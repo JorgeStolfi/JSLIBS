@@ -1,5 +1,5 @@
 # Libraries in compile order
-# Last edited on 2020-12-08 00:00:52 by jstolfi
+# Last edited on 2020-12-08 03:03:25 by jstolfi
 
 # + = OK.
 # ? = Status uncertain.
@@ -15,7 +15,6 @@
 
 + libgeo
 
-+ libps
 + libeps
 
 + liblsq
@@ -34,7 +33,6 @@
 + libaa
 + libaafuncs
 + libaagraph
-! libaazf
 + libaacmp
 
 + libbbopt
@@ -60,16 +58,13 @@
 + libarchdraw
 + libstreetmap
 + libsheetcut
-! libcpk
 + libdicio
 
 + libstpoly
 + libstmesh
 + libvoxm
 
-! libcamffmpeg
 + libcamfirewire
-+ libdsm
 
 + libclassif
 
@@ -82,28 +77,11 @@
 + libintg
 + libtsai
 
-! libvsignal
-
 + libpspulse
 + libbezier
-
-! liblmdif
-! libgmo
-! libleoimg
-! libraab
-
-! libdygrid
-! libbzpatch
-! libdgspline
-! libbzb
 
 + libneuro
 + libnmsim
 + libnmsim_e
-! libnmsim_g
 
-! libirons
-! libsort_es
 
-J libmsmatch-2011-12-22
-J libnmsim-old
