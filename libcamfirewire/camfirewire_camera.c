@@ -1,5 +1,5 @@
 /* See {camfirewire_camera.h}. */
-/* Last edited on 2020-12-07 23:53:54 by jstolfi */
+/* Last edited on 2020-12-08 13:57:44 by jstolfi */
 
 #define _GNU_SOURCE_
 #include <stdio.h>
@@ -104,23 +104,23 @@ void camfirewire_list_camera_features(camfirewire_camera_t* cc, FILE* arq){
     dc1394framerate_t framerate;
     float fps;
     err = dc1394_video_get_framerate(cc->camera_handler, &framerate);
-    if (err != 0) { printf(stderr, "{dc1394_video_get_framerate} err = %d\n", err); }
+    if (err != 0) { fprintf(stderr, "{dc1394_video_get_framerate} err = %d\n", err); }
     err = dc1394_framerate_as_float(framerate,&fps);
-    if (err != 0) { printf(stderr, "{dc1394_framerate_as_float} err = %d\n", err); }
+    if (err != 0) { fprintf(stderr, "{dc1394_framerate_as_float} err = %d\n", err); }
     
     dc1394video_mode_t video_mode;
     uint32_t h,w;
     err = dc1394_video_get_mode(cc->camera_handler,&video_mode);
-    if (err != 0) { printf(stderr, "{dc1394_video_get_mode} err = %d\n", err); }
+    if (err != 0) { fprintf(stderr, "{dc1394_video_get_mode} err = %d\n", err); }
     dc1394_get_image_size_from_video_mode(cc->camera_handler, video_mode, &w, &h);
     
     dc1394operation_mode_t mode;
     err = dc1394_video_get_operation_mode(cc->camera_handler, &mode);
-    if (err != 0) { printf(stderr, "{dc1394_video_get_operation_mode} err = %d\n", err); }
+    if (err != 0) { fprintf(stderr, "{dc1394_video_get_operation_mode} err = %d\n", err); }
     
     dc1394speed_t speed;
     err = dc1394_video_get_iso_speed(cc->camera_handler,&speed);
-    if (err != 0) { printf(stderr, "{dc1394_video_get_iso_speed} err = %d\n", err); }
+    if (err != 0) { fprintf(stderr, "{dc1394_video_get_iso_speed} err = %d\n", err); }
     
     fprintf(arq,"ISO SPEED: %s \n",camfirewire_iso_speed_name(speed));
     fprintf(arq,"VIDEO MODE: %s (%dx%d)\n",camfirewire_video_mode_name(video_mode),w,h);
@@ -139,12 +139,12 @@ void camfirewire_list_camera_features(camfirewire_camera_t* cc, FILE* arq){
 	fprintf(arq,"fps (");
 	dc1394framerates_t framerate_list;
 	err = dc1394_video_get_supported_framerates(cc->camera_handler, video_mode,&framerate_list);
-        if (err != 0) { printf(stderr, "{dc1394_video_get_supported_framerates} err = %d\n", err); }
+        if (err != 0) { fprintf(stderr, "{dc1394_video_get_supported_framerates} err = %d\n", err); }
 	for(int j= 0; j < framerate_list.num; j++){
 	  framerate = framerate_list.framerates[j];
 	  float fps;
 	  err = dc1394_framerate_as_float(framerate,&fps);
-          if (err != 0) { printf(stderr, "{dc1394_framerate_as_float} err = %d\n", err); }
+          if (err != 0) { fprintf(stderr, "{dc1394_framerate_as_float} err = %d\n", err); }
 	  fprintf(arq," %3.2f ",fps);
 	}
 	fprintf(arq,")");

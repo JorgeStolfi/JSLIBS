@@ -1,4 +1,4 @@
-# Last edited on 2011-05-15 20:22:46 by stolfi
+# Last edited on 2020-12-08 13:59:40 by jstolfi
 
 PROG := test_camera_plot
 TEST_LIB := libtsai.a
@@ -23,7 +23,7 @@ check:  build run-tests
 
 PSVIEW := okular
 
-include ../../../GENERIC-LIB-TEST.make
+include ../../../../GENERIC-LIB-TEST.make
 
 run-tests: ${PROG}
 	-rm -rf out/*
