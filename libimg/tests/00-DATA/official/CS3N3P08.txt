@@ -1,0 +1,150 @@
+Image: CS3N3P08.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: PseudoClass
+  Geometry: 32x32+0+0
+  Units: Undefined
+  Type: Palette
+  Endianess: Undefined
+  Colorspace: sRGB
+  Depth: 8-bit
+  Channel depth:
+    red: 8-bit
+    green: 8-bit
+    blue: 8-bit
+  Channel statistics:
+    Pixels: 1024
+    Red:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 103.594 (0.40625)
+      standard deviation: 115.616 (0.453395)
+      kurtosis: -1.71662
+      skewness: 0.377694
+      entropy: 0.653966
+    Green:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 191.25 (0.75)
+      standard deviation: 86.9292 (0.340899)
+      kurtosis: -0.467852
+      skewness: -1.01685
+      entropy: 0.738972
+    Blue:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 87.6562 (0.34375)
+      standard deviation: 111.135 (0.435823)
+      kurtosis: -1.41601
+      skewness: 0.649755
+      entropy: 0.634806
+  Image statistics:
+    Overall:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 127.5 (0.5)
+      standard deviation: 105.316 (0.413006)
+      kurtosis: -1.33538
+      skewness: 2.52163e-14
+      entropy: 0.675915
+  Colors: 28
+  Histogram:
+        32: (  0, 36,255) #0024FF srgb(0,36,255)
+        32: (  0, 73,255) #0049FF srgb(0,73,255)
+        32: (  0,109,255) #006DFF srgb(0,109,255)
+        32: (  0,146,255) #0092FF srgb(0,146,255)
+        32: (  0,182,255) #00B6FF srgb(0,182,255)
+        32: (  0,219,255) #00DBFF srgb(0,219,255)
+        64: (  0,255,  0) #00FF00 lime
+        32: (  0,255, 36) #00FF24 srgb(0,255,36)
+        32: (  0,255, 73) #00FF49 srgb(0,255,73)
+        32: (  0,255,109) #00FF6D srgb(0,255,109)
+        32: (  0,255,146) #00FF92 srgb(0,255,146)
+        32: (  0,255,182) #00FFB6 srgb(0,255,182)
+        32: (  0,255,219) #00FFDB srgb(0,255,219)
+        64: (  0,255,255) #00FFFF cyan
+        32: ( 36,255,  0) #24FF00 srgb(36,255,0)
+        32: ( 73,255,  0) #49FF00 srgb(73,255,0)
+        32: (109,255,  0) #6DFF00 srgb(109,255,0)
+        32: (146,255,  0) #92FF00 srgb(146,255,0)
+        32: (182,255,  0) #B6FF00 srgb(182,255,0)
+        32: (219,255,  0) #DBFF00 srgb(219,255,0)
+        64: (255,  0,  0) #FF0000 red
+        32: (255, 36,  0) #FF2400 srgb(255,36,0)
+        32: (255, 73,  0) #FF4900 srgb(255,73,0)
+        32: (255,109,  0) #FF6D00 srgb(255,109,0)
+        32: (255,146,  0) #FF9200 srgb(255,146,0)
+        32: (255,182,  0) #FFB600 srgb(255,182,0)
+        32: (255,219,  0) #FFDB00 srgb(255,219,0)
+        64: (255,255,  0) #FFFF00 yellow
+  Colormap entries: 28
+  Colormap:
+         0: (146,255,  0) #92FF00 srgb(146,255,0)
+         1: (  0,255,146) #00FF92 srgb(0,255,146)
+         2: (  0,255,255) #00FFFF cyan
+         3: (  0,255,  0) #00FF00 lime
+         4: (  0,219,255) #00DBFF srgb(0,219,255)
+         5: (  0,255,109) #00FF6D srgb(0,255,109)
+         6: (255,182,  0) #FFB600 srgb(255,182,0)
+         7: (  0,109,255) #006DFF srgb(0,109,255)
+         8: (182,255,  0) #B6FF00 srgb(182,255,0)
+         9: (255,146,  0) #FF9200 srgb(255,146,0)
+        10: (219,255,  0) #DBFF00 srgb(219,255,0)
+        11: (  0, 73,255) #0049FF srgb(0,73,255)
+        12: (255, 36,  0) #FF2400 srgb(255,36,0)
+        13: (255,  0,  0) #FF0000 red
+        14: ( 36,255,  0) #24FF00 srgb(36,255,0)
+        15: ( 73,255,  0) #49FF00 srgb(73,255,0)
+        16: (  0,255,219) #00FFDB srgb(0,255,219)
+        17: (  0,255, 73) #00FF49 srgb(0,255,73)
+        18: (  0,255,182) #00FFB6 srgb(0,255,182)
+        19: (255,255,  0) #FFFF00 yellow
+        20: (  0,255, 36) #00FF24 srgb(0,255,36)
+        21: (  0,182,255) #00B6FF srgb(0,182,255)
+        22: (255,219,  0) #FFDB00 srgb(255,219,0)
+        23: (  0,146,255) #0092FF srgb(0,146,255)
+        24: (255,109,  0) #FF6D00 srgb(255,109,0)
+        25: (  0, 36,255) #0024FF srgb(0,36,255)
+        26: (255, 73,  0) #FF4900 srgb(255,73,0)
+        27: (109,255,  0) #6DFF00 srgb(109,255,0)
+  Rendering intent: Perceptual
+  Gamma: 1
+  Chromaticity:
+    red primary: (0.64,0.33)
+    green primary: (0.3,0.6)
+    blue primary: (0.15,0.06)
+    white point: (0.3127,0.329)
+  Background color: white
+  Border color: srgb(223,223,223)
+  Matte color: grey74
+  Transparent color: black
+  Interlace: None
+  Intensity: Undefined
+  Compose: Over
+  Page geometry: 32x32+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=1 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 8
+    png:IHDR.bit_depth: 8
+    png:IHDR.color-type-orig: 3
+    png:IHDR.color_type: 3 (Indexed)
+    png:IHDR.interlace_method: 0 (Not interlaced)
+    png:IHDR.width,height: 32, 32
+    png:PLTE.number_colors: 28
+    signature: b940944588ec117611df85a11d1a78ea34475b2b0099ea4bd7d43ce715720694
+  Artifacts:
+    filename: CS3N3P08.png
+    verbose: true
+  Tainted: False
+  Filesize: 259B
+  Number pixels: 1.02K
+  Pixels per second: 1.024EB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

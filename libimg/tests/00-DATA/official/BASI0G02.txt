@@ -1,0 +1,70 @@
+Image: BASI0G02.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: PseudoClass
+  Geometry: 32x32+0+0
+  Units: Undefined
+  Type: Grayscale
+  Base type: Grayscale
+  Endianess: Undefined
+  Colorspace: Gray
+  Depth: 8/2-bit
+  Channel depth:
+    gray: 2-bit
+  Channel statistics:
+    Pixels: 1024
+    Gray:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 127.5 (0.5)
+      standard deviation: 95.0329 (0.372678)
+      kurtosis: -1.36
+      skewness: 8.58003e-15
+      entropy: 1
+  Colors: 4
+  Histogram:
+       256: (  0,  0,  0) #000000 gray(0)
+       256: ( 85, 85, 85) #555555 gray(85)
+       256: (170,170,170) #AAAAAA gray(170)
+       256: (255,255,255) #FFFFFF gray(255)
+  Colormap entries: 4
+  Colormap:
+         0: (  0,  0,  0) #000000 gray(0)
+         1: ( 85, 85, 85) #555555 gray(85)
+         2: (170,170,170) #AAAAAA gray(170)
+         3: (255,255,255) #FFFFFF gray(255)
+  Rendering intent: Undefined
+  Gamma: 1
+  Background color: gray(255)
+  Border color: gray(223)
+  Matte color: gray(189)
+  Transparent color: gray(0)
+  Interlace: PNG
+  Intensity: Rec709Luminance
+  Compose: Over
+  Page geometry: 32x32+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=1 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 2
+    png:IHDR.bit_depth: 2
+    png:IHDR.color-type-orig: 0
+    png:IHDR.color_type: 0 (Grayscale)
+    png:IHDR.interlace_method: 1 (Adam7 method)
+    png:IHDR.width,height: 32, 32
+    signature: 56878250272d4a04f61c00971b40a019738f1b37f85d747046470eb6cd12d09b
+  Artifacts:
+    filename: BASI0G02.png
+    verbose: true
+  Tainted: False
+  Filesize: 154B
+  Number pixels: 1.02K
+  Pixels per second: 1.024EB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

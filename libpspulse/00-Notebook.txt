@@ -1,0 +1,16 @@
+# Last edited on 2009-08-23 16:53:18 by stolfi
+
+Tasks to do:
+
+[ ] Rename modules consistently psp_pulse, psp_tent
+
+[ ] Discard dg_spline (duplicates psp_basic)
+
+[ ] Get some plot routines from libdygrid?
+
+[ ] Rename library to "libpolysp"
+
+[ ] Move some of the "pack" routines to this library.
+
+[ ] Rename {pix} to {mix} ("mother's index").
+

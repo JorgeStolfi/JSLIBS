@@ -1,0 +1,100 @@
+Image: S05N3P02.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: PseudoClass
+  Geometry: 5x5+0+0
+  Units: Undefined
+  Type: Palette
+  Endianess: Undefined
+  Colorspace: sRGB
+  Depth: 8/4-bit
+  Channel depth:
+    red: 4-bit
+    green: 1-bit
+    blue: 1-bit
+  Channel statistics:
+    Pixels: 25
+    Red:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 201.28 (0.789333)
+      standard deviation: 75.0592 (0.29435)
+      kurtosis: -0.301544
+      skewness: -0.958245
+      entropy: 0.709074
+    Green:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 10.2 (0.04)
+      standard deviation: 49.9696 (0.195959)
+      kurtosis: 20.0417
+      skewness: 4.69486
+      entropy: 0.242292
+    Blue:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 91.8 (0.36)
+      standard deviation: 122.4 (0.48)
+      kurtosis: -1.65972
+      skewness: 0.583333
+      entropy: 0.942683
+  Image statistics:
+    Overall:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 101.093 (0.396444)
+      standard deviation: 87.7736 (0.34421)
+      kurtosis: 1.23922
+      skewness: 1.03462
+      entropy: 0.63135
+  Colors: 3
+  Histogram:
+         1: (  0,255,255) #00FFFF cyan
+         8: (119,  0,255) #7700FF srgb(119,0,255)
+        16: (255,  0,  0) #FF0000 red
+  Colormap entries: 3
+  Colormap:
+         0: (  0,255,255) #00FFFF cyan
+         1: (119,  0,255) #7700FF srgb(119,0,255)
+         2: (255,  0,  0) #FF0000 red
+  Rendering intent: Perceptual
+  Gamma: 1
+  Chromaticity:
+    red primary: (0.64,0.33)
+    green primary: (0.3,0.6)
+    blue primary: (0.15,0.06)
+    white point: (0.3127,0.329)
+  Background color: white
+  Border color: srgb(223,223,223)
+  Matte color: grey74
+  Transparent color: black
+  Interlace: None
+  Intensity: Undefined
+  Compose: Over
+  Page geometry: 5x5+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=1 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 2
+    png:IHDR.bit_depth: 2
+    png:IHDR.color-type-orig: 3
+    png:IHDR.color_type: 3 (Indexed)
+    png:IHDR.interlace_method: 0 (Not interlaced)
+    png:IHDR.width,height: 5, 5
+    png:PLTE.number_colors: 3
+    signature: 9847c302ca2ff44d2778686cd82e450b7ec3c5e9d4475b35bcb1da0b2304a790
+  Artifacts:
+    filename: S05N3P02.png
+    verbose: true
+  Tainted: False
+  Filesize: 129B
+  Number pixels: 25
+  Pixels per second: 25PB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

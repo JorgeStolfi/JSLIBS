@@ -1,0 +1,91 @@
+Image: G25N0G16.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: DirectClass
+  Geometry: 32x32+0+0
+  Units: Undefined
+  Type: Grayscale
+  Base type: Grayscale
+  Endianess: Undefined
+  Colorspace: Gray
+  Depth: 16/8-bit
+  Channel depth:
+    gray: 8-bit
+  Channel statistics:
+    Pixels: 1024
+    Gray:
+      min: 0 (0)
+      max: 65535 (1)
+      mean: 20104.7 (0.306778)
+      standard deviation: 23037.7 (0.351533)
+      kurtosis: -0.364839
+      skewness: 1.08164
+      entropy: 0.790005
+  Colors: 31
+  Histogram:
+       201: (    0,    0,    0) #000000000000 gray(0)
+        16: (  257,  257,  257) #010101010101 gray(1)
+        16: (  514,  514,  514) #020202020202 gray(2)
+        16: (  771,  771,  771) #030303030303 gray(3)
+        16: ( 1028, 1028, 1028) #040404040404 gray(4)
+        16: ( 1542, 1542, 1542) #060606060606 gray(6)
+        16: ( 2313, 2313, 2313) #090909090909 gray(9)
+        16: ( 3084, 3084, 3084) #0C0C0C0C0C0C gray(12)
+        16: ( 3855, 3855, 3855) #0F0F0F0F0F0F gray(15)
+        16: ( 4883, 4883, 4883) #131313131313 gray(19)
+        16: ( 6168, 6168, 6168) #181818181818 gray(24)
+        16: ( 7453, 7453, 7453) #1D1D1D1D1D1D gray(29)
+        16: ( 8995, 8995, 8995) #232323232323 gray(35)
+        16: (10794,10794,10794) #2A2A2A2A2A2A gray(42)
+       245: (11565,11565,11565) #2D2D2D2D2D2D gray(45)
+        16: (12593,12593,12593) #313131313131 gray(49)
+        16: (14649,14649,14649) #393939393939 gray(57)
+        16: (16962,16962,16962) #424242424242 gray(66)
+        16: (19275,19275,19275) #4B4B4B4B4B4B gray(75)
+        16: (21845,21845,21845) #555555555555 gray(85)
+        14: (24672,24672,24672) #606060606060 gray(96)
+        14: (27756,27756,27756) #6C6C6C6C6C6C gray(108)
+        13: (31097,31097,31097) #797979797979 gray(121)
+        13: (34438,34438,34438) #868686868686 gray(134)
+        14: (38293,38293,38293) #959595959595 gray(149)
+        14: (42148,42148,42148) #A4A4A4A4A4A4 gray(164)
+        16: (46517,46517,46517) #B5B5B5B5B5B5 gray(181)
+        16: (50886,50886,50886) #C6C6C6C6C6C6 gray(198)
+        16: (55512,55512,55512) #D8D8D8D8D8D8 gray(216)
+        16: (60395,60395,60395) #EBEBEBEBEBEB gray(235)
+       144: (65535,65535,65535) #FFFFFFFFFFFF gray(255)
+  Rendering intent: Undefined
+  Gamma: 2.5
+  Background color: gray(255)
+  Border color: gray(223)
+  Matte color: gray(189)
+  Transparent color: gray(0)
+  Interlace: None
+  Intensity: Rec709Luminance
+  Compose: Over
+  Page geometry: 32x32+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=2.5 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 16
+    png:IHDR.bit_depth: 16
+    png:IHDR.color-type-orig: 0
+    png:IHDR.color_type: 0 (Grayscale)
+    png:IHDR.interlace_method: 0 (Not interlaced)
+    png:IHDR.width,height: 32, 32
+    signature: 8f556130b32db12a7bc1129fb0c2b82a32745335acbf9ee4ba9d6ffc1c8fb0de
+  Artifacts:
+    filename: G25N0G16.png
+    verbose: true
+  Tainted: False
+  Filesize: 383B
+  Number pixels: 1.02K
+  Pixels per second: 1.024EB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

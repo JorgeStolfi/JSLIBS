@@ -1,0 +1,151 @@
+Image: G25N2C08.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: DirectClass
+  Geometry: 32x32+0+0
+  Units: Undefined
+  Type: Palette
+  Endianess: Undefined
+  Colorspace: sRGB
+  Depth: 8-bit
+  Channel depth:
+    red: 8-bit
+    green: 8-bit
+    blue: 1-bit
+  Channel statistics:
+    Pixels: 1024
+    Red:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 35.3105 (0.138473)
+      standard deviation: 65.2014 (0.255692)
+      kurtosis: 2.7584
+      skewness: 1.96391
+      entropy: 0.621537
+    Green:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 59.4209 (0.233023)
+      standard deviation: 87.8371 (0.344459)
+      kurtosis: 0.658875
+      skewness: 1.49485
+      entropy: 0.570854
+    Blue:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 60.2637 (0.236328)
+      standard deviation: 108.331 (0.424826)
+      kurtosis: -0.459132
+      skewness: 1.24132
+      entropy: 0.788881
+  Image statistics:
+    Overall:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 51.665 (0.202608)
+      standard deviation: 88.8859 (0.348572)
+      kurtosis: 0.934545
+      skewness: 1.61665
+      entropy: 0.660424
+  Colors: 60
+  Histogram:
+       185: (  0,  0,  0) #000000 black
+        32: (  0,  0,255) #0000FF blue
+       245: (  0, 45,  0) #002D00 srgb(0,45,0)
+       128: (  0,255,  0) #00FF00 lime
+         8: (  1,  0,  0) #010000 srgb(1,0,0)
+         8: (  1,  1,255) #0101FF srgb(1,1,255)
+         8: (  2,  0,  0) #020000 srgb(2,0,0)
+         8: (  2,  2,255) #0202FF srgb(2,2,255)
+         8: (  4,  0,  0) #040000 srgb(4,0,0)
+         8: (  4,  4,255) #0404FF srgb(4,4,255)
+         8: (  6,  0,  0) #060000 srgb(6,0,0)
+         8: (  6,  6,255) #0606FF srgb(6,6,255)
+         8: (  8,  0,  0) #080000 srgb(8,0,0)
+         8: (  8,  8,255) #0808FF srgb(8,8,255)
+         8: ( 11,  0,  0) #0B0000 srgb(11,0,0)
+         8: ( 11, 11,255) #0B0BFF srgb(11,11,255)
+         8: ( 15,  0,  0) #0F0000 srgb(15,0,0)
+         8: ( 15, 15,255) #0F0FFF srgb(15,15,255)
+         8: ( 19,  0,  0) #130000 srgb(19,0,0)
+         8: ( 19, 19,255) #1313FF srgb(19,19,255)
+         8: ( 23,  0,  0) #170000 srgb(23,0,0)
+         8: ( 23, 23,255) #1717FF srgb(23,23,255)
+         8: ( 29,  0,  0) #1D0000 srgb(29,0,0)
+         8: ( 29, 29,255) #1D1DFF srgb(29,29,255)
+         8: ( 34,  0,  0) #220000 srgb(34,0,0)
+         8: ( 34, 34,255) #2222FF srgb(34,34,255)
+         8: ( 41,  0,  0) #290000 srgb(41,0,0)
+         8: ( 41, 41,255) #2929FF srgb(41,41,255)
+         8: ( 48,  0,  0) #300000 srgb(48,0,0)
+         8: ( 48, 48,255) #3030FF srgb(48,48,255)
+         8: ( 56,  0,  0) #380000 srgb(56,0,0)
+         8: ( 56, 56,255) #3838FF srgb(56,56,255)
+         8: ( 65,  0,  0) #410000 srgb(65,0,0)
+         8: ( 65, 65,255) #4141FF srgb(65,65,255)
+         8: ( 74,  0,  0) #4A0000 srgb(74,0,0)
+         8: ( 74, 74,255) #4A4AFF srgb(74,74,255)
+         8: ( 85,  0,  0) #550000 srgb(85,0,0)
+         8: ( 85, 85,255) #5555FF srgb(85,85,255)
+         8: ( 96,  0,  0) #600000 srgb(96,0,0)
+         6: ( 96, 96,255) #6060FF srgb(96,96,255)
+         8: (108,  0,  0) #6C0000 srgb(108,0,0)
+         6: (108,108,255) #6C6CFF srgb(108,108,255)
+         8: (120,  0,  0) #780000 srgb(120,0,0)
+         5: (120,120,255) #7878FF srgb(120,120,255)
+         8: (134,  0,  0) #860000 srgb(134,0,0)
+         5: (134,134,255) #8686FF srgb(134,134,255)
+         8: (148,  0,  0) #940000 srgb(148,0,0)
+         6: (148,148,255) #9494FF srgb(148,148,255)
+         8: (164,  0,  0) #A40000 srgb(164,0,0)
+         6: (164,164,255) #A4A4FF srgb(164,164,255)
+         8: (180,  0,  0) #B40000 srgb(180,0,0)
+         8: (180,180,255) #B4B4FF srgb(180,180,255)
+         8: (197,  0,  0) #C50000 srgb(197,0,0)
+         8: (197,197,255) #C5C5FF srgb(197,197,255)
+         8: (215,  0,  0) #D70000 srgb(215,0,0)
+         8: (215,215,255) #D7D7FF srgb(215,215,255)
+         8: (234,  0,  0) #EA0000 srgb(234,0,0)
+         8: (234,234,255) #EAEAFF srgb(234,234,255)
+         8: (255,  0,  0) #FF0000 red
+         8: (255,255,255) #FFFFFF white
+  Rendering intent: Perceptual
+  Gamma: 2.5
+  Chromaticity:
+    red primary: (0.64,0.33)
+    green primary: (0.3,0.6)
+    blue primary: (0.15,0.06)
+    white point: (0.3127,0.329)
+  Background color: white
+  Border color: srgb(223,223,223)
+  Matte color: grey74
+  Transparent color: black
+  Interlace: None
+  Intensity: Undefined
+  Compose: Over
+  Page geometry: 32x32+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=2.5 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 8
+    png:IHDR.bit_depth: 8
+    png:IHDR.color-type-orig: 2
+    png:IHDR.color_type: 2 (Truecolor)
+    png:IHDR.interlace_method: 0 (Not interlaced)
+    png:IHDR.width,height: 32, 32
+    signature: 362ef50ba0995042b1967bab910f4ac7eaf7e972e189953c31b29944284e7749
+  Artifacts:
+    filename: G25N2C08.png
+    verbose: true
+  Tainted: False
+  Filesize: 405B
+  Number pixels: 1.02K
+  Pixels per second: 1.024EB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

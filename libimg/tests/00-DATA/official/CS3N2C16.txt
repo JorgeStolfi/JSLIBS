@@ -1,0 +1,123 @@
+Image: CS3N2C16.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: DirectClass
+  Geometry: 32x32+0+0
+  Units: Undefined
+  Type: Palette
+  Endianess: Undefined
+  Colorspace: sRGB
+  Depth: 16/15-bit
+  Channel depth:
+    red: 13-bit
+    green: 16-bit
+    blue: 16-bit
+  Channel statistics:
+    Pixels: 1024
+    Red:
+      min: 0 (0)
+      max: 65535 (1)
+      mean: 25600.5 (0.390639)
+      standard deviation: 29089.5 (0.443878)
+      kurtosis: -1.63648
+      skewness: 0.441459
+      entropy: 0.665145
+    Green:
+      min: 0 (0)
+      max: 65535 (1)
+      mean: 49151.2 (0.75)
+      standard deviation: 21283.7 (0.324769)
+      kurtosis: -0.580197
+      skewness: -0.940919
+      entropy: 0.707134
+    Blue:
+      min: 0 (0)
+      max: 65535 (1)
+      mean: 23550.8 (0.359361)
+      standard deviation: 28506.5 (0.434981)
+      kurtosis: -1.48676
+      skewness: 0.576571
+      entropy: 0.655705
+  Image statistics:
+    Overall:
+      min: 0 (0)
+      max: 65535 (1)
+      mean: 32767.5 (0.5)
+      standard deviation: 26531.8 (0.40485)
+      kurtosis: -1.27781
+      skewness: 2.67712e-14
+      entropy: 0.675994
+  Colors: 32
+  Histogram:
+        32: (    0, 8193,65535) #00002001FFFF srgb(0%,12.5017%,100%)
+        32: (    0,16386,65535) #00004002FFFF srgb(0%,25.0034%,100%)
+        32: (    0,24579,65535) #00006003FFFF srgb(0%,37.5051%,100%)
+        32: (    0,32772,65535) #00008004FFFF srgb(0%,50.0069%,100%)
+        32: (    0,40964,65535) #0000A004FFFF srgb(0%,62.5071%,100%)
+        32: (    0,49157,65535) #0000C005FFFF srgb(0%,75.0088%,100%)
+        32: (    0,57350,65535) #0000E006FFFF srgb(0%,87.5105%,100%)
+        32: (    0,65535,    0) #0000FFFF0000 lime
+        32: (    0,65535, 8185) #0000FFFF1FF9 srgb(0%,100%,12.4895%)
+        32: (    0,65535,16378) #0000FFFF3FFA srgb(0%,100%,24.9912%)
+        32: (    0,65535,24571) #0000FFFF5FFB srgb(0%,100%,37.4929%)
+        32: (    0,65535,32763) #0000FFFF7FFB srgb(0%,100%,49.9931%)
+        32: (    0,65535,40956) #0000FFFF9FFC srgb(0%,100%,62.4949%)
+        32: (    0,65535,49149) #0000FFFFBFFD srgb(0%,100%,74.9966%)
+        32: (    0,65535,57342) #0000FFFFDFFE srgb(0%,100%,87.4983%)
+        32: (    0,65535,65535) #0000FFFFFFFF cyan
+        32: ( 8193,65535,    0) #2001FFFF0000 srgb(12.5017%,100%,0%)
+        32: (16386,65535,    0) #4002FFFF0000 srgb(25.0034%,100%,0%)
+        32: (24579,65535,    0) #6003FFFF0000 srgb(37.5051%,100%,0%)
+        32: (32772,65535,    0) #8004FFFF0000 srgb(50.0069%,100%,0%)
+        32: (40964,65535,    0) #A004FFFF0000 srgb(62.5071%,100%,0%)
+        32: (49157,65535,    0) #C005FFFF0000 srgb(75.0088%,100%,0%)
+        32: (57350,65535,    0) #E006FFFF0000 srgb(87.5105%,100%,0%)
+        32: (65535,    0,    0) #FFFF00000000 red
+        32: (65535, 8185,    0) #FFFF1FF90000 srgb(100%,12.4895%,0%)
+        32: (65535,16378,    0) #FFFF3FFA0000 srgb(100%,24.9912%,0%)
+        32: (65535,24571,    0) #FFFF5FFB0000 srgb(100%,37.4929%,0%)
+        32: (65535,32763,    0) #FFFF7FFB0000 srgb(100%,49.9931%,0%)
+        32: (65535,40956,    0) #FFFF9FFC0000 srgb(100%,62.4949%,0%)
+        32: (65535,49149,    0) #FFFFBFFD0000 srgb(100%,74.9966%,0%)
+        32: (65535,57342,    0) #FFFFDFFE0000 srgb(100%,87.4983%,0%)
+        32: (65535,65535,    0) #FFFFFFFF0000 yellow
+  Rendering intent: Perceptual
+  Gamma: 1
+  Chromaticity:
+    red primary: (0.64,0.33)
+    green primary: (0.3,0.6)
+    blue primary: (0.15,0.06)
+    white point: (0.3127,0.329)
+  Background color: white
+  Border color: srgb(223,223,223)
+  Matte color: grey74
+  Transparent color: black
+  Interlace: None
+  Intensity: Undefined
+  Compose: Over
+  Page geometry: 32x32+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=1 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 16
+    png:IHDR.bit_depth: 16
+    png:IHDR.color-type-orig: 2
+    png:IHDR.color_type: 2 (Truecolor)
+    png:IHDR.interlace_method: 0 (Not interlaced)
+    png:IHDR.width,height: 32, 32
+    signature: 3c4215d3daa0f300b80f7dd890375122e9e4e8a754a2667fa65acc2a75082dfd
+  Artifacts:
+    filename: CS3N2C16.png
+    verbose: true
+  Tainted: False
+  Filesize: 214B
+  Number pixels: 1.02K
+  Pixels per second: 1.024EB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

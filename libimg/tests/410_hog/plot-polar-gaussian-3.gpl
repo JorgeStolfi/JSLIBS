@@ -1,0 +1,26 @@
+# Last edited on 2012-01-10 01:40:24 by stolfilocal
+
+  set xlabel "alpha"
+
+  unset logscale x; set xrange [-0.01:(pi+0.01)]
+  # set logscale x;  set xrange [0.0001:3.5]
+  
+  # unset logscale y; set yrange [-0.001:*]
+  set logscale y; set yrange [0.0001:*]
+  
+  # final approximation for angular distribution:
+  gac(a,d,p,e,g,h) = e*exp(-0.5*(def(a,d,g,h)/p)**2)
+  
+  plot \
+    dfile using 2:3 with points title "d0" pt 7 ps 0.5 lc rgb '#ff0000', \
+    ""    using 2:4 with points title "d1" pt 7 ps 0.5 lc rgb '#883300', \
+    ""    using 2:5 with points title "d2" pt 7 ps 0.5 lc rgb '#007700', \
+    ""    using 2:6 with points title "d3" pt 7 ps 0.5 lc rgb '#0055ff', \
+    ""    using 2:7 with points title "d4" pt 7 ps 0.5 lc rgb '#7700ff', \
+    ""    using 2:8 with points title "d5" pt 7 ps 0.5 lc rgb '#dd0088', \
+    (gac(x,d0,p0,e0,g0,h0)) notitle with lines lt 1 lc rgb '#ff0000', \
+    (gac(x,d1,p1,e1,g1,h1)) notitle with lines lt 1 lc rgb '#883300', \
+    (gac(x,d2,p2,e2,g2,h2)) notitle with lines lt 1 lc rgb '#007700', \
+    (gac(x,d3,p3,e3,g3,h3)) notitle with lines lt 1 lc rgb '#0055ff', \
+    (gac(x,d4,p4,e4,g4,h4)) notitle with lines lt 1 lc rgb '#7700ff', \
+    (gac(x,d5,p5,e5,g5,h5)) notitle with lines lt 1 lc rgb '#dd0088' 

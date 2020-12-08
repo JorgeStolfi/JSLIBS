@@ -1,0 +1,167 @@
+Image: CDHN2C08.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: DirectClass
+  Geometry: 32x8+0+0
+  Resolution: 4x1
+  Print size: 8x8
+  Units: Undefined
+  Type: Palette
+  Endianess: Undefined
+  Colorspace: sRGB
+  Depth: 8/4-bit
+  Channel depth:
+    red: 4-bit
+    green: 4-bit
+    blue: 4-bit
+  Channel statistics:
+    Pixels: 256
+    Red:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 186.137 (0.729948)
+      standard deviation: 96.6369 (0.378968)
+      kurtosis: -0.444689
+      skewness: -1.0815
+      entropy: 0.592124
+    Green:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 132.016 (0.517708)
+      standard deviation: 98.6006 (0.386669)
+      kurtosis: -1.57924
+      skewness: -0.0788283
+      entropy: 0.853941
+    Blue:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 35.1289 (0.13776)
+      standard deviation: 72.6696 (0.284979)
+      kurtosis: 2.04013
+      skewness: 1.86558
+      entropy: 0.407074
+  Image statistics:
+    Overall:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 117.76 (0.461806)
+      standard deviation: 90.0771 (0.353243)
+      kurtosis: -0.222866
+      skewness: 0.20297
+      entropy: 0.617713
+  Colors: 73
+  Histogram:
+         1: (  0,119,255) #0077FF srgb(0,119,255)
+         1: (  0,136,255) #0088FF srgb(0,136,255)
+         1: (  0,170,255) #00AAFF srgb(0,170,255)
+         1: (  0,187,170) #00BBAA srgb(0,187,170)
+         3: (  0,187,187) #00BBBB srgb(0,187,187)
+         1: (  0,187,255) #00BBFF srgb(0,187,255)
+         1: (  0,204,153) #00CC99 srgb(0,204,153)
+         1: (  0,204,170) #00CCAA srgb(0,204,170)
+         1: (  0,204,204) #00CCCC srgb(0,204,204)
+         5: (  0,221,153) #00DD99 srgb(0,221,153)
+         1: (  0,221,170) #00DDAA srgb(0,221,170)
+         1: (  0,221,204) #00DDCC srgb(0,221,204)
+         2: (  0,238,136) #00EE88 srgb(0,238,136)
+         1: (  0,238,153) #00EE99 srgb(0,238,153)
+         2: (  0,255,  0) #00FF00 lime
+         2: (  0,255, 17) #00FF11 srgb(0,255,17)
+         2: (  0,255, 34) #00FF22 srgb(0,255,34)
+         1: (  0,255, 85) #00FF55 srgb(0,255,85)
+         4: (  0,255,102) #00FF66 srgb(0,255,102)
+         5: (  0,255,119) #00FF77 srgb(0,255,119)
+         2: (  0,255,136) #00FF88 srgb(0,255,136)
+         1: (  0,255,153) #00FF99 srgb(0,255,153)
+         1: ( 17, 68,255) #1144FF srgb(17,68,255)
+         1: ( 17, 85,255) #1155FF srgb(17,85,255)
+         1: ( 17,255,  0) #11FF00 srgb(17,255,0)
+         2: ( 17,255, 51) #11FF33 srgb(17,255,51)
+         1: ( 34,255,  0) #22FF00 srgb(34,255,0)
+         1: ( 51, 17,255) #3311FF srgb(51,17,255)
+         1: ( 68,  0,255) #4400FF srgb(68,0,255)
+         1: ( 85, 17,255) #5511FF srgb(85,17,255)
+         2: ( 85,255, 17) #55FF11 srgb(85,255,17)
+         2: (102,255,  0) #66FF00 srgb(102,255,0)
+         1: (119,  0,255) #7700FF srgb(119,0,255)
+         8: (119,255,  0) #77FF00 srgb(119,255,0)
+         1: (136,238,  0) #88EE00 srgb(136,238,0)
+         1: (153, 17,221) #9911DD srgb(153,17,221)
+         5: (153,221,  0) #99DD00 srgb(153,221,0)
+         6: (153,238,  0) #99EE00 srgb(153,238,0)
+         2: (153,255,  0) #99FF00 srgb(153,255,0)
+         1: (170, 17,204) #AA11CC srgb(170,17,204)
+         3: (170,221,  0) #AADD00 srgb(170,221,0)
+         4: (170,238,  0) #AAEE00 srgb(170,238,0)
+         2: (170,255,  0) #AAFF00 srgb(170,255,0)
+         1: (187,  0,204) #BB00CC srgb(187,0,204)
+         3: (187, 17,187) #BB11BB srgb(187,17,187)
+         2: (187,221,  0) #BBDD00 srgb(187,221,0)
+         2: (187,238,  0) #BBEE00 srgb(187,238,0)
+         2: (204,221,  0) #CCDD00 srgb(204,221,0)
+         2: (204,238,  0) #CCEE00 srgb(204,238,0)
+         2: (204,255,  0) #CCFF00 srgb(204,255,0)
+         1: (221,  0,153) #DD0099 srgb(221,0,153)
+         2: (221,  0,170) #DD00AA srgb(221,0,170)
+         1: (221,  0,187) #DD00BB srgb(221,0,187)
+         2: (221,187,  0) #DDBB00 srgb(221,187,0)
+         1: (221,221,  0) #DDDD00 srgb(221,221,0)
+         1: (221,238,  0) #DDEE00 srgb(221,238,0)
+         1: (238,221,  0) #EEDD00 srgb(238,221,0)
+         1: (238,238,  0) #EEEE00 srgb(238,238,0)
+         2: (238,255,  0) #EEFF00 srgb(238,255,0)
+        44: (255,  0,  0) #FF0000 red
+         8: (255, 17,  0) #FF1100 srgb(255,17,0)
+         8: (255, 34,  0) #FF2200 srgb(255,34,0)
+         4: (255, 51,  0) #FF3300 srgb(255,51,0)
+         8: (255, 68,  0) #FF4400 srgb(255,68,0)
+         9: (255, 85,  0) #FF5500 srgb(255,85,0)
+        16: (255,102,  0) #FF6600 srgb(255,102,0)
+        27: (255,119,  0) #FF7700 srgb(255,119,0)
+         1: (255,136,  0) #FF8800 srgb(255,136,0)
+         1: (255,153,  0) #FF9900 srgb(255,153,0)
+         3: (255,187,  0) #FFBB00 srgb(255,187,0)
+         1: (255,204,  0) #FFCC00 srgb(255,204,0)
+         6: (255,221,  0) #FFDD00 srgb(255,221,0)
+         7: (255,238,  0) #FFEE00 srgb(255,238,0)
+  Rendering intent: Perceptual
+  Gamma: 1
+  Chromaticity:
+    red primary: (0.64,0.33)
+    green primary: (0.3,0.6)
+    blue primary: (0.15,0.06)
+    white point: (0.3127,0.329)
+  Background color: white
+  Border color: srgb(223,223,223)
+  Matte color: grey74
+  Transparent color: black
+  Interlace: None
+  Intensity: Undefined
+  Compose: Over
+  Page geometry: 32x8+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=1 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 8
+    png:IHDR.bit_depth: 8
+    png:IHDR.color-type-orig: 2
+    png:IHDR.color_type: 2 (Truecolor)
+    png:IHDR.interlace_method: 0 (Not interlaced)
+    png:IHDR.width,height: 32, 8
+    png:pHYs: x_res=4, y_res=1, units=0
+    signature: 2d5a7c970865c21cf33f521c6cfabf66edb8b47b4606f9ffe1edc284e49a1bd0
+  Artifacts:
+    filename: CDHN2C08.png
+    verbose: true
+  Tainted: False
+  Filesize: 344B
+  Number pixels: 256
+  Pixels per second: 256PB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

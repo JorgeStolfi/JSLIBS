@@ -1,0 +1,10 @@
+#! /bin/csh -f
+# Last edited on 2007-12-26 20:37:15 by stolfi
+
+pnmift \
+  -seedPixels tree3-1-seeds.txt \
+  -radius 1.5 \
+  -costFunction maxdiff \
+  -output tree3-1 \
+  -verbose \
+  tree3.pgm

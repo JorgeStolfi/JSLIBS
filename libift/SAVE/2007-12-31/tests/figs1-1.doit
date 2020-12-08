@@ -1,0 +1,15 @@
+#! /bin/csh -f
+# Last edited on 2007-12-26 20:49:48 by stolfi
+
+pnmift \
+  -seedPixels figs1-1-seeds.txt \
+  -radius 1.0 \
+  -costFunction maxdiff \
+  -output figs1-1 \
+  -plot figs1-1-trees.eps \
+  -roots figs1-1-roots.pgm \
+  -spread figs1-1-spread.pgm \
+  -reverse \
+  -verbose \
+  figs1.pgm
+

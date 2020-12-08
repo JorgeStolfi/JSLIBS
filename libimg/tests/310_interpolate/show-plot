@@ -1,0 +1,18 @@
+#! /bin/bash
+# Last edited on 2009-06-14 11:16:02 by stolfi
+
+file="$1"; shift;
+
+gnuplot -geometry '800x800' <<EOF
+set term X11
+set size 1,1.333
+set surface
+set hidden3d
+splot \
+  "${file}" using 1:2:3 with lines lt 2, \
+  "${file}" using 1:2:(column(4)+2) with lines lt 1, \
+  "${file}" using 1:2:(column(5)+4) with lines lt 3, \
+  "${file}" using 1:2:(0.1*column(6)-2) with lines lt 4
+pause 30
+
+EOF

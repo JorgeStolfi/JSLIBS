@@ -1,0 +1,267 @@
+btc_bubble_compute_basis.ho: btc_bubble_compute_basis.h
+btc_bubble_compute_basis.ho: btc_bubble_t.ho
+
+btc_bubble_eval_rms_log_error.ho: btc_bubble_eval_rms_log_error.h
+btc_bubble_eval_rms_log_error.ho: btc_bubble_t.ho
+
+btc_bubble_fit_lsq.ho: btc_bubble_fit_lsq.h
+btc_bubble_fit_lsq.ho: btc_bubble_t.ho
+
+btc_bubble_nl_opt_add_integer_parameter_bias.ho: btc_bubble_nl_opt_add_integer_parameter_bias.h
+
+btc_bubble_nl_opt_adjust_continuous_parameters.ho: btc_bubble_nl_opt_adjust_continuous_parameters.h
+btc_bubble_nl_opt_adjust_continuous_parameters.ho: btc_bubble_t.ho
+
+btc_bubble_nl_opt_adjust_parameters.ho: btc_bubble_nl_opt_adjust_parameters.h
+btc_bubble_nl_opt_adjust_parameters.ho: btc_bubble_t.ho
+
+btc_bubble_nl_opt_check_bubble_parms_in_range.ho: btc_bubble_nl_opt_check_bubble_parms_in_range.h
+btc_bubble_nl_opt_check_bubble_parms_in_range.ho: btc_bubble_t.ho
+
+btc_bubble_nl_opt_compute_dmax.ho: btc_bubble_nl_opt_compute_dmax.h
+
+btc_bubble_nl_opt_gather_continuous_variable_parameters.ho: btc_bubble_nl_opt_gather_continuous_variable_parameters.h
+btc_bubble_nl_opt_gather_continuous_variable_parameters.ho: btc_bubble_t.ho
+
+btc_bubble_nl_opt_gather_integer_variable_parameters.ho: btc_bubble_nl_opt_gather_integer_variable_parameters.h
+btc_bubble_nl_opt_gather_integer_variable_parameters.ho: btc_bubble_t.ho
+
+btc_bubble_nl_opt_map_continuous_parameters.ho: btc_bubble_nl_opt_map_continuous_parameters.h
+
+btc_bubble_nl_opt_set_continuous_variable_parameters.ho: btc_bubble_nl_opt_set_continuous_variable_parameters.h
+btc_bubble_nl_opt_set_continuous_variable_parameters.ho: btc_bubble_t.ho
+
+btc_bubble_nl_opt_set_integer_variable_parameters.ho: btc_bubble_nl_opt_set_integer_variable_parameters.h
+btc_bubble_nl_opt_set_integer_variable_parameters.ho: btc_bubble_t.ho
+
+btc_bubble_nl_opt_unmap_continuous_parameters.ho: btc_bubble_nl_opt_unmap_continuous_parameters.h
+
+btc_bubble_parms_copy.ho: btc_bubble_parms_copy.h
+btc_bubble_parms_copy.ho: btc_bubble_t.ho
+
+btc_bubble_parms_read.ho: btc_bubble_parms_read.h
+btc_bubble_parms_read.ho: btc_bubble_t.ho
+
+btc_bubble_parms_validate.ho: btc_bubble_parms_validate.h
+btc_bubble_parms_validate.ho: /home/jstolfi/include/bool.ho
+btc_bubble_parms_validate.ho: btc_bubble_t.ho
+
+btc_bubble_parms_write.ho: btc_bubble_parms_write.h
+btc_bubble_parms_write.ho: btc_bubble_t.ho
+
+btc_bubble_t.ho: btc_bubble_t.h
+
+btc_date_lookup.ho: btc_date_lookup.h
+
+btc_date_read.ho: btc_date_read.h
+btc_date_read.ho: /home/jstolfi/include/bool.ho
+
+btc_is_in_double_range.ho: btc_is_in_double_range.h
+btc_is_in_double_range.ho: /home/jstolfi/include/bool.ho
+
+btc_is_in_int_range.ho: btc_is_in_int_range.h
+btc_is_in_int_range.ho: /home/jstolfi/include/bool.ho
+
+btc_is_trivial_double_range.ho: btc_is_trivial_double_range.h
+btc_is_trivial_double_range.ho: /home/jstolfi/include/bool.ho
+
+btc_is_trivial_int_range.ho: btc_is_trivial_int_range.h
+btc_is_trivial_int_range.ho: /home/jstolfi/include/bool.ho
+
+btc_price_series_local_avg.ho: btc_price_series_local_avg.h
+
+btc_price_series_local_fit_and_eval.ho: btc_price_series_local_fit_and_eval.h
+
+btc_price_series_read.ho: btc_price_series_read.h
+
+btc_price_series_smooth.ho: btc_price_series_smooth.h
+
+btc_bubble_compute_basis.o: btc_bubble_compute_basis.c
+btc_bubble_compute_basis.o: /home/jstolfi/include/affirm.ho
+btc_bubble_compute_basis.o: /home/jstolfi/include/bool.ho
+btc_bubble_compute_basis.o: btc_bubble_t.ho
+btc_bubble_compute_basis.o: btc_bubble_compute_basis.ho
+btc_bubble_compute_basis.o: btc_price_series_smooth.ho
+
+btc_bubble_eval_rms_log_error.o: btc_bubble_eval_rms_log_error.c
+btc_bubble_eval_rms_log_error.o: /home/jstolfi/include/bool.ho
+btc_bubble_eval_rms_log_error.o: /home/jstolfi/include/affirm.ho
+btc_bubble_eval_rms_log_error.o: btc_bubble_t.ho
+btc_bubble_eval_rms_log_error.o: btc_bubble_eval_rms_log_error.ho
+
+btc_bubble_fit_lsq.o: btc_bubble_fit_lsq.c
+btc_bubble_fit_lsq.o: /home/jstolfi/include/affirm.ho
+btc_bubble_fit_lsq.o: /home/jstolfi/include/bool.ho
+btc_bubble_fit_lsq.o: /home/jstolfi/include/lsq_robust.ho
+btc_bubble_fit_lsq.o: btc_bubble_t.ho
+btc_bubble_fit_lsq.o: btc_bubble_fit_lsq.ho
+
+btc_bubble_nl_opt_add_integer_parameter_bias.o: btc_bubble_nl_opt_add_integer_parameter_bias.c
+btc_bubble_nl_opt_add_integer_parameter_bias.o: btc_bubble_nl_opt_add_integer_parameter_bias.ho
+
+btc_bubble_nl_opt_adjust_continuous_parameters.o: btc_bubble_nl_opt_adjust_continuous_parameters.c
+btc_bubble_nl_opt_adjust_continuous_parameters.o: /home/jstolfi/include/bool.ho
+btc_bubble_nl_opt_adjust_continuous_parameters.o: /home/jstolfi/include/affirm.ho
+btc_bubble_nl_opt_adjust_continuous_parameters.o: /home/jstolfi/include/rn.ho
+btc_bubble_nl_opt_adjust_continuous_parameters.o: /home/jstolfi/include/jsmath.ho
+btc_bubble_nl_opt_adjust_continuous_parameters.o: /home/jstolfi/include/sve_minn.ho
+btc_bubble_nl_opt_adjust_continuous_parameters.o: btc_bubble_t.ho
+btc_bubble_nl_opt_adjust_continuous_parameters.o: btc_bubble_nl_opt_gather_continuous_variable_parameters.ho
+btc_bubble_nl_opt_adjust_continuous_parameters.o: btc_bubble_nl_opt_map_continuous_parameters.ho
+btc_bubble_nl_opt_adjust_continuous_parameters.o: btc_bubble_nl_opt_unmap_continuous_parameters.ho
+btc_bubble_nl_opt_adjust_continuous_parameters.o: btc_bubble_nl_opt_compute_dmax.ho
+btc_bubble_nl_opt_adjust_continuous_parameters.o: btc_bubble_nl_opt_set_continuous_variable_parameters.ho
+btc_bubble_nl_opt_adjust_continuous_parameters.o: btc_bubble_nl_opt_check_bubble_parms_in_range.ho
+btc_bubble_nl_opt_adjust_continuous_parameters.o: btc_bubble_compute_basis.ho
+btc_bubble_nl_opt_adjust_continuous_parameters.o: btc_bubble_fit_lsq.ho
+btc_bubble_nl_opt_adjust_continuous_parameters.o: btc_bubble_parms_copy.ho
+btc_bubble_nl_opt_adjust_continuous_parameters.o: btc_bubble_eval_rms_log_error.ho
+btc_bubble_nl_opt_adjust_continuous_parameters.o: btc_bubble_nl_opt_adjust_continuous_parameters.ho
+
+btc_bubble_nl_opt_adjust_parameters.o: btc_bubble_nl_opt_adjust_parameters.c
+btc_bubble_nl_opt_adjust_parameters.o: /home/jstolfi/include/bool.ho
+btc_bubble_nl_opt_adjust_parameters.o: /home/jstolfi/include/affirm.ho
+btc_bubble_nl_opt_adjust_parameters.o: /home/jstolfi/include/jsmath.ho
+btc_bubble_nl_opt_adjust_parameters.o: btc_bubble_t.ho
+btc_bubble_nl_opt_adjust_parameters.o: btc_bubble_nl_opt_gather_integer_variable_parameters.ho
+btc_bubble_nl_opt_adjust_parameters.o: btc_bubble_nl_opt_gather_continuous_variable_parameters.ho
+btc_bubble_nl_opt_adjust_parameters.o: btc_bubble_parms_copy.ho
+btc_bubble_nl_opt_adjust_parameters.o: btc_bubble_nl_opt_set_integer_variable_parameters.ho
+btc_bubble_nl_opt_adjust_parameters.o: btc_bubble_nl_opt_add_integer_parameter_bias.ho
+btc_bubble_nl_opt_adjust_parameters.o: btc_bubble_nl_opt_check_bubble_parms_in_range.ho
+btc_bubble_nl_opt_adjust_parameters.o: btc_bubble_nl_opt_adjust_continuous_parameters.ho
+btc_bubble_nl_opt_adjust_parameters.o: btc_bubble_compute_basis.ho
+btc_bubble_nl_opt_adjust_parameters.o: btc_bubble_fit_lsq.ho
+btc_bubble_nl_opt_adjust_parameters.o: btc_bubble_eval_rms_log_error.ho
+btc_bubble_nl_opt_adjust_parameters.o: btc_bubble_nl_opt_adjust_parameters.ho
+
+btc_bubble_nl_opt_check_bubble_parms_in_range.o: btc_bubble_nl_opt_check_bubble_parms_in_range.c
+btc_bubble_nl_opt_check_bubble_parms_in_range.o: /home/jstolfi/include/bool.ho
+btc_bubble_nl_opt_check_bubble_parms_in_range.o: /home/jstolfi/include/affirm.ho
+btc_bubble_nl_opt_check_bubble_parms_in_range.o: btc_bubble_t.ho
+btc_bubble_nl_opt_check_bubble_parms_in_range.o: btc_is_trivial_int_range.ho
+btc_bubble_nl_opt_check_bubble_parms_in_range.o: btc_is_in_int_range.ho
+btc_bubble_nl_opt_check_bubble_parms_in_range.o: btc_is_in_double_range.ho
+btc_bubble_nl_opt_check_bubble_parms_in_range.o: btc_bubble_nl_opt_check_bubble_parms_in_range.ho
+
+btc_bubble_nl_opt_compute_dmax.o: btc_bubble_nl_opt_compute_dmax.c
+btc_bubble_nl_opt_compute_dmax.o: /home/jstolfi/include/bool.ho
+btc_bubble_nl_opt_compute_dmax.o: /home/jstolfi/include/affirm.ho
+btc_bubble_nl_opt_compute_dmax.o: btc_bubble_nl_opt_compute_dmax.ho
+
+btc_bubble_nl_opt_gather_continuous_variable_parameters.o: btc_bubble_nl_opt_gather_continuous_variable_parameters.c
+btc_bubble_nl_opt_gather_continuous_variable_parameters.o: /home/jstolfi/include/bool.ho
+btc_bubble_nl_opt_gather_continuous_variable_parameters.o: /home/jstolfi/include/affirm.ho
+btc_bubble_nl_opt_gather_continuous_variable_parameters.o: btc_bubble_t.ho
+btc_bubble_nl_opt_gather_continuous_variable_parameters.o: btc_is_trivial_double_range.ho
+btc_bubble_nl_opt_gather_continuous_variable_parameters.o: btc_bubble_nl_opt_gather_continuous_variable_parameters.ho
+
+btc_bubble_nl_opt_gather_integer_variable_parameters.o: btc_bubble_nl_opt_gather_integer_variable_parameters.c
+btc_bubble_nl_opt_gather_integer_variable_parameters.o: /home/jstolfi/include/bool.ho
+btc_bubble_nl_opt_gather_integer_variable_parameters.o: /home/jstolfi/include/affirm.ho
+btc_bubble_nl_opt_gather_integer_variable_parameters.o: btc_bubble_t.ho
+btc_bubble_nl_opt_gather_integer_variable_parameters.o: btc_is_trivial_int_range.ho
+btc_bubble_nl_opt_gather_integer_variable_parameters.o: btc_bubble_nl_opt_gather_integer_variable_parameters.ho
+
+btc_bubble_nl_opt_map_continuous_parameters.o: btc_bubble_nl_opt_map_continuous_parameters.c
+btc_bubble_nl_opt_map_continuous_parameters.o: /home/jstolfi/include/bool.ho
+btc_bubble_nl_opt_map_continuous_parameters.o: /home/jstolfi/include/affirm.ho
+btc_bubble_nl_opt_map_continuous_parameters.o: btc_bubble_nl_opt_map_continuous_parameters.ho
+
+btc_bubble_nl_opt_set_continuous_variable_parameters.o: btc_bubble_nl_opt_set_continuous_variable_parameters.c
+btc_bubble_nl_opt_set_continuous_variable_parameters.o: /home/jstolfi/include/bool.ho
+btc_bubble_nl_opt_set_continuous_variable_parameters.o: /home/jstolfi/include/affirm.ho
+btc_bubble_nl_opt_set_continuous_variable_parameters.o: btc_bubble_t.ho
+btc_bubble_nl_opt_set_continuous_variable_parameters.o: btc_bubble_nl_opt_set_continuous_variable_parameters.ho
+
+btc_bubble_nl_opt_set_integer_variable_parameters.o: btc_bubble_nl_opt_set_integer_variable_parameters.c
+btc_bubble_nl_opt_set_integer_variable_parameters.o: /home/jstolfi/include/bool.ho
+btc_bubble_nl_opt_set_integer_variable_parameters.o: /home/jstolfi/include/affirm.ho
+btc_bubble_nl_opt_set_integer_variable_parameters.o: btc_bubble_t.ho
+btc_bubble_nl_opt_set_integer_variable_parameters.o: btc_bubble_nl_opt_set_integer_variable_parameters.ho
+
+btc_bubble_nl_opt_unmap_continuous_parameters.o: btc_bubble_nl_opt_unmap_continuous_parameters.c
+btc_bubble_nl_opt_unmap_continuous_parameters.o: /home/jstolfi/include/bool.ho
+btc_bubble_nl_opt_unmap_continuous_parameters.o: /home/jstolfi/include/affirm.ho
+btc_bubble_nl_opt_unmap_continuous_parameters.o: btc_bubble_nl_opt_unmap_continuous_parameters.ho
+
+btc_bubble_parms_copy.o: btc_bubble_parms_copy.c
+btc_bubble_parms_copy.o: btc_bubble_t.ho
+btc_bubble_parms_copy.o: btc_bubble_parms_copy.ho
+
+btc_bubble_parms_read.o: btc_bubble_parms_read.c
+btc_bubble_parms_read.o: /home/jstolfi/include/bool.ho
+btc_bubble_parms_read.o: /home/jstolfi/include/fget.ho
+btc_bubble_parms_read.o: /home/jstolfi/include/jsfile.ho
+btc_bubble_parms_read.o: /home/jstolfi/include/affirm.ho
+btc_bubble_parms_read.o: btc_bubble_t.ho
+btc_bubble_parms_read.o: btc_date_read.ho
+btc_bubble_parms_read.o: btc_bubble_parms_validate.ho
+btc_bubble_parms_read.o: btc_bubble_parms_read.ho
+
+btc_bubble_parms_validate.o: btc_bubble_parms_validate.c
+btc_bubble_parms_validate.o: /home/jstolfi/include/bool.ho
+btc_bubble_parms_validate.o: btc_bubble_t.ho
+btc_bubble_parms_validate.o: btc_bubble_parms_validate.ho
+
+btc_bubble_parms_write.o: btc_bubble_parms_write.c
+btc_bubble_parms_write.o: /home/jstolfi/include/bool.ho
+btc_bubble_parms_write.o: /home/jstolfi/include/jsfile.ho
+btc_bubble_parms_write.o: btc_bubble_t.ho
+btc_bubble_parms_write.o: btc_bubble_parms_write.ho
+
+btc_bubble_t.o: btc_bubble_t.c
+btc_bubble_t.o: btc_bubble_t.ho
+
+btc_date_lookup.o: btc_date_lookup.c
+btc_date_lookup.o: /home/jstolfi/include/bool.ho
+btc_date_lookup.o: btc_date_lookup.ho
+
+btc_date_read.o: btc_date_read.c
+btc_date_read.o: /home/jstolfi/include/bool.ho
+btc_date_read.o: /home/jstolfi/include/fget.ho
+btc_date_read.o: btc_date_lookup.ho
+btc_date_read.o: btc_date_read.ho
+
+btc_is_in_double_range.o: btc_is_in_double_range.c
+btc_is_in_double_range.o: /home/jstolfi/include/bool.ho
+btc_is_in_double_range.o: /home/jstolfi/include/affirm.ho
+btc_is_in_double_range.o: btc_is_in_double_range.ho
+
+btc_is_in_int_range.o: btc_is_in_int_range.c
+btc_is_in_int_range.o: /home/jstolfi/include/bool.ho
+btc_is_in_int_range.o: /home/jstolfi/include/affirm.ho
+btc_is_in_int_range.o: btc_is_in_int_range.ho
+
+btc_is_trivial_double_range.o: btc_is_trivial_double_range.c
+btc_is_trivial_double_range.o: /home/jstolfi/include/bool.ho
+btc_is_trivial_double_range.o: /home/jstolfi/include/affirm.ho
+btc_is_trivial_double_range.o: btc_is_trivial_double_range.ho
+
+btc_is_trivial_int_range.o: btc_is_trivial_int_range.c
+btc_is_trivial_int_range.o: /home/jstolfi/include/bool.ho
+btc_is_trivial_int_range.o: /home/jstolfi/include/affirm.ho
+btc_is_trivial_int_range.o: btc_is_trivial_int_range.ho
+
+btc_price_series_local_avg.o: btc_price_series_local_avg.c
+btc_price_series_local_avg.o: /home/jstolfi/include/bool.ho
+btc_price_series_local_avg.o: btc_price_series_local_fit_and_eval.ho
+btc_price_series_local_avg.o: btc_price_series_local_avg.ho
+
+btc_price_series_local_fit_and_eval.o: btc_price_series_local_fit_and_eval.c
+btc_price_series_local_fit_and_eval.o: /home/jstolfi/include/bool.ho
+btc_price_series_local_fit_and_eval.o: /home/jstolfi/include/affirm.ho
+btc_price_series_local_fit_and_eval.o: btc_price_series_local_fit_and_eval.ho
+
+btc_price_series_read.o: btc_price_series_read.c
+btc_price_series_read.o: /home/jstolfi/include/bool.ho
+btc_price_series_read.o: /home/jstolfi/include/affirm.ho
+btc_price_series_read.o: /home/jstolfi/include/nget.ho
+btc_price_series_read.o: /home/jstolfi/include/fget.ho
+btc_price_series_read.o: /home/jstolfi/include/jsfile.ho
+btc_price_series_read.o: btc_price_series_read.ho
+
+btc_price_series_smooth.o: btc_price_series_smooth.c
+btc_price_series_smooth.o: btc_price_series_smooth.ho
+btc_price_series_smooth.o: btc_price_series_local_avg.ho
+

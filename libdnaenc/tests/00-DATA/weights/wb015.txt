@@ -1,0 +1,4 @@
+# Last edited on 2014-07-29 01:14:26 by stolfilocal
+# r = 3  var = 1.5000
+
+1 6 15 20 15 6 1

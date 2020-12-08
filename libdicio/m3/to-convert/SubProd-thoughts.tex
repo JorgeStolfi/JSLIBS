@@ -1,0 +1,34 @@
+\section{Basic definitions}
+
+\newcommand{\sig}{\sigma}
+\newcommand{\Sig}{\Sigma}
+
+\newcommand{\rqq}{\mathbin{/\!/}}
+\newcommand{\lqq}{\mathbin{\setminus\!\setminus}}
+
+\subsection{Language quotients}
+
+If $S$, $D$ are subsets of $\Sig^\ast$, then we define
+the {\em right} and {\em left quotients of $S$ by $D$} as
+\begin{eqnarray*}
+  S \rqq D &=& 
+    \rset{ x\in \Sig^\ast\suchthat (\forall y\in D\suchthat x y \in s) } \\
+  D \lqq X &=& 
+    \rset{ y \in \Sig^\ast\suchthat (\forall x\in D\suchthat x y \in s) }
+\end{eqnarray*}
+
+\subsection{Subproducts of a language}
+
+If $S$ is a subset of $\Sig^\ast$, then a {\em subproduct} of $S$ is
+a pair of languages $L,R\subseteq \Sig^\ast$ such that 
+$L\cat R\subseteq S$.  
+
+Note that the subproduct is the {\em pair} of languages, not their concatenation.
+
+We say that a pair of languages $(L',R')$ is contained in another pair $(L,R)$
+iff $L'\subseteq L$ and $R'\subseteq R$.  A {\em maximal subproduct}
+of a language $S$ are the subproducts of $S$ that are maximal in this 
+partial order.
+
+\end{document}  
+    

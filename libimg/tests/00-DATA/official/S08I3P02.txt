@@ -1,0 +1,102 @@
+Image: S08I3P02.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: PseudoClass
+  Geometry: 8x8+0+0
+  Units: Undefined
+  Type: Palette
+  Endianess: Undefined
+  Colorspace: sRGB
+  Depth: 8/4-bit
+  Channel depth:
+    red: 4-bit
+    green: 1-bit
+    blue: 1-bit
+  Channel statistics:
+    Pixels: 64
+    Red:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 92.4375 (0.3625)
+      standard deviation: 94.646 (0.371161)
+      kurtosis: -0.967779
+      skewness: 0.550776
+      entropy: 0.949701
+    Green:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 191.25 (0.75)
+      standard deviation: 110.418 (0.433013)
+      kurtosis: -0.666667
+      skewness: -1.1547
+      entropy: 0.811278
+    Blue:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 127.5 (0.5)
+      standard deviation: 127.5 (0.5)
+      kurtosis: -2
+      skewness: 0
+      entropy: 1
+  Image statistics:
+    Overall:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 137.062 (0.5375)
+      standard deviation: 111.664 (0.437897)
+      kurtosis: -1.50509
+      skewness: -0.16801
+      entropy: 0.920326
+  Colors: 4
+  Histogram:
+        28: (  0,255,255) #00FFFF cyan
+         4: (119,  0,255) #7700FF srgb(119,0,255)
+        20: (119,255,  0) #77FF00 srgb(119,255,0)
+        12: (255,  0,  0) #FF0000 red
+  Colormap entries: 4
+  Colormap:
+         0: (  0,255,255) #00FFFF cyan
+         1: (119,  0,255) #7700FF srgb(119,0,255)
+         2: (119,255,  0) #77FF00 srgb(119,255,0)
+         3: (255,  0,  0) #FF0000 red
+  Rendering intent: Perceptual
+  Gamma: 1
+  Chromaticity:
+    red primary: (0.64,0.33)
+    green primary: (0.3,0.6)
+    blue primary: (0.15,0.06)
+    white point: (0.3127,0.329)
+  Background color: white
+  Border color: srgb(223,223,223)
+  Matte color: grey74
+  Transparent color: black
+  Interlace: PNG
+  Intensity: Undefined
+  Compose: Over
+  Page geometry: 8x8+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=1 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 2
+    png:IHDR.bit_depth: 2
+    png:IHDR.color-type-orig: 3
+    png:IHDR.color_type: 3 (Indexed)
+    png:IHDR.interlace_method: 1 (Adam7 method)
+    png:IHDR.width,height: 8, 8
+    png:PLTE.number_colors: 4
+    signature: 64637d69a57950b8aea781e758b1810f86494b4cbe22210d41e0082f86d9a88f
+  Artifacts:
+    filename: S08I3P02.png
+    verbose: true
+  Tainted: False
+  Filesize: 149B
+  Number pixels: 64
+  Pixels per second: 64PB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

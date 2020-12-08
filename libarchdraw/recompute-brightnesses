@@ -1,0 +1,18 @@
+#! /usr/bin/gawk -f
+# Last edited on 2009-09-17 09:29:48 by stolfi
+
+# Recomputes the brightnesses of the colors in the space usage color table,
+# in the procedure {adrw_ic_define_type_fill_colors} of {archdraw_ic.c}.
+
+/color/{ 
+  lin = $0;
+  gsub(/[ ]*[\/][*].*$/, "", lin);
+  R = $4; gsub(/[,]/, "", R);
+  G = $5; gsub(/[,]/, "", G);
+  B = $6; gsub(/[,]/, "", B);
+  printf "%s /* Y = %6.4f */\n", lin, 0.3*R + 0.6*G + 0.1*B;
+  next;
+}
+
+// { print; next; }
+

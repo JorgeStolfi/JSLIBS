@@ -1,0 +1,6 @@
+(
+  (GIVEN x y z)
+  (= w (+ x y))
+  (= r (+ 3 (sqrt z)))
+  (RETURN (+ r (- w)))
+)

@@ -1,0 +1,98 @@
+Image: S03I3P01.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: PseudoClass
+  Geometry: 3x3+0+0
+  Units: Undefined
+  Type: Palette
+  Endianess: Undefined
+  Colorspace: sRGB
+  Depth: 8/4-bit
+  Channel depth:
+    red: 1-bit
+    green: 4-bit
+    blue: 1-bit
+  Channel statistics:
+    Pixels: 9
+    Red:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 28.3333 (0.111111)
+      standard deviation: 80.1388 (0.31427)
+      kurtosis: 4.125
+      skewness: 2.47487
+      entropy: 0.503258
+    Green:
+      min: 119 (0.466667)
+      max: 255 (1)
+      mean: 239.889 (0.940741)
+      standard deviation: 42.7407 (0.16761)
+      kurtosis: 4.125
+      skewness: -2.47487
+      entropy: 0.503258
+    Blue:
+      min: 0 (0)
+      max: 0 (0)
+      mean: 0 (0)
+      standard deviation: 0 (0)
+      kurtosis: 0
+      skewness: 0
+      entropy: -nan
+  Image statistics:
+    Overall:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 89.4074 (0.350617)
+      standard deviation: 52.4372 (0.205636)
+      kurtosis: 35.4751
+      skewness: 7.38312
+      entropy: -nan
+  Colors: 2
+  Histogram:
+         8: (  0,255,  0) #00FF00 lime
+         1: (255,119,  0) #FF7700 srgb(255,119,0)
+  Colormap entries: 2
+  Colormap:
+         0: (  0,255,  0) #00FF00 lime
+         1: (255,119,  0) #FF7700 srgb(255,119,0)
+  Rendering intent: Perceptual
+  Gamma: 1
+  Chromaticity:
+    red primary: (0.64,0.33)
+    green primary: (0.3,0.6)
+    blue primary: (0.15,0.06)
+    white point: (0.3127,0.329)
+  Background color: white
+  Border color: srgb(223,223,223)
+  Matte color: grey74
+  Transparent color: black
+  Interlace: PNG
+  Intensity: Undefined
+  Compose: Over
+  Page geometry: 3x3+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=1 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 1
+    png:IHDR.bit_depth: 1
+    png:IHDR.color-type-orig: 3
+    png:IHDR.color_type: 3 (Indexed)
+    png:IHDR.interlace_method: 1 (Adam7 method)
+    png:IHDR.width,height: 3, 3
+    png:PLTE.number_colors: 2
+    signature: e32ca68c79bbada9f43c26341635087d4cf98502ddd8349f57ab2809a2ce182e
+  Artifacts:
+    filename: S03I3P01.png
+    verbose: true
+  Tainted: False
+  Filesize: 118B
+  Number pixels: 9
+  Pixels per second: 9PB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

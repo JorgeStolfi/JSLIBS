@@ -1,0 +1,86 @@
+Image: TBBN1G04.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: DirectClass
+  Geometry: 32x32+0+0
+  Units: Undefined
+  Type: GrayscaleAlpha
+  Base type: Grayscale
+  Endianess: Undefined
+  Colorspace: Gray
+  Depth: 8/4-bit
+  Channel depth:
+    gray: 4-bit
+    alpha: 1-bit
+  Channel statistics:
+    Pixels: 1024
+    Gray:
+      min: 0 (0)
+      max: 221 (0.866667)
+      mean: 81.7461 (0.320573)
+      standard deviation: 55.2308 (0.216591)
+      kurtosis: -1.18764
+      skewness: -0.413505
+      entropy: 0.619219
+    Alpha:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 126.504 (0.496094)
+      standard deviation: 127.496 (0.499985)
+      kurtosis: -1.99976
+      skewness: -0.0156255
+      entropy: 0.262638
+  Alpha: graya(119,0)   #77777700
+  Colors: 14
+  Histogram:
+       238: (  0,  0,  0,255) #000000FF graya(0,1)
+        38: ( 17, 17, 17,255) #111111FF graya(17,1)
+        40: ( 34, 34, 34,255) #222222FF graya(34,1)
+        45: ( 51, 51, 51,255) #333333FF graya(51,1)
+        24: ( 68, 68, 68,255) #444444FF graya(68,1)
+        31: ( 85, 85, 85,255) #555555FF graya(85,1)
+        23: (102,102,102,255) #666666FF graya(102,1)
+       516: (119,119,119,  0) #77777700 graya(119,0)
+        15: (136,136,136,255) #888888FF graya(136,1)
+        12: (153,153,153,255) #999999FF graya(153,1)
+        27: (170,170,170,255) #AAAAAAFF graya(170,1)
+        10: (187,187,187,255) #BBBBBBFF graya(187,1)
+         3: (204,204,204,255) #CCCCCCFF graya(204,1)
+         2: (221,221,221,255) #DDDDDDFF graya(221,1)
+  Rendering intent: Undefined
+  Gamma: 1
+  Background color: graya(0,1)
+  Border color: graya(223,1)
+  Matte color: graya(189,1)
+  Transparent color: graya(0,0)
+  Interlace: None
+  Intensity: Rec709Luminance
+  Compose: Over
+  Page geometry: 32x32+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:bKGD: chunk was found (see Background color, above)
+    png:gAMA: gamma=1 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 4
+    png:IHDR.bit_depth: 4
+    png:IHDR.color-type-orig: 0
+    png:IHDR.color_type: 0 (Grayscale)
+    png:IHDR.interlace_method: 0 (Not interlaced)
+    png:IHDR.width,height: 32, 32
+    png:tRNS: chunk was found
+    signature: 7dce1aba11a8937e216757cb8c1718964227ee10d8ac6981351fb4a8551cfa45
+  Artifacts:
+    filename: TBBN1G04.png
+    verbose: true
+  Tainted: False
+  Filesize: 419B
+  Number pixels: 1.02K
+  Pixels per second: 1.024EB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

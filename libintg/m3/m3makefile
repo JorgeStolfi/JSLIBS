@@ -1,0 +1,14 @@
+STOLFI = "${HOME}/programs/pm3-1.1.15"
+
+import ("libm3")
+import("parseparams")
+
+override("libm3geoN", STOLFI)
+import("libm3geoN")
+
+Interface ("Integrator") 
+
+Module ("RKF4Integrator")
+Module ("EulerIntegrator")
+
+Library("m3intg")

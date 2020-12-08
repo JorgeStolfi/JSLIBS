@@ -1,0 +1,4 @@
+# Last edited on DATE TIME by USER
+# r =  6  var =  2.0000
+
+    1   19  183 1055 3680 7786 9992 7786 3680 1055  183   19    1

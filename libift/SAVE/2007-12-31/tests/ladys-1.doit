@@ -1,0 +1,15 @@
+#! /bin/csh -f
+# Last edited on 2007-12-26 20:36:58 by stolfi
+
+pnmift \
+  -seedPixels ladys-1-seeds.txt \
+  -radius 1.0 \
+  -costFunction maxdiff \
+  -output ladys-1 \
+  -plot ladys-1.eps \
+  -roots ladys-1-roots.pgm \
+  -spread ladys-1-spread.pgm \
+  -reverse \
+  -verbose \
+  ladys.pgm
+

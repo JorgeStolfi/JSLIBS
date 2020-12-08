@@ -1,0 +1,102 @@
+Image: S09I3P02.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: PseudoClass
+  Geometry: 9x9+0+0
+  Units: Undefined
+  Type: Palette
+  Endianess: Undefined
+  Colorspace: sRGB
+  Depth: 8/4-bit
+  Channel depth:
+    red: 1-bit
+    green: 4-bit
+    blue: 1-bit
+  Channel statistics:
+    Pixels: 81
+    Red:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 125.926 (0.493827)
+      standard deviation: 127.49 (0.499962)
+      kurtosis: -1.99939
+      skewness: 0.0246932
+      entropy: 0.99989
+    Green:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 150.901 (0.59177)
+      standard deviation: 96.514 (0.378486)
+      kurtosis: -1.26346
+      skewness: -0.258054
+      entropy: 0.958568
+    Blue:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 75.5556 (0.296296)
+      standard deviation: 116.439 (0.456623)
+      kurtosis: -1.20395
+      skewness: 0.892218
+      entropy: 0.876716
+  Image statistics:
+    Overall:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 117.461 (0.460631)
+      standard deviation: 114.203 (0.447854)
+      kurtosis: -1.63521
+      skewness: 0.186847
+      entropy: 0.945058
+  Colors: 4
+  Histogram:
+         8: (  0,119,255) #0077FF srgb(0,119,255)
+        33: (  0,255,  0) #00FF00 lime
+        16: (255,  0,255) #FF00FF magenta
+        24: (255,119,  0) #FF7700 srgb(255,119,0)
+  Colormap entries: 4
+  Colormap:
+         0: (  0,255,  0) #00FF00 lime
+         1: (  0,119,255) #0077FF srgb(0,119,255)
+         2: (255,  0,255) #FF00FF magenta
+         3: (255,119,  0) #FF7700 srgb(255,119,0)
+  Rendering intent: Perceptual
+  Gamma: 1
+  Chromaticity:
+    red primary: (0.64,0.33)
+    green primary: (0.3,0.6)
+    blue primary: (0.15,0.06)
+    white point: (0.3127,0.329)
+  Background color: white
+  Border color: srgb(223,223,223)
+  Matte color: grey74
+  Transparent color: black
+  Interlace: PNG
+  Intensity: Undefined
+  Compose: Over
+  Page geometry: 9x9+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=1 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 2
+    png:IHDR.bit_depth: 2
+    png:IHDR.color-type-orig: 3
+    png:IHDR.color_type: 3 (Indexed)
+    png:IHDR.interlace_method: 1 (Adam7 method)
+    png:IHDR.width,height: 9, 9
+    png:PLTE.number_colors: 4
+    signature: 614d540ef9ce1af8f22c238a97d23aa43e69d3fc3365908b717b53ce31182497
+  Artifacts:
+    filename: S09I3P02.png
+    verbose: true
+  Tainted: False
+  Filesize: 147B
+  Number pixels: 81
+  Pixels per second: 81PB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

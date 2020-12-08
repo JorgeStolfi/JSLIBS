@@ -1,0 +1,109 @@
+# Libraries in compile order
+# Last edited on 2020-12-08 00:00:52 by jstolfi
+
+# + = OK.
+# ? = Status uncertain.
+# ! = Buggy, needs finishing/fixing.
+# J = Junk or obsolete.
+
++ libjs
++ libjsextra
++ libjsarray
++ libsexp
+
++ libflt
+
++ libgeo
+
++ libps
++ libeps
+
++ liblsq
++ libapprox
+
++ libia
+
++ libminu
++ libminn
+
++ libimg
++ libift
++ libmkgr
++ libpsextra
+
++ libaa
++ libaafuncs
++ libaagraph
+! libaazf
++ libaacmp
+
++ libbbopt
+
++ libjsaudio
+
++ libquad
++ libdelaunay
+
++ libpst
++ libmultifok
+
++ libcryptoy
+
++ libspmat
++ libdgraph
+
++ libgem
++ libgmap
+
++ libppv
+
++ libarchdraw
++ libstreetmap
++ libsheetcut
+! libcpk
++ libdicio
+
++ libstpoly
++ libstmesh
++ libvoxm
+
+! libcamffmpeg
++ libcamfirewire
++ libdsm
+
++ libclassif
+
++ libmsmatch
++ libdnaenc
++ libdnaview
+
++ libbtc
+
++ libintg
++ libtsai
+
+! libvsignal
+
++ libpspulse
++ libbezier
+
+! liblmdif
+! libgmo
+! libleoimg
+! libraab
+
+! libdygrid
+! libbzpatch
+! libdgspline
+! libbzb
+
++ libneuro
++ libnmsim
++ libnmsim_e
+! libnmsim_g
+
+! libirons
+! libsort_es
+
+J libmsmatch-2011-12-22
+J libnmsim-old

@@ -1,0 +1,1 @@
+identify: improper image header `XLFN0G04.png' @ error/png.c/ReadPNGImage/3921.

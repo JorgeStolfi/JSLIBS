@@ -1,0 +1,93 @@
+Image: BASN0G04.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: PseudoClass
+  Geometry: 32x32+0+0
+  Units: Undefined
+  Type: Grayscale
+  Base type: Grayscale
+  Endianess: Undefined
+  Colorspace: Gray
+  Depth: 8/4-bit
+  Channel depth:
+    gray: 4-bit
+  Channel statistics:
+    Pixels: 1024
+    Gray:
+      min: 0 (0)
+      max: 238 (0.933333)
+      mean: 119 (0.466667)
+      standard deviation: 55.0863 (0.216025)
+      kurtosis: -0.619048
+      skewness: 5.50668e-15
+      entropy: 0.947638
+  Colors: 15
+  Histogram:
+        16: (  0,  0,  0) #000000 gray(0)
+        32: ( 17, 17, 17) #111111 gray(17)
+        48: ( 34, 34, 34) #222222 gray(34)
+        64: ( 51, 51, 51) #333333 gray(51)
+        80: ( 68, 68, 68) #444444 gray(68)
+        96: ( 85, 85, 85) #555555 gray(85)
+       112: (102,102,102) #666666 gray(102)
+       128: (119,119,119) #777777 gray(119)
+       112: (136,136,136) #888888 gray(136)
+        96: (153,153,153) #999999 gray(153)
+        80: (170,170,170) #AAAAAA gray(170)
+        64: (187,187,187) #BBBBBB gray(187)
+        48: (204,204,204) #CCCCCC gray(204)
+        32: (221,221,221) #DDDDDD gray(221)
+        16: (238,238,238) #EEEEEE gray(238)
+  Colormap entries: 16
+  Colormap:
+         0: (  0,  0,  0) #000000 gray(0)
+         1: ( 17, 17, 17) #111111 gray(17)
+         2: ( 34, 34, 34) #222222 gray(34)
+         3: ( 51, 51, 51) #333333 gray(51)
+         4: ( 68, 68, 68) #444444 gray(68)
+         5: ( 85, 85, 85) #555555 gray(85)
+         6: (102,102,102) #666666 gray(102)
+         7: (119,119,119) #777777 gray(119)
+         8: (136,136,136) #888888 gray(136)
+         9: (153,153,153) #999999 gray(153)
+        10: (170,170,170) #AAAAAA gray(170)
+        11: (187,187,187) #BBBBBB gray(187)
+        12: (204,204,204) #CCCCCC gray(204)
+        13: (221,221,221) #DDDDDD gray(221)
+        14: (238,238,238) #EEEEEE gray(238)
+        15: (255,255,255) #FFFFFF gray(255)
+  Rendering intent: Undefined
+  Gamma: 1
+  Background color: gray(255)
+  Border color: gray(223)
+  Matte color: gray(189)
+  Transparent color: gray(0)
+  Interlace: None
+  Intensity: Rec709Luminance
+  Compose: Over
+  Page geometry: 32x32+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=1 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 4
+    png:IHDR.bit_depth: 4
+    png:IHDR.color-type-orig: 0
+    png:IHDR.color_type: 0 (Grayscale)
+    png:IHDR.interlace_method: 0 (Not interlaced)
+    png:IHDR.width,height: 32, 32
+    signature: bbf1d6e921d6a545c1310bd26fd0260aa42d798940465fc500af1e9588a7b5f6
+  Artifacts:
+    filename: BASN0G04.png
+    verbose: true
+  Tainted: False
+  Filesize: 145B
+  Number pixels: 1.02K
+  Pixels per second: 1.024EB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

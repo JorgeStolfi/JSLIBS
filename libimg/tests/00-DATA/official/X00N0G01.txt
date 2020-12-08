@@ -1,0 +1,4 @@
+identify: Image width is zero in IHDR `X00N0G01.png' @ warning/png.c/MagickPNGWarningHandler/1656.
+identify: Image height is zero in IHDR `X00N0G01.png' @ warning/png.c/MagickPNGWarningHandler/1656.
+identify: Invalid IHDR data `X00N0G01.png' @ error/png.c/MagickPNGErrorHandler/1630.
+identify: corrupt image `X00N0G01.png' @ error/png.c/ReadPNGImage/3959.

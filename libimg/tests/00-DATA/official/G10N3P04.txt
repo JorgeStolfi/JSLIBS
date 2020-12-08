@@ -1,0 +1,114 @@
+Image: G10N3P04.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: PseudoClass
+  Geometry: 32x32+0+0
+  Units: Undefined
+  Type: Palette
+  Endianess: Undefined
+  Colorspace: sRGB
+  Depth: 8-bit
+  Channel depth:
+    red: 8-bit
+    green: 8-bit
+    blue: 8-bit
+  Channel statistics:
+    Pixels: 1024
+    Red:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 93.2588 (0.365721)
+      standard deviation: 115.229 (0.451877)
+      kurtosis: -1.56425
+      skewness: 0.554781
+      entropy: 0.741792
+    Green:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 123.48 (0.484237)
+      standard deviation: 94.1185 (0.369092)
+      kurtosis: -1.24466
+      skewness: 0.056622
+      entropy: 0.886874
+    Blue:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 123.273 (0.483425)
+      standard deviation: 111.411 (0.436908)
+      kurtosis: -1.68714
+      skewness: 0.0655632
+      entropy: 0.978504
+  Image statistics:
+    Overall:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 113.338 (0.444461)
+      standard deviation: 107.313 (0.420837)
+      kurtosis: -1.55328
+      skewness: 0.221264
+      entropy: 0.869056
+  Colors: 10
+  Histogram:
+       216: (  0,  0,  0) #000000 black
+       241: (  0,127,127) #007F7F srgb(0,127,127)
+       128: (  0,255,255) #00FFFF cyan
+        64: ( 84, 84,  0) #545400 srgb(84,84,0)
+        64: (169,169,  0) #A9A900 srgb(169,169,0)
+        64: (255,  0,255) #FF00FF magenta
+        64: (255, 85,255) #FF55FF srgb(255,85,255)
+        60: (255,170,255) #FFAAFF srgb(255,170,255)
+        64: (255,255,  0) #FFFF00 yellow
+        59: (255,255,255) #FFFFFF white
+  Colormap entries: 10
+  Colormap:
+         0: (  0,  0,  0) #000000 black
+         1: (169,169,  0) #A9A900 srgb(169,169,0)
+         2: (  0,255,255) #00FFFF cyan
+         3: (255,170,255) #FFAAFF srgb(255,170,255)
+         4: ( 84, 84,  0) #545400 srgb(84,84,0)
+         5: (255,  0,255) #FF00FF magenta
+         6: (  0,127,127) #007F7F srgb(0,127,127)
+         7: (255,255,255) #FFFFFF white
+         8: (255,255,  0) #FFFF00 yellow
+         9: (255, 85,255) #FF55FF srgb(255,85,255)
+  Rendering intent: Perceptual
+  Gamma: 1
+  Chromaticity:
+    red primary: (0.64,0.33)
+    green primary: (0.3,0.6)
+    blue primary: (0.15,0.06)
+    white point: (0.3127,0.329)
+  Background color: white
+  Border color: srgb(223,223,223)
+  Matte color: grey74
+  Transparent color: black
+  Interlace: None
+  Intensity: Undefined
+  Compose: Over
+  Page geometry: 32x32+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=1 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 4
+    png:IHDR.bit_depth: 4
+    png:IHDR.color-type-orig: 3
+    png:IHDR.color_type: 3 (Indexed)
+    png:IHDR.interlace_method: 0 (Not interlaced)
+    png:IHDR.width,height: 32, 32
+    png:PLTE.number_colors: 10
+    signature: f5d90b28ce1343630119780ddc1e46d38418e306a966cec73108374b86709c41
+  Artifacts:
+    filename: G10N3P04.png
+    verbose: true
+  Tainted: False
+  Filesize: 214B
+  Number pixels: 1.02K
+  Pixels per second: 1.024EB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

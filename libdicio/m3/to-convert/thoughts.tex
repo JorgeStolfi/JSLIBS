@@ -1,0 +1,178 @@
+\section{Basic definitions}
+
+\newcommand{\sig}{\sigma}
+\newcommand{\Sig}{\Sigma}
+
+\subsection{Alphabets}
+
+An {\em alphabet} is a finite ordered set, whose elements are called
+{\em letters}. 
+
+The {\em rank} of a letter $\sig$ {\em in} an alphabet $\Sig$ 
+is the number $\rank_{\Sig}{\sig} = \rset{\tau \in \Sig \suchthat \tau < \sig}$,
+where $<$ denotes the order of the letters of $\Sig$.
+
+The
+{\em complement} of a letter $\sig_i$ {\em in} $\Sig$ is by definition
+the letter $\cmp{\sig_i} = \sig{m-1-i}$.
+
+
+
+\subsection{Words}
+
+Let $\Sig=(\sig_0,\dd\sig_{m-1})$ be an alphabet with $m$ letters.  
+For any $n\in\BN$, we denote by $\Sig^{\times {n}}$ the $n$th
+Cartesian power of $\Sig$, that is, the set of 
+all functions from $\set{0,\dd n-1}$ into $\Sig$. 
+
+The ordering of $\Sig$ extends to an ordering of
+$\Sig^{\times n}$, called the {\em  order},
+in which words are compared from letter 0 up.
+.
+If $x,y$ are words from $\Sig^{\times n}$, then we write $x<y$ (and
+$y>x$ if $x$ precedes $y$ in lexicographic order.
+
+The 
+The {\em words of length $n$} are the sequences of length $n$ over 
+
+\subsection{Symmetry operations on strings}
+
+Let $x$ be a word of length $n$ over $\Sig$, that is, a sequence
+$x=(x_0,\dd x_{n-1})$ of letters of $\Sig$.  We define the following
+related words of $\Sig^{\times n}$:
+\begin{itemize}
+  \item[] its {\em complement} $\cmp{x}= (\cmp{x_0},\cmp{x_1},\dots, \cmp{x_{n-1}})$;
+  \item[] its {\em reversal} $\rev{x}=(x_{n-1},x_{n-2},\dots, x_0)$;
+  \item[] its {\em reversed complement}, or {\em replement},
+    $\rep{x}= \rev{\cmp{x}} = \cmp{\rev{x}} = 
+      (\cmp{x_{n-1}}, \cmp{x_{n-2}}, \dots, \cmp{x_0})$.
+\end{itemize}
+
+A word $x$ is {\em palindromic} if $\rev{x}=x$.  The number of 
+palindromic sequences of length $n$ over an $m$-letter alphabet
+is of course $m^{\lceil n/2\rceil}$. Note that this number is always
+positive.
+
+A word $x$ is {\em self-complementary} if $\cmp{x}=x$.  
+Obviously, if the alphabet size is even, there is no such word;
+and, if the alphabet size is odd, there is exactly one self-complementary
+word in $\Sig^{\times n}$, for any $n$.
+
+A word $x$ is {\em anadromic} if $\rep{x}=x$. How many anadromic words
+are there with length $n$ over an $m$-letter alphabet? Obviously
+there is no such word 
+if $n$ is odd and $m$ is even, because there is a conflict with the
+middle letter.  Otherwise the middle letter is either absent or
+limited to one choice; the first $\lfloor n/2\rfloor$
+letters are arbitrary, and they determine the last $\lfloor n/2\rfloor$.
+So the answer is zero if $n(m+1)$ is odd, and $m^{\lfloor n/2\rfloor}$
+otherwise.
+
+\subsection{Symmetric orders}
+
+A partial order %\preceq$ on $\Sig^{\times n}$ is {\em replement-symmetric} if 
+\[
+  x \preceq y \iff \rep{y}\preceq \rep{x}
+\]
+for any two words $x,y$. 
+
+Suppose $\preceq$ is a total order (that is, $x\preceq y \wedge
+y\preceq x\implies x=y$ for all $x,y$).  Let $N=m^{\cdot n}$, and let
+$\rank{x}$ be the number of words of $\Sig^{\times n}$ that strictly precede
+$x$ in $\preceq$.  then $\prec$ is replement-symmetric iff
+$\rank{\rep{x}} = N-1-\rank{x}$ for all $x$ in $\Sig^{\times n}$.
+
+When does a replement-symmetric total order of $\Sig^{\times n}$ exist?
+Note that an anadromic word $x$ satisfies $\rank{x}=N-1-\rank{x}$,
+that is, $\rank{x}=(N-1)/2$.  Thus, $m$ and $n$ must be such that
+either there are no anadromic words in $\Sig^{\times n}$, or there is 
+exactly one such word, and $N$ is odd.  The first case happens if and
+only if $n$ is odd and $m$ is even; the second case happens if and only if 
+$n=0$, $m=1$, or $n=1$ and $m$ is odd --- rather boring cases.
+
+\subsection{Derivative of a word}
+
+The {\em natural alphabet with $m$ letters}, where $m$ is a
+non-negative intefer, is the interval of natural numbers
+$\BN_m=\set{0,1,\dots,m-1}$.  The {\em signed alphabet with $m$
+letters} is defined only for odd positive $m$ as the interval
+$\BZ_m=\set{-\rdown{m/2},\dd 0,\dd \rdown{m/2}}$. In both cases the 
+letters are ordered by numeric value.
+
+Let $\Sig=(\sig_0,\dd\sig_{m-1})$ be any alphabet with $m$ letters.
+We define the {\em natural difference} ({\em in $\Sig$}) between two letters
+$\sig_i,\sig_j\in m$ as the natural number $\sig_i \nminus \sig_j =
+(i-j)\bmod m$, which is an element of $\BN_m$.  
+
+If $m$ is odd, we define also the {\em signed
+difference} $\sig_i
+\sminus \sig_j$ as the unique element of $\BZ_m$ that is congruent modulo
+$m$ to $i-j$.
+
+Note that when $\Sig$ is an interval of integers, the natural and
+signed differences are simply the ordinary (numeric) difference of the
+letters, reduced modulo $m$ to the ranges $\BN_m$ abd $\BZ_m$,
+respectively.
+
+The {\em natural derivative} of a word $x\in\Sig^{\times n}$, where $n\geq 1$,
+is by definition the word $\ndif{x}\in\BN_m^{\times {n-1}}$ such that 
+$(\wdiff{x})_i = x_{i+1} \nminus x_i$ for $i\in\set{0,\dd n-2}$.  
+
+When $m$ is odd, the {\em signed derivative} is defined in the same way, with 
+$\sminus$ instead of $\nminus$. 
+
+Whenever defined, these functions satisfy the following properties:
+
+\newcounter{\diffpropct}
+
+\begin{list}{D\arabic{\diffpropct}:}{\usecounter{\diffpropct}}
+
+  \item $\ndiff{x}=(0)^{\cat {n-1}}$ if and only if 
+    $x = (\sig)^{\cat{n}}$, for some letter $\sig$.
+    Ditto for $\sdiff{}$.
+    
+  \item $\sdiff{\cmp{x}} = \cmp{\sdiff{x}}$.
+  
+  \item $\sdiff{\rev{x}} = \rep{\sdiff{x}}$.
+  
+  \item $\sdiff{\rep{x}} = \rev{\sdiff{x}}$.
+  
+\end{list}
+
+\section{Selecting cycle representatives}
+
+Let $\pi$ be any permutation of a finite set $S$, and $\tau$ be any
+involution on $S$ with the property that $x\pi\tau = x\tau\pi^{-1}$
+for all $x\in S$.
+
+Note that the involution $\tau$ defines an involution $\hat\tau$ on the set
+of cycles of $\pi$.  We wish to find for each cycle $C$ of $\pi$
+a representative element $e(C)$, in the most $\tau$-symmetric way possible;
+more precisely, we want $e(C\hat\tau)=(e(C))\tau$ whenever C contains
+any edge satisfying this property.
+
+One way to do so is to pick any total order $<$ on $S$, and define 
+from it a new order $\prec$ by the formula
+\begin{eqnarray*}
+  x\prec y &\iff & (x\tau = x \wedge y\tau\neq y) \vee \\
+   & & (x\tau = y \wedge x<y) \vee \\
+   & & (x\tau\neq y\wedge \min\set{x,x\tau} < \min\set{y,y\tau})
+\end{eqnarray*}
+That is, we sort the orbits of $\tau$ by increasing size (1-cycles,
+then 2-cycles), then sort orbits of the same size by the
+least element in each orbit, and then sort the elements in each orbit.
+
+To define $e(C)$ for a cycle $c$, we just enumerate its elements,
+and return the smallest one.
+
+Proof that this answer is correct: First, if $C=C\hat\tau$, and $X$
+contains any element that is a fixpoint of $\tau$, then obviously the
+minimum of $C$ by $\prec$ will be such a fixpoint; and that element
+will also be a minimum of $C\hat\tau$. On the other hand, if
+$C\hat\tau\neq C$, then $C$ contains no fixpoints of $\tau$; if $x$ is
+the minimum of $C$, then $x\tau\neq y$ and $x\prec y$ for all $y\in
+C\setminus\set{x}$; these two conditions imply $x\tau\prec y\tau$,
+hence $x\tau$ is the minimum of $C\hat\tau$.
+
+\end{document}  
+    

@@ -1,0 +1,15 @@
+# Last edited on 2020-10-31 20:40:34 by jstolfi
+
+Test images for affine comparison. They are derived from a color
+magazine page scanned at 600 dpi. They are all 128x128 pixels, 8 bits
+per sample, centered at about the same point of the page (±2 pixels), at
+the end of a black pen stroke.
+
+image        size     center       description
+-----------  -------  -----------  ---------------------------
+scan-01.png  128x128  64.00 64.00  page scan, cropped.
+scan-02.png  128x128  63.20 65.20  re-scan of the same page, shifted on scanner, cropped.
+scan-03.png  128x128  62.35 64.76  image scan-02.png rotated by 60 degrees ccw about center.
+scan-04.png  128x128  62.00 62.00  image scan-01.png magnified to 200% with gimp about center and cropped.
+scan-05.png  128x128  64.50 64.20  same scan of scan-01.png, reduced to 50% with gimp and cropped. 
+scan-06.png  128x128  65.17 64.53  same scan of scan-01.png, perspective-deformed with gimp and cropped.  

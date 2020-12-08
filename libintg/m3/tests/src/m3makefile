@@ -1,0 +1,16 @@
+% Last edited on 2000-12-04 14:35:46 by stolfi
+
+STOLFI = "${HOME}/programs/pm3-1.1.15"
+
+import("libm3")
+
+override("libm3intg", STOLFI)
+import ("libm3intg")
+
+override("libm3geoN", STOLFI)
+import ("libm3geoN")
+
+module("IntegratorProblem")
+
+implementation("TestIntegrators")
+program("TestIntegrators")

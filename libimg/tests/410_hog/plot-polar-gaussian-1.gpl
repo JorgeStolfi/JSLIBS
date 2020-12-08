@@ -1,0 +1,34 @@
+# Last edited on 2012-01-10 02:03:51 by stolfilocal
+
+  set xlabel "def"
+
+  # unset logscale x; set xrange [-0.01:*]
+  # unset logscale y; set yrange [-0.01:*]
+ 
+  set xlabel "def"
+  set ylabel "dpr"
+  set key left
+  
+  unset logscale x; set xrange [-0.01:(pi + 0.01)]
+  # set logscale x; set xrange [0.001:3.5]
+  
+  unset logscale y; set yrange [*:*]
+  # set logscale y; set yrange [0.001:*]
+  
+  plot \
+    (0) with lines lt -1, \
+    dfile using (def(column(2),d0,g0,h0)):(dpr(0,e0,p0)) with points title "d0" pt 1 lc rgb '#ff0000', \
+    ""    using (def(column(2),d1,g1,h1)):(dpr(1,e1,p1)) with points title "d1" pt 1 lc rgb '#883300', \
+    ""    using (def(column(2),d2,g2,h2)):(dpr(2,e2,p2)) with points title "d2" pt 1 lc rgb '#007700', \
+    ""    using (def(column(2),d3,g3,h3)):(dpr(3,e3,p3)) with points title "d3" pt 1 lc rgb '#0055ff', \
+    ""    using (def(column(2),d4,g4,h4)):(dpr(4,e4,p4)) with points title "d4" pt 1 lc rgb '#7700ff', \
+    ""    using (def(column(2),d5,g5,h5)):(dpr(5,e5,p5)) with points title "d5" pt 1 lc rgb '#dd0088'
+
+    
+    # (def(x,d0,g0,h0)) with lines lc rgb '#ff0000', \
+    # (def(x,d1,g1,h1)) with lines lc rgb '#883300', \
+    # (def(x,d2,g2,h2)) with lines lc rgb '#007700', \
+    # (def(x,d3,g3,h3)) with lines lc rgb '#0055ff', \
+    # (def(x,d4,g4,h4)) with lines lc rgb '#7700ff', \
+    # (def(x,d5,g5,h5)) with lines lc rgb '#dd0088', \
+    

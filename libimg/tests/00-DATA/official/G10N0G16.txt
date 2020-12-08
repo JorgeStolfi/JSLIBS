@@ -1,0 +1,93 @@
+Image: G10N0G16.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: DirectClass
+  Geometry: 32x32+0+0
+  Units: Undefined
+  Type: Grayscale
+  Base type: Grayscale
+  Endianess: Undefined
+  Colorspace: Gray
+  Depth: 16/8-bit
+  Channel depth:
+    gray: 8-bit
+  Channel statistics:
+    Pixels: 1024
+    Gray:
+      min: 0 (0)
+      max: 65535 (1)
+      mean: 31813.3 (0.48544)
+      standard deviation: 21920.7 (0.334489)
+      kurtosis: -1.07613
+      skewness: 0.0470469
+      entropy: 0.810536
+  Colors: 33
+  Histogram:
+       168: (    0,    0,    0) #000000000000 gray(0)
+        16: ( 2056, 2056, 2056) #080808080808 gray(8)
+        16: ( 4112, 4112, 4112) #101010101010 gray(16)
+        16: ( 6425, 6425, 6425) #191919191919 gray(25)
+        16: ( 8481, 8481, 8481) #212121212121 gray(33)
+        16: (10537,10537,10537) #292929292929 gray(41)
+        16: (12593,12593,12593) #313131313131 gray(49)
+        16: (14906,14906,14906) #3A3A3A3A3A3A gray(58)
+        16: (16962,16962,16962) #424242424242 gray(66)
+        16: (19018,19018,19018) #4A4A4A4A4A4A gray(74)
+        16: (21074,21074,21074) #525252525252 gray(82)
+        16: (23130,23130,23130) #5A5A5A5A5A5A gray(90)
+        16: (25443,25443,25443) #636363636363 gray(99)
+        16: (27499,27499,27499) #6B6B6B6B6B6B gray(107)
+        16: (29555,29555,29555) #737373737373 gray(115)
+        16: (31611,31611,31611) #7B7B7B7B7B7B gray(123)
+       241: (32639,32639,32639) #7F7F7F7F7F7F gray(127)
+        16: (33924,33924,33924) #848484848484 gray(132)
+        16: (35980,35980,35980) #8C8C8C8C8C8C gray(140)
+        16: (38036,38036,38036) #949494949494 gray(148)
+        16: (40092,40092,40092) #9C9C9C9C9C9C gray(156)
+        16: (42405,42405,42405) #A5A5A5A5A5A5 gray(165)
+        15: (44461,44461,44461) #ADADADADADAD gray(173)
+        14: (46517,46517,46517) #B5B5B5B5B5B5 gray(181)
+        15: (48573,48573,48573) #BDBDBDBDBDBD gray(189)
+        15: (50629,50629,50629) #C5C5C5C5C5C5 gray(197)
+        15: (52942,52942,52942) #CECECECECECE gray(206)
+        13: (54998,54998,54998) #D6D6D6D6D6D6 gray(214)
+        16: (57054,57054,57054) #DEDEDEDEDEDE gray(222)
+        16: (59110,59110,59110) #E6E6E6E6E6E6 gray(230)
+        16: (61423,61423,61423) #EFEFEFEFEFEF gray(239)
+        16: (63479,63479,63479) #F7F7F7F7F7F7 gray(247)
+       144: (65535,65535,65535) #FFFFFFFFFFFF gray(255)
+  Rendering intent: Undefined
+  Gamma: 1
+  Background color: gray(255)
+  Border color: gray(223)
+  Matte color: gray(189)
+  Transparent color: gray(0)
+  Interlace: None
+  Intensity: Rec709Luminance
+  Compose: Over
+  Page geometry: 32x32+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=1 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 16
+    png:IHDR.bit_depth: 16
+    png:IHDR.color-type-orig: 0
+    png:IHDR.color_type: 0 (Grayscale)
+    png:IHDR.interlace_method: 0 (Not interlaced)
+    png:IHDR.width,height: 32, 32
+    signature: 8201df9dfdf102919cc6cd29407063dda6595f66d427bf1b518d493c90a2afe6
+  Artifacts:
+    filename: G10N0G16.png
+    verbose: true
+  Tainted: False
+  Filesize: 262B
+  Number pixels: 1.02K
+  Pixels per second: 1.024EB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

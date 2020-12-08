@@ -1,0 +1,42 @@
+.\" (****************************************************************************)
+.\" (* (C) Copyright 1992 Universidade Estadual de Campinas (UNICAMP)           *)
+.\" (*                    Campinas, SP, Brazil                                  *)
+.\" (*                                                                          *)
+.\" (* Authors:                                                                 *)
+.\" (*                                                                          *)
+.\" (*   Tomasz Kowaltowski  - CS Dept, UNICAMP <tomasz@dcc.unicamp.br>         *)
+.\" (*   Claudio L. Lucchesi - CS Dept, UNICAMP <lucchesi@dcc.unicamp.br>       *)
+.\" (*   Jorge Stolfi        - CS Dept, UNICAMP <stolfi@dcc.unicamp.br>         *)
+.\" (*                                                                          *)
+.\" (* This file can be freely distributed, modified, and used for any          *)
+.\" (*   non-commercial purpose, provided that this copyright and authorship    *)
+.\" (*   notice be included in any copy or derived version of this file.        *)
+.\" (*                                                                          *)
+.\" (* DISCLAIMER: This software is offered ``as is'', without any guarantee    *)
+.\" (*   as to fitness for any particular purpose.  Neither the copyright       *)
+.\" (*   holder nor the authors or their employers can be held responsible for  *)
+.\" (*   any damages that may result from its use.                              *)
+.\" (****************************************************************************)
+.\"
+.nh
+.TH Goodies 1
+.SH Name
+Goodies \- minimization and compression of word automata
+.SH Synopsis
+\fBGoodies\fR [ \fIoptions\fR ] \fB<\fR \fIinfile\fR \fB>\fR \fIoutfile\fR
+.SH Description
+\fBGoodies\fR implements the \fIfold\fI heuristic for
+minimization of binary automata (\fIJBCS\fR \fB1\fR(3), 5\-11).
+.PP
+\fBGoodies\fR also reads and writes such automata in the 
+\fIcompressed\fR format (\fIibid.\fR).
+.PP
+Finally, \fBGoodies\fR can convert such folded binary automata to the
+\fBReduced\fR format, which is recognized by other \fBdicio\fR tools such as
+\fBMaintainAutomaton\fR.
+.PP
+See the source for more details.
+.SH Bugs
+None known yet.
+.SH Author
+C. L. Lucchesi (Institute of Computing, UNICAMP)

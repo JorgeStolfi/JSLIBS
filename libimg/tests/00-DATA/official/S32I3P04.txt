@@ -1,0 +1,120 @@
+Image: S32I3P04.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: PseudoClass
+  Geometry: 32x32+0+0
+  Units: Undefined
+  Type: Palette
+  Endianess: Undefined
+  Colorspace: sRGB
+  Depth: 8/4-bit
+  Channel depth:
+    red: 4-bit
+    green: 4-bit
+    blue: 4-bit
+  Channel statistics:
+    Pixels: 1024
+    Red:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 107.429 (0.421289)
+      standard deviation: 116.929 (0.458544)
+      kurtosis: -1.7296
+      skewness: 0.327521
+      entropy: 0.894115
+    Green:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 119.183 (0.467383)
+      standard deviation: 116.734 (0.457778)
+      kurtosis: -1.79176
+      skewness: 0.142796
+      entropy: 0.926978
+    Blue:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 96.3555 (0.377865)
+      standard deviation: 114.547 (0.449204)
+      kurtosis: -1.56346
+      skewness: 0.511163
+      entropy: 0.87525
+  Image statistics:
+    Overall:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 107.656 (0.422179)
+      standard deviation: 116.075 (0.455195)
+      kurtosis: -1.70477
+      skewness: 0.327429
+      entropy: 0.898781
+  Colors: 13
+  Histogram:
+       149: (  0,  0,  0) #000000 black
+        53: (  0,  0,255) #0000FF blue
+        78: (  0,119,255) #0077FF srgb(0,119,255)
+        82: (  0,255,  0) #00FF00 lime
+        80: (  0,255,119) #00FF77 srgb(0,255,119)
+        77: (  0,255,255) #00FFFF cyan
+        56: (119,  0,255) #7700FF srgb(119,0,255)
+        82: (119,255,  0) #77FF00 srgb(119,255,0)
+        85: (255,  0,  0) #FF0000 red
+        57: (255,  0,119) #FF0077 srgb(255,0,119)
+        59: (255,  0,255) #FF00FF magenta
+        84: (255,119,  0) #FF7700 srgb(255,119,0)
+        82: (255,255,  0) #FFFF00 yellow
+  Colormap entries: 13
+  Colormap:
+         0: (  0,  0,  0) #000000 black
+         1: (255,  0,119) #FF0077 srgb(255,0,119)
+         2: (  0,255,255) #00FFFF cyan
+         3: (  0,255,  0) #00FF00 lime
+         4: (119,  0,255) #7700FF srgb(119,0,255)
+         5: (  0,119,255) #0077FF srgb(0,119,255)
+         6: (119,255,  0) #77FF00 srgb(119,255,0)
+         7: (255,  0,255) #FF00FF magenta
+         8: (255,  0,  0) #FF0000 red
+         9: (  0,255,119) #00FF77 srgb(0,255,119)
+        10: (255,255,  0) #FFFF00 yellow
+        11: (255,119,  0) #FF7700 srgb(255,119,0)
+        12: (  0,  0,255) #0000FF blue
+  Rendering intent: Perceptual
+  Gamma: 1
+  Chromaticity:
+    red primary: (0.64,0.33)
+    green primary: (0.3,0.6)
+    blue primary: (0.15,0.06)
+    white point: (0.3127,0.329)
+  Background color: white
+  Border color: srgb(223,223,223)
+  Matte color: grey74
+  Transparent color: black
+  Interlace: PNG
+  Intensity: Undefined
+  Compose: Over
+  Page geometry: 32x32+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=1 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 4
+    png:IHDR.bit_depth: 4
+    png:IHDR.color-type-orig: 3
+    png:IHDR.color_type: 3 (Indexed)
+    png:IHDR.interlace_method: 1 (Adam7 method)
+    png:IHDR.width,height: 32, 32
+    png:PLTE.number_colors: 13
+    signature: 1d040a1bb2f87150f8a472c0c8ed839c4bb9aa3811ebdc62aae9d197071b5f80
+  Artifacts:
+    filename: S32I3P04.png
+    verbose: true
+  Tainted: False
+  Filesize: 355B
+  Number pixels: 1.02K
+  Pixels per second: 1.024EB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

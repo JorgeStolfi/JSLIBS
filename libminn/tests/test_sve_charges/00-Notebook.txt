@@ -1,0 +1,157 @@
+# Last edited on 2012-01-23 04:17:22 by stolfilocal
+
+COMPUTED OPTIMUM CONFIGURATIONS
+
+  Some computed optimum configurations for the Rutherford atom
+  with cloud of uniform density:
+  
+      001:1:0    0.000  center
+
+      002:1:0    1.890  symmetric
+
+      003:2:0    5.670  triangle
+      003:2:1    6.325  three in line
+      003:2:2    5.670  triangle
+
+      004:3:0   11.339  tetrahedron
+      004:3:2   11.339  tetrahedron
+
+      005:3:0   19.196  3-bipyramid 
+      005:3:1   20.225  square + center
+      005:3:3   19.959  tetrahedron + center
+
+      006:3:0   28.936  octahedron
+      006:3:1   28.936  octahedron
+      006:3:2   28.936  octahedron
+
+      007:3:0   41.031  5-bipyramid, slightly distorted
+      007:3:1   41.687  octahedron + center
+      007:3:3   41.687  octahedron + center
+
+      008:3:0   55.095  4-antiprism
+      008:3:1   55.593  6-bipyramid
+      008:3:2   55.217  hexahedron
+
+      009:3:0   71.322  3-bisantiprism (3-prism with 4-pyramids on sides)
+      009:3:1   72.049  hexahedron + center
+      009:3:3   72.049  hexahedron + center
+
+      010:3:0   89.737  irregular, 1 shell
+      010:3:1   90.219  hexahedron + top/botom 4-pyramids, squashed and slightly distorted
+
+      011:3:0  110.415  irregular, 1 shell
+      011:3:1  111.072  hexahedron + top/botom 4-pyramids + center, distorted
+
+      012:3:0  133.363  irregular, 1 shell + center
+      012:3:1  132.942  icosahedron
+      012:3:2  132.943  icosahedron
+
+      013:3:0  158.092  irregular, 1 shell + 2 inside 
+      013:3:1  157.955  icosahedron + center, distorted
+      013:3:3  157.936  icosahedron + center
+
+      014:3:0  185.813  icosahedron + 2 inside, distorted
+      014:3:1  185.289  hexahedron + octahedron
+
+      015:3:0  214.307  6-prism + top/botom 6-pyramids + center, distorted
+      015:3:1  214.375  6-prism + top/botom 6-pyramids + center, slightly distorted
+
+      016:3:0  245.732  irregular, 1 shell + center (some regularity?)
+      016:3:1  246.464  6-prism + top/botom 6-pyramids + 2 inside, slightly distorted
+      
+      017:3:0  279.338  irregular, 1 shell + center
+      017:3:1  279.812  irregular, 1 shell + center
+
+      018:3:0  315.137  irregular, 1 shell + center
+      018:3:1  316.105  irregular, 1 shell + 2 inside
+
+      019:3:0  353.315  irregular, 1 shell + center
+      019:3:1  353.610  5-8-5-tower + center (some regularity?)
+
+      020:3:0  394.143  irregular (2 shells?)
+      020:3:1  394.009  irregular (2 shells?)
+      020:3:2  396.247  dodecahedron
+
+      021:3:0  436.435  irregular, 1 shell + 2 inside
+      021:3:1  435.874  1-5-8-5-1-tower + center, slightly distorted
+      021:3:3  437.387  dodecahedron + center
+
+      022:3:0  481.044  irregular, 1 shell + 2 inside
+      022:3:1  480.667  irregular, 1 shell + 2 inside (some regularity?)
+
+      023:3:0  527.666  irregular, 1 shell + 2 inside
+      023:3:1  527.510  1-6-8-6-1-tower + center
+
+      024:3:0  576.742  very irregular, 1 shell + 2 inside
+      024:3:1  576.486  4-7-7-4-tower + 2 inside, distorted
+      
+      031:3:0  990.278  very irregular, 1 shell + 8 inside + 1 outside cloud!
+      031:3:1  983.560  irregular, 1 shell + center + 4 inside 
+      
+      030:3:0  918.485  irregular, 1 shell + 5 inside in irregular positions
+      030:3:1  918.734  irregular, 1 shell + 6 inside in irregular paired positions (some regularity?)
+      
+      032:3:0 1050.126  irregular, 1 shell + 7 inside in irregular positions
+      032:3:1 1049.678  irregular, 1 shell + 6 inside in irregular paired positions (some regularity?)
+
+      033:3:0 1118.172  irregular?, 1 shell + 5 inside
+      033:3:1 1119.234  dodecahedron + rectangle inside + center + 8 5-pyramids on faces, slightly distorted [1]
+      
+      036:3:0 1338.191  irregular?, 1 shell + 6 inside
+      036:3:1 1338.015  irregular?, 1 shell + 6 inside
+      
+      060:3:0 3826.735  irregular, 1 shell + ~18 inside in irregular positions (some regularity?)
+      060:3:1 3822.082  1 outer irregular shell of 44 + 1 inner shell of 14 (regular?) + 2 near center 
+      
+  Configuration [1] is a dodecahedron + center + 12 5-pyramids on all
+  faces, except that 4 of those pyramids are pushed inwards instead of
+  outwards, with their tips creating a rectangle inside the
+  dodecahedron. The configuration has the symmetry of a parallelepiped
+  with unequal sides.
+ 
+
+EVOLUTION OF MIN POTENTIAL
+
+  Data to plot:
+
+     1    0.000  center
+     2    1.890  symmetric
+     3    5.670  triangle
+     4   11.339  tetrahedron
+     5   19.196  3-bipyramid 
+     6   28.936  octahedron
+     7   41.031  5-bipyramid, slightly distorted
+     8   55.095  4-antiprism
+     9   71.322  3-bisantiprism (3-prism with 4-pyramids on sides)
+    10   89.737  irregular, 1 shell
+    11  110.415  irregular, 1 shell
+    12  132.943  icosahedron
+    13  157.936  icosahedron + center
+    14  185.289  hexahedron + octahedron
+    15  214.307  6-prism + top/botom 6-pyramids + center, distorted
+    16  245.732  irregular, 1 shell + center (some regularity?)
+    17  279.338  irregular, 1 shell + center
+    18  315.137  irregular, 1 shell + center
+    19  353.315  irregular, 1 shell + center
+    20  394.009  irregular (2 shells?)
+    21  435.874  1-5-8-5-1-tower + center, slightly distorted
+    22  480.667  irregular, 1 shell + 2 inside (some regularity?)
+    23  527.510  1-6-8-6-1-tower + center
+    24  576.486  4-7-7-4-tower + 2 inside, distorted
+    
+    30  918.485  irregular, 1 shell + 5 inside in irregular positions
+    31  983.560  irregular, 1 shell + center + 4 inside 
+    32 1049.678  irregular, 1 shell + 6 inside in irregular paired positions (some regularity?)
+    33 1118.172  irregular?, 1 shell + 5 inside
+      
+    36 1338.015  irregular?, 1 shell + 6 inside
+  
+    60 3822.082  1 outer irregular shell of 44 + 1 inner shell of 14 (regular?) + 2 near center
+    
+  Asymptotic model: 
+  
+    minpot(nq) = 1.08*(nq - 0.70)**2
+    
+  This model is extremely accurate from {nq=1} to {nq=60}.
+  
+  

@@ -1,0 +1,28 @@
+# Seeds to isolate the blue-painted moringa exterior from background
+# Last edited on 2001-09-28 09:20:49 by stolfi
+# 
+# The blue surface:
+#
+(   84  201 ) =     1
+(  112   64 ) =     1
+(  102   41 ) =     1
+(  156  220 ) =     1
+(   69  161 ) =     1
+(  112  274 ) =     1
+(   44  204 ) =     1
+(  199  155 ) =     1
+(  144  121 ) =     1
+# 
+# Various background segments:
+#
+(  209   53 ) =     2
+(  220  203 ) =     2
+(   12  201 ) =     2
+(   17  270 ) =     2
+(   33   71 ) =     2
+(  182   10 ) =     2
+(   30  287 ) =     2
+(  191  286 ) =     2
+(  108   27 ) =     2
+(  120   27 ) =     2
+# 

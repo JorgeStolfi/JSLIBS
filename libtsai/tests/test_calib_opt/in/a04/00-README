@@ -1,0 +1,2 @@
+# Marks with random jitter (~0.5 pixel) and two outliers,
+# weights 0.90 for all marks, except outliers have smaller weights.

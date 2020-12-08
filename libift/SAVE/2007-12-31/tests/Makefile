@@ -1,0 +1,71 @@
+# Last edited on 2008-06-10 20:40:39 by stolfi
+
+PROG := pnmift
+
+PROGDIR  := ..
+
+include ${HOME}/Projeto/Programas/GENERIC-PROGS-TEST.make
+
+TESTS := \
+  figs1-1 \
+  ladys-1 \
+  ladys-2 \
+  mrng3-1 \
+  unifm-1 \
+  tree3-gr-1
+  
+all: check
+
+.PHONY:: clean-all run-all clean-single run-single
+
+all: check
+
+check:  run-all
+
+all: check
+
+clean:: clean-all
+
+all: check
+
+run-check:  ; \
+  for tst in ${TESTS}; do \
+    ${MAKE} TNAME=$${tst} run-single; \
+  done
+  
+all: check
+
+clean-check:  ; \
+  for tst in ${TESTS}; do \
+    ${MAKE} TNAME=$${tst} clean-single; \
+  done
+
+######################################################################
+# Recursive section -- client must define ${TNAME}
+
+TNAME := TNAME.IS.UNDEFINED
+ifneq "/${TNAME}" "/TNAME.IS.UNDEFINED"
+
+IMGNAME = ${shell echo ${TNAME} | sed -e 's/[-][0-9]$$//'}
+
+SHOWPGM := display
+SHOWEPS := gv
+
+run-single: ${TNAME}.costs
+
+${TNAME}.costs: ${PROGDIR}/${PROG} ${TNAME}.doit ${IMGNAME}.pgm
+	@echo TNAME = ${TNAME} IMGNAME = ${IMGNAME}
+	${TNAME}.doit
+	${SHOWPGM} ${IMGNAME}.pgm ${TNAME}*.pgm && ${SHOWEPS} ${TNAME}.eps
+
+clean-single:
+	rm -f \
+          ${TNAME}-labels.pgm \
+          ${TNAME}-preds.pgm \
+          ${TNAME}-roots.pgm \
+          ${TNAME}-spread.pgm \
+          ${TNAME}-trees.eps \
+
+endif
+# End ${TNAME} section
+######################################################################

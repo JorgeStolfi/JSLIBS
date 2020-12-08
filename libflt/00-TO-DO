@@ -1,0 +1,5 @@
+
+* Compare fltasm-{knueppel,hybrid,priest}.s, test-ieee/fptest.s,
+  and the Sun fpsetround/fpgetround routines.  Pick one.
+  
+* Compile and test IA, AA, etc.

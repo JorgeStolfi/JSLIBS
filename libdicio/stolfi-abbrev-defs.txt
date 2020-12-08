@@ -1,0 +1,201 @@
+;;-*-coding: emacs-mule;-*-
+(define-abbrev-table 'awk-mode-abbrev-table '(
+    ))
+
+(define-abbrev-table 'c++-mode-abbrev-table '(
+    ))
+
+(define-abbrev-table 'c-mode-abbrev-table '(
+    ))
+
+(define-abbrev-table 'comint-mode-abbrev-table '(
+    ))
+
+(define-abbrev-table 'empty-abbrev-table '(
+    ))
+
+(define-abbrev-table 'fundamental-mode-abbrev-table '(
+    ))
+
+(define-abbrev-table 'global-abbrev-table '(
+    ))
+
+(define-abbrev-table 'grep-mode-abbrev-table '(
+    ))
+
+(define-abbrev-table 'idl-mode-abbrev-table '(
+    ))
+
+(define-abbrev-table 'java-mode-abbrev-table '(
+    ))
+
+(define-abbrev-table 'lisp-mode-abbrev-table '(
+    ))
+
+(define-abbrev-table 'm3-abbrev-table '(
+    ("abs" "ABS" nil 0)
+    ("address" "ADDRESS" nil 0)
+    ("adr" "ADR" nil 0)
+    ("adrsize" "ADRSIZE" nil 0)
+    ("and" "AND" nil 0)
+    ("any" "ANY" nil 0)
+    ("array" "ARRAY" nil 0)
+    ("as" "AS" nil 0)
+    ("bitsize" "BITSIZE" nil 0)
+    ("bool" "BOOL" nil 0)
+    ("boolean" "BOOLEAN" nil 0)
+    ("branded" "BRANDED" nil 0)
+    ("by" "BY" nil 0)
+    ("bytesize" "BYTESIZE" nil 0)
+    ("cardinal" "CARDINAL" nil 0)
+    ("ceiling" "CEILING" nil 0)
+    ("char" "CHAR" nil 0)
+    ("dec" "DEC" nil 0)
+    ("dispose" "DISPOSE" nil 0)
+    ("div" "DIV" nil 0)
+    ("do" "DO" nil 0)
+    ("end" "END" nil 0)
+    ("exit" "EXIT" nil 0)
+    ("exports" "EXPORTS" nil 0)
+    ("extended" "EXTENDED" nil 0)
+    ("false" "FALSE" nil 0)
+    ("first" "FIRST" nil 0)
+    ("float" "FLOAT" nil 0)
+    ("floor" "FLOOR" nil 0)
+    ("from" "FROM" nil 0)
+    ("generic" "GENERIC" nil 0)
+    ("in" "IN" nil 0)
+    ("inc" "INC" nil 0)
+    ("int" "INT" nil 0)
+    ("integer" "INTEGER" nil 0)
+    ("istype" "ISTYPE" nil 0)
+    ("last" "LAST" nil 0)
+    ("longreal" "LONGREAL" nil 0)
+    ("loophole" "LOOPHOLE" nil 0)
+    ("max" "MAX" nil 0)
+    ("min" "MIN" nil 0)
+    ("mod" "MOD" nil 0)
+    ("narrow" "NARROW" nil 0)
+    ("nat" "NAT" nil 0)
+    ("new" "NEW" nil 0)
+    ("nil" "NIL" nil 0)
+    ("not" "NOT" nil 0)
+    ("null" "NULL" nil 0)
+    ("number" "NUMBER" nil 0)
+    ("nutex" "MUTEX" nil 0)
+    ("of" "OF" nil 0)
+    ("or" "OR" nil 0)
+    ("ord" "ORD" nil 0)
+    ("raise" "RAISE" nil 0)
+    ("readonly" "READONLY" nil 0)
+    ("real" "REAL" nil 0)
+    ("ref" "REF" nil 0)
+    ("refany" "REFANY" nil 0)
+    ("root" "ROOT" nil 0)
+    ("round" "ROUND" nil 0)
+    ("set" "SET" nil 0)
+    ("subarray" "SUBARRAY" nil 0)
+    ("text" "TEXT" nil 0)
+    ("then" "THEN" nil 0)
+    ("to" "TO" nil 0)
+    ("true" "TRUE" nil 0)
+    ("trunc" "TRUNC" nil 0)
+    ("typecode" "TYPECODE" nil 0)
+    ("unsafe" "UNSAFE" nil 0)
+    ("untraced" "UNTRACED" nil 0)
+    ("val" "VAL" nil 0)
+    ("value" "VALUE" nil 0)
+    ))
+
+(define-abbrev-table 'm3-long-abbrev-table '(
+    ("assert" "<* ASSERT%n%>%>~%n%<%<*>~" nil 0)
+    ("begin" "BEGIN%n%>~%n%<END~" nil 0)
+    ("bits" "BITS ~ FOR%n%>~" nil 0)
+    ("case" "CASE ~ OF%n%>~%n%<END~" nil 0)
+    ("const" "CONST%n%>~" nil 0)
+    ("else" "%<ELSE%n%>~" nil 0)
+    ("elsif" "%<ELSIF ~ THEN%n%>~" nil 0)
+    ("eval" "EVAL%n%>~" nil 0)
+    ("except" "%<EXCEPT%n%>~" nil 0)
+    ("exception" "EXCEPTION%n%>~" nil 0)
+    ("fatal" "<* FATAL%n%>%>~%<%<*>~" nil 0)
+    ("finally" "%<FINALLY%n%>~" nil 0)
+    ("for" "FOR ~ DO%n%>~%n%<END~" nil 0)
+    ("if" "IF ~ THEN%n%>~%n%<END~" nil 0)
+    ("import" "IMPORT%n%>~" nil 0)
+    ("interface" "INTERFACE ~;%n%n~%n%nEND ~." nil 0)
+    ("lock" "LOCK ~ DO%n%>~%n%<END" nil 0)
+    ("loop" "LOOP%n%>~%n%<END~" nil 0)
+    ("methods" "%<METHODS%n%>~" nil 0)
+    ("module" "MODULE ~;%n%n~%n%nBEGIN%n%>~%n%<END ~." nil 0)
+    ("object" "OBJECT%n%>%>~%n%<END~" nil 0)
+    ("overrides" "%<OVERRIDES%n%>~" nil 0)
+    ("procedure" "PROCEDURE ~(%n%>%>~%n%<)~%n~" nil 0)
+    ("record" "RECORD%n%>%>~%n%<END~" nil 0)
+    ("repeat" "REPEAT%n%>~%n%<UNTIL ~" nil 0)
+    ("return" "RETURN%n%>~" nil 0)
+    ("reveal" "REVEAL%n%>~" nil 0)
+    ("try" "TRY%n%>~%n%<EXCEPT%n%>~%n%<END~" nil 0)
+    ("type" "TYPE%n%>~" nil 0)
+    ("typecase" "TYPECASE ~ OF%n%>~%n%<END~" nil 0)
+    ("until" "%<UNTIL%n%>~" nil 0)
+    ("var" "VAR%n%>~" nil 0)
+    ("while" "WHILE ~ DO%n%>~%n%<END~" nil 0)
+    ("with" "WITH%n%>~%n%<DO%n%>~%n%<END~" nil 0)
+    ))
+
+(define-abbrev-table 'm3-short-abbrev-table '(
+    ("assert" "<* ASSERT ~ *>~" nil 0)
+    ("begin" "BEGIN ~ END~" nil 0)
+    ("bits" "BITS ~ FOR ~" nil 0)
+    ("case" "CASE ~ OF ~ END~" nil 0)
+    ("const" "CONST ~" nil 0)
+    ("else" "%<ELSE ~" nil 0)
+    ("elsif" "%<ELSIF ~ THEN ~" nil 0)
+    ("end" "%<END~" nil 0)
+    ("eval" "EVAL ~" nil 0)
+    ("except" "%<EXCEPT ~" nil 0)
+    ("exception" "EXCEPTION ~" nil 0)
+    ("fatal" "<* FATAL ~ *>~" nil 0)
+    ("finally" "%<FINALLY ~" nil 0)
+    ("for" "FOR ~ DO ~ END~" nil 0)
+    ("if" "IF ~ THEN ~ END~" nil 0)
+    ("import" "IMPORT ~" nil 0)
+    ("interface" "INTERFACE ~;%n%n~%n%nEND ~." nil 0)
+    ("lock" "LOCK ~ DO ~ END~" nil 0)
+    ("loop" "LOOP ~ END~" nil 0)
+    ("methods" "METHODS ~" nil 0)
+    ("module" "MODULE ~;%n%n~%n%nBEGIN%n%>~%n%<END ~." nil 0)
+    ("object" "OBJECT ~ END~" nil 0)
+    ("overrides" "OVERRIDES ~" nil 0)
+    ("procedure" "PROCEDURE ~(~)~" nil 0)
+    ("raise" "RAISE ~" nil 0)
+    ("raises" "RAISES {~}~" nil 0)
+    ("record" "RECORD ~ END~" nil 0)
+    ("repeat" "REPEAT ~ UNTIL ~" nil 0)
+    ("return" "RETURN ~" nil 0)
+    ("reveal" "REVEAL ~" nil 0)
+    ("try" "TRY ~ EXCEPT ~ END~" nil 0)
+    ("type" "TYPE ~" nil 0)
+    ("typecase" "TYPECASE ~ OF ~ END~" nil 0)
+    ("until" "%<UNTIL ~" nil 0)
+    ("var" "VAR ~" nil 0)
+    ("while" "WHILE ~ DO ~ END~" nil 0)
+    ("with" "WITH ~ DO ~ END~" nil 0)
+    ))
+
+(define-abbrev-table 'mail-abbrevs '(
+    ))
+
+(define-abbrev-table 'objc-mode-abbrev-table '(
+    ))
+
+(define-abbrev-table 'pike-mode-abbrev-table '(
+    ))
+
+(define-abbrev-table 'shell-mode-abbrev-table '(
+    ))
+
+(define-abbrev-table 'text-mode-abbrev-table '(
+    ))
+

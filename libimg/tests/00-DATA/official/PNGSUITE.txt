@@ -1,0 +1,89 @@
+Image: PNGSUITE.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: DirectClass
+  Geometry: 256x256+0+0
+  Units: Undefined
+  Type: TrueColor
+  Endianess: Undefined
+  Colorspace: sRGB
+  Depth: 8-bit
+  Channel depth:
+    red: 8-bit
+    green: 8-bit
+    blue: 8-bit
+  Channel statistics:
+    Pixels: 65536
+    Red:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 128.92 (0.505569)
+      standard deviation: 101.593 (0.398404)
+      kurtosis: -1.60293
+      skewness: -0.0168912
+      entropy: 0.716861
+    Green:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 129.913 (0.509463)
+      standard deviation: 101.702 (0.398831)
+      kurtosis: -1.60618
+      skewness: -0.0330702
+      entropy: 0.717411
+    Blue:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 108.413 (0.42515)
+      standard deviation: 102.847 (0.403321)
+      kurtosis: -1.5616
+      skewness: 0.276138
+      entropy: 0.657159
+  Image statistics:
+    Overall:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 122.415 (0.480061)
+      standard deviation: 102.049 (0.400192)
+      kurtosis: -1.58879
+      skewness: 0.0738919
+      entropy: 0.697144
+  Rendering intent: Perceptual
+  Gamma: 0.454545
+  Chromaticity:
+    red primary: (0.64,0.33)
+    green primary: (0.3,0.6)
+    blue primary: (0.15,0.06)
+    white point: (0.3127,0.329)
+  Background color: white
+  Border color: srgb(223,223,223)
+  Matte color: grey74
+  Transparent color: black
+  Interlace: None
+  Intensity: Undefined
+  Compose: Over
+  Page geometry: 256x256+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:IHDR.bit-depth-orig: 8
+    png:IHDR.bit_depth: 8
+    png:IHDR.color-type-orig: 2
+    png:IHDR.color_type: 2 (Truecolor)
+    png:IHDR.interlace_method: 0 (Not interlaced)
+    png:IHDR.width,height: 256, 256
+    png:sRGB: intent=0 (Perceptual Intent)
+    signature: 7fcf8ac366b5882df343a58c5f4eca3736ea8a69ee3a8cfa4227603199eea2a5
+  Artifacts:
+    filename: PNGSUITE.png
+    verbose: true
+  Tainted: False
+  Filesize: 2.26KB
+  Number pixels: 65.5K
+  Pixels per second: 0B
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

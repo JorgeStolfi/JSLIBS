@@ -1,0 +1,98 @@
+# Last edited on 2014-07-29 12:46:27 by stolfilocal
+
+COMPUTING WEIGHT TABLE
+
+  # See ~/programs/c/JSLIBS/libdnaenc/tests/subsampling-weights.gawk
+
+OLD STUFF
+
+  # subsampling-weights -v balanced=1 -v variance=1.500 -v radius=10
+  #    
+  #               5  50 264 718 998 718 264  50   5            # var = 1.5000 
+  # 
+  # subsampling-weights -v balanced=1 -v variance=2.000 -v radius=10
+  # 
+  #           2  18 105 366 773 992 773 366 105  18   2        # var = 2.0000 
+  #   
+  # subsampling-weights -v balanced=1 -v variance=2.250 -v radius=15
+  # 
+  #           4  29 135 410 798 996 798 410 135  29   4        # var = 2.2503
+  #        
+  # subsampling-weights -v balanced=1 -v variance=3.000 -v radius=15         
+  #   
+  #       2  16  70 223 512 842 994 842 512 223  70  16   2    # var = 3.0014
+  #       
+  # subsampling-weights -v balanced=1 -v variance=4.000 -v radius=15
+  # 
+  #   2  11  44 136 324 603 876 992 876 603 324 136  44  11  2 # var = 4.0024
+  # 
+  # ----------------------------------------------------------------------
+  # Binomial weights
+  # INIT_WEIGHTS :=                   1   2   1                   # var = 0.5000
+  # INCR_WEIGHTS :=                   1   2   1                   # var = 0.5000
+
+  # INIT_WEIGHTS :=               1   4   6   4   1               # var = 1.0000
+  # INCR_WEIGHTS :=                   1   2   1                   # var = 0.5000
+
+  # INIT_WEIGHTS :=           1   6  15  20  15   6   1           # var = 1.5000
+  # INCR_WEIGHTS :=                   1   2   1                   # var = 0.5000
+
+  # INIT_WEIGHTS :=     1   9  36  84 126 126  84  36   9   1     # var = 2.2500
+  # INCR_WEIGHTS :=                 1   3   3   1                 # var = 0.7500
+
+  # INIT_WEIGHTS :=   1  12  66 220 495 792 924 792 495 220  66  12   1 # var = 3.0000
+  # INCR_WEIGHTS :=              1   4   6   4   1                      # var = 1.0000
+
+  # INCR_WEIGHTS :=                       1   2   1                     # var = 0.5000
+  # INCR_WEIGHTS :=                     1   3   3   1                   # var = 0.7500
+  # INCR_WEIGHTS :=                   1   4   6   4   1                 # var = 1.0000
+  # INCR_WEIGHTS :=                 1   5  10  10   5   1               # var = 1.2500
+  # INCR_WEIGHTS :=               1   6  15  20  15   6   1             # var = 1.5000
+  # INCR_WEIGHTS :=             1   7  21  35  35  21   7   1           # var = 1.7500
+  # INCR_WEIGHTS :=           1   8  28  56  70  56  28   8   1         # var = 2.0000
+  # INCR_WEIGHTS :=         1   9  36  84 126 126  84  36   9   1       # var = 2.2500
+  # INCR_WEIGHTS :=       1  10  45 120 210 252 210 120  45  10   1     # var = 2.5000
+  # INCR_WEIGHTS :=     1  11  55 165 330 462 462 330 165  55  11   1   # var = 2.7500
+  # ----------------------------------------------------------------------
+
+  # ----------------------------------------------------------------------
+  # Gaussian-like weights 
+  # INIT_WEIGHTS :=      5  50 263 715 997 715 263  50   5      # var = 1.4998 unb = -0.0010
+  # INCR_WEIGHTS :=             18 372 996 372  18              # var = 0.5000 unb = -0.1622
+  # ----------------------------------------------------------------------
+
+  # ----------------------------------------------------------------------
+  # Weights used sometime in 180_discrim
+  # INIT_WEIGHTS :=           1  8  20  24  20   8  1                   # var = ?????
+  # INCR_WEIGHTS :=              1   4   6   4   1                      # var = 1.0000
+  # ----------------------------------------------------------------------
+
+
+  # ----------------------------------------------------------------------
+  # Gaussian-based partition-of-unity weights
+  # INIT_WEIGHTS :=      5  50 263 716 996 716 263  50   5      # var = 1.5000 unb = +0.0000 
+  # INCR_WEIGHTS :=                  1   2   1                  # var = 0.5000 unb = +0.0000
+  # ----------------------------------------------------------------------
+
+  # ----------------------------------------------------------------------
+  # Gaussian-based weights by {subsampling-weights}
+  # INIT_WEIGHTS :=  2  11  44 136 324 603 876 992 876 603 324 136  44  11  2 # var = 4.0024
+  # INCR_WEIGHTS :=  2  16  70 223 512 842 994 842 512 223  70  16   2        # var = 3.0014
+  # ----------------------------------------------------------------------
+
+  # ----------------------------------------------------------------------
+  # Gaussian-based weights by {subsampling-weights}
+  # INIT_WEIGHTS := 1   5  17  50 124 263 471 714 917 996 917 714 471 263 124  50  17   5   1  # var = 5.9980
+  # INCR_WEIGHTS :=     1   4  18  62 169 367 638 890 994 890 638 367 169  62  18   4   1      # var = 4.5000
+
+  # ----------------------------------------------------------------------
+  # Uniform weights
+  # INIT_WEIGHTS :=         1   1   1   1   1       # var = 2.0000 unb = -0.2000
+  # INCR_WEIGHTS :=             1   1   1           # var = 0.6667 unb = -0.3333
+
+  # INIT_WEIGHTS :=           1   1   1         # var = 0.6667 unb = +0.0000
+  # INCR_WEIGHTS :=             1   1           # var = 0.2500 unb = +0.0000
+
+  # INIT_WEIGHTS :=             1   1           # var = 0.2500 unb = +0.0000
+  # INCR_WEIGHTS :=             1   1           # var = 0.2500 unb = +0.0000
+  # ----------------------------------------------------------------------

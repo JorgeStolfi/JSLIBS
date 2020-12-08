@@ -1,0 +1,131 @@
+# Last edited on 2009-02-19 16:37:44 by stolfi
+
+http://mathforum.org/kb/message.jspa?messageID=5969540&tstart=0
+
+# Duncan Muirhead
+
+Posts: 60
+Registered: 3/22/07
+	
+Re: Ellipse Distance / Intersection
+Posted: Oct 29, 2007 2:42 PM
+
+Distance from an ellipse to a point:
+This sort of thing is done in geodesy.
+Some notation: (sorry if I'm labouring the obvious)
+Assume the coordinates have been chosen so that the ellipse
+is (x/a)^2 + (y/b)^2 = 1, where a > b.
+The geodetic latitude of a point on an ellipse is the angle between the
+normal at the point and the x axis. It's often denoted phi, and we have
+x= nu*cos(phi), y=(1-e2)*nu*sin(phi)
+where
+b^2 = a^2*(1-e2) defines the eccentricity squared e2 of the ellipse
+nu(phi) = a/sqrt( 1-e2*sin(phi)^2)
+
+We get a coordinate system by letting a points coordinates be
+phi, h. Here phi is the foot of the normal to the ellipse on which
+the point lies and h the "height above the ellipse" ie the distance
+along the normal from the ellipse to the point.]
+So
+x = (nu+h)*cos(phi)
+y = ((1-e2)*nu + h)*sin(phi).
+The usual approach to solving finding phi, h given x,y is
+to rearrange the x,y equations to get phi - atan2( y+e2*nu, x) = 0
+and then solve this via newton raphson starting at
+phi = atan2( y, (1-e2)*x)
+Given phi we can recover h as hypot( x, y+e2*nu)-nu
+
+>>> SEEMS WRONG - JS
+----------------------------------------------------------------------
+gnuplot <<EOF
+F(phi,u,v) = phi - atan2(v + e2*a/sqrt(1 - e2*(sin(phi))**2), u)
+set xrange [0:pi/2];
+a = 100; b = 100; e2 = 1-b**2/a**2; plot F(x,10,100) with lines, F(x,100,100) with lines, F(x,100,10) with lines, F(x,1,1) with lines, (0) with lines
+a = 100; b = 10;  e2 = 1-b**2/a**2; plot F(x,100,100) with lines, (0) with lines
+a = 500; b = 1;   e2 = 1-b**2/a**2; plot F(x,100,100) with lines, (0) with lines
+
+
+----------------------------------------------------------------------
+Distance from a Point to an Ellipse in 2D
+David Eberly
+Geometric Tools, LLC
+http://www.geometrictools.com/
+Copyright c
+ 1998-2008. All Rights Reserved.
+Created: January 17, 2004
+Last Modified: March 1, 2008
+----------------------------------------------------------------------
+
+Main parameters:
+
+A(a,b,u,v) = (b*v)/(a*u);          
+B(a,b,u,v) = (a - b)*(a + b)/(a*u);
+
+Assuming {a >= b > 0, u > 0, v >= 0} , the ranges of {A} and {B} are {[0 : +oo)}
+Note that {B} does not depend on {v}, and {A} is linear in {v}. 
+
+Polynomial form: using the rational parametric equation 
+for the ellipse
+
+  RE(t) = (a*cos(th), b*sin(th)) 
+  
+where 
+
+  cos(th) = (1-t**2)/(1+t**2)
+
+  sin(th) = 2*t/(1+t**2)
+
+with {t} in {[0 : +1)}.
+
+The closest point is {RE(t)} such that {(RE(t) - (u,v)) \cdot RE'(t) == 0}.
+Expanding this equation and multiplying by {(1+t**2)**2} we get
+the polynomial equation {P(a,b,u,v,t) == 0} where
+
+  P(a,b,u,v,t) = PR(A(a,b,u,v),B(a,b,u,v),t) 
+
+  PR(A,B,t) = A*(1+t**2)*(1-t**2) - 2*t*(2 - (1+B)*(1-t**2)) 
+
+The equation has a single root in {[0:1]}, with {PR(A,B,0) == A > 0}
+and {PR(A,B,1) == -4 < 0}.  The funtion {P} is not always monotonic in {(0:1)},
+but is concave since
+
+  P''(A,B,t) = -12*t*(A*t + (1+B)) < 0
+  
+Therefore Newton-Raphson converges with {t0 = 1}.
+However, when {A,B} tend to {0,1} the equation 
+tends to have a double root at {t == 0}, 
+so convergence becomes linear. 
+
+Plotting:
+
+  gnuplot
+  A(a,b,u,v) = (b*v)/(a*u)          
+  B(a,b,u,v) = (a - b)*(a + b)/(a*u)
+  PR(A,B,t) = A*(1+t**2)*(1-t**2) - 2*t*((B+1)*t**2 - (B-1)) 
+  P(a,b,u,v,t) = PR(A(a,b,u,v),B(a,b,u,v),t) 
+  set xrange [-0.0001:+1.0001]
+  
+  AA=0.001; set yrange [-3.0:+0.2+AA]; plot PR(AA, 0.001, x), PR(AA, 0.01, x) with lines, PR(AA, 0.1, x) with lines,  PR(AA, 0.5, x) with lines,  PR(AA, 1.0, x) with lines,  PR(AA, 1.5, x) with lines,  PR(AA, 2.0, x),  PR(AA, 10.0, x),  PR(AA, 100.0, x) with lines, (0) with lines
+  
+  
+----------------------------------------------------------------------
+Trig form: we start from the trigonometric parametric equation 
+for the ellipse
+
+  TE(th) = (a*cos(th), b*sin(th)) 
+  
+for {th} in {[0 : pi/2)}.
+
+The closest point is {TE(t)} such that 
+
+  (TE(t) - (u,v)) \cdot TE'(t) == 0
+  
+Expanding we get the trigonometric equation 
+
+  T(a,b,u,v,th) == 0
+  
+where
+
+  T(a,b,u,v,th) = TR(A(a,b,u,v),B(a,b,u,v),th)
+
+  TR(A,B,th) = A*cos(th) - sin(th)*(2 - (1 + B)*cos(th))

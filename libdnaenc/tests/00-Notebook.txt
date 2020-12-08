@@ -1,0 +1,31 @@
+# Last edited on 2014-07-29 03:04:38 by stolfilocal
+
+COMPUTING BOUNDED GAUSSIAN-LIKE FILTER KERNELS
+
+  # Trying to compute Gaussian-like filters with specified variances.
+  # The parameters below were obtained by trial and error to give
+  # variances as close as possible to 1.5000, 2.0000, 3.0000, etc.
+
+      5:01.5015:wg015 \
+      6:02.0023:wg020 \
+      7:03.0014:wg030 \
+      8:04.0039:wg040 \
+      9:04.5000:wg045 \
+     10:06.0055:wg060 \
+     15:12.0000:wg120 \
+     21:24.0155:wg240 \
+     30:47.9472:wg480 \
+
+  for rv in \
+     12:08.0075:wg080 \
+     18:15.9836:wg160 \
+   ; do
+     fld=( `echo "${rv}" | tr ':' ' '` )
+     rad="${fld[0]}"
+     rbig="$(( ${rad} + 2 ))"
+     var="${fld[1]}"
+     name="${fld[2]}"
+     echo "computing ${name}.txt : r = ${rbig} var = ${var}" 1>&2
+     subsampling-weights.gawk -v radius="${rbig}" -v variance="${var}" -v balanced=1 > ${name}.txt
+     grep 'r =' ${name}.txt
+   done

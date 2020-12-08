@@ -1,0 +1,47 @@
+# Last edited on 2012-01-16 01:44:57 by stolfilocal
+
+HANDLING GRADIENT NOISE
+
+  Tried hard to find a good approximation for the 
+  distribution of the azimuth of (x,y) when 
+  (x,y) follow a symmetric 2D Gaussian distribution 
+  with mean (0,d) and deviation 1 in each coordinate.
+
+  See compute-polar-gaussian.gawk to compute the true 
+  distribution (by line integral along each ray).
+
+  See plot-polar-gaussian.sh to plot the true distribution
+  and some candidate approximation formulas.
+
+  Eventually gave up and just reduced the weight of each 
+  gradient by the factor {g^2/(g^2 + n^2)} where
+  {g} is the gradient modulus and {n} is the specified
+  noise deviation.
+  
+GENERATING THE TEST FILES
+
+  Raw files created with gimp (centered between pixels):
+
+    in/RAW/janus-big.png 400x400
+    in/RAW/jdiag-big.png 400x400
+    in/RAW/odots-big.png 400x400
+    in/RAW/sqres-big.png 400x400
+    in/RAW/trigs-big.png 400x400
+
+    in/RAW/white-msk.png 400x400
+    
+  Raw files created with make_bullseye (centered between pixels):
+
+    in/RAW/bueye-big.png 512x512
+    
+  Raw files created with make_test_slope_maps (centered at pixel)
+
+    in/RAW/bdots-big.png 513x513
+    in/RAW/bpent-big.png 513x513
+    in/RAW/btria-big.png 513x513
+    in/RAW/ptpyr-big.png 513x513
+    in/RAW/wavec-big.png 513x513
+
+  Reducing them to 100x100:
+  
+    make-input-images.sh

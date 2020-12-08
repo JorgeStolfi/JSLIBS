@@ -1,0 +1,66 @@
+Image: BASI0G01.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: PseudoClass
+  Geometry: 32x32+0+0
+  Units: Undefined
+  Type: Bilevel
+  Base type: Grayscale
+  Endianess: Undefined
+  Colorspace: Gray
+  Depth: 8/1-bit
+  Channel depth:
+    gray: 1-bit
+  Channel statistics:
+    Pixels: 1024
+    Gray:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 124.512 (0.488281)
+      standard deviation: 127.465 (0.499863)
+      kurtosis: -1.9978
+      skewness: 0.0468879
+      entropy: 0.999604
+  Colors: 2
+  Histogram:
+       524: (  0,  0,  0) #000000 gray(0)
+       500: (255,255,255) #FFFFFF gray(255)
+  Colormap entries: 2
+  Colormap:
+         0: (  0,  0,  0) #000000 gray(0)
+         1: (255,255,255) #FFFFFF gray(255)
+  Rendering intent: Undefined
+  Gamma: 1
+  Background color: gray(255)
+  Border color: gray(223)
+  Matte color: gray(189)
+  Transparent color: gray(0)
+  Interlace: PNG
+  Intensity: Rec709Luminance
+  Compose: Over
+  Page geometry: 32x32+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=1 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 1
+    png:IHDR.bit_depth: 1
+    png:IHDR.color-type-orig: 0
+    png:IHDR.color_type: 0 (Grayscale)
+    png:IHDR.interlace_method: 1 (Adam7 method)
+    png:IHDR.width,height: 32, 32
+    signature: fc4d2ed3385658f4b1bedea797f74e92058ab3163c8a09b3500d1d7e0fbd00ac
+  Artifacts:
+    filename: BASI0G01.png
+    verbose: true
+  Tainted: False
+  Filesize: 217B
+  Number pixels: 1.02K
+  Pixels per second: 1.024EB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

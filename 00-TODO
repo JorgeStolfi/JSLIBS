@@ -1,0 +1,12 @@
+# Last edited on 2005-02-15 02:08:05 by stolfi
+
+??? upgrade ia.{h,c}, aa.{h,c}, flt.{h,c} to double.
+??? change ia.{h,c} to use interval.h as the data type.
+??? unite libia/box.{h,c} with libjs/box.{h,c}.
+??? get rid of ioprotos.h.
+??? fix ppv*.{h,c} to use indexing.h.
+??? fix dg*.{h,c} to use indexing.h.
+??? fix bz*.{h,c} to use indexing.h.
+??? Generalize ix_diagonal to arrays where {z[j] > z[i]}.
+
+

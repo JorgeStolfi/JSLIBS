@@ -1,0 +1,23 @@
+#! /bin/csh -f
+
+set usage = "$0 INTEGRATOR SECONDS"
+
+set intg = "$1"; shift
+set secs = "$1"; shift;
+
+gnuplot <<EOF
+set terminal X11
+plot  \
+  "out/${intg}-step.plot" using 1:2 title "quadr" with points, \
+  "out/${intg}-step.plot" using 1:3 title "quart" with points, \
+  "out/${intg}-step.plot" using 1:4 title "quint" with points, \
+  "out/${intg}-step.plot" using 1:5 title "sinus" with points, \
+  "out/${intg}-step.plot" using 1:6 title "gauss" with points, \
+  "out/${intg}-step.plot" using 1:7 title "twang" with points, \
+  "out/${intg}-step.plot" using 1:8 title "hyper" with points, \
+  "out/${intg}-step.plot" using 1:9 title "notch" with points
+pause $secs
+quit
+EOF
+
+exit 0

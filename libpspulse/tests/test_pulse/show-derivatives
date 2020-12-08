@@ -1,0 +1,30 @@
+#! /bin/bash
+# Last edited on 2009-08-22 18:46:53 by stolfi
+
+usage="${0##*/} MAXORDER PLTFILE"
+
+if [ $# -ne 2 ]; then
+  echo "usage: ${usage}"; exit 1
+fi
+
+maxorder="$1"; shift
+pltfile="$1"; shift
+
+name=${pltfile%.*}
+tmp="/tmp/$$"
+
+pics=()
+for k in `count 0 ${maxorder}` ; do 
+  out="${tmp}-${k}.png"
+  plot-one-derivative ${k} ${pltfile} > ${tmp}-${k}.png
+  pics=( ${pics[@]} ${out} )
+done
+
+convert -append ${pics[@]} -noop  ${name}.png
+/bin/rm -f ${pics[@]}
+
+if [[ -s ${name}.png ]]; then
+  display ${name}.png
+else
+  echo "** ${name}.png does not exist or has zero size" 1>&2; exit 1
+fi

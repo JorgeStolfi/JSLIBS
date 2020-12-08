@@ -1,0 +1,11 @@
+#! /bin/csh -f
+# Last edited on 2009-02-10 19:09:12 by stolfi
+
+set problems = ( `ls -tr *-true.plot | sed -e 's/-true.plot//g'` )
+
+foreach prbl ( ${problems} )
+  ./show-intg-plot ${prbl} rkfo4 15
+  ./show-intg-plot ${prbl} rkfo2 15
+  ./show-intg-plot ${prbl} euler 15
+end
+

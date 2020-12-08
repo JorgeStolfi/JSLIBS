@@ -1,0 +1,15 @@
+#! /bin/csh -f
+# Last edited on 2007-12-26 20:37:27 by stolfi
+
+pnmift \
+  -seedPixels unifm-2-seeds.txt \
+  -radius 1.5 \
+  -costFunction maxdiff \
+  -output unifm-2 \
+  -plot unifm-2.eps \
+  -roots unifm-2-roots.pgm \
+  -spread unifm-2-spread.pgm \
+  -maxCostValue 1 \
+  -reverse \
+  -verbose \
+  unifm.pgm

@@ -1,0 +1,19 @@
+#! /bin/csh -f
+# Last edited on 2003-09-01 21:01:11 by stolfi
+
+set usage = "$0 PROBLEM INTEGRATOR SECONDS"
+
+set prbl = "$1"; shift
+set intg = "$1"; shift
+set secs = "$1"; shift;
+
+gnuplot <<EOF
+set terminal X11
+plot \
+  "${prbl}-${intg}-merr.plot" using 1:2 with points, \
+  "${prbl}-${intg}-eerr.plot" using 1:2 with points
+pause $secs
+quit
+EOF
+
+exit 0

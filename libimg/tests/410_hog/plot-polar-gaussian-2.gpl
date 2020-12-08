@@ -1,0 +1,17 @@
+# Last edited on 2012-01-10 01:49:42 by stolfilocal
+
+  set xlabel "exp(-0.5*(dst(a,1,1,m)/p)**2)"
+  set key left
+
+  unset logscale x; set xrange [-0.01:1.01]
+  unset logscale y; set yrange [-0.1:*]
+  # set logscale x; set xrange [0.0001:10.0]
+  # set logscale y; set yrange [0.0001:*]
+  plot \
+    dfile using (exp(-0.5*(def(column(2),d0,g0,h0)/p0)**2)):(column(3+0)/e0) with points title "d0" pt 7 ps 0.5 lc rgb '#ff0000', \
+    ""    using (exp(-0.5*(def(column(2),d1,g1,h1)/p1)**2)):(column(3+1)/e1) with points title "d1" pt 7 ps 0.5 lc rgb '#883300', \
+    ""    using (exp(-0.5*(def(column(2),d2,g2,h2)/p2)**2)):(column(3+2)/e2) with points title "d2" pt 7 ps 0.5 lc rgb '#007700', \
+    ""    using (exp(-0.5*(def(column(2),d3,g3,h3)/p3)**2)):(column(3+3)/e3) with points title "d3" pt 7 ps 0.5 lc rgb '#0055ff', \
+    ""    using (exp(-0.5*(def(column(2),d4,g4,h4)/p4)**2)):(column(3+4)/e4) with points title "d4" pt 7 ps 0.5 lc rgb '#7700ff', \
+    ""    using (exp(-0.5*(def(column(2),d5,g5,h5)/p5)**2)):(column(3+5)/e5) with points title "d5" pt 7 ps 0.5 lc rgb '#dd0088', \
+    (x) with lines

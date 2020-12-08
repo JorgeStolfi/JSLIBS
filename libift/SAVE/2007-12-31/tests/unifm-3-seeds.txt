@@ -1,0 +1,4 @@
+# two seeds 
+# Last edited on 2001-09-10 19:16:01 by stolfi
+( 48 64) = 1
+( 80 64) = 2

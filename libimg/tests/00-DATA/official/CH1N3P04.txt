@@ -1,0 +1,124 @@
+Image: CH1N3P04.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: PseudoClass
+  Geometry: 32x32+0+0
+  Units: Undefined
+  Type: Palette
+  Endianess: Undefined
+  Colorspace: sRGB
+  Depth: 8/4-bit
+  Channel depth:
+    red: 4-bit
+    green: 4-bit
+    blue: 4-bit
+  Channel statistics:
+    Pixels: 1024
+    Red:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 69.5938 (0.272917)
+      standard deviation: 94.8768 (0.372066)
+      kurtosis: -0.627586
+      skewness: 1.01258
+      entropy: 0.802659
+    Green:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 179.031 (0.702083)
+      standard deviation: 100.302 (0.393342)
+      kurtosis: -0.936584
+      skewness: -0.847948
+      entropy: 0.721252
+    Blue:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 137.062 (0.5375)
+      standard deviation: 112.359 (0.440624)
+      kurtosis: -1.74505
+      skewness: -0.131411
+      entropy: 0.805687
+  Image statistics:
+    Overall:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 128.562 (0.504167)
+      standard deviation: 102.773 (0.40303)
+      kurtosis: -1.25609
+      skewness: -0.000139227
+      entropy: 0.776533
+  Colors: 15
+  Histogram:
+        80: (  0, 68,255) #0044FF srgb(0,68,255)
+        96: (  0,153,255) #0099FF srgb(0,153,255)
+       112: (  0,255, 68) #00FF44 srgb(0,255,68)
+       128: (  0,255,153) #00FF99 srgb(0,255,153)
+       112: (  0,255,255) #00FFFF cyan
+        64: ( 34,  0,255) #2200FF srgb(34,0,255)
+        96: ( 34,255,  0) #22FF00 srgb(34,255,0)
+        80: (119,255,  0) #77FF00 srgb(119,255,0)
+        48: (136,  0,255) #8800FF srgb(136,0,255)
+        32: (221,  0,255) #DD00FF srgb(221,0,255)
+        64: (221,255,  0) #DDFF00 srgb(221,255,0)
+        16: (255,  0,  0) #FF0000 red
+        16: (255,  0,187) #FF00BB srgb(255,0,187)
+        32: (255,102,  0) #FF6600 srgb(255,102,0)
+        48: (255,187,  0) #FFBB00 srgb(255,187,0)
+  Colormap entries: 15
+  Colormap:
+         0: ( 34,  0,255) #2200FF srgb(34,0,255)
+         1: (  0,255,255) #00FFFF cyan
+         2: (136,  0,255) #8800FF srgb(136,0,255)
+         3: ( 34,255,  0) #22FF00 srgb(34,255,0)
+         4: (  0,153,255) #0099FF srgb(0,153,255)
+         5: (255,102,  0) #FF6600 srgb(255,102,0)
+         6: (221,  0,255) #DD00FF srgb(221,0,255)
+         7: (119,255,  0) #77FF00 srgb(119,255,0)
+         8: (255,  0,  0) #FF0000 red
+         9: (  0,255,153) #00FF99 srgb(0,255,153)
+        10: (221,255,  0) #DDFF00 srgb(221,255,0)
+        11: (255,  0,187) #FF00BB srgb(255,0,187)
+        12: (255,187,  0) #FFBB00 srgb(255,187,0)
+        13: (  0, 68,255) #0044FF srgb(0,68,255)
+        14: (  0,255, 68) #00FF44 srgb(0,255,68)
+  Rendering intent: Perceptual
+  Gamma: 1
+  Chromaticity:
+    red primary: (0.64,0.33)
+    green primary: (0.3,0.6)
+    blue primary: (0.15,0.06)
+    white point: (0.3127,0.329)
+  Background color: white
+  Border color: srgb(223,223,223)
+  Matte color: grey74
+  Transparent color: black
+  Interlace: None
+  Intensity: Undefined
+  Compose: Over
+  Page geometry: 32x32+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=1 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 4
+    png:IHDR.bit_depth: 4
+    png:IHDR.color-type-orig: 3
+    png:IHDR.color_type: 3 (Indexed)
+    png:IHDR.interlace_method: 0 (Not interlaced)
+    png:IHDR.width,height: 32, 32
+    png:PLTE.number_colors: 15
+    signature: 93302575430e4e81bab5b40e7c6ba066762f14595859f08a1c5d02401605cacc
+  Artifacts:
+    filename: CH1N3P04.png
+    verbose: true
+  Tainted: False
+  Filesize: 258B
+  Number pixels: 1.02K
+  Pixels per second: 1.024EB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

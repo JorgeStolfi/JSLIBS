@@ -1,0 +1,38 @@
+
+
+A LIBRARY FOR CREATING POSTSCRIPT FILES
+
+SUMMARY
+  
+  This package contains various tools for creating Postscript files,
+  with emphasis on graphics as opposed to text.  Modules:
+  
+    pswr.h, pswr.c  
+
+      The basic module. Still somewhat limited (no tilted text, no
+      ellipses, no transformations, equal scales, etc.) A complete
+      rewrite is in the works elsewhere (see the "libpsplot" package).
+    
+    pswr_def.h, pswr_aux.h
+
+      Internal definitions for "pswr". 
+    
+    pswr_vis.h, pswr_vis.c
+
+      A window clipping module used internally by "pswr". 
+
+    pswr_iso.h, pswr_iso.c 
+
+      An extension of "pswr". Contains additional tools for generating
+      isoline and color-band plots of bivariate functions.
+
+    pswr_color.h, pswr_color.c 
+
+      Tools for generating color scales suitable for printing.
+
+    ps.h, ps.c
+
+      An older version of "pswr", with a clumsier and even more limited
+      interface. It ought to be retired but it is still used by many
+      programs. At present (sep/2003) it is just a thin layer on top of
+      "pswr".

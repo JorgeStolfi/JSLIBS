@@ -1,0 +1,22 @@
+#! /bin/csh -f
+# Last edited on 2009-02-10 19:09:39 by stolfi
+
+set usage = "$0 PROBLEM INTEGRATOR SECONDS"
+
+set prbl = "$1"; shift
+set intg = "$1"; shift
+set secs = "$1"; shift;
+
+gnuplot <<EOF
+set terminal X11
+plot \
+  "out/${prbl}-true.plot" with lines, \
+  "out/${prbl}-${intg}-4.plot" with points, \
+  "out/${prbl}-${intg}-3.plot" with points, \
+  "out/${prbl}-${intg}-2.plot" with points, \
+  "out/${prbl}-${intg}-1.plot" with points
+pause $secs
+quit
+EOF
+
+exit 0

@@ -1,0 +1,4 @@
+# Last edited on 2014-07-29 01:06:54 by stolfilocal
+# r = 4  var = 2.000
+
+1 8 28 56 70 56 28 8 1

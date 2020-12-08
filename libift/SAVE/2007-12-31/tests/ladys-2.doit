@@ -1,0 +1,13 @@
+#! /bin/csh -f
+# Last edited on 2007-12-26 20:37:03 by stolfi
+
+pnmift \
+  -radius 1.5 \
+  -costFunction monoroot \
+  -output ladys-2 \
+  -plot ladys-2.eps \
+  -roots ladys-2-roots.pgm \
+  -spread ladys-2-spread.pgm \
+  -verbose \
+  ladys.pgm
+

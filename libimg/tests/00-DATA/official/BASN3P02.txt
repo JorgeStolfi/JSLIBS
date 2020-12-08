@@ -1,0 +1,102 @@
+Image: BASN3P02.png
+  Format: PNG (Portable Network Graphics)
+  Mime type: image/png
+  Class: PseudoClass
+  Geometry: 32x32+0+0
+  Units: Undefined
+  Type: Palette
+  Endianess: Undefined
+  Colorspace: sRGB
+  Depth: 8/1-bit
+  Channel depth:
+    red: 1-bit
+    green: 1-bit
+    blue: 1-bit
+  Channel statistics:
+    Pixels: 1024
+    Red:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 127.5 (0.5)
+      standard deviation: 127.5 (0.5)
+      kurtosis: -2
+      skewness: 1.33233e-14
+      entropy: 1
+    Green:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 127.5 (0.5)
+      standard deviation: 127.5 (0.5)
+      kurtosis: -2
+      skewness: 1.33233e-14
+      entropy: 1
+    Blue:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 63.75 (0.25)
+      standard deviation: 110.418 (0.433013)
+      kurtosis: -0.666667
+      skewness: 1.1547
+      entropy: 0.811278
+  Image statistics:
+    Overall:
+      min: 0 (0)
+      max: 255 (1)
+      mean: 106.25 (0.416667)
+      standard deviation: 122.072 (0.478714)
+      kurtosis: -1.74656
+      skewness: 0.369256
+      entropy: 0.937093
+  Colors: 4
+  Histogram:
+       256: (  0,  0,255) #0000FF blue
+       256: (  0,255,  0) #00FF00 lime
+       256: (255,  0,  0) #FF0000 red
+       256: (255,255,  0) #FFFF00 yellow
+  Colormap entries: 4
+  Colormap:
+         0: (  0,255,  0) #00FF00 lime
+         1: (255,  0,  0) #FF0000 red
+         2: (255,255,  0) #FFFF00 yellow
+         3: (  0,  0,255) #0000FF blue
+  Rendering intent: Perceptual
+  Gamma: 1
+  Chromaticity:
+    red primary: (0.64,0.33)
+    green primary: (0.3,0.6)
+    blue primary: (0.15,0.06)
+    white point: (0.3127,0.329)
+  Background color: white
+  Border color: srgb(223,223,223)
+  Matte color: grey74
+  Transparent color: black
+  Interlace: None
+  Intensity: Undefined
+  Compose: Over
+  Page geometry: 32x32+0+0
+  Dispose: Undefined
+  Iterations: 0
+  Compression: Zip
+  Orientation: Undefined
+  Properties:
+    date:create: 2017-06-17T15:13:28-03:00
+    date:modify: 2017-06-15T22:08:03-03:00
+    png:gAMA: gamma=1 (See Gamma, above)
+    png:IHDR.bit-depth-orig: 2
+    png:IHDR.bit_depth: 2
+    png:IHDR.color-type-orig: 3
+    png:IHDR.color_type: 3 (Indexed)
+    png:IHDR.interlace_method: 0 (Not interlaced)
+    png:IHDR.width,height: 32, 32
+    png:PLTE.number_colors: 4
+    signature: 295fe76227f9704c45caa157576ae49e703ad9d1ebbd8c3c7cf65027e4f77a3a
+  Artifacts:
+    filename: BASN3P02.png
+    verbose: true
+  Tainted: False
+  Filesize: 146B
+  Number pixels: 1.02K
+  Pixels per second: 1.024EB
+  User time: 0.000u
+  Elapsed time: 0:01.000
+  Version: ImageMagick 6.9.3-0 Q16 x86_64 2017-03-11 http://www.imagemagick.org

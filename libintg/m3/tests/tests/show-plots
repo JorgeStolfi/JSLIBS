@@ -1,0 +1,8 @@
+#! /bin/csh -f
+
+foreach f ( `ls -tr *-true.plot` )
+set prbl = "`echo $f | sed -e 's/-true.plot//g'`"
+show-plot ${prbl} rkfo4 15
+show-plot ${prbl} euler 15
+end
+

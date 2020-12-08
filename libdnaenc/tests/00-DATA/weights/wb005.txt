@@ -1,0 +1,4 @@
+# Last edited on 2014-07-29 01:07:02 by stolfilocal
+# r = 1  var = 0.5000
+
+1 2 1 

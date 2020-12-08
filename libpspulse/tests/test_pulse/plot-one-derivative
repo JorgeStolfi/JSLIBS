@@ -1,0 +1,41 @@
+#! /bin/bash
+# Last edited on 2009-08-22 18:35:23 by stolfi
+
+usage="${0##*/} ORDER PLTFILE"
+
+if [ $# -ne 2 ]; then
+  echo "usage: ${usage}"; exit 1
+fi
+
+order="$1"; shift
+pltfile="$1"; shift
+
+name=${pltfile%.*}
+
+cola=$((2 * order + 2))
+coln=$((2 * order + 3))
+echo "plotting columns ${cola} and ${coln}" 1>&2
+if [ ${order} -eq 0 ]; then
+  titset='set title "'"${name}"'"'
+  key="value"
+else
+  titset=''
+  key="D${order}"
+fi
+
+gnuplot -background white <<EOF
+set term png small \
+  xffffff x000000 x404040 \
+  xff0000 xcc5500 x448800 x009900 x008888 x0033ff x7700ff x990077
+  
+set size 1,0.33
+set output
+${titset}
+
+plot \
+  "${pltfile}" using 1:${cola}  title "${key}(A)" with linespoints, \
+  "${pltfile}" using 1:${coln}  title "${key}(N)" with linespoints, \
+  (abs(x)>0.02 ? 0/0 : 0.1) notitle with lines linetype 0, \
+  (abs(x)>0.02 ? 0/0 : -0.1) notitle with lines linetype 0
+
+EOF
