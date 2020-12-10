@@ -1,5 +1,5 @@
 /* See {nmsim_elem_net_sim.h} */
-/* Last edited on 2020-12-06 19:21:34 by jstolfi */
+/* Last edited on 2020-12-10 01:46:33 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -195,9 +195,9 @@ void nmsim_elem_net_sim_compute_tot_inputs
         nmsim_elem_synapse_t *syn = &(enet->syn.e[kse]);
         /* Get indices of its neurons: */ 
         nmsim_elem_neuron_ix_t ine_pre = syn->ine_pre; /* Pre-synaptic neuron. */
-        nmsim_elem_neuron_ix_t ine_pos = syn->ine_pos; /* Post-synaptic neuron. */
         if (X[ine_pre])
           { /* The pre-synaptic neuron fired; accumulate its pulse. */
+            nmsim_elem_neuron_ix_t ine_pos = syn->ine_pos; /* Post-synaptic neuron. */
             double dV = H[ine_pre] * syn->W;
             J[ine_pos] += dV;
           }
