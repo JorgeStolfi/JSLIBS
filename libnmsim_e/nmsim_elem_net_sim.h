@@ -2,7 +2,7 @@
 #define nmsim_elem_net_sim_H
  
 /* Simulation of neuron-level networks of Galves-Löcherbach neurons. */
-/* Last edited on 2020-12-06 19:23:13 by jstolfi */
+/* Last edited on 2020-12-09 22:25:32 by jstolfi */
 
 #define _GNU_SOURCE
 
@@ -33,9 +33,9 @@ void nmsim_elem_net_sim_step
     firing age of each neuron {i} at time {t}, for {i} in {0..nne-1};
     which defines its state at that time.
     
-    On input, {M[i]} and {H[i]} must be the modulators of the output synaptic strength 
-    and of the recharge factor of neuron {i} at time {t}, respectively, as determined from its 
-    firing age {age[i]}.
+    On input, {M[i]} and {H[i]} must be the modulators of the recharge
+    factor and of the output synaptic strength of neuron {i} at time
+    {t}, respectively, as determined from its firing age {age[i]}.
 
     On input, {I[i]} must be the extra voltage increment that will be
     imposed on the potential of neuron {i} by external sources, in

@@ -2,7 +2,7 @@
 #define nmsim_elem_synapse_H
  
 /* Synapses in an element-level network. */
-/* Last edited on 2020-12-06 18:57:35 by jstolfi */
+/* Last edited on 2020-12-09 22:46:46 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -20,7 +20,7 @@ typedef struct nmsim_elem_synapse_t
   { nmsim_group_synapse_ix_t isg;      /* Index of synaptic group. */
     nmsim_elem_neuron_ix_t ine_pre;    /* Index of pre-synaptic neuron. */
     nmsim_elem_neuron_ix_t ine_pos;    /* Index of post-synaptic neuron. */
-    double W;                          /* Resting weight of synapse (mV). */
+    float W;                           /* Resting weight (mV). A {float} to save mem. */
   } nmsim_elem_synapse_t;
   /* Specifies a chemical synapse.  See {nmsim_elem_synapse_INFO}. */
   

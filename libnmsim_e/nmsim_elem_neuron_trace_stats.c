@@ -1,5 +1,5 @@
 /* See {nmsim_elem_neuron_trace_stats.h} */
-/* Last edited on 2020-12-07 16:15:34 by jstolfi */
+/* Last edited on 2020-12-09 00:21:58 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -191,7 +191,7 @@ void nmsim_elem_neuron_trace_stats_compute
         if (S->nvs < 2)
           { S->dev = NAN; }
         else
-          { S->dev /= ((double)(S->nvs - 1)); }
+          { S->dev = sqrt(S->dev/((double)(S->nvs - 1))); }
       }
       
   }
