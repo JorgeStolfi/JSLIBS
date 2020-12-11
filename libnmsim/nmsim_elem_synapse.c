@@ -1,5 +1,5 @@
 /* See {nmsim_elem_synapse.h} */
-/* Last edited on 2020-12-09 22:42:39 by jstolfi */
+/* Last edited on 2020-12-10 14:32:43 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -9,7 +9,6 @@
 #include <math.h>
 
 #include <bool.h>
-#include <vec.h>
 #include <affirm.h>
 #include <jsrandom.h>
 
@@ -102,4 +101,3 @@ void nmsim_elem_synapse_compare(nmsim_elem_synapse_t *syn_read, nmsim_elem_synap
     nmsim_compare_double_param("W",  syn_read->W, sin_orig->W, nmsim_write_KW_PREC, TRUE, FALSE);
   }
 
-vec_typeimpl(nmsim_elem_synapse_vec_t, nmsim_elem_synapse_vec, nmsim_elem_synapse_t);

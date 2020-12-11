@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} write, read, and compare procs"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2019-05-28 15:23:08 by jstolfi */ 
+/* Last edited on 2020-12-11 12:52:12 by jstolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -49,11 +49,23 @@ void test_write_read_compare(FILE *rd, FILE *wr, double prec, int32_t phase);
     writes to {wr} the values that were read from {rd}. */
   
 void test_int64(FILE *rd, FILE *wr, int32_t phase, int64_t v);
-  /* Same as {test_write_read_compare}, but uses the value {v}. */
+  /* Same as {test_write_read_compare}, but for the single value {v}. */
   
 void test_double(FILE *rd, FILE *wr, int32_t phase, double v, double prec);
-  /* Same as {test_write_read_compare}, but uses the value {v}
+  /* Same as {test_write_read_compare}, but for the single value {v}
     with all eight {sgn,fudge_0,fudge_1} options. */
+
+void test_double_case
+  ( FILE *rd, FILE *wr, 
+    int32_t phase,
+    double v,
+    double prec,
+    bool_t sgn,
+    bool_t fudge_0,
+    bool_t fudge_1
+  );
+  /* Same as {test_double}, but for a specific combination
+    of {sgn,fudge_0,fudge_1} options. */
 
 int main(int argc, char **argv);
 
@@ -159,29 +171,7 @@ void test_double(FILE *rd, FILE *wr, int32_t phase, double v, double prec)
     for (int sgn = 0; sgn <= 1; sgn++)
       { for (int fudge_0 = 0; fudge_0 <= 1; fudge_0++)
           { for (int fudge_1 = 0; fudge_1 <= 1; fudge_1++)
-              {
-                char *lab = NULL; /* Label for compare (the value in "E" format). */
-                asprintf(&lab, "%.17e(%d,%d,%d)", v, sgn, fudge_0, fudge_1);
-                
-                if (phase == 0)
-                  { fprintf(wr, "   ");
-                    nmsim_write_double_value(wr, v, prec, (sgn != 0), (fudge_0 != 0), (fudge_1 != 0));
-                    fprintf(wr, "\n");
-                  }
-                else if (phase == 1)
-                  { double_t v_read = nmsim_read_double_value(rd, lab, -INF, +INF);
-                    fget_eol(rd); 
-                    /* Error should be less than {prec}, but fudging may double it: */
-                    double cmp_prec = prec; /* Precision to use in comparisons. */
-                    if (fudge_0 && (fabs(v) <= prec)) { cmp_prec = 2*prec; }
-                    if (fudge_1 && (fabs(1 - fabs(v)) <= prec)) { cmp_prec = 2*prec; }
-                    nmsim_compare_double_param(lab, v_read, v, cmp_prec, (fudge_0 != 0), (fudge_1 != 0));
-                    fprintf(wr, "   ");
-                    nmsim_write_double_value(wr, v_read, prec, (sgn != 0), (fudge_0 != 0), (fudge_1 != 0));
-                    fprintf(wr, "\n");
-                  }
-                free(lab);
-              }
+              { test_double_case(rd, wr, phase, v, prec, (sgn != 0), (fudge_0 != 0), (fudge_1 != 0)); }
           }
       }
       if (phase == 0)
@@ -194,3 +184,45 @@ void test_double(FILE *rd, FILE *wr, int32_t phase, double v, double prec)
         }
   }
 
+void test_double_case
+  ( FILE *rd, FILE *wr, 
+    int32_t phase,
+    double v,
+    double prec,
+    bool_t sgn,
+    bool_t fudge_0,
+    bool_t fudge_1
+  )
+  {
+    char *lab = NULL; /* Label for compare (the value in "E" format). */
+    asprintf(&lab, "%.17e(%d,%.12f,%c,%c,%c)", v, phase, prec, "FT"[sgn], "FT"[fudge_0], "FT"[fudge_1]);
+
+    if (phase == 0)
+      { fprintf(wr, "   ");
+        nmsim_write_double_value(wr, v, prec, sgn, fudge_0, fudge_1);
+        fprintf(wr, "\n");
+      }
+    else if (phase == 1)
+      { double_t v_read = nmsim_read_double_value(rd, lab, -INF, +INF);
+        fget_eol(rd); 
+        /* Error should be less than {prec}, but fudging may double it: */
+        double cmp_prec = prec; /* Precision to use in comparisons. */
+        if (fudge_0 && (fabs(v) <= prec)) 
+          { if (v == 0.0) 
+              { cmp_prec = 0; }
+            else
+              { cmp_prec = 2*prec; }
+          }
+        if (fudge_1 && (fabs(1.0 - fabs(v)) <= prec)) 
+          { if (fabs(v) == 1.0) 
+              { cmp_prec = 0.0; }
+            else
+              { cmp_prec = 2*prec; }
+          }
+        nmsim_compare_double_param(lab, v_read, v, cmp_prec, fudge_0, fudge_1);
+        fprintf(wr, "   ");
+        nmsim_write_double_value(wr, v_read, prec, sgn, fudge_0, fudge_1);
+        fprintf(wr, "\n");
+      }
+    free(lab);
+  }

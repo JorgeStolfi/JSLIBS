@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} individual synapse attributes"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2019-04-09 11:36:25 by jstolfi */ 
+/* Last edited on 2020-12-11 18:59:10 by jstolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -47,14 +47,24 @@ int main(int argc, char **argv)
   { 
     nmsim_group_synapse_count_t nsg = 50;  /* Assumed number of synapse classes. */
     nmsim_elem_neuron_count_t nne = 500; /* Assumed number of neurons. */
-    double W_avg = -5.0;
-    double W_dev = 2.0;
-    nmsim_elem_synapse_t syn = nmsim_elem_synapse_throw(0, nsg - 1, 0, nne - 1, 0, nne - 1, W_avg, W_dev);
-    nmsim_elem_synapse_show(stderr, "synapse = ", &syn, "\n");
-    char *fname = "out/test_synapse_elem.txt";
-    nmsim_elem_synapse_ix_t ise = 17;
-    nmsim_elem_synapse_test_write(fname, ise, &syn);
-    nmsim_elem_synapse_test_read(fname, ise, &syn);
+    
+    for (int32_t i = 0; i < 10; i++)
+      { nmsim_group_synapse_ix_t isg_max = (nmsim_group_synapse_ix_t)imin(3*i, nsg-1); 
+        nmsim_group_synapse_ix_t isg_min = (nmsim_group_synapse_ix_t)(i < 3 ? 0 : isg_max); 
+        nmsim_elem_neuron_ix_t ine_max = nne-1;
+        nmsim_elem_neuron_ix_t ine_min = 0;
+        double W_avg = -5.0;
+        double W_dev = 2.0;
+        nmsim_elem_synapse_t syn = nmsim_elem_synapse_throw
+          ( isg_min, isg_max, ine_min, ine_max, ine_min, ine_max, W_avg, W_dev );
+        nmsim_elem_synapse_show(stderr, "synapse = ", &syn, "\n");
+        char *fname = NULL;
+        asprintf(&fname, "out/test_synapse_elem_%03d.txt", i);
+        nmsim_elem_synapse_ix_t ise = 17;
+        nmsim_elem_synapse_test_write(fname, ise, &syn);
+        nmsim_elem_synapse_test_read(fname, ise, &syn);
+        free(fname);
+      }
     return 0;
   }
   

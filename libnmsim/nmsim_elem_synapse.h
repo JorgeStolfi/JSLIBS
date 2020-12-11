@@ -2,14 +2,13 @@
 #define nmsim_elem_synapse_H
  
 /* Synapses in an element-level network. */
-/* Last edited on 2020-12-09 22:46:46 by jstolfi */
+/* Last edited on 2020-12-10 14:32:32 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 
 #include <bool.h>
-#include <vec.h>
 
 #include <nmsim_basic.h>
 #include <nmsim_write.h>
@@ -91,8 +90,5 @@ void nmsim_elem_synapse_compare(nmsim_elem_synapse_t *syn_read, nmsim_elem_synap
   /* Compares the synapse attributes {*syn_read} read from a file
     with the expected attributes {*sin_orig}.  Aborts if any attribute
     does not match (within roundoff tolerance). */
-
-vec_typedef(nmsim_elem_synapse_vec_t, nmsim_elem_synapse_vec, nmsim_elem_synapse_t);
-  /* Type of an extensible vector of synapses. */
 
 #endif

@@ -2,7 +2,7 @@
 #define nmsim_class_synapse_H
 
 /* Common parameters for a class of synapses. */ 
-/* Last edited on 2020-12-06 18:56:01 by jstolfi */
+/* Last edited on 2020-12-11 17:50:05 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -47,7 +47,8 @@ void nmsim_class_synapse_free(nmsim_class_synapse_t *sclass);
 
 void nmsim_class_synapse_write(FILE *wr, nmsim_class_synapse_t *sclass);
   /* Writes the synapse class parameter record {p} to file {wr}, as described by
-    {nmsim_class_synapse_read_INFO} below. */
+    {nmsim_class_synapse_read_INFO} below. The output takes multiple lines 
+    and ends with a newline. */
 
 nmsim_class_synapse_t* nmsim_class_synapse_read(FILE *rd);
   /* Reads the parameters of a synapse class

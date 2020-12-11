@@ -1,5 +1,5 @@
 /* See {nmsim_elem_net_sim.h} */
-/* Last edited on 2020-12-10 01:46:33 by jstolfi */
+/* Last edited on 2020-12-11 00:31:54 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -189,17 +189,24 @@ void nmsim_elem_net_sim_compute_tot_inputs
         J[ine] = I[ine];
       }
 
-    for (nmsim_elem_synapse_ix_t kse = 0; kse < nse; kse++)
-      { 
-        /* Get the synapse {kse]}: */
-        nmsim_elem_synapse_t *syn = &(enet->syn.e[kse]);
-        /* Get indices of its neurons: */ 
-        nmsim_elem_neuron_ix_t ine_pre = syn->ine_pre; /* Pre-synaptic neuron. */
-        if (X[ine_pre])
-          { /* The pre-synaptic neuron fired; accumulate its pulse. */
-            nmsim_elem_neuron_ix_t ine_pos = syn->ine_pos; /* Post-synaptic neuron. */
-            double dV = H[ine_pre] * syn->W;
-            J[ine_pos] += dV;
+    /* Add synaptic contributions from neurons that fired: */
+    for (nmsim_elem_neuron_ix_t ine = 0; ine < nne; ine++) 
+      { if (X[ine])
+          { double H_ine = H[ine]; /* Output synapse strength modulation factor. */
+            /* Scan output synapses of neuron {ine}: */
+            nmsim_elem_synapse_ix_t ise_start = enet->neu[ine].ise_start;
+            nmsim_elem_synapse_ix_t ise_lim = ise_start + enet->neu[ine].nse_out;
+            for (nmsim_elem_synapse_ix_t kse = ise_start; kse < ise_lim; kse++)
+              { /* Get the synapse {kse]}: */
+                nmsim_elem_synapse_t *syn = &(enet->syn.e[kse]);
+                /* Get indices of its neurons: */ 
+                nmsim_elem_neuron_ix_t ine_pre = syn->ine_pre; /* Pre-synaptic neuron. */
+                nmsim_elem_neuron_ix_t ine_pos = syn->ine_pos; /* Post-synaptic neuron. */
+                assert(ine_pre == ine);
+                /* Accumulate its pulse. */
+                double dV = H_ine * syn->W;
+                J[ine_pos] += dV;
+              }
           }
       } 
   }

@@ -1,5 +1,5 @@
 /* See {nmsim_class_neuron.h} */
-/* Last edited on 2020-12-04 21:01:05 by jstolfi */
+/* Last edited on 2020-12-11 13:55:20 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -46,6 +46,7 @@ nmsim_class_neuron_t* nmsim_class_neuron_new
 
 void nmsim_class_neuron_free(nmsim_class_neuron_t *nclass)
   { 
+    /* Does not free {nclass->Phi}. */
     if (nclass != NULL) { free(nclass); }
   }
 
@@ -211,7 +212,7 @@ nmsim_class_neuron_t* nmsim_class_neuron_throw(void)
     double M_mu = nmsim_throw_double(0.750, 0.950);
     double H_R = nmsim_throw_double(0.300, 0.800);
     double H_mu = nmsim_throw_double(0.750, 0.950);
-    nmsim_firing_func_class_t Phi_class = "GLN"[int32_abrandom(0,1)];
+    nmsim_firing_func_class_t Phi_class = "GLN"[int32_abrandom(0,2)];
     double V_M = nmsim_throw_double(-50.0, -30.0);
     double V_D = nmsim_throw_double(5.0, 25.0);
     

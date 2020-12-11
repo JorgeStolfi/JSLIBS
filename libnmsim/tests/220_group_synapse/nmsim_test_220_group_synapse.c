@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} synaptic band attributes"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2019-02-28 20:17:18 by jstolfi */ 
+/* Last edited on 2020-12-11 14:26:54 by jstolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -31,11 +31,20 @@
 
 #include <nmsim_group_synapse.h>
 
-void nmsim_group_synapse_test_write(char *fname, nmsim_group_synapse_ix_t isg, nmsim_group_synapse_t *sgrp);
+void nmsim_group_synapse_test_write
+  ( char *fname, 
+    nmsim_group_synapse_ix_t isg, 
+    nmsim_group_synapse_t *sgrp
+  );
   /* Writes the synapse group attributes {*sgrp} to file {fname},
     assuming index {isg}. */
 
-void nmsim_group_synapse_test_read(char *fname, nmsim_group_synapse_ix_t isg, nmsim_group_synapse_t *sgrp);
+void nmsim_group_synapse_test_read
+  ( char *fname, 
+    nmsim_group_synapse_ix_t isg, 
+    nmsim_elem_synapse_count_t nse_max,
+    nmsim_group_synapse_t *sgrp
+  );
   /* Reads a synapse group index and attributes record from file {fname}, and compares
     them to {isg} and {*sgrp}. */
 
@@ -49,31 +58,46 @@ int main(int argc, char **argv)
     nmsim_group_neuron_count_t nng = 500; /* Assumed number of neuron groups. */
     nmsim_group_neuron_ix_t ing_pre = (nmsim_group_neuron_ix_t)int64_abrandom(0, nng-1);
     nmsim_group_neuron_ix_t ing_pos = (nmsim_group_neuron_ix_t)int64_abrandom(0, nng-1);
-    double K_min = 5.0;
-    double K_max = 10.0;
+    nmsim_elem_synapse_count_t nse_min = 1;
+    nmsim_elem_synapse_count_t nse_max = 20;
     nmsim_class_synapse_ix_t isc_max = nsc - 1; /* Max class index. */
-    nmsim_group_synapse_t sgrp = nmsim_group_synapse_throw(isc_max, ing_pre, ing_pos, K_min, K_max);
-    nmsim_group_synapse_show(stderr, "synaps group = ", &sgrp, "\n");
-    char *fname = "out/test_synapse_group.txt";
-    nmsim_group_synapse_ix_t isg = 17;
-    nmsim_group_synapse_test_write(fname, isg, &sgrp);
-    nmsim_group_synapse_test_read(fname, isg, &sgrp);
+    for (int32_t i = 0; i < 10; i++)
+      { nmsim_group_synapse_t sgrp = 
+          nmsim_group_synapse_throw(isc_max, ing_pre, ing_pos, nse_min, nse_max);
+        nmsim_group_synapse_show(stderr, "synaps group = ", &sgrp, "\n");
+        char *fname = NULL;
+        asprintf(&fname, "out/test_synapse_group_%03d.txt", i);
+        nmsim_group_synapse_ix_t isg = 17;
+        nmsim_group_synapse_test_write(fname, isg, &sgrp);
+        nmsim_group_synapse_test_read(fname, isg, nse_max, &sgrp);
+        free(fname);
+      }
     return 0;
   }
   
-void nmsim_group_synapse_test_write(char *fname, nmsim_group_synapse_ix_t isg, nmsim_group_synapse_t *sgrp)
+void nmsim_group_synapse_test_write
+  ( char *fname, 
+    nmsim_group_synapse_ix_t isg, 
+    nmsim_group_synapse_t *sgrp
+  )
   { FILE *wr = open_write(fname, TRUE);
     nmsim_group_synapse_write(wr, isg, sgrp);
     fprintf(wr, "\n");
     fclose(wr);
   }
 
-void nmsim_group_synapse_test_read(char *fname, nmsim_group_synapse_ix_t isg, nmsim_group_synapse_t *sgrp)
+void nmsim_group_synapse_test_read
+  ( char *fname, 
+    nmsim_group_synapse_ix_t isg, 
+    nmsim_elem_synapse_count_t nse_max,
+    nmsim_group_synapse_t *sgrp
+  )
   {
     FILE *rd = open_read(fname, TRUE);
     nmsim_class_synapse_ix_t isc_max = sgrp->isc;
     nmsim_group_neuron_ix_t ing_max = (nmsim_group_neuron_ix_t)imax(sgrp->ing_pre, sgrp->ing_pos);
-    nmsim_group_synapse_t sgrp_read = nmsim_group_synapse_read(rd, isg, isc_max, ing_max);
+    nmsim_group_synapse_t sgrp_read = 
+      nmsim_group_synapse_read(rd, isg, isc_max, ing_max, nse_max);
     fclose(rd);
     
     nmsim_group_synapse_compare(&sgrp_read, sgrp);

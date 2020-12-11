@@ -2,7 +2,7 @@
 #define nmsim_class_neuron_H
  
 /* Common parameters for a class of Galves-Löcherbach neurons. */
-/* Last edited on 2019-03-28 18:13:28 by jstolfi */
+/* Last edited on 2020-12-11 17:51:26 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -105,7 +105,8 @@ void nmsim_class_neuron_throw_state
 void nmsim_class_neuron_write(FILE *wr, nmsim_class_neuron_t *nclass, double timeStep);
   /* Writes the parameter record {p} to file {wr}, as described by
     {nmsim_class_neuron_read_INFO} below.  The {timeStep} parameter (in milliseconds) is used to 
-    convert {c_B}, {M_mu}, and {H_mu} to step-invariant {V_tau}, {M_tau}, and {H_tau}. */
+    convert {c_B}, {M_mu}, and {H_mu} to step-invariant {V_tau}, {M_tau}, and {H_tau}.
+    The output takes multiple lines and ends with a newline. */
 
 nmsim_class_neuron_t* nmsim_class_neuron_read(FILE *rd, double timeStep);
   /* Reads the parameters of a GL neuron class 

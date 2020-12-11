@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} element-level network procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2019-06-18 11:30:40 by jstolfi */ 
+/* Last edited on 2020-12-11 19:11:28 by jstolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -40,26 +40,31 @@
 #include <nmsim_elem_synapse.h>
 
 #include <nmsim_class_net.h>
+#include <nmsim_class_net_throw.h>
+
 #include <nmsim_group_net.h>
+#include <nmsim_group_net_throw.h>
+
 #include <nmsim_elem_net.h>
+#include <nmsim_elem_net_throw.h>
 
 void nmsim_elem_net_test
   ( int32_t nnc,
     int32_t nsc,
     int32_t nng, 
     int32_t nsg, 
-    int32_t nne_g_min,
-    int32_t nne_g_max
+    int32_t nne, 
+    int32_t nse
   );
   /* Tests a net neuron with {nnc} neuron classes, {nsc} synapse classes,
-    {nng} neuron groups and {nsg} neuron groups, all generated at random. 
+    {nng} neuron groups, {nsg} neuron groups, {nne} neurons, and {nse}
+    synapses, all generated at random. 
     
-    If {nne_g_max > 0}, the neuron groups will be expanded to have
-    between {nne_g_min} and {nne_g_max} neurons each; and each synapse group will be expanded
-    into about {K*nne_g_max} synapses between those neurons, where {K}
-    is the average in-degree of the post-synaptic neurons, as
-    specified in the attributes of the synaptic group. See
-    {nmsim_elem_net_expand_groups} for details. */
+    The network must have at least one neuron, therefore {nnc,nng,nne}
+    must be positive. If it has some synapses ({nse > 0}), it must have
+    at least one synaptic bundle ({nsg > 0}). If it has a synaptic
+    bundle ({nsg > 0}), it must have at least one synapse class ({nsc >
+    0}). */
 
 void nmsim_elem_net_test_write(char *fname, nmsim_elem_net_t *enet, double timeStep);
   /* Tests {nmsim_elem_net_write} with the elem-level network description
@@ -75,9 +80,9 @@ int main(int argc, char **argv);
 
 int main(int argc, char **argv)
   { 
-    nmsim_elem_net_test(0,0, 0,0, 0,0);
-    nmsim_elem_net_test(2,3, 0,0, 0,0);
-    nmsim_elem_net_test(2,3, 4,5, 0,0);
+    nmsim_elem_net_test(1,0, 1,0, 1,0);
+    nmsim_elem_net_test(2,3, 1,0, 1,0);
+    nmsim_elem_net_test(2,3, 3,5, 3,0);
     nmsim_elem_net_test(5,10, 5,7, 4,6);
     nmsim_elem_net_test(5,10, 50,100, 10,20);
     return 0;
@@ -88,24 +93,21 @@ void nmsim_elem_net_test
     int32_t nsc,
     int32_t nng, 
     int32_t nsg, 
-    int32_t nne_g_min, 
-    int32_t nne_g_max
+    int32_t nne, 
+    int32_t nse
   )
   {
     /* Assemble the file name {fname}: */
     char *fname = NULL;
     asprintf
       ( &fname, 
-        "out/test_elem_net_%04dnc_%04dsc_%04dng_%04dsg_%04d-%04dnpg.txt", 
-        nnc, nsc, nng, nsg, nne_g_min, nne_g_max
+        "out/test_elem_net_%04dnc_%04dsc_%04dng_%04dsg_%04dne_%04dse.txt", 
+        nnc, nsc, nng, nsg, nne, nse
       );
 
     /* Create a random network: */
     nmsim_class_net_t *cnet = nmsim_class_net_throw(nnc, nsc);
-    double K_max = 0.8*((double)nne_g_max);
-    double K_min = 0.5*K_max;
-    nmsim_group_net_t *gnet = 
-      nmsim_group_net_throw(cnet, nng, nsg, nne_g_min, nne_g_max, K_min, K_max);
+    nmsim_group_net_t *gnet = nmsim_group_net_throw(cnet, nng, nsg, nne, nse);
     nmsim_elem_net_t *enet = nmsim_elem_net_throw(gnet);
     
     /* Test write and read: */

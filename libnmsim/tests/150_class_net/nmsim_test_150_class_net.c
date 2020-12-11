@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} class-level network description"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2019-06-18 11:28:02 by jstolfi */ 
+/* Last edited on 2020-12-11 13:34:31 by jstolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -33,11 +33,12 @@
 #include <nmsim_class_synapse.h>
 
 #include <nmsim_class_net.h>
+#include <nmsim_class_net_throw.h>
 
 void nmsim_class_net_test(int32_t nnc, int32_t nsc);
   /* Tests creation, reading, and writing of a class-level
     network description with {nnc} neuron classes and {nsc} synapse 
-    classes. */
+    classes. The parameter {nnc} must be positive. */
 
 void nmsim_class_net_test_write(char *fname, nmsim_class_net_t *cnet, double timeStep);
   /* Tests {nmsim_class_net_write} with the class-level network description
@@ -53,7 +54,7 @@ int main(int argc, char **argv);
 
 int main(int argc, char **argv)
   { 
-    nmsim_class_net_test(0,0);
+    nmsim_class_net_test(1,0);
     nmsim_class_net_test(1,1);
     nmsim_class_net_test(2,3);
     return 0;

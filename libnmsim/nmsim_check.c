@@ -1,5 +1,5 @@
 /* See {nmsim_check.h} */
-/* Last edited on 2019-03-21 12:46:02 by jstolfi */
+/* Last edited on 2020-12-11 19:13:50 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -17,7 +17,7 @@
  
 void nmsim_check_int64_value(char *name, int64_t v, int64_t vmin, int64_t vmax)
   { if ((v < vmin) || (v > vmax))
-      { fprintf(stderr, "** value of %s = %ld\n", name, v);
+      { fprintf(stderr, "** value of %s = %ld", name, v);
         fprintf(stderr, " is out of range {%ld .. %ld}\n", vmin, vmax);
         demand(FALSE, "aborted");
       }
