@@ -1,10 +1,14 @@
 /* See {nmsim_stats.h} */
-/* Last edited on 2020-12-07 16:19:09 by jstolfi */
+/* Last edited on 2020-12-15 21:36:36 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
+#include <math.h>
 
+#include <bool.h>
+
+#include <nmsim_basic.h>
 #include <nmsim_write.h>
 
 #include <nmsim_stats.h>
@@ -32,4 +36,26 @@ void nmsim_stats_print
     
     void wrd(double x)
       { nmsim_write_double_value(wr, x, prec, sgn, fudge_0, fudge_1); }
+  }
+
+    
+void  nmsim_stats_initialize(nmsim_stats_t *S)
+  { S->nvs = 0;
+    S->min = +INF; S->max = -INF;
+    S->avg = 0.0; S->dev = 0.0;
+  }
+  
+void  nmsim_stats_accumulate(nmsim_stats_t *S, double v)
+  { S->nvs++;
+    S->min = fmin(S->min, v);
+    S->max = fmax(S->max, v);
+    S->avg += v;
+    S->dev += v*v;
+  }
+  
+void  nmsim_stats_finalize(nmsim_stats_t *S, double v)
+  { 
+    double dn = ((double)s->nvs);
+    S->avg = (S->nvs < 1 ? 0.0 : S->avg/dn);
+    S->dev = (S->nvs < 2 ? 0.0 : sqrt(fmax(0.0, S->dev - dn*S->avg*S->avg)/(dn - 1.0)));
   }

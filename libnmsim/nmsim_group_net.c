@@ -1,5 +1,5 @@
 /* See {nmsim_group_net.h} */
-/* Last edited on 2020-12-11 19:55:35 by jstolfi */
+/* Last edited on 2020-12-15 00:41:34 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -90,10 +90,13 @@ nmsim_group_net_t *nmsim_group_net_read
     double timeStep
   )
   { 
-    bool_t debug = FALSE;
+    fprintf(stderr, "  {nmsim_group_net_read} begin\n");
+
     /* Read header line: */
     filefmt_read_header(rd, nmsim_group_net_FILE_TYPE, nmsim_group_net_VERSION);
     
+    fprintf(stderr, "  {nmsim_group_net_read} reading group counts ...\n");
+
     /* Read the number of neuron groups: */
     nmsim_group_neuron_count_t nng = (nmsim_group_neuron_count_t)
       nmsim_read_int64_param(rd, "neuron_groups", 1, nmsim_group_neuron_count_MAX);
@@ -102,7 +105,7 @@ nmsim_group_net_t *nmsim_group_net_read
     nmsim_group_synapse_count_t nsg = (nmsim_group_synapse_count_t)
       nmsim_read_int64_param(rd, "synapse_groups", 0, nmsim_group_synapse_count_MAX);
 
-    if (debug) { fprintf(stderr, "begin {nmsim_group_net_read} nng = %d nsg = %d\n", nng, nsg); }
+    fprintf(stderr, "  {nmsim_group_net_read} nng = %d nsg = %d\n", nng, nsg);
 
     /* Read the neuron and synapse classes:*/
     nmsim_class_net_t *cnet = nmsim_class_net_read(rd, timeStep);
@@ -110,15 +113,23 @@ nmsim_group_net_t *nmsim_group_net_read
     /* Allocate group-level net: */
     nmsim_group_net_t *gnet = nmsim_group_net_new(cnet, nng, nsg); 
     
-    /* Read the neuron groups: */
+    /* Read the neuron groups, set the {ine_start} fields: */
+    nmsim_elem_neuron_ix_t ine_next = 0; /* Next unallocated slot in neuron list. */
+    fprintf(stderr, "  {nmsim_group_net_read} reading neuron groups ...\n");
     for (nmsim_group_neuron_ix_t ing = 0; ing < nng; ing++)
       { nmsim_group_neuron_t ngrp = nmsim_group_neuron_read
           (rd, ing, cnet->nnc - 1, nne_g_max, nsg);
         fget_eol(rd);
+        ngrp.ine_start = ine_next;
+        assert((ngrp.nne >= 0) && (ngrp.nne <= nne_g_max));
+        assert(ngrp.nne <= nmsim_elem_neuron_count_MAX - ine_next);
+        ine_next += ngrp.nne;
         gnet->ngrp[ing] = ngrp;
       }
+    fprintf(stderr, "  {nmsim_group_net_read} groups claim to have %d neurons total\n", ine_next);
     
     /* Read the synapse groups: */
+    fprintf(stderr, "  {nmsim_group_net_read} reading synapse groups ...\n");
     if (nsg > 0)
       { assert(cnet->nsc > 0);
         for (nmsim_group_synapse_ix_t isg = 0; isg < nsg; isg++)
@@ -130,6 +141,7 @@ nmsim_group_net_t *nmsim_group_net_read
       }
 
     /* Read footer line: */
+    fprintf(stderr, "  {nmsim_group_net_read} reading footer ...\n");
     filefmt_read_footer(rd, nmsim_group_net_FILE_TYPE);
 
     return gnet;

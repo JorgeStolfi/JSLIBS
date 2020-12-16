@@ -2,7 +2,7 @@
 #define nmsim_class_net_H
  
 /* Class-level description of a network of Galves-Löcherbach neurons. */
-/* Last edited on 2020-12-11 17:55:01 by jstolfi */
+/* Last edited on 2020-12-12 08:19:59 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -89,7 +89,7 @@ nmsim_class_net_t *nmsim_class_net_read(FILE *rd, double timeStep);
     
 #define nmsim_class_net_FILE_TYPE "nmsim_class_net"
     
-#define nmsim_class_net_VERSION "2020-10-12"
+#define nmsim_class_net_VERSION "2020-12-10"
 
 /* TESTING AND DEBUGGING */
 

@@ -1,5 +1,5 @@
 /* See {nmsim_group_synapse.h} */
-/* Last edited on 2020-12-11 17:47:33 by jstolfi */
+/* Last edited on 2020-12-12 16:32:23 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -37,6 +37,10 @@ nmsim_group_synapse_t nmsim_group_synapse_read
     nmsim_elem_synapse_count_t nse_g_max
   )
   { 
+    bool_t debug = FALSE;
+    
+    if (debug) { fprintf(stderr, "    reading synapse group %d ... ", isg); }
+    
     (void)nmsim_read_int64_value(rd, "synapse group index", isg, isg);
     
     nmsim_class_synapse_ix_t isc = (nmsim_class_synapse_ix_t)
@@ -53,6 +57,8 @@ nmsim_group_synapse_t nmsim_group_synapse_read
     nmsim_group_synapse_t sgrp = (nmsim_group_synapse_t)
       { .isc = isc, .ing_pre = ing_pre, .ing_pos = ing_pos, .nse = nse_g };
 
+    if (debug) { nmsim_group_synapse_show(stderr, NULL, &sgrp, "\n"); }
+    
     return sgrp;
   }
 

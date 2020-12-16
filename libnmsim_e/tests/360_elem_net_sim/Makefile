@@ -1,4 +1,4 @@
-# Last edited on 2020-12-05 07:52:07 by jstolfi
+# Last edited on 2020-12-15 18:19:06 by jstolfi
 
 PROG := nmsim_test_360_elem_net_sim
  
@@ -18,7 +18,7 @@ check:  do-test
 
 do-test: do-clean ${PROG}
 	nice ${PROG}
-	for ff in out/sim_*_elem_n[0-9]*.txt ; do \
+	for ff in out/sim_*_elem_n[0-9]*_trace.txt ; do \
 	  ./plot_potentials.sh $$ff ;\
 	done
 

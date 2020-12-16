@@ -2,7 +2,7 @@
 #define nmsim_elem_net_H
  
 /* Neuron-level model of a network of Galves-Löcherbach neurons. */
-/* Last edited on 2020-12-11 14:51:44 by jstolfi */
+/* Last edited on 2020-12-13 16:03:25 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>

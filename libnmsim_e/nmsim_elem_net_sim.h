@@ -2,7 +2,7 @@
 #define nmsim_elem_net_sim_H
  
 /* Simulation of neuron-level networks of Galves-Löcherbach neurons. */
-/* Last edited on 2020-12-09 22:25:32 by jstolfi */
+/* Last edited on 2020-12-15 18:13:46 by jstolfi */
 
 #define _GNU_SOURCE
 
@@ -36,6 +36,8 @@ void nmsim_elem_net_sim_step
     On input, {M[i]} and {H[i]} must be the modulators of the recharge
     factor and of the output synaptic strength of neuron {i} at time
     {t}, respectively, as determined from its firing age {age[i]}.
+    On output, they will be updated to time {t+1}, taking into 
+    account the possible firing of the neuron in that interval.
 
     On input, {I[i]} must be the extra voltage increment that will be
     imposed on the potential of neuron {i} by external sources, in
@@ -74,13 +76,14 @@ void nmsim_elem_net_sim_step
 
 void nmsim_elem_net_sim_compute_modulators
   ( nmsim_elem_net_t *enet, 
+    nmsim_time_t t,           /* Time at END of step. */
     nmsim_step_count_t age[], /* Firing age of each neuron (IN). */
     double M[],               /* Recharge modulator of each neuron (OUT). */
     double H[]                /* Output modulator of each neuron at time {t} (OUT). */
   );
-  /* On input, {age[i]} must be the non-negative firing age of each neuron {i}.
-    On output, {M[i]} and {H[i]} are the output and recharge modulators of 
-    each neuron {i}, as determined from its age.
+  /* On input, {age[i]} must be the non-negative firing age of each neuron {i} at 
+    some time {t}.  On output, {M[i]} and {H[i]} are the output and recharge modulators of 
+    each neuron {i} at that time, as determined from its age.
     This procedure may be useful at the start of the simulation, when
     the firing ages are generated randomly. */
 

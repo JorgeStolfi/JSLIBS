@@ -2,7 +2,7 @@
 #define PROG_DESC "tests of {limnmism} neuron-level network simulation"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2019-03-28 22:09:08 by jstolfi */ 
+/* Last edited on 2020-12-15 18:16:34 by jstolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -39,8 +39,13 @@
 #include <nmsim_elem_synapse.h>
 
 #include <nmsim_class_net.h>
+#include <nmsim_class_net_throw.h>
+
 #include <nmsim_group_net.h>
+#include <nmsim_group_net_throw.h>
+
 #include <nmsim_elem_net.h>
+#include <nmsim_elem_net_throw.h>
 #include <nmsim_elem_net_trace.h>
 
 #include <nmsim_elem_net_sim.h>
@@ -88,7 +93,7 @@ int main(int argc, char **argv);
 int main(int argc, char **argv)
   { 
     /* nmsim_test_elem_net_sim(1,1,1,1,1,1); */
-    nmsim_test_elem_net_sim(1,1,2,1,20,100);
+    nmsim_test_elem_net_sim(1,1,3,12,21,120);
     return 0;
   }
     
@@ -107,15 +112,10 @@ void nmsim_test_elem_net_sim
     /* Compute number of neurons per neuron group: */
     demand(nng >= 1, "bad neuron group count");
     demand((nne % nng) == 0, "bad neuron elem count");
-    int32_t nne_g = nne/nng; /* Num neurons per neuron group. */
-    assert(nne_g > 0);
     
     /* Compute the average indegree of each neuron: */
     demand(nsg >= 1, "bad synapse group count");
     demand((nse % nsg) == 0, "bad synapse elem count");
-    int32_t nse_g = nse/nsg; /* Desired num synapses per synapse group. */
-    assert(nse_g > 0);
-    double K = ((double)nse_g)/((double)nne_g); /* Desired avg indegre. */
 
     /* Choose simulation time parameters: */
     nmsim_time_t nSteps = 10000; /* Simulate from {t=0} to {t=nSteps}. */
@@ -132,7 +132,7 @@ void nmsim_test_elem_net_sim
       );
    
     /* Create the group-levek network: */
-    nmsim_group_net_t *gnet = nmsim_group_net_throw(cnet, nng, nsg, nne_g, nne_g, K, K);
+    nmsim_group_net_t *gnet = nmsim_group_net_throw(cnet, nng, nsg, nne, nse);
     
     /* Create and write out the element_level network: */
     nmsim_elem_net_t *enet = nmsim_elem_net_throw(gnet);
@@ -154,11 +154,11 @@ void nmsim_test_elem_net_sim
     
     /* Initialize the neuron ages, potentials, and modulators: */
     for (nmsim_elem_neuron_ix_t ine = 0; ine < nne; ine++) 
-      { nmsim_group_neuron_ix_t ing = enet->neu.e[ine].ing; /* Neuron group index. */
-        nmsim_class_neuron_ix_t inc = gnet->ngrp.e[ing].inc; /* Neuron class index. */
-        nmsim_class_neuron_throw_state(cnet->nclass.e[inc], &(V[ine]), &(age[ine]));
+      { nmsim_group_neuron_ix_t ing = enet->neu[ine].ing; /* Neuron group index. */
+        nmsim_class_neuron_ix_t inc = gnet->ngrp[ing].inc; /* Neuron class index. */
+        nmsim_class_neuron_throw_state(cnet->nclass[inc], &(V[ine]), &(age[ine]));
       }
-    nmsim_elem_net_sim_compute_modulators(enet, age, M, H);
+    nmsim_elem_net_sim_compute_modulators(enet, 0, age, M, H);
 
     /* Simulate: */
     for (nmsim_time_t t = 0; t < nSteps; t++)

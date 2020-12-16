@@ -1,5 +1,5 @@
 /* See filefmt.h */
-/* Last edited on 2019-04-25 18:03:14 by jstolfi */
+/* Last edited on 2020-12-12 08:19:02 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -82,7 +82,7 @@ void filefmt_read_header(FILE *rd, char *type, char *version)
     char *rd_version = NULL;
     filefmt_read_gen_header(rd, &rd_type, &rd_version);
     if (strcmp(type, rd_type) != 0)
-      { fprintf(stderr, "** wrong type in file header = %s\n", rd_type);
+      { fprintf(stderr, "** wrong type in file header = %s expected = %s\n", rd_type, type);
         demand(FALSE, "aborted");
       }
     char *msg = NULL; /* Error message to print. */
@@ -91,7 +91,7 @@ void filefmt_read_header(FILE *rd, char *type, char *version)
     else
       { if (rd_version != NULL) { msg = "spurious"; } }
     if (msg != NULL)
-      { fprintf(stderr, "** %s version in file header = %s\n", msg, rd_version);
+      { fprintf(stderr, "** %s version in file header = %s expected = %s\n", msg, rd_version, version);
         demand(FALSE, "aborted");
       }
     free(rd_type);

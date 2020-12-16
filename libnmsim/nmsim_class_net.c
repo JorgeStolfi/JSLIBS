@@ -1,5 +1,5 @@
 /* See {nmsim_class_net.h} */
-/* Last edited on 2020-12-11 17:56:38 by jstolfi */
+/* Last edited on 2020-12-12 10:06:43 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -83,8 +83,14 @@ void nmsim_class_net_write(FILE *wr, nmsim_class_net_t *cnet, double timeStep)
 
 nmsim_class_net_t *nmsim_class_net_read(FILE *rd, double timeStep)
   {
+    bool_t debug = FALSE;
+    
+    fprintf(stderr, "    {nmsim_class_net_read} begin\n");
+
     /* Read header line: */
     filefmt_read_header(rd, nmsim_class_net_FILE_TYPE, nmsim_class_net_VERSION);
+    
+    fprintf(stderr, "    {nmsim_class_net_read} reading class counts ...\n");
     
     /* Read the number of neuron classes: */
     nmsim_class_neuron_count_t nnc = (nmsim_class_neuron_count_t)
@@ -93,11 +99,14 @@ nmsim_class_net_t *nmsim_class_net_read(FILE *rd, double timeStep)
    /* Read the number of synapse classes: */
     nmsim_class_synapse_count_t nsc = (nmsim_class_synapse_count_t)
       nmsim_read_int64_param(rd, "synapse_classes", 0, nmsim_class_synapse_count_MAX);
+    
+    fprintf(stderr, "    {nmsim_class_net_read} nnc = %d nsc = %d\n", nnc, nsc);
  
     /* Create the network description: */
     nmsim_class_net_t *cnet = nmsim_class_net_new(nnc, nsc);
     
     /* Read the neuron classes: */
+    fprintf(stderr, "    {nmsim_class_net_read} reading neuron classes ...\n");
     for (nmsim_class_neuron_ix_t inc = 0; inc < nnc; inc++)
       { (void)nmsim_read_int64_param(rd, "neuron_class", inc, inc);
         nmsim_class_neuron_t *nclass = nmsim_class_neuron_read(rd, timeStep);
@@ -105,6 +114,7 @@ nmsim_class_net_t *nmsim_class_net_read(FILE *rd, double timeStep)
       }
     
     /* Read the synapse classes: */
+    fprintf(stderr, "    {nmsim_class_net_read} reading synapse classes ...\n");
     for (nmsim_class_synapse_ix_t isc = 0; isc < nsc; isc++)
       { (void)nmsim_read_int64_param(rd, "synapse_class", isc, isc);
         nmsim_class_synapse_t *sclass = nmsim_class_synapse_read(rd);
@@ -112,6 +122,7 @@ nmsim_class_net_t *nmsim_class_net_read(FILE *rd, double timeStep)
       }
 
     /* Read footer line: */
+    fprintf(stderr, "    {nmsim_class_net_read} reading footer ...\n");
     filefmt_read_footer(rd, nmsim_class_net_FILE_TYPE);
 
     return cnet;

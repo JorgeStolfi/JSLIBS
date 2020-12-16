@@ -1,5 +1,5 @@
 /* See {nmsim_elem_net.h} */
-/* Last edited on 2020-12-11 19:56:53 by jstolfi */
+/* Last edited on 2020-12-13 16:07:06 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -23,8 +23,6 @@
 #include <nmsim_elem_synapse.h>
 
 #include <nmsim_elem_net.h>
-
-/* LOW-LEVEL EXPANSION PROCEDURES */
 
 nmsim_elem_net_t *nmsim_elem_net_new
   ( nmsim_group_net_t *gnet, 
@@ -85,9 +83,13 @@ nmsim_elem_net_t *nmsim_elem_net_read(FILE *rd, double timeStep)
   { 
     bool_t debug = FALSE;
     
+    fprintf(stderr, "{nmsim_elem_net_read} begin\n");
+    
     /* Read header line: */
     filefmt_read_header(rd, nmsim_elem_net_FILE_TYPE, nmsim_elem_net_VERSION);
     
+    fprintf(stderr, "{nmsim_elem_net_read} reading element counts ...\n");
+
     /* Read the number of neurons:  */
     nmsim_elem_neuron_count_t nne = (nmsim_elem_neuron_count_t)
       nmsim_read_int64_param(rd, "neuron_elems", 0, nmsim_elem_neuron_count_MAX);
@@ -96,7 +98,7 @@ nmsim_elem_net_t *nmsim_elem_net_read(FILE *rd, double timeStep)
     nmsim_elem_synapse_count_t nse = (nmsim_elem_synapse_count_t)
       nmsim_read_int64_param(rd, "synapse_elems", 0, nmsim_elem_synapse_count_MAX);
     
-    if (debug) { fprintf(stderr, "begin {nmsim_elem_net_read} nne = %d nse = %d\n", nne, nse); }
+    fprintf(stderr, "{nmsim_elem_net_read} nne = %d nse = %d\n", nne, nse);
 
     /* Read the neuron and synapse groups:*/
     nmsim_group_net_t *gnet = nmsim_group_net_read(rd, nne, nse, timeStep);
@@ -109,13 +111,14 @@ nmsim_elem_net_t *nmsim_elem_net_read(FILE *rd, double timeStep)
     nmsim_elem_neuron_count_t *nne_g = notnull(malloc(nng*sizeof(nmsim_elem_neuron_count_t)), "no mem");
     
     /* Read the neurons: */
+    fprintf(stderr, "{nmsim_elem_net_read} reading neuron elements ...\n");
     for (nmsim_group_neuron_ix_t ing = 0; ing < nng; ing++) { nne_g[ing] = 0; }
     nmsim_elem_synapse_count_t nse_out_tot = 0; /* Sum of {.nse_out} so far. */
     for (nmsim_elem_neuron_ix_t ine = 0; ine < nne; ine++)
       { if (debug) { fprintf(stderr, "reading neuron %d - %d synapses so far\n", ine, nse_out_tot); }
         nmsim_elem_neuron_t neu = nmsim_elem_neuron_read(rd, ine, nng - 1, nse - nse_out_tot);
-        if (debug) { fprintf(stderr, "read neuron %d - %d outputs\n", ine, neu.nse_out); }
         fget_eol(rd);
+        if (debug) { fprintf(stderr, "read neuron %d - %d outputs\n", ine, neu.nse_out); }
         /* Store in neuron table: */
         neu.ise_out_start = nse_out_tot;
         nse_out_tot += neu.nse_out;
@@ -136,6 +139,8 @@ nmsim_elem_net_t *nmsim_elem_net_read(FILE *rd, double timeStep)
     
     if (nse > 0)
       { 
+        fprintf(stderr, "{nmsim_elem_net_read} reading synapse elements ...\n");
+        
         /* Vector of output synapses per neuron, to sort the synapses: */
         nmsim_elem_synapse_count_t *nse_out_n = 
           notnull(malloc(nne*sizeof(nmsim_elem_synapse_count_t)), "no mem");
@@ -176,6 +181,7 @@ nmsim_elem_net_t *nmsim_elem_net_read(FILE *rd, double timeStep)
       }
 
     /* Read footer line: */
+    fprintf(stderr, "{nmsim_elem_net_read} reading footer ...\n");
     filefmt_read_footer(rd, nmsim_elem_net_FILE_TYPE);
 
     return enet;

@@ -1,5 +1,5 @@
 /* See {nmsim_group_neuron.h} */
-/* Last edited on 2020-12-11 15:03:47 by jstolfi */
+/* Last edited on 2020-12-12 16:32:45 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -36,6 +36,10 @@ nmsim_group_neuron_t nmsim_group_neuron_read
     nmsim_group_synapse_count_t nsg_out_max
   )
   {
+    bool_t debug = FALSE;
+    
+    if (debug) { fprintf(stderr, "    reading neuron group %d ... ", ing); }
+        
     (void)nmsim_read_int64_value(rd, "neuron group index", ing, ing);
     
     nmsim_class_neuron_ix_t inc = (nmsim_class_neuron_ix_t)
@@ -49,6 +53,9 @@ nmsim_group_neuron_t nmsim_group_neuron_read
 
     nmsim_group_neuron_t ngrp = (nmsim_group_neuron_t)
       { .inc = inc, .nne = nne_g, .ine_start = 0, .nsg_out = nsg_out };
+
+    if (debug) { nmsim_group_neuron_show(stderr, NULL, &ngrp, "\n"); }
+        
     return ngrp;
   }
 

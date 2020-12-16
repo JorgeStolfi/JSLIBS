@@ -1,5 +1,5 @@
 /* See fget.h */
-/* Last edited on 2020-10-31 21:28:06 by jstolfi */
+/* Last edited on 2020-12-14 23:57:40 by jstolfi */
 
 #define _GNU_SOURCE_
 #include <stdio.h>
@@ -265,17 +265,46 @@ unsigned int fget_uint32(FILE *f, int base)
 
 uint64_t fget_uint64(FILE *f, int base)
   { demand((base >= 2) && (base <= 36), "invalid base");
-    uint64_t x = 0;
     fget_skip_spaces_to_something(f);
-    int d = fget_digit(f, (base > 10));
-    demand(d >= 0, "number not found"); 
-    do
-      { demand(d < base, "invalid digit in number"); 
-        demand (x <= (UINT64_MAX - d)/base, "number does not fit in 64 bits");
-        x = base*x + d;
-        d = fget_digit(f, (base > 10));
+    uint64_t x = 0;
+    int cmax_dec, cmax_alo, cmax_ahi; /* Max chars for decmimal and alpha ranges. */
+    if (base <= 10)
+      { cmax_dec = '0' + (base-1); /* Not used: */ cmax_alo = cmax_ahi = '*'; }
+    else
+      { cmax_dec = '9'; cmax_alo = 'a' + (base-11); cmax_ahi = 'A' + (base-11); }
+    uint64_t xpmax = UINT64_MAX/base; /* Max value of {x} to which a 0 can be appended. */
+    bool_t any_digit_yet = FALSE; /* TRUE if at least one digit is found. */
+    while (TRUE)
+      { /* Grab the next digit's value {d}, or {-1} if none: */
+        int c = fgetc(f);
+        int d; 
+        if ((c >= '0') && (c <= cmax_dec))
+          { d = c - '0'; }
+        else if (base > 10)
+          { if ((c >= 'a') && (c <= cmax_alo))
+              { d = 10 + (c - 'a'); }
+            else if ((c >= 'A') && (c <= cmax_ahi))
+              { d = 10 + (c - 'A'); }
+            else
+              { d = -1;}
+          }
+        else
+          { d = -1;}
+
+        if (d < 0)
+          { /* Digit not found. */
+            if (c != EOF) { ungetc(c, f); } 
+            if (any_digit_yet) 
+              { break; }
+            else
+              { demand(FALSE, "number not found"); }
+          }
+        any_digit_yet = TRUE;
+        demand (x <= xpmax, "number does not fit in 64 bits");
+        x = base*x;
+        demand(x <= UINT64_MAX - d, "number does not fit in 64 bits");
+        x = x + d;
       }
-    while (d >= 0);
     return x;
   }
 
