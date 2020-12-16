@@ -1,5 +1,5 @@
 /* See {nmsim_stats.h} */
-/* Last edited on 2020-12-15 21:36:36 by jstolfi */
+/* Last edited on 2020-12-16 00:17:41 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -53,9 +53,9 @@ void  nmsim_stats_accumulate(nmsim_stats_t *S, double v)
     S->dev += v*v;
   }
   
-void  nmsim_stats_finalize(nmsim_stats_t *S, double v)
+void  nmsim_stats_finalize(nmsim_stats_t *S)
   { 
-    double dn = ((double)s->nvs);
+    double dn = ((double)S->nvs);
     S->avg = (S->nvs < 1 ? 0.0 : S->avg/dn);
     S->dev = (S->nvs < 2 ? 0.0 : sqrt(fmax(0.0, S->dev - dn*S->avg*S->avg)/(dn - 1.0)));
   }

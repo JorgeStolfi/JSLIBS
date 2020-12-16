@@ -1,5 +1,5 @@
 /* See {nmsim_elem_net_trace.h} */
-/* Last edited on 2020-12-07 16:01:22 by jstolfi */
+/* Last edited on 2020-12-16 00:23:03 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -101,9 +101,12 @@ void nmsim_elem_net_trace_write(char *prefix, nmsim_elem_net_trace_t *etrace)
     for (nmsim_elem_neuron_ix_t k = 0; k < etrace->tne; k++)
       { nmsim_elem_neuron_trace_t *trnek = etrace->trne[k];
         if (trnek != NULL)
-          { { /* Trace data by time step: */
+          { nmsim_elem_neuron_ix_t ine = trnek->ine;
+            nmsim_time_t tlo = trnek->tlo;
+            nmsim_time_t thi = trnek->thi;
+            { /* Trace data by time step: */
               char *fname = NULL;
-              asprintf(&fname, "%s_n%010d_trace.txt", prefix, trnek->ine);
+              asprintf(&fname, "%s_n%010d_trace.txt", prefix, ine);
               FILE *wr = open_write(fname, TRUE);
               nmsim_elem_neuron_trace_write(wr, trnek);
               fclose(wr);
@@ -111,12 +114,13 @@ void nmsim_elem_net_trace_write(char *prefix, nmsim_elem_net_trace_t *etrace)
             }
             { /* Statistical summary: */
               char *fname = NULL;
-              asprintf(&fname, "%s_n%010d_stats.txt", prefix, trnek->ine);
+              asprintf(&fname, "%s_n%010d_stats.txt", prefix, ine);
               FILE *wr = open_write(fname, TRUE);
-              nmsim_elem_neuron_trace_stats_t trS;
-              nmsim_elem_neuron_trace_stats_compute(trnek, &trS);
-              nmsim_elem_neuron_trace_stats_write(wr, &trS);
+              nmsim_elem_net_sim_stats_t *trS = nmsim_elem_net_sim_stats_new(ine, ine, tlo, thi);
+              nmsim_elem_neuron_trace_stats_compute(trnek, trS);
+              nmsim_elem_net_sim_stats_write(wr, trS);
               fclose(wr);
+              free(trS);
               free(fname); 
             }
           }

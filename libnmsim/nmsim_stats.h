@@ -2,7 +2,7 @@
 #define nmsim_stats_H
  
 /* Statistical summaries for neuromat network simulation. */
-/* Last edited on 2020-12-15 21:37:19 by jstolfi */
+/* Last edited on 2020-12-16 00:17:34 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -52,7 +52,7 @@ void  nmsim_stats_accumulate(nmsim_stats_t *S, double v);
   /* Updates {S.min,S.max} to include the sameple {v}.  Increments {nvs},
     adds {v} to {avg}, and its square to {dev}. */
   
-void  nmsim_stats_finalize(nmsim_stats_t *S, double v);
+void  nmsim_stats_finalize(nmsim_stats_t *S);
   /* Converts {S.avg} from sum of sample values to their average.
     Converts {S.dev} from sum of squared samples to their standard
     deviation.
