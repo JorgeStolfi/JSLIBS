@@ -2,7 +2,7 @@
 #define PROG_DESC "tests of {limnmism} neuron-level network simulation"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-15 18:16:34 by jstolfi */ 
+/* Last edited on 2020-12-17 01:28:50 by jstolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -119,8 +119,8 @@ void nmsim_test_elem_net_sim
 
     /* Choose simulation time parameters: */
     nmsim_time_t nSteps = 10000; /* Simulate from {t=0} to {t=nSteps}. */
-    nmsim_time_t tlo = 0;         /* First time to save in traces. */
-    nmsim_time_t thi = nSteps-1;  /* Last time to save in traces. */
+    nmsim_time_t tLo = 0;         /* First time to save in traces. */
+    nmsim_time_t tHi = nSteps-1;  /* Last time to save in traces. */
     double timeStep = 1.0; /* Nominal time step (ms). */
     
     /* Create the filename prefix: */
@@ -141,7 +141,10 @@ void nmsim_test_elem_net_sim
     /* Allocate element-level trace structure, choose neurons to trace: */
     nmsim_elem_neuron_count_t tne_max = 5; /* Max neurons to trace. */
     nmsim_elem_neuron_count_t tne = (nmsim_elem_neuron_count_t)imin(tne_max, nne);
-    nmsim_elem_net_trace_t *etrace = nmsim_elem_net_trace_throw(nne, tlo, thi, tne);
+    nmsim_elem_net_trace_t *etrace = nmsim_elem_net_trace_throw(nne, tLo, tHi, tne);
+      
+    /* Allocate and initialize per-group neurons state statistics structure: */
+    nmsim_elem_net_sim_group_stats_t *gstats = NULL;
     
     /* Allocate work arrays: */
     double *V = notnull(malloc(nne*sizeof(double)), "no mem");
@@ -165,7 +168,7 @@ void nmsim_test_elem_net_sim
       { /* Define the external inputs (zero for now): */
         for (nmsim_elem_neuron_ix_t ine = 0; ine < nne; ine++) { I[ine] = 0.0; } 
         /* Apply the evolution equations: */
-        nmsim_elem_net_sim_step(enet, t, V, age, M, H, X, I, J, etrace);
+        nmsim_elem_net_sim_step(enet, t, V, age, M, H, X, I, J, etrace, gstats);
       }
       
     /* Write the traces: */

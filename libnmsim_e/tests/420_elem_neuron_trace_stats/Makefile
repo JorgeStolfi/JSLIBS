@@ -1,4 +1,4 @@
-# Last edited on 2020-12-16 00:30:55 by jstolfi
+# Last edited on 2020-12-17 11:10:06 by jstolfi
 
 PROG := nmsim_test_420_elem_neuron_trace_stats
  
@@ -11,13 +11,11 @@ JS_LIBS := \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
-  ${NN} ${NSTEPS}
+
 all: check
 
-check:  do-test
-
-do-test: do-clean ${PROG}
+check:  ${PROG}
+	mkdir -p out
+	rm -f out/*.{txt,png}
 	nice ${PROG}
-
-do-clean:
-	rm -f out/sim_*.txt
+	

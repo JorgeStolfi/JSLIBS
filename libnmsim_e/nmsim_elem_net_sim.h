@@ -2,7 +2,7 @@
 #define nmsim_elem_net_sim_H
  
 /* Simulation of neuron-level networks of Galves-Löcherbach neurons. */
-/* Last edited on 2020-12-15 18:13:46 by jstolfi */
+/* Last edited on 2020-12-17 01:16:35 by jstolfi */
 
 #define _GNU_SOURCE
 
@@ -12,6 +12,7 @@
 #include <nmsim_compare.h>
 #include <nmsim_elem_net.h>
 #include <nmsim_elem_net_trace.h>
+#include <nmsim_elem_net_sim_group_stats.h>
 
 void nmsim_elem_net_sim_step
   ( nmsim_elem_net_t *enet,    /* Network description. */
@@ -23,7 +24,8 @@ void nmsim_elem_net_sim_step
     bool_t X[],                /* Firing indicator of each neuron (OUT). */
     double I[],                /* External neuron inputs (IN,mV). */
     double J[],                /* Total input of each neuron (OUT,mV). */
-    nmsim_elem_net_trace_t *etrace /* Monitored neuron traces. */
+    nmsim_elem_net_trace_t *etrace,          /* Traces of monitored neurons. */
+    nmsim_elem_net_sim_group_stats_t *gstats /* Statistics of neuron state and activity per group. */
   );
   /* Simulates the evolution of a network {enet} of {nne=enet.nne} GL
     neurons during the time step from discrete time {t} to time
@@ -62,17 +64,28 @@ void nmsim_elem_net_sim_step
     
     The input contents of {X} and {J} are ignored.
     
-    If {etrace} is not {NULL}, the procedure also stores into it 
-    the states and evolution dataof the selected neurons relevant to that time step. Specifically, let 
-    {trk = etrace.trne[k]}, for each {k} in {0..etrace.nne-1},
-    be the trace of a monitored neuron {i}.
+    If {etrace} is not {NULL}, the procedure also stores into it the
+    states and evolution data of the selected neurons relevant to that
+    time step. Specifically, let {trk = etrace.trne[k]}, for each {k} in
+    {0..etrace.nne-1}, be the trace of a monitored neuron {i}.
     
-    If {t} is in {trk.tlo .. trk.thi}, saves in the trace entry 
-    {tst=trk.ts[t - trk.tlo]} corresponding to time {t} the parameters
+    If {t} is in {trk.tLo .. trk.tHi}, saves in the trace entry 
+    {tst=trk.ts[t - trk.tLo]} corresponding to time {t} the parameters
     {V,age,M,H} that describe the state at time {t}, and the parametes
     {X,I,J} that describe what happened between times {t} and {t+1}.
     Note that the updated parameter {V,age,M,H} are NOT stored in the
-    entry {t+1} of {trk}. */
+    entry {t+1} of {trk}.
+    
+    If {gstats} is not {NULL}, the procedure accumulates into it per-group statistics
+    about the state and activity variables of the neurons, between the times
+    {gstats.tLo} and {gstats.tHi}. Namely, it accumulates the parameters
+    {V,age,M,H} that describe the state at time {t}, the parametes
+    {X,I,J} that describe what happened between times {t} and {t+1},
+    and the parameters {V,age} at time {t} for neurons that fired 
+    between {t} and {t+1}.  Note that the updated parameters {V,age,M,H} 
+    at {t+1} are NOT accumulated.  Note also that the {gstats} structure
+    must be initialized with {nmsim_elem_net_sim_group_stats_initialize} 
+    and finalized with {nmsim_elem_net_sim_group_stats_finalize}. */
 
 void nmsim_elem_net_sim_compute_modulators
   ( nmsim_elem_net_t *enet, 

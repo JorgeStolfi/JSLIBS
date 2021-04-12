@@ -2,7 +2,7 @@
 #define PROG_DESC "tests of {limnmism} neuron-level network simulation"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-16 00:39:33 by jstolfi */ 
+/* Last edited on 2020-12-17 11:08:38 by jstolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2020  State University of Campinas (UNICAMP)"
@@ -76,18 +76,14 @@ void nmsim_test_elem_net_sim_stats(int32_t nne)
     /* Choose nominal simulation time parameters: */
     nmsim_time_t nSteps = 10000;  /* Pretend to simulate from {t=0} to {t=nSteps}. */
     
-    /* Create the filename prefix: */
-    char *prefix = NULL;
-    asprintf(&prefix, "out/sim_%06dne_stats", nne);
-   
     /* Allocate the statistics structure, choose (proper) subset of neurons to statize: */
-    nmsim_elem_neuron_ix_t ine_lo = (nmsim_elem_neuron_ix_t)imax(nne/4, nne/2-3); /* First neuron to consider. */
-    nmsim_elem_neuron_ix_t ine_hi = (nmsim_elem_neuron_ix_t)imin(3*nne/4, nne/2+3); /* Last neuron to consider. */
-    assert((ine_lo > 0) && (ine_lo < ine_hi) && (ine_hi < nne-1));  
-    nmsim_time_t stt_lo = nSteps/4;    /* First time to statize. */
-    nmsim_time_t stt_hi = 3*nSteps/4;  /* Last time to statize. */
+    nmsim_elem_neuron_ix_t ineLo = (nmsim_elem_neuron_ix_t)imax(nne/4, nne/2-3); /* First neuron to consider. */
+    nmsim_elem_neuron_ix_t ineHi = (nmsim_elem_neuron_ix_t)imin(3*nne/4, nne/2+3); /* Last neuron to consider. */
+    assert((ineLo > 0) && (ineLo < ineHi) && (ineHi < nne-1));  
+    nmsim_time_t sttLo = nSteps/4;    /* First time to statize. */
+    nmsim_time_t sttHi = 3*nSteps/4;  /* Last time to statize. */
 
-    nmsim_elem_net_sim_stats_t *S = nmsim_elem_net_sim_stats_new(ine_lo, ine_hi, stt_lo, stt_hi);
+    nmsim_elem_net_sim_stats_t *S = nmsim_elem_net_sim_stats_new(ineLo, ineHi, sttLo, sttHi);
     nmsim_elem_net_sim_stats_initialize(S);
     
     /* Allocate work arrays: */
@@ -120,6 +116,8 @@ void nmsim_test_elem_net_sim_stats(int32_t nne)
     nmsim_elem_net_sim_stats_finalize(S);
 
     /* Write the statistics: */
+    char *prefix = NULL;
+    asprintf(&prefix, "out/sim_%06dne", nne);
     nmsim_test_elem_net_sim_stats_write(prefix, S);
     
     free(V);
@@ -133,7 +131,7 @@ void nmsim_test_elem_net_sim_stats(int32_t nne)
   
 void nmsim_test_elem_net_sim_stats_write(char *prefix, nmsim_elem_net_sim_stats_t *S)
   { char *fname = NULL;
-    asprintf(&fname, "%s.txt", prefix);
+    asprintf(&fname, "%s_ne%010d--%010d_stats.txt", prefix, S->ineLo, S->ineHi);
     FILE *wr = open_write(fname, TRUE);
     nmsim_elem_net_sim_stats_write(wr, S);
     fclose(wr);

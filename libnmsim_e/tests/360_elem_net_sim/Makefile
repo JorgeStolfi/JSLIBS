@@ -1,4 +1,4 @@
-# Last edited on 2020-12-15 18:19:06 by jstolfi
+# Last edited on 2020-12-17 10:58:56 by jstolfi
 
 PROG := nmsim_test_360_elem_net_sim
  
@@ -17,9 +17,11 @@ all: check
 check:  do-test
 
 do-test: do-clean ${PROG}
+	mkdir -p out
+	rm -fv out/*.{png,txt}
 	nice ${PROG}
-	for ff in out/sim_*_elem_n[0-9]*_trace.txt ; do \
-	  ./plot_potentials.sh $$ff ;\
+	for ff in out/sim_*_elem_ne[0-9]*_trace.txt ; do \
+	  nmsim_plot_potentials.sh $$ff `nmsim_extract_neuron_indices.sh $$ff` 495 605 -90 10;\
 	done
 
 do-clean:

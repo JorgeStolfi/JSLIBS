@@ -2,7 +2,7 @@
 #define nmsim_basic_H
  
 /* Basic types for neuromat network simulation. */
-/* Last edited on 2020-12-07 15:31:57 by jstolfi */
+/* Last edited on 2020-12-24 22:25:55 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -138,65 +138,75 @@ typedef int64_t nmsim_time_t;
     index. Note that in a simulation with {N} time steps the discrete
     times go from 0 to {N}. */
 
+/* TAU-MU CONVERSION */
+
+double nmsim_basic_tau_from_mu(double mu, double timeStep);
+  /* Returns the characteristic decay time {tau} that corresponds to the
+    decay fator {mu} in a simulation with the given {timeStep}. */
+    
+double nmsim_basic_mu_from_tau(double tau, double timeStep);
+  /* Returns the decay factor {mu} that corresponds to the
+    characteristic time {tau} in a simulation with the given {timeStep}. */
+        
 /* RANGE CLIPPING */
 
 void nmsim_int64_range_clip
-  ( int64_t alo,
-    int64_t ahi, 
-    int64_t blo, 
-    int64_t bhi, 
-    int64_t *cloP, 
-    int64_t *chiP,
+  ( int64_t aLo,
+    int64_t aHi, 
+    int64_t bLo, 
+    int64_t bHi, 
+    int64_t *cLoP, 
+    int64_t *cHiP,
     char *itname
   );
 void nmsim_int32_range_clip
-  ( int32_t alo,
-    int32_t ahi, 
-    int32_t blo, 
-    int32_t bhi, 
-    int32_t *cloP, 
-    int32_t *chiP,
+  ( int32_t aLo,
+    int32_t aHi, 
+    int32_t bLo, 
+    int32_t bHi, 
+    int32_t *cLoP, 
+    int32_t *cHiP,
     char *itname
   );
-  /* Computes the intersection of two integer ranges {alo..ahi} and {blo..bhi}, 
-    and returns the low and high ends of the result in {*cloP} and {*chiP}.
-    If the intersection is empty, returns {*cloP=0} and {*chiP=-1}.
+  /* Computes the intersection of two integer ranges {aLo..aHi} and {bLo..bHi}, 
+    and returns the low and high ends of the result in {*cLoP} and {*cHiP}.
+    If the intersection is empty, returns {*cLoP=0} and {*cHiP=-1}.
     
     If {itname} is not {NULL}, assumes that it is the name of an item in those
-    ranges (e.g. "index", "time", etc.) and prints warnings if {alo..ahi} is not fully inside
-    the range {blo..bhi}, or is completely outside it. */
+    ranges (e.g. "index", "time", etc.) and prints warnings if {aLo..aHi} is not fully inside
+    the range {bLo..bHi}, or is completely outside it. */
 
 void nmsim_int64_range_unite
-  ( int64_t alo,
-    int64_t ahi, 
-    int64_t blo, 
-    int64_t bhi, 
-    int64_t *uloP, 
-    int64_t *uhiP
+  ( int64_t aLo,
+    int64_t aHi, 
+    int64_t bLo, 
+    int64_t bHi, 
+    int64_t *uLoP, 
+    int64_t *uHiP
   );
 void nmsim_int32_range_unite
-  ( int32_t alo,
-    int32_t ahi, 
-    int32_t blo, 
-    int32_t bhi, 
-    int32_t *uloP, 
-    int32_t *uhiP
+  ( int32_t aLo,
+    int32_t aHi, 
+    int32_t bLo, 
+    int32_t bHi, 
+    int32_t *uLoP, 
+    int32_t *uHiP
   );
-  /* Computes the union of two integer ranges {alo..ahi} and {blo..bhi}, 
-    and returns the low and high ends of the result in {*uloP} and {*uhiP}. */
+  /* Computes the union of two integer ranges {aLo..aHi} and {bLo..bHi}, 
+    and returns the low and high ends of the result in {*uLoP} and {*uHiP}. */
 
 /* OTHER UTILITIES */
   
-double nmsim_throw_double(double vlo, double vhi);
-  /* Generates a random double-precision value in the range {[vlo _ vhi]},
+double nmsim_throw_double(double vLo, double vHi);
+  /* Generates a random double-precision value in the range {[vLo _ vHi]},
     rounded to a proper number of decimal digits. */
 
-double nmsim_select_rounding_mod(double vlo, double vhi);
+double nmsim_select_rounding_mod(double vLo, double vHi);
   /* Selects a suitable rounding modulus for rounding a random number between
-    {vlo} and {vhi}. */
+    {vLo} and {vHi}. */
     
-void nmsim_throw_time_range(nmsim_time_t tlo, nmsim_time_t thi, nmsim_time_t *tloP, nmsim_time_t *thiP);
-  /* Generates a random time interval {*tloP ..* thiP} roughly contained in {tlo .. thi}, but 
+void nmsim_throw_time_range(nmsim_time_t tLo, nmsim_time_t tHi, nmsim_time_t *tLoP, nmsim_time_t *tHiP);
+  /* Generates a random time interval {*tLoP ..* tHiP} roughly contained in {tLo .. tHi}, but 
     may extrapolate somewhat from that range. */
 
 /* MISCELLANEOUS */

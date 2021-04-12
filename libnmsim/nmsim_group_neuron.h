@@ -2,7 +2,7 @@
 #define nmsim_group_neuron_H
  
 /* Attributes of a population of Galves-Löcherbach neurons. */
-/* Last edited on 2020-12-11 15:03:35 by jstolfi */
+/* Last edited on 2021-01-06 11:09:02 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -57,9 +57,10 @@ nmsim_group_neuron_t nmsim_group_neuron_read
     is in 0..nsg_out_max}. The field {.ine_start}, not in the file, is set to zero */
     
 #define nmsim_group_neuron_read_INFO \
-  "The neuron group description consists of three integers -- the neuron group" \
-  " index {ing}, the neuron class index {inc}, and the" \
-  " number {nne} of neurons in the group -- separated by one" \
+  "The neuron group description consists of four integers -- the neuron group" \
+  " index {ing}, the neuron class index {inc}, the" \
+  " number {nne} of neurons in the group, and the number {nsg_out} of" \
+  " synaptic bundles out of this neuron group -- separated by one" \
   " or more blanks, on the same line."
 
 /* DEBUGGING AND TESTING */

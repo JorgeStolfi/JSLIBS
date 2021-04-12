@@ -1,5 +1,5 @@
 /* See {nmsim_elem_net_throw.h} */
-/* Last edited on 2020-12-11 22:37:39 by jstolfi */
+/* Last edited on 2020-12-16 01:32:16 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -83,7 +83,7 @@ void nmsim_elem_net_expand_synapse_group
 
 nmsim_elem_net_t *nmsim_elem_net_throw(nmsim_group_net_t *gnet)
   { 
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
     
     nmsim_group_neuron_count_t nng = gnet->nng;
     nmsim_group_synapse_count_t nsg = gnet->nsg;

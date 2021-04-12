@@ -1,5 +1,5 @@
 /* See {nmsim_elem_net_group_stats.h} */
-/* Last edited on 2020-12-15 10:47:10 by jstolfi */
+/* Last edited on 2021-01-06 13:42:33 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -30,7 +30,7 @@ nmsim_group_synapse_stats_t *nmsim_elem_net_group_stats_get
     sign_t sgn
   )
   {
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
     
     nmsim_elem_neuron_count_t nne = enet->nne; /* Total neurons in network. */
     nmsim_elem_synapse_count_t nse = enet->nse; /* Total synapses in network. */
@@ -54,7 +54,7 @@ nmsim_group_synapse_stats_t *nmsim_elem_net_group_stats_get
     assert((ing_pre >= 0) && (ing_pre < nng));
     nmsim_group_neuron_t *ngrp_pre = &(gnet->ngrp[ing_pre]);
     nmsim_elem_neuron_count_t nne_pre = ngrp_pre->nne;
-    assert((nne_pre >= 1) && (nne_pre < nne)); /* Must have at least 1 neuron per group. */
+    assert((nne_pre >= 1) && (nne_pre <= nne)); /* Must have at least 1 neuron per group. */
     nmsim_elem_neuron_ix_t ine_pre_start = ngrp_pre->ine_start;
     nmsim_elem_neuron_ix_t ine_pre_lim = ine_pre_start + nne_pre;
     assert((ine_pre_start >= 0) && (ine_pre_start < ine_pre_lim) && (ine_pre_lim <= nne));
@@ -66,7 +66,7 @@ nmsim_group_synapse_stats_t *nmsim_elem_net_group_stats_get
     assert((ing_pos >= 0) && (ing_pos < nng));
     nmsim_group_neuron_t *ngrp_pos = &(gnet->ngrp[ing_pos]);
     nmsim_elem_neuron_count_t nne_pos = ngrp_pos->nne;
-    assert((nne_pos >= 1) && (nne_pos < nne)); /* Must have at least 1 neuron per group. */
+    assert((nne_pos >= 1) && (nne_pos <= nne)); /* Must have at least 1 neuron per group. */
     nmsim_elem_neuron_ix_t ine_pos_start = ngrp_pos->ine_start;
     nmsim_elem_neuron_ix_t ine_pos_lim = ine_pos_start + nne_pos;
     assert((ine_pos_start >= 0) && (ine_pos_start < ine_pos_lim) && (ine_pos_lim <= nne));

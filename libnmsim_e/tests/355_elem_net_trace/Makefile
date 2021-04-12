@@ -1,4 +1,4 @@
-# Last edited on 2020-12-05 07:51:41 by jstolfi
+# Last edited on 2020-12-17 09:31:27 by jstolfi
 
 PROG := nmsim_test_355_elem_net_trace
  
@@ -17,6 +17,7 @@ all: check
 check:  do-test
 
 do-test: do-clean ${PROG}
+	mkdir -p out
 	nice ${PROG}
 
 do-clean:

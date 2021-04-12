@@ -2,7 +2,7 @@
 #define nmsim_elem_neuron_trace_stats_H
  
 /* Statistical summary of a single neuron trace in a Galves-Löecherbach net. */
-/* Last edited on 2020-12-15 22:23:05 by jstolfi */
+/* Last edited on 2020-12-16 12:07:30 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -25,7 +25,7 @@ void nmsim_elem_neuron_trace_stats_compute
   ( nmsim_elem_neuron_trace_t *trne,
     nmsim_elem_net_sim_stats_t *ntS
   );
-  /* Stores into {*ntS} a statistical summary of the neuron trace {trne}.  Ignores
+  /* Stores into {*ntS} a statistical summary of the single-neuron trace {trne}.  Ignores
     any values that are {±INF} or {NAN}. */
 
 #endif

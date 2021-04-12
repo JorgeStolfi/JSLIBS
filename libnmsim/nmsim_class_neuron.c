@@ -1,5 +1,5 @@
 /* See {nmsim_class_neuron.h} */
-/* Last edited on 2020-12-11 13:55:20 by jstolfi */
+/* Last edited on 2020-12-24 22:26:30 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -130,13 +130,7 @@ void nmsim_class_neuron_write(FILE *wr, nmsim_class_neuron_t *nclass, double tim
     /* INTERNAL IMPLEMENTATIONS */
 
     void write_tau_param_from_mu(char *name, double mu)
-      { double tau;
-        if (mu == 0)
-          { tau = 0; }
-        else if (mu == 1.0)
-          { tau = INF; }
-        else
-         { tau = -timeStep/log(mu); }
+      { double tau = nmsim_basic_tau_from_mu(mu, timeStep);
         nmsim_write_double_param(wr, ind2, name, tau, nmsim_write_tau_PREC, FALSE, TRUE, FALSE);
       }
   }
@@ -179,12 +173,7 @@ nmsim_class_neuron_t *nmsim_class_neuron_read(FILE *rd, double timeStep)
 
     double read_mu_from_tau_param(char *name)
       { double tau = nmsim_read_double_param(rd, name, 0.0, INF);
-        if (tau < 0.02*timeStep)
-          { return 0.0; }
-        else if (tau == INF)
-          { return 1.0; }
-        else
-          { return exp(-timeStep/tau); } 
+        return nmsim_basic_mu_from_tau(tau, timeStep);
       }
   }
 

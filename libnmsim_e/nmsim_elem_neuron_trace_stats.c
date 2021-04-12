@@ -1,5 +1,5 @@
 /* See {nmsim_elem_neuron_trace_stats.h} */
-/* Last edited on 2020-12-16 00:23:59 by jstolfi */
+/* Last edited on 2020-12-25 11:54:47 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -34,27 +34,28 @@ void nmsim_elem_neuron_trace_stats_compute
   )
   {
     /* Copy data: */
-    S->ine_lo = trne->ine;
-    S->ine_hi = trne->ine;
-    S->t_lo = trne->tlo;
-    S->t_hi = trne->thi;
+    S->ineLo = trne->ineLo;
+    S->ineHi = trne->ineHi;
+    S->tLo = trne->tLo;
+    S->tHi = trne->tHi;
     
     /* Clear statistics: */
     nmsim_elem_net_sim_stats_initialize(S);
 
     /* Scan trace entries and collect {nvs,min,max} for each parameter.  Accumulate sum in {avg}. */
-    nmsim_time_t tlo = trne->tlo;
-    nmsim_time_t thi = trne->thi;
-    for (nmsim_time_t t = tlo; t <= thi; t++)
-      { nmsim_elem_neuron_trace_entry_t *tsk = &(trne->ts[t - tlo]);
+    nmsim_time_t tLo = trne->tLo;
+    nmsim_time_t tHi = trne->tHi;
+    for (nmsim_time_t t = tLo; t <= tHi; t++)
+      { nmsim_elem_neuron_trace_entry_t *tsk = &(trne->ts[t - tLo]);
         nmsim_stats_accumulate(&(S->V), tsk->V);
         nmsim_stats_accumulate(&(S->age), (double)tsk->age);
         nmsim_stats_accumulate(&(S->M), tsk->M);
         nmsim_stats_accumulate(&(S->H), tsk->H);
-        /* The variables {X,I,J} may not be defined for {t=thi}: */
-        if (t < thi)
+        /* The variables {X,I,J} may not be defined for {t=tHi}: */
+        if (t < tHi)
           { nmsim_stats_accumulate(&(S->X), (double)tsk->X);
             nmsim_stats_accumulate(&(S->I), tsk->I);
+            nmsim_stats_accumulate(&(S->S), tsk->J - tsk->I);
             nmsim_stats_accumulate(&(S->J), tsk->J);
             if (tsk->X)
               { /* Neuron fired in the next time step. Collect stats: */

@@ -1,5 +1,5 @@
 /* See {nmsim_class_net.h} */
-/* Last edited on 2020-12-12 10:06:43 by jstolfi */
+/* Last edited on 2020-12-16 22:58:32 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -83,8 +83,6 @@ void nmsim_class_net_write(FILE *wr, nmsim_class_net_t *cnet, double timeStep)
 
 nmsim_class_net_t *nmsim_class_net_read(FILE *rd, double timeStep)
   {
-    bool_t debug = FALSE;
-    
     fprintf(stderr, "    {nmsim_class_net_read} begin\n");
 
     /* Read header line: */

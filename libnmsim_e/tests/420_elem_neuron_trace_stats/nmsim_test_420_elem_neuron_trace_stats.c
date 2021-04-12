@@ -2,7 +2,7 @@
 #define PROG_DESC "tests of {limnmism} neuron-level network simulation"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-16 00:51:29 by jstolfi */ 
+/* Last edited on 2020-12-17 11:20:41 by jstolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2020  State University of Campinas (UNICAMP)"
@@ -80,40 +80,43 @@ void nmsim_test_elem_neuron_trace_stats(int32_t nne)
     /* Choose nominal simulation time parameters: */
     nmsim_time_t nSteps = 10000;  /* Pretend to simulate from {t=0} to {t=nSteps}. */
     
-    /* Create the filename prefix: */
-    char *prefix = NULL;
-    asprintf(&prefix, "out/sim_%06dne_stats", nne);
-   
     /* Allocate the trace structure, choose neuron to trace: */
-    nmsim_elem_neuron_ix_t ine = int32_abrandom(nne/4, 3*nne/4); /* Neuron to trace. */
-    assert((ine > 0) && (ine < nne-1));  
-    nmsim_time_t trt_lo = nSteps/4;    /* First time to trace. */
-    nmsim_time_t trt_hi = 3*nSteps/4;  /* Last time to trace. */
+    nmsim_elem_neuron_ix_t ineLo = int32_abrandom(nne/4, nne/2); /* Frst neuron to trace. */
+    nmsim_elem_neuron_ix_t ineHi = int32_abrandom(ineLo, 4*nne/5); /* Last neuron to trace. */
+    assert((ineLo > 0) && (ineLo <= ineHi) && (ineHi < nne-1));  
+    nmsim_time_t trtLo = nSteps/4;    /* First time to trace. */
+    nmsim_time_t trtHi = 3*nSteps/4;  /* Last time to trace. */
+    fprintf(stderr, "neurons %d .. %d  times %ld .. %ld\n", ineLo, ineHi, trtLo, trtHi);
     
-    nmsim_elem_neuron_trace_t *trne = nmsim_elem_neuron_trace_new(ine, trt_lo, trt_hi);
+    nmsim_elem_neuron_trace_t *trne = nmsim_elem_neuron_trace_new(ineLo, ineHi, trtLo, trtHi);
 
     /* Pretend to simulate: */
     srandom(19501129);
-    for (nmsim_time_t t = 0; t < nSteps; t++)
+    for (nmsim_time_t t = 0; t <= nSteps; t++)
       { /* Generate random values for state variables: */
         double V =    10.0 + 5.0*dgaussrand();
         nmsim_step_count_t age =  (nmsim_step_count_t)(t % 100);
         double M =    1.0 +0.5*dgaussrand();
         double H =    2.0 +3.0*dgaussrand();
-        bool_t X =    (drandom() < 0.10);
-        double I =    10.0 + 5.0*dgaussrand();
-        double J =    20.0 + 10.0*dgaussrand();
-
-        /* Gather statistics: */
-        nmsim_elem_neuron_trace_set_V_age_M_H(trne, t, V, age, M, H);
-        nmsim_elem_neuron_trace_set_X_I_J(trne, t, X, I, J);
+        /* Gather statistics of state variables: */
+        nmsim_elem_neuron_trace_set_V_age_M_H(trne, t, V, (double)age, M, H);
+        if (t < nSteps) { 
+          /* Generate random values for evolution variables: */
+          bool_t X =    (drandom() < 0.10);
+          double I =    10.0 + 5.0*dgaussrand();
+          double J =    20.0 + 10.0*dgaussrand();
+          /* Gather statistics of evolution variables: */
+          nmsim_elem_neuron_trace_set_X_I_J(trne, t, (double)X, I, J); 
+        }
       }
 
     /* Compute the statistics of that trace: */
-    nmsim_elem_net_sim_stats_t *S = nmsim_elem_net_sim_stats_new(ine, ine, trt_lo, trt_hi);
+    nmsim_elem_net_sim_stats_t *S = nmsim_elem_net_sim_stats_new(ineLo, ineHi, trtLo, trtHi);
     nmsim_elem_neuron_trace_stats_compute(trne, S);
 
     /* Write the statistics: */
+    char *prefix = NULL;
+    asprintf(&prefix, "out/sim_%06d", nne);
     nmsim_test_elem_neuron_trace_stats_write(prefix, S);
     
     free(trne);
@@ -123,7 +126,7 @@ void nmsim_test_elem_neuron_trace_stats(int32_t nne)
   
 void nmsim_test_elem_neuron_trace_stats_write(char *prefix, nmsim_elem_net_sim_stats_t *S)
   { char *fname = NULL;
-    asprintf(&fname, "%s.txt", prefix);
+    asprintf(&fname, "%s_ne%010d--%010d_stats.txt", prefix, S->ineLo, S->ineHi);
     FILE *wr = open_write(fname, TRUE);
     nmsim_elem_net_sim_stats_write(wr, S);
     fclose(wr);

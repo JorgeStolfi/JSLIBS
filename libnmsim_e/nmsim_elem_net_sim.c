@@ -1,5 +1,5 @@
 /* See {nmsim_elem_net_sim.h} */
-/* Last edited on 2020-12-15 20:01:03 by jstolfi */
+/* Last edited on 2020-12-16 14:07:57 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -25,6 +25,9 @@
 #include <nmsim_elem_neuron.h>
 
 #include <nmsim_firing_func.h>
+
+#include <nmsim_elem_net_trace.h>
+#include <nmsim_elem_net_sim_group_stats.h>
 
 #include <nmsim_elem_net_sim.h>
 
@@ -111,13 +114,15 @@ void nmsim_elem_net_sim_step
     bool_t X[],                /* Firing indicator of each neuron (OUT). */
     double I[],                /* External neuron inputs (IN,mV). */
     double J[],                /* Total input of each neuron (OUT,mV). */
-    nmsim_elem_net_trace_t *etrace /* Monitored neuron traces. */
+    nmsim_elem_net_trace_t *etrace,          /* Traces of monitored neurons. */
+    nmsim_elem_net_sim_group_stats_t *gstats /* Statistics of neuron state and activity per group. */
   )
   {
     nmsim_elem_neuron_count_t nne = enet->nne; /* Number of neurons in network. */
     
-    /* Save the trace data for time {t}: */
+    /* Save the trace data and accumulate state statistics for time {t}: */
     if (etrace != NULL) { nmsim_elem_net_trace_set_V_age_M_H(etrace, t, nne, V, age, M, H); }
+    if (gstats != NULL) { nmsim_elem_net_sim_group_stats_accumulate_V_age_M_H(gstats, t, nne, V, age, M, H); }
     
     /* Compute the firing indicators {X} and total inputs {J} for step {t} to {t+1}: */
     nmsim_elem_net_sim_determine_firings(enet, t, V, X);
@@ -125,6 +130,7 @@ void nmsim_elem_net_sim_step
     
     /* Save the tace data for the step {t} to {t+1}: */
     if (etrace != NULL) { nmsim_elem_net_trace_set_X_I_J(etrace, t, nne, X, I, J); }
+    if (gstats != NULL) { nmsim_elem_net_sim_group_stats_accumulate_VF_AF_X_I_J(gstats, t, nne, V, age, X, I, J); }
 
     /* Update potentials, ages, and modulators for time {t+1}: */
     nmsim_elem_net_sim_update_states(enet, t+1, V, age, M, H, X, J);
@@ -160,7 +166,7 @@ void nmsim_elem_net_sim_determine_firings
     bool_t X[]       /* Firing indicators in time step (OUT). */
   )
   {
-    bool_t debug = (t == 400);
+    bool_t debug = FALSE; /* (t == 400); */
 
     if (debug) { fprintf(stderr, "computing firing indicators for t = %ld\n", t); }
     
@@ -191,7 +197,7 @@ void nmsim_elem_net_sim_compute_tot_inputs
     double J[]                /* Total input of each neuron from {t} to {t+1} (OUT). */
   )
   {
-    bool_t debug = (t == 400);
+    bool_t debug = FALSE; /* (t == 400); */
     
     nmsim_elem_synapse_count_t nse = enet->nse;
     nmsim_elem_neuron_count_t nne = enet->nne;

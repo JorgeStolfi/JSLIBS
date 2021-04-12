@@ -2,7 +2,7 @@
 #define PROG_DESC "tests of {limnmism} neuron-level simulation trace"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2019-03-28 22:08:52 by jstolfi */ 
+/* Last edited on 2020-12-17 09:32:37 by jstolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -76,8 +76,8 @@ void nmsim_test_elem_net_trace
   {
     /* Choose simulation time parameters: */
     nmsim_time_t nSteps = 100;          /* Simulate from {t=0} to {t=nSteps}. */
-    nmsim_time_t tlo = 418;            /* First time to save in traces. */
-    nmsim_time_t thi = tlo + nSteps;  /* Last time to save in traces. */
+    nmsim_time_t tLo = 418;            /* First time to save in traces. */
+    nmsim_time_t tHi = tLo + nSteps;  /* Last time to save in traces. */
     
     /* Create the filename prefix: */
     char *prefix = NULL;
@@ -85,13 +85,13 @@ void nmsim_test_elem_net_trace
       
     /* Allocate element-level trace structure, choose neurons to trace: */
     fprintf(stderr, "creating elem net trace structure...\n");
-    nmsim_elem_net_trace_t *etrace = nmsim_elem_net_trace_throw(nne, tlo, thi, tne);
+    nmsim_elem_net_trace_t *etrace = nmsim_elem_net_trace_throw(nne, tLo, tHi, tne);
     for(nmsim_elem_neuron_ix_t k = 0; k < tne; k++)
       { fprintf(stderr, "  entry[%2d]", k);
         nmsim_elem_neuron_trace_t *trnek = etrace->trne[k];
         if (trnek != NULL)
-          { fprintf(stderr, " neuron %d", trnek->ine);
-            fprintf(stderr, " time range %ld .. %ld\n", trnek->tlo, trnek->thi); 
+          { fprintf(stderr, " neurons %d..%d", trnek->ineLo, trnek->ineHi);
+            fprintf(stderr, " time range %ld .. %ld\n", trnek->tLo, trnek->tHi); 
           }
         else
           { fprintf(stderr, " NULL\n"); }
@@ -118,7 +118,7 @@ void nmsim_test_elem_net_trace
 
     /* Fill trace: */
     fprintf(stderr, "faking the simulation...\n");
-    for (nmsim_time_t t = tlo-10; t < thi-10; t++)
+    for (nmsim_time_t t = tLo-10; t < tHi-10; t++)
       { nmsim_elem_net_trace_set_V_age_M_H(etrace, t, nne, V, age, M, H);
         for (nmsim_elem_neuron_ix_t ine = 0; ine < nne; ine++) 
           { /* Define firing indicator: */
@@ -174,10 +174,11 @@ void nmsim_test_elem_net_trace_read(char *prefix, nmsim_elem_net_trace_t *etrace
     nmsim_elem_neuron_count_t tne = etrace->tne;
     for (nmsim_elem_neuron_ix_t k = 0; k < tne; k++)
       { nmsim_elem_neuron_trace_t *trnek = etrace->trne[k];
-        nmsim_elem_neuron_ix_t ine = trnek->ine;
-        fprintf(stderr, "reading and checking state trne[%d] = %d\n", k, ine);
+        nmsim_elem_neuron_ix_t ineLo = trnek->ineLo;
+        nmsim_elem_neuron_ix_t ineHi = trnek->ineHi;
+        fprintf(stderr, "reading and checking trace trne[%d] of neurons %d..%d\n", k, ineLo, ineHi);
         char *fname = NULL;
-        asprintf(&fname, "%s_n%010d.txt", prefix, ine);
+        asprintf(&fname, "%s_ne%010d--%010d_trace.txt", prefix, ineLo, ineHi);
         FILE *rd = open_read(fname, TRUE);
         nmsim_elem_neuron_trace_t *trnek_read = nmsim_elem_neuron_trace_read(rd);
         fclose(rd);

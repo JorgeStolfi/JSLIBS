@@ -1,5 +1,5 @@
 /* See {nmsim_write.h} */
-/* Last edited on 2020-12-11 13:29:04 by jstolfi */
+/* Last edited on 2020-12-16 22:48:36 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -46,6 +46,8 @@ void  nmsim_write_fudge_abs_value
 
 void nmsim_write_double_value(FILE *wr, double v, double prec, bool_t sgn, bool_t fudge_0, bool_t fudge_1)
   { bool_t debug = FALSE;
+  
+    /* !!! Should eliminate trailing blanks !!! */
   
     /* Check for NAN and infinities: */
     char *vbad = NULL;

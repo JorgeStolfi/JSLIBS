@@ -1,5 +1,5 @@
-/* See {nmsim_basic.h} */
-/* Last edited on 2019-04-25 18:13:41 by jstolfi */
+/* see {nmsim_basic.h} */
+/* Last edited on 2020-12-24 22:23:19 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -17,103 +17,121 @@
 
 #include <nmsim_basic.h>
 
+double nmsim_basic_tau_from_mu(double mu, double timeStep)
+  { if (mu == 0)
+      { return 0; }
+    else if (mu == 1.0)
+      { return INF; }
+    else
+      { return -timeStep/log(mu); }
+  }
+  
+double nmsim_basic_mu_from_tau(double tau, double timeStep)
+  { if (tau < 0.02*timeStep)
+      { return 0.0; }
+    else if (tau == INF)
+      { return 1.0; }
+    else
+      { return exp(-timeStep/tau); } 
+  }
+
 void nmsim_int64_range_clip
-  ( int64_t alo,
-    int64_t ahi, 
-    int64_t blo, 
-    int64_t bhi, 
-    int64_t *cloP, 
-    int64_t *chiP,
+  ( int64_t aLo,
+    int64_t aHi, 
+    int64_t bLo, 
+    int64_t bHi, 
+    int64_t *cLoP, 
+    int64_t *cHiP,
     char *itname
   )
   { /* Compute raw intersection: */
-    int64_t clo = imax(alo, blo);
-    int64_t chi = imin(ahi, bhi);
+    int64_t cLo = imax(aLo, bLo);
+    int64_t cHi = imin(aHi, bHi);
     /* Regularize empty range: */
-    if (clo > chi) { clo = 0; chi = -1; }
+    if (cLo > cHi) { cLo = 0; cHi = -1; }
     if (itname != NULL)
       { /* Print warnings, if any: */
-        if (clo >chi)
-          { fprintf(stderr, "!! %s range %ld..%ld is empty or fully outside %ld..%ld\n", itname, alo, ahi, blo, bhi); }
+        if (cLo >cHi)
+          { fprintf(stderr, "!! %s range %ld..%ld is empty or fully outside %ld..%ld\n", itname, aLo, aHi, bLo, bHi); }
         else 
-          { if (clo > alo)
-              { fprintf(stderr, "!! %s subrange %ld..%ld is outside  %ld..%ld\n", itname, alo, clo-1, blo, bhi); }
-            if (chi < ahi)
-              { fprintf(stderr, "!! %s subrange %ld..%ld is outside  %ld..%ld\n", itname, chi+1, ahi, blo, bhi); }
+          { if (cLo > aLo)
+              { fprintf(stderr, "!! %s subrange %ld..%ld is outside  %ld..%ld\n", itname, aLo, cLo-1, bLo, bHi); }
+            if (cHi < aHi)
+              { fprintf(stderr, "!! %s subrange %ld..%ld is outside  %ld..%ld\n", itname, cHi+1, aHi, bLo, bHi); }
           }
       }
     /* Return: */
-    (*cloP) = clo; (*chiP) = chi;
+    (*cLoP) = cLo; (*cHiP) = cHi;
   }
  
 void nmsim_int32_range_clip
-  ( int32_t alo,
-    int32_t ahi, 
-    int32_t blo, 
-    int32_t bhi, 
-    int32_t *cloP, 
-    int32_t *chiP,
+  ( int32_t aLo,
+    int32_t aHi, 
+    int32_t bLo, 
+    int32_t bHi, 
+    int32_t *cLoP, 
+    int32_t *cHiP,
     char *itname
   )
-  { int64_t clo, chi;
-    nmsim_int64_range_clip(alo, ahi, blo, bhi, &clo, &chi, itname);
-    assert((INT32_MIN <= clo) && (clo <= INT32_MAX));
-    assert((INT32_MIN <= chi) && (chi <= INT32_MAX));
-    (*cloP) = (int32_t)clo; (*chiP) = (int32_t)chi;
+  { int64_t cLo, cHi;
+    nmsim_int64_range_clip(aLo, aHi, bLo, bHi, &cLo, &cHi, itname);
+    assert((INT32_MIN <= cLo) && (cLo <= INT32_MAX));
+    assert((INT32_MIN <= cHi) && (cHi <= INT32_MAX));
+    (*cLoP) = (int32_t)cLo; (*cHiP) = (int32_t)cHi;
   }
  
 void nmsim_int64_range_unite
-  ( int64_t alo,
-    int64_t ahi, 
-    int64_t blo, 
-    int64_t bhi, 
-    int64_t *uloP, 
-    int64_t *uhiP
+  ( int64_t aLo,
+    int64_t aHi, 
+    int64_t bLo, 
+    int64_t bHi, 
+    int64_t *uLoP, 
+    int64_t *uHiP
   )
   { /* Compute raw union: */
-    int64_t ulo, uhi;
-    if (alo > ahi)
-      { ulo = blo; uhi = bhi; }
-    else if (blo > bhi)
-      { ulo = alo; uhi = ahi; }
+    int64_t uLo, uHi;
+    if (aLo > aHi)
+      { uLo = bLo; uHi = bHi; }
+    else if (bLo > bHi)
+      { uLo = aLo; uHi = aHi; }
     else
-      { ulo = imin(alo, blo); uhi = imax(ahi, bhi); }
+      { uLo = imin(aLo, bLo); uHi = imax(aHi, bHi); }
     /* Regularize empty range: */
-    if (ulo > uhi) { ulo = 0; uhi = -1; }
+    if (uLo > uHi) { uLo = 0; uHi = -1; }
     /* Return: */
-    (*uloP) = ulo; (*uhiP) = uhi;
+    (*uLoP) = uLo; (*uHiP) = uHi;
   }
 
 void nmsim_int32_range_unite
-  ( int32_t alo,
-    int32_t ahi, 
-    int32_t blo, 
-    int32_t bhi, 
-    int32_t *uloP, 
-    int32_t *uhiP
+  ( int32_t aLo,
+    int32_t aHi, 
+    int32_t bLo, 
+    int32_t bHi, 
+    int32_t *uLoP, 
+    int32_t *uHiP
   )
-  { int64_t ulo, uhi;
-    nmsim_int64_range_unite(alo, ahi, blo, bhi, &ulo, &uhi);
-    assert((INT32_MIN <= ulo) && (ulo <= INT32_MAX));
-    assert((INT32_MIN <= uhi) && (uhi <= INT32_MAX));
-    (*uloP) = (int32_t)ulo; (*uhiP) = (int32_t)uhi;
+  { int64_t uLo, uHi;
+    nmsim_int64_range_unite(aLo, aHi, bLo, bHi, &uLo, &uHi);
+    assert((INT32_MIN <= uLo) && (uLo <= INT32_MAX));
+    assert((INT32_MIN <= uHi) && (uHi <= INT32_MAX));
+    (*uLoP) = (int32_t)uLo; (*uHiP) = (int32_t)uHi;
   }
 
-double nmsim_throw_double(double vlo, double vhi)
-  { double v = dabrandom(vlo, vhi);
-    if (vlo != vhi)
+double nmsim_throw_double(double vLo, double vHi)
+  { double v = dabrandom(vLo, vHi);
+    if (vLo != vHi)
       { /* Round value to nice number: */
-        assert(vlo < vhi);
-        double mod = nmsim_select_rounding_mod(vlo, vhi);
+        assert(vLo < vHi);
+        double mod = nmsim_select_rounding_mod(vLo, vHi);
         double q = floor((v + mod/2)/mod);
         v = q*mod;
       }
     return v;
   }
 
-double nmsim_select_rounding_mod(double vlo, double vhi)
+double nmsim_select_rounding_mod(double vLo, double vHi)
   {
-    double dif = fabs(vhi - vlo);
+    double dif = fabs(vHi - vLo);
     /* Compute a power of 10 {mod} between {dif/100} and {dif/10): */
     double mod = 1.0;
     while (mod < dif/100) { mod = mod*10; }
@@ -121,27 +139,26 @@ double nmsim_select_rounding_mod(double vlo, double vhi)
     return mod;
   }
 
-void nmsim_throw_time_range(nmsim_time_t tlo, nmsim_time_t thi, nmsim_time_t *tloP, nmsim_time_t *thiP)
+void nmsim_throw_time_range(nmsim_time_t tLo, nmsim_time_t tHi, nmsim_time_t *tLoP, nmsim_time_t *tHiP)
   {
-    if (tlo > thi) 
+    if (tLo > tHi) 
       { /* Empty interval: */
-        (*tloP) = 0;
-        (*thiP) = -1;
+        (*tLoP) = 0;
+        (*tHiP) = -1;
       }
     else
       { /* Choose min and max possible times: */
-        nmsim_step_count_t dt = thi - tlo;  /* Num of steps in given range. */
+        nmsim_step_count_t dt = tHi - tLo;  /* Num of steps in given range. */
         nmsim_step_count_t xt = dt / 2;     /* How much we should extrapolate. */
         if (xt < 10) { xt = 10; }
-        nmsim_time_t tmin = (tlo >= nmsim_time_MIN + xt ? tlo - xt : nmsim_time_MIN);
-        nmsim_time_t tmax = (thi <= nmsim_time_MAX - xt ? thi + xt : nmsim_time_MAX);
+        nmsim_time_t tmin = (tLo >= nmsim_time_MIN + xt ? tLo - xt : nmsim_time_MIN);
+        nmsim_time_t tmax = (tHi <= nmsim_time_MAX - xt ? tHi + xt : nmsim_time_MAX);
         /* Choose a random subrange of {tmin..tmax}: */
-        nmsim_time_t tlo_pk = (nmsim_time_t)int64_abrandom(tmin-1, tmax);
-        nmsim_time_t thi_pk = (nmsim_time_t)int64_abrandom(tmin, tmax);
-        if (tlo_pk > thi_pk) { tlo_pk = tmax - (tlo_pk + 1 - tmin); thi_pk = tmax - (thi_pk - tmin); }
-        assert((nmsim_time_MIN <= tlo_pk) && (tlo_pk <= thi_pk) && (thi_pk <= nmsim_time_MAX));
-        (*tloP) = tlo_pk;
-        (*thiP) = thi_pk;
+        nmsim_time_t tLo_pk = (nmsim_time_t)int64_abrandom(tmin-1, tmax);
+        nmsim_time_t tHi_pk = (nmsim_time_t)int64_abrandom(tmin, tmax);
+        if (tLo_pk > tHi_pk) { tLo_pk = tmax - (tLo_pk + 1 - tmin); tHi_pk = tmax - (tHi_pk - tmin); }
+        assert((nmsim_time_MIN <= tLo_pk) && (tLo_pk <= tHi_pk) && (tHi_pk <= nmsim_time_MAX));
+        (*tLoP) = tLo_pk;
+        (*tHiP) = tHi_pk;
       }
   }
-        

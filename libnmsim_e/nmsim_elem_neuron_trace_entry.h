@@ -2,7 +2,7 @@
 #define nmsim_elem_neuron_trace_entry_H
  
 /* Full state and step evolution data of a Galves-Löcherbach neuron. */
-/* Last edited on 2020-12-06 19:24:21 by jstolfi */
+/* Last edited on 2020-12-16 23:05:50 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -17,32 +17,33 @@
 
 typedef struct nmsim_elem_neuron_trace_entry_t
   { 
-    double V;               /* Membrane potential at {t}. */
-    nmsim_step_count_t age; /* Firing age at {t} (whole time steps since last firing). */
-    double M;               /* Potential decay modulator at time {t}. */
-    double H;               /* Output synapse strength modulator at time {t}. */
-    bool_t X;               /* Firing indicator between {t} and {t+1}. */
-    double I;               /* External input between {t} and {t+1} (mV). */
-    double J;               /* Total input between {t} and {t+1} (mV). */
+    double V;     /* Membrane potential at {t}. */
+    double age;   /* Firing age at {t} (whole time steps since last firing). */
+    double M;     /* Potential decay modulator at time {t}. */
+    double H;     /* Output synapse strength modulator at time {t}. */
+    double X;     /* Firing indicator between {t} and {t+1}. */
+    double I;     /* External input between {t} and {t+1} (mV). */
+    double J;     /* Total input between {t} and {t+1} (mV). */
   } nmsim_elem_neuron_trace_entry_t;
-  /* Full state of a neuron element. */
+  /* State and activity variables of a neuron element, or average 
+    of variables of two or more neurons. */
   
 void nmsim_elem_neuron_trace_entry_clear(nmsim_elem_neuron_trace_entry_t *ts);
-  /* Sets all {double} fields of {ts} to {NAN}, the firing age {ts.age} to {-1}, and the firing
-    indicator {ts.X} with {FALSE}. */
+  /* Sets all fields of {ts} to {NAN}. */
     
 bool_t nmsim_elem_neuron_trace_entry_is_undefined(nmsim_elem_neuron_trace_entry_t *ts);
-  /* Returns true if {ts} is {NULL}, or if all the {double} fields
-    are {NAN}, the firing age {ts.age} is {-1}, and the firing indicator {ts.X} is {FALSE}.
-    Returns false {ts} is not NULL, none of {ts.V,ts.M,ts.H} is {NAN}, and the firing age 
-    is non-negative. Fails in all other cases.  
+  /* Returns true if {ts} is {NULL}, or if all the fields
+    are {NAN}.  Returns false {ts} is not NULL and none of its fields is {NAN}. Fails in all other cases.  
     
-    Note that the entries {ts.I} and {ts.J} may be {NAN} even when {ts.V,ts.M,ts.H} are not {NAN}. */
+    Note that the entries {ts.X,ts.I,ts.J} may be {NAN} even when {ts.V,ts.age,ts.M,ts.H} are not {NAN}. */
   
-void nmsim_elem_neuron_trace_entry_write(FILE *wr, nmsim_elem_neuron_trace_entry_t *ts);
+void nmsim_elem_neuron_trace_entry_write(FILE *wr, nmsim_elem_neuron_trace_entry_t *ts, bool_t single);
   /* Writes {ts} to file {wr}, in the format described by 
     {nmsim_elem_neuron_trace_entry_read_INFO} below.  Does NOT write
-    a final newline. */
+    a final newline. 
+    
+    If {single} is true, assumes that the data refers to a single neuron.  It implies 
+    that {ts.age} must be a non-negative integer, and {ts.X} must be 0 or 1. */
     
 void nmsim_elem_neuron_trace_entry_read(FILE *rd, nmsim_elem_neuron_trace_entry_t *ts);
   /* Reads a neuron state from {rd}, in the format described by 
@@ -54,14 +55,16 @@ void nmsim_elem_neuron_trace_entry_read(FILE *rd, nmsim_elem_neuron_trace_entry_
     
 #define nmsim_elem_neuron_trace_entry_read_INFO \
   "Each entry contains the following fields, all in the same line:\n" \
-  "      \"{V} {AGE} {M} {H} {X} {I} {J}\"\n" \
+  "      \"{V} {age} {M} {H} {X} {I} {J}\"\n" \
   " where {V,AGE,M,H} are the membrane potential, firing age, potential decay" \
   " modulator, and output modulator at some time {t}, {X,I,J} are the" \
   " firing indicator, external input, and total input between" \
   " time {t} and {t+1}.\n" \
   "\n" \
-  "   The firing indicator is a Boolean (0 or 1), and all other fields are" \
-  " floats.  A negative {age} indicates an unknown or undefined neuron state."
+  "   For a single neuron, the firing indicator {X} is a Boolean" \
+  " value (0 or 1), the {age} is an integer value. Otherwise, {X} is a" \
+  " fraction between 0 and 1, and {age} is a non-negative fraction. All other fields " \
+  " can be fractions. Some of the values may be \"nan\"."
 
 /* TESTING AND DEBUGGING */
 

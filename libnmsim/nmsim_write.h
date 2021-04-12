@@ -2,7 +2,7 @@
 #define nmsim_write_H
  
 /* Value writing procedures. */
-/* Last edited on 2019-07-02 16:50:59 by jstolfi */
+/* Last edited on 2020-12-16 22:47:41 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -12,6 +12,9 @@
 
 #define nmsim_write_VIJ_PREC 0.0006
   /* Max rounding error allowed for {V,I,J,I_avg,I_dev} values. */
+
+#define nmsim_write_age_PREC 0.06
+  /* Max rounding error allowed for mean {age} values. */
 
 #define nmsim_write_MH_PREC 0.0000006
   /* Max rounding error allowed for {M,H,M_avg,H_avg} values. */

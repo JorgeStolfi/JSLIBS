@@ -2,7 +2,7 @@
 #define PROG_DESC "tests of {limnmism} single neuron simulation trace"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2019-03-28 22:08:27 by jstolfi */ 
+/* Last edited on 2020-12-17 02:22:06 by jstolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -40,17 +40,17 @@
 
 void nmsim_test_elem_neuron_trace
   ( char *tag,
-    nmsim_time_t tlo_s, 
-    nmsim_time_t thi_s,
-    nmsim_time_t tlo_t, 
-    nmsim_time_t thi_t
+    nmsim_time_t tLo_s, 
+    nmsim_time_t tHi_s,
+    nmsim_time_t tLo_t, 
+    nmsim_time_t tHi_t
   );
   /* Tests a neuron element trace structure that can save neuron states for time
     {t} and step data for the step from {t} to {t+1}, where {t} is in
-    {tlo_t .. thi_t}; that is, with {thi_t - tlo_t + 1} entries.  
+    {tLo_t .. tHi_t}; that is, with {tHi_t - tLo_t + 1} entries.  
     
-    The simulation is run from {tlo_s}
-    to {thi_s} inclusive, that is {thi_s - tlo_s} steps.
+    The simulation is run from {tLo_s}
+    to {tHi_s} inclusive, that is {tHi_s - tLo_s} steps.
     
     Output file will be called "out/trace_{tag}.txt". */
 
@@ -76,14 +76,14 @@ int main(int argc, char **argv)
     
 void nmsim_test_elem_neuron_trace
   ( char *tag,
-    nmsim_time_t tlo_s, 
-    nmsim_time_t thi_s,
-    nmsim_time_t tlo_t, 
-    nmsim_time_t thi_t
+    nmsim_time_t tLo_s, 
+    nmsim_time_t tHi_s,
+    nmsim_time_t tLo_t, 
+    nmsim_time_t tHi_t
   )
   {
-    fprintf(stderr, "simulation times %5ld .. %5ld ( %5ld steps   )\n", tlo_s, thi_s, thi_s - tlo_s);
-    fprintf(stderr, "tracing times    %5ld .. %5ld ( %5ld entries )\n", tlo_t, thi_t, thi_t - tlo_t + 1);
+    fprintf(stderr, "simulation times %5ld .. %5ld ( %5ld steps   )\n", tLo_s, tHi_s, tHi_s - tLo_s);
+    fprintf(stderr, "tracing times    %5ld .. %5ld ( %5ld entries )\n", tLo_t, tHi_t, tHi_t - tLo_t + 1);
     
     /* Create a neuron class: */
     nmsim_class_neuron_count_t nnc = 10; /* Arbitrary number of neuron classes in network. */
@@ -92,57 +92,50 @@ void nmsim_test_elem_neuron_trace
     /* Pick an index for the neuron: */
     nmsim_group_neuron_count_t nng = 2*nnc; /* Arbitrary number of neuron groups in network. */ 
     nmsim_elem_neuron_count_t nne = 10*nng; /* Arbitrary num of neuron elems in network. */
-    nmsim_elem_neuron_ix_t ine = (nmsim_elem_neuron_ix_t)int64_abrandom(0, nne-1);
       
     /* Create the filename: */
     char *fname = NULL;
     asprintf(&fname, "out/trace_%s.txt", tag);
       
     /* Allocate neuron element trace structure: */
-    nmsim_elem_neuron_trace_t *trne = nmsim_elem_neuron_trace_new(ine, tlo_t, thi_t);
-    
-    /* Full neuron state for simulation: */
-    nmsim_elem_neuron_trace_entry_t ts;
-    nmsim_elem_neuron_trace_entry_clear(&ts);
+    nmsim_elem_neuron_count_t nne_tr_MAX = 4; /* Max number of neurons in monitored set. */
+    nmsim_elem_neuron_ix_t ineLo = (nmsim_elem_neuron_ix_t)int64_abrandom(0, nne-1);
+    nmsim_elem_neuron_ix_t ineHi = (nmsim_elem_neuron_ix_t)(ineLo + int64_abrandom(0, nne_tr_MAX) - 1);
+    if (ineHi >= nne) { ineHi = nne-1; }
+    assert((ineLo >= 0) && (ineLo <= ineHi) && (ineHi < nne));
+    bool_t single = (ineLo == ineHi);
+    nmsim_elem_neuron_trace_t *trne = nmsim_elem_neuron_trace_new(ineLo, ineHi, tLo_t, tHi_t);
     
     /* Initialize the neuron ages, potentials, and modulators: */
-    nmsim_class_neuron_throw_state(nclass, &(ts.V), &(ts.age));
-    ts.M = nmsim_class_neuron_compute_M(nclass, ts.age);
-    ts.H = nmsim_class_neuron_compute_H(nclass, ts.age);
+    double V, age, M, H;
+    nmsim_step_count_t age1;
+    nmsim_class_neuron_throw_state(nclass, &(V), &(age1)); 
+    age = (double)age1;
+    M = nmsim_class_neuron_compute_M(nclass, age1);
+    H = nmsim_class_neuron_compute_H(nclass, age1);
 
-    /* Fake a simulation for a range of times that overlaps {tlo..thi}: */
-    nmsim_time_t t = tlo_s;
-    while (t < thi_s)
-      { 
-        /* Store into {trne} the state {V,age,M,H} at time {t}, if applicable: */
-        nmsim_elem_neuron_trace_set_V_age_M_H(trne, t, ts.V, ts.age, ts.M, ts.H);
+    /* Fake a simulation for a range of times that overlaps {tLo..tHi}: */
+    nmsim_time_t t = tLo_s;
+    while (t < tHi_s)
+      { /* Store into {trne} the state {V,age,M,H} at time {t}, if applicable: */
+        nmsim_elem_neuron_trace_set_V_age_M_H(trne, t, V, age, M, H);
         /* Define firing indicator for step {t} to {t+1}: */
-        ts.X = (drandom() < 0.05);
+        double X = (single ? (double)(drandom() < 0.05) : drandom());
         /* Define sinusoidal {I}, random {J} for step between {t} and {t+1}: */
         double freq = 0.07;
-        ts.I = 10.0*sin(0.3 + freq*((double)t));
-        ts.J = ts.I + 0.5*dgaussrand();
-        nmsim_elem_neuron_trace_set_X_I_J(trne, t, ts.X, ts.I, ts.J);
+        double I = 10.0*sin(0.3 + freq*((double)t));
+        double J = I + 0.5*dgaussrand();
+        nmsim_elem_neuron_trace_set_X_I_J(trne, t, X, I, J);
         /* Update {V,age,M,H}: */
-        if (ts.X)
-          { /* Reset: */
-            ts.V = nclass->V_R;
-            ts.age = 0;
-            ts.M = nclass->M_R;
-            ts.H = nclass->H_R;
-          }
-        else
-          { /* Integrate: */
-            ts.V = (ts.V + ts.I)*ts.M*nclass->c_B + 0.5*dgaussrand();
-            ts.age = ts.age + 1;
-            ts.M = 1 - (1 - ts.M)*nclass->M_mu;
-            ts.H = 1 - (1 - ts.H)*nclass->H_mu;
-          }
+        V = X*nclass->V_R + (1-X)*((V + I)*M*nclass->c_B + 0.5*dgaussrand());
+        age = X*0 + (1-X)*(age + 1);
+        M = X*nclass->M_R + (1-X)*(1 - (1 - M)*nclass->M_mu);
+        H = X*nclass->H_R + (1-X)*(1 - (1 - H)*nclass->H_mu);
         /* Advance the time: */ 
         t++;
       }
     /* Store into {trne} the state {V,age,M,H} at final simulated time {t}, if applicable: */
-    nmsim_elem_neuron_trace_set_V_age_M_H(trne, t, ts.V, ts.age, ts.M, ts.H);     
+    nmsim_elem_neuron_trace_set_V_age_M_H(trne, t, V, age, M, H);     
       
     /* Write the traces: */
     nmsim_test_elem_neuron_trace_write(fname, trne);

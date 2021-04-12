@@ -2,10 +2,12 @@
 #define nmsim_elem_net_throw_H
  
 /* Generates a random neuron-level model of a network of Galves-Löcherbach neurons. */
-/* Last edited on 2020-12-10 18:14:07 by jstolfi */
+/* Last edited on 2021-01-07 21:12:36 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
+
+#include <nmsim_basic.h>
 
 #include <nmsim_class_net.h>
 #include <nmsim_group_net.h>
