@@ -1,7 +1,6 @@
-# Last edited on 2021-04-12 19:59:54 by jstolfi
+# JSLIBS - Jorge Stolfi's C libraries
 
-repository JSLIBS
-Jorge Stolfi's C libraries
+% Last edited on 2021-04-12 20:12:23 by jstolfi
 
 This repository contains a set of C libraries that I have written over
 almost 30 years. They were originally intended for "private" use, by
@@ -11,73 +10,72 @@ case someone else finds them useful.
   --Jorge Stolfi, IC-UNICAMP 2020-12-07
   
 Creator: Jorge Stolfi
-Supervision: Jorge Stolfi
+Supervisor: Jorge Stolfi
 Intended users: Jorge Stolfi, general public
 
-LIBRARIES
+##LIBRARIES
 
 Each library is in a package of its own.
 
-* Data structures:
+### Data structures:
 
-  libspmat
+  * libspmat
     Functions for generic sparse matrix definition and manipulation,
     with user-specified element types.
 
-  libdgraph
-    Library for directed graphs as sparse matrices of booleans,
+  * libdgraph
+    Directed graphs as sparse matrices of booleans,
     based on {libspmat}.
 
-  libjsarray
+  * libjsarray
 
-    Library for n-dimensional arrays whose elements are floats, intervals,
+    N-dimensional arrays whose elements are floats, intervals,
     or other user-specfied scalar type.  See also {vec.h} in {libjs}.
 
-  libsexp
-   
-    Library of functions for reading and printing Lisp-like
+  * libsexp
+    Functions for reading and printing Lisp-like
     S-expressions.
 
-* Function approximation and optimization:
+### Function approximation and optimization:
 
-  liblsq 
+  * liblsq 
     Least squares fitting, also with outlier rejection.
 
-  libapprox
+  * libapprox
     Object-oriented functions for least-squares functional approximation.
     Developed with Anamaria Gomide for her Ph. D. Thesis.
     See also {liblsq}.
     
-  libpspulse
-    Library for polynomial spline pulses and tents.
+  * libpspulse
+    Polynomial spline pulses and tents.
 
-  libminn
+  * libminn
     General non-linear n-variate minimization routines.
 
-  libminu
-    Library for minimization of univariate non-linear functions.
+  * libminu
+    Minimization of univariate non-linear functions.
 
-  libbbopt
+  * libbbopt
     Tools for finding maximum or minimum of functions
     by the bounding box method, using  IA or AA estimators.
   
-  libbezier
-    Library for Bézier representation of univariate polynomials.
+  * libbezier
+    Bézier representation of univariate polynomials.
 
-  libclassif
+  * libclassif
     Procedures for vector clustering and classification,
     using various methods including the Falcão's Optimal Path Forest.
     Mainly to compare the accuracy etc of those methods.
     
-* Numerical calculus:
+### Numerical calculus:
 
-  libintg
-    Library with J. Stolfi's implementation of the Euler and Runge-Kutta
+  * libintg
+    J. Stolfi's implementation of the Euler and Runge-Kutta
     methods for integration of 
 
-* Computational geometry and graphics:
+### Computational geometry and graphics:
 
-  libgeo
+  * libgeo
     Basic geometry routines, including linear algebra in {R^2},{R^3}, {R^4},
     {R^6} and {R^n}, matrix operations, Gaussian elimination.  
     Also some tools for homogeneous coordinates in {T^2}, {T^3} and {T^n},
@@ -86,47 +84,47 @@ Each library is in a package of its own.
     Also tools for parsing vector arguments from files or the command line.
     See also {libjsarray}.
   
-  libdelaunay
-    Library for planar Voronoi/Delaunay construction with quad-edge data structure
+  * libdelaunay
+    Planar Voronoi/Delaunay construction with quad-edge data structure
     
-  libeps
-    Library to create Encapsulated Postscript files,
+  * libeps
+    Creation of Encapsulated Postscript files,
     with emphasis on graphics as opposed to text.
 
-  libpsextra
+  * libpsextra
     Functions to plot Bézier maps of {R^2}.
     >> TO BE DECOMISSIONED
     
-  libquad
+  * libquad
     Representation and tools of the quad-edge and oct-edge
     data structures. Uses low-order bits of address to indicate flip and rot.
 
-  libgem
-    A library that implements the GEM data structure.
+  * libgem
+    Implementation of the GEM data structure.
     Partly developed by Arnaldo Montagner and Lucas Moutinho Bueno
     for their thesis projects.
 
-  libgmap
-    Library for representation and manipulation of n-dimensional maps
+  * libgmap
+    Representation and manipulation of n-dimensional maps
     (complexes of topological polytopes), represented internally by the
     gems of their barycentric subdivisions.
     
-  libstmesh
-    A data structure for triangle meshes with quantized vertices
+  * libstmesh
+    A data structure for riangle meshes with quantized vertices
     and semi-topological structure.  Related to the UTFPR 3D slicing project 
     by Minetto, Volpatto, Habib, and Stolfi (2015).
     
-  libstpoly
-    A library to deal with polygonal figures described by unstructured lists 
+  * libstpoly
+    Representation of polygonal figures by unstructured lists 
     of segments (the "STP" format, a 2D analog of the popular STL format)
 
-  libmkgr
+  * libmkgr
     Functions to create grids of marks, e.g. calibration grids,
     quadrille paper, etc.
 
-* Images, videos, sounds, tomograms:
+### Images, videos, sounds, tomograms:
 
-  libimg
+  * libimg
     Representation and processing of multichannel two-dimensional images
     as arrays of {float} values. Image operations include interpolation,
     deformation, and Fourier-Hartley transform, Also conversion of such
@@ -134,108 +132,106 @@ Each library is in a package of its own.
     functions to represent and manipulate colors as vectors of 3
     {float}s in various color spaces.
     
-  libift
+  * libift
     Functions to build the Image Forest Transform (IFT) of an image.
 
-  libcamfirewire
-    Library for controlling camera through the Firewire interface.
+  * libcamfirewire
+    Controlling camera through the Firewire interface.
     Developed mainly by Rafael Saracchini for his PhD project.
 
-  libjsaudio
-    J. Stolfi's library for handling audio files.
+  * libjsaudio
+    J. Stolfi's tools for handling audio files.
 
-  libppv
-    Library for portable multi-dimensional arrays of integer samples
+  * libppv
+    Portable multi-dimensional arrays of integer samples
     for general signal  processing (images, videos, sound, spectra, etc.).a
 
-  libvoxm
+  * libvoxm
     Tools for voxel-based 3D solid modeling.
 
-* Computer vision and pattern matching:
+### Computer vision and pattern matching:
 
-  libmsmatch
-    Library of routines for multiscale sequence matching.
+  * libmsmatch
+    Routines for multiscale sequence matching.
     Derived from Helena Leitão's Ph. D. thesis project
     with contributions by Rafael Saracchini.
 
-  libmultifok
+  * libmultifok
     Functions to do multifocus stereo.
     >> IN DEVELOPMENT
     
-  libpst
-    A library of functions for photometric stereo.
+  * libpst
+    Functions for photometric stereo.
     Developed with Rafael Saracchiní for his Ph. D. thesis project.
     
-  libtsai
-    Library with Tsai's camera calibration routines.
+  * libtsai
+    Tsai's camera calibration routines.
     Used in Rodrigo Minetto's PhD project.
 
-* Bioinformatics:
+### Bioinformatics:
 
-  libdnaenc
-    Library for encoding of DNA strings as sequences of points in 3D.
+  * libdnaenc
+    Encoding of DNA strings as sequences of points in 3D.
 
-  libdnaview
-    Library for visualizing DNA strings as curves in 3D.
+  * libdnaview
+    Visualizing DNA strings as curves in 3D.
  
-* Interval and affine arithmetic:
+### Interval and affine arithmetic:
 
-  libia
+  * libia
     Standard interval arithmetic (IA) operations. They provide
     guaranteed error bounds for the results, accounting for roundoff
     errors.  Also axes-aligned boxes (multidimensional intervals). 
     >> {ia_box.h} SUPERSEDED BY {interval.h}
 
-  libaa
+  * libaa
     Basic Affine Arithmetic (AA) operations.  They provide
     guaranteed error bounds for the results, accounting for roundoff
     errors, that are usually tighter than those of interval arithmetic (IA).
     This implementation requires manual allocation of AA forms..
 
-  libflt
+  * libflt
     Operations on floating-point values that parallel those of {libia}
     and {libaa}.   Also parsing of algebraic formulas
     into a stack-machine pseudocode.
 
-  libaacmp
+  * libaacmp
     Compiling formulas into affine arithmetic function calls.
-    >>IN DEVELOPMENT
     
-  libaafuncs 
-    A library of 1-argument and 2-argument test functions for the
+  * libaafuncs 
+    Some 1-argument and 2-argument test functions for the
     interval arithmetic library {libia} and the affine arithmetic
     library {libaa}, as well as the "isomorhic" floating point
     arithmetic library {libflt}.
     
-  libaagraph
-    Porcedures to plot univariate functions using libraries for
+  * libaagraph
+    Procedures to plot univariate functions using libraries for
     interval arithmetic {libia}, affine arithmetic {libaa}.
     and "isomorphic" floating point {libflt}
     
-* Natural language processing:
+### Natural language processing:
 
-  libdicio
-    Libraries for representing worl lists as acyclic automata,
+  * libdicio
+    Representing word lists as acyclic automata,
     as in the Dicio project (lucchesi/stolfi).
     This is a C rewriting of the original Modula-3 libraries.
 
-* Drawing buidings, furniture, maps:
+### Drawing buidings, furniture, maps:
 
-  libarchdraw
-    A simple (but not at all user-friendly) 
-    library to generate architectural ground plan sketches. 
+  * libarchdraw
+    Simple (but not at all user-friendly) 
+    tools to generate architectural ground plan sketches. 
     
-  libsheetcut
-    Library of functions for planning the cutting of rectangular
+  * libsheetcut
+    Functions for planning the cutting of rectangular
     plates out of rectangular stock sheets.
     
-  libstreetmap
-    This directory contains a library for reading, plotting, and
-    manipulating street maps.
+  * libstreetmap
+    Functions for reading, plotting, anda manipulating street maps.
     
-* Miscellaneous
+### Miscellaneous
 
-  libjs
+  * libjs
     Miscellaneous hacks: text concatenation, random
     numbers, bool data type, sign data type, generic 
     self-sized extensible vector data types,
@@ -246,34 +242,33 @@ Each library is in a package of its own.
     subsets of {0..31}, linear search and interpolation
     in tables, program timing, etc..
 
-  libjsextra
-    This library contains various interfaces which should 
+  * libjsextra
+    Various interfaces which should 
     be in {jslib.h} or the like, but which aren't
     working yet.
     >> UNDER DEVELOPMENT
 
-  libbtc
-    Library for data analysis related to bitcoin, such as the
+  * libbtc
+    Data analysis related to bitcoin, such as the
     sum-of-bubbles model and log-quadratic fitting.
 
-  libcryptoy
-    Library for trivial criptography tools.
-    >>IN DEVELOPMENT
+  * libcryptoy
+    Trivial criptography tools.
 
-* NeuroMat project:
+### NeuroMat project:
 
-  libneuro
+  * libneuro
     EEG procesinng tools for the NeuroMat project.
 
-  libnmsim
-    Library with data structures and basic functions
+  * libnmsim
+    Data structures and basic functions
     for modeling of neurons and neuronal networks.
 
-  libnmsim_e
+  * libnmsim_e
     Tools to simulate a neuronal net model as described in {libnmsim},
     at the {elem} level (individual neurons and synapses).
 
-MAKEFILES
+## MAKEFILES
 
   Each library has its own Makefile, and a sub-directory "tests".
   containing one or more programs that check the library and/or
@@ -319,7 +314,7 @@ MAKEFILES
   When a library imports files from another, it gets them from the
   global repository.
   
-INSTALLATION
+## INSTALLATION
 
   Instructions for /bin/bash users:
 
@@ -327,7 +322,7 @@ INSTALLATION
         and incompatible OS/architecture combinations (e.g., Linux and
         Solaris, Intel and SPARC), set the variable ${PLATFORM} to a
         string that identifies the hardware and OS for which the
-        libraries are to be compiled. For example
+        * libraries are to be compiled. For example
         
           export PLATFORM="Intel-Linux"
           
