@@ -1,4 +1,6 @@
-# Last edited on 2007-10-03 08:16:36 by stolfi
+# Last edited on 2021-04-12 19:13:58 by jstolfi
 
-libsignal - tools for n-dimensional signal processing
+Library for n-dimensional arrays whose elements are floats or other 
+user-specfied scalar type.
+
 

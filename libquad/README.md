@@ -1,4 +1,5 @@
-The quad-edge data structure
+The quad-edge and oct-edge data structures.
+Uses low-order bits of address to indicate flip and rot.
 
   quad.h, quad.c
   

@@ -1,5 +1,7 @@
-# Last edited on 2008-07-25 00:59:13 by stolfi
+# Last edited on 2021-04-12 19:45:14 by jstolfi
 
-A generic sparse matrix library.
+Functions for generic sparse matrix definition and manipulation,
+with user-specified element types.
+
 
 

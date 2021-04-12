@@ -1,7 +1,11 @@
-Standard interval arithmetic with roundoff control
+Tools for standard interval arithmetic (IA).
 
   ia.h, ia.c 
   
+    Basic interval arithmetic data types operations. They provide
+    guaranteed error bounds for the results, accounting for roundoff
+    errors.  
+    
     Basic interval arithmetic types and operations
     
   ia_box.h, ia_box.c
@@ -15,7 +19,7 @@ Standard interval arithmetic with roundoff control
     using interval arithmetic.  Also evaluates interval
     derivatives.
     
-# Last edited on 2006-03-14 11:34:39 by stolfi
+# Last edited on 2021-04-12 17:54:25 by jstolfi
     
     
     

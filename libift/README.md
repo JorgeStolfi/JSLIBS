@@ -1,3 +1,3 @@
-# Last edited on 2010-06-02 23:04:50 by stolfi
+# Last edited on 2021-04-12 17:59:26 by jstolfi
 
-Library of Image Forest Transform (IFT) functions
+Functions to build the Image Forest Transform (IFT) of an image.

@@ -1,5 +1,4 @@
-# Geometry and linear algebra routines
-# Last edited on 2011-03-08 16:22:45 by stolfi
+# Last edited on 2021-04-12 19:21:21 by jstolfi
 
 LIBNAME := libminn
 

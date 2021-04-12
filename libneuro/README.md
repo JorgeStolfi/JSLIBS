@@ -1,4 +1,4 @@
-# Last edited on 2013-05-24 00:02:04 by stolfilocal
+# Last edited on 2021-04-12 19:28:39 by jstolfi
 
-Library of tools for the NeuroMat project
+EEG procesinng tools for the NeuroMat project.
 

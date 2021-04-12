@@ -1,5 +1,5 @@
-# Last edited on 2009-02-11 09:10:05 by stolfi
+# Last edited on 2021-04-12 19:07:50 by jstolfi
 
-libintg - J. Stolfi's library for integration of 
-ODEs by Euler and Runge-Kutta.
+Library with J. Stolfi's  implementation of the Euler and Runge-Kutta 
+methods for integration of ODEs.
 

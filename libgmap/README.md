@@ -1,4 +1,5 @@
-# Last edited on 2015-12-01 14:35:24 by stolfilocal
+# Last edited on 2021-04-12 17:50:00 by jstolfi
 
-Library for representation and manipulation of N-d maps, represented
-internally by the gems of their barycentric subdivisions.
+Library for representation and manipulation of n-dimensional maps
+(complexes of topological polytopes), represented internally by the
+gems of their barycentric subdivisions.
