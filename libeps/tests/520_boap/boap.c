@@ -1,5 +1,5 @@
-/* Tech drawing for the new center gate of Boaretto da Silva 113 */
-/* Last edited on 2012-12-07 20:54:43 by stolfilocal */
+/* Tech drawing for the front gate of the storage area of Boaretto da Silva 113 */
+/* Last edited on 2021-04-13 23:41:45 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>

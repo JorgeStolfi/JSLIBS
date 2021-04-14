@@ -1,6 +1,6 @@
 # JSLIBS - Jorge Stolfi's C libraries
 
-% Last edited on 2021-04-13 01:16:09 by jstolfi
+% Last edited on 2021-04-13 01:28:46 by jstolfi
 
 This repository contains a set of C libraries that I have written over
 almost 30 years. They were originally intended for "private" use, by
@@ -19,62 +19,62 @@ Each library is in a package of its own.
 
 ### Data structures:
 
-  *libspmat*
+  **libspmat**: 
     Functions for generic sparse matrix definition and manipulation,
     with user-specified element types.
 
-  *libdgraph*
+  **libdgraph**: 
     Directed graphs as sparse matrices of booleans,
     based on {libspmat}.
 
-  *libjsarray*
+  **libjsarray**: 
     N-dimensional arrays whose elements are floats, intervals,
-    or other user-specfied scalar type.  See also {vec.h} in {libjs}.
+    or other user-specified scalar type.  See also {vec.h} in {libjs}.
 
-  *libsexp*
+  **libsexp**: 
     Functions for reading and printing Lisp-like
     S-expressions.
 
 ### Function approximation and optimization:
 
-  *liblsq*
+  **liblsq**: 
     Least squares fitting, also with outlier rejection.
 
-  *libapprox*
+  **libapprox**: 
     Object-oriented functions for least-squares functional approximation.
     Developed with Anamaria Gomide for her Ph. D. Thesis.
     See also {liblsq}.
     
-  *libpspulse*
+  **libpspulse**: 
     Polynomial spline pulses and tents.
 
-  *libminn*
+  **libminn**: 
     General non-linear n-variate minimization routines.
 
-  *libminu*
+  **libminu**: 
     Minimization of univariate non-linear functions.
 
-  *libbbopt*
+  **libbbopt**: 
     Tools for finding maximum or minimum of functions
     by the bounding box method, using  IA or AA estimators.
   
-  *libbezier*
+  **libbezier**: 
     Bézier representation of univariate polynomials.
 
-  *libclassif*
+  **libclassif**: 
     Procedures for vector clustering and classification,
     using various methods including the Falcão's Optimal Path Forest.
     Mainly to compare the accuracy etc of those methods.
     
 ### Numerical calculus:
 
-  *libintg*
+  **libintg**: 
     J. Stolfi's implementation of the Euler and Runge-Kutta
     methods for integration of 
 
 ### Computational geometry and graphics:
 
-  *libgeo*
+  **libgeo**: 
     Basic geometry routines, including linear algebra in {R^2},{R^3}, {R^4},
     {R^6} and {R^n}, matrix operations, Gaussian elimination.  
     Also some tools for homogeneous coordinates in {T^2}, {T^3} and {T^n},
@@ -83,47 +83,47 @@ Each library is in a package of its own.
     Also tools for parsing vector arguments from files or the command line.
     See also {libjsarray}.
   
-  *libdelaunay*
+  **libdelaunay**: 
     Planar Voronoi/Delaunay construction with quad-edge data structure
     
-  *libeps*
+  **libeps**: 
     Creation of Encapsulated Postscript files,
     with emphasis on graphics as opposed to text.
 
-  *libpsextra*
+  **libpsextra**: 
     Functions to plot Bézier maps of {R^2}.
     >> TO BE REFORMED
     
-  *libquad*
+  **libquad**: 
     Representation and tools of the quad-edge and oct-edge
     data structures. Uses low-order bits of address to indicate flip and rot.
 
-  *libgem*
+  **libgem**: 
     Implementation of the GEM data structure.
     Partly developed by Arnaldo Montagner and Lucas Moutinho Bueno
     for their thesis projects.
 
-  *libgmap*
+  **libgmap**: 
     Representation and manipulation of n-dimensional maps
     (complexes of topological polytopes), represented internally by the
     gems of their barycentric subdivisions.
     
-  *libstmesh*
-    A data structure for riangle meshes with quantized vertices
+  **libstmesh**: 
+    A data structure for triangle meshes with quantized vertices
     and semi-topological structure.  Related to the UTFPR 3D slicing project 
     by Minetto, Volpatto, Habib, and Stolfi (2015).
     
-  *libstpoly*
+  **libstpoly**: 
     Representation of polygonal figures by unstructured lists 
     of segments (the "STP" format, a 2D analog of the popular STL format)
 
-  *libmkgr*
+  **libmkgr**: 
     Functions to create grids of marks, e.g. calibration grids,
     quadrille paper, etc.
 
 ### Images, videos, sounds, tomograms:
 
-  *libimg*
+  **libimg**: 
     Representation and processing of multichannel two-dimensional images
     as arrays of {float} values. Image operations include interpolation,
     deformation, and Fourier-Hartley transform, Also conversion of such
@@ -131,139 +131,138 @@ Each library is in a package of its own.
     functions to represent and manipulate colors as vectors of 3
     {float}s in various color spaces.
     
-  *libift*
+  **libift**: 
     Functions to build the Image Forest Transform (IFT) of an image.
 
-  *libcamfirewire*
+  **libcamfirewire**: 
     Controlling camera through the Firewire interface.
     Developed mainly by Rafael Saracchini for his PhD project.
 
-  *libjsaudio*
+  **libjsaudio**: 
     J. Stolfi's tools for handling audio files.
 
-  *libppv*
+  **libppv**: 
     Portable multi-dimensional arrays of integer samples
     for general signal  processing (images, videos, sound, spectra, etc.).a
 
-  *libvoxm*
+  **libvoxm**: 
     Tools for voxel-based 3D solid modeling.
 
 ### Computer vision and pattern matching:
 
-  *libmsmatch*
+  **libmsmatch**: 
     Routines for multiscale sequence matching.
     Derived from Helena Leitão's Ph. D. thesis project
     with contributions by Rafael Saracchini.
 
-  *libmultifok*
-    Functions to do multifocus stereo.
+  **libmultifok**: 
+    Functions to do multi-focus stereo.
     >> IN DEVELOPMENT
     
-  *libpst*
+  **libpst**: 
     Functions for photometric stereo.
     Developed with Rafael Saracchiní for his Ph. D. thesis project.
     
-  *libtsai*
+  **libtsai**: 
     Tsai's camera calibration routines.
     Used in Rodrigo Minetto's PhD project.
 
 ### Bioinformatics:
 
-  *libdnaenc*
+  **libdnaenc**: 
     Encoding of DNA strings as sequences of points in 3D.
 
-  *libdnaview*
+  **libdnaview**: 
     Visualizing DNA strings as curves in 3D.
  
 ### Interval and affine arithmetic:
 
-  *libia*
+  **libia**: 
     Standard interval arithmetic (IA) operations. They provide
-    guaranteed error bounds for the results, accounting for roundoff
+    guaranteed error bounds for the results, accounting for round-off
     errors.  Also axes-aligned boxes (multidimensional intervals). 
     >> {ia_box.h} SUPERSEDED BY {interval.h}
 
-  *libaa*
+  **libaa**: 
     Basic Affine Arithmetic (AA) operations.  They provide
-    guaranteed error bounds for the results, accounting for roundoff
+    guaranteed error bounds for the results, accounting for round off
     errors, that are usually tighter than those of interval arithmetic (IA).
     This implementation requires manual allocation of AA forms..
 
-  *libflt*
+  **libflt**: 
     Operations on floating-point values that parallel those of {libia}
     and {libaa}.   Also parsing of algebraic formulas
-    into a stack-machine pseudocode.
+    into a stack-machine pseudo-code.
 
-  *libaacmp*
+  **libaacmp**: 
     Compiling formulas into affine arithmetic function calls.
     
-  *libaafuncs*
+  **libaafuncs**: 
     Some 1-argument and 2-argument test functions for the
     interval arithmetic library {libia} and the affine arithmetic
-    library {libaa}, as well as the "isomorhic" floating point
+    library {libaa}, as well as the "isomorphic" floating point
     arithmetic library {libflt}.
     
-  *libaagraph*
+  **libaagraph**: 
     Procedures to plot univariate functions using libraries for
     interval arithmetic {libia}, affine arithmetic {libaa}.
     and "isomorphic" floating point {libflt}
     
 ### Natural language processing:
 
-  *libdicio*
+  **libdicio**: 
     Representing word lists as acyclic automata,
     as in the Dicio project (lucchesi/stolfi).
     This is a C rewriting of the original Modula-3 libraries.
 
-### Drawing buidings, furniture, maps:
+### Drawing buildings, furniture, maps:
 
-  *libarchdraw*
+  **libarchdraw**: 
     Simple (but not at all user-friendly) 
     tools to generate architectural ground plan sketches. 
     
-  *libsheetcut*
+  **libsheetcut**: 
     Functions for planning the cutting of rectangular
     plates out of rectangular stock sheets.
     
-  *libstreetmap*
-    Functions for reading, plotting, anda manipulating street maps.
+  **libstreetmap**: 
+    Functions for reading, plotting, and manipulating street maps.
     
 ### Miscellaneous
 
-  *libjs*
+  **libjs**: 
     Miscellaneous hacks: text concatenation, random
     numbers, bool data type, sign data type, generic 
     self-sized extensible vector data types,
     integer ranges, assertions with custom messages,
     simple file parsing tools, structured file parsing, 
-    command-line parsing, indexing in multimensional arrays,
+    command-line parsing, indexing in multidimensional arrays,
     heaps of integers, merging and sorting arrays of integers, 
     subsets of {0..31}, linear search and interpolation
     in tables, program timing, etc..
 
-  *libjsextra*
-    Various interfaces which should 
-    be in {jslib.h} or the like, but which aren't
-    working yet.
+  **libjsextra**: 
+    Various interfaces which should be in {jslib} or other libraries,
+    but which aren't working yet.
     >> UNDER DEVELOPMENT
 
-  *libbtc*
+  **libbtc**: 
     Data analysis related to bitcoin, such as the
     sum-of-bubbles model and log-quadratic fitting.
 
-  *libcryptoy*
-    Trivial criptography tools.
+  **libcryptoy**: 
+    Trivial cryptography tools.
 
 ### NeuroMat project:
 
-  *libneuro*
-    EEG procesinng tools for the NeuroMat project.
+  **libneuro**: 
+    EEG processing tools for the NeuroMat project.
 
-  *libnmsim*
+  **libnmsim**: 
     Data structures and basic functions
     for modeling of neurons and neuronal networks.
 
-  *libnmsim_e*
+  **libnmsim_e**: 
     Tools to simulate a neuronal net model as described in {libnmsim},
     at the {elem} level (individual neurons and synapses).
 
@@ -275,7 +274,7 @@ Each library is in a package of its own.
   templates {GENERIC-LIB.make} and {GENERIC-LIB-TEST.make},
   respectively, which in turn uses the script {extract-ho-deps} to
   obtain the module dependency graph. which should have been made
-  avaliable with in the distribution.
+  available with in the distribution.
 
   The Makefiles assume an environment variable ${PLATFORM} that
   indicates the machine and operating system. This is to allow the

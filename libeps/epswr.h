@@ -1,5 +1,5 @@
 /* Tools for generating Encapsulated Postscript graphics files. */
-/* Last edited on 2020-10-27 18:49:36 by jstolfi */
+/* Last edited on 2021-04-13 22:38:10 by jstolfi */
 
 #ifndef epswr_H
 #define epswr_H
@@ -76,13 +76,13 @@ typedef enum { epswr_axis_HOR = 0, epswr_axis_VER = 1 } epswr_axis_t;
 
 epswr_figure_t *epswr_new_figure
   ( FILE *wr,
-    double hPlotSize,  /* Initial plot window width (in pt). */
-    double vPlotSize,  /* Initial plot window height (in pt). */
+    double hPlotSize,    /* Initial plot window width (in pt). */
+    double vPlotSize,    /* Initial plot window height (in pt). */
     double leftMargin,   /* Extra margin at left (pt). */
     double rightMargin,  /* Extra margin at right (pt). */
     double botMargin,    /* Extra margin at bottom (in pt). */
     double topMargin,    /* Extra margin at top (in pt). */
-    bool_t verbose     /* TRUE to print diagnostics. */
+    bool_t verbose       /* TRUE to print diagnostics. */
   );
   /* Writes to file {wr} the suitable preamble for an EPS
     figure.

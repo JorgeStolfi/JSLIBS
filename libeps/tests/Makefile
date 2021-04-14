@@ -5,6 +5,7 @@ LIB_TEST_DIRS = \
   210_testplot \
   310_testshade \
   410_testiso \
+  450_testplot2D \
   510_boag
    
 include ${STOLFIHOME}/programs/c/GENERIC-ROOT-DIR.make

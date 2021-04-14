@@ -1,7 +1,7 @@
-/* See {pswr_plot_2D.h}. */
-/* Last edited on 2020-10-01 20:33:55 by jstolfi */
+/* See {epswr_plot_2D.h}. */
+/* Last edited on 2021-04-13 22:35:27 by jstolfi */
 
-#define pswr_plot_2D_C_COPYRIGHT "Copyright © 2007 by the State University of Campinas (UNICAMP)."
+#define epswr_plot_2D_C_COPYRIGHT "Copyright © 2007 by the State University of Campinas (UNICAMP)."
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -15,21 +15,21 @@
 #include <rn.h>
 #include <frgb.h>
 #include <frgb_ops.h>
-#include <pswr.h>
-#include <pswr_color.h>
-#include <pswr_iso.h>
-#include <pswr_shade_tri.h>
+#include <epswr.h>
+#include <epswr_color.h>
+#include <epswr_iso.h>
+#include <epswr_shade_tri.h>
 
-#include <pswr_plot_2D.h>
+#include <epswr_plot_2D.h>
 
-void pswr_plot_2D_quad
-  ( PSStream *ps, 
+void epswr_plot_2D_quad
+  ( epswr_figure_t *eps, 
     int nf,
-    pswr_plot_2D_func_t *F,
+    epswr_plot_2D_func_t *F,
     interval_t B[],
     int n0,
     int n1,
-    pswr_plot_2D_style_t *st,
+    epswr_plot_2D_style_t *st,
     bool_t fill,
     bool_t draw
   )
@@ -118,17 +118,17 @@ void pswr_plot_2D_quad
                 if (k0 > 0)
                   { if(k1 > 0) 
                       { /* Paint the four triangles: */
-                        pswr_plot_2D_tri_atom
-                          ( ps, f00, f01, fmm, nf, st, fillP, drawP );
+                        epswr_plot_2D_tri_atom
+                          ( eps, f00, f01, fmm, nf, st, fillP, drawP );
 
-                        pswr_plot_2D_tri_atom                     
-                          ( ps, f01, f11, fmm, nf, st, fillP, drawP );
+                        epswr_plot_2D_tri_atom                     
+                          ( eps, f01, f11, fmm, nf, st, fillP, drawP );
 
-                        pswr_plot_2D_tri_atom                     
-                          ( ps, f11, f10, fmm, nf, st, fillP, drawP );
+                        epswr_plot_2D_tri_atom                     
+                          ( eps, f11, f10, fmm, nf, st, fillP, drawP );
 
-                        pswr_plot_2D_tri_atom                     
-                          ( ps, f10, f00, fmm, nf, st, fillP, drawP );
+                        epswr_plot_2D_tri_atom                     
+                          ( eps, f10, f00, fmm, nf, st, fillP, drawP );
                       }
                   }
 
@@ -145,15 +145,15 @@ void pswr_plot_2D_quad
       }
   }
    
-void pswr_plot_2D_tri
-  ( PSStream *ps, 
+void epswr_plot_2D_tri
+  ( epswr_figure_t *eps, 
     int nf,
-    pswr_plot_2D_func_t *F,
+    epswr_plot_2D_func_t *F,
     double xa[],
     double xb[],
     double xc[],
     int ns,
-    pswr_plot_2D_style_t *st,
+    epswr_plot_2D_style_t *st,
     bool_t fill,
     bool_t draw
   )
@@ -222,8 +222,8 @@ void pswr_plot_2D_tri
 
                 if ((kb > 0) && (kc > 0)) 
                   { /* Paint the upward-pointing chip in chip pair: */
-                    pswr_plot_2D_tri_atom
-                      ( ps, f00, f10, f01, nf, st, fillP, drawP );
+                    epswr_plot_2D_tri_atom
+                      ( eps, f00, f10, f01, nf, st, fillP, drawP );
                   }
 
                 if (ka >= 0)
@@ -239,8 +239,8 @@ void pswr_plot_2D_tri
 
                     if ((kb > 0) && (kc > 0))
                       { /* Paint the downward-pointing chip in chip pair: */
-                        pswr_plot_2D_tri_atom
-                          ( ps, f10, f11, f01, nf, st, fillP, drawP );
+                        epswr_plot_2D_tri_atom
+                          ( eps, f10, f11, f01, nf, st, fillP, drawP );
                       }
                   }
 
@@ -254,10 +254,10 @@ void pswr_plot_2D_tri
       }
   }
  
-void pswr_plot_2D_quad_outline
-  ( PSStream *ps, 
+void epswr_plot_2D_quad_outline
+  ( epswr_figure_t *eps, 
     int nf,
-    pswr_plot_2D_func_t *F,
+    epswr_plot_2D_func_t *F,
     interval_t B[],
     int n0,
     int n1
@@ -291,25 +291,25 @@ void pswr_plot_2D_quad_outline
     x0 = xa; x1 = xb;
     x0[0] = LO(B[0]); x0[1] = LO(B[1]); 
     x1[0] = HI(B[0]); x1[1] = LO(B[1]);
-    pswr_plot_2D_line(ps, nf, L, &U, n0);
+    epswr_plot_2D_line(eps, nf, L, &U, n0);
     
     { double *tmp = x0; x0 = x1; x1 = tmp; }
     x1[0] = HI(B[0]); x1[1] = HI(B[1]); 
-    pswr_plot_2D_line(ps, nf, L, &U, n1);
+    epswr_plot_2D_line(eps, nf, L, &U, n1);
     
     { double *tmp = x0; x0 = x1; x1 = tmp; }
     x1[0] = LO(B[0]); x1[1] = HI(B[1]); 
-    pswr_plot_2D_line(ps, nf, L, &U, n0);
+    epswr_plot_2D_line(eps, nf, L, &U, n0);
     
     { double *tmp = x0; x0 = x1; x1 = tmp; }
     x1[0] = LO(B[0]); x1[1] = LO(B[1]); 
-    pswr_plot_2D_line(ps, nf, L, &U, n1);
+    epswr_plot_2D_line(eps, nf, L, &U, n1);
   }
 
-void pswr_plot_2D_tri_outline
-  ( PSStream *ps, 
+void epswr_plot_2D_tri_outline
+  ( epswr_figure_t *eps, 
     int nf,
-    pswr_plot_2D_func_t *F,
+    epswr_plot_2D_func_t *F,
     double xa[],
     double xb[],
     double xc[],
@@ -341,19 +341,19 @@ void pswr_plot_2D_tri_outline
     interval_t U = (interval_t){{ 0.0, 1.0 }};  /* A unit interval for the parameter. */
     
     x0 = xa; x1 = xb;
-    pswr_plot_2D_line(ps, nf, L, &U, ns);
+    epswr_plot_2D_line(eps, nf, L, &U, ns);
     
     x0 = xb; x1 = xc;
-    pswr_plot_2D_line(ps, nf, L, &U, ns);
+    epswr_plot_2D_line(eps, nf, L, &U, ns);
     
     x0 = xc; x1 = xa;
-    pswr_plot_2D_line(ps, nf, L, &U, ns);
+    epswr_plot_2D_line(eps, nf, L, &U, ns);
   }
 
-void pswr_plot_2D_line
-  ( PSStream *ps, 
+void epswr_plot_2D_line
+  ( epswr_figure_t *eps, 
     int nf,
-    pswr_plot_2D_func_t *F,
+    epswr_plot_2D_func_t *F,
     interval_t *B,
     int ns
   )
@@ -387,17 +387,17 @@ void pswr_plot_2D_line
         F(xp, ddim, f1, nf);
             
         /* Plot segment, if we have both endpoints: */
-        if (i > 0) { pswr_segment(ps, f0[0], f0[1], f1[0], f1[1]); }
+        if (i > 0) { epswr_segment(eps, f0[0], f0[1], f1[0], f1[1]); }
       }
   }
 
-void pswr_plot_2D_tri_atom
-  ( PSStream *ps, 
+void epswr_plot_2D_tri_atom
+  ( epswr_figure_t *eps, 
     double fa[],
     double fb[],
     double fc[],
     int nf,
-    pswr_plot_2D_style_t *st,
+    epswr_plot_2D_style_t *st,
     bool_t fill,
     bool_t draw
   )
@@ -405,26 +405,26 @@ void pswr_plot_2D_tri_atom
     if (fill)
       {
         if ((st->nc > 0) && (st->ic >= 0) && (st->ic + st->nc <= nf))
-          { pswr_plot_2D_tri_atom_shade
-              ( ps, fa, fb, fc, nf, st->ic, st->nc );
+          { epswr_plot_2D_tri_atom_shade
+              ( eps, fa, fb, fc, nf, st->ic, st->nc );
           }
         else if ((st->ib >= 0) && (st->ib < nf))
-          { pswr_plot_2D_tri_atom_bands
-              ( ps, fa, fb, fc, nf, st->ib, 
+          { epswr_plot_2D_tri_atom_bands
+              ( eps, fa, fb, fc, nf, st->ib, 
                 st->vStart,st->vStep, st->kMin,st->kMax, 
                 st->Rtb,st->Gtb,st->Btb
               );
           }
         else
-          { pswr_plot_2D_tri_atom_solid
-              ( ps, fa, fb, fc, nf );
+          { epswr_plot_2D_tri_atom_solid
+              ( eps, fa, fb, fc, nf );
           }
       }
     
     if (draw)
       { if ((st->iv >= 0) && (st->iv < nf))
-          { pswr_plot_2D_tri_atom_isolines
-              ( ps, fa, fb, fc, nf, st->iv, 
+          { epswr_plot_2D_tri_atom_isolines
+              ( eps, fa, fb, fc, nf, st->iv, 
                 st->vStart,st->vStep, st->kMin,st->kMax
               );
           }
@@ -432,16 +432,16 @@ void pswr_plot_2D_tri_atom
   }
 
 
-void pswr_plot_2D_tri_atom_solid
-  ( PSStream *ps, 
+void epswr_plot_2D_tri_atom_solid
+  ( epswr_figure_t *eps, 
     double fa[],
     double fb[],
     double fc[],
     int nf 
   )  
   { demand(nf >= 2, "can't plot without coordinates"); 
-    pswr_triangle
-      ( ps,
+    epswr_triangle
+      ( eps,
         fa[0], fa[1],
         fb[0], fb[1],
         fc[0], fc[1],
@@ -449,8 +449,8 @@ void pswr_plot_2D_tri_atom_solid
       );
   }
 
-void pswr_plot_2D_tri_atom_shade
-  ( PSStream *ps, 
+void epswr_plot_2D_tri_atom_shade
+  ( epswr_figure_t *eps, 
     double fa[],
     double fb[],
     double fc[],
@@ -475,11 +475,11 @@ void pswr_plot_2D_tri_atom_shade
         double Y1 = 0.30;
         double Rc, Gc, Bc;
         if (nc == 1)
-          { pswr_color_scale_1(fk[ic], Rs, Gs, Bs, Y0, &(Rc), &(Gc), &(Bc)); }
+          { epswr_color_scale_1(fk[ic], Rs, Gs, Bs, Y0, &(Rc), &(Gc), &(Bc)); }
         else if (nc == 2)
-          { pswr_color_scale_2(fk[ic], fk[ic+1], Rs, Gs, Bs, Y0, &(Rc), &(Gc), &(Bc)); }
+          { epswr_color_scale_2(fk[ic], fk[ic+1], Rs, Gs, Bs, Y0, &(Rc), &(Gc), &(Bc)); }
         else if (nc >= 3)
-          { pswr_color_scale_3(fk[ic], fk[ic+1], fk[ic+2], Y0, Y1, &(Rc), &(Gc), &(Bc)); }
+          { epswr_color_scale_3(fk[ic], fk[ic+1], fk[ic+2], Y0, Y1, &(Rc), &(Gc), &(Bc)); }
         frgb_t RGB = (frgb_t){{ (float)Rc, (float)Gc, (float)Bc }};
         frgb_clip_rgb(&RGB);
         R[k] = RGB.c[0];
@@ -487,8 +487,8 @@ void pswr_plot_2D_tri_atom_shade
         B[k] = RGB.c[2];
       }
     /* Paint quadrilateral with bilinear shading: */
-    pswr_shade_triangle
-      ( ps,
+    epswr_shade_triangle
+      ( eps,
         fa[0], fa[1], R[0], G[0], B[0],
         fb[0], fb[1], R[1], G[1], B[1],
         fc[0], fc[1], R[2], G[2], B[2],
@@ -496,8 +496,8 @@ void pswr_plot_2D_tri_atom_shade
       );
   }
   
-void pswr_plot_2D_tri_atom_bands
-  ( PSStream *ps, 
+void epswr_plot_2D_tri_atom_bands
+  ( epswr_figure_t *eps, 
     double fa[],
     double fb[],
     double fc[],
@@ -514,8 +514,8 @@ void pswr_plot_2D_tri_atom_bands
   { demand(nf >= 2, "can't plot without coordinates"); 
     demand((ib >= 0) && (ib < nf), "invalid function value index"); 
     if ((Rtb != NULL) && (Gtb != NULL) && (Btb != NULL))
-      { pswr_bands_in_triangle
-          ( ps,
+      { epswr_bands_in_triangle
+          ( eps,
             fa[0], fa[1], fa[ib],
             fb[0], fb[1], fb[ib],
             fc[0], fc[1], fc[ib],
@@ -525,8 +525,8 @@ void pswr_plot_2D_tri_atom_bands
       }
   }
   
-void pswr_plot_2D_tri_atom_isolines
-  ( PSStream *ps, 
+void epswr_plot_2D_tri_atom_isolines
+  ( epswr_figure_t *eps, 
     double fa[],
     double fb[],
     double fc[],
@@ -539,8 +539,8 @@ void pswr_plot_2D_tri_atom_isolines
   )  
   { demand(nf >= 2, "can't plot without coordinates"); 
     demand((iv >= 0) && (iv < nf), "invalid function value index"); 
-    pswr_isolines_in_triangle
-      ( ps,
+    epswr_isolines_in_triangle
+      ( eps,
         fa[0], fa[1], fa[iv],
         fb[0], fb[1], fb[iv],
         fc[0], fc[1], fc[iv],

@@ -1,20 +1,20 @@
-#ifndef pswr_plot_2D_H
-#define pswr_plot_2D_H
+#ifndef epswr_plot_2D_H
+#define epswr_plot_2D_H
 
 /* Plotting of a 2D Bézier patch with fixed resolution (for debugging) */
-/* Last edited on 2020-10-01 20:32:54 by jstolfi */
+/* Last edited on 2021-04-13 22:33:37 by jstolfi */
 
 #include <bool.h>
 #include <interval.h>
 
-#include <pswr.h>
+#include <epswr.h>
 
-typedef void pswr_plot_2D_func_t(double x[], int nx, double f[], int nf);
+typedef void epswr_plot_2D_func_t(double x[], int nx, double f[], int nf);
   /* Type of a generic function to be plotted. It should take the
     argument vector {x[0..nx-1]} and store the corresponding function
     value into {f[0..nf-1]}. */
     
-typedef struct pswr_plot_2D_style_t
+typedef struct epswr_plot_2D_style_t
   { int ic; /* Index of first function value to use for smooth color shading. */
     int nc; /* Number of function values to use for smooth color shading. */
     int ib; /* Index of function value to use for discrete color banding. */
@@ -26,9 +26,9 @@ typedef struct pswr_plot_2D_style_t
     double *Rtb;
     double *Gtb;
     double *Btb;
-  } pswr_plot_2D_style_t;
+  } epswr_plot_2D_style_t;
   /* 
-    Type of a record that determines as a two-dimensional function {F}
+    Type of a record that determines how a two-argument function {F}
     is to be used when filling and/or drawing a shape.
   
     The function {F} is assumed to take a point {x[0..1]} of the plane
@@ -39,7 +39,7 @@ typedef struct pswr_plot_2D_style_t
       * if {nc > 0}, {ic >= 0}, and {ic+nc <= nf}, the region is filled
         with smoothly varying colors determined by the function values
         {f[ic..ic+nc-1]}. Each triangular fragment is painted using
-        {pswr_shade_triangle} with option {ns == -1} (Gouraud
+        {epswr_shade_triangle} with option {ns == -1} (Gouraud
         shading). The interpretation of the function values depends on
         the number {nc}. If {nc == 1}, the face is painted with a
         monochromatic blue-white-orange scale. If {nc == 2} it is
@@ -51,8 +51,8 @@ typedef struct pswr_plot_2D_style_t
       * otherwise, if {ib >= 0} and {ib < nf}, the region is filled
         with discrete bands determined by the function value {f[ib]},
         the isoline fields {vStart,vStep,kMin,kMax}, and the color
-        tables {Rtb,Gtb,Btb}. See {pswr_bands_in_triangle},
-        {pswr_bands_in_quadrilateral}. If these
+        tables {Rtb,Gtb,Btb}. See {epswr_bands_in_triangle},
+        {epswr_bands_in_quadrilateral}. If these
         tables are NULL, the bands are supressed and the region remains
         unpainted.
 
@@ -65,19 +65,19 @@ typedef struct pswr_plot_2D_style_t
       * if {iv > 0} and {iv < nf}, isolines are
       drawn according to the function value {f[iv]} and the isoline
       fields {vStart,vStep,kMin,kMax}. The fields {Rtb,Gtb,Btb}
-      are ignored.  See {pswr_isolines_in_triangle},
-      {pswr_isolines_in_quadrilateral}.
+      are ignored.  See {epswr_isolines_in_triangle},
+      {epswr_isolines_in_quadrilateral}.
   */
     
-void pswr_plot_2D_tri
-  ( PSStream *ps, 
+void epswr_plot_2D_tri
+  ( epswr_figure_t *eps, 
     int nf,
-    pswr_plot_2D_func_t *F,
+    epswr_plot_2D_func_t *F,
     double xa[],
     double xb[],
     double xc[],
     int ns,
-    pswr_plot_2D_style_t *st,
+    epswr_plot_2D_style_t *st,
     bool_t fill,
     bool_t draw
   );
@@ -104,10 +104,10 @@ void pswr_plot_2D_tri
     with lines drawn as specified by the {st} and the current pen
     settings. */
 
-void pswr_plot_2D_tri_outline
-  ( PSStream *ps, 
+void epswr_plot_2D_tri_outline
+  ( epswr_figure_t *eps, 
     int nf,
-    pswr_plot_2D_func_t *F,
+    epswr_plot_2D_func_t *F,
     double xa[],
     double xb[],
     double xc[],
@@ -115,22 +115,22 @@ void pswr_plot_2D_tri_outline
   );
   /* Draws (with the current pen settings) the outline of a 2D region
     whose shape is defined by the function {F} and the triangle {T = (xa,xb,xc)},
-    as explained for  {pswr_plot_2D_tri}.
+    as explained for  {epswr_plot_2D_tri}.
     
-    The parameters have the same meaning as in {pswr_plot_2D_tri}.
+    The parameters have the same meaning as in {epswr_plot_2D_tri}.
     Each side of the domain triangle {T} is divided into {ns}
     segments, the endpoints of those segments are mapped through {F}
     to points of the plane, and these points are connected by straight
     lines. */
 
-void pswr_plot_2D_quad
-  ( PSStream *ps, 
+void epswr_plot_2D_quad
+  ( epswr_figure_t *eps, 
     int nf,
-    pswr_plot_2D_func_t *F,
+    epswr_plot_2D_func_t *F,
     interval_t B[],
     int n0,
     int n1,
-    pswr_plot_2D_style_t *st,
+    epswr_plot_2D_style_t *st,
     bool_t fill,
     bool_t draw
   );
@@ -145,30 +145,30 @@ void pswr_plot_2D_quad
     (1st degree) within the chip.
     
     The other parameters have the same meaning as those of 
-    {pswr_plot_2D_tri}. */
+    {epswr_plot_2D_tri}. */
 
-void pswr_plot_2D_quad_outline
-  ( PSStream *ps, 
+void epswr_plot_2D_quad_outline
+  ( epswr_figure_t *eps, 
     int nf,
-    pswr_plot_2D_func_t *F,
+    epswr_plot_2D_func_t *F,
     interval_t B[],
     int n0,
     int n1
   );
   /* Draws (with the current pen settings) the outline of a 2D region
     whose shape is defined by the function {F} and the 
-    rectangle {B = B[0]×B[1]}, as explained for  {pswr_plot_2D_quad}.
+    rectangle {B = B[0]×B[1]}, as explained for  {epswr_plot_2D_quad}.
     
-    The parameters have the same meaning as in {pswr_plot_2D_quad}.
+    The parameters have the same meaning as in {epswr_plot_2D_quad}.
     Each side of the domain rectangle {B} is divided into {n0} or {n1}
     segments, according to the corresponding axis of the domain; the
     endpoints of those segments are mapped through {F} to points of
     the plane, and these points are connected by straight lines. */
 
-void pswr_plot_2D_line
-  ( PSStream *ps, 
+void epswr_plot_2D_line
+  ( epswr_figure_t *eps, 
     int nf,
-    pswr_plot_2D_func_t *F,
+    epswr_plot_2D_func_t *F,
     interval_t *B,
     int ns
   );
@@ -197,23 +197,23 @@ void pswr_plot_2D_line
   argument must be a vector with {nf} values. Function values {f[0]}
   and {f[1]} are used as the X and Y coordinates for plotting. */
   
-void pswr_plot_2D_tri_atom
-  ( PSStream *ps, 
+void epswr_plot_2D_tri_atom
+  ( epswr_figure_t *eps, 
     double fa[],
     double fb[],
     double fc[],
     int nf,
-    pswr_plot_2D_style_t *st,
+    epswr_plot_2D_style_t *st,
     bool_t fill,
     bool_t draw
   );
   /* If {fill} is true, fills the interior of the triangle with
     colors; then, if {draw} is true, draws the isolines with
     the current pen. The color interpretation and the remaining
-    parameters have the same meanings as in {pswr_plot_2D_quad}. */
+    parameters have the same meanings as in {epswr_plot_2D_quad}. */
 
-void pswr_plot_2D_tri_atom_solid
-  ( PSStream *ps, 
+void epswr_plot_2D_tri_atom_solid
+  ( epswr_figure_t *eps, 
     double fa[],
     double fb[],
     double fc[],
@@ -221,8 +221,8 @@ void pswr_plot_2D_tri_atom_solid
   );
   /* Paints the triangle with the current fill color. */
 
-void pswr_plot_2D_tri_atom_shade
-  ( PSStream *ps, 
+void epswr_plot_2D_tri_atom_shade
+  ( epswr_figure_t *eps, 
     double fa[],
     double fb[],
     double fc[],
@@ -233,8 +233,8 @@ void pswr_plot_2D_tri_atom_shade
   /* Paints the triangle with smooth shading. The colors at the
     vertices are defined by the function values {f[ic..ic+nc-1]}. */
     
-void pswr_plot_2D_tri_atom_bands
-  ( PSStream *ps, 
+void epswr_plot_2D_tri_atom_bands
+  ( epswr_figure_t *eps, 
     double fa[],
     double fb[],
     double fc[],
@@ -254,10 +254,10 @@ void pswr_plot_2D_tri_atom_bands
     the tables are NULL, paints nothing. If they are non-NULL, each
     must have {N = kMax - kMin + 2} elements. Assumes that {f[ib]}
     varies affinely inside the triangle. See
-    {pswr_bands_in_triangle}. */
+    {epswr_bands_in_triangle}. */
 
-void pswr_plot_2D_tri_atom_isolines
-  ( PSStream *ps, 
+void epswr_plot_2D_tri_atom_isolines
+  ( epswr_figure_t *eps, 
     double fa[],
     double fb[],
     double fc[],
@@ -273,6 +273,6 @@ void pswr_plot_2D_tri_atom_isolines
     The isolines are defined by the function value {f[iv]} and the
     parameters {vStart,vStep,kMin,kMax}.  Assumes that {f[ib]} varies
     affinely inside the triangle. See
-    {pswr_isolines_in_triangle}. */
+    {epswr_isolines_in_triangle}. */
 
 #endif
