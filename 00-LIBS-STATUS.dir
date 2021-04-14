@@ -1,5 +1,5 @@
 # Libraries in compile order
-# Last edited on 2020-12-08 03:03:25 by jstolfi
+# Last edited on 2021-04-13 23:56:22 by jstolfi
 
 # + = OK.
 # ? = Status uncertain.
@@ -7,7 +7,6 @@
 # J = Junk or obsolete.
 
 + libjs
-+ libjsextra
 + libjsarray
 + libsexp
 
@@ -28,7 +27,6 @@
 + libimg
 + libift
 + libmkgr
-+ libpsextra
 
 + libaa
 + libaafuncs

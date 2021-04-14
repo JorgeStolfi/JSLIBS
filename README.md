@@ -1,6 +1,6 @@
 # JSLIBS - Jorge Stolfi's C libraries
 
-% Last edited on 2021-04-13 01:28:46 by jstolfi
+% Last edited on 2021-04-13 23:55:53 by jstolfi
 
 This repository contains a set of C libraries that I have written over
 almost 30 years. They were originally intended for "private" use, by
@@ -90,10 +90,6 @@ Each library is in a package of its own.
     Creation of Encapsulated Postscript files,
     with emphasis on graphics as opposed to text.
 
-  **libpsextra**: 
-    Functions to plot Bézier maps of {R^2}.
-    >> TO BE REFORMED
-    
   **libquad**: 
     Representation and tools of the quad-edge and oct-edge
     data structures. Uses low-order bits of address to indicate flip and rot.
@@ -240,11 +236,6 @@ Each library is in a package of its own.
     heaps of integers, merging and sorting arrays of integers, 
     subsets of {0..31}, linear search and interpolation
     in tables, program timing, etc..
-
-  **libjsextra**: 
-    Various interfaces which should be in {jslib} or other libraries,
-    but which aren't working yet.
-    >> UNDER DEVELOPMENT
 
   **libbtc**: 
     Data analysis related to bitcoin, such as the

@@ -32,6 +32,7 @@
 + libeps/tests/210_testplot
 + libeps/tests/310_testshade
 + libeps/tests/410_testiso
++ libeps/tests/450_testplot2D
 + libeps/tests/510_boag
 + libeps/tests/520_boap
 + libeps/tests/610_miguec
@@ -104,8 +105,6 @@
 + libjs/tests/510_test_mst
 + libjs/tests/520_test_opf
 ! libjsarray/tests/test_float_array
-! libjsextra/tests/test_jsqroots
-? libjsextra/tests/test_ulist_del
 ? liblsq/tests/lsq
 ? liblsq/tests/lsq_constr
 ? liblsq/tests/lsq_robust
@@ -141,7 +140,6 @@
 ? libppv/tests/ppv_io_test
 ? libppv/tests/ppv_test
 ? libppv/tests/ppvip
-+ libpsextra/tests/testplot2D
 ? libpspulse/tests/test_pulse
 ? libpst/tests/test_expand_reduce_maps
 ? libquad/tests/makeshape
