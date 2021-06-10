@@ -1,11 +1,12 @@
 /* r4.h --- operations on points and vectors of R^4 */
-/* Last edited on 2014-03-24 23:33:39 by stolfilocal */
+/* Last edited on 2021-06-09 20:44:03 by jstolfi */
 
 #ifndef r4_H
 #define r4_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 
 #include <vec.h>
@@ -20,7 +21,7 @@ void r4_zero (r4_t *r);
 void r4_all (double x, r4_t *r);
   /* Sets all coordinates of {r} to the value {x}. */
   
-void r4_axis (int i, r4_t *r);
+void r4_axis (int32_t i, r4_t *r);
   /* Sets {r} to the {i}th vector of the canonical basis. */
 
 void r4_add (r4_t *a, r4_t *b, r4_t *r);
@@ -96,10 +97,10 @@ double r4_decomp (r4_t *a, r4_t *u, r4_t *para, r4_t *perp);
     Namely, {para = c*u} and {perp = a - c*u}, where 
     {c = r4_dot(a,u)/r4_dot(u,u)}. Also returns {c}. */
 
-int r4_is_finite(r4_t *p);
+int32_t r4_is_finite(r4_t *p);
   /* True iff all coordinates of {p} are finite. */
 
-int r4_eq(r4_t *p, r4_t *q);
+bool_t r4_eq(r4_t *p, r4_t *q);
   /* True iff points {p} and {q} are identical. */
 
 void r4_throw_cube (r4_t *r);
@@ -125,7 +126,18 @@ void r4_gen_print (FILE *f, r4_t *a, char *fmt, char *lp, char *sep, char *rp);
     between, and after all the coordinates of {a}.  When NULL, they default 
     to "%16.8e", "(", " ", and ")", respectively. */
 
+/* DERIVED TYPES */
+
 vec_typedef(r4_vec_t,r4_vec,r4_t);
   /* An {r4_vec_t} is a vector of {r4_t}s. */
+
+typedef bool_t r4_pred_t(r4_t *a);
+  /* Type of a function that returns a {bool_t} value from an {r4_t} value. */
+
+typedef double r4_double_func_t(r4_t *a);
+  /* Type of a function that returns a {double} value from an {r4_t} value. */
+
+typedef r4_t r4_map_t(r4_t *a);
+  /* Type of a function that returns a {double} value from an {r4_t} value. */
 
 #endif

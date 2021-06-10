@@ -1,29 +1,28 @@
-/* voxm_bezier.h --- voxel-based modeling of antialiased 3D objects */
-/* Last edited on 2016-04-02 19:46:23 by stolfilocal */
+/* r3_bezier.h --- voxel-based modeling of antialiased 3D objects */
+/* Last edited on 2021-06-09 19:57:20 by jstolfi */
 
-#ifndef voxm_bezier_H
-#define voxm_bezier_H
+#ifndef r3_bezier_H
+#define r3_bezier_H
 
 #define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>
 #include <r3.h>
+#include <r3_motion.h>
 #include <r3_path.h>
 
-#include <voxm_path.h>
-
-void voxm_bezier_from_path_states(voxm_path_state_t *S, voxm_path_state_t *T, r3_t *p1, r3_t *p2);
+void r3_bezier_from_path_states(r3_path_state_t *S, r3_path_state_t *T, r3_t *p1, r3_t *p2);
   /* Conmputes the two middle Bezier control points of a cubic arc that starts 
     at time {S.t} and position {S.p} with velocity {S.v} and ends at time {T.t} 
     and position {T.p} with velocity {T.v}. The control points
     of the arc will be {p0=S.p}, {p1}, {p2}, and {p3=T.p}. */
 
-double voxm_bezier_length_estimate(r3_t *p0, r3_t *p1, r3_t *p2, r3_t *p3, int order);
+double r3_bezier_length_estimate(r3_t *p0, r3_t *p1, r3_t *p2, r3_t *p3, int32_t order);
   /* Estimates the length of the cubic curve arc defined by the Bezier 
      control points {p0,p1,p2,p3}, by bisecting it recursively {order} times. */
 
-void voxm_bezier_split
+void r3_bezier_split
   ( double t0, 
     double t1,
     r3_t *p0, 

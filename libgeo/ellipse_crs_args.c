@@ -1,8 +1,9 @@
 /* See ellipse_crs_args_parse.h */
-/* Last edited on 2013-11-21 02:54:40 by stolfilocal */
+/* Last edited on 2021-06-09 19:48:45 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -85,7 +86,7 @@ void ellipse_crs_args_adjust_print
   { /* Try to determine the natural width of {fmt}-printed values: */
     char *tmp = NULL;
     asprintf(&tmp, fmt, 0);
-    int wd = (int)strlen(tmp);
+    int32_t wd = (int32_t)strlen(tmp);
     free(tmp);
     
     fprintf(wr, "  center ");

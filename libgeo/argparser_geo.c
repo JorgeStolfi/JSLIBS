@@ -1,10 +1,11 @@
 /* See argparser_geo.h. */
-/* Last edited on 2017-03-11 19:40:36 by stolfilocal */
+/* Last edited on 2021-06-09 19:56:55 by jstolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -17,8 +18,8 @@
 
 #include <argparser_geo.h>
 
-void argparser_get_next_rn(argparser_t *pp, double p[], int n, double min, double max)
-  { int i;
+void argparser_get_next_rn(argparser_t *pp, double p[], int32_t n, double min, double max)
+  { int32_t i;
     for (i = 0; i < n; i++) { p[i] = argparser_get_next_double(pp, min, max); }
   }
 
@@ -69,7 +70,7 @@ void argparser_get_next_adjust(argparser_t *pp, double *adjP, double min, double
 hr2_pmap_t argparser_get_next_proj_map_matrix(argparser_t *pp)
   { /* Parse the nine entries of the projective matrix, row order: */
     r3x3_t A;
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < 3; i++)
       { for (j = 0; j < 3; j++)
           { A.c[i][j] = argparser_get_next_double(pp, -BIG_ELEM, +BIG_ELEM); }
@@ -87,7 +88,7 @@ hr2_pmap_t argparser_get_next_proj_map_matrix(argparser_t *pp)
 hr2_pmap_t argparser_get_next_proj_map_from_points(argparser_t *pp)
   { /* Parse the four input points {ip[0..3]}: */
     hr2_point_t ip[4];
-    int i;
+    int32_t i;
     for (i = 0; i < 4; i++)
       { ip[i].c.c[0] = 1.0;
         ip[i].c.c[1] = argparser_get_next_double(pp, -BIG_COORD, +BIG_COORD);

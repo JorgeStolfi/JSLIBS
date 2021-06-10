@@ -1,5 +1,5 @@
 /* See {float_image_transform.h}. */
-/* Last edited on 2017-06-26 16:59:00 by stolfilocal */
+/* Last edited on 2021-06-09 20:56:05 by jstolfi */
 
 #define _GNU_SOURCE
 #include <assert.h>
@@ -26,14 +26,14 @@
 /* IMPLEMENTATIONS */
 
 void float_image_transform_all
-  ( float_image_t *iimg, /* Input image. */
-    ix_reduction_t red,  /* Index reduction method. */ 
-    r2_map_t *map,       /* Output-to-input coordinate transformation. */
-    float undef,         /* Sample value for undefined output pixels. */
-    bool_t avg,          /* TRUE to average pixels, FALSE to add them. */
-    int order,           /* Interpolation order. */
-    r2_pred_t *debugp,   /* Tells whether pixel should be debugged. */
-    float_image_t *oimg  /* Output image. */
+  ( float_image_t *iimg,    /* Input image. */
+    ix_reduction_t red,     /* Index reduction method. */ 
+    r2_map_jacobian_t *map, /* Output-to-input coordinate transformation. */
+    float undef,            /* Sample value for undefined output pixels. */
+    bool_t avg,             /* TRUE to average pixels, FALSE to add them. */
+    int order,              /* Interpolation order. */
+    r2_pred_t *debugp,      /* Tells whether pixel should be debugged. */
+    float_image_t *oimg     /* Output image. */
   )
   { 
     int ocols = (int)oimg->sz[1];
@@ -42,18 +42,18 @@ void float_image_transform_all
   }    
 
 void float_image_transform_sub
-  ( float_image_t *iimg, /* Input image. */
-    ix_reduction_t red,  /* Index reduction method. */ 
-    r2_map_t *map,       /* Output-to-input coordinate transformation. */
-    float undef,         /* Sample value for undefined output pixels. */
-    bool_t avg,          /* TRUE to average pixels, FALSE to add them. */
-    int order,           /* Interpolation order. */
-    int x0,              /* First output image column. */
-    int y0,              /* First output image row. */
-    int NX,              /* Number of output image columns. */
-    int NY,              /* Number of output image rows. */
-    r2_pred_t *debugp,   /* Tells whether pixel should be debugged. */
-    float_image_t *oimg  /* Output image. */
+  ( float_image_t *iimg,    /* Input image. */
+    ix_reduction_t red,     /* Index reduction method. */ 
+    r2_map_jacobian_t *map, /* Output-to-input coordinate transformation. */
+    float undef,            /* Sample value for undefined output pixels. */
+    bool_t avg,             /* TRUE to average pixels, FALSE to add them. */
+    int order,              /* Interpolation order. */
+    int x0,                 /* First output image column. */
+    int y0,                 /* First output image row. */
+    int NX,                 /* Number of output image columns. */
+    int NY,                 /* Number of output image rows. */
+    r2_pred_t *debugp,      /* Tells whether pixel should be debugged. */
+    float_image_t *oimg     /* Output image. */
   )
   { demand(iimg->sz[0] == oimg->sz[0], "images must have the same channels");
     int chns = (int)oimg->sz[0];
@@ -84,7 +84,7 @@ void float_image_transform_get_pixel
     ix_reduction_t red, /* Index reduction method. */ 
     int col, 
     int row, 
-    r2_map_t *map, 
+    r2_map_jacobian_t *map, 
     float undef, 
     bool_t avg,
     int order, 
@@ -168,7 +168,7 @@ void float_image_transform_copy_persp_rectangle
     
     auto void projmap(r2_t *p, r2x2_t *J);
       /* Applies the projective map to the point {p}. Also post-multiplies {J} by the local Jacobian, as
-        expected from a {r2_map_t}. */
+        expected from a {r2_map_jacobian_t}. */
     
     float_image_transform_sub(iimg, red, &projmap, undef, avg, order, x0, NX, y0, NY, debugp, oimg);
     

@@ -1,31 +1,33 @@
 /* r6test --- test program for r6.h, r6x6.h  */
-/* Last edited on 2016-04-03 13:09:56 by stolfilocal */
+/* Last edited on 2021-06-09 20:39:28 by jstolfi */
+
+#define _GNU_SOURCE
+#include <math.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+#include <affirm.h>
+#include <jsrandom.h>
+#include <flt.h>
 
 #include <r6.h>
 #include <r6_extra.h>
 #include <r6x6.h>
 #include <rn_test_tools.h>
 
-#include <affirm.h>
-#include <jsrandom.h>
-#include <flt.h>
-
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #define N 6
 #define NO NULL
 
 /* Internal prototypes */
 
-int main (int argc, char **argv);
-void test_r6(int verbose);
-void test_r6x6(int verbose);
+int32_t main (int32_t argc, char **argv);
+void test_r6(int32_t verbose);
+void test_r6x6(int32_t verbose);
 void throw_matrix(r6x6_t *m);
 
-int main (int argc, char **argv)
-  { int i;
+int32_t main (int32_t argc, char **argv)
+  { int32_t i;
     srand(1993);
     srandom(1993);
 
@@ -36,12 +38,12 @@ int main (int argc, char **argv)
     return (0);
   }
 
-void test_r6(int verbose)
+void test_r6(int32_t verbose)
   { r6_t a, b, c, d, e, f, g, para, perp;
     double r, s, t;
     double rr, ss, tt;
     double mag;
-    int i, j, k;
+    int32_t i, j, k;
 
     if (verbose)
       { fprintf(stderr,
@@ -240,14 +242,14 @@ void test_r6(int verbose)
     if (verbose) { fprintf(stderr, "--- r6_cross ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
-      { int i0 = (i + 0) % N;
-        int i1 = (i + 1) % N;
-        int i2 = (i + 2) % N;
-        int i3 = (i + 3) % N;
-        int i4 = (i + 4) % N;
-        int i5 = (i + 5) % N;
+      { int32_t i0 = (i + 0) % N;
+        int32_t i1 = (i + 1) % N;
+        int32_t i2 = (i + 2) % N;
+        int32_t i3 = (i + 3) % N;
+        int32_t i4 = (i + 4) % N;
+        int32_t i5 = (i + 5) % N;
         double sign = ((i % 2) == 0 ? 1.0 : -1.0);
-        int p;
+        int32_t p;
         r6_axis(i0, &a);
         r6_axis(i1, &b);
         r6_axis(i2, &c);
@@ -282,7 +284,7 @@ void test_r6(int verbose)
     if (verbose) { fprintf(stderr, "--- r6_pick_ortho ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
-      { int i0 = (i + 0) % N;
+      { int32_t i0 = (i + 0) % N;
         r6_axis(i0, &a);
         double ma = r6_L_inf_norm(&a);
         r6_pick_ortho(&a, &d);
@@ -304,12 +306,12 @@ void test_r6(int verbose)
     if (verbose) { fprintf(stderr, "--- r6_det ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
-      { int i0 = (i + 0) % N;
-        int i1 = (i + 1) % N;
-        int i2 = (i + 2) % N;
-        int i3 = (i + 3) % N;
-        int i4 = (i + 4) % N;
-        int i5 = (i + 5) % N;
+      { int32_t i0 = (i + 0) % N;
+        int32_t i1 = (i + 1) % N;
+        int32_t i2 = (i + 2) % N;
+        int32_t i3 = (i + 3) % N;
+        int32_t i4 = (i + 4) % N;
+        int32_t i5 = (i + 5) % N;
         double sign = ((i % 2) == 0 ? 1.0 : -1.0);
         r6_axis(i0, &a);
         r6_axis(i1, &b);
@@ -356,13 +358,13 @@ void test_r6(int verbose)
       }
   }
 
-void test_r6x6(int verbose)
+void test_r6x6(int32_t verbose)
   { r6x6_t A, B, C;
     r6_t a, b, c, bb, cc;
     double r, s, t;
     double rr, ss, tt;
     double mag;
-    int i, j, k;
+    int32_t i, j, k;
 
     if (verbose) { fprintf(stderr, "--- Size and allocation ---\n"); }
     if (verbose)
@@ -399,7 +401,7 @@ void test_r6x6(int verbose)
 
     if (verbose) { fprintf(stderr, "--- r6x6_get_row, r6x6_set_row, r6x6_get_col, r6x6_set_col ---\n"); }
     throw_matrix(&A);
-    int dir; /* 0 for row, 1 for col. */
+    int32_t dir; /* 0 for row, 1 for col. */
     for (dir = 0; dir < 2; dir++)
       { for (i = 0; i < N; i++)
           { /* Check {r6x6_get_row,r6x6_get_col}: */
@@ -496,7 +498,7 @@ void test_r6x6(int verbose)
     if (verbose) { fprintf(stderr, "--- r6x6_det ---\n"); }
     throw_matrix(&A);
     for (i = 0; i < N; i++)
-      { int k = (i + 1) % N;
+      { int32_t k = (i + 1) % N;
         for (j = 0; j < N; j++)
           { /* Check for linearity */
             r = drandom();
@@ -575,7 +577,7 @@ void test_r6x6(int verbose)
   }  
 
 void throw_matrix(r6x6_t *m)
-  { int i, j;
+  { int32_t i, j;
     r6_t a;
     for (i = 0; i < N; i++)
       { r6_throw_cube(&a);

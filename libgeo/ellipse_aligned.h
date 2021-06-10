@@ -2,10 +2,11 @@
 #define ellipse_aligned_H
 
 /* ellipse_aligned.h -- tools for axis-aligned, origin-centered ellipses. */
-/* Last edited on 2013-05-24 15:30:43 by stolfilocal */
+/* Last edited on 2021-06-09 19:55:19 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <sign.h>
 #include <bool.h>
 #include <interval.h>
@@ -40,10 +41,10 @@ void ellipse_aligned_int_bbox
   ( double cx, double cy,  /* Center of ellipse. */
     double rx, double ry,
     double mrg, /* Extra margin. */
-    int *xLoP,  /* (OUT) Min X of clip area. */
-    int *xHiP,  /* (OUT) Max X of clip area. */
-    int *yLoP,  /* (OUT) Min Y of clip area. */
-    int *yHiP   /* (OUT) Max Y of clip area. */
+    int32_t *xLoP,  /* (OUT) Min X of clip area. */
+    int32_t *xHiP,  /* (OUT) Max X of clip area. */
+    int32_t *yLoP,  /* (OUT) Min Y of clip area. */
+    int32_t *yHiP   /* (OUT) Max Y of clip area. */
   );
   /* Stores in {*xLoP,*xHiP,*yLoP,*yHiP} a bounding box with integer coordinates
     for the ellipse with center {cx,xy} and X,Y radii {rx,ry}. The box is at least

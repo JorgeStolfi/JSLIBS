@@ -1,11 +1,12 @@
 /* r2.h --- operations on points and vectors of R^2 */
-/* Last edited on 2020-10-16 01:43:33 by jstolfi */
+/* Last edited on 2021-06-09 20:43:33 by jstolfi */
 
 #ifndef r2_H
 #define r2_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 
 #include <vec.h>
@@ -21,7 +22,7 @@ void r2_zero (r2_t *r);
 void r2_all (double x, r2_t *r);
   /* Sets all coordinates of {r} to the value {x}. */
   
-void r2_axis (int i, r2_t *r);
+void r2_axis (int32_t i, r2_t *r);
   /* Sets {r} to the {i}th vector of the canonical basis. */
 
 void r2_add (r2_t *a, r2_t *b, r2_t *r);
@@ -98,10 +99,10 @@ double r2_decomp (r2_t *a, r2_t *u, r2_t *para, r2_t *perp);
     Namely, {para = c*u} and {perp = a - c*u}, where 
     {c = r2_dot(a,u)/r2_dot(u,u)}. Also returns {c}. */
 
-int r2_is_finite(r2_t *p);
+int32_t r2_is_finite(r2_t *p);
   /* True iff both coordinates of {p} are finite (neither {±INF} nor {NAN}). */
 
-int r2_eq(r2_t *p, r2_t *q);
+bool_t r2_eq(r2_t *p, r2_t *q);
   /* True iff points {p} and {q} are identical. */
   
 void r2_barycenter(int32_t np, r2_t p[], double w[], r2_t *barP);
@@ -117,7 +118,7 @@ void r2_bbox(int32_t np, r2_t p[], interval_t B[], bool_t finite);
 r2_t r2_circumcenter(r2_t *a, r2_t *b, r2_t *c);
   /* The center of the circle passing through the three points {a,b,c}. */
 
-int r2_orient(r2_t *a, r2_t *b, r2_t *c);
+int32_t r2_orient(r2_t *a, r2_t *b, r2_t *c);
   /* The orientation of the triangle{a,b,c}: {+1} if CCW, {-1} if CW, 0 if flat.
     Note that the result is unreliable if {a,b,c} is nearly flat. */
     
@@ -147,7 +148,18 @@ void r2_gen_print (FILE *f, r2_t *a, char *fmt, char *lp, char *sep, char *rp);
     between, and after all the coordinates of {a}.  When NULL, they default 
     to "%16.8e", "(", " ", and ")", respectively. */
 
+/* DERIVED TYPES */
+
 vec_typedef(r2_vec_t, r2_vec, r2_t);
   /* An {r2_vec_t} is a vector of {r2_t}s. */
 
+typedef bool_t r2_pred_t(r2_t *a);
+  /* Type of a function that returns a {bool_t} value from an {r2_t} value. */
+
+typedef double r2_double_func_t(r2_t *a);
+  /* Type of a function that returns a {double} value from an {r2_t} value. */
+
+typedef r2_t r2_map_t(r2_t *a);
+  /* Type of a function that returns a {double} value from an {r2_t} value. */
+ 
 #endif

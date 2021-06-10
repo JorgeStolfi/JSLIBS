@@ -1,8 +1,9 @@
 /* See r2x2.h. */
-/* Last edited on 2020-10-14 15:18:11 by jstolfi */
+/* Last edited on 2021-06-09 19:39:00 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 
@@ -38,27 +39,27 @@ void r2x2_transp (r2x2_t *A, r2x2_t *M)
     a = A->c[0][1]; b = A->c[1][0]; M->c[0][1] = b; M->c[1][0] = a;
   }
 
-void r2x2_get_row(r2x2_t *A, int i, r2_t *x)
+void r2x2_get_row(r2x2_t *A, int32_t i, r2_t *x)
   { assert((i >= 0) && (i < N));
     double *v = &(A->c[i][0]);
     x->c[0] = v[0];
     x->c[1] = v[1];
   }
   
-void r2x2_set_row(r2x2_t *A, int i, r2_t *x)
+void r2x2_set_row(r2x2_t *A, int32_t i, r2_t *x)
   { assert((i >= 0) && (i < N));
     double *v = &(A->c[i][0]);
     v[0] = x->c[0];
     v[1] = x->c[1];
   }
 
-void r2x2_get_col(r2x2_t *A, int j, r2_t *x)
+void r2x2_get_col(r2x2_t *A, int32_t j, r2_t *x)
   { assert((j >= 0) && (j < N));
     x->c[0] = A->c[0][j];
     x->c[1] = A->c[1][j];
   }
   
-void r2x2_set_col(r2x2_t *A, int j, r2_t *x)
+void r2x2_set_col(r2x2_t *A, int32_t j, r2_t *x)
   { assert((j >= 0) && (j < N));
     A->c[0][j] = x->c[0];
     A->c[1][j] = x->c[1];
@@ -243,7 +244,7 @@ void r2x2_from_cols(r2_t *a, r2_t *b, r2x2_t *M)
 
 bool_t r2x2_is_unif_scaling(r2x2_t *M, double s)
   {
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { if (M->c[i][j] != (i == j ? s : 0.0)) { return FALSE; } }
@@ -321,9 +322,9 @@ void r2x2_rot_and_scale(r2_t *p, r2x2_t *M)
 
 void r2x2_from_point_pairs(r2_vec_t *p1, r2_t *bar1, r2_vec_t *p2, r2_t *bar2, r2x2_t *M)
   {
-    int np = p1->ne;
+    int32_t np = p1->ne;
     assert(np == p2->ne);
-    int k;
+    int32_t k;
     double debug = FALSE;
     
     if (debug) { fprintf(stderr, "--- computing the linear matrix ---\n"); }
@@ -340,7 +341,7 @@ void r2x2_from_point_pairs(r2_vec_t *p1, r2_t *bar1, r2_vec_t *p2, r2_t *bar2, r
         if (bar1 != NULL) { r2_sub(&q1k, bar1, &q1k); }
         if (bar2 != NULL) { r2_sub(&q2k, bar2, &q2k); }
         /* Accumulate moments and projections: */
-        int i,j;
+        int32_t i,j;
         for(i = 0; i < 2; i ++)
           { for (j = 0; j < 2; j++)
               { A.c[i][j] += q1k.c[i]*q1k.c[j];

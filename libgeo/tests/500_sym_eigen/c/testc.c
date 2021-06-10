@@ -1,34 +1,37 @@
-/* Last edited on 2013-06-01 23:23:27 by stolfilocal */
+/* Last edited on 2021-06-09 20:41:05 by jstolfi */
 /* test of TriRed.c, TriQL.c */
 
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 
-#include <sym_eigen.h>
 #include <bool.h>
 
-int main(int argn, char **argc);
-void filla(int n, double *A, int it);
-void prta(int n, double *A);
-void prtri(int n, double *d, double *e);
-void preval(int n, double *d, int p);
-void prevec(int n, double *R, int p);
-void appsim(int n, double *R, double *A, double *v);
+#include <sym_eigen.h>
 
-int main(int argn, char **argc)
+int32_t main(int32_t argn, char **argc);
+void filla(int32_t n, double *A, int32_t it);
+void prta(int32_t n, double *A);
+void prtri(int32_t n, double *d, double *e);
+void preval(int32_t n, double *d, int32_t p);
+void prevec(int32_t n, double *R, int32_t p);
+void appsim(int32_t n, double *R, double *A, double *v);
+
+int32_t main(int32_t argn, char **argc)
   {
-    int n = 7;
+    int32_t n = 7;
     double A[n*n], R[n*n], d[n], e[n], v[n];
-    int p;
-    int test1, test2, absrt;
+    int32_t p;
+    int32_t test1, test2, absrt;
     test1 = 1;
     test2 = 1;
     absrt = 0;
 
-    int nt = 3; /* Number of test matrices. */
-    int it;
+    int32_t nt = 3; /* Number of test matrices. */
+    int32_t it;
     for (it = 0; it < nt; it++)
       { 
         if (test1)
@@ -90,10 +93,10 @@ int main(int argn, char **argc)
     return 0;
   }
 
-void filla(int n, double *A, int it)
+void filla(int32_t n, double *A, int32_t it)
   /* Generate a symmetric matrix A(n,n) */
   { 
-    int i,j;
+    int32_t i,j;
     double s, t;
     for (i = 0; i < n; i++) 
       { for (j = 0; j <= i; j++) 
@@ -124,10 +127,10 @@ void filla(int n, double *A, int it)
       }
   }
 
-void prta(int n, double *A)
+void prta(int32_t n, double *A)
   /* prints matrix A(n,n) */
   { 
-    int i,j;
+    int32_t i,j;
     fprintf(stderr, "\n");
     for (i = 0; i < n; i++) 
       { for (j = 0; j < n; j++) 
@@ -137,10 +140,10 @@ void prta(int n, double *A)
     fprintf(stderr, "\n");
   }
 
-void prtri(int n, double *d, double *e)
+void prtri(int32_t n, double *d, double *e)
   /* prints symmetric tridiagonal matrix */
   /* d[0..n-1] is diagonal, e[1..n-1] is sub-diagonal */
-  { int i, j;
+  { int32_t i, j;
     fprintf(stderr, "\n");
     for (i = 0; i < n; i++) 
       { for (j = 0; j < i-1; j++)  { fprintf(stderr, "%8s", ""); }
@@ -152,18 +155,18 @@ void prtri(int n, double *d, double *e)
     fprintf(stderr, "\n");
   }
 
-void preval(int n, double *d, int p)
+void preval(int32_t n, double *d, int32_t p)
   /* prints eigenvalue list d[1..n-1] */
-  { int i;
+  { int32_t i;
     fprintf(stderr, "\n");
     for (i = 0; i < p; i++) 
       { fprintf(stderr, "%10.6f\n", d[i]); }
     fprintf(stderr, "\n");
   }
 
-void prevec(int n, double *R, int p)
+void prevec(int32_t n, double *R, int32_t p)
   /* prints eigenvectors R[0..p-1,*] */
-  { int i, j;
+  { int32_t i, j;
     fprintf(stderr, "\n");
     for (i = 0; i < p; i++)  
       { for (j = 0; j < n; j++)
@@ -173,12 +176,12 @@ void prevec(int n, double *R, int p)
     fprintf(stderr, "\n");
   }    
 
-void appsim(int n, double *R, double *A, double *v)      
+void appsim(int32_t n, double *R, double *A, double *v)      
   /* applies similarity transformation "R" to "A", */
   /* i.e. computes "R*A*(R^t)", using "v[0..n-1]" as temp storage */
   {
     double s;
-    int i, j, k;
+    int32_t i, j, k;
 
     /*set "A" to "R" times "A": */
     for (j = 0; j < n; j++)

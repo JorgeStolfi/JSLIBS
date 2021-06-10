@@ -1,8 +1,9 @@
 /* See r2.h */
-/* Last edited on 2020-10-16 01:55:12 by jstolfi */
+/* Last edited on 2021-06-09 20:49:58 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 
 #include <r2.h>
@@ -26,7 +27,7 @@ void r2_all (double x, r2_t *r)
     r->c[1] = x;
   }
 
-void r2_axis (int i, r2_t *r)
+void r2_axis (int32_t i, r2_t *r)
   { affirm((i >= 0) && (i < N), "r2_axis: bad index");
     r->c[0] = 0.0;
     r->c[1] = 0.0;
@@ -190,12 +191,13 @@ double r2_decomp (r2_t *a, r2_t *u, r2_t *para, r2_t *perp)
       }
   }
 
-int r2_is_finite(r2_t *p)
+int32_t r2_is_finite(r2_t *p)
   { return (isfinite(p->c[0]) && isfinite(p->c[1]));
   }
 
-int r2_eq(r2_t *p, r2_t *q)
-  { return (p->c[0] == q->c[0]) && (p->c[1] == q->c[1]);
+bool_t r2_eq(r2_t *p, r2_t *q)
+  { 
+    return (p->c[0] == q->c[0]) && (p->c[1] == q->c[1]);
   }
   
 void r2_barycenter(int32_t np, r2_t p[], double w[], r2_t *bar)
@@ -213,7 +215,7 @@ void r2_barycenter(int32_t np, r2_t p[], double w[], r2_t *bar)
 void r2_bbox(int32_t np, r2_t p[], interval_t B[], bool_t finite)
   { double xmin = INF, xmax = -INF;
     double ymin = INF, ymax = -INF;
-    int ip;
+    int32_t ip;
     for (ip = 0; ip < np; ip++)
       { r2_t *pi = &(p[ip]);
         if ((! finite) || r2_is_finite(pi))

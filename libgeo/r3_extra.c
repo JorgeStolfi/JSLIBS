@@ -1,8 +1,9 @@
 /* See r3_extra.h */
-/* Last edited on 2014-01-12 15:38:49 by stolfilocal */
+/* Last edited on 2021-06-09 19:56:19 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 
@@ -15,7 +16,7 @@
 
 /* INTERNAL PROTOTYPES */
 
-void r3_icosahedron_gen_vertices(double B, double C, int n, r3_t r[]);
+void r3_icosahedron_gen_vertices(double B, double C, int32_t n, r3_t r[]);
   /* Stores in {r[0..n-1]} the vertices of an icosahedron of the form
     {(0,±B,±C)} and its cyclic permutations.   Requires {n==12}. */
 
@@ -26,7 +27,7 @@ double r3_pick_ortho (r3_t *u, r3_t *r)
     if (u !=  r) { (*r) = (*u); }
     double m = r3_L_inf_norm(u);
     if (m != 0)
-      { int i;
+      { int32_t i;
         if (m == fabs(u->c[0]))
           { i = 0; }
         else if (m == fabs(u->c[1]))
@@ -35,8 +36,8 @@ double r3_pick_ortho (r3_t *u, r3_t *r)
           { i = 2; }
         else
           { assert(FALSE); }
-        int j = (i + 1) % N;
-        int k = (i + 2) % N;
+        int32_t j = (i + 1) % N;
+        int32_t k = (i + 2) % N;
         double t = r->c[i];  
         r->c[i] = -(r->c[j]);
         r->c[j] = t; 
@@ -45,10 +46,10 @@ double r3_pick_ortho (r3_t *u, r3_t *r)
     return m;
   }
 
-void r3_cylindrical_grid(double H, double R, int m, int n, double skew, r3_t r[])
+void r3_cylindrical_grid(double H, double R, int32_t m, int32_t n, double skew, r3_t r[])
   { demand((n >= 0) && (m >= 0), "invalid parameters");
-    int k = 0;
-    int i, j;
+    int32_t k = 0;
+    int32_t i, j;
     for (i = 0; i < m; i++)
       { double hi = (m == 1 ? 0.0 : H*(2*((double)i)/(m-1) - 1));
         double fi = (m == 1 ? 0.0 : skew*(((double)i)/(m-1) - 0.5));
@@ -61,7 +62,7 @@ void r3_cylindrical_grid(double H, double R, int m, int n, double skew, r3_t r[]
     assert(k == m*n);
   }
 
-void r3_tetrahedron_vertices(double R, int n, r3_t r[])
+void r3_tetrahedron_vertices(double R, int32_t n, r3_t r[])
   { demand(n == 4, "bad num vertices"); 
     double S = R/sqrt(3.0);
     r[0] = (r3_t){{ -S, -S, -S }};
@@ -70,10 +71,10 @@ void r3_tetrahedron_vertices(double R, int n, r3_t r[])
     r[3] = (r3_t){{ -S, +S, +S }};
   }
   
-void r3_octahedron_vertices(double R, int n, r3_t r[])
+void r3_octahedron_vertices(double R, int32_t n, r3_t r[])
   { demand(n == 6, "bad num vertices"); 
-    int k = 0;
-    int i;
+    int32_t k = 0;
+    int32_t i;
     for (i = 0; i < N; i++) 
       { r[k] = (r3_t){{ 0,0,0 }}; r[k].c[i] = +R; k++;
         r[k] = (r3_t){{ 0,0,0 }}; r[k].c[i] = -R; k++;
@@ -81,11 +82,11 @@ void r3_octahedron_vertices(double R, int n, r3_t r[])
     assert(k == n);
   }
           
-void r3_hexahedron_vertices(double R, int n, r3_t r[])
+void r3_hexahedron_vertices(double R, int32_t n, r3_t r[])
   { demand(n == 8, "bad num vertices"); 
     double S = R/sqrt(3.0);
-    int k = 0;
-    int s0, s1, s2;
+    int32_t k = 0;
+    int32_t s0, s1, s2;
     for (s0 = -1; s0 <= +1; s0 += 2) 
       { for (s1 = -1; s1 <= +1; s1 += 2) 
           { for (s2 = -1; s2 <= +1; s2 += 2) 
@@ -95,7 +96,7 @@ void r3_hexahedron_vertices(double R, int n, r3_t r[])
     assert(k == n);
   }
           
-void r3_icosahedron_vertices(double R, int n, r3_t r[])
+void r3_icosahedron_vertices(double R, int32_t n, r3_t r[])
   { demand(n == 12, "bad num vertices"); 
     double s = 1.0/sqrt(5.0);
     double c = sqrt((1 - s)/2);
@@ -107,7 +108,7 @@ void r3_icosahedron_vertices(double R, int n, r3_t r[])
     r3_icosahedron_gen_vertices(B, C, n, r);
   }
            
-void r3_dodecahedron_vertices(double R, int n, r3_t r[])
+void r3_dodecahedron_vertices(double R, int32_t n, r3_t r[])
   { demand(n == 20, "bad num vertices");
     double f = (sqrt(5) + 1)/2;
     double s = sqrt(3);
@@ -117,16 +118,16 @@ void r3_dodecahedron_vertices(double R, int n, r3_t r[])
     r3_hexahedron_vertices(R, 8, &(r[12]));
   }
 
-void r3_icosahedron_gen_vertices(double B, double C, int n, r3_t r[])
+void r3_icosahedron_gen_vertices(double B, double C, int32_t n, r3_t r[])
   {
-    int k = 0;
-    int i, sb, sc;
+    int32_t k = 0;
+    int32_t i, sb, sc;
     for (i = 0; i < N; i++) 
       { for (sb = -1; sb <= +1; sb += 2) 
           { for (sc = -1; sc <= +1; sc += 2) 
-              { int ja = i;
-                int jb = (i + 1) % N;
-                int jc = (i + 2) % N;
+              { int32_t ja = i;
+                int32_t jb = (i + 1) % N;
+                int32_t jc = (i + 2) % N;
                 r[k].c[ja] = 0.0;
                 r[k].c[jb] = sb*B;
                 r[k].c[jc] = sc*C;

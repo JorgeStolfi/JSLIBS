@@ -1,11 +1,12 @@
 /* r2_extra.h --- additional operations on points and vectors of {R^2} */
-/* Last edited on 2018-06-30 00:25:11 by stolfilocal */
+/* Last edited on 2021-06-09 21:08:24 by jstolfi */
 
 #ifndef r2_extra_H
 #define r2_extra_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 
 #include <vec.h>
@@ -14,10 +15,7 @@
 #include <r3x3.h>
 #include <r2x2.h>
 
-typedef bool_t r2_pred_t(r2_t *p); 
-  /* Type of a point predicate. */
-
-typedef void r2_map_t (r2_t *p, r2x2_t *J);
+typedef void r2_map_jacobian_t (r2_t *p, r2x2_t *J);
   /* Type of a procedure that defines a geometric transformation
     from {R^2} to {R^2}.
     
@@ -73,11 +71,11 @@ void r2_map_contract(r2_t *p, double xlo, double xhi, double ylo, double yhi, r2
     contracting each coordinate separately with {contract_range}. Also
     post-multiplies the matrix {J} by the Jacobian of the map. */
 
-void r2_map_compute_numeric_jacobian(r2_t *p, r2_map_t *map, double step, r2x2_t *K, bool_t debug);
+void r2_map_compute_numeric_jacobian(r2_t *p, r2_map_jacobian_t *map, double step, r2x2_t *K, bool_t debug);
   /* Computes the jacobian {8K} of {map} by numeric differentiation with 
     the given{step}. */
 
-void r2_map_check_jacobian(r2_t *p, r2_map_t *map, char *mapname, double eps, bool_t debug);
+void r2_map_check_jacobian(r2_t *p, r2_map_jacobian_t *map, char *mapname, double eps, bool_t debug);
   /* Checks the Jacobian {J} returned by {map} at {p} against the numerically estimated
     derivatives of {q} relative to {p}, where {q} is computed from {p}
     by the {map} procedure. The estimates are obtained by central
@@ -108,8 +106,8 @@ void r2_get_persp_disk_bbox
     one for ech axis. */
 
 bool_t r2_pixel_is_inside_persp_rectangle
-  ( int x,              /* Pixel column in image. */
-    int y,              /* Pixel row in image. */
+  ( int32_t x,              /* Pixel column in image. */
+    int32_t y,              /* Pixel row in image. */
     double mrg,         /* Safety margin (pixels). */
     r3x3_t *I2T,        /* Image-to-true projective matrix. */
     interval_t tbox[]   /* Rectangle in true coordinates. */
@@ -124,8 +122,8 @@ bool_t r2_pixel_is_inside_persp_rectangle
     matrix {I2T}. */
 
 bool_t r2_pixel_is_inside_persp_disk
-  ( int x,        /* Pixel column in image. */
-    int y,        /* Pixel row in image. */
+  ( int32_t x,        /* Pixel column in image. */
+    int32_t y,        /* Pixel row in image. */
     double mrg,   /* Safety margin (pixels). */
     r3x3_t *I2T,  /* Image-to-true projective matrix. */
     r2_t *ctr,    /* Center of disk in true coordinates. */

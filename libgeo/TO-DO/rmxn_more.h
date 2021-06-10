@@ -1,8 +1,10 @@
-/* Last edited on 2007-10-13 20:04:00 by stolfi */
+/* Last edited on 2021-06-09 20:20:53 by jstolfi */
+
+#include <stdint.h>
 
 /* NON-CANONICAL REGULAR {n}-SIMPLICES */
   
-void rmxn_regular_simplex(int n, double V[], double U[]);
+void rmxn_regular_simplex(int32_t n, double V[], double U[]);
   /* This simplex also has {n+1} corners, and can be viewed as sitting
     either (1) in the finite part of the {n}-dimensional projective space
     {T^n}, or (2) in the {n}-dimensional subspace of Cartesian space
@@ -19,7 +21,7 @@ void rmxn_regular_simplex(int n, double V[], double U[]);
     
   */
   
-void rmxn_barycentric_matrix(int n, double V[], double U[]);
+void rmxn_barycentric_matrix(int32_t n, double V[], double U[]);
   /* Stores into {U[0..(n+1)*(n+1)-1]} a projetive matrix that can be
     used to compute the barycentric coordinates of any given point of
     {R^n} relative to a given {n}-simplex {V}.

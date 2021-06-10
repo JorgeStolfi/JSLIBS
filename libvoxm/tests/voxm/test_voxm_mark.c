@@ -1,5 +1,5 @@
 /* See {test_voxm_mark}.h  */
-/* Last edited on 2016-04-03 14:33:56 by stolfilocal */
+/* Last edited on 2021-06-09 16:26:52 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -12,7 +12,7 @@
 #include <affirm.h>
 #include <r3.h>
 #include <r3x3.h>
-#include <r3_path.h>
+#include <r3_motion.h>
 #include <ppv_array.h>
 
 #include <voxm_obj.h>
@@ -39,7 +39,7 @@ void test_voxm_mark_corners(ppv_array_t *a, r3_t *ctr, r3_t *rad, double fuzzR)
       { for (iy = -1; iy <= +1; iy += 2)
           { for (iz = -1; iz <= +1; iz += 2)
               { /* Pick a corner of the domain: */
-                r3_path_state_t S; /* Ball position and pose. */
+                r3_motion_state_t S; /* Ball position and pose. */
                 S.p = (r3_t){{ ctr->c[0] + ix*rad->c[0], ctr->c[1] + iy*rad->c[1], ctr->c[2] + iz*rad->c[2] }};
                 r3x3_ident(&(S.M)); 
                 voxm_splat_object(a, fuzzy_ball, &S, ballR + fuzzR, FALSE);
@@ -82,7 +82,7 @@ void test_voxm_mark_edges(ppv_array_t *a, r3_t *ctr, r3_t *rad, int ax, double f
     for (ix = -1; ix <= +1; ix += 2)
       { for (iy = -1; iy <= +1; iy += 2)
           { /* Pick a corner of the domain: */
-            r3_path_state_t S; /* Rod position and pose. */
+            r3_motion_state_t S; /* Rod position and pose. */
             S.p.c[xax] = ctr->c[xax] + ix*rad->c[xax];
             S.p.c[yax] = ctr->c[yax] + iy*rad->c[yax];
             S.p.c[zax] = ctr->c[zax];

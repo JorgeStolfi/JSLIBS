@@ -1,7 +1,8 @@
 /* See hi2.h */
-/* Last edited on 2013-11-21 02:55:04 by stolfilocal */ 
+/* Last edited on 2021-06-09 20:15:17 by jstolfi */ 
 
 #define _GNU_SOURCE
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 
@@ -196,7 +197,7 @@ sign_t hi2_in_circle(hi2_point_t *a, hi2_point_t *b, hi2_point_t *c, hi2_point_t
 
 // hi2_pmap_t hi2_pmap_from_points(hi2_point_t *p, hi2_point_t *q, hi2_point_t *r, hi2_point_t *u)
 //   {
-//     int i;
+//     int32_t i;
 //     hi2_pmap_t m; /* The resulting map. */
 //     
 //     /* Compute weights {(a,b,c)=w.c[0..2]} for rows of {Q} that map {[1,1,1]} to {u}: */

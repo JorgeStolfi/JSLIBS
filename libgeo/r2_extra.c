@@ -1,7 +1,8 @@
 /* see r2_extra.h */
-/* Last edited on 2018-12-04 21:59:35 by stolfilocal */
+/* Last edited on 2021-06-09 21:05:36 by jstolfi */
 
 #define _GNU_SOURCE
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 
@@ -120,12 +121,12 @@ void r2_get_persp_rectangle_bbox
   )
   {
     /* Initialize bounds: */
-    int ax;
+    int32_t ax;
     for (ax = 0; ax < 2; ax++) { ibox[ax].end[0] = +INF; ibox[ax].end[1] = -INF; }
     /* Hack: map the corners of a slightly wider rectangle and get its bbox */
     double wx = HI(tbox[0]) - LO(tbox[0]);
     double wy = HI(tbox[1]) - LO(tbox[1]);
-    int dx, dy;
+    int32_t dx, dy;
     for (dx = 0; dx <= 1; dx++)
       { for (dy = 0; dy <= 1; dy++)
           { /* Get a true corner {p} of the enlarged rectangle: */
@@ -151,19 +152,19 @@ void r2_get_persp_disk_bbox
   )
   {
     /* Initialize bounds: */
-    int ax;
+    int32_t ax;
     for (ax = 0; ax < 2; ax++) { ibox[ax].end[0] = +INF; ibox[ax].end[1] = -INF; }
     /* Hack: map the corners of an enclosing 8-gon and get its bbox */
     double a = 1.00001*rad;             /* Max abs coord of an octagon corner. */
     double b = 1.00001*rad*tan(M_PI/8); /* Min abs coord of an octagon corner. */
-    int dx, dy;
+    int32_t dx, dy;
     for (dx = -1; dx <= +1; dx += 2)
       { for (dy = -1; dy <= +1; dy += 2)
           { /* Get a corner {txp,typ} of the octagon: */
             double txp = ctr->c[0] + dx*a;
             double typ = ctr->c[1] + dy*b;
             /* Try the two transposed copies of the point: */
-            int swap;
+            int32_t swap;
 	    for (swap = 0; swap < 2; swap++)
 	      { /* Map it to the image coord system: */
                 r2_t p = (r2_t){{ txp, typ }};
@@ -181,15 +182,15 @@ void r2_get_persp_disk_bbox
   }
 
 bool_t r2_pixel_is_inside_persp_rectangle
-  ( int x,
-    int y,
+  ( int32_t x,
+    int32_t y,
     double mrg, 
     r3x3_t *I2T,
     interval_t tbox[]   /* Rectangle in true coordinates. */
   )
   {
     /* Check the four corners of the pixel: */
-    int dx, dy;
+    int32_t dx, dy;
     for (dx = -1; dx <= +1; dx += 2)
       { for (dy = -1; dy <= +1; dy += 2)
           { /* Get a corner {p} of the pixel, expanded by {mrg}: */
@@ -207,8 +208,8 @@ bool_t r2_pixel_is_inside_persp_rectangle
   }
 
 bool_t r2_pixel_is_inside_persp_disk
-  ( int x,
-    int y,
+  ( int32_t x,
+    int32_t y,
     double mrg, 
     r3x3_t *I2T,
     r2_t *ctr, 
@@ -217,7 +218,7 @@ bool_t r2_pixel_is_inside_persp_disk
   {
     /* Check the four corners of the pixel: */
     double r2 = rad*rad;
-    int dx, dy;
+    int32_t dx, dy;
     for (dx = -1; dx <= +1; dx += 2)
       { for (dy = -1; dy <= +1; dy += 2)
           { /* Get a corner {p} of the pixel, expanded by {mrg}: */
@@ -326,7 +327,7 @@ void r2_clip_seg_to_unit_disk(r2_t *a, r2_t *b, double *ta, double *tb)
       { /* Points are distinct.  There must be two roots. */
         /* Find roots of equation: */
         double r1, r2, im; /* Real and imaginary parts. */
-        int sd; /* Sign of discriminant. */
+        int32_t sd; /* Sign of discriminant. */
         sd = roots_quadratic(A, B, C, &r1, &r2, &im);
         if (sd < 0)
           { /* Line {a--b} does not touch or cross disk, return empty interval: */
@@ -369,10 +370,10 @@ void r2_debug_point_jac(char *label, r2_t *p, r2x2_t *J, char *tail)
     fprintf(stderr, "%s", tail);
   }
 
-void r2_map_compute_numeric_jacobian(r2_t *p, r2_map_t *map, double step, r2x2_t *K, bool_t debug)
+void r2_map_compute_numeric_jacobian(r2_t *p, r2_map_jacobian_t *map, double step, r2x2_t *K, bool_t debug)
   {
     /* Check the partial derivatives numerically: */
-    int i, j, k;
+    int32_t i, j, k;
     for (i = 0; i < 2; i++)
       { /* Evaluate {map} at points {oq[0..1]} , displaced from {p} along axis {i}: */
         r2_t q[2];
@@ -397,7 +398,7 @@ void r2_map_compute_numeric_jacobian(r2_t *p, r2_map_t *map, double step, r2x2_t
       }
   }
 
-void r2_map_check_jacobian(r2_t *p, r2_map_t *map, char *mapname, double eps, bool_t debug)
+void r2_map_check_jacobian(r2_t *p, r2_map_jacobian_t *map, char *mapname, double eps, bool_t debug)
   {
     if (debug) { fprintf(stderr, "    checking the Jacobian ...\n"); }
     /* Generate a `random' invertible matrix {M} to be the prior Jacobian: */
@@ -425,7 +426,7 @@ void r2_map_check_jacobian(r2_t *p, r2_map_t *map, char *mapname, double eps, bo
     /* Establish a limit for the relative error: */
     double tol = 1.0e-4;
     /* Check the partial derivatives numerically: */
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < 2; i++)
       { /* Check the derivatives of {ip} w.r.t. coordinate {i} of {op}: */
         for (j = 0; j < 2; j++)

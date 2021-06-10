@@ -1,5 +1,5 @@
 /* hr3test --- test program for hr3.h  */
-/* Last edited on 2012-07-21 11:03:43 by stolfi */
+/* Last edited on 2021-06-09 19:54:09 by jstolfi */
 
 #include <hr3.h>
 
@@ -15,6 +15,7 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #define NH 4
@@ -42,15 +43,15 @@
 
 /* Internal prototypes */
 
-int main (int argc, char **argv);
-void test_hr3(int verbose);
-void test_hr3_pmap(int verbose);
+int32_t main (int32_t argc, char **argv);
+void test_hr3(int32_t verbose);
+void test_hr3_pmap(int32_t verbose);
 void throw_pmap(hr3_pmap_t *m);
 double frac (double x);
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   {
-    int i;
+    int32_t i;
     srand(1993);
     srandom(1993);
 
@@ -62,18 +63,18 @@ int main (int argc, char **argv)
   }
 
 double frac (double x)
-  { int i = (int)x;
+  { int32_t i = (int32_t)x;
     double f = x - (double)i;
     return (f);
   }
 
-void test_hr3(int verbose)
+void test_hr3(int32_t verbose)
   {
     hr3_point_t p, q, r, s;
     hr3_line_t F, G;
     hr3_plane_t L, M, N, O;
     r3_t pc;
-    int i;
+    int32_t i;
 
     if (verbose)
       { fprintf(stderr,
@@ -325,11 +326,11 @@ void test_hr3(int verbose)
     }
   }
 
-void test_hr3_pmap(int verbose)
+void test_hr3_pmap(int32_t verbose)
   {
     // hr3_pmap_t A, B, C;
     // hr3_point_t p, q, r;
-    // int i, j, k;
+    // int32_t i, j, k;
 
     /* Size: */
     if (verbose)
@@ -376,7 +377,7 @@ void test_hr3_pmap(int verbose)
     // if (verbose) { fprintf(stderr, "--- r3x3_det ---\n"); }
     // throw_matrix(&A);
     // for (i = 0; i < N; i++)
-    //   { int k = (i + 1) % N;
+    //   { int32_t k = (i + 1) % N;
     //     for (j = 0; j < N; j++)
     //       { /* Check for linearity */
     //         r = drandom();
@@ -435,7 +436,7 @@ void test_hr3_pmap(int verbose)
 
 void throw_pmap(hr3_pmap_t *m)
   {
-    int i, j;
+    int32_t i, j;
     r4_t a;
     for (i = 0; i < NH; i++)
       { r4_throw_cube(&a);

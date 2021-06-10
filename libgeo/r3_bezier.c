@@ -1,5 +1,5 @@
 /* See voxm_bezier.h */
-/* Last edited on 2016-04-04 00:07:18 by stolfilocal */
+/* Last edited on 2021-06-09 19:56:34 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -10,20 +10,19 @@
 
 #include <bool.h>
 #include <r3.h>
-#include <r3_path.h>
 #include <affirm.h>
 
-#include <voxm_path.h>
-#include <voxm_bezier.h>
+#include <r3_path.h>
+#include <r3_bezier.h>
 
-void voxm_bezier_from_path_states(voxm_path_state_t *S, voxm_path_state_t *T, r3_t *p1, r3_t *p2)
+void r3_bezier_from_path_states(r3_path_state_t *S, r3_path_state_t *T, r3_t *p1, r3_t *p2)
   { 
     bool_t debug = TRUE;
     if (debug) { fprintf(stderr, "enter %s\n", __FUNCTION__); }
 
     if (debug) 
-      { voxm_path_state_debug(stderr, S, "  ", "initial"); 
-        voxm_path_state_debug(stderr, T, "  ", "final"); 
+      { r3_path_state_debug(stderr, S, "  ", "initial"); 
+        r3_path_state_debug(stderr, T, "  ", "final"); 
       }
     
     r3_t *p0 = &(S->p);
@@ -35,21 +34,21 @@ void voxm_bezier_from_path_states(voxm_path_state_t *S, voxm_path_state_t *T, r3
     if (debug) { fprintf(stderr, "exit %s\n", __FUNCTION__); }
   }
 
-double voxm_bezier_length_estimate(r3_t *p0, r3_t *p1, r3_t *p2, r3_t *p3, int order)
+double r3_bezier_length_estimate(r3_t *p0, r3_t *p1, r3_t *p2, r3_t *p3, int32_t order)
   { 
     if (order <= 0)
       { return r3_dist(p0,p3); }
     else
       { 
         r3_t p01, p12, p23, p012, p123, p0123; /* Intermediate points. */
-        voxm_bezier_split(0.0, 1.0, p0, p1, p2, p3, 0.5, &p01, &p12, &p23, &p012, &p123, &p0123, NULL);      
-        double d0 = voxm_bezier_length_estimate(p0, &p01, &p012, &p0123, order-1);
-        double d1 = voxm_bezier_length_estimate(&p0123, &p123, &p23, p3, order-1);
+        r3_bezier_split(0.0, 1.0, p0, p1, p2, p3, 0.5, &p01, &p12, &p23, &p012, &p123, &p0123, NULL);      
+        double d0 = r3_bezier_length_estimate(p0, &p01, &p012, &p0123, order-1);
+        double d1 = r3_bezier_length_estimate(&p0123, &p123, &p23, p3, order-1);
         return d0 + d1;
       }
   }
 
-void voxm_bezier_split
+void r3_bezier_split
   ( double t0, 
     double t1,
     r3_t *p0, 

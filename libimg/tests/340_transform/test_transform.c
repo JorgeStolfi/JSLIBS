@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_transform.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-11-15 17:31:38 by jstolfi */ 
+/* Last edited on 2021-06-09 20:57:42 by jstolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_transform_COPYRIGHT \
@@ -36,7 +36,7 @@ void do_test
     float_image_test_generator_t *gen_proc,
     char *gen_name,
     float_image_t *oimg,
-    r2_map_t *map_proc,
+    r2_map_jacobian_t *map_proc,
     char *map_name,
     bool_t avg,
     int order,
@@ -373,7 +373,7 @@ void do_test
     float_image_test_generator_t *gen_proc,
     char *gen_name,
     float_image_t *oimg,
-    r2_map_t *map_proc,
+    r2_map_jacobian_t *map_proc,
     char *map_name,
     bool_t avg,
     int order,

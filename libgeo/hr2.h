@@ -1,8 +1,10 @@
 /* Oriented projective geometry in two dimensions. */
-/* Last edited on 2020-10-12 14:12:14 by jstolfi */ 
+/* Last edited on 2021-06-09 20:29:25 by jstolfi */ 
    
 #ifndef hr2_H
 #define hr2_H
+
+#define _GNU_SOURCE
 
 #include <r2.h>
 #include <r3.h>

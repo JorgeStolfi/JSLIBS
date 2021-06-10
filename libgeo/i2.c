@@ -1,5 +1,5 @@
 /* See i2.h */
-/* Last edited on 2018-03-04 22:54:17 by stolfilocal */
+/* Last edited on 2021-06-09 20:43:00 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -23,7 +23,7 @@ void i2_all (int32_t x, i2_t *r)
     r->c[1] = x;
   }
 
-void i2_axis (int i, i2_t *r)
+void i2_axis (int32_t i, i2_t *r)
   { affirm((i >= 0) && (i < N), "i2_axis: bad index");
     r->c[0] = 0;
     r->c[1] = 0;
@@ -102,7 +102,7 @@ int64_t i2_det (i2_t *a, i2_t *b)
     return a0*(int64_t)b1 - a1*(int64_t)b0; 
   }
 
-int i2_eq(i2_t *p, i2_t *q)
+bool_t i2_eq(i2_t *p, i2_t *q)
   { if (p->c[0] != q->c[0]) return FALSE;
     if (p->c[1] != q->c[1]) return FALSE;
     return TRUE;
@@ -117,7 +117,7 @@ void i2_print (FILE *f, i2_t *a)
   { i2_gen_print(f, a, NULL, NULL, NULL, NULL); }
 
 void i2_gen_print (FILE *f, i2_t *a, char *fmt, char *lp, char *sep, char *rp)
-  { int i;
+  { int32_t i;
     if (fmt == NULL) { fmt = "%d"; }
     if (lp == NULL) { lp = "("; }
     if (sep == NULL) { sep = " "; }

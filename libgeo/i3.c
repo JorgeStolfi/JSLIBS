@@ -1,5 +1,5 @@
 /* See i3.h */
-/* Last edited on 2018-03-04 22:54:27 by stolfilocal */
+/* Last edited on 2021-06-09 20:43:13 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -27,7 +27,7 @@ void i3_all (int32_t x, i3_t *r)
     r->c[2] = x;
   }
 
-void i3_axis (int i, i3_t *r)
+void i3_axis (int32_t i, i3_t *r)
   { affirm((i >= 0) && (i < N), "i3_axis: bad index");
     r->c[0] = 0.0;
     r->c[1] = 0.0;
@@ -136,7 +136,7 @@ int64_t i3_det (i3_t *a, i3_t *b, i3_t *c)
     return ab0*c0 + ab1*c1 + ab2*c2;
   }
 
-int i3_eq(i3_t *p, i3_t *q)
+bool_t i3_eq(i3_t *p, i3_t *q)
   { if (p->c[0] != q->c[0]) return FALSE;
     if (p->c[1] != q->c[1]) return FALSE;
     if (p->c[2] != q->c[2]) return FALSE;
@@ -153,7 +153,7 @@ void i3_print (FILE *f, i3_t *a)
   { i3_gen_print(f, a, NULL, NULL, NULL, NULL); }
 
 void i3_gen_print (FILE *f, i3_t *a, char *fmt, char *lp, char *sep, char *rp)
-  { int i;
+  { int32_t i;
     if (fmt == NULL) { fmt = "%d"; }
     if (lp == NULL) { lp = "("; }
     if (sep == NULL) { sep = " "; }

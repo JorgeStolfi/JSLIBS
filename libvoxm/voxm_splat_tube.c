@@ -1,5 +1,5 @@
 /* See voxm_splat_tube.h */
-/* Last edited on 2016-04-03 20:28:03 by stolfilocal */
+/* Last edited on 2021-06-09 17:42:54 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -10,15 +10,15 @@
 
 #include <bool.h>
 #include <r3.h>
-#include <r3_path.h>
+#include <r3_motion.h>
 #include <r3_extra.h>
 #include <r3x3.h>
 #include <affirm.h>
 #include <ppv_array.h>
 
 #include <voxm_obj.h>
-#include <voxm_path.h>
-#include <voxm_bezier.h>
+#include <r3_path.h>
+#include <r3_bezier.h>
 #include <voxm_splat.h>
 
 #include <voxm_splat_tube.h>
@@ -27,7 +27,7 @@ void voxm_splat_tube_round_helix
   ( ppv_array_t *a, 
     double t0,
     double t1,
-    r3_path_state_t *S, 
+    r3_motion_state_t *S, 
     double L, 
     double A,
     double H, 
@@ -35,8 +35,8 @@ void voxm_splat_tube_round_helix
     double otR, 
     double fuzzR, 
     bool_t sub,
-    r3_path_state_t *S0,
-    r3_path_state_t *S1
+    r3_motion_state_t *S0,
+    r3_motion_state_t *S1
   )
   {
     bool_t debug = TRUE;
@@ -44,7 +44,7 @@ void voxm_splat_tube_round_helix
     demand((otR >= inR) && (inR >= 0), "invalid tube radii");
     demand(t1 >= t0, "invalid time interval");
 
-    auto r3_path_state_t helix_path(double t);
+    auto r3_motion_state_t helix_path(double t);
       /* Function that computes the position and orientation at time {t} along
         the helix defined by {L,A,H}, modified by state {S}. */
     
@@ -68,9 +68,9 @@ void voxm_splat_tube_round_helix
     if (debug) { fprintf(stderr, "  sampling path at %d points\n", ns); }
     
     /* Sample the path states {sp[0..ns-1]}: */
-    r3_path_state_t *sp = notnull(malloc(ns*sizeof(r3_path_state_t)), "no mem");
+    r3_motion_state_t *sp = notnull(malloc(ns*sizeof(r3_motion_state_t)), "no mem");
     bool_t mids = FALSE;
-    r3_path_sample_uniform(helix_path, t0, t1, ns, mids, NULL, sp);
+    r3_motion_sample_uniform(helix_path, t0, t1, ns, mids, NULL, sp);
     if (S0 != NULL) { (*S0) = sp[0]; }
     if (S1 != NULL) { (*S1) = sp[ns-1]; }
     
@@ -88,11 +88,11 @@ void voxm_splat_tube_round_helix
     
     /* INTERNAL IMPLEMENTATION */
     
-    r3_path_state_t helix_path(double t)
+    r3_motion_state_t helix_path(double t)
       { 
-        r3_path_state_t T;
-        r3_path_helix(t, L, A, H, &T);
-        r3_path_state_compose(&T, S, &T);
+        r3_motion_state_t T;
+        r3_motion_helix(t, L, A, H, &T);
+        r3_motion_state_compose(&T, S, &T);
         return T;
       }
       
@@ -123,7 +123,7 @@ void voxm_splat_tube_round_bezier
     
     demand((otR >= inR) && (inR >= 0), "invalid tube radii");
 
-    auto r3_path_state_t bezier_path(double t);
+    auto r3_motion_state_t bezier_path(double t);
       /* Function that computes the state {S} (position and orientation)
         at time {t} along the Bezier arc defined by {p0,p1,p2,p3}.
         The arc is assumed to be at {p0} when {t=0} and at {p3} when {t=1}. 
@@ -151,9 +151,9 @@ void voxm_splat_tube_round_bezier
     
     /* Sample the path times and states {st[0..ns-1],sp[0..ns-1]}: */
     double *t = notnull(malloc(ns*sizeof(double)), "no mem");
-    r3_path_state_t *S = notnull(malloc(ns*sizeof(r3_path_state_t)), "no mem");
+    r3_motion_state_t *S = notnull(malloc(ns*sizeof(r3_motion_state_t)), "no mem");
     bool_t mids = FALSE;
-    r3_path_sample_uniform(bezier_path, 0.0, 1.0, ns, mids, t, S);
+    r3_motion_sample_uniform(bezier_path, 0.0, 1.0, ns, mids, t, S);
     
     if (!sub)
       { /* Splat the tube: */
@@ -169,16 +169,16 @@ void voxm_splat_tube_round_bezier
     
     /* INTERNAL IMPLEMENTATION */
     
-    r3_path_state_t bezier_path(double t)
+    r3_motion_state_t bezier_path(double t)
       { 
         /* Compute the position and velocity of the Bezier arc at {t}: */
         r3_t p01, p12, p23, p012, p123; /* Intermediate points. */
-        voxm_path_state_t S; /* Position and velocity of the Bezier arc at time {t}. */
+        r3_path_state_t S; /* Position and velocity of the Bezier arc at time {t}. */
         S.t = t;
-        voxm_bezier_split(0.0, 1.0, p0, p1, p2, p3, t, &p01, &p12, &p23, &p012, &p123, &(S.p), &(S.v));      
+        r3_bezier_split(0.0, 1.0, p0, p1, p2, p3, t, &p01, &p12, &p23, &p012, &p123, &(S.p), &(S.v));      
         
         /* Convert to a path state: */
-        r3_path_state_t T = voxm_path_state_to_r3_path_state(&S);
+        r3_motion_state_t T = r3_path_state_to_r3_motion_state(&S);
         return T;
       }
       
@@ -195,8 +195,8 @@ void voxm_splat_tube_round_bezier
 
 void voxm_splat_tube_round_segment
   ( ppv_array_t *a, 
-    voxm_path_state_t *S, 
-    voxm_path_state_t *T, 
+    r3_path_state_t *S, 
+    r3_path_state_t *T, 
     double inR, 
     double otR, 
     double fuzzR, 
@@ -208,7 +208,7 @@ void voxm_splat_tube_round_segment
     r3_t *p0 = &(S->p);
     r3_t p1, p2;
     r3_t *p3 = &(T->p);
-    voxm_bezier_from_path_states(S, T, &p1, &p2);
+    r3_bezier_from_path_states(S, T, &p1, &p2);
     voxm_splat_tube_round_bezier(a, p0, &p1, &p2, p3, inR, otR, fuzzR, sub);
   }
   

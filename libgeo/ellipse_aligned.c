@@ -1,8 +1,9 @@
 /* See ellipse_aligned.h */
-/* Last edited on 2013-05-24 20:50:21 by stolfilocal */
+/* Last edited on 2021-06-09 19:48:23 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <values.h>
 #include <stdlib.h>
@@ -29,17 +30,17 @@ void ellipse_aligned_int_bbox
   ( double cx, double cy,  /* Center of ellipse. */
     double rx, double ry, 
     double mrg, /* Extra margin. */
-    int *xLoP,  /* (OUT) Min X of clip area. */
-    int *xHiP,  /* (OUT) Max X of clip area. */
-    int *yLoP,  /* (OUT) Min Y of clip area. */
-    int *yHiP   /* (OUT) Max Y of clip area. */
+    int32_t *xLoP,  /* (OUT) Min X of clip area. */
+    int32_t *xHiP,  /* (OUT) Max X of clip area. */
+    int32_t *yLoP,  /* (OUT) Min Y of clip area. */
+    int32_t *yHiP   /* (OUT) Max Y of clip area. */
   )
   {
     demand(mrg >= 0, "the extra margin {mrg} must be non-negative");
-    (*xLoP) = (int)floor(cx - rx - mrg);
-    (*xHiP) = (int)ceil (cx + rx + mrg);
-    (*yLoP) = (int)floor(cy - ry - mrg);
-    (*yHiP) = (int)ceil (cy + ry + mrg);
+    (*xLoP) = (int32_t)floor(cx - rx - mrg);
+    (*xHiP) = (int32_t)ceil (cx + rx + mrg);
+    (*yLoP) = (int32_t)floor(cy - ry - mrg);
+    (*yHiP) = (int32_t)ceil (cy + ry + mrg);
   }
 
 double ellipse_aligned_position(double xp, double yp, double rx, double ry, double *cosP, double *sinP)
@@ -290,7 +291,7 @@ double ellipse_aligned_compute_t(double A, double B)
     double t = 1.0;
     double Bp = B + 1;
     double Bm = B - 1;
-    int nIts = 0;  /* Counts iterations. */
+    int32_t nIts = 0;  /* Counts iterations. */
     if (debug) { Pr(Er, "  t[%d] = %13.8f\n", nIts, t); }
     while (TRUE)
       { /* Compute {P(t)}: */

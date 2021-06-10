@@ -1,5 +1,5 @@
 /* See {test_voxm_obj.h} */
-/* Last edited on 2016-12-13 17:37:56 by stolfilocal */
+/* Last edited on 2021-06-09 16:27:11 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -12,7 +12,7 @@
 #include <affirm.h>
 #include <r3.h>
 #include <r3x3.h>
-#include <r3_path.h>
+#include <r3_motion.h>
 #include <ppv_array.h>
 
 #include <voxm_obj.h>
@@ -46,7 +46,7 @@ void test_voxm_objs_ball(ppv_array_t *a, r3_t *ctr, double rad, double fuzzR)
     double ballR = 0.05*rad;  /* Radius of ball. */
     double ballX = 0.80*rad;  /* {X}-displacement. */
     
-    r3_path_state_t state;
+    r3_motion_state_t state;
     state.p = (*ctr); state.p.c[0] += ballX;
     r3x3_ident(&(state.M)); 
     
@@ -67,7 +67,7 @@ void test_voxm_objs_donut(ppv_array_t *a, r3_t *ctr, double rad, double fuzzR)
     double majR = 0.25*rad;  /* Radius of donut midline. */
     double minR = majR/3; /* Radius of dough. */
     
-    r3_path_state_t state;
+    r3_motion_state_t state;
     state.p = (*ctr);
     r3x3_ident(&(state.M)); 
     
@@ -91,7 +91,7 @@ void test_voxm_objs_rod(ppv_array_t *a, r3_t *ctr, double rad, double fuzzR)
     double rodF = 0.25*rodR;  /* Fillet radius. */
     double rodA = M_PI/12;    /* Tilting angle. */
     
-    r3_path_state_t state;
+    r3_motion_state_t state;
     state.p = (*ctr);
     r3_t u = (r3_t){{ 0.0, 0.0, 1.0 }};
     r3_t v = (r3_t){{ sin(rodA), 0.0, cos(rodA) }};
@@ -120,7 +120,7 @@ void test_voxm_objs_tube(ppv_array_t *a, r3_t *ctr, double rad, double fuzzR)
     double tubeX = -0.70*rad; /* X displacement. */
     double tubeY = +0.20*rad; /* Y displacement. */
 
-    r3_path_state_t state;
+    r3_motion_state_t state;
     state.p = (*ctr); state.p.c[0] += tubeX; state.p.c[1] += tubeY;
     r3_t u = (r3_t){{ 0.0, 0.0, 1.0 }};
     r3_t v = (r3_t){{ sin(tubeA), 0.0, cos(tubeA) }};
@@ -143,7 +143,7 @@ void test_voxm_objs_cube_hole(ppv_array_t *a, r3_t *ctr, double rad, double fuzz
     double cubeZ = 0.50*rad;   /* Distance above array center of cube center and hole center. */
     double cubeA = M_PI/12;    /* Tilting angle. */
     
-    r3_path_state_t state;
+    r3_motion_state_t state;
     state.p = (*ctr); state.p.c[2] += cubeZ;
     r3_t u = (r3_t){{ 1.0, 0.0, 0.0 }};
     r3_t v = (r3_t){{ cos(cubeA), 0.0, sin(cubeA) }};
@@ -178,7 +178,7 @@ void test_voxm_objs_box(ppv_array_t *a, r3_t *ctr, double rad, double fuzzR)
     double boxZ = -0.40*rad;  /* {Z}-distance from array center to box center. */
     double boxA = -M_PI/12;   /* Tilting angle. */
     
-    r3_path_state_t state;
+    r3_motion_state_t state;
     state.p = (*ctr); state.p.c[2] += boxZ;
     r3_t u = (r3_t){{ 1.0, 0.0, 0.0 }};
     r3_t v = (r3_t){{ cos(boxA), 0.0, sin(boxA) }};
@@ -209,7 +209,7 @@ void test_voxm_objs_rounded_box(ppv_array_t *a, r3_t *ctr, double rad, double fu
     double boxZ = -0.65*rad;  /* {Z}-distance from array center to box center. */
     double boxA = -M_PI/12;   /* Tilting angle. */
     
-    r3_path_state_t state;
+    r3_motion_state_t state;
     state.p = (*ctr); state.p.c[2] += boxZ;
     r3_t u = (r3_t){{ 1.0, 0.0, 0.0 }};
     r3_t v = (r3_t){{ cos(boxA), 0.0, sin(boxA) }};
@@ -251,7 +251,7 @@ void test_voxm_objs_cup(ppv_array_t *a, r3_t *ctr, double rad, double fuzzR)
     double cupF = 2*cupT;          /* Radius of base filet. */
     
     /* Position and orientation of cup: */
-    r3_path_state_t state;
+    r3_motion_state_t state;
     state.p = (r3_t){{ cupX, cupY, cupZ }};
     r3x3_ident(&(state.M));
     

@@ -2,7 +2,7 @@
 #define i2_H
 
 /* Operations on points and vectors of Z^2 */
-/* Last edited on 2016-12-28 22:50:04 by stolfilocal */
+/* Last edited on 2021-06-09 20:43:07 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -35,7 +35,7 @@ void i2_zero (i2_t *r);
 void i2_all (int32_t x, i2_t *r);
   /* Sets all coordinates of {r} to the value {x}. */
   
-void i2_axis (int i, i2_t *r);
+void i2_axis (int32_t i, i2_t *r);
   /* Sets {r} to the {i}th vector of the canonical basis. */
 
 void i2_add (i2_t *a, i2_t *b, i2_t *r);
@@ -77,7 +77,7 @@ int64_t i2_det (i2_t *a, i2_t *b);
   /* Returns the determinant of the 2x2 matrix whose rows are {a,b}.  
     Input MMax: {2^30-1}. Output range: {-2*M^2 .. +2*M^2}. */
 
-int i2_eq(i2_t *p, i2_t *q);
+bool_t i2_eq(i2_t *p, i2_t *q);
   /* True iff points {p} and {q} are identical. */
 
 void i2_throw_cube (int32_t m, i2_t *r);
@@ -93,7 +93,18 @@ void i2_gen_print (FILE *f, i2_t *a, char *fmt, char *lp, char *sep, char *rp);
     between, and after all the coordinates of {a}.  When NULL, they default 
     to "%d", "(", " ", and ")", respectively. */
 
+/* DERIVED TYPES */
+
 vec_typedef(i2_vec_t,i2_vec,i2_t);
   /* An {i2_vec_t} is a vector of {i2_t}s. */
+
+typedef bool_t i2_pred_t(i2_t *a);
+  /* Type of a function that returns a {bool_t} value from an {i2_t} value. */
+
+typedef double i2_double_func_t(i2_t *a);
+  /* Type of a function that returns a {double} value from an {i2_t} value. */
+
+typedef i2_t i2_map_t(i2_t *a);
+  /* Type of a function that returns a {double} value from an {i2_t} value. */
 
 #endif

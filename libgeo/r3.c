@@ -1,8 +1,9 @@
 /* See r3.h */
-/* Last edited on 2014-01-12 12:43:28 by stolfilocal */
+/* Last edited on 2021-06-09 20:43:42 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 
 #include <r3.h>
@@ -26,7 +27,7 @@ void r3_all (double x, r3_t *r)
     r->c[2] = x;
   }
 
-void r3_axis (int i, r3_t *r)
+void r3_axis (int32_t i, r3_t *r)
   { affirm((i >= 0) && (i < N), "r3_axis: bad index");
     r->c[0] = 0.0;
     r->c[1] = 0.0;
@@ -236,14 +237,14 @@ double r3_decomp (r3_t *a, r3_t *u, r3_t *para, r3_t *perp)
       }
   }
 
-int r3_is_finite(r3_t *p)
+int32_t r3_is_finite(r3_t *p)
   { if (fabs(p->c[0]) == INF) return FALSE;
     if (fabs(p->c[1]) == INF) return FALSE;
     if (fabs(p->c[2]) == INF) return FALSE;
     return TRUE;
   }
 
-int r3_eq(r3_t *p, r3_t *q)
+bool_t r3_eq(r3_t *p, r3_t *q)
   { if (p->c[0] != q->c[0]) return FALSE;
     if (p->c[1] != q->c[1]) return FALSE;
     if (p->c[2] != q->c[2]) return FALSE;

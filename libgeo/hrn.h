@@ -1,8 +1,11 @@
 /* Oriented projective geometry in {N} dimensions.  */
-/* Last edited on 2007-10-28 09:09:23 by stolfi */
+/* Last edited on 2021-06-09 20:21:35 by jstolfi */
 
 #ifndef hrn_H
 #define hrn_H
+
+#define _GNU_SOURCE
+#include <stdint.h>
 
 #include <rn.h>
 #include <rmxn.h>
@@ -80,7 +83,7 @@
   infinity/, with coefficients {<1,0,0,...,0>}, consisting of all
   points of {T^n} with zero weight. */
   
-void rn_to_hrn(int n, double P[], double w, double p[]);
+void rn_to_hrn(int32_t n, double P[], double w, double p[]);
   /* Given the Cartesian coordinates {P[0..n-1]} of a point {P} of
     {R^n}, returns the homogeneous coordinates {p[0..n]} of the
     corresponding point {p} of {T^n} with weight {w}, namely {[w,w*P[0],..
@@ -91,7 +94,7 @@ void rn_to_hrn(int n, double P[], double w, double p[]);
     negative, the result is the antipode of the canonical inclusion of {P}.
     If {w} is zero, the result is the invalid point {[0*]}. */
     
-void hrn_to_rn(int n, double p[], double P[]);
+void hrn_to_rn(int32_t n, double p[], double P[]);
   /* Given the homogeneous coordinates {p[0..n]} of a point {p}
     of {T^n}, returns the Cartesian coordinates {P[0..n-1]} of the 
     corresponding point {P} of {R^n}, namely {(p[1]/p[0],p[2]/p[0],...,p[n]/p[0])}.
@@ -102,7 +105,7 @@ void hrn_to_rn(int n, double p[], double P[]);
     is the inverse image of the antipode of {p}. If {p} is at infinity
     ({p[0] = 0}), the result {P} is undefined (infinite or NaN). */
 
-sign_t hrn_side(int n, double p[], double h[]);
+sign_t hrn_side(int32_t n, double p[], double h[]);
   /* Returns sign of point {p} relative to hyperplane {h}: 0 on the
     hyperplane, +1 in positive halfspace, -1 in negative halfspace.
     May give inconsistent results for points very close to the
@@ -110,7 +113,7 @@ sign_t hrn_side(int n, double p[], double h[]);
 
 /* PROJECTIVE MAPS */
 
-typedef struct hrn_pmap_t { int m; int n; double *dir; double *inv; } hrn_pmap_t;
+typedef struct hrn_pmap_t { int32_t m; int32_t n; double *dir; double *inv; } hrn_pmap_t;
   /* A projective function from {T^m} to {T^n}.
   
   Field {dir} is the function's matrix, with {m+1} rows and {n+1} columns.
@@ -119,7 +122,7 @@ typedef struct hrn_pmap_t { int m; int n; double *dir; double *inv; } hrn_pmap_t
   positive scaling, the matrices satisfy {dir*inv*dir = dir} and
   {inv*dir*inv = inv}. */
 
-hrn_pmap_t hrn_pmap_alloc(int m, int n);
+hrn_pmap_t hrn_pmap_alloc(int32_t m, int32_t n);
   /* Allocates a projetive function from {T^m} to {T^n},
     initializes it with the (pseudo)identity. */
 
@@ -145,7 +148,7 @@ hrn_pmap_t hrn_pmap_inv(hrn_pmap_t *M);
     
 /* CANONICAL SIMPLEX */
 
-void hrn_canonical_simplex(int d, int n, double p[]);
+void hrn_canonical_simplex(int32_t d, int32_t n, double p[]);
   /* Stores into {p[0..(d+1)*(n+1)-1}]} the canonical {d}-dimensional
     simplex of {T^n}, for any {d <= n}. 
     
@@ -166,7 +169,7 @@ void hrn_canonical_simplex(int d, int n, double p[]);
 
 /* REGULAR SIMPLEX */
 
-void hrn_regular_simplex(int n, double p[]);
+void hrn_regular_simplex(int32_t n, double p[]);
   /* Stores into {p[0..(n+1)^2-1}]} the geometry of a regular
     {n}-dimensional simplex of {T^n}. 
     

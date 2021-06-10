@@ -1,10 +1,12 @@
 /* gauss_elim.h - Gaussian triangulation and elimination. */
-/* Last edited on 2012-12-15 09:50:55 by stolfilocal */
+/* Last edited on 2021-06-09 20:28:44 by jstolfi */
 
 #ifndef gauss_elim_H
 #define gauss_elim_H
 
+#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 /* In all the procedures below, two-dimensional matrices are stored
   into one-dimensional vectors, in row-by-row order. That is, an {m×n}
@@ -12,7 +14,7 @@
   with entry {A[i,j]} of the matrix in element {A[n*i+j]} of the
   vector. */
     
-int gsel_solve(int m, int n, double A[], int p, double B[], double X[], double tiny);
+int32_t gsel_solve(int32_t m, int32_t n, double A[], int32_t p, double B[], double X[], double tiny);
   /* Solves the linear system {A X = B}, where {A} is a known matrix
     of size {m × n}, {B} is a known matrix of size {m × p}, and {X} is
     an unknown matrix of size {n × p}. The arrays {A} and {B} are not
@@ -28,19 +30,19 @@ int gsel_solve(int m, int n, double A[], int p, double B[], double X[], double t
     reduced to {tiny} or less times its previous value is set to zero.
     If {tiny} is zero or negative, this cleanup is supressed. */
 
-void gsel_residual(int m, int n, double A[], int p, double B[], double X[], double R[]);
+void gsel_residual(int32_t m, int32_t n, double A[], int32_t p, double B[], double X[], double R[]);
   /* Given the matrices {A} and {B} and a putative solution {X} of the system
     {A X = B}, computes the residual {R = A X - B}.  Assumes that {R}
     has size {m × p} (like {B}). */
 
-double gsel_determinant(int m, int n, double A[], int q);
+double gsel_determinant(int32_t m, int32_t n, double A[], int32_t q);
   /* Returns the determinant of the first {q} rows and {q} columns of
     the {m × n} array {A}. If {q > m} or {q > n}, the result is zero.
     The array {A} is not changed. */
 
 /* ARRAY TRIANGULARIZATION, DIAGONALIZATION, NORMALIZATION, DETERMINANT */
 
-void gsel_triangularize(int m, int n, double M[], int total, double tiny);
+void gsel_triangularize(int32_t m, int32_t n, double M[], int32_t total, double tiny);
   /* Applies the Gaussian elimination method to the {m×n} matrix
     {M}, leaving it upper triangular. 
     
@@ -61,7 +63,7 @@ void gsel_triangularize(int m, int n, double M[], int total, double tiny);
     reduced to {tiny} or less times its previous value is set to zero.
     If {tiny} is zero or negative, this cleanup is supressed. */
 
-void gsel_diagonalize(int m, int n, double M[], int total);
+void gsel_diagonalize(int32_t m, int32_t n, double M[], int32_t total);
   /* Assumes that the {m×n} matrix {M} has been triangularized,
     namely that {lead(M,i) >= i} for every {i}.  Applies 
     row operations to {M} so that it becomes diagonal-like,
@@ -73,7 +75,7 @@ void gsel_diagonalize(int m, int n, double M[], int total);
     If {total == 1}, then, whenever {j := lead(M,i)} is finite,
     all elements {M[k,j]} in rows {k != i} are set to zero. */
     
-void gsel_normalize(int m, int n, double M[], int total);
+void gsel_normalize(int32_t m, int32_t n, double M[], int32_t total);
   /* Assumes that the {m×n} matrix {M} has been 
     triangularized (and possibly diagonalized), namely that {lead(M,i) >= i}
     for every {i}.  
@@ -86,14 +88,14 @@ void gsel_normalize(int m, int n, double M[], int total);
 
 /* SYSTEM SOLVING UTILITIES */
 
-double gsel_triangular_det(int m, int n, double M[], int q);
+double gsel_triangular_det(int32_t m, int32_t n, double M[], int32_t q);
   /* Assumes that the {m×n} matrix {M} has been triangularized.
     Returns the product of the elements on the main diagonal of the
     first {q} rows and columns. Returns zero if {m < q} or {n < q}.
     Note that when {q == m} the result is the determinant of the first
     {m} columns of {M}. */
 
-int gsel_extract_solution(int m, int n, double M[], int p, double X[], int total);
+int32_t gsel_extract_solution(int32_t m, int32_t n, double M[], int32_t p, double X[], int32_t total);
   /* Assumes that {M} is an {m×n} matrix that has been
     triangularized, diagonalized, and normalized with the 
     specified {total} flag.
@@ -137,7 +139,7 @@ int gsel_extract_solution(int m, int n, double M[], int p, double X[], int total
 
 /* PRINTOUT */
 
-void gsel_print_array(FILE *wr, char *fmt, char *head, int m, int n, double M[], char *foot);
+void gsel_print_array(FILE *wr, char *fmt, char *head, int32_t m, int32_t n, double M[], char *foot);
   /* Writes to {wr} the array {M}, in a human-readable format. Each
     element is printed with format {fmt}. The strings {head} and
     {foot}, if not NULL, are printed on separate lines before and
@@ -147,10 +149,10 @@ void gsel_print_system
   ( FILE *wr, 
     char *fmt, 
     char *head, 
-    int m, 
-    int n, 
+    int32_t m, 
+    int32_t n, 
     double A[], 
-    int p, 
+    int32_t p, 
     double B[], 
     char *foot
   );

@@ -1,142 +1,96 @@
 /* See r3_path.h */
-/* Last edited on 2016-04-04 01:37:28 by stolfilocal */
+/* Last edited on 2021-06-09 19:57:50 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <math.h>
+#include <assert.h>
 
-#include <r3.h>
 #include <bool.h>
-#include <r3x3.h>
+#include <r3.h>
+#include <r3_extra.h>
+#include <r3_motion.h>
 #include <affirm.h>
 
 #include <r3_path.h>
+#include <r3_bezier.h>
 
-void r3_path_state_canonical(r3_path_state_t *C)
-  { (C->p) = (r3_t){{ 0.0, 0.0, 0.0 }};
-    r3x3_ident(&(C->M));
+r3_path_state_t r3_path_state_from_r3_motion_state(double t, r3_motion_state_t *S, double v)
+  { r3_path_state_t T;
+    T.t = t;
+    T.p = S->p;
+    T.v = (r3_t){{ v*S->M.c[0][0], v*S->M.c[0][1], v*S->M.c[0][2] }}; 
+    return T;
   }
 
-void r3_path_state_compose(r3_path_state_t *S, r3_path_state_t *T, r3_path_state_t *C)
-  { /* Beware that {C} may be the same as {S} or {T}, so use {S,T} before setting {C}: */
-    r3_t q;
-    r3x3_map_row(&(S->p), &(T->M), &q);
-    r3_add(&(T->p), &q, &(C->p));
-    r3x3_mul(&(S->M), &(T->M), &(C->M));
+r3_motion_state_t r3_path_state_to_r3_motion_state(r3_path_state_t *S)
+  { 
+    r3_motion_state_t T;
+    
+    /* Copy the position: */
+    (T.p) = (S->p);
+    
+    /* Compute the unit direction vector {u} of the path at {p}: */
+    r3_t u;
+    double vm = r3_dir(&(S->v), &u);
+    if (vm == 0) { u = (r3_t){{ 1.0, 0.0, 0.0 }}; }
+
+    /* Transverse direction {v} - any vector orthogonal to {w}: */
+    r3_t v;
+    (void)r3_pick_ortho(&u, &v);
+    (void)r3_dir(&v, &v);
+
+    /* Third direction {w}: */
+    r3_t w;
+    r3_cross(&u, &v, &w);
+    (void)r3_dir(&w, &w);
+
+    /* Assemble the matrix: */
+    r3x3_from_rows(&u, &v, &w,  &(T.M));
+    
+    return T;
   }
 
-void r3_path_sample_uniform
-  ( r3_path_proc_t path,
-    double t0,
-    double t1,
-    int32_t n,
-    bool_t mids,
-    double t[],
-    r3_path_state_t S[]
-  )
-  {
-    if (n == 0) { return; }
-    if ((t == NULL) && (S == NULL)) { return; }
-
-    demand(t1 >= t0, "invalid {t} interval");
-    demand(n >= 1, "{n} must be positive");
-
-    /* Compute the time step {dt} and set {t[0]}: */
-    double T = t1 - t0;
-    double dt; /* Sampling step. */
-    double ts0, ts1; /* First and last sampling times. */
-    if (mids)
-      { dt = T/n;
-        ts0 = t0 + dt/2;
-        ts1 = t1 - dt/2;
-      }
-    else
-      { if (T == 0)
-          { dt = 0; }
-        else
-          { demand(n >= 2, "{n} must be at least 2");
-            dt = T/(n - 1);
-          }
-        ts0 = t0;
-        ts1 = t1;
-      }
-    if (t != NULL) { t[0] = ts0; }
-    if (S != NULL) { S[0] = path(ts0); }
-    if (n >= 2) {
-      if (t != NULL) { t[n-1] = ts1; }
-      if (S != NULL) { S[n-1] = path(ts1); }
-    }
-    if (n <= 2) { return; }
-
-    /* Get the other samples: */
-    int32_t k;
-    for (k = 1; k <= n-2; k++)
-      { double rk = ((double) k)/((double) n - 1);
-        double tk = (1 - rk)*ts0 + rk*ts1;
-        if (t != NULL) { t[k] = tk; }
-        if (S != NULL) { S[k] = path(tk); }
-      }
-  }
-
-void r3_path_circle(double t, double L, double A, r3_path_state_t *S)
-  {  /* Compute the position and direction of arc at {t}: */
-     double X, Y; /* Position of {S(t)} on plane {XY}. */
-     double dX, dY; /* Direction of path at {t}. */
-     if ((t == 0) || (A == 0))
-       { X = t*L;
-         Y = 0;
-         dX = 1;
-         dY = 0.0;
-       }
-     else
-       { double R = L/A; /* Radius of curvature. */
-         double at = t*A; /* Angular argument at {t}. */
-         double cat = cos(at);
-         double sat = sin(at);
-         X = R*sat;
-         Y = R*(1-cat);
-         dX = cat;
-         dY = sat;
-       }
-     /* Build the state: */
-     (S->p) = (r3_t){{ X, Y, 0.0 }}; /* Position. */
-     r3x3_ident(&(S->M));
-     S->M.c[0][0] = +dX;  S->M.c[0][1] = +dY; /* Tangent direction. */
-     S->M.c[1][0] = -dY;  S->M.c[1][1] = +dX; /* Transverse horizontal direction. */
-  }
-
-void r3_path_helix(double t, double L, double A, double H, r3_path_state_t *S)
-  {
-    /* Generate a circle on the {XY} plane: */
-    r3_path_circle(t, L, A, S);
-    if (H != 0)
-      { /* Raise the point in {Z}: */
-        S->p.c[2] += t*H;
-        /* Adjust rows 0 and 2 of the matrix: */
-        double a = atan2(H,L); /* Tilt angle of spiral. */
-        double ca = cos(a);
-        double sa = sin(a);
-        int j;
-        for (j = 0; j < 3; j++)
-          { double oldU = S->M.c[0][j];
-            double oldW = S->M.c[2][j];
-            double newU = + ca*oldU + sa*oldW;
-            double newW = - sa*oldU + ca*oldW;
-            S->M.c[0][j] = newU;
-            S->M.c[2][j] = newW;
+void r3_path_interpolate_some(r3_path_state_t S[], int32_t N)
+  { 
+    if (N >= 3)
+      { double t0 = S[0].t;
+        r3_t *p0 = &(S[0].p);
+        r3_t p1, p2;
+        double t3 = S[N-1].t;
+        r3_t *p3 = &(S[N-1].p);
+        r3_bezier_from_path_states(&(S[0]), &(S[N-1]), &p1, &p2);
+        int32_t im;
+        for (im = 1; im <= N-2; im++)
+          { r3_path_state_t *Sm = &(S[im]);
+            double fm = ((double)im)/((double)N-1); /* Fractional position of {S[im]}. */
+            double tm = (1-fm)*t0 + fm*t3; /* Time for {im}. */
+            Sm->t = tm;
+            r3_t p01, p12, p23, p012, p123; /* Intermediate points. */
+            r3_bezier_split(t0, t3, p0, &p1, &p2, p3, tm, &p01, &p12, &p23, &p012, &p123, &(Sm->p), &(Sm->v));      
           }
       }
+  }
+
+double r3_path_length_estimate(r3_path_state_t *S, r3_path_state_t *T, int32_t order)
+  { r3_t *p0 = &(S->p);
+    r3_t p1, p2;
+    r3_t *p3 = &(T->p);
+    r3_bezier_from_path_states(S, T, &p1, &p2);
+    return r3_bezier_length_estimate(p0, &p1, &p2, p3, order);
   }
 
 void r3_path_state_print (FILE *f, r3_path_state_t *S)
-  { r3_path_state_gen_print(f, S, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL); }
+  { r3_path_state_gen_print(f, S, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL); }
 
 void r3_path_state_gen_print
  ( FILE *f,
    r3_path_state_t *S,
+   char *tfmt,
    char *pfmt,
-   char *Mfmt,
+   char *vfmt,
    char *olp, char *osep, char *orp, /* Outer delimiters for matrix. */
    char *ilp, char *isep, char *irp  /* Delimiters for matrix rows and position. */
   )
@@ -147,28 +101,36 @@ void r3_path_state_gen_print
     if (ilp == NULL) { ilp = "= ( "; }
     if (isep == NULL) { isep = " "; }
     if (irp == NULL) { irp = " )"; }
+    if (tfmt == NULL) { pfmt = "%16.8e"; }
     if (pfmt == NULL) { pfmt = "%16.8e"; }
-    if (Mfmt == NULL) { Mfmt = "%16.8e"; }
+    if (vfmt == NULL) { vfmt = "%16.8e"; }
     fputs(olp, f);
+    
+    fputs("t", f);
+    fputs(ilp, f);
+    fprintf(f, tfmt, &(S->t));
+    fputs(irp, f);
+    
+    fputs(osep, f);
+    
     fputs("p", f);
     r3_gen_print(f, &(S->p), pfmt, ilp, isep, irp);
-    int i;
-    for (i = 0; i < 3; i++)
-      { fputs(osep, f);
-        r3_t vi; r3x3_get_row(&(S->M), i, &vi);
-        fputc("uvw"[i], f);
-        r3_gen_print(f, &vi, Mfmt, ilp, isep, irp);
-      }
+    
+    fputs(osep, f);
+    
+    fputs("v", f);
+    r3_gen_print(f, &(S->v), vfmt, ilp, isep, irp);
+    
     fputs(orp, f);
     fflush(f);
   }
 
 void r3_path_state_debug(FILE *wr, r3_path_state_t *S, char *indent, char *title)
-  { char *olp; asprintf(&olp, "%s%s state:\n%s  ", indent, title, indent);
-    char *osep; asprintf(&osep, "\n%s  ", indent);
+  { char *olp; asprintf(&olp, "%s%s state:\n%s  ", indent, title, indent); 
+    char *osep; asprintf(&osep, "\n%s  ", indent); 
     r3_path_state_gen_print
-      ( wr, S,
-        "%.2f", "%+9.6f",
+      ( wr, S, 
+        "%.4f", "%.2f", "%+.3f", 
         olp, osep, "\n",
         " = ( ", " ", " )"
       );

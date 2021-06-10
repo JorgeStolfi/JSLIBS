@@ -2,7 +2,10 @@
 #define ellipse_crs_H
 
 /* ellipse_crs.h -- tools for ellipses in the center-radius-stretch form. */
-/* Last edited on 2010-03-18 22:11:39 by stolfi */
+/* Last edited on 2021-06-09 20:14:34 by jstolfi */
+
+#define _GNU_SOURCE
+#include <stdint.h>
 
 #include <r2.h>
 #include <interval.h>
@@ -37,10 +40,10 @@ void ellipse_crs_bbox(ellipse_crs_t *E, interval_t bbox[]);
 void ellipse_crs_int_bbox
   ( ellipse_crs_t *E, 
     double mrg, /* Extra margin. */
-    int *xLoP,  /* (OUT) Min X of clip area. */
-    int *xHiP,  /* (OUT) Max X of clip area. */
-    int *yLoP,  /* (OUT) Min Y of clip area. */
-    int *yHiP   /* (OUT) Max Y of clip area. */
+    int32_t *xLoP,  /* (OUT) Min X of clip area. */
+    int32_t *xHiP,  /* (OUT) Max X of clip area. */
+    int32_t *yLoP,  /* (OUT) Min Y of clip area. */
+    int32_t *yHiP   /* (OUT) Max Y of clip area. */
   );
   /* Stores in {*xLoP,*xHiP,*yLoP,*yHiP} a bounding box for the
     ellipse {E} with integer coordinates. The box is at least {mrg}

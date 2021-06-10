@@ -2,7 +2,7 @@
 #define float_image_transform_H
 
 /* Tools for projective and barrel/pincushion image correction. */
-/* Last edited on 2012-07-22 11:19:16 by stolfilocal */ 
+/* Last edited on 2021-06-09 20:57:26 by jstolfi */ 
 
 #include <r2.h>
 #include <r2_extra.h>
@@ -13,14 +13,14 @@
 #include <float_image.h>
 
 void float_image_transform_all
-  ( float_image_t *iimg, /* Input image. */
-    ix_reduction_t red,  /* Index reduction method. */ 
-    r2_map_t *map,       /* Output-to-input coordinate transformation. */
-    float undef,         /* Sample value for undefined output pixels. */
-    bool_t avg,          /* TRUE to average pixels, FALSE to add them. */
-    int order,           /* Interpolation order. */
-    r2_pred_t *debugp,   /* Predicate, tells whether pixel should be debugged (NULL means "no"). */
-    float_image_t *oimg  /* Output image. */
+  ( float_image_t *iimg,     /* Input image. */
+    ix_reduction_t red,      /* Index reduction method. */ 
+    r2_map_jacobian_t *map,  /* Output-to-input coordinate transformation. */
+    float undef,             /* Sample value for undefined output pixels. */
+    bool_t avg,              /* TRUE to average pixels, FALSE to add them. */
+    int order,               /* Interpolation order. */
+    r2_pred_t *debugp,       /* Predicate, tells whether pixel should be debugged (NULL means "no"). */
+    float_image_t *oimg      /* Output image. */
   );
   /* Applies the transformation {map} to the image {iimg} and
     stores the result in {oimg}. 
@@ -75,34 +75,34 @@ void float_image_transform_all
     output pixel. */
     
 void float_image_transform_sub
-  ( float_image_t *iimg, /* Input image. */
-    ix_reduction_t red,  /* Index reduction method. */ 
-    r2_map_t *map,       /* Output-to-input coordinate transformation. */
-    float undef,         /* Sample value for undefined output pixels. */
-    bool_t avg,          /* TRUE to average pixels, FALSE to add them. */
-    int order,           /* Interpolation order. */
-    int x0,              /* First output image column. */
-    int y0,              /* First output image row. */
-    int NX,              /* Number of output image columns. */
-    int NY,              /* Number of output image rows. */
-    r2_pred_t *debugp,   /* Predicate, tells whether pixel should be debugged (NULL means "no"). */
-    float_image_t *oimg  /* Output image. */
+  ( float_image_t *iimg,     /* Input image. */
+    ix_reduction_t red,      /* Index reduction method. */ 
+    r2_map_jacobian_t *map,  /* Output-to-input coordinate transformation. */
+    float undef,             /* Sample value for undefined output pixels. */
+    bool_t avg,              /* TRUE to average pixels, FALSE to add them. */
+    int order,               /* Interpolation order. */
+    int x0,                  /* First output image column. */
+    int y0,                  /* First output image row. */
+    int NX,                  /* Number of output image columns. */
+    int NY,                  /* Number of output image rows. */
+    r2_pred_t *debugp,       /* Predicate, tells whether pixel should be debugged (NULL means "no"). */
+    float_image_t *oimg      /* Output image. */
   );
   /* Same as {float_image_transform_all}, but copies only the 
     rectangular sub-image of {oimg} with pixel indices in the range
     {[x0..x0+NX-1]×[y0..y0+NY-1]}. */
   
 void float_image_transform_get_pixel
-  ( float_image_t *img, /* Input image. */
-    ix_reduction_t red, /* Index reduction method. */ 
-    int col,            /* Column index of output pixel. */
-    int row,            /* Row index of output pixel. */
-    r2_map_t *map,      /* Output-to-input coordinate transformation. */
-    float undef,        /* Sample value for undefined output pixels. */
-    bool_t avg,         /* TRUE to average pixels, FALSE to add them. */
-    int order,          /* Interpolation order. */
-    float f[],          /* Output pixel. */
-    bool_t debug        /* If TRUE, prints debugging info. */
+  ( float_image_t *img,     /* Input image. */
+    ix_reduction_t red,     /* Index reduction method. */ 
+    int col,                /* Column index of output pixel. */
+    int row,                /* Row index of output pixel. */
+    r2_map_jacobian_t *map, /* Output-to-input coordinate transformation. */
+    float undef,            /* Sample value for undefined output pixels. */
+    bool_t avg,             /* TRUE to average pixels, FALSE to add them. */
+    int order,              /* Interpolation order. */
+    float f[],              /* Output pixel. */
+    bool_t debug            /* If TRUE, prints debugging info. */
   );
   /* Computes the value of the pixel on column{col} and row {row} of a
     transformed image. The result is an average (if {avg} is true) or partition

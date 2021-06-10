@@ -1,7 +1,8 @@
 /* See hr3.h */
-/* Last edited on 2011-12-29 20:29:54 by stolfilocal */ 
+/* Last edited on 2021-06-09 20:15:55 by jstolfi */ 
 
 #define _GNU_SOURCE
+#include <stdint.h>
 #include <hr3.h>
 
 #include <r3.h>
@@ -207,7 +208,7 @@ hr3_pmap_t hr3_pmap_u_v_rotation(r3_t *u, r3_t *v)
     
     /* Convert to a projective map (note that inverse is just transpose): */
     hr3_pmap_t m;
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < 4; i++)
       { for (j = 0; j < 4; j++)
           { if ((i == 0) && (j == 0))
@@ -368,7 +369,7 @@ void hr3_L_inf_normalize_line(hr3_line_t *n)
 hr3_pmap_t hr3_pmap_persp(hr3_point_t *obs, hr3_point_t *foc, double rad, hr3_point_t *upp)
   { hr3_pmap_t m;
     r4x4_t mt, mr, mc, mrt;
-    int i, j;
+    int32_t i, j;
     
     demand(foc->c.c[0] > 0.0, "focus must be finite and hither");
     demand(obs->c.c[0] >= 0.0, "observer must be hither or infinite");
@@ -447,7 +448,7 @@ void hr3_point_print (FILE *f, char *pre, hr3_point_t *p, char *fmt, char *suf)
   { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, f); }
     fputc('[', f);
     if (fmt == NULL) { fmt = "24.26e"; }
-    int i;
+    int32_t i;
     for (i = 0; i < 4; i++)
       { if (i != 0) { fputc(' ', f); }
         fprintf(f, fmt, p->c.c[i]);
@@ -460,7 +461,7 @@ void hr3_plane_print (FILE *f, char *pre, hr3_plane_t *P, char *fmt, char *suf)
   { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, f); }
     fputc('[', f);
     if (fmt == NULL) { fmt = "24.26e"; }
-    int i;
+    int32_t i;
     for (i = 0; i < 4; i++)
       { if (i != 0) { fputc(' ', f); }
         fprintf(f, fmt, P->f.c[i]);
@@ -473,7 +474,7 @@ void hr3_line_print (FILE *f, char *pre, hr3_line_t *n, char *fmt, char *suf)
   { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, f); }
     fputc('[', f);
     if (fmt == NULL) { fmt = "24.26e"; }
-    int i;
+    int32_t i;
     for (i = 0; i < 4; i++)
       { if (i != 0) { fputc(' ', f); }
         fprintf(f, fmt, n->k.c[i]);

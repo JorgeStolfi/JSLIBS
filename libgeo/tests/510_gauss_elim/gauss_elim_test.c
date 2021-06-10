@@ -1,5 +1,5 @@
 /* gauss_elim_test --- test program for gauss_elim.h  */
-/* Last edited on 2018-03-04 22:54:51 by stolfilocal */
+/* Last edited on 2021-06-09 23:38:42 by jstolfi */
 
 #define _GNU_SOURCE
 #include <gauss_elim.h>
@@ -14,6 +14,7 @@
 #include <rn.h>
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
 #include <limits.h>
@@ -34,27 +35,27 @@
 
 /* INTERNAL PROTOTYPES */
 
-int main (int argc, char **argv);
+int32_t main (int32_t argc, char **argv);
 
-void test_gauss_elim(int trial, bool_t verbose);
+void test_gauss_elim(int32_t trial, bool_t verbose);
   /* Tests the low-level routines (except {gsel_solve} and {gsel_quadratic_min}). */
 
-void test_solve(int trial, bool_t verbose);
+void test_solve(int32_t trial, bool_t verbose);
   /* Tests {gsel_solve}. */
 
-void test_quadratic_min(int trial, bool_t verbose);
+void test_quadratic_min(int32_t trial, bool_t verbose);
   /* Tests {gsel_quadratic_min}. */
 
-void throw_system(int m, int n, double A[], int p, double B[], double X[], bool_t verbose);
+void throw_system(int32_t m, int32_t n, double A[], int32_t p, double B[], double X[], bool_t verbose);
   /* Generates a random {m × n} coefficient matrix {A} and a random {m × p}
     solution matrix {X}, then computes the {n × p} right-hand-side matrix 
     {B = A X}. */
 
-void throw_quadratic_fn(int n, double A[], double b[], bool_t verbose);
+void throw_quadratic_fn(int32_t n, double A[], double b[], bool_t verbose);
   /* Generates a random {n × n} coefficient matrix {A}, positive semidefinite,
     and a random {n}-vector {b}. */
 
-double determinant(int m, int n, double M[], int q);
+double determinant(int32_t m, int32_t n, double M[], int32_t q);
   /* Determinant of the first {q} rows and columns of {M}, computed by the
     basic definition (sum of {q!} terms) Returns zero if {q > m} or {q > n}. */
 
@@ -64,14 +65,14 @@ double determinant(int m, int n, double M[], int q);
   {0..p-1}, should be the largest absolute value of any element on
   column {k} of the {B} array. */
 
-void check_satisfaction(int m, int n, double M[], int p, double X_ref[], double Bmax[]);
+void check_satisfaction(int32_t m, int32_t n, double M[], int32_t p, double X_ref[], double Bmax[]);
   /* Checks whether the {(n-p) × p} matrix {X} is still a solution of the 
     system {A X = B}  where {A} is the first {n-p} columns of {M},
     and {B} is the last {p} columns. */
 
 void check_triangularize
-  ( int m, int n, double M[], 
-    int p, double X_ref[], 
+  ( int32_t m, int32_t n, double M[], 
+    int32_t p, double X_ref[], 
     bool_t total, 
     double Bmax[]
   );
@@ -79,8 +80,8 @@ void check_triangularize
     {check_satisfaction(m,n,M,p,X_ref,Bmax)}. */
 
 void check_diagonalize
-  ( int m, int n, double M[], 
-    int p, double X_ref[], 
+  ( int32_t m, int32_t n, double M[], 
+    int32_t p, double X_ref[], 
     bool_t total, 
     double Bmax[]
   );
@@ -88,8 +89,8 @@ void check_diagonalize
     {check_satisfaction(m,n,M,p,X_ref,Bmax)}. */
 
 void check_normalize
-  ( int m, int n, double M[], 
-    int p, double X_ref[], 
+  ( int32_t m, int32_t n, double M[], 
+    int32_t p, double X_ref[], 
     bool_t total, 
     double Bmax[]
   );
@@ -97,8 +98,8 @@ void check_normalize
     {check_satisfaction(m,n,M,p,X_ref,Bmax)}. */
 
 void check_extract_solution
-  ( int m, int n, double M[], 
-    int p, double X[], int r, 
+  ( int32_t m, int32_t n, double M[], 
+    int32_t p, double X[], int32_t r, 
     double X_ref[],
     bool_t total, double Bmax[]
   );
@@ -108,9 +109,9 @@ void check_extract_solution
     return value. */
 
 void check_solve
-  ( int m, int n, double A[], 
-    int p, double B[], 
-    double X[], int r,
+  ( int32_t m, int32_t n, double A[], 
+    int32_t p, double B[], 
+    double X[], int32_t r,
     double Bmax[]
   );
   /* Checks the outcome of {gsel_solve}. The parameter {X} should be
@@ -118,8 +119,8 @@ void check_solve
     return value. */
 
 void check_residual
-  ( int m, int n, double A[], 
-    int p, double B[], 
+  ( int32_t m, int32_t n, double A[], 
+    int32_t p, double B[], 
     double X[],
     double R[],
     double Bmax[]
@@ -129,7 +130,7 @@ void check_residual
     and {X}. */
 
 void check_solution_with_reference
-  ( int m, int n, int p, 
+  ( int32_t m, int32_t n, int32_t p, 
     double X[], double X_ref[], 
     double Bmax[]
   );    
@@ -137,37 +138,37 @@ void check_solution_with_reference
     `true' solution {X_ref}; where {A} is {m × n}, {X} and {X_ref} are
     {n × p}, and {B} is {m × p}. */
 
-void check_quadratic_min(int n, double A[], double b[], double x[], double bmax);
+void check_quadratic_min(int32_t n, double A[], double b[], double x[], double bmax);
   /* Checks the putative solution of the constrained
     problem of minimizing {Q(x) = x' A x - 2 x'b + c} subject to
     {x[i] >= 0} for all {i}. */
 
-void check_determinant(int m, double Amax, double detA, double detR);
+void check_determinant(int32_t m, double Amax, double detA, double detR);
   /* Checks whether the determinant {detA} of an {m × m} matrix is equal
     to {detR} except for roundoff.  Assumes that the matrix entries are
     limited to {Amax} in absolute value. */
 
-double max_abs_elem(int m, int n, double M[]);
+double max_abs_elem(int32_t m, int32_t n, double M[]);
   /* Returns the maximum absolute value of the elements in the {m × n} matrix {M}. */
 
-double max_abs_col_elem(int m, int n, double M[], int j);
+double max_abs_col_elem(int32_t m, int32_t n, double M[], int32_t j);
   /* Returns the maximum absolute value of the elements in column {j} of
      the {m × n} matrix {M}. */
 
-double max_residual_roundoff(int m, int n, double bmax);
+double max_residual_roundoff(int32_t m, int32_t n, double bmax);
   /* Estimates the maximum roundoff error in the computed residual
     {A x - b} with {m} equations and {n} unknowns, given the 
     absolute magnitude {bmax} of the right-hand-side elements. */
 
-double max_determinant_roundoff(int m, double Amax);
+double max_determinant_roundoff(int32_t m, double Amax);
   /* Estimates the maximum roundoff error in the computation of the
     determinant of an {m × m} matrix, given the absolute magnitude
     {bmax} of the matrix elements. */
 
 /* IMPLEMENTATIONS */
 
-int main (int argc, char **argv)
-  { int i;
+int32_t main (int32_t argc, char **argv)
+  { int32_t i;
     for (i = 0; i < MAX_RUNS; i++) { test_gauss_elim(i, i < 5); }
     for (i = 0; i < MAX_RUNS; i++) { test_solve(i, i < 5); }
     for (i = 0; i < MAX_RUNS; i++) { test_quadratic_min(i, i < 30); }
@@ -176,20 +177,20 @@ int main (int argc, char **argv)
     return (0);
   }
 
-void test_gauss_elim (int trial, bool_t verbose)
+void test_gauss_elim (int32_t trial, bool_t verbose)
   { 
     srand(1665 + 2*trial);
     srandom(1665 + 2*trial);
-    int m = rand()/(RAND_MAX/MAX_ROWS) + 1; /* Rows (equations). */
-    int n = rand()/(RAND_MAX/MAX_COLS) + 1; /* Main columns (unknowns). */
-    int p = rand()/(RAND_MAX/MAX_PRBS) + 1; /* RHS columns (problems). */
+    int32_t m = rand()/(RAND_MAX/MAX_ROWS) + 1; /* Rows (equations). */
+    int32_t n = rand()/(RAND_MAX/MAX_COLS) + 1; /* Main columns (unknowns). */
+    int32_t p = rand()/(RAND_MAX/MAX_PRBS) + 1; /* RHS columns (problems). */
     bool_t total = (rand()/8) % 2 == 0; /* Do half the tests with {total=TRUE}. */
 
     fprintf(stderr, "\n");
     fprintf(stderr, "======================================================================\n");
     fprintf(stderr, "%s (%d)\n", __FUNCTION__, trial);
     fprintf(stderr, "testing with m = %d  n = %d  p = %d  total = %d ...\n", m, n, p, total);
-    int i, j, k;
+    int32_t i, j, k;
     
     double A[m*n]; /* Main systems matrix. */
     double B[m*p]; /* Right-hand-side matrix. */
@@ -199,7 +200,7 @@ void test_gauss_elim (int trial, bool_t verbose)
     throw_system(m, n, A, p, B, X_ref, verbose);
 
     /* Compute the determinant of the first {max(m,n)} columns of {A}, recursively: */
-    int q = (m > n ? m : n);
+    int32_t q = (m > n ? m : n);
     if (verbose) { fprintf(stderr, "  computing 'true' determinant...\n"); }
     double detA_ref = determinant(m, n, A, q);
     if (verbose) { fprintf(stderr, "  determinant = %22.14e\n\n", detA_ref); }
@@ -210,7 +211,7 @@ void test_gauss_elim (int trial, bool_t verbose)
     for (k = 0; k < p; k++) { Bmax[k] = max_abs_col_elem(n, p, B, k); }
 
     /* Pack arrays into a single array: */
-    int np = n+p;       /* Total columns of {A} and {B}. */
+    int32_t np = n+p;       /* Total columns of {A} and {B}. */
     double AB[m*np];    /* Combined {A} and {B} matrices, side by side. */
     for (i = 0; i < m; i++) 
       { for (j = 0; j < n; j++) { AB[i*np + j] = A[i*n + j]; }
@@ -240,7 +241,7 @@ void test_gauss_elim (int trial, bool_t verbose)
     if (verbose) { gsel_print_array(stderr, "%12.6f", "  gsel_normalize:", m, np, AB, ""); }
     check_normalize(m, np, AB, p, X_ref, total, Bmax);
 
-    int r = gsel_extract_solution(m, np, AB, p, X, total);
+    int32_t r = gsel_extract_solution(m, np, AB, p, X, total);
     if (verbose) { gsel_print_array(stderr, "%12.6f", "  gsel_extract_solution:", n, p, X, ""); }
     if (verbose) { fprintf(stderr, "  used %d out of %d equations\n", r, m); }
     check_extract_solution(m, np, AB, p, X, r, X_ref, total, Bmax);
@@ -251,19 +252,19 @@ void test_gauss_elim (int trial, bool_t verbose)
     fprintf(stderr, "======================================================================\n");
   }
 
-void test_solve (int trial, bool_t verbose)
+void test_solve (int32_t trial, bool_t verbose)
   { 
     srand(1665 + 12*trial);
     srandom(1665 + 12*trial);
-    int m = rand()/(RAND_MAX/MAX_ROWS) + 1; /* Rows (equations). */
-    int n = rand()/(RAND_MAX/MAX_COLS) + 1; /* Main columns (unknowns). */
-    int p = rand()/(RAND_MAX/MAX_PRBS) + 1; /* RHS columns (problems). */
+    int32_t m = rand()/(RAND_MAX/MAX_ROWS) + 1; /* Rows (equations). */
+    int32_t n = rand()/(RAND_MAX/MAX_COLS) + 1; /* Main columns (unknowns). */
+    int32_t p = rand()/(RAND_MAX/MAX_PRBS) + 1; /* RHS columns (problems). */
     
     fprintf(stderr, "\n");
     fprintf(stderr, "======================================================================\n");
     fprintf(stderr, "%s (%d)\n", __FUNCTION__, trial);
     fprintf(stderr, "testing with m = %d  n = %d  p = %d ...\n", m, n, p);
-    int k;
+    int32_t k;
     
     double A[m*n];      /* Main systems matrix. */
     double B[m*p];      /* Right-hand-side matrix. */
@@ -274,7 +275,7 @@ void test_solve (int trial, bool_t verbose)
     throw_system(m, n, A, p, B, X_ref, verbose);
 
     /* Compute the determinant of the first {max(m,n)} columns of {A}, recursively: */
-    int q = (m > n ? m : n);
+    int32_t q = (m > n ? m : n);
     if (verbose) { fprintf(stderr, "  computing 'true' determinant...\n"); }
     double detA_ref = determinant(m, n, A, q);
     if (verbose) { fprintf(stderr, "  determinant = %22.14e\n\n", detA_ref); }
@@ -293,7 +294,7 @@ void test_solve (int trial, bool_t verbose)
     if (verbose) { fprintf(stderr, "  gsel_determinant: result = %24.16e\n\n", detA); }
     check_determinant(q, Amax, detA, detA_ref);
 
-    int r = gsel_solve(m, n, A, p, B, X, 0.0);
+    int32_t r = gsel_solve(m, n, A, p, B, X, 0.0);
     if (verbose) { gsel_print_array(stderr, "%12.6f", "  gsel_solve:", n, p, X, ""); }
     if (verbose) { fprintf(stderr, "  used %d out of %d equations\n", r, m); }
     check_solve(m, n, A, p, B, X, r, Bmax);
@@ -309,11 +310,11 @@ void test_solve (int trial, bool_t verbose)
     fprintf(stderr, "======================================================================\n");
   }
 
-void test_quadratic_min (int trial, bool_t verbose)
+void test_quadratic_min (int32_t trial, bool_t verbose)
   { 
     srand(1665 + 418*trial);
     srandom(1665 + 418*trial);
-    int n = rand()/(RAND_MAX/MAX_COLS) + 1; /* Size of matrix. */
+    int32_t n = rand()/(RAND_MAX/MAX_COLS) + 1; /* Size of matrix. */
 
     fprintf(stderr, "\n");
     fprintf(stderr, "======================================================================\n");
@@ -341,9 +342,9 @@ void test_quadratic_min (int trial, bool_t verbose)
     fprintf(stderr, "======================================================================\n");
   }
 
-void check_satisfaction(int m, int n, double M[], int p, double X[], double Bmax[])
-  { int q = n - p;
-    int i, j, k;
+void check_satisfaction(int32_t m, int32_t n, double M[], int32_t p, double X[], double Bmax[])
+  { int32_t q = n - p;
+    int32_t i, j, k;
     for (k = 0; k < p; k++) 
       { double tol = max_residual_roundoff(m, n, Bmax[k]);
         for (i = 0; i < m; i++)
@@ -359,25 +360,25 @@ void check_satisfaction(int m, int n, double M[], int p, double X[], double Bmax
   }
 
 void check_triangularize
-  ( int m, int n, double M[], 
-    int p, double X_ref[], 
+  ( int32_t m, int32_t n, double M[], 
+    int32_t p, double X_ref[], 
     bool_t total, 
     double Bmax[]
   )
   { /* The equations should be equivalent, so {X} should still be a solution: */
     check_satisfaction(m, n, M, p, X_ref, Bmax);
     /* Check the {gsel_triangularize} post-conditions: */
-    int i, j;
-    int jr = -1; /* Leading non-zero column in previous row */
+    int32_t i, j;
+    int32_t jr = -1; /* Leading non-zero column in previous row */
     for (i = 0; i < m; i++)
       { /* Find the leading nonzero column {j} in row {i}: */
         j = 0; 
         while ((j < n) && (M[i*n + j] == 0.0)) { j++; }
-        if (j >= n) { j = INT_MAX; }
+        if (j >= n) { j = INT32_MAX; }
         /* Check triangulation condition: */
         bool_t ok; char *msg; 
         if (total)
-          { ok = (j > jr) || ((jr == INT_MAX) && (j == INT_MAX));
+          { ok = (j > jr) || ((jr == INT32_MAX) && (j == INT32_MAX));
             msg = "** leading element in wrong column"; 
           }
         else
@@ -393,27 +394,27 @@ void check_triangularize
   }
 
 void check_diagonalize
-  ( int m, int n, double M[], 
-    int p, double X_ref[], 
+  ( int32_t m, int32_t n, double M[], 
+    int32_t p, double X_ref[], 
     bool_t total, 
     double Bmax[]
   )
   { /* The triangularization conditions should still hold: */
     check_triangularize(m, n, M, p, X_ref, total, Bmax);
     /* Check the {gsel_diagonalize} post_conditions: */
-    int i, j, k;
+    int32_t i, j, k;
     for (i = 0; i < m; i++)
       { if (total)
           { /* Find leading nonzero column {j} in row {i}: */
             j = 0; 
             while ((j < n) && (M[i*n + j] == 0.0)) { j++; }
-            if (j >= n) { j = INT_MAX; }
+            if (j >= n) { j = INT32_MAX; }
           }
         else
           { /* Aut {M[i,i]} aut nihil: */
-            j = ((i < n) && (M[i*n + i] != 0.0) ? i : INT_MAX);
+            j = ((i < n) && (M[i*n + i] != 0.0) ? i : INT32_MAX);
           }
-        if (j < INT_MAX) 
+        if (j < INT32_MAX) 
           { /* Element {M[i,j]} must be the only non-zero elem in column {j}: */
             for (k = 0; k < m; k++) 
               { if ((k != i) && (M[k*n + j] != 0.0))
@@ -425,7 +426,7 @@ void check_diagonalize
       }
   }
 
-void check_determinant(int m, double Amax, double detA, double detR)
+void check_determinant(int32_t m, double Amax, double detA, double detR)
   {
     double tol = max_determinant_roundoff(m, Amax);
     if (fabs(detA - detR) > tol) 
@@ -435,27 +436,27 @@ void check_determinant(int m, double Amax, double detA, double detR)
   }
 
 void check_normalize
-  ( int m, int n, double M[], 
-    int p, double X_ref[], 
+  ( int32_t m, int32_t n, double M[], 
+    int32_t p, double X_ref[], 
     bool_t total, 
     double Bmax[]
   )
   { /* The diagonalization conditions should still hold: */
     check_diagonalize(m, n, M, p, X_ref, total, Bmax);
     /* Check the {gsel_normalize} post-conditions: */
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < m; i++)
       { if (total)
           { /* Find leading nonzero column {j} in row {i}: */
             j = 0; 
             while ((j < n) && (M[i*n + j] == 0.0)) { j++; }
-            if (j >= n) { j = INT_MAX; }
+            if (j >= n) { j = INT32_MAX; }
           }
         else
           { /* Normalize with {total=FALSE} leaves diagonal at 1.0 or 0.0: */
-            j = ((i >= n) || (M[i*n + i] == 0.0) ? INT_MAX : i);
+            j = ((i >= n) || (M[i*n + i] == 0.0) ? INT32_MAX : i);
           }
-        if (j < INT_MAX) 
+        if (j < INT32_MAX) 
           { /* Element {M[i,j]} must be 1.0: */
             if (M[i*n + j] != 1.0)
               { fprintf(stderr, "M[%d,%d] = %24.16e\n", i, j, M[i*n + j]);
@@ -466,9 +467,9 @@ void check_normalize
   }
 
 void check_extract_solution
-  ( int m, int n, double M[], 
-    int p, double X[], 
-    int r,double X_ref[],
+  ( int32_t m, int32_t n, double M[], 
+    int32_t p, double X[], 
+    int32_t r,double X_ref[],
     bool_t total, 
     double Bmax[]
   )
@@ -476,12 +477,12 @@ void check_extract_solution
     check_normalize(m, n, M, p, X_ref, total, Bmax);
     /* Check the {gsel_extract_solution} post-conditions: */
     double tol[p]; /* Max roundoff error for each column of {X} and {B}. */
-    int k; 
+    int32_t k; 
     for (k = 0; k < p; k++) { tol[k] = max_residual_roundoff(m, n, Bmax[k]); }
 
-    int q = n - p;
-    int i, jr;
-    int neq = 0; /* Number of non-zero equations. */
+    int32_t q = n - p;
+    int32_t i, jr;
+    int32_t neq = 0; /* Number of non-zero equations. */
     for (i = 0, jr = 0; i < m; i++)
       { double Mij; /* Pivot element, or {0.0} if coefs are all zero. */
         while (jr < q)
@@ -498,7 +499,7 @@ void check_extract_solution
             if (! total) { break; }
             jr++;
           }
-        if (jr >= q) { jr = INT_MAX; Mij = 0.0; }
+        if (jr >= q) { jr = INT32_MAX; Mij = 0.0; }
          
         if (Mij != 0.0)
           { /* We have one more effective equation: */
@@ -507,7 +508,7 @@ void check_extract_solution
             for (k = 0; k < p; k++)
               { /* Compute the residual {Yik = (A X - B)[i,k]}: */
                 double Yik = 0.0;
-                int j;
+                int32_t j;
                 for (j = 0; j < q; j++) { Yik += M[i*n + j]*X[j*p + k]; }
                 Yik -= M[i*n + q + k];
 
@@ -522,7 +523,7 @@ void check_extract_solution
           { /* Equation was ignored, nothing to check: */ }
 
         /* In any case, the next row's pivot must be at least one col to the right: */
-        if (jr < INT_MAX) { jr++; }
+        if (jr < INT32_MAX) { jr++; }
       }
     
     /* Check number of equations used. */
@@ -533,14 +534,14 @@ void check_extract_solution
   }
 
 void check_solution_with_reference
-  ( int m, int n, int p, 
+  ( int32_t m, int32_t n, int32_t p, 
     double X[], double X_ref[], 
     double Bmax[]
   )
-  { int k; 
+  { int32_t k; 
     for (k = 0; k < p; k++)
       { double tol = max_residual_roundoff(m, n, Bmax[k]);
-        int j;
+        int32_t j;
         for (j = 0; j < n; j++)
           { double xj = X[j*p + k];
             double xj_ref = X_ref[j*p + k];
@@ -555,11 +556,11 @@ void check_solution_with_reference
   }
 
 
-void check_solve(int m, int n, double A[], int p, double B[], double X[], int r, double Bmax[])
+void check_solve(int32_t m, int32_t n, double A[], int32_t p, double B[], double X[], int32_t r, double Bmax[])
   { if (r < m)
       { fprintf(stderr, "  excess equations, solution not checked.\n"); }
     else
-      { int i, j, k;
+      { int32_t i, j, k;
         for (k = 0; k < p; k++) 
           { double tol = max_residual_roundoff(m, n, Bmax[k]);
             for (i = 0; i < m; i++)
@@ -577,13 +578,13 @@ void check_solve(int m, int n, double A[], int p, double B[], double X[], int r,
   }
 
 void check_residual
-  ( int m, int n, double A[], 
-    int p, double B[], 
+  ( int32_t m, int32_t n, double A[], 
+    int32_t p, double B[], 
     double X[],
     double R[],
     double Bmax[]
   )
-  { int i, j, k;
+  { int32_t i, j, k;
     for (k = 0; k < p; k++) 
       { /* The residual must be more accurate than the solution, right? */
         double tol = 0.1 * max_residual_roundoff(m, n, Bmax[k]);
@@ -610,10 +611,10 @@ void check_residual
       }
   }
 
-void check_quadratic_min(int n, double A[], double b[], double x[], double bmax)
+void check_quadratic_min(int32_t n, double A[], double b[], double x[], double bmax)
   { 
     double tol = max_residual_roundoff(n, n, bmax);
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < n; i++)
       { /* Compute the derivative {yi = (A x - b)[i]} of {Q} w.r.t {x[i]}: */
         double yi = 0.0;
@@ -641,14 +642,14 @@ void check_quadratic_min(int n, double A[], double b[], double x[], double bmax)
       }    
   }
 
-void throw_system(int m, int n, double A[], int p, double B[], double X[], bool_t verbose)
+void throw_system(int32_t m, int32_t n, double A[], int32_t p, double B[], double X[], bool_t verbose)
   {
     /* Generate power-of-ten scale factors: */
     double Ascale = pow(10.0, rand()/(RAND_MAX/3));
     double Xscale = pow(10.0, rand()/(RAND_MAX/3));
     if (verbose) { fprintf(stderr, "  scales: A = %8.1e X = %8.1e\n", Ascale, Xscale); }
     
-    int i, j, k;
+    int32_t i, j, k;
     /* Generate a random solution matrix {X_ref}: */
     for (j = 0; j < n; j++)
       { for (k = 0; k < p; k++) 
@@ -675,21 +676,21 @@ void throw_system(int m, int n, double A[], int p, double B[], double X[], bool_
 #define MAX_PHIS MAX_COLS
   /* Max number of sample points in least squares basis. */
 
-void throw_quadratic_fn(int n, double A[], double b[], bool_t verbose)
+void throw_quadratic_fn(int32_t n, double A[], double b[], bool_t verbose)
   {
     /* Generate power-of-ten scale factors: */
     double Fscale = pow(10.0, int32_abrandom(0, 2));
     double xscale = pow(10.0, int32_abrandom(0, 3));
     if (verbose) { fprintf(stderr, "  scales: F = %8.1e x = %8.1e\n", Fscale, xscale); }
     
-    int i, j, k;
+    int32_t i, j, k;
     /* Generate a random goal point {x}: */
     double x[n]; 
     for (j = 0; j < n; j++) { x[j] = xscale * (double)(int32_abrandom(0,n-1) - n/2); }
     if (verbose) { gsel_print_array(stderr, "%12.6f", "  original solution:", n, 1, x, ""); }
 
     /* Generate a random {q × n} basis matrix {F}: */
-    int q = (n >= MAX_PHIS ? n : n + int32_abrandom(0, MAX_PHIS - n));
+    int32_t q = (n >= MAX_PHIS ? n : n + int32_abrandom(0, MAX_PHIS - n));
     double F[q*n]; /* Least squares basis. */
     for (k = 0; k < q; k++) 
       { for (i = 0; i < n; i++)
@@ -714,16 +715,16 @@ void throw_quadratic_fn(int n, double A[], double b[], bool_t verbose)
     if (verbose) { gsel_print_system(stderr, "%12.6f", "  original system:", n, n, A, 1, b, ""); }
   }
 
-double determinant(int m, int n, double M[], int q)
+double determinant(int32_t m, int32_t n, double M[], int32_t q)
   { bool_t debug = FALSE;
   
     if ((q > m) || (q > n)) { return 0.0; }
 
-    int perm[q];
-    int i;
+    int32_t perm[q];
+    int32_t i;
     for (i = 0; i < q; i++) { perm[i] = i; }
     
-    auto void add_terms(int k, double factor);
+    auto void add_terms(int32_t k, double factor);
       /* Generates all permutations of {perm[k..q-1]}, and adds to
         {det} the {factor} times {Q[r,perm[r]} for {r} in {k..q-1}.
         Upon return, {perm[k..q-1]} are back to their initial
@@ -735,11 +736,11 @@ double determinant(int m, int n, double M[], int q)
     if (debug) { fprintf(stderr, "  det =   %22.14e\n", det); }
     return det;
     
-    void add_terms(int k, double factor)
+    void add_terms(int32_t k, double factor)
       { if (k >= q)
           { if (debug) 
               { fprintf(stderr, "    det(");
-                int j;
+                int32_t j;
                 char *sep = "";
                 for (j = 0; j < k; j++) { fprintf(stderr, "%s%d", sep, perm[j]);  sep = ","; }
                 fprintf(stderr, ")");
@@ -748,20 +749,20 @@ double determinant(int m, int n, double M[], int q)
             det += factor;
           }
         else
-          { int j;
+          { int32_t j;
             for (j = k; j < q; j++)
-              { if (j != k) { int t = perm[k]; perm[k] = perm[j]; perm[j] = t; }
-                int row = k, col = perm[k];
+              { if (j != k) { int32_t t = perm[k]; perm[k] = perm[j]; perm[j] = t; }
+                int32_t row = k, col = perm[k];
                 double subfactor = factor * (k == j ? 1.0 : -1.0) * M[row*n + col];
                 add_terms(k+1, subfactor);
-                if (j != k) { int t = perm[k]; perm[k] = perm[j]; perm[j] = t; }
+                if (j != k) { int32_t t = perm[k]; perm[k] = perm[j]; perm[j] = t; }
               }
           }
       }
   }
 
-double max_abs_elem(int m, int n, double M[])
-  { int i, j;
+double max_abs_elem(int32_t m, int32_t n, double M[])
+  { int32_t i, j;
     double emax = 0.0;
     for (i = 0; i < m; i++)
       { for (j = 0; j < n; j++)
@@ -772,8 +773,8 @@ double max_abs_elem(int m, int n, double M[])
     return emax;
   }
 
-double max_abs_col_elem(int m, int n, double M[], int j)
-  { int i;
+double max_abs_col_elem(int32_t m, int32_t n, double M[], int32_t j)
+  { int32_t i;
     double emax = 0.0;
     for (i = 0; i < m; i++)
       { double Mij = fabs(M[i*n + j]);
@@ -782,17 +783,17 @@ double max_abs_col_elem(int m, int n, double M[], int j)
     return emax;
   }
   
-double max_residual_roundoff(int m, int n, double bmax)
+double max_residual_roundoff(int32_t m, int32_t n, double bmax)
   { /* Assumes that the magnitude of the products {A[i,j]*x[j]}
       is comparable to the magnitude {bmax} of the right-hand-side
       vector. Also assumes that roundoff errors are independent: */
     return 1.0e-14 * bmax * sqrt(n);
   }
 
-double max_determinant_roundoff(int m, double emax)
+double max_determinant_roundoff(int32_t m, double emax)
   { double nf = m; /* Number of factors in each term */
     double nt = 1.0; /* Number of terms. */
-    int i; for (i = 1; i <= nf; i++) { nt *= i; }
+    int32_t i; for (i = 1; i <= nf; i++) { nt *= i; }
     /* Assumes that the roundoff errors are independent: */
     return 1.0e-14 * pow(emax, nf) * sqrt(nt);
   }

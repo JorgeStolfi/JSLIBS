@@ -1,9 +1,10 @@
 /* See rmxn.h. */
-/* Last edited on 2012-12-15 09:48:00 by stolfilocal */
+/* Last edited on 2021-06-09 19:42:05 by jstolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include <rn.h>
@@ -14,57 +15,57 @@
 
 #include <rmxn.h>
 
-void rmxn_zero(int m, int n, double *M)
-  { int i, j, t;
+void rmxn_zero(int32_t m, int32_t n, double *M)
+  { int32_t i, j, t;
     t = 0;
     for (i = 0; i < m; i++)
       for (j = 0; j < n; j++)
         { M[t] = 0.0; t++; }
   }
 
-void rmxn_copy(int m, int n, double *A, double *M)
-  { int mn = m*n;
-    int ij;
+void rmxn_copy(int32_t m, int32_t n, double *A, double *M)
+  { int32_t mn = m*n;
+    int32_t ij;
     for (ij = 0; ij < mn; ij++) { M[ij] = A[ij]; }
   }
 
-void rmxn_get_row(int m, int n, double *A, int i, double *r)
+void rmxn_get_row(int32_t m, int32_t n, double *A, int32_t i, double *r)
   { double *Ai = &(A[i*n]);
-    int j;
+    int32_t j;
     for (j = 0; j < n; j++) { r[j] = Ai[j]; }
   }
   
-void rmxn_set_row(int m, int n, double *A, int i, double *r)
+void rmxn_set_row(int32_t m, int32_t n, double *A, int32_t i, double *r)
   { double *Ai = &(A[i*n]);
-    int j;
+    int32_t j;
     for (j = 0; j < n; j++) { Ai[j] = r[j]; }
   }
 
-void rmxn_get_col(int m, int n, double *A, int j, double *r)
+void rmxn_get_col(int32_t m, int32_t n, double *A, int32_t j, double *r)
   { double *Aij = &(A[j]);
-    int i;
+    int32_t i;
     for (i = 0; i < m; i++) { r[i] = (*Aij); Aij += n; }
   }
 
-void rmxn_set_col(int m, int n, double *A, int j, double *r)
+void rmxn_set_col(int32_t m, int32_t n, double *A, int32_t j, double *r)
   { double *Aij = &(A[j]);
-    int i;
+    int32_t i;
     for (i = 0; i < m; i++) { (*Aij) = r[i]; Aij += n; }
   }
 
-void rmxn_ident(int m, int n, double *M)
-  { int i, j, t;
+void rmxn_ident(int32_t m, int32_t n, double *M)
+  { int32_t i, j, t;
     t = 0;
     for (i = 0; i < m; i++)
       for (j = 0; j < n; j++)
         { M[t] = (i == j ? 1.0 : 0.0); t++; }
   }
 
-void rmxn_map_row (int m, int n, double *x, double *A, double *r)
-  { int i, j;
+void rmxn_map_row (int32_t m, int32_t n, double *x, double *A, double *r)
+  { int32_t i, j;
     for (j = 0; j < n; j++)
       { double sum = 0.0, corr = 0.0; 
-        int t = j;
+        int32_t t = j;
         for (i = 0; i < m; i++) 
           { double term = x[i] * A[t];
             /* Kahan's summation: */
@@ -78,8 +79,8 @@ void rmxn_map_row (int m, int n, double *x, double *A, double *r)
       }
   }
 
-void rmxn_map_col (int m, int n, double *A, double *x, double *r)
-  { int i, j, t = 0;
+void rmxn_map_col (int32_t m, int32_t n, double *A, double *x, double *r)
+  { int32_t i, j, t = 0;
     for (i = 0; i < m; i++)
       { double sum = 0.0, corr = 0.0; 
         for (j = 0; j < n; j++)
@@ -95,12 +96,12 @@ void rmxn_map_col (int m, int n, double *A, double *x, double *r)
       }
   }
 
-void rmxn_mul (int m, int p, int n, double *A, double *B, double *M)
-  { int i, j, k, r = 0, v = 0;
+void rmxn_mul (int32_t m, int32_t p, int32_t n, double *A, double *B, double *M)
+  { int32_t i, j, k, r = 0, v = 0;
     for (i = 0; i < m; i++)
       { for (j = 0; j < n; j++)
           { double sum = 0.0, corr = 0.0;
-            int t = j;
+            int32_t t = j;
             for (k = 0; k < p; k++)
               { double term = A[r+k]*B[t];
                 /* Kahan's summation: */
@@ -116,12 +117,12 @@ void rmxn_mul (int m, int p, int n, double *A, double *B, double *M)
       }
   }
 
-void rmxn_mul_tr (int m, int n, int p, double *A, double *B, double *M)
-  { int i, j, k;
-    int v = 0;
-    int r = 0;
+void rmxn_mul_tr (int32_t m, int32_t n, int32_t p, double *A, double *B, double *M)
+  { int32_t i, j, k;
+    int32_t v = 0;
+    int32_t r = 0;
     for (i = 0; i < m; i++)
-      { int s = 0;
+      { int32_t s = 0;
         for (j = 0; j < n; j++)
           { double sum = 0.0, corr = 0.0;
             for (k = 0; k < p; k++) 
@@ -139,13 +140,13 @@ void rmxn_mul_tr (int m, int n, int p, double *A, double *B, double *M)
       }
   }
 
-void rmxn_tr_mul (int p, int m, int n, double *A, double *B, double *M)
-  { int i, j, k;
-    int v = 0;
+void rmxn_tr_mul (int32_t p, int32_t m, int32_t n, double *A, double *B, double *M)
+  { int32_t i, j, k;
+    int32_t v = 0;
     for (i = 0; i < m; i++)
       { for (j = 0; j < n; j++)
           { double sum = 0.0, corr = 0.0;
-            int r = i, s = j;
+            int32_t r = i, s = j;
             for (k = 0; k < p; k++) 
               { double term = A[r]*B[s];
                 /* Kahan's summation: */
@@ -160,8 +161,8 @@ void rmxn_tr_mul (int p, int m, int n, double *A, double *B, double *M)
       }
   }
 
-double rmxn_det (int n, double *A)
-  { int n2 = n*n, t;
+double rmxn_det (int32_t n, double *A)
+  { int32_t n2 = n*n, t;
     double *C = (double *)notnull(malloc(n2*sizeof(double)), "no mem for C");
     double det = 1.0;
     for (t = 0; t < n2; t++) { C[t] = A[t]; }
@@ -171,11 +172,11 @@ double rmxn_det (int n, double *A)
     return det;
   }
 
-double rmxn_inv (int n, double *A, double *M)
-  { int i, j;
-    int nC = 2*n;
-    int nA = n;
-    int nM = n;
+double rmxn_inv (int32_t n, double *A, double *M)
+  { int32_t i, j;
+    int32_t nC = 2*n;
+    int32_t nA = n;
+    int32_t nM = n;
     double *C = (double *)notnull(malloc(n*nC*sizeof(double)), "no mem for C");
     /* Copy {A} into the left half of {C}, fill the right half with the identity: */
     for (i = 0; i < n; i++) 
@@ -198,17 +199,17 @@ double rmxn_inv (int n, double *A, double *M)
     return det;
   }
   
-double rmxn_inv_full (int n, double *A, double *M)
+double rmxn_inv_full (int32_t n, double *A, double *M)
   { 
-    int i, j, t;
+    int32_t i, j, t;
     /* Copy {A} into {M}: */
     t = 0;
     for (i = 0; i < n; i++) { for (j = 0; j < n; j++) { M[t] = A[t]; t++; } }
  
     double det = 1.0; /* Accumulates the determinant. */
  
-    int prow[n], pcol[n]; 
-    int k = 0;
+    int32_t prow[n], pcol[n]; 
+    int32_t k = 0;
     
     while (k < n)
       { /* Process the remaining {n-k}x{n-k} submatrix starting at {A[k][k]}. */
@@ -305,33 +306,33 @@ double rmxn_inv_full (int n, double *A, double *M)
   }
 
 
-void rmxn_scale(int m, int n, double s, double *A, double *M) 
-  { int i, j, k = 0;
+void rmxn_scale(int32_t m, int32_t n, double s, double *A, double *M) 
+  { int32_t i, j, k = 0;
     for (i = 0; i < m; i++)
       { for (j = 0; j < n; j++)
           { M[k] = s*A[k]; k++; }
       }
   }
 
-void rmxn_mix(int m, int n, double s, double *A, double t, double *B, double *M)
-  { int i, j, k = 0;
+void rmxn_mix(int32_t m, int32_t n, double s, double *A, double t, double *B, double *M)
+  { int32_t i, j, k = 0;
     for (i = 0; i < m; i++)
       { for (j = 0; j < n; j++)
           { M[k] = s*A[k] + t*B[k]; k++; }
       }
   }
 
-void rmxn_rel_diff(int m, int n, double *A, double *B, double *M)
-  { int i, j, k = 0;
+void rmxn_rel_diff(int32_t m, int32_t n, double *A, double *B, double *M)
+  { int32_t i, j, k = 0;
     for (i = 0; i < m; i++)
       { for (j = 0; j < n; j++)
           { M[k] = rel_diff(A[k], B[k]); k++; }
       }
   }
 
-double rmxn_norm_sqr(int m, int n, double *A)
+double rmxn_norm_sqr(int32_t m, int32_t n, double *A)
   { double s = 0;
-    int i, j, k = 0;
+    int32_t i, j, k = 0;
     for (i = 0; i < m; i++)
       { for (j = 0; j < n; j++)
           { double Aij = A[k]; k++; 
@@ -341,9 +342,9 @@ double rmxn_norm_sqr(int m, int n, double *A)
     return s;
   }
 
-double rmxn_norm(int m, int n, double *A)
+double rmxn_norm(int32_t m, int32_t n, double *A)
   { double s = 0;
-    int i, j, k = 0;
+    int32_t i, j, k = 0;
     for (i = 0; i < m; i++)
       { for (j = 0; j < n; j++)
           { double Aij = A[k]; k++; 
@@ -353,11 +354,11 @@ double rmxn_norm(int m, int n, double *A)
     return sqrt(s);
   }
 
-double rmxn_mod_norm_sqr(int n, double *A)
+double rmxn_mod_norm_sqr(int32_t n, double *A)
   {
     double s = 0.0;
-    int i, j;
-    int k = 0;
+    int32_t i, j;
+    int32_t k = 0;
     for (i = 0; i < n; i++)
       for (j = 0; j < n; j++)
         { double Aij = A[k]; k++; 
@@ -367,8 +368,8 @@ double rmxn_mod_norm_sqr(int n, double *A)
     return s; 
   }
 
-double rmxn_max_abs_elem(int m, int n, double *A)
-  { int i, j;
+double rmxn_max_abs_elem(int32_t m, int32_t n, double *A)
+  { int32_t i, j;
     double emax = 0.0;
     for (i = 0; i < m; i++)
       { for (j = 0; j < n; j++)
@@ -379,8 +380,8 @@ double rmxn_max_abs_elem(int m, int n, double *A)
     return emax;
   }
 
-void rmxn_LT_inv_map_row(int n, double *y, double *L, double *r)
-  { int i, j;
+void rmxn_LT_inv_map_row(int32_t n, double *y, double *L, double *r)
+  { int32_t i, j;
     for (j = n-1; j >= 0; j--)
       { double sum = y[j], corr = 0.0;
         for (i = j+1; i < n; i++)
@@ -395,8 +396,8 @@ void rmxn_LT_inv_map_row(int n, double *y, double *L, double *r)
       }
   }
 
-void rmxn_LT_inv_map_col(int m, double *L, double *y, double *r)
-  { int i, j;
+void rmxn_LT_inv_map_col(int32_t m, double *L, double *y, double *r)
+  { int32_t i, j;
     for (i = 0; i < m; i++)
       { double sum = y[i], corr = 0.0;
         for (j = 0; j < i; j++)
@@ -411,8 +412,8 @@ void rmxn_LT_inv_map_col(int m, double *L, double *y, double *r)
       }
   }
 
-void rmxn_LT_pos_div(int m, int n, double *A, double *L, double *M)
-  { int i, j, k;
+void rmxn_LT_pos_div(int32_t m, int32_t n, double *A, double *L, double *M)
+  { int32_t i, j, k;
     for (k = 0; k < m; k++)
       { for (j = n-1; j >= 0; j--)
           { double sum = A[n*k + j], corr = 0.0;
@@ -429,8 +430,8 @@ void rmxn_LT_pos_div(int m, int n, double *A, double *L, double *M)
       }
   }
 
-void rmxn_LT_pre_div(int m, int n, double *L, double *A, double *M)
-  { int i, j, k;
+void rmxn_LT_pre_div(int32_t m, int32_t n, double *L, double *A, double *M)
+  { int32_t i, j, k;
     for (k = 0; k < n; k++)
       { for (i = 0; i < m; i++)
           { double sum = A[n*i + k], corr = 0.0;
@@ -447,7 +448,7 @@ void rmxn_LT_pre_div(int m, int n, double *L, double *A, double *M)
       }
   }
 
-void rmxn_cholesky(int n, double *A, double *L)
+void rmxn_cholesky(int32_t n, double *A, double *L)
   { 
     /* Andre-Louis Cholesky (spelled with a 'y'), born in France in
       1875, was a geodesist in the French military. He developed his
@@ -463,7 +464,7 @@ void rmxn_cholesky(int n, double *A, double *L)
       with a "tsh" sound --- which in French would be spelled "Tch",
       as in "Tchaikovski" or "Tchekov". */
   
-    int i, j, k;
+    int32_t i, j, k;
 
     for (i = 0; i < n; i++)
       { double Lii;
@@ -503,17 +504,17 @@ void rmxn_cholesky(int n, double *A, double *L)
       }
   }
 
-void rmxn_print (FILE *f, int m, int n, double *A)
+void rmxn_print (FILE *f, int32_t m, int32_t n, double *A)
   { rmxn_gen_print(f, m, n, A, NULL, NULL, NULL, NULL, NULL, NULL, NULL); }
 
 void rmxn_gen_print
-  ( FILE *f, int m, int n, double *A,
+  ( FILE *f, int32_t m, int32_t n, double *A,
     char *fmt, 
     char *olp, char *osep, char *orp,
     char *ilp, char *isep, char *irp
   )
   {
-    int i,j, t;
+    int32_t i,j, t;
     if (olp == NULL) { olp = "(\n"; }
     if (osep == NULL) { osep = "\n"; }
     if (orp == NULL) { orp = "\n)"; }
@@ -538,7 +539,7 @@ void rmxn_gen_print
   }  
 
 
-double *rmxn_alloc(int m, int n)
+double *rmxn_alloc(int32_t m, int32_t n)
   { void *p = malloc(m*n*sizeof(double));
     affirm(p != NULL, "no memory for rmxn_t");
     return (double *)p;

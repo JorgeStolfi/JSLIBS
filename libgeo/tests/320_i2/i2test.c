@@ -1,8 +1,9 @@
 /* i2test --- test program for i2.h, i2x2.h  */
-/* Last edited on 2014-01-12 15:27:53 by stolfilocal */
+/* Last edited on 2021-06-09 19:53:57 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -18,16 +19,16 @@
 
 /* Internal prototypes */
 
-int main (int argc, char **argv);
-void test_i2(int verbose);
-/* void test_i2x2(int verbose); */
+int32_t main (int32_t argc, char **argv);
+void test_i2(int32_t verbose);
+/* void test_i2x2(int32_t verbose); */
 /* void throw_matrix(i2x2_t *m); */
 /* void throw_diag_matrix(i2x2_t *m); */
 /* void throw_symmetric_matrix(i2x2_t *m); */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   {
-    int i;
+    int32_t i;
     srand(1993);
     srandom(1993);
 
@@ -38,7 +39,7 @@ int main (int argc, char **argv)
     return (0);
   }
 
-void test_i2(int verbose)
+void test_i2(int32_t verbose)
   {
     i2_t a, b, d, e;
     int32_t t32;
@@ -46,7 +47,7 @@ void test_i2(int verbose)
     int64_t r64, s64;
     int64_t rr64, ss64;
     int32_t trad = 4634;
-    int i, j, k;
+    int32_t i, j, k;
 
     if (verbose)
       { fprintf(stderr,
@@ -147,10 +148,10 @@ void test_i2(int verbose)
     if (verbose) { fprintf(stderr, "--- i2_cross ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
-      { int i0 = (i + 0) % N;
-        int i1 = (i + 1) % N;
-        int sign = ((i % 2) == 0 ? +1 : -1);
-        int p;
+      { int32_t i0 = (i + 0) % N;
+        int32_t i1 = (i + 1) % N;
+        int32_t sign = ((i % 2) == 0 ? +1 : -1);
+        int32_t p;
         i2_axis(i0, &a);
         i2_cross(&a, &d);
         i2_axis(i1, &e);
@@ -168,9 +169,9 @@ void test_i2(int verbose)
     if (verbose) { fprintf(stderr, "--- i2_det ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
-      { int i0 = (i + 0) % N;
-        int i1 = (i + 1) % N;
-        int sign = ((i % 2) == 0 ? +1 : -1);
+      { int32_t i0 = (i + 0) % N;
+        int32_t i1 = (i + 1) % N;
+        int32_t sign = ((i % 2) == 0 ? +1 : -1);
         i2_axis(i0, &a);
         i2_axis(i1, &b);
         r64 = i2_det(&a, &b);
@@ -198,14 +199,14 @@ void test_i2(int verbose)
       }
   }
 
-//  void test_i2x2(int verbose)
+//  void test_i2x2(int32_t verbose)
 //    {
 //      i2x2_t A, B, C;
 //      i2_t a, b, c, bb, cc;
 //      double r, s, t;
 //      double rr, ss, tt;
 //      double mag;
-//      int i, j, k;
+//      int32_t i, j, k;
 //  
 //      if (verbose) { fprintf(stderr, "--- Size and allocation ---\n"); }
 //      if (verbose)
@@ -317,7 +318,7 @@ void test_i2(int verbose)
 //      if (verbose) { fprintf(stderr, "--- i2x2_det ---\n"); }
 //      throw_matrix(&A);
 //      for (i = 0; i < N; i++)
-//        { int k = (i + 1) % N;
+//        { int32_t k = (i + 1) % N;
 //          for (j = 0; j < N; j++)
 //            { /* Check for linearity */
 //              r = drandom();
@@ -460,7 +461,7 @@ void test_i2(int verbose)
 //  
 //  void throw_matrix(i2x2_t *m)
 //    {
-//      int i, j;
+//      int32_t i, j;
 //      i2_t a;
 //      for (i = 0; i < N; i++)
 //        { i2_throw_cube(trad, &a);
@@ -470,7 +471,7 @@ void test_i2(int verbose)
 //  
 //  void throw_diag_matrix(i2x2_t *m)
 //    {
-//      int i, j;
+//      int32_t i, j;
 //      for (i = 0; i < N; i++)
 //        { for (j = 0; j < N; j++)
 //            { m->c[i][j] = (i == j ? 2*drandom() - 1.0 : 0.0); }
@@ -479,7 +480,7 @@ void test_i2(int verbose)
 //  
 //  void throw_symmetric_matrix(i2x2_t *m)
 //    {
-//      int i, j;
+//      int32_t i, j;
 //      for (i = 0; i < N; i++)
 //        { /* Note: {j} runs to {i} not {N-1}! */
 //          for (j = 0; j <= i; j++)

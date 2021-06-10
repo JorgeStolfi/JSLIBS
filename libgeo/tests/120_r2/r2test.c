@@ -1,35 +1,37 @@
 /* r2test --- test program for r2.h, r2x2.h  */
-/* Last edited on 2020-10-14 15:19:17 by jstolfi */
+/* Last edited on 2021-06-09 20:37:51 by jstolfi */
 
+#define _GNU_SOURCE
+#include <math.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+#include <affirm.h>
+#include <jsrandom.h>
+#include <flt.h>
 #include <r2.h>
 #include <r2_extra.h>
 #include <r2x2.h>
 #include <rn_test_tools.h>
 
-#include <affirm.h>
-#include <jsrandom.h>
-#include <flt.h>
-
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #define N 2
 #define NO NULL
 
 /* Internal prototypes */
 
-int main (int argc, char **argv);
-void test_r2(int verbose);
-void test_r2maps(int verbose);
-void test_r2x2(int verbose);
+int32_t main (int32_t argc, char **argv);
+void test_r2(int32_t verbose);
+void test_r2maps(int32_t verbose);
+void test_r2x2(int32_t verbose);
 void throw_matrix(r2x2_t *m);
 void throw_diag_matrix(r2x2_t *m);
 void throw_symmetric_matrix(r2x2_t *m);
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   {
-    int i;
+    int32_t i;
     srand(1993);
     srandom(1993);
 
@@ -41,13 +43,13 @@ int main (int argc, char **argv)
     return (0);
   }
 
-void test_r2(int verbose)
+void test_r2(int32_t verbose)
   {
     r2_t a, b, c, d, e, para, perp;
     double r, s, t;
     double rr, ss, tt;
     double mag;
-    int i, j, k;
+    int32_t i, j, k;
 
     if (verbose)
       { fprintf(stderr,
@@ -263,10 +265,10 @@ void test_r2(int verbose)
     if (verbose) { fprintf(stderr, "--- r2_cross ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
-      { int i0 = (i + 0) % N;
-        int i1 = (i + 1) % N;
+      { int32_t i0 = (i + 0) % N;
+        int32_t i1 = (i + 1) % N;
         double sign = ((i % 2) == 0 ? 1.0 : -1.0);
-        int p;
+        int32_t p;
         r2_axis(i0, &a);
         r2_cross(&a, &d);
         r2_axis(i1, &e);
@@ -286,8 +288,8 @@ void test_r2(int verbose)
     if (verbose) { fprintf(stderr, "--- r2_det ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
-      { int i0 = (i + 0) % N;
-        int i1 = (i + 1) % N;
+      { int32_t i0 = (i + 0) % N;
+        int32_t i1 = (i + 1) % N;
         double sign = ((i % 2) == 0 ? 1.0 : -1.0);
         r2_axis(i0, &a);
         r2_axis(i1, &b);
@@ -338,11 +340,11 @@ void test_r2(int verbose)
       }
   }
 
-void test_r2maps(int verbose)
+void test_r2maps(int32_t verbose)
   {
     r2_t a, b, c;
     double r, s;
-    int i, j, k, ii, jj;
+    int32_t i, j, k, ii, jj;
     bool_t debug = verbose;
 
     /* ---------------------------------------------------------------------- */
@@ -371,8 +373,8 @@ void test_r2maps(int verbose)
             
     /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r2_map_twirl ---\n"); }
-    int NX = 640;
-    int NY = 480;
+    int32_t NX = 640;
+    int32_t NY = 480;
     r2_t ctr = (r2_t){{ 0.5*NX, 0.5*NY }};
     double rad = 0.25*fmin(NX,NY);
     double ang = 0.5*M_PI*(2*drandom()-1);
@@ -447,14 +449,14 @@ void test_r2maps(int verbose)
       }
   }
 
-void test_r2x2(int verbose)
+void test_r2x2(int32_t verbose)
   {
     r2x2_t A, B, C;
     r2_t a, b, c, bb, cc;
     double r, s, t;
     double rr, ss, tt;
     double mag;
-    int i, j, k;
+    int32_t i, j, k;
 
     /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- Size and allocation ---\n"); }
@@ -495,7 +497,7 @@ void test_r2x2(int verbose)
     /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r2x2_get_row, r2x2_set_row, r2x2_get_col, r2x2_set_col ---\n"); }
     throw_matrix(&A);
-    int dir; /* 0 for row, 1 for col. */
+    int32_t dir; /* 0 for row, 1 for col. */
     for (dir = 0; dir < 2; dir++)
       { for (i = 0; i < N; i++)
           { /* Check {r2x2_get_row,r2x2_get_col}: */
@@ -598,7 +600,7 @@ void test_r2x2(int verbose)
     if (verbose) { fprintf(stderr, "--- r2x2_det ---\n"); }
     throw_matrix(&A);
     for (i = 0; i < N; i++)
-      { int k = (i + 1) % N;
+      { int32_t k = (i + 1) % N;
         for (j = 0; j < N; j++)
           { /* Check for linearity */
             r = drandom();
@@ -760,7 +762,7 @@ void test_r2x2(int verbose)
 
 void throw_matrix(r2x2_t *m)
   {
-    int i, j;
+    int32_t i, j;
     r2_t a;
     for (i = 0; i < N; i++)
       { r2_throw_cube(&a);
@@ -770,7 +772,7 @@ void throw_matrix(r2x2_t *m)
 
 void throw_diag_matrix(r2x2_t *m)
   {
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < N; i++)
       { for (j = 0; j < N; j++)
           { m->c[i][j] = (i == j ? 2*drandom() - 1.0 : 0.0); }
@@ -779,7 +781,7 @@ void throw_diag_matrix(r2x2_t *m)
 
 void throw_symmetric_matrix(r2x2_t *m)
   {
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < N; i++)
       { /* Note: {j} runs to {i} not {N-1}! */
         for (j = 0; j <= i; j++)

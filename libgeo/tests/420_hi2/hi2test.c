@@ -1,8 +1,9 @@
 /* hi2test --- test program for hi2.h  */
-/* Last edited on 2018-03-04 22:58:49 by stolfilocal */
+/* Last edited on 2021-06-09 19:53:22 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -25,56 +26,56 @@
 #define NC 2
   /* Number of Cartesian coordinates in a point. */
  
-void do_check_eq(int64_t x, int64_t y, char *msg, char *file, int lnum, const char *func);
+void do_check_eq(int64_t x, int64_t y, char *msg, char *file, int32_t lnum, const char *func);
   /* If {x} and {y} differ, prints them, prints {msg}, and stops. */
 
 #define check_eq(x,y,msg) \
   do_check_eq((x), (y), (msg), __FILE__, __LINE__, __FUNCTION__)
  
-void do_check_i2_coll(i2_t *u, i2_t *v, char *msg, char *file, int lnum, const char *func);
+void do_check_i2_coll(i2_t *u, i2_t *v, char *msg, char *file, int32_t lnum, const char *func);
   /* If {u} and {v} are not collinear with same direction (or both null),
     prints them, prints {msg} and stops. */
  
 #define check_i2_coll(u,v,msg) \
   do_check_i2_coll((u), (v), (msg), __FILE__, __LINE__, __FUNCTION__)
  
-void do_check_i3_coll(i3_t *u, i3_t *v, char *msg, char *file, int lnum, const char *func);
+void do_check_i3_coll(i3_t *u, i3_t *v, char *msg, char *file, int32_t lnum, const char *func);
   /* If {u} and {v} are not collinear with same direction (or both null),
     prints them, prints {msg} and stops. */
  
 #define check_i3_coll(u,v,msg) \
   do_check_i3_coll((u), (v), (msg), __FILE__, __LINE__, __FUNCTION__)
  
-void do_check_eq(int64_t x, int64_t y, char *msg, char *file, int lnum, const char *func)
+void do_check_eq(int64_t x, int64_t y, char *msg, char *file, int32_t lnum, const char *func)
   { if (x != y)
       { fprintf(stderr, (" ** %+" int64_d_fmt " %+" int64_d_fmt " differ\n"), x, y);
         programerror(msg, file, lnum, func);
       }
   }
 
-void do_check_i2_coll(i2_t *u, i2_t *v, char *msg, char *file, int lnum, const char *func)
+void do_check_i2_coll(i2_t *u, i2_t *v, char *msg, char *file, int32_t lnum, const char *func)
   {
     int32_t ug = (int32_t)gcd(abs(u->c[0]), abs(u->c[1])); 
     int32_t vg = (int32_t)gcd(abs(v->c[0]), abs(v->c[1])); 
     demand((ug == 0) == (vg == 0), msg);
-    int i;
+    int32_t i;
     for (i = 0; i < NC; i++) { do_check_eq(u->c[i]/ug, v->c[i]/vg, msg, file, lnum, func); }
   }
 
-void do_check_i3_coll(i3_t *u, i3_t *v, char *msg, char *file, int lnum, const char *func)
+void do_check_i3_coll(i3_t *u, i3_t *v, char *msg, char *file, int32_t lnum, const char *func)
   {
     int32_t ug = (int32_t)gcd(gcd(abs(u->c[0]), abs(u->c[1])), abs(u->c[2])); 
     int32_t vg = (int32_t)gcd(gcd(abs(v->c[0]), abs(v->c[1])), abs(u->c[2]));  
     demand((ug == 0) == (vg == 0), msg);
-    int i;
+    int32_t i;
     for (i = 0; i < NH; i++) { do_check_eq(u->c[i]/ug, v->c[i]/vg, msg, file, lnum, func); }
   }
 
 /* Internal prototypes */
 
-int main (int argc, char **argv);
-void test_hi2(int verbose);
-/* void test_hi2_pmap(int verbose); */
+int32_t main (int32_t argc, char **argv);
+void test_hi2(int32_t verbose);
+/* void test_hi2_pmap(int32_t verbose); */
 /* void throw_pmap(hi2_pmap_t *m); */
 
 // void check_pmap
@@ -93,9 +94,9 @@ void test_hi2(int verbose);
 //     silently if some attempt produced a match (modulo rounding errors);
 //     aborts with error {msg} if all attempts failed. */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   {
-    int i;
+    int32_t i;
     srand(1993);
     srandom(1993);
 
@@ -106,13 +107,13 @@ int main (int argc, char **argv)
     return (0);
   }
 
-void test_hi2(int verbose)
+void test_hi2(int32_t verbose)
   {
     hi2_point_t p, q, r;
     hi2_line_t L, M, N;
     int32_t trad = 4615;
     i2_t pc;
-    int i;
+    int32_t i;
 
     if (verbose)
       { fprintf(stderr,
@@ -248,7 +249,7 @@ void test_hi2(int verbose)
       
       if (verbose)
         { /* Plot result: */
-          int iw, ix, iy;
+          int32_t iw, ix, iy;
           iw = 10;
           for (iy = -30; iy <= 30; iy++)
             { fprintf(stderr, "%4d/%-4d ", iy, iw);
@@ -303,11 +304,11 @@ void test_hi2(int verbose)
     }
   }
 
-// void test_hi2_pmap(int verbose)
+// void test_hi2_pmap(int32_t verbose)
 //   {
 //     hi2_pmap_t A/* , B, C */;
 //     hi2_point_t p, q, r, u;
-//     /* int i, j, k; */
+//     /* int32_t i, j, k; */
 // 
 //     /* Size: */
 //     if (verbose)
@@ -367,7 +368,7 @@ void test_hi2(int verbose)
 //     // if (verbose) { fprintf(stderr, "--- i2x2_det ---\n"); }
 //     // throw_matrix(&A);
 //     // for (i = 0; i < N; i++)
-//     //   { int k = (i + 1) % N;
+//     //   { int32_t k = (i + 1) % N;
 //     //     for (j = 0; j < N; j++)
 //     //       { /* Check for linearity */
 //     //         r = drandom();
@@ -426,7 +427,7 @@ void test_hi2(int verbose)
 // 
 // void throw_pmap(hi2_pmap_t *m)
 //   {
-//     int i, j;
+//     int32_t i, j;
 //     i3_t a;
 //     for (i = 0; i < NH; i++)
 //       { i3_throw_cube(trad, &a);
@@ -455,7 +456,7 @@ void test_hi2(int verbose)
 //     else
 //       { /* Try flipping the signs of {w,x,y} in all combinations: */
 //         double dmin = +INF;
-//         int sw, sx, sy;
+//         int32_t sw, sx, sy;
 //         for (sy = -1; sy <= +1; sy += 2)
 //           for (sx = -1; sx <= +1; sx += 2)
 //             for (sw = -1; sw <= +1; sw += 2)

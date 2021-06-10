@@ -1,5 +1,5 @@
 /* hr2test --- test program for hr2.h  */
-/* Last edited on 2020-10-12 18:13:19 by jstolfi */
+/* Last edited on 2021-06-09 19:54:25 by jstolfi */
 
 #include <hr2.h>
 
@@ -15,6 +15,7 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #define NH 3
@@ -23,13 +24,13 @@
 #define NC 2
   /* Number of Cartesian coordinates in a point. */
  
-void do_check_eq(double x, double y, char *msg, char *file, int lnum, const char *func);
+void do_check_eq(double x, double y, char *msg, char *file, int32_t lnum, const char *func);
   /* If {x} and {y} differ, prints them, prints {msg}, and stops. */
 
 #define check_eq(x,y,msg) \
   do_check_eq((x), (y), (msg), __FILE__, __LINE__, __FUNCTION__)
   
-void do_check_eps(double x, double y, double eps, char *msg, char *file, int lnum, const char *func);
+void do_check_eps(double x, double y, double eps, char *msg, char *file, int32_t lnum, const char *func);
   /* If {x} and {y} differ by more than {eps}, prints them, prints {msg}, and stops. */
 
 #define check_eps(x, y, eps, msg) \
@@ -42,7 +43,7 @@ void do_check_hr2_eps
     double eps, 
     char *msg, 
     char *file, 
-    int lnum,
+    int32_t lnum,
     const char *func
   );
   /* If points {x} and {y} differ by more than {eps} 
@@ -52,14 +53,14 @@ void do_check_hr2_eps
 #define check_hr2_eps(a, x, y, eps, msg)                                 \
   do_check_hr2_eps((a), (x), (y), (eps), (msg), __FILE__, __LINE__, __FUNCTION__)
 
-void do_check_eq(double x, double y, char *msg, char *file, int lnum, const char *func)
+void do_check_eq(double x, double y, char *msg, char *file, int32_t lnum, const char *func)
   { if (x != y)
       { fprintf(stderr, " ** %+20.16e %+20.16e differ\n", x, y);
         programerror(msg, file, lnum, func);
       }
   }
 
-void do_check_eps(double x, double y, double eps, char *msg, char *file, int lnum, const char *func)
+void do_check_eps(double x, double y, double eps, char *msg, char *file, int32_t lnum, const char *func)
   { double diff = fabs(x - y);
     if (diff > eps)
       { fprintf(stderr, " ** %+20.16e %+20.16e", x, y);
@@ -75,7 +76,7 @@ void do_check_hr2_eps
     double eps, 
     char *msg, 
     char *file, 
-    int lnum,
+    int32_t lnum,
     const char *func
   )
   {
@@ -100,9 +101,9 @@ void do_check_hr2_eps
 
 /* Internal prototypes */
 
-int main (int argc, char **argv);
-void test_hr2(int verbose);
-void test_hr2_pmap(int verbose);
+int32_t main (int32_t argc, char **argv);
+void test_hr2(int32_t verbose);
+void test_hr2_pmap(int32_t verbose);
 void throw_pmap(hr2_pmap_t *m);
 double frac (double x);
 
@@ -122,9 +123,9 @@ void check_pmap
     silently if some attempt produced a match (modulo rounding errors);
     aborts with error {msg} if all attempts failed. */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   {
-    int i;
+    int32_t i;
     srand(1993);
     srandom(1993);
 
@@ -136,17 +137,17 @@ int main (int argc, char **argv)
   }
 
 double frac (double x)
-  { int i = (int)x;
+  { int32_t i = (int32_t)x;
     double f = x - (double)i;
     return (f);
   }
 
-void test_hr2(int verbose)
+void test_hr2(int32_t verbose)
   {
     hr2_point_t p, q, r;
     hr2_line_t L, M, N;
     r2_t pc;
-    int i;
+    int32_t i;
 
     if (verbose)
       { fprintf(stderr,
@@ -205,7 +206,7 @@ void test_hr2(int verbose)
       check_eps(dob, dex, 1.0e-8, "hr2_pt_pt_diff error(3)");
       /* Check invariance under rotations: */
       for (i = 0; i < NH; i++)
-        { int j = (i + 1) % NH; /* Another axis. */
+        { int32_t j = (i + 1) % NH; /* Another axis. */
           /* Rotate {p,q} by a random angle in {R^3} parallel to plane {i,j}: */
           double ang = 2*M_PI*drandom();
           double ca = cos(ang), sa = sin(ang);
@@ -308,11 +309,11 @@ void test_hr2(int verbose)
     //    }
   }
 
-void test_hr2_pmap(int verbose)
+void test_hr2_pmap(int32_t verbose)
   {
     hr2_pmap_t A/* , B, C */;
     hr2_point_t p, q, r, u;
-    /* int i, j, k; */
+    /* int32_t i, j, k; */
 
     /* Size: */
     if (verbose)
@@ -392,7 +393,7 @@ void test_hr2_pmap(int verbose)
     // if (verbose) { fprintf(stderr, "--- r2x2_det ---\n"); }
     // throw_matrix(&A);
     // for (i = 0; i < N; i++)
-    //   { int k = (i + 1) % N;
+    //   { int32_t k = (i + 1) % N;
     //     for (j = 0; j < N; j++)
     //       { /* Check for linearity */
     //         r = drandom();
@@ -463,7 +464,7 @@ void test_hr2_pmap(int verbose)
 
 void throw_pmap(hr2_pmap_t *m)
   {
-    int i, j;
+    int32_t i, j;
     r3_t a;
     for (i = 0; i < NH; i++)
       { r3_throw_cube(&a);
@@ -492,7 +493,7 @@ void check_pmap
     else
       { /* Try flipping the signs of {w,x,y} in all combinations: */
         double dmin = +INF;
-        int sw, sx, sy;
+        int32_t sw, sx, sy;
         for (sy = -1; sy <= +1; sy += 2)
           for (sx = -1; sx <= +1; sx += 2)
             for (sw = -1; sw <= +1; sw += 2)

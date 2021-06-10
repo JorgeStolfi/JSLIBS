@@ -1,11 +1,12 @@
 /* r6.h --- operations on points and vectors of R^6 */
-/* Last edited on 2014-03-24 23:33:39 by stolfilocal */
+/* Last edited on 2021-06-09 20:44:20 by jstolfi */
 
 #ifndef r6_H
 #define r6_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 
 #include <vec.h>
@@ -20,7 +21,7 @@ void r6_zero (r6_t *r);
 void r6_all (double x, r6_t *r);
   /* Sets all coordinates of {r} to the value {x}. */
   
-void r6_axis (int i, r6_t *r);
+void r6_axis (int32_t i, r6_t *r);
   /* Sets {r} to the {i}th vector of the canonical basis. */
 
 void r6_add (r6_t *a, r6_t *b, r6_t *r);
@@ -96,10 +97,10 @@ double r6_decomp (r6_t *a, r6_t *u, r6_t *para, r6_t *perp);
     Namely, {para = c*u} and {perp = a - c*u}, where 
     {c = r6_dot(a,u)/r6_dot(u,u)}. Also returns {c}. */
 
-int r6_is_finite(r6_t *p);
+int32_t r6_is_finite(r6_t *p);
   /* True iff all coordinates of {p} are finite. */
 
-int r6_eq(r6_t *p, r6_t *q);
+bool_t r6_eq(r6_t *p, r6_t *q);
   /* True iff points {p} and {q} are identical. */
 
 void r6_throw_cube (r6_t *r);
@@ -125,7 +126,18 @@ void r6_gen_print (FILE *f, r6_t *a, char *fmt, char *lp, char *sep, char *rp);
     between, and after all the coordinates of {a}.  When NULL, they default 
     to "%16.8e", "(", " ", and ")", respectively. */
 
+/* DERIVED TYPES */
+
 vec_typedef(r6_vec_t,r6_vec,r6_t);
   /* An {r6_vec_t} is a vector of {r6_t}s. */
+
+typedef bool_t r6_pred_t(r6_t *a);
+  /* Type of a function that returns a {bool_t} value from an {r6_t} value. */
+
+typedef double r6_double_func_t(r6_t *a);
+  /* Type of a function that returns a {double} value from an {r6_t} value. */
+
+typedef r6_t r6_map_t(r6_t *a);
+  /* Type of a function that returns a {double} value from an {r6_t} value. */
 
 #endif

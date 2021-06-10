@@ -1,11 +1,12 @@
 /* r6x6.h --- 4x4 matrices and operations on them */
-/* Last edited on 2016-04-03 12:49:55 by stolfilocal */
+/* Last edited on 2021-06-09 19:55:26 by jstolfi */
 
 #ifndef r6x6_H
 #define r6x6_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <r6.h>
 
 typedef struct { double c[6][6]; } r6x6_t;
@@ -21,12 +22,12 @@ void r6x6_ident(r6x6_t *M);
 void r6x6_transp (r6x6_t *A, r6x6_t *M);
   /* Sets {M} to the transpose {A^t} of matrix {A} */
 
-void r6x6_get_row(r6x6_t *A, int i, r6_t *x);
-void r6x6_set_row(r6x6_t *A, int i, r6_t *x);
+void r6x6_get_row(r6x6_t *A, int32_t i, r6_t *x);
+void r6x6_set_row(r6x6_t *A, int32_t i, r6_t *x);
   /* These two procedures copy row {i} of matrix {A} to and from vector {x}, respectively. */
 
-void r6x6_get_col(r6x6_t *A, int j, r6_t *x);
-void r6x6_set_col(r6x6_t *A, int j, r6_t *x);
+void r6x6_get_col(r6x6_t *A, int32_t j, r6_t *x);
+void r6x6_set_col(r6x6_t *A, int32_t j, r6_t *x);
   /* These two procedures copy column {j} of matrix {A} to and from vector {x}, respectively. */
 
 void r6x6_map_row (r6_t *x, r6x6_t *A, r6_t *r);

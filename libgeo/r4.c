@@ -1,8 +1,9 @@
 /* See r4.h. */
-/* Last edited on 2007-12-27 02:32:18 by stolfi */
+/* Last edited on 2021-06-09 20:43:57 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 
 #include <r4.h>
@@ -28,7 +29,7 @@ void r4_all (double x, r4_t *r)
     r->c[3] = x;
   }
 
-void r4_axis (int i, r4_t *r)
+void r4_axis (int32_t i, r4_t *r)
   { affirm((i >= 0) && (i < N), "r4_axis: bad index");
     r->c[0] = 0.0;
     r->c[1] = 0.0;
@@ -229,7 +230,7 @@ double r4_decomp (r4_t *a, r4_t *u, r4_t *para, r4_t *perp)
     return rn_decomp(N, &(a->c[0]), &(u->c[0]), paran, perpn);
   }
 
-int r4_is_finite(r4_t *p)
+int32_t r4_is_finite(r4_t *p)
   { if (fabs(p->c[0]) == INF) return FALSE;
     if (fabs(p->c[1]) == INF) return FALSE;
     if (fabs(p->c[2]) == INF) return FALSE;
@@ -237,7 +238,7 @@ int r4_is_finite(r4_t *p)
     return TRUE;
   }
 
-int r4_eq(r4_t *p, r4_t *q)
+bool_t r4_eq(r4_t *p, r4_t *q)
   { if (p->c[0] != q->c[0]) return FALSE;
     if (p->c[1] != q->c[1]) return FALSE;
     if (p->c[2] != q->c[2]) return FALSE;
@@ -246,14 +247,14 @@ int r4_eq(r4_t *p, r4_t *q)
   }
 
 void r4_throw_cube (r4_t *r)
-  { int i;
+  { int32_t i;
     for (i = 0; i < N; i++)
       { r->c[i] = 2.0 * drandom() - 1.0; }
   }
 
 void r4_throw_dir (r4_t *r)
   { /* Generate a nonzero Gaussian random vector: */
-    int i;
+    int32_t i;
     double r2;
     do
       { r4_throw_normal(r);
@@ -271,7 +272,7 @@ void r4_throw_ball (r4_t *r)
   { rn_throw_ball(N, &(r->c[0])); }
 
 void r4_throw_normal (r4_t *r)
-  { int i;
+  { int32_t i;
     for (i = 0; i < N; i++)
       { r->c[i] = dgaussrand(); }
   }

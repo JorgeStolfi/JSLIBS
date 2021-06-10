@@ -1,8 +1,9 @@
 /* See ellipse_ouv.h */
-/* Last edited on 2013-05-24 15:35:58 by stolfilocal */
+/* Last edited on 2021-06-09 19:38:42 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <values.h>
 #include <stdlib.h>
@@ -37,10 +38,10 @@ void ellipse_ouv_int_bbox
   ( r2_t *ctr,  /* Center of ellipse. */
     ellipse_ouv_t *F, 
     double mrg, /* Extra margin. */
-    int *xLoP,  /* (OUT) Min X of clip area. */
-    int *xHiP,  /* (OUT) Max X of clip area. */
-    int *yLoP,  /* (OUT) Min Y of clip area. */
-    int *yHiP   /* (OUT) Max Y of clip area. */
+    int32_t *xLoP,  /* (OUT) Min X of clip area. */
+    int32_t *xHiP,  /* (OUT) Max X of clip area. */
+    int32_t *yLoP,  /* (OUT) Min Y of clip area. */
+    int32_t *yHiP   /* (OUT) Max Y of clip area. */
   )
   {
     demand(mrg >= 0, "the extra margin {mrg} must be non-negative");
@@ -48,10 +49,10 @@ void ellipse_ouv_int_bbox
     ellipse_ouv_bbox(F, bbox);
     double cx = ctr->c[0];
     double cy = ctr->c[1];
-    (*xLoP) = (int)floor(LO(bbox[0]) + cx - mrg);
-    (*xHiP) = (int)ceil (HI(bbox[0]) + cx + mrg);
-    (*yLoP) = (int)floor(LO(bbox[1]) + cy - mrg);
-    (*yHiP) = (int)ceil (HI(bbox[1]) + cy + mrg);
+    (*xLoP) = (int32_t)floor(LO(bbox[0]) + cx - mrg);
+    (*xHiP) = (int32_t)ceil (HI(bbox[0]) + cx + mrg);
+    (*yLoP) = (int32_t)floor(LO(bbox[1]) + cy - mrg);
+    (*yHiP) = (int32_t)ceil (HI(bbox[1]) + cy + mrg);
   }
 
 double ellipse_ouv_position(ellipse_ouv_t *F, r2_t *p, r2_t *csp)

@@ -2,7 +2,10 @@
 #define ellipse_ouv_H
 
 /* ellipse_ouv.h -- tools for ellipses in the dir-radius form. */
-/* Last edited on 2013-05-24 13:11:54 by stolfilocal */
+/* Last edited on 2021-06-09 20:14:44 by jstolfi */
+
+#define _GNU_SOURCE
+#include <stdint.h>
 
 #include <r2.h>
 #include <sign.h>
@@ -44,10 +47,10 @@ void ellipse_ouv_int_bbox
   ( r2_t *ctr,  /* Center of ellipse. */
     ellipse_ouv_t *F,
     double mrg, /* Extra margin. */
-    int *xLoP,  /* (OUT) Min X of clip area. */
-    int *xHiP,  /* (OUT) Max X of clip area. */
-    int *yLoP,  /* (OUT) Min Y of clip area. */
-    int *yHiP   /* (OUT) Max Y of clip area. */
+    int32_t *xLoP,  /* (OUT) Min X of clip area. */
+    int32_t *xHiP,  /* (OUT) Max X of clip area. */
+    int32_t *yLoP,  /* (OUT) Min Y of clip area. */
+    int32_t *yHiP   /* (OUT) Max Y of clip area. */
   );
   /* Stores in {*xLoP,*xHiP,*yLoP,*yHiP} a bounding box with integer coordinates for the
     ellipse {F} displaced by {ctr}. The box is at least {mrg}

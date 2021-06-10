@@ -1,5 +1,5 @@
 /* voxm_splat.h --- voxel-based modeling of antialiased 3D objects */
-/* Last edited on 2016-04-02 13:06:27 by stolfilocal */
+/* Last edited on 2021-06-09 21:38:22 by jstolfi */
 
 #ifndef voxm_splat_H
 #define voxm_splat_H
@@ -9,7 +9,7 @@
 
 #include <bool.h>
 #include <r3.h>
-#include <r3_path.h>
+#include <r3_motion.h>
 #include <ppv_array.h>
 
 /* VOXEL-BASED SOLID MODELING 
@@ -41,7 +41,15 @@
   the center of the voxel is well outside or well inside the object,
   respectively. Intermetiate values are used in a /fuzzy layer/ near the
   object boundary to improve the smoothness of its implied surface,
-  which is asumed to be the locus of points with occupancy 0.5. */
+  which is asumed to be the locus of points with occupancy 0.5.
+  
+  Splatting overlapping objects will produce the union of their definite
+  interiors (voxels with value {MAXVAL}) and the intersection of their
+  definite exteriors (voxels with value 0). Intermediate values will
+  also be correct in voxels of the result where the original contents or
+  the splatted item were 0.  However, in voxels where both had
+  intermediate values, the resulting intermediate value will generally
+  be incorrect.   */
 
 /* SINGLE VOXEL SPLATTING */
  
@@ -61,17 +69,21 @@ typedef double voxm_splat_obfun_t(r3_t *p);
   /* Type of the occupancy function of a fuzzy object, that 
     returns 0 if {p} is well outside the object, 1 if it
     is well inside it, and fractional values in the fuzzy layer. */
-   
+w   
 void voxm_splat_object
   ( ppv_array_t *a,
-    voxm_splat_obfun_t *obj,
-    r3_path_state_t *S,
+    r3_double_func_t *obj,
+    r3_motion_state_t *S,
     double maxR,
     bool_t sub
   );
   /* Splats into the voxel array {a} the object defined by the occupancy function
     {obj}, modified by the matrix {S.M} and translated by {S.p}.
     The matrix {S.M} must be an isometry (a rotation or a reflection).
+    
+    The function {obj} should return 0 if {p} is well outside the
+    object, 1 if it is well inside it, and fractional values in the
+    fuzzy layer.
     
     Assumes that the modified and translated object has zero occupancy
     at any point that differs more than {maxR} units from {S.p} along
@@ -80,9 +92,9 @@ void voxm_splat_object
 
 void voxm_splat_object_multi
   ( ppv_array_t *a,
-    voxm_splat_obfun_t *obj,
+    r3_double_func_t *obj,
     int32_t ns,
-    r3_path_state_t S[],
+    r3_motion_state_t S[],
     double maxR,
     bool_t sub
   );

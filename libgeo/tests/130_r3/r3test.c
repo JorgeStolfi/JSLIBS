@@ -1,35 +1,37 @@
 /* r3test --- test program for r3.h, r3x3.h  */
-/* Last edited on 2016-04-03 13:07:20 by stolfilocal */
+/* Last edited on 2021-06-09 20:38:26 by jstolfi */
+
+#define _GNU_SOURCE
+#include <math.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+#include <affirm.h>
+#include <jsrandom.h>
+#include <flt.h>
 
 #include <r3.h>
 #include <r3_extra.h>
 #include <r3x3.h>
 #include <rn_test_tools.h>
 
-#include <affirm.h>
-#include <jsrandom.h>
-#include <flt.h>
-
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #define N 3
 #define NO NULL
 
 /* Internal prototypes */
 
-int main (int argc, char **argv);
-void test_r3(int verbose);
-void test_r3x3(int verbose);
+int32_t main (int32_t argc, char **argv);
+void test_r3(int32_t verbose);
+void test_r3x3(int32_t verbose);
 void throw_matrix(r3x3_t *m);
 
-void check_regular_polyhedron(char *func, double R, double L, int n, r3_t p[], int deg);
+void check_regular_polyhedron(char *func, double R, double L, int32_t n, r3_t p[], int32_t deg);
   /* Check that {p[0..n-1]} are the vertices of a regular 
     polyhedron with radius {R}, side {L}, and vertex degree {deg}. */
 
-int main (int argc, char **argv)
-  { int i;
+int32_t main (int32_t argc, char **argv)
+  { int32_t i;
     srand(1993);
     srandom(1993);
 
@@ -40,12 +42,12 @@ int main (int argc, char **argv)
     return (0);
   }
 
-void test_r3(int verbose)
+void test_r3(int32_t verbose)
   { r3_t a, b, c, d, e, para, perp;
     double r, s, t;
     double rr, ss, tt;
     double mag;
-    int i, j, k;
+    int32_t i, j, k;
 
     if (verbose)
       { fprintf(stderr,
@@ -243,10 +245,10 @@ void test_r3(int verbose)
     if (verbose) { fprintf(stderr, "--- r3_cross ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
-      { int i0 = (i + 0) % N;
-        int i1 = (i + 1) % N;
-        int i2 = (i + 2) % N;
-        int p;
+      { int32_t i0 = (i + 0) % N;
+        int32_t i1 = (i + 1) % N;
+        int32_t i2 = (i + 2) % N;
+        int32_t p;
         r3_axis(i0, &a);
         r3_axis(i1, &b);
         r3_cross(&a, &b, &d);
@@ -269,7 +271,7 @@ void test_r3(int verbose)
     if (verbose) { fprintf(stderr, "--- r3_pick_ortho ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
-      { int i0 = (i + 0) % N;
+      { int32_t i0 = (i + 0) % N;
         r3_axis(i0, &a);
         double ma = r3_L_inf_norm(&a);
         double mo = r3_pick_ortho(&a, &d);
@@ -289,9 +291,9 @@ void test_r3(int verbose)
     if (verbose) { fprintf(stderr, "--- r3_det ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
-      { int i0 = (i + 0) % N;
-        int i1 = (i + 1) % N;
-        int i2 = (i + 2) % N;
+      { int32_t i0 = (i + 0) % N;
+        int32_t i1 = (i + 1) % N;
+        int32_t i2 = (i + 2) % N;
         r3_axis(i0, &a);
         r3_axis(i1, &b);
         r3_axis(i2, &c);
@@ -365,14 +367,14 @@ void test_r3(int verbose)
     if (verbose) { fprintf(stderr, "!! warning: r3_cylindrical_grid not tested\n"); }
   }
 
-void test_r3x3(int verbose)
+void test_r3x3(int32_t verbose)
   {
     r3x3_t A, B, C;
     r3_t a, b, c, bb, cc;
     double r, s, t;
     double rr, ss, tt;
     double mag;
-    int i, j, k;
+    int32_t i, j, k;
 
     if (verbose) { fprintf(stderr, "--- Size and allocation ---\n"); }
     if (verbose)
@@ -409,7 +411,7 @@ void test_r3x3(int verbose)
 
     if (verbose) { fprintf(stderr, "--- r3x3_get_row, r3x3_set_row, r3x3_get_col, r3x3_set_col ---\n"); }
     throw_matrix(&A);
-    int dir; /* 0 for row, 1 for col. */
+    int32_t dir; /* 0 for row, 1 for col. */
     for (dir = 0; dir < 2; dir++)
       { for (i = 0; i < N; i++)
           { /* Check {r3x3_get_row,r3x3_get_col}: */
@@ -506,7 +508,7 @@ void test_r3x3(int verbose)
     if (verbose) { fprintf(stderr, "--- r3x3_det ---\n"); }
     throw_matrix(&A);
     for (i = 0; i < N; i++)
-      { int k = (i + 1) % N;
+      { int32_t k = (i + 1) % N;
         for (j = 0; j < N; j++)
           { /* Check for linearity */
             r = drandom();
@@ -593,7 +595,7 @@ void test_r3x3(int verbose)
   }  
 
 void throw_matrix(r3x3_t *m)
-  { int i, j;
+  { int32_t i, j;
     r3_t a;
     for (i = 0; i < N; i++)
       { r3_throw_cube(&a);
@@ -601,11 +603,11 @@ void throw_matrix(r3x3_t *m)
       }
   }
 
-void check_regular_polyhedron(char *func, double R, double L, int n, r3_t p[], int deg)
+void check_regular_polyhedron(char *func, double R, double L, int32_t n, r3_t p[], int32_t deg)
   {
     /* Not a complete test... */
     R = fabs(R); /* We can't distinguish {R} from {-R}. */
-    int i, j;
+    int32_t i, j;
     /* Find the smallest nonzero vertex-vertex distance {dmin}: */
     double dmin = +INF;
     for (i = 0; i < n; i++)
@@ -619,7 +621,7 @@ void check_regular_polyhedron(char *func, double R, double L, int n, r3_t p[], i
         double Ri = r3_norm(&(p[i]));
         rn_check_eps(Ri, R, 0.000001*R, &i, NULL, "vertex has wrong radius");
         /* Check number of nearest neighbors: */
-        int degi = 0;
+        int32_t degi = 0;
         for (j = 0; j < n; j++)
           { double dij = r3_dist(&(p[i]), &(p[j]));
             if (fabs(dij - L) < 0.0001*R) { degi++; }

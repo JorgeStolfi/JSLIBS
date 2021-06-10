@@ -1,5 +1,7 @@
-/* Last edited on 2007-10-14 14:52:54 by stolfi */
+/* Last edited on 2021-06-09 20:20:27 by jstolfi */
 /* REGULAR SIMPLEX */
+
+#include <stdint.h>
 
 double hr2_pt_pt_diff(hr2_point_t *p, hr2_point_t *q);
   /* Distance between {p} and {q} in the spherical model; that is,
@@ -39,7 +41,7 @@ bool_t hrn_pmap_is_identity(hrn_pmap_t *M);
     (apart from homogeneous scaling). */
 
 
-hrn_pmap_t hrn_pmap_from_points(int m, int n, double p[], double u[]);
+hrn_pmap_t hrn_pmap_from_points(int32_t m, int32_t n, double p[], double u[]);
   /* Returns a projective function that takes the {m+1} cardinal
     points of {T^m} (the unit vectors of {R^{m+1}}) to the {m+1}
     points of {T^n} contained in {p}; and also some point {s} of {T^m},

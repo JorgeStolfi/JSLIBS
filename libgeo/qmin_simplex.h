@@ -1,10 +1,12 @@
 /* qmin_simplex.h - quadratic minimization in a simplex. */
-/* Last edited on 2011-05-14 18:45:10 by stolfi */
+/* Last edited on 2021-06-09 20:32:39 by jstolfi */
 
 #ifndef qmin_simplex_H
 #define qmin_simplex_H
 
+#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 /* In all the procedures below, two-dimensional matrices are stored
   into one-dimensional vectors, in row-by-row order. That is, an {m×n}
@@ -13,7 +15,7 @@
   vector. */
     
 
-void qms_quadratic_min(int n, double A[], double b[], double x[]);
+void qms_quadratic_min(int32_t n, double A[], double b[], double x[]);
   /* Finds the minimum argument {x} of a quadratic function 
     {Q(x) = x' A x - 2 x'b + c}, subject to the constraints
     {x[i] >= 0} for all {i}; where {A} is a known positive

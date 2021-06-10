@@ -1,10 +1,13 @@
 /* sym_eigen.h -- eigenvalues and eigenvectors of a symmetric matrix */
-/* Last edited on 2013-06-01 22:52:09 by stolfilocal */
+/* Last edited on 2021-06-09 20:17:45 by jstolfi */
 
 #ifndef sym_eigen_H
 #define sym_eigen_H
 
-void syei_tridiagonalize(int n, double *A, double *d, double *e, double *R);
+#define _GNU_SOURCE
+#include <stdint.h>
+
+void syei_tridiagonalize(int32_t n, double *A, double *d, double *e, double *R);
   /* Reduces the real symmetric matrix {A} to a symmetric tridiagonal
     matrix {T}, using an orthogonal similarity transformation {R}.
 
@@ -41,7 +44,7 @@ void syei_tridiagonalize(int n, double *A, double *d, double *e, double *R);
          {A} (if distinct from {R}) is unaltered.
   */
 
-void syei_trid_eigen(int n, double *d, double *e, double *R, int *p, int absrt);
+void syei_trid_eigen(int32_t n, double *d, double *e, double *R, int32_t *p, int32_t absrt);
   /* Finds the right eigenvalues and eigenvectors of a symmetric
     tridiagonal matrix {T} by the QL method. 
     

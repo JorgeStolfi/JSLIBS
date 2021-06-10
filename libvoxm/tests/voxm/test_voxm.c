@@ -5,7 +5,7 @@
 #define test_voxm_C_COPYRIGHT \
   "Copyright © 2016 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2016-04-03 14:23:55 by stolfilocal */
+/* Last edited on 2021-06-09 16:29:59 by jstolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -68,7 +68,7 @@
 #include <r3.h>
 #include <i3.h>
 #include <r3x3.h>
-#include <r3_path.h>
+#include <r3_motion.h>
 #include <ppv_array.h>
 #include <ppv_io.h>
 

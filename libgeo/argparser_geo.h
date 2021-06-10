@@ -1,5 +1,5 @@
 /* argparser_geo.h -- extends argparser.h for geometric args. */
-/* Last edited on 2017-03-11 19:35:39 by stolfilocal */
+/* Last edited on 2021-06-09 20:11:37 by jstolfi */
 
 #ifndef argparser_geo_H
 #define argparser_geo_H
@@ -9,6 +9,8 @@
 /* This interface provides convenient tools for parsing command
   line arguments whose values are real vectors. */
 
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <r2.h>
 #include <r3.h>
 #include <r4.h>
@@ -24,7 +26,7 @@ r6_t argparser_get_next_r6(argparser_t *pp, double min, double max);
     must be in the range {[min.. max]}, as the coordinates of a point;
     where {N} is 2,3,4, or 6. */
 
-void argparser_get_next_rn(argparser_t *pp, double p[], int n, double min, double max);
+void argparser_get_next_rn(argparser_t *pp, double p[], int32_t n, double min, double max);
   /* Parses with {argparser_get_next_double} the next {n} arguments, 
     which must be in the range {[min .. max]}, and stores them in 
     {p[0.n-1]}. */

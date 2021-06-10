@@ -1,4 +1,6 @@
-/* Last edited on 2009-02-18 22:07:46 by stolfi */
+/* Last edited on 2021-06-09 20:13:14 by jstolfi */
+
+#include <stdint.h>
 
 e2 = 1 - b^2/a^2;
 p = (x,y);
@@ -57,15 +59,15 @@ double DistancePointEllipseSpecial
     double dA,
     double dB, 
     const double dEpsilon, 
-    const int iMax, 
-    int *riIFinal,
+    const int32_t iMax, 
+    int32_t *riIFinal,
     double *rdX, 
     double *rdY
   )
   { // initial guess
     double dT = dB*(dV - dB);
     // Newton's method
-    int i;
+    int32_t i;
     for (i = 0; i < iMax; i++)
       {
         double dTpASqr = dT + dA*dA;
@@ -111,8 +113,8 @@ double DistancePointEllipse (
 double dU, double dV, // test point (u,v)
 double dA, double dB, // ellipse is (x/a)^2 + (y/b)^2 = 1
 const double dEpsilon, // zero tolerance for Newton\u2019s method
-const int iMax, // maximum iterations in Newton\u2019s method
-int *riIFinal, // number of iterations used
+const int32_t iMax, // maximum iterations in Newton\u2019s method
+int32_t *riIFinal, // number of iterations used
 double *rdX, double *rdY) // a closest point (x,y)
 {
 // special case of circle
@@ -226,18 +228,18 @@ rdX = -rdX;
 return dDistance;
 }
 //----------------------------------------------------------------------------
-int main ()
+int32_t main ()
 {
 // The ellipse is (x/2)^2 + (y/1)^2 = 1. Compute distances for points
 // (u,v) with |u| <= 3 and |v| <= 3.
 double dA = 2.0, dB = 1.0;
 const double dEpsilon = 1e-08;
-const int iMax = 32;
+const int32_t iMax = 32;
 double dUMin = -3.0, dUMax = 3.0;
 double dVMin = -3.0, dVMax = 3.0;
 double dU, dV, dX, dY, dDistance;
-int iX, iY, iIFinal, iMaxIFinal = 0;
-const int iXBound = 256, iYBound = 256;
+int32_t iX, iY, iIFinal, iMaxIFinal = 0;
+const int32_t iXBound = 256, iYBound = 256;
 ImageDouble2D kImage(iXBound,iYBound);
 ImageInt2D kIndex(iXBound,iYBound);
 for (iY = 0; iY < iYBound; iY++)

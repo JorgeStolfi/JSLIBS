@@ -1,5 +1,5 @@
 /* test_voxm_obj.h --- tests the primitive shapes in {voxm_obj.h}. */
-/* Last edited on 2016-12-13 17:20:29 by stolfilocal */
+/* Last edited on 2021-06-09 16:39:34 by jstolfi */
 
 #ifndef test_voxm_obj_H
 #define test_voxm_obj_H
@@ -9,7 +9,7 @@
 
 #include <bool.h>
 #include <r3.h>
-#include <r3_path.h>
+#include <r3_motion.h>
 #include <ppv_array.h>
 
 void test_voxm_objs(ppv_array_t *a, r3_t *ctr, r3_t *rad, double fuzzR);

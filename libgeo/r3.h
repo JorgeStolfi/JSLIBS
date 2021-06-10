@@ -1,11 +1,12 @@
 /* r3.h --- operations on points and vectors of R^3 */
-/* Last edited on 2014-03-24 23:24:18 by stolfilocal */
+/* Last edited on 2021-06-09 20:43:49 by jstolfi */
 
 #ifndef r3_H
 #define r3_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 
 #include <vec.h>
@@ -20,7 +21,7 @@ void r3_zero (r3_t *r);
 void r3_all (double x, r3_t *r);
   /* Sets all coordinates of {r} to the value {x}. */
 
-void r3_axis (int i, r3_t *r);
+void r3_axis (int32_t i, r3_t *r);
   /* Sets {r} to the {i}th vector of the canonical basis. */
 
 void r3_add (r3_t *a, r3_t *b, r3_t *r);
@@ -96,10 +97,10 @@ double r3_decomp (r3_t *a, r3_t *u, r3_t *para, r3_t *perp);
     Namely, {para = c*u} and {perp = a - c*u}, where 
     {c = r3_dot(a,u)/r3_dot(u,u)}. Also returns {c}. */
 
-int r3_is_finite(r3_t *p);
+int32_t r3_is_finite(r3_t *p);
   /* True iff all coordinates of {p} are finite. */
 
-int r3_eq(r3_t *p, r3_t *q);
+bool_t r3_eq(r3_t *p, r3_t *q);
   /* True iff points {p} and {q} are identical. */
 
 void r3_throw_cube (r3_t *r);
@@ -125,7 +126,18 @@ void r3_gen_print (FILE *f, r3_t *a, char *fmt, char *lp, char *sep, char *rp);
     between, and after all the coordinates of {a}.  When NULL, they default 
     to "%16.8e", "(", " ", and ")", respectively. */
 
+/* DERIVED TYPES */
+
 vec_typedef(r3_vec_t,r3_vec,r3_t);
   /* An {r3_vec_t} is a vector of {r3_t}s. */
+
+typedef bool_t r3_pred_t(r3_t *a);
+  /* Type of a function that returns a {bool_t} value from an {r3_t} value. */
+
+typedef double r3_double_func_t(r3_t *a);
+  /* Type of a function that returns a {double} value from an {r3_t} value. */
+
+typedef r3_t r3_map_t(r3_t *a);
+  /* Type of a function that returns a {double} value from an {r3_t} value. */
 
 #endif

@@ -1,5 +1,5 @@
 /* See voxm_splat.h */
-/* Last edited on 2016-04-22 20:23:07 by stolfilocal */
+/* Last edited on 2021-06-09 21:11:51 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -10,7 +10,7 @@
 
 #include <bool.h>
 #include <r3.h>
-#include <r3_path.h>
+#include <r3_motion.h>
 #include <r3_extra.h>
 #include <r3x3.h>
 #include <i3.h>
@@ -22,9 +22,9 @@
 
 void voxm_splat_object_multi
   ( ppv_array_t *a,
-    voxm_splat_obfun_t *obj,
+    r3_double_func_t *obj,
     int32_t ns,
-    r3_path_state_t S[],
+    r3_motion_state_t S[],
     double maxR,
     bool_t sub
   )
@@ -40,8 +40,8 @@ void voxm_splat_object_multi
 
 void voxm_splat_object
   ( ppv_array_t *a, 
-    voxm_splat_obfun_t *obj,
-    r3_path_state_t *S,
+    r3_double_func_t *obj,
+    r3_motion_state_t *S,
     double maxR,
     bool_t sub
   )

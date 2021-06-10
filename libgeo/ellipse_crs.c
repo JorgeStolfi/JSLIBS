@@ -1,8 +1,9 @@
 /* See ellipse.h */
-/* Last edited on 2010-03-20 09:42:08 by stolfi */
+/* Last edited on 2021-06-09 19:48:11 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <values.h>
 #include <stdlib.h>
@@ -66,19 +67,19 @@ void ellipse_crs_bbox(ellipse_crs_t *E, interval_t bbox[])
 void ellipse_crs_int_bbox
   ( ellipse_crs_t *E, 
     double mrg, /* Extra margin. */
-    int *xLoP,  /* (OUT) Min X of clip area. */
-    int *xHiP,  /* (OUT) Max X of clip area. */
-    int *yLoP,  /* (OUT) Min Y of clip area. */
-    int *yHiP   /* (OUT) Max Y of clip area. */
+    int32_t *xLoP,  /* (OUT) Min X of clip area. */
+    int32_t *xHiP,  /* (OUT) Max X of clip area. */
+    int32_t *yLoP,  /* (OUT) Min Y of clip area. */
+    int32_t *yHiP   /* (OUT) Max Y of clip area. */
   )
   {
     demand(mrg >= 0, "the extra margin {mrg} must be non-negative");
     interval_t bbox[2];
     ellipse_crs_bbox(E, bbox);
-    (*xLoP) = (int)floor(LO(bbox[0]) - mrg);
-    (*xHiP) = (int)ceil (HI(bbox[0]) + mrg);
-    (*yLoP) = (int)floor(LO(bbox[1]) - mrg);
-    (*yHiP) = (int)ceil (HI(bbox[1]) + mrg);
+    (*xLoP) = (int32_t)floor(LO(bbox[0]) - mrg);
+    (*xHiP) = (int32_t)ceil (HI(bbox[0]) + mrg);
+    (*yLoP) = (int32_t)floor(LO(bbox[1]) - mrg);
+    (*yHiP) = (int32_t)ceil (HI(bbox[1]) + mrg);
   }
 
 bool_t ellipse_crs_inside(ellipse_crs_t *E, r2_t *p)

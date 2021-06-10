@@ -1,9 +1,10 @@
 /* See hr2.h */
-/* Last edited on 2020-10-12 14:55:42 by jstolfi */ 
+/* Last edited on 2021-06-09 20:15:38 by jstolfi */ 
 
 /* Based on HR2.m3, created 1994-05-04 by J. Stolfi. */
 
 #define _GNU_SOURCE
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 
@@ -204,7 +205,7 @@ r2_t hr2_point_point_dir(hr2_point_t *frm, hr2_point_t *tto)
 
 hr2_pmap_t hr2_pmap_from_points(hr2_point_t *p, hr2_point_t *q, hr2_point_t *r, hr2_point_t *u)
   {
-    int i;
+    int32_t i;
     hr2_pmap_t m; /* The resulting map. */
     
     /* Compute weights {(a,b,c)=w.c[0..2]} for rows of {Q} that map {[1,1,1]} to {u}: */

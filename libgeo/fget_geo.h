@@ -1,5 +1,5 @@
 /* fget_geo.h -- extends fget.h for geometric args. */
-/* Last edited on 2008-07-14 22:32:39 by stolfi */
+/* Last edited on 2021-06-09 20:28:18 by jstolfi */
 
 #ifndef fget_geo_H
 #define fget_geo_H
@@ -9,7 +9,9 @@
 /* This interface provides convenient tools for parsing command
   line arguments whose values are real vectors. */
 
+#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <r2.h>
 #include <r3.h>
@@ -25,7 +27,7 @@ r6_t fget_r6(FILE *rd);
     skip over line breaks, so all numbers must be on the current line
     of {rd}. */
 
-void fget_rn(FILE *rd, double p[], int n);
+void fget_rn(FILE *rd, double p[], int32_t n);
   /* Reads from {rd} (with {fget_double}) the next {n} real numbers,
     and stores them in {p[0.n-1]}. Does not skip over line breaks, so
     all numbers must be on the current line {rd}. */

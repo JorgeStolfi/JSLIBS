@@ -1,11 +1,12 @@
 /* r2x2.h --- 2x2 matrices and operations on them */
-/* Last edited on 2020-10-14 15:19:26 by jstolfi */
+/* Last edited on 2021-06-09 19:46:13 by jstolfi */
 
 #ifndef r2x2_H
 #define r2x2_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <r2.h>
 
 typedef struct { double c[2][2]; } r2x2_t;
@@ -21,12 +22,12 @@ void r2x2_ident(r2x2_t *M);
 void r2x2_transp (r2x2_t *A, r2x2_t *M);
   /* Sets {M} to the transpose {A^t} of matrix {A}. */
 
-void r2x2_get_row(r2x2_t *A, int i, r2_t *x);
-void r2x2_set_row(r2x2_t *A, int i, r2_t *x);
+void r2x2_get_row(r2x2_t *A, int32_t i, r2_t *x);
+void r2x2_set_row(r2x2_t *A, int32_t i, r2_t *x);
   /* These two procedures copy row {i} of matrix {A} to and from vector {x}, respectively. */
 
-void r2x2_get_col(r2x2_t *A, int j, r2_t *x);
-void r2x2_set_col(r2x2_t *A, int j, r2_t *x);
+void r2x2_get_col(r2x2_t *A, int32_t j, r2_t *x);
+void r2x2_set_col(r2x2_t *A, int32_t j, r2_t *x);
   /* These two procedures copy column {j} of matrix {A} to and from vector {x}, respectively. */
 
 void r2x2_map_row (r2_t *x, r2x2_t *A, r2_t *r);

@@ -1,6 +1,6 @@
 # JSLIBS - Jorge Stolfi's C libraries
 
-% Last edited on 2021-04-13 23:55:53 by jstolfi
+% Last edited on 2021-04-17 23:07:24 by jstolfi
 
 This repository contains a set of C libraries that I have written over
 almost 30 years. They were originally intended for "private" use, by
@@ -9,9 +9,13 @@ case someone else finds them useful.
 
   --Jorge Stolfi, IC-UNICAMP 2020-12-07
   
-Creator: Jorge Stolfi
-Supervisor: Jorge Stolfi
-Intended users: Jorge Stolfi, general public
+## Attributes
+  
++ **Creator:** Jorge Stolfi
+
++ **Supervisor:** Jorge Stolfi
+
++ **Intended users:** Jorge Stolfi, general public
 
 ##LIBRARIES
 

@@ -1,7 +1,9 @@
-/* Last edited on 2012-12-15 09:42:19 by stolfilocal */
+/* Last edited on 2021-06-09 20:13:27 by jstolfi */
 /* TO FINISH !!! */
 
-void qms_project_simplex(int m, int n, double M[], double p[], double x[], double q[])
+#include <stdint.h>
+
+void qms_project_simplex(int32_t m, int32_t n, double M[], double p[], double x[], double q[])
   /* Given an {m × n} matrix {M}, with {m <= n}, and an {n}-vector {p}, 
     finds an {m}-vector {x} such that {x[i] >= 0} for {i in 0..m-1}, 
     {SUM{x[i] : i in 0..m-1} = 1}, and {|p - xM|} is minimum.
@@ -38,28 +40,28 @@ void qms_project_simplex(int m, int n, double M[], double p[], double x[], doubl
     double tiny = 1.0e-14 * bmax * sqrt(n);  /* Est. roundoff error in residuals. */
 
     /* Work array: */
-    int n1 = n+1; /* Total columns in {A} and {b}. */
+    int32_t n1 = n+1; /* Total columns in {A} and {b}. */
     double Ab[n*n1]; /* Active sub-matrices of {A} and {b}, side by side. */
     
     /* Work vector: */
     double y[n]; /* Candidate solution to replace {x}. */
 
     /* Subset of active (nonzero) variables: */
-    int na; /* Number of active variables. */
-    int sit[n]; /* Situation of variable {i}: {x[i]} is active iff {sit[i] < na}. */ 
-    int pos[n]; /* Invariant: {pos[sit[k]] = k = sit[pos[k]]} for all {k} in {0..n-1}. */ 
+    int32_t na; /* Number of active variables. */
+    int32_t sit[n]; /* Situation of variable {i}: {x[i]} is active iff {sit[i] < na}. */ 
+    int32_t pos[n]; /* Invariant: {pos[sit[k]] = k = sit[pos[k]]} for all {k} in {0..n-1}. */ 
     /* The active variables are {x[pos[ia]]} for {ia} in {0..na-1}. */
     /* The inactive variables are {x[pos[ii]]} for {ii} in {na..n-1}. */
 
-    auto void activate(int i); 
+    auto void activate(int32_t i); 
       /* Add inactive variable {i} to the active set. Expects {x[i]}
         to be zero, and sets it to a tiny positive value. */  
 
-    auto void inactivate(int i); 
+    auto void inactivate(int32_t i); 
       /* Deletes active variable {i} from the active set. Expects {x[i]}
         to be essentially zero, and sets it to zero. */  
 
-    auto double compute_residual(int i, double *u);
+    auto double compute_residual(int32_t i, double *u);
       /* Computes the resudual {(A u - b)[i]}.  Assumes that inactive
         variables are all zero. */
     
@@ -68,7 +70,7 @@ void qms_project_simplex(int m, int n, double M[], double p[], double x[], doubl
         correspond to active variables, and assuming that inactive
         variables are zero. */
     
-    auto void find_first_obstacle(double *x, double *y, int *job, double *sob);
+    auto void find_first_obstacle(double *x, double *y, int32_t *job, double *sob);
       /* Assumes that {x[j]} is non-negative for all {j}. Returns in
         {*job} the index of the first coordinate that becomes zero
         when one moves along the segment from {x} to {y}. Also returns
@@ -81,13 +83,13 @@ void qms_project_simplex(int m, int n, double M[], double p[], double x[], doubl
       /* Writes to {wr} the current active and inactive lists. */
     
     /* Start with all variables inactive, turn them on one at a time. */
-    int i;
+    int32_t i;
     for (i = 0; i < n; i++) { sit[i] = i; pos[i] = i; x[i] = 0.0; }
     na = 0;
 
     /* Iterate until conditions (1)-(3) are satisfied for column {k}: */
     i = 0; /* Next variable to check for condition (3). */
-    int nok = 0; /* Number of variables that checked OK for (3) since last change. */
+    int32_t nok = 0; /* Number of variables that checked OK for (3) since last change. */
     while (nok < n)
       { /* Loop invariant: Conditions (1) and (2) are satisfied. */
         /* Also, a variable is active iff it is nonzero. */
@@ -142,10 +144,10 @@ void qms_project_simplex(int m, int n, double M[], double p[], double x[], doubl
                     bool_t ok2 = FALSE; /* TRUE when condition (2) is OK. */
                     while (! ok2) 
                       { /* Find first variable in path {x} to {y} to become inactive, if any: */
-                        int jmin; double sjmin; 
+                        int32_t jmin; double sjmin; 
                         find_first_obstacle(x, y, &jmin, &sjmin);
                         /* Advance from {x} towards {y} by the ratio {sjmin}: */
-                        int j;
+                        int32_t j;
                         for (j = 0; j < n; j++)
                           { if (sit[j] < na) { x[j] = (1-sjmin)*x[j] + sjmin*y[j]; } }
 
@@ -190,16 +192,16 @@ void qms_project_simplex(int m, int n, double M[], double p[], double x[], doubl
         i = (i + 1) % n;
       }
 
-    void activate(int i) 
+    void activate(int32_t i) 
       { if (debug) { fprintf(stderr, "  activating %d\n", i); }
         assert(x[i] == 0);
-        int ia = sit[i];  /* Index of active list slot that contains {i}. */
+        int32_t ia = sit[i];  /* Index of active list slot that contains {i}. */
         assert(ia >= na);
         /* Make sure that {i} is in the *first* inactive list slot: */
-        int ia1 = na; /* Index of first inactive list slot. */
+        int32_t ia1 = na; /* Index of first inactive list slot. */
         if (ia != ia1)
           { /* Swap {pos[ia]} with {pos[ia1]}: */
-            int i1 = pos[ia1];
+            int32_t i1 = pos[ia1];
             pos[ia1] = i;
             pos[ia] = i1;
             /* Fix {iax[i]}, {iax[j]}: */
@@ -212,17 +214,17 @@ void qms_project_simplex(int m, int n, double M[], double p[], double x[], doubl
         x[i] = tiny;
       }
 
-    void inactivate(int i)
+    void inactivate(int32_t i)
       { if (debug) { fprintf(stderr, "  deactivating %d\n", i); }
         assert(x[i] >= -tiny);     /* Condition (1) (modulo roundoff). */
         assert(x[i] <= tiny);  /* We can inactivate only if {x} is on constraint. */
-        int ia = sit[i];  /* Index of active list slot that contains {i}. */
+        int32_t ia = sit[i];  /* Index of active list slot that contains {i}. */
         assert(ia < na);
         /* Make sure that {i} is in the *last* active list slot: */
-        int ia1 = na-1; /* Index of last active list slot. */
+        int32_t ia1 = na-1; /* Index of last active list slot. */
         if (ia != ia1)
           { /* Swap {pos[ia]} with {pos[ia1]}: */
-            int i1 = pos[ia1];
+            int32_t i1 = pos[ia1];
             pos[ia1] = i;
             pos[ia] = i1;
             /* Fix {iax[i]}, {iax[j]}: */
@@ -236,7 +238,7 @@ void qms_project_simplex(int m, int n, double M[], double p[], double x[], doubl
       }
 
     void print_sets(FILE *wr)
-      { int ia;
+      { int32_t ia;
         char *sep; 
         fprintf(wr, "  active = (");
         sep = ""; 
@@ -259,23 +261,23 @@ void qms_project_simplex(int m, int n, double M[], double p[], double x[], doubl
         fprintf(wr, "\n");
       }
     
-    double compute_residual(int i, double *u)
+    double compute_residual(int32_t i, double *u)
       { double sum = 0.0;
-        int ja;
+        int32_t ja;
         /* We need to add only the nonzero variables: */
         for (ja = 0; ja < na; ja++) 
-          { int j = pos[ja]; sum += A[i*n + j]*u[j]; } 
+          { int32_t j = pos[ja]; sum += A[i*n + j]*u[j]; } 
         return sum - b[i];
       }
           
     void solve_active(double *u)
       {
         /* Extract active subsystem of {A u = b}, store in {Ab}: */
-        int ia, ja;
+        int32_t ia, ja;
         for (ia = 0; ia < na; ia++)
-          { int i = pos[ia];
+          { int32_t i = pos[ia];
             for (ja = 0; ja < na; ja++)
-              { int j = pos[ja]; Ab[ia*(na+1) + ja] = A[i*n + j]; }
+              { int32_t j = pos[ja]; Ab[ia*(na+1) + ja] = A[i*n + j]; }
             Ab[ia*(na+1) + na] = b[i];
           }
         /* Solve subsystem: */
@@ -287,18 +289,18 @@ void qms_project_simplex(int m, int n, double M[], double p[], double x[], doubl
         gsel_extract_solution(na, na+1, Ab, 1, ua, TRUE);
         if (debug) { gsel_print_array(stderr, "%9.5f", "  subsystem's solution:",  na, 1, ua, ""); }
         /* Unpack {ua} into {u}: */
-        int i;
+        int32_t i;
         for (i = 0; i < n; i++)
-          { int ia = sit[i]; u[i] = (ia < na ? ua[ia] : 0.0); }
+          { int32_t ia = sit[i]; u[i] = (ia < na ? ua[ia] : 0.0); }
         if (debug) { gsel_print_array(stderr, "%9.5f", "  new solution:",  n, 1, u, ""); }
       }
     
-    void find_first_obstacle(double *u, double *v, int *job, double *sob)
+    void find_first_obstacle(double *u, double *v, int32_t *job, double *sob)
       { (*sob) = +INFINITY; 
         (*job) = -1;
-        int ja;
+        int32_t ja;
         for (ja = 0; ja < na; ja++)
-          { int j = pos[ja]; 
+          { int32_t j = pos[ja]; 
             assert(u[j] > 0.0);
             if (v[j] <= 0.0)
               { double sj = u[j]/(u[j]-v[j]);

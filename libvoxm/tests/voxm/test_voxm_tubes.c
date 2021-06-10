@@ -1,5 +1,5 @@
 /* See {test_voxm_tubes.h} */
-/* Last edited on 2016-04-03 14:30:29 by stolfilocal */
+/* Last edited on 2021-06-09 17:37:10 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -12,10 +12,10 @@
 #include <affirm.h>
 #include <r3.h>
 #include <r3x3.h>
-#include <r3_path.h>
+#include <r3_motion.h>
 #include <ppv_array.h>
 
-#include <voxm_path.h>
+#include <r3_path.h>
 #include <voxm_splat.h>
 #include <voxm_splat_tube.h>
 
@@ -65,7 +65,7 @@ void test_voxm_tubes_helix(ppv_array_t *a, r3_t *ctr, r3_t *rad, double fuzzR)
     fprintf(stderr, "enter %s\n", __FUNCTION__);
 
     int N = 3; /* Number of tubes. */
-    r3_path_state_t S[N]; /* Placement states of tubes. */
+    r3_motion_state_t S[N]; /* Placement states of tubes. */
     double t0[N]; /* Start time. */
     double t1[N]; /* End time. */
     double L[N]; /* Representative arc lengths. */
@@ -100,7 +100,7 @@ void test_voxm_tubes_helix(ppv_array_t *a, r3_t *ctr, r3_t *rad, double fuzzR)
     double scale = trad - otR;
     r3_t shift = (*ctr);
     for (k = 0; k < N; k++)
-      { test_voxm_rescale_r3_path_state(&(S[k]), scale, &shift); }
+      { test_voxm_rescale_r3_motion_state(&(S[k]), scale, &shift); }
 
     /* Define the times, lengths, angles, and steps (already scaled): */
     double hrad = 0.25*trad; /* Typical helix radius. */
@@ -116,11 +116,11 @@ void test_voxm_tubes_helix(ppv_array_t *a, r3_t *ctr, r3_t *rad, double fuzzR)
           { 
             fprintf(stderr, "  helix %d  t = [ %.3f _ %.3f ]  L = %.2f", k, t0[k], t1[k], L[k]);
             fprintf(stderr, "  A = %.2f deg  H = %.2f\n", A[k]*180/M_PI, H[k]);
-            r3_path_state_debug(stderr, &(S[k]), "  ", "placement");
-            r3_path_state_t S0, S1;
+            r3_motion_state_debug(stderr, &(S[k]), "  ", "placement");
+            r3_motion_state_t S0, S1;
             voxm_splat_tube_round_helix(a, t0[k], t1[k], &(S[k]), L[k], A[k], H[k], inR, otR, fuzzR, sub, &S0, &S1);
-            r3_path_state_debug(stderr, &(S0), "  ", "initial");
-            r3_path_state_debug(stderr, &(S1), "  ", "final");
+            r3_motion_state_debug(stderr, &(S0), "  ", "initial");
+            r3_motion_state_debug(stderr, &(S1), "  ", "final");
           }
       }
 
@@ -135,7 +135,7 @@ void test_voxm_tubes_segment(ppv_array_t *a, r3_t *ctr, r3_t *rad, double fuzzR)
     fprintf(stderr, "enter %s\n", __FUNCTION__);
 
     int N = 4; /* Number of tubes. */
-    voxm_path_state_t S[N], T[N]; /* Initial and final states of tubes. */
+    r3_path_state_t S[N], T[N]; /* Initial and final states of tubes. */
     
     /* Define the end states assuming that the domain has radius 1 and center at {(0,0,0)}: */
     /* A straight tube parallel to the {X}-axis: */
@@ -168,9 +168,9 @@ void test_voxm_tubes_segment(ppv_array_t *a, r3_t *ctr, r3_t *rad, double fuzzR)
     int k;
     for (k = 0; k < N; k++)
       { S[k].t = 0.00;
-        test_voxm_rescale_voxm_path_state(&(S[k]), scale, &shift);
+        test_voxm_rescale_r3_path_state(&(S[k]), scale, &shift);
         T[k].t = 1.00;
-        test_voxm_rescale_voxm_path_state(&(T[k]), scale, &shift);
+        test_voxm_rescale_r3_path_state(&(T[k]), scale, &shift);
       }
     
     /* Splat the tubes, then clear the bores: */
@@ -241,10 +241,10 @@ void test_voxm_tubes_bezier(ppv_array_t *a, r3_t *ctr, r3_t *rad, double fuzzR)
 void test_voxm_rescale_r3(r3_t *p, double scale, r3_t *shift)
   { r3_mix(1.0, shift, scale, p, p); }
     
-void test_voxm_rescale_voxm_path_state(voxm_path_state_t *P, double scale, r3_t *shift)
+void test_voxm_rescale_r3_path_state(r3_path_state_t *P, double scale, r3_t *shift)
   { r3_mix(scale, &(P->p), 1.0, shift, &(P->p));
     r3_scale(scale, &(P->v), &(P->v));
   }
 
-void test_voxm_rescale_r3_path_state(r3_path_state_t *P, double scale, r3_t *shift)
+void test_voxm_rescale_r3_motion_state(r3_motion_state_t *P, double scale, r3_t *shift)
   { r3_mix(scale, &(P->p), 1.0, shift, &(P->p)); }

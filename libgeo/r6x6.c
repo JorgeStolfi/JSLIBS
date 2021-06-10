@@ -1,8 +1,9 @@
 /* See r6x6.h. */
-/* Last edited on 2016-04-03 12:53:16 by stolfilocal */
+/* Last edited on 2021-06-09 19:55:51 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 
@@ -14,14 +15,14 @@
 #define N 6
 
 void r6x6_zero(r6x6_t *M)
-  { int i, j;
+  { int32_t i, j;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { M->c[i][j] = 0.0; }
   }
 
 void r6x6_ident(r6x6_t *M)
-  { int i, j;
+  { int32_t i, j;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { M->c[i][j] = (i == j ? 1.0 : 0.0); }
@@ -29,7 +30,7 @@ void r6x6_ident(r6x6_t *M)
 
 void r6x6_transp (r6x6_t *A, r6x6_t *M)
   { 
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < N; i++)
       { M->c[i][i] = A->c[i][i]; 
         for (j = 0; j < i; j++)
@@ -41,35 +42,35 @@ void r6x6_transp (r6x6_t *A, r6x6_t *M)
       }
   }
 
-void r6x6_get_row(r6x6_t *A, int i, r6_t *x)
+void r6x6_get_row(r6x6_t *A, int32_t i, r6_t *x)
   { assert((i >= 0) && (i < N));
     double *v = &(A->c[i][0]);
-    int j;
+    int32_t j;
     for (j = 0; j < N; j++) { x->c[j] = v[j]; }
   }
   
-void r6x6_set_row(r6x6_t *A, int i, r6_t *x)
+void r6x6_set_row(r6x6_t *A, int32_t i, r6_t *x)
   { assert((i >= 0) && (i < N));
     double *v = &(A->c[i][0]);
-    int j;
+    int32_t j;
     for (j = 0; j < N; j++) { v[j] = x->c[j]; }
   }
 
-void r6x6_get_col(r6x6_t *A, int j, r6_t *x)
+void r6x6_get_col(r6x6_t *A, int32_t j, r6_t *x)
   { assert((j >= 0) && (j < N));
-    int i;
+    int32_t i;
     for (i = 0; i < N; i++) { x->c[j] = A->c[i][j]; }
   }
   
-void r6x6_set_col(r6x6_t *A, int j, r6_t *x)
+void r6x6_set_col(r6x6_t *A, int32_t j, r6_t *x)
   { assert((j >= 0) && (j < N));
-    int i;
+    int32_t i;
     for (i = 0; i < N; i++) { A->c[i][j] = x->c[j]; }
   }
 
 void r6x6_map_row (r6_t *x, r6x6_t *A, r6_t *r)
   { r6_t rr;
-    int j, k;
+    int32_t j, k;
     for (j = 0; j < N; j++)
       { double s = 0.0;
         for (k = 0; k < N; k++) s += x->c[k] * A->c[k][j];
@@ -80,7 +81,7 @@ void r6x6_map_row (r6_t *x, r6x6_t *A, r6_t *r)
 
 void r6x6_map_col (r6x6_t *A, r6_t *x, r6_t *r)
   { r6_t rr;
-    int i, k;
+    int32_t i, k;
     for (i = 0; i < N; i++)
       { double s = 0.0;
         for (k = 0; k < N; k++) s += A->c[i][k] * x->c[k];
@@ -90,7 +91,7 @@ void r6x6_map_col (r6x6_t *A, r6_t *x, r6_t *r)
   }
 
 void r6x6_scale (double s, r6x6_t *A, r6x6_t *M)  
-  { int i, j;
+  { int32_t i, j;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { M->c[i][j] = s * A->c[i][j]; }
@@ -98,7 +99,7 @@ void r6x6_scale (double s, r6x6_t *A, r6x6_t *M)
 
 void r6x6_mul (r6x6_t *A, r6x6_t *B, r6x6_t *M)
   { r6x6_t RR;
-    int i, j, k;
+    int32_t i, j, k;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { double s = 0.0;
@@ -111,7 +112,7 @@ void r6x6_mul (r6x6_t *A, r6x6_t *B, r6x6_t *M)
 void r6x6_mul_tr (r6x6_t *A, r6x6_t *B, r6x6_t *M)
   {
     r6x6_t RR;
-    int i, j, k;
+    int32_t i, j, k;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { double s = 0.0;
@@ -135,7 +136,7 @@ void r6x6_inv (r6x6_t *A, r6x6_t *M)
 double r6x6_norm_sqr(r6x6_t* A)
   {
     double s = 0.0;
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { double Aij = A->c[i][j];
@@ -147,7 +148,7 @@ double r6x6_norm_sqr(r6x6_t* A)
 double r6x6_norm(r6x6_t* A)
   {
     double s = 0.0;
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { double Aij = A->c[i][j];
@@ -159,7 +160,7 @@ double r6x6_norm(r6x6_t* A)
 double r6x6_mod_norm_sqr(r6x6_t* A)
   {
     double s = 0.0;
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { double Aij = A->c[i][j];
@@ -171,7 +172,7 @@ double r6x6_mod_norm_sqr(r6x6_t* A)
 
 bool_t r6x6_is_unif_scaling(r6x6_t *M, double s)
   {
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { if (M->c[i][j] != (i == j ? s : 0.0)) { return FALSE; } }
@@ -179,7 +180,7 @@ bool_t r6x6_is_unif_scaling(r6x6_t *M, double s)
   }
 
 void r6x6_from_rows(r6_t *a, r6_t *b, r6_t *c, r6_t *d, r6_t *e, r6_t *f, r6x6_t *M)
-  { int j;
+  { int32_t j;
     for (j = 0; j < N; j++)
       { M->c[0][j] = a->c[j];
         M->c[1][j] = b->c[j];
@@ -191,7 +192,7 @@ void r6x6_from_rows(r6_t *a, r6_t *b, r6_t *c, r6_t *d, r6_t *e, r6_t *f, r6x6_t
   }
 
 void r6x6_from_cols(r6_t *a, r6_t *b, r6_t *c, r6_t *d, r6_t *e, r6_t *f, r6x6_t *M)
-  { int j;
+  { int32_t j;
     for (j = 0; j < N; j++)
       { M->c[j][0] = a->c[j];
         M->c[j][1] = b->c[j];

@@ -1,11 +1,12 @@
 /* r3x3.h --- 3x3 matrices and operations on them */
-/* Last edited on 2016-04-03 12:49:39 by stolfilocal */
+/* Last edited on 2021-06-09 19:43:29 by jstolfi */
 
 #ifndef r3x3_H
 #define r3x3_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <r3.h>
 
 typedef struct { double c[3][3]; } r3x3_t;
@@ -21,12 +22,12 @@ void r3x3_ident(r3x3_t *M);
 void r3x3_transp (r3x3_t *A, r3x3_t *M);
   /* Sets {M} to the transpose {A^t} of matrix {A} */
 
-void r3x3_get_row(r3x3_t *A, int i, r3_t *x);
-void r3x3_set_row(r3x3_t *A, int i, r3_t *x);
+void r3x3_get_row(r3x3_t *A, int32_t i, r3_t *x);
+void r3x3_set_row(r3x3_t *A, int32_t i, r3_t *x);
   /* These two procedures copy row {i} of matrix {A} to and from vector {x}, respectively. */
 
-void r3x3_get_col(r3x3_t *A, int j, r3_t *x);
-void r3x3_set_col(r3x3_t *A, int j, r3_t *x);
+void r3x3_get_col(r3x3_t *A, int32_t j, r3_t *x);
+void r3x3_set_col(r3x3_t *A, int32_t j, r3_t *x);
   /* These two procedures copy column {j} of matrix {A} to and from vector {x}, respectively. */
 
 void r3x3_map_row (r3_t *x, r3x3_t *A, r3_t *r);

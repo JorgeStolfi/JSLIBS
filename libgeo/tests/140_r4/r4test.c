@@ -1,31 +1,33 @@
 /* r4test --- test program for r4.h, r4x4.h  */
-/* Last edited on 2016-04-03 13:09:22 by stolfilocal */
+/* Last edited on 2021-06-09 20:38:57 by jstolfi */
+
+#define _GNU_SOURCE
+#include <math.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+#include <affirm.h>
+#include <jsrandom.h>
+#include <flt.h>
 
 #include <r4.h>
 #include <r4_extra.h>
 #include <r4x4.h>
 #include <rn_test_tools.h>
 
-#include <affirm.h>
-#include <jsrandom.h>
-#include <flt.h>
-
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #define N 4
 #define NO NULL
 
 /* Internal prototypes */
 
-int main (int argc, char **argv);
-void test_r4(int verbose);
-void test_r4x4(int verbose);
+int32_t main (int32_t argc, char **argv);
+void test_r4(int32_t verbose);
+void test_r4x4(int32_t verbose);
 void throw_matrix(r4x4_t *m);
 
-int main (int argc, char **argv)
-  { int i;
+int32_t main (int32_t argc, char **argv)
+  { int32_t i;
     srand(1993);
     srandom(1993);
 
@@ -36,12 +38,12 @@ int main (int argc, char **argv)
     return (0);
   }
 
-void test_r4(int verbose)
+void test_r4(int32_t verbose)
   { r4_t a, b, c, d, e, para, perp;
     double r, s, t;
     double rr, ss, tt;
     double mag;
-    int i, j, k;
+    int32_t i, j, k;
 
     if (verbose)
       { fprintf(stderr,
@@ -240,12 +242,12 @@ void test_r4(int verbose)
     if (verbose) { fprintf(stderr, "--- r4_cross ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
-      { int i0 = (i + 0) % N;
-        int i1 = (i + 1) % N;
-        int i2 = (i + 2) % N;
-        int i3 = (i + 3) % N;
+      { int32_t i0 = (i + 0) % N;
+        int32_t i1 = (i + 1) % N;
+        int32_t i2 = (i + 2) % N;
+        int32_t i3 = (i + 3) % N;
         double sign = ((i % 2) == 0 ? 1.0 : -1.0);
-        int p;
+        int32_t p;
         r4_axis(i0, &a);
         r4_axis(i1, &b);
         r4_axis(i2, &c);
@@ -272,7 +274,7 @@ void test_r4(int verbose)
     if (verbose) { fprintf(stderr, "--- r4_pick_ortho ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
-      { int i0 = (i + 0) % N;
+      { int32_t i0 = (i + 0) % N;
         r4_axis(i0, &a);
         double ma = r4_L_inf_norm(&a);
         r4_pick_ortho(&a, &d);
@@ -294,10 +296,10 @@ void test_r4(int verbose)
     if (verbose) { fprintf(stderr, "--- r4_det ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
-      { int i0 = (i + 0) % N;
-        int i1 = (i + 1) % N;
-        int i2 = (i + 2) % N;
-        int i3 = (i + 3) % N;
+      { int32_t i0 = (i + 0) % N;
+        int32_t i1 = (i + 1) % N;
+        int32_t i2 = (i + 2) % N;
+        int32_t i3 = (i + 3) % N;
         double sign = ((i % 2) == 0 ? 1.0 : -1.0);
         r4_axis(i0, &a);
         r4_axis(i1, &b);
@@ -340,13 +342,13 @@ void test_r4(int verbose)
       }
   }
 
-void test_r4x4(int verbose)
+void test_r4x4(int32_t verbose)
   { r4x4_t A, B, C;
     r4_t a, b, c, bb, cc;
     double r, s, t;
     double rr, ss, tt;
     double mag;
-    int i, j, k;
+    int32_t i, j, k;
 
     if (verbose) { fprintf(stderr, "--- Size and allocation ---\n"); }
     if (verbose)
@@ -383,7 +385,7 @@ void test_r4x4(int verbose)
 
     if (verbose) { fprintf(stderr, "--- r4x4_get_row, r4x4_set_row, r4x4_get_col, r4x4_set_col ---\n"); }
     throw_matrix(&A);
-    int dir; /* 0 for row, 1 for col. */
+    int32_t dir; /* 0 for row, 1 for col. */
     for (dir = 0; dir < 2; dir++)
       { for (i = 0; i < N; i++)
           { /* Check {r4x4_get_row,r4x4_get_col}: */
@@ -480,7 +482,7 @@ void test_r4x4(int verbose)
     if (verbose) { fprintf(stderr, "--- r4x4_det ---\n"); }
     throw_matrix(&A);
     for (i = 0; i < N; i++)
-      { int k = (i + 1) % N;
+      { int32_t k = (i + 1) % N;
         for (j = 0; j < N; j++)
           { /* Check for linearity */
             r = drandom();
@@ -559,7 +561,7 @@ void test_r4x4(int verbose)
   }  
 
 void throw_matrix(r4x4_t *m)
-  { int i, j;
+  { int32_t i, j;
     r4_t a;
     for (i = 0; i < N; i++)
       { r4_throw_cube(&a);

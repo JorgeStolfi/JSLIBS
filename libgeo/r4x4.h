@@ -1,11 +1,12 @@
 /* r4x4.h --- 4x4 matrices and operations on them */
-/* Last edited on 2016-04-03 12:49:48 by stolfilocal */
+/* Last edited on 2021-06-09 19:44:44 by jstolfi */
 
 #ifndef r4x4_H
 #define r4x4_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <r4.h>
 
 typedef struct { double c[4][4]; } r4x4_t;
@@ -21,12 +22,12 @@ void r4x4_ident(r4x4_t *M);
 void r4x4_transp (r4x4_t *A, r4x4_t *M);
   /* Sets {M} to the transpose {A^t} of matrix {A} */
 
-void r4x4_get_row(r4x4_t *A, int i, r4_t *x);
-void r4x4_set_row(r4x4_t *A, int i, r4_t *x);
+void r4x4_get_row(r4x4_t *A, int32_t i, r4_t *x);
+void r4x4_set_row(r4x4_t *A, int32_t i, r4_t *x);
   /* These two procedures copy row {i} of matrix {A} to and from vector {x}, respectively. */
 
-void r4x4_get_col(r4x4_t *A, int j, r4_t *x);
-void r4x4_set_col(r4x4_t *A, int j, r4_t *x);
+void r4x4_get_col(r4x4_t *A, int32_t j, r4_t *x);
+void r4x4_set_col(r4x4_t *A, int32_t j, r4_t *x);
   /* These two procedures copy column {j} of matrix {A} to and from vector {x}, respectively. */
 
 void r4x4_map_row (r4_t *x, r4x4_t *A, r4_t *r);

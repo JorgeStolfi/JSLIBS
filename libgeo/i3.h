@@ -2,7 +2,7 @@
 #define i3_H
 
 /* i3.h --- operations on points and vectors of Z^3 */
-/* Last edited on 2011-12-24 01:52:16 by stolfilocal */
+/* Last edited on 2021-06-09 20:43:18 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -37,7 +37,7 @@ void i3_zero (i3_t *r);
 void i3_all (int32_t x, i3_t *r);
   /* Sets all coordinates of {r} to the value {x}. */
 
-void i3_axis (int i, i3_t *r);
+void i3_axis (int32_t i, i3_t *r);
   /* Sets {r} to the {i}th vector of the canonical basis. */
 
 void i3_add (i3_t *a, i3_t *b, i3_t *r);
@@ -79,7 +79,7 @@ int64_t i3_det (i3_t *a, i3_t *b, i3_t *c);
   /* Returns the determinant of the 3 x 3 matrix whose rows are {a,b,c}.
     Input MMax: {1518500249 > 1448*2^20}. Output range: {-4*M^3 .. +4*M^3}. */
 
-int i3_eq(i3_t *p, i3_t *q);
+bool_t i3_eq(i3_t *p, i3_t *q);
   /* True iff points {p} and {q} are identical. */
 
 void i3_throw_cube (int32_t m, i3_t *r);
@@ -95,7 +95,18 @@ void i3_gen_print (FILE *f, i3_t *a, char *fmt, char *lp, char *sep, char *rp);
     between, and after all the coordinates of {a}.  When NULL, they default 
     to "%d", "(", " ", and ")", respectively. */
 
+/* DERIVED TYPES */
+
 vec_typedef(i3_vec_t,i3_vec,i3_t);
   /* An {i3_vec_t} is a vector of {i3_t}s. */
+
+typedef bool_t i3_pred_t(i3_t *a);
+  /* Type of a function that returns a {bool_t} value from an {i3_t} value. */
+
+typedef double i3_double_func_t(i3_t *a);
+  /* Type of a function that returns a {double} value from an {i3_t} value. */
+
+typedef i3_t i3_map_t(i3_t *a);
+  /* Type of a function that returns a {double} value from an {i3_t} value. */
 
 #endif

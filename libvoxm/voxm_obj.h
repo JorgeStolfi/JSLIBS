@@ -1,5 +1,5 @@
 /* voxm_obj.h --- basic clipped distance functions for voxel-based modeling */
-/* Last edited on 2016-04-22 15:27:40 by stolfilocal */
+/* Last edited on 2021-06-06 03:20:27 by jstolfi */
 
 #ifndef voxm_obj_H
 #define voxm_obj_H

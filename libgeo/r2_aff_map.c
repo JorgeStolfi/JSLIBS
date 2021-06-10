@@ -1,10 +1,11 @@
 /* See r2_aff_map.h */
-/* Last edited on 2020-10-16 04:35:22 by jstolfi */ 
+/* Last edited on 2021-06-09 19:49:49 by jstolfi */ 
 
 /* Based on R2_AFF_MAP.m3, created 1994-05-04 by J. Stolfi. */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 
@@ -136,7 +137,7 @@ r2_aff_map_t r2_aff_map_from_points(r2_t *o, r2_t *p, r2_t *q)
 
 r2_aff_map_t r2_aff_map_from_point_pairs(int32_t np, r2_t p1[], r2_t p2[], double w[])
   {
-    int k;
+    int32_t k;
     double debug = FALSE;
     
     if (debug) { fprintf(stderr, "--- computing the affine matrix ---\n"); }
@@ -186,7 +187,7 @@ r2_aff_map_t r2_aff_map_from_point_pairs(int32_t np, r2_t p1[], r2_t p2[], doubl
                 r2_sub(&(p1[k]), &bar1, &q1k);
                 r2_sub(&(p2[k]), &bar2, &q2k);
                 /* Accumulate moments and projections: */
-                int i,j;
+                int32_t i,j;
                 for(i = 0; i < 2; i ++)
                   { for (j = 0; j < 2; j++)
                       { M.c[i][j] += wk*q1k.c[i]*q1k.c[j];

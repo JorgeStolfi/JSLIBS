@@ -1,8 +1,9 @@
 /* See rmxn_extra.h. */
-/* Last edited on 2019-12-18 21:50:21 by jstolfi */
+/* Last edited on 2021-06-09 19:58:03 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -15,9 +16,9 @@
 
 #include <rmxn_extra.h>
 
-void rmxn_perturb_unif(int m, int n, double mag, double M[])
+void rmxn_perturb_unif(int32_t m, int32_t n, double mag, double M[])
   {
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < m; i++)
       { for (j = 0; j < n; j++) 
           { double d = dabrandom(-mag, +mag);
@@ -30,13 +31,13 @@ void rmxn_rot2(double c, double s, double *x, double *y);
   /* Rotates the vector {(x,y)} by an angle {theta}, given
      {x}, {y}, {c = cos(theta)}, and {s = sin(theta)}. */
 
-void rmxn_throw_ortho(int n, double M[])
+void rmxn_throw_ortho(int32_t n, double M[])
   { /* Start with the identity matrix: */
     rmxn_ident(n, n, M);
     /* Now apply mirroring ops to it: */
-    int k, i, j;
+    int32_t k, i, j;
     double s[n];
-    int flip = 0;
+    int32_t flip = 0;
     for (k = 0; k < n; k++)
       { /* Now the first {k} rows and cols of {M} are a random orthonormal {k×k} matrix. */
         double *Mk = &(M[n*k]); /* Row {k} of {M} */
@@ -66,26 +67,26 @@ void rmxn_throw_ortho(int n, double M[])
     if (flip != 0) { for (j = 0; j < n; j++) { M[j] = -M[j]; } }
   }
 
-void rmxn_spin_rows(int m, int n, double A[], double M[])
+void rmxn_spin_rows(int32_t m, int32_t n, double A[], double M[])
   { /* Generate a random orthonormal {n×n} matrix {N}: */
     double N[n*n];
     rmxn_throw_ortho(n, N);
     /* Map each row of {A} by {N} (beware of aliasing between {A} and {M}): */
     double v[n];
-    int i;
+    int32_t i;
     for (i = 0; i < m; i++)
       { rmxn_map_row(n, n, &(A[i*n]), N, v);
         rn_copy(n, v, &(M[i*n]));
       }
   }
 
-void rmxn_spin_cols(int m, int n, double A[], double M[])
+void rmxn_spin_cols(int32_t m, int32_t n, double A[], double M[])
   { /* Generate a random orthonormal {m×m} matrix {N}: */
     double N[m*m];
     rmxn_throw_ortho(m, N);
     /* Map each col of {A} by {N} (beware of aliasing between {A} and {M}): */
     double a[m], v[m];
-    int j;
+    int32_t j;
     for (j = 0; j < n; j++)
       { rmxn_get_col(m, n, A, j, a);
         rmxn_map_col(m, m, a, N, v);
@@ -93,66 +94,66 @@ void rmxn_spin_cols(int m, int n, double A[], double M[])
       }
   }
   
-void rmxn_shift_rows(int m, int n, double A[], double v[], double M[])
-  { int i, j;
+void rmxn_shift_rows(int32_t m, int32_t n, double A[], double v[], double M[])
+  { int32_t i, j;
     for (i = 0; i < m; i++)
       { for (j = 0; j < n; j++) 
-          { int ij = i*n + j; M[ij] = A[ij] + v[j]; }
+          { int32_t ij = i*n + j; M[ij] = A[ij] + v[j]; }
       }
   }
   
-void rmxn_shift_cols(int m, int n, double v[], double A[], double M[])
-  { int i, j;
+void rmxn_shift_cols(int32_t m, int32_t n, double v[], double A[], double M[])
+  { int32_t i, j;
     for (i = 0; i < m; i++)
       { for (j = 0; j < n; j++) 
-          { int ij = i*n + j; M[ij] = A[ij] + v[i]; }
+          { int32_t ij = i*n + j; M[ij] = A[ij] + v[i]; }
       }
   }
 
-void rmxn_canonical_simplex(int d, int n, double V[])
+void rmxn_canonical_simplex(int32_t d, int32_t n, double V[])
   { 
     demand(0 <= d, "bad dimension {d}");
     demand(d < n, "space dimension {n} is too small for {d}");
-    int i, j;
+    int32_t i, j;
     for (i = 0; i <= d; i++) 
       { for (j = 0; j < n; j++)
           { V[i*n + j] = (i == j ? 1 : 0); }
       }
   }
 
-double rmxn_canonical_simplex_radius(int d)
+double rmxn_canonical_simplex_radius(int32_t d)
   { double D = (double)d;
     return sqrt(D/(D+1));
   }
 
-double rmxn_canonical_simplex_subradius(int d, int k)
+double rmxn_canonical_simplex_subradius(int32_t d, int32_t k)
   { double D = (double)d;
     double K = (double)k;
     return sqrt((D-K)/((D+1)*(K+1)));
   }
   
-double rmxn_canonical_simplex_edge(int d)  
+double rmxn_canonical_simplex_edge(int32_t d)  
   { return M_SQRT2; }
   
-double rmxn_canonical_simplex_height(int d)
+double rmxn_canonical_simplex_height(int32_t d)
   { double D = (double)d;
     return sqrt((D+1)/D);
   }
 
-double rmxn_canonical_simplex_measure(int d)
+double rmxn_canonical_simplex_measure(int32_t d)
   { double D = (double)d;
     return sqrt(D+1)*exp(-lgamma(D+1));
   }
 
-void rmxn_regular_simplex(int n, double V[])
+void rmxn_regular_simplex(int32_t n, double V[])
   { double N = (double)n;
     double SN1 = sqrt(N+1);
     double c = (SN1 - 1)/N;
     double d = 1 + (N-1)*c;
-    int i, j;
+    int32_t i, j;
     /* Set the matrix {p}: */
     for (i = 0; i <= n; i++) 
-      { int ni = i*n;
+      { int32_t ni = i*n;
         if (i == 0)
           { /* Set the first row to {(-1,-1,..-1)}: */
             for (j = 0; j < n; j++) { V[ni + j] = -1; }
@@ -164,51 +165,51 @@ void rmxn_regular_simplex(int n, double V[])
       }
     }
 
-double rmxn_regular_simplex_radius(int n)
+double rmxn_regular_simplex_radius(int32_t n)
   { double N = (double)n;
     return sqrt(N);
   }
 
-double rmxn_regular_simplex_subradius(int n, int k)
+double rmxn_regular_simplex_subradius(int32_t n, int32_t k)
   { double N = (double)n;
     double K = (double)k;
     return sqrt((N-K)/(K+1));
   }
   
-double rmxn_regular_simplex_edge(int n)  
+double rmxn_regular_simplex_edge(int32_t n)  
   { double N = (double)n;
     return sqrt(2*(N+1));
   }
   
-double rmxn_regular_simplex_height(int n)
+double rmxn_regular_simplex_height(int32_t n)
   { double N = (double)n;
     return (N+1)/sqrt(N);
   }
   
-double rmxn_regular_simplex_measure(int n)
+double rmxn_regular_simplex_measure(int32_t n)
   { double N = (double)n;
     return exp((N+1)*log(N+1)/2 - lgamma(N+1));
   }
 
-void rmxn_throw_canonical_simplex(int d, double x[])
+void rmxn_throw_canonical_simplex(int32_t d, double x[])
   { /* Generate a random point in the unit cube {[0_1]^d}: */
-    int i;
+    int32_t i;
     for (i = 0; i < d; i++) { x[i] = drandom(); }
     /* Sort {x} by increasing value: */
-    auto int cmp(const void *a, const void *b);
-    int cmp(const void *a, const void *b) { return cmp_double((double *)a, (double *)b); }
+    auto int32_t cmp(const void *a, const void *b);
+    int32_t cmp(const void *a, const void *b) { return cmp_double((double *)a, (double *)b); }
     qsort(x, d, sizeof(double), &cmp);
     /* Now map the ordered {d}-simplex to the canonical {d}-simplex: */
     x[d] = 1;
     for (i = d; i > 0; i--) { x[i] = x[i] - x[i-1]; }
   }
   
-void rmxn_throw_canonical_simplex_ball(int d, double x[]) 
+void rmxn_throw_canonical_simplex_ball(int32_t d, double x[]) 
   { /* Generate a random point in the unit {(d+1)}-dimensional ball: */
     rn_throw_ball(d+1, x);
     /* Compute projection {s} of {x} on {u = (1,1,..1)/sqrt(d+1)}: */
     double sum = 0.0;
-    int i;
+    int32_t i;
     for (i = 0; i <= d; i++) { sum += x[i]; }
     double s = sum/sqrt(d+1);
     /* Ensure projection is in {[-1_+1]}: */

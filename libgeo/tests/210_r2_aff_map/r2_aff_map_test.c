@@ -1,8 +1,9 @@
 /* hr2test --- test program for hr2.h  */
-/* Last edited on 2020-10-16 04:41:51 by jstolfi */
+/* Last edited on 2021-06-09 19:51:49 by jstolfi */
 
 #define _GNU_SOURCE_
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
@@ -21,7 +22,7 @@
  
 /* INTERNAL PROTOTYPES */
 
-int main (int argc, char **argv);
+int32_t main (int32_t argc, char **argv);
 void test_r2_aff_map(int32_t i);
 void throw_aff_map(r2_aff_map_t *A);
 
@@ -63,9 +64,9 @@ void check_aff_map
 void print_aff_map(char *name, r2_aff_map_t *A);
   /* Prints {A} to stderr. */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   {
-    int i;
+    int32_t i;
     srand(1993);
 
     for (i = 0; i < 100; i++) test_r2_aff_map(i);

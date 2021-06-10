@@ -1,8 +1,9 @@
 /* See r3x3.h. */
-/* Last edited on 2016-04-03 12:53:07 by stolfilocal */
+/* Last edited on 2021-06-09 19:50:16 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <assert.h>
 #include <math.h>
 
@@ -14,14 +15,14 @@
 #define N 3
 
 void r3x3_zero(r3x3_t *M)
-  { int i, j;
+  { int32_t i, j;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { M->c[i][j] = 0.0; }
   }
 
 void r3x3_ident(r3x3_t *M)
-  { int i, j;
+  { int32_t i, j;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { M->c[i][j] = (i == j ? 1.0 : 0.0); }
@@ -40,7 +41,7 @@ void r3x3_transp (r3x3_t *A, r3x3_t *M)
     a = A->c[1][2]; b = A->c[2][1]; M->c[1][2] = b; M->c[2][1] = a;
   }
 
-void r3x3_get_row(r3x3_t *A, int i, r3_t *x)
+void r3x3_get_row(r3x3_t *A, int32_t i, r3_t *x)
   { assert((i >= 0) && (i < N));
     double *v = &(A->c[i][0]);
     x->c[0] = v[0];
@@ -48,7 +49,7 @@ void r3x3_get_row(r3x3_t *A, int i, r3_t *x)
     x->c[2] = v[2];
   }
   
-void r3x3_set_row(r3x3_t *A, int i, r3_t *x)
+void r3x3_set_row(r3x3_t *A, int32_t i, r3_t *x)
   { assert((i >= 0) && (i < N));
     double *v = &(A->c[i][0]);
     v[0] = x->c[0];
@@ -56,14 +57,14 @@ void r3x3_set_row(r3x3_t *A, int i, r3_t *x)
     v[2] = x->c[2];
   }
 
-void r3x3_get_col(r3x3_t *A, int j, r3_t *x)
+void r3x3_get_col(r3x3_t *A, int32_t j, r3_t *x)
   { assert((j >= 0) && (j < N));
     x->c[0] = A->c[0][j];
     x->c[1] = A->c[1][j];
     x->c[2] = A->c[2][j];
   }
   
-void r3x3_set_col(r3x3_t *A, int j, r3_t *x)
+void r3x3_set_col(r3x3_t *A, int32_t j, r3_t *x)
   { assert((j >= 0) && (j < N));
     A->c[0][j] = x->c[0];
     A->c[1][j] = x->c[1];
@@ -72,7 +73,7 @@ void r3x3_set_col(r3x3_t *A, int j, r3_t *x)
 
 void r3x3_map_row (r3_t *x, r3x3_t *A, r3_t *r)
   { r3_t rr;
-    int j, k;
+    int32_t j, k;
     for (j = 0; j < N; j++)
       { double s = 0.0;
         for (k = 0; k < N; k++) s += x->c[k] * A->c[k][j];
@@ -83,7 +84,7 @@ void r3x3_map_row (r3_t *x, r3x3_t *A, r3_t *r)
 
 void r3x3_map_col (r3x3_t *A, r3_t *x, r3_t *r)
   { r3_t rr;
-    int i, k;
+    int32_t i, k;
     for (i = 0; i < N; i++)
       { double s = 0.0;
         for (k = 0; k < N; k++) s += A->c[i][k] * x->c[k];
@@ -93,14 +94,14 @@ void r3x3_map_col (r3x3_t *A, r3_t *x, r3_t *r)
   }
 
 void r3x3_scale (double s, r3x3_t *A, r3x3_t *M)  
-  { int i, j;
+  { int32_t i, j;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { M->c[i][j] = s * A->c[i][j]; }
   }
 
 void r3x3_mix (double s, r3x3_t *A, double t, r3x3_t *B, r3x3_t *M)
-  { int i, j;
+  { int32_t i, j;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { M->c[i][j] = s * A->c[i][j] + t * B->c[i][j]; }
@@ -108,7 +109,7 @@ void r3x3_mix (double s, r3x3_t *A, double t, r3x3_t *B, r3x3_t *M)
 
 void r3x3_mul (r3x3_t *A, r3x3_t *B, r3x3_t *M)
   { r3x3_t RR;
-    int i, j, k;
+    int32_t i, j, k;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { double s = 0.0;
@@ -121,7 +122,7 @@ void r3x3_mul (r3x3_t *A, r3x3_t *B, r3x3_t *M)
 void r3x3_mul_tr (r3x3_t *A, r3x3_t *B, r3x3_t *M)
   {
     r3x3_t RR;
-    int i, j, k;
+    int32_t i, j, k;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { double s = 0.0;
@@ -179,7 +180,7 @@ void r3x3_adj (r3x3_t *A, r3x3_t *M)
 
 void r3x3_inv (r3x3_t *A, r3x3_t *M)
   { r3x3_t RR;
-    int i, j;
+    int32_t i, j;
     r3x3_adj(A, &RR);
     double d = 
         A->c[0][0]*RR.c[0][0]
@@ -246,7 +247,7 @@ double r3x3_mod_norm_sqr(r3x3_t* A)
 
 bool_t r3x3_is_unif_scaling(r3x3_t *M, double s)
   {
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { if (M->c[i][j] != (i == j ? s : 0.0)) { return FALSE; } }
@@ -254,7 +255,7 @@ bool_t r3x3_is_unif_scaling(r3x3_t *M, double s)
   }
 
 void r3x3_from_rows(r3_t *a, r3_t *b, r3_t *c, r3x3_t *M)
-  { int j;
+  { int32_t j;
     for (j = 0; j < N; j++)
       { M->c[0][j] = a->c[j];
         M->c[1][j] = b->c[j];
@@ -263,7 +264,7 @@ void r3x3_from_rows(r3_t *a, r3_t *b, r3_t *c, r3x3_t *M)
   }
 
 void r3x3_from_cols(r3_t *a, r3_t *b, r3_t *c, r3x3_t *M)
-  { int j;
+  { int32_t j;
     for (j = 0; j < N; j++)
       { M->c[j][0] = a->c[j];
         M->c[j][1] = b->c[j];

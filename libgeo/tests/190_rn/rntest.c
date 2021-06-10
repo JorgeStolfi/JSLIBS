@@ -1,12 +1,13 @@
 /* rntest --- test program for rn.h, rmxn.h  */
-/* Last edited on 2018-03-04 22:55:08 by stolfilocal */
+/* Last edited on 2021-06-09 20:40:01 by jstolfi */
 
 #define _GNU_SOURCE
-
-#include <rn.h>
-#include <rmxn.h>
-#include <rmxn_extra.h>
-#include <rn_test_tools.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <limits.h>
 
 #include <affirm.h>
 #include <jsrandom.h>
@@ -14,37 +15,36 @@
 #include <flt.h>
 #include <bool.h>
 
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <limits.h>
+#include <rn.h>
+#include <rmxn.h>
+#include <rmxn_extra.h>
+#include <rn_test_tools.h>
 
 #define NO NULL
 
 /* Internal prototypes */
 
-int main (int argc, char **argv);
-void test_rn(int verbose);
-void test_rmxn(int verbose);
-void test_rn_ball_vol(int n, bool_t verbose);
-void throw_matrix(int m, int n, double *Amn);
-void throw_LT_matrix(int m, double *Lmm);
-void print_matrix(FILE *wr, int m, int n, double *Amn);
+int32_t main (int32_t argc, char **argv);
+void test_rn(int32_t verbose);
+void test_rmxn(int32_t verbose);
+void test_rn_ball_vol(int32_t n, bool_t verbose);
+void throw_matrix(int32_t m, int32_t n, double *Amn);
+void throw_LT_matrix(int32_t m, double *Lmm);
+void print_matrix(FILE *wr, int32_t m, int32_t n, double *Amn);
 
-void check_simplex(int d, int n, double V[], double rExp, double iExp, double sExp, double hExp, double mExp);
+void check_simplex(int32_t d, int32_t n, double V[], double rExp, double iExp, double sExp, double hExp, double mExp);
   /* Checks whether the {d}-dimensional simplex {V} of {R^n} is
     regular (modulo some roundoff). Assumes that {V} has {d+1} rows
     (vertices) and {n} columns (coordinates). Also checks the
     circum-radius {rExp}, the in-radius {iExp}, the edge length
     {sExp}, the height {hExp}, and the measure {mExp}. */
 
-void check_ortho_matrix(int n, double M[]);
+void check_ortho_matrix(int32_t n, double M[]);
   /* Checks whether the {n x n} matrix {M} orthonormal; that is
     whether the rows are pairwise orthogonal and have length 1. */
 
-int main (int argc, char **argv)
-  { int i;
+int32_t main (int32_t argc, char **argv)
+  { int32_t i;
     srand(1993);
     srandom(1993);
     for (i = 0; i < 100; i++) test_rn(i <= 3);
@@ -54,14 +54,14 @@ int main (int argc, char **argv)
     return (0);
   }
 
-void test_rn (int verbose)
+void test_rn (int32_t verbose)
   { double *a, *b, *c, *d, *e, *para, *perp;
     double r, s, t;
     double rr, ss, tt;
     double mag;
-    int i, j, k;
-    int maxsize = (verbose ? 5 : 10);
-    int n = rand()/(RAND_MAX/maxsize) + 1;  /* Vector size. */
+    int32_t i, j, k;
+    int32_t maxsize = (verbose ? 5 : 10);
+    int32_t n = rand()/(RAND_MAX/maxsize) + 1;  /* Vector size. */
 
     fprintf(stderr, "test_rn:  n = %d\n", n);
     
@@ -289,11 +289,11 @@ void test_rn (int verbose)
       for (i = 0; i < n; i++)
         { double sign = ((n-1)*i % 2 == 0 ? +1.0 : -1.0);
           for (k = 0; k < n-1; k++)
-            { int ik = (i + k) % n; 
+            { int32_t ik = (i + k) % n; 
               z[k] = rn_alloc(n);
               rn_axis(n, ik, z[k]);
             }
-          { int in1 = (i + n-1) % n; rn_axis(n, in1, b); }
+          { int32_t in1 = (i + n-1) % n; rn_axis(n, in1, b); }
           rn_cross(n, z, c);
           for (j = 0; j < n; j++)
             { double cxj = sign*b[j];
@@ -323,7 +323,7 @@ void test_rn (int verbose)
       for (i = 0; i < n; i++)
         { double sign = ((n-1)*i % 2 == 0 ? +1.0 : -1.0);
           for (k = 0; k < n; k++)
-            { int ik = (i + k) % n; 
+            { int32_t ik = (i + k) % n; 
               z[k] = rn_alloc(n);
               rn_axis(n, ik, z[k]);
             }
@@ -395,13 +395,13 @@ void test_rn (int verbose)
     free(perp);
   }
   
-void test_rn_ball_vol(int n, bool_t verbose)
+void test_rn_ball_vol(int32_t n, bool_t verbose)
   {
     fprintf(stderr, "test_rn_ball_vol:  n = %d\n", n);
     
     if (verbose) { fprintf(stderr, "--- Volume ---\n"); }
     { 
-      int ir;
+      int32_t ir;
       for (ir = 1; ir <= 3; ir++)
         { double r = (double)ir;
           double v = rn_ball_vol(r, n);
@@ -424,12 +424,12 @@ void test_rn_ball_vol(int n, bool_t verbose)
     }
     
     if (verbose) { fprintf(stderr, "--- Slices by angle ---\n"); }
-    { int NW = 10; /* Number of latitude steps. */
-      int imin = 0;
-      int imax = NW;
+    { int32_t NW = 10; /* Number of latitude steps. */
+      int32_t imin = 0;
+      int32_t imax = NW;
       double wmax = M_PI;
       if (verbose) { fprintf(stderr, "  volume fraction between lat = 0 and lat = z:\n"); }
-      int i;
+      int32_t i;
       for (i = imin; i <= imax; i++)
         { double w = wmax*((double)i)/((double)NW);
           double f = rn_ball_cap_vol_frac_ang(n, w);
@@ -453,12 +453,12 @@ void test_rn_ball_vol(int n, bool_t verbose)
     }
 
     if (verbose) { fprintf(stderr, "--- Slices by position ---\n"); }
-    { int NX = 10; /* Number of position steps in each hemisphere. */
-      int imin = -NX-1;
-      int imax = +NX+1;
+    { int32_t NX = 10; /* Number of position steps in each hemisphere. */
+      int32_t imin = -NX-1;
+      int32_t imax = +NX+1;
       double xmax = 1.0;
       if (verbose) { fprintf(stderr, "  volume fraction between x = -1 and x = z:\n"); }
-      int i;
+      int32_t i;
       for (i = imin; i <= imax; i++)
         { double u = xmax*((double)i)/((double)NX);
           double f = rn_ball_cap_vol_frac_pos(n, u);
@@ -470,17 +470,17 @@ void test_rn_ball_vol(int n, bool_t verbose)
       
   }
 
-void test_rmxn(int verbose)
+void test_rmxn(int32_t verbose)
   { double *Amn, *Bmn, *Cmn, *Amp, *Bpn, *Amm, *Bmm, *Cmm;
     double *am, *bm, *cm, *an, *bn, *cn;
     double r, s, t;
     double rr, ss, tt;
     double mag;
-    int i, j, k;
-    int maxsize = (verbose ? 5 : 10);
-    int m = rand()/(RAND_MAX/maxsize) + 1;  /* Number of rows. */
-    int n = rand()/(RAND_MAX/maxsize) + 1;  /* Number of columns. */
-    int p = rand()/(RAND_MAX/maxsize) + 1;  /* Middle dimension for rmxn_mul. */
+    int32_t i, j, k;
+    int32_t maxsize = (verbose ? 5 : 10);
+    int32_t m = rand()/(RAND_MAX/maxsize) + 1;  /* Number of rows. */
+    int32_t n = rand()/(RAND_MAX/maxsize) + 1;  /* Number of columns. */
+    int32_t p = rand()/(RAND_MAX/maxsize) + 1;  /* Middle dimension for rmxn_mul. */
 
     fprintf(stderr, "test_rmxn:  m = %d  n = %d  p = %d\n", m, n, p);
     
@@ -670,7 +670,7 @@ void test_rmxn(int verbose)
     if (verbose) { fprintf(stderr, "--- rmxn_det ---\n"); }
     throw_matrix(m, m, Amm);
     for (i = 0; i < m; i++)
-      { int k = (i + 1) % m;
+      { int32_t k = (i + 1) % m;
         for (j = 0; j < m; j++)
           { /* Check for linearity */
             r = drandom();
@@ -761,7 +761,7 @@ void test_rmxn(int verbose)
       
     if (verbose) { fprintf(stderr, "--- rmxn_LT_inv_map_row, rmxn_LT_inv_map_col ---\n"); }
     { double *Lmm = Amm;
-      int by_row; 
+      int32_t by_row; 
       throw_LT_matrix(m, Lmm);
       (void)rmxn_inv(m, Lmm, Bmm);
       rn_throw_cube(m, am);
@@ -857,7 +857,7 @@ void test_rmxn(int verbose)
       }
 
     if (verbose) { fprintf(stderr, "--- rmxn_canonical_simplex ---\n"); }
-    { int d = n-1;
+    { int32_t d = n-1;
       double V[(d+1)*n];
       rmxn_canonical_simplex(d, n, V);
       double rExp = rmxn_canonical_simplex_radius(d);
@@ -869,7 +869,7 @@ void test_rmxn(int verbose)
     }
 
     if (verbose) { fprintf(stderr, "--- rmxn_throw_canonical_simplex ---\n"); }
-    { int d = n-1;
+    { int32_t d = n-1;
       double x[d+1];
       double tol = 1.0e-12;
       rmxn_throw_canonical_simplex(d, x);
@@ -884,7 +884,7 @@ void test_rmxn(int verbose)
     }
 
     if (verbose) { fprintf(stderr, "--- rmxn_throw_canonical_simplex_ball ---\n"); }
-    { int d = n-1;
+    { int32_t d = n-1;
       double x[d+1];
       double tol = 1.0e-12;
       rmxn_throw_canonical_simplex_ball(d, x);
@@ -933,23 +933,23 @@ void test_rmxn(int verbose)
     free(an); free(bn); free(cn);
   }  
 
-void throw_matrix(int m, int n, double *Amn)
-  { int i, j;
+void throw_matrix(int32_t m, int32_t n, double *Amn)
+  { int32_t i, j;
     for (i = 0; i < m; i++)
       { for (j = 0; j < n; j++) 
           { Amn[n*i + j] = 2.0 * drandom() - 1.0; }
       }
   }
 
-void throw_LT_matrix(int m, double *Lmm)
-  { int i, j;
+void throw_LT_matrix(int32_t m, double *Lmm)
+  { int32_t i, j;
     for (i = 0; i < m; i++)
       { for (j = 0; j < m; j++) 
           { Lmm[m*i + j] = (j <= i ? 2.0 * drandom() - 1.0 : 0.0); }
       }
   }
 
-void check_simplex(int d, int n, double V[], double rExp, double iExp, double sExp, double hExp, double mExp)
+void check_simplex(int32_t d, int32_t n, double V[], double rExp, double iExp, double sExp, double hExp, double mExp)
   { if (n < 1) { return; }
     demand(d <= n, "simplex dimension {d} too big for space dimension {n}");
     double tol = 1.0e-12;
@@ -957,7 +957,7 @@ void check_simplex(int d, int n, double V[], double rExp, double iExp, double sE
     double dMin = +INFINITY;
     double rMax = -INFINITY;
     double rMin = +INFINITY;
-    int i, j, k; 
+    int32_t i, j, k; 
     /* Compute barycenter {b[0..n-1]}: */
     double b[n];
     for (k = 0; k < n; k++)
@@ -1070,10 +1070,10 @@ void check_simplex(int d, int n, double V[], double rExp, double iExp, double sE
     }
   }
 
-void check_ortho_matrix(int n, double M[])
+void check_ortho_matrix(int32_t n, double M[])
   { 
     double tol = 1.0e-12;
-    int i0, i1, j;
+    int32_t i0, i1, j;
     for (i0 = 0; i0 < n; i0++)
       { for (i1 = 0; i1 <= i0; i1++)
           { /* Compute dot product {sObs} of rows {i0} and {i1}: */
@@ -1086,8 +1086,8 @@ void check_ortho_matrix(int n, double M[])
       }
   }
 
-void print_matrix(FILE *wr, int m, int n, double *Amn)
-  { int i, j;
+void print_matrix(FILE *wr, int32_t m, int32_t n, double *Amn)
+  { int32_t i, j;
     fprintf(wr, "%d × %d matrix\n", m, n);
     for (i = 0; i < m; i++)
       { for (j = 0; j < n; j++)

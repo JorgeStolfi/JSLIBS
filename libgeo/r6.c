@@ -1,8 +1,9 @@
 /* See r6.h. */
-/* Last edited on 2007-12-27 02:32:34 by stolfi */
+/* Last edited on 2021-06-09 20:44:11 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 
 #include <r6.h>
@@ -32,7 +33,7 @@ void r6_all (double x, r6_t *r)
     r->c[5] = x;
   }
 
-void r6_axis (int i, r6_t *r)
+void r6_axis (int32_t i, r6_t *r)
   { affirm((i >= 0) && (i < N), "r6_axis: bad index");
     r->c[0] = 0.0;
     r->c[1] = 0.0;
@@ -239,7 +240,7 @@ double r6_decomp (r6_t *a, r6_t *u, r6_t *para, r6_t *perp)
     return rn_decomp(N, &(a->c[0]), &(u->c[0]), paran, perpn);
   }
 
-int r6_is_finite(r6_t *p)
+int32_t r6_is_finite(r6_t *p)
   { if (fabs(p->c[0]) == INF) return FALSE;
     if (fabs(p->c[1]) == INF) return FALSE;
     if (fabs(p->c[2]) == INF) return FALSE;
@@ -249,7 +250,7 @@ int r6_is_finite(r6_t *p)
     return TRUE;
   }
 
-int r6_eq(r6_t *p, r6_t *q)
+bool_t r6_eq(r6_t *p, r6_t *q)
   { if (p->c[0] != q->c[0]) return FALSE;
     if (p->c[1] != q->c[1]) return FALSE;
     if (p->c[2] != q->c[2]) return FALSE;
@@ -260,14 +261,14 @@ int r6_eq(r6_t *p, r6_t *q)
   }
 
 void r6_throw_cube (r6_t *r)
-  { int i;
+  { int32_t i;
     for (i = 0; i < N; i++)
       { r->c[i] = 2.0 * drandom() - 1.0; }
   }
 
 void r6_throw_dir (r6_t *r)
   { /* Generate a nonzero Gaussian random vector: */
-    int i;
+    int32_t i;
     double r2;
     do
       { r6_throw_normal(r);
@@ -285,7 +286,7 @@ void r6_throw_ball (r6_t *r)
   { rn_throw_ball(N, &(r->c[0])); }
 
 void r6_throw_normal (r6_t *r)
-  { int i;
+  { int32_t i;
     for (i = 0; i < N; i++)
       { r->c[i] = dgaussrand(); }
   }
