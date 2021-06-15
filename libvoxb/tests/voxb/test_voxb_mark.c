@@ -1,5 +1,5 @@
 /* See {test_voxb_mark}.h  */
-/* Last edited on 2021-06-09 23:25:32 by jstolfi */
+/* Last edited on 2021-06-12 09:37:15 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -21,7 +21,7 @@
 #include <test_voxb_mark.h>
 
 
-void test_voxb_mark_corners(ppv_array_t *a, r3_t *ctr, r3_t *rad)
+void test_voxb_mark_corners(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
     r3_gen_print (stderr, ctr, "%.2f", "  ctr = ( ", " ", " )\n");
@@ -41,7 +41,7 @@ void test_voxb_mark_corners(ppv_array_t *a, r3_t *ctr, r3_t *rad)
                 r3_motion_state_t S; /* Ball position and pose. */
                 S.p = (r3_t){{ ctr->c[0] + ix*rad->c[0], ctr->c[1] + iy*rad->c[1], ctr->c[2] + iz*rad->c[2] }};
                 r3x3_ident(&(S.M)); 
-                voxb_splat_object(a, ball, &S, ballR, voxb_op_OR);
+                voxb_splat_object(A, ball, &S, ballR, voxb_op_OR);
               }
           }
       }
@@ -57,7 +57,7 @@ void test_voxb_mark_corners(ppv_array_t *a, r3_t *ctr, r3_t *rad)
       { return voxb_obj_ball(p, ballR); }
   }
     
-void test_voxb_mark_edges(ppv_array_t *a, r3_t *ctr, r3_t *rad, int ax)
+void test_voxb_mark_edges(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, int ax)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
     r3_gen_print (stderr, ctr, "%.2f", "  ctr = ( ", " ", " )\n");
@@ -88,7 +88,7 @@ void test_voxb_mark_edges(ppv_array_t *a, r3_t *ctr, r3_t *rad, int ax)
             S.M.c[0][xax] = 1.0;
             S.M.c[1][yax] = 1.0;
             S.M.c[2][zax] = 1.0;
-            voxb_splat_object(a, rod, &S, hypot(rodH,rodR), voxb_op_OR);
+            voxb_splat_object(A, rod, &S, hypot(rodH,rodR), voxb_op_OR);
           }
       }
 

@@ -5,7 +5,7 @@
 #define test_voxm_C_COPYRIGHT \
   "Copyright © 2016 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2021-06-09 16:29:59 by jstolfi */
+/* Last edited on 2021-06-12 12:03:33 by jstolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -70,7 +70,8 @@
 #include <r3x3.h>
 #include <r3_motion.h>
 #include <ppv_array.h>
-#include <ppv_io.h>
+#include <ppv_array_read.h>
+#include <ppv_array_write.h>
 
 #include <voxm_obj.h>
 #include <voxm_splat.h>
@@ -100,7 +101,7 @@ typedef struct test_voxm_options_t
 test_voxm_options_t *test_voxm_parse_options(int32_t argc, char **argv);
   /* Parses the command line arguments and packs them as an {test_voxm_options_t}. */
 
-void test_voxm_tomogram_write(char *outFile, ppv_array_t *a); 
+void test_voxm_tomogram_write(char *outFile, ppv_array_desc_t *A); 
 
 int32_t main(int32_t argc,char** argv);
 
@@ -111,20 +112,19 @@ int32_t main(int32_t argc, char** argv)
     test_voxm_options_t *o = test_voxm_parse_options(argc, argv);
     
     /* Array dimensions: */
+    ppv_dim_t d = 3;
     int32_t NX = 3*o->size; 
     int32_t NY = o->size + o->size/2; 
     int32_t NZ = o->size; 
     
     /* Allocate the voxel array: */
-    ppv_size_t sz[ppv_array_NAXES];
-    int32_t k;
-    for (k = 0; k < ppv_array_NAXES; k++) { sz[k] = 1; }
+    ppv_size_t sz[d];
     sz[0] = NZ;
     sz[1] = NY;
     sz[2] = NX;
     ppv_nbits_t bps = 8;
     ppv_nbits_t bpw = 32;
-    ppv_array_t a = ppv_new_array(sz, bps, bpw);
+    ppv_array_desc_t *A = ppv_array_new(d, sz, bps, bpw);
     
     /* Center and radius of array: */
     r3_t ctr = (r3_t){{ 0.5*NX, 0.5*NY, 0.5*NZ }};
@@ -132,29 +132,29 @@ int32_t main(int32_t argc, char** argv)
     double fuzzR = 1.5;      /* Half-thickness of fuzzy layer. */
 
     /* Mark the corners: */
-    test_voxm_mark_corners(&a, &ctr, &rad, fuzzR);
-    test_voxm_mark_edges(&a, &ctr, &rad, 0, fuzzR);
-    test_voxm_mark_edges(&a, &ctr, &rad, 1, fuzzR);
-    test_voxm_mark_edges(&a, &ctr, &rad, 2, fuzzR);
+    test_voxm_mark_corners(A, &ctr, &rad, fuzzR);
+    test_voxm_mark_edges(A, &ctr, &rad, 0, fuzzR);
+    test_voxm_mark_edges(A, &ctr, &rad, 1, fuzzR);
+    test_voxm_mark_edges(A, &ctr, &rad, 2, fuzzR);
 
     if (strcmp(o->object, "objs") == 0)
-      { test_voxm_objs(&a, &ctr, &rad, fuzzR); }
+      { test_voxm_objs(A, &ctr, &rad, fuzzR); }
     else if (strcmp(o->object, "tubes") == 0)
-      { test_voxm_tubes(&a, &ctr, &rad, fuzzR); }
+      { test_voxm_tubes(A, &ctr, &rad, fuzzR); }
     else 
       { demand(FALSE, "invalid \"-object\" option"); }
     
     /* Write it out: */
-    test_voxm_tomogram_write("-", &a);
+    test_voxm_tomogram_write("-", A);
     return 0;
   }
     
-void test_voxm_tomogram_write(char *outFile, ppv_array_t *a)
+void test_voxm_tomogram_write(char *outFile, ppv_array_desc_t *A)
   {
     FILE *wr = open_write(outFile, TRUE);
 
     bool_t plain = FALSE;
-    ppv_write_array(wr, a, plain);
+    ppv_array_write_file(wr, A, plain);
     
     fclose(wr); 
   }

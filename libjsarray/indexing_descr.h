@@ -2,7 +2,7 @@
 #define indexing_descr_H
 
 /* Multidimensional array descriptors. */
-/* Last edited on 2020-10-02 11:22:39 by jstolfi */ 
+/* Last edited on 2021-06-13 11:33:58 by jstolfi */ 
 
 #include <stdio.h>
 #include <bool.h>
@@ -312,10 +312,10 @@ sign_t ix_descr_compare ( ix_descr_t *D, const ix_index_t ixa[], const ix_index_
     
 /* ELEMENT ENUMERATION */
 
-typedef ix_op_t ix_descr_op_t;
+typedef ix_index_pos3_op_t ix_descr_op_t;
   /* Client procedure for {ix_descr_enum}. */
 
-void ix_descr_enum 
+bool_t ix_descr_enum 
   ( ix_descr_op_t *op,
     ix_order_t ixor,
     bool_t reverse,
@@ -334,6 +334,13 @@ void ix_descr_enum
     and {sz-(1,..1)}. For each tuple {ix}, it computes the the
     corresponding positions {pA,pB,pC} in {A,B,C}, respectively; and
     calls {op(ix,pA,pB,pC)}.
+    
+    The procedure stops the enumeraton when the call to {op} returns
+    {TRUE}, and returns {TRUE}. Otherwise the enumeration continues
+    until all valid index tuples are exhausted, and returns {FALSE}. In
+    particular, if the array is empty (that is, one of the sizes
+    {sz[ax]} is zero), the procedure returns {FALSE} without ever
+    calling {op}.
     
     If {A} is NULL, {A.sz[i]} is assumed to be {+oo}, and {pA} is
     always 0. Ditto for the other two descriptors. If all three

@@ -1,5 +1,5 @@
 /* See indexing_io.h */
-/* Last edited on 2011-12-21 21:36:47 by stolfi */
+/* Last edited on 2021-06-14 08:44:09 by jstolfi */
 /* Copyright © 2007 by Jorge Stolfi, from University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
@@ -16,25 +16,25 @@ void ix_print_dim ( FILE *wr, ix_dim_t d )
 void ix_print_pos ( FILE *wr, ix_pos_t p )
 { fprintf(wr, ("%" uint64_u_fmt), p); }
 
-void ix_print_indices ( FILE *wr, char *lp, ix_dim_t d, ix_index_t ix[], int wd, char *sp, char *rp )
+void ix_print_indices ( FILE *wr, char *lp, ix_dim_t d, const ix_index_t ix[], int wd, char *sp, char *rp )
   { int i; 
     if (sp == NULL) { sp = " "; }
     char *epref = "";
     if (lp != NULL) { fprintf(wr, "%s", lp); }
     for (i = 0; i < d; i++) { fprintf(wr, ("%s%*" int64_d_fmt), epref, wd, ix[i]); epref = sp; }
-    if (rp == NULL) { fprintf(wr, "%s", rp); }
+    if (rp != NULL) { fprintf(wr, "%s", rp); }
   }
 
-void ix_print_sizes ( FILE *wr, char *lp, ix_dim_t d, ix_size_t sz[], int wd, char *sp, char *rp )
+void ix_print_sizes ( FILE *wr, char *lp, ix_dim_t d, const ix_size_t sz[], int wd, char *sp, char *rp )
   { int i; 
     if (sp == NULL) { sp = " "; }
     char *epref = "";
     if (lp != NULL) { fprintf(wr, "%s", lp); }
     for (i = 0; i < d; i++) { fprintf(wr, ("%s%*" uint64_u_fmt), epref, wd, sz[i]); epref = sp; }
-    if (rp == NULL) { fprintf(wr, "%s", rp); }
+    if (rp != NULL) { fprintf(wr, "%s", rp); }
   }
 
-void ix_print_steps ( FILE *wr, char *lp, ix_dim_t d, ix_step_t st[], int wd, char *sp, char *rp )
+void ix_print_steps ( FILE *wr, char *lp, ix_dim_t d, const ix_step_t st[], int wd, char *sp, char *rp )
   { int i; 
     if (sp == NULL) { sp = " "; }
     char *epref = "";
@@ -47,7 +47,7 @@ void ix_print_steps ( FILE *wr, char *lp, ix_dim_t d, ix_step_t st[], int wd, ch
         else
           { fprintf(wr, ("%+*" int64_d_fmt), wd, st[i]); }
       }
-    if (rp == NULL) { fprintf(wr, "%s", rp); }
+    if (rp != NULL) { fprintf(wr, "%s", rp); }
   }
 
 void ix_print_parms
@@ -55,8 +55,8 @@ void ix_print_parms
    char *pre, 
    ix_dim_t d, 
    ix_pos_t *bp, 
-   ix_size_t sz[], 
-   ix_step_t st[], 
+   const ix_size_t sz[], 
+   const ix_step_t st[], 
    int wd, 
    char *suf
  )

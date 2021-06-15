@@ -1,5 +1,5 @@
 /* Sampled multi-dimensional signals. */
-/* Last edited on 2008-05-25 01:20:37 by stolfi */
+/* Last edited on 2021-06-13 11:34:44 by jstolfi */
 
 #ifndef ppv_signal_H
 #define ppv_signal_H
@@ -22,17 +22,14 @@
   or space curve, a two-dimensional image or repeating pattern, a
   three-dimensional tomogram, a video clip, etc.. */
 
-#define ppv_signal_NAXES ppv_array_NAXES
-  /* Max dimension of the domain of a signal. */
-
 typedef 
   struct ppv_signal_t {
     ppv_array_t s;                         /* Sample array. */
     double *vtb                            /* Sample decoding table. */
-    interval_t dom[ppv_signal_NAXES];      /* Fundamental coordinate interval along each axis. */
+    interval_t dom[];      /* Fundamental coordinate interval along each axis. */
     interval_t rng;                        /* Value range of signal. */
-    ppv_extrap_t extrap[ppv_signal_NAXES]; /* Extrapolation method along each axis. */
-    ppv_interp_t interp[ppv_signal_NAXES]; /* Interpolation method along each axis. */
+    ppv_extrap_t extrap[]; /* Extrapolation method along each axis. */
+    ppv_interp_t interp[]; /* Interpolation method along each axis. */
   } ppv_signal_t; 
   /* A {ppv_signal_t} is descriptor for a signal. */
 
@@ -40,7 +37,7 @@ typedef
   Domain and range
 
     The domain of any {ppv_signal_t} is a subset of {R^N} where {N =
-    ppv_signal_NAXES}. If {f} is such a signal, and {x[0..N-1]} is a vector
+    }. If {f} is such a signal, and {x[0..N-1]} is a vector
     of real numbers, we denote by {f(x)} the value of signal {f}
     at point {x}.
 
@@ -220,7 +217,7 @@ ppv_pos_t ppv_signal_eval(ppv_signal_t *f, double []);
   section "DETAILS OF SAMPLE PACKING" below. The user must make sure
   that {pos} is valid (i.e. the sample actually exists.)  */
 
-ppv_sample_t ppv_get_sample 
+ppv_sample_t ppv_get_sample_at_pos 
   ( void *el, 
     ppv_nbits_t bps, 
     ppv_nbits_t bpw, 
@@ -228,7 +225,7 @@ ppv_sample_t ppv_get_sample
   );
   /* Extracts the sample with position {pos}. */
 
-void ppv_set_sample 
+void ppv_set_sample_at_pos 
   ( void *el, 
     ppv_nbits_t bps, 
     ppv_nbits_t bpw, 
@@ -239,29 +236,29 @@ void ppv_set_sample
 
 /* INDEX TUPLE MANIPULATION */
 
-void ppv_index_clear ( ppv_index_t *ix );
-  /* Sets {ix[i] = 0} for every axis {i}. */
+void ppv_index_clear ( ppv_dim_t d, ppv_index_t ix[] );
+  /* Sets {ix[i] = 0} for every axis {i} in {0..d-1}. */
 
-void ppv_index_assign ( ppv_index_t *ix, ppv_index_t *val );
-  /* Sets {ix[i] = val[i]} for every axis {i}. */
+void ppv_index_assign ( ppv_dim_t d, ppv_index_t ix[], ppv_index_t *val );
+  /* Sets {ix[i] = val[i]} for every axis {i} in {0..d-1}. */
 
-bool_t ppv_index_first ( ppv_index_t *ix, ppv_signal_t *A );
-  /* Sets {ix[i] = 0} for every axis {i}, and returns TRUE iff that
+bool_t ppv_index_first ( ppv_dim_t d, ppv_index_t ix[], ppv_signal_t *A );
+  /* Sets {ix[i] = 0} for every axis {i} in {0..d-1}, and returns TRUE iff that
     is a valid index tuple for {A} (i.e. {A.size[i]>0} for all {i}). */
 
-bool_t ppv_index_last ( ppv_index_t *ix, ppv_signal_t *A );
+bool_t ppv_index_last ( ppv_dim_t d, ppv_index_t ix[], ppv_signal_t *A );
   /* Sets {ix[i] = A.size[i]-1} for every axis {i}, and returns TRUE iff that
     is a valid index tuple for {A} (i.e. {A.size[i]>0} for all {i}). */
 
-void ppv_index_shift ( ppv_index_t *ix, ppv_index_t *inc );
+void ppv_index_shift ( ppv_dim_t d, ppv_index_t ix[], ppv_index_t *inc );
   /* Sets {ix[i] += inc[i]} for every axis {i}. */
 
-sign_t ppv_index_compare ( ppv_index_t *ixa, ppv_index_t *ixb );
-  /* Returns {NEG}, {ZER}, or {POS} depending on whether {ixa} is less
-    than, equal to, or greater than {ixb} in reverse lexicographic
+sign_t ppv_index_compare ( ppv_index_t ixa[], ppv_index_t ixb[] );
+  /* Returns {NEG}, {ZER}, or {POS} depending on whether {ixa[0..d-1]} is less
+    than, equal to, or greater than {ixb[0..d-1]} in reverse lexicographic
     order (where the first index varies the fastest). */
 
-bool_t ppv_index_next ( ppv_index_t *ix, ppv_signal_t *A, ppv_dim_t d, ppv_pos_t *p );
+bool_t ppv_index_next ( ppv_index_t ix[], ppv_signal_t *A, ppv_dim_t d, ppv_pos_t *p );
   /* Set {ix[0..d-1]} to the next combination of values of those
     indices that is valid for {A}, in reverse lexicographic order
     (with the first index in the innermost loop, as in FORTRAN array
@@ -290,7 +287,7 @@ bool_t ppv_index_next ( ppv_index_t *ix, ppv_signal_t *A, ppv_dim_t d, ppv_pos_t
 
     */
 
-bool_t ppv_index_prev ( ppv_index_t *ix, ppv_signal_t *A, ppv_dim_t d, ppv_pos_t *p );
+bool_t ppv_index_prev ( ppv_index_t ix[], ppv_signal_t *A, ppv_dim_t d, ppv_pos_t *p );
   /* Like {ppv_index_next}, but in the reverse order. Each index {ix[i]}
     with {i} in {0..d-1} is decremented from {A.size[i]-1} down to 0,
     and reset to {(A.size[i]-1)} when needed; and the returned result
@@ -308,7 +305,7 @@ bool_t ppv_index_prev ( ppv_index_t *ix, ppv_signal_t *A, ppv_dim_t d, ppv_pos_t
     
 /* INDEX TUPLE VALIDATION */
     
-bool_t ppv_index_is_valid ( ppv_index_t *ix, ppv_signal_t *A );
+bool_t ppv_index_is_valid ( ppv_index_t ix[], ppv_signal_t *A );
   /* Returns TRUE iff {ix} is a valid index tuple for the array {A},
     i.e., if sample {A[ix[0],..ix[N-1]]} exists. This is true if and
     only if {ix[i]} lies in the range {0..A.step[i]-1}, for every
@@ -346,7 +343,7 @@ void ppv_subsample ( ppv_signal_t *A, ppv_axis_t i, ppv_size_t stride );
     the original {size[i]}. In particular, {size[i]} will be 0 
     if and only if it was 0 originally. */
 
-void ppv_flip ( ppv_signal_t *A, ppv_axis_t i );
+void ppv_reverse ( ppv_signal_t *A, ppv_axis_t i );
   /* Modifies the descriptor {A} so that it describes the same samples
     as before, with the same indices, except that the index {i}
     runs in the opposite direction.  */
@@ -417,14 +414,18 @@ void ppv_chop ( ppv_signal_t *A, ppv_axis_t i, ppv_size_t sz, ppv_axis_t j );
 
 /* ELEMENT ENUMERATION */
 
-typedef void ppv_op_t ( ppv_index_t *ix, ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC );
-  /* Client procedure for {ppv_enum}. */
-
-void ppv_enum ( ppv_op_t op, ppv_signal_t *A, ppv_signal_t *B, ppv_signal_t *C );
+bool_t ppv_enum ( ppv_index_pos3_op_t op, ppv_signal_t *A, ppv_signal_t *B, ppv_signal_t *C );
   /* Enumerates all valid samples of the arrays {A,B,C} in parallel,
     with matching indices. For each index tuple {[ix[0],..ix[N-1]]}, calls
     {op(ix, pA, pB, pC)} where {pA,pB,pC} are the
     positions of the corresponding samples in the three arrays. 
+    
+    The procedure stops the enumeraton when the call to {op} returns
+    {TRUE}, and returns {TRUE}. Otherwise the enumeration continues
+    until all valid index tuples are exhausted, and returns {FALSE}. In
+    particular, if the array is empty (that is, one of the sizes
+    {sz[ax]} is zero), the procedure returns {FALSE} without ever
+    calling {op}. 
     
     If an array is NULL, it is not scanned and the corresponding {pos}
     is always 0. All {ppv_signal_t} arguments that are not NULL must

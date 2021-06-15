@@ -2,7 +2,7 @@
 #define indexing_H
 
 /* Multidimensional array indexing tools */
-/* Last edited on 2020-10-15 21:16:36 by jstolfi */
+/* Last edited on 2021-06-14 08:47:12 by jstolfi */
 
 #include <bool.h>
 #include <sign.h>
@@ -225,7 +225,7 @@ bool_t ix_contained ( ix_dim_t d, const ix_size_t sza[], const ix_size_t szb[], 
 
 /* The following procedures modify the indexing parameters {sz}, {*bp}
   and {st} so as to change the set of valid indices and/or the mapping
-  between indices and positions. Obviously, no array elements are
+  between indices and positions, as described. Obviously, no array elements are
   actually allocated, reclaimed, or changed.
   
   In the describing comments, {ixA[0..d-1]} is a generic tuple valid
@@ -346,7 +346,7 @@ void ix_slice
     const ix_axis_t ax[], 
     const ix_index_t ix[] 
   );
-  /* Sets the {n} indices along axes {ax[0..n-1]} are set to the values
+  /* Sets the {n} indices along axes {ax[0..n-1]} to the values
     {ix[0..n-1]}, and then performs an index permutation that moves those axes
     to the end of the index tuple and brings the rest of the indices to the
     front, preserving their order.
@@ -539,11 +539,18 @@ int ix_sync_level
 
 /* ELEMENT ENUMERATION */
 
-typedef void ix_op_t ( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC );
-  /* Client procedure for {ix_enum}. */
+typedef bool_t ix_index_op_t (const ix_index_t ix[]);
+  /* Type of a procedure that operates on a given index tuple {ix[0..d-1]}, returning
+    a boolean value.  */
 
-void ix_enum 
-  ( ix_op_t *op,
+typedef bool_t ix_index_pos_op_t ( const ix_index_t ix[], ix_pos_t pA );
+typedef bool_t ix_index_pos2_op_t ( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB );
+typedef bool_t ix_index_pos3_op_t ( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC );
+  /* Type of a procedure that operates on a given index tuple {ix[0..d-1]}, and corresponding
+    array position values {posA}, {posB}, {posC}, returning a boolean value.  */
+
+bool_t ix_enum 
+  ( ix_index_pos3_op_t *op,
     ix_dim_t d,
     const ix_size_t sz[],
     ix_order_t ixor,
@@ -562,9 +569,16 @@ void ix_enum
     varying the indices in the order defined by {ixor}; from
     {(0,..0)} to {sz-(1,..1)} if {reverse} is FALSE, and from
     {sz-(1,..1)} to {(0,..0)} if reverse is TRUE. For each tuple {ix},
-    computes the the positions {pA,pB,pC} using offsets {bpA,bpB,bpC}
+    computes the relative positions {pA,pB,pC} using offsets {bpA,bpB,bpC}
     and steps {stA,stB,stC}, respectively; and calls
     {op(ix,pA,pB,pC)}.
+    
+    The procedure stops the enumeraton when the call to {op} returns
+    {TRUE}, and returns {TRUE}. Otherwise the enumeration continues
+    until all valid index tuples are exhausted, and returns {FALSE}. In
+    particular, if the array is empty (that is, one of the sizes
+    {sz[ax]} is zero), the procedure returns {FALSE} without ever
+    calling {op}. 
     
     If {stA} is NULL, {pA} is always {bpA}. Ditto for the other two
     arrays.

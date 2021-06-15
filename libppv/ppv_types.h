@@ -1,5 +1,5 @@
 /* Basic types and limits for portable 6-dimensional sample arrays. */
-/* Last edited on 2019-08-30 07:18:27 by jstolfi */
+/* Last edited on 2021-06-13 12:25:06 by jstolfi */
 
 #ifndef ppv_types_H
 #define ppv_types_H
@@ -38,6 +38,12 @@ typedef ix_axis_t ppv_axis_t;
   /* Specifies an axis (index). Legitimate values are {0..ppv_NAXES-1},
      but {ppv_NAXES} may be used as a `null' value. */
 
+typedef ix_index_op_t ppv_index_op_t;
+typedef ix_index_pos_op_t ppv_index_pos_op_t;
+typedef ix_index_pos2_op_t ppv_index_pos2_op_t;
+typedef ix_index_pos3_op_t ppv_index_pos3_op_t;
+  /* Type of a procedure that operates on an index tuple. */
+
 /* SIZES, STEPS, POSITIONS */
 
 typedef ix_step_t ppv_step_t; 
@@ -58,7 +64,15 @@ typedef ix_pos_t ppv_pos_t;
 
 /* LIMITS */
 
+#define ppv_MAX_DIM (ix_MAX_DIM)
+  /* Max number of axes (indices) in an array. */
+
+#define ppv_MAX_AXIS (ix_MAX_AXIS)
+  /* Should be {ppv_MAX_DIM-1}. Axes are numbered {0..ppv_MAX_AXIS}. */
+
 #define ppv_MAX_BPS (32)
+  /* Maximum number of bits per sample. */
+
 #define ppv_MAX_SAMPLE_VAL UINT32_MAX
   /* I.e. {2^ppv_MAX_BPS - 1}. */
 

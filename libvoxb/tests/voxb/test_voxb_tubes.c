@@ -1,5 +1,5 @@
 /* See {test_voxb_tubes.h} */
-/* Last edited on 2021-06-09 23:30:56 by jstolfi */
+/* Last edited on 2021-06-12 09:39:52 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -22,7 +22,7 @@
 #include <test_voxb_tubes.h>
 #include <test_voxb_mark.h>
 
-void test_voxb_tubes(ppv_array_t *a, r3_t *ctr, r3_t *rad)
+void test_voxb_tubes(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad)
   { 
     int NT = 3; /* Number of independent tests. */
     
@@ -43,14 +43,14 @@ void test_voxb_tubes(ppv_array_t *a, r3_t *ctr, r3_t *rad)
     for (k = 0; k < NT; k++)
       { if (doit[k])
           { /* Mark the {Y} and {Z} edges of the sub-box: */
-            test_voxb_mark_edges(a, &csu, &rsu, 1);
-            test_voxb_mark_edges(a, &csu, &rsu, 2);
+            test_voxb_mark_edges(A, &csu, &rsu, 1);
+            test_voxb_mark_edges(A, &csu, &rsu, 2);
 
             /* Splat the tubes: */
             switch (k)
-              { case 0: test_voxb_tubes_helix  (a, &csu, &rsu); break;
-                case 1: test_voxb_tubes_segment(a, &csu, &rsu); break;
-                case 2: test_voxb_tubes_bezier (a, &csu, &rsu); break;
+              { case 0: test_voxb_tubes_helix  (A, &csu, &rsu); break;
+                case 1: test_voxb_tubes_segment(A, &csu, &rsu); break;
+                case 2: test_voxb_tubes_bezier (A, &csu, &rsu); break;
                 default: assert(FALSE);
               }
 
@@ -60,7 +60,7 @@ void test_voxb_tubes(ppv_array_t *a, r3_t *ctr, r3_t *rad)
       }
   }
   
-void test_voxb_tubes_helix(ppv_array_t *a, r3_t *ctr, r3_t *rad)
+void test_voxb_tubes_helix(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
 
@@ -68,9 +68,9 @@ void test_voxb_tubes_helix(ppv_array_t *a, r3_t *ctr, r3_t *rad)
     r3_motion_state_t S[N]; /* Placement states of tubes. */
     double t0[N]; /* Start time. */
     double t1[N]; /* End time. */
-    double L[N]; /* Representative arc lengths. */
-    double A[N]; /* Representative turn angles. */
-    double H[N]; /* Representative advances. */
+    double len[N]; /* Representative arc lengths. */
+    double ang[N]; /* Representative turn angles. */
+    double hht[N]; /* Representative advances. */
     
     /* Define the end states assuming that the domain has radius 1 and center at {(0,0,0)}: */
     int k;
@@ -104,9 +104,9 @@ void test_voxb_tubes_helix(ppv_array_t *a, r3_t *ctr, r3_t *rad)
 
     /* Define the times, lengths, angles, and steps (already scaled): */
     double hrad = 0.25*trad; /* Typical helix radius. */
-    t0[0] = 00.000; t1[0] = +1.000; L[0] = 1.00*hrad*M_PI; A[0] = 2*M_PI; H[0] = 0.50*hrad+ 2*otR;
-    t0[1] = -1.000; t1[1] = +2.000; L[1] = 1.00*hrad*M_PI; A[1] = 2*M_PI; H[1] = 0.35*hrad+ 2*otR;
-    t0[2] = 00.000; t1[2] = +1.000; L[2] = 1.50*hrad*M_PI; A[2] = 2*M_PI; H[2] = 0.25*hrad+ 2*otR;
+    t0[0] = 00.000; t1[0] = +1.000; len[0] = 1.00*hrad*M_PI; ang[0] = 2*M_PI; hht[0] = 0.50*hrad+ 2*otR;
+    t0[1] = -1.000; t1[1] = +2.000; len[1] = 1.00*hrad*M_PI; ang[1] = 2*M_PI; hht[1] = 0.35*hrad+ 2*otR;
+    t0[2] = 00.000; t1[2] = +1.000; len[2] = 1.50*hrad*M_PI; ang[2] = 2*M_PI; hht[2] = 0.25*hrad+ 2*otR;
 
     /* Splat the tubes, then clear the bores: */
     int isub;
@@ -114,11 +114,11 @@ void test_voxb_tubes_helix(ppv_array_t *a, r3_t *ctr, r3_t *rad)
       { bool_t sub = (isub == 1); /* FALSE to splat the tubes, TRUE to clear the hole. */
         for (k = 0; k < N; k++)
           { 
-            fprintf(stderr, "  helix %d  t = [ %.3f _ %.3f ]  L = %.2f", k, t0[k], t1[k], L[k]);
-            fprintf(stderr, "  A = %.2f deg  H = %.2f\n", A[k]*180/M_PI, H[k]);
+            fprintf(stderr, "  helix %d  t = [ %.3f _ %.3f ]  len = %.2f", k, t0[k], t1[k], len[k]);
+            fprintf(stderr, "  ang = %.2f deg  hht = %.2f\n", ang[k]*180/M_PI, hht[k]);
             r3_motion_state_debug(stderr, &(S[k]), "  ", "placement");
             r3_motion_state_t S0, S1;
-            voxb_splat_tube_round_helix(a, t0[k], t1[k], &(S[k]), L[k], A[k], H[k], inR, otR, sub, &S0, &S1);
+            voxb_splat_tube_round_helix(A, t0[k], t1[k], &(S[k]), len[k], ang[k], hht[k], inR, otR, sub, &S0, &S1);
             r3_motion_state_debug(stderr, &(S0), "  ", "initial");
             r3_motion_state_debug(stderr, &(S1), "  ", "final");
           }
@@ -130,7 +130,7 @@ void test_voxb_tubes_helix(ppv_array_t *a, r3_t *ctr, r3_t *rad)
     return;
   }
 
-void test_voxb_tubes_segment(ppv_array_t *a, r3_t *ctr, r3_t *rad)
+void test_voxb_tubes_segment(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
 
@@ -178,7 +178,7 @@ void test_voxb_tubes_segment(ppv_array_t *a, r3_t *ctr, r3_t *rad)
     for (isub = 0; isub < 2; isub++)
       { bool_t sub = (isub == 1); /* FALSE to splat the tubes, TRUE to clear the hole. */
         for (k = 0; k < N; k++)
-          { voxb_splat_tube_round_segment(a, &(S[k]), &(T[k]), inR, otR, sub); }
+          { voxb_splat_tube_round_segment(A, &(S[k]), &(T[k]), inR, otR, sub); }
       }
 
     fprintf(stderr, "\n");
@@ -187,7 +187,7 @@ void test_voxb_tubes_segment(ppv_array_t *a, r3_t *ctr, r3_t *rad)
     return;
   }
   
-void test_voxb_tubes_bezier(ppv_array_t *a, r3_t *ctr, r3_t *rad)
+void test_voxb_tubes_bezier(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
     
@@ -231,7 +231,7 @@ void test_voxb_tubes_bezier(ppv_array_t *a, r3_t *ctr, r3_t *rad)
     for (isub = 0; isub < 2; isub++)
       { bool_t sub = (isub == 1); /* FALSE to splat the tubes, TRUE to clear the hole. */
         for (k = 0; k < N; k++)
-          { voxb_splat_tube_round_bezier(a, &(p0[k]), &(p1[k]), &(p2[k]), &(p3[k]), inR, otR, sub); }
+          { voxb_splat_tube_round_bezier(A, &(p0[k]), &(p1[k]), &(p2[k]), &(p3[k]), inR, otR, sub); }
       }
 
     fprintf(stderr, "\n");

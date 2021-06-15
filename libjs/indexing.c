@@ -1,5 +1,5 @@
 /* See indexing.h */
-/* Last edited on 2020-10-15 21:36:35 by jstolfi */
+/* Last edited on 2021-06-13 12:27:11 by jstolfi */
 /* Copyright © 2003 by Jorge Stolfi, from University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
@@ -627,8 +627,8 @@ int ix_sync_level
     return k;
   }
 
-void ix_enum 
-  ( ix_op_t *op,
+bool_t ix_enum 
+  ( ix_index_pos3_op_t *op,
     ix_dim_t d,
     const ix_size_t sz[],
     ix_order_t ixor, 
@@ -647,7 +647,9 @@ void ix_enum
             ix_pos_t pB = bpB;
             ix_pos_t pC = bpC;
             do 
-              { op(ix, pA,pB,pC); } 
+              { bool_t stop =op(ix, pA,pB,pC);
+                if (stop) { return TRUE; }
+              } 
             while (! ix_next(d,ix,sz,ixor,stA,&pA,stB,&pB,stC,&pC));
          }
       }
@@ -657,10 +659,13 @@ void ix_enum
            ix_pos_t pB = (stB == NULL ? bpB : ix_position(d,ix,bpB,stB));
            ix_pos_t pC = (stC == NULL ? bpC : ix_position(d,ix,bpC,stC));
            do 
-             { op(ix, pA,pB,pC); } 
+             { bool_t stop = op(ix, pA,pB,pC);
+               if (stop) { return TRUE; }
+             } 
            while (! ix_prev(d,ix,sz,ixor,stA,&pA,stB,&pB,stC,&pC));
          }
       }
+    return FALSE;
   }
 
 /* PARAMETER VALIDATION */
@@ -672,8 +677,12 @@ bool_t ix_parms_are_valid
     const ix_step_t st[], 
     bool_t die
   )
-  { /* Check the position of element {[0,0,...,0]}: */
-    if (bp > ix_MAX_POS) { fail_test(die,"bp too big"); }
+  { 
+    /* Check the number of axes: */
+    if (d > ix_MAX_DIM)  { fail_test(die,"dimension too big"); }
+
+    /* Check the position of element {[0,0,...,0]}: */
+    if (bp > ix_MAX_POS) { fail_test(die,"base position too big"); }
     
     /* Check sizes and number of (supposedly) distinct positions: */
     ix_dim_t dw = 0; /* Number of non-trivial indices. */

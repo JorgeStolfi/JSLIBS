@@ -1,4 +1,4 @@
-# Last edited on 2021-06-09 17:49:30 by jstolfi
+# Last edited on 2021-06-11 16:22:53 by jstolfi
 
 PROG = test_voxb
  
@@ -15,10 +15,11 @@ include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 .PHONY:: do-test
 
 TESTS := \
-  0100:objs \
-  0200:tubes
+  0200:erolate
 
-MORE_TESTS :=
+MORE_TESTS := \
+  0200:objs \
+  0200:tubes
 
 all: check
 

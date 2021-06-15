@@ -1,5 +1,5 @@
 /* See {indexing_descr.h}. */
-/* Last edited on 2020-10-02 11:23:00 by jstolfi */
+/* Last edited on 2021-06-13 11:32:52 by jstolfi */
 
 #define indexing_descr_C_COPYRIGHT "Copyright © 2003  Jorge Stolfi, State University of Campinas"
 
@@ -142,8 +142,8 @@ void ix_descr_chop ( ix_descr_t *D, ix_axis_t i, ix_size_t sz, ix_axis_t j )
 
 /* ELEMENT ENUMERATION */
 
-void ix_descr_enum 
-  ( ix_descr_op_t *op,
+bool_t ix_descr_enum 
+  ( ix_descr_index_pos3_op_t *op,
     ix_order_t ixor,
     bool_t reverse,
     ix_descr_t *A,
@@ -180,7 +180,7 @@ void ix_descr_enum
     ix_pos_t bpC = (C == NULL ? 0 : C->bp);
     ix_step_t *stC = (C == NULL ? NULL : C->st);
     
-    ix_enum(op, na, sz, ixor, reverse, bpA, stA, bpB, stB, bpC, stC);
+    return ix_enum(op, na, sz, ixor, reverse, bpA, stA, bpB, stB, bpC, stC);
   }
 
 bool_t ix_descr_is_valid ( ix_descr_t *D, bool_t die )

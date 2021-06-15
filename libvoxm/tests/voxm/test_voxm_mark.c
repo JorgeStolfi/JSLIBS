@@ -1,5 +1,5 @@
 /* See {test_voxm_mark}.h  */
-/* Last edited on 2021-06-09 16:26:52 by jstolfi */
+/* Last edited on 2021-06-12 10:37:04 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -21,7 +21,7 @@
 #include <test_voxm_mark.h>
 
 
-void test_voxm_mark_corners(ppv_array_t *a, r3_t *ctr, r3_t *rad, double fuzzR)
+void test_voxm_mark_corners(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
     r3_gen_print (stderr, ctr, "%.2f", "  ctr = ( ", " ", " )\n");
@@ -42,7 +42,7 @@ void test_voxm_mark_corners(ppv_array_t *a, r3_t *ctr, r3_t *rad, double fuzzR)
                 r3_motion_state_t S; /* Ball position and pose. */
                 S.p = (r3_t){{ ctr->c[0] + ix*rad->c[0], ctr->c[1] + iy*rad->c[1], ctr->c[2] + iz*rad->c[2] }};
                 r3x3_ident(&(S.M)); 
-                voxm_splat_object(a, fuzzy_ball, &S, ballR + fuzzR, FALSE);
+                voxm_splat_object(A, fuzzy_ball, &S, ballR + fuzzR, FALSE);
               }
           }
       }
@@ -58,7 +58,7 @@ void test_voxm_mark_corners(ppv_array_t *a, r3_t *ctr, r3_t *rad, double fuzzR)
       { return voxm_obj_ball(p, ballR, fuzzR); }
   }
     
-void test_voxm_mark_edges(ppv_array_t *a, r3_t *ctr, r3_t *rad, int ax, double fuzzR)
+void test_voxm_mark_edges(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, int ax, double fuzzR)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
     r3_gen_print (stderr, ctr, "%.2f", "  ctr = ( ", " ", " )\n");
@@ -90,7 +90,7 @@ void test_voxm_mark_edges(ppv_array_t *a, r3_t *ctr, r3_t *rad, int ax, double f
             S.M.c[0][xax] = 1.0;
             S.M.c[1][yax] = 1.0;
             S.M.c[2][zax] = 1.0;
-            voxm_splat_object(a, fuzzy_rod, &S, hypot(rodH,rodR) + fuzzR, FALSE);
+            voxm_splat_object(A, fuzzy_rod, &S, hypot(rodH,rodR) + fuzzR, FALSE);
           }
       }
 

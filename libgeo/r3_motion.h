@@ -1,5 +1,5 @@
 /* r3_motion.h --- paths in R^3 with local frames */
-/* Last edited on 2021-06-09 16:17:50 by jstolfi */
+/* Last edited on 2021-06-12 09:27:27 by jstolfi */
 
 #ifndef r3_motion_H
 #define r3_motion_H
@@ -92,7 +92,7 @@ void r3_motion_circle(double t, double L, double A, r3_motion_state_t *S);
   /* Stores in {S} a state at time {t} along a circle
     on the coordinate plane {Z=0}. 
     
-    The point {S.p} starts at the origin then {t=0}; when {t=1}, {S.p}
+    The point {S.p} starts at the origin when {t=0}; when {t=1}, {S.p}
     has traversed a distance {L} along the circle and turned by an angle
     {A} (in radians, counterclockwise). If {L>0}, the arc starts tangent
     to the {X} coordinate axis in the direction {+X}.  The parameter

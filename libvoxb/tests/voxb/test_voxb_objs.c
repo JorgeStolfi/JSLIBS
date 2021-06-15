@@ -1,5 +1,5 @@
 /* See {test_voxb_obj.h} */
-/* Last edited on 2021-06-09 23:36:30 by jstolfi */
+/* Last edited on 2021-06-12 09:37:58 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -20,28 +20,28 @@
 
 #include <test_voxb_objs.h>
 
-void test_voxb_objs(ppv_array_t *a, r3_t *ctr, r3_t *rad)
+void test_voxb_objs(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
 
     /* Get the half-size {orad} of largest cube that fits in the box: */
     double orad = fmin(rad->c[0], fmin(rad->c[1], rad->c[2])); 
 
-    test_voxb_objs_ball         (a, ctr, orad);
-    test_voxb_objs_donut        (a, ctr, orad);
-    test_voxb_objs_rod          (a, ctr, orad);
-    test_voxb_objs_tube         (a, ctr, orad);
-    test_voxb_objs_cube_hole    (a, ctr, orad);
-    test_voxb_objs_box          (a, ctr, orad);
-    test_voxb_objs_rounded_box  (a, ctr, orad);
-    test_voxb_objs_cup          (a, ctr, orad);
+    test_voxb_objs_ball         (A, ctr, orad);
+    test_voxb_objs_donut        (A, ctr, orad);
+    test_voxb_objs_rod          (A, ctr, orad);
+    test_voxb_objs_tube         (A, ctr, orad);
+    test_voxb_objs_cube_hole    (A, ctr, orad);
+    test_voxb_objs_box          (A, ctr, orad);
+    test_voxb_objs_rounded_box  (A, ctr, orad);
+    test_voxb_objs_cup          (A, ctr, orad);
     
     fprintf(stderr, "\n");
     fprintf(stderr, "exit %s\n", __FUNCTION__);
     return;
   }
 
-void test_voxb_objs_ball(ppv_array_t *a, r3_t *ctr, double rad)
+void test_voxb_objs_ball(ppv_array_desc_t *A, r3_t *ctr, double rad)
   { 
     double ballR = 0.05*rad;  /* Radius of ball. */
     double ballX = 0.80*rad;  /* {X}-displacement. */
@@ -53,7 +53,7 @@ void test_voxb_objs_ball(ppv_array_t *a, r3_t *ctr, double rad)
     auto bool_t ball(r3_t *p);
       /* Indicator function for a canonical ball of radius {ballR}. */
        
-    voxb_splat_object(a, ball, &state, ballR, voxb_op_OR);
+    voxb_splat_object(A, ball, &state, ballR, voxb_op_OR);
     
     return;
 
@@ -61,7 +61,7 @@ void test_voxb_objs_ball(ppv_array_t *a, r3_t *ctr, double rad)
       { return voxb_obj_ball(p, ballR); }
   }      
 
-void test_voxb_objs_donut(ppv_array_t *a, r3_t *ctr, double rad)
+void test_voxb_objs_donut(ppv_array_desc_t *A, r3_t *ctr, double rad)
   { 
     double majR = 0.25*rad;  /* Radius of donut midline. */
     double minR = majR/3; /* Radius of dough. */
@@ -74,7 +74,7 @@ void test_voxb_objs_donut(ppv_array_t *a, r3_t *ctr, double rad)
       /* Indicator function for a canonical donut of major radius {majR},
         minor radius {minR}. */
        
-    voxb_splat_object(a, donut, &state, majR + minR, voxb_op_OR);
+    voxb_splat_object(A, donut, &state, majR + minR, voxb_op_OR);
     
     return;
 
@@ -82,7 +82,7 @@ void test_voxb_objs_donut(ppv_array_t *a, r3_t *ctr, double rad)
       { return voxb_obj_donut(p, minR, majR, 2); }
   }      
 
-void test_voxb_objs_rod(ppv_array_t *a, r3_t *ctr, double rad)
+void test_voxb_objs_rod(ppv_array_desc_t *A, r3_t *ctr, double rad)
   { 
     double rodH = 0.20*rad;   /* Half-height of rod. */
     double rodR = 0.10*rad;   /* Radius of rod. */
@@ -99,7 +99,7 @@ void test_voxb_objs_rod(ppv_array_t *a, r3_t *ctr, double rad)
       /* Indicator function for a canonical rod with height {2*rodH},
         radius {rodR}, fillet radius {rodF}. */
        
-    voxb_splat_object(a, rod, &state, hypot(rodH, rodR), voxb_op_OR);
+    voxb_splat_object(A, rod, &state, hypot(rodH, rodR), voxb_op_OR);
     
     return;
       
@@ -107,7 +107,7 @@ void test_voxb_objs_rod(ppv_array_t *a, r3_t *ctr, double rad)
       { return voxb_obj_rod(p, rodH, rodR, rodF); }
   }    
   
-void test_voxb_objs_tube(ppv_array_t *a, r3_t *ctr, double rad)
+void test_voxb_objs_tube(ppv_array_desc_t *A, r3_t *ctr, double rad)
   { 
     double tubeH = 0.20*rad;    /* Half-height of tube. */
     double tubeRi = 0.10*rad;   /* Radius of tube. */
@@ -128,7 +128,7 @@ void test_voxb_objs_tube(ppv_array_t *a, r3_t *ctr, double rad)
       /* Indicator function for a canonical tube with height {2*tubeH},
         radii {tubeRi,tubeRo}, fillet radius {tubeF}. */
        
-    voxb_splat_object(a, tube, &state, hypot(tubeH, tubeRo), voxb_op_OR);
+    voxb_splat_object(A, tube, &state, hypot(tubeH, tubeRo), voxb_op_OR);
     
     return;
       
@@ -136,7 +136,7 @@ void test_voxb_objs_tube(ppv_array_t *a, r3_t *ctr, double rad)
       { return voxb_obj_tube(p, tubeH, tubeRi,tubeRo, tubeF); }
   }    
   
-void test_voxb_objs_cube_hole(ppv_array_t *a, r3_t *ctr, double rad)
+void test_voxb_objs_cube_hole(ppv_array_desc_t *A, r3_t *ctr, double rad)
   { 
     double cubeZ = 0.50*rad;   /* Distance above array center of cube center and hole center. */
     double cubeA = M_PI/12;    /* Tilting angle. */
@@ -154,7 +154,7 @@ void test_voxb_objs_cube_hole(ppv_array_t *a, r3_t *ctr, double rad)
       /* Indicator function for a canonical cube with side {2*cubeH},
         fillet radius {cubeF}. */
        
-    voxb_splat_object(a, cube, &state, sqrt(3)*cubeH, voxb_op_OR);
+    voxb_splat_object(A, cube, &state, sqrt(3)*cubeH, voxb_op_OR);
     
     /* Stretch and squeeze cube to make the hole: */
     r3x3_t K;
@@ -163,7 +163,7 @@ void test_voxb_objs_cube_hole(ppv_array_t *a, r3_t *ctr, double rad)
     K.c[1][1] = 0.5;
     K.c[2][2] = 2.0;
     r3x3_mul(&K, &(state.M), &(state.M));
-    voxb_splat_object(a, cube, &state, sqrt(3)*cubeH, voxb_op_SUB);
+    voxb_splat_object(A, cube, &state, sqrt(3)*cubeH, voxb_op_SUB);
     
     return;
       
@@ -171,7 +171,7 @@ void test_voxb_objs_cube_hole(ppv_array_t *a, r3_t *ctr, double rad)
       { return voxb_obj_cube(p, cubeH, cubeF); }
   }    
 
-void test_voxb_objs_box(ppv_array_t *a, r3_t *ctr, double rad)
+void test_voxb_objs_box(ppv_array_desc_t *A, r3_t *ctr, double rad)
   {
     double boxZ = -0.40*rad;  /* {Z}-distance from array center to box center. */
     double boxA = -M_PI/12;   /* Tilting angle. */
@@ -193,7 +193,7 @@ void test_voxb_objs_box(ppv_array_t *a, r3_t *ctr, double rad)
       /* Indicator function for a canonical box with sides {2*boxRX}, 
         {2*boxRY}, {2*boxRZ}, fillet radius {boxF}. */
        
-    voxb_splat_object(a, box, &state, boxRXYZ, voxb_op_OR);
+    voxb_splat_object(A, box, &state, boxRXYZ, voxb_op_OR);
     
     return;
     
@@ -201,7 +201,7 @@ void test_voxb_objs_box(ppv_array_t *a, r3_t *ctr, double rad)
       { return voxb_obj_box(p, boxRX, boxRY, boxRZ, boxF); }
   }
 
-void test_voxb_objs_rounded_box(ppv_array_t *a, r3_t *ctr, double rad)
+void test_voxb_objs_rounded_box(ppv_array_desc_t *A, r3_t *ctr, double rad)
   {
     double boxZ = -0.65*rad;  /* {Z}-distance from array center to box center. */
     double boxA = -M_PI/12;   /* Tilting angle. */
@@ -224,7 +224,7 @@ void test_voxb_objs_rounded_box(ppv_array_t *a, r3_t *ctr, double rad)
       /* Indicator function for a canonical box with sides {2*boxRX}, 
         {2*boxRY}, {2*boxRZ}, fillet radius {boxF}. */
        
-    voxb_splat_object(a, box, &state, boxRXYZ, voxb_op_OR);
+    voxb_splat_object(A, box, &state, boxRXYZ, voxb_op_OR);
     
     return;
     
@@ -232,7 +232,7 @@ void test_voxb_objs_rounded_box(ppv_array_t *a, r3_t *ctr, double rad)
       { return voxb_obj_rounded_box(p, boxRX, boxRY, boxRZ, boxRoundR, boxF); }
   }
 
-void test_voxb_objs_cup(ppv_array_t *a, r3_t *ctr, double rad)
+void test_voxb_objs_cup(ppv_array_desc_t *A, r3_t *ctr, double rad)
   {
     /* Basic cup parameters: */
     double cupX = 0.65*rad;
@@ -255,7 +255,7 @@ void test_voxb_objs_cup(ppv_array_t *a, r3_t *ctr, double rad)
       /* Indicator function for the cup. */
        
     fprintf(stderr, "splatting round cup: halfH = %.2f  R = %.2f  thk = %.2f  fillR = %.2f\n", cupH, cupR, cupT, cupF);
-    voxb_splat_object(a, cup, &state, hypot(cupH, cupR), voxb_op_OR);
+    voxb_splat_object(A, cup, &state, hypot(cupH, cupR), voxb_op_OR);
     
     return;
       

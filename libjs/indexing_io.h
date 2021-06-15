@@ -2,7 +2,7 @@
 #define indexing_io_H
 
 /* Printout and debugging tools for {indexing_h} */
-/* Last edited on 2007-10-10 20:58:05 by stolfi */
+/* Last edited on 2021-06-14 08:43:39 by jstolfi */
 
 #include <indexing.h>
 #include <stdio.h>
@@ -15,9 +15,9 @@ void ix_print_pos ( FILE *wr, ix_pos_t p );
   /* These procedures write the given parameter to {wr}, in decimal,
      bracketed by the strings {lp} and {rp} (which default to "" if NULL). */
 
-void ix_print_indices ( FILE *wr, char *lp, ix_dim_t d, ix_index_t ix[], int wd, char *sp, char *rp );
-void ix_print_sizes   ( FILE *wr, char *lp, ix_dim_t d, ix_size_t sz[],  int wd, char *sp, char *rp );
-void ix_print_steps   ( FILE *wr, char *lp, ix_dim_t d, ix_step_t st[],  int wd, char *sp, char *rp );
+void ix_print_indices ( FILE *wr, char *lp, ix_dim_t d, const ix_index_t ix[], int wd, char *sp, char *rp );
+void ix_print_sizes   ( FILE *wr, char *lp, ix_dim_t d, const ix_size_t sz[],  int wd, char *sp, char *rp );
+void ix_print_steps   ( FILE *wr, char *lp, ix_dim_t d, const ix_step_t st[],  int wd, char *sp, char *rp );
   /* These procedures write the first {d} elements of the given tuple to {wr}, in decimal. 
     The tuple is bracketed by the strings {lp} and {rp} (which default to "" if NULL);
     In the case of {ix_print_steps}, the sign "+" or "-" is always printed.
@@ -29,8 +29,8 @@ void ix_print_parms
    char *pre, 
    ix_dim_t d, 
    ix_pos_t *bp, 
-   ix_size_t sz[], 
-   ix_step_t st[], 
+   const ix_size_t sz[], 
+   const ix_step_t st[], 
    int wd, 
    char *suf
  );

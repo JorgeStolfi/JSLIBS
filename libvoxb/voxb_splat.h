@@ -1,5 +1,5 @@
 /* voxb_splat.h --- voxel-based modeling of 3D objects (binary tomogram version) */
-/* Last edited on 2021-06-09 23:45:08 by jstolfi */
+/* Last edited on 2021-06-14 20:55:38 by jstolfi */
 
 #ifndef voxb_splat_H
 #define voxb_splat_H
@@ -46,45 +46,53 @@ typedef enum {
   } voxb_op_t; 
   /* Specifies the operation to be performed by {voxb_splat_voxel} and the like. */
  
-void voxb_splat_voxel(ppv_array_t *a, int32_t kx, int32_t ky, int32_t kz, bool_t val, voxb_op_t op);
- /* Modifies the stored value {oldv} of voxel {kx} of row {ky} of layer {kz} of {a} 
+void voxb_splat_voxel(ppv_array_desc_t *A, int32_t kx, int32_t ky, int32_t kz, bool_t val, voxb_op_t op);
+ /* Modifies the stored value {oldv} of voxel {kx} of row {ky} of layer {kz} of {A} 
    with the value {val}. Specifically, replaces the old value {ak} by {ak op val}.
    
-   Note that {kx,ky,kz} are indices {2,1,0} of {a}, in that order. */
+   Note that {kx,ky,kz} are indices {2,1,0} of {A}, in that order. */
 
 /* SPLATTING OBJECTS FROM POINT PREDICATES */
   
 void voxb_splat_object
-  ( ppv_array_t *a,
+  ( ppv_array_desc_t *A,
     r3_pred_t *obj,
     r3_motion_state_t *S,
     double maxR,
     voxb_op_t op
   );
-  /* Splats into the voxel array {a} the object defined by the occupancy
-    function {obj}, modified by the matrix {S.M} and translated by
-    {S.p}. The matrix {S.M} must be an isometry (a rotation or a
-    reflection).
+  /* Splats into the voxel array {A} the primitive object defined by the
+    occupancy function {obj}, modified by the matrix {S.M} and
+    translated by {S.p}. The matrix {S.M} must be an isometry (a
+    rotation or a reflection).
     
-    The predicate {obj(&p)} should return {TRUE} if the given point {p} is 
-    inside the object, {FALSE} if outside.
+    The predicate {obj(&p)} receives a point of the array's domain,
+    translated by minus {S.p} and transformed by the investe of {S.M}.
+    The coordinates are in the geometric order {(X,Y,Z)}, reversed from
+    the voxel index order. The predicate should return {TRUE} if the
+    given point {p} is inside the object {obj}, {FALSE} if outside.
     
     Assumes that the modified and translated object has zero occupancy
     at any point that differs more than {maxR} units from {S.p} along
     any axes. */
 
 void voxb_splat_object_multi
-  ( ppv_array_t *a,
+  ( ppv_array_desc_t *A,
     r3_pred_t *obj,
     int32_t ns,
     r3_motion_state_t S[],
     double maxR,
     voxb_op_t op
   );
-  /* Splats into the voxel array {a} the object {obj} modified by the
+  /* Splats into the voxel array {A} the object {obj} modified by the
     matrces {S[k].M} and translated by {S[k].p}, for {k} in {0..ns-1}.
     Assumes that the modified object extends at most {maxR} units from
     its reference point, for any {k}. */
+
+/* HACKS */
+
+extern bool_t voxb_splat_debug;
+  /* Set to true to see all voxels being splatted. */
 
 #endif
 

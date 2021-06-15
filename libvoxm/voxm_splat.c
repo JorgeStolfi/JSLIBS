@@ -1,5 +1,5 @@
 /* See voxm_splat.h */
-/* Last edited on 2021-06-09 21:11:51 by jstolfi */
+/* Last edited on 2021-06-12 12:15:50 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -21,7 +21,7 @@
 #include <voxm_splat.h>
 
 void voxm_splat_object_multi
-  ( ppv_array_t *a,
+  ( ppv_array_desc_t *A,
     r3_double_func_t *obj,
     int32_t ns,
     r3_motion_state_t S[],
@@ -33,13 +33,13 @@ void voxm_splat_object_multi
     int32_t k;
     for (k = 0; k < ns; k++) 
       { if (debug) { fprintf(stderr, "."); }
-        voxm_splat_object(a, obj, &(S[k]), maxR, sub);
+        voxm_splat_object(A, obj, &(S[k]), maxR, sub);
       }
     if (debug) { fprintf(stderr, "\n"); }
   }
 
 void voxm_splat_object
-  ( ppv_array_t *a, 
+  ( ppv_array_desc_t *A, 
     r3_double_func_t *obj,
     r3_motion_state_t *S,
     double maxR,
@@ -48,7 +48,7 @@ void voxm_splat_object
   {
     
     /* Get the cell counts along each axis. */
-    i3_t N = (i3_t){{ (int32_t)a->size[2], (int32_t)a->size[1], (int32_t)a->size[0] }}; 
+    i3_t N = (i3_t){{ (int32_t)A->size[2], (int32_t)A->size[1], (int32_t)A->size[0] }}; 
     
     /* Compute the bounding box of the brush: */
     i3_t kmin;
@@ -80,17 +80,17 @@ void voxm_splat_object
                 double val = obj(&qobj);
                 if (val > 0.0)
                   { /* Modify voxel value according to coverage: */
-                    voxm_splat_voxel(a, kx, ky, kz, val, sub);
+                    voxm_splat_voxel(A, kx, ky, kz, val, sub);
                   }
               }
           }
       }
   }
   
-void voxm_splat_voxel(ppv_array_t *a, int32_t kx, int32_t ky, int32_t kz, double val, bool_t sub)
+void voxm_splat_voxel(ppv_array_desc_t *A, int32_t kx, int32_t ky, int32_t kz, double val, bool_t sub)
   {
     /* Quantize the value: */
-    ppv_sample_t maxsmp = (ppv_sample_t)((1u << a->bps) - 1); /* Max sample value. */
+    ppv_sample_t maxsmp = (ppv_sample_t)((1u << A->bps) - 1); /* Max sample value. */
     ppv_sample_t smp; /* Value {val} quantized to {0..maxsmp}. */
     if (val <= 0.0)
       { smp = 0; }
@@ -100,21 +100,20 @@ void voxm_splat_voxel(ppv_array_t *a, int32_t kx, int32_t ky, int32_t kz, double
       { smp = (ppv_sample_t)floor(val * maxsmp + 0.4999999); }
       
     /* Fetch the current sample {osmp}: */
-    int32_t NA = ppv_array_NAXES;
-    ppv_index_t ix[NA];
-    int32_t j;
-    for (j = 0; j < NA; j++) { ix[j] = 0; }
+    ppv_dim_t d = A->d;
+    assert(d == 3);
+    ppv_index_t ix[d];
     ix[0] = kz; 
     ix[1] = ky; 
     ix[2] = kx; 
-    ppv_pos_t pos = ppv_sample_pos(a, ix);
-    ppv_sample_t osmp = ppv_get_sample(a->el, a->bps, a->bpw, pos);
+    ppv_pos_t pos = ppv_sample_pos(A, ix);
+    ppv_sample_t osmp = ppv_get_sample_at_pos(A->el, A->bps, A->bpw, pos);
             
     if (!sub)
       { /* Set voxel value to maximum of the two: */
         if (smp > osmp)
           { /* Update value in array: */
-            ppv_set_sample(a->el, a->bps, a->bpw, pos, smp);
+            ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, smp);
           }
       }
     else
@@ -122,7 +121,7 @@ void voxm_splat_voxel(ppv_array_t *a, int32_t kx, int32_t ky, int32_t kz, double
         smp = (ppv_sample_t)(maxsmp - smp);
         if (smp < osmp)
           { /* Update value in array: */
-            ppv_set_sample(a->el, a->bps, a->bpw, pos, smp);
+            ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, smp);
           }
       }
   }

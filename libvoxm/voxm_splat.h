@@ -1,5 +1,5 @@
 /* voxm_splat.h --- voxel-based modeling of antialiased 3D objects */
-/* Last edited on 2021-06-09 21:38:22 by jstolfi */
+/* Last edited on 2021-06-12 11:51:43 by jstolfi */
 
 #ifndef voxm_splat_H
 #define voxm_splat_H
@@ -53,15 +53,15 @@
 
 /* SINGLE VOXEL SPLATTING */
  
-void voxm_splat_voxel(ppv_array_t *a, int32_t kx, int32_t ky, int32_t kz, double val, bool_t sub);
- /* Modifies the stored value {oldv} of voxel {kx} of row {ky} of layer {kz} of {a} 
+void voxm_splat_voxel(ppv_array_desc_t *A, int32_t kx, int32_t ky, int32_t kz, double val, bool_t sub);
+ /* Modifies the stored value {oldv} of voxel {kx} of row {ky} of layer {kz} of {A} 
    with the value {val}, after quantizing {val} to an unsigned integer {newv}.
    
    Specifically, if {sub} is false, stores into the voxel the maximum of
    {oldv} and {newv}. If {sub} is true, stores instead the minimum of
    {oldv} and {MAXVAL-newv}.
    
-   Note that {kx,ky,kz} are indices {2,1,0} of {a}, in that order. */
+   Note that {kx,ky,kz} are indices {2,1,0} of {A}, in that order. */
 
 /* SPLATTING OBJECTS FROM OCCUPANCY FUNCTIONS */
 
@@ -69,15 +69,15 @@ typedef double voxm_splat_obfun_t(r3_t *p);
   /* Type of the occupancy function of a fuzzy object, that 
     returns 0 if {p} is well outside the object, 1 if it
     is well inside it, and fractional values in the fuzzy layer. */
-w   
+   
 void voxm_splat_object
-  ( ppv_array_t *a,
+  ( ppv_array_desc_t *A,
     r3_double_func_t *obj,
     r3_motion_state_t *S,
     double maxR,
     bool_t sub
   );
-  /* Splats into the voxel array {a} the object defined by the occupancy function
+  /* Splats into the voxel array {A} the object defined by the occupancy function
     {obj}, modified by the matrix {S.M} and translated by {S.p}.
     The matrix {S.M} must be an isometry (a rotation or a reflection).
     
@@ -91,14 +91,14 @@ void voxm_splat_object
     layer. */
 
 void voxm_splat_object_multi
-  ( ppv_array_t *a,
+  ( ppv_array_desc_t *A,
     r3_double_func_t *obj,
     int32_t ns,
     r3_motion_state_t S[],
     double maxR,
     bool_t sub
   );
-  /* Splats into the voxel array {a} the object {obj} modified by the
+  /* Splats into the voxel array {A} the object {obj} modified by the
     matrces {S[k].M} and translated by {S[k].p}, for {k} in {0..ns-1}.
     Assumes that the modified object extends at most {maxR} units from
     its reference point, for any {k}. */

@@ -1,5 +1,5 @@
 /* See voxb_splat_tube.h */
-/* Last edited on 2021-06-09 23:33:22 by jstolfi */
+/* Last edited on 2021-06-12 10:33:50 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -24,13 +24,13 @@
 #include <voxb_splat_tube.h>
 
 void voxb_splat_tube_round_helix
-  ( ppv_array_t *a, 
+  ( ppv_array_desc_t *A, 
     double t0,
     double t1,
     r3_motion_state_t *S, 
-    double L, 
-    double A,
-    double H, 
+    double len, 
+    double ang,
+    double hht, 
     double inR, 
     double otR, 
     bool_t sub,
@@ -45,7 +45,7 @@ void voxb_splat_tube_round_helix
 
     auto r3_motion_state_t helix_path(double t);
       /* Function that computes the position and orientation at time {t} along
-        the helix defined by {L,A,H}, modified by state {S}. */
+        the helix defined by {len,ang,hht}, modified by state {S}. */
     
     auto bool_t donut(r3_t *p);
       /* Indicator function for a donut of major radius {(iR+oR)/2},
@@ -56,7 +56,7 @@ void voxb_splat_tube_round_helix
       /* Indicator function for a ball of radius {iR}. */
        
     /* Estimate the total arc length {totL} of outer edge from {t0} to {t1}: */
-    double totL = (t1 - t0)*(hypot(L,H) + A*otR);
+    double totL = (t1 - t0)*(hypot(len,hht) + ang*otR);
     
     /* Select the number of samples {ns} : */
     double step = 0.25;     /* Linear step length for path enumeration. */
@@ -72,11 +72,11 @@ void voxb_splat_tube_round_helix
     
     if (!sub)
       { /* Splat the tube: */
-        voxb_splat_object_multi(a, donut, ns, sp, otR, voxb_op_OR);
+        voxb_splat_object_multi(A, donut, ns, sp, otR, voxb_op_OR);
       }
     else
       { /* Subtract the bore: */
-        voxb_splat_object_multi(a, ball, ns, sp, inR, voxb_op_SUB);
+        voxb_splat_object_multi(A, ball, ns, sp, inR, voxb_op_SUB);
       }
       
     if (debug) { fprintf(stderr, "\n"); }
@@ -87,7 +87,7 @@ void voxb_splat_tube_round_helix
     r3_motion_state_t helix_path(double t)
       { 
         r3_motion_state_t T;
-        r3_motion_helix(t, L, A, H, &T);
+        r3_motion_helix(t, len, ang, hht, &T);
         r3_motion_state_compose(&T, S, &T);
         return T;
       }
@@ -104,7 +104,7 @@ void voxb_splat_tube_round_helix
   }
 
 void voxb_splat_tube_round_bezier
-  ( ppv_array_t *a, 
+  ( ppv_array_desc_t *A, 
     r3_t *p0, 
     r3_t *p1, 
     r3_t *p2, 
@@ -134,10 +134,10 @@ void voxb_splat_tube_round_bezier
     auto bool_t ball(r3_t *p);
       /* Indicator function for a ball of major radius {inR}. */
        
-    /* Estimate the arc length {L} and select the number of samples {ns} : */
+    /* Estimate the arc length {len} and select the number of samples {ns} : */
     double step = 0.25;     /* Linear step length for path enumeration. */
-    double L = r3_dist(p0,p1) + r3_dist(p1,p2) + r3_dist(p2,p3);
-    int32_t ns = 1 + (int32_t)ceil(L/step); /* Number of sample points to use. */
+    double len = r3_dist(p0,p1) + r3_dist(p1,p2) + r3_dist(p2,p3);
+    int32_t ns = 1 + (int32_t)ceil(len/step); /* Number of sample points to use. */
     if (debug) { fprintf(stderr, "sampling path at %d points\n", ns); }
     
     /* Sample the path times and states {st[0..ns-1],sp[0..ns-1]}: */
@@ -148,11 +148,11 @@ void voxb_splat_tube_round_bezier
     
     if (!sub)
       { /* Splat the tube: */
-        voxb_splat_object_multi(a, donut, ns, S, otR, voxb_op_OR);
+        voxb_splat_object_multi(A, donut, ns, S, otR, voxb_op_OR);
       }
     else
       { /* Subtract the bore: */
-        voxb_splat_object_multi(a, ball, ns, S, otR, voxb_op_SUB);
+        voxb_splat_object_multi(A, ball, ns, S, otR, voxb_op_SUB);
       }
       
     if (debug) { fprintf(stderr, "\n"); }
@@ -185,7 +185,7 @@ void voxb_splat_tube_round_bezier
   }
 
 void voxb_splat_tube_round_segment
-  ( ppv_array_t *a, 
+  ( ppv_array_desc_t *A, 
     r3_path_state_t *S, 
     r3_path_state_t *T, 
     double inR, 
@@ -198,6 +198,6 @@ void voxb_splat_tube_round_segment
     r3_t p1, p2;
     r3_t *p3 = &(T->p);
     r3_bezier_from_path_states(S, T, &p1, &p2);
-    voxb_splat_tube_round_bezier(a, p0, &p1, &p2, p3, inR, otR, sub);
+    voxb_splat_tube_round_bezier(A, p0, &p1, &p2, p3, inR, otR, sub);
   }
   

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {indexing.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-10-15 21:39:44 by jstolfi */ 
+/* Last edited on 2021-06-13 12:29:01 by jstolfi */ 
 /* Created on 2005-02-14 (or earlier) by J. Stolfi, UNICAMP */
 
 #define test_indexing_COPYRIGHT \
@@ -321,6 +321,8 @@ void test_addressing(desc_t *A)
 
 void test_enum(desc_t *A)
   {
+    /* !!! Test {ix_enum} with early abort when {op} returns {TRUE}. !!! */
+    
     ix_count_t nt = ix_num_tuples(A->d, A->z);
     fprintf(stderr, ("Checking ix_enum (d = %d nt = %" uint64_u_fmt ")...\n"), A->d, nt);
 
@@ -349,13 +351,14 @@ void test_enum(desc_t *A)
     ix_pos_t *posC = notnull(malloc(npos*sizeof(ix_pos_t)), "no mem");
     int64_t kpos;     /* Current index into {posA}. */
 
-    auto void check_fw( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC );
-    auto void check_bw( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC );
+    auto bool_t check_fw( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC );
+    auto bool_t check_bw( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC );
       /* These are procedures that can be passed as the {op} argument of 
         {ix_enum}. They check whether the given positions {pA,pB,pC}
         match {posA[kpos],posB[kpos],posC[kpos]}.  The procedure 
         {check_fw} increments {kpos} after the test,
-        while {check_bw} decrements it before the test. */
+        while {check_bw} decrements it before the test.
+        They always return {FALSE}. */
 
     /* Enumerate all positions by hand in "F" order: */
     kpos = 0;
@@ -376,12 +379,15 @@ void test_enum(desc_t *A)
 
     /* Check forward enumeration, Fortran order: */
     kpos = 0;
-    ix_enum(check_fw, d, sz, ix_order_F, FALSE, A->b, A->s, B->b, B->s, C->b, C->s);
+    bool_t stop;
+    stop = ix_enum(check_fw, d, sz, ix_order_F, FALSE, A->b, A->s, B->b, B->s, C->b, C->s);
+    assert(! stop);
     assert(kpos == npos);
 
     /* Check backward enumeration, Fortran order: */
     kpos = npos;
-    ix_enum(check_bw, d, sz, ix_order_F, TRUE,  A->b, A->s, B->b, B->s, C->b, C->s);
+    stop = ix_enum(check_bw, d, sz, ix_order_F, TRUE,  A->b, A->s, B->b, B->s, C->b, C->s);
+    assert(! stop);
     assert(kpos == 0);
 
     /* Enumerate all positions by hand in "L" order: */
@@ -402,17 +408,19 @@ void test_enum(desc_t *A)
 
     /* Check forward enumeration, C/Pascal order: */
     kpos = 0;
-    ix_enum(check_fw, d, sz, ix_order_L, FALSE, A->b, A->s, B->b, B->s, C->b, C->s);
+    stop = ix_enum(check_fw, d, sz, ix_order_L, FALSE, A->b, A->s, B->b, B->s, C->b, C->s);
+    assert(! stop);
     assert(kpos == npos);
 
     /* Check backward enumeration, C/Pascal order: */
     kpos = npos;
-    ix_enum(check_bw, d, sz, ix_order_L, TRUE,  A->b, A->s, B->b, B->s, C->b, C->s);
+    stop = ix_enum(check_bw, d, sz, ix_order_L, TRUE,  A->b, A->s, B->b, B->s, C->b, C->s);
+    assert(! stop);
     assert(kpos == 0);
 
     /* IMPLEMENTATION OF LOCAL PROCS */
 
-    void check_fw( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC )
+    bool_t check_fw( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC )
       {
         assert(kpos >= 0);
         assert(kpos < npos);
@@ -420,9 +428,10 @@ void test_enum(desc_t *A)
         assert(pB == posB[kpos]);
         assert(pC == posC[kpos]);
         kpos++;
+        return FALSE;
       }
 
-    void check_bw( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC )
+    bool_t check_bw( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC )
       {
         kpos--;
         assert(kpos >= 0);
@@ -430,6 +439,7 @@ void test_enum(desc_t *A)
         assert(pA == posA[kpos]);
         assert(pB == posB[kpos]);
         assert(pC == posC[kpos]);
+        return FALSE;
       }
   }
 

@@ -4,7 +4,7 @@
 
 #define array_def_H_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2020-10-03 19:45:42 by jstolfi */
+/* Last edited on 2021-06-13 11:32:14 by jstolfi */
 
 /* These inclusions are necessary if this file is included or compiled on its own: */
 #include <stdint.h>
@@ -165,10 +165,10 @@
 
 #define array_IMPLEMENT_assign(ARRAY_TYPE,PREFIX,ELEM_TYPE) \
   array_DECLARE_assign(ARRAY_TYPE,PREFIX,ELEM_TYPE) \
-    { auto void assign_elem ( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC ); \
-      void assign_elem ( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC ) \
-        { A->e[pA] = B->e[pB]; } \
-      ix_descr_enum(&assign_elem, ix_order_L, FALSE, &(A->ds), &(B->ds), NULL); \
+    { auto bool_t assign_elem ( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC ); \
+      bool_t assign_elem ( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC ) \
+        { A->e[pA] = B->e[pB]; return FALSE; } \
+      (void)ix_descr_enum(&assign_elem, ix_order_L, FALSE, &(A->ds), &(B->ds), NULL); \
      }
 
 #define array_TYPEIMPL(ARRAY_TYPE,PREFIX,ELEM_TYPE) \

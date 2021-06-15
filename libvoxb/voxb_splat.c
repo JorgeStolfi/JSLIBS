@@ -1,5 +1,5 @@
 /* See voxb_splat.h */
-/* Last edited on 2021-06-09 23:45:47 by jstolfi */
+/* Last edited on 2021-06-14 20:59:31 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -21,7 +21,7 @@
 #include <voxb_splat.h>
 
 void voxb_splat_object_multi
-  ( ppv_array_t *a,
+  ( ppv_array_desc_t *A,
     r3_pred_t *obj,
     int32_t ns,
     r3_motion_state_t S[],
@@ -33,33 +33,38 @@ void voxb_splat_object_multi
     int32_t k;
     for (k = 0; k < ns; k++) 
       { if (debug) { fprintf(stderr, "."); }
-        voxb_splat_object(a, obj, &(S[k]), maxR, op);
+        voxb_splat_object(A, obj, &(S[k]), maxR, op);
       }
     if (debug) { fprintf(stderr, "\n"); }
   }
 
 void voxb_splat_object
-  ( ppv_array_t *a, 
+  ( ppv_array_desc_t *A, 
     r3_pred_t *obj,
     r3_motion_state_t *S,
     double maxR,
     voxb_op_t op
   )
   {
-    demand(a->bps == 1, "tomogram is not binary");
+    demand(A->bps == 1, "tomogram is not binary");
     
     /* Get the voxel counts along each axis. */
-    i3_t N = (i3_t){{ (int32_t)a->size[2], (int32_t)a->size[1], (int32_t)a->size[0] }}; 
+    i3_t N = (i3_t){{ (int32_t)A->size[2], (int32_t)A->size[1], (int32_t)A->size[0] }}; 
     
-    /* Compute the bounding box of the brush: */
-    i3_t kmin;
-    i3_t kmax;
-    int32_t j;
-    for (j = 0; j < 3; j++)
-      { kmin.c[j] = (int32_t)floor(S->p.c[j] - maxR - 1.0);
-        if (kmin.c[j] < 0) { kmin.c[j] = 0; }
-        kmax.c[j] = (int32_t)ceil (S->p.c[j] + maxR + 1.0);
-        if (kmax.c[j] >= N.c[j]) { kmax.c[j] = N.c[j] - 1; }
+    /* Compute the bounding box {kmin..kmax} of the affected voxels: */
+    i3_t kmin, kmax; /* Elements are {X,Y,Z}. */
+    for (int32_t j = 0; j < 3; j++)
+      { if (op == voxb_op_AND)
+          { /* Can affect anywhere: */
+            kmin.c[j] = 0; kmax.c[j] = N.c[j] - 1;
+          }
+        else
+          { /* Will affect only where there is object: */
+            kmin.c[j] = (int32_t)floor(S->p.c[j] - maxR - 1.0);
+            if (kmin.c[j] < 0) { kmin.c[j] = 0; }
+            kmax.c[j] = (int32_t)ceil (S->p.c[j] + maxR + 1.0);
+            if (kmax.c[j] >= N.c[j]) { kmax.c[j] = N.c[j] - 1; }
+          }
       }
       
     /* Get inverse of pose matrix: */
@@ -89,25 +94,27 @@ void voxb_splat_object
                 bool_t val = obj(&qobj);
                 if (val != null_val)
                   { /* Modify voxel value: */
-                    voxb_splat_voxel(a, kx, ky, kz, val, op);
+                    voxb_splat_voxel(A, kx, ky, kz, val, op);
                   }
               }
           }
       }
   }
-  
-void voxb_splat_voxel(ppv_array_t *a, int32_t kx, int32_t ky, int32_t kz, bool_t val, voxb_op_t op)
+
+void voxb_splat_voxel(ppv_array_desc_t *A, int32_t kx, int32_t ky, int32_t kz, bool_t val, voxb_op_t op)
   {
+    if (voxb_splat_debug) 
+      { fprintf(stderr, "  {voxb_splat_voxel}: ix = [ %d %d %d ]\n", kz,ky,kx); }
+    
     /* Fetch the current sample {osmp}: */
-    int32_t NA = ppv_array_NAXES;
-    ppv_index_t ix[NA];
-    int32_t j;
-    for (j = 0; j < NA; j++) { ix[j] = 0; }
+    ppv_dim_t d = A->d;
+    ppv_index_t ix[d];
+    for (ppv_axis_t j = 0; j < d; j++) { ix[j] = 0; }
     ix[0] = kz; 
     ix[1] = ky; 
     ix[2] = kx; 
-    ppv_pos_t pos = ppv_sample_pos(a, ix);
-    ppv_sample_t osmp = ppv_get_sample(a->el, a->bps, a->bpw, pos);
+    ppv_pos_t pos = ppv_sample_pos(A, ix);
+    ppv_sample_t osmp = ppv_get_sample_at_pos(A->el, A->bps, A->bpw, pos);
     ppv_sample_t vsmp = ((ppv_sample_t)val) & 1;
     ppv_sample_t smp; /* New sample value. */
     switch (op)
@@ -119,5 +126,6 @@ void voxb_splat_voxel(ppv_array_t *a, int32_t kx, int32_t ky, int32_t kz, bool_t
         default: assert(FALSE);
       }
     smp = smp & 1; /* Get rid of any spurious bits. */   
-    if (smp != osmp) { ppv_set_sample(a->el, a->bps, a->bpw, pos, smp); }
+    if (smp != osmp) { ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, smp); }
   }
+

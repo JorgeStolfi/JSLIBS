@@ -5,7 +5,7 @@
 #define test_voxb_C_COPYRIGHT \
   "Copyright © 2016 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2021-06-09 23:54:31 by jstolfi */
+/* Last edited on 2021-06-12 12:03:16 by jstolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -23,7 +23,8 @@
   PROG_HELP "\n" \
   "\n" \
   "DESCRIPTION\n" \
-  "  The program writes to standard output a tomogram (3D voxel array) containing an antialiased model of some test objects.\n" \
+  "  The program writes to standard output a tomogram (3D voxel" \
+  " array) containing a model of some test objects.\n" \
   "\n" \
   "OPTIONS\n" \
   "  -size {SIZE}\n" \
@@ -70,7 +71,7 @@
 #include <r3x3.h>
 #include <r3_motion.h>
 #include <ppv_array.h>
-#include <ppv_io.h>
+#include <ppv_array_write.h>
 
 #include <voxb_obj.h>
 #include <voxb_splat.h>
@@ -79,6 +80,7 @@
 #include <test_voxb_objs.h>
 #include <test_voxb_tubes.h>
 #include <test_voxb_mark.h>
+#include <test_voxb_erolate.h>
 
 /* COMMAND-LINE OPTIONS */
 
@@ -100,7 +102,7 @@ typedef struct test_voxb_options_t
 test_voxb_options_t *test_voxb_parse_options(int32_t argc, char **argv);
   /* Parses the command line arguments and packs them as an {test_voxb_options_t}. */
 
-void test_voxb_tomogram_write(char *outFile, ppv_array_t *a); 
+void test_voxb_tomogram_write(char *outFile, ppv_array_desc_t *A); 
 
 int32_t main(int32_t argc,char** argv);
 
@@ -110,50 +112,54 @@ int32_t main(int32_t argc, char** argv)
   {
     test_voxb_options_t *o = test_voxb_parse_options(argc, argv);
     
+    ppv_dim_t d = 3;
+    
     /* Array dimensions: */
     int32_t NX = 3*o->size; 
     int32_t NY = o->size + o->size/2; 
     int32_t NZ = o->size; 
     
     /* Allocate the voxel array: */
-    ppv_size_t sz[ppv_array_NAXES];
-    int32_t k;
-    for (k = 0; k < ppv_array_NAXES; k++) { sz[k] = 1; }
+    ppv_size_t sz[d];
     sz[0] = NZ;
     sz[1] = NY;
     sz[2] = NX;
     ppv_nbits_t bps = 1;
     ppv_nbits_t bpw = 32;
-    ppv_array_t a = ppv_new_array(sz, bps, bpw);
+    ppv_array_desc_t *A = ppv_array_new(d, sz, bps, bpw);
     
     /* Center and radius of array: */
     r3_t ctr = (r3_t){{ 0.5*NX, 0.5*NY, 0.5*NZ }};
     r3_t rad = (r3_t){{ 0.5*NX, 0.5*NY, 0.5*NZ }};
 
     /* Mark the corners: */
-    test_voxb_mark_corners(&a, &ctr, &rad);
-    test_voxb_mark_edges(&a, &ctr, &rad, 0);
-    test_voxb_mark_edges(&a, &ctr, &rad, 1);
-    test_voxb_mark_edges(&a, &ctr, &rad, 2);
+    test_voxb_mark_corners(A, &ctr, &rad);
+    test_voxb_mark_edges(A, &ctr, &rad, 0);
+    test_voxb_mark_edges(A, &ctr, &rad, 1);
+    test_voxb_mark_edges(A, &ctr, &rad, 2);
 
     if (strcmp(o->object, "objs") == 0)
-      { test_voxb_objs(&a, &ctr, &rad); }
+      { test_voxb_objs(A, &ctr, &rad); }
     else if (strcmp(o->object, "tubes") == 0)
-      { test_voxb_tubes(&a, &ctr, &rad); }
-    else 
+      { test_voxb_tubes(A, &ctr, &rad); }
+    else  if (strcmp(o->object, "erolate") == 0)
+      { double smr = 3.5;  /* Smoothing radius (vx). */
+        test_voxb_erolate(A, &ctr, &rad, smr);
+      }
+    else
       { demand(FALSE, "invalid \"-object\" option"); }
     
     /* Write it out: */
-    test_voxb_tomogram_write("-", &a);
+    test_voxb_tomogram_write("-", A);
     return 0;
   }
     
-void test_voxb_tomogram_write(char *outFile, ppv_array_t *a)
+void test_voxb_tomogram_write(char *outFile, ppv_array_desc_t *A)
   {
     FILE *wr = open_write(outFile, TRUE);
 
     bool_t plain = FALSE;
-    ppv_write_array(wr, a, plain);
+    ppv_array_write_file(wr, A, plain);
     
     fclose(wr); 
   }
