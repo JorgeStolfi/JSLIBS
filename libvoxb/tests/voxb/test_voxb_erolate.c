@@ -1,5 +1,5 @@
 /* See {test_voxb_erolate.h} */
-/* Last edited on 2021-06-14 08:54:47 by jstolfi */
+/* Last edited on 2021-06-14 22:01:17 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -84,7 +84,7 @@ void test_voxb_erolate_obj(ppv_array_desc_t *A, int32_t isec, double smr)
     auto bool_t cube(r3_t *p);
       /* Indicator function for a canonical cube with side {2*cubeH} and sharp edges. */
        
-    voxb_splat_object(A, cube, &state, sqrt(3)*cubeH, voxb_op_OR);
+    voxb_splat_object(A, cube, &state, sqrt(3)*cubeH, voxb_op_OR, FALSE);
     /* ppv_index_t ixctr[d] = { 30,30,30 }; */
     /* ppv_set_sample(A, ixctr, 1); */
     
@@ -95,7 +95,7 @@ void test_voxb_erolate_obj(ppv_array_desc_t *A, int32_t isec, double smr)
     L.c[1][1] = 2.00;
     L.c[2][2] = 0.25;
     r3x3_mul(&L, &R, &(state.M));
-    voxb_splat_object(A, cube, &state, sqrt(3)*cubeH, voxb_op_OR);
+    voxb_splat_object(A, cube, &state, sqrt(3)*cubeH, voxb_op_OR, FALSE);
     
     /* Stretch and squeeze cube to make the hole: */
     r3x3_t K;
@@ -104,7 +104,7 @@ void test_voxb_erolate_obj(ppv_array_desc_t *A, int32_t isec, double smr)
     K.c[1][1] = 0.5;
     K.c[2][2] = 2.0;
     r3x3_mul(&K, &R, &(state.M));
-    voxb_splat_object(A, cube, &state, sqrt(3)*cubeH, voxb_op_SUB);
+    voxb_splat_object(A, cube, &state, sqrt(3)*cubeH, voxb_op_SUB, FALSE);
 
     /* Now apply erosion/dilation: */
      if (isec == 0)

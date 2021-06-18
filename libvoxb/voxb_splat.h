@@ -1,5 +1,5 @@
 /* voxb_splat.h --- voxel-based modeling of 3D objects (binary tomogram version) */
-/* Last edited on 2021-06-14 20:55:38 by jstolfi */
+/* Last edited on 2021-06-15 17:48:18 by jstolfi */
 
 #ifndef voxb_splat_H
 #define voxb_splat_H
@@ -41,12 +41,25 @@ typedef enum {
     voxb_op_OR,  /* a = a | v    (union of shapes). */
     voxb_op_AND, /* a = a & v    (intersecion). */
     voxb_op_SUB, /* a = a & (~v) (subtraction). */
-    voxb_op_XOR, /* a = a XOR v  (symm. difference). */
-    voxb_op_LIM  /* Limit of enum values. */
+    voxb_op_XOR  /* a = a XOR v  (symm. difference). */
   } voxb_op_t; 
   /* Specifies the operation to be performed by {voxb_splat_voxel} and the like. */
+
+#define voxb_op_FIRST (voxb_op_OR)
+#define voxb_op_LAST (voxb_op_XOR)
+  /* For looping on all {voxb_op_t} values. */
  
-void voxb_splat_voxel(ppv_array_desc_t *A, int32_t kx, int32_t ky, int32_t kz, bool_t val, voxb_op_t op);
+/* SPLATTING SINGLE VOXELS */
+
+void voxb_splat_voxel
+  ( ppv_array_desc_t *A, 
+    int32_t kx, 
+    int32_t ky, 
+    int32_t kz, 
+    bool_t val, 
+    voxb_op_t op, 
+    bool_t debug
+  );
  /* Modifies the stored value {oldv} of voxel {kx} of row {ky} of layer {kz} of {A} 
    with the value {val}. Specifically, replaces the old value {ak} by {ak op val}.
    
@@ -59,7 +72,8 @@ void voxb_splat_object
     r3_pred_t *obj,
     r3_motion_state_t *S,
     double maxR,
-    voxb_op_t op
+    voxb_op_t op,
+    bool_t debug
   );
   /* Splats into the voxel array {A} the primitive object defined by the
     occupancy function {obj}, modified by the matrix {S.M} and
@@ -74,7 +88,8 @@ void voxb_splat_object
     
     Assumes that the modified and translated object has zero occupancy
     at any point that differs more than {maxR} units from {S.p} along
-    any axes. */
+    any axes. Also limits the operation to the domain of {A} minus a margin
+    of {mrg} voxels all around. */
 
 void voxb_splat_object_multi
   ( ppv_array_desc_t *A,

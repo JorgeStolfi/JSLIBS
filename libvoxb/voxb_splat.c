@@ -1,5 +1,5 @@
 /* See voxb_splat.h */
-/* Last edited on 2021-06-14 20:59:31 by jstolfi */
+/* Last edited on 2021-06-15 01:12:06 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -33,7 +33,7 @@ void voxb_splat_object_multi
     int32_t k;
     for (k = 0; k < ns; k++) 
       { if (debug) { fprintf(stderr, "."); }
-        voxb_splat_object(A, obj, &(S[k]), maxR, op);
+        voxb_splat_object(A, obj, &(S[k]), maxR, op, FALSE);
       }
     if (debug) { fprintf(stderr, "\n"); }
   }
@@ -43,7 +43,8 @@ void voxb_splat_object
     r3_pred_t *obj,
     r3_motion_state_t *S,
     double maxR,
-    voxb_op_t op
+    voxb_op_t op,
+    bool_t debug
   )
   {
     demand(A->bps == 1, "tomogram is not binary");
@@ -56,6 +57,7 @@ void voxb_splat_object
     for (int32_t j = 0; j < 3; j++)
       { if (op == voxb_op_AND)
           { /* Can affect anywhere: */
+            fprintf(stderr, "<--> op = %d\n", op);
             kmin.c[j] = 0; kmax.c[j] = N.c[j] - 1;
           }
         else
@@ -67,6 +69,13 @@ void voxb_splat_object
           }
       }
       
+    if (debug)
+       { fprintf(stderr, "splatting object with op = %d maxR = %.3f coord ranges = ", op, maxR);
+         for (int32_t j = 0; j < 3; j++)
+           { fprintf(stderr, " %d..%d (%d)", kmin.c[j], kmax.c[j], kmax.c[j] - kmin.c[j] + 1); }
+         fprintf(stderr, "\n");
+       }
+    
     /* Get inverse of pose matrix: */
     r3x3_t Minv;
     r3x3_inv(&(S->M), &Minv);
@@ -94,16 +103,24 @@ void voxb_splat_object
                 bool_t val = obj(&qobj);
                 if (val != null_val)
                   { /* Modify voxel value: */
-                    voxb_splat_voxel(A, kx, ky, kz, val, op);
+                    voxb_splat_voxel(A, kx, ky, kz, val, op, debug);
                   }
               }
           }
       }
   }
 
-void voxb_splat_voxel(ppv_array_desc_t *A, int32_t kx, int32_t ky, int32_t kz, bool_t val, voxb_op_t op)
+void voxb_splat_voxel
+  ( ppv_array_desc_t *A, 
+    int32_t kx, 
+    int32_t ky, 
+    int32_t kz, 
+    bool_t val, 
+    voxb_op_t op, 
+    bool_t debug
+  )
   {
-    if (voxb_splat_debug) 
+    if (debug) 
       { fprintf(stderr, "  {voxb_splat_voxel}: ix = [ %d %d %d ]\n", kz,ky,kx); }
     
     /* Fetch the current sample {osmp}: */

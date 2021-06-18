@@ -1,5 +1,5 @@
 /* See {test_voxb_obj.h} */
-/* Last edited on 2021-06-12 09:37:58 by jstolfi */
+/* Last edited on 2021-06-14 22:02:07 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -53,7 +53,7 @@ void test_voxb_objs_ball(ppv_array_desc_t *A, r3_t *ctr, double rad)
     auto bool_t ball(r3_t *p);
       /* Indicator function for a canonical ball of radius {ballR}. */
        
-    voxb_splat_object(A, ball, &state, ballR, voxb_op_OR);
+    voxb_splat_object(A, ball, &state, ballR, voxb_op_OR, FALSE);
     
     return;
 
@@ -74,7 +74,7 @@ void test_voxb_objs_donut(ppv_array_desc_t *A, r3_t *ctr, double rad)
       /* Indicator function for a canonical donut of major radius {majR},
         minor radius {minR}. */
        
-    voxb_splat_object(A, donut, &state, majR + minR, voxb_op_OR);
+    voxb_splat_object(A, donut, &state, majR + minR, voxb_op_OR, FALSE);
     
     return;
 
@@ -99,7 +99,7 @@ void test_voxb_objs_rod(ppv_array_desc_t *A, r3_t *ctr, double rad)
       /* Indicator function for a canonical rod with height {2*rodH},
         radius {rodR}, fillet radius {rodF}. */
        
-    voxb_splat_object(A, rod, &state, hypot(rodH, rodR), voxb_op_OR);
+    voxb_splat_object(A, rod, &state, hypot(rodH, rodR), voxb_op_OR, FALSE);
     
     return;
       
@@ -128,7 +128,7 @@ void test_voxb_objs_tube(ppv_array_desc_t *A, r3_t *ctr, double rad)
       /* Indicator function for a canonical tube with height {2*tubeH},
         radii {tubeRi,tubeRo}, fillet radius {tubeF}. */
        
-    voxb_splat_object(A, tube, &state, hypot(tubeH, tubeRo), voxb_op_OR);
+    voxb_splat_object(A, tube, &state, hypot(tubeH, tubeRo), voxb_op_OR, FALSE);
     
     return;
       
@@ -154,7 +154,7 @@ void test_voxb_objs_cube_hole(ppv_array_desc_t *A, r3_t *ctr, double rad)
       /* Indicator function for a canonical cube with side {2*cubeH},
         fillet radius {cubeF}. */
        
-    voxb_splat_object(A, cube, &state, sqrt(3)*cubeH, voxb_op_OR);
+    voxb_splat_object(A, cube, &state, sqrt(3)*cubeH, voxb_op_OR, FALSE);
     
     /* Stretch and squeeze cube to make the hole: */
     r3x3_t K;
@@ -163,7 +163,7 @@ void test_voxb_objs_cube_hole(ppv_array_desc_t *A, r3_t *ctr, double rad)
     K.c[1][1] = 0.5;
     K.c[2][2] = 2.0;
     r3x3_mul(&K, &(state.M), &(state.M));
-    voxb_splat_object(A, cube, &state, sqrt(3)*cubeH, voxb_op_SUB);
+    voxb_splat_object(A, cube, &state, sqrt(3)*cubeH, voxb_op_SUB, FALSE);
     
     return;
       
@@ -193,7 +193,7 @@ void test_voxb_objs_box(ppv_array_desc_t *A, r3_t *ctr, double rad)
       /* Indicator function for a canonical box with sides {2*boxRX}, 
         {2*boxRY}, {2*boxRZ}, fillet radius {boxF}. */
        
-    voxb_splat_object(A, box, &state, boxRXYZ, voxb_op_OR);
+    voxb_splat_object(A, box, &state, boxRXYZ, voxb_op_OR, FALSE);
     
     return;
     
@@ -224,7 +224,7 @@ void test_voxb_objs_rounded_box(ppv_array_desc_t *A, r3_t *ctr, double rad)
       /* Indicator function for a canonical box with sides {2*boxRX}, 
         {2*boxRY}, {2*boxRZ}, fillet radius {boxF}. */
        
-    voxb_splat_object(A, box, &state, boxRXYZ, voxb_op_OR);
+    voxb_splat_object(A, box, &state, boxRXYZ, voxb_op_OR, FALSE);
     
     return;
     
@@ -255,7 +255,7 @@ void test_voxb_objs_cup(ppv_array_desc_t *A, r3_t *ctr, double rad)
       /* Indicator function for the cup. */
        
     fprintf(stderr, "splatting round cup: halfH = %.2f  R = %.2f  thk = %.2f  fillR = %.2f\n", cupH, cupR, cupT, cupF);
-    voxb_splat_object(A, cup, &state, hypot(cupH, cupR), voxb_op_OR);
+    voxb_splat_object(A, cup, &state, hypot(cupH, cupR), voxb_op_OR, FALSE);
     
     return;
       

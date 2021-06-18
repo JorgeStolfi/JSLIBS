@@ -1,5 +1,5 @@
 /* See epswr_def.h */
-/* Last edited on 2020-10-27 18:51:47 by jstolfi */
+/* Last edited on 2021-06-16 16:06:04 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -74,7 +74,9 @@ void epswr_def_report_window
     double hxMin, double hxMax,
     double vyMin, double vyMax
   )
-  { if (requestor != NULL) { fprintf(stderr, "{%s}: ", requestor); }
-    fprintf(stderr, "%s window %s", which, action);
-    fprintf(stderr, " [%6.1f _ %6.1f] × [%6.1f _ %6.1f]\n", hxMin, hxMax, vyMin, vyMax);
+  { if (! isnan(hxMin))
+      { if (requestor != NULL) { fprintf(stderr, "{%s}: ", requestor); }
+        fprintf(stderr, "%s window %s", which, action);
+        fprintf(stderr, " [%6.1f _ %6.1f] × [%6.1f _ %6.1f]\n", hxMin, hxMax, vyMin, vyMax);
+      }
   }

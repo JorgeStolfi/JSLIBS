@@ -2,7 +2,7 @@
 #define sve_minn_H
 
 /* Quadratic minimzation by the simplex vertex-edge method. */
-/* Last edited on 2017-03-16 14:11:17 by stolfilocal */
+/* Last edited on 2021-06-17 11:22:30 by jstolfi */
 
 /* SIMPLICES
 
@@ -10,14 +10,14 @@
   {n >= 0}. Those points are the /corners/ of the simplex, and any two
   distinct corners define an /edge/. The simplex is /degenerate/ if
   some corner can be written as an affine combination of the other
-  corner; and is /proper/ otherwise.
+  corners; and is /proper/ otherwise.
   
   In this interface, {V(i)} denotes corner number {i} of the simplex {V} 
   
   SIMPLEX REPRESENTATION
   
   In this interface, an {n}-simplex {V} in {R^n} is represented
-  as an array {v} with has {(n+1)*n} elements, conceptually
+  as an array {v} with {(n+1)*n} elements, conceptually
   {n+1} rows and {n} columns; where row {i} contains the {n}
   coordinates of corner {i} of the simplex. 
   
