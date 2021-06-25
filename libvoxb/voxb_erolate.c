@@ -1,5 +1,5 @@
 /* See voxb_erolate.h */
-/* Last edited on 2021-06-14 13:04:42 by jstolfi */
+/* Last edited on 2021-06-22 13:46:34 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -17,7 +17,7 @@
 
 #include <voxb_erolate.h>
 
-void voxb_erolate_with_brush_big(ppv_array_desc_t *A, ppv_brush_t *b, bool_t erode);
+void voxb_erolate_with_brush_big(ppv_array_t *A, ppv_brush_t *b, bool_t erode);
  /* Same as {voxb_erolate_with_brush}, but uses a sliding buffer
    technique to avoid allocating a whole copy of {A} as a work area.
    
@@ -28,7 +28,7 @@ void voxb_erolate_with_brush_big(ppv_array_desc_t *A, ppv_brush_t *b, bool_t ero
    total number of pixels of {A} and {M} is the number of voxels in the
    brush. */
 
-void voxb_erolate_with_brush_small(ppv_array_desc_t *A, ppv_brush_t *b, bool_t erode);
+void voxb_erolate_with_brush_small(ppv_array_t *A, ppv_brush_t *b, bool_t erode);
  /* Same as {voxb_erolate_with_brush},but always uses a
    whole copy of {A} as a work area.
    
@@ -38,7 +38,7 @@ void voxb_erolate_with_brush_small(ppv_array_desc_t *A, ppv_brush_t *b, bool_t e
 
 ppv_sample_t voxb_erolate_compute_result
   ( const ppv_index_t ixA[],
-    ppv_array_desc_t *T, 
+    ppv_array_t *T, 
     ppv_index_t buf_lo,
     ppv_index_t buf_hi,
     ppv_size_t sz0A,
@@ -63,7 +63,7 @@ ppv_sample_t voxb_erolate_compute_result
 #define voxb_erolate_BIG_SIZE (200*1000*1000)
   /* Size (in bits) when starts to use sliding buffer technique */
 
-void voxb_erolate_with_brush(ppv_array_desc_t *A, ppv_brush_t *b, bool_t erode)
+void voxb_erolate_with_brush(ppv_array_t *A, ppv_brush_t *b, bool_t erode)
   {
     ppv_dim_t d = A->d;
     demand(ppv_brush_dimension(b) == d, "incompatible dimensions");   /* Could be smaller? */
@@ -80,7 +80,7 @@ void voxb_erolate_with_brush(ppv_array_desc_t *A, ppv_brush_t *b, bool_t erode)
     return;
   }
       
-void voxb_erolate_with_brush_big(ppv_array_desc_t *A, ppv_brush_t *b, bool_t erode)
+void voxb_erolate_with_brush_big(ppv_array_t *A, ppv_brush_t *b, bool_t erode)
   { 
     bool_t debug = TRUE;
     if (debug) { fprintf(stderr, "entering {voxb_erolate_with_brush_big}\n"); }
@@ -92,7 +92,7 @@ void voxb_erolate_with_brush_big(ppv_array_desc_t *A, ppv_brush_t *b, bool_t ero
       
       We use a buffer {T} to hold the original contents of the lines of
       {A} that are needed to compute one slice of the result. The buffer
-      is a {ppv_array_desc_t} with same dims as {A} except that it has
+      is a {ppv_array_t} with same dims as {A} except that it has
       only {sz0T} slices in the direction of axis 0. Namely, when
       computing the slice of {A} with index {ix0}, the buffer has the
       original contents of all the slices of {A} from {ix0+dx0lo} to
@@ -103,7 +103,7 @@ void voxb_erolate_with_brush_big(ppv_array_desc_t *A, ppv_brush_t *b, bool_t ero
       slice {k0} of {A} is stored in the buffer {T}, it is stored as
       slice {k0 % T.size[0]} of {T}. */
     
-    auto ppv_array_desc_t *alloc_buffer(ppv_size_t sz0);
+    auto ppv_array_t *alloc_buffer(ppv_size_t sz0);
       /* Allocates a buffer to hold {sz0} slices of {A}. */
     
     /* Allocate the work buffer: */
@@ -111,7 +111,7 @@ void voxb_erolate_with_brush_big(ppv_array_desc_t *A, ppv_brush_t *b, bool_t ero
     ppv_brush_index_ranges(b, dxlo, dxhi);
     ppv_size_t sz0b = (ppv_size_t)(dxhi[0] - dxlo[0] + 1); /* Number of slices in the brush. */
     ppv_size_t sz0T = sz0b; /* Number of slices in the buffer. */
-    ppv_array_desc_t *T = alloc_buffer(sz0T);
+    ppv_array_t *T = alloc_buffer(sz0T);
     assert(T->size[0] == sz0T);
     
     auto bool_t copy_voxel_A_to_T(const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pT, ppv_pos_t pC);
@@ -182,11 +182,11 @@ void voxb_erolate_with_brush_big(ppv_array_desc_t *A, ppv_brush_t *b, bool_t ero
     return;
     
     /* Local procedures: */
-    ppv_array_desc_t *alloc_buffer(ppv_size_t sz0)
+    ppv_array_t *alloc_buffer(ppv_size_t sz0)
       { ppv_size_t szT[d];
         for (ppv_axis_t i = 0; i < d; i++) { szT[i] = A->size[i]; }
         szT[0] = sz0;
-        ppv_array_desc_t *T = ppv_array_new(d, szT, A->bps, A->bpw);
+        ppv_array_t *T = ppv_array_new(d, szT, A->bps, A->bpw);
         return T;
       }
     
@@ -199,8 +199,8 @@ void voxb_erolate_with_brush_big(ppv_array_desc_t *A, ppv_brush_t *b, bool_t ero
     void copy_A_slice_to_T(ppv_index_t ix0)
       { assert(sz0T == T->size[0]);
         if ((ix0 >= 0) && (ix0 < A->size[0]))
-          { ppv_array_desc_t *Az = ppv_slice(A, 0, ix0);
-            ppv_array_desc_t *Tz = ppv_slice(T, 0, ix0 % sz0T);
+          { ppv_array_t *Az = ppv_slice(A, 0, ix0);
+            ppv_array_t *Tz = ppv_slice(T, 0, ix0 % sz0T);
             (void) ppv_enum(copy_voxel_A_to_T, FALSE, Az, Tz, NULL); 
             free(Az);
             free(Tz);
@@ -209,7 +209,7 @@ void voxb_erolate_with_brush_big(ppv_array_desc_t *A, ppv_brush_t *b, bool_t ero
   }
 
       
-void voxb_erolate_with_brush_small(ppv_array_desc_t *A, ppv_brush_t *b, bool_t erode)
+void voxb_erolate_with_brush_small(ppv_array_t *A, ppv_brush_t *b, bool_t erode)
   { 
     bool_t debug = TRUE;
     if (debug) { fprintf(stderr, "entering {voxb_erolate_with_brush_small}\n"); }
@@ -218,7 +218,7 @@ void voxb_erolate_with_brush_small(ppv_array_desc_t *A, ppv_brush_t *b, bool_t e
     
     /* We just copy {A} to a buffer array {T} and compute the result from {T}. */
     
-    ppv_array_desc_t *T = ppv_array_new(d, A->size, A->bps, A->bpw);
+    ppv_array_t *T = ppv_array_new(d, A->size, A->bps, A->bpw);
     ppv_array_assign(T, A);
     
     ppv_index_t ixA0buf_lo = 0;             /* Low slice of {A} in buffer. */
@@ -256,7 +256,7 @@ void voxb_erolate_with_brush_small(ppv_array_desc_t *A, ppv_brush_t *b, bool_t e
 
 ppv_sample_t voxb_erolate_compute_result
   ( const ppv_index_t ixA[],
-    ppv_array_desc_t *T, 
+    ppv_array_t *T, 
     ppv_index_t buf_lo,
     ppv_index_t buf_hi,
     ppv_size_t sz0A,

@@ -1,4 +1,4 @@
-/* Last edited on 2021-06-12 01:51:07 by jstolfi */ 
+/* Last edited on 2021-06-22 13:44:54 by jstolfi */ 
 /* Test of the I/O functions from the PPV library. */
 
 /* Must define _GNU_SOURCE in order to get {asprintf} */
@@ -27,10 +27,10 @@
     exit(1); \
   } while(0)
 
-ppv_array_desc_t *make_test_array(void);
-void test_fill_array(ppv_array_desc_t *A);
+ppv_array_t *make_test_array(void);
+void test_fill_array(ppv_array_t *A);
 
-void check_array_equality(ppv_array_desc_t *A, ppv_array_desc_t *B);
+void check_array_equality(ppv_array_t *A, ppv_array_t *B);
 void dump_storage(FILE *wr, void *el, int nw, ppv_nbits_t bpw);
 void check_size(ppv_dim_t d, ppv_size_t *sza, ppv_size_t *szb);
 
@@ -38,7 +38,7 @@ int main (int argn, char **argv)
   {
     char *name = "test";
     
-    ppv_array_desc_t *A = make_test_array();
+    ppv_array_t *A = make_test_array();
 
     fprintf(stderr, "Checking ppv_array_write_file...\n");
     bool_t verbose = FALSE;
@@ -52,7 +52,7 @@ int main (int argn, char **argv)
     /* Read it back: */
     fprintf(stderr, "Checking ppv_array_read_file...\n");
     ppv_nbits_t new_bpw = A->bpw;  /* For now. */
-    ppv_array_desc_t *B;
+    ppv_array_t *B;
     FILE *rd = open_read(fname, TRUE);
     for (int32_t i = 0; i < 2; i++)
       { B = ppv_array_read_file(rd, new_bpw);
@@ -68,7 +68,7 @@ int main (int argn, char **argv)
     return 0;
   }
 
-void check_array_equality(ppv_array_desc_t *A, ppv_array_desc_t *B)
+void check_array_equality(ppv_array_t *A, ppv_array_t *B)
   {
     ppv_dim_t d = A->d;
     assert(d == 6);
@@ -98,7 +98,7 @@ void check_array_equality(ppv_array_desc_t *A, ppv_array_desc_t *B)
                 }
   }
 
-ppv_array_desc_t *make_test_array(void)
+ppv_array_t *make_test_array(void)
   {
     ppv_dim_t d = 6;
 
@@ -108,7 +108,7 @@ ppv_array_desc_t *make_test_array(void)
 
     fprintf(stderr, "bps = %d bpw = %d\n", bps, bpw);
 
-    ppv_array_desc_t *A = ppv_array_new(d, sz,  bps, bpw);
+    ppv_array_t *A = ppv_array_new(d, sz,  bps, bpw);
 
     fprintf(stderr, "creating test array...\n");
     bool_t verbose = TRUE;
@@ -125,7 +125,7 @@ ppv_array_desc_t *make_test_array(void)
     
   }
 
-void test_fill_array(ppv_array_desc_t *A)
+void test_fill_array(ppv_array_t *A)
   {
     ppv_dim_t d = A->d;
     ppv_word_t val = 4615;

@@ -1,5 +1,5 @@
 /* Input and output of portable 6-dimensional arrays. */
-/* Last edited on 2021-06-12 00:58:51 by jstolfi */
+/* Last edited on 2021-06-22 13:52:04 by jstolfi */
 /* Copyright © 2005 by Jorge Stolfi, from University of Campinas, Brazil. */
 
 #ifndef ppv_array_read_H
@@ -9,7 +9,7 @@
 #include <ppv_array.h>
 #include <stdio.h>
 
-ppv_array_desc_t *ppv_array_read_file ( FILE *rd, ppv_nbits_t bpw );
+ppv_array_t *ppv_array_read_file ( FILE *rd, ppv_nbits_t bpw );
   /* Reads an array {A} from file {rd}, assumed to be in the standard
     format (plain or raw) as described in {ppv_array_read_FORMAT_INFO}. 
     

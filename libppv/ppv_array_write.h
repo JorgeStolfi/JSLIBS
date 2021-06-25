@@ -1,5 +1,5 @@
 /* Writing portable multidimensional arrays of samples. */
-/* Last edited on 2021-06-12 00:57:54 by jstolfi */
+/* Last edited on 2021-06-22 13:52:10 by jstolfi */
 /* Copyright © 2005 by Jorge Stolfi, from University of Campinas, Brazil. */
 
 #ifndef ppv_array_write_H
@@ -9,7 +9,7 @@
 #include <ppv_array.h>
 #include <stdio.h>
 
-void ppv_array_write_file ( FILE *wr, ppv_array_desc_t *A, bool_t plain );
+void ppv_array_write_file ( FILE *wr, ppv_array_t *A, bool_t plain );
   /* Outputs the array {A} to file {wr}, in a format compatible with
     {ppv_array_read_file}. 
     

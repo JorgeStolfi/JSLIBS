@@ -1,5 +1,5 @@
 /* voxm_splat.h --- voxel-based modeling of antialiased 3D objects */
-/* Last edited on 2021-06-12 11:51:43 by jstolfi */
+/* Last edited on 2021-06-22 13:48:13 by jstolfi */
 
 #ifndef voxm_splat_H
 #define voxm_splat_H
@@ -53,7 +53,7 @@
 
 /* SINGLE VOXEL SPLATTING */
  
-void voxm_splat_voxel(ppv_array_desc_t *A, int32_t kx, int32_t ky, int32_t kz, double val, bool_t sub);
+void voxm_splat_voxel(ppv_array_t *A, int32_t kx, int32_t ky, int32_t kz, double val, bool_t sub);
  /* Modifies the stored value {oldv} of voxel {kx} of row {ky} of layer {kz} of {A} 
    with the value {val}, after quantizing {val} to an unsigned integer {newv}.
    
@@ -71,7 +71,7 @@ typedef double voxm_splat_obfun_t(r3_t *p);
     is well inside it, and fractional values in the fuzzy layer. */
    
 void voxm_splat_object
-  ( ppv_array_desc_t *A,
+  ( ppv_array_t *A,
     r3_double_func_t *obj,
     r3_motion_state_t *S,
     double maxR,
@@ -91,7 +91,7 @@ void voxm_splat_object
     layer. */
 
 void voxm_splat_object_multi
-  ( ppv_array_desc_t *A,
+  ( ppv_array_t *A,
     r3_double_func_t *obj,
     int32_t ns,
     r3_motion_state_t S[],

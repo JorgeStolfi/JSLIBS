@@ -1,5 +1,5 @@
 /* See ppv_array.h */
-/* Last edited on 2021-06-14 02:26:41 by jstolfi */
+/* Last edited on 2021-06-22 13:43:17 by jstolfi */
 /* Copyright © 2003 by Jorge Stolfi, from University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
@@ -12,7 +12,7 @@
 
 /* INTERNAL PROOTYPES: */
     
-ppv_array_desc_t *ppv_array_new_desc ( ppv_dim_t d );
+ppv_array_t *ppv_array_new_desc ( ppv_dim_t d );
   /* Allocates a new descriptor {A} for an array with dimension {d}. The
     {A.step} and {A.size} vectors are allocated in the same {malloc}
     record and set to all zeros, as {A.base}. The element area pointer
@@ -20,7 +20,7 @@ ppv_array_desc_t *ppv_array_new_desc ( ppv_dim_t d );
 
 /* IMPLEMENTATIONS: */
 
-bool_t ppv_index_is_valid ( ppv_index_t ix[], ppv_array_desc_t *A )
+bool_t ppv_index_is_valid ( ppv_index_t ix[], ppv_array_t *A )
   { return ix_is_valid(A->d, ix, A->size); }
 
 void ppv_index_clear ( ppv_dim_t d, ppv_index_t ix[] )
@@ -35,23 +35,23 @@ void ppv_index_shift ( ppv_dim_t d, ppv_index_t ix[], ppv_index_t *inc )
 sign_t ppv_index_compare ( ppv_dim_t d, ppv_index_t ixa[], ppv_index_t ixb[] )
   { return ix_compare(d, ixa, ixb, ix_order_L); }
     
-bool_t ppv_index_first ( ppv_index_t ix[], ppv_array_desc_t *A )
+bool_t ppv_index_first ( ppv_index_t ix[], ppv_array_t *A )
   { return ix_assign_min(A->d, ix, A->size); } 
 
-bool_t ppv_index_last ( ppv_index_t ix[], ppv_array_desc_t *A )
+bool_t ppv_index_last ( ppv_index_t ix[], ppv_array_t *A )
   { return ix_assign_max(A->d, ix, A->size); } 
 
-bool_t ppv_index_next ( ppv_index_t ix[], ppv_array_desc_t *A, ppv_dim_t d, ppv_pos_t *p )
+bool_t ppv_index_next ( ppv_index_t ix[], ppv_array_t *A, ppv_dim_t d, ppv_pos_t *p )
   { demand(d <= A->d, "d too big"); 
     return ix_next(d, ix, A->size, ix_order_L, A->step, p, NULL, NULL, NULL, NULL);
   }
 
-bool_t ppv_index_prev ( ppv_index_t ix[], ppv_array_desc_t *A, ppv_dim_t d, ppv_pos_t *p )
+bool_t ppv_index_prev ( ppv_index_t ix[], ppv_array_t *A, ppv_dim_t d, ppv_pos_t *p )
   { demand(d <= A->d, "d too big"); 
     return ix_prev(d, ix, A->size, ix_order_L, A->step, p, NULL, NULL, NULL, NULL);
   }
 
-bool_t ppv_descriptor_is_valid ( ppv_array_desc_t *A, bool_t die )
+bool_t ppv_descriptor_is_valid ( ppv_array_t *A, bool_t die )
   { assert(ppv_MAX_DIM == ix_MAX_DIM); 
     assert(ppv_MAX_POS == ix_MAX_POS); 
     assert(ppv_MAX_ABS_STEP == ix_MAX_ABS_STEP);
@@ -61,9 +61,9 @@ bool_t ppv_descriptor_is_valid ( ppv_array_desc_t *A, bool_t die )
     return TRUE;
   }
 
-ppv_array_desc_t *ppv_array_new ( ppv_dim_t d, ppv_size_t *sz, ppv_nbits_t bps, ppv_nbits_t bpw )
+ppv_array_t *ppv_array_new ( ppv_dim_t d, ppv_size_t *sz, ppv_nbits_t bps, ppv_nbits_t bpw )
   { 
-    ppv_array_desc_t *A = ppv_array_new_desc(d);
+    ppv_array_t *A = ppv_array_new_desc(d);
     
     /* Check {bps} and store it: */
     demand(bps <= ppv_MAX_BPS, "bits-per-sample too big");
@@ -145,10 +145,10 @@ ppv_array_desc_t *ppv_array_new ( ppv_dim_t d, ppv_size_t *sz, ppv_nbits_t bps, 
     return A;
   }
 
-ppv_array_desc_t *ppv_array_clone ( ppv_array_desc_t *A )
+ppv_array_t *ppv_array_clone ( ppv_array_t *A )
   { 
     ppv_dim_t d = A->d;
-    ppv_array_desc_t *C = ppv_array_new_desc(d);
+    ppv_array_t *C = ppv_array_new_desc(d);
     for (ppv_axis_t ax = 0; ax < d; ax++) { C->step[ax] = A->step[ax]; C->size[ax] = A->size[ax]; }
     C->base = A->base;
     C->el = A->el;
@@ -157,7 +157,7 @@ ppv_array_desc_t *ppv_array_clone ( ppv_array_desc_t *A )
     return C;
   }
 
-ppv_sample_count_t ppv_sample_count( ppv_array_desc_t *A, bool_t reptoo )
+ppv_sample_count_t ppv_sample_count( ppv_array_t *A, bool_t reptoo )
   {
     ppv_sample_count_t nv = 1;
     for (ppv_axis_t ax = 0; ax < A->d; ax++)
@@ -175,14 +175,14 @@ ppv_sample_count_t ppv_sample_count( ppv_array_desc_t *A, bool_t reptoo )
     return nv;
   }
 
-ppv_array_desc_t *ppv_array_new_desc ( ppv_dim_t d )
+ppv_array_t *ppv_array_new_desc ( ppv_dim_t d )
   { 
-    size_t head_bytes = sizeof(ppv_array_desc_t);   /* Mem size wihout {A.size,A.step} vectors. */
+    size_t head_bytes = sizeof(ppv_array_t);   /* Mem size wihout {A.size,A.step} vectors. */
     size_t size_bytes = d * sizeof(ppv_size_t);     /* Mem size of {A.size} vector. */
     size_t step_bytes = d * sizeof(ppv_step_t);     /* Mem size of {A.step} vector. */
     size_t desc_bytes = head_bytes + size_bytes + step_bytes;
     
-    ppv_array_desc_t *A = notnull(malloc(desc_bytes), "no mem");
+    ppv_array_t *A = notnull(malloc(desc_bytes), "no mem");
     A->size = (ppv_size_t *)(((char*)A) + head_bytes);
     A->step = (ppv_step_t *)(((char*)A->size) + size_bytes);
     
@@ -202,19 +202,19 @@ ppv_array_desc_t *ppv_array_new_desc ( ppv_dim_t d )
     return A;
   }
 
-ppv_sample_t ppv_get_sample ( ppv_array_desc_t *A, ppv_index_t ix[] )
+ppv_sample_t ppv_get_sample ( ppv_array_t *A, ppv_index_t ix[] )
   { ppv_pos_t pos = ppv_sample_pos(A, ix);
     ppv_sample_t qv = ppv_get_sample_at_pos(A->el, A->bps, A->bpw, pos);
     return qv;
   }
 
-void ppv_set_sample ( ppv_array_desc_t *A, ppv_index_t ix[], ppv_sample_t qv )
+void ppv_set_sample ( ppv_array_t *A, ppv_index_t ix[], ppv_sample_t qv )
   { ppv_pos_t pos = ppv_sample_pos(A, ix);
     ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, qv);
     return;
   }
 
-ppv_pos_t ppv_sample_pos ( ppv_array_desc_t *A, ppv_index_t ix[] )
+ppv_pos_t ppv_sample_pos ( ppv_array_t *A, ppv_index_t ix[] )
   { return ix_position(A->d, ix, A->base, A->step); }
 
 ppv_sample_t ppv_get_sample_at_pos 
@@ -360,31 +360,31 @@ void ppv_set_sample_at_pos
 
 /* DESCRIPTOR MANIPULATION */
 
-void ppv_crop ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_size_t skip, ppv_size_t keep )
+void ppv_crop ( ppv_array_t *A, ppv_axis_t ax, ppv_size_t skip, ppv_size_t keep )
   { ix_crop(A->d, A->size, &(A->base), A->step, ax, skip, keep);
     /* If the array has become empty, {A.el} is now useless: */
     if (keep == 0) { A->el = NULL; }
   }
 
-void ppv_subsample ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_size_t stride )
+void ppv_subsample ( ppv_array_t *A, ppv_axis_t ax, ppv_size_t stride )
   { ix_subsample(A->d, A->size, &(A->base), A->step, ax, stride); }
 
-void ppv_reverse ( ppv_array_desc_t *A, ppv_axis_t ax )
+void ppv_reverse ( ppv_array_t *A, ppv_axis_t ax )
   { ix_flip(A->d, A->size, &(A->base), A->step, ax); }
 
-void ppv_replicate ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_size_t sz )
+void ppv_replicate ( ppv_array_t *A, ppv_axis_t ax, ppv_size_t sz )
   { ix_replicate(A->d, A->size, &(A->base), A->step, ax, sz); }
 
-void ppv_swap_indices ( ppv_array_desc_t *A, ppv_axis_t ax0, ppv_axis_t ax1, ppv_dim_t n )
+void ppv_swap_indices ( ppv_array_t *A, ppv_axis_t ax0, ppv_axis_t ax1, ppv_dim_t n )
   { ix_swap_indices(A->d, A->size, &(A->base), A->step, ax0, ax1, n); }
 
-void ppv_flip_indices ( ppv_array_desc_t *A, ppv_axis_t ax0, ppv_axis_t ax1 )
+void ppv_flip_indices ( ppv_array_t *A, ppv_axis_t ax0, ppv_axis_t ax1 )
   { ix_flip_indices(A->d, A->size, &(A->base), A->step, ax0, ax1); }
 
-void ppv_diagonal ( ppv_array_desc_t *A, ppv_axis_t ax0, ppv_axis_t ax1 )
+void ppv_diagonal ( ppv_array_t *A, ppv_axis_t ax0, ppv_axis_t ax1 )
   { ix_diagonal(A->d, A->size, &(A->base), A->step, ax0, ax1); }
 
-ppv_array_desc_t *ppv_slice ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_index_t ix )
+ppv_array_t *ppv_slice ( ppv_array_t *A, ppv_axis_t ax, ppv_index_t ix )
   { ppv_dim_t d = A->d;
     demand(ax < d, "invalid axis");
     
@@ -403,7 +403,7 @@ ppv_array_desc_t *ppv_slice ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_index_t ix
     
     /* Copy the parameters in a new descriptor, with one dimension less: */
     ppv_dim_t dS = (ppv_dim_t)(d-1);
-    ppv_array_desc_t *S = ppv_array_new_desc(dS);
+    ppv_array_t *S = ppv_array_new_desc(dS);
     S->base = baseA;
     for(ppv_axis_t ax = 0; ax < dS; ax++) { S->size[ax] = sizeA[ax]; S->step[ax] = stepA[ax]; }
     S->bps = A->bps;
@@ -413,7 +413,7 @@ ppv_array_desc_t *ppv_slice ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_index_t ix
     return S;
   }
 
-ppv_array_desc_t *ppv_chop ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_size_t sz )
+ppv_array_t *ppv_chop ( ppv_array_t *A, ppv_axis_t ax, ppv_size_t sz )
   { 
     ppv_dim_t d = A->d;
     demand(d < ppv_MAX_DIM, "too many axes already");
@@ -435,7 +435,7 @@ ppv_array_desc_t *ppv_chop ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_size_t sz )
     assert(sizeA[d] == A->size[ax]/sz);
     
     /* Copy the parameters in a new descriptor, with one dimension more: */
-    ppv_array_desc_t *S = ppv_array_new_desc(dS);
+    ppv_array_t *S = ppv_array_new_desc(dS);
     S->base = baseA;
     for(ppv_axis_t ax = 0; ax < dS; ax++) { S->size[ax] = sizeA[ax]; S->step[ax] = stepA[ax]; }
     S->bps = A->bps;
@@ -450,13 +450,13 @@ ppv_array_desc_t *ppv_chop ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_size_t sz )
 bool_t ppv_enum 
   ( ppv_index_pos3_op_t *op, 
     bool_t reverse, 
-    ppv_array_desc_t *A, 
-    ppv_array_desc_t *B, 
-    ppv_array_desc_t *C 
+    ppv_array_t *A, 
+    ppv_array_t *B, 
+    ppv_array_t *C 
   )
   {
     /* Obtain a non-null operand {X}: */
-    ppv_array_desc_t *X = A;
+    ppv_array_t *X = A;
     if (X == NULL) { X = B; }
     if (X == NULL) { X = C; } 
     /* If all three operands are null, there is nothing to do: */
@@ -480,7 +480,7 @@ bool_t ppv_enum
     return ix_enum(op, A->d, X->size, ix_order_L, reverse, bA, sA, bB, sB, bC, sC);
   }
 
-void ppv_array_assign ( ppv_array_desc_t *A, ppv_array_desc_t *B  )
+void ppv_array_assign ( ppv_array_t *A, ppv_array_t *B  )
   {
     ppv_sample_t mask = (ppv_sample_t)((((ppv_sample_t)1) << A->bps) - 1); /* {A} sample mask. */
     
@@ -501,7 +501,7 @@ void ppv_array_assign ( ppv_array_desc_t *A, ppv_array_desc_t *B  )
 
 /* ERROR MESSAGES */
 
-void ppv_print_descriptor ( FILE *wr, char *pf, ppv_array_desc_t *A, char *sf )
+void ppv_print_descriptor ( FILE *wr, char *pf, ppv_array_t *A, char *sf )
   {
     fprintf(stderr, "%s", pf); 
     fprintf(stderr, "bps = %u bpw = %u", A->bps, A->bpw);

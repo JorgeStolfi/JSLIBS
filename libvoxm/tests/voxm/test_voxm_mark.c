@@ -1,5 +1,5 @@
 /* See {test_voxm_mark}.h  */
-/* Last edited on 2021-06-12 10:37:04 by jstolfi */
+/* Last edited on 2021-06-22 13:47:21 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -21,7 +21,7 @@
 #include <test_voxm_mark.h>
 
 
-void test_voxm_mark_corners(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
+void test_voxm_mark_corners(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
     r3_gen_print (stderr, ctr, "%.2f", "  ctr = ( ", " ", " )\n");
@@ -58,7 +58,7 @@ void test_voxm_mark_corners(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double fu
       { return voxm_obj_ball(p, ballR, fuzzR); }
   }
     
-void test_voxm_mark_edges(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, int ax, double fuzzR)
+void test_voxm_mark_edges(ppv_array_t *A, r3_t *ctr, r3_t *rad, int ax, double fuzzR)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
     r3_gen_print (stderr, ctr, "%.2f", "  ctr = ( ", " ", " )\n");

@@ -1,5 +1,5 @@
 /* voxb_splat_tube.h --- voxel-based modeling of tubes and ropes */
-/* Last edited on 2021-06-12 14:42:21 by jstolfi */
+/* Last edited on 2021-06-22 13:47:04 by jstolfi */
 
 #ifndef voxb_splat_tube_H
 #define voxb_splat_tube_H
@@ -39,7 +39,7 @@
   objects. */
  
 void voxb_splat_tube_round_helix
-  ( ppv_array_desc_t *A, 
+  ( ppv_array_t *A, 
     double t0,
     double t1,
     r3_motion_state_t *S, 
@@ -69,7 +69,7 @@ void voxb_splat_tube_round_helix
     (not parallel to the helix axis). */
 
 void voxb_splat_tube_round_segment
-  ( ppv_array_desc_t *A, 
+  ( ppv_array_t *A, 
     r3_path_state_t *S, 
     r3_path_state_t *T, 
     double inR, 
@@ -81,7 +81,7 @@ void voxb_splat_tube_round_segment
     the path was traversed in approximately unit time. */
 
 void voxb_splat_tube_round_bezier
-  ( ppv_array_desc_t *A, 
+  ( ppv_array_t *A, 
     r3_t *p0, 
     r3_t *p1, 
     r3_t *p2, 

@@ -1,5 +1,5 @@
 /* See ppv_array_write.h */
-/* Last edited on 2021-06-12 01:32:50 by jstolfi */
+/* Last edited on 2021-06-22 13:44:42 by jstolfi */
 /* Copyright © 2003 by Jorge Stolfi, from University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
@@ -18,15 +18,15 @@
 
 /* INTERNAL PROTOTPES */
 
-void ppv_array_write_samples_plain ( FILE *wr, ppv_array_desc_t *A );
-void ppv_array_write_samples_raw_small ( FILE *wr, ppv_array_desc_t *A );
-void ppv_array_write_samples_raw_big ( FILE *wr, ppv_array_desc_t *A );
-void ppv_array_write_samples_raw_bytes ( FILE *wr, ppv_array_desc_t *A );
+void ppv_array_write_samples_plain ( FILE *wr, ppv_array_t *A );
+void ppv_array_write_samples_raw_small ( FILE *wr, ppv_array_t *A );
+void ppv_array_write_samples_raw_big ( FILE *wr, ppv_array_t *A );
+void ppv_array_write_samples_raw_bytes ( FILE *wr, ppv_array_t *A );
 
 #define ppv_FILE_TYPE "ppv_array_t"
 #define ppv_FILE_VERSION "2005-05-28"
     
-void ppv_array_write_file(FILE *wr, ppv_array_desc_t *A, bool_t plain)
+void ppv_array_write_file(FILE *wr, ppv_array_t *A, bool_t plain)
   {
     /* Find effective number of axes: */
     ppv_dim_t d = A->d;
@@ -96,7 +96,7 @@ void ppv_array_write_file(FILE *wr, ppv_array_desc_t *A, bool_t plain)
 
 #define ppv_MAX_SAMPLES_PER_LINE 20
 
-void ppv_array_write_samples_plain ( FILE *wr, ppv_array_desc_t *A )
+void ppv_array_write_samples_plain ( FILE *wr, ppv_array_t *A )
   {
     ppv_dim_t d = A->d;
     ppv_index_t ix[d];
@@ -124,7 +124,7 @@ void ppv_array_write_samples_plain ( FILE *wr, ppv_array_desc_t *A )
       }
   }
 
-void ppv_array_write_samples_raw_small ( FILE *wr, ppv_array_desc_t *A )
+void ppv_array_write_samples_raw_small ( FILE *wr, ppv_array_t *A )
   {
     ppv_dim_t d = A->d;
     ppv_index_t ix[d];
@@ -147,7 +147,7 @@ void ppv_array_write_samples_raw_small ( FILE *wr, ppv_array_desc_t *A )
       }
   }
 
-void ppv_array_write_samples_raw_big ( FILE *wr, ppv_array_desc_t *A )
+void ppv_array_write_samples_raw_big ( FILE *wr, ppv_array_t *A )
   {
     ppv_dim_t d = A->d;
     ppv_index_t ix[d];
@@ -171,7 +171,7 @@ void ppv_array_write_samples_raw_big ( FILE *wr, ppv_array_desc_t *A )
       }
   }
                   
-void ppv_array_write_samples_raw_bytes ( FILE *wr, ppv_array_desc_t *A )
+void ppv_array_write_samples_raw_bytes ( FILE *wr, ppv_array_t *A )
   {
     ppv_dim_t d = A->d;
     ppv_index_t ix[d];

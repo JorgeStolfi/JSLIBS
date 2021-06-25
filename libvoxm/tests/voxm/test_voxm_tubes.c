@@ -1,5 +1,5 @@
 /* See {test_voxm_tubes.h} */
-/* Last edited on 2021-06-12 10:42:19 by jstolfi */
+/* Last edited on 2021-06-22 13:47:52 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -22,7 +22,7 @@
 #include <test_voxm_tubes.h>
 #include <test_voxm_mark.h>
 
-void test_voxm_tubes(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
+void test_voxm_tubes(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
   { 
     int NT = 3; /* Number of independent tests. */
     
@@ -60,7 +60,7 @@ void test_voxm_tubes(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
       }
   }
   
-void test_voxm_tubes_helix(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
+void test_voxm_tubes_helix(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
 
@@ -130,7 +130,7 @@ void test_voxm_tubes_helix(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double fuz
     return;
   }
 
-void test_voxm_tubes_segment(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
+void test_voxm_tubes_segment(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
 
@@ -187,7 +187,7 @@ void test_voxm_tubes_segment(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double f
     return;
   }
   
-void test_voxm_tubes_bezier(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
+void test_voxm_tubes_bezier(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
     

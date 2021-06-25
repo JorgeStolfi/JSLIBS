@@ -1,17 +1,17 @@
 /* Infinite multi-dimensional arrays. */
-/* Last edited on 2021-06-12 11:27:30 by jstolfi */
+/* Last edited on 2021-06-22 13:43:03 by jstolfi */
 
 /*  
   INFINITE ARRAYS
    
     A {ppv_grid_t} defines an /index reduction mapping/, a mapping from
     an infinite {d}-dimensional grid of integers to a finite one, such
-    as the valid indices of a {ppv_array_desc_t}. The mapping allows the
+    as the valid indices of a {ppv_array_t}. The mapping allows the
     finite grid to be shfted and extended or replicated along each
     dimension.
     
     This interface allows clients to read and write elements of sample
-    arrays (such as described by {ppv_array_desc_t}) as if they were
+    arrays (such as described by {ppv_array_t}) as if they were
     infinite arrays, without worrying about index wrap-around.
     
   INTENDED USE
@@ -71,7 +71,7 @@ typedef enum
       element {AA[ix]} is aliased to {a[r]} if {q} is even, or to the
       negation of {a[n-1-r]} if {q} is odd.
       
-    Since the elements of a {ppv_array_desc_t} are uninterpreted bit strings, the
+    Since the elements of a {ppv_array_t} are uninterpreted bit strings, the
     aliasing to negated elements is indicated by a separate sign parameter. See
     {ppv_grid_get_sample} and related procedures. */
 

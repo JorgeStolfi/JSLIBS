@@ -1,5 +1,5 @@
 /* See {test_voxm_obj.h} */
-/* Last edited on 2021-06-12 10:38:50 by jstolfi */
+/* Last edited on 2021-06-22 13:47:34 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -20,7 +20,7 @@
 
 #include <test_voxm_objs.h>
 
-void test_voxm_objs(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
+void test_voxm_objs(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
 
@@ -41,7 +41,7 @@ void test_voxm_objs(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
     return;
   }
 
-void test_voxm_objs_ball(ppv_array_desc_t *A, r3_t *ctr, double rad, double fuzzR)
+void test_voxm_objs_ball(ppv_array_t *A, r3_t *ctr, double rad, double fuzzR)
   { 
     double ballR = 0.05*rad;  /* Radius of ball. */
     double ballX = 0.80*rad;  /* {X}-displacement. */
@@ -62,7 +62,7 @@ void test_voxm_objs_ball(ppv_array_desc_t *A, r3_t *ctr, double rad, double fuzz
       { return voxm_obj_ball(p, ballR, fuzzR); }
   }      
 
-void test_voxm_objs_donut(ppv_array_desc_t *A, r3_t *ctr, double rad, double fuzzR)
+void test_voxm_objs_donut(ppv_array_t *A, r3_t *ctr, double rad, double fuzzR)
   { 
     double majR = 0.25*rad;  /* Radius of donut midline. */
     double minR = majR/3; /* Radius of dough. */
@@ -84,7 +84,7 @@ void test_voxm_objs_donut(ppv_array_desc_t *A, r3_t *ctr, double rad, double fuz
       { return voxm_obj_donut(p, minR, majR, 2, fuzzR); }
   }      
 
-void test_voxm_objs_rod(ppv_array_desc_t *A, r3_t *ctr, double rad, double fuzzR)
+void test_voxm_objs_rod(ppv_array_t *A, r3_t *ctr, double rad, double fuzzR)
   { 
     double rodH = 0.20*rad;   /* Half-height of rod. */
     double rodR = 0.10*rad;   /* Radius of rod. */
@@ -109,7 +109,7 @@ void test_voxm_objs_rod(ppv_array_desc_t *A, r3_t *ctr, double rad, double fuzzR
       { return voxm_obj_rod(p, rodH, rodR, rodF, fuzzR); }
   }    
   
-void test_voxm_objs_tube(ppv_array_desc_t *A, r3_t *ctr, double rad, double fuzzR)
+void test_voxm_objs_tube(ppv_array_t *A, r3_t *ctr, double rad, double fuzzR)
   { 
     double tubeH = 0.20*rad;    /* Half-height of tube. */
     double tubeRi = 0.10*rad;   /* Radius of tube. */
@@ -138,7 +138,7 @@ void test_voxm_objs_tube(ppv_array_desc_t *A, r3_t *ctr, double rad, double fuzz
       { return voxm_obj_tube(p, tubeH, tubeRi,tubeRo, tubeF, fuzzR); }
   }    
   
-void test_voxm_objs_cube_hole(ppv_array_desc_t *A, r3_t *ctr, double rad, double fuzzR)
+void test_voxm_objs_cube_hole(ppv_array_t *A, r3_t *ctr, double rad, double fuzzR)
   { 
     double cubeZ = 0.50*rad;   /* Distance above array center of cube center and hole center. */
     double cubeA = M_PI/12;    /* Tilting angle. */
@@ -173,7 +173,7 @@ void test_voxm_objs_cube_hole(ppv_array_desc_t *A, r3_t *ctr, double rad, double
       { return voxm_obj_cube(p, cubeH, cubeF, fuzzR); }
   }    
 
-void test_voxm_objs_box(ppv_array_desc_t *A, r3_t *ctr, double rad, double fuzzR)
+void test_voxm_objs_box(ppv_array_t *A, r3_t *ctr, double rad, double fuzzR)
   {
     double boxZ = -0.40*rad;  /* {Z}-distance from array center to box center. */
     double boxA = -M_PI/12;   /* Tilting angle. */
@@ -204,7 +204,7 @@ void test_voxm_objs_box(ppv_array_desc_t *A, r3_t *ctr, double rad, double fuzzR
       { return voxm_obj_box(p, boxRX, boxRY, boxRZ, boxF, fuzzR); }
   }
 
-void test_voxm_objs_rounded_box(ppv_array_desc_t *A, r3_t *ctr, double rad, double fuzzR)
+void test_voxm_objs_rounded_box(ppv_array_t *A, r3_t *ctr, double rad, double fuzzR)
   {
     double boxZ = -0.65*rad;  /* {Z}-distance from array center to box center. */
     double boxA = -M_PI/12;   /* Tilting angle. */
@@ -236,7 +236,7 @@ void test_voxm_objs_rounded_box(ppv_array_desc_t *A, r3_t *ctr, double rad, doub
       { return voxm_obj_rounded_box(p, boxRX, boxRY, boxRZ, boxRoundR, boxF, fuzzR); }
   }
 
-void test_voxm_objs_cup(ppv_array_desc_t *A, r3_t *ctr, double rad, double fuzzR)
+void test_voxm_objs_cup(ppv_array_t *A, r3_t *ctr, double rad, double fuzzR)
   {
     /* Basic cup parameters: */
     double cupX = 0.65*rad;

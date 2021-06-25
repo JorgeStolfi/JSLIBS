@@ -5,7 +5,7 @@
 #define test_voxb_C_COPYRIGHT \
   "Copyright © 2016 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2021-06-12 12:03:16 by jstolfi */
+/* Last edited on 2021-06-22 13:45:21 by jstolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -102,7 +102,7 @@ typedef struct test_voxb_options_t
 test_voxb_options_t *test_voxb_parse_options(int32_t argc, char **argv);
   /* Parses the command line arguments and packs them as an {test_voxb_options_t}. */
 
-void test_voxb_tomogram_write(char *outFile, ppv_array_desc_t *A); 
+void test_voxb_tomogram_write(char *outFile, ppv_array_t *A); 
 
 int32_t main(int32_t argc,char** argv);
 
@@ -126,7 +126,7 @@ int32_t main(int32_t argc, char** argv)
     sz[2] = NX;
     ppv_nbits_t bps = 1;
     ppv_nbits_t bpw = 32;
-    ppv_array_desc_t *A = ppv_array_new(d, sz, bps, bpw);
+    ppv_array_t *A = ppv_array_new(d, sz, bps, bpw);
     
     /* Center and radius of array: */
     r3_t ctr = (r3_t){{ 0.5*NX, 0.5*NY, 0.5*NZ }};
@@ -154,7 +154,7 @@ int32_t main(int32_t argc, char** argv)
     return 0;
   }
     
-void test_voxb_tomogram_write(char *outFile, ppv_array_desc_t *A)
+void test_voxb_tomogram_write(char *outFile, ppv_array_t *A)
   {
     FILE *wr = open_write(outFile, TRUE);
 

@@ -1,5 +1,5 @@
 /* See voxb_splat.h */
-/* Last edited on 2021-06-15 01:12:06 by jstolfi */
+/* Last edited on 2021-06-22 13:46:50 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -21,7 +21,7 @@
 #include <voxb_splat.h>
 
 void voxb_splat_object_multi
-  ( ppv_array_desc_t *A,
+  ( ppv_array_t *A,
     r3_pred_t *obj,
     int32_t ns,
     r3_motion_state_t S[],
@@ -39,7 +39,7 @@ void voxb_splat_object_multi
   }
 
 void voxb_splat_object
-  ( ppv_array_desc_t *A, 
+  ( ppv_array_t *A, 
     r3_pred_t *obj,
     r3_motion_state_t *S,
     double maxR,
@@ -111,7 +111,7 @@ void voxb_splat_object
   }
 
 void voxb_splat_voxel
-  ( ppv_array_desc_t *A, 
+  ( ppv_array_t *A, 
     int32_t kx, 
     int32_t ky, 
     int32_t kz, 

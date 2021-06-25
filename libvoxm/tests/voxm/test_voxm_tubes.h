@@ -1,5 +1,5 @@
 /* test_voxm_tubes.h --- tests the tube-splatting functions in {voxm_splat_tube.h}. */
-/* Last edited on 2021-06-12 10:43:03 by jstolfi */
+/* Last edited on 2021-06-22 13:47:59 by jstolfi */
 
 #ifndef test_voxm_tubes_H
 #define test_voxm_tubes_H
@@ -14,17 +14,17 @@
 
 #include <r3_path.h>
 
-void test_voxm_tubes(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double fuzzR);
+void test_voxm_tubes(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR);
   /* Splats some tubes in {A}, spanning the box whith half-size {rad} 
     and center {ctr}. */
 
-void test_voxm_tubes_helix(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double fuzzR);
+void test_voxm_tubes_helix(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR);
   /* Tests helical tubes. */
 
-void test_voxm_tubes_segment(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double fuzzR);
+void test_voxm_tubes_segment(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR);
   /* Tests tubes defined by two {r3_path_state_t}s. */
 
-void test_voxm_tubes_bezier(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double fuzzR);
+void test_voxm_tubes_bezier(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR);
   /* Tests tubes defined by bezier control points. */
 
 /* INTERNAL TOOLS */

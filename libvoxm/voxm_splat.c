@@ -1,5 +1,5 @@
 /* See voxm_splat.h */
-/* Last edited on 2021-06-12 12:15:50 by jstolfi */
+/* Last edited on 2021-06-22 13:48:06 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -21,7 +21,7 @@
 #include <voxm_splat.h>
 
 void voxm_splat_object_multi
-  ( ppv_array_desc_t *A,
+  ( ppv_array_t *A,
     r3_double_func_t *obj,
     int32_t ns,
     r3_motion_state_t S[],
@@ -39,7 +39,7 @@ void voxm_splat_object_multi
   }
 
 void voxm_splat_object
-  ( ppv_array_desc_t *A, 
+  ( ppv_array_t *A, 
     r3_double_func_t *obj,
     r3_motion_state_t *S,
     double maxR,
@@ -87,7 +87,7 @@ void voxm_splat_object
       }
   }
   
-void voxm_splat_voxel(ppv_array_desc_t *A, int32_t kx, int32_t ky, int32_t kz, double val, bool_t sub)
+void voxm_splat_voxel(ppv_array_t *A, int32_t kx, int32_t ky, int32_t kz, double val, bool_t sub)
   {
     /* Quantize the value: */
     ppv_sample_t maxsmp = (ppv_sample_t)((1u << A->bps) - 1); /* Max sample value. */

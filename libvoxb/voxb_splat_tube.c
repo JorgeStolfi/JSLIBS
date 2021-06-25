@@ -1,5 +1,5 @@
 /* See voxb_splat_tube.h */
-/* Last edited on 2021-06-12 10:33:50 by jstolfi */
+/* Last edited on 2021-06-22 13:46:56 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -24,7 +24,7 @@
 #include <voxb_splat_tube.h>
 
 void voxb_splat_tube_round_helix
-  ( ppv_array_desc_t *A, 
+  ( ppv_array_t *A, 
     double t0,
     double t1,
     r3_motion_state_t *S, 
@@ -104,7 +104,7 @@ void voxb_splat_tube_round_helix
   }
 
 void voxb_splat_tube_round_bezier
-  ( ppv_array_desc_t *A, 
+  ( ppv_array_t *A, 
     r3_t *p0, 
     r3_t *p1, 
     r3_t *p2, 
@@ -185,7 +185,7 @@ void voxb_splat_tube_round_bezier
   }
 
 void voxb_splat_tube_round_segment
-  ( ppv_array_desc_t *A, 
+  ( ppv_array_t *A, 
     r3_path_state_t *S, 
     r3_path_state_t *T, 
     double inR, 

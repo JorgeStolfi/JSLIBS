@@ -1,5 +1,5 @@
 /* voxb_erolate.h --- erosion and dilation of PPV arrays. */
-/* Last edited on 2021-06-13 14:06:01 by jstolfi */
+/* Last edited on 2021-06-22 13:46:43 by jstolfi */
 
 #ifndef voxb_erolate_H
 #define voxb_erolate_H
@@ -13,7 +13,7 @@
 
 /* OPERATIONS WITH BRUSHES */
 
-void voxb_erolate_with_brush(ppv_array_desc_t *A, ppv_brush_t *b, bool_t erode);
+void voxb_erolate_with_brush(ppv_array_t *A, ppv_brush_t *b, bool_t erode);
  /* Erodes or dilates the shape stored in the binary PPV array {A} 
    with the brush (structuring element) {b}.
    

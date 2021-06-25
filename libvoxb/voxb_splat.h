@@ -1,5 +1,5 @@
 /* voxb_splat.h --- voxel-based modeling of 3D objects (binary tomogram version) */
-/* Last edited on 2021-06-15 17:48:18 by jstolfi */
+/* Last edited on 2021-06-22 13:52:16 by jstolfi */
 
 #ifndef voxb_splat_H
 #define voxb_splat_H
@@ -52,7 +52,7 @@ typedef enum {
 /* SPLATTING SINGLE VOXELS */
 
 void voxb_splat_voxel
-  ( ppv_array_desc_t *A, 
+  ( ppv_array_t *A, 
     int32_t kx, 
     int32_t ky, 
     int32_t kz, 
@@ -68,7 +68,7 @@ void voxb_splat_voxel
 /* SPLATTING OBJECTS FROM POINT PREDICATES */
   
 void voxb_splat_object
-  ( ppv_array_desc_t *A,
+  ( ppv_array_t *A,
     r3_pred_t *obj,
     r3_motion_state_t *S,
     double maxR,
@@ -92,7 +92,7 @@ void voxb_splat_object
     of {mrg} voxels all around. */
 
 void voxb_splat_object_multi
-  ( ppv_array_desc_t *A,
+  ( ppv_array_t *A,
     r3_pred_t *obj,
     int32_t ns,
     r3_motion_state_t S[],

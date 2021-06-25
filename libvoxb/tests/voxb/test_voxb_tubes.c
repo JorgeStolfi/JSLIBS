@@ -1,5 +1,5 @@
 /* See {test_voxb_tubes.h} */
-/* Last edited on 2021-06-12 09:39:52 by jstolfi */
+/* Last edited on 2021-06-22 13:46:18 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -22,7 +22,7 @@
 #include <test_voxb_tubes.h>
 #include <test_voxb_mark.h>
 
-void test_voxb_tubes(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad)
+void test_voxb_tubes(ppv_array_t *A, r3_t *ctr, r3_t *rad)
   { 
     int NT = 3; /* Number of independent tests. */
     
@@ -60,7 +60,7 @@ void test_voxb_tubes(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad)
       }
   }
   
-void test_voxb_tubes_helix(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad)
+void test_voxb_tubes_helix(ppv_array_t *A, r3_t *ctr, r3_t *rad)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
 
@@ -130,7 +130,7 @@ void test_voxb_tubes_helix(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad)
     return;
   }
 
-void test_voxb_tubes_segment(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad)
+void test_voxb_tubes_segment(ppv_array_t *A, r3_t *ctr, r3_t *rad)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
 
@@ -187,7 +187,7 @@ void test_voxb_tubes_segment(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad)
     return;
   }
   
-void test_voxb_tubes_bezier(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad)
+void test_voxb_tubes_bezier(ppv_array_t *A, r3_t *ctr, r3_t *rad)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
     

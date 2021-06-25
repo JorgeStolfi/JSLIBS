@@ -1,5 +1,5 @@
 /* See ppv_array_read.h */
-/* Last edited on 2021-06-12 01:12:41 by jstolfi */
+/* Last edited on 2021-06-22 13:44:34 by jstolfi */
 /* Copyright © 2003 by Jorge Stolfi, from University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
@@ -18,15 +18,15 @@
 
 /* INTERNAL PROTOTPES */
 
-void ppv_array_read_samples_plain ( FILE *rd, ppv_array_desc_t *A );
-void ppv_array_read_samples_raw_small ( FILE *rd, ppv_array_desc_t *A );
-void ppv_array_read_samples_raw_big ( FILE *rd, ppv_array_desc_t *A );
-void ppv_array_read_samples_raw_bytes ( FILE *rd, ppv_array_desc_t *A );
+void ppv_array_read_samples_plain ( FILE *rd, ppv_array_t *A );
+void ppv_array_read_samples_raw_small ( FILE *rd, ppv_array_t *A );
+void ppv_array_read_samples_raw_big ( FILE *rd, ppv_array_t *A );
+void ppv_array_read_samples_raw_bytes ( FILE *rd, ppv_array_t *A );
 
 #define ppv_FILE_TYPE "ppv_array_t"
 #define ppv_FILE_VERSION "2005-05-28"
     
-ppv_array_desc_t *ppv_array_read_file(FILE *rd, ppv_nbits_t bpw)
+ppv_array_t *ppv_array_read_file(FILE *rd, ppv_nbits_t bpw)
   {
     /* Read header: */
     filefmt_read_header(rd, ppv_FILE_TYPE, ppv_FILE_VERSION);
@@ -71,7 +71,7 @@ ppv_array_desc_t *ppv_array_read_file(FILE *rd, ppv_nbits_t bpw)
     fget_eol(rd); 
     
     /* Allocate array using {asz}: */
-    ppv_array_desc_t *A = ppv_array_new(d, asz, (ppv_nbits_t)bps, bpw);
+    ppv_array_t *A = ppv_array_new(d, asz, (ppv_nbits_t)bps, bpw);
     
     if (! empty)
       { 
@@ -98,7 +98,7 @@ ppv_array_desc_t *ppv_array_read_file(FILE *rd, ppv_nbits_t bpw)
     return A;
   }
 
-void ppv_array_read_samples_plain ( FILE *rd, ppv_array_desc_t *A )
+void ppv_array_read_samples_plain ( FILE *rd, ppv_array_t *A )
   {
     ppv_dim_t d = A->d;
     bool_t debug = FALSE;
@@ -122,7 +122,7 @@ void ppv_array_read_samples_plain ( FILE *rd, ppv_array_desc_t *A )
       }
   }
 
-void ppv_array_read_samples_raw_small ( FILE *rd, ppv_array_desc_t *A )
+void ppv_array_read_samples_raw_small ( FILE *rd, ppv_array_t *A )
   {
     ppv_dim_t d = A->d;
     ppv_index_t ix[d];
@@ -147,12 +147,12 @@ void ppv_array_read_samples_raw_small ( FILE *rd, ppv_array_desc_t *A )
       }
   }
 
-void ppv_array_read_samples_raw_big ( FILE *rd, ppv_array_desc_t *A )
+void ppv_array_read_samples_raw_big ( FILE *rd, ppv_array_t *A )
   {
     affirm(FALSE, "not implemented yet");
   }
 
-void ppv_array_read_samples_raw_bytes ( FILE *rd, ppv_array_desc_t *A )
+void ppv_array_read_samples_raw_bytes ( FILE *rd, ppv_array_t *A )
   {
     ppv_dim_t d = A->d;
     ppv_index_t ix[d];

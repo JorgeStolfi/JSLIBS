@@ -1,5 +1,5 @@
 /* Portable multi-dimensional sample arrays. */
-/* Last edited on 2021-06-13 23:27:58 by jstolfi */
+/* Last edited on 2021-06-22 13:44:20 by jstolfi */
 
 #ifndef ppv_array_H
 #define ppv_array_H
@@ -12,7 +12,7 @@
 /* !!! Allow {A.d} to be zero? !!! */
 
 typedef 
-  struct ppv_array_desc_t {
+  struct ppv_array_t {
     ppv_dim_t d;        /* Number of axes (ndices) in the array. */
     ppv_size_t *size;      /* Extent of array's domain along each axis. */
     ppv_step_t *step;      /* Position increment for each index. */
@@ -20,15 +20,15 @@ typedef
     ppv_nbits_t bps;       /* Bits per sample. */
     ppv_nbits_t bpw;       /* Bits per word (storage unit). */
     void *el;              /* Start of storage area (NULL if no samples). */
-  } ppv_array_desc_t; 
+  } ppv_array_t; 
   /* 
-    A {ppv_array_desc_t} is descriptor for a multi-dimensional array of
+    A {ppv_array_t} is descriptor for a multi-dimensional array of
     small non-negative integers (/samples/), stored in memory 
     in a packed binary format. 
     
     Array indexing and shape
     
-      Each sample of a {ppv_array_desc_t} {A} is identified by
+      Each sample of a {ppv_array_t} {A} is identified by
       {d = A.d} indices {[ix[0],..ix[d-1]]}.
 
       The /shape/ of {A} is defined by {d} non-negative integers,
@@ -41,14 +41,14 @@ typedef
 
     Intended use
 
-      Although a {ppv_array_desc_t} structure can be used to store
+      Although a {ppv_array_t} structure can be used to store
       arbitrary arrays of integers, it was primarily designed to be a
       unified format for uncompressed, uniformly sampled, muti-channel
       and multi-dimensional data -- audio, still image (both 2D and 3D)
       and video.
       
       For example, a color video file could be represented by a
-      {ppv_array_desc_t} {A} with {A.d = 4}, with index 0 being the
+      {ppv_array_t} {A} with {A.d = 4}, with index 0 being the
       color channel (R,G,B, etc.), indices 1 and 2 running along the
       spatial axes (width and height), and index 3 being time (the frame
       number). Thus, a 10-sec color TV movie at 60 frames per second
@@ -118,7 +118,7 @@ typedef
 
 /* ARRAY ALLOCATION */
 
-ppv_array_desc_t *ppv_array_new ( ppv_dim_t d, ppv_size_t sz[], ppv_nbits_t bps, ppv_nbits_t bpw );
+ppv_array_t *ppv_array_new ( ppv_dim_t d, ppv_size_t sz[], ppv_nbits_t bps, ppv_nbits_t bpw );
   /* Allocates a descriptor {A} for a newly allocated array of samples,
     with {A.d = d}, {A.size = {sz[0],.. sz[d-1]}} and the specified number of bits
     per sample and per word. The individual sizes {sz[ax]} must not
@@ -143,7 +143,7 @@ ppv_array_desc_t *ppv_array_new ( ppv_dim_t d, ppv_size_t sz[], ppv_nbits_t bps,
     same {malloc} record, so one should never call {free} on them; the
     call {free(A)} will reclaim their storage too. */
 
-ppv_array_desc_t *ppv_array_clone ( ppv_array_desc_t *A );
+ppv_array_t *ppv_array_clone ( ppv_array_t *A );
   /* Creates a copy {S} of the descriptor of the array {A} that shares
     the same sample storage as {A}. 
     
@@ -152,7 +152,7 @@ ppv_array_desc_t *ppv_array_clone ( ppv_array_desc_t *A );
     current values in {A}. However, {S} and {A} will share the same
     sample storage area (S->el == A->el). */
 
-ppv_sample_count_t ppv_sample_count( ppv_array_desc_t *A, bool_t reptoo );
+ppv_sample_count_t ppv_sample_count( ppv_array_t *A, bool_t reptoo );
   /* Returns the total number of sample positions in {A}. If {reptoo}
     is true, counts replicated elements as distict; that is, counts the 
     number of distinct valid index tuples.  If {reptoo} is false, counts
@@ -160,15 +160,15 @@ ppv_sample_count_t ppv_sample_count( ppv_array_desc_t *A, bool_t reptoo );
 
 /* SAMPLE EXTRACTION AND INSERTION */
 
-ppv_sample_t ppv_get_sample ( ppv_array_desc_t *A, ppv_index_t ix[] );
+ppv_sample_t ppv_get_sample ( ppv_array_t *A, ppv_index_t ix[] );
   /* Extracts the sample {A[ix[0],ix[1],.. ix[d-1]]}. */
 
-void ppv_set_sample ( ppv_array_desc_t *A, ppv_index_t ix[], ppv_sample_t qv );
+void ppv_set_sample ( ppv_array_t *A, ppv_index_t ix[], ppv_sample_t qv );
   /* Stores value {qv} into the element {A[ix[0],ix[1],.. ix[d-1]]}. */
 
 /* SAMPLE EXTRACTION AND INSERTION WITH POSITION */
 
-ppv_pos_t ppv_sample_pos ( ppv_array_desc_t *A, ppv_index_t ix[] );
+ppv_pos_t ppv_sample_pos ( ppv_array_t *A, ppv_index_t ix[] );
   /* Computes the position of sample {A[ix[0],.. ix[d-1]]}. Does not check
     whether the element exists or not. */
 
@@ -210,15 +210,15 @@ sign_t ppv_index_compare ( ppv_dim_t d, ppv_index_t ixa[], ppv_index_t ixb[] );
   /* Returns {NEG}, {ZER}, or {POS} depending on whether {ixa} is less
     than, equal to, or greater than {ixb} in the C index order. */
 
-bool_t ppv_index_first ( ppv_index_t ix[], ppv_array_desc_t *A );
+bool_t ppv_index_first ( ppv_index_t ix[], ppv_array_t *A );
   /* Sets {ix[ax] = 0} for every axis {ax}, and returns TRUE iff that
     is a valid index tuple for {A} (i.e. {A.size[ax]>0} for all {ax}). */
 
-bool_t ppv_index_last ( ppv_index_t ix[], ppv_array_desc_t *A );
+bool_t ppv_index_last ( ppv_index_t ix[], ppv_array_t *A );
   /* Sets {ix[ax] = A.size[ax]-1} for every axis {ax}, and returns TRUE iff that
     is a valid index tuple for {A} (i.e. {A.size[ax]>0} for all {ax}). */
 
-bool_t ppv_index_next ( ppv_index_t ix[], ppv_array_desc_t *A, ppv_dim_t na, ppv_pos_t *p );
+bool_t ppv_index_next ( ppv_index_t ix[], ppv_array_t *A, ppv_dim_t na, ppv_pos_t *p );
   /* Set {ix[0..na-1]} to the next combination of values of those
     indices that is valid for {A}, in the C index order.
   
@@ -244,7 +244,7 @@ bool_t ppv_index_next ( ppv_index_t ix[], ppv_array_desc_t *A, ppv_dim_t na, ppv
 
     */
 
-bool_t ppv_index_prev ( ppv_index_t ix[], ppv_array_desc_t *A, ppv_dim_t na, ppv_pos_t *p );
+bool_t ppv_index_prev ( ppv_index_t ix[], ppv_array_t *A, ppv_dim_t na, ppv_pos_t *p );
   /* Like {ppv_index_next}, but enumerates the index tuples in the reverse order. 
   
     More precisely, the procedure scans the indices {ix[na-1]},
@@ -266,7 +266,7 @@ bool_t ppv_index_prev ( ppv_index_t ix[], ppv_array_desc_t *A, ppv_dim_t na, ppv
     
 /* INDEX TUPLE VALIDATION */
     
-bool_t ppv_index_is_valid ( ppv_index_t ix[], ppv_array_desc_t *A );
+bool_t ppv_index_is_valid ( ppv_index_t ix[], ppv_array_t *A );
   /* Returns TRUE iff {ix} is a valid index tuple for the array {A},
     i.e., if sample {A[ix[0],..ix[na-1]]} exists. This is true if and
     only if {ix[ax]} lies in the range {0..A.step[ax]-1}, for every
@@ -283,7 +283,7 @@ bool_t ppv_index_is_valid ( ppv_index_t ix[], ppv_array_desc_t *A );
   sense of {ppv_descriptor_is_valid} below) when given valid
   arguments. */
 
-void ppv_crop ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_size_t skip, ppv_size_t  keep);
+void ppv_crop ( ppv_array_t *A, ppv_axis_t ax, ppv_size_t skip, ppv_size_t  keep);
   /* Crops the array {A} to the range {skip..skip+keep-1} along axis
     {ax}. Thus {size[ax]} becomes {keep}, and using value {r} for that
     index in the new descriptor is equivalent to using {r + skip} in
@@ -294,7 +294,7 @@ void ppv_crop ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_size_t skip, ppv_size_t 
     retains its size along the other axes) and all its steps are
     reset to zero. */
 
-void ppv_subsample ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_size_t stride );
+void ppv_subsample ( ppv_array_t *A, ppv_axis_t ax, ppv_size_t stride );
   /* Subsamples the descriptor {A} along axis {ax}, so that using {r}
     for that index in the new descriptor is equivalent to using
     {r*stride} in the old one.
@@ -304,19 +304,19 @@ void ppv_subsample ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_size_t stride );
     the original {size[ax]}. In particular, {size[ax]} will be 0 
     if and only if it was 0 originally. */
 
-void ppv_reverse ( ppv_array_desc_t *A, ppv_axis_t ax );
+void ppv_reverse ( ppv_array_t *A, ppv_axis_t ax );
   /* Modifies the descriptor {A} so that it describes the same samples
     as before, with the same indices, except that the index {ax}
     runs in the opposite direction.  */
 
-void ppv_replicate ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_size_t sz );
+void ppv_replicate ( ppv_array_t *A, ppv_axis_t ax, ppv_size_t sz );
   /* Modifies the descriptor {A} so that it has size {sz} along axis
     {ax}, but using any value for that index yields the same sample as
     using the value 0. Namely, this procedure sets {A.step[ax]} to 0,
     {A.size[ax]=sz}. On input, {size[ax]} must be 1, and {sz} must be
     positive. */
 
-void ppv_swap_indices ( ppv_array_desc_t *A, ppv_axis_t ax0, ppv_axis_t ax1, ppv_dim_t n );
+void ppv_swap_indices ( ppv_array_t *A, ppv_axis_t ax0, ppv_axis_t ax1, ppv_dim_t n );
   /* Modifies the descriptor {A} so that it describes the same samples
     as before, with the same indices, except that the {n} indices that
     begin with index {ax0} and the {n} indices that begin with index
@@ -328,14 +328,14 @@ void ppv_swap_indices ( ppv_array_desc_t *A, ppv_axis_t ax0, ppv_axis_t ax1, ppv
     disjoint (|ax0-ax1|>=n). If they are identical, the procedure has no
     effect. */
 
-void ppv_flip_indices ( ppv_array_desc_t *A, ppv_axis_t ax0, ppv_axis_t ax1 );
+void ppv_flip_indices ( ppv_array_t *A, ppv_axis_t ax0, ppv_axis_t ax1 );
   /* Modifies the descriptor {A} so that it describes the same samples
     as before, with the indices {ax0..ax1} in reverse order. Thus,
     after the call the call {ppv_flip_indices(A,2,5)}, 
     element {A[p,q,r,s,t,u]} is equivalent to {A[p,q,u,t,s,r]}
     of the original array. */
 
-void ppv_diagonal ( ppv_array_desc_t *A, ppv_axis_t ax0, ppv_axis_t ax1 );
+void ppv_diagonal ( ppv_array_t *A, ppv_axis_t ax0, ppv_axis_t ax1 );
   /* Modifies the descriptor {A} so that it describes a diagonal slice
     through the original array, cut parallel to the bisector of axes
     {ax0} and {ax1}; and redefines axis {ax0} to be along that diagonal.
@@ -357,7 +357,7 @@ void ppv_diagonal ( ppv_array_desc_t *A, ppv_axis_t ax0, ppv_axis_t ax1 );
 
 /* OPERATORS THAT CHANGE THE DIMENSION */
 
-ppv_array_desc_t *ppv_slice ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_index_t ix );
+ppv_array_t *ppv_slice ( ppv_array_t *A, ppv_axis_t ax, ppv_index_t ix );
   /* Returns a new descriptor {S} that describes the subset of the
     samples of {A} where the index of axis {ax} has value {ix}. The
     array {S} will have one dimension less than {A}, and the index tuple
@@ -368,7 +368,7 @@ ppv_array_desc_t *ppv_slice ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_index_t ix
     The axis {ax} must be in {0..A->d-1}, and the index {ix} must be valid for it.
     Thus the array {A} must not be empty. */
 
-ppv_array_desc_t *ppv_chop ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_size_t sz );
+ppv_array_t *ppv_chop ( ppv_array_t *A, ppv_axis_t ax, ppv_size_t sz );
   /* Returns a new descriptor {S} that describes the same samples
     as {A}, with the same indices, except that axis {ax} is
     replaced by the combination of axes {ax} and a new axis {d}.
@@ -399,9 +399,9 @@ ppv_array_desc_t *ppv_chop ( ppv_array_desc_t *A, ppv_axis_t ax, ppv_size_t sz )
 bool_t ppv_enum 
   ( ppv_index_pos3_op_t *op, 
     bool_t reverse, 
-    ppv_array_desc_t *A, 
-    ppv_array_desc_t *B, 
-    ppv_array_desc_t *C 
+    ppv_array_t *A, 
+    ppv_array_t *B, 
+    ppv_array_t *C 
   );
   /* Enumerates all valid samples of the arrays {A,B,C} in parallel, with
     matching indices. For each index tuple {[ix[0],..ix[d-1]]}, calls {op(ix,
@@ -427,10 +427,10 @@ bool_t ppv_enum
     varies fastest).
     
     Any array that is NULL is not scanned, and the corresponding {pos}
-    is always 0. All {ppv_array_desc_t} arguments that are not NULL must
+    is always 0. All {ppv_array_t} arguments that are not NULL must
     have the same {size} vector. */
 
-void ppv_array_assign ( ppv_array_desc_t *A, ppv_array_desc_t *B );
+void ppv_array_assign ( ppv_array_t *A, ppv_array_t *B );
   /* Copies the samples of {B} into the corresponding samples of {A}.
     The two arrays must have the same size along every axis. 
     
@@ -441,13 +441,13 @@ void ppv_array_assign ( ppv_array_desc_t *A, ppv_array_desc_t *B );
 
 /* DESCRIPTOR PRINTOUT */
 
-void ppv_print_descriptor ( FILE *wr, char *pf, ppv_array_desc_t *A, char *sf );
+void ppv_print_descriptor ( FILE *wr, char *pf, ppv_array_t *A, char *sf );
   /* Prints the attributes of descriptor {A} to file {wr},
     bracketed by the strings "pf" and "sf". */
   
 /* DESCRIPTOR VALIDATION */
 
-bool_t ppv_descriptor_is_valid ( ppv_array_desc_t *A, bool_t die );
+bool_t ppv_descriptor_is_valid ( ppv_array_t *A, bool_t die );
   /* Checks whether the descriptor {A} seems to be valid.
     
     To be valid, an array descriptor must satisfy the following

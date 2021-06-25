@@ -1,5 +1,5 @@
 /* See {test_voxb_erolate.h} */
-/* Last edited on 2021-06-14 22:01:17 by jstolfi */
+/* Last edited on 2021-06-22 13:45:30 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -20,12 +20,12 @@
 
 #include <test_voxb_erolate.h>
 
-void test_voxb_erolate_obj(ppv_array_desc_t *A, int32_t isec, double smr);
+void test_voxb_erolate_obj(ppv_array_t *A, int32_t isec, double smr);
   /* Splats a test object at the center of {A}, then applies erosion,
     dilation, or open-close op selected by the section number {isec},
     with smoothing radius {smr}. */
 
-void test_voxb_erolate(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double smr)
+void test_voxb_erolate(ppv_array_t *A, r3_t *ctr, r3_t *rad, double smr)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
     
@@ -40,7 +40,7 @@ void test_voxb_erolate(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double smr)
       { ppv_size_t xskip = isec*szsec;
         ppv_size_t yskip = (NY - szsec)/2;
         ppv_size_t zskip = (NZ - szsec)/2;
-        ppv_array_desc_t *S = ppv_array_clone(A);
+        ppv_array_t *S = ppv_array_clone(A);
         ppv_crop(S, 0, zskip, szsec);
         ppv_crop(S, 1, yskip, szsec);
         ppv_crop(S, 2, xskip, szsec);
@@ -50,7 +50,7 @@ void test_voxb_erolate(ppv_array_desc_t *A, r3_t *ctr, r3_t *rad, double smr)
     return;     
   }
 
-void test_voxb_erolate_obj(ppv_array_desc_t *A, int32_t isec, double smr)
+void test_voxb_erolate_obj(ppv_array_t *A, int32_t isec, double smr)
   { 
     ppv_dim_t d = A->d;
     assert(d == 3);

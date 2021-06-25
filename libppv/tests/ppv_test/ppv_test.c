@@ -1,4 +1,4 @@
-/* Last edited on 2021-06-14 01:35:49 by jstolfi */ 
+/* Last edited on 2021-06-22 13:45:09 by jstolfi */ 
 /* Test of the PPV library. */
 
 #define _GNU_SOURCE
@@ -43,27 +43,27 @@ ppv_sample_t ransample(ppv_dim_t d, ppv_index_t ix[], int32_t K, int32_t L, ppv_
     and on the parameters K and L.  The sample will be in the range
     {0..2^bps-1}. */
     
-void enum_by_hand(ix_index_op_t op, ppv_array_desc_t *A);
+void enum_by_hand(ix_index_op_t op, ppv_array_t *A);
   /* Calls {op(ix)} on all index vectors of the array {A}, in lex order.
     The {op} argument must be a procedure of type {ix_index_op_t}, that
     receives an index vector and returns a {bbol_t} ({TRUE} to stop the
     enumration). */
 
-void test_new_array(ppv_array_desc_t *A, ppv_size_t *sz, ppv_nbits_t bps, ppv_nbits_t bpw);
-void test_packing(ppv_array_desc_t *A);
-void test_sample_pos(ppv_array_desc_t *A);
-void test_enum(ppv_array_desc_t *A);
-void test_assign(ppv_array_desc_t *A, ppv_nbits_t bpsB);
+void test_new_array(ppv_array_t *A, ppv_size_t *sz, ppv_nbits_t bps, ppv_nbits_t bpw);
+void test_packing(ppv_array_t *A);
+void test_sample_pos(ppv_array_t *A);
+void test_enum(ppv_array_t *A);
+void test_assign(ppv_array_t *A, ppv_nbits_t bpsB);
 
-void test_crop(ppv_array_desc_t *A);
-void test_subsample(ppv_array_desc_t *A);
-void test_reverse(ppv_array_desc_t *A);
-void test_replicate(ppv_array_desc_t *A);
-void test_swap_indices(ppv_array_desc_t *A);
-void test_flip_indices(ppv_array_desc_t *A);
-void test_slice(ppv_array_desc_t *A);
-void test_diagonal(ppv_array_desc_t *A);
-void test_chop(ppv_array_desc_t *A);
+void test_crop(ppv_array_t *A);
+void test_subsample(ppv_array_t *A);
+void test_reverse(ppv_array_t *A);
+void test_replicate(ppv_array_t *A);
+void test_swap_indices(ppv_array_t *A);
+void test_flip_indices(ppv_array_t *A);
+void test_slice(ppv_array_t *A);
+void test_diagonal(ppv_array_t *A);
+void test_chop(ppv_array_t *A);
 
 void dump_storage(FILE *wr, void *el, int nw, ppv_nbits_t bps, ppv_nbits_t bpw);
 void check_size(ppv_dim_t d, ppv_size_t *sza, ppv_size_t *szb);
@@ -101,7 +101,7 @@ void do_tests(ppv_dim_t d, ppv_nbits_t bps, ppv_nbits_t bpw)
     /* Create the array: */
     ppv_size_t sz[d];
     for (ppv_axis_t ax = 0; ax < d; ax++) { sz[ax] = szmax[ax]; }
-    ppv_array_desc_t *A = ppv_array_new(d, sz,  bps, bpw);
+    ppv_array_t *A = ppv_array_new(d, sz,  bps, bpw);
 
     test_new_array(A, sz, bps, bpw);
     test_packing(A);
@@ -126,7 +126,7 @@ void do_tests(ppv_dim_t d, ppv_nbits_t bps, ppv_nbits_t bpw)
     return;
   }
 
-void enum_by_hand(ix_index_op_t op, ppv_array_desc_t *A)
+void enum_by_hand(ix_index_op_t op, ppv_array_t *A)
   {
     ppv_dim_t dmax = 6;
     ppv_dim_t d = A->d;
@@ -147,7 +147,7 @@ void enum_by_hand(ix_index_op_t op, ppv_array_desc_t *A)
     return;
   }
 
-void test_new_array(ppv_array_desc_t *A, ppv_size_t *sz, ppv_nbits_t bps, ppv_nbits_t bpw)
+void test_new_array(ppv_array_t *A, ppv_size_t *sz, ppv_nbits_t bps, ppv_nbits_t bpw)
   {
     ppv_dim_t d = A->d;
     fprintf(stderr, "Checking num of axes...\n");
@@ -179,7 +179,7 @@ void test_new_array(ppv_array_desc_t *A, ppv_size_t *sz, ppv_nbits_t bps, ppv_nb
       }
   }
 
-void test_packing(ppv_array_desc_t *A)
+void test_packing(ppv_array_t *A)
   {
     fprintf(stderr, "Checking {ppv_{get,set}_sample_at_pos} on a few elems...\n");
     bool_t verbose = TRUE;
@@ -202,7 +202,7 @@ void test_packing(ppv_array_desc_t *A)
     fprintf(stderr, "\n");
   }
 
-void test_sample_pos(ppv_array_desc_t *A)
+void test_sample_pos(ppv_array_t *A)
   {
     fprintf(stderr, "Checking {ppv_sample_pos,ppv_{get,set}_sample{,_at_pos}} on all elems...\n");
     bool_t verbose = FALSE;
@@ -260,12 +260,12 @@ void test_sample_pos(ppv_array_desc_t *A)
       }
   }
 
-void test_enum(ppv_array_desc_t *A)
+void test_enum(ppv_array_t *A)
   {
     fprintf(stderr, "!! NOT checking enum yet!\n");
   }
   
-void test_assign(ppv_array_desc_t *A, ppv_nbits_t bpsB)
+void test_assign(ppv_array_t *A, ppv_nbits_t bpsB)
   {
     /* !!! Warning: this test will fail if {A} has replicated elements !!! */
   
@@ -276,7 +276,7 @@ void test_assign(ppv_array_desc_t *A, ppv_nbits_t bpsB)
     ppv_nbits_t bpwB = (ppv_nbits_t)(A->bpw == 32 ? 8 : 2*A->bpw);
     
     /* Create array {B} with same indices as {A}: */
-    ppv_array_desc_t *B = ppv_array_new(d, A->size, bpsB, bpwB);
+    ppv_array_t *B = ppv_array_new(d, A->size, bpsB, bpwB);
     fprintf(stderr, "A.el = %016lx B.el = %016lx\n", (uint64_t)A->el, (uint64_t)B->el);
     
     /* Fill {A} and {B} with different garbage: */
@@ -319,7 +319,7 @@ void test_assign(ppv_array_desc_t *A, ppv_nbits_t bpsB)
       }
   }
 
-void test_crop(ppv_array_desc_t *A)
+void test_crop(ppv_array_t *A)
   {
     ppv_dim_t d = A->d;
     fprintf(stderr, "Checking {ppv_crop}...\n");
@@ -333,7 +333,7 @@ void test_crop(ppv_array_desc_t *A)
         for (ppv_axis_t ax = 0; ax < d; ax++) { sh[ax] = 0; } 
         memcpy(sz, A->size, d*sizeof(ppv_size_t)); 
         /* Start with the standard array: */
-        ppv_array_desc_t *B = ppv_array_clone(A);
+        ppv_array_t *B = ppv_array_clone(A);
 
         /* Perform first cropping: */
         ppv_axis_t ax1 = (ppv_axis_t)(trial % d);
@@ -393,7 +393,7 @@ void test_crop(ppv_array_desc_t *A)
     return;
   }
 
-void test_subsample(ppv_array_desc_t *A) 
+void test_subsample(ppv_array_t *A) 
   {
     ppv_dim_t d = A->d;
     fprintf(stderr, "Checking {ppv_subsample}...\n");
@@ -407,7 +407,7 @@ void test_subsample(ppv_array_desc_t *A)
         for (ppv_axis_t ax = 0; ax < d; ax++) { st[ax] = 1; } 
         memcpy(sz, A->size, d*sizeof(ppv_size_t)); 
         /* Start with the standard array: */
-        ppv_array_desc_t *B = ppv_array_clone(A);
+        ppv_array_t *B = ppv_array_clone(A);
 
         /* Perform first subsampling: */
         ppv_axis_t ax1 = (ppv_axis_t)(trial % d);
@@ -458,7 +458,7 @@ void test_subsample(ppv_array_desc_t *A)
       }
   }
 
-void test_swap_indices(ppv_array_desc_t *A)
+void test_swap_indices(ppv_array_t *A)
   {
     ppv_dim_t d = A->d;
     if (d < 2)
@@ -474,7 +474,7 @@ void test_swap_indices(ppv_array_desc_t *A)
       { /* Initialze {tr} with identity permutation: */
         for (ppv_axis_t ax = 0; ax < d; ax++) { tr[ax] = ax; }
         /* Start with the standard array: */
-        ppv_array_desc_t *B = ppv_array_clone(A);
+        ppv_array_t *B = ppv_array_clone(A);
 
         for (int32_t pass = 0; pass < 2; pass++)
           { /* Perform a transposition: */
@@ -525,7 +525,7 @@ void test_swap_indices(ppv_array_desc_t *A)
       }
   }
 
-void test_flip_indices(ppv_array_desc_t *A)
+void test_flip_indices(ppv_array_t *A)
   {
     ppv_dim_t d = A->d;
     fprintf(stderr, "Checking {ppv_flip_indices}...\n");
@@ -537,7 +537,7 @@ void test_flip_indices(ppv_array_desc_t *A)
       { /* Initialze {tr} with identity permutation: */
         for (ppv_axis_t ax = 0; ax < d; ax++) { tr[ax] = ax; }
         /* Start with the standard array: */
-        ppv_array_desc_t *B = ppv_array_clone(A);
+        ppv_array_t *B = ppv_array_clone(A);
 
         /* Perform first transposition: */
         ppv_axis_t axa1 = (ppv_axis_t)(trial % d);
@@ -599,7 +599,7 @@ void test_flip_indices(ppv_array_desc_t *A)
       }
   }
 
-void test_reverse(ppv_array_desc_t *A)
+void test_reverse(ppv_array_t *A)
   {
     ppv_dim_t d = A->d;
     fprintf(stderr, "Checking {ppv_reverse}...\n");
@@ -611,7 +611,7 @@ void test_reverse(ppv_array_desc_t *A)
       { /* Initialze {fp} for unflipped array: */
         for (ppv_axis_t ax = 0; ax < d; ax++) { { fp[ax] = FALSE; } }
         /* Start with the standard array: */
-        ppv_array_desc_t *B = ppv_array_clone(A);
+        ppv_array_t *B = ppv_array_clone(A);
 
         /* Perform first flip: */
         ppv_axis_t ax1 = (ppv_axis_t)(trial % d);
@@ -664,12 +664,12 @@ void test_reverse(ppv_array_desc_t *A)
       }
   }
 
-void test_slice(ppv_array_desc_t *A)
+void test_slice(ppv_array_t *A)
   {
     fprintf(stderr, "!! NOT checking {ppv_slice}...\n");
   }
 
-void test_diagonal(ppv_array_desc_t *A)
+void test_diagonal(ppv_array_t *A)
   {
     ppv_dim_t d = A->d;
     if (d < 2)
@@ -685,7 +685,7 @@ void test_diagonal(ppv_array_desc_t *A)
       { /* Initialze {sz} for full array: */
         memcpy(sz, A->size, d*sizeof(ppv_size_t)); 
         /* Start with the standard array: */
-        ppv_array_desc_t *B = ppv_array_clone(A);
+        ppv_array_t *B = ppv_array_clone(A);
 
         /* Choose any two distinct axes {axa1,axb1}: */
         ppv_axis_t axa1 = (ppv_axis_t)(trial % d);
@@ -730,7 +730,7 @@ void test_diagonal(ppv_array_desc_t *A)
       }
   }
 
-void test_chop(ppv_array_desc_t *A)
+void test_chop(ppv_array_t *A)
   {
     ppv_dim_t d = A->d;
     fprintf(stderr, "Checking {ppv_chop}...\n");
@@ -742,7 +742,7 @@ void test_chop(ppv_array_desc_t *A)
       { /* Initialze {sz} for full array: */
         memcpy(sz, A->size, d*sizeof(ppv_size_t)); 
         /* Start with the standard array: */
-        ppv_array_desc_t *B = ppv_array_clone(A);
+        ppv_array_t *B = ppv_array_clone(A);
 
         /* Choose an axis to chop: */
         ppv_axis_t axa1 = (ppv_axis_t)(trial % d);
@@ -755,7 +755,7 @@ void test_chop(ppv_array_desc_t *A)
             ppv_crop(B, axa1, 0, (B->size[axa1]/chunksz1)*chunksz1);
           }
         /* Chop array: */
-        ppv_array_desc_t *C = ppv_chop(B, axa1, chunksz1);
+        ppv_array_t *C = ppv_chop(B, axa1, chunksz1);
         assert(C->d == B->d + 1);
         ppv_axis_t axb1 = (ppv_axis_t)(C->d - 1); /* Chunk index axis. */
         /* Compute expected sizes of {C}: */
@@ -791,7 +791,7 @@ void test_chop(ppv_array_desc_t *A)
       }
   }
 
-void test_replicate(ppv_array_desc_t *A)
+void test_replicate(ppv_array_t *A)
   {
     ppv_dim_t d = A->d;
     fprintf(stderr, "Checking {ppv_replicate}...\n");
@@ -803,7 +803,7 @@ void test_replicate(ppv_array_desc_t *A)
       { /* Initialze {sz} for full array: */
         memcpy(sz, A->size, d*sizeof(ppv_size_t)); 
         /* Start with the standard array: */
-        ppv_array_desc_t *B = ppv_array_clone(A);
+        ppv_array_t *B = ppv_array_clone(A);
 
         /* Choose axis for first replication: */
         ppv_axis_t ax1 = (ppv_axis_t)(trial % d);
