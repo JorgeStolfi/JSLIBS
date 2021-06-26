@@ -1,5 +1,5 @@
 /* See {kdtom_ixmap.h}. */
-/* Last edited on 2021-06-24 01:33:50 by jstolfi */
+/* Last edited on 2021-06-25 06:47:19 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -52,6 +52,16 @@ kdtom_ixmap_t *kdtom_ixmap_make
     return T;
   }
    
+size_t kdtom_ixmap_node_size(ppv_dim_t d)
+  { 
+    size_t fix_bytes = sizeof(kdtom_ixmap_t);   /* Bytesize of all fixed fields incl. {head} */
+    size_t size_bytes = d * sizeof(ppv_size_t); /* Bytesize of the {head.size} vector. */
+    size_t prax_bytes = d * sizeof(ppv_axis_t); /* Bytesize of the {prax} vector. */
+    size_t rvix_bytes = d * sizeof(bool_t);     /* Bytesize of the {rvx} vector. */
+    size_t tot_bytes = fix_bytes + size_bytes + prax_bytes + rvix_bytes;
+    return tot_bytes;
+  }
+
 kdtom_ixmap_t *kdtom_ixmap_alloc(ppv_dim_t d)
   { 
     size_t fix_bytes = sizeof(kdtom_ixmap_t); /* Bytesize of all fixed fields incl. {head} */

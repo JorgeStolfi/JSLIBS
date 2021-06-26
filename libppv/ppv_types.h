@@ -1,5 +1,5 @@
 /* Basic types and limits for portable 6-dimensional sample arrays. */
-/* Last edited on 2021-06-13 12:25:06 by jstolfi */
+/* Last edited on 2021-06-25 17:09:09 by jstolfi */
 
 #ifndef ppv_types_H
 #define ppv_types_H

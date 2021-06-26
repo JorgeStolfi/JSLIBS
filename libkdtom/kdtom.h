@@ -1,5 +1,5 @@
 /* Multidimensional sample arrays stored as k-d-trees. */
-/* Last edited on 2021-06-24 00:23:15 by jstolfi */
+/* Last edited on 2021-06-25 01:31:33 by jstolfi */
 
 #ifndef kdtom_H
 #define kdtom_H
@@ -97,5 +97,27 @@ kdtom_t *kdtom_alloc(ppv_dim_t d, size_t rec_bytes, char **pendP);
     of the record that are specific to the variant. One should NEVER
     call {free(T->size)}. */
     
+kdtom_t *kdtom_grind_array(ppv_array_t *A);
+  /* Creates a {kdtom_t} tree from the array {A} by recursively splitting
+    and analyzing each part.
+    
+    The internal nodes of the tree will be {kdtom_split_t} nodes. The
+    leaves will be either {kdtom_const_t} or {kdtom_array_t} nodes.
+    
+    Any substantial part of {A} found in the search whose volxels have
+    all the same value is represented by a const node.
+    
+    Otherwise the part is represented by an array node, with a newly
+    allocated sample storage area, and the relevant voxels of {A} are
+    copied ino that area. Thus {A} can be wholly reclaimed after the
+    procedure returns.
+    
+    The recursive subdivision will proceed until the part of {A} under
+    analysis would take more space if represented as a k-d-tree than if
+    it was kept as a single array node. 
+    
+    If the two sides of a split are const nodes with the same  value,
+    they are merged into one. Ditto if they are both array nodes.*/
+
 
 #endif

@@ -1,4 +1,4 @@
-/* Last edited on 2021-06-22 13:45:09 by jstolfi */ 
+/* Last edited on 2021-06-25 19:15:44 by jstolfi */ 
 /* Test of the PPV library. */
 
 #define _GNU_SOURCE
@@ -9,6 +9,7 @@
 #include <math.h>
 
 #include <bool.h>
+#include <jsmath.h>
 #include <indexing.h>
 #include <indexing_io.h>
 
@@ -38,7 +39,7 @@
 
 void do_tests(ppv_dim_t d, ppv_nbits_t bps, ppv_nbits_t bpw);
 
-ppv_sample_t ransample(ppv_dim_t d, ppv_index_t ix[], int32_t K, int32_t L, ppv_nbits_t bps);
+ppv_sample_t ransample(ppv_dim_t d, const ppv_index_t ix[], int32_t K, int32_t L, ppv_nbits_t bps);
   /* A pseudorandom sample value that depends on the index vector {ix[0..d-1]}
     and on the parameters K and L.  The sample will be in the range
     {0..2^bps-1}. */
@@ -49,11 +50,23 @@ void enum_by_hand(ix_index_op_t op, ppv_array_t *A);
     receives an index vector and returns a {bbol_t} ({TRUE} to stop the
     enumration). */
 
+void test_sample_distr(ppv_array_t *A);
+  /* Computes the histogram of the sample values in {A}. Prints
+    the histogram to {stderr} (if not too large).  Prints
+    statistics of the histogram.  
+    
+    Warning: requires memory proportional to {2^A->bps}, and is not
+    useful unless the number of samples in {A} is many times that value.
+    Will do nothing if {A->bps} is zero or way too large. */
+
+void test_best_bpw(void);
 void test_new_array(ppv_array_t *A, ppv_size_t *sz, ppv_nbits_t bps, ppv_nbits_t bpw);
 void test_packing(ppv_array_t *A);
 void test_sample_pos(ppv_array_t *A);
 void test_enum(ppv_array_t *A);
 void test_assign(ppv_array_t *A, ppv_nbits_t bpsB);
+void test_sample_range(ppv_array_t *A);
+void test_throw(ppv_array_t *A, ppv_sample_count_t seed);
 
 void test_crop(ppv_array_t *A);
 void test_subsample(ppv_array_t *A);
@@ -70,6 +83,7 @@ void check_size(ppv_dim_t d, ppv_size_t *sza, ppv_size_t *szb);
 
 int main (int argn, char **argv)
   {
+    test_best_bpw();
     do_tests(2, 10,  8);
     do_tests(2, 10, 32);
     do_tests(5,  0, 16);
@@ -78,8 +92,30 @@ int main (int argn, char **argv)
     do_tests(0, 10, 16);
     return 0;
   }
+  
+void test_best_bpw(void)
+  {
+    fprintf(stderr, "Testing {ppv_best_bpw}...\n");
+    fprintf(stderr, "%5s %5s %3s %3s %6s\n", "bps", "bpw", "wps", "spw", "loss");
+    fprintf(stderr, "%5s %5s %3s %3s %6s\n", "-----", "-----", "---", "---", "------");
+    for (ppv_nbits_t bps = 0; bps <= ppv_MAX_BPS; bps++)
+      { ppv_nbits_t bpw = ppv_best_bpw(bps);
+        uint32_t wps; /* Words per sample. */
+        uint32_t spw; /* Samples in {wps} words. */
+        double waste; /* Fraction of memory wasted. */
+        if (bps == 0)
+          { wps = 0; spw = 0; waste = 0.0; }
+        else
+          { wps = (bps + bpw - 1)/bpw;
+            spw = (wps*bpw)/bps;    
+            waste = ((double)(wps*bpw - spw*bps))/((double)(wps*bpw));
+          }
+        fprintf(stderr, "%5u %5u %3u %3u %6.3f\n", bps, bpw, wps, spw, waste);
+      }
+    fprintf(stderr, "\n");
+  }
 
-ppv_sample_t ransample(ppv_dim_t d, ppv_index_t ix[], int32_t K, int32_t L, ppv_nbits_t bps)
+ppv_sample_t ransample(ppv_dim_t d, const ppv_index_t ix[], int32_t K, int32_t L, ppv_nbits_t bps)
   { ppv_sample_t smax = (ppv_sample_t)((1 << bps) - 1);
     double s = 0;
     for (ppv_axis_t ax = 0; ax < d; ax++)
@@ -111,6 +147,9 @@ void do_tests(ppv_dim_t d, ppv_nbits_t bps, ppv_nbits_t bpw)
     test_assign(A, A->bps);
     if (A->bps < A->bpw) { test_assign(A, (ppv_nbits_t)(A->bps+1)); }
     if (A->bps > 0) { test_assign(A, (ppv_nbits_t)(A->bps-1)); }
+    test_sample_range(A);
+    test_throw(A, 4615);
+    test_throw(A, 0);
     
     test_crop(A);
     test_subsample(A);
@@ -211,19 +250,19 @@ void test_sample_pos(ppv_array_t *A)
     ppv_dim_t d = A->d;
 
     fprintf(stderr, "  filling array...\n");
-    auto bool_t fill1(ppv_index_t ixA[]);
+    auto bool_t fill1(const ppv_index_t ixA[]);
       /* Checks {ppv_sample_pos}, sets/gets/compares each sample. */ 
     ppv_pos_t xpos = 0;
     enum_by_hand(fill1, A);
     
     fprintf(stderr, "  re-checking the value of all samples...\n");
-    auto bool_t check1(ppv_index_t ixA[]);
+    auto bool_t check1(const ppv_index_t ixA[]);
       /* Checks if samples set by {fill1} are still there. */ 
     enum_by_hand(check1, A);
     
     return;
     
-    bool_t fill1(ppv_index_t ixA[])
+    bool_t fill1(const ppv_index_t ixA[])
       { 
         if (! ppv_index_is_valid(ixA, A)) { bug0("not ppv_index_is_valid"); } 
         ppv_pos_t pos = ppv_sample_pos(A, ixA);
@@ -246,7 +285,7 @@ void test_sample_pos(ppv_array_t *A)
         return FALSE;
       }
     
-    bool_t check1(ppv_index_t ixA[])
+    bool_t check1(const ppv_index_t ixA[])
       { 
         ppv_sample_t smp = ransample(d, ixA, 7, +11, A->bps);
         ppv_pos_t pos = ppv_sample_pos(A, ixA);
@@ -262,9 +301,115 @@ void test_sample_pos(ppv_array_t *A)
 
 void test_enum(ppv_array_t *A)
   {
-    fprintf(stderr, "!! NOT checking enum yet!\n");
+    fprintf(stderr, "!! NOT checking {ppv_enum} yet!\n");
   }
   
+void test_sample_range(ppv_array_t *A)
+  {
+    fprintf(stderr, "!! NOT checking {ppv_sample_range} yet!\n");
+  }
+
+void test_throw(ppv_array_t *A, ppv_sample_count_t seed)
+  { 
+    fprintf(stderr, "Checking {ppv_throw}");
+    fprintf(stderr, " seed = " ppv_sample_count_t_FMT, seed);
+    fprintf(stderr, " A.bps = %u ...\n", A->bps);
+
+    srandom((uint32_t)seed);
+    ppv_throw(A);
+    
+    ppv_sample_t vmin, vmax;
+    ppv_sample_range(A, &vmin, &vmax);
+    fprintf(stderr, "sample range = { " ppv_sample_t_FMT, vmin);
+    fprintf(stderr, ".. " ppv_sample_t_FMT " }\n", vmax);
+    
+    test_sample_distr(A);
+    return;
+        
+  }
+    
+void test_sample_distr(ppv_array_t *A)
+  { 
+    ppv_sample_t maxval = (ppv_sample_t)((1 << A->bps) - 1);
+    fprintf(stderr, "maxval = " ppv_sample_t_FMT, maxval);
+    
+    ppv_sample_count_t npos = ppv_sample_count(A, TRUE); /* Voxel count, incl. replics. */
+    fprintf(stderr, "sample count = " ppv_sample_count_t_FMT, npos);
+    ppv_sample_count_t nposmin = 2; /* Min voxel count. */
+    if (npos < nposmin) 
+      { fprintf(stderr, "!! no samples -- histogram not computed.\n");
+        return;
+      }
+
+    bool_t prhist = (maxval < 256);
+
+    int64_t maxnvals = imax(1, imin(1 << 18, npos/2));
+    int32_t nvals = (int32_t)maxval + 1;
+    if (nvals > maxnvals)
+      { /* No use mapping samples to a smaller range, so: */
+        fprintf(stderr, "!! sample value range too big -- histogram not computed\n");
+        return;
+      }
+
+    assert(nvals >= 1);
+    uint64_t hist[nvals]; 
+    for (int32_t v = 0; v < nvals; v++) { hist[v] = 0; }
+
+    auto bool_t gather_hist(const ppv_index_t ix[]);
+    enum_by_hand(gather_hist, A);
+    if (prhist) 
+      { fprintf(stderr, "%5s %12s\n", "val", "count");
+        fprintf(stderr, "%5s %12s\n", "-----", "------------");
+      }
+
+    double hp = 1.0/((double)nvals); /* Prob of a sample falling into a bin. */
+    uint64_t hmin = ppv_MAX_SAMPLES;
+    uint64_t hmax = 0;
+    double sum_h = 0.0;
+    for (int32_t v = 0; v < nvals; v++)
+      { uint64_t hv = hist[v];
+        if (prhist) { fprintf(stderr, "%5u %12lu\n", v, hv); }
+        if (hv > hmax) { hmax = hv;  }
+        if (hv < hmin) { hmin = hv;  }
+        sum_h += (double)(hv);
+      }
+    if (prhist) { fprintf(stderr, "\n"); }
+    double havg = sum_h/(double)nvals;   /* Actual average bin count. */
+    double sum_d2 = 0;
+    for (int32_t v = 0; v < nvals; v++)
+      { uint64_t hv = hist[v];
+        double dv = ((double)hv) - havg;
+        sum_d2 += dv*dv;
+      }
+    double hdev = sqrt(sum_d2/((double)nvals-1));       /* Actual dev of bin counts. */
+    
+    /* ??? Should compute chi-square statistic. ??? */
+    fprintf(stderr, "value count statistics:\n");
+    fprintf(stderr, "  max = %lu min = %lu\n", hmin, hmax);
+    
+    double havg_exp = hp*((double)npos); /* Expected average bin count. */
+    assert(havg_exp > 0.0);
+    double havg_err = (havg - havg_exp)/havg_exp; /* Error in average. */
+    fprintf(stderr, "  avg = %.3f (exp = %.3f, err = %.1f%%)\n", havg, havg_exp, 100*havg_err);
+    
+    if (nvals >= 2)
+      { double hdev_exp = sqrt(hp*(1-hp)*((double)npos)); /* Expected dev of bin counts. */
+        assert(hdev_exp > 0.0);
+        double hdev_err = (hdev - hdev_exp)/hdev_exp; /* Error in deviation. */
+        fprintf(stderr, "  dev = %.3f (exp = %.3f, err = %.1f%%)\n", hdev, hdev_exp, 100*hdev_err);
+      }
+    return;
+
+    /* Internal procs */
+
+    bool_t gather_hist(const ppv_index_t ix[])
+      { ppv_sample_t val = ppv_get_sample(A, ix);
+        assert ((0 <= val) && (val <= maxval));
+        hist[(int32_t)val]++;
+        return FALSE;
+      }
+  }
+
 void test_assign(ppv_array_t *A, ppv_nbits_t bpsB)
   {
     /* !!! Warning: this test will fail if {A} has replicated elements !!! */
@@ -282,19 +427,19 @@ void test_assign(ppv_array_t *A, ppv_nbits_t bpsB)
     /* Fill {A} and {B} with different garbage: */
     ppv_sample_t maskB = (ppv_sample_t)((1 << bpsB) - 1);
 
-    auto bool_t fillAB(ppv_index_t ixA[]);
+    auto bool_t fillAB(const ppv_index_t ixA[]);
     enum_by_hand(fillAB, A);
     
     /* Copy {A} into {B}: */
     ppv_array_assign(B, A);
     
     /* Check whether the assignment succeeded: */
-    auto bool_t checkAB(ppv_index_t ixA[]);
+    auto bool_t checkAB(const ppv_index_t ixA[]);
     enum_by_hand(checkAB, A);
     
     return;
     
-    bool_t fillAB(ppv_index_t ixA[])
+    bool_t fillAB(const ppv_index_t ixA[])
       { ppv_sample_t smpA = ransample(d, ixA, 3, +17, A->bps);
         ppv_sample_t smpB = ransample(d, ixA, 5, -23, B->bps);
         ppv_set_sample(A, ixA, smpA);
@@ -302,7 +447,7 @@ void test_assign(ppv_array_t *A, ppv_nbits_t bpsB)
         return FALSE;
       }
     
-    bool_t checkAB(ppv_index_t ixA[])
+    bool_t checkAB(const ppv_index_t ixA[])
       { ppv_sample_t smpA_get = ppv_get_sample(A, ixA);
         ppv_sample_t smpB_get = ppv_get_sample(B, ixA);
         ppv_sample_t smpB_ass = smpA_get & maskB;
@@ -370,14 +515,14 @@ void test_crop(ppv_array_t *A)
         check_size(d, B->size, sz);
         /* Now check coincidence of the two arrays: */
         
-        auto bool_t check1(ppv_index_t ixB[]);
+        auto bool_t check1(const ppv_index_t ixB[]);
         enum_by_hand(check1, B);
 
         continue;
 
         /* Internal procedures: */
 
-        bool_t check1(ppv_index_t ixB[])
+        bool_t check1(const ppv_index_t ixB[])
           { 
             ppv_index_t ixA[d];
             ppv_index_assign(d, ixA, ixB); ppv_index_shift(d,ixA, sh);
@@ -441,12 +586,12 @@ void test_subsample(ppv_array_t *A)
         check_size(d, B->size, sz); 
         /* Now check coincidence of the two arrays: */
         
-        auto bool_t check1(ppv_index_t ixB[]);
+        auto bool_t check1(const ppv_index_t ixB[]);
         enum_by_hand(check1, B);
 
         return;
         
-        bool_t check1(ppv_index_t ixB[])       
+        bool_t check1(const ppv_index_t ixB[])       
           { ppv_index_t ixA[d];
             for (ppv_axis_t ax = 0; ax < d; ax++) { ixA[ax] = ixB[ax]*st[ax]; }
             ppv_pos_t posB = ppv_sample_pos(B, ixB);
@@ -508,12 +653,12 @@ void test_swap_indices(ppv_array_t *A)
               { bug("step[%d] = " stFMT, ax, B->step[ax]); }
           }
         /* Now check coincidence of the two arrays: */
-        auto bool_t check1(ppv_index_t ixB[]);
+        auto bool_t check1(const ppv_index_t ixB[]);
         enum_by_hand(check1, A);
         
         return;
         
-        bool_t check1(ppv_index_t ixA[])       
+        bool_t check1(const ppv_index_t ixA[])       
           { ppv_index_t ixB[d];
             for (ppv_axis_t ax = 0; ax < d; ax++) { ixB[ax] = ixA[tr[ax]]; }
             ppv_pos_t posB = ppv_sample_pos(B, ixB);
@@ -581,12 +726,12 @@ void test_flip_indices(ppv_array_t *A)
           }
         /* Now check coincidence of the two arrays: */
         
-        auto bool_t check1(ppv_index_t ixA[]);
+        auto bool_t check1(const ppv_index_t ixA[]);
         enum_by_hand(check1, A);
 
         return;
 
-        bool_t check1(ppv_index_t ixA[])       
+        bool_t check1(const ppv_index_t ixA[])       
           { 
             ppv_index_t ixB[d];
             for (ppv_axis_t ax = 0; ax < d; ax++) { ixB[ax] = ixA[tr[ax]]; }
@@ -645,12 +790,12 @@ void test_reverse(ppv_array_t *A)
               { bug("step[%d] =" stFMT, ax, B->step[ax]); }
         }
         /* Now check coincidence of the two arrays: */
-        auto bool_t check1(ppv_index_t ixB[]);
+        auto bool_t check1(const ppv_index_t ixB[]);
         enum_by_hand(check1, A);
         
         return;
         
-        bool_t check1(ppv_index_t ixB[])       
+        bool_t check1(const ppv_index_t ixB[])       
           { ppv_index_t ixA[d];
             for (ppv_axis_t ax = 0; ax < d; ax++) 
               { ixA[ax] = (fp[ax] ? A->size[ax] - 1 - ixB[ax] : ixB[ax]); }
@@ -711,12 +856,12 @@ void test_diagonal(ppv_array_t *A)
             /* Check whether the size of {1} is correct: */
             check_size(d, B->size, sz);
             /* Now check coincidence of the two arrays: */
-            auto bool_t check1(ppv_index_t ixB[]);
+            auto bool_t check1(const ppv_index_t ixB[]);
             enum_by_hand(check1, B);
 
             return;
 
-            bool_t check1(ppv_index_t ixB[])       
+            bool_t check1(const ppv_index_t ixB[])       
               { ppv_index_t ixA[d];
                 ppv_index_assign(d, ixA, ixB);
                 ixA[axb1] += ixA[axa1];
@@ -772,12 +917,12 @@ void test_chop(ppv_array_t *A)
         /* Check whether the size of {1} is correct: */
         check_size(d, C->size, sz);
         /* Now check coincidence of the two arrays: */
-        auto bool_t check1(ppv_index_t ixA[]);
+        auto bool_t check1(const ppv_index_t ixA[]);
         enum_by_hand(check1, A);
 
         return;
 
-        bool_t check1(ppv_index_t ixA[])       
+        bool_t check1(const ppv_index_t ixA[])       
           { ppv_index_t ixC[d];
             ppv_index_assign(d, ixC, ixA);
             ixC[axa1] = ixA[axa1] % chunksz1;
@@ -842,12 +987,12 @@ void test_replicate(ppv_array_t *A)
         /* Check whether the size of {1} is correct: */
         check_size(d, B->size, sz);
         /* Now check coincidence of the two arrays: */
-        auto bool_t check1(ppv_index_t ixB[]);
+        auto bool_t check1(const ppv_index_t ixB[]);
         enum_by_hand(check1, B);
 
         return;
 
-        bool_t check1(ppv_index_t ixB[])       
+        bool_t check1(const ppv_index_t ixB[])       
           { ppv_index_t ixA[d];
             ppv_index_assign(d, ixA, ixB);
             ixA[ax1] = skip1;

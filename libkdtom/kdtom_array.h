@@ -1,5 +1,5 @@
 /* An internal k-d-tree node is basically a {ppv_array_t}. */
-/* Last edited on 2021-06-24 17:58:25 by jstolfi */
+/* Last edited on 2021-06-25 06:37:35 by jstolfi */
 
 #ifndef kdtom_array_H
 #define kdtom_array_H
@@ -37,5 +37,9 @@ kdtom_array_t *kdtom_array_make(ppv_array_t *A);
 ppv_sample_t kdtom_array_get_sample(kdtom_array_t *T, ppv_index_t ix[]);
   /* Obtains the sample {T.v[ix]} if {ix} is a valid index vector for {T}, otherwise
     bombs out. */
+
+size_t kdtom_array_node_size(ppv_dim_t d);
+  /* Size in bytes of a {kdtom_array_t} node {T}, including the {T.head.size}
+    and {T.step} vectors, but NOT including the sample storage area {*T->el}. */
 
 #endif

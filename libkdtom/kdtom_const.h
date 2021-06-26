@@ -1,5 +1,5 @@
 /* An internal k-d-tree node that has a constant value over the whole domain. */
-/* Last edited on 2021-06-24 00:23:09 by jstolfi */
+/* Last edited on 2021-06-25 06:38:04 by jstolfi */
 
 #ifndef kdtom_const_H
 #define kdtom_const_H
@@ -27,5 +27,9 @@ ppv_sample_t kdtom_const_get_sample(kdtom_const_t *T, ppv_index_t ix[]);
 kdtom_const_t *kdtom_const_make(ppv_dim_t d, ppv_nbits_t bps, ppv_size_t [], ppv_sample_t val);
   /* Creates a constant node {T} with the given parameters: {d} axes, {bps} bits per sample,
     and sample value {val}, with {size[k]} voxels along each axis {k} in {0..d-1}. */
+
+size_t kdtom_const_node_size(ppv_dim_t d);
+  /* Size in bytes of a {kdtom_const_t} node {T}, including the {T.head.size}
+    vector. */
 
 #endif

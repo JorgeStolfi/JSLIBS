@@ -3,9 +3,9 @@
 #define PROG_VERS "1.0"
 
 #define test_voxb_C_COPYRIGHT \
-  "Copyright © 2016 by the State University of Campinas (UNICAMP)"
+  "Copyright © 2021 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2021-06-22 13:45:21 by jstolfi */
+/* Last edited on 2021-06-25 11:18:09 by jstolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \

@@ -2,7 +2,7 @@
 #define indexing_H
 
 /* Multidimensional array indexing tools */
-/* Last edited on 2021-06-14 08:47:12 by jstolfi */
+/* Last edited on 2021-06-25 07:29:53 by jstolfi */
 
 #include <bool.h>
 #include <sign.h>

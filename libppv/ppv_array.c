@@ -1,14 +1,21 @@
 /* See ppv_array.h */
-/* Last edited on 2021-06-22 13:43:17 by jstolfi */
+/* Last edited on 2021-06-25 19:11:17 by jstolfi */
 /* Copyright © 2003 by Jorge Stolfi, from University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
 #define _GNU_SOURCE
-#include <ppv_array.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <math.h>
+
+#include <bool.h>
 #include <affirm.h>
+#include <jsmath.h>
+#include <jsrandom.h>
+#include <indexing.h>
+
+#include <ppv_array.h>
 
 /* INTERNAL PROOTYPES: */
     
@@ -20,19 +27,19 @@ ppv_array_t *ppv_array_new_desc ( ppv_dim_t d );
 
 /* IMPLEMENTATIONS: */
 
-bool_t ppv_index_is_valid ( ppv_index_t ix[], ppv_array_t *A )
+bool_t ppv_index_is_valid ( const ppv_index_t ix[], ppv_array_t *A )
   { return ix_is_valid(A->d, ix, A->size); }
 
 void ppv_index_clear ( ppv_dim_t d, ppv_index_t ix[] )
   { ix_fill(d, ix, 0); }
 
-void ppv_index_assign ( ppv_dim_t d, ppv_index_t ix[], ppv_index_t val[] )
+void ppv_index_assign ( ppv_dim_t d, ppv_index_t ix[], const ppv_index_t val[] )
   { ix_assign(d, ix, val); }
 
 void ppv_index_shift ( ppv_dim_t d, ppv_index_t ix[], ppv_index_t *inc )
   { ix_shift(d, ix, inc); } 
 
-sign_t ppv_index_compare ( ppv_dim_t d, ppv_index_t ixa[], ppv_index_t ixb[] )
+sign_t ppv_index_compare ( ppv_dim_t d, const ppv_index_t ixa[], const ppv_index_t ixb[] )
   { return ix_compare(d, ixa, ixb, ix_order_L); }
     
 bool_t ppv_index_first ( ppv_index_t ix[], ppv_array_t *A )
@@ -74,77 +81,50 @@ ppv_array_t *ppv_array_new ( ppv_dim_t d, ppv_size_t *sz, ppv_nbits_t bps, ppv_n
     /* The {base} is always 0: */
     A->base = 0;
     
-    /* Save {A->size}, check if too large, see if array is empty: */
-    bool_t empty = FALSE;
-    for (ppv_axis_t ax = 0; ax < A->d; ax++) 
-      { ppv_size_t szi = sz[ax]; 
-        demand (szi <= ppv_MAX_SIZE, "bad array size");
-        A->size[ax] = szi;
-        if (szi == 0) { empty = TRUE; }
-      }
+    /* Save {A->size}, see if array is empty: */
+    for (ppv_axis_t ax = 0; ax < A->d; ax++) { A->size[ax] = sz[ax]; }
+    /* Compute number {npos} of distinct positions, set {A->step}: */
+    ppv_sample_count_t npos = ppv_compute_npos_steps(d, A->size, A->step);
+
+    size_t nbytes = ppv_tot_sample_bytes(npos, bps, bpw);
     /* Set {A->step,A->el}: */
-    if (empty)
-      { /* Empty array; reset all steps to zero: */ 
-        for (ppv_axis_t ax = 0; ax < A->d; ax++) { A->step[ax] = 0; }
-        /* No storage area: */
+    if (nbytes == 0)
+      { /* Memoryless array: */ 
         A->el = NULL;
       }
     else
-      { /* Array is not empty. */
-        /* Compute number {npos} of distinct positions, set {A->step}: */
-        ppv_sample_count_t npos = 1;
-        for (ppv_axis_t ax = 0; ax < A->d; ax++) 
-          { ppv_size_t szi = sz[ax];
-            if (szi == 1) 
-              { A->step[ax] = 0; }
-            else
-              { /* Store position increment along axis {ax}, if relevant: */
-                A->step[ax] = npos;
-                /* Check overflow BEFORE multiplication: */
-                if (npos > 0) { demand (szi <= ppv_MAX_SAMPLES/npos, "too many samples"); }
-                npos *= szi;
-              }
-          }
-        /* Compute number of words {nw}: */
-        size_t nw;
-        if (bps == 0)
-          { /* Zero-length samples - no storage required: */
-            nw = 0;
-          }
-        else if (bps < bpw)
-          { ppv_nbits_t spw = bpw/bps; /* Samples per word. */
-            nw = (npos + spw - 1) / spw;
-          }
-        else if (bps > bpw)
-          { ppv_nbits_t wps = (ppv_nbits_t)(bps + bpw - 1)/bpw; /* Words per sample. */
-            nw = npos * wps;
-          }
-        else
-          { nw = npos; }
-        if (nw == 0)
-          { /* Memoryless array: */
-            A->el = NULL; 
-          }
-        else
-          { /* Allocate storage are of correct size: */
-            size_t cpw; /* Bytes per word. */
-            if (bpw == 8)
-              { cpw = sizeof(ppv_word_08_t); }
-            else if (bpw == 16)
-              { cpw = sizeof(ppv_word_16_t); }
-            else if (bpw == 32)
-              { cpw = sizeof(ppv_word_32_t); }
-            else
-              { demand(FALSE, "unsupported bits-per-word"); /* GCC pacifier: */ cpw = 0; }
-            demand (nw <= ppv_MAX_BYTES/cpw, "too many bytes");
-            A->el = malloc(nw * cpw);
-            /* Check for allocation failure: */
-            affirm(A->el != NULL, "no mem for new array");
-          }
+      { demand (nbytes <= ppv_MAX_BYTES, "too many bytes");
+        A->el = notnull(malloc(nbytes), "no mem for new array");
       }
     return A;
   }
 
+ppv_sample_count_t ppv_compute_npos_steps ( ppv_dim_t d, ppv_size_t size[], ppv_step_t step[] )
+  { 
+    ppv_sample_count_t npos = 1;
+    for (ppv_axis_t ax = 0; ax < d; ax++) 
+      { ppv_size_t szi = size[ax];
+        demand (szi <= ppv_MAX_SIZE, "bad array size");
+        if (szi == 0) 
+          { npos = 0; break; }
+        else if (szi == 1) 
+          { if (step != NULL) { step[ax] = 0; } }
+        else
+          { /* Store position increment along axis {ax}, if relevant: */
+            if (step != NULL) { step[ax] = npos; }
+            /* Check overflow BEFORE multiplication: */
+            if (npos > 0) { demand (szi <= ppv_MAX_SAMPLES/npos, "too many samples"); }
+            npos *= szi;
+          }
+      }
+    
+    /* If the array is empty, all steps should be zero: */
+    if ((npos == 0) && (step != NULL))
+      { for (ppv_axis_t ax = 0; ax < d; ax++) { step[ax] = 0; } }
+      
+    return npos;
+  }
+ 
 ppv_array_t *ppv_array_clone ( ppv_array_t *A )
   { 
     ppv_dim_t d = A->d;
@@ -175,6 +155,12 @@ ppv_sample_count_t ppv_sample_count( ppv_array_t *A, bool_t reptoo )
     return nv;
   }
 
+bool_t ppv_is_empty( ppv_array_t *A )
+  { for (ppv_axis_t ax = 0; ax < A->d; ax++)
+      { if (A->size[ax] == 0) { return TRUE; } }
+    return FALSE;
+  }
+
 ppv_array_t *ppv_array_new_desc ( ppv_dim_t d )
   { 
     size_t head_bytes = sizeof(ppv_array_t);   /* Mem size wihout {A.size,A.step} vectors. */
@@ -202,19 +188,47 @@ ppv_array_t *ppv_array_new_desc ( ppv_dim_t d )
     return A;
   }
 
-ppv_sample_t ppv_get_sample ( ppv_array_t *A, ppv_index_t ix[] )
+ppv_nbits_t ppv_best_bpw( ppv_nbits_t bps )
+  { 
+    ppv_nbits_t bpw = ppv_MAX_BPW; /* Default. */
+    /* Cases when {bpw} is best equal to {bps}: */
+    if (bps == 0)
+      { /* Irrelevant: */ bpw = 8; }
+    else if ((bps == 8) || (bps == 16) || (bps == 32))
+      { bpw = bps; }
+    else if ((bps % 32) == 0)
+      { bpw = 32; }
+    else if ((bps % 16) == 0)
+      { bpw = 16; }
+    else if ((bps % 8) == 0)
+      { bpw = 8; }
+    else
+      { double waste_min = +INF; /* Best fraction of space wasted. */
+        int32_t wps_min;         /* Words per sample at that {bpw}. */
+        for (ppv_nbits_t b = 8; b <= 32; b = (ppv_nbits_t)(2*b))
+           { int32_t wps = (bps + b - 1)/b; /* Count of {b}-bit words per sample. */
+             int32_t spw = (bps >= b ? 1 : (wps*b)/bps); /* Samples that fit in those words. */
+             double waste = ((double)(wps*b - spw*bps))/((double)(wps*b)); /* Wastage.*/
+             if ((waste < waste_min) || ((waste == waste_min) && (wps < wps_min)))
+               { bpw = b; waste_min = waste; wps_min = wps; }
+           }
+      }
+    return bpw;
+  }
+
+ppv_sample_t ppv_get_sample ( ppv_array_t *A, const ppv_index_t ix[] )
   { ppv_pos_t pos = ppv_sample_pos(A, ix);
     ppv_sample_t qv = ppv_get_sample_at_pos(A->el, A->bps, A->bpw, pos);
     return qv;
   }
 
-void ppv_set_sample ( ppv_array_t *A, ppv_index_t ix[], ppv_sample_t qv )
+void ppv_set_sample ( ppv_array_t *A, const ppv_index_t ix[], ppv_sample_t qv )
   { ppv_pos_t pos = ppv_sample_pos(A, ix);
     ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, qv);
     return;
   }
 
-ppv_pos_t ppv_sample_pos ( ppv_array_t *A, ppv_index_t ix[] )
+ppv_pos_t ppv_sample_pos ( ppv_array_t *A, const ppv_index_t ix[] )
   { return ix_position(A->d, ix, A->base, A->step); }
 
 ppv_sample_t ppv_get_sample_at_pos 
@@ -357,6 +371,28 @@ void ppv_set_sample_at_pos
           { *(((ppv_word_32_t *)el) + pos) = (ppv_word_32_t)qv; }
       }
   }
+
+void ppv_sample_range(ppv_array_t *A, ppv_sample_t *vminP, ppv_sample_t *vmaxP)
+  { 
+    ppv_sample_t vmin = (ppv_sample_t)((1 << A->bps) - 1);
+    ppv_sample_t vmax = 0;
+    auto bool_t update(const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC);
+      /* Updates {vmin,vmax} with the sample at {pA}. */
+      
+    if (A->bps > 0) { ppv_enum(update, FALSE, A, NULL, NULL); }
+    (*vminP) = vmin;
+    (*vmaxP) = vmax;
+    return;
+    
+    bool_t update(const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC)
+      { ppv_sample_t val = ppv_get_sample_at_pos(A->el, A->bps, A->bpw, pA);
+        if (val < vmin) { vmin = val; }
+        if (val > vmax) { vmax = val; }
+        return FALSE;
+      }
+  }
+
+
 
 /* DESCRIPTOR MANIPULATION */
 
@@ -518,3 +554,73 @@ void ppv_print_descriptor ( FILE *wr, char *pf, ppv_array_t *A, char *sf )
     fprintf(stderr, " el = %lu", ((uint64_t)A->el));
     fprintf(stderr, "%s", sf);
   }
+
+size_t ppv_tot_sample_bytes(ppv_sample_count_t npos, ppv_nbits_t bps, ppv_nbits_t bpw)
+  {
+    /* Compiler/machine sanity check: */
+    assert(sizeof(ppv_word_08_t) == 1);
+    assert(sizeof(ppv_word_16_t) == 2);
+    assert(sizeof(ppv_word_32_t) == 4);
+    demand((bpw == 8) || (bpw == 16) || (bpw == 32), "unsupported bits-per-word");
+    
+    int32_t Bpw = bpw/8; /* Bytes per word. */
+
+    /* Compute number of words {nwords}: */
+    size_t nwords; 
+    if (bps == 0)
+      { /* Zero-length samples - no storage required: */
+        nwords = 0;
+      }
+    else if (bps < bpw)
+      { ppv_nbits_t spw = bpw/bps; /* Samples per word. */
+        nwords = (npos + spw - 1) / spw;
+        demand( nwords < ppv_MAX_BYTES/Bpw, "too many bytes in array");
+      }
+    else if (bps > bpw)
+      { ppv_nbits_t wps = (ppv_nbits_t)(bps + bpw - 1)/bpw; /* Words per sample. */
+        demand(npos < ppv_MAX_BYTES/(wps*Bpw), "too many bytes in array");
+        nwords = npos * wps;
+      }
+    else
+      { demand(npos < ppv_MAX_BYTES/Bpw, "too many bytes in array");
+        nwords = npos;
+      }
+    /* Allocate storage are of correct size: */
+    size_t nbytes = nwords * Bpw;
+    return nbytes;
+  }
+
+void ppv_throw(ppv_array_t *A)
+  {
+    bool_t debug = TRUE;
+    ppv_nbits_t bps = A->bps;
+    ppv_nbits_t bpw = A->bpw;
+    ppv_sample_t maxval = (ppv_sample_t)((1 << bps) - 1);
+
+    auto bool_t throw_voxel(const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC);
+    ppv_sample_count_t nset = 0;  /* Count of samples assigned. */
+    if (debug) { fprintf(stderr, "samples = "); }
+    ppv_enum(throw_voxel, FALSE, A, NULL, NULL);
+    
+    if (debug) { fprintf(stderr, "\n"); }
+    if (debug) 
+      { fprintf(stderr, ppv_sample_count_t_FMT " samples set\n", nset);
+        ppv_sample_count_t npos = ppv_sample_count(A, TRUE); 
+        assert(nset == npos);
+      }
+    return;
+    
+    bool_t throw_voxel(const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC)
+      { ppv_sample_t val = (ppv_sample_t)uint64_mrandom(maxval);
+        ppv_set_sample_at_pos(A->el, bps, bpw, pA, val);
+        if (debug) 
+          { if (nset < 256) 
+              { fprintf(stderr, " " ppv_sample_t_FMT, val); }
+            else if (nset == 256) 
+              { fprintf(stderr, " ..."); }
+          }
+        nset++;
+        return FALSE;
+      }
+  }
+        

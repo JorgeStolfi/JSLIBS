@@ -1,5 +1,5 @@
 /* See {kdtom_array.h}. */
-/* Last edited on 2021-06-24 17:58:29 by jstolfi */
+/* Last edited on 2021-06-25 06:49:01 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -35,6 +35,15 @@ kdtom_array_t *kdtom_array_make(ppv_array_t *A)
     return T;
   }
   
+size_t kdtom_array_node_size(ppv_dim_t d)
+  {
+    size_t fix_bytes = sizeof(kdtom_array_t);   /* Bytesize of all fixed fields incl. {head} */
+    size_t size_bytes = d * sizeof(ppv_size_t); /* Bytesize of the {head.size} vector. */
+    size_t step_bytes = d * sizeof(ppv_step_t); /* Bytesize of the {step} vector. */
+    size_t tot_bytes = fix_bytes + size_bytes + step_bytes;
+    return tot_bytes;
+  }
+
 kdtom_array_t *kdtom_array_alloc(ppv_dim_t d)
   {
     size_t fix_bytes = sizeof(kdtom_array_t);  /* Size of fixed felds incl. {head}. */

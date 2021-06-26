@@ -1,5 +1,5 @@
 /* See {kdtom_const.h}. */
-/* Last edited on 2021-06-24 01:35:00 by jstolfi */
+/* Last edited on 2021-06-25 06:50:16 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -37,6 +37,14 @@ kdtom_const_t *kdtom_const_make(ppv_dim_t d, ppv_nbits_t bps, ppv_size_t size[],
     return T;
   }
    
+size_t kdtom_const_node_size(ppv_dim_t d)
+  { 
+    size_t fix_bytes = sizeof(kdtom_const_t);   /* Bytesize of all fixed fields incl. {head} */
+    size_t size_bytes = d * sizeof(ppv_size_t); /* Bytesize of the {head.size} vector. */
+    size_t tot_bytes = fix_bytes + size_bytes;
+    return tot_bytes;
+  }
+
 kdtom_const_t *kdtom_const_alloc(ppv_dim_t d)
   { 
     size_t fix_bytes = sizeof(kdtom_const_t); /* Bytesize of all fixed fields incl. {head} */

@@ -1,5 +1,5 @@
 /* See {kdtom_split.h}. */
-/* Last edited on 2021-06-24 01:37:15 by jstolfi */
+/* Last edited on 2021-06-25 06:52:01 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -43,7 +43,15 @@ kdtom_split_t *kdtom_split_make(ppv_axis_t ax, kdtom_t *sub0, kdtom_t *sub1)
     T->sub[1] = sub1;
     return T;
   }
-   
+  
+size_t kdtom_split_node_size(ppv_dim_t d)
+  {
+    size_t fix_bytes = sizeof(kdtom_split_t);   /* Bytesize of all fixed fields incl. {head} */
+    size_t size_bytes = d * sizeof(ppv_size_t); /* Bytesize of the {head.size} vector. */
+    size_t tot_bytes = fix_bytes + size_bytes;
+    return tot_bytes;
+  }  
+
 kdtom_split_t *kdtom_split_alloc(ppv_dim_t d)
   { 
     size_t fix_bytes = sizeof(kdtom_split_t); /* Bytesize of all fixed fields incl. {head} */

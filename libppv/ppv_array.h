@@ -1,5 +1,5 @@
 /* Portable multi-dimensional sample arrays. */
-/* Last edited on 2021-06-22 13:44:20 by jstolfi */
+/* Last edited on 2021-06-25 19:06:20 by jstolfi */
 
 #ifndef ppv_array_H
 #define ppv_array_H
@@ -152,23 +152,43 @@ ppv_array_t *ppv_array_clone ( ppv_array_t *A );
     current values in {A}. However, {S} and {A} will share the same
     sample storage area (S->el == A->el). */
 
-ppv_sample_count_t ppv_sample_count( ppv_array_t *A, bool_t reptoo );
-  /* Returns the total number of sample positions in {A}. If {reptoo}
-    is true, counts replicated elements as distict; that is, counts the 
-    number of distinct valid index tuples.  If {reptoo} is false, counts
-    those elements only once. */
+ppv_sample_count_t ppv_compute_npos_steps ( ppv_dim_t d, ppv_size_t size[], ppv_step_t step[] );
+  /* If {step} is not {NULL}, computes suitable position increments {step[0..d-1]} for 
+    an array with {size[ax]} elements along each axis {ax}. In any case, returns the
+    total number of samples in that array.
+
+    Assumes that the array will have no replicated elements; that is, {step[ax]}
+    will be zero only if the array is empty or {size[ax]} is 1. */
+
+ppv_sample_count_t ppv_sample_count ( ppv_array_t *A, bool_t reptoo );
+  /* Returns the total number of sample positions in {A}. 
+  
+    If {reptoo} is true, counts replicated elements as distict; that is, counts the 
+    number of distinct valid index tuples.  If {reptoo} is false, counts those elements
+    only once. */
+
+bool_t ppv_is_empty ( ppv_array_t *A );
+  /* Returns {TRUE} if and only if the array {A} has no samples;
+    that is, iff one of the sizes {A->size[0..d]} is zero.  
+    
+    Note that this is not the same as {A} being memoryless ({A->el ==
+    NULL}), since this also includes the case {A->bps == 0}. */
+
+ppv_nbits_t ppv_best_bpw( ppv_nbits_t bps );
+  /* Returns a value of bits-per-word that minimizes wasted
+    space for a sample array with {bps} bits per sample. */
 
 /* SAMPLE EXTRACTION AND INSERTION */
 
-ppv_sample_t ppv_get_sample ( ppv_array_t *A, ppv_index_t ix[] );
+ppv_sample_t ppv_get_sample ( ppv_array_t *A, const ppv_index_t ix[] );
   /* Extracts the sample {A[ix[0],ix[1],.. ix[d-1]]}. */
 
-void ppv_set_sample ( ppv_array_t *A, ppv_index_t ix[], ppv_sample_t qv );
+void ppv_set_sample ( ppv_array_t *A, const ppv_index_t ix[], ppv_sample_t qv );
   /* Stores value {qv} into the element {A[ix[0],ix[1],.. ix[d-1]]}. */
 
 /* SAMPLE EXTRACTION AND INSERTION WITH POSITION */
 
-ppv_pos_t ppv_sample_pos ( ppv_array_t *A, ppv_index_t ix[] );
+ppv_pos_t ppv_sample_pos ( ppv_array_t *A, const ppv_index_t ix[] );
   /* Computes the position of sample {A[ix[0],.. ix[d-1]]}. Does not check
     whether the element exists or not. */
 
@@ -195,18 +215,23 @@ void ppv_set_sample_at_pos
   );
   /* Stores value {qv} into the sample with position {pos}. */
 
+void ppv_sample_range(ppv_array_t *A, ppv_sample_t *vminP, ppv_sample_t *vmaxP);
+  /* Finds the maximum and mininmum values of all the samples in {A},
+    and returns them in {*vminP,*vmaxP}.  If {A} is empty, sets
+    {*vminP} to {2^A.bps-1} and {*vmaxP} to zero. */
+
 /* INDEX TUPLE MANIPULATION */
 
 void ppv_index_clear ( ppv_dim_t d, ppv_index_t ix[] );
   /* Sets {ix[ax] = 0} for every axis {ax}. */
 
-void ppv_index_assign ( ppv_dim_t d, ppv_index_t ix[], ppv_index_t val[] );
+void ppv_index_assign ( ppv_dim_t d, ppv_index_t ix[], const ppv_index_t val[] );
   /* Sets {ix[ax] = val[ax]} for every axis {ax}. */
 
 void ppv_index_shift ( ppv_dim_t d, ppv_index_t ix[], ppv_index_t *inc );
   /* Sets {ix[ax] += inc[ax]} for every axis {ax}. */
 
-sign_t ppv_index_compare ( ppv_dim_t d, ppv_index_t ixa[], ppv_index_t ixb[] );
+sign_t ppv_index_compare ( ppv_dim_t d, const ppv_index_t ixa[], const ppv_index_t ixb[] );
   /* Returns {NEG}, {ZER}, or {POS} depending on whether {ixa} is less
     than, equal to, or greater than {ixb} in the C index order. */
 
@@ -266,7 +291,7 @@ bool_t ppv_index_prev ( ppv_index_t ix[], ppv_array_t *A, ppv_dim_t na, ppv_pos_
     
 /* INDEX TUPLE VALIDATION */
     
-bool_t ppv_index_is_valid ( ppv_index_t ix[], ppv_array_t *A );
+bool_t ppv_index_is_valid ( const ppv_index_t ix[], ppv_array_t *A );
   /* Returns TRUE iff {ix} is a valid index tuple for the array {A},
     i.e., if sample {A[ix[0],..ix[na-1]]} exists. This is true if and
     only if {ix[ax]} lies in the range {0..A.step[ax]-1}, for every
@@ -554,5 +579,22 @@ bool_t ppv_descriptor_is_valid ( ppv_array_t *A, bool_t die );
     that contains the highest-order bit of the sample with position 0.
 
 */
+
+size_t ppv_tot_sample_bytes ( ppv_sample_count_t npos, ppv_nbits_t bps, ppv_nbits_t bpw );
+  /* Returns the minimum number of bytes needed to store all the voxels
+    of an array a total of {npos} elements, given that each sample has
+    {bps} bits and the samples are packed in words of {bpw} bits each.
+    
+    Assumes that the samples are packed as closely as allowed by the
+    packing rules above, with no index replication.  In particular,
+    returns 0 if {npos == 0} or {bps == 0}. */
+
+/* TESTING AND DEBUGGING */
+
+void ppv_throw(ppv_array_t *A);
+  /* Fills the array {A} with pseudo-random (very pseudo) sample values.
+    Uses the procedures in {jsrandom.h}. To obtain repeatable or truly
+    random values, call {srandom} from {stdlib.h} first, with an
+    appropriate {seed}. */
 
 #endif

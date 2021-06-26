@@ -2,13 +2,19 @@
 #define jsrandom_H
 
 /* Alternative random generator functions */
-/* Last edited on 2020-12-06 15:57:25 by jstolfi */
+/* Last edited on 2021-06-25 19:03:13 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
 #include <stdlib.h> 
 
-/* {stdlib.h} Defines {srandom} and 32-bit signed {random} with result in {0..RAND_MAX}. */
+/* 
+  These procedure use {random} from {stdlib.h} that is supposed to
+  return a random {long int} result in {0..RAND_MAX}, where {RAND_MAX}
+  is hoped to be at least {2^22-1}. To get a repeatable or truly random
+  sequence of values, call {srandom} from that library with a suitable
+  {unsigned int} seed value.
+*/
 
 int32_t int32_random(void);
 int64_t int64_random(void);
