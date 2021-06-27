@@ -1,5 +1,5 @@
 /* Tools for generating Encapsulated Postscript graphics files. */
-/* Last edited on 2021-04-13 22:38:10 by jstolfi */
+/* Last edited on 2021-06-26 22:22:58 by jstolfi */
 
 #ifndef epswr_H
 #define epswr_H
@@ -587,7 +587,8 @@ void epswr_set_label_font(epswr_figure_t *eps, const char *font, double size);
 
 void epswr_label
   ( epswr_figure_t *eps, 
-    const char *text, 
+    const char *text,
+    const char *strut,
     double x, double y, 
     double rot,
     bool_t clipped,
@@ -605,9 +606,18 @@ void epswr_label
     bounding box will end up at {(x,y)}: 0.0 means the left side,
     1.0 means the right side. Other values of are
     interpolated/extrapolated, so that {hAlign = 0.5} the label will
-    be horizontally centered at {(x,y)}.  The parameter 
-    {vAlign} controls the vertical alignment of the bounding 
-    box, with 0.0 meaning bottom and 1.0 meaning top.
+    be horizontally centered at {(x,y)}.  
+    
+    The parameter {vAlign} controls the vertical alignment of the
+    bounding box, with 0.0 meaning bottom and 1.0 meaning top. However
+    the vertical extent of the box will be that of the {strut} string
+    (which must not be empty) rather than that of {text}. Thus, for
+    example, if {strut} is "x", then {vAlign=0} means the font's
+    baseline and {vAlign=1} means the top of lowercase letters (the
+    /x-height/). If {strut} is "Rg", then {vAlign=0} means the bottom of
+    the "g" descender and {vAlign=1} means the top of uppercase letters.
+    To get {vAlign} be relative to the bounding box of {text}, use
+    {strut=text}.
     
     In any case, after the alignment is applied, the label will be
     rotated by {rot} degrees counterclockwise around the point
@@ -626,27 +636,30 @@ void epswr_label
 
 /* RUNNING TEXT */
 
-void epswr_set_text_client_geometry
+void epswr_set_text_geometry
   ( epswr_figure_t *eps, 
-    double xMin, double xMax, 
-    double yMin, double yMax,
+    bool_t client,
+    double xhMin, double xhMax, 
+    double yvMin, double yvMax,
     double rot
   );
-  /* Sets the nominal text margins for {epswr_text} to the rectangle {[xMin _ xMax] x
-    [yMin x yMax]} in Client coordinates. 
+  /* Sets the nominal text margins for {epswr_text} to the rectangle {[xhMin _ xhMax] x
+    [yvMin x yvMax]}. If {client} is TRUE those are Client coordinates,
+    else they are Device coordinates relative to the current Device plot
+    window. 
     
     The {epswr_figure_t} object {eps} will keep track of the current
-    /topline/ coordinate {yT}, initially at {yMax}. Each line of text
+    /topline/ coordinate {yvT}, initially at {yvMax}. Each line of text
     written by {epswr_text} will be drawn with the top of its bounding
-    box at {yT}, and then {yT} will be reduced by an amount equal to the
-    current point size.  The coordinates {xMin} and {xMax} are used to
+    box at {yvT}, and then {yvT} will be reduced by an amount equal to the
+    current point size.  The coordinates {xhMin} and {xhMax} are used to
     define the alignment of each line; see {epswr_text}.
     
     The actual text will be rotated by {rot} degrees counterclockwise
-    relative to the center of that rectangle. The {yMin} parameter is
+    relative to the center of that rectangle. The {yvMin} parameter is
     used only to define that center.
     
-    !!! Should use the baseline of the text instead of the char's bounding box. !!! */
+    !!! Add a {sep} parameter (extra spacing between lines, in pt). !!! */
 
 void epswr_set_text_font(epswr_figure_t *eps, const char *font, double size);
   /* Sets the name and point size of the font to be used by {epswr_text}. */
@@ -698,7 +711,7 @@ void epswr_text
     If {clipped} is TRUE, the text will be clipped to the current plot
     area. Otherwise it may extend over the whole figure.
     
-    !!! The vertical spacing {dy} should be an independent parameter? !!!
+    !!! Maybe let override the {sep} of {set_text_geometry} for internal breaks. !!!
     */
 
 /* MISCELLANEOUS */ 

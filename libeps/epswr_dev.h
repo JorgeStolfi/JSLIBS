@@ -1,4 +1,5 @@
 /* epswr_dev.h - draw EPS files in Device coordinates. */
+/* Last edited on 2021-06-26 18:33:57 by jstolfi */
 
 #ifndef epswr_dev_H
 #define epswr_dev_H
@@ -427,6 +428,7 @@ void epswr_dev_set_label_font(epswr_figure_t *eps, const char *font, double size
 void epswr_dev_label
   ( epswr_figure_t *eps, 
     const char *text, 
+    const char *strut, 
     double psx, double psy, 
     double rot,
     bool_t clipped,
@@ -444,9 +446,18 @@ void epswr_dev_label
     bounding box will end up at {(psx,psy)}: 0.0 means the left side,
     1.0 means the right side. Other values of are
     interpolated/extrapolated, so that {hAlign = 0.5} the label will
-    be horizontally centered at {(psx,psy)}.  The parameter 
-    {vAlign} controls the vertical alignment of the bounding 
-    box, with 0.0 meaning bottom and 1.0 meaning top.
+    be horizontally centered at {(psx,psy)}.  
+    
+    The parameter {vAlign} controls the vertical alignment of the
+    bounding box, with 0.0 meaning bottom and 1.0 meaning top. However
+    the vertical extent of the box will be that of the {strut} string
+    (which must not be empty) rather than that of {text}. Thus, for
+    example, if {strut} is "x", then {vAlign=0} means the font's
+    baseline and {vAlign=1} means the top of lowercase letters (the
+    /x-height/). If {strut} is "Rg", then {vAlign=0} means the bottom of
+    the "g" descender and {vAlign=1} means the top of uppercase letters.
+    To get {vAlign} be relative to the bounding box of {text}, use
+    {strut=text}.
     
     In any case, after the alignment is applied, the label will be
     rotated by {rot} degrees counterclockwise around the point
@@ -498,18 +509,17 @@ void epswr_dev_text
     
     The position of the text is determined by the rectangle
     {[hMin_hMax] x [vMin x vMax]} defined in the last call to
-    {epswr_set_text_device_geometry} or {epswr_set_text_client_geometry} and by the text lines
+    {epswr_set_text_geometry} and by the text lines
     already written since that call. Successive lines are written
     top to bottom in that rectangle, with vertical spacing
     determined by the current font's nominal size.
     
-    More precisely, the bottom of the first line of {text} will be {dy}
-    points below the bottom of the last line previously written,
-    where {dy} is the current nominal text font size (as set by
-    {epswr_set_text_font}); or at top of the text rectangle,
-    if no lines have been written since the last call to
-    {epswr_set_text_device_geometry}
-    Successive baselines are spaced {dy} points down.
+    More precisely, the top of the first line of {text} will be {dy}
+    points below the top of the last line previously written, where
+    {dy} is the current nominal text font size (as set by
+    {epswr_set_text_font}); or at top of the text rectangle, if no lines
+    have been written since the last call to
+    {epswr_dev_set_text_geometry}.
     
     The parameter {hAlign} defines the alignment of each line of
     {txt} relative to the nominal margins {hMin} and {hMax}. If
@@ -586,15 +596,16 @@ void epswr_dev_write_text_font_set_cmds(FILE *wr, const char *font, double size)
     variable {labelFont}. */
 
 void epswr_dev_write_ps_string(FILE *wr, const char *text);
-  /* Writes the given text out to {wr}, in Postscript form, properly
-    quoting any special chars and parentheses. 
+  /* Writes the first line of the given text out to {wr},
+    in Postscript form, properly quoting any special chars
+    and parentheses.
     
-    Printing ASCII characters are written verbatim.  Tabs '\t'
-    are replaced by two spaces.  Backslashes and parentheses are 
-    escaped with a '\'.  Intreprets a zero or line break character 
-    {'\000','\012','\015'}) as the end of the string. 
-    Other characters are written as '\' followed by
-    the 3-digit octal value. */
+    Printing ASCII characters are written verbatim. Tabs '\t' are
+    replaced by two spaces. Backslashes and parentheses are escaped with
+    a '\'. Intreprets a zero or line break character {'\000'=NUL,
+    '\012'='\n'=LF, '\015'='\r'=CR}) as the end of the string. Other
+    characters are written as '\' followed by the 3-digit octal
+    value. */
 
 void epswr_dev_write_fill_color_set_cmds(FILE *wr, double fc[]);
   /* Writes the Postoscript command that saves {fc[0..2]}

@@ -1,5 +1,5 @@
 %!PS-Adobe-3.0 EPS-2.0
-%%CreationDate: 21-03-13 23:24:16
+%%CreationDate: 21-05-26 22:02:54
 %%BoundingBox: 0 0 366 456
 %%Pages: 1
 %%DocumentFonts: (atend)
@@ -419,28 +419,63 @@ epswr$dict begin
 } bind def
 
 % Generic clipped label/text draw and fill operator:
-%   {draw} {fill} {str} {xa} {ya} {rot} {xc} {yc} strfs --> 
+%   {draw} {fill} {str} {str1} {xa} {ya} {rot} {xc} {yc} strfs --> 
 /strfs
 { newpath moveto
-    % --- draw, fill, str, xa, ya, rot
+    % --- draw, fill, str, str1, xa, ya, rot
+  5 1 roll
+    % --- draw, fill, rot, str, str1, xa, ya
+  gsave 3 index false charpath flattenpath pathbbox grestore
+    % --- draw, fill, rot, str, str1, xa, ya, lox, loy, hix, hiy
+  pop exch pop
+    % --- draw, fill, rot, str, str1, xa, ya, lox, hix
+  gsave 5 -1 roll false charpath flattenpath pathbbox grestore
+    % --- draw, fill, rot, str, xa, ya, lox, hix lox1 loy1 hix1 hiy1
+  exch pop 3 -1 roll pop
+    % --- draw, fill, rot, str, xa, ya, lox, hix loy1 hiy1
+  3 1 roll exch 3 -1 roll
+    % --- draw, fill, rot, str, xa, ya, lox, loy1 hix hiy1
+  
+  3 index 3 index currentpoint
+    % --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, lox, loy1, cx, cy
+  exch
+    % --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, lox, loy1, cy, cx
+  4 1 roll
+    % --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, cx, lox, loy1, cy
+  exch
+    % --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, cx, lox, cy, loy1
+  sub
+    % --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, cx, lox, cy-loy1
+  3 1 roll
+    % --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, cy-loy1, cx, lox
+  sub
+    % --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, cy-loy1, cx-lox
+  exch
+    % --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, cx-lox, cy-loy1
+  10 -1 roll (C) pstack pop
+    % --- draw, fill, str, xa, ya, lox, loy, hix1, hiy1, cx-lox, cy-loy1, rot
   gsave
   rotate
-    % --- draw, fill, str, xa, ya
-  gsave 2 index false charpath flattenpath pathbbox grestore
-    % --- draw, fill, str, xa, ya, lox, loy, hix, hiy
-  3 index 3 index currentpoint 
-    % --- draw, fill, str, xa, ya, lox, loy, hix, hiy, lox, loy, cx, cy
-  exch 4 1 roll exch sub
-  3 1 roll sub exch
-    % --- draw, fill, str, xa, ya, lox, loy, hix, hiy, cx-lox, cy-loy
+    % --- draw, fill, str, xa, ya, lox, loy1, hix, hiy1, cx-lox, cy-loy1
   rmoveto
-    % --- draw, fill, str, xa, ya, lox, loy, hix, hiy
-  exch 4 1 roll exch sub 
-  3 1 roll sub exch
-    % --- draw, fill, str, xa, ya, dx, dy
+    % --- draw, fill, str, xa, ya, lox, loy1, hix, hiy1
+  exch
+    % --- draw, fill, str, xa, ya, lox, loy1, hiy1, hix
+  4 1 roll
+    % --- draw, fill, str, xa, ya, hix, lox, loy1, hiy1
+  exch
+    % --- draw, fill, str, xa, ya, hix, lox, hiy1, loy1
+  sub 
+    % --- draw, fill, str, xa, ya, hix, lox, dy1
+  3 1 roll
+    % --- draw, fill, str, xa, ya, dy1, hix, lox
+  sub
+    % --- draw, fill, str, xa, ya, dy1, dx
+  exch (D) pstack pop
+    % --- draw, fill, str, xa, ya, dx, dy1
   exch 4 1 roll mul -1 mul
-  3 1 roll mul -1 mul exch
-    % --- draw, fill, str, -dx*xa, -dy*ya
+  3 1 roll mul -1 mul exch (E) pstack pop
+    % --- draw, fill, str, -dx*xa, -dy1*ya
   rmoveto
     % --- draw, fill, str
   true charpath
@@ -450,7 +485,7 @@ epswr$dict begin
 } bind def
 
 % Generic unclipped label/text draw and fill operator:
-%   {draw} {fill} {str} {xa} {ya} {rot} {xc} {yc} ncstrfs --> 
+%   {draw} {fill} {str} {str1} {xa} {ya} {rot} {xc} {yc} ncstrfs --> 
 /ncstrfs
 { gsave
     initclip

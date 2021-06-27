@@ -1,5 +1,5 @@
 /* Tech drawing for the new center gate of Boaretto da Silva 113 */
-/* Last edited on 2012-12-07 20:54:43 by stolfilocal */
+/* Last edited on 2021-06-26 18:49:14 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -781,7 +781,7 @@ void boag_show_dim
       );
     char *label = NULL;
     asprintf(&label, "%.*f", nfrac, dab);
-    epswr_label(epsf, label, xr, yr, rot, FALSE, 0.5, 0.5, TRUE, FALSE);
+    epswr_label(epsf, label, "0", xr, yr, rot, FALSE, 0.5, 0.5, TRUE, FALSE);
     epswr_set_verbose(epsf, FALSE);
     free(label);
   }

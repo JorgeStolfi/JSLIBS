@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2021-06-16 16:35:45 by jstolfi */
+/* Last edited on 2021-06-26 19:48:25 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -49,6 +49,7 @@ void epswr_dev_write_file_trailer(FILE *wr, int nfonts, char **fonts);
 void epswr_dev_text_line
   ( epswr_figure_t *eps, 
     const char *line,
+    const char *strut,
     double hAbs, double vAbs, 
     double rot, 
     bool_t clipped, 
@@ -61,7 +62,8 @@ void epswr_dev_text_line
     The point of text's bounding box specified by {hAlign,vAlign} 
     will be at absolute Device coordinates {(hAbs,vAbs)},
     and the text will be rotated by {rot} degrees counterclockwise
-    around that point.  
+    around that point.  The vertical extent of the bounding box
+    will be that of the string {strut}, which is otherwise ignored.
     
     The end of the {line} is assumed to be at the first character
     that is null or a line break ('\000', '\012', or '\015').
@@ -201,19 +203,18 @@ void epswr_dev_write_fill_color_set_cmds(FILE *wr, double *fc)
   }
 
 void epswr_dev_write_ps_string(FILE *wr, const char *text)
-  { const char *p;
+  { const char *p = text;
     putc('(', wr);
-    for (p = text; *p != 0; p++)
+    while((*p != 0) && (*p != '\n') && (*p != '\r'))
       { if ((*p == '(') || (*p == ')') || (*p == '\\'))
           { putc('\\', wr); putc(*p, wr); }
         else if ((*p >= ' ') && (*p <= '~'))
           { putc(*p, wr); }
         else if (*p == '\t')
           { putc(' ', wr); putc(' ', wr); }
-        else if ((*p == '\n') || (*p == '\r'))
-          { demand(FALSE, "invalid line break"); }
         else
           { fprintf(wr, "\\%03o", *p); }
+        p++;
       }
     fprintf(wr, ")");
   }
@@ -753,28 +754,63 @@ void epswr_dev_write_proc_defs(FILE *wr)
     
     fprintf(wr, 
       "%% Generic clipped label/text draw and fill operator:\n"
-      "%%   {draw} {fill} {str} {xa} {ya} {rot} {xc} {yc} strfs --> \n"
+      "%%   {draw} {fill} {str} {str1} {xa} {ya} {rot} {xc} {yc} strfs --> \n"
       "/strfs\n"
       "{ newpath moveto\n"
-      "    %% --- draw, fill, str, xa, ya, rot\n"
+      "    %% --- draw, fill, str, str1, xa, ya, rot\n"
+      "  5 1 roll\n"
+      "    %% --- draw, fill, rot, str, str1, xa, ya\n"
+      "  gsave 3 index false charpath flattenpath pathbbox grestore\n"
+      "    %% --- draw, fill, rot, str, str1, xa, ya, lox, loy, hix, hiy\n"
+      "  pop exch pop\n"
+      "    %% --- draw, fill, rot, str, str1, xa, ya, lox, hix\n"
+      "  gsave 5 -1 roll false charpath flattenpath pathbbox grestore\n"
+      "    %% --- draw, fill, rot, str, xa, ya, lox, hix lox1 loy1 hix1 hiy1\n"
+      "  exch pop 3 -1 roll pop\n"
+      "    %% --- draw, fill, rot, str, xa, ya, lox, hix loy1 hiy1\n"
+      "  3 1 roll exch 3 -1 roll\n"
+      "    %% --- draw, fill, rot, str, xa, ya, lox, loy1 hix hiy1\n"
+      "  \n"
+      "  3 index 3 index currentpoint\n"
+      "    %% --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, lox, loy1, cx, cy\n"
+      "  exch\n"
+      "    %% --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, lox, loy1, cy, cx\n"
+      "  4 1 roll\n"
+      "    %% --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, cx, lox, loy1, cy\n"
+      "  exch\n"
+      "    %% --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, cx, lox, cy, loy1\n"
+      "  sub\n"
+      "    %% --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, cx, lox, cy-loy1\n"
+      "  3 1 roll\n"
+      "    %% --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, cy-loy1, cx, lox\n"
+      "  sub\n"
+      "    %% --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, cy-loy1, cx-lox\n"
+      "  exch\n"
+      "    %% --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, cx-lox, cy-loy1\n"
+      "  10 -1 roll (C) pstack pop\n"
+      "    %% --- draw, fill, str, xa, ya, lox, loy, hix1, hiy1, cx-lox, cy-loy1, rot\n"
       "  gsave\n"
       "  rotate\n"
-      "    %% --- draw, fill, str, xa, ya\n"
-      "  gsave 2 index false charpath flattenpath pathbbox grestore\n"
-      "    %% --- draw, fill, str, xa, ya, lox, loy, hix, hiy\n"
-      "  3 index 3 index currentpoint \n"
-      "    %% --- draw, fill, str, xa, ya, lox, loy, hix, hiy, lox, loy, cx, cy\n"
-      "  exch 4 1 roll exch sub\n"
-      "  3 1 roll sub exch\n"
-      "    %% --- draw, fill, str, xa, ya, lox, loy, hix, hiy, cx-lox, cy-loy\n"
+      "    %% --- draw, fill, str, xa, ya, lox, loy1, hix, hiy1, cx-lox, cy-loy1\n"
       "  rmoveto\n"
-      "    %% --- draw, fill, str, xa, ya, lox, loy, hix, hiy\n"
-      "  exch 4 1 roll exch sub \n"
-      "  3 1 roll sub exch\n"
-      "    %% --- draw, fill, str, xa, ya, dx, dy\n"
+      "    %% --- draw, fill, str, xa, ya, lox, loy1, hix, hiy1\n"
+      "  exch\n"
+      "    %% --- draw, fill, str, xa, ya, lox, loy1, hiy1, hix\n"
+      "  4 1 roll\n"
+      "    %% --- draw, fill, str, xa, ya, hix, lox, loy1, hiy1\n"
+      "  exch\n"
+      "    %% --- draw, fill, str, xa, ya, hix, lox, hiy1, loy1\n"
+      "  sub \n"
+      "    %% --- draw, fill, str, xa, ya, hix, lox, dy1\n"
+      "  3 1 roll\n"
+      "    %% --- draw, fill, str, xa, ya, dy1, hix, lox\n"
+      "  sub\n"
+      "    %% --- draw, fill, str, xa, ya, dy1, dx\n"
+      "  exch (D) pstack pop\n"
+      "    %% --- draw, fill, str, xa, ya, dx, dy1\n"
       "  exch 4 1 roll mul -1 mul\n"
-      "  3 1 roll mul -1 mul exch\n"
-      "    %% --- draw, fill, str, -dx*xa, -dy*ya\n"
+      "  3 1 roll mul -1 mul exch (E) pstack pop\n"
+      "    %% --- draw, fill, str, -dx*xa, -dy1*ya\n"
       "  rmoveto\n"
       "    %% --- draw, fill, str\n"
       "  true charpath\n"
@@ -787,7 +823,7 @@ void epswr_dev_write_proc_defs(FILE *wr)
 
     fprintf(wr, 
       "%% Generic unclipped label/text draw and fill operator:\n"
-      "%%   {draw} {fill} {str} {xa} {ya} {rot} {xc} {yc} ncstrfs --> \n"
+      "%%   {draw} {fill} {str} {str1} {xa} {ya} {rot} {xc} {yc} ncstrfs --> \n"
       "/ncstrfs\n"
       "{ gsave\n"
       "    initclip\n"
@@ -1464,6 +1500,7 @@ void epswr_dev_set_label_font(epswr_figure_t *eps, const char *font, double size
 void epswr_dev_label
   ( epswr_figure_t *eps, 
     const char *text, 
+    const char *strut, 
     double psx, double psy, 
     double rot,
     bool_t clipped,
@@ -1477,7 +1514,7 @@ void epswr_dev_label
 
     FILE *wr = eps->wr;
     fprintf(wr, "labelFont setfont\n");
-    epswr_dev_text_line(eps, text, psx, psy, rot, clipped, hAlign, vAlign, fill, draw);
+    epswr_dev_text_line(eps, text, strut, psx, psy, rot, clipped, hAlign, vAlign, fill, draw);
   }
 
 /* RUNNING TEXT */
@@ -1511,34 +1548,41 @@ void epswr_dev_text
     double hAlign, 
     bool_t fill, bool_t draw
   )
-  { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
+  { 
+    bool_t debug = FALSE;
+    if (eps->fillColor[0] < 0.0) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
     
     FILE *wr = eps->wr;
     fprintf(wr, "textFont setfont\n");
     /* Loop on text lines */
+    double dv = eps->textFontSize; /* Assumed baseline spacing. */
+    double rot = eps->rotText;
+    double ang = rot*M_PI/180; /* Rotation angle in radians. */
+    double ca = cos(ang), sa = sin(ang);
+    double vAlign = 1.00;
     char *line = (char *)text; /* Start of next line of text. */
     while(TRUE)
       { /* Find the end {pend} of the line: */
         char *pend = line;
         while (((*pend) != 0) && ((*pend) != '\n') && ((*pend) != '\r')) { pend++; }
         /* Compute the vert coord of the line bottom in the unrotated text area, rel to center: */
-        double dv = eps->textFontSize; /* Assumed baseline spacing. */
         if (pend > line)
-          { double vRefRaw = eps->vTopText - dv; /* !!! Should account for font depth. !!! */
-            /* Compute the horiz coord of the line's ref point: */
-            double hRefRaw = eps->hCtrText + (hAlign - 0.5)*eps->hSizeText;
+          { /* !!! Should account for font depth. !!! */
+            /* Compute the vert coord of text bottom relto center, unrotated. */
+            double vRefRaw = eps->vTopText; 
+            /* Compute the horiz coord of the line's ref point rel to center, unrotated: */
+            double hRefRaw = (hAlign - 0.5)*eps->hSizeText;
+            if (debug) { fprintf(stderr, "raw = ( %.3f %.3f )", hRefRaw, vRefRaw); }
             /* Rotate the ref point around the center: */
-            double rot = eps->rotText;
-            double ang = rot*M_PI/180; /* Rotation angle in radians. */
-            double ca = cos(ang), sa = sin(ang);
-            double hRef = eps->hCtrText + ca*hRefRaw - ca*vRefRaw;
+            double hRef = eps->hCtrText + ca*hRefRaw - sa*vRefRaw;
             double vRef = eps->vCtrText + sa*hRefRaw + ca*vRefRaw;
-            double vAlign = 0.0; /* !!! Should account for baseline. !!! */
-            epswr_dev_text_line(eps, line, hRef, vRef, rot, clipped, hAlign, vAlign, fill, draw);
+            if (debug) { fprintf(stderr, " rot = ( %.3f %.3f )\n", hRef, vRef); }
+            if (debug) { epswr_dev_dot(eps, hRef, vRef, 0.5, TRUE, FALSE); }
+            epswr_dev_text_line(eps, line, "Rg", hRef, vRef, rot, clipped, hAlign, vAlign, fill, draw);
           }
         /* Update the text "cursor" position: */
-        eps->vTopText -= dv;
+        eps->vTopText = eps->vTopText - dv;
         /* Prepare for next line: */
         line = pend;
         /* Skip line break (ASCII CR, LF, or CR-LF), if any: */
@@ -1546,12 +1590,13 @@ void epswr_dev_text
         if ((*line) == '\n') { line++; }
         /* Are we done? */
         if ((*line) == '\000') { return; }
-      } 
+      }
   }
 
 void epswr_dev_text_line
   ( epswr_figure_t *eps, 
     const char *text,
+    const char *strut,
     double hAbs, double vAbs, 
     double rot, 
     bool_t clipped, 
@@ -1561,6 +1606,7 @@ void epswr_dev_text_line
   { FILE *wr = eps->wr;
     fprintf(wr, "%d %d ", draw, fill);
     epswr_dev_write_ps_string(wr, text);
+    epswr_dev_write_ps_string(wr, strut);
     fprintf(wr, "  %5.3f %5.3f  %7.3f",  hAlign, vAlign, rot);
     fprintf(wr, "  %6.1f %6.1f", hAbs, vAbs);
     fprintf(wr, "  %s\n", (clipped ? "strfs" : "ncstrfs"));

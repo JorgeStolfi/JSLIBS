@@ -1,5 +1,5 @@
 /* See {archdraw.h}. */
-/* Last edited on 2020-10-27 17:12:10 by jstolfi */
+/* Last edited on 2021-06-26 18:40:39 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -545,7 +545,7 @@ void adrw_plot_point
       { ptlab = lab; }
     epswr_dot(epsf, x, y, 0.25, TRUE, FALSE);
     epswr_set_label_font(epsf, "Courier", 4.0);
-    epswr_label(epsf, ptlab, x, y, rot, FALSE, hAlign, vAlign, TRUE, FALSE);
+    epswr_label(epsf, ptlab, "P", x, y, rot, FALSE, hAlign, vAlign, TRUE, FALSE);
     if (lab != ptlab) { free(ptlab); }
   }
 
@@ -891,7 +891,7 @@ void adrw_plot_type_legend
         frgb_t *rgb = &(st->fill_rgb);
         epswr_set_fill_color(epsf, rgb->c[0],rgb->c[1],rgb->c[2]);
         epswr_rectangle(epsf, rxlo, rxhi, rylo, ryhi, TRUE, TRUE);
-        epswr_label(epsf, type_tag[type], rxhi + 1.5, rylo + 0.5, 0.0, FALSE, 0.0,0.0, TRUE, FALSE);
+        epswr_label(epsf, type_tag[type], "P", rxhi + 1.5, rylo + 0.5, 0.0, FALSE, 0.0,0.0, TRUE, FALSE);
       }
     epswr_end_figure(epsf);
   }

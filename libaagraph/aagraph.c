@@ -1,5 +1,5 @@
 /* See aagraph.h */
-/* Last edited on 2016-12-26 17:48:23 by stolfilocal */
+/* Last edited on 2021-06-26 02:30:59 by jstolfi */
 
 #include <aagraph.h>
 #include <affirm.h>
@@ -7,12 +7,12 @@
 #include <ia.h>
 #include <aa.h>
 #include <aarange.h>
-#include <pswr.h>
+#include <epswr.h>
 #include <math.h>
 #include <stdio.h>
 
 void aagraph_plot_paralelograms(
-    PSStream *ps,
+    epswr_figure_t *fig,
     AAP f (AAP x),
     Interval xd,
     Interval yd,
@@ -26,7 +26,7 @@ void aagraph_plot_paralelograms(
     AATerm eps[1];
     double gray = 0.75;
 
-    pswr_comment(ps, "Plot of AA graph");
+    epswr_comment(fig, "Plot of AA graph");
 
     for (xi=0; xi<n; xi++)
       {
@@ -58,8 +58,8 @@ void aagraph_plot_paralelograms(
         xp[2] = xv.hi;  yp[2] = yvhi.hi;
         xp[3] = xv.lo;  yp[3] = yvlo.hi;
         
-        pswr_set_fill_color(ps, gray,gray,gray); 
-        pswr_polygon(ps, TRUE, xp, yp, 4, TRUE, TRUE, TRUE);
+        epswr_set_fill_color(fig, gray,gray,gray); 
+        epswr_polygon(fig, TRUE, xp, yp, 4, TRUE, TRUE, TRUE);
 
         aa_flush(frame);
       }
@@ -68,7 +68,7 @@ void aagraph_plot_paralelograms(
   }
 
 void aagraph_plot_boxes(
-    PSStream *ps,
+    epswr_figure_t *fig,
     AAP f (AAP x),
     Interval xd,
     Interval yd,
@@ -80,7 +80,7 @@ void aagraph_plot_boxes(
     AAP xf, yf;
     double gray = 0.75;
 
-    pswr_comment(ps, "Plot of AA range graph");
+    epswr_comment(fig, "Plot of AA range graph");
 
     for (xi=0; xi<n; xi++)
       {
@@ -100,8 +100,8 @@ void aagraph_plot_boxes(
         if (ia_is_full(&yv)) { yv = (Interval){xd.lo, xd.hi}; }
 
         ROUND_NEAR;
-        pswr_set_fill_color(ps, gray,gray,gray);
-        pswr_rectangle(ps, xv.lo, xv.hi, yv.lo, yv.hi, TRUE, TRUE);
+        epswr_set_fill_color(fig, gray,gray,gray);
+        epswr_rectangle(fig, xv.lo, xv.hi, yv.lo, yv.hi, TRUE, TRUE);
 
         aa_flush(frame);
       }
@@ -110,7 +110,7 @@ void aagraph_plot_boxes(
   }
 
 void aagraph_fill_and_draw_2d_range 
-  ( PSStream *ps, 
+  ( epswr_figure_t *fig, 
     AAP x, 
     AAP y, 
     double R, double G, double B
@@ -122,14 +122,14 @@ void aagraph_fill_and_draw_2d_range
     double xv[nvmax], yv[nvmax];
     AATermCount nv;
 
-    pswr_comment(ps, "AA joint range");
+    epswr_comment(fig, "AA joint range");
 
     aa_2d_range(x, y, &nv, xv, yv);
     if (nv == 0)
-      { pswr_dot(ps, (double)(x->center), (double)(y->center), 0.5, FALSE, TRUE); }
+      { epswr_dot(fig, (double)(x->center), (double)(y->center), 0.5, FALSE, TRUE); }
     else
-      { pswr_set_fill_color(ps, R,G,B);
-        pswr_polygon(ps, TRUE, xv, yv, (int)nv, TRUE, TRUE, TRUE);
+      { epswr_set_fill_color(fig, R,G,B);
+        epswr_polygon(fig, TRUE, xv, yv, (int)nv, TRUE, TRUE, TRUE);
       }
     
     fprintf(stderr, "\n");

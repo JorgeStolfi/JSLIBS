@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2020-10-27 18:47:18 by jstolfi */
+/* Last edited on 2021-06-26 18:36:18 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -563,6 +563,7 @@ void epswr_set_label_font(epswr_figure_t *eps, const char *font, double size)
 void epswr_label
   ( epswr_figure_t *eps, 
     const char *text,
+    const char *strut,
     double x, double y, 
     double rot, 
     bool_t clipped,
@@ -573,21 +574,30 @@ void epswr_label
     if ((!draw) && (!fill)) { return; }
     double psx; epswr_x_to_h_coord(eps, x, &(psx));
     double psy; epswr_y_to_v_coord(eps, y, &(psy));
-    epswr_dev_label(eps, text, psx, psy, rot, clipped, hAlign, vAlign, fill, draw);
+    epswr_dev_label(eps, text, strut, psx, psy, rot, clipped, hAlign, vAlign, fill, draw);
   }
   
-void epswr_set_text_client_geometry
+void epswr_set_text_geometry
   ( epswr_figure_t *eps, 
-    double xMin, double xMax, 
-    double yMin, double yMax,
+    bool_t client,
+    double xhMin, double xhMax, 
+    double yvMin, double yvMax,
     double rot
   )
   {
     double hMin, hMax, vMin, vMax;
-    epswr_x_to_h_coord(eps, xMin, &(hMin));
-    epswr_y_to_v_coord(eps, yMin, &(vMin));
-    epswr_x_to_h_coord(eps, xMax, &(hMax));
-    epswr_y_to_v_coord(eps, yMax, &(vMax));
+    if (client)
+      { epswr_x_to_h_coord(eps, xhMin, &(hMin));
+        epswr_x_to_h_coord(eps, xhMax, &(hMax));
+        epswr_y_to_v_coord(eps, yvMin, &(vMin));
+        epswr_y_to_v_coord(eps, yvMax, &(vMax));
+      }
+    else
+      { hMin = xhMin + eps->hMin; 
+        hMax = xhMax + eps->hMin; 
+        vMin = yvMin + eps->vMin; 
+        vMax = yvMax + eps->vMin;
+      }
     epswr_dev_set_text_geometry(eps, hMin, hMax, vMin, vMax, rot);
   }
 

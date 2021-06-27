@@ -1,5 +1,5 @@
 /* See {allgraphs.h} */
-/* Last edited on 2009-01-06 03:10:25 by stolfi */
+/* Last edited on 2021-06-26 21:49:55 by jstolfi */
 
 #define _GNU_SOURCE
 
@@ -11,7 +11,7 @@
 #include <flt.h>
 #include <ia.h>
 #include <aa.h>
-#include <pswr.h>
+#include <epswr.h>
 #include <bool.h>
 #include <jsstring.h>
 #include <jsfile.h>
@@ -28,18 +28,18 @@ char *allgraphs_format_parms(
     int nsub
   );
   
-PSStream *allgraphs_open_stream(bool_t epsformat, char *fileprefix);
+epswr_figure_t *allgraphs_open_stream(bool_t epsformat, char *fileprefix);
 
-void allgraphs_new_plot
-  ( PSStream *ps,
-    char *tag,
-    char *pagenum,
+epswr_figure_t *allgraphs_new_plot
+  ( char *fileprefix, 
+    char *filetag,
     char *method,
     char *function,
     char *parmstr,
-    double xmin, double xmax,
-    double ymin, double ymax,
-    int nsub
+    double xmin, 
+    double xmax, 
+    double ymin, 
+    double ymax
   );
 
 /* IMPLEMENTATIONS */
@@ -70,106 +70,101 @@ void allgraphs_plot(
     int nsub,
     int nsteps
   )
-  { char *parmstr = allgraphs_format_parms(xmin, xmax, ymin, ymax, nsub);
-    PSStream *ps = allgraphs_open_stream(epsformat, fileprefix);
-    
+  { 
+    char *parmstr = allgraphs_format_parms(xmin, xmax, ymin, ymax, nsub);
     Interval xd = (Interval){xmin, xmax};
     Interval yd = (Interval){ymin, ymax};
 
     /*** IA BOX ENCLOSURES ***/
-    allgraphs_new_plot
-      ( ps, "ia", "ia", "Box enclosures (Interval Arith.)",
-        function,  parmstr,
-        xmin, xmax,  ymin, ymax,
-        nsub
+
+    char *method = NULL;
+    epswr_figure_t *fig = NULL;
+    
+    /* Start a new EPS figure: */
+    method = "Box enclosures (Interval Arith.)";
+    fig = allgraphs_new_plot
+      ( fileprefix, "ia", 
+        method, function, parmstr,
+        xmin, xmax,  ymin, ymax
       );
     
-    pswr_set_pen(ps, 0.0,0.0,0.0, 0.10, 0.0, 0.0);
-    iagraph_plot_boxes(ps, eval_ia, xd, yd, nsub);
+    epswr_set_pen(fig, 0.0,0.0,0.0, 0.10, 0.0, 0.0);
+    iagraph_plot_boxes(fig, eval_ia, xd, yd, nsub);
     
-    pswr_set_pen(ps, 0.5,0.0,0.0, 0.10, 0.0, 0.0);
-    fltgraph_plot(ps, eval_fp, xd, yd, nsteps);
+    epswr_set_pen(fig, 0.5,0.0,0.0, 0.10, 0.0, 0.0);
+    fltgraph_plot(fig, eval_fp, xd, yd, nsteps);
     
-    pswr_set_pen(ps, 0.0,0.0,0.0, 0.10, 0.0, 0.0);
-    fltgraph_draw_axes(ps, xd, yd);
+    epswr_set_pen(fig, 0.0,0.0,0.0, 0.10, 0.0, 0.0);
+    fltgraph_draw_axes(fig, xd, yd);
     
-    pswr_set_pen(ps, 0.0,0.0,0.0, 0.25, 0.0, 0.0);
-    pswr_frame(ps);
+    epswr_set_pen(fig, 0.0,0.0,0.0, 0.25, 0.0, 0.0);
+    epswr_frame(fig);
+    epswr_end_figure(fig); fig = NULL;
       
     /*** AA BOX ENCLOSURES ***/
-    allgraphs_new_plot
-      ( ps, "ar", "ar", "Box enclosures (Affine Arith.)",
-        function,  parmstr,
-        xmin, xmax,  ymin, ymax,
-        nsub
+    method = "Box enclosures (Affine Arith.)";
+    fig = allgraphs_new_plot
+      ( fileprefix, "ab",
+        method, function,  parmstr,
+        xmin, xmax,  ymin, ymax
       );
 
-    aagraph_plot_boxes(ps, eval_aa, xd, yd, nsub);
-    fltgraph_draw_axes(ps, xd, yd);
-    fltgraph_plot(ps, eval_fp, xd, yd, nsteps);
-    pswr_frame(ps);
+    aagraph_plot_boxes(fig, eval_aa, xd, yd, nsub);
+    fltgraph_draw_axes(fig, xd, yd);
+    fltgraph_plot(fig, eval_fp, xd, yd, nsteps);
+    epswr_frame(fig);
+    epswr_end_figure(fig); fig = NULL;
       
     /*** IA INTERVAL-SLOPE ENCLOSURES ***/
     if (diff_ia != NULL)
-      { allgraphs_new_plot
-          ( ps, "id", "ad", "Interval-slope enclosures (Interval Arith.)",
-            function,  parmstr,
-            xmin, xmax,  ymin, ymax,
-            nsub
+      { method = "Interval-slope enclosures (Interval Arith.)";
+        fig = allgraphs_new_plot
+          ( fileprefix, "id", 
+            method, function,  parmstr,
+            xmin, xmax,  ymin, ymax
           );
 
-        pswr_set_pen(ps, 0.0,0.0,0.0, 0.10, 0.0, 0.0);
-        iagraph_plot_butterflies(ps, eval_ia, diff_ia, xd, yd, nsub);
+        epswr_set_pen(fig, 0.0,0.0,0.0, 0.10, 0.0, 0.0);
+        iagraph_plot_butterflies(fig, eval_ia, diff_ia, xd, yd, nsub);
 
-        pswr_set_pen(ps, 0.5,0.0,0.0, 0.10, 0.0, 0.0);
-        fltgraph_plot(ps, eval_fp, xd, yd, nsteps);
+        epswr_set_pen(fig, 0.5,0.0,0.0, 0.10, 0.0, 0.0);
+        fltgraph_plot(fig, eval_fp, xd, yd, nsteps);
 
-        pswr_set_pen(ps, 0.0,0.0,0.0, 0.10, 0.0, 0.0);
-        fltgraph_draw_axes(ps, xd, yd);
+        epswr_set_pen(fig, 0.0,0.0,0.0, 0.10, 0.0, 0.0);
+        fltgraph_draw_axes(fig, xd, yd);
 
-        pswr_set_pen(ps, 0.0,0.0,0.0, 0.25, 0.0, 0.0);
-        pswr_frame(ps);
+        epswr_set_pen(fig, 0.0,0.0,0.0, 0.25, 0.0, 0.0);
+        epswr_frame(fig);
+        epswr_end_figure(fig); fig = NULL;
       }
 
     /*** AA BAND ENCLOSURES ***/
-    allgraphs_new_plot
-      ( ps, "aa", "aa", "Band enclosures (Affine Arith.)",
-        function,  parmstr,
-        xmin, xmax,  ymin, ymax,
-        nsub
+    method = "Band enclosures (Affine Arith.)";
+    fig = allgraphs_new_plot
+      ( fileprefix, "aa",
+        method, function,  parmstr,
+        xmin, xmax,  ymin, ymax
       );
     
-    aagraph_plot_paralelograms(ps, eval_aa, xd, yd, nsub);
-    fltgraph_draw_axes(ps, xd, yd);
-    fltgraph_plot(ps, eval_fp, xd, yd, nsteps);
-    pswr_frame(ps);
-    
-    /* FINISH */
-    
-    pswr_close_stream(ps);
+    aagraph_plot_paralelograms(fig, eval_aa, xd, yd, nsub);
+    fltgraph_draw_axes(fig, xd, yd);
+    fltgraph_plot(fig, eval_fp, xd, yd, nsteps);
+    epswr_frame(fig);
+    epswr_end_figure(fig); fig = NULL;
   }
 
-PSStream *allgraphs_open_stream(bool_t epsformat, char *fileprefix)
-  { /* Actual EPS {hCanvasSize, vCanvasSize} will be set for each figure: */
-    PSStream *ps = pswr_new_stream(fileprefix, NULL, epsformat, "doc", "letter", FALSE, 300.0, 300.0);
-    return ps;
-  }
-
-void allgraphs_new_plot
-  ( PSStream *ps,
-    char *tag,
-    char *pagenum,
+epswr_figure_t *allgraphs_new_plot
+  ( char *fileprefix, 
+    char *filetag,
     char *method,
     char *function,
     char *parmstr,
-    double xmin, double xmax,
-    double ymin, double ymax,
-    int nsub
+    double xmin, 
+    double xmax, 
+    double ymin, 
+    double ymax
   )
-  {
-    /* Start a new page or new EPS figure: */
-    pswr_new_canvas(ps, tag);
-    
+  { 
     /* Compute the plot scale so that the largest dimension is 6 inches: */
     double wx = xmax - xmin;
     double wy = ymax - ymin;
@@ -177,25 +172,30 @@ void allgraphs_new_plot
     double scale = 6.0 * 72.0 / wm; /* Plot scale (pt per client unit). */
     
     /* Compute the canvas dimensions (excluding the margins): */
-    double hsize = scale*wx; /* Canvas H size. */
-    double vsize = scale*wy; /* Canvas V size. */
-    double mrg = 2.0; /* In pt. */
+    double hsize = scale*wx; /* Figure H size (pt). */
+    double vsize = scale*wy; /* Figure V size (pt). */
+    double fontsize = 10.0;
 
-    /* Set the canvas size (effective only for EPS figures): */
-    pswr_set_canvas_size(ps, hsize+2*mrg, vsize + 2*mrg);
+    char *fname = NULL;
+    asprintf(&fname, "%s%s.eps", fileprefix, filetag);
+    FILE *wr = open_write(fname, TRUE);
+    
+    double smrg = 5;
+    double tmrg = 2*smrg + 5*fontsize + smrg;
+    epswr_figure_t *fig = epswr_new_figure(wr, hsize, vsize, smrg,smrg,smrg,tmrg, TRUE);
+    epswr_set_text_font(fig, "Courier", fontsize);
     
     /* Set the client window size: */
-    pswr_new_picture(ps, xmin, xmax, ymin, ymax);
+    epswr_set_client_window(fig, xmin, xmax, ymin, ymax);
+
+    /* Define text margins: */
+    double vtext = vsize + 2*smrg + 5*fontsize; 
+    epswr_set_text_geometry(fig, FALSE, 0, hsize, vsize, vtext, 0);
     
-    /* Set the grid size: */
-    pswr_set_grid(ps, nsub, 1);
-    
-    if (! pswr_is_eps(ps))
-      { /* pswr_add_caption(ps, "", 0.0); */
-        pswr_add_caption(ps, function, 0.0);
-        /* pswr_add_caption(ps, "", 0.0); */
-        pswr_add_caption(ps, method, 0.0);
-        /* pswr_add_caption(ps, "", 0.0); */
-        pswr_add_caption(ps, parmstr, 0.0);
-      }
+    epswr_text(fig, function, FALSE, 0.0, TRUE, FALSE);
+    epswr_text(fig, method,   FALSE, 0.0, TRUE, FALSE);
+    epswr_text(fig, parmstr,  FALSE, 0.0, TRUE, FALSE);
+
+    free(fname);
+    return fig;
   }

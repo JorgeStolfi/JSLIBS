@@ -1,17 +1,17 @@
 /* See fltgraph.h */
-/* Last edited on 2016-12-26 17:41:26 by stolfilocal */
+/* Last edited on 2021-06-26 18:39:56 by jstolfi */
 
 #include <fltgraph.h>
 #include <affirm.h>
 #include <bool.h>
 #include <flt.h>
-#include <pswr.h>
+#include <epswr.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 void fltgraph_plot
-  ( PSStream *ps,
+  ( epswr_figure_t *fig,
     Float f (Float x),
     Interval xd,
     Interval yd,
@@ -21,7 +21,7 @@ void fltgraph_plot
     Float x0, y0, x1, y1;
 
     ROUND_NEAR;
-    pswr_comment(ps, "Plot of actual graph");
+    epswr_comment(fig, "Plot of actual graph");
 
     x1 = xd.lo;
     y1 = f(x1);
@@ -38,26 +38,26 @@ void fltgraph_plot
             ((y0 >= yd.lo) || (y1 >= yd.lo)) &&
             ((y0 <= yd.hi) || (y1 <= yd.hi))
           )
-          { pswr_segment(ps, x0, y0, x1, y1); }
+          { epswr_segment(fig, x0, y0, x1, y1); }
       }
   }
 
 void fltgraph_draw_axes
-  ( PSStream *ps,
+  ( epswr_figure_t *fig,
     Interval xd,
     Interval yd
   )
   { if ((xd.lo < Zero) && (xd.hi > Zero))
-      { pswr_coord_line(ps, HOR, 0.0); }
+      { epswr_coord_line(fig, epswr_axis_HOR, 0.0); }
     if ((yd.lo < Zero) && (yd.hi > Zero))
-      { pswr_coord_line(ps, VER, 0.0); }
+      { epswr_coord_line(fig, epswr_axis_VER, 0.0); }
   }
 
 #define MAXLABLEN (300)
 
 void fltgraph_draw_tics
-  ( PSStream *ps,
-    pswr_axis_t axis,
+  ( epswr_figure_t *fig,
+    epswr_axis_t axis,
     Float lo, Float hi,
     int n,
     double ticsz,
@@ -75,18 +75,18 @@ void fltgraph_draw_tics
         if ((c > clip.lo) && (c <= clip.hi) && (fabs(c) > eps))
           { if (labfmt != NULL) { snprintf(buf, MAXLABLEN, labfmt, c); }
             if (axis == 0)
-              { pswr_tic(ps, axis, c, 0.0, ticsz, 0.5);
+              { epswr_tic(fig, axis, c, 0.0, ticsz, 0.5);
                 if (labfmt != NULL) 
-                  { pswr_label(ps, buf, c, 0.0, 0.0, 0.5, labalign); }
+                  { epswr_label(fig, buf, "0", c,0.0, 0.0, TRUE, 0.5,labalign, TRUE,FALSE); }
               }
             else if (axis == 1) 
-              { pswr_tic(ps, axis, 0.0, c, ticsz, 0.5);
+              { epswr_tic(fig, axis, 0.0, c, ticsz, 0.5);
                 if (labfmt != NULL) 
-                  { pswr_label(ps, buf, 0.0, c, 0.0, labalign, 0.5); }
+                  { epswr_label(fig, buf, "0", 0.0,c, 0.0, TRUE, labalign,0.5, TRUE,FALSE); }
               }
             else
               { affirm(FALSE, "bad axis"); }
           }
       }
-    pswr_flush(ps);
+    epswr_flush(fig);
   }    

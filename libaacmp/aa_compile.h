@@ -2,7 +2,7 @@
 #define aa_compile_H
 
 /* aa_compile.h -- Compile pcode functions to C routine that calls AA ops */
-/* Last edited on 2007-11-01 17:26:53 by stolfi */
+/* Last edited on 2021-06-26 22:09:51 by jstolfi */
 
 #define _GNU_SOURCE_
 #include <stdio.h>
@@ -17,8 +17,7 @@ void aa_compile(
     bool_t **res_depends,  /* Required depcy between results and shared epsilons. */
     int32_t shared_ne,       /* Number of shared epsilons */
     char *proc_name,     /* Name of generated procedure */
-    FILE *c_file,        /* File for C code */
-    FILE *l_file         /* File for ??? */
+    FILE *c_file        /* File for C code */
   );
   /* Compiles a p-code expression into a C program that evaluates
     it using affine arithmetic.

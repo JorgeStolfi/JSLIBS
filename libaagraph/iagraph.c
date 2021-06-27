@@ -1,12 +1,12 @@
 /* See {iagraph.h} */
-/* Last edited on 2016-04-01 01:17:11 by stolfilocal */
+/* Last edited on 2021-06-26 02:24:20 by jstolfi */
 
 #include <iagraph.h>
 
 #include <flt.h>
 #include <ia.h>
 #include <ia_butfly.h>
-#include <pswr.h>
+#include <epswr.h>
 #include <affirm.h>
 
 #include <math.h>
@@ -15,7 +15,7 @@
 #define DEBUG 0
 
 void iagraph_plot_boxes
-  ( PSStream *ps,
+  ( epswr_figure_t *fig,
     Interval f (Interval x),
     Interval xd,
     Interval yd,
@@ -25,7 +25,7 @@ void iagraph_plot_boxes
     int xi;
     double gray = 0.75;
 
-    pswr_comment(ps, "Function plot with IA box enclosures");
+    epswr_comment(fig, "Function plot with IA box enclosures");
 
     for (xi=0; xi<n; xi++)
       {
@@ -39,14 +39,14 @@ void iagraph_plot_boxes
 
         ROUND_NEAR;
         
-        iagraph_fill_and_draw_box(ps, xv, yv, xd, yd, gray,gray,gray);
+        iagraph_fill_and_draw_box(fig, xv, yv, xd, yd, gray,gray,gray);
       }
 
     fprintf(stderr, "\n");
   }
 
 void iagraph_plot_butterflies
-  ( PSStream *ps,
+  ( epswr_figure_t *fig,
     Interval f (Interval x),
     Interval df (Interval x),
     Interval xd,
@@ -57,7 +57,7 @@ void iagraph_plot_butterflies
     int xi;
     double gray = 0.75;
 
-    pswr_comment(ps, "Function plot IA interval-slope enclosures");
+    epswr_comment(fig, "Function plot IA interval-slope enclosures");
 
     for (xi=0; xi<n; xi++)
       {
@@ -73,7 +73,7 @@ void iagraph_plot_butterflies
         ia_butfly_t bt;
         iagraph_compute_butterfly(xv, xmd, f, df, &bt);
         
-        iagraph_fill_and_draw_butterfly(ps, &bt, xd, yd, gray,gray,gray);
+        iagraph_fill_and_draw_butterfly(fig, &bt, xd, yd, gray,gray,gray);
       }
 
     fprintf(stderr, "\n");
@@ -124,7 +124,7 @@ void iagraph_compute_butterfly
   }
 
 void iagraph_fill_and_draw_box
-  ( PSStream *ps, 
+  ( epswr_figure_t *fig, 
     Interval xv, 
     Interval yv, 
     Interval xd,
@@ -134,12 +134,12 @@ void iagraph_fill_and_draw_box
   { /* Clip box vertically to {yd}: */
     yv = ia_meet(yv, yd);
     /* Plot box: */
-    pswr_set_fill_color(ps, R,G,B);
-    pswr_rectangle(ps, xv.lo, xv.hi, yv.lo, yv.hi, TRUE, TRUE);
+    epswr_set_fill_color(fig, R,G,B);
+    epswr_rectangle(fig, xv.lo, xv.hi, yv.lo, yv.hi, TRUE, TRUE);
   }
 
 void iagraph_fill_and_draw_trapezoid
-  ( PSStream *ps, 
+  ( epswr_figure_t *fig, 
     ia_trapez_t *tp,
     Interval xd,
     Interval yd,
@@ -169,13 +169,13 @@ void iagraph_fill_and_draw_trapezoid
         xp[3] = x.lo;  yp[3] = yxlo.hi;
         np = 4;
         /* Should clip polygon against {xd × yd}: */
-        pswr_set_fill_color(ps, R,G,B);  
-        pswr_polygon(ps, TRUE, xp, yp, np, TRUE, TRUE, TRUE); 
+        epswr_set_fill_color(fig, R,G,B);  
+        epswr_polygon(fig, TRUE, xp, yp, np, TRUE, TRUE, TRUE); 
       }
   }
 
 void iagraph_fill_and_draw_butterfly
-  ( PSStream *ps, 
+  ( epswr_figure_t *fig, 
     ia_butfly_t *bt, 
     Interval xd,
     Interval yd,
@@ -185,6 +185,6 @@ void iagraph_fill_and_draw_butterfly
     int i;
     for (i = 0; i < 2; i++)
       { ia_trapez_t *ti = &(bt->tp[i]); 
-        iagraph_fill_and_draw_trapezoid(ps, ti, xd, yd, R,G,B);
+        iagraph_fill_and_draw_trapezoid(fig, ti, xd, yd, R,G,B);
       }
   }

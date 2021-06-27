@@ -1,5 +1,5 @@
 /* aagraph.h -- Plots graph of unary function with affine arithmetic. */
-/* Last edited on 2007-12-26 14:17:45 by stolfi */
+/* Last edited on 2021-06-26 02:26:06 by jstolfi */
 
 #ifndef aagraph_H
 #define aagraph_H
@@ -7,10 +7,10 @@
 #include <flt.h>
 #include <aa.h>
 #include <ia.h>
-#include <pswr.h>
+#include <epswr.h>
 
 void aagraph_plot_paralelograms
-  ( PSStream *ps,
+  ( epswr_figure_t *fig,
     AAP f (AAP x),
     Interval xd,
     Interval yd,
@@ -26,7 +26,7 @@ void aagraph_plot_paralelograms
     with the given coordinate ranges. */
 
 void aagraph_plot_boxes
-  ( PSStream *ps,
+  ( epswr_figure_t *fig,
     AAP f (AAP x),
     Interval xd,
     Interval yd,
@@ -43,7 +43,7 @@ void aagraph_plot_boxes
     with the given coordinate ranges. */
 
 void aagraph_fill_and_draw_2d_range 
-  ( PSStream *ps, 
+  ( epswr_figure_t *fig, 
     AAP x, 
     AAP y, 
     double R, double G, double B

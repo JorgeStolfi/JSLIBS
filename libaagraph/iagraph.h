@@ -1,5 +1,5 @@
 /* Graphing 1-argument functions with interval arithmetic. */
-/* Last edited on 2007-12-26 14:15:49 by stolfi */
+/* Last edited on 2021-06-26 02:28:10 by jstolfi */
 
 #ifndef iagraph_H
 #define iagraph_H
@@ -7,10 +7,10 @@
 #include <flt.h>
 #include <ia.h>
 #include <ia_butfly.h>
-#include <pswr.h>
+#include <epswr.h>
 
 void iagraph_plot_boxes
-  ( PSStream *ps,
+  ( epswr_figure_t *fig,
     Interval f (Interval x),
     Interval xd,
     Interval yd,
@@ -25,7 +25,7 @@ void iagraph_plot_boxes
     with the given coordinate ranges. */
 
 void iagraph_plot_butterflies
-  ( PSStream *ps,
+  ( epswr_figure_t *fig,
     Interval f (Interval x),
     Interval df (Interval x),
     Interval xd,
@@ -74,7 +74,7 @@ void iagraph_compute_butterfly
   !!! FIX IT !!! */
 
 void iagraph_fill_and_draw_box
-  ( PSStream *ps, 
+  ( epswr_figure_t *fig, 
     Interval xv, 
     Interval yv, 
     Interval xd,
@@ -84,7 +84,7 @@ void iagraph_fill_and_draw_box
   /* Plots to {ps} the rectangular box {xv × yv}. */
 
 void iagraph_fill_and_draw_trapezoid
-  ( PSStream *ps, 
+  ( epswr_figure_t *fig, 
     ia_trapez_t *tp, 
     Interval xd,
     Interval yd,
@@ -93,7 +93,7 @@ void iagraph_fill_and_draw_trapezoid
   /* Plots to {ps} a trapezoid {tp}. */
     
 void iagraph_fill_and_draw_butterfly
-  ( PSStream *ps, 
+  ( epswr_figure_t *fig, 
     ia_butfly_t *bt, 
     Interval xd,
     Interval yd,

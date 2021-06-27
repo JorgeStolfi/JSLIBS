@@ -1,8 +1,8 @@
-# Last edited on 2021-04-13 23:23:22 by jstolfi
+# Last edited on 2021-06-26 22:02:39 by jstolfi
 
 PROG := testplot2D
   
-TEST_LIB := libpsextra.a
+TEST_LIB := libeps.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS := \

@@ -1,5 +1,5 @@
 /* Control schematic of the Mazoni-Zabini IG-UNICAMP multifocus microscope */
-/* Last edited on 2012-12-07 20:54:43 by stolfilocal */
+/* Last edited on 2021-06-26 18:57:53 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -169,12 +169,14 @@ void miguec_draw_box
     char *text
   )
   {
-    double xLo = xCtr - 0.5*xSize, xHi = xCtr + 0.5*xSize; 
-    double yLo = yCtr - 0.5*ySize, yHi = yCtr + 0.5*ySize; 
-    epswr_set_fill_color(epsf, 1.000,1.000,0.950);
-    epswr_rectangle(epsf, xLo, xHi, yLo, yHi, TRUE, TRUE);
-    epswr_set_fill_color(epsf, 0.000,0.000,0.000);
-    epswr_label(epsf, text, xCtr, yCtr, 0.0, TRUE, 0.5, 0.5, TRUE, FALSE);
+    if ((text != NULL) && (strlen(text) > 0))
+      { double xLo = xCtr - 0.5*xSize, xHi = xCtr + 0.5*xSize; 
+        double yLo = yCtr - 0.5*ySize, yHi = yCtr + 0.5*ySize; 
+        epswr_set_fill_color(epsf, 1.000,1.000,0.950);
+        epswr_rectangle(epsf, xLo, xHi, yLo, yHi, TRUE, TRUE);
+        epswr_set_fill_color(epsf, 0.000,0.000,0.000);
+        epswr_label(epsf, text, text, xCtr, yCtr, 0.0, TRUE, 0.5, 0.5, TRUE, FALSE);
+      }
   }
 
 void miguec_draw_arrow
@@ -190,9 +192,9 @@ void miguec_draw_arrow
     epswr_polygon(epsf, FALSE, xv, yv, n, FALSE, TRUE, FALSE);
     epswr_set_fill_color(epsf, 0.000,0.000,0.000);
     epswr_arrowhead(epsf, xv[n-2], yv[n-2], xv[n-1], yv[n-1], 1.0, 2.5,  1.0, TRUE, TRUE);
-    if (text1 != NULL)
-      { epswr_label(epsf, text1, xText1, yText1, 0.0, TRUE, 0.5, 0.5, TRUE, FALSE); }
-    if (text2 != NULL)
-      { epswr_label(epsf, text2, xText2, yText2, 0.0, TRUE, 0.5, 0.5, TRUE, FALSE); }
+    if ((text1 != NULL) && (strlen(text1) > 0))
+      { epswr_label(epsf, text1, text1, xText1, yText1, 0.0, TRUE, 0.5, 0.5, TRUE, FALSE); }
+    if ((text2 != NULL) && (strlen(text2) > 0))
+      { epswr_label(epsf, text2, text2, xText2, yText2, 0.0, TRUE, 0.5, 0.5, TRUE, FALSE); }
   }
     

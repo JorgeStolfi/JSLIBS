@@ -1,12 +1,13 @@
-# Last edited on 2020-10-11 15:21:47 by jstolfi
+# Last edited on 2021-06-26 04:22:00 by jstolfi
 
 PROG := fn1_graphs
   
-TEST_LIB := libfgraph.a
+TEST_LIB := libaagraph.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS := \
-  libps.a \
+  libeps.a \
+  libaafuncs.a \
   libaa.a \
   libia.a \
   libflt.a \
@@ -58,29 +59,28 @@ OUTNAME := pf-${FUNCTION}
 
 PLOTSTEPS := 512
 
-MAINPS := ${OUTNAME}-doc.ps
+MAINEPS := \
+  ${OUTNAME}-ia.eps
 
-EPSFILES :=  \
-  ${OUTNAME}-ia.eps \
-  ${OUTNAME}-aa.eps \
-  ${OUTNAME}-ar.eps
+OTHEREPS :=  \
+  ${filter-out ${MAINEPS},${wildcard ${OUTNAME}-*.eps}}
 
-PSFILES := \
-  ${MAINPS} \
-  ${EPSFILES}
+EPSFILES := \
+  ${MAINEPS} \
+  ${OTHEREPS}
 
-PSVIEW = okular
+EPSVIEW = evince
   
-run-single: ${MAINPS} show-ps
+run-single: ${MAINEPS} show-eps
 
 clean-single: 
-	/bin/rm -f ${PROG}.o ${PROG} ${PSFILES}
+	/bin/rm -f ${PROG}.o ${PROG} ${EPSFILES}
   
-${MAINPS}: ${PROG}
+${MAINEPS}: ${PROG}
 	${PROG} ${FUNCTION} ${PLOTSTEPS}
 
-show-ps: ${MAINPS}        
-	${PSVIEW} ${MAINPS}
+show-eps: ${MAINEPS}        
+	${EPSVIEW} ${EPSFILES}
         
 endif
 # ${FUNCTION}

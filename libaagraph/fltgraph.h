@@ -1,19 +1,19 @@
 /* Plotting the graph of a 1-argument function. */
-/* Last edited on 2007-12-26 14:55:55 by stolfi */
+/* Last edited on 2021-06-26 02:27:26 by jstolfi */
 
 #ifndef fltgraph_H
 #define fltgraph_H
 
 #include <flt.h>
 #include <ia.h>
-#include <pswr.h>
+#include <epswr.h>
 
-/* These procedures assume that {*ps} is a {PSStream} object, as defined
-  in {pswr.h}, properly initialized for a plot with the given coordinate 
+/* These procedures assume that {*fig} is a {epswr_figure_t} object, as defined
+  in {epswr.h}, properly initialized for a plot with the given coordinate 
   ranges. */
 
 void fltgraph_plot
-  ( PSStream *ps,
+  ( epswr_figure_t *fig,
     Float f (Float x),
     Interval xd,
     Interval yd,
@@ -23,7 +23,7 @@ void fltgraph_plot
     approximated by {m} straight segments. */
 
 void fltgraph_draw_axes
-  ( PSStream *ps,
+  ( epswr_figure_t *fig,
     Interval xd,
     Interval yd
   );
@@ -31,8 +31,8 @@ void fltgraph_draw_axes
     in the specified rectangle. */
   
 void fltgraph_draw_tics
-  ( PSStream *ps,
-    pswr_axis_t axis,
+  ( epswr_figure_t *fig,
+    epswr_axis_t axis,
     Float lo, Float hi,
     int n,
     double ticsz,

@@ -1,6 +1,7 @@
 #define PROG_NAME "testplot"
 #define PROG_DESC "test of {epswr.h} plotting ops"
 #define PROG_VERS "1.0"
+/* Last edited on 2021-06-26 20:01:05 by jstolfi */
 
 #define testplot_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
@@ -25,6 +26,7 @@ int main (int argc, char **argv);
 void DoTests(void);
 
 void DrawThings(epswr_figure_t *epsf);
+void DrawLabels(epswr_figure_t *epsf, double xc, double yc);
 void DrawTexts(epswr_figure_t *epsf, double xc, double yc);
 void DrawLines(epswr_figure_t *epsf, double xc, double yc, bool_t arrowheads);
 void DrawFigures(epswr_figure_t *epsf, double xc, double yc, bool_t fill, bool_t draw, bool_t eo, bool_t closed);
@@ -41,7 +43,7 @@ int main (int argc, char **argv)
   
 void DoTests(void)
   {
-    double hPlotSize = 600.0;
+    double hPlotSize = 800.0;
     double vPlotSize = 400.0;
     double hvMarg = 8.0;
     bool_t verbose = TRUE;
@@ -58,7 +60,7 @@ void DoTests(void)
         hvMarg, hvMarg, hvMarg, hvMarg, 
         verbose    
       );
-    epswr_set_client_window(epsf, -22.00, +22.00,  -16.50, +16.50);
+    epswr_set_client_window(epsf, -29.00, +29.00,  -16.50, +16.50);
 
     DrawThings(epsf);
     epswr_end_figure(epsf);
@@ -78,36 +80,39 @@ void DrawThings(epswr_figure_t *epsf)
     epswr_set_pen(epsf, 0.800, 0.800, 0.300,  0.10,  2.0, 1.0);
     epswr_grid_lines(epsf, 44, 33);
 
+    epswr_comment(epsf, "Labels in various positions:");
+    DrawLabels(epsf, -27.0, -15.5);
+
     epswr_comment(epsf, "Text in various positions:");
-    DrawTexts(epsf, -20.0, -15.5);
+    DrawTexts(epsf, -13.0, -15.5);
 
     epswr_comment(epsf, "Medium solid black segments:");
     epswr_set_pen(epsf, 0.000, 0.000, 0.000,  0.20,  0.0, 0.0);
-    DrawLines(epsf,  -6.0, -15.5, FALSE);
+    DrawLines(epsf,  +1.0, -15.5, FALSE);
 
     epswr_comment(epsf, "Thicker blue segments with arrowheads:");
     epswr_set_pen(epsf, 0.000, 0.000, 1.000,  0.40,  0.0, 0.0);
-    DrawLines(epsf,  +8.0, -15.5, TRUE);
+    DrawLines(epsf, +15.0, -15.5, TRUE);
 
     epswr_comment(epsf, "Thin solid black figures, closed, yellow filled:");
     epswr_set_pen(epsf, 0.000, 0.000, 0.000,  0.10,  0.0, 0.0);
     epswr_set_fill_color(epsf, 1.000, 1.000, 0.000);
-    DrawFigures(epsf, -20.0,  +0.5,  TRUE, TRUE, FALSE, TRUE);
+    DrawFigures(epsf, -27.0,  +0.5,  TRUE, TRUE, FALSE, TRUE);
 
     epswr_comment(epsf, "Medium solid red figures, open, unfilled:");
     epswr_set_pen(epsf, 1.000, 0.000, 0.000,  0.20,  0.0, 0.0);
     epswr_set_fill_color(epsf, -1.00, -1.00, -1.00);
     epswr_grid_cell(epsf,  5, 44, 2, 33,  TRUE, TRUE);
-    DrawFigures(epsf,  -6.0,  +0.5,  TRUE, TRUE, FALSE, FALSE);
+    DrawFigures(epsf, -14.0,  +0.5,  TRUE, TRUE, FALSE, FALSE);
 
     epswr_comment(epsf, "Unstroked figures, closed, pink e-o-filled:");
     epswr_set_pen(epsf, 0.000, 0.000, 0.000,  0.50,  0.0, 0.0);
     epswr_set_fill_color(epsf, 1.000, 0.800, 0.700);
     epswr_grid_cell(epsf,  7, 44, 2, 33,  TRUE, FALSE);
-    DrawFigures(epsf,  +8.0,  +0.5,  TRUE, FALSE, TRUE, TRUE);
+    DrawFigures(epsf,  +1.0,  +0.5,  TRUE, FALSE, TRUE, TRUE);
   }
 
-void DrawTexts(epswr_figure_t *epsf, double xc, double yc)
+void DrawLabels(epswr_figure_t *epsf, double xc, double yc)
   {
     /* Usable area [0 _ 12]×[0 _ 15] */
     DrawFrame(epsf, 0.00+xc, 12.00+xc, 0.00+yc, 15.00+yc);
@@ -115,19 +120,23 @@ void DrawTexts(epswr_figure_t *epsf, double xc, double yc)
     auto void do_lab
       ( char *fontname, double fontsize, 
         char *text, 
+        char *strut, 
         double xd, double yd, 
         double rot, double xalign, double yalign, 
         double R, double G, double B
       );
     
-    do_lab("Courier",       8.0, "rC8",    +1.00,   +6.00,    0.0, 0.0,0.0, 1.000,0.000,0.000);
-    do_lab("Times-Roman",  12.0, "rTR12",  +6.00,   +5.50,  +90.0, 0.5,0.0, 1.000,0.000,0.000);
-    do_lab("Helvetica",     6.0, "bH6",   +11.00,  +12.00,  -45.0, 1.0,0.5, 0.000,0.000,1.000);
-    do_lab("Courier-Bold", 10.0, "gCB10",  +6.50,   +9.50, +180.0, 0.0,0.5, 0.000,0.800,0.000);
+    do_lab("Courier-Bold", 10.0, "lb-g-CB10", "g",   +6.50,   +9.50, +180.0, 0.0,0.0, 0.000,0.800,0.000);
+    do_lab("Courier",       8.0, "lb-x-C8",   "x",   +1.00,   +6.00,    0.0, 0.0,0.0, 1.000,0.000,0.000);
+    do_lab("Times-Roman",  12.0, "cb-X-TR12", "X",   +6.00,   +5.50,  +90.0, 0.5,0.0, 1.000,0.000,0.000);
+    do_lab("Helvetica",     6.0, "rc-Xg-H6",  "Xg", +11.00,  +12.00,  -45.0, 1.0,0.5, 0.000,0.000,1.000);
+    
+    return;
     
     void do_lab
       ( char *fontname, double fontsize, 
         char *text, 
+        char *strut,
         double xd, double yd, 
         double rot, double xalign, double yalign, 
         double R, double G, double B
@@ -145,7 +154,7 @@ void DrawTexts(epswr_figure_t *epsf, double xc, double yc)
         epswr_dot(epsf, xc+xd, yc+yd, 0.2,  TRUE, FALSE);
 
         epswr_set_fill_color(epsf, 1-R, 1-G, 1-B);
-        epswr_label(epsf, txtcat("1-",text),  xc+xd, yc+yd,  rot, FALSE, xalign, yalign, TRUE, FALSE);
+        epswr_label(epsf, txtcat("1-",text), strut, xc+xd, yc+yd,  rot, FALSE, xalign, yalign, TRUE, FALSE);
         
         xd += ddx; yd += ddy;
         
@@ -153,7 +162,7 @@ void DrawTexts(epswr_figure_t *epsf, double xc, double yc)
         epswr_dot(epsf, xc+xd, yc+yd, 0.2,  TRUE, FALSE);
       
         epswr_set_fill_color(epsf, 1-R, 1-G, 1-B);
-        epswr_label(epsf, txtcat("2-",text),  xc+xd, yc+yd,  rot, FALSE, xalign, yalign, TRUE, FALSE);
+        epswr_label(epsf, txtcat("2-",text), strut,  xc+xd, yc+yd,  rot, FALSE, xalign, yalign, TRUE, FALSE);
         
         xd += ddx; yd += ddy;
         
@@ -161,7 +170,7 @@ void DrawTexts(epswr_figure_t *epsf, double xc, double yc)
         epswr_dot(epsf, xc+xd, yc+yd, 0.2,  TRUE, FALSE);
         
         epswr_set_fill_color(epsf, 1-R, 1-G, 1-B);
-        epswr_label(epsf, txtcat("3-",text),  xc+xd, yc+yd,  rot, FALSE, xalign, yalign, FALSE, TRUE);
+        epswr_label(epsf, txtcat("3-",text), strut,  xc+xd, yc+yd,  rot, FALSE, xalign, yalign, FALSE, TRUE);
         
         xd += ddx; yd += ddy;
         
@@ -169,7 +178,84 @@ void DrawTexts(epswr_figure_t *epsf, double xc, double yc)
         epswr_dot(epsf, xc+xd, yc+yd, 0.2,  TRUE, FALSE);
       
         epswr_set_fill_color(epsf, 1-R, 1-G, 1-B);
-        epswr_label(epsf, txtcat("4-",text),  xc+xd, yc+yd,  rot, FALSE, xalign, yalign, TRUE, TRUE);
+        epswr_label(epsf, txtcat("4-",text), strut,  xc+xd, yc+yd,  rot, FALSE, xalign, yalign, TRUE, TRUE);
+      }
+
+  }
+
+void DrawTexts(epswr_figure_t *epsf, double xc, double yc)
+  {
+    /* Usable area [0 _ 12]×[0 _ 15] */
+    DrawFrame(epsf, 0.00+xc, 12.00+xc, 0.00+yc, 15.00+yc);
+    
+    auto void set_text
+      ( char *fontname, double fontsize, 
+        double xMin, double xMax,
+        double yMin, double yMax,
+        double rot, 
+        double R, double G, double B
+      );
+    
+    set_text("Courier",       7.0,    2.0,  6.0,  2.0,  5.0,  +30.0, 1.000,0.000,0.000);
+    epswr_text(epsf, "Left 1\nLeftius 2", FALSE, 0.0, TRUE, FALSE);
+    epswr_text(epsf, "xaman",             FALSE, 0.0, TRUE, FALSE);
+    epswr_text(epsf, "rugga \nmuGGa",     FALSE, 1.0, TRUE, FALSE);
+
+    set_text("Times-Roman",   8.0,    3.0,  9.0,  7.5, 10.7,  -30.0, 0.000,0.700,0.000);
+    epswr_text(epsf, "Cent 1\nCentrum 2", FALSE, 0.5, TRUE, FALSE);
+    epswr_text(epsf, "Centesim 3",        FALSE, 0.5, TRUE, FALSE);
+    epswr_text(epsf, "Census 4\nCena 5",  FALSE, 0.5, TRUE, FALSE);
+
+    set_text("Helvetica",     6.0,    7.5, 10.0,  11.5, 14.0,  000.00, 0.000,0.300,1.000);
+    epswr_text(epsf, "Rite 1\nRighsky", FALSE, 1.0, TRUE, FALSE);
+    epswr_text(epsf, "riGhsky ",          FALSE, 1.0, TRUE, FALSE);
+    epswr_text(epsf, "ramen \nRAMEN",     FALSE, 1.0, TRUE, FALSE);
+    
+    return;
+    
+    void set_text
+      ( char *fontname, double fontsize, 
+        double xMin, double xMax,
+        double yMin, double yMax,
+        double rot, 
+        double R, double G, double B
+      )
+      { 
+        /* Set the text geometry, font, color: */
+        epswr_set_text_geometry(epsf, TRUE, xMin+xc, xMax+xc, yMin+yc, yMax+yc, rot);
+        epswr_set_text_font(epsf, fontname, fontsize);
+        epswr_set_fill_color(epsf, R,G,B);
+        
+        /* Compute frame (unrotated) relative to center: */
+        double dx = (xMax - xMin)/2; /* Half-width of frame. */
+        double dy = (yMax - yMin)/2; /* Half-height of frame. */
+
+        double xctr = (xMin + xMax)/2 + xc;
+        double yctr = (yMin + yMax)/2 + yc;
+        double xp[4], yp[4];
+        
+        /* Draw rotated frame: */
+        double tmrg = 0.2;
+        for (int32_t km = 0; km < 2; km++)
+          { 
+            double dm = km*tmrg;
+            double ang = rot*M_PI/180; /* Rotation angle in radians. */
+            double sa = sin(ang), ca = cos(ang);
+            double dhx = +(dx + dm)*ca, dvx = +(dx + dm)*sa;
+            double dhy = -(dy + dm)*sa, dvy = +(dy + dm)*ca;
+
+            xp[0] = xctr - dhx - dhy;  yp[0] = yctr - dvx - dvy;
+            xp[1] = xctr + dhx - dhy;  yp[1] = yctr + dvx - dvy;
+            xp[2] = xctr + dhx + dhy;  yp[2] = yctr + dvx + dvy;
+            xp[3] = xctr - dhx + dhy;  yp[3] = yctr - dvx + dvy;
+        
+            if (km == 0)
+              { epswr_set_pen(epsf, 0.800,0.800,0.800, 0.15, 0,0); }
+            else
+              { epswr_set_pen(epsf, 0.000,0.000,0.000, 0.25, 0,0); }
+            epswr_polygon(epsf, TRUE, xp, yp, 4,   FALSE,TRUE, TRUE);
+          }
+        return;
       }
 
   }

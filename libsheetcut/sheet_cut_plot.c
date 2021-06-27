@@ -1,5 +1,5 @@
 /* See {sheet_cut_plot.h} */
-/* Last edited on 2020-11-05 18:00:02 by jstolfi */
+/* Last edited on 2021-06-26 18:59:36 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -62,7 +62,7 @@ epswr_figure_t *sheet_cut_plot_new_figure
         sheet_dim.c[0], sheet_dim.c[1], 
         usableSize.c[0], usableSize.c[1]
       );
-    epswr_label(eps, label, mrg, mrg + vPlotSize + mrg, 0.0, FALSE, 0.0,0.0, TRUE, FALSE);
+    epswr_label(eps, label, "X", mrg, mrg + vPlotSize + mrg, 0.0, FALSE, 0.0,0.0, TRUE, FALSE);
     free(label);
     
     /* Set the plot window (in mm) to the physical sheet: */
@@ -181,7 +181,7 @@ void sheet_cut_plot_labels(epswr_figure_t *eps, r2_t pos, r2_t size, char *tag)
             /* Generate the label text: */
             char *txt = NULL;
             asprintf(&txt, "(%.1f, %.1f)", cpos.c[0], cpos.c[1]);
-            epswr_label(eps, txt, tpos.c[0], tpos.c[1], rot, FALSE, xAlign, yAlign, TRUE, FALSE);
+            epswr_label(eps, txt, "0", tpos.c[0], tpos.c[1], rot, FALSE, xAlign, yAlign, TRUE, FALSE);
             free(txt);
           }
       }
@@ -196,13 +196,13 @@ void sheet_cut_plot_labels(epswr_figure_t *eps, r2_t pos, r2_t size, char *tag)
     
     /* Plate tag is on first line: */
     r2_t tpos = (r2_t){{ ctr.c[0] - 0.5*vst.c[0], ctr.c[1] - 0.5*vst.c[1] }};
-    epswr_label(eps, tag, tpos.c[0], tpos.c[1], rot, FALSE, 0.5, 0.5, TRUE, FALSE);
+    epswr_label(eps, tag, "X", tpos.c[0], tpos.c[1], rot, FALSE, 0.5, 0.5, TRUE, FALSE);
 
     /* Plate dimensions on second line: */
     char *txt = NULL;
     asprintf(&txt, "%.1f x %.1f", size.c[0], size.c[1]);
     r2_add(&tpos, &vst, &tpos);
-    epswr_label(eps, txt, tpos.c[0], tpos.c[1], rot, FALSE, 0.5, 0.5, TRUE, FALSE);
+    epswr_label(eps, txt, "0", tpos.c[0], tpos.c[1], rot, FALSE, 0.5, 0.5, TRUE, FALSE);
     free(txt);
   }
 

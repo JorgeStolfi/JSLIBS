@@ -1,5 +1,5 @@
-/* Plots function susing AA and IA. */
-/* Last edited on 2016-12-26 22:19:40 by stolfilocal */
+/* Plots functions using AA and IA. */
+/* Last edited on 2021-06-26 03:42:58 by jstolfi */
 
 #define _GNU_SOURCE
 

@@ -1,5 +1,5 @@
 /* See aa_compile.h */
-/* Last edited on 2020-10-01 20:50:58 by jstolfi */
+/* Last edited on 2021-06-26 22:11:22 by jstolfi */
 
 #define _GNU_SOURCE_
 #include <stdlib.h>
@@ -74,7 +74,6 @@ void aa_generate_code
   ( pcode_proc_t *p, 
     char *proc_name, 
     FILE *c_file, 
-    FILE *l_file, 
     bool_t **arg_depends, 
     bool_t **res_depends, 
     int32_t shared_ne,
@@ -111,7 +110,6 @@ void aa_generate_proc_header
   ( pcode_proc_t *p,
     char *proc_name,
     FILE *c_file, 
-    FILE *l_file, 
     int32_t *result,
     bool_t **arg_depends, 
     bool_t **res_depends, 
@@ -126,7 +124,6 @@ void aa_generate_local_decls
   ( pcode_proc_t *p,
     char *proc_name,
     FILE *c_file, 
-    FILE *l_file, 
     int32_t nv,
     bool_t **depends, 
     int32_t ne,
@@ -141,7 +138,6 @@ void aa_generate_body
   ( pcode_proc_t *p,
     char *proc_name,
     FILE *c_file, 
-    FILE *l_file, 
     int32_t *defined, 
     int32_t *last_used, 
     int32_t nv, 
@@ -158,8 +154,7 @@ void aa_generate_body
 void aa_generate_proc_trailer
   ( pcode_proc_t *p,
     char *proc_name,
-    FILE *c_file, 
-    FILE *l_file,
+    FILE *c_file,
     int32_t nv,
     int32_t *result,
     bool_t **res_depends, 
@@ -313,8 +308,7 @@ void aa_compile
     bool_t **res_depends,
     int32_t shared_ne,
     char *proc_name,
-    FILE *c_file,
-    FILE *l_file
+    FILE *c_file
   )
   {
     int32_t maxv, nv;   /* Max and actual num of distinct values computed */
@@ -371,7 +365,7 @@ void aa_compile
         erreps, depends, reduce, &ne
       );
     aa_generate_code
-      ( p, proc_name, c_file, l_file, 
+      ( p, proc_name, c_file, 
         arg_depends, res_depends, shared_ne,
         defined, last_used, result, nv,
         erreps, depends, reduce, ne
@@ -748,7 +742,6 @@ void aa_generate_code
   ( pcode_proc_t *p, 
     char *proc_name, 
     FILE *c_file, 
-    FILE *l_file, 
     bool_t **arg_depends, 
     bool_t **res_depends, 
     int32_t shared_ne,
@@ -765,24 +758,24 @@ void aa_generate_code
     char **v_name = aa_compute_value_names(nv);
     
     aa_generate_proc_header
-      ( p, proc_name, c_file, l_file, 
+      ( p, proc_name, c_file, 
         result, arg_depends, res_depends, shared_ne,
         v_name
       );
     aa_generate_local_decls
-      ( p, proc_name, c_file, l_file, 
+      ( p, proc_name, c_file, 
         nv,
         depends, ne,
         v_name
       );
     aa_generate_body
-      ( p, proc_name, c_file, l_file, 
+      ( p, proc_name, c_file,  
         defined, last_used, nv,
         erreps, depends, reduce, ne,
         v_name
       );
     aa_generate_proc_trailer
-      ( p, proc_name, c_file, l_file,
+      ( p, proc_name, c_file, 
         nv, result, res_depends, shared_ne, 
         depends, ne,
         v_name
@@ -810,7 +803,6 @@ void aa_generate_proc_header
   ( pcode_proc_t *p,
     char *proc_name,
     FILE *c_file, 
-    FILE *l_file, 
     int32_t *result,
     bool_t **arg_depends, 
     bool_t **res_depends, 
@@ -853,7 +845,6 @@ void aa_generate_local_decls
   ( pcode_proc_t *p,
     char *proc_name,
     FILE *c_file, 
-    FILE *l_file, 
     int32_t nv,
     bool_t **depends, 
     int32_t ne,
@@ -876,7 +867,6 @@ void aa_generate_body
   ( pcode_proc_t *p,
     char *proc_name,
     FILE *c_file, 
-    FILE *l_file, 
     int32_t *defined, 
     int32_t *last_used, 
     int32_t nv, 
@@ -1011,8 +1001,7 @@ void aa_generate_body
 void aa_generate_proc_trailer
   ( pcode_proc_t *p,
     char *proc_name,
-    FILE *c_file, 
-    FILE *l_file,
+    FILE *c_file,
     int32_t nv,
     int32_t *result,
     bool_t **res_depends, 

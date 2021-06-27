@@ -3,7 +3,7 @@
 #define PROG_VERS "1.0"
 
 #define curvefit_C_COPYRIGHT "Copyright © 2004 by the State University of Campinas (UNICAMP)"
-/* Last edited on 2009-01-06 03:30:57 by stolfi */
+/* Last edited on 2021-06-26 22:13:32 by jstolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -39,7 +39,7 @@
   argparser_help_info_HELP_INFO "\n" \
   "\n" \
   "SEE ALSO\n" \
-  "  !!!(1).\n" \
+  "  stuffa(1).\n" \
   "\n" \
   "AUTHOR\n" \
   "  Created 2004-11-02 by Jorge Stolfi, IC-UNICAMP.\n" \

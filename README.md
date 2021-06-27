@@ -1,6 +1,6 @@
 # JSLIBS - Jorge Stolfi's C libraries
 
-% Last edited on 2021-04-17 23:07:24 by jstolfi
+% Last edited on 2021-06-26 00:54:16 by jstolfi
 
 This repository contains a set of C libraries that I have written over
 almost 30 years. They were originally intended for "private" use, by
@@ -19,7 +19,7 @@ case someone else finds them useful.
 
 ##LIBRARIES
 
-Each library is in a package of its own.
+Each library is in a folder of its own.
 
 ### Data structures:
 
@@ -146,7 +146,16 @@ Each library is in a package of its own.
     for general signal  processing (images, videos, sound, spectra, etc.).a
 
   **libvoxm**: 
-    Tools for voxel-based 3D solid modeling.
+    Tools for voxel-based 3D solid modeling using (one-sided) clipped
+    Eucliean distance representation.
+
+  **libvoxb**: 
+    Tools for voxel-based 3D solid modeling using binary representation.
+
+  **libkdtom**: 
+    Tools for multi-dimensional voxel arrays (similar to those of libppv) 
+    but represented by k-d-trees, to save space when there are 
+    large uniform regons.
 
 ### Computer vision and pattern matching:
 

@@ -1,5 +1,5 @@
 /* Private definitions for epswr.h. */
-/* Last edited on 2020-10-27 18:51:37 by jstolfi */
+/* Last edited on 2021-06-26 08:04:22 by jstolfi */
 
 #ifndef epswr_def_H
 #define epswr_def_H
@@ -23,8 +23,9 @@ typedef struct epswr_def_figure_t
     /* Text layout parameters: */
     double hCtrText;       /* Device {h} coordinate of center of nominal text rectangle. */
     double vCtrText;       /* Device {v} coordinate of center of nominal text rectangle. */
-    double hSizeText;      /* Width of text area before rotation. */
     double rotText;        /* Rotation of text area (degrees, counterclockwise).*/
+    /* These parameters are before rotation: */
+    double hSizeText;      /* Width of text area. */
     double vTopText;       /* Vert position of top of free area (bottom of prev text line) rel center. */
 
     /* ATTRIBUTES THAT MIRROR POSTSCRIPT FILE VARIABLES: */
