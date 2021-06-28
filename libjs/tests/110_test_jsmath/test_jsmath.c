@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {jsmath.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2019-01-07 17:39:08 by stolfilocal */ 
+/* Last edited on 2021-06-27 12:37:19 by jstolfi */ 
 /* Created on 2007-01-02 by J. Stolfi, UNICAMP */
 
 #define test_jsmath_COPYRIGHT \
@@ -34,12 +34,15 @@
 
 double zrandom(void); /* A random double with random magnitude. */
 
+void test_iroundup(int32_t nt);
+
 void test_gcd(int32_t nt);
 
 void test_lcm(int32_t nt);
 
 void test_imod(int32_t nt);
-/* !!! should test ifloor, iceil */
+
+/* !!! should test ifloor, iceil, iroundfrac */
 
 void test_ipow(int32_t nt);
 
@@ -141,6 +144,7 @@ static int64_t int64_nice[N_int64_nice] =
 
 int32_t main (int32_t argn, char **argv)
   { test_minbits(1000);
+    test_iroundup(100);
     test_gcd(200);
     test_lcm(200);
     test_imod(200);
@@ -153,6 +157,28 @@ int32_t main (int32_t argn, char **argv)
 
     return 0;
   }
+
+void test_iroundup(int32_t nt)
+  { fprintf(stderr, "Checking {iroundup,addrsync}...\n");
+    int32_t i, j;
+    for (i = 0; i < N_uint64_nice + nt; i++)
+      { uint64_t a = (i < N_uint64_nice ? uint64_nice[i] : uint64_random());
+        for (j = 0; j < N_uint64_nice + nt; j++)
+          { uint64_t d = (j < N_uint64_nice ? uint64_nice[j] : uint64_abrandom(1,1000));
+            if (d > 0)
+              { uint64_t r = a % d;
+                if ((r == 0) || (a <= UINT64_MAX - (d - r)))
+                  { uint64_t b = iroundup(a, d);
+                    demand(b >= a, "not monotonic");
+                    demand(b % d == 0, "not multiple");
+                    char *c = addrsync((char *)a, d);
+                    demand((uint64_t)c == b, "addrsync inconsistent");
+                  }
+              }
+          }
+      }
+  }
+
 
 void test_gcd(int32_t nt)
   { fprintf(stderr, "Checking {gcd}...\n");
@@ -522,14 +548,18 @@ double compute_map_derivative(double z, double zlo, double zhi, range_map_t *map
 
 void check_expand_contract_derivative(double z, double dz, double zlo, double zhi, range_map_t *map, char *mapname)
   { 
-    double tol = 1.0e-4;  /* Relative error tolerance. */
+    double rtol = 1.0e-4;   /* Error tolerance relative to derivative values. */
+    double atol = 1.0e-10;  /* Error tolerance relative to {z} values. */
     double dnum = compute_map_derivative(z, zlo, zhi, map);
     if (isfinite(dnum))
       { double err = fabs(dnum-dz);
-        if (!isfinite(dz) || (err > tol*(fabs(dnum)+fabs(dz))))
+        double err_rmax = rtol*(fabs(dnum)+fabs(dz));
+        double err_amax = atol*fmax(fabs(zlo),fabs(zhi));
+        double err_max = fmax(err_rmax, err_amax);
+        if ((! isfinite(dz)) || (err > err_max))
           { fprintf(stderr, " ** Derivative of %s is inconsistent (err = %+12.6e)\n", mapname, err); 
             fprintf(stderr, "  z = %24.16e  zlo = %24.16e  zhi = %24.16e\n", z, zlo, zhi);
-            fprintf(stderr, "  dz = %14.8f numeric = %14.8f", dz, dnum);
+            fprintf(stderr, "  dz = %24.16e numeric = %24.16e", dz, dnum);
             fprintf(stderr, "\n");
             affirm(FALSE, "Aborted");
           }

@@ -1,5 +1,5 @@
 /* See jsmath.h */
-/* Last edited on 2019-01-07 17:36:08 by stolfilocal */
+/* Last edited on 2021-06-27 12:22:36 by jstolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -78,7 +78,7 @@ int64_t iceil(int64_t x, int64_t y)
    is just for extra safety, to account for the round to even/odd
    option. */
 
-int64_t iround(double x, double eps, int64_t d, int64_t r, int64_t imax)
+int64_t iroundfrac(double x, double eps, int64_t d, int64_t r, int64_t imax)
   { 
     demand(eps > 0.0, "{eps} must be positive");
     demand(d <= 2*((int64_t)double_EXACT_MAX), "invalid divisor {d}");
@@ -125,6 +125,23 @@ int64_t iround(double x, double eps, int64_t d, int64_t r, int64_t imax)
       }
 
     return qk;
+  }
+
+uint64_t iroundup(uint64_t a, uint64_t d)
+  {
+    uint64_t r = a % d;
+    if (r == 0) 
+      { return a; }
+    else
+      { uint64_t b = a + (d - r);
+        demand(b >= a, "overflow");
+        return b;
+      }
+  }
+
+char *addrsync(char* a, uint64_t d)
+  { 
+    return (char *)iroundup((uint64_t)a, d); 
   }
 
 uint64_t gcd(uint64_t a, uint64_t b)

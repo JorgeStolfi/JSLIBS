@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 /* J. Stolfi's miscellaneous general-purpose definitions */
-/* Last edited on 2019-01-07 17:43:04 by stolfilocal */
+/* Last edited on 2021-06-27 12:22:47 by jstolfi */
 
 #ifndef INF
 #define INF INFINITY
@@ -29,7 +29,7 @@ int64_t iceil(int64_t x, int64_t y);
     Fails with divide-by-zero if {y} is zero or negative.
     Beware of overflow. */
 
-int64_t iround(double x, double eps, int64_t d, int64_t r, int64_t imax);
+int64_t iroundfrac(double x, double eps, int64_t d, int64_t r, int64_t imax);
   /* Returns the fraction {x/eps} rounded to an integer. 
   
     If {r < 0}, or {d <= 1}, rounds to the nearest integer. 
@@ -43,6 +43,14 @@ int64_t iround(double x, double eps, int64_t d, int64_t r, int64_t imax);
     Fails if the ratio {x/eps} is too large for the rouding to be
     accurate. If {imax} is not negative, also fails if the result 
     is greater than {imax} in absolute value. */
+
+uint64_t iroundup(uint64_t a, uint64_t d);
+  /* Returns {a} rounded up to the next multiple of {d} (which must be nonzero).
+    Fails if {a} would overflow. */
+
+char *addrsync(char* a, uint64_t d);
+  /* Returns the address {a} up to the next multiple of {d} (which must be nonzero).
+    Fails if {a} would overflow. */
 
 uint64_t gcd(uint64_t a, uint64_t b);
   /* Greatest common divisor of {a} and {b}.

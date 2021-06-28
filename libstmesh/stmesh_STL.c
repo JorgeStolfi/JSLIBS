@@ -1,5 +1,5 @@
 /* See {stmesh_STL.h} */
-/* Last edited on 2018-04-23 21:42:47 by stolfilocal */
+/* Last edited on 2021-06-27 12:23:13 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -303,7 +303,7 @@ i3_t stmesh_STL_round_point(stmesh_STL_r3_t *v, float eps, bool_t even)
     i3_t qv;
     int k;
     for (k = 0; k < 3; k++)
-      { qv.c[k] = (int32_t)iround(v->c[k], eps, 2, rem, INT32_MAX); }
+      { qv.c[k] = (int32_t)iroundfrac(v->c[k], eps, 2, rem, INT32_MAX); }
     return qv;
   }
 

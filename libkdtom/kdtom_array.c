@@ -1,5 +1,5 @@
 /* See {kdtom_array.h}. */
-/* Last edited on 2021-06-25 06:49:01 by jstolfi */
+/* Last edited on 2021-06-28 08:42:32 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -9,6 +9,7 @@
 
 #include <bool.h>
 #include <ppv_array.h>
+#include <jsmath.h>
 #include <affirm.h>
 
 #include <kdtom.h>
@@ -16,18 +17,24 @@
 
 kdtom_array_t *kdtom_array_alloc(ppv_dim_t d);
   /* Allocats a {kdtom_array_t} record {T}, including the internal
-    {T.head.size} and {T.step} vectors. Initializes only the {T.head.d}
-    and {T.head.kind} fields. */
+    {T.head.size} and {T.step} vectors. Initializes {T.head.d}
+    {T.head.kind}, and the addresses of the internal vectors
+    {T.head.size} and {T.step}. */
 
 kdtom_array_t *kdtom_array_make(ppv_array_t *A)
   { 
     ppv_dim_t d = A->d;
+    
+    /* Allocate the whole record and the internal vectors: */
     kdtom_array_t *T = kdtom_array_alloc(A->d);
+    assert(T->head.d == d);
+    assert(T->head.kind == kdtom_kind_ARRAY);
+
+    /* Initialize all remaining fields: */
     for (ppv_axis_t ax = 0; ax < d; ax++)
       { T->head.size[ax] = A->size[ax];
         T->step[ax] = A->step[ax];
       }
-    
     T->head.bps = A->bps;
     T->base = A->base;
     T->bpw = A->bpw;
@@ -35,25 +42,42 @@ kdtom_array_t *kdtom_array_make(ppv_array_t *A)
     return T;
   }
   
-size_t kdtom_array_node_size(ppv_dim_t d)
+size_t kdtom_array_node_bytesize(ppv_dim_t d)
   {
-    size_t fix_bytes = sizeof(kdtom_array_t);   /* Bytesize of all fixed fields incl. {head} */
-    size_t size_bytes = d * sizeof(ppv_size_t); /* Bytesize of the {head.size} vector. */
+    size_t fixf_bytes = sizeof(kdtom_array_t); /* Fixed fields incl those of {head}. */
+    size_t tot_bytes = iroundup(fixf_bytes, 8); /* Account for address sync. */
+
+    size_t sizv_bytes = d * sizeof(ppv_size_t); /* Bytesize for {head.size} vector. */
+    tot_bytes += iroundup(sizv_bytes, 8);       /* Paranoia, account for address sync. */
+
     size_t step_bytes = d * sizeof(ppv_step_t); /* Bytesize of the {step} vector. */
-    size_t tot_bytes = fix_bytes + size_bytes + step_bytes;
+    tot_bytes += iroundup(step_bytes, 8);       /* Paranoia, account for address sync. */
+
     return tot_bytes;
   }
 
 kdtom_array_t *kdtom_array_alloc(ppv_dim_t d)
   {
-    size_t fix_bytes = sizeof(kdtom_array_t);  /* Size of fixed felds incl. {head}. */
-    size_t stp_bytes = d * sizeof(ppv_step_t); /* Size of {T.step} vector.*/
-    size_t rec_bytes = fix_bytes + stp_bytes; /* Record size minus {size} vector. */
-    char *pend;
-    kdtom_array_t *T = (kdtom_array_t *)kdtom_alloc(d, rec_bytes, &pend);
-    assert(T->head.d == d);
+    /* Allocate the full record including all internal vectors: */
+    size_t tot_bytes = kdtom_array_node_bytesize(d); /* Total node bytesize including all vectors. */
+    kdtom_array_t *T = (kdtom_array_t *)notnull(malloc(tot_bytes), "no mem");
+    
+    /* Set {pend} to the free space inside the record, past all fixed fields: */
+    size_t fix_bytes = sizeof(kdtom_array_t);  /* Size of fixed felds incl. those of {head}. */
+    char *pend = addrsync(((char*)T) + fix_bytes, 8);
+    
+    /* Initialize the {head} fields, including the {T.head.size} vector: */
+    kdtom_node_init((kdtom_t *)T, tot_bytes, d, &pend);
     T->head.kind = kdtom_kind_ARRAY;
-    T->step = (ppv_step_t *)pend; pend += stp_bytes;
+    
+    /* Allocate the {T.step} vector: */
+    size_t elsz = sizeof(ppv_step_t);
+    pend = addrsync(pend, 8);
+    T->step = (ppv_step_t *)kdtom_alloc_internal_vector((kdtom_t *)T, tot_bytes, d, elsz, &pend);
+
+    /* Check for overflow. Note that some bytes may be left over due to rounding: */
+    assert (pend - (char*)T <= tot_bytes);
+    
     return T;
   }
 
@@ -63,4 +87,28 @@ ppv_sample_t kdtom_array_get_sample(kdtom_array_t *T, ppv_index_t ix[])
     ppv_pos_t pos = ix_position(T->head.d, ix, T->base, T->step);
     ppv_sample_t v = ppv_get_sample_at_pos(T->el, T->head.bps, T->bpw, pos);
     return v;
+  }
+
+size_t kdtom_array_bytesize(kdtom_array_t *T, bool_t total)
+  {
+    size_t node_bytes = kdtom_array_node_bytesize(T->head.d);
+    size_t tot_bytes = node_bytes;
+    if (total)
+      { /* Create a temporary array descriptor: */
+        ppv_array_t A = (ppv_array_t)
+          { .d = T->head.d,
+            .size = T->head.size,
+            .step = T->step,
+            .base = 0,
+            .bps = T->head.bps,
+            .bpw = T->bpw,
+            .el = T->el
+          };
+        /* Count samples ignoring replicated ones: */
+        ppv_sample_count_t npos = ppv_sample_count(&A, FALSE);
+        /* Compute nominal bytes needed to store them: */
+        size_t samp_bytes = ppv_tot_sample_bytes(npos, T->head.bps, T->bpw);
+        tot_bytes += samp_bytes;
+      }
+    return tot_bytes;
   }

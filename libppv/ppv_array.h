@@ -1,5 +1,5 @@
 /* Portable multi-dimensional sample arrays. */
-/* Last edited on 2021-06-25 19:06:20 by jstolfi */
+/* Last edited on 2021-06-27 00:56:44 by jstolfi */
 
 #ifndef ppv_array_H
 #define ppv_array_H
@@ -163,9 +163,10 @@ ppv_sample_count_t ppv_compute_npos_steps ( ppv_dim_t d, ppv_size_t size[], ppv_
 ppv_sample_count_t ppv_sample_count ( ppv_array_t *A, bool_t reptoo );
   /* Returns the total number of sample positions in {A}. 
   
-    If {reptoo} is true, counts replicated elements as distict; that is, counts the 
-    number of distinct valid index tuples.  If {reptoo} is false, counts those elements
-    only once. */
+    If {reptoo} is true, counts replicated elements as distict; that is,
+    returns the count of distinct *valid index tuples*. If {reptoo} is
+    false, counts those elements only once; that is, returns the count
+    of distinct *sample positions*. */
 
 bool_t ppv_is_empty ( ppv_array_t *A );
   /* Returns {TRUE} if and only if the array {A} has no samples;

@@ -1,5 +1,5 @@
 /* See {kdtom.h}. */
-/* Last edited on 2021-06-25 11:12:33 by jstolfi */
+/* Last edited on 2021-06-28 08:41:23 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -9,6 +9,7 @@
 
 #include <bool.h>
 #include <ppv_array.h>
+#include <jsmath.h>
 #include <affirm.h>
 
 #include <kdtom.h>
@@ -39,22 +40,51 @@ ppv_sample_t kdtom_get_sample(kdtom_t *T, ppv_index_t ix[])
       }
   }
 
-kdtom_t *kdtom_alloc(ppv_dim_t d, size_t rec_bytes, char **pendP)
+size_t kdtom_bytesize(kdtom_t *T, bool_t total)
   {
-    size_t hdr_bytes = sizeof(kdtom_t);        /* Bytesize of the {kdom_t} fixed fields. */
-    size_t szv_bytes = d * sizeof(ppv_size_t); /* Bytesize of the {size} vector. */
-    size_t tot_bytes = rec_bytes + szv_bytes;  /* Total bytes to allocate. */
-    
-    kdtom_t *T = (kdtom_t *)notnull(malloc(tot_bytes), "no mem");
-    char *pend = ((char *)T) + hdr_bytes; /* Freespace pointer. */
-    
-    /* Set the fields {d,size}: */
-    T->d = d;
-    T->size = (ppv_size_t *)pend;  pend += szv_bytes;
+    switch (T->kind)
+      { 
+        case kdtom_kind_ARRAY:
+          return kdtom_array_bytesize((kdtom_array_t *)T, total);
+        case kdtom_kind_CONST:
+          return kdtom_const_bytesize((kdtom_const_t *)T);
+        case kdtom_kind_SPLIT:
+          return kdtom_split_bytesize((kdtom_split_t *)T, total);
+        case kdtom_kind_IXMAP:
+          return kdtom_ixmap_bytesize((kdtom_ixmap_t *)T, total);
+        default:
+          assert(FALSE);
+      }
+  }
 
-    /* Return results: */
-    if ((pendP != NULL) && (rec_bytes > hdr_bytes)) { (*pendP) = pend; }
-    return T;
+char *kdtom_alloc_internal_vector(kdtom_t *T, size_t sztot, ppv_dim_t d, size_t elsz, char **pendP)
+  {
+    char *pend = (*pendP);
+    
+    /* Check where the address {pend} is properly aligned for the element size: */
+    demand(((uint64_t)pend) % elsz == 0, "{*pendP} sync error");
+    
+    /* Check for enough space, alocate the vector, and update {*pendP}: */
+    size_t vec_bytes = d*elsz;
+    assert (sztot - (pend - (char*)T) >= vec_bytes);
+    char *vaddr = pend; pend += vec_bytes;
+    (*pendP) = pend;
+    
+    return vaddr;
+  }
+
+void kdtom_node_init(kdtom_t *T, size_t sztot, ppv_dim_t d, char **pendP)
+  {
+    /* Check for clobbering of the fixed head fields: */
+    size_t fix_bytes = sizeof(kdtom_t);        /* Fixed fields, incl. {size} pointer. */
+    demand((*pendP) - (char *)T >= fix_bytes, "bad {*pendP}");
+    
+    /* Allocate the {T.size} vector: */
+    size_t elsz = sizeof(ppv_size_t);
+    T->size = (ppv_size_t *)kdtom_alloc_internal_vector(T, sztot, d, elsz, pendP);
+    
+    /* Set the {d} field: */
+    T->d = d;
   }
 
 kdtom_t *kdtom_grind_array(ppv_array_t *A)
@@ -88,9 +118,9 @@ kdtom_t *kdtom_grind_array(ppv_array_t *A)
     /* General parameters: */
     ppv_dim_t d = A->d;
     ppv_nbits_t bps = A->bps;
-    size_t split_sz = kdtom_split_node_size(d);
-    size_t const_sz = kdtom_const_node_size(d);
-    size_t array_sz = kdtom_array_node_size(d);
+    size_t split_sz = kdtom_split_node_bytesize(d);
+    size_t const_sz = kdtom_const_node_bytesize(d);
+    size_t array_sz = kdtom_array_node_bytesize(d);
     ppv_nbits_t bpw = ppv_best_bpw(bps);
     
     kdtom_t *T;

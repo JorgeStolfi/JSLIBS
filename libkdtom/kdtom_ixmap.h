@@ -1,5 +1,5 @@
 /* An inrernal k-d-tree node that permutes, reverses, and shifts indices. */
-/* Last edited on 2021-06-25 06:38:27 by jstolfi */
+/* Last edited on 2021-06-27 10:16:11 by jstolfi */
 
 #ifndef kdtom_ixmap_H
 #define kdtom_ixmap_H
@@ -39,9 +39,20 @@ ppv_sample_t kdtom_ixmap_get_sample(kdtom_ixmap_t *T, ppv_index_t ix[]);
   /* Obtains the sample {T.v[ix]} if {ix} is a valid index vector for
     {T}, otherwise bombs out. */
 
-size_t kdtom_ixmap_node_size(ppv_dim_t d);
+size_t kdtom_ixmap_node_bytesize(ppv_dim_t d);
   /* Size in bytes of a {kdtom_ixmap_t} node {T}, including the {T.sub}
     pointer and the vectors {T.head.size}, {T.prax}, and {T.ixlo} but
     NOT the nodes in the sub-tree pointed to {T.sub}. */
+
+size_t kdtom_ixmap_bytesize(kdtom_ixmap_t *T, bool_t total);
+  /* If {total} is false, returns the size in bytes used by the
+    node record {*T}. The result includes the storage used by the {T.head}
+    header and the vectors {T.head.size,T.prax,T.rvix,T.ixlo}
+    and the {T.sub} pointer; but NOT the other nodes accessed 
+    through that pointer.
+    
+    If {total} is true, the result also includes the total size in
+    bytes of all nodes that can be reached through {T.sub},
+    as returned by {kdtom_bytesize(T.sub,TRUE)}. .*/
 
 #endif

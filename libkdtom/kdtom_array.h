@@ -1,5 +1,5 @@
 /* An internal k-d-tree node is basically a {ppv_array_t}. */
-/* Last edited on 2021-06-25 06:37:35 by jstolfi */
+/* Last edited on 2021-06-27 01:12:20 by jstolfi */
 
 #ifndef kdtom_array_H
 #define kdtom_array_H
@@ -38,8 +38,23 @@ ppv_sample_t kdtom_array_get_sample(kdtom_array_t *T, ppv_index_t ix[]);
   /* Obtains the sample {T.v[ix]} if {ix} is a valid index vector for {T}, otherwise
     bombs out. */
 
-size_t kdtom_array_node_size(ppv_dim_t d);
-  /* Size in bytes of a {kdtom_array_t} node {T}, including the {T.head.size}
+size_t kdtom_array_node_bytesize(ppv_dim_t d);
+  /* Size in bytes of a {kdtom_array_t} node {T} with dimension {d}, including the {T.head.size}
     and {T.step} vectors, but NOT including the sample storage area {*T->el}. */
+
+size_t kdtom_array_bytesize(kdtom_array_t *T, bool_t total);
+  /* If {total} is false, returns the size in bytes used by the array
+    record {*T}. The result includes the storage used by the {T.head}
+    header and its {T.head.size} vector, as well as the {T->step}
+    vector; but NOT the sample storage area {T->el}. The {reptoo} parameter
+    is ignored.
+    
+    If {total} is true, the result also includes the nominal size in
+    bytes of the sample storage area. This number is derived from the
+    total count of distinct sample positions in the array, not counting
+    replicated samples, as in {ppv_sample_count} with {reptoo=FALSE};
+    assuming that samples are packed as tightly as allowed by the
+    packing parameters {T.head.bps} and {T.bpw}.  The actual storage 
+    area {T->el} may be larger than this amount. */
 
 #endif

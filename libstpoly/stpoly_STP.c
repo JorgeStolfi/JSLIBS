@@ -1,5 +1,5 @@
 /* See {stpoly_STP.h} */
-/* Last edited on 2016-04-18 19:53:34 by stolfilocal */
+/* Last edited on 2021-06-27 12:23:21 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -231,6 +231,6 @@ i2_t stpoly_STP_round_point(r2_t *v, double eps, bool_t even)
     i2_t qv;
     int k;
     for (k = 0; k < 2; k++)
-      { qv.c[k] = (int32_t)iround(v->c[k], eps, 2, rem, INT32_MAX); }
+      { qv.c[k] = (int32_t)iroundfrac(v->c[k], eps, 2, rem, INT32_MAX); }
     return qv;
   }

@@ -1,5 +1,5 @@
 /* See {kdtom_split.h}. */
-/* Last edited on 2021-06-25 06:52:01 by jstolfi */
+/* Last edited on 2021-06-28 11:28:41 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -9,6 +9,7 @@
 
 #include <bool.h>
 #include <ppv_array.h>
+#include <jsmath.h>
 #include <affirm.h>
 
 #include <kdtom.h>
@@ -44,20 +45,31 @@ kdtom_split_t *kdtom_split_make(ppv_axis_t ax, kdtom_t *sub0, kdtom_t *sub1)
     return T;
   }
   
-size_t kdtom_split_node_size(ppv_dim_t d)
+size_t kdtom_split_node_bytesize(ppv_dim_t d)
   {
-    size_t fix_bytes = sizeof(kdtom_split_t);   /* Bytesize of all fixed fields incl. {head} */
-    size_t size_bytes = d * sizeof(ppv_size_t); /* Bytesize of the {head.size} vector. */
-    size_t tot_bytes = fix_bytes + size_bytes;
+    size_t fixf_bytes = sizeof(kdtom_split_t);   /* Fixed fields incl those of {head}. */
+    size_t tot_bytes = iroundup(fixf_bytes, 8);  /* Account for address sync. */
+
+    size_t sizv_bytes = d * sizeof(ppv_size_t);  /* Bytesize for {head.size} vector. */
+    tot_bytes += iroundup(sizv_bytes, 8);        /* Paranoia, account for address sync. */
+ 
     return tot_bytes;
   }  
 
 kdtom_split_t *kdtom_split_alloc(ppv_dim_t d)
   { 
-    size_t fix_bytes = sizeof(kdtom_split_t); /* Bytesize of all fixed fields incl. {head} */
-    kdtom_split_t *T = (kdtom_split_t *)kdtom_alloc(d, fix_bytes, NULL);
+    /* Allocate the full record including all internal vectors: */
+    size_t tot_bytes = kdtom_split_node_bytesize(d); /* Total node bytesize including all vectors. */
+    kdtom_split_t *T = (kdtom_split_t *)notnull(malloc(tot_bytes), "no mem");
+    
+    /* Set {pend} to the free space inside the record, past all fixed fields: */
+    size_t fix_bytes = sizeof(kdtom_split_t);  /* Size of fixed felds incl. those of {head}. */
+    char *pend = addrsync(((char*)T) + fix_bytes, 8);
+    
+    /* Initialize the {head} fields, including the {T.head.size} vector: */
+    kdtom_node_init((kdtom_t *)T, tot_bytes, d, &pend);
     T->head.kind = kdtom_kind_SPLIT;
-    assert(T->head.d == d); 
+
     return T;
   }
 
@@ -84,4 +96,18 @@ ppv_sample_t kdtom_split_get_sample(kdtom_split_t *T, ppv_index_t ix[])
     /* Restore original index vector: */
     ix[ax] = ix_save;
     return v;
+  }
+
+size_t kdtom_split_bytesize(kdtom_split_t *T, bool_t total)
+  {
+    size_t node_bytes = kdtom_split_node_bytesize(T->head.d);
+    size_t tot_bytes = node_bytes;
+    if (total)
+      { /* Add size of subtrees: */
+        for (int32_t i = 0; i < 2; i++)
+          { size_t subt_bytes = kdtom_bytesize(T->sub[i], TRUE);
+            tot_bytes += subt_bytes;
+          }
+      }
+    return tot_bytes;
   }

@@ -1,5 +1,5 @@
 /* Multidimensional sample arrays stored as k-d-trees. */
-/* Last edited on 2021-06-25 01:31:33 by jstolfi */
+/* Last edited on 2021-06-28 00:35:51 by jstolfi */
 
 #ifndef kdtom_H
 #define kdtom_H
@@ -54,49 +54,23 @@ typedef struct kdtom_t
     other hand, if {T.D > 0} but {T.size[ax]} is zero for some axis
     {ax}, the {kdtom_t} is /empty/ -- there are no voxels. The other
     elements of {T.size} are still significant and may make a difference
-    in some operations. */
+    in some operations.
     
+    When any kind of {kdom_t} node record {T} is allocated on the heap,
+    the {T.size} vector is usually allocated within the same heap memory
+    area. Then the command {free(T)} will reclaim the space used by the
+    {kdtom_t} record AND by the vector {T->size}, plus any other fields
+    of the record that are specific to the variant. In that case one
+    should NOT call {free(T->size)}, or serious tire damage may result. */
+    
+/* SAMPLE EXTRACTION */
+
 ppv_sample_t kdtom_get_sample(kdtom_t  *T, ppv_index_t ix[]);
   /* Obtains the sample {T.v[ix]} if {ix} is a valid index vector, otherwise
     bombs out. */
     
-kdtom_t kdtom_clip(kdtom_t *T, ppv_axis_t ax, ppv_index_t ixlo, ppv_index_t sz);
-  /* Returns a {kdtom_t} structure {S} that describes the same voxel array as {T},
-    except that along the axis {ax} it is clipped to the index range {ixlo..ixlo+sz-1}.
-    This range must be contained in the range {0..T.size[ax]-1}.
-    
-    That is, voxel {S.v[ix]} is equal to {T.v[jx]} where {jx[k]=ix[k]}
-    for each {k} in {0..T.d-1}, except that {jx[ax]=ix[ax]+ixlo};
-    provided that {ix[ax]} is in {0..sz-1}, and {jx[k]} is in
-    {0..T.size[k]} fr all {k}.
-    
-    In any case (even if {S} is empty) {S.size[k]} will be {sz} if
-    {k=ax}, and {T.size[k]} otherwise.*/
-    
-/* FOR USE BY VARIANT IMPLEMENTATIONS */
+/* RECURSIVE TREE BUILDNG AND MANIPULATION */
 
-kdtom_t *kdtom_alloc(ppv_dim_t d, size_t rec_bytes, char **pendP);
-  /* Allocates an area {T} on the heap for a {kdtom_t} record, 
-    and sets the size vector address {T->size} to point to 
-    a place within the same record.  The {T->d field is set to {d},
-    but all other fields are left undefined.
-    
-    The parameter {rec_bytes} must be at least {hdr_bytes =
-    sizof(kdtom_t)}. The record will actually have bytesize {rec_bytes +
-    szv_bytes}, where {szv_bytes = d*sizeof(ppv_size_t)} is the
-    bytesize used by by the {T.size} vector. The latter will be located
-    right after the first {hdr_bytes} bytes. 
-    
-    The address of the allocated record is returned as the result. if
-    {pendP} is not {NULL}, and {rec_bytes} is strictly greater than
-    {hdr_bytes}, the address of the "free" area (if any) in the record,
-    right after the {size} vector, is reurned in {*pendP}.
-    
-    Thus the command {free(T)} will reclaim the space used by the
-    {kdtom_t} record AND by the vector {T->size}, plus any other fields
-    of the record that are specific to the variant. One should NEVER
-    call {free(T->size)}. */
-    
 kdtom_t *kdtom_grind_array(ppv_array_t *A);
   /* Creates a {kdtom_t} tree from the array {A} by recursively splitting
     and analyzing each part.
@@ -119,5 +93,50 @@ kdtom_t *kdtom_grind_array(ppv_array_t *A);
     If the two sides of a split are const nodes with the same  value,
     they are merged into one. Ditto if they are both array nodes.*/
 
+kdtom_t kdtom_clip(kdtom_t *T, ppv_axis_t ax, ppv_index_t ixlo, ppv_index_t sz);
+  /* Returns a {kdtom_t} structure {S} that describes the same voxel array as {T},
+    except that along the axis {ax} it is clipped to the index range {ixlo..ixlo+sz-1}.
+    This range must be contained in the range {0..T.size[ax]-1}.
+    
+    That is, voxel {S.v[ix]} is equal to {T.v[jx]} where {jx[k]=ix[k]}
+    for each {k} in {0..T.d-1}, except that {jx[ax]=ix[ax]+ixlo};
+    provided that {ix[ax]} is in {0..sz-1}, and {jx[k]} is in
+    {0..T.size[k]} fr all {k}.
+    
+    In any case (even if {S} is empty) {S.size[k]} will be {sz} if
+    {k=ax}, and {T.size[k]} otherwise.*/
+    
+/* FOR USE BY VARIANT IMPLEMENTATIONS */
+
+void kdtom_node_init(kdtom_t *T, size_t sztot, ppv_dim_t d, char **pendP);
+  /* Assumes that {T} is pointing to a memory area with {sztot} bytes,
+    which is large enough to contain a bare {d}-dimensional {kdtom_t}
+    node record including the {size} vector. Also assumes that {*pendP)
+    is the address within that memory area where the {size} vector can
+    be stored.
+    
+    The procedure sets the size vector address {T->size} to {*pendP} and
+    updates {*pendP} to point just past the end of that vector. It also
+    sets the {T->d} field to {d}, but leaves all other fields undefined.
+    It fails if there is not enough space from{*pendP} to the end of the 
+    record.  */
+    
+char *kdtom_alloc_internal_vector(kdtom_t *T, size_t sztot, ppv_dim_t d, size_t elsz, char **pendP);
+  /* Assumes that {T} is pointing to an area with {sztot} bytes and
+    {*pendP} is the address within that area. Returns {*pendP} after
+    making sure that there is enough space from there to the end of the
+    record to hold a vector of {d} elements each with {elsz} bytes. */
+
+size_t kdtom_bytesize(kdtom_t *T, bool_t total);
+  /* If {total} is false, returns the total size in bytes used by the
+    record {*T}, taking into account its kind. The result includes the
+    storare used by the {T->size} vector, as well as any internal
+    type-specific fields. In case of an array node, however, it does NOT
+    include its voxels storage area.
+
+    If {total} is true, returns instead the total size in bytes used by
+    all the k-d-tree nodes reached from {T}, includin the node records
+    themselves and the nominal size of the storage area of every array
+    node (as returned by {kdtom_array_total_bytesize}). */
 
 #endif
