@@ -1,5 +1,5 @@
-/* See {kdtom_array.h}. */
-/* Last edited on 2021-06-28 08:42:32 by jstolfi */
+* See {kdtom_array.h}. */
+/* Last edited on 2021-07-01 15:47:59 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -17,9 +17,9 @@
 
 kdtom_array_t *kdtom_array_alloc(ppv_dim_t d);
   /* Allocats a {kdtom_array_t} record {T}, including the internal
-    {T.head.size} and {T.step} vectors. Initializes {T.head.d}
-    {T.head.kind}, and the addresses of the internal vectors
-    {T.head.size} and {T.step}. */
+    {T.h.size} and {T.step} vectors. Initializes {T.h.d}
+    {T.h.kind}, and the addresses of the internal vectors
+    {T.h.size} and {T.step}. */
 
 kdtom_array_t *kdtom_array_make(ppv_array_t *A)
   { 
@@ -27,15 +27,15 @@ kdtom_array_t *kdtom_array_make(ppv_array_t *A)
     
     /* Allocate the whole record and the internal vectors: */
     kdtom_array_t *T = kdtom_array_alloc(A->d);
-    assert(T->head.d == d);
-    assert(T->head.kind == kdtom_kind_ARRAY);
+    assert(T->h.d == d);
+    assert(T->h.kind == kdtom_kind_ARRAY);
 
     /* Initialize all remaining fields: */
     for (ppv_axis_t ax = 0; ax < d; ax++)
-      { T->head.size[ax] = A->size[ax];
+      { T->h.size[ax] = A->size[ax];
         T->step[ax] = A->step[ax];
       }
-    T->head.bps = A->bps;
+    T->h.bps = A->bps;
     T->base = A->base;
     T->bpw = A->bpw;
     T->el = A->el;
@@ -44,10 +44,10 @@ kdtom_array_t *kdtom_array_make(ppv_array_t *A)
   
 size_t kdtom_array_node_bytesize(ppv_dim_t d)
   {
-    size_t fixf_bytes = sizeof(kdtom_array_t); /* Fixed fields incl those of {head}. */
+    size_t fixf_bytes = sizeof(kdtom_array_t); /* Fixed fields incl those of head part {h}. */
     size_t tot_bytes = iroundup(fixf_bytes, 8); /* Account for address sync. */
 
-    size_t sizv_bytes = d * sizeof(ppv_size_t); /* Bytesize for {head.size} vector. */
+    size_t sizv_bytes = d * sizeof(ppv_size_t); /* Bytesize for {h.size} vector. */
     tot_bytes += iroundup(sizv_bytes, 8);       /* Paranoia, account for address sync. */
 
     size_t step_bytes = d * sizeof(ppv_step_t); /* Bytesize of the {step} vector. */
@@ -63,12 +63,12 @@ kdtom_array_t *kdtom_array_alloc(ppv_dim_t d)
     kdtom_array_t *T = (kdtom_array_t *)notnull(malloc(tot_bytes), "no mem");
     
     /* Set {pend} to the free space inside the record, past all fixed fields: */
-    size_t fix_bytes = sizeof(kdtom_array_t);  /* Size of fixed felds incl. those of {head}. */
+    size_t fix_bytes = sizeof(kdtom_array_t);  /* Size of fixed felds incl. those of {h}. */
     char *pend = addrsync(((char*)T) + fix_bytes, 8);
     
-    /* Initialize the {head} fields, including the {T.head.size} vector: */
+    /* Initialize the {h} fields, including the {T.h.size} vector: */
     kdtom_node_init((kdtom_t *)T, tot_bytes, d, &pend);
-    T->head.kind = kdtom_kind_ARRAY;
+    T->h.kind = kdtom_kind_ARRAY;
     
     /* Allocate the {T.step} vector: */
     size_t elsz = sizeof(ppv_step_t);
@@ -83,31 +83,31 @@ kdtom_array_t *kdtom_array_alloc(ppv_dim_t d)
 
 ppv_sample_t kdtom_array_get_sample(kdtom_array_t *T, ppv_index_t ix[])
   {
-    assert(T->head.kind == kdtom_kind_ARRAY);
-    ppv_pos_t pos = ix_position(T->head.d, ix, T->base, T->step);
-    ppv_sample_t v = ppv_get_sample_at_pos(T->el, T->head.bps, T->bpw, pos);
+    assert(T->h.kind == kdtom_kind_ARRAY);
+    ppv_pos_t pos = ix_position(T->h.d, ix, T->base, T->step);
+    ppv_sample_t v = ppv_get_sample_at_pos(T->el, T->h.bps, T->bpw, pos);
     return v;
   }
 
 size_t kdtom_array_bytesize(kdtom_array_t *T, bool_t total)
   {
-    size_t node_bytes = kdtom_array_node_bytesize(T->head.d);
+    size_t node_bytes = kdtom_array_node_bytesize(T->h.d);
     size_t tot_bytes = node_bytes;
     if (total)
       { /* Create a temporary array descriptor: */
         ppv_array_t A = (ppv_array_t)
-          { .d = T->head.d,
-            .size = T->head.size,
+          { .d = T->h.d,
+            .size = T->h.size,
             .step = T->step,
             .base = 0,
-            .bps = T->head.bps,
+            .bps = T->h.bps,
             .bpw = T->bpw,
             .el = T->el
           };
         /* Count samples ignoring replicated ones: */
         ppv_sample_count_t npos = ppv_sample_count(&A, FALSE);
         /* Compute nominal bytes needed to store them: */
-        size_t samp_bytes = ppv_tot_sample_bytes(npos, T->head.bps, T->bpw);
+        size_t samp_bytes = ppv_tot_sample_bytes(npos, T->h.bps, T->bpw);
         tot_bytes += samp_bytes;
       }
     return tot_bytes;

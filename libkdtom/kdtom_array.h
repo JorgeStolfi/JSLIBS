@@ -1,5 +1,5 @@
 /* An internal k-d-tree node is basically a {ppv_array_t}. */
-/* Last edited on 2021-06-27 01:12:20 by jstolfi */
+/* Last edited on 2021-07-01 15:49:31 by jstolfi */
 
 #ifndef kdtom_array_H
 #define kdtom_array_H
@@ -12,7 +12,7 @@
 #include <bool.h>
 
 typedef struct kdtom_array_t 
-  { kdtom_t head;            /* General fields. */
+  { kdtom_t h;            /* General fields. */
     ppv_step_t *step;        /* Addressing increments. */
     ppv_pos_t base;          /* Base position. */
     ppv_nbits_t bpw;         /* Bits per word. */
@@ -20,11 +20,11 @@ typedef struct kdtom_array_t
   } kdtom_array_t;
   /* A record {T} of this type describes a block of voxels as a
     {ppv_array_t} object {A}.  The array descriptor consists of the 
-    {d,bps,size} fields of {head} plus the {step,base,bpw,el} fields
-    of the record.
+    {d,bps,size} fields of the head {h} plus the {step,base,bpw,el} fields
+    specific of this node type.
     
-    The {head} must be the first field in the
-    record, and {head.kind} must be {kdtom_kind_ARRAY}.
+    The {h} field must be the first field in the
+    record, and {h.kind} must be {kdtom_kind_ARRAY}.
     
     The field {kdtom_kind_t} must be the first field in the record. */
 
@@ -39,13 +39,13 @@ ppv_sample_t kdtom_array_get_sample(kdtom_array_t *T, ppv_index_t ix[]);
     bombs out. */
 
 size_t kdtom_array_node_bytesize(ppv_dim_t d);
-  /* Size in bytes of a {kdtom_array_t} node {T} with dimension {d}, including the {T.head.size}
+  /* Size in bytes of a {kdtom_array_t} node {T} with dimension {d}, including the {T.h.size}
     and {T.step} vectors, but NOT including the sample storage area {*T->el}. */
 
 size_t kdtom_array_bytesize(kdtom_array_t *T, bool_t total);
   /* If {total} is false, returns the size in bytes used by the array
-    record {*T}. The result includes the storage used by the {T.head}
-    header and its {T.head.size} vector, as well as the {T->step}
+    record {*T}. The result includes the storage used by the {T.h}
+    header and its {T.h.size} vector, as well as the {T->step}
     vector; but NOT the sample storage area {T->el}. The {reptoo} parameter
     is ignored.
     
@@ -54,7 +54,7 @@ size_t kdtom_array_bytesize(kdtom_array_t *T, bool_t total);
     total count of distinct sample positions in the array, not counting
     replicated samples, as in {ppv_sample_count} with {reptoo=FALSE};
     assuming that samples are packed as tightly as allowed by the
-    packing parameters {T.head.bps} and {T.bpw}.  The actual storage 
+    packing parameters {T.h.bps} and {T.bpw}.  The actual storage 
     area {T->el} may be larger than this amount. */
 
 #endif

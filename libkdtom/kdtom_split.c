@@ -1,5 +1,5 @@
 /* See {kdtom_split.h}. */
-/* Last edited on 2021-06-28 11:28:41 by jstolfi */
+/* Last edited on 2021-07-02 00:30:30 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -16,8 +16,8 @@
 #include <kdtom_split.h>
 
 kdtom_split_t *kdtom_split_alloc(ppv_dim_t d);
-  /* Allocats a {kdtom_split_t} record {T}, including the internal {T.head.size} vector.
-    Initializes only the {T.head.d} and {T.head.kind} fields. */
+  /* Allocats a {kdtom_split_t} record {T}, including the internal {T.h.size} vector.
+    Initializes only the {T.h.d} and {T.h.kind} fields. */
 
 kdtom_split_t *kdtom_split_make(ppv_axis_t ax, kdtom_t *sub0, kdtom_t *sub1)
   { 
@@ -25,18 +25,18 @@ kdtom_split_t *kdtom_split_make(ppv_axis_t ax, kdtom_t *sub0, kdtom_t *sub1)
     
     kdtom_split_t *T = kdtom_split_alloc(d);
     
-    demand(sub1->d == T->head.d, "{d} mismatch");
-    T->head.bps = sub0->bps; 
-    demand(sub1->bps = T->head.bps, "{bps} mismatch");
+    demand(sub1->d == T->h.d, "{d} mismatch");
+    T->h.bps = sub0->bps; 
+    demand(sub1->bps = T->h.bps, "{bps} mismatch");
     for (ppv_axis_t k = 0; k < d; k++)
       { if (k != ax)
           { ppv_size_t szk = sub0->size[k];
-            T->head.size[k] = szk;
+            T->h.size[k] = szk;
             demand(sub1->size[k] == szk, "size mismatch");
           }
         else
           { ppv_size_t szk = sub0->size[k] + sub1->size[k];
-            T->head.size[k] = szk;
+            T->h.size[k] = szk;
           }
       }
     T->ax = ax;
@@ -47,10 +47,10 @@ kdtom_split_t *kdtom_split_make(ppv_axis_t ax, kdtom_t *sub0, kdtom_t *sub1)
   
 size_t kdtom_split_node_bytesize(ppv_dim_t d)
   {
-    size_t fixf_bytes = sizeof(kdtom_split_t);   /* Fixed fields incl those of {head}. */
+    size_t fixf_bytes = sizeof(kdtom_split_t);   /* Fixed fields incl those of {T.h}. */
     size_t tot_bytes = iroundup(fixf_bytes, 8);  /* Account for address sync. */
 
-    size_t sizv_bytes = d * sizeof(ppv_size_t);  /* Bytesize for {head.size} vector. */
+    size_t sizv_bytes = d * sizeof(ppv_size_t);  /* Bytesize for {T.h.size} vector. */
     tot_bytes += iroundup(sizv_bytes, 8);        /* Paranoia, account for address sync. */
  
     return tot_bytes;
@@ -63,20 +63,20 @@ kdtom_split_t *kdtom_split_alloc(ppv_dim_t d)
     kdtom_split_t *T = (kdtom_split_t *)notnull(malloc(tot_bytes), "no mem");
     
     /* Set {pend} to the free space inside the record, past all fixed fields: */
-    size_t fix_bytes = sizeof(kdtom_split_t);  /* Size of fixed felds incl. those of {head}. */
+    size_t fix_bytes = sizeof(kdtom_split_t);  /* Size of fixed felds incl. those of {T.h}. */
     char *pend = addrsync(((char*)T) + fix_bytes, 8);
     
-    /* Initialize the {head} fields, including the {T.head.size} vector: */
+    /* Initialize the {T.h} fields, including the {T.h.size} vector: */
     kdtom_node_init((kdtom_t *)T, tot_bytes, d, &pend);
-    T->head.kind = kdtom_kind_SPLIT;
+    T->h.kind = kdtom_kind_SPLIT;
 
     return T;
   }
 
 ppv_sample_t kdtom_split_get_sample(kdtom_split_t *T, ppv_index_t ix[])
   {
-    assert(T->head.kind == kdtom_kind_SPLIT);
-    ppv_dim_t d = T->head.d;
+    assert(T->h.kind == kdtom_kind_SPLIT);
+    ppv_dim_t d = T->h.d;
     ppv_axis_t ax = T->ax; assert((0 <= ax) && (ax < d));
     
     /* Save original index of axis {ax}: */
@@ -100,7 +100,7 @@ ppv_sample_t kdtom_split_get_sample(kdtom_split_t *T, ppv_index_t ix[])
 
 size_t kdtom_split_bytesize(kdtom_split_t *T, bool_t total)
   {
-    size_t node_bytes = kdtom_split_node_bytesize(T->head.d);
+    size_t node_bytes = kdtom_split_node_bytesize(T->h.d);
     size_t tot_bytes = node_bytes;
     if (total)
       { /* Add size of subtrees: */

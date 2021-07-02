@@ -1,5 +1,5 @@
 /* See {kdtom_ixmap.h}. */
-/* Last edited on 2021-06-28 03:31:25 by jstolfi */
+/* Last edited on 2021-07-02 00:29:12 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -17,16 +17,14 @@
 
 kdtom_ixmap_t *kdtom_ixmap_alloc(ppv_dim_t d);
   /* Allocats a {kdtom_ixmap_t} record {T}, including the internal 
-    vectors {T.head.size},  {T->pmix}, {T->rvix}, {T->ixlo}.
-    Initializes only the {T.head.d} and {T.head.kind} fields. */
+    vectors {T.h.size},  {T->pmix}, {T->rvix}, {T->ixlo}.
+    Initializes only the {T.h.d} and {T.h.kind} fields. */
 
 kdtom_ixmap_t *kdtom_ixmap_make
   ( ppv_dim_t d,
     ppv_size_t size[],
     ppv_axis_t prax[],
-    bool_t rvix[],
-    ppv_index_t ixlo[],
-    ppv_sample_t fill, 
+    bool_t rvix[], 
     kdtom_t *sub
   )
   { 
@@ -34,20 +32,16 @@ kdtom_ixmap_t *kdtom_ixmap_make
     ppv_dim_t bps_sub = sub->bps; 
     
     kdtom_ixmap_t *T = kdtom_ixmap_alloc(d);
-    T->head.bps = bps_sub;
-    T->fill = fill;
+    T->h.bps = bps_sub;
     T->sub = sub;
 
     for (ppv_axis_t k = 0; k < d; k++)
       { ppv_size_t szk = size[k];
         demand((0 <= szk) && (szk <= ppv_MAX_SIZE), "invalid size");
-        T->head.size[k] = szk;
+        T->h.size[k] = szk;
         ppv_axis_t praxk = prax[k];
         demand((0 <= praxk) && (praxk < d_sub), "invalid index remap");
         T->prax[k] = praxk;
-        ppv_index_t ixlok = ixlo[k];
-        demand((-ppv_MAX_INDEX <= ixlok) && (ixlok <= ppv_MAX_INDEX), "invalid index shift");
-        T->ixlo[k] = ixlok;
         T->rvix[k] = rvix[k];
       }
     return T;
@@ -55,10 +49,10 @@ kdtom_ixmap_t *kdtom_ixmap_make
    
 size_t kdtom_ixmap_node_bytesize(ppv_dim_t d)
   { 
-    size_t fixf_bytes = sizeof(kdtom_ixmap_t);   /* Fixed fields incl those of {head}. */
+    size_t fixf_bytes = sizeof(kdtom_ixmap_t);   /* Fixed fields incl those of {T.h}. */
     size_t tot_bytes = iroundup(fixf_bytes, 8);  /* Account for address sync. */
 
-    size_t sizv_bytes = d * sizeof(ppv_size_t);  /* Bytesize for {head.size} vector. */
+    size_t sizv_bytes = d * sizeof(ppv_size_t);  /* Bytesize for {T.h.size} vector. */
     tot_bytes += iroundup(sizv_bytes, 8);        /* Paranoia, account for address sync. */
 
     size_t ixlo_bytes = d * sizeof(ppv_index_t); /* Bytesize of the {ixlo} vector. */
@@ -80,21 +74,15 @@ kdtom_ixmap_t *kdtom_ixmap_alloc(ppv_dim_t d)
     kdtom_ixmap_t *T = (kdtom_ixmap_t *)notnull(malloc(tot_bytes), "no mem");
     
     /* Set {pend} to the free space inside the record, past all fixed fields: */
-    size_t fix_bytes = sizeof(kdtom_ixmap_t);  /* Size of fixed felds incl. those of {head}. */
+    size_t fix_bytes = sizeof(kdtom_ixmap_t);  /* Size of fixed felds incl. those of {T.h}. */
     char *pend = addrsync(((char*)T) + fix_bytes, 8);
 
-    /* Initialize the {head} fields, including the {T.head.size} vector: */
+    /* Initialize the {T.h} fields, including the {T.h.size} vector: */
     kdtom_node_init((kdtom_t *)T, tot_bytes, d, &pend);
-    assert(T->head.d == d);
-    T->head.kind = kdtom_kind_IXMAP;
+    assert(T->h.d == d);
+    T->h.kind = kdtom_kind_IXMAP;
 
     /* Allocate the variant-specific vectors{T.prax,T.rvix,T.ixlo}: */
-    
-    /* Start with the {ixlo} vector to avoid multiple {addrsync}s: */
-    size_t ixlo_elsz = sizeof(ppv_index_t);
-    assert(ixlo_elsz == 8);
-    assert(((uint64_t)pend) % 8 == 0); /* Because we just allocated the {T.head.size} vector. */
-    T->ixlo = (ppv_index_t *)kdtom_alloc_internal_vector((kdtom_t *)T, tot_bytes, d, ixlo_elsz, &pend);
     
     size_t prax_elsz = sizeof(ppv_axis_t);
     assert(prax_elsz == 1);  /* So no {addrsync} is necessary. */
@@ -112,15 +100,15 @@ kdtom_ixmap_t *kdtom_ixmap_alloc(ppv_dim_t d)
 
 ppv_sample_t kdtom_ixmap_get_sample(kdtom_ixmap_t *T, ppv_index_t ix[])
   {
-    assert(T->head.kind == kdtom_kind_IXMAP);
-    // ppv_dim_t d = T->head.d;
+    assert(T->h.kind == kdtom_kind_IXMAP);
+    // ppv_dim_t d = T->h.d;
     // ppv_axis_t ax = T->ax; assert((0 <= ax) && (ax < d));
     // 
     // /* Save original index of axis {ax}: */
     // ppv_index_t ix_save = ix[ax];
     // 
     // /* Decide where to go, and adjust index: */
-    // ppv_size_t sz0 = T->sub[0]->head.size[ax]; /* Size of low block on axis {ax}. */
+    // ppv_size_t sz0 = T->sub[0]->h.size[ax]; /* Size of low block on axis {ax}. */
     // int32_t ksub;     /* Which subnode (0 or 1) has the desired voxel. */
     // if (ix[ax] < sz0)
     //   { ksub = 0; }
@@ -137,7 +125,7 @@ ppv_sample_t kdtom_ixmap_get_sample(kdtom_ixmap_t *T, ppv_index_t ix[])
 
 size_t kdtom_ixmap_bytesize(kdtom_ixmap_t *T, bool_t total)
   {
-    size_t node_bytes = kdtom_ixmap_node_bytesize(T->head.d);
+    size_t node_bytes = kdtom_ixmap_node_bytesize(T->h.d);
     size_t tot_bytes = node_bytes;
     if (total)
       { /* Add size of subtree: */

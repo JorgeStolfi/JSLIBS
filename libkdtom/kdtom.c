@@ -1,5 +1,5 @@
 /* See {kdtom.h}. */
-/* Last edited on 2021-06-28 08:41:23 by jstolfi */
+/* Last edited on 2021-07-01 15:11:35 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -16,6 +16,7 @@
 #include <kdtom_split.h>
 #include <kdtom_array.h>
 #include <kdtom_const.h>
+#include <kdtom_trans.h>
 #include <kdtom_ixmap.h>
 
 ppv_sample_t kdtom_get_sample(kdtom_t *T, ppv_index_t ix[])
@@ -33,6 +34,8 @@ ppv_sample_t kdtom_get_sample(kdtom_t *T, ppv_index_t ix[])
           return kdtom_const_get_sample((kdtom_const_t *)T, ix);
         case kdtom_kind_SPLIT:
           return kdtom_split_get_sample((kdtom_split_t *)T, ix);
+        case kdtom_kind_TRANS:
+          return kdtom_trans_get_sample((kdtom_trans_t *)T, ix);
         case kdtom_kind_IXMAP:
           return kdtom_ixmap_get_sample((kdtom_ixmap_t *)T, ix);
         default:
@@ -50,6 +53,8 @@ size_t kdtom_bytesize(kdtom_t *T, bool_t total)
           return kdtom_const_bytesize((kdtom_const_t *)T);
         case kdtom_kind_SPLIT:
           return kdtom_split_bytesize((kdtom_split_t *)T, total);
+        case kdtom_kind_TRANS:
+          return kdtom_trans_bytesize((kdtom_trans_t *)T, total);
         case kdtom_kind_IXMAP:
           return kdtom_ixmap_bytesize((kdtom_ixmap_t *)T, total);
         default:

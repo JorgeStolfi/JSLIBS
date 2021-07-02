@@ -1,5 +1,5 @@
 /* Multidimensional sample arrays stored as k-d-trees. */
-/* Last edited on 2021-06-28 00:35:51 by jstolfi */
+/* Last edited on 2021-07-01 02:47:43 by jstolfi */
 
 #ifndef kdtom_H
 #define kdtom_H
@@ -14,7 +14,8 @@ typedef enum
   { kdtom_kind_CONST,  /* All voxels are constant. */
     kdtom_kind_ARRAY,  /* The voxels are represented by an array of samples. */
     kdtom_kind_SPLIT,  /* The voxels are split in twosub-blocks. */
-    kdtom_kind_IXMAP   /* The voxels indices are remapped. */
+    kdtom_kind_TRANS,  /* The voxel block is shifted and padded. */
+    kdtom_kind_IXMAP   /* The voxel indices are permuted and/or reversed */
   } kdtom_kind_t;
   /* A code that identifies the kind of a {kdtom_t}. */
 
