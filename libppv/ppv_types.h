@@ -1,5 +1,5 @@
 /* Basic types and limits for portable 6-dimensional sample arrays. */
-/* Last edited on 2021-06-25 17:09:09 by jstolfi */
+/* Last edited on 2021-07-03 07:49:13 by jstolfi */
 
 #ifndef ppv_types_H
 #define ppv_types_H
@@ -43,6 +43,15 @@ typedef ix_index_pos_op_t ppv_index_pos_op_t;
 typedef ix_index_pos2_op_t ppv_index_pos2_op_t;
 typedef ix_index_pos3_op_t ppv_index_pos3_op_t;
   /* Type of a procedure that operates on an index tuple. */
+
+typedef double ppv_sample_floatize_proc_t(ppv_sample_t v, ppv_sample_t vmax);
+  /* Type of a procedure that converts an integer sample value {v} 
+    in {0..vmax} into a double-precision value in {[0 _ 1]}. */
+
+typedef ppv_sample_t ppv_sample_quantize_proc_t(double x, ppv_sample_t vmax);
+  /* Type of a procedure that converts an a double-precision float value {x}
+    into an integer sample value {v} in {0..vmax}.  The value {x}
+    may be {NAN}. */
 
 /* SIZES, STEPS, POSITIONS */
 

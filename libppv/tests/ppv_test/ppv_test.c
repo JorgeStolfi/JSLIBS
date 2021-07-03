@@ -1,4 +1,4 @@
-/* Last edited on 2021-06-25 19:15:44 by jstolfi */ 
+/* Last edited on 2021-07-03 15:25:00 by jstolfi */ 
 /* Test of the PPV library. */
 
 #define _GNU_SOURCE
@@ -66,7 +66,8 @@ void test_sample_pos(ppv_array_t *A);
 void test_enum(ppv_array_t *A);
 void test_assign(ppv_array_t *A, ppv_nbits_t bpsB);
 void test_sample_range(ppv_array_t *A);
-void test_throw(ppv_array_t *A, ppv_sample_count_t seed);
+void test_throw_noise(ppv_array_t *A, ppv_sample_count_t seed);
+void test_throw_balls(ppv_array_t *A, ppv_sample_count_t seed);
 
 void test_crop(ppv_array_t *A);
 void test_subsample(ppv_array_t *A);
@@ -148,8 +149,9 @@ void do_tests(ppv_dim_t d, ppv_nbits_t bps, ppv_nbits_t bpw)
     if (A->bps < A->bpw) { test_assign(A, (ppv_nbits_t)(A->bps+1)); }
     if (A->bps > 0) { test_assign(A, (ppv_nbits_t)(A->bps-1)); }
     test_sample_range(A);
-    test_throw(A, 4615);
-    test_throw(A, 0);
+    test_throw_noise(A, 4615);
+    test_throw_noise(A, 0);
+    test_throw_balls(A, 4615);
     
     test_crop(A);
     test_subsample(A);
@@ -309,49 +311,60 @@ void test_sample_range(ppv_array_t *A)
     fprintf(stderr, "!! NOT checking {ppv_sample_range} yet!\n");
   }
 
-void test_throw(ppv_array_t *A, ppv_sample_count_t seed)
+void test_throw_noise(ppv_array_t *A, ppv_sample_count_t seed)
   { 
-    fprintf(stderr, "Checking {ppv_throw}");
+    fprintf(stderr, "Checking {ppv_throw_noise}");
     fprintf(stderr, " seed = " ppv_sample_count_t_FMT, seed);
     fprintf(stderr, " A.bps = %u ...\n", A->bps);
 
     srandom((uint32_t)seed);
-    ppv_throw(A);
-    
-    ppv_sample_t vmin, vmax;
-    ppv_sample_range(A, &vmin, &vmax);
-    fprintf(stderr, "sample range = { " ppv_sample_t_FMT, vmin);
-    fprintf(stderr, ".. " ppv_sample_t_FMT " }\n", vmax);
+    ppv_throw_noise(A);
     
     test_sample_distr(A);
     return;
         
   }
     
+void test_throw_balls(ppv_array_t *A, ppv_sample_count_t seed)
+  { 
+    fprintf(stderr, "Checking {ppv_throw_balls}");
+    fprintf(stderr, " seed = " ppv_sample_count_t_FMT, seed);
+    fprintf(stderr, " A.bps = %u ...\n", A->bps);
+
+    srandom((uint32_t)seed);
+    ppv_throw_balls(A);
+    
+    test_sample_distr(A);
+    return;
+  }
+
 void test_sample_distr(ppv_array_t *A)
   { 
-    ppv_sample_t maxval = (ppv_sample_t)((1 << A->bps) - 1);
-    fprintf(stderr, "maxval = " ppv_sample_t_FMT, maxval);
+    ppv_sample_t vmin, vmax;
+    ppv_sample_range(A, &vmin, &vmax);
+    fprintf(stderr, "sample range = { " ppv_sample_t_FMT, vmin);
+    fprintf(stderr, ".. " ppv_sample_t_FMT " }\n", vmax);
     
     ppv_sample_count_t npos = ppv_sample_count(A, TRUE); /* Voxel count, incl. replics. */
-    fprintf(stderr, "sample count = " ppv_sample_count_t_FMT, npos);
+    fprintf(stderr, "sample count = " ppv_sample_count_t_FMT "\n", npos);
     ppv_sample_count_t nposmin = 2; /* Min voxel count. */
     if (npos < nposmin) 
       { fprintf(stderr, "!! no samples -- histogram not computed.\n");
         return;
       }
 
-    bool_t prhist = (maxval < 256);
+    uint32_t nvals = (uint32_t)(vmax - vmin + 1);
+    assert(nvals >= 1);
+
+    bool_t prhist = (nvals <= 256);
 
     int64_t maxnvals = imax(1, imin(1 << 18, npos/2));
-    int32_t nvals = (int32_t)maxval + 1;
     if (nvals > maxnvals)
       { /* No use mapping samples to a smaller range, so: */
         fprintf(stderr, "!! sample value range too big -- histogram not computed\n");
         return;
       }
 
-    assert(nvals >= 1);
     uint64_t hist[nvals]; 
     for (int32_t v = 0; v < nvals; v++) { hist[v] = 0; }
 
@@ -368,7 +381,7 @@ void test_sample_distr(ppv_array_t *A)
     double sum_h = 0.0;
     for (int32_t v = 0; v < nvals; v++)
       { uint64_t hv = hist[v];
-        if (prhist) { fprintf(stderr, "%5u %12lu\n", v, hv); }
+        if (prhist) { fprintf(stderr, "%5u %12lu\n", (uint32_t)(v + vmin), hv); }
         if (hv > hmax) { hmax = hv;  }
         if (hv < hmin) { hmin = hv;  }
         sum_h += (double)(hv);
@@ -404,8 +417,8 @@ void test_sample_distr(ppv_array_t *A)
 
     bool_t gather_hist(const ppv_index_t ix[])
       { ppv_sample_t val = ppv_get_sample(A, ix);
-        assert ((0 <= val) && (val <= maxval));
-        hist[(int32_t)val]++;
+        assert ((vmin <= val) && (val <= vmax));
+        hist[(int32_t)(val - vmin)]++;
         return FALSE;
       }
   }

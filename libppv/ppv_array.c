@@ -1,5 +1,5 @@
 /* See ppv_array.h */
-/* Last edited on 2021-06-25 19:11:17 by jstolfi */
+/* Last edited on 2021-07-03 15:04:58 by jstolfi */
 /* Copyright © 2003 by Jorge Stolfi, from University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
@@ -541,8 +541,7 @@ void ppv_print_descriptor ( FILE *wr, char *pf, ppv_array_t *A, char *sf )
   {
     fprintf(stderr, "%s", pf); 
     fprintf(stderr, "bps = %u bpw = %u", A->bps, A->bpw);
-    ppv_axis_t ax;
-    for (ax = 0; ax < A->d; ax++)
+    for (ppv_axis_t ax = 0; ax < A->d; ax++)
       { fprintf(stderr, " ");
         fprintf(stderr, ppv_size_t_FMT, A->size[ax]);
         fprintf(stderr, "(×");
@@ -590,7 +589,24 @@ size_t ppv_tot_sample_bytes(ppv_sample_count_t npos, ppv_nbits_t bps, ppv_nbits_
     return nbytes;
   }
 
-void ppv_throw(ppv_array_t *A)
+void ppv_choose_test_size(ppv_dim_t d, ppv_sample_count_t npos, ppv_size_t sz[])
+  { demand(npos <= ppv_MAX_SAMPLES, "too many samples");
+    if (d == 0)
+      { /* Nothing to do. */}
+    else if (d == 1) 
+      { sz[0] = (ppv_size_t)imax(1, imin(npos, ppv_MAX_SIZE)); }
+    else
+      { double xsize_avg = (npos == 0 ? 0 : pow((double)npos, 1.0/d)); /* Geom avg size. */
+        double xfmax = sqrt(3);
+        double xfmin = 1.0/xfmax;
+        for (ppv_axis_t ax = 0; ax < d; ax++)
+          { double xf = xfmin * pow(xfmax/xfmin, ((double)ax)/(d-1)); 
+            sz[ax] = (ppv_size_t)imax(1, imin((int64_t)ceil(xf*xsize_avg), ppv_MAX_SIZE)); 
+          }
+      }
+  }
+
+void ppv_throw_noise(ppv_array_t *A)
   {
     bool_t debug = TRUE;
     ppv_nbits_t bps = A->bps;
@@ -624,3 +640,53 @@ void ppv_throw(ppv_array_t *A)
       }
   }
         
+void ppv_throw_balls(ppv_array_t *A)
+  {
+    bool_t debug = TRUE;
+    ppv_dim_t d = A->d;
+    ppv_nbits_t bps = A->bps;
+    ppv_nbits_t bpw = A->bpw;
+    if ((bps == 0) || (d == 0)) { /* Single value or single voxel: */ return; }
+    ppv_sample_t maxval = (ppv_sample_t)((1 << bps) - 1);
+
+    /* Choose centers and radii: */
+    int32_t nb = 10; /* Number of balls. */
+    ppv_sample_count_t npos = ppv_sample_count(A, FALSE);
+    double rad_max = 0.2*pow((double)npos, 1.0/d);
+    double **ctr = notnull(malloc(nb*sizeof(double *)), "no mem");
+    double rad[nb];
+    ppv_sample_t val[nb];
+    if (debug) { fprintf(stderr, "throwing %d balls...\n", nb); }
+    for (int32_t ib = 0; ib < nb; ib++)
+      { if (debug) { fprintf(stderr, "  ball %3d center = (", ib); }
+        ctr[ib] = notnull(malloc(d*sizeof(double)), "no mem");
+        for (ppv_axis_t ax = 0; ax < A->d; ax++) 
+          { ctr[ib][ax] = dabrandom(0, (double)A->size[ax]); 
+            if (debug) { fprintf(stderr, " %8.2f", ctr[ib][ax]); }
+          }
+        rad[ib] = dabrandom(0.3*rad_max, rad_max);
+        if (debug) { fprintf(stderr, " ) radius = %8.2f", rad[ib]); }
+        val[ib] = (ppv_sample_t)uint64_abrandom(1, maxval);
+        if (debug) { fprintf(stderr, " value = " ppv_sample_t_FMT "\n", val[ib]); }
+      }
+    auto bool_t set_voxel(const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC);
+    ppv_enum(set_voxel, FALSE, A, NULL, NULL);
+    return;
+    
+    bool_t set_voxel(const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC)
+      { ppv_sample_t v = 0; /* Value to store. */
+        /* Check if voxel center is inside some ball: */
+        for(int32_t ib = 0; ib < nb; ib++)
+          { double d2 = 0.0; /* Squared dist from center of ball {b} */
+            for (ppv_axis_t ax = 0; ax < A->d; ax++) 
+              { double da = ((double)ix[ax] + 0.5) - ctr[ib][ax]; 
+                d2 += da*da;
+              }
+            if (sqrt(d2) < rad[ib]) { v = val[ib]; }
+          }
+        ppv_set_sample_at_pos(A->el, bps, bpw, pA, v);
+        return FALSE;
+      }
+    
+  
+  }

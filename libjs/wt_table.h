@@ -2,7 +2,7 @@
 #define wt_table_H
 
 /* Weight tables for filtering digital signals */
-/* Last edited on 2017-06-11 23:42:37 by stolfilocal */
+/* Last edited on 2021-07-02 23:52:17 by jstolfi */
 
 #define wt_table_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -40,9 +40,14 @@ void wt_table_fill_triangular(int n, double wt[]);
     elements. */
 
 void wt_table_fill_hann(int n, double wt[]);
-  /* Stores into {wt[0..n-1]} a Hann-like table {wt[i] = (1 + cos(pi*(i-c)/h))/2} 
-    where {c=(n-1)/2}, {h=n/2}. The table is then normalized so that
-    the sum of all entries is 1. */
+  /* Stores into {wt[0..n-1]} a Hann-like weight table.
+  
+    First, sets each {wt[i]} to {(1 + cos(pi*(i-c)/h))/2} where
+    {c=(n-1)/2}, {h=n/2}. Thus, if {n} is odd, the central element will
+    be set to 1. In any case, the values will be symmetric with {wt[0] =
+    wt[n-1] = (1 + cos(pi*(n-1)/n)/2}.
+    
+    The table is then normalized so that the sum of all entries is 1. */
 
 /* WEIGHT TABLES WITH ALLOCATION
 

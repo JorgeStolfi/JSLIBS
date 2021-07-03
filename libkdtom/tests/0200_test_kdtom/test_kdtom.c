@@ -5,7 +5,7 @@
 #define tkdt_C_COPYRIGHT \
   "Copyright © 2021 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2021-06-28 11:43:56 by jstolfi */
+/* Last edited on 2021-07-03 13:22:57 by jstolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -135,7 +135,7 @@ ppv_array_t *tkdt_make_array(ppv_dim_t d, ppv_size_t sz[], ppv_nbits_t bps)
     
     /* Fill the array with random samples: */
     srandom(4615);
-    ppv_throw(A); 
+    ppv_throw_noise(A); 
 
     if (d == 0) { /* Only one sample: */  return A; }
 

@@ -1,5 +1,5 @@
 /* Portable multi-dimensional sample arrays. */
-/* Last edited on 2021-06-27 00:56:44 by jstolfi */
+/* Last edited on 2021-07-03 14:57:54 by jstolfi */
 
 #ifndef ppv_array_H
 #define ppv_array_H
@@ -592,10 +592,25 @@ size_t ppv_tot_sample_bytes ( ppv_sample_count_t npos, ppv_nbits_t bps, ppv_nbit
 
 /* TESTING AND DEBUGGING */
 
-void ppv_throw(ppv_array_t *A);
-  /* Fills the array {A} with pseudo-random (very pseudo) sample values.
-    Uses the procedures in {jsrandom.h}. To obtain repeatable or truly
-    random values, call {srandom} from {stdlib.h} first, with an
-    appropriate {seed}. */
+void ppv_choose_test_size(ppv_dim_t d, ppv_sample_count_t npos, ppv_size_t sz[]);
+  /* Chooses varied array sizes {sz[0..d-1]} so that the total number of samples
+    will be about {npos}.  
+    
+    The min size will be at least 1. If {d >= 2}, the max size will be
+    about 3 times the min size. */
+    
+/* RANDOM FILLING 
+
+  The procedures in this section use the the pseudorandom generators
+  from {jsrandom.h}. To make the results repeatable or 
+  non-repeatable, call {srandom} from {stdlib.h} first, with an
+  appropriate {seed}. */
+
+void ppv_throw_noise(ppv_array_t *A);
+  /* Fills the array {A} with pseudo-random (very pseudo) sample values. */
+
+void ppv_throw_balls(ppv_array_t *A);
+  /* Fills the array {A} with 0 samples except for a few balls
+    of random ceneters and radii, possibly overlapping. */
 
 #endif
