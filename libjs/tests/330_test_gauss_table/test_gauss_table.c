@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {gauss_table.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-09 23:57:09 by jstolfi */ 
+/* Last edited on 2021-07-04 05:11:37 by jstolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_hermite3_COPYRIGHT \
@@ -56,7 +56,7 @@ void do_test_print(int32_t nw, bool_t normSum, bool_t folded)
     double dev = 0.21 * nw;
     double *wt = gauss_table_make(nw, avg, dev, normSum, folded);         
 
-    wt_table_print(stderr, "gauss_table_make", nw, wt);
+    wt_table_print(stderr, "gauss_table_make", nw, wt, 0);
     if (normSum) { wt_table_check_normalization(nw, wt, 1.0e-8, TRUE); }
     
     /* Build a table {wc[0..nw-1]} independently of the lib: */

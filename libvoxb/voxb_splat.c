@@ -1,5 +1,5 @@
 /* See voxb_splat.h */
-/* Last edited on 2021-06-22 13:46:50 by jstolfi */
+/* Last edited on 2021-07-08 16:16:44 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -132,7 +132,7 @@ void voxb_splat_voxel
     ix[2] = kx; 
     ppv_pos_t pos = ppv_sample_pos(A, ix);
     ppv_sample_t osmp = ppv_get_sample_at_pos(A->el, A->bps, A->bpw, pos);
-    ppv_sample_t vsmp = ((ppv_sample_t)val) & 1;
+    ppv_sample_t vsmp = (ppv_sample_t)(val & 1);
     ppv_sample_t smp; /* New sample value. */
     switch (op)
       { 

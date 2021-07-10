@@ -1,5 +1,5 @@
 /* See voxm_splat.h */
-/* Last edited on 2021-06-22 13:48:06 by jstolfi */
+/* Last edited on 2021-07-08 16:10:26 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -77,27 +77,27 @@ void voxm_splat_object
                 r3_sub(&qvox, &(S->p), &qobj);
                 r3x3_map_row(&qobj, &Minv, &qobj);
                 /* Evaluate object there: */
-                double val = obj(&qobj);
-                if (val > 0.0)
+                double fsmp = obj(&qobj);
+                if (fsmp > 0.0)
                   { /* Modify voxel value according to coverage: */
-                    voxm_splat_voxel(A, kx, ky, kz, val, sub);
+                    voxm_splat_voxel(A, kx, ky, kz, fsmp, sub);
                   }
               }
           }
       }
   }
   
-void voxm_splat_voxel(ppv_array_t *A, int32_t kx, int32_t ky, int32_t kz, double val, bool_t sub)
+void voxm_splat_voxel(ppv_array_t *A, int32_t kx, int32_t ky, int32_t kz, double fsmp, bool_t sub)
   {
     /* Quantize the value: */
-    ppv_sample_t maxsmp = (ppv_sample_t)((1u << A->bps) - 1); /* Max sample value. */
-    ppv_sample_t smp; /* Value {val} quantized to {0..maxsmp}. */
-    if (val <= 0.0)
+    ppv_sample_t maxsmp = A->maxsmp; /* Max sample value. */
+    ppv_sample_t smp; /* Value {fsmp} quantized to {0..maxsmp}. */
+    if (fsmp <= 0.0)
       { smp = 0; }
-    else if (val >= 1.0)
+    else if (fsmp >= 1.0)
       { smp = maxsmp; }
     else
-      { smp = (ppv_sample_t)floor(val * maxsmp + 0.4999999); }
+      { smp = (ppv_sample_t)floor(fsmp * maxsmp + 0.4999999); }
       
     /* Fetch the current sample {osmp}: */
     ppv_dim_t d = A->d;

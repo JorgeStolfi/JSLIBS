@@ -5,7 +5,7 @@
 #define test_voxm_C_COPYRIGHT \
   "Copyright © 2016 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2021-06-22 13:47:11 by jstolfi */
+/* Last edited on 2021-07-09 01:04:29 by jstolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -122,9 +122,8 @@ int32_t main(int32_t argc, char** argv)
     sz[0] = NZ;
     sz[1] = NY;
     sz[2] = NX;
-    ppv_nbits_t bps = 8;
-    ppv_nbits_t bpw = 32;
-    ppv_array_t *A = ppv_array_new(d, sz, bps, bpw);
+    ppv_sample_t maxsmp = 255;
+    ppv_array_t *A = ppv_array_new(d, sz, maxsmp);
     
     /* Center and radius of array: */
     r3_t ctr = (r3_t){{ 0.5*NX, 0.5*NY, 0.5*NZ }};

@@ -2,7 +2,7 @@
 #define indexing_io_H
 
 /* Printout and debugging tools for {indexing_h} */
-/* Last edited on 2021-06-14 08:43:39 by jstolfi */
+/* Last edited on 2021-07-03 22:24:14 by jstolfi */
 
 #include <indexing.h>
 #include <stdio.h>
@@ -21,7 +21,7 @@ void ix_print_steps   ( FILE *wr, char *lp, ix_dim_t d, const ix_step_t st[],  i
   /* These procedures write the first {d} elements of the given tuple to {wr}, in decimal. 
     The tuple is bracketed by the strings {lp} and {rp} (which default to "" if NULL);
     In the case of {ix_print_steps}, the sign "+" or "-" is always printed.
-    Each element is left-padded with ' ' tototal width {wd} or more.
+    Each element is left-padded with ' ' to total width {wd} or more.
     The elements are separated by the string {sp} (which defaults to " " if NULL). */
 
 void ix_print_parms

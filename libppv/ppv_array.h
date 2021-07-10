@@ -1,5 +1,5 @@
 /* Portable multi-dimensional sample arrays. */
-/* Last edited on 2021-07-03 14:57:54 by jstolfi */
+/* Last edited on 2021-07-09 22:31:31 by jstolfi */
 
 #ifndef ppv_array_H
 #define ppv_array_H
@@ -9,17 +9,17 @@
 
 /* !!! Add more parameters to {ppv_index_next,ppb_index_prev} as in {indexing.h} !!! */
 /* !!! Allow {bpw} to be 64 too. !!! */
-/* !!! Allow {A.d} to be zero? !!! */
 
 typedef 
   struct ppv_array_t {
-    ppv_dim_t d;        /* Number of axes (ndices) in the array. */
+    ppv_dim_t d;           /* Number of axes (ndices) in the array. */
     ppv_size_t *size;      /* Extent of array's domain along each axis. */
     ppv_step_t *step;      /* Position increment for each index. */
     ppv_pos_t base;        /* Position of element {[0,..0]}. */
-    ppv_nbits_t bps;       /* Bits per sample. */
+    ppv_nbits_t bps;       /* Bits per element. */
     ppv_nbits_t bpw;       /* Bits per word (storage unit). */
-    void *el;              /* Start of storage area (NULL if no samples). */
+    ppv_sample_t maxsmp;   /* Maximum allowed sample value. */
+    void *el;              /* Start of storage area (NULL if memoryless). */
   } ppv_array_t; 
   /* 
     A {ppv_array_t} is descriptor for a multi-dimensional array of
@@ -28,7 +28,7 @@ typedef
     
     Array indexing and shape
     
-      Each sample of a {ppv_array_t} {A} is identified by
+      Each element of a {ppv_array_t} {A} is identified by
       {d = A.d} indices {[ix[0],..ix[d-1]]}.
 
       The /shape/ of {A} is defined by {d} non-negative integers,
@@ -60,7 +60,7 @@ typedef
       
       As another example, an audio file could have {A.d = 2} where
       index 1 identifies the sound track or stereo channel, and index 2
-      is time (the sample index). Then a 4-channel 10-second audio file
+      is time (the audio sample index). Then a 4-channel 10-second audio file
       sampled at 44100 Hz would have have {A.size={4,441000}}. If that
       audio file was chopped into overlapping segments associated with
       frames video, then one could have {A.d = 3}, where indices 0 and
@@ -70,134 +70,211 @@ typedef
 
     Empty arrays
 
-      If any of the sizes {size[ax]} is zero, the array has no samples
+      If any of the sizes {size[ax]} is zero, the array has no elements
       and is said to be /empty/. An empty array still has a definite
       shape, which is significant in certain operations.
 
     Value range of each sample
 
-      The samples of an array {A} have a fixed number of bits per
-      sample, {A.bps}. By definition, each sample is an unsigned
-      integer in the range {0..2^A.bps - 1}; in particular, if {A.bps}
-      is zero, then all samples have value 0.
+     Each element of an array {A} is stored in a fixed number of bits,
+     the /bits per sample/ attribute {A.bps}. 
+     
+     By definition, the sample stored in each element is an unsigned
+     integer in the range {0..A.maxsmp}, and {A.maxsmp} is at most
+     {2^A.bps-1}. In particular, if {A.maxsmp} is zero, then each
+     element can assume only one value, namely zero; and if {A.bps} is
+     zero, then {A.maxsmp} is zero.
 
     Memoryless arrays
 
-      A /memoryless/ array is one that is empty or has {bps==0},
-      and therefore occupies no storage.
+      A /memoryless/ array is one that is empty or has {bps} equal to
+      zero, and therefore occupies no storage.
+      
+    Element indexing
 
-    Sample indexing
-
-      Each sample of an array {A} has a /position/ which is an
+      Each element of an array {A} has a /position/ which is an
       affine combination of its {d} indices {ix[0],..ix[d-1]}:
 
         | pos(A, ix) = A.base + ix[0]*A.step[0] + ·· ix[d-1]*A.step[d-1]
 
       Each coefficient {A.step[ax]} may be positive, negative, or zero.
-      In the last case, two samples whose indices differ only in that
-      index will have the same position. The field {A.npos} records the
-      number of distinct sample positions in the array.
+      In particular, if {A.size[ax]} is 1 or 0, the corresponding
+      coefficient {A.step[ax]} is irrelevant and should be zero.
+      
+    Replicated elements
+    
+      If a coefficient {A.step[ax]} is zero but {A.size[ax]} is 2 or
+      more, two index vectors that differ only in that axis will yield
+      the same position, hence will denote the same memory area (if
+      any). The array is then said to be /replicated/ along that axis.
+      In that case, there will be a dfference between the number of
+      valid index tuples and the number of distinct element positions.
+      
+      On the other hand, two valid index tuples that differ in at least 
+      one axis that is not replicated will have distinct positions and
+      will be stored in disjoint memory areas.
 
-    Sample storage
+    Element storage
 
-      The samples of an array {A} are stored in the area pointed by
-      {A.el}. The position {pos} of a sample, together with the the
-      packing parameters {A.bps} and {A.bpw}, uniquely determines the
-      location of the sample within that area. Two samples with distinct
-      positions occupy disjoint areas of memory.
-
-      In order to save storage and to simplify image transfer between
-      devices and computers with different architectures, the storage
-      area is organized as a vector of /words/. The number of bits per
-      word is an explicit attribute {A.bpw} of the array, and may be
-      different from the machine's native word size. The legal values
-      for {bpw}, for this implementation, are 8, 16, and 32. Depending
-      on {A.bps} and {A.bpw}, one sample may span two or more words, or
-      one word may contain two or more samples. See the section
-      "DETAILS OF SAMPLE PACKING" at end of this file.  */
+      If an array {A} is not memoryless, its elemnts are stored in the
+      area pointed by {A.el}. The position {pos} of an element, together
+      with the the packing parameters {A.bps} and {A.bpw}, uniquely
+      determines the location of the element within that area. 
+      See {ppv_packing_INFO} below.
+      
+    Modifying attributes
+    
+      The attributes of an array descriptor {A} may be set or modified
+      by users. However, care must be taken to preserve the properties
+      stated above. In particular, unchecked out-of-bounds memory access
+      may occur if the fields {A.bps}, {A.bpw}, {A.size} or {A.step} are
+      improperly modified. Also, changing {A.maxsmp} from zero to a
+      non-zero value requres allocating a storage area for {A.el}.
+      
+    Significant changes
+    
+      The attrbute {A.maxsmp} was added on 2021-07-08.  Several
+      functions were modified to use {A.maxsmp}  instead of 
+      the previously assumed maximum {2^A.bps-1}.
+      
+      As of 2021-07-08, the procedures {ppv_set_sample} and {ppv_get_sample}
+      will check wether the index tuple is valid and the sample value
+      is in {0..A.maxsmp}.
+      
+    */
 
 /* ARRAY ALLOCATION */
 
-ppv_array_t *ppv_array_new ( ppv_dim_t d, ppv_size_t sz[], ppv_nbits_t bps, ppv_nbits_t bpw );
+ppv_array_t *ppv_array_new ( ppv_dim_t d, ppv_size_t sz[], ppv_sample_t maxsmp );
   /* Allocates a descriptor {A} for a newly allocated array of samples,
-    with {A.d = d}, {A.size = {sz[0],.. sz[d-1]}} and the specified number of bits
-    per sample and per word. The individual sizes {sz[ax]} must not
-    exceed {ppv_MAX_SIZE},
+    with {A.d = d}, {A.size = {sz[0],.. sz[d-1]}}, and the specified max sample
+    size {A.maxsmp}.  
+    
+    The number of axes {d} cannot exceed {ppv_MAX_AXES}, 
+    the individual sizes {sz[ax]} must not exceed {ppv_MAX_SIZE},
+    their product {sz[0]*..sz[d-1]} must not exceed {ppv_MAX_SAMPLES},
+    and {maxsmp} must not exceed {ppv_MAX_SAMPLE_VAL}.
+    
+    The number of bits per sample {A.bps} the smallest number that can
+    represent any value in {0..maxsmp}; that is, such that {maxsmp <
+    2^A.bps}. In particular, if {maxsmp} is zero, {A.bps} will be zero
+    and the array will be memoryless. 
+    
+    The bits per word {A.bpw} will be chosen with attempt to minimize
+    the wasted space and/or maximize the packing and unpacking speed.
     
     If the array {A} turns out to be memoryless, {A.el} is set to NULL
-    and all samples will have the same position (0).
+    and all elements will have the same position (0).
     
-    Otherwise, {A.el} will point to a newly allocated area large
-    enough to contain all samples. The samples {A[ix[0],..ix[d-1]]} will
-    be packed as compactly as possible, linearized in the obvious way
-    with index {ix[0]} varying fastest and {ix[d-1]} the slowest. That
-    is, {A.base} will be 0, and each increment {A.step[ax]} will be
-    the product of all sizes {A.size[j]} with {j<ax}. 
+    Otherwise, {A.el} will point to a newly allocated area large enough
+    to contain all elements. The total storage occupied by them must not
+    exceed {ppv_MAX_BYTES}. The elements {A[ix[0],..ix[d-1]]} will be
+    packed as compactly as possible, linearized in the obvious way with
+    index {ix[0]} varying fastest and {ix[d-1]} the slowest. That is,
+    {A.base} will be 0, and each increment {A.step[ax]} will be the
+    product of all sizes {A.size[j]} with {j<ax}.
     
-    The number of axes {d} must not exceed {ppv_MAX_AXES}}. The product
-    {sz[0]*..sz[d-1]} must not exceed {ppv_MAX_SAMPLES}, and the total
-    storage occupied by them must not exceed {ppv_MAX_BYTES}.
-    
-    In any case, the call {free(A.el)} will reclaim the storage used by
-    the array. The vectors {A.size} and {A.step} are allocated in the
-    same {malloc} record, so one should never call {free} on them; the
-    call {free(A)} will reclaim their storage too. */
+    In any case, the calls {free(A.el); free(A)} will reclaim the
+    storage used by the array. The vectors {A.size} and {A.step} are
+    allocated in the same {malloc} record, so one should never call
+    {free} on them; the call {free(A)} will reclaim their storage
+    too. */
 
 ppv_array_t *ppv_array_clone ( ppv_array_t *A );
   /* Creates a copy {S} of the descriptor of the array {A} that shares
-    the same sample storage as {A}. 
+    the same element storage as {A}. 
     
     All fields of {S} a(including {S->step} and {S->size}) will be
     separate memory areas from {A}, and will be initialized with the
     current values in {A}. However, {S} and {A} will share the same
-    sample storage area (S->el == A->el). */
+    element storage area (S->el == A->el). */
 
 ppv_sample_count_t ppv_compute_npos_steps ( ppv_dim_t d, ppv_size_t size[], ppv_step_t step[] );
   /* If {step} is not {NULL}, computes suitable position increments {step[0..d-1]} for 
     an array with {size[ax]} elements along each axis {ax}. In any case, returns the
-    total number of samples in that array.
+    total number of elements in that array.
 
     Assumes that the array will have no replicated elements; that is, {step[ax]}
     will be zero only if the array is empty or {size[ax]} is 1. */
 
 ppv_sample_count_t ppv_sample_count ( ppv_array_t *A, bool_t reptoo );
-  /* Returns the total number of sample positions in {A}. 
+  /* Returns the total number of elements in {A}. 
   
     If {reptoo} is true, counts replicated elements as distict; that is,
     returns the count of distinct *valid index tuples*. If {reptoo} is
     false, counts those elements only once; that is, returns the count
-    of distinct *sample positions*. */
+    of distinct *element positions*. */
 
 bool_t ppv_is_empty ( ppv_array_t *A );
-  /* Returns {TRUE} if and only if the array {A} has no samples;
+  /* Returns {TRUE} if and only if the array {A} has no elements;
     that is, iff one of the sizes {A->size[0..d]} is zero.  
     
     Note that this is not the same as {A} being memoryless ({A->el ==
     NULL}), since this also includes the case {A->bps == 0}. */
 
+ppv_sample_t ppv_max_sample( ppv_nbits_t bps );
+  /* Returns the max sample value that can be stored in {bps}
+    bits; that is, {2^bps-1}. */
+
+ppv_nbits_t ppv_min_bps( ppv_sample_t maxsmp );
+  /* Returns a value of bits-per-sample {bps} that is just large
+    enough to hold samples in the range {0..maxsmp}.
+    Iin particular, returns 0 if {maxsmp} is zero. */
+
 ppv_nbits_t ppv_best_bpw( ppv_nbits_t bps );
-  /* Returns a value of bits-per-word that minimizes wasted
+  /* Returns a value of bits-per-word {bpw} that minimizes wasted
     space for a sample array with {bps} bits per sample. */
 
 /* SAMPLE EXTRACTION AND INSERTION */
 
 ppv_sample_t ppv_get_sample ( ppv_array_t *A, const ppv_index_t ix[] );
-  /* Extracts the sample {A[ix[0],ix[1],.. ix[d-1]]}. */
+  /* Given an index tuple {ix[0..A.d-1]}, extracts the sample stored in
+    element {A[ix]}. Fails if {ix} is not a valid index tuple for {A}, 
+    or if {smp} is not in {0..A.maxsmp}.
+    
+    In particular, if {A.maxsmp} is zero, the index checking is done,
+    but a zero sample value is returned without accessing the (non-existent)
+    storage area. */
 
-void ppv_set_sample ( ppv_array_t *A, const ppv_index_t ix[], ppv_sample_t qv );
-  /* Stores value {qv} into the element {A[ix[0],ix[1],.. ix[d-1]]}. */
+void ppv_set_sample ( ppv_array_t *A, const ppv_index_t ix[], ppv_sample_t smp );
+  /* Given an index tuple {ix[0..A.d-1]} and a sample value {smp},
+    stores {smp} into the element {A[ix]}.  Fails if the index tuple
+    is not valid for {A}, or if {smp} is not in {0..A.maxsmp}.
+    
+    In particular, if {A.maxsmp} is zero, the index checking is done,
+    but {smp} must be zero and it is not acually written to memory. */
+
+bool_t ppv_index_is_valid ( const ppv_index_t ix[], ppv_array_t *A );
+  /* Returns TRUE iff {ix[0..A.d-1]} is a valid index tuple for the
+    array {A}. This is true if and only if {ix[ax]} lies in the range
+    {0..A.step[ax]-1}, for every axis {ax}.
+    
+    If {ix} is valid, the element {A[ix]} nominally "exists" and has a
+    value and position, but will not occupy any memory if {A.maxsmp} is
+    zero. */
+
+void ppv_array_assign ( ppv_array_t *A, ppv_array_t *B );
+  /* Copies the samples of {B} into the corresponding samples of {A}.
+    The two arrays must have the same size along every axis,
+    and any samples of {B} must be in the range {0..A.maxsmp}
+    
+    The assgnments are done in lex order of the indices. This matters
+    only if {A} is replicated along one or more axes whereas {B} is not;
+    so that multiple elements of {B} with different values may be
+    assigned to the same element of {A}. */
 
 /* SAMPLE EXTRACTION AND INSERTION WITH POSITION */
 
 ppv_pos_t ppv_sample_pos ( ppv_array_t *A, const ppv_index_t ix[] );
-  /* Computes the position of sample {A[ix[0],.. ix[d-1]]}. Does not check
-    whether the element exists or not. */
+  /* Given an index tuple {ix[0..A.d-1]}, computes the position 
+    of sample {A[ix]}. Does NOT check whether the index tuple is
+    valid. */
 
 /* For the procedures below, {pos} is the position of a sample in a
   sample storage area with address {el}. The samples are assumed to be
   packed with {bps} bits per sample and {bpw} bits per word; see the
   section "DETAILS OF SAMPLE PACKING" below. The user must make sure
-  that {pos} is valid (i.e. the sample actually exists.)  */
+  that {pos} is valid (i.e. the sample actually exists.) */
 
 ppv_sample_t ppv_get_sample_at_pos 
   ( void *el, 
@@ -205,16 +282,22 @@ ppv_sample_t ppv_get_sample_at_pos
     ppv_nbits_t bpw, 
     ppv_pos_t pos 
   );
-  /* Extracts the sample with position {pos}. */
+  /* If {bps} zero, ignores {el} and returns 0. Otherwise extracts the
+    value of the element with position {pos} from the area {el}.
+    No address range checking is done on {pos}. */
 
 void ppv_set_sample_at_pos 
   ( void *el, 
     ppv_nbits_t bps, 
     ppv_nbits_t bpw, 
     ppv_pos_t pos, 
-    ppv_sample_t qv 
+    ppv_sample_t smp 
   );
-  /* Stores value {qv} into the sample with position {pos}. */
+  /* If {bps} is zero, ignores {el} and does nothing. Otherwise stores
+    value {smp} into the element with position {pos} in the area {el}.
+    
+    No address range checking is done on {pos}. Fails if {smp} is not in
+    {0..2^bps-1}, but does not test it against the array's {maxsmp}. */
 
 void ppv_sample_range(ppv_array_t *A, ppv_sample_t *vminP, ppv_sample_t *vmaxP);
   /* Finds the maximum and mininmum values of all the samples in {A},
@@ -290,14 +373,6 @@ bool_t ppv_index_prev ( ppv_index_t ix[], ppv_array_t *A, ppv_dim_t na, ppv_pos_
 
    */
     
-/* INDEX TUPLE VALIDATION */
-    
-bool_t ppv_index_is_valid ( const ppv_index_t ix[], ppv_array_t *A );
-  /* Returns TRUE iff {ix} is a valid index tuple for the array {A},
-    i.e., if sample {A[ix[0],..ix[na-1]]} exists. This is true if and
-    only if {ix[ax]} lies in the range {0..A.step[ax]-1}, for every
-    axis {ax}. */
-
 /* DESCRIPTOR MANIPULATION */
 
 /* The following procedures modify the {size}, {step} and {base} field
@@ -456,15 +531,6 @@ bool_t ppv_enum
     is always 0. All {ppv_array_t} arguments that are not NULL must
     have the same {size} vector. */
 
-void ppv_array_assign ( ppv_array_t *A, ppv_array_t *B );
-  /* Copies the samples of {B} into the corresponding samples of {A}.
-    The two arrays must have the same size along every axis. 
-    
-    The assgnments are done in lex order of the indices. This matters
-    only if {A} is replicated along one or more axes whereas {B} is not;
-    so that multiple elements of {B} with different values may be
-    assigned to the same element of {A}. */
-
 /* DESCRIPTOR PRINTOUT */
 
 void ppv_print_descriptor ( FILE *wr, char *pf, ppv_array_t *A, char *sf );
@@ -486,100 +552,110 @@ bool_t ppv_descriptor_is_valid ( ppv_array_t *A, bool_t die );
         their indices differ.
 
       (2) For any {ax} in {0..A.d-1}, if {A.size[ax]} is 1, then {A.step[ax]} is zero.
+      
+      (3) The field {A.maxsmp} is at most {2^A.bps-1}.
 
-      (3) If the array is memoryless, then {A.base} and all {A.step}
+      (4) If the array is memoryless, then {A.base} and all {A.step}
         coefficients are zero, and {A.el} is NULL.
 
-      (4) The field {A.npos} is the number of samples with distinct
-        positions. Because of (3), {A.npos} is zero if any {A.size[ax]}
-        is zero, otherwise it is the product of {A.size[ax]}
-        for every {ax} where {A.step[ax]} is nonzero.
-
-      (5) The storage area of every valid sample is contained
-        in the allocated area pointed by {A.el}. (Note that 
-        when {A.bps==0} this is true even if {A.el==NULL}.)
+      (5) If the array is not memoryless, the storage area 
+        of every element is contained in the allocated 
+        area pointed by {A.el}.
         
-    The procedure returns TRUE if the parameters are valid.
-    Otherwise, it either aborts the program with an error message 
-    (if {die=TRUE}) or returns FALSE (if {die=FALSE}).
+    The procedure checks conditons (1)--(5). It returns TRUE if the
+    attributes of {A} are valid. Otherwise, it either aborts the program with
+    an error message (if {die=TRUE}) or returns FALSE (if {die=FALSE}).
   */
 
-/* DETAILS OF SAMPLE PACKING
+/* DETAILS OF ELEMENT PACKING */
 
-  General principles
-
-    The samples of an array {M} are stored in a vector of words,
-    pointed to by {M.el}. Each word is an unsigned binary integer with
-    {M.bpw} bits.
-
-    A sample is never split across word boundaries; so, if {M.bps} is
-    not an exact divisor or multiple of {M.bpw}, any incompletely filled
-    words will be padded with zeros at the `big' end.
-    
-    For this implementation, the word size {M.bpw} must be 8, 16, or
-    32. The implementation below assumes that words can be directly
-    addressed by a pointer of the appropriate type, and that an
-    {unsigned int} variable is at least 32 bits long.
-
-  Packing of "small" samples
-
-    If {M.bps} is less than {M.bpw}, then {K=M.bpw/M.bps} samples are stored
-    into each word. Within each word, samples with consecutive
-    positions are packed together in big-endian order. Thus, a sample
-    whose position is {pos} will be stored in word {iw = pos/K}, and
-    its units bit will be bit {ib = (K-1 - pos%K)*M.bps} of that word.
-
-    For example, consider an image with {I.bps=6} and 5 samples
-    {A,B,C,D,E} with positions {pos = 0,1,2,3,4}. With {bpw=8}, we
-    would have {K = 8/6 = 1} samples per word, and the samples would
-    be stored in memory as follows:
-
-      | word#   <--0---> <--1---> <--2---> <--3---> <--4--->
-      | sample#   <-0-->   <-1-->   <-2-->   <-3-->   <-4-->      
-      |         ==AAAAAA ==BBBBBB ==CCCCCC ==DDDDDD ==EEEEEE
-      | bit#    7      0 7      0 7      0 7      0 7      0   
-
-    With {bpw = 16}, we would have {K = 16/6 = 2}, and the following layout:
-
-      | word#   <------0-------> <-----1--------> <-----2-------->
-      | sample#     <-0--><-1-->     <-2--><-3-->     <-4-->      
-      |         ====AAAAAABBBBBB ====CCCCCCDDDDDD ====EEEEEE======
-      | bit#    1  1     0     0 1  1     0     0 1  1     0     0   
-      |         5  2     6     0 5  2     6     0 5  2     6     0   
-
-    With {bpw = 32}, we would have {K = 32/6 = 5}, and the following layout:
-
-      | word#   <---------------------1-------->
-      | sample#   <-0--><-1--><-2--><-3--><-4-->      
-      |         ==AAAAAABBBBBBCCCCCCDDDDDDEEEEEE
-      | bit#    33     2     1     1     0     0
-      |         10     4     8     2     6     0
-
-  Packing of "big" samples
-
-    If {M.bps} is greater than {M.bpw}, then each sample will occupy 
-    {K=(bps+bpw-1)/bpw} consecutive words, big-end first. Thus, if 
-    {bps = 18}, the layout for {bpw = 8} will be
-
-      | word#   <--0---> <--1---> <--2---> <--3---> <--4---> <--5---> ...
-      | sample#       <-------0---------->       <--------1---------> ...
-      |         ======AA AAAAAAAA AAAAAAAA ======BB BBBBBBBB BBBBBBBB ...
-      | bit#    7    2 0 7      0 7      0 7    2 0 7      0 7      0 ... 
-
-    while that for {bpw = 16} will be
-
-      | word#   <------0-------> <-----1--------> <-----2--------> <-----3--------> ...
-      | sample#               <---------0------->               <--------1--------> ...
-      |         ==============AA AAAAAAAAAAAAAAAA ==============BB BBBBBBBBBBBBBBBB ...
-      | bit#    1            0 0 1              0 1            0 0 1              0 ... 
-      |         5            2 0 5              0 5            2 0 5              0 ...  
-
-  Sample addressing
-
-    The sample storage area address {M.el} is the address of the word
-    that contains the highest-order bit of the sample with position 0.
-
-*/
+#define ppv_packing_INFO \
+  "General principles\n" \
+  "\n" \
+  "  In order to save storage and to simplify image transfer between\n" \
+  "  devices and computers with different architectures, the storage\n" \
+  "  area {A.el} is organized as a vector of /words/. Each\n" \
+  "  word is an unsigned binary integer with {A.bpw} bits. The\n" \
+  "  parameter {A.bpw} may be  different from the machine's native word size.\n" \
+  "  For this implementation, the word size {A.bpw} must be 8, 16, or\n" \
+  "  32. The implementation assumes that words can be directly\n" \
+  "  addressed by a pointer of the appropriate type.\n" \
+  "\n" \
+  "  Each element of an array {A} is stored in {A.bps} bits. Depending\n" \
+  "  on {A.bps} and {A.bpw}, one element may span two or more words, or\n" \
+  "  one word may contain two or more elements. The sample storage area\n" \
+  "  address {A.el} is the address of the word\n" \
+  "  that contains the highest-order bit of the sample with position 0.\n" \
+  "\n" \
+  "Packing of \"small\" samples\n" \
+  "\n" \
+  "  If {bps} is less than or equal to {bpw}, each element is entirely\n" \
+  "  contained in a single word, and {K=A.bpw/A.bps} elements are\n" \
+  "  allocated into each word. Within each word, samples with consecutive\n" \
+  "  positions are tightly packed together. Specifically a sample whose\n" \
+  "  position is {pos} will be stored in word {iw = pos/K}, and its units\n" \
+  "  bit will be bit {ib = (K-1 - pos%K)*A.bps} of that word If {A.bps}\n" \
+  "  is not an exact divisor of {A.bpw}, any incompletely filled words\n" \
+  "  will be padded with zeros at the high-order end.\n" \
+  "\n" \
+  "  For example, consider an image with {A.bps=6} and 5 samples\n" \
+  "  {A,B,C,D,E,F,G} with positions {pos = 0,1,2,3,4,5,6}. With {bpw=8}, we\n" \
+  "  would have {K = 8/6 = 1} samples per word, and the samples would\n" \
+  "  be stored in memory as follows:\n" \
+  "\n" \
+  "    | word#   <--0---> <--1---> <--2---> <--3---> <--4---> <--5---> <--6--->\n" \
+  "    | sample#   <-0-->   <-1-->   <-2-->   <-3-->   <-4-->   <-5-->   <-6-->\n" \
+  "    |         ==AAAAAA ==BBBBBB ==CCCCCC ==DDDDDD ==EEEEEE ==FFFFFF ==GGGGGG\n" \
+  "    | bit#    76     0 76     0 76     0 76     0 76     0 76     0 76     0\n" \
+  "\n" \
+  "  With {bpw = 16}, we would have {K = 16/6 = 2}, and the following layout:\n" \
+  "\n" \
+  "    | word#   <------0-------> <-----1--------> <-----2--------> <-----3-------->\n" \
+  "    | sample#     <-0--><-1-->     <-2--><-3-->     <-4--><-5-->     <--->       \n" \
+  "    |         ====AAAAAABBBBBB ====CCCCCCDDDDDD ====EEEEEEFFFFFF ====GGGGGG======\n" \
+  "    | bit#    1  1     0     0 1  1     0     0 1  1     0     0 1  1     0     0\n" \
+  "    |         5  2     6     0 5  2     6     0 5  2     6     0 5  2     6     0\n" \
+  "\n" \
+  "  With {bpw = 32}, we would have {K = 32/6 = 5}, and the following layout:\n" \
+  "\n" \
+  "    | word#   <---------------------1--------> <---------------------1-------->\n" \
+  "    | sample#   <-0--><-1--><-2--><-3--><-4-->   <-5--><-6-->                  \n" \
+  "    |         ==AAAAAABBBBBBCCCCCCDDDDDDEEEEEE ==FFFFFFGGGGGG==================\n" \
+  "    | bit#    33     2     1     1     0     0 33     2     1     1     0     0\n" \
+  "    |         10     4     8     2     6     0 10     4     8     2     6     0\n" \
+  "\n" \
+  "Packing of \"big\" samples\n" \
+  "\n" \
+  "  If {A.bps} is greater than {A.bpw}, then each sample will occupy\n" \
+  "  {K=(bps+bpw-1)/bpw} consecutive words, with word indices {(pos-1)*K}\n" \
+  "  to {pos*K-1}.  The units bit of the latter will be the units bit\n" \
+  "  of the sample.  If {A.bps} is not an exact multiple of {A.bpw},\n" \
+  "  the first word, with index {(pos-1)*K}, will be padded with zero\n" \
+  "  bits at the high-order end.\n" \
+  "\n" \
+  "  For example, if {bps = 18}, the layout for {bpw = 8} will be\n" \
+  "\n" \
+  "    | word#   <--0---> <--1---> <--2---> <--3---> <--4---> <--5---> ...\n" \
+  "    | sample#       <-------0---------->       <--------1---------> ...\n" \
+  "    |         ======AA AAAAAAAA AAAAAAAA ======BB BBBBBBBB BBBBBBBB ...\n" \
+  "    | bit#    7    2 0 7      0 7      0 7    2 0 7      0 7      0 ...\n" \
+  "\n" \
+  "  while that for {bpw = 16} will be\n" \
+  "\n" \
+  "    | word#   <------0-------> <-----1--------> <-----2--------> <-----3--------> ...\n" \
+  "    | sample#               <---------0------->               <--------1--------> ...\n" \
+  "    |         ==============AA AAAAAAAAAAAAAAAA ==============BB BBBBBBBBBBBBBBBB ...\n" \
+  "    | bit#    1            0 0 1              0 1            0 0 1              0 ...\n" \
+  "    |         5            2 0 5              0 5            2 0 5              0 ...\n" \
+  "\n" \
+  "  and that for {bpw = 32} will be\n" \
+  "\n" \
+  "    | word#   <--------------0---------------> <--------------2---------------> ...\n" \
+  "    | sample#               <-------0-------->               <-------1--------> ...\n" \
+  "    |         ==============AAAAAAAAAAAAAAAAAA ==============BBBBBBBBBBBBBBBBBB ...\n" \
+  "    | bit#    3             1                0 3             1                0 ...\n" \
+  "    |         1             7                0 1             7                0 ...\n" \
+  ""
 
 size_t ppv_tot_sample_bytes ( ppv_sample_count_t npos, ppv_nbits_t bps, ppv_nbits_t bpw );
   /* Returns the minimum number of bytes needed to store all the voxels
@@ -587,7 +663,7 @@ size_t ppv_tot_sample_bytes ( ppv_sample_count_t npos, ppv_nbits_t bps, ppv_nbit
     {bps} bits and the samples are packed in words of {bpw} bits each.
     
     Assumes that the samples are packed as closely as allowed by the
-    packing rules above, with no index replication.  In particular,
+    packing rules above, with no element replication.  In particular,
     returns 0 if {npos == 0} or {bps == 0}. */
 
 /* TESTING AND DEBUGGING */
@@ -599,18 +675,27 @@ void ppv_choose_test_size(ppv_dim_t d, ppv_sample_count_t npos, ppv_size_t sz[])
     The min size will be at least 1. If {d >= 2}, the max size will be
     about 3 times the min size. */
     
+void ppv_dump_storage(FILE *wr, void *el, ppv_pos_t pos, ppv_nbits_t bps, ppv_nbits_t bpw, int nxw);
+  /* Prints the word(s) of the storage area {*el} that contain(s) the 
+    element with position {pos}, plus {nxw} words of context.
+    Assumes that the element is {bps}  bits long and that elements
+    are packed into words of {bpw} bits each, as explained in {ppv_packing_INFO}.
+    Also prints the decimal value of the sample stored there. */
+
 /* RANDOM FILLING 
 
   The procedures in this section use the the pseudorandom generators
-  from {jsrandom.h}. To make the results repeatable or 
-  non-repeatable, call {srandom} from {stdlib.h} first, with an
-  appropriate {seed}. */
+  from {jsrandom.h}. To ensure that the results are repeatable or
+  non-repeatable, as needed, call {srandom} from {stdlib.h} first, with
+  an appropriate {seed}. */
 
 void ppv_throw_noise(ppv_array_t *A);
-  /* Fills the array {A} with pseudo-random (very pseudo) sample values. */
+  /* Fills the array {A} with pseudo-random (very pseudo) sample values
+    in the range {0..A.maxsmp}. */
 
 void ppv_throw_balls(ppv_array_t *A);
-  /* Fills the array {A} with 0 samples except for a few balls
-    of random ceneters and radii, possibly overlapping. */
+  /* Seta all elements of {A} to sample value 0 except for a few balls
+    of random centers and radii, possibly overlapping, whith 
+    sample values in {1..A.maxsmp}. */
 
 #endif

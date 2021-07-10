@@ -1,5 +1,5 @@
 /* See {kdtom_ixmap.h}. */
-/* Last edited on 2021-07-02 00:29:12 by jstolfi */
+/* Last edited on 2021-07-08 15:50:06 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -116,11 +116,11 @@ ppv_sample_t kdtom_ixmap_get_sample(kdtom_ixmap_t *T, ppv_index_t ix[])
     //   { ksub = 1; ix[ax] = ix[ax] - sz0; }
     // 
     // /* Get the sample: */
-    ppv_sample_t v = kdtom_get_sample(T->sub, ix);
+    ppv_sample_t smp = kdtom_get_sample(T->sub, ix);
     //
     // /* Restore original index vector: */
     // ix[ax] = ix_save;
-    return v;
+    return smp;
   }
 
 size_t kdtom_ixmap_bytesize(kdtom_ixmap_t *T, bool_t total)

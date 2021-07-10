@@ -1,5 +1,5 @@
 /* See ppv_array.h */
-/* Last edited on 2021-07-03 15:04:58 by jstolfi */
+/* Last edited on 2021-07-10 04:11:31 by jstolfi */
 /* Copyright © 2003 by Jorge Stolfi, from University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
@@ -63,37 +63,50 @@ bool_t ppv_descriptor_is_valid ( ppv_array_t *A, bool_t die )
     assert(ppv_MAX_POS == ix_MAX_POS); 
     assert(ppv_MAX_ABS_STEP == ix_MAX_ABS_STEP);
     assert(ppv_MAX_SIZE == ix_MAX_SIZE);
+    if (A->maxsmp > ppv_max_sample(A->bps))
+      { fail_test(die, "invalid max sample value"); }
     if (! ix_parms_are_valid(A->d, A->size, A->base, A->step, die)) { return FALSE; };
     if (! ix_positions_are_distinct(A->d, A->size, A->step, die)) { return FALSE; };
+    if ((ix_is_empty(A->d, A->size) || (A->maxsmp == 0)) != (A->el == 0)) 
+      { fail_test(die, "inconsistent element storage area"); }
     return TRUE;
   }
 
-ppv_array_t *ppv_array_new ( ppv_dim_t d, ppv_size_t *sz, ppv_nbits_t bps, ppv_nbits_t bpw )
+ppv_array_t *ppv_array_new ( ppv_dim_t d, ppv_size_t *sz, ppv_sample_t maxsmp )
   { 
     ppv_array_t *A = ppv_array_new_desc(d);
     
-    /* Check {bps} and store it: */
-    demand(bps <= ppv_MAX_BPS, "bits-per-sample too big");
+    /* Check {maxsmp} and store it: */
+    demand(maxsmp <= ppv_MAX_SAMPLE_VAL, "max sample value too big");
+    A->maxsmp = maxsmp;
+
+    /* Compute {bps} and store it: */
+    ppv_nbits_t bps = ppv_min_bps(maxsmp);
+    assert(bps <= ppv_MAX_BPS);
     A->bps = bps;
+
     /* Check {bpw} and store it: */
-    demand(bpw <= ppv_MAX_BPW, "bits-per-word too big");
+    ppv_nbits_t bpw = ppv_best_bpw(bps);
+    assert(bpw <= ppv_MAX_BPW);
     A->bpw = bpw; 
-    /* The {base} is always 0: */
+
+    /* The {base} of a new array is 0: */
     A->base = 0;
     
-    /* Save {A->size}, see if array is empty: */
+    /* Save {A->size}: */
     for (ppv_axis_t ax = 0; ax < A->d; ax++) { A->size[ax] = sz[ax]; }
+
     /* Compute number {npos} of distinct positions, set {A->step}: */
     ppv_sample_count_t npos = ppv_compute_npos_steps(d, A->size, A->step);
 
+    /* Set {A->el}: */
     size_t nbytes = ppv_tot_sample_bytes(npos, bps, bpw);
-    /* Set {A->step,A->el}: */
     if (nbytes == 0)
       { /* Memoryless array: */ 
         A->el = NULL;
       }
     else
-      { demand (nbytes <= ppv_MAX_BYTES, "too many bytes");
+      { demand(nbytes <= ppv_MAX_BYTES, "too many bytes");
         A->el = notnull(malloc(nbytes), "no mem for new array");
       }
     return A;
@@ -104,7 +117,7 @@ ppv_sample_count_t ppv_compute_npos_steps ( ppv_dim_t d, ppv_size_t size[], ppv_
     ppv_sample_count_t npos = 1;
     for (ppv_axis_t ax = 0; ax < d; ax++) 
       { ppv_size_t szi = size[ax];
-        demand (szi <= ppv_MAX_SIZE, "bad array size");
+        demand(szi <= ppv_MAX_SIZE, "bad array size");
         if (szi == 0) 
           { npos = 0; break; }
         else if (szi == 1) 
@@ -113,7 +126,7 @@ ppv_sample_count_t ppv_compute_npos_steps ( ppv_dim_t d, ppv_size_t size[], ppv_
           { /* Store position increment along axis {ax}, if relevant: */
             if (step != NULL) { step[ax] = npos; }
             /* Check overflow BEFORE multiplication: */
-            if (npos > 0) { demand (szi <= ppv_MAX_SAMPLES/npos, "too many samples"); }
+            if (npos > 0) { demand(szi <= ppv_MAX_SAMPLES/npos, "too many samples"); }
             npos *= szi;
           }
       }
@@ -134,6 +147,7 @@ ppv_array_t *ppv_array_clone ( ppv_array_t *A )
     C->el = A->el;
     C->bps = A->bps;
     C->bpw = A->bpw;
+    C->maxsmp = A->maxsmp;
     return C;
   }
 
@@ -183,6 +197,7 @@ ppv_array_t *ppv_array_new_desc ( ppv_dim_t d )
     A->base = 0;
     A->bps = 0;
     A->bpw = 0;
+    A->maxsmp = 0;
     A->el = NULL;
     
     return A;
@@ -216,15 +231,31 @@ ppv_nbits_t ppv_best_bpw( ppv_nbits_t bps )
     return bpw;
   }
 
-ppv_sample_t ppv_get_sample ( ppv_array_t *A, const ppv_index_t ix[] )
-  { ppv_pos_t pos = ppv_sample_pos(A, ix);
-    ppv_sample_t qv = ppv_get_sample_at_pos(A->el, A->bps, A->bpw, pos);
-    return qv;
+ppv_sample_t ppv_max_sample( ppv_nbits_t bps )
+  { 
+    ppv_sample_t maxsmp = (ppv_sample_t)((((uint64_t)1) << bps) - 1);
+    return maxsmp;
   }
 
-void ppv_set_sample ( ppv_array_t *A, const ppv_index_t ix[], ppv_sample_t qv )
-  { ppv_pos_t pos = ppv_sample_pos(A, ix);
-    ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, qv);
+ppv_nbits_t ppv_min_bps( ppv_sample_t maxsmp )
+  { ppv_nbits_t bps = 0;
+    while (maxsmp > 0) { maxsmp = (maxsmp >> 1); bps++; }
+    return bps;
+  }
+
+ppv_sample_t ppv_get_sample ( ppv_array_t *A, const ppv_index_t ix[] )
+  { demand(ix_is_valid(A->d, ix, A->size), "invalid index");
+    ppv_pos_t pos = ppv_sample_pos(A, ix);
+    ppv_sample_t smp = ppv_get_sample_at_pos(A->el, A->bps, A->bpw, pos);
+    assert(smp <= A->maxsmp);
+    return smp;
+  }
+
+void ppv_set_sample ( ppv_array_t *A, const ppv_index_t ix[], ppv_sample_t smp )
+  { demand(ix_is_valid(A->d, ix, A->size), "invalid index");
+    ppv_pos_t pos = ppv_sample_pos(A, ix);
+    demand(smp <= A->maxsmp, "invalid sample value");
+    ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, smp);
     return;
   }
 
@@ -250,16 +281,16 @@ ppv_sample_t ppv_get_sample_at_pos
         else 
           { qw = *(((ppv_word_32_t *)el) + pos/spw); }
         ppv_nbits_t shift = (ppv_nbits_t)((spw - 1 - pos%spw)*bps); /* Shift to place sample at low end: */
-        ppv_word_t mask = ((ppv_word_t)1<<bps) - 1;   /* Mask to extract low-end sample. */
-        ppv_sample_t qv = (qw >> shift) & mask;
+        ppv_word_t mask = (ppv_word_t)((((uint64_t)1)<<bps) - 1);   /* Mask to extract low-end sample. */
+        ppv_sample_t smp = (qw >> shift) & mask;
         /* fprintf(stderr, "get: pos = " ppv_pos_t_FMT,  pos); */
         /* fprintf(stderr, " el = %016lx  qw = %08x", (uint64_t)el, qw); */
-        /* fprintf(stderr, " shift = %d mask = %08x qv = %08x\n", shift, mask, qv); */
-        return qv; 
+        /* fprintf(stderr, " shift = %d mask = %08x smp = %08x\n", shift, mask, smp); */
+        return smp; 
       }
     else if (bps > bpw)
       { int wps = (bps + bpw - 1) / bpw; /* Words per sample. */
-        ppv_word_t mask = ((ppv_word_t)1 << bps) - 1; /* Mask to remove padding. */
+        ppv_word_t mask = (ppv_word_t)((((uint64_t)1) << bps) - 1); /* Mask to remove padding. */
         /* Gather the sample words into {qw}: */
         ppv_word_t qw = 0;
         if (bpw == 8) 
@@ -281,9 +312,9 @@ ppv_sample_t ppv_get_sample_at_pos
           { ppv_word_32_t *q32 = ((ppv_word_32_t *)el) + pos*wps;
             for (int32_t k = 0; k < wps; k++) { qw = (qw << bpw) | (*q32); q32++; }
           }
-        ppv_sample_t qv = qw & mask;
-        /* fprintf(stderr, " qv = %08x", qv); */
-        return qv;
+        ppv_sample_t smp = qw & mask;
+        /* fprintf(stderr, " smp = %08x", smp); */
+        return smp;
       }
     else /* bps == bpw */
       { if (bpw == 8) 
@@ -300,94 +331,96 @@ void ppv_set_sample_at_pos
     ppv_nbits_t bps, 
     ppv_nbits_t bpw, 
     ppv_pos_t pos, 
-    ppv_sample_t qv 
+    ppv_sample_t smp 
   )
-  { ppv_word_t mask = ((ppv_word_t)1 << bps) - 1; /* Mask to remove padding. */
-    demand(qv <= mask, "bad pixel value");
+  { ppv_word_t vmask = (ppv_word_t)((((uint64_t)1) << bps) - 1); /* Mask to remove padding. */
+    demand(smp <= vmask, "bad pixel value");
     if (bps == 0)
       { return; }
     else if (bps < bpw)
       { ppv_nbits_t spw = bpw/bps; /* Samples per word. */
         ppv_nbits_t shift = (ppv_nbits_t)((spw - 1 - pos%spw)*bps); /* Shift to apply to sample: */
-        ppv_word_t mask = (((ppv_word_t)1<<bps) - 1) << shift; /* Mask to extract sample. */
+        ppv_word_t shmask = vmask << shift; /* Mask to extract sample. */
         /* Insert the sample into the appropriate word: */
         
-        /* fprintf(stderr, "set: mask = %u ~mask = %u shift = %d\n", mask, (~mask), shift); */
+        /* fprintf(stderr, "set: shmask = %u ~shmask = %u shift = %d\n", shmask, (~shmask), shift); */
         if (bpw == 8) 
           { ppv_word_08_t *q8 = ((ppv_word_08_t *)el) + pos/spw; 
-            (*q8) = (ppv_word_08_t)(((*q8) & (~mask)) | ((qv << shift) & mask));
+            (*q8) = (ppv_word_08_t)(((*q8) & (~shmask)) | ((smp << shift) & shmask));
           }
         else if (bpw == 16) 
           { ppv_word_16_t *q16 = ((ppv_word_16_t *)el) + pos/spw;
-            (*q16) = (ppv_word_16_t)(((*q16) & (~mask)) | ((qv << shift) & mask));
+            (*q16) = (ppv_word_16_t)(((*q16) & (~shmask)) | ((smp << shift) & shmask));
           }
         else 
           { ppv_word_32_t *q32 = ((ppv_word_32_t *)el) + pos/spw;
             /* fprintf(stderr, "set: pos = " ppv_pos_t_FMT, pos); */
             /* fprintf(stderr, " el = %016lx qw = %08x", (uint64_t)el, (*q32)); */
-            /* fprintf(stderr, " qv = %08x mask = %08x shift = %d", qv, mask, shift); */
-            (*q32) = (ppv_word_32_t)(((*q32) & (~mask)) | ((qv << shift) & mask));
+            /* fprintf(stderr, " smp = %08x shmask = %08x shift = %d", smp, shmask, shift); */
+            (*q32) = (ppv_word_32_t)(((*q32) & (~shmask)) | ((smp << shift) & shmask));
             /* fprintf(stderr, " qw = %08x\n", (*q32)); */
           }
       }
     else if (bps > bpw)
       { ppv_nbits_t wps = (ppv_nbits_t)((bps + bpw - 1) / bpw); /* Words per sample. */
-        ppv_word_t maskw = (1 << bpw) - 1; /* Mask to chop a wordful from the sample. */
-        ppv_word_t masks = (1 << (bps - wps*bpw)) - 1; /* Mask to protect padding. */
+        ppv_word_t maskw = (ppv_word_t)((((uint64_t)1) << bpw) - 1); /* Mask to chop a wordful from the sample. */
+        ppv_nbits_t bhw = (ppv_nbits_t)(((int32_t)bps - 1)%bpw + 1); /* Number of sample bits in the first word. */
+        ppv_word_t masks = (ppv_word_t)((((uint64_t)1) << bhw) - 1); /* Mask to chop the bits of in the first word. */
         /* Split the sample into words and store them */
         if (bpw == 8) 
           { ppv_word_08_t *q8 = ((ppv_word_08_t *)el) + pos*wps + wps - 1;
             /* fprintf(stderr, "set: pos = " ppv_pos_t_FMT " el = %016lx", pos, (uint64_t)el); */
-            /* fprintf(stderr, " qv = %08x", qv); */
+            /* fprintf(stderr, " smp = %08x\n", smp); */
             for (int32_t k = 1; k < wps; k++) 
               { /* fprintf(stderr, " q8 = %02x", (*q8)); */
-                (*q8) = (ppv_word_08_t)(qv & maskw);
-                /* fprintf(stderr, " -> %02x", (*q8)); */
-                qv >>= bpw;
+                (*q8) = (ppv_word_08_t)(smp & maskw);
+                /* fprintf(stderr, " -> %02x\n", (*q8)); */
+                smp >>= bpw;
                 q8--; }
             /* fprintf(stderr, " q8 = %02x", (*q8)); */
-            (*q8) = (ppv_word_08_t)(((*q8) & (~masks)) | (qv & masks)); 
+            (*q8) = (ppv_word_08_t)(((*q8) & (~masks)) | (smp & masks)); 
             /* fprintf(stderr, " -> %02x\n", (*q8)); */
           }
         else if (bpw == 16) 
           { ppv_word_16_t *q16 = ((ppv_word_16_t *)el) + pos*wps + wps -1;
             for (int32_t k = 1; k < wps; k++) 
-              { (*q16) = (ppv_word_16_t)(qv & maskw); qv >>= bpw; q16--; }
-            (*q16) =  (ppv_word_16_t)(((*q16) & (~masks)) | (qv & masks)); 
+              { (*q16) = (ppv_word_16_t)(smp & maskw); smp >>= bpw; q16--; }
+            (*q16) =  (ppv_word_16_t)(((*q16) & (~masks)) | (smp & masks)); 
           }
         else 
           { ppv_word_32_t *q32 = ((ppv_word_32_t *)el) + pos*wps + wps -1;
             for (int32_t k = 1; k < wps; k++) 
-              { (*q32) =  (ppv_word_32_t)(qv & maskw); qv >>= bpw; q32--; }
-            (*q32) =  (ppv_word_32_t)(((*q32) & (~masks)) | (qv & masks)); 
+              { (*q32) =  (ppv_word_32_t)(smp & maskw); smp >>= bpw; q32--; }
+            (*q32) =  (ppv_word_32_t)(((*q32) & (~masks)) | (smp & masks)); 
           }
       }
     else /* bps == bpw */
       { if (bpw == 8) 
-          { *(((ppv_word_08_t *)el) + pos) = (ppv_word_08_t)qv; }
+          { *(((ppv_word_08_t *)el) + pos) = (ppv_word_08_t)smp; }
         else if (bpw == 16) 
-          { *(((ppv_word_16_t *)el) + pos) = (ppv_word_16_t)qv; }
+          { *(((ppv_word_16_t *)el) + pos) = (ppv_word_16_t)smp; }
         else 
-          { *(((ppv_word_32_t *)el) + pos) = (ppv_word_32_t)qv; }
+          { *(((ppv_word_32_t *)el) + pos) = (ppv_word_32_t)smp; }
       }
   }
 
-void ppv_sample_range(ppv_array_t *A, ppv_sample_t *vminP, ppv_sample_t *vmaxP)
+void ppv_sample_range(ppv_array_t *A, ppv_sample_t *smp_minP, ppv_sample_t *smp_maxP)
   { 
-    ppv_sample_t vmin = (ppv_sample_t)((1 << A->bps) - 1);
-    ppv_sample_t vmax = 0;
+    ppv_sample_t smp_min = A->maxsmp;
+    ppv_sample_t smp_max = 0;
     auto bool_t update(const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC);
-      /* Updates {vmin,vmax} with the sample at {pA}. */
+      /* Updates {smp_min,smp_max} with the sample at {pA}. */
       
     if (A->bps > 0) { ppv_enum(update, FALSE, A, NULL, NULL); }
-    (*vminP) = vmin;
-    (*vmaxP) = vmax;
+    (*smp_minP) = smp_min;
+    (*smp_maxP) = smp_max;
     return;
     
     bool_t update(const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC)
-      { ppv_sample_t val = ppv_get_sample_at_pos(A->el, A->bps, A->bpw, pA);
-        if (val < vmin) { vmin = val; }
-        if (val > vmax) { vmax = val; }
+      { ppv_sample_t smp = ppv_get_sample_at_pos(A->el, A->bps, A->bpw, pA);
+        assert(smp <= A->maxsmp);
+        if (smp < smp_min) { smp_min = smp; }
+        if (smp > smp_max) { smp_max = smp; }
         return FALSE;
       }
   }
@@ -444,6 +477,7 @@ ppv_array_t *ppv_slice ( ppv_array_t *A, ppv_axis_t ax, ppv_index_t ix )
     for(ppv_axis_t ax = 0; ax < dS; ax++) { S->size[ax] = sizeA[ax]; S->step[ax] = stepA[ax]; }
     S->bps = A->bps;
     S->bpw = A->bpw;
+    S->maxsmp = A->maxsmp;
     S->el = A->el;
     
     return S;
@@ -476,6 +510,7 @@ ppv_array_t *ppv_chop ( ppv_array_t *A, ppv_axis_t ax, ppv_size_t sz )
     for(ppv_axis_t ax = 0; ax < dS; ax++) { S->size[ax] = sizeA[ax]; S->step[ax] = stepA[ax]; }
     S->bps = A->bps;
     S->bpw = A->bpw;
+    S->maxsmp = A->maxsmp;
     S->el = A->el;
     
     return S;
@@ -518,8 +553,6 @@ bool_t ppv_enum
 
 void ppv_array_assign ( ppv_array_t *A, ppv_array_t *B  )
   {
-    ppv_sample_t mask = (ppv_sample_t)((((ppv_sample_t)1) << A->bps) - 1); /* {A} sample mask. */
-    
     auto bool_t copy_voxel( const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC);
       /* Sets the sample of {A} at position {pA} to the sample value of {B} at positon {pB}.
         Ignores {ix} and {pC}. */
@@ -529,8 +562,10 @@ void ppv_array_assign ( ppv_array_t *A, ppv_array_t *B  )
     
     /* Internal procedures: */
     bool_t copy_voxel( const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC )
-      { ppv_sample_t vsmp = ppv_get_sample_at_pos(B->el, B->bps, B->bpw, pB);
-        ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pA, vsmp & mask);
+      { ppv_sample_t smp = ppv_get_sample_at_pos(B->el, B->bps, B->bpw, pB);
+        assert(smp <= B->maxsmp);
+        demand(smp <= A->maxsmp, "invalid sample value");
+        ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pA, smp);
         return FALSE;
       }
   }
@@ -540,17 +575,24 @@ void ppv_array_assign ( ppv_array_t *A, ppv_array_t *B  )
 void ppv_print_descriptor ( FILE *wr, char *pf, ppv_array_t *A, char *sf )
   {
     fprintf(stderr, "%s", pf); 
-    fprintf(stderr, "bps = %u bpw = %u", A->bps, A->bpw);
+    fprintf(stderr, "d = %u", A->d);
+    fprintf(stderr, " bps = %u bpw = %u", A->bps, A->bpw);
+    fprintf(stderr, " maxsmp = " ppv_sample_t_FMT, A->maxsmp);
+    fprintf(stderr, " size(step) = [ ");
     for (ppv_axis_t ax = 0; ax < A->d; ax++)
       { fprintf(stderr, " ");
         fprintf(stderr, ppv_size_t_FMT, A->size[ax]);
-        fprintf(stderr, "(×");
+        fprintf(stderr, "(");
         fprintf(stderr, ppv_step_t_FMT, A->step[ax]);
         fprintf(stderr, ")");
       }
-    fprintf(stderr, " base = ");
+    fprintf(stderr, " ] base = ");
     fprintf(stderr, ppv_pos_t_FMT, A->base);
     fprintf(stderr, " el = %lu", ((uint64_t)A->el));
+    ppv_sample_count_t nix = ppv_sample_count(A, TRUE);
+    fprintf(stderr, " nix = " ppv_sample_count_t_FMT, nix);
+    ppv_sample_count_t nel = ppv_sample_count(A, FALSE);
+    fprintf(stderr, " nel = " ppv_sample_count_t_FMT, nel);
     fprintf(stderr, "%s", sf);
   }
 
@@ -606,12 +648,100 @@ void ppv_choose_test_size(ppv_dim_t d, ppv_sample_count_t npos, ppv_size_t sz[])
       }
   }
 
+void ppv_dump_storage(FILE *wr, void *el, ppv_pos_t pos, ppv_nbits_t bps, ppv_nbits_t bpw, int32_t nxw)
+  {
+    if (bps == 0)
+      { fprintf(stderr, "  zero-length pixels -- no storage area to dump, sample is zero.\n");
+        return;
+      }
+    if (el == NULL)
+      { fprintf(stderr, "  array has no storage area\n");
+        return;
+      }
+
+    /* Find word count and word and bit indices {iwp,ibt} of element {pos}: */
+    int64_t nw;   /* Number of words that contain the sample. */
+    int64_t iwp;  /* Index of word that contains the high bit of element. */
+    int64_t ibt;  /* Index of high bit of element in that word. */
+    if (bps <= bpw)
+      { /* One or more whole samples per word: */
+        int64_t spw = bpw/bps;             /* Whole samples per word. */
+        iwp = ((int64_t)pos)/spw;
+        nw = 1;
+        int64_t isw = ((int64_t)pos)%spw;  /* Index of sample in word. */
+        ibt = ((int64_t)bpw - spw*bps) + isw*bps;
+      }
+    else
+      { /* Two or more words per sample: */
+        int64_t wps = (bps + bpw - 1)/bpw;  /* Words per sample. */
+        iwp = ((int64_t)pos)*wps;
+        nw = wps;
+        ibt = wps*bpw - bps;
+      }
+    assert(iwp >= 0);
+    assert(ibt >= 0);
+    
+    /* Print {nw} words starting with that one, plus {nxw} words on each side for context: */
+    int64_t iw_ini = (iwp < nxw ? 0 : iwp - nxw);
+    int64_t iw_fin = iwp + nw - 1 + nxw;
+    
+    int64_t kb_ini = ibt;           /* Index of first sample bit relative to start of the word {iwp}. */
+    int64_t kb_fin = ibt + bps - 1; /* Index of last sample bit relative to start of the word {iwp}. */
+    
+    /* Print word indices: */
+    for (int64_t iw = iw_ini; iw <= iw_fin; iw++)
+      { if (iw != 0) { fprintf(wr, " "); }
+        fprintf(wr, "%*ld", bpw, iw); 
+      }
+    fprintf(stderr, "\n");
+    
+    /* Print the bits, compute the sample: */
+    int32_t kb; /* Sequential index of bit relative to start of the word {iwp}. */
+    uint64_t smp = 0; /* Sample value. */
+    for (uint64_t iw = iw_ini; iw <= iw_fin; iw++)
+      { if (iw == iwp) { kb = 0; }
+        ppv_word_t w;
+        if (bpw == 8) 
+            { w = *(((ppv_word_08_t *)el) + iw); }
+          else if (bpw == 16) 
+            { w = *(((ppv_word_16_t *)el) + iw); }
+          else 
+            { w = *(((ppv_word_32_t *)el) + iw); }
+        if (iw != 0) { fprintf(wr, " "); }
+        for (int32_t axb = bpw-1; axb >= 0; axb--)
+          { int32_t bit = (w >> axb) & 1;
+            fprintf(wr, "%d", bit);
+            if ((kb >= kb_ini) && (kb <= kb_fin)) 
+              { smp = (smp << 1) | bit; }
+            kb++;
+          }
+      }
+    fprintf(stderr, "\n");
+    
+    /* Highlight the bits of the sample: */
+    for (uint64_t iw = iw_ini; iw <= iw_fin; iw++)
+      { if (iw == iwp) { kb = 0; }
+        if (iw != 0) { fprintf(wr, " "); }
+        for (int32_t axb = bpw-1; axb >= 0; axb--)
+          { if ((kb >= kb_ini) && (kb <= kb_fin)) 
+              { fprintf(wr, "^"); }
+            else
+              { fprintf(wr, " "); }
+            kb++;
+          }
+      }
+    fprintf(stderr, "\n");
+   
+    fprintf(stderr, "sample value = %lu\n", smp);
+    fprintf(stderr, "\n");
+  }
+
 void ppv_throw_noise(ppv_array_t *A)
   {
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
     ppv_nbits_t bps = A->bps;
     ppv_nbits_t bpw = A->bpw;
-    ppv_sample_t maxval = (ppv_sample_t)((1 << bps) - 1);
+    ppv_sample_t maxsmp = A->maxsmp;
 
     auto bool_t throw_voxel(const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC);
     ppv_sample_count_t nset = 0;  /* Count of samples assigned. */
@@ -627,11 +757,11 @@ void ppv_throw_noise(ppv_array_t *A)
     return;
     
     bool_t throw_voxel(const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC)
-      { ppv_sample_t val = (ppv_sample_t)uint64_mrandom(maxval);
-        ppv_set_sample_at_pos(A->el, bps, bpw, pA, val);
+      { ppv_sample_t smp = (ppv_sample_t)uint64_mrandom(maxsmp);
+        ppv_set_sample_at_pos(A->el, bps, bpw, pA, smp);
         if (debug) 
           { if (nset < 256) 
-              { fprintf(stderr, " " ppv_sample_t_FMT, val); }
+              { fprintf(stderr, " " ppv_sample_t_FMT, smp); }
             else if (nset == 256) 
               { fprintf(stderr, " ..."); }
           }
@@ -642,20 +772,20 @@ void ppv_throw_noise(ppv_array_t *A)
         
 void ppv_throw_balls(ppv_array_t *A)
   {
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
     ppv_dim_t d = A->d;
     ppv_nbits_t bps = A->bps;
     ppv_nbits_t bpw = A->bpw;
-    if ((bps == 0) || (d == 0)) { /* Single value or single voxel: */ return; }
-    ppv_sample_t maxval = (ppv_sample_t)((1 << bps) - 1);
+    ppv_sample_t maxsmp = A->maxsmp;
+    if ((maxsmp == 0) || (d == 0)) { /* Single value or single voxel: */ return; }
 
-    /* Choose centers and radii: */
+    /* Choose centers, radii, and values: */
     int32_t nb = 10; /* Number of balls. */
     ppv_sample_count_t npos = ppv_sample_count(A, FALSE);
     double rad_max = 0.2*pow((double)npos, 1.0/d);
     double **ctr = notnull(malloc(nb*sizeof(double *)), "no mem");
     double rad[nb];
-    ppv_sample_t val[nb];
+    ppv_sample_t bsmp[nb];
     if (debug) { fprintf(stderr, "throwing %d balls...\n", nb); }
     for (int32_t ib = 0; ib < nb; ib++)
       { if (debug) { fprintf(stderr, "  ball %3d center = (", ib); }
@@ -666,15 +796,15 @@ void ppv_throw_balls(ppv_array_t *A)
           }
         rad[ib] = dabrandom(0.3*rad_max, rad_max);
         if (debug) { fprintf(stderr, " ) radius = %8.2f", rad[ib]); }
-        val[ib] = (ppv_sample_t)uint64_abrandom(1, maxval);
-        if (debug) { fprintf(stderr, " value = " ppv_sample_t_FMT "\n", val[ib]); }
+        bsmp[ib] = (ppv_sample_t)imax(uint64_abrandom(1, maxsmp),uint64_abrandom(1, maxsmp));
+        if (debug) { fprintf(stderr, " value = " ppv_sample_t_FMT "\n", bsmp[ib]); }
       }
     auto bool_t set_voxel(const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC);
     ppv_enum(set_voxel, FALSE, A, NULL, NULL);
     return;
     
     bool_t set_voxel(const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC)
-      { ppv_sample_t v = 0; /* Value to store. */
+      { ppv_sample_t smp = 0; /* Value to store. */
         /* Check if voxel center is inside some ball: */
         for(int32_t ib = 0; ib < nb; ib++)
           { double d2 = 0.0; /* Squared dist from center of ball {b} */
@@ -682,11 +812,9 @@ void ppv_throw_balls(ppv_array_t *A)
               { double da = ((double)ix[ax] + 0.5) - ctr[ib][ax]; 
                 d2 += da*da;
               }
-            if (sqrt(d2) < rad[ib]) { v = val[ib]; }
+            if (sqrt(d2) < rad[ib]) { smp = bsmp[ib]; }
           }
-        ppv_set_sample_at_pos(A->el, bps, bpw, pA, v);
+        ppv_set_sample_at_pos(A->el, bps, bpw, pA, smp);
         return FALSE;
       }
-    
-  
   }

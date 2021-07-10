@@ -1,5 +1,5 @@
 /* See {kdtom.h}. */
-/* Last edited on 2021-07-01 15:11:35 by jstolfi */
+/* Last edited on 2021-07-09 00:03:15 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -123,10 +123,11 @@ kdtom_t *kdtom_grind_array(ppv_array_t *A)
     /* General parameters: */
     ppv_dim_t d = A->d;
     ppv_nbits_t bps = A->bps;
-    size_t split_sz = kdtom_split_node_bytesize(d);
-    size_t const_sz = kdtom_const_node_bytesize(d);
-    size_t array_sz = kdtom_array_node_bytesize(d);
+    size_t split_bytes = kdtom_split_node_bytesize(d);
+    size_t const_bytes = kdtom_const_node_bytesize(d);
+    size_t array_bytes = kdtom_array_node_bytesize(d);
     ppv_nbits_t bpw = ppv_best_bpw(bps);
+    ppv_sample_t maxsmp = A->maxsmp;
     
     kdtom_t *T;
     if (ppv_is_empty(A))
@@ -140,10 +141,10 @@ kdtom_t *kdtom_grind_array(ppv_array_t *A)
     kdtom_t *grind(ppv_array_t *B)
       { 
         /* Is it constant? */
-        ppv_sample_t vmin, vmax;
-        ppv_sample_range(B, &vmin, &vmax);
-        if (vmin == vmax)
-          { return (kdtom_t*)kdtom_const_make(d, bps, B->size, vmin); }
+        ppv_sample_t smp_min, smp_max;
+        ppv_sample_range(B, &smp_min, &smp_max);
+        if (smp_min == smp_max)
+          { return (kdtom_t*)kdtom_const_make(d, bps, B->size, smp_min); }
 
         /* Is it worth splitting? */
         ppv_axis_t ax = choose_split_axis(B);
@@ -178,9 +179,9 @@ kdtom_t *kdtom_grind_array(ppv_array_t *A)
       {
         /* Compute size of storage area needed for the voxels: */
         ppv_sample_count_t npos = ppv_compute_npos_steps(d, B->size, NULL);
-        size_t voxel_sz = ppv_tot_sample_bytes(npos, bps, bpw);
+        size_t tot_voxel_bytes = ppv_tot_sample_bytes(npos, bps, bpw);
         /* Splitting will take at least one split node and two const nodes: */
-        return (array_sz + voxel_sz < split_sz + 2*const_sz); 
+        return (array_bytes + tot_voxel_bytes < split_bytes + 2*const_bytes); 
       }
         
     kdtom_array_t *shared_array_node(ppv_array_t *B)
@@ -191,7 +192,7 @@ kdtom_t *kdtom_grind_array(ppv_array_t *A)
         
     kdtom_array_t *copied_array_node(ppv_array_t *B)
       {
-        ppv_array_t *C = ppv_array_new(d, B->size, bps, bpw);
+        ppv_array_t *C = ppv_array_new(d, B->size, B->maxsmp);
         ppv_array_assign(C, B);
         kdtom_array_t *Ta = kdtom_array_make(C);
         return Ta;

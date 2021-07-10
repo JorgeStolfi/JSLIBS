@@ -1,5 +1,5 @@
 /* See {sample_conv.h}. */
-/* Last edited on 2017-06-16 02:30:45 by stolfilocal */
+/* Last edited on 2021-07-09 02:18:20 by jstolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -182,36 +182,36 @@ sample_uint32_t sample_conv_quantize
     sample_uint32_t *imax
   )
   { demand(! isnan(fv), "{fv} is NAN"); 
+    demand(maxval > 0, "{maxval} is zero"); 
     if ((vmin != NULL) && (fv < (*vmin))) { (*vmin) = fv; }
     if ((vmax != NULL) && (fv > (*vmax))) { (*vmax) = fv; }
-    double fdelta = hi - lo;
-    double rv = (fdelta == 0 ? 0.5 : (fv - lo)/fdelta);
-    demand(! isnan(rv), "result is NAN");
-    if (rv < 0.0) { rv = 0.0;  if (clo != NULL) { (*clo)++; } }
-    if (rv > 1.0) { rv = 1.0;  if (chi != NULL) { (*chi)++; } }
-    int zv;
-    if (rv == 0)
-      { zv = 0; }
-    else if (rv == 1.0)
-      { zv = maxval; }
-    else if (isMask) 
-      { /* Map 0 to 0, 1 to {2*maxval}, linearly, with directed rounding: */ 
-        double sv = 2*rv*((double)maxval);
-        zv = (rv < 0.5 ? (int)ceil(sv) : (int)floor(sv) + 1); 
-        /* Now round the fraction bit up: */
-        zv = zv >> 1;
-      }
+    sample_uint32_t smp;
+    if (lo == hi)
+      { smp = maxval/2; }
     else
-      { /* Round every interval {[iv/(maxval+1),(iv+1)/(maxval+1))} down to {iv}: */
-        zv = (int)floor(rv*((double)maxval + 1));
-        /* Should not happen, except perhaps for very large or very small {fdelta}: */
-        if (zv > maxval) { zv = maxval; }
+      { double rv = (fv - lo)/(hi - lo);
+        assert(! isnan(rv));
+        if (rv <= 0.0) 
+          { smp = 0;  if (clo != NULL) { (*clo)++; } }
+        else if (rv >= 1)
+          { smp = maxval; if (chi != NULL) { (*chi)++; } }
+        else if (isMask) 
+          { /* Map 0 to 0, 1 to {2*maxval}, linearly, with directed rounding: */ 
+            double fsmp = rv*((double)maxval - 1.0e-12);
+            fsmp = (rv < 0.5 ? ceil(fsmp - 0.5) : floor(fsmp + 0.5)); 
+            assert((fsmp >= 0) && (fsmp <= maxval));
+            smp = (sample_uint32_t)fsmp;
+          }
+        else
+          { /* Round every interval {[iv/(maxval+1),(iv+1)/(maxval+1))} down to {iv}: */
+            double fsmp = floor(rv*((double)maxval + 1.0 - 1.0e-12));
+            assert((fsmp >= 0) && (fsmp <= maxval));
+            smp = (sample_uint32_t)fsmp;
+          }
       }
-    demand((zv >= 0) && (zv <= (int)maxval), "bad {zv}");
-    sample_uint32_t iv = zv;
-    if ((imin != NULL) && (iv < (*imin))) { (*imin) = iv; }
-    if ((imax != NULL) && (iv > (*imax))) { (*imax) = iv; }
-    return iv;
+    if ((imin != NULL) && (smp < (*imin))) { (*imin) = smp; }
+    if ((imax != NULL) && (smp > (*imax))) { (*imax) = smp; }
+    return smp;
   }
   
 void sample_conv_print_quantize_stats

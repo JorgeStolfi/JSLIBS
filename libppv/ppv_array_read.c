@@ -1,20 +1,22 @@
 /* See ppv_array_read.h */
-/* Last edited on 2021-06-22 13:44:34 by jstolfi */
+/* Last edited on 2021-07-10 04:27:33 by jstolfi */
 /* Copyright © 2003 by Jorge Stolfi, from University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
-#include <ppv_array.h>
-#include <ppv_array_read.h>
-
-#include <filefmt.h>
-#include <fget.h>
-#include <nget.h>
-#include <bool.h>
-#include <affirm.h>
-
+#define _GNU_SOURCE
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 #include <assert.h>
+
+#include <affirm.h>
+#include <bool.h>
+#include <nget.h>
+#include <fget.h>
+#include <filefmt.h>
+
+#include <ppv_array.h>
+#include <ppv_array_read.h>
 
 /* INTERNAL PROTOTPES */
 
@@ -24,13 +26,16 @@ void ppv_array_read_samples_raw_big ( FILE *rd, ppv_array_t *A );
 void ppv_array_read_samples_raw_bytes ( FILE *rd, ppv_array_t *A );
 
 #define ppv_FILE_TYPE "ppv_array_t"
-#define ppv_FILE_VERSION "2005-05-28"
+ 
+#define smpFMT ppv_sample_t_FMT
     
-ppv_array_t *ppv_array_read_file(FILE *rd, ppv_nbits_t bpw)
+ppv_array_t *ppv_array_read_file ( FILE *rd )
   {
     /* Read header: */
-    filefmt_read_header(rd, ppv_FILE_TYPE, ppv_FILE_VERSION);
-    
+    char *fileType = NULL;
+    char *fileVersion = NULL;
+    filefmt_read_gen_header(rd, &fileType, &fileVersion);
+    demand(strcmp(fileType, ppv_FILE_TYPE) == 0, "invalid file type");
     /* Read effective dimensions: */
     uint64_t d64 = nget_uint64(rd, "dim", 10);
     demand(d64 <= ppv_MAX_DIM, "too many dimensions");
@@ -61,19 +66,31 @@ ppv_array_t *ppv_array_read_file(FILE *rd, ppv_nbits_t bpw)
       }
     fget_eol(rd); 
     
-    /* Read bits-per-sample: */
-    uint64_t bps = nget_uint64(rd, "bps", 10);
-    demand(bps <= ppv_MAX_BPS, "too many bits per sample");
+    ppv_sample_t maxsmp; /* Max sample value. */
+    if (strcmp(fileVersion, ppv_FILE_VERSION_2005) == 0)
+      { /* Read bits-per-sample: */
+        uint64_t bps = nget_uint64(rd, "bps", 10);
+        demand(bps <= ppv_MAX_BPS, "too many bits per sample");
+        maxsmp = ppv_max_sample((ppv_nbits_t)bps);
+      }
+    else if (strcmp(fileVersion, ppv_FILE_VERSION_2021) == 0)
+      { /* Read max sample value: */
+        uint64_t mu = nget_uint64(rd, "maxsmp", 10);
+        demand(mu <= ppv_MAX_SAMPLE_VAL, "invalid max sample value");
+        maxsmp = (ppv_sample_t)mu;
+      }
+    else
+      { demand(FALSE, "invalid file version"); }
     fget_eol(rd); 
-    
+
     /* Read plain/raw flag: */
     bool_t plain = nget_bool(rd, "plain");
     fget_eol(rd); 
     
     /* Allocate array using {asz}: */
-    ppv_array_t *A = ppv_array_new(d, asz, (ppv_nbits_t)bps, bpw);
+    ppv_array_t *A = ppv_array_new(d, asz, maxsmp);
     
-    if (! empty)
+    if ((A->maxsmp > 0) && (! empty))
       { 
         /* Now read samples: */
         if (plain)
@@ -103,30 +120,31 @@ void ppv_array_read_samples_plain ( FILE *rd, ppv_array_t *A )
     ppv_dim_t d = A->d;
     bool_t debug = FALSE;
     ppv_index_t ix[d];
-    ppv_sample_t max_sample = (ppv_sample_t)((1LLU << A->bps) - 1);
+    ppv_sample_t maxsmp = A->maxsmp;
     if (ppv_index_first(ix, A)) 
       { ppv_pos_t pos = ppv_sample_pos(A, ix);
         do 
           { fget_skip_formatting_chars(rd);
-            uint64_t qv = fget_uint64(rd, 10);
+            uint64_t usmp = fget_uint64(rd, 10);
             if (debug) 
               { fprintf(stderr, "    ix =");
-                int32_t j;
-                for (j = 0; j < d; j++) { fprintf(stderr, " %ld", ix[j]); }
-                fprintf(stderr, "  smp = %lu\n", (uint64_t)qv);
+                for (int32_t j = 0; j < d; j++) { fprintf(stderr, " " ppv_index_t_FMT, ix[j]); }
+                fprintf(stderr, "  usmp = %lu\n", (uint64_t)usmp);
               }
-            demand(qv <= max_sample, "sample too big");
-            ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, (ppv_sample_t)qv);
+            demand(usmp <= maxsmp, "sample too big");
+            ppv_sample_t smp = (ppv_sample_t)usmp;
+            ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, smp);
          } 
         while (! ppv_index_next(ix, A, d, &pos));
       }
+    return;
   }
 
 void ppv_array_read_samples_raw_small ( FILE *rd, ppv_array_t *A )
   {
     ppv_dim_t d = A->d;
     ppv_index_t ix[d];
-    ppv_sample_t smask = (ppv_sample_t)((1LLU << A->bps) - 1);
+    ppv_sample_t smask = (ppv_sample_t)((((uint64_t)1) << A->bps) - 1);
     if (ppv_index_first(ix, A)) 
       { int32_t spc = 8/A->bps; /* Samples per byte. */
         ppv_nbits_t shift_ini = (ppv_nbits_t)((spc - 1)*A->bps); /* Shift to apply to sample [0]. */
@@ -141,29 +159,59 @@ void ppv_array_read_samples_raw_small ( FILE *rd, ppv_array_t *A )
               }
             else
               { shift = (ppv_nbits_t)(shift - A->bps); }
-            ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, (buf >> shift) & smask);
+            ppv_sample_t smp = (buf >> shift) & smask;
+            demand(smp <= A->maxsmp, "invalid sample value");
+            ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, smp);
           }
         while (! ppv_index_next(ix, A, d, &pos));
       }
+    return;
   }
 
 void ppv_array_read_samples_raw_big ( FILE *rd, ppv_array_t *A )
   {
-    affirm(FALSE, "not implemented yet");
+    ppv_dim_t d = A->d;
+    ppv_index_t ix[d];
+    ppv_sample_t smask = (ppv_sample_t)((((uint64_t)1) << A->bps) - 1); /* Mask to eat out a sample */
+    int32_t cps = (A->bps + 7)/8; /* Bytes per sample. */
+    assert(sizeof(ppv_word_t) >= cps);
+    if (ppv_index_first(ix, A)) 
+      { ppv_pos_t pos = ppv_sample_pos(A, ix);
+        do
+          { ppv_word_t w = 0;
+            /* bool_t debug = ((A->bps == 10) && (pos == 0)); */
+            for (int32_t i = 0; i < cps; i++)
+              { int32_t ch = fgetc(rd);
+                demand(ch != EOF, "unexpected end-of-file");
+                /* if (debug) { fprintf(stderr,  "  ch = %u\n", (unsigned char)ch); } */
+                w = (w << 8) | ((unsigned char)ch);
+              }
+            /* if (debug) { fprintf(stderr,  "w = " smpFMT "\n", w); } */
+            ppv_sample_t smp = (ppv_sample_t)(w & smask);
+            /* if (debug) { fprintf(stderr,  "smp = " smpFMT "\n", smp); } */
+            demand(smp <= A->maxsmp, "invalid sample value");
+            ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, smp);
+          }
+        while (! ppv_index_next(ix, A, d, &pos));
+      }
+    return;
   }
 
 void ppv_array_read_samples_raw_bytes ( FILE *rd, ppv_array_t *A )
   {
     ppv_dim_t d = A->d;
     ppv_index_t ix[d];
-    ppv_sample_t smask = (ppv_sample_t)((1LLU << A->bps) - 1);
+    assert(A->bps == 8);
     if (ppv_index_first(ix, A)) 
       { ppv_pos_t pos = ppv_sample_pos(A, ix);
         do 
-          { int32_t qv = fgetc(rd);
-            demand(qv != EOF, "unexpected end-of-file");
-            ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, qv & smask);
+          { int32_t ch = fgetc(rd);
+            demand(ch != EOF, "unexpected end-of-file");
+            ppv_sample_t smp = (ppv_sample_t)ch;
+            demand(smp <= A->maxsmp, "invalid sample value");
+            ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, smp);
          } 
         while (! ppv_index_next(ix, A, d, &pos));
       }
+    return;
   }

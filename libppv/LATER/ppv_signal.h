@@ -1,5 +1,5 @@
 /* Sampled multi-dimensional signals. */
-/* Last edited on 2021-06-13 11:34:44 by jstolfi */
+/* Last edited on 2021-07-08 15:54:54 by jstolfi */
 
 #ifndef ppv_signal_H
 #define ppv_signal_H
@@ -230,9 +230,9 @@ void ppv_set_sample_at_pos
     ppv_nbits_t bps, 
     ppv_nbits_t bpw, 
     ppv_pos_t pos, 
-    ppv_sample_t qv 
+    ppv_sample_t smp 
   );
-  /* Stores value {qv} into the sample with position {pos}. */
+  /* Stores value {smp} into the sample with position {pos}. */
 
 /* INDEX TUPLE MANIPULATION */
 

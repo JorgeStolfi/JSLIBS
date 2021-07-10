@@ -1,5 +1,5 @@
 * See {kdtom_array.h}. */
-/* Last edited on 2021-07-01 15:47:59 by jstolfi */
+/* Last edited on 2021-07-08 15:45:54 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -85,8 +85,8 @@ ppv_sample_t kdtom_array_get_sample(kdtom_array_t *T, ppv_index_t ix[])
   {
     assert(T->h.kind == kdtom_kind_ARRAY);
     ppv_pos_t pos = ix_position(T->h.d, ix, T->base, T->step);
-    ppv_sample_t v = ppv_get_sample_at_pos(T->el, T->h.bps, T->bpw, pos);
-    return v;
+    ppv_sample_t smp = ppv_get_sample_at_pos(T->el, T->h.bps, T->bpw, pos);
+    return smp;
   }
 
 size_t kdtom_array_bytesize(kdtom_array_t *T, bool_t total)

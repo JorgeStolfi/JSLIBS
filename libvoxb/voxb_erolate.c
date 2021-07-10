@@ -1,5 +1,5 @@
 /* See voxb_erolate.h */
-/* Last edited on 2021-06-22 13:46:34 by jstolfi */
+/* Last edited on 2021-07-09 01:04:05 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -158,10 +158,9 @@ void voxb_erolate_with_brush_big(ppv_array_t *A, ppv_brush_t *b, bool_t erode)
             ixA0buf_hi = ixA0cp; 
             if (nbuf <= 0) { ixA0buf_lo = ixA0buf_hi; }
           }
-        if (debug) { fprintf(stderr, "  lowest slice in buffer = %ld\n", ixA0buf_lo); }
-        assert(ix0+dxlo[0] >= ixA0buf_lo);
-        if (debug) { fprintf(stderr, "  highest slice in buffer = %ld\n", ixA0buf_hi); }
-        assert(ix0+dxhi[0] <= ixA0buf_hi);
+        if (debug) { fprintf(stderr, "  slice range in buffer = {%ld..%ld}\n", ixA0buf_lo, ixA0buf_hi); }
+        assert(imax(0,ix0+dxlo[0]) >= ixA0buf_lo);
+        assert(imin(ix0+dxhi[0], A->size[0]-1) <= ixA0buf_hi);
             
         /* Compute slice {ix[0]} of the answer from voxels in {T}, store in {A} */
         ppv_index_t ixA[d];
@@ -186,7 +185,7 @@ void voxb_erolate_with_brush_big(ppv_array_t *A, ppv_brush_t *b, bool_t erode)
       { ppv_size_t szT[d];
         for (ppv_axis_t i = 0; i < d; i++) { szT[i] = A->size[i]; }
         szT[0] = sz0;
-        ppv_array_t *T = ppv_array_new(d, szT, A->bps, A->bpw);
+        ppv_array_t *T = ppv_array_new(d, szT, A->maxsmp);
         return T;
       }
     
@@ -218,7 +217,7 @@ void voxb_erolate_with_brush_small(ppv_array_t *A, ppv_brush_t *b, bool_t erode)
     
     /* We just copy {A} to a buffer array {T} and compute the result from {T}. */
     
-    ppv_array_t *T = ppv_array_new(d, A->size, A->bps, A->bpw);
+    ppv_array_t *T = ppv_array_new(d, A->size, A->maxsmp);
     ppv_array_assign(T, A);
     
     ppv_index_t ixA0buf_lo = 0;             /* Low slice of {A} in buffer. */

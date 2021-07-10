@@ -1,5 +1,5 @@
 /* voxm_splat.h --- voxel-based modeling of antialiased 3D objects */
-/* Last edited on 2021-06-22 13:48:13 by jstolfi */
+/* Last edited on 2021-07-09 21:37:58 by jstolfi */
 
 #ifndef voxm_splat_H
 #define voxm_splat_H
@@ -25,14 +25,14 @@
   selects a voxel in that row.
   
   For the purpose of this module, each voxel is imagined as a cube of
-  unit size with integer corner coordinates. If an array has {N=a.size[j]}
+  unit size with integer corner coordinates. If an array has {N=A.size[j]}
   voxels along some axis {j}, the voxels are supposed to span
   the coordinate interval {[0 _ N]} along that axis. The index {i=ix[j]}
   of a voxel along that axis ranges from 0 to {N-1}; the voxel spans the
   range {[i _ i+1]} on that axis, and its center is at {i+0.5}.
   
-  Voxel values in a tomogram {a} (/samples/) are unsigned integers from
-  0 to {MAXVAL = 2^a.bps}. They are interpreted as fractional
+  Voxel values in a tomogram {A} (/samples/) are unsigned integers from
+  0 to {A.maxval}. They are interpreted as fractional
   (/occupancy values/) between 0.0 and 1.0; where voxel value 0 means
   occupancy 0.0, {MAXVAL} means 1.0, and other voxel values interpolate
   linearly between them.
@@ -53,9 +53,9 @@
 
 /* SINGLE VOXEL SPLATTING */
  
-void voxm_splat_voxel(ppv_array_t *A, int32_t kx, int32_t ky, int32_t kz, double val, bool_t sub);
+void voxm_splat_voxel(ppv_array_t *A, int32_t kx, int32_t ky, int32_t kz, double fsmp, bool_t sub);
  /* Modifies the stored value {oldv} of voxel {kx} of row {ky} of layer {kz} of {A} 
-   with the value {val}, after quantizing {val} to an unsigned integer {newv}.
+   with the value {fsmp}, after quantizing {fsmp} to an unsigned integer {newv}.
    
    Specifically, if {sub} is false, stores into the voxel the maximum of
    {oldv} and {newv}. If {sub} is true, stores instead the minimum of

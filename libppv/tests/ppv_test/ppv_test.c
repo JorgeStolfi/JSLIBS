@@ -1,4 +1,4 @@
-/* Last edited on 2021-07-03 15:25:00 by jstolfi */ 
+/* Last edited on 2021-07-09 23:04:52 by jstolfi */ 
 /* Test of the PPV library. */
 
 #define _GNU_SOURCE
@@ -10,6 +10,7 @@
 
 #include <bool.h>
 #include <jsmath.h>
+#include <jsrandom.h>
 #include <indexing.h>
 #include <indexing_io.h>
 
@@ -37,12 +38,17 @@
     exit(1); \
   } while(0)
 
-void do_tests(ppv_dim_t d, ppv_nbits_t bps, ppv_nbits_t bpw);
+void do_tests(ppv_dim_t d, ppv_sample_t maxsmp);
 
-ppv_sample_t ransample(ppv_dim_t d, const ppv_index_t ix[], int32_t K, int32_t L, ppv_nbits_t bps);
+ppv_sample_t ix_to_sample(ppv_dim_t d, const ppv_index_t ix[], int32_t K, int32_t L, ppv_sample_t maxsmp);
   /* A pseudorandom sample value that depends on the index vector {ix[0..d-1]}
-    and on the parameters K and L.  The sample will be in the range
-    {0..2^bps-1}. */
+    and on the parameters {K} and {L}.  The sample will be in the range
+    {0..maxsmp}. */
+
+ppv_sample_t pos_to_sample(ppv_pos_t pos, int32_t K, int32_t L, ppv_sample_t maxsmp);
+  /* A pseudorandom sample value that depends on the element position {pos}
+    and on the parameters {K} and {L}.  The sample will be in the range
+    {0..maxsmp}. */
     
 void enum_by_hand(ix_index_op_t op, ppv_array_t *A);
   /* Calls {op(ix)} on all index vectors of the array {A}, in lex order.
@@ -60,11 +66,11 @@ void test_sample_distr(ppv_array_t *A);
     Will do nothing if {A->bps} is zero or way too large. */
 
 void test_best_bpw(void);
-void test_new_array(ppv_array_t *A, ppv_size_t *sz, ppv_nbits_t bps, ppv_nbits_t bpw);
+void test_new_array(ppv_array_t *A, ppv_size_t *sz, ppv_sample_t maxsmp);
 void test_packing(ppv_array_t *A);
 void test_sample_pos(ppv_array_t *A);
 void test_enum(ppv_array_t *A);
-void test_assign(ppv_array_t *A, ppv_nbits_t bpsB);
+void test_assign(ppv_array_t *A, ppv_sample_t maxsmpB);
 void test_sample_range(ppv_array_t *A);
 void test_throw_noise(ppv_array_t *A, ppv_sample_count_t seed);
 void test_throw_balls(ppv_array_t *A, ppv_sample_count_t seed);
@@ -79,21 +85,25 @@ void test_slice(ppv_array_t *A);
 void test_diagonal(ppv_array_t *A);
 void test_chop(ppv_array_t *A);
 
-void dump_storage(FILE *wr, void *el, int nw, ppv_nbits_t bps, ppv_nbits_t bpw);
 void check_size(ppv_dim_t d, ppv_size_t *sza, ppv_size_t *szb);
 
 int main (int argn, char **argv)
   {
     test_best_bpw();
-    do_tests(2, 10,  8);
-    do_tests(2, 10, 32);
-    do_tests(5,  0, 16);
-    do_tests(1,  1,  8);
-    do_tests(6,  7, 16);
-    do_tests(0, 10, 16);
+    for (ppv_nbits_t bps = 0; bps <= ppv_MAX_BPS; bps++)
+      { ppv_sample_t maxmaxsmp = ppv_max_sample(bps);
+        int64_t m0 = int64_abrandom(0, maxmaxsmp);
+        int64_t m1 = int64_abrandom(0, maxmaxsmp);
+        ppv_sample_t maxsmp = (ppv_sample_t)imax(m0, m1);
+        do_tests(2,  maxsmp);
+      }
+    do_tests(5,          65536);  
+    do_tests(1,      (1<<25)-1);
+    do_tests(6, ppv_MAX_SAMPLE_VAL);
+    do_tests(0,             17);
     return 0;
   }
-  
+
 void test_best_bpw(void)
   {
     fprintf(stderr, "Testing {ppv_best_bpw}...\n");
@@ -116,20 +126,33 @@ void test_best_bpw(void)
     fprintf(stderr, "\n");
   }
 
-ppv_sample_t ransample(ppv_dim_t d, const ppv_index_t ix[], int32_t K, int32_t L, ppv_nbits_t bps)
-  { ppv_sample_t smax = (ppv_sample_t)((1 << bps) - 1);
-    double s = 0;
+ppv_sample_t ix_to_sample(ppv_dim_t d, const ppv_index_t ix[], int32_t K, int32_t L, ppv_sample_t maxsmp)
+  { double s = 0;
     for (ppv_axis_t ax = 0; ax < d; ax++)
       { s += sin(K*ax + L)*((double)ix[ax]); }
     s = s - floor(s);
-    ppv_sample_t smp = (ppv_sample_t)floor(pow(2,bps)*s);
-    assert((smp >= 0) && (smp <= smax));
+    ppv_sample_t smp = (ppv_sample_t)floor((maxsmp + 0.99999)*s);
+    assert((smp >= 0) && (smp <= maxsmp));
     return smp;
   }
 
-void do_tests(ppv_dim_t d, ppv_nbits_t bps, ppv_nbits_t bpw)
+ppv_sample_t pos_to_sample(ppv_pos_t pos, int32_t K, int32_t L, ppv_sample_t maxsmp)
+  { ppv_sample_t smp;
+    if (pos == 0)
+      { smp = maxsmp; }
+    else
+      { double ang = (double)(((int64_t)K) + ((int64_t)pos)*((int64_t)L));
+        double s = sin(ang);
+        s = s - floor(s);
+        smp = (ppv_sample_t)floor((maxsmp + 0.99999)*s);
+        assert((smp >= 0) && (smp <= maxsmp));
+      }
+    return smp;
+  }
+
+void do_tests(ppv_dim_t d, ppv_sample_t maxsmp)
   {
-    fprintf(stderr, "--- {do-tests} d = %d bps = %d bpw = %d ---\n", d, bps, bpw);
+    fprintf(stderr, "--- {do-tests} d = %d maxsmp = " smpFMT " ---\n", d, maxsmp);
 
     ppv_dim_t dmax = 6;
     assert(d <= dmax);
@@ -138,16 +161,18 @@ void do_tests(ppv_dim_t d, ppv_nbits_t bps, ppv_nbits_t bpw)
     /* Create the array: */
     ppv_size_t sz[d];
     for (ppv_axis_t ax = 0; ax < d; ax++) { sz[ax] = szmax[ax]; }
-    ppv_array_t *A = ppv_array_new(d, sz,  bps, bpw);
+    ppv_array_t *A = ppv_array_new(d, sz,  maxsmp);
 
-    test_new_array(A, sz, bps, bpw);
+    test_new_array(A, sz, maxsmp);
     test_packing(A);
     test_sample_pos(A);
     
     test_enum(A);
-    test_assign(A, A->bps);
-    if (A->bps < A->bpw) { test_assign(A, (ppv_nbits_t)(A->bps+1)); }
-    if (A->bps > 0) { test_assign(A, (ppv_nbits_t)(A->bps-1)); }
+    test_assign(A, A->maxsmp);
+    if (A->maxsmp < ppv_MAX_SAMPLE_VAL) 
+      { ppv_sample_t maxsmpB = (ppv_sample_t)uint64_abrandom(A->maxsmp + 1, ppv_MAX_SAMPLE_VAL);
+        test_assign(A, maxsmpB);
+      }
     test_sample_range(A);
     test_throw_noise(A, 4615);
     test_throw_noise(A, 0);
@@ -188,7 +213,7 @@ void enum_by_hand(ix_index_op_t op, ppv_array_t *A)
     return;
   }
 
-void test_new_array(ppv_array_t *A, ppv_size_t *sz, ppv_nbits_t bps, ppv_nbits_t bpw)
+void test_new_array(ppv_array_t *A, ppv_size_t *sz, ppv_sample_t maxsmp)
   {
     ppv_dim_t d = A->d;
     fprintf(stderr, "Checking num of axes...\n");
@@ -198,8 +223,7 @@ void test_new_array(ppv_array_t *A, ppv_size_t *sz, ppv_nbits_t bps, ppv_nbits_t
     if (verbose) { ppv_print_descriptor(stderr, "A = { ", A, " }\n"); } 
     if (! ppv_descriptor_is_valid(A, TRUE)) { bug0("{ppv_array_new}: returns invalid desc"); }
     if (A->base != 0) { bug("base = " posFMT, A->base); }
-    if (A->bps != bps) { bug("bpw = %u", A->bps); }
-    if (A->bpw != bpw) { bug("bpw = %u", A->bpw); }
+    if (A->maxsmp != maxsmp) { bug("maxsmp = " smpFMT, A->maxsmp); }
     /* Check steps for a vanilla array: */
     ppv_sample_count_t stp = 1;
     for (ppv_axis_t ax = 0; ax < d; ax++) 
@@ -225,20 +249,17 @@ void test_packing(ppv_array_t *A)
     fprintf(stderr, "Checking {ppv_{get,set}_sample_at_pos} on a few elems...\n");
     bool_t verbose = TRUE;
     if (verbose) { ppv_print_descriptor(stderr, "A = { ", A, " }\n"); } 
-    ppv_word_t smask = ((ppv_word_t)1 << A->bps) - 1;
-    if (verbose) { fprintf(stderr, "bps = %u mask = " smpFMT "\n", A->bps, smask); }
     int npos = 5; /* Number of positions to test */
-    int ndump = (npos*A->bps + A->bpw - 1)/A->bpw + 1; /* Number of words to dump. */
     fprintf(stderr, "\n");
     for (ppv_pos_t pos = 0; pos < npos; pos++)
-      { ppv_sample_t xsmp = (ppv_sample_t)(smask & ((2*pos) | 1 | (1LU <<(A->bps-1))));
-        if (verbose) { fprintf(stderr, "setting sample " posFMT " to %u\n", pos, xsmp); }
-        ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, xsmp);
-        if (verbose) { dump_storage(stderr, A->el, ndump, A->bps, A->bpw); }
+      { ppv_sample_t smp_set = pos_to_sample(pos, 417, 4615, A->maxsmp);
+        if (verbose) { fprintf(stderr, "setting sample " posFMT " to %u\n", pos, smp_set); }
+        ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, smp_set);
+        if (verbose) { ppv_dump_storage(stderr, A->el, pos, A->bps, A->bpw, 2); }
         if (verbose) { fprintf(stderr, "\n"); }
-        ppv_sample_t smp = ppv_get_sample_at_pos(A->el, A->bps, A->bpw, pos);
-        if (smp != xsmp) 
-          { bug("set/get sample mismatch smp = " smpFMT " xsmp = " smpFMT, smp, xsmp); } 
+        ppv_sample_t smp_get = ppv_get_sample_at_pos(A->el, A->bps, A->bpw, pos);
+        if (smp_get != smp_set) 
+          { bug("set/get sample mismatch set = " smpFMT " get = " smpFMT, smp_set, smp_get); } 
       }
     fprintf(stderr, "\n");
   }
@@ -271,13 +292,13 @@ void test_sample_pos(ppv_array_t *A)
         if (pos != xpos) 
           { bug("{ppv_sample_pos}: mismatch pos = " posFMT " xpos = " posFMT, pos, xpos); } 
 
-        ppv_sample_t smp1 = ransample(d, ixA, 3, +17, A->bps);
+        ppv_sample_t smp1 = ix_to_sample(d, ixA, 3, +17, A->maxsmp);
         ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, smp1);
         ppv_sample_t xsmp = ppv_get_sample_at_pos(A->el, A->bps, A->bpw, pos);
         if (xsmp != smp1) 
           { bug("{set_sample_at_pos/get_sample_at_pos}: mismatch smp = " smpFMT " xsmp = " smpFMT, smp1, xsmp); } 
       
-        ppv_sample_t smp2 = ransample(d, ixA, 7, +11, A->bps);
+        ppv_sample_t smp2 = ix_to_sample(d, ixA, 7, +11, A->maxsmp);
         ppv_set_sample(A,ixA, smp2);
         ppv_sample_t ysmp = ppv_get_sample(A, ixA);
         if (ysmp != smp2) 
@@ -289,7 +310,7 @@ void test_sample_pos(ppv_array_t *A)
     
     bool_t check1(const ppv_index_t ixA[])
       { 
-        ppv_sample_t smp = ransample(d, ixA, 7, +11, A->bps);
+        ppv_sample_t smp = ix_to_sample(d, ixA, 7, +11, A->maxsmp);
         ppv_pos_t pos = ppv_sample_pos(A, ixA);
         ppv_sample_t xsmp = ppv_get_sample_at_pos(A->el, A->bps, A->bpw, pos);
         if (xsmp != smp) 
@@ -315,7 +336,7 @@ void test_throw_noise(ppv_array_t *A, ppv_sample_count_t seed)
   { 
     fprintf(stderr, "Checking {ppv_throw_noise}");
     fprintf(stderr, " seed = " ppv_sample_count_t_FMT, seed);
-    fprintf(stderr, " A.bps = %u ...\n", A->bps);
+    fprintf(stderr, " A.maxsmp = " smpFMT " ...\n", A->maxsmp);
 
     srandom((uint32_t)seed);
     ppv_throw_noise(A);
@@ -329,10 +350,10 @@ void test_throw_balls(ppv_array_t *A, ppv_sample_count_t seed)
   { 
     fprintf(stderr, "Checking {ppv_throw_balls}");
     fprintf(stderr, " seed = " ppv_sample_count_t_FMT, seed);
-    fprintf(stderr, " A.bps = %u ...\n", A->bps);
+    fprintf(stderr, " A.maxsmp = " smpFMT " ...\n", A->maxsmp);
 
     srandom((uint32_t)seed);
-    ppv_throw_balls(A);
+    if (A->maxsmp >= 1) { ppv_throw_balls(A); }
     
     test_sample_distr(A);
     return;
@@ -340,10 +361,10 @@ void test_throw_balls(ppv_array_t *A, ppv_sample_count_t seed)
 
 void test_sample_distr(ppv_array_t *A)
   { 
-    ppv_sample_t vmin, vmax;
-    ppv_sample_range(A, &vmin, &vmax);
-    fprintf(stderr, "sample range = { " ppv_sample_t_FMT, vmin);
-    fprintf(stderr, ".. " ppv_sample_t_FMT " }\n", vmax);
+    ppv_sample_t smp_min, smp_max;
+    ppv_sample_range(A, &smp_min, &smp_max);
+    fprintf(stderr, "sample range = { " smpFMT, smp_min);
+    fprintf(stderr, ".. " smpFMT " }\n", smp_max);
     
     ppv_sample_count_t npos = ppv_sample_count(A, TRUE); /* Voxel count, incl. replics. */
     fprintf(stderr, "sample count = " ppv_sample_count_t_FMT "\n", npos);
@@ -353,7 +374,7 @@ void test_sample_distr(ppv_array_t *A)
         return;
       }
 
-    uint32_t nvals = (uint32_t)(vmax - vmin + 1);
+    uint32_t nvals = (uint32_t)(smp_max - smp_min + 1);
     assert(nvals >= 1);
 
     bool_t prhist = (nvals <= 256);
@@ -381,7 +402,7 @@ void test_sample_distr(ppv_array_t *A)
     double sum_h = 0.0;
     for (int32_t v = 0; v < nvals; v++)
       { uint64_t hv = hist[v];
-        if (prhist) { fprintf(stderr, "%5u %12lu\n", (uint32_t)(v + vmin), hv); }
+        if (prhist) { fprintf(stderr, "%5u %12lu\n", (uint32_t)(v + smp_min), hv); }
         if (hv > hmax) { hmax = hv;  }
         if (hv < hmin) { hmin = hv;  }
         sum_h += (double)(hv);
@@ -416,30 +437,36 @@ void test_sample_distr(ppv_array_t *A)
     /* Internal procs */
 
     bool_t gather_hist(const ppv_index_t ix[])
-      { ppv_sample_t val = ppv_get_sample(A, ix);
-        assert ((vmin <= val) && (val <= vmax));
-        hist[(int32_t)(val - vmin)]++;
+      { ppv_sample_t smp = ppv_get_sample(A, ix);
+        assert ((smp_min <= smp) && (smp <= smp_max));
+        hist[(int32_t)(smp - smp_min)]++;
         return FALSE;
       }
   }
 
-void test_assign(ppv_array_t *A, ppv_nbits_t bpsB)
+void test_assign(ppv_array_t *A, ppv_sample_t maxsmpB)
   {
-    /* !!! Warning: this test will fail if {A} has replicated elements !!! */
-  
-    fprintf(stderr, "Checking {ppv_assign} A.bps = %u B.bps = %u ...\n", A->bps, bpsB);
+    fprintf(stderr, "Checking {ppv_assign} A.maxsmp = " smpFMT, A->maxsmp);
+    fprintf(stderr, " B.maxsmp = " smpFMT " ...\n", maxsmpB);
+    
     ppv_dim_t d = A->d;
 
-    /* Choose a {bpw} different from {A}'s: */
-    ppv_nbits_t bpwB = (ppv_nbits_t)(A->bpw == 32 ? 8 : 2*A->bpw);
+    /* Check if {A} has replicated elements: */
+    bool_t repl = FALSE; 
+    for (ppv_axis_t ax = 0; ax < d; ax++)
+      { if ((A->size[ax] > 1) && (A->step[ax] == 0))
+          { repl = TRUE; }
+      }
+    if (repl)
+      { fprintf(stderr, "test skipped because {A} has replicated elements\n");
+        return;
+      }
     
     /* Create array {B} with same indices as {A}: */
-    ppv_array_t *B = ppv_array_new(d, A->size, bpsB, bpwB);
+    ppv_array_t *B = ppv_array_new(d, A->size, maxsmpB);
     fprintf(stderr, "A.el = %016lx B.el = %016lx\n", (uint64_t)A->el, (uint64_t)B->el);
     
     /* Fill {A} and {B} with different garbage: */
-    ppv_sample_t maskB = (ppv_sample_t)((1 << bpsB) - 1);
-
     auto bool_t fillAB(const ppv_index_t ixA[]);
     enum_by_hand(fillAB, A);
     
@@ -453,8 +480,8 @@ void test_assign(ppv_array_t *A, ppv_nbits_t bpsB)
     return;
     
     bool_t fillAB(const ppv_index_t ixA[])
-      { ppv_sample_t smpA = ransample(d, ixA, 3, +17, A->bps);
-        ppv_sample_t smpB = ransample(d, ixA, 5, -23, B->bps);
+      { ppv_sample_t smpA = ix_to_sample(d, ixA, 3, +17, A->maxsmp);
+        ppv_sample_t smpB = ix_to_sample(d, ixA, 5, -23, B->maxsmp);
         ppv_set_sample(A, ixA, smpA);
         ppv_set_sample(B, ixA, smpB);
         return FALSE;
@@ -463,12 +490,11 @@ void test_assign(ppv_array_t *A, ppv_nbits_t bpsB)
     bool_t checkAB(const ppv_index_t ixA[])
       { ppv_sample_t smpA_get = ppv_get_sample(A, ixA);
         ppv_sample_t smpB_get = ppv_get_sample(B, ixA);
-        ppv_sample_t smpB_ass = smpA_get & maskB;
-        if (smpB_get != smpB_ass)
+        if (smpB_get != smpA_get)
           { ix_print_indices(stderr, "ix = (", d, ixA, 0, " ", ")\n");
-            bug("{ppv_assign}: {A} and {B} differ after assignment: B now = " smpFMT " assigned = " smpFMT, smpB_get, smpB_ass);
+            bug("{ppv_assign}: {A} and {B} differ after assignment: B now = " smpFMT " assigned = " smpFMT, smpB_get, smpA_get);
           }
-        ppv_sample_t smpA_set = ransample(d, ixA, 3, +17, A->bps);
+        ppv_sample_t smpA_set = ix_to_sample(d, ixA, 3, +17, A->maxsmp);
         if (smpA_get != smpA_set)
           { ix_print_indices(stderr, "ix = (", d, ixA, 0, " ", ")\n");
             bug("{ppv_assign}: {A} changed set = " smpFMT " get = " smpFMT "\n", smpA_set, smpA_get);
@@ -1017,30 +1043,6 @@ void test_replicate(ppv_array_t *A)
               { bug("{ppv_replicate}: position error posB = " posFMT " posA = " posFMT, posB, posA); }
             return FALSE;
           }
-      }
-  }
-
-void dump_storage(FILE *wr, void *el, int nw, ppv_nbits_t bps, ppv_nbits_t bpw)
-  {
-    if (bps == 0)
-      { fprintf(stderr, "  zero-length pixels -- no storage area to dump\n");
-        return;
-      }
-    if (el == NULL)
-      { fprintf(stderr, "  array has no storage area\n");
-        return;
-      }
-    for (int32_t iw = 0; iw < nw; iw++)
-      { ppv_word_t w;
-        if (bpw == 8) 
-            { w = *(((ppv_word_08_t *)el) + iw); }
-          else if (bpw == 16) 
-            { w = *(((ppv_word_16_t *)el) + iw); }
-          else 
-            { w = *(((ppv_word_32_t *)el) + iw); }
-        if (iw != 0) { fprintf(wr, " "); }
-        for (int32_t axb = bpw-1; axb >= 0; axb--)
-          { fprintf(wr, "%d", (w >> axb) & 1); }
       }
   }
 

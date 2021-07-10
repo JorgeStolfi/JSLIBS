@@ -2,7 +2,7 @@
 #define PROG_DESC "test of DNA signal filtering routines (also spectrum plots)"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-10-27 17:12:28 by jstolfi */
+/* Last edited on 2021-07-04 05:11:17 by jstolfi */
 
 #define test_dnae_filter_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -238,9 +238,9 @@ int main(int argc, char**argv)
     
     fprintf(stderr, "getting the weight tables ...\n");
     char *wname0 = wt_table_make_descr(o->w0.ne, o->w0.e, "%6.4f");
-    wt_table_print(stderr, "ini", o->w0.ne, o->w0.e);
+    wt_table_print(stderr, "ini", o->w0.ne, o->w0.e, 0);
     char *wname1 = wt_table_make_descr(o->w1.ne, o->w1.e, "%6.4f");
-    wt_table_print(stderr, "inc", o->w1.ne, o->w1.e);
+    wt_table_print(stderr, "inc", o->w1.ne, o->w1.e, 0);
 
     fprintf(stderr, "trying to filter up to level %d ...\n", o->maxLevel);
     dnae_seq_t r[o->maxLevel + 1];
@@ -302,8 +302,8 @@ void dnae_generate_and_plot_spectra(options_t *o, int N)
     double maxW = 1.0;
     
     fprintf(stderr, "computing the power spectra of the two filters at max resolution ...\n");
-    /* wt_table_print(stderr, "initial", o->w0.ne, o->w0.e); */
-    /* wt_table_print(stderr, "incremental", o->w1.ne, o->w1.e); */
+    /* wt_table_print(stderr, "initial", o->w0.ne, o->w0.e, 0); */
+    /* wt_table_print(stderr, "incremental", o->w1.ne, o->w1.e, 0); */
     double *w0P = notnull(malloc((maxF+1)*sizeof(double)), "no mem"); /* Initial filter. */;
     double *w1P = notnull(malloc((maxF+1)*sizeof(double)), "no mem"); /* Incremental filter. */;
     dnae_compute_filter_spectrum(o->w0.ne, o->w0.e, maxN, w0P);

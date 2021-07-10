@@ -1,5 +1,5 @@
 /* See wt_table.h */
-/* Last edited on 2019-12-04 19:06:52 by jstolfi */
+/* Last edited on 2021-07-04 09:48:29 by jstolfi */
 
 #define wt_table_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -83,20 +83,38 @@ double wt_table_var(int n, double wt[], double avg)
     return var;
   }
 
-void wt_table_print(FILE *wr, char *wtname, int n, double wt[])
+void wt_table_print(FILE *wr, char *wtname, int n, double wt[], int stride)
   { double ctr = ((double)n-1)/2;
     double radius = ctr;
     fprintf(wr, "weight table\n");
     if (wtname != NULL) { fprintf(wr, "name = %s\n", wtname); }
+    fprintf(wr, "length = %d\n", n);
+    if (stride != 0) { fprintf(wr, "stride = %d\n", stride); }
     double sum_w = 0;   /* Sum of {wt[k]}. */
     double sum_bw[2] = { 0, 0 }; /* Sum of even and odd elements. */
-    int k;
-    for (k = 0; k < n; k++)
-      { double w = wt[k];
-        fprintf(wr, "  w[%3d] (%+6.1f) = %22.18f\n", k, k - ctr, w);
-        sum_w += w;
-        sum_bw[k%2] += w;
+    double sum_s_exp = 1.0/stride; /* Expected value of overlapped windows. */
+    for (int ka = 0; ka < n; ka++)
+      { double wa = wt[ka];
+        fprintf(wr, "  w[%03d] (%+6.1f) = %10.8f", ka, ka - ctr, wa);
+        sum_w += wa;
+        sum_bw[ka%2] += wa;
+        if (stride != 0)
+          { /* Check partition of unity: */
+            int imin = -(ka/stride);
+            int imax = (n-1-ka)/stride;
+            double sum_s = 0.0; /* Sum of all weights in a {stride} train. */
+            for (int i = imin; i <= imax; i++)
+              { int kb = ka + i*stride;
+                assert((0 <=kb) && (kb < n));
+                sum_s += wt[kb];
+              }
+            fprintf(wr, " sum = %18.16f", sum_s);
+            double err = sum_s - sum_s_exp;
+            fprintf(wr, " err = %24.16e", err);
+          }
+        fprintf(wr, "\n");
       }
+
     fprintf(wr, "\n");
     fprintf(wr, "width =     %4d\n", n);
     fprintf(wr, "radius =    %6.1f\n", radius);
@@ -106,7 +124,7 @@ void wt_table_print(FILE *wr, char *wtname, int n, double wt[])
     double avg = wt_table_avg(n, wt);
     fprintf(wr, "mean =      %13.8f\n", avg);
     double sum_d2w = 0;
-    for (k = 0; k < n; k++)
+    for (int k = 0; k < n; k++)
       { double w = wt[k];
         double d = k - avg;
         sum_d2w += d*d*w; 
@@ -153,17 +171,21 @@ void wt_table_fill_binomial(int n, double wt[])
 
 void wt_table_fill_triangular(int n, double wt[])
   { /* Compute distribution: */
-    double W = n*n;
-    for (int k = 0, j = n-1; k < n; k++, j--)
-      { wt[k] = (k <= j ? (4*k + (k == j ? 1 : 2))/W : wt[n-1-k]); }
-    /* Unit sum property should hold except for roundoff: */
-    wt_table_check_normalization(n, wt, 1.0e-10, TRUE);
+    double c = (n-1)/2.0;
+    double h = (n+1)/2.0;
+    double sumw = 0.0;
+    for (int k = 0; k < n; k++)
+      { wt[k] = 1.0 - fabs((k-c)/h);
+        sumw += wt[k];
+      }
+    /* normalize to unit sum: */
+    for (int k = 0; k < n; k++) { wt[k] /= sumw; }
   }
    
 void wt_table_fill_hann(int n, double wt[])
   { /* Compute parameters: */
-    double c = ((double)n-1)/2.0; /* Center of {[0 _ n]} (may be half-integer). */
-    double h = ((double)n)/2.0;  /* Radius of domain. */
+    double c = ((double)n-1)/2.0;  /* Center of {[0 _ n]} (may be half-integer). */
+    double h = ((double)n+1)/2.0;  /* To make {wt[-1]=wt[n]=0}. */
     double sumw = 0;
     for (int k = 0; k < n; k++)
       { double wk = (k <= n-1-k ? (1 + cos(M_PI*(k-c)/h))/2 : wt[n-1-k]); 

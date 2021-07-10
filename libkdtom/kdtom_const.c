@@ -1,5 +1,5 @@
 /* See {kdtom_const.h}. */
-/* Last edited on 2021-07-02 00:27:55 by jstolfi */
+/* Last edited on 2021-07-08 15:46:56 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -19,17 +19,17 @@ kdtom_const_t *kdtom_const_alloc(ppv_dim_t d);
   /* Allocats a {kdtom_const_t} record {T}, including the internal {T.h.size} vector.
     Initializes only the {T.h.d} and {T.h.kind} fields. */
 
-kdtom_const_t *kdtom_const_make(ppv_dim_t d, ppv_nbits_t bps, ppv_size_t size[], ppv_sample_t val)
+kdtom_const_t *kdtom_const_make(ppv_dim_t d, ppv_nbits_t bps, ppv_size_t size[], ppv_sample_t smp)
   { 
     demand((0 <= d) && (d <= ppv_MAX_DIM), "invalid num of axes"); 
     demand((0 <= bps) && (bps <= ppv_MAX_BPS), "invalid bits per sample"); 
-    ppv_sample_t maxval = (ppv_sample_t)((1<<bps)- 1);
-    demand((0 <= val) && (val <= maxval), "invalid sample value"); 
+    ppv_sample_t maxsmp = ppv_max_sample(bps);
+    demand((0 <= smp) && (smp <= maxsmp), "invalid sample value"); 
     
     kdtom_const_t *T = kdtom_const_alloc(d);
 
     T->h.bps = bps; 
-    T->val = val; 
+    T->smp = smp; 
     for (ppv_axis_t k = 0; k < d; k++)
       { ppv_size_t szk = size[k];
         demand((0 <= szk) && (szk <= ppv_MAX_SIZE), "invalid size");
@@ -75,7 +75,7 @@ ppv_sample_t kdtom_const_get_sample(kdtom_const_t *T, ppv_index_t ix[])
       { ppv_size_t szk = T->h.size[k];
         demand((0 <=ix[k]) && (ix[k] < szk), "invalid index");
       }
-    return T->val;
+    return T->smp;
   }
 
 size_t kdtom_const_bytesize(kdtom_const_t *T)

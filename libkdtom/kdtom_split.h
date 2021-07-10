@@ -1,5 +1,5 @@
 /* An inrernal k-d-tree node that divides the domain betwee two nodes. */
-/* Last edited on 2021-07-02 00:31:04 by jstolfi */
+/* Last edited on 2021-07-08 15:51:03 by jstolfi */
 
 #ifndef kdtom_split_H
 #define kdtom_split_H
@@ -25,8 +25,8 @@ typedef struct kdtom_split_t
     block {T.sub[0]} must have a certain size {sz0} in {0..sz[ax]}, and {T.sub[1]} 
     must have size {T.h.sz[ax]-sz0}.
     
-    The voxel {T.v[ix]} is {T.sub[0].v[ix]} if {ix[ax]} is less than 
-    {sz0 = sub0.size[ax]}, and {T.sub[1].v[jx]} otherwise, where
+    The voxel {T.V[ix]} is {T.sub[0].V[ix]} if {ix[ax]} is less than 
+    {sz0 = sub0.size[ax]}, and {T.sub[1].V[jx]} otherwise, where
     {jx] is {ix} with {sz0} subtracted from {ix[ax]}.
     
     The header field {h} must be the first field in the record. */
@@ -40,7 +40,7 @@ kdtom_split_t *kdtom_split_make(ppv_axis_t ax, kdtom_t *sub0, kdtom_t *sub1);
     {T}. */
 
 ppv_sample_t kdtom_split_get_sample(kdtom_split_t *T, ppv_index_t ix[]);
-  /* Obtains the sample {T.v[ix]} if {ix} is a valid index vector for
+  /* Obtains the sample {T.V[ix]} if {ix} is a valid index vector for
     {T}, otherwise bombs out. The index vector {ix} is be modified by
     the procedure, but is restored before returning. */
 

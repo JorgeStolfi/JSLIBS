@@ -1,5 +1,5 @@
 /* An inrernal k-d-tree node that permutes, reverses, and shifts indices. */
-/* Last edited on 2021-07-02 00:29:47 by jstolfi */
+/* Last edited on 2021-07-08 15:50:41 by jstolfi */
 
 #ifndef kdtom_ixmap_H
 #define kdtom_ixmap_H
@@ -32,7 +32,7 @@ kdtom_ixmap_t *kdtom_ixmap_make
   /* Creates an index-mapping node {T} with sub-node {sub}, ???. */
    
 ppv_sample_t kdtom_ixmap_get_sample(kdtom_ixmap_t *T, ppv_index_t ix[]);
-  /* Obtains the sample {T.v[ix]} if {ix} is a valid index vector for
+  /* Obtains the sample {T.V[ix]} if {ix} is a valid index vector for
     {T}, otherwise bombs out. */
 
 size_t kdtom_ixmap_node_bytesize(ppv_dim_t d);

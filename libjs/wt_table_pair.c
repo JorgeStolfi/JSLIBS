@@ -1,5 +1,5 @@
 /* See wt_table_pair.h */
-/* Last edited on 2009-02-23 22:12:26 by stolfi */
+/* Last edited on 2021-07-04 05:23:04 by jstolfi */
 
 #define wt_table_pair_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -35,13 +35,13 @@ void wt_table_pair_make_gaussian
     (*wtb0) = wt_table_make_gaussian(sigma0, maxLoss);
     (*wname0) = NULL;
     asprintf(wname0, "gaussian(sigma = %8.6f)", sigma0);
-    if (verbose) { wt_table_print(stderr, (*wname0), wtb0->ne, wtb0->e); }
+    if (verbose) { wt_table_print(stderr, (*wname0), wtb0->ne, wtb0->e, 0); }
     
     double sigma1 = sqrt(var1);
     (*wtb1) = wt_table_make_gaussian(sigma1, maxLoss);
     (*wname1) = NULL;
     asprintf(wname1, "gaussian(sigma = %8.6f)", sigma1);
-    if (verbose) { wt_table_print(stderr, (*wname1), wtb1->ne, wtb1->e); }
+    if (verbose) { wt_table_print(stderr, (*wname1), wtb1->ne, wtb1->e, 0); }
   }
    
 void wt_table_pair_make_binomial
@@ -58,13 +58,13 @@ void wt_table_pair_make_binomial
     (*wtb0) = wt_table_make_binomial(r0);
     (*wname0) = NULL;
     asprintf(wname0, "binomial(n = %d, sigma = %8.6f)", 2*r0, sqrt(0.5*r0));
-    if (verbose) { wt_table_print(stderr, (*wname0), wtb0->ne, wtb0->e); }
+    if (verbose) { wt_table_print(stderr, (*wname0), wtb0->ne, wtb0->e, 0); }
     
     int r1 = (int)floor(2*var1 + 0.5);
     (*wtb1) = wt_table_make_binomial(r1);
     (*wname1) = NULL;
     asprintf(wname1, "binomial(n = %d, sigma = %8.6f)", 2*r1, sqrt(0.5*r1));
-    if (verbose) { wt_table_print(stderr, (*wname1), wtb1->ne, wtb1->e); }
+    if (verbose) { wt_table_print(stderr, (*wname1), wtb1->ne, wtb1->e, 0); }
   }
    
 void wt_table_pair_make_triangular
@@ -81,11 +81,11 @@ void wt_table_pair_make_triangular
     (*wtb0) = wt_table_make_triangular(r0);
     (*wname0) = NULL;
     asprintf(wname0, "triangular(r = %d)", r0);
-    if (verbose) { wt_table_print(stderr, (*wname0), wtb0->ne, wtb0->e); }
+    if (verbose) { wt_table_print(stderr, (*wname0), wtb0->ne, wtb0->e, 0); }
     
     int r1 = (int)floor(sqrt(4*var1) + 0.5);
     (*wtb1) = wt_table_make_triangular(r1);
     (*wname1) = NULL;
     asprintf(wname1, "triangular(r = %d)", r1);
-    if (verbose) { wt_table_print(stderr, (*wname1), wtb1->ne, wtb1->e); }
+    if (verbose) { wt_table_print(stderr, (*wname1), wtb1->ne, wtb1->e, 0); }
   }

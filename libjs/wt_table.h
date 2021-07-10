@@ -2,7 +2,7 @@
 #define wt_table_H
 
 /* Weight tables for filtering digital signals */
-/* Last edited on 2021-07-02 23:52:17 by jstolfi */
+/* Last edited on 2021-07-04 09:36:03 by jstolfi */
 
 #define wt_table_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -31,23 +31,38 @@ void wt_table_fill_binomial(int n, double wt[]);
   /* Sets {wt[i] = choose(i,n-1)/2^(n-1)} for {i} in {0..n-1}. 
     Note that the sum of all entries is 1.
     The variance will be {(n-1)/4}, so the
-    standard deviation will be {sqrt(n-1)/2)}. */
+    standard deviation will be {sqrt(n-1)/2)}.
+    
+    The table will be a partition of unity if used with stride
+    1 or (if n >=2) with stride 2. */
 
 void wt_table_fill_triangular(int n, double wt[]);
-  /* Builds a triangular weight table, {wt[i] = (r+1 - |i-r|)/(r+1)^2}
-    for {i} in {0..n-1}, where {r = (n-1)/2}. Requires {n} odd. This
-    is the convolution of two uniform distributions on {r+1}
-    elements. */
+  /* First, builds a triangular weight table, {wt[i] = 1 - |i-c|/h}
+    where {c = (n-1)/2} and {h=(n+1)/2}for {i} in {0..n-1}. 
+    Requires {n} odd. 
+    
+    Thus, if {n} is odd, the central element will be set to 1, and the
+    table is the convolution of two uniform distributions on {r+1}
+    elements. In any case, the values will be symmetric; the elements
+    {wt[-1]} and {wt[n]}, if they existed, would be zero, and {wt[0] =
+    wt[n-1] = 2/(n+1)}.
+    
+    The table is then normalized so that the sum of all entries is 1. If
+    {n} is odd, {2*r+1}, the table will be a partition of unity when
+    used with stride {r+1}. */
 
 void wt_table_fill_hann(int n, double wt[]);
   /* Stores into {wt[0..n-1]} a Hann-like weight table.
   
-    First, sets each {wt[i]} to {(1 + cos(pi*(i-c)/h))/2} where
-    {c=(n-1)/2}, {h=n/2}. Thus, if {n} is odd, the central element will
-    be set to 1. In any case, the values will be symmetric with {wt[0] =
-    wt[n-1] = (1 + cos(pi*(n-1)/n)/2}.
+    First, sets each {wt[i]} to {0.5*(1 + cos(pi*(i-c)/h))} where
+    {c=(n-1)/2} and {h=(n+1)/2}. Thus, if {n} is odd, the central element
+    will be set to 1. In any case, the values will be symmetric; the
+    elements {wt[-1]} and {wt[n]}, if they existed, would be zero, and
+    {wt[0] = wt[n-1] = 0.5*(1 + cos(pi*(n-1)/(n+1))}.
     
-    The table is then normalized so that the sum of all entries is 1. */
+    The table is then normalized so that the sum of all entries is 1.
+    If {n} is odd, {2*r+1}, the table will be a partition of unity 
+    when used with stride {r+1}. */
 
 /* WEIGHT TABLES WITH ALLOCATION
 
@@ -98,9 +113,12 @@ double wt_table_var(int n, double wt[], double avg);
 
 /* PRINTOUT */
 
-void wt_table_print(FILE *wr, char *wtname, int n, double wt[]);
+void wt_table_print(FILE *wr, char *wtname, int n, double wt[], int stride);
   /* prints to {wr} the name {wtname} (if not NULL), the weight table
-    {wt[0..n-1]}, and its main statistical properties. */
+    {wt[0..n-1]}, and its main statistical properties. 
+    
+    If {stride} is positive, also prints the effect of overlapping 
+    copies of the table with displacement {stride}. */
 
 char *wt_table_make_descr(int n, double wt[], char *fmt);
   /* Returns the weight table {wt[0..n-1]} formatted as a character string,

@@ -5,7 +5,7 @@
 #define tkdt_C_COPYRIGHT \
   "Copyright © 2021 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2021-07-03 13:22:57 by jstolfi */
+/* Last edited on 2021-07-09 00:05:21 by jstolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -127,9 +127,9 @@ void tkdt_do_tests(tkdt_options_t *o, ppv_dim_t d, ppv_nbits_t bps)
 
 ppv_array_t *tkdt_make_array(ppv_dim_t d, ppv_size_t sz[], ppv_nbits_t bps)
   {
-    ppv_nbits_t bpw = ppv_best_bpw(bps);
-    /* ppv_sample_t maxval = (ppv_sample_t)((1 << bps) - 1); */
-    ppv_array_t *A = ppv_array_new(d, sz, bps, bpw);
+    ppv_sample_t maxmaxsmp = ppv_max_sample(bps);
+    ppv_sample_t = (ppv_sample_t)(bps == 0 ? 0 : uint64_abrandom(1,maxmaxsmp));
+    ppv_array_t *A = ppv_array_new(d, sz, maxsmp);
     
     if (bps == 0) { /* Array must be all zeros anyway: */ return A; }
     
@@ -186,6 +186,7 @@ void tkdt_paint_bullseye(ppv_array_t *A, double ctr[], double R)
   { 
     ppv_dim_t d = A->d;
     ppv_nbits_t bps = A->bps;
+    ppv_sample_t maxsmp = A->maxsmp;
     
     /* Bullseye raddi (may be negative): */
     double R3 = R;           /* Outer radius of outer noise ring. */
@@ -193,15 +194,14 @@ void tkdt_paint_bullseye(ppv_array_t *A, double ctr[], double R)
     double R1 = 0.5*R2;      /* Outer radius of inner noise ring. */
     double R0 = R1-sqrt(d);  /* Inner radius of inner noise ring. */
 
-    ppv_sample_t maxval = (ppv_sample_t)((1 << bps) - 1);
-    assert(maxval > 0);
-    ppv_sample_t valA = 0;
-    ppv_sample_t valB = (ppv_sample_t)(maxval+1)/2;
-    assert(valA != valB);
+    assert(maxsmp > 0);
+    ppv_sample_t smpA = 0;
+    ppv_sample_t smpB = (ppv_sample_t)(maxsmp+1)/2;
+    assert(smpA != smpB);
 
     auto bool_t bullpaint(const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC);
-      /* Sets the area within {R0} and outside {R3} to {valA}.
-        Sets the area between {R1} and {R2} to {valB}.
+      /* Sets the area within {R0} and outside {R3} to {smpA}.
+        Sets the area between {R1} and {R2} to {smpB}.
         Leaves other voxels unchanged. */
     ppv_enum(bullpaint, FALSE, A, NULL, NULL);
 
@@ -212,8 +212,8 @@ void tkdt_paint_bullseye(ppv_array_t *A, double ctr[], double R)
         assert(ctrix[k] < A->size[k]);
       }
     ppv_sample_t ctrval = ppv_get_sample(A, ctrix);
-    assert(ctrval <= maxval);
-    ppv_sample_t newval = (maxval - ctrval < ctrval ? 0 : maxval);
+    assert(ctrval <= maxsmp);
+    ppv_sample_t newval = (maxsmp - ctrval < ctrval ? 0 : maxsmp);
     ppv_set_sample(A, ctrix, newval);
     return;
 
@@ -229,9 +229,9 @@ void tkdt_paint_bullseye(ppv_array_t *A, double ctr[], double R)
           }
         double dist = sqrt(dist2);
         if ((dist <= R0) || (dist >= R3))
-          { ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pA, valA); }
+          { ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pA, smpA); }
         else if ((dist >= R1) && (dist <= R2))
-          { ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pA, valB); }
+          { ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pA, smpB); }
         else
           { /* Leave sample unchaged. */ }
         return FALSE;

@@ -1,5 +1,5 @@
 /* Basic types and limits for portable 6-dimensional sample arrays. */
-/* Last edited on 2021-07-03 07:49:13 by jstolfi */
+/* Last edited on 2021-07-09 23:30:06 by jstolfi */
 
 #ifndef ppv_types_H
 #define ppv_types_H
@@ -117,17 +117,21 @@ typedef ix_pos_t ppv_pos_t;
 #define ppv_MAX_BYTES SIZE_MAX
   /* The size argument for {malloc} is a {size_t}. */
 
-/* FORMATS 
+/* FILE FORMAT TAGS */
+
+#define ppv_FILE_VERSION_2021 "2021-07-08"
+#define ppv_FILE_VERSION_2005 "2005-05-28"
+
+/* PRINTF FORMATS 
 
   These are formats suitable to print values of the above types,
   at least in GNU's gcc 3.4.2. */
 
 #define ppv_size_t_FMT "%lu"
-#define ppv_index_t_FMP "%ld"
+#define ppv_index_t_FMT "%ld"
 #define ppv_step_t_FMT "%ld"
 #define ppv_pos_t_FMT "%lu"
 #define ppv_sample_count_t_FMT "%lu"
-
 #define ppv_sample_t_FMT "%u"
 
 #endif

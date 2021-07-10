@@ -1,4 +1,4 @@
-/* Last edited on 2021-06-22 13:44:54 by jstolfi */ 
+/* Last edited on 2021-07-10 04:26:43 by jstolfi */ 
 /* Test of the I/O functions from the PPV library. */
 
 /* Must define _GNU_SOURCE in order to get {asprintf} */
@@ -9,7 +9,9 @@
 #include <assert.h>
 
 #include <affirm.h>
+#include <jsmath.h>
 #include <jsfile.h>
+#include <jsrandom.h>
 #include <bool.h>
 
 #include <ppv_array.h>
@@ -18,153 +20,163 @@
 
 #define posFMT ppv_pos_t_FMT
 #define sizeFMT ppv_size_t_FMT
+#define smpFMT ppv_sample_t_FMT
 
-#define bug(FMT_AND_ARGS...) \
+#define dMAX (7)
+
+#define bug(nerrP,FMT_AND_ARGS...) \
   do { \
     fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); \
     fprintf(stderr, FMT_AND_ARGS); \
     fprintf(stderr, "\n"); \
-    exit(1); \
+    (*nerrP)++; \
   } while(0)
 
-ppv_array_t *make_test_array(void);
+ppv_array_t *make_test_array(ppv_dim_t d, ppv_nbits_t bps);
 void test_fill_array(ppv_array_t *A);
 
-void check_array_equality(ppv_array_t *A, ppv_array_t *B);
-void dump_storage(FILE *wr, void *el, int nw, ppv_nbits_t bpw);
-void check_size(ppv_dim_t d, ppv_size_t *sza, ppv_size_t *szb);
+void check_array_equality(ppv_array_t *A, ppv_array_t *B, int64_t *nerrP);
+  /* Compares arrays {A} and {B}, calls {bug} if discrepant.
+    Increments {*nerrP} on errors. */
+
+void do_test_write(ppv_array_t *A, char *fname);
+  /* Writes the array {A} to file {fname}. */
+  
+void do_test_read(ppv_array_t *A, char *fname, int64_t *nerrP);
+  /* Reads an array {B} from file {fname}, which is could be either a
+    2005 format or a 2021 format file. If {A} is not {NULL}, compares it
+    to {A} with {check_array_equality(A,B,nerrP)}. */
 
 int main (int argn, char **argv)
   {
-    char *name = "test";
+    int64_t nerr = 0; /* Number of errors. */
     
-    ppv_array_t *A = make_test_array();
+    for (ppv_dim_t d = 0; d <= dMAX; d = (ppv_dim_t)(3*d + 2)/2)
+      { ppv_nbits_t bps_lo = (d == 0 ? 3 : 0);
+        ppv_nbits_t bps_hi = (d == 0 ? 3 : 32);
+        
+        for (ppv_nbits_t bps = bps_lo; bps <= bps_hi; bps++)
+          { ppv_array_t *A = make_test_array(d, bps);
+            char *fname = NULL;
+            asprintf(&fname, "out/test_d%d_bps%02d.ppv", d, bps);
+            
+            /* Write a file in the current format: */
+            do_test_write(A, fname);
 
-    fprintf(stderr, "Checking ppv_array_write_file...\n");
+            /* Read it back: */
+            do_test_read(A, fname, &nerr);
+
+            free(fname);
+          }
+      }
+
+    /* Read a version in the old format: */
+    do_test_read(NULL, "in/test_2005.ppv", &nerr);
+
+    demand(nerr == 0, "there were errors");
+    fprintf(stderr, "done.\n");
+    return 0;
+  }
+
+void do_test_write(ppv_array_t *A, char *fname)
+  {
+    fprintf(stderr, "Checking {ppv_array_write_file} fname = %s...\n", fname);
     bool_t verbose = FALSE;
     if (verbose) { ppv_print_descriptor(stderr, "A = { ", A, " }\n"); } 
-    char *fname = NULL;
-    asprintf(&fname, "out/%s.ppv", name);
     FILE *wr = open_write(fname, TRUE);
     ppv_array_write_file(wr, A, TRUE);
     ppv_array_write_file(wr, A, FALSE);
     fclose(wr);
-    /* Read it back: */
-    fprintf(stderr, "Checking ppv_array_read_file...\n");
-    ppv_nbits_t new_bpw = A->bpw;  /* For now. */
+  }
+  
+void do_test_read(ppv_array_t *A, char *fname, int64_t *nerrP)
+  {
+    fprintf(stderr, "Checking {ppv_array_read_file} (same array)...\n");
     ppv_array_t *B;
     FILE *rd = open_read(fname, TRUE);
     for (int32_t i = 0; i < 2; i++)
-      { B = ppv_array_read_file(rd, new_bpw);
+      { B = ppv_array_read_file(rd);
         if (! ppv_descriptor_is_valid(B, TRUE)) 
-          { bug("ppv_array_read_file returns an invalid desc"); }
-        if (B->bpw != new_bpw) 
-          { bug("ppv_array_read_file returns wrong bpw"); }
-        check_array_equality(A, B);
+          { bug(nerrP,"{ppv_array_read_file} returns an invalid desc"); }
+        if (A != NULL) { check_array_equality(A, B, nerrP); }
         free(B->el);
       }
     fclose(rd);
-    free(fname);
-    return 0;
   }
-
-void check_array_equality(ppv_array_t *A, ppv_array_t *B)
+void check_array_equality(ppv_array_t *A, ppv_array_t *B, int64_t *nerrP)
   {
     ppv_dim_t d = A->d;
-    assert(d == 6);
-    demand(B->d == d, "dims don't match");
+    demand(B->d == d, "axis counts don't match");
+    
     /* Check array size: */
-    check_size(d, B->size, A->size);
-    ppv_size_t *sz = A->size;
-    /* Check sample size: */
-    if (B->bps != A->bps) { bug("wrong bps"); }
+    for (ppv_axis_t i = 0; i < d; i++)
+      { if (B->size[i] != A->size[i]) 
+          { bug(nerrP, "size[%d] = " sizeFMT "", i, B->size[i]); }
+      }
+    
+    /* Assume the 2021 format, with {B.maxsmp}: */
+    if (B->maxsmp != A->maxsmp) { bug(nerrP, "wrong {.maxsmp}"); }
+    if (B->bps != A->bps) { bug(nerrP, "wrong {.bps}"); }
+
     /* Check contents: */
-    ppv_index_t ix[d];
-    for (ix[5] = 0; ix[5] < sz[5]; ix[5]++)
-      for (ix[4] = 0; ix[4] < sz[4]; ix[4]++)
-        for (ix[3] = 0; ix[3] < sz[3]; ix[3]++)
-          for (ix[2] = 0; ix[2] < sz[2]; ix[2]++)
-            for (ix[1] = 0; ix[1] < sz[1]; ix[1]++)
-              for (ix[0] = 0; ix[0] < sz[0]; ix[0]++)
-                { 
-                  ppv_pos_t posA = ppv_sample_pos(A, ix);
-                  ppv_sample_t smpA = ppv_get_sample_at_pos(A->el, A->bps, A->bpw, posA);
-                  
-                  ppv_pos_t posB = ppv_sample_pos(B, ix);
-                  ppv_sample_t smpB = ppv_get_sample_at_pos(B->el, B->bps, B->bpw, posB);
-                  
-                  if (smpA != smpB)
-                    { bug("contents differ at positions posA = " posFMT " posB = " posFMT "", posA, posB); } 
-                }
+    auto bool_t comp(const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC);
+    ppv_enum(comp, FALSE, A, B, NULL);
+    return;
+    
+    bool_t comp(const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC)
+      { ppv_sample_t smpA = ppv_get_sample_at_pos(A->el, A->bps, A->bpw, pA);
+        ppv_sample_t smpB = ppv_get_sample_at_pos(B->el, B->bps, B->bpw, pB);
+        if (smpA != smpB)
+          { bug(nerrP, "contents differ at positions posA = " posFMT " posB = " posFMT "", pA, pB); } 
+        return FALSE;
+      }
   }
 
-ppv_array_t *make_test_array(void)
+ppv_array_t *make_test_array(ppv_dim_t d, ppv_nbits_t bps)
   {
-    ppv_dim_t d = 6;
-
-    ppv_size_t sz[d];
-    sz[0] = 3; sz[1] = 40; sz[2] = 30; sz[3] = 3; sz[4] = 2; sz[5] = 3;
-    ppv_nbits_t bps = 7, bpw = 16;
-
-    fprintf(stderr, "bps = %d bpw = %d\n", bps, bpw);
-
-    ppv_array_t *A = ppv_array_new(d, sz,  bps, bpw);
-
-    fprintf(stderr, "creating test array...\n");
     bool_t verbose = TRUE;
+
+    fprintf(stderr, "creating test array d = %d bps =%d ...\n", d, bps);
+    
+    ppv_size_t sz[d];
+    ppv_sample_count_t npos = 5000;
+    ppv_choose_test_size(d, npos, sz);
+
+    ppv_sample_t maxsmp;
+    if (bps == 0)
+      { maxsmp = 0; }
+    else
+      { ppv_sample_t maxmaxsmp = ppv_max_sample(bps);
+        uint64_t m0 = uint64_abrandom(1, maxmaxsmp);
+        uint64_t m1 = uint64_abrandom(1, maxmaxsmp);
+        maxsmp = (ppv_sample_t)imax(m0,m1);
+      }
+    fprintf(stderr, "maxsmp = " smpFMT "\n", maxsmp);
+
+    ppv_array_t *A = ppv_array_new(d, sz,  maxsmp);
 
     if (verbose) 
       { ppv_print_descriptor(stderr, "A = { ", A, " }\n"); } 
 
-    if (! ppv_descriptor_is_valid(A, TRUE))
-      { bug("{ppv_array_new} returns invalid desc"); }
+    assert(ppv_descriptor_is_valid(A, TRUE));
       
     test_fill_array(A);
-    
     return A;
-    
   }
 
 void test_fill_array(ppv_array_t *A)
   {
-    ppv_dim_t d = A->d;
-    ppv_word_t val = 4615;
-    ppv_word_t smask = ((ppv_word_t)1 << A->bps) - 1;
-    ppv_index_t ix[d];
-    for (ix[5] = 0; ix[5] < A->size[5]; ix[5]++)
-      for (ix[4] = 0; ix[4] < A->size[4]; ix[4]++)
-        for (ix[3] = 0; ix[3] < A->size[3]; ix[3]++)
-          for (ix[2] = 0; ix[2] < A->size[2]; ix[2]++)
-            for (ix[1] = 0; ix[1] < A->size[1]; ix[1]++)
-              for (ix[0] = 0; ix[0] < A->size[0]; ix[0]++)
-                { 
-                  ppv_pos_t pos = ppv_sample_pos(A, ix);
-                  ppv_sample_t xsmp = smask & val;
-                  ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pos, xsmp);
-                  /* val = (31415*val + 1703) >> 3; */
-                  val++;
-                }
-  }
-
-void dump_storage(FILE *wr, void *el, int nw, ppv_nbits_t bpw)
-  {
-    for (int32_t iw = 0; iw < nw; iw++)
-      { ppv_word_t w;
-        if (bpw == 8) 
-            { w = *(((ppv_word_08_t *)el) + iw); }
-          else if (bpw == 16) 
-            { w = *(((ppv_word_16_t *)el) + iw); }
-          else 
-            { w = *(((ppv_word_32_t *)el) + iw); }
-        if (iw != 0) { fprintf(wr, " "); }
-        for (int32_t ib = bpw-1; ib >= 0; ib--)
-          { fprintf(wr, "%d", (w >> ib) & 1); }
+    /* Fill elements: */
+    ppv_sample_t val = 4615;
+    auto bool_t init(const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC);
+    ppv_enum(init, FALSE, A, NULL, NULL);
+    return;
+    
+    bool_t init(const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC)
+      { ppv_sample_t smp = (ppv_sample_t)(val % (A->maxsmp + 1));
+        ppv_set_sample_at_pos(A->el, A->bps, A->bpw, pA, smp);
+        val++;
+        return FALSE;
       }
   }
 
-void check_size(ppv_dim_t d, ppv_size_t *sza, ppv_size_t *szb)
-  {
-    ppv_axis_t i;
-    for (i = 0; i < d; i++)
-      { if (sza[i] != szb[i]) { bug("size[%d] = " sizeFMT "", i, sza[0]); } }
-  }

@@ -1,5 +1,5 @@
 /* Multidimensional sample arrays stored as k-d-trees. */
-/* Last edited on 2021-07-01 02:47:43 by jstolfi */
+/* Last edited on 2021-07-09 21:39:13 by jstolfi */
 
 #ifndef kdtom_H
 #define kdtom_H
@@ -26,7 +26,7 @@ typedef struct kdtom_t
     ppv_size_t *size;   /* Count of voxels along each axis. */
   } kdtom_t;
   /* A {kdtom_t} {T} describes a finite multi-dimensional array of
-    samples {T.v}, internally stored as a k-d-tree.
+    samples {T.V}, internally stored as a k-d-tree.
     
     Compared to a simple {ppv_array_t}, a {kdtom_t} is much more
     economical of space if the array has large regions with uniform
@@ -35,10 +35,10 @@ typedef struct kdtom_t
     changed.
     
     The array has {T.d} axes (dimensions). Each sample is a
-    {ppv_sample_t} value (an unsigned inteegr) in the range
+    {ppv_sample_t} value (an unsigned integer) in the range
     {0..2^bps-1}. If {T.bps} is zero, all samples have value zero.
     
-    Each element of {T.v} (a /voxel/) is identified by an index vector
+    Each element of {T.V} (a /voxel/) is identified by an index vector
     {ix[0..d-1]}. The voxel exists iff {ix[k]} is in {0..T.size[k]-1}
     for each axis {k}; and undefined otherwise.
     
@@ -67,7 +67,7 @@ typedef struct kdtom_t
 /* SAMPLE EXTRACTION */
 
 ppv_sample_t kdtom_get_sample(kdtom_t  *T, ppv_index_t ix[]);
-  /* Obtains the sample {T.v[ix]} if {ix} is a valid index vector, otherwise
+  /* Obtains the sample {T.V[ix]} if {ix} is a valid index vector, otherwise
     bombs out. */
     
 /* RECURSIVE TREE BUILDNG AND MANIPULATION */
@@ -99,7 +99,7 @@ kdtom_t kdtom_clip(kdtom_t *T, ppv_axis_t ax, ppv_index_t ixlo, ppv_index_t sz);
     except that along the axis {ax} it is clipped to the index range {ixlo..ixlo+sz-1}.
     This range must be contained in the range {0..T.size[ax]-1}.
     
-    That is, voxel {S.v[ix]} is equal to {T.v[jx]} where {jx[k]=ix[k]}
+    That is, voxel {S.V[ix]} is equal to {T.V[jx]} where {jx[k]=ix[k]}
     for each {k} in {0..T.d-1}, except that {jx[ax]=ix[ax]+ixlo};
     provided that {ix[ax]} is in {0..sz-1}, and {jx[k]} is in
     {0..T.size[k]} fr all {k}.

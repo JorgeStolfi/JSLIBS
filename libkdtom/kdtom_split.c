@@ -1,5 +1,5 @@
 /* See {kdtom_split.h}. */
-/* Last edited on 2021-07-02 00:30:30 by jstolfi */
+/* Last edited on 2021-07-08 15:50:51 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -91,11 +91,11 @@ ppv_sample_t kdtom_split_get_sample(kdtom_split_t *T, ppv_index_t ix[])
       { ksub = 1; ix[ax] = ix[ax] - sz0; }
     
     /* Get the sample: */
-    ppv_sample_t v = kdtom_get_sample(T->sub[ksub], ix);
+    ppv_sample_t smp = kdtom_get_sample(T->sub[ksub], ix);
     
     /* Restore original index vector: */
     ix[ax] = ix_save;
-    return v;
+    return smp;
   }
 
 size_t kdtom_split_bytesize(kdtom_split_t *T, bool_t total)

@@ -1,5 +1,5 @@
 /* Input and output of portable 6-dimensional arrays. */
-/* Last edited on 2021-06-22 13:52:04 by jstolfi */
+/* Last edited on 2021-07-10 04:22:45 by jstolfi */
 /* Copyright © 2005 by Jorge Stolfi, from University of Campinas, Brazil. */
 
 #ifndef ppv_array_read_H
@@ -9,17 +9,23 @@
 #include <ppv_array.h>
 #include <stdio.h>
 
-ppv_array_t *ppv_array_read_file ( FILE *rd, ppv_nbits_t bpw );
+ppv_array_t *ppv_array_read_file ( FILE *rd );
   /* Reads an array {A} from file {rd}, assumed to be in the standard
     format (plain or raw) as described in {ppv_array_read_FORMAT_INFO}. 
     
     The procedure automatically allocates the descriptor for {A} and the
-    sample storage area {A.el}. The base displacement {A.base} and the
-    addressing increments {A.step}, which are not in the file, are
-    defined by the procedure based on the bits per sample and the array
-    sizes specified in the file. The bits-per-word sample packing
-    parameter {A.bpw}, which is also omitted in the file. is set to the
-    value {bpw} given (8, 16, or 32).
+    sample storage area {A.el}. The fields {A.d}, {A.size[0..A.d-1]},
+    {A.maxsmp} are read from the header. The header's vector
+    {asize[0..A.d-1]} tells which indices are replicated, if any:
+    namely, those for which {A.size[ax] > 1} and {asize[ax] == 1}. The
+    base displacement {A.base} and the element position increments
+    {A.step}, which are not in the file, are defined by the procedure
+    based on this information.
+    
+    The number of bits per sample {A.bps} is set to
+    {ppv_min_bps(A.maxsmp)}. The bits-per-word sample packing parameter
+    {A.bpw}, which is also omitted in the file. is set to
+    {ppv_best_bpw(bps)}.
     
     The procedure aborts the program, with an error message to {stderr},
     if the file is malformed, or there is not enough memory. */ 
@@ -30,7 +36,7 @@ ppv_array_t *ppv_array_read_file ( FILE *rd, ppv_nbits_t bpw );
   " values of all samples; and a fixed footer (trailer) line. More" \
   " specifically: \n" \
   "\n" \
-  "    * a header line \"begin ppv_array_t (format of 2005-05-28)\".\n" \
+  "    * a header line \"begin ppv_array_t (format of " ppv_FILE_VERSION_2021 ")\".\n" \
   "\n" \
   "    * a line \"dim = {d}\" where {d} is in {0..ppv_MAX_DIM};\n" \
   "\n" \
@@ -38,9 +44,9 @@ ppv_array_t *ppv_array_read_file ( FILE *rd, ppv_nbits_t bpw );
   "\n" \
   "    * a line \"asize = {asz[0]} ... {asz[d-1]}\";\n" \
   "\n" \
-  "    * a line \"bps = {M}\" where {M = A.bps};\n" \
+  "    * a line \"maxsmp = {MAXSMP}\" where {MAXSMP = A.maxsmp};\n" \
   "\n" \
-  "    * a line \"plain = {B}\" where {B} is 0 or 1;\n" \
+  "    * a line \"plain = {PL}\" where {PL} is 0 or 1;\n" \
   "\n" \
   "    * the sample values, in a format determined by {B};\n" \
   "\n" \
@@ -71,7 +77,7 @@ ppv_array_t *ppv_array_read_file ( FILE *rd, ppv_nbits_t bpw );
   " I/O and much smaller files (from 1/3 to 1/16 of the" \
   " plain equivalent, depending on the number of bits per sample).\n" \
   "\n" \
-  "  Specifically, if the plain flag {B} in the file is 1, sample" \
+  "  Specifically, if the plain flag {PL} in the file is 1, sample" \
   " values are represented in the /plain/ " \
   " format: namely, as decimal numbers with ASCII digits, separated by " \
   " one or more ASCII formatting chars (ASCII 'SPACE', 'TAB', 'NUL', " \
@@ -80,7 +86,7 @@ ppv_array_t *ppv_array_read_file ( FILE *rd, ppv_nbits_t bpw );
   " regularly in order to avoid long lines. Extra formatting characters " \
   " may be present before and/or after the sample block.\n" \
   "\n" \
-  "  If the flag {B} is 0, sample values are represented in the /raw/ " \
+  "  If the flag {PL} is 0, sample values are represented in the /raw/ " \
   " (packed binary) format, detailed at the end of this file. Extra " \
   " formatting characters may be present after the sample block, " \
   " but not before it.\n" \
@@ -111,6 +117,14 @@ ppv_array_t *ppv_array_read_file ( FILE *rd, ppv_nbits_t bpw );
   "    | byte#   <--0---> <--1---> <--2---> <--3---> <--4---> <--5---> ... \n" \
   "    | sample#       <-------0---------->       <--------1---------> ... \n" \
   "    |         ======AA AAAAAAAA AAAAAAAA ======BB BBBBBBBB BBBBBBBB ... \n" \
-  "    | bit#    7    2 0 7      0 7      0 7    2 0 7      0 7      0 ... " \
+  "    | bit#    7    2 0 7      0 7      0 7    2 0 7      0 7      0 ... \n" \
+  "\n" \
+  "OLDER FORMATS\n" \
+  "\n" \
+  "  The file format changed slightly in 2001. The previous format" \
+  " had \"(format of " ppv_FILE_VERSION_2005 ")\" in the header, and" \
+  " the line \"maxsmp = {MAXSMP}\" was replaced by \"bps = {BPS}\".  The" \
+  " procedure {ppv_array_read_file} can read those old files, and will" \
+  " assume {2^BPS-1} as the {A.maxsmp} parameter."
 
 #endif

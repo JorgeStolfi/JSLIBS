@@ -1,5 +1,5 @@
 /* See ppv_array_blur.h */
-/* Last edited on 2021-07-03 08:09:32 by jstolfi */
+/* Last edited on 2021-07-09 01:41:20 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -23,32 +23,25 @@
 ppv_array_t *ppv_array_blur
   ( ppv_array_t *A, 
     ppv_sample_floatize_proc_t *floatize,
-    ppv_nbits_t bps, 
-    ppv_size_t radius,
+    ppv_sample_t maxsmpG, 
+    int32_t radius,
     double wt[],
-    ppv_size_t hstep,
+    int32_t stride,
     ppv_sample_quantize_proc_t *quantize
   )
   {
     demand(radius >= 1, "blur radius must be positive");
-    ppv_size_t t = 2*radius + 1;
+    demand(maxsmpG >= 1, "invalid output max sample");
     
-    demand((hstep >= 0) && (hstep <= radius), "invalid hstep");
-    ppv_size_t s = 2*hstep + 1;
-    demand(t % s == 0, "probing step must divide window size");
+    demand((stride >= 1) && (stride <= radius+1), "invalid probing stride");
+    demand((radius + 1) % stride == 0, "probing stride must divide {radius+1}");
     
     ppv_dim_t d = A->d;
     
-    demand(A->bps > 0, "invalid input bits per sample");
-    demand(bps > 0, "invalid output bits per sample");
-    
-    ppv_sample_t mG = (ppv_sample_t)((1LU << bps) - 1); /* Max sample of {G}. */
-    
     /* Compute the size of {G} and allocate it: */
     ppv_size_t szG[d];
-    for (ppv_axis_t k = 0; k < d; k++) { szG[k] = A->size[k]/s; }
-    ppv_nbits_t bpw = ppv_best_bpw(bps);
-    ppv_array_t *G = ppv_array_new(d, szG, bps, bpw);
+    for (ppv_axis_t k = 0; k < d; k++) { szG[k] = (A->size[k]+stride-1)/stride; }
+    ppv_array_t *G = ppv_array_new(d, szG, maxsmpG);
     
     /* Now compute the samples of {G}: */
     ppv_index_t ixA[d]; /* Index vector for {A}. */
@@ -58,17 +51,17 @@ ppv_array_t *ppv_array_blur
     return G;
     
     bool_t compav(const ppv_index_t *ix, ppv_pos_t pG, ppv_pos_t pB, ppv_pos_t pC)
-      { for (ppv_axis_t k = 0; k < d; k++) { ixA[k] = s*ix[k] + hstep; }
+      { for (ppv_axis_t k = 0; k < d; k++) { ixA[k] = (ppv_index_t)(stride*ix[k]); }
         double avg = ppv_array_blur_single(A, ixA, radius, floatize, wt);
-        ppv_sample_t vG;
+        ppv_sample_t smpG;
         assert(! isnan(avg));
         if (quantize != NULL)
-          { vG = quantize(avg, mG); }
+          { smpG = quantize(avg, maxsmpG); }
         else
-          { vG = (ppv_sample_t)sample_conv_quantize
-              ( (float)avg, mG, FALSE, 0.0, 1.0, NULL,NULL, NULL,NULL, NULL,NULL );
+          { smpG = (ppv_sample_t)sample_conv_quantize
+              ( (float)avg, maxsmpG, FALSE, 0.0, 1.0, NULL,NULL, NULL,NULL, NULL,NULL );
           }
-        ppv_set_sample_at_pos(G->el, bps, bpw, pG, vG);
+        ppv_set_sample_at_pos(G->el, G->bps, G->bpw, pG, smpG);
         return FALSE;
       }
   }
@@ -76,21 +69,22 @@ ppv_array_t *ppv_array_blur
 double ppv_array_blur_single
   ( ppv_array_t *A, 
     const ppv_index_t ix[],
-    ppv_size_t radius,
+    int32_t radius,
     ppv_sample_floatize_proc_t *floatize,
     double wt[]
   )
   {
+    ppv_dim_t d = A->d;
+    
     bool_t debug = FALSE;
 
-    ppv_dim_t d = A->d;
-    ppv_size_t t = 2*radius + 1; /* Neighborhood size along each axis. */
-    ppv_sample_t mA = (ppv_sample_t)((1LU << A->bps) - 1); /* Max sample of {A}. */
+    int32_t szw = 2*radius + 1; /* Neighborhood size along each axis. */
+    ppv_sample_t maxsmpA = A->maxsmp; /* Max sample of {A}. */
 
-    if (debug) { ix_print_indices (stderr, "avg arount A[", d, ix, 0, ",", "]"); }
+    if (debug) { ix_print_indices (stderr, "avg around A[", d, ix, 0, ",", "]\n"); }
 
     double avg; /* Neighborhood average. */
-    if (A->bps == 0)
+    if (A->maxsmp == 0)
       { /* All samples are zero anyway: */ avg = 0.0; }
     else
       { /* Enumerate neighborhood voxels: */
@@ -100,13 +94,14 @@ double ppv_array_blur_single
         double sum_w = 0.0;   /* Sum of weights used. */
         while (TRUE)
           { /* Compute weight of sample {A[jx]} (0 if it does not exist): */
+            if (debug) { ix_print_indices (stderr, "  A[", d, jx, 0, ",", "]\n"); }
             double wj = 1.0; /* Sample weight in neighborhood. */
             for (ppv_axis_t k = 0; k < d; k++) 
               { ppv_index_t jxk = jx[k];
                 if ((jxk >= 0) && (jxk < A->size[k]))
                   { /* Voxel {A[jx]} exists: */
                     ppv_index_t rix = jx[k] - ix[k] + radius; /* Index withing neighborhood. */
-                    assert((rix >= 0) && (rix < t));
+                    assert((rix >= 0) && (rix < szw));
                     wj = wj * wt[rix];
                   }
                 else
@@ -119,23 +114,24 @@ double ppv_array_blur_single
                 ppv_sample_t vj = ppv_get_sample(A, jx);
                 double xj; /* Floatized sample value. */
                 if (floatize != NULL)
-                  { xj = floatize(vj, mA); }
+                  { xj = floatize(vj, maxsmpA); }
                 else
-                  { xj = sample_conv_floatize(vj, mA, TRUE, 0.0,1.0, NULL,NULL, NULL,NULL); }
+                  { xj = sample_conv_floatize(vj, maxsmpA, TRUE, 0.0,1.0, NULL,NULL, NULL,NULL); }
+                if (debug) { fprintf(stderr, "  wj = %16.12f xj = %8.6f\n", wj, xj); }
                 sum_wx += wj*xj;
                 sum_w += wj;
               }
             /* Advance {jx} to the next index in neigborhood: */
             ppv_axis_t axf = 0;  /* Axis to try to increment next. */
             while((axf < d) && (jx[axf] >= ix[axf] + radius))
-              { jx[axf] = ix[axf] + radius;
+              { jx[axf] = ix[axf] - radius;
                 axf++;
               }
             if (axf >= d) { /* Scanned the whole neighborhood */ break; }
             jx[axf]++;
           }
         /* Compute and return the average: */
-        if (debug) { fprintf(stderr, " = %24.16e/%24.1e", sum_wx, sum_w); } 
+        if (debug) { fprintf(stderr, " = %24.16e/%24.16e", sum_wx, sum_w); } 
         avg = (sum_w == 0.0 ? NAN : sum_wx/sum_w);
       }
     if (debug) { fprintf(stderr, " = %18.16f\n", avg); } 

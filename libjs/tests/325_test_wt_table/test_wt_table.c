@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {wt_table.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2017-06-12 00:10:09 by stolfilocal */ 
+/* Last edited on 2021-07-04 09:49:32 by jstolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_hermite3_COPYRIGHT \
@@ -60,25 +60,32 @@ void do_test_basics(void)
 
 void do_test_print(int nw, char *tname)
   {
-    fprintf(stderr, "=== %s =============================================\n", tname);
+    fprintf(stderr, "--- table = %s nw = %d ---\n", tname, nw);
     
     double wt[nw];         
+    int32_t stride;
     
     if (strcmp(tname, "gaussian") == 0)
       { double sigma = nw/5.0;
         wt_table_fill_gaussian(sigma, nw, wt); 
+        stride = 0;
       }
     else if (strcmp(tname, "binomial") == 0)
       { wt_table_fill_binomial(nw, wt); 
+        stride = (nw == 1 ? 1 : 2);
       }
     else if (strcmp(tname, "triangular") == 0)
-      { wt_table_fill_triangular(nw, wt); }
+      { wt_table_fill_triangular(nw, wt);
+        stride = (nw % 2 == 1? (nw+1)/2 : 0);
+      }
     else if (strcmp(tname, "hann") == 0)
-      { wt_table_fill_hann(nw, wt); }
+      { wt_table_fill_hann(nw, wt); 
+        stride = (nw % 2 == 1? (nw+1)/2 : 0);
+      }
     else 
       { assert(FALSE); }
 
-    wt_table_print(stderr, tname, nw, wt);
+    wt_table_print(stderr, tname, nw, wt, stride);
     wt_table_check_normalization(nw, wt, 1.0e-8, TRUE);
     
     /* !!! To be expanded !!! */

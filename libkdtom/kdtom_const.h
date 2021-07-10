@@ -1,5 +1,5 @@
 /* An internal k-d-tree node that has a constant value over the whole domain. */
-/* Last edited on 2021-07-02 00:28:32 by jstolfi */
+/* Last edited on 2021-07-08 15:49:44 by jstolfi */
 
 #ifndef kdtom_const_H
 #define kdtom_const_H
@@ -13,20 +13,20 @@
 
 typedef struct kdtom_const_t 
   { kdtom_t h;       /* General node parameters. */
-    ppv_sample_t val;   /* Sample value. */
+    ppv_sample_t smp;   /* Sample value. */
   } kdtom_const_t;
-  /* A record {T} of this type describes a block {T.v} of voxels whose
-    values are all equal to {T.val}.
+  /* A record {T} of this type describes a block {T.V} of voxels whose
+    values are all equal to {T.smp}.
     
     The header field {h} must be the first field in the record. */
 
 ppv_sample_t kdtom_const_get_sample(kdtom_const_t *T, ppv_index_t ix[]);
-  /* Obtains the sample {T.v[ix]}, that is, {t.val}, if {ix} is a valid index vector for
+  /* Obtains the sample {T.V[ix]}, that is, {T.smp}, if {ix} is a valid index vector for
     {T}; otherwise bombs out. */
 
-kdtom_const_t *kdtom_const_make(ppv_dim_t d, ppv_nbits_t bps, ppv_size_t [], ppv_sample_t val);
+kdtom_const_t *kdtom_const_make(ppv_dim_t d, ppv_nbits_t bps, ppv_size_t [], ppv_sample_t smp);
   /* Creates a constant node {T} with the given parameters: {d} axes, {bps} bits per sample,
-    and sample value {val}, with {size[k]} voxels along each axis {k} in {0..d-1}. */
+    and sample value {smp}, with {size[k]} voxels along each axis {k} in {0..d-1}. */
 
 size_t kdtom_const_node_bytesize(ppv_dim_t d);
   /* Size in bytes of a {kdtom_const_t} node {T}, including the {T.h.size}

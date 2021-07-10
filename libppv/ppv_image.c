@@ -1,5 +1,5 @@
 /* See ppv_image.h */
-/* Last edited on 2021-07-03 14:58:07 by jstolfi */
+/* Last edited on 2021-07-09 01:13:29 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -17,9 +17,9 @@
 
 #include <ppv_image.h>
 
-uint16_image_t *ppv_image_from_array(ppv_array_t *A, ppv_sample_t maxval)
+uint16_image_t *ppv_image_from_array(ppv_array_t *A)
   {
-    demand(maxval <= uint16_image_MAX_SAMPLE, "invalid maxval");
+    demand(A->maxsmp <= uint16_image_MAX_SAMPLE, "invalid maxsmp");
     ppv_dim_t d = A->d;
     demand((d == 2) || (d == 3), "array must have 2 or 3 axes");
     
@@ -38,7 +38,7 @@ uint16_image_t *ppv_image_from_array(ppv_array_t *A, ppv_sample_t maxval)
       }
     
     uint16_image_t *J = uint16_image_new(cols, rows, chns);
-    J->maxval = (uint16_t)maxval;
+    J->maxval = (uint16_t)A->maxsmp;
     if ((cols > 0) && (rows > 0) && (chns > 0)) 
       { /* Copy samples: */
         ppv_index_t ix[d];
@@ -49,9 +49,8 @@ uint16_image_t *ppv_image_from_array(ppv_array_t *A, ppv_sample_t maxval)
               { ix[0] = x;
                 for (int32_t c = 0; c < chns; c++)
                   { if (d == 3) { ix[2] = c; }
-                    ppv_sample_t v = ppv_get_sample(A, ix);
-                    demand(v <= maxval, "invalid sample in array");
-                    row[x*chns + c] = (uint16_t)v;
+                    ppv_sample_t smp = ppv_get_sample(A, ix);
+                    row[x*chns + c] = (uint16_t)smp;
                   }
               }
           }
@@ -67,19 +66,15 @@ ppv_array_t *ppv_image_to_array(uint16_image_t *J)
     int32_t cols = J->cols; demand(cols <= ppv_MAX_SIZE, "too many columns"); 
     int32_t rows = J->rows; demand(rows <= ppv_MAX_SIZE, "too many rows"); 
     int32_t chns = J->chns; demand(chns <= ppv_MAX_SIZE, "too many channels");
-    uint16_t maxval = J->maxval; 
-    assert(maxval <= ppv_MAX_SAMPLE_VAL);
+    uint16_t maxsmp = J->maxval; 
+    assert(maxsmp <= ppv_MAX_SAMPLE_VAL);
     
     ppv_size_t sz[d];
     sz[0] = cols;
     sz[1] = rows;
     if (d == 3) { sz[2] = chns; }
-    ppv_nbits_t bps = 0;
-    while (maxval >= (1 << bps)) { bps++; }
-    assert(bps <= ppv_MAX_BPS);
-    ppv_nbits_t bpw = ppv_best_bpw(bps); 
-    
-    ppv_array_t *A = ppv_array_new(d, sz, bps, bpw);
+
+    ppv_array_t *A = ppv_array_new(d, sz, maxsmp);
     if ((cols > 0) && (rows > 0) && (chns > 0)) 
       { /* Copy samples: */
         ppv_index_t ix[d];
@@ -90,13 +85,12 @@ ppv_array_t *ppv_image_to_array(uint16_image_t *J)
               { ix[0] = x;
                 for (int32_t c = 0; c < chns; c++)
                   { if (d == 3) { ix[2] = c; }
-                    uint16_t v = row[x*chns + c];
-                    demand(v <= maxval, "invalid sample in image");
-                    ppv_set_sample(A, ix, (ppv_sample_t)v);
+                    uint16_t smp = row[x*chns + c];
+                    demand(smp <= maxsmp, "invalid sample in image");
+                    ppv_set_sample(A, ix, (ppv_sample_t)smp);
                   }
               }
           }
       }
     return A;
-  
   }

@@ -1,5 +1,5 @@
 /* An inrernal k-d-tree node that shifts and pads a sub-tree. */
-/* Last edited on 2021-07-02 00:32:12 by jstolfi */
+/* Last edited on 2021-07-08 15:51:22 by jstolfi */
 
 #ifndef kdtom_trans_H
 #define kdtom_trans_H
@@ -17,11 +17,11 @@ typedef struct kdtom_trans_t
     ppv_sample_t fill;           /* Surround fill value. */
     kdtom_t *sub;                /* Sub-tree. */
   } kdtom_trans_t;
-  /* A descriptor {T} for a block {T.v} of voxels in the {d}-dimensional
+  /* A descriptor {T} for a block {T.V} of voxels in the {d}-dimensional
     infinite voxel grid, represetnted as another k-d-tree {sub}
     but shifted and padded.
     
-    Namely, a sample T.v[ix]} of {T}, as usual, has index vector {ix[0..d-1]} where,
+    Namely, a sample T.V[ix]} of {T}, as usual, has index vector {ix[0..d-1]} where,
     for each {k}, {ix[k]} is in the range {0..tsz[k]-1]} and {tsz = T.h.size}.
     The sample is undefined for other index vectors.
     
@@ -46,7 +46,7 @@ kdtom_trans_t *kdtom_trans_make
     {ixlo[0..d-1]}, and the sub-tree {sub}. */
    
 ppv_sample_t kdtom_trans_get_sample(kdtom_trans_t *T, ppv_index_t ix[]);
-  /* Obtains the sample {T.v[ix]} if {ix} is a valid index vector for
+  /* Obtains the sample {T.V[ix]} if {ix} is a valid index vector for
     {T}, otherwise bombs out. */
 
 size_t kdtom_trans_node_bytesize(ppv_dim_t d);
