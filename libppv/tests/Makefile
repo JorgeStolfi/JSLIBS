@@ -1,6 +1,5 @@
-# Last edited on 2019-04-09 17:50:40 by jstolfi
+# Last edited on 2021-07-10 11:47:58 by jstolfi
 
-IGNOREDIRS := \
-  ppvip
+IGNOREDIRS :=
   
 include ${STOLFIHOME}/programs/c/GENERIC-ROOT-DIR.make
