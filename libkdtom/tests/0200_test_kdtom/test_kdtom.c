@@ -5,7 +5,7 @@
 #define tkdt_C_COPYRIGHT \
   "Copyright © 2021 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2021-07-09 00:05:21 by jstolfi */
+/* Last edited on 2021-07-11 22:59:52 by jstolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -53,6 +53,7 @@
 #include <bool.h>
 #include <affirm.h>
 #include <jsfile.h>
+#include <jsrandom.h>
 #include <argparser.h>
 #include <ppv_array.h>
 
@@ -60,6 +61,7 @@
 #include <kdtom_array.h>
 #include <kdtom_split.h>
 #include <kdtom_const.h>
+#include <kdtom_grind_array.h>
 
 /* COMMAND-LINE OPTIONS */
 
@@ -85,8 +87,8 @@ void tkdt_paint_bullseye(ppv_array_t *A, double ctr[], double R);
 void tkdt_choose_array_size(ppv_dim_t d, ppv_size_t sz[]);
   /* Fills {sz[0..d-1]} with suitable values, not all equal. */
 
-ppv_array_t *tkdt_make_array(ppv_dim_t d, ppv_size_t sz[], ppv_nbits_t bps);
-  /* Creates an array {A} with the given attributes {d,sz[0..d-1],bps},
+ppv_array_t *tkdt_make_array(ppv_dim_t d, ppv_size_t sz[], ppv_sample_t maxsmp);
+  /* Creates an array {A} with the given attributes {d,sz[0..d-1],maxsmp},
     and fills it with a suitable test pattern. */
 
 void tkdt_check_tree(kdtom_t *T);
@@ -95,7 +97,7 @@ void tkdt_check_tree(kdtom_t *T);
 void tkdt_plot(kdtom_t *T);
   /* Plots the array {T}.  Only if {T.d} is 2. */
 
-void tkdt_do_tests(tkdt_options_t *o,ppv_dim_t d, ppv_nbits_t bps);
+void tkdt_do_tests(tkdt_options_t *o,ppv_dim_t d, ppv_sample_t maxsmp);
 void tkdt_test_array_node(ppv_array_t *A);
 void tkdt_test_grinding(ppv_array_t *A);
 
@@ -107,31 +109,43 @@ int32_t main(int32_t argc, char** argv)
   {
     tkdt_options_t *o = tkdt_parse_options(argc, argv);
     
-    for (ppv_dim_t d = 0; d <= 16; d++)
-      for (ppv_nbits_t bps = 0; bps <= 1;  bps = (ppv_nbits_t)((5*bps+4)/3))
-        { tkdt_do_tests(o, d, bps); }
+    int32_t nms = 33;     /* Count of values of {maxsmp} to try. */
+    ppv_sample_t ms[nms]; /* The values. */
+    for (int32_t k = 0; k < nms; k++)
+      { ppv_nbits_t bps = (ppv_nbits_t)floor(32*((double)k)/(nms-1) + 0.5);
+        if (bps == 0)
+          { ms[k] = 0; }
+        else
+          { ppv_sample_t maxmaxsmp = ppv_max_sample(bps);
+            ms[k] = (ppv_sample_t)(uint64_abrandom(maxmaxsmp/2+1, maxmaxsmp));
+          }
+        fprintf(stderr, " bps = %2d  ms[%2d] = " ppv_sample_t_FMT "\n", bps, k, ms[k]);
+      }
+    
+    for (ppv_dim_t d = 0; d <= 6; d++)
+      { for (int32_t k = 0; k < nms; k++)
+          { tkdt_do_tests(o, d, ms[k]); }
+      }
       
     return 0;
   }
   
-void tkdt_do_tests(tkdt_options_t *o, ppv_dim_t d, ppv_nbits_t bps)
+void tkdt_do_tests(tkdt_options_t *o, ppv_dim_t d, ppv_sample_t maxsmp)
   { 
-    fprintf(stderr, "Testing d = %u bps = %u ...\n", d, bps);
+    fprintf(stderr, "Testing d = %u maxsmp = " ppv_sample_t_FMT " ...\n", d, maxsmp);
     ppv_size_t sz[d];
     tkdt_choose_array_size(d, sz);
-    ppv_array_t *A = tkdt_make_array(d, sz, bps);
+    ppv_array_t *A = tkdt_make_array(d, sz, maxsmp);
     tkdt_test_array_node(A);
     tkdt_test_grinding(A);
     return;
  }
 
-ppv_array_t *tkdt_make_array(ppv_dim_t d, ppv_size_t sz[], ppv_nbits_t bps)
+ppv_array_t *tkdt_make_array(ppv_dim_t d, ppv_size_t sz[], ppv_sample_t maxsmp)
   {
-    ppv_sample_t maxmaxsmp = ppv_max_sample(bps);
-    ppv_sample_t = (ppv_sample_t)(bps == 0 ? 0 : uint64_abrandom(1,maxmaxsmp));
     ppv_array_t *A = ppv_array_new(d, sz, maxsmp);
     
-    if (bps == 0) { /* Array must be all zeros anyway: */ return A; }
+    if (maxsmp == 0) { /* Array must be all zeros anyway: */ return A; }
     
     /* Fill the array with random samples: */
     srandom(4615);
@@ -160,14 +174,14 @@ ppv_array_t *tkdt_make_array(ppv_dim_t d, ppv_size_t sz[], ppv_nbits_t bps)
     
 void tkdt_test_grinding(ppv_array_t *A)
   {
-    kdtom_t *Tg = kdtom_grind_array(A);
+    kdtom_t *Tg = kdtom_grind_array(A, 0);
     tkdt_check_tree(Tg);
     return;
   }
 
 void tkdt_test_array_node(ppv_array_t *A)
   {
-    kdtom_array_t *Ta = kdtom_array_make(A);
+    kdtom_array_t *Ta = kdtom_array_make(A, 0);
     tkdt_check_tree((kdtom_t *)Ta);
     return;
   }
@@ -185,7 +199,6 @@ void tkdt_check_tree(kdtom_t *T)
 void tkdt_paint_bullseye(ppv_array_t *A, double ctr[], double R)
   { 
     ppv_dim_t d = A->d;
-    ppv_nbits_t bps = A->bps;
     ppv_sample_t maxsmp = A->maxsmp;
     
     /* Bullseye raddi (may be negative): */

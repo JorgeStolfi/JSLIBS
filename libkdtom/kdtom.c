@@ -1,5 +1,5 @@
 /* See {kdtom.h}. */
-/* Last edited on 2021-07-09 00:03:15 by jstolfi */
+/* Last edited on 2021-07-11 18:09:13 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -16,50 +16,93 @@
 #include <kdtom_split.h>
 #include <kdtom_array.h>
 #include <kdtom_const.h>
-#include <kdtom_trans.h>
-#include <kdtom_ixmap.h>
 
 ppv_sample_t kdtom_get_sample(kdtom_t *T, ppv_index_t ix[])
   {
-    /* Check index bounds.  Early warning is good. */
-    for (ppv_axis_t ax = 0; ax < T->d; ax++)
-      { demand((0 <= ix[ax]) && (ix[ax]< T->size[ax]), "invalid voxel index"); }
-      
-    /* Switch to proper handler: */
-    switch (T->kind)
-      { 
-        case kdtom_kind_ARRAY:
-          return kdtom_array_get_sample((kdtom_array_t *)T, ix);
-        case kdtom_kind_CONST:
-          return kdtom_const_get_sample((kdtom_const_t *)T, ix);
-        case kdtom_kind_SPLIT:
-          return kdtom_split_get_sample((kdtom_split_t *)T, ix);
-        case kdtom_kind_TRANS:
-          return kdtom_trans_get_sample((kdtom_trans_t *)T, ix);
-        case kdtom_kind_IXMAP:
-          return kdtom_ixmap_get_sample((kdtom_ixmap_t *)T, ix);
-        default:
-          assert(FALSE);
+    ppv_dim_t d = T->d;
+    
+    /* Check index bounds, compute relative index {dx}: */
+    bool_t inside_core = TRUE;
+    ppv_index_t dx[d];
+    for (ppv_axis_t k = 0; k < d; k++)
+      { ppv_index_t dxk = ix[k] - T->ixlo[k];
+        inside_core = inside_core && (0 <= dxk) && (dxk < T->size[k]);
+        assert((T->size[k] == 0) == (T->size[0] == 0)); /* Empty domain invariant. */
+        dx[k] = dxk;
       }
+    
+    ppv_sample_t smp;
+    if (! inside_core)
+      { smp = T->fill; }
+    else
+      { switch (T->kind)
+          { case kdtom_kind_ARRAY:
+              smp = kdtom_array_get_core_sample((kdtom_array_t *)T, dx);
+            case kdtom_kind_CONST:
+              smp = kdtom_const_get_core_sample((kdtom_const_t *)T, dx);
+            case kdtom_kind_SPLIT:
+              smp = kdtom_split_get_core_sample((kdtom_split_t *)T, dx);
+            default:
+              assert(FALSE);
+          }
+      }
+    assert(smp <= T->maxsmp);
+    return smp;
   }
 
 size_t kdtom_bytesize(kdtom_t *T, bool_t total)
   {
+    size_t bytes = 0;
     switch (T->kind)
-      { 
-        case kdtom_kind_ARRAY:
-          return kdtom_array_bytesize((kdtom_array_t *)T, total);
+      { case kdtom_kind_ARRAY:
+          bytes = kdtom_array_bytesize((kdtom_array_t *)T, total);
         case kdtom_kind_CONST:
-          return kdtom_const_bytesize((kdtom_const_t *)T);
+          bytes = kdtom_const_bytesize((kdtom_const_t *)T);
         case kdtom_kind_SPLIT:
-          return kdtom_split_bytesize((kdtom_split_t *)T, total);
-        case kdtom_kind_TRANS:
-          return kdtom_trans_bytesize((kdtom_trans_t *)T, total);
-        case kdtom_kind_IXMAP:
-          return kdtom_ixmap_bytesize((kdtom_ixmap_t *)T, total);
+          bytes = kdtom_split_bytesize((kdtom_split_t *)T, total);
         default:
           assert(FALSE);
       }
+    assert(bytes > 0);
+    return bytes;
+  }
+
+kdtom_t *kdtom_clip(kdtom_t *T, ppv_index_t ixlo[], ppv_size_t size[])
+  {
+    ppv_dim_t d = T->d;
+    bool_t empty = FALSE; /* Is the clip box empty? */
+    for (ppv_axis_t k = 0; k < d; k++) { if (size[k] == 0) { empty = TRUE; break; } }
+    
+    bool_t empty_core = empty; /* Is the core {S.K} empty?  */
+    ppv_index_t ixlo_B[d]; /* Low corner of {T.DK} clipped. */
+    ppv_size_t size_B[d];  /* Size of {T.DK} clipped. */
+    if (! empty)
+      { for (ppv_axis_t k = 0; k < d; k++)
+          { ppv_index_t ixlok = (ixlo == NULL ? 0 : ixlo[k]);
+            ixlo_B[k] = (ppv_index_t)imax(ixlok, T->ixlo[k]);
+            ppv_index_t ixhik_B = (ppv_index_t)imin(ixlok+size[k], T->ixlo[k]+T->size[k]);
+            if (ixlo_B[k] >= ixhik_B) { empty_core = TRUE; break; }
+            size_B[k] = (ppv_size_t)(ixhik_B - ixlo_B[k]);
+          }
+      }
+    
+    kdtom_t *S = NULL;
+    if (empty_core)
+      { S = (kdtom_t *)kdtom_const_make(d, T->maxsmp, T->fill, NULL, NULL, T->fill); }
+    else
+      { switch (T->kind)
+          { case kdtom_kind_ARRAY:
+              S = (kdtom_t *)kdtom_array_clip((kdtom_array_t *)T, ixlo_B, size_B);
+            case kdtom_kind_CONST:
+              S = (kdtom_t *)kdtom_const_clip((kdtom_const_t *)T, ixlo_B, size_B);
+            case kdtom_kind_SPLIT:
+              S = (kdtom_t *)kdtom_split_clip((kdtom_split_t *)T, ixlo_B, size_B);
+            default:
+              assert(FALSE);
+          }
+      }
+    assert(S != NULL);
+    return S;
   }
 
 char *kdtom_alloc_internal_vector(kdtom_t *T, size_t sztot, ppv_dim_t d, size_t elsz, char **pendP)
@@ -78,150 +121,84 @@ char *kdtom_alloc_internal_vector(kdtom_t *T, size_t sztot, ppv_dim_t d, size_t 
     return vaddr;
   }
 
-void kdtom_node_init(kdtom_t *T, size_t sztot, ppv_dim_t d, char **pendP)
+void kdtom_node_init
+  ( kdtom_t *T, 
+    kdtom_kind_t kind,
+    ppv_dim_t d, 
+    ppv_sample_t maxsmp,
+    ppv_sample_t fill,
+    ppv_index_t ixlo[], 
+    ppv_size_t size[], 
+    size_t sztot,
+    char **pendP
+  )
   {
+    demand(maxsmp <= ppv_MAX_SAMPLE_VAL, "invalid {maxsmp}");
+    demand(d <= ppv_MAX_DIM, "invalid {d}");
+    demand((kind >= kdtom_kind_FIRST) && (kind <= kdtom_kind_LAST), "invalid {kind}");
+    demand(fill <= maxsmp, "invalid {fill}");
+    bool_t empty = (size == NULL);
+    if (! empty)
+      { for(ppv_axis_t k = 0; k < d; k++) 
+          { if (size[k] == 0) { empty = TRUE; break; } }
+      }
+    if (!empty)
+      { for (ppv_axis_t k = 0; k < d; k++) 
+          { demand(size[k] <= ppv_MAX_SIZE, "invalid {size}");
+            demand((ixlo[k] >= -ppv_MAX_INDEX) && (ixlo[k] <= ppv_MAX_INDEX - size[k]), "invalid {ixlo}");
+          }
+      }
+    
     /* Check for clobbering of the fixed head fields: */
-    size_t fix_bytes = sizeof(kdtom_t);        /* Fixed fields, incl. {size} pointer. */
+    size_t fix_bytes = sizeof(kdtom_t);        /* Fixed fields, incl. {ixlo,size} pointers. */
     demand((*pendP) - (char *)T >= fix_bytes, "bad {*pendP}");
     
+    /* Allocate the {T.ixlo} vector: */
+    size_t elsz = sizeof(ppv_index_t);
+    T->ixlo = (ppv_index_t *)kdtom_alloc_internal_vector(T, sztot, d, elsz, pendP);
+    
     /* Allocate the {T.size} vector: */
-    size_t elsz = sizeof(ppv_size_t);
+    elsz = sizeof(ppv_size_t);
     T->size = (ppv_size_t *)kdtom_alloc_internal_vector(T, sztot, d, elsz, pendP);
     
-    /* Set the {d} field: */
+    /* Stores the given fields: */
+    T->kind = kind;
     T->d = d;
+    T->maxsmp = maxsmp;
+    T->fill = fill;
+    for (ppv_axis_t k = 0; k < d; k++) 
+      { if (empty)
+          { T->ixlo[k] = 0; T->size[k] = 0; }
+        else
+          { T->ixlo[k] = ixlo[k]; T->size[k] = size[k]; }
+      }
   }
 
-kdtom_t *kdtom_grind_array(ppv_array_t *A)
-  { 
-    auto bool_t small_enough(ppv_array_t *B);
-      /* Returns true if and only if {B} as a single array node
-        would take less memory than a k-d-tree of it. */
-        
-    auto kdtom_array_t *shared_array_node(ppv_array_t *B);
-      /* Returns a {kdtom_array_t} node that is just a copy
-        of {B}'s descriptor, sharing same sample storage area
-        and sample indexng parameters. */
-        
-    auto kdtom_array_t *copied_array_node(ppv_array_t *B);
-      /*  Returns a {kdtom_array_t} node that has the same size as {B}
-        but a a newly alocated sample storage area, after copying into
-        it the sample values of the voxels of {B}. */
-        
-    auto ppv_axis_t choose_split_axis(ppv_array_t *B);
-      /* Finds the axis along which {B} has the largest extent. */
-        
-    auto void split_array(ppv_array_t *B, ppv_axis_t ax, ppv_array_t **B0P, ppv_array_t **B1P);
-      /* Splits the array {B} into two approximate halves by a plane
-        perpendicular to {ax}. Returns the addresses of the descriptors
-        of the two halves in {*B0P,*B1P} */
-        
-    auto kdtom_t *grind(ppv_array_t *B);
-      /* Same as {kdtom_grind_array(B)} but slightly more efficient.
-        Assumes that {B} is not empty. */
-      
-    /* General parameters: */
-    ppv_dim_t d = A->d;
-    ppv_nbits_t bps = A->bps;
-    size_t split_bytes = kdtom_split_node_bytesize(d);
-    size_t const_bytes = kdtom_const_node_bytesize(d);
-    size_t array_bytes = kdtom_array_node_bytesize(d);
-    ppv_nbits_t bpw = ppv_best_bpw(bps);
-    ppv_sample_t maxsmp = A->maxsmp;
-    
-    kdtom_t *T;
-    if (ppv_is_empty(A))
-      { T = (kdtom_t*)kdtom_const_make(d, bps, A->size, 0); }
-    else
-      { T = grind(A); }
-    return T;
-      
-     /* Internal procedures */
-     
-    kdtom_t *grind(ppv_array_t *B)
-      { 
-        /* Is it constant? */
-        ppv_sample_t smp_min, smp_max;
-        ppv_sample_range(B, &smp_min, &smp_max);
-        if (smp_min == smp_max)
-          { return (kdtom_t*)kdtom_const_make(d, bps, B->size, smp_min); }
+void kdtom_translate(kdtom_t  *T, ppv_index_t dx[])
+  {
+    for (ppv_axis_t k = 0; k < T->d; k++) { T->ixlo[k] += dx[k]; }
+  }
 
-        /* Is it worth splitting? */
-        ppv_axis_t ax = choose_split_axis(B);
-        if ((B->size[ax] <= 1) || small_enough(B))
-          { return (kdtom_t*)shared_array_node(B); }
+bool_t kdtom_is_all_fill(kdtom_t *T, ppv_sample_t fill)
+  {
+    if (T->kind != kdtom_kind_CONST) { return FALSE; }
+    kdtom_const_t *Tc = (kdtom_const_t *)T;
+    return kdtom_const_is_all_fill(Tc, fill);
+  }
 
-        /* Try splitting: */
-        ppv_array_t *B0;
-        ppv_array_t *B1;
-        split_array(B, ax, &B0, &B1);
-        kdtom_t *T0 = kdtom_grind_array(B0);
-        kdtom_t *T1 = kdtom_grind_array(B1);
-
-        /* Was it worth splitting? */
-        if ((T0->kind == kdtom_kind_ARRAY) && (T1->kind == kdtom_kind_ARRAY))
-          { /* Both parts are array nodes; just use a single array node: */
-            free(T0); free(T1);
-            return (kdtom_t*)shared_array_node(B);
-          }
-        else
-          { /* If both sides are constant they must be distinct constants. */
-            /* Replace shared-element arrays by deep copies:*/
-            if (T0->kind == kdtom_kind_ARRAY) 
-              { T0 = (kdtom_t *)copied_array_node(B0); }
-            if (T1->kind == kdtom_kind_ARRAY) 
-              { T1 = (kdtom_t *)copied_array_node(B1); }
-            return (kdtom_t*)kdtom_split_make(ax, T0,T1);
-          }
-        }
-        
-    bool_t small_enough(ppv_array_t *B)
-      {
-        /* Compute size of storage area needed for the voxels: */
-        ppv_sample_count_t npos = ppv_compute_npos_steps(d, B->size, NULL);
-        size_t tot_voxel_bytes = ppv_tot_sample_bytes(npos, bps, bpw);
-        /* Splitting will take at least one split node and two const nodes: */
-        return (array_bytes + tot_voxel_bytes < split_bytes + 2*const_bytes); 
-      }
-        
-    kdtom_array_t *shared_array_node(ppv_array_t *B)
-      {
-        kdtom_array_t *Ta = kdtom_array_make(B);
-        return Ta;
-      }
-        
-    kdtom_array_t *copied_array_node(ppv_array_t *B)
-      {
-        ppv_array_t *C = ppv_array_new(d, B->size, B->maxsmp);
-        ppv_array_assign(C, B);
-        kdtom_array_t *Ta = kdtom_array_make(C);
-        return Ta;
-      }
-        
-    ppv_axis_t choose_split_axis(ppv_array_t *B)
-      {
-        ppv_size_t szmax = 0;
-        ppv_axis_t axmax = 0;
-        for (ppv_axis_t k = 0; k < d; k++)
-          { ppv_size_t szk = B->size[k];
-            assert(szk > 0);   /* Empty array must have been caught before. */
-            if (szk > szmax) { szmax = szk; axmax = k; }
-          }
-        return axmax;
-      }
-        
-    void split_array(ppv_array_t *B, ppv_axis_t ax, ppv_array_t **B0P, ppv_array_t **B1P)
-      {
-        ppv_size_t sz0 = B->size[ax] / 2;
-        assert(sz0 >= 1);
-        ppv_array_t *B0 = ppv_array_clone(B);
-        ppv_crop(B0, ax, 0, sz0);
-        ppv_array_t *B1 = ppv_array_clone(B);
-        ppv_crop(B1, ax, sz0, B->size[ax]-sz0);
-        (*B0P) = B0;
-        (*B1P) = B1;
-        return;
-      }
-
-   }
-            
+kdtom_t *kdtom_join_nodes
+  ( ppv_size_t size[], 
+    ppv_axis_t ax,
+    kdtom_t *T0, 
+    ppv_size_t sz0, 
+    kdtom_t *T1, 
+    ppv_size_t sz1
+  )
+  {
+    if (T0->kind != kdtom_kind_CONST) { return NULL; }
+    if (T1->kind != kdtom_kind_CONST) { return NULL; }
+    kdtom_const_t *Tc0 = (kdtom_const_t *)T0;
+    kdtom_const_t *Tc1 = (kdtom_const_t *)T1;
+    kdtom_const_t *Tc = kdtom_const_join_nodes(size, ax, Tc0, sz0,Tc1, sz1);
+    return (kdtom_t *)Tc;
+  }
