@@ -1,5 +1,5 @@
 /* An internal k-d-tree node that has a constant value over the whole domain. */
-/* Last edited on 2021-07-11 16:33:37 by jstolfi */
+/* Last edited on 2021-07-12 22:08:22 by jstolfi */
 
 #ifndef kdtom_const_H
 #define kdtom_const_H
@@ -37,14 +37,14 @@ kdtom_const_t *kdtom_const_make
     ppv_sample_t smp
   );
   /* Creates a constant node {T} with the given parameters {T.h.d,
-    T.h.maxsmp, T.h.fill, T.smp}. 
+    T.h.maxsmp, T.h.fill, T.smp}. The number of axes {d} should not be zero.
     
     If {smp==fill} or {size == NULL} or {size[k] == 0} for any axis {k},
     the core will be empty ({T.size[k]==0} for all {k}) otherwise
     {T.size} will be copied from {size}. If {ixlo} is {NULL}, {T.ixlo} will be set
     to all zeros. */
 
-kdtom_t *kdtom_const_clip(kdtom_const_t *T, ppv_index_t ixlo[], ppv_size_t size[]);
+kdtom_const_t *kdtom_const_clip(kdtom_const_t *T, ppv_index_t ixlo[], ppv_size_t size[]);
   /* Returns a {kdtom_t} structure {S} that describes the same voxel
     grid as {T}, except that its core {S.K} is the box {B} with
     low corner {ixlo[0..T.d-1]} and size {size[0..T.d-1]}. 
@@ -83,7 +83,7 @@ kdtom_const_t *kdtom_const_join_nodes
 
 size_t kdtom_const_node_bytesize(ppv_dim_t d);
   /* Size in bytes of a {kdtom_const_t} node {T}, including the {T.h.size}
-    vector. */
+    vector. The number of axes {d} should not be zero. */
 
 size_t kdtom_const_bytesize(kdtom_const_t *T);
   /* Returns the size in bytes used by the record {*T}. The result

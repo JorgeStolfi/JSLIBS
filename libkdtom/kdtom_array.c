@@ -1,5 +1,5 @@
 /* See {kdtom_array.h}. */
-/* Last edited on 2021-07-11 18:35:42 by jstolfi */
+/* Last edited on 2021-07-12 11:21:27 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -18,6 +18,7 @@
 kdtom_array_t *kdtom_array_make(ppv_array_t *A, ppv_sample_t fill)
   { 
     ppv_dim_t d = A->d;
+    demand((d > 0) && (d <= ppv_MAX_DIM), "invalid array dimension {d}");
     ppv_sample_t maxsmp = A->maxsmp;
     demand(fill <= maxsmp, "invalid {fill} value");
     
@@ -46,10 +47,22 @@ kdtom_array_t *kdtom_array_make(ppv_array_t *A, ppv_sample_t fill)
     return T;
   }
   
+kdtom_t *kdtom_array_clip(kdtom_array_t *T, ppv_index_t ixlo[], ppv_size_t size[])
+  {
+    /* !!! Implement !!! */
+    fprintf(stderr, "!! {kdtom_array_clip} not implemented\n");
+    return NULL;
+  }
+
 size_t kdtom_array_node_bytesize(ppv_dim_t d)
   {
+    demand((d > 0) && (d <= ppv_MAX_DIM), "invalid dimension {d}");
+
     size_t fixf_bytes = sizeof(kdtom_array_t); /* Fixed fields incl those of head part {h}. */
     size_t tot_bytes = iroundup(fixf_bytes, 8); /* Account for address sync. */
+
+    size_t ixlo_bytes = d * sizeof(ppv_size_t);  /* Bytesize for {T.h.ixlo} vector. */
+    tot_bytes += iroundup(ixlo_bytes, 8);        /* Paranoia, account for address sync. */
 
     size_t sizv_bytes = d * sizeof(ppv_size_t); /* Bytesize for {h.size} vector. */
     tot_bytes += iroundup(sizv_bytes, 8);       /* Paranoia, account for address sync. */

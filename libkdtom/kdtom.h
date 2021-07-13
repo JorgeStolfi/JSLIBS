@@ -1,5 +1,5 @@
 /* Multidimensional sample arrays stored as k-d-trees. */
-/* Last edited on 2021-07-11 18:09:26 by jstolfi */
+/* Last edited on 2021-07-12 22:01:27 by jstolfi */
 
 #ifndef kdtom_H
 #define kdtom_H
@@ -22,7 +22,7 @@ typedef enum
 
 typedef struct kdtom_t 
   { kdtom_kind_t kind;    /* Kind of node. */
-    ppv_dim_t d;          /* Dimensinality (number of axes). */
+    ppv_dim_t d;          /* Dimensinality (number of axes), positive. */
     ppv_sample_t maxsmp;  /* Max sample value. */
     ppv_sample_t fill;    /* Surround sample value. */
     ppv_index_t *ixlo;    /* Low index of core. */
@@ -41,15 +41,13 @@ typedef struct kdtom_t
     
     Axes, indices, and sample values
     
-    The voxel grid {T.V} has {T.d} axes (dimensions). Each voxel {T.v[ix]}
-    is identified by an /index vector/ {ix[0..d-1]} of signed integers.
+    The voxel grid {T.V} has a positive number {T.d} axes (dimensions).
+    Each voxel {T.v[ix]} is identified by an /index vector/ {ix[0..d-1]}
+    of signed integers.
     
     Each sample is a {ppv_sample_t} value (an unsigned integer) in the
     range {0..T.maxsmp}. In particular,if {T.maxsmp} is zero, all samples have
     value zero.
-    
-    A {kdtom_t} may have zero dimensions ({T.d = 0}), in which case  
-    the grid {T.V} has a single voxel whose index vector is the empty vector. 
     
     Core and fill
     
@@ -64,7 +62,7 @@ typedef struct kdtom_t
     {T.V[ix]} is the fixed sample {T.fill}, which must be in
     {0..T.maxsmp}.
     
-    If {T.d > 0} but {T.size[ax]} is zero for some axis {ax}, the core
+    If {T.size[ax]} is zero for some axis {ax}, the core
     grid {T.K} is /empty/ -- has no voxels. In that case, all elements
     of {T.ixlo} and {T.size} will be zero, and all samples {T.V} are
     equal to {T.fill}.
@@ -102,6 +100,9 @@ typedef struct kdtom_t
 bool_t kdtom_is_all_fill(kdtom_t *T, ppv_sample_t fill);
   /* True iff {T} is a {kdtom_const_t} node and {T.V} is everywhere equal to {fill}. */
 
+bool_t kdtom_has_empty_core(kdtom_t  *T);
+  /* Returns {TRUE} if and only if {T} has empty core. */
+
 kdtom_t *kdtom_join_nodes
   ( ppv_size_t size[], 
     ppv_axis_t ax,
@@ -123,8 +124,6 @@ kdtom_t *kdtom_join_nodes
     {T1.V[jx]} otherwise; were {jx[k]} is {ix[k]} for all {k}, except
     that {jx[ax] = ix[ax]-sz0}. */
 
-/* SAMPLE EXTRACTION */
-
 ppv_sample_t kdtom_get_sample(kdtom_t  *T, ppv_index_t ix[]);
   /* Obtains the sample {T.V[ix]}; from the code {T.K} if {ix} is in the core
   domain {T.DK}, otherwise returns the {T.fill} value. */
@@ -132,8 +131,9 @@ ppv_sample_t kdtom_get_sample(kdtom_t  *T, ppv_index_t ix[]);
 /* RECURSIVE TREE BUILDING AND MANIPULATION */
 
 void kdtom_translate(kdtom_t  *T, ppv_index_t dx[]);
-  /* Translates the whole grid {T.V} by the vector {dx[0..T.d-1]},
-    by adding that vector to the {T.ixlo} vector. */
+  /* Translates the whole grid {T.V} by the vector {dx[0..T.d-1]}, by
+    adding {dx} to the {T.ixlo} vector; unless the core domain {T.DK} is
+    empty, in which case the operation is a no-op. */
 
 void kdtom_realloc_array_nodes(kdtom_t *T);
   /* Replaces the storage area of every {kdtom_array_t} node {S} in {T}
@@ -158,6 +158,26 @@ kdtom_t *kdtom_clip(kdtom_t *T, ppv_index_t ixlo[], ppv_size_t size[]);
     The result {S} will be a newly allocated node, even it describes the
     same grid as {T}. It may not have the same kind as {T}. Note that
     {T} and some of its descendants may not be reachable from {S}. */
+    
+bool_t kdtom_box_is_empty(ppv_dim_t d, ppv_size_t  size[]);
+  /* Returns {TRUE} if any one of the components {size[0..d-1]}
+    is zero. */
+
+void kdtom_intersect_boxes
+  ( ppv_dim_t d,
+    ppv_index_t ixlo_A[], 
+    ppv_size_t  size_A[],
+    ppv_index_t ixlo_B[], 
+    ppv_size_t  size_B[],
+    ppv_index_t ixlo_R[], 
+    ppv_size_t  size_R[]
+  );
+  /* Takes two {d}-dimensional boxes -- {A}, defined by the low-corner {ixlo_A[0..d-1]}
+    and the sizes  {size_A[0..d-1]}, and {B}, defined similarly by {ixlo_B} and {size_B};
+    and computes their intersection {R}, defined by {ixlo_R} and {size_R}. 
+    
+    If the intersection is empy (in particular, if any {size_A[k]} or {size_B[k]} is empty),
+    sets {ixlo_R} and {size_R} to alll zeros.*/
     
 /* FOR USE BY VARIANT IMPLEMENTATIONS */
 

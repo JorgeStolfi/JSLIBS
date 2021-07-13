@@ -1,5 +1,5 @@
 /* An internal k-d-tree node is basically a {ppv_array_t}. */
-/* Last edited on 2021-07-11 18:19:30 by jstolfi */
+/* Last edited on 2021-07-12 11:17:20 by jstolfi */
 
 #ifndef kdtom_array_H
 #define kdtom_array_H
@@ -37,8 +37,9 @@ kdtom_array_t *kdtom_array_make(ppv_array_t *A, ppv_sample_t fill);
   /* Creates a {kdtom_array_t} node {T} whose core is the given array.
   
     The fields {T.h.d,T.h.maxsmp,T.h.size,T.step,T.bps,T.bpw,T.el} will
-    be copied from {A}. The vector {T.ixlo} will be set to all zeros,
-    and {T.fill} will be the specified {fill} value.
+    be copied from {A}. The number of axes {A.d} should not be zero. The
+    vector {T.ixlo} will be set to all zeros, and {T.fill} will be the
+    specified {fill} value.
     
     Note that, since the storage area {A.el} is shared, neither {A} nor
     {T} should be completely reclaimed wile the other is still in
@@ -65,7 +66,8 @@ kdtom_t *kdtom_array_clip(kdtom_array_t *T, ppv_index_t ixlo[], ppv_size_t size[
 
 size_t kdtom_array_node_bytesize(ppv_dim_t d);
   /* Size in bytes of a {kdtom_array_t} node {T} with dimension {d}, including the {T.h.size}
-    and {T.step} vectors, but NOT including the sample storage area {*T->el}. */
+    and {T.step} vectors, but NOT including the sample storage area {*T->el}.
+    The number of axes {d} should not be zero. */
 
 size_t kdtom_array_bytesize(kdtom_array_t *T, bool_t total);
   /* If {total} is false, returns the size in bytes used by the array

@@ -1,5 +1,5 @@
 /* See {kdtom_split.h}. */
-/* Last edited on 2021-07-11 18:46:56 by jstolfi */
+/* Last edited on 2021-07-12 11:20:52 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -102,6 +102,7 @@ kdtom_split_t *kdtom_split_do_make
   {
     demand(T0->d == T1->d, "incompatible axis count");
     ppv_dim_t d = T0->d;
+    assert((d > 0) && (d <= ppv_MAX_DIM));
     demand(T0->maxsmp == T1->maxsmp, "incompatible {maxsmp}");
     ppv_sample_t maxsmp = T0->maxsmp;
     demand(fill <= maxsmp, "bad {fill}");
@@ -126,9 +127,18 @@ kdtom_split_t *kdtom_split_do_make
     
     return T;
   }
+  
+kdtom_t *kdtom_split_clip(kdtom_split_t *T, ppv_index_t ixlo[], ppv_size_t size[])
+  {
+    /* !!! Implement !!! */
+    fprintf(stderr, "!! {kdtom_split_clip} not implemented\n");
+    return NULL;
+  }
 
 size_t kdtom_split_node_bytesize(ppv_dim_t d)
   {
+    demand((d > 0) && (d <= ppv_MAX_DIM), "invalid dimension {d}");
+    
     size_t fixf_bytes = sizeof(kdtom_split_t);   /* Fixed fields incl those of {T.h}. */
     size_t tot_bytes = iroundup(fixf_bytes, 8);  /* Account for address sync. */
 

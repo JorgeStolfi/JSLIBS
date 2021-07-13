@@ -1,5 +1,5 @@
 /* See {kdtom_const.h}. */
-/* Last edited on 2021-07-11 18:08:30 by jstolfi */
+/* Last edited on 2021-07-12 22:08:06 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -48,6 +48,7 @@ kdtom_const_t *kdtom_const_make
     
     /* Initialize the {T.h} fields: */
     kdtom_node_init((kdtom_t*)(&T->h), kdtom_kind_CONST, d, maxsmp, fill, ixlo, size, tot_bytes, &pend); 
+    assert(T->h.kind == kdtom_kind_CONST);
 
     if (T->h.size[0] == 0) 
       { /* Core domain is empty, so {T->smp} is irrelevant: */
@@ -57,11 +58,30 @@ kdtom_const_t *kdtom_const_make
       { T->smp = smp; }
     return T;
   }
+  
+kdtom_const_t *kdtom_const_clip(kdtom_const_t *T, ppv_index_t ixlo[], ppv_size_t size[])
+  {
+    ppv_dim_t d = T->h.d;
+    
+    /* Compute the new core domain {ixlo_new,size_new} and {empty_new}: */
+    ppv_index_t ixlo_new[d];  /* Expected {T.h.ixlo} after clipping. */
+    ppv_size_t  size_new[d];  /* Expected {T.h.size} after clipping. */
+    kdtom_intersect_boxes(d, T->h.ixlo, T->h.size, ixlo, size, ixlo_new, size_new);
+    
+    kdtom_const_t *S = kdtom_const_make(d, T->h.maxsmp, T->h.fill, ixlo_new, size_new, T->smp);
    
+    return S;
+  }
+
 size_t kdtom_const_node_bytesize(ppv_dim_t d)
   { 
+    demand((d > 0) && (d <= ppv_MAX_DIM), "invalid dimension {d}");
+    
     size_t fixf_bytes = sizeof(kdtom_const_t);   /* Fixed fields incl those of {T.h}. */
     size_t tot_bytes = iroundup(fixf_bytes, 8);  /* Account for address sync. */
+
+    size_t ixlo_bytes = d * sizeof(ppv_size_t);  /* Bytesize for {T.h.ixlo} vector. */
+    tot_bytes += iroundup(ixlo_bytes, 8);        /* Paranoia, account for address sync. */
 
     size_t sizv_bytes = d * sizeof(ppv_size_t);  /* Bytesize for {T.h.size} vector. */
     tot_bytes += iroundup(sizv_bytes, 8);        /* Paranoia, account for address sync. */
