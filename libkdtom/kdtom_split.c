@@ -1,5 +1,5 @@
 /* See {kdtom_split.h}. */
-/* Last edited on 2021-07-12 11:20:52 by jstolfi */
+/* Last edited on 2021-07-13 02:51:09 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -21,7 +21,7 @@ kdtom_t *kdtom_split_make
     ppv_index_t ixlo[], 
     ppv_size_t size[], 
     ppv_axis_t ax, 
-    ppv_index_t ixcut,
+    ppv_size_t sz0,
     kdtom_t *sub0,
     kdtom_t *sub1
   )
@@ -34,6 +34,8 @@ kdtom_t *kdtom_split_make
     
     bool_t empty = FALSE;
     for (ppv_axis_t k = 0; k < d; k++) { if (size[k] == 0) { empty = TRUE; break; } }
+    
+    demand((sz0 > 0) && (sz0 < size[ax]), "invalid {sz0}");
     
     kdtom_t *T = NULL; 
     if (empty)
@@ -48,9 +50,8 @@ kdtom_t *kdtom_split_make
         ppv_index_t iax = ixlo[ax];
         ppv_index_t sax = size[ax];
 
-        /* Compute the sizes {sz0,sz1} of each sub-domain along axis {ax}: */
-        ppv_size_t sz0 = (ixcut <= iax ? 0 : (ixcut >= iax + sax ? sax : ixcut - iax));
-        ppv_size_t sz1 = (ixcut <= iax ? sax : (ixcut >= iax + sax ? 0 : sax - (ixcut - iax)));
+        /* Compute the size {sz1} of upper sub-domain along axis {ax}: */
+        ppv_size_t sz1 = (ppv_size_t)(sax - sz0);
         
         /* Clip the two sub-nodes to the boxes with the sizes of the sub-domains, */
         /* then translate them so that the low corner of each sub-domain is at origin: */
@@ -67,11 +68,11 @@ kdtom_t *kdtom_split_make
         size[ax] = sax; ixlo[ax] = iax;
 
         /* See if the split can be simplified: */
-        if ((ixcut <= iax) || (kdtom_is_all_fill(T0, fill) && (T1->fill == fill)))
+        if (kdtom_is_all_fill(T0, fill) && (T1->fill == fill))
           { /* We can return just {T1} shifted by {ixlo}: */
             T = T1;
           }
-        else if ((ixcut >= iax + size[ax]) || (kdtom_is_all_fill(T1, fill) && (T0->fill == fill)))
+        else if (kdtom_is_all_fill(T1, fill) && (T0->fill == fill))
           { /* We can return just {T0} shifted by {ixlo}: */
             T = T0;
           }
@@ -84,7 +85,7 @@ kdtom_t *kdtom_split_make
               }
           }
         /* Shift {T} to {ixlo}: */
-        for (ppv_axis_t k = 0; k < d; k++) { T->ixlo[k] += ixlo[k]; }
+        kdtom_translate(T, ixlo);
       }
     assert(T != NULL);
     return T;
@@ -120,7 +121,7 @@ kdtom_split_t *kdtom_split_do_make
     /* Initialize the {T.h} fields, including the {T.h.size} vector: */
     kdtom_node_init((kdtom_t*)T, kdtom_kind_SPLIT, d, maxsmp, fill, NULL, size, tot_bytes, &pend); 
     T->ax = ax;
-    T->ixcut = sz0;
+    T->sz0 = sz0;
     
     T->sub[0] = T0;
     T->sub[1] = T1;
@@ -128,6 +129,15 @@ kdtom_split_t *kdtom_split_do_make
     return T;
   }
   
+kdtom_split_t *kdtom_split_clone(kdtom_split_t *T)
+  { 
+    ppv_size_t sz0 = T->sz0;
+    ppv_size_t sz1 = T->h.size[T->ax] - sz0;
+    kdtom_split_t *S = kdtom_split_do_make(T->h.fill, T->h.size, T->ax, T->sub[0], sz0, T->sub[1], sz1); 
+    kdtom_translate((kdtom_t *)S, T->h.ixlo);
+    return S;
+  }
+
 kdtom_t *kdtom_split_clip(kdtom_split_t *T, ppv_index_t ixlo[], ppv_size_t size[])
   {
     /* !!! Implement !!! */
@@ -163,7 +173,7 @@ ppv_sample_t kdtom_split_get_core_sample(kdtom_split_t *T, ppv_index_t dx[])
     ppv_index_t dx_save = dx[ax];
     
     /* Decide where to go, and adjust index: */
-    ppv_size_t sz0 = T->ixcut - T->h.ixlo[ax]; /* Size of low sub-domain on axis {ax}. */
+    ppv_size_t sz0 = T->sz0; /* Size of low sub-domain on axis {ax}. */
     int32_t ksub;     /* Which subnode (0 or 1) has the desired voxel. */
     if (dx[ax] < sz0)
       { ksub = 0; }

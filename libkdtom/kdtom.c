@@ -1,5 +1,5 @@
 /* See {kdtom.h}. */
-/* Last edited on 2021-07-12 22:08:54 by jstolfi */
+/* Last edited on 2021-07-13 02:47:06 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -80,6 +80,26 @@ size_t kdtom_bytesize(kdtom_t *T, bool_t total)
       }
     assert(bytes > 0);
     return bytes;
+  }
+
+kdtom_t *kdtom_clone(kdtom_t *T)
+  { 
+    kdtom_t *S = NULL;
+    switch (T->kind)
+      { case kdtom_kind_ARRAY:
+          S = (kdtom_t *)kdtom_array_clone((kdtom_array_t *)T);
+          break;
+        case kdtom_kind_CONST:
+          S = (kdtom_t *)kdtom_const_clone((kdtom_const_t *)T);
+          break;
+        case kdtom_kind_SPLIT:
+          S = (kdtom_t *)kdtom_split_clone((kdtom_split_t *)T);
+          break;
+        default:
+          assert(FALSE);
+      }
+    assert(S != NULL);
+    return S;
   }
 
 kdtom_t *kdtom_clip(kdtom_t *T, ppv_index_t ixlo[], ppv_size_t size[])
@@ -208,6 +228,15 @@ void kdtom_translate(kdtom_t  *T, ppv_index_t dx[])
       }
   }
 
+void kdtom_translate_one(kdtom_t  *T, ppv_axis_t ax, ppv_index_t dx)
+  {
+    bool_t empty = kdtom_has_empty_core(T);
+    if (empty)
+      { assert(T->ixlo[ax] == 0);}
+    else
+      { T->ixlo[ax] += dx; }
+  }
+
 bool_t kdtom_is_all_fill(kdtom_t *T, ppv_sample_t fill)
   {
     if (T->kind != kdtom_kind_CONST) { return FALSE; }
@@ -230,6 +259,15 @@ kdtom_t *kdtom_join_nodes
     kdtom_const_t *Tc1 = (kdtom_const_t *)T1;
     kdtom_const_t *Tc = kdtom_const_join_nodes(size, ax, Tc0, sz0,Tc1, sz1);
     return (kdtom_t *)Tc;
+  }
+
+bool_t kdtom_index_is_in_box(ppv_dim_t d, ppv_index_t ix[], ppv_index_t ixlo[], ppv_size_t size[])
+  {
+    for (ppv_axis_t k = 0; k < d;  k++)
+      { ppv_index_t dxk = ix[k] - ixlo[k];
+        if ((dxk < 0) || (dxk >= size[k])) { return FALSE; }
+      }
+    return TRUE;
   }
 
 void kdtom_intersect_boxes

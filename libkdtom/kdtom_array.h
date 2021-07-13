@@ -1,5 +1,5 @@
 /* An internal k-d-tree node is basically a {ppv_array_t}. */
-/* Last edited on 2021-07-12 11:17:20 by jstolfi */
+/* Last edited on 2021-07-13 01:13:53 by jstolfi */
 
 #ifndef kdtom_array_H
 #define kdtom_array_H
@@ -45,6 +45,11 @@ kdtom_array_t *kdtom_array_make(ppv_array_t *A, ppv_sample_t fill);
     {T} should be completely reclaimed wile the other is still in
     use. */
 
+kdtom_array_t *kdtom_array_clone(kdtom_array_t *T);
+  /* Returns a copy of the node {T}. Copies the fixed fields
+    and the internally allocated vectors {T.h.ixlo,T.h.size,T.step},
+    but does NOT copy the voxel storage area pointed to by {T.el}. */
+
 ppv_sample_t kdtom_array_get_core_sample(kdtom_array_t *T, ppv_index_t dx[]);
   /* Returns the sample {T.V[T.ixlo + dx]}. IMPORTANT: Assumes that this
     index is insde the core domain {T.DK}; that is, {dx} is in
@@ -85,5 +90,14 @@ size_t kdtom_array_bytesize(kdtom_array_t *T, bool_t total);
     Note that the actual storage area {T->el} may be larger than this
     amount, e.g. if the elements of {A} are NOT packed as tightly as
     possible. */
+
+ppv_array_t kdtom_array_make_descr(kdtom_array_t *T);
+  /* Returns a {ppv_array_t} descriptor {A} (the record, not a pointer to it)
+    that describes the array of voxels that is the core {T.K} of {T}.
+    
+    The vectors {A.size} and {A.step} and the storage area {A.el}
+    will be shared with {T.h.size}, {T.step}, and {T.el}; thus {A}
+    will become invalid if {T is reclaimed. */
+    
 
 #endif

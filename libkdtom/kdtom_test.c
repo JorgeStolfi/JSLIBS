@@ -1,5 +1,5 @@
 /* See {kdtom_test.h}. */
-/* Last edited on 2021-07-12 22:27:55 by jstolfi */
+/* Last edited on 2021-07-13 02:57:39 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -21,6 +21,168 @@
 
 #include <kdtom_test.h>
 
+void kdtom_test_get_sample(kdtom_t *T, kdtom_test_get_sample_proc_t *getsmp)
+  {
+    ppv_dim_t d = T->d;
+    ppv_sample_t fill = T->fill;
+    bool_t empty = kdtom_has_empty_core((kdtom_t *)T);
+
+    ppv_index_t ix[d];
+    for (ppv_axis_t k = 0; k < d;  k++) { ix[k] = T->ixlo[k]; }
+
+    ppv_sample_t val_T; /* Sample value fetched from {T}. */
+    ppv_sample_t val_X; /* Sample value obtained from {getsmp}. */
+    if (empty)
+      { val_T = kdtom_get_sample((kdtom_t *)T, ix); 
+        assert(val_T == fill);
+        for (ppv_axis_t k = 0; k < d;  k++)
+          { ix[k]--;
+            val_T = kdtom_get_sample((kdtom_t *)T, ix);
+            assert(val_T == fill);
+            ix[k]++;
+
+            ix[k]++;
+            val_T = kdtom_get_sample((kdtom_t *)T, ix);
+            assert(val_T == fill);
+            ix[k]--;
+          }
+      }
+    else 
+      { val_T = kdtom_get_sample((kdtom_t *)T, ix); val_X = getsmp(ix);
+        assert(val_T == val_X);
+
+        for (ppv_axis_t k = 0; k < d;  k++)
+          { ix[k]--;
+            val_T = kdtom_get_sample((kdtom_t *)T, ix);
+            assert(val_T == fill);
+            ix[k]++;
+
+            ix[k] += T->size[k];
+
+            val_T = kdtom_get_sample((kdtom_t *)T, ix);
+            assert(val_T == fill);
+
+            ix[k]--;
+            val_T = kdtom_get_sample((kdtom_t *)T, ix); val_X = getsmp(ix);
+            assert(val_T == val_X);
+            ix[k]++;
+
+            ix[k] -= T->size[k];
+          }
+      }
+    return;
+  }
+
+void kdtom_test_clip(kdtom_t *T, int32_t loclip, int32_t hiclip)
+  {
+    fprintf(stderr, "Testing {kdtom_clip} loclip = %+d hiclip =%+d ...\n", loclip, hiclip);
+    
+    ppv_dim_t d = T->d;
+    
+    auto ppv_sample_t getsmp(ppv_index_t ix[]);
+      /* Requires {ix} to be inside {T.DK}, and returns {T.V[ix]}. */
+
+    kdtom_test_show_box(stderr, d, "original box = [ ", T->ixlo, T->size, " ]\n");
+
+    ppv_index_t ixlo_box[d]; /* {ixlo} value of clip box. */
+    ppv_size_t size_box[d];  /* Size vector of clip box. */
+    ppv_index_t ixlo_new[d]; /* Expected {T.h.ixlo} after clipping. */
+    ppv_size_t size_new[d];  /* Expected {T.h.size} after clipping. */
+    
+    for (ppv_axis_t ax = 0; ax < d;  ax++) 
+      { /* Get current core index range {ixlok_old..ixhik_old} on axis {ax}: */
+        ppv_index_t ixlok_old = T->ixlo[ax];
+        ppv_index_t ixhik_old = ixlok_old + T->size[ax] - 1;
+                
+        /* Select the clipping box index range {ixlok_box..ixhik_box} on axis {ax}: */
+        ppv_index_t ixa[5] = { ixlok_old - 2, ixlok_old, ixlok_old + 1, ixhik_old, ixhik_old + 1};
+        ppv_index_t ixb[5] = { ixlok_old - 1, ixlok_old, ixhik_old - 1, ixhik_old, ixhik_old + 2};
+        ppv_index_t ixlok_box = ixa[loclip+2];
+        ppv_index_t ixhik_box = ixb[hiclip+2];
+        bool_t empty_box = (ixlok_box > ixhik_box);
+        if (empty_box) { ixlok_box = 0; ixhik_box = -1; }
+        ixlo_box[ax] = ixlok_box; 
+        size_box[ax] = ixhik_box - ixlok_box + 1;
+        
+        /* Set index range along other axes as non-clipping: */
+        for (ppv_axis_t k = 0; k < d;  k++)
+          { if (k != ax)
+              { ixlo_box[k] = (empty_box ? 0 : T->ixlo[k] - 1);
+                size_box[k] = (empty_box ? 0 : T->size[k] + 2);
+              }
+          }
+        kdtom_test_show_box(stderr, d, "clipping box = [ ", ixlo_box, size_box, " ]\n");
+        
+        /* Compute the expected clipped core box {ixlo_new[ax],size_new[ax]}: */
+        kdtom_intersect_boxes(d, T->ixlo, T->size, ixlo_box, size_box, ixlo_new, size_new); 
+        kdtom_test_show_box(stderr, d, "expected box = [ ", ixlo_new, size_new, " ]\n");
+
+        kdtom_t *S = kdtom_clip((kdtom_t *)T, ixlo_box, size_box);
+        kdtom_test_show_box(stderr, d, "clipped box =  [ ", S->ixlo, S->size, " ]\n");
+
+        demand(S->d == T->d, "{kdtom_clip} bug: {S.d}");
+        demand(S->maxsmp == T->maxsmp, "{kdtom_clip} bug: {S.maxsmp}");
+        demand(S->fill == T->fill, "{kdtom_clip} bug: {S.fill}");
+        for (ppv_axis_t k = 0; k < d;  k++)
+          { demand(S->ixlo[k] == ixlo_new[k], "{kdtom_clip} bug: {S.ixlo}");
+            demand(S->size[k] == size_new[k], "{kdtom_clip} bug: {S.size}");
+          }
+        
+        kdtom_test_get_sample(S, getsmp);
+        fprintf(stderr, "\n");
+        free(S);
+      }
+
+    return;
+    
+    auto ppv_sample_t getsmp(ppv_index_t ix[])
+      { 
+        assert(kdtom_index_is_in_box(d, ix, T->ixlo, T->size));
+        return kdtom_get_sample(T, ix);
+      }
+  }
+
+void kdtom_test_translate(kdtom_t *T)
+  {
+    fprintf(stderr, "Testing {kdtom_translate} ...\n");
+    ppv_dim_t d = T->d;
+    kdtom_test_show_box(stderr, d, "T core = [ ", T->ixlo, T->size, " ]\n");
+    
+    bool_t empty = kdtom_has_empty_core((kdtom_t *)T);
+    ppv_index_t dx[d];       /* Displacement to apply. */
+    fprintf(stderr, "displ = [");
+    for (ppv_axis_t k = 0; k < d;  k++) 
+      { dx[k] = 400 -10*k;
+        fprintf(stderr, " " ppv_index_t_FMT, dx[k]);
+      }
+    fprintf(stderr, " ]\n");
+
+    kdtom_t *S = kdtom_clone(T);
+    
+    kdtom_translate((kdtom_t *)S, dx);
+    kdtom_test_show_box(stderr, d, "S core = [", S->ixlo, S->size, " ]\n");
+    
+    /* Check: */
+    for (ppv_axis_t k = 0; k < d; k++) 
+      { demand(S->ixlo[k] == (empty ? 0 : T->ixlo[k] + dx[k]), "{kdtom_translate} bad {T.ixlo}"); 
+        demand(S->size[k] == (empty ? 0 : T->size[k]), "{kdtom_translate} bad {T.size}"); 
+      }
+    
+    auto ppv_sample_t getsmp(ppv_index_t ix[]);
+    kdtom_test_get_sample(S, getsmp);
+    
+    free(S);
+
+    return;
+    
+    ppv_sample_t getsmp(ppv_index_t ix[])
+      { ppv_index_t jx[d];
+        for (ppv_axis_t k = 0; k < d; k++) { jx[k] = ix[k] - dx[k]; }
+        assert(kdtom_index_is_in_box(T->d, jx, T->ixlo, T->size));
+        return kdtom_get_sample(T, jx);
+      }
+  }
+
 ppv_sample_t *kdtom_test_pick_max_samples(int32_t nms)
   { ppv_sample_t *ms = notnull(malloc(nms*sizeof(ppv_sample_t)), "no mem");
     for (int32_t k = 0; k < nms; k++)
@@ -37,11 +199,11 @@ ppv_sample_t *kdtom_test_pick_max_samples(int32_t nms)
     return ms;
   }
 
-ppv_array_t *kdtom_test_make_array(ppv_dim_t d, ppv_size_t sz[], ppv_sample_t maxsmp)
+ppv_array_t *kdtom_test_array_make(ppv_dim_t d, ppv_size_t size[], ppv_sample_t maxsmp)
   {
     demand((d > 0) && (d <= ppv_MAX_DIM), "invalid dimension {d}");
 
-    ppv_array_t *A = ppv_array_new(d, sz, maxsmp);
+    ppv_array_t *A = ppv_array_new(d, size, maxsmp);
     
     if (maxsmp == 0) { /* Array must be all zeros anyway: */ return A; }
     
@@ -126,7 +288,7 @@ void kdtom_test_paint_bullseye(ppv_array_t *A, double ctr[], double R)
       }
   }
 
-void kdtom_test_choose_array_size(ppv_dim_t d, ppv_size_t sz[])
+void kdtom_test_choose_array_size(ppv_dim_t d, ppv_size_t size[])
   {
     demand((d > 0) && (d <= ppv_MAX_DIM), "invalid dimension {d}");
     ppv_sample_count_t npos = 1;
@@ -144,9 +306,9 @@ void kdtom_test_choose_array_size(ppv_dim_t d, ppv_size_t sz[])
         double xsize = pow(xnpos, 1.0/d); /* Expected size per axis. */
         fprintf(stderr, "array size:");
         for (ppv_axis_t k = 0; k <d; k++)
-          { sz[k] = (ppv_size_t)floor(xsize*rsz[k]/rsz_avg);
-            fprintf(stderr, " %lu", sz[k]);
-            npos *= sz[k];
+          { size[k] = (ppv_size_t)floor(xsize*rsz[k]/rsz_avg);
+            fprintf(stderr, " %lu", size[k]);
+            npos *= size[k];
           }
         fprintf(stderr, "\n");
       }

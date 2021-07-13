@@ -1,5 +1,5 @@
 /* See {kdtom_const.h}. */
-/* Last edited on 2021-07-12 22:08:06 by jstolfi */
+/* Last edited on 2021-07-13 06:10:37 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -13,6 +13,7 @@
 #include <affirm.h>
 
 #include <kdtom.h>
+
 #include <kdtom_const.h>
 
 ppv_sample_t kdtom_const_get_core_sample(kdtom_const_t *T, ppv_index_t dx[])
@@ -59,6 +60,12 @@ kdtom_const_t *kdtom_const_make
     return T;
   }
   
+kdtom_const_t *kdtom_const_clone(kdtom_const_t *T)
+  {
+    kdtom_const_t *S = kdtom_const_make(T->h.d, T->h.maxsmp, T->h.fill, T->h.ixlo, T->h.size, T->smp);
+    return S;
+  }
+
 kdtom_const_t *kdtom_const_clip(kdtom_const_t *T, ppv_index_t ixlo[], ppv_size_t size[])
   {
     ppv_dim_t d = T->h.d;
@@ -130,7 +137,7 @@ kdtom_const_t *kdtom_const_join_nodes
     if ((T0->h.size[0] == 0) || (T0->smp == T0->h.fill)) 
       { /* {T0} is all fill: */ 
         /* Translate {T} by {sz0} along axis {ax}: */
-        T1->h.ixlo[ax] += sz0;
+        kdtom_translate_one((kdtom_t *)T1, ax, sz0);
         return T1;
       }
     if ((T1->h.size[0] == 0) || (T1->smp == T1->h.fill)) 

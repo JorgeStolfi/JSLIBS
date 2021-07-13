@@ -1,5 +1,5 @@
 /* Multidimensional sample arrays stored as k-d-trees. */
-/* Last edited on 2021-07-12 22:01:27 by jstolfi */
+/* Last edited on 2021-07-13 02:50:06 by jstolfi */
 
 #ifndef kdtom_H
 #define kdtom_H
@@ -124,16 +124,26 @@ kdtom_t *kdtom_join_nodes
     {T1.V[jx]} otherwise; were {jx[k]} is {ix[k]} for all {k}, except
     that {jx[ax] = ix[ax]-sz0}. */
 
+kdtom_t *kdtom_clone(kdtom_t *T);
+  /* Returns a copy of the node {T}. Copies the vectors {T.ixlo,T.size}
+    and other fixed or internally allocated fields specific to the
+    variant, but does NOT copy separate records pointed to by it, such
+    as the voxel array of a {ppv_array_t} or the children of a
+    {kdtom_split_t} node. */
+
 ppv_sample_t kdtom_get_sample(kdtom_t  *T, ppv_index_t ix[]);
   /* Obtains the sample {T.V[ix]}; from the code {T.K} if {ix} is in the core
   domain {T.DK}, otherwise returns the {T.fill} value. */
     
 /* RECURSIVE TREE BUILDING AND MANIPULATION */
 
-void kdtom_translate(kdtom_t  *T, ppv_index_t dx[]);
+void kdtom_translate(kdtom_t *T, ppv_index_t dx[]);
   /* Translates the whole grid {T.V} by the vector {dx[0..T.d-1]}, by
     adding {dx} to the {T.ixlo} vector; unless the core domain {T.DK} is
     empty, in which case the operation is a no-op. */
+
+void kdtom_translate_one(kdtom_t *T, ppv_axis_t ax, ppv_index_t dx);
+  /* Like {kdtom_translate}, but displaces by {dx} along the axis {ax} only. */  
 
 void kdtom_realloc_array_nodes(kdtom_t *T);
   /* Replaces the storage area of every {kdtom_array_t} node {S} in {T}
@@ -145,6 +155,7 @@ void kdtom_realloc_array_nodes(kdtom_t *T);
     
     This procedure can be called after {kdtom_grind_array(A,fill)} to
     allow that {A.el} can be safely reclaimed. */
+
 
 kdtom_t *kdtom_clip(kdtom_t *T, ppv_index_t ixlo[], ppv_size_t size[]);
   /* Returns a {kdtom_t} structure {S} that describes the same voxel
@@ -159,9 +170,13 @@ kdtom_t *kdtom_clip(kdtom_t *T, ppv_index_t ixlo[], ppv_size_t size[]);
     same grid as {T}. It may not have the same kind as {T}. Note that
     {T} and some of its descendants may not be reachable from {S}. */
     
-bool_t kdtom_box_is_empty(ppv_dim_t d, ppv_size_t  size[]);
+bool_t kdtom_box_is_empty(ppv_dim_t d, ppv_size_t size[]);
   /* Returns {TRUE} if any one of the components {size[0..d-1]}
     is zero. */
+
+bool_t kdtom_index_is_in_box(ppv_dim_t d, ppv_index_t ix[], ppv_index_t ixlo[], ppv_size_t size[]);
+  /* Returns {TRUE} if and only if {ix[k]} is in the range {ixlo[k] .. ixlo[k]+size[k]-1}
+    for every {k} in {0..d-1}. */
 
 void kdtom_intersect_boxes
   ( ppv_dim_t d,

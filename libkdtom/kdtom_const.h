@@ -1,5 +1,5 @@
 /* An internal k-d-tree node that has a constant value over the whole domain. */
-/* Last edited on 2021-07-12 22:08:22 by jstolfi */
+/* Last edited on 2021-07-13 01:14:11 by jstolfi */
 
 #ifndef kdtom_const_H
 #define kdtom_const_H
@@ -43,6 +43,10 @@ kdtom_const_t *kdtom_const_make
     the core will be empty ({T.size[k]==0} for all {k}) otherwise
     {T.size} will be copied from {size}. If {ixlo} is {NULL}, {T.ixlo} will be set
     to all zeros. */
+
+kdtom_const_t *kdtom_const_clone(kdtom_const_t *T);
+  /* Returns a copy of the node {T}. Copies all the fixed fields
+    as well as the internally allocated vectors {T.ixlo,T.size}. */
 
 kdtom_const_t *kdtom_const_clip(kdtom_const_t *T, ppv_index_t ixlo[], ppv_size_t size[]);
   /* Returns a {kdtom_t} structure {S} that describes the same voxel

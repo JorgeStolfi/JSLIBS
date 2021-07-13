@@ -1,5 +1,5 @@
 /* An inrernal k-d-tree node that divides the domain betwee two nodes. */
-/* Last edited on 2021-07-12 11:19:25 by jstolfi */
+/* Last edited on 2021-07-13 01:28:09 by jstolfi */
 
 #ifndef kdtom_split_H
 #define kdtom_split_H
@@ -14,13 +14,14 @@
 typedef struct kdtom_split_t 
   { kdtom_t h;          /* General node parameters. */
     ppv_axis_t ax;      /* Coordinate axis perpendicular to cut. */
-    ppv_index_t ixcut;  /* Index value of the cut. */
+    ppv_size_t sz0;     /* Size of low core domain part. */
     kdtom_t *sub[2];    /* Representation of the two half-blocks. */
   } kdtom_split_t;
   /* A record {T} of this type describes an infinite grid {T.V} of
     voxels whose core consists of the the splice of two grids {T0.V} and
     {T1.V}, separated by a plane perpendicular to axis {ax} between the
-    voxels with indices {ixcut-1} and {ixcut} on that axis. 
+    voxels with indices {T.ixcut-1} and {T.ixcut} on that axis, where 
+    {T.ixcut = T.h.ixlo[ax] + T->sz0}. 
     
     The core {T.K} of {T} is defined by {T.h.ixlo} and {T.h.size}, as in
     any {kdtom_t} variant; and voxels outside that region are all equal
@@ -31,9 +32,8 @@ typedef struct kdtom_split_t
     that will be the count {T.h.d}. Same for the {.maxsmp} fields.
     
     The axis {T.ax} must be in {0..d-1} where {d = T.h.d}, and the value
-    of {T.ixcut} must be such that {T.ixcut - T.d.ixlo[ax]} is in
-    {1..T.d.size[ax]-1}. Note that the core {T.K} must not be empty, and
-    {t.h.size[ax]} must be at least 2.
+    of {T.sz0} must be in {1..T.d.size[ax]-1}. Note that the core {T.K}
+    must not be empty, and {t.h.size[ax]} must be at least 2.
     
     The core domain {T.DK} is split into two non-empty sub-domains:
     {T.DK0}, with with indices up to {T.ixcut-1} along axis {ax}, and
@@ -53,7 +53,7 @@ typedef struct kdtom_split_t
     core domain {T.DK} is either {T.sub[0].V[ix - T.ix0]} or
     {T.sub[1].V[ix - T.ix1]}, depending on whether {ix} is in {T.DK0} or
     {T.DK1}. The vector {T.ix0} is just {T.ixlo}, and {T.ix1} is the
-    same except that {T.ix1[ax]} is T.ixcut}.
+    same except that {T.ix1[ax]} is {T.ixcut}.
     
     The {.d} and {.maxval} fields of {T.sub[0]} and {T.sub[1]} must be equal to 
     those of {T.d}.  The {.fill} values may be all different.
@@ -65,7 +65,7 @@ kdtom_t *kdtom_split_make
     ppv_index_t ixlo[], 
     ppv_size_t size[], 
     ppv_axis_t ax, 
-    ppv_index_t ixcut,
+    ppv_size_t sz0,
     kdtom_t *sub0,
     kdtom_t *sub1
   );
@@ -119,6 +119,11 @@ kdtom_split_t *kdtom_split_do_make
     
     The split node {T} created will have {T.h.ixlo} all zeros
     and {T.ixcut = sz0}. */
+
+kdtom_split_t *kdtom_split_clone(kdtom_split_t *T);
+  /* Returns a copy of the node {T}. Copies the fixed fields, including the
+    pointers {T->sub[0..1]}, and the internally allocated vectors {T.h.ixlo,T.h.size},
+    but does NOT copy the nodes pointed to by {T->sub[0..1]}. */
 
 ppv_sample_t kdtom_split_get_core_sample(kdtom_split_t *T, ppv_index_t dx[]);
   /* Returns the sample {T.V[T.ixlo + dx]}. IMPORTANT: Assumes that this
