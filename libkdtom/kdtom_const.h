@@ -1,5 +1,5 @@
 /* An internal k-d-tree node that has a constant value over the whole domain. */
-/* Last edited on 2021-07-13 01:14:11 by jstolfi */
+/* Last edited on 2021-07-16 12:18:39 by jstolfi */
 
 #ifndef kdtom_const_H
 #define kdtom_const_H
@@ -48,19 +48,20 @@ kdtom_const_t *kdtom_const_clone(kdtom_const_t *T);
   /* Returns a copy of the node {T}. Copies all the fixed fields
     as well as the internally allocated vectors {T.ixlo,T.size}. */
 
-kdtom_const_t *kdtom_const_clip(kdtom_const_t *T, ppv_index_t ixlo[], ppv_size_t size[]);
+kdtom_const_t *kdtom_const_clip_core(kdtom_const_t *T, ppv_index_t ixlo[], ppv_size_t size[]);
   /* Returns a {kdtom_t} structure {S} that describes the same voxel
     grid as {T}, except that its core {S.K} is the box {B} with
     low corner {ixlo[0..T.d-1]} and size {size[0..T.d-1]}. 
     
     IMPORTANT: The procedures assumes that {B} is not empty and is
     contained in {T.DK}.
-    
+
     The parameters {S.maxsmp} and {S.fill} will be copied from {T}.
     
-    The result {S} will be a newly allocated node, even it describes the
-    same grid as {T}. It may not have the same kind as {T}. Note that
-    {T} and some of its descendants may not be reachable from {S}. */
+    The result {S} will be a newly allocated {kdtom_const_t} node, even
+    Tit describes the same grid as {T}. The node {T} itself is not
+    Tchanged. Note that {T} and some of its descendants may not be
+    Treachable from {S}. */
 
 bool_t kdtom_const_is_all_fill(kdtom_const_t *T, ppv_sample_t fill);
   /* True iff {T.V} is everywhere equal to {fill}. */
@@ -69,21 +70,21 @@ kdtom_const_t *kdtom_const_join_nodes
   ( ppv_size_t size[],
     ppv_axis_t ax,
     kdtom_const_t *T0, 
-    ppv_size_t sz0, 
+    ppv_size_t size0, 
     kdtom_const_t *T1, 
-    ppv_size_t sz1
+    ppv_size_t size1
   );
   /* If nodes {T0} and {T1} can be joined in a single {kdtom_const_t}
     node, creates and returns that node. Otherwise returns {NULL}.
     
     Assumes that {T0} and {T1} are clipped so that the indice in their
-    cores, along the axis {ax}, are contained in {0..sz0-1} and
-    {0..sz1-1}, respectively; and in {0..size[k]-1} along any other axis {k}.
+    cores, along the axis {ax}, are contained in {0..size0-1} and
+    {0..size1-1}, respectively; and in {0..size[k]-1} along any other axis {k}.
     
     The joined node {T}, if any, will have all zeros in {T.ixlo}, and
-    will be such that {T.V[ix]} will be {T0.V[ix]} if {ix[ax] < sz0},
+    will be such that {T.V[ix]} will be {T0.V[ix]} if {ix[ax] < size0},
     and {T1.V[jx]} otherwise; were {jx[k]} is {ix[k]} for all {k},
-    except that {jx[ax] = ix[ax]-sz0}. */
+    except that {jx[ax] = ix[ax]-size0}. */
 
 size_t kdtom_const_node_bytesize(ppv_dim_t d);
   /* Size in bytes of a {kdtom_const_t} node {T}, including the {T.h.size}
@@ -94,5 +95,11 @@ size_t kdtom_const_bytesize(kdtom_const_t *T);
     includes the storage used by the {T.h} header and its
     {T.h.size} vector, as well as any internal type-specific
     fields. */
+
+/* DEBUGGING */
+
+void kdtom_const_print_fields(FILE *wr, kdtom_const_t *T);
+  /* Prints to {wr} the fields that are specific of {T}, 
+    as ".{field} = {value}". */
 
 #endif

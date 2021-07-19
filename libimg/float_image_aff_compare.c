@@ -17,7 +17,7 @@
 #include <i2.h>
 #include <jsmath.h>
 #include <affirm.h>
-#include <indexing.h>
+#include <ix.h>
 #include <wt_table.h>
 #include <gauss_table.h>
 #include <float_image.h>

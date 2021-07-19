@@ -1,5 +1,5 @@
 /* See ppv_array.h */
-/* Last edited on 2021-07-10 04:11:31 by jstolfi */
+/* Last edited on 2021-07-16 10:14:00 by jstolfi */
 /* Copyright © 2003 by Jorge Stolfi, from University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
@@ -13,18 +13,12 @@
 #include <affirm.h>
 #include <jsmath.h>
 #include <jsrandom.h>
-#include <indexing.h>
+#include <ix.h>
 
 #include <ppv_array.h>
 
 /* INTERNAL PROOTYPES: */
     
-ppv_array_t *ppv_array_new_desc ( ppv_dim_t d );
-  /* Allocates a new descriptor {A} for an array with dimension {d}. The
-    {A.step} and {A.size} vectors are allocated in the same {malloc}
-    record and set to all zeros, as {A.base}. The element area pointer
-    {A.el} is set to {NULL}. */
-
 /* IMPLEMENTATIONS: */
 
 bool_t ppv_index_is_valid ( const ppv_index_t ix[], ppv_array_t *A )
@@ -153,18 +147,11 @@ ppv_array_t *ppv_array_clone ( ppv_array_t *A )
 
 ppv_sample_count_t ppv_sample_count( ppv_array_t *A, bool_t reptoo )
   {
-    ppv_sample_count_t nv = 1;
-    for (ppv_axis_t ax = 0; ax < A->d; ax++)
-      { ppv_step_t stepk = A->step[ax];
-        ppv_size_t sizek = A->size[ax];
-        if ((sizek >= 2) && (stepk == 0) && (! reptoo)) { sizek = 1; }
-        if (sizek == 0) 
-          { nv = 0; break; }
-        else
-          { assert(nv <= ppv_MAX_SIZE/sizek);
-            nv = nv*sizek;
-          }
-      }
+    ppv_sample_count_t nv;
+    if (reptoo)
+      { nv = ix_num_tuples(A->d, A->size); }
+    else
+      { nv = ix_num_positions(A->d, A->size, A->step); }
     assert((A->el == NULL) == ((nv == 0) || (A->bps == 0)));
     return nv;
   }
@@ -177,9 +164,9 @@ bool_t ppv_is_empty( ppv_array_t *A )
 
 ppv_array_t *ppv_array_new_desc ( ppv_dim_t d )
   { 
-    size_t head_bytes = sizeof(ppv_array_t);   /* Mem size wihout {A.size,A.step} vectors. */
-    size_t size_bytes = d * sizeof(ppv_size_t);     /* Mem size of {A.size} vector. */
-    size_t step_bytes = d * sizeof(ppv_step_t);     /* Mem size of {A.step} vector. */
+    size_t head_bytes = iroundup(sizeof(ppv_array_t), 8);  /* Mem size wihout {A.size,A.step} vectors. */
+    size_t size_bytes = d * sizeof(ppv_size_t);  /* Mem size of {A.size} vector. */
+    size_t step_bytes = d * sizeof(ppv_step_t);  /* Mem size of {A.step} vector. */
     size_t desc_bytes = head_bytes + size_bytes + step_bytes;
     
     ppv_array_t *A = notnull(malloc(desc_bytes), "no mem");
@@ -574,26 +561,26 @@ void ppv_array_assign ( ppv_array_t *A, ppv_array_t *B  )
 
 void ppv_print_descriptor ( FILE *wr, char *pf, ppv_array_t *A, char *sf )
   {
-    fprintf(stderr, "%s", pf); 
-    fprintf(stderr, "d = %u", A->d);
-    fprintf(stderr, " bps = %u bpw = %u", A->bps, A->bpw);
-    fprintf(stderr, " maxsmp = " ppv_sample_t_FMT, A->maxsmp);
-    fprintf(stderr, " size(step) = [ ");
+    fprintf(wr, "%s", pf); 
+    fprintf(wr, "d = %u", A->d);
+    fprintf(wr, " bps = %u bpw = %u", A->bps, A->bpw);
+    fprintf(wr, " maxsmp = " ppv_sample_t_FMT, A->maxsmp);
+    fprintf(wr, " size(step) = [ ");
     for (ppv_axis_t ax = 0; ax < A->d; ax++)
-      { fprintf(stderr, " ");
-        fprintf(stderr, ppv_size_t_FMT, A->size[ax]);
-        fprintf(stderr, "(");
-        fprintf(stderr, ppv_step_t_FMT, A->step[ax]);
-        fprintf(stderr, ")");
+      { fprintf(wr, " ");
+        fprintf(wr, ppv_size_t_FMT, A->size[ax]);
+        fprintf(wr, "(");
+        fprintf(wr, ppv_step_t_FMT, A->step[ax]);
+        fprintf(wr, ")");
       }
-    fprintf(stderr, " ] base = ");
-    fprintf(stderr, ppv_pos_t_FMT, A->base);
-    fprintf(stderr, " el = %lu", ((uint64_t)A->el));
+    fprintf(wr, " ] base = ");
+    fprintf(wr, ppv_pos_t_FMT, A->base);
+    fprintf(wr, " el = %lu", ((uint64_t)A->el));
     ppv_sample_count_t nix = ppv_sample_count(A, TRUE);
-    fprintf(stderr, " nix = " ppv_sample_count_t_FMT, nix);
+    fprintf(wr, " nix = " ppv_sample_count_t_FMT, nix);
     ppv_sample_count_t nel = ppv_sample_count(A, FALSE);
-    fprintf(stderr, " nel = " ppv_sample_count_t_FMT, nel);
-    fprintf(stderr, "%s", sf);
+    fprintf(wr, " nel = " ppv_sample_count_t_FMT, nel);
+    fprintf(wr, "%s", sf);
   }
 
 size_t ppv_tot_sample_bytes(ppv_sample_count_t npos, ppv_nbits_t bps, ppv_nbits_t bpw)

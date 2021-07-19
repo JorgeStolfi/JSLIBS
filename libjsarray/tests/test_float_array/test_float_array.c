@@ -4,7 +4,7 @@
 
 #define test_float_array_C_COPYRIGHT "Copyright © 2009  by the State University of Campinas (UNICAMP)"
 /* Created on 2009-08-31 by J. Stolfi, UNICAMP */
-/* Last edited on 2018-03-04 22:57:31 by stolfilocal */ 
+/* Last edited on 2021-07-18 19:16:49 by jstolfi */ 
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -24,6 +24,7 @@
 #include <affirm.h>
 
 
+#include <ix.h>
 #include <array.h>
 #include <array_io.h>
 // #include <array_linalg.h>
@@ -31,6 +32,8 @@
 
 #define i32min(X,Y) (((X) <= (Y) ? (X) : (Y)))
 #define i32max(X,Y) (((X) >= (Y) ? (X) : (Y)))
+
+#define szFMT ix_index_t_FMT
 
 /* PROTOTYPES */
 
@@ -102,22 +105,23 @@ void test_float_array(int nt)
    
 float_array_t *float_array_new_random(int it, bool_t verbose)
   {
-    float_array_dim_t na = (it % float_array_MAX_AXES);
+    float_array_dim_t na = (float_array_dim_t)(it % array_MAX_AXES);
     float_array_size_t sz[na];
     int ia;
-    ix_pos_count_t ne = 1;
-    for (ia = 0; ia < na; ia++) { sz[ia] = int32_abrandom(0, 3)+int32_abrandom(0, 4); ne *= sz[ia]; }
+    ix_count_t ne = 1;
+    for (ia = 0; ia < na; ia++) 
+      { sz[ia] = int32_abrandom(0, 3)+int32_abrandom(0, 4); ne *= (ix_count_t)(sz[ia]); }
     ix_order_t ixor = (ix_order_t)int32_abrandom(0, 1);
     if (verbose)
       { fprintf(stderr, "%s(%d, %c)\n", __FUNCTION__, it, "FT"[verbose]);
         fprintf(stderr, "na = %d\n", na);
         fprintf(stderr, "sz = [");
-        for (ia = 0; ia < na; ia++) { fprintf(stderr, " %2lld", sz[ia]); }
+        for (ia = 0; ia < na; ia++) { fprintf(stderr, " " szFMT, sz[ia]); }
         fprintf(stderr, " ]\n");
         fprintf(stderr, "ixor = %c\n", "LF"[ixor]);
       }
     float_array_t *A = float_array_new_descr();
-    (*A) = float_array_new(na, sz, ixor);
+    (*A) = float_array_new(na, sz);
     ix_descr_t *DA = &(A->ds);
     if (verbose) { show_float_array(stderr, "A", A, 5); }
     assert(DA->na == na);
@@ -163,10 +167,10 @@ void test_float_array_get_elem_set_elem(int it, bool_t verbose)
     int k = 4615;
     if (ix_descr_indices_first(DA, ix))
       { do {
-          float v_set = (double)k;
+          float v_set = (float)k;
           float_array_set_elem(A, ix, v_set);
           k++;
-        } while (! ix_descr_next(DA,ix,ix_order_L,NULL));
+        } while (! ix_descr_next(DA,ix,NULL));
       }
     
     /* Check whether the numbers are still there: */
@@ -174,7 +178,7 @@ void test_float_array_get_elem_set_elem(int it, bool_t verbose)
     if (ix_descr_indices_first(DA, ix))
       { ix_pos_t p_exp = ix_descr_position(DA, ix);
         do {
-          float v_set = (double)k;
+          float v_set = (float)k;
           float v_get = float_array_get_elem(A, ix);
           if (v_get != v_set)
             { fprintf(stderr, "** set/get elem mismatch:\n");
@@ -188,12 +192,12 @@ void test_float_array_get_elem_set_elem(int it, bool_t verbose)
             { fprintf(stderr, "** elem position mismatch:\n");
               show_float_array(stderr, "A", A, 5);
               show_indices(stderr, "ix = ", DA->na, ix, "\n");
-              fprintf(stderr, "  p (get) = %12llu  p (exp) = %12llu\n", p_get, p_exp);
+              fprintf(stderr, "  p (get) = %12lu  p (exp) = %12lu\n", p_get, p_exp);
               fprintf(stderr, "  v (set) = %15.8e  v (get) = %15.8e\n", v_set, A->e[p_get]);
               assert(FALSE);
             }
           k++;
-        } while (! ix_descr_next(DA,ix,ix_order_L,&p_exp));
+        } while (! ix_descr_next(DA,ix,&p_exp));
       }
     
   }
@@ -208,9 +212,8 @@ void test_float_array_write_float_array_read(int it, bool_t verbose)
     float_array_t *A = float_array_new_random(it, verbose);
     
     float_array_throw(A, 0.25);
-    ix_order_t ixor = (ix_order_t)(it % 2);
     FILE *wr = open_write(fname, TRUE);
-    float_array_write(wr, A, ixor);
+    float_array_write(wr, A);
     fclose(wr);
     
     if (verbose) fprintf(stderr, "Checking {float_array_read} ...\n");
@@ -248,8 +251,8 @@ bool_t check_float_array(float_array_t *A, char *Aname, float_array_t *R, char *
       {
         if ((DA->sz[ia]) != (DR->sz[ia]))
           { fprintf(stderr, "** size mismatch in axis %d:\n", ia);
-            fprintf(stderr, "  %s.ds.sz[%d] = %5lld\n", Aname, ia, DA->sz[ia]);
-            fprintf(stderr, "  %s.ds.sz[%d] = %5lld\n", Rname, ia, DR->sz[ia]);
+            fprintf(stderr, "  %s.ds.sz[%d] = %5ld\n", Aname, ia, DA->sz[ia]);
+            fprintf(stderr, "  %s.ds.sz[%d] = %5ld\n", Rname, ia, DR->sz[ia]);
             assert(FALSE);
           }
       }
@@ -269,13 +272,13 @@ bool_t check_float_array(float_array_t *A, char *Aname, float_array_t *R, char *
           if (A->e[pA] != R->e[pR])
             { fprintf(stderr, "** element value mismatch\n");
               fprintf(stderr, "ix = [");
-              for (ia = 0; ia < na; ia++) { fprintf(stderr, " %2lld", ix[ia]); }
+              for (ia = 0; ia < na; ia++) { fprintf(stderr, " %2ld", ix[ia]); }
               fprintf(stderr, " ]\n");
               fprintf(stderr, "  %s.e[ix] = %+15.8e\n", Aname, A->e[pA]);
               fprintf(stderr, "  %s.e[ix] = %+15.8e\n", Rname, R->e[pR]);
               assert(FALSE);
             }
-        } while (! ix_descr_next(DA,ix,ix_order_L,NULL));
+        } while (! ix_descr_next(DA,ix,NULL));
       }
     return TRUE;
   }
@@ -284,17 +287,17 @@ void show_float_array(FILE *wr, char *Aname, float_array_t *A, float_array_count
   {
     ix_descr_t *DA = &(A->ds);
     float_array_dim_t na = DA->na;
-    ix_pos_count_t ne = ix_descr_num_positions(DA);
+    ix_count_t ne = ix_descr_num_positions(DA);
     if (nPrint > ne) { nPrint = ne; }
     int ia;
     fprintf(wr, "%s = { na: %3u", Aname, na); 
     fprintf(wr, " sz: ["); 
-    for (ia = 0; ia < na; ia++) { fprintf(wr, " %2lld", DA->sz[ia]); }
+    for (ia = 0; ia < na; ia++) { fprintf(wr, " %2ld", DA->sz[ia]); }
     fprintf(wr, " ]"); 
     fprintf(wr, " st: ["); 
-    for (ia = 0; ia < na; ia++) { fprintf(wr, " %lld", DA->st[ia]); }
+    for (ia = 0; ia < na; ia++) { fprintf(wr, " %ld", DA->st[ia]); }
     fprintf(wr, " ]"); 
-    fprintf(wr, " e: %10p[%5llu]", A->e, ne); 
+    fprintf(wr, " e: %10p[%5lu]", A->e, ne); 
     fprintf(wr, " } = ("); 
     float_array_count_t k = 0;
     ix_index_t ix[na];
@@ -307,7 +310,7 @@ void show_float_array(FILE *wr, char *Aname, float_array_t *A, float_array_count
             }
           float v = A->e[pA];
           fprintf(wr, " %+15.8e", v);
-        } while (! ix_descr_next(DA,ix,ix_order_L,&pA));
+        } while (! ix_descr_next(DA,ix,&pA));
       }
     fprintf(wr, " )\n");
   }
@@ -317,7 +320,7 @@ void show_indices(FILE *wr, char *pf, ix_dim_t d, ix_index_t ix[], char *sf)
   { fprintf(wr, "%s", pf); 
     int i;
     for (i = 0; i < d; i++)
-      { fprintf(wr, " %2lld", ix[i]); }
+      { fprintf(wr, " %2ld", ix[i]); }
     fprintf(wr, "%s", sf);
   }
 
@@ -329,8 +332,8 @@ void float_array_throw(float_array_t *A, double frac)
       { ix_pos_t pA = ix_descr_position(DA, ix);
         do {
           double v = (drandom() < frac ? drandom() : 0.0);
-          A->e[pA] = v;
-        } while (! ix_descr_next(DA,ix,ix_order_L,&pA));
+          A->e[pA] = (float)v;
+        } while (! ix_descr_next(DA,ix,&pA));
       }
   }
 
@@ -669,7 +672,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     for (i = 0; i < A.rows; i++) 
 //       { double sum = 0; 
 //         posA = float_array_extract_row(&A, posA, i, Arow, A.cols);
-//         assert(A.cols = nu);
+//         assert(A.cols == nu);
 //         for (j = 0; j < nu; j++) { sum += Arow[j]*u[j]; }
 //         r[i]= sum;
 //       }

@@ -1,5 +1,5 @@
 /* Multidimensional sample arrays stored as k-d-trees. */
-/* Last edited on 2021-07-13 02:50:06 by jstolfi */
+/* Last edited on 2021-07-16 14:26:34 by jstolfi */
 
 #ifndef kdtom_H
 #define kdtom_H
@@ -107,22 +107,22 @@ kdtom_t *kdtom_join_nodes
   ( ppv_size_t size[], 
     ppv_axis_t ax,
     kdtom_t *T0, 
-    ppv_size_t sz0, 
+    ppv_size_t size0, 
     kdtom_t *T1, 
-    ppv_size_t sz1
+    ppv_size_t size1
   );
   /* If nodes {T0} and {T1} are {kdtom_const_t} nodes that can be joined
     in a single {kdtom_const_t} node, creates and returns that node.
     Otherwise returns {NULL}.
     
     Assumes that {T0} and {T1} are clipped so that the indice in their
-    cores, along the axis {ax}, are contained in {0..sz0-1} and
-    {0..sz1-1}, respectively; and in {0..size[k]-1} along any other axis {k}.
+    cores, along the axis {ax}, are contained in {0..size0-1} and
+    {0..size1-1}, respectively; and in {0..size[k]-1} along any other axis {k}.
     
     The joined node {T}, if any, will have all zeros in {T.ixlo}, and
-    will be such that {T.V[ix]} will be {T0.V[ix]} if {ix[ax]<sz0}, and
+    will be such that {T.V[ix]} will be {T0.V[ix]} if {ix[ax]<size0}, and
     {T1.V[jx]} otherwise; were {jx[k]} is {ix[k]} for all {k}, except
-    that {jx[ax] = ix[ax]-sz0}. */
+    that {jx[ax] = ix[ax]-size0}. */
 
 kdtom_t *kdtom_clone(kdtom_t *T);
   /* Returns a copy of the node {T}. Copies the vectors {T.ixlo,T.size}
@@ -157,7 +157,7 @@ void kdtom_realloc_array_nodes(kdtom_t *T);
     allow that {A.el} can be safely reclaimed. */
 
 
-kdtom_t *kdtom_clip(kdtom_t *T, ppv_index_t ixlo[], ppv_size_t size[]);
+kdtom_t *kdtom_clip_core(kdtom_t *T, ppv_index_t ixlo[], ppv_size_t size[]);
   /* Returns a {kdtom_t} structure {S} that describes the same voxel
     grid as {T}, except that its core {S.K} is the core {T.K} clipped
     to the box {B} with low corner {ixlo[0..T.d-1]} and size {size[0..T.d-1]}.
@@ -166,33 +166,19 @@ kdtom_t *kdtom_clip(kdtom_t *T, ppv_index_t ixlo[], ppv_size_t size[]);
     
     The parameters {S.maxsmp} and {S.fill} will be copied from {T}.
     
-    The result {S} will be a newly allocated node, even it describes the
-    same grid as {T}. It may not have the same kind as {T}. Note that
-    {T} and some of its descendants may not be reachable from {S}. */
+    The result {S} may be the same as {T}, or it may be a new 
+    node. In the second case, it may not have the same kind as {T}.
     
-bool_t kdtom_box_is_empty(ppv_dim_t d, ppv_size_t size[]);
-  /* Returns {TRUE} if any one of the components {size[0..d-1]}
-    is zero. */
-
-bool_t kdtom_index_is_in_box(ppv_dim_t d, ppv_index_t ix[], ppv_index_t ixlo[], ppv_size_t size[]);
-  /* Returns {TRUE} if and only if {ix[k]} is in the range {ixlo[k] .. ixlo[k]+size[k]-1}
-    for every {k} in {0..d-1}. */
-
-void kdtom_intersect_boxes
-  ( ppv_dim_t d,
-    ppv_index_t ixlo_A[], 
-    ppv_size_t  size_A[],
-    ppv_index_t ixlo_B[], 
-    ppv_size_t  size_B[],
-    ppv_index_t ixlo_R[], 
-    ppv_size_t  size_R[]
-  );
-  /* Takes two {d}-dimensional boxes -- {A}, defined by the low-corner {ixlo_A[0..d-1]}
-    and the sizes  {size_A[0..d-1]}, and {B}, defined similarly by {ixlo_B} and {size_B};
-    and computes their intersection {R}, defined by {ixlo_R} and {size_R}. 
+    In particular, if the core domain {T.DK} is not empty but the box
+    {B} does not intersect it, the result will be just a new {kdtom_const_t}
+    node with empty core that is everywhere equal to {T.fill}.
     
-    If the intersection is empy (in particular, if any {size_A[k]} or {size_B[k]} is empty),
-    sets {ixlo_R} and {size_R} to alll zeros.*/
+    The nodes that descend from {T}, if any, will have their cores 
+    clipped too, rescursively.  That may change the types
+    of those descendants and/or cause whole sub-trees to be 
+    excluded from the tree. 
+    
+    In any case, neither {T} nor any descendant nodes are modified. */
     
 /* FOR USE BY VARIANT IMPLEMENTATIONS */
 
@@ -245,5 +231,15 @@ size_t kdtom_bytesize(kdtom_t *T, bool_t total);
     all the k-d-tree nodes reached from {T}, includin the node records
     themselves and the nominal size of the storage area of every array
     node (as returned by {kdtom_array_total_bytesize}). */
+
+/* DEBUGGING */
+
+void kdtom_print_node(FILE *wr, int32_t ind, char *name, kdtom_t *T, bool_t rec);
+  /* Prints the contents of node {T} on {wr}, indented by {ind} spaces,
+    surrounded by braces, preceded by "{name} = "} (if {name} is not null)
+    and terminated by a newline. The node {T} may be {NULL}.
+    
+    If {rec} is true, also prints any sub-trees hanging from {T},
+    recursively. */
 
 #endif

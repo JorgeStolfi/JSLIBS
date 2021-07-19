@@ -6,8 +6,8 @@
 
 #include <stdio.h>
 #include <bool.h>
-#include <indexing.h>
-#include <indexing_descr.h>
+#include <ix.h>
+#include <ix_descr.h>
 
 #include <array.h>
 #include <array_io.h>

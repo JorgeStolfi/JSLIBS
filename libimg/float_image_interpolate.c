@@ -9,7 +9,7 @@
 
 #include <affirm.h>
 #include <bool.h>
-#include <indexing.h>
+#include <ix.h>
 #include <float_image.h>
 
 #include <float_image_interpolate.h>

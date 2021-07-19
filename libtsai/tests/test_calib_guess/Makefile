@@ -1,4 +1,4 @@
-# Last edited on 2011-05-17 02:59:27 by stolfi
+# Last edited on 2021-07-19 04:12:00 by jstolfi
 
 PROG := test_calib_guess
 TEST_LIB := libtsai.a
@@ -24,7 +24,7 @@ check:  build run-tests
 # PSVIEW := okular
 PSVIEW := evince
 
-include ../../../GENERIC-LIB-TEST.make
+include ../../../../GENERIC-LIB-TEST.make
 
 run-tests: t03-1
 # BUG: run-tests: t03-2 

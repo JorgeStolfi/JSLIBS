@@ -14,7 +14,7 @@
 #include <r3.h>
 #include <r3x3.h>
 #include <affirm.h>
-#include <indexing.h>
+#include <ix.h>
 #include <float_image.h>
 #include <float_image_transform.h>
 #include <float_image_average.h>

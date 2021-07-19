@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <math.h>
 
-#include <indexing.h>
+#include <ix.h>
 #include <affirm.h>
 #include <bool.h>
 #include <jsaudio.h>

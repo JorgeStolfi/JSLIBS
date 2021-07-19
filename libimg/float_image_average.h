@@ -5,7 +5,7 @@
 /* Last edited on 2017-06-26 16:51:48 by stolfilocal */ 
 
 #include <bool.h>
-#include <indexing.h>
+#include <ix.h>
 #include <r2.h>
 #include <r2x2.h>
 #include <r3x3.h>

@@ -1,5 +1,5 @@
 /* See {kdtom_const.h}. */
-/* Last edited on 2021-07-13 06:10:37 by jstolfi */
+/* Last edited on 2021-07-19 05:05:44 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -11,10 +11,15 @@
 #include <ppv_array.h>
 #include <jsmath.h>
 #include <affirm.h>
+#include <ixbox.h>
 
 #include <kdtom.h>
 
 #include <kdtom_const.h>
+
+#define ixFMT ppv_index_t_FMT
+#define smpFMT ppv_sample_t_FMT
+#define szFMT ppv_size_t_FMT
 
 ppv_sample_t kdtom_const_get_core_sample(kdtom_const_t *T, ppv_index_t dx[])
   {
@@ -66,17 +71,12 @@ kdtom_const_t *kdtom_const_clone(kdtom_const_t *T)
     return S;
   }
 
-kdtom_const_t *kdtom_const_clip(kdtom_const_t *T, ppv_index_t ixlo[], ppv_size_t size[])
+kdtom_const_t *kdtom_const_clip_core(kdtom_const_t *T, ppv_index_t ixlo[], ppv_size_t size[])
   {
     ppv_dim_t d = T->h.d;
-    
-    /* Compute the new core domain {ixlo_new,size_new} and {empty_new}: */
-    ppv_index_t ixlo_new[d];  /* Expected {T.h.ixlo} after clipping. */
-    ppv_size_t  size_new[d];  /* Expected {T.h.size} after clipping. */
-    kdtom_intersect_boxes(d, T->h.ixlo, T->h.size, ixlo, size, ixlo_new, size_new);
-    
-    kdtom_const_t *S = kdtom_const_make(d, T->h.maxsmp, T->h.fill, ixlo_new, size_new, T->smp);
-   
+    demand(! ixbox_is_empty(d, size), "new core domain is empty");
+    demand(ixbox_is_contained(d, ixlo, size, T->h.ixlo, T->h.size), "new core domain not contained");
+    kdtom_const_t *S = kdtom_const_make(d, T->h.maxsmp, T->h.fill, ixlo, size, T->smp);
     return S;
   }
 
@@ -114,9 +114,9 @@ kdtom_const_t *kdtom_const_join_nodes
   ( ppv_size_t size[],
     ppv_axis_t ax,
     kdtom_const_t *T0, 
-    ppv_size_t sz0, 
+    ppv_size_t size0, 
     kdtom_const_t *T1, 
-    ppv_size_t sz1
+    ppv_size_t size1
   )
   {
     /* Basic compatibility: */
@@ -124,7 +124,7 @@ kdtom_const_t *kdtom_const_join_nodes
     ppv_dim_t d = T0->h.d;
 
     demand(ax < d, "invalid {ax}");
-    demand(sz0 + sz1 == size[ax], "inconsistent {sz0,sz1}");
+    demand(size0 + size1 == size[ax], "inconsistent {size0,size1}");
 
     if (T0->h.maxsmp != T1->h.maxsmp) { return NULL; }
     ppv_sample_t maxsmp = T0->h.maxsmp;
@@ -136,19 +136,19 @@ kdtom_const_t *kdtom_const_join_nodes
     /* Tests for trivially empty cores: */
     if ((T0->h.size[0] == 0) || (T0->smp == T0->h.fill)) 
       { /* {T0} is all fill: */ 
-        /* Translate {T} by {sz0} along axis {ax}: */
-        kdtom_translate_one((kdtom_t *)T1, ax, sz0);
+        /* Translate {T} by {size0} along axis {ax}: */
+        kdtom_translate_one((kdtom_t *)T1, ax, size0);
         return T1;
       }
     if ((T1->h.size[0] == 0) || (T1->smp == T1->h.fill)) 
       { /* {T1} is all fill: */
         return T0;
       }
-    if ((T0->h.ixlo[ax] >= sz0) || (T0->h.ixlo[ax] + T0->h.size[ax] <= 0))
+    if ((T0->h.ixlo[ax] >= size0) || (T0->h.ixlo[ax] + T0->h.size[ax] <= 0))
       { /* Core of {T0} is outside clip area: */ 
         return T1;
       }
-    if ((T1->h.ixlo[ax] >= sz1) || (T1->h.ixlo[ax] + T1->h.size[ax] <= 0))
+    if ((T1->h.ixlo[ax] >= size1) || (T1->h.ixlo[ax] + T1->h.size[ax] <= 0))
       { /* Core of {T1} is outside clip area: */
         return T0;
       }
@@ -158,7 +158,7 @@ kdtom_const_t *kdtom_const_join_nodes
     ppv_sample_t smp = T0->smp;
     
     /* Check whether clipped cores can join into a single box: */
-    if (T0->h.ixlo[ax] + T0->h.size[ax] < sz0)
+    if (T0->h.ixlo[ax] + T0->h.size[ax] < size0)
       { /* Core of {T0} does not reach to the joint: */ return NULL; }
     if (T1->h.ixlo[ax] > 0)
       { /* Core of {T1} starts after the joint: */ return NULL; }
@@ -173,4 +173,11 @@ kdtom_const_t *kdtom_const_join_nodes
     /* No further objections, your honor: */
     kdtom_const_t *T = kdtom_const_make(d, maxsmp, fill, NULL, size, smp);
     return T;
+  }
+
+void kdtom_const_print_fields(FILE *wr, kdtom_const_t *T)
+  {
+    fprintf(wr, " .smp = " smpFMT, T->smp);
+
+    return;
   }

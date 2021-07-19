@@ -18,7 +18,7 @@
 #include <ref.h>
 #include <affirm.h>
 #include <jsmath.h>
-#include <indexing.h>
+#include <ix.h>
 
 #include <enum_orbits.h>
 

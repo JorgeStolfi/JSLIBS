@@ -1,4 +1,4 @@
-# Last edited on 2020-10-01 19:35:12 by jstolfi
+# Last edited on 2021-07-19 05:00:37 by jstolfi
 
 PROG := test_calib
 TEST_LIB := libtsai.a
@@ -17,7 +17,7 @@ JS_LIBS := \
 # OTHER_C_FLAGS := -pg
 # OTHER_LD_FLAGS := -pg
  
-include ../../../GENERIC-LIB-TEST.make
+include ../../../../GENERIC-LIB-TEST.make
 
 all: check
 

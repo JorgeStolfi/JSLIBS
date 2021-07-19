@@ -19,7 +19,7 @@
 #include <bool.h>
 #include <jsfile.h>
 #include <affirm.h>
-#include <indexing.h>
+#include <ix.h>
 
 int main(int argn, char **argv);
 

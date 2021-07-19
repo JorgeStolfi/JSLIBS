@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:33:16 by jstolfi
+# Last edited on 2021-07-19 04:12:06 by jstolfi
 
 PROG := test_calib_opt
 TEST_LIB := libtsai.a
@@ -24,7 +24,7 @@ run-all-tests: \
 # OTHER_C_FLAGS := -pg
 # OTHER_LD_FLAGS := -pg
 
-include ../../../GENERIC-LIB-TEST.make
+include ../../../../GENERIC-LIB-TEST.make
 
 ######################################################################
 # Recursive make - client must define ${TNAME}

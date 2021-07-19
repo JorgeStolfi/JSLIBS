@@ -3,8 +3,8 @@
 /* Copyright © 2007 by Jorge Stolfi, from University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
-#include <indexing_io.h>
-#include <indexing.h>
+#include <ix_io.h>
+#include <ix.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>

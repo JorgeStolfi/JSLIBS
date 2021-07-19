@@ -1,11 +1,11 @@
 /* See {indexing_descr.h}. */
-/* Last edited on 2021-06-13 11:32:52 by jstolfi */
+/* Last edited on 2021-07-17 15:53:31 by jstolfi */
 
 #define indexing_descr_C_COPYRIGHT "Copyright © 2003  Jorge Stolfi, State University of Campinas"
 
-#include <indexing_descr.h>
-#include <indexing.h>
-#include <indexing_io.h>
+#include <ix_descr.h>
+#include <ix.h>
+#include <ix_io.h>
 #include <bool.h>
 
 #include <stdio.h>
@@ -143,7 +143,7 @@ void ix_descr_chop ( ix_descr_t *D, ix_axis_t i, ix_size_t sz, ix_axis_t j )
 /* ELEMENT ENUMERATION */
 
 bool_t ix_descr_enum 
-  ( ix_descr_index_pos3_op_t *op,
+  ( ix_index_pos3_op_t *op,
     ix_order_t ixor,
     bool_t reverse,
     ix_descr_t *A,
@@ -157,7 +157,7 @@ bool_t ix_descr_enum
     if (X == NULL) { X = C; } 
 
     /* If all three operands are null, there is nothing to do: */
-    if (X == NULL) { return; }
+    if (X == NULL) { return FALSE; }
 
     /* Get the effective number of indices: */
     ix_dim_t na = A->na;

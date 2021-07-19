@@ -7,7 +7,7 @@
 #include <assert.h>
 
 #include <bool.h>
-#include <indexing.h>
+#include <ix.h>
 #include <affirm.h>
 
 #include <interp_spline.h>

@@ -4,8 +4,8 @@
 #include <interval_array.h>
 
 #include <array.h>
-#include <indexing.h>
-#include <indexing_descr.h>
+#include <ix.h>
+#include <ix_descr.h>
 
 #include <filefmt.h>
 #include <nget.h>

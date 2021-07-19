@@ -15,7 +15,7 @@
 #include <frgb.h>
 #include <frgb_ops.h>
 #include <float_image_color.h>
-#include <indexing.h>
+#include <ix.h>
 #include <filefmt.h>
 #include <nget.h>
 #include <fget.h>

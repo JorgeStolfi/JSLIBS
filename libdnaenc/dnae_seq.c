@@ -1,5 +1,5 @@
 /* See dnae_seq.h */
-/* Last edited on 2019-04-09 13:03:35 by jstolfi */
+/* Last edited on 2021-07-18 00:42:10 by jstolfi */
 
 #define dnae_seq_C_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)" \
@@ -326,7 +326,7 @@ dnae_seq_t dnae_seq_read(FILE *rd)
     int skip = nget_int(rd, "offset"); fget_eol(rd);
 
     int chns = nget_int(rd, "channels"); fget_eol(rd);
-    demand(chns = dnae_CHANNELS, "wrong number of channels");
+    demand(chns == dnae_CHANNELS, "wrong number of channels");
     
     dnae_datum_scale_t sfac;
     sfac.f[0] = nget_double(rd, "scale");

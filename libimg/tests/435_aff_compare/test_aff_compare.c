@@ -20,7 +20,7 @@
 #include <float_image.h>
 #include <float_image_read_gen.h>
 #include <float_image_aff_compare.h>
-#include <indexing.h>
+#include <ix.h>
 #include <r2.h>
 #include <i2.h>
 #include <r2x2.h>

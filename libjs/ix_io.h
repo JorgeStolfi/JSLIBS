@@ -4,7 +4,7 @@
 /* Printout and debugging tools for {indexing_h} */
 /* Last edited on 2021-07-03 22:24:14 by jstolfi */
 
-#include <indexing.h>
+#include <ix.h>
 #include <stdio.h>
 #include <bool.h>
 #include <sign.h>

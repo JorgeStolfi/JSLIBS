@@ -21,7 +21,7 @@
 #include <float_image_interpolate.h>
 #include <float_image_read_pnm.h>
 #include <wt_table.h>
-#include <indexing.h>
+#include <ix.h>
 #include <r2.h>
 #include <r2x2.h>
 #include <bool.h>

@@ -4,7 +4,7 @@
 
 #define test_dspmat_C_COPYRIGHT "Copyright © 2008  by the State University of Campinas (UNICAMP)"
 /* Created on 2008-07-05 by J. Stolfi, UNICAMP */
-/* Last edited on 2011-06-06 17:51:49 by stolfi */ 
+/* Last edited on 2021-07-18 00:03:44 by jstolfi */ 
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -474,7 +474,7 @@ void test_dspmat_map_col(int it, bool_t verbose)
     for (i = 0; i < A.rows; i++) 
       { double sum = 0; 
         posA = dspmat_extract_row(&A, posA, i, Arow, A.cols);
-        assert(A.cols = nu);
+        assert(A.cols == nu);
         for (j = 0; j < nu; j++) { sum += Arow[j]*u[j]; }
         r[i]= sum;
       }

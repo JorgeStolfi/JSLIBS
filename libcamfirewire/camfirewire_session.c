@@ -1,6 +1,7 @@
 /* See {camfirewire_session.h}. */
-/* Last edited on 2020-12-07 23:55:09 by jstolfi */
+/* Last edited on 2021-07-19 05:10:02 by jstolfi */
 
+#include <camfirewire_camera.h>
 #include <camfirewire_session.h>
 #include <camfirewire_names.h>
 #include <camfirewire_error.h>

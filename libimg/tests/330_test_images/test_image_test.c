@@ -16,7 +16,7 @@
 #include <math.h>
 
 #include <affirm.h>
-#include <indexing.h>
+#include <ix.h>
 #include <jsfile.h>
 #include <bool.h>
 #include <r2x2.h>

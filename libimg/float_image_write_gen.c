@@ -19,7 +19,7 @@
 #include <uint16_image_write_png.h>
 #include <uint16_image_write_pnm.h>
 
-#include <indexing.h>
+#include <ix.h>
 #include <sample_conv.h>
 #include <float_image.h>
 #include <float_image_to_uint16_image.h>

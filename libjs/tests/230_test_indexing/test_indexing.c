@@ -14,7 +14,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include <indexing.h>
+#include <ix.h>
 #include <affirm.h>
 #include <jsrandom.h>
 #include <jswsize.h>

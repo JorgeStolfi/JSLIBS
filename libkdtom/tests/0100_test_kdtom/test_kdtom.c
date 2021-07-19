@@ -5,7 +5,7 @@
 #define tkdt_C_COPYRIGHT \
   "Copyright © 2021 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2021-07-12 22:57:29 by jstolfi */
+/* Last edited on 2021-07-16 06:29:08 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -29,6 +29,8 @@
 
 #define kdtom_kind_DUMMY kdtom_kind_CONST
   /* Just for testing. */
+  
+#define smpFMT ppv_sample_t_FMT
   
 kdtom_t *tkdt_make_dummy_node(ppv_dim_t d, ppv_sample_t maxsmp, bool_t empty);
 size_t tkdt_dummy_node_bytesize(ppv_dim_t d);
@@ -68,7 +70,7 @@ int32_t main(int32_t argc, char** argv)
   
 void tkdt_do_tests(ppv_dim_t d, ppv_sample_t maxsmp, bool_t empty)
   { 
-    fprintf(stderr, "Testing d = %u maxsmp = " ppv_sample_t_FMT " empty = %c ...\n", d, maxsmp, "FT"[empty]);
+    fprintf(stderr, "=== testing d = %u maxsmp = " smpFMT " empty = %c ===\n", d, maxsmp, "FT"[empty]);
     
     /* Create a dummy variant of {kdtom_t}: */
     kdtom_t *T = tkdt_make_dummy_node(d, maxsmp, empty);

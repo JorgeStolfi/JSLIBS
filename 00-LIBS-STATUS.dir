@@ -1,5 +1,5 @@
 # Libraries in compile order
-# Last edited on 2021-06-26 02:08:19 by jstolfi
+# Last edited on 2021-07-19 05:12:28 by jstolfi
 
 # + = OK.
 # ? = Status uncertain.
@@ -14,6 +14,8 @@
 
 + libgeo
 
++ libimg
+
 + libeps
 
 + liblsq
@@ -24,7 +26,6 @@
 + libminu
 + libminn
 
-+ libimg
 + libift
 + libmkgr
 
@@ -62,7 +63,9 @@
 + libstpoly
 + libstmesh
 + libvoxm
-+ lobvoxb
++ libvoxb
++ libmroc
++ libkdtom
 
 + libcamfirewire
 
@@ -77,8 +80,8 @@
 + libintg
 + libtsai
 
-+ libpspulse
 + libbezier
++ libpspulse
 
 + libneuro
 + libnmsim

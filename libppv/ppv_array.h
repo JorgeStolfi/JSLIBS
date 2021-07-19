@@ -1,5 +1,5 @@
 /* Portable multi-dimensional sample arrays. */
-/* Last edited on 2021-07-09 22:31:31 by jstolfi */
+/* Last edited on 2021-07-13 20:50:40 by jstolfi */
 
 #ifndef ppv_array_H
 #define ppv_array_H
@@ -224,6 +224,12 @@ ppv_nbits_t ppv_min_bps( ppv_sample_t maxsmp );
 ppv_nbits_t ppv_best_bpw( ppv_nbits_t bps );
   /* Returns a value of bits-per-word {bpw} that minimizes wasted
     space for a sample array with {bps} bits per sample. */
+
+ppv_array_t *ppv_array_new_desc ( ppv_dim_t d );
+  /* Allocates a new descriptor {A} for an array with dimension {d}. The
+    {A.step} and {A.size} vectors are allocated in the same {malloc}
+    record. The contencts of those vectors and all fields are set to
+    zeros. The element area pointer {A.el} is set to {NULL}. */
 
 /* SAMPLE EXTRACTION AND INSERTION */
 

@@ -11,8 +11,8 @@
 #include <array.h>
 #include <array_io.h>
 /* #include <array_linalg.h> */
-#include <indexing.h>
-#include <indexing_descr.h>
+#include <ix.h>
+#include <ix_descr.h>
 
 #define interval_t_array_MAX_AXES (array_MAX_AXES)
   /* Number of indices (dimensions, axes) in any array. Lower-dimensional

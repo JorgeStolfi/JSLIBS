@@ -5,7 +5,7 @@
 #define tkda_C_COPYRIGHT \
   "Copyright © 2021 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2021-07-13 06:17:07 by jstolfi */
+/* Last edited on 2021-07-16 21:46:01 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -29,6 +29,9 @@
 
 /* INTERNAL PROTOTYPES */
 
+#define smpFMT ppv_sample_t_FMT
+#define ixFMT ppv_index_t_FMT
+
 void tkda_do_tests(ppv_dim_t d, ppv_sample_t maxsmp);
 
 kdtom_array_t *tkda_test_make(ppv_dim_t d, ppv_sample_t maxsmp, ppv_index_t ixlo[], ppv_size_t size[]);
@@ -37,10 +40,16 @@ kdtom_array_t *tkda_test_make(ppv_dim_t d, ppv_sample_t maxsmp, ppv_index_t ixlo
 void tkda_test_translate(kdtom_array_t *T);
   /* Tests {kdtom_translate(t,dx)} with some displacement {dx}. */
 
-void tkda_test_clip(kdtom_array_t *T, int32_t loclip, int32_t hiclip);
-  /* Tests {kdtom_clip(T,ixlo,size)} with various clip boxes.
-    See {kdtom_test_clip} for the meaning of {loclip,hiclip}
-    and the clipping boxes that are used. */
+void tkda_test_clip_core(kdtom_array_t *T);
+  /* Tests {kdtom_clip_core(T,ixlo,size)} with various clip boxes.
+    
+    For each axis {ax}, the low and high indices of the clip box along
+    that axis may be just below {T.DK}, at the low end of {T.DK},
+    somewhere inside {T.DK}, at the upper end of {T.DK}, and just above
+    that end.  The combinations tried will include one empty box.
+    
+    Along axes other than {ax}, the clipbox will strictly contain 
+    the core domain {T.DK}. */
 
 int32_t main(int32_t argc,char** argv);
 
@@ -62,7 +71,7 @@ int32_t main(int32_t argc, char** argv)
   
 void tkda_do_tests(ppv_dim_t d, ppv_sample_t maxsmp)
   { 
-    fprintf(stderr, "Testing d = %u maxsmp = " ppv_sample_t_FMT " ...\n", d, maxsmp);
+    fprintf(stderr, "=== testing d = %u maxsmp = " smpFMT " ===\n", d, maxsmp);
     
     /* Choose the core domain {ixlo,size}: */
     ppv_size_t size[d];
@@ -72,15 +81,14 @@ void tkda_do_tests(ppv_dim_t d, ppv_sample_t maxsmp)
     for (ppv_axis_t k = 0; k < d;  k++) { ixlo[k] = 18 + 10*k; }
 
     kdtom_array_t *T = tkda_test_make(d, maxsmp, ixlo, size);
+    kdtom_print_node(stderr, 0, "T", (kdtom_t *)T, TRUE);
+    assert(T->h.kind == kdtom_kind_ARRAY); 
+    assert(T->h.d == d); 
+    assert(T->h.maxsmp == maxsmp);
 
     tkda_test_translate(T);
     
-    for (int32_t loclip = -2; loclip <= +2; loclip++)
-      { for (int32_t hiclip = -2; hiclip <= +2; hiclip++)
-          { if ((loclip == -1) || (loclip <= hiclip))
-              { tkda_test_clip(T, loclip, hiclip); }
-          }
-      }
+    tkda_test_clip_core(T);
       
     return;
   }
@@ -91,33 +99,39 @@ void tkda_test_translate(kdtom_array_t *T)
     return;
   }
 
-void tkda_test_clip(kdtom_array_t *T, int32_t loclip, int32_t hiclip)
+void tkda_test_clip_core(kdtom_array_t *T)
   {
-    kdtom_test_clip((kdtom_t *)T, loclip, hiclip);
+    ppv_dim_t d = T->h.d;
+
+    /* Try clipping along all axes: */
+    for (ppv_axis_t r = 0; r < d;  r++) 
+      { 
+        auto void do_test_clip_core(ppv_index_t ixlo_r, ppv_size_t size_r);
+          /* Tests clipping to range {ixlo_r .. ixlo_r + size_r - 1 on axis {r}. */
+        kdtom_test_enum_ranges_single(T->h.ixlo[r], T->h.size[r], do_test_clip_core);
+
+        continue;
+        
+        void do_test_clip_core(ppv_index_t ixlo_r, ppv_size_t size_r)
+          { kdtom_test_clip_core((kdtom_t *)T, r, ixlo_r, size_r); }
+      }
     return;
   }
 
 kdtom_array_t *tkda_test_make(ppv_dim_t d, ppv_sample_t maxsmp, ppv_index_t ixlo[], ppv_size_t size[])
   {
-
-    fprintf(stderr, "Testing {kdtom_array_make} d = %u maxsmp = " ppv_sample_t_FMT " ...\n", d, maxsmp);
-    fprintf(stderr, "ixlo =");
-    for (ppv_axis_t k = 0; k < d;  k++) { fprintf(stderr, " " ppv_index_t_FMT, ixlo[k]); }
-    fprintf(stderr, "\n");
-    fprintf(stderr, "size =");
-    for (ppv_axis_t k = 0; k < d;  k++) { fprintf(stderr, " " ppv_size_t_FMT, size[k]); }
-    fprintf(stderr, "\n");
+    fprintf(stderr, "--- testing {kdtom_array_make} d = %u maxsmp = " smpFMT " ---\n", d, maxsmp);
+    ixbox_print(stderr, d, "core = [", ixlo, size, " ]\n");
     
     ppv_sample_t fill = (ppv_sample_t)(maxsmp <= 1 ? maxsmp : uint64_abrandom(1, maxsmp-1));
+    fprintf(stderr, "fill = " smpFMT "\n", fill);
+    assert(fill <= maxsmp);
 
     ppv_array_t *A = kdtom_test_array_make(d, size, maxsmp);
 
-    fprintf(stderr, "fill = " ppv_sample_t_FMT "\n", fill);
-    assert(fill <= maxsmp);
-
     kdtom_array_t *T = kdtom_array_make(A, fill);
     assert(T->h.kind == kdtom_kind_ARRAY); 
-    kdtom_translate(T, ixlo);
+    kdtom_translate((kdtom_t *)T, ixlo);
     
     auto ppv_sample_t getsmp(ppv_index_t ix[]);
       /* Requires {ix} to be inside {T.DK}, and returns {T.V[ix]}. */
@@ -127,11 +141,10 @@ kdtom_array_t *tkda_test_make(ppv_dim_t d, ppv_sample_t maxsmp, ppv_index_t ixlo
     return T;
 
     auto ppv_sample_t getsmp(ppv_index_t ix[])
-      { assert(kdtom_index_is_in_box(d, ix, ixlo, size));
+      { assert(ixbox_has(d, ix, ixlo, size));
         ppv_index_t jx[d];
         for (ppv_axis_t k = 0; k < d;  k++) { jx[k] = ix[k] - ixlo[k]; }
         ppv_sample_t smp = ppv_get_sample(A, jx);
         return smp;
       }
   }
-    

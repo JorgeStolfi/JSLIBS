@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #include <bool.h>
-#include <indexing.h>
+#include <ix.h>
 
 #define INF INFINITY
 

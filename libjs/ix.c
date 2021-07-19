@@ -10,7 +10,7 @@
 
 #include <affirm.h>
 
-#include <indexing.h>
+#include <ix.h>
 
 /* INTERNAL PROTOTYPES */
 

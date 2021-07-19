@@ -15,7 +15,7 @@
 #include <bool.h>
 #include <sign.h>
 #include <vec.h>
-#include <indexing.h>
+#include <ix.h>
 
 /* 
   SIMPLE UNIDIMENSIONAL DOMAINS

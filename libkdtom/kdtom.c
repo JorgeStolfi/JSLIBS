@@ -1,5 +1,5 @@
 /* See {kdtom.h}. */
-/* Last edited on 2021-07-13 02:47:06 by jstolfi */
+/* Last edited on 2021-07-19 05:06:26 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -11,17 +11,17 @@
 #include <ppv_array.h>
 #include <jsmath.h>
 #include <affirm.h>
+#include <ixbox.h>
 
 #include <kdtom.h>
 #include <kdtom_split.h>
 #include <kdtom_array.h>
 #include <kdtom_const.h>
+#include <kdtom_test.h>
 
-bool_t kdtom_box_is_empty(ppv_dim_t d, ppv_size_t  size[])
-  { for (ppv_axis_t k = 0; k < d; k++)
-      { if (size[k] == 0) { return TRUE; } }
-    return FALSE;
-  }
+#define ixFMT ppv_index_t_FMT
+#define smpFMT ppv_sample_t_FMT
+#define szFMT ppv_size_t_FMT
 
 bool_t kdtom_has_empty_core(kdtom_t  *T)
   { return (T->size[0] == 0); }
@@ -102,45 +102,50 @@ kdtom_t *kdtom_clone(kdtom_t *T)
     return S;
   }
 
-kdtom_t *kdtom_clip(kdtom_t *T, ppv_index_t ixlo[], ppv_size_t size[])
+kdtom_t *kdtom_clip_core(kdtom_t *T, ppv_index_t ixlo[], ppv_size_t size[])
   {
-    ppv_dim_t d = T->d;
-    bool_t empty = FALSE; /* Is the clip box empty? */
-    for (ppv_axis_t k = 0; k < d; k++) { if (size[k] == 0) { empty = TRUE; break; } }
+    bool_t debug = TRUE;
+    #define dbtag "{kdtom_clip_core}: "
     
-    bool_t empty_core = empty; /* Is the core {S.K} empty?  */
-    ppv_index_t ixlo_B[d]; /* Low corner of {T.DK} clipped. */
-    ppv_size_t size_B[d];  /* Size of {T.DK} clipped. */
-    if (! empty)
-      { for (ppv_axis_t k = 0; k < d; k++)
-          { ppv_index_t ixlok = (ixlo == NULL ? 0 : ixlo[k]);
-            ixlo_B[k] = (ppv_index_t)imax(ixlok, T->ixlo[k]);
-            ppv_index_t ixhik_B = (ppv_index_t)imin(ixlok+size[k], T->ixlo[k]+T->size[k]);
-            if (ixlo_B[k] >= ixhik_B) { empty_core = TRUE; break; }
-            size_B[k] = (ppv_size_t)(ixhik_B - ixlo_B[k]);
-          }
-      }
+    ppv_dim_t d = T->d;
+    
+    ppv_index_t ixlo_new[d]; /* Low corner of {T.DK} clipped. */
+    ppv_size_t size_new[d];  /* Size of {T.DK} clipped. */
+    if (debug) { ixbox_print(stderr, d, dbtag "T.DK    =  [ ", T->ixlo, T->size, " ]\n"); }
+    if (debug) { ixbox_print(stderr, d, dbtag "clip box = [ ", ixlo, size, " ]\n"); }
+    ixbox_intersect(d, T->ixlo, T->size, ixlo, size, ixlo_new, size_new);
+    if (debug) { ixbox_print(stderr, d, dbtag "clipped =  [ ", ixlo_new, size_new, " ]\n"); }
     
     kdtom_t *S = NULL;
-    if (empty_core)
-      { S = (kdtom_t *)kdtom_const_make(d, T->maxsmp, T->fill, NULL, NULL, T->fill); }
-    else
-      { switch (T->kind)
+    if (ixbox_equal(d, T->ixlo, T->size, ixlo_new, size_new))
+      { /* Core did not change: */
+        S = T;
+      }
+    else if (size_new[0] == 0)
+      { /* Result has an empty core: */
+        S = (kdtom_t *)kdtom_const_make(d, T->maxsmp, T->fill, NULL, NULL, T->fill);
+        if (debug) { fprintf(stderr, dbtag "empty core\n"); }
+      }
+    else 
+      { /* Result has a non-empty core: */
+        switch (T->kind)
           { case kdtom_kind_ARRAY:
-              S = (kdtom_t *)kdtom_array_clip((kdtom_array_t *)T, ixlo_B, size_B);
+              S = (kdtom_t *)kdtom_array_clip_core((kdtom_array_t *)T, ixlo_new, size_new);
               break;
             case kdtom_kind_CONST:
-              S = (kdtom_t *)kdtom_const_clip((kdtom_const_t *)T, ixlo_B, size_B);
+              S = (kdtom_t *)kdtom_const_clip_core((kdtom_const_t *)T, ixlo_new, size_new);
               break;
             case kdtom_kind_SPLIT:
-              S = (kdtom_t *)kdtom_split_clip((kdtom_split_t *)T, ixlo_B, size_B);
+              S = (kdtom_t *)kdtom_split_clip_core((kdtom_split_t *)T, ixlo_new, size_new);
               break;
             default:
               assert(FALSE);
           }
+        if (debug) { ixbox_print(stderr, d, dbtag "S.DK =  [ ", S->ixlo, S->size, " ]\n"); }
       }
     assert(S != NULL);
     return S;
+    #undef dbtag
   }
 
 char *kdtom_alloc_internal_vector(kdtom_t *T, size_t sztot, ppv_dim_t d, size_t elsz, char **pendP)
@@ -176,12 +181,8 @@ void kdtom_node_init
     demand(maxsmp <= ppv_MAX_SAMPLE_VAL, "invalid {maxsmp}");
     demand((kind >= kdtom_kind_FIRST) && (kind <= kdtom_kind_LAST), "invalid {kind}");
     demand(fill <= maxsmp, "invalid {fill}");
-    bool_t empty = (size == NULL);
+    bool_t empty = ixbox_is_empty(d, size);
     if (! empty)
-      { for(ppv_axis_t k = 0; k < d; k++) 
-          { if (size[k] == 0) { empty = TRUE; break; } }
-      }
-    if (!empty)
       { for (ppv_axis_t k = 0; k < d; k++) 
           { demand(size[k] <= ppv_MAX_SIZE, "invalid {size}");
             if (ixlo != NULL)
@@ -248,61 +249,51 @@ kdtom_t *kdtom_join_nodes
   ( ppv_size_t size[], 
     ppv_axis_t ax,
     kdtom_t *T0, 
-    ppv_size_t sz0, 
+    ppv_size_t size0, 
     kdtom_t *T1, 
-    ppv_size_t sz1
+    ppv_size_t size1
   )
   {
     if (T0->kind != kdtom_kind_CONST) { return NULL; }
     if (T1->kind != kdtom_kind_CONST) { return NULL; }
     kdtom_const_t *Tc0 = (kdtom_const_t *)T0;
     kdtom_const_t *Tc1 = (kdtom_const_t *)T1;
-    kdtom_const_t *Tc = kdtom_const_join_nodes(size, ax, Tc0, sz0,Tc1, sz1);
+    kdtom_const_t *Tc = kdtom_const_join_nodes(size, ax, Tc0, size0, Tc1, size1);
     return (kdtom_t *)Tc;
   }
 
-bool_t kdtom_index_is_in_box(ppv_dim_t d, ppv_index_t ix[], ppv_index_t ixlo[], ppv_size_t size[])
-  {
-    for (ppv_axis_t k = 0; k < d;  k++)
-      { ppv_index_t dxk = ix[k] - ixlo[k];
-        if ((dxk < 0) || (dxk >= size[k])) { return FALSE; }
+void kdtom_print_node(FILE *wr, int32_t ind, char *name, kdtom_t *T, bool_t rec)
+  { 
+    fprintf(wr, "%*s", ind, "");
+    if (name != NULL) { fprintf(wr, "%s = ", name); }
+    if (T == NULL)
+      { fputs("NULL", wr); }
+    else
+      { fputs("{", wr);
+        fprintf(wr, " .d = %d", T->d);
+        fprintf(wr, " .maxsmp = " smpFMT, T->maxsmp);
+        fprintf(wr, " .fill = " smpFMT, T->fill);
+        ixbox_print(wr, T->d, " .KD = [", T->ixlo, T->size, " ]");
+        switch (T->kind)
+          { case kdtom_kind_ARRAY:
+              kdtom_array_print_fields(wr, (kdtom_array_t *)T);
+              fputs(" }\n", wr);
+              break;
+            case kdtom_kind_CONST:
+              kdtom_const_print_fields(wr, (kdtom_const_t *)T);
+              fputs(" }\n", wr);
+              break;
+            case kdtom_kind_SPLIT:
+              kdtom_split_print_fields(wr, (kdtom_split_t *)T);
+              fputs(" }\n", wr);
+              if (rec)
+                { kdtom_split_print_subtrees(wr, ind+2, (kdtom_split_t *)T); }
+              break;
+            default:
+              assert(FALSE);
+          }
       }
-    return TRUE;
-  }
 
-void kdtom_intersect_boxes
-  ( ppv_dim_t d,
-    ppv_index_t ixlo_A[], 
-    ppv_size_t  size_A[],
-    ppv_index_t ixlo_B[], 
-    ppv_size_t  size_B[],
-    ppv_index_t ixlo_R[], 
-    ppv_size_t  size_R[]
-  )
-  {
-    bool_t empty_A = kdtom_box_is_empty(d, size_A);
-    bool_t empty_B = kdtom_box_is_empty(d, size_B);
-    
-    /* Compute the new core domain {ixlo_R,size_R} and {empty_R}: */
-    bool_t empty_R = FALSE;
-    for (ppv_axis_t k = 0; k < d;  k++)
-      { /* Get the index range  {ixlok_A..ixhik_A} of box{A} on axis {k}: */
-        ppv_index_t ixlok_A = (ppv_size_t)(empty_A ? 0 : ixlo_A[k]);
-        ppv_index_t ixhik_A = (ppv_size_t)(empty_A ? -1 : ixlok_A + size_A[k] - 1);
-                
-        /* Get the index range {ixlok_B..ixhik_B} of  box {B} on axis {k}: */
-        ppv_index_t ixlok_B = (ppv_size_t)(empty_B ? 0 : ixlo_B[k]);
-        ppv_index_t ixhik_B = (ppv_size_t)(empty_B ? -1 : ixlo_B[k] + size_B[k] - 1);
-        
-        /* Get the expected clipped core box {ixlo_R[k],size_R[k]}: */
-        ppv_index_t ixlok_R = (ppv_index_t)imax(ixlok_A, ixlok_B);
-        ppv_index_t ixhik_R = (ppv_index_t)imin(ixhik_A, ixhik_B);
-        if (ixlok_R > ixhik_R) { empty_R = TRUE; break; }
-        ixlo_R[k] = ixlok_R; 
-        size_R[k] = (ppv_size_t)(ixhik_R - ixlok_R + 1);
-      }
-      
-    if (empty_R) { for (ppv_axis_t k = 0; k < d;  k++) { ixlo_R[k] = 0; size_R[k] = 0; } }
     return;
   }
-   
+

@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <indexing.h>
+#include <ix.h>
 #include <affirm.h>
 #include <bool.h>
 #include <jspnm.h>

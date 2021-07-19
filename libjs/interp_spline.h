@@ -5,7 +5,7 @@
 /* Last edited on 2013-10-25 23:25:39 by stolfilocal */ 
 
 #include <bool.h>
-#include <indexing.h>
+#include <ix.h>
 
 /* The procedures in this interface convert a sequence of real samples
   {s[0..ns-1]} into a real-valued function {f} of a real argument {z},

@@ -1,5 +1,5 @@
 /* See {kdtom_grind_array.h}. */
-/* Last edited on 2021-07-11 22:34:05 by jstolfi */
+/* Last edited on 2021-07-19 05:19:54 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -77,8 +77,8 @@ kdtom_t *kdtom_grind_array(ppv_array_t *A, ppv_sample_t fill)
         ppv_array_t *B0;
         ppv_array_t *B1;
         split_array(B, ax, &B0, &B1);
-        ppv_size_t sz0 = B0->size[ax];
-        ppv_size_t sz1 = B1->size[ax];
+        ppv_size_t size0 = B0->size[ax];
+        ppv_size_t size1 = B1->size[ax];
 
         kdtom_t *T0 = grind(B0);
         kdtom_t *T1 = grind(B1);
@@ -89,7 +89,7 @@ kdtom_t *kdtom_grind_array(ppv_array_t *A, ppv_sample_t fill)
             T = (kdtom_t*)shared_array_node(B);
           }
         else 
-          { T = (kdtom_t*)kdtom_split_do_make(fill, B->size, ax, T0, sz0, T1, sz1); }
+          { T = (kdtom_t*)kdtom_split_make(d, maxsmp, fill, NULL, B->size, ax, T0, size0, T1, size1); }
         return T;
       }
         
@@ -122,12 +122,12 @@ kdtom_t *kdtom_grind_array(ppv_array_t *A, ppv_sample_t fill)
         
     void split_array(ppv_array_t *B, ppv_axis_t ax, ppv_array_t **B0P, ppv_array_t **B1P)
       {
-        ppv_size_t sz0 = B->size[ax] / 2;
-        assert(sz0 >= 1);
+        ppv_size_t size0 = B->size[ax] / 2;
+        assert(size0 >= 1);
         ppv_array_t *B0 = ppv_array_clone(B);
-        ppv_crop(B0, ax, 0, sz0);
+        ppv_crop(B0, ax, 0, size0);
         ppv_array_t *B1 = ppv_array_clone(B);
-        ppv_crop(B1, ax, sz0, B->size[ax]-sz0);
+        ppv_crop(B1, ax, size0, B->size[ax]-size0);
         (*B0P) = B0;
         (*B1P) = B1;
         return;

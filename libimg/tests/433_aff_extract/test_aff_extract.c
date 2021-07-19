@@ -22,7 +22,7 @@
 #include <float_image_write_gen.h>
 #include <float_image_aff_sampling.h>
 #include <float_image_aff_extract.h>
-#include <indexing.h>
+#include <ix.h>
 #include <r2.h>
 #include <i2.h>
 #include <r2x2.h>

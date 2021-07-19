@@ -2,7 +2,7 @@
 #define indexing_H
 
 /* Multidimensional array indexing tools */
-/* Last edited on 2021-06-25 07:29:53 by jstolfi */
+/* Last edited on 2021-07-17 15:48:41 by jstolfi */
 
 #include <bool.h>
 #include <sign.h>
@@ -773,5 +773,13 @@ void ix_reduce_range ( ix_index_t i0, ix_size_t m, ix_size_t N, ix_reduction_t r
 #define ix_MAX_POS (ix_MAX_POSITIONS - 1)
   /* Valid element positions run from 0 to the max number of 
     positions minus 1. */
+
+/* PRINTF FORMATS */
+
+#define ix_size_t_FMT "%lu"
+#define ix_index_t_FMT "%ld"
+#define ix_step_t_FMT "%ld"
+#define ix_pos_t_FMT "%lu"
+#define ix_count_t_FMT "%lu"
 
 #endif

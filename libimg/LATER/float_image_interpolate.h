@@ -5,7 +5,7 @@
 /* Last edited on 2017-06-26 17:06:10 by stolfilocal */ 
 
 #include <bool.h>
-#include <indexing.h>
+#include <ix.h>
 #include <float_image.h>
 
 /* 

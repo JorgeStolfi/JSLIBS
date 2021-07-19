@@ -17,7 +17,7 @@
 #include <math.h>
 
 #include <wt_table.h>
-#include <indexing.h>
+#include <ix.h>
 #include <r2.h>
 #include <rn.h>
 #include <r2x2.h>

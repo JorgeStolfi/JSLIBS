@@ -19,7 +19,7 @@
 #include <uint16_image_read_jpeg.h>
 #include <uint16_image_read_png.h>
 
-#include <indexing.h>
+#include <ix.h>
 #include <sample_conv.h>
 #include <float_image.h>
 #include <float_image_from_uint16_image.h>

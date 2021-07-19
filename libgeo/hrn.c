@@ -1,5 +1,5 @@
 /* See {hrn.h}. */
-/* Last edited on 2021-06-09 20:16:06 by jstolfi */
+/* Last edited on 2021-07-18 00:42:18 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -56,7 +56,7 @@ void hrn_map_point(double p[], hrn_pmap_t *M, double q[])
   { rmxn_map_row(M->m, M->n, p, M->dir, q); }
 
 void hrn_pmap_comp(hrn_pmap_t *M, hrn_pmap_t *N, hrn_pmap_t *R)
-  { demand(M->n = N->m, "incompatible domain/co-domain dimensions");
+  { demand(M->n == N->m, "incompatible domain/co-domain dimensions");
     int32_t m = M->m, p = M->n, n = N->n;
     demand((R->m == m) && (R->n == n), "result map has wrong dimensions");
     rmxn_mul(m, p, n, M->dir, N->dir, R->dir);

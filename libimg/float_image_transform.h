@@ -9,7 +9,7 @@
 #include <r2x2.h>
 #include <r3x3.h>
 #include <bool.h>
-#include <indexing.h>
+#include <ix.h>
 #include <float_image.h>
 
 void float_image_transform_all

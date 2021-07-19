@@ -11,8 +11,8 @@
 #include <bool.h>
 #include <jsmath.h>
 #include <jsrandom.h>
-#include <indexing.h>
-#include <indexing_io.h>
+#include <ix.h>
+#include <ix_io.h>
 
 #include <ppv_array.h>
 

@@ -18,7 +18,7 @@
 
 #include <r2_opt.h>
 #include <wt_table.h>
-#include <indexing.h>
+#include <ix.h>
 #include <r2.h>
 #include <r2x2.h>
 #include <bool.h>

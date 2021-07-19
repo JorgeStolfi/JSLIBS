@@ -1,5 +1,5 @@
 /* See {msm_image.h} */
-/* Last edited on 2019-02-06 18:23:19 by jstolfi */
+/* Last edited on 2021-07-18 00:42:32 by jstolfi */
 
 #define msm_image_C_COPYRIGHT \
   "Copyright © 2005 by the State University of Campinas (UNICAMP)"
@@ -92,7 +92,7 @@ void msm_image_compute_min_max_range(msm_image_t *img, int c, double *lo, double
 
 float_image_t *float_image_colorize(float_image_t *gfim, double maxf)
   { /* Check the channel count and get image dimensions: */
-    demand(gfim->sz[0] = 1, "input image must be grayscale");
+    demand(gfim->sz[0] == 1, "input image must be grayscale");
     int NC = 3; /* Number of channels in output image. */
     int NX = (int)gfim->sz[1]; /* Number of columns. */
     int NY = (int)gfim->sz[2]; /* Number of rows. */
@@ -214,7 +214,7 @@ void msm_image_max(msm_image_t *img, int ic, int x, int y, float v)
 void msm_image_normalize_and_write_as_pgm(msm_image_t *img, char *name, char *tag)
   { /* Chck the channel count: */
     int NC = (int)img->fim->sz[0];
-    demand(NC = 1, "image must be grayscale");
+    demand(NC == 1, "image must be grayscale");
     /* Find actual range of image (excluding infinite pixels): */
     double lov, hiv;
     msm_image_compute_min_max_range(img, 0, &lov, &hiv);

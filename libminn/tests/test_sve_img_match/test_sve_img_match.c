@@ -26,7 +26,7 @@
 #include <r2_extra.h>
 #include <rn.h>
 #include <affirm.h>
-#include <indexing.h>
+#include <ix.h>
 #include <wt_table.h>
 #include <jsfile.h>
 #include <js.h>

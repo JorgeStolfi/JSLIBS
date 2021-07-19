@@ -10,8 +10,8 @@
 #include <array.h>
 #include <array_io.h>
 /* #include <array_linalg.h> */
-#include <indexing.h>
-#include <indexing_descr.h>
+#include <ix.h>
+#include <ix_descr.h>
 
 /* Multi-dimensional arrays of {float} elements.
 

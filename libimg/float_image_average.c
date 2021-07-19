@@ -14,7 +14,7 @@
 #include <r2x2.h>
 #include <r3.h>
 #include <interval.h>
-#include <indexing.h>
+#include <ix.h>
 #include <float_image.h>
 #include <float_image_interpolate.h>
 
