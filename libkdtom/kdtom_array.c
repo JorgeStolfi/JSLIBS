@@ -1,5 +1,5 @@
 /* See {kdtom_array.h}. */
-/* Last edited on 2021-07-19 05:07:10 by jstolfi */
+/* Last edited on 2021-07-21 02:01:31 by jstolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -9,7 +9,7 @@
 
 #include <bool.h>
 #include <ppv_array.h>
-#include <indexing_io.h>
+#include <ix_io.h>
 #include <jsmath.h>
 #include <affirm.h>
 #include <ixbox.h>
