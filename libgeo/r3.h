@@ -1,5 +1,5 @@
 /* r3.h --- operations on points and vectors of R^3 */
-/* Last edited on 2021-06-09 20:43:49 by jstolfi */
+/* Last edited on 2021-08-20 16:06:30 by stolfi */
 
 #ifndef r3_H
 #define r3_H
@@ -44,6 +44,13 @@ void r3_mix_in (double s, r3_t *a, r3_t *r);
 
 void r3_weigh (r3_t *a, r3_t *w, r3_t *r);
   /* Sets {r[i] := a[i] * w[i]}. */
+
+void r3_unweigh (r3_t *a, r3_t *w, r3_t *r);
+  /* Sets {r[i] := a[i] / w[i]}. */
+
+void r3_rot_axis (r3_t *a, int32_t i, int32_t j, double ang, r3_t *r);
+  /* Sets {r} to {a} after a rotation that moves axis {i} towards 
+    axis {j} by {ang} radians, leaving all other coordinates unchanged. */
 
 double r3_norm (r3_t *a);
   /* Returns the Euclidean length of {a}. */
@@ -97,7 +104,7 @@ double r3_decomp (r3_t *a, r3_t *u, r3_t *para, r3_t *perp);
     Namely, {para = c*u} and {perp = a - c*u}, where 
     {c = r3_dot(a,u)/r3_dot(u,u)}. Also returns {c}. */
 
-int32_t r3_is_finite(r3_t *p);
+bool_t r3_is_finite(r3_t *p);
   /* True iff all coordinates of {p} are finite. */
 
 bool_t r3_eq(r3_t *p, r3_t *q);
@@ -138,6 +145,6 @@ typedef double r3_double_func_t(r3_t *a);
   /* Type of a function that returns a {double} value from an {r3_t} value. */
 
 typedef r3_t r3_map_t(r3_t *a);
-  /* Type of a function that returns a {double} value from an {r3_t} value. */
+  /* Type of a function that returns an {r3_t} value from an {r3_t} value. */
 
 #endif

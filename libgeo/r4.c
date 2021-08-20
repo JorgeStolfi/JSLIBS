@@ -1,5 +1,5 @@
 /* See r4.h. */
-/* Last edited on 2021-06-09 20:43:57 by jstolfi */
+/* Last edited on 2021-08-20 16:10:44 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -86,6 +86,27 @@ void r4_weigh (r4_t *a, r4_t *w, r4_t *r)
     r->c[1] = a->c[1] * w->c[1];
     r->c[2] = a->c[2] * w->c[2];
     r->c[3] = a->c[3] * w->c[3];
+  }
+
+void r4_unweigh (r4_t *a, r4_t *w, r4_t *r)
+  { r->c[0] = a->c[0] / w->c[0];
+    r->c[1] = a->c[1] / w->c[1];
+    r->c[2] = a->c[2] / w->c[2];
+    r->c[3] = a->c[3] / w->c[3];
+  }
+
+void r4_rot_axis (r4_t *a, int32_t i, int32_t j, double ang, r4_t *r)
+  {
+    affirm((i >= 0) && (i < N), "r4_rot_axis: bad index {i}");
+    affirm((j >= 0) && (j < N), "r4_rot_axis: bad index {j}");
+    affirm(i != j, "r4_rot_axis: axes not distinct");
+    (*r) = (*a);
+    double c = cos(ang);
+    double s = sin(ang);
+    double x = + c*a->c[i] - s*a->c[j];
+    double y = + s*a->c[i] + c*a->c[j];
+    r->c[i] = x;
+    r->c[j] = y;
   }
 
 double r4_norm (r4_t *a)
@@ -230,7 +251,7 @@ double r4_decomp (r4_t *a, r4_t *u, r4_t *para, r4_t *perp)
     return rn_decomp(N, &(a->c[0]), &(u->c[0]), paran, perpn);
   }
 
-int32_t r4_is_finite(r4_t *p)
+bool_t r4_is_finite(r4_t *p)
   { if (fabs(p->c[0]) == INF) return FALSE;
     if (fabs(p->c[1]) == INF) return FALSE;
     if (fabs(p->c[2]) == INF) return FALSE;

@@ -1,5 +1,5 @@
 /* r3test --- test program for r3.h, r3x3.h  */
-/* Last edited on 2021-06-09 20:38:26 by jstolfi */
+/* Last edited on 2021-08-20 16:21:02 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -56,16 +56,19 @@ void test_r3(int32_t verbose)
         );
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_zero ---\n"); }
     r3_zero(&a);
     for (i = 0; i < N; i++)
       { rn_check_eq(a.c[i],0.0, NO, NO, "r3_zero error"); }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_all ---\n"); }
     r3_all(3.14, &a);
     for (i = 0; i < N; i++)
       { rn_check_eq(a.c[i],3.14, NO, NO, "r3_all error"); }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_axis ---\n"); }
     for (k = 0; k < N; k++)
       { r3_axis(k, &a);
@@ -73,6 +76,7 @@ void test_r3(int32_t verbose)
           { rn_check_eq(a.c[i],(i == k ? 1.0 : 0.0), NO, NO, "r3_axis error"); }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_throw_cube ---\n"); }
     r3_throw_cube(&a);
     for (i = 0; i < N; i++)
@@ -83,6 +87,7 @@ void test_r3(int32_t verbose)
         affirm((a.c[i] > -1.0) && (a.c[i] < 1.0), "r3_throw error(2)"); 
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_throw_dir ---\n"); }
     /* Should check uniformity... */
     r3_throw_dir(&a);
@@ -93,6 +98,7 @@ void test_r3(int32_t verbose)
     for (i = 0; i < N; i++) { double ai = a.c[i]; rr += ai*ai; }
     rn_check_eps(1,rr,0.000000001 * rr, NO, NO, "r3_throw_dir error (2)");
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_throw_ball ---\n"); }
     /* Should check uniformity... */
     r3_throw_ball(&a);
@@ -103,6 +109,7 @@ void test_r3(int32_t verbose)
     for (i = 0; i < N; i++) { double ai = a.c[i]; rr += ai*ai; }
     demand(rr <= 1 + 0.000000001*rr, "r3_throw_ball error (2)");
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_add ---\n"); }
     r3_throw_cube(&a);
     r3_throw_cube(&b);
@@ -110,6 +117,7 @@ void test_r3(int32_t verbose)
     for (i = 0; i < N; i++)
       { rn_check_eq(d.c[i],a.c[i] + b.c[i], NO, NO, "r3_add error"); }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_sub ---\n"); }
     r3_throw_cube(&a);
     r3_throw_cube(&b);
@@ -117,12 +125,14 @@ void test_r3(int32_t verbose)
     for (i = 0; i < N; i++)
       { rn_check_eq(d.c[i],a.c[i] - b.c[i], NO, NO, "r3_sub error"); }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_neg ---\n"); }
     r3_throw_cube(&a);
     r3_neg(&a, &d);
     for (i = 0; i < N; i++)
       { rn_check_eq(d.c[i],- a.c[i], NO, NO, "r3_neg error"); }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_scale ---\n"); }
     s = drandom();
     r3_throw_cube(&a);
@@ -132,6 +142,7 @@ void test_r3(int32_t verbose)
         rn_check_eq(d.c[i],zi, NO, NO, "r3_scale error(1)");
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_mix ---\n"); }
     s = drandom();
     t = drandom();
@@ -143,6 +154,7 @@ void test_r3(int32_t verbose)
         rn_check_eq(d.c[i],ddi, NO, NO, "r3_mix error");
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_mix_in ---\n"); }
     s = drandom();
     r3_throw_cube(&a);
@@ -154,6 +166,7 @@ void test_r3(int32_t verbose)
         rn_check_eq(d.c[i],ddi, NO, NO, "r3_mix_in error");
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_weigh ---\n"); }
     r3_throw_cube(&a);
     r3_throw_cube(&b);
@@ -163,6 +176,27 @@ void test_r3(int32_t verbose)
         rn_check_eq(d.c[i],ddi, NO, NO, "r3_weigh error");
       }
 
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- r3_unweigh ---\n"); }
+    r3_throw_cube(&a);
+    r3_throw_cube(&b);
+    r3_unweigh(&a, &b, &d);
+    for (i = 0; i < N; i++)
+      { double ddi = a.c[i] / b.c[i];
+        rn_check_eq(d.c[i],ddi, NO, NO, "r3_unweigh error");
+      }
+
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- r3_rot_axis ---\n"); }
+    { r3_throw_cube(&a);
+      int32_t i = int32_abrandom(0, N-1);
+      int32_t j = int32_abrandom(0, N-2); if (j >= i) { j++; }
+      double ang = 2.1*M_PI*drandom();
+      r3_rot_axis(&a, i, j, ang, &d);
+      rn_test_rot_axis(N, a.c, i, j, ang, d.c, "r3_rot_axis error");
+    }
+
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_norm, r3_norm_sqr, r3_L_inf_norm ---\n"); }
     r3_throw_cube(&a);
     r = r3_norm(&a);
@@ -198,6 +232,7 @@ void test_r3(int32_t verbose)
     rn_check_eps(s,ss,0.000000001 * ss, NO, NO, "r3_dist_sqr error");
     rn_check_eq(t,tt, NO, NO, "r3_L_inf_dist error");
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_dir, r3_L_inf_dir ---\n"); }
     r3_throw_cube(&a);
     r = r3_dir(&a, &b);
@@ -209,6 +244,7 @@ void test_r3(int32_t verbose)
         rn_check_eps(d.c[i],a.c[i]/tt,0.000000001 * tt, NO, NO, "r3_L_inf_dir error");
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_dot, r3_cos, r3_sin, r3_angle ---\n"); }
     r3_throw_cube(&a);
     r3_throw_cube(&b);
@@ -242,6 +278,7 @@ void test_r3(int32_t verbose)
           }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_cross ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
@@ -268,6 +305,7 @@ void test_r3(int32_t verbose)
     r = r3_dot(&b, &d);
     rn_check_eps(r,0.0,0.00000001 * mag*r3_norm(&b), NO, NO, "r3_cross error(2)");
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_pick_ortho ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
@@ -288,6 +326,7 @@ void test_r3(int32_t verbose)
       rn_check_eps(r, 0.0, 0.00000001*ma, NO, NO, "r3_pick_ortho error(3)");
     }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_det ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
@@ -310,8 +349,8 @@ void test_r3(int32_t verbose)
     mag = r3_norm(&a)*r3_norm(&b)*r3_norm(&c);
     rn_check_eps(r,rr,0.00000001 * mag, NO, NO, "r3_det error(1)");
 
-    if (verbose) { fprintf(stderr, "--- r3_decomp ---\n"); }
-
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- r3_decomp ---\n"); } 
     r3_throw_cube(&a);
     r3_throw_cube(&b);
     r = r3_decomp(&a, &b, &para, &perp);
@@ -325,6 +364,7 @@ void test_r3(int32_t verbose)
     t = r3_dot(&para, &perp);
     rn_check_eps(t,0.0,0.000000001 * r3_norm(&a), NO, NO, "r3_decomp error(4)");
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3_print ---\n"); }
     if (verbose)
       { r3_throw_cube (&a);
@@ -337,32 +377,38 @@ void test_r3(int32_t verbose)
     { r3_t pv[20];
       double R = drandom();
 
+      /* ---------------------------------------------------------------------- */
       if (verbose) { fprintf(stderr, "--- r3_tetrahedron_vertices ---\n"); }
       r3_tetrahedron_vertices(R, 4, pv);
       double tetra_L = R*sqrt(8.0/3.0);
       check_regular_polyhedron("r3_tetrahedron_vertices", R, tetra_L, 4, pv, 3);
 
+      /* ---------------------------------------------------------------------- */
       if (verbose) { fprintf(stderr, "--- r3_octahedron_vertices ---\n"); }
       r3_octahedron_vertices(R, 6, pv);
       double octa_L = R*sqrt(2.0);
       check_regular_polyhedron("r3_octahedron_vertices", R, octa_L, 6, pv, 4);
 
+      /* ---------------------------------------------------------------------- */
       if (verbose) { fprintf(stderr, "--- r3_hexahedron_vertices ---\n"); }
       r3_hexahedron_vertices(R, 8, pv);
       double hexa_L = 2*R/sqrt(3.0);
       check_regular_polyhedron("r3_hexahedron_vertices", R, hexa_L, 8, pv, 3);
 
+      /* ---------------------------------------------------------------------- */
       if (verbose) { fprintf(stderr, "--- r3_icosahedron_vertices ---\n"); }
       r3_icosahedron_vertices(R, 12, pv);
       double icosa_L = R*sqrt(2 - 2/sqrt(5));
       check_regular_polyhedron("r3_icosahedron_vertices", R, icosa_L, 12, pv, 5);
 
+      /* ---------------------------------------------------------------------- */
       if (verbose) { fprintf(stderr, "--- r3_dodecahedron_vertices ---\n"); }
       r3_dodecahedron_vertices(R, 20, pv);
       double dodeca_L = R*(sqrt(5)-1)/sqrt(3);
       check_regular_polyhedron("r3_dodecahedron_vertices", R, dodeca_L, 20, pv, 3);
    }
 
+      /* ---------------------------------------------------------------------- */
     /* Checking the cylindrical mesh: */
     if (verbose) { fprintf(stderr, "!! warning: r3_cylindrical_grid not tested\n"); }
   }
@@ -376,6 +422,7 @@ void test_r3x3(int32_t verbose)
     double mag;
     int32_t i, j, k;
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- Size and allocation ---\n"); }
     if (verbose)
       { fprintf(stderr,
@@ -392,13 +439,15 @@ void test_r3x3(int32_t verbose)
         fprintf(stderr, "&(B.c[0][0]) = %016lx\n", (long unsigned)&(B.c[0][0]));
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- Indexing and addressing ---\n"); }
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { double *Aij = &(A.c[i][j]); 
-          affirm(Aij = ((double *)&A)+(N*i)+j, "r3x3_t indexing error");
+          affirm(Aij == ((double *)&A)+(N*i)+j, "r3x3_t indexing error");
         }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3x3_zero, r3x3_ident ---\n"); }
     r3x3_zero(&A);
     r3x3_ident(&B);
@@ -409,6 +458,7 @@ void test_r3x3(int32_t verbose)
           }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3x3_get_row, r3x3_set_row, r3x3_get_col, r3x3_set_col ---\n"); }
     throw_matrix(&A);
     int32_t dir; /* 0 for row, 1 for col. */
@@ -431,6 +481,7 @@ void test_r3x3(int32_t verbose)
           }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3x3_map_row, r3x3_map_col ---\n"); }
     throw_matrix(&A);
     r3_throw_cube(&a);
@@ -462,6 +513,7 @@ void test_r3x3(int32_t verbose)
           }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3x3_mul ---\n"); }
     throw_matrix(&A);
     throw_matrix(&B);
@@ -476,6 +528,7 @@ void test_r3x3(int32_t verbose)
           }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3x3_mul_tr ---\n"); }
     throw_matrix(&A);
     throw_matrix(&B);
@@ -490,6 +543,7 @@ void test_r3x3(int32_t verbose)
           }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3x3_transp ---\n"); }
     throw_matrix(&A);
     r3x3_transp(&A, &B);
@@ -505,6 +559,7 @@ void test_r3x3(int32_t verbose)
           { rn_check_eq(B.c[i][j],A.c[j][i], NO, NO, "r3x3_transp error (2)"); }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3x3_det ---\n"); }
     throw_matrix(&A);
     for (i = 0; i < N; i++)
@@ -545,6 +600,7 @@ void test_r3x3(int32_t verbose)
         rn_check_eps(r,-rr,000000001 * mag, NO, NO, "r3x3_det error(3)");
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3x3_inv ---\n"); }
     throw_matrix(&A);
     r3x3_inv(&A, &B);
@@ -556,6 +612,7 @@ void test_r3x3(int32_t verbose)
           }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3x3_norm,r3x3_norm_sqr,r3x3_mod_norm ---\n"); }
     throw_matrix(&A);
     s = r3x3_norm_sqr(&A);
@@ -585,6 +642,7 @@ void test_r3x3(int32_t verbose)
     for (i = 0; i < N; i++)
       { affirm(fabs(b.c[i] - c.c[i]) < 000000001, "r3x3_u_v_rotation error"); }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3x3_print ---\n"); }
     if (verbose)
       { throw_matrix (&A);

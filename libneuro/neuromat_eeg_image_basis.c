@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_image_basis.h}. */
-/* Last edited on 2014-01-12 20:46:35 by stolfilocal */
+/* Last edited on 2021-08-20 15:39:13 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -27,7 +27,7 @@ void neuromat_eeg_image_basis_compute_shepard_weights(int ne, r3_t pos3D[], doub
     point {*p}. Assumes that all those points are on the unit sphere.
     Returns the weights in {wraw[0..ne-1]}, not normalized. */
 
-float_image_t **neuromat_eeg_image_basis_make(int btype, float_image_t *msk, int ne, r2_t pos[], r2_t *ctr, r2_t *rad)
+float_image_t **neuromat_eeg_image_basis_make(int btype, float_image_t *msk, int ne, r2_t pos[], r2_t *ctr, r3_t *rad)
   {
     demand(msk->sz[0] == 1, "mask should be monochromatic");
     int NX = (int)msk->sz[1];

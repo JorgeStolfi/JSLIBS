@@ -1,5 +1,5 @@
 /* rf2.h --- operations on points and vectors of R^2 (single-precision version) */
-/* Last edited on 2021-08-17 08:51:28 by stolfi */
+/* Last edited on 2021-08-20 16:08:20 by stolfi */
 
 #ifndef rf2_H
 #define rf2_H
@@ -25,84 +25,90 @@ rf2_t rf2_all (float x);
 rf2_t rf2_axis (int32_t i);
   /* Returns the unit vector of coordinate axis {i}. */
 
-rf2_t rf2_add (rf2_t *a, rf2_t *b);
+rf2_t rf2_add (rf2_t* const a, rf2_t* const b);
   /* Returns the vector {a + b}. */
 
-rf2_t rf2_sub (rf2_t *a, rf2_t *b);
+rf2_t rf2_sub (rf2_t* const a, rf2_t* const b);
   /* Returns the vector {a - b}. */
 
-rf2_t rf2_neg (rf2_t *a);
+rf2_t rf2_neg (rf2_t* const a);
   /* Returns the vector {-a}. */
 
-rf2_t rf2_scale (double s, rf2_t *a);
+rf2_t rf2_scale (double s, rf2_t* const a);
   /* Returns the vector {s * a}. */
 
-rf2_t rf2_mix (double s, rf2_t *a, double t, rf2_t *b);
+rf2_t rf2_mix (double s, rf2_t* const a, double t, rf2_t* const b);
   /* Returns the vector {s * a + t * b}. */
 
-void rf2_mix_in (double s, rf2_t *a, rf2_t *r);
+void rf2_mix_in (double s, rf2_t* const a, rf2_t* const r);
   /* Sets {r := r + s * a}. */
 
-rf2_t rf2_weigh (rf2_t *a, rf2_t *w);
+rf2_t rf2_weigh (rf2_t* const a, rf2_t* const w);
   /* Returns the vector {r} with {r[i] = a[i] * w[i]}. */
 
-double rf2_norm (rf2_t *a);
+rf2_t rf2_unweigh (rf2_t* const a, rf2_t* const w);
+  /* Returns the vector {r} with {r[i] = a[i] / w[i]}. */
+
+rf2_t rf2_rot (rf2_t* const a, double ang);
+  /* Returns {a} rotated by {ang} radians, from axis 0 towards axis 1. */
+
+double rf2_norm (rf2_t* const a);
   /* Returns the Euclidean length of {a}. */
 
-double rf2_norm_sqr (rf2_t *a);
+double rf2_norm_sqr (rf2_t* const a);
   /* Returns the square of the Euclidean length of {a}. */
 
-float rf2_L_inf_norm (rf2_t *a);
+float rf2_L_inf_norm (rf2_t* const a);
   /* Returns the L-infinity norm of {a} (max absolute coordinate). */
 
-double rf2_dist (rf2_t *a, rf2_t *b);
+double rf2_dist (rf2_t* const a, rf2_t* const b);
   /* Returns the Euclidean distance between {a} and {b}. */
 
-double rf2_dist_sqr (rf2_t *a, rf2_t *b);
+double rf2_dist_sqr (rf2_t* const a, rf2_t* const b);
   /* Returns the square of the Euclidean distance between {a} and {b}. */
 
-double rf2_L_inf_dist (rf2_t *a, rf2_t *b);
+double rf2_L_inf_dist (rf2_t* const a, rf2_t* const b);
   /* Returns the L-infinity distance between {a} and {b} 
     (max absolute diff). */
 
-rf2_t rf2_dir (rf2_t *a, double *normP); 
+rf2_t rf2_dir (rf2_t* const a, double *normP); 
   /*  Returns {a} scaled to unit Euclidean length. 
     If {normP} is not {NULL}, stores the Euclidean norn of {a} in {*normP}. */
   
-rf2_t rf2_L_inf_dir (rf2_t *a, float *normP); 
+rf2_t rf2_L_inf_dir (rf2_t* const a, float *normP); 
   /* Returns {a} scaled to unit L-infinity norm,
     If {normP} is not {NULL}, stores the L-infinity norn of {a} in {*normP}. */
 
-double rf2_dot (rf2_t *a, rf2_t *b);
+double rf2_dot (rf2_t* const a, rf2_t* const b);
   /* Dot product of vectors {a} and {b}. */
 
-double rf2_cos (rf2_t *a, rf2_t *b);
+double rf2_cos (rf2_t* const a, rf2_t* const b);
   /* Cosine of angle between vectors {a} and {b}. */
 
-double rf2_sin (rf2_t *a, rf2_t *b);
+double rf2_sin (rf2_t* const a, rf2_t* const b);
   /* Absolute sine of angle between vectors {a} and {b}. */
 
-double rf2_angle (rf2_t *a, rf2_t *b);
+double rf2_angle (rf2_t* const a, rf2_t* const b);
   /* Angle between vectors {a} and {b}, in radians. */
 
-rf2_t rf2_cross (rf2_t *a);
+rf2_t rf2_cross (rf2_t* const a);
   /* Returns the `cross product' of the vector {a}, namely 
     {a} rotated 90 degrees counterclockwise. */
   
-double rf2_det (rf2_t *a, rf2_t *b);
+double rf2_det (rf2_t* const a, rf2_t* const b);
   /* Returns the determinant of the 2 x 2 matrix whose rows
     are {a} and {b}. */
 
-double rf2_decomp (rf2_t *a, rf2_t *u, rf2_t *para, rf2_t *perp);
+double rf2_decomp (rf2_t* const a, rf2_t* const u, rf2_t *para, rf2_t *perp);
   /* Sets {para} and {perp} (when not NULL) to the components of 
     {a} that are parallel and perpendicular to to {u}, respectively.
     Namely, {para = c*u} and {perp = a - c*u}, where 
     {c = rf2_dot(a,u)/rf2_dot(u,u)}. Also returns {c}. */
 
-bool_t rf2_is_finite(rf2_t *p);
+bool_t rf2_is_finite(rf2_t* const p);
   /* True iff all coordinates of {p} are finite (neither {±INF} nor {NAN}). */
 
-bool_t rf2_eq(rf2_t *p, rf2_t *q);
+bool_t rf2_eq(rf2_t* const p, rf2_t* const q);
   /* True iff points {p} and {q} are identical. */
   
 rf2_t rf2_barycenter(int32_t np, rf2_t p[], double w[]);
@@ -114,14 +120,14 @@ void rf2_bbox(int32_t np, rf2_t p[], interval_t B[], bool_t finite);
     {p.e[0..np-1]}. If {finite} is true, ignores points 
     that have infinite or NAN coordinate(s). */
 
-rf2_t rf2_circumcenter(rf2_t *a, rf2_t *b, rf2_t *c);
+rf2_t rf2_circumcenter(rf2_t* const a, rf2_t* const b, rf2_t* const c);
   /* The center of the circle passing through the three points {a,b,c}. */
 
-int32_t rf2_orient(rf2_t *a, rf2_t *b, rf2_t *c);
+int32_t rf2_orient(rf2_t* const a, rf2_t* const b, rf2_t* const c);
   /* The orientation of the triangle{a,b,c}: {+1} if CCW, {-1} if CW, 0 if flat.
     Note that the result is unreliable if {a,b,c} is nearly flat. */
     
-bool_t rf2_incircle (rf2_t *a, rf2_t *b, rf2_t *c, rf2_t *d);
+bool_t rf2_incircle (rf2_t* const a, rf2_t* const b, rf2_t* const c, rf2_t* const d);
   /* TRUE iff the point {d} lies inside the circle {a,b,c}. */
 
 rf2_t rf2_throw_cube (void);
@@ -138,10 +144,10 @@ rf2_t rf2_throw_normal (void);
   /* Sets each coordinate {r[i]} to an independent Gaussian random
     number with zero mean and unit standard deviation. */
 
-void rf2_print (FILE *f, rf2_t *a);
+void rf2_print (FILE *f, rf2_t* const a);
   /* Prints {a} on file {f}, with some default format. */
 
-void rf2_gen_print (FILE *f, rf2_t *a, char *fmt, char *lp, char *sep, char *rp);
+void rf2_gen_print (FILE *f, rf2_t* const a, char *fmt, char *lp, char *sep, char *rp);
   /* Prints {a} on file {f}, formatting each coordinate with {fmt}. 
     The strings {lp}, {sep}, and {rp} are printed respectively before,
     between, and after all the coordinates of {a}.  When NULL, they default 
@@ -152,13 +158,13 @@ void rf2_gen_print (FILE *f, rf2_t *a, char *fmt, char *lp, char *sep, char *rp)
 vec_typedef(rf2_vec_t, rf2_vec, rf2_t);
   /* An {rf2_vec_t} is a vector of {rf2_t}s. */
 
-typedef bool_t rf2_pred_t(rf2_t *a);
+typedef bool_t rf2_pred_t(rf2_t* const a);
   /* Type of a function that returns a {bool_t} value from an {rf2_t} value. */
 
-typedef double rf2_double_func_t(rf2_t *a);
+typedef double rf2_double_func_t(rf2_t* const a);
   /* Type of a function that returns a {double} value from an {rf2_t} value. */
 
-typedef rf2_t rf2_map_t(rf2_t *a);
+typedef rf2_t rf2_map_t(rf2_t* const a);
   /* Type of a function that returns an {rf2_t} value from an {rf2_t} value. */
  
 #endif

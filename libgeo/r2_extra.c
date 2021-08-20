@@ -1,5 +1,5 @@
 /* see r2_extra.h */
-/* Last edited on 2021-06-09 21:05:36 by jstolfi */
+/* Last edited on 2021-08-17 05:54:22 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -422,7 +422,7 @@ void r2_map_check_jacobian(r2_t *p, r2_map_jacobian_t *map, char *mapname, doubl
     /* Compute the numeric Jacobian: */
     r2x2_t K;
     r2_map_compute_numeric_jacobian(p, map, step, &K, debug);
-    if (debug) { fprintf(stderr, "    step = %12.6e\n", step); }
+    if (debug) { fprintf(stderr, "    step = %14.6e\n", step); }
     /* Establish a limit for the relative error: */
     double tol = 1.0e-4;
     /* Check the partial derivatives numerically: */
@@ -436,7 +436,7 @@ void r2_map_check_jacobian(r2_t *p, r2_map_jacobian_t *map, char *mapname, doubl
             double djac = J.c[i][j]; 
             double err = fabs(dnum-djac);
             if (err > tol*mag_J)
-              { fprintf(stderr, "    ** Jacobian of %s is inconsistent (err = %+12.6e)\n", mapname, err); 
+              { fprintf(stderr, "    ** Jacobian of %s is inconsistent (err = %+14.6e)\n", mapname, err); 
                 fprintf(stderr, "    J[%d][%d] = %15.8e", i, j, djac);
                 fprintf(stderr, "  numeric d_ip[%d]/d_op[%d] = %15.8e", j, i, dnum);
                 fprintf(stderr, "\n");

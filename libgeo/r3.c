@@ -1,5 +1,5 @@
 /* See r3.h */
-/* Last edited on 2021-06-09 20:43:42 by jstolfi */
+/* Last edited on 2021-08-20 16:11:08 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -76,6 +76,26 @@ void r3_weigh (r3_t *a, r3_t *w, r3_t *r)
   { r->c[0] = a->c[0] * w->c[0];
     r->c[1] = a->c[1] * w->c[1];
     r->c[2] = a->c[2] * w->c[2];
+  }
+
+void r3_unweigh (r3_t *a, r3_t *w, r3_t *r)
+  { r->c[0] = a->c[0] / w->c[0];
+    r->c[1] = a->c[1] / w->c[1];
+    r->c[2] = a->c[2] / w->c[2];
+  }
+
+void r3_rot_axis (r3_t *a, int32_t i, int32_t j, double ang, r3_t *r)
+  {
+    affirm((i >= 0) && (i < N), "r3_rot_axis: bad index {i}");
+    affirm((j >= 0) && (j < N), "r3_rot_axis: bad index {j}");
+    affirm(i != j, "r3_rot_axis: axes not distinct");
+    (*r) = (*a);
+    double c = cos(ang);
+    double s = sin(ang);
+    double x = + c*a->c[i] - s*a->c[j];
+    double y = + s*a->c[i] + c*a->c[j];
+    r->c[i] = x;
+    r->c[j] = y;
   }
 
 double r3_norm (r3_t *a)
@@ -237,7 +257,7 @@ double r3_decomp (r3_t *a, r3_t *u, r3_t *para, r3_t *perp)
       }
   }
 
-int32_t r3_is_finite(r3_t *p)
+bool_t r3_is_finite(r3_t *p)
   { if (fabs(p->c[0]) == INF) return FALSE;
     if (fabs(p->c[1]) == INF) return FALSE;
     if (fabs(p->c[2]) == INF) return FALSE;

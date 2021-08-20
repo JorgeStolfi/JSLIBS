@@ -1,5 +1,5 @@
 /* rfmxn.h --- m by n matrices and operations on them */
-/* Last edited on 2021-08-17 05:55:27 by stolfi */
+/* Last edited on 2021-08-17 15:04:30 by stolfi */
 
 #ifndef rfmxn_H
 #define rfmxn_H
@@ -39,7 +39,7 @@ void rfmxn_set_col(int32_t m, int32_t n, float *A, int32_t j, float *r);
     {r[0..m-1]}, respectively. The matrix {A} is assumed to have {m}
     rows and {n} columns. */
 
-void rfmxn_scale(int32_t m, int32_t n, float s, float *A, float *M);
+void rfmxn_scale(int32_t m, int32_t n, double s, float *A, float *M);
   /* Stores in {M} the matrix {s*A}.  The matrix {M} may be the 
     same as {A}. */
 

@@ -1,5 +1,5 @@
 /* gauss_elim_test --- test program for gauss_elim.h  */
-/* Last edited on 2021-06-09 23:38:42 by jstolfi */
+/* Last edited on 2021-08-20 16:41:33 by stolfi */
 
 #define _GNU_SOURCE
 #include <gauss_elim.h>

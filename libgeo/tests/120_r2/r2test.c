@@ -1,5 +1,5 @@
 /* r2test --- test program for r2.h, r2x2.h  */
-/* Last edited on 2021-06-09 20:37:51 by jstolfi */
+/* Last edited on 2021-08-20 16:17:40 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -177,6 +177,24 @@ void test_r2(int32_t verbose)
       { double ddi = a.c[i] * b.c[i];
         rn_check_eq(d.c[i],ddi, NO, NO, "r2_weigh error");
       }
+
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- r2_unweigh ---\n"); }
+    r2_throw_cube(&a);
+    r2_throw_cube(&b);
+    r2_unweigh(&a, &b, &d);
+    for (i = 0; i < N; i++)
+      { double ddi = a.c[i] / b.c[i];
+        rn_check_eq(d.c[i],ddi, NO, NO, "r2_unweigh error");
+      }
+
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- r2_rot ---\n"); }
+    { r2_throw_cube(&a);
+      double ang = 2.1*M_PI*drandom();
+      r2_rot(&a, ang, &d);
+      rn_test_rot_axis(N, a.c, 0, 1, ang, d.c, "r2_rot error");
+    }
 
     /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r2_norm, r2_norm_sqr, r2_L_inf_norm ---\n"); }
@@ -480,7 +498,7 @@ void test_r2x2(int32_t verbose)
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { double *Aij = &(A.c[i][j]); 
-          affirm(Aij = ((double *)&A)+(N*i)+j, "r2x2_t indexing error");
+          affirm(Aij == ((double *)&A)+(N*i)+j, "r2x2_t indexing error");
         }
 
     /* ---------------------------------------------------------------------- */

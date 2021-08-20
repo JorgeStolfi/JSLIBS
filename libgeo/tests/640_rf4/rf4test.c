@@ -1,5 +1,5 @@
 /* rf4test --- test program for rf4.h, rf4x4.h  */
-/* Last edited on 2021-08-17 10:35:35 by stolfi */
+/* Last edited on 2021-08-20 17:25:08 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -14,6 +14,7 @@
 #include <rf4.h>
 #include <rf4x4.h>
 #include <rn_test_tools.h>
+#include <rfn_check.h>
 
 #define N 4
 #define NO NULL
@@ -51,6 +52,19 @@ void test_rf4(int32_t verbose)
           sizeof(rf4_t), N, N*sizeof(double)
         );
       }
+
+
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- rf4_zero ---\n"); }
+    a = rf4_zero();
+    for (i = 0; i < N; i++)
+      { rn_check_eq(a.c[i], 0.0, NO, NO, "rf4_zero error"); }
+
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- rf4_all ---\n"); }
+    a = rf4_all(3.14f);
+    for (i = 0; i < N; i++)
+      { rn_check_eq(a.c[i], 3.14f, NO, NO, "rf4_all error"); }
 
     if (verbose) { fprintf(stderr, "--- rf4_axis ---\n"); }
     for (k = 0; k < N; k++)
@@ -148,6 +162,25 @@ void test_rf4(int32_t verbose)
       { float ddi = (float)(a.c[i] * b.c[i]);
         rn_check_eq(d.c[i],ddi, NO, NO, "rf4_weigh error");
       }
+
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- rf4_unweigh ---\n"); }
+    a = rf4_throw_cube();
+    b = rf4_throw_cube();
+    d = rf4_unweigh(&a, &b);
+    for (i = 0; i < N; i++)
+      { float ddi = (float)(((double)a.c[i]) / b.c[i]);
+        rn_check_eq(d.c[i],ddi, NO, NO, "rf4_unweigh error");
+      }
+
+    if (verbose) { fprintf(stderr, "--- rf4_rot_axis ---\n"); }
+    { a = rf4_throw_cube();
+      int32_t i = int32_abrandom(0, N-1);
+      int32_t j = int32_abrandom(0, N-2); if (j >= i) { j++; }
+      double ang = 2.1*M_PI*drandom();
+      d = rf4_rot_axis(&a, i, j, ang);
+      rfn_check_rot_axis(N, a.c, i, j, ang, d.c, "rf4_rot_axis error");
+    }
 
     if (verbose) { fprintf(stderr, "--- rf4_norm, rf4_norm_sqr, rf4_L_inf_norm ---\n"); }
     a = rf4_throw_cube();

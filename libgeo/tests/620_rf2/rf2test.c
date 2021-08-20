@@ -1,5 +1,5 @@
 /* rf2test --- test program for rf2.h, rf2x2.h  */
-/* Last edited on 2021-08-17 10:10:17 by stolfi */
+/* Last edited on 2021-08-20 16:30:22 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -12,6 +12,7 @@
 #include <flt.h>
 #include <rf2.h>
 #include <rn_test_tools.h>
+#include <rfn_check.h>
 
 
 #define N 2
@@ -49,6 +50,18 @@ void test_rf2(int32_t verbose)
           sizeof(rf2_t), N, N*sizeof(double)
         );
       }
+
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- rf2_zero ---\n"); }
+    a = rf2_zero();
+    for (i = 0; i < N; i++)
+      { rn_check_eq(a.c[i], 0.0, NO, NO, "rf2_zero error"); }
+
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- rf2_all ---\n"); }
+    a = rf2_all(3.14f);
+    for (i = 0; i < N; i++)
+      { rn_check_eq(a.c[i], 3.14f, NO, NO, "rf2_all error"); }
 
     /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- rf2_axis ---\n"); }
@@ -154,9 +167,27 @@ void test_rf2(int32_t verbose)
     b = rf2_throw_cube();
     d = rf2_weigh(&a, &b);
     for (i = 0; i < N; i++)
-      { float ddi = (float)((double)(a.c[i]) * b.c[i]);
+      { float ddi = (float)(((double)a.c[i]) * b.c[i]);
         rn_check_eq(d.c[i],ddi, NO, NO, "rf2_weigh error");
       }
+
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- rf2_unweigh ---\n"); }
+    a = rf2_throw_cube();
+    b = rf2_throw_cube();
+    d = rf2_unweigh(&a, &b);
+    for (i = 0; i < N; i++)
+      { float ddi = (float)(((double)a.c[i]) / b.c[i]);
+        rn_check_eq(d.c[i],ddi, NO, NO, "rf2_unweigh error");
+      }
+
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- rf2_rot_axis ---\n"); }
+    { a = rf2_throw_cube();
+      double ang = 2.1*M_PI*drandom();
+      d = rf2_rot(&a, ang);
+      rfn_check_rot_axis(N, a.c, 0, 1, ang, d.c, "rf2_rot_axis error");
+    }
 
     /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- rf2_norm, rf2_norm_sqr, rf2_L_inf_norm ---\n"); }
@@ -168,7 +199,7 @@ void test_rf2(int32_t verbose)
     tt = 0.0;
     for (i = 0; i < N; i++)
       { float ai = fabsf(a.c[i]);
-        ss += (double)(ai)*ai; 
+        ss += ((double)ai)*ai; 
         if (ai > tt) { tt = ai; }
       }
     rr = sqrt(ss);
@@ -186,7 +217,7 @@ void test_rf2(int32_t verbose)
     ss = 0.0;
     tt = 0.0;
     for (i = 0; i < N; i++)
-      { double di = fabs((double)(a.c[i]) - b.c[i]);
+      { double di = fabs(((double)a.c[i]) - b.c[i]);
         ss += di*di; 
         if (di > tt) { tt = di; }
       }
@@ -205,7 +236,7 @@ void test_rf2(int32_t verbose)
     for (i = 0; i < N; i++)
       { float bi =  (float)(a.c[i]/ss);
         rn_check_eps(b.c[i], bi, 0.0000001 * ss, NO, NO, "rf2_dir error");
-        float di = (float)((double)(a.c[i])/tf);
+        float di = (float)(((double)a.c[i])/tf);
         rn_check_eps(d.c[i], di, 0.0000001 * tf, NO, NO, "rf2_L_inf_dir error");
       }
 
@@ -219,7 +250,7 @@ void test_rf2(int32_t verbose)
     double A = rf2_angle(&a, &b);
     mag = sqrt(rf2_dot(&a,&a)*rf2_dot(&b,&b));
     rr = 0.0;
-    for (i = 0; i < N; i++) { rr += a.c[i]*b.c[i]; }
+    for (i = 0; i < N; i++) { rr += ((double)a.c[i])*b.c[i]; }
     double CC = rr/(rf2_norm(&a)*rf2_norm(&b));
     rn_check_eps(r,rr,0.0000001 * mag, NO, NO, "rf2_dot error(1)");
     rn_check_eps(C,CC,0.0000001, NO, NO, "rf2_cos error(1)");

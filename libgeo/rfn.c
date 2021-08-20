@@ -1,5 +1,5 @@
 /* See {rfn.h}. */
-/* Last edited on 2021-08-17 06:23:22 by stolfi */
+/* Last edited on 2021-08-20 16:16:40 by stolfi */
 /* Based on VectorN.mg, created  95-02-27 by J. Stolfi. */
 
 /* !!! We should use Kahan's summation for all scalar products. */
@@ -43,7 +43,7 @@ void rfn_copy (int32_t n, float *a, float *r)
 
 void rfn_add (int32_t n, float *a, float *b, float *r)
   { int32_t i;
-    for (i = 0; i < n; i++) { r[i] = a[i] + b[i]; }
+    for (i = 0; i < n; i++) { r[i] = (float)(((double)a[i]) + b[i]); }
   }
 
 void rfn_sub (int32_t n, float *a, float *b, float *r)
@@ -78,7 +78,24 @@ void rfn_mix_in (int32_t n, double s, float *a, float *r)
 
 void rfn_weigh (int32_t n, float *a, float *w, float *r)
   { int32_t i;
-    for (i = 0; i < n; i++) { r[i] = (float)((double)(a[i]) * w[i]); }
+    for (i = 0; i < n; i++) { r[i] = (float)(((double)a[i]) * w[i]); }
+  }
+
+void rfn_unweigh (int32_t n, float *a, float *w, float *r)
+  { int32_t i;
+    for (i = 0; i < n; i++) { r[i] = (float)(((double)a[i]) / w[i]); }
+  }
+
+void rfn_rot_axis (int32_t n, float *a, int32_t i, int32_t j, double ang, float *r)
+  {
+    affirm((i >= 0) && (i < n), "rn_rot_axis: bad index {i}");
+    affirm((j >= 0) && (j < n), "rn_rot_axis: bad index {j}");
+    affirm(i != j, "rn_rot_axis: axes not distinct");
+    double c = cos(ang);
+    double s = sin(ang);
+    float x = (float)(+ c*a[i] - s*a[j]);
+    float y = (float)(+ s*a[i] + c*a[j]);
+    for (int32_t k = 0; k < n; k++) { r[k] = (k == i ? x : (k == j ? y : a[k])); }
   }
 
 double rfn_sum (int32_t n, float *a)
@@ -154,7 +171,7 @@ float rfn_L_inf_dir (int32_t n, float *a, float *r)
 double rfn_dot (int32_t n, float *a, float *b)
   { double sum = 0.0;
     int32_t i;
-    for (i = 0; i < n; i++) { sum += (double)(a[i])*b[i]; }
+    for (i = 0; i < n; i++) { sum += ((double)a[i])*b[i]; }
     return sum;
   }
 

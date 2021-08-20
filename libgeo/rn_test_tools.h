@@ -1,5 +1,5 @@
 /* rn_test_tools.h --- tools for testing the {libgeo} functions. */
-/* Last edited on 2021-06-09 20:35:32 by jstolfi */
+/* Last edited on 2021-08-18 15:16:37 by stolfi */
 /* Created 2005-07-20 by J. Stolfi. */
 
 #ifndef rn_test_tools_H
@@ -33,5 +33,8 @@ void rn_do_check_eq(double x, double y, int32_t *i, int32_t *j, char *msg, rn_LO
 void rn_do_check_eps(double x, double y, double eps, int32_t *i, int32_t *j, char *msg, rn_LOCPARMS);
 
 /* OTHER TOOLS */
+
+void rn_test_rot_axis(int32_t n, double *a, int32_t i, int32_t j, double ang, double *r, char *msg);
+  /* Checks whether {r} is indeed the result of {rn_rot_axis(n, a, i, j, ang, r)}. */
 
 #endif

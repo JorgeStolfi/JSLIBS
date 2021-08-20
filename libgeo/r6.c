@@ -1,5 +1,5 @@
 /* See r6.h. */
-/* Last edited on 2021-06-09 20:44:11 by jstolfi */
+/* Last edited on 2021-08-20 16:10:13 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -106,6 +106,29 @@ void r6_weigh (r6_t *a, r6_t *w, r6_t *r)
     r->c[3] = a->c[3] * w->c[3];
     r->c[4] = a->c[4] * w->c[4];
     r->c[5] = a->c[5] * w->c[5];
+  }
+
+void r6_unweigh (r6_t *a, r6_t *w, r6_t *r)
+  { r->c[0] = a->c[0] / w->c[0];
+    r->c[1] = a->c[1] / w->c[1];
+    r->c[2] = a->c[2] / w->c[2];
+    r->c[3] = a->c[3] / w->c[3];
+    r->c[4] = a->c[4] / w->c[4];
+    r->c[5] = a->c[5] / w->c[5];
+  }
+
+void r6_rot_axis (r6_t *a, int32_t i, int32_t j, double ang, r6_t *r)
+  {
+    affirm((i >= 0) && (i < N), "r6_rot_axis: bad index {i}");
+    affirm((j >= 0) && (j < N), "r6_rot_axis: bad index {j}");
+    affirm(i != j, "r6_rot_axis: axes not distinct");
+    (*r) = (*a);
+    double c = cos(ang);
+    double s = sin(ang);
+    double x = + c*a->c[i] - s*a->c[j];
+    double y = + s*a->c[i] + c*a->c[j];
+    r->c[i] = x;
+    r->c[j] = y;
   }
 
 double r6_norm (r6_t *a)
@@ -240,7 +263,7 @@ double r6_decomp (r6_t *a, r6_t *u, r6_t *para, r6_t *perp)
     return rn_decomp(N, &(a->c[0]), &(u->c[0]), paran, perpn);
   }
 
-int32_t r6_is_finite(r6_t *p)
+bool_t r6_is_finite(r6_t *p)
   { if (fabs(p->c[0]) == INF) return FALSE;
     if (fabs(p->c[1]) == INF) return FALSE;
     if (fabs(p->c[2]) == INF) return FALSE;

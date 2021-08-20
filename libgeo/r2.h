@@ -1,5 +1,5 @@
 /* r2.h --- operations on points and vectors of R^2 */
-/* Last edited on 2021-06-09 20:43:33 by jstolfi */
+/* Last edited on 2021-08-20 16:06:09 by stolfi */
 
 #ifndef r2_H
 #define r2_H
@@ -45,6 +45,12 @@ void r2_mix_in (double s, r2_t *a, r2_t *r);
 
 void r2_weigh (r2_t *a, r2_t *w, r2_t *r);
   /* Sets {r[i] := a[i] * w[i]}. */
+
+void r2_unweigh (r2_t *a, r2_t *w, r2_t *r);
+  /* Sets {r[i] := a[i] / w[i]}. */
+
+void r2_rot (r2_t *a, double ang, r2_t *r);
+  /* Rotates {a} by {ang} radians, from axis 0 towards axis 1. */
 
 double r2_norm (r2_t *a);
   /* Returns the Euclidean length of {a}. */
@@ -99,8 +105,8 @@ double r2_decomp (r2_t *a, r2_t *u, r2_t *para, r2_t *perp);
     Namely, {para = c*u} and {perp = a - c*u}, where 
     {c = r2_dot(a,u)/r2_dot(u,u)}. Also returns {c}. */
 
-int32_t r2_is_finite(r2_t *p);
-  /* True iff both coordinates of {p} are finite (neither {±INF} nor {NAN}). */
+bool_t r2_is_finite(r2_t *p);
+  /* True iff all coordinates of {p} are finite (neither {±INF} nor {NAN}). */
 
 bool_t r2_eq(r2_t *p, r2_t *q);
   /* True iff points {p} and {q} are identical. */
@@ -160,6 +166,6 @@ typedef double r2_double_func_t(r2_t *a);
   /* Type of a function that returns a {double} value from an {r2_t} value. */
 
 typedef r2_t r2_map_t(r2_t *a);
-  /* Type of a function that returns a {double} value from an {r2_t} value. */
+  /* Type of a function that returns an {r2_t} value from an {r2_t} value. */
  
 #endif

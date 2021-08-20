@@ -1,5 +1,5 @@
 /* rntest --- test program for rn.h, rmxn.h  */
-/* Last edited on 2021-06-09 20:40:01 by jstolfi */
+/* Last edited on 2021-08-20 16:28:14 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -191,6 +191,26 @@ void test_rn (int32_t verbose)
     for (i = 0; i < n; i++)
       { double dxi = a[i] * b[i];
         rn_check_eq(d[i],dxi, &i, NO, "rn_weigh error");
+      }
+
+    if (verbose) { fprintf(stderr, "--- rn_unweigh ---\n"); }
+    rn_throw_cube(n, a);
+    rn_throw_cube(n, b);
+    rn_unweigh(n, a, b, d);
+    for (i = 0; i < n; i++)
+      { double dxi = a[i] / b[i];
+        rn_check_eq(d[i],dxi, &i, NO, "rn_unweigh error");
+      }
+
+    if (n >= 2)
+      { if (verbose) { fprintf(stderr, "--- rn_rot_axis ---\n"); }
+        { rn_throw_cube(n, a);
+          int32_t i = int32_abrandom(0, n-1);
+          int32_t j = int32_abrandom(0, n-2); if (j >= i) { j++; }
+          double ang = 2.1*M_PI*drandom();
+          rn_rot_axis(n, a, i, j, ang, d);
+          rn_test_rot_axis(n, a, i, j, ang, d, "rn_rot_axis error");
+        }
       }
 
     if (verbose) { fprintf(stderr, "--- rn_sum ---\n"); }

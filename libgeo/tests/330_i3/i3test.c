@@ -1,5 +1,5 @@
 /* i3test --- test program for i3.h, i3x3.h  */
-/* Last edited on 2021-06-09 19:52:47 by jstolfi */
+/* Last edited on 2021-08-17 10:24:56 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -230,7 +230,7 @@ void test_i3(int32_t verbose)
 //     for (i = 0; i < N; i++)
 //       for (j = 0; j < N; j++)
 //         { double *Aij = &(A.c[i][j]); 
-//           affirm(Aij = ((double *)&A)+(N*i)+j, "i3x3_t indexing error");
+//           affirm(Aij == ((double *)&A)+(N*i)+j, "i3x3_t indexing error");
 //         }
 // 
 //     if (verbose) { fprintf(stderr, "--- i3x3_zero, i3x3_ident ---\n"); }

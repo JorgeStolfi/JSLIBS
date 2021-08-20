@@ -2,7 +2,7 @@
 #define neuromat_geom_H
 
 /* NeuroMat geometry tools. */
-/* Last edited on 2013-11-29 01:11:07 by stolfilocal */
+/* Last edited on 2021-08-20 16:02:26 by stolfi */
 
 #define _GNU_SOURCE
 
@@ -11,11 +11,49 @@
 
 #include <neuromat_eeg.h>
 
+/*  SCHEMATIC SCALP COORDINATES
+
+    In the absence of data on actual shape of the subject's scalp and
+    on the actual electrode posiitons, we generally work with
+    a /schematic scalp/ and /schematic positions/.
+    
+    The /schematic 3D scalp/ is the unit sphere of {\RR^3}, with the
+    zenith point of the scalp represented by the north pole {(0,0,1)}
+    of the sphere, the and the nose towards the {(0,1,0)} vector. The
+    /3D schematic position/ of a point on the scalp is therefore a
+    unit vector of {\RR^3}.
+    
+    The /2D schematic scalp/ is the plane {\RR^2}. The /2D schematic
+    position/ of a point (on the scalp or off it) is its 3D schematic position,
+    mapped to the plane by stereographic projection
+    from the south pole {(0,0,-1)} onto the equatorial plane {Z=0}. Thus the upper
+    hemisphere of the schematic 3D scalp maps to the unit disk of the
+    schematic 2D scalp, while the lower hemisphere maps to the
+    complement of that disk.  
+    
+    IDEALIZED SCALP COORDINATES
+    
+    The /idealized 3D scalp/ is an ellipsoid in {\RR^3} that results
+    from stretching the schematic 3D scalp (unit sphere) by factors
+    {(rX,rY,rZ)} along the three coordinate axes. These three numbers
+    are the /idealized dimensions/ of the scalp, namely the half-width
+    from ear to ear, the half-length from nose to occiput, and the
+    half-height from ears to top. The /idealized 3D positions/ of a
+    point on the scalp are its schematic 3D coordinates stretched by
+    those factors.
+    
+    The /idealized 2D scalp/ is again the plane {\RR^2}. The
+    /idealized 2D position/ of apoint on the scalp is the
+    stereographic projection of its idealized 3D position from the
+    point {(0,0,-rZ)} onto the plane {Z=0}. Thus the upper half of the
+    scalp (with {Z>0}) projects to the interior of the ellipse on the
+    idealized plane with center {(0,0)} and radii {(rX,rY)}.
+*/
+
 r2_t *neuromat_eeg_geom_get_schematic_2D_points(int ne);
-  /* Returns a vector of {ne} points which are the two-dimensional
+  /* If {rad} is {NULL}, returns a vector of {ne} points which are the two-dimensional
     schematic positions of the electrodes in the {ne}-electrode
-    experiments. Assumes that the head is represented in the schematic
-    diagram by the unit disk, as seen from above, with the nose at the top,. */
+    experiments.  */
 
 r2_t *neuromat_eeg_geom_get_20_schematic_2D_points(void);
   /* Same as {neuromat_eeg_geom_get_schematic_2D_points}
@@ -27,21 +65,28 @@ r2_t *neuromat_eeg_geom_get_128_schematic_2D_points(void);
     
 /* STEREOGRAPHIC PROJECTION 2D TO/FROM 3D  */
     
-r3_t neuromat_eeg_geom_3D_from_2D(r2_t *p);
-r2_t neuromat_eeg_geom_2D_from_3D(r3_t *p);
-  /* These procedures map between schematic 2D and 3D scalp coordinates.
-    The schematic 3D position is a point on the unit sphere of {R^3}, the 
-    schematic 2D position is a point of the {XY} plane. 
+r3_t neuromat_eeg_geom_3D_from_2D(r2_t *p, r2_t *rad2, r3_t *rad3);
+r2_t neuromat_eeg_geom_2D_from_3D(r3_t *p, r3_t *rad3, r2_t *rad2);
+  /* If {rad2} and {rad3} are {NULL}, these procedures map between schematic 2D and 3D 
+    scalp coordinates.
     
-    Assumes stereographic projection from the south pole {(0,0,-1)}. 
-    Thus the origin is mapped to/from the north pole {(0,0,+1)}, the 
-    {+Z} hemisphere is mapped to/from the unit disk of the {XY} plane, 
-    and the edge of that disk (the equator of the unit sphere) is mapped to itself,
-    i.e. merely gets an extra coordinate {Z=0}. 
+    Note that the mapping from {3D} to {2D} is undefined for point
+    with {Z = -1}. For points that are not on the scalp, the 2D
+    position is NOT the same as projecting radially onto the unit
+    sphere and then applying the stereographic projection.
     
-    When going from {2D} to {3D} the result is always a  unit vector of {R^3}
-    (apart from rounding errors). The mapping from {3D} to {2D} is undefined
-    at the south pole. */
+    When going from {2D} to {3D} the result is always a unit vector of
+    {R^3} distinct from the south pole {(0,0,-1)} (apart from rounding
+    errors).
+    
+    If {rad2} is not {NULL}, it is assumed to be a vector with the
+    half-radii {(rX,rY)} of the idealized 2D scalp, and the 2D
+    coordinates (input or output) are interpreted as coordinates on
+    that idealized 2D scalp. Similarly if {rad3} is not {NULL}, it is
+    assumed to be a vector with the half-radii {(rX,rY,rZ)} of the
+    idealized 3D skull, and the 3D coordinates (input or output) are
+    interpreted as coordinates on that idealized scalp.
+    */
    
 /* MAPPING UNIT DISK TO/FROM ELLIPSE */
 

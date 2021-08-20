@@ -1,5 +1,5 @@
 /* rfn.h --- operations on points and vectors of R^n (single precision version) */
-/* Last edited on 2021-08-17 06:12:04 by stolfi */
+/* Last edited on 2021-08-20 16:09:23 by stolfi */
 /* 
   Based on VectorN.mg, created  95-02-27 by J. Stolfi.
 */
@@ -48,6 +48,13 @@ void rfn_mix_in (int32_t n, double s, float *a, float *r);
 
 void rfn_weigh (int32_t n, float *a, float *w, float *r);
   /* Sets {r[i] := a[i] * w[i]}. */
+
+void rfn_unweigh (int32_t n, float *a, float *w, float *r);
+  /* Sets {r[i] := a[i] / w[i]}. */
+
+void rfn_rot_axis (int32_t n, float *a, int32_t i, int32_t j, double ang, float *r);
+  /* Sets {r} to {a} after a rotation that moves axis {i} towards 
+    axis {j} by {ang} radians, leaving all other coordinates unchanged. */
 
 double rfn_sum (int32_t n, float *a);
   /* Returns the sum of all elements {a[0..n-1]}. */

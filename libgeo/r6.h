@@ -1,5 +1,5 @@
 /* r6.h --- operations on points and vectors of R^6 */
-/* Last edited on 2021-06-09 20:44:20 by jstolfi */
+/* Last edited on 2021-08-20 17:21:49 by stolfi */
 
 #ifndef r6_H
 #define r6_H
@@ -44,6 +44,13 @@ void r6_mix_in (double s, r6_t *a, r6_t *r);
 
 void r6_weigh (r6_t *a, r6_t *w, r6_t *r);
   /* Sets {r[i] := a[i] * w[i]}. */
+
+void r6_unweigh (r6_t *a, r6_t *w, r6_t *r);
+  /* Sets {r[i] := a[i] / w[i]}. */
+
+void r6_rot_axis (r6_t *a, int32_t i, int32_t j, double ang, r6_t *r);
+  /* Sets {r} to {a} after a rotation that moves axis {i} towards 
+    axis {j} by {ang} radians, leaving all other coordinates unchanged. */
 
 double r6_norm (r6_t *a);
   /* Returns the Euclidean length of {a}. */
@@ -97,7 +104,7 @@ double r6_decomp (r6_t *a, r6_t *u, r6_t *para, r6_t *perp);
     Namely, {para = c*u} and {perp = a - c*u}, where 
     {c = r6_dot(a,u)/r6_dot(u,u)}. Also returns {c}. */
 
-int32_t r6_is_finite(r6_t *p);
+bool_t r6_is_finite(r6_t *p);
   /* True iff all coordinates of {p} are finite. */
 
 bool_t r6_eq(r6_t *p, r6_t *q);
@@ -138,6 +145,6 @@ typedef double r6_double_func_t(r6_t *a);
   /* Type of a function that returns a {double} value from an {r6_t} value. */
 
 typedef r6_t r6_map_t(r6_t *a);
-  /* Type of a function that returns a {double} value from an {r6_t} value. */
+  /* Type of a function that returns an {r6_t} value from an {r6_t} value. */
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef __LIBCAMFIREWIRE_H__
-#define __LIBCAMFIREWIRE_H__
+#ifndef libcamfirewire_H
+#define libcamfirewire_H
 
 #include <camfirewire_names.h>
 #include <camfirewire_session.h>

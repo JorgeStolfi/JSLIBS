@@ -1,5 +1,5 @@
 /* See rfmxn.h. */
-/* Last edited on 2021-08-17 05:54:53 by stolfi */
+/* Last edited on 2021-08-17 15:04:49 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -195,7 +195,7 @@ double rfmxn_inv_full (int32_t n, float *A, float *M)
   }
 
 
-void rfmxn_scale(int32_t m, int32_t n, float s, float *A, float *M) 
+void rfmxn_scale(int32_t m, int32_t n, double s, float *A, float *M) 
   { int32_t i, j, k = 0;
     for (i = 0; i < m; i++)
       { for (j = 0; j < n; j++)
