@@ -1,5 +1,5 @@
 /* r6test --- test program for r6.h, r6x6.h  */
-/* Last edited on 2021-06-09 20:39:28 by jstolfi */
+/* Last edited on 2021-08-20 16:26:07 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -45,6 +45,7 @@ void test_r6(int32_t verbose)
     double mag;
     int32_t i, j, k;
 
+    /* ---------------------------------------------------------------------- */
     if (verbose)
       { fprintf(stderr,
           "sizeof(r6_t) = %lud  %d*sizeof(double) = %lud\n",
@@ -52,16 +53,19 @@ void test_r6(int32_t verbose)
         );
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_zero ---\n"); }
     r6_zero(&a);
     for (i = 0; i < N; i++)
       { rn_check_eq(a.c[i],0.0, NO, NO, "r6_zero error"); }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_all ---\n"); }
     r6_all(3.14, &a);
     for (i = 0; i < N; i++)
       { rn_check_eq(a.c[i],3.14, NO, NO, "r6_all error"); }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_axis ---\n"); }
     for (k = 0; k < N; k++)
       { r6_axis(k, &a);
@@ -69,6 +73,7 @@ void test_r6(int32_t verbose)
           { rn_check_eq(a.c[i],(i == k ? 1.0 : 0.0), NO, NO, "r6_axis error"); }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_throw_cube ---\n"); }
     r6_throw_cube(&a);
     for (i = 0; i < N; i++)
@@ -79,6 +84,7 @@ void test_r6(int32_t verbose)
         affirm((a.c[i] > -1.0) && (a.c[i] < 1.0), "r6_throw error(2)"); 
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_throw_dir ---\n"); }
     /* Should check uniformity... */
     r6_throw_dir(&a);
@@ -89,6 +95,7 @@ void test_r6(int32_t verbose)
     for (i = 0; i < N; i++) { double ai = a.c[i]; rr += ai*ai; }
     rn_check_eps(1,rr,0.000000001 * rr, NO, NO, "r6_throw_dir error (2)");
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_throw_ball ---\n"); }
     /* Should check uniformity... */
     r6_throw_ball(&a);
@@ -99,6 +106,7 @@ void test_r6(int32_t verbose)
     for (i = 0; i < N; i++) { double ai = a.c[i]; rr += ai*ai; }
     demand(rr <= 1 + 0.000000001*rr, "r6_throw_ball error (2)");
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_add ---\n"); }
     r6_throw_cube(&a);
     r6_throw_cube(&b);
@@ -106,6 +114,7 @@ void test_r6(int32_t verbose)
     for (i = 0; i < N; i++)
       { rn_check_eq(d.c[i],a.c[i] + b.c[i], NO, NO, "r6_add error"); }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_sub ---\n"); }
     r6_throw_cube(&a);
     r6_throw_cube(&b);
@@ -113,12 +122,14 @@ void test_r6(int32_t verbose)
     for (i = 0; i < N; i++)
       { rn_check_eq(d.c[i],a.c[i] - b.c[i], NO, NO, "r6_sub error"); }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_neg ---\n"); }
     r6_throw_cube(&a);
     r6_neg(&a, &d);
     for (i = 0; i < N; i++)
       { rn_check_eq(d.c[i],- a.c[i], NO, NO, "r6_neg error"); }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_scale ---\n"); }
     s = drandom();
     r6_throw_cube(&a);
@@ -128,6 +139,7 @@ void test_r6(int32_t verbose)
         rn_check_eq(d.c[i],zi, NO, NO, "r6_scale error(1)");
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_mix ---\n"); }
     s = drandom();
     t = drandom();
@@ -139,6 +151,7 @@ void test_r6(int32_t verbose)
         rn_check_eq(d.c[i],ddi, NO, NO, "r6_mix error");
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_mix_in ---\n"); }
     s = drandom();
     r6_throw_cube(&a);
@@ -150,6 +163,7 @@ void test_r6(int32_t verbose)
         rn_check_eq(d.c[i],ddi, NO, NO, "r6_mix_in error");
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_weigh ---\n"); }
     r6_throw_cube(&a);
     r6_throw_cube(&b);
@@ -159,6 +173,27 @@ void test_r6(int32_t verbose)
         rn_check_eq(d.c[i],ddi, NO, NO, "r6_weigh error");
       }
 
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- r6_unweigh ---\n"); }
+    r6_throw_cube(&a);
+    r6_throw_cube(&b);
+    r6_unweigh(&a, &b, &d);
+    for (i = 0; i < N; i++)
+      { double ddi = a.c[i] / b.c[i];
+        rn_check_eq(d.c[i],ddi, NO, NO, "r6_unweigh error");
+      }
+
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- r6_rot_axis ---\n"); }
+    { r6_throw_cube(&a);
+      int32_t i = int32_abrandom(0, N-1);
+      int32_t j = int32_abrandom(0, N-2); if (j >= i) { j++; }
+      double ang = 2.1*M_PI*drandom();
+      r6_rot_axis(&a, i, j, ang, &d);
+      rn_test_rot_axis(N, a.c, i, j, ang, d.c, "r6_rot_axis error");
+    }
+
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_norm, r6_norm_sqr, r6_L_inf_norm ---\n"); }
     r6_throw_cube(&a);
     r = r6_norm(&a);
@@ -176,6 +211,7 @@ void test_r6(int32_t verbose)
     rn_check_eps(s,ss,0.000000001 * ss, NO, NO, "r6_norm_sqr error");
     rn_check_eq(t,tt, NO, NO, "r6_L_inf_norm error");
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_dist, r6_dist_sqr, r6_L_inf_dist ---\n"); }
     r6_throw_cube(&a);
     r6_throw_cube(&b);
@@ -195,6 +231,7 @@ void test_r6(int32_t verbose)
     rn_check_eps(s,ss,0.000000001 * ss, NO, NO, "r6_dist_sqr error");
     rn_check_eq(t,tt, NO, NO, "r6_L_inf_dist error");
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_dir, r6_L_inf_dir ---\n"); }
     r6_throw_cube(&a);
     r = r6_dir(&a, &b);
@@ -206,6 +243,7 @@ void test_r6(int32_t verbose)
         rn_check_eps(d.c[i],a.c[i]/tt,0.000000001 * tt, NO, NO, "r6_L_inf_dir error");
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_dot, r6_cos, r6_sin, r6_angle ---\n"); }
     r6_throw_cube(&a);
     r6_throw_cube(&b);
@@ -239,6 +277,7 @@ void test_r6(int32_t verbose)
           }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_cross ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
@@ -281,6 +320,7 @@ void test_r6(int32_t verbose)
     r = r6_dot(&e, &f);
     rn_check_eps(r,0.0,0.00000001 * mag*r6_norm(&e), NO, NO, "r6_cross error(3)");
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_pick_ortho ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
@@ -303,6 +343,7 @@ void test_r6(int32_t verbose)
       rn_check_eps(r, 0.0, 0.00000001*ma, NO, NO, "r6_pick_ortho error(3)");
     }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_det ---\n"); }
     /* Test on basis vectors: */
     for (i = 0; i < N; i++)
@@ -335,6 +376,7 @@ void test_r6(int32_t verbose)
     mag = r6_norm(&a)*r6_norm(&b)*r6_norm(&c)*r6_norm(&d)*r6_norm(&e)*r6_norm(&f);
     rn_check_eps(r,rr,0.00000001 * mag, NO, NO, "r6_det error(1)");
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_decomp ---\n"); }
     r6_throw_cube(&a);
     r6_throw_cube(&b);
@@ -349,6 +391,7 @@ void test_r6(int32_t verbose)
     t = r6_dot(&para, &perp);
     rn_check_eps(t,0.0,0.000000001 * r6_norm(&a), NO, NO, "r6_decomp error(4)");
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6_print ---\n"); }
     if (verbose)
       { r6_throw_cube (&a);
@@ -366,6 +409,7 @@ void test_r6x6(int32_t verbose)
     double mag;
     int32_t i, j, k;
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- Size and allocation ---\n"); }
     if (verbose)
       { fprintf(stderr,
@@ -382,6 +426,7 @@ void test_r6x6(int32_t verbose)
         fprintf(stderr, "&(B.c[0][0]) = %016lx\n", (long unsigned)&(B.c[0][0]));
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- Indexing and addressing ---\n"); }
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
@@ -389,6 +434,7 @@ void test_r6x6(int32_t verbose)
           affirm(Bij = ((double *)&B)+(N*i)+j, "r6x6_t indexing error");
         }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6x6_zero, r6x6_ident ---\n"); }
     r6x6_zero(&A);
     r6x6_ident(&B);
@@ -399,6 +445,7 @@ void test_r6x6(int32_t verbose)
           }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6x6_get_row, r6x6_set_row, r6x6_get_col, r6x6_set_col ---\n"); }
     throw_matrix(&A);
     int32_t dir; /* 0 for row, 1 for col. */
@@ -421,6 +468,7 @@ void test_r6x6(int32_t verbose)
           }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6x6_map_row, r6x6_map_col ---\n"); }
     throw_matrix(&A);
     r6_throw_cube(&a);
@@ -439,6 +487,7 @@ void test_r6x6(int32_t verbose)
     s = r6_dist(&c, &cc);
     affirm(s < 0.000000001 * r6_norm(&cc), "r6_map_col error");
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6x6_scale ---\n"); }
     throw_matrix(&A);
     r = drandom();
@@ -452,6 +501,7 @@ void test_r6x6(int32_t verbose)
           }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6x6_mul ---\n"); }
     throw_matrix(&A);
     throw_matrix(&B);
@@ -466,6 +516,7 @@ void test_r6x6(int32_t verbose)
           }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6x6_mul_tr ---\n"); }
     throw_matrix(&A);
     throw_matrix(&B);
@@ -480,6 +531,7 @@ void test_r6x6(int32_t verbose)
           }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6x6_transp ---\n"); }
     throw_matrix(&A);
     r6x6_transp(&A, &B);
@@ -495,6 +547,7 @@ void test_r6x6(int32_t verbose)
           { rn_check_eq(B.c[i][j],A.c[j][i], NO, NO, "r6x6_transp error (2)"); }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6x6_det ---\n"); }
     throw_matrix(&A);
     for (i = 0; i < N; i++)
@@ -535,6 +588,7 @@ void test_r6x6(int32_t verbose)
         rn_check_eps(r,-rr,000000001 * mag, NO, NO, "r6x6_det error(3)");
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6x6_inv ---\n"); }
     throw_matrix(&A);
     r6x6_inv(&A, &B);
@@ -546,6 +600,7 @@ void test_r6x6(int32_t verbose)
           }
       }
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6x6_norm,r6x6_norm_sqr,r6x6_mod_norm ---\n"); }
     throw_matrix(&A);
     s = r6x6_norm_sqr(&A);
@@ -567,6 +622,7 @@ void test_r6x6(int32_t verbose)
     affirm(tt >= 0, "r6x6_mod_norm_sqr error");
     affirm(fabs(tt - t) < 000000001, "r6x6_mod_norm_sqr error");
 
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6x6_print ---\n"); }
     if (verbose)
       { throw_matrix (&A);

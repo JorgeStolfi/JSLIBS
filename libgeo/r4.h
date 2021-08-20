@@ -1,5 +1,5 @@
 /* r4.h --- operations on points and vectors of R^4 */
-/* Last edited on 2021-06-09 20:44:03 by jstolfi */
+/* Last edited on 2021-08-20 16:06:47 by stolfi */
 
 #ifndef r4_H
 #define r4_H
@@ -44,6 +44,13 @@ void r4_mix_in (double s, r4_t *a, r4_t *r);
 
 void r4_weigh (r4_t *a, r4_t *w, r4_t *r);
   /* Sets {r[i] := a[i] * w[i]}. */
+
+void r4_unweigh (r4_t *a, r4_t *w, r4_t *r);
+  /* Sets {r[i] := a[i] / w[i]}. */
+
+void r4_rot_axis (r4_t *a, int32_t i, int32_t j, double ang, r4_t *r);
+  /* Sets {r} to {a} after a rotation that moves axis {i} towards 
+    axis {j} by {ang} radians, leaving all other coordinates unchanged. */
 
 double r4_norm (r4_t *a);
   /* Returns the Euclidean length of {a}. */
@@ -97,7 +104,7 @@ double r4_decomp (r4_t *a, r4_t *u, r4_t *para, r4_t *perp);
     Namely, {para = c*u} and {perp = a - c*u}, where 
     {c = r4_dot(a,u)/r4_dot(u,u)}. Also returns {c}. */
 
-int32_t r4_is_finite(r4_t *p);
+bool_t r4_is_finite(r4_t *p);
   /* True iff all coordinates of {p} are finite. */
 
 bool_t r4_eq(r4_t *p, r4_t *q);
@@ -138,6 +145,6 @@ typedef double r4_double_func_t(r4_t *a);
   /* Type of a function that returns a {double} value from an {r4_t} value. */
 
 typedef r4_t r4_map_t(r4_t *a);
-  /* Type of a function that returns a {double} value from an {r4_t} value. */
+  /* Type of a function that returns an {r4_t} value from an {r4_t} value. */
 
 #endif

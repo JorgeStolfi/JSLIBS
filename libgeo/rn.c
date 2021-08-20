@@ -81,6 +81,23 @@ void rn_weigh (int32_t n, double *a, double *w, double *r)
     for (i = 0; i < n; i++) { r[i] = a[i] * w[i]; }
   }
 
+void rn_unweigh (int32_t n, double *a, double *w, double *r)
+  { int32_t i;
+    for (i = 0; i < n; i++) { r[i] = a[i] / w[i]; }
+  }
+
+void rn_rot_axis (int32_t n, double *a, int32_t i, int32_t j, double ang, double *r)
+  {
+    affirm((i >= 0) && (i < n), "rn_rot_axis: bad index {i}");
+    affirm((j >= 0) && (j < n), "rn_rot_axis: bad index {j}");
+    affirm(i != j, "rn_rot_axis: axes not distinct");
+    double c = cos(ang);
+    double s = sin(ang);
+    double x = + c*a[i] - s*a[j];
+    double y = + s*a[i] + c*a[j];
+    for (int32_t k = 0; k < n; k++) { r[k] = (k == i ? x : (k == j ? y : a[k])); }
+  }
+
 double rn_sum (int32_t n, double *a)
   { int32_t i;
     double sum = 0;

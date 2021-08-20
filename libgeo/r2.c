@@ -1,5 +1,5 @@
 /* See r2.h */
-/* Last edited on 2021-06-09 20:49:58 by jstolfi */
+/* Last edited on 2021-08-20 16:11:41 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -68,6 +68,21 @@ void r2_mix_in (double s, r2_t *a, r2_t *r)
 void r2_weigh (r2_t *a, r2_t *w, r2_t *r)
   { r->c[0] = a->c[0] * w->c[0];
     r->c[1] = a->c[1] * w->c[1];
+  }
+
+void r2_unweigh (r2_t *a, r2_t *w, r2_t *r)
+  { r->c[0] = a->c[0] / w->c[0];
+    r->c[1] = a->c[1] / w->c[1];
+  }
+
+void r2_rot (r2_t *a, double ang, r2_t *r)
+  {
+    double c = cos(ang);
+    double s = sin(ang);
+    double x = + c*a->c[0] - s*a->c[1];
+    double y = + s*a->c[0] + c*a->c[1];
+    r->c[0] = x;
+    r->c[1] = y;
   }
 
 double r2_norm (r2_t *a)
@@ -191,7 +206,7 @@ double r2_decomp (r2_t *a, r2_t *u, r2_t *para, r2_t *perp)
       }
   }
 
-int32_t r2_is_finite(r2_t *p)
+bool_t r2_is_finite(r2_t *p)
   { return (isfinite(p->c[0]) && isfinite(p->c[1]));
   }
 

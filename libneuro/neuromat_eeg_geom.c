@@ -1,5 +1,5 @@
 /* See {neuromat_{eeg_|}image.h}. */
-/* Last edited on 2013-11-29 01:15:38 by stolfilocal */
+/* Last edited on 2021-08-20 16:05:21 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -231,20 +231,27 @@ r2_t *neuromat_eeg_geom_get_128_schematic_2D_points(void)
     return pos;
   }
  
-r3_t neuromat_eeg_geom_3D_from_2D(r2_t *p)
+r3_t neuromat_eeg_geom_3D_from_2D(r2_t *p, r2_t *rad2, r3_t *rad3)
   {
-    double R2 = r2_norm_sqr(p);
+    r2_t q2 = (*p);
+    if (rad2 != NULL) { r2_unweigh(&q2, rad2, &q2); }
+    double R2 = r2_norm_sqr(&q2);
     double Den = 1 + R2;
-    r3_t q = (r3_t){{ 2*p->c[0]/Den, 2*p->c[1]/Den, (R2 - 1)/Den }};
+    r3_t q3 = (r3_t){{ 2*q2.c[0]/Den, 2*q2.c[1]/Den, (R2 - 1)/Den }};
     /* Paranoia: */
-    (void)r3_dir(&q, &q);
-    return q;
+    (void)r3_dir(&q3, &q3);
+    if (rad3 != NULL) { r3_weigh(&q3, rad3, &q3); }
+    return q3;
   }
 
-r2_t neuromat_eeg_geom_2D_from_3D(r3_t *p)
+r2_t neuromat_eeg_geom_2D_from_3D(r3_t *p, r3_t *rad3, r2_t *rad2);
   {
-    double Den = 1 + p->c[2];
-    return (r2_t){{ p->c[0]/Den, p->c[1]/Den }};
+    r3_t q3 = (*p);
+    if (rad3 != NULL) { r3_unweigh(&q3, rad3, &q3); }
+    double Den = 1 + q3.c[2];
+    r2_t q2 = (r2_t){{ q3.c[0]/Den, q3.c[1]/Den }};
+    if (rad2 != NULL) { r2_weigh(&q2, rad2, &q2); }
+    return q2;
   }
 
 
@@ -263,6 +270,14 @@ r2_t neuromat_eeg_geom_ellipse_from_disk(r2_t *p, r2_t *ctr, r2_t *rad)
           ctr->c[1] + p->c[1]*rad->c[1]
       }};
   }
+
+    if (rad != NULL)  
+      { for (int32_t k = 0; k < ne; k++)
+          { r2_t *pk = &(pos[k]);
+            r2_weigh(pk, rad, pk);
+          }
+      }
+
 
 void neuromat_eeg_geom_map_many_disk_to_ellipse(int np, r2_t p[], r2_t *ctr, r2_t *rad, r2_t q[])
   {

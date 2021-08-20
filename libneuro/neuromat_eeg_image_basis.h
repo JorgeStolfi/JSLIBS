@@ -2,7 +2,7 @@
 #define neuromat_eeg_image_basis_H
 
 /* NeuroMat tools to interpolate values over flat scalp image. */
-/* Last edited on 2014-01-12 20:46:10 by stolfilocal */
+/* Last edited on 2021-08-20 15:51:29 by stolfi */
 
 #define _GNU_SOURCE
 #include <r2.h>
@@ -18,30 +18,42 @@ typedef enum {
     neuromat_eeg_image_basis_type_SHEPARD1,
     neuromat_eeg_image_basis_type_RADIAL,
     neuromat_eeg_image_basis_type_VORONOI,
-    neuromat_eeg_image_basis_type_LIM
+    neuromat_eeg_image_basis_type_CORREL
   } neuromat_eeg_image_basis_type_t;
+#define neuromat_eeg_image_basis_type_LAST neuromat_eeg_image_basis_type_CORREL
   /* The avaliable basis types. */
 
-float_image_t **neuromat_eeg_image_basis_make(int btype, float_image_t *msk, int ne, r2_t pos2D[], r2_t *ctr, r2_t *rad);
+float_image_t **neuromat_eeg_image_basis_make(int btype, int ne, float_image_t *msk, r2_t pos2D[], r3_t *srad, r2_t *ictr, r2_t *irad);
   /* Computes an interpolating image basis {bas[0..ne-1]} of type
-    {btype} for electrodes in the positions {pos2D[0..ne-1]}.  
+    {btype} for electrodes with schematic positions {pos2D[0..ne-1]}.  
     
-    An /interpolating image basis/ for {ne} electrodes 
-    is a list of images {bas[0..ne-1]} such that each image {bas[i]} has 
-    value 1 at the position of electrode {i} and value 0 at 
-    the positions of all other electrodes.
+    An /interpolating image basis/ for {ne} electrodes is a list of 2D
+    images {bas[0..ne-1]} of the scalp such that each image {bas[i]}
+    has value 1 at the position of electrode {i} and value 0 at the
+    positions of all other electrodes.
+    
+    Some basis functions require computing distances between points in the scalp.
+    Since the actual positions of the electrodes on the scalp are unknown,
+    the basis are computed with their /idealized 3D positions/ which are obtained from 
+    their schematic 2D
+    
+    
+    3D as if the scalp was
+    scaled in all three axes so that it can be approximated by 
+    the sphere 
+    
+    The procedure assumes that the 2D electrode positions {pos2D[0..ne-1]}
+    are of the schematic 3D electrode
+    positions on the unit sphere to the plane, so that the {+Z} hemisphere projects into the unit
+    disk.
+    
+    
+    The basis functions are actually defined on the unit sphere.
     
     The image {msk} must be a single-channel mask for the head outline
     (1 inside, 0 outside, possibly antialiased along the border). Each
     basis element will have the same size as {msk} and will be zero
-    where {msk} is zero. 
-    
-    The basis fucntions are actually defined on the unit sphere using
-    the straight-line 3D distance. The procedure assumes that the 2D
-    electrode positions {pos2D[0..ne-1]} are stereographic projections
-    of the schematic 3D electrode positions on the unit sphere to the
-    plane from the {-Z} pole {(0,0,-1)}, so that the {+Z} hemisphere
-    projects into the unit circle.
+    where {msk} is zero.
     
     In the images, the basis functions are projected to the plane
     stereographically as above, then stretched and translated so that
@@ -76,7 +88,13 @@ void neuromat_eeg_image_basis_fill_voronoi(float_image_t *msk, int ne, float_ima
   /* The basis is essentially the Voronoi diagram of the electrodes in image form, after 
     expanding the axes so that the ellipse becomes a circle. The values are
     between 0 and 1 and form a partition of unity. */
-    
+     
+void neuromat_eeg_image_basis_fill_correl(float_image_t *msk, int ne, float_image_t *bas[], r2_t *ctr, r2_t *rad, r3_t pos3D[], double rho);
+  /* The basis is computed so that pairs of interpolated values have correlations that
+    decay with their distance {d} as {1 - rho*d}. The value of {rho} must be between 0
+    and {-2/dmax} where {dmax} is the diameter of the domain (max distance between two 
+    scalp pixels). */
+   
 typedef double neuromat_image_basis_elem_t(int j, r3_t *p);
   /* A procedure that evaluates a generic basis element number {j} at an
     arbitrary point {p} of the unit sphere. */

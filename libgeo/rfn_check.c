@@ -1,5 +1,5 @@
 /* See rfn_check.h. */
-/* Last edited on 2021-08-18 16:49:46 by stolfi */
+/* Last edited on 2021-08-18 17:38:16 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -8,7 +8,7 @@
 #include <assert.h>
 
 #include <affirm.h>
-#include <rn_check.h>
+#include <rn_test_tools.h>
 
 #include <rfn_check.h>
 
@@ -27,6 +27,6 @@ void rfn_check_rot_axis(int32_t n, float *a, int32_t i, int32_t j, double ang, f
           { rrk = (float)(+ sa*a[i] + ca*a[k]); }
         else
           { rrk = a[k]; }
-        rfn_check_eq(r[k], rrk, &i, &j, msg);
+        rn_check_eq(r[k], rrk, &i, &j, msg);
       }
   }

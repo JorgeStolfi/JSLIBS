@@ -1,5 +1,5 @@
 /* i2test --- test program for i2.h, i2x2.h  */
-/* Last edited on 2021-06-09 19:53:57 by jstolfi */
+/* Last edited on 2021-08-17 10:24:50 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -228,7 +228,7 @@ void test_i2(int32_t verbose)
 //      for (i = 0; i < N; i++)
 //        for (j = 0; j < N; j++)
 //          { double *Aij = &(A.c[i][j]); 
-//            affirm(Aij = ((double *)&A)+(N*i)+j, "i2x2_t indexing error");
+//            affirm(Aij == ((double *)&A)+(N*i)+j, "i2x2_t indexing error");
 //          }
 //  
 //      if (verbose) { fprintf(stderr, "--- i2x2_zero, i2x2_ident ---\n"); }

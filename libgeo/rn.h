@@ -1,5 +1,5 @@
 /* rn.h --- operations on points and vectors of R^n */
-/* Last edited on 2021-06-09 20:47:21 by jstolfi */
+/* Last edited on 2021-08-20 16:07:37 by stolfi */
 /* 
   Based on VectorN.mg, created  95-02-27 by J. Stolfi.
 */
@@ -48,6 +48,13 @@ void rn_mix_in (int32_t n, double s, double *a, double *r);
 
 void rn_weigh (int32_t n, double *a, double *w, double *r);
   /* Sets {r[i] := a[i] * w[i]}. */
+
+void rn_unweigh (int32_t n, double *a, double *w, double *r);
+  /* Sets {r[i] := a[i] / w[i]}. */
+  
+void rn_rot_axis (int32_t n, double *a, int32_t i, int32_t j, double ang, double *r);
+  /* Sets {r} to {a} after a rotation that moves axis {i} towards 
+    axis {j} by {ang} radians, leaving all other coordinates unchanged. */
 
 double rn_sum (int32_t n, double *a);
   /* Returns the sum of all elements {a[0..n-1]}. */

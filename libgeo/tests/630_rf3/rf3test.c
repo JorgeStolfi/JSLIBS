@@ -1,5 +1,5 @@
 /* rf3test --- test program for rf3.h, rf3x3.h  */
-/* Last edited on 2021-08-17 10:10:37 by stolfi */
+/* Last edited on 2021-08-20 17:24:34 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -13,6 +13,7 @@
 
 #include <rf3.h>
 #include <rn_test_tools.h>
+#include <rfn_check.h>
 
 #define N 3
 #define NO NULL
@@ -47,6 +48,18 @@ void test_rf3(int32_t verbose)
           sizeof(rf3_t), N, N*sizeof(double)
         );
       }
+
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- rf3_zero ---\n"); }
+    a = rf3_zero();
+    for (i = 0; i < N; i++)
+      { rn_check_eq(a.c[i], 0.0, NO, NO, "rf3_zero error"); }
+
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- rf3_all ---\n"); }
+    a = rf3_all(3.14f);
+    for (i = 0; i < N; i++)
+      { rn_check_eq(a.c[i], 3.14f, NO, NO, "rf3_all error"); }
 
     if (verbose) { fprintf(stderr, "--- rf3_axis ---\n"); }
     for (k = 0; k < N; k++)
@@ -144,6 +157,25 @@ void test_rf3(int32_t verbose)
       { float ddi = (float)((double)(a.c[i]) * b.c[i]);
         rn_check_eq(d.c[i],ddi, NO, NO, "rf3_weigh error");
       }
+
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- rf3_unweigh ---\n"); }
+    a = rf3_throw_cube();
+    b = rf3_throw_cube();
+    d = rf3_unweigh(&a, &b);
+    for (i = 0; i < N; i++)
+      { float ddi = (float)(((double)a.c[i]) / b.c[i]);
+        rn_check_eq(d.c[i],ddi, NO, NO, "rf3_unweigh error");
+      }
+
+    if (verbose) { fprintf(stderr, "--- rf3_rot_axis ---\n"); }
+    { a = rf3_throw_cube();
+      int32_t i = int32_abrandom(0, N-1);
+      int32_t j = int32_abrandom(0, N-2); if (j >= i) { j++; }
+      double ang = 2.1*M_PI*drandom();
+      d = rf3_rot_axis(&a, i, j, ang);
+      rfn_check_rot_axis(N, a.c, i, j, ang, d.c, "rf3_rot_axis error");
+    }
 
     if (verbose) { fprintf(stderr, "--- rf3_norm, rf3_norm_sqr, rf3_L_inf_norm ---\n"); }
     a = rf3_throw_cube();
