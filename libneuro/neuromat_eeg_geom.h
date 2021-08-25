@@ -2,9 +2,10 @@
 #define neuromat_geom_H
 
 /* NeuroMat geometry tools. */
-/* Last edited on 2021-08-20 16:02:26 by stolfi */
+/* Last edited on 2021-08-21 12:25:49 by stolfi */
 
 #define _GNU_SOURCE
+#include <stdint.h>
 
 #include <r2.h>
 #include <r3.h>
@@ -50,7 +51,7 @@
     idealized plane with center {(0,0)} and radii {(rX,rY)}.
 */
 
-r2_t *neuromat_eeg_geom_get_schematic_2D_points(int ne);
+r2_t *neuromat_eeg_geom_get_schematic_2D_points(int32_t ne);
   /* If {rad} is {NULL}, returns a vector of {ne} points which are the two-dimensional
     schematic positions of the electrodes in the {ne}-electrode
     experiments.  */
@@ -97,8 +98,8 @@ r2_t neuromat_eeg_geom_ellipse_from_disk(r2_t *p, r2_t *ctr, r2_t *rad);
     mapped to the ellipse with center {ctr} and major radii {rad.c[0],
     rad.c[1]}.  */
 
-void neuromat_eeg_geom_map_many_disk_to_ellipse(int np, r2_t p[], r2_t *ctr, r2_t *rad, r2_t q[]); 
-void neuromat_eeg_geom_map_many_ellipse_to_disk(int np, r2_t p[], r2_t *ctr, r2_t *rad, r2_t q[]); 
+void neuromat_eeg_geom_map_many_disk_to_ellipse(int32_t np, r2_t p[], r2_t *ctr, r2_t *rad, r2_t q[]); 
+void neuromat_eeg_geom_map_many_ellipse_to_disk(int32_t np, r2_t p[], r2_t *ctr, r2_t *rad, r2_t q[]); 
   /* These proceedures apply {neuromat_eeg_geom_ellipse_from_disk}
     and {neuromat_eeg_geom_disk_from_ellipse}, respectively, to the points 
     {p[0..np-1]} yielding the points {q[0..np-1]}. */

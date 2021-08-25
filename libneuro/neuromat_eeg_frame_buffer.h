@@ -2,21 +2,21 @@
 #define neuromat_eeg_frame_buffer_H
 
 /* Buffer for readin consecutive dataframes from plain text NeuroMat EEG datasets. */
-/* Last edited on 2017-10-18 13:15:40 by jstolfi */
+/* Last edited on 2021-08-21 13:09:54 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
-#include <limits.h>
+#include <stdint.h>
 
 #include <bool.h>
  
 typedef struct neuromat_eeg_frame_buffer_t 
   {
-    int size;     /* Max number of frames in buffer. */
-    int nc;       /* Total number of channels. */
-    double **val; /* Cyclic queue of frame pointers. */
-    int it_ini;   /* Index of first frame in buffer. */
-    int it_fin;   /* Index of last frame in buffer. */
+    int32_t size;     /* Max number of frames in buffer. */
+    int32_t nc;       /* Total number of channels. */
+    double **val;     /* Cyclic queue of frame pointers. */
+    int32_t it_ini;   /* Index of first frame in buffer. */
+    int32_t it_fin;   /* Index of last frame in buffer. */
   } neuromat_eeg_frame_buffer_t;
   /* A buffer that stores up to {size} consecutive 
     data frames from a text NeuroMat EEG dataset, each with {nc}
@@ -29,7 +29,7 @@ typedef struct neuromat_eeg_frame_buffer_t
     The index {it_ini} is always non-negative, and {it_fin} is {it_ini-1} iff
     the buffer is empty, at least {it_ini} if it has at least one frame loaded. */
 
-neuromat_eeg_frame_buffer_t *neuromat_eeg_frame_buffer_new(int size, int nc);
+neuromat_eeg_frame_buffer_t *neuromat_eeg_frame_buffer_new(int32_t size, int32_t nc);
   /* Allocate EEG data buffer, with space for up to {size} frames of {nc}
     channels each. */
 
@@ -37,13 +37,13 @@ void neuromat_eeg_frame_buffer_free(neuromat_eeg_frame_buffer_t *buf);
   /* De-allocates all the internal subsidiary records of {buf}, and the 
     record {*buf} itself. */
 
-typedef int neuromat_eeg_frame_buffer_read_proc_t(int nc, double val[]);
+typedef int32_t neuromat_eeg_frame_buffer_read_proc_t(int32_t nc, double val[]);
   /* Type of a client procedure that reads a frame from somewhere and stores it into {val[0..nc-1]}.
     Should return 1 if success, 0 if there are no more frames. */
 
-int neuromat_eeg_frame_buffer_get_frame
+int32_t neuromat_eeg_frame_buffer_get_frame
   ( neuromat_eeg_frame_buffer_t *buf,
-    int it,
+    int32_t it,
     neuromat_eeg_frame_buffer_read_proc_t read_frame,
     bool_t mirror
   );
@@ -78,12 +78,12 @@ int neuromat_eeg_frame_buffer_get_frame
 void neuromat_eeg_frame_buffer_find_next_pulse
   ( neuromat_eeg_frame_buffer_t *buf, 
     neuromat_eeg_frame_buffer_read_proc_t *read_frame,
-    int it_start, 
-    int ns,
-    int ichs[], 
-    int *it_iniP, 
-    int *it_finP, 
-    int *sP
+    int32_t it_start, 
+    int32_t ns,
+    int32_t ichs[], 
+    int32_t *it_iniP, 
+    int32_t *it_finP, 
+    int32_t *sP
   );
   /* Looks for the first and last frame of the next pulse in certain
     channels of the input, starting with frame {it_start}. Assumes that
@@ -102,17 +102,17 @@ void neuromat_eeg_frame_buffer_find_next_pulse
     in {0..ns-1} such that the the pulse was in channel {ichs[*sP]}.
 
     If all channels {chs[0..ns-1]} are zero in all frames at or after frame
-    {it_start}, the procedure returns {INT_MIN} in {*it_fx_iniP}. In that case
+    {it_start}, the procedure returns {INT32_MIN} in {*it_fx_iniP}. In that case
     {*it_fx_finP,*sP} are undefined. */
 
 void neuromat_eeg_frame_buffer_find_next_pulse_start
   ( neuromat_eeg_frame_buffer_t *buf, 
     neuromat_eeg_frame_buffer_read_proc_t *read_frame,
-    int it_start, 
-    int ns, 
-    int ichs[], 
-    int *itP,
-    int *sP
+    int32_t it_start, 
+    int32_t ns, 
+    int32_t ichs[], 
+    int32_t *itP,
+    int32_t *sP
   );
   /* Finds the next up-transition in one or more channels of the input,
     starting at or after frame {it_start}.  Assumes that some frames are in {buf}, reads more frames
@@ -128,15 +128,15 @@ void neuromat_eeg_frame_buffer_find_next_pulse_start
     two or more pulses starting at the same time, returns the one with smallest
     {*sP}.
     
-    Returns {INT_MIN} in {*itP} if the dataset ends before finding
+    Returns {INT32_MIN} in {*itP} if the dataset ends before finding
     the required pulse.  In that case, {*sP} will be undefined.  */
 
 void neuromat_eeg_frame_buffer_find_pulse_end
   ( neuromat_eeg_frame_buffer_t *buf, 
     neuromat_eeg_frame_buffer_read_proc_t *read_frame, 
-    int it_start, 
-    int ic, 
-    int *itP
+    int32_t it_start, 
+    int32_t ic, 
+    int32_t *itP
   );
   /* Finds the frame at or after frame {it_start} where the current
     pulse in channel {ic} ends. Returns its index in {*itP}. Assumes
@@ -170,18 +170,18 @@ void neuromat_eeg_frame_buffer_find_pulse_end
 void neuromat_eeg_frame_buffer_get_next_pulse_pair
   ( neuromat_eeg_frame_buffer_t *buf,
     neuromat_eeg_frame_buffer_read_proc_t *read_frame,
-    int it_start, 
-    int ns, 
-    int ichs[], 
-    int nt_fx_default,
+    int32_t it_start, 
+    int32_t ns, 
+    int32_t ichs[], 
+    int32_t nt_fx_default,
     bool_t verbose,
     char *chnames[], 
     double fsmp,
-    int *it_fx_iniP,
-    int *it_fx_finP, 
-    int *it_st_iniP, 
-    int *it_st_finP,
-    int *s_stP
+    int32_t *it_fx_iniP,
+    int32_t *it_fx_finP, 
+    int32_t *it_st_iniP, 
+    int32_t *it_st_finP,
+    int32_t *s_stP
   );
   /* Looks for the next experimental run in the input file, defined by a
     start-of-fixation pulse (possibly missing) followed by a start-of-stimulus pulse,
@@ -206,7 +206,7 @@ void neuromat_eeg_frame_buffer_get_next_pulse_pair
     {stderr}, assuming {chnames[o..buf->nc-1]} are the channel names and
     {fsmp} is the sampling rate (in Hz).
 
-    If there are no more runs in the input, returns {INT_MIN} in {*it_fx_iniP}.
+    If there are no more runs in the input, returns {INT32_MIN} in {*it_fx_iniP}.
     In that case {*it_fx_finP,*it_st_iniP,*it_st_finP,*s_stP} are undefined.
     
     If the first pulse found after {it_start} is a start-of-stimulus pulse, tries 
@@ -222,15 +222,15 @@ void neuromat_eeg_frame_buffer_get_next_pulse_pair
 void neuromat_eeg_frame_buffer_get_next_fixation_pulse
   ( neuromat_eeg_frame_buffer_t *buf,
     neuromat_eeg_frame_buffer_read_proc_t *read_frame,
-    int it_start, 
-    int ns, 
-    int ichs[],
-    int nt_fx_default,
+    int32_t it_start, 
+    int32_t ns, 
+    int32_t ichs[],
+    int32_t nt_fx_default,
     bool_t verbose,
     char *chnames[], 
     double fsmp,
-    int *it_fx_iniP,
-    int *it_fx_finP
+    int32_t *it_fx_iniP,
+    int32_t *it_fx_finP
   );
   /* Looks for the next start-of-fixation pulse in the input file,
     faking one if it is missing, starting at or after frame {it_start}.
@@ -250,7 +250,7 @@ void neuromat_eeg_frame_buffer_get_next_fixation_pulse
     {stderr}, assuming {chnames[o..buf->nc-1]} are the channel names and
     {fsmp} is the sampling rate (in Hz).
 
-    If there are no more runs in the input, returns {INT_MIN} in {*it_fx_iniP}.
+    If there are no more runs in the input, returns {INT32_MIN} in {*it_fx_iniP}.
     In that case {*it_fx_finP} is undefined.
     
     If the first pulse found after {it_start} is a start-of-stimulus pulse, tries 
@@ -262,15 +262,15 @@ void neuromat_eeg_frame_buffer_get_next_fixation_pulse
 void neuromat_eeg_frame_buffer_get_next_stimulus_pulse
   ( neuromat_eeg_frame_buffer_t *buf,
     neuromat_eeg_frame_buffer_read_proc_t *read_frame,
-    int it_start, 
-    int ns, 
-    int ichs[], 
+    int32_t it_start, 
+    int32_t ns, 
+    int32_t ichs[], 
     bool_t verbose,
     char *chnames[], 
     double fsmp,
-    int *it_st_iniP, 
-    int *it_st_finP,
-    int *s_stP
+    int32_t *it_st_iniP, 
+    int32_t *it_st_finP,
+    int32_t *s_stP
   );
   /* Looks for the next start-of-stimulus pulse in the input file,
     faking one if it is missing, starting at or after frame {it_start}.
@@ -293,11 +293,11 @@ void neuromat_eeg_frame_buffer_get_next_stimulus_pulse
     {fsmp} is the sampling rate (in Hz).
 
     If reaches the end-of-file before finding such a frame,
-    returns {INT_MIN} in {*it_st_iniP}. In that case {*it_st_finP} 
+    returns {INT32_MIN} in {*it_st_iniP}. In that case {*it_st_finP} 
     and {*s_stP} are undefined.
     
     If the first pulse in channels {ichs[0..ns-1]} 
     found after {it_start} is a start-of-fixation pulse, 
-    rather than a start-of-stimulus, also returns  {INT_MIN} in {*it_st_iniP}. */
+    rather than a start-of-stimulus, also returns  {INT32_MIN} in {*it_st_iniP}. */
 
 #endif

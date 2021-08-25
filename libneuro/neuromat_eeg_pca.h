@@ -2,10 +2,11 @@
 #define neuromat_eeg_pca_H
 
 /* Principal componnet analysis toos for NeuroMat. */
-/* Last edited on 2017-10-17 18:03:53 by jstolfi */
+/* Last edited on 2021-08-21 12:47:26 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <bool.h>
 
@@ -27,7 +28,7 @@
   and {np} columns, which is the inverse of {P*P'} where {P'} is the
   transpose of {P}. */
 
-int neuromat_eeg_pca_eigen_decomp(int ne, double *A, double minMag, double *Ev, double emag[]);
+int32_t neuromat_eeg_pca_eigen_decomp(int32_t ne, double *A, double minMag, double *Ev, double emag[]);
   /* Computes the eigendecompostion of the matrix {A}, assumed
     to be square of size {ne × ne}, symmetric, and stored by rows.
 
@@ -39,15 +40,15 @@ int neuromat_eeg_pca_eigen_decomp(int ne, double *A, double minMag, double *Ev, 
     {Ev[iv*ne + je]} for {je} in {0..ne-1}. The square root of the
     corresponding eigenvalue is stored in {emag[iv]}. */
 
-void neuromat_eeg_pca_compute_fitting_matrix(int np, int ne, double *P, double *Q);
+void neuromat_eeg_pca_compute_fitting_matrix(int32_t np, int32_t ne, double *P, double *Q);
   /* Stores into {Q} the inverse of {P*P'}.  Also checks whether the inverse is 
     valid. */
 
 void neuromat_eeg_pca_fit_patterns
-  ( int nt, 
-    int ne, 
+  ( int32_t nt, 
+    int32_t ne, 
     double **val, 
-    int np, 
+    int32_t np, 
     double *P, 
     double *Q, 
     double **coeff,

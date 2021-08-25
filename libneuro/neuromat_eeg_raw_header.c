@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_raw_header.h}. */
-/* Last edited on 2017-09-15 15:10:07 by jstolfi */
+/* Last edited on 2021-08-21 13:10:34 by stolfi */
   
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -23,7 +23,7 @@ neuromat_eeg_raw_header_t *neuromat_eeg_raw_header_read(FILE *rd)
     
     /* Parse the fixed partof the header: */
     (*hr) = (neuromat_eeg_raw_header_t)
-      { .version = neuromat_eeg_raw_read_int32(rd, "version", 2, 4),        /* Sample data type (2 = {short int}, 4 = {float}). */
+      { .version = neuromat_eeg_raw_read_int32(rd, "version", 2, 4),        /* Sample data type (2 = {int16_t}, 4 = {float}). */
         .year =    neuromat_eeg_raw_read_int16(rd, "year",  2000, 2100),    /* Recording time: year (4-digit). */
         .month =   neuromat_eeg_raw_read_int16(rd, "month", 1, 12),         /* Recording time: month. */
         .day =     neuromat_eeg_raw_read_int16(rd, "day",   1, 31),         /* Recording time: day. */
@@ -43,8 +43,7 @@ neuromat_eeg_raw_header_t *neuromat_eeg_raw_header_read(FILE *rd)
     
     /* Parse the event channel names: */
     hr->evnames = notnull(malloc(hr->nv*sizeof(char *)), "no mem");
-    int ie; 
-    for(ie = 0; ie < hr->nv; ie++)
+    for(int32_t ie = 0; ie < hr->nv; ie++)
       { hr->evnames[ie] = neuromat_eeg_raw_read_event_code(rd, "event"); }
     
     return hr;
@@ -64,7 +63,7 @@ void neuromat_eeg_raw_header_print(FILE *wr, neuromat_eeg_raw_header_t *hr)
     fprintf(wr, "number of event channels = %d\n", hr->nv);
     
     fprintf(wr, "event channel names =");
-    for(int ie = 0; ie < hr->nv; ie++) 
+    for(int32_t ie = 0; ie < hr->nv; ie++) 
       { if ((ie > 0) && ((ie % 10) == 0)) { fprintf(wr, "\n "); }
         fprintf(wr, " %s", hr->evnames[ie]);
       }
@@ -75,18 +74,18 @@ void neuromat_eeg_raw_header_print(FILE *wr, neuromat_eeg_raw_header_t *hr)
 neuromat_eeg_header_t *neuromat_eeg_raw_header_to_plain_header
   ( neuromat_eeg_raw_header_t *hr,
     char *file,
-    int skip,
-    int copy,
-    int subject,
-    int run
+    int32_t skip,
+    int32_t copy,
+    int32_t subject,
+    int32_t run
   )
   {
     demand((hr->nc == 21) || (hr->nc == 129), "invalid channel count");
-    int ne = hr->nc - 1; /* Number of electrode channels. */
-    int ntOrig = hr->nt; /* Number of frames in original file. */
+    int32_t ne = hr->nc - 1; /* Number of electrode channels. */
+    int32_t ntOrig = hr->nt; /* Number of frames in original file. */
     
     /* Get the complete channel count and names (including event channels): */
-    int nc = 0;
+    int32_t nc = 0;
     char **chnames = NULL;
     neuromat_eeg_get_channel_names(ne, hr->nv, hr->evnames, &nc, &chnames);
     
@@ -105,17 +104,17 @@ neuromat_eeg_header_t *neuromat_eeg_raw_header_to_plain_header
         .ne = ne,          /* Num of electrode channels. */
         .type = NULL,      /* Type of run. */
         .chnames = chnames,
-        .kfmax = INT_MIN,   /* Max frequency index (only if spectrum data). */
+        .kfmax = INT32_MIN,   /* Max frequency index (only if spectrum data). */
         .component = NULL,  /* Principal component name. */
 
         /* Filtering data: */
-        .tdeg = INT_MIN,     /* Degree of polynomial trend. */
-        .tkeep = INT_MIN,    /* Whether the polynomial trend was kept (1) or suppressed (0). */
+        .tdeg = INT32_MIN,     /* Degree of polynomial trend. */
+        .tkeep = INT32_MIN,    /* Whether the polynomial trend was kept (1) or suppressed (0). */
         .flo0 = NAN,         /* Lower cutoff frequency. */
         .flo1 = NAN,         /* Nominal lowest preserved frequency. */
         .fhi1 = NAN,         /* Nominal highest preserved frequency. */
         .fhi0 = NAN,         /* Higher cutoff frequency. */
-        .finvert = INT_MIN,  /* Filter complementation: 0 for bandpass, 1 for bandkill. */
+        .finvert = INT32_MIN,  /* Filter complementation: 0 for bandpass, 1 for bandkill. */
         
         /* Source file information: */
         .orig = orig         /* Source parameters. */

@@ -2,7 +2,7 @@
 #define float_image_to_uint16_image_H
 
 /* Conversion from multichannel float-valued images to {uint16_t}-valued images. */
-/* Last edited on 2017-06-22 17:41:48 by stolfilocal */ 
+/* Last edited on 2021-08-24 12:20:27 by stolfi */ 
 
 #include <stdio.h>
 
@@ -18,7 +18,7 @@ uint16_image_t *float_image_to_uint16_image
     double lo[],         /* Nominal min float sample for each chosen channel. */
     double hi[],         /* Nominal max float sample for each chosen channel. */
     int ch[],            /* Indices of channels of {fim} to convert. */
-    uint16_t maxval, /* Max integer sample value in result image. */
+    uint16_t maxval,     /* Max integer sample value in result image. */
     bool_t yup,          /* If TRUE, reverses the indexing of rows. */
     bool_t verbose       /* If TRUE, prints conversion diagnostics to {stderr}. */
   );

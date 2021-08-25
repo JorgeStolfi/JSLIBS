@@ -2,17 +2,18 @@
 #define neuromat_eeg_channel_stats_H
 
 /* NeuroMat statistics tools. */
-/* Last edited on 2017-10-17 17:21:10 by jstolfi */
+/* Last edited on 2021-08-21 12:20:16 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <bool.h>
 
 #include <neuromat_eeg.h>
 
 typedef struct neuromat_eeg_channel_stats_t
-  { int num;    /* Number of observations (frames). */
+  { int32_t num;    /* Number of observations (frames). */
     double twt; /* Total frame weight. */
     double min; /* Min value. */
     double max; /* Max value. */
@@ -31,7 +32,7 @@ typedef struct neuromat_eeg_channel_stats_t
     
 /* ALLOCATION AND INITIALIZATION */
 
-neuromat_eeg_channel_stats_t *neuromat_eeg_channel_stats_new(int nc);
+neuromat_eeg_channel_stats_t *neuromat_eeg_channel_stats_new(int32_t nc);
   /* Allocates a vector of {nc} channel statistics records. 
     Initializes them all with {neuromat_eeg_channel_stats_clear}. */
 
@@ -63,25 +64,25 @@ void neuromat_eeg_channel_stats_clear(neuromat_eeg_channel_stats_t *st);
   {+INF} and {-INF}, and the other fields will be {NAN}. */
   
 void neuromat_eeg_channel_stats_gather
-  ( int nt, 
-    int nc, 
+  ( int32_t nt, 
+    int32_t nc, 
     double **val,
     double wt[],
     double eps,
-    int ic,
+    int32_t ic,
     neuromat_eeg_channel_stats_t *st
   );
   /* Computes the statistics of channel {ic}, which must be in {0..nc-1}, and
     stores them in {*st}. */
  
 void neuromat_eeg_channel_stats_gather_all
-  ( int nt, 
-    int nc, 
+  ( int32_t nt, 
+    int32_t nc, 
     double **val,
     double wt[],
     double eps,
     neuromat_eeg_channel_stats_t st[],
-    int ne, 
+    int32_t ne, 
     neuromat_eeg_channel_stats_t *stg
   );
   /* Computes the statistics of the values {val[0..nt-1][ic]}
@@ -99,8 +100,8 @@ void neuromat_eeg_channel_stats_gather_all
 
 void neuromat_eeg_channel_stats_print
   ( FILE *wr, 
-    int indent,
-    int ic,
+    int32_t indent,
+    int32_t ic,
     char *name,
     bool_t pnum,
     neuromat_eeg_channel_stats_t *st
@@ -112,12 +113,12 @@ void neuromat_eeg_channel_stats_print
 
 void neuromat_eeg_channel_stats_print_all
   ( FILE *wr, 
-    int indent,
-    int nc, 
+    int32_t indent,
+    int32_t nc, 
     char *name[],
     bool_t pnum,
     neuromat_eeg_channel_stats_t st[],
-    int ne,
+    int32_t ne,
     neuromat_eeg_channel_stats_t *stg
   );
   /* Prints to {wr} the statistics {st[0..nc-1]} of the {nc}
@@ -128,11 +129,11 @@ void neuromat_eeg_channel_stats_print_all
     statistics {*stg} assumed to refer to {ne} electrode channels.*/
     
 double neuromat_eeg_channel_stats_avg
-  ( int nt, 
-    int nc, 
+  ( int32_t nt, 
+    int32_t nc, 
     double **val,
     double wt[],
-    int ic
+    int32_t ic
   );
   /* Computes the weighted mean of the values of channel {ic}
     in the sample array {val[0..nt-1][0..nc-1]}, where 
@@ -146,8 +147,8 @@ double neuromat_eeg_channel_stats_avg
 /* COVARIANCE MATRIX */    
   
 double *neuromat_eeg_channel_stats_covariance_matrix
-  ( int nt,          /* Number of frames. */
-    int ne,          /* Number of electrodes. */
+  ( int32_t nt,          /* Number of frames. */
+    int32_t ne,          /* Number of electrodes. */
     double **val,    /* The samples per frame and electrode. */
     double vshift[], /* Values to subtract from each channel. */
     double wt[]      /* Weight of each frame. */
@@ -169,8 +170,8 @@ double *neuromat_eeg_channel_stats_covariance_matrix
     matrix with size {ne} by {ne}, linearized by rows. */
 
 void neuromat_eeg_channel_stats_accum_covariance_matrix
-  ( int nt,          /* Number of frames. */
-    int ne,          /* Number of electrodes. */
+  ( int32_t nt,          /* Number of frames. */
+    int32_t ne,          /* Number of electrodes. */
     double **val,    /* The samples per frame and electrode. */
     double vshift[], /* Values to subtract from each channel. */
     double wt[],     /* Weight of each frame. */

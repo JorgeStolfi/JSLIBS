@@ -2,7 +2,7 @@
 #define neuromat_eeg_raw_header_H
 
 /* Tools for reading and writing headers of "raw" NeuroMat EEG dataset. */
-/* Last edited on 2013-11-12 00:42:07 by stolfilocal */
+/* Last edited on 2021-08-21 12:51:47 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -13,7 +13,7 @@
 /* RAW EEG FILES */
 
 typedef struct neuromat_eeg_raw_header_t
-  { int32_t version; /* Sample data type (2 = {short int}, 4 = {float}). */
+  { int32_t version; /* Sample data type (2 = {int16_t}, 4 = {float}). */
     int16_t year;    /* Recording time: year (4-digit). */
     int16_t month;   /* Recording time: month. */
     int16_t day;     /* Recording time: day. */
@@ -41,10 +41,10 @@ void neuromat_eeg_raw_header_print(FILE *wr, neuromat_eeg_raw_header_t *hr);
 neuromat_eeg_header_t *neuromat_eeg_raw_header_to_plain_header
   ( neuromat_eeg_raw_header_t *hr,
     char *file,
-    int skip,
-    int copy,
-    int subject,
-    int run
+    int32_t skip,
+    int32_t copy,
+    int32_t subject,
+    int32_t run
   );
   /* Returns a standard NeuroMat dataset header with fields taken from the raw 
     header {hr}, assuming that {skip} frames will be skipped

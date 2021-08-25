@@ -2,16 +2,17 @@
 #define neuromat_eeg_io_H
 
 /* Reading plain-text NeuroMat EEG signals. */
-/* Last edited on 2013-11-24 22:44:38 by stolfilocal */
+/* Last edited on 2021-08-21 12:37:05 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <neuromat_eeg.h>
 
 /* !!! Change the sample type to {float} in order to save memory space? !!! */
 
-int neuromat_eeg_frame_read(FILE *rd, int nc, double frm[], int *nlP, int *nfP);
+int32_t neuromat_eeg_frame_read(FILE *rd, int32_t nc, double frm[], int32_t *nlP, int32_t *nfP);
   /* Read from {rd} the next data frame from an EEG dataset file.
   
     Assumes that each data frame is a line of {rd}, containing {nc}
@@ -38,7 +39,7 @@ int neuromat_eeg_frame_read(FILE *rd, int nc, double frm[], int *nlP, int *nfP);
     and comment lines), and increments {*nfP} by the number of data
     frames that it reads (0 or 1). */
 
-double **neuromat_eeg_data_read(FILE *rd, int nskip, int nread, int nc, /*(I/O):*/ int *nlP, /*(OUT):*/ int *ntP);
+double **neuromat_eeg_data_read(FILE *rd, int32_t nskip, int32_t nread, int32_t nc, /*(I/O):*/ int32_t *nlP, /*(OUT):*/ int32_t *ntP);
   /* Reads from {rd} multiple data frames of an EEG dataset. 
     
     The procedure will read but discard the first {nskip} data frames in
@@ -59,7 +60,7 @@ double **neuromat_eeg_data_read(FILE *rd, int nskip, int nread, int nc, /*(I/O):
     of data frames actually read (excluding all '#'-comments and header
     lines). */
     
-void neuromat_eeg_data_write(FILE *wr, int nt, int nc, double **val, int it_ini, int it_fin, int it_step);
+void neuromat_eeg_data_write(FILE *wr, int32_t nt, int32_t nc, double **val, int32_t it_ini, int32_t it_fin, int32_t it_step);
   /* Assumes that {val[0..nt-1][0..nc-1]} is an EEG dataset consisting
     of {nc} analog signals sampled at {nt} equally spaced moments. 
     Writes to {wr} the samples {val[it][0..nc-1]} where {it} 
@@ -69,13 +70,13 @@ void neuromat_eeg_data_write(FILE *wr, int nt, int nc, double **val, int it_ini,
     The values are written in "%e" format with 8 significant digits, separated by 
     blanks.  Does not write any header or trailer. */
       
-void neuromat_eeg_frame_write(FILE *wr, int nc, double val[]);
+void neuromat_eeg_frame_write(FILE *wr, int32_t nc, double val[]);
   /* Assumes that {val[0..nc-1]} is an EEG data frame consisting of
     {nc} analog signal samples. Writes to {wr} the samples
     {val[0..nc-1]}. The values are written in "%e" format with 8
     significant digits, separated by blanks. */
     
-void neuromat_eeg_frame_print(FILE *wr, char *pre, int nc, char **chnames, double val[], char *sep, char *suf);
+void neuromat_eeg_frame_print(FILE *wr, char *pre, int32_t nc, char **chnames, double val[], char *sep, char *suf);
   /* Prints to {wr} the samples {val[0..nc-1]}.  The list is preceded by the 
     string {pre}, closed with the string {suf}, and values are separated by {sep};
     if any of these strings is null, it is omitted. 

@@ -1,9 +1,10 @@
 /* See {neuromat_{eeg_|}image.h}. */
-/* Last edited on 2021-08-20 16:05:21 by stolfi */
+/* Last edited on 2021-08-21 12:25:21 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <r2.h>
@@ -13,7 +14,7 @@
 #include <neuromat_eeg.h>
 #include <neuromat_eeg_geom.h>
 
-r2_t *neuromat_eeg_geom_get_schematic_2D_points(int ne)
+r2_t *neuromat_eeg_geom_get_schematic_2D_points(int32_t ne)
   {
     r2_t *pos = NULL;
     if (ne == 20)
@@ -27,7 +28,7 @@ r2_t *neuromat_eeg_geom_get_schematic_2D_points(int ne)
 
 r2_t *neuromat_eeg_geom_get_20_schematic_2D_points(void)
   {
-    int ne = 20;
+    int32_t ne = 20;
     r2_t *pos = notnull(malloc(ne*sizeof(r2_t)), "no mem");
     
     /* Positions in arbitrary coordinates:  */
@@ -56,9 +57,8 @@ r2_t *neuromat_eeg_geom_get_20_schematic_2D_points(void)
     assert(ne == 20);
     
     /* Rescale to unit disk: */
-    int ie,j;
-    for (ie = 0; ie < ne; ie++) 
-      { for (j = 0; j < 2; j++) 
+    for (int32_t ie = 0; ie < ne; ie++) 
+      { for (int32_t j = 0; j < 2; j++) 
           { double z_raw = pos[ie].c[j];
             double z_rel = (z_raw - ctr_ref.c[j])/rad_ref.c[j];
             if (j == 1) { z_rel = -z_rel; }
@@ -71,7 +71,7 @@ r2_t *neuromat_eeg_geom_get_20_schematic_2D_points(void)
 
 r2_t *neuromat_eeg_geom_get_128_schematic_2D_points(void)
   {
-    int ne = 128;
+    int32_t ne = 128;
     r2_t *pos = notnull(malloc(ne*sizeof(r2_t)), "no mem");
     
     /* Positions in arbitrary coordinates:  */
@@ -218,9 +218,8 @@ r2_t *neuromat_eeg_geom_get_128_schematic_2D_points(void)
     assert(ne == 128);
     
     /* Rescale to unit disk: */
-    int ie,j;
-    for (ie = 0; ie < ne; ie++) 
-      { for (j = 0; j < 2; j++) 
+    for (int32_t ie = 0; ie < ne; ie++) 
+      { for (int32_t j = 0; j < 2; j++) 
           { double z_raw = pos[ie].c[j];
             double z_rel = (z_raw - ctr_ref.c[j])/rad_ref.c[j];
             if (j == 1) { z_rel = -z_rel; }
@@ -244,7 +243,7 @@ r3_t neuromat_eeg_geom_3D_from_2D(r2_t *p, r2_t *rad2, r3_t *rad3)
     return q3;
   }
 
-r2_t neuromat_eeg_geom_2D_from_3D(r3_t *p, r3_t *rad3, r2_t *rad2);
+r2_t neuromat_eeg_geom_2D_from_3D(r3_t *p, r3_t *rad3, r2_t *rad2)
   {
     r3_t q3 = (*p);
     if (rad3 != NULL) { r3_unweigh(&q3, rad3, &q3); }
@@ -253,7 +252,6 @@ r2_t neuromat_eeg_geom_2D_from_3D(r3_t *p, r3_t *rad3, r2_t *rad2);
     if (rad2 != NULL) { r2_weigh(&q2, rad2, &q2); }
     return q2;
   }
-
 
 r2_t neuromat_eeg_geom_disk_from_ellipse(r2_t *p, r2_t *ctr, r2_t *rad)
   {
@@ -271,24 +269,14 @@ r2_t neuromat_eeg_geom_ellipse_from_disk(r2_t *p, r2_t *ctr, r2_t *rad)
       }};
   }
 
-    if (rad != NULL)  
-      { for (int32_t k = 0; k < ne; k++)
-          { r2_t *pk = &(pos[k]);
-            r2_weigh(pk, rad, pk);
-          }
-      }
-
-
-void neuromat_eeg_geom_map_many_disk_to_ellipse(int np, r2_t p[], r2_t *ctr, r2_t *rad, r2_t q[])
+void neuromat_eeg_geom_map_many_disk_to_ellipse(int32_t np, r2_t p[], r2_t *ctr, r2_t *rad, r2_t q[])
   {
-    int ip;
-    for (ip = 0; ip < np; ip++) 
+    for (int32_t ip = 0; ip < np; ip++) 
       { q[ip] = neuromat_eeg_geom_ellipse_from_disk(&(p[ip]), ctr, rad); }
   }
 
-void neuromat_eeg_geom_map_many_ellipse_to_disk(int np, r2_t p[], r2_t *ctr, r2_t *rad, r2_t q[])
+void neuromat_eeg_geom_map_many_ellipse_to_disk(int32_t np, r2_t p[], r2_t *ctr, r2_t *rad, r2_t q[])
   {
-    int ip;
-    for (ip = 0; ip < np; ip++) 
+    for (int32_t ip = 0; ip < np; ip++) 
       { q[ip] = neuromat_eeg_geom_disk_from_ellipse(&(p[ip]), ctr, rad); }
   }
