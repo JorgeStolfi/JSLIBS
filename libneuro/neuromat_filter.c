@@ -1,11 +1,12 @@
 /* See {neuromat_filter.h}. */
-/* Last edited on 2013-11-21 02:53:19 by stolfilocal */
+/* Last edited on 2021-08-21 12:57:23 by stolfi */
 
 /* !!! Replace apodizing with trend-removal !!! */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 #include <math.h>
 #include <complex.h>
@@ -20,7 +21,7 @@
 #include <neuromat_poly.h>
 #include <neuromat_filter.h>
  
-double *neuromat_filter_tabulate_gain(int nf, double fsmp, neuromat_filter_t *gain, bool_t verbose);
+double *neuromat_filter_tabulate_gain(int32_t nf, double fsmp, neuromat_filter_t *gain, bool_t verbose);
   /* Builds a table of Hartley filter coefficients {G[0..nf-1]} from a
     complex Fourier filter transfer function {gain}, suitable for
     scaling a Hartley transform with {nf} coefficients.
@@ -36,11 +37,11 @@ double *neuromat_filter_tabulate_gain(int nf, double fsmp, neuromat_filter_t *ga
     !!! Should fold-over the response. !!! */
  
 void neuromat_filter_apply
-  ( int nt, 
-    int ne, 
+  ( int32_t nt, 
+    int32_t ne, 
     double **val, 
     double fsmp, 
-    int tdeg, 
+    int32_t tdeg, 
     bool_t tkeep, 
     neuromat_filter_t *gain,
     bool_t verbose
@@ -61,34 +62,31 @@ void neuromat_filter_apply
     double *P = (tdeg < 0 ? NULL : notnull(malloc(sizeof(double)*(tdeg+1)), "no mem"));
     double *s = (tdeg < 0 ? NULL : notnull(malloc(sizeof(double)*nt), "no mem"));
        
-    int it, ie;
-    for (ie = 0; ie < ne; ie++) 
+    for (int32_t ie = 0; ie < ne; ie++) 
       { /* Copy the signal {ie} into the FFT buffer, with mirrored apodized ends and zero padding: */
-        for (it = 0; it < nt; it++) { in[it] = val[it][ie]; }
+        for (int32_t it = 0; it < nt; it++) { in[it] = val[it][ie]; }
         
         if (tdeg >= 0)
           { /* Fit the polynomial {P}: */
-            int maxiter = 5;
+            int32_t maxiter = 5;
             neuromat_poly_fit_robust(nt, NULL, in, NULL, maxiter, tdeg, P, NULL);
             if (verbose) 
               { fprintf(stderr, "  trend = ");
-                int r; 
-                for (r = 0; r <= tdeg; r++) { fprintf(stderr, " %+12.6f", P[r]); }
+                for (int32_t r = 0; r <= tdeg; r++) { fprintf(stderr, " %+12.6f", P[r]); }
                 fprintf(stderr, "\n");
               }
             /* Evaluate it: */
             neuromat_poly_eval_multi(tdeg, P, nt, NULL, s);
             /* Subtract it from the data: */
-            for (it = 0; it < nt; it++) { in[it] -= s[it]; }
+            for (int32_t it = 0; it < nt; it++) { in[it] -= s[it]; }
           }
 
         /* Transform to frequency domain: */
         fftw_execute(pd);
 
         /* Apply frequency filter: */
-        int kf0;
-        for (kf0 = 0; kf0 <= nt-kf0; kf0++) 
-          { int kf1 = (nt - kf0) % nt; /* The other Hartley element with same absolute freq. */
+        for (int32_t kf0 = 0; kf0 <= nt-kf0; kf0++) 
+          { int32_t kf1 = (nt - kf0) % nt; /* The other Hartley element with same absolute freq. */
             double h0 = out[kf0];
             double G0 = G[kf0];
             if (kf1 == kf0)
@@ -111,7 +109,7 @@ void neuromat_filter_apply
         fftw_execute(pi);
         
         /* Return filtered signal & trend to {val}: */
-        for (it = 0; it < nt; it++) 
+        for (int32_t it = 0; it < nt; it++) 
           { /* Scale to preserve total power: */
             in[it] /= nt;
             /* Restore trend if any: */
@@ -131,13 +129,12 @@ void neuromat_filter_apply
     return;
   }
     
-double *neuromat_filter_tabulate_gain(int nf, double fsmp, neuromat_filter_t *gain, bool_t verbose)
+double *neuromat_filter_tabulate_gain(int32_t nf, double fsmp, neuromat_filter_t *gain, bool_t verbose)
   { 
     double *G = notnull(malloc(nf*sizeof(double)), "no mem");
     
-    int kf0;
-    for (kf0 = 0; kf0 <= nf-kf0; kf0++)
-      { int kf1 = (nf - kf0) % nf;  /* Index of the Hartley coeff with the same frequency. */
+    for (int32_t kf0 = 0; kf0 <= nf-kf0; kf0++)
+      { int32_t kf1 = (nf - kf0) % nf;  /* Index of the Hartley coeff with the same frequency. */
         /* Compute filter gain at frequency {f}: */
         complex F0 = gain(kf0, nf, fsmp);
         if (verbose) { fprintf(stderr, "%6d %10.6f  %+14.10f %+14.10f", kf0, kf0*fsmp/nf, creal(F0), cimag(F0)); }
@@ -180,7 +177,7 @@ double neuromat_filter_lowpass_sigmoid(double f, double fa, double fb)
       { return 0.5*(1 - erf(z)); }
   }
 
-double neuromat_filter_lowpass_butterworth(double f, double fc, int n)
+double neuromat_filter_lowpass_butterworth(double f, double fc, int32_t n)
   {
     if (fc == 0) { return 0; } 
     double s = f/fc;
@@ -197,16 +194,15 @@ double neuromat_filter_lowpass_butterworth(double f, double fc, int n)
       }
   }
   
-complex neuromat_filter_lowpass_cbutterworth(double f, double fc, int n)
+complex neuromat_filter_lowpass_cbutterworth(double f, double fc, int32_t n)
   {
     if (fc == 0) { return 0; } 
-    int odd = (n % 2);
+    int32_t odd = (n % 2);
     complex s = f/fc*I;
     complex B = (odd ? 1 + s : 1);
-    int n2 = n/2;
+    int32_t n2 = n/2;
     double u = M_PI/n/2;
-    int k;
-    for (k = 1; k <= n2; k++)
+    for (int32_t k = 1; k <= n2; k++)
       { complex t = s*s - 2*s*cos((2*k+n-1)*u) + 1;
         B *= t;
       }
@@ -227,10 +223,9 @@ double neuromat_filter_lowpass_gauss(double f, double fc, double gc, double fsmp
     double zf = f/fd;
     double gf = exp(-zf*zf);
     /* Range of summation for folded-over tails: */
-    int M = (int)ceil(8.5*fd/fsmp);
-    int k;
+    int32_t M = (int32_t)ceil(8.5*fd/fsmp);
     double gtf = 0, gt0 = 0;
-    for (k = M; k > 0; k--)
+    for (int32_t k = M; k > 0; k--)
       { double zkfp = (f + k*fsmp)/fd;
         double gkfp = exp(-zkfp*zkfp);
         double zkfm = (f - k*fsmp)/fd;
@@ -253,7 +248,7 @@ double neuromat_filter_lowpass_biquadratic(double f, double fmax)
     return g;
   } 
 
-double **neuromat_filter_compute_spectra(int nt, int ne, double **val, int kfmax, bool_t verbose)  
+double **neuromat_filter_compute_spectra(int32_t nt, int32_t ne, double **val, int32_t kfmax, bool_t verbose)  
   {
     demand(kfmax <= nt/2, "parameter {kfmax} exceeds the Nyquist frequency");
     
@@ -266,17 +261,15 @@ double **neuromat_filter_compute_spectra(int nt, int ne, double **val, int kfmax
     
     /* Apodizing window: */
     double *W = notnull(malloc(nt*sizeof(double)), "no mem");
-    int it;
-    for (it = 0; it < nt; it++) { W[it] = 0.5*(1 - cos(2*M_PI*(it+0.5)/nt)); }
+    for (int32_t it = 0; it < nt; it++) { W[it] = 0.5*(1 - cos(2*M_PI*(it+0.5)/nt)); }
     
     /* Do the row transforms: */
     fftw_plan px = fftw_plan_r2r_1d(nt, in, out, FFTW_DHT, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
-    int ie;
-    for (ie = 0; ie < ne; ie++)
+    for (int32_t ie = 0; ie < ne; ie++)
       { /* Allocate and compute the spectrum of electrode {ie}: */
         pwr[ie] = notnull(malloc((kfmax+1)*sizeof(double)), "no mem"); 
         double sum2_in = 0;
-        for (it = 0; it < nt; it++) 
+        for (int32_t it = 0; it < nt; it++) 
           { double vt = val[it][ie] * W[it];
             sum2_in += vt*vt;
             in[it] =  vt;
@@ -284,11 +277,10 @@ double **neuromat_filter_compute_spectra(int nt, int ne, double **val, int kfmax
         double rms_in = sqrt(sum2_in / nt);
         fftw_execute(px);
         if (verbose) { fprintf(stderr, "  electrode %d\n", ie); }
-        int kf0;
         double sum2_out = 0;
-        for (kf0 = 0; kf0 <= kfmax; kf0++) 
+        for (int32_t kf0 = 0; kf0 <= kfmax; kf0++) 
           { /* Get the index {kf1} of the coefficient with same actual frequency {kf0}: */
-            int kf1 = (nt - kf0) % nt;
+            int32_t kf1 = (nt - kf0) % nt;
             /* Compute the total power in that frequency: */
             double c0 = out[kf0];
             double c1 = out[kf1];
@@ -314,22 +306,21 @@ double **neuromat_filter_compute_spectra(int nt, int ne, double **val, int kfmax
 
 void neuromat_filter_write_spectra
   ( FILE *wr, 
-    int nt, 
-    int ne, 
-    int kfmax, 
+    int32_t nt, 
+    int32_t ne, 
+    int32_t kfmax, 
     double fsmp, 
     double **pwr
   )
   {
     demand(2*kfmax <= nt, "{kfmax} too high");
-    int kf, ie;
     
-    for (kf = 0; kf <= kfmax; kf++) 
+    for (int32_t kf = 0; kf <= kfmax; kf++) 
       { double f = kf*fsmp/nt;
         double flo = (kf == 0 ? 0.0 : kf - 0.5)*fsmp/nt;
         double fhi = (2*kf == nt ? (double)kf : kf + 0.5)*fsmp/nt;
         fprintf(wr, "%8d  %12.7f  %12.7f %12.7f ", kf, f, flo, fhi);
-        for (ie = 0; ie < ne; ie++) { fprintf(wr, " %12.5e", pwr[ie][kf]); }
+        for (int32_t ie = 0; ie < ne; ie++) { fprintf(wr, " %12.5e", pwr[ie][kf]); }
         fprintf(wr, "\n");
       }
     fflush(wr);

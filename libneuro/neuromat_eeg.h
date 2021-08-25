@@ -2,14 +2,15 @@
 #define neuromat_H
 
 /* NeuroMat tools. */
-/* Last edited on 2013-12-02 03:12:57 by stolfilocal */
+/* Last edited on 2021-08-23 23:19:36 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <bool.h>
 
-void neuromat_eeg_get_channel_names(int ne, int nv, char **evname, int *ncP, char ***chnamesP);
+void neuromat_eeg_get_channel_names(int32_t ne, int32_t nv, char **evname, int32_t *ncP, char ***chnamesP);
   /* Returns in {*chnamesP} a vector {chnames[0..nc-1]} of {nc} strings with 
     the names of the channels for {ne}-electrode EEG datasets. 
     The number {nc} of channels is returned in {*ncP}.
@@ -23,7 +24,7 @@ void neuromat_eeg_get_channel_names(int ne, int nv, char **evname, int *ncP, cha
     All the strings as well as the vector are newly allocated by the procedure.
     In particular, the strings {evname[0..nv-1]} are copied to new storage. */
 
-void neuromat_eeg_get_20_channel_names(int *ncP, char ***chnamesP);
+void neuromat_eeg_get_20_channel_names(int32_t *ncP, char ***chnamesP);
   /* Returns in {*chnamesP} a vector {chnames[0..20]} of 21 strings that
     are the names of the raw channels in the 20-electrode experiment.
     The number of channels (129) is returned in {*ncP}.
@@ -45,7 +46,7 @@ void neuromat_eeg_get_20_channel_names(int *ncP, char ***chnamesP);
     All the strings as well as the vector are newly allocated by the procedure.
   */
 
-void neuromat_eeg_get_128_channel_names(int *ncP, char ***chnamesP);
+void neuromat_eeg_get_128_channel_names(int32_t *ncP, char ***chnamesP);
   /* Returns in {*chnamesP} a vector {chnames[0..128]} of 129 strings with 
     the names of the channels for the 128-electrode EEG datasets. 
     The number of channels (129) is returned in {*ncP}.
@@ -58,23 +59,23 @@ void neuromat_eeg_get_128_channel_names(int *ncP, char ***chnamesP);
     
     All the strings as well as the vector are newly allocated by the procedure. */
 
-int neuromat_eeg_find_channel_by_name(char *name, int ic_start, int ic_end, char *chnames[], bool_t die);
+int32_t neuromat_eeg_find_channel_by_name(char *name, int32_t ic_start, int32_t ic_end, char *chnames[], bool_t die);
   /* Returns the index {i} in {ic_start..ic_end} such that the string {chnames[i]} 
     is equal to the string {name}.  If there is no such {i}, returns {-1} if {die}
     is false, or fails with message if {die} id true. */
 
 /* PULSE IDENTIFICATION */
     
-int neuromat_eeg_locate_pulses
-  ( int nt,              /* Number of data frames. */
-    int nc,              /* Number of data channels. */
+int32_t neuromat_eeg_locate_pulses
+  ( int32_t nt,              /* Number of data frames. */
+    int32_t nc,              /* Number of data channels. */
     double **val,        /* The EEG dataset ({nt} frames with {nc} channels each). */
-    int ict,             /* Index of trigger channel. */
+    int32_t ict,             /* Index of trigger channel. */
     double vmin,         /* "Low" trigger channel value. */
     double vmax,         /* "High" trigger channel value. */
-    int np_max,          /* Max expected number of pulses in file. */
-    int it_pulse_ini[],  /* (OUT) Index of first frame in each pulse. */
-    int it_pulse_fin[]   /* (OUT) Index of last frame in each pulse. */
+    int32_t np_max,          /* Max expected number of pulses in file. */
+    int32_t it_pulse_ini[],  /* (OUT) Index of first frame in each pulse. */
+    int32_t it_pulse_fin[]   /* (OUT) Index of last frame in each pulse. */
   );
   /* Locates the trigger pulses in an EEG
     dataset{val[0..nt-1][0..nc-1]}, which is assumed to have {nt} data
@@ -92,7 +93,7 @@ int neuromat_eeg_locate_pulses
     the first and last frames of pulse number {jp} (in {0..np-1}).
     These arrays should have at least {np_max} elements. */ 
 
-void neuromat_eeg_report_pulse(FILE *wr, char *pre, int ic, char *name, int it_ini, int it_fin, double fsmp, char *suf);
+void neuromat_eeg_report_pulse(FILE *wr, char *pre, int32_t ic, char *name, int32_t it_ini, int32_t it_fin, double fsmp, char *suf);
   /* Reports in {wr} a pulse in channel {ic} spanning frames {it_ini..it_fin}.
     Assumes that the channel is called {name} and that the samplig rate is {fsmp} (Hz).
     The procedure rints only one line and does not print a final newline.

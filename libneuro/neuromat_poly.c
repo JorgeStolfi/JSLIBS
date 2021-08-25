@@ -1,9 +1,10 @@
 /* See {neuromat_poly.h}. */
-/* Last edited on 2014-03-26 16:11:37 by stolfilocal */
+/* Last edited on 2021-08-21 13:04:20 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 #include <math.h>
 #include <complex.h>
@@ -17,7 +18,7 @@
 #include <neuromat_eeg.h>
 #include <neuromat_poly.h>
    
-void neuromat_poly_compute_lsq_matrix(int n, double x[], double w[], int g, double A[]);
+void neuromat_poly_compute_lsq_matrix(int32_t n, double x[], double w[], int32_t g, double A[]);
   /* Assumes that {A} is a {g+1} by {g+1} matrix inearzed by rows.
     Fills it with the linear system's matrix for the weighted least squares 
     polynomial approximation problem at arguments {x[0..n-1]}
@@ -29,7 +30,7 @@ void neuromat_poly_compute_lsq_matrix(int n, double x[], double w[], int g, doub
     If {x} is null, assumes {x[k] = 2*(k + 1/2)/n - 1} for {k} in {0..n-1}.
     If {w} is null, assumes unit weights for all arguments.*/
 
-void neuromat_poly_compute_lsq_vector(int n, double x[], double y[], double w[], int g, double b[]);
+void neuromat_poly_compute_lsq_vector(int32_t n, double x[], double y[], double w[], int32_t g, double b[]);
   /* Assumes that {b} is a vector with {g+1} elements.
     Fills it with the linear system's right-hand-side vector for the weighted least squares 
     polynomial approximation problem at arguments {x[0..n-1]} of values {y[0..n-1]}
@@ -48,7 +49,7 @@ double neuromat_poly_bayes(double v, double pri_gud, double avg_gud, double dev_
     and that, a priori, the sample is good with probability {pri_gud}. */
 
 void neuromat_poly_compute_stats
-  ( int n, 
+  ( int32_t n, 
     double v[], 
     double w[], 
     double p[], 
@@ -69,40 +70,37 @@ void neuromat_poly_compute_stats
     If {p} is null, assumes {p[k]==0.5} for all {k}. */
 
 
-double neuromat_poly_eval(int g, double P[], double x)
+double neuromat_poly_eval(int32_t g, double P[], double x)
   {
     demand(g >= 0, "invalid power");
     double y = P[g];
-    int i;
-    for (i = g-1; i >= 0; i--) { y = P[i] + x*y; }
+    for (int32_t i = g-1; i >= 0; i--) { y = P[i] + x*y; }
     return y;
   }
 
-void neuromat_poly_eval_multi(int g, double P[], int n, double x[], double s[])
+void neuromat_poly_eval_multi(int32_t g, double P[], int32_t n, double x[], double s[])
   {
     demand(g >= 0, "invalid power");
-    int k;
-    for (k = 0; k < n; k++) 
+    for (int32_t k = 0; k < n; k++) 
       { double xk = (x != NULL ? x[k] : 2*(k + 0.5)/n - 1);
         s[k] = neuromat_poly_eval(g, P, xk);
       }
   }
 
-void neuromat_poly_compute_lsq_matrix(int n, double x[], double w[], int g, double A[])
+void neuromat_poly_compute_lsq_matrix(int32_t n, double x[], double w[], int32_t g, double A[])
   {
     demand(g >= 0, "invalid power");
-    int g1 = g + 1;
+    int32_t g1 = g + 1;
     rmxn_zero(g1, g1, A);
 
     /* Fill the lower triangular half of {A}: */
     double *p = notnull(malloc(g1*sizeof(double)), "no mem"); /* Powers of each {x}. */
-    int i, j, k;
-    for (k = 0; k < n; k++)
+    for (int32_t k = 0; k < n; k++)
       { double xk = (x != NULL ? x[k] : 2*(k + 0.5)/n - 1);
         double wk = (w != NULL ? w[k] : 1);
-        for (i = 0; i <= g; i++)
+        for (int32_t i = 0; i <= g; i++)
           { p[i] = (i == 0 ? 1.0 : p[i-1]*xk);
-            for (j = 0; j <= i; j++)
+            for (int32_t j = 0; j <= i; j++)
               { double pipj = p[i]*p[j];
                 A[i*g1 + j] += wk*pipj;
               }
@@ -111,82 +109,77 @@ void neuromat_poly_compute_lsq_matrix(int n, double x[], double w[], int g, doub
     free(p);
 
     /* Replicate the lower half of {A} into the upper half: */
-    for (i = 1; i <= g; i++) { for (j = 0; j < i; j++) { A[j*g1 + i] = A[i*g1 + j]; } }
+    for (int32_t i = 1; i <= g; i++) { for (int32_t j = 0; j < i; j++) { A[j*g1 + i] = A[i*g1 + j]; } }
   }
 
-void neuromat_poly_compute_lsq_vector(int n, double x[], double y[], double w[], int g, double b[])
+void neuromat_poly_compute_lsq_vector(int32_t n, double x[], double y[], double w[], int32_t g, double b[])
   {
     demand(g >= 0, "invalid power");
-    int g1 = g + 1;
+    int32_t g1 = g + 1;
     rn_zero(g1, b);
-    int i, k;
-    for (k = 0; k < n; k++)
+    for (int32_t k = 0; k < n; k++)
       { double xk = (x != NULL ? x[k] : 2*(k + 0.5)/n - 1);
         double yk = y[k];
         double wk = (w != NULL ? w[k] : 1);
         double pi = 1.0; /* Power {xk^i}. */
-        for (i = 0; i <= g; i++)
+        for (int32_t i = 0; i <= g; i++)
           { b[i] += wk*pi*yk;
             pi = pi*xk;
           }
       }
   }
 
-void neuromat_poly_shift(int g, double P[], double a, double Q[])
+void neuromat_poly_shift(int32_t g, double P[], double a, double Q[])
   {
     demand(g >= 0, "invalid power");
-    int k;
-    for (k = g; k >= 0; k--)
+    for (int32_t k = g; k >= 0; k--)
       { /* Assume that {Q'=Q[k+1..g]} is the polynomial {P'=P[k+1..g]} shifted by {a},
           that is {Q'(x) = P'(x-a)} for all {x}. Now set {Q[k..g]} to the 
           coeffs of {Q''} that is {P''=P[k..g]} shifted by {a}.
           That is,  { Q''(x) = P''(x-a) = P[k]+(x-a)*P'(x-a) = P[k]+(x-a)*Q'(x) }
         */
         Q[k] = P[k];
-        int i;
-        for (i = k; i < g; i++) { Q[i] = Q[i] - a*Q[i+1]; }
+        for (int32_t i = k; i < g; i++) { Q[i] = Q[i] - a*Q[i+1]; }
       }
   }
 
-void neuromat_poly_stretch(int g, double P[], double h, double Q[])
+void neuromat_poly_stretch(int32_t g, double P[], double h, double Q[])
   {
     demand(g >= 0, "invalid power");
     double hk = 1.0;
-    int k;
-    for (k = 1; k <= g; k++)
+    for (int32_t k = 1; k <= g; k++)
       { hk *= h;  /* Value is {h^k}. */
         Q[k] = P[k]/hk;
       }
   }
 
-void neuromat_poly_bezier(int g, int i, double a, double b, double P[])
+void neuromat_poly_bezier(int32_t g, int32_t i, double a, double b, double P[])
   {
     demand((0 <= i) && (i <= g), "invalid Bezier exponent or index");
     double h = b - a;
     double ah = a/h, bh = b/h;
     P[0] = (double)comb(g,i); /* Hopefully there is no overflow or rounding. */
     /* Multiply {P[0..0]} by {((x-a)/h)^i} yielding {P[0..i]}: */
-    int k, r;
-    for (k = 0; k < i; k++)
+    for (int32_t k = 0; k < i; k++)
       { /* Multiply {P[0..k]} by {(x-a)/h} yielding {P[0..k+1]}: */
         P[k+1] = P[k]/h;
-        for (r = k; r > 0; r--) { P[r] = P[r-1]/h - P[r]*ah; }
+        for (int32_t r = k; r > 0; r--) { P[r] = P[r-1]/h - P[r]*ah; }
         P[0] = -P[0]*ah;
       }
     /* Multiply {P[0..i]} by {((b-x)/h)^(g-i)} yielding {P[0..g]}: */
-    for (k = i; k < g; k++)
+    for (int32_t k = i; k < g; k++)
       { /* Multiply {P[0..k]} by {(b-x)/h} yielding {P[0..k+1]}: */
         P[k+1] = -P[k]/h;
-        for (r = k; r > 0; r--) { P[r] = -P[r-1]/h + P[r]*bh; }
+        for (int32_t r = k; r > 0; r--) { P[r] = -P[r-1]/h + P[r]*bh; }
         P[0] = P[0]*bh;
       }
   }
 
-void neuromat_poly_fit(int n, double x[], double y[], double w[], int g, double P[])
+void neuromat_poly_fit(int32_t n, double x[], double y[], double w[], int32_t g, double P[])
   {
     demand(g >= 0, "invalid power");
     demand(n > g, "too few data points");
-    int g1 = g + 1; /* Number of unnowns (coefficients). */
+    int32_t g1 = g + 1; /* Number of unnowns (coefficients). */
     double *A = notnull(malloc(g1*g1*sizeof(double)), "no mem"); /* Moment matrix. */
     double *b = notnull(malloc(g1*sizeof(double)), "no mem"); /* Right-hand side. */
     
@@ -199,12 +192,12 @@ void neuromat_poly_fit(int n, double x[], double y[], double w[], int g, double 
   }
 
 void neuromat_poly_fit_robust
-  ( int n, 
+  ( int32_t n, 
     double x[], 
     double y[], 
     double w[], 
-    int maxiter, 
-    int g, 
+    int32_t maxiter, 
+    int32_t g, 
     double P[],
     neuromat_poly_report_proc_t *report
   )
@@ -215,7 +208,7 @@ void neuromat_poly_fit_robust
     demand(g >= 0, "invalid power");
     demand(n > g, "too few data points");
     
-    int g1 = g+1; /* Number of unnowns (coefficients). */
+    int32_t g1 = g+1; /* Number of unnowns (coefficients). */
     double *A = notnull(malloc(g1*g1*sizeof(double)), "no mem"); /* Moment matrix. */
     double *b = notnull(malloc(g1*sizeof(double)), "no mem"); /* Right-hand side. */
 
@@ -241,9 +234,8 @@ void neuromat_poly_fit_robust
         double dev_gud, dev_bad;   /* Deviation. */
         double pri_gud, pri_bad;   /* A priori probability of being inlier or outlier. */
         
-        int iter;
         rn_all(n, 0.5, p); /* A priori, inliers and outliers are equally likely: */
-        for (iter = 1; iter <= maxiter; iter++)
+        for (int32_t iter = 1; iter <= maxiter; iter++)
           { 
             if (debug) { fprintf(stderr, "    iteration %d\n", iter); }
 
@@ -272,8 +264,7 @@ void neuromat_poly_fit_robust
             if (debug) { fprintf(stderr, "      bad:  avg = %+9.4f  dev = %9.4f  pri = %9.4f\n", avg_bad, dev_bad, pri_bad); }
 
             /* Recompute data point inlier/outlier probabilities and adjusted data {yc[0..n-1]}: */
-            int k;
-            for (k = 0; k < n; k++) 
+            for (int32_t k = 0; k < n; k++) 
               { /* Decide the probability {p[k]} of each sample {y[k]} being an inlier: */
                 double pk = neuromat_poly_bayes(y[k], pri_gud, ya[k] + avg_gud, dev_gud, avg_bad, dev_bad);
                 p[k] = pk;
@@ -294,7 +285,7 @@ void neuromat_poly_fit_robust
   }
 
 void neuromat_poly_compute_stats
-  ( int n, 
+  ( int32_t n, 
     double v[], 
     double w[], 
     double p[], 
@@ -308,8 +299,7 @@ void neuromat_poly_compute_stats
     double sum_wpv = 0;
     double sum_wp = 0;
     double sum_w = 0;
-    int k;
-    for (k = 0; k < n; k++) 
+    for (int32_t k = 0; k < n; k++) 
       { double vk = v[k];
         double wk = (w == NULL ? 1.0 : w[k]);
         double pk = (p == NULL ? 0.5 : (good ? p[k] : 1.0 - p[k]));
@@ -322,7 +312,7 @@ void neuromat_poly_compute_stats
     assert(! isnan(avg));
     /* Compute the standard deviation: */
     double sum_wpd2 = 0;
-    for (k = 0; k < n; k++) 
+    for (int32_t k = 0; k < n; k++) 
       { double dk = v[k] - avg;
         double wk = (w == NULL ? 1.0 : w[k]);
         double pk = (p == NULL ? 0.5 : (good ? p[k] : 1.0 - p[k]));

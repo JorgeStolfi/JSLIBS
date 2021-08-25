@@ -1,5 +1,5 @@
 #! /bin/bash
-# Last edited on 2014-01-15 22:59:09 by stolfilocal
+# Last edited on 2021-08-21 21:49:12 by stolfi
 
 # Tests the proper weights for unidimensional Shepard-like interpolation of first order.
 
@@ -34,10 +34,10 @@ printf "     ''           using 1:(1.0) title 'data'    with points lt 1 lw 1.5 
 
 while [[ ${i} -lt ${nc} ]]; do
   printf ", "'\\'"\n" >> ${wtgpl}
-  printf "     '${wtfile}' using 1:(2+${i}) title 'wt[${i}]' with lines lt 1 lw 1.5 lc rgb '#${color[${icolor}]}'" >> ${wtgpl}
+  printf "     '${wtfile}' using 1:(column(2+${i})) title 'wt[${i}]' with lines lt 1 lw 1.5 lc rgb '#${color[${icolor}]}'" >> ${wtgpl}
 
   printf ", "'\\'"\n" >> ${basgpl}
-  printf "     '${basfile}' using 1:(2+${i}) title 'bas[${i}]' with lines lt 1 lw 1.5 lc rgb '#${color[${icolor}]}'" >> ${basgpl}
+  printf "     '${basfile}' using 1:(column(2+${i})) title 'bas[${i}]' with lines lt 1 lw 1.5 lc rgb '#${color[${icolor}]}'" >> ${basgpl}
   
   i=$(( ${i} + 1 ));
   icolor=$(( ${icolor} + 1 ));
@@ -60,11 +60,13 @@ yden = 2000.0/1800.0
 # Pairs
 set origin 0.0,(0.500/yden)
 set size 1.0,(0.475/yden)
+set yrange [-0.01:3.01]
 load "${wtgpl}"
 # ----------------------------------------------------------------------
 # Difference
 set origin 0.0,(0.000/yden)
 set size 1.0,(0.475/yden)
+set yrange [-3.01:3.01]
 load "${basgpl}"
 # ----------------------------------------------------------------------
 unset multiplot

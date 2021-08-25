@@ -1,10 +1,10 @@
 /* See {neuromat_eeg_frame_buffer.oh}. */
-/* Last edited on 2017-10-18 14:41:16 by jstolfi */
+/* Last edited on 2021-08-21 13:09:34 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <affirm.h>
@@ -16,7 +16,7 @@
 
 #include <neuromat_eeg_frame_buffer.h>
       
-neuromat_eeg_frame_buffer_t *neuromat_eeg_frame_buffer_new(int size, int nc)
+neuromat_eeg_frame_buffer_t *neuromat_eeg_frame_buffer_new(int32_t size, int32_t nc)
   {
     neuromat_eeg_frame_buffer_t *buf = notnull(malloc(sizeof(neuromat_eeg_frame_buffer_t)), "no mem");
     
@@ -27,30 +27,28 @@ neuromat_eeg_frame_buffer_t *neuromat_eeg_frame_buffer_new(int size, int nc)
         .it_ini = 0, /* Index of first frame in buffer. */
         .it_fin = -1 /* Index of last frame in buffer. */
       };
-    int itb;
-    for (itb = 0; itb < size; itb++) { buf->val[itb] = NULL; }
+    for (int32_t itb = 0; itb < size; itb++) { buf->val[itb] = NULL; }
     return buf;
   }
 
 void neuromat_eeg_frame_buffer_free(neuromat_eeg_frame_buffer_t *buf)
   {
-    int itb;
-    for (itb = 0; itb < buf->size; itb++) { free(buf->val[itb]); }
+    for (int32_t itb = 0; itb < buf->size; itb++) { free(buf->val[itb]); }
     free(buf->val);
     free(buf);
   }
 
-int neuromat_eeg_frame_buffer_get_frame
+int32_t neuromat_eeg_frame_buffer_get_frame
   ( neuromat_eeg_frame_buffer_t *buf,
-    int it,
+    int32_t it,
     neuromat_eeg_frame_buffer_read_proc_t read_frame,
     bool_t mirror
   )
   {
     bool_t debug = FALSE;
     
-    int it_raw = it; /* For messages. */
-    int it_end = -1; /* Index of last frame in file, or {-1} if not known. */
+    int32_t it_raw = it; /* For messages. */
+    int32_t it_end = -1; /* Index of last frame in file, or {-1} if not known. */
 
     /* Mirror negative indices about frame zero: */
     if (it < 0) 
@@ -65,17 +63,17 @@ int neuromat_eeg_frame_buffer_get_frame
     while (it > buf->it_fin)
       { /* Flush the first frame, if needed, to make space for one more frame: */
         assert(buf->it_ini <= buf->it_fin + 1);
-        int nb = buf->it_fin + 1 - buf->it_ini;
+        int32_t nb = buf->it_fin + 1 - buf->it_ini;
         if (nb >= buf->size) { (buf->it_ini)++; }
         /* Get the index of the next frame in file {jt} and in the buffer {jt_buf}: */
-        int jt = buf->it_fin + 1;
-        int jt_buf = (jt % buf->size);
+        int32_t jt = buf->it_fin + 1;
+        int32_t jt_buf = (jt % buf->size);
         /* Get or allocate storage for the next frame: */
         if (debug) { fprintf(stderr, "  reading into row %d of buffer\n", jt_buf); }
         double *frm = buf->val[jt_buf];
         if (frm == NULL) { frm = notnull(malloc(buf->nc*sizeof(double)), "no mem"); }
         /* Read the next frame into buffer: */
-        int nrd = (it_end >= 0 ? 0 : read_frame(buf->nc, frm));
+        int32_t nrd = (it_end >= 0 ? 0 : read_frame(buf->nc, frm));
         if (nrd == 1) 
           { assert(it_end < 0); /* We must not have hit EOF before. */
             /* Read succedded, store in buffer: */
@@ -97,7 +95,7 @@ int neuromat_eeg_frame_buffer_get_frame
                 it_end = buf->it_fin;
                 if (mirror)
                   { /* Mirror {it} about last frame: */
-                    int nt = it_end + 1; /* Number of frames in file. */
+                    int32_t nt = it_end + 1; /* Number of frames in file. */
                     /* Execute multiple mirrors about end and zero: */
                     it = it % (2*nt); 
                     /* Mirror one last time about end if needed: */
@@ -135,27 +133,27 @@ int neuromat_eeg_frame_buffer_get_frame
 void neuromat_eeg_frame_buffer_find_next_pulse
   ( neuromat_eeg_frame_buffer_t *buf, 
     neuromat_eeg_frame_buffer_read_proc_t *read_frame,
-    int it_start, 
-    int ns,
-    int ichs[], 
-    int *it_iniP, 
-    int *it_finP, 
-    int *sP
+    int32_t it_start, 
+    int32_t ns,
+    int32_t ichs[], 
+    int32_t *it_iniP, 
+    int32_t *it_finP, 
+    int32_t *sP
   )
   {
     bool_t debug = TRUE;
     if (debug) { fprintf(stderr, "    %s: starting at buf.it_ini = %d\n", __FUNCTION__, it_start); }
     
     /* Data for a pulse: */
-    int it_ini = -1, it_fin = -1; /* First and last frame of pulse. */
-    int s = -1;  /* Phase type: stimulus type index {0..ns-1} or -1 if fixation. */ 
+    int32_t it_ini = -1, it_fin = -1; /* First and last frame of pulse. */
+    int32_t s = -1;  /* Phase type: stimulus type index {0..ns-1} or -1 if fixation. */ 
     
-    int it_next = it_start;
+    int32_t it_next = it_start;
     neuromat_eeg_frame_buffer_find_next_pulse_start(buf, read_frame, it_next, ns, ichs, &it_ini, &s);
-    if (it_ini != INT_MIN) 
+    if (it_ini != INT32_MIN) 
       { assert(it_ini >= it_next);
         assert((s >= 0) && (s < ns));
-        int ic = ichs[s]; /* Channel where pulse actually occurred. */
+        int32_t ic = ichs[s]; /* Channel where pulse actually occurred. */
         it_next = it_ini;
         /* Skip rest of pulse: */
         neuromat_eeg_frame_buffer_find_pulse_end(buf, read_frame, it_next, ic, &it_fin);
@@ -173,30 +171,29 @@ void neuromat_eeg_frame_buffer_find_next_pulse
 void neuromat_eeg_frame_buffer_find_next_pulse_start
   ( neuromat_eeg_frame_buffer_t *buf, 
     neuromat_eeg_frame_buffer_read_proc_t *read_frame,
-    int it_start, 
-    int ns, 
-    int ichs[], 
-    int *itP,
-    int *sP
+    int32_t it_start, 
+    int32_t ns, 
+    int32_t ichs[], 
+    int32_t *itP,
+    int32_t *sP
   )
   {
-    int it = it_start;
-    int s = -1; /* Channel that was up. */
+    int32_t it = it_start;
+    int32_t s = -1; /* Channel that was up. */
     while (TRUE)
       { /* Make sure that frame {it} is in the buffer, grab it: */
-        int itb = neuromat_eeg_frame_buffer_get_frame(buf, it, read_frame, FALSE);
+        int32_t itb = neuromat_eeg_frame_buffer_get_frame(buf, it, read_frame, FALSE);
         if (itb < 0) 
           { /* End of file before next frame. */
-            it = INT_MIN; 
+            it = INT32_MIN; 
             break;
           }
         double *vt = buf->val[itb];
         /* Check if any of the channels are up, save in {*sP}: */
-        int nup = 0; /* Number of marker channels that are up. */ 
-        int r;
-        for (r = 0; r < ns; r++)
+        int32_t nup = 0; /* Number of marker channels that are up. */ 
+        for (int32_t r = 0; r < ns; r++)
           { /* Check channel {ichs[r]}: */
-            int ic = ichs[r];
+            int32_t ic = ichs[r];
             demand(vt[ic] >= 0, "stimulus phase marker channel is negative");
             if (vt[ic] > 0) 
               { if (s == -1) { s = r; }
@@ -216,15 +213,15 @@ void neuromat_eeg_frame_buffer_find_next_pulse_start
 void neuromat_eeg_frame_buffer_find_pulse_end
   ( neuromat_eeg_frame_buffer_t *buf, 
     neuromat_eeg_frame_buffer_read_proc_t *read_frame, 
-    int it_start, 
-    int ic, 
-    int *itP
+    int32_t it_start, 
+    int32_t ic, 
+    int32_t *itP
   )
   {
-    int it = it_start;
+    int32_t it = it_start;
     while(TRUE)
       { /* Make sure that frame {it} is in the buffer: */
-        int itb = neuromat_eeg_frame_buffer_get_frame(buf, it, read_frame, FALSE);
+        int32_t itb = neuromat_eeg_frame_buffer_get_frame(buf, it, read_frame, FALSE);
         if (itb < 0) 
           { /* End of file before next frame. */
             demand(it > it_start, "start frame does not exist");
@@ -244,28 +241,28 @@ void neuromat_eeg_frame_buffer_find_pulse_end
 void neuromat_eeg_frame_buffer_get_next_pulse_pair
   ( neuromat_eeg_frame_buffer_t *buf,
     neuromat_eeg_frame_buffer_read_proc_t *read_frame,
-    int it_start, 
-    int ns, 
-    int ichs[], 
-    int nt_fx_default,
+    int32_t it_start, 
+    int32_t ns, 
+    int32_t ichs[], 
+    int32_t nt_fx_default,
     bool_t verbose,
     char *chnames[], 
     double fsmp,
-    int *it_fx_iniP,
-    int *it_fx_finP, 
-    int *it_st_iniP, 
-    int *it_st_finP,
-    int *s_stP
+    int32_t *it_fx_iniP,
+    int32_t *it_fx_finP, 
+    int32_t *it_st_iniP, 
+    int32_t *it_st_finP,
+    int32_t *s_stP
   )
   {
-    int s_fx = ns-1;  /* Phase type of the fixation phase: */
+    int32_t s_fx = ns-1;  /* Phase type of the fixation phase: */
 
     /* Local frame indices: */
-    int it_fx_ini, it_fx_fin; /* First and last frame of start-of-fixation pulse. */
-    int it_st_ini, it_st_fin; /* First and last frame of start-of-stimulus pulse. */
-    int s_st;  /* Index of start-of-stimulus channel in {ichs[0..ns-1]}. */
+    int32_t it_fx_ini, it_fx_fin; /* First and last frame of start-of-fixation pulse. */
+    int32_t it_st_ini, it_st_fin; /* First and last frame of start-of-stimulus pulse. */
+    int32_t s_st;  /* Index of start-of-stimulus channel in {ichs[0..ns-1]}. */
     
-    int it_next = it_start;
+    int32_t it_next = it_start;
     
     /* Loop until we get a well-formed run or the file is exhausted: */
     while(TRUE)
@@ -279,11 +276,11 @@ void neuromat_eeg_frame_buffer_get_next_pulse_pair
             &it_fx_ini, &it_fx_fin
           );
 
-        if (it_fx_ini == INT_MIN)
+        if (it_fx_ini == INT32_MIN)
           { /* No more runs: */
-            it_st_ini = INT_MIN;
-            it_st_fin = INT_MIN;
-            s_st = INT_MIN;
+            it_st_ini = INT32_MIN;
+            it_st_fin = INT32_MIN;
+            s_st = INT32_MIN;
             break;
           }
         else
@@ -297,14 +294,14 @@ void neuromat_eeg_frame_buffer_get_next_pulse_pair
                 verbose, chnames, fsmp, 
                 &it_st_ini, &it_st_fin, &s_st
               );
-            if (it_st_ini == INT_MIN)
+            if (it_st_ini == INT32_MIN)
               { /* Missing start-of-stimulus pulse, due to eof or another fixation pulse. */
                 /* Discard fixation pulse: */
                 fprintf(stderr, "!! start of stimulus pulse not found\n");
                 fprintf(stderr, "!! ignoring start-of-fixation pulse at frame %d\n", it_fx_ini);
                 it_next = it_fx_fin + 1;
-                it_fx_ini = INT_MIN;
-                it_fx_fin = INT_MIN;
+                it_fx_ini = INT32_MIN;
+                it_fx_fin = INT32_MIN;
                 /* Look again for the start-of-fixation pulse: */
                 continue;
               }
@@ -316,7 +313,7 @@ void neuromat_eeg_frame_buffer_get_next_pulse_pair
       }
       
     /* Either we found a start-of-stimulus pulse in the actual file, or eof: */
-    if (it_st_ini != INT_MIN)
+    if (it_st_ini != INT32_MIN)
       { /* Paranoia: */
         assert(it_fx_ini <= it_fx_fin);
         assert(it_fx_ini < it_st_ini);
@@ -325,10 +322,10 @@ void neuromat_eeg_frame_buffer_get_next_pulse_pair
         assert(s_st != s_fx);
        }
      else
-       { assert(it_fx_fin == INT_MIN);
-         assert(it_st_ini == INT_MIN);
-         assert(it_st_fin == INT_MIN);
-         assert(s_st == INT_MIN);
+       { assert(it_fx_fin == INT32_MIN);
+         assert(it_st_ini == INT32_MIN);
+         assert(it_st_fin == INT32_MIN);
+         assert(s_st == INT32_MIN);
        }
 
     /* Return results: */
@@ -342,32 +339,32 @@ void neuromat_eeg_frame_buffer_get_next_pulse_pair
 void neuromat_eeg_frame_buffer_get_next_fixation_pulse
   ( neuromat_eeg_frame_buffer_t *buf,
     neuromat_eeg_frame_buffer_read_proc_t *read_frame,
-    int it_start,
-    int ns, 
-    int ichs[],
-    int nt_fx_default,
+    int32_t it_start,
+    int32_t ns, 
+    int32_t ichs[],
+    int32_t nt_fx_default,
     bool_t verbose,
     char *chnames[], 
     double fsmp,
-    int *it_fx_iniP,
-    int *it_fx_finP
+    int32_t *it_fx_iniP,
+    int32_t *it_fx_finP
   )
   {  
-    int s_fx = ns-1;  /* Phase type of the fixation phase: */
+    int32_t s_fx = ns-1;  /* Phase type of the fixation phase: */
 
     /* Look for the next start-of-phase pulse in the fixation or stimulus trigger channels: */
-    int it_pu_ini, it_pu_fin; /* First and last frame of pulse. */
-    int s_pu;  /* Phase type in {0..ns-1}. */ 
+    int32_t it_pu_ini, it_pu_fin; /* First and last frame of pulse. */
+    int32_t s_pu;  /* Phase type in {0..ns-1}. */ 
     neuromat_eeg_frame_buffer_find_next_pulse
       ( buf, read_frame, it_start,
         ns, ichs, 
         &it_pu_ini, &it_pu_fin, &s_pu
       );
 
-    if (it_pu_ini == INT_MIN) 
+    if (it_pu_ini == INT32_MIN) 
       { /* No more start-of-something pulses in file: */
-        (*it_fx_iniP) = INT_MIN;
-        (*it_fx_finP) = INT_MIN;
+        (*it_fx_iniP) = INT32_MIN;
+        (*it_fx_finP) = INT32_MIN;
         return;
       }
     else
@@ -377,7 +374,7 @@ void neuromat_eeg_frame_buffer_get_next_fixation_pulse
 
         if (s_pu == s_fx)
           { /* We got a start-of-fixation pulse: */
-            int ic_pu = ichs[s_pu];
+            int32_t ic_pu = ichs[s_pu];
             if (verbose)
               { neuromat_eeg_report_pulse
                   ( stderr, " [fx] ", ic_pu, chnames[ic_pu], it_pu_ini, it_pu_fin, fsmp, "\n" );
@@ -388,7 +385,7 @@ void neuromat_eeg_frame_buffer_get_next_fixation_pulse
           }
         else
           { /* We got an unexpected start-of-stimulus pulse. */
-            int ic_pu = ichs[s_pu];
+            int32_t ic_pu = ichs[s_pu];
             fprintf(stderr, "!! warning: missing start-of-fixation pulse - start-of-stimulus pulse in channel %d\n", ic_pu);
             /* Fake the start-of-fixation pulse: */
             if (it_pu_ini < it_start + nt_fx_default)
@@ -404,33 +401,33 @@ void neuromat_eeg_frame_buffer_get_next_fixation_pulse
 void neuromat_eeg_frame_buffer_get_next_stimulus_pulse
   ( neuromat_eeg_frame_buffer_t *buf,
     neuromat_eeg_frame_buffer_read_proc_t *read_frame,
-    int it_start, 
-    int ns, 
-    int ichs[], 
+    int32_t it_start, 
+    int32_t ns, 
+    int32_t ichs[], 
     bool_t verbose,
     char *chnames[], 
     double fsmp,
-    int *it_st_iniP, 
-    int *it_st_finP,
-    int *s_stP
+    int32_t *it_st_iniP, 
+    int32_t *it_st_finP,
+    int32_t *s_stP
   )
   { 
-    int s_fx = ns-1;  /* Phase type of the fixation phase: */
+    int32_t s_fx = ns-1;  /* Phase type of the fixation phase: */
 
     /* Look for the next start-of-phase pulse in the fixation or stimulus trigger channels: */
-    int it_pu_ini, it_pu_fin; /* First and last frame of pulse. */
-    int s_pu;  /* Phase type in {0..ns-1}. */ 
+    int32_t it_pu_ini, it_pu_fin; /* First and last frame of pulse. */
+    int32_t s_pu;  /* Phase type in {0..ns-1}. */ 
     neuromat_eeg_frame_buffer_find_next_pulse
       ( buf, read_frame, it_start, 
         ns, ichs, 
         &it_pu_ini, &it_pu_fin, &s_pu
       );
 
-    if (it_pu_ini == INT_MIN) 
+    if (it_pu_ini == INT32_MIN) 
       { /* No more start-of-something pulses in file: */
-        (*it_st_iniP) = INT_MIN;
-        (*it_st_finP) = INT_MIN;
-        (*s_stP) = INT_MIN;
+        (*it_st_iniP) = INT32_MIN;
+        (*it_st_finP) = INT32_MIN;
+        (*s_stP) = INT32_MIN;
         return;
       }
     else
@@ -440,7 +437,7 @@ void neuromat_eeg_frame_buffer_get_next_stimulus_pulse
 
         if (s_pu != s_fx)
           { /* We got a start-of-stimulus pulse: */
-            int ic_pu = ichs[s_pu];
+            int32_t ic_pu = ichs[s_pu];
             if (verbose)
               { neuromat_eeg_report_pulse
                   ( stderr, " [st] ", ic_pu, chnames[ic_pu], it_pu_ini, it_pu_fin, fsmp, "\n" );
@@ -451,12 +448,12 @@ void neuromat_eeg_frame_buffer_get_next_stimulus_pulse
           }
         else
           { /* We got an unexpected start-of-fixation pulse: */
-            int ic_pu = ichs[s_pu];
+            int32_t ic_pu = ichs[s_pu];
             fprintf(stderr, "!! warning: missing start-of-stimulus pulse - start-of-fixation pulse in channel %d\n", ic_pu);
             /* Signal "start-of-stimulus pulse not found": */
-            (*it_st_iniP) = INT_MIN;
-            (*it_st_finP) = INT_MIN;
-            (*s_stP) = INT_MIN;
+            (*it_st_iniP) = INT32_MIN;
+            (*it_st_finP) = INT32_MIN;
+            (*s_stP) = INT32_MIN;
           }
         return;
       }

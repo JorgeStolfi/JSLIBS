@@ -2,14 +2,15 @@
 #define neuromat_filter_H
 
 /* NeuroMat filtering and spectral analysis tools. */
-/* Last edited on 2013-11-21 02:53:06 by stolfilocal */
+/* Last edited on 2021-08-21 12:58:08 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <complex.h>
 #include <bool.h>
 
-typedef complex neuromat_filter_t(int kf, int nf, double fsmp);
+typedef complex neuromat_filter_t(int32_t kf, int32_t nf, double fsmp);
   /* Type of a procedure that returns the (complex) gain of a component
     with frequency index {kf} in a discrete Fourier transform with {nf}
     coefficients. Requires {kf} in {0..nf-1}. Assumes the original data
@@ -18,11 +19,11 @@ typedef complex neuromat_filter_t(int kf, int nf, double fsmp);
     {gain(kf,nf,fsmp)}. */
 
 void neuromat_filter_apply
-  ( int nt, 
-    int ne, 
+  ( int32_t nt, 
+    int32_t ne, 
     double **val, 
     double fsmp, 
-    int tdeg, 
+    int32_t tdeg, 
     bool_t tkeep, 
     neuromat_filter_t *gain,
     bool_t verbose
@@ -78,17 +79,17 @@ double neuromat_filter_lowpass_sigmoid(double f, double fa, double fb);
   /* A real lowpass filter with a log-sigmoid response, that has gain
      {0.999} at {f=fa} and {0.001} at {f=fb}. */
 
-double neuromat_filter_lowpass_butterworth(double f, double fc, int n);
+double neuromat_filter_lowpass_butterworth(double f, double fc, int32_t n);
   /* A Butterworth (?) lowpass filter with cutoff frequency {fc} and order {n}.
     If {fc} is zero, returns 1 if {f} is zero, 0 otherwise. */
 
-complex neuromat_filter_lowpass_cbutterworth(double f, double fc, int n);
+complex neuromat_filter_lowpass_cbutterworth(double f, double fc, int32_t n);
   /* The complex Butterworth filter with cutoff frequency {fc} and order {n}.
     If {fc} is zero, returns 1 if {f} is zero, 0 otherwise. */
 
 /* SPECTRAL ANALYSIS */
 
-double **neuromat_filter_compute_spectra(int nt, int ne, double **val, int kfmax, bool_t verbose);
+double **neuromat_filter_compute_spectra(int32_t nt, int32_t ne, double **val, int32_t kfmax, bool_t verbose);
   /* Returns an array {pwr[0..ne-1][0..kfmax]} such that {pwr[i][kf]} is the 
     power (rms value) of the Fourier components of electrode {i} with
     frequency index {kf} (i.e. with {kf} full cycles in the input sample
@@ -104,9 +105,9 @@ double **neuromat_filter_compute_spectra(int nt, int ne, double **val, int kfmax
     
 void neuromat_filter_write_spectra
   ( FILE *wr, 
-    int nt, 
-    int ne, 
-    int kfmax, 
+    int32_t nt, 
+    int32_t ne, 
+    int32_t kfmax, 
     double fsmp, 
     double **pwr
   );

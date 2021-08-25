@@ -2,24 +2,74 @@
 #define neuromat_image_H
 
 /* NeuroMat generic image tools. */
-/* Last edited on 2017-09-29 01:23:24 by jstolfi */
+/* Last edited on 2021-08-24 16:33:54 by stolfi */
 
 #define _GNU_SOURCE
+#include <stdint.h>
+
+#include <sign.h>
 #include <frgb.h>
 #include <float_image.h>
 #include <r2.h>
 
 #include <neuromat_eeg.h>
 
+/* COLORIZING MONOCHROMATIC IMAGES */
+
+void neuromat_image_colorize_field
+  ( float_image_t *cim,
+    float_image_t *fld, 
+    float_image_t *msk, 
+    double vmax, 
+    int32_t style
+  );
+  /* Stores into {cim} a false-color version of image {fld}, where the
+    value range {[-vmax__+vmax]} is turned into various colors with
+    {frgb_path_signed(z,1,style)}. 
+    
+    The image {cim} must have 4 chanels (RGB plus opacity). If {msk} is not null, it
+    must be be a monochromatic image with samples in {[0__1]}, no
+    {NAN}s. If {msk} is null, it is assumed to be an image with all
+    pixels equal to 1. 
+    
+    Pixels of {fld} outside that range are clipped to that range. Pixels
+    where {fld} is {NAN} or where the mask image {msk} is zero are
+    set to black with opacity zero. Pixels where the mask is nonzero
+    are set to the RGB color with that opacity.
+    
+    */
+
+/* COLORIZING AN IMAGE OVERLAY */
+
+void neuromat_image_colorize_signed_overlay
+  ( float_image_t *cim,
+    float_image_t *ovr, 
+    sign_t sgn,
+    frgb_t fc
+  );
+  /* Converts a signed monochromatic overlat {ovr} into an RGBA image {cim}.
+    
+    The image {cim} must have 4 channels. The image {ovr} must have a
+    single channel and the same width and height as {cim}.  The sign {sgn}
+    should be either {+1} or {-1}.
+    
+    Each pixel of {ovr} must be {NAN} or in the range {[-1__+1]}. If its
+    is not {NAN} and its sign is {sgn}, channels {0..2} of the corresponding pixel of {cim}
+    are set to the color {fc}, and channel 3 (opacity) is set to the absolute value of {ovr}.
+    Otherwise the pixel of {cim} is set to all zeros (black, transparent). */
+
 /* SHOWING TIMES AND TIME RANGES ON A TIMELINE BAR
 
-  The procedures below draw times and time ranges with color {fc} into
-  an image {img}, along a horizontal timeline.
+  The procedures below draw time tracks, ranges, tics, or sliders with sample value {smp} into
+  an RGBA image {img}.
   
-  The timeline is an imaginary zero-width line segment located {y}
-  pixels above the bottom edge of the image. It starts {xlo} pixels to
-  the right of the left image border, and extends for exactly {xsz}
-  pixels.
+  !!! Tic marks and the slider should be antialiased !!!
+  
+  The range highlights and tic marks are vertically centered on the
+  corresponding /time line/, the axis of the coresponding time track.
+  The timeline is located {y} pixels above the bottom of the image,
+  starts {xlo} pixels to the right of the left image border, and extends
+  for exactly {xsz} pixels.
   
   Horizontal lines are drawn vertically centered on that timeline, with
   vertical width {2*hw} pixels.
@@ -29,36 +79,43 @@
   
   The timeline represents some time interval {tlo__thi}. An arbitrary
   time {t} is mapped affinely from that interval to a real displacement
-  along the timeline, in the interval {0__xsz}.  Thus the time {t = tlo}
+  along the timeline, in the interval {0__xsz}, and then rounded to 
+  the nearest integer coordinate.  Thus the time {t = tlo}
   corresponds to the point {xlo} pixels to the right of the image
   border, and the time span {thi-tlo} corresponds to exactly {xsz}
-  pixels. */
+  pixels.
+  */
 
 void neuromat_image_paint_time_track
-  ( float_image_t *img, 
-    int hw, 
-    int xlo, 
-    int xsz, 
-    int y, 
-    frgb_t *fc
+  ( float_image_t *img,
+    int32_t hw, 
+    int32_t xlo, 
+    int32_t xsz, 
+    int32_t y, 
+    frgb_t fc
   );
-  /* Paints into {img} a horizontal stripe with color {fc},
-    spanning the whole length of the timeline ({xsz} pixels). */
+  /* Paints onto {img} a /time track/, as a horizontal stripe of of
+    half-width {hw} centered on the timeline. The track starts {xlo}
+    pixels to the right of the left image border, and extends for
+    exactly {xsz} pixels. The pixels will be set to color {fc} with
+    opacity 1. */
 
 void neuromat_image_paint_marker_ranges
-  ( float_image_t *img, 
-    int hw, 
-    int nt, 
-    int nc,
+  ( float_image_t *img,
+    int32_t hw, 
+    int32_t nt, 
+    int32_t nc,
     double **val,
-    int ic_mark, 
-    int xlo, 
-    int xsz,
-    int y,
-    frgb_t *fc
+    int32_t ic_mark, 
+    int32_t xlo, 
+    int32_t xsz,
+    int32_t y, 
+    frgb_t fc
   );
-  /* Paints into image {img} tic marks and highlights showing the
+  /* Paints onto {img} tic marks and highlights showing the
     ranges of frames where the marker channel {ic} is nonzero.
+    The marks are located on the timeline defined by {xlo,xsz,y}.
+    The pixels will be set to color {fc} with  opacity 1.
     
     The procedure assumes that there are {nt} data frames with {nc}
     channels, and that {val[it][ic]} is the value of channel
@@ -69,45 +126,44 @@ void neuromat_image_paint_marker_ranges
     where those samples are non-zero. For each run, spanning frames
     {it_ini} to {it_fin} inclusive, the procedure paints with color {fc}
     two tic marks at the positions corresponding to {it_ini} and
-    {it_fin}, and horizontal line of between those two positions,
-    as per {neuromat_image_paint_time_range}. 
+    {it_fin}, and a horizontal line of between those two positions,
+    as per {neuromat_image_paint_time_range}.  
     
     The frame with index{it} is assumed to have time {it+0.5}.
     The timeline spans the time interval from {tlo=0.0} 
-    to {thi = nt}.
-
- */
+    to {thi = nt}. */
 
 void neuromat_image_paint_time_range_and_tics
-  ( float_image_t *img, 
-    int hw, 
+  ( float_image_t *img,
+    int32_t hw, 
     double tlo,
     double tini,
     double tfin,
     double thi, 
-    int xlo, 
-    int xsz,
-    int y,
-    frgb_t *fc
+    int32_t xlo, 
+    int32_t xsz,
+    int32_t y, 
+    frgb_t fc
   );
-  /* Paints into image {img} with color {fc} two tic marks and a
-    horizontal line over the timeline, showing the time range {tini _
-    tfin} in the global time range {tlo__thi}.
+  /* Paints onto image {img} with color {fc} two tic marks and a
+    horizontal line over the timeline, showing the time range
+    {tini__tfin} in the global time range {tlo__thi}. The highlights and
+    tics are located on the timeline defined by {xlo,xsz,y}.
     
     See {neuromat_image_paint_time_range} and 
     {neuromat_image_paint_tic}. */
     
 void neuromat_image_paint_time_range
-  ( float_image_t *img, 
-    int hw, 
+  ( float_image_t *img,
+    int32_t hw, 
     double tlo,
     double tini,
     double tfin,
     double thi, 
-    int xlo, 
-    int xsz,
-    int y,
-    frgb_t *fc
+    int32_t xlo, 
+    int32_t xsz,
+    int32_t y, 
+    frgb_t fc
   );
   /* Paints a horizontal straight line stroke with color {fc} over the
     timeline, showing the range {tini__tfin} in the global time range
@@ -117,15 +173,15 @@ void neuromat_image_paint_time_range
     or {tfin-tini} is too small, nothing is drawn.  */
 
 void neuromat_image_paint_tic
-  ( float_image_t *img, 
-    int hw, 
+  ( float_image_t *img,
+    int32_t hw, 
     double tlo,
     double t,
     double thi, 
-    int xlo, 
-    int xsz,
-    int y,
-    frgb_t *fc
+    int32_t xlo, 
+    int32_t xsz,
+    int32_t y, 
+    frgb_t fc
   );
   /* Paints a vertical tic mark with color {fc} showing
     the position of time {t} in the global time range {tlo__thi}.  
@@ -133,16 +189,16 @@ void neuromat_image_paint_tic
     If {t<tlo} or {t>thi}, the tic mark is omitted. */
 
 void neuromat_image_paint_slider
-  ( float_image_t *img, 
-    int hw,
+  ( float_image_t *img,
+    int32_t hw,
     double tlo,
     double t,
     double thi, 
-    int xlo, 
-    int xsz,
-    int ylo,
-    int yhi,
-    frgb_t *fc
+    int32_t xlo, 
+    int32_t xsz,
+    int32_t ylo,
+    int32_t yhi, 
+    frgb_t fc
   );
  /* Paints a slider with color {fc} showing
     the position of time {t} in the global time range {tlo__thi}. 
@@ -151,33 +207,5 @@ void neuromat_image_paint_slider
     The slider will span the timelines with ordinates {y=ylo}
     and {y=yhi}.  I will extend at least {6*hw} below and above
     those lines. */
-
-void neuromat_image_colorize
-  ( float_image_t *fim, 
-    float_image_t *msk, 
-    double vmax, 
-    int style, 
-    frgb_t *bgr,
-    float_image_t *cim
-  );
-  /* Stores into {cim} a false-color version of image {fim}, where the
-    range {[-vmax__+vmax]} is turned into various colors with
-    {frgb_path_signed(z,1,style)}. Pixels where the image is {NAN} are
-    mapped to {bgr}.
-    
-    If {msk} is not null, it is assumed to be a mask image with samples
-    in {[0__1]}, that has been multiplied into {fim}. The colorized
-    image is then masked by {msk}, so that pixels where {msk} is zero
-    are painted with color {bgr}. */
-
-void neuromat_image_paint_overlay(float_image_t *img, float_image_t *ovr, float col[]);
-  /* Paints the overlay image {ovr} over the image {img}, colorizing it with {col}.
-    
-    The image {img} may have any number {nc} of channels.  The image {ovr} must have a single
-    channel and the same width and height as {img}.  Each pixel of {ovr} must be in the 
-    range {[0__1]}, and is interpreted as the fraction of the pixel that is covered by the
-    overlay.  If it is 0, the corresponding pixel of {img} is not affected.  If it is 1,
-    the pixel is replaced by {col[0..nc-1]}.  For intermediate values, the pixel of {img}
-    is blended with {col[0..nc-1]}. */
 
 #endif

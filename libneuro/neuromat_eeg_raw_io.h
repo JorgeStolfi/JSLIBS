@@ -2,7 +2,7 @@
 #define neuromat_eeg_raw_io_H
 
 /* Reading plain-text NeuroMat EEG signals. */
-/* Last edited on 2013-11-12 00:45:16 by stolfilocal */
+/* Last edited on 2021-08-21 13:11:16 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -10,7 +10,7 @@
 
 #include <neuromat_eeg.h>
 
-int neuromat_eeg_raw_frame_read(FILE *rd, int version, double unit, int nc, char **chnames, double val[]);
+int32_t neuromat_eeg_raw_frame_read(FILE *rd, int32_t version, double unit, int32_t nc, char **chnames, double val[]);
   /* Reads a data frame from the raw EEG file {rd}, assumed to consist
     of {nc} channel samples, called {chnames[0..nc-1]}.  Converts
     the samples to {double} values and saves  them into {val[0..nc-1]}. 
@@ -22,9 +22,9 @@ int neuromat_eeg_raw_frame_read(FILE *rd, int version, double unit, int nc, char
     
 /* LOW LEVEL RAW I/O */
 
-double neuromat_eeg_raw_read_raw_sample(FILE *rd, int version, double unit, char *name);
+double neuromat_eeg_raw_read_raw_sample(FILE *rd, int32_t version, double unit, char *name);
   /* Reads a single sample from the raw EEG file {rd}. The sample is
-    assumed to be stored in the file in binary, as a {short int} if
+    assumed to be stored in the file in binary, as a {int16_t} if
     {version=2}, or as a IEEE single-precision {float} if {version=4}.
     In the first case, the integer sample is multiplied by {unit}.
     In either case the result is returned as {double}. */
@@ -45,7 +45,7 @@ char *neuromat_eeg_raw_read_event_code(FILE *rd, char *name);
   /* Reads the next 4 bytes from {rd} as an event code; returns as a new string,
     zero-terminated, with all blanks removed. */
 
-void neuromat_eeg_raw_check_int_val(int32_t res, char *name, int32_t vmin, int32_t vmax); 
+void neuromat_eeg_raw_check_int32_val(int32_t res, char *name, int32_t vmin, int32_t vmax); 
 void neuromat_eeg_raw_check_float_val(float res, char *name, float vmin, float vmax);
   /* These procedures check whether {vmin <= res <= vmax},
     and noisily fail if not. */

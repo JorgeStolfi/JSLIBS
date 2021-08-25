@@ -2,10 +2,11 @@
 #define neuromat_eeg_header_H
 
 /* Tools for reading and writing headers of plain-text NeuroMat EEG datasets. */
-/* Last edited on 2017-10-09 09:58:43 by jstolfi */
+/* Last edited on 2021-08-23 00:06:41 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
   
 /* !!! Add to plain header the date and other fields from raw header? !!! */
 
@@ -30,31 +31,32 @@
   specified in the file header must be provided by some other means.
   
   Depending on the contet, parameter values in {neuromat_eeg_header_t} and its sub-records
-  may be unspecified or unknown. This is indicated by the value {INT_MIN}
+  may be unspecified or unknown. This is indicated by the value {INT32_MIN}
   for integer values, {NAN} for doubles, or {NULL} for lists.  */
 
 typedef struct neuromat_eeg_header_t
   { 
     /* Dataset size and content: */
-    int nt;            /* Number of sampling times in the EEG dataset. Positive. */
-    int nc;            /* Number of data channels (tokens per line) in EEG the dataset. Positive. */
+    int32_t nt;            /* Number of sampling times in the EEG dataset. Positive. */
+    int32_t nc;            /* Number of data channels (tokens per line) in EEG the dataset. Positive. */
 
     /* Nature of data: */
     double fsmp;       /* Sampling frequency (Hz) of dataset. */
-    int ne;            /* Number of electric measurement channels, in {0..nc}. */
+    int32_t ne;            /* Number of electric measurement channels, in {0..nc}. */
     char *type;        /* Type of experiment, e.g. "B" (bio) or "N" (non-bio). */
     char **chnames;    /* Names of channels, indexed {0..nc-1}. */
-    int kfmax;         /* Maximum frequency index (if spectral data), in {0..nt/2}. */
+    int32_t kfmax;         /* Maximum frequency index (if spectral data), in {0..nt/2}. */
     char *component;   /* Name of a component of original signal, or NULL. */
     
     /* Filtering data: */
-    int tdeg;          /* Degree of trend polynomial, or negative if none. */
-    int tkeep;         /* Tells whether trend polynomial was kept (1) of suppressed (0). */
+    double *rebase_wt; /* Electrode weights used for rebasing, or {NULL}. */
+    int32_t tdeg;      /* Degree of trend polynomial, or negative if none. */
+    int32_t tkeep;     /* Tells whether trend polynomial was kept (1) of suppressed (0). */
     double flo0;       /* Lower cutoff frequency, {-INF}. */
     double flo1;       /* Nominal lowest preserved frequency, {-INF}. */
     double fhi1;       /* Nominal highest preserved frequency, {+INF}. */
     double fhi0;       /* Higher cutoff frequency, {+INF}. */
-    int finvert;       /* Filter complementation: 0 for bandpass, 1 for bandkill. */
+    int32_t finvert;       /* Filter complementation: 0 for bandpass, 1 for bandkill. */
     
     /* Data history: */
     struct neuromat_eeg_source_t *orig; /* Source EEG data in original raw recording. */
@@ -85,16 +87,22 @@ typedef struct neuromat_eeg_header_t
       beginnng with ascii letter and continuing with decimal digits,
       ascii letters, periods or underscores, with no embedded blanks.
       The pointer {chnames} may be {NULL}.
+      
+    o If the field {rebase_wt} is not {NULL}, it means that the electrode potentials were
+      changed to a different reference potential. Then {rebase_wt} should be be a vector of
+      {ne} non-negative weights that were used to compute the average potential of each frame,
+      which was subtracted from every sample in that frame.  If {NULL}, the data is assumed to 
+      use the original potential reference, such as the "CZ" electrode.
   */
   
 typedef struct neuromat_eeg_source_t
-  { char *file;    /* Name of original raw data file. */
-    int nt;        /* Number of frames in original data file. */
-    int it_ini;    /* Index of first time frame in original data file (from 0). */
-    int it_fin;    /* Index of last time frame in original data file (from 0). */
-    double fsmp;   /* Sampling frequency (Hz) of original dataset. */
-    int subject;   /* Index of subject (from 1). */
-    int run;       /* Index of experimental run (from 1). */
+  { char *file;        /* Name of original raw data file. */
+    int32_t nt;        /* Number of frames in original data file. */
+    int32_t it_ini;    /* Index of first time frame in original data file (from 0). */
+    int32_t it_fin;    /* Index of last time frame in original data file (from 0). */
+    double fsmp;       /* Sampling frequency (Hz) of original dataset. */
+    int32_t subject;   /* Index of subject (from 1). */
+    int32_t run;       /* Index of experimental run (from 1). */
   } neuromat_eeg_source_t;
   /* Describes the raw EEG data this file was ultimately derived from.
     In the header lines, these field names are prefixed with "orig.",
@@ -113,7 +121,7 @@ void neuromat_eeg_header_free(neuromat_eeg_header_t *h);
     (such as {h->orig}).  Any strings and vector values
     are assumed to be in `owned' storage and freed too. */
 
-neuromat_eeg_header_t *neuromat_eeg_header_read(FILE *rd, int neDef, double fsmpDef, int *nlP);
+neuromat_eeg_header_t *neuromat_eeg_header_read(FILE *rd, int32_t neDef, double fsmpDef, int32_t *nlP);
   /* Reads zero or more lines from {rd} and parses them as header
     data. Always returns a non-{NULL} pointer {h} with a non-null
     field {h->orig}, both newly allocated, even if no header lines
@@ -141,7 +149,7 @@ neuromat_eeg_header_t *neuromat_eeg_header_read(FILE *rd, int neDef, double fsmp
 void neuromat_eeg_header_write(FILE *wr, neuromat_eeg_header_t *h);
   /* Writes to {wr} zero or more header lines with 
     information from {h}.  Fields that have `null' values
-    ({INT_MIN} for integers, {NAN} for [double}s, {NULL} for strings
+    ({INT32_MIN} for integers, {NAN} for [double}s, {NULL} for strings
     and lists) are omitted. */
     
 void neuromat_eeg_header_merge(neuromat_eeg_header_t *dst, neuromat_eeg_header_t *src);
@@ -156,8 +164,8 @@ void neuromat_eeg_header_merge_orig(neuromat_eeg_source_t *dst, neuromat_eeg_sou
     copies its value to {dst}. In that case, string and vector values
     are copied into newly allocated storage. */
     
-int neuromat_eeg_header_append_electrode_channel(neuromat_eeg_header_t *h, char *name);
-int neuromat_eeg_header_append_marker_channel(neuromat_eeg_header_t *h, char *name);
+int32_t neuromat_eeg_header_append_electrode_channel(neuromat_eeg_header_t *h, char *name);
+int32_t neuromat_eeg_header_append_marker_channel(neuromat_eeg_header_t *h, char *name);
   /* These procedures insert a new channel with the given {name} in the header,
     at the end of the electrode channels and at the end of all channels, respectively.
     The {h.chnames} table is reallocated and the counts {h.ne,h.nc} are updated,
@@ -172,8 +180,8 @@ void neuromat_eeg_header_read_field_value(FILE *rd, char *name, neuromat_eeg_hea
 
 void neuromat_eeg_header_write_field_string(FILE *wr, char *pref, char *name, char *value);
 void neuromat_eeg_header_write_field_double(FILE *wr, char *pref, char *name, double value, double vmin, double vmax);
-void neuromat_eeg_header_write_field_int(FILE *wr, char *pref, char *name, int value, int vmin, int vmax);
-void neuromat_eeg_header_write_field_int_range(FILE *wr, char *pref, char *name, int vini, int vfin, int vmin, int vmax);
+void neuromat_eeg_header_write_field_int(FILE *wr, char *pref, char *name, int32_t value, int32_t vmin, int32_t vmax);
+void neuromat_eeg_header_write_field_int_range(FILE *wr, char *pref, char *name, int32_t vini, int32_t vfin, int32_t vmin, int32_t vmax);
   /* These procedures write the generic header field as a line
     
       "{pref}{name} = {value(s)}"

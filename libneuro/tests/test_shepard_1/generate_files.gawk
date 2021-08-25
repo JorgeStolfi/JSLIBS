@@ -1,5 +1,5 @@
 #! /usr/bin/gawk -f
-# Last edited on 2014-01-15 22:58:44 by stolfilocal
+# Last edited on 2021-08-21 21:51:57 by stolfi
 
 BEGIN {
   # Domain interval is {[xlo_xhi]}:
@@ -11,8 +11,8 @@ BEGIN {
   split("", ctr); # Center abscissas are {ctr[0..nc-1]}. 
   split("", rad); # Element reference radii are {rad[0..nc-1]}. 
   ctr[nc] = 0.5; rad[nc] = 0.50; nc++;
-  ctr[nc] = 1.0; rad[nc] = 0.50; nc++;
-  ctr[nc] = 1.8; rad[nc] = 0.30; nc++;
+  ctr[nc] = 1.0; rad[nc] = 0.80; nc++;
+  ctr[nc] = 1.8; rad[nc] = 0.80; nc++;
   ctr[nc] = 2.1; rad[nc] = 0.30; nc++;
   # Write the element centers and radii to file {fcenters}:
   fcenters = "out/centers.txt";
@@ -50,11 +50,12 @@ BEGIN {
 
 function shepard_weight(ct,rd,x,  d,ord,eps,wg,wp)
   { # Shepard radial weight function for element with center {ct} and reference radius {rd}.
-    ord = 1;
+    ord = 2;
     eps = 1.0e-10;
     d = (x - ct)/rd;
     if (d < 0) { d = -d; }
-    wp = (d == 0.0 ? 1.0/eps : 1.0/(exp(ord*log(d)) + eps));
+    d = d + eps
+    wp = 1.0/exp(ord*log(d));
     wg = exp(-d*d/2);
     return wp*wg;
   }
@@ -96,12 +97,12 @@ function eval_basis(x,nc,ctr,wt,bas,  nb,ic,jc,zi,wi,rb,sb,vr,vs,M,B,N,alpha)
           }
       }
 
-    # Compute the inverse {N} of matrix {M}:    
-    split("", N);
-    invert_matrix_2x2(M, N);
-    # Multiply {N*B} to get {alpha[0..nb-1,0..nc-1]}:
+    # Compute the inverse {R} of matrix {M}:    
+    split("", R);
+    invert_matrix_2x2(M,R);
+    # Multiply {R*B} to get {alpha[0..nb-1,0..nc-1]}:
     split("", alpha);
-    multiply_matrices(nb,nb,nc,M,B,alpha);
+    multiply_matrices(nb,nb,nc,R,B,alpha);
     # Now evaluate the combination at {x}:
     for (ic = 0; ic < nc; ic++) { bas[ic] = 0; }
     for (rb = 0; rb < nb; rb++)
@@ -122,11 +123,11 @@ function multiply_matrices(m,p,n,A,B,C,  i,j,k,sum)
       }
   }
 
-function invert_matrix_2x2(M,N,  det)
+function invert_matrix_2x2(M,R,  det)
   {
     det = M[0,0]*M[1,1] - M[1,0]*M[0,1];
-    N[0,0] = M[1,1]/det;
-    N[0,1] = -M[0,1]/det;
-    N[1,0] = -M[1,0]/det;
-    N[1,1] = M[0,0]/det;
+    R[0,0] = M[1,1]/det;
+    R[0,1] = -M[0,1]/det;
+    R[1,0] = -M[1,0]/det;
+    R[1,1] = M[0,0]/det;
   }

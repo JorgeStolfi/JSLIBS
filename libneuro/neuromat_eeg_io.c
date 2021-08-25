@@ -1,9 +1,10 @@
 /* See {neuromat_eeg_io.h}. */
-/* Last edited on 2015-04-02 04:02:34 by stolfilocal */
+/* Last edited on 2021-08-21 12:36:40 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <fget.h>
@@ -14,10 +15,10 @@
 
 #include <neuromat_eeg_io.h>
 
-int neuromat_eeg_frame_read(FILE *rd, int nc, double frm[], int *nlP, int *nfP)
-  { int nl = (nlP == NULL ? 0 : (*nlP)); /* Number of file lines already read/skipped (incl. comments and headers). */
-    int nf = (nfP == NULL ? 0 : (*nfP)); /* Number of data frames already read/skipped. */
-    int nfr = 0; /* Number of data lines read/skipped in this call. */
+int32_t neuromat_eeg_frame_read(FILE *rd, int32_t nc, double frm[], int32_t *nlP, int32_t *nfP)
+  { int32_t nl = (nlP == NULL ? 0 : (*nlP)); /* Number of file lines already read/skipped (incl. comments and headers). */
+    int32_t nf = (nfP == NULL ? 0 : (*nfP)); /* Number of data frames already read/skipped. */
+    int32_t nfr = 0; /* Number of data lines read/skipped in this call. */
     
     auto void skip_line(void);
       /* Consumes the remaining characters up to and including the EOL. 
@@ -26,7 +27,7 @@ int neuromat_eeg_frame_read(FILE *rd, int nc, double frm[], int *nlP, int *nfP)
     /* Loop until EOF or one data line: */
     while (TRUE)
       { /* Try to read one more line from the file: */
-        int r = fgetc(rd);
+        int32_t r = fgetc(rd);
         if (r == EOF)
           { break; } 
         else
@@ -48,8 +49,7 @@ int neuromat_eeg_frame_read(FILE *rd, int nc, double frm[], int *nlP, int *nfP)
                 else
                   { /* Parse the data values, store in {frm}: */
                     ungetc(r, rd);
-                    int ic;
-                    for (ic = 0; ic < nc; ic++) { frm[ic] = fget_double(rd); }
+                    for (int32_t ic = 0; ic < nc; ic++) { frm[ic] = fget_double(rd); }
                     (void)fget_skip_and_test_char(rd, '\015');
                     fget_eol(rd);
                   }
@@ -66,27 +66,27 @@ int neuromat_eeg_frame_read(FILE *rd, int nc, double frm[], int *nlP, int *nfP)
     /* Internal implementations: */
     
     void skip_line(void)
-      { int r;
+      { int32_t r;
         do { r = fgetc(rd); } while ((r != EOF) && (r != '\n'));
         if (r == EOF) { fprintf(stderr, "** EOF found while skipping line %d\n", nl+1); exit(1); } 
       }
   }
 
-double **neuromat_eeg_data_read(FILE *rd, int nskip, int nread, int nc, int *nlP, int *ntP)
+double **neuromat_eeg_data_read(FILE *rd, int32_t nskip, int32_t nread, int32_t nc, int32_t *nlP, int32_t *ntP)
   { 
-    int nchunk = 3600*600;  /* One hour of samples at 600 Hz. */
-    int nalloc = (nread <= 0 ? nchunk : nread);  /* Trimmed or expanded later. */
+    int32_t nchunk = 3600*600;  /* One hour of samples at 600 Hz. */
+    int32_t nalloc = (nread <= 0 ? nchunk : nread);  /* Trimmed or expanded later. */
     double **val = notnull(malloc(nalloc*sizeof(double*)), "no mem");
     
-    int nl = (nlP == NULL ? 0 : (*nlP)); /* Number of file lines already read/skipped (incl. comments and headers). */
-    int nf = 0; /* Number of data frames read/skiped (excluding comments and headers). */
-    int nt = 0; /* Number of data frames actually read and stored. */
+    int32_t nl = (nlP == NULL ? 0 : (*nlP)); /* Number of file lines already read/skipped (incl. comments and headers). */
+    int32_t nf = 0; /* Number of data frames read/skiped (excluding comments and headers). */
+    int32_t nt = 0; /* Number of data frames actually read and stored. */
 
     while ((nread <= 0) || (nt < nread))
       { 
         /* Try to read/skip one more data frame: */
         double *frm = (nf < nskip ? NULL : notnull(malloc(nc*sizeof(double)), "no mem"));
-        int nfr = neuromat_eeg_frame_read(rd, nc, frm, &nl, &nf);
+        int32_t nfr = neuromat_eeg_frame_read(rd, nc, frm, &nl, &nf);
         if (nfr == 0) 
           { /* Hit end of file: */
             if (frm != NULL) { free(frm); frm = NULL; }
@@ -129,13 +129,12 @@ double **neuromat_eeg_data_read(FILE *rd, int nskip, int nread, int nc, int *nlP
     return val;
   }
 
-void neuromat_eeg_data_write(FILE *wr, int nt, int nc, double **val, int it_ini, int it_fin, int it_step)
+void neuromat_eeg_data_write(FILE *wr, int32_t nt, int32_t nc, double **val, int32_t it_ini, int32_t it_fin, int32_t it_step)
   {
     demand((0 <= it_ini) && (it_ini <= it_fin) && (it_fin < nt), "invalid sample index range");
     demand(it_step > 0, "invalid sample index increment");
-    int it;
-    int nw = 0;
-    for (it = it_ini; it <= it_fin; it += it_step) 
+    int32_t nw = 0;
+    for (int32_t it = it_ini; it <= it_fin; it += it_step) 
       { neuromat_eeg_frame_write(wr, nc, val[it]);
         nw++;
       }
@@ -143,16 +142,14 @@ void neuromat_eeg_data_write(FILE *wr, int nt, int nc, double **val, int it_ini,
     fflush(wr);
   }
 
-void neuromat_eeg_frame_write(FILE *wr, int nc, double val[])
-  { int ic;
-    for (ic = 0; ic < nc; ic++) { fprintf(wr, " %15.7e", val[ic]); }
+void neuromat_eeg_frame_write(FILE *wr, int32_t nc, double val[])
+  { for (int32_t ic = 0; ic < nc; ic++) { fprintf(wr, " %15.7e", val[ic]); }
     fprintf(wr, "\n");
   }
 
-void neuromat_eeg_frame_print(FILE *wr, char *pre, int nc, char **chnames, double val[], char *sep, char *suf)
+void neuromat_eeg_frame_print(FILE *wr, char *pre, int32_t nc, char **chnames, double val[], char *sep, char *suf)
   { if (pre != NULL) { fprintf(wr, "%s", pre); }
-    int i;
-    for (i = 0; i < nc; i++)
+    for (int32_t i = 0; i < nc; i++)
       { if ((i > 0) && (sep != NULL)) { fprintf(wr, "%s", sep); } 
         if (chnames != NULL) { fprintf(wr, "%s = ", chnames[i]); }
         fprintf(wr, "%14.8e", val[i]);
