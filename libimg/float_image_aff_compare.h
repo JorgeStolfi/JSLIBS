@@ -2,19 +2,19 @@
 #define float_image_aff_compare_H
 
 /* Tools for locally comparing two images with affine deformation. */
-/* Last edited on 2020-11-06 03:43:02 by jstolfi */ 
+/* Last edited on 2022-10-19 08:27:23 by stolfi */ 
 
 #include <bool.h>
 #include <r2.h>
 #include <i2.h>
-#include <r2_aff_map.h>
+#include <hr2.h>
 #include <float_image.h>
 
 double float_image_aff_compare
   ( float_image_t *img1,
-    r2_aff_map_t *A1,
+    hr2_pmap_t *A1,
     float_image_t *img2,
-    r2_aff_map_t *A2,
+    hr2_pmap_t *A2,
     r2_t *stepP,
     i2_t *sizeP
   );

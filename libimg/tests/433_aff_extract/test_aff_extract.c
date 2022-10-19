@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_aff_extract.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-11-06 00:18:29 by jstolfi */ 
+/* Last edited on 2022-10-19 17:00:32 by stolfi */ 
 /* Created on 2020-11-05 by J. Stolfi, UNICAMP */
 
 #define taffe_COPYRIGHT \
@@ -24,8 +24,10 @@
 #include <float_image_aff_extract.h>
 #include <ix.h>
 #include <r2.h>
+#include <hr2.h>
 #include <i2.h>
 #include <r2x2.h>
+#include <argparser_geo.h>
 #include <bool.h>
 #include <jsfile.h>
 #include <jsrandom.h>
@@ -33,9 +35,8 @@
 
 typedef struct taffe_options_t 
   { char *prefix;     /* Output name prefix. */
-    char *imageName;  /* First image name (sans directory and extension). */
-    r2_aff_map_t A;   /* Optimum map for first image. */
-    double Amag;      /* Extra nag factor for {A}. */
+    char *imageName;  /* Image name (sans directory and extension). */
+    hr2_pmap_t A;     /* Affine map to use. */
   } taffe_options_t;
 
 float_image_t *taffe_read_image(char *imageName);
@@ -44,14 +45,13 @@ float_image_t *taffe_read_image(char *imageName);
 void taffe_write_image(float_image_t *img, char *prefix, char *imageName);
   /* Writes float image {img} to "out/{prefix}_{imageName}.png". */
 
+void taffe_show_map(char *name, char *qualif, hr2_pmap_t *A);
+  /* Prints the map {A} on {stderr}, labeled with the given {name}
+    and {qualif}. */
+
 taffe_options_t *taffe_parse_options(int argc, char **argv);
   /* Parses the command line options. */
- 
-void taffe_parse_next_affine_map(argparser_t *pp, r2_aff_map_t *A);
-  /* Parses an affine map from the command line, as 6 numbers 
-    {m[0][0] m[0][1] m[1][0] m[1][1] d[0] d[1]},
-    where {m = A->mat} and {d = A->disp}. */
-    
+   
 int main(int argn, char **argv);
   
 /* IMPLEMENTATIONS */
@@ -63,11 +63,12 @@ int main(int argc, char **argv)
 
     /* Input image and affine map: */
     float_image_t *img = taffe_read_image(o->imageName);
-    r2_aff_map_t A = o->A;
-    r2x2_scale(o->Amag, &(A.mat), &(A.mat));
+    hr2_pmap_t A = o->A;
+    demand(hr2_pmap_is_affine(&A), "map is not affine");
+    taffe_show_map("A", "", &A);
     
     /* Choose sampling step and sampling grid size: */
-    r2_t dp = float_image_aff_sampling_choose_step(&(A.mat));
+    r2_t dp = float_image_aff_sampling_choose_step(&(A.dir));
     fprintf(stderr, "step = (%.6f %.6f)\n", dp.c[0], dp.c[1]);
     double R = 3.5; /* Should be enough. */
     i2_t size = float_image_aff_sampling_grid_size(dp, R);
@@ -103,6 +104,16 @@ void taffe_write_image(float_image_t *img, char *prefix, char *imageName)
     float_image_write_gen_named(fname, img, ffmt, 0.0, 1.0, NAN, NAN, FALSE);
     free(fname);
   }
+ 
+void taffe_show_map(char *name, char *phase, hr2_pmap_t *A)
+  { double w = fabs(A->dir.c[0][0]);
+    fprintf(stderr, "%-4s %s = [", name, phase);
+    fprintf(stderr, " [ %+10.4f %+10.4f ]", A->dir.c[1][1]/w, A->dir.c[1][2]/w);
+    fprintf(stderr, " [ %+10.4f %+10.4f ]", A->dir.c[2][1]/w, A->dir.c[2][2]/w);
+    fprintf(stderr, " ]");
+    fprintf(stderr, " [ %10.4f %10.4f ]", A->dir.c[0][1]/w, A->dir.c[0][2]/w);
+    fprintf(stderr, "\n");
+  }
   
 taffe_options_t *taffe_parse_options(int argc, char **argv)
   { 
@@ -114,24 +125,13 @@ taffe_options_t *taffe_parse_options(int argc, char **argv)
     taffe_options_t *o = notnull(malloc(sizeof(taffe_options_t)), "no mem");
 
     o->prefix = argparser_get_next(pp);
-    
+
     o->imageName = argparser_get_next(pp);
-    taffe_parse_next_affine_map(pp, &(o->A)); 
-    o->Amag = argparser_get_next_double(pp, 0.1, 100.0);
+
+    o->A = argparser_get_next_feature_map(pp);
 
     argparser_skip_parsed(pp);
     argparser_finish(pp);
     return o;
   }
-
-void taffe_parse_next_affine_map(argparser_t *pp, r2_aff_map_t *A)
-  {
-    for (int32_t i = 0; i < 2; i++)
-      { for (int32_t j = 0; j < 2; j++)
-          { A->mat.c[i][j] = argparser_get_next_double(pp, -100.0, +100.0); }
-      }
-    for (int32_t j = 0; j < 2; j++)
-      { A->disp.c[j] = argparser_get_next_double(pp, -100.0, +100.0); }
-  }
-
     

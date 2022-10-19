@@ -1,5 +1,5 @@
 /* See {float_image_aff_compare.h}. */
-/* Last edited on 2020-11-06 03:42:51 by jstolfi */
+/* Last edited on 2022-10-19 18:40:02 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -13,7 +13,7 @@
 #include <sign.h>
 #include <r2.h>
 #include <r2x2.h>
-#include <r2_aff_map.h>
+#include <hr2.h>
 #include <i2.h>
 #include <jsmath.h>
 #include <affirm.h>
@@ -35,9 +35,9 @@ void float_image_aff_compare_show_sample(char *label, r2_t *p, int32_t NC, doubl
 
 double float_image_aff_compare
   ( float_image_t *img1,
-    r2_aff_map_t *A1,
+    hr2_pmap_t *A1,
     float_image_t *img2,
-    r2_aff_map_t *A2,
+    hr2_pmap_t *A2,
     r2_t *stepP,
     i2_t *sizeP
   )
@@ -45,12 +45,16 @@ double float_image_aff_compare
     int32_t NC = (int32_t)img1->sz[0]; /* Number of color channels. */
     demand(NC == img2->sz[0], "images must have the same channel count");
     
+    /* The maps must be affine: */
+    demand(hr2_pmap_is_affine(A1), "map {A1} is not affine");
+    demand(hr2_pmap_is_affine(A2), "map {A2} is not affine");
+    
     bool_t debug_table = FALSE;
     bool_t debug_sampling = FALSE;
     
     /* Choose the steps in {x} and {y}: */
-    r2_t step1 = float_image_aff_sampling_choose_step(&(A1->mat));
-    r2_t step2 = float_image_aff_sampling_choose_step(&(A2->mat));
+    r2_t step1 = float_image_aff_sampling_choose_step(&(A1->dir));
+    r2_t step2 = float_image_aff_sampling_choose_step(&(A2->dir));
     double dx = fmin(step1.c[0], step2.c[0]);
     double dy = fmin(step1.c[1], step2.c[1]);
     if (debug_sampling) { fprintf(stderr, "step = (%.6f %.6f)\n", dx, dy); }
@@ -90,12 +94,10 @@ double float_image_aff_compare
           { double wyk = (ky >= 0 ? wy[ky] : wy[-ky]);
             r2_t p = (r2_t){{ kx*dx, ky*dy }};
             
-            r2_t p1; 
-            r2_aff_map_apply(&p, A1, &p1);
+            r2_t p1 = hr2_pmap_r2_point(&p, A1); 
             float_image_interpolate_pixel(img1, p1.c[0], p1.c[1], order, red, v1);
             
-            r2_t p2; 
-            r2_aff_map_apply(&p, A2, &p2);
+            r2_t p2 = hr2_pmap_r2_point(&p, A2);
             float_image_interpolate_pixel(img2, p2.c[0], p2.c[1], order, red, v2);
             
             double w = wxk*wyk;

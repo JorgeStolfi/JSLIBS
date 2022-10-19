@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_aff_compare.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-11-05 23:36:23 by jstolfi */ 
+/* Last edited on 2022-10-19 19:03:10 by stolfi */ 
 /* Created on 2020-09-26 by J. Stolfi, UNICAMP */
 
 #define taffc_COPYRIGHT \
@@ -24,6 +24,7 @@
 #include <r2.h>
 #include <i2.h>
 #include <r2x2.h>
+#include <argparser_geo.h>
 #include <bool.h>
 #include <jsfile.h>
 #include <jsrandom.h>
@@ -38,14 +39,12 @@ typedef struct taffc_options_t
     int32_t NS;       /* Number of steps to take on each side of zero. */
     double uvMax;     /* Max abs value of {u,v} parameters. */
     char *img1;       /* First image name (sans directory and extension). */
-    r2_aff_map_t A1;  /* Optimum map for first image. */
-    double R1;        /* Extra mag factor for {A1}. */
+    hr2_pmap_t A1;    /* Optimum map for first image. */
     char *img2;       /* Second image name (sans directory and extension). */
-    r2_aff_map_t A2;  /* Optimum map for second image. */
-    double R2;        /* Extra mag factor for {A2}. */
+    hr2_pmap_t A2;    /* Optimum map for second image. */
   } taffc_options_t;
   
-typedef r2_aff_map_t taffc_make_map_func_t (double u, double v);
+typedef hr2_pmap_t taffc_make_map_func_t (double u, double v);
   /* Type of a procedure that returns an affine map {M(u,v)} a as a function 
     of two parameters {u,v} varying over {[-1 _ +1]}. 
     It should return the identity for {0,0}. It should assume
@@ -55,10 +54,9 @@ void taffc_plot_square_mismatch
   ( char *prefix,
     char *deform,
     float_image_t *img1,
-    r2_aff_map_t *A1,
+    hr2_pmap_t *A1,
     float_image_t *img2,
-    r2_aff_map_t *A2,
-    
+    hr2_pmap_t *A2,
     int32_t NS,
     double uvMax,
     taffc_make_map_func_t *M
@@ -69,30 +67,29 @@ void taffc_plot_square_mismatch
     
     The affine map {C1(u,v)} is defined as {C1(u,v)(p) = A1(M(u,v)(p))}. 
     
-    The map {C2(u,v)} is defined in the same way, but with {A2} modified
-    by the the inverse of {M(u,v)}.
+    The map {C2(u,v)} is defined as {C2(u,v)(p) = A2(M(u,v)^{-1}(p))}. .
     
     A total of {2*NS-1} values of {u} and {v} are used, varying over {[-uvMax _ +uvMax]}. */
 
 #define taffc_translation_REF (0.5)
-r2_aff_map_t taffc_xy_translation_map(double u, double v);
+hr2_pmap_t taffc_make_xy_translation_map(double u, double v);
   /* Generates an affine map that displaces the origin by {(D*u,D*v)},
     where {D = taffc_translation_REF}. */
   
 #define taffc_rotation_REF (0.60*M_PI)
 #define taffc_scale_REF (2.0)
-r2_aff_map_t taffc_rotate_scale_map(double u, double v);
+hr2_pmap_t taffc_make_rotate_scale_map(double u, double v);
   /* Generates an affine map that rotates the plane by {T*u}
-    radians and manifies it by {S^v}, where {T = taffc_rotation_REF}
+    radians and magnifies it by {S^v}, where {T = taffc_rotation_REF}
     and {S = taffc_scale_REF}. */
  
 #define taffc_stretch_REF (2.0)
-r2_aff_map_t taffc_xy_stretch_map(double u, double v);
+hr2_pmap_t taffc_make_xy_stretch_map(double u, double v);
   /* Generates an affine map that scales {x} and {y} by {S^u}
     and {S^v}, respectively, where {S = taffc_stretch_REF}. */
 
 #define taffc_shear_REF (0.5)
-r2_aff_map_t taffc_xy_shear_map(double u, double v);
+hr2_pmap_t taffc_make_xy_shear_map(double u, double v);
   /* Generates an affine map that shears the plane by {S*u} in the {y}
     direction and by {S*v} in the {x} diiection, where 
     {S = taffc_shear_REF}. Namely, maps {(1,0)} to {(1,S*u)} and
@@ -103,16 +100,16 @@ float_image_t *taffc_read_image(char *imgname);
 
 taffc_options_t *taffc_parse_options(int argc, char **argv);
   /* Parses the command line options. */
-  
-void taffc_parse_next_affine_map(argparser_t *pp, r2_aff_map_t *A);
-  /* Parses an affine map from the command line, as 6 numbers 
-    {m[0][0] m[0][1] m[1][0] m[1][1] d[0] d[1]},
-    where {m = A->mat} and {d = A->disp}. */
     
-void taffc_show_map(char *name, char *qualif, r2_aff_map_t *A);
-  /* Prints the map {A} on {stderr}, labeled with the given {name} and {qualif}. */
+void taffc_scale_pmap_aff(hr2_pmap_t *A, double scale);
+  /* Modifies the map {A} by composing it with a uniform scalinh by {scale},
+    in that order. */
 
-void taffc_show_map_pair(char *phase, r2_aff_map_t *C1, r2_aff_map_t *C2);
+void taffc_show_map(char *name, char *qualif, hr2_pmap_t *A);
+  /* Prints the map {A} on {stderr}, labeled with the given {name}
+    and {qualif}. */
+
+void taffc_show_map_pair(char *phase, hr2_pmap_t *C1, hr2_pmap_t *C2);
   /* Prints to {stderr} the maps {C1} and {C2}, as well as the composition
     of the inverse of {C1} with {C2}, applied in that order.  The latter is the
     map that morphs image 1 to match image 2. */
@@ -130,29 +127,30 @@ int main(int argc, char **argv)
 
     /* Input images and affine maps: */
     float_image_t *img1 = taffc_read_image(o->img1);
-    r2_aff_map_t A1 = o->A1;
-    r2x2_scale(o->R1, &(A1.mat), &(A1.mat));
+    hr2_pmap_t A1 = o->A1;
+    assert(hr2_pmap_is_affine(&A1));
+    
     float_image_t *img2 = taffc_read_image(o->img2);
-    r2_aff_map_t A2 = o->A2;
-    r2x2_scale(o->R2, &(A2.mat), &(A2.mat));
+    hr2_pmap_t A2 = o->A2;
+    assert(hr2_pmap_is_affine(&A2));
     
     int32_t NS = o->NS; /* Samples of {u,v} on each side of zero. */
     
     if (strcmp(o->deform, "xytrans") == 0)
       { taffc_plot_square_mismatch
-          ( o->prefix, "xytrans", img1, &A1, img2, &A2, NS, o->uvMax, &taffc_xy_translation_map );
+          ( o->prefix, "xytrans", img1, &A1, img2, &A2, NS, o->uvMax, &taffc_make_xy_translation_map );
       }
     else if (strcmp(o->deform, "rotmag") == 0)
       { taffc_plot_square_mismatch
-          ( o->prefix, "rotmag", img1, &A1, img2, &A2, NS, o->uvMax, &taffc_rotate_scale_map );
+          ( o->prefix, "rotmag", img1, &A1, img2, &A2, NS, o->uvMax, &taffc_make_rotate_scale_map );
       }
     else if (strcmp(o->deform, "xystretch") == 0)
       { taffc_plot_square_mismatch
-          ( o->prefix, "xystretch", img1, &A1, img2, &A2, NS, o->uvMax, &taffc_xy_stretch_map );
+          ( o->prefix, "xystretch", img1, &A1, img2, &A2, NS, o->uvMax, &taffc_make_xy_stretch_map );
       }
     else if (strcmp(o->deform, "xyshear") == 0)
       { taffc_plot_square_mismatch
-          ( o->prefix, "xyshear", img1, &A1, img2, &A2, NS, o->uvMax, &taffc_xy_shear_map );
+          ( o->prefix, "xyshear", img1, &A1, img2, &A2, NS, o->uvMax, &taffc_make_xy_shear_map );
       }
     else 
       { demand(FALSE, "invalid {deform}"); }
@@ -160,54 +158,56 @@ int main(int argc, char **argv)
     return 0;
   }
   
-r2_aff_map_t taffc_xy_translation_map(double u, double v)
+hr2_pmap_t taffc_make_xy_translation_map(double u, double v)
   {
     double D = taffc_translation_REF;
-    
-    r2_aff_map_t M;
-    r2x2_ident(&(M.mat));
-    M.disp = (r2_t){{ D*u, D*v }};
+    r2_t disp = (r2_t){{ D*u, D*v }};
+    hr2_pmap_t M = hr2_pmap_translation(&disp);
     return M;
   }
   
-r2_aff_map_t taffc_rotate_scale_map(double u, double v)
+hr2_pmap_t taffc_make_rotate_scale_map(double u, double v)
   {
-    double T = taffc_rotation_REF;
+    double R = taffc_rotation_REF;
     double S = taffc_scale_REF;
     
-    r2_aff_map_t M;
-    double ang = T*u;
-    double mag = pow(S, v);
-    r2_t p = (r2_t){{ mag*cos(ang), mag*sin(ang) }};
-    r2x2_rot_and_scale(&p, &(M.mat));
-    M.disp = (r2_t){{ 0.0, 0.0 }};
+    double ang = R*u;
+    double scale = pow(S, v);
+    hr2_pmap_t M = hr2_pmap_rotation_and_scaling(ang, scale);
     return M;
   }
   
-r2_aff_map_t taffc_xy_stretch_map(double u, double v)
+hr2_pmap_t taffc_make_xy_stretch_map(double u, double v)
   {
     double S = taffc_stretch_REF;
 
-    r2_aff_map_t M;
-    r2x2_ident(&(M.mat));
-    M.mat.c[0][0] = pow(S, u);
-    M.mat.c[1][1] = pow(S, v);
-    M.disp = (r2_t){{ 0.0, 0.0 }};
+    r2_t scale = (r2_t){{ S*u, S*v }};
+    hr2_pmap_t M = hr2_pmap_scaling(&scale);
     return M;
   }
   
-r2_aff_map_t taffc_xy_shear_map(double u, double v)
+hr2_pmap_t taffc_make_xy_shear_map(double u, double v)
   {
     double S = taffc_shear_REF;
 
-    r2_aff_map_t M;
-    r2x2_ident(&(M.mat));
-    M.mat.c[0][1] = S*u;
-    M.mat.c[1][0] = S*v;
-    M.disp = (r2_t){{ 0.0, 0.0 }};
+    r2x2_t L;
+    r2x2_ident(&L);
+    L.c[0][1] = S*u;
+    L.c[1][0] = S*v;
+    r2_t disp = (r2_t){{ 0.0, 0.0 }};
+    
+    hr2_pmap_t M = hr2_pmap_aff_from_mat_and_disp(&L, &disp);
     return M;
   }
   
+void taffc_scale_pmap_aff(hr2_pmap_t *A, double scale)
+  {
+    for (int32_t i = 0; i < 3; i++)
+      { for (int32_t j = 1; j < 3; j++) 
+         { A->dir.c[i][j] *= scale; A->inv.c[j][i] /= scale; }
+      }
+  }
+
 float_image_t *taffc_read_image(char *imgname)
   {
     char *fname = NULL; 
@@ -225,9 +225,9 @@ void taffc_plot_square_mismatch
   ( char *prefix,
     char *deform,
     float_image_t *img1,
-    r2_aff_map_t *A1,
+    hr2_pmap_t *A1,
     float_image_t *img2,
-    r2_aff_map_t *A2,
+    hr2_pmap_t *A2,
     
     int32_t NS,
     double uvMax,
@@ -244,7 +244,7 @@ void taffc_plot_square_mismatch
     double fopt = +INF;  /* Optimum square msismatch value {(u,v)}. */
     r2_t popt = (r2_t){{ NAN, NAN }};    /* Optimum parameter pair {(u,v)}. */
     i2_t iopt = (i2_t){{ 9999, 9999 }};    /* Optimum parameter sample index {(iu,iv)}. */
-    r2_aff_map_t C1opt, C2opt;    /* Optimum affine maps. */
+    hr2_pmap_t C1opt, C2opt;    /* Optimum affine maps. */
     r2_t dp; /* Sampling steps used by {float_image_aff_compare}. */
     i2_t size; /* Sampling grid size used by {float_image_aff_compare}. */
 
@@ -254,30 +254,31 @@ void taffc_plot_square_mismatch
           { double v = uvMax*((double)iv)/((double)NS);
             
             /* Construct the modified maps {C1, C2}: */
-            r2_aff_map_t Muv = M(u,v);
-            r2_aff_map_t C1; r2_aff_map_compose(&Muv, A1, &C1);
+            hr2_pmap_t Muv = M(u,v);
+            hr2_pmap_t C1 = hr2_pmap_compose(&Muv, A1);
             if (debug_maps) { taffc_show_map("C1", "", &C1); }
             
-            r2_aff_map_t Nuv; r2_aff_map_invert(&Muv, &Nuv);
-            r2_aff_map_t C2; r2_aff_map_compose(&Nuv, A2, &C2);
+            hr2_pmap_t Nuv = hr2_pmap_inv(&Muv);
+            hr2_pmap_t C2 = hr2_pmap_compose(&Nuv, A2);
             if (debug_maps) { taffc_show_map("C2", "", &C2); }
-            if (debug_maps) { fprintf(stderr, "\n"); }
             
             double f = float_image_aff_compare(img1, &C1, img2, &C2, &dp, &size);
+            if (debug_maps) { fprintf(stderr, "point %4d %4d u = %10.7f v = %10.7f mismatch = %12.9f\n", iu, iv, u, v, f); }
             if (f < fopt)
               { /* Update optimum: */
                 fopt = f;  popt = (r2_t){{ u, v }}; iopt = (i2_t){{ iu, iv }};
                 C1opt = C1; C2opt = C2;
               }
+            if (debug_maps) { fprintf(stderr, "\n"); }
               
-            fprintf(wr, "0 %4d, %4d %10.7f %10.7f %12.9f\n", iu, iv, u, v, f);
+            fprintf(wr, "0 %4d %4d  %10.7f %10.7f  %12.9f\n", iu, iv, u, v, f);
           }
         fprintf(wr, "\n"); /* For gnuplot. */
       }
-    fprintf
-      ( wr, "1 %4d, %4d %10.7f %10.7f %16.8e\n", 
-        iopt.c[0], iopt.c[0], popt.c[0], popt.c[1], fopt
-      );
+    //  fprintf
+    //    ( wr, "1 %4d, %4d %10.7f %10.7f %16.8e\n", 
+    //      iopt.c[0], iopt.c[0], popt.c[0], popt.c[1], fopt
+    //    );
     fclose(wr);
     fprintf
       ( stderr, "lowest mismatch %.8e at [%d, %d] = (%.7f %.7f)\n", 
@@ -304,55 +305,42 @@ taffc_options_t *taffc_parse_options(int argc, char **argv)
     o->uvMax = argparser_get_next_double(pp, 0.01, 100.0);
     
     o->img1 = argparser_get_next(pp);
-    taffc_parse_next_affine_map(pp, &(o->A1)); 
-    o->R1 = argparser_get_next_double(pp, 0.1, 100.0);
+    o->A1 = argparser_get_next_feature_map(pp);
     
     o->img2 = argparser_get_next(pp);
-    taffc_parse_next_affine_map(pp, &(o->A2)); 
-    o->R2 = argparser_get_next_double(pp, 0.1, 100.0);
+    o->A2 = argparser_get_next_feature_map(pp);
 
     argparser_skip_parsed(pp);
     argparser_finish(pp);
     return o;
   }
 
-void taffc_parse_next_affine_map(argparser_t *pp, r2_aff_map_t *A)
-  {
-    for (int32_t i = 0; i < 2; i++)
-      { for (int32_t j = 0; j < 2; j++)
-          { A->mat.c[i][j] = argparser_get_next_double(pp, -100.0, +100.0); }
-      }
-    for (int32_t j = 0; j < 2; j++)
-      { A->disp.c[j] = argparser_get_next_double(pp, -100.0, +100.0); }
-  }
-
-void taffc_show_map(char *name, char *phase, r2_aff_map_t *A)
-  { fprintf(stderr, "%-4s %s = [", name, phase);
-    fprintf(stderr, " [ %+8.4f %+8.4f ]", A->mat.c[0][0], A->mat.c[0][1]);
-    fprintf(stderr, " [ %+8.4f %+8.4f ]", A->mat.c[1][0], A->mat.c[1][1]);
+void taffc_show_map(char *name, char *phase, hr2_pmap_t *A)
+  { double w = fabs(A->dir.c[0][0]);
+    fprintf(stderr, "%-4s %s = [", name, phase);
+    fprintf(stderr, " [ %+10.4f %+10.4f ]", A->dir.c[1][1]/w, A->dir.c[1][2]/w);
+    fprintf(stderr, " [ %+10.4f %+10.4f ]", A->dir.c[2][1]/w, A->dir.c[2][2]/w);
     fprintf(stderr, " ]");
-    fprintf(stderr, " [ %8.4f %8.4f ]", A->disp.c[0], A->disp.c[1]);
+    fprintf(stderr, " [ %10.4f %10.4f ]", A->dir.c[0][1]/w, A->dir.c[0][2]/w);
     fprintf(stderr, "\n");
   }
             
-void taffc_show_map_pair(char *phase, r2_aff_map_t *C1, r2_aff_map_t *C2)
+void taffc_show_map_pair(char *phase, hr2_pmap_t *C1, hr2_pmap_t *C2)
   { 
     /* Print the maps from {\RR^2} to {img1} and {img2}: */
     taffc_show_map("C1", phase, C1);
     taffc_show_map("C2", phase, C2);
    
     /* Show the implied map from {img1} to {img2}: */
-    r2_aff_map_t C1inv, C12;
-    r2_aff_map_invert(C1, &C1inv);
-    r2_aff_map_compose(&C1inv, C2, &C12);
+    hr2_pmap_t C1inv = hr2_pmap_inv(C1);
+    hr2_pmap_t C12 = hr2_pmap_compose(&C1inv, C2);
     taffc_show_map("C12", phase, &C12);
 
     /* Print the normalized map from {img1} to {img2} and the relative scale radius: */
-    r2_aff_map_t A12;
-    A12.disp = C12.disp;
-    double R12 = r2x2_norm(&(C12.mat))/M_SQRT2;
-    r2x2_scale(1.0/R12, &(C12.mat), &(A12.mat));
+    hr2_pmap_t A12 = C12;
+    double R12 = hypot(hypot(A12.dir.c[1][1], A12.dir.c[1][2]), hypot(A12.dir.c[2][1], A12.dir.c[2][2]));
+    taffc_scale_pmap_aff(&(A12), 1/R12);
     taffc_show_map("A12", phase, &A12);
-    fprintf(stderr, "R12 %s = %8.4f\n", phase, R12);
+    fprintf(stderr, "R12 %s = %10.4f\n", phase, R12);
   }
     

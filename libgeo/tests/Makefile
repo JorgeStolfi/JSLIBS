@@ -1,28 +1,7 @@
-# Last edited on 2014-05-23 13:43:41 by stolfilocal
+# Last edited on 2022-10-19 16:46:12 by stolfi
 
-ALL_TESTS := \
-  ellipse \
-  r2 \
-  r3 \
-  r4 \
-  r6 \
-  rn \
-  hr2 \
-  hr3 \
-  sym_eigen \
-  gauss_elim \
-  i2 \
-  i3 \
-  hi2
-  
-SOME_TESTS := \
-  r2 \
-  r3 \
-  r4 \
-  r6 \
-  rn
-
-SUBDIRS := ${ALL_TESTS}  
+IGNOREDIRS := \
+  OLD
 
 all: check
 

@@ -1,5 +1,5 @@
 /* hr2test --- test program for hr2.h  */
-/* Last edited on 2022-03-01 12:13:48 by stolfi */
+/* Last edited on 2022-10-19 11:59:33 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -57,11 +57,10 @@ void test_hr2_meet(bool_t verbose);
 void test_hr2_point_point_dir(bool_t verbose);
 void test_hr2_line_dir(bool_t verbose);
 void test_hr2_line_normal(bool_t verbose);
-void test_hr2_pmap_scaling(bool_t verbose);
+
 void test_hr2_pmap_congruence_from_point_and_dir(bool_t verbose, bool_t flip);
 void test_hr2_pmap_similarity_from_two_points(bool_t verbose, bool_t flip);
 void test_hr2_pmap_from_four_points(bool_t verbose);
-
 void test_hr2_pmap_gen_print(bool_t verbose);
 void test_hr2_pmap_identity(bool_t verbose);
 void test_hr2_pmap_inv(bool_t verbose);
@@ -83,33 +82,6 @@ void test_hr2_pmap_rotation(bool_t verbose);
 void test_hr2_pmap_rotation_and_scaling(bool_t verbose);
 void test_hr2_pmap_scaling(bool_t verbose);
 void test_hr2_pmap_translation(bool_t verbose);
-
-
-    /* TEST: bool_t hr2_pmap_is_affine(r3x3_t *A); */
-    /* TEST: bool_t hr2_pmap_is_identity(hr2_pmap_t *M); */
-    /* TEST: double hr2_pmap_deform_sqr(r2_t h[], r3x3_t *A); */
-    /* TEST: double hr2_pmap_mismatch_sqr(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[]); */
-    /* TEST: double r2_aff_map_mismatch_sqr( r3x3_t *A, r3x3_t *B); */
-    /* TEST: hr2_line_t hr2_pmap_line(hr2_line_t *L, hr2_pmap_t *M); */
-    /* TEST: hr2_pmap_t hr2_pmap_aff_from_mat_and_disp(r2x2_t *E, r2_t *d); */
-    /* TEST: hr2_pmap_t hr2_pmap_aff_from_point_pairs(int32_t np, r2_t p1[], r2_t p2[], double w[]); */
-    /* TEST: hr2_pmap_t hr2_pmap_identity(void); */
-    /* TEST: hr2_pmap_t hr2_pmap_inv(hr2_pmap_t *M); */
-    /* TEST: hr2_pmap_t hr2_pmap_compose(hr2_pmap_t *M, hr2_pmap_t *N); */
-    /* TEST: hr2_pmap_t hr2_pmap_inv_comp(hr2_pmap_t *M, hr2_pmap_t *N); */
-    /* TEST: hr2_pmap_t hr2_pmap_rotation(double ang); */
-    /* TEST: hr2_pmap_t hr2_pmap_rotation_and_scaling(double ang, double scale); */
-    /* TEST: hr2_pmap_t hr2_pmap_scaling(r2_t *scale); */
-    /* TEST: hr2_pmap_t hr2_pmap_translation(r2_t *vec); */
-    /* TEST: hr2_point_t hr2_pmap_point(hr2_point_t *p, hr2_pmap_t *M); */
-    /* TEST: r2_t hr2_pmap_r2_point(r2_t *p, r3x3_t *A); */
-    /* TEST: typedef enum  */
-    /* TEST: typedef struct hr2_line_t { r3_t f; } hr2_line_t;   /\* {f.c[0..2]} are the line's coefficients. *\/ */
-    /* TEST: typedef struct hr2_pmap_t { r3x3_t dir; r3x3_t inv; } hr2_pmap_t; */
-    /* TEST: typedef struct hr2_point_t { r3_t c; } hr2_point_t; /\* {c.c[0..2]} are the points's coordinates. *\/ */
-    /* TEST: typedef void hr2_pmap_opt_report_proc_t (hr2_pmap_t *M, double F); */
-    /* TEST: void hr2_pmap_gen_print */
-    /* TEST: void hr2_pmap_print (FILE *wr, hr2_pmap_t *M); */
 
 void throw_pmap(hr2_pmap_t *M);
   /* Fills {M} with a random projective map. */
@@ -294,127 +266,41 @@ void test_hr2_pmap(bool_t verbose)
 
     test_hr2_pmap_print(verbose);
     test_hr2_pmap_gen_print(verbose);
- 
+
+  }  
+
+void test_hr2_pmap_aff(bool_t verbose)
+  {
+    /* Size: */
+    if (verbose)
+      { fprintf(stderr,
+          "sizeof(hr2_pmap_t) = %lu  %d*%d*sizeof(double) = %lu\n",
+          sizeof(hr2_pmap_t), NC+1, NC, (NC+1)*NC*sizeof(double)
+        );
+      }
+
+    test_hr2_pmap_is_affine(verbose);
+    test_hr2_pmap_aff_from_mat_and_disp(verbose);
+
+    test_hr2_pmap_translation(verbose);
+    test_hr2_pmap_rotation(verbose);
+    test_hr2_pmap_scaling(verbose);
+    test_hr2_pmap_rotation_and_scaling(verbose);
+    test_hr2_pmap_aff_mismatch_sqr(verbose);
+    test_hr2_pmap_congruence_from_point_and_dir(verbose, FALSE);
+    test_hr2_pmap_congruence_from_point_and_dir(verbose, TRUE);
+    test_hr2_pmap_similarity_from_two_points(verbose, FALSE);
+    test_hr2_pmap_similarity_from_two_points(verbose, TRUE);
+    test_hr2_pmap_aff_from_points(verbose);
+    test_hr2_pmap_aff_from_point_pairs(TRUE); // verbose
+
     /* TO BE COMPLETED !!! */
     
-    /* ??? bool_t hr2_pmap_is_identity(hr2_pmap_t *M); */
-    /* ??? hr2_point_t hr2_pmap_point(hr2_point_t *p, hr2_pmap_t *M); */
-    /* ??? hr2_line_t hr2_pmap_line(hr2_line_t *L, hr2_pmap_t *M); */
-    /* ??? hr2_pmap_t hr2_pmap_translation(r2_t *vec); */
-    /* ??? hr2_pmap_t hr2_pmap_rotation(double ang); */
-
-    /* ??? hr2_pmap_t hr2_pmap_comp(hr2_pmap_t *M, hr2_pmap_t *n); */
-    /* ??? hr2_pmap_t hr2_pmap_inv(hr2_pmap_t *M); */
-    /* ??? hr2_pmap_t hr2_pmap_similarity_from_two_points(hr2_point_t *p, hr2_point_t *q); */
-
-    /* ??? typedef void hr2_pmap_opt_report_proc_t (hr2_pmap_t *M, double F); */
-    /* ??? typedef enum  */
-    /* ??? double hr2_pmap_mismatch_sqr(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[]); */
-    /* ??? double hr2_pmap_deform_sqr(r2_t h[], r3x3_t *M); */
-
-    // if (verbose) { fprintf(stderr, "--- r2x2_map_row, r2x2_map_col ---\n"); }
-    // throw_matrix(&A);
-    // r2_throw_cube(&a);
-    // r2x2_map_row(&a, &A, &b);
-    // r2x2_map_col(&A, &a, &c);
-    // r2_zero(&bb);
-    // r2_zero(&cc);
-    // for (i = 0; i < N; i++)
-    //   { for (int32_t j = 0; j < N; j++)
-    //       { bb.c[j] += a.c[i] * A.c[i][j];
-    //         cc.c[i] += A.c[i][j] * a.c[j];
-    //       }
-    //   }
-    // r = r2_dist(&b, &bb);
-    // affirm(r < 0.000000001 * r2_norm(&bb), "r2_map_row error");
-    // s = r2_dist(&c, &cc);
-    // affirm(s < 0.000000001 * r2_norm(&cc), "r2_map_col error");
-    // 
-    // if (verbose) { fprintf(stderr, "--- r2x2_mul ---\n"); }
-    // throw_matrix(&A);
-    // throw_matrix(&B);
-    // r2x2_mul(&A, &B, &C);
-    // for (i = 0; i < N; i++)
-    //   { for (int32_t j = 0; j < N; j++)
-    //       { double sum = 0.0;
-    //         for (k = 0; k < N; k++) { sum += A.c[i][k]*B.c[k][j]; }
-    //         check_eps(C.c[i][j], sum, 0.000000001 * fabs(sum),
-    //           "r2x2_mul error"
-    //         );
-    //       }
-    //   }
-    // 
-    // if (verbose) { fprintf(stderr, "--- r2x2_det ---\n"); }
-    // throw_matrix(&A);
-    // for (i = 0; i < N; i++)
-    //   { int32_t k = (i + 1) % N;
-    //     for (int32_t j = 0; j < N; j++)
-    //       { /* Check for linearity */
-    //         r = drandom();
-    //         A.c[i][j] = r;
-    //         rr = r2x2_det(&A);
-    // 
-    //         s = drandom();
-    //         A.c[i][j] = s;
-    //         ss = r2x2_det(&A);
-    // 
-    //         t = drandom();
-    //         A.c[i][j] = r*(1-t) + s*t;
-    //         tt = r2x2_det(&A);
-    //         mag = fabs(rr) + fabs(ss) + fabs(tt);
-    //         check_eps(tt, rr*(1.0 - t) + ss*t, 000000001 * mag,
-    //           "r2x2_det error(1)"
-    //         );
-    //       }
-    // 
-    //     /* Row swap test: */
-    //     r = r2x2_det(&A);
-    //     for (int32_t j = 0; j < N; j++)
-    //       { double t = A.c[i][j]; A.c[i][j] = A.c[k][j]; A.c[k][j] = t; }
-    //     rr = r2x2_det(&A);
-    //     mag = fabs(r) + fabs(rr);
-    //     check_eps(r, -rr, 000000001 * mag, "r2x2_det error(2)");
-    // 
-    //     /* Col swap test: */
-    //     r = r2x2_det(&A);
-    //     for (int32_t j = 0; j < N; j++)
-    //       { double t = A.c[j][i]; A.c[j][i] = A.c[j][k]; A.c[j][k] = t; }
-    //     rr = r2x2_det(&A);
-    //     mag = fabs(r) + fabs(rr);
-    //     check_eps(r, -rr, 000000001 * mag, "r2x2_det error(3)");
-    //   }
-    // 
-    // if (verbose) { fprintf(stderr, "--- r2x2_inv ---\n"); }
-    // throw_matrix(&A);
-    // r2x2_inv(&A, &B);
-    // r2x2_mul(&A, &B, &C);
-    // for (i = 0; i < N; i++)
-    //   { for (int32_t j = 0; j < N; j++)
-    //       { double val = (i == j ? 1.0 : 0.0);
-    //         affirm((C.c[i][j] - val) < 000000001, "r2x2_inv error");
-    //       }
-    //   }
-    // 
-    // if (verbose) { fprintf(stderr, "--- r2x2_print ---\n"); }
-    // if (verbose)
-    //   { throw_matrix (&A);
-    //     fprintf(stderr, "A = ");
-    //     r2x2_print(stderr, &A);
-    //     fputc('\n', stderr);
-    //   }
-
     if (verbose)
       { 
-        fprintf(stderr, "!! hr2_pmap_is_identity NOT TESTED\n");
-        fprintf(stderr, "!! hr2_pmap_point NOT TESTED\n");
-        fprintf(stderr, "!! hr2_pmap_line NOT TESTED\n");
-        fprintf(stderr, "!! hr2_pmap_translation NOT TESTED\n");
-        fprintf(stderr, "!! hr2_pmap_rotation NOT TESTED\n");
-        fprintf(stderr, "!! hr2_pmap_comp NOT TESTED\n");
-        fprintf(stderr, "!! hr2_pmap_inv NOT TESTED\n");
-        fprintf(stderr, "!! hr2_pmap_from_point_pairs NOT TESTED\n");
+        /* fprintf(stderr, "!! r2_aff_map_from_XXX NOT TESTED\n"); */
       }
-  }  
+  }
 
 void test_hr2_to_from_r2(bool_t verbose)
   { 
@@ -824,39 +710,6 @@ void check_pmap_r2_point
   
 void print_pmap(char *name, hr2_pmap_t *M);
   /* Prints {M} to stderr. */
-
-void test_hr2_pmap_aff(bool_t verbose)
-  {
-    /* Size: */
-    if (verbose)
-      { fprintf(stderr,
-          "sizeof(hr2_pmap_t) = %lu  %d*%d*sizeof(double) = %lu\n",
-          sizeof(hr2_pmap_t), NC+1, NC, (NC+1)*NC*sizeof(double)
-        );
-      }
-
-    test_hr2_pmap_is_affine(verbose);
-    test_hr2_pmap_aff_from_mat_and_disp(verbose);
-
-    test_hr2_pmap_translation(verbose);
-    test_hr2_pmap_rotation(verbose);
-    test_hr2_pmap_scaling(verbose);
-    test_hr2_pmap_rotation_and_scaling(verbose);
-    test_hr2_pmap_aff_mismatch_sqr(verbose);
-    test_hr2_pmap_congruence_from_point_and_dir(verbose, FALSE);
-    test_hr2_pmap_congruence_from_point_and_dir(verbose, TRUE);
-    test_hr2_pmap_similarity_from_two_points(verbose, FALSE);
-    test_hr2_pmap_similarity_from_two_points(verbose, TRUE);
-    test_hr2_pmap_aff_from_points(verbose);
-    test_hr2_pmap_aff_from_point_pairs(verbose);
-
-    /* TO BE COMPLETED !!! */
-    
-    if (verbose)
-      { 
-        /* fprintf(stderr, "!! r2_aff_map_from_XXX NOT TESTED\n"); */
-      }
-  }
     
 void test_hr2_pmap_r2_point(bool_t verbose)
   {
@@ -922,6 +775,22 @@ void test_hr2_pmap_translation(bool_t verbose)
       }
   }
 
+void test_hr2_pmap_rotation(bool_t verbose)
+  { 
+    if (verbose) { fprintf(stderr, "--- hr2_pmap_rotation ---\n"); }
+    double ang = dabrandom(-1.58, +1.58);
+    hr2_pmap_t M = hr2_pmap_rotation(ang);
+    double ca = cos(ang);
+    double sa = sin(ang);
+    for (int32_t k = 0; k < 5; k++)
+      { r2_t p; r2_throw_cube(&p);
+        r2_t q; 
+        q.c[0] = + ca*p.c[0] - sa*p.c[1];
+        q.c[1] = + sa*p.c[0] + ca*p.c[1];
+        check_pmap_r2_point("p", &p, &M, &q, "hr2_pmap_rotation failed");
+      }
+  }
+
 void test_hr2_pmap_rotation_and_scaling(bool_t verbose)
   {
     if (verbose) { fprintf(stderr, "--- hr2_pmap_rotation_and_scaling ---\n"); }
@@ -955,7 +824,7 @@ void test_hr2_pmap_aff_mismatch_sqr(bool_t verbose)
     double mis2 = hr2_pmap_aff_mismatch_sqr(&M, &N);
     /* The integrand |(M - N)(u(t))|^2 is a sinusoidal function with freqs 0,1,2. */
     /* Can be integrated numerically with 5 or more samples. */
-    int32_t nang = 3;
+    int32_t nang = 7;
     double sum_d2 = 0; 
     for (int32_t i = 0; i < nang; i++)
       { double ang = 2*M_PI*((double)i)/((double)nang);
@@ -997,8 +866,8 @@ void test_hr2_pmap_aff_from_point_pairs(bool_t verbose)
      
     if (verbose) { fprintf(stderr, "--- hr2_pmap_aff_from_point_pairs  np = %d ---\n", np); }
      
-    bool_t exact = (np <= 3);
-    verbose = verbose | exact;
+    double eps = (np <= 3 ? 0.0 : 0.01); /* Typical perturbation size. */
+    verbose = verbose | (eps == 0.0);
 
     bool_t debug = verbose;
 
@@ -1045,9 +914,9 @@ void test_hr2_pmap_aff_from_point_pairs(bool_t verbose)
     r2_t q[np];
     for (int32_t ip = 0; ip < np; ip++) 
       { q[ip] = hr2_pmap_r2_point(&(p[ip]), &M);
-        if (! exact)
+        if (eps > 0.0)
           { r2_t d; r2_throw_cube(&d);
-            r2_mix(1.0, &(q[ip]), 0.1, &d, &(q[ip]));
+            r2_mix(1.0, &(q[ip]), eps, &d, &(q[ip]));
           }
       }
     
@@ -1061,7 +930,7 @@ void test_hr2_pmap_aff_from_point_pairs(bool_t verbose)
     /* Compare the maps with {hr2_pmap_aff_mismatch_sqr}: */
     double mis2 = hr2_pmap_aff_mismatch_sqr(&M, &N);
     double mis = sqrt(mis2); 
-    if (exact)
+    if (eps == 0.0)
       { check_num_eps("mis", mis, 0.0, 0.0000001, "hr2_pmap_aff_from_point_pairs failed"); }
     else 
       { /* Compare the maps by testing with given points: */
@@ -1069,12 +938,12 @@ void test_hr2_pmap_aff_from_point_pairs(bool_t verbose)
         double sum_d2A = 0.0;
         double sum_d2B = 0.0;
         for (int32_t ip = 0; ip < np; ip++)
-          { r2_t pi = p[ip]; /* M source point. */
+          { r2_t pi = p[ip]; /* Given source point. */
             r2_t qi = q[ip]; /* Given destination point. */
-            r2_t piA = hr2_pmap_r2_point(&pi, &M); /* Where the map {M} sent it. */
+            r2_t piA = hr2_pmap_r2_point(&pi, &M); /* Where the ideal map {M} sent it. */
             double d2A = r2_dist_sqr(&piA, &qi);
             sum_d2A += d2A;
-            r2_t piB = hr2_pmap_r2_point(&pi, &N); /* Where the solution {N} sent it. */
+            r2_t piB = hr2_pmap_r2_point(&pi, &N); /* Where the fitted map {N} sent it. */
             double d2B = r2_dist_sqr(&piB, &qi);
             sum_d2B += d2B;
           }
@@ -1082,7 +951,7 @@ void test_hr2_pmap_aff_from_point_pairs(bool_t verbose)
         double dB = sqrt(sum_d2B/np); /* RMS error of original data points rel to {N}. */
         if (verbose) { fprintf(stderr, "rms error M = %12.7f N = %12.7f\n", dA, dB); }
         double bad = fmax(0.0, dB - dA); /* Positive if {N} is worse than {M}, 0 if better. */
-        check_num_eps("bad", bad, 0.0, np*0.0000001, "hr2_pmap_aff_from_point_pairs failed");
+        check_num_eps("bad", bad, 0.0, np*eps*eps, "hr2_pmap_aff_from_point_pairs failed");
       }
   }
 
@@ -1112,9 +981,6 @@ void test_hr2_pmap_gen_print(bool_t verbose)
 
 void test_hr2_pmap_is_affine(bool_t verbose)
   { fprintf(stderr, "!! {test_hr2_pmap_is_affine} NOT TESTED\n"); }
-
-void test_hr2_pmap_rotation(bool_t verbose)
-  { fprintf(stderr, "!! {hr2_pmap_rotation} NOT TESTED\n"); }
 
 void throw_aff_map(hr2_pmap_t *M)
   {

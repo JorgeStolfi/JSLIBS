@@ -2,24 +2,24 @@
 #define float_image_aff_sampling_H
 
 /* Tools for sampling an image with affine deformation. */
-/* Last edited on 2020-11-05 23:19:25 by jstolfi */ 
+/* Last edited on 2022-10-19 08:45:11 by stolfi */ 
 
 #define _GNU_SOURCE_
 
 #include <bool.h>
 #include <r2.h>
 #include <i2.h>
-#include <r2x2.h>
-#include <r2_aff_map.h>
+#include <r3x3.h>
 #include <float_image.h>
 
-r2_t float_image_aff_sampling_choose_step(r2x2_t *mat);
-  /* Returns the steps in {x} and {y} on {\RR^2} that are adequate to 
-    sample an image after mapping by a linear map {L} with matrix {mat}
-    (or by an affine mapt {L} with that matrix as the linear term).
+r2_t float_image_aff_sampling_choose_step(r3x3_t *M);
+  /* Returns the steps in {x} and {y} on {\RR^2} that are adequate to
+    sample an image after mapping by a projective map {H} with direct
+    matrix {M}. Requires {H} to be affine; that is, the first column of
+    {M} should be {[w,0,0]} for some non-zero {w}.
     
     Specifically, determines an orthogonal grid of points on the plane {\RR^2},
-    including the origin, that is sufficiently dense for its image under {L} 
+    including the origin, that is sufficiently dense for its image under {H} 
     to fully sample an image with sub-pixel accuracy. */
     
 i2_t float_image_aff_sampling_grid_size(r2_t dp, double R);

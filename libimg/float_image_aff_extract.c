@@ -1,5 +1,5 @@
 /* See {float_image_aff_extract.h}. */
-/* Last edited on 2020-11-05 23:22:56 by jstolfi */
+/* Last edited on 2022-10-19 08:57:17 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -13,7 +13,7 @@
 #include <sign.h>
 #include <r2.h>
 #include <r2x2.h>
-#include <r2_aff_map.h>
+#include <hr2.h>
 #include <i2.h>
 #include <jsmath.h>
 #include <affirm.h>
@@ -35,9 +35,12 @@ void float_image_aff_extract_show_sample(int32_t ix, int32_t iy, r2_t p, r2_t q,
 
 /* IMPLEMENTATIONS */
 
-float_image_t *float_image_aff_extract(float_image_t *img, r2_aff_map_t *A, r2_t dp, i2_t size)
+float_image_t *float_image_aff_extract(float_image_t *img, hr2_pmap_t *A, r2_t dp, i2_t size)
   {
     bool_t debug_sampling = FALSE;
+    
+    /* The map must be affine: */
+    demand(hr2_pmap_is_affine(A), "map {A} is not affine");
     
     /* Get the result image size: */
     int32_t NC = (int32_t)img->sz[0]; /* Number of color channels. */
@@ -74,7 +77,7 @@ float_image_t *float_image_aff_extract(float_image_t *img, r2_aff_map_t *A, r2_t
           { double wyi = (iy >= 0 ? wy[iy] : wy[-iy]);
             /* Get the image sample {vd[0..NC-1]}: */
             r2_t p = (r2_t){{ ix*dx, iy*dy }};  /* Grid point in {\RR^2}. */
-            r2_t q; r2_aff_map_apply(&p, A, &q); /* Affine map image of {p}. */
+            r2_t q = hr2_pmap_r2_point(&p, A); /* Affine map image of {p}. */
             float_image_interpolate_pixel(img, q.c[0], q.c[1], order, red, vd);
             /* Apply the mask weight: */
             double wxy = wxi*wyi;

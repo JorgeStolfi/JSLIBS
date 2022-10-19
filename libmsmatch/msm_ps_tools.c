@@ -1,5 +1,5 @@
 /* See msm_ps_tools.h */
-/* Last edited on 2022-10-18 20:51:26 by stolfi */
+/* Last edited on 2022-10-19 19:31:10 by stolfi */
 
 #define msm_ps_tools_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -157,9 +157,6 @@ msm_ps_tools_t *msm_ps_tools_new_graph
     
     return mps;
   }
-
-epswr_figure_t *msm_ps_tools_get_ps_stream(msm_ps_tools_t *mps)
-  { return mps->eps; }
 
 void msm_ps_tools_get_plot_size(msm_ps_tools_t *mps, double *hSize, double *vSize)
   { *hSize = mps->size[0]; *vSize = mps->size[1]; }
@@ -633,7 +630,7 @@ void msm_ps_tools_draw_graphs
     demand(nd > 0, "can't plot empty graph");
 
     /* Get the {epswr_figure_t} handle for {epswr.h} routines: */
-    epswr_figure_t *eps = msm_ps_tools_get_ps_stream(mps);
+    epswr_figure_t *eps = mps->eps;
 
     /* Choose the actual X range {[xPlotMin_xPlotMax]} of graphs: */
     /* If {circ} is true, allow for half-steps at each end: */
@@ -795,7 +792,7 @@ void msm_ps_tools_draw_histogram
     demand(nd > 0, "can't plot empty histogram");
 
     /* Get the {epswr_figure_t} handle for {epswr.h} routines: */
-    epswr_figure_t *eps = msm_ps_tools_get_ps_stream(mps);
+    epswr_figure_t *eps = mps->eps;
 
     /* Choose the actual X range {[xPlotMin_xPlotMax]} of histogram: */
     /* Allow for half-steps at each end: */

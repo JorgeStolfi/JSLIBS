@@ -1,5 +1,5 @@
 /* See hr2.h */
-/* Last edited on 2022-03-01 12:03:45 by stolfi */ 
+/* Last edited on 2022-10-19 11:42:11 by stolfi */ 
 
 /* Based on HR2.m3 created 1994-05-04 by J. Stolfi. */
 
@@ -27,8 +27,9 @@
 
 /* INTERNAL PROTOPTYPES */
 
-void hr2_pmap_aff_norm_check(r3x3_t *A);
-  /* Bombs if {A} is not the matrix of an affine map with unit weight. */
+void hr2_pmap_normalize(r3x3_t *A);
+  /* Divides the matrix {A} by the absolute value of element {A[0][0]}. 
+    If that element is zero, the matrix is filled with {NAN}. */
 
 /* IMPLEMENTATIONS */
 
@@ -176,12 +177,12 @@ hr2_pmap_t hr2_pmap_rotation_and_scaling(double ang, double scale)
     M.dir.c[0][2] = 0.0;       M.inv.c[0][2] = 0.0;     
 
     M.dir.c[1][0] = 0.0;       M.inv.c[1][0] = 0.0;     
-    M.dir.c[1][0] = +c*scale;  M.inv.c[1][0] = +c/scale;
-    M.dir.c[1][1] = +s*scale;  M.inv.c[1][1] = -s/scale;
+    M.dir.c[1][1] = +c*scale;  M.inv.c[1][1] = +c/scale;
+    M.dir.c[1][2] = +s*scale;  M.inv.c[1][2] = -s/scale;
 
     M.dir.c[2][0] = 0.0;       M.inv.c[2][0] = 0.0;     
-    M.dir.c[2][0] = -s*scale;  M.inv.c[2][0] = +s/scale;
-    M.dir.c[2][1] = +c*scale;  M.inv.c[2][1] = +c/scale;
+    M.dir.c[2][1] = -s*scale;  M.inv.c[2][1] = +s/scale;
+    M.dir.c[2][2] = +c*scale;  M.inv.c[2][2] = +c/scale;
 
     return M;
   }
@@ -388,13 +389,26 @@ double hr2_pmap_deform_sqr(r2_t ph[], hr2_pmap_t *M)
 bool_t hr2_pmap_is_affine(hr2_pmap_t *M)
   { r3x3_t *A = &(M->dir);
     if (A->c[0][0] <= 0) { return FALSE; }
-    if ((A->c[0][1] != 0.0) || (A->c[0][2] != 0.0)) { return FALSE; }
+    if ((A->c[1][0] != 0.0) || (A->c[2][0] != 0.0)) { return FALSE; }
     return TRUE;
   }
 
-void hr2_pmap_aff_norm_check(r3x3_t *A)
-  { demand(A->c[0][0] == 1.0, "matrix is not unit-weight");
-    demand((A->c[0][1] == 0.0) && (A->c[0][2] == 0.0), "matrix is not affine");
+void hr2_pmap_normalize(r3x3_t *A)
+  { 
+    double w = fabs(A->c[0][0]);
+    if (w != 0)
+      { for (int32_t i = 0; i < 3; i++)
+          { for (int32_t j = 0; j < 3; j++)
+             { A->c[i][j] /= w; }
+          }
+        assert(fabs(A->c[0][0]) == 1.0);
+      }
+    else
+      { for (int32_t i = 0; i < 3; i++)
+          { for (int32_t j = 0; j < 3; j++)
+             { A->c[i][j] = NAN; }
+          }
+      }
   }
 
 void hr2_pmap_print (FILE *wr, hr2_pmap_t *M, char *pref, char *suff)
@@ -475,16 +489,16 @@ hr2_pmap_t hr2_pmap_aff_from_mat_and_disp(r2x2_t *E, r2_t *d)
 
 double hr2_pmap_aff_mismatch_sqr(hr2_pmap_t *M, hr2_pmap_t *N)
   {
-    r3x3_t *A = &(M->dir);
-    hr2_pmap_aff_norm_check(A);
-    r3x3_t *B = &(N->dir);
-    hr2_pmap_aff_norm_check(B);
+    r3x3_t A = M->dir;
+    hr2_pmap_normalize(&A);
+    r3x3_t B = N->dir;
+    hr2_pmap_normalize(&B);
     /* Hope the math is right: */
     r3x3_t E, H;
-    r3x3_sub(A, B, &E);
+    r3x3_sub(&A, &B, &E);
     r3x3_mul_tr(&E, &E, &H);
     double h2 = (H.c[1][1] + H.c[2][2])/2;
-    double d2 = H.c[0][0] - 1.0;
+    double d2 = H.c[0][0];
     return h2 + d2;
   }
 
@@ -531,7 +545,9 @@ hr2_pmap_t hr2_pmap_aff_from_point_pairs(int32_t np, r2_t p1[], r2_t p2[], doubl
         r2_t d; /* Displacement vector */
         
         if (np == 1)
-          { r2_sub(&bar2, &bar1, &d); }
+          { /* Just translate {bar1} to {bar2}: */
+            r2_sub(&bar2, &bar1, &d);
+          }
         else
           { /* Determine the linear map matrix {L = A.c[1..2][1..2]}: */
             r2x2_t L;

@@ -2,7 +2,7 @@
 #define msm_ps_tools_H
 
 /* Postscript plots of graphs and such. */
-/* Last edited on 2014-07-29 14:48:01 by stolfilocal */
+/* Last edited on 2022-10-19 19:28:47 by stolfi */
 
 #define msm_ps_tools_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -10,7 +10,7 @@
 #include <msm_basic.h>
 
 #include <vec.h>
-#include <pswr.h>
+#include <epswr.h>
 
 #define msm_PT_PER_MM (72.0/25.4)
   /* Postscript points (pt) per millimeter (mm). */ 
@@ -108,13 +108,6 @@ void msm_ps_tools_close(msm_ps_tools_t *mps);
     {stderr}). Then frees all internal storage used by {mps}, including
     the associated {PSStream} object and {*mps} itself. */
 
-PSStream *msm_ps_tools_get_ps_stream(msm_ps_tools_t *mps);
-  /* Returns the {PSStream} object associated with the {msm_ps_tools_t}
-    object {mps}.  The {pswr.h} routines can be used to draw on that
-    stream. For those routines, the client coordinates are
-    measured (in mm) from the lower left corner of the usable
-    plotting area. */
-
 void msm_ps_tools_get_plot_size(msm_ps_tools_t *mps, double *hSize, double *vSize);
   /* Stores in {*hSize} and {*vSize} the dimensions (in mm) of the usableplot
     area, as specified to {msm_ps_tools_init}, excluding the margin. */
@@ -129,14 +122,14 @@ void msm_ps_tools_get_plot_size(msm_ps_tools_t *mps, double *hSize, double *vSiz
   
 double msm_ps_tools_map_x(msm_ps_tools_t *mps, double x);
 double msm_ps_tools_map_y(msm_ps_tools_t *mps, double y);
-double msm_ps_tools_map_coord(msm_ps_tools_t *mps, pswr_axis_t axis, double coord);
+double msm_ps_tools_map_coord(msm_ps_tools_t *mps, epswr_axis_t axis, double coord);
 void msm_ps_tools_map_coords(msm_ps_tools_t *mps, double x, double y, double *h, double *v);
   /* These procedures map client coordinates {x,y} to device
      coordinates {h,v}, as defined by {mps}. */
 
 double msm_ps_tools_unmap_h(msm_ps_tools_t *mps, double h);
 double msm_ps_tools_unmap_v(msm_ps_tools_t *mps, double v);
-double msm_ps_tools_unmap_coord(msm_ps_tools_t *mps, pswr_axis_t axis, double coord);
+double msm_ps_tools_unmap_coord(msm_ps_tools_t *mps, epswr_axis_t axis, double coord);
 void msm_ps_tools_unmap_coords(msm_ps_tools_t *mps, double h, double v, double *x, double *y);
   /* These procedures map device coordinates {h,v} to client
      coordinates {x,y}, as defined by {mps}. */
@@ -211,7 +204,7 @@ void msm_ps_tools_draw_segment(msm_ps_tools_t *mps, double xa, double ya, double
   /* Draws a line segment from {(xa,ya)} to {(xb,yb)} with the current pen
     and draw color. */
 
-void msm_ps_tools_draw_ref_axis(msm_ps_tools_t *mps, pswr_axis_t axis, double R, double G, double B);
+void msm_ps_tools_draw_ref_axis(msm_ps_tools_t *mps, epswr_axis_t axis, double R, double G, double B);
   /* Draw the {x} or {y} coordinate axes in dark gray.
     The axis will span the current reference rectangle 
     (NOT the current plottable area). The axis will be drawn 
@@ -219,7 +212,7 @@ void msm_ps_tools_draw_ref_axis(msm_ps_tools_t *mps, pswr_axis_t axis, double R,
 
 void msm_ps_tools_draw_tic
   ( msm_ps_tools_t *mps, 
-    pswr_axis_t axis, 
+    epswr_axis_t axis, 
     double xt, 
     double yt,
     double ticSize,
@@ -231,7 +224,7 @@ void msm_ps_tools_draw_tic
   /* Draws a tic mark, perpendicular to the given {axis}, at the
     nominal position {xt,yt}, with the current pen and draw color.
     The parameters {ticSize,ticAlign} are
-    passed to {pswr_tic}.
+    passed to {epswr_tic}.
     
     If the string {label} is not NULL, its is written using the
     current font and text color. The label is centered on the tic
@@ -244,7 +237,7 @@ void msm_ps_tools_draw_tic
 
 void msm_ps_tools_draw_scale
   ( msm_ps_tools_t *mps, 
-    pswr_axis_t axis, 
+    epswr_axis_t axis, 
     double pos,
     double ticSize,
     double ticAlign,
@@ -279,7 +272,7 @@ void msm_ps_tools_draw_scale
 
 void msm_choose_label_coords
   ( msm_ps_tools_t *mps,
-    pswr_axis_t axis,
+    epswr_axis_t axis,
     double ztMin,
     double ztMax, 
     double ztStep,
@@ -310,7 +303,7 @@ void msm_choose_label_coords
     
 void msm_ps_tools_choose_tic_coords
   ( msm_ps_tools_t *mps, 
-    pswr_axis_t axis, 
+    epswr_axis_t axis, 
     double cMin, 
     double cMax, 
     double minDist, 
@@ -339,7 +332,7 @@ void msm_ps_tools_choose_tic_coords
 
 void msm_psplot_choose_label_coords
   ( msm_ps_tools_t *mps,
-    pswr_axis_t axis,
+    epswr_axis_t axis,
     double ztMin,
     double ztMax, 
     double ztStep,
@@ -404,7 +397,7 @@ void msm_ps_tools_draw_y_dots
     
     The radius {rad} is in mm, while the centers are in client
     coordinates. The parameters {fill} and {draw} are as in
-    {pswr_dot}. */
+    {epswr_dot}. */
 
 /* HIGH-LEVEL DRAWING TOOLS 
 

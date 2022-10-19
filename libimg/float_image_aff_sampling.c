@@ -1,5 +1,5 @@
 /* See {float_image_aff_sampling.h}. */
-/* Last edited on 2020-11-05 23:19:34 by jstolfi */
+/* Last edited on 2022-10-19 08:48:00 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -12,8 +12,7 @@
 #include <bool.h>
 #include <sign.h>
 #include <r2.h>
-#include <r2x2.h>
-#include <r2_aff_map.h>
+#include <r3x3.h>
 #include <i2.h>
 #include <jsmath.h>
 #include <affirm.h>
@@ -25,14 +24,18 @@
 
 #include <float_image_aff_sampling.h>
 
-r2_t float_image_aff_sampling_choose_step(r2x2_t *mat)
+r2_t float_image_aff_sampling_choose_step(r3x3_t *M)
   {
     /* Assume that the matrix is roughly orthogonal. */
     /* !!! Find a better formula for highly non-orthogonal matrices !!! */
     
     /* Compute the sample distance for increment 1 in {x} and {y}: */
-    double dx = hypot(mat->c[0][0], mat->c[0][1]);
-    double dy = hypot(mat->c[1][0], mat->c[1][1]);
+    double w = fabs(M->c[0][0]);
+    demand(w > 1.0e-200, "matrix weight is almost zero");
+    demand(M->c[1][0] == 0, "map is not affine (1)");
+    demand(M->c[2][0] == 0, "map is not affine (2)");
+    double dx = hypot(M->c[1][1], M->c[1][2])/w;
+    double dy = hypot(M->c[2][1], M->c[2][2])/w;
 
     /* Choose the sampling steps to be half a pixel after mapping: */
     return (r2_t){{ 0.5/dx, 0.5/dy }};

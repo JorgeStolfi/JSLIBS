@@ -1,5 +1,5 @@
 /* argparser_geo.h -- extends argparser.h for geometric args. */
-/* Last edited on 2022-01-01 22:21:29 by stolfi */
+/* Last edited on 2022-10-19 16:40:28 by stolfi */
 
 #ifndef argparser_geo_H
 #define argparser_geo_H
@@ -44,6 +44,9 @@ void argparser_get_next_adjust(argparser_t *pp, double *adjP, double min, double
     {[min _ max]}, and stores that value into {*adjP}. If the "adjust"
     keyword is not present, the procedure parses nothing and leaves
     {*adjP} unchanged. */
+    
+/* ---------------------------------------------------------------------- */
+/* PROJECTIVE MAP AS MATRIX */
 
 hr2_pmap_t argparser_get_next_proj_map_matrix(argparser_t *pp);
   /* Parses the next nine arguments, which must be floating point numbers,
@@ -56,6 +59,9 @@ hr2_pmap_t argparser_get_next_proj_map_matrix(argparser_t *pp);
 #define argparser_proj_map_matrix_INFO \
   "specifies the elements of the 3×3 projetive transformation" \
   " matrix, in row by row order."
+    
+/* ---------------------------------------------------------------------- */
+/* PROJECTIVE MAP AS FOUR POINT PAIRS */
 
 hr2_pmap_t argparser_get_next_proj_map_from_points(argparser_t *pp);
   /* Parses the next sixteen arguments, which must be floating point
@@ -85,6 +91,9 @@ hr2_pmap_t argparser_get_next_proj_map_from_points(argparser_t *pp);
   " systems, respectively.  The matrix {M} is computed using" \
   " {hr2_pmap_from_four_points} in {hr2.h}"
   
+/* ---------------------------------------------------------------------- */
+/* PROJECTIVE MAP AS MATRIX OR POINT PAIRS */
+
 hr2_pmap_t argparser_get_proj_map(argparser_t *pp);
   /* Parses an optional description of a 2D projective map from the command line, as
     per {argparser_proj_map_HELP} and
@@ -117,6 +126,23 @@ hr2_pmap_t argparser_get_proj_map(argparser_t *pp);
   " exclusive with \"-matrix\".   If \"-points\" and" \
   " \"-matrix\" are both omitted, the" \
   " projective transformation is trivial (the identity map)." \
+  
+/* ---------------------------------------------------------------------- */
+/* AFFINE MAP FOR FEATURE EXTRACTION AND MATCHING */
+
+hr2_pmap_t argparser_get_next_feature_map(argparser_t *pp);
+  /* Parses the next command line arguments as an affine map that takes a canonical 
+    orthogonal sampling grid to a grid of samples on {R^2}, as described by 
+    {argparser_featrue_map_HELP} and {argparser_feature_map_INFO}. */
+    
+#define argparser_featrue_map_HELP \
+  " {CX} {CY}  {A00} {A01} {A10} {A11} / {MAG}"
+  
+#define argparser_feature_map_INFO \
+  "These parameters specify an affine map" \
+  " that takes the origin to the point {(CX,CY)} and the unit" \
+  " displacement vectors {(1,0)} and {(0,1)} to {(A00,A01)/MAG} and" \
+  " {(A10,A11)/MAG}, respectively."
 
 /* Copyright © 2003 by Jorge Stolfi.
 **

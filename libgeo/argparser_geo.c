@@ -1,5 +1,5 @@
 /* See argparser_geo.h. */
-/* Last edited on 2022-01-01 22:21:06 by stolfi */
+/* Last edited on 2022-10-19 17:10:49 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 
@@ -126,6 +126,32 @@ hr2_pmap_t argparser_get_proj_map(argparser_t *pp)
     return M;
   }
     
+hr2_pmap_t argparser_get_next_feature_map(argparser_t *pp)
+  {
+    r3x3_t M;
+    r3x3_ident(&M);
+
+    for (int32_t j = 1; j < 3; j++)
+      { M.c[0][j] = argparser_get_next_double(pp, -1000.0, +1000.0); }
+    
+    for (int32_t i = 1; i < 3; i++)
+      { for (int32_t j = 1; j < 3; j++)
+          { M.c[i][j] = argparser_get_next_double(pp, -1000.0, +1000.0); }
+      }
+      
+    double mag = argparser_get_next_double(pp, 0.001, 1000.0);
+    
+    for (int32_t i = 1; i < 3; i++)
+      { for (int32_t j = 1; j < 3; j++)
+          { M.c[i][j] /= mag; }
+      }
+
+    hr2_pmap_t A;
+    A.dir = M;
+    r3x3_inv(&M, &(A.inv));
+    return A;
+  }
+
 /* Copyright © 2003 by Jorge Stolfi.
 **
 ** Permission to use, copy, modify, and distribute this software and its
