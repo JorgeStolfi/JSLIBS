@@ -1,5 +1,5 @@
 /* hr3test --- test program for hr3.h  */
-/* Last edited on 2021-06-09 19:54:09 by jstolfi */
+/* Last edited on 2022-01-04 08:42:35 by stolfi */
 
 #include <hr3.h>
 
@@ -78,7 +78,7 @@ void test_hr3(int32_t verbose)
 
     if (verbose)
       { fprintf(stderr,
-          "sizeof(hr3_point_t) = %lud  %d*sizeof(double) = %lud\n",
+          "sizeof(hr3_point_t) = %lu  %d*sizeof(double) = %lu\n",
           sizeof(hr3_point_t), NH, NH*sizeof(double)
         );
       }
@@ -335,7 +335,7 @@ void test_hr3_pmap(int32_t verbose)
     /* Size: */
     if (verbose)
       { fprintf(stderr,
-          "sizeof(hr3_pmap_t) = %lud  2*%d*%d*sizeof(double) = %lud\n",
+          "sizeof(hr3_pmap_t) = %lu  2*%d*%d*sizeof(double) = %lu\n",
           sizeof(hr3_pmap_t), NH, NH, 2*NH*NH*sizeof(double)
         );
       }

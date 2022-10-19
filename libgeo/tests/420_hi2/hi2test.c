@@ -1,5 +1,5 @@
 /* hi2test --- test program for hi2.h  */
-/* Last edited on 2021-06-09 19:53:22 by jstolfi */
+/* Last edited on 2022-01-04 08:43:00 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -117,7 +117,7 @@ void test_hi2(int32_t verbose)
 
     if (verbose)
       { fprintf(stderr,
-          "sizeof(hi2_point_t) = %lud  %d*sizeof(int32_t) = %lud\n",
+          "sizeof(hi2_point_t) = %lu  %d*sizeof(int32_t) = %lu\n",
           sizeof(hi2_point_t), NH, NH*sizeof(int32_t)
         );
       }

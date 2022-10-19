@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_pca.h}.  */
-/* Last edited on 2021-08-21 12:46:52 by stolfi */
+/* Last edited on 2021-08-29 11:45:18 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -127,3 +127,32 @@ void neuromat_eeg_pca_fit_patterns
       }
   }
 
+void neuromat_eeg_pca_combine_patterns
+  ( int nt, 
+    int ne, 
+    int np, 
+    double *P, 
+    double **coef, 
+    int mp, 
+    int ip[], 
+    double **vout
+  )
+  {
+    demand((0 <= np) && (np <= ne), "invalid {np,ne}");
+    int it;
+    for (it = 0; it < nt; it++)
+      { double *cf = coef[it]; /* Fitted pattern coefficients. */
+        double *vo = vout[it];        /* Reconstructed electrodes. */
+        /* Combine the requested components: */
+        rn_zero(ne, vo);
+        int k;
+        for (k = 0; k < mp; k++)
+          { int ipk = ip[k];
+            demand((0 <= ipk) && (ipk < np), "invalid pattern index");
+            double *Pi = &(P[ipk*ne]); /* Selected pattern. */
+            double cfi = cf[ipk]; /* Its coefficient. */
+            rn_mix_in (ne, cfi, Pi, vo);
+          }
+      }
+  }
+  

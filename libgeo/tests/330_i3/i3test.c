@@ -1,5 +1,5 @@
 /* i3test --- test program for i3.h, i3x3.h  */
-/* Last edited on 2021-08-17 10:24:56 by stolfi */
+/* Last edited on 2022-01-04 08:42:52 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -46,7 +46,7 @@ void test_i3(int32_t verbose)
 
     if (verbose)
       { fprintf(stderr,
-          "sizeof(i3_t) = %lud  %d*sizeof(int32_t) = %lud\n",
+          "sizeof(i3_t) = %lu  %d*sizeof(int32_t) = %lu\n",
           sizeof(i3_t), N, N*sizeof(int32_t)
         );
       }

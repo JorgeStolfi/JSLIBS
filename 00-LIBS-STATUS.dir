@@ -1,5 +1,5 @@
 # Libraries in compile order
-# Last edited on 2021-07-19 05:12:28 by jstolfi
+# Last edited on 2022-02-27 23:19:28 by stolfi
 
 # + = OK.
 # ? = Status uncertain.
@@ -25,6 +25,7 @@
 
 + libminu
 + libminn
++ libalign
 
 + libift
 + libmkgr

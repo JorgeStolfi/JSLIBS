@@ -2,7 +2,7 @@
 #define float_image_paint_H
 
 /* Tools for drawing into float images. */
-/* Last edited on 2020-10-11 01:39:58 by jstolfi */ 
+/* Last edited on 2021-08-28 23:26:44 by stolfi */ 
 
 #include <bool.h>
 #include <ellipse_crs.h>

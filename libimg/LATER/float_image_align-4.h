@@ -1,32 +1,48 @@
-/* See {float_image_align.h}. */
-/* Last edited on 2017-08-23 00:07:59 by jstolfi */
+#ifndef float_image_align_H
+#define float_image_align_H
 
-#define _GNU_SOURCE
-#include <math.h>
-#include <limits.h>
-#include <assert.h>
-#include <string.h>
-#include <limits.h>
-#include <math.h>
- 
- 
+/* Tools for optimizing a vector of points on the plane. */
+/* Last edited on 2017-06-05 16:02:48 by stolfilocal */ 
+
 #include <bool.h>
-#include <sign.h>
 #include <r2.h>
 #include <i2.h>
-#include <jsmath.h>
-#include <affirm.h>
 #include <float_image.h>
-#include <sve_minn.h>
-#include <wt_table.h>
 
-#include <float_image_align.h>
+/* 
+  ALIGNMENT VECTOR
+  
+  A (two-dimensional) /alignment vector/ for {ni} objects is a list of points 
+  {p[0..ni-1]} of the plane.  It says that point {p[i]} of each object {i}
+  corresponds in some sense to object {p[j]} of each other object {j}. 
+  
+  For example, the objects could be images, and the alignment {p[0..ni-1]} could be 
+  claiming that some neighborhood of point {p[i]} of image {i} looks like
+  the similar neighborhood of point {p[j]} of image {j}. */
 
-/* INTERNAL PROTOTYPES */
+typedef double float_image_align_mismatch_t(int ni, r2_t p[], i2_t iscale); 
+  /* Type of a function that evaluates the mismatch of {ni} objects.
+    in some neighborhood of points {p[0..ni-1]}, at a specified
+    scale of resolution {iscale}.
+    
+    The mismatch should be computed as if every object is expanded or
+    reduced by the scale factor {1/2^iscale.c[j]} along axis {j}, with
+    each alignment point {p[i]} scaled by that same amount.
+    
+    The size of the neighborhood, measured on the scaled object, should
+    be the same. That is, measured on the unscaled object, the
+    neighborhod should be centered on {p[i]} and have size proportional
+    to {2^iscale.c[j]} along axis {j}.
+    
+    Nevertheless, the function should ideally take about the same time
+    whatever the {iscale}. For positive {iscale}, this usually requires
+    that each object be reduced with antialiasing before the
+    comparison.
+    
+    The function had better be C2 near the optimum alignment for
+    quadratic optimization (see below). */
 
-/* IMPLEMENTATIONS */
-
-??void float_image_align_single_scale_enum
+void float_image_align_single_scale_enum
   ( int ni,                   /* Number of objects to align. */
     i2_t iscale,              /* Object scaling exponent along each axis. */  
     float_image_align_mismatch_t *f2,  /* Function that evaluates the mismatch between the objects. */
@@ -34,271 +50,106 @@
     r2_t step[],              /* Adjustment step for each object. */
     r2_t p[],                 /* (IN/OUT) Corresponding points in each object. */
     double *f2p               /* (OUT) Mismatch for the computed alignment vector. */
-  )
-
-void float_image_align_single_scale_enum
-  ( int ni,                            /* Number fo images to align. */
-    int scale,                         /* Image scale. */  
-    float_image_align_mismatch_t *f2,  /* Function that evaluates the mismatch between the images. */
-    r2_t rad[],                        /* Max alignment adjustment for each image. */
-    r2_t step[],                       /* Granularity of alignment in each coordinate. */
-    r2_t p[],                           /* (IN/OUT) Corresponding points in each image. */
-    double *f2p                        /* (OUT) Mismatch for the computed alignment vector. */
-  )
-  {
-    /* Trivial case: */
-    if (ni <= 1) { return; }
+  );
+  /* Adjusts an alignment vector {p[0..ni-1]} for some {ni} objects so
+    that they are as similar as possible in the neighborhoords of those
+    points, as defined by the mismatch function {f2(ni,p,iscale)}.
+    Uses exhaustive enumeration of all valid alignment vectors.
     
-    r2_t p0[ni]; /* Saved initial guess. */
-
-    int nv = 2*ni; /* Number of variables in enumeration. */
-    int v[nv];     /* Enumeration variables. */
-    int r[nv];     /* Limits for the enumeration variables. */
+    On input, {p[0..ni-1]} must be a guess for the optimum alignment. On
+    output, {p[0..ni-1]} will be an improved alignment, which differs
+    from the given one by an integer multiple of {step[i].c[j]} in each
+    axis {j=0..1}, not exceeding {arad[i].c[j]} in absolute value.
     
-     /* The enumeration variables {v[0..nv-1]} are the coordinates
-      of the displacements from {p0[0..ni-1]} to {p[0..ni-1]},
-      divided by the corresponding steps.  Each {v[k]} 
-      is at most {r[k]} in absolute value. */
-
-    /* Save {p0} and initialize {r,v}: */
-    int i, j;
-    for (i = 0; i < ni; i++)
-      { p0[i] = p[i];
-        for (j = 0; j < 2; j++)
-          { int k = 2*i + j;
-            double rij = rad[i].c[j];
-            demand(rij >= 0, "invalid search radius");
-            if (rij == 0)
-              { r[k] = 0; }
-            else
-              { double sij = step[i].c[j];
-                demand(sij > 0, "invalid search step");
-                r[k] = (int)floor(rij/sij);
-              }
-            v[k] = -r[k];
-          }
-      }
+    If {arad[i].c[j]} is positive, {step[i].c[j]} must be positive. If
+    {arad[i].c[j]} is zero or less than {step[i].c[j]}, the coordinate
+    {p[i].c[j]} is fixed.
     
-    /* Enumerate all valid vectors {v[0..nv-1]}: */
-    (*f2p) = +INF;   /* Minimum mismatch found so far. */
-    r2_t pv[nv];     /* Trial alignment vector. */
-    while (TRUE) 
-      { /* Increment the next {v[k]} that can be incremented, reset previous ones to min: */
-        { int k = 0;
-          while ((k < nv) && (v[k] >= r[k])) { v[k] = -r[k]; k++; }
-          if (k >= nv){ /* Done: */ return; }
-          v[k]++;
-        }
-        /* Compute {pv} from {v} and evaluate the function: */
-        for (i = 0; i < ni; i++)
-          { for (j = 0; j < 2; j++)
-              { int k = 2*i + j;
-                pv[i].c[j] = p0[i].c[j] + v[k]*step[i].c[j];
-              }
-          }
-        double f2v = f2(ni,scale,pv);
-        if (f2v < (*f2p))
-          { /* Update the current optimum: */
-            for (i = 0; i < ni; i++) { p[i] = pv[i]; }
-            (*f2p) = f2v;
-          }
-      }
-  }
+    The value of {f2(ni,iscale,p)} is returned on {*f2p}. */
 
 void float_image_align_single_scale_quadopt
-  ( int ni,                            /* Number fo images to align. */
-    int scale,                         /* Image scale. */  
-    float_image_align_mismatch_t *f2,  /* Function that evaluates the mismatch between the images. */
-    r2_t rad[],                        /* Max alignment adjustment for each image. */
-    r2_t p[],                          /* (IN/OUT) Corresponding points in each image. */
-    double *f2p                        /* (OUT) Mismatch for the computed alignment vector. */
-  )
-  {
-    int maxIters = 10;
-    bool_t debug = TRUE;
+  ( int ni,                   /* Number of objects to align. */
+    i2_t iscale,              /* Object scaling exponent along each axis. */  
+    float_image_align_mismatch_t *f2,  /* Function that evaluates the mismatch between the objects. */
+    r2_t arad[],              /* Max alignment adjustment for each object. */
+    r2_t step[],              /* Desired adjustment precision for each object. */
+    r2_t p[],                 /* (IN/OUT) Corresponding points in each object. */
+    double *f2p               /* (OUT) Mismatch for the computed alignment vector. */
+  );
+  /* Adjusts an alignment vector {p[0..ni-1]} for certain {ni} objects so
+    that they are as similar as possible in the neighborhoords of those
+    points, as defined by the mismatch function {f2(ni,iscale,p)}.
+    Uses iterated quadratic minimization. 
     
-    /* Trivial case: */
-    if (ni <= 1) { return; }
+    On input, {p[0..ni-1]} must be a guess for the optimum alignment
+    vector. On output, {p[0..ni-1]} will be an improved alignment, which
+    differs from the given one by at most {arad[i].c[j]}, and differs
+    from the optimum by about {step.c[j]}, in each axis {j=0..1}.
     
-    /* Find the number {nv} of variables to optimize: */
-    int nv = 0;
-    { int i, j; 
-      for (i = 0; i < ni; i++) 
-        { for (j = 0; j < 2; j++)
-            { double rij = rad[i].c[j];
-              demand(rij >= 0, "invalid search radius");
-              if (rij > 0) { nv++; }
-            }
-        }
-    }
+    If {arad[i].c[j]} is positive, {step[i].c[j]} must be positive. If
+    {arad[i].c[j]} is zero or less than {step[i].c[j]}, the coordinate
+    {p[i].c[j]} is fixed.
     
-    if (nv > 0)
-      { 
-        /* Apply nonlinear optimization. */
-
-        /* The optimization variables {x[0..nv-1]} are the coordinates
-          of the displacements from {p0[0..ni-1].c[j]} to {p[0..ni-1].c[j]},
-          divided by the corresponding radii {rad[i].c[j]}. */
-
-        /* Save initial guess {p} in {p0}: */
-        r2_t p0[ni]; /* Saved initial guess. */
-        { int i; for (i = 0; i < ni; i++) { p0[i] = p[i]; } }
-
-        /* These functions assume that the initial guess was saved in {p0[0..ni-1]}: */ 
-
-        auto void points_to_vars(r2_t q[], double y[]);
-          /* Stores the active displacements {q[0..ni-1]-p0[0..ni-1]} into {y[0..nv-1]}. */
-
-        auto void vars_to_points(double y[], r2_t q[]);
-          /* Stores {y[0..nv-1]} into the active {q[0..ni-1]}, adding {p0[0..ni-1]}. */
-
-        auto double sve_goal(int nx, double x[]);
-          /* Computes the minimization goal function from the given argument {x[0..nv-1]}.
-            Expects {nx == nv}. Also sets {p[0..ni-1]}. */
-
-        /* Compute the initial goal function value: */
-        double z[nv];
-        points_to_vars(p, z);
-        double Fz = sve_goal(nv, z);
-        sign_t dir = -1; /* Look for minimum. */
-        sve_minn_iterate
-          ( nv, 
-            &sve_goal, NULL, 
-            z, &Fz,
-            dir,
-            /*dMax:*/ 1.0,
-            /*rIni:*/ 0.5, 
-            /*rMin:*/ 0.05, 
-            /*rMax:*/ 0.5, 
-            /*stop:*/ 0.01,
-            maxIters,
-            debug
-          );
-
-        /* Return the optimal vector: */
-        vars_to_points(z, p);
-
-        /* Local implementations: */
-
-        void points_to_vars(r2_t q[], double y[])
-          { int i, j;
-            int k = 0;
-            for (i = 0; i < ni; i++)
-              { for (j = 0; j < 2; j++)
-                  { double rij = rad[i].c[j];
-                    if (rij > 0) { y[k] = (q[i].c[j] - p0[i].c[j])/rij; k++; }
-                  }
-              }
-            assert(k == nv);
-          }
-
-        void vars_to_points(double y[], r2_t q[])
-          { int i, j;
-            int k = 0;
-            for (i = 0; i < ni; i++)
-              { for (j = 0; j < 2; j++)
-                  { double rij = rad[i].c[j];
-                    if (rij > 0) { q[i].c[j] = p0[i].c[j] + y[k]*rij; k++; }
-                  }
-              }
-            assert(k == nv);
-          }
-
-        double sve_goal(int nx, double x[])
-          { assert(nx == nv);
-            /* Convert variables {x[0..nx-1]} to displacements {p[0..ni-1]}: */
-            vars_to_points(x, p);
-            /* Evaluate the client function: */
-            double Q2 = f2(ni, scale, p);
-            return Q2;
-          }
-
-      }
-      
-    /* Compue the final mismatch: */
-    (*f2p) = f2(ni,scale,p);
+    The value of {f2(ni,iscale,p)} is returned on {*f2p}.
     
-    return;
-  }
+    The mismatch function {f2} had better have a single minimum within
+    the search region, and preferably be approximately quadratic on {p}
+    within that region. */
 
 void float_image_align_multi_scale
-  ( int ni,                            /* Number of images to align. */
-    float_image_align_mismatch_t *f2,  /* Function that evaluates the mismatch between the images. */
-    bool_t quadopt,                    /* Use quadratic optimization? */
-    r2_t rad[],                        /* Max alignment adjustment along each axis. */
-    r2_t p[],                          /* (IN/OUT) Corresponding points in each image. */
-    double *f2p                        /* (OUT) Mismatch for the computed alignment vector. */
-  )
-  {
-    /* Find the maximum search radius: */
-    int i, j;
-    double rmax = 0;
-    for (i = 0; i < ni; i++)
-      { for (j = 0; j < 2; j++)
-          { double rij = rad[i].c[j];
-            demand(rij >= 0, "invalid search radius");
-            if (rij > rmax) { rmax = rij; }
-          }
-      }
-      
-    if (rmax == 0)
-      { /* Nothing to do: */ (*f2p) = f2(ni,0,p); }
-    else
-      { 
-        /* Compute the initial scale {m} and its reduction factor {fscale}: */
-        int m = 0;
-        double fscale = 1.0;
-        while (rmax > 0.5) { m = m+1; rmax = rmax/2; fscale = fscale/2; }
-        /* Reduce the problem to scale {m}: */
-        r2_t srad[ni];  /* Search radius at current scale. */
-        r2_t step[ni];  /* Search step at current scale (if {quadopt} is false). */
-        for (i = 0; i < ni; i++)
-          { for (j = 0; j < 2; j++) 
-              { srad[i].c[j] = rad[i].c[j]*fscale;
-                p[i].c[j] = p[i].c[j]*fscale;
-                step[i].c[j] = 0.5;
-              }
-          }
-        /* Now solve the problem at increasing scales: */
-        int s = m;
-        while(TRUE)
-          { /* Solve the problem at scale {s}: */
-            if (quadopt)
-              { float_image_align_single_scale_quadopt(ni, s, f2, srad, p, f2p); }
-            else
-              { float_image_align_single_scale_enum(ni, s, f2, srad, step, p, f2p); }
-            /* Are we done? */
-            if (s == 0) { break; }
-            /* Expand to the next finer scale: */
-            for (i = 0; i < ni; i++)
-              { for (j = 0; j < 2; j++) 
-                  { srad[i].c[j] = fmin(0.5, 2 * srad[i].c[j]);
-                    p[i].c[j] = 2 * p[i].c[j];
-                  }
-              }
-          
-          }
-      }
-      
-  }
-
-double float_image_align_rel_disp_sqr(int ni, r2_t p[], int scale, r2_t q[], r2_t rad[])
-  {
-    double d2 = 0.0;
-    double fscale = pow(2.0, scale);
-    int i, j;
-    for (i = 0; i < ni; i++)
-      { for (j = 0; j < 2; j++)
-          { double rij = rad[i].c[j];
-            if (rij != 0)
-              { double dij = (fscale*p[i].c[j] - q[i].c[j])/rij;
-                d2 += dij*dij;
-              }
-          }
-      }
-    return d2;
-  }
+  ( int ni,                  /* Number of objects to align. */
+    float_image_align_mismatch_t *f2, /* Function that evaluates the mismatch between the objects. */
+    bool_t quadopt,          /* Use quadratic optimization? */
+    r2_t arad[],             /* Max alignment adjustment for each object. */
+    r2_t step[],             /* Adjustment step or desired precision for each object. */
+    r2_t p[],                /* (IN/OUT) Corresponding points in each object. */
+    double *f2p              /* (OUT) Mismatch for the computed alignment vector. */
+  );
+  /* Adjusts an alignment vector {p[0..ni-1]} for certain {ni} objects
+    so that they are as similar as possible in the neighborhoords of
+    those points, as defined by the mismatch function {f2(ni,(0,0),p)}. Uses
+    a multiscale alignment strategy, with variable step sizes, to
+    efficiently search large alignment ranges.
     
-            
+    On input, {p[0..ni-1]} must be a guess for the optimum alignment
+    vector at scale 0. On output, {p[0..ni-1]} will be an improved
+    alignment at scale {(0,0)}, which differs from the given one by at
+    most {arad[i].c[j]}, and differs from the optimum by about
+    {step.c[j]}, in each axis {j=0..1}.
     
+    If {arad[i].c[j]} is positive, {step[i].c[j]} must be positive. If
+    {arad[i].c[j]} is zero or less than {step[i].c[j]}, the coordinate
+    {p[i].c[j]} is fixed.
+    
+    The value of {f2(ni,(0,0),p)} is returned on {*f2p}.
+    
+    The procedure performs an enumerative or quadratic optimization of
+    the adjustment vector at various scales {iscale}, starting with
+    some coarsest scale {ismax} and ending with scale {(0,0)}.
+    Successive scales have at least one of the coordinates reduced by 1.
+    
+    At each scale, the procedure uses {float_image_align_single_scale_enum}
+    or {float_image_align_single_scale_quadopt}, 
+    with modified search steps {stp} and modified search radii {rad}
+    such that (1) {stp[i].c[j]} is {step[i].c[j]*2^iscale.c[j]}, or
+    zero; and (2) {rad[i].c[j]} is about {2*stp[i].c[j]}, or zero. Thus,
+    at each scale the adjustment range for {p[i].c[j]} is only a small
+    multiple of the adjustment step/precision
+    
+    The procedure starts the search at a scale {ismax} such that
+    {ismax.c[j]} is the smallest integer such that
+    {step[i].c[j]*2^iscale.c[j] > arad[i].c[j]}, for all {i} such that
+    {arad[i].c[j] > 0}. */
 
+double float_image_align_rel_disp_sqr(int ni, r2_t p[], r2_t q[], r2_t arad[]);
+  /* Computes the total squared displacement between {p[0..ni-1]} and 
+    {q[0..ni-1]} relative to the radius {arad[i]}, that is,
+    
+      { SUM { (p[i].c[j] - q[i].c[j])/arad[i].c[j]|^2 : i=0..ni-1,j=0..1 } }
+    
+    except that terms where {arad[i].c[j]} is zero are ignored. Clients
+    may want to add an appropriate multple of this function to the goal
+    function in order to bias the search towards the neighborhood of the
+    initial guess. */
+
+#endif

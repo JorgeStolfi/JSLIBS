@@ -1,5 +1,5 @@
 /* r3test --- test program for r3.h, r3x3.h  */
-/* Last edited on 2021-08-20 16:21:02 by stolfi */
+/* Last edited on 2022-01-05 14:23:32 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -25,10 +25,16 @@ int32_t main (int32_t argc, char **argv);
 void test_r3(int32_t verbose);
 void test_r3x3(int32_t verbose);
 void throw_matrix(r3x3_t *m);
+void print_matrix(char *name, r3x3_t *A);
+
+void check_num_eps(char *name, double x, double y, double eps, char *msg);
+  /* If {x} and {y} differ by more than {eps}, prints {name}, {x}, {y}, and {msg}, and stops. */
 
 void check_regular_polyhedron(char *func, double R, double L, int32_t n, r3_t p[], int32_t deg);
   /* Check that {p[0..n-1]} are the vertices of a regular 
     polyhedron with radius {R}, side {L}, and vertex degree {deg}. */
+
+void test_r3x3_diff_sqr(bool_t verbose);
 
 int32_t main (int32_t argc, char **argv)
   { int32_t i;
@@ -51,7 +57,7 @@ void test_r3(int32_t verbose)
 
     if (verbose)
       { fprintf(stderr,
-          "sizeof(r3_t) = %lud  %d*sizeof(double) = %lud\n",
+          "sizeof(r3_t) = %lu  %d*sizeof(double) = %lu\n",
           sizeof(r3_t), N, N*sizeof(double)
         );
       }
@@ -426,12 +432,12 @@ void test_r3x3(int32_t verbose)
     if (verbose) { fprintf(stderr, "--- Size and allocation ---\n"); }
     if (verbose)
       { fprintf(stderr,
-          "sizeof(r3x3_t) = %lud  %d*%d*sizeof(double) = %lud\n",
+          "sizeof(r3x3_t) = %lu  %d*%d*sizeof(double) = %lu\n",
           sizeof(r3x3_t), N, N, N*N*sizeof(double)
         );
         fprintf(stderr, "&B = %016lx\n", (long unsigned)&B);
-        fprintf(stderr, "&A-&B = %lud\n", ((long unsigned)(&A))-((long unsigned)(&B)));
-        fprintf(stderr, "&B-&C = %lud\n", ((long unsigned)(&B))-((long unsigned)(&C)));
+        fprintf(stderr, "&A-&B = %lu\n", ((long unsigned)(&A))-((long unsigned)(&B)));
+        fprintf(stderr, "&B-&C = %lu\n", ((long unsigned)(&B))-((long unsigned)(&C)));
         fprintf(stderr, "&(B.c) = %016lx\n", (long unsigned)&(B.c));
         fprintf(stderr, "B.c = %016lx\n", (long unsigned)(B.c));
         fprintf(stderr, "&(B.c[0]) = %016lx\n", (long unsigned)&(B.c[0]));
@@ -634,6 +640,11 @@ void test_r3x3(int32_t verbose)
     affirm(tt >= 0, "r3x3_mod_norm_sqr error");
     affirm(fabs(tt - t) < 000000001, "r3x3_mod_norm_sqr error");
 
+    /* ---------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
+    test_r3x3_diff_sqr(verbose);
+
+    /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r3x3_u_v_rotation ---\n"); }
     r3_throw_dir(&a);
     r3_throw_dir(&b);
@@ -650,7 +661,51 @@ void test_r3x3(int32_t verbose)
         r3x3_print(stderr, &A);
         fputc('\n', stderr);
       }
+
+    if (verbose)
+      { 
+        fprintf(stderr, "!! r3x3_add NOT TESTED\n");
+        fprintf(stderr, "!! r3x3_sub NOT TESTED\n");
+        fprintf(stderr, "!! r3x3_neg NOT TESTED\n");
+        fprintf(stderr, "!! r3x3_mix NOT TESTED\n");
+        fprintf(stderr, "!! r3x3_adj NOT TESTED\n");
+        fprintf(stderr, "!! r3x3_is_unif_scaling NOT TESTED\n");
+      }
   }  
+
+void test_r3x3_diff_sqr(bool_t verbose)
+  {
+    bool_t debug = FALSE;
+    if (verbose) { fprintf(stderr, "--- r3x3_diff_sqr ---\n"); }
+    
+    r3x3_t A, B, R;
+    throw_matrix(&A);
+    throw_matrix(&B);
+    throw_matrix(&R);
+    int32_t iz = int32_abrandom(0, 2);
+    int32_t jz = int32_abrandom(0, 2);
+    R.c[iz][jz] = 0;
+    if (debug)
+      { print_matrix("A", &A);
+        print_matrix("B", &B);
+        print_matrix("R", &R);
+      }
+    double dabs2, drel2;
+    r3x3_diff_sqr(&A, &B, &R, &dabs2, &drel2);
+    double cabs2 = 0, crel2 = 0;
+    for (int32_t j = 0; j < N;  j++)
+      { for (int32_t i = 0; i < N;  i++)
+          { double rij = R.c[i][j];
+            if (rij != 0.0)
+              { double d = A.c[i][j] - B.c[i][j];
+                cabs2 += d*d;
+                crel2 += (d/rij)*(d/rij);
+              }
+          }
+      }
+    check_num_eps("drel2", drel2, crel2, 0.0000001, "r3x3_diff_sqr failed");
+    check_num_eps("dabs2", dabs2, cabs2, 0.0000001, "r3x3_diff_sqr failed");
+  }
 
 void throw_matrix(r3x3_t *m)
   { int32_t i, j;
@@ -659,6 +714,12 @@ void throw_matrix(r3x3_t *m)
       { r3_throw_cube(&a);
         for (j = 0; j < N; j++) { m->c[i][j] = a.c[j]; }
       }
+  }
+  
+void print_matrix(char *name, r3x3_t *A)
+  { fprintf(stderr, "%s = ", name);
+    r3x3_gen_print(stderr, A, "%+10.6f", NULL,NULL,NULL, NULL,NULL,NULL);
+    fprintf(stderr, "\n");
   }
 
 void check_regular_polyhedron(char *func, double R, double L, int32_t n, r3_t p[], int32_t deg)
@@ -685,5 +746,14 @@ void check_regular_polyhedron(char *func, double R, double L, int32_t n, r3_t p[
             if (fabs(dij - L) < 0.0001*R) { degi++; }
           }
         rn_check_eq(degi, deg, &i, NULL, "vertex has wrong degree");
+      }
+  }
+
+void check_num_eps(char *name, double x, double y, double eps, char *msg)
+  { double diff = fabs(x - y);
+    if (diff > eps)
+      { fprintf(stderr, " ** %s: %+20.16e %+20.16e", name, x, y);
+        fprintf(stderr, " diff = %+20.16e  max = %+20.16e - %s\n", diff, eps, msg);
+        exit(1);
       }
   }

@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:35:57 by jstolfi
+# Last edited on 2022-10-18 21:11:37 by stolfi
 
 PROG := msm_test_110_cands
 
@@ -8,7 +8,7 @@ TEST_LIB_DIR := ../..
 JS_LIBS := \
   libgeo.a \
   libimg.a \
-  libps.a \
+  libeps.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

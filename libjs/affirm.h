@@ -2,7 +2,7 @@
 #define affirm_H
 
 /* Variants of {assert} with explicit message argument. */
-/* Last edited on 2011-05-14 16:54:28 by stolfi */
+/* Last edited on 2022-10-18 21:10:06 by stolfi */
 
 /* ERRORS AND ASSERTIONS */
 
@@ -51,11 +51,11 @@ void programerror (const char *msg, const char *file, unsigned int line, const c
 /* NULL POINTER CHECKING */
 
 #define notnull(p, msg) \
-  checknotnull(p, (msg), __FILE__, __LINE__, __FUNCTION__)
+  checknotnull((p), (msg), __FILE__, __LINE__, __FUNCTION__)
   /* If {p == NULL}, aborts with {*msg} with the program 
     location; otherwise returns {p} itself. */
   
-void *checknotnull(const void *p, const char *msg, const char *file, unsigned int line, const char* proc);
+void *checknotnull(void *p, const char *msg, const char *file, unsigned int line, const char *proc);
   /* If {p == NULL}, prints {file ":" line ": (" *proc ")" *msg} to {stderr} and
     stops; otherwise returns {p} itself.  Meant for {notnull} below. */
     

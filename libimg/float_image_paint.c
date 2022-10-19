@@ -1,5 +1,5 @@
 /* See {float_image_paint.h}. */
-/* Last edited on 2020-10-11 02:47:20 by jstolfi */
+/* Last edited on 2021-08-28 23:25:18 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>

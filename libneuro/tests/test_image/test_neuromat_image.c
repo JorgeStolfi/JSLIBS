@@ -4,7 +4,7 @@
 
 #define test_neuromat_image_C_COPYRIGHT \
   "Copyright © 2021 by the State University of Campinas (UNICAMP)"
-/* Last edited on 2021-08-25 02:48:41 by stolfi */
+/* Last edited on 2021-08-29 01:07:31 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -48,12 +48,6 @@ int32_t main(int32_t argc, char **argv)
     assert(fld->sz[1] == NX);
     assert(fld->sz[2] == NY);
     
-    /* Read an EEG dataset: */
-    double **val = NULL;
-    int32_t nt, nc, ne, nm;
-    tni_read_dataset("in/s019_r00418.txt", &val, &nt, &nc, &ne, &nm);
-    assert(nm >= 2);
-    
     /* Create the ouptut image: */
     float_image_t *cim = float_image_new(4,NX,NY);
     double gamma = NAN; /* Use dafault gamma for output images. */
@@ -65,7 +59,7 @@ int32_t main(int32_t argc, char **argv)
     vmax = fmaxf(fabsf(vlo),fabsf(vhi));
     int32_t style = 1;
     neuromat_image_colorize_field(cim, fld, msk, (double)vmax, style);
-    neuromat_image_png_write("out/t", "czf", cim, 0.0, 1.0, gamma);
+    neuromat_image_png_write("out", "czf", cim, 0.0, 1.0, gamma);
     
     fprintf(stderr, "--- testing {neuromat_image_colorize_signed_overlay} ---\n");
     float_image_fill(cim, NAN);
@@ -77,34 +71,34 @@ int32_t main(int32_t argc, char **argv)
       { frgb_t rgb = (side == 0 ? (frgb_t){{ 0.0, 0.5, 1.0 }} : (frgb_t){{ 1.0, 0.5, 0.0 }});
         neuromat_image_colorize_signed_overlay(cim, ovr, (sign_t)(2*side-1), rgb);
         char *tag = (side == 0 ? "cov_neg" : "cov_pos");
-        neuromat_image_png_write("out/t", tag, cim, 0.0, 1.0, gamma);
+        neuromat_image_png_write("out", tag, cim, 0.0, 1.0, gamma);
       }
  
-    fprintf(stderr, "--- testing painting time tracks and markers ---\n");
+    fprintf(stderr, "--- {testing neuromat_image_paint_slider}  ---\n");
     float_image_fill(cim, 0.000f);
     vlo = +INF; vhi = -INF;
     int32_t xlo = 20;
     int32_t xsz = NX - 2*xlo;
-    int32_t ylo = 20;
-    int32_t y = ylo;
+    int32_t y0 = 20;
+    int32_t y1 = y0 + 20;
+    int32_t y2 = y1 + 20;
     frgb_t ftrack = (frgb_t){{ 0.500f, 0.600f, 0.700f }};
-    frgb_t fmark = (frgb_t){{ 1.000f, 0.800f, 0.000f }};
     frgb_t fslid = (frgb_t){{ 1.000f, 0.000f, 0.500f }};
     int32_t hw = 2;
-    int32_t ic_mark = nc - 1;
-    neuromat_image_paint_time_track(cim, hw, xlo, xsz, y, ftrack);
-    neuromat_image_paint_marker_ranges(cim, hw, nt, nc, val, ic_mark, xlo, xsz, y, fmark);
+    neuromat_image_paint_time_track(cim, hw, xlo, xsz, y0, ftrack);
+    neuromat_image_paint_time_track(cim, hw, xlo, xsz, y1, ftrack);
+    neuromat_image_paint_time_track(cim, hw, xlo, xsz, y2, ftrack);
     double tlo = 0.0;
-    double thi = (double)nt;
+    double thi = 500.0;
     double t = 0.67*tlo + 0.33*thi;
-    int32_t yhi = ylo + 20;
-    neuromat_image_paint_slider(cim, hw, tlo, t, thi, xlo, xsz, ylo, yhi, fslid);
-    neuromat_image_png_write("out/t", "sld", cim, 0.0, 1.0, gamma);
+    int32_t ylo = y0;
+    int32_t yhi = y2;
+    int32_t shh = 4*hw;
+    neuromat_image_paint_slider(cim, hw, shh, tlo, t, thi, xlo, xsz, ylo, yhi, fslid);
+    neuromat_image_png_write("out", "sld", cim, 0.0, 1.0, gamma);
 
     float_image_free(msk);
     float_image_free(ovr);
-    for (int32_t it = 0; it < nt; it++) { free(val[it]; }
-    free(val);
     float_image_free(cim);
     
     return 0;

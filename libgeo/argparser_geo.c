@@ -1,5 +1,5 @@
 /* See argparser_geo.h. */
-/* Last edited on 2021-06-09 19:56:55 by jstolfi */
+/* Last edited on 2022-01-01 22:21:06 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 
@@ -96,7 +96,7 @@ hr2_pmap_t argparser_get_next_proj_map_from_points(argparser_t *pp)
         fprintf(stderr, "  ip[%d] = [ %10.2f %10.2f %10.2f ]\n", i, ip[i].c.c[0], ip[i].c.c[1], ip[i].c.c[2]);
       }
     fprintf(stderr, "\n");
-    hr2_pmap_t IM = hr2_pmap_from_points(&(ip[0]), &(ip[1]), &(ip[2]), &(ip[3]));
+    hr2_pmap_t IM = hr2_pmap_from_four_points(&(ip[0]), &(ip[1]), &(ip[2]), &(ip[3]));
     /* Parse the four output points {op[0..3]}: */
     hr2_point_t op[4];
     for (i = 0; i < 4; i++)
@@ -106,7 +106,7 @@ hr2_pmap_t argparser_get_next_proj_map_from_points(argparser_t *pp)
         fprintf(stderr, "  op[%d] = [ %10.2f %10.2f %10.2f ]\n", i, op[i].c.c[0], op[i].c.c[1], op[i].c.c[2]);
       }
     fprintf(stderr, "\n");
-    hr2_pmap_t OM = hr2_pmap_from_points(&(op[0]), &(op[1]), &(op[2]), &(op[3]));
+    hr2_pmap_t OM = hr2_pmap_from_four_points(&(op[0]), &(op[1]), &(op[2]), &(op[3]));
     /* Compute the projective map: */
     hr2_pmap_t M;
     r3x3_mul(&(IM.inv), &(OM.dir), &(M.dir));

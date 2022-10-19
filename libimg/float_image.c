@@ -1,5 +1,5 @@
 /* See float_image.h */
-/* Last edited on 2020-11-06 03:00:39 by jstolfi */ 
+/* Last edited on 2021-08-28 03:51:13 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <limits.h>

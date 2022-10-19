@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_channel_stats.h}. */
-/* Last edited on 2021-08-21 13:09:13 by stolfi */
+/* Last edited on 2021-09-01 20:25:04 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -30,6 +30,7 @@ void neuromat_eeg_channel_stats_extreme_print
   ( FILE *wr, 
     int32_t indent,
     int32_t ne,
+    char *name[],
     neuromat_eeg_channel_stats_t *stg
   );
   /* Prints the overall 
@@ -48,8 +49,8 @@ neuromat_eeg_channel_stats_t *neuromat_eeg_channel_stats_new(int32_t nc)
 void neuromat_eeg_channel_stats_clear(neuromat_eeg_channel_stats_t *st)
   { st->num = 0;
     st->twt = 0.0;
-    st->min = +INF;
-    st->max = -INF;
+    st->min = +INF; st->icmin = -1; st->itmin = -1;
+    st->max = -INF; st->icmax = -1; st->itmax = -1;
     st->avg = NAN;
     st->msq = NAN;
     st->rms = NAN;
@@ -93,10 +94,10 @@ void neuromat_eeg_channel_stats_gather
   )
   { demand ((! isnan(eps)) && (eps >= 0.0) && (eps < +INF), "invalid {eps}");
     demand ((ic >= 0) && (ic < nc), "invalid channel index {ic}");
-    /* Compute {num,twt,min,max} of channel, and sum and sum of squares: */
+    /* Compute {num,twt,min,icmin,itmin,max,icmax,itmax} of channel, and sum and sum of squares: */
     st->num = 0;
-    st->min = +INF;
-    st->max = -INF;
+    st->min = +INF; st->icmin = -1; st->itmin = -1;
+    st->max = -INF; st->icmax = -1; st->itmax = -1;
     double sumw = 0.0;
     double sumwv = 0;
     double sumwv2 = 0;
@@ -107,9 +108,9 @@ void neuromat_eeg_channel_stats_gather
         if (w > 0.0)
           { st->num++;
             double vlo = v - 3*eps;
-            if (vlo < st->min) { st->min = vlo; }
+            if (vlo < st->min) { st->min = vlo; st->icmin = ic; st->itmin = it; }
             double vhi = v + 3*eps;
-            if (vhi > st->max) { st->max = vhi; }
+            if (vhi > st->max) { st->max = vhi; st->icmax = ic; st->itmax = it; }
             sumw += w;
             sumwv += w*v;
             sumwv2 += w*(v*v + eps*eps);
@@ -163,8 +164,8 @@ void neuromat_eeg_channel_stats_extreme
   {
     int32_t min_num = INT32_MAX;
     double min_twt = +INF;
-    double min_min = +INF;
-    double max_max = -INF;
+    double min_min = +INF; int32_t min_icmin = -1; int32_t min_itmin = -1;
+    double max_max = -INF; int32_t max_icmax = -1; int32_t max_itmax = -1;
     double max_var = 0.0;
     double max_dev = 0.0;
     double max_msq = 0.0;
@@ -173,8 +174,8 @@ void neuromat_eeg_channel_stats_extreme
       { neuromat_eeg_channel_stats_t *sti = &(st[ie]);
         if (sti->num < min_num) { min_num = sti->num; }
         if (sti->twt < min_twt) { min_twt = sti->twt; }
-        if (sti->min < min_min) { min_min = sti->min; }
-        if (sti->max > max_max) { max_max = sti->max; }
+        if (sti->min < min_min) { min_min = sti->min; min_icmin = sti->icmin; min_itmin = sti->itmin; }
+        if (sti->max > max_max) { max_max = sti->max; max_icmax = sti->icmax; max_itmax = sti->itmax; }
         if (sti->var > max_var) { max_var = sti->var; }
         if (sti->dev > max_dev) { max_dev = sti->dev; }
         if (sti->msq > max_msq) { max_msq = sti->msq; }
@@ -187,8 +188,8 @@ void neuromat_eeg_channel_stats_extreme
     else
       { stg->num = min_num;
         stg->twt = min_twt;
-        stg->min = min_min;
-        stg->max = max_max;
+        stg->min = min_min; stg->icmin = min_icmin; stg->itmin = min_itmin;
+        stg->max = max_max; stg->icmax = max_icmax; stg->itmax = max_itmax;
         stg->avg = NAN;
         stg->var = max_var;
         stg->dev = max_dev;
@@ -210,21 +211,24 @@ void neuromat_eeg_channel_stats_print
     fprintf(wr, "channel %3d = %-4s", ic, name); 
     if (pnum) { fprintf(wr, "  num = %6d  twt = %14.8f", st->num, st->twt); } 
     fprintf(wr, "  avg = %+14.5f  dev = %14.5f  rms = %14.5f", st->avg, st->dev, st->rms); 
-    fprintf(wr, "  min = %+14.5f  max = %+14.5f\n", st->min, st->max); 
+    fprintf(wr, "  min = %+14.5f at frame %5d", st->min, st->itmin); 
+    fprintf(wr, "  max = %+14.5f at frame %5d", st->max, st->itmax); 
+    fprintf(wr, "\n"); 
   }
 
 void neuromat_eeg_channel_stats_extreme_print
   ( FILE *wr, 
     int32_t indent,
     int32_t ne,
+    char *name[],
     neuromat_eeg_channel_stats_t *stg
   )
   {
-    if (indent > 0) { fprintf(wr, "%*s", indent, ""); }
-    fprintf(wr, "range of the %3d electrode values = [ %8.5f __ %8.5f ]\n", ne, stg->min, stg->max);
-    if (indent > 0) { fprintf(wr, "%*s", indent, ""); }
-    fprintf(wr, "maximum electrode dev =   %8.5f  rms =   %8.5f", stg->dev, stg->rms); 
-    fprintf(wr, "\n");
+    char *namemin = (stg->icmin < 0 ? "????" : name[stg->icmin]);
+    fprintf(wr, "%*smin value %+14.5f at channel %3d = %s frame %5d\n", indent, "", stg->min, stg->icmin, namemin, stg->itmin);
+    char *namemax = (stg->icmax < 0 ? "????" : name[stg->icmax]);
+    fprintf(wr, "%*smax value %+14.5f at channel %3d = %s frame %5d\n", indent, "", stg->max, stg->icmax, namemax, stg->itmax);
+    fprintf(wr, "%*smax dev = %14.5f  max rms = %14.5f\n", indent, "", stg->dev, stg->rms); 
   }
 
 void neuromat_eeg_channel_stats_print_all
@@ -241,7 +245,7 @@ void neuromat_eeg_channel_stats_print_all
       { neuromat_eeg_channel_stats_print(wr, indent, ic, name[ic], pnum, &(st[ic]));  }
     if ((stg != NULL) && (ne > 0))
       { fprintf(wr, "\n");
-        neuromat_eeg_channel_stats_extreme_print(wr, indent, ne, stg);
+        neuromat_eeg_channel_stats_extreme_print(wr, indent, ne, name, stg);
       }
   }
 
@@ -260,8 +264,8 @@ double *neuromat_eeg_channel_stats_covariance_matrix
   }
     
 void neuromat_eeg_channel_stats_accum_covariance_matrix
-  ( int32_t nt,          /* Number of frames. */
-    int32_t ne,          /* Number of electrodes. */
+  ( int32_t nt,      /* Number of frames. */
+    int32_t ne,      /* Number of electrodes. */
     double **val,    /* The samples per frame and electrode. */
     double vshift[], /* Values to subtract from each channel. */
     double wt[],     /* Weight of each frame. */

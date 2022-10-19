@@ -1,5 +1,5 @@
 /* See msm_ps_tools.h */
-/* Last edited on 2014-07-29 14:46:42 by stolfilocal */
+/* Last edited on 2022-10-18 20:51:26 by stolfi */
 
 #define msm_ps_tools_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -7,7 +7,7 @@
 #include <msm_basic.h>
 #include <msm_ps_tools.h>
 
-#include <pswr.h>
+#include <epswr.h>
 #include <affirm.h>
 #include <jsmath.h>
 
@@ -20,23 +20,23 @@
 /* INTERNAL REPRESENTATION */
 
 struct msm_ps_tools_t
-  { PSStream *ps;
-    double size[2];  /* Usable figure dimensions (mm). */
-    double fontSize; /* Label font size (pt). */
-    int maxXLabChars; /* Assumed width of X-scale labels (chars). */
-    int maxYLabChars; /* Assumed width of Y-scale labels (chars). */
-    /* Client-to-PSStream coordinate conversion: */
-    double pswrMin[2], pswrMax[2]; /* Min and max {pswr} coords in each axis (mm). */
+  { epswr_figure_t *eps;  /* The EPS figure-wrting object. */
+    double size[2];       /* Usable figure dimensions (mm). */
+    double fontSize;      /* Label font size (pt). */
+    int maxXLabChars;     /* Assumed width of X-scale labels (chars). */
+    int maxYLabChars;     /* Assumed width of Y-scale labels (chars). */
+    /* Client-to-epswr_figure_t coordinate conversion: */
+    double epswrMin[2], epswrMax[2]; /* Min and max {epswr} coords in each axis (mm). */
     double userMin[2], userMax[2]; /* Min and max client coords in each axis. */
   };
-  /* The Postscript stream {ps} is set up so that the plot area is
-    {size[0]} by {size[1]} mm, and the {pswr.h} client coordinates
+  /* The Postscript stream {eps} is set up so that the plot area is
+    {size[0]} by {size[1]} mm, and the {epswr.h} client coordinates
     (here called /device coordinates/) are measured in mm from the
     lower left corner.
     
     The {msm_ps_tools.h} client coordinates are such that the rectangle
     {[userMin[0] _ userMax[0]] × [userMin[1] _ userMax[1]]} in client coords gets
-    plotted to the rectangle {[pswrMin[0]_pswrMax[0]] × [pswrMin[1]_pswrMax[1]]}
+    plotted to the rectangle {[epswrMin[0]_epswrMax[0]] × [epswrMin[1]_epswrMax[1]]}
     in device coords. */
 
 void msm_ps_tools_debug_rectangle(char *title, double vMin[], double vMax[]);
@@ -55,34 +55,30 @@ msm_ps_tools_t *msm_ps_tools_new
     double mrg
   )
   { /* Join {name} and {tag} into a file name prefix: */
-    char *prefix = NULL;
-    asprintf(&prefix, "%s%s", name, tag);
     if (wr == NULL)
       { /* Add the extension ".eps" and open the file: */
         wr = msm_open_write(name, tag, ".eps", TRUE);
       }
     /* Create an Encapsulated Postscript stream from {wr}: */
     double ptPmm = msm_PT_PER_MM;
-    double hPageSize = hSize + 2*mrg; /* (mm) */
-    double vPageSize = vSize + 2*mrg; /* (mm) */
-    PSStream *ps = pswr_new_stream(prefix, wr, TRUE, "doc", NULL, FALSE, hPageSize*ptPmm, vPageSize*ptPmm);
-    /* Cannot free the {prefix} here --- it's in use! */
-    /* Sets the page layout to a single picture {hSize} by {vSize}: */
-    pswr_set_canvas_layout(ps, hSize*ptPmm, vSize*ptPmm, FALSE, mrg*ptPmm, mrg*ptPmm, 0, 1, 1);
-    /* Sets the client plot window to {[0 _ hSize] × [0 _ vSize]}, in mm: */
-    pswr_new_picture(ps, 0, hSize, 0, vSize); 
+    double hSize_pt = hSize + 2*mrg; /* (mm) */
+    double vSize_pt = vSize + 2*mrg; /* (mm) */
+    double mrg_pt = mrg*ptPmm;
+    epswr_figure_t *eps = epswr_new_figure(wr, hSize_pt, vSize_pt, mrg_pt, mrg_pt, mrg_pt, mrg_pt, TRUE);
+    /* Set client coordinates to mm: */
+    epswr_set_client_window(eps, 0, hSize, 0, vSize); 
     /* Create the {msm_ps_tools_t} object: */
     msm_ps_tools_t *mps = (msm_ps_tools_t *)notnull(malloc(sizeof(msm_ps_tools_t)), "no mem");
-    mps->ps = ps;
+    mps->eps = eps;
     mps->size[0] = hSize; mps->size[1] = vSize;
     /* Set default client and device reference window: */
     int ax;
     for (ax = 0; ax < 2; ax++)
       { /* Device ref window is the whole plot area (canvas minus margins): */
-        mps->pswrMin[ax] = 0; mps->pswrMax[ax] = mps->size[ax];
+        mps->epswrMin[ax] = 0; mps->epswrMax[ax] = mps->size[ax];
         /* Client ref window is initially set so that cient and device coords are the same: */
-        mps->userMin[ax] = mps->pswrMin[ax]; 
-        mps->userMax[ax] = mps->pswrMax[ax];
+        mps->userMin[ax] = mps->epswrMin[ax]; 
+        mps->userMax[ax] = mps->epswrMax[ax];
       }
     mps->fontSize = fontSize;
     mps->maxXLabChars = maxXLabChars;
@@ -162,8 +158,8 @@ msm_ps_tools_t *msm_ps_tools_new_graph
     return mps;
   }
 
-PSStream *msm_ps_tools_get_ps_stream(msm_ps_tools_t *mps)
-  { return mps->ps; }
+epswr_figure_t *msm_ps_tools_get_ps_stream(msm_ps_tools_t *mps)
+  { return mps->eps; }
 
 void msm_ps_tools_get_plot_size(msm_ps_tools_t *mps, double *hSize, double *vSize)
   { *hSize = mps->size[0]; *vSize = mps->size[1]; }
@@ -181,9 +177,9 @@ void msm_ps_tools_set_device_ref_window
     double hMin, double hMax, 
     double vMin, double vMax
   )
-  { mps->pswrMin[0] = hMin; mps->pswrMax[0] = hMax;
-    mps->pswrMin[1] = vMin; mps->pswrMax[1] = vMax;
-    msm_ps_tools_debug_rectangle("device", mps->pswrMin, mps->pswrMax);
+  { mps->epswrMin[0] = hMin; mps->epswrMax[0] = hMax;
+    mps->epswrMin[1] = vMin; mps->epswrMax[1] = vMax;
+    msm_ps_tools_debug_rectangle("device", mps->epswrMin, mps->epswrMax);
   }
 
 void msm_ps_tools_shrink_device_ref_window
@@ -191,9 +187,9 @@ void msm_ps_tools_shrink_device_ref_window
     double lMrg, double rMrg, 
     double bMrg, double tMrg
   )
-  { mps->pswrMin[0] += lMrg; mps-> pswrMax[0] -= rMrg;
-    mps->pswrMin[1] += bMrg; mps-> pswrMax[1] -= tMrg;
-    msm_ps_tools_debug_rectangle("device", mps->pswrMin, mps->pswrMax);
+  { mps->epswrMin[0] += lMrg; mps-> epswrMax[0] -= rMrg;
+    mps->epswrMin[1] += bMrg; mps-> epswrMax[1] -= tMrg;
+    msm_ps_tools_debug_rectangle("device", mps->epswrMin, mps->epswrMax);
   }
 
 void msm_ps_tools_set_client_ref_window
@@ -218,18 +214,18 @@ void msm_ps_tools_expand_client_ref_window
 
 double msm_ps_tools_map_x(msm_ps_tools_t *mps, double x)
   { double s = (x - mps->userMin[0])/(mps->userMax[0] - mps->userMin[0]), r = 1-s;
-    return r*mps->pswrMin[0] + s*mps->pswrMax[0];
+    return r*mps->epswrMin[0] + s*mps->epswrMax[0];
   }
   
 double msm_ps_tools_map_y(msm_ps_tools_t *mps, double y)
   { double s = (y - mps->userMin[1])/(mps->userMax[1] - mps->userMin[1]), r = 1-s;
-    return r*mps->pswrMin[1] + s*mps->pswrMax[1];
+    return r*mps->epswrMin[1] + s*mps->epswrMax[1];
   }
 
-double msm_ps_tools_map_coord(msm_ps_tools_t *mps, pswr_axis_t axis, double coord)
-  { demand((axis == HOR) || (axis == VER), "bad axis");
+double msm_ps_tools_map_coord(msm_ps_tools_t *mps, epswr_axis_t axis, double coord)
+  { demand((axis == epswr_axis_HOR) || (axis == epswr_axis_VER), "bad axis");
     double s = (coord - mps->userMin[axis])/(mps->userMax[axis] - mps->userMin[axis]), r = 1-s;
-    return r*mps->pswrMin[axis] + s*mps->pswrMax[axis];
+    return r*mps->epswrMin[axis] + s*mps->epswrMax[axis];
   }
   
 void msm_ps_tools_map_coords(msm_ps_tools_t *mps, double x, double y, double *h, double *v)
@@ -240,18 +236,18 @@ void msm_ps_tools_map_coords(msm_ps_tools_t *mps, double x, double y, double *h,
 /* DEVICE -> CLIENT */
 
 double msm_ps_tools_unmap_h(msm_ps_tools_t *mps, double h)
-  { double s = (h - mps->pswrMin[0])/(mps->pswrMax[0] - mps->pswrMin[0]), r = 1-s;
+  { double s = (h - mps->epswrMin[0])/(mps->epswrMax[0] - mps->epswrMin[0]), r = 1-s;
     return r*mps->userMin[0] + s*mps->userMax[0];
   }
   
 double msm_ps_tools_unmap_v(msm_ps_tools_t *mps, double v)
-  { double s = (v - mps->pswrMin[1])/(mps->pswrMax[1] - mps->pswrMin[1]), r = 1-s;
+  { double s = (v - mps->epswrMin[1])/(mps->epswrMax[1] - mps->epswrMin[1]), r = 1-s;
     return r*mps->userMin[1] + s*mps->userMax[1];
   }
 
-double msm_ps_tools_unmap_coord(msm_ps_tools_t *mps, pswr_axis_t axis, double coord)
-  { demand((axis == HOR) || (axis == VER), "bad axis");
-    double s = (coord - mps->pswrMin[axis])/(mps->pswrMax[axis] - mps->pswrMin[axis]), r = 1-s;
+double msm_ps_tools_unmap_coord(msm_ps_tools_t *mps, epswr_axis_t axis, double coord)
+  { demand((axis == epswr_axis_HOR) || (axis == epswr_axis_VER), "bad axis");
+    double s = (coord - mps->epswrMin[axis])/(mps->epswrMax[axis] - mps->epswrMin[axis]), r = 1-s;
     return r*mps->userMin[axis] + s*mps->userMax[axis];
   }
   
@@ -269,29 +265,29 @@ void msm_ps_tools_draw_segment(msm_ps_tools_t *mps, double xa, double ya, double
     double hb, vb;
     msm_ps_tools_map_coords(mps, xb, yb, &hb, &vb);
     /* Plot the segment: */
-    pswr_segment(mps->ps, ha, va, hb, vb);
+    epswr_segment(mps->eps, ha, va, hb, vb);
   }
 
-void msm_ps_tools_draw_ref_axis(msm_ps_tools_t *mps, pswr_axis_t axis, double R, double G, double B)
-  { pswr_set_pen(mps->ps, R,G,B, 0.10, 0.0, 0.0);
+void msm_ps_tools_draw_ref_axis(msm_ps_tools_t *mps, epswr_axis_t axis, double R, double G, double B)
+  { epswr_set_pen(mps->eps, R,G,B, 0.10, 0.0, 0.0);
     /* Get the device coordinate of the requested axis along the other axis: */
     double cpos = msm_ps_tools_map_coord(mps, 1-axis, 0.0);
-    pswr_axis(mps->ps, axis, cpos, mps->pswrMin[axis], mps->pswrMax[axis]);
+    epswr_axis(mps->eps, axis, cpos, mps->epswrMin[axis], mps->epswrMax[axis]);
   }
 
 void msm_ps_tools_draw_ref_frame(msm_ps_tools_t *mps, double R, double G, double B)
-  { pswr_set_pen(mps->ps, R,G,B, 0.10, 0.0, 0.0);
-    pswr_rectangle(mps->ps, mps->pswrMin[0], mps->pswrMax[0], mps->pswrMin[1], mps->pswrMax[1], FALSE, TRUE);
+  { epswr_set_pen(mps->eps, R,G,B, 0.10, 0.0, 0.0);
+    epswr_rectangle(mps->eps, mps->epswrMin[0], mps->epswrMax[0], mps->epswrMin[1], mps->epswrMax[1], FALSE, TRUE);
   }
 
 void msm_ps_tools_draw_plot_frame(msm_ps_tools_t *mps, double R, double G, double B)
-  { pswr_set_pen(mps->ps, R,G,B, 0.10, 0.0, 0.0);
-    pswr_rectangle(mps->ps, 0, mps->size[0], 0, mps->size[1], FALSE, TRUE);
+  { epswr_set_pen(mps->eps, R,G,B, 0.10, 0.0, 0.0);
+    epswr_rectangle(mps->eps, 0, mps->size[0], 0, mps->size[1], FALSE, TRUE);
   }
   
 void msm_ps_tools_draw_tic
   ( msm_ps_tools_t *mps, 
-    pswr_axis_t axis, 
+    epswr_axis_t axis, 
     double xt, 
     double yt,
     double ticSize,
@@ -304,25 +300,26 @@ void msm_ps_tools_draw_tic
     double ht = msm_ps_tools_map_x(mps, xt);
     double vt = msm_ps_tools_map_y(mps, yt);
     /* Plot the tic proper: */
-    pswr_set_pen(mps->ps, R,G,B, 0.10, 0.0, 0.0);
-    pswr_tic(mps->ps, axis, ht, vt, ticSize, ticAlign);
+    epswr_set_pen(mps->eps, R,G,B, 0.10, 0.0, 0.0);
+    epswr_tic(mps->eps, axis, ht, vt, ticSize, ticAlign);
     if (label != NULL)
       { /* Decide the vertical and horizontal alignment of label: */
-        double hAlign = (axis == HOR ? 0.5 : labAlign);
-        double vAlign = (axis == VER ? 0.5 : labAlign);
+        double hAlign = (axis == epswr_axis_HOR ? 0.5 : labAlign);
+        double vAlign = (axis == epswr_axis_VER ? 0.5 : labAlign);
         /* Adjust the position of the label's reference point to account for tic size: */
         double cadj = (1-labAlign-ticAlign)*ticSize; 
-        double hb = (axis == HOR ? ht : ht + cadj);
-        double vb = (axis == VER ? vt : vt + cadj);
+        double hb = (axis == epswr_axis_HOR ? ht : ht + cadj);
+        double vb = (axis == epswr_axis_VER ? vt : vt + cadj);
         /* Set pen to requested color: */
-        pswr_set_pen(mps->ps, 0,0,0, 0.10, 0.0, 0.0);
-        pswr_label(mps->ps, label, hb, vb, 0.0, hAlign, vAlign);
+        epswr_set_pen(mps->eps, 0,0,0, 0.10, 0.0, 0.0);
+        epswr_set_fill_color(mps->eps, 0,0,0);
+        epswr_label(mps->eps, label, "Rg", hb, vb, 0.0, FALSE, hAlign, vAlign, TRUE, FALSE);
       }
   }
 
 void msm_ps_tools_draw_scale
   ( msm_ps_tools_t *mps, 
-    pswr_axis_t axis, 
+    epswr_axis_t axis, 
     double pos,
     double ticSize,
     double ticAlign,
@@ -336,24 +333,24 @@ void msm_ps_tools_draw_scale
   )
   { 
     /* Oh paranoia, not even Goya could draw'ya: */
-    demand((axis == HOR) || (axis == VER), "bad axis");
+    demand((axis == epswr_axis_HOR) || (axis == epswr_axis_VER), "bad axis");
     
     /* Get the raw span of tics in device coords (mm): */
-    double pswrMin = mps->pswrMin[axis];
-    double pswrMax = mps->pswrMax[axis];
+    double epswrMin = mps->epswrMin[axis];
+    double epswrMax = mps->epswrMax[axis];
     
-    /* Swap if needed to ensure {pswrMin <= pswrMax}: */
-    if (pswrMin > pswrMax) { double c = pswrMin; pswrMin = pswrMax; pswrMax = c; }
+    /* Swap if needed to ensure {epswrMin <= epswrMax}: */
+    if (epswrMin > epswrMax) { double c = epswrMin; epswrMin = epswrMax; epswrMax = c; }
     
     /* Leave some space {eps} between range limits and first/last tics: */
     double eps = 0.5; /* In mm. */
-    pswrMin += eps; pswrMax -= eps;
+    epswrMin += eps; epswrMax -= eps;
     
     /* Choose the client coords of minor tics (0 if no tics in range): */
     double ztMin, ztMax; /* Min and max client coords of minor tics. */
     double ztStep; /* Client coord increment between minor tics (0 if no tics). */
     msm_ps_tools_choose_tic_coords
-      ( mps, axis, pswrMin, pswrMax, ticMinDist, ticMinStep, &ztMin, &ztMax, &ztStep );
+      ( mps, axis, epswrMin, epswrMax, ticMinDist, ticMinStep, &ztMin, &ztMax, &ztStep );
     /* fprintf(stderr, "  ztMin = %24.16e ztMax = %24.16e ztStep = %24.16e\n", ztMin, ztMax, ztStep); */
     if (ztStep <= 0) { /* Not enough space for tics: */ return; }
     
@@ -381,8 +378,8 @@ void msm_ps_tools_draw_scale
         /* Compute nominal client coordinate {zt} of tic on the given {axis}: */
         double zt = r*ztMin + s*ztMax;
         /* Nominal client coords of tic mark are {xt,yt}: */
-        double xt = (axis == HOR ? zt : pos);
-        double yt = (axis == VER ? zt : pos);
+        double xt = (axis == epswr_axis_HOR ? zt : pos);
+        double yt = (axis == epswr_axis_VER ? zt : pos);
         /* Decide which kind of label to draw: */
         if ((labPer > 0) && (imod(i, labPer) == labSkp))
           { /* Draw a major (labeled) tic: */
@@ -403,9 +400,9 @@ void msm_ps_tools_draw_scale
 
 void msm_ps_tools_choose_tic_coords
   ( msm_ps_tools_t *mps, 
-    pswr_axis_t axis, 
-    double pswrMin, 
-    double pswrMax, 
+    epswr_axis_t axis, 
+    double epswrMin, 
+    double epswrMax, 
     double minDist, 
     double minStep, 
     double *zMinP,
@@ -417,22 +414,22 @@ void msm_ps_tools_choose_tic_coords
     /* Local copies of results: */
     double userMin, userMax, zStep;
     /* Any space at all? */
-    if (pswrMin > pswrMax) 
+    if (epswrMin > epswrMax) 
       { /* Interval is empty, no tics there: */
         userMin = +INF; userMax = -INF; zStep = 0;
       }
     else
       { /* Compute the client increment {zStep} equivalent to device increment {labSp}: */
         double zDif = fabs(mps->userMax[axis] - mps->userMin[axis]);
-        double cDif = fabs(mps->pswrMax[axis] - mps->pswrMin[axis]);
+        double cDif = fabs(mps->epswrMax[axis] - mps->epswrMin[axis]);
         zStep = minDist*(zDif/cDif);
         if (zStep < minStep) { zStep = minStep; }
         assert(zStep >= 0);
         /* Round {zStep} to a nice value: */
-        zStep = pswr_round_to_nice(zStep);
-        /* Get range {[userMin_userMax]} of client coords corresponding to {[pswrMin_pswrMax]}: */
-        userMin = msm_ps_tools_unmap_coord(mps, axis, pswrMin);
-        userMax = msm_ps_tools_unmap_coord(mps, axis, pswrMax);
+        zStep = epswr_round_to_nice(zStep);
+        /* Get range {[userMin_userMax]} of client coords corresponding to {[epswrMin_epswrMax]}: */
+        userMin = msm_ps_tools_unmap_coord(mps, axis, epswrMin);
+        userMax = msm_ps_tools_unmap_coord(mps, axis, epswrMax);
         if (userMin > userMax) { double z = userMin; userMin = userMax; userMax = z; }
         /* fprintf(stderr, "  userMin =  %24.16e userMax =  %24.16e  zStep = %24.16e\n", userMin, userMax, zStep); */
         /* See whether there are any multiples of {zStep} in {userMin,userMax}: */
@@ -459,7 +456,7 @@ void msm_ps_tools_choose_tic_coords
 
 void msm_choose_label_coords
   ( msm_ps_tools_t *mps,
-    pswr_axis_t axis,
+    epswr_axis_t axis,
     double ztMin,
     double ztMax, 
     double ztStep,
@@ -510,7 +507,7 @@ void msm_choose_label_coords
             /* Increment {labPer} until {zbStep} is nice (should't be too far): */
             while (TRUE)
               { if (zbStep <= minStep) { break; }
-                double zbNice = pswr_round_to_nice(zbStep);
+                double zbNice = epswr_round_to_nice(zbStep);
                 /* fprintf(stderr, "    labPer = %d zbStep =  %24.16e", labPer, zbStep); */
                 /* fprintf(stderr, " zbNice = %24.16e\n", zbNice); */
                 if (zbNice == INF) { /* Overflow, give up: */ labPer = 0; break; }
@@ -568,7 +565,7 @@ void msm_ps_tools_draw_y_polyline
         double x1 = r*xMin + s*xMax;
         double h1, v1;
         msm_ps_tools_map_coords(mps, x1, y[i], &h1, &v1);
-        pswr_segment(mps->ps, h0, v0, h1, v1);
+        epswr_segment(mps->eps, h0, v0, h1, v1);
         h0 = h1; v0 = v1;
       }
   }
@@ -592,12 +589,12 @@ void msm_ps_tools_draw_y_dots
         double x = r*xMin + s*xMax;
         double h, v;
         msm_ps_tools_map_coords(mps, x, y[i], &h, &v);
-        pswr_dot(mps->ps, h, v, rad, fill, draw);
+        epswr_dot(mps->eps, h, v, rad, fill, draw);
       }
   }
 
 void msm_ps_tools_close(msm_ps_tools_t *mps)
-  { pswr_close_stream(mps->ps);
+  { epswr_end_figure(mps->eps);
     free(mps);
   }
 
@@ -635,8 +632,8 @@ void msm_ps_tools_draw_graphs
   {
     demand(nd > 0, "can't plot empty graph");
 
-    /* Get the {PSStream} handle for {pswr.h} routines: */
-    PSStream *ps = msm_ps_tools_get_ps_stream(mps);
+    /* Get the {epswr_figure_t} handle for {epswr.h} routines: */
+    epswr_figure_t *eps = msm_ps_tools_get_ps_stream(mps);
 
     /* Choose the actual X range {[xPlotMin_xPlotMax]} of graphs: */
     /* If {circ} is true, allow for half-steps at each end: */
@@ -708,11 +705,11 @@ void msm_ps_tools_draw_graphs
     
     /* Draw axes, tics, labels, etc: */
     char *font = "Times-Roman";
-    pswr_set_label_font(ps, font, mps->fontSize);
+    epswr_set_label_font(eps, font, mps->fontSize);
     double D = 0.5; /* Brightness of axis and frame color. */
-    msm_ps_tools_draw_ref_axis(mps, HOR, D,D,D);
-    msm_ps_tools_draw_scale(mps, HOR, yMin, ticSz,1.0, 5.0,1.0, D,D,D, "%.0f",   1.2, 12.0,1.0);
-    msm_ps_tools_draw_scale(mps, VER, xMin, ticSz,1.0, 3.0,0.0, D,D,D, "%+.2f",  1.2,  4.0,0.0);
+    msm_ps_tools_draw_ref_axis(mps, epswr_axis_HOR, D,D,D);
+    msm_ps_tools_draw_scale(mps, epswr_axis_HOR, yMin, ticSz,1.0, 5.0,1.0, D,D,D, "%.0f",   1.2, 12.0,1.0);
+    msm_ps_tools_draw_scale(mps, epswr_axis_VER, xMin, ticSz,1.0, 3.0,0.0, D,D,D, "%+.2f",  1.2,  4.0,0.0);
 
     /* Decide indices of first and last segment to plot. */
     /* Segment {i} extends from point {i-1} to point {i}. */
@@ -725,7 +722,7 @@ void msm_ps_tools_draw_graphs
     for (c = 0; c < nc; c++)
       { /* Plot channel {c}. */
         /* Set the pen color: */
-        pswr_set_pen(ps, R[c], G[c], B[c], 0.25, 0.0, 0.0);
+        epswr_set_pen(eps, R[c], G[c], B[c], 0.25, 0.0, 0.0);
         /* Plot channel {c} of the sequence. */
         
         auto void get_data_point(int ix, double *xi, double *yi);
@@ -765,19 +762,19 @@ void msm_ps_tools_draw_graphs
             get_plot_point(i, &x1, &y1);
             double h1, v1;
             msm_ps_tools_map_coords(mps, x1, y1, &h1, &v1);
-            pswr_segment(ps, h0, v0, h1, v1);
+            epswr_segment(eps, h0, v0, h1, v1);
             h0 = h1; v0 = v1;
             i++;
           }
         if (show_dots)
           { /* Draw dots at data points: */
-            pswr_set_fill_color(ps, R[c], G[c], B[c]);
+            epswr_set_fill_color(eps, R[c], G[c], B[c]);
             for (i = 0; i < nd; i++)
               { double xi, yi;
                 get_data_point(i, &xi, &yi);
                 double hi, vi;
                 msm_ps_tools_map_coords(mps, xi, yi, &hi, &vi);
-                pswr_dot(ps, hi, vi, 0.5, TRUE, FALSE);
+                epswr_dot(eps, hi, vi, 0.5, TRUE, FALSE);
               }
           }
       }
@@ -797,8 +794,8 @@ void msm_ps_tools_draw_histogram
   {
     demand(nd > 0, "can't plot empty histogram");
 
-    /* Get the {PSStream} handle for {pswr.h} routines: */
-    PSStream *ps = msm_ps_tools_get_ps_stream(mps);
+    /* Get the {epswr_figure_t} handle for {epswr.h} routines: */
+    epswr_figure_t *eps = msm_ps_tools_get_ps_stream(mps);
 
     /* Choose the actual X range {[xPlotMin_xPlotMax]} of histogram: */
     /* Allow for half-steps at each end: */
@@ -831,14 +828,14 @@ void msm_ps_tools_draw_histogram
     
     /* Draw axes, tics, labels, etc: */
     char *font = "Times-Roman";
-    pswr_set_label_font(ps, font, mps->fontSize);
+    epswr_set_label_font(eps, font, mps->fontSize);
     double D = 0.5; /* Lightness of axis and frame */
-    msm_ps_tools_draw_ref_axis(mps, HOR, D,D,D);
-    msm_ps_tools_draw_scale(mps, HOR, yMin, ticSz,1.0, 5.0,1.0, D,D,D, "%.0f",   1.2, 12.0,1.0);
-    msm_ps_tools_draw_scale(mps, VER, xMin, ticSz,1.0, 3.0,0.0, D,D,D, "%+.2f",  1.2,  4.0,0.0);
+    msm_ps_tools_draw_ref_axis(mps, epswr_axis_HOR, D,D,D);
+    msm_ps_tools_draw_scale(mps, epswr_axis_HOR, yMin, ticSz,1.0, 5.0,1.0, D,D,D, "%.0f",   1.2, 12.0,1.0);
+    msm_ps_tools_draw_scale(mps, epswr_axis_VER, xMin, ticSz,1.0, 3.0,0.0, D,D,D, "%+.2f",  1.2,  4.0,0.0);
 
     /* Set the pen color: */
-    pswr_set_pen(ps, 1.00,0.00,0.00, 0.25, 0.0, 0.0);
+    epswr_set_pen(eps, 1.00,0.00,0.00, 0.25, 0.0, 0.0);
 
     /* Prepare for first half-step: */
     double x0 = xPlotMin, y0 = 0.0;
@@ -857,10 +854,10 @@ void msm_ps_tools_draw_histogram
         
         if (i >= 0)
           { /* Plot left wall of bar {i}: */
-            pswr_segment(ps, h0, v0, h0, v1);
+            epswr_segment(eps, h0, v0, h0, v1);
           }
         /* Plot horizontal part of bar {i}: */
-        pswr_segment(ps, h0, v1, h1, v1);
+        epswr_segment(eps, h0, v1, h1, v1);
         h0 = h1; v0 = v1;
         i++;
       }

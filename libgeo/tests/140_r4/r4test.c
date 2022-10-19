@@ -1,5 +1,5 @@
 /* r4test --- test program for r4.h, r4x4.h  */
-/* Last edited on 2021-08-20 16:24:09 by stolfi */
+/* Last edited on 2022-01-04 08:44:05 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -48,7 +48,7 @@ void test_r4(int32_t verbose)
     /* ---------------------------------------------------------------------- */
     if (verbose)
       { fprintf(stderr,
-          "sizeof(r4_t) = %lud  %d*sizeof(double) = %lud\n",
+          "sizeof(r4_t) = %lu  %d*sizeof(double) = %lu\n",
           sizeof(r4_t), N, N*sizeof(double)
         );
       }
@@ -397,12 +397,12 @@ void test_r4x4(int32_t verbose)
     if (verbose) { fprintf(stderr, "--- Size and allocation ---\n"); }
     if (verbose)
       { fprintf(stderr,
-          "sizeof(r4x4_t) = %lud  %d*%d*sizeof(double) = %lud\n",
+          "sizeof(r4x4_t) = %lu  %d*%d*sizeof(double) = %lu\n",
           sizeof(r4x4_t), N, N, N*N*sizeof(double)
         );
         fprintf(stderr, "&B = %016lx\n", (long unsigned)&B);
-        fprintf(stderr, "&A-&B = %lud\n", ((long unsigned)(&A))-((long unsigned)(&B)));
-        fprintf(stderr, "&B-&C = %lud\n", ((long unsigned)(&B))-((long unsigned)(&C)));
+        fprintf(stderr, "&A-&B = %lu\n", ((long unsigned)(&A))-((long unsigned)(&B)));
+        fprintf(stderr, "&B-&C = %lu\n", ((long unsigned)(&B))-((long unsigned)(&C)));
         fprintf(stderr, "&(B.c) = %016lx\n", (long unsigned)&(B.c));
         fprintf(stderr, "B.c = %016lx\n", (long unsigned)(B.c));
         fprintf(stderr, "&(B.c[0]) = %016lx\n", (long unsigned)&(B.c[0]));

@@ -1,5 +1,5 @@
 /* See affirm.h */
-/* Last edited on 2019-04-25 17:58:13 by jstolfi */
+/* Last edited on 2022-10-18 21:09:50 by stolfi */
 
 #include <affirm.h>
 #include <stdio.h>
@@ -10,7 +10,7 @@ void programerror (const char *msg, const char *file, unsigned int line, const c
     exit(1);
   }
 
-void *checknotnull(const void *p, const char *msg, const char *file, unsigned int line, const char* proc)
+void *checknotnull(void *p, const char *msg, const char *file, unsigned int line, const char* proc)
   { if (p == NULL) { programerror(msg, file, line, proc); }
     return (void *)p;
   }

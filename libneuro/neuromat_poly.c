@@ -1,5 +1,5 @@
 /* See {neuromat_poly.h}. */
-/* Last edited on 2021-08-21 13:04:20 by stolfi */
+/* Last edited on 2021-08-31 00:08:46 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -203,7 +203,7 @@ void neuromat_poly_fit_robust
   )
   {
     /* bool_t debug = (report != NULL); */
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
     
     demand(g >= 0, "invalid power");
     demand(n > g, "too few data points");

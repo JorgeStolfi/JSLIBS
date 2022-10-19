@@ -1,5 +1,5 @@
 /* See r3x3.h. */
-/* Last edited on 2021-06-09 19:50:16 by jstolfi */
+/* Last edited on 2022-01-05 14:17:01 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -15,16 +15,14 @@
 #define N 3
 
 void r3x3_zero(r3x3_t *M)
-  { int32_t i, j;
-    for (i = 0; i < N; i++)
-      for (j = 0; j < N; j++)
+  { for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
         { M->c[i][j] = 0.0; }
   }
 
 void r3x3_ident(r3x3_t *M)
-  { int32_t i, j;
-    for (i = 0; i < N; i++)
-      for (j = 0; j < N; j++)
+  { for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
         { M->c[i][j] = (i == j ? 1.0 : 0.0); }
   }
 
@@ -73,47 +71,60 @@ void r3x3_set_col(r3x3_t *A, int32_t j, r3_t *x)
 
 void r3x3_map_row (r3_t *x, r3x3_t *A, r3_t *r)
   { r3_t rr;
-    int32_t j, k;
-    for (j = 0; j < N; j++)
+    for (int32_t j = 0; j < N; j++)
       { double s = 0.0;
-        for (k = 0; k < N; k++) s += x->c[k] * A->c[k][j];
+        for (int32_t k = 0; k < N; k++) s += x->c[k] * A->c[k][j];
         rr.c[j] = s;
       }
-    for (j = 0; j < N; j++) { r->c[j] = rr.c[j]; }
+    for (int32_t j = 0; j < N; j++) { r->c[j] = rr.c[j]; }
   }
 
 void r3x3_map_col (r3x3_t *A, r3_t *x, r3_t *r)
   { r3_t rr;
-    int32_t i, k;
-    for (i = 0; i < N; i++)
+    for (int32_t i = 0; i < N; i++)
       { double s = 0.0;
-        for (k = 0; k < N; k++) s += A->c[i][k] * x->c[k];
+        for (int32_t k = 0; k < N; k++) s += A->c[i][k] * x->c[k];
         rr.c[i] = s;
       }
-    for (i = 0; i < N; i++) { r->c[i] = rr.c[i]; }
+    for (int32_t i = 0; i < N; i++) { r->c[i] = rr.c[i]; }
+  }
+
+void r3x3_add (r3x3_t *A, r3x3_t *B, r3x3_t *M)
+  { for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
+        { M->c[i][j] = A->c[i][j] + B->c[i][j]; }
+  }
+
+void r3x3_sub (r3x3_t *A, r3x3_t *B, r3x3_t *M)
+  { for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
+        { M->c[i][j] = A->c[i][j] - B->c[i][j]; }
+  }
+
+void r3x3_neg (r3x3_t *A, r3x3_t *M)
+  { for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
+        { M->c[i][j] = - A->c[i][j]; }
   }
 
 void r3x3_scale (double s, r3x3_t *A, r3x3_t *M)  
-  { int32_t i, j;
-    for (i = 0; i < N; i++)
-      for (j = 0; j < N; j++)
+  { for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
         { M->c[i][j] = s * A->c[i][j]; }
   }
 
 void r3x3_mix (double s, r3x3_t *A, double t, r3x3_t *B, r3x3_t *M)
-  { int32_t i, j;
-    for (i = 0; i < N; i++)
-      for (j = 0; j < N; j++)
+  { for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
         { M->c[i][j] = s * A->c[i][j] + t * B->c[i][j]; }
   }
 
 void r3x3_mul (r3x3_t *A, r3x3_t *B, r3x3_t *M)
   { r3x3_t RR;
-    int32_t i, j, k;
-    for (i = 0; i < N; i++)
-      for (j = 0; j < N; j++)
+    for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
         { double s = 0.0;
-          for (k = 0; k < N; k++)  s += A->c[i][k]*B->c[k][j];
+          for (int32_t k = 0; k < N; k++)  s += A->c[i][k]*B->c[k][j];
           RR.c[i][j] = s;
         }
     (*M) = RR;
@@ -122,11 +133,10 @@ void r3x3_mul (r3x3_t *A, r3x3_t *B, r3x3_t *M)
 void r3x3_mul_tr (r3x3_t *A, r3x3_t *B, r3x3_t *M)
   {
     r3x3_t RR;
-    int32_t i, j, k;
-    for (i = 0; i < N; i++)
-      for (j = 0; j < N; j++)
+    for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
         { double s = 0.0;
-          for (k = 0; k < N; k++)  s += A->c[i][k]*B->c[j][k];
+          for (int32_t k = 0; k < N; k++)  s += A->c[i][k]*B->c[j][k];
           RR.c[i][j] = s;
         }
     (*M) = RR;
@@ -180,14 +190,13 @@ void r3x3_adj (r3x3_t *A, r3x3_t *M)
 
 void r3x3_inv (r3x3_t *A, r3x3_t *M)
   { r3x3_t RR;
-    int32_t i, j;
     r3x3_adj(A, &RR);
     double d = 
         A->c[0][0]*RR.c[0][0]
       + A->c[0][1]*RR.c[1][0]
       + A->c[0][2]*RR.c[2][0];
-    for (i = 0; i < N; i++)
-      for (j = 0; j < N; j++)
+    for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
         M->c[i][j] = RR.c[i][j]/d;
   }
 
@@ -245,18 +254,36 @@ double r3x3_mod_norm_sqr(r3x3_t* A)
       D20*D20 + D21*D21 + D22*D22; 
   }
 
-bool_t r3x3_is_unif_scaling(r3x3_t *M, double s)
+void r3x3_diff_sqr(r3x3_t *A, r3x3_t *B, r3x3_t *R, double *dabs2P, double *drel2P)
   {
-    int32_t i, j;
-    for (i = 0; i < N; i++)
-      for (j = 0; j < N; j++)
-        { if (M->c[i][j] != (i == j ? s : 0.0)) { return FALSE; } }
+    double dabs2 = 0.0;
+    double drel2 = 0.0;
+    for (int32_t i = 0; i < N; i++) 
+      { for (int32_t j = 0; j < N; j++) 
+          { double *Rp = &(R->c[i][j]);
+            if ((*Rp) != 0.0)
+              { double Re = (*Rp);
+                double *Ap = &(A->c[i][j]); double Ae = (*Ap);
+                double *Bp = &(B->c[i][j]); double Be = (*Bp);
+                double d = Ae - Be;
+                dabs2 += d*d;
+                drel2 += (d/Re)*(d/Re);
+              }
+          }
+      }
+    if (dabs2P != NULL) { (*dabs2P) = dabs2; }
+    if (drel2P != NULL) { (*drel2P) = drel2; }
+  }
+
+bool_t r3x3_is_unif_scaling(r3x3_t *A, double s)
+  { for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
+        { if (A->c[i][j] != (i == j ? s : 0.0)) { return FALSE; } }
     return TRUE;
   }
 
 void r3x3_from_rows(r3_t *a, r3_t *b, r3_t *c, r3x3_t *M)
-  { int32_t j;
-    for (j = 0; j < N; j++)
+  { for (int32_t j = 0; j < N; j++)
       { M->c[0][j] = a->c[j];
         M->c[1][j] = b->c[j];
         M->c[2][j] = c->c[j];
@@ -264,8 +291,7 @@ void r3x3_from_rows(r3_t *a, r3_t *b, r3_t *c, r3x3_t *M)
   }
 
 void r3x3_from_cols(r3_t *a, r3_t *b, r3_t *c, r3x3_t *M)
-  { int32_t j;
-    for (j = 0; j < N; j++)
+  { for (int32_t j = 0; j < N; j++)
       { M->c[j][0] = a->c[j];
         M->c[j][1] = b->c[j];
         M->c[j][2] = c->c[j];

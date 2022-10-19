@@ -1,5 +1,5 @@
 /* See {neuromat_{eeg_|}image.h}. */
-/* Last edited on 2021-08-25 02:25:58 by stolfi */
+/* Last edited on 2021-08-28 21:11:22 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -19,6 +19,39 @@
 #include <neuromat_eeg.h>
 #include <neuromat_image.h>
 #include <neuromat_eeg_image.h>
+
+void neuromat_image_paint_marker_ranges
+  ( float_image_t *img,
+    int32_t hw, 
+    int32_t nt, 
+    int32_t nc,
+    double **val,
+    int32_t ic_mark, 
+    int32_t xlo, 
+    int32_t xsz,
+    int32_t y, 
+    frgb_t fc
+  );
+  /* Paints onto {img} tic marks and highlights showing the
+    ranges of frames where the marker channel {ic} is nonzero.
+    The marks are located on the timeline defined by {xlo,xsz,y}.
+    The pixels will be set to color {fc} with  opacity 1.
+    
+    The procedure assumes that there are {nt} data frames with {nc}
+    channels, and that {val[it][ic]} is the value of channel
+    {ic} in data frame {it} for {ic} in {0..nc-1} and {it} in {0..nt-1}.
+
+    The procedure scans the samples {val[0..nt-1][ic_mark]} of the given
+    channel {ic_mark} and identifies the maximal runs of consecutive frames
+    where those samples are non-zero. For each run, spanning frames
+    {it_ini} to {it_fin} inclusive, the procedure paints with color {fc}
+    two tic marks at the positions corresponding to {it_ini} and
+    {it_fin}, and a horizontal line of between those two positions,
+    as per {neuromat_image_paint_time_range}.  
+    
+    The frame with index{it} is assumed to have time {it+0.5}.
+    The timeline spans the time interval from {tlo=0.0} 
+    to {thi = nt}. */
 
 float_image_t *neuromat_eeg_image_make_idealized_scalp_mask
   ( int32_t NX, 
@@ -73,20 +106,22 @@ void neuromat_eeg_image_compute_pot_field
       }
   }
 
-void neuromat_eeg_image_paint_electrodes
-  ( int32_t ne,
+float_image_t *neuromat_eeg_image_electrodes_overlay
+  ( int32_t ne, 
     r2_t pos[], 
-    double drad,
+    double drad, 
     double hwd,
     int32_t ie_spec, 
     frgb_t *fcfill, 
-    frgb_t *fcdraw, 
-    float_image_t *img
+    frgb_t *fcdraw,
+    int32_t NX,
+    int32_t NY
   )
   { 
-    int32_t NC = (int32_t)img->sz[0];
-    demand(NC == 4, "image should be RGBA");
-    if ((fcfill == NULL) && (fcdraw == NULL)) { return; }
+    int32_t NC = 4;
+    float_image_t *img = float_image_new(NC, NX, NY);
+    float_image_fill(img, 0.000f);
+    if ((fcfill == NULL) && (fcdraw == NULL)) { return img; }
     bool_t round = TRUE; /* Round dots? */
     bool_t diagonal = FALSE; /* Diagonal crosses? (Not used.) */
     int32_t msub = 3; /* Subsampling order. */
@@ -131,70 +166,119 @@ void neuromat_eeg_image_paint_electrodes
               }
           }
       }
+    return img;
   }
 
-void neuromat_eeg_image_paint_timeline_bars  
+float_image_t *neuromat_eeg_image_make_time_tracks  
   ( int32_t nt, 
     int32_t nc, 
     double **val, 
     int32_t nm, 
-    int32_t ic_mark[], 
+    neuromat_eeg_marker_spec_t marker[], 
     int32_t hw,
-    frgb_t fc[],
-    float_image_t *img,
+    int32_t NX,
+    int32_t *mkdots_xctrP,
+    double *mkdots_radP,
     int32_t *track_xloP, 
     int32_t *track_xszP, 
-    int32_t track_y[]
+    int32_t track_y[],
+    int32_t *slider_hhP
   )
   {
-    int32_t NC = (int32_t)img->sz[0];
-    int32_t NX = (int32_t)img->sz[1];
-    int32_t NY = (int32_t)img->sz[2];
-    demand(NC == 4, "image should be RGBA");
-    
     demand(hw >= 1, "invalid {hw}");
-    int32_t nk = (nm < 1 ? 1 : nm); /* Number of tracks. */
 
-    /* Choose the horizontal start and  of the tracks: */
-    int32_t xmrg = (int32_t)imax(NX/25, 3*hw);  /* Margin pixels on sides. */
-    int32_t xlo = xmrg;  /* Left offset to start of track (pixels). */
-    int32_t xsz = NX - 2*xmrg; /* Horizontal extent of tracks (pixels). */
+    /* Choose the horizontal start and end of the tracks: */
+    int32_t xmrg = 4*hw;                /* Extra marging at left and right. */
+    int32_t drad = 2*hw;                /* Dot radius. */
+    int32_t xspc = 3*hw;                /* Spacing between dots and time tracks. */
+    int32_t xdctr = xmrg + drad;        /* X coord of dots center. */
+    int32_t xlo = xdctr + drad + xspc;  /* Left offset to start of track (pixels). */
+    int32_t xsz = NX - 2*xlo;           /* Horizontal extent of tracks (pixels). */
     demand(xsz >= 4*hw, "timeline image width is too small");
+    (*mkdots_xctrP) = xdctr;
+    (*mkdots_radP) = (double)drad;
     (*track_xloP) = xlo;
     (*track_xszP) = xsz;
     
     /* Choose the vertical positions of the tracks and paint them: */
-    int32_t ymrg = 2*hw;           /* Extra marging at bottom and top. */
-    int32_t ythw = 2*hw;           /* Track half-width including highlights and tic marks. */
-    int32_t ytw = 2*ythw;          /* Track width including highlights and tic marks. */
-    int32_t ytsp = 1*hw;           /* Extra intertrack spacing. */
-    int32_t ytstep = ytw + ytsp;   /* Y step between track axes. */
-    int32_t y0 = ymrg + ytsp; /* Y coordinate of lowest timeline. */
-    int32_t ytot = ymrg + ytsp   + ythw + (nk-1)*ytstep + ythw + ytsp + ymrg; /* Total height of tracks (pixels) incl margins. */
-    demand(NY >= ytot, "image not tall enough for timeline bars"); 
+    int32_t ymrg = 4*hw;                  /* Extra marging at bottom and top. */
+    int32_t slhh = 4*hw;                  /* Max extent of slider from top and bot timelines. */
+    int32_t ythw = 2*hw;                  /* Track half-width including highlights and tic marks. */
+    int32_t yspc = 2*hw;                  /* Extra intertrack spacing. */
+    int32_t ytstep = ythw + yspc + ythw;  /* Y step between track axes. */
+    int32_t NY = ymrg + slhh + ythw + (nm-1)*ytstep + ythw + slhh + ymrg; /* Total height of tracks (pixels) incl margins. */
+    (*slider_hhP) = slhh;
 
+    /* Allocate the image: */
+    int32_t NC = 4;
+    float_image_t *img = float_image_new(NC, NX, NY);
+    float_image_fill(img, 0.000f);
+    
     /* Paint the tracks and marker channel ranges: */
     frgb_t ftrack = (frgb_t){{ 0.500f, 0.500f, 0.500f }}; /* Color or track line. */
-    for (int32_t ik = 0; ik < nk; ik++)
-      { frgb_t fmark = fc[ik]; /* Color or tics and marks line. */
-        track_y[ik] = y0 + ik*ytstep; 
-        int32_t ic = (nm == 0 ? -1 : ic_mark[ik]); /* EEG channel index. */
-        neuromat_image_paint_time_track(img, hw, xlo, xsz, track_y[ik], ftrack);
-        if (ic >= 0) { neuromat_image_paint_marker_ranges(img, hw, nt, nc, val, ic, xlo, xsz, track_y[ik], fmark); }
+    int32_t y0 = ymrg + yspc + ythw;      /* Y coordinate of lowest timeline. */
+    for (int32_t im = 0; im < nm; im++)
+      { int32_t yk = y0 + im*ytstep;
+        track_y[im] = yk; 
+        neuromat_image_paint_time_track(img, hw, xlo, xsz, yk, ftrack);
+        int32_t ic = marker[im].ic; /* EEG channel index. */
+        if ((ic >= 0) && (ic < nc))
+          { frgb_t fmark = marker[im].color; /* Color or tics and marks line. */
+            neuromat_image_paint_marker_ranges(img, hw, nt, nc, val, ic, xlo, xsz, yk, fmark);
+          }
+      }
+    return img;
+  }
+
+void neuromat_image_paint_marker_ranges
+  ( float_image_t *img,
+    int32_t hw, 
+    int32_t nt, 
+    int32_t nc,
+    double **val,
+    int32_t ic_mark, 
+    int32_t xlo, 
+    int32_t xsz,
+    int32_t y, 
+    frgb_t fc
+  )
+  { 
+    int32_t NC = (int32_t)img->sz[0];
+    demand(NC == 4, "result image should be RGBA");
+    double tlo = 0.0; /* Time just before first frame. */
+    double thi = (double)nt; /* Time just after last frame. */
+    /* Scan samples of channel {ic}: */
+    /* Pretend that marker channel is zero before and after all frames. */
+    int32_t it_ini = -1;  /* Index of start frame of run, or -1 if not started yet. */
+    int32_t it_fin = -1;  /* Index of end frame of run, or -1 if not started yet. */
+    for (int32_t it = 0; it <= nt; it++)
+      { double smp = (it >= nt ? 0.0 : val[it][ic_mark]);
+        assert(! isnan(smp));
+        if (smp != 0.0)
+          { /* Start or extend a run: */
+            if (it_ini < 0) { it_ini = it; }
+            it_fin = it;
+          }
+        else if (it_ini >= 0)
+          { /* End of run: */
+            assert((it_ini >= 0) && (it_ini <= it_fin) && (it_fin < nt));
+            double tini = it_ini + 0.5;
+            double tfin = it_fin + 0.5;
+            neuromat_image_paint_time_range_and_tics(img, hw, tlo, tini, tfin, thi, xlo, xsz, y, fc);
+            it_ini = -1;
+            it_fin = -1;
+          }
       }
   }
-    
+
 void neuromat_eeg_image_paint_marker_dots
-  ( int32_t nc, 
+  ( float_image_t *img,
+    int32_t nc, 
     double valt[],
     int32_t nm,
-    int32_t ic_mark[], 
-    double vscale[], 
-    frgb_t fcpos[],
-    frgb_t fcneg[],
-    r2_t ctr_mark[],
-    double rad_mark,
-    float_image_t *img
+    neuromat_eeg_marker_spec_t marker[], 
+    r2_t mkdot_ctr[],
+    double mkdot_rad
   )
   { 
     int32_t NC = (int32_t)img->sz[0];
@@ -205,17 +289,33 @@ void neuromat_eeg_image_paint_marker_dots
     bool_t round = TRUE; /* Round dots? */
     bool_t diagonal = FALSE; /* Diagonal crosses? (Not used.) */
     int32_t msub = 4; /* Subsampling order. */
-    for (int32_t km = 0; km < nm; km++)
-      { int32_t ic = ic_mark[km]; /* Index of channel in data frames: */
-        demand((ic >= 0) && (ic < nc), "invalid marker channel");
-        /* Convert marker value to {[-1 _ +1]}: */
-        r2_t *ctrk = &(ctr_mark[km]);
-        double zk = valt[ic]/vscale[ic]; /* Marker value scaled to {[-1..+1]} */
-        double sk = sqrt(fabs(zk));
-        frgb_t *rgbk = (zk > 0 ? &(fcpos[km]) : &(fcneg[km]));
-        for (int32_t c = 0; c < NC; c++)
-          { double rkc = (c < 3 ? rad_mark + 1.5 : rad_mark);
-            float vfill = (float)(c < 3 ? sk*rgbk->c[c] : 1.000);
+    for (int32_t im = 0; im < nm; im++)
+      { /* Get the marker's value {vr} scaled and clipped to {[-1..+1]} */
+        int32_t ic = marker[im].ic; /* Index of channel in data frames: */
+        double vm = ((ic >= 0) && (ic < nc) ? valt[ic] : 0.0);
+        double vr = fmax(-1.0, fmin(+1.0, vm/(marker[ic].vref + 1.0e-100)));
+        /* Compute the dot's color {fc}: */
+        frgb_t fc;
+        if (fabs(vr) < 1.0e-6)
+          { fc = (frgb_t){{ 0.000f, 0.000f, 0.000f }}; }
+        else
+          { /* Compute max saturated color {fc}: */
+            frgb_t fc = marker[im].color;
+            if (vr < 0)
+              { /* Complement {fc} relative to its saturation range: */
+                double clo = fmin(fc.c[0], fmin(fc.c[1], fc.c[2]));
+                double chi = fmax(fc.c[0], fmax(fc.c[1], fc.c[2]));
+                for (int32_t ia = 0; ia < 3; ia++)  { fc.c[ia] = (float)(clo + (chi - fc.c[ia])/(chi - clo + 1.0e-100)); }
+              }
+            /* Scale {fc} (non-linearly) by {fabs(vr)}: */
+            double vs = sqrt(fabs(vr));
+            for (int32_t ia = 0; ia < 3; ia++)  { fc.c[ia] = (float)(vs*fc.c[ia]); }
+          }
+         /* Now paint the dot: */
+         r2_t *ctrk = &(mkdot_ctr[im]);
+         for (int32_t c = 0; c < NC; c++)
+          { double rkc = (c < 3 ? mkdot_rad + 1.5 : mkdot_rad);
+            float vfill = (float)(c < 3 ? fc.c[c] : 1.000);
             (void)float_image_paint_dot
               ( img, c, ctrk->c[0], ctrk->c[1], rkc, hwd, 
                 round, diagonal, vfill, vdraw, msub

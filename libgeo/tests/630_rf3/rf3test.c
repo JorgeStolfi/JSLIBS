@@ -1,5 +1,5 @@
 /* rf3test --- test program for rf3.h, rf3x3.h  */
-/* Last edited on 2021-08-20 17:24:34 by stolfi */
+/* Last edited on 2022-01-04 08:44:13 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -44,7 +44,7 @@ void test_rf3(int32_t verbose)
 
     if (verbose)
       { fprintf(stderr,
-          "sizeof(rf3_t) = %lud  %d*sizeof(double) = %lud\n",
+          "sizeof(rf3_t) = %lu  %d*sizeof(double) = %lu\n",
           sizeof(rf3_t), N, N*sizeof(double)
         );
       }

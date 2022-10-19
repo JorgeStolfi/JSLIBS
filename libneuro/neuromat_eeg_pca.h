@@ -2,7 +2,7 @@
 #define neuromat_eeg_pca_H
 
 /* Principal componnet analysis toos for NeuroMat. */
-/* Last edited on 2021-08-21 12:47:26 by stolfi */
+/* Last edited on 2021-08-29 11:44:46 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -79,4 +79,29 @@ void neuromat_eeg_pca_fit_patterns
     {neuromat_eeg_pca_compute_fitting_matrix}. The coefficients
     {ci[0..np-1]} are computed by the product {Q*P*vi'}. */
 
+void neuromat_eeg_pca_combine_patterns
+  ( int nt, 
+    int ne, 
+    int np, 
+    double *P, 
+    double **coef, 
+    int mp, 
+    int ip[], 
+    double **vout
+  );
+  /* Creates an EEG datset from a selected subset of patterns from {P}
+    and their coefficients from {coef}.
+
+    Assumes that {ip[0..mp-1]} are integers in the range {0..np-1}.
+    
+    The procedure stores into channels {0..ne-1} of each frame
+    {vout[it]} the EEG electrode potentials corresponding to the
+    linear combination of rows {ip[0..mp-1]} of {P}, with their
+    respective coefficients from {coef[it]}.  That is
+    
+      {vout[it][ie] = SUM{ coef[it][ip[k]]*P[ip[k]*ne + ie] : k \in 0..mp-1}}
+      
+    for {it} in {0..nt-1} and {ie} in {0..ne-1}.  Any excess channels in {vout}
+    are left unchanged. */
+          
 #endif

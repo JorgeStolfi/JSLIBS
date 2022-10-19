@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_image_basis.h}. */
-/* Last edited on 2021-08-24 08:38:39 by stolfi */
+/* Last edited on 2021-08-31 16:55:25 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -79,7 +79,7 @@ float_image_t **neuromat_eeg_image_basis_make
                 float_image_set_sample(bas[ie], 0, ix, iy, fval);
               }
           }
-        if (verbose) { fprintf(stderr, "."); if ((iy == NY-1) || ((iy % 50) == 0)) { fprintf(stderr, "\n"); } }
+        if (verbose) { fprintf(stderr, "."); if ((iy == NY-1) || (((iy + 1) % 50) == 0)) { fprintf(stderr, "\n"); } }
       }
       
     free(bval);

@@ -1,4 +1,4 @@
-/* Last edited on 2020-10-27 17:13:14 by jstolfi */
+/* Last edited on 2022-10-18 20:59:49 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 
 r2_t *makesites(int N, bool_t normal, bool_t print)
   { 
-    r2_t *st = notnull(malloc(N*sizeof(r2_t)), "no mem");
+    r2_t *st = (r2_t *)notnull(malloc(N*sizeof(r2_t)), "no mem");
     
     srandom(4615);
 

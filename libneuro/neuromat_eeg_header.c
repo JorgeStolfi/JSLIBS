@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_header.h}. */
-/* Last edited on 2021-08-23 00:27:50 by stolfi */
+/* Last edited on 2021-08-28 02:31:42 by stolfi */
   
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -38,7 +38,6 @@ neuromat_eeg_header_t *neuromat_eeg_header_new(void)
         .type = NULL,
         .component = NULL,
         .kfmax = INT32_MIN,
-        .rebase_wt = NULL,
         .tdeg = INT32_MIN,
         .tkeep = INT32_MIN,
         .fsmp = NAN,
@@ -47,6 +46,7 @@ neuromat_eeg_header_t *neuromat_eeg_header_new(void)
         .fhi1 = NAN,
         .fhi0 = NAN,
         .finvert = INT32_MIN,
+        .rebase_wt = NULL,
         .orig = neuromat_eeg_source_new()
       };
     return h;
@@ -84,12 +84,6 @@ void neuromat_eeg_header_write(FILE *wr, neuromat_eeg_header_t *h)
         fprintf(wr, "component = %s\n", h->component);
       }   
     if (! isnan(h->fsmp)) { fprintf(wr, "fsmp = %.10f\n", h->fsmp); }  
-    if (h->rebase_wt != NULL)
-      { fprintf(wr, "rebase_wt =");
-        double *wt = h->rebase_wt;
-        for (int32_t ie = 0; ie < h->ne; ie++) { fprintf(wr, " %9.7f", wt[ie]); }
-        fprintf(wr, "\n");
-      }
     if (h->tdeg >= 0) 
       { demand((h->tkeep == 0) || (h->tkeep == 1), "inconsistent trend preservation flag");
         fprintf(wr, "trend = %d %d\n", h->tdeg, h->tkeep); }   
@@ -98,6 +92,12 @@ void neuromat_eeg_header_write(FILE *wr, neuromat_eeg_header_t *h)
         demand((h->finvert == 0) || (h->finvert == 1), "inconsistent filter inversion flag");
         fprintf(wr, "band = %.15g %.15g %.15g %.15g %d\n", h->flo0, h->flo1, h->fhi1, h->fhi0, h->finvert);
       }   
+    if (h->rebase_wt != NULL)
+      { fprintf(wr, "rebase_wt =");
+        double *wt = h->rebase_wt;
+        for (int32_t ie = 0; ie < h->ne; ie++) { fprintf(wr, " %9.7f", wt[ie]); }
+        fprintf(wr, "\n");
+      }
     neuromat_eeg_source_write(wr, "orig.", h->orig);
     fflush(wr);
   }
@@ -161,10 +161,9 @@ neuromat_eeg_header_t *neuromat_eeg_header_read(FILE *rd, int32_t neDef, double 
       }
     if (h->chnames == NULL) 
       { fprintf(stderr, "providing standard channel names for %d electrodes (without extra events)\n", h->ne);
-        int32_t nc1;
-        neuromat_eeg_get_channel_names(h->ne, 0, NULL, &nc1, &(h->chnames));
-        if (nc1 != h->nc)
-          { fprintf(stderr, "** inconsistent channel count: h.ne = %d  h.nc = %d  nc1 = %d\n", h->ne, h->nc, nc1); 
+        char **chnames = neuromat_eeg_get_channel_names(h->ne, 0, NULL);
+        if (h->nc > h->ne)
+          { fprintf(stderr, "** cannot guess trigger channel names: h.ne = %d  h.nc = %d\n", h->ne, h->nc); 
             exit(1);
           }
       }
@@ -185,7 +184,6 @@ void neuromat_eeg_header_merge(neuromat_eeg_header_t *dst, neuromat_eeg_header_t
     neuromat_eeg_header_merge_string(&(dst->component), src->component, "component");
     
     /* Frequency filtering data: */
-    neuromat_eeg_header_merge_double_vec(dst->ne, &(dst->rebase_wt), src->rebase_wt, "rebase_wt"); 
     neuromat_eeg_header_merge_int32(&(dst->tdeg), src->tdeg, "tdeg");     
     neuromat_eeg_header_merge_int32(&(dst->tkeep), src->tkeep, "tkeep");     
     neuromat_eeg_header_merge_double(&(dst->flo0), src->flo0, "flo0");     
@@ -193,6 +191,7 @@ void neuromat_eeg_header_merge(neuromat_eeg_header_t *dst, neuromat_eeg_header_t
     neuromat_eeg_header_merge_double(&(dst->fhi1), src->fhi1, "fhi1");     
     neuromat_eeg_header_merge_double(&(dst->fhi0), src->fhi0, "fhi0");     
     neuromat_eeg_header_merge_int32(&(dst->finvert), src->finvert, "finvert");
+    neuromat_eeg_header_merge_double_vec(dst->ne, &(dst->rebase_wt), src->rebase_wt, "rebase_wt"); 
 
     neuromat_eeg_header_merge_orig(dst->orig, src->orig);
   }
@@ -359,15 +358,6 @@ void neuromat_eeg_header_read_field_value(FILE *rd, char *name, neuromat_eeg_hea
       { h->fsmp = fget_double(rd);
         demand((! isnan(h->fsmp)) && (h->fsmp > 0), "invalid sampling frequency");
       }
-    else if (strcmp(name, "rebase_wt") == 0) 
-      { demand(h->ne != INT32_MIN, "{rebase_wt} in file header before {ne}");
-        double *wt = rn_alloc(h->ne);
-        for (int32_t ie = 0; ie < h->ne; ie++) 
-          { wt[ie] = fget_double(rd);
-            demand(wt[ie] >= 0 && wt[ie] <= 1.0, "invalid rebase weight");
-          }
-        h->rebase_wt = wt;
-      }
     else if (strcmp(name, "trend") == 0) 
       { h->tdeg = fget_int32(rd);
         h->tkeep = fget_int32(rd);
@@ -384,6 +374,15 @@ void neuromat_eeg_header_read_field_value(FILE *rd, char *name, neuromat_eeg_hea
         demand((h->flo1 == -INF) || (h->flo0 >= 0), "invalid low cutoff");
         demand((h->fhi1 == +INF) || (h->fhi0 <= h->fsmp/2), "invalid high cutoff");
         demand((h->finvert == 0) || (h->finvert == 1), "invalid filter invert flag");
+      }
+    else if (strcmp(name, "rebase_wt") == 0) 
+      { demand(h->ne != INT32_MIN, "{rebase_wt} in file header before {ne}");
+        double *wt = rn_alloc(h->ne);
+        for (int32_t ie = 0; ie < h->ne; ie++) 
+          { wt[ie] = fget_double(rd);
+            demand(wt[ie] >= 0 && wt[ie] <= 1.0, "invalid rebase weight");
+          }
+        h->rebase_wt = wt;
       }
     else if (isprefix("orig.", name)) 
       { char *subname = strchr(name, '.');

@@ -1,5 +1,5 @@
 /* See pst_nodak.h */
-/* Last edited on 2016-03-16 16:06:53 by stolfilocal */
+/* Last edited on 2022-01-01 22:22:27 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -99,7 +99,7 @@ r3x3_t pst_nodak_get_matrix_from_4_points(r2_t p[])
     hr2_point_t p1 = (hr2_point_t){{{1.0,p[1].c[0],p[1].c[1]}}};
     hr2_point_t p2 = (hr2_point_t){{{1.0,p[2].c[0],p[2].c[1]}}};
     hr2_point_t p3 = (hr2_point_t){{{1.0,p[3].c[0],p[3].c[1]}}};
-    hr2_pmap_t P =  hr2_pmap_from_points(&p0, &p1, &p2, &p3);
+    hr2_pmap_t P =  hr2_pmap_from_four_points(&p0, &p1, &p2, &p3);
     return P.dir;
   }
 

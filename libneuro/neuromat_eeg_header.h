@@ -2,7 +2,7 @@
 #define neuromat_eeg_header_H
 
 /* Tools for reading and writing headers of plain-text NeuroMat EEG datasets. */
-/* Last edited on 2021-08-23 00:06:41 by stolfi */
+/* Last edited on 2021-08-26 12:32:15 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -49,14 +49,14 @@ typedef struct neuromat_eeg_header_t
     char *component;   /* Name of a component of original signal, or NULL. */
     
     /* Filtering data: */
-    double *rebase_wt; /* Electrode weights used for rebasing, or {NULL}. */
     int32_t tdeg;      /* Degree of trend polynomial, or negative if none. */
     int32_t tkeep;     /* Tells whether trend polynomial was kept (1) of suppressed (0). */
     double flo0;       /* Lower cutoff frequency, {-INF}. */
     double flo1;       /* Nominal lowest preserved frequency, {-INF}. */
     double fhi1;       /* Nominal highest preserved frequency, {+INF}. */
     double fhi0;       /* Higher cutoff frequency, {+INF}. */
-    int32_t finvert;       /* Filter complementation: 0 for bandpass, 1 for bandkill. */
+    int32_t finvert;   /* Filter complementation: 0 for bandpass, 1 for bandkill. */
+    double *rebase_wt; /* Electrode weights used for rebasing, or {NULL}. */
     
     /* Data history: */
     struct neuromat_eeg_source_t *orig; /* Source EEG data in original raw recording. */
@@ -88,11 +88,14 @@ typedef struct neuromat_eeg_header_t
       ascii letters, periods or underscores, with no embedded blanks.
       The pointer {chnames} may be {NULL}.
       
-    o If the field {rebase_wt} is not {NULL}, it means that the electrode potentials were
-      changed to a different reference potential. Then {rebase_wt} should be be a vector of
-      {ne} non-negative weights that were used to compute the average potential of each frame,
-      which was subtracted from every sample in that frame.  If {NULL}, the data is assumed to 
-      use the original potential reference, such as the "CZ" electrode.
+    o If the field {rebase_wt} is not {NULL}, it means that the
+      electrode potentials were changed to a different reference
+      potential, after filtering and trend replacement. Then {rebase_wt}
+      should be be a vector of {ne} non-negative weights that were used
+      to compute the average potential of each frame, which was
+      subtracted from every sample in that frame. If {NULL}, the data is
+      assumed to use the original potential reference, such as the "CZ"
+      electrode.
   */
   
 typedef struct neuromat_eeg_source_t

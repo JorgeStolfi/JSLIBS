@@ -1,5 +1,5 @@
 /* See {sheet_cut_plot.h} */
-/* Last edited on 2021-06-26 18:59:36 by jstolfi */
+/* Last edited on 2022-04-20 00:33:08 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -175,7 +175,7 @@ void sheet_cut_plot_labels(epswr_figure_t *eps, r2_t pos, r2_t size, char *tag)
             /* Label alignment (0.0 = bottom/left, 1.0 = top/right). */
             double xAlign, yAlign;
             if (rotate)
-              { xAlign = (double)py; yAlign = (double)px; }
+              { xAlign = (double)(1-py); yAlign = (double)px; }
             else
               { xAlign = (double)px; yAlign = (double)py; }
             /* Generate the label text: */

@@ -2,7 +2,7 @@
 #define neuromat_eeg_raw_header_H
 
 /* Tools for reading and writing headers of "raw" NeuroMat EEG dataset. */
-/* Last edited on 2021-08-21 12:51:47 by stolfi */
+/* Last edited on 2021-08-28 02:21:06 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -50,6 +50,6 @@ neuromat_eeg_header_t *neuromat_eeg_raw_header_to_plain_header
     header {hr}, assuming that {skip} frames will be skipped
     and {copy} frames will be copied afterwards.
     Some fields are discarded, others made up. In particular, the 
-    channel names are created with {neuromat_eeg_128_channel_names}. */
+    channel names are created with {neuromat_eeg_get_channel_names}. */
   
 #endif

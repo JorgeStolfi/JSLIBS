@@ -2,7 +2,7 @@
 #define interval_H
 
 /* Intervals with {double} endpoints. */
-/* Last edited on 2012-01-04 00:23:39 by stolfi */ 
+/* Last edited on 2021-12-31 23:44:51 by stolfi */ 
 
 /* Should be merged with (or replaced by) {ia.h}. */
  
@@ -25,6 +25,10 @@
   {LO(X) > HI(X)}; whereas an open or half-open interval is empty
   iff {LO(X) >= HI(X)}. */
   
+/* We need to set these in order to get {asinh}. What a crock... */
+#undef __STRICT_ANSI__
+#define _ISOC99_SOURCE 1
+
 #include <jsmath.h>
 
 typedef struct interval_t { double end[2]; } interval_t;
@@ -56,12 +60,13 @@ double interval_is_trivial(interval_t *X);
     real number, that is, iff {LO(X) == HI(X)}. */
 
 void interval_mid_rad (interval_t *X, double *mid, double *rad);
-  /* If the closed interval {X} is not empty, returns the approximate
+  /* If the interval {X} is empty, returns {mid = 0, rad = -INF}.
+    
+    If the (closed) interval {X} is not empty, returns the approximate
     midlpoint {mid} of {X} (which is guaranteed to be in {X}), and a
     non-negative value {rad} such that {X} is tightly contained in
     {[mid-rad _ mid+rad]}, that is, {mid-rad <= LO(X)} and {mid+rad >=
-    HI(X)}. If the closed interval {X} is empty, returns {mid = 0, rad
-    = -INF}.
+    HI(X)}. 
     
     In particular, if {X} is full, returns {mid = 0, rad = +INF}. If
     {X} is trivial returns {mid = LO(X) = HI(X), rad = 0}. If {X} is
@@ -73,8 +78,8 @@ void interval_mid_rad (interval_t *X, double *mid, double *rad);
 double interval_mid (interval_t *X);
   /* If the closed interval {X} is finite and not empty, 
     returns the approximate midpoint of {X}, guaranteed to be 
-    finite and inside {X}.  If {X} is empty or full, returns 0.
-    Otherwise, if {X} is finite.   */
+    finite and inside {X}.  If {X} is full, returns 0.
+    Fails if {X} is empty.   */
 
 double interval_rad (interval_t *X);
   /* If {X} is not empty, the radius of {X} from its midpoint {m =
@@ -96,6 +101,9 @@ interval_t interval_split(interval_t *X, interval_side_t dir);
   /* Returns the lower or upper half of the closed interval {X},
     depending on {dir}. The splitting point is {interval_mid(X)}, and
     is included in both halves. */
+
+interval_t interval_include(interval_t *X, double z);
+  /* Returns the smallest interval enclosing both {X} and {z}. */
 
 interval_t interval_join(interval_t *X, interval_t *Y);
   /* Returns the smallest interval enclosing both {X} and {Y}. */

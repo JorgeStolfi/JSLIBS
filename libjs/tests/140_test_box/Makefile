@@ -1,12 +1,11 @@
-# Last edited on 2020-10-12 14:30:03 by jstolfi
+# Last edited on 2021-12-31 21:01:38 by stolfi
 
-PROG = r2_aff_map_test 
+PROG := test_box
  
-TEST_LIB := libgeo.a
+TEST_LIB := libjs.a
 TEST_LIB_DIR := ../..
 
-JS_LIBS := \
-  libjs.a
+JS_LIBS :=
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
  

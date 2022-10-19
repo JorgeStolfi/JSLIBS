@@ -2,7 +2,7 @@
 #define neuromat_H
 
 /* NeuroMat tools. */
-/* Last edited on 2021-08-23 23:19:36 by stolfi */
+/* Last edited on 2021-08-28 02:04:04 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -10,57 +10,22 @@
 
 #include <bool.h>
 
-void neuromat_eeg_get_channel_names(int32_t ne, int32_t nv, char **evname, int32_t *ncP, char ***chnamesP);
-  /* Returns in {*chnamesP} a vector {chnames[0..nc-1]} of {nc} strings with 
-    the names of the channels for {ne}-electrode EEG datasets. 
-    The number {nc} of channels is returned in {*ncP}.
+char **neuromat_eeg_get_channel_names(int32_t ne, int32_t nv, char *evname[]);
+  /* Returns a vector {chname[0..nc-1]} with the names of the 
+    {nc=ne+nv} channels for {ne}-electrode EEG datasets. 
     
-    Currently accepts only {ne=20} (the 20-electrode setup) of {ne=128}
-    (the 128-electrode setup). In both cases, assumes that the channels comprise
-    {ne} electrode voltages, an extra channel (trigger for {ne=20},
-    voltage reference for {ne=128}), and finally {nv} event channels
-    named {evname[0..nv-1]}.  (If {nv} is zero then {evname} may be null.)
+    Currently accepts only {ne=20} (the 20-electrode setup), {ne=128}
+    (the 128-electrode setup), or {ne=129} (the 128-electrodes plus the
+    voltage reference electrode "CZ"). In all cases, assumes that the
+    channels comprise {ne} electrode voltages, with standard names,
+    followed by {nv} event channels named {evname[0..nv-1]}. (If {nv} is
+    zero then {evname} may be null.)
     
     All the strings as well as the vector are newly allocated by the procedure.
     In particular, the strings {evname[0..nv-1]} are copied to new storage. */
 
-void neuromat_eeg_get_20_channel_names(int32_t *ncP, char ***chnamesP);
-  /* Returns in {*chnamesP} a vector {chnames[0..20]} of 21 strings that
-    are the names of the raw channels in the 20-electrode experiment.
-    The number of channels (129) is returned in {*ncP}.
-    
-    The channels comprise 20 electrode voltages and one trigger channel.
-    Note that the C-language indices ("C" in the table below) range from
-    0 to 19 while the Fortran/Matlab indices ("F") range from 1 to 20.
-    
-      |    C  F  Name    C  F  Name    C  F  Name    C  F  Name  
-      |   -- -- -----   -- -- -----   -- -- -----   -- -- -----
-      |    0  1  "F7"    5  6 "C3"    10 11 "T6"    15 16 "O2"
-      |    1  2  "T3"    6  7 "P3"    11 12 "Fp2"   16 17 "Fz"
-      |    2  3  "T5"    7  8 "O1"    12 13 "F4"    17 18 "Cz"
-      |    3  4  "Fp1"   8  9 "F8"    13 14 "C4"    18 19 "Pz"
-      |    4  5  "F3"    9 10 "T4"    14 15 "P4"    19 20 "Oz"
-      
-    The trigger channel has C-index 20 (F-index 21) and name "TR". 
-    
-    All the strings as well as the vector are newly allocated by the procedure.
-  */
-
-void neuromat_eeg_get_128_channel_names(int32_t *ncP, char ***chnamesP);
-  /* Returns in {*chnamesP} a vector {chnames[0..128]} of 129 strings with 
-    the names of the channels for the 128-electrode EEG datasets. 
-    The number of channels (129) is returned in {*ncP}.
-    
-    Specifically, names {chnames[0..127]} are "C1" to "C128" 
-    (ie. {chnames[i]} is "C{i+1}"), for {i} in {0..127}.  
-    The last channel is assumed to be the reference (ground) electrode,
-    so {chnames[128]} is set to "CZ" (name used by the Neuromat team; 
-    labeled "VREF" in the electrode diagram?).
-    
-    All the strings as well as the vector are newly allocated by the procedure. */
-
-int32_t neuromat_eeg_find_channel_by_name(char *name, int32_t ic_start, int32_t ic_end, char *chnames[], bool_t die);
-  /* Returns the index {i} in {ic_start..ic_end} such that the string {chnames[i]} 
+int32_t neuromat_eeg_find_channel_by_name(char *name, int32_t ic_start, int32_t ic_end, char *chname[], bool_t die);
+  /* Returns the index {i} in {ic_start..ic_end} such that the string {chname[i]} 
     is equal to the string {name}.  If there is no such {i}, returns {-1} if {die}
     is false, or fails with message if {die} id true. */
 

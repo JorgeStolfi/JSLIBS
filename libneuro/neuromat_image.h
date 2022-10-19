@@ -2,7 +2,7 @@
 #define neuromat_image_H
 
 /* NeuroMat generic image tools. */
-/* Last edited on 2021-08-24 16:33:54 by stolfi */
+/* Last edited on 2021-08-28 21:08:20 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -100,39 +100,6 @@ void neuromat_image_paint_time_track
     exactly {xsz} pixels. The pixels will be set to color {fc} with
     opacity 1. */
 
-void neuromat_image_paint_marker_ranges
-  ( float_image_t *img,
-    int32_t hw, 
-    int32_t nt, 
-    int32_t nc,
-    double **val,
-    int32_t ic_mark, 
-    int32_t xlo, 
-    int32_t xsz,
-    int32_t y, 
-    frgb_t fc
-  );
-  /* Paints onto {img} tic marks and highlights showing the
-    ranges of frames where the marker channel {ic} is nonzero.
-    The marks are located on the timeline defined by {xlo,xsz,y}.
-    The pixels will be set to color {fc} with  opacity 1.
-    
-    The procedure assumes that there are {nt} data frames with {nc}
-    channels, and that {val[it][ic]} is the value of channel
-    {ic} in data frame {it} for {ic} in {0..nc-1} and {it} in {0..nt-1}.
-
-    The procedure scans the samples {val[0..nt-1][ic_mark]} of the given
-    channel {ic_mark} and identifies the maximal runs of consecutive frames
-    where those samples are non-zero. For each run, spanning frames
-    {it_ini} to {it_fin} inclusive, the procedure paints with color {fc}
-    two tic marks at the positions corresponding to {it_ini} and
-    {it_fin}, and a horizontal line of between those two positions,
-    as per {neuromat_image_paint_time_range}.  
-    
-    The frame with index{it} is assumed to have time {it+0.5}.
-    The timeline spans the time interval from {tlo=0.0} 
-    to {thi = nt}. */
-
 void neuromat_image_paint_time_range_and_tics
   ( float_image_t *img,
     int32_t hw, 
@@ -191,6 +158,7 @@ void neuromat_image_paint_tic
 void neuromat_image_paint_slider
   ( float_image_t *img,
     int32_t hw,
+    int32_t hh,
     double tlo,
     double t,
     double thi, 
@@ -205,7 +173,7 @@ void neuromat_image_paint_slider
     Fails if {t<tlo} or {t>thi}. 
     
     The slider will span the timelines with ordinates {y=ylo}
-    and {y=yhi}.  I will extend at least {6*hw} below and above
+    and {y=yhi}.  I will extend at least {hh} below and above
     those lines. */
 
 #endif

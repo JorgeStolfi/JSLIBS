@@ -2,7 +2,7 @@
 #define neuromat_geom_H
 
 /* NeuroMat geometry tools. */
-/* Last edited on 2021-08-21 12:25:49 by stolfi */
+/* Last edited on 2021-08-31 12:27:35 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -52,18 +52,26 @@
 */
 
 r2_t *neuromat_eeg_geom_get_schematic_2D_points(int32_t ne);
-  /* If {rad} is {NULL}, returns a vector of {ne} points which are the two-dimensional
-    schematic positions of the electrodes in the {ne}-electrode
-    experiments.  */
-
-r2_t *neuromat_eeg_geom_get_20_schematic_2D_points(void);
-  /* Same as {neuromat_eeg_geom_get_schematic_2D_points}
-    specific to 20-electrode experiments. */
-
-r2_t *neuromat_eeg_geom_get_128_schematic_2D_points(void);
-  /* Same as {neuromat_eeg_geom_get_schematic_2D_points}
-    specific to 128-electrode experiments. */
+  /* If {rad} is {NULL}, returns a vector {pos2D[0..ne-1]} with the
+    two-dimensional schematic positions of the electrodes in the
+    {ne}-electrode experiments.
     
+    Currently supports only {ne} equal to 20, 128, or 129.
+    The latter includes the votage reference ("CZ") electrode 
+    as {pos2D[128]}. */
+
+    
+r2_t *neuromat_eeg_geom_get_schematic_2D_points_by_name(int32_t ne, char *chnames[], int32_t ne_full);
+  /* Returns a vector {pos2D[0..ne-1]} with the schematic 2D coordinates
+    of the electrodes whose names are {chnames[0..ne-1]}.
+    
+    Assumes that those electrodes are a subset of the full set of
+    {ne_full} electrodes availabe on the cap, whose names are
+    provided by {neuromat_eeg_get_channel_names(ne_full,0,NULL)}. Thus
+    {ne_full} must be one of the electrode counts recognized by that
+    function. */
+
+
 /* STEREOGRAPHIC PROJECTION 2D TO/FROM 3D  */
     
 r3_t neuromat_eeg_geom_3D_from_2D(r2_t *p, r2_t *rad2, r3_t *rad3);

@@ -4,7 +4,7 @@
 
 #define test_neuromat_eeg_image_C_COPYRIGHT \
   "Copyright © 2021 by the State University of Campinas (UNICAMP)"
-/* Last edited on 2021-08-25 03:18:37 by stolfi */
+/* Last edited on 2021-08-28 21:10:12 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -46,8 +46,8 @@ int32_t main(int32_t argc, char **argv)
     float_image_t **bas = tnei_read_basis_images("in/bdir/450_630_e128_gauss_i1_n1", ne, chnames, NX, NY);
     
     fprintf(stderr, "--- testing {neuromat_eeg_image_make_idealized_scalp_mask} ---\n");
-    r2_t ctr = (r2_t){{ 0.50*NX, 0.65*NY }};
-    r2_t rad = (r2_t){{ 0.35*NX, 0.35*NY }};
+    r2_t ctr = (r2_t){{ (225.0/450.0)*NX, (315.0/630.0)*NY }};
+    r2_t rad = (r2_t){{ (213.8/450.0)*NX, (256.5/630.0)*NY }};
     float_image_t *msk = neuromat_eeg_image_make_idealized_scalp_mask(NX, NY, &ctr, &rad);
     tnei_write_fni("msk", msk);
     
@@ -57,7 +57,7 @@ int32_t main(int32_t argc, char **argv)
     neuromat_eeg_image_compute_pot_field(ne, val[it_x], bas, msk, fld);
     tnei_write_fni("fld", fld);
     
-    fprintf(stderr, "--- testing {neuromat_eeg_image_paint_electrodes} ---\n");
+    fprintf(stderr, "--- testing {neuromat_eeg_image_electrodes_overlay} ---\n");
     float_image_t *cim = float_image_new(4, NX, NY);
     float_image_fill(cim, 0.000f);
     frgb_t fcfill = (frgb_t){{ 1.000f, 0.950f, 0.000f }};
@@ -68,38 +68,44 @@ int32_t main(int32_t argc, char **argv)
     r2_t *pos2D = neuromat_eeg_geom_get_schematic_2D_points(ne); 
     r2_t pos_img[ne]; /* Position of elecrodes on image. */
     neuromat_eeg_geom_map_many_disk_to_ellipse(ne, pos2D, &ctr, &rad, pos_img);
-    neuromat_eeg_image_paint_electrodes(ne, pos_img, drad_el, hwd_el, ie_spec, &fcfill, &fcdraw, cim);
-    tnei_write_fni("elp", cim);
+    float_image_t *elp = neuromat_eeg_image_electrodes_overlay(ne, pos_img, drad_el, hwd_el, ie_spec, &fcfill, &fcdraw, NX, NY);
+    tnei_write_fni("elp", elp);
     
     fprintf(stderr, "--- testing {neuromat_eeg_image_paint_timeline_bars} ---\n");
-    float_image_fill(cim, 0.000f);
     int32_t hwd_tb = 2;
-    int32_t ic_mark[nm];
-    frgb_t fmark_p[nm];
-    frgb_t fmark_n[nm];
+    neuromat_eeg_marker_spec_t marker[nm];
     for (int32_t im = 0; im < nm; im++) 
-      { ic_mark[im] = ne + im;
+      { marker[im].ic = ne + im;
         double ang = M_PI*((double)im)/(nm-1);
-        fmark_p[im] = (frgb_t){{ (float)(0.5*(1 + cos(ang))), 1.000f, (float)(0.5*(1 - cos(ang))) }};
-        fmark_n[im] = (frgb_t){{ (float)(0.5*(1 - cos(ang))), 0.000f, (float)(0.5*(1 + cos(ang))) }};
+        marker[im].vref = 1.00;
+        frgb_t fc = (frgb_t){{ (float)(0.5*(1 + cos(ang))), 1.000f, (float)(0.5*(1 - cos(ang))) }};
+        double fcm = fmax(fc.c[0], fc.c[2]);
+        fc.c[0] = (float)(fc.c[0]/fcm);
+        fc.c[2] = (float)(fc.c[2]/fcm);
+        marker[im].color = fc;
       }
-    int32_t track_xlo, track_xhi;
+    int32_t mkdots_xctr;
+    double mkdots_rad;
+    int32_t track_xlo, track_xsz;
     int32_t track_y[nm];
-    neuromat_eeg_image_paint_timeline_bars(nt, nc, val, nm,  ic_mark, hwd_tb, fmark_p, cim, &track_xlo, &track_xhi, track_y);
-    tnei_write_fni("trk", cim);
+    int32_t slider_hw, slider_hh;
+    float_image_t *trk = neuromat_eeg_image_make_time_tracks
+      ( nt, nc, val, nm,  marker, hwd_tb, NX, &mkdots_xctr, &mkdots_rad, &track_xlo, &track_xsz, track_y, &slider_hh );
+    double tlo = 0.0;
+    double thi = (double)nt;
+    double t = 0.67*tlo + 0.33*thi;
+    int32_t ylo = track_y[0];
+    int32_t yhi = track_y[nm-1];
+    fprintf(stderr, "track y = {%d..%d}\n", ylo, yhi);
+    frgb_t fslid = (frgb_t){{ 1.000f, 0.000f, 0.500f }};
+    neuromat_image_paint_slider(trk, slider_hw, slider_hh, tlo, t, thi, track_xlo, track_xsz, ylo, yhi, fslid);
 
-    fprintf(stderr, "--- testing {neuromat_eeg_image_paint_timeline_bars} ---\n");
-    float_image_fill(cim, 0.000f);
-    double rad_mark = 15.0;
-    double vscale[nm];
+    fprintf(stderr, "--- testing {neuromat_eeg_image_paint_marker_dots} ---\n");
     r2_t ctr_mark[nm];
     for (int32_t im = 0; im < nm; im++) 
-      { ic_mark[im] = ne + im;
-        vscale[im] = 1.00;
-        ctr_mark[im] = (r2_t){{ 20, NY - 20 - (2*rad_mark + 10)*im }}; 
-      }
-    neuromat_eeg_image_paint_marker_dots(nc, val[it_x], nm, ic_mark, vscale, fmark_p, fmark_n, ctr_mark, rad_mark, cim);
-    tnei_write_fni("mdt", cim);
+      { ctr_mark[im] = (r2_t){{ (double)mkdots_xctr, (double)track_y[im] }}; }
+    neuromat_eeg_image_paint_marker_dots(trk, nc, val[it_x], nm, marker, ctr_mark, mkdots_rad);
+    tnei_write_fni("trk", trk);
 
     float_image_free(msk);
     for (int32_t ie = 0; ie < ne; ie++) { float_image_free(bas[ie]); }

@@ -1,5 +1,5 @@
 /* i2test --- test program for i2.h, i2x2.h  */
-/* Last edited on 2021-08-17 10:24:50 by stolfi */
+/* Last edited on 2022-01-04 08:42:43 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -51,7 +51,7 @@ void test_i2(int32_t verbose)
 
     if (verbose)
       { fprintf(stderr,
-          "sizeof(i2_t) = %lud  %d*sizeof(int32_t) = %lud\n",
+          "sizeof(i2_t) = %lu  %d*sizeof(int32_t) = %lu\n",
           sizeof(i2_t), N, N*sizeof(int32_t)
         );
       }

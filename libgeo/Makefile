@@ -1,6 +1,8 @@
 # Geometry and linear algebra routines
-# Last edited on 2011-03-05 19:09:47 by stolfi
+# Last edited on 2022-02-27 23:42:38 by stolfi
 
 LIBNAME := libgeo
+
+IGNORE :=
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB.make

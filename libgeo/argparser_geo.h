@@ -1,5 +1,5 @@
 /* argparser_geo.h -- extends argparser.h for geometric args. */
-/* Last edited on 2021-06-09 20:11:37 by jstolfi */
+/* Last edited on 2022-01-01 22:21:29 by stolfi */
 
 #ifndef argparser_geo_H
 #define argparser_geo_H
@@ -82,8 +82,8 @@ hr2_pmap_t argparser_get_next_proj_map_from_points(argparser_t *pp);
   " image.  No three of the input-side points may be collinear," \
   " and ditto for the output-side points.  The input and output" \
   " coordinates are relative to the input and output coordinate" \
-  " systems, respectively.  The matrix {M} is computed using {hr2_pmap_from_points}" \
-  " in {hr2.h}"
+  " systems, respectively.  The matrix {M} is computed using" \
+  " {hr2_pmap_from_four_points} in {hr2.h}"
   
 hr2_pmap_t argparser_get_proj_map(argparser_t *pp);
   /* Parses an optional description of a 2D projective map from the command line, as

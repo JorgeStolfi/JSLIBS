@@ -1,5 +1,5 @@
 /* See r2x2.h. */
-/* Last edited on 2021-06-09 19:39:00 by jstolfi */
+/* Last edited on 2022-01-05 01:44:14 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -244,9 +244,8 @@ void r2x2_from_cols(r2_t *a, r2_t *b, r2x2_t *M)
 
 bool_t r2x2_is_unif_scaling(r2x2_t *M, double s)
   {
-    int32_t i, j;
-    for (i = 0; i < N; i++)
-      for (j = 0; j < N; j++)
+    for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
         { if (M->c[i][j] != (i == j ? s : 0.0)) { return FALSE; } }
     return TRUE;
   }
@@ -324,7 +323,6 @@ void r2x2_from_point_pairs(r2_vec_t *p1, r2_t *bar1, r2_vec_t *p2, r2_t *bar2, r
   {
     int32_t np = p1->ne;
     assert(np == p2->ne);
-    int32_t k;
     double debug = FALSE;
     
     if (debug) { fprintf(stderr, "--- computing the linear matrix ---\n"); }
@@ -333,7 +331,7 @@ void r2x2_from_point_pairs(r2_vec_t *p1, r2_t *bar1, r2_vec_t *p2, r2_t *bar2, r
     /* Compute mean 2×2 linear transformation {S} from {p1-bar1} to {p2-bar2} by least squares: */
     r2x2_t A; r2x2_zero(&A); /* Moment matrix. */
     r2x2_t B; r2x2_zero(&B); /* Projection matrix. */
-    for (k = 0; k < np; k++)
+    for (int32_t k = 0; k < np; k++)
       { 
         /* Reduce points {p1.e[k],p2.e[k]} relative to barycenter: */
         r2_t q1k = p1->e[k];
@@ -341,9 +339,8 @@ void r2x2_from_point_pairs(r2_vec_t *p1, r2_t *bar1, r2_vec_t *p2, r2_t *bar2, r
         if (bar1 != NULL) { r2_sub(&q1k, bar1, &q1k); }
         if (bar2 != NULL) { r2_sub(&q2k, bar2, &q2k); }
         /* Accumulate moments and projections: */
-        int32_t i,j;
-        for(i = 0; i < 2; i ++)
-          { for (j = 0; j < 2; j++)
+        for (int32_t i = 0; i < 2; i ++)
+          { for (int32_t j = 0; j < 2; j++)
               { A.c[i][j] += q1k.c[i]*q1k.c[j];
                 B.c[i][j] += q1k.c[i]*q2k.c[j];
               }

@@ -2,7 +2,7 @@
 #define neuromat_eeg_channel_stats_H
 
 /* NeuroMat statistics tools. */
-/* Last edited on 2021-08-21 12:20:16 by stolfi */
+/* Last edited on 2021-09-01 17:51:52 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -14,14 +14,18 @@
 
 typedef struct neuromat_eeg_channel_stats_t
   { int32_t num;    /* Number of observations (frames). */
-    double twt; /* Total frame weight. */
-    double min; /* Min value. */
-    double max; /* Max value. */
-    double avg; /* Average (mean). */
-    double var; /* Variance around the mean. */
-    double dev; /* Standard deviation {sqrt(var)}. */
-    double msq; /* Average of squared value. */
-    double rms; /* Root mean square {sqrt(msq)}. */
+    double twt;     /* Total frame weight. */
+    double min;     /* Min value. */
+    int32_t icmin;  /* Channel index of min value, or {-1} if none. */
+    int32_t itmin;  /* Frame index of min value, or {-1} if none. */
+    double max;     /* Max value. */
+    int32_t icmax;  /* Channel index of max value, or {-1} if none. */
+    int32_t itmax;  /* Frame index of max value, or {-1} if none. */
+    double avg;     /* Average (mean). */
+    double var;     /* Variance around the mean. */
+    double dev;     /* Standard deviation {sqrt(var)}. */
+    double msq;     /* Average of squared value. */
+    double rms;     /* Root mean square {sqrt(msq)}. */
   } neuromat_eeg_channel_stats_t;
   /* Statistics for a single channel in an EEG dataset.
     
@@ -39,8 +43,8 @@ neuromat_eeg_channel_stats_t *neuromat_eeg_channel_stats_new(int32_t nc);
 void neuromat_eeg_channel_stats_clear(neuromat_eeg_channel_stats_t *st);
   /* Sets the contents of {*st} to an undefined value.
     The fields {.num} and {.twt} are set to zero,
-    {.min} is set to {+INF}, {.max} is set to {-INF},
-    and all other fields are set to {NAN}. */
+    {.min} is set to {+INF}, {.max} is set to {-INF}, the corresponding 
+    indices are set to {-1}  and all other fields are set to {NAN}. */
 
 /* GATHERING STATISTICS
 

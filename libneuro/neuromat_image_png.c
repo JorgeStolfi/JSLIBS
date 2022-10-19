@@ -1,5 +1,5 @@
 /* See {neuromat_image_png.h}. */
-/* Last edited on 2021-08-24 15:49:19 by stolfi */
+/* Last edited on 2021-08-29 01:05:06 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -20,7 +20,7 @@
 
 #include <neuromat_image_png.h>
 
-void neuromat_image_png_write(char *prefix, char *tag, float_image_t *fim, float vlo, float vhi, double gamma)
+void neuromat_image_png_write(char *dir, char *name, float_image_t *fim, float vlo, float vhi, double gamma)
   {
     int32_t NC = (int32_t)fim->sz[0];
     int32_t chns = NC;
@@ -47,7 +47,7 @@ void neuromat_image_png_write(char *prefix, char *tag, float_image_t *fim, float
     
     /* Write {pim} to disk: */
     char *fname = NULL;
-    asprintf(&fname, "%s_%s.png", prefix, tag);
+    asprintf(&fname, "%s/%s.png", dir, name);
     bool_t verbose_write = TRUE;
     uint16_image_write_png_named(fname, pim, gamma, verbose_write);
     

@@ -1,12 +1,15 @@
 /* See interval.h */
-/* Last edited on 2017-08-02 10:46:22 by jstolfi */
+/* Last edited on 2021-12-31 23:44:41 by stolfi */
 
-#define _ISOC99_SOURCE
+/* We need to set these in order to get {asinh}. What a crock... */
+#undef __STRICT_ANSI__
+#define _ISOC99_SOURCE 1
+#include <stdlib.h>
 #include <math.h>
 #include <limits.h>
-#include <stdlib.h>
 #include <fenv.h>
 #include <fpu_control.h>
+#include <assert.h>
 
 #include <jsmath.h>
 #include <affirm.h>
@@ -34,7 +37,7 @@ void interval_mid_rad (interval_t *X, double *mid, double *rad)
   { if (interval_IS_FULL(*X))
       { if (mid != NULL) { (*mid) = 0; } if (rad != NULL) { (*rad) = +INF; } }
     else if (interval_IS_EMPTY(*X))
-      { if (mid != NULL) { (*mid) = 0; } if (rad != NULL) { (*rad) = -INF; } }
+      { if (mid != NULL) { (*mid) = NAN; } if (rad != NULL) { (*rad) = -INF; } }
     else if (interval_IS_TRIVIAL(*X))
       { if (mid != NULL) { (*mid) = LO(*X); } if (rad != NULL) { (*rad) = 0; } }
     else if (LO(*X) == -INF)
@@ -69,6 +72,7 @@ void interval_mid_rad (interval_t *X, double *mid, double *rad)
 double interval_mid (interval_t *X)
   { double m;
     interval_mid_rad(X, &m, NULL);
+    demand(! isnan(m), "empty interval");
     return m;
   }
 
@@ -128,6 +132,18 @@ interval_t interval_split(interval_t *X, interval_side_t dir)
       { return (interval_t){{ LO(*X), mid }}; }
     else
       { return (interval_t){{ mid, HI(*X) }}; }
+  }
+
+interval_t interval_include(interval_t *X, double z)
+  { double Xlo = LO(*X), Xhi = HI(*X);
+    if (Xlo > Xhi) 
+      { return (interval_t){{ z, z }}; }
+    else
+      { interval_t w;
+        LO(w) = (z < Xlo ? z : Xlo);
+        HI(w) = (z > Xhi ? z : Xhi);
+        return w;
+      }
   }
 
 interval_t interval_join(interval_t *X, interval_t *Y)

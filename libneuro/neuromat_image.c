@@ -1,5 +1,5 @@
 /* See {neuromat_image.h}. */
-/* Last edited on 2021-08-24 16:33:37 by stolfi */
+/* Last edited on 2021-08-29 00:21:32 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -132,47 +132,6 @@ void neuromat_image_paint_time_track
     float_image_fill_rectangle_pixels(img, xmin, xmax, ymin, ymax, color);
   }
 
-void neuromat_image_paint_marker_ranges
-  ( float_image_t *img,
-    int32_t hw, 
-    int32_t nt, 
-    int32_t nc,
-    double **val,
-    int32_t ic_mark, 
-    int32_t xlo, 
-    int32_t xsz,
-    int32_t y, 
-    frgb_t fc
-  )
-  { 
-    int32_t NC = (int32_t)img->sz[0];
-    demand(NC == 4, "result image should be RGBA");
-    double tlo = 0.0; /* Time just before first frame. */
-    double thi = (double)nt; /* Time just after last frame. */
-    /* Scan samples of channel {ic}: */
-    /* Pretend that marker channel is zero before and after all frames. */
-    int32_t it_ini = -1;  /* Index of start frame of run, or -1 if not started yet. */
-    int32_t it_fin = -1;  /* Index of end frame of run, or -1 if not started yet. */
-    for (int32_t it = 0; it <= nt; it++)
-      { double smp = (it >= nt ? 0.0 : val[it][ic_mark]);
-        assert(! isnan(smp));
-        if (smp != 0.0)
-          { /* Start or extend a run: */
-            if (it_ini < 0) { it_ini = it; }
-            it_fin = it;
-          }
-        else if (it_ini >= 0)
-          { /* End of run: */
-            assert((it_ini >= 0) && (it_ini <= it_fin) && (it_fin < nt));
-            double tini = it_ini + 0.5;
-            double tfin = it_fin + 0.5;
-            neuromat_image_paint_time_range_and_tics(img, hw, tlo, tini, tfin, thi, xlo, xsz, y, fc);
-            it_ini = -1;
-            it_fin = -1;
-          }
-      }
-  }
-
 void neuromat_image_paint_time_range_and_tics
   ( float_image_t *img,
     int32_t hw, 
@@ -228,8 +187,8 @@ void neuromat_image_paint_time_range
     if (tini > thi) { tini = thi; }
     
     double scale = ((double)xsz)/(thi - tlo);
-    int32_t xmin = xlo + (int32_t)floor(xlo + scale*(tini - tlo) + 0.5);
-    int32_t xmax = xlo + (int32_t)floor(xlo + scale*(tfin - tlo) + 0.5) - 1;
+    int32_t xmin = xlo + (int32_t)floor(scale*(tini - tlo) + 0.5);
+    int32_t xmax = xlo + (int32_t)floor(scale*(tfin - tlo) + 0.5) - 1;
     if (xmax < xmin) { return; }
     int32_t ymin = y - hw;
     int32_t ymax = y + hw - 1;
@@ -269,6 +228,7 @@ void neuromat_image_paint_tic
 void neuromat_image_paint_slider
   ( float_image_t *img, 
     int32_t hw,
+    int32_t hh, 
     double tlo,
     double t,
     double thi, 
@@ -294,10 +254,13 @@ void neuromat_image_paint_slider
     int32_t xmin = xctr - hw;
     int32_t xmax = xctr + hw - 1;
     
-    for (int32_t ik = 0; ik < 2; ik++)
-      { int32_t yctr = (ik == 0 ? ylo - 4*hw : yhi + 4*hw);
-        int32_t ymin = yctr - 2*hw;
-        int32_t ymax = yctr + 2*hw + 1;
-        float_image_fill_rectangle_pixels(img, xmin, xmax, ymin, ymax, vfill);
-      }
+    /* Paint the lower slider: */
+    int32_t ymin = ylo - hh;
+    int32_t ymax = ylo - 1;
+    float_image_fill_rectangle_pixels(img, xmin, xmax, ymin, ymax, vfill);
+    
+    /* Paint the upper slider: */
+    ymin = yhi;
+    ymax = yhi + hh - 1;
+    float_image_fill_rectangle_pixels(img, xmin, xmax, ymin, ymax, vfill);
   }

@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_raw_header.h}. */
-/* Last edited on 2021-08-21 13:10:34 by stolfi */
+/* Last edited on 2021-08-28 02:38:26 by stolfi */
   
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -80,14 +80,13 @@ neuromat_eeg_header_t *neuromat_eeg_raw_header_to_plain_header
     int32_t run
   )
   {
-    demand((hr->nc == 21) || (hr->nc == 129), "invalid channel count");
-    int32_t ne = hr->nc - 1; /* Number of electrode channels. */
+    int32_t nc = hr->nc;
+    demand((nc == 21) || (nc == 129) || (nc == 130), "invalid channel count");
+    int32_t ne = nc-1;  /* ??? MAY BE WRONG ??? */
     int32_t ntOrig = hr->nt; /* Number of frames in original file. */
     
     /* Get the complete channel count and names (including event channels): */
-    int32_t nc = 0;
-    char **chnames = NULL;
-    neuromat_eeg_get_channel_names(ne, hr->nv, hr->evnames, &nc, &chnames);
+    char **chnames = neuromat_eeg_get_channel_names(ne, hr->nv, hr->evnames);
     
     /* Allocate the plain-format header: */
     neuromat_eeg_header_t *ht = neuromat_eeg_header_new();

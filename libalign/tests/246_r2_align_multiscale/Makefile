@@ -1,6 +1,15 @@
-# Last edited on 2021-12-16 20:04:28 by stolfi
+# Last edited on 2022-02-28 11:52:44 by stolfi
 
-PROG = test_align_quadopt
+PROG = r2_align_multiscale_test
+
+TEST_LIB := libalign.a
+TEST_LIB_DIR := ../..
+
+JS_LIBS :=  \
+  libminn.a \
+  libgeo.a \ 
+  libimg.a \
+  libjs.a
 
 # Test runs
 # Format: ${FUNC}:${BIAS}:${MONO}:${QUAD}:${NI}:${WX}:${WY}:${AX}:${AY}
@@ -11,15 +20,6 @@ TESTS := \
 ALL_TESTS := \
   images:0:0:0:02:20:20:01:01 \
   indiff:0:0:0:02:04:04:01:01 
-
-TEST_LIB := libimg.a
-TEST_LIB_DIR := ../..
-
-JS_LIBS := \
-  libminn.a \
-  libminu.a \
-  libgeo.a \
-  libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 
