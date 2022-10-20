@@ -1,5 +1,5 @@
 /* voxb_obj.h --- basic shape predicates for voxel-based modeling */
-/* Last edited on 2021-06-09 23:18:23 by jstolfi */
+/* Last edited on 2022-10-20 05:48:22 by stolfi */
 
 #ifndef voxb_obj_H
 #define voxb_obj_H
@@ -34,7 +34,7 @@ bool_t voxb_obj_rounded_box(r3_t *p, double RX, double RY, double RZ, double rou
     with radius {roundR}, and fillets of radius {fillR} along the top
     and bottom edges. */
 
-bool_t voxb_obj_donut(r3_t *p, double minR, double majR, int axis);
+bool_t voxb_obj_donut(r3_t *p, double minR, double majR, int32_t axis);
   /* A donut (filled torus) with midline radius {majR}, and dough radius
     {minR}. The donut is centered at the origin, and is rotationally
     symmetric around the coordinate axis {ax} (0, 1, or 2). */

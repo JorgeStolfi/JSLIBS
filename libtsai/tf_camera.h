@@ -1,10 +1,11 @@
 /* Camera model and camera parameters for most uses. */
-/* Last edited on 2011-05-17 01:50:08 by stolfi */
+/* Last edited on 2022-10-20 05:53:10 by stolfi */
 
 #ifndef tf_camera_params_H
 #define tf_camera_params_H
 
 #include <r2.h>
+#include <stdint.h>
 #include <r3.h>
 #include <r3x3.h>
 #include <r4.h>
@@ -58,7 +59,7 @@ void tf_camera_matrix_print_rotation (r4x4_t *S, FILE *ferr);
 /* This routine prints the rotation submatrix of matrix {S} to {ferr},
   in human-readable format, with "//" in front of every line. */
 
-void tf_camera_params_write (FILE *wr, int index, tf_camera_params_t *cpar);
+void tf_camera_params_write (FILE *wr, int32_t index, tf_camera_params_t *cpar);
 /* Writes the {index} and all camera parameters from {cpar}
   to file {wr}, in a single line.
 
@@ -71,12 +72,12 @@ void tf_camera_params_write (FILE *wr, int index, tf_camera_params_t *cpar);
       {f} {kappa} {sx}
       {Npx} {Npy} {dpx} {dpy} {Cx} {Cy}". */
 
-int tf_camera_params_read (FILE *rd, tf_camera_params_t *cpar);
+int32_t tf_camera_params_read (FILE *rd, tf_camera_params_t *cpar);
 /* Reads frame {index} and all camera parameters from file {rd},
    in the format used by {tf_camera_params_write},
    and stores them into the {cpar} structure. Returns the frame index. */
 
-void tf_camera_params_write_mutable (FILE *wr, int index, tf_camera_params_t *cpar);
+void tf_camera_params_write_mutable (FILE *wr, int32_t index, tf_camera_params_t *cpar);
 /* Writes the frame {index} and the mutable camera parameters from {cpar}
   ({S,f,kappa, sx}) to file {wr}, in a single line.
 
@@ -89,7 +90,7 @@ void tf_camera_params_write_mutable (FILE *wr, int index, tf_camera_params_t *cp
       {f} {kappa} {sx}".
    Ignores the fields {Npx} {Npy} {dpx} {dpy} {Cx} {Cy} of {cpar}. */
 
-int tf_camera_params_read_mutable (FILE *rd, tf_camera_params_t *cpar);
+int32_t tf_camera_params_read_mutable (FILE *rd, tf_camera_params_t *cpar);
 /* Reads the frame {index} and the mutable camera parameters from file {rd},
    in the format used by {tf_camera_params_write_mutable},
    and stores the latter in the {cpar} structure. Returns the frame index.
@@ -113,7 +114,7 @@ void tf_camera_params_write_povray (FILE *wr, tf_camera_params_t *cpar, bool_t f
 #define tf_camera_num_parameters (15)
 /* Number of indexable parameters in a {tf_camera_params_t}. */
 
-double tf_camera_params_get_value_from_index (tf_camera_params_t *cpar, int iparam, double vref);
+double tf_camera_params_get_value_from_index (tf_camera_params_t *cpar, int32_t iparam, double vref);
 /* Returns the parameter number {iparam} from {cpar}.
   If the parameter is an angle, return {tf_camera_adjust_angle(v,vref)}
   instead of the stored value {v}. */
@@ -122,7 +123,7 @@ void tf_camera_params_set_from_vector (tf_camera_params_t *cpar, double params[]
 /* Sets all fields of {cpar} from {params[0..n-1]} where 
   {n == tf_camera_num_parameters}. */
 
-char *tf_camera_params_get_name_from_index (int iparam);
+char *tf_camera_params_get_name_from_index (int32_t iparam);
 /* The name of parameter number {iparam} in a {tf_camera_params_t *}. */
 
 /* COORDINATE CONVERSION */
@@ -213,7 +214,7 @@ r2_t tf_camera_compute_image_error(tf_camera_params_t *cpar, r3_t p_w, r2_t p_i)
 
 void tf_camera_compute_all_image_errors
   ( tf_camera_params_t *cpar,
-    int nmarks,
+    int32_t nmarks,
     r3_t p_w[],
     r2_t p_i[],
     r2_t e_i[] );

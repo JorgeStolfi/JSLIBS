@@ -1,8 +1,9 @@
 /* See stmap.h */
-/* Last edited on 2017-01-02 21:44:21 by jstolfi */
+/* Last edited on 2022-10-20 07:45:46 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,10 +24,10 @@
 
 /* INTERNAL PROTOTYPES */
 
-void st_map_file_error(int nlin, char *msg);
-void st_map_add_edge(Map *m, int org, int dst, int ei, float c0, float c1);
+void st_map_file_error(int32_t nlin, char *msg);
+void st_map_add_edge(Map *m, int32_t org, int32_t dst, int32_t ei, float c0, float c1);
 bool_t st_map_insert_edge_in_ring(quad_arc_t e, quad_arc_t r);
-int  st_map_ccw(Point p, Point q, Point r);
+int32_t  st_map_ccw(Point p, Point q, Point r);
 bool_t st_map_vertex_is_visible(Point p, Interval xr, Interval yr);
 bool_t st_map_edge_is_visible(Point p, Point q, Interval xr, Interval yr);
 
@@ -34,10 +35,10 @@ bool_t st_map_edge_is_visible(Point p, Point q, Interval xr, Interval yr);
 
 Map *st_map_read(FILE *f)
   { Map *m = (Map *)malloc(sizeof(Map));
-    int vi;
-    int ei, ai;
-    int nlin = 0;
-    int res;
+    int32_t vi;
+    int32_t ei, ai;
+    int32_t nlin = 0;
+    int32_t res;
 
     affirm(m != NULL, "out of memory"); 
     res = fscanf(f, "p street-graph %d %d\n", &(m->nv), &(m->ne));
@@ -55,7 +56,7 @@ Map *st_map_read(FILE *f)
 
     for (vi = 0; vi < m->nv; vi++) 
       { VertexData *vd = (VertexData *)malloc(sizeof(VertexData));
-        int vot, vin, id;
+        int32_t vot, vin, id;
         res = fscanf(f, "v %d %lf %lf %d %d\n", &id, &(vd->p.c[0]), &(vd->p.c[1]), &vin, &vot);
         nlin++;
         if (res != 5) { st_map_file_error(nlin, "bad vertex line"); }
@@ -64,7 +65,7 @@ Map *st_map_read(FILE *f)
         m->vd[id] = vd;
       }
     for (ei = 0; ei < m->ne; ei++)
-      { int org, dst, blocked;
+      { int32_t org, dst, blocked;
         float c0, c1;
         res = fscanf(f, "a %d %d %d\n", &org, &dst, &blocked);
         nlin++;
@@ -83,21 +84,21 @@ Map *st_map_read(FILE *f)
 #define DIRID(a) ((((EdgeData *)quad_ldata(a))->id << 1) | quad_sym_bit(a))
 
 void st_map_init_costs(Map *m, float *d, quad_arc_t *e, float *c)
-  { int vi, ai;
+  { int32_t vi, ai;
     for(vi = 0; vi < m->nv; vi++) { d[vi] = +INF; e[vi] = quad_arc_NULL; }
     for(ai = 0; ai < 2*m->ne; ai++) { c[ai] = +INF; }
   }
 
-void st_map_reset_costs(Map *m, int *r, int nr, float *d, quad_arc_t *e, float *c)
-  { int k;
+void st_map_reset_costs(Map *m, int32_t *r, int32_t nr, float *d, quad_arc_t *e, float *c)
+  { int32_t k;
     for (k = 0; k < nr; k++)
-      { int vi = r[k]; 
+      { int32_t vi = r[k]; 
         d[vi] = +INF; e[vi] = quad_arc_NULL;
         quad_arc_t b = m->out[vi], a = b;
         do
           { EdgeData *ad = (EdgeData *)quad_ldata(a);
-            int s = quad_lon_bit(a);
-            int ai = 2 * ad->id + s;
+            int32_t s = quad_lon_bit(a);
+            int32_t ai = 2 * ad->id + s;
             c[ai] = +INF;
             a = quad_onext(a);
           }
@@ -107,16 +108,16 @@ void st_map_reset_costs(Map *m, int *r, int nr, float *d, quad_arc_t *e, float *
 
 void st_map_compute_costs
   ( Map *m, 
-    int u, 
+    int32_t u, 
     float dMax,
-    int *r,
-    int *nr, 
+    int32_t *r,
+    int32_t *nr, 
     float *d, 
     quad_arc_t *e,
     float *c
   )
   {
-    int vi;
+    int32_t vi;
     st_Heap *h = st_heap_new(2*m->ne);
     float cprev = 0.0, dprev = 0.0;
 
@@ -142,13 +143,13 @@ void st_map_compute_costs
         { quad_arc_t b = m->out[vi], a = b;
           do
             { EdgeData *ad = (EdgeData *)quad_ldata(a);
-              int s = quad_lon_bit(a);
-              int ai = 2 * ad->id + s;
+              int32_t s = quad_lon_bit(a);
+              int32_t ai = 2 * ad->id + s;
               float cnew = d[vi] + ad->cost[s];
               affirm(cnew >= d[vi], "negative arc cost");
               if (cnew <= dMax)
                 { VertexData *vd = (VertexData *)quad_ddata(a);
-                  int wi = vd->id;
+                  int32_t wi = vd->id;
                   affirm(c[ai] == +INF, "total arc cost c[ai] set twice");
                   c[ai] = cnew; 
                   if (cnew < d[wi]) { st_heap_insert(h, ai, c); }
@@ -160,10 +161,10 @@ void st_map_compute_costs
         /* Get next vertex {vi} in cost order, or -1 if none: */
         vi = -1;
         while ((h->n > 0) && (vi < 0))
-          { int ai = st_heap_pop(h, c);
+          { int32_t ai = st_heap_pop(h, c);
             quad_arc_t a = m->along[ai];
             VertexData *vd = (VertexData *)quad_ddata(a);
-            int wi = vd->id;
+            int32_t wi = vd->id;
             affirm(c[ai] >= cprev, "total arc costs popped out of order");
             cprev = c[ai];
             if (c[ai] < d[wi]) { d[wi] = c[ai]; e[wi] = a; vi = wi; }
@@ -175,14 +176,14 @@ void st_map_compute_costs
      
 void st_compute_coverage
   ( Map *m, 
-    int *u, 
+    int32_t *u, 
     float *dMax, 
-    int n, 
-    int *vcover,
-    int *ecover
+    int32_t n, 
+    int32_t *vcover,
+    int32_t *ecover
   )
   {
-    int vi, ei;
+    int32_t vi, ei;
     for (vi = 0; vi < m->nv; vi++) { vcover[vi] = 0; }
     for (ei = 0; ei < m->ne; ei++) { ecover[ei] = 0; }
     if (n > 0) 
@@ -190,13 +191,13 @@ void st_compute_coverage
         float d[m->nv];
         float c[2 * m->ne];
         quad_arc_t e[m->nv];
-        int r[m->nv];
-        int nr;
+        int32_t r[m->nv];
+        int32_t nr;
         /* Count sites that cover each vertex and each edge: */
         st_map_init_costs(m, d, e, c);
-        int i;
+        int32_t i;
         for(i = 0; i < n; i++)
-          { int ui = u[i];
+          { int32_t ui = u[i];
             float dmi = dMax[i];
             /* Find vertices within cost {dMax} from {ui}: */
             st_map_compute_costs(m, ui, dmi, r, &nr, d, e, c);
@@ -211,16 +212,16 @@ void st_compute_coverage
 void st_increment_coverage
   ( Map* m,
     float dMax, 
-    int *r, 
-    int nr, 
+    int32_t *r, 
+    int32_t nr, 
     float *d, 
     float *c,
-    int *vcover, 
-    int *ecover
+    int32_t *vcover, 
+    int32_t *ecover
   )
-  { int k;
+  { int32_t k;
     for (k = 0; k < nr; k++)
-      { int vi = r[k];
+      { int32_t vi = r[k];
         /* Tally vertex coverage: */
         affirm(d[vi] <= dMax, "inconsistent cost");
         vcover[vi]++;
@@ -228,13 +229,13 @@ void st_increment_coverage
         quad_arc_t b = m->out[vi], a = b;
         do
           { EdgeData *ad = (EdgeData *)quad_ldata(a);
-            int ei = ad->id;
-            int ai = 2 * ei, aj = ai + 1;
+            int32_t ei = ad->id;
+            int32_t ai = 2 * ei, aj = ai + 1;
             /* Check if edge {ei} is {dMax}-reachable: */
             if ((c[ai] <= dMax) || (c[aj] <= dMax))
               { /* Take care not to increment {ecover[ei]} twice: */
                 VertexData *wd = (VertexData *)quad_odata(quad_sym(a));
-                int wi = wd->id;
+                int32_t wi = wd->id;
                 if (vi < wi) { ecover[ei]++; }
               }
             a = quad_onext(a);
@@ -251,7 +252,7 @@ void st_map_plot(
     float *ewidth, RGBColor *ecolor
   )
   {
-    int vi, ei;
+    int32_t vi, ei;
     bool_t clipping = FALSE;
     
     if ( 
@@ -307,7 +308,7 @@ void st_map_plot(
 void st_map_get_bbox(Map *m, Interval *xr, Interval *yr)
   {
     double xlo = 0.0, xhi = 0.0, ylo = 0.0, yhi = 0.0;
-    int i;
+    int32_t i;
     for (i = 0; i < m->nv; i++)
       { VertexData *vd = m->vd[i];
         double x = vd->p.c[0], y = vd->p.c[1];
@@ -322,10 +323,10 @@ void st_map_get_bbox(Map *m, Interval *xr, Interval *yr)
     yr->lo = ylo; yr->hi = yhi;
   }
 
-int st_map_nearest_vertex(Map *m, Point p)
+int32_t st_map_nearest_vertex(Map *m, Point p)
   {
-    int vi;
-    int imin = -1;
+    int32_t vi;
+    int32_t imin = -1;
     double d2min = +INF;
     for (vi = 0; vi < m->nv; vi++)
       { VertexData *vd = m->vd[vi]; 
@@ -339,7 +340,7 @@ int st_map_nearest_vertex(Map *m, Point p)
 
 /* INTERNAL PROCEDURES */
   
-void st_map_file_error(int nlin, char *msg)
+void st_map_file_error(int32_t nlin, char *msg)
    /*
      Prints {msg} and {nlin}, and exits with error status.
      Handy while parsing a map file. */
@@ -348,7 +349,7 @@ void st_map_file_error(int nlin, char *msg)
     exit(1);
   }
 
-void st_map_add_edge(Map *m, int org, int dst, int ei, float c0, float c1)
+void st_map_add_edge(Map *m, int32_t org, int32_t dst, int32_t ei, float c0, float c1)
    /*
      Adds a new edge with number {ei} to the map's topology
      structure, between vertices {org} and {dst}, with costs {c0} and
@@ -361,8 +362,8 @@ void st_map_add_edge(Map *m, int org, int dst, int ei, float c0, float c1)
         
     quad_arc_t a0 = quad_make_edge();
     quad_arc_t a1 = quad_sym(a0);
-    int ia0 = 2*ei + quad_lon_bit(a0);
-    int ia1 = 2*ei + quad_lon_bit(a1);
+    int32_t ia0 = 2*ei + quad_lon_bit(a0);
+    int32_t ia1 = 2*ei + quad_lon_bit(a1);
     
     affirm(org != dst, "loop edge");
 
@@ -416,7 +417,7 @@ bool_t st_map_insert_edge_in_ring(quad_arc_t e, quad_arc_t r)
       else
         { VertexData *ad = (VertexData *)quad_ddata(a);
           VertexData *bd = (VertexData *)quad_ddata(b);
-          int sae, seb, sba;
+          int32_t sae, seb, sba;
 
           affirm(quad_odata(a) == quad_odata(e), "edge origin");
           sae = st_map_ccw(od->p, ad->p, ed->p);
@@ -430,7 +431,7 @@ bool_t st_map_insert_edge_in_ring(quad_arc_t e, quad_arc_t r)
     return FALSE;
   }
   
-int st_map_ccw(Point p, Point q, Point r)
+int32_t st_map_ccw(Point p, Point q, Point r)
   /*
    Sign of triangle {p,q,r} (-1, 0, or +1). */
   {
@@ -457,9 +458,9 @@ double_vec_t st_read_double_vec_t(char *name)
   }
   
 double_vec_t st_fread_double_vec_t(FILE *rd)
-  { int ne = nget_int(rd, "vertices"); fget_eol(rd);
+  { int32_t ne = nget_int32(rd, "vertices"); fget_eol(rd);
     double_vec_t d = double_vec_new(ne);
-    int i;
+    int32_t i;
     for (i = 0; i < ne; i++) { d.e[i] = fget_double(rd); fget_eol(rd); }
     return d;
   }
@@ -471,7 +472,7 @@ void st_write_double_vec_t(char *name, double_vec_t *d)
   }
 
 void st_fwrite_double_vec_t(FILE *wr, double_vec_t *d)
-  { int i;
+  { int32_t i;
     fprintf(wr, "vertices = %d\n", d->ne);
     for (i = 0; i < d->ne; i++) { fprintf(wr, "%24.16e\n", d->e[i]); }
     fflush(wr);

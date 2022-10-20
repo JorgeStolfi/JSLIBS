@@ -1,5 +1,5 @@
 /* See {test_voxb_mark}.h  */
-/* Last edited on 2021-06-22 13:45:44 by jstolfi */
+/* Last edited on 2022-10-20 05:49:17 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -33,7 +33,7 @@ void test_voxb_mark_corners(ppv_array_t *A, r3_t *ctr, r3_t *rad)
       /* Indicator function for a ball of radius {ballR}. */
     
     /* Array dimensions: */
-    int ix, iy, iz;
+    int32_t ix, iy, iz;
     for (ix = -1; ix <= +1; ix += 2)
       { for (iy = -1; iy <= +1; iy += 2)
           { for (iz = -1; iz <= +1; iz += 2)
@@ -57,15 +57,15 @@ void test_voxb_mark_corners(ppv_array_t *A, r3_t *ctr, r3_t *rad)
       { return voxb_obj_ball(p, ballR); }
   }
     
-void test_voxb_mark_edges(ppv_array_t *A, r3_t *ctr, r3_t *rad, int ax)
+void test_voxb_mark_edges(ppv_array_t *A, r3_t *ctr, r3_t *rad, int32_t ax)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
     r3_gen_print (stderr, ctr, "%.2f", "  ctr = ( ", " ", " )\n");
     r3_gen_print (stderr, rad, "%.2f", "  rad = ( ", " ", " )\n");
 
-    int xax = (ax + 1) % 3; /* The actual "{X}" axis. */
-    int yax = (ax + 2) % 3; /* The actual "{Y}" axis. */
-    int zax = (ax + 3) % 3; /* The actual "{Z}" axis. */
+    int32_t xax = (ax + 1) % 3; /* The actual "{X}" axis. */
+    int32_t yax = (ax + 2) % 3; /* The actual "{Y}" axis. */
+    int32_t zax = (ax + 3) % 3; /* The actual "{Z}" axis. */
 
     double rodR = 3.0; /* Rod radius in voxels. */
     double rodH = rad->c[zax]; /* Rod half-height in voxels. */
@@ -76,7 +76,7 @@ void test_voxb_mark_edges(ppv_array_t *A, r3_t *ctr, r3_t *rad, int ax)
       /* Indicator function for a canonical rod of radius {rodR}. */
     
     /* Splat the rods: */
-    int ix, iy;
+    int32_t ix, iy;
     for (ix = -1; ix <= +1; ix += 2)
       { for (iy = -1; iy <= +1; iy += 2)
           { /* Pick a corner of the domain: */

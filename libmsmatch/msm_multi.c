@@ -1,5 +1,5 @@
 /* See msm_multi.h */
-/* Last edited on 2017-04-28 10:45:57 by stolfilocal */ 
+/* Last edited on 2022-10-20 06:38:14 by stolfi */ 
 
 #define msm_multi_C_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)" \
@@ -7,6 +7,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <msm_basic.h>
@@ -22,16 +23,16 @@ msm_cand_vec_t msm_multi_find_matches
   ( msm_cand_vec_t *cdvini,
     msm_seq_desc_t sv0[], 
     msm_seq_desc_t sv1[],
-    int maxMatches,
-    int maxLevel,
-    int minSamples[],
+    int32_t maxMatches,
+    int32_t maxLevel,
+    int32_t minSamples[],
     double frac,
     bool_t refine,
-    int delta,
-    int kappa,
-    int expand,
-    int shrink,
-    int maxUnp,
+    int32_t delta,
+    int32_t kappa,
+    int32_t expand,
+    int32_t shrink,
+    int32_t maxUnp,
     msm_rung_step_score_proc_t *step_score,
     msm_multi_report_proc_t *report,
     bool_t verbose
@@ -43,11 +44,11 @@ msm_cand_vec_t msm_multi_find_matches
     msm_cand_vec_t cdv = msm_cand_vec_new(0);
 
     /* Multiscale search and refine at all scales: */
-    int level;
+    int32_t level;
     for (level = maxLevel; level >= 0; level--)
       { 
         /* Scale reduction factor from original strings: */
-        int scale = 1 << level;
+        int32_t scale = 1 << level;
 
         fprintf(stderr, "\n");
         fprintf(stderr, "= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n");
@@ -81,9 +82,9 @@ msm_cand_vec_t msm_multi_find_matches
         if (refine)
           { /* Refine, sort, and prune {cdvraw}: */
             fprintf(stderr, "refining %d candidates\n", cdvraw.ne);
-            int nprune = maxMatches * scale;
+            int32_t nprune = maxMatches * scale;
             fprintf(stderr, "  pruning to at most %d candidates\n", nprune);
-            int mincov = minSamples[level];
+            int32_t mincov = minSamples[level];
             fprintf(stderr, "  min covered samples in each sequence %d\n", mincov);
             assert(mincov > 0);
             cdv = msm_cand_vec_refine 

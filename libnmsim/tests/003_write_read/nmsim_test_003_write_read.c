@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} write, read, and compare procs"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-11 12:52:12 by jstolfi */ 
+/* Last edited on 2022-10-20 06:34:44 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -17,6 +17,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -67,11 +68,11 @@ void test_double_case
   /* Same as {test_double}, but for a specific combination
     of {sgn,fudge_0,fudge_1} options. */
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     do_tests(0.6);
     do_tests(0.06);
@@ -168,9 +169,9 @@ void test_int64(FILE *rd, FILE *wr, int32_t phase, int64_t v)
 
 void test_double(FILE *rd, FILE *wr, int32_t phase, double v, double prec)
   {
-    for (int sgn = 0; sgn <= 1; sgn++)
-      { for (int fudge_0 = 0; fudge_0 <= 1; fudge_0++)
-          { for (int fudge_1 = 0; fudge_1 <= 1; fudge_1++)
+    for (int32_t sgn = 0; sgn <= 1; sgn++)
+      { for (int32_t fudge_0 = 0; fudge_0 <= 1; fudge_0++)
+          { for (int32_t fudge_1 = 0; fudge_1 <= 1; fudge_1++)
               { test_double_case(rd, wr, phase, v, prec, (sgn != 0), (fudge_0 != 0), (fudge_1 != 0)); }
           }
       }

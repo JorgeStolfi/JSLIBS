@@ -1,10 +1,11 @@
-/* Last edited on 2020-10-11 03:46:01 by jstolfi */
+/* Last edited on 2022-10-20 06:06:38 by stolfi */
 
 #define PROG_NAME "test_povray_camera"
 #define PROG_DESC "tests the conversion from Tsai camera matrix to POV-Ray camera spec"
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
@@ -30,15 +31,15 @@
 #define ttm_PNM_GAMMA 1.000
 #define ttm_PNM_BIAS  0.000
 
-int main (int argc, char *argv[])
+int32_t main (int32_t argc, char *argv[])
   {
     /* Arguments: */
     char *data_dir = argv[1];      /* Directory for input file names. */
     char *out_dir = argv[2];       /* Directory for output file names */
     char *calib_tag = argv[3];     /* Tag of subject calibration, or "NONE". */
     char *true_tag = argv[3];      /* Tag of reference calibration, or "NONE". */
-    int frame_ini = atoi(argv[4]); /* Number of initial frame. */
-    int frame_fin = atoi(argv[5]); /* Number of final frame. */
+    int32_t frame_ini = atoi(argv[4]); /* Number of initial frame. */
+    int32_t frame_fin = atoi(argv[5]); /* Number of final frame. */
 
     /* Get the fixed camera parameters: */
     char *cspec_fname = NULL;
@@ -67,7 +68,7 @@ int main (int argc, char *argv[])
     tf_calib_data_t * cdat = read_world_positions(data_dir);
 
     /* Loop on frames: */
-    int frame_num;
+    int32_t frame_num;
     for (frame_num = frame_ini; frame_num <= frame_fin; frame_num++)
     {
       fprintf(stderr, "--- begin frame %05d --------------------------------------------------\n", frame_num);
@@ -111,7 +112,7 @@ int main (int argc, char *argv[])
       fprintf(f_p_wgt, "%d\n", n_p_w);
 
       /* Process marks: */
-      int i;
+      int32_t i;
       for (i = 0; i < n_p_w; i++) {
           r2_t p_i = tf_world_coords_to_image_coords (cal_cpar, cdat->world[i]);
           double mark_radius = 5;
@@ -171,6 +172,6 @@ int main (int argc, char *argv[])
 
     char *wpos_fname = NULL;
     asprintf(&wpos_fname, "%s/world-coords.txt", data_dir);
-    int n_p_w;
+    int32_t n_p_w;
     tf_calib_data_t * cdat = calibration_data_new();
     tf_calib_data_read_world_points (wpos_fname, &n_p_w, &(cdat->world));

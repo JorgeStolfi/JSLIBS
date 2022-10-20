@@ -2,9 +2,10 @@
 #define float_image_align_H
 
 /* Tools for optimizing a vector of points on the plane. */
-/* Last edited on 2021-12-16 19:46:53 by stolfi */ 
+/* Last edited on 2022-10-20 06:16:41 by stolfi */ 
 
 #include <bool.h>
+#include <stdint.h>
 #include <r2.h>
 #include <i2.h>
 #include <float_image.h>
@@ -49,7 +50,7 @@
   with no adjustment. 
   */
 
-typedef double float_image_align_mismatch_t(int ni, r2_t p[], i2_t iscale); 
+typedef double float_image_align_mismatch_t(int32_t ni, r2_t p[], i2_t iscale); 
   /* Type of a function that evaluates the mismatch of {ni} objects.
     in some neighborhood of points {p[0..ni-1]}, at a specified
     scale of resolution {iscale}.  The size of the neighborhood
@@ -80,7 +81,7 @@ typedef double float_image_align_mismatch_t(int ni, r2_t p[], i2_t iscale);
     quadratic optimization (see below). */
 
 void float_image_align_single_scale_enum
-  ( int ni,                           /* Number of objects to align. */
+  ( int32_t ni,                           /* Number of objects to align. */
     i2_t iscale,                      /* Object scaling exponent along each axis. */  
     float_image_align_mismatch_t *f2, /* Function that evaluates the mismatch between the objects. */
     r2_t arad[],                      /* Max alignment adjustment for each object. */
@@ -100,7 +101,7 @@ void float_image_align_single_scale_enum
     The value of {f2(ni,iscale,p)} is returned on {*f2p}. */
 
 void float_image_align_single_scale_quadopt
-  ( int ni,                   /* Number of objects to align. */
+  ( int32_t ni,                   /* Number of objects to align. */
     i2_t iscale,              /* Object scaling exponent along each axis. */  
     float_image_align_mismatch_t *f2,  /* Function that evaluates the mismatch between the objects. */
     r2_t arad[],              /* Max alignment adjustment for each object. */
@@ -124,7 +125,7 @@ void float_image_align_single_scale_quadopt
     within that region. */
 
 void float_image_align_multi_scale
-  ( int ni,                           /* Number of objects to align. */
+  ( int32_t ni,                           /* Number of objects to align. */
     float_image_align_mismatch_t *f2, /* Function that evaluates the mismatch between the objects. */
     bool_t quadopt,                   /* Use quadratic optimization? */
     r2_t arad[],                      /* Max alignment adjustment for each object. */
@@ -155,7 +156,7 @@ void float_image_align_multi_scale
     {float_image_align_single_scale_quadopt}, accordng to the parameter
     {quadopt}. */
 
-double float_image_align_rel_disp_sqr(int ni, r2_t p[], r2_t q[], r2_t arad[]);
+double float_image_align_rel_disp_sqr(int32_t ni, r2_t p[], r2_t q[], r2_t arad[]);
   /* Computes the total squared displacement between {p[0..ni-1]} and 
     {q[0..ni-1]} relative to the radius {arad[i]}, that is,
     

@@ -1,8 +1,9 @@
 /* See epswr_iso.h */
-/* Last edited on 2009-08-30 16:11:12 by stolfi */
+/* Last edited on 2022-10-20 06:50:40 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
+#include <stdint.h>
 /* #include <stdio.h> */
 /* #include <stdlib.h> */
 /* #include <limits.h> */
@@ -35,7 +36,7 @@ static bool_t epswr_isolines_complained = FALSE;
 #define RESTORE_FPU \
   _FPU_SETCW(cw)
 
-double epswr_level(double vStart, double vStep, int k)
+double epswr_level(double vStart, double vStep, int32_t k)
   { /* Will those #@!$ hackers keep their pizza-stained hands off this code? */
     /* I said DOUBLE, not EXTENDED, dammit!!!! */ 
     DOUBLE_PREC;
@@ -44,11 +45,11 @@ double epswr_level(double vStart, double vStep, int k)
     return z;
   }
 
-int epswr_inf_isoline(double vStart, double vStep, double z)
+int32_t epswr_inf_isoline(double vStart, double vStep, double z)
   { 
     affirm(vStep > 0.0, "bad vStep"); 
     DOUBLE_PREC;
-    int k = (int)floor((z - vStart)/vStep);
+    int32_t k = (int32_t)floor((z - vStart)/vStep);
     /* Correct possible roundoff errors: */
     double fk = epswr_level(vStart, vStep, k), fm;
     while ((z < fk) && (fk > (fm = epswr_level(vStart, vStep, k-1)))) 
@@ -59,11 +60,11 @@ int epswr_inf_isoline(double vStart, double vStep, double z)
     return k;
   }
   
-int epswr_sup_isoline(double vStart, double vStep, double z)
+int32_t epswr_sup_isoline(double vStart, double vStep, double z)
   { 
     affirm(vStep > 0.0, "bad vStep"); 
     DOUBLE_PREC;
-    int k = (int)ceil((z - vStart)/vStep);
+    int32_t k = (int32_t)ceil((z - vStart)/vStep);
     /* Correct possible roundoff errors: */
     double fk = epswr_level(vStart, vStep, k), fm;
     while ((z > fk) && (fk < (fm = epswr_level(vStart, vStep, k+1)))) 
@@ -83,8 +84,8 @@ void epswr_isolines_in_triangle
     double xc, double yc, double fc,
     double vStart,  /* Synchronize levels with this value. */
     double vStep,   /* Spacing between levels. */
-    int kMin,       /* Minimum isoline index. */
-    int kMax        /* Maximum isoline index. */
+    int32_t kMin,       /* Minimum isoline index. */
+    int32_t kMax        /* Maximum isoline index. */
   )
   { if (kMin > kMax) { return; }
 
@@ -97,25 +98,25 @@ void epswr_isolines_in_triangle
     /* Find indices of isolines that intercept the triangle: */
     /* Round values slightly outwards so that we don't lose isolines. */
     double eps = 1.0e-13 * fmin(vStep, fabs(fMax - fMin));
-    int iMin = epswr_sup_isoline(vStart, vStep, fMin - eps);
+    int32_t iMin = epswr_sup_isoline(vStart, vStep, fMin - eps);
     if (iMin > kMax) { return; }
     if (iMin < kMin) { iMin = kMin; }
     
-    int iMax = epswr_inf_isoline(vStart, vStep, fMax + eps);
+    int32_t iMax = epswr_inf_isoline(vStart, vStep, fMax + eps);
     if (iMax < kMin) { return; }
     if (iMax > kMax) { iMax = kMax; }
 
     if (iMin > iMax) { return; }
          
     /* Sanity check to avoid excessive plotting: */
-    int nIsolines = iMax - iMin + 1;
+    int32_t nIsolines = iMax - iMin + 1;
     if (nIsolines > MaxIsolinesInTriangle)
       { if (! epswr_isolines_complained) 
           { fprintf(stderr, "** too many isolines in triangle");
             fprintf(stderr, " fMin = %g  fMax = %g", fMin, fMax);
             epswr_isolines_complained = TRUE;
           }
-        int excess = MaxIsolinesInTriangle - nIsolines;
+        int32_t excess = MaxIsolinesInTriangle - nIsolines;
         iMin = iMin + excess/2;
         iMax = iMin + MaxIsolinesInTriangle - 1;
         affirm((iMin >= kMin) && (iMax <= kMax), "isoline bug");
@@ -128,7 +129,7 @@ void epswr_isolines_in_triangle
     epswr_sort_triangle(&xa, &ya, &fa,  &xb, &yb, &fb,  &xc, &yc, &fc);
 
     /* Plot the isolines: */
-    int k;
+    int32_t k;
     for (k = iMin; k <= iMax; k++)
       { double vk = epswr_level(vStart, vStep, k);
         if ((fa == vk) && (fc == vk))
@@ -161,8 +162,8 @@ void epswr_isolines_in_quadrilateral
     double x11, double y11, double f11,
     double vStart,  /* Synchronize levels with this value. */
     double vStep,   /* Spacing between levels. */
-    int kMin,       /* Minimum isoline index. */
-    int kMax        /* Maximum isoline index. */
+    int32_t kMin,       /* Minimum isoline index. */
+    int32_t kMax        /* Maximum isoline index. */
   )
   { 
     if (kMin > kMax) { return; }
@@ -201,12 +202,12 @@ void epswr_compute_band_indices
   ( double vStart, 
     double vStep, 
     double fMin, 
-    int kMin, 
-    int *iMin, 
+    int32_t kMin, 
+    int32_t *iMin, 
     double *zMin, 
     double fMax, 
-    int kMax, 
-    int *iMax, 
+    int32_t kMax, 
+    int32_t *iMax, 
     double *zMax 
   )
   {
@@ -273,8 +274,8 @@ void epswr_bands_in_triangle
     double xc, double yc, double fc,
     double vStart,  /* Synchronize levels with this value. */
     double vStep,   /* Spacing between levels. */
-    int kMin,       /* Minimum isoline index. */
-    int kMax,       /* Maximum isoline index. */
+    int32_t kMin,       /* Minimum isoline index. */
+    int32_t kMax,       /* Maximum isoline index. */
     double *R, double *G, double *B
   )
   { /* Find function range in triangle: */
@@ -284,7 +285,7 @@ void epswr_bands_in_triangle
     fMax = (fMax > fc ? fMax : fc);
     
     /* Find range {iMin .. iMax} of color band indices: */
-    int iMin, iMax;
+    int32_t iMin, iMax;
     double zMin, zMax;
     epswr_compute_band_indices
       ( vStart, vStep, 
@@ -313,7 +314,7 @@ void epswr_bands_in_triangle
         double xr = xa, yr = ya;  /* Lower point on polyg {a--b--c}. */
         double xs = xa, ys = ya;  /* Lower point on seg {a--c}. */
         bool_t sameLo = TRUE;       /* Do {r} and {s} coincide? */
-        int k;
+        int32_t k;
         for (k = iMin; k <= iMax; k++)
           { double zHi;     /* Value at higher isoline. */
             double xu, yu;  /* Higher point on polyg {a--b--c}. */
@@ -408,8 +409,8 @@ void epswr_bands_in_quadrilateral
     double x11, double y11, double f11,
     double vStart,  /* Synchronize levels with this value. */
     double vStep,   /* Spacing between levels. */
-    int kMin,       /* Minimum isoline index. */
-    int kMax,       /* Maximum isoline index. */
+    int32_t kMin,       /* Minimum isoline index. */
+    int32_t kMax,       /* Maximum isoline index. */
     double *R, double *G, double *B
   )
   { /* Compute coords and estimated value at center of quadrilateral: */

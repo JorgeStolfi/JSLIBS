@@ -1,8 +1,9 @@
 /* See {fine2.h}. */
-/* Last edited on 2011-05-15 01:43:37 by stolfi */
+/* Last edited on 2022-10-20 05:53:42 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <jsfile.h>
@@ -17,14 +18,14 @@
 /* !!! A conversao (f,Tz)<-->(logf,L) deveria estar em tf_camera_opt ou vice-versa !!! */
 
 void tf_calib_refine2_gather_optimization_params
-  ( int nparams,
+  ( int32_t nparams,
     double params[],
     tf_camera_specs_t *cspec,
     tf_calib_data_t * cdat,
     tf_camera_params_t *cpar,
     tf_optimization_choice_t *which ) 
 {
-    int pos_param = 0;
+    int32_t pos_param = 0;
     if (which->R) {
       r3_t R;
       tf_camera_matrix_to_euler_angles(&(cpar->S), &R);
@@ -67,14 +68,14 @@ void tf_calib_refine2_gather_optimization_params
 }
 
 void tf_calib_refine2_scatter_optimization_params
-  ( int nparams,
+  ( int32_t nparams,
     double params[],
     tf_camera_specs_t *cspec,
     tf_calib_data_t * cdat,
     tf_camera_params_t *cpar,
     tf_optimization_choice_t *which ) 
 { 
-  int pos_param = 0;
+  int32_t pos_param = 0;
   if (which->R) {
     r3_t R;
     R.c[0] = params[pos_param++];
@@ -125,7 +126,7 @@ double tf_calib_refine2_calc_zc_star
     tf_camera_params_t *cpar ) 
 {
 
-    int i;
+    int32_t i;
     double sum_mean = 0.0, sum_std = 0.0, sum_w = 0.0;
 
     double *z_v = (double *)malloc(cdat->np*sizeof(double));
@@ -158,7 +159,7 @@ double tf_calib_refine2_calc_Tz
     tf_calib_data_t * cdat,
     tf_camera_params_t *cpar ) 
 {
-    int i;
+    int32_t i;
     double sum_mean = 0.0, sum_std = 0.0, sum_w = 0.0;
     double *dzc = (double *)malloc(cdat->np*sizeof(double));
 

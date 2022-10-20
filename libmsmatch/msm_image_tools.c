@@ -1,5 +1,5 @@
 /* See {msm_image_tools.h} */
-/* Last edited on 2013-10-22 03:51:55 by stolfilocal */
+/* Last edited on 2022-10-20 06:38:32 by stolfi */
 
 #define msm_image_tools_C_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
@@ -36,8 +36,8 @@ void msm_image_seq_seq_score_write_named
     char *name, 
     char *tag
   )
-  { int n0 = seq0->size;
-    int n1 = seq1->size;
+  { int32_t n0 = seq0->size;
+    int32_t n1 = seq1->size;
     msm_image_t *gim = msm_image_alloc(1, n0, n1, TRUE);
     fprintf(stderr, "  image size = %d × %d  scale factor = %d\n", n0, n1, gim->scale);
     /* Paint the sample-to-sample distances: */
@@ -64,10 +64,10 @@ void msm_image_seq_seq_score_write_named
 
 void msm_image_cand_write_named(msm_cand_t *cd, float v, char *name, char *tag)
   { /* Get sequence sizes {n0,n1}: */
-    int n0 = cd->seq[0].size;
-    int n1 = cd->seq[1].size;
+    int32_t n0 = cd->seq[0].size;
+    int32_t n1 = cd->seq[1].size;
     /* Choose the unscaled image size {nv0,nv1 = n0,n1}, for folded plot: */
-    int nv0 = n0, nv1 = n1;
+    int32_t nv0 = n0, nv1 = n1;
     /* Allocate the virtual image {img}: */
     msm_image_t *img = msm_image_alloc(1, nv0, nv1, TRUE);
     /* Fill the image with "no value": */
@@ -89,10 +89,10 @@ void msm_image_cand_vec_write_named
     char *tag
   )
   { /* Get sequence sizes {n0,n1}: */
-    int n0 = seq0->size;
-    int n1 = seq1->size;
+    int32_t n0 = seq0->size;
+    int32_t n1 = seq1->size;
     /* Choose the unscaled image size {nv0,nv1 = n0,n1}: */
-    int nv0 = n0, nv1 = n1;
+    int32_t nv0 = n0, nv1 = n1;
     /* Allocate the virtual image {img}: */
     msm_image_t *img = msm_image_alloc(1, nv0, nv1, scale);
     /* Paint candidates: */
@@ -104,8 +104,8 @@ void msm_image_cand_vec_write_named
   }
 
 void msm_image_dyn_tableau_write_named
-  ( int n0,                /* Length of first sequence. */
-    int n1,                /* Length of second sequence. */
+  ( int32_t n0,                /* Length of first sequence. */
+    int32_t n1,                /* Length of second sequence. */
     msm_dyn_tableau_t *tb, /* Tableau to plot. */
     msm_rung_t gopt,       /* Optimal end-rung or {msm_rung_none} */
     bool_t scale,          /* TRUE to adjust the scale to avoid large images. */   
@@ -114,15 +114,15 @@ void msm_image_dyn_tableau_write_named
     char *tag              /* Tag for file name. */
   )
   { /* Find out the X and Y ranges covered by {tb}: */
-    int i0Min, i0Max;  /* Min and max X in {tb}. */
-    int i1Min, i1Max;  /* Min and max Y in {tb}. */
+    int32_t i0Min, i0Max;  /* Min and max X in {tb}. */
+    int32_t i1Min, i1Max;  /* Min and max Y in {tb}. */
     msm_dyn_tableau_get_i0_i1_ranges(tb, &i0Min, &i0Max, &i1Min, &i1Max);
     fprintf(stderr, "plotting tableau\n");
     fprintf(stderr, "  coordinate ranges");
     fprintf(stderr, "[%4d .. %4d]×[%4d .. %4d]\n", i0Min, i0Max, i1Min, i1Max);
     /* Choose the unscaled image size {nv0,nv1 = n0,n1}, for UNfolded plot: */
-    int nv0 = i0Max - i0Min + 1;
-    int nv1 = i1Max - i1Min + 1;
+    int32_t nv0 = i0Max - i0Min + 1;
+    int32_t nv1 = i1Max - i1Min + 1;
     /* Allocate a virtual greyscale image {gim}: */
     msm_image_t *gim = msm_image_alloc(1, nv0, nv1, scale);
     /* Initialize the image with {-INF}: */

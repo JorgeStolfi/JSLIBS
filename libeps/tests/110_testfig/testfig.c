@@ -3,13 +3,14 @@
 #define PROG_VERS "1.0"
 
 /* Created by J. Stolfi, UNICAMP sometime before 2003-10-11. */
-/* Last edited on 2020-10-27 19:20:57 by jstolfi */
+/* Last edited on 2022-10-20 06:52:03 by stolfi */
 
 #define testfig_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -19,11 +20,11 @@
 #include <epswr.h>
 #include <epswr_dev.h>
 
-int main (int argc, char **argv);
+int32_t main (int32_t argc, char **argv);
 
 void DoTests(void);
 
-void DrawPictures(epswr_figure_t *epsf, double lightDir, int nh, int nv);
+void DrawPictures(epswr_figure_t *epsf, double lightDir, int32_t nh, int32_t nv);
   /* The {lightDir} is the elevation of the light source: 0.0 for equatorial, 1.0 for polar. */
 
 void DrawPicture(epswr_figure_t *epsf, double cubeRot, double lightDir);
@@ -31,13 +32,13 @@ void DrawPicture(epswr_figure_t *epsf, double cubeRot, double lightDir);
 
 void DrawCubeFace
   ( epswr_figure_t *epsf, 
-    int ax, int bx, int cx, /* The normal axis and two parallel axes. */
-    int fc,                 /* Coordinate along axis {ax} ({+1} or {-1}). */
+    int32_t ax, int32_t bx, int32_t cx, /* The normal axis and two parallel axes. */
+    int32_t fc,                 /* Coordinate along axis {ax} ({+1} or {-1}). */
     double ct, double st,   /* Cosine and sine of rotation angle. */
     double cs, double ss    /* Cosine and sine of light source elevation. */
   );
   
-void TestWindowOps(epswr_figure_t *epsf, int kk);
+void TestWindowOps(epswr_figure_t *epsf, int32_t kk);
   /* Tries to redefine the current window to the same Client and Device
     rectangle, using various windowing ops depending on {kk} */
 
@@ -60,7 +61,7 @@ void CheckValue(char *fname, char coord, char* side, double v0, double v1);
     
 /* IMPLEMENTATIONS */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   { DoTests();
     return 0;
   }
@@ -68,8 +69,8 @@ int main (int argc, char **argv)
 void DoTests(void)
   { 
     /* Subfigure dimensions: */
-    int nh = 5; double hFigSize = 180.0;
-    int nv = 4; double vFigSize = 160.0;
+    int32_t nh = 5; double hFigSize = 180.0;
+    int32_t nv = 4; double vFigSize = 160.0;
     
     double hPlotSize = nh * hFigSize;
     double vPlotSize = nv * vFigSize;
@@ -79,8 +80,8 @@ void DoTests(void)
     double topMargin = 12.0;
     bool_t verbose = TRUE;
 
-    int nFig = 2;
-    for (int iFig = 0; iFig < nFig; iFig++)
+    int32_t nFig = 2;
+    for (int32_t iFig = 0; iFig < nFig; iFig++)
       { 
         /* Create the figure file: */
         char *fileName = NULL;
@@ -102,14 +103,14 @@ void DoTests(void)
      }
   }
       
-void DrawPictures(epswr_figure_t *epsf, double lightDir, int nh, int nv)
+void DrawPictures(epswr_figure_t *epsf, double lightDir, int32_t nh, int32_t nv)
   { 
     double hMin, hMax, vMin, vMax;
     epswr_get_device_window(epsf, &hMin, &hMax, &vMin, &vMax);
-    int nSub = nh * nv;
-    int iSub = 0;
-    for (int iv = nv-1; iv >= 0; iv--)
-      { for (int ih = 0; ih < nh; ih++)
+    int32_t nSub = nh * nv;
+    int32_t iSub = 0;
+    for (int32_t iv = nv-1; iv >= 0; iv--)
+      { for (int32_t ih = 0; ih < nh; ih++)
           { /* Leave the bottom row incomplete: */
             if ((iv == 0) && (ih == (nh + 1)/2)) { return; }
             /* Set the plot window to the desired subfigure: */
@@ -127,7 +128,7 @@ void DrawPictures(epswr_figure_t *epsf, double lightDir, int nh, int nv)
       }
   }
   
-void TestWindowOps(epswr_figure_t *epsf, int kk)
+void TestWindowOps(epswr_figure_t *epsf, int32_t kk)
   { 
     /* Save current Device and Client windows: */
     double hMin0, hMax0, vMin0, vMax0;
@@ -138,8 +139,8 @@ void TestWindowOps(epswr_figure_t *epsf, int kk)
     /* Change the windows in various ways: */
     double xMin1, xMax1, yMin1, yMax1;
     double hMin1, hMax1, vMin1, vMax1;
-    int mod = 7;
-    int kkm = (kk %mod); 
+    int32_t mod = 7;
+    int32_t kkm = (kk %mod); 
     if (kkm == 0)
       { /* Test {epswr_shrink_device_window}: */
         char *fname = "epswr_shrink_device_window";
@@ -301,17 +302,17 @@ void DrawPicture(epswr_figure_t *epsf, double lightDir, double cubeRot)
     epswr_set_client_window(epsf, -R, +R, -R, +R);
     
     /* Enumerate the eight faces of the cube: */
-    for (int ax = 0; ax < 3; ax++)
-      { int bx = (ax + 1) % 3, cx = (ax + 2) % 3;
-        for (int fc = -1; fc <= +1; fc += 2)
+    for (int32_t ax = 0; ax < 3; ax++)
+      { int32_t bx = (ax + 1) % 3, cx = (ax + 2) % 3;
+        for (int32_t fc = -1; fc <= +1; fc += 2)
           { DrawCubeFace(epsf, ax, bx, cx, fc, ct, st, cs, ss); }
       }
   }
             
 void DrawCubeFace
   ( epswr_figure_t *epsf, 
-    int ax, int bx, int cx, /* The normal axis and two parallel axes. */
-    int fc,                 /* Coordinate along axis {ax} ({+1} or {-1}). */
+    int32_t ax, int32_t bx, int32_t cx, /* The normal axis and two parallel axes. */
+    int32_t fc,                 /* Coordinate along axis {ax} ({+1} or {-1}). */
     double ct, double st,   /* Cosine and sine of rotation angle. */
     double cs, double ss    /* Cosine and sine of light source elevation. */
   )
@@ -321,14 +322,14 @@ void DrawCubeFace
     
     void norm(double u[])
       { double s2 = 0.0;
-        for (int k = 0; k < 3; k++) { s2 += u[k]*u[k]; }
+        for (int32_t k = 0; k < 3; k++) { s2 += u[k]*u[k]; }
         double m = sqrt(s2);
-        for (int k = 0; k < 3; k++) { u[k] /= m; }
+        for (int32_t k = 0; k < 3; k++) { u[k] /= m; }
       }
   
     double dot(double u[], double v[])
       { double s = 0.0;
-        for (int k = 0; k < 3; k++) { s += u[k]*v[k]; }
+        for (int32_t k = 0; k < 3; k++) { s += u[k]*v[k]; }
         return s;
       }
   
@@ -343,27 +344,27 @@ void DrawCubeFace
     double xp[4], yp[4];  /* Plot coordinates of vertices. */
     
     /* Clear face normal: */
-    for (int ar = 0; ar < 3; ar++) { fn[ar] = 0.0; }
+    for (int32_t ar = 0; ar < 3; ar++) { fn[ar] = 0.0; }
     
     /* Enumerate vertices of face {v[ax] == fc} in cyclic order, compute face normal: */
     double v[3];
-    int r = 0;
-    for (int j = -1; j <= +1; j += 2)
-      { for (int k = -1; k <= +1; k += 2)
+    int32_t r = 0;
+    for (int32_t j = -1; j <= +1; j += 2)
+      { for (int32_t k = -1; k <= +1; k += 2)
           { v[ax] = fc;
             v[bx] = j;
             v[cx] = k*j; /* Hack to get the right order. */
             
             /* Rotate point {v} by angle {arg(ct,st)} around all axes: */
-            for (int ar = 0; ar < 3; ar++)
-              { int br = (ar + 1) % 3, cr = (ar + 2) % 3;
+            for (int32_t ar = 0; ar < 3; ar++)
+              { int32_t br = (ar + 1) % 3, cr = (ar + 2) % 3;
                 double xt =  ct*v[br] + st*v[cr];
                 double yt = -st*v[br] + ct*v[cr];
                 v[br] = xt; v[cr] = yt;
               }
             
             /* Accumulate into face normal: */
-            for (int ar = 0; ar < 3; ar++) { fn[ar] += v[ar]; }
+            for (int32_t ar = 0; ar < 3; ar++) { fn[ar] += v[ar]; }
             
             /* Project and store in {xp[r],yp[r]}: */
             

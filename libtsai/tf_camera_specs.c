@@ -1,8 +1,9 @@
 /* See {tf_camera_specs.h}. */
-/* Last edited on 2011-05-17 02:56:00 by stolfi */
+/* Last edited on 2022-10-20 05:52:13 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -58,7 +59,7 @@ void tf_camera_specs_print (FILE *wr, tf_camera_specs_t *cspec)
     fprintf(wr, "// sx =     [ %.6f _ %.6f ]\n", LO(cspec->sx), HI(cspec->sx));
     fprintf(wr, "// f =      [ %17.15f _ %17.15f ]\n", LO(cspec->f), HI(cspec->f));
     fprintf(wr, "// kappa =  [ %+17.15f _ %+17.15f ]\n", LO(cspec->kappa), HI(cspec->kappa));
-    int i;
+    int32_t i;
     for (i = 0; i < 3; i++) {
       fprintf(wr, "// v_w[%d] = [ %+10.3f _ %+10.3f ]\n", i, LO(cspec->v_w[i]), HI(cspec->v_w[i]));
     }
@@ -323,7 +324,7 @@ void tf_camera_specs_get_mean_params(tf_camera_specs_t *cspec, tf_camera_params_
     }
   }
 
-interval_t tf_camera_specs_get_param_range (tf_camera_specs_t *cspec, int iparam, double vref)
+interval_t tf_camera_specs_get_param_range (tf_camera_specs_t *cspec, int32_t iparam, double vref)
   {
     switch (iparam) {
     case 0:
@@ -362,7 +363,7 @@ interval_t tf_camera_specs_get_param_range (tf_camera_specs_t *cspec, int iparam
     }
   }
 
-void tf_camera_specs_set_param_range (tf_camera_specs_t *cspec, int iparam, interval_t *range)
+void tf_camera_specs_set_param_range (tf_camera_specs_t *cspec, int32_t iparam, interval_t *range)
   {
     switch (iparam) {
     case 0:

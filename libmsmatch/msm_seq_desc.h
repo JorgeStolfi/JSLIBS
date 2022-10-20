@@ -2,7 +2,7 @@
 #define msm_seq_desc_H
 
 /* Abstract sequence descriptors. */
-/* Last edited on 2017-04-28 16:56:15 by stolfilocal */
+/* Last edited on 2022-10-20 06:36:46 by stolfi */
 
 #define msm_seq_H_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)"
@@ -35,7 +35,7 @@
   assuming that it is a simple affine map. (If the correspondence is not
   an affine map, it must be represented in some other way). */
 
-typedef int msm_seq_id_t; 
+typedef int32_t msm_seq_id_t; 
   /* A {msm_seq_id_t} is an internal identifier for an original
     data sequence, e.g. an index into a table of biosequences. */
 
@@ -155,7 +155,7 @@ msm_seq_desc_t msm_seq_desc_resample(msm_seq_desc_t *s, int8_t ek);
     ones of {s}. That is, {t.size} will be {(s.size - 1)*m + 1}, and
     {t.skip} will be {s.skip*m}. */ 
 
-msm_seq_desc_t msm_seq_desc_filter(msm_seq_desc_t *sd, int nw, int8_t ek);
+msm_seq_desc_t msm_seq_desc_filter(msm_seq_desc_t *sd, int32_t nw, int8_t ek);
   /* Returns an abstract sequence descriptor for the result of
     filtering an abstract sequence with descriptor
     {sd}, with a filter whose table has {nw} entries, and resampling the result
@@ -216,9 +216,9 @@ void msm_seq_desc_write
   ( FILE *wr, 
     char *pre, 
     msm_seq_desc_t *s, 
-    int idSize, 
-    int nameSize, 
-    int indexSize,
+    int32_t idSize, 
+    int32_t nameSize, 
+    int32_t indexSize,
     char *suf
   );
   /* Writes to {wr} the sequence descriptor {s}, in a format

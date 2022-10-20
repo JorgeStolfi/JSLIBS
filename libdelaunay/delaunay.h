@@ -20,6 +20,7 @@
 */
 
 #include <quad.h>
+#include <stdint.h>
 #include <bool.h>
 #include <sign.h>
 #include <i3.h>

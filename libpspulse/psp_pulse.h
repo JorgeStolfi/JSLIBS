@@ -5,6 +5,7 @@
 #define psp_pulse_H
 
 #include <psp_basic.h>
+#include <stdint.h>
 #include <psp_grid.h>
 
 /*

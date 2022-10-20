@@ -1,10 +1,11 @@
 /* See {msm_basic.h} */
-/* Last edited on 2013-10-22 01:52:10 by stolfilocal */
+/* Last edited on 2022-10-20 06:41:43 by stolfi */
 
 #define msm_basic_C_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)"
 
 #include <msm_basic.h>
+#include <stdint.h>
 
 #include <bool.h>
 #include <sign.h>
@@ -19,22 +20,22 @@
 void msm_check_malloc(char *tag)
   { 
     fprintf(stderr, "[%s]", tag);
-    int N = 10; 
+    int32_t N = 10; 
     char *p[N];
-    int k;
+    int32_t k;
     for (k = 0; k < N; k++) { p[k] = malloc(2000*(k+1)); }
     for (k = 0; k < N; k++) { free(p[k]); }
     for (k = 0; k < N; k++) { p[k] = malloc(2000*(k+1)); }
     for (k = 0; k < N; k++) { free(p[k]); }
   }
 
-int msm_choose(int lo, int hi, double dProb)
-  { int n = hi - lo;
+int32_t msm_choose(int32_t lo, int32_t hi, double dProb)
+  { int32_t n = hi - lo;
     /* Slow and stupid solution: we simulate a random walk on the
       discrete grid {{lo..hi}×{lo..hi}}, from the {(lo,lo)} corner to a
       diagonal goal line {(hi-k,lo+k)}. The Y position is the
       answer. */
-    int x = 0, y = 0; /* Displacements from the lower corner: */
+    int32_t x = 0, y = 0; /* Displacements from the lower corner: */
     while (x + y < n)
       { double toss = drandom();
         if ((toss -= dProb/2) < 0)

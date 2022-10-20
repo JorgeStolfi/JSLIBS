@@ -1,5 +1,5 @@
 /* See {test_voxm_tubes.h} */
-/* Last edited on 2021-06-22 13:47:52 by jstolfi */
+/* Last edited on 2022-10-20 05:47:21 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -24,7 +24,7 @@
 
 void test_voxm_tubes(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
   { 
-    int NT = 3; /* Number of independent tests. */
+    int32_t NT = 3; /* Number of independent tests. */
     
     /* Which tubes to splat: */
     bool_t doit[NT];
@@ -33,8 +33,8 @@ void test_voxm_tubes(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
     doit[2] =  TRUE; /* {test_voxm_tubes_bezier}. */
     
     /* Divide box into equal sub_boxes: */
-    int k; 
-    int NB = 0; /* Number of active tests: */
+    int32_t k; 
+    int32_t NB = 0; /* Number of active tests: */
     for (k = 0; k < NT; k++) { if (doit[k]) { NB++; } } 
     r3_t rsu = (*rad); rsu.c[0] /= NB;  /* Half-size of each sub-box. */
     r3_t csu; r3_sub(ctr, rad, &csu); r3_add(&csu, &rsu, &csu);  /* Center of next sub-box. */
@@ -64,7 +64,7 @@ void test_voxm_tubes_helix(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
 
-    int N = 3; /* Number of tubes. */
+    int32_t N = 3; /* Number of tubes. */
     r3_motion_state_t S[N]; /* Placement states of tubes. */
     double t0[N]; /* Start time. */
     double t1[N]; /* End time. */
@@ -73,7 +73,7 @@ void test_voxm_tubes_helix(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
     double hht[N]; /* Representative advances. */
     
     /* Define the end states assuming that the domain has radius 1 and center at {(0,0,0)}: */
-    int k;
+    int32_t k;
     for (k = 0; k < N; k++)
       { double pY = 2*(k + 0.5)/N - 1.0;
         double pZ = -0.50;
@@ -81,7 +81,7 @@ void test_voxm_tubes_helix(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
         r3x3_ident(&(S[k].M));
       }
     /* Tilt the middle spiral: */
-    int j;
+    int32_t j;
     double ca = cos(M_PI/6);
     double sa = sin(M_PI/6);
     for (j = 0; j < 3; j++)
@@ -109,7 +109,7 @@ void test_voxm_tubes_helix(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
     t0[2] = 00.000; t1[2] = +1.000; len[2] = 1.50*hrad*M_PI; ang[2] = 2*M_PI; hht[2] = 0.25*hrad+ 2*otR;
 
     /* Splat the tubes, then clear the bores: */
-    int isub;
+    int32_t isub;
     for (isub = 0; isub < 2; isub++)
       { bool_t sub = (isub == 1); /* FALSE to splat the tubes, TRUE to clear the hole. */
         for (k = 0; k < N; k++)
@@ -134,7 +134,7 @@ void test_voxm_tubes_segment(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
 
-    int N = 4; /* Number of tubes. */
+    int32_t N = 4; /* Number of tubes. */
     r3_path_state_t S[N], T[N]; /* Initial and final states of tubes. */
     
     /* Define the end states assuming that the domain has radius 1 and center at {(0,0,0)}: */
@@ -165,7 +165,7 @@ void test_voxm_tubes_segment(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
     double trad = fmin(rad->c[0], fmin(rad->c[1], rad->c[2]));  /* Half-side of inscribed cube. */
     double scale = trad - otR;
     r3_t shift = (*ctr); /* shift.c[0] += 00.00*trad; */
-    int k;
+    int32_t k;
     for (k = 0; k < N; k++)
       { S[k].t = 0.00;
         test_voxm_rescale_r3_path_state(&(S[k]), scale, &shift);
@@ -174,7 +174,7 @@ void test_voxm_tubes_segment(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
       }
     
     /* Splat the tubes, then clear the bores: */
-    int isub;
+    int32_t isub;
     for (isub = 0; isub < 2; isub++)
       { bool_t sub = (isub == 1); /* FALSE to splat the tubes, TRUE to clear the hole. */
         for (k = 0; k < N; k++)
@@ -191,7 +191,7 @@ void test_voxm_tubes_bezier(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
   { 
     fprintf(stderr, "enter %s\n", __FUNCTION__);
     
-    int N = 3; /* Number of tubes. */
+    int32_t N = 3; /* Number of tubes. */
     r3_t p0[N], p1[N], p2[N], p3[N]; /* Bezier controlpoints of segments. */
     
     /* Define the end states assuming that the domain has radius 1 and center at {(0,0,0)}: */
@@ -218,7 +218,7 @@ void test_voxm_tubes_bezier(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
     double trad = fmin(rad->c[0], fmin(rad->c[1], rad->c[2]));  /* Half-side of inscribed cube. */
     double scale = trad - otR;
     r3_t shift = (*ctr);
-    int k;
+    int32_t k;
     for (k = 0; k < N; k++)
       { test_voxm_rescale_r3(&(p0[k]), scale, &shift);
         test_voxm_rescale_r3(&(p1[k]), scale, &shift);
@@ -227,7 +227,7 @@ void test_voxm_tubes_bezier(ppv_array_t *A, r3_t *ctr, r3_t *rad, double fuzzR)
       }
 
     /* Splat the tubes, then clear the bores: */
-    int isub;
+    int32_t isub;
     for (isub = 0; isub < 2; isub++)
       { bool_t sub = (isub == 1); /* FALSE to splat the tubes, TRUE to clear the hole. */
         for (k = 0; k < N; k++)

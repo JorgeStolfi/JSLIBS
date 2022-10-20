@@ -1,10 +1,11 @@
 /* Smooth shading of triangles. */
-/* Last edited on 2009-08-25 23:27:36 by stolfi */
+/* Last edited on 2022-10-20 06:54:27 by stolfi */
 
 #ifndef epswr_shade_tri_H
 #define epswr_shade_tri_H
 
 #include <stdio.h>
+#include <stdint.h>
 #include <epswr.h>
 
 void epswr_shade_triangle
@@ -12,7 +13,7 @@ void epswr_shade_triangle
     double xa, double ya, double Ra, double Ga, double Ba,
     double xb, double yb, double Rb, double Gb, double Bb,
     double xc, double yc, double Rc, double Gc, double Bc,
-    int ns         /* Number of subdivisions. */
+    int32_t ns         /* Number of subdivisions. */
   );
   /* Fills a triangle, given the corner coordinates
     {(xa,ya),(xb,yb),(xc,yc)} and the respective colors

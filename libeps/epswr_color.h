@@ -1,18 +1,20 @@
 /* Useful color operations for Postscript plotting. */
-/* Last edited on 2009-08-25 23:23:23 by stolfi */
+/* Last edited on 2022-10-20 07:38:22 by stolfi */
 
 #ifndef epswr_color_H
 #define epswr_color_H
 
+#include <stdint.h>
+
 void epswr_make_color_table
   ( double vStart,
     double vStep,
-    int kMin,
-    int kMax, 
+    int32_t kMin,
+    int32_t kMax, 
     double RMin, double GMin, double BMin,
     double RZer, double GZer, double BZer,
     double RMax, double GMax, double BMax,
-    int *NP, 
+    int32_t *NP, 
     double **RP, 
     double **GP,
     double **BP

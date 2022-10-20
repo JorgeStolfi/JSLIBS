@@ -1,11 +1,12 @@
 /* Tsai's algorithm for guessing the initial camera calibration. */
-/* Last edited on 2011-05-17 02:01:17 by stolfi */
+/* Last edited on 2022-10-20 05:54:32 by stolfi */
 
 #ifndef tf_calib_guess1_H
 #define tf_calib_guess1_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <r3.h> 
 #include <r2.h> 
@@ -49,12 +50,12 @@ void tf_calib_guess1_initial_camera_parameters
 /* AUXILIARY CALIBRATION DATA STRUCTURE */
 
 typedef struct _calibration_aux_data_t {
-    int    nmarks;           /* number of marks */
+    int32_t    nmarks;           /* number of marks */
     r2_t   *distorted_coords;  /* computed image coordinates of each mark [mm] */
     double *r_squared;         /* squared distance from image center to each mark [mm] */
 } *calibration_aux_data_t;
 
-calibration_aux_data_t tf_calib_guess1_create_auxiliary_calibration_aux_data_structure (int nmarks);
+calibration_aux_data_t tf_calib_guess1_create_auxiliary_calibration_aux_data_structure (int32_t nmarks);
 
 void tf_calib_guess1_free_auxiliary_calibration_aux_data_structure (calibration_aux_data_t caux);
 

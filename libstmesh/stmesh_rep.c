@@ -1,5 +1,5 @@
 /* Functions of {stmesh.h} that depend on the representation. See {stmesh_rep.h} */
-/* Last edited on 2016-04-21 18:44:11 by stolfilocal */
+/* Last edited on 2022-10-20 06:02:40 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -20,12 +20,12 @@
 /* IMPLEMENTATIONS */
 
 #define EDGE_NAT(e) ( (stmesh_edge_t)( ((uint64_t)(e)) & (~1LU) ) )
-#define EDGE_D(e) ( (int)( ((uint64_t)(e)) & 1LU ) )
+#define EDGE_D(e) ( (int32_t)( ((uint64_t)(e)) & 1LU ) )
 #define EDGE_REV(e) ( (stmesh_edge_t)( ((uint64_t)(e)) ^ 1LU ) )
         
 #define FACE_NAT(f) ( (stmesh_face_t)( ((uint64_t)(f)) & (~7LU) ) )
-#define FACE_D(f) ( (int)( ((uint64_t)(f)) & 1LU ) )
-#define FACE_K(f) ( (int)( ( ((uint64_t)(f)) & 6LU ) >> 1 ) )
+#define FACE_D(f) ( (int32_t)( ((uint64_t)(f)) & 1LU ) )
+#define FACE_K(f) ( (int32_t)( ( ((uint64_t)(f)) & 6LU ) >> 1 ) )
 #define FACE_FLIP(f) ( (stmesh_face_t)( ((uint64_t)(f)) ^ 1LU ) )
 
 uint32_t stmesh_vert_count(stmesh_t mesh) 
@@ -43,7 +43,7 @@ float stmesh_get_eps(stmesh_t mesh)
 i3_t stmesh_vert_get_pos(stmesh_vert_t v)
   { return v->pos; }
 
-stmesh_edge_t stmesh_edge_reverse(stmesh_edge_t e, int k)
+stmesh_edge_t stmesh_edge_reverse(stmesh_edge_t e, int32_t k)
   { if ((k & 1) == 1)
       { return EDGE_REV(e); }
     else
@@ -55,17 +55,17 @@ stmesh_edge_t stmesh_edge_natural(stmesh_edge_t e)
     return EDGE_NAT(e);
   }
 
-stmesh_face_t stmesh_face_flip(stmesh_face_t f, int k)
+stmesh_face_t stmesh_face_flip(stmesh_face_t f, int32_t k)
   { if ((k & 1) == 0)
       { return f; }
     else
       { return FACE_FLIP(f); }
   }
 
-stmesh_face_t stmesh_face_shift(stmesh_face_t f, int k)
+stmesh_face_t stmesh_face_shift(stmesh_face_t f, int32_t k)
   { 
-    int fd = FACE_D(f);
-    int fk = FACE_K(f);
+    int32_t fd = FACE_D(f);
+    int32_t fk = FACE_K(f);
     stmesh_face_t f0 = FACE_NAT(f);
     /* Apply {k} 120 degree rotations in sense {d} to {fk}: */
     k = k % 3;
@@ -87,15 +87,15 @@ uint32_t stmesh_edge_degree(stmesh_edge_t e)
     return e0->degree;
   }
 
-stmesh_vert_t stmesh_edge_get_endpoint(stmesh_edge_t e, int k)
+stmesh_vert_t stmesh_edge_get_endpoint(stmesh_edge_t e, int32_t k)
   { assert((k == 0) || (k == 1));
-    int ed = EDGE_D(e);
+    int32_t ed = EDGE_D(e);
     stmesh_edge_t e0 = EDGE_NAT(e);
     return e0->endv[ed ^ k];
   }
 
 void stmesh_edge_get_endpoints(stmesh_edge_t e, stmesh_vert_t v[])
-  { int ed = EDGE_D(e);
+  { int32_t ed = EDGE_D(e);
     stmesh_edge_t e0 = EDGE_NAT(e);
     v[0] = e0->endv[0 ^ ed];
     v[1] = e0->endv[1 ^ ed];
@@ -117,8 +117,8 @@ void stmesh_face_get_zrange(stmesh_face_t f, int32_t *minZP, int32_t *maxZP)
   }
     
 stmesh_edge_t stmesh_face_get_base(stmesh_face_t f)
-  { int fk = FACE_K(f);
-    int fd = FACE_D(f);
+  { int32_t fk = FACE_K(f);
+    int32_t fd = FACE_D(f);
     stmesh_face_t f0 = FACE_NAT(f);
     stmesh_edge_t e = f0->side[fk];
     assert(e != NULL);
@@ -127,8 +127,8 @@ stmesh_edge_t stmesh_face_get_base(stmesh_face_t f)
   }
 
 void stmesh_face_get_sides(stmesh_face_t f, stmesh_edge_t e[])
-  { int fk = FACE_K(f);
-    int fd = FACE_D(f);
+  { int32_t fk = FACE_K(f);
+    int32_t fd = FACE_D(f);
     stmesh_face_t f0 = FACE_NAT(f);
     if (fd == 0)
       { e[0] = f0->side[fk];
@@ -145,10 +145,10 @@ void stmesh_face_get_sides(stmesh_face_t f, stmesh_edge_t e[])
 void stmesh_face_get_corners(stmesh_face_t f, stmesh_vert_t v[])
   { stmesh_edge_t e[3];
     stmesh_face_get_sides(f, e);
-    int k;
+    int32_t k;
     for (k = 0; k < 3; k++)
       { stmesh_edge_t ek2 = e[(k+2)%3];
-        int d = EDGE_D(ek2);
+        int32_t d = EDGE_D(ek2);
         stmesh_edge_t e0 = EDGE_NAT(ek2);
         v[k] = e0->endv[d];
       }
@@ -242,7 +242,7 @@ stmesh_vert_unx_t stmesh_add_vert(stmesh_t mesh, i3_t *pos)
     v->pos = (*pos);
 
     /* Update the bounding box: */
-    int k;
+    int32_t k;
     for (k = 0; k < 3; k++)
       { int32_t pik = pos->c[k];
         if (pik < mesh->minQ.c[k]) { mesh->minQ.c[k] = pik; }
@@ -267,7 +267,7 @@ stmesh_edge_unx_t stmesh_add_edge(stmesh_t mesh, stmesh_vert_unx_t uxv[])
     mesh->ne++;
 
     /* Set the edge endpoints: */
-    int d;
+    int32_t d;
     for (d = 0; d < 2; d++)
       { assert(uxv[d] < mesh->nv);
         e->endv[d] = &(mesh->v[uxv[d]]);
@@ -297,7 +297,7 @@ stmesh_face_unx_t stmesh_add_face(stmesh_t mesh, stmesh_edge_unx_t uxe[])
 
     /* Get the pointers to the edge records, in their natural orientations, and bump degrees: */
     stmesh_edge_rep_t *e[3];
-    int k;
+    int32_t k;
     for (k = 0; k < 3; k++) 
       { assert(uxe[k] < mesh->ne);
         e[k] = &(mesh->e[uxe[k]]);
@@ -312,7 +312,7 @@ stmesh_face_unx_t stmesh_add_face(stmesh_t mesh, stmesh_edge_unx_t uxe[])
     stmesh_vert_t v1 = e[0]->endv[1];
     
     /* Find {k1} in {1..2} such that {e[k1]} in sense {d1} continues the base edge: */
-    int k1 = -1; int d1 = -1;
+    int32_t k1 = -1; int32_t d1 = -1;
     for (k = 1; k < 3; k++)
       { if (v1 == e[k]->endv[0]) { k1 = k; d1 = 0; break; }
         else if (v1 == e[k]->endv[1]) { k1 = k; d1 = 1; break; }
@@ -322,8 +322,8 @@ stmesh_face_unx_t stmesh_add_face(stmesh_t mesh, stmesh_edge_unx_t uxe[])
     assert(v1 == stmesh_edge_get_endpoint(f->side[1], 0));
 
     /* Find the proper orientation of the other edge: */
-    int k2 = 3 - k1; /* {1-->2, 2-->1}. */
-    int d2 = (v0 == e[k2]->endv[0] ? 1 : 0);
+    int32_t k2 = 3 - k1; /* {1-->2, 2-->1}. */
+    int32_t d2 = (v0 == e[k2]->endv[0] ? 1 : 0);
     f->side[2] = stmesh_edge_reverse(e[k2], d2);
     assert(v0 == stmesh_edge_get_endpoint(f->side[2], 1));
 
@@ -383,7 +383,7 @@ void stmesh_face_print(FILE *wr, stmesh_t mesh, stmesh_face_t f)
     /* Print the sides of {f}: */
     stmesh_edge_t ef[3];
     stmesh_face_get_sides(f, ef);
-    int k;
+    int32_t k;
     for (k = 0; k < 3; k++)
       { fprintf(wr, "  side %d = ", k);
         stmesh_edge_print(wr, mesh, ef[k]);

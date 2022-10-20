@@ -1,11 +1,12 @@
 /* See msm_rung.h */
-/* Last edited on 2018-03-04 22:58:15 by stolfilocal */
+/* Last edited on 2022-10-20 07:58:20 by stolfi */
 
 #define msm_rung_C_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)"
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 
@@ -33,14 +34,14 @@ bool_t msm_rung_is_none(msm_rung_t *g)
   { return ((g->c[0] == msm_rung_none.c[0]) && (g->c[1] == msm_rung_none.c[1])); }
 
 msm_rung_t msm_rung_throw(msm_rung_t glo, msm_rung_t ghi, bool_t diagonal)
-  { int d0 = ghi.c[0] - glo.c[0];
-    int d1 = ghi.c[1] - glo.c[1];
+  { int32_t d0 = ghi.c[0] - glo.c[0];
+    int32_t d1 = ghi.c[1] - glo.c[1];
     msm_rung_t g = glo;
     if (diagonal)
       { /* Pick a point on the diagonal: */
         double r = drandom();
-        g.c[0] += (int)floor(r*(d0 + 1));
-        g.c[1] += (int)floor(r*(d1 + 1));
+        g.c[0] += (int32_t)floor(r*(d0 + 1));
+        g.c[1] += (int32_t)floor(r*(d1 + 1));
       }
     else
       { /* Pick a point anywhere in the rectangle: */
@@ -52,16 +53,16 @@ msm_rung_t msm_rung_throw(msm_rung_t glo, msm_rung_t ghi, bool_t diagonal)
 
 msm_rung_t msm_rung_throw_middle(msm_rung_t glo, msm_rung_t ghi, double skipProb)
   { /* Number of steps on each side: */
-    int D0 = ghi.c[0] - glo.c[0];
-    int D1 = ghi.c[1] - glo.c[1];
+    int32_t D0 = ghi.c[0] - glo.c[0];
+    int32_t D1 = ghi.c[1] - glo.c[1];
     demand(D0 >= 2, "step X displacement is too small");
     demand(D1 >= 2, "step Y displacement is too small");
-    int nsmax = (D0 < D1 ? D0 : D1); /* Max steps from {glo} to {ghi}. */
-    int cs = (nsmax + int32_abrandom(0,1))/2; /* Half the steps, rounded randomly */
+    int32_t nsmax = (D0 < D1 ? D0 : D1); /* Max steps from {glo} to {ghi}. */
+    int32_t cs = (nsmax + int32_abrandom(0,1))/2; /* Half the steps, rounded randomly */
     affirm((cs > 0) && (cs < nsmax), "bug");
     msm_rung_t g = glo;
     if (D0 > D1)
-      { int d1 = msm_choose(1, D1-1, skipProb);
+      { int32_t d1 = msm_choose(1, D1-1, skipProb);
         assert((d1 > 0) && (d1 < D1));
         g.c[1] += d1;
         g.c[0] += 2*cs - d1;
@@ -69,7 +70,7 @@ msm_rung_t msm_rung_throw_middle(msm_rung_t glo, msm_rung_t ghi, double skipProb
         if (g.c[0] >= ghi.c[0]) { g.c[0]--; }
       }
     else
-      { int d0 = msm_choose(1, D0-1, skipProb);
+      { int32_t d0 = msm_choose(1, D0-1, skipProb);
         assert((d0 > 0) && (d0 < D0));
         g.c[0] += d0;
         g.c[1] += 2*cs - d0; 
@@ -86,11 +87,11 @@ msm_rung_t msm_rung_throw_middle(msm_rung_t glo, msm_rung_t ghi, double skipProb
 
 msm_rung_vec_t msm_rung_vec_throw(msm_rung_t gini, msm_rung_t gfin, bool_t atomic, double skipProb)
   { /* Compute increments {D0,D1} in each coordinate: */
-    int D0 = gfin.c[0] - gini.c[0]; /* Increment in X. */
-    int D1 = gfin.c[1] - gini.c[1]; /* Increment in Y. */
+    int32_t D0 = gfin.c[0] - gini.c[0]; /* Increment in X. */
+    int32_t D1 = gfin.c[1] - gini.c[1]; /* Increment in Y. */
     /* Allocate the rung vector: */
     msm_rung_vec_t gv = msm_rung_vec_new(D0 + D1 + 1);
-    int ng = 0;
+    int32_t ng = 0;
     /* Store initial rung: */
     gv.e[ng] = gini; ng++;
 
@@ -108,14 +109,14 @@ msm_rung_vec_t msm_rung_vec_throw(msm_rung_t gini, msm_rung_t gfin, bool_t atomi
 
     void append_rungs(msm_rung_t gi, msm_rung_t gf)
       { /* Steps on each side: */
-        int d0 = gf.c[0] - gi.c[0];
-        int d1 = gf.c[1] - gi.c[1];
+        int32_t d0 = gf.c[0] - gi.c[0];
+        int32_t d1 = gf.c[1] - gi.c[1];
         /* Check for empty case: */
         if ((d0 == 0) && (d1 == 0)) { /* Nothing to do. */ return; }
         /* Require strictly increasing: */
         assert((d0 > 0) && (d1 > 0)); 
         /* Compute the max number of steps {nsmax}: */
-        int nsmax = (d0 < d1 ? d0 : d1); /* Max steps from {gi} to {gf}. */
+        int32_t nsmax = (d0 < d1 ? d0 : d1); /* Max steps from {gi} to {gf}. */
         assert(nsmax > 0); 
         if (nsmax == 1)
           { /* Just add the last rung {gf}: */
@@ -137,9 +138,9 @@ msm_rung_vec_t msm_rung_vec_throw(msm_rung_t gini, msm_rung_t gfin, bool_t atomi
     return gv;
   }
 
-bool_t msm_rung_step_is_increasing(msm_rung_t g0, msm_rung_t g1, int minIncrEach, int minIncrSum, bool_t die)
-  { int d0 = g1.c[0] - g0.c[0];
-    int d1 = g1.c[1] - g0.c[1];
+bool_t msm_rung_step_is_increasing(msm_rung_t g0, msm_rung_t g1, int32_t minIncrEach, int32_t minIncrSum, bool_t die)
+  { int32_t d0 = g1.c[0] - g0.c[0];
+    int32_t d1 = g1.c[1] - g0.c[1];
     if (d0 < minIncrEach) { fail_test(die, "X increment is too short"); }
     if (d1 < minIncrEach) { fail_test(die, "Y increment is too short"); }
     if (d0 + d1 < minIncrSum) { fail_test(die, "total X+Y increment are too short"); }
@@ -147,20 +148,20 @@ bool_t msm_rung_step_is_increasing(msm_rung_t g0, msm_rung_t g1, int minIncrEach
   }
 
 bool_t msm_rung_step_is_atomic(msm_rung_t g0, msm_rung_t g1, bool_t die)
-  { int d0 = g1.c[0] - g0.c[0];
-    int d1 = g1.c[1] - g0.c[1];
+  { int32_t d0 = g1.c[0] - g0.c[0];
+    int32_t d1 = g1.c[1] - g0.c[1];
     if ((abs(d0) != 1) && (abs(d1) != 1)) { fail_test(die, "step is not atomic"); }
     return TRUE;
   }
 
 bool_t msm_rung_step_is_perfect(msm_rung_t g0, msm_rung_t g1, bool_t die)
-  { int d0 = g1.c[0] - g0.c[0];
-    int d1 = g1.c[1] - g0.c[1];
+  { int32_t d0 = g1.c[0] - g0.c[0];
+    int32_t d1 = g1.c[1] - g0.c[1];
     if ((d0 != 1) || (d1 != 1)) { fail_test(die, "step is not perfect"); }
     return TRUE;
   }
   
-int msm_rung_step_span_increment(msm_rung_t g0, msm_rung_t g1, int j)
+int32_t msm_rung_step_span_increment(msm_rung_t g0, msm_rung_t g1, int32_t j)
   { if ((j == 0) || (j == 1))
       { return g1.c[j] - g0.c[j]; }
     else if (j == -1)
@@ -201,20 +202,20 @@ sign_t msm_rung_step_break_tie(msm_rung_t a0, msm_rung_t a1, msm_rung_t b0, msm_
       }
     else
       { /* All end-rungs are valid. Compute the displacements: */
-        int d0a = a1.c[0] - a0.c[0];
-        int d1a = a1.c[1] - a0.c[1];
-        int d0b = b1.c[0] - b0.c[0];
-        int d1b = b1.c[1] - b0.c[1];
+        int32_t d0a = a1.c[0] - a0.c[0];
+        int32_t d1a = a1.c[1] - a0.c[1];
+        int32_t d0b = b1.c[0] - b0.c[0];
+        int32_t d1b = b1.c[1] - b0.c[1];
         /* Compare step lengths in L1 metric: */
-        int la = abs(d0a) + abs(d1a);
-        int lb = abs(d0b) + abs(d1b);
+        int32_t la = abs(d0a) + abs(d1a);
+        int32_t lb = abs(d0b) + abs(d1b);
         if (la < lb)
           { return +1; }
         else if (la > lb)
           { return -1; }
         /* Compare deviations from diagonal: */
-        int va = abs(d0a - d1a);
-        int vb = abs(d0b - d1b);
+        int32_t va = abs(d0a - d1a);
+        int32_t vb = abs(d0b - d1b);
         if (va < vb)
           { return +1; }
         else if (va > vb)
@@ -224,26 +225,26 @@ sign_t msm_rung_step_break_tie(msm_rung_t a0, msm_rung_t a1, msm_rung_t b0, msm_
       }
   }
 
-void msm_rung_interpolate(msm_rung_t g0, msm_rung_t g1, int *ngP, msm_rung_vec_t *gv)
+void msm_rung_interpolate(msm_rung_t g0, msm_rung_t g1, int32_t *ngP, msm_rung_vec_t *gv)
   {
-    int ng = (*ngP);
+    int32_t ng = (*ngP);
     /* Compute total displacement {sgnd[j]*absd[j]} in each axis {j}: */
-    int absd[2], sgnd[2];
-    int j;
+    int32_t absd[2], sgnd[2];
+    int32_t j;
     for (j = 0; j <= 1; j++)
-      { int d = g1.c[j] - g0.c[j];
+      { int32_t d = g1.c[j] - g0.c[j];
         absd[j] = abs(d);
         sgnd[j] = (d == 0 ? 0 : (d < 0 ? -1 : +1));
       }
     /* Find axes {jmin,jmax} with smallest and largest displacement: */
-    int jmax = (absd[0] >= absd[1] ? 0 : 1);
-    int jmin = 1 - jmax;
+    int32_t jmax = (absd[0] >= absd[1] ? 0 : 1);
+    int32_t jmin = 1 - jmax;
     demand(absd[jmin] >= 1, "step {g0-->g1} is stationary in X or Y");
     /* Step along axis {jmin}: */
-    int dmin;
+    int32_t dmin;
     for (dmin = 1; dmin <= absd[jmin]; dmin++)
       { /* Compute the relative position {dmax} along axis {jmax}: */
-        int dmax = absd[jmax]*dmin/absd[jmin];
+        int32_t dmax = absd[jmax]*dmin/absd[jmin];
         /* Compute the absolute coordinates and pack into a rung {f}: */
         msm_rung_t f;
         f.c[jmin] = g0.c[jmin] + sgnd[jmin]*dmin;
@@ -258,18 +259,18 @@ void msm_rung_interpolate(msm_rung_t g0, msm_rung_t g1, int *ngP, msm_rung_vec_t
 msm_rung_vec_t msm_rung_vec_interpolate(msm_rung_vec_t *gv)
   {
     /* Get number of old rungs: */
-    int ngold = gv->ne;
+    int32_t ngold = gv->ne;
     /* Allocate the new rung vector {gvnew} (it may grow later): */
     msm_rung_vec_t gvnew = msm_rung_vec_new(ngold);
     if (ngold > 0)
       { /* The new rungs will be {gvnew[0..ngnew-1]}: */
-        int ngnew = 0;
+        int32_t ngnew = 0;
         /* Initialize the previous rung {g} with first rung of {gv}: */
         msm_rung_t g = gv->e[0];
         /* Insert the first rung in {gvnew}: */
         gvnew.e[0] = g; ngnew++;
         /* Process all steps of {gv}: */
-        int i;
+        int32_t i;
         for (i = 1; i < ngold; i++)
           { /* Get final rung {h} of this step: */
             msm_rung_t h = gv->e[i];
@@ -284,20 +285,20 @@ msm_rung_vec_t msm_rung_vec_interpolate(msm_rung_vec_t *gv)
     return gvnew;
   }
 
-msm_rung_vec_t msm_rung_vec_make_increasing(msm_rung_vec_t *gv, int minIncrEach, int minIncrSum)
-  { int ng = gv->ne;
+msm_rung_vec_t msm_rung_vec_make_increasing(msm_rung_vec_t *gv, int32_t minIncrEach, int32_t minIncrSum)
+  { int32_t ng = gv->ne;
     assert(ng > 0);
     
     /* Create the rung vector {gv_new} of result: */
     msm_rung_vec_t gv_new = msm_rung_vec_new(ng);
-    int ng_new = 0; /* The gathered rungs are {gv_new.e[0..ng_new-1]}. */
+    int32_t ng_new = 0; /* The gathered rungs are {gv_new.e[0..ng_new-1]}. */
             
     /* Get first rung and last rungs {gini,gfin} of {gv}: */
     msm_rung_t gini = gv->e[0];
     msm_rung_t gfin = gv->e[ng-1];
     
-    int tinc0 = gfin.c[0] - gini.c[0]; /* Total increment on side 0. */
-    int tinc1 = gfin.c[1] - gini.c[1]; /* Total increment on side 1. */
+    int32_t tinc0 = gfin.c[0] - gini.c[0]; /* Total increment on side 0. */
+    int32_t tinc1 = gfin.c[1] - gini.c[1]; /* Total increment on side 1. */
     if ((tinc0 < minIncrEach) || (tinc1 < minIncrEach) || (tinc0+tinc1 < minIncrSum))
       { /* Result has a single rung: */
         msm_rung_t gmid = gv->e[ng/2];
@@ -311,14 +312,14 @@ msm_rung_vec_t msm_rung_vec_make_increasing(msm_rung_vec_t *gv, int minIncrEach,
         ng_new = 1; /* The gathered rungs are {gv_new.e[0..ng_new-1]}. */
         /* Gather the intermediate rungs that fit: */
         msm_rung_t gpre = gini; /* Last rung that was taken. */
-        int k = 1;
+        int32_t k = 1;
         while (k < ng - 1)
           { /* Get rung {k} of {gv}: */
             msm_rung_t gk = gv->e[k];
             bool_t take = TRUE; /* Should we take this rung? */
             /* Get increments {dpre[0..1],dpos[0..1]} between {gpre,gk,gfin}: */
-            int dpre[2], dpos[2];
-            int j;
+            int32_t dpre[2], dpos[2];
+            int32_t j;
             for (j = 0; j < 2; j++)
               { dpre[j] = gk.c[j] - gpre.c[j];
                 dpos[j] = gfin.c[j] - gk.c[j];
@@ -350,15 +351,15 @@ msm_rung_vec_t msm_rung_vec_make_increasing(msm_rung_vec_t *gv, int minIncrEach,
     return gv_new;
   }
 
-#define msm_rung_huge (msm_rung_t){{ INT_MAX, INT_MAX }}
+#define msm_rung_huge (msm_rung_t){{ INT32_MAX, INT32_MAX }}
 
-msm_rung_vec_t msm_rung_vec_join(msm_rung_vec_t *gva, int ja, msm_rung_vec_t *gvb, int jb)
+msm_rung_vec_t msm_rung_vec_join(msm_rung_vec_t *gva, int32_t ja, msm_rung_vec_t *gvb, int32_t jb)
   { /* Allocate the result rung vector, with guessed size: */
-    int ngmax = (gva->ne < gvb->ne ? gva->ne : gvb->ne);
+    int32_t ngmax = (gva->ne < gvb->ne ? gva->ne : gvb->ne);
     msm_rung_vec_t gv = msm_rung_vec_new(ngmax);
     /* Scan the two rung vectors and collect coincidences: */
-    int ng = 0; /* Output rungs will be {gv.e[0..ng-1]}. */
-    int ka = 0, kb = 0;  /* Indices into {gva,gvb}: */
+    int32_t ng = 0; /* Output rungs will be {gv.e[0..ng-1]}. */
+    int32_t ka = 0, kb = 0;  /* Indices into {gva,gvb}: */
     while ((ka < gva->ne) && (kb < gvb->ne))
       { msm_rung_t ga = (ka >= gva->ne ? msm_rung_huge : gva->e[ka]);
         msm_rung_t gb = (kb >= gvb->ne ? msm_rung_huge : gvb->e[kb]);
@@ -405,11 +406,11 @@ sign_t msm_rung_strict_compare(msm_rung_t ga, msm_rung_t gb)
 
 msm_rung_vec_t msm_rung_vec_map_gen(msm_rung_vec_t *gv, msm_rung_map_proc_t *map)
   { /* Get rung count {ng} of given rung_vec: */
-    int ng = gv->ne;
+    int32_t ng = gv->ne;
     /* Allocate new rung vector: */
     msm_rung_vec_t gvnew = msm_rung_vec_new(ng);
     /* Map all rungs: */
-    int i;
+    int32_t i;
     for (i = 0; i < gvnew.ne; i++) { gvnew.e[i] = map(gv->e[i]); }
     /* Make rung_vec from rung vector: */
     return gvnew;
@@ -428,8 +429,8 @@ msm_rung_vec_t msm_rung_vec_map
     msm_rung_t map_rung(msm_rung_t g)
       { double p0 = msm_seq_desc_map_index(g.c[0], s0_old, s0_new);
         double p1 = msm_seq_desc_map_index(g.c[1], s1_old, s1_new);
-        int i0 = (int)msm_round(p0);
-        int i1 = (int)msm_round(p1);
+        int32_t i0 = (int32_t)msm_round(p0);
+        int32_t i1 = (int32_t)msm_round(p1);
         return (msm_rung_t){{ i0, i1 }};
       }
       
@@ -446,7 +447,7 @@ msm_rung_vec_t msm_rung_vec_map
 
 void msm_rung_step_write(FILE *wr, int32_t d0, int32_t d1, int32_t rep)
   {
-    auto void wrstep(char cha, int d, char chb);
+    auto void wrstep(char cha, int32_t d, char chb);
       /* Prints a step as "{cha}{d}{chb}" to {wr}.  Usually
         {cha} is ':', '.', or '\''; and {chb} 
         is  |', '/', or '\\'.
@@ -455,7 +456,7 @@ void msm_rung_step_write(FILE *wr, int32_t d0, int32_t d1, int32_t rep)
         if {d} is in {1..msm_rung_MAXD}, omits the "{d}"
         part and repeats the "{cha}" part {d} times. */
         
-    void wrstep(char cha, int d, char chb)
+    void wrstep(char cha, int32_t d, char chb)
       { if (d == 0) 
           { /* Omit {cha} and {d}. */ }
         else if ((d >= 1) && (d <= msm_rung_MAXD))
@@ -487,13 +488,13 @@ void msm_rung_step_write(FILE *wr, int32_t d0, int32_t d1, int32_t rep)
       }
     else if (rep > 1)
       { /* Print the extra rungs in perfect segment; */
-        int k;
+        int32_t k;
         for (k = 1; k < rep; k++) { fprintf(wr, "|"); }
       }
   }
 
 void msm_rung_step_read(FILE *rd, int32_t *d0P, int32_t *d1P, int32_t *repP)
-  { int ch = fgetc(rd); /* Next char in {rd}. */
+  { int32_t ch = fgetc(rd); /* Next char in {rd}. */
     demand(ch != EOF, "unexpected EOF");
     /* Parse the increments {d0,d1}: */
     /* Interpret {d0} and {d1} as if next char was '|', fix later if not: */
@@ -501,9 +502,9 @@ void msm_rung_step_read(FILE *rd, int32_t *d0P, int32_t *d1P, int32_t *repP)
     if (ch == '(')
       { /* Parse "{d0},{d1})|" (no '\\' or '/'): */
         ungetc(ch, rd);
-        d0 = (int32_t)fget_int(rd);
+        d0 = fget_int32(rd);
         fget_match(rd, ",");
-        d1 = (int32_t)fget_int(rd);
+        d1 = fget_int32(rd);
         fget_match(rd, ")");
         /* Get hold again of the next char: */
         ch = fgetc(rd); 
@@ -524,7 +525,7 @@ void msm_rung_step_read(FILE *rd, int32_t *d0P, int32_t *d1P, int32_t *repP)
         if ((d == 1) && ((ch >= '0') && (ch <= '9')))
           { /* There is an explicit sample skip count, parse it: */
             ungetc(ch, rd);
-            d = fget_int(rd);
+            d = fget_int32(rd);
             /* Get hold again of the next char: */
             ch = fgetc(rd); 
             demand(ch != EOF, "unexpected EOF");
@@ -566,7 +567,7 @@ void msm_rung_step_read(FILE *rd, int32_t *d0P, int32_t *d1P, int32_t *repP)
       { if ((ch >= '0') && (ch <= '9'))
           { /* Numeric rep field: */
             ungetc(ch, rd);
-            rep = (int32_t)fget_int(rd); 
+            rep = fget_int32(rd); 
             demand(rep >= 1, "field {rep} must be positive"); 
           }
         else

@@ -2,13 +2,15 @@
 
 /* Exports planar slices */
 
-int exportSingleSVGFormat (string fileName, const vector<vector<salamic_r2_Segment_t> > &slicesWithLineSegs, const salamic_stl_r3_t &aabbSize) {
+#include <stdint.h>
+
+int32_t exportSingleSVGFormat (string fileName, const vector<vector<salamic_r2_Segment_t> > &slicesWithLineSegs, const salamic_stl_r3_t &aabbSize) {
 
     typedef struct _rgb {
-       int r, g, b;
+       int32_t r, g, b;
     } rgb; 
   
-    int nrgb = 8;   
+    int32_t nrgb = 8;   
  
     rgb colors[nrgb];
 
@@ -55,7 +57,7 @@ int exportSingleSVGFormat (string fileName, const vector<vector<salamic_r2_Segme
     return 0;
 }
 
-void exportSingleSVGFormatB (const vector<vector<salamic_r2_Segment_t> > &slicesWithLineSegs, const salamic_stl_r3_t &aabbSize, int nsegments, int nslices) {
+void exportSingleSVGFormatB (const vector<vector<salamic_r2_Segment_t> > &slicesWithLineSegs, const salamic_stl_r3_t &aabbSize, int32_t nsegments, int32_t nslices) {
 
     glm::vec3 fromEuler (0.0f, 0.0f, 60.0f);
     glm::quat quaternion (DEG_TO_RAD(fromEuler));
@@ -83,12 +85,12 @@ void exportSingleSVGFormatB (const vector<vector<salamic_r2_Segment_t> > &slices
     fprintf (file, "<svg viewBox=\"0 0 1024 768\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:cc=\"http://web.resource.org/cc/\">\n");
 
     size_t i = 0;
-    int disp_x = +100; /*Deslocamento da figura*/
-    int disp_y = +100; /*Deslocamento da figura*/
-    //int shift_x = -180; /*Bottle*/
-    //int shift_y = -100; /*Bottle*/
-    int shift_x = +150;
-    int shift_y = +250; /*Quanto mais positivo, mais abaixa a camera!*/
+    int32_t disp_x = +100; /*Deslocamento da figura*/
+    int32_t disp_y = +100; /*Deslocamento da figura*/
+    //int32_t shift_x = -180; /*Bottle*/
+    //int32_t shift_y = -100; /*Bottle*/
+    int32_t shift_x = +150;
+    int32_t shift_y = +250; /*Quanto mais positivo, mais abaixa a camera!*/
 
     for (; i < nslices; i++) {
        for (const salamic_r2_Segment_t &ls : slicesWithLineSegs[i]) {
@@ -100,7 +102,7 @@ void exportSingleSVGFormatB (const vector<vector<salamic_r2_Segment_t> > &slices
        }
     }
 
-    int segment = 0;
+    int32_t segment = 0;
     for (const salamic_r2_Segment_t &ls : slicesWithLineSegs[i]) {
        if (segment < nsegments) {
            salamic_stl_r3_t p0 = disp_x + ls.v[0];
@@ -117,7 +119,7 @@ void exportSingleSVGFormatB (const vector<vector<salamic_r2_Segment_t> > &slices
     fclose(file);
 }
 
-int exportSingleSVGFormat3D (const vector<vector<salamic_r2_Segment_t> > &slicesWithLineSegs, const salamic_stl_r3_t &aabbSize) {
+int32_t exportSingleSVGFormat3D (const vector<vector<salamic_r2_Segment_t> > &slicesWithLineSegs, const salamic_stl_r3_t &aabbSize) {
 
     const size_t nslices = slicesWithLineSegs.size();
 
@@ -131,7 +133,7 @@ int exportSingleSVGFormat3D (const vector<vector<salamic_r2_Segment_t> > &slices
     return 0;
 }
 
-int exportSingleSVGFormat4D (const vector<vector<salamic_r2_Segment_t> > &slicesWithLineSegs,  const salamic_stl_r3_t &aabbSize) {
+int32_t exportSingleSVGFormat4D (const vector<vector<salamic_r2_Segment_t> > &slicesWithLineSegs,  const salamic_stl_r3_t &aabbSize) {
 
     glm::vec3 fromEuler (0.0f, 0.0f, 60.0f);
     glm::quat quaternion (DEG_TO_RAD(fromEuler));

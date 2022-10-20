@@ -1,11 +1,12 @@
 /* See {msm_image.h} */
-/* Last edited on 2021-07-18 00:42:32 by jstolfi */
+/* Last edited on 2022-10-20 06:39:46 by stolfi */
 
 #define msm_image_C_COPYRIGHT \
   "Copyright © 2005 by the State University of Campinas (UNICAMP)"
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 #include <string.h>
@@ -22,7 +23,7 @@
 
 #include <msm_image.h>
 
-void msm_image_reduce_coords(int *x, int *y, int NVX, int NVY);
+void msm_image_reduce_coords(int32_t *x, int32_t *y, int32_t NVX, int32_t NVY);
   /* Reduces the (unscaled) coordinate {*x} to the range {0..NVX-1}
     modulo {NVX}, and the coordinate {*y} to the range {0..NVY-1} modulo
     {NVY}. */
@@ -32,15 +33,15 @@ float_image_t *float_image_colorize(float_image_t *gfim, double maxf);
   are mapped to bluish tones, positive samples to reddish tones, 0 to white,
   {±INF} to black, and {NAN} to grey. */
 
-msm_image_t *msm_image_alloc(int NC, int NVX, int NVY, bool_t scale)
+msm_image_t *msm_image_alloc(int32_t NC, int32_t NVX, int32_t NVY, bool_t scale)
   { /* Choose the image downscaling factor {scale}: */
-    int nbig = (NVX > NVY ? NVX : NVY); /* Length of largest sequence. */
-    int nmax = 1024; /* Maximum alowed image size. */
-    int ppp = (scale ? (nbig + nmax - 1)/nmax : 1); /* Positions per pixel. */
+    int32_t nbig = (NVX > NVY ? NVX : NVY); /* Length of largest sequence. */
+    int32_t nmax = 1024; /* Maximum alowed image size. */
+    int32_t ppp = (scale ? (nbig + nmax - 1)/nmax : 1); /* Positions per pixel. */
     if (ppp == 0) { ppp = 1; }
     /* Compute actual image size {NPX,NPY}: */
-    int NPX = (NVX - 1)/ppp + 1;
-    int NPY = (NVY - 1)/ppp + 1;
+    int32_t NPX = (NVX - 1)/ppp + 1;
+    int32_t NPY = (NVY - 1)/ppp + 1;
     fprintf(stderr, "  virtual image %4d × %4d", NVX, NVY);
     fprintf(stderr, "  actual image %4d × %4d", NPX, NPY);
     fprintf(stderr, "  scale =  %4d positions per pixel\n", ppp);
@@ -56,7 +57,7 @@ msm_image_t *msm_image_alloc(int NC, int NVX, int NVY, bool_t scale)
     return img;
   }
 
-void msm_image_compute_avg_dev_range(msm_image_t *img, int c, double *lo, double *hi, double ns)
+void msm_image_compute_avg_dev_range(msm_image_t *img, int32_t c, double *lo, double *hi, double ns)
   { double avg, dev;
     float_image_compute_sample_avg_dev(img->fim, c, &avg, &dev);
     /* Choose black and white values: */
@@ -71,7 +72,7 @@ void msm_image_compute_avg_dev_range(msm_image_t *img, int c, double *lo, double
     (*lo) = vlo; (*hi) = vhi;
   }
 
-void msm_image_compute_min_max_range(msm_image_t *img, int c, double *lo, double *hi)
+void msm_image_compute_min_max_range(msm_image_t *img, int32_t c, double *lo, double *hi)
   { /* Find range {vMin,vMax} of samples: */
     float vMin = +INF, vMax = -INF;
     float_image_update_sample_range(img->fim, c, &vMin, &vMax);
@@ -93,16 +94,16 @@ void msm_image_compute_min_max_range(msm_image_t *img, int c, double *lo, double
 float_image_t *float_image_colorize(float_image_t *gfim, double maxf)
   { /* Check the channel count and get image dimensions: */
     demand(gfim->sz[0] == 1, "input image must be grayscale");
-    int NC = 3; /* Number of channels in output image. */
-    int NX = (int)gfim->sz[1]; /* Number of columns. */
-    int NY = (int)gfim->sz[2]; /* Number of rows. */
+    int32_t NC = 3; /* Number of channels in output image. */
+    int32_t NX = (int32_t)gfim->sz[1]; /* Number of columns. */
+    int32_t NY = (int32_t)gfim->sz[2]; /* Number of rows. */
     float_image_t *cfim = float_image_new(NC, NX, NY);
     /* Limiting colors: */
     float zer[3] = { 1.000f, 1.000f, 1.000f }; /* Lum = 1.000; for {v = 0}. */
     float pos[3] = { 1.000f, 0.333f, 0.000f }; /* Lum = 0.500; for {v=+maxf}. */
     float neg[3] = { 0.000f, 0.667f, 1.000f }; /* Lum = 0.500; for {v=-maxf}. */
     /* Convert monochrome pixels from {gfim} to color pixels of {cfim}: */
-    int x, y, c;
+    int32_t x, y, c;
     for(y = 0; y < NY; y++)
       { for(x = 0; x < NX; x++)
           { /* Get pixel {v} from monochrome image: */
@@ -153,12 +154,12 @@ void msm_image_write_as_pnm
     char *tag
   )
   { /* Chck the channel count: */
-    int NC = (int)img->fim->sz[0];
+    int32_t NC = (int32_t)img->fim->sz[0];
     demand((NC == 1) || (NC == 3), "bad number of channels"); 
     /* Prepare the per-channel {lo,hi} parameters from single {minv,maxv}: */
     double lov[NC];
     double hiv[NC];
-    int c; 
+    int32_t c; 
     for (c = 0; c < NC; c++) { lov[c] = minv; hiv[c] = maxv; }
     /* Convert the float image {img} to an integer image {pnm}: */
     bool_t yup = TRUE, verbose = TRUE;
@@ -175,26 +176,26 @@ void msm_image_write_as_pnm
     uint16_image_free(pnm);
   }
 
-void msm_image_reduce_coords(int *x, int *y, int NVX, int NVY)
-  { (*x) = (int)imod((*x), NVX); 
-    (*y) = (int)imod((*y), NVY);
+void msm_image_reduce_coords(int32_t *x, int32_t *y, int32_t NVX, int32_t NVY)
+  { (*x) = (int32_t)imod((*x), NVX); 
+    (*y) = (int32_t)imod((*y), NVY);
   }
 
-void msm_image_set(msm_image_t *img, int ic, int x, int y, float v)
+void msm_image_set(msm_image_t *img, int32_t ic, int32_t x, int32_t y, float v)
   { /* fprintf(stderr, "    setting %10.5f to virtual pixel ( %1d %4d %4d )\n", v, ic, x, y); */
     msm_image_reduce_coords(&x, &y, img->NV[0], img->NV[1]);
-    int ipx = x/img->scale;
-    int ipy = y/img->scale;
+    int32_t ipx = x/img->scale;
+    int32_t ipy = y/img->scale;
     float *p = float_image_get_sample_address(img->fim, ic, ipx, ipy);
     (*p) = v;
     /* fprintf(stderr, "    actual pixel ( %1d %4d %4d ) became %10.5f\n", ic, ipx, ipy, (*p)); */
   }
 
-void msm_image_add(msm_image_t *img, int ic, int x, int y, float v)
+void msm_image_add(msm_image_t *img, int32_t ic, int32_t x, int32_t y, float v)
   { /* fprintf(stderr, "    adding %10.5f to virtual pixel ( %4d %4d )\n", v, ic, x, y); */
     msm_image_reduce_coords(&x, &y, img->NV[0], img->NV[1]);
-    int ipx = x/img->scale;
-    int ipy = y/img->scale;
+    int32_t ipx = x/img->scale;
+    int32_t ipy = y/img->scale;
     float *p = float_image_get_sample_address(img->fim, ic, ipx, ipy);
     if (isfinite((*p)))
       { (*p) += v; }
@@ -203,17 +204,17 @@ void msm_image_add(msm_image_t *img, int ic, int x, int y, float v)
     /* fprintf(stderr, "    actual pixel ( %4d %4d ) became %10.5f\n", ic, ipx, ipy, (*p)); */
   }
 
-void msm_image_max(msm_image_t *img, int ic, int x, int y, float v)
+void msm_image_max(msm_image_t *img, int32_t ic, int32_t x, int32_t y, float v)
   { msm_image_reduce_coords(&x, &y, img->NV[0], img->NV[1]);
-    int ipx = x/img->scale;
-    int ipy = y/img->scale;
+    int32_t ipx = x/img->scale;
+    int32_t ipy = y/img->scale;
     float *p = float_image_get_sample_address(img->fim, ic, ipx, ipy);
     if (v > (*p)) { (*p) = v; }
   }
 
 void msm_image_normalize_and_write_as_pgm(msm_image_t *img, char *name, char *tag)
   { /* Chck the channel count: */
-    int NC = (int)img->fim->sz[0];
+    int32_t NC = (int32_t)img->fim->sz[0];
     demand(NC == 1, "image must be grayscale");
     /* Find actual range of image (excluding infinite pixels): */
     double lov, hiv;

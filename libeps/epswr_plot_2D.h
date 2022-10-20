@@ -2,27 +2,28 @@
 #define epswr_plot_2D_H
 
 /* Plotting of a 2D Bézier patch with fixed resolution (for debugging) */
-/* Last edited on 2021-04-13 22:33:37 by jstolfi */
+/* Last edited on 2022-10-20 06:50:49 by stolfi */
 
 #include <bool.h>
+#include <stdint.h>
 #include <interval.h>
 
 #include <epswr.h>
 
-typedef void epswr_plot_2D_func_t(double x[], int nx, double f[], int nf);
+typedef void epswr_plot_2D_func_t(double x[], int32_t nx, double f[], int32_t nf);
   /* Type of a generic function to be plotted. It should take the
     argument vector {x[0..nx-1]} and store the corresponding function
     value into {f[0..nf-1]}. */
     
 typedef struct epswr_plot_2D_style_t
-  { int ic; /* Index of first function value to use for smooth color shading. */
-    int nc; /* Number of function values to use for smooth color shading. */
-    int ib; /* Index of function value to use for discrete color banding. */
-    int iv; /* Index of function value to use for isoline drawing. */
+  { int32_t ic; /* Index of first function value to use for smooth color shading. */
+    int32_t nc; /* Number of function values to use for smooth color shading. */
+    int32_t ib; /* Index of function value to use for discrete color banding. */
+    int32_t iv; /* Index of function value to use for isoline drawing. */
     double vStart;
     double vStep;
-    int kMin;
-    int kMax;
+    int32_t kMin;
+    int32_t kMax;
     double *Rtb;
     double *Gtb;
     double *Btb;
@@ -71,12 +72,12 @@ typedef struct epswr_plot_2D_style_t
     
 void epswr_plot_2D_tri
   ( epswr_figure_t *eps, 
-    int nf,
+    int32_t nf,
     epswr_plot_2D_func_t *F,
     double xa[],
     double xb[],
     double xc[],
-    int ns,
+    int32_t ns,
     epswr_plot_2D_style_t *st,
     bool_t fill,
     bool_t draw
@@ -106,12 +107,12 @@ void epswr_plot_2D_tri
 
 void epswr_plot_2D_tri_outline
   ( epswr_figure_t *eps, 
-    int nf,
+    int32_t nf,
     epswr_plot_2D_func_t *F,
     double xa[],
     double xb[],
     double xc[],
-    int ns
+    int32_t ns
   );
   /* Draws (with the current pen settings) the outline of a 2D region
     whose shape is defined by the function {F} and the triangle {T = (xa,xb,xc)},
@@ -125,11 +126,11 @@ void epswr_plot_2D_tri_outline
 
 void epswr_plot_2D_quad
   ( epswr_figure_t *eps, 
-    int nf,
+    int32_t nf,
     epswr_plot_2D_func_t *F,
     interval_t B[],
-    int n0,
-    int n1,
+    int32_t n0,
+    int32_t n1,
     epswr_plot_2D_style_t *st,
     bool_t fill,
     bool_t draw
@@ -149,11 +150,11 @@ void epswr_plot_2D_quad
 
 void epswr_plot_2D_quad_outline
   ( epswr_figure_t *eps, 
-    int nf,
+    int32_t nf,
     epswr_plot_2D_func_t *F,
     interval_t B[],
-    int n0,
-    int n1
+    int32_t n0,
+    int32_t n1
   );
   /* Draws (with the current pen settings) the outline of a 2D region
     whose shape is defined by the function {F} and the 
@@ -167,10 +168,10 @@ void epswr_plot_2D_quad_outline
 
 void epswr_plot_2D_line
   ( epswr_figure_t *eps, 
-    int nf,
+    int32_t nf,
     epswr_plot_2D_func_t *F,
     interval_t *B,
-    int ns
+    int32_t ns
   );
   /* Draws (with the current pen settings) a curved line 
     whose shape is defined by the function {F}, that maps    
@@ -202,7 +203,7 @@ void epswr_plot_2D_tri_atom
     double fa[],
     double fb[],
     double fc[],
-    int nf,
+    int32_t nf,
     epswr_plot_2D_style_t *st,
     bool_t fill,
     bool_t draw
@@ -217,7 +218,7 @@ void epswr_plot_2D_tri_atom_solid
     double fa[],
     double fb[],
     double fc[],
-    int nf 
+    int32_t nf 
   );
   /* Paints the triangle with the current fill color. */
 
@@ -226,9 +227,9 @@ void epswr_plot_2D_tri_atom_shade
     double fa[],
     double fb[],
     double fc[],
-    int nf,
-    int ic,
-    int nc
+    int32_t nf,
+    int32_t ic,
+    int32_t nc
   );
   /* Paints the triangle with smooth shading. The colors at the
     vertices are defined by the function values {f[ic..ic+nc-1]}. */
@@ -238,12 +239,12 @@ void epswr_plot_2D_tri_atom_bands
     double fa[],
     double fb[],
     double fc[],
-    int nf,
-    int ib,
+    int32_t nf,
+    int32_t ib,
     double vStart,
     double vStep, 
-    int kMin,
-    int kMax,
+    int32_t kMin,
+    int32_t kMax,
     double *Rtb, 
     double *Gtb, 
     double *Btb 
@@ -261,12 +262,12 @@ void epswr_plot_2D_tri_atom_isolines
     double fa[],
     double fb[],
     double fc[],
-    int nf,
-    int iv,
+    int32_t nf,
+    int32_t iv,
     double vStart,
     double vStep, 
-    int kMin,
-    int kMax 
+    int32_t kMin,
+    int32_t kMax 
   );
   /* Draws isolines inside the triangle {fa,fb,fc}
     with the current pen settings.

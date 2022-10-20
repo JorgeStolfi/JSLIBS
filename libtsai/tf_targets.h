@@ -1,18 +1,19 @@
 /* Routines to read target data and show placement of targets on images */
-/* Last edited on 2011-05-15 00:45:42 by stolfi */
+/* Last edited on 2022-10-20 05:49:27 by stolfi */
 
 #ifndef tf_targets_H
 #define tf_targets_H
 
 #include <r2.h>
+#include <stdint.h>
 #include <r3.h>
 #include <tf_camera.h>
 #include <tf_calib_data.h>
 
 typedef struct _targets_data_t {
-  int ntargets;
+  int32_t ntargets;
 
-  int *type;       /*type of each target. e.g: 0 circle, 1 square, etc ...*/
+  int32_t *type;       /*type of each target. e.g: 0 circle, 1 square, etc ...*/
   /* Target positions and shapes in the scene: */ 
   r3_t *p_w;       /* world coords of center of each target [mm] */
   r3_t *u_w;       /* world coords of U-axis unit vector of each target [mm] */
@@ -26,7 +27,7 @@ typedef struct _targets_data_t {
   double *conf;    /* Confidence of each target in image. */
 } *targets_data_t;
 
-targets_data_t tf_targets_data_create (int size);
+targets_data_t tf_targets_data_create (int32_t size);
   /* Allocates a {_targets_data_t} record and its {p_w}, {p_i}, and {conf} vectors.
     The remaining fields are set to NULL. */
 
@@ -39,7 +40,7 @@ void tf_targets_data_clear (targets_data_t tdat);
   /* Sets the {p_w}, {p_i}, and {conf} of all targets in {tdat} to zero. */
 
 void tf_targets_write_info
-  ( int target, 
+  ( int32_t target, 
     r2_t pos, 
     double alpha, 
     double beta, 
@@ -67,8 +68,8 @@ targets_data_t tf_targets_data_read
 
 void tf_read_types_and_world_shapes
   ( char *fname, 
-    int *ntargets, 
-    int **type,  
+    int32_t *ntargets, 
+    int32_t **type,  
     r3_t **u_world_coords, 
     r3_t **v_world_coords
   );

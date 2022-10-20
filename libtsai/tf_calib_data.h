@@ -1,11 +1,12 @@
 /* General-purpose data and functions for calibration routines. */
-/* Last edited on 2011-05-15 17:14:41 by stolfi */
+/* Last edited on 2022-10-20 05:54:53 by stolfi */
 
 #ifndef tf_calib_data_H
 #define tf_calib_data_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <r2.h>
 #include <r3.h>
 
@@ -18,7 +19,7 @@
 /* A data set for weighted camera calibration: */
 typedef struct tf_calib_data_t 
   {
-    int    np;       /* Number of calibration points. */
+    int32_t    np;       /* Number of calibration points. */
     r3_t   *world;   /* World coordinates of each calibration point [mm]. */
     r2_t   *image;   /* Image coordinates of each calibration point [pixels]. */
     double *weight;  /* Confidence weight of (world,image) data pair. */
@@ -52,41 +53,41 @@ void tf_calib_data_print (FILE *wr, tf_calib_data_t *cdat);
 /* I/O OF SEPARATE POINT LISTS */
 
 
-void tf_calib_data_read_world_points (char *fname, int *np, r3_t **pp);
+void tf_calib_data_read_world_points (char *fname, int32_t *np, r3_t **pp);
 /* Reads a file containing a number of marks {*np} followed by {*np}
   world coordinates {(*pp)[0..*np-1]}, each being three real numbers. 
   Allocates the vector {*pp}. */
 
-void tf_calib_data_write_world_points (char *fname, int np, r3_t p[]);
+void tf_calib_data_write_world_points (char *fname, int32_t np, r3_t p[]);
 /* Writes {p[0..np-1]} to file {fname}, in a format that can
   be read back by {tf_calib_data_read_world_points}. */
 
-void tf_calib_data_print_world_points (FILE *wr, int np, r3_t p[]);
+void tf_calib_data_print_world_points (FILE *wr, int32_t np, r3_t p[]);
 /* Prints {p[0..np-1]} to {wr} in a human-readable format. */
 
-void tf_calib_data_read_image_points (char *fname, int *np, r2_t **qq);
+void tf_calib_data_read_image_points (char *fname, int32_t *np, r2_t **qq);
 /* Reads a file containing a number of marks {*np} followed by {*np}
   image coordinates {(*qq)[0..*np-1]}, each being two real numbers. 
   Allocates the vector {*qq}. */
 
-void tf_calib_data_write_image_points (char *fname, int np, r2_t q[]);
+void tf_calib_data_write_image_points (char *fname, int32_t np, r2_t q[]);
 /* Writes {q[0..np-1]} to file {fname}, in a format that can
   be read back by {tf_calib_data_read_image_points}. */
 
-void tf_calib_data_print_image_points (FILE *wr, int np, r2_t q[]);
+void tf_calib_data_print_image_points (FILE *wr, int32_t np, r2_t q[]);
 /* Prints {q[0..np-1]} to {wr} in a human-readable format. */
 
 
-void tf_calib_data_read_weights (char *fname, int *np, double **ww);
+void tf_calib_data_read_weights (char *fname, int32_t *np, double **ww);
 /* Reads a file containing a number of marks {*np} followed by {*np}
   confidence weights {(*ww)[0..*np-1]}, each being one real number. 
   Allocates the vector {*ww}. */
 
-void tf_calib_data_write_weights (char *fname, int np, double w[]);
+void tf_calib_data_write_weights (char *fname, int32_t np, double w[]);
 /* Writes {w[0..np-1]} to file {fname}, in a format that can
   be read back by {tf_calib_data_read_weights}. */
 
-void tf_calib_data_print_weights (FILE *wr, int np, double w[]);
+void tf_calib_data_print_weights (FILE *wr, int32_t np, double w[]);
 /* Prints {w[0..np-1]} to {wr} in a human-readable format. */
 
 /* ---------------------------------------------------------------------- */

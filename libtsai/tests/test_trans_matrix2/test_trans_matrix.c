@@ -1,10 +1,11 @@
-/* Last edited on 2017-06-22 18:18:49 by stolfilocal */
+/* Last edited on 2022-10-20 05:55:50 by stolfi */
 
 #define PROG_NAME "test_povray_camera"
 #define PROG_DESC "tests the conversion from Tsai camera matrix to POV-Ray camera spec"
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
@@ -44,12 +45,12 @@ void pswr_cross(PSStream *ps, double xc, double yc, double radius);
 
 
 
-int main (int argc, char *argv[])
+int32_t main (int32_t argc, char *argv[])
 {
   /*Verify memory*/
   void *trash = malloc(1);
   struct mallinfo info;
-  int MemDinInicial, MemDinFinal;
+  int32_t MemDinInicial, MemDinFinal;
   free(trash);
   info = mallinfo();
   MemDinInicial = info.uordblks;
@@ -79,7 +80,7 @@ int main (int argc, char *argv[])
 
   FILE *f_cpars = fopen(argv[3], "r");
 
-  int n_p_w;
+  int32_t n_p_w;
   tf_calib_data_t *cdat = tf_calib_data_new();
   tf_calib_data_read_world_points (argv[4], &n_p_w, &(cdat->world));
 
@@ -91,9 +92,9 @@ int main (int argc, char *argv[])
 
   while (!feof(f_cpars)) {
       char *frame_name = NULL; 
-      //int frame = tf_get_cpar_from_file (cpar,  f_cpars);
-      //int frame = tf_camera_params_read_mutable (f_cpars, cpar);
-      int frame = tf_camera_params_read (f_cpars, cpar);
+      //int32_t frame = tf_get_cpar_from_file (cpar,  f_cpars);
+      //int32_t frame = tf_camera_params_read_mutable (f_cpars, cpar);
+      int32_t frame = tf_camera_params_read (f_cpars, cpar);
       fprintf(stderr, "O frame lido foi %d\n", frame);
       asprintf(&frame_name, "%s/%05d/frame.pgm", frame_prefix, frame);
       float_image_t *img = float_image_read_pnm_named(frame_name);
@@ -101,7 +102,7 @@ int main (int argc, char *argv[])
       fprintf(stderr, "In camera parameters:\n");
       tf_camera_params_print (cpar, stderr);
 
-      int i;
+      int32_t i;
 
       mkdir("out", 0777);
       char *out_dir = NULL;
@@ -176,7 +177,7 @@ int main (int argc, char *argv[])
 	  cdat->image[i] = p_i;
           fprintf(stdout, "after tf_world_coords_to_image_coords\n"); 
 
-          int mark_radius = 5;
+          int32_t mark_radius = 5;
 	  fprintf(stdout, "cross in %f %f image position\n", p_i.c[0], p_i.c[1]);
 
 	  if (   (p_i.c[0] > 5) && (p_i.c[1] > 5)
@@ -238,7 +239,7 @@ void my_plot_marks
       pswr_set_pen(ps, 0.0,0.0,0.0, 0.5, 0,0); /* Black lines */
     }
     pswr_set_fill_color(ps, 1.0,1.0,0.0);    /* Yellow fill. */
-    int mark;
+    int32_t mark;
     for (mark = 0; mark < cdat->np; mark++) {
       r3_t p_w = cdat->world[mark];
       r2_t p_i;

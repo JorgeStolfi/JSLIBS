@@ -1,43 +1,44 @@
 /* Functions for linear algebra and matrix manipulation. */
-/* Last edited on 2011-05-15 00:39:26 by stolfi */
+/* Last edited on 2022-10-20 05:50:05 by stolfi */
 
 #ifndef tf_matrix_H
 #define tf_matrix_H
 
 #include <stdio.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <r3.h> 
 #include <r2.h> 
 #include <r4x4.h> 
 
 typedef struct _rmxn_t {
-    int  nrows;
-    int  ncols;
+    int32_t  nrows;
+    int32_t  ncols;
     double **c;             
 } *rmxn_t;
 
 typedef struct _mat_rm_t {
-    int  nrows;
-    int  ncols;
+    int32_t  nrows;
+    int32_t  ncols;
     double *c;             
 } *mat_rm_t;
 
 typedef struct _rm_t {
-    int size; 
+    int32_t size; 
     double *c;             
 } *rm_t;
 
 void                     tf_copy_vector_rm (rm_t source, rm_t target);
 
-mat_rm_t                 tf_alloc_mat_rm (int nrows, int ncols);
+mat_rm_t                 tf_alloc_mat_rm (int32_t nrows, int32_t ncols);
 
 void                     tf_free_mat_rm_structure (mat_rm_t m);
 
-rm_t                     tf_alloc_rm (int size);
+rm_t                     tf_alloc_rm (int32_t size);
 
 void                     tf_free_rm_structure (rm_t v);
 
-rmxn_t                   tf_alloc_rmxn (int nrows, int ncols);
+rmxn_t                   tf_alloc_rmxn (int32_t nrows, int32_t ncols);
 
 void                     tf_free_rmxn_structure (rmxn_t m);
 

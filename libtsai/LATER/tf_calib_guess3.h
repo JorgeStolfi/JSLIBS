@@ -1,10 +1,11 @@
-/* Last edited on 2011-05-15 01:51:41 by stolfi */
+/* Last edited on 2022-10-20 05:57:44 by stolfi */
 /* Redesigned Tsai calibration routines (version 2). */
 
 #ifndef tf_calib_guess3_H
 #define tf_calib_guess3_H
 
 #include <stdio.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <r3.h> 
 #include <r2.h> 
@@ -46,7 +47,7 @@ void tf_calib_guess3_initial_camera_parameters
 /* AUXILIARY ROUTINES */
 
 void tf_calib_guess3_compute_f_of_fixed_camera
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -61,7 +62,7 @@ void tf_calib_guess3_compute_f_of_fixed_camera
 
 
 void tf_calib_guess3_compute_S_f_of_fixed_position_camera
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -78,7 +79,7 @@ void tf_calib_guess3_compute_S_f_of_fixed_position_camera
   Not yet implemented. */
 
 void tf_calib_guess3_compute_S_f_of_unrestricted_camera
-  ( int nmarks,
+  ( int32_t nmarks,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -92,7 +93,7 @@ void tf_calib_guess3_compute_S_f_of_unrestricted_camera
   /* ??? */
 
 void tf_calib_guess3_compute_S_f_of_far_away_camera
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -118,7 +119,7 @@ void tf_calib_guess3_compute_S_f_of_far_away_camera
   Otherwise it computes {R} too. */
 
 void tf_calib_guess3_compute_R_mu
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -136,7 +137,7 @@ void tf_calib_guess3_compute_R_mu
   and the other elements are set to 0  */
 
 void tf_calib_guess3_compute_mu_given_R
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -151,7 +152,7 @@ void tf_calib_guess3_compute_mu_given_R
   {f/z_c} in the camera-to-undistorted mapping formula. */
 
 void tf_calib_guess3_compute_initial_affine_model
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -178,8 +179,8 @@ void tf_calib_guess3_extract_camera_vectors
   magnification factor {*mu} from the two rows {rh,sh} of the
   matrix {H} computed by {tf_calib_guess3_initial_affine_model}. */
 
-void tf_calib_guess3_compute_Tx_given_R_mu (int n, r3_t b_w, r2_t b_u, r4x4_t *S, double mu, bool_t debug);
+void tf_calib_guess3_compute_Tx_given_R_mu (int32_t n, r3_t b_w, r2_t b_u, r4x4_t *S, double mu, bool_t debug);
 
-void tf_calib_guess3_compute_Ty_given_R_mu (int n, r3_t b_w, r2_t b_u, r4x4_t *S, double mu, bool_t debug);
+void tf_calib_guess3_compute_Ty_given_R_mu (int32_t n, r3_t b_w, r2_t b_u, r4x4_t *S, double mu, bool_t debug);
 
 #endif

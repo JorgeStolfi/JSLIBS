@@ -1,10 +1,11 @@
 /* stmap - tools for reading, plotting, and manipulating street maps */
-/* Last edited on 2011-12-21 23:26:41 by stolfi */
+/* Last edited on 2022-10-20 05:58:29 by stolfi */
 
 #ifndef stmap_H
 #define stmap_H
 
 #include <math.h>
+#include <stdint.h>
 
 #include <quad.h>
 #include <r2.h>
@@ -21,7 +22,7 @@ typedef r2_t Point;
 
 typedef struct EdgeData
   { float cost[2];  /* Traversal cost for each direction. */
-    int id;         /* Undirected edge ID.  */
+    int32_t id;         /* Undirected edge ID.  */
   } EdgeData;
   /* 
     Data for an undirected edge.  If {a} is a quad_arc_t on the edge,
@@ -30,13 +31,13 @@ typedef struct EdgeData
 
 typedef struct VertexData
   { Point p;      /* Vertex coords (m). */
-    int id;       /* Vertex ID. */
-    int deg;      /* Count of incident undirected edges. */
+    int32_t id;       /* Vertex ID. */
+    int32_t deg;      /* Count of incident undirected edges. */
   } VertexData;
 
 typedef struct Map
-  { int nv;             /* Vertex count. */
-    int ne;             /* Edge count. */
+  { int32_t nv;             /* Vertex count. */
+    int32_t ne;             /* Edge count. */
     VertexData **vd;    /* Vertex data records. */
     EdgeData **ed;      /* Edge data records. */
     quad_arc_t *out;    /* {out[vi]} is some {quad_arc_t} out of vertex number {vi}. */
@@ -92,10 +93,10 @@ Map *st_map_read(FILE *f);
 
 void st_map_compute_costs
   ( Map *m, 
-    int u, 
+    int32_t u, 
     float dMax,
-    int *r,
-    int *nr, 
+    int32_t *r,
+    int32_t *nr, 
     float *d, 
     quad_arc_t *e,
     float *c
@@ -118,18 +119,18 @@ void st_map_init_costs(Map *m, float *d, quad_arc_t *e, float *c);
     {st_map_compute_costs}. Specifically, sets {d[v] = INFINITY},
     {e[v] = NULL_REF}, {c[ai] = INFINITY} for all {v} and {ai}. */
     
-void st_map_reset_costs(Map *m, int *r, int nr, float *d, quad_arc_t *e, float *c);
+void st_map_reset_costs(Map *m, int32_t *r, int32_t nr, float *d, quad_arc_t *e, float *c);
   /* Re-initializes the vectors {d}, {e} and {c} after a call
     to {st_map_compute_costs}, in preparation for a new call. Only
     the vertices {r[0..nr-1]} and their incident edges are re-initialized. */
 
 void st_compute_coverage
   ( Map *m, 
-    int *u, 
+    int32_t *u, 
     float *dMax, 
-    int n, 
-    int *vcover,
-    int *ecover
+    int32_t n, 
+    int32_t *vcover,
+    int32_t *ecover
   );
   /* Given a list of vertices {u[0..n-1]} (the /sites/), and
     respective cost bounds {dMax[0..n-1]}, computes for each vertex {v}
@@ -140,12 +141,12 @@ void st_compute_coverage
 void st_increment_coverage
   ( Map* m,
     float dMax,
-    int *r, 
-    int nr, 
+    int32_t *r, 
+    int32_t nr, 
     float *d,
     float *c,
-    int *vcover, 
-    int *ecover
+    int32_t *vcover, 
+    int32_t *ecover
   );
   /* Increments {vcover[v]} and {ecover[e]} for every vertex 
     {v} and every undirected edge {e} in the {dMax}-ball of
@@ -178,7 +179,7 @@ void st_map_plot
     the arrays {ewidth}, {ecolor}, {vwidth}, and {vcolor} can be NULL,
     in which case suitable defaults are used.  */
 
-int st_map_nearest_vertex(Map *m, Point p);
+int32_t st_map_nearest_vertex(Map *m, Point p);
   /* Returns the ID of the vertex of {m} nearest to {p}. */
 
 void st_map_get_bbox(Map *m, Interval *xr, Interval *yr);

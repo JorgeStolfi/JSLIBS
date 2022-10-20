@@ -1,11 +1,12 @@
 /* Types and tools for STL files. */
-/* Last edited on 2016-11-16 15:38:47 by stolfilocal */
+/* Last edited on 2022-10-20 06:03:02 by stolfi */
 
 #ifndef stmesh_STL_H
 #define stmesh_STL_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <vec.h>
 #include <bool.h>
@@ -64,7 +65,7 @@ typedef struct stmesh_STL_face_t
   } stmesh_STL_face_t;
   /* A triangular face of the mesh, as represented in an STL file. */  
 
-typedef void stmesh_STL_face_proc_t(int line, stmesh_STL_face_t *face);
+typedef void stmesh_STL_face_proc_t(int32_t line, stmesh_STL_face_t *face);
   /* Type of a procedure that is called by {stmesh_STL_read} to process
     each triangle {*face} read from the STL file. The {line} argument is
     a line number to be used in error messages. Note: the face record

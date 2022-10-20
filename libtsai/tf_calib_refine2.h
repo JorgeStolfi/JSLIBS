@@ -1,10 +1,11 @@
 /* Non-linear calibration refinement step - version 2. */
-/* Last edited on 2011-05-15 00:47:15 by stolfi */
+/* Last edited on 2022-10-20 05:53:34 by stolfi */
 
 #ifndef tf_calib_refine2_H
 #define tf_calib_refine2_H
 
 #include <stdio.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <values.h>
 #include <r3.h> 
@@ -14,7 +15,7 @@
 #include <tf_calib.h> 
 
 void tf_calib_refine2_gather_optimization_params
-  ( int nparams,
+  ( int32_t nparams,
     double params[],
     tf_camera_specs_t *cspec,
     tf_calib_data_t * cdat,
@@ -22,7 +23,7 @@ void tf_calib_refine2_gather_optimization_params
     tf_optimization_choice_t *which );
 
 void tf_calib_refine2_scatter_optimization_params
-  ( int nparams,
+  ( int32_t nparams,
     double params[],
     tf_camera_specs_t *cspec,
     tf_calib_data_t * cdat,

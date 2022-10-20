@@ -1,8 +1,9 @@
 /* See epswr.h */
-/* Last edited on 2020-01-11 01:37:22 by jstolfi */
+/* Last edited on 2022-10-20 06:51:37 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -18,24 +19,24 @@
     elements in use rounded up to the next power of two, or
     {epswr_font_list_MINSZ}, whichever is larger. */
 
-void epswr_font_list_initialize(int *nFontsP, char ***fontsP)
+void epswr_font_list_initialize(int32_t *nFontsP, char ***fontsP)
   {
     demand((*fontsP) == NULL, "non-NULL font list");
-    int nFonts = 0;
-    int nAlloc = epswr_font_list_MINSZ;
+    int32_t nFonts = 0;
+    int32_t nAlloc = epswr_font_list_MINSZ;
     char **fonts = (char **)malloc(nAlloc*sizeof(char *));
     /* Update caller's variables: */
     (*nFontsP) = nFonts;
     (*fontsP) = fonts;
   }
 
-void epswr_font_list_add(const char *font, int *nFontsP, char ***fontsP)
+void epswr_font_list_add(const char *font, int32_t *nFontsP, char ***fontsP)
   {
-    int nFonts = (*nFontsP);
+    int32_t nFonts = (*nFontsP);
     char **fonts = (*fontsP);
     demand(fonts != NULL, "font list not initialized");
     /* Check whether font already is in the table: */
-    for (int i = 0; i < nFonts; i++)
+    for (int32_t i = 0; i < nFonts; i++)
       { if (strcmp(fonts[i], font) == 0) { return; } }
     /* Ensure that there is space for a new entry: */
     if ((nFonts >= epswr_font_list_MINSZ) && (((nFonts - 1) & nFonts) == 0))
@@ -51,12 +52,12 @@ void epswr_font_list_add(const char *font, int *nFontsP, char ***fontsP)
     (*fontsP) = fonts;
   }
 
-void epswr_font_list_free(int *nFontsP, char ***fontsP)
+void epswr_font_list_free(int32_t *nFontsP, char ***fontsP)
   {
-    int nFonts = (*nFontsP);
+    int32_t nFonts = (*nFontsP);
     char **fonts = (*fontsP);
     demand(fonts != NULL, "font list not initialized");
-    for (int i = 0; i < nFonts; i++) { free(fonts[i]); }
+    for (int32_t i = 0; i < nFonts; i++) { free(fonts[i]); }
     free(fonts);
     (*fontsP) = NULL;
     (*nFontsP) = 0;

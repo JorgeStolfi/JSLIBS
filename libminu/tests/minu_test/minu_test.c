@@ -1,7 +1,8 @@
 // See minu_test.h
-// Last edited on 2009-02-09 00:38:11 by stolfi
+// Last edited on 2022-10-20 06:28:27 by stolfi
 
 #include <minu_gen.h>
+#include <stdint.h>
 #include <minu_test.h>
 
 #include <affirm.h>
@@ -24,7 +25,7 @@ typedef struct TestParms {
 
 // PROTOTYPES
 
-void minu_test_init_plot(PSStream *ps, int page, Problem *prb);
+void minu_test_init_plot(PSStream *ps, int32_t page, Problem *prb);
 void minu_test_end_plot
   ( PSStream *ps, unsigned nCalls, double error, Minimizer *opt, Problem *prb );
 void minu_test_draw_segment
@@ -67,7 +68,7 @@ bool_t minu_test_multiple_check
 
 Performance minu_test_single
   ( PSStream *ps,         /* Postscript file */\
-    int page,          /* Page number in document */
+    int32_t page,          /* Page number in document */
     Minimizer *opt,    /* The minimization tool */
     Problem *prb,      /* Function and parameters */
     bool_t debug         /* Passed to the minimizer */
@@ -122,12 +123,12 @@ Performance minu_test_single
      };
   }
 
-void minu_test_init_plot(PSStream *ps, int page, Problem *prb)
+void minu_test_init_plot(PSStream *ps, int32_t page, Problem *prb)
   {
     double xa, ya, xb, yb, dfxb;
-    int NSteps = 400;
+    int32_t NSteps = 400;
     double dx = (prb->xMax - prb->xMin) / ((double)NSteps);
-    int i;
+    int32_t i;
 
     pswr_new_canvas(ps, NULL);
     pswr_set_window(ps, 
@@ -269,7 +270,7 @@ Performance minu_test_multiple
     unsigned nFailures = 0;
     TestParms test_parms = (TestParms){prb, opt, NULL, 0};
     TestParms *tp = &test_parms;
-    int i;
+    int32_t i;
 
     fprintf(stderr, "\n");
     fprintf(stderr, "=============================================================================\n");

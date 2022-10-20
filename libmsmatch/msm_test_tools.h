@@ -2,12 +2,13 @@
 #define msm_test_tools_H
 
 /* Miscellaneous tools for test programs. */
-/* Last edited on 2013-10-22 06:44:25 by stolfilocal */
+/* Last edited on 2022-10-20 10:27:49 by stolfi */
 
 #define msm_test_tools_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
 
 #include <msm_basic.h>
+#include <stdint.h>
 #include <msm_pairing.h>
 #include <msm_seq_desc.h>
 #include <msm_cand.h>
@@ -15,8 +16,8 @@
 
 #include <vec.h>
 
-void msm_debug_double_vec(double *v, int nv, char *fmt);
-void msm_debug_int_vec(int *v, int nv, char *fmt);
+void msm_debug_double_vec(double *v, int32_t nv, char *fmt);
+void msm_debug_int32_vec(int32_t *v, int32_t nv, char *fmt);
   /* These procedures print {v[0..nv-1]} to {stderr}, each with format {fmt},
     separated by spaces and bracketed by '[' and ']'. */
 
@@ -25,11 +26,11 @@ msm_cand_t msm_test_tools_get_optimum_pairing
     msm_seq_desc_t *seq1, 
     msm_rung_t gini,
     msm_rung_t gfin, 
-    int delta, 
+    int32_t delta, 
     msm_rung_step_score_proc_t *step_score, 
     bool_t verbose,
     msm_dyn_tableau_t *tb,
-    int maxIter
+    int32_t maxIter
   );
   /* Finds an optimum pairing between the segments of 
     sequences {ap} and {bp} spanned by the two rungs {gini,gfin}. The

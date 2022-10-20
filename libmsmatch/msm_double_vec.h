@@ -2,17 +2,18 @@
 #define msm_double_vec_H
 
 /* Tools to manipulate vectors of doubles. */
-/* Last edited on 2013-10-22 01:07:23 by stolfilocal */
+/* Last edited on 2022-10-20 06:40:14 by stolfi */
 
 #define msm_double_vec_H_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
 #include <msm_basic.h>
+#include <stdint.h>
 #include <msm_rung.h>
 
 #include <vec.h>
 
-double *msm_double_vec_get_address(double_vec_t *smp, int i);
+double *msm_double_vec_get_address(double_vec_t *smp, int32_t i);
   /* Returns the address of element {i} in the vector {smp}.
     If {circ} is TRUE, the index {i} will be reduced modulo
     {smp.ne}.  Otherwise {i} must be in {0..smp.ne-1}. */
@@ -29,7 +30,7 @@ double msm_double_vec_interpolate(double_vec_t *smp, double z);
     any value, and will be reduced modulo {smp.ne}. Otherwise they
     must be in {0..smp.ne-1}. */
 
-double_vec_t msm_double_vec_throw_normal(int ns);
+double_vec_t msm_double_vec_throw_normal(int32_t ns);
  /* Returns a vector with {ns} random numbers taken from 
    a Gaussian distribution with mean 0 and deviation 1. */
 

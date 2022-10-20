@@ -1,9 +1,10 @@
 /* See {tf_calib_guess1.h}. */
-/* Last edited on 2011-05-17 03:45:09 by stolfi */
+/* Last edited on 2022-10-20 05:54:39 by stolfi */
 
 #define _GNU_SOURCE
 
 #include <jsfile.h>
+#include <stdint.h>
 
 #include <tf_camera.h>
 #include <tf_matrix.h>
@@ -36,7 +37,7 @@ void tf_calib_guess1_initial_camera_parameters
   U = tf_calib_guess1_compute_U (cdat, caux);
   if (debug) {
     fprintf(stderr, "  Vector {U}\n");
-    int j;
+    int32_t j;
     for (j = 0; j < 7; j++) { fprintf(stderr, "  U[%d] = %24.12f\n", j, U->c[j]);
       fprintf(stderr, "  \n");
     }
@@ -116,7 +117,7 @@ void tf_calib_guess1_compute_xd_yd_and_r_squared
     tf_camera_params_t *cpar, 
     calibration_aux_data_t caux )
 {   
-  int i;
+  int32_t i;
   for (i = 0; i < cdat->np; i++) {
     caux->distorted_coords[i] = tf_image_coords_to_sensor_coords (cpar, cdat->image[i]);
 
@@ -127,7 +128,7 @@ void tf_calib_guess1_compute_xd_yd_and_r_squared
 
 rm_t tf_calib_guess1_compute_U (tf_calib_data_t * cdat, calibration_aux_data_t caux)
 {
-  int i;
+  int32_t i;
   mat_rm_t M = tf_alloc_mat_rm (cdat->np, 7);
   rm_t b = tf_alloc_rm (cdat->np);
   rm_t U = tf_alloc_rm (7);
@@ -142,7 +143,7 @@ rm_t tf_calib_guess1_compute_U (tf_calib_data_t * cdat, calibration_aux_data_t c
     M->c[i*7+6] = -caux->distorted_coords[i].c[0] * cdat->world[i].c[2];
     b->c[i]     =  caux->distorted_coords[i].c[0];
 
-    int j;
+    int32_t j;
     for (j = 0; j < 7; j++)
       fprintf(stderr, " %12.8f ", M->c[i*7+j]);
     fprintf(stderr, " = %12.8f\n", b->c[i]);    
@@ -150,7 +151,7 @@ rm_t tf_calib_guess1_compute_U (tf_calib_data_t * cdat, calibration_aux_data_t c
 
   tf_solve_system_mxn (M, U, b, cdat->weight);
   fprintf(stderr, "U solution\n");
-  int j;
+  int32_t j;
   for (j = 0; j < 7; j++)
     fprintf(stderr, " %12.8f ", U->c[j]);
   fprintf(stderr, "\n");
@@ -168,7 +169,7 @@ void tf_calib_guess1_compute_Tx_and_Ty
   calibration_aux_data_t caux, 
   rm_t U )
 {
-  int i, far_point;
+  int32_t i, far_point;
   double Tx, Ty, Ty_squared, x, y;
   double distance, far_distance;
     
@@ -263,7 +264,7 @@ void tf_calib_guess1_compute_approximate_f_and_Tz
     calibration_aux_data_t caux )
 {
   /* !!! Should check whether {f} and/or {Tz} and/or {kappa} are fixed !!! */
-  int i;
+  int32_t i;
   mat_rm_t M = tf_alloc_mat_rm (cdat->np, 2);
   rm_t b = tf_alloc_rm (cdat->np);
   rm_t U = tf_alloc_rm (2);
@@ -280,7 +281,7 @@ void tf_calib_guess1_compute_approximate_f_and_Tz
 		 cpar->S.c[3][2] * cdat->world[i].c[1] + 
 		 cpar->S.c[3][3] * cdat->world[i].c[2] ) * caux->distorted_coords[i].c[1];
      
-    int j;
+    int32_t j;
     for (j = 0; j < 2; j++)
       fprintf(stderr, " %12.8f ", M->c[i*2+j]);
     fprintf(stderr, " = %12.8f\n", b->c[i]); 
@@ -290,7 +291,7 @@ void tf_calib_guess1_compute_approximate_f_and_Tz
 
   tf_solve_system_mxn (M, U, b, cdat->weight);
   fprintf(stderr, "U solution\n");
-  int j;
+  int32_t j;
   for (j = 0; j < 2; j++)
     fprintf(stderr, " %12.8f ", U->c[j]);
   fprintf(stderr, "\n"); 
@@ -326,7 +327,7 @@ void tf_calib_guess1_compute_exact_f_Tz_kappa
       FALSE ); 
 }
 
-calibration_aux_data_t tf_calib_guess1_create_auxiliary_calibration_aux_data_structure (int nmarks)
+calibration_aux_data_t tf_calib_guess1_create_auxiliary_calibration_aux_data_structure (int32_t nmarks)
 {
   calibration_aux_data_t caux = (calibration_aux_data_t)malloc(sizeof(struct _calibration_aux_data_t));   
    
@@ -339,7 +340,7 @@ calibration_aux_data_t tf_calib_guess1_create_auxiliary_calibration_aux_data_str
 
 void tf_calib_guess1_print_calibration_aux_data (calibration_aux_data_t caux, FILE *wr)
 {
-  int i;
+  int32_t i;
   fprintf(wr, "%s\n", "Calibration aux data:");
   for (i = 0; i < caux->nmarks; i++) {
     fprintf(wr, "caux->x[%d] -> %9.9f \n", i, caux->distorted_coords[i].c[0]);

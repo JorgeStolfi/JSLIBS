@@ -2,7 +2,7 @@
 #define PROG_DESC "tests of {limnmism} neuron-level network simulation"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-17 01:28:50 by jstolfi */ 
+/* Last edited on 2022-10-20 06:48:55 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -17,6 +17,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -86,11 +87,11 @@ void nmsim_test_elem_net_trace_write(char *prefix, nmsim_elem_net_trace_t *etrac
   /* Writes the elem-level traces in {etrace} with names "{prefix}_elem_n{NN}.txt"
     where {NN} is the neuron index. */
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     /* nmsim_test_elem_net_sim(1,1,1,1,1,1); */
     nmsim_test_elem_net_sim(1,1,3,12,21,120);

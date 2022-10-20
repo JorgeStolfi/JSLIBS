@@ -4,6 +4,7 @@
 /* Must define _GNU_SOURCE in order to get {asprintf} */
 #define _GNU_SOURCE
 #include <string.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>

@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} neuron population attributes"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-11 15:10:00 by jstolfi */ 
+/* Last edited on 2022-10-20 06:34:10 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -17,6 +17,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -44,11 +45,11 @@ void nmsim_group_neuron_test_read
   /* Reads a neuron population index and attributes record from file {fname}, and compares
     them to {ing} and {ngrp}. */
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     nmsim_class_neuron_ix_t inc_max = 418;
     nmsim_elem_neuron_count_t nne_g_min = 1;

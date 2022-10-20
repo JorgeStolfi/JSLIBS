@@ -2,7 +2,7 @@
 #define PROG_DESC "test of procedures that deal with rungs"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2017-06-22 18:12:38 by stolfilocal */
+/* Last edited on 2022-10-20 07:58:26 by stolfi */
 
 #define dm_test_rungs_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -48,6 +48,7 @@
   argparser_help_info_STANDARD_RIGHTS  
 
 #include <dm_basic.h>
+#include <stdint.h>
 
 #include <msm_image.h>
 #include <msm_rung.h>
@@ -69,17 +70,17 @@
   /* Minimum number of datums in a sequence at coarsest level. */
 
 typedef struct options_t 
-  { int lengthX;       /* length of X sequence. */
+  { int32_t lengthX;       /* length of X sequence. */
     bool_t circX;      /* TRUE iff X sequence is circular. */
-    int lengthY;       /* length of Y sequence. */
+    int32_t lengthY;       /* length of Y sequence. */
     bool_t circY;      /* TRUE iff Y sequence is circular. */
     /* Output parameters: */
     char *outName;     /* Output file name prefix (minus extensions). */
   } options_t;
   
-int main(int argc, char**argv);
+int32_t main(int32_t argc, char**argv);
 
-options_t *msm_get_options(int argc, char**argv);
+options_t *msm_get_options(int32_t argc, char**argv);
   /* Parses the command line options, packs 
     them into a {options_t} record. */
 
@@ -89,7 +90,7 @@ dm_cand_vec_t msm_generate_cands(options_t *o);
     elements, and is circular iff {o->circX} is TRUE. Ditto for
     {o->lengthY,o->circY}. */
   
-int main(int argc, char**argv)
+int32_t main(int32_t argc, char**argv)
   { 
     options_t *o = msm_get_options(argc, argv);
     
@@ -106,10 +107,10 @@ int main(int argc, char**argv)
     
 dm_cand_vec_t msm_generate_cands(options_t *o)
   { /* Define the max candidate length {maxlen}: */
-    int nx = o->lengthX;
-    int ny = o->lengthY;
-    int maxlen = (nx > ny ? nx : ny);
-    int minlen = (maxlen + 9)/10;
+    int32_t nx = o->lengthX;
+    int32_t ny = o->lengthY;
+    int32_t maxlen = (nx > ny ? nx : ny);
+    int32_t minlen = (maxlen + 9)/10;
     /* Generate the candidates: */
     dm_cand_vec_t cdv = msm_cand_vec_throw
       ( o->nPairings,
@@ -124,7 +125,7 @@ dm_cand_vec_t msm_generate_cands(options_t *o)
     return cdv;
   }
 
-options_t *msm_get_options(int argc, char**argv)
+options_t *msm_get_options(int32_t argc, char**argv)
   { 
     options_t *o = (options_t *)notnull(malloc(sizeof(options_t)), "no mem");
     
@@ -135,13 +136,13 @@ options_t *msm_get_options(int argc, char**argv)
     
     argparser_skip_parsed(pp);
     
-    o->lengthX = argparser_get_next_int(pp, 0, INT_MAX);
+    o->lengthX = argparser_get_next_int32_t(pp, 0, INT32_MAX);
     o->circX = argparser_get_next_bool(pp);
     
-    o->lengthY = argparser_get_next_int(pp, 0, INT_MAX);
+    o->lengthY = argparser_get_next_int32_t(pp, 0, INT32_MAX);
     o->circY = argparser_get_next_bool(pp);
     
-    o->nPairings = argparser_get_next_int(pp, 0, INT_MAX);
+    o->nPairings = argparser_get_next_int32_t(pp, 0, INT32_MAX);
     o->outName = argparser_get_next(pp);
 
     argparser_finish(pp);

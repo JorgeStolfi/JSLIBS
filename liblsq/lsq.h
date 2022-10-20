@@ -2,7 +2,7 @@
 #define lsq_H
 
 /* Fits a linear map of {R^nx} to {R^nf} by least squares, given sampling proc. */
-/* Last edited on 2019-12-18 15:59:51 by jstolfi */
+/* Last edited on 2022-10-20 10:28:02 by stolfi */
 
 #define lsq_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -131,7 +131,7 @@ int32_t lsq_solve_system
     of linearly independent rows in {A} and {R}. */
  
 void lsq_debug_double_vec(int32_t nx, double x[], char *fmt);
-void lsq_debug_int32_t_vec(int32_t nx, int32_t x[], char *fmt);
+void lsq_debug_int32_vec(int32_t nx, int32_t x[], char *fmt);
   /* These procedures print {x[0..nx-1]} to {stderr}, each with format {fmt},
     separated by spaces and bracketed by '[' and ']'. */
 

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of mapping candidates between scales"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2017-06-22 18:13:13 by stolfilocal */
+/* Last edited on 2022-10-20 11:13:13 by stolfi */
 
 #define msm_test_120_mapping_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -51,6 +51,7 @@
 
 #define _GNU_SOURCE
 #include <math.h>
+#include <stdint.h>
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -82,9 +83,9 @@ typedef struct msm_options_t
     char *outName;  /* Output file name prefix (minus extensions). */
   } msm_options_t;
   
-int main(int argc, char**argv);
+int32_t main(int32_t argc, char**argv);
 
-msm_options_t *msm_get_options(int argc, char**argv);
+msm_options_t *msm_get_options(int32_t argc, char**argv);
   /* Parses the command line options, packs 
     them into a {msm_options_t} record. */
 
@@ -95,16 +96,16 @@ msm_cand_vec_t msm_fake_initial_cands
   );
   /* Generates a list of {nCands} candidates between the sequences {seq0,seq1}. */
   
-int main(int argc, char**argv)
+int32_t main(int32_t argc, char**argv)
   { 
-    int M = msm_MAX_MAX_LEVEL;
+    int32_t M = msm_MAX_MAX_LEVEL;
     
     msm_options_t *o = msm_get_options(argc, argv);
 
     fprintf(stderr, "computing sequence descriptors for scales %d .. %d ...\n", 0, M-1);
     msm_seq_desc_t sv0[M+1];
     msm_seq_desc_t sv1[M+1];
-    int level;
+    int32_t level;
     for (level = 0; level <= M; level++) 
       { if (level == 0)
           { /* Original sequences: */
@@ -114,7 +115,7 @@ int main(int argc, char**argv)
         else
           { /* Filtered sequences: */
             /* Choose an arbitrary kernel radius {rwtb}: */
-            int rwtb = 3 + (level % 3);
+            int32_t rwtb = 3 + (level % 3);
             /* Choose an arbitrary resampling order {ek}: */
             int8_t ek = (int8_t)(level == 1 ? -2 : ((level % 4) == 2 ? -1 : +1));
             /* Simulate the filtering: */
@@ -150,7 +151,7 @@ int main(int argc, char**argv)
     for (level = M; level >= 0; level--)
       { 
         /* Scale reduction factor from original strings: */
-        int scale = 1 << level;
+        int32_t scale = 1 << level;
 
         fprintf(stderr, "\n");
         fprintf(stderr, "= = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\n");
@@ -221,13 +222,13 @@ msm_cand_vec_t msm_fake_initial_cands
   )
   { 
     /* Define the max pairing length {maxlen}: */
-    int n0 = seq0->size;
-    int n1 = seq1->size;
-    int maxlen = (n0 < n1 ? n0 : n1);
-    int minlen = (maxlen + 9)/10;
+    int32_t n0 = seq0->size;
+    int32_t n1 = seq1->size;
+    int32_t maxlen = (n0 < n1 ? n0 : n1);
+    int32_t minlen = (maxlen + 9)/10;
     /* Generate the candidates: */
     msm_cand_vec_t cdv = msm_cand_vec_new(nCands);
-    int ncd = 0; /* Start storing candidates here. */
+    int32_t ncd = 0; /* Start storing candidates here. */
     msm_cand_vec_throw
       ( nCands,
         seq0, seq1,
@@ -242,7 +243,7 @@ msm_cand_vec_t msm_fake_initial_cands
     return cdv;
   }
 
-msm_options_t *msm_get_options(int argc, char**argv)
+msm_options_t *msm_get_options(int32_t argc, char**argv)
   { 
     msm_options_t *o = (msm_options_t *)notnull(malloc(sizeof(msm_options_t)), "no mem");
     
@@ -253,11 +254,11 @@ msm_options_t *msm_get_options(int argc, char**argv)
     
     argparser_skip_parsed(pp);
     
-    o->lengthX = (int32_t)argparser_get_next_int(pp, 0, INT_MAX);
+    o->lengthX = (int32_t)argparser_get_next_int(pp, 0, INT32_MAX);
     
-    o->lengthY = (int32_t)argparser_get_next_int(pp, 0, INT_MAX);
+    o->lengthY = (int32_t)argparser_get_next_int(pp, 0, INT32_MAX);
     
-    o->nCands = (int32_t)argparser_get_next_int(pp, 0, INT_MAX);
+    o->nCands = (int32_t)argparser_get_next_int(pp, 0, INT32_MAX);
     
     o->outName = argparser_get_next(pp);
 

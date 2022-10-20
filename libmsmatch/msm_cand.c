@@ -1,11 +1,12 @@
 /* See msm_cand.h */
-/* Last edited on 2017-04-28 18:01:52 by stolfilocal */
+/* Last edited on 2022-10-20 06:41:24 by stolfi */
 
 #define msm_cand_C_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)"
 
 #define _GNU_SOURCE
 #include <assert.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
@@ -50,7 +51,7 @@ void msm_cand_free(msm_cand_t *cd)
 
 bool_t msm_cand_equivalent(msm_cand_t *cda, msm_cand_t *cdb, bool_t die)
   {
-    int j;
+    int32_t j;
     for (j = 0; j < 2; j++)
       { msm_seq_desc_t *saj = &(cda->seq[j]);
         msm_seq_desc_t *sbj = &(cdb->seq[j]);
@@ -71,15 +72,15 @@ bool_t msm_cand_equivalent(msm_cand_t *cda, msm_cand_t *cdb, bool_t die)
 #define DEBLEV(n) (msm_cand_debug_level >= (n))
   /* Use {if(DEBLEV(n)){...}} for debug printouts of level {n}. */
 
-int msm_cand_count_common_rungs(msm_cand_t *ca, msm_cand_t *cb)
-  { int j;
+int32_t msm_cand_count_common_rungs(msm_cand_t *ca, msm_cand_t *cb)
+  { int32_t j;
     for (j = 0; j < 2; j++)
       { msm_seq_desc_t *saj = &(ca->seq[j]);
         msm_seq_desc_t *sbj = &(cb->seq[j]);
         if(! msm_seq_desc_equal(saj, sbj, FALSE)) { return 0; }
       }
-    int n0 = ca->seq[0].size;
-    int n1 = ca->seq[1].size;
+    int32_t n0 = ca->seq[0].size;
+    int32_t n1 = ca->seq[1].size;
     return msm_pairing_count_common_rungs(ca->pr, cb->pr, n0, n1);
   }
   
@@ -91,11 +92,11 @@ double msm_cand_compute_score
     bool_t ini_step,
     bool_t fin_step
   )
-  { int ng = msm_pairing_num_rungs(pr);
+  { int32_t ng = msm_pairing_num_rungs(pr);
     if (ng == 0) { /* Should not happen, but... */ return 0.0; }
     
     double sc = 0;  /* Total score. */
-    int t_ini; /* Index of first step. */
+    int32_t t_ini; /* Index of first step. */
     
     msm_rung_t g; /* Preceding rung. */
     if (ini_step)
@@ -109,7 +110,7 @@ double msm_cand_compute_score
         t_ini = 1;
       }
     /* Add the scores of all steps that end in rungs {t_ini..ng-1}: */
-    int t; 
+    int32_t t; 
     for (t = t_ini; t < ng; t++)
       { msm_rung_t h = msm_pairing_get_rung(pr, t);
         sc += step_score(seq0, seq1, &g, &h);
@@ -126,7 +127,7 @@ double msm_cand_compute_score
 msm_cand_t msm_cand_throw
   ( msm_seq_desc_t *seq0, 
     msm_seq_desc_t *seq1, 
-    int len,
+    int32_t len,
     bool_t atomic,
     bool_t diagonal,
     double skipProb
@@ -144,9 +145,9 @@ msm_cand_t msm_cand_throw
     return cd;
   }
   
-msm_cand_t msm_cand_sub_throw(msm_cand_t *cd, int len)
-  { int old_span = msm_pairing_span(cd->pr, -1); /* Total {s0} and {s1} span of {cd}: */
-    int new_span = 2*len; /* Required total span. */
+msm_cand_t msm_cand_sub_throw(msm_cand_t *cd, int32_t len)
+  { int32_t old_span = msm_pairing_span(cd->pr, -1); /* Total {s0} and {s1} span of {cd}: */
+    int32_t new_span = 2*len; /* Required total span. */
     double score = cd->score * ((double)new_span)/((double)old_span); /* Rough guess. */
     msm_cand_t cdn = (msm_cand_t)
       { .score = score,
@@ -203,7 +204,7 @@ msm_cand_t msm_cand_interpolate(msm_cand_t *cd)
       }
     
     msm_cand_t cdnew; 
-    int j;
+    int32_t j;
     cdnew.score = cd->score; 
     for (j = 0; j <= 1; j++) { cdnew.seq[j] = cd->seq[j]; }
     cdnew.pr = msm_pairing_interpolate(cd->pr);
@@ -217,7 +218,7 @@ msm_cand_t msm_cand_interpolate(msm_cand_t *cd)
     return cdnew; 
   }
 
-msm_cand_t msm_cand_make_increasing(msm_cand_t *cd, int minIncrEach, int minIncrSum)
+msm_cand_t msm_cand_make_increasing(msm_cand_t *cd, int32_t minIncrEach, int32_t minIncrSum)
   { 
     bool_t debug = FALSE;
 
@@ -228,7 +229,7 @@ msm_cand_t msm_cand_make_increasing(msm_cand_t *cd, int minIncrEach, int minIncr
       }
     
     msm_cand_t cdnew; 
-    int j;
+    int32_t j;
     cdnew.score = cd->score; 
     for (j = 0; j <= 1; j++) { cdnew.seq[j] = cd->seq[j]; }
     cdnew.pr = msm_pairing_make_increasing(cd->pr, minIncrEach, minIncrSum);
@@ -246,15 +247,15 @@ void msm_cand_write
   ( FILE *wr, 
     char *pre, 
     msm_cand_t *cd, 
-    int idSize, 
-    int nameSize, 
-    int ixSize, 
+    int32_t idSize, 
+    int32_t nameSize, 
+    int32_t ixSize, 
     char *suf,
     bool_t writePairing
   )
   { 
     if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, wr); }
-    int j;
+    int32_t j;
     for (j = 0; j < 2; j++)
       { msm_seq_desc_t *sj = &(cd->seq[j]);
         msm_seq_desc_write(wr, "( ", sj, idSize, nameSize, ixSize, " )  ");
@@ -269,7 +270,7 @@ void msm_cand_write
 msm_cand_t msm_cand_read(FILE *rd, char *pre, char *suf)
   { if ((pre != NULL) && ((*pre) != 0)) { fget_skip_spaces(rd); fget_match(rd, pre); }
     msm_cand_t cd;
-    int j;
+    int32_t j;
     for (j = 0; j < 2; j++)
       { cd.seq[j] = msm_seq_desc_read(rd, "(", ")"); 
         
@@ -280,14 +281,14 @@ msm_cand_t msm_cand_read(FILE *rd, char *pre, char *suf)
     return cd;
   }
 
-bool_t msm_cand_pairing_is_valid(msm_pairing_t *pr, int n0, int n1, int minIncrEach, bool_t atomic, bool_t die)
+bool_t msm_cand_pairing_is_valid(msm_pairing_t *pr, int32_t n0, int32_t n1, int32_t minIncrEach, bool_t atomic, bool_t die)
   { if (! msm_pairing_is_valid(pr, die)) { return FALSE; }
-    int ng = msm_pairing_num_rungs(pr);
+    int32_t ng = msm_pairing_num_rungs(pr);
     assert(ng >= 0);
     if (ng != 0) 
       { /* The pairing must be non-decreasing on both sides, non-stuttering: */
         if (minIncrEach < 0) { minIncrEach = 0; } /* Require non-decreasing steps in any case. */
-        int minIncrSum = 1; /* Require non-stuttering steps in any case. */
+        int32_t minIncrSum = 1; /* Require non-stuttering steps in any case. */
         if (! msm_pairing_is_increasing(pr, minIncrEach, minIncrSum, atomic, die)) { return FALSE; }
 
         /* Check if first and last rungs are in the valid range, rest follows: */
@@ -299,7 +300,7 @@ bool_t msm_cand_pairing_is_valid(msm_pairing_t *pr, int n0, int n1, int minIncrE
     return TRUE;
   }
 
-bool_t msm_cand_is_valid(msm_cand_t *cd, int minIncrEach, bool_t atomic, bool_t die)
+bool_t msm_cand_is_valid(msm_cand_t *cd, int32_t minIncrEach, bool_t atomic, bool_t die)
   { 
     /* Check the descriptors: */
     if (! msm_seq_desc_is_valid(&(cd->seq[0]), FALSE)) { fail_test(die, "invalid sequence 0"); }

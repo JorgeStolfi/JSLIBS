@@ -2,18 +2,18 @@
 #define msm_rung_H
 
 /* A rung is a pair of integer indices. */
-/* Last edited on 2013-10-22 06:52:46 by stolfilocal */
+/* Last edited on 2022-10-20 07:58:11 by stolfi */
 
 #define msm_rung_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
 
-#include <msm_basic.h>
-#include <msm_seq_desc.h>
+#include <stdint.h>
 
 #include <sign.h>
 #include <vec.h>
 
-#include <stdint.h>
+#include <msm_basic.h>
+#include <msm_seq_desc.h>
 
 /* RUNGS
   
@@ -36,7 +36,7 @@ typedef struct msm_rung_t { int32_t c[2]; } msm_rung_t;
   /* The R- and S-coordinates of a rung (along the main
     diagonal and across it, respectively). */
 
-#define msm_rung_none (msm_rung_t){{ INT_MAX, INT_MAX }}
+#define msm_rung_none (msm_rung_t){{ INT32_MAX, INT32_MAX }}
   /* A special {msm_rung_t} value mening /no rung/. */
 
 bool_t msm_rung_is_none(msm_rung_t *g);
@@ -112,7 +112,7 @@ msm_rung_vec_t msm_rung_vec_throw(msm_rung_t gini, msm_rung_t gfin, bool_t atomi
   The step is /X-stationary/ if {g0.X == g1.X}, and /Y-stationary/
   if {g.Y == h.Y}.  */
   
-bool_t msm_rung_step_is_increasing(msm_rung_t g0, msm_rung_t g1, int minIncrEach, int minIncrSum, bool_t die);
+bool_t msm_rung_step_is_increasing(msm_rung_t g0, msm_rung_t g1, int32_t minIncrEach, int32_t minIncrSum, bool_t die);
   /* Returns TRUE iff the step {g0-->g1} advances least {minIncrEach}
     positions on each side, and a total of at least {minIncrSum} on both
     sequences together. Othwerwise, if {die} is TRUE, fails with an
@@ -126,7 +126,7 @@ bool_t msm_rung_step_is_perfect(msm_rung_t g0, msm_rung_t g1, bool_t die);
   /* Returns TRUE iff the step {g0-->g1} is perfect.  Othwerwise, if {die} is TRUE,
     fails with an error message; if {die} is FALSE, returns FALSE silently. */
 
-int msm_rung_step_span_increment(msm_rung_t g0, msm_rung_t g1, int j);
+int32_t msm_rung_step_span_increment(msm_rung_t g0, msm_rung_t g1, int32_t j);
   /* If {j} is 0 or 1, returns the signed number of positions spanned
     on side {j} of the rungs by the step from {g0} to {g1}, not
     counting one of the rungs; that is, {g1.c[j] - g0.c[j]}. If {j} is
@@ -149,7 +149,7 @@ sign_t msm_rung_step_break_tie(msm_rung_t a0, msm_rung_t a1, msm_rung_t b0, msm_
     from {msm_rung_none} are worse than any steps between two valid
     rungs. */
 
-void msm_rung_interpolate(msm_rung_t g0, msm_rung_t g1, int *ngP, msm_rung_vec_t *gv);
+void msm_rung_interpolate(msm_rung_t g0, msm_rung_t g1, int32_t *ngP, msm_rung_vec_t *gv);
   /* Appends to {gv[0..*ngP-1]} a series of rungs that interpolate
     between rung {g0} (exclusive) and rung {g1} (inclusive), so
     that the steps are atomic, all in the same direction as
@@ -168,7 +168,7 @@ msm_rung_vec_t msm_rung_vec_interpolate(msm_rung_vec_t *gv);
     ednd with the same rungs as {gv}, and will contain all its
     rungs. */
 
-msm_rung_vec_t msm_rung_vec_make_increasing(msm_rung_vec_t *gv, int minIncrEach, int minIncrSum);
+msm_rung_vec_t msm_rung_vec_make_increasing(msm_rung_vec_t *gv, int32_t minIncrEach, int32_t minIncrSum);
   /* Returns a list of rungs that contains a subset of the rungs of {gv},
     chosen so that the X and Y increments of every step (1) are
     at least {minIncrEach} and (2) add at least {minIncrSum} or more.  
@@ -180,7 +180,7 @@ msm_rung_vec_t msm_rung_vec_make_increasing(msm_rung_vec_t *gv, int minIncrEach,
     result has the same initial and final rungs as {gv}. */
 
 
-msm_rung_vec_t msm_rung_vec_join(msm_rung_vec_t *gva, int ja, msm_rung_vec_t *gvb, int jb);
+msm_rung_vec_t msm_rung_vec_join(msm_rung_vec_t *gva, int32_t ja, msm_rung_vec_t *gvb, int32_t jb);
   /* Composes two rung vectors {gva} and {gvb} on their sides {ja} and {jb},
     respectively, producing a single rung vector {gvm}.
     

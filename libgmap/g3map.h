@@ -1,6 +1,6 @@
 #ifndef g3map_H
 #define g3map_H
-/* Last edited on 2016-01-01 18:10:30 by stolfilocal */
+/* Last edited on 2022-10-20 06:29:08 by stolfi */
 
 /* 
   3-DIMENSIONAL MAPS
@@ -25,6 +25,7 @@
 
 #define _GNU_SOURCE
 #include <gem.h>
+#include <stdint.h>
 
 typedef gem_ref_t g3map_place_t;
   /* A {g3map_place_t} specifies a /place/ on a 3-map. It is actually a
@@ -38,7 +39,7 @@ typedef gem_ref_t g3map_place_t;
     the places on a {k}-part, one starts from any place on it and
     enumerate all places reached by {i}-pointers with {i < k}. */
     
-g3map_place_t g3map_step(g3map_place_t a, int i);
+g3map_place_t g3map_step(g3map_place_t a, int32_t i);
   /* Takes a step on the 3-map from place {a} to the place
     that differs from {a} only in the part of dimension {i},
     which must be in {0..3}.
@@ -122,7 +123,7 @@ void g3map_edge_splice(g3map_place_t a, g3map_place_t b);
   2-sphere, otherwise the cell will have a non-manifold point in its
   interior. */
 
-g3map_place_t g3map_face_make(int n, g3map_place_t e[]);
+g3map_place_t g3map_face_make(int32_t n, g3map_place_t e[]);
   /* Creates a new 2-dimensional map consisting of a single 2-face,
     whose sides are the previously created edges {e[0..n-1]},
     which must be all distinct, non-loop, and not attached to any edge, face

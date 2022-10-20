@@ -2,7 +2,7 @@
 #define neuromat_eeg_pca_H
 
 /* Principal componnet analysis toos for NeuroMat. */
-/* Last edited on 2021-08-29 11:44:46 by stolfi */
+/* Last edited on 2022-10-20 06:26:34 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -80,13 +80,13 @@ void neuromat_eeg_pca_fit_patterns
     {ci[0..np-1]} are computed by the product {Q*P*vi'}. */
 
 void neuromat_eeg_pca_combine_patterns
-  ( int nt, 
-    int ne, 
-    int np, 
+  ( int32_t nt, 
+    int32_t ne, 
+    int32_t np, 
     double *P, 
     double **coef, 
-    int mp, 
-    int ip[], 
+    int32_t mp, 
+    int32_t ip[], 
     double **vout
   );
   /* Creates an EEG datset from a selected subset of patterns from {P}

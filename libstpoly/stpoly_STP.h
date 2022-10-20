@@ -1,11 +1,12 @@
 /* Types and tools for STP files. */
-/* Last edited on 2016-04-18 19:44:23 by stolfilocal */
+/* Last edited on 2022-10-20 05:59:46 by stolfi */
 
 #ifndef stpoly_STP_H
 #define stpoly_STP_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <vec.h>
 #include <bool.h>
@@ -16,7 +17,7 @@ typedef struct stpoly_STP_edge_t { r2_t v[2]; } stpoly_STP_edge_t;
   /* A straight line segment (an /edge/) of a polygonal figure,
     as represented in an STP file. */  
 
-typedef void stpoly_STP_edge_proc_t(int line, stpoly_STP_edge_t *edge);
+typedef void stpoly_STP_edge_proc_t(int32_t line, stpoly_STP_edge_t *edge);
   /* Type of a procedure that is called by {stpoly_STP_read} to process
     each segment {*edge} read from the STP file. The {line} argument is
     a line number to be used in error messages. Note: the edge record

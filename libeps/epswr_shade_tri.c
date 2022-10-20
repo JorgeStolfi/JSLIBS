@@ -1,8 +1,9 @@
 /* See epswr_shade_tri.h */
-/* Last edited on 2009-08-25 01:07:58 by stolfi */
+/* Last edited on 2022-10-20 06:54:52 by stolfi */
 
 #define _GNU_SOURCE
 #include <assert.h>
+#include <stdint.h>
 
 #include <bool.h>
 #include <affirm.h>
@@ -19,7 +20,7 @@ void epswr_shade_triangle_subd
     double xa, double ya, double Ra, double Ga, double Ba,
     double xb, double yb, double Rb, double Gb, double Bb,
     double xc, double yc, double Rc, double Gc, double Bc,
-    int ns         /* Number of subdivisions. */
+    int32_t ns         /* Number of subdivisions. */
   );
   /* Same as epswr_shade_triangle, for {ns > 0}. */
 
@@ -36,7 +37,7 @@ void epswr_shade_triangle
     double xa, double ya, double Ra, double Ga, double Ba,
     double xb, double yb, double Rb, double Gb, double Bb,
     double xc, double yc, double Rc, double Gc, double Bc,
-    int ns         /* Number of subdivisions. */
+    int32_t ns         /* Number of subdivisions. */
   )
   { if (ns < 0)
       { /* Gouraud-shaded triangle: */
@@ -72,13 +73,13 @@ void epswr_shade_triangle_subd
     double xa, double ya, double Ra, double Ga, double Ba,
     double xb, double yb, double Rb, double Gb, double Bb,
     double xc, double yc, double Rc, double Gc, double Bc,
-    int ns         /* Number of subdivisions. */
+    int32_t ns         /* Number of subdivisions. */
   )
   {
     assert(ns > 0);
-    int nt = ns + 1; /* Number of intervals on each side. */
+    int32_t nt = ns + 1; /* Number of intervals on each side. */
     
-    int ib, ic;
+    int32_t ib, ic;
     /* Scan the chip rows: */
     for (ic = 0; ic < nt; ic++)
       { /* Rel. contrib of input corner {c} to chip corners in rows {ic} and {ic+1}: */

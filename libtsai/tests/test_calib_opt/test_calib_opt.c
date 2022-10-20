@@ -1,10 +1,11 @@
-/* Last edited on 2011-05-17 02:57:01 by stolfi */
+/* Last edited on 2022-10-20 05:57:02 by stolfi */
 
 #define PROG_NAME "test_calib_opt"
 #define PROG_DESC "tests the camera calibration optimization algorithms"
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
@@ -40,7 +41,7 @@ tf_calib_data_t *read_calibration_data(char *in_dir, char *tag);
 
 tf_camera_params_t *read_camera_parameters(tf_camera_specs_t *cspec, char *in_dir, char *name);
 
-int main (int argc, char *argv[])
+int32_t main (int32_t argc, char *argv[])
 {
   char *camera_name = argv[1];
   char *in_dir = argv[2];  /* Directory where to find {p_i.txt,p_w.txt,p_wgt.txt,true.cpar}. */
@@ -84,7 +85,7 @@ int main (int argc, char *argv[])
   tf_calib_data_print(stderr, cdat); 
   fprintf(stderr, "-----------------------------\n");
 
-  int nmarks = cdat->np;
+  int32_t nmarks = cdat->np;
   r2_t *q = cdat->image;
   r3_t *p = cdat->world;
   double *w = cdat->weight;
@@ -167,7 +168,7 @@ void plot_cpars
     PSStream *ps = pswr_new_stream(ps_prefix, NULL, TRUE, NULL, NULL, FALSE, hSize + 2*hMrg, vSize + 2*vMrg);
 
     /* Plot the figures: */
-    int nmarks = cdat->np;
+    int32_t nmarks = cdat->np;
     r2_t *q = cdat->image;
     r3_t *p = cdat->world;
 

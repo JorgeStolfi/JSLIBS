@@ -1,4 +1,4 @@
-/* Last edited on 2015-09-26 17:05:25 by stolfilocal */
+/* Last edited on 2022-10-20 06:03:50 by stolfi */
 
 /*
 Original code {tinyxml2.hpp} by Lee Thomason (www.grinninglizard.com)
@@ -30,6 +30,7 @@ distribution.
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -38,7 +39,7 @@ distribution.
 
 #include <bool.h>
 
-int salamic_xml_snprintf( char* buffer, size_t size, const char* format, ... );
+int32_t salamic_xml_snprintf( char* buffer, size_t size, const char* format, ... );
 
 // namespace salamic_xml
 // {
@@ -74,7 +75,7 @@ typedef struct salamic_xml_str_pair_t
   {
     char *start;
     char *end;
-    int flags;
+    int32_t flags;
   } salamic_xml_str_pair_t;
   /*
     A strig wrapper. Normally stores the start and end
@@ -82,7 +83,7 @@ typedef struct salamic_xml_str_pair_t
     and entity translation if actually read. Can also store (and memory
     manage) a traditional {char[]}. */
 
-void salamic_xml_str_pair_set(salamic_xml_str_pair_t *str, char* start, char* end, int flags);
+void salamic_xml_str_pair_set(salamic_xml_str_pair_t *str, char* start, char* end, int32_t flags);
 // StrPair.Set
 
 char *salamic_xml_str_pair_get_chars (salamic_xml_str_pair_t *str);
@@ -91,10 +92,10 @@ char *salamic_xml_str_pair_get_chars (salamic_xml_str_pair_t *str);
 bool_t salamic_xml_str_pair_is_empty(salamic_xml_str_pair_t *str);
 // StrPair.Empty
 
-void salamic_xml_str_pair_from_string(salamic_xml_str_pair_t *str, const char* ch, int flags);
+void salamic_xml_str_pair_from_string(salamic_xml_str_pair_t *str, const char* ch, int32_t flags);
 // StrPair.SetChars
 
-char* salamic_xml_str_pair_parse_text(salamic_xml_str_pair_t *str, char* in, const char* endTag, int flags);
+char* salamic_xml_str_pair_parse_text(salamic_xml_str_pair_t *str, char* in, const char* endTag, int32_t flags);
 // StrPair.ParseText
 
 char* salamic_xml_str_pair_parse_name(salamic_xml_str_pair_t *str, char* in);

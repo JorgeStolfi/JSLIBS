@@ -1,11 +1,12 @@
 /* Arbitrary polygonal figure, with quasimanifold topology. */
-/* Last edited on 2016-04-21 18:40:07 by stolfilocal */
+/* Last edited on 2022-10-20 06:02:06 by stolfi */
 
 #ifndef stpoly_H
 #define stpoly_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <vec.h>
 #include <bool.h>
@@ -68,7 +69,7 @@ uint32_t stpoly_vert_degree(stpoly_vert_t v);
 
 /* EDGE OPERATIONS */
 
-stpoly_edge_t stpoly_edge_reverse(stpoly_edge_t e, int k);
+stpoly_edge_t stpoly_edge_reverse(stpoly_edge_t e, int32_t k);
   /* If {k} is odd, returns the oriented edge which is the same unoriented edge as
     {e}, but with the opposite orientation.  If {k} is even, retruns {e}
     itself. */
@@ -79,7 +80,7 @@ stpoly_edge_t stpoly_edge_natural(stpoly_edge_t e);
     for any oriented edge {e}, where {e'} is the reverse of {e},
     and {e*} is either {e} or {e'}. */
 
-stpoly_vert_t stpoly_edge_get_endpoint(stpoly_edge_t e, int k);
+stpoly_vert_t stpoly_edge_get_endpoint(stpoly_edge_t e, int32_t k);
   /* Returns the vertex that is the origin ({k = 0}) or
     destination ({k = 1}) of {e}, taking its orientation into account. */
 

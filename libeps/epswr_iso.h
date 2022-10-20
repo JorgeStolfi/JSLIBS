@@ -1,10 +1,11 @@
 /* Plots of bivariate functions with isolines or color bands. */
-/* Last edited on 2009-08-24 22:31:54 by stolfi */
+/* Last edited on 2022-10-20 06:53:40 by stolfi */
 
 #ifndef epswr_iso_H
 #define epswr_iso_H
 
 #include <epswr.h>
+#include <stdint.h>
 
 /* 
   This module provides tools for painting a function defined in a
@@ -24,14 +25,14 @@
   depending on whether the compiler chooses to evaluate it in {double}
   or {double extended}.  */
   
-double epswr_level(double vStart, double vStep, int k);
+double epswr_level(double vStart, double vStep, int32_t k);
   /* The official level {v[k]} of the isoline with index {k}. */
 
-int epswr_inf_isoline(double vStart, double vStep, double z);
+int32_t epswr_inf_isoline(double vStart, double vStep, double z);
   /* Returns the index of the first isoline at or below value {z},
     i.e. the largest integer {k} such that {v[k] \leq z}. */
 
-int epswr_sup_isoline(double vStart, double vStep, double z);
+int32_t epswr_sup_isoline(double vStart, double vStep, double z);
   /* Returns the index of the first isoline at or above value {z},
     i.e. the smallest integer {k} such that {z \leq v[k]}. */
 
@@ -46,12 +47,12 @@ void epswr_compute_band_indices
   ( double vStart, 
     double vStep, 
     double fMin, 
-    int kMin, 
-    int *iMin, 
+    int32_t kMin, 
+    int32_t *iMin, 
     double *zMin, 
     double fMax, 
-    int kMax, 
-    int *iMax, 
+    int32_t kMax, 
+    int32_t *iMax, 
     double *zMax 
   );
   /* Returns the range {iMin .. iMax} of indices of all bands that
@@ -85,8 +86,8 @@ void epswr_isolines_in_triangle
     double xc, double yc, double fc,
     double vStart,  /* Synchronize levels with this value. */
     double vStep,   /* Spacing between levels. */
-    int kMin,       /* Minimum isoline index. */
-    int kMax        /* Maximum isoline index. */
+    int32_t kMin,       /* Minimum isoline index. */
+    int32_t kMax        /* Maximum isoline index. */
   );
   /* Plots the isolines that enter the triangle. Specifically, a
     straight isoline segment is drawn, with the current pen, wherever
@@ -101,8 +102,8 @@ void epswr_bands_in_triangle
     double xc, double yc, double fc,
     double vStart,  /* Synchronize levels with this value. */
     double vStep,   /* Spacing between levels. */
-    int kMin,       /* Minimum isoline index. */
-    int kMax,       /* Maximum isoline index. */
+    int32_t kMin,       /* Minimum isoline index. */
+    int32_t kMax,       /* Maximum isoline index. */
     double *R, double *G, double *B
   );
   /* Paints the interior of the triangle with bands whose colors are
@@ -137,8 +138,8 @@ void epswr_isolines_in_quadrilateral
     double x11, double y11, double f11,
     double vStart,  /* Synchronize levels with this value. */
     double vStep,   /* Spacing between levels. */
-    int kMin,       /* Minimum isoline index. */
-    int kMax        /* Maximum isoline index. */
+    int32_t kMin,       /* Minimum isoline index. */
+    int32_t kMax        /* Maximum isoline index. */
   );
   /* Plots isolines in a quadrilateral {Q}.  See {epswr_isolines_in_triangle}
     for more details. */
@@ -151,8 +152,8 @@ void epswr_bands_in_quadrilateral
     double x11, double y11, double f11,
     double vStart,  /* Synchronize levels with this value. */
     double vStep,   /* Spacing between levels. */
-    int kMin,       /* Minimum isoline index. */
-    int kMax,       /* Maximum isoline index. */
+    int32_t kMin,       /* Minimum isoline index. */
+    int32_t kMax,       /* Maximum isoline index. */
     double *R, double *G, double *B
   );
   /* Paints color bands in a quadrilateral {Q}.  See {epswr_bands_in_triangle}

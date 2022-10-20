@@ -1,10 +1,11 @@
-/* Last edited on 2011-05-17 02:00:37 by stolfi */
+/* Last edited on 2022-10-20 05:55:12 by stolfi */
 
 #ifndef tf_calib_H
 #define tf_calib_H
 
 /* General-purpose data and functions for calibration routines. */
 #include <stdio.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <values.h>
 #include <r3.h> 
@@ -31,7 +32,7 @@ typedef struct tf_optimization_choice_t
   to be optimized. */
 
 typedef void tf_gather_params_proc_t
-  ( int nparams,
+  ( int32_t nparams,
     double params[],
     tf_camera_specs_t *cspec,
     tf_calib_data_t * cdat,
@@ -44,7 +45,7 @@ typedef void tf_gather_params_proc_t
   {cpar->S} and pack it as the three equivalent euler angles. */
 
 typedef void tf_scatter_params_proc_t
-  ( int nparams,
+  ( int32_t nparams,
     double params[],
     tf_camera_specs_t *cspec,
     tf_calib_data_t * cdat,
@@ -139,12 +140,12 @@ void tf_unselect_all_fixed_parameters(tf_camera_specs_t *cspec, tf_optimization_
 /* Sets {which.XXX} to FALSE if the camera parameter {cspec.XXX} is fixed.
   Leaves the other fields unchanged. */
 
-int tf_generic_optimization_count_params 
+int32_t tf_generic_optimization_count_params 
   ( tf_optimization_choice_t *which );
 /* Computes the number of {lmdif} parameters that are needed to 
   calibrate the parameters selected by {which}. */
 
-int tf_generic_optimization_count_error_terms 
+int32_t tf_generic_optimization_count_error_terms 
   ( tf_calib_data_t * cdat,
     bool_t use_cpar_dev_terms,
     tf_optimization_choice_t *which );
@@ -156,7 +157,7 @@ int tf_generic_optimization_count_error_terms
 
 void tf_generic_optimization_compute_error_terms
   ( double *err,
-    int nerr,
+    int32_t nerr,
     tf_calib_data_t * cdat,
     tf_camera_specs_t *cspec,
     r2_t p_i_dev,
@@ -232,7 +233,7 @@ void tf_clip_to_range (char *name, double *v, bool_t variable, interval_t *range
 /* ---------------------------------------------------------------------- */
 /* UTILITY FUNCTIONS */
 
-void tf_compute_undistorted_obs_coordinates(int n, r2_t p_i[], tf_camera_params_t *cpar, r2_t p_u[]);
+void tf_compute_undistorted_obs_coordinates(int32_t n, r2_t p_i[], tf_camera_params_t *cpar, r2_t p_u[]);
 /* Computes the observed undistorted sensor
   coordinates of all features.  Stores into {p_u[i]} the
   observed image coordinates {p_i[i]}, mapped to
@@ -243,12 +244,12 @@ void tf_compute_undistorted_obs_coordinates(int n, r2_t p_i[], tf_camera_params_
   {tf_dis_sensor_coords_to_und_sensor_coords} with
   {cpar->kappa}. */
 
-void tf_compute_world_barycenter(int n, r3_t p_w[], double weight[], r3_t *b_w);
+void tf_compute_world_barycenter(int32_t n, r3_t p_w[], double weight[], r3_t *b_w);
 /* Computes the weighted barycenter of the world coordinates of all
   {n} featuers.  Assumes that the coordinates of feature {i} are
   {p_w[i]}, and its weight is {weight[i]}. */
   
-void tf_compute_undistorted_coords_barycenter(int n, r2_t p_u[], double weight[], r2_t *b_u);
+void tf_compute_undistorted_coords_barycenter(int32_t n, r2_t p_u[], double weight[], r2_t *b_u);
 /* Computes the weighted barycenter of the undistorted sensor
   coordinates of all {n} features.  Assumes that the coordinates of
   feature {i} are {p_u[i]}, and its weight is {cdat->weight[i]}. */
@@ -256,7 +257,7 @@ void tf_compute_undistorted_coords_barycenter(int n, r2_t p_u[], double weight[]
 void tf_show_optimization_errors
 ( double err[],
   double weight[],
-  int m,
+  int32_t m,
   FILE *ferr );
 /*  */
 
@@ -273,7 +274,7 @@ void tf_write_cpar_and_errors
 void tf_generic_optimization_print_error_terms
   ( FILE *ferr,
     double *err,
-    int nerr,
+    int32_t nerr,
     bool_t use_cpar_dev_terms,
     tf_calib_data_t * cdat,
     tf_optimization_choice_t *which );
@@ -281,7 +282,7 @@ void tf_generic_optimization_print_error_terms
 
 void tf_recompute_target_weights
   ( tf_camera_params_t *cpar,
-    int ntargets,
+    int32_t ntargets,
     r3_t p_w[],
     r2_t p_i[],
     double p_wgt[],

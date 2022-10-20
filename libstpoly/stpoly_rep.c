@@ -1,5 +1,5 @@
 /* Functions of {stpoly.h} that depend on the representation. See {stpoly_rep.h} */
-/* Last edited on 2016-04-21 18:41:58 by stolfilocal */
+/* Last edited on 2022-10-20 05:59:33 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -20,7 +20,7 @@
 /* IMPLEMENTATIONS */
 
 #define EDGE_NAT(e) ( (stpoly_edge_t)( ((uint64_t)(e)) & (~1LU) ) )
-#define EDGE_D(e) ( (int)( ((uint64_t)(e)) & 1LU ) )
+#define EDGE_D(e) ( (int32_t)( ((uint64_t)(e)) & 1LU ) )
 #define EDGE_REV(e) ( (stpoly_edge_t)( ((uint64_t)(e)) ^ 1LU ) )
 
 uint32_t stpoly_vert_count(stpoly_t mesh) 
@@ -35,7 +35,7 @@ float stpoly_get_eps(stpoly_t mesh)
 i2_t stpoly_vert_get_pos(stpoly_vert_t v)
   { return v->pos; }
 
-stpoly_edge_t stpoly_edge_reverse(stpoly_edge_t e, int k)
+stpoly_edge_t stpoly_edge_reverse(stpoly_edge_t e, int32_t k)
   { if ((k & 1) == 1)
       { return EDGE_REV(e); }
     else
@@ -51,15 +51,15 @@ uint32_t stpoly_vert_degree(stpoly_vert_t v)
   { return v->degree;
   }
 
-stpoly_vert_t stpoly_edge_get_endpoint(stpoly_edge_t e, int k)
+stpoly_vert_t stpoly_edge_get_endpoint(stpoly_edge_t e, int32_t k)
   { assert((k == 0) || (k == 1));
-    int ed = EDGE_D(e);
+    int32_t ed = EDGE_D(e);
     stpoly_edge_t e0 = EDGE_NAT(e);
     return e0->endv[ed ^ k];
   }
 
 void stpoly_edge_get_endpoints(stpoly_edge_t e, stpoly_vert_t v[])
-  { int ed = EDGE_D(e);
+  { int32_t ed = EDGE_D(e);
     stpoly_edge_t e0 = EDGE_NAT(e);
     v[0] = e0->endv[0 ^ ed];
     v[1] = e0->endv[1 ^ ed];
@@ -147,7 +147,7 @@ stpoly_vert_unx_t stpoly_add_vert(stpoly_t mesh, i2_t *pos)
     v->pos = (*pos);
 
     /* Update the bounding box: */
-    int k;
+    int32_t k;
     for (k = 0; k < 3; k++)
       { int32_t pik = pos->c[k];
         if (pik < mesh->minQ.c[k]) { mesh->minQ.c[k] = pik; }
@@ -175,7 +175,7 @@ stpoly_edge_unx_t stpoly_add_edge(stpoly_t mesh, stpoly_vert_unx_t uxv[])
     mesh->ne++;
 
     /* Set the edge endpoints: */
-    int d;
+    int32_t d;
     for (d = 0; d < 2; d++)
       { assert(uxv[d] < mesh->nv);
         e->endv[d] = &(mesh->v[uxv[d]]);
@@ -185,7 +185,7 @@ stpoly_edge_unx_t stpoly_add_edge(stpoly_t mesh, stpoly_vert_unx_t uxv[])
     if (debug) { fprintf(stderr, " vertices "); }
     e->minY = INT32_MAX;
     e->maxY = INT32_MIN;
-    int k;
+    int32_t k;
     for (k = 0; k < 2; k++) 
       { assert(uxv[k] < mesh->nv);
         stpoly_vert_t vk = &(mesh->v[uxv[k]]);

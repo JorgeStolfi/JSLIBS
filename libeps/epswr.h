@@ -1,5 +1,5 @@
 /* Tools for generating Encapsulated Postscript graphics files. */
-/* Last edited on 2021-06-26 22:22:58 by jstolfi */
+/* Last edited on 2022-10-20 06:53:30 by stolfi */
 
 #ifndef epswr_H
 #define epswr_H
@@ -28,6 +28,7 @@
   
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <bool.h>
 
@@ -176,8 +177,8 @@ void epswr_shrink_device_window
     
 void epswr_set_device_window_to_grid_cell
   ( epswr_figure_t *eps, 
-    double hMin, double hMax, int ih, int nh, 
-    double vMin, double vMax, int iv, int nv
+    double hMin, double hMax, int32_t ih, int32_t nh, 
+    double vMin, double vMax, int32_t iv, int32_t nv
   );
   /* Conceptually divides the rectangle {[hMin _ hMax] × [vMin _ vmax]}
     (in absolute Device coordinates) into a grid of rectangular
@@ -389,7 +390,7 @@ void epswr_polygon
   ( epswr_figure_t *eps,
     bool_t closed,
     double x[], double y[],
-    int n,
+    int32_t n,
     bool_t fill, bool_t draw,
     bool_t evenOdd
   );
@@ -409,7 +410,7 @@ void epswr_rounded_polygon
   ( epswr_figure_t *eps,
     bool_t closed,
     double x[], double y[],
-    int n,
+    int32_t n,
     double rad,
     bool_t fill, bool_t draw,
     bool_t evenOdd
@@ -436,7 +437,7 @@ void epswr_bezier_polygon
   ( epswr_figure_t *eps,
     bool_t closed,
     double x[], double y[],
-    int n,
+    int32_t n,
     bool_t fill, bool_t draw,
     bool_t evenOdd
   );
@@ -557,7 +558,7 @@ void epswr_arrowhead
     
 /* GRID LINES AND GRID CELLS */
 
-void epswr_grid_lines(epswr_figure_t *eps, int nh, int nv);
+void epswr_grid_lines(epswr_figure_t *eps, int32_t nh, int32_t nv);
   /* The current plot window is implicitly divided into a grid of rectangular
     cells, with {xn} columns and {yn} rows. Draws all grid cell boundaries
     with the current pen and color.  
@@ -567,8 +568,8 @@ void epswr_grid_lines(epswr_figure_t *eps, int nh, int nv);
 
 void epswr_grid_cell
   ( epswr_figure_t *eps, 
-    int ih, int nh,
-    int iv, int nv,
+    int32_t ih, int32_t nh,
+    int32_t iv, int32_t nv,
     bool_t fill, bool_t draw
   );
   /* The curren plot window is implicitly divided into a grid of
@@ -727,7 +728,7 @@ void epswr_comment(epswr_figure_t *eps, const char *title);
     purposes only; it has no visible effect on the printed 
     page/figure. */
 
-void epswr_show_stack(epswr_figure_t *eps, int code);
+void epswr_show_stack(epswr_figure_t *eps, int32_t code);
   /* Issues a command that, when the EPS file is interpreted
     by {gs} (Ghostscript) or similar software, will
     print the contents of the Postscript stack to {stderr}.

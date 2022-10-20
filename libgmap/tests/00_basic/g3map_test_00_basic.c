@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of the {g3map.h} procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2016-05-17 14:49:28 by stolfilocal */ 
+/* Last edited on 2022-10-20 06:28:46 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2015  State University of Campinas (UNICAMP)"
@@ -17,6 +17,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -33,13 +34,13 @@
 
 void g3map_test_make_step_splice_vert(void);
 void g3map_test_make_step_splice_edge(void);
-void g3map_test_make_step_splice_face(int M, int N);
+void g3map_test_make_step_splice_face(int32_t M, int32_t N);
 
 void g3map_test_make_step_splice_cell(bool_t cube);
   /* Tests splicing of cells.  If {cube} is true,
     glues two cubes, else glues two tetrahedra. */
 
-void g3map_test_face_make(int N, g3map_place_t e[]);
+void g3map_test_face_make(int32_t N, g3map_place_t e[]);
   /* Creates a polygon with {N} edges, which are returned in {e[0..N-1]}. Also
    does some consistency checks on {g3map_face_make}. */ 
    
@@ -51,21 +52,21 @@ g3map_place_t g3map_test_tetra_make(void);
   /* Builds a detached cell with topology of a tertahedron. 
      Returns a place on one of the faces. */
 
-void g3map_test_check_cycle_degree(int N, g3map_place_t a, int c0, int c1);
+void g3map_test_check_cycle_degree(int32_t N, g3map_place_t a, int32_t c0, int32_t c1);
   /* Walks on the map along the cycle 
     that starts at {a} and alternates with steps {c0}
     and {c1}. Checks whether that cycle has exactly {N} distinct
     steps ({2*N} distinct places). */
 
-/* void g3map_test_data(int d); */
-/* void g3map_test_traverse(int d); */
-/* void g3map_test_write_read(char *name, int d, g3map_place_t m); */
+/* void g3map_test_data(int32_t d); */
+/* void g3map_test_traverse(int32_t d); */
+/* void g3map_test_write_read(char *name, int32_t d, g3map_place_t m); */
 
-/* g3map_place_t g3map_test_make_square(int d, bool_t rev1, bool_t rev2); */
+/* g3map_place_t g3map_test_make_square(int32_t d, bool_t rev1, bool_t rev2); */
   /* Builds a {d}-dimensional cone of a 2-dimensional gem consisting of a barycentric division of a square,
     with opposite sides identified with parallel or antiparallel orientations dependinn on {rev1,rev2}. */
 
-/* g3map_place_t g3map_test_make_cross_polytope(int d); */
+/* g3map_place_t g3map_test_make_cross_polytope(int32_t d); */
   /* Builds a {d+1}-dimensional gem that is a {d+1}-dimensional cross
     polytope divided into simplices by coning each facet with the
     origin. It has {2^(d+1)} cells, {2*(d+1)} vertices. The vertex at
@@ -75,19 +76,19 @@ void g3map_test_check_cycle_degree(int N, g3map_place_t a, int c0, int c1);
     In particular, if {d} is {-1}, the result has a single unattached
     0-dimensional cell. */
 
-/* g3map_place_t g3map_test_make_star(int d, int n); */
+/* g3map_place_t g3map_test_make_star(int32_t d, int32_t n); */
   /* Builds a star of {n} {d}-dimensional simplices sharing a {d-2}-face ({n} must be even). */
 
-int main(int argc, char **argv);
-/* void write_gem(char *name, int d, g3map_place_t a); */
-/* g3map_place_t read_gem(char *name, int d); */
+int32_t main(int32_t argc, char **argv);
+/* void write_gem(char *name, int32_t d, g3map_place_t a); */
+/* g3map_place_t read_gem(char *name, int32_t d); */
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
-    fprintf(stderr, "sizeof(void *) = %d\n", (int)(sizeof(void*)));
-    fprintf(stderr, "sizeof(g3map_place_t) = %d\n", (int)(sizeof(g3map_place_t)));
+    fprintf(stderr, "sizeof(void *) = %d\n", (int32_t)(sizeof(void*)));
+    fprintf(stderr, "sizeof(g3map_place_t) = %d\n", (int32_t)(sizeof(g3map_place_t)));
     
     g3map_test_make_step_splice_vert();
     
@@ -122,7 +123,7 @@ void g3map_test_make_step_splice_vert(void)
     fprintf(stderr, "--- testing {g3map_vert_make} ---\n");
     /* bool_t debug = FALSE; */
     g3map_place_t r = g3map_vert_make(); demand(gem_node_dim(r) == 3, "bad {r} dimension");
-    int i;
+    int32_t i;
     for (i = 0; i <= 3; i++) 
       { demand(gem_step(r, i) == r, "{g3map_vert_make} error {r}.1"); }
   }
@@ -131,9 +132,9 @@ void g3map_test_make_step_splice_edge(void)
   {
     fprintf(stderr, "--- testing {g3map_edge_make,g3map_edge_splice} ---\n");
     /* bool_t debug = FALSE; */
-    int N = 5;
+    int32_t N = 5;
     /* Create {N} unattached edges: */
-    int k;
+    int32_t k;
     g3map_place_t u[N]; /* Origins of edges. */
     g3map_place_t v[N]; /* Destinations of edges. */
     g3map_place_t e[N]; /* Edges. */
@@ -145,7 +146,7 @@ void g3map_test_make_step_splice_edge(void)
         demand(e[k] == u[k], "{} returned wrong end");
         demand(g3map_step(u[k], 0) == v[k], "{g3map_edge_make}/{gem_step} error {v}.1");
         demand(g3map_step(v[k], 0) == u[k], "{g3map_edge_make}/{gem_step} error {v}.2");
-        int i;
+        int32_t i;
         for (i = 1; i <= 3; i++) 
           { demand(gem_step(u[k], i) == u[k], "{g3map_edge_make} error {e}.1");
             demand(gem_step(v[k], i) == v[k], "{g3map_edge_make} error {e}.2");
@@ -154,7 +155,7 @@ void g3map_test_make_step_splice_edge(void)
     /* Splice them into a cycle: */
     for (k = 0; k < N; k++)
       { /* Attach edge {e[k]} to the next one: */
-        int k1 = (k+1)%N;
+        int32_t k1 = (k+1)%N;
         g3map_edge_splice(g3map_step(e[k],0), e[k1]);
         
         /* Check them: */
@@ -175,7 +176,7 @@ void g3map_test_make_step_splice_edge(void)
           { demand(g3map_step(v[0], 1) == u[1], "{g3map_edge_splice}/{g3map_step} error {e}.11");
             demand(g3map_step(u[1], 1) == v[0], "{g3map_edge_splice}/{g3map_step} error {e}.12");
           }
-        int i;
+        int32_t i;
         for (i = 2; i <= 3; i++) 
           { demand(gem_step(v[k], i) == v[k], "{g3map_edge_make} error {e}.13");
             demand(gem_step(u[k1], i) == u[k1], "{g3map_edge_make} error {e}.14");
@@ -184,7 +185,7 @@ void g3map_test_make_step_splice_edge(void)
     /* Unsplice them: */
     for (k = 0; k < N; k++)
       { /* Attach edge {e[k]} to the next one: */
-        int k1 = (k+1)%N;
+        int32_t k1 = (k+1)%N;
         g3map_edge_splice(g3map_step(e[k],0), e[k1]);
         
         /* Check them: */
@@ -197,7 +198,7 @@ void g3map_test_make_step_splice_edge(void)
         demand(g3map_step(v[k], 1) == v[k], "{g3map_edge_make}/{g3map_step} error {e}.24");
         demand(g3map_step(u[k1], 1) == u[k1], "{g3map_edge_make}/{g3map_step} error {e}.25");
         
-        int i;
+        int32_t i;
         for (i = 2; i <= 3; i++) 
           { demand(gem_step(v[k], i) == v[k], "{g3map_edge_make} error {e}.26");
             demand(gem_step(u[k1], i) == u[k1], "{g3map_edge_make} error {e}.27");
@@ -205,7 +206,7 @@ void g3map_test_make_step_splice_edge(void)
       }
   }
      
-void g3map_test_make_step_splice_face(int M, int N)
+void g3map_test_make_step_splice_face(int32_t M, int32_t N)
   {
     fprintf(stderr, "--- testing {g3map_face_make}, {g3map_face_splice} ---\n");
     /* bool_t debug = FALSE; */
@@ -221,7 +222,7 @@ void g3map_test_make_step_splice_face(int M, int N)
     g3map_face_splice(a[0], b[0]);
      
     /* Check: */
-    int k;
+    int32_t k;
     for (k = 0; k < M+N; k++)
       { 
         if (k == 0)
@@ -245,10 +246,10 @@ void g3map_test_make_step_splice_face(int M, int N)
       
   }
     
-void g3map_test_face_make(int N, g3map_place_t e[])
+void g3map_test_face_make(int32_t N, g3map_place_t e[])
   { 
     /* Create {N} unattached edges {e[0..M-1]: */
-    int k;
+    int32_t k;
     for (k = 0; k < N; k++)
       { g3map_place_t uk = g3map_vert_make();
         g3map_place_t vk = g3map_vert_make();
@@ -260,7 +261,7 @@ void g3map_test_face_make(int N, g3map_place_t e[])
 
     /* Ensure that corners are properly attached: */
     for (k = 0; k < N; k++)
-      { int k1 = (k+1)%N;
+      { int32_t k1 = (k+1)%N;
         g3map_place_t v0 = g3map_step(e[k], 0); /* Destintation of {e[k]}. */
         g3map_place_t u1 = e[k1];               /* Origin of {e[k+1]}. */
         demand(g3map_step(v0, 1) == u1, "{g3map_face_make}/{g3map_step} error {e}.7");
@@ -274,7 +275,7 @@ void g3map_test_face_make(int N, g3map_place_t e[])
     for (k = 0; k < N; k++)
       { g3map_place_t u0 = e[k];  /* Origin of {e[k]}. */
         g3map_place_t v0 = g3map_step(e[k], 0); /* Destintation of {e[k]}. */
-        int i;
+        int32_t i;
         for (i = 2; i <= 3; i++)
           { demand(gem_step(u0, i) == u0, "{g3map_face_make} not free {u0}");
             demand(gem_step(v0, i) == v0, "{g3map_face_make} not free {v0}");
@@ -306,8 +307,8 @@ void g3map_test_make_step_splice_cell(bool_t cube)
     g3map_place_t bk = b;
     
     fprintf(stderr, "  (");
-    int ne = (cube ? 4 : 3);
-    int k;
+    int32_t ne = (cube ? 4 : 3);
+    int32_t k;
     for (k = 0; k < 2*ne; k++)
       { fprintf(stderr, " %d", k);
         demand(g3map_step(ak, 3) == bk, "{g3map_cell_splice}/{g3map_step} error {a}.1");
@@ -336,7 +337,7 @@ g3map_place_t g3map_test_cube_make(void)
     /* Create 6 squares {f[0..5]} with 24 unglued edges {e[0..23]}: */
     g3map_place_t f[6]; /* One place in each face. */
     g3map_place_t e[24]; /* Edges of face {k} are {e[4*k..4*k+3]}. */
-    int k, s;
+    int32_t k, s;
     for (k = 0; k < 6; k++)
       { g3map_test_face_make(4, &(e[4*k]));
         f[k] = e[4*k];
@@ -346,7 +347,7 @@ g3map_place_t g3map_test_cube_make(void)
     for (s = 0; s < 2; s++)
       { /* Glue faces {f[3*s..3*s+2]} to tach other: */
         for (k = 0; k < 3; k++)
-          { int k1 = (k+1)%3;
+          { int32_t k1 = (k+1)%3;
             /* Splice {f[k]} to {f[k+1]}: */
             g3map_face_splice(g3map_step(e[4*k+14*s], 1), e[4*k1+14*s]);
           }
@@ -369,8 +370,8 @@ g3map_place_t g3map_test_cube_make(void)
     /* Collect the vertices: */
     g3map_place_t v[8]; /* One place near each vertex. */
     for (s = 0; s < 2; s++)
-      { int kf = 3*s; /* Face index (0 or 3). */
-        int kv = 4*s; /* Index of first vertex of face {kf} (0 or 4). */
+      { int32_t kf = 3*s; /* Face index (0 or 3). */
+        int32_t kv = 4*s; /* Index of first vertex of face {kf} (0 or 4). */
         v[kv] = f[kf]; /* Vertices of face {kf} will vbe {v[0..3]}: */
         for (k = 1; k < 4; k++) { v[kv+k] = g3map_step(g3map_step(v[kv+k-1], 0), 1); }
       }
@@ -390,7 +391,7 @@ g3map_place_t g3map_test_tetra_make(void)
     /* Create 4 triangles {f[0..3]} with 12 unglued edges {e[0..11]}: */
     g3map_place_t f[4]; /* One place in each face. */
     g3map_place_t e[11]; /* Edges of face {k} are {e[3*k..3*k+2]}. */
-    int k, s;
+    int32_t k, s;
     for (k = 0; k < 4; k++)
       { g3map_test_face_make(3, &(e[3*k]));
         f[k] = e[3*k];
@@ -429,9 +430,9 @@ g3map_place_t g3map_test_tetra_make(void)
     return e[0];
   }
   
-void g3map_test_check_cycle_degree(int N, g3map_place_t a, int c0, int c1)
+void g3map_test_check_cycle_degree(int32_t N, g3map_place_t a, int32_t c0, int32_t c1)
   {
-    int k, r;
+    int32_t k, r;
     g3map_place_t u0 = a;  /* Place around the cycle. */
     for (k = 0; k < N; k++)
       { 
@@ -458,60 +459,60 @@ void g3map_test_check_cycle_degree(int N, g3map_place_t a, int c0, int c1)
   }
 
 // 
-// void g3map_test_data(int d)
+// void g3map_test_data(int32_t d)
 //   {
 //     fprintf(stderr, "--- testing {g3map_set_data}, {g3map_get_data} (d = %d) ---\n", d);
 //     g3map_place_t r = g3map_node_new(d); demand(g3map_node_dim(r) == d, "bad {r} dimension");
-//     int d1 = 418;
+//     int32_t d1 = 418;
 //     g3map_set_data(r, d1);
-//     int d2 = g3map_get_data(r);
+//     int32_t d2 = g3map_get_data(r);
 //     demand(d1 == d2, "{g3map_set_data}/{g3map_get_data} error 1");
 //     g3map_node(r);
 //   }
 //     
-// void g3map_test_traverse(int d)
+// void g3map_test_traverse(int32_t d)
 //   {
 //     fprintf(stderr, "--- testing {g3map_residues_enum}, {g3map_traverse}, {g3map_get_label}, {g3map_component} (d = %d) ---\n", d);
 //     bool_t debug = TRUE;
 //     if (debug) { fprintf(stderr, "  creating cross polytope\n"); }
 //     g3map_place_t p = g3map_test_make_cross_polytope(d);
 //     
-//     int nc = (1 << (d+1)); /* Number of cells. */
+//     int32_t nc = (1 << (d+1)); /* Number of cells. */
 //     g3map_place_vec_t node = g3map_place_vec_new(100);
-//     int nn = 0;
+//     int32_t nn = 0;
 //     if (debug) { fprintf(stderr, "  traversing it\n"); }
 //     g3map_traverse(p, d, &node, &nn);
 //     demand(nn == nc, "wrong node count");
 //     demand(node.e[0] == p, "root is not the first visited node");
-//     int k;
+//     int32_t k;
 //     for (k = 0; k < nn; k++)
-//       { int lab = g3map_get_label(node.e[k]);
+//       { int32_t lab = g3map_get_label(node.e[k]);
 //         demand(lab == k, "wrong label");
 //       }
 //     
-//     /* void g3map_residues_enum(g3map_place_t root, int d, int rcol[], int r, int scol[], int s, int na, g3map_place_t nodes[], int *nnP); */
+//     /* void g3map_residues_enum(g3map_place_t root, int32_t d, int32_t rcol[], int32_t r, int32_t scol[], int32_t s, int32_t na, g3map_place_t nodes[], int32_t *nnP); */
 //     if (debug) { fprintf(stderr, "  recycling it\n"); }
 //     g3map_component(p, d);
 //     free(node.e);
 //     fprintf(stderr, "!! NOT FULLY TESTED\n");
 //   }
 //     
-// g3map_place_t g3map_test_make_cross_polytope(int d)
+// g3map_place_t g3map_test_make_cross_polytope(int32_t d)
 //   { /* Note that {d} may be -1, in which case we create  */
 //     bool_t debug = TRUE;
 //     /* Create the {2^(d+1)} cells: */
-//     int nc = (1 << (d+1)); /* Number of cells. */
+//     int32_t nc = (1 << (d+1)); /* Number of cells. */
 //     if (debug) { fprintf(stderr, "    creating %d nodes\n", nc); }
 //     g3map_place_t *p = notnull(malloc(nc*sizeof(g3map_place_t)), "no mem");
-//     int k;
+//     int32_t k;
 //     for (k = 0; k < nc; k++)
 //       { p[k] = g3map_node_new(d+1); g3map_set_data(p[k], k); }
 //     /* Glue them. Each node {p[k]} is glued to {p[k1]} if {k1>k} and {k,k1} differ by 1 bit. */
 //     if (debug) { fprintf(stderr, "    gluing the nodes"); }
 //     for (k = 0; k < nc; k++)
-//       { int i;
+//       { int32_t i;
 //         for (i = 0; i <= d; i++)
-//           { int k1 = k ^ (1 << i); 
+//           { int32_t k1 = k ^ (1 << i); 
 //             if (k1 > k)
 //               { if (debug) { fprintf(stderr, " %d:%d-%d:%d", k,i,k1,i); }
 //                 g3map_splice(p[k], p[k1], i);
@@ -525,15 +526,15 @@ void g3map_test_check_cycle_degree(int N, g3map_place_t a, int c0, int c1)
 //     return res;
 //   }
 // 
-// g3map_place_t g3map_test_make_square(int d, bool_t rev1, bool_t rev2)
+// g3map_place_t g3map_test_make_square(int32_t d, bool_t rev1, bool_t rev2)
 //   { g3map_place_t a[4], b[4];
-//     int i;
+//     int32_t i;
 //     for (i = 0; i < 4; i++) 
 //       { a[i] = g3map_node_new(d); g3map_set_data(a[i], 2*i);
 //         b[i] = g3map_node_new(d); g3map_set_data(b[i], 2*i + 1);
 //       }
 //     for (i = 0; i < 4; i++) 
-//       { int i1 = (i + 1) % 4;
+//       { int32_t i1 = (i + 1) % 4;
 //         g3map_splice(a[i], b[i], 0);
 //         g3map_splice(b[i], a[i1], 1);
 //       }
@@ -556,15 +557,15 @@ void g3map_test_check_cycle_degree(int N, g3map_place_t a, int c0, int c1)
 //     return a[0];
 //   } 
 //      
-// void g3map_test_write_read(char *name, int d, g3map_place_t m)
+// void g3map_test_write_read(char *name, int32_t d, g3map_place_t m)
 //   { fprintf(stderr, "--- testing write, read %s (d = %d) ---\n", name, d);
 //     /* write_gem(name, d, m); */
 //     /* read_gem(name, d, m); */
 //     fprintf(stderr, "!! NOT TESTED\n");
 //   }
 // 
-// void write_gem(char *name, int d, g3map_place_t a)
+// void write_gem(char *name, int32_t d, g3map_place_t a)
 //   { assert(FALSE); }
 //   
-// g3map_place_t read_gem(char *name, int d)
+// g3map_place_t read_gem(char *name, int32_t d)
 //   { assert(FALSE); }

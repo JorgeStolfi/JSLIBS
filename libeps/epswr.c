@@ -1,8 +1,9 @@
 /* See epswr.h */
-/* Last edited on 2021-06-26 18:36:18 by jstolfi */
+/* Last edited on 2022-10-20 06:51:26 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
@@ -32,11 +33,11 @@ void epswr_write_file_preamble(epswr_figure_t *eps);
 void epswr_write_file_postamble(epswr_figure_t *eps);
   /* Writes the file's postamble, including the fonts list. */
 
-void epswr_font_list_initialize(int *nfontsP, char ***fontsP);
+void epswr_font_list_initialize(int32_t *nfontsP, char ***fontsP);
   /* Initializes the font list with the "Courier" font.
     The list must be {NULL}. */
 
-void epswr_font_list_free(int *nfontsP, char ***fontsP);
+void epswr_font_list_free(int32_t *nfontsP, char ***fontsP);
   /* Frees all storage used by the font list and sets it to NULL. */
     
 void epswr_check_param
@@ -122,8 +123,8 @@ void epswr_shrink_device_window
     
 void epswr_set_device_window_to_grid_cell
   ( epswr_figure_t *eps, 
-    double hMin, double hMax, int ih, int nh,
-    double vMin, double vMax, int iv, int nv
+    double hMin, double hMax, int32_t ih, int32_t nh,
+    double vMin, double vMax, int32_t iv, int32_t nv
   )
   { epswr_dev_set_window_to_grid_cell(eps, hMin, hMax, ih, nh, vMin, vMax, iv, nv);
     epswr_def_reset_client_window(eps);
@@ -333,7 +334,7 @@ void epswr_polygon
   ( epswr_figure_t *eps,
     bool_t closed,
     double x[], double y[],
-    int n,
+    int32_t n,
     bool_t fill, bool_t draw,
     bool_t evenOdd
   )
@@ -343,7 +344,7 @@ void epswr_polygon
     double *psx = (double *)malloc(n*sizeof(double));
     double *psy = (double *)malloc(n*sizeof(double));
     /* Map points to Device coordinates: */
-    for (int i=0; i<n; i++)
+    for (int32_t i=0; i<n; i++)
       { epswr_x_to_h_coord(eps, x[i], &(psx[i]));
         epswr_y_to_v_coord(eps, y[i], &(psy[i]));
       }
@@ -355,7 +356,7 @@ void epswr_rounded_polygon
   ( epswr_figure_t *eps,
     bool_t closed,
     double x[], double y[],
-    int n,
+    int32_t n,
     double rad,
     bool_t fill, bool_t draw,
     bool_t evenOdd
@@ -367,7 +368,7 @@ void epswr_rounded_polygon
     double *psx = (double *)malloc(n*sizeof(double));
     double *psy = (double *)malloc(n*sizeof(double));
     /* Map points and radius to Device coordinates: */
-    for (int i=0; i<n; i++)
+    for (int32_t i=0; i<n; i++)
       { epswr_x_to_h_coord(eps, x[i], &(psx[i]));
         epswr_y_to_v_coord(eps, y[i], &(psy[i]));
       }
@@ -380,18 +381,18 @@ void epswr_bezier_polygon
   ( epswr_figure_t *eps,
     bool_t closed,
     double x[], double y[],
-    int n,
+    int32_t n,
     bool_t fill, bool_t draw,
     bool_t evenOdd
   )
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
     if (! closed) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
-    int np = 4*n; /* Number of points. */
+    int32_t np = 4*n; /* Number of points. */
     double *psx = (double *)malloc(np*sizeof(double));
     double *psy = (double *)malloc(np*sizeof(double));
     /* Map points to Device coordinates: */
-    for (int i = 0; i < np; i++)
+    for (int32_t i = 0; i < np; i++)
       { epswr_x_to_h_coord(eps, x[i], &(psx[i]));
         epswr_y_to_v_coord(eps, y[i], &(psy[i]));
       }
@@ -543,13 +544,13 @@ void epswr_arrowhead
     epswr_dev_arrowhead(eps, psxa, psya, psxb, psyb, pswidth, pslength, fraction, fill, draw);
   } 
 
-void epswr_grid_lines(epswr_figure_t *eps, int nh, int nv)
+void epswr_grid_lines(epswr_figure_t *eps, int32_t nh, int32_t nv)
   { epswr_dev_grid_lines(eps, nh, nv); }
 
 void epswr_grid_cell
   ( epswr_figure_t *eps, 
-    int ih, int nh,
-    int iv, int nv,
+    int32_t ih, int32_t nh,
+    int32_t iv, int32_t nv,
     bool_t fill, bool_t draw
   )
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
@@ -679,7 +680,7 @@ void epswr_set_verbose(epswr_figure_t *eps, const bool_t verbose)
 void epswr_comment(epswr_figure_t *eps, const char *title)
   { epswr_dev_comment(eps, title); }
  
-void epswr_show_stack(epswr_figure_t *eps, int code)
+void epswr_show_stack(epswr_figure_t *eps, int32_t code)
   { epswr_dev_show_stack(eps, code); }
  
 void epswr_flush (epswr_figure_t *eps)

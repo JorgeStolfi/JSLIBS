@@ -1,5 +1,5 @@
 /* See {dgraph.h} */
-/* Last edited on 2009-11-08 00:57:28 by stolfi */
+/* Last edited on 2022-10-20 06:15:25 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -26,7 +26,7 @@ spmat_io_impl(dgraph_t, dgraph, bool_t);
 
 /* PROCEDURES SPECIFIC TO GRAPHS: */
 
-dgraph_vertex_count_t *dgraph_degrees(dgraph_t *G, int which)
+dgraph_vertex_count_t *dgraph_degrees(dgraph_t *G, int32_t which)
   { dgraph_vertex_count_t nv = (which == 0 ? G->rows : G->cols);
     dgraph_edge_count_t ne = G->ents;
     dgraph_vertex_count_t *deg = notnull(malloc(nv*sizeof(dgraph_vertex_index_t)), "no mem");

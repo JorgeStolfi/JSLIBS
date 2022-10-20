@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} individual synapse attributes"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-11 18:59:10 by jstolfi */ 
+/* Last edited on 2022-10-20 06:33:52 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -17,6 +17,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -39,11 +40,11 @@ void nmsim_elem_synapse_test_read(char *fname, nmsim_elem_synapse_ix_t ise, nmsi
   /* Reads a synapse index and attributes record from file {fname}, and compares
     them to {ise} and {syn}. */
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     nmsim_group_synapse_count_t nsg = 50;  /* Assumed number of synapse classes. */
     nmsim_elem_neuron_count_t nne = 500; /* Assumed number of neurons. */

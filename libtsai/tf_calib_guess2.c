@@ -1,8 +1,9 @@
 /* See {tf_calib_guess2.h}. */
-/* Last edited on 2011-05-17 02:52:48 by stolfi */
+/* Last edited on 2022-10-20 05:54:21 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <jsfile.h>
@@ -27,7 +28,7 @@ void tf_calib_guess2_initial_camera_parameters
   tf_select_no_parameters(&which);
   tf_select_all_variable_parameters(cspec, &which);
         
-  int n = cdat->np;
+  int32_t n = cdat->np;
   if (debug) {
     fprintf(stderr, "Computing the initial guess of {cpar}\n");
     tf_camera_specs_print(stderr, cspec);
@@ -93,7 +94,7 @@ void tf_calib_guess2_initial_camera_parameters
 /* MAIN CASES */
 
 void tf_calib_guess2_compute_f_of_fixed_camera
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -108,7 +109,7 @@ void tf_calib_guess2_compute_f_of_fixed_camera
 }
 
 void tf_calib_guess2_compute_S_f_of_fixed_position_camera
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -126,7 +127,7 @@ void tf_calib_guess2_compute_S_f_of_fixed_position_camera
 }
 
 void tf_calib_guess2_compute_S_f_of_far_away_camera
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -177,7 +178,7 @@ void tf_calib_guess2_compute_S_f_of_far_away_camera
 }
 
 void tf_calib_guess2_compute_R_mu
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -213,7 +214,7 @@ void tf_calib_guess2_compute_R_mu
 }
 
 void tf_calib_guess2_compute_mu_given_R
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -229,7 +230,7 @@ void tf_calib_guess2_compute_mu_given_R
 }
 
 void tf_calib_guess2_compute_initial_affine_model
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -242,7 +243,7 @@ void tf_calib_guess2_compute_initial_affine_model
 {
   if (debug) { fprintf(stderr, "Entering %s\n", __FUNCTION__); }
   
-  int i;
+  int32_t i;
   mat_rm_t A = tf_alloc_mat_rm (n, 3);
   mat_rm_t B = tf_alloc_mat_rm (n, 2);
   mat_rm_t X = tf_alloc_mat_rm (3, 2);
@@ -260,7 +261,7 @@ void tf_calib_guess2_compute_initial_affine_model
   }
 
   for (i = 0; i < n; i++) {
-    int j;
+    int32_t j;
     for (j = 0; j < 3; j++) fprintf(stderr, " %12.8f ", A->c[i*3+j]);
     fprintf(stderr, " = ");  
     for (j = 0; j < 2; j++) fprintf(stderr, " %12.8f ", B->c[i*2+j]);
@@ -272,7 +273,7 @@ void tf_calib_guess2_compute_initial_affine_model
 
   fprintf(stderr, "Solution X:\n");
   for (i = 0; i < 3; i++) 
-    { int j;
+    { int32_t j;
       for (j = 0; j < 2; j++) fprintf(stderr, " %12.8f ", X->c[i*2+j]);
       fprintf(stderr, "\n");
     }
@@ -280,7 +281,7 @@ void tf_calib_guess2_compute_initial_affine_model
   /* Extract {rh,sh} and compute the constant term {d}: */
   *d = b_u;
   for (i = 0; i < 3; i++)
-    { int j;
+    { int32_t j;
       for (j = 0; j < 2; j++) { d->c[j] -= (b_w.c[i]*X->c[i*2+j]); }
       rh->c[i] = X->c[i*2+0];
       sh->c[i] = X->c[i*2+1];
@@ -326,7 +327,7 @@ void tf_calib_guess2_extract_camera_vectors
   r3_dir(t, t);
 }
 
-void tf_calib_guess2_compute_Tx_given_R_mu (int n, r3_t b_w, r2_t b_u, r4x4_t *S, double mu, bool_t debug)
+void tf_calib_guess2_compute_Tx_given_R_mu (int32_t n, r3_t b_w, r2_t b_u, r4x4_t *S, double mu, bool_t debug)
 {
   if (debug) { fprintf(stderr, "Entering %s\n", __FUNCTION__); }
   
@@ -340,7 +341,7 @@ void tf_calib_guess2_compute_Tx_given_R_mu (int n, r3_t b_w, r2_t b_u, r4x4_t *S
   S->c[1][0] = b_u.c[0]/mu - d;
 }
 
-void tf_calib_guess2_compute_Ty_given_R_mu (int n, r3_t b_w, r2_t b_u, r4x4_t *S, double mu, bool_t debug)
+void tf_calib_guess2_compute_Ty_given_R_mu (int32_t n, r3_t b_w, r2_t b_u, r4x4_t *S, double mu, bool_t debug)
 {
   if (debug) { fprintf(stderr, "Entering %s\n", __FUNCTION__); }
   

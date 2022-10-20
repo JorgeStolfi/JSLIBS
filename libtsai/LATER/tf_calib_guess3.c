@@ -1,8 +1,9 @@
 /* See {tf_calib_guess3.h}. */
-/* Last edited on 2011-05-15 01:58:08 by stolfi */
+/* Last edited on 2022-10-20 05:57:54 by stolfi */
 
 #define _GNU_SOURCE
 #include <assert.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include <jsfile.h>
@@ -28,7 +29,7 @@ void tf_calib_guess3_initial_camera_parameters
   tf_select_no_parameters(&which);
   tf_select_all_variable_parameters(cspec, &which);
         
-  int nmarks = cdat->np;
+  int32_t nmarks = cdat->np;
   if (debug) {
     fprintf(stderr, "Computing the initial guess of {cpar}\n");
     tf_camera_specs_print (cspec, stderr);
@@ -59,7 +60,7 @@ void tf_calib_guess3_initial_camera_parameters
 
   /* Compute the mark weights to use: */
   double* wt_loc = (double*)notnull(malloc(nmarks*sizeof(double)), "no mem");
-  int k;
+  int32_t k;
   for (k = 0; k < nmarks; k++) {
     wt_loc[k] = cdat->weight[k];
     if (distance_weights) {
@@ -84,7 +85,7 @@ void tf_calib_guess3_initial_camera_parameters
 }
 
 void tf_calib_guess3_compute_S_f_of_unrestricted_camera
-  ( int nmarks,
+  ( int32_t nmarks,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -152,7 +153,7 @@ void tf_calib_guess3_compute_S_f_of_unrestricted_camera
 }
 
 void tf_calib_guess3_compute_P
-  ( int nmarks,
+  ( int32_t nmarks,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -164,10 +165,10 @@ void tf_calib_guess3_compute_P
 {
   if (debug) { fprintf(stderr, "Entering %s\n", __FUNCTION__); }
   
-  int k;
-  int m = 2*nmarks;
-  int n = 12;
-  int p = 1;
+  int32_t k;
+  int32_t m = 2*nmarks;
+  int32_t n = 12;
+  int32_t p = 1;
   mat_rm_t A = tf_alloc_mat_rm (m, n);
   mat_rm_t B = tf_alloc_mat_rm (m, p);
   mat_rm_t X = tf_alloc_mat_rm (n, p);
@@ -177,7 +178,7 @@ void tf_calib_guess3_compute_P
     r3_t pwk = p_w[k];
     r2_t pik = p_i[k];
     double wtk = sqrt(weight[k]);
-    int i = 2*k;
+    int32_t i = 2*k;
     double *EA = &(A->c[i*n]);
     double *EB = &(B->c[i*p]);
 
@@ -214,7 +215,7 @@ void tf_calib_guess3_compute_P
   }
 
   for (i = 0; i < m; i++) {
-    int j;
+    int32_t j;
     for (j = 0; j < n; j++) fprintf(stderr, " %12.8f ", A->c[i*n+j]);
     fprintf(stderr, " = ");  
     for (j = 0; j < p; j++) fprintf(stderr, " %12.8f ", B->c[i*p+j]);
@@ -226,7 +227,7 @@ void tf_calib_guess3_compute_P
 
   fprintf(stderr, "Solution X:\n");
   for (i = 0; i < n; i++) 
-    { int j;
+    { int32_t j;
       for (j = 0; j < p; j++) fprintf(stderr, " %12.8f ", X->c[i*p+j]);
       fprintf(stderr, "\n");
     }

@@ -1,7 +1,7 @@
 #define PROG_NAME "testplot"
 #define PROG_DESC "test of {epswr.h} plotting ops"
 #define PROG_VERS "1.0"
-/* Last edited on 2021-06-26 20:01:05 by jstolfi */
+/* Last edited on 2022-10-20 06:52:14 by stolfi */
 
 #define testplot_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
@@ -10,6 +10,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -21,7 +22,7 @@
 #include <epswr.h>
 #include <epswr_dim.h>
 
-int main (int argc, char **argv);
+int32_t main (int32_t argc, char **argv);
 
 void DoTests(void);
 
@@ -36,7 +37,7 @@ void DrawRoundedPolygon(epswr_figure_t *epsf, double xc, double yc, bool_t fill,
 void DrawBezierPolygon(epswr_figure_t *epsf, double xc, double yc, bool_t fill, bool_t draw, bool_t eo, bool_t closed);
 void DrawRoundedFrame(epswr_figure_t *epsf, double xlo, double xhi, double ylo, double yhi);
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   { DoTests();
     return 0;
   }
@@ -301,7 +302,7 @@ void DrawLines(epswr_figure_t *epsf, double xc, double yc, bool_t arrowheads)
     epswr_segment(epsf,  1.0+xc,  5.0+yc,  1.0+xc, 13.0+yc);
     epswr_segment(epsf, 11.0+xc,  5.0+yc, 11.0+xc, 13.0+yc);
     epswr_segment(epsf,  2.0+xc, 14.0+yc, 10.0+xc, 14.0+yc);
-    int i;
+    int32_t i;
     for (i = -7; i <= +7; i++)
       { double align = ((i % 2) == 0)*0.5 - ((i % 4) == 0)*0.25;
         double ticsz = 0.5 + ((i % 2) == 0)*0.5 + ((i % 4) == 0)*1.0; 
@@ -370,9 +371,9 @@ void DrawFrame(epswr_figure_t *epsf, double xlo, double xhi, double ylo, double 
 void DrawPolygon(epswr_figure_t *epsf, double xc, double yc, bool_t fill, bool_t draw, bool_t eo, bool_t closed)
   {
     double r = 1.4;
-    int n = 7;
+    int32_t n = 7;
     double x[n], y[n];
-    int i;
+    int32_t i;
     for (i = 0; i < n; i++)
       { double t = 2.0*M_PI*((double)i)/((double)n);
         x[i] = xc + r*cos(2*t); 
@@ -385,9 +386,9 @@ void DrawRoundedPolygon(epswr_figure_t *epsf, double xc, double yc, bool_t fill,
   {
     double ra = 1.4;
     double rb = 0.7;
-    int n = 10;
+    int32_t n = 10;
     double x[n], y[n];
-    int i;
+    int32_t i;
     for (i = 0; i < n; i += 2)
       { double s = 2.0*M_PI*((double)i)/((double)n);
         x[i] = xc + ra*cos(s); 
@@ -402,7 +403,7 @@ void DrawRoundedPolygon(epswr_figure_t *epsf, double xc, double yc, bool_t fill,
 
 void DrawRoundedFrame(epswr_figure_t *epsf, double xlo, double xhi, double ylo, double yhi)
   {
-    int n = 10;
+    int32_t n = 10;
     double x[n], y[n];
     x[0] = xlo+0.50; y[0] = ylo+0.50;
     x[1] = xhi-0.50; y[1] = ylo+0.50;
@@ -437,10 +438,10 @@ void DrawBezierPolygon(epswr_figure_t *epsf, double xc, double yc, bool_t fill, 
     double mag = 1.500;   /* Magnification factor. */
     double shift = 0.600; /* Side shift from center. */
     
-    int n = 5;
-    int np = 4*n;
+    int32_t n = 5;
+    int32_t np = 4*n;
     double x[np], y[np];
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < n; i++)
       { /* Rotation angle: */
         double t = 2.0*M_PI*((double)i)/((double)n);

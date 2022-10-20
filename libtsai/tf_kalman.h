@@ -3,15 +3,16 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 typedef struct _kalman_parameters_t {
-    int order;
+    int32_t order;
     double avg;
     double dev;
     double *coeffs;
 } *kalman_parameters_t;
 
-kalman_parameters_t tf_kalman_new_parameters (int order);
+kalman_parameters_t tf_kalman_new_parameters (int32_t order);
 
 kalman_parameters_t tf_kalman_read_parameters (FILE *f);
 

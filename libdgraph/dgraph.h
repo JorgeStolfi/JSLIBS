@@ -2,7 +2,7 @@
 #define dgraph_H
 
 /* Directed or undirected graphs represented as sparse matrices of booleans. */
-/* Last edited on 2012-12-21 00:18:24 by stolfilocal */
+/* Last edited on 2022-10-20 06:14:19 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -64,7 +64,7 @@ typedef spmat_pos_t dgraph_edge_index_t;
  
 /* PROCEDURES SPECIFIC TO GRAPHS: */
 
-dgraph_vertex_count_t *dgraph_degrees(dgraph_t *G, int which);
+dgraph_vertex_count_t *dgraph_degrees(dgraph_t *G, int32_t which);
   /* Compute the degrees of all vertices of {G}, returns a vector
     {deg[0..nv-1]}. If {which} is 0, the vector has {nv = G.rows}
     elements, and {deg[u]} is the out-degree of source vertex {u}.

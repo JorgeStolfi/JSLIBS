@@ -1,10 +1,11 @@
 /* Redesigned Tsai calibration routines (version 2). */
-/* Last edited on 2011-05-15 00:36:01 by stolfi */
+/* Last edited on 2022-10-20 05:53:59 by stolfi */
 
 #ifndef tf_calib_guess2_H
 #define tf_calib_guess2_H
 
 #include <stdio.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <r3.h> 
 #include <r2.h> 
@@ -41,7 +42,7 @@ void tf_calib_guess2_initial_camera_parameters
 /* AUXILIARY ROUTINES */
 
 void tf_calib_guess2_compute_f_of_fixed_camera
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -56,7 +57,7 @@ void tf_calib_guess2_compute_f_of_fixed_camera
 
 
 void tf_calib_guess2_compute_S_f_of_fixed_position_camera
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -74,7 +75,7 @@ void tf_calib_guess2_compute_S_f_of_fixed_position_camera
 
 
 void tf_calib_guess2_compute_S_f_of_far_away_camera
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -100,7 +101,7 @@ void tf_calib_guess2_compute_S_f_of_far_away_camera
   Otherwise it computes {R} too. */
 
 void tf_calib_guess2_compute_R_mu
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -118,7 +119,7 @@ void tf_calib_guess2_compute_R_mu
   and the other elements are set to 0  */
 
 void tf_calib_guess2_compute_mu_given_R
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -133,7 +134,7 @@ void tf_calib_guess2_compute_mu_given_R
   {f/z_c} in the camera-to-undistorted mapping formula. */
 
 void tf_calib_guess2_compute_initial_affine_model
-  ( int n,
+  ( int32_t n,
     r3_t p_w[],
     r3_t b_w,
     r2_t p_u[],
@@ -160,8 +161,8 @@ void tf_calib_guess2_extract_camera_vectors
   magnification factor {*mu} from the two rows {rh,sh} of the
   matrix {H} computed by {tf_calib_guess2_initial_affine_model}. */
 
-void tf_calib_guess2_compute_Tx_given_R_mu (int n, r3_t b_w, r2_t b_u, r4x4_t *S, double mu, bool_t debug);
+void tf_calib_guess2_compute_Tx_given_R_mu (int32_t n, r3_t b_w, r2_t b_u, r4x4_t *S, double mu, bool_t debug);
 
-void tf_calib_guess2_compute_Ty_given_R_mu (int n, r3_t b_w, r2_t b_u, r4x4_t *S, double mu, bool_t debug);
+void tf_calib_guess2_compute_Ty_given_R_mu (int32_t n, r3_t b_w, r2_t b_u, r4x4_t *S, double mu, bool_t debug);
 
 #endif

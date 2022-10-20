@@ -1,3 +1,5 @@
+#include <stdint.h>
+
     /* Choose a suitable {maxval} for it: */
     uint32_t maxmaxval = uint16_image_MAX_SAMPLE;
     sample_conv_choose_maxval(chns, imaxval, maxmaxval, &omaxval);

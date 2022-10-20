@@ -7,6 +7,7 @@
 #define _GNU_SOURCE
 
 #include <bool.h>
+#include <stdint.h>
 #include <r3x3.h>
 #include <hr2.h>
 #include <i2.h>

@@ -1,8 +1,9 @@
 /* See epswr.h */
-/* Last edited on 2021-06-26 19:48:25 by jstolfi */
+/* Last edited on 2022-10-20 06:54:34 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
@@ -41,7 +42,7 @@ void epswr_dev_write_file_header(FILE *wr, double hSize, double vSize);
     work. Other procedures below must be called to define those
     variables. */
 
-void epswr_dev_write_file_trailer(FILE *wr, int nfonts, char **fonts);
+void epswr_dev_write_file_trailer(FILE *wr, int32_t nfonts, char **fonts);
   /* Writes to {wr} the file postamble for an encapsulated Postscript file,
     namely the "%%Trailer" comment followed by the "%%DocumentFonts:
     {F}" (where {F} is the given list of font names). */
@@ -74,7 +75,7 @@ void epswr_dev_text_line
     to the current plotting area; otherwise it may extend over the 
     whole figure. */ 
 
-void epswr_dev_write_font_list(FILE *psFile, int nfonts, char **fonts);
+void epswr_dev_write_font_list(FILE *psFile, int32_t nfonts, char **fonts);
   /* Writes the structured comment "%%DocumentFonts: {F}" 
     where {F} is the given list of font names. */
 
@@ -141,13 +142,13 @@ void epswr_dev_write_file_header
     epswr_dev_write_proc_defs(wr);
   }
 
-void epswr_dev_write_file_trailer(FILE *wr, int nFonts, char **fonts)
+void epswr_dev_write_file_trailer(FILE *wr, int32_t nFonts, char **fonts)
   { fprintf(wr, "%%%%Trailer\n" );
     epswr_dev_write_font_list(wr, nFonts, fonts);
   }
 
-void epswr_dev_write_font_list(FILE *wr, int nFonts, char **fonts)
-  { int i;
+void epswr_dev_write_font_list(FILE *wr, int32_t nFonts, char **fonts)
+  { int32_t i;
     fprintf(wr, "%%%%DocumentFonts:");
     for (i = 0; i < nFonts; i++)
       { fprintf(wr, " %s", fonts[i]); }
@@ -952,8 +953,8 @@ void epswr_dev_shrink_window
 
 void epswr_dev_set_window_to_grid_cell
   ( epswr_figure_t *eps, 
-    double hMin, double hMax, int ih, int nh, 
-    double vMin, double vMax, int iv, int nv
+    double hMin, double hMax, int32_t ih, int32_t nh, 
+    double vMin, double vMax, int32_t iv, int32_t nv
   )
   { demand((0 <= ih) && (ih < nh), "invalid grid column spec {ih,nh}");
     demand((0 <= iv) && (iv < nv), "invalid grid column spec {iv,nv}");
@@ -1107,7 +1108,7 @@ void epswr_dev_polygon
   ( epswr_figure_t *eps,
     bool_t closed,
     double psx[], double psy[],
-    int n,
+    int32_t n,
     bool_t fill, bool_t draw,
     bool_t evenOdd
   )
@@ -1120,8 +1121,8 @@ void epswr_dev_polygon
         fprintf(wr, "%d %d %d %d", draw, fill, evenOdd, closed);
         if (n > 6) { fprintf(wr, "\n"); }
         /* Write the sides in the reverse order: */
-        int nplin = 0; /* Number of points in current line. */
-        for (int i = n-1; i >= 0; i--)
+        int32_t nplin = 0; /* Number of points in current line. */
+        for (int32_t i = n-1; i >= 0; i--)
           { if (nplin >= 6) { fprintf(wr, "\n"); nplin = 0; }
             fprintf(wr, "  %6.1f %6.1f", psx[i], psy[i]);
           }
@@ -1135,7 +1136,7 @@ void epswr_dev_rounded_polygon
   ( epswr_figure_t *eps,
     bool_t closed,
     double psx[], double psy[],
-    int n,
+    int32_t n,
     double psrad,
     bool_t fill, bool_t draw,
     bool_t evenOdd
@@ -1146,9 +1147,9 @@ void epswr_dev_rounded_polygon
     if (! epswr_polygon_is_invisible(eps, psx, psy, n))
       { /* Compute the radii to use at each corner: */
         double *arad = (double *)malloc(n*sizeof(double));
-        for (int i = 0; i<n; i++)
-          { int j = (i + 1) % n;
-            int k = (i + 2) % n;
+        for (int32_t i = 0; i<n; i++)
+          { int32_t j = (i + 1) % n;
+            int32_t k = (i + 2) % n;
             /* Adjust the rounding radius at corner {j = i+1}: */
             if ((! closed) && ((j == 0) || (j == n-1)))
               { arad[j] = 0; }
@@ -1162,10 +1163,10 @@ void epswr_dev_rounded_polygon
         fprintf(wr, "%d %d %d %d", draw, fill, evenOdd, closed);
         if (n > 3) { fprintf(wr, "\n"); }
         /* Write the corners and radii in reverse order: */
-        int nplin = 0; /* Number of points in current line. */
-        for (int ii = n; ii >= 0; ii--)
+        int32_t nplin = 0; /* Number of points in current line. */
+        for (int32_t ii = n; ii >= 0; ii--)
           { if (nplin >= 3) { fprintf(wr, "\n"); nplin = 0; }
-            int i = ii % n;
+            int32_t i = ii % n;
             fprintf(wr, "  %6.1f %6.1f %8.3f", psx[i], psy[i], arad[i]);
             nplin++;
           }
@@ -1185,14 +1186,14 @@ void epswr_dev_bezier_polygon
   ( epswr_figure_t *eps,
     bool_t closed,
     double psx[], double psy[],
-    int n,
+    int32_t n,
     bool_t fill, bool_t draw,
     bool_t evenOdd
   )
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
     if (! closed) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
-    int np = 4*n; /* Number of points. */
+    int32_t np = 4*n; /* Number of points. */
     /* 
       The following test assumes that if the straight polygon with
       those {np} vertices is invisible, the Bézier polygon is
@@ -1207,10 +1208,10 @@ void epswr_dev_bezier_polygon
         fprintf(wr, "%d %d %d %d", draw, fill, evenOdd, closed);
         fprintf(wr, "\n");
         /* Write the arcs in the reverse order: */
-        for (int i = n-1; i >= 0; i--)
-          { int k0 = 4*i;              /* Start of arc number {i} */
-            for (int j = 0; j < 4; j++)
-              { int j1 = (j + 1) % 4;
+        for (int32_t i = n-1; i >= 0; i--)
+          { int32_t k0 = 4*i;              /* Start of arc number {i} */
+            for (int32_t j = 0; j < 4; j++)
+              { int32_t j1 = (j + 1) % 4;
                 double psxi = psx[k0+j1];
                 double psyi = psy[k0+j1];
                 fprintf(wr, "  %6.1f %6.1f", psxi, psyi);
@@ -1458,17 +1459,17 @@ void epswr_dev_arrowhead
     
 /* GRID LINES AND GRID CELLS */
 
-void epswr_dev_grid_lines(epswr_figure_t *eps, int nh, int nv)
+void epswr_dev_grid_lines(epswr_figure_t *eps, int32_t nh, int32_t nv)
   {
     double hMin, hMax, vMin, vMax;
     epswr_dev_get_window(eps, &hMin, &hMax, &vMin, &vMax);
     FILE *wr = eps->wr;
-    for (int ih = 0; ih<=nh; ih++)
+    for (int32_t ih = 0; ih<=nh; ih++)
       { double r = ((double)ih)/((double)nh);
         double h = (1 - r)*hMin + r*hMax;
         fprintf(wr, "%6.1f xgrd\n", h);
       }
-    for (int iv = 0; iv<=nv; iv++)
+    for (int32_t iv = 0; iv<=nv; iv++)
       { double r = ((double)iv)/((double)nv);
         double v = (1 - r)*vMin + r*vMax;
         fprintf(wr, "%6.1f ygrd\n", v);
@@ -1477,8 +1478,8 @@ void epswr_dev_grid_lines(epswr_figure_t *eps, int nh, int nv)
 
 void epswr_dev_grid_cell
   ( epswr_figure_t *eps, 
-    int ih, int nh,
-    int iv, int nv,
+    int32_t ih, int32_t nh,
+    int32_t iv, int32_t nv,
     bool_t fill, bool_t draw
   )
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
@@ -1627,7 +1628,7 @@ void epswr_dev_comment(epswr_figure_t *eps, const char *title)
     fflush(wr);
   }
 
-void epswr_dev_show_stack(epswr_figure_t *eps, int code)
+void epswr_dev_show_stack(epswr_figure_t *eps, int32_t code)
   { FILE *wr = eps->wr;
     affirm(wr != NULL, "no wr");
     fprintf(eps->wr, "\n%d stack pop\n", code);

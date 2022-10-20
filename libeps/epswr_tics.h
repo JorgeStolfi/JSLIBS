@@ -1,10 +1,11 @@
 /* Plots tic marks and labels along specified axes. */
-/* Last edited on 2009-08-24 22:31:46 by stolfi */
+/* Last edited on 2022-10-20 06:51:54 by stolfi */
 
 #ifndef epswr_tics_H
 #define epswr_tics_H
 
 #include <epswr.h>
+#include <stdint.h>
   
 void epswr_tics
   ( epswr_figure_t *epsf, 
@@ -14,7 +15,7 @@ void epswr_tics
     double dy,
     double lo, 
     double hi,
-    int n,
+    int32_t n,
     char *fmt,
     double ticSize,
     double align 

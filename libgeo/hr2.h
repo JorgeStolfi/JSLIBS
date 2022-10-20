@@ -7,6 +7,7 @@
 #define _GNU_SOURCE
 
 #include <r2.h>
+#include <stdint.h>
 #include <r3.h>
 #include <r2x2.h>
 #include <r3x3.h>

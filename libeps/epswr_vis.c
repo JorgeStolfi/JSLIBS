@@ -1,8 +1,9 @@
 /* See epswr_vis.h */
-/* Last edited on 2020-10-27 17:05:08 by jstolfi */
+/* Last edited on 2022-10-20 06:51:09 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <limits.h>
 
@@ -83,11 +84,11 @@ bool_t epswr_triangle_is_invisible
 
 bool_t epswr_polygon_is_invisible
   ( epswr_figure_t *epsf,
-    double x[], double y[], int npoints
+    double x[], double y[], int32_t npoints
   )
   { DEFWINDOW;
     INITBBOX;
-    int i;
+    int32_t i;
     for (i = 0; i < npoints; i++) { XBOX(x[i]); YBOX(y[i]); }
     CHECKBOX;
   }

@@ -1,5 +1,5 @@
 /* See {stpoly.h} */
-/* Last edited on 2016-04-21 18:55:47 by stolfilocal */
+/* Last edited on 2022-10-20 06:02:18 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -74,16 +74,16 @@ stpoly_t stpoly_read_STP(char *fileName, bool_t binary, float eps, uint32_t neGu
     uint32_t ng_edge = neGuess; /* Expected number of edges. */
     bvtable_t *tb_edge = bvtable_new(sz_edge, ng_edge);
     auto uint64_t hash_edge(void *ep, size_t sz);
-    auto int cmp_edge(void *xp, void *yp, size_t sz);
+    auto int32_t cmp_edge(void *xp, void *yp, size_t sz);
 
     /* Lookup table to uniquify vertices: */
     size_t sz_vert = sizeof(i2_t);
     uint32_t ng_vert = ng_edge;
     bvtable_t *tb_vert = bvtable_new(sz_vert, ng_vert);
     auto uint64_t hash_vert(void *vp, size_t sz);
-    auto int cmp_vert(void *xp, void *yp, size_t sz);
+    auto int32_t cmp_vert(void *xp, void *yp, size_t sz);
     
-    auto void process_STP_edge(int line, stpoly_STP_edge_t *edge);
+    auto void process_STP_edge(int32_t line, stpoly_STP_edge_t *edge);
       /* Procedure that quantizes an STP face {face} and stores it in
          the polygonal figure, if not degenerate. */
 
@@ -112,7 +112,7 @@ stpoly_t stpoly_read_STP(char *fileName, bool_t binary, float eps, uint32_t neGu
     
     /* INTERNAL IMPLEMENTATIONS */
     
-    void process_STP_edge(int line, stpoly_STP_edge_t *stp_edge)
+    void process_STP_edge(int32_t line, stpoly_STP_edge_t *stp_edge)
       { 
         if (debug) 
           { fprintf(stderr, "edge = "); stpoly_STP_print_edge(stderr, stp_edge); fprintf(stderr, " --> (");  }
@@ -120,7 +120,7 @@ stpoly_t stpoly_read_STP(char *fileName, bool_t binary, float eps, uint32_t neGu
         ne_read++;
         /* Quantize vertices, assign indices: */
         stpoly_vert_unx_t uxv[2]; /* Indices of endpoint vertices, assigned or recovered. */
-        int k;
+        int32_t k;
         for (k = 0; k < 2; k++)
           { /* Quantize the coordinates of endpoint {k}: */
             i2_t vposk = stpoly_STP_round_point(&(stp_edge->v[k]), eps, even);
@@ -170,12 +170,12 @@ stpoly_t stpoly_read_STP(char *fileName, bool_t binary, float eps, uint32_t neGu
         return h;
       }
         
-    auto int cmp_edge(void *xp, void *yp, size_t sz)
+    auto int32_t cmp_edge(void *xp, void *yp, size_t sz)
       { assert(sz == sizeof(stpoly_vert_unx_pair_t));
         stpoly_vert_unx_pair_t *x = (stpoly_vert_unx_pair_t *)xp;
         stpoly_vert_unx_pair_t *y = (stpoly_vert_unx_pair_t *)yp;
         /* Compare the endpoint indices lexicographically: */
-        int k;
+        int32_t k;
         for (k = 0; k < 2; k++)
           { stpoly_vert_unx_t uxvx = x->v[k];
             stpoly_vert_unx_t uxvy = y->v[k];
@@ -194,12 +194,12 @@ stpoly_t stpoly_read_STP(char *fileName, bool_t binary, float eps, uint32_t neGu
         return h;
       }
         
-    auto int cmp_vert(void *xp, void *yp, size_t sz)
+    auto int32_t cmp_vert(void *xp, void *yp, size_t sz)
       { assert(sz == sizeof(i2_t));
         i2_t *x = (i2_t *)xp;
         i2_t *y = (i2_t *)yp;
         /* Compare quantized coords lexicographically in order {Y,X}: */
-        int k;
+        int32_t k;
         for (k = 0; k < 2; k++)
           { int32_t xk = x->c[1-k];
             int32_t yk = y->c[1-k];
@@ -272,7 +272,7 @@ void stpoly_print_bounding_box(FILE *wr, stpoly_t poly)
     i2_t minQ, maxQ;
     stpoly_get_bounding_box(poly, &minQ, &maxQ);
     fprintf(wr, "bounding box:\n");
-    int k;
+    int32_t k;
     for (k = 0; k < 2; k++)
       { int32_t minQk = minQ.c[k]; float minFk = eps*(float)minQk;
         int32_t maxQk = maxQ.c[k]; float maxFk = eps*(float)maxQk;
@@ -286,7 +286,7 @@ bool_t stpoly_edge_crosses_line(stpoly_edge_t e, int32_t pY)
     stpoly_vert_t v[2]; /* Endpoints of {e}. */
     stpoly_edge_get_endpoints(e, v);
     int32_t vY[2]; /* Quantized {Y}-coords of endpoints of {e}. */
-    int r;
+    int32_t r;
     for (r = 0; r < 2; r++) 
       { i2_t p = stpoly_vert_get_pos(v[r]); vY[r] = p.c[1];
         if (verbose) { fprintf(stderr, "endpoint %d at Y = %+d\n", r, vY[r]); }
@@ -302,7 +302,7 @@ double stpoly_edge_line_intersection(stpoly_edge_t e, int32_t pY, double eps)
     stpoly_vert_t v[2]; /* Endpoints of {e}. */
     stpoly_edge_get_endpoints(e, v);
     i2_t p[2]; /* Quantized coordinates of the endpoints. */
-    int r;
+    int32_t r;
     for (r = 0; r < 2; r++) { p[r] = stpoly_vert_get_pos(v[r]); }
     int32_t nY = pY - p[0].c[1];
     int32_t dY = p[1].c[1] - p[0].c[1];
@@ -383,7 +383,7 @@ void stpoly_vert_check(stpoly_t poly, stpoly_vert_t v)
 
 void stpoly_edge_check(stpoly_t poly, stpoly_edge_t e)
   {
-    int k;
+    int32_t k;
 
     /* Check the index: */
     stpoly_edge_unx_t uxe = stpoly_edge_get_unx(poly, e);
@@ -396,7 +396,7 @@ void stpoly_edge_check(stpoly_t poly, stpoly_edge_t e)
     /* Compare with reversed versions: */
     bool_t found = FALSE; /* Found a version of {e} that matches {e0}. */
     stpoly_edge_t c = e;
-    int t;
+    int32_t t;
     for (t = 0; t < 2; t++)
       { /* At this point, {c = reverse^t(e)}. */
         stpoly_edge_t c1 = stpoly_edge_reverse(e, t);

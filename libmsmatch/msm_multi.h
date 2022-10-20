@@ -2,19 +2,20 @@
 #define msm_multi_H
 
 /* Multiscale DNA matching */
-/* Last edited on 2017-04-28 10:31:14 by stolfilocal */ 
+/* Last edited on 2022-10-20 06:38:07 by stolfi */ 
 
 #define msm_multi_H_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)" \
   " and the Federal Fluminense University (UFF)"
 
 #include <msm_basic.h>
+#include <stdint.h>
 #include <msm_rung.h>
 #include <msm_cand.h>
 #include <msm_cand_vec.h>
 
 typedef void msm_multi_report_proc_t
-  ( int level,
+  ( int32_t level,
     msm_seq_desc_t *seq0, 
     msm_seq_desc_t *seq1,
     msm_cand_vec_t *cdv,
@@ -38,16 +39,16 @@ msm_cand_vec_t msm_multi_find_matches
   ( msm_cand_vec_t *cdvini,
     msm_seq_desc_t sv0[], 
     msm_seq_desc_t sv1[],
-    int maxMatches,
-    int maxLevel,
-    int minSamples[],
+    int32_t maxMatches,
+    int32_t maxLevel,
+    int32_t minSamples[],
     double frac,
     bool_t refine,
-    int delta,
-    int kappa,
-    int expand,
-    int shrink,
-    int maxUnp,
+    int32_t delta,
+    int32_t kappa,
+    int32_t expand,
+    int32_t shrink,
+    int32_t maxUnp,
     msm_rung_step_score_proc_t *step_score,
     msm_multi_report_proc_t *report,
     bool_t verbose

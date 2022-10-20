@@ -1,11 +1,12 @@
 /* Arbitrary triangle mesh, with quasimanifold topology. */
-/* Last edited on 2016-05-03 15:45:18 by stolfilocal */
+/* Last edited on 2022-10-20 06:03:24 by stolfi */
 
 #ifndef stmesh_H
 #define stmesh_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <vec.h>
 #include <bool.h>
@@ -75,7 +76,7 @@ r3_t stmesh_unround_point(i3_t *p, float eps);
 
 /* EDGE OPERATIONS */
 
-stmesh_edge_t stmesh_edge_reverse(stmesh_edge_t e, int k);
+stmesh_edge_t stmesh_edge_reverse(stmesh_edge_t e, int32_t k);
   /* If {k} is odd, returns the oriented edge which is the same unoriented edge as
     {e}, but with the opposite orientation.  If {k} is even, retruns {e}
     itself. */
@@ -86,7 +87,7 @@ stmesh_edge_t stmesh_edge_natural(stmesh_edge_t e);
     for any oriented edge {e}, where {e'} is the reverse of {e},
     and {e*} is either {e} or {e'}. */
 
-stmesh_vert_t stmesh_edge_get_endpoint(stmesh_edge_t e, int k);
+stmesh_vert_t stmesh_edge_get_endpoint(stmesh_edge_t e, int32_t k);
   /* Returns the vertex that is the origin ({k = 0}) or
     destination ({k = 1}) of {e}, taking its orientation into account. */
 
@@ -103,7 +104,7 @@ uint32_t stmesh_edge_degree(stmesh_edge_t e);
 stmesh_edge_t stmesh_face_get_base(stmesh_face_t f);
   /* Return the oriented base edge of the oriented face {f}. */
   
-stmesh_face_t stmesh_face_flip(stmesh_face_t f, int k);
+stmesh_face_t stmesh_face_flip(stmesh_face_t f, int32_t k);
   /* If {k} is odd, returns the oriented face which is the same
     unoriented face as {f}, but taken with the opposite orientation. If
     {k} is even, returns {f} itself.
@@ -114,7 +115,7 @@ stmesh_face_t stmesh_face_flip(stmesh_face_t f, int k);
     that new base edge, and each side will traversed in the opposite
     sense. */
 
-stmesh_face_t stmesh_face_shift(stmesh_face_t f, int k);
+stmesh_face_t stmesh_face_shift(stmesh_face_t f, int32_t k);
   /* Returns the oriented face that is the same unoriented
     face as {f}, with the perimeter traversed in the same sense, but whose
     base edge is {k} sides ahead of {f}'s base edge, in that sense of traversal.

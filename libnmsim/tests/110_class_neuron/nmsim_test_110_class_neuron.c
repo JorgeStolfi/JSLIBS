@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} neuron class tools"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2019-01-12 22:42:47 by jstolfi */ 
+/* Last edited on 2022-10-20 06:34:30 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -17,6 +17,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -41,11 +42,11 @@ void nmsim_class_neuron_test_read(char *fname, nmsim_class_neuron_t *nclass, dou
   /* Reads a neuron class parameters record from file {fname},
     assuming the given {timeStep}, and compares it to {nclass}. */
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     double timeStep = 1.0; /* Simulation time step (ms). */
     nmsim_class_neuron_t *nclass = nmsim_class_neuron_throw();

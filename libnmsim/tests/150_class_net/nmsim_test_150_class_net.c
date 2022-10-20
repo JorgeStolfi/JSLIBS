@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} class-level network description"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-11 13:34:31 by jstolfi */ 
+/* Last edited on 2022-10-20 06:34:17 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -48,11 +48,11 @@ void nmsim_class_net_test_read(char *fname, nmsim_class_net_t *cnet, double time
   /* Reads a class-level network description from file
     {fname}, and compares it to the given {cnet}.*/
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     nmsim_class_net_test(1,0);
     nmsim_class_net_test(1,1);

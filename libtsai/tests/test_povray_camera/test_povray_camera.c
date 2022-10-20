@@ -1,10 +1,11 @@
-/* Last edited on 2020-10-11 03:44:03 by jstolfi */
+/* Last edited on 2022-10-20 05:56:12 by stolfi */
 
 #define PROG_NAME "test_povray_camera"
 #define PROG_DESC "tests the conversion from Tsai camera matrix to POV-Ray camera spec"
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <math.h>
@@ -28,12 +29,12 @@ void set_generic_cpar (tf_camera_params_t *cpar);
 
 void set_special_cpar (tf_camera_params_t *cpar);
 
-int main (int argc, char *argv[])
+int32_t main (int32_t argc, char *argv[])
 {
   /*Verify memory*/
   void *trash = malloc(1);
   struct mallinfo info;
-  int MemDinInicial, MemDinFinal;
+  int32_t MemDinInicial, MemDinFinal;
   free(trash);
   info = mallinfo();
   MemDinInicial = info.uordblks;

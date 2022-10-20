@@ -3,6 +3,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <math.h>
@@ -16,12 +17,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-int main (int argc, char *argv[])
+int32_t main (int32_t argc, char *argv[])
 {
   /*Verify memory*/
   void *trash = malloc(1);
   struct mallinfo info;
-  int MemDinInicial, MemDinFinal;
+  int32_t MemDinInicial, MemDinFinal;
   free(trash);
   info = mallinfo();
   MemDinInicial = info.uordblks;
@@ -50,14 +51,14 @@ int main (int argc, char *argv[])
 
   FILE *f_cpars = fopen(argv[3], "r");
 
-  int n_p_w;
+  int32_t n_p_w;
   tf_calib_data_t *cdat = tf_calib_data_new();
   tf_calib_data_read_world_points (argv[4], &n_p_w, &(cdat->world));
 
 
   while (!feof(f_cpars)) {
       char *frame_name = NULL; 
-      int frame = tf_camera_params_read (f_cpars, cpar);
+      int32_t frame = tf_camera_params_read (f_cpars, cpar);
       fprintf(stderr, "O frame lido foi %d\n", frame);
       asprintf(&frame_name, "%s%05d.pgm", frame_prefix, frame);
       image_t img = image_read_pgm (frame_name);
@@ -65,7 +66,7 @@ int main (int argc, char *argv[])
       fprintf(stderr, "In camera parameters:\n");
       tf_camera_params_print (cpar, stderr);
 
-      int i;
+      int32_t i;
 
       mkdir("out", 0777);
       char *out_dir = NULL;
@@ -97,7 +98,7 @@ int main (int argc, char *argv[])
           r2_t p_i = tf_world_coords_to_image_coords (cpar, cdat->world[i]);
           fprintf(stdout, "after tf_world_coords_to_image_coords\n"); 
 
-          int mark_radius = 5;
+          int32_t mark_radius = 5;
 	  fprintf(stdout, "cross in %f %f image position\n", p_i.c[0], p_i.c[1]);
 
 	  if (   (p_i.c[0] > 5) && (p_i.c[1] > 5)

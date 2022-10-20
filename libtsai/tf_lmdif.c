@@ -1,5 +1,5 @@
 /* See {tf_lmdif.h} */
-/* Last edited on 2015-10-05 00:15:05 by stolfilocal */
+/* Last edited on 2022-10-20 05:51:01 by stolfi */
 
 /* From public domain Fortran version of Argonne National Laboratories MINPACK
   
@@ -10,6 +10,7 @@
 
 #define _GNU_SOURCE
 #include <float.h>
+#include <stdint.h>
 #include <math.h>
 
 #include <tf_lmdif.h>
@@ -24,7 +25,7 @@
 
 /* INTERNAL PROTOTYPES */
 
-double enorm(int n, double x[]);
+double enorm(int32_t n, double x[]);
   /*  Computes the Euclidean norm of an {n}-vector {x[0..n-1]}.
 
     The euclidean norm is computed by accumulating the sum of squares in
@@ -41,11 +42,11 @@ double enorm(int n, double x[]);
     Argonne National Laboratory. Minpack Project. March 1980.
     Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More */
 
-int lmpar
-  ( int n,
+int32_t lmpar
+  ( int32_t n,
     double r[],
-    int ldr,
-    int ipvt[],
+    int32_t ldr,
+    int32_t ipvt[],
     double diag[],
     double qtb[],
     double delta,
@@ -141,14 +142,14 @@ int lmpar
     Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
   */
 
-int qrfac
-  ( int m,
-    int n,
+int32_t qrfac
+  ( int32_t m,
+    int32_t n,
     double a[],
-    int lda,
-    int pivot,
-    int ipvt[],
-    int lipvt,
+    int32_t lda,
+    int32_t pivot,
+    int32_t ipvt[],
+    int32_t lipvt,
     double rdiag[],
     double acnorm[],
     double wa[]
@@ -223,11 +224,11 @@ int qrfac
     Argonne National Laboratory. Minpack Project. March 1980.
     Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More */
 
-int qrsolv
-  ( int n,
+int32_t qrsolv
+  ( int32_t n,
     double r[],
-    int ldr,
-    int ipvt[],
+    int32_t ldr,
+    int32_t ipvt[],
     double diag[],
     double qtb[],
     double x[],
@@ -304,15 +305,15 @@ int qrsolv
     Argonne National Laboratory. Minpack Project. March 1980.
     Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More */
 
-int fdjac2
+int32_t fdjac2
   ( tf_lmdif_fcn_t *fcn,
-    int m,
-    int n,
+    int32_t m,
+    int32_t n,
     double x[],
     double fvec[],
     double fjac[],
-    int ldfjac,
-    int *iflag,
+    int32_t ldfjac,
+    int32_t *iflag,
     double epsfcn,
     double wa[]
   );
@@ -391,26 +392,26 @@ int fdjac2
 
 #define BUG 0
 
-int lmdif
-  ( void fcn(int m, int n, double x[], double fvec[], int *iflag),
-    int m,
-    int n,
+int32_t lmdif
+  ( void fcn(int32_t m, int32_t n, double x[], double fvec[], int32_t *iflag),
+    int32_t m,
+    int32_t n,
     double x[],
     double fvec[],
     double ftol,
     double xtol,
     double gtol,
-    int maxfev,
+    int32_t maxfev,
     double epsfcn,
     double diag[],
-    int mode,
+    int32_t mode,
     double factor,
-    int nprint,
-    int *info,
-    int *nfev,
+    int32_t nprint,
+    int32_t *info,
+    int32_t *nfev,
     double fjac[],
-    int ldfjac,
-    int ipvt[],
+    int32_t ldfjac,
+    int32_t ipvt[],
     double qtf[],
     double wa1[],
     double wa2[],
@@ -418,7 +419,7 @@ int lmdif
     double wa4[]
   )
   {
-    int i,iflag,ij,jj,iter,j,l;
+    int32_t i,iflag,ij,jj,iter,j,l;
     double actred,delta,dirder,fnorm,fnorm1,gnorm;
     double par,pnorm,prered,ratio;
     double sum,temp,temp1,temp2,temp3,xnorm;
@@ -770,11 +771,11 @@ int lmdif
     return 0; 
   }
 
-int lmpar
-  ( int n,
+int32_t lmpar
+  ( int32_t n,
     double r[],
-    int ldr,
-    int ipvt[],
+    int32_t ldr,
+    int32_t ipvt[],
     double diag[],
     double qtb[],
     double delta,
@@ -785,7 +786,7 @@ int lmpar
     double wa2[]
   )
   {
-    int i,iter,ij,jj,j,jm1,jp1,k,l,nsing;
+    int32_t i,iter,ij,jj,j,jm1,jp1,k,l,nsing;
     double dxnorm,fp,gnorm,parc,parl,paru;
     double sum,temp;
     static double zero = 0.0;
@@ -1001,14 +1002,14 @@ int lmpar
     return 0;
   }
 
-int qrfac
-  ( int m,
-    int n,
+int32_t qrfac
+  ( int32_t m,
+    int32_t n,
     double a[],
-    int lda,
-    int pivot,
-    int ipvt[],
-    int lipvt,
+    int32_t lda,
+    int32_t pivot,
+    int32_t ipvt[],
+    int32_t lipvt,
     double rdiag[],
     double acnorm[],
     double wa[]
@@ -1016,7 +1017,7 @@ int qrfac
   {
     /* #pragma unused(lipvt) */
     /* #pragma unused(lda) */
-    int i,ij,jj,j,jp1,k,kmax,minmn;
+    int32_t i,ij,jj,j,jp1,k,kmax,minmn;
     double ajnorm,sum,temp;
     static double zero = 0.0;
     static double one = 1.0;
@@ -1142,11 +1143,11 @@ int qrfac
 
 #define BUG 0
 
-int qrsolv
-  ( int n,
+int32_t qrsolv
+  ( int32_t n,
     double r[],
-    int ldr,
-    int ipvt[],
+    int32_t ldr,
+    int32_t ipvt[],
     double diag[],
     double qtb[],
     double x[],
@@ -1154,7 +1155,7 @@ int qrsolv
     double wa[]
   )
   {
-    int i,ij,ik,kk,j,jp1,k,kp1,l,nsing;
+    int32_t i,ij,ik,kk,j,jp1,k,kp1,l,nsing;
     double cos,cotan,qtbpj,sin,sum,tan,temp;
     static double zero = 0.0;
     static double p25 = 0.25;
@@ -1300,9 +1301,9 @@ int qrsolv
     return 0;
   }
 
-double enorm(int n, double x[])
+double enorm(int32_t n, double x[])
   {
-    int i;
+    int32_t i;
     double agiant,floatn,s1,s2,s3,xabs,x1max,x3max;
     double ans, temp;
     static double rdwarf = 3.834e-20;
@@ -1390,21 +1391,21 @@ double enorm(int n, double x[])
     return(ans);
   }
 
-int fdjac2
+int32_t fdjac2
   ( tf_lmdif_fcn_t *fcn,
-    int m,
-    int n,
+    int32_t m,
+    int32_t n,
     double x[],
     double fvec[],
     double fjac[],
-    int ldfjac,
-    int *iflag,
+    int32_t ldfjac,
+    int32_t *iflag,
     double epsfcn,
     double wa[]
   )
   {
     /* #pragma unused(ldfjac) */
-    int i,j,ij;
+    int32_t i,j,ij;
     double eps,h,temp;
     static double zero = 0.0;
 
@@ -1456,8 +1457,8 @@ int fdjac2
 //         return(b);
 // }
 // 
-// int min0(a,b)
-// int a,b;
+// int32_t min0(a,b)
+// int32_t a,b;
 // {
 // if( a <= b )
 //         return(a);
@@ -1465,18 +1466,18 @@ int fdjac2
 //         return(b);
 // }
 // 
-// int mod( k, m )
-// int k, m;
+// int32_t mod( k, m )
+// int32_t k, m;
 // {
 // return( k % m );
 // }
 // 
 // 
 // pmat( m, n, y  )
-// int m, n;
+// int32_t m, n;
 // double y[];
 // {
-// int i, j, k;
+// int32_t i, j, k;
 // 
 // k = 0;
 // for( i=0; i<m; i++ )

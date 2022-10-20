@@ -1,9 +1,10 @@
 /* See {tf_camera_image.h}.  */
-/* Last edited on 2015-10-04 20:50:29 by stolfilocal */
+/* Last edited on 2022-10-20 05:52:58 by stolfi */
 
 #define _GNU_SOURCE
 
 #include <float_image.h>
+#include <stdint.h>
 #include <float_image_interpolate.h>
 #include <affirm.h>
 
@@ -12,15 +13,15 @@
 
 float_image_t *image_apply_pincushion (tf_camera_params_t *cpar, float_image_t *img)
   {
-    int NC = (int)img->sz[0];
-    int NX = (int)img->sz[1];
-    int NY = (int)img->sz[2];
+    int32_t NC = (int32_t)img->sz[0];
+    int32_t NX = (int32_t)img->sz[1];
+    int32_t NY = (int32_t)img->sz[2];
     
     float_image_t *omg = float_image_new(NC, NX, NY);
     double vv[NC];
     float v[NC];
 
-    int iy, ix, ic;
+    int32_t iy, ix, ic;
     for (iy = 0; iy < NY; iy++) {
       for (ix = 0; ix < NX; ix++) {
 

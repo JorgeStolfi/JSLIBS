@@ -1,5 +1,5 @@
 /* See voxb_obj.h */
-/* Last edited on 2021-06-09 23:44:15 by jstolfi */
+/* Last edited on 2022-10-20 05:48:29 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -167,7 +167,7 @@ bool_t voxb_obj_rounded_box(r3_t *p, double RX, double RY, double RZ, double rou
       }
   }
 
-bool_t voxb_obj_donut(r3_t *p, double minR, double majR, int ax)
+bool_t voxb_obj_donut(r3_t *p, double minR, double majR, int32_t ax)
   {
     demand((majR >= minR) && (minR >= 0), "invalid radii");
     demand((ax >= 0) && (ax < 3), "invalid axis {ax}");

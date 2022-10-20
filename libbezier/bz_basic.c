@@ -1,5 +1,5 @@
 /* See bz_basic.h */
-/* Last edited on 2014-04-04 01:34:22 by stolfilocal */
+/* Last edited on 2022-10-20 06:27:35 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -19,7 +19,7 @@
 double bz_bernstein(bz_degree_t g, bz_index_t i, double z)
   {
     if ((i < 0) || (i > g)) { return NAN; }
-    double v; int e, k;
+    double v; int32_t e, k;
     double u = 1.0 - z;
     if (i+i > g) { u = z; z = 1.0 - z; i = (bz_index_t)(g - i); }
     /* Compute {v = (1-z)^{g-i}}: */
@@ -60,7 +60,7 @@ void bz_split
     else
       { rb = wb/w; ra = 1 - rb; }
     
-    int i, j;
+    int32_t i, j;
     if (b == NULL)
       { /* Clients wants only the first piece. */
         /* Copy coeffs to {a}, unless they are already there: */
@@ -92,7 +92,7 @@ void bz_diff
     double w,        /* Actual width of interval. */
     double d[]       /* OUT: Bezier coeffs of derivative. */
   )
-  { int i;
+  { int32_t i;
     double f = g;
     for (i = 0; i < g; i++) { d[i] = f*(c[i+1] - c[i])/w; }
   }
@@ -103,7 +103,7 @@ void bz_integ
     double w,        /* Actual width of interval. */
     double d[]        /* OUT: Bezier coeffs of integral. */
   )
-  { int i;
+  { int32_t i;
     double f = g + 1;
     double sum = 0;
     d[0] = 0;
@@ -139,7 +139,7 @@ void bz_eval
         second = FALSE;
       }
     /* Now differentiate {p} up to order {ord} or until {g} is constant: */
-    int k = 0;
+    int32_t k = 0;
     while (k <= ord)
       { f[k] = p[second ? 0: g]; k++;
         if (g <= 0) { break; }

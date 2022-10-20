@@ -1,11 +1,12 @@
 /* Tools for handling an expandable font list. */
-/* Last edited on 2020-01-11 01:24:08 by jstolfi */
+/* Last edited on 2022-10-20 06:51:44 by stolfi */
 
 #ifndef epswr_font_list_H
 #define epswr_font_list_H
   
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <bool.h>
 
@@ -16,16 +17,16 @@
   The entries in use are {fonts[0..nFonts-1]}, where {nFonts
   =(*nFontsP)}. */
   
-void epswr_font_list_initialize(int *nFontsP, char ***fontsP);
+void epswr_font_list_initialize(int32_t *nFontsP, char ***fontsP);
   /* Intialize {nFontsP} to zero and {*fontsP} to the address 
     of a newly allocated array of suitable size. */
 
-void epswr_font_list_add(const char *font, int *nFontsP, char ***fontsP);
+void epswr_font_list_add(const char *font, int32_t *nFontsP, char ***fontsP);
   /* If the string {font} is not in the font list {fonts[0..nFonts-1]}, appends a copy of 
     it to the list, incementing {*nFontsP}. Reallocates {*fontsP}
     if necessary. */
 
-void epswr_font_list_free(int *nFontsP, char ***fontsP);
+void epswr_font_list_free(int32_t *nFontsP, char ***fontsP);
   /* Reclaims the storage of all strings in {fonts[0.. */
  
 #endif

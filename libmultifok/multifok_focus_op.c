@@ -1,5 +1,5 @@
 /* See {multifok_focus_op.h}. */
-/* Last edited on 2017-12-27 16:17:39 by stolfilocal */
+/* Last edited on 2022-10-20 06:27:05 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -19,7 +19,7 @@ double multifok_focus_op_score_simple(int32_t NW, double v[], double *phi[], dou
   { 
     int32_t NS = multifok_focus_op_num_samples(NW);
     double c[NS];
-    for (int i = 0; i < NS; i++) { c[i] = multifok_focus_op_prod(NW, v, phi[i], w); }
+    for (int32_t i = 0; i < NS; i++) { c[i] = multifok_focus_op_prod(NW, v, phi[i], w); }
     double m2 = c[0]*c[0]; /* Mean value squared. */
     double g2 = c[1]*c[1] + c[2]*c[2]; /* Gradient modulus squared. */
     /* double foc = (g2 + 1.0e-100)/(g2 + noise + 1.0e-100); */
@@ -75,7 +75,7 @@ double **multifok_focus_op_basis(int32_t NW)
     int32_t NS = multifok_focus_op_num_samples(NW);
     
     double **phi = notnull(malloc(NS*sizeof(double*)), "no mem"); 
-    for (int i = 0; i < NS; i++) { phi[i] = notnull(malloc(NS*sizeof(double)), "no mem"); }
+    for (int32_t i = 0; i < NS; i++) { phi[i] = notnull(malloc(NS*sizeof(double)), "no mem"); }
     
     double sqrt2 = M_SQRT2;
     
@@ -92,7 +92,7 @@ double **multifok_focus_op_basis(int32_t NW)
     return phi;
   }
 
-void multifok_focus_op_orthize(int32_t NW, int k, double *phi[], double w[])
+void multifok_focus_op_orthize(int32_t NW, int32_t k, double *phi[], double w[])
   { int32_t NS = multifok_focus_op_num_samples(NW);
     /* Make orthogonal:*/
     for (int32_t i = 0; i < k; i++)
@@ -134,11 +134,11 @@ void multifok_focus_op_basis_check(int32_t NW, double *phi[], double w[])
     /* Print basis: */
     fprintf(stderr, "--- basis ---------------------------------------------\n");
     fprintf(stderr, "%3s", "");
-    for (int j = 0; j < NS; j++) { fprintf(stderr, " %10d", j); }
+    for (int32_t j = 0; j < NS; j++) { fprintf(stderr, " %10d", j); }
     fprintf(stderr, "\n");
-    for (int i = 0; i < NS; i++)
+    for (int32_t i = 0; i < NS; i++)
       { fprintf(stderr, "%3d", i);
-        for (int j = 0; j < NS; j++)
+        for (int32_t j = 0; j < NS; j++)
           { double pij = phi[i][j];
             fprintf(stderr, " %+10.6f", pij);
           }
@@ -149,11 +149,11 @@ void multifok_focus_op_basis_check(int32_t NW, double *phi[], double w[])
     /* Print basis products: */
     fprintf(stderr, "--- momentum matrix -----------------------------------\n");
     fprintf(stderr, "%3s", "");
-    for (int j = 0; j < NS; j++) { fprintf(stderr, " %10d", j); }
+    for (int32_t j = 0; j < NS; j++) { fprintf(stderr, " %10d", j); }
     fprintf(stderr, "\n");
-    for (int i = 0; i < NS; i++)
+    for (int32_t i = 0; i < NS; i++)
       { fprintf(stderr, "%3d", i);
-        for (int j = 0; j <= i; j++)
+        for (int32_t j = 0; j <= i; j++)
           { double pij = multifok_focus_op_prod(NW, phi[i], phi[j], w);
             fprintf(stderr, " %+10.6f", pij);
           }
@@ -164,7 +164,7 @@ void multifok_focus_op_basis_check(int32_t NW, double *phi[], double w[])
 
 void multifok_focus_op_remap_samples(int32_t NW, double v[], double *phi[], double w[], double c[])
   { int32_t NS = multifok_focus_op_num_samples(NW);
-    for (int i = 0; i < NS; i++) 
+    for (int32_t i = 0; i < NS; i++) 
       { c[i] = multifok_focus_op_prod(NW, v, phi[i], w); }
   }
     
@@ -175,7 +175,7 @@ void multifok_focus_op_check(int32_t NW)
     double **phi = multifok_focus_op_basis(NW);
     multifok_focus_op_basis_check(NW, phi, w);
     free(w);
-    for (int i = 0; i < NS; i++) { free(phi[i]); }
+    for (int32_t i = 0; i < NS; i++) { free(phi[i]); }
     free(phi);
   } 
 

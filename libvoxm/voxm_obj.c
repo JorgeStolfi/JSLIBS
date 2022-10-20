@@ -1,5 +1,5 @@
 /* See voxm_obj.h */
-/* Last edited on 2016-04-22 16:11:52 by stolfilocal */
+/* Last edited on 2022-10-20 05:47:06 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -182,7 +182,7 @@ double voxm_obj_rounded_box(r3_t *p, double RX, double RY, double RZ, double rou
     return voxm_obj_classify(d, fuzzR);
   }
 
-double voxm_obj_donut(r3_t *p, double minR, double majR, int ax, double fuzzR)
+double voxm_obj_donut(r3_t *p, double minR, double majR, int32_t ax, double fuzzR)
   {
     demand((majR >= minR) && (minR >= 0), "invalid radii");
     demand((ax >= 0) && (ax < 3), "invalid axis {ax}");

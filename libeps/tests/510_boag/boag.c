@@ -1,8 +1,9 @@
 /* Tech drawing for the new center gate of Boaretto da Silva 113 */
-/* Last edited on 2021-06-26 18:49:14 by jstolfi */
+/* Last edited on 2022-10-20 06:53:01 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -137,7 +138,7 @@ void boag_draw_leaf_beams
 void boag_draw_half_hinge
   ( epswr_figure_t *epsf, 
     bool_t cut,
-    int which,
+    int32_t which,
     double Xctr, double Yctr, double Zctr,
     double Yhdist
   );
@@ -161,7 +162,7 @@ void boag_draw_plate
 void boag_draw_tube
   ( epswr_figure_t *epsf, 
     bool_t cut,
-    int axis,
+    int32_t axis,
     double Xctr, double Yctr, double Zctr, 
     double Xsize, double Ysize, double Zsize
   );
@@ -188,7 +189,7 @@ void boag_show_dim
     double agap,
     double bgap, 
     double elen,
-    int nfrac,
+    int32_t nfrac,
     bool_t inner
   );
   /* Shows the distance between points {a=(xa,ya)} and {b=(xb,yb)}
@@ -202,7 +203,7 @@ void boag_show_dim
 
 /* IMPLEMENTATIONS */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   {
     boag_draw_gate("out/gate_plan.eps", FALSE);
     /* boag_draw_gate("out/gate_hcut.eps", TRUE); */
@@ -456,7 +457,7 @@ void boag_draw_leaf_beams
 
     /* Number, {Y} spacing, {Z} center, and {Z} extent of vertical grille beams: */
     double ideal_Ygap = 96.0; /* Ideal gap between vert beams. */
-    int YN = (int)floor((Ymax - Ymin + tube_Ysize)/(ideal_Ygap + tube_Ysize) + 0.5) - 1;
+    int32_t YN = (int32_t)floor((Ymax - Ymin + tube_Ysize)/(ideal_Ygap + tube_Ysize) + 0.5) - 1;
     double Ygap = (Ymax - Ymin + tube_Ysize)/(YN + 1) - tube_Ysize; /* Actual gap between vert beams. */
     double V_Zctr = (Zmin + Zmax)/2; /* {Z} coord of center of vert beams. */
     double V_Zsize = Zmax - Zmin; /* {Z} extent of vert beams. */
@@ -464,7 +465,7 @@ void boag_draw_leaf_beams
     /* Max number and spacing of horizontal grille beams. */
     double ideal_Zgap = 315.0; /* Ideal gap between horz beams: */
     double Zex = 20; /* Extra space to trim at bottom. */
-    int ZN = (int)floor((Zmax - Zmin + Zex + tube_Zsize)/(ideal_Zgap + tube_Zsize) + 0.5);
+    int32_t ZN = (int32_t)floor((Zmax - Zmin + Zex + tube_Zsize)/(ideal_Zgap + tube_Zsize) + 0.5);
     double Zgap = (Zmax - Zmin + Zex + tube_Zsize)/ZN - tube_Zsize; /* Actual gap between horz beams. */
     
     fprintf(stderr, "  %2d vert beams, Ygap = %7.3f mm\n", YN, Ygap);
@@ -472,7 +473,7 @@ void boag_draw_leaf_beams
     
     assert(YN %2 == 0);  /* For best looks. */
 
-    for (int kY = 0; kY <= YN; kY++)
+    for (int32_t kY = 0; kY <= YN; kY++)
       { 
         if (kY > 0)
           { /* Draw ver beam {kY}: */
@@ -492,9 +493,9 @@ void boag_draw_leaf_beams
 
         double H_Yctr = (H_Ymin + H_Ymax)/2; /* {Y} coord of center of horz beams. */
         double H_Ysize = Ygap; /* {Y} extent of horz beams. */
-        int H_phase = ((kY + 1) % 2); /* 0 if first vert gap is whole, 1 if half-height. */
+        int32_t H_phase = ((kY + 1) % 2); /* 0 if first vert gap is whole, 1 if half-height. */
              
-        for (int kZ = 0; kZ < ZN; kZ++)
+        for (int32_t kZ = 0; kZ < ZN; kZ++)
            { if ((H_phase == 1) || (kZ > 0))
                { /* Draw beam {kZ}: */
                  double H_Zctr = Zmin - Zex - tube_Zsize/2 + (kZ + 0.5*H_phase)*(Zgap + tube_Zsize);
@@ -638,7 +639,7 @@ void boag_draw_post
 void boag_draw_half_hinge
   ( epswr_figure_t *epsf, 
     bool_t cut,
-    int which,
+    int32_t which,
     double Xctr, double Yctr, double Zctr,
     double Yhdist
   )
@@ -691,7 +692,7 @@ void boag_draw_half_hinge
 void boag_draw_tube
   ( epswr_figure_t *epsf, 
     bool_t cut,
-    int axis,
+    int32_t axis,
     double Xctr, double Yctr, double Zctr, 
     double Xsize, double Ysize, double Zsize
   )
@@ -761,7 +762,7 @@ void boag_show_dim
     double agap,
     double bgap, 
     double elen,
-    int nfrac,
+    int32_t nfrac,
     bool_t inner
   )
   { sign_t dir = ( elen < 0 ? -1 : +1); /* Direction of extension lines rel {a-->b}. */

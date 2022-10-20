@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} element-level network procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-11 19:11:28 by jstolfi */ 
+/* Last edited on 2022-10-20 06:33:44 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -17,6 +17,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -74,11 +75,11 @@ void nmsim_elem_net_test_read(char *fname, nmsim_elem_net_t *enet, double timeSt
   /* Reads a elem-level network description from file
     {fname}, and compares it to the given {enet}.*/
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     nmsim_elem_net_test(1,0, 1,0, 1,0);
     nmsim_elem_net_test(2,3, 1,0, 1,0);

@@ -8,6 +8,7 @@
 */
 
 #include <FBasPoly2.h>
+#include <stdint.h>
 #include <FBas.h>
 
 #include <filefmt.h>
@@ -22,9 +23,9 @@
 
 #define T FBasPoly2
 
-double FBasPoly2_M_Eval(T *bas, int index, int dp, double *p);
-double FBasPoly2_M_Energy(T *bas, int i, int j);
-int FBasPoly2_M_RoundSize(T *bas, int nb, bool_t up);
+double FBasPoly2_M_Eval(T *bas, int32_t index, int32_t dp, double *p);
+double FBasPoly2_M_Energy(T *bas, int32_t i, int32_t j);
+int32_t FBasPoly2_M_RoundSize(T *bas, int32_t nb, bool_t up);
 T *FBasPoly2_M_Copy(T *bas);
 void FBasPoly2_M_Free(T *bas);
 void FBasPoly2_M_Write(T *bas, FILE *wr);
@@ -51,17 +52,17 @@ FBasPoly2 *FBasPoly2_Cast(OBJ *o)
 
 /* OVERRIDES FOR PARENT CLASS METHODS */
 
-double FBasPoly2_M_Eval(T *bas, int index, int dp, double *p)
+double FBasPoly2_M_Eval(T *bas, int32_t index, int32_t dp, double *p)
   { affirm(dp == 2, "wrong point dimension");
     /* Find degree {d} of element {index}: */
-    int d = 0, imin = 0;
+    int32_t d = 0, imin = 0;
     while (index > imin + d) { d++; imin += d; }
     /* Compute expoents of element: */
-    int ix = index - imin, iy = d - ix;
+    int32_t ix = index - imin, iy = d - ix;
     /* Evaluate the monomial {z = x^ix*y^iy} */
     /* (don't care aboout speed for now): */
     double x = p[0], y = p[1], z = 1.0;
-    int r;
+    int32_t r;
     for (r = 1; r <= ix; r++) { z *= x; }
     for (r = 1; r <= iy; r++) { z *= y; }
     return z;
@@ -69,7 +70,7 @@ double FBasPoly2_M_Eval(T *bas, int index, int dp, double *p)
   
 #define f2baspoly_TB_DEG 9
 #define f2baspoly_TB_SZ ((f2baspoly_TB_DEG+1)*(f2baspoly_TB_DEG+2)/2)
-static int FBasPoly2_EnergyTable[f2baspoly_TB_SZ] = 
+static int32_t FBasPoly2_EnergyTable[f2baspoly_TB_SZ] = 
   { 1,
     1,1,
     3,1,3,
@@ -82,10 +83,10 @@ static int FBasPoly2_EnergyTable[f2baspoly_TB_SZ] =
     24310,1430,286,110,70,70,110,286,1430,24310
   };
    
-double FBasPoly2_M_Energy(T *bas, int i, int j)
+double FBasPoly2_M_Energy(T *bas, int32_t i, int32_t j)
   { /* Find degree {d} of element {k := max(i,j)}: */
-    int k = (i > j ? i : j);
-    int d = 0, imin = 0;
+    int32_t k = (i > j ? i : j);
+    int32_t d = 0, imin = 0;
     while (k > imin + d) { d++; imin += d; }
     affirm(k < (d+1)*(d+2)/2, "degree bug");
     affirm(imin == d*(d+1)/2, "imin bug");
@@ -99,20 +100,20 @@ double FBasPoly2_M_Energy(T *bas, int i, int j)
       
     if ((i < imin) || (j < imin)) { return 0.0; }
     /* Find exponents {ix} and {jx} of {x} in the monomials {i,j}: */
-    int ix = (i - imin);
-    int jx = (j - imin);
+    int32_t ix = (i - imin);
+    int32_t jx = (j - imin);
     if ((ix+jx) % 2 != 0) { return 0.0; }
     /* Look up energy coeff in table: */
     affirm(d <= f2baspoly_TB_DEG, "unimplemented");
-    int r = (ix + jx)/2;
+    int32_t r = (ix + jx)/2;
     return (double)FBasPoly2_EnergyTable[imin + r];
   }
 
-int FBasPoly2_M_RoundSize(T *bas, int n, bool_t up)
+int32_t FBasPoly2_M_RoundSize(T *bas, int32_t n, bool_t up)
   { /* Use fact that {deg_down(nb) = deg_up(nb+1)-1}: */
     if (! up) { n++; }
     /* Find degree {d} that gives at {nb >= nb} elements: */
-    int d = -1, nb = 0; 
+    int32_t d = -1, nb = 0; 
     while (nb < n) { d++; nb += d+1; }
     if (! up) { nb -= d+1; d--; affirm(nb >= 0, "bad size"); }
     return nb;

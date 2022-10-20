@@ -2,10 +2,12 @@
 #define dna_seq_view_tools_H
 
 /* Tools for DNA sequence visualization. */
-/* Last edited on 2014-09-01 23:39:20 by stolfilocal */
+/* Last edited on 2022-10-20 10:51:09 by stolfi */
 
 #define _GNU_SOURCE
+#include <GL/gl.h>
 #include <GL/glu.h>
+#include <stdint.h>
 
 #include <bool.h>
 #include <r3.h>
@@ -15,10 +17,10 @@
 
 #include <dnae_seq.h>
 
-void dna_seq_view_tools_draw_ball(r3_t* p, double rad, GLUquadricObj* quad);
+void dna_seq_view_tools_draw_ball(r3_t* p, double rad, GLUquadric* quad);
   /* Draws a ball at {p} with radius {rad}. */
 
-void dna_seq_view_tools_draw_stick(r3_t* p, bool_t ptrim, r3_t* q, bool_t qtrim, double rad, double trimrad, GLUquadricObj* quad);
+void dna_seq_view_tools_draw_stick(r3_t* p, bool_t ptrim, r3_t* q, bool_t qtrim, double rad, double trimrad, GLUquadric* quad);
   /* Draws a stick from {p} to {q} given radius {rad}.  If {ptrim} is true, trims the stick at the {p} end
     by {trimrad}.  Ditto if {trimq}, at the {q} end. */
 
@@ -30,28 +32,28 @@ void dna_seq_view_tools_draw_sequence
     double magnify, 
     r3_t *pert, 
     double radius, 
-    int step,
+    int32_t step,
     frgb_t *color, 
-    int ini, 
-    int fin
+    int32_t ini, 
+    int32_t fin
   );
   /* Paints the sequence {z}, scaling every point by {magnify}
     and adding the {pert} vector to it. Each datum whose index is a multiple of {step} is painted
     as a sphere with given {radius}.  The spheres and the connecting lines are
-    painted with the given {color}, unless they are between the first {ini} or last {fin} datums. */
+    painted with the given {color}, unless they are among the first {ini} or last {fin} datums. */
 
 void dna_seq_view_tools_draw_paired
   ( msm_rung_vec_t *gv,
     dnae_seq_t *x,
-    int inix,
-    int finx,
+    int32_t inix,
+    int32_t finx,
     dnae_seq_t *y,
-    int iniy,
-    int finy,
+    int32_t iniy,
+    int32_t finy,
     double magnify,
     bool_t perturb,
     double radius,
-    int step,
+    int32_t step,
     frgb_t *color_x,
     frgb_t *color_y, 
     frgb_t *color_p,

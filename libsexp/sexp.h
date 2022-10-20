@@ -1,10 +1,11 @@
 /* LISP-like Symbolic Expressions. */
-/* Last edited on 2009-02-09 17:42:35 by stolfi */
+/* Last edited on 2022-10-20 06:13:51 by stolfi */
 
 #ifndef sexp_H
 #define sexp_H
 
 #include <bool.h>
+#include <stdint.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -180,7 +181,7 @@ void sexp_print(FILE *wr, sexp_t *e);
   /* Writes the print form of {e} to file {wr}, using a minimum of
     spaces (ASCII SP) for separators, and no line breaks. */
 
-void sexp_pprint(FILE *wr, sexp_t *e, int ind, int maxw, int minw, int step);
+void sexp_pprint(FILE *wr, sexp_t *e, int32_t ind, int32_t maxw, int32_t minw, int32_t step);
   /* Writes the print form of {e} to file {wr}. If the expression does
     ot fit in a single line, uses spaces and newlines to obtain
     suitable alignment and indantation between conecutive lines.

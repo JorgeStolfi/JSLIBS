@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {epswr.h} and {epswr_iso.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2011-06-06 17:47:26 by stolfi */
+/* Last edited on 2022-10-20 06:52:31 by stolfi */
 
 #define testiso_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
@@ -11,6 +11,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
 
@@ -25,22 +26,22 @@
 #define FIG_SIZE (140.0)
   /* Figure size in points. */
 
-int main (int argc, char **argv);
-void DoEPSTests(int mx, int my);
-void DoPaintings(epswr_figure_t *epsf, int mx, int my);
+int32_t main (int32_t argc, char **argv);
+void DoEPSTests(int32_t mx, int32_t my);
+void DoPaintings(epswr_figure_t *epsf, int32_t mx, int32_t my);
 void PlotFunc2D
   ( epswr_figure_t *epsf, 
     double func(double x, double y),
-    int mx,
-    int my,
-    int kx,
-    int ky,
+    int32_t mx,
+    int32_t my,
+    int32_t kx,
+    int32_t ky,
     bool_t bands, 
     bool_t lines,
     double vStart,  /* Synchronize levels with this value. */
     double vStep,   /* Spacing between levels. */
-    int kMin,       /* Minimum isoline index. */
-    int kMax,       /* Maximum isoline index. */
+    int32_t kMin,       /* Minimum isoline index. */
+    int32_t kMax,       /* Maximum isoline index. */
     double *R, double *G, double *B
   );
 
@@ -50,12 +51,12 @@ double FC(double x, double y);
 double FX(double x, double y);
 double FY(double x, double y);
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   { DoEPSTests(3,3);
     return 0;
   }
   
-void DoEPSTests(int mx, int my)
+void DoEPSTests(int32_t mx, int32_t my)
   {
     double hsize = FIG_SIZE*mx;
     double vsize = FIG_SIZE*my;
@@ -73,20 +74,20 @@ void DoEPSTests(int mx, int my)
     free(fname);
   }
       
-void DoPaintings(epswr_figure_t *epsf, int mx, int my)
+void DoPaintings(epswr_figure_t *epsf, int32_t mx, int32_t my)
   { 
     double vMin = -1.0, vMax = +1.0, vStep = 0.2, vStart = vStep/2;
     
     /* Indices of first and last isoline: */
-    int kMin = epswr_sup_isoline(vStart, vStep, vMin);
-    int kMax = epswr_inf_isoline(vStart, vStep, vMax);
+    int32_t kMin = epswr_sup_isoline(vStart, vStep, vMin);
+    int32_t kMax = epswr_inf_isoline(vStart, vStep, vMax);
     affirm(epswr_level(vStart, vStep, kMin) >= vMin, "duh");
     affirm(epswr_level(vStart, vStep, kMin-1) < vMin, "duh");
     affirm(epswr_level(vStart, vStep, kMax) <= vMax, "duh");
     affirm(epswr_level(vStart, vStep, kMax+1) > vMax, "duh");
 
     /* Create standard color table (blue-white-red): */
-    int N; /* Number of color bands: */
+    int32_t N; /* Number of color bands: */
     double *Ra, *Ga, *Ba;
     epswr_make_color_table
       ( vStart, vStep, kMin, kMax, 
@@ -100,7 +101,7 @@ void DoPaintings(epswr_figure_t *epsf, int mx, int my)
     
     /* Create a modified color table with some invisible colors: */
     double Rb[N], Gb[N], Bb[N];
-    int i;  /* Index of color band. */
+    int32_t i;  /* Index of color band. */
     for (i = 0; i < N; i++)
       { if ((i == 0) || (i == N-1))
           { Rb[i] = -1.000; Gb[i] = -1.000; Bb[i] = -1.000; }
@@ -156,16 +157,16 @@ void DoPaintings(epswr_figure_t *epsf, int mx, int my)
 void PlotFunc2D
   ( epswr_figure_t *epsf,
     double func(double x, double y),
-    int mx,
-    int my,
-    int kx,
-    int ky,
+    int32_t mx,
+    int32_t my,
+    int32_t kx,
+    int32_t ky,
     bool_t bands, 
     bool_t lines,
     double vStart,  /* Synchronize levels with this value. */
     double vStep,   /* Spacing between levels. */
-    int kMin,       /* Minimum isoline index. */
-    int kMax,       /* Maximum isoline index. */
+    int32_t kMin,       /* Minimum isoline index. */
+    int32_t kMax,       /* Maximum isoline index. */
     double *R, double *G, double *B
   )
   { /* Usable area {[0 _ wx]×[0 _ wy]} */
@@ -177,15 +178,15 @@ void PlotFunc2D
     epswr_set_pen(epsf, 0.000, 0.000, 0.000,  0.20,  0.0, 0.0);
     epswr_rectangle(epsf, -0.25+xc, +0.25+xw+xc, -0.25+yc, +0.25+yw+yc, FALSE, TRUE);
       
-    int nx = 20;
-    int ny = 20;
+    int32_t nx = 20;
+    int32_t ny = 20;
     
     epswr_set_pen(epsf, 0.000, 0.000, 0.333,  0.10,  0.0, 0.0);
-    int pass;
+    int32_t pass;
     for (pass = 0; pass < 2; pass++)
       { if ((pass == 0) && (! bands)) { continue; }
         if ((pass == 1) && (! lines)) { continue; }
-        int ix, iy;
+        int32_t ix, iy;
         for (ix = 0; ix < nx; ix++)
           { for (iy = 0; iy < ny; iy++)
               { double x0 = ((double)ix)/((double)nx);

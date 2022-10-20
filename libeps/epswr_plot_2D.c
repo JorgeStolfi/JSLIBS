@@ -1,10 +1,11 @@
 /* See {epswr_plot_2D.h}. */
-/* Last edited on 2021-04-13 22:35:27 by jstolfi */
+/* Last edited on 2022-10-20 06:50:26 by stolfi */
 
 #define epswr_plot_2D_C_COPYRIGHT "Copyright © 2007 by the State University of Campinas (UNICAMP)."
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <math.h>
@@ -24,18 +25,18 @@
 
 void epswr_plot_2D_quad
   ( epswr_figure_t *eps, 
-    int nf,
+    int32_t nf,
     epswr_plot_2D_func_t *F,
     interval_t B[],
-    int n0,
-    int n1,
+    int32_t n0,
+    int32_t n1,
     epswr_plot_2D_style_t *st,
     bool_t fill,
     bool_t draw
   )
   {
     /* The domain dimension must be 2: */
-    int ddim = 2;
+    int32_t ddim = 2;
     
     /* We need at least 2 values for positional coordinates: */
     demand(nf >= 2, "too few function values to plot.");
@@ -50,7 +51,7 @@ void epswr_plot_2D_quad
     double x11[ddim];      /* Upper right corner of current tile. */
     double xmm[ddim];      /* Center of current tile. */
     
-    int pass; /* Pass 0 is fill, pass 1 is draw: */
+    int32_t pass; /* Pass 0 is fill, pass 1 is draw: */
     for (pass = 0; pass < 2; pass++)
       { if ((pass == 0) && (! fill)) { continue; }
         if ((pass == 1) && (! draw)) { continue; }
@@ -59,7 +60,7 @@ void epswr_plot_2D_quad
         bool_t drawP = (pass == 1);
 
         /* Scan the tile corners: */
-        int k0, k1;
+        int32_t k0, k1;
         for (k1 = 0; k1 <= n1; k1++)
           { /* Now, if {k1 > 0}, {f} contains the {F}-vals for the vertices in scanline {k1-1}. */
 
@@ -134,12 +135,12 @@ void epswr_plot_2D_quad
 
                 if (k0 > 0)
                   { /* Save top left corner as bottom left corner for next row: */
-                    int j;
+                    int32_t j;
                     for (j = 0; j < nf; j++) { f00[j] = f01[j]; }
                   }
               }
             /* Save top right corner of last tile as last bottom right corner: */
-            int j;
+            int32_t j;
             for (j = 0; j < nf; j++) { f10[j] = f11[j]; }
           }
       }
@@ -147,33 +148,33 @@ void epswr_plot_2D_quad
    
 void epswr_plot_2D_tri
   ( epswr_figure_t *eps, 
-    int nf,
+    int32_t nf,
     epswr_plot_2D_func_t *F,
     double xa[],
     double xb[],
     double xc[],
-    int ns,
+    int32_t ns,
     epswr_plot_2D_style_t *st,
     bool_t fill,
     bool_t draw
   )
   {
     /* The domain dimension must be 2: */
-    int ddim = 2;
+    int32_t ddim = 2;
     
     /* We need at least 2 values for positional coordinates: */
     demand(nf >= 2, "too few function values to plot.");
     demand(F != NULL, "cannot plot a null function.");
     
     /* Number of tile corners along each scanline: */
-    int nv = ns+1;   /* Number of corners. */
+    int32_t nv = ns+1;   /* Number of corners. */
     double f[nv*nf]; /* Value vectors at corners of previous scanline. */  
     /* The values at tile corner {ib} are {f[ib*nf+j]}, for {j=0..nf-1}. */
     
     double fp[nf], fq[nf]; /* Work vectors for {F}-vals at corners of a 4-sided tile. */
     double x11[ddim];      /* Upper right corner of current chip pair. */
     
-    int pass; /* Pass 0 is fill, pass 1 is draw: */
+    int32_t pass; /* Pass 0 is fill, pass 1 is draw: */
     for (pass = 0; pass < 2; pass++)
       { if ((pass == 0) && (! fill)) { continue; }
         if ((pass == 1) && (! draw)) { continue; }
@@ -182,7 +183,7 @@ void epswr_plot_2D_tri
         bool_t drawP = (pass == 1);
 
         /* Scan the vertices (with overshoot of 1 on {kb}): */
-        int ka, kb, kc; /* Indices of vertices (sum is {ns}, all non-negative when inside). */
+        int32_t ka, kb, kc; /* Indices of vertices (sum is {ns}, all non-negative when inside). */
         for (kc = 0; kc <= ns; kc++)
           { /* Now, if {kc > 0}, {f} contains the {F}-vals for the vertices in scanline {kc-1}. */
 
@@ -246,7 +247,7 @@ void epswr_plot_2D_tri
 
                 if (kb > 0)
                   { /* Save top left corner as bottom left corner for next row: */
-                    int j;
+                    int32_t j;
                     for (j = 0; j < nf; j++) { f00[j] = f01[j]; }
                   }
               }
@@ -256,27 +257,27 @@ void epswr_plot_2D_tri
  
 void epswr_plot_2D_quad_outline
   ( epswr_figure_t *eps, 
-    int nf,
+    int32_t nf,
     epswr_plot_2D_func_t *F,
     interval_t B[],
-    int n0,
-    int n1
+    int32_t n0,
+    int32_t n1
   )
   {
     /* The domain dimension must be 2: */
-    int ddim = 2;
+    int32_t ddim = 2;
     
     double *x0; /* Either {xa} or {xb}. */
     double *x1; /* Either {xb} or {xa}. */
     
-    auto void L(double z[], int nz, double g[], int ng);
+    auto void L(double z[], int32_t nz, double g[], int32_t ng);
       /* Maps a real {z[0]} from the interval {[0_1]} to 
         a point {x[0..1]} on the domain segment 
         from {x0[0..1]} to {x1[0..1]}, affinely; 
         then calls {F} on {xp} and returns the result
         in {g[0..ng-1]}. Requires {ng == nf}. */
         
-    void L(double z[], int nz, double g[], int ng)
+    void L(double z[], int32_t nz, double g[], int32_t ng)
       { assert(nz == 1);
         assert(ng == nf);
         double x[ddim];
@@ -308,28 +309,28 @@ void epswr_plot_2D_quad_outline
 
 void epswr_plot_2D_tri_outline
   ( epswr_figure_t *eps, 
-    int nf,
+    int32_t nf,
     epswr_plot_2D_func_t *F,
     double xa[],
     double xb[],
     double xc[],
-    int ns
+    int32_t ns
   )
   {
     /* The domain dimension must be 2: */
-    int ddim = 2;
+    int32_t ddim = 2;
     
     double *x0; /* Either {xa}, {xb}, or {xc}. */
     double *x1; /* Either {xb}, {xc}, or {xa}. */
     
-    auto void L(double z[], int nz, double g[], int ng);
+    auto void L(double z[], int32_t nz, double g[], int32_t ng);
       /* Maps a real {z[0]} from the interval {[0_1]} to 
         a point {x[0..1]} on the domain segment 
         from {x0[0..1]} to {x1[0..1]}, affinely; 
         then calls {F} on {xp} and returns the result
         in {g[0..ng-1]}. Requires {ng == nf}. */
         
-    void L(double z[], int nz, double g[], int ng)
+    void L(double z[], int32_t nz, double g[], int32_t ng)
       { assert(nz == 1);
         assert(ng == nf);
         double x[ddim];
@@ -352,14 +353,14 @@ void epswr_plot_2D_tri_outline
 
 void epswr_plot_2D_line
   ( epswr_figure_t *eps, 
-    int nf,
+    int32_t nf,
     epswr_plot_2D_func_t *F,
     interval_t *B,
-    int ns
+    int32_t ns
   )
   {
     /* The domain dimension must be 2: */
-    int ddim = 1;
+    int32_t ddim = 1;
     
     /* We need at least 2 values for positional coordinates: */
     demand(nf >= 2, "too few function values to plot.");
@@ -373,7 +374,7 @@ void epswr_plot_2D_line
 
     /* Scan the sample points: */
     double xp[ddim];  /* Endpoint of current segment. */
-    int i;
+    int32_t i;
     for (i = 0; i <= ns; i++)
       { /* Compute coordinate {xp[1]} of this point: */
         double u = ((double)i)/((double)ns);
@@ -396,7 +397,7 @@ void epswr_plot_2D_tri_atom
     double fa[],
     double fb[],
     double fc[],
-    int nf,
+    int32_t nf,
     epswr_plot_2D_style_t *st,
     bool_t fill,
     bool_t draw
@@ -437,7 +438,7 @@ void epswr_plot_2D_tri_atom_solid
     double fa[],
     double fb[],
     double fc[],
-    int nf 
+    int32_t nf 
   )  
   { demand(nf >= 2, "can't plot without coordinates"); 
     epswr_triangle
@@ -454,9 +455,9 @@ void epswr_plot_2D_tri_atom_shade
     double fa[],
     double fb[],
     double fc[],
-    int nf,
-    int ic,
-    int nc
+    int32_t nf,
+    int32_t ic,
+    int32_t nc
   )  
   { demand(nf >= 2, "can't plot without coordinates"); 
     demand(nc > 0, "can't smooth-shade without function values"); 
@@ -464,7 +465,7 @@ void epswr_plot_2D_tri_atom_shade
     /* Map corner function values to corner colors: */
     double *f[3] = { fa, fb, fc };
     double R[3], G[3], B[3]; /* Vertex colors. */
-    int k;
+    int32_t k;
     for (k = 0; k < 3; k++)
       { 
         /* Get function values for vertex {k} of part. */
@@ -501,12 +502,12 @@ void epswr_plot_2D_tri_atom_bands
     double fa[],
     double fb[],
     double fc[],
-    int nf,
-    int ib,
+    int32_t nf,
+    int32_t ib,
     double vStart,
     double vStep, 
-    int kMin,
-    int kMax,
+    int32_t kMin,
+    int32_t kMax,
     double *Rtb, 
     double *Gtb, 
     double *Btb 
@@ -530,12 +531,12 @@ void epswr_plot_2D_tri_atom_isolines
     double fa[],
     double fb[],
     double fc[],
-    int nf,
-    int iv,
+    int32_t nf,
+    int32_t iv,
     double vStart,
     double vStep, 
-    int kMin,
-    int kMax 
+    int32_t kMin,
+    int32_t kMax 
   )  
   { demand(nf >= 2, "can't plot without coordinates"); 
     demand((iv >= 0) && (iv < nf), "invalid function value index"); 

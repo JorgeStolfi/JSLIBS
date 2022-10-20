@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <math.h>
@@ -13,9 +14,9 @@
 void tf_plot_cameras
   ( PSStream *ps, 
     char *name, 
-    int np,
+    int32_t np,
     r3_t p[], 
-    int ncpars,
+    int32_t ncpars,
     tf_camera_params_t *cpar[],
     r2_t q[], 
     double hSize,
@@ -25,7 +26,7 @@ void tf_plot_cameras
     double Nx,
     double Ny,
     double mRadius,
-    int mStyle
+    int32_t mStyle
   ); 
   /* For each {ip} in {0..ncpars}, if {p} and {cpar[ip]} are not
     NULL, computes the positions {q} from {p} using each
@@ -35,10 +36,10 @@ void tf_plot_cameras
 
 void tf_plot_marks
   ( PSStream *ps, 
-    int np,
+    int32_t np,
     r2_t q[], 
     double mRadius,
-    int mStyle
+    int32_t mStyle
   );
   /* Plots the image points {q[0..np-1]} to the Postscript stream {ps},
     with style {mStyle}, size {mRadius}, using the current pen 

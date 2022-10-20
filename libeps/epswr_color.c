@@ -1,7 +1,8 @@
 /* See pscolor.h */
-/* Last edited on 2009-08-25 13:28:13 by stolfi */
+/* Last edited on 2022-10-20 06:54:18 by stolfi */
 
 #include <epswr_color.h>
+#include <stdint.h>
 #include <epswr_iso.h>
 
 #include <affirm.h>
@@ -16,28 +17,28 @@
 void epswr_make_color_table
   ( double vStart,
     double vStep,
-    int kMin,
-    int kMax, 
+    int32_t kMin,
+    int32_t kMax, 
     double RMin, double GMin, double BMin,
     double RZer, double GZer, double BZer,
     double RMax, double GMax, double BMax,
-    int *NP, 
+    int32_t *NP, 
     double **RP, 
     double **GP,
     double **BP
   )
   {
     /* Create gradual color table: */
-    int N = kMax - kMin + 2;     /* Number of color bands: */
+    int32_t N = kMax - kMin + 2;     /* Number of color bands: */
     double *R = (double *)malloc(N*sizeof(double));
     double *G = (double *)malloc(N*sizeof(double));
     double *B = (double *)malloc(N*sizeof(double));
     double vMin = vStart + (kMin - 0.5)*vStep;
     double vMax = vStart + (kMax + 0.5)*vStep;
     
-    int i;
+    int32_t i;
     for (i = 0; i < N; i++)
-      { int k = kMin + i;  /* Index of upper isoline of band {i}. */
+      { int32_t k = kMin + i;  /* Index of upper isoline of band {i}. */
         
         /* Compute relative function value {r} at mid-band, in [-1 _ +1]: */
         double r; 

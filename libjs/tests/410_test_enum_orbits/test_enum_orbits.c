@@ -9,6 +9,7 @@
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>

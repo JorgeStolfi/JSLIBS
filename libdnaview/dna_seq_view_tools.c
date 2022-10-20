@@ -1,11 +1,12 @@
-/* Last edited on 2014-09-01 23:40:18 by stolfilocal */
+/* Last edited on 2022-10-20 10:59:02 by stolfi */
 /* See {dna_seq_view_tools.h} */
 
 #define _GNU_SOURCE
 #include <assert.h>
+#include <stdint.h>
 
+#include <GL/gl.h>
 #include <GL/glu.h>
-#include <GL/glut.h>
 
 #include <jsrandom.h>
 #include <frgb_ops.h>
@@ -27,7 +28,7 @@ void dna_seq_view_tools_draw_tetrahedron(frgb_t *color)
     glColor3f(color->c[0],color->c[1],color->c[2]);
     /* Draw the edges: */
     glBegin(GL_LINES);
-    int i,j;
+    int32_t i,j;
     for(i = 0; i < 3; i++)
       { GLfloat xi = (GLfloat)(v[i].c[0]);
         GLfloat yi = (GLfloat)(v[i].c[1]);
@@ -48,13 +49,13 @@ void dna_seq_view_tools_draw_sequence
     double magnify, 
     r3_t *pert, 
     double radius, 
-    int nst,
+    int32_t nst,
     frgb_t *color, 
-    int ini, 
-    int fin
+    int32_t ini, 
+    int32_t fin
   )
   {
-    int nsmp = dnae_seq_num_datums(z);
+    int32_t nsmp = dnae_seq_num_datums(z);
     assert(dnae_CHANNELS == 3);
     assert(nst >= 1);
    
@@ -67,7 +68,7 @@ void dna_seq_view_tools_draw_sequence
       datums are trimmed.
     */
 
-    int ne = -1;    /* Number of items (rods, balls) in the current segment; {-1} between segments. */
+    int32_t ne = -1;    /* Number of items (rods, balls) in the current segment; {-1} between segments. */
     bool_t seg_vis; /* If {ne>0}: true if current segment is fully visible, false if effaced. */
     
     auto void start_segment(void);
@@ -123,7 +124,7 @@ void dna_seq_view_tools_draw_sequence
     double cylrad = 0.30*datrad; /* Radius of connecting cylinders. */
 
     r3_t dp_prev; /*previous point*/
-    int k;
+    int32_t k;
     bool_t vis_prev = FALSE;   /* Visibility indicator of previous datum in {seq}. */
     bool_t ori_prev = TRUE;    /* Whether previous datum was original or interpolated. */
     start_segment();
@@ -135,7 +136,7 @@ void dna_seq_view_tools_draw_sequence
 
         /* Convert to point {dp_this} of {R^3}: */
         r3_t dp_this;
-        int j;
+        int32_t j;
         for(j = 0; j < dnae_CHANNELS; j++){
           dp_this.c[j] = dnae_sample_decode(dtk->c[j], z->sfac.f[j]);
           dp_this.c[j] *= magnify;
@@ -175,15 +176,15 @@ void dna_seq_view_tools_draw_sequence
 void dna_seq_view_tools_draw_paired
   ( msm_rung_vec_t *gv,
     dnae_seq_t *x,
-    int inix,
-    int finx,
+    int32_t inix,
+    int32_t finx,
     dnae_seq_t *y,
-    int iniy,
-    int finy,
+    int32_t iniy,
+    int32_t finy,
     double magnify,
     bool_t perturb,
     double radius,
-    int nst,
+    int32_t step,
     frgb_t *color_x,
     frgb_t *color_y,
     frgb_t *color_p,
@@ -196,8 +197,8 @@ void dna_seq_view_tools_draw_paired
 
     /*Draw the sequences*/
 
-    dna_seq_view_tools_draw_sequence(x, magnify, &x_pert, radius, nst, color_x, inix, finx);
-    dna_seq_view_tools_draw_sequence(y, magnify, &y_pert, radius, nst, color_y, iniy, finy);
+    dna_seq_view_tools_draw_sequence(x, magnify, &x_pert, radius, step, color_x, inix, finx);
+    dna_seq_view_tools_draw_sequence(y, magnify, &y_pert, radius, step, color_y, iniy, finy);
 
     /*Now we draw the sticks between sequences*/
     dna_seq_view_tools_draw_rungs(x, y, gv, magnify, &x_pert, &y_pert, radius, color_p, dif_cutoff);
@@ -215,16 +216,16 @@ void dna_seq_view_tools_draw_rungs
     double dif_cutoff
   )
   {
-    auto void draw_pairing_stick(int ix, int iy, GLUquadricObj* qd);
+    auto void draw_pairing_stick(int32_t ix, int32_t iy, GLUquadricObj* qd);
     
-    void draw_pairing_stick(int ix, int iy, GLUquadricObj* qd)
+    void draw_pairing_stick(int32_t ix, int32_t iy, GLUquadricObj* qd)
       { dnae_datum_t dx = dnae_seq_get_datum(x,ix);
         dnae_datum_t dy = dnae_seq_get_datum(y,iy);
         double dif2 = dnae_datum_diffsq(&dx, &(x->sfac), &dy, &(y->sfac));
         assert((dif2 >= 0.0) && (dif2 <= 1.0000000000001));
         double dif = sqrt(dif2);
         r3_t px,py;
-        int j;
+        int32_t j;
         for(j = 0; j < 3; j++)
           { px.c[j] = dnae_sample_decode(dx.c[j], x->sfac.f[j]);
             px.c[j] *= magnify;
@@ -247,11 +248,11 @@ void dna_seq_view_tools_draw_rungs
     glColor3f(color->c[0],color->c[1],color->c[2]);
     GLUquadricObj* quad  = gluNewQuadric();
     msm_rung_t gini = gv->e[0];
-    int i;
+    int32_t i;
     for(i = 0; i < gv->ne; i++)
       { msm_rung_t h = gv->e[i];
-        int hxk = h.c[0] - gini.c[0];
-        int hyk = h.c[1] - gini.c[1];
+        int32_t hxk = h.c[0] - gini.c[0];
+        int32_t hyk = h.c[1] - gini.c[1];
         draw_pairing_stick(hxk, hyk, quad);
       }
     gluDeleteQuadric(quad);

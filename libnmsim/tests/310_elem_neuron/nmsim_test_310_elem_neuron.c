@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} individual neuron attributes"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-11 18:46:25 by jstolfi */ 
+/* Last edited on 2022-10-20 06:49:19 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -17,6 +17,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -38,11 +39,11 @@ void nmsim_elem_neuron_test_read(char *fname, nmsim_elem_neuron_ix_t ine, nmsim_
   /* Reads a neuron index and attributes record from file {fname}, and compares
     them to {ine} and {neu}. */
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     nmsim_group_neuron_count_t nng = 418;
     for(int32_t i = 0; i < 10; i++)

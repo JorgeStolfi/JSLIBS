@@ -3,6 +3,7 @@
 
 #define _GNU_SOURCE
 #include <math.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <assert.h>

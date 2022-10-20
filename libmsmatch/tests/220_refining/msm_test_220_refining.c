@@ -2,7 +2,7 @@
 #define PROG_DESC "test of candidate refinement routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2017-06-22 18:13:16 by stolfilocal */
+/* Last edited on 2022-10-20 11:13:25 by stolfi */
 
 #define msm_test_020_refining_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -129,6 +129,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 #include <string.h>
@@ -153,41 +154,41 @@
 #include <msm_double_vec.h>
 #include <msm_test_tools.h>
 
-typedef int msm_seq_pos_t;
+typedef int32_t msm_seq_pos_t;
 /* The numerator of a fractional index into in a sequence. 
    The denominator should be specified separately. */
 
 typedef struct msm_options_t 
   { /* Sequence generation parameters: */
-    int seqLength;       /* Expected number of positions on each sequence. */
+    int32_t seqLength;       /* Expected number of positions on each sequence. */
     double mutDev;       /* Mutation probability. */
     double delProb;      /* Insertion/deletion probability. */
-    int expSub;          /* Exponent of subsampling factor (denominator for {msm_seq_pos_t}s). */
+    int32_t expSub;          /* Exponent of subsampling factor (denominator for {msm_seq_pos_t}s). */
     /* Candidate generation parameters: */
-    int nCands;          /* Number of candidates to generate. */
+    int32_t nCands;          /* Number of candidates to generate. */
     /* Refinement iteration parameter: */
-    int repeat;          /* How many times to refine each candidate. */
+    int32_t repeat;          /* How many times to refine each candidate. */
     /* Refinement parameters: */
-    int delta;           /* Half-width of tableau around original pairing. */
-    int kappa;           /* Extension of tableau beyond ends of pairing. */
-    int expand;          /* How much the refined {R}-range may expand beyond original {R}-range. */
-    int shrink;          /* How much the refined {R}-range may shrink into the original {R}-range. */
-    int maxUnp;          /* Maximum unpaired datums allowed between consecutive rungs. */
+    int32_t delta;           /* Half-width of tableau around original pairing. */
+    int32_t kappa;           /* Extension of tableau beyond ends of pairing. */
+    int32_t expand;          /* How much the refined {R}-range may expand beyond original {R}-range. */
+    int32_t shrink;          /* How much the refined {R}-range may shrink into the original {R}-range. */
+    int32_t maxUnp;          /* Maximum unpaired datums allowed between consecutive rungs. */
     /* Output parameters: */
     char *outName;  /* Output file name prefix (minus extensions). */
   } msm_options_t;
   
-int main(int argc, char**argv);
+int32_t main(int32_t argc, char**argv);
 
-msm_options_t *msm_get_options(int argc, char**argv);
+msm_options_t *msm_get_options(int32_t argc, char**argv);
   /* Parses the command line options, packs 
     them into a {msm_options_t} record. */
 
 void msm_test_seq_make_ancestral
-  ( int ns, 
+  ( int32_t ns, 
     msm_seq_id_t id, 
     char *name,
-    int expSub, 
+    int32_t expSub, 
     msm_seq_desc_t *seq, 
     double_vec_t *smp
   );
@@ -229,11 +230,11 @@ void msm_test_seq_make_derived
     sequence. */
 
 void msm_fake_initial_cands
-  ( int ntr, 
+  ( int32_t ntr, 
     msm_seq_desc_t *seq0,
     msm_seq_desc_t *seq1,
     msm_cand_vec_t *cdv,
-    int *ncdP
+    int32_t *ncdP
   );
   /* Generates {ntr} candidates for the two {msm_seq_desc_t}s.
     At east one candidate is near the diagonal. */
@@ -275,15 +276,15 @@ double msm_test_step_score
 
 void msm_show_tableau
   ( char *outName,         /* File name prefix. */
-    int ic,                /* Candidate index. */
-    int ir,                /* Refinement iteration index. */
+    int32_t ic,                /* Candidate index. */
+    int32_t ir,                /* Refinement iteration index. */
     msm_cand_t *cd,        /* Refined candidate. */
     msm_dyn_tableau_t *tb  /* Dynamic programming tableau. */
   );
   /* Writes an image called "{outName}-{NNNNN}-{R}.ppm" containing a picture
     of the tableau {tb}, with the candidate {cd} drawn on top of it. */ 
 
-int main(int argc, char**argv)
+int32_t main(int32_t argc, char**argv)
   { 
     msm_options_t *o = msm_get_options(argc, argv);
     
@@ -299,7 +300,7 @@ int main(int argc, char**argv)
     double_vec_t smp[2];
     msm_seq_desc_t seq[2];
     msm_rung_vec_t gvd[2];
-    int j;
+    int32_t j;
     for (j = 0; j < 2; j++)
       { msm_seq_id_t seqId = j+1;
         char *seqName = (j == 0 ? "X" : "Y");
@@ -335,7 +336,7 @@ int main(int argc, char**argv)
     
     fprintf(stderr, "creating initial candidates ...\n");
     msm_cand_vec_t cdvraw = msm_cand_vec_new(o->nCands);
-    int ncd = 0; /* Candidates are {cdvraw.e[0..ncd-1]}. */
+    int32_t ncd = 0; /* Candidates are {cdvraw.e[0..ncd-1]}. */
     /* Candidate 0 is the "true" pairing: */
     msm_rung_vec_t gvtrue = msm_rung_vec_make_increasing(&gv, 1, 1);
     gvtrue = msm_rung_vec_interpolate(&gvtrue);
@@ -364,14 +365,14 @@ int main(int argc, char**argv)
     fprintf(stderr, "refining candidates ...\n");
     msm_dyn_tableau_t tb = msm_dyn_tableau_new(); /* Dynamic programming tableau. */
     msm_cand_vec_t cdvref = msm_cand_vec_new(ncd); /* Refined cands will be {cdvref[0..ncd-1]}. */
-    int ic;
+    int32_t ic;
     for (ic = 0; ic < ncd; ic++)
       { msm_cand_t cd = cdvraw.e[ic];
         /* Refine candidate {o->repeat} times: */
-        int ir;
+        int32_t ir;
         for (ir = 0; ir < o->repeat; ir++)
-          { int n_steps = 0;
-            int n_entries = 0;
+          { int32_t n_steps = 0;
+            int32_t n_entries = 0;
             bool_t verbose = TRUE;
             msm_cand_t cdref = msm_cand_refine
               ( &cd,
@@ -397,29 +398,29 @@ int main(int argc, char**argv)
   }
 
 void msm_test_seq_make_ancestral
-  ( int ns, 
+  ( int32_t ns, 
     msm_seq_id_t id, 
     char *name,
-    int expSub, 
+    int32_t expSub, 
     msm_seq_desc_t *seq, 
     double_vec_t *smp
   )
   { /* Generate a vector of random numbers: */
     *smp = msm_double_vec_throw_normal(ns);
     /* Smooth it a few times: */
-    int nsmooth = 1;
-    int j;
+    int32_t nsmooth = 1;
+    int32_t j;
     for (j = 0; j < nsmooth; j++)
       { msm_double_vec_smooth(smp); 
         msm_double_vec_normalize(smp);
       }
     /* Compute the subsampling factor {den}: */
     assert((expSub >= 0) && (expSub <= 10));
-    int den = (1 << expSub);
+    int32_t den = (1 << expSub);
     /* Assemble the sequence descriptor: */
     int8_t estep = (int8_t)(-expSub);
-    int skip = 0;
-    int size = den*(ns - 1) - 2*skip + 1;
+    int32_t skip = 0;
+    int32_t size = den*(ns - 1) - 2*skip + 1;
     (*seq) = msm_seq_desc_make(id, name, FALSE, size, estep, skip);
   }
 
@@ -437,20 +438,20 @@ void msm_test_seq_make_derived
   { msm_rung_vec_t gvr;
     /* Make a mutated copy {smpd} of the sample vector, noting the pairing {gvr}: */
     msm_double_vec_mutate(smpa, mutDev, delProb, smpd, &gvr);
-    int nsd = smpd->ne; /* Number of derived seq. samples. */
+    int32_t nsd = smpd->ne; /* Number of derived seq. samples. */
     /* Compute the subsampling factor {den}: */
     int8_t estepo = seqo->estep;
-    int skipo = seqo->skip;
+    int32_t skipo = seqo->skip;
     assert((estepo >= -10) && (estepo <= 0));
-    int den = (1 << -estepo);
+    int32_t den = (1 << -estepo);
     /* Assemble the sequence descriptor: */
     bool_t revd = seqo->rev;
     int8_t estepd = estepo;
-    int skipd = skipo;
-    int sized = den*(nsd - 1) - 2*skipd + 1;
+    int32_t skipd = skipo;
+    int32_t sized = den*(nsd - 1) - 2*skipd + 1;
     (*seqd) = msm_seq_desc_make(idd, named, revd, sized, estepd, skipd);
     /* Scale all rungs in {gvr} by {den}: */
-    int i;
+    int32_t i;
     for (i = 0; i < gvr.ne; i++)
       { msm_rung_t *gvi = &(gvr.e[i]);
         gvi->c[0] = gvi->c[0]*den - skipo;
@@ -463,18 +464,18 @@ void msm_test_seq_make_derived
   }
   
 void msm_fake_initial_cands
-  ( int ntr, 
+  ( int32_t ntr, 
     msm_seq_desc_t *seq0,
     msm_seq_desc_t *seq1,
     msm_cand_vec_t *cdv,
-    int *ncdP
+    int32_t *ncdP
   )
   { /* Sequence lengths: */
-    int n0 = seq0->size;
-    int n1 = seq1->size;
+    int32_t n0 = seq0->size;
+    int32_t n1 = seq1->size;
     /* Define the max candidate length {maxlen}: */
-    int maxlen = (n0 > n1 ? n0 : n1);
-    int minlen = (maxlen + 9)/10;
+    int32_t maxlen = (n0 > n1 ? n0 : n1);
+    int32_t minlen = (maxlen + 9)/10;
     /* Generate the candidates: */
     msm_cand_vec_throw
       ( ntr, seq0, seq1,
@@ -524,14 +525,14 @@ double msm_test_step_score
     bool_t debug = FALSE;
     
     /* Get the indices into each sequence: */
-    int ig0 = g->c[0], ig1 = g->c[1];
-    int ih0 = h->c[0], ih1 = h->c[1];
+    int32_t ig0 = g->c[0], ig1 = g->c[1];
+    int32_t ih0 = h->c[0], ih1 = h->c[1];
     /* See which rungs are defined: */
     bool_t undg = msm_rung_is_none(g);
     bool_t undh = msm_rung_is_none(h);
     /* Compute a measure {Sm} of how much the step deviates from perfection: */
     double Sm;
-    int d0, d1;
+    int32_t d0, d1;
     if (undg || undh)
       { d0 = d1 = 0; Sm = 0; }
     else 
@@ -591,8 +592,8 @@ double msm_test_step_score
 
 void msm_show_tableau
   ( char *outName,
-    int ic, /* Candidate index. */
-    int ir, /* Refinement iteration index. */
+    int32_t ic, /* Candidate index. */
+    int32_t ir, /* Refinement iteration index. */
     msm_cand_t *cd, /* Refined candidate. */
     msm_dyn_tableau_t *tb  /* Dynamic programming tableau. */
   )
@@ -601,7 +602,7 @@ void msm_show_tableau
     msm_seq_desc_t *seq1 = &(cd->seq[1]);
     char *tag = NULL;
     asprintf(&tag, "-%05d-%d", ic, ir);
-    int ng = msm_pairing_num_rungs(cd->pr);
+    int32_t ng = msm_pairing_num_rungs(cd->pr);
     msm_rung_t gopt = msm_pairing_get_rung(cd->pr, ng-1);
     bool_t scale = FALSE;
     bool_t colorize = TRUE;
@@ -609,7 +610,7 @@ void msm_show_tableau
     free(tag);
   }
 
-msm_options_t *msm_get_options(int argc, char**argv)
+msm_options_t *msm_get_options(int32_t argc, char**argv)
   { 
     msm_options_t *o = (msm_options_t *)notnull(malloc(sizeof(msm_options_t)), "no mem");
     
@@ -619,47 +620,47 @@ msm_options_t *msm_get_options(int argc, char**argv)
     argparser_process_help_info_options(pp);
     
     argparser_get_keyword(pp, "-seqLength");
-    o->seqLength = (int)argparser_get_next_int(pp, 1, INT_MAX);
+    o->seqLength = (int32_t)argparser_get_next_int(pp, 1, INT32_MAX);
     
     argparser_get_keyword(pp, "-expSub");
-    o->expSub = (int)argparser_get_next_int(pp, 0, 10);
+    o->expSub = (int32_t)argparser_get_next_int(pp, 0, 10);
     
     argparser_get_keyword(pp, "-mutDev");
-    o->mutDev = (int)argparser_get_next_double(pp, 0.0, 1.0);
+    o->mutDev = (int32_t)argparser_get_next_double(pp, 0.0, 1.0);
     
     argparser_get_keyword(pp, "-delProb");
     o->delProb = argparser_get_next_double(pp, 0.0, 1.0 - o->mutDev);
     
     if (argparser_keyword_present(pp, "-delta"))
-      { o->delta = (int)argparser_get_next_int(pp, 0, INT_MAX); }
+      { o->delta = (int32_t)argparser_get_next_int(pp, 0, INT32_MAX); }
     else
       { o->delta = 3; }
     
     if (argparser_keyword_present(pp, "-kappa"))
-      { o->kappa = (int)argparser_get_next_int(pp, 0, INT_MAX); }
+      { o->kappa = (int32_t)argparser_get_next_int(pp, 0, INT32_MAX); }
     else
       { o->kappa = 6; }
     
     if (argparser_keyword_present(pp, "-expand"))
-      { o->expand = (int)argparser_get_next_int(pp, 0, INT_MAX); }
+      { o->expand = (int32_t)argparser_get_next_int(pp, 0, INT32_MAX); }
     else
       { o->expand = 0; }
 
     if (argparser_keyword_present(pp, "-shrink"))
-      { o->shrink = (int)argparser_get_next_int(pp, 0, INT_MAX); }
+      { o->shrink = (int32_t)argparser_get_next_int(pp, 0, INT32_MAX); }
     else
       { o->shrink = 0; }
 
     if (argparser_keyword_present(pp, "-maxUnp"))
-      { o->maxUnp = (int)argparser_get_next_int(pp, 0, INT_MAX); }
+      { o->maxUnp = (int32_t)argparser_get_next_int(pp, 0, INT32_MAX); }
     else
       { o->maxUnp = 6; }
     
     argparser_get_keyword(pp, "-nCands");
-    o->nCands = (int)argparser_get_next_int(pp, 0, INT_MAX);
+    o->nCands = (int32_t)argparser_get_next_int(pp, 0, INT32_MAX);
     
     if (argparser_keyword_present(pp, "-repeat"))
-      { o->repeat = (int)argparser_get_next_int(pp, 0, INT_MAX); }
+      { o->repeat = (int32_t)argparser_get_next_int(pp, 0, INT32_MAX); }
     else
       { o->repeat = 1; }
     

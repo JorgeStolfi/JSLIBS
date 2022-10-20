@@ -1,8 +1,9 @@
 /* See stimage.h */
-/* Last edited on 2017-07-01 00:03:58 by stolfilocal */
+/* Last edited on 2022-10-20 07:45:56 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,11 +31,11 @@
   )
 
 DataImage *st_image_new
-  ( int mmXLo,  /* Lowest X sample coordinate, in mm. */
-    int nx,     /* Number of samples in X direction. */
-    int mmYLo,  /* Lowest Y sample coordinate, in mm. */
-    int ny,     /* Number of samples in Y direction. */
-    int mmStep  /* Step between samples, in mm */
+  ( int32_t mmXLo,  /* Lowest X sample coordinate, in mm. */
+    int32_t nx,     /* Number of samples in X direction. */
+    int32_t mmYLo,  /* Lowest Y sample coordinate, in mm. */
+    int32_t ny,     /* Number of samples in Y direction. */
+    int32_t mmStep  /* Step between samples, in mm */
   )
   {
     DataImage *img = (DataImage *)malloc(sizeof(DataImage));
@@ -45,70 +46,70 @@ DataImage *st_image_new
     img->mmXLo = mmXLo; 
     img->mmYLo = mmYLo;
     /* Compute image size: */
-    int ns = nx*ny;
+    int32_t ns = nx*ny;
     img->d = (double*)malloc(ns*sizeof(double));
     affirm(img->d != NULL, "out of mem");
-    int i;
+    int32_t i;
     for (i = 0; i < ns; i++) { img->d[i] = 0; }
     return img;
   }
 
 DataImage *st_image_for_rect(Interval rx, Interval ry, double step)
   { /* Compute number of steps: */
-    int nx = (int)((rx.hi - rx.lo)/step + 0.5);
-    int ny = (int)((ry.hi - ry.lo)/step + 0.5);
+    int32_t nx = (int32_t)((rx.hi - rx.lo)/step + 0.5);
+    int32_t ny = (int32_t)((ry.hi - ry.lo)/step + 0.5);
     /* Adjust step and bounds to integer number of millimeters: */
-    int mmStep = (int)ceil(step*1000.0);
-    int mmXLo = (int)((rx.lo + 0.5*step)*1000 + 0.5); 
-    int mmYLo = (int)((ry.lo + 0.5*step)*1000 + 0.5);
+    int32_t mmStep = (int32_t)ceil(step*1000.0);
+    int32_t mmXLo = (int32_t)((rx.lo + 0.5*step)*1000 + 0.5); 
+    int32_t mmYLo = (int32_t)((ry.lo + 0.5*step)*1000 + 0.5);
     /* Allocate image: */
     return st_image_new(mmXLo, nx, mmYLo, ny, mmStep);
   }
 
-int st_image_locate(DataImage *img, double x, double y)
+int32_t st_image_locate(DataImage *img, double x, double y)
   { /* Nearest sample: */
-    int ix = (int)floor((x*1000.0 - img->mmXLo)/img->mmStep + 0.5);
-    int iy = (int)floor((y*1000.0 - img->mmYLo)/img->mmStep + 0.5);
+    int32_t ix = (int32_t)floor((x*1000.0 - img->mmXLo)/img->mmStep + 0.5);
+    int32_t iy = (int32_t)floor((y*1000.0 - img->mmYLo)/img->mmStep + 0.5);
     return CHKINDEX(img,ix,iy);
   }
 
 double st_image_get(DataImage *img, double x, double y)
-  { int k = st_image_locate(img, x, y);
+  { int32_t k = st_image_locate(img, x, y);
     return (k >= 0 ? img->d[k] : 0.0);
   }
 
 void st_image_set(DataImage *img, double x, double y, double val)
-  { int k = st_image_locate(img, x, y);
+  { int32_t k = st_image_locate(img, x, y);
     if (k >= 0) { img->d[k] = val; } 
   }
 
 void st_image_increment(DataImage *img, double x, double y, double val)
-  { int k = st_image_locate(img, x, y);
+  { int32_t k = st_image_locate(img, x, y);
     if (k >= 0) { img->d[k] += val; } 
   }
 
 double st_image_interpolate(DataImage *img, double x, double y)
   { /* Displacements in mm from lower corner of area: */
     double st = (double)(img->mmStep);
-    int dx = (int)floor(x*1000.0 - img->mmXLo + 0.5*st);
-    int dy = (int)floor(y*1000.0 - img->mmYLo + 0.5*st);
+    int32_t dx = (int32_t)floor(x*1000.0 - img->mmXLo + 0.5*st);
+    int32_t dy = (int32_t)floor(y*1000.0 - img->mmYLo + 0.5*st);
     
     /* Indices of nearest sample: */
-    int ix = dx/img->mmStep;
-    int iy = dy/img->mmStep;
+    int32_t ix = dx/img->mmStep;
+    int32_t iy = dy/img->mmStep;
     
     /* Fraction of step towards next sample: */
     double fx = (double)(dx % img->mmStep)/st;
     double fy = (double)(dy % img->mmStep)/st;
 
     /* Add values four adjacent pixels, with bilinear weights: */
-    int sx, sy;
+    int32_t sx, sy;
     double sum = 0.0;
     for (sy = 0; sy <= 1; sy++)
       { double ty = (sy == 0 ? 1.0-fy : fy);
         for (sx = 0; sx <= 1; sx++)
           { double tx = (sx == 0 ? 1.0-fx : fx);
-            int k = CHKINDEX(img,ix+sx,iy+sy); 
+            int32_t k = CHKINDEX(img,ix+sx,iy+sy); 
             if (k >= 0) { sum = tx*ty*img->d[k]; }
           }
       }
@@ -117,10 +118,10 @@ double st_image_interpolate(DataImage *img, double x, double y)
 
 DataImage *st_image_blur(DataImage *img, double rad)
   { /* Compute a unidimensional Gaussian with variance {rad^2/2}: */
-    int nr = (int)ceil(3.0*rad*1000/img->mmStep);
+    int32_t nr = (int32_t)ceil(3.0*rad*1000/img->mmStep);
     double *mask = (double *)malloc((nr+1)*sizeof(double));
     double S = rad*rad/2.0;
-    int i;
+    int32_t i;
     for (i = 0; i <= nr; i++) 
       { double x = ((double)i*img->mmStep)/1000.0;
         mask[i] = exp(-x*x/S);
@@ -128,19 +129,19 @@ DataImage *st_image_blur(DataImage *img, double rad)
     /* Now convolve bidimensional gaussian (normalized) with given image: */
     DataImage *res = st_image_new
       ( img->mmXLo, img->nx, img->mmYLo, img->ny, img->mmStep );
-    int ix, iy;
+    int32_t ix, iy;
     for (iy = 0; iy < img->ny; iy++)
       { for (ix = 0; ix < img->nx; ix++)
           { /* Compute weighted average of samples around {[ix,iy]}: */
-            int dx, dy;
+            int32_t dx, dy;
             double sw = 0, swd = 0;
             for (dy = -nr; dy <= +nr; dy++)
-              { int jy = iy+dy;
+              { int32_t jy = iy+dy;
                 if ((jy >= 0) && (jy < img->ny))
                   { for (dx = -nr; dx <= +nr; dx++)
-                      { int jx = ix+dx;
+                      { int32_t jx = ix+dx;
                         if ((jx >= 0) && (jx < img->nx))
-                          { int kimg = INDEX(img,jx,jy);
+                          { int32_t kimg = INDEX(img,jx,jy);
                             double mx = mask[abs(dx)];
                             double my = mask[abs(dy)];
                             swd += img->d[kimg]*mx*my;
@@ -150,7 +151,7 @@ DataImage *st_image_blur(DataImage *img, double rad)
                   }
               }
             if (sw > 0.0) { swd /= sw; }
-            int kres = INDEX(res,ix,iy);
+            int32_t kres = INDEX(res,ix,iy);
             res->d[kres] = swd;            
           }
       }
@@ -160,7 +161,7 @@ DataImage *st_image_blur(DataImage *img, double rad)
 Interval st_image_sample_range(DataImage *img)
   { double lo = +INFINITY;
     double hi = -INFINITY;
-    int ns = img->nx*img->ny, k;
+    int32_t ns = img->nx*img->ny, k;
     for (k = 0; k < ns; k++)
       { double dk = img->d[k];
         if (dk < lo) { lo = dk; }
@@ -180,16 +181,16 @@ void st_image_write_as_pgm
     qim->maxval = 65535; /* Some versions of PGM/PBM can't handle more. */
     double mv = (double)qim->maxval;
     /* Convert data samples to gray tone values: */
-    int ix, iy;
+    int32_t ix, iy;
     for (iy = 0; iy < img->ny; iy++)
       { uint16_t *smp = qim->smp[img->ny-1-iy]; 
         for (ix = 0; ix < img->nx; ix++)
-          { int k = INDEX(img,ix,iy);
+          { int32_t k = INDEX(img,ix,iy);
             double z = (img->d[k] - bval)/(wval - bval);
             double zs = floor(z*mv + 0.5);
             if (zs < 0.0) { zs = 0.0; }
             if (zs > mv) { zs = mv; }
-            smp[ix] = (uint16_t)((int)zs);
+            smp[ix] = (uint16_t)((int32_t)zs);
           }
       }
     bool_t forceplain = FALSE;
@@ -207,19 +208,19 @@ DataImage *st_image_read_from_pgm(FILE *rd)
   { /* Read pgm image; */
     uint16_image_t *qim = uint16_image_read_pnm_file(rd);
     assert(qim->chns == 1);
-    int mmXLo = nget_int(rd, "xLo(mm)"); fget_eol(rd);
-    int mmYLo = nget_int(rd, "yLo(mm)"); fget_eol(rd);
-    int mmStep = nget_int(rd, "step(mm)"); fget_eol(rd);
+    int32_t mmXLo = nget_int32(rd, "xLo(mm)"); fget_eol(rd);
+    int32_t mmYLo = nget_int32(rd, "yLo(mm)"); fget_eol(rd);
+    int32_t mmStep = nget_int32(rd, "step(mm)"); fget_eol(rd);
     double bval = nget_double(rd, "bval"); fget_eol(rd);
     double wval = nget_double(rd, "wval"); fget_eol(rd);
     DataImage *img = st_image_new(mmXLo, qim->cols, mmYLo, qim->rows, mmStep);
     double mv = (double)qim->maxval;
     /* Convert gray pixels to sample values: */
-    int ix, iy;
+    int32_t ix, iy;
     for (iy = 0; iy < img->ny; iy++)
       { uint16_t *smp = qim->smp[img->ny-1-iy]; 
         for (ix = 0; ix < img->nx; ix++)
-          { int k = INDEX(img,ix,iy);
+          { int32_t k = INDEX(img,ix,iy);
             double zs = (double)smp[ix];
             double z = bval + (wval - bval)*(zs/mv);
             img->d[k] = z;

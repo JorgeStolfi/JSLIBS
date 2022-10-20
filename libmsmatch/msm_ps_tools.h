@@ -2,12 +2,13 @@
 #define msm_ps_tools_H
 
 /* Postscript plots of graphs and such. */
-/* Last edited on 2022-10-19 19:28:47 by stolfi */
+/* Last edited on 2022-10-20 06:37:25 by stolfi */
 
 #define msm_ps_tools_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
 
 #include <msm_basic.h>
+#include <stdint.h>
 
 #include <vec.h>
 #include <epswr.h>
@@ -50,8 +51,8 @@ msm_ps_tools_t *msm_ps_tools_new
     double hSize, 
     double vSize,
     double fontSize,
-    int maxXLabChars,
-    int maxYLabChars,
+    int32_t maxXLabChars,
+    int32_t maxYLabChars,
     double mrg
   );
   /* Creates a {msm_ps_tools_t} for an Encapsulated Postscript
@@ -79,8 +80,8 @@ msm_ps_tools_t *msm_ps_tools_new_graph
     bool_t scaleB, bool_t titleB,
     bool_t scaleT, bool_t titleT,
     double fontSize,
-    int maxXLabChars,
-    int maxYLabChars,
+    int32_t maxXLabChars,
+    int32_t maxYLabChars,
     double mrg
   );
   /* Creates a {msm_ps_tools_t} for an Encapsulated Postscript
@@ -189,7 +190,7 @@ void msm_ps_tools_expand_client_ref_window
     specified amounts on the left, right, bottom, and top sides,
     respectively. */
 
-void msm_ps_tools_compute_data_range(int n, int stride, double z[], double *zMinP, double *zMaxP);
+void msm_ps_tools_compute_data_range(int32_t n, int32_t stride, double z[], double *zMinP, double *zMaxP);
   /* Computes a data range {[*zMinP _ *zMaxP]} appropriate for plotting the 
     graph of {n} given values, namely {z[i*stride]} for {i = 0..n-1]}.
     The resulting range will be non-empty and non-degenerate even if {n == 0}
@@ -278,8 +279,8 @@ void msm_choose_label_coords
     double ztStep,
     double minDist,
     double minStep,
-    int *labPerP,
-    int *labSkpP
+    int32_t *labPerP,
+    int32_t *labSkpP
   );;
   /* Chooses client coordinates for major (labeled) tics,
     given the spacing {ztStep} (in client coordinates) between
@@ -338,8 +339,8 @@ void msm_psplot_choose_label_coords
     double ztStep,
     double minDist,
     double minStep,
-    int *labPerP,
-    int *labSkpP
+    int32_t *labPerP,
+    int32_t *labSkpP
   );
   /* Chooses client coordinates for major (labeled) tics,
     given the spacing {ztStep} (in client coordinates) between
@@ -375,7 +376,7 @@ void msm_ps_tools_draw_y_polyline
     double xMin, 
     double xMax,
     double y[],
-    int n
+    int32_t n
   );
   /* Draws a polygonal line with {n} vertices and {n-1} line segments.
     The vertex X coordinates are univormly spaced in {[xMin_xMax]}.
@@ -386,7 +387,7 @@ void msm_ps_tools_draw_y_dots
     double xMin, 
     double xMax,
     double y[],
-    int n,
+    int32_t n,
     double rad,
     bool_t fill,
     bool_t draw
@@ -406,8 +407,8 @@ void msm_ps_tools_draw_y_dots
 
 void msm_ps_tools_draw_graphs
   ( msm_ps_tools_t *mps,
-    int nc,
-    int nd,
+    int32_t nc,
+    int32_t nd,
     double x[],
     double start,
     double step,
@@ -430,7 +431,7 @@ void msm_ps_tools_draw_graphs
 
 void msm_ps_tools_draw_histogram
   ( msm_ps_tools_t *mps,
-    int nd,
+    int32_t nd,
     double x[],
     double y[],
     double yMin,

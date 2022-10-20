@@ -1,8 +1,9 @@
-/* Last edited on 2014-04-04 01:41:28 by stolfilocal */
+/* Last edited on 2022-10-20 06:27:25 by stolfi */
 /* Test of bz_basic.h and bz_patch.h routines. */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
@@ -16,7 +17,7 @@
 
 /* INTERNAL PROTOTYPES */
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 void test_bezier(bz_degree_t g, double a, double b, double m);
   /* Tests of basic routines for polynomials of degree {g},
@@ -49,13 +50,13 @@ void print_coeffs(bz_degree_t g, double c[]);
 void print_results(bz_degree_t ord, double f[]);
    /* Prints results {f[0..ord]} to {stderr}. */
   
-void check_val(double va, double vb, double tol, char *msg, int kk);
+void check_val(double va, double vb, double tol, char *msg, int32_t kk);
   /* Compare{va} and {vb}, bombs out with error {msg,kk} if
     they are not practically equal. */
  
 /* IMPLEMENTATIONS */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     double a = 2.0;
     double b = 5.0;
@@ -102,8 +103,8 @@ void test_bezier_aux(bz_degree_t g, double C[], double a, double b, double m, bz
     double C0[g+1];     /* Bézier coeffs of first piece. */
     double C1[g+1];     /* Bézier coeffs of second piece. */
     
-    int NS = 35; /* Sampling intervals. */
-    int i, j, k;
+    int32_t NS = 35; /* Sampling intervals. */
+    int32_t i, j, k;
      
     fprintf(stderr, "--- testing [ %7.4f _ %7.4f _ %7.4f ] g = %d ix = %d ---\n", a, m, b, g, ix);
         
@@ -216,17 +217,17 @@ void evaluate
   }
 
 void print_coeffs(bz_degree_t g, double c[])
-  { int i;
+  { int32_t i;
     for (i = 0; i <= g; i++) { fprintf(stderr, "%3d %18.15f\n", i, c[i]); }
   }
 
 void print_results(bz_degree_t ord, double f[])
-  { int i;
+  { int32_t i;
     for (i = 0; i <= ord; i++) { fprintf(stderr, "%3d %18.15f\n", i, f[i]); }
   }
 
 
-void check_val(double va, double vb, double tol, char *msg, int kk)
+void check_val(double va, double vb, double tol, char *msg, int32_t kk)
   { 
     if (fabs(va - vb) > tol)
       { char *fmsg = NULL;

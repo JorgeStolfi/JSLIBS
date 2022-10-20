@@ -6,6 +6,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <ppv_array.h>
 #include <bool.h>

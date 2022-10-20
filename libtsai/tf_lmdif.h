@@ -1,4 +1,4 @@
-/* Last edited on 2015-10-05 00:14:35 by stolfilocal */
+/* Last edited on 2022-10-20 07:33:54 by stolfi */
 
 #ifndef tf_lmdif_H
 #define tf_lmdif_H
@@ -12,7 +12,9 @@
   Adapted by J.Stolfi, UNICAMP, 2015-10-04.
 */
 
-typedef void tf_lmdif_fcn_t (int m, int n, double x[], double fvec[], int *iflag);
+#include <stdint.h>
+
+typedef void tf_lmdif_fcn_t (int32_t m, int32_t n, double x[], double fvec[], int32_t *iflag);
   /* Type of the user-supplied procedure which
     calculates the functions for {lmdif}.  It receives an argument 
     vector {x[0..n-1]} and should store the nonlinear 
@@ -21,26 +23,26 @@ typedef void tf_lmdif_fcn_t (int m, int n, double x[], double fvec[], int *iflag
     {lmdif} below).  The procedure may set {*iflag}
     to a negative integer to terminate {lmdif}. */
 
-int lmdif
+int32_t lmdif
   ( tf_lmdif_fcn_t *fcn,
-    int m,
-    int n,
+    int32_t m,
+    int32_t n,
     double x[],
     double fvec[],
     double ftol,
     double xtol,
     double gtol,
-    int maxfev,
+    int32_t maxfev,
     double epsfcn,
     double diag[],
-    int mode,
+    int32_t mode,
     double factor,
-    int nprint,
-    int *info,
-    int *nfev,
+    int32_t nprint,
+    int32_t *info,
+    int32_t *nfev,
     double fjac[],
-    int ldfjac,
-    int ipvt[],
+    int32_t ldfjac,
+    int32_t ipvt[],
     double qtf[],
     double wa1[],
     double wa2[],

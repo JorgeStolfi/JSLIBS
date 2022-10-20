@@ -1,8 +1,9 @@
 /* Control schematic of the Mazoni-Zabini IG-UNICAMP multifocus microscope */
-/* Last edited on 2021-06-26 18:57:53 by jstolfi */
+/* Last edited on 2022-10-20 06:52:25 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -33,7 +34,7 @@ void miguec_draw_box
 
 void miguec_draw_arrow
   ( epswr_figure_t *epsf, 
-    int n,
+    int32_t n,
     double xv[], double yv[],
     double xText1, double yText1,
     char *text1,
@@ -47,7 +48,7 @@ void miguec_draw_arrow
   
 /* IMPLEMENTATIONS */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   {
     miguec_draw_diagram("out/control_diagram.eps");
 
@@ -72,7 +73,7 @@ void miguec_draw_diagram(char *fname)
     double yBSize = 20.0; 
 
     /* Coordinates of boxes: */
-    int xN = 4, yN = 3;
+    int32_t xN = 4, yN = 3;
     double xBMin = 0.75*xBSize, yBMin = 0.75*yBSize;   /* Center of lower left box. */
     double xBStep = 2.500*xBSize, yBStep = 2.0*yBSize;
     double xBMax = xBMin + (xN-1)*xBStep,  yBMax = yBMin + (yN-1)*yBStep; /* Center of upper right box. */
@@ -135,8 +136,8 @@ void miguec_draw_diagram(char *fname)
     xText = (xv[2] + xv[3])/2; yText = yv[3] + yTDisp;
     miguec_draw_arrow(epsf, 4, xv, yv, xText, yText, "light ctl", 0,0,NULL);
 
-    int aN = 6; /* Number of light arrows. */
-    for (int k = 0; k < aN; k++) 
+    int32_t aN = 6; /* Number of light arrows. */
+    for (int32_t k = 0; k < aN; k++) 
       { if ((k < 3) || (k == aN-1))
           { double dy = 2*yADisp*(1 - 2*((double)k)/((double)aN-1));
             xv[0] = xBMin + 2*xBStep + 0.5*xBSize, yv[0] = yBMin + 2*yBStep + dy;
@@ -181,7 +182,7 @@ void miguec_draw_box
 
 void miguec_draw_arrow
   ( epswr_figure_t *epsf, 
-    int n,
+    int32_t n,
     double xv[], double yv[],
     double xText1, double yText1,
     char *text1,

@@ -2,6 +2,7 @@
 /* Last edited on 2008-07-24 17:49:52 by stolfi */
 
 #include <nget.h>
+#include <stdint.h>
 #include <fget.h>
 #include <affirm.h>
 #include <stdio.h>

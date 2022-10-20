@@ -2,16 +2,17 @@
 #define lsq_robust_mf_H
 
 /* Fits a linear map of {R^nx} to {R^nf} by least squares, given sample arrays. */
-/* Last edited on 2014-05-25 13:39:23 by stolfilocal */
+/* Last edited on 2022-10-20 06:31:27 by stolfi */
 
 #define lsq_robust_mf_H_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <bool.h>
 
-typedef void lsq_robust_mf_report_t(int iter, double U[], double Fc[], double P[]);
+typedef void lsq_robust_mf_report_t(int32_t iter, double U[], double Fc[], double P[]);
   /* Type of a procedure that is used by {lsq_robust_mf_fit} to report the progress of the 
     iteration. 
     
@@ -25,13 +26,13 @@ typedef void lsq_robust_mf_report_t(int iter, double U[], double Fc[], double P[
     outlier. */
 
 void lsq_robust_mf_fit
-  ( int nx,       /* Number of independent variables. */
-    int nf,       /* Number of dependent variables (functions to fit). */
-    int nt,       /* Number of cases to generate. */
+  ( int32_t nx,       /* Number of independent variables. */
+    int32_t nf,       /* Number of dependent variables (functions to fit). */
+    int32_t nt,       /* Number of cases to generate. */
     double X[],   /* Values of independent variables ({nt} by {nx}). */
     double F[],   /* Values of dependent variables ({nt} by {nf}). */
     double W[],   /* Corresponding weights ({nt} elements). */
-    int maxiter,  /* Max iteration count. */
+    int32_t maxiter,  /* Max iteration count. */
     double U[],   /* (OUT) Fitted linear transformation matrix ({nx} by {nf]). */
     double P[],   /* (OUT) Assumed outlier probabilities, or NULL ({nt} elements). */
     lsq_robust_mf_report_t *report,
@@ -72,8 +73,8 @@ void lsq_robust_mf_fit
 /* AUXILIARY PROCEDURES */
 
 void lsq_robust_mf_compute_stats
-  ( int nf, 
-    int nt,
+  ( int32_t nf, 
+    int32_t nt,
     double Y[],   /* Values to analyze (deviations or function values, {nt} by {nx}). */
     double W[],   /* Weights of data records ({nt} elements). */
     double P[],   /* Probabilities
@@ -130,7 +131,7 @@ void lsq_robust_mf_compute_stats
     the weighted mean of {P[0..nt-1]} or its complement, depending on {good}. */
 
 double lsq_robust_mf_bayes
-  ( int nf, 
+  ( int32_t nf, 
     double F[], 
     double P_gud,
     double E_gud[], 
@@ -162,7 +163,7 @@ double lsq_robust_mf_bayes
     The procedure assumes that, a priori, the data record is good with
     probability {P_gud}. */
 
-void lsq_robust_mf_fudge_covariance_matrix(int nf, double alpha, double V[], double beta, double Q[]);
+void lsq_robust_mf_fudge_covariance_matrix(int32_t nf, double alpha, double V[], double beta, double Q[]);
   /* Assumes that {V} and {Q} are {nf} by {nf} covariance matrices
     of {nf} random variables. Scales the covariance matrix {V} by the
     factor {alpha}, then adds a very small multiple of the identity to
@@ -172,7 +173,7 @@ void lsq_robust_mf_fudge_covariance_matrix(int nf, double alpha, double V[], dou
     
     !!! Rethink this procedure. !!! */
 
-void lsq_robust_mf_debug_distr(FILE *wr, char *tag, int nf, double E[], double V[], double pri);
+void lsq_robust_mf_debug_distr(FILE *wr, char *tag, int32_t nf, double E[], double V[], double pri);
   /* Prints to {wr} the parameters of the distribution identified by
     {tag} -- either "gud" (residuals of inliers) or "bad" (values of
     outliers). The parameter {E} is a vector of {nf} numbers, and

@@ -1,20 +1,23 @@
 /* See dna_seq_view_GL.h */
-/* Last edited on 2014-06-09 23:10:43 by stolfilocal */
+/* Last edited on 2022-10-20 10:15:03 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <values.h>
 #include <assert.h>
 
-#include <GL/glu.h>
-#include <GL/glut.h>
+#define GLFW_INCLUDE_NONE
+#include <GL/freeglut.h>
+#include <GL/gl.h>
+#include <GLFW/glfw3.h>
 
 #include <bool.h>
 
 #include <dna_seq_view_GL.h>
 
-void dna_seq_view_GL_initialize_libraries(int *argc, char** argv)
+void dna_seq_view_GL_initialize_libraries(int32_t *argc, char** argv)
   { 
     glutInitWindowPosition(dna_seq_view_GL_default_window_corner_H, dna_seq_view_GL_default_window_corner_V);
     glutInitWindowSize(dna_seq_view_GL_default_window_HSize, dna_seq_view_GL_default_window_VSize);
@@ -24,11 +27,11 @@ void dna_seq_view_GL_initialize_libraries(int *argc, char** argv)
 void dna_seq_view_GL_initialize_window
   ( char *title,
     void display(void),
-    void reshape(int width, int height),
-    void keyboard(unsigned char key, int x, int y),
-    void passivemouse(int x, int y),
-    void activemouse(int x, int y),
-    void special(int key, int x, int y)
+    void reshape(int32_t width, int32_t height),
+    void keyboard(unsigned char key, int32_t x, int32_t y),
+    void passivemouse(int32_t x, int32_t y),
+    void activemouse(int32_t x, int32_t y),
+    void special(int32_t key, int32_t x, int32_t y)
   )
   { 
     /* Setup window parameters: */

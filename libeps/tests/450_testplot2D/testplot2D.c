@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {epswr_plot_2D.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2021-04-13 23:19:34 by jstolfi */
+/* Last edited on 2022-10-20 06:52:42 by stolfi */
 
 #define testplot_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
@@ -11,6 +11,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -40,23 +41,23 @@
 #define VMG (4.0)
   /* Minimum margins for EPS figures (pt). */
 
-int main (int argc, char **argv);
-void SetPlotWindow(epswr_figure_t *eps, double scale, int ix, int iy, int nx, int ny);
-void DoTests(int nx, int ny, bool_t quad);
-void DoPaintings(epswr_figure_t *eps, double scale, int nx, int ny, bool_t quad);
+int32_t main (int32_t argc, char **argv);
+void SetPlotWindow(epswr_figure_t *eps, double scale, int32_t ix, int32_t iy, int32_t nx, int32_t ny);
+void DoTests(int32_t nx, int32_t ny, bool_t quad);
+void DoPaintings(epswr_figure_t *eps, double scale, int32_t nx, int32_t ny, bool_t quad);
 void PlotFunc2D
   ( epswr_figure_t *eps, 
     double scale,
-    int ix,
-    int iy,
-    int nx,
-    int ny,
+    int32_t ix,
+    int32_t iy,
+    int32_t nx,
+    int32_t ny,
     bool_t messy,
-    int nf,
+    int32_t nf,
     bool_t isolines,
     bool_t bands,
     bool_t quad,
-    int ns
+    int32_t ns
   );
   /* Draws a function plot in slot {ix,iy} of {nx} by {ny}
     slot array.
@@ -69,19 +70,19 @@ void PlotFunc2D
     and {ns} steps along each side. */ 
 
 epswr_plot_2D_style_t *BuildStyle
-  ( int nf,
+  ( int32_t nf,
     bool_t isolines,
     bool_t bands
   );
   /* Builds a style parameter for {}. */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   { DoTests(4,5, FALSE);
     DoTests(4,5, TRUE);
     return 0;
   }
 
-void DoTests(int nx, int ny, bool_t quad)
+void DoTests(int32_t nx, int32_t ny, bool_t quad)
   { 
     epswr_figure_t *eps = NULL;
     /* Choose scale: */
@@ -102,10 +103,10 @@ void DoTests(int nx, int ny, bool_t quad)
 double FA(double x, double y);
 double FB(double x, double y);
 
-void DoPaintings(epswr_figure_t *eps, double scale, int nx, int ny, bool_t quad)
+void DoPaintings(epswr_figure_t *eps, double scale, int32_t nx, int32_t ny, bool_t quad)
   { 
-    int nsBig = 25; /* Number of plot steps for messy functions. */
-    int nsSma = 3;  /* Number of plot steps for smooth functions. */
+    int32_t nsBig = 25; /* Number of plot steps for messy functions. */
+    int32_t nsSma = 3;  /* Number of plot steps for smooth functions. */
     
     bool_t messy, isolines, bands;
     
@@ -151,16 +152,16 @@ void DoPaintings(epswr_figure_t *eps, double scale, int nx, int ny, bool_t quad)
 void PlotFunc2D
   ( epswr_figure_t *eps,
     double scale,
-    int ix,
-    int iy,
-    int nx, 
-    int ny,
+    int32_t ix,
+    int32_t iy,
+    int32_t nx, 
+    int32_t ny,
     bool_t messy,
-    int nf,
+    int32_t nf,
     bool_t isolines,
     bool_t bands,
     bool_t quad,
-    int ns
+    int32_t ns
   )
   { double wx = XSZ;
     double wy = YSZ;
@@ -169,8 +170,8 @@ void PlotFunc2D
     SetPlotWindow(eps, scale, ix, iy, nx, ny);
     
     epswr_set_pen(eps, 0.000, 0.000, 0.000,  0.40,  0.0, 0.0);
-    /* int ticlo = 0; */
-    /* int tichi = (int)floor(XY_SZ); */
+    /* int32_t ticlo = 0; */
+    /* int32_t tichi = (int32_t)floor(XY_SZ); */
     /* epswr_tics(eps, HOR, ticlo, tichi, tichi - ticlo, NULL, 1.0, 0.0); */
     /* epswr_tics(eps, VER, ticlo, tichi, tichi - ticlo, NULL, 1.0, 0.0); */
     epswr_rectangle(eps, -0.25, +0.25+wx, -0.25, +0.25+wy, FALSE, TRUE);
@@ -189,10 +190,10 @@ void PlotFunc2D
     xb[0] = HI(B[0]); xb[1] = (LO(B[1]) + HI(B[1]))/2;
     xc[0] = LO(B[0]); xc[1] = HI(B[1]);
     
-    auto void mess(double x[], int nx, double f[], int nf);
+    auto void mess(double x[], int32_t nx, double f[], int32_t nf);
       /* A messy black-box function to plot. */
     
-    void mess(double x[], int nx, double f[], int nf)
+    void mess(double x[], int32_t nx, double f[], int32_t nf)
       { 
         demand(nx == DDIM, "bad {nx}");
         demand(nf >= DDIM, "bad {nf}");
@@ -217,10 +218,10 @@ void PlotFunc2D
         fprintf(stderr, "bilinear corner values:\n");
         fprintf(stderr, "\n");
         srandom(4615);
-        int k, j;
+        int32_t k, j;
         for (k = 0; k < 4; k++)
-          { int i0 = k % 2;
-            int i1 = k / 2;
+          { int32_t i0 = k % 2;
+            int32_t i1 = k / 2;
             fprintf(stderr, "bf%d%d =", i0,i1);
             double *bfk = &(bf[k*nf]);
             bfk[0] = wx*(0.05 + 0.90*i0 - 0.2*(2*i0-1)*drandom());
@@ -238,14 +239,14 @@ void PlotFunc2D
         
     void interp(double z, interval_t *B, double bf0[], double bf1[], double f[])
       { double s = (z - B->end[0])/(B->end[1] - B->end[0]);
-        int j;
+        int32_t j;
         for (j = 0; j < nf; j++) { f[j] = (1 - s)*bf0[j] + s*bf1[j]; }
       }
     
-    auto void bill(double x[], int nx, double f[], int nf);
+    auto void bill(double x[], int32_t nx, double f[], int32_t nf);
       /* A billinear function to plot, interpolates the values in {bf}. */
     
-    void bill(double x[], int nx, double f[], int nf)
+    void bill(double x[], int32_t nx, double f[], int32_t nf)
       { 
         demand(nx == DDIM, "bad {nx}");
         demand(nf >= DDIM, "bad {nf}");
@@ -284,7 +285,7 @@ void PlotFunc2D
   }
   
 epswr_plot_2D_style_t *BuildStyle
-  ( int nf,
+  ( int32_t nf,
     bool_t isolines,
     bool_t bands
   )
@@ -311,7 +312,7 @@ epswr_plot_2D_style_t *BuildStyle
     st->kMax = epswr_sup_isoline(st->vStart, st->vStep, vMax + eps);
 
     /* Build the color band tables: */
-    int N = 0;
+    int32_t N = 0;
     st->Rtb = NULL;
     st->Gtb = NULL;
     st->Btb = NULL;
@@ -327,7 +328,7 @@ epswr_plot_2D_style_t *BuildStyle
     return st;
   }      
 
-void SetPlotWindow(epswr_figure_t *eps, double scale, int ix, int iy, int nx, int ny)
+void SetPlotWindow(epswr_figure_t *eps, double scale, int32_t ix, int32_t iy, int32_t nx, int32_t ny)
   {
     assert((ix >= 0) && (ix < nx));
     assert((iy >= 0) && (iy < ny));

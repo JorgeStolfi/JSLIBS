@@ -1,5 +1,5 @@
 /* See {r2_align_quadopt.h}. */
-/* Last edited on 2021-12-19 11:02:55 by stolfi */
+/* Last edited on 2022-10-20 06:16:29 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -23,7 +23,7 @@
 /* IMPLEMENTATIONS */
 
 void r2_align_quadopt
-  ( int ni,                   /* Number of objects to align. */
+  ( int32_t ni,                   /* Number of objects to align. */
     r2_align_mismatch_t *F2,  /* Function that evaluates the mismatch between the objects. */
     r2_t arad[],              /* Max alignment adjustment for each object. */
     double tol,               /* Desired precision. */

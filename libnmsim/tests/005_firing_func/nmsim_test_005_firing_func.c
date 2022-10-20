@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} firing function procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-04 21:07:40 by jstolfi */ 
+/* Last edited on 2022-10-20 06:34:38 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -17,6 +17,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -31,11 +32,11 @@
 #include <nmsim_firing_func.h>
 #include <nmsim_test.h>
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     char *classes = "GLN"; /* Firing function classes to plot. */
     int32_t k = 0;

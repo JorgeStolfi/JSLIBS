@@ -1,8 +1,9 @@
 /* See {tf_calib_data.h}.  */
-/* Last edited on 2011-05-15 17:25:53 by stolfi */
+/* Last edited on 2022-10-20 07:45:30 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <malloc.h>
 
@@ -23,13 +24,13 @@ tf_calib_data_t *tf_calib_data_new (void)
 /* ---------------------------------------------------------------------- */
 /* READING */  
 
-void tf_calib_data_read_world_points (char *fname, int *np, r3_t **pp)
+void tf_calib_data_read_world_points (char *fname, int32_t *np, r3_t **pp)
   {
     FILE *rd = open_read(fname, TRUE);
-    int n = fget_int(rd); fget_eol(rd);
+    int32_t n = fget_int32(rd); fget_eol(rd);
     demand((n > 0) && (n <= MAX_POINTS), "invalid number of points in file");
     r3_t *p = notnull(malloc(n * sizeof(r3_t)),"no mem");
-    int i;
+    int32_t i;
     for (i = 0; i < n; i++)
       { r3_t *pi = &(p[i]);
         pi->c[0] = fget_double(rd);
@@ -43,13 +44,13 @@ void tf_calib_data_read_world_points (char *fname, int *np, r3_t **pp)
     (*np) = n;
   }
 
-void tf_calib_data_read_image_points (char *fname, int *np, r2_t **qq)
+void tf_calib_data_read_image_points (char *fname, int32_t *np, r2_t **qq)
   {
     FILE *rd = open_read(fname, TRUE);
-    int n = fget_int(rd); fget_eol(rd);
+    int32_t n = fget_int32(rd); fget_eol(rd);
     demand((n > 0) && (n <= MAX_POINTS), "invalid number of points in file");
     r2_t *q = notnull(malloc(n * sizeof(r2_t)),"no mem");
-    int i;
+    int32_t i;
     for (i = 0; i < n; i++)
       { r2_t *qi = &(q[i]);
         qi->c[0] = fget_double(rd);
@@ -62,13 +63,13 @@ void tf_calib_data_read_image_points (char *fname, int *np, r2_t **qq)
     (*np) = n;
   }
 
-void tf_calib_data_read_weights (char *fname, int *np, double **ww)
+void tf_calib_data_read_weights (char *fname, int32_t *np, double **ww)
   {
     FILE *rd = open_read(fname, TRUE);
-    int n = fget_int(rd); fget_eol(rd);
+    int32_t n = fget_int32(rd); fget_eol(rd);
     demand((n > 0) && (n <= MAX_POINTS), "invalid number of points in file");
     double *w = notnull(malloc(n * sizeof(double)),"no mem");
-    int i;
+    int32_t i;
     for (i = 0; i < n; i++)
       { w[i] = fget_double(rd);
         tf_calib_data_skip_comment (rd);
@@ -81,7 +82,7 @@ void tf_calib_data_read_weights (char *fname, int *np, double **ww)
 
 tf_calib_data_t *tf_calib_data_read (char *world_fname, char *image_fname, char *weight_fname)
   {
-    int n_world, n_image, n_weight;
+    int32_t n_world, n_image, n_weight;
     tf_calib_data_t *cdat = tf_calib_data_new();
     tf_calib_data_read_world_points (world_fname, &n_world, &(cdat->world));
     tf_calib_data_read_image_points (image_fname, &n_image, &(cdat->image));
@@ -103,11 +104,11 @@ tf_calib_data_t *tf_calib_data_read (char *world_fname, char *image_fname, char 
 /* ---------------------------------------------------------------------- */
 /* WRITING TO FILES */  
 
-void tf_calib_data_write_world_points (char *fname, int np, r3_t p[])
+void tf_calib_data_write_world_points (char *fname, int32_t np, r3_t p[])
   {
     FILE *wr = open_write(fname, TRUE);
     fprintf(wr, "%d\n", np);
-    int i;
+    int32_t i;
     for (i = 0; i < np; i++)
       { r3_t pi = p[i];
         fprintf(wr, " %14.6f %14.6f %14.6f  # %03d\n", pi.c[0], pi.c[1], pi.c[2], i);
@@ -115,11 +116,11 @@ void tf_calib_data_write_world_points (char *fname, int np, r3_t p[])
     fclose(wr);
   }
 
-void tf_calib_data_write_image_points (char *fname, int np, r2_t q[])
+void tf_calib_data_write_image_points (char *fname, int32_t np, r2_t q[])
   {
     FILE *wr = open_write(fname, TRUE);
     fprintf(wr, "%d\n", np);
-    int i;
+    int32_t i;
     for (i = 0; i < np; i++)
       { r2_t qi = q[i];
         fprintf(wr, " %9.3f %9.3f  # %03d\n", qi.c[0], qi.c[1], i);
@@ -127,11 +128,11 @@ void tf_calib_data_write_image_points (char *fname, int np, r2_t q[])
     fclose(wr);
   }
 
-void tf_calib_data_write_weights (char *fname, int np, double w[])
+void tf_calib_data_write_weights (char *fname, int32_t np, double w[])
   {
     FILE *wr = open_write(fname, TRUE);
     fprintf(wr, "%d\n", np);
-    int i;
+    int32_t i;
     for (i = 0; i < np; i++)
       { fprintf(wr, " %11.9f  # %03d\n", w[i], i); }
     fclose(wr);
@@ -143,7 +144,7 @@ void tf_calib_data_write_weights (char *fname, int np, double w[])
 void tf_calib_data_print (FILE *wr, tf_calib_data_t *cdat)
   {
     fprintf(wr, "--------- calibration data ---------------------------------\n");
-    int i;
+    int32_t i;
     for (i = 0; i < cdat->np; i++)
       { r3_t pi = cdat->world[i];
         r2_t qi = cdat->image[i];
@@ -156,10 +157,10 @@ void tf_calib_data_print (FILE *wr, tf_calib_data_t *cdat)
     fprintf(wr, "------------------------------------------------------------\n");
   }
 
-void tf_calib_data_print_world_points (FILE *wr, int np, r3_t p[])
+void tf_calib_data_print_world_points (FILE *wr, int32_t np, r3_t p[])
   {
     fprintf(wr, "--------- world points -------------------------------------\n");
-    int i;
+    int32_t i;
     for (i = 0; i < np; i++)
       { r3_t pi = p[i];
         fprintf(wr, "[%03d]", i);
@@ -168,10 +169,10 @@ void tf_calib_data_print_world_points (FILE *wr, int np, r3_t p[])
     fprintf(wr, "------------------------------------------------------------\n");
   }
 
-void tf_calib_data_print_image_points (FILE *wr, int np, r2_t q[])
+void tf_calib_data_print_image_points (FILE *wr, int32_t np, r2_t q[])
   {
     fprintf(wr, "--------- image points ------------------------------------\n");
-    int i;
+    int32_t i;
     for (i = 0; i < np; i++)
       { r2_t qi = q[i];
         fprintf(wr, "[%03d]", i);
@@ -180,10 +181,10 @@ void tf_calib_data_print_image_points (FILE *wr, int np, r2_t q[])
     fprintf(wr, "------------------------------------------------------------\n");
   }
 
-void tf_calib_data_print_weights (FILE *wr, int np, double w[])
+void tf_calib_data_print_weights (FILE *wr, int32_t np, double w[])
   {
     fprintf(wr, "--------- point weights ------------------------------------\n");
-    int i;
+    int32_t i;
     for (i = 0; i < np; i++)
       { fprintf(wr, "[%03d]", i);
         fprintf(wr, "  w = %11.9f\n", w[i]);
@@ -193,19 +194,19 @@ void tf_calib_data_print_weights (FILE *wr, int np, double w[])
 
 void  tf_calib_data_skip_comment (FILE *rd)
   {
-    int ch;
+    int32_t ch;
     while ((ch=fgetc(rd)) == ' ') { }
     if (ch == '#') { while (((ch=fgetc(rd)) != '\n') && (ch != EOF)) { } }
     if (ch != EOF) { ungetc(ch, rd);}
   }
 
 void tf_calib_data_set_weights(tf_calib_data_t *cdat, double w[])
-  { int k;
+  { int32_t k;
     for (k = 0; k < cdat->np; k++) { cdat->weight[k] = w[k]; }
   }
 
 void tf_calib_data_set_weights_uniform(tf_calib_data_t * cdat)
-  { int k;
+  { int32_t k;
     for (k = 0; k < cdat->np; k++) { cdat->weight[k] = 1.0; }
   }
 

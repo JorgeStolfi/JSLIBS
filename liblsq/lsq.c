@@ -1,5 +1,5 @@
 /* See {lsq.h} */
-/* Last edited on 2019-12-18 17:14:36 by jstolfi */
+/* Last edited on 2022-10-20 10:28:07 by stolfi */
 
 #define lsq_C_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
@@ -260,7 +260,7 @@ void lsq_debug_double_vec(int32_t nx, double x[], char *fmt)
     fprintf(stderr, " ]");
   }
     
-void lsq_debug_int32_t_vec(int32_t nx, int32_t x[], char *fmt)
+void lsq_debug_int32_vec(int32_t nx, int32_t x[], char *fmt)
   { fprintf(stderr, "[");
     int32_t j;
     for (j = 0; j < nx; j++)

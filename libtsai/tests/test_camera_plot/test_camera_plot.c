@@ -1,10 +1,11 @@
-/* Last edited on 2011-05-15 22:49:41 by stolfi */
+/* Last edited on 2022-10-20 05:56:39 by stolfi */
 
 #define PROG_NAME "test_camera_plot"
 #define PROG_DESC "tests the initial camera calibration guess algorithms"
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
@@ -15,9 +16,9 @@
 #include <jsrandom.h>
 #include <tf_camera_plot.h>
 
-void write_test_plots(int Nx, int Ny, char *out_dir);
+void write_test_plots(int32_t Nx, int32_t Ny, char *out_dir);
 
-int main (int argc, char *argv[])
+int32_t main (int32_t argc, char *argv[])
 {
   fprintf(stderr, "Starting:\n");
   char *out_dir = "out";
@@ -26,7 +27,7 @@ int main (int argc, char *argv[])
   return 0;
 }
 
-void write_test_plots(int Nx, int Ny, char *out_dir)
+void write_test_plots(int32_t Nx, int32_t Ny, char *out_dir)
   {
     /* Camera aspect ratio: */
     double aspect = Nx/Ny;
@@ -61,10 +62,10 @@ void write_test_plots(int Nx, int Ny, char *out_dir)
     pswr_set_pen(ps, 0.0,0.0,0.0, 0.20, 0,0); /* Black lines */
 
     pswr_set_pen(ps, 0.0,0.0,0.0, 0.25, 0,0); /* Thick black lines */
-    int nq = 10;
-    int maxStyle = 5;
+    int32_t nq = 10;
+    int32_t maxStyle = 5;
     r2_t q[nq];
-    int m;
+    int32_t m;
     for (m = 0; m <= maxStyle; m++) 
       { /* First point is at center to check alignment: */
         q[0] = (r2_t){{ 0.5*Nx, 0.5*Ny }};
@@ -72,7 +73,7 @@ void write_test_plots(int Nx, int Ny, char *out_dir)
         double r = 0.1 + 0.3*((double)m)/((double)maxStyle);
         q[1] = (r2_t){{ (0.5 + r)*Nx, 0.5*Ny }};
         /* Other points are random: */
-        int i;
+        int32_t i;
         for (i = 2; i < nq; i++) { q[i] = (r2_t){{ 0.5*drandom()*Nx, drandom()*Ny }}; }
         tf_plot_marks(ps, nq, q, 1.0, m);
       }

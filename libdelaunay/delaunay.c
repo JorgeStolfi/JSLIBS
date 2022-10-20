@@ -9,6 +9,7 @@
 
 #define _GNU_SOURCE
 #include <stdlib.h>
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 

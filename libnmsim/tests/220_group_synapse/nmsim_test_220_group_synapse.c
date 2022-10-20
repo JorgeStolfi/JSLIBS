@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} synaptic band attributes"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-11 14:26:54 by jstolfi */ 
+/* Last edited on 2022-10-20 06:49:11 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -17,6 +17,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -48,11 +49,11 @@ void nmsim_group_synapse_test_read
   /* Reads a synapse group index and attributes record from file {fname}, and compares
     them to {isg} and {*sgrp}. */
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     nmsim_class_neuron_count_t nsc = 50;  /* Assumed number of synapse classes. */
     nmsim_group_neuron_count_t nng = 500; /* Assumed number of neuron groups. */

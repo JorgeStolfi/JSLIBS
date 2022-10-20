@@ -1,5 +1,5 @@
 /* See msm_seq_desc.h */
-/* Last edited on 2018-03-04 22:58:21 by stolfilocal */
+/* Last edited on 2022-10-20 07:46:24 by stolfi */
 
 #define msm_seq_desc_C_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)" \
@@ -7,6 +7,7 @@
 
 #define _GNU_SOURCE
 #include <stdlib.h>
+#include <stdint.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -33,7 +34,7 @@ msm_seq_desc_t msm_seq_desc_make
     int32_t skip      /* First sample matches sample {skip*(2^estep)} of original seq. */
   )
   { demand(size >= 0, "invalid {size}");
-    demand(abs((int)estep) <= msm_seq_desc_estep_MAX, "invalid {estep}");
+    demand(abs((int32_t)estep) <= msm_seq_desc_estep_MAX, "invalid {estep}");
     msm_seq_desc_t s = (msm_seq_desc_t)
       { .id = id,
         .name = name,
@@ -136,7 +137,7 @@ msm_seq_desc_t msm_seq_desc_resample(msm_seq_desc_t *s, int8_t ek)
     if (ek == 0) { return t; }
     
     /* Compute the {estep} of {t}: */
-    int testep = (int)s->estep + (int)ek;
+    int32_t testep = (int32_t)s->estep + (int32_t)ek;
     demand(abs(testep) <= msm_seq_desc_estep_MAX, "overflow in {estep}");
     t.estep = (int8_t)testep;
     
@@ -173,9 +174,9 @@ msm_seq_desc_t msm_seq_desc_resample(msm_seq_desc_t *s, int8_t ek)
     return t;
   }
 
-msm_seq_desc_t msm_seq_desc_filter(msm_seq_desc_t *sd, int nw, int8_t ek)
+msm_seq_desc_t msm_seq_desc_filter(msm_seq_desc_t *sd, int32_t nw, int8_t ek)
   { demand((nw > 0) && (nw % 2 == 1), "main filter width must be odd");
-    int trim = (nw - 1)/2;
+    int32_t trim = (nw - 1)/2;
     msm_seq_desc_t tsd = msm_seq_desc_trim(sd, trim, trim);
     msm_seq_desc_t rsd = msm_seq_desc_resample(&tsd, ek);
     return rsd;
@@ -223,9 +224,9 @@ void msm_seq_desc_write
   ( FILE *wr, 
     char *pre, 
     msm_seq_desc_t *s, 
-    int idSize, 
-    int nameSize, 
-    int indexSize,
+    int32_t idSize, 
+    int32_t nameSize, 
+    int32_t indexSize,
     char *suf
   )
   { if ((pre != NULL) & ((*pre) != 0)) { fputs(pre, wr); }
@@ -242,12 +243,12 @@ msm_seq_desc_t msm_seq_desc_read(FILE *rd, char *pre, char *suf)
   { if ((pre != NULL) & ((*pre) != 0))
       { fget_skip_spaces(rd); fget_match(rd, pre); }
     msm_seq_desc_t s = (msm_seq_desc_t)
-      { .id = (msm_seq_id_t)fget_int(rd),
+      { .id = (msm_seq_id_t)fget_int32(rd),
         .name = fget_string(rd),
         .rev = fget_bool(rd),
-        .size = (int32_t)fget_int(rd),
-        .estep = (int8_t)fget_int(rd),
-        .skip = (int32_t)fget_int(rd)
+        .size = fget_int32(rd),
+        .estep = (int8_t)fget_int32(rd),
+        .skip = fget_int32(rd)
       };
     (void)msm_seq_desc_is_valid(&s, TRUE);
     if ((suf != NULL) & ((*suf) != 0)) 
@@ -265,7 +266,7 @@ bool_t msm_seq_desc_is_valid(msm_seq_desc_t *s, bool_t die)
       { fail_test(die, "empty {name}"); }
     if (s->size < 0)          
       { fail_test(die, "invalid {size}"); }
-    if (abs((int)s->estep) > msm_seq_desc_estep_MAX) 
+    if (abs((int32_t)s->estep) > msm_seq_desc_estep_MAX) 
       { fail_test(die, "invalid {estep}"); }
     /* Note that {s->size} may be negative. */
     if ((s->size > 0) && (s->estep < 0))

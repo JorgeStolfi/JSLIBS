@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} group-level network description"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-11 17:39:10 by jstolfi */ 
+/* Last edited on 2022-10-20 06:33:59 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -17,6 +17,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -63,11 +64,11 @@ void nmsim_group_net_test_read
   /* Reads a group-level network description from file
     {fname}, and compares it to the given {gnet}.*/
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     nmsim_group_net_test(1,0,1,0);
     nmsim_group_net_test(2,3,1,0);

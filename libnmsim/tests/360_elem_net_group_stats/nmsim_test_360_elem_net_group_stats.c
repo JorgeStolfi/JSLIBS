@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} synapse group statistics tols"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-14 03:57:42 by jstolfi */ 
+/* Last edited on 2022-10-20 06:49:43 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2020  State University of Campinas (UNICAMP)"
@@ -17,6 +17,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -59,11 +60,11 @@ void nmsim_elem_net_test
     
     The statistics are written to a file called "out/test_stats_{STUFF}.txt". */
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     nmsim_elem_net_test(1,0, 1,0, 1,0);
     nmsim_elem_net_test(2,3, 1,0, 1,0);

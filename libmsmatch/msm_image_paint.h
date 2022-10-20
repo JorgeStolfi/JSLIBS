@@ -2,7 +2,7 @@
 #define msm_image_paint_H
 
 /* Procedures that paint various things on images. */
-/* Last edited on 2013-10-22 07:01:08 by stolfilocal */
+/* Last edited on 2022-10-20 06:38:42 by stolfi */
 
 #define msm_image_paint_H_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
@@ -50,8 +50,8 @@ void msm_image_seq_seq_score_paint
     msm_seq_desc_t *seq1, 
     msm_rung_score_proc_t *score, 
     msm_image_t *img,
-    int i0Min, 
-    int i1Min
+    int32_t i0Min, 
+    int32_t i1Min
   );
   /* Sets each pixel in column {i0/scale} and row {i1/scale} of
     {img} to the value of {score(seq0[i0],seq1[i1])}, where
@@ -65,13 +65,13 @@ void msm_image_seq_seq_score_paint
 
 void msm_image_pairing_paint
   ( msm_pairing_t *pr,
-    int n0,
-    int n1,
+    int32_t n0,
+    int32_t n1,
     float v[],
     bool_t add,
     msm_image_t *img,
-    int i0Min, 
-    int i1Min
+    int32_t i0Min, 
+    int32_t i1Min
   );
   /* Paints the pairing {pr}, reduced by {1/scale}, on image {img}.
     The painting uses color {v[0..NC]} where {NC} is the number of
@@ -90,8 +90,8 @@ void msm_image_cand_paint
     float v[], 
     bool_t add, 
     msm_image_t *img, 
-    int i0Min, 
-    int i1Min
+    int32_t i0Min, 
+    int32_t i1Min
   );
   /* Paints the pairing of candidate {cd}, reduced by {1/scale}, on
     image {img}. The pairing is painted with pixel value {v[0..NC-1]}
@@ -109,8 +109,8 @@ void msm_image_cand_vec_paint
     msm_seq_desc_t *seq0, 
     msm_seq_desc_t *seq1,
     msm_image_t *img,
-    int i0Min, 
-    int i1Min
+    int32_t i0Min, 
+    int32_t i1Min
   );
   /* Fills {img} with an image showing the candidates of {cdv},
     against a background of {-INF} values.
@@ -126,12 +126,12 @@ void msm_image_cand_vec_paint
 /* DYNAMIC PROGRAMMING TABLEAUS */
 
 void msm_image_dyn_tableau_scores_paint
-  ( int n0,                /* Length of first sequence. */
-    int n1,                /* Length of second sequence. */
+  ( int32_t n0,                /* Length of first sequence. */
+    int32_t n1,                /* Length of second sequence. */
     msm_dyn_tableau_t *tb, /* Tableau. */
     msm_image_t *img,
-    int i0Min, 
-    int i1Min
+    int32_t i0Min, 
+    int32_t i1Min
   );
   /* Fills {img} with an image that shows the scores associated with
     each entry of the dynamic programming tableau {tb}. 
@@ -147,14 +147,14 @@ void msm_image_dyn_tableau_scores_paint
     sequences are assumed to be circular.) */
 
 void msm_image_dyn_tableau_pairing_paint
-  ( int n0,                /* Length of first sequence. */
-    int n1,                /* Length of second sequence. */
+  ( int32_t n0,                /* Length of first sequence. */
+    int32_t n1,                /* Length of second sequence. */
     msm_dyn_tableau_t *tb, /* Tableau. */
     msm_rung_t gopt,       /* Optimal end-rung or {msm_rung_none} */ 
     float clr[],
     msm_image_t *img,
-    int i0Min, 
-    int i1Min
+    int32_t i0Min, 
+    int32_t i1Min
   );
   /* Stores {clr[0..3]} into the pixels of {img} that correspond 
     to the rungs of the optimal path in tableau {tb} that ends with
@@ -169,12 +169,12 @@ void msm_image_dyn_tableau_pairing_paint
     (i.e., the sequences are assumed to be circular.) */
 
 void msm_image_grid_paint
-  ( int step0, 
-    int step1, 
+  ( int32_t step0, 
+    int32_t step1, 
     float clr[],
     msm_image_t *img,
-    int i0Min, 
-    int i1Min
+    int32_t i0Min, 
+    int32_t i1Min
   );
   /* Draws a vertical line at every X-coordinate that is a multiple of
     {n0} and a horizontal line at every Y-coordinate that is a multiple

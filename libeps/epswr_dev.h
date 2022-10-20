@@ -1,5 +1,5 @@
 /* epswr_dev.h - draw EPS files in Device coordinates. */
-/* Last edited on 2021-06-26 18:33:57 by jstolfi */
+/* Last edited on 2022-10-20 06:54:08 by stolfi */
 
 #ifndef epswr_dev_H
 #define epswr_dev_H
@@ -27,6 +27,7 @@
   
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <epswr.h>
 #include <bool.h>
@@ -121,8 +122,8 @@ void epswr_dev_shrink_window
 
 void epswr_dev_set_window_to_grid_cell
   ( epswr_figure_t *eps, 
-    double hMin, double hMax, int ih, int nh, 
-    double vMin, double vMax, int iv, int nv
+    double hMin, double hMax, int32_t ih, int32_t nh, 
+    double vMin, double vMax, int32_t iv, int32_t nv
   );
   /* Conceptually divides the the rectangle {[hMin _ hMax] × [vMin _ vmax]}
     (in absolute Device coordinates) into a grid of rectangular
@@ -237,7 +238,7 @@ void epswr_dev_polygon
   ( epswr_figure_t *eps,
     bool_t closed,
     double psx[], double psy[],
-    int n,
+    int32_t n,
     bool_t fill, bool_t draw,
     bool_t evenOdd
   );
@@ -257,7 +258,7 @@ void epswr_dev_rounded_polygon
   ( epswr_figure_t *eps,
     bool_t closed,
     double psx[], double psy[],
-    int n,
+    int32_t n,
     double psrad,
     bool_t fill, bool_t draw,
     bool_t evenOdd
@@ -284,7 +285,7 @@ void epswr_dev_bezier_polygon
   ( epswr_figure_t *eps,
     bool_t closed,
     double psx[], double psy[],
-    int n,
+    int32_t n,
     bool_t fill, bool_t draw,
     bool_t evenOdd
   );
@@ -404,15 +405,15 @@ void epswr_dev_arrowhead
     
 /* GRID LINES AND GRID CELLS */
 
-void epswr_dev_grid_lines(epswr_figure_t *eps, int nh, int nv);
+void epswr_dev_grid_lines(epswr_figure_t *eps, int32_t nh, int32_t nv);
   /* The plot window is implicitly divided into a grid of rectangular
     cells, with {nh} columns and {nv} rows. Draws all grid cell boundaries
     with the current pen and color. */
 
 void epswr_dev_grid_cell
   ( epswr_figure_t *eps, 
-    int ih, int nh,
-    int iv, int nv,
+    int32_t ih, int32_t nh,
+    int32_t iv, int32_t nv,
     bool_t fill, bool_t draw
   );
   /* The plot window is implicitly divided into a grid of rectangular
@@ -553,7 +554,7 @@ void epswr_dev_comment(epswr_figure_t *eps, const char *title);
     purposes only; it has no visible effect on the printed 
     page/figure. */
 
-void epswr_dev_show_stack(epswr_figure_t *eps, int code);
+void epswr_dev_show_stack(epswr_figure_t *eps, int32_t code);
   /* Issues a command that, when the EPS file is interpreted
     by {gs} (Ghostscript) or similar software, will
     print the contents of the Postscript stack to {stderr}.
@@ -568,7 +569,7 @@ void epswr_dev_flush (epswr_figure_t *eps);
 
 /* HEADERS AND OTHER INTERNAL OPS */
 
-void epswr_dev_add_font(const char *font, int *nfontsP, char ***fontsP);
+void epswr_dev_add_font(const char *font, int32_t *nfontsP, char ***fontsP);
   /* Appends a copy of the given {font} name string to the font list
     {(**fontsP)[0..(*nfontsP)-1]}. */
 
@@ -581,7 +582,7 @@ void epswr_dev_write_window_set_cmds
     variables {hMin,hMax,vMin,vMax} to the given values,
     and sets the clip path to that rectangle. */
 
-void epswr_dev_write_grid_set_cmds(FILE *wr, int hGridN, int vGridN);
+void epswr_dev_write_grid_set_cmds(FILE *wr, int32_t hGridN, int32_t vGridN);
   /* Writes to {wr} some commands that set the Postscript
     variables {hGridN,vGridN} that define the cell grid */
 

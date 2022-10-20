@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {epswr.h} and {epswr_shade.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-10-27 17:12:55 by jstolfi */
+/* Last edited on 2022-10-20 06:53:12 by stolfi */
 
 #define testshade_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
@@ -11,6 +11,7 @@
 
 #define _GNU_SOURCE
 #include <math.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -33,19 +34,19 @@
 #define MIN_EPS_VMG (4.0)
   /* Minimum margins for EPS figures (pt). */
 
-int main (int argc, char **argv);
-void SetPlotWindow(epswr_figure_t *epsf, double xsz, double ysz, int ix, int iy, int nx, int ny);
-void DoEPSTests(int nx, int ny);
-void DoPSTests(int nx, int ny);
-void DoPaintings(epswr_figure_t *epsf, int nx, int ny);
+int32_t main (int32_t argc, char **argv);
+void SetPlotWindow(epswr_figure_t *epsf, double xsz, double ysz, int32_t ix, int32_t iy, int32_t nx, int32_t ny);
+void DoEPSTests(int32_t nx, int32_t ny);
+void DoPSTests(int32_t nx, int32_t ny);
+void DoPaintings(epswr_figure_t *epsf, int32_t nx, int32_t ny);
 void PlotShadedPoly
   ( epswr_figure_t *epsf,
-    int ix,
-    int iy,
-    int nx, 
-    int ny,
+    int32_t ix,
+    int32_t iy,
+    int32_t nx, 
+    int32_t ny,
     bool_t quad,
-    int ns
+    int32_t ns
   );
   /* Draws a shading test plot on file {epsf}.  The page
     is divided conceptually into an array of {nx × ny} sub-figures.
@@ -57,12 +58,12 @@ void PlotShadedPoly
     is the subdivision order; {ns == 0} means a single solid color,
     {ns == -1} means Gouraud shading. */ 
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   { DoEPSTests(2,4);
     return 0;
   }
   
-void SetPlotWindow(epswr_figure_t *epsf, double xsz, double ysz, int ix, int iy, int nx, int ny)
+void SetPlotWindow(epswr_figure_t *epsf, double xsz, double ysz, int32_t ix, int32_t iy, int32_t nx, int32_t ny)
   {
     /* Compute minimum margins in pt: */
     double min_hmg = MIN_EPS_HMG;
@@ -99,7 +100,7 @@ void SetPlotWindow(epswr_figure_t *epsf, double xsz, double ysz, int ix, int iy,
     epswr_set_window(epsf, fig_hlo, fig_hhi, fig_vlo, fig_vhi, FALSE, 0, xsz, 0, ysz);
   }
 
-void DoEPSTests(int nx, int ny)
+void DoEPSTests(int32_t nx, int32_t ny)
   { /* Choose scale: */
     double hscale = 6.0*72/(nx*FIG_XSZ);
     double vscale = 6.0*72/(ny*FIG_XSZ);
@@ -121,7 +122,7 @@ void DoEPSTests(int nx, int ny)
 double FA(double x, double y);
 double FB(double x, double y);
 
-void DoPaintings(epswr_figure_t *epsf, int nx, int ny)
+void DoPaintings(epswr_figure_t *epsf, int32_t nx, int32_t ny)
   { 
     PlotShadedPoly(epsf, 0, 0, nx, ny, FALSE,  0);
 
@@ -142,12 +143,12 @@ void DoPaintings(epswr_figure_t *epsf, int nx, int ny)
 
 void PlotShadedPoly
   ( epswr_figure_t *epsf,
-    int ix,
-    int iy,
-    int nx, 
-    int ny,
+    int32_t ix,
+    int32_t iy,
+    int32_t nx, 
+    int32_t ny,
     bool_t quad,
-    int ns
+    int32_t ns
   )
   { assert((ix >= 0) && (ix < nx));
     assert((iy >= 0) && (iy < ny));
@@ -159,8 +160,8 @@ void PlotShadedPoly
     /* Usable area {[0 _ wx]×[0 _ wy]} */
     
     epswr_set_pen(epsf, 0.000, 0.000, 0.000,  0.40,  0.0, 0.0);
-    /* int ticlo = 0; */
-    /* int tichi = (int)floor(FIG_XY_SZ); */
+    /* int32_t ticlo = 0; */
+    /* int32_t tichi = (int32_t)floor(FIG_XY_SZ); */
     /* epswr_tics(epsf, epswr_axis_HOR, ticlo, tichi, tichi - ticlo, NULL, 1.0, 0.0); */
     /* epswr_tics(epsf, epswr_axis_VER, ticlo, tichi, tichi - ticlo, NULL, 1.0, 0.0); */
     epswr_rectangle(epsf, -0.25, +0.25+wx, -0.25, +0.25+wy, FALSE, TRUE);

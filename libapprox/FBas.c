@@ -8,6 +8,7 @@
 */
 
 #include <FBas.h>
+#include <stdint.h>
 #include <FBasPoly2.h>
 
 #include <bool.h> 
@@ -32,7 +33,7 @@ void FBas_WriteAsSubclass(FBas *bas, FILE *wr);
     calls the corresponding {write} method (which must shadow,
     but must not override, the {write} method of {bas}. */
 
-void FBas_PrintSystem(int ne, int nc, double *A, int nb);
+void FBas_PrintSystem(int32_t ne, int32_t nc, double *A, int32_t nb);
   /* Prints the system matrix {A} which is assumed to have 
     {ne} rows and {nc} columns. Prints dividing lines after the 
     first {nb} equations and unknowns. */
@@ -61,15 +62,15 @@ void FBas_PrintSystem(int ne, int nc, double *A, int nb);
 
 void FBas_BuildLeastSquaresSystem
   ( FBas *bas,      /* Basis to use. */  
-    int nb,         /* Number of basis elements to use. */
-    int np,         /* Number of samples. */
-    int dp,         /* Coordinates per sample. */
+    int32_t nb,         /* Number of basis elements to use. */
+    int32_t np,         /* Number of samples. */
+    int32_t dp,         /* Coordinates per sample. */
     double *P,      /* Sample positions. */ 
-    int dv,         /* Data values per sample. */
+    int32_t dv,         /* Data values per sample. */
     double *V,      /* Sample values. */ 
     double bias,    /* Bias for the internal energy. */
-    int *neP,       /* OUT: Number of equations (rows of system matrix). */
-    int *ncP,       /* OUT: Number of variables and indep terms (cols). */
+    int32_t *neP,       /* OUT: Number of equations (rows of system matrix). */
+    int32_t *ncP,       /* OUT: Number of variables and indep terms (cols). */
     double **AP     /* OUT: Matrix of linear system, stored by rows. */
   );
   /* Sets up a linear system {M X + U = 0} for data fitting by least
@@ -79,14 +80,14 @@ void FBas_BuildLeastSquaresSystem
 
 void FBas_BuildInterpolationSystem
   ( FBas *bas,      /* Basis to use. */  
-    int nb,         /* Number of basis elements to use. */
-    int np,         /* Number of samples. */
-    int dp,         /* Coordinates per sample. */
+    int32_t nb,         /* Number of basis elements to use. */
+    int32_t np,         /* Number of samples. */
+    int32_t dp,         /* Coordinates per sample. */
     double *P,      /* Sample positions. */ 
-    int dv,         /* Data values per sample. */
+    int32_t dv,         /* Data values per sample. */
     double *V,      /* Sample values. */ 
-    int *neP,       /* OUT: Number of equations (rows of system matrix). */
-    int *ncP,       /* OUT: Number of variables and indep terms (cols). */
+    int32_t *neP,       /* OUT: Number of equations (rows of system matrix). */
+    int32_t *ncP,       /* OUT: Number of variables and indep terms (cols). */
     double **AP     /* OUT: Matrix of linear system, stored by rows. */
   );
   /* Sets up a linear system {M X + U = 0} for data fitting by
@@ -145,18 +146,18 @@ FBas *FBas_Read(FILE *rd)
 bool_t FBas_Debug = TRUE;
 
 void FBas_Fit
-  ( int np,         /* Number of samples. */
-    int dp,         /* Number of coordinates per sample. */
+  ( int32_t np,         /* Number of samples. */
+    int32_t dp,         /* Number of coordinates per sample. */
     double *P,      /* Sample positions. */ 
-    int dv,         /* Number of data values per sample. */
+    int32_t dv,         /* Number of data values per sample. */
     double *V,      /* Sample values. */  
     FBas *bas,      /* Basis to use. */  
-    int nb,         /* How many elements of {bas} to use. */
+    int32_t nb,         /* How many elements of {bas} to use. */
     double *W       /* OUT: coefficients of fit. */
   )
   { if(FBas_Debug)
       { fprintf(stderr, "-- samples --\n");
-        int k;
+        int32_t k;
         for (k = 0; k < np; k++)
           { double *Pk = &(P[dp*k]);
             double *Vk = &(V[dv*k]);
@@ -169,7 +170,7 @@ void FBas_Fit
       }
      
     /* Build linear system {A[0..ne-1,0..nc-1]}: */
-    int ne, nc;
+    int32_t ne, nc;
     double *A;
     if (nb < np)
       { /* Use least-squares with slight bias from energy. */
@@ -190,14 +191,14 @@ void FBas_Fit
     if (FBas_Debug) { FBas_PrintSystem(ne, nc, A, nb); }
 
     /* Extract solution: */
-    int nx = nc - dv;
+    int32_t nx = nc - dv;
     double X[nx*dv];
     gsel_extract_solution(ne, nc, A, dv, X, TRUE);
     free(A);
 
     if(FBas_Debug)
       { fprintf(stderr, "-- system solution --\n");
-        int i;
+        int32_t i;
         for (i = 0; i < nx; i++)
           { double *Xi = &(X[dv*i]); 
             fprintf(stderr, "X[%02d] = ", i); 
@@ -206,9 +207,9 @@ void FBas_Fit
           }
       }
     /* Copy coeffs to {W}: */
-    int i;
+    int32_t i;
     for(i = 0; i < nb; i++)
-      { int r;
+      { int32_t r;
         double *Wir = &(W[dv*i]);
         double *Xir = &(X[dv*i]);
         for (r = 0; r < dv; r++, Wir++, Xir++) 
@@ -218,23 +219,23 @@ void FBas_Fit
   
 void FBas_BuildLeastSquaresSystem
   ( FBas *bas,      /* Basis to use. */  
-    int nb,         /* Number of basis elements to use. */
-    int np,         /* Number of samples. */
-    int dp,         /* Coordinates per sample. */
+    int32_t nb,         /* Number of basis elements to use. */
+    int32_t np,         /* Number of samples. */
+    int32_t dp,         /* Coordinates per sample. */
     double *P,      /* Sample positions. */ 
-    int dv,         /* Data values per sample. */
+    int32_t dv,         /* Data values per sample. */
     double *V,      /* Sample values. */ 
     double bias,    /* Bias for the internal energy. */
-    int *neP,       /* OUT: Number of equations (rows of system matrix). */
-    int *ncP,       /* OUT: Number of variables and indep terms (cols). */
+    int32_t *neP,       /* OUT: Number of equations (rows of system matrix). */
+    int32_t *ncP,       /* OUT: Number of variables and indep terms (cols). */
     double **AP     /* OUT: Matrix of linear system, stored by rows. */
   )
   { /* Use least squares-plus-energy minimization. */
     /* Compute matrix {B[i,k] = basis[i](P[k])}: */
     double B[nb*np];
-    int i;
+    int32_t i;
     for (i = 0; i < nb; i++)
-      { int k;
+      { int32_t k;
         double *Bik = &(B[np*i]);
         for (k = 0; k < np; k++, Bik++)
           { double *Pk = &(P[dp*k]);
@@ -243,9 +244,9 @@ void FBas_BuildLeastSquaresSystem
       }
             
     /* Now compute the system matrix {A}: */
-    int nx = nb;       /* Total number of unknowns (coeffs). */ 
-    int ne = nx;       /* Total number of equations. */
-    int nc = nx + dv;  /* Total number of cols in the {A} matrix. */
+    int32_t nx = nb;       /* Total number of unknowns (coeffs). */ 
+    int32_t ne = nx;       /* Total number of equations. */
+    int32_t nc = nx + dv;  /* Total number of cols in the {A} matrix. */
     double *A = (double *)malloc(ne*nc*sizeof(double));
     affirm(A != NULL, "out of mem");
     
@@ -259,7 +260,7 @@ void FBas_BuildLeastSquaresSystem
     /* Build the matrix {A}: */
     for (i = 0; i < ne; i++)
       { /* Compute the main entries for equation {i}: */
-        int j;
+        int32_t j;
         double *Mij = &(A[nc*i]);  /* Scans row {i}. */
         double *Mji = &(A[i]);     /* Scans column {i} */
         for (j = 0; j <= i; j++, Mij++, Mji += nc)
@@ -267,7 +268,7 @@ void FBas_BuildLeastSquaresSystem
             double Q = bas->m->energy(bas, i, j);
             /* Compute least-squares term: */
             double S = 0.0;
-            int k;
+            int32_t k;
             double *Bik = &(B[np*i]);
             double *Bjk = &(B[np*j]);
             for (k = 0; k < np; k++, Bik++, Bjk++)
@@ -275,11 +276,11 @@ void FBas_BuildLeastSquaresSystem
             (*Mij) = (*Mji) = bias*Q + S;
           }
         /* Compute the independent terms: */
-        int r;
+        int32_t r;
         double *Uir = &(A[nc*i + nx]);
         for (r = 0; r < dv; r++, Uir++) 
           { double T = 0.0;
-            int k;
+            int32_t k;
             double *Bik = &(B[np*i]);
             double *Vkr = &(V[r]);
             for (k = 0; k < np; k++, Bik++, Vkr += dv)
@@ -294,20 +295,20 @@ void FBas_BuildLeastSquaresSystem
 
 void FBas_BuildInterpolationSystem
   ( FBas *bas,      /* Basis to use. */  
-    int nb,         /* Number of basis elements to use. */
-    int np,         /* Number of samples. */
-    int dp,         /* Coordinates per sample. */
+    int32_t nb,         /* Number of basis elements to use. */
+    int32_t np,         /* Number of samples. */
+    int32_t dp,         /* Coordinates per sample. */
     double *P,      /* Sample positions. */ 
-    int dv,         /* Data values per sample. */
+    int32_t dv,         /* Data values per sample. */
     double *V,      /* Sample values. */ 
-    int *neP,       /* OUT: Number of equations (rows of system matrix). */
-    int *ncP,       /* OUT: Number of variables and indep terms (cols). */
+    int32_t *neP,       /* OUT: Number of equations (rows of system matrix). */
+    int32_t *ncP,       /* OUT: Number of variables and indep terms (cols). */
     double **AP     /* OUT: Matrix of linear system, stored by rows. */
   )
-  { int nm = np;          /* Number of Lagrange multipliers. */
-    int nx = nb + nm;     /* Total number of unknowns (coeffs + lambdas). */
-    int ne = nx;          /* Total number of equations. */
-    int nc = nx + dv;   /* Total number of cols in the {A} matrix. */
+  { int32_t nm = np;          /* Number of Lagrange multipliers. */
+    int32_t nx = nb + nm;     /* Total number of unknowns (coeffs + lambdas). */
+    int32_t ne = nx;          /* Total number of equations. */
+    int32_t nc = nx + dv;   /* Total number of cols in the {A} matrix. */
     double *A = (double *)malloc(ne*nc*sizeof(double));
     affirm(A != NULL, "out of mem");
 
@@ -317,10 +318,10 @@ void FBas_BuildInterpolationSystem
     /* The remaining {np} variables are Lagrange multipliers. */
 
     /* Build the matrix {A}: */
-    int i;
+    int32_t i;
     for (i = 0; i < ne; i++)
       { /* Compute equation {i}: */
-        int j, r;
+        int32_t j, r;
         double *Mij = &(A[nc*i]);
         double *Mji = &(A[i]);
         double *Uir = &(A[nc*i + nx]);
@@ -334,7 +335,7 @@ void FBas_BuildInterpolationSystem
             for (r = 0; r < dv; r++, Uir++) { (*Uir) = 0.0; }
           }
         else
-          { int k = i - nb; 
+          { int32_t k = i - nb; 
             /* The equation is an interpolation constraint at {P[k]}: */
             double *Pk = &(P[dp*k]);
             for (j = 0; j < i; j++, Mij++, Mji += nc)
@@ -352,9 +353,9 @@ void FBas_BuildInterpolationSystem
     (*AP) = A;
   }
 
-void FBas_PrintSystem(int ne, int nc, double *A, int nb)
+void FBas_PrintSystem(int32_t ne, int32_t nc, double *A, int32_t nb)
   { fprintf(stderr, "-- systems matrix --\n");
-    int i, j, ij = 0;
+    int32_t i, j, ij = 0;
     for (i = 0; i < ne; i++)
       { if (i == nb)
           { for (j = 0; j < nc; j++)

@@ -2,7 +2,7 @@
 #define msm_image_H
 
 /* Image tools for {msm_match}. */
-/* Last edited on 2013-10-22 01:32:50 by stolfilocal */
+/* Last edited on 2022-10-20 06:39:37 by stolfi */
 
 #define msm_image_H_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)"
@@ -12,14 +12,14 @@
 #include <float_image.h>
 
 typedef struct msm_image_t
-  { int NV[2];
-    int scale;
+  { int32_t NV[2];
+    int32_t scale;
     float_image_t *fim;
   } msm_image_t; 
    /* A virtual image with {NV[0]} by {NV[1]} pixels, implemented as a
      smaller float image {fim}, at a reduction factor {scale:1}. */
 
-msm_image_t *msm_image_alloc(int NC, int NVX, int NVY, bool_t scale);
+msm_image_t *msm_image_alloc(int32_t NC, int32_t NVX, int32_t NVY, bool_t scale);
   /* Allocates a virtual image with {NC} channels, {NVX} columns and
     {NVY} rows. If {scale} is TRUE then the underlying {float_image}'s actual size is
     {ceil(NVX/ppp)} by {ceil(NVY/ppp)}, where {ppp} is chosen so
@@ -31,15 +31,15 @@ msm_image_t *msm_image_alloc(int NC, int NVX, int NVY, bool_t scale);
   arguments {x,y} map to the pixel {((xr/scale,yr/scale)}, 
   where {xr,yr} are {x,y} reduced modulo {img->NV[0],img->NV[1]}. */
 
-void msm_image_set(msm_image_t *img, int c, int x, int y, float v);
+void msm_image_set(msm_image_t *img, int32_t c, int32_t x, int32_t y, float v);
   /* Stores {v} into the sample in channel {c} of {img} corresponding to index pair
     {(x,y)} */
 
-void msm_image_add(msm_image_t *img, int c, int x, int y, float v);
+void msm_image_add(msm_image_t *img, int32_t c, int32_t x, int32_t y, float v);
   /* Adds {v} to the sample in channel {c} of {img} corresponding to
     index pair {(x,y)}.  If that sample is {-oo}, sets it to {v}. */
 
-void msm_image_max(msm_image_t *img, int c, int x, int y, float v);
+void msm_image_max(msm_image_t *img, int32_t c, int32_t x, int32_t y, float v);
   /* Stores {v} into the sample in channel {c} of {img} corresponding to
     index pair {(x,y)}, provided that it is greater than the current value
     of that sample. */
@@ -51,7 +51,7 @@ void msm_image_max(msm_image_t *img, int c, int x, int y, float v);
   visualization of a given image {img}.  In any case, the limits {lo} and {hi}
   are fudged as needed so as to ensure that {lo < hi}. */
   
-void msm_image_compute_avg_dev_range(msm_image_t *img, int c, double *lo, double *hi, double ns);
+void msm_image_compute_avg_dev_range(msm_image_t *img, int32_t c, double *lo, double *hi, double ns);
   /* Computes the average {avg} and standard deviation {dev} of all
     finite sample values in channel {c} of {img}. Ignores samples that
     are {±INF} or {NAN}. The {lo} and {hi} values are set to
@@ -61,7 +61,7 @@ void msm_image_compute_avg_dev_range(msm_image_t *img, int c, double *lo, double
     containing that value. If there are no valid sample values, returns
     a tiny interval centered at 0. */ 
 
-void msm_image_compute_min_max_range(msm_image_t *img, int c, double *lo, double *hi);
+void msm_image_compute_min_max_range(msm_image_t *img, int32_t c, double *lo, double *hi);
   /* Computes the minimum {vmin} and maximum {vmax} of all finite
     sample values in channel {c} of {img}. Ignores samples that are
     {±INF} or {NAN}. The {lo} and {hi} values are set to {vmin} and

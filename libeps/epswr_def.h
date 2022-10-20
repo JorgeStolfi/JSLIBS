@@ -1,17 +1,18 @@
 /* Private definitions for epswr.h. */
-/* Last edited on 2021-06-26 08:04:22 by jstolfi */
+/* Last edited on 2022-10-20 06:56:10 by stolfi */
 
 #ifndef epswr_def_H
 #define epswr_def_H
 
 #include <stdio.h> 
+#include <stdint.h>
 
 typedef struct epswr_def_figure_t  
   { /* LOCAL ATTRIBUTES NOT AVAILABLE IN THE POSTSCRIPT FILE */
     
     /* Miscellaneous: */
     FILE *wr;              /* EPS file handle. */
-    int verbose;           /* TRUE prints a trace of some commands. */
+    int32_t verbose;           /* TRUE prints a trace of some commands. */
     
     /* Client plotting window: */
     double xMin, xMax;     /* Client X plotting range (in Client coords). */
@@ -50,7 +51,7 @@ typedef struct epswr_def_figure_t
     
     /* OTHER INFORMATION: */
 
-    int nFonts;            /* Number of fonts used in file. */
+    int32_t nFonts;            /* Number of fonts used in file. */
     char **fonts;          /* Fonts used (alloc size is {2^ceil(log2(nFonts))}. */
 
   } epswr_def_figure_t;

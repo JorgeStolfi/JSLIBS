@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} synapse class procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2019-01-12 22:47:54 by jstolfi */ 
+/* Last edited on 2022-10-20 06:34:24 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -17,6 +17,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -40,11 +41,11 @@ void nmsim_class_synapse_test_read(char *fname, nmsim_class_synapse_t *sclass);
   /* Reads the parameters record of a synapse class from file {fname},
     and compares it to {sclass}. */
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     nmsim_class_synapse_t *sclass = nmsim_class_synapse_throw();
     nmsim_class_synapse_show(stderr, "class = ", sclass, "\n");

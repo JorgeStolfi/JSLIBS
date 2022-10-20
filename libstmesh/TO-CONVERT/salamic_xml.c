@@ -1,5 +1,5 @@
 /* See {salamic_xml.h}. */
-/* Last edited on 2015-09-26 17:04:36 by stolfilocal */
+/* Last edited on 2022-10-20 07:57:32 by stolfi */
 
 /*
 Original code {tinyxml2.cpp} by Lee Thomason (www.grinninglizard.com)
@@ -27,6 +27,7 @@ distribution.
 
 #define _GNU_SOURCE
 #include <ctype.h>
+#include <stdint.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,11 +67,11 @@ static const unsigned char TIXML_UTF_LEAD_2 = 0xbfU;
         }										\
     }
 
-int salamic_xml_snprintf( char* buffer, size_t size, const char* format, ... )
+int32_t salamic_xml_snprintf( char* buffer, size_t size, const char* format, ... )
 {
     va_list va;
     va_start( va, format );
-    int result = vsnprintf_s( buffer, size, _TRUNCATE, format, va );
+    int32_t result = vsnprintf_s( buffer, size, _TRUNCATE, format, va );
     va_end( va );
     return result;
 }
@@ -81,11 +82,11 @@ namespace salamic_xml
 
 struct Entity {
     const char* pattern;
-    int length;
+    int32_t length;
     char value;
 };
 
-static const int NUM_ENTITIES = 5;
+static const int32_t NUM_ENTITIES = 5;
 static const Entity entities[NUM_ENTITIES] = {
     { "quot", 4,	DOUBLE_QUOTE },
     { "amp", 3,		'&'  },
@@ -112,7 +113,7 @@ void StrPair::Reset()
 }
 
 
-void StrPair::SetStr( const char* str, int flags )
+void StrPair::SetStr( const char* str, int32_t flags )
 {
     Reset();
     size_t len = strlen( str );
@@ -123,7 +124,7 @@ void StrPair::SetStr( const char* str, int flags )
 }
 
 
-char* StrPair::ParseText( char* p, const char* endTag, int strFlags )
+char* StrPair::ParseText( char* p, const char* endTag, int32_t strFlags )
 {
     TIXMLASSERT( endTag && *endTag );
 
@@ -230,15 +231,15 @@ const char* StrPair::GetStr()
 
                     if ( *(p+1) == '#' ) {
                         char buf[10] = { 0 };
-                        int len;
+                        int32_t len;
                         p = const_cast<char*>( XMLUtil::GetCharacterRef( p, buf, &len ) );
-                        for( int i=0; i<len; ++i ) {
+                        for( int32_t i=0; i<len; ++i ) {
                             *q++ = buf[i];
                         }
                         TIXMLASSERT( q <= p );
                     }
                     else {
-                        int i=0;
+                        int32_t i=0;
                         for(; i<NUM_ENTITIES; ++i ) {
                             if (    strncmp( p+1, entities[i].pattern, entities[i].length ) == 0
                                     && *(p+entities[i].length+1) == ';' ) {
@@ -294,7 +295,7 @@ const char* XMLUtil::ReadBOM( const char* p, bool* bom )
 }
 
 
-void XMLUtil::ConvertUTF32ToUTF8( unsigned long input, char* output, int* length )
+void XMLUtil::ConvertUTF32ToUTF8( unsigned long input, char* output, int32_t* length )
 {
     const unsigned long BYTE_MASK = 0xBF;
     const unsigned long BYTE_MARK = 0x80;
@@ -342,7 +343,7 @@ void XMLUtil::ConvertUTF32ToUTF8( unsigned long input, char* output, int* length
 }
 
 
-const char* XMLUtil::GetCharacterRef( const char* p, char* value, int* length )
+const char* XMLUtil::GetCharacterRef( const char* p, char* value, int32_t* length )
 {
     // Presume an entity, and pull it out.
     *length = 0;
@@ -420,19 +421,19 @@ const char* XMLUtil::GetCharacterRef( const char* p, char* value, int* length )
 }
 
 
-void XMLUtil::ToStr( int v, char* buffer, int bufferSize )
+void XMLUtil::ToStr( int32_t v, char* buffer, int32_t bufferSize )
 {
     salamic_xml_snprintf( buffer, bufferSize, "%d", v );
 }
 
 
-void XMLUtil::ToStr( unsigned v, char* buffer, int bufferSize )
+void XMLUtil::ToStr( unsigned v, char* buffer, int32_t bufferSize )
 {
     salamic_xml_snprintf( buffer, bufferSize, "%u", v );
 }
 
 
-void XMLUtil::ToStr( bool v, char* buffer, int bufferSize )
+void XMLUtil::ToStr( bool v, char* buffer, int32_t bufferSize )
 {
     salamic_xml_snprintf( buffer, bufferSize, "%d", v ? 1 : 0 );
 }
@@ -441,19 +442,19 @@ void XMLUtil::ToStr( bool v, char* buffer, int bufferSize )
 	ToStr() of a number is a very tricky topic.
 	https://github.com/leethomason/salamic_xml/issues/106
 */
-void XMLUtil::ToStr( float v, char* buffer, int bufferSize )
+void XMLUtil::ToStr( float v, char* buffer, int32_t bufferSize )
 {
     salamic_xml_snprintf( buffer, bufferSize, "%.8g", v );
 }
 
 
-void XMLUtil::ToStr( double v, char* buffer, int bufferSize )
+void XMLUtil::ToStr( double v, char* buffer, int32_t bufferSize )
 {
     salamic_xml_snprintf( buffer, bufferSize, "%.17g", v );
 }
 
 
-bool XMLUtil::ToInt( const char* str, int* value )
+bool XMLUtil::ToInt( const char* str, int32_t* value )
 {
     if ( TIXML_SSCANF( str, "%d", value ) == 1 ) {
         return true;
@@ -471,7 +472,7 @@ bool XMLUtil::ToUnsigned( const char* str, unsigned *value )
 
 bool XMLUtil::ToBool( const char* str, bool* value )
 {
-    int ival = 0;
+    int32_t ival = 0;
     if ( ToInt( str, &ival )) {
         *value = (ival==0) ? false : true;
         return true;
@@ -522,11 +523,11 @@ char* XMLDocument::Identify( char* p, XMLNode** node )
     static const char* cdataHeader		= { "<![CDATA[" };
     static const char* elementHeader	= { "<" };	// and a header for everything else; check last.
 
-    static const int xmlHeaderLen		= 2;
-    static const int commentHeaderLen	= 4;
-    static const int dtdHeaderLen		= 2;
-    static const int cdataHeaderLen		= 9;
-    static const int elementHeaderLen	= 1;
+    static const int32_t xmlHeaderLen		= 2;
+    static const int32_t commentHeaderLen	= 4;
+    static const int32_t dtdHeaderLen		= 2;
+    static const int32_t cdataHeaderLen		= 9;
+    static const int32_t elementHeaderLen	= 1;
 
 #if defined(_MSC_VER)
 #pragma warning ( push )
@@ -897,7 +898,7 @@ char* XMLText::ParseDeep( char* p, StrPair* )
         return p;
     }
     else {
-        int flags = _document->ProcessEntities() ? StrPair::TEXT_ELEMENT : StrPair::TEXT_ELEMENT_LEAVE_ENTITIES;
+        int32_t flags = _document->ProcessEntities() ? StrPair::TEXT_ELEMENT : StrPair::TEXT_ELEMENT_LEAVE_ENTITIES;
         if ( _document->WhitespaceMode() == COLLAPSE_WHITESPACE ) {
             flags |= StrPair::COLLAPSE_WHITESPACE;
         }
@@ -1122,7 +1123,7 @@ void XMLAttribute::SetName( const char* n )
 }
 
 
-XMLError XMLAttribute::QueryIntValue( int* value ) const
+XMLError XMLAttribute::QueryIntValue( int32_t* value ) const
 {
     if ( XMLUtil::ToInt( Value(), value )) {
         return XML_NO_ERROR;
@@ -1131,7 +1132,7 @@ XMLError XMLAttribute::QueryIntValue( int* value ) const
 }
 
 
-XMLError XMLAttribute::QueryUnsignedValue( unsigned int* value ) const
+XMLError XMLAttribute::QueryUnsignedValue( unsigned int32_t* value ) const
 {
     if ( XMLUtil::ToUnsigned( Value(), value )) {
         return XML_NO_ERROR;
@@ -1173,7 +1174,7 @@ void XMLAttribute::SetAttribute( const char* v )
 }
 
 
-void XMLAttribute::SetAttribute( int v )
+void XMLAttribute::SetAttribute( int32_t v )
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1286,7 +1287,7 @@ void	XMLElement::SetText( const char* inText )
 }
 
 
-void XMLElement::SetText( int v ) 
+void XMLElement::SetText( int32_t v ) 
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -1326,7 +1327,7 @@ void XMLElement::SetText( double v )
 }
 
 
-XMLError XMLElement::QueryIntText( int* ival ) const
+XMLError XMLElement::QueryIntText( int32_t* ival ) const
 {
     if ( FirstChild() && FirstChild()->ToText() ) {
         const char* t = FirstChild()->ToText()->Value();
@@ -1818,7 +1819,7 @@ void XMLDocument::SetError( XMLError error, const char* str1, const char* str2 )
 void XMLDocument::PrintError() const
 {
     if ( _errorID ) {
-        static const int LEN = 20;
+        static const int32_t LEN = 20;
         char buf1[LEN] = { 0 };
         char buf2[LEN] = { 0 };
 
@@ -1835,7 +1836,7 @@ void XMLDocument::PrintError() const
 }
 
 
-XMLPrinter::XMLPrinter( FILE* file, bool compact, int depth ) :
+XMLPrinter::XMLPrinter( FILE* file, bool compact, int32_t depth ) :
     _elementJustOpened( false ),
     _firstElement( true ),
     _fp( file ),
@@ -1844,19 +1845,19 @@ XMLPrinter::XMLPrinter( FILE* file, bool compact, int depth ) :
     _processEntities( true ),
     _compactMode( compact )
 {
-    for( int i=0; i<ENTITY_RANGE; ++i ) {
+    for( int32_t i=0; i<ENTITY_RANGE; ++i ) {
         _entityFlag[i] = false;
         _restrictedEntityFlag[i] = false;
     }
-    for( int i=0; i<NUM_ENTITIES; ++i ) {
+    for( int32_t i=0; i<NUM_ENTITIES; ++i ) {
         TIXMLASSERT( entities[i].value < ENTITY_RANGE );
         if ( entities[i].value < ENTITY_RANGE ) {
-            _entityFlag[ (int)entities[i].value ] = true;
+            _entityFlag[ (int32_t)entities[i].value ] = true;
         }
     }
-    _restrictedEntityFlag[(int)'&'] = true;
-    _restrictedEntityFlag[(int)'<'] = true;
-    _restrictedEntityFlag[(int)'>'] = true;	// not required, but consistency is nice
+    _restrictedEntityFlag[(int32_t)'&'] = true;
+    _restrictedEntityFlag[(int32_t)'<'] = true;
+    _restrictedEntityFlag[(int32_t)'>'] = true;	// not required, but consistency is nice
     _buffer.Push( 0 );
 }
 
@@ -1871,9 +1872,9 @@ void XMLPrinter::Print( const char* format, ... )
     }
     else {
 #if defined(_MSC_VER) && (_MSC_VER >= 1400 )
-        int len = _vscprintf( format, va );
+        int32_t len = _vscprintf( format, va );
 #else
-        int len = vsnprintf( 0, 0, format, va );
+        int32_t len = vsnprintf( 0, 0, format, va );
 #endif
         // Close out and re-start the va-args
         va_end( va );
@@ -1889,9 +1890,9 @@ void XMLPrinter::Print( const char* format, ... )
 }
 
 
-void XMLPrinter::PrintSpace( int depth )
+void XMLPrinter::PrintSpace( int32_t depth )
 {
-    for( int i=0; i<depth; ++i ) {
+    for( int32_t i=0; i<depth; ++i ) {
         Print( "    " );
     }
 }
@@ -1915,7 +1916,7 @@ void XMLPrinter::PrintString( const char* p, bool restricted )
                         Print( "%c", *p );
                         ++p;
                     }
-                    for( int i=0; i<NUM_ENTITIES; ++i ) {
+                    for( int32_t i=0; i<NUM_ENTITIES; ++i ) {
                         if ( entities[i].value == *q ) {
                             Print( "&%s;", entities[i].pattern );
                             break;
@@ -1977,7 +1978,7 @@ void XMLPrinter::PushAttribute( const char* name, const char* value )
 }
 
 
-void XMLPrinter::PushAttribute( const char* name, int v )
+void XMLPrinter::PushAttribute( const char* name, int32_t v )
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( v, buf, BUF_SIZE );
@@ -2059,7 +2060,7 @@ void XMLPrinter::PushText( const char* text, bool cdata )
     }
 }
 
-void XMLPrinter::PushText( int value )
+void XMLPrinter::PushText( int32_t value )
 {
     char buf[BUF_SIZE];
     XMLUtil::ToStr( value, buf, BUF_SIZE );
@@ -2199,7 +2200,7 @@ bool XMLPrinter::Visit( const XMLUnknown& unknown )
 
 }   // namespace salamic_xml
 
-void salamic_xml_str_pair_set(salamic_xml_str_pair_t *str, char* start, char* end, int flags)
+void salamic_xml_str_pair_set(salamic_xml_str_pair_t *str, char* start, char* end, int32_t flags)
   {
     salamic_xml_str_pair_reset();
     str->start = start;              
@@ -2218,14 +2219,14 @@ bool_t salamic_xml_str_pair_is_empty(salamic_xml_str_pair_t *str)
     return (str->start == str->end);
   }
 
-void salamic_xml_str_pair_from_string(salamic_xml_str_pair_t *str, const char* ch, int flags)
+void salamic_xml_str_pair_from_string(salamic_xml_str_pair_t *str, const char* ch, int32_t flags)
   {
     salamic_xml_str_pair_reset();
     str->start = (char*)ch;
     str->flags = flags;
   }
 
-char* salamic_xml_str_pair_parse_text(salamic_xml_str_pair_t *str, char* in, const char* endTag, int flags)
+char* salamic_xml_str_pair_parse_text(salamic_xml_str_pair_t *str, char* in, const char* endTag, int32_t flags)
   {
     assert(FALSE);
     return "";
@@ -2255,7 +2256,7 @@ void salamic_xml_str_pair_collapse_white_space(salamic_xml_str_pair_t *str)
         Has a small initial memory pool, so that low or no usage will not
         cause a call to new/delete
 */
-template <class T, int INIT>
+template <class T, int32_t INIT>
 class DynArray
 {
 public:
@@ -2280,7 +2281,7 @@ public:
         _mem[_size++] = t;
     }
 
-    T* PushArr( int count ) {
+    T* PushArr( int32_t count ) {
         EnsureCapacity( _size+count );
         T* ret = &_mem[_size];
         _size += count;
@@ -2291,7 +2292,7 @@ public:
         return _mem[--_size];
     }
 
-    void PopArr( int count ) {
+    void PopArr( int32_t count ) {
         TIXMLASSERT( _size >= count );
         _size -= count;
     }
@@ -2300,12 +2301,12 @@ public:
         return _size == 0;
     }
 
-    T& operator[](int i)                                {
+    T& operator[](int32_t i)                                {
         TIXMLASSERT( i>= 0 && i < _size );
         return _mem[i];
     }
 
-    const T& operator[](int i) const    {
+    const T& operator[](int32_t i) const    {
         TIXMLASSERT( i>= 0 && i < _size );
         return _mem[i];
     }
@@ -2315,11 +2316,11 @@ public:
         return _mem[ _size - 1];
     }
 
-    int Size() const                                    {
+    int32_t Size() const                                    {
         return _size;
     }
 
-    int Capacity() const                                {
+    int32_t Capacity() const                                {
         return _allocated;
     }
 
@@ -2332,9 +2333,9 @@ public:
     }
 
 private:
-    void EnsureCapacity( int cap ) {
+    void EnsureCapacity( int32_t cap ) {
         if ( cap > _allocated ) {
-            int newAllocated = cap * 2;
+            int32_t newAllocated = cap * 2;
             T* newMem = new T[newAllocated];
             memcpy( newMem, _mem, sizeof(T)*_size );    // warning: not using constructors, only works for PODs
             if ( _mem != _pool ) {
@@ -2347,8 +2348,8 @@ private:
 
     T*  _mem;
     T   _pool[INIT];
-    int _allocated;             // objects allocated
-    int _size;                  // number objects in use
+    int32_t _allocated;             // objects allocated
+    int32_t _size;                  // number objects in use
 };
 
 
@@ -2362,7 +2363,7 @@ public:
     MemPool() {}
     virtual ~MemPool() {}
 
-    virtual int ItemSize() const = 0;
+    virtual int32_t ItemSize() const = 0;
     virtual void* Alloc() = 0;
     virtual void Free( void* ) = 0;
     virtual void SetTracked() = 0;
@@ -2372,22 +2373,22 @@ public:
 /*
         Template child class to create pools of the correct type.
 */
-template< int SIZE >
+template< int32_t SIZE >
 class MemPoolT : public MemPool
 {
 public:
     MemPoolT() : _root(0), _currentAllocs(0), _nAllocs(0), _maxAllocs(0), _nUntracked(0)        {}
     ~MemPoolT() {
         // Delete the blocks.
-        for( int i=0; i<_blockPtrs.Size(); ++i ) {
+        for( int32_t i=0; i<_blockPtrs.Size(); ++i ) {
             delete _blockPtrs[i];
         }
     }
 
-    virtual int ItemSize() const        {
+    virtual int32_t ItemSize() const        {
         return SIZE;
     }
-    int CurrentAllocs() const           {
+    int32_t CurrentAllocs() const           {
         return _currentAllocs;
     }
 
@@ -2397,7 +2398,7 @@ public:
             Block* block = new Block();
             _blockPtrs.Push( block );
 
-            for( int i=0; i<COUNT-1; ++i ) {
+            for( int32_t i=0; i<COUNT-1; ++i ) {
                 block->chunk[i].next = &block->chunk[i+1];
             }
             block->chunk[COUNT-1].next = 0;
@@ -2435,7 +2436,7 @@ public:
         _nUntracked--;
     }
 
-    int Untracked() const {
+    int32_t Untracked() const {
         return _nUntracked;
     }
 
@@ -2461,10 +2462,10 @@ private:
     DynArray< Block*, 10 > _blockPtrs;
     Chunk* _root;
 
-    int _currentAllocs;
-    int _nAllocs;
-    int _maxAllocs;
-    int _nUntracked;
+    int32_t _currentAllocs;
+    int32_t _nAllocs;
+    int32_t _maxAllocs;
+    int32_t _nUntracked;
 };
 
 
@@ -2567,8 +2568,8 @@ public:
                || ch == '-';
     }
 
-    inline static bool StringEqual( const char* p, const char* q, int nChar=INT_MAX )  {
-        int n = 0;
+    inline static bool StringEqual( const char* p, const char* q, int32_t nChar=INT32_MAX )  {
+        int32_t n = 0;
         if ( p == q ) {
             return true;
         }
@@ -2583,25 +2584,25 @@ public:
         return false;
     }
     
-    inline static int IsUTF8Continuation( const char p ) {
+    inline static int32_t IsUTF8Continuation( const char p ) {
         return p & 0x80;
     }
 
     static const char* ReadBOM( const char* p, bool* hasBOM );
     // p is the starting location,
     // the UTF-8 value of the entity will be placed in value, and length filled in.
-    static const char* GetCharacterRef( const char* p, char* value, int* length );
-    static void ConvertUTF32ToUTF8( unsigned long input, char* output, int* length );
+    static const char* GetCharacterRef( const char* p, char* value, int32_t* length );
+    static void ConvertUTF32ToUTF8( unsigned long input, char* output, int32_t* length );
 
     // converts primitive types to strings
-    static void ToStr( int v, char* buffer, int bufferSize );
-    static void ToStr( unsigned v, char* buffer, int bufferSize );
-    static void ToStr( bool v, char* buffer, int bufferSize );
-    static void ToStr( float v, char* buffer, int bufferSize );
-    static void ToStr( double v, char* buffer, int bufferSize );
+    static void ToStr( int32_t v, char* buffer, int32_t bufferSize );
+    static void ToStr( unsigned v, char* buffer, int32_t bufferSize );
+    static void ToStr( bool v, char* buffer, int32_t bufferSize );
+    static void ToStr( float v, char* buffer, int32_t bufferSize );
+    static void ToStr( double v, char* buffer, int32_t bufferSize );
 
     // converts strings to primitive types
-    static bool ToInt( const char* str, int* value );
+    static bool ToInt( const char* str, int32_t* value );
     static bool ToUnsigned( const char* str, unsigned* value );
     static bool ToBool( const char* str, bool* value );
     static bool ToFloat( const char* str, float* value );
@@ -3098,8 +3099,8 @@ public:
         If the value isn't an integer, 0 will be returned. There is no error checking;
         use QueryIntValue() if you need error checking.
     */
-    int          IntValue() const                               {
-        int i=0;
+    int32_t          IntValue() const                               {
+        int32_t i=0;
         QueryIntValue( &i );
         return i;
     }
@@ -3132,9 +3133,9 @@ public:
         in the provided parameter. The function will return XML_NO_ERROR on success,
         and XML_WRONG_ATTRIBUTE_TYPE if the conversion is not successful.
     */
-    XMLError QueryIntValue( int* value ) const;
+    XMLError QueryIntValue( int32_t* value ) const;
     /// See QueryIntValue
-    XMLError QueryUnsignedValue( unsigned int* value ) const;
+    XMLError QueryUnsignedValue( unsigned int32_t* value ) const;
     /// See QueryIntValue
     XMLError QueryBoolValue( bool* value ) const;
     /// See QueryIntValue
@@ -3145,7 +3146,7 @@ public:
     /// Set the attribute to a string value.
     void SetAttribute( const char* value );
     /// Set the attribute to value.
-    void SetAttribute( int value );
+    void SetAttribute( int32_t value );
     /// Set the attribute to value.
     void SetAttribute( unsigned value );
     /// Set the attribute to value.
@@ -3230,8 +3231,8 @@ public:
         returned if there is an error. For a method with error
         checking, see QueryIntAttribute()
     */
-    int          IntAttribute( const char* name ) const         {
-        int i=0;
+    int32_t          IntAttribute( const char* name ) const         {
+        int32_t i=0;
         QueryIntAttribute( name, &i );
         return i;
     }
@@ -3269,11 +3270,11 @@ public:
         value:
 
         @verbatim
-        int value = 10;
+        int32_t value = 10;
         QueryIntAttribute( "foo", &value );             // if "foo" isn't found, value will still be 10
         @endverbatim
     */
-    XMLError QueryIntAttribute( const char* name, int* value ) const                            {
+    XMLError QueryIntAttribute( const char* name, int32_t* value ) const                            {
         const XMLAttribute* a = FindAttribute( name );
         if ( !a ) {
             return XML_NO_ATTRIBUTE;
@@ -3281,7 +3282,7 @@ public:
         return a->QueryIntValue( value );
     }
     /// See QueryIntAttribute()
-    XMLError QueryUnsignedAttribute( const char* name, unsigned int* value ) const      {
+    XMLError QueryUnsignedAttribute( const char* name, unsigned int32_t* value ) const      {
         const XMLAttribute* a = FindAttribute( name );
         if ( !a ) {
             return XML_NO_ATTRIBUTE;
@@ -3327,27 +3328,27 @@ public:
         value:
 
         @verbatim
-        int value = 10;
+        int32_t value = 10;
         QueryAttribute( "foo", &value );                // if "foo" isn't found, value will still be 10
         @endverbatim
     */
-        int QueryAttribute( const char* name, int* value ) const {
+        int32_t QueryAttribute( const char* name, int32_t* value ) const {
                 return QueryIntAttribute( name, value );
         }
 
-        int QueryAttribute( const char* name, unsigned int* value ) const {
+        int32_t QueryAttribute( const char* name, unsigned int32_t* value ) const {
                 return QueryUnsignedAttribute( name, value );
         }
 
-        int QueryAttribute( const char* name, bool* value ) const {
+        int32_t QueryAttribute( const char* name, bool* value ) const {
                 return QueryBoolAttribute( name, value );
         }
 
-        int QueryAttribute( const char* name, double* value ) const {
+        int32_t QueryAttribute( const char* name, double* value ) const {
                 return QueryDoubleAttribute( name, value );
         }
 
-        int QueryAttribute( const char* name, float* value ) const {
+        int32_t QueryAttribute( const char* name, float* value ) const {
                 return QueryFloatAttribute( name, value );
         }
 
@@ -3357,7 +3358,7 @@ public:
         a->SetAttribute( value );
     }
     /// Sets the named attribute to value.
-    void SetAttribute( const char* name, int value )                    {
+    void SetAttribute( const char* name, int32_t value )                    {
         XMLAttribute* a = FindOrCreateAttribute( name );
         a->SetAttribute( value );
     }
@@ -3460,7 +3461,7 @@ public:
     */
         void SetText( const char* inText );
     /// Convenience method for setting text inside and element. See SetText() for important limitations.
-    void SetText( int value );
+    void SetText( int32_t value );
     /// Convenience method for setting text inside and element. See SetText() for important limitations.
     void SetText( unsigned value );  
     /// Convenience method for setting text inside and element. See SetText() for important limitations.
@@ -3484,7 +3485,7 @@ public:
         "value" of x and y.
 
         @verbatim
-                int x = 0;
+                int32_t x = 0;
                 float y = 0;    // types of x and y are contrived for example
                 const XMLElement* xElement = pointElement->FirstChildElement( "x" );
                 const XMLElement* yElement = pointElement->FirstChildElement( "y" );
@@ -3496,7 +3497,7 @@ public:
                          to the requested type, and XML_NO_TEXT_NODE if there is no child text to query.
 
     */
-    XMLError QueryIntText( int* ival ) const;
+    XMLError QueryIntText( int32_t* ival ) const;
     /// See QueryIntText()
     XMLError QueryUnsignedText( unsigned* uval ) const;
     /// See QueryIntText()
@@ -3512,7 +3513,7 @@ public:
         CLOSED,         // <foo/>
         CLOSING         // </foo>
     };
-    int ClosingType() const {
+    int32_t ClosingType() const {
         return _closingType;
     }
     char* ParseDeep( char* p, StrPair* endTag );
@@ -3531,7 +3532,7 @@ private:
     char* ParseAttributes( char* p );
 
     enum { BUF_SIZE = 200 };
-    int _closingType;
+    int32_t _closingType;
     // The attribute list is ordered; there is no 'lastAttribute'
     // because the list needs to be scanned for dupes before adding
     // a new attribute.
@@ -4008,7 +4009,7 @@ public:
         If 'compact' is set to true, then output is created
         with only required whitespace and newlines.
     */
-    XMLPrinter( FILE* file=0, bool compact = false, int depth = 0 );
+    XMLPrinter( FILE* file=0, bool compact = false, int32_t depth = 0 );
     virtual ~XMLPrinter()       {}
 
     /** If streaming, write the BOM and declaration. */
@@ -4019,7 +4020,7 @@ public:
     void OpenElement( const char* name, bool compactMode=false );
     /// If streaming, add an attribute to an open element.
     void PushAttribute( const char* name, const char* value );
-    void PushAttribute( const char* name, int value );
+    void PushAttribute( const char* name, int32_t value );
     void PushAttribute( const char* name, unsigned value );
     void PushAttribute( const char* name, bool value );
     void PushAttribute( const char* name, double value );
@@ -4029,7 +4030,7 @@ public:
     /// Add a text node.
     void PushText( const char* text, bool cdata=false );
     /// Add a text node from an integer.
-    void PushText( int value );
+    void PushText( int32_t value );
     /// Add a text node from an unsigned.
     void PushText( unsigned value );
     /// Add a text node from a bool.
@@ -4070,7 +4071,7 @@ public:
         of the XML file in memory. (Note the size returned
         includes the terminating null.)
     */
-    int CStrSize() const {
+    int32_t CStrSize() const {
         return _buffer.Size();
     }
     /**
@@ -4088,7 +4089,7 @@ protected:
         /** Prints out the space before an element. You may override to change
             the space and tabs used. A PrintSpace() override should call Print().
         */
-    virtual void PrintSpace( int depth );
+    virtual void PrintSpace( int32_t depth );
     void Print( const char* format, ... );
 
         void SealElement();
@@ -4100,8 +4101,8 @@ private:
 
     bool _firstElement;
     FILE* _fp;
-    int _depth;
-    int _textDepth;
+    int32_t _depth;
+    int32_t _textDepth;
     bool _processEntities;
         bool _compactMode;
 

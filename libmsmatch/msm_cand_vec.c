@@ -1,11 +1,12 @@
 /* See msm_cand_vec.h */
-/* Last edited on 2018-03-04 22:57:55 by stolfilocal */
+/* Last edited on 2022-10-20 07:50:47 by stolfi */
 
 #define msm_cand_vec_C_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)"
 
 #define _GNU_SOURCE
 #include <assert.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
@@ -54,9 +55,9 @@ typedef void msm_subpairing_use_proc_t
 
 void msm_cand_vec_scan_alignment
   ( msm_seq_desc_t *seq0,
-    int i0,
+    int32_t i0,
     msm_seq_desc_t *seq1,
-    int i1,
+    int32_t i1,
     msm_rung_step_score_proc_t *step_score,
     int64_t minRungs,   /* Min number of rungs in a valid subpairing. */
     double minScore,    /* Ignore candidates with score lower than this. */
@@ -78,14 +79,14 @@ msm_cand_vec_t msm_cand_vec_get_best_perfect
     msm_rung_step_score_proc_t *step_score,
     int64_t minRungs, 
     double minScore,
-    int maxCands
+    int32_t maxCands
   )
   {
-    int n0 = seq0->size; 
-    int n1 = seq1->size; 
+    int32_t n0 = seq0->size; 
+    int32_t n1 = seq1->size; 
 
     msm_cand_vec_t cdv = msm_cand_vec_new(maxCands);
-    int ncd = 0;
+    int32_t ncd = 0;
     /* The current set of candidates is kept in the array
       {cdv[0..ncd-1]}. During the scan, the array is sorted
       by *decreasing* score (i.e. the worst candidate is 
@@ -93,7 +94,7 @@ msm_cand_vec_t msm_cand_vec_get_best_perfect
       
     double lowScore = minScore; /* Current minimum score for storage. */
 
-    auto void scan_alignment(int i0, int i1, int64_t ng);
+    auto void scan_alignment(int32_t i0, int32_t i1, int64_t ng);
       /* Scans the perfect pairing {p} that starts with rung {(i0,i1)}
         and has {ng} rungs, and adds all candidates found in it to the
         heap.
@@ -112,7 +113,7 @@ msm_cand_vec_t msm_cand_vec_get_best_perfect
     
     return cdv; 
 
-    void scan_alignment(int i0, int i1, int64_t ng)
+    void scan_alignment(int32_t i0, int32_t i1, int64_t ng)
       {
         auto void store_cand(int64_t kmin, int64_t kmax, double score);
           /* Stores into the sorted list {cdv} the pairing
@@ -139,10 +140,10 @@ msm_cand_vec_t msm_cand_vec_get_best_perfect
                   ); 
               }
             affirm(score >= lowScore, "bad score");
-            msm_pairing_t *pr = msm_pairing_perfect(gini, (int)ns);
+            msm_pairing_t *pr = msm_pairing_perfect(gini, (int32_t)ns);
             msm_cand_t cd = msm_cand_from_pairing(seq0, seq1, pr, score);
             double frac = +INF;
-            msm_cand_vec_insert(&cdv, &ncd, (int)minRungs, maxCands, &cd, frac);
+            msm_cand_vec_insert(&cdv, &ncd, (int32_t)minRungs, maxCands, &cd, frac);
             /* Update the current min useful score: */
             lowScore = (ncd < maxCands ? minScore : cdv.e[ncd-1].score);
             if (DEBLEV(1)) { fprintf(stderr, "  %d candidates, min score = %24.16e\n", ncd, lowScore); }
@@ -152,17 +153,17 @@ msm_cand_vec_t msm_cand_vec_get_best_perfect
 
 void msm_cand_vec_scan_alignment
   ( msm_seq_desc_t *seq0,
-    int i0,
+    int32_t i0,
     msm_seq_desc_t *seq1,
-    int i1,
+    int32_t i1,
     msm_rung_step_score_proc_t *step_score,
     int64_t minRungs,   /* Min number of rungs in a valid subpairing. */
     double minScore,    /* Ignore candidates with score lower than this. */
     msm_subpairing_use_proc_t *use  /* What to do with candidates. */
   )
   {
-    int n0 = seq0->size; 
-    int n1 = seq1->size;
+    int32_t n0 = seq0->size; 
+    int32_t n1 = seq1->size;
 
     affirm((i0 >= 0) && (i0 < n0), "bad {i0}");
     affirm((i1 >= 0) && (i1 < n1), "bad {i1}");
@@ -244,26 +245,26 @@ void msm_cand_vec_scan_alignment
   }
 
 void msm_cand_vec_throw
-  ( int ntr,
+  ( int32_t ntr,
     msm_seq_desc_t *seq0, 
     msm_seq_desc_t *seq1,
-    int minlen,
-    int maxlen,
+    int32_t minlen,
+    int32_t maxlen,
     double atomProb,
     double diagProb,
     double skipProb,
     msm_cand_vec_t *cdv,
-    int *ncdP
+    int32_t *ncdP
   )
-  { int ncd = (*ncdP);
-    int i; 
+  { int32_t ncd = (*ncdP);
+    int32_t i; 
     for (i = 0; i < ntr; i++) 
       { /* Choose between atomic or not: */
         bool_t atomP = (drandom() < atomProb);
         /* Choose between near-diagonal and random: */
         bool_t diagP = (drandom() < diagProb);
         /* Choose length of candidate: */
-        int len = int32_abrandom(minlen, maxlen);
+        int32_t len = int32_abrandom(minlen, maxlen);
         /* Generate random candidate: */
         msm_cand_vec_expand(cdv, ncd);
         cdv->e[ncd] = msm_cand_throw(seq0, seq1, len, atomP, diagP, 0.10);
@@ -274,7 +275,7 @@ void msm_cand_vec_throw
 
 void msm_cand_vec_free(msm_cand_vec_t *cdv)
   {
-    int i;
+    int32_t i;
     for (i = 0; i < cdv->ne; i++) { msm_cand_free(&(cdv->e[i])); }
     free(cdv->e);
   }
@@ -284,29 +285,29 @@ void msm_cand_vec_free(msm_cand_vec_t *cdv)
 #define msm_cand_vec_format "2013-10-16"
 
 void msm_cand_vec_write(FILE *wr, msm_cand_vec_t *cdv)
-  { int ncd = cdv->ne;
+  { int32_t ncd = cdv->ne;
     /* Find maximum abs of {id,strlen(name),index}: */
-    int idmax = 1; 
-    int nlenmax = 1;
-    int ixmax = 1;
-    int i;
+    int32_t idmax = 1; 
+    int32_t nlenmax = 1;
+    int32_t ixmax = 1;
+    int32_t i;
     for (i = 0; i < ncd; i++)
       { msm_cand_t *cd = &(cdv->e[i]);
-        int j;
+        int32_t j;
         for (j = 0; j < 2; j++)
           { msm_seq_desc_t *sj = &(cd->seq[j]);
-            int idj = (sj->id >= 0 ? sj->id : 10*(-sj->id)); 
+            int32_t idj = (sj->id >= 0 ? sj->id : 10*(-sj->id)); 
             if (idj > idmax) { idmax = idj; }
-            int lenj = (sj->name == NULL ? 0 : (int)strlen(sj->name));
+            int32_t lenj = (sj->name == NULL ? 0 : (int32_t)strlen(sj->name));
             if (lenj > nlenmax) { nlenmax = lenj; }
-            int ixj = (sj->size <= 0 ? 0 : sj->size - 1);
+            int32_t ixj = (sj->size <= 0 ? 0 : sj->size - 1);
             if (ixj > ixmax) { ixmax = ixj; }
           }
       }
     /* Compute the max number of digits needed for {i0,name,index}: */
-    int idSize = digits(idmax);
-    int nameSize = nlenmax;
-    int ixSize = digits(ixmax);
+    int32_t idSize = digits(idmax);
+    int32_t nameSize = nlenmax;
+    int32_t ixSize = digits(ixmax);
     filefmt_write_header(wr, msm_cand_vec_type_name, msm_cand_vec_format);
     fprintf(wr, "ncands = %d\n", ncd);
     for (i = 0; i < ncd; i++)
@@ -329,10 +330,10 @@ msm_cand_vec_t msm_cand_vec_read(FILE *rd)
     /* Skip comment lines, if any: */
     (void)filefmt_read_comment(rd, '|');
     /* Read the header fields: */
-    bool_t ncd = nget_int(rd, "ncands"); fget_eol(rd);
+    bool_t ncd = nget_int32(rd, "ncands"); fget_eol(rd);
     /* Read the candidates: */
     msm_cand_vec_t cdv = msm_cand_vec_new(ncd);
-    int k; 
+    int32_t k; 
     for (k = 0; k < ncd; k++)
       { cdv.e[k] = msm_cand_read(rd, NULL, NULL); 
         fget_eol(rd);
@@ -352,7 +353,7 @@ msm_cand_vec_t msm_cand_vec_read_named(char *name, char *tag, char *ext)
 msm_cand_vec_t msm_cand_vec_map(msm_cand_vec_t *cdv, msm_seq_desc_t *s0_new, msm_seq_desc_t *s1_new)
   { fprintf(stderr, "  mapping %d candidates ...\n", cdv->ne);
     msm_cand_vec_t cdvnew = msm_cand_vec_new(cdv->ne);
-    int ic;
+    int32_t ic;
     for (ic = 0; ic < cdv->ne; ic++)
       { cdvnew.e[ic] = msm_cand_map(&(cdv->e[ic]), s0_new, s1_new); }
     fprintf(stderr, "  mapped %d candidates.\n", cdvnew.ne);
@@ -361,15 +362,15 @@ msm_cand_vec_t msm_cand_vec_map(msm_cand_vec_t *cdv, msm_seq_desc_t *s0_new, msm
  
 msm_cand_vec_t msm_cand_vec_interpolate(msm_cand_vec_t *cdv)
   { msm_cand_vec_t cdvnew = msm_cand_vec_new(cdv->ne);
-    int ic;
+    int32_t ic;
     for (ic = 0; ic < cdv->ne; ic++)
       { cdvnew.e[ic] = msm_cand_interpolate(&(cdv->e[ic])); }
     return cdvnew;
   }
  
-msm_cand_vec_t msm_cand_vec_make_increasing(msm_cand_vec_t *cdv, int minIncrEach, int minIncrSum)
+msm_cand_vec_t msm_cand_vec_make_increasing(msm_cand_vec_t *cdv, int32_t minIncrEach, int32_t minIncrSum)
   { msm_cand_vec_t cdvnew = msm_cand_vec_new(cdv->ne);
-    int ic;
+    int32_t ic;
     for (ic = 0; ic < cdv->ne; ic++)
       { cdvnew.e[ic] = msm_cand_make_increasing(&(cdv->e[ic]), minIncrEach, minIncrSum); }
     return cdvnew;
@@ -379,23 +380,23 @@ msm_cand_vec_t msm_cand_vec_refine
   ( msm_cand_vec_t *cdvold,
     msm_seq_desc_t *seq0, 
     msm_seq_desc_t *seq1,
-    int delta,
-    int kappa, 
-    int expand,
-    int shrink,
-    int maxUnp, 
+    int32_t delta,
+    int32_t kappa, 
+    int32_t expand,
+    int32_t shrink,
+    int32_t maxUnp, 
     msm_rung_step_score_proc_t *step_score,
     bool_t verbose,
     msm_dyn_tableau_t *tb, 
-    int minCover,
-    int maxCands,
+    int32_t minCover,
+    int32_t maxCands,
     double frac
   )
   { msm_cand_vec_t cdvnew = msm_cand_vec_new(cdvold->ne);
-    int ic;
-    int ncnew = 0; /* Number of candidates that were kept. */
-    int n_entries = 0;
-    int n_steps = 0;
+    int32_t ic;
+    int32_t ncnew = 0; /* Number of candidates that were kept. */
+    int32_t n_entries = 0;
+    int32_t n_steps = 0;
     fprintf(stderr,"refining candidate vector...\n");
     for (ic = 0; ic < cdvold->ne; ic++)
       { msm_cand_t *cdoi = &(cdvold->e[ic]);
@@ -417,23 +418,23 @@ msm_cand_vec_t msm_cand_vec_refine
 
 void msm_cand_vec_insert
   ( msm_cand_vec_t *cdv,
-    int *ncandP,
-    int minCover,
-    int maxCands,
+    int32_t *ncandP,
+    int32_t minCover,
+    int32_t maxCands,
     msm_cand_t *cd,
     double frac
   )
   {
-    auto int bubble_up(int j);
+    auto int32_t bubble_up(int32_t j);
       /* Assumes that the list is OK except that {cdv[j]} may be worse
         than {cdv[j-1]}. Swaps the two. */
     
-    auto void delete(int j);
+    auto void delete(int32_t j);
       /* Deletes the entry {cdv[j]}, displacing all subsequent entries. 
         Decrements {ncand}. */
     
     /* Check minimum coverage requirement: */
-    int j;
+    int32_t j;
     for (j = 0; j < 2; j++)
       { if (msm_pairing_span(cd->pr, j) < minCover) 
         { /* Candidate does not cover enough of sequence {j}: */
@@ -442,7 +443,7 @@ void msm_cand_vec_insert
         }
       }
     
-    int k; /* Final position of inserted candidate, or {(*ncandP)} if not inserted. */
+    int32_t k; /* Final position of inserted candidate, or {(*ncandP)} if not inserted. */
 
     /* Find the smallest {k} such that {cdv[k]} is definitely worse than {cd}: */
     k = (*ncandP);
@@ -452,8 +453,8 @@ void msm_cand_vec_insert
       { 
         /* Discard {cd} if there is any better or equal cand that contains or is similar to {cd}: */
         for (j = 0; j < k; j++)
-          { int ngnew = msm_pairing_num_rungs(cd->pr); /* Rungs in {cd}. */
-            int ngboth = msm_cand_count_common_rungs(&(cdv->e[j]), cd); /* Shared rungs. */
+          { int32_t ngnew = msm_pairing_num_rungs(cd->pr); /* Rungs in {cd}. */
+            int32_t ngboth = msm_cand_count_common_rungs(&(cdv->e[j]), cd); /* Shared rungs. */
             if (ngboth >= frac*ngnew) 
               { /* Discard {cd}: */
                 msm_cand_debug("C", cd);
@@ -463,8 +464,8 @@ void msm_cand_vec_insert
 
         /* Remove any candidates that are worse than {cd} but contained in or similar to {cd}: */
         for (j = (*ncandP)-1; j >= k; j--)
-          { int ngold = msm_pairing_num_rungs(cdv->e[j].pr); /* Rungs in {cdv->e[j]}. */
-            int ngboth = msm_cand_count_common_rungs(&(cdv->e[j]), cd); /* Shared rungs. */
+          { int32_t ngold = msm_pairing_num_rungs(cdv->e[j].pr); /* Rungs in {cdv->e[j]}. */
+            int32_t ngboth = msm_cand_count_common_rungs(&(cdv->e[j]), cd); /* Shared rungs. */
             if (ngboth >= frac*ngold) 
               { /* Discard candidate {cvd.e[j]}: */
                 //msm_cand_debug("S", &(cdv->e[j]));
@@ -497,10 +498,10 @@ void msm_cand_vec_insert
     assert((k >= 0) && (k < (*ncandP)));
     msm_cand_debug("+", &(cdv->e[k]));
 
-    int bubble_up(int j)
+    int32_t bubble_up(int32_t j)
       { while (j > 0)
           { /* Get parent: */
-            int k = j-1; 
+            int32_t k = j-1; 
             /* If {cdv[k]} is not worse than {cdv[j]}, stop: */
             if (cdv->e[k].score >= cdv->e[j].score) { break; }
             /* Swap parent with {cdv[j]}: */
@@ -510,8 +511,8 @@ void msm_cand_vec_insert
         return j;
       }
 
-    void delete(int j)
-      { int i;
+    void delete(int32_t j)
+      { int32_t i;
         for (i = j+1; i < (*ncandP); i++) { cdv->e[i-1] = cdv->e[i]; }
         (*ncandP)--;
       }

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of pairing tools and file formats"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2017-06-22 18:13:10 by stolfilocal */
+/* Last edited on 2022-10-20 11:13:03 by stolfi */
 
 #define msm_test_110_cands_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -50,6 +50,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 #include <string.h>
@@ -75,16 +76,16 @@
   /* Minimum number of datums in a sequence at coarsest level. */
 
 typedef struct msm_options_t 
-  { int lengthX;    /* length of X sequence. */
-    int lengthY;    /* length of Y sequence. */
-    int nCands;     /* Number of candidates to generate. */
+  { int32_t lengthX;    /* length of X sequence. */
+    int32_t lengthY;    /* length of Y sequence. */
+    int32_t nCands;     /* Number of candidates to generate. */
     /* Output parameters: */
     char *outName;  /* Output file name prefix (minus extensions). */
   } msm_options_t;
   
-int main(int argc, char**argv);
+int32_t main(int32_t argc, char**argv);
 
-msm_options_t *msm_get_options(int argc, char**argv);
+msm_options_t *msm_get_options(int32_t argc, char**argv);
   /* Parses the command line options, packs 
     them into a {msm_options_t} record. */
 
@@ -96,13 +97,13 @@ void msm_compare_cand_vecs(msm_cand_vec_t *cdva, msm_cand_vec_t *cdvb);
   /* Checks whether the candidate lists {cdva} and {cdvb} contains the same
     candidates, with the same scores, in the same order.  */
 
-int main(int argc, char**argv)
+int32_t main(int32_t argc, char**argv)
   { 
     msm_options_t *o = msm_get_options(argc, argv);
     
     /* Make descriptors for the two sequences: */
-    int wrad0 = 5; /* Filter kernel radius for level 0-->1 (arbitrary). */
-    int wrad1 = 3; /* Filter kernel radius for higher levels (arbitrary). */
+    int32_t wrad0 = 5; /* Filter kernel radius for level 0-->1 (arbitrary). */
+    int32_t wrad1 = 3; /* Filter kernel radius for higher levels (arbitrary). */
     int8_t estep = 3; /* Arbitrary. */
     int32_t skip = wrad0 + wrad1*((1 << estep) - 1); /* Skip for {level}. */
     msm_seq_desc_t x = msm_seq_desc_make( 0, "x", FALSE, o->lengthX - 2*skip, estep, skip);
@@ -126,8 +127,8 @@ int main(int argc, char**argv)
     
 void msm_compare_cand_vecs(msm_cand_vec_t *cdva, msm_cand_vec_t *cdvb)
   { demand(cdva->ne == cdvb->ne, "candidate counts differ"); 
-    int ncd = cdva->ne;
-    int k;
+    int32_t ncd = cdva->ne;
+    int32_t k;
     for (k = 0; k < ncd; k++)
       { msm_cand_t *cda = &(cdva->e[k]);
         msm_cand_t *cdb = &(cdvb->e[k]);
@@ -137,11 +138,11 @@ void msm_compare_cand_vecs(msm_cand_vec_t *cdva, msm_cand_vec_t *cdvb)
 
 msm_cand_vec_t msm_generate_cands(msm_seq_desc_t *xp, msm_seq_desc_t *yp, msm_options_t *o)
   { /* Define the max candidate length {maxlen}: */
-    int maxlen = (xp->size < yp->size ? xp->size : yp->size);
-    int minlen = (maxlen + 9)/10;
+    int32_t maxlen = (xp->size < yp->size ? xp->size : yp->size);
+    int32_t minlen = (maxlen + 9)/10;
     /* Generate the candidates: */
     msm_cand_vec_t cdv = msm_cand_vec_new(o->nCands);
-    int ncd = 0; /* Start storing candidates here. */
+    int32_t ncd = 0; /* Start storing candidates here. */
     msm_cand_vec_throw
       ( o->nCands,
         xp, 
@@ -157,7 +158,7 @@ msm_cand_vec_t msm_generate_cands(msm_seq_desc_t *xp, msm_seq_desc_t *yp, msm_op
     return cdv;
   }
 
-msm_options_t *msm_get_options(int argc, char**argv)
+msm_options_t *msm_get_options(int32_t argc, char**argv)
   { 
     msm_options_t *o = (msm_options_t *)notnull(malloc(sizeof(msm_options_t)), "no mem");
     
@@ -168,11 +169,11 @@ msm_options_t *msm_get_options(int argc, char**argv)
     
     argparser_skip_parsed(pp);
     
-    o->lengthX = (int)argparser_get_next_int(pp, 0, INT_MAX);
+    o->lengthX = (int32_t)argparser_get_next_int(pp, 0, INT32_MAX);
     
-    o->lengthY = (int)argparser_get_next_int(pp, 0, INT_MAX);
+    o->lengthY = (int32_t)argparser_get_next_int(pp, 0, INT32_MAX);
     
-    o->nCands = (int)argparser_get_next_int(pp, 0, INT_MAX);
+    o->nCands = (int32_t)argparser_get_next_int(pp, 0, INT32_MAX);
     o->outName = argparser_get_next(pp);
 
     argparser_finish(pp);

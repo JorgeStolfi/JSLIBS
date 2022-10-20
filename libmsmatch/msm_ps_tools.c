@@ -1,10 +1,11 @@
 /* See msm_ps_tools.h */
-/* Last edited on 2022-10-19 19:31:10 by stolfi */
+/* Last edited on 2022-10-20 06:37:33 by stolfi */
 
 #define msm_ps_tools_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
 
 #include <msm_basic.h>
+#include <stdint.h>
 #include <msm_ps_tools.h>
 
 #include <epswr.h>
@@ -23,8 +24,8 @@ struct msm_ps_tools_t
   { epswr_figure_t *eps;  /* The EPS figure-wrting object. */
     double size[2];       /* Usable figure dimensions (mm). */
     double fontSize;      /* Label font size (pt). */
-    int maxXLabChars;     /* Assumed width of X-scale labels (chars). */
-    int maxYLabChars;     /* Assumed width of Y-scale labels (chars). */
+    int32_t maxXLabChars;     /* Assumed width of X-scale labels (chars). */
+    int32_t maxYLabChars;     /* Assumed width of Y-scale labels (chars). */
     /* Client-to-epswr_figure_t coordinate conversion: */
     double epswrMin[2], epswrMax[2]; /* Min and max {epswr} coords in each axis (mm). */
     double userMin[2], userMax[2]; /* Min and max client coords in each axis. */
@@ -50,8 +51,8 @@ msm_ps_tools_t *msm_ps_tools_new
     double hSize, 
     double vSize,
     double fontSize,
-    int maxXLabChars,
-    int maxYLabChars,
+    int32_t maxXLabChars,
+    int32_t maxYLabChars,
     double mrg
   )
   { /* Join {name} and {tag} into a file name prefix: */
@@ -72,7 +73,7 @@ msm_ps_tools_t *msm_ps_tools_new
     mps->eps = eps;
     mps->size[0] = hSize; mps->size[1] = vSize;
     /* Set default client and device reference window: */
-    int ax;
+    int32_t ax;
     for (ax = 0; ax < 2; ax++)
       { /* Device ref window is the whole plot area (canvas minus margins): */
         mps->epswrMin[ax] = 0; mps->epswrMax[ax] = mps->size[ax];
@@ -97,8 +98,8 @@ msm_ps_tools_t *msm_ps_tools_new_graph
     bool_t scaleB, bool_t titleB,
     bool_t scaleT, bool_t titleT,
     double fontSize,
-    int maxXLabChars,
-    int maxYLabChars,    
+    int32_t maxXLabChars,
+    int32_t maxYLabChars,    
     double mrg
   )
   {
@@ -352,12 +353,12 @@ void msm_ps_tools_draw_scale
     if (ztStep <= 0) { /* Not enough space for tics: */ return; }
     
     /* Compute number {ntsteps} of minor tic steps: */
-    int ntsteps = (int)msm_round((ztMax/ztStep) - (ztMin/ztStep));
+    int32_t ntsteps = (int32_t)msm_round((ztMax/ztStep) - (ztMin/ztStep));
     assert(ntsteps >= 0); 
     
     /* Compute minor-to-major tic ratio {labPer} (0 if no major tics) and phase {labSkp}: */
-    int labPer;   /* Minor tic steps in one major tic step. */
-    int labSkp; /* Minor tics before the first major tic. */
+    int32_t labPer;   /* Minor tic steps in one major tic step. */
+    int32_t labSkp; /* Minor tics before the first major tic. */
     if (fmt == NULL)
       { /* Clients wants no major tics: */
         labPer = labSkp = 0;
@@ -368,7 +369,7 @@ void msm_ps_tools_draw_scale
           ( mps, axis, ztMin, ztMax, ztStep, labMinDist, labMinStep, &labPer, &labSkp);
       }
       
-    int i;
+    int32_t i;
     for (i = 0; i <= ntsteps; i++)
       { /* Get fractions {r:s} of {i} betwen 0 and {ntsteps}: */
         double s = (ntsteps == 0 ? 0.5 : ((double)i)/((double)ntsteps)), r = 1-s;
@@ -459,23 +460,23 @@ void msm_choose_label_coords
     double ztStep,
     double minDist,
     double minStep,
-    int *labPerP,
-    int *labSkpP
+    int32_t *labPerP,
+    int32_t *labSkpP
   )
   {
     double eps = 1.0e-12; /* Relative fudge factor to compensate for roundoff errors. */
 
      /* First, we choose the label period {labPer}: */
-    int labPer; 
+    int32_t labPer; 
     
-    auto int min_mult(int k, double unit, double min);
+    auto int32_t min_mult(int32_t k, double unit, double min);
       /* Increments the positive integer {k} so that {k*unit >= minv},
         allowing for some roundoff noise in {unit}. */
          
-    int min_mult(int k, double unit, double minv)
+    int32_t min_mult(int32_t k, double unit, double minv)
       { unit = (1+eps)*unit;
         if (k*unit < minv)
-          { k = (int)ceil(minv/unit);
+          { k = (int32_t)ceil(minv/unit);
             assert(k*unit >= minv);
           }
         return k;
@@ -509,7 +510,7 @@ void msm_choose_label_coords
                 /* fprintf(stderr, " zbNice = %24.16e\n", zbNice); */
                 if (zbNice == INF) { /* Overflow, give up: */ labPer = 0; break; }
                 if (zbNice <= zbStep) { /* Phew! */ break; }
-                int labPerNew = min_mult(labPer, ztStep, zbNice);
+                int32_t labPerNew = min_mult(labPer, ztStep, zbNice);
                 if(labPerNew <= labPer) break;
                 labPer = labPerNew;
                 zbStep = labPer*ztStep;
@@ -518,7 +519,7 @@ void msm_choose_label_coords
       }
       
     /* Compute the number {labSkp} of minor tics before first major tic: */
-    int labSkp;
+    int32_t labSkp;
     if (labPer == 0)
       { /* Just in case: */ labSkp = 0; }
     else
@@ -530,7 +531,7 @@ void msm_choose_label_coords
         if (qbMin <= qbMax)
           { /* There is a multiple of {zbStep} in the range: */
             double zbMin = qbMin*zbStep;
-            labSkp = (int)msm_round((zbMin - ztMin)/ztStep);
+            labSkp = (int32_t)msm_round((zbMin - ztMin)/ztStep);
             /* fprintf(stderr, "  zbMin  =  %24.16e labSkp = %d\n", zbMin, labSkp); */
             assert((labSkp >= 0) && (labSkp < labPer));
           }
@@ -549,13 +550,13 @@ void msm_ps_tools_draw_y_polyline
     double xMin, 
     double xMax,
     double y[],
-    int n
+    int32_t n
   )
   { if (n < 2) { return; }
     double n1 = n - 1;
     double h0, v0; /* Previously plotted point. */
     msm_ps_tools_map_coords(mps, xMin, y[0], &h0, &v0);
-    int i;
+    int32_t i;
     for (i = 1; i < n; i++)
       { /* Plot step from point {i-1} to point {i}: */
         double s = i/n1, r = 1-s;
@@ -572,14 +573,14 @@ void msm_ps_tools_draw_y_dots
     double xMin, 
     double xMax,
     double y[],
-    int n,
+    int32_t n,
     double rad,
     bool_t fill,
     bool_t draw
   )
   { if (n < 1) { return; }
     double n1 = n - 1;
-    int i;
+    int32_t i;
     for (i = 0; i < n; i++)
       { /* Plot point {i}: */
         double s = i/n1, r = 1-s;
@@ -595,8 +596,8 @@ void msm_ps_tools_close(msm_ps_tools_t *mps)
     free(mps);
   }
 
-void msm_ps_tools_compute_data_range(int n, int stride, double z[], double *zMinP, double *zMaxP)
-  { int i;
+void msm_ps_tools_compute_data_range(int32_t n, int32_t stride, double z[], double *zMinP, double *zMaxP)
+  { int32_t i;
     double userMin = +INF; 
     double userMax = -INF;
     for (i = 0; i < n; i++)
@@ -617,8 +618,8 @@ void msm_ps_tools_compute_data_range(int n, int stride, double z[], double *zMin
 
 void msm_ps_tools_draw_graphs
   ( msm_ps_tools_t *mps,
-    int nc,
-    int nd,
+    int32_t nc,
+    int32_t nd,
     double x[],
     double start,
     double step,
@@ -651,7 +652,7 @@ void msm_ps_tools_draw_graphs
     
     if (yMin >= yMax)
       { /* Given range {[yMin _ yMax]} is empty or trivial, compute it from the data: */
-        int ncd = nc*nd;
+        int32_t ncd = nc*nd;
         msm_ps_tools_compute_data_range(ncd, 1, y, &yMin, &yMax); 
         /* Include 0 in the range, if near enough: */
         double yDifRaw = yMax - yMin;
@@ -712,28 +713,28 @@ void msm_ps_tools_draw_graphs
     /* Segment {i} extends from point {i-1} to point {i}. */
     /* If circular, plots segments {0..nd}, clipped to {[xPlotMin _ xPlotMax]}. */
     /* If not circular, plots segments {1..nd-1}, no need to clip. */
-    int iIni = (1); /* Index of first segment to plot. */
-    int iFin = (nd-1); /* Index of last segment to plot. */
+    int32_t iIni = (1); /* Index of first segment to plot. */
+    int32_t iFin = (nd-1); /* Index of last segment to plot. */
 
-    int c;
+    int32_t c;
     for (c = 0; c < nc; c++)
       { /* Plot channel {c}. */
         /* Set the pen color: */
         epswr_set_pen(eps, R[c], G[c], B[c], 0.25, 0.0, 0.0);
         /* Plot channel {c} of the sequence. */
         
-        auto void get_data_point(int ix, double *xi, double *yi);
+        auto void get_data_point(int32_t ix, double *xi, double *yi);
           /* Obtains the coordinates {*xi,*yi} of data point number {ix},
             taking circularity into account. */
           
-        void get_data_point(int ix, double *xi, double *yi)
+        void get_data_point(int32_t ix, double *xi, double *yi)
           { double dx = 0.0;
             assert((ix >= 0) && (ix < nd));
             (*xi) = (x == NULL ? (double)(start + ix*step) : x[ix]) + dx;
             (*yi) = y[c*nd + ix];
           }
         
-        auto void get_plot_point(int ix, double *xp, double *yp);
+        auto void get_plot_point(int32_t ix, double *xp, double *yp);
           /* Obtains the coordinates {*xp,*yp} of plot point number
             {ix}, taking circularity into account. For {ix == -1}
             returns {xp==xPlotMin}, for {ix == nd} returns
@@ -741,7 +742,7 @@ void msm_ps_tools_draw_graphs
             interpolation. In the other cases, returns the data point
             number {ix}. */
           
-        void get_plot_point(int ip, double *xp, double *yp)
+        void get_plot_point(int32_t ip, double *xp, double *yp)
           { if ((ip >= 0) && (ip < nd))
               { get_data_point(ip, xp, yp); }
           }
@@ -752,7 +753,7 @@ void msm_ps_tools_draw_graphs
         double h0, v0; /* Previously plotted point (plot coords). */
         msm_ps_tools_map_coords(mps, x0, y0, &h0, &v0);
         /* Now plot all steps. */
-        int i = iIni;
+        int32_t i = iIni;
         while (i <= iFin)
           { /* Plot step from sample {i-1} to sample {i}: */
             double x1, y1;
@@ -782,7 +783,7 @@ void msm_ps_tools_draw_graphs
 
 void msm_ps_tools_draw_histogram
   ( msm_ps_tools_t *mps,
-    int nd,
+    int32_t nd,
     double x[],
     double y[],
     double yMin,
@@ -840,7 +841,7 @@ void msm_ps_tools_draw_histogram
     msm_ps_tools_map_coords(mps, x0, y0, &h0, &v0);
 
     /* Now plot all steps, including half-steps at each end ({i==-1} and {i==nd}): */
-    int i = -1;
+    int32_t i = -1;
     while (i <= nd)
       { /* Get upper right corner {x1,y1} of next bar: */
         double x1 = (i >= nd ? xPlotMax : (x == NULL ? i+0.5 : x[i+1]));

@@ -1,8 +1,9 @@
 /* See epswr_shade_quad.h */
-/* Last edited on 2009-08-25 01:12:18 by stolfi */
+/* Last edited on 2022-10-20 06:51:15 by stolfi */
 
 #define _GNU_SOURCE
 #include <assert.h>
+#include <stdint.h>
 
 #include <bool.h>
 #include <affirm.h>
@@ -20,7 +21,7 @@ void epswr_shade_quadrilateral_subd
     double x01, double y01, double R01, double G01, double B01,
     double x10, double y10, double R10, double G10, double B10,
     double x11, double y11, double R11, double G11, double B11,
-    int ns         /* Number of subdivisions. */
+    int32_t ns         /* Number of subdivisions. */
   );
 
 void epswr_shade_quadrilateral_gouraud
@@ -37,7 +38,7 @@ void epswr_shade_quadrilateral
     double x01, double y01, double R01, double G01, double B01,
     double x10, double y10, double R10, double G10, double B10,
     double x11, double y11, double R11, double G11, double B11,
-    int ns         /* Number of subdivisions. */
+    int32_t ns         /* Number of subdivisions. */
   )
   { if (ns < 0)
       { /* Gouraud-shaded quadrilateral: */
@@ -76,15 +77,15 @@ void epswr_shade_quadrilateral_subd
     double x01, double y01, double R01, double G01, double B01,
     double x10, double y10, double R10, double G10, double B10,
     double x11, double y11, double R11, double G11, double B11,
-    int ns         /* Number of subdivisions. */
+    int32_t ns         /* Number of subdivisions. */
   )
   { 
     assert(ns > 0);
-    int nt = ns + 1; /* Number of intervals. */
-    int nv = nt + 1; /* Number of corners. */
+    int32_t nt = ns + 1; /* Number of intervals. */
+    int32_t nv = nt + 1; /* Number of corners. */
     double x[nv], y[nv];  /* Coords of previous corner row. */
     
-    int i0, i1;
+    int32_t i0, i1;
     /* Initialize the first row of corner coords: */
     for (i0 = 0; i0 <= nt; i0++)
       { double u0 = ((double)i0)/((double)nt);

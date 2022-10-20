@@ -1,8 +1,9 @@
 /* See {tf_calib.h}. */
-/* Last edited on 2015-10-05 00:22:55 by stolfilocal */
+/* Last edited on 2022-10-20 08:01:31 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <math.h>
@@ -55,11 +56,11 @@ void tf_calib_generic
       }
   } 
 
-void tf_compute_world_barycenter (int n, r3_t p_w[], double weight[], r3_t *b_w)
+void tf_compute_world_barycenter (int32_t n, r3_t p_w[], double weight[], r3_t *b_w)
 {
   *b_w = (r3_t){{0,0,0}};
   double sum_w = 0.0;
-  int i;
+  int32_t i;
     for (i = 0; i < n; i++) {
         b_w->c[0] += p_w[i].c[0]*weight[i];
 	b_w->c[1] += p_w[i].c[1]*weight[i];
@@ -70,11 +71,11 @@ void tf_compute_world_barycenter (int n, r3_t p_w[], double weight[], r3_t *b_w)
     r3_scale(1/sum_w, b_w, b_w);
 }
 
-void tf_compute_undistorted_coords_barycenter(int n, r2_t p_u[], double weight[], r2_t *b_u)
+void tf_compute_undistorted_coords_barycenter(int32_t n, r2_t p_u[], double weight[], r2_t *b_u)
 {
   *b_u = (r2_t){{0,0}};
   double sum_w = 0.0;
-  int i;
+  int32_t i;
     for (i = 0; i < n; i++) {
       b_u->c[0] += p_u[i].c[0]*weight[i];
 	b_u->c[1] += p_u[i].c[1]*weight[i];
@@ -84,9 +85,9 @@ void tf_compute_undistorted_coords_barycenter(int n, r2_t p_u[], double weight[]
     r2_scale(1/sum_w, b_u, b_u);
 }
 
-void tf_compute_undistorted_obs_coordinates(int n, r2_t p_i[], tf_camera_params_t *cpar, r2_t p_u[])
+void tf_compute_undistorted_obs_coordinates(int32_t n, r2_t p_i[], tf_camera_params_t *cpar, r2_t p_u[])
 {
-  int i;
+  int32_t i;
 
   for (i = 0; i < n; i++) {
     r2_t p_d = tf_image_coords_to_sensor_coords (cpar, p_i[i]);
@@ -96,7 +97,7 @@ void tf_compute_undistorted_obs_coordinates(int n, r2_t p_i[], tf_camera_params_
 
 void tf_generic_optimization_compute_error_terms
   ( double *err,
-    int nerr,
+    int32_t nerr,
     tf_calib_data_t * cdat,
     tf_camera_specs_t *cspec,
     r2_t p_i_dev,
@@ -104,9 +105,9 @@ void tf_generic_optimization_compute_error_terms
     tf_camera_params_t *cpar,
     tf_optimization_choice_t *which )
 {
-    int i;
+    int32_t i;
 
-    int kerr = 0;
+    int32_t kerr = 0;
     
     /* Mark position terms: */
 
@@ -181,7 +182,7 @@ void tf_generic_optimization_compute_error_terms
 
       if (which->v_w[0] || which->v_w[1] || which->v_w[2]) {
 	r3_t v_w = tf_camera_matrix_to_v_w (&(cpar->S));
-	int j;
+	int32_t j;
 	for (j = 0; j < 3; j++) {
 	  if (which->v_w[j]) {
 	    assert(! interval_is_trivial (&(cspec->v_w[j])) );
@@ -200,7 +201,7 @@ void tf_generic_optimization_compute_error_terms
       }
 
       if (which->R) {
-	int j;
+	int32_t j;
 	for (j = 0; j < 3; j++) {
           assert(! interval_is_trivial (&(cspec->R[j])) );
 	}
@@ -218,7 +219,7 @@ void tf_generic_optimization_compute_error_terms
 	  /* !!! Pensar melhor !!! */
 	  r3_t R;
 	  tf_camera_matrix_to_euler_angles (&(cpar->S), &R);
-	  int j;
+	  int32_t j;
 	  for (j = 0; j < 3; j++) {
 	    double avg = interval_mid(&(cspec->R[j]));
 	    double dev = interval_rad(&(cspec->R[j]))/3;
@@ -237,14 +238,14 @@ void tf_generic_optimization_compute_error_terms
 void tf_generic_optimization_print_error_terms
   ( FILE *ferr,
     double *err,
-    int nerr,
+    int32_t nerr,
     bool_t use_cpar_dev_terms,
     tf_calib_data_t * cdat,
     tf_optimization_choice_t *which )
 {
-    int i;
+    int32_t i;
 
-    int kerr = 0;
+    int32_t kerr = 0;
     
     /* Mark position terms: */
 
@@ -291,7 +292,7 @@ void tf_generic_optimization_print_error_terms
 
       if (which->v_w[0] || which->v_w[1] || which->v_w[2]) {
 	r3_t wt_error_v_w;
-	int j;
+	int32_t j;
 	for (j = 0; j < 3; j++) {
 	  wt_error_v_w.c[j] = err[kerr];
 	  kerr++;
@@ -302,7 +303,7 @@ void tf_generic_optimization_print_error_terms
 
       if (which->R) {
 	r3_t wt_error_R;
-	int j;
+	int32_t j;
 	for (j = 0; j < 3; j++) {
 	  wt_error_R.c[j] = err[kerr];
 	  kerr++;
@@ -342,8 +343,8 @@ void tf_generic_optimization
   // demand(! which->dpx, "cannot calibrate dpx");
   // demand(! which->dpy, "cannot calibrate dpy");
 
-  int nparams = tf_generic_optimization_count_params(which); 
-  int nerrs   = tf_generic_optimization_count_error_terms(cdat, use_cpar_dev_terms,    which); 
+  int32_t nparams = tf_generic_optimization_count_params(which); 
+  int32_t nerrs   = tf_generic_optimization_count_error_terms(cdat, use_cpar_dev_terms,    which); 
 
   if (debug) {
     fprintf(stderr, "NPARAMS %d\n", nparams);
@@ -351,26 +352,26 @@ void tf_generic_optimization
 
   /* parameters needed by MINPACK's lmdif() */
 
-  int     m = nerrs;   /* num error terms in the goal function. */
-  int     n = nparams; /* num parameters. */
+  int32_t     m = nerrs;   /* num error terms in the goal function. */
+  int32_t     n = nparams; /* num parameters. */
  
   
   double  ftol = REL_SENSOR_TOLERANCE_ftol;
   double  xtol = REL_PARAM_TOLERANCE_xtol;
   double  gtol = ORTHO_TOLERANCE_gtol;
-  int     maxfev = 1000*n;
+  int32_t     maxfev = 1000*n;
   double  epsfcn = LMDIF_EPSFCN;
 
-  int     mode = LMDIF_MODE;
+  int32_t     mode = LMDIF_MODE;
   double  factor = LMDIF_FACTOR;
-  int     nprint = 0;
-  int     info;
-  int     nfev;
+  int32_t     nprint = 0;
+  int32_t     info;
+  int32_t     nfev;
 
-  int     ldfjac = m;
+  int32_t     ldfjac = m;
   double  x[MAX_OPT_PARAMS];
   double  diag[MAX_OPT_PARAMS];
-  int     ipvt[MAX_OPT_PARAMS];
+  int32_t     ipvt[MAX_OPT_PARAMS];
   double  qtf[MAX_OPT_PARAMS];
   double  wa1[MAX_OPT_PARAMS];
   double  wa2[MAX_OPT_PARAMS];
@@ -380,9 +381,9 @@ void tf_generic_optimization
   double *fjac;
   double *wa4;  
 
-  fvec = (double *)notnull(malloc((unsigned int)m*(unsigned int)sizeof(double)), "no mem for fvec");
-  fjac = (double *)notnull(malloc((unsigned int)(m*n)*(unsigned int)sizeof(double)),"no mem for fjac");
-  wa4 =  (double *)notnull(malloc((unsigned int)m*(unsigned int)sizeof(double)), "no mem for wa4"); 
+  fvec = (double *)notnull(malloc((uint32_t)m*(uint32_t)sizeof(double)), "no mem for fvec");
+  fjac = (double *)notnull(malloc((uint32_t)(m*n)*(uint32_t)sizeof(double)),"no mem for fjac");
+  wa4 =  (double *)notnull(malloc((uint32_t)m*(uint32_t)sizeof(double)), "no mem for wa4"); 
 
 
   if (debug) 
@@ -396,17 +397,17 @@ void tf_generic_optimization
   gather_params(nparams, x, cspec, cdat, cpar, which);
 
   /* define optional scale factors for the parameters */
-  int i;
+  int32_t i;
 
   if (mode == 2) {
     for (i = 0; i < nparams; i++)
       diag[i] = 1.0; /* some user-defined values */
   }
 
-  auto void error (int ns, int np, double x[], double fvec[], int *iflag);
+  auto void error (int32_t ns, int32_t np, double x[], double fvec[], int32_t *iflag);
   /* goal function for MINPACK's lmdif. */
     
-  void error (int ne, int np, double x[], double fvec[], int *iflag) {
+  void error (int32_t ne, int32_t np, double x[], double fvec[], int32_t *iflag) {
     assert(ne == nerrs); assert(np == nparams);
     scatter_params(np, x, cspec, cdat, cpar, which); 
     if (debug) {
@@ -442,23 +443,23 @@ void tf_generic_optimization
 
 }
 
-int tf_generic_optimization_count_params (tf_optimization_choice_t *which)
+int32_t tf_generic_optimization_count_params (tf_optimization_choice_t *which)
 {
   /* count the variable parameters: */
   bool_t which_Tx_Ty = which->v_w[0] | which->v_w[1] | which->v_w[2] | which->R;
   bool_t which_L = which->v_w[0] | which->v_w[1] | which->v_w[2] | which->R | which->f;
 
-  int nparams =  (which->R*3) + (which_Tx_Ty*2) + (which_L) + (which->f)
+  int32_t nparams =  (which->R*3) + (which_Tx_Ty*2) + (which_L) + (which->f)
                  + (which->kappa) + (which->sx) +  (which->Cx) + (which->Cy); 
   return nparams;
 }
 
-int tf_generic_optimization_count_error_terms 
+int32_t tf_generic_optimization_count_error_terms 
   ( tf_calib_data_t * cdat,
     bool_t use_cpar_dev_terms,
     tf_optimization_choice_t *which )
 {
-  int nerrs = 2*cdat->np;
+  int32_t nerrs = 2*cdat->np;
   if (use_cpar_dev_terms) {
     nerrs += (which->R*3) + (which->v_w[0]) + (which->v_w[1]) + (which->v_w[2])
               + (which->f) + (which->kappa) + (which->sx) +  (which->Cx) + (which->Cy); 
@@ -489,12 +490,12 @@ void tf_clip_to_range (char *name, double *v, bool_t variable, interval_t *range
 void tf_show_optimization_errors
 ( double err[],
   double weight[],
-  int m,
+  int32_t m,
   FILE *ferr )
 {
-  int nmarks = m/2;
+  int32_t nmarks = m/2;
   assert(m == (2*nmarks));
-  int i;
+  int32_t i;
   double sum = 0.0;
   fprintf(ferr, "----- tf_show_optimization_errors -----\n");
   for (i = 0; i < nmarks; i++) {
@@ -575,7 +576,7 @@ void tf_show_values_of_selected_parameters
     fprintf(ferr, "\n");
   }
 
-  int i;
+  int32_t i;
   for (i = 0; i < 3; i++) {
     if (which->v_w[i]) {
       fprintf(ferr, "  .%-8s[%d] =", "v_w", i); 
@@ -634,7 +635,7 @@ void tf_select_all_variable_parameters(tf_camera_specs_t *cspec, tf_optimization
       (LO(cspec->R[1]) < HI(cspec->R[1])) || 
       (LO(cspec->R[2]) < HI(cspec->R[2]))
     ) { which->R = TRUE; }
-  int i;
+  int32_t i;
   for (i = 0; i < 3; i++) {
      if (LO(cspec->v_w[i]) < HI(cspec->v_w[i])) { which->v_w[i] = TRUE; }
   }
@@ -656,7 +657,7 @@ void tf_unselect_all_fixed_parameters(tf_camera_specs_t *cspec, tf_optimization_
       (LO(cspec->R[1]) >= HI(cspec->R[1])) && 
       (LO(cspec->R[2]) >= HI(cspec->R[2]))
     ) { which->R = FALSE; }
-  int i;
+  int32_t i;
   for (i = 0; i < 3; i++) {
      if (LO(cspec->v_w[i])  >= HI(cspec->v_w[i]))  { which->v_w[i] = FALSE; }
   }
@@ -716,7 +717,7 @@ void tf_write_cpar_and_errors
     FILE *ferr = open_write(ferr_fname, TRUE);
     free(ferr_fname);
 
-    int nerr = tf_generic_optimization_count_error_terms (cdat, use_cpar_dev_terms, &which);
+    int32_t nerr = tf_generic_optimization_count_error_terms (cdat, use_cpar_dev_terms, &which);
     double err[nerr];
 
     tf_generic_optimization_compute_error_terms
@@ -747,7 +748,7 @@ void tf_write_cpar_and_errors
 
 void tf_recompute_target_weights
   ( tf_camera_params_t *cpar,
-    int ntargets,
+    int32_t ntargets,
     r3_t p_w[],
     r2_t p_i[],
     double p_wgt[],
@@ -757,7 +758,7 @@ void tf_recompute_target_weights
 {
   if (debug) { fprintf(stderr, "dev_gud = ( %8.4lf %8.4lf )\n", dev_gud.c[0], dev_gud.c[1]); }
   if (debug) { fprintf(stderr, "dev_bad = ( %8.4lf %8.4lf )\n", dev_bad.c[0], dev_bad.c[1]); }
-  int i;
+  int32_t i;
   for (i = 0; i < ntargets; i++) {
     if (debug) { fprintf(stderr, "  mark %03d:\n", i); }
     r2_t e = tf_camera_compute_image_error(cpar, p_w[i], p_i[i]);
@@ -769,7 +770,7 @@ void tf_recompute_target_weights
     
     double log_Pr_e_gud = 0.0; /* Probability of error {e} assuming it is an INLIER. */
     double log_Pr_e_bad = 0.0; /* Probability of error {e} assuming it is an OUTLIER. */
-    int axis;
+    int32_t axis;
     for (axis = 0; axis < 2; axis++) {
       /* Inlier's gaussian: */
       double sigma_gud = dev_gud.c[axis];

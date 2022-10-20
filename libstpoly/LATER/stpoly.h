@@ -1,11 +1,12 @@
 /* Polygonal regions. */
-/* Last edited on 2016-04-13 11:27:04 by stolfilocal */
+/* Last edited on 2022-10-20 06:02:32 by stolfi */
 
 #ifndef stpoly_H
 #define stpoly_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <vec.h>
 #include <bool.h>
@@ -77,7 +78,7 @@ r3_t stpoly_unround_point(i3_t *p, float eps);
 
 /* EDGE OPERATIONS */
 
-stpoly_edge_t stpoly_edge_reverse(stpoly_edge_t e, int k);
+stpoly_edge_t stpoly_edge_reverse(stpoly_edge_t e, int32_t k);
   /* If {k} is odd, returns the oriented edge which is the same unoriented edge as
     {e}, but with the opposite orientation.  If {k} is even, retruns {e}
     itself. */
@@ -88,7 +89,7 @@ stpoly_edge_t stpoly_edge_natural(stpoly_edge_t e);
     for any oriented edge {e}, where {e'} is the reverse of {e},
     and {e*} is either {e} or {e'}. */
 
-stpoly_vert_t stpoly_edge_get_endpoint(stpoly_edge_t e, int k);
+stpoly_vert_t stpoly_edge_get_endpoint(stpoly_edge_t e, int32_t k);
   /* Returns the vertex that is the origin ({k = 0}) or
     destination ({k = 1}) of {e}, taking its orientation into account. */
 
@@ -105,7 +106,7 @@ uint32_t stpoly_edge_degree(stpoly_edge_t e);
 stpoly_edge_t stpoly_face_get_base(stpoly_face_t f);
   /* Return the oriented base edge of the oriented face {f}. */
   
-stpoly_face_t stpoly_face_flip(stpoly_face_t f, int k);
+stpoly_face_t stpoly_face_flip(stpoly_face_t f, int32_t k);
   /* If {k} is odd, returns the oriented face which is the same
     unoriented face as {f}, but taken with the opposite orientation. If
     {k} is even, returns {f} itself.
@@ -116,7 +117,7 @@ stpoly_face_t stpoly_face_flip(stpoly_face_t f, int k);
     that new base edge, and each side will traversed in the opposite
     sense. */
 
-stpoly_face_t stpoly_face_shift(stpoly_face_t f, int k);
+stpoly_face_t stpoly_face_shift(stpoly_face_t f, int32_t k);
   /* Returns the oriented face that is the same unoriented
     face as {f}, with the perimeter traversed in the same sense, but whose
     base edge is {k} sides ahead of {f}'s base edge, in that sense of traversal.

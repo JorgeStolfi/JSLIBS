@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 void foo (
     Float a_ctr
 ,    Float a_0
@@ -7,7 +9,7 @@ void foo (
 ,    Float c_2
 ,    Float *ra_ctr,
     Float *ra_3
-,    int *nops
+,    int32_t *nops
   )
   {
     Float alpha, beta, zeta, gamma, delta, tmp;

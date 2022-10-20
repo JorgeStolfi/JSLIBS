@@ -2,7 +2,7 @@
 #define PROG_DESC "tests of {limnmism} single neuron simulation trace"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-17 02:22:06 by jstolfi */ 
+/* Last edited on 2022-10-20 06:33:30 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -17,6 +17,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -61,11 +62,11 @@ void nmsim_test_elem_neuron_trace_read(char *fname, nmsim_elem_neuron_trace_t *e
   /* Reads a neuron element trace from file {fname} and compares
     its contents to that of the given {etrace}. */
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     nmsim_test_elem_neuron_trace("A", 418, 418, 400, 450);
     nmsim_test_elem_neuron_trace("B",  10,  20,   7,  17);

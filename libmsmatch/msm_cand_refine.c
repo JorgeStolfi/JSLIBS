@@ -1,5 +1,5 @@
 /* See msm_cand_refine.h */
-/* Last edited on 2017-04-28 12:19:22 by stolfilocal */
+/* Last edited on 2022-10-20 06:41:03 by stolfi */
 
 #define msm_refine_C_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)" \
@@ -7,6 +7,7 @@
 
 #define _GNU_SOURCE
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -26,18 +27,18 @@
 
 void msm_cand_refine_fill_tableau
   ( msm_cand_t *cdold, 
-    int delta,
-    int kappa,
-    int expand,
-    int shrink,
-    int maxUnp,             /* Maximum unpaired datums between rungs. */
+    int32_t delta,
+    int32_t kappa,
+    int32_t expand,
+    int32_t shrink,
+    int32_t maxUnp,             /* Maximum unpaired datums between rungs. */
     msm_rung_step_score_proc_t *step_score, 
     bool_t verbose,         /* True to print debugging info. */
     msm_rung_t *goptp,      /* OUT: last rung of optimum pairing. */
     double *voptp,          /* OUT: score of optimum pairing. */
     msm_dyn_tableau_t *tb,  /* WORK: dynamic programming tableau. */
-    int *n_steps,           /* Number of examined steps (in,out). */
-    int *n_entries          /* Number of tableau entries that were computed (in,out). */
+    int32_t *n_steps,           /* Number of examined steps (in,out). */
+    int32_t *n_entries          /* Number of tableau entries that were computed (in,out). */
   );
   /* Runs the incremental dynamic programming algorithm to compute an
     optimum pairing of two sequences {ap} and {bp} that is a
@@ -56,14 +57,14 @@ void msm_cand_refine_fill_tableau
     under {msm_cand_refine}. */
 
 void msm_cand_refine_set_tableau_entry
-  ( int r, /* {R}-coordinate of entry. */
-    int s, /* {S}-coordinate of entry. */
+  ( int32_t r, /* {R}-coordinate of entry. */
+    int32_t s, /* {S}-coordinate of entry. */
     msm_seq_desc_t *ap,
     msm_seq_desc_t *bp,
     msm_pairing_t *prold,
-    int delta,
-    int kappa,
-    int maxUnp,             /* Maximum unpaired datums between rungs. */
+    int32_t delta,
+    int32_t kappa,
+    int32_t maxUnp,             /* Maximum unpaired datums between rungs. */
     msm_rung_step_score_proc_t *step_score, 
     bool_t may_begin_here,
     bool_t may_end_here,
@@ -71,9 +72,9 @@ void msm_cand_refine_set_tableau_entry
     msm_rung_t *goptp,      /* IN/OUT: the current best choice for the last rung of pairing. */   
     double *voptp,          /* IN/OUT: score of that pairing, or {+INF}. */   
     msm_dyn_tableau_t *tb,  /* WORK: dynamic programming tableau. */
-    int kp,                 /* Hint for index of rung in {prold} whose {R}-coord is {~r}. */
-    int *n_steps,           /* Number of examined steps (in,out). */
-    int *n_entries          /* Number of tableau entries that were computed. */
+    int32_t kp,                 /* Hint for index of rung in {prold} whose {R}-coord is {~r}. */
+    int32_t *n_steps,           /* Number of examined steps (in,out). */
+    int32_t *n_entries          /* Number of tableau entries that were computed. */
   );
   /* Fills entry of {tb} corresponding to the rung {g} whose {R,S}
     coordinates are {r,s}. Assumes that {g} is a valid rung for the tableau {tb},
@@ -91,14 +92,14 @@ void msm_cand_refine_set_tableau_entry
 
 void msm_cand_refine_compute_r_range
   ( msm_pairing_t *p, 
-    int n0, 
-    int n1,
-    int delta, 
-    int kappa, 
-    int *oldminrp, 
-    int *oldmaxrp, 
-    int *minrp, 
-    int *maxrp
+    int32_t n0, 
+    int32_t n1,
+    int32_t delta, 
+    int32_t kappa, 
+    int32_t *oldminrp, 
+    int32_t *oldmaxrp, 
+    int32_t *minrp, 
+    int32_t *maxrp
   );
   /* Computes the minimum and maximum R-coordinates {*oldminrp,*oldmaxrp}
     of the rungs in pairing {p}, and the minimum and maximum {R}-coordinates
@@ -108,14 +109,14 @@ void msm_cand_refine_compute_r_range
   
 void msm_refine_compute_s_range
   ( msm_pairing_t *p,
-    int n0, 
-    int n1,
-    int r,
-    int *kp,
-    int delta,
-    int kappa,
-    int *minsp,
-    int *maxsp
+    int32_t n0, 
+    int32_t n1,
+    int32_t r,
+    int32_t *kp,
+    int32_t delta,
+    int32_t kappa,
+    int32_t *minsp,
+    int32_t *maxsp
   );
   /* Computes the minimum and maximum S-coordinates {*minsp,*maxsp} of
     any valid rung with R-coordinate {r}, given the old pairing {p}
@@ -130,16 +131,16 @@ void msm_refine_compute_s_range
 
 msm_cand_t msm_cand_refine
   ( msm_cand_t *cdold, 
-    int delta,
-    int kappa,
-    int expand,
-    int shrink,
-    int maxUnp, 
+    int32_t delta,
+    int32_t kappa,
+    int32_t expand,
+    int32_t shrink,
+    int32_t maxUnp, 
     msm_rung_step_score_proc_t *step_score,
     bool_t verbose,
     msm_dyn_tableau_t *tb,
-    int *n_steps, 
-    int *n_entries 
+    int32_t *n_steps, 
+    int32_t *n_entries 
   )
   { 
     if (verbose)
@@ -148,8 +149,8 @@ msm_cand_t msm_cand_refine
         msm_cand_write(stderr, "    old: ", cdold, 5, 10, 6, "\n", TRUE);
       }
     
-    int n_steps_t = 0;
-    int n_entries_t = 0;
+    int32_t n_steps_t = 0;
+    int32_t n_entries_t = 0;
     
     msm_rung_t gopt;
     double vopt;
@@ -169,7 +170,7 @@ msm_cand_t msm_cand_refine
     (*n_entries)+= n_entries_t;
     (*n_steps)+= n_steps_t;
     /* Get number of rungs {nr} in optimum pairing: */
-    int nr = 0;
+    int32_t nr = 0;
     msm_rung_t g = gopt;
     while (! msm_rung_is_none(&g)) 
       { nr++; 
@@ -178,7 +179,7 @@ msm_cand_t msm_cand_refine
       }
     /* Now collect the optimum pairing: */
     msm_rung_vec_t gvnew = msm_rung_vec_new(nr);
-    g = gopt; int ip = nr;
+    g = gopt; int32_t ip = nr;
     while (! msm_rung_is_none(&g)) 
       { /* fprintf(stderr, "      ip = %3d g = (%5d,%5d)\n", ip, g.c[0], g.c[1]); */
         ip--; gvnew.e[ip] = g; 
@@ -200,18 +201,18 @@ msm_cand_t msm_cand_refine
   
 void msm_cand_refine_fill_tableau
   ( msm_cand_t *cdold, 
-    int delta,
-    int kappa,
-    int expand,
-    int shrink,
-    int maxUnp,             /* Maximum unpaired datums between rungs. */
+    int32_t delta,
+    int32_t kappa,
+    int32_t expand,
+    int32_t shrink,
+    int32_t maxUnp,             /* Maximum unpaired datums between rungs. */
     msm_rung_step_score_proc_t *step_score, 
     bool_t verbose,         /* True to print debugging info. */
     msm_rung_t *goptp,      /* OUT: last rung of optimum pairing. */
     double *voptp,          /* OUT: score of optimum pairing. */
     msm_dyn_tableau_t *tb,  /* WORK: dynamic programming tableau. */
-    int *n_steps,           /* Number of examined steps (in,out). */
-    int *n_entries          /* Number of tableau entries that were computed. */
+    int32_t *n_steps,           /* Number of examined steps (in,out). */
+    int32_t *n_entries          /* Number of tableau entries that were computed. */
   )
   { bool_t debug = verbose;
     if (debug) { fprintf(stderr, "      filling matrices...\n"); }
@@ -225,15 +226,15 @@ void msm_cand_refine_fill_tableau
     msm_seq_desc_t *seq0 = &(cdold->seq[0]);
     msm_seq_desc_t *seq1 = &(cdold->seq[1]); 
 
-    int n0 = seq0->size;
-    int n1 = seq1->size;
+    int32_t n0 = seq0->size;
+    int32_t n1 = seq1->size;
     
-    int oldminr, oldmaxr; /* Min and max R-coord of original rungs. */
-    int minr, maxr; /* Min and max R-coord of any valid rung. */
+    int32_t oldminr, oldmaxr; /* Min and max R-coord of original rungs. */
+    int32_t minr, maxr; /* Min and max R-coord of any valid rung. */
     msm_cand_refine_compute_r_range(prold, n0, n1, delta, kappa, &oldminr, &oldmaxr, &minr, &maxr);
 
     /* Compute max differente {maxds} between two S-coordinates of valid rungs with same {R-coord}: */
-    int maxds = 2*(kappa + 2*delta);
+    int32_t maxds = 2*(kappa + 2*delta);
     /* Make sure that the tableau has all the required elements: */
     msm_dyn_tableau_resize(tb, minr, maxr, maxds);
     /* Fills the matrix within the band, in diagonal order.
@@ -241,22 +242,22 @@ void msm_cand_refine_fill_tableau
       increasing R-coordinate. */
     double vopt = -INF;   /* Score of the best path found so far. */
     msm_rung_t gopt = msm_rung_none;  /* Final rung {gopt} of that best path. */
-    int r;
-    int kp = 0; /* Approximate index in {p} of a rung with R-coord {r}; */
+    int32_t r;
+    int32_t kp = 0; /* Approximate index in {p} of a rung with R-coord {r}; */
     for (r = minr; r <= maxr; r++)
       { /* Process tableau entries along the diagonal with R-coordinate {r}. */
-        int mins, maxs; /* Range of S-coordinates for the R-coordinate {r}. */
+        int32_t mins, maxs; /* Range of S-coordinates for the R-coordinate {r}. */
         msm_refine_compute_s_range(prold, n0, n1, r, &kp, delta, kappa, &mins, &maxs);
         assert(mins <= maxs);
         msm_dyn_tableau_set_s_range(tb, r, mins, maxs);
 
         /* Compute all elements in diagonal {r} of the tableau: */
-        int s;
+        int32_t s;
         for (s = mins; s <= maxs; s += 2)
           { assert((r + s) % 2 == 0);
             /* Debugging decision: */
-            int debug_drmin = 50;
-            int debug_drmax = 100;
+            int32_t debug_drmin = 50;
+            int32_t debug_drmax = 100;
             bool_t debug_in_r_range = ((r - minr) >= debug_drmin) & ((r - minr) < debug_drmax);
             bool_t debug_in_s_range = (s == (mins + maxs)/2);
             bool_t debug_entry = debug & (debug_in_r_range & debug_in_s_range);
@@ -284,14 +285,14 @@ void msm_cand_refine_fill_tableau
   }
 
 void msm_cand_refine_set_tableau_entry
-  ( int r, /* {R}-coordinate of entry. */
-    int s, /* {S}-coordinate of entry. */
+  ( int32_t r, /* {R}-coordinate of entry. */
+    int32_t s, /* {S}-coordinate of entry. */
     msm_seq_desc_t *seq0,
     msm_seq_desc_t *seq1,
     msm_pairing_t *prold,
-    int delta,
-    int kappa,
-    int maxUnp,             /* Maximum unpaired datums between rungs. */
+    int32_t delta,
+    int32_t kappa,
+    int32_t maxUnp,             /* Maximum unpaired datums between rungs. */
     msm_rung_step_score_proc_t *step_score, 
     bool_t may_begin_here,
     bool_t may_end_here,
@@ -299,16 +300,16 @@ void msm_cand_refine_set_tableau_entry
     msm_rung_t *goptp,         
     double *voptp,             
     msm_dyn_tableau_t *tb,  /* WORK: dynamic programming tableau. */
-    int kp,                 /* Hint for index of rung in {prold} whose {R}-coord is {~r}. */
-    int *n_steps,           /* Number of examined steps (in,out). */
-    int *n_entries          /* Number of tableau entries that were computed (in,out). */
+    int32_t kp,                 /* Hint for index of rung in {prold} whose {R}-coord is {~r}. */
+    int32_t *n_steps,           /* Number of examined steps (in,out). */
+    int32_t *n_entries          /* Number of tableau entries that were computed (in,out). */
   )
   {
-    int n0 = seq0->size;
-    int n1 = seq1->size;
+    int32_t n0 = seq0->size;
+    int32_t n1 = seq1->size;
     /* Compute the X and Y coordinates {i0,i1} of entry: */
-    int i0 = (r + s) / 2;
-    int i1 = (r - s) / 2;
+    int32_t i0 = (r + s) / 2;
+    int32_t i1 = (r - s) / 2;
     msm_rung_t g = (msm_rung_t){{ i0, i1 }}; /* Rung of entry. */
     if (debug) { fprintf(stderr, "      filling entry [%d,%d]\n", i0, i1); }
     /* Try to get the tableau entry for {g}: */
@@ -329,7 +330,7 @@ void msm_cand_refine_set_tableau_entry
         double vsel = -INF;  /* Score of best path that ends at {g}. */
         msm_rung_t fsel = msm_rung_none;     /* Previous rung on that path. */
 
-        auto void try_step(msm_rung_t f, int *kpfP);
+        auto void try_step(msm_rung_t f, int32_t *kpfP);
           /* If {f} is inside the tableau and the step {f->g} is valid, 
             computes the score {vtofg} of the best pairing that ends
             with rung {f}, plus the cost of the step {f->g};
@@ -337,7 +338,7 @@ void msm_cand_refine_set_tableau_entry
             The integer {*kpfP} is a hint to the position in {prold}
             of a rung with same R-coord as {f}. */
 
-        void try_step(msm_rung_t f, int *kpfP)
+        void try_step(msm_rung_t f, int32_t *kpfP)
           { double vtof; /* Value of best path to {f}. */
             if (msm_rung_is_none(&f))
               { if (debug) { fprintf(stderr, "        start at"); }
@@ -386,7 +387,7 @@ void msm_cand_refine_set_tableau_entry
           leaves at most {maxUnp} unpaired datums all on 
           the same sequence. */
         
-        int kpf = kp; /* Approximate index in {prold} of a rung with R-coord of {f}; */
+        int32_t kpf = kp; /* Approximate index in {prold} of a rung with R-coord of {f}; */
         
         if (may_begin_here) 
           { /* Consider starting a pairing at {g}: */
@@ -397,10 +398,10 @@ void msm_cand_refine_set_tableau_entry
         try_step((msm_rung_t){{ i0 - 1, i1 - 1 }}, &kpf);
 
         /* Consider the imperfect atomic steps ending at {g}: */
-        int unp;
+        int32_t unp;
         for (unp = 1; unp <= maxUnp; unp++)
           { /* Consider the two {f} rungs that leave {unp} unpaired datums on each side: */
-            int j;
+            int32_t j;
             for (j = 0; j <= 1; j ++)
               { msm_rung_t f;
                 f.c[j] = g.c[j] - 1 - unp;
@@ -432,20 +433,20 @@ void msm_cand_refine_set_tableau_entry
 
 void msm_cand_refine_compute_r_range
   ( msm_pairing_t *p, 
-    int n0, 
-    int n1,
-    int delta, 
-    int kappa, 
-    int *oldminrp, 
-    int *oldmaxrp, 
-    int *minrp, 
-    int *maxrp
+    int32_t n0, 
+    int32_t n1,
+    int32_t delta, 
+    int32_t kappa, 
+    int32_t *oldminrp, 
+    int32_t *oldmaxrp, 
+    int32_t *minrp, 
+    int32_t *maxrp
   )
   {
     bool_t debug = FALSE;
     
     /* Get the first rung {glo} of pairing: */
-    int nr = msm_pairing_num_rungs(p);
+    int32_t nr = msm_pairing_num_rungs(p);
     msm_rung_t glo = msm_pairing_get_rung(p, 0);
     
     if (debug) { fprintf(stderr, "      lo rung = %5d %5d\n", glo.c[0], glo.c[1]); }
@@ -455,17 +456,17 @@ void msm_cand_refine_compute_r_range
     if (debug) { fprintf(stderr, "      hi rung = %5d %5d\n", ghi.c[0], ghi.c[1]); }
     
     /* Compute range {oldminr,oldmaxr} of R-coords of rungs in pairing {p}: */
-    int oldminr = glo.c[0] + glo.c[1];
-    int oldmaxr = ghi.c[0] + ghi.c[1];
+    int32_t oldminr = glo.c[0] + glo.c[1];
+    int32_t oldmaxr = ghi.c[0] + ghi.c[1];
 
     /* Compute minimum and maximum R-coord of any valid rung: */
-    int min0 = (int)imax(glo.c[0] - kappa - delta,0);
-    int min1 = (int)imax(glo.c[1] - kappa - delta,0);
-    int max0 = (int)imin(ghi.c[0] + kappa + delta, n0 - 1);
-    int max1 = (int)imin(ghi.c[1] + kappa + delta, n1 - 1);
+    int32_t min0 = (int32_t)imax(glo.c[0] - kappa - delta,0);
+    int32_t min1 = (int32_t)imax(glo.c[1] - kappa - delta,0);
+    int32_t max0 = (int32_t)imin(ghi.c[0] + kappa + delta, n0 - 1);
+    int32_t max1 = (int32_t)imin(ghi.c[1] + kappa + delta, n1 - 1);
     
-    int minr = min0 + min1; 
-    int maxr = max0 + max1;
+    int32_t minr = min0 + min1; 
+    int32_t maxr = max0 + max1;
 
       if(debug) 
         { fprintf(stderr,"range [%d..%d] expanded to [%d..to %d]\n", oldminr, oldmaxr, minr, maxr); }
@@ -479,40 +480,40 @@ void msm_cand_refine_compute_r_range
   
 void msm_refine_compute_s_range
   ( msm_pairing_t *p,
-    int n0, 
-    int n1,
-    int r,
-    int *kp,
-    int delta,
-    int kappa,
-    int *minsp,
-    int *maxsp
+    int32_t n0, 
+    int32_t n1,
+    int32_t r,
+    int32_t *kp,
+    int32_t delta,
+    int32_t kappa,
+    int32_t *minsp,
+    int32_t *maxsp
   )
   {
     /* Get num of rungs {nr} in given pairing: */
-    int nr = msm_pairing_num_rungs(p);
+    int32_t nr = msm_pairing_num_rungs(p);
     
-    auto int rung_r(int k);
+    auto int32_t rung_r(int32_t k);
       /* Returns the R-coordinate ofrung {k} of pairing {p}. */
       
-    auto int rung_s(int k);
+    auto int32_t rung_s(int32_t k);
       /* Returns the S-coordinate of rung {k} of pairing {p}. */
       
-    int rung_r(int k)
+    int32_t rung_r(int32_t k)
       { msm_rung_t g = msm_pairing_get_rung(p, k);
         return msm_rung_R(g);
       }
     
-    int rung_s(int k)
+    int32_t rung_s(int32_t k)
       { msm_rung_t g = msm_pairing_get_rung(p, k);
         return msm_rung_S(g);
       }
 
     /* Get the R- and S-coords {lor,los} of the first rung: */
-    int lor = rung_r(0), los = rung_s(0);
+    int32_t lor = rung_r(0), los = rung_s(0);
     
     /* Get the R- and S-coords {hir,his} of the last rung */
-    int hir = rung_r(nr-1), his = rung_s(nr-1);
+    int32_t hir = rung_r(nr-1), his = rung_s(nr-1);
 
     /* If {lor <= r <= hir}, find rung indices {kprev} and {knext},
       consecutive or equal, so that the step {p[kprev] -> p[knext]}
@@ -520,7 +521,7 @@ void msm_refine_compute_s_range
       rung_r(knext)}. If {r < lor} we set {kprev} to {-1},
       if {r > hir} we set {knext} to {nr}; otherwise 
       we will have {0 <= kprev <= knext < nr}. */
-    int kprev, knext;
+    int32_t kprev, knext;
     if (r < lor)
       { /* Sweepline lies before rung 0: */ 
         kprev = -1; knext = 0;
@@ -550,7 +551,7 @@ void msm_refine_compute_s_range
     (*kp) = knext;
 
     /* Compute center {meds} and radius {rads} of the S-coord range for this R-coord: */
-    int meds, rads;
+    int32_t meds, rads;
     if (r <= lor - kappa)
       { meds = los; rads = 2*(kappa + delta) - (lor - r); }
     else if (r >= hir + kappa)
@@ -560,8 +561,8 @@ void msm_refine_compute_s_range
     else if (r > hir) 
       { meds = his; rads = r - hir + 2*delta; }
     else 
-      { int sprev = rung_s(kprev), rprev = rung_r(kprev);
-        int snext = rung_s(knext), rnext = rung_r(knext);
+      { int32_t sprev = rung_s(kprev), rprev = rung_r(kprev);
+        int32_t snext = rung_s(knext), rnext = rung_r(knext);
         assert((rprev <= r) && (r <= rnext));
         if (r == rprev) 
           { meds = sprev; rads = 2*delta; }
@@ -569,8 +570,8 @@ void msm_refine_compute_s_range
           { meds = snext; rads = 2*delta; }
         else 
           { /* Compute {meds} by linear interpolation: */
-            int ds = snext - sprev;
-            int dr = rnext - rprev;
+            int32_t ds = snext - sprev;
+            int32_t dr = rnext - rprev;
             meds = sprev + ds*(r - rprev)/dr;
             /* The parity of {s} must agree with that of {r}: */
             if ((r + meds) % 2 == 0)
@@ -585,22 +586,22 @@ void msm_refine_compute_s_range
       }
 
     /* Compute range {mins..maxs} of the {s} coord, store in tableau: */
-    int mins = meds - rads;
-    int maxs = meds + rads;
+    int32_t mins = meds - rads;
+    int32_t maxs = meds + rads;
     /* fprintf(stderr, "      r = %5d  mins = %5d maxs = %5d", r, mins, maxs); */
     /* fprintf(stderr, " (x,y)min = (%5d,%5d)", (r + mins)/2, (r - mins)/2); */
     /* fprintf(stderr, " (x,y)min = (%5d,%5d)", (r + maxs)/2, (r - maxs)/2); */
     /* fprintf(stderr, "\n"); */
     
-    int min0 = (r + mins)/2;
-    int max0 = (r + maxs)/2;
-    int min1 = (r - maxs)/2;
-    int max1 = (r - mins)/2;
+    int32_t min0 = (r + mins)/2;
+    int32_t max0 = (r + maxs)/2;
+    int32_t min1 = (r - maxs)/2;
+    int32_t max1 = (r - mins)/2;
 
-    if(min0 < 0)   { int b = 0 - min0;       maxs = maxs - 2*b; min0 = min0 + b; max1 = max1 - b; }
-    if(min1 < 0)   { int b = 0 - min1;       mins = mins + 2*b; max0 = max0 - b; min1 = min1 + b; }
-    if(max0 >= n0) { int b = max0 - n0 + 1;  mins = mins + 2*b; max0 = max0 - b; min1 = min1 + b; }
-    if(max1 >= n1) { int b = max1 - n1 + 1;  maxs = maxs - 2*b; min0 = min0 + b; max1 = max1 - b; }
+    if(min0 < 0)   { int32_t b = 0 - min0;       maxs = maxs - 2*b; min0 = min0 + b; max1 = max1 - b; }
+    if(min1 < 0)   { int32_t b = 0 - min1;       mins = mins + 2*b; max0 = max0 - b; min1 = min1 + b; }
+    if(max0 >= n0) { int32_t b = max0 - n0 + 1;  mins = mins + 2*b; max0 = max0 - b; min1 = min1 + b; }
+    if(max1 >= n1) { int32_t b = max1 - n1 + 1;  maxs = maxs - 2*b; min0 = min0 + b; max1 = max1 - b; }
     
     /* Return results: */
     (*minsp) = mins; (*maxsp) = maxs;

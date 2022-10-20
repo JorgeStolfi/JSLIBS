@@ -1,5 +1,6 @@
 
 #include <tf_calib.h>
+#include <stdint.h>
 #include <tf_camera.h>
 #include <tf_errors.h>
 #include <tf_math.h>
@@ -27,7 +28,7 @@ void tf_calib_summarize_image_errors (tf_calib_data_t * cdat, tf_camera_params_t
   }
   else {
 
-  int i;
+  int32_t i;
   r2_t sum_e = (r2_t) {{ 0, 0 }};
   r2_t sum_e2 = (r2_t) {{ 0, 0 }};
   double max_t2 = 0.0;
@@ -69,7 +70,7 @@ void tf_calib_summarize_world_errors (tf_calib_data_t * cdat, tf_camera_params_t
   else {
     double sum_e2 = 0.0, max_e2 = 0.0;
 
-    int i;
+    int32_t i;
     for (i = 0; i < cdat->np; i++) {
       r3_t p_w = cdat->world[i];
       r2_t p_i = cdat->image[i];

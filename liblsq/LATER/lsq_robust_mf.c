@@ -1,11 +1,12 @@
 /* See {lsq_robust_mf.h} */
-/* Last edited on 2019-12-18 16:25:37 by jstolfi */
+/* Last edited on 2022-10-20 06:48:00 by stolfi */
 
 #define lsq_robust_mf_C_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
@@ -22,13 +23,13 @@
 #include <lsq_robust_mf.h>
 
 void lsq_robust_mf_fit
-  ( int nx,       /* Number of independent variables. */
-    int nf,       /* Number of dependent variables (functions to fit). */
-    int nt,       /* Number of cases to generate. */
+  ( int32_t nx,       /* Number of independent variables. */
+    int32_t nf,       /* Number of dependent variables (functions to fit). */
+    int32_t nt,       /* Number of cases to generate. */
     double X[],   /* Sample values of the independent variables ({nt} by {nx}). */
     double F[],   /* Corresponding measured values of the dependent variables ({nt} by {nf}. */
     double W[],   /* Corresponding weights ({nt} elements). */
-    int maxiter,  /* Max iteration count. */
+    int32_t maxiter,  /* Max iteration count. */
     double U[],   /* (OUT) Fitted linear transformation matrix. */
     double K[],   /* (OUT) Assumed principal axes of normal errors, or NULL. */
     double L[],   /* (OUT) Assumed principal variances of normal errors, or NULL. */
@@ -41,7 +42,7 @@ void lsq_robust_mf_fit
     bool_t debug = TRUE;
     bool_t verbacc = FALSE;
     
-    auto void gen_case(int it, int nx, double xi[], int nf, double fi[], double *wiP);
+    auto void gen_case(int32_t it, int32_t nx, double xi[], int32_t nf, double fi[], double *wiP);
       /* Returns row {it} of {X} in {xi}, row {it} of {F} in {fi}, and {W[it]} in {*wiP}. */
       
     double *A = rmxn_alloc(nx,nx); /* Moment matrix. */
@@ -71,7 +72,7 @@ void lsq_robust_mf_fit
         double *K_gud = (V != NULL ? V : rmxn_alloc(nf,nf));  /* Covariance matrix of inliers. */
         double *K_bad = rmxn_alloc(nf,nf);  /* Covariance matrix of outliers. */
         
-        int iter;
+        int32_t iter;
         rn_all(nt, 0.5, Pc); /* A priori, inliers and outliers are equally likely: */
         for (iter = 1; iter <= maxiter; iter++)
           { 
@@ -92,7 +93,7 @@ void lsq_robust_mf_fit
             assert(fabs(P_bad + P_gud - 1.0) < 0.0001);
            
             /* Recompute data point inlier/outlier probabilities and adjusted data {Fc[0..n-1]}: */
-            int k;
+            int32_t k;
             double E_gud_k[nf]; /* Assumed average of inlier error distribution for each dependent variable. */
             for (k = 0; k < nt; k++) 
               { /* Decide the probability {Pc[k]} of each data record {X[k,*},F[k,*]} being an inlier: */
@@ -125,10 +126,10 @@ void lsq_robust_mf_fit
         free(V_bad);
       }
     
-    void gen_case(int it, int nx, double xi[], int nf, double fi[], double *wiP)
+    void gen_case(int32_t it, int32_t nx, double xi[], int32_t nf, double fi[], double *wiP)
       { double *Xi = &(X[it*nx]);
         double *Fi = &(F[it*nf]);
-        int j;
+        int32_t j;
         for (j = 0; j < nx; j++) { xi[j] = Xi[j]; }
         for (j = 0; j < nf; j++) { fi[j] = Fi[j]; }
         (*wiP) = W[it];
@@ -136,8 +137,8 @@ void lsq_robust_mf_fit
   }
 
 void lsq_robust_mf_compute_stats
-  ( int nt,
-    int nf,
+  ( int32_t nt,
+    int32_t nf,
     double Y[], 
     double W[], 
     double P[], 
@@ -152,11 +153,11 @@ void lsq_robust_mf_compute_stats
   )
   {
     /* Compute the average and overall probability: */
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < nf; i++) { E[i] = 0; }
     double sum_wp = 0;
     double sum_w = 0;
-    int k;
+    int32_t k;
     for (k = 0; k < nt; k++) 
       { double* Yk = &(Y[k*nf]);
         double wk = (W == NULL ? 1.0 : W[k]);
@@ -236,7 +237,7 @@ void lsq_robust_mf_compute_stats
         rmxn_copy(nf, nf, V, Vc);
         double et[nf];
         syei_tridiagonalize(nf, Vc, L, et, K);
-        int rank;
+        int32_t rank;
         syei_trid_eigen(nf, L, et, K, &rank, 0);
         assert(rank == nf);
         free(Vc);
@@ -254,14 +255,14 @@ void lsq_robust_mf_compute_stats
     if (priP != NULL) { (*priP) = pri; }
   }
 
-void lsq_robust_mf_fudge_covariance_matrix(int nf, double alpha, double V[], double beta, double Q[])
+void lsq_robust_mf_fudge_covariance_matrix(int32_t nf, double alpha, double V[], double beta, double Q[])
   {
     /* !!! Rethink !!! */
-    int i;
+    int32_t i;
   }
 
 double lsq_robust_mf_bayes
-  ( int nf, 
+  ( int32_t nf, 
     double F[], 
     double P_gud,
     double E_gud[], 
@@ -300,11 +301,11 @@ double lsq_robust_mf_bayes
     return PP_gud/(PP_gud + PP_bad);
   }
 
-void lsq_robust_mf_debug_distr(FILE *wr, char *tag, int nf, double E[], double V[], double pri)
+void lsq_robust_mf_debug_distr(FILE *wr, char *tag, int32_t nf, double E[], double V[], double pri)
   {
     fprintf(wr, "--- distribution of independent variables for \"%s\" records ---\n", tag);
     fprintf(wr, "prior prob = %9.4f\n", pri);
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < nf; i++)
       { fprintf(wr, "%4d %+16.8f | ", E[i]);
         for (j = 0; j < nf; j++) { fprintf(wr, " %+20.16f", V[i*nf + j]); }

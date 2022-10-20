@@ -1,7 +1,8 @@
-/* Last edited on 2011-05-15 23:10:49 by stolfi */
+/* Last edited on 2022-10-20 05:52:46 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <math.h>
@@ -19,9 +20,9 @@
 void tf_plot_cameras
   ( PSStream *ps, 
     char *name, 
-    int np,
+    int32_t np,
     r3_t p[], 
-    int ncpars,
+    int32_t ncpars,
     tf_camera_params_t *cpar[],
     r2_t q[], 
     double hSize,
@@ -31,7 +32,7 @@ void tf_plot_cameras
     double Nx,
     double Ny,
     double mRadius,
-    int mStyle
+    int32_t mStyle
   ) 
   {
     pswr_new_canvas(ps, name);
@@ -47,10 +48,10 @@ void tf_plot_cameras
         pswr_set_fill_color(ps, 1.000, 1.000, 0.400);
         pswr_set_pen(ps, 0.0,0.0,0.0, 0.20, 0,0);
         r2_t *q_aux = (r2_t *)notnull(malloc(np*sizeof(r2_t)), "no mem");
-        int k;
+        int32_t k;
         for (k = 0; k < ncpars; k++) 
           { if (cpar[k] != NULL)
-              { int i;
+              { int32_t i;
                 for (i = 0; i < np; i++)
                   { r3_t pi = p[i];
                     fprintf(stderr, "p[%d] = ( %f %f %f )\n", i, pi.c[0], pi.c[1], pi.c[2]);
@@ -72,13 +73,13 @@ void tf_plot_cameras
 
 void tf_plot_marks
   ( PSStream *ps, 
-    int np,
+    int32_t np,
     r2_t q[], 
     double mRadius,
-    int mStyle
+    int32_t mStyle
   )
   {    
-    int i;
+    int32_t i;
     double oRadius; /* Optical radius of a mark with unit radius: */
     for (i = 0; i < np; i++) {
       r2_t qi = q[i];

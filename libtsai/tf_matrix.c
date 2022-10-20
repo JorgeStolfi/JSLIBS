@@ -1,8 +1,9 @@
 /* See {tf_matrix.h}. */
-/* Last edited on 2011-05-15 02:31:25 by stolfi */
+/* Last edited on 2022-10-20 05:50:22 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <assert.h>
 #include <stdlib.h>
 
@@ -71,7 +72,7 @@ void tf_solve_system_mxn_mxp (mat_rm_t M, mat_rm_t U, mat_rm_t B, double wgts[])
 
 mat_rm_t tf_transpose_mat_rm (mat_rm_t m)
 {
-    int i, j;
+    int32_t i, j;
 
     mat_rm_t r = tf_alloc_mat_rm (m->ncols, m->nrows);
 
@@ -87,7 +88,7 @@ mat_rm_t tf_transpose_mat_rm (mat_rm_t m)
 void tf_apply_weigths (mat_rm_t m, double wgts[])
 {
   if (wgts == NULL) { return; }
-    int i, j;
+    int32_t i, j;
 
     for (i = 0; i < m->nrows; i++) {
         for (j = 0; j < m->ncols; j++) {
@@ -98,7 +99,7 @@ void tf_apply_weigths (mat_rm_t m, double wgts[])
 
 void tf_print_mat_rm (mat_rm_t m)
 {
-    int i, j;
+    int32_t i, j;
 
     for (i = 0; i < m->nrows; i++) {
         for (j = 0; j < m->ncols; j++) {
@@ -109,9 +110,9 @@ void tf_print_mat_rm (mat_rm_t m)
 }
 
 
-rmxn_t tf_alloc_rmxn (int nrows, int ncols) 
+rmxn_t tf_alloc_rmxn (int32_t nrows, int32_t ncols) 
 {
-    int row; /* Array of rows */
+    int32_t row; /* Array of rows */
 
     rmxn_t m = (rmxn_t)malloc(sizeof(struct _rmxn_t));
 
@@ -138,7 +139,7 @@ rmxn_t tf_alloc_rmxn (int nrows, int ncols)
 
 void tf_free_rmxn_structure (rmxn_t m)
 {
-    int row;
+    int32_t row;
 
     for (row = 0; row < m->nrows; row++){
         free(m->c[row]);
@@ -149,7 +150,7 @@ void tf_free_rmxn_structure (rmxn_t m)
 }
 
 
-rm_t tf_alloc_rm (int size)
+rm_t tf_alloc_rm (int32_t size)
 {
     rm_t v = (rm_t)malloc(sizeof(struct _rm_t));
 
@@ -167,7 +168,7 @@ void tf_free_rm_structure (rm_t v)
 
 void tf_copy_vector_rm (rm_t source, rm_t target)
 {
-    int i;
+    int32_t i;
 
     target->size = source->size;
 
@@ -175,7 +176,7 @@ void tf_copy_vector_rm (rm_t source, rm_t target)
         target->c[i] = source->c[i];
 }
 
-mat_rm_t tf_alloc_mat_rm (int nrows, int ncols)
+mat_rm_t tf_alloc_mat_rm (int32_t nrows, int32_t ncols)
 {
    mat_rm_t m = (mat_rm_t)malloc(sizeof(struct _mat_rm_t));
 

@@ -1,17 +1,18 @@
 /* stimage - images that represent geographic data. */
-/* Last edited on 2003-08-26 19:58:56 by stolfi */
+/* Last edited on 2022-10-20 05:58:52 by stolfi */
 
 #ifndef stimage_H
 #define stimage_H
 
 #include <stmap.h>
+#include <stdint.h>
 
 typedef struct DataImage
-  { int mmXLo;  /* Lowest X sample coordinate, in mm. */
-    int nx;     /* Number of samples in X direction. */
-    int mmYLo;  /* Lowest Y sample coordinate, in mm. */
-    int ny;     /* Number of samples in Y direction. */
-    int mmStep; /* Step between samples, in mm. */
+  { int32_t mmXLo;  /* Lowest X sample coordinate, in mm. */
+    int32_t nx;     /* Number of samples in X direction. */
+    int32_t mmYLo;  /* Lowest Y sample coordinate, in mm. */
+    int32_t ny;     /* Number of samples in Y direction. */
+    int32_t mmStep; /* Step between samples, in mm. */
     double *d;  /* Sample values. */
   } DataImage;
   /* A real-valued function of position, defined by interpolation
@@ -21,11 +22,11 @@ typedef struct DataImage
     and is stored in {d[ix + nx*iy]}. */
 
 DataImage *st_image_new
-  ( int mmXLo,  /* Lowest X sample coordinate, in mm. */
-    int nx,     /* Number of samples in X direction. */
-    int mmYLo,  /* Lowest Y sample coordinate, in mm. */
-    int ny,     /* Number of samples in Y direction. */
-    int mmStep  /* Step between samples, in mm */
+  ( int32_t mmXLo,  /* Lowest X sample coordinate, in mm. */
+    int32_t nx,     /* Number of samples in X direction. */
+    int32_t mmYLo,  /* Lowest Y sample coordinate, in mm. */
+    int32_t ny,     /* Number of samples in Y direction. */
+    int32_t mmStep  /* Step between samples, in mm */
   );
   /* Allocates a new {DataImage} with given attributes.
      The sample values are set to zero. */
@@ -35,7 +36,7 @@ DataImage *st_image_for_rect(Interval rx, Interval ry, double step);
     (in meters) with sample points spaced by approximately {step}
     meters. The sample values are set to zero. */
 
-int st_image_locate(DataImage *img, double x, double y);
+int32_t st_image_locate(DataImage *img, double x, double y);
   /* Returns the index into {img->d} of the sample closest 
     to point {(x,y)} (in meters), or -1 if that point lies 
     outside the rectangle covered by the samples. */

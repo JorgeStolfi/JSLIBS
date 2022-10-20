@@ -1,10 +1,11 @@
-/* Last edited on 2011-05-17 02:57:14 by stolfi */
+/* Last edited on 2022-10-20 05:57:21 by stolfi */
 
 #define PROG_NAME "test_calib"
 #define PROG_DESC "tests the Tsai camera calibration algorithm"
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
@@ -37,16 +38,16 @@ void plot_cpars
     char *out_dir
   );
   
-int main (int argc, char *argv[])
+int32_t main (int32_t argc, char *argv[])
 {
   /* Arguments: */
   char *camera_name = argv[1];
   char *in_dir = argv[2];
   char *out_dir = argv[3];
 
-  int which_calib = atoi(argv[4]);             /* Version of {tf_calib} to use. */
-  int nl_optimization = (atoi(argv[5]) != 0);  /* 0 to skip the NL optimization. */
-  int has_ref_calib = atoi(argv[6]);           /* 1 if has true calibration. */
+  int32_t which_calib = atoi(argv[4]);             /* Version of {tf_calib} to use. */
+  int32_t nl_optimization = (atoi(argv[5]) != 0);  /* 0 to skip the NL optimization. */
+  int32_t has_ref_calib = atoi(argv[6]);           /* 1 if has true calibration. */
   
   fprintf(stderr, "Starting...\n");
   
@@ -150,7 +151,7 @@ void plot_cpars
     PSStream *ps = pswr_new_stream(ps_prefix, NULL, TRUE, NULL, NULL, FALSE, hSize + 2*hMrg, vSize + 2*vMrg);
 
     /* Plot the figures: */
-    int np = cdat->np;
+    int32_t np = cdat->np;
     r2_t *q = cdat->image;
     r3_t *p = cdat->world;
 

@@ -2,7 +2,7 @@
 #define msm_basic_H
 
 /* Basic types for multiscale matching of univariate signals. */
-/* Last edited on 2013-10-19 14:32:39 by stolfilocal */
+/* Last edited on 2022-10-20 06:41:35 by stolfi */
 
 #define msm_basic_H_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)"
@@ -22,7 +22,7 @@ void msm_check_malloc(char *tag);
   /* A procedure that calls {malloc} and {free} several times, in order
     to test the integrity of the {malloc} heap. */
 
-int msm_choose(int lo, int hi, double dProb);
+int32_t msm_choose(int32_t lo, int32_t hi, double dProb);
   /* Generates a random integer in the range {lo..hi}.
     If {dProb} is zero, the result is the center {(lo+hi)/2}
     of the range, rounded randomly. As {dProb} increases,

@@ -1,10 +1,11 @@
 /* epswr_vis.h -- window visibility culling procs (in Device coordinates). */
-/* Last edited on 2020-10-27 17:04:51 by jstolfi */
+/* Last edited on 2022-10-20 06:51:01 by stolfi */
 
 #ifndef epswr_vis_H
 #define epswr_vis_H
 
 #include <epswr.h>
+#include <stdint.h>
 #include <bool.h>
 
 #include <stdio.h>
@@ -45,7 +46,7 @@ bool_t epswr_triangle_is_invisible
 
 bool_t epswr_polygon_is_invisible
   ( epswr_figure_t *epsf,
-    double x[], double y[], int npoints
+    double x[], double y[], int32_t npoints
   );
 
 bool_t epswr_circle_is_invisible

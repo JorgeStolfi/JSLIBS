@@ -1,4 +1,5 @@
 #include <aa_compile.h>
+#include <stdint.h>
 #include <ia.h>
 #include <affirm.h>
 #include <pcode.h>
@@ -7,11 +8,11 @@
 
 /* INTERNAL PROTOTYPES */
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 /* IMPLEMENTATIONS */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { char *ename;
     FILE *p_file;
     FILE *c_file;

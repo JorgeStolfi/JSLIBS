@@ -2,7 +2,7 @@
 #define msm_cand_refine_H
 
 /* Scale-to-scale mapping and refinement of candidates and candidate lists. */
-/* Last edited on 2017-04-28 10:30:44 by stolfilocal */
+/* Last edited on 2022-10-20 06:40:53 by stolfi */
 
 #define msm_cand_refine_H_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)" \
@@ -20,16 +20,16 @@
 
 msm_cand_t msm_cand_refine
   ( msm_cand_t *cdold, 
-    int delta,
-    int kappa,
-    int expand,
-    int shrink,
-    int maxUnp, 
+    int32_t delta,
+    int32_t kappa,
+    int32_t expand,
+    int32_t shrink,
+    int32_t maxUnp, 
     msm_rung_step_score_proc_t *step_score,
     bool_t verbose,
     msm_dyn_tableau_t *tb,
-    int *n_steps,          
-    int *n_entries         
+    int32_t *n_steps,          
+    int32_t *n_entries         
   );
   /* Finds a pairing with maximum score between two sequences {s0} and
     {s1} within the band of half-width {delta} around the candidate

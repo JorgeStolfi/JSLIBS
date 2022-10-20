@@ -1,10 +1,11 @@
 /* Specifying ranges for camera parameters. */
-/* Last edited on 2011-05-17 02:54:46 by stolfi */
+/* Last edited on 2022-10-20 05:52:01 by stolfi */
 
 #ifndef tf_camera_specs_H
 #define tf_camera_specs_H
 
 #include <r2.h>
+#include <stdint.h>
 #include <r3.h>
 #include <r3x3.h>
 #include <r4.h>
@@ -77,13 +78,13 @@ interval_t tf_camera_specs_read_range (FILE *rd, char *name);
   must be separated by spaces.  The name must match {name}.
   !!! Details? !!! */
 
-interval_t tf_camera_specs_get_param_range (tf_camera_specs_t *cspec, int iparam, double vref);
+interval_t tf_camera_specs_get_param_range (tf_camera_specs_t *cspec, int32_t iparam, double vref);
 /* Obtains the range of parameter {iparam} from {cspec}.  The parameter
   numbering and conventions are the same as those of {tf_camera_params_get_value_from_index}.
   For the {R} parameters, the resulting interval is adjusted to contain {vref}
   (if it is not NAN). */
 
-void tf_camera_specs_set_param_range (tf_camera_specs_t *cspec, int iparam, interval_t *range);
+void tf_camera_specs_set_param_range (tf_camera_specs_t *cspec, int32_t iparam, interval_t *range);
 /* Sets the range of parameter {iparam} into {cspec} as {range}.  The parameter
   numbering and conventions are the same as those of {tf_camera_params_get_value_from_index}. */
 

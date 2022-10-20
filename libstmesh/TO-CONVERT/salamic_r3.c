@@ -2,6 +2,7 @@
 /* See {salamic_r3.h} */
 
 #include <math.h>
+#include <stdint.h>
 /*
 #include <glm/glm.h>
 #include <glm/gtc/matrix_transform.h>
@@ -9,8 +10,8 @@
 #include <salamic_r3.h>
 #include <salamic_utils.h>
 
-int salamic_r3_hash (const salamic_stl_r3_t *v) {
-  int h = 0;
+int32_t salamic_r3_hash (const salamic_stl_r3_t *v) {
+  int32_t h = 0;
   salamic_utils_hash_combine(&h, salamic_utils_float_hash(v->x));
   salamic_utils_hash_combine(&h, salamic_utils_float_hash(v->y));
   salamic_utils_hash_combine(&h, salamic_utils_float_hash(v->z));
@@ -110,10 +111,10 @@ protected:
 
 /*
 public:
-    salamic_r3_Segment_t(salamic_stl_r3_t p0=salamic_stl_r3_t(), salamic_stl_r3_t p1=salamic_stl_r3_t(), int l=0) { v[0]=p0; v[1]=p1; label=l; }
-    int label;
+    salamic_r3_Segment_t(salamic_stl_r3_t p0=salamic_stl_r3_t(), salamic_stl_r3_t p1=salamic_stl_r3_t(), int32_t l=0) { v[0]=p0; v[1]=p1; label=l; }
+    int32_t label;
 	bool operator==(const salamic_r3_Segment_t &ls) const { return v[0] == ls.v[0] && v[1] == ls.v[1]; }
-	int interceptPlane(salamic_r3_Plane_t &plane, salamic_stl_r3_t &point) {
+	int32_t interceptPlane(salamic_r3_Plane_t &plane, salamic_stl_r3_t &point) {
         salamic_stl_r3_t a = v[0];
 		salamic_stl_r3_t b = v[1];
 		const float da = plane.distanceToPoint(a);

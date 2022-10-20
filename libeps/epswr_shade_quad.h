@@ -1,10 +1,11 @@
 /* Smooth shading of quadrilaterals. */
-/* Last edited on 2009-08-25 23:28:59 by stolfi */
+/* Last edited on 2022-10-20 06:53:49 by stolfi */
 
 #ifndef epswr_shade_quad_H
 #define epswr_shade_quad_H
 
 #include <stdio.h>
+#include <stdint.h>
 #include <epswr.h>
 
 void epswr_shade_quadrilateral
@@ -13,7 +14,7 @@ void epswr_shade_quadrilateral
     double x01, double y01, double R01, double G01, double B01,
     double x10, double y10, double R10, double G10, double B10,
     double x11, double y11, double R11, double G11, double B11,
-    int ns         /* Number of subdivisions. */
+    int32_t ns         /* Number of subdivisions. */
   );
   /* Fills a quadrilateral, given the corner coordinates
     {(x00,y00),(x01,y01),(x01,y10),(x11,y11)}, and their respective

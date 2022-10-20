@@ -2,7 +2,7 @@
 #define msm_image_tools_H
 
 /* Procedures that write image files with given names. */
-/* Last edited on 2013-10-22 01:39:37 by stolfilocal */
+/* Last edited on 2022-10-20 06:38:24 by stolfi */
 
 #define msm_image_tools_H_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
@@ -82,8 +82,8 @@ void msm_image_cand_vec_write_named
 /* PLOTTING DYNAMIC PROGRAMMING TABLEAUS */
 
 void msm_image_dyn_tableau_write_named
-  ( int n0,                /* Length of first sequence. */
-    int n1,                /* Length of second sequence. */
+  ( int32_t n0,                /* Length of first sequence. */
+    int32_t n1,                /* Length of second sequence. */
     msm_dyn_tableau_t *tb, /* Tableau to plot. */
     msm_rung_t gopt,       /* End-rung of optimum path, or {msm_rung_none} */
     bool_t scale,          /* TRUE to adjust the scale to avoid large images. */

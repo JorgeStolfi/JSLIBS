@@ -1,11 +1,12 @@
 /* Calibration error functions. */
-/* Last edited on 2011-05-15 00:46:53 by stolfi */
+/* Last edited on 2022-10-20 05:53:52 by stolfi */
 
 #ifndef tf_calib_quality_H
 #define tf_calib_quality_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <tf_camera.h>
 #include <tf_calib.h>
 
@@ -60,7 +61,7 @@ void tf_norm_calibration_error_measures
   the ??? error metric over all marks in {cdat}.  */
 
 double tf_norm_calibration_point_error
-  ( int point,
+  ( int32_t point,
     tf_calib_data_t * cdat,
     tf_camera_params_t *cpar );
 /*
@@ -70,7 +71,7 @@ double tf_norm_calibration_point_error
 void tf_show_optimization_errors
 ( double err[],
   double weight[],
-  int m,
+  int32_t m,
   FILE *ferr );
 /* Shows the (weighted) undistorted sensor coordinate 
    errors {err[0..m-1]} and the weights {weight[0..m/2-1]}. 

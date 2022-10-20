@@ -4,6 +4,7 @@
 /* See the rights and conditions notice at the end of this file. */
 
 #include <ppv_array.h>
+#include <stdint.h>
 #include <ppv_array_write.h>
 
 #include <filefmt.h>

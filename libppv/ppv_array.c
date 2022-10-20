@@ -5,6 +5,7 @@
 
 #define _GNU_SOURCE
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>

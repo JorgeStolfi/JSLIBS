@@ -1,5 +1,5 @@
 /* See {stmesh.h} */
-/* Last edited on 2016-04-21 18:56:18 by stolfilocal */
+/* Last edited on 2022-10-20 06:03:35 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -79,7 +79,7 @@ void stmesh_print_bounding_box(FILE *wr, stmesh_t mesh)
     i3_t minQ, maxQ;
     stmesh_get_bounding_box(mesh, &minQ, &maxQ);
     fprintf(wr, "bounding box:\n");
-    int k;
+    int32_t k;
     for (k = 0; k < 3; k++)
       { int32_t minQk = minQ.c[k]; float minFk = eps*(float)minQk;
         int32_t maxQk = maxQ.c[k]; float maxFk = eps*(float)maxQk;
@@ -93,7 +93,7 @@ bool_t stmesh_edge_crosses_plane(stmesh_edge_t e, int32_t pZ)
     stmesh_vert_t v[2]; /* Endpoints of {e}. */
     stmesh_edge_get_endpoints(e, v);
     int32_t vZ[2]; /* Quantized {Z}-coords of endpoints of {e}. */
-    int r;
+    int32_t r;
     for (r = 0; r < 2; r++) 
       { i3_t p = stmesh_vert_get_pos(v[r]); vZ[r] = p.c[2];
         if (verbose) { fprintf(stderr, "endpoint %d at Z = %+d\n", r, vZ[r]); }
@@ -109,7 +109,7 @@ r2_t stmesh_edge_plane_intersection(stmesh_edge_t e, int32_t pZ, double eps)
     stmesh_vert_t v[2]; /* Endpoints of {e}. */
     stmesh_edge_get_endpoints(e, v);
     i3_t p[2]; /* Quantized coordinates of the endpoints. */
-    int r;
+    int32_t r;
     for (r = 0; r < 2; r++) { p[r] = stmesh_vert_get_pos(v[r]); }
     int32_t nZ = pZ - p[0].c[2];
     int32_t dZ = p[1].c[2] - p[0].c[2];
@@ -117,7 +117,7 @@ r2_t stmesh_edge_plane_intersection(stmesh_edge_t e, int32_t pZ, double eps)
     double t = ((double)nZ)/((double)dZ);
     assert((t > 0.0) && (t < 1.0));
     r2_t u;
-    int k;
+    int32_t k;
     for (k = 0; k < 2; k++)
       { int32_t dk = p[1].c[k] - p[0].c[k];
         u.c[k] = eps*(p[0].c[k] + t*dk);
@@ -132,8 +132,8 @@ void stmesh_face_get_sliced_sides(stmesh_t mesh, stmesh_face_t f, int32_t pZ, st
     stmesh_edge_t side[3]; /* The sides of {f} */
     stmesh_face_get_sides(f, side);
     if (verbose) { fprintf(stderr, "mesh face %u and plane at Z = %+d\n", stmesh_face_get_unx(mesh, f), pZ); }
-    int k;
-    int m = 0;
+    int32_t k;
+    int32_t m = 0;
     for (k = 0; k < 3; k++)
       { stmesh_edge_t ek = side[k];
         if (stmesh_edge_crosses_plane(ek, pZ))
@@ -239,7 +239,7 @@ void stmesh_vert_check(stmesh_t mesh, stmesh_vert_t v)
 
 void stmesh_edge_check(stmesh_t mesh, stmesh_edge_t e)
   {
-    int k;
+    int32_t k;
 
     /* Check the index: */
     stmesh_edge_unx_t uxe = stmesh_edge_get_unx(mesh, e);
@@ -252,7 +252,7 @@ void stmesh_edge_check(stmesh_t mesh, stmesh_edge_t e)
     /* Compare with reversed versions: */
     bool_t found = FALSE; /* Found a version of {e} that matches {e0}. */
     stmesh_edge_t c = e;
-    int t;
+    int32_t t;
     for (t = 0; t < 2; t++)
       { /* At this point, {c = reverse^t(e)}. */
         stmesh_edge_t c1 = stmesh_edge_reverse(e, t);
@@ -284,7 +284,7 @@ void stmesh_edge_check(stmesh_t mesh, stmesh_edge_t e)
    
 void stmesh_face_check(stmesh_t mesh, stmesh_face_t f)
   {
-    int k;
+    int32_t k;
 
     /* Check the index: */
     stmesh_face_unx_t uxf = stmesh_face_get_unx(mesh, f);
@@ -300,7 +300,7 @@ void stmesh_face_check(stmesh_t mesh, stmesh_face_t f)
     /* Compare with flipped and shifted versions: */
     bool_t found = FALSE; /* Found a version of {f} that matches {f0}. */
     stmesh_face_t g = f;
-    int s, t;
+    int32_t s, t;
     for (s = 0; s < 3; s++)
       { /* At this point, {g = shift^s(f)}. */
         stmesh_face_t g1 = stmesh_face_shift(f, s);
@@ -346,8 +346,8 @@ void stmesh_face_check(stmesh_t mesh, stmesh_face_t f)
 
     /* Check consistency of elements of {f}: */
     for (k = 0; k < 3; k++)
-      { int k1 = (k+1)%3;
-        int k2 = (k+2)%3;
+      { int32_t k1 = (k+1)%3;
+        int32_t k2 = (k+2)%3;
         stmesh_vert_t uk = stmesh_edge_get_endpoint(ef[k1], 1);
         stmesh_vert_t wk = stmesh_edge_get_endpoint(ef[k2], 0);
         assert(vf[k] == uk);

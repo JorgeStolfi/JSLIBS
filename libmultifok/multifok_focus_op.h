@@ -1,5 +1,5 @@
 /* Focus detector for multi-focus stereo. */
-/* Last edited on 2017-12-27 16:15:43 by stolfilocal */
+/* Last edited on 2022-10-20 06:26:56 by stolfi */
 
 #ifndef multifok_focus_op_H
 #define multifok_focus_op_H
@@ -70,7 +70,7 @@ void multifok_focus_op_set_samples_3x3
   /* Specific for {NW = 3} ({NS = 9}): sets the elements {x[0..NS-1]} to the 
     values {x00,x01,x02,x10,...,x22} multiplied by {scale}. */
 
-void multifok_focus_op_orthize(int32_t NW, int k, double *phi[], double w[]);
+void multifok_focus_op_orthize(int32_t NW, int32_t k, double *phi[], double w[]);
   /* Makes row {k} of the basis matrix {phi} orthogonal to all the previous ones and normalized. */
 
 #endif

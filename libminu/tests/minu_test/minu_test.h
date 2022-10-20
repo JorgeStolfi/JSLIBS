@@ -1,10 +1,11 @@
 // Tools for testing univariate minimizers
-// Last edited on 2007-12-26 21:48:11 by stolfi
+// Last edited on 2022-10-20 06:27:57 by stolfi
 
 #ifndef minu_test_H
 #define minu_test_H
 
 #include <minu_gen.h>
+#include <stdint.h>
 #include <pswr.h>
 
 typedef void (*ProblemFunc) (void *prb, double x, double *fx, double *dfx);
@@ -53,7 +54,7 @@ typedef struct Performance
 
 Performance minu_test_single
   ( PSStream *ps,         /* Postscript file */
-    int page,          /* Page number in document */
+    int32_t page,          /* Page number in document */
     Minimizer *opt,    /* The minimization tool */
     Problem *prb,      /* Function and parameters */
     bool_t debug         /* Passed to the minimizer */

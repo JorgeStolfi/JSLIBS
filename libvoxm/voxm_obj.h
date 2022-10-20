@@ -1,5 +1,5 @@
 /* voxm_obj.h --- basic clipped distance functions for voxel-based modeling */
-/* Last edited on 2021-06-06 03:20:27 by jstolfi */
+/* Last edited on 2022-10-20 05:46:56 by stolfi */
 
 #ifndef voxm_obj_H
 #define voxm_obj_H
@@ -49,7 +49,7 @@ double voxm_obj_rounded_box(r3_t *p, double RX, double RY, double RZ, double rou
 double voxm_obj_ball(r3_t *p, double R, double fuzzR);
   /* A fuzzy ball with center at the origin and radius {R}.  */
 
-double voxm_obj_donut(r3_t *p, double minR, double majR, int axis, double fuzzR);
+double voxm_obj_donut(r3_t *p, double minR, double majR, int32_t axis, double fuzzR);
   /* A fuzzy donut (filled torus) with midline radius {majR}, and dough
     radius {minR}. The donut is centered at the origin, and is
     rotationally symmetric around the coordinate axis {ax} 
