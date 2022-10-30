@@ -1,5 +1,5 @@
 /* See dnae_vis.h */
-/* Last edited on 2015-10-29 00:08:59 by stolfilocal */
+/* Last edited on 2022-10-20 11:41:47 by stolfi */
 
 #define dnae_vis_C_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"

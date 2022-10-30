@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {r2_opt.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2017-06-22 18:12:31 by stolfilocal */ 
+/* Last edited on 2022-10-30 19:35:39 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define tr2o_COPYRIGHT \
@@ -447,7 +447,8 @@ void tr2o_make_weight_table(int hw, int *nwp, double **wtp)
   { demand (hw >= 0, "invalid sampling radius");
     int nw = 2*hw + 1;
     double *wt = notnull(malloc(nw*sizeof(double)), "no mem");
-    wt_table_fill_hann(nw, wt);
+    bool_t norm = TRUE;
+    wt_table_fill_hann(nw, wt, norm);
     (*nwp) = nw;
     (*wtp) = wt;
   }

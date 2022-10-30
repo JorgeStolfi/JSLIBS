@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {r2_align_multiscale.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-02-28 11:54:24 by stolfi */ 
+/* Last edited on 2022-10-30 19:45:54 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_align_COPYRIGHT \
@@ -192,13 +192,14 @@ void test_align_one
     r2_t pini[NI];  /* Initial alignment. */
 
     /* Create the window weight tables: */
+    bool_t norm = TRUE;
     int32_t hwx = (int32_t)ceil(fabs(cmp_rad.c[0])), nwx = 2*hwx + 1;
     double wx[nwx];
-    wt_table_fill_hann(nwx, wx);
+    wt_table_fill_hann(nwx, wx, norm);
     
     int32_t hwy = (int32_t)ceil(fabs(cmp_rad.c[1])), nwy = 2*hwy + 1;
     double wy[nwy];
-    wt_table_fill_hann(nwy, wy);
+    wt_table_fill_hann(nwy, wy, norm);
     
     int32_t NX = 20, NY = 10;   /* Nominal domain dimensions. */
     bool_t cmp_opt;         /* Should the solution be compared to {popt}? */

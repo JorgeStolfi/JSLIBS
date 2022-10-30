@@ -1,4 +1,4 @@
-/* Last edited on 2022-10-20 10:59:02 by stolfi */
+/* Last edited on 2022-10-20 11:35:20 by stolfi */
 /* See {dna_seq_view_tools.h} */
 
 #define _GNU_SOURCE
@@ -49,15 +49,14 @@ void dna_seq_view_tools_draw_sequence
     double magnify, 
     r3_t *pert, 
     double radius, 
-    int32_t nst,
+    int32_t step,
     frgb_t *color, 
     int32_t ini, 
-    int32_t fin
-  )
+    int32_t fin  )
   {
     int32_t nsmp = dnae_seq_num_datums(z);
     assert(dnae_CHANNELS == 3);
-    assert(nst >= 1);
+    assert(step >= 1);
    
     frgb_t effcolor = (frgb_t){{ 0.8f, 0.8f, 0.8f }}; /* Color of effaced parts of sequence. */
     
@@ -145,7 +144,7 @@ void dna_seq_view_tools_draw_sequence
 
         /* Attributes of this datum: */
         bool_t vis_this = ((k >= ini) && (k <= fin)); /* Visibility of this datum. */
-        bool_t ori_this = (k % nst) == 0; /* Whether this datum is original. */
+        bool_t ori_this = (k % step) == 0; /* Whether this datum is original. */
 
         if (k > 0)
           { /* End current segment if connecting visible to invisible datums: */

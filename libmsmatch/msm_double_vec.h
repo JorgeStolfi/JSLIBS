@@ -2,7 +2,7 @@
 #define msm_double_vec_H
 
 /* Tools to manipulate vectors of doubles. */
-/* Last edited on 2022-10-20 06:40:14 by stolfi */
+/* Last edited on 2022-10-30 11:19:35 by stolfi */
 
 #define msm_double_vec_H_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
@@ -39,7 +39,10 @@ void msm_double_vec_smooth(double_vec_t *smp);
     then adds to it a linear ramp so as to make it
     periodic. */ 
 
-void msm_double_vec_normalize(double_vec_t *smp);
+void msm_double_vec_normalize_sum(double_vec_t *smp);
+  /* Scales every sample of {smp} so that they have unit sum. */ 
+
+void msm_double_vec_normalize_avg_dev(double_vec_t *smp);
   /* Applies an affine map to every sample of {smp}, 
     so that they have zero mean and unit standard deviation. */ 
 

@@ -1,5 +1,5 @@
 /* See {float_image_gradient.h}. */
-/* Last edited on 2013-10-21 00:14:41 by stolfilocal */
+/* Last edited on 2022-10-30 19:44:57 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -97,7 +97,8 @@ float_image_t *float_image_gradient_sqr_relative
     /* Weight table: */
     int hw = 2, nw = 2*hw+1;
     double wt[nw];
-    wt_table_fill_binomial(nw, wt);
+    bool_t norm = TRUE;
+    wt_table_fill_binomial(nw, wt, norm);
  
     /* Process channel by channel: */
     double noise2 = noise*noise;

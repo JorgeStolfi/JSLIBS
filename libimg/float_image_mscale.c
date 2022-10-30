@@ -1,5 +1,5 @@
 /* See {float_image_mscale.h}. */
-/* Last edited on 2013-10-21 00:50:04 by stolfilocal */
+/* Last edited on 2022-10-30 19:44:38 by stolfi */
 
 #define _GNU_SOURCE
 #include <assert.h>
@@ -25,7 +25,8 @@ float_image_t *float_image_mscale_shrink(float_image_t *A, float_image_t *M, int
     /* Generate the 1D weight mask: */
     demand(nw > 0, "invalid filter width");
     double wt[nw];
-    wt_table_fill_binomial(nw, wt);
+    bool_t norm = TRUE;
+    wt_table_fill_binomial(nw, wt, norm);
     
     /* Get the image dimensions: */
     int NC = (int)A->sz[0];
@@ -84,7 +85,8 @@ float_image_t *float_image_mscale_mask_shrink(float_image_t *M, int NXR, int NYR
   { /* Generate the 1D weight mask: */
     demand(nw > 0, "invalid filter width");
     double wt[nw];
-    wt_table_fill_binomial(nw, wt);
+    bool_t norm = TRUE;
+    wt_table_fill_binomial(nw, wt, norm);
     
     /* Get the image dimensions: */
     int NC = (int)M->sz[0];

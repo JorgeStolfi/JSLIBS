@@ -2,13 +2,13 @@
 #define PROG_DESC "tests the ordered table search procedure"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2021-12-31 23:28:24 by stolfi */
+/* Last edited on 2022-10-30 12:11:52 by stolfi */
 /* Created on 2021-09-25 or earler by J. Stolfi, UNICAMP */
 
 #define test_box_COPYRIGHT \
   "Copyright © 2021  by the State University of Campinas (UNICAMP)"
 
-#define _ISOC99_SOURCE
+#define _ISOC99_SOURCE 1
 #include <limits.h>
 #include <math.h>
 #include <stdlib.h>

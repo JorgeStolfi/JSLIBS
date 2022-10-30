@@ -2,7 +2,7 @@
 #define wt_table_pair_H
 
 /* Weight tables for filtering digital signals */
-/* Last edited on 2009-02-23 22:10:40 by stolfi */
+/* Last edited on 2022-10-30 19:30:13 by stolfi */
 
 #define wt_table_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -18,8 +18,8 @@
   also put in {*wname0,*wname1} strings that describe those two
   tables.
 
-  The tables will have odd length, and are packaged as newly allocated
-  {double_vec_t}s.
+  The tables will have odd length and will be normalized to unit sum.
+  They are packaged as newly allocated {double_vec_t}s.
   
   !!! These procedures should be generalized to even lengths. !!! */
 

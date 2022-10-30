@@ -2,7 +2,7 @@
 #define PROG_DESC "test of candidate refinement routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-20 11:13:25 by stolfi */
+/* Last edited on 2022-10-30 11:19:08 by stolfi */
 
 #define msm_test_020_refining_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -412,7 +412,7 @@ void msm_test_seq_make_ancestral
     int32_t j;
     for (j = 0; j < nsmooth; j++)
       { msm_double_vec_smooth(smp); 
-        msm_double_vec_normalize(smp);
+        msm_double_vec_normalize_avg_dev(smp);
       }
     /* Compute the subsampling factor {den}: */
     assert((expSub >= 0) && (expSub <= 10));

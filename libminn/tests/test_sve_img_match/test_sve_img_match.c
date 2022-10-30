@@ -2,7 +2,7 @@
 #define PROG_DESC "tests {sve_minn.h} on an image matching problem"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2017-03-16 18:26:22 by stolfilocal */
+/* Last edited on 2022-10-30 19:35:26 by stolfi */
 
 #define test_sve_img_match_C_COPYRIGHT "Copyright © 2009 by the State University of Campinas (UNICAMP)"
 
@@ -332,7 +332,8 @@ float_image_t *shrink_image(float_image_t *A, int shrink)
     /* Generate the 1D weight mask: */
     int nw = 3*shrink;
     double wt[nw];
-    wt_table_fill_hann(nw, wt);
+    bool_t norm = TRUE;
+    wt_table_fill_hann(nw, wt, norm);
     
     /* Get the image dimensions: */
     int NC  = (int)A->sz[0];

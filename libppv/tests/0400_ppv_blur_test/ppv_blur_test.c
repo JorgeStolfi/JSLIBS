@@ -1,4 +1,4 @@
-/* Last edited on 2021-07-09 01:42:06 by jstolfi */ 
+/* Last edited on 2022-10-30 19:35:15 by stolfi */ 
 /* Test of the {ppv_array_blur.h} module. */
 
 #define _GNU_SOURCE
@@ -61,8 +61,9 @@ void pbt_do_test(ppv_dim_t d, int32_t radius, int32_t stride)
     
     /* Create the weight table: */
     int32_t szw = 2*radius + 1;
+    bool_t norm = TRUE;
     double wt[szw]; /* Hahn weight table, sums to 1. */
-    wt_table_fill_hann(szw, wt);
+    wt_table_fill_hann(szw, wt, norm);
     wt_table_print(stderr, "hann", szw, wt, stride);
     
     /* Create the array and fill it with a suitable test pattern: */
