@@ -1,5 +1,5 @@
 /* See dnae_seq.h */
-/* Last edited on 2022-10-31 11:20:55 by stolfi */
+/* Last edited on 2022-10-31 14:14:13 by stolfi */
 
 #define dnae_seq_C_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)" \
@@ -400,9 +400,9 @@ void dnae_seq_free(dnae_seq_t *seq)
     free(seq); 
   }
     
-dnae_seq_t dnae_seq_filter(dnae_seq_t *seq, double_vec_t *wtb, int8_t ek, char *wcmt)
+dnae_seq_t dnae_seq_filter(dnae_seq_t *seq, double_vec_t *wt, int8_t ek, char *wcmt)
   { /* Get filter kernel width {nw}: */
-    int32_t nw = wtb->ne;
+    int32_t nw = wt->ne;
     demand((nw % 2) == 1, "filter kernel width must be odd");
     int32_t hw = (nw - 1)/2;  /* Filter kernel radius. */
     /* Decide parameters of filtered sequence (note: may be empty): */
@@ -449,7 +449,7 @@ dnae_seq_t dnae_seq_filter(dnae_seq_t *seq, double_vec_t *wtb, int8_t ek, char *
               }
 
             /* Filter the old samples to produce the new samples {vn}, without interpolation: */
-            conv_filter(ndo, vo.e, iskpo, stpo, nw, wtb->e, ndn, vn.e);
+            conv_filter(ndo, vo.e, iskpo, stpo, nw, wt->e, ndn, vn.e);
             
             /* Compute the new scale factor {Sn.f[k]}: */
             double sum_sq = 0;

@@ -2,7 +2,7 @@
 #define dnae_seq_H
 
 /* Numerically encoded and filtered DNA sequences */
-/* Last edited on 2022-10-31 09:38:20 by stolfi */
+/* Last edited on 2022-10-31 14:13:37 by stolfi */
 
 #define dnae_seq_H_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)" \
@@ -235,24 +235,24 @@ void dnae_seq_multi_free(dnae_seq_t *seq[], int32_t maxLevel);
     
 /* FILTERING AND INTERPOLATING */
 
-dnae_seq_t dnae_seq_filter(dnae_seq_t *seq, double_vec_t *wtb, int8_t ek, char *wcmt);
+dnae_seq_t dnae_seq_filter(dnae_seq_t *seq, double_vec_t *wt, int8_t ek, char *wcmt);
   /* Returns a sequence {new} obtained by filtering a numeric datum sequence {seq} 
-    with the kernel {wtb}, and resampling it with step size {2^ek} times its
+    with the kernel {wt}, and resampling it with step size {2^ek} times its
     current step.  The exponent {ek} must be non-negative.
     
     The descriptor of {new} is given by {msm_desc_filter(seq.sd,nw,ek)}
-    where {nw=wtb->ne}.
+    where {nw=wt->ne}.
     
     More precisely the datums {pnew[0..nnew-1]} of the new sequence
     {new} are related to the datums {pseq[0..nseq-1]} of the old ones by
     the formula
     
-      {pnew[i] = SUM{ pseq[2^ek*i+j+d] * wtb[j] : j in 0..nw-1}}
+      {pnew[i] = SUM{ pseq[2^ek*i+j+d] * wt[j] : j in 0..nw-1}}
       
     where {d=new.skip*2^ek-hw} and {hw = (nw-1)/2}.
     
     The string {wcmt}, if not NULL, is assumed to be the name or
-    description of the weight table {wtb}, and is appended to the
+    description of the weight table {wt}, and is appended to the
     comment {seq->cmt} to make the new string's comment. For each
     channel {k}, the new scale factor {sfac.f[k]} will be the
     root-mean-square value of the samples in channel {k} of the filtered

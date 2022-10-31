@@ -2,7 +2,7 @@
 #define PROG_DESC "test of DNA signal interpolating routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-31 12:12:12 by stolfi */
+/* Last edited on 2022-10-31 14:38:17 by stolfi */
 
 #define test_dnae_interpolate_C_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
@@ -101,9 +101,9 @@ int32_t main(int32_t argc, char**argv)
     
     fprintf(stderr, "writing and plotting the interpolated sequence ...\n");
     bool_t plot = TRUE;
-    double hSize = 80.0; /* mm */
+    double hSize = 180.0; /* mm */
     double vSize = 60.0; /* mm */
-    double fontSize = 18.0; /* pt */
+    double fontSize = 8.0; /* pt */
     dnae_test_tools_seq_write_and_plot_named
       ( &r, "Interpolated Sequence", o->outName, "-ot", 
         plot, hSize, vSize, fontSize, -1

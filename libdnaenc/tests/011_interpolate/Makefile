@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:40:45 by jstolfi
+# Last edited on 2022-10-31 14:37:34 by stolfi
 
 TEST_LIB := libdnaenc.a
 TEST_LIB_DIR := ../..
@@ -7,7 +7,7 @@ PROG := test_dnae_interpolate
 JS_LIBS := \
   libmsmatch.a \
   libgeo.a \
-  libps.a \
+  libeps.a \
   libimg.a \
   libjs.a
 
@@ -32,14 +32,14 @@ ifneq "/${STEP}" "/"
 
 IN_DIR := ${STOLFIHOME}/programs/c/DNA/DATA/small/eqs
 
-SEQ := 100A-ot-02
+SEQ := 100A-wg020-wg060-02
 XSTEP := ${subst .,,${STEP}}
 
 IN_NAME := ${IN_DIR}/${SEQ}
 
 OUT_NAME := out/${SEQ}-${XSTEP}
 
-SHOWPS := okular
+SHOWPS := evince
   
 run-single: ${PROG}
 	${PROG} \
