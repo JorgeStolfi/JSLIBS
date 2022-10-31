@@ -1,5 +1,5 @@
 /* See {dnae_test_tools.h} */
-/* Last edited on 2020-12-07 23:32:11 by jstolfi */
+/* Last edited on 2022-10-31 11:21:54 by stolfi */
 
 #define dnae_test_tools_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -7,6 +7,7 @@
 #define _GNU_SOURCE
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <assert.h>
 #include <jsrandom.h>
@@ -34,7 +35,7 @@ void dnae_test_tools_seq_write_and_plot_named
     double hSize,
     double vSize,
     double fontSize,
-    int maxXLabChars
+    int32_t maxXLabChars
   )
   {
     bool_t debug = TRUE;
@@ -45,7 +46,7 @@ void dnae_test_tools_seq_write_and_plot_named
 
     /* Check whether the sample vector is compatible with the seq descriptor: */
     
-    int size = dnae_seq_num_datums(seq);
+    int32_t size = dnae_seq_num_datums(seq);
     assert(size == seq->dv.ne);
     
     /* Ignore the {seq} for now: */
@@ -53,8 +54,8 @@ void dnae_test_tools_seq_write_and_plot_named
     
     if (plot)
       { /* Plot the seqence: */
-        if (maxXLabChars < 0) { maxXLabChars = (int)ceil(log(fmax(size,9)*1.05)/M_LN10); }
-        int maxYLabChars = 5; 
+        if (maxXLabChars < 0) { maxXLabChars = (int32_t)ceil(log(fmax(size,9)*1.05)/M_LN10); }
+        int32_t maxYLabChars = 5; 
 
         msm_ps_tools_t *mps = msm_ps_tools_new_graph
           ( NULL, name, tag, 
@@ -71,9 +72,9 @@ void dnae_test_tools_seq_write_and_plot_named
           );
 
         /* Repack the samples as a single vector {smp[]}, for {msm_ps_tools_draw_graphs}: */
-        int nplt = size; /* Number of samples for plotting. */
+        int32_t nplt = size; /* Number of samples for plotting. */
         double smp[dnae_CHANNELS*nplt]; 
-        int i, c;
+        int32_t i, c;
         for (i = 0; i < nplt; i++)
           { if (debug) { fprintf(stderr, "datum[%6d]", i); }
             for (c = 0; c < dnae_CHANNELS; c++)
@@ -103,7 +104,7 @@ void dnae_test_tools_seq_write_and_plot_named
 
 void dnae_test_tools_seq_multi_write_and_plot_named
   ( dnae_seq_t seq[],
-    int maxLevel,
+    int32_t maxLevel,
     char *title,
     char *name,
     char *tag,
@@ -111,15 +112,15 @@ void dnae_test_tools_seq_multi_write_and_plot_named
     double hSize,
     double vSize,
     double fontSize,
-    int maxXLabChars
+    int32_t maxXLabChars
   )
   { 
     /* Compute max label chars for all plots, if necessary: */
     if (plot & (maxXLabChars < 0))
-      { int nposMax = dnae_seq_num_datums(&(seq[0]));
-        maxXLabChars = (int)ceil(log(fmax(nposMax,2)*1.05)/M_LN10);
+      { int32_t nposMax = dnae_seq_num_datums(&(seq[0]));
+        maxXLabChars = (int32_t)ceil(log(fmax(nposMax,2)*1.05)/M_LN10);
       }
-    int level;
+    int32_t level;
     for (level = 0; level <= maxLevel; level++)
       { char *titlei = NULL; 
         asprintf(&titlei, "%s level %02d", title, level);
@@ -133,7 +134,7 @@ void dnae_test_tools_seq_multi_write_and_plot_named
       }
   }
 
-#define dnae_rung_HUGE (msm_rung_t){{ INT_MAX, INT_MAX }}
+#define dnae_rung_HUGE (msm_rung_t){{ INT32_MAX, INT32_MAX }}
 
 void dnae_test_tools_make_seq_pair
   ( char *borg, 
@@ -154,12 +155,12 @@ void dnae_test_tools_make_seq_pair
     dnae_nucleic_string_mutate(borg, TRUE, TRUE, mutProb, delProb, &xdna, &xgv);
     dnae_nucleic_string_mutate(borg, TRUE, TRUE, mutProb, delProb, &ydna, &ygv);
     /* Merge the rung vectors {xgv,ygv} by component 0 to create the pairing {*prP}: */
-    int minEach = 1; /* Each side of every step must increase. */
-    int minSum = 2;  /* The sum must increase by 2. */
-    int ngmax = (xgv.ne < ygv.ne ? xgv.ne : ygv.ne);
+    int32_t minEach = 1; /* Each side of every step must increase. */
+    int32_t minSum = 2;  /* The sum must increase by 2. */
+    int32_t ngmax = (xgv.ne < ygv.ne ? xgv.ne : ygv.ne);
     msm_rung_vec_t gv = msm_rung_vec_new(ngmax);
-    int ng = 0; /* Output rungs will be {gv[0..ng-1]}. */
-    int kx = 0, ky = 0;
+    int32_t ng = 0; /* Output rungs will be {gv[0..ng-1]}. */
+    int32_t kx = 0, ky = 0;
     while ((kx < xgv.ne) && (ky < ygv.ne))
       { msm_rung_t xg = (kx >= xgv.ne ? dnae_rung_HUGE : xgv.e[kx]);
         msm_rung_t yg = (ky >= ygv.ne ? dnae_rung_HUGE : ygv.e[ky]);

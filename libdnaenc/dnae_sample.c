@@ -1,5 +1,5 @@
 /* See {dnae_sample.h}. */
-/* Last edited on 2017-01-04 19:08:29 by stolfilocal */
+/* Last edited on 2022-10-31 09:41:34 by stolfi */
 
 #define dnae_sample_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -7,6 +7,7 @@
 #define _GNU_SOURCE
 #include <math.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <assert.h>
 
@@ -50,9 +51,9 @@ void dnae_decode_table_setup(void)
     assert(dnae_sample_enc_VERY_MAX >= dnae_sample_enc_VALID_MAX);
     assert(dnae_sample_enc_VALID_MIN + dnae_sample_enc_VALID_MAX == 0);
     
-    int N = dnae_sample_BIAS + dnae_sample_enc_VERY_MAX + 1;
+    int32_t N = dnae_sample_BIAS + dnae_sample_enc_VERY_MAX + 1;
     double *tb = (double *)notnull(malloc(N*sizeof(double)), "no mem");
-    int v; /* Must be {int} and not {dnae_sample_t} to avoid overflow. */
+    int32_t v; /* Must be {int32_t} and not {dnae_sample_t} to avoid overflow. */
     /* Fill the table with {NaN}s: */
     for (v = dnae_sample_enc_VERY_MIN; v <= dnae_sample_enc_VERY_MAX; v++)
       { tb[dnae_sample_BIAS + v] = NAN; }
@@ -96,17 +97,17 @@ void dnae_decode_table_setup(void)
   }       
 
 double dnae_sample_decode(dnae_sample_enc_t ev, double scale)
-  { int iev = ev;
+  { int32_t iev = ev;
     demand((iev >= dnae_sample_enc_VALID_MIN) && (iev <= dnae_sample_enc_VALID_MAX), "invalid encoded value"); 
     if (dnae_decode_table == NULL) { dnae_decode_table_setup(); }
-    int k = ev + dnae_sample_BIAS; /* Should be in {1..2^16-1}. */
+    int32_t k = ev + dnae_sample_BIAS; /* Should be in {1..2^16-1}. */
     return scale*dnae_decode_table[k];
   }
 
 dnae_sample_enc_t dnae_sample_encode(double dv, double scale)
   { /* Must check whether this is the best rounding: */
     double fv = erf((dv/scale)/M_SQRT2); /* Result in {[-1 _ +1]}. */
-    int v = (int)round(fv*(dnae_sample_enc_VALID_MAX + 0.5));
+    int32_t v = (int32_t)round(fv*(dnae_sample_enc_VALID_MAX + 0.5));
     if (v > dnae_sample_enc_VALID_MAX) { v = dnae_sample_enc_VALID_MAX; }
     if (v < dnae_sample_enc_VALID_MIN) { v = dnae_sample_enc_VALID_MIN; }
     return (dnae_sample_enc_t)v;

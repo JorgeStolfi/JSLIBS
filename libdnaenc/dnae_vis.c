@@ -1,5 +1,5 @@
 /* See dnae_vis.h */
-/* Last edited on 2022-10-20 11:41:47 by stolfi */
+/* Last edited on 2022-10-31 11:21:58 by stolfi */
 
 #define dnae_vis_C_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
@@ -48,13 +48,13 @@ dnae_seq_t dnae_vis_seq_read(char *name, int8_t resample_exp)
 r3_vec_t dnae_vis_datums_to_points(dnae_seq_t *seq, double magnify, r3_t *pvec)
   {
     assert(dnae_CHANNELS == 3);
-    int nsmp = dnae_seq_num_datums(seq);
+    int32_t nsmp = dnae_seq_num_datums(seq);
     r3_vec_t dp = r3_vec_new(nsmp);
-    int k;
+    int32_t k;
     for(k = 0; k < nsmp; k++)
       { dnae_datum_t *dtk = dnae_seq_get_datum_address(seq, k);
         r3_t *dpk = &(dp.e[k]);
-        int c;
+        int32_t c;
         for (c = 0; c < dnae_CHANNELS; c++)
           { dpk->c[c] = dnae_sample_decode(dtk->c[c], seq->sfac.f[c]); }
         r3_scale(magnify, dpk, dpk);
@@ -64,29 +64,29 @@ r3_vec_t dnae_vis_datums_to_points(dnae_seq_t *seq, double magnify, r3_t *pvec)
   }
     
 void dnae_vis_determine_visible_segments
-  ( int ns, 
+  ( int32_t ns, 
     dnae_seq_t seq[], 
     bool_t showMatch, 
     bool_t hideMatch, 
     double maxDist, 
-    int ini[], 
-    int fin[]
+    int32_t ini[], 
+    int32_t fin[]
   )
   {
     if (maxDist >= 0)
       { if (showMatch)
           { /* Find longest internal matching seg in each sequence: */
-            int minSize = 1;
+            int32_t minSize = 1;
             dnae_vis_find_mid_match(ns, seq, maxDist, minSize, ini, fin);
           }
         else if (hideMatch)
           { /* Find longest matching prefix and suffix: */
-            int npref = dnae_vis_find_pref_suff_match(ns, seq, maxDist, +1);
-            int nsuff = dnae_vis_find_pref_suff_match(ns, seq, maxDist, -1); 
+            int32_t npref = dnae_vis_find_pref_suff_match(ns, seq, maxDist, +1);
+            int32_t nsuff = dnae_vis_find_pref_suff_match(ns, seq, maxDist, -1); 
             /* Show each sequence minus prefix and suffix: */
-            int i;
+            int32_t i;
             for (i = 0; i < ns; i++)
-              { int ni = seq[i].sd.size; 
+              { int32_t ni = seq[i].sd.size; 
                 assert((npref >= 0) && (npref <= ni));
                 assert((nsuff >= 0) && (nsuff <= ni));
                 if (npref + nsuff > ni + 1)
@@ -105,36 +105,36 @@ void dnae_vis_determine_visible_segments
       }
     else
       { /* Show entire sequences: */
-        int i;
+        int32_t i;
         for (i = 0; i < ns; i++) 
-          { int ni = seq[i].sd.size; 
+          { int32_t ni = seq[i].sd.size; 
             ini[i] = 0; 
             fin[i] = ni - 1;
           }
       }
 
     /* Report start and end of special section: */
-    int i;
+    int32_t i;
     for (i = 0; i < ns; i++) 
-      { int ni = seq[i].sd.size; 
-        int mi = (fin[i] >= ini[i] ? fin[i] - ini[i] + 1 : 0);
+      { int32_t ni = seq[i].sd.size; 
+        int32_t mi = (fin[i] >= ini[i] ? fin[i] - ini[i] + 1 : 0);
         fprintf(stderr, "sequence %d has %d effaced and %d fully-visible datums", i, ni-mi, mi);
         if (mi > 0) { fprintf(stderr, " [%d .. %d]", ini[i], fin[i]); }
         fprintf(stderr, "\n");
       } 
   }
 
-int dnae_vis_find_pref_suff_match(int ns, dnae_seq_t seq[], double maxDist, int dir)
+int32_t dnae_vis_find_pref_suff_match(int32_t ns, dnae_seq_t seq[], double maxDist, int32_t dir)
   { 
     bool_t debug = FALSE;
     demand((dir == -1) || (dir == +1), "invalid dir");
     double maxDist2 = maxDist*maxDist;
     /* Find the length {nmin} of the sortest sequence: */
-    int nmin = (1 << 30);
-    int i;
-    for (i = 0; i < ns; i++) { int ni = seq[i].sd.size; if (ni < nmin) { nmin = ni; } } 
+    int32_t nmin = (1 << 30);
+    int32_t i;
+    for (i = 0; i < ns; i++) { int32_t ni = seq[i].sd.size; if (ni < nmin) { nmin = ni; } } 
     /* Find the length {nd} of the longest matching prefix/suffix: */
-    int nd = 0;
+    int32_t nd = 0;
     while (nd < nmin)
       { double maxd2 = dnae_vis_max_datum_euc_distsq(ns, seq, nd, dir);
         if (debug) { fprintf(stderr, "d = %.6f  m = %.6f\n", sqrt(maxd2), maxDist); }
@@ -148,42 +148,42 @@ int dnae_vis_find_pref_suff_match(int ns, dnae_seq_t seq[], double maxDist, int 
     return nd;
   }
 
-void dnae_vis_find_mid_match(int ns, dnae_seq_t seq[], double maxDist, int minSize, int ini[], int fin[])
+void dnae_vis_find_mid_match(int32_t ns, dnae_seq_t seq[], double maxDist, int32_t minSize, int32_t ini[], int32_t fin[])
   {
     if (ns == 0) { /* Nothing to do: */ return; }
     
     double maxDist2 = maxDist*maxDist;
-    int i, j;
+    int32_t i, j;
     /* Initialize the matching segment in each sequence to be empty: */
-    for (i = 0; i < ns; i++) { int ni = seq[i].sd.size; ini[i] = ni - 1; fin[i] = 0; } 
+    for (i = 0; i < ns; i++) { int32_t ni = seq[i].sd.size; ini[i] = ni - 1; fin[i] = 0; } 
 
     /* Find the largest common sement in each pair, save the longest for each sequence: */
     for (i = 0; i < ns; i++)
-      { int ni = seq[i].sd.size; 
+      { int32_t ni = seq[i].sd.size; 
         dnae_datum_scale_t *sfi = &(seq[i].sfac); 
         
         for (j = i+1; j < ns; j++)
           { /* Find the maximum matching segments between sequences {i} and {j}: */
-            int nj = seq[j].sd.size; 
+            int32_t nj = seq[j].sd.size; 
             dnae_datum_scale_t *sfj = &(seq[j].sfac); 
             
             /* Try all possible alignments of {seq[i]} and {seq[j]}, record the longest match: */
             
-            int iniBest_i = ni;  /* Start in sequence {i} of longest {i,j} matching segment found. */
-            int iniBest_j = nj;  /* Start in sequence {j} of longest {i,j} matching segment found. */
-            int nmBest_ij = -1;     /* Number of datums in that matching segment: */
+            int32_t iniBest_i = ni;  /* Start in sequence {i} of longest {i,j} matching segment found. */
+            int32_t iniBest_j = nj;  /* Start in sequence {j} of longest {i,j} matching segment found. */
+            int32_t nmBest_ij = -1;     /* Number of datums in that matching segment: */
             
-            auto void check_alignment(int ki, int kj, int64_t ng);
+            auto void check_alignment(int32_t ki, int32_t kj, int64_t ng);
               /* Finds and the maximum matching subsegment in sequence {i} and {j}
                  assuming that datum {ki+r} is paired with datum {kj+r} for {r} in {0..ng-1}. */
                  
-            void check_alignment(int ki, int kj, int64_t ng)
+            void check_alignment(int32_t ki, int32_t kj, int64_t ng)
               { assert((ki >= 0) && (ki + ng <= ni));
                 assert((kj >= 0) && (kj + ng <= nj));
                 
                 if (ng >= minSize)
-                  { int rIni = 0;
-                    int r;
+                  { int32_t rIni = 0;
+                    int32_t r;
                     for (r = 0; r < ng; r++)
                       { /* Datums {ki+rIni..ki+r-1} of {seq[i]} match {kj+rIni..kj+r-1} of {seq[j]}. */
                         dnae_datum_t *di = dnae_seq_get_datum_address(&(seq[i]), ki+r);
@@ -195,7 +195,7 @@ void dnae_vis_find_mid_match(int ns, dnae_seq_t seq[], double maxDist, int minSi
                           }
                         else
                           { /* Datums {rIni..r} of this alignment define a matching segment: */
-                            int nm = r + rIni - 1; /* Number of datums matched. */
+                            int32_t nm = r + rIni - 1; /* Number of datums matched. */
                             if ((nm > nmBest_ij) && (nm >= minSize)) 
                               { /* Found a better candidate for the longest matching segment: */
                                 iniBest_i = ki + rIni;
@@ -220,7 +220,7 @@ void dnae_vis_find_mid_match(int ns, dnae_seq_t seq[], double maxDist, int minSi
 
     /* Report matching segments: */
     for (i = 0; i < ns; i++) 
-      { int ni = (fin[i] >= ini[i] ? fin[i] - ini[i] + 1 : 0);
+      { int32_t ni = (fin[i] >= ini[i] ? fin[i] - ini[i] + 1 : 0);
         if (ni == 0) 
           { fprintf(stderr, "sequence %d has no matching segment\n", i); }
         else
@@ -230,15 +230,15 @@ void dnae_vis_find_mid_match(int ns, dnae_seq_t seq[], double maxDist, int minSi
       } 
   } 
 
-double dnae_vis_max_datum_euc_distsq(int ns, dnae_seq_t seq[], int k, int dir)
+double dnae_vis_max_datum_euc_distsq(int32_t ns, dnae_seq_t seq[], int32_t k, int32_t dir)
   { 
     bool_t debug = FALSE;
     double maxd2 = -INF;
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < ns; i++)
       { dnae_seq_t *seqA = &(seq[i]);
-        int nsmpA = seqA->sd.size;
-        int kA = (dir > 0 ? k : nsmpA - 1 - k);
+        int32_t nsmpA = seqA->sd.size;
+        int32_t kA = (dir > 0 ? k : nsmpA - 1 - k);
         if ((kA < 0) || (kA >= nsmpA)) { return +INF; }
         dnae_datum_t *dA = dnae_seq_get_datum_address(seqA, kA);
         if (debug)
@@ -247,8 +247,8 @@ double dnae_vis_max_datum_euc_distsq(int ns, dnae_seq_t seq[], int k, int dir)
           }
         for (j = 0; j < i; j++) 
           { dnae_seq_t *seqB = &(seq[j]);
-            int nsmpB = seqB->sd.size;
-            int kB = (dir > 0 ? k : nsmpB - 1 - k);
+            int32_t nsmpB = seqB->sd.size;
+            int32_t kB = (dir > 0 ? k : nsmpB - 1 - k);
             assert((kB >= 0) && (kB < nsmpB)); /* Since {seqB} was {seqA} before. */
             dnae_datum_t *dB = dnae_seq_get_datum_address(seqB,kB);
             double d2 = dnae_datum_euc_distsq(dA, &(seqA->sfac), dB, &(seqB->sfac));
@@ -258,7 +258,7 @@ double dnae_vis_max_datum_euc_distsq(int ns, dnae_seq_t seq[], int k, int dir)
     return maxd2;
   }
 
-void dnae_vis_choose_perturbations(double perturb, int ns, r3_t pvec[])
+void dnae_vis_choose_perturbations(double perturb, int32_t ns, r3_t pvec[])
   {
     switch(ns)
       { 
@@ -293,23 +293,23 @@ void dnae_vis_choose_perturbations(double perturb, int ns, r3_t pvec[])
       }
   }
 
-void dnae_vis_parse_seqFile_options(argparser_t *pp, string_vec_t *seqFile,  int_vec_t *texture)
+void dnae_vis_parse_seqFile_options(argparser_t *pp, string_vec_t *seqFile,  int32_vec_t *texture)
   {
-    int nseq = 0;
+    int32_t nseq = 0;
     (*seqFile) = string_vec_new(10);
-    (*texture) = int_vec_new(10);
+    (*texture) = int32_vec_new(10);
     while(argparser_keyword_present(pp,"-seqFile"))
       { string_vec_expand(seqFile,nseq);
-        int_vec_expand(texture,nseq);
+        int32_vec_expand(texture,nseq);
         seqFile->e[nseq] = argparser_get_next(pp);
         if (argparser_keyword_present_next(pp,"-texture"))
-          { texture->e[nseq] = (int)argparser_get_next_int(pp, 0, INT_MAX); }
+          { texture->e[nseq] = (int32_t)argparser_get_next_int(pp, 0, INT32_MAX); }
         else
           { texture->e[nseq] = nseq; }
         nseq++;
       }
     string_vec_trim(seqFile,nseq);
-    int_vec_trim(texture,nseq);
+    int32_vec_trim(texture,nseq);
   }
 
 
@@ -317,7 +317,7 @@ void dnae_vis_parse_resample_option(argparser_t *pp, int8_t *resample_expP)
   {
     if (argparser_keyword_present(pp,"-resample"))
       { double st = argparser_get_next_double(pp, 1.0/((double)dna_vis_RESAMPLE_STEPS_MAX), 1.0);
-        int ek = 0;
+        int32_t ek = 0;
         while (st < 1) { ek--; st = st*2; }
         while (st > 1) { ek++; st = st/2; }
         if (st != 1.0) { argparser_error(pp, "initial sampling step must be a power of 2."); }

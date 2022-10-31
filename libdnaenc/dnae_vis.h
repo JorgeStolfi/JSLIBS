@@ -2,7 +2,7 @@
 #define dnae_vis_H
 
 /* Filtered DNA sequences */
-/* Last edited on 2015-10-29 00:06:35 by stolfilocal */
+/* Last edited on 2022-10-31 11:18:26 by stolfi */
 
 #define dnae_vis_H_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)" \
@@ -40,10 +40,10 @@ r3_vec_t dnae_vis_datums_to_points(dnae_seq_t *seq, double magnify, r3_t *pvec);
   /* Converts the three channels of each datum of {seq} to a Cartesian coordinate triple, 
   multiplying its coordinates by {magnify} and adding the vector {pvec} to it. */
     
-void dnae_vis_choose_perturbations(double perturb, int ns, r3_t pvec[]);
+void dnae_vis_choose_perturbations(double perturb, int32_t ns, r3_t pvec[]);
   /* Sets {pvec[0..ns-1]} to {ns} distinct vectors with length {perturb}. */
 
-double dnae_vis_max_datum_euc_distsq(int ns, dnae_seq_t seq[], int k, int dir);
+double dnae_vis_max_datum_euc_distsq(int32_t ns, dnae_seq_t seq[], int32_t k, int32_t dir);
   /* Returns the maxmum Euclidean distance squared between any two datums with same index {k}
     in sequences {seq[0..ns-1]}, as computed by {dnae_datum_euc_distsq}. If {dir} is {+1}, the index {k} is counted
     from the beginnining of each sequence; if {dir} is {-1}, it is counted
@@ -53,13 +53,13 @@ double dnae_vis_max_datum_euc_distsq(int ns, dnae_seq_t seq[], int k, int dir);
 /* HIGHLIGHTING */
 
 void dnae_vis_determine_visible_segments
-  ( int ns, 
+  ( int32_t ns, 
     dnae_seq_t seq[], 
     bool_t showMatch, 
     bool_t hideMatch, 
     double maxDist, 
-    int ini[], 
-    int fin[]
+    int32_t ini[], 
+    int32_t fin[]
   );
   /* Determines the segments of sequences {seq[0..ns-1]} that are to 
     receive special treatment, as described in {dnae_vis_show_hide_match_option_INFO}.
@@ -80,7 +80,7 @@ void dnae_vis_determine_visible_segments
     If neither {showMatch} nor {hideMatch}} are true, sets {ini[i] = 0}, {fin[i]
     = ni-1}, just in case. */
 
-int dnae_vis_find_pref_suff_match(int ns, dnae_seq_t seq[], double maxDist, int dir);
+int32_t dnae_vis_find_pref_suff_match(int32_t ns, dnae_seq_t seq[], double maxDist, int32_t dir);
   /* Finds the longest prefix (if {dir} is {+1}) or the longest suffix
     (if {dir} is {-1}) of the sequences {seq[0..ns-1]} in which all
     coresponding datums differ by less than {maxDist}.   The distance is
@@ -88,7 +88,7 @@ int dnae_vis_find_pref_suff_match(int ns, dnae_seq_t seq[], double maxDist, int 
     datums) in the prefix or suffix. If there are no matching datums at
     the selected end, returns {0}. */
 
-void dnae_vis_find_mid_match(int ns, dnae_seq_t seq[], double maxDist, int minSize, int ini[], int fin[]);
+void dnae_vis_find_mid_match(int32_t ns, dnae_seq_t seq[], double maxDist, int32_t minSize, int32_t ini[], int32_t fin[]);
   /* Finds the longest segment in each of the sequences {seq[0..ns-1]} with at least {minSize} datums
     that matches a segment of same length some other sequence.  Two segments are considered to match 
     if all coresponding datums differ by less than {maxDist}. The distance is
@@ -101,7 +101,7 @@ void dnae_vis_find_mid_match(int ns, dnae_seq_t seq[], double maxDist, int minSi
 
 /* COMMAND LINE PARSING */
 
-void dnae_vis_parse_seqFile_options(argparser_t *pp, string_vec_t *seqFile,  int_vec_t *texture);
+void dnae_vis_parse_seqFile_options(argparser_t *pp, string_vec_t *seqFile,  int32_vec_t *texture);
   /* Parses the "-seqFile" arguments as described in {dnae_vis_seqFile_option_HELP} and 
     {dnae_vis_seqFile_option_INFO} below.  The vectors {seqFile} and {texture} are allocated 
     by the procedure itself, so they should be empty on input. */

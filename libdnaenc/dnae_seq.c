@@ -1,5 +1,5 @@
 /* See dnae_seq.h */
-/* Last edited on 2021-07-18 00:42:10 by jstolfi */
+/* Last edited on 2022-10-31 11:20:55 by stolfi */
 
 #define dnae_seq_C_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)" \
@@ -36,7 +36,7 @@
 
 /* IMPLEMENTATIONS */
 
-dnae_seq_t dnae_seq_new(int n)
+dnae_seq_t dnae_seq_new(int32_t n)
   { dnae_seq_t seq;
     seq.sd.id = dnae_seq_id_none;
     seq.sd.name = NULL;
@@ -45,7 +45,7 @@ dnae_seq_t dnae_seq_new(int n)
     seq.sd.estep = 0;
     seq.sd.skip = 0;
     seq.cmt = NULL;
-    int k;
+    int32_t k;
     for (k = 0; k < dnae_CHANNELS; k++) { seq.sfac.f[k] = 1.0; }
     seq.dv = dnae_datum_vec_new(n);
     return seq;
@@ -56,7 +56,7 @@ dnae_seq_t dnae_seq_from_datum_vec
     char *name, 
     bool_t rev,
     int8_t estep, 
-    int skip, 
+    int32_t skip, 
     char *cmt, 
     dnae_datum_scale_t *sfac,
     dnae_datum_vec_t dv
@@ -69,7 +69,7 @@ dnae_seq_t dnae_seq_from_datum_vec
     seq.sd.estep = estep;
     seq.sd.skip = skip;
     seq.cmt = cmt;
-    int k;
+    int32_t k;
     for (k = 0; k < dnae_CHANNELS; k++) { seq.sfac.f[k] = sfac->f[k]; }
     seq.dv = dv;
     return seq;
@@ -82,23 +82,23 @@ dnae_seq_t dnae_seq_from_nucleic_string(dnae_seq_id_t id, char *name, bool_t rev
     /* Compute standard deviation {rms} of signal for uniformly distributed bases: */
     double rms = dnae_NUCLEIC_RAW_SCALE;
     dnae_datum_scale_t sfac;
-    int k; for (k = 0; k < dnae_CHANNELS; k++) { sfac.f[k] = rms; }
+    int32_t k; for (k = 0; k < dnae_CHANNELS; k++) { sfac.f[k] = rms; }
     /* Pack it all as a {dnae_seq_t}: */
     int8_t estep = 0;
-    int skip = 0;
+    int32_t skip = 0;
     dnae_seq_t seq = dnae_seq_from_datum_vec(id, name, rev, estep, skip, cmt, &sfac, dv); 
     return seq;
   }
 
 dnae_seq_t dnae_seq_copy(dnae_seq_t *seq)
-  { int nd = seq->sd.size;
+  { int32_t nd = seq->sd.size;
     return dnae_seq_copy_sub(seq, 0, nd - 1); 
   }
 
-dnae_seq_t dnae_seq_copy_sub(dnae_seq_t *seq, int ini, int fin)
+dnae_seq_t dnae_seq_copy_sub(dnae_seq_t *seq, int32_t ini, int32_t fin)
   { /* Compute the new sequence's size and offset: */
-    int size = (ini > fin ? 0 : fin - ini + 1);
-    int skip = (size == 0 ? 0 : seq->sd.skip + ini);
+    int32_t size = (ini > fin ? 0 : fin - ini + 1);
+    int32_t skip = (size == 0 ? 0 : seq->sd.skip + ini);
     if (size > 0) { demand((0 <= ini) && (fin < seq->sd.size), "invalid index range"); }
     /* Create the descriptor and copy the datums: */
     dnae_seq_t scp;
@@ -109,53 +109,53 @@ dnae_seq_t dnae_seq_copy_sub(dnae_seq_t *seq, int ini, int fin)
     scp.sd.skip = skip;
     scp.sd.size = size;
     scp.cmt = seq->cmt;
-    int i, k;
+    int32_t i, k;
     for (k = 0; k < dnae_CHANNELS; k++) { scp.sfac.f[k] = seq->sfac.f[k]; }
     scp.dv = dnae_datum_vec_new(size);
     for (i = 0; i < size; i++) { scp.dv.e[i] = seq->dv.e[i + ini]; }
     return scp; 
   }
 
-int dnae_seq_num_datums(dnae_seq_t *seq)
+int32_t dnae_seq_num_datums(dnae_seq_t *seq)
   { return seq->dv.ne; }
   
-dnae_sample_enc_t *dnae_seq_get_sample_enc_address(dnae_seq_t *seq, int i, int k)
+dnae_sample_enc_t *dnae_seq_get_sample_enc_address(dnae_seq_t *seq, int32_t i, int32_t k)
   { assert((k >= 0) && (k < dnae_CHANNELS));
     dnae_datum_t *dp = dnae_seq_get_datum_address(seq, i);
     return &(dp->c[k]);
   }
   
-dnae_sample_enc_t dnae_seq_get_sample_enc(dnae_seq_t *seq, int i, int k)
+dnae_sample_enc_t dnae_seq_get_sample_enc(dnae_seq_t *seq, int32_t i, int32_t k)
   { dnae_sample_enc_t *sp = dnae_seq_get_sample_enc_address(seq, i, k);
     return *sp;
   }
   
-void dnae_seq_set_sample_enc(dnae_seq_t *seq, int i, int k, dnae_sample_enc_t s)
+void dnae_seq_set_sample_enc(dnae_seq_t *seq, int32_t i, int32_t k, dnae_sample_enc_t s)
   { dnae_sample_enc_t *sp = dnae_seq_get_sample_enc_address(seq, i, k);
     (*sp) = s;
   }
 
-dnae_datum_t *dnae_seq_get_datum_address(dnae_seq_t *seq, int i)
-  { int n = seq->dv.ne;
+dnae_datum_t *dnae_seq_get_datum_address(dnae_seq_t *seq, int32_t i)
+  { int32_t n = seq->dv.ne;
     
     assert((i >= 0) && (i < n));
     dnae_datum_t *dp = &(seq->dv.e[i]);
     return dp;
   }
 
-dnae_datum_t dnae_seq_get_datum(dnae_seq_t *seq, int i)
+dnae_datum_t dnae_seq_get_datum(dnae_seq_t *seq, int32_t i)
   { dnae_datum_t *dp = dnae_seq_get_datum_address(seq, i);
     return *dp;
   }
   
-void dnae_seq_set_datum(dnae_seq_t *seq, int i, dnae_datum_t d)
+void dnae_seq_set_datum(dnae_seq_t *seq, int32_t i, dnae_datum_t d)
   { dnae_datum_t *dp = dnae_seq_get_datum_address(seq, i);
     (*dp) = d;
   }
 
 dnae_datum_t dnae_seq_eval(dnae_seq_t *seq, double x, bool_t smooth)
   { 
-    int nsmp = seq->dv.ne;
+    int32_t nsmp = seq->dv.ne;
     int32_t size = seq->sd.size;
     assert(nsmp == size);
     
@@ -164,8 +164,8 @@ dnae_datum_t dnae_seq_eval(dnae_seq_t *seq, double x, bool_t smooth)
     
     /* Linear interpolation for now. */
     /* !!! Change to a smoother interpolation !!! */
-    int i0 = (int)floor(x); /* Index of preceding sample. */
-    int i1 = (int)ceil(x);  /* Index of next sample. */
+    int32_t i0 = (int32_t)floor(x); /* Index of preceding sample. */
+    int32_t i1 = (int32_t)ceil(x);  /* Index of next sample. */
     assert((0 <= i0) && (i0 <= i1) && (i1 < nsmp));
     if (i0 == i1)
       { /* No interpolation needed. */
@@ -190,7 +190,7 @@ dnae_datum_t dnae_seq_eval(dnae_seq_t *seq, double x, bool_t smooth)
         
         /* Evaluate the interpolated datum {fx} channel by channel: */
         dnae_datum_t fx;
-        int c;
+        int32_t c;
         for (c = 0; c < dnae_CHANNELS; c++)
           { double sfac = seq->sfac.f[c]; /* Scale factor for channel {c}. */
             /* Get decoded values at {i0,i1}: */
@@ -269,7 +269,7 @@ void dnae_seq_write(FILE *wr, dnae_seq_t *seq)
     filefmt_write_header(wr, dnae_seq_type_name, dnae_seq_version);
     
     /* Write the comment, if any: */
-    int ind = 0; /* Comment indentation. */
+    int32_t ind = 0; /* Comment indentation. */
     if (seq->cmt != NULL) { filefmt_write_comment(wr, seq->cmt, ind, '|'); }
     
     /* Write the header fields: */
@@ -280,16 +280,16 @@ void dnae_seq_write(FILE *wr, dnae_seq_t *seq)
     fprintf(wr, "offset = %d\n", seq->sd.skip);
     fprintf(wr, "channels = %d\n", dnae_CHANNELS);
     fprintf(wr, "scale =");
-    int k; for (k = 0; k < dnae_CHANNELS; k++)
+    int32_t k; for (k = 0; k < dnae_CHANNELS; k++)
       { fprintf(wr, " %24.16e", seq->sfac.f[k]); }
     fprintf(wr, "\n");
     fprintf(wr, "datums = %d\n", seq->dv.ne);
     
     /* Write the datum vector: */
-    int ib;
+    int32_t ib;
     for (ib = 0; ib < seq->dv.ne; ib++)
       { dnae_datum_t *dp = &(seq->dv.e[ib]);
-        int k;
+        int32_t k;
         for (k = 0; k < dnae_CHANNELS; k++)
           { fprintf(wr, " %+6d", dp->c[k]); }
         fprintf(wr, "\n");
@@ -315,36 +315,36 @@ dnae_seq_t dnae_seq_read(FILE *rd)
     char *cmt = filefmt_read_comment(rd, '|');
     
     /* Read the header fields: */
-    int id = nget_int(rd, "id"); fget_eol(rd);
+    int32_t id = nget_int32(rd, "id"); fget_eol(rd);
 
     char *name = nget_string(rd, "name"); fget_eol(rd);
 
     bool_t rev = nget_bool(rd, "reversed"); fget_eol(rd);
 
-    int estep = nget_int(rd, "resampling"); fget_eol(rd);
+    int32_t estep = nget_int32(rd, "resampling"); fget_eol(rd);
     demand(abs(estep) <= msm_seq_desc_estep_MAX, "bad resampling");
 
-    int skip = nget_int(rd, "offset"); fget_eol(rd);
+    int32_t skip = nget_int32(rd, "offset"); fget_eol(rd);
 
-    int chns = nget_int(rd, "channels"); fget_eol(rd);
+    int32_t chns = nget_int32(rd, "channels"); fget_eol(rd);
     demand(chns == dnae_CHANNELS, "wrong number of channels");
     
     dnae_datum_scale_t sfac;
     sfac.f[0] = nget_double(rd, "scale");
-    int k; for (k = 1; k < dnae_CHANNELS; k++) { sfac.f[k] = fget_double(rd); }
+    int32_t k; for (k = 1; k < dnae_CHANNELS; k++) { sfac.f[k] = fget_double(rd); }
     fget_eol(rd);
     
-    int nsmp = nget_int(rd, "datums"); fget_eol(rd);
+    int32_t nsmp = nget_int32(rd, "datums"); fget_eol(rd);
     demand(nsmp >= 0, "invalid datum count");
     
     /* Read the datum vector: */
     dnae_datum_vec_t dv = dnae_datum_vec_new(nsmp);
-    int ib;
+    int32_t ib;
     for (ib = 0; ib < nsmp; ib++)
       { dnae_datum_t d;
-        int k;
+        int32_t k;
         for (k = 0; k < dnae_CHANNELS; k++)
-          { int s = fget_int(rd);
+          { int32_t s = fget_int32(rd);
             demand((s >= dnae_sample_enc_VALID_MIN) && (s <= dnae_sample_enc_VALID_MAX), "bad sample value"); 
             d.c[k] = (dnae_sample_enc_t)s;
           }
@@ -400,23 +400,11 @@ void dnae_seq_free(dnae_seq_t *seq)
     free(seq); 
   }
     
-void dnae_seq_multi_free_datums(dnae_seq_t seq[], int maxLevel)
-  { int level;
-    for (level = 0; level <= maxLevel; level++)
-      { dnae_seq_free_datums(&(seq[level])); }
-  }
-
-void dnae_seq_multi_free(dnae_seq_t *seq[], int maxLevel)
-  { int level;
-    for (level = 0; level <= maxLevel; level++)
-      { dnae_seq_free(seq[level]); }
-  }
-   
 dnae_seq_t dnae_seq_filter(dnae_seq_t *seq, double_vec_t *wtb, int8_t ek, char *wcmt)
   { /* Get filter kernel width {nw}: */
-    int nw = wtb->ne;
+    int32_t nw = wtb->ne;
     demand((nw % 2) == 1, "filter kernel width must be odd");
-    int hw = (nw - 1)/2;  /* Filter kernel radius. */
+    int32_t hw = (nw - 1)/2;  /* Filter kernel radius. */
     /* Decide parameters of filtered sequence (note: may be empty): */
     demand(ek >= 0, "{dnae_seq_filter} cannot interpolate");
     msm_seq_desc_t sdo = seq->sd; /* Old sequence descriptor. */
@@ -428,7 +416,7 @@ dnae_seq_t dnae_seq_filter(dnae_seq_t *seq, double_vec_t *wtb, int8_t ek, char *
     /* Allocate new datum vector {dvn}: */
     dnae_datum_vec_t dvn = dnae_datum_vec_new(ndn);
     dnae_datum_scale_t Sn;  /* Scale factors for encoding the new samples: */
-    int k;
+    int32_t k;
     if (ndn == 0)
       { /* Sequence {seq} is empty, output is empty. */
         /* Set {Sn} to something sensible, just in case: */
@@ -439,7 +427,7 @@ dnae_seq_t dnae_seq_filter(dnae_seq_t *seq, double_vec_t *wtb, int8_t ek, char *
     else
       { /* Some samples of {sdo} are aligned with some samples of {sdn}. */
         /* The assertions marked "OC" are output conditions of {msm_seq_desc_filter}. */
-        int stpo = (1 << ek);  /* Step in {sdo} between aligned samples. */
+        int32_t stpo = (1 << ek);  /* Step in {sdo} between aligned samples. */
         int32_t iskpo = sdn.skip*stpo - sdo.skip; /* Samples skipped at start of old sequence. */
         int32_t fskpo = ndo - iskpo - 1 - (ndn - 1)*stpo; /* Samples skipped at end of old sequence. */
         /* Old samples lost must be enough to fit the filtering kernel: */
@@ -454,7 +442,7 @@ dnae_seq_t dnae_seq_filter(dnae_seq_t *seq, double_vec_t *wtb, int8_t ek, char *
         for (k = 0; k < dnae_CHANNELS; k++)
           { /* Extract and decode the old samples {seq.dv}: */
             double Sok = seq->sfac.f[k];
-            int i;
+            int32_t i;
             for (i = 0; i < ndo; i++)
               { dnae_sample_enc_t s = dnae_seq_get_sample_enc(seq, i, k);
                 vo.e[i] = dnae_sample_decode(s, Sok); 
@@ -504,11 +492,11 @@ dnae_seq_t dnae_seq_interpolate(dnae_seq_t *seq, int8_t ek)
     int32_t ndo = sdo.size;
     int32_t ndn = sdn.size;
     assert(ndo == seq->dv.ne);
-    int stpn = (1 << (-ek));  /* Step in {sdn} between aligned samples. */
+    int32_t stpn = (1 << (-ek));  /* Step in {sdn} between aligned samples. */
     /* Allocate new datum vector {dvn}: */
     dnae_datum_vec_t dvn = dnae_datum_vec_new(ndn);
     dnae_datum_scale_t Sn;  /* Scale factors for encoding the new samples: */
-    int k;
+    int32_t k;
     if (ndn == 0)
       { /* Sequence {seq} is empty, output is empty. */
         /* Set {Sn} to something sensible, just in case: */
@@ -526,7 +514,7 @@ dnae_seq_t dnae_seq_interpolate(dnae_seq_t *seq, int8_t ek)
             for (k = 0; k < dnae_CHANNELS; k++)
               { /* Extract and decode the old samples {seq.dv}: */
                 double Sok = seq->sfac.f[k];
-                int i;
+                int32_t i;
                 for (i = 0; i < ndo; i++)
                   { dnae_sample_enc_t s = dnae_seq_get_sample_enc(seq, i, k);
                     vo.e[i] = dnae_sample_decode(s, Sok); 
@@ -568,32 +556,3 @@ dnae_seq_t dnae_seq_interpolate(dnae_seq_t *seq, int8_t ek)
     
   }
 
-void dnae_seq_multi_filter
-  ( dnae_seq_t *s, 
-    int maxLevel, 
-    double_vec_t *wtb0,
-    char *wname0,
-    double_vec_t *wtb1,
-    char *wname1,
-    int8_t ek0,
-    dnae_seq_t sr[]
-  )
-  { int k; /* Level of hierarchy. */
-    for (k = 0; k <= maxLevel; k++)
-      { if (k == 0)
-          { sr[k] = dnae_seq_copy(s); }
-        else
-          { double_vec_t *wtb = (k == 1 ? wtb0 : wtb1);
-            char *wname = (k == 1 ? wname0 : wname1);
-            int8_t ekk = (int8_t)(k == 1 ? ek0 : 1);    /* Exponent of step for upsampling/downsampling. */
-            int8_t ekf = (int8_t)(ekk >= 0 ? ekk : 0);  /* Exponent of step for downsampling. */
-            sr[k] = dnae_seq_filter(&(sr[k-1]), wtb, ekf, wname);
-            if (ekk < 0) 
-              { dnae_seq_t tmp = sr[k];
-                sr[k] = dnae_seq_interpolate(&tmp, ekk);
-                dnae_seq_free_datums(&tmp);
-              }
-          }
-      }
-  }
- 

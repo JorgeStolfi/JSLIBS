@@ -1,11 +1,12 @@
 /* See dnae_nucleic.h */
-/* Last edited on 2019-04-09 13:03:48 by jstolfi */
+/* Last edited on 2022-10-31 09:41:08 by stolfi */
 
 #define dnae_nucleic_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
 
 #define _GNU_SOURCE
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
@@ -24,9 +25,9 @@ bool_t dnae_nucleic_mutate_step
     bool_t upper, 
     double mutProb, 
     double delProb, 
-    int *nP, 
+    int32_t *nP, 
     char_vec_t *cv,
-    int *skp,
+    int32_t *skp,
     bool_t *mut
   );
   /* Simulates one cycle of the natural duplication of a nucleotide 
@@ -58,14 +59,14 @@ bool_t dnae_nucleic_mutate_step
     (`success'). */
 
 char dnae_nucleic_throw(bool_t upper, bool_t dna)
-  { int c = (dna ? "atcg" : "aucg")[abrandom(0,3)];
+  { int32_t c = (dna ? "atcg" : "aucg")[abrandom(0,3)];
     if (upper) { c = toupper(c); }
     return (char)c;
   }
   
-char *dnae_nucleic_string_throw(int nb, bool_t upper, bool_t dna)
+char *dnae_nucleic_string_throw(int32_t nb, bool_t upper, bool_t dna)
   { char *b = (char *)notnull(malloc((nb+1)*sizeof(char)), "no mem");
-    int k;
+    int32_t k;
     for (k = 0; k < nb; k++) { b[k] = dnae_nucleic_throw(upper, dna); }
     b[nb] = 0;
     return b;
@@ -77,9 +78,9 @@ bool_t dnae_nucleic_mutate_step
     bool_t upper, 
     double mutProb, 
     double delProb, 
-    int *nP, 
+    int32_t *nP, 
     char_vec_t *cv,
-    int *skp,
+    int32_t *skp,
     bool_t *mut
   )
   { 
@@ -131,14 +132,14 @@ void dnae_nucleic_string_mutate
     msm_rung_vec_t *gv
   )
   { /* Allocate character and integer vectors {rv,*gv} slightly larger than {s}: */
-    int nguess = (11*((int)strlen(s)))/10; /* Guessed size of result. */
+    int32_t nguess = (11*((int32_t)strlen(s)))/10; /* Guessed size of result. */
     char_vec_t rv = char_vec_new(nguess);
     (*gv) = msm_rung_vec_new(nguess);
-    int nr = 0; /* Number of chars in new string. */
-    int ng = 0; /* Number of indices in {iv}. */
-    int ix = 0; /* Index of next char in {s}. */
+    int32_t nr = 0; /* Number of chars in new string. */
+    int32_t ng = 0; /* Number of indices in {iv}. */
+    int32_t ix = 0; /* Index of next char in {s}. */
     while (TRUE)
-      { int skp;
+      { int32_t skp;
         bool_t mut;
         bool_t ok = dnae_nucleic_mutate_step(s[ix], dna, upper, mutProb, delProb, &nr, &rv, &skp, &mut);
         if (! ok) { break; }
@@ -167,9 +168,9 @@ void dnae_nucleic_string_write_named(char *fname, char *tag, char *ext, char *s,
 #define dnae_nucleic_BASES_PER_LINE 70
 
 void dnae_nucleic_string_write(FILE *wr, char *s, char *cmt)
-  { int ind = 0; /* Comment indentation. */
+  { int32_t ind = 0; /* Comment indentation. */
     filefmt_write_comment(wr, cmt, ind, '>');
-    int nb = 0; /* Number of nucleotides written out. */
+    int32_t nb = 0; /* Number of nucleotides written out. */
     while ((*s) != 0)
       { if ((nb > 0) && ((nb % dnae_nucleic_BASES_PER_LINE) == 0))
           { fputc('\n', wr); }
@@ -185,9 +186,9 @@ void dnae_nucleic_string_read(FILE *rd, char **sp, char **cmtp)
     (*cmtp) = filefmt_read_comment(rd, '>');
     /* Read bases, skipping blanks: */
     char_vec_t sv = char_vec_new(1000);
-    int nbas = 0; /* Counts base letters read. */
-    int nlin = 1; /* Current line number for diagnostics. */
-    int ch;
+    int32_t nbas = 0; /* Counts base letters read. */
+    int32_t nlin = 1; /* Current line number for diagnostics. */
+    int32_t ch;
     bool_t ignore_lf = FALSE; /* Set to TRUE immediately after a '\015' */
     while ((ch = getc(rd)) != EOF)
       { if (ch=='\015')
@@ -225,7 +226,7 @@ bool_t is_dna_basis(char c)
       (c == 'a') || (c == 't') || (c == 'u') || (c == 'c') || (c == 'g') ;
   }
 
-void dnae_nucleic_value(char b, int *A, int *T, int *C, int *G)
+void dnae_nucleic_value(char b, int32_t *A, int32_t *T, int32_t *C, int32_t *G)
   { (*A) = (*T) = (*C) = (*G) = 0;
     if ((b == 'A') || (b == 'a'))
       { (*A) = 1; }

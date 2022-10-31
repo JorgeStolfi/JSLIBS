@@ -2,7 +2,7 @@
 #define msm_ps_tools_H
 
 /* Postscript plots of graphs and such. */
-/* Last edited on 2022-10-20 06:37:25 by stolfi */
+/* Last edited on 2022-10-31 13:08:48 by stolfi */
 
 #define msm_ps_tools_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -24,9 +24,11 @@
 typedef struct msm_ps_tools_t msm_ps_tools_t;
   /* A handle to a Postscript graph-plotting stream.
   
-    An {msm_ps_tools_t} is a handle to a {FILE} descriptor plus some
-    internal state. The file is supposed to contain one Encapsulated
-    Postscript image.
+    An {msm_ps_tools_t} is a handle to an {epswr_figure_t} object plus some
+    internal state. The {epswr_figure_t} object in turn includes a
+    handle to a file that is supposed to contain one Encapsulated
+    Postscript image. Plot commands on this interface (or in the {epswr.h} 
+    interface) usually write Postscript commands to that file.
     
     Procedures that create an {msm_ps_tools_t} take as parameters a
     {FILE*} {wr} and two strings {name} and {tag}. If {wr} is not
@@ -37,8 +39,12 @@ typedef struct msm_ps_tools_t msm_ps_tools_t;
     "{name}{tag}.eps" and use that file instead of {wr}. In both
     cases, the procedure will write the appropriate EPS preamble to
     the file.
-    
-    All dimensional parameters are in mm, except where said otherwise.
+
+    Many plotting routines in this interface take their arguments in
+    /Graph coordinates/ {x,y}. A {msm_ps_tools_t} object defines a
+    mapping of those Graph coordinates to the {epswr} ``client''
+    coordinates (here called /Epswr coordinates/) {h,v}, measured in
+    millimeters from the lower left corner of the plot area.
     
     The client must call {msm_ps_tools_close} at the end, to write the necessary 
     postamble and close the underlying {FILE}. 
@@ -62,7 +68,8 @@ msm_ps_tools_t *msm_ps_tools_new
     The parameters {maxXLabChars,maxYLabChars} should be an upper bound
     on the number of characters in the X and Y plot scale labels.
     
-    The client's coordinate system and plotable area will be set
+    The {epswr} client and device coordinate systems and windows,
+    as well as the Graph coordinates of this intervace, will be set
     initially to the rectangle {[0_hSize]×[0_vSize]] excluding the
     margin.
     
@@ -86,7 +93,7 @@ msm_ps_tools_t *msm_ps_tools_new_graph
   );
   /* Creates a {msm_ps_tools_t} for an Encapsulated Postscript
     figure that is to contain a graph of width {hGraphSize} and height
-    {vGraphSize}.
+    {vGraphSize} (in mm).
     
     The plottable area will include space for the graph, plus extra
     space around it for graph scales at the left, right, bottom or top
@@ -100,7 +107,7 @@ msm_ps_tools_t *msm_ps_tools_new_graph
     In addition to these extra spaces, the figure will have an extra
     margin of {mrg} mm all around the plottable area.
     
-    The client and device reference rectangles will be initialized
+    The Graph and Epswr reference rectangles will be initialized
     to the graph area only (excluding the scale and title areas). */
   
 void msm_ps_tools_close(msm_ps_tools_t *mps);
@@ -113,84 +120,85 @@ void msm_ps_tools_get_plot_size(msm_ps_tools_t *mps, double *hSize, double *vSiz
   /* Stores in {*hSize} and {*vSize} the dimensions (in mm) of the usableplot
     area, as specified to {msm_ps_tools_init}, excluding the margin. */
    
-/* COORDINATE MAPPING
-  
-  Many plotting routines in this interface take their arguments in
-  /client coordinates/ {x,y}. A {msm_ps_tools_t} object defines
-  a mapping of those client coordinates to /device
-  coordinates/ {h,v}, measured in millimeters from the lower left
-  corner of the plot area. */
+/* COORDINATE MAPPING */
   
 double msm_ps_tools_map_x(msm_ps_tools_t *mps, double x);
 double msm_ps_tools_map_y(msm_ps_tools_t *mps, double y);
 double msm_ps_tools_map_coord(msm_ps_tools_t *mps, epswr_axis_t axis, double coord);
 void msm_ps_tools_map_coords(msm_ps_tools_t *mps, double x, double y, double *h, double *v);
-  /* These procedures map client coordinates {x,y} to device
+  /* These procedures map Graph coordinates {x,y} to Epswr
      coordinates {h,v}, as defined by {mps}. */
 
 double msm_ps_tools_unmap_h(msm_ps_tools_t *mps, double h);
 double msm_ps_tools_unmap_v(msm_ps_tools_t *mps, double v);
 double msm_ps_tools_unmap_coord(msm_ps_tools_t *mps, epswr_axis_t axis, double coord);
 void msm_ps_tools_unmap_coords(msm_ps_tools_t *mps, double h, double v, double *x, double *y);
-  /* These procedures map device coordinates {h,v} to client
+  /* These procedures map Epswr coordinates {h,v} to Graph
      coordinates {x,y}, as defined by {mps}. */
   
 /* SETTING THE COORDINATE MAPPINGS
 
-  The client-to-device mapping of a {msm_ps_tools_t} object is defined by
-  two rectangles stored in the object: the /device reference window/
-  {DRW = [hMin_hMax]×[vMin_vMax]} and the /client reference window/
-  {CRW = [xMin_xMax]×[yMin_yMax]}.
+  The Graph-to-Epswr mapping of a {msm_ps_tools_t} object is defined by
+  two rectangles stored in the object: the /Epswr reference window/
+  {ERW = [hMin_hMax]×[vMin_vMax]} and the /Graph reference window/
+  {GRW = [xMin_xMax]×[yMin_yMax]}. The {ERW} is distinct from 
+  the {epswr} ``client'' and ``device'' windows.
   
-  The client-to-device mapping is such that the {CRW} is mapped to the
-  {DRW}. More precisely, {x=xMin} is mapped to {h=hMin}, {x=xMax} to
-  {h=hMax}. So, if {hMin > hMax} (or {xMin > xMax}) the client {x}
+  The Graph-to-Epswr mapping is such that the {GRW} is mapped to the
+  {ERW}. More precisely, {x=xMin} is mapped to {h=hMin}, {x=xMax} to
+  {h=hMax}. So, if {hMin > hMax} (or {xMin > xMax}) the Graph {x}
   axis is directed from right to left. The same holds for the {y} and
   {v} coordinates.
   
-  Changing either of these rectangles affects the way that client
+  Changing either of these rectangles affects the way that Graph
   coordinates are interpreted by subsequent function calls.
 
-  The rectangles {CRW} and {DRW} are not used for clipping.
+  The rectangles {GRW} and {ERW} are not used for clipping.
   Regardless of them, the usable plotting area is always
-  the rectangle {[0_hSize]×[0_vSize]} in device coordinates. */
+  the rectangle {[0_hSize]×[0_vSize]} in Epswr coordinates. */
 
-void msm_ps_tools_set_device_ref_window
+void msm_ps_tools_set_epswr_ref_window
   ( msm_ps_tools_t *mps,
     double hMin, double hMax, 
     double vMin, double vMax
   );
-  /* Sets the device reference window to the specified
+  /* Sets the Epswr reference window to the specified
     rectangle (in mm from the lower left corner of the 
     plottable area).*/
 
-void msm_ps_tools_set_client_ref_window
+void msm_ps_tools_set_graph_ref_window
   ( msm_ps_tools_t *mps,
     double xMin, double xMax, 
     double yMin, double yMax
   );
-  /* Sets the client reference window to the specified
-    rectangle (in client coordinates).*/
+  /* Sets the Graph reference window to the specified
+    rectangle (in Graph coordinates).*/
 
-void msm_ps_tools_shrink_device_ref_window
+void msm_ps_tools_shrink_epswr_ref_window
   ( msm_ps_tools_t *mps,
     double lMrg, double rMrg, 
     double bMrg, double tMrg
   );
-  /* Displaces the device reference window boundary INWARDS by the
-    specified amounts on the left, right, bottom, and top sides,
+  /* Displaces the Epswr reference window boundary INWARDS by the
+    specified amounts (in mm) on the left, right, bottom, and top sides,
     respectively. */
 
-void msm_ps_tools_expand_client_ref_window
+void msm_ps_tools_expand_graph_ref_window
   ( msm_ps_tools_t *mps,
     double lMrg, double rMrg, 
     double bMrg, double tMrg
   );
-  /* Displaces the client reference window boundary OUTWARDS by the
+  /* Displaces the Graph reference window boundary OUTWARDS by the
     specified amounts on the left, right, bottom, and top sides,
     respectively. */
 
-void msm_ps_tools_compute_data_range(int32_t n, int32_t stride, double z[], double *zMinP, double *zMaxP);
+void msm_ps_tools_compute_data_range
+  ( int32_t n, 
+    int32_t stride, 
+    double z[], 
+    double *zMinP, 
+    double *zMaxP
+  );
   /* Computes a data range {[*zMinP _ *zMaxP]} appropriate for plotting the 
     graph of {n} given values, namely {z[i*stride]} for {i = 0..n-1]}.
     The resulting range will be non-empty and non-degenerate even if {n == 0}
@@ -198,7 +206,7 @@ void msm_ps_tools_compute_data_range(int32_t n, int32_t stride, double z[], doub
 
 /* LOW-LEVEL DRAWING TOOLS 
 
-  Unless specified otherwise, all procedures below take client
+  Unless specified otherwise, all procedures below take Graph
   coordinates. */
 
 void msm_ps_tools_draw_segment(msm_ps_tools_t *mps, double xa, double ya, double xb, double yb);
@@ -257,15 +265,15 @@ void msm_ps_tools_draw_scale
     reference rectangle. The spacing of the tics is chosen by the
     procedure, with the constraint that the spacing between tic marks
     (labeled or unlabeled) must be at least {ticMinDist} in millimeters, and
-    {ticMinStep} in client coordinates. (At least one of these
+    {ticMinStep} in Graph coordinates. (At least one of these
     constraints must be positive.)
     
     If the parameter {fmt} is not NULL, a subset of the tics will be
-    labeled with the corresponding client coordinates, in the format
+    labeled with the corresponding Graph coordinates, in the format
     {fmt} (as per {printf}). Labeled tics are longer than unlabeled
     ones ({1.5*ticSize}, in mm). The spacing between labeled tics
     will be at least {labMinDist} in millimeters, and {labMinStep}
-    in client coordinates.  
+    in Graph coordinates.  
     
     The parameters {ticSize,ticAlign,labAlign} are explained
     under {msm_ps_tools_draw_tic}. The lines and tics will be drawn 
@@ -282,9 +290,9 @@ void msm_choose_label_coords
     int32_t *labPerP,
     int32_t *labSkpP
   );;
-  /* Chooses client coordinates for major (labeled) tics,
-    given the spacing {ztStep} (in client coordinates) between
-    minor tics, and the client coordinates {ztMin,ztMax} of the first and last
+  /* Chooses Graph coordinates for major (labeled) tics,
+    given the spacing {ztStep} (in Graph coordinates) between
+    minor tics, and the Graph coordinates {ztMin,ztMax} of the first and last
     minor tics.
 
     Specifically, the procedure chooses the number {labPer} (a
@@ -295,7 +303,7 @@ void msm_choose_label_coords
     
     If {minDist} is positive, it specifies the minimum spacing (in mm)
     between labeled tics. If {minStep} is positive, it specifies the
-    minimum increment (in client coordinates) between consecutive
+    minimum increment (in Graph coordinates) between consecutive
     labels.
     
     The results are returned in {*labPerP,*lasbSkpP}.  If the constraints
@@ -313,17 +321,17 @@ void msm_ps_tools_choose_tic_coords
     double *zMaxP,
     double *zStepP
   );
-  /* Chooses client coordinates for minor tics within the range
-    {[cMin_cMax]} of device coordinates.
+  /* Chooses Graph coordinates for minor tics within the range
+    {[cMin_cMax]} of Epswr coordinates.
     
     Specifically, the procedure chooses a nice round increment
-    {zStep} in client coordinates between two consecutive tics, and
-    computes the client coordinates {zMin,zMax}, multiples of
+    {zStep} in Graph coordinates between two consecutive tics, and
+    computes the Graph coordinates {zMin,zMax}, multiples of
     {zStep}, of the first and last tic that fit in that range.
     
     The parameter {minDist}, if positive, and specifies the minimum
     distance (in mm) between tics. The parameter {minStep}, if
-    positive, specifies the minimum client coordinate increment
+    positive, specifies the minimum Graph coordinate increment
     between tics. At least one of {minDist,minStep} must be
     positive.
     
@@ -342,9 +350,9 @@ void msm_psplot_choose_label_coords
     int32_t *labPerP,
     int32_t *labSkpP
   );
-  /* Chooses client coordinates for major (labeled) tics,
-    given the spacing {ztStep} (in client coordinates) between
-    minor tics, and the client coordinates {ztMin,ztMax} of the first and last
+  /* Chooses Graph coordinates for major (labeled) tics,
+    given the spacing {ztStep} (in Graph coordinates) between
+    minor tics, and the Graph coordinates {ztMin,ztMax} of the first and last
     minor tics.
 
     Specifically, the procedure chooses the number {labPer} (a
@@ -355,7 +363,7 @@ void msm_psplot_choose_label_coords
     
     If {minDist} is positive, it specifies the minimum spacing (in mm)
     between labeled tics. If {minStep} is positive, it specifies the
-    minimum increment (in client coordinates) between consecutive
+    minimum increment (in Graph coordinates) between consecutive
     labels.
     
     The results are returned in {*labPerP,*lasbSkpP}.  If the constraints
@@ -396,13 +404,13 @@ void msm_ps_tools_draw_y_dots
     dot centers are uniformly spaced in {[xMin_xMax]}. The Y
     coordinates are {y[0..n-1]}.
     
-    The radius {rad} is in mm, while the centers are in client
+    The radius {rad} is in mm, while the centers are in Graph
     coordinates. The parameters {fill} and {draw} are as in
     {epswr_dot}. */
 
 /* HIGH-LEVEL DRAWING TOOLS 
 
-  Unless specified otherwise, all procedures below take client
+  Unless specified otherwise, all procedures below take Graph
   coordinates. */
 
 void msm_ps_tools_draw_graphs
@@ -446,5 +454,19 @@ void msm_ps_tools_draw_histogram
     Also draws the axes, tic marks, and a surrounding frame. The
     vertical plot scale is adjusted to include {[yMin _ yMax]}, plus
     tics, tic labels etc.. */
+
+/* FOR LOW LEVEL HACKING */
+
+epswr_figure_t *msm_ps_tools_get_eps_figure(msm_ps_tools_t *mps);
+  /* Returns the {epswr_figure_t} object underlying {mps}. 
+  
+    This can be used to draw graphics objects not supported by this
+    interface. Any coordinate arguments must be first mapped b {double
+    msm_ps_tools_map_{x,y,coord,coords}} before being used as parameters
+    to the {epswr} functions.
+    
+    The {epswr} scale-setting procedures ({epswr_set_device_window}, 
+    {epswr_set_client_window}, etc) should not be used, or chaos will 
+    result. */
 
 #endif

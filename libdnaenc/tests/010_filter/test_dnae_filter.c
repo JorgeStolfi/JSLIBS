@@ -2,7 +2,7 @@
 #define PROG_DESC "test of DNA signal filtering routines (also spectrum plots)"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2021-07-04 05:11:17 by jstolfi */
+/* Last edited on 2022-10-31 12:17:27 by stolfi */
 
 #define test_dnae_filter_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -113,6 +113,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <assert.h>
 #include <math.h>
@@ -122,6 +123,7 @@
 #include <argparser.h>
 #include <affirm.h>
 #include <vec.h>
+#include <epswr.h>
 #include <wt_table.h>
 
 #include <msm_multi.h>
@@ -132,6 +134,7 @@
 #include <dnae_seq.h>
 #include <dnae_spectrum.h>
 #include <dnae_test_tools.h>
+#include <dnae_seq_multi.h>
 
 #define dnae_DEFAULT_PLOT_WIDTH 180.0
 #define dnae_DEFAULT_PLOT_HEIGHT 60.0
@@ -139,7 +142,7 @@
 
 typedef struct options_t 
   { char *seqFileName;   /* Name of file with DNA/RNA sequence (minus ".bas" ext). */
-    int maxLevel;        /* Maximum filtering level. */
+    int32_t maxLevel;        /* Maximum filtering level. */
     double_vec_t w0;     /* Filter weights for first stage (level 0 to level 1). */
     int8_t initStep_exp; /* Exponent of 2 of resampling step from level 0 to level 1. */ 
     double_vec_t w1;     /* Filter weights for subsequent stages. */
@@ -151,18 +154,18 @@ typedef struct options_t
     char *outName;       /* Output file name prefix (minus extensions). */
   } options_t;
   
-int main(int argc, char**argv);
+int32_t main(int32_t argc, char**argv);
 
-options_t *dnae_get_options(int argc, char**argv);
+options_t *dnae_get_options(int32_t argc, char**argv);
   /* Parses the command line options, packs 
     them into a {options_t} record. */
 
-void dnae_generate_and_plot_spectra(options_t *o, int N);
+void dnae_generate_and_plot_spectra(options_t *o, int32_t N);
   /* Generates and plots ideal spectra of random DNA signals
     and their filtered/sampled versions, assuming {N}
     datums in the basic sequence. */
 
-void dnae_compute_random_dna_spectrum(int N, double randP[]);
+void dnae_compute_random_dna_spectrum(int32_t N, double randP[]);
   /* Stores in {randP[0..N/2]} the theoretical power spectrum of a
     random DNA sequence. Assumes that the bases are uniformly
     distributed and independent. Also assumes that they are converted
@@ -171,35 +174,35 @@ void dnae_compute_random_dna_spectrum(int N, double randP[]);
     
     The spectrum is the sum of the spectra of all three channels */
 
-void dnae_compute_filter_spectrum(int nw, double w[ ], int N, double wP[]);
+void dnae_compute_filter_spectrum(int32_t nw, double w[ ], int32_t N, double wP[]);
   /* Stores in {wP[0..N/2]} the power spectrum of the sequence {w[0..nw-1]},
     zero-extended to {N} samples.  Requires {nw <= N}. */
 
-void dnae_dump_dft(int N, char *xN, fftw_complex *xP, char *yN, fftw_complex *yP);
+void dnae_dump_dft(int32_t N, char *xN, fftw_complex *xP, char *yN, fftw_complex *yP);
   /* Writes the complex vectors {xP[0..N-1]} and {yP[0..N-1]}
     (typically, a complex discrete signal and its DFT), side by side.
     The parameters {xN,yN} should be the names of the three vectors.
     If either vector is NULL, it is omitted from the printout. */
 
-void dnae_dump_spectra(int fMax, char *xN, double *xP, char *yN, double *yP, char *zN, double *zP);
+void dnae_dump_spectra(int32_t fMax, char *xN, double *xP, char *yN, double *yP, char *zN, double *zP);
   /* Writes the power spectra {xP[0..fMax]}, {yP[0..fMax]},
     {zP[0..fMax]} side by side. The parameters {xN,yN,zN} should be
     the names of the three vectors. If either vector is NULL, it is
     omitted from the printout. */
 
 void dnae_plot_spectra
-  ( int fMax,
+  ( int32_t fMax,
     double *xP,
     double *yP,
     double *zP,
-    int fSep,
+    int32_t fSep,
     double vMax,
     bool_t skipZero,
     double hPlotSize,
     double vPlotSize,
     double fontSize,
     char *outName,
-    int level,
+    int32_t level,
     char *tag
   );
   /* Plots up to three power spectra on the same graph, using the same 
@@ -215,20 +218,20 @@ void dnae_plot_spectra
     frequency {fSep}.  The plot is written to file
     "{outName}-{level}{tag}.eps". */
 
-void dnae_plot_graph(msm_ps_tools_t *dp, int fMax, double xP[], bool_t skipZero, double R, double G, double B, bool_t show_dots);
+void dnae_plot_graph(msm_ps_tools_t *dp, int32_t fMax, double xP[], bool_t skipZero, double R, double G, double B, bool_t show_dots);
   /* Plots to {dp} the graph with points {(f,xP[f])} for {f} between {0}
     and {fMax} inclusive. Note that {xP} must have {fMax+1} elements.
     The first data point is omitted if {skipZero} is true. The
     points are connecetd by a polyline with the given {R,G,B} color; if
     {show_dots} is true, also a dot is drawn at each point. */
 
-options_t *dnae_get_options(int argc, char**argv);
+options_t *dnae_get_options(int32_t argc, char**argv);
   /* Parses the command line options, packs 
     them into a {options_t} record. */
 
 #define dnae_debug_fft FALSE
 
-int main(int argc, char**argv)
+int32_t main(int32_t argc, char**argv)
   { 
     options_t *o = dnae_get_options(argc, argv);
 
@@ -248,7 +251,7 @@ int main(int argc, char**argv)
     dnae_seq_multi_filter(&s, o->maxLevel, &(o->w0), wname0, &(o->w1), wname1, ek0, r);
     
     /* Figure out max useful level {maxLevel}: */
-    int maxLevel = o->maxLevel;
+    int32_t maxLevel = o->maxLevel;
     while ((maxLevel >= 0) && (dnae_seq_num_datums(&(r[maxLevel])) == 0)) { maxLevel--; }
     fprintf(stderr, "maximum non-empty level is %d\n", maxLevel);
     
@@ -259,7 +262,7 @@ int main(int argc, char**argv)
       );
 
     if (o->plotSpectra) 
-      { int N = 1;
+      { int32_t N = 1;
         while (N < s.sd.size) { N <<= 1; }
         dnae_generate_and_plot_spectra(o, N);
       }
@@ -269,19 +272,19 @@ int main(int argc, char**argv)
     return 0;
   }
       
-void dnae_generate_and_plot_spectra(options_t *o, int N)
+void dnae_generate_and_plot_spectra(options_t *o, int32_t N)
   {
     /* Convenience: */
     double hSz = o->plotSize_h;
     double vSz = o->plotSize_v;
     double fSz = o->fontSize;
-    int ek0 = o->initStep_exp;
+    int32_t ek0 = o->initStep_exp;
     
     /* Number of datums in original signal: */
-    int origN = N;
+    int32_t origN = N;
     
     /* Maximum frequency in original signal: */
-    int origF = origN/2; 
+    int32_t origF = origN/2; 
     
     /* Nominal maximum power in random DNA spectrum: */
     double origW = 6.0*dnae_NUCLEIC_RAW_SCALE*dnae_NUCLEIC_RAW_SCALE;
@@ -293,10 +296,10 @@ void dnae_generate_and_plot_spectra(options_t *o, int N)
     dnae_plot_spectra(origF, origP, NULL, NULL, 0, origW, FALSE, hSz, vSz, fSz, o->outName, 0, "-db");
 
     /* Maximum samples any filtered sequence (accounting for subsampling at level 1): */
-    int maxN = origN*(ek0 < 0 ? (1 << (-ek0)) : 1); 
+    int32_t maxN = origN*(ek0 < 0 ? (1 << (-ek0)) : 1); 
     
     /* Maximum frequency in any power spectra: */
-    int maxF = maxN/2;
+    int32_t maxF = maxN/2;
     
     /* Nominal maximum power in filter spectra: */
     double maxW = 1.0;
@@ -319,12 +322,12 @@ void dnae_generate_and_plot_spectra(options_t *o, int N)
     
     /* !!! Should account for sequence shortening. !!! */
     
-    int f;
+    int32_t f;
     
     /* Initialize spectra for original sequence (level 0): */
-    int curL = 0;     /* Current filtering level. */
-    int curN = origN;  /* Number of samples in current signal. */
-    int curF = origF;  /* Max freq in {vP,aP}. */
+    int32_t curL = 0;     /* Current filtering level. */
+    int32_t curN = origN;  /* Number of samples in current signal. */
+    int32_t curF = origF;  /* Max freq in {vP,aP}. */
     
     /* Spectrum of filtered DNA signal at max resolution, assuming no resampling: */
     double *fP = (double *)notnull(malloc((maxF+1)*sizeof(double)), "no mem");
@@ -374,7 +377,7 @@ void dnae_generate_and_plot_spectra(options_t *o, int N)
         /* Compute the current signal and noise powers and N/S ratio: */
         double vPt = 0; /* Total power in non-aliased freqencies. */
         double aPt = 0; /* Total power in aliased frequencies. */
-        int g;
+        int32_t g;
         for (g = 0; g <= curF; g++) { vPt += vP[g]; aPt += aP[g]; }
         fprintf
           ( stderr,
@@ -387,7 +390,7 @@ void dnae_generate_and_plot_spectra(options_t *o, int N)
         if (o->w1.ne > curN) { fprintf(stderr, "!! seq too short\n"); break; }
 
         /* Compute number of samples {nextN} and max freq {nextF} after next resampling: */
-        int nextN;
+        int32_t nextN;
         if (curL == 0)
           { if (ek0 < 0) 
               { /* Interpolation at level 0 --> level 1: */
@@ -395,7 +398,7 @@ void dnae_generate_and_plot_spectra(options_t *o, int N)
               }
             else if (ek0 > 0)
               { /* Downsampling at level 0 --> level 1: */
-                int step = (1 << ek0);
+                int32_t step = (1 << ek0);
                 if (curN % step != 0) { fprintf(stderr, "!! cannot evenly downsample\n"); break; }
                 nextN = curN/step;
               }
@@ -406,7 +409,7 @@ void dnae_generate_and_plot_spectra(options_t *o, int N)
           { assert(curN % 2 == 0);
             nextN = curN/2;
           }
-        int nextF = nextN/2; /* Max freq after next resampling. */
+        int32_t nextF = nextN/2; /* Max freq after next resampling. */
 
         /* APPLY FILTERING: */
         
@@ -415,9 +418,9 @@ void dnae_generate_and_plot_spectra(options_t *o, int N)
         
         /* Build effective kernel {wft[0..maxN-1]} of filter in max resolution: */
         assert(maxN % curN == 0);
-        int maxS = maxN/curN; /* Step of current signal relative to max resolution signal: */
+        int32_t maxS = maxN/curN; /* Step of current signal relative to max resolution signal: */
         assert(wt->ne*maxS <= maxN);
-        int t;
+        int32_t t;
         for (t = 0; t < maxN; t++) { wft[t] = 0; }
         for (t = 0; t < wt->ne; t++) { wft[t*maxS] = wt->e[t]; }
         /* Compute power spectrum of incremental filter in max resolution: */
@@ -446,7 +449,7 @@ void dnae_generate_and_plot_spectra(options_t *o, int N)
         double *nextaP = notnull(malloc((nextF+1)*sizeof(double)), "no mem");
         
         /* Simulate resampling of {vP,aP} to {nextvP,nextaP}: */
-        int h;
+        int32_t h;
         for (h = 0; h <= nextF; h++) { nextvP[h] = nextaP[h] = 0; }
         if (nextN >= curN)
           { /* No downsampling, hence no aliasing: */
@@ -454,7 +457,7 @@ void dnae_generate_and_plot_spectra(options_t *o, int N)
           }
         else
           { assert(curN % nextN == 0);
-            int nextS = curN/nextN; /* Step of next signal relative to current one. */
+            int32_t nextS = curN/nextN; /* Step of next signal relative to current one. */
             for (g = 0; g <= curF; g++) 
               { /* Compute the frequency {h} that {g} becomes when 2-sampled: */
                 h = nextS*g;
@@ -492,8 +495,8 @@ void dnae_generate_and_plot_spectra(options_t *o, int N)
     free(wfP);
   }
 
-void dnae_dump_spectra(int fMax, char *xN, double *xP, char *yN, double *yP, char *zN, double *zP)
-  { int f;
+void dnae_dump_spectra(int32_t fMax, char *xN, double *xP, char *yN, double *yP, char *zN, double *zP)
+  { int32_t f;
     for (f = 0; f <= fMax; f++)
       { if (xP != NULL) { fprintf(stderr, " %s[%4d] = %8.6f", xN, f, xP[f]); }
         if (yP != NULL) { fprintf(stderr, " %s[%4d] = %8.6f", yN, f, yP[f]); }
@@ -502,8 +505,8 @@ void dnae_dump_spectra(int fMax, char *xN, double *xP, char *yN, double *yP, cha
       }
   }
 
-void dnae_dump_dft(int N, char *xN, fftw_complex *xP, char *yN, fftw_complex *yP)
-  { int i;
+void dnae_dump_dft(int32_t N, char *xN, fftw_complex *xP, char *yN, fftw_complex *yP)
+  { int32_t i;
     for (i = 0; i < N; i++)
       { if (xP != NULL)
           { fprintf(stderr, "  %s[%4d] = ( %+9.6f %+9.6f )", xN, i, xP[i][0], xP[i][1]); }
@@ -513,11 +516,11 @@ void dnae_dump_dft(int N, char *xN, fftw_complex *xP, char *yN, fftw_complex *yP
       }
   }
 
-void dnae_compute_random_dna_spectrum(int N, double randP[])
+void dnae_compute_random_dna_spectrum(int32_t N, double randP[])
   { /* Get and check some parameters: */
     demand(N % 2 == 0, "N must be even");
-    int fMax = N/2; /* Maximum frequency n power spectrum. */
-    int nc = dnae_CHANNELS; /* Number of channels in datums. */
+    int32_t fMax = N/2; /* Maximum frequency n power spectrum. */
+    int32_t nc = dnae_CHANNELS; /* Number of channels in datums. */
     assert(nc == 3); /* The analysis below is specific for {nc=3}. */
     double uP = 1.0; /* Expected power per channel and per freq {0..N-1} */
     /* In each channel, the samples are {-1} or {+1} with equal prob. */
@@ -526,14 +529,14 @@ void dnae_compute_random_dna_spectrum(int N, double randP[])
     /* For frequency {fMax}, the expected power is {1/N} too: */
     randP[fMax] = nc*uP;
     /* For other freqs {1..fMax-1}, the expected power is {2/N}  too: */
-    int f;
+    int32_t f;
     for (f = 1; f < fMax; f++) { randP[f] = 6*uP; }
   }
 
-void dnae_compute_filter_spectrum(int nw, double w[ ], int N, double wP[])
+void dnae_compute_filter_spectrum(int32_t nw, double w[ ], int32_t N, double wP[])
   { /* Get and check some parameters: */
     demand(N % 2 == 0, "N must be even");
-    int fMax = N/2; /* Maximum frequency in power spectrum. */
+    int32_t fMax = N/2; /* Maximum frequency in power spectrum. */
     demand(nw <= N, "nw must not exceed N");
     
     /* Allocate vectors {in,ot} for {fftw3.h} routines: */
@@ -544,7 +547,7 @@ void dnae_compute_filter_spectrum(int nw, double w[ ], int N, double wP[])
     fftw_plan plan = fftw_plan_dft_1d(N, in, ot, FFTW_FORWARD, FFTW_ESTIMATE);
 
     /* Store weights {w} in input vector, as complex numbers: */
-    int i;
+    int32_t i;
     for (i = 0; i < N; i++)
       { in[i][0] = (i < nw ? w[i] : 0); 
         in[i][1] = 0; 
@@ -560,11 +563,11 @@ void dnae_compute_filter_spectrum(int nw, double w[ ], int N, double wP[])
 
     /* Compute the power spectrum: */
     double norm = 1/((double)N); /* Power normalization factor. */
-    int f;
+    int32_t f;
     for (f = 0; f <= fMax; f++)
       { double P = ot[f][0]*ot[f][0] + ot[f][1]*ot[f][1];
         if ((f > 0) && (f < fMax))
-          { int g = N-f;
+          { int32_t g = N-f;
             P += ot[g][0]*ot[g][0] + ot[g][1]*ot[g][1];
           }
         wP[f] = norm*P;
@@ -588,18 +591,18 @@ void dnae_compute_filter_spectrum(int nw, double w[ ], int N, double wP[])
   }
 
 void dnae_plot_spectra
-  ( int fMax,
+  ( int32_t fMax,
     double *xP,
     double *yP,
     double *zP,
-    int fSep,
+    int32_t fSep,
     double vMax,
     bool_t skipZero,
     double hPlotSize,
     double vPlotSize,
     double fontSize,
     char *outName,
-    int level,
+    int32_t level,
     char *tag
   )
   { /* Colors for curves (all with brightness = 0.30): */
@@ -611,8 +614,8 @@ void dnae_plot_spectra
     double C[3] = { 0.800,0.500,0.000 };
     
     /* Max label chars in each scale: */
-    int maxXLabChars = (int)ceil(log(fmax(fMax,9))/M_LN10);
-    int maxYLabChars = 5; /* E.g. "+1.00". */
+    int32_t maxXLabChars = (int32_t)ceil(log(fmax(fMax,9))/M_LN10);
+    int32_t maxYLabChars = 5; /* E.g. "+1.00". */
     
     /* Figure dimensions in mm: */
     double mmpt = 25.4/72.0;  /* Size of a point in mm. */
@@ -640,7 +643,7 @@ void dnae_plot_spectra
     double xMax = fMax + xSkosh;
     
     /* Enlarge {vmax} if needed to enclose all data points: */
-    int f;
+    int32_t f;
     for (f = 0; f <= fMax; f++)
       { if ((xP != NULL) && (xP[f] > vMax)) { vMax = xP[f]; } 
         if ((yP != NULL) && (yP[f] > vMax)) { vMax = yP[f]; } 
@@ -687,9 +690,9 @@ void dnae_plot_spectra
     free(levTag);
   }
   
-void dnae_plot_graph(msm_ps_tools_t *dp, int fMax, double xP[], bool_t skipZero, double R, double G, double B, bool_t show_dots)
+void dnae_plot_graph(msm_ps_tools_t *dp, int32_t fMax, double xP[], bool_t skipZero, double R, double G, double B, bool_t show_dots)
   { assert(fMax >= 0);
-    int skip = (skipZero ? 1 : 0); /* How many data points to skip from start. */
+    int32_t skip = (skipZero ? 1 : 0); /* How many data points to skip from start. */
     PSStream *ps = msm_ps_tools_get_ps_stream(dp);
     pswr_set_pen(ps, R,G,B, 0.25, 0.0, 0.0);
     msm_ps_tools_draw_y_polyline(dp, skip, fMax, xP+skip, fMax+1-skip);
@@ -699,7 +702,7 @@ void dnae_plot_graph(msm_ps_tools_t *dp, int fMax, double xP[], bool_t skipZero,
       }
   }
 
-options_t* dnae_get_options(int argc, char**argv)
+options_t* dnae_get_options(int32_t argc, char**argv)
   { options_t *o = (options_t *)notnull(malloc(sizeof(options_t)), "no mem");
     
     argparser_t *pp = argparser_new(stderr, argc, argv);
@@ -714,11 +717,11 @@ options_t* dnae_get_options(int argc, char**argv)
     o->w1 = wt_table_args_parse(pp, TRUE);
 
     argparser_get_keyword(pp, "-maxLevel");
-    o->maxLevel = (int)argparser_get_next_int(pp, 0, 20);
+    o->maxLevel = (int32_t)argparser_get_next_int(pp, 0, 20);
 
     if (argparser_keyword_present(pp, "-initStep"))
       { double st = argparser_get_next_double(pp, 1.0/128.0, 128.0);
-        int ek = 0;
+        int32_t ek = 0;
         while (st < 1) { ek--; st = st*2; }
         while (st > 1) { ek++; st = st/2; }
         if (st != 1.0) { argparser_error(pp, "initial sampling step must be a power of 2."); }

@@ -2,7 +2,7 @@
 #define dnae_seq_H
 
 /* Numerically encoded and filtered DNA sequences */
-/* Last edited on 2014-07-28 21:45:07 by stolfilocal */
+/* Last edited on 2022-10-31 09:38:20 by stolfi */
 
 #define dnae_seq_H_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)" \
@@ -10,6 +10,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <bool.h>
 #include <vec.h>
@@ -40,7 +41,7 @@ typedef struct dnae_seq_t
 
 /* CREATION */
 
-dnae_seq_t dnae_seq_new(int n);
+dnae_seq_t dnae_seq_new(int32_t n);
   /* Allocates a new datum sequence with {n} sample datums, initially
     all set to {(0,..0)}. The sequence will have {sd.id=dnae_seq_id_none},
     {sd.name=cmt=NULL}, {sd.rev=NULL}, {sd.estep=0}, {sd.skip=0}, {sd.size=n}, and
@@ -51,7 +52,7 @@ dnae_seq_t dnae_seq_from_datum_vec
     char *name, 
     bool_t rev,
     int8_t estep, 
-    int skip, 
+    int32_t skip, 
     char *cmt, 
     dnae_datum_scale_t *sfac,
     dnae_datum_vec_t dv
@@ -70,27 +71,27 @@ dnae_seq_t dnae_seq_copy(dnae_seq_t *seq);
   /* Creates a heap copy of {*seq}, including all its internal storage
     (so that {dnae_seq_free_datums(seq)} will not affect the copy, and vice-versa). */
 
-dnae_seq_t dnae_seq_copy_sub(dnae_seq_t* seq, int ini, int fin);
+dnae_seq_t dnae_seq_copy_sub(dnae_seq_t* seq, int32_t ini, int32_t fin);
  /* Creates a heap copy of the segment of {*seq} from datum number {ini} to 
     datum {fin} inclusive. The datum vector is newly allocated 
     so that {dnae_seq_free_datums(seq)} will not affect the copy, and vice-versa. */
 
 /* EXTRACTING DATA */
 
-int dnae_seq_num_datums(dnae_seq_t *seq);
+int32_t dnae_seq_num_datums(dnae_seq_t *seq);
   /* Number of datums in sequence {seq}. */
 
-dnae_sample_enc_t *dnae_seq_get_sample_enc_address(dnae_seq_t *seq, int i, int k);
-dnae_sample_enc_t dnae_seq_get_sample_enc(dnae_seq_t *seq, int i, int k);
-void dnae_seq_set_sample_enc(dnae_seq_t *seq, int i, int k, dnae_sample_enc_t s);
+dnae_sample_enc_t *dnae_seq_get_sample_enc_address(dnae_seq_t *seq, int32_t i, int32_t k);
+dnae_sample_enc_t dnae_seq_get_sample_enc(dnae_seq_t *seq, int32_t i, int32_t k);
+void dnae_seq_set_sample_enc(dnae_seq_t *seq, int32_t i, int32_t k, dnae_sample_enc_t s);
   /* These procedures return the address, return the encoded value, and set the
     encoded value of the sample in channel {k} of datum {i} from
     the sequence {*seq}.  The index {i} must lie in the range
     {[0..seq->dv.ne-1]}. */
  
-dnae_datum_t *dnae_seq_get_datum_address(dnae_seq_t *seq, int i);
-dnae_datum_t dnae_seq_get_datum(dnae_seq_t *seq, int i);
-void dnae_seq_set_datum(dnae_seq_t *seq, int i, dnae_datum_t d);
+dnae_datum_t *dnae_seq_get_datum_address(dnae_seq_t *seq, int32_t i);
+dnae_datum_t dnae_seq_get_datum(dnae_seq_t *seq, int32_t i);
+void dnae_seq_set_datum(dnae_seq_t *seq, int32_t i, dnae_datum_t d);
   /* These procedures return the address, return the value, and set
     the value of encoded datum {i} from the sequence {*seq}. The index {i}
     must lie in the range {[0..seq->dv.ne-1]}. */
@@ -224,11 +225,11 @@ void dnae_seq_free_datums(dnae_seq_t *seq);
 void dnae_seq_free(dnae_seq_t *seq);
    /* Reclaims the sequence record {*seq} and all its internal storage. */
      
-void dnae_seq_multi_free_datums(dnae_seq_t seq[], int maxLevel);
+void dnae_seq_multi_free_datums(dnae_seq_t seq[], int32_t maxLevel);
   /* Reclaims the internal storage of sequences {seq[0..maxLevel]} 
     (but not the array {*seq} itself). */
    
-void dnae_seq_multi_free(dnae_seq_t *seq[], int maxLevel);
+void dnae_seq_multi_free(dnae_seq_t *seq[], int32_t maxLevel);
   /* Reclaims the sequences {*(seq[0..maxLevel])} and all
     their internal storage. */
     
@@ -278,33 +279,4 @@ dnae_seq_t dnae_seq_interpolate(dnae_seq_t *seq, int8_t ek);
     Currently uses C1 cubic Hermite interpolation in each interval,
     with slopes at the original elements estimated by finite differences. */
     
-void dnae_seq_multi_filter
-  ( dnae_seq_t *s, 
-    int maxLevel, 
-    double_vec_t *wtb0, 
-    char *wname0,
-    double_vec_t *wtb1, 
-    char *wname1,
-    int8_t ek0,
-    dnae_seq_t sr[]
-  );
-  /* Places into {sr[0..maxLevel]} various filtered and resampled versions of the
-    sequence {s}. Namely {sr[0]} is a storage-independent
-    copy of {s}, and {sr[r]} is the filtered and possibly resampled
-    version of {sr[r-1]}, for {r} in {1..maxLevel}.  
-    
-    Specifically, the filter table {wtb0} is applied to sequence
-    {sr[0]}, and the resulting sequence is up- or downsampled with step {2^ek0} to
-    obtain sequence {sr[1]}. From then on, each sequence {sr[r+1]} is
-    obtained by filtering the previous sequence with filter table
-    {wtb1}, and then downsampling the result with step 2. The comment
-    strings {wname0} and {wname1} are used in the {cmt} field of the
-    resulting sequences, as appropriate.
-    
-    Therefore, sequence {sr[0]} has the same number of datums as {s},
-    and thereafter each sequence {sr[r+1]} will have at most
-    {(n+1)/2^{ek0+r}} datums (but usually less, to account for the size
-    of the filter tables). Therefore, the sequence {sr[r]} may be empty
-    for {r} beyond a certain value. */
-
 #endif

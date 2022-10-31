@@ -2,10 +2,13 @@
 #define dnae_test_tools_H
 
 /* Miscellaneous tools for DNA encoding test programs. */
-/* Last edited on 2014-08-05 22:43:23 by stolfilocal */
+/* Last edited on 2022-10-31 11:32:53 by stolfi */
 
 #define dnae_test_tools_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
+
+#define _GNU_SOURCE
+#include <stdint.h>
 
 #include <vec.h>
 
@@ -26,7 +29,7 @@ void dnae_test_tools_seq_write_and_plot_named
     double hSize,
     double vSize,
     double fontSize,
-    int maxXLabChars
+    int32_t maxXLabChars
   );
   /* Writes a test sequence to a disk file called "{name}{tag}.txt".
     If {plot} is true, also writes a plot of its sample values to a disk file called
@@ -34,15 +37,18 @@ void dnae_test_tools_seq_write_and_plot_named
     vector {*smp}, and that the sequence's descriptor is {*seq}, with
     subsampling factor {den}. 
     
-    If [plot} is true, the parameter {maxXLabChars} should be an upper bound
-    on the number of characters in the X plot scale labels.
-    If negative, the procedure makes a guess.
+    If [plot} is true, also writes an EPS plot. The parameters {hSize}
+    and {vSize} are the total width and height of the figure in mm,
+    while the {fontSize} is the nominal font size in points. The
+    parameter {maxXLabChars} should be an upper bound on the number of
+    characters in the X plot scale labels. If negative, the procedure
+    makes a guess.
     
     Assumes that the decoded samples do not exceed 1.0 in absolute value. */
 
 void dnae_test_tools_seq_multi_write_and_plot_named
   ( dnae_seq_t seq[],
-    int maxLevel,
+    int32_t maxLevel,
     char *title,
     char *name,
     char *tag,
@@ -50,7 +56,7 @@ void dnae_test_tools_seq_multi_write_and_plot_named
     double hSize,
     double vSize,
     double fontSize,
-    int maxXLabChars
+    int32_t maxXLabChars
   );
   /* Assumes that {seq[i]}, for {i} in {0..maxLevel-1}, is a versions
     of sequence {seq[0]} filtered and downsampled {i} times. Calls
@@ -60,10 +66,13 @@ void dnae_test_tools_seq_multi_write_and_plot_named
     {i}" appended, and {tagi} is {tag} with "-{II}" appended, where
     {II} is the two-digit level {i}.
     
-    The parameter {maxXLabChars} should be an upper bound
-    on the number of characters in the X plot scale labels. 
-    If negative, the procedure makes a guess, based on the
-    length of {seq[0]}, and uses that value for all plots.
+    If [plot} is true, also writes an EPS plot. The parameters {hSize}
+    and {vSize} are the total width and height of the figure in mm,
+    while the {fontSize} is the nominal font size in points. The
+    parameter {maxXLabChars} should be an upper bound on the number of
+    characters in the X plot scale labels. If negative, the procedure
+    makes a guess, based on the length of {seq[0]}, and uses that value
+    for all plots.
     
     Assumes that the decoded samples do not exceed 1.0 in absolute value. */
 

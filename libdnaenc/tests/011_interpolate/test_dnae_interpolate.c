@@ -2,7 +2,7 @@
 #define PROG_DESC "test of DNA signal interpolating routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2014-07-26 18:21:38 by stolfilocal */
+/* Last edited on 2022-10-31 12:12:12 by stolfi */
 
 #define test_dnae_interpolate_C_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
@@ -55,6 +55,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <assert.h>
 #include <math.h>
@@ -77,13 +78,13 @@ typedef struct options_t
     char *outName;     /* Output file name prefix (minus extensions). */
   } options_t;
   
-int main(int argc, char**argv);
+int32_t main(int32_t argc, char**argv);
 
-options_t *dm_get_options(int argc, char**argv);
+options_t *dm_get_options(int32_t argc, char**argv);
   /* Parses the command line options, packs 
     them into a {options_t} record. */
 
-int main(int argc, char**argv)
+int32_t main(int32_t argc, char**argv)
   { 
     options_t *o = dm_get_options(argc, argv);
 
@@ -99,14 +100,21 @@ int main(int argc, char**argv)
     dnae_seq_t r = dnae_seq_interpolate(&s, ek);
     
     fprintf(stderr, "writing and plotting the interpolated sequence ...\n");
-    dnae_test_tools_seq_write_and_plot_named(&r, "Interpolated Sequence", o->outName, "-ot", -1);
+    bool_t plot = TRUE;
+    double hSize = 80.0; /* mm */
+    double vSize = 60.0; /* mm */
+    double fontSize = 18.0; /* pt */
+    dnae_test_tools_seq_write_and_plot_named
+      ( &r, "Interpolated Sequence", o->outName, "-ot", 
+        plot, hSize, vSize, fontSize, -1
+      );
 
     /* ...and we are done: */
     fprintf(stderr, "done.\n");
     return 0;
   }
 
-options_t* dm_get_options(int argc, char**argv)
+options_t* dm_get_options(int32_t argc, char**argv)
   { options_t *o = (options_t *)notnull(malloc(sizeof(options_t)), "no mem");
     
     argparser_t *pp = argparser_new(stderr, argc, argv);

@@ -2,10 +2,13 @@
 #define dnae_nucleic_H
 
 /* Raw DNA/RNA sequences */
-/* Last edited on 2014-06-09 17:34:21 by stolfilocal */
+/* Last edited on 2022-10-31 11:23:02 by stolfi */
 
 #define dnae_nucleic_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
+
+#define _GNU_SOURCE
+#include <stdint.h>
 
 #include <vec.h>
 
@@ -29,7 +32,7 @@ char dnae_nucleic_throw(bool_t upper, bool_t dna);
     The code will be uppercase iff {upper} is true.  The result is chosen unformly 
     from [ATCG] or [atcg] if {dna} is TRUE, or from [AUCG] or [aucg] if {dna} is FALSE. */
 
-char *dnae_nucleic_string_throw(int nb, bool_t upper, bool_t dna);
+char *dnae_nucleic_string_throw(int32_t nb, bool_t upper, bool_t dna);
   /* Generates a string containing a random sequence of {nb} nucleotide
     codes.  Each letter is generated with {dnae_nucleic_throw(upper, dna)}. */
     

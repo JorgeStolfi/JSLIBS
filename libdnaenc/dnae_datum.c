@@ -1,11 +1,13 @@
 /* See {dnae_datum.h}. */
-/* Last edited on 2014-08-27 21:05:06 by stolfilocal */
+/* Last edited on 2022-10-31 11:23:21 by stolfi */
 
 #define dnae_datum_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
 
+#define _GNU_SOURCE
 #include <math.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <assert.h>
 
@@ -32,7 +34,7 @@ dnae_datum_t dnae_datum_mix
     dnae_datum_scale_t *rscale
   )
   { dnae_datum_t fz; 
-    int c;
+    int32_t c;
     for (c = 0; c < dnae_CHANNELS; c++)
       { double xc = dnae_sample_decode(fx->c[c], xscale->f[c]);
         double yc = dnae_sample_decode(fy->c[c], yscale->f[c]);
@@ -44,7 +46,7 @@ dnae_datum_t dnae_datum_mix
 
 double dnae_datum_euc_distsq(dnae_datum_t *fx, dnae_datum_scale_t *xscale, dnae_datum_t *fy, dnae_datum_scale_t *yscale)
   { double d2 = 0;
-    int c;
+    int32_t c;
     for (c = 0; c < dnae_CHANNELS; c++)
       { double xc = dnae_sample_decode(fx->c[c], xscale->f[c]);
         double yc = dnae_sample_decode(fy->c[c], yscale->f[c]);
@@ -216,7 +218,7 @@ double dnae_datum_euc_distsq(dnae_datum_t *fx, dnae_datum_scale_t *xscale, dnae_
 double dnae_datum_diffsq(dnae_datum_t *fx, dnae_datum_scale_t *xscale, dnae_datum_t *fy, dnae_datum_scale_t *yscale)
   { /* We use the formula {T2(X,Y) = 6 - 2*<X|Y>} to estimate {S2(X,Y)}. */
     double p = 0;  /* Dot product {<fx|fy>} */
-    int c;
+    int32_t c;
     for (c = 0; c < dnae_CHANNELS; c++)
       { double xc = dnae_sample_decode(fx->c[c], xscale->f[c]);
         double yc = dnae_sample_decode(fy->c[c], yscale->f[c]);
@@ -245,7 +247,7 @@ double dnae_datum_step_diffsq
       {Y(t)} interpolates between {fy0} and {fy1},
       as {t} ranges from 0 to 1: */
     double mp = 0;  /* Mean value of {<X(t)|Y(t)>} */
-    int c;
+    int32_t c;
     for (c = 0; c < dnae_CHANNELS; c++)
       { double x0c = dnae_sample_decode(fx0->c[c], xscale->f[c]);
         double y0c = dnae_sample_decode(fy0->c[c], yscale->f[c]);
@@ -274,7 +276,7 @@ double dnae_datum_half_step_diffsq
       as {t} ranges from 0 to 1, where {w} is the half-tent weight function,
       {w(t)=1-t}: */
     double iwp = 0; /* Integral of {w(t)*<X(t)|Y(t)>} over [0_1]. */
-    int c;
+    int32_t c;
     for (c = 0; c < dnae_CHANNELS; c++)
       { double x0c = dnae_sample_decode(fx0->c[c], xscale->f[c]);
         double y0c = dnae_sample_decode(fy0->c[c], yscale->f[c]);
@@ -300,8 +302,8 @@ void dnae_datum_to_nucleic_densities(dnae_datum_t *d, dnae_datum_scale_t *dscale
     (*G) = ((-d0) + (+d1) + (-d2) + 1)/4;
   }
 
-void dnae_datum_decoded_from_nucleic_char(char b, int *d)
-  { int A, T, C, G;
+void dnae_datum_decoded_from_nucleic_char(char b, int32_t *d)
+  { int32_t A, T, C, G;
     dnae_nucleic_value(b, &A, &T, &C, &G);
     d[0] = (A-T)+(C-G);
     d[1] = (G-C)+(A-T);
@@ -309,7 +311,7 @@ void dnae_datum_decoded_from_nucleic_char(char b, int *d)
   }
 
 dnae_datum_t dnae_datum_encoded_from_nucleic_char(char b)
-  { int d[3];
+  { int32_t d[3];
     dnae_datum_decoded_from_nucleic_char(b, d);
     dnae_datum_t r;
     double scale = dnae_NUCLEIC_RAW_SCALE;
@@ -321,13 +323,13 @@ dnae_datum_t dnae_datum_encoded_from_nucleic_char(char b)
 
 dnae_datum_vec_t dnae_datum_vec_from_nucleic_string(char *s)
   { /* Get count {nbas} of nucleotide characters: */
-    int nbas = 0; 
+    int32_t nbas = 0; 
     char *p = s;
     while ((*p) != 0) { if (is_dna_basis(*p)) { nbas++; } p++; }
     /* Allocate datum vector: */
     dnae_datum_vec_t dv = dnae_datum_vec_new(nbas);
     /* Convert to numeric and encode: */
-    int j = 0;
+    int32_t j = 0;
     p = s;
     while ((*p) != 0)
       { char c = *p;
@@ -346,7 +348,7 @@ vec_typeimpl(dnae_datum_vec_t,dnae_datum_vec,dnae_datum_t);
 
 void dnae_datum_encoded_write(FILE *wr, dnae_datum_t *d, char *lp, char *sep, char *rp)
 { if (lp != NULL) { fputs(lp, wr); }
-    int c;
+    int32_t c;
     for (c = 0; c < dnae_CHANNELS; c++)
       { if ((c != 0) && (sep != NULL)) { fputs(sep, wr); }
         fprintf(wr, "%+6d", d->c[c]); 
@@ -356,7 +358,7 @@ void dnae_datum_encoded_write(FILE *wr, dnae_datum_t *d, char *lp, char *sep, ch
     
 void dnae_datum_decoded_write(FILE *wr, dnae_datum_t *d, dnae_datum_scale_t *dscale, char *lp, char *sep, char *rp)
   { if (lp != NULL) { fputs(lp, wr); }
-    int c;
+    int32_t c;
     for (c = 0; c < dnae_CHANNELS; c++)
       { if ((c != 0) && (sep != NULL)) { fputs(sep, wr); }
         fprintf(wr, "%+11.7f", dnae_sample_decode(d->c[c], dscale->f[c])); 

@@ -1,5 +1,5 @@
 /* See dnae_seq_ps.h */
-/* Last edited on 2014-06-10 10:44:10 by stolfilocal */
+/* Last edited on 2022-10-31 09:43:13 by stolfi */
 
 #define dnae_seq_C_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)" \
@@ -8,6 +8,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <math.h>
 #include <ctype.h>
 #include <assert.h>
@@ -61,15 +62,15 @@ void dnae_seq_ps_plot_named
 void dnae_seq_ps_plot(msm_ps_tools_t *dp, dnae_seq_t *seq)
   { 
     /* Get sequence size: */
-    int nd = dnae_seq_num_datums(seq); /* Number of datums. */
-    int nc = dnae_CHANNELS; /* Number of channels per datum. */
+    int32_t nd = dnae_seq_num_datums(seq); /* Number of datums. */
+    int32_t nc = dnae_CHANNELS; /* Number of channels per datum. */
     if (nd == 0) { return; }
 
     /* Get scaling factors: */
     double *sfac = seq->sfac.f; /* Sample scaling factor per channel. */
     
     /* Choose the nominal Y range {[yMin_yMax]}: */
-    int c;
+    int32_t c;
     double sfMax = 1.0e-100; /* Max sample scale factor among channels. */
     for (c = 0; c < nc; c++) { if (sfac[c] > sfMax) { sfMax = sfac[c]; } }
     double vMax = dnae_sample_decode(dnae_sample_enc_VALID_MAX, sfMax);
@@ -78,9 +79,9 @@ void dnae_seq_ps_plot(msm_ps_tools_t *dp, dnae_seq_t *seq)
     double yMax = +vMax + ySkosh;
     
     /* Extract the data to plot: */
-    int ny = nd*nc;
+    int32_t ny = nd*nc;
     double *y = (double*) malloc(sizeof(double)*ny);
-    int i;
+    int32_t i;
     for (i = 0; i < nd; i++)
       { for (c = 0; c < nc; c++)
           { dnae_sample_enc_t s = dnae_seq_get_sample_enc(seq, i, c);
@@ -89,8 +90,8 @@ void dnae_seq_ps_plot(msm_ps_tools_t *dp, dnae_seq_t *seq)
       }
        
     /* Plot the graphs: */
-    int start = (int)(seq->sd.skip);
-    int step = (1 << seq->sd.estep);
+    int32_t start = (int32_t)(seq->sd.skip);
+    int32_t step = (1 << seq->sd.estep);
     msm_ps_tools_draw_graphs(dp, nc, nd,  NULL, start, step, y, yMin, yMax); 
     free(y);
   }

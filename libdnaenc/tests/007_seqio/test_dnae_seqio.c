@@ -2,7 +2,7 @@
 #define PROG_DESC "test of DNA signal reading/writing routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2014-06-13 00:57:45 by stolfilocal */
+/* Last edited on 2022-10-31 09:33:29 by stolfi */
 
 #define test_dnae_seqio_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -57,6 +57,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 
@@ -72,13 +73,13 @@ typedef struct options_t
     char *outName;     /* Output file name prefix (minus extensions). */
   } options_t;
   
-int main(int argc, char**argv);
+int32_t main(int32_t argc, char**argv);
 
-options_t *dm_get_options(int argc, char**argv);
+options_t *dm_get_options(int32_t argc, char**argv);
   /* Parses the command line options, packs 
     them into a {options_t} record. */
 
-int main(int argc, char**argv)
+int32_t main(int32_t argc, char**argv)
   { 
     options_t *o = dm_get_options(argc, argv);
 
@@ -109,10 +110,10 @@ int main(int argc, char**argv)
     assert(srd.sd.skip == seq.sd.skip);
     assert(strcmp(srd.cmt, seq.cmt) == 0);
     assert(srd.dv.ne == seq.dv.ne);
-    int k;
+    int32_t k;
     for (k = 0; k < dnae_CHANNELS; k++)
       { assert(seq.sfac.f[k] == srd.sfac.f[k]); 
-        int i;
+        int32_t i;
         for (i = 0; i < seq.dv.ne; i++)
           { dnae_sample_enc_t ssmp = dnae_seq_get_sample_enc(&seq, i, k); 
             dnae_sample_enc_t tsmp = dnae_seq_get_sample_enc(&srd, i, k);
@@ -125,7 +126,7 @@ int main(int argc, char**argv)
     return 0;
   }
 
-options_t* dm_get_options(int argc, char**argv)
+options_t* dm_get_options(int32_t argc, char**argv)
   { options_t *o = (options_t *)notnull(malloc(sizeof(options_t)), "no mem");
     
     argparser_t *pp = argparser_new(stderr, argc, argv);

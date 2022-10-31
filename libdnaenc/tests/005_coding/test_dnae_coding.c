@@ -2,7 +2,7 @@
 #define PROG_DESC "test of DNA signal encoding/decoding routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2014-06-14 02:52:28 by stolfilocal */
+/* Last edited on 2022-10-31 09:32:59 by stolfi */
 
 #define test_dnae_coding_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -45,6 +45,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 
@@ -57,19 +58,19 @@
 #include <dnae_seq.h>
 
 typedef struct options_t 
-  { int nSamples;      /* Average number of test samples per bin. */
+  { int32_t nSamples;      /* Average number of test samples per bin. */
   } options_t;
   
-int main(int argc, char**argv);
+int32_t main(int32_t argc, char**argv);
 
-options_t *dm_get_options(int argc, char**argv);
+options_t *dm_get_options(int32_t argc, char**argv);
   /* Parses the command line options, packs 
     them into a {options_t} record. */
 
-int main(int argc, char**argv)
+int32_t main(int32_t argc, char**argv)
   { 
     options_t *o = dm_get_options(argc, argv);
-    int NS = o->nSamples;
+    int32_t NS = o->nSamples;
     
     double scale = 1.00; 
     
@@ -77,32 +78,32 @@ int main(int argc, char**argv)
     fprintf(stderr, "------ ------------ --------------\n");
     
     /* Encoding consistency check: */
-    int i;
+    int32_t i;
     for (i = dnae_sample_enc_VALID_MIN; i < dnae_sample_enc_VALID_MAX; i++)
       { dnae_sample_enc_t ev = (dnae_sample_enc_t)i;
         double fv = dnae_sample_decode(ev, scale);
         dnae_sample_enc_t tva = dnae_sample_encode(fv - 1.0e-8*(1 + fabs(fv)), scale);
         dnae_sample_enc_t tvb = dnae_sample_encode(fv, scale);
         dnae_sample_enc_t tvc = dnae_sample_encode(fv + 1.0e-8*(1 + fabs(fv)), scale);
-        fprintf(stderr, "%+06d %12.8f %+06d %+06d %+06d\n", (int)ev, fv, (int)tva, (int)tvb, (int)tvc);
+        fprintf(stderr, "%+06d %12.8f %+06d %+06d %+06d\n", (int32_t)ev, fv, (int32_t)tva, (int32_t)tvb, (int32_t)tvc);
         assert((ev == tva) && (ev == tvb) && (ev == tvc));
       }
     
     /* Encoding error test: */
     double sumd = 0;
     double sumd2 = 0;
-    int NV = dnae_sample_enc_VALID_MAX - dnae_sample_enc_VALID_MIN + 1;
-    int hist[NV];
+    int32_t NV = dnae_sample_enc_VALID_MAX - dnae_sample_enc_VALID_MIN + 1;
+    int32_t hist[NV];
     double hsumd[NV];
     double hsumd2[NV];
     for (i = 0; i < NV; i++) { hist[i] = 0; hsumd[i] = 0; hsumd2[i] = 0; }
-    int k;
+    int32_t k;
     for (k = 0; k < NS*NV; k++)
       { /* Generate a random normal-distributed value {dv}: */
         double rv = dgaussrand();
         /* Encode it: */
         dnae_sample_enc_t ev = dnae_sample_encode(rv, scale);
-        int i = ((int)ev) - ((int)dnae_sample_enc_VALID_MIN);
+        int32_t i = ((int32_t)ev) - ((int32_t)dnae_sample_enc_VALID_MIN);
         assert((i >= 0) && (i < NV));
         /* Decode the encoded value: */
         double dv = dnae_sample_decode(ev, scale);
@@ -140,7 +141,7 @@ int main(int argc, char**argv)
     return 0;
   }
   
-options_t* dm_get_options(int argc, char**argv)
+options_t* dm_get_options(int32_t argc, char**argv)
   { options_t *o = (options_t *)notnull(malloc(sizeof(options_t)), "no mem");
     
     argparser_t *pp = argparser_new(stderr, argc, argv);
@@ -150,7 +151,7 @@ options_t* dm_get_options(int argc, char**argv)
     
     argparser_skip_parsed(pp);
     
-    o->nSamples = (int)argparser_get_next_int(pp, 1, INT_MAX);
+    o->nSamples = (int32_t)argparser_get_next_int(pp, 1, INT32_MAX);
 
     argparser_finish(pp);
     

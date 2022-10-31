@@ -2,16 +2,18 @@
 #define dnae_datum_H
 
 /* Numerical encoding of DNA/RNA bases */
-/* Last edited on 2014-08-27 20:56:14 by stolfilocal */
+/* Last edited on 2022-10-31 11:22:52 by stolfi */
 
 #define dnae_datum_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
 
-#include <dnae_sample.h>
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdint.h>
 
 #include <vec.h>
 
-#include <stdio.h>
+#include <dnae_sample.h>
   
 /* DATUMS */
 
@@ -132,7 +134,7 @@ void dnae_datum_decoded_write(FILE *wr, dnae_datum_t *d, dnae_datum_scale_t *dsc
   /nucleotide datums/ {dnae_datum_from_nucleic_char(b)}
   where {b} is 'A', 'T', 'C', or 'G'. */
 
-void dnae_datum_decoded_from_nucleic_char(char b, int *d);
+void dnae_datum_decoded_from_nucleic_char(char b, int32_t *d);
   /* Stores in {d[0..2]} the numeric representation of the DNA/RNA
     nucleotide character {b}, namely
     
