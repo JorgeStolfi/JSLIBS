@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {wt_table.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-30 23:19:43 by stolfi */ 
+/* Last edited on 2022-10-31 04:01:47 by stolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_hermite3_COPYRIGHT \
@@ -21,6 +21,7 @@
 #include <bool.h>
 #include <jsfile.h>
 #include <jsmath.h>
+#include <jsrandom.h>
 #include <affirm.h>
 
 int32_t main(int32_t argn, char **argv);
@@ -29,21 +30,26 @@ void do_test_basics(void);
   /* Basic consistency tests. */
 
 void do_test_avg_var(int32_t n);
-  /* Checks {wt_table_avg}, {wt_table_var}. */
+  /* Checks {wt_table_avg}, {wt_table_var} for a table of size {n}. */
+
+void do_test_convolution(int32_t n);
+  /* Check {wt_table_convolution} for two tables of size about {n} and 
+    a random stride. */
 
 void do_test_normalize_sum(int32_t n);
-  /* Checks {wt_table_normalize_sum}. */
+  /* Checks {wt_table_normalize_sum} for a table of size {n}. */
 
 void do_test_gaussian_loss(int32_t n, double sigma);
-  /* Checks {wt_table_gaussian_loss}. */
+  /* Checks {wt_table_gaussian_loss}  for the given {n} and {sigma}. */
     
 void do_test_make_fill_gaussian(double sigma, double maxLoss, bool_t norm);
-  /* Check {wt_table_fill_gaussian}, {wt_table_make_gaussian}. */
+  /* Check {wt_table_fill_gaussian}, {wt_table_make_gaussian} for the given
+    {sigma,maxLoss,norm}. */
     
 void do_test_make_fill(int32_t n, char *tname, bool_t norm);
   /* Check {wt_table_fill_{tname}}, {wt_table_make_{tname}}
     where {tname} is "binomial", "triangular",
-    or "hann". */
+    or "hann", for the given {n,norm}. */
 
 void do_test_print(int32_t n, char *tname, bool_t norm);
   /* Generates aa table with {wt_table_make_{tname}(n,...,norm)} and prints it
@@ -55,6 +61,7 @@ int32_t main (int32_t argc, char **argv)
     for (int32_t n = 1; n <= 13; n = 3*n/2+1)
       { do_test_avg_var(n);
         do_test_normalize_sum(n);
+        do_test_convolution(n);
         double sigma = n/5.0;
         do_test_gaussian_loss(n, sigma);
         for (int32_t inorm = 0; inorm < 2; inorm++)
@@ -111,6 +118,33 @@ void do_test_avg_var(int32_t n)
     demand(fabs(varCmp - varExp) < 1.0e-10, "{wt_table_var} failed");
   }
     
+void do_test_convolution(int32_t n)
+  {
+    int32_t n1 = n;
+    int32_t n2 = int32_abrandom(1, 2*n1);
+    int32_t stride = int32_abrandom(1, 2*n1);
+    
+    fprintf(stderr, "--- testing {wt_table_convolution}");
+    fprintf(stderr, " n1 = %d n2 = %d stride = %d ---\n", n1, n2, stride);
+    
+    bool_t norm = FALSE;
+    double_vec_t wt1 = wt_table_make_binomial(n1, norm);
+    double_vec_t wt2 = wt_table_make_binomial(n2, norm);
+    double_vec_t ws = wt_table_convolution(n1, wt1.e, n2, wt2.e, stride);
+
+    int32_t ns = ws.ne;
+    demand(ns == (n2-1)*stride + n1, "wrong size of {wt_table_convolution}");
+    
+    double tol = ((n1 <= 40) && (n2 <= 40) ? 0 : 1.0e-12);
+    for (int32_t i = 0; i < ns; i++)
+      { double sum = 0;
+        for (int32_t k2 = 0; k2 < n2; k2++)
+          { int32_t k1 = i - k2*stride;
+            if ((k1 >= 0) && (k1 < n1)) { sum += wt1.e[k1]*wt2.e[k2]; }
+          }
+        demand(fabs(ws.e[i] - sum) <= tol, "{wt_table_convolution} error");
+      }
+  }
 
 void do_test_normalize_sum(int32_t n)
   {

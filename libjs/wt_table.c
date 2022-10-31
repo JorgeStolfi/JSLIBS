@@ -1,5 +1,5 @@
 /* See wt_table.h */
-/* Last edited on 2022-10-30 23:32:48 by stolfi */
+/* Last edited on 2022-10-31 03:40:30 by stolfi */
 
 #define wt_table_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -103,6 +103,28 @@ void wt_table_shifted_sum(int32_t n, double wt[], int32_t stride, double ws[])
           }
         ws[ka] = sum;
       }
+  }
+
+double_vec_t wt_table_convolution(int32_t n1, double wt1[], int32_t n2, double wt2[], int32_t stride)
+  {
+    demand(stride >= 1, "invalid {stride}");
+    int32_t ns = n1 + (n2-1)*stride;
+    double_vec_t ws = double_vec_new(ns);
+    for (int32_t i = 0; i < ns; i++)
+      { int32_t k2min = (i < n1 ? 0 : (i - n1 + stride)/stride);
+        int32_t k2max = (i >= n2*stride ? n2 - 1 : i/stride);
+        assert(k2min >= 0);
+        assert(k2max < n2);
+        double sum = 0;
+        for (int32_t k2 = k2min; k2 <= k2max; k2++)
+          { int32_t k1 = i - k2*stride;
+            assert(k1 >= 0);
+            assert(k1 < n1);
+            sum += wt1[k1]*wt2[k2];
+          }
+        ws.e[i] = sum;
+      }
+    return ws;
   }
 
 void wt_table_print(FILE *wr, char *wtname, int32_t n, double wt[], int32_t stride)

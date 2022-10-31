@@ -2,7 +2,7 @@
 #define wt_table_pair_H
 
 /* Weight tables for filtering digital signals */
-/* Last edited on 2022-10-30 19:30:13 by stolfi */
+/* Last edited on 2022-10-31 04:06:54 by stolfi */
 
 #define wt_table_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -19,7 +19,11 @@
   tables.
 
   The tables will have odd length and will be normalized to unit sum.
+  Their variances will be at least {var0} and {var1}, respectively.
   They are packaged as newly allocated {double_vec_t}s.
+  
+  If {verbose} is true, each procedure prints the two tables and 
+  their startistical properties.
   
   !!! These procedures should be generalized to even lengths. !!! */
 

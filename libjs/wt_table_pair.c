@@ -1,5 +1,5 @@
 /* See wt_table_pair.h */
-/* Last edited on 2022-10-30 20:38:49 by stolfi */
+/* Last edited on 2022-10-31 04:18:26 by stolfi */
 
 #define wt_table_pair_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -35,13 +35,15 @@ void wt_table_pair_make_gaussian
     bool_t norm = TRUE;
     (*wtb0) = wt_table_make_gaussian(sigma0, maxLoss, norm);
     (*wname0) = NULL;
-    asprintf(wname0, "gaussian(sigma = %8.6f)", sigma0);
+    int32_t n0 = wtb0->ne;
+    asprintf(wname0, "gaussian(n=%d,sigma=%8.6f)", n0, sigma0);
     if (verbose) { wt_table_print(stderr, (*wname0), wtb0->ne, wtb0->e, 0); }
     
     double sigma1 = sqrt(var1);
     (*wtb1) = wt_table_make_gaussian(sigma1, maxLoss, norm);
     (*wname1) = NULL;
-    asprintf(wname1, "gaussian(sigma = %8.6f)", sigma1);
+    int32_t n1 = wtb1->ne;
+    asprintf(wname1, "gaussian(n=%d,sigma=%8.6f)", n1, sigma1);
     if (verbose) { wt_table_print(stderr, (*wname1), wtb1->ne, wtb1->e, 0); }
   }
    
@@ -57,16 +59,18 @@ void wt_table_pair_make_binomial
   { bool_t norm = TRUE;
     
     /* Variance of the distribution {w[k] = choose(n,k)} is {n/4 = r/2}, so: */
-    int r0 = (int)floor(2*var0 + 0.5);
-    (*wtb0) = wt_table_make_binomial(2*r0+1, norm);
+    int32_t r0 = (int32_t)ceil(2*var0);
+    int32_t n0 = 2*r0 + 1;
+    (*wtb0) = wt_table_make_binomial(n0, norm);
     (*wname0) = NULL;
-    asprintf(wname0, "binomial(n = %d, sigma = %8.6f)", 2*r0, sqrt(0.5*r0));
+    asprintf(wname0, "binomial(n=%d)", n0);
     if (verbose) { wt_table_print(stderr, (*wname0), wtb0->ne, wtb0->e, 0); }
     
-    int r1 = (int)floor(2*var1 + 0.5);
-    (*wtb1) = wt_table_make_binomial(2*r1+1, norm);
+    int32_t r1 = (int32_t)ceil(2*var1);
+    int32_t n1 = 2*r1 + 1;
+    (*wtb1) = wt_table_make_binomial(n1, norm);
     (*wname1) = NULL;
-    asprintf(wname1, "binomial(n = %d, sigma = %8.6f)", 2*r1, sqrt(0.5*r1));
+    asprintf(wname1, "binomial(n=%d)", n1);
     if (verbose) { wt_table_print(stderr, (*wname1), wtb1->ne, wtb1->e, 0); }
   }
    
@@ -82,15 +86,17 @@ void wt_table_pair_make_triangular
   { bool_t norm = TRUE;
     
     /* Variance of the distribution {w[k] = r + 1 - |r-k|} is {~r^2/4}, so: */
-    int r0 = (int)floor(sqrt(4*var0) + 0.5);
-    (*wtb0) = wt_table_make_triangular(2*r0+1, norm);
+    int32_t r0 = (int32_t)ceil(sqrt(4*var0));
+    int32_t n0 = 2*r0 + 1;
+    (*wtb0) = wt_table_make_triangular(n0, norm);
     (*wname0) = NULL;
-    asprintf(wname0, "triangular(r = %d)", r0);
+    asprintf(wname0, "triangular(n=%d)", n0);
     if (verbose) { wt_table_print(stderr, (*wname0), wtb0->ne, wtb0->e, 0); }
     
-    int r1 = (int)floor(sqrt(4*var1) + 0.5);
-    (*wtb1) = wt_table_make_triangular(2*r1+1, norm);
+    int32_t r1 = (int32_t)ceil(sqrt(4*var1));
+    int32_t n1 = 2*r1 + 1;
+    (*wtb1) = wt_table_make_triangular(n1, norm);
     (*wname1) = NULL;
-    asprintf(wname1, "triangular(r = %d)", r1);
+    asprintf(wname1, "triangular(n=%d)", n1);
     if (verbose) { wt_table_print(stderr, (*wname1), wtb1->ne, wtb1->e, 0); }
   }
