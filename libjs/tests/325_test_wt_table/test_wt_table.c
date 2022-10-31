@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {wt_table.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-30 19:43:12 by stolfi */ 
+/* Last edited on 2022-10-30 23:19:43 by stolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_hermite3_COPYRIGHT \
@@ -57,15 +57,18 @@ int32_t main (int32_t argc, char **argv)
         do_test_normalize_sum(n);
         double sigma = n/5.0;
         do_test_gaussian_loss(n, sigma);
-        do_test_make_fill_gaussian(sigma, 0.01);
-        do_test_make_fill_gaussian(sigma, 0.0001);
-        do_test_make_fill(n, "binomial");
-        do_test_make_fill(n, "triangular");
-        do_test_make_fill(n, "hann");
-        do_test_print(n, "gaussian");
-        do_test_print(n, "binomial");
-        do_test_print(n, "triangular");
-        do_test_print(n, "hann");
+        for (int32_t inorm = 0; inorm < 2; inorm++)
+          { bool_t norm = (inorm == 1);
+            do_test_print(n, "gaussian", norm);
+            do_test_print(n, "binomial", norm);
+            do_test_print(n, "triangular", norm);
+            do_test_print(n, "hann", norm);
+            do_test_make_fill_gaussian(sigma, 0.01, norm);
+            do_test_make_fill_gaussian(sigma, 0.0001, norm);
+            do_test_make_fill(n, "binomial", norm);
+            do_test_make_fill(n, "triangular", norm);
+            do_test_make_fill(n, "hann", norm);
+          }
       }
     return 0;
   }
@@ -149,9 +152,10 @@ void do_test_make_fill_gaussian(double sigma, double maxLoss, bool_t norm)
     fprintf(stderr, "--- testing {wt_table_fill_gaussian}, {wt_table_make_gaussian}");
     fprintf(stderr, " sigma = %22.18f maxLoss = %22.18f norm = %c---\n", sigma, maxLoss, "FT"[norm]);
     
-    double_vec_t wm = wt_table_make_gaussian(sigma, maxLoss);
+    double_vec_t wm = wt_table_make_gaussian(sigma, maxLoss, norm);
     int32_t n = wm.ne;
     fprintf(stderr, "n = %d\n", n);
+    demand(n % 2 == 1, "table shoudl have odd length");
     double wf[n]; 
     wt_table_fill_gaussian(sigma, n, wf, norm); 
     for (int32_t k = 0; k < n; k++) { assert(wf[k] == wm.e[k]); }
@@ -170,7 +174,7 @@ void do_test_make_fill(int32_t n, char *tname, bool_t norm)
     fprintf(stderr, " n = %d norm = %c ---\n", n, "FT"[norm]);
     
     double_vec_t wm = double_vec_new(0); /* To be created with {make} function. */
-    double wf[n];   /* To be created with {fill} function. */
+    double wf[n];   /* To be created with {fill} function, if {n} is odd. */
     int32_t stride;  /* Stride for partition of unit check. */
     double tol = 1.0e-10;  /* Tolerance for unit sum and partition of unit checks. */
     
@@ -193,11 +197,15 @@ void do_test_make_fill(int32_t n, char *tname, bool_t norm)
     else 
       { assert(FALSE); }
 
+    if (wm.ne != n)
+      { fprintf(stderr, "** {wt_make_%s} returned wrong size = %d\n", tname, wm.ne); 
+        assert(FALSE);
+      } 
     for (int32_t k = 0; k < n; k++)
       { if (wf[k] != wm.e[k])
-          { fprintf(stderr, "discrepancy between {wt_make_%s} and {wt_fill_%s}\n", tname, tname);
+          { fprintf(stderr, "** discrepancy between {wt_make_%s} and {wt_fill_%s}\n", tname, tname);
             double err = wf[k] - wm.e[k];
-            fprintf(stderr, "fill[k] = %22.18f make[k] = %22.18f err = %24.16e\n", wf[k], wm.e[k], err);
+            fprintf(stderr, "  fill[k] = %22.18f make[k] = %22.18f err = %24.16e\n", wf[k], wm.e[k], err);
             assert(FALSE);
           } 
       }
@@ -206,7 +214,7 @@ void do_test_make_fill(int32_t n, char *tname, bool_t norm)
       { bool_t die = TRUE; /* Abort on error. */
         if (norm) { wt_table_check_normalization(n, wf, tol, die); }
         /* Check partition of unit property with shift {stride}: */
-        if (stride != 0)
+        if (norm && (stride != 0))
           { fprintf(stderr, "checking partition of unity property with stride %d\n", stride);
             wt_table_check_partition_of_unity(n, wf, stride, tol, die); 
           }

@@ -1,5 +1,5 @@
 /* See wt_table.h */
-/* Last edited on 2022-10-30 19:28:47 by stolfi */
+/* Last edited on 2022-10-30 23:32:48 by stolfi */
 
 #define wt_table_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -36,24 +36,24 @@ double wt_table_gaussian_loss(int32_t n, double sigma)
     return ws;
   }
 
-double_vec_t wt_table_make_binomial(int32_t r, bool_t norm)
+double_vec_t wt_table_make_binomial(int32_t n, bool_t norm)
   { /* Allocate and fill the table: */
-    double_vec_t wt = double_vec_new(2*r + 1);
-    wt_table_fill_binomial(wt.ne, wt.e, norm);
+    double_vec_t wt = double_vec_new(n);
+    wt_table_fill_binomial(n, wt.e, norm);
     return wt;
   }
 
-double_vec_t wt_table_make_triangular(int32_t r, bool_t norm)
+double_vec_t wt_table_make_triangular(int32_t n, bool_t norm)
   { /* Allocate and fill the table: */
-    double_vec_t wt = double_vec_new(2*r + 1);
-    wt_table_fill_triangular(wt.ne, wt.e, norm);
+    double_vec_t wt = double_vec_new(n);
+    wt_table_fill_triangular(n, wt.e, norm);
     return wt;
   }
    
-double_vec_t wt_table_make_hann(int32_t r, bool_t norm)
+double_vec_t wt_table_make_hann(int32_t n, bool_t norm)
   { /* Allocate and fill the table: */
-    double_vec_t wt = double_vec_new(2*r + 1);
-    wt_table_fill_hann(wt.ne, wt.e, norm);
+    double_vec_t wt = double_vec_new(n);
+    wt_table_fill_hann(n, wt.e, norm);
     return wt;
   }
    
@@ -211,17 +211,24 @@ bool_t wt_table_check_normalization(int32_t n, double wt[], double tol,bool_t di
       { return TRUE; }
   }
   
-bool_t wt_table_check_partition_of_unity(int32_t n, double wt[], int32_t stride, double tol, bool_t die)
+bool_t wt_table_check_partition_of_unity
+  ( int32_t n, 
+    double wt[], 
+    int32_t stride,
+    double tol, 
+    bool_t die
+  )
   {
     demand(stride >= 1, "invalid {stride}");
     double ws[n];
     wt_table_shifted_sum(n, wt, stride, ws);
+    double wsExp = 1.0/stride; /* Expected value of overlapped windows. */
     for (int32_t k = 0; k < n; k++) 
-      { if (fabs(ws[k] - 1.0) > tol)
+      { if (fabs(ws[k] - wsExp) > tol)
           { if (die)
               { fprintf(stderr, "table is not  partition of unity");
                 fprintf(stderr, " {ws[%d] = %18.16f", k, ws[k]);
-                double err = ws[k] - 1.0;
+                double err = ws[k] - wsExp;
                 fprintf(stderr, " err = %24.16e\n", err);
                 assert(FALSE);
               }
