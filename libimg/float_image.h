@@ -2,7 +2,7 @@
 #define float_image_H
 
 /* Multichannel images with floating-point samples. */
-/* Last edited on 2020-11-06 02:58:20 by jstolfi */ 
+/* Last edited on 2023-01-07 12:48:59 by stolfi */ 
 
 #define _GNU_SOURCE_
 #include <stdio.h>
@@ -522,9 +522,10 @@ void float_image_shift(float_image_t *A, int32_t c, int32_t dx, int32_t dy);
 
 /* GET/CHECK SIZE */
   
-void float_image_get_size(float_image_t *A, int32_t *NC, int32_t *NX, int32_t *NY);
+void float_image_get_size(float_image_t *A, int32_t *NC_P, int32_t *NX_P, int32_t *NY_P);
   /* Stores the number of channels, columns, and rows of {A} in
-    {*NC}, {*NX}, and {*NY}, respectively. */
+    {*NC_P}, {*NX_P}, and {*NY_P}, respectively. Addresses that are {NULL},
+    are not set. */
   
 void float_image_check_size(float_image_t *A, int32_t NC, int32_t NX, int32_t NY);
   /* Bombs out if {A} does not have exactly {NC} channels, {NX}

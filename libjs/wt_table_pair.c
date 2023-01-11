@@ -1,5 +1,5 @@
 /* See wt_table_pair.h */
-/* Last edited on 2022-10-31 14:11:29 by stolfi */
+/* Last edited on 2023-01-07 17:11:02 by stolfi */
 
 #define wt_table_pair_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -82,9 +82,9 @@ void wt_table_pair_make_binomial
    
 void wt_table_pair_make_triangular
   ( double var0,
-    double_vec_t *wt0, 
+    double_vec_t *wt0_P, 
     char **wname0_P, 
-    double var1_P,
+    double var1,
     double_vec_t *wt1_P, 
     char **wname1_P,
     bool_t verbose
@@ -94,7 +94,7 @@ void wt_table_pair_make_triangular
     /* Variance of the distribution {w[k] = r + 1 - |r-k|} is {~r^2/4}, so: */
     int32_t r0 = (int32_t)ceil(sqrt(4*var0));
     int32_t n0 = 2*r0 + 1;
-    (*double_vec_t wt0 = wt_table_make_triangular(n0, norm);
+    double_vec_t wt0 = wt_table_make_triangular(n0, norm);
     char *wname0 = NULL;
     asprintf(&wname0, "triangular(n=%d)", n0);
     if (verbose) { wt_table_print(stderr, wname0, wt0.ne, wt0.e, 0); }

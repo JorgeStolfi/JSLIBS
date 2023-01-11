@@ -1,6 +1,6 @@
 /* See {float_image_test.h}. */
 
-/* Last edited on 2020-11-15 17:32:37 by jstolfi */ 
+/* Last edited on 2023-01-10 12:35:11 by stolfi */ 
 /* Created on 2009-06-02 by J. Stolfi, UNICAMP */
 
 #define float_image_test_C_COPYRIGHT \
@@ -162,4 +162,3 @@ void float_image_test_paint
           }
       }
   }
-

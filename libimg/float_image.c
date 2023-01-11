@@ -1,5 +1,5 @@
 /* See float_image.h */
-/* Last edited on 2021-08-28 03:51:13 by stolfi */ 
+/* Last edited on 2023-01-07 12:49:42 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <limits.h>
@@ -1044,9 +1044,9 @@ void float_image_free(float_image_t *A)
   }
   
 void float_image_get_size(float_image_t *A, int32_t *NC, int32_t *NX, int32_t *NY)
-  { (*NC) = (int32_t)A->sz[0]; 
-    (*NX) = (int32_t)A->sz[1];
-    (*NY) = (int32_t)A->sz[2];
+  { if (NC != NULL) { (*NC) = (int32_t)A->sz[0]; }
+    if (NX != NULL) { (*NX) = (int32_t)A->sz[1]; }
+    if (NY != NULL) { (*NY) = (int32_t)A->sz[2]; }
   }
   
 void float_image_check_size(float_image_t *A, int32_t NC, int32_t NX, int32_t NY)

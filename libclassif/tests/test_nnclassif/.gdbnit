@@ -1,0 +1,7 @@
+file test_nnclassif
+dir ../..
+dir ../../../libps
+dir ../../../libjs
+dir ../../../libimg
+break programerror
+

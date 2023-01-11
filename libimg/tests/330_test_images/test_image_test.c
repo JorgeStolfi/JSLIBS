@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_test.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-11-15 17:31:19 by jstolfi */ 
+/* Last edited on 2023-01-10 16:03:39 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_image_test_COPYRIGHT \
@@ -29,21 +29,28 @@
 
 int main(int argn, char **argv);
 
-void do_test(float_image_test_generator_t *gen_proc, char *gen_name);
+void do_test_gen(float_image_test_generator_t *gen_proc, char *gen_name);
+
+void do_test_comb_waves(int32_t NF0, int32_t NF1);
 
 void write_image(char *gen_name, float_image_t *img);
 
 int main (int argn, char **argv)
   {
-    do_test(&float_image_test_gen_stripes, "stripes");
-    do_test(&float_image_test_gen_ripples, "ripples");
-    do_test(&float_image_test_gen_checker, "checker");
-    do_test(&float_image_test_gen_chopsea, "chopsea");
+    do_test_gen(&float_image_test_gen_stripes, "stripes");
+    do_test_gen(&float_image_test_gen_ripples, "ripples");
+    do_test_gen(&float_image_test_gen_checker, "checker");
+    do_test_gen(&float_image_test_gen_chopsea, "chopsea");
+    
+    do_test_comb_waves(0, 0);
+    do_test_comb_waves(1, 1);
+    do_test_comb_waves(2, 2);
+    do_test_comb_waves(0, 2);
     
     return 0;
   }
 
-void do_test(float_image_test_generator_t *gen_proc, char *gen_name)
+void do_test_gen(float_image_test_generator_t *gen_proc, char *gen_name)
   {
     fprintf(stderr, "=== test gen=%s============\n", gen_name);
 
@@ -58,6 +65,30 @@ void do_test(float_image_test_generator_t *gen_proc, char *gen_name)
     
     /* Write the input and output images: */
     write_image(gen_name, img);
+    fprintf(stderr, "===================================================\n");
+  }  
+
+void do_test_comb_waves(int32_t NF, int32_t NS)
+  {
+    fprintf(stderr, "=== test comb_waves = %d..%d ============\n", NF, NS);
+
+    fprintf(stderr, "creating image...\n");
+    int NC = 3;
+    int NX = 1024;
+    int NY = 768;
+    float_image_t *img = float_image_new(NC, NX, NY);
+    
+    fprintf(stderr, "choosing frequencies...\n");
+    double amp[NF];
+    double fx[NF];
+    double fy[NF]; 
+    double phase[NF];
+    
+    fprintf(stderr, "filling image ...\n");
+    float_image_test_paint(img, gen_proc, 1);
+    
+    /* Write the input and output images: */
+    write_image(fname, img);
     fprintf(stderr, "===================================================\n");
   }  
 

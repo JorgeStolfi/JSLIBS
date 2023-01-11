@@ -2,7 +2,7 @@
 #define float_image_test_H
 
 /* Tools for testing programs that deal with {float_image_t}. */
-/* Last edited on 2020-11-15 17:31:01 by jstolfi */ 
+/* Last edited on 2023-01-10 15:32:19 by stolfi */ 
 
 #define _GNU_SOURCE_
 #include <stdint.h>
