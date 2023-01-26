@@ -2,7 +2,7 @@
 #define i2_H
 
 /* Operations on points and vectors of Z^2 */
-/* Last edited on 2021-06-09 20:43:07 by jstolfi */
+/* Last edited on 2023-01-12 06:48:45 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -27,7 +27,7 @@
   Note that signed {int2_t} variables naturally have an *asymmetric* range
   {[-N..N-1]} where {N = 2^31}. */
 
-typedef struct { int32_t c[2]; } i2_t;
+typedef struct i2_t { int32_t c[2]; } i2_t;
 
 void i2_zero (i2_t *r);
   /* Sets {r} to the zero vector. */

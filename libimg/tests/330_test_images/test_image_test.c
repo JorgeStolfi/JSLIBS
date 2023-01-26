@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_test.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-01-10 16:03:39 by stolfi */ 
+/* Last edited on 2023-01-14 20:29:17 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_image_test_COPYRIGHT \
@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 #include <affirm.h>
 #include <ix.h>
@@ -24,33 +25,29 @@
 #include <uint16_image.h>
 #include <uint16_image_write_pnm.h>
 #include <float_image_test.h>
-#include <float_image_to_uint16_image.h>
 #include <float_image.h>
+#include <float_image_waves.h>
+#include <float_image_write_pnm.h>
 
 int main(int argn, char **argv);
 
-void do_test_gen(float_image_test_generator_t *gen_proc, char *gen_name);
+void do_test_gen(float_image_test_generator_t *gen_proc, char *gen_name, char *outPrefix);
 
-void do_test_comb_waves(int32_t NF0, int32_t NF1);
-
-void write_image(char *gen_name, float_image_t *img);
+void write_color_image(float_image_t *img, char *outPrefix, char *tag);
 
 int main (int argn, char **argv)
   {
-    do_test_gen(&float_image_test_gen_stripes, "stripes");
-    do_test_gen(&float_image_test_gen_ripples, "ripples");
-    do_test_gen(&float_image_test_gen_checker, "checker");
-    do_test_gen(&float_image_test_gen_chopsea, "chopsea");
+    char *outPrefix = "out/test";
     
-    do_test_comb_waves(0, 0);
-    do_test_comb_waves(1, 1);
-    do_test_comb_waves(2, 2);
-    do_test_comb_waves(0, 2);
+    do_test_gen(&float_image_test_gen_stripes, "stripes", outPrefix);
+    do_test_gen(&float_image_test_gen_ripples, "ripples", outPrefix);
+    do_test_gen(&float_image_test_gen_checker, "checker", outPrefix);
+    do_test_gen(&float_image_test_gen_chopsea, "chopsea", outPrefix);
     
     return 0;
   }
 
-void do_test_gen(float_image_test_generator_t *gen_proc, char *gen_name)
+void do_test_gen(float_image_test_generator_t *gen_proc, char *gen_name, char *outPrefix)
   {
     fprintf(stderr, "=== test gen=%s============\n", gen_name);
 
@@ -64,46 +61,22 @@ void do_test_gen(float_image_test_generator_t *gen_proc, char *gen_name)
     float_image_test_paint(img, gen_proc, 1);
     
     /* Write the input and output images: */
-    write_image(gen_name, img);
+    write_color_image(img, outPrefix, gen_name);
     fprintf(stderr, "===================================================\n");
   }  
 
-void do_test_comb_waves(int32_t NF, int32_t NS)
+void write_color_image(float_image_t *img, char *outPrefix, char *tag)
   {
-    fprintf(stderr, "=== test comb_waves = %d..%d ============\n", NF, NS);
+    assert(img->sz[0] == 3);
 
-    fprintf(stderr, "creating image...\n");
-    int NC = 3;
-    int NX = 1024;
-    int NY = 768;
-    float_image_t *img = float_image_new(NC, NX, NY);
-    
-    fprintf(stderr, "choosing frequencies...\n");
-    double amp[NF];
-    double fx[NF];
-    double fy[NF]; 
-    double phase[NF];
-    
-    fprintf(stderr, "filling image ...\n");
-    float_image_test_paint(img, gen_proc, 1);
-    
-    /* Write the input and output images: */
-    write_image(fname, img);
-    fprintf(stderr, "===================================================\n");
-  }  
-
-void write_image(char *gen_name, float_image_t *img)
-  {
     char *fname = NULL;
-    asprintf(&fname, "out/test-%s.ppm", gen_name);
-    FILE *wr = open_write(fname, TRUE);
-    int chns = (int)img->sz[0];
-    bool_t yup = TRUE, verbose = TRUE;
+    asprintf(&fname, "%s-%s.ppm", outPrefix, tag);
     bool_t isMask = FALSE; /* Assume uniform distr. of pixel values in encoding/decoding. */
-    uint16_image_t *pimg = float_image_to_uint16_image(img, isMask, chns, NULL, NULL, NULL, 255, yup, verbose);
-    bool_t forceplain = FALSE;
-    uint16_image_write_pnm_file(wr, pimg, forceplain, verbose);
-    uint16_image_free(pimg);
-    fclose(wr);
+    double gamma = 1.000;
+    double bias = 0.000;
+    bool_t yup = TRUE;
+    bool_t warn = TRUE;
+    bool_t verbose = TRUE;
+    float_image_write_pnm_named(fname, img, isMask, gamma, bias, yup, warn, verbose);
     free(fname);
   }

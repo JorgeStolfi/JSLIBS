@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_func_basis.h}. */
-/* Last edited on 2021-08-22 18:08:16 by stolfi */
+/* Last edited on 2023-01-14 01:08:31 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -68,7 +68,7 @@ double *neuromat_eeg_func_basis_nearest_dists(int32_t ne, r3_t pos3D[])
 double neuromat_eeg_func_basis_shepard_weight(r3_t *p, r3_t *ctr, double rho, double sigma, double ord)
   {
     double d2 = r3_dist_sqr(p, ctr);
-    double t2shep = (d2 + 1.0e-30)/(rho*rho);
+    double t2shep = (d2 + 1.0e-38)/(rho*rho);
     double zshep = (ord == 2 ? t2shep : pow(t2shep, ord/2));
     double shep = 1/zshep;
     double z2bell = d2/(sigma*sigma);

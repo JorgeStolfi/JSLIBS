@@ -1,5 +1,5 @@
 /* r6x6.h --- 4x4 matrices and operations on them */
-/* Last edited on 2021-06-09 19:55:26 by jstolfi */
+/* Last edited on 2023-01-12 06:51:47 by stolfi */
 
 #ifndef r6x6_H
 #define r6x6_H
@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <r6.h>
 
-typedef struct { double c[6][6]; } r6x6_t;
+typedef struct r6x6_t { double c[6][6]; } r6x6_t;
 
 /* STANDARD OPERATIONS */
 

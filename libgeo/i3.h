@@ -2,7 +2,7 @@
 #define i3_H
 
 /* i3.h --- operations on points and vectors of Z^3 */
-/* Last edited on 2021-06-09 20:43:18 by jstolfi */
+/* Last edited on 2023-01-12 06:48:57 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -29,7 +29,7 @@
   {[-N..N-1]} where {N = 2^31}. */
   
 
-typedef struct { int32_t c[3]; } i3_t;
+typedef struct i3_t { int32_t c[3]; } i3_t;
 
 void i3_zero (i3_t *r);
   /* Sets {r} to the zero vector. */

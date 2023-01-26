@@ -2,7 +2,7 @@
 #define lsq_H
 
 /* Fits a linear map of {R^nx} to {R^nf} by least squares, given sampling proc. */
-/* Last edited on 2022-10-20 10:28:02 by stolfi */
+/* Last edited on 2023-01-24 10:18:38 by stolfi */
 
 #define lsq_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -46,18 +46,18 @@ int32_t lsq_fit
     varying from 0 to {nt-1}, to generate the argument coordinates
     {Xk[0..nx-1]}, the function samples {Fk[0..nf-1]}, and the
     reliability weight {Wk} for each data point {k}. The weighted least
-    squares method assumes that the function samples {Fk[0..nf-1]} are
-    measurements of some ``true'' linear function {f} from {R^nx} to
+    squares method assumes that the function samples {Fk[jf]} are
+    measurements of some ``true'' linear function {f[jf]} from {R^nx} to
     {R^nf}, whose actual (unknown) value at {Xk[0..nx-1]} is
-    {Tk[0..nf-1]}, perturbed by the addition of {nf} measurement errors
-    {Nk[0..nf-1]}, with independent Gaussian distributions with zero
+    {f[jf](Xk[0..nx-1])}, perturbed by the addition of measurement errors
+    {Nk[jf]}, with independent Gaussian distributions with zero
     mean and the same variance {1/Wk}. 
     
     The procedure stores into argument {U} the {nx × nf} coefficient matrix of
     the linear function {s} that maximizes the likelihood of the data
     points. The parameter {U} should have {nx*nf} elements,
     and the matrix will be packed by rows; that is, conceptual 
-    element {U[i,j]} is {U[i*nf + j]}.
+    element {U[ix,jf]}, the coefficient of {X[ix]} in is {U[kx*nf + jf]}.
     
     The approximation is defined as the vector-matrix product {s(x) = x*U}.
     Namely, column {j} of {U} is the coefficient vector of the

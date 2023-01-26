@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {image_window_op.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-11-15 17:41:24 by jstolfi */ 
+/* Last edited on 2023-01-14 01:07:58 by stolfi */ 
 /* Created on 2012-01-25 by J. Stolfi, UNICAMP */
 
 #define test_image_window_op_COPYRIGHT \
@@ -205,6 +205,8 @@ void tiwo_fill_test_image(int32_t it, float_image_t *timg)
     /* Rescale values to span the range {[0_1]}: */
     float vMin = +INF, vMax = -INF;
     float_image_update_sample_range(timg, 0, &vMin, &vMax);
+    vMin += -1.0e-38f; /* To void {NAN} values if {img} is all zeros. */
+    vMax += +1.0e-38f; /* To void {NAN} values if {img} is all zeros. */
     float_image_rescale_samples(timg, 0, vMin,vMax, 0.0,1.0);
 
     void gen_proc(r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[])

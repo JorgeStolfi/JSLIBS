@@ -1,5 +1,5 @@
 /* See {lsq.h} */
-/* Last edited on 2022-10-20 10:28:07 by stolfi */
+/* Last edited on 2023-01-24 10:12:24 by stolfi */
 
 #define lsq_C_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
@@ -189,6 +189,12 @@ int32_t lsq_solve_system
     if (verbose)
       { fprintf(stderr, "  rank = %d", rank);
         if (rank < nx) { fprintf(stderr, " (%s)", "indeterminate"); }
+        fprintf(stderr, "  system solution:\n");
+        for (int32_t ix = 0; ix < nx; ix++)
+          { fprintf(stderr, "  %-4s", (ix == nx/2 ? "U = " : ""));
+            lsq_debug_double_vec(nf, &(U[ix*nf]), "%12.5f");
+            fprintf(stderr, "\n");
+          }
         fprintf(stderr, "\n");
       }
     return rank;

@@ -1,5 +1,5 @@
 /* rf2.h --- operations on points and vectors of R^2 (single-precision version) */
-/* Last edited on 2021-08-20 16:08:20 by stolfi */
+/* Last edited on 2023-01-12 06:50:33 by stolfi */
 
 #ifndef rf2_H
 #define rf2_H
@@ -12,7 +12,7 @@
 #include <vec.h>
 #include <interval.h>
 
-typedef struct { float c[2]; } rf2_t;
+typedef struct rf2_t { float c[2]; } rf2_t;
 
 #define INF INFINITY
 

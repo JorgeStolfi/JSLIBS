@@ -1,5 +1,5 @@
 /* r6.h --- operations on points and vectors of R^6 */
-/* Last edited on 2021-08-20 17:21:49 by stolfi */
+/* Last edited on 2023-01-12 06:50:20 by stolfi */
 
 #ifndef r6_H
 #define r6_H
@@ -11,7 +11,7 @@
 
 #include <vec.h>
 
-typedef struct { double c[6]; } r6_t;
+typedef struct r6_t { double c[6]; } r6_t;
 
 #define INF INFINITY
 

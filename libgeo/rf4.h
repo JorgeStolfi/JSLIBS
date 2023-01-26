@@ -1,5 +1,5 @@
 /* rf4.h --- operations on points and vectors of R^4 (single-precision version) */
-/* Last edited on 2021-08-20 16:09:03 by stolfi */
+/* Last edited on 2023-01-12 06:50:51 by stolfi */
 
 #ifndef rf4_H
 #define rf4_H
@@ -12,7 +12,7 @@
 #include <vec.h>
 #include <interval.h>
 
-typedef struct { float c[4]; } rf4_t;
+typedef struct rf4_t { float c[4]; } rf4_t;
 
 #define INF INFINITY
 

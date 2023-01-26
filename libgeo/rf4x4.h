@@ -1,5 +1,5 @@
 /* rf4x4.h --- 4x4 matrices and operations on them (single-precision version) */
-/* Last edited on 2021-08-17 08:49:56 by stolfi */
+/* Last edited on 2023-01-12 06:52:06 by stolfi */
 
 #ifndef rf4x4_H
 #define rf4x4_H
@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <rf4.h>
 
-typedef struct { float c[4][4]; } rf4x4_t;
+typedef struct rf4x4_t { float c[4][4]; } rf4x4_t;
 
 /* STANDARD OPERATIONS */
 

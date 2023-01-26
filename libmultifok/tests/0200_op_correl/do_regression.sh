@@ -1,91 +1,33 @@
 #! /bin/bash
-# Last edited on 2023-01-09 03:39:58 by stolfi
+# Last edited on 2023-01-25 07:54:04 by stolfi
 
-fname="$1"; shift   # File name minus the "-b{B}-vals.txt" tail.
-btype="$1"; shift   # "N", "D", or "H".
-nw="$1"; shift      # Window size.
-sqrOnly="$1"; shift # 1 to generate only the squared terms, 0 all cross products too.
-
-if [[ ${nw} -ne 3 ]]; then echo "** window size must be 3" 1>&2; exit 1; fi
-nb=$(( $nw * $nw ))
+prefix="$1"; shift      # File name minus the "-terma.txt" and "-rdata.txt" tail.
 
 tmp="/tmp/$$"
 
-inNamesFile="${fname}-b${btype}-names.txt" # File with basis element names.
-inCoeffFile="${fname}-b${btype}-vals.txt"  # Raw data file.
+termsFile="${prefix}-terms.txt" # File with term names and weights.
+dataFile="${prefix}-rdata.txt"  # Raw data file.
 
-tmpTermsFile="${tmp}-tdata.txt"             # Temporary data file with quadratic terms.
-tmpNamesFile="${tmp}-tnames.txt"            # Temporary data file with names of quadratic terms.
-outRegrFile="${fname}-b${btype}-regr.txt"   # Regression result file.
-outFormFile="${fname}-b${btype}-form.txt"   # Fitted formula file.
+termNames=( `cat ${termsFile} | sed -e 's:[#].*$::g' | gawk '//{ print $1; }'` )
+nt=${#termNames[@]}
+echo "expecting ${nt} terms in regression data file" 1>&2
 
-# Get the number of basis elements and their names:
+# Assumes that each line of ${dataFile} corresponds to a pixel and has fields
+#   {pixelID} {sharp^exp} {wp} {term[0]} ... {term[NT-1]}
+# where {wp} is the weight of the pixel, {sharp} is the actual image sharpness 
+# in the pixel, {exp} is 0 or 1, and {term[0..NT-1]} are the terms (local 
+# operator values) that are to be used to estimate the {sharp} value.
 
-names=( `cat ${inNamesFile}` )
-nb=${#names[@]}
+outRegrFile="${prefix}-regr.txt"   # Regression result file.
+outFormFile="${prefix}-form.txt"   # Fitted formula file.
 
-echo "found ${nb} basis elements = ${names[@]}" 1>&2 
-
-# Generating the term names file:
-
-gawk \
-    -v names="${names[*]}" \
-    -v sqrOnly=${sqrOnly} \
-    ' BEGIN {
-        nb = split(names, bnam);
-        printf "generating the terms found %d basis elements\n", nb > "/dev/stderr"
-        for (ib = 1; ib <= nb; ib++) {
-          dblim = (sqrOnly+0 != 0 ? 1 : ib);
-          for (db = 0; db < dblim; db++) {
-            jb = ib-db;
-            tn = ( bnam[ib] "*" bnam[jb] )
-            printf "%s\n", tn;
-          }
-        }
-        printf "1\n";
-      }
-    ' \
-  > ${tmpNamesFile}
-  
-if [[ ! ( -s ${tmpNamesFile} ) ]]; then exit 1; fi
-  
-if [[ ${sqrOnly} -ne 0 ]]; then
-  nt=$(( ${nb} + 1 ))
-else
-  nt=$(( ${nb} * ( ${nb} + 1) / 2 + 1 )) 
-fi
-echo "should have ${nt} terms; checking" 1>&2
-wc -l ${tmpNamesFile} 1>&2
-
-# Generate the temporary data file with the terms values:
-
-cat ${inCoeffFile} \
-  | gawk \
-      -v nb="${nb}" \
-      -v sqrOnly=${sqrOnly} \
-      ' // { 
-          printf "P%03d.%03d %s ", $1, $2, $4; 
-          for (ib = 1; ib <= nb; ib++) {
-            dblim = (sqrOnly+0 != 0 ? 1 : ib);
-            for (db = 0; db < dblim; db++) {
-              jb = ib-db;
-              tv = $(4+ib) * $(4+jb);
-              printf " %16.12f", tv;
-            }
-          }
-          printf " 1\n";
-        }
-      ' \
-  > ${tmpTermsFile}
-  
-if [[ ! ( -s ${tmpNamesFile} ) ]]; then exit 1; fi
-
-# Do the quadratic regression:
+# Do the regression: */
 
 linear_fit \
     -terms ${nt} \
-    -termNames `cat ${tmpNamesFile}` \
+    -weighted T \
+    -termNames "${termNames[@]}" \
     -writeFormula ${outFormFile} \
-  < ${tmpTermsFile} \
+  < ${dataFile} \
   > ${outRegrFile}
   

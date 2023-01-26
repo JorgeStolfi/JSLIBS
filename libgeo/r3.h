@@ -1,5 +1,5 @@
 /* r3.h --- operations on points and vectors of R^3 */
-/* Last edited on 2021-08-20 16:06:30 by stolfi */
+/* Last edited on 2023-01-12 06:49:59 by stolfi */
 
 #ifndef r3_H
 #define r3_H
@@ -11,7 +11,7 @@
 
 #include <vec.h>
 
-typedef struct { double c[3]; } r3_t;
+typedef struct r3_t { double c[3]; } r3_t;
 
 #define INF INFINITY
 

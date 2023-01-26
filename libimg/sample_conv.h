@@ -2,7 +2,7 @@
 #define sample_conv_H
 
 /* {sample_conv.h} - conversion between floating-point and integer samples. */
-/* Last edited on 2017-06-24 23:22:26 by stolfilocal */
+/* Last edited on 2023-01-14 12:04:13 by stolfi */
 
 #include <stdint.h>
 #include <stdlib.h>

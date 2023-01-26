@@ -1,5 +1,5 @@
 /* rf3.h --- operations on points and vectors of R^3 (single-precision version) */
-/* Last edited on 2021-08-20 16:08:43 by stolfi */
+/* Last edited on 2023-01-12 06:50:42 by stolfi */
 
 #ifndef rf3_H
 #define rf3_H
@@ -12,7 +12,7 @@
 #include <vec.h>
 #include <interval.h>
 
-typedef struct { float c[3]; } rf3_t;
+typedef struct rf3_t { float c[3]; } rf3_t;
 
 #define INF INFINITY
 

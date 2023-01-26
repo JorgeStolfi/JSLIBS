@@ -1,5 +1,5 @@
 /* r2.h --- operations on points and vectors of R^2 */
-/* Last edited on 2021-08-20 16:06:09 by stolfi */
+/* Last edited on 2023-01-12 06:49:43 by stolfi */
 
 #ifndef r2_H
 #define r2_H
@@ -12,7 +12,7 @@
 #include <vec.h>
 #include <interval.h>
 
-typedef struct { double c[2]; } r2_t;
+typedef struct r2_t { double c[2]; } r2_t;
 
 #define INF INFINITY
 

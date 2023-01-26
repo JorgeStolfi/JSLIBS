@@ -1,5 +1,5 @@
 /* See pst_fit_ellipse.h */
-/* Last edited on 2017-03-13 21:02:57 by stolfilocal */ 
+/* Last edited on 2023-01-14 01:06:55 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -405,7 +405,7 @@ double pst_fit_ellipse_eval(float_image_t *IGR, ellipse_crs_t *EP)
           }
       }
     assert(sum_W_E2 > 0);
-    sum_W_I2 += 1.0e-30; /* To prevent division by zero. */
+    sum_W_I2 += 1.0e-300; /* To prevent division by zero. */
     double corr = sum_W_I_E/sqrt(sum_W_E2*sum_W_I2); /* Correlation. */
     
     /* The result must be a quadratic mismatch metric, so: */

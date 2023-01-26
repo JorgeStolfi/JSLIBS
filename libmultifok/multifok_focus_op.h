@@ -1,5 +1,5 @@
 /* Focus detector for multi-focus stereo. */
-/* Last edited on 2023-01-09 10:21:02 by stolfi */
+/* Last edited on 2023-01-25 13:54:57 by stolfi */
 
 #ifndef multifok_focus_op_H
 #define multifok_focus_op_H
@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #include <bool.h>
+#include <i2.h>
 
 /* 
   FOCUS DETECTOR OPERATORS
@@ -23,13 +24,6 @@
   = NW*NW}, linearized by rows.
   
   The window size {NW} must be odd and at least 3. */ 
-  
-typedef enum {
-    multifok_focus_op_basis_type_NONE,
-    multifok_focus_op_basis_type_DIFF,
-    multifok_focus_op_basis_type_HART
-  } multifok_focus_op_basis_type_t;
-  /* Basis types. */
 
 int32_t multifok_focus_op_num_samples(int32_t NW);
   /* Returns the number of pixels in a window of {NW} by {NW} pixels, 
@@ -53,36 +47,37 @@ double multifok_focus_op_dist_sqr(int32_t NW, double x[], double y[], double ws[
   /* Computes the squared distance of sample vectors {x[0..NS-1]} and {y[0..NS-1]}
     with weights {ws[0..NS-1]}.  That is, {SUM{i \in 0..NS-1 : ws[i]*(x[i] - y[i])^2}}. */
 
-void multifok_focus_op_normalize_samples(int32_t NW, double x[], double ws[], double noise);
-  /* Normalizes the samples {x[0..NS-1]} to have weighted average 0 and weighted deviation 1.
-    This correction elimines the effect of brightness and contrast variations.
+void multifok_focus_op_normalize_window_samples
+  ( int32_t NW, 
+    double x[], 
+    double ws[], 
+    double noise, 
+    double *avg_P,
+    double *dev_P
+  );
+  /* Computes the weighted average {avg} and deviation {dev} of the window samples {x[0..NS-1]},
+    returning them in {*ave_P} and {*dev_P}.
     
-    Assumes that the samples are contaminated with random noise with mean 0 and deviation {noise},
+    Then normalizes the samples {x[0..NS-1]} by subtracting {avg}
+    dividing by {hypot(dev, noise}, so that they have zero mean and unit deviation.
+    
+    This correction elimines the effect of brightness and contrast variations,
+    assuming that the samples are contaminated with random noise with mean 0 and deviation {noise},
     so variations that are small compared to {noise} are not amplified. */
 
-/* SIMPLE FOCUS SCORE */
-
 /* FOCUS SCORE DERIVED FROM LOCAL BASIS  */
-
-double multifok_focus_op_score_from_basis(int32_t NW, double x[], double noise, double ws[], int32_t NB, double *phi[], double wc[]);
-  /* Assumes that {x[0..NS-1]} contains the samples from a some channel
-    of some image {img} contained in an {NW} by {NW} window, stored by
-    rows, where {NS = NW*NW}. Returns a numeric score that tells how
-    well-focused the image seems to be in that window.
-    
-    Before computing the score, the sampels {x[0..NS-1]} are 
-    normalized by shifting and scaling with {multifok_focus_op_normalize_samples},
-    so that they have zero mean and unit deviation.
-    
-    The score is then obtained by computing the coeffs {c[0..NB-1]} of the
-    window samples in the given basis {phi[0..NB-1][0..NS-1]}, then
-    computing the weighted sum of squares of the coeffs, namely {SUM{
-    wc[i]*c[i]^2 : i \in 0..NB-1 }}.
-    
-    The basis is assumed to be orthonormal with respect to the dot
-    product with sample weights {ws}.
-    
-    The samples are destroyed in the process. */ 
+  
+typedef enum {
+    multifok_focus_op_basis_type_CANC, /* The canonical basis, 1 at each sample and 0 at others. */
+    multifok_focus_op_basis_type_LAPL, /* The order 2 differential operators: "DX", "DY", "DXX", "DXY", "DYY". */
+    multifok_focus_op_basis_type_CUBE, /* Same as {LAPL} plus the 3rd order saddles "C3", "S3". */
+    multifok_focus_op_basis_type_DIFF, /* The {CUBE} operators plus the checker "Q". */
+    multifok_focus_op_basis_type_HART  /* The Hartley basis waves. */
+  } multifok_focus_op_basis_type_t;
+  /* Basis types. */
+  
+#define multifok_focus_op_basis_type_FIRST multifok_focus_op_basis_type_CANC
+#define multifok_focus_op_basis_type_LAST multifok_focus_op_basis_type_HART 
 
 void multifok_focus_op_basis_make
   ( int32_t NW, 
@@ -90,21 +85,24 @@ void multifok_focus_op_basis_make
     multifok_focus_op_basis_type_t bType,
     bool_t ortho,
     int32_t *NB_P, 
-    double ***phi_P, 
-    double **wc_P,
-    char ***name_P
+    double ***bas_P, 
+    char ***belName_P
   );
-  /* Returns in {*phi_P} a newly allocated array {phi[0..NB-1][0..NS-1]} with a
-    basis to be used to analyze the window samples. Namely {phi[i][j]}
+  /* Returns in {*bas_P} a newly allocated array {bas[0..NB-1][0..NS-1]} with a
+    basis to be used to analyze the window samples. Namely {bas[i][j]}
     is coordnate {j} of basis element {i}. The number {NB} is chosen by
     the procedure and returned in {*NB_P}.
     
-    If {bType} is {multifok_focus_op_basis_type_NONE}, basis element
+    If {bType} is {multifok_focus_op_basis_type_CANC}, basis element
     {kb} will be 0 except at sample {kb}, where it will be 1.
     
+    If {bType} is {multifok_focus_op_basis_type_LAPL}, then {NW} must be
+    3, and the basis will consist of the five differential operators "DX", "DY",
+    "DXX", "DXY", "DYY".
+    
     If {bType} is {multifok_focus_op_basis_type_DIFF}, then {NW} must be
-    3, and the basis will consist of all the differential operators of
-    order 0, 1, and 2, as well as two 3-saddles and the 3x3 checker.
+    3, and the basis will consist of the same operators as {LAPL},
+    as well as the local image value "F", the two 3-saddles, and the 3x3 checker.
     
     If {bType} is {multifok_focus_op_basis_type_HART} is false, the
     basis will consists of the Hartley waves whose frequency vectors are
@@ -114,7 +112,7 @@ void multifok_focus_op_basis_make
     If {ortho} is true, the basis will be modified to be orthonormal
     with respect to the the dot product {multifok_focus_op_prod}, with
     sample weights {ws[0..NS-1]}; that is, the dot product of
-    {phi[ib][0..NS-1]} and {phi[jb][0..NS-1]} is 1 if {ib=jb} and 0
+    {bas[ib][0..NS-1]} and {bas[jb][0..NS-1]} is 1 if {ib=jb} and 0
     otherwise.  During this procedure, some elements may be discarded
     for being too close to linear combinations of the previous ones.
     
@@ -123,38 +121,79 @@ void multifok_focus_op_basis_make
     be in the range {[-1 _ +1]} and hit at least one of the two 
     bounds. 
     
-    The procedure also returns in {*wc_P} a vector of {NB} elements
-    where {wc[k]} is the weight to be used when combining the squared 
-    coefficient of {phi[k]} into the focus indicator.
+    The procedure also returns in {*belName_P} a vector of {NB} newly alocated strings 
+    such that {belName[k]} is a scrutable name for basis element {bas[k]}. */
+ 
+void multifok_focus_op_compute_basis_coeffs(int32_t NW, double x[], double ws[], int32_t NB, double *bas[], double coeff[]);
+  /* Applies a transformation of the window samples {x[0..NS-1]} to coefficients {coeff[0..NB-1]}
+    using the basis {bas[0..NB-1][0..NS-1]} and inner product weights {ws[0..NS-1]}.
     
-    The procedure also returns in {*name_P} a vector of {NB} newly alocated strings 
-    such that {name[k]} is a scrutable name for basis element {phi[k]}. */
+    The basis is assumed to be orthonormal with respect to the dot product with
+    sample weights {ws}, so that {coeff[kb]} is the weighted inner product of {bas[kb]}. */
 
-void multifok_focus_op_basis_free(int32_t NB, double **phi, double *wc, char **name);
-  /* Frees the storage used by {phi[0..NB-1][0..NS-1]}, {wc[0..NB-1]}, and {name[0..NB-1]}. */
+char *multifok_focus_op_basis_type_to_text(multifok_focus_op_basis_type_t bType);
+  /* Converts the basis type {bType} to text ("LAPL", "DIFF", etc.). 
+    Clients should NOT call {free} on the returned strings. */
+    
+multifok_focus_op_basis_type_t multifok_focus_op_basis_type_from_text(char *name, bool_t fail);
+  /* Converts the {name} ("LAPL", "DIFF", etc.) to a basis type.  
+    If the {name} invalid, fails if {fail} is true, and returns {-1} if false. */
+
+void multifok_focus_op_basis_free(int32_t NB, double **bas, char **belName);
+  /* Frees the storage used by {bas[0..NB-1][0..NS-1]} and {belName[0..NB-1]}. */
+
+void multifok_focus_op_term_indices_from_names(int32_t NB, char *belName[], int32_t NT, char *tname[], i2_t tix[]);
+  /* Sets {tix[0..NT-1]} to the term index pairs implied by the term names {tname[0..NT-1}} and the 
+    basis element names {belName[0..NB-1]}. See {multifok_focus_op_score_from_basis_coeffs}. */
+
+double multifok_focus_op_score_from_basis_coeffs
+  ( int32_t NB, 
+    double coeff[],
+    int32_t NT,
+    i2_t tix[],
+    double wt[],
+    double term[], /* OUT */
+    bool_t squared
+  );
+  /* Assumes that {coeff[0..NB-1]} are the coefficients of the
+    window samples in some local operator basis.
+    
+    Then, if {NT} is positive, the procedure forms {NT} term values {term[0..NT-1]} from the
+    coeefs {coeff[0..NB-1]} as specified in the vector {tix[0..NT-1]}.
+    Namely, let {tix[k]} be {(ib,jb)}. If {ib} and {jb} are
+    non-negative, then {term[k]} is the quadratic term {coeff[ib]*coeff[jb]}. If
+    only {ib} is non-negative, then {term[k]} is {coeff[ib]}. If both are
+    negative, then {term[k]} is 1.
+    
+    Finally, the procedure computes the sharpness score as the weighted sum 
+    {SUM{wt[k]*term[k] : k \in 0..NT-1 }}.  However, if {squared} is true,
+    assumes that the combination of the terms is an estimate
+    of the squared sharpness, so that the returned {score} is the square root 
+    of that combination. In any case the returned value is clipped to the
+    range {[0 _ 1]}.
+   
+    If {NT} is zero, the parameters {tix} and {wt} are ignored, and the
+    sharpness score is set to zero.
+    
+    The samples are destroyed in the process. */ 
 
 void multifok_focus_op_basis_print
   ( FILE *wr,
     int32_t NW, 
     int32_t NB, 
-    double *phi[],
-    double wc[],
-    char *name[]
+    double *bas[],
+    char *belName[]
   );
-  /* Prints to {wr} the basis {phi[0..NB-1][0..NS-1]} and the coefficient weights {wc[0..NB-1]}. */
+  /* Prints to {wr} the basis {bas[0..NB-1][0..NS-1]}. */
 
 void multifok_focus_op_basis_ortho_check
   ( FILE *wr,
     int32_t NW, 
     double ws[], 
     int32_t NB, 
-    double *phi[]
+    double *bas[]
   );
-  /* Checks whether basis {phi[0..NB-1][0..NS-1]} is osrthonormal. */
-
-void multifok_focus_op_remap_samples(int32_t NW, double x[], double ws[], int32_t NB, double *phi[], double c[]);
-  /* Applies a transformation of the window samples {x[0..NS-1]} to coefficients {c[0..NB-1]}
-    using the basis {phi[0..NB-1][0..NS-1]} and inner product weights {ws[0..NS-1]}. */
+  /* Checks whether basis {bas[0..NB-1][0..NS-1]} is osrthonormal. */
 
 void multifok_focus_op_check(int32_t NW, multifok_focus_op_basis_type_t bType, bool_t ortho);
   /* Runs various diagnostics on this module. */

@@ -1,5 +1,5 @@
 /* r2x2.h --- 2x2 matrices and operations on them */
-/* Last edited on 2021-06-09 19:46:13 by jstolfi */
+/* Last edited on 2023-01-12 06:51:15 by stolfi */
 
 #ifndef r2x2_H
 #define r2x2_H
@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <r2.h>
 
-typedef struct { double c[2][2]; } r2x2_t;
+typedef struct r2x2_t { double c[2][2]; } r2x2_t;
 
 /* STANDARD OPERATIONS */
 

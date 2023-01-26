@@ -2,7 +2,7 @@
 #define float_image_waves_H
 
 /* Tools for generating images that are combinations of waves. */
-/* Last edited on 2023-01-10 20:08:03 by stolfi */ 
+/* Last edited on 2023-01-14 20:17:23 by stolfi */ 
 
 #define _GNU_SOURCE_
 #include <stdint.h>
@@ -16,14 +16,19 @@ double float_image_waves_eval
     double amp[], 
     double fx[], 
     double fy[], 
-    double phase[]
+    double phase[],
+    double squash
   );
   /* Computes the sum of {NF} sinusoidal waves at the point {(x,y)}.
     Each wave has amplitude {amp[k]}, frequency vectors {(fx[k],fy[k])},
     and phase {phase[k]}, for {k} in {0..NF-1}.
     
     The frequency vectors should have length less than 0.5, to avoid
-    aliasing artifacts when sampled in a 1-pixel grid. */
+    aliasing artifacts when sampled in a 1-pixel grid.
+    
+    If {squash} is finite and positive, the result is processed by a 
+    map {F) that compresses the range {(-INF _ +INF)} to {[-1 _ +1]},
+    such that {F(±squash) = ±sqrt(0.5)}. */
 
 void float_image_waves_pick
   ( int32_t NF,

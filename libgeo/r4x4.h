@@ -1,5 +1,5 @@
 /* r4x4.h --- 4x4 matrices and operations on them */
-/* Last edited on 2021-06-09 19:44:44 by jstolfi */
+/* Last edited on 2023-01-12 06:51:37 by stolfi */
 
 #ifndef r4x4_H
 #define r4x4_H
@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <r4.h>
 
-typedef struct { double c[4][4]; } r4x4_t;
+typedef struct r4x4_t { double c[4][4]; } r4x4_t;
 
 /* STANDARD OPERATIONS */
 

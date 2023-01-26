@@ -2,7 +2,7 @@
 #define PROG_DESC "test of various unary ops on {float_image_t} images"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2017-06-22 18:10:31 by stolfilocal */
+/* Last edited on 2023-01-14 00:58:22 by stolfi */
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_misc_ops_C_COPYRIGHT \
@@ -152,8 +152,11 @@ int main(int argc, char **argv)
     fprintf(stderr, "output image range = [ %+8.4f _ %+8.4f ]\n", vMin, vMax);
     
     /* Rescale pixels to {[0_1]}: */
+    double vR = fmax(fabs(vMin), fabs(vMax)) + 1.0e-38;
+    vMin = (float)(vMin < 0.0 ? -vR : 0.0);
+    vMax = (float)(vMax > 0.0 ? +vR : 0.0);
     for (c = 0; c < fot->sz[0]; c++)
-      { float_image_rescale_samples(fot, c, 0.0, vMax, 0.0, 1.0); }
+      { float_image_rescale_samples(fot, c, vMin, vMax, 0.0, 1.0); }
       
     /* Write output image: */
     float_image_write_pnm_named("-", fot, isMask, 1.000, 0.000, TRUE, TRUE, FALSE);

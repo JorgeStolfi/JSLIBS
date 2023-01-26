@@ -1,5 +1,5 @@
 /* r3x3.h --- 3x3 matrices and operations on them */
-/* Last edited on 2022-01-05 14:15:54 by stolfi */
+/* Last edited on 2023-01-12 06:51:28 by stolfi */
 
 #ifndef r3x3_H
 #define r3x3_H
@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <r3.h>
 
-typedef struct { double c[3][3]; } r3x3_t;
+typedef struct r3x3_t { double c[3][3]; } r3x3_t;
 
 /* STANDARD OPERATIONS */
 

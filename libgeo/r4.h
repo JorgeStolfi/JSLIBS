@@ -1,5 +1,5 @@
 /* r4.h --- operations on points and vectors of R^4 */
-/* Last edited on 2021-08-20 16:06:47 by stolfi */
+/* Last edited on 2023-01-12 06:50:09 by stolfi */
 
 #ifndef r4_H
 #define r4_H
@@ -11,7 +11,7 @@
 
 #include <vec.h>
 
-typedef struct { double c[4]; } r4_t;
+typedef struct r4_t { double c[4]; } r4_t;
 
 #define INF INFINITY
 

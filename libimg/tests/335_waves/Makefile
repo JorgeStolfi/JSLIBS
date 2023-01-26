@@ -1,4 +1,4 @@
-# Last edited on 2023-01-10 16:21:17 by stolfi
+# Last edited on 2023-01-22 03:56:32 by stolfi
 
 PROG = waves_test
 
@@ -15,11 +15,22 @@ include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 
 all: check
 
-check:  clean do-test
+check:  clean do-test show
 
 do-test: ${PROG}
 	${PROG}
-	display -title '%f' -filter Box -resize '400%' `ls out/test-*.pgm | sort`
+
+show:
+	for dir in ppm-400x400 pgm-512x512 pgm-256x256 pgm-128x128; do \
+          display -title '%d/%f' -filter Box -resize '200%' `ls out/$${dir}/wavys-*.p?m | sort` ; \
+        done
+        
+TEXBANK := ${HOME}/projects/image-collections/texture-bank
+        
+export:    
+	for dir in ppm-400x400 pgm-512x512 pgm-256x256 pgm-128x128; do \
+          cp -av out/$${dir}/wavys-*.p?m ${TEXBANK}/$${dir}/ ; \
+        done
 
 clean::
-	/bin/rm -fv out/test-*.pgm
+	/bin/rm -fv ${OUT_PREFIX}-*.{pgm,ppm}
