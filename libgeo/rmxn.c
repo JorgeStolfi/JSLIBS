@@ -1,5 +1,5 @@
 /* See rmxn.h. */
-/* Last edited on 2021-06-09 19:42:05 by jstolfi */
+/* Last edited on 2023-02-01 20:30:37 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -538,6 +538,48 @@ void rmxn_gen_print
     fflush(f);
   }  
 
+
+void rmxn_gen_print2 
+  ( FILE *f, int32_t m,
+    int32_t n1, double *A1,
+    int32_t n2, double *A2,
+    char *fmt, 
+    char *olp, char *osep, char *orp,     /* Outer delimiters. */
+    char *ilp, char *isep, char *irp,     /* Inner delimiters. */
+    char *msep                            /* Matrix separator. */
+  )
+  {
+    if (olp == NULL) { olp = "(\n"; }
+    if (osep == NULL) { osep = "\n"; }
+    if (orp == NULL) { orp = "\n)"; }
+    if (ilp == NULL) { ilp = "  ("; }
+    if (isep == NULL) { isep = " "; }
+    if (msep == NULL) { msep = "  "; }
+    if (irp == NULL) { irp = ")"; }
+    if (fmt == NULL) { fmt = "%16.8e"; }
+    fputs(olp, f);
+    int32_t t1 = 0;
+    int32_t t2 = 0;
+    for (int32_t i = 0; i < m; i++)
+      {
+        if (i > 0) { fputs(osep, f); }
+        fputs(ilp, f);
+        for (int32_t j = 0; j < n1; j++) 
+          { if (j > 0) { fputs(isep, f); }
+            fprintf(f, fmt, A1[t1]); t1++;
+          }
+        fputs(irp, f);
+        fputs(msep, f);
+        fputs(ilp, f);
+        for (int32_t j = 0; j < n2; j++) 
+          { if (j > 0) { fputs(isep, f); }
+            fprintf(f, fmt, A2[t2]); t2++;
+          }
+        fputs(irp, f);
+      }
+    fputs(orp, f);
+    fflush(f);
+  }  
 
 double *rmxn_alloc(int32_t m, int32_t n)
   { void *p = malloc(m*n*sizeof(double));

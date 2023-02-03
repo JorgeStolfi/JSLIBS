@@ -1,5 +1,5 @@
 /* fget.h -- alternatives to fscanf that die on error. */
-/* Last edited on 2017-06-18 00:10:36 by stolfilocal */
+/* Last edited on 2023-01-28 01:48:36 by stolfi */
 
 #ifndef fget_H
 #define fget_H
@@ -113,10 +113,10 @@ void fget_eol(FILE *f);
 void fget_comment_or_eol(FILE *f, int cmtc);
   /* Similar to {fget_eol}, but allows arbitrary comment string,
     preceded by spaces and the character {cmtc}, before the newline.
-    Namely, first does {fget_skip_spaces(rd)}. Then, if the next character
-    is {cmtc}, consumes it up to the newline; if it is newline,
-    consumes it; otherwise fails.
-    The character {cmtc} should not be a space or newline. */
+    Namely, first does {fget_skip_spaces(rd)}. Then, if the next character is newline,
+    consumes it; if it is {cmtc}, consumes it and any others up to and including the newline. 
+    
+    Otherwise it fails.  The character {cmtc} should not be a space or newline. */
 
 bool_t fget_test_comment_or_eol(FILE *f, int cmtc);
   /* First does {fget_skip_spaces(rd)}. Then, if the next character

@@ -1,5 +1,5 @@
 #! /usr/bin/gawk -f
-# Last edited on 2023-01-25 17:12:47 by stolfi
+# Last edited on 2023-01-29 14:00:04 by stolfi
 
 # Reads one or more formula files as produced by {linear_fit -writeFormula},
 # writes them in colums, matching the coeffs by the term name after "#".
@@ -8,23 +8,27 @@
 
 BEGIN { 
   nt = 0; # Number of distinct terms seen.
-  split("", tname);  # {tname[0..nt-1]} are the term names.
-  split("", tindex); # {tindex[na]} is the index {kt} such that {tname[kt]=na}.
+  split("", termName);  # {termName[0..nt-1]} are the term names.
+  split("", termIndex); # {termIndex[na]} is the index {kt} such that {termName[kt]=na}.
   
   nf = 0;
   split("", fname);  # {fname[0..nf-1]} are the names of the files already started processing.
   
-  split("", tcoeff); # {tcoeff[kf,kt]} is the coefficient of term {tname[kt]} in file {fname[kf]}.
+  split("", tcoeff); # {tcoeff[kf,kt]} is the coefficient of term {termName[kt]} in file {fname[kf]}.
   
   tcoeff[20,15] = "BOO";
   if (! ((20,15) in tcoeff)) { data_error("BUG"); }
   
   # Start the term list with the avg and dev errors:
-  tname[nt] = "AVG_ERR"; tindex[tname[nt]] = nt; nt++;
-  tname[nt] = "DEV_ERR"; tindex[tname[nt]] = nt; nt++;
+  termName[nt] = "AVG_ERR"; termIndex[termName[nt]] = nt; nt++;
+  termName[nt] = "DEV_ERR"; termIndex[termName[nt]] = nt; nt++;
 
   cur_fname = ""; # Name of current file.
   end_file();
+}
+
+/^ *([#]|$)/ {
+  next;
 }
 
 // {
@@ -41,7 +45,7 @@ BEGIN {
   next;
 }
 
-/[#]/ {
+/[0-9].*[#]/ {
   if (NF != 4) { data_error("bad coeff line"); }
   it = $1 + 0; cf = $2; cc = $3; na = $4;
   if (it != nt_in_file) { data_error("unexpected term index in line"); }
@@ -87,7 +91,7 @@ END {
   printf "\n"
  
   for (it = 2; it < nt; it++) {
-    na = tname[it];
+    na = termName[it];
     print_term(na);
   }
   printf "\n"
@@ -113,18 +117,18 @@ function start_file(fn) {
 }
 
 function process_term(na,  kt,kf) {
-  if (! (na in tindex)) {
-    tname[nt] = na;
-    tindex[na] = nt;
+  if (! (na in termIndex)) {
+    termName[nt] = na;
+    termIndex[na] = nt;
     nt++;
   }
-  kt = tindex[na];
+  kt = termIndex[na];
   kf = nf - 1;
   tcoeff[kf,kt] = cf;
 }
 
 function print_term(na, kt,cf,kf) {
-  kt = tindex[na];
+  kt = termIndex[na];
   printf "%-12s ", na;
   for (kf = 0; kf < nf; kf++) {
     if ((kf,kt) in tcoeff) {

@@ -1,4 +1,4 @@
-# Last edited on 2023-01-20 14:23:57 by stolfi
+# Last edited on 2023-01-29 15:10:29 by stolfi
 
 TEST_LIB := libmultifok.a
 TEST_LIB_DIR := ../..
@@ -24,4 +24,4 @@ check:  ${PROG}
 	./${PROG} \
           -winSize ${NW} \
           -outPrefix ${OUT_PREFIX}
-	display -title '%f' -filter Box -resize '12800%' ${OUT_PREFIX}*.pgm
+	display -title '%f' -filter Box -resize '12800%' ${OUT_PREFIX}*-{ws,be}.pgm

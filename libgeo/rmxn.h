@@ -1,5 +1,5 @@
 /* rmxn.h --- m by n matrices and operations on them */
-/* Last edited on 2021-06-09 19:47:26 by jstolfi */
+/* Last edited on 2023-02-01 20:27:28 by stolfi */
 
 #ifndef rmxn_H
 #define rmxn_H
@@ -177,6 +177,22 @@ void rmxn_gen_print
     element. The matrix is bounded by {olp} and {orp}, and rows are
     separated by {osep}. Each row is bounded by {ilp} and {irp}, and
     elements are separated by {isep}. Defaults are provided for any of
+    these strings which are NULL. */
+
+void rmxn_gen_print2 
+  ( FILE *f, int32_t m,
+    int32_t n1, double *A1,
+    int32_t n2, double *A2,
+    char *fmt, 
+    char *olp, char *osep, char *orp,     /* Outer delimiters. */
+    char *ilp, char *isep, char *irp,     /* Inner delimiters. */
+    char *msep                            /* Matrix separator. */
+  );
+  /* Prints the {m x n1} matrix {A1} and {m x n2} matrix {A2}, side by side, to file {f}, using {fmt} for each
+    element. The two matrices are bounded by {olp} and {orp}, and rows are
+    separated by {osep}. Each row of {A1} and {A2} is bounded by {ilp} and {irp}, and
+    elements are separated by {isep}. The string {msep} is printed between each row 
+    of {A1} and the corresponding row of {A2}. Defaults are provided for any of
     these strings which are NULL. */
 
 /* HEAP ALLOCATION */

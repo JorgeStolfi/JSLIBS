@@ -34,7 +34,7 @@ NOISE := 0.12
 
 check:  combine show
 
-MERGED_FILE := ${OUT_PREFIX}-r.ppm
+MERGED_FILE := ${OUT_PREFIX}-cr.ppm
 
 combine: ${MERGED_FILE}
 
@@ -50,5 +50,5 @@ ${MERGED_FILE}: ${PROG} Makefile
             -outPrefix ${OUT_PREFIX}
             
 show: ${MERGED_FILE}
-	display -title '%f' -filter Box -resize '400%' ${OUT_PREFIX}{-r.ppm,-z.pgm,-v.pgm}
+	display -title '%f' -filter Box -resize '400%' ${OUT_PREFIX}{-cr.ppm,-az.pgm,-ez.pgm}
             

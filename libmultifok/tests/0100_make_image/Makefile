@@ -1,4 +1,4 @@
-# Last edited on 2023-01-25 22:55:08 by stolfi
+# Last edited on 2023-02-01 06:25:27 by stolfi
 
 SHELL := /bin/bash
 
@@ -16,22 +16,19 @@ OTHER_LIBS :=
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 
 .PHONY:: \
-  generate show export \
+  some-tests \
   single-test \
-  clean_out-test generate-test show-test export_test
+  clean_out-test
 
 all: check
 
-SCENE_TYPE := F
+NX := 160
+NY := 120
 
 SOME_TESTS := \
-  chalk-82:S \
   cloth-84:S \
-  decor-82:S \
-  falls-83:S \
   fiber-01:S \
   grave-02:S \
-  india-81:S \
   pebbl-87:S \
   rebar-03:S \
   trees-07:S \
@@ -90,42 +87,22 @@ ALL_TESTS := \
    \
   wavys-09:M
 
-ifeq "${SCENE_TYPE}" "F"
-  # Non-overlapping disks/balls:
-  BACK_TILT := F
-  OVERLAP := F
-else ifeq "${SCENE_TYPE}" "T"
-  # Overlapping disks/balls:
-  BACK_TILT := F
-  OVERLAP := T
-else ifeq "${SCENE_TYPE}" "R"
-  # Tilted backplane only:
-  BACK_TILT := T
-  OVERLAP := F
-else
-  := ERROR
-endif
+check: some-tests
 
-check: generate show export
+# SCENE_TYPES := T F R
+SCENE_TYPES := F
 
-generate:
+some-tests:
 	for targs in ${SOME_TESTS} ; do \
-          ${MAKE} TARGS=$${targs} generate-test ; \
-        done
-
-show:
-	for targs in ${SOME_TESTS} ; do \
-          ${MAKE} TARGS=$${targs} show-test ; \
-        done
-
-export:
-	for targs in ${SOME_TESTS} ; do \
-  	  ${MAKE} TARGS=$${targs} export-test ; \
+	  for st in ${SCENE_TYPES} ; do \
+            ${MAKE} TARGS=$${targs} SCENE_TYPE=$${st} single-test ; \
+          done ; \
         done
 
 ######################################################################
-# recursive section - caller must define ${TARGS}
+# recursive section - caller must define ${TARGS}, ${SCENE_TYPE}
 ifneq "/${TARGS}" "/"
+ifneq "/${SCENE_TYPE}" "/"
 
 TEST_ARGS := ${subst :, , ${TARGS}}
 PATTERN := ${word 1, ${TEST_ARGS}}
@@ -133,59 +110,40 @@ ZOPT :=    ${word 2, ${TEST_ARGS}}
 
 ifeq "/${ZOPT}" "/S"
   # Single image at midway focus plane {Z}:
+  Z_DEP := 6.0
   ZFOC_MIN := 15.5
   ZFOC_MAX := 15.5
   ZFOC_STEP := 3.0
-  ZFOCS := -zRange 15.5 15.5 -zStep 1.0
-  OUT_SUBDIR := single-z${shell printf "%04.1f" "${ZFOC_MIN}"}
 else ifeq "/${ZOPT}" "/M"
   # Stack of images at multiple focus plane {Z}:
+  Z_DEP := 6.0
   ZFOC_MIN := 0.5
   ZFOC_MAX := 29.5
   ZFOC_STEP := 3.0
-  OUT_SUBDIR := stack-z${shell printf "%04.1f-%04.1f-%04.1f" "${ZFOC_MIN}" "${ZFOC_MAX}" "${ZFOC_STEP}" }
 else
   # Unknown ${ZOPT}:
   :=:
 endif
 
-NX := 160
-NY := 120
-NP := 5
-NR := 40
-FOC_DEPTH := 6.0
+PATTERN_DIR := in/pgm-256x256
+PATTERN_FILE := ${PATTERN_DIR}/${PATTERN}.pgm
 
-PATTERN_FILE := in/pgm-256x256/${PATTERN}.pgm
+SIZE_TAG := ${shell printf "%04dx%04d" ${NX} ${NY}}
+OUT_PREFIX := out/st${SCENE_TYPE}-${SIZE_TAG}-${PATTERN}/frame
+SHARP_IMAGE := ${OUT_PREFIX}-sharp-cs.ppm
 
-OUT_PREFIX := out/${OUT_SUBDIR}/st${SCENE_TYPE}-${PATTERN}
+RUN_SCRIPT := run_make_image.sh
 
-SHARP_IMAGE := ${OUT_PREFIX}-sharp-c.ppm
+clean-out-test:
+	rm -fv ${OUT_PREFIX}-*.{ppm,pgm}
 
-clean_out-test:
-	mkdir -p out/${OUT_SUBDIR}
-	rm -f ${OUT_PREFIX}*.pgm ${OUT_PREFIX}*.ppm
+single-test: clean-out-test ${SHARP_IMAGE}
+	@echo "SHARP_IMAGE = ${SHARP_IMAGE}" 1>&2
 
-generate-test: ${SHARP_IMAGE} clean_out-test
-
-${SHARP_IMAGE}: ${PROG}
-	mkdir -p out/${OUT_SUBDIR}
-	./${PROG} \
-          -imgSize ${NX} ${NY} \
-          -backTilt ${BACK_TILT} \
-          -overlap ${OVERLAP} \
-          -pixSampling ${NP} \
-          -dirSampling ${NR} \
-          -zRange ${ZFOC_MIN} ${ZFOC_MAX} -zStep ${ZFOC_STEP} \
-          -focDepth ${FOC_DEPTH} \
-          -pattern ${PATTERN_FILE} \
-          -outPrefix ${OUT_PREFIX}
-
-show-test: ${SHARP_IMAGE}
-	./show_images.sh ${OUT_PREFIX}
-
-export-test: ${SHARP_IMAGE}
-	@echo "!! Not exported" 1>&2
+${SHARP_IMAGE}: ${PROG} ${RUN_SCRIPT} Makefile
+	./${RUN_SCRIPT} ${SCENE_TYPE} ${NX} ${NY} ${PATTERN_DIR} ${PATTERN} ${Z_DEP} ${ZFOC_MIN} ${ZFOC_MAX} ${ZFOC_STEP}
 
 endif
-# End ${TARGS} section
+endif
+# End ${TARGS}, ${SCENE_TYPE} section
 #######################################################################

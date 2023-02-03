@@ -34,7 +34,7 @@ OUT_PREFIX := out/test-st${SCENE_TYPE}-${PATTERN}-${FD_TAG}-ash${ACTUAL_SHARP}
 
 check:  combine show
 
-MERGED_FILE := ${OUT_PREFIX}-r.ppm
+MERGED_FILE := ${OUT_PREFIX}-cr.ppm
 
 combine: ${MERGED_FILE}
 
@@ -50,5 +50,5 @@ ${MERGED_FILE}: ${PROG} Makefile
             -outPrefix ${OUT_PREFIX}
             
 show: ${MERGED_FILE}
-	display -title '%f' -filter Box -resize '400%' ${OUT_PREFIX}{-r.ppm,-q.ppm,-z.pgm,-v.pgm}
+	display -title '%f' -filter Box -resize '400%' ${OUT_PREFIX}{-cr.ppm,-er.ppm,-az.pgm,-ez.pgm}
             

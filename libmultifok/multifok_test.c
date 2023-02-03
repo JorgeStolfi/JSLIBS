@@ -1,5 +1,5 @@
 /* See {multifok_test.h}. */
-/* Last edited on 2023-01-25 07:47:54 by stolfi */
+/* Last edited on 2023-01-31 21:45:44 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -26,9 +26,17 @@
 #include <float_image_read_pnm.h>
 #include <float_image_write_pnm.h>
 
-#include <multifok_test.h>
-#include <multifok_focus_op.h>
+#include <multifok_window.h>
+#include <multifok_window.h>
+#include <multifok_basis.h>
+#include <multifok_score.h>
+#include <multifok_term.h>
 #include <multifok_scene.h>
+
+#include <multifok_test.h>
+
+#define EQUALS "============================================================"
+#define SHARPS "############################################################"
 
 void multifok_test_choose_ray_tilts_and_weights
   ( int32_t NR_min, 
@@ -76,9 +84,9 @@ void multifok_test_compute_focus_plane_point_color_sharpness_and_zav
     in {0..NR-1}.
     
     Each ray {R} is traced with {multifok_scene_ray_trace} with
-    parameters {(scene,pattern,p,d,&ray_clr,&ray_hit)}. Its color
+    parameters {(scene,pattern,p,d,&ray_hob,&ray_hpt)}. Its color
     {clr(R)} and hit point {hit(R)} are the restults returned in {ray_clr} and
-    {ray_hit}. Its sharpness {shr(R)} is the depth of focus {zDep}
+    {ray_hpt}. Its sharpness {shr(R)} is the depth of focus {zDep}
     divided by the absolute difference between {zFoc} and {zht(R)=hit(R).Z}. In
     particular, if {zDep} is {+INF} (vertical rays), or {zht(R)} is
     equal to {zFoc} then {shr(R)} is {+INF}.
@@ -144,10 +152,10 @@ void multifok_test_images_make
   {
     demand((NX >= 10) && (NY >= 10), "image is too small");
     int32_t NC = 3;
-    float_image_t *cimg = float_image_new(NC, NX, NY);
-    float_image_t *simg = float_image_new(1, NX, NY);
-    float_image_t *zimg = float_image_new(1, NX, NY);
-    float_image_t *dimg = float_image_new(1, NX, NY);
+    float_image_t *csimg = float_image_new(NC, NX, NY);
+    float_image_t *shimg = float_image_new(1, NX, NY);
+    float_image_t *azimg = float_image_new(1, NX, NY);
+    float_image_t *dzimg = float_image_new(1, NX, NY);
    
     /* Pixel sampling weights: */
     double wp[NP];
@@ -162,28 +170,40 @@ void multifok_test_images_make
     
     for (int32_t iy = 0; iy < NY; iy++)
       { for (int32_t ix = 0; ix < NX; ix++)
-          { /* Compute the color and nominal focus of pixel {ix,iy} by ray-tracing, assuming image plane at {Z=zFoc}: */
+          { /* fprintf(stderr, "(%d,%d)", ix, iy); */
+            bool_t debug = FALSE;
+            if (debug)
+              { /* Restrict debugging to one pixel */ 
+                if (scene->NO == 0)
+                  { debug = ((ix == 10) && (iy == 10)); }
+                else
+                  { /* Lets debug a pixel right over object 0: */
+                    r3_t *ctr = &(scene->objs[0].ctr);
+                    debug = ((ix == (int32_t)(ctr->c[0] + 0.5)) && (iy == (int32_t)(ctr->c[1] + 0.5))); 
+                  }
+              }
+            
+            /* Compute the color and nominal focus of pixel {ix,iy} by ray-tracing, assuming image plane at {Z=zFoc}: */
             frgb_t pix_clr;
             double pix_shr;
             double pix_zav;
             double pix_zvr;
-            /* bool_t debug = ((ix == 137) && (iy == NY-111)); */
-            bool_t debug = FALSE;
+            
             multifok_test_compute_pixel_color_sharpness_and_zav
               ( scene, pattern, ix, iy, zFoc, zDep, NP, wp, NR, tilt, wr, debug,
                 &pix_clr, &pix_shr, &pix_zav, &pix_zvr
               );
             for (int32_t ic = 0; ic < NC; ic++)
-              { float_image_set_sample(cimg, ic, ix, iy, pix_clr.c[ic]); }
-            float_image_set_sample(simg, 0, ix, iy, (float)pix_shr);         
-            float_image_set_sample(zimg, 0, ix, iy, (float)pix_zav);         
-            float_image_set_sample(dimg, 0, ix, iy, (float)sqrt(pix_zvr));         
+              { float_image_set_sample(csimg, ic, ix, iy, pix_clr.c[ic]); }
+            float_image_set_sample(shimg, 0, ix, iy, (float)pix_shr);         
+            float_image_set_sample(azimg, 0, ix, iy, (float)pix_zav);         
+            float_image_set_sample(dzimg, 0, ix, iy, (float)sqrt(pix_zvr));         
           }
       }
-    (*cimg_P) = cimg;
-    (*simg_P) = simg;
-    (*zimg_P) = zimg;
-    (*dimg_P) = dimg;
+    (*cimg_P) = csimg;
+    (*simg_P) = shimg;
+    (*zimg_P) = azimg;
+    (*dimg_P) = dzimg;
   }
 
 void multifok_test_compute_pixel_color_sharpness_and_zav
@@ -207,7 +227,10 @@ void multifok_test_compute_pixel_color_sharpness_and_zav
   { 
     bool_t verbose = debug;
     
-    if (verbose) { fprintf(stderr, "=== computing pixel ix = %d iy = %d ===\n", ix, iy); }
+    if (verbose) 
+      { fprintf(stderr, SHARPS "\n");
+        fprintf(stderr, "computing pixel ix = %d iy = %d\n", ix, iy);
+      }
 
     int32_t NC = 3;
     /* Scan sampling points, store sample point averages and variances, and sample weights: */
@@ -291,6 +314,8 @@ void multifok_test_compute_pixel_color_sharpness_and_zav
     (*pix_shr_P) = pix_shr;
     (*pix_zav_P) = pix_zav;
     (*pix_zvr_P) = pix_zvr;
+    
+    if (verbose) { fprintf(stderr, SHARPS "\n"); }
   }
  
 void multifok_test_compute_focus_plane_point_color_sharpness_and_zav
@@ -310,9 +335,15 @@ void multifok_test_compute_focus_plane_point_color_sharpness_and_zav
   {
     bool_t verbose = debug;
     
+    if (verbose) 
+      { fprintf(stderr, "  " EQUALS "\n");
+        r3_gen_print(stderr, p, "%12.6f", "  computing point ( ", " ", " )\n");
+      }
+    
     demand(zDep > 0.0, "invalid {zDep}");
     double zFoc = p->c[2];
     int32_t NC = 3;
+    interval_t zRange = scene->dom[2];
     double sum_wr_clr[NC]; /* Sum of {wr(R)*clr(R)}. */
     for (int32_t ic = 0; ic < NC; ic++) { sum_wr_clr[ic] = 0.0; }
     double sum_wr_shr = 0.0; /* Sum of {wr(R)*shr(R)}. */
@@ -326,16 +357,21 @@ void multifok_test_compute_focus_plane_point_color_sharpness_and_zav
         d.c[1] = tilt[ir].c[1];
         d.c[2] = 1.0;
         /* Raytrace the objects: */
-        frgb_t ray_clr;
-        r3_t ray_hit;
-        multifok_scene_ray_trace(scene, pattern, p, &d, debug, &ray_clr, &ray_hit);
-        double ray_zht = ray_hit.c[2];
+        multifok_scene_object_t *ray_hob; /* Object hit, or {NULL} if floor. */
+        r3_t ray_hpt; /* Hit point. */
+        multifok_scene_ray_trace(scene, p, &d, debug, &ray_hob, &ray_hpt);
+        double ray_zht = ray_hpt.c[2];
         /* The scene surface must be entirely contained in the scene's box: */
-        assert(ray_zht >= scene->box[2].end[0]);
-        assert(ray_zht <= scene->box[2].end[1]);
+        if ((ray_zht < zRange.end[0]) || (ray_zht > zRange.end[1]))
+          { fprintf(stderr, "    ray hit at Z = %16.12f, outside range {%16.12f _ %16.12f]\n", ray_zht, zRange.end[0], zRange.end[1]);
+            assert(FALSE);
+          }
         double dz = ray_zht - zFoc;
         double ray_shr = ((dz != 0.0) && isfinite(zDep) ? fabs(zDep/dz) : +INF);/* Sharpness at hit point. */
         
+        /* Compute the hit point's color: */
+        frgb_t ray_clr = multifok_scene_compute_hit_color(ray_hob, &(ray_hpt), pattern);
+
         /* Accumulate point properties: */
         double wri = wr[ir];
         if (verbose) {fprintf(stderr, "    ray %3d shr = %12.8f zht = %12.6f wri = %16.12f\n", ir, ray_shr, ray_zht, wri); }
@@ -367,6 +403,8 @@ void multifok_test_compute_focus_plane_point_color_sharpness_and_zav
     (*pt_shr_P) = pt_shr;
     (*pt_zav_P) = pt_zav;
     (*pt_zvr_P) = pt_zvr;
+    
+    if (verbose) { fprintf(stderr, "  " EQUALS "\n"); }
   }
 
 void multifok_test_choose_ray_tilts_and_weights
@@ -443,6 +481,8 @@ void multifok_test_choose_ray_tilts_and_weights
     (*wr_P) = wr;
   }
 
+/* Terms data I/O */
+
 /* IMAGE I/O */
 
 #define ZMAX multifok_scene_ZMAX
@@ -495,84 +535,24 @@ float_image_t *multifok_test_read_grayscale_image(char *inPrefix, char *tag, cha
       
 float_image_t *multifok_test_read_scene_color_image(char *inPrefix, char *tag)
   {
-    return multifok_test_read_color_image(inPrefix, tag, "c", 0.0, 1.0);
+    return multifok_test_read_color_image(inPrefix, tag, "cs", 0.0, 1.0);
   } 
 
 float_image_t *multifok_test_read_sharpness_image(char *inPrefix, char *tag)
   {
-    return multifok_test_read_grayscale_image(inPrefix, tag, "s", 0.0, 1.0);
+    return multifok_test_read_grayscale_image(inPrefix, tag, "sh", 0.0, 1.0);
   }
   
 float_image_t *multifok_test_read_zave_image(char *inPrefix, char *tag)
   {
-    return multifok_test_read_grayscale_image(inPrefix, tag, "z", 0.0, ZMAX);
+    return multifok_test_read_grayscale_image(inPrefix, tag, "az", 0.0, ZMAX);
   }
 
 float_image_t *multifok_test_read_zdev_image(char *inPrefix, char *tag)
   {
-    return multifok_test_read_grayscale_image(inPrefix, tag, "d", 0.0, ZMAX);
+    return multifok_test_read_grayscale_image(inPrefix, tag, "dz", 0.0, ZMAX);
   }
 
-void multifok_test_read_term_names_and_weights
-  ( char *twfname, 
-    int32_t NB, 
-    char *belName[],
-    int32_t *NT_P, 
-    char ***tname_P, 
-    double **wt_P, 
-    i2_t **tix_P,
-    bool_t verbose
-  )
-  {
-    /* Read term names and weights from file: */
-    FILE *rd = open_read(twfname, TRUE);
-    int32_t NT = 0;
-    string_vec_t tname = string_vec_new(50);
-    double_vec_t wt = double_vec_new(50);
-    while (TRUE)
-      { fget_skip_spaces(rd);
-        int32_t c = fgetc(rd);
-        if (c == EOF) 
-          { break; }
-        else if (c == '#')
-          { do { c = fgetc(rd); } while ((c != '\n') && (c != EOF)); 
-            if (c == EOF) { break; }
-            continue;
-          }
-        else if (c == '\n')
-          { continue; }
-        else
-          { ungetc(c, rd); 
-            string_vec_expand(&tname,NT);
-            double_vec_expand(&wt,NT);
-            tname.e[NT] = fget_string(rd);
-            wt.e[NT] = fget_double(rd);
-            NT++;
-            fget_comment_or_eol(rd, '#');
-          }
-      }
-    string_vec_trim(&tname,NT);
-    double_vec_trim(&wt,NT);
-    fclose(rd);
-    
-    /* Convert term names to indices: */
-    i2_t *tix = (i2_t*)notnull(malloc(NT*sizeof(i2_t)), "no mem");
-    multifok_focus_op_term_indices_from_names(NB, belName, NT, tname.e, tix);
-    
-    if (verbose)
-      { for (int32_t kt = 0; kt < NT; kt++)
-          { fprintf(stderr, "%3d  %+16.8f", kt, wt.e[kt]);
-            char *tnk = tname.e[kt];
-            fprintf(stderr, " * %-12s", tnk);
-            fprintf(stderr, " = %3d %3d\n", tix[kt].c[0], tix[kt].c[1]);
-          }
-      }
-    
-    (*NT_P) = NT;
-    (*tname_P) = tname.e;
-    (*tix_P) = tix;
-    (*wt_P) = wt.e;
-  }
 
 void multifok_test_write_color_image(float_image_t *img, char *outPrefix, char *tag, char *code, float vMin, float vMax)
   {
@@ -616,55 +596,55 @@ void multifok_test_write_grayscale_image(float_image_t *img, char *outPrefix, ch
     free(fname);
   }
 
-void multifok_test_write_scene_color_image(float_image_t *cimg, char *outPrefix, char *tag)
+void multifok_test_write_scene_color_image(float_image_t *csimg, char *outPrefix, char *tag)
   {
-    multifok_test_write_color_image(cimg, outPrefix, tag, "c", 0.0, 1.0);
+    multifok_test_write_color_image(csimg, outPrefix, tag, "cs", 0.0, 1.0);
   }
 
-void multifok_test_write_sharpness_image(float_image_t *simg, char *outPrefix, char *tag)
+void multifok_test_write_sharpness_image(float_image_t *shimg, char *outPrefix, char *tag)
   {
-    multifok_test_write_grayscale_image(simg, outPrefix, tag, "s", 0.0, 1.0);
+    multifok_test_write_grayscale_image(shimg, outPrefix, tag, "sh", 0.0, 1.0);
   }
 
-void multifok_test_write_zavg_image(float_image_t *zimg, char *outPrefix, char *tag)
+void multifok_test_write_zavg_image(float_image_t *azimg, char *outPrefix, char *tag)
   {
-    multifok_test_write_grayscale_image(zimg, outPrefix, tag, "z", 0.0, ZMAX);
+    multifok_test_write_grayscale_image(azimg, outPrefix, tag, "az", 0.0, ZMAX);
   }
 
-void multifok_test_write_zdev_image(float_image_t *dimg, char *outPrefix, char *tag)
+void multifok_test_write_zdev_image(float_image_t *dzimg, char *outPrefix, char *tag)
   {
-    multifok_test_write_grayscale_image(dimg, outPrefix, tag, "d", 0.0, ZMAX);
+    multifok_test_write_grayscale_image(dzimg, outPrefix, tag, "dz", 0.0, ZMAX);
   }
 
-void multifok_test_write_score_image(float_image_t *simg, char *outPrefix, char *tag)
+void multifok_test_write_score_image(float_image_t *shimg, char *outPrefix, char *tag)
   {
-    multifok_test_write_grayscale_image(simg, outPrefix, tag, "f", 0.0, 1.0);
+    multifok_test_write_grayscale_image(shimg, outPrefix, tag, "sc", 0.0, 1.0);
   }
 
-void multifok_test_write_score_error_image(float_image_t *eimg, char *outPrefix, char *tag)
+void multifok_test_write_score_error_image(float_image_t *esimg, char *outPrefix, char *tag)
   {
-    multifok_test_write_grayscale_image(eimg, outPrefix, tag, "e", -1.0, +1.0);
+    multifok_test_write_grayscale_image(esimg, outPrefix, tag, "es", -1.0, +1.0);
   }
     
-void multifok_test_write_estimated_Z_image(float_image_t *uimg, char *outPrefix, char *tag)
+void multifok_test_write_estimated_Z_image(float_image_t *czimg, char *outPrefix, char *tag)
   {
-    multifok_test_write_grayscale_image(uimg, outPrefix, tag, "u", 0.0, ZMAX);
+    multifok_test_write_grayscale_image(czimg, outPrefix, tag, "cz", 0.0, ZMAX);
   }
  
-void multifok_test_write_Z_error_image(float_image_t *vimg, char *outPrefix, char *tag)
+void multifok_test_write_Z_error_image(float_image_t *ezimg, char *outPrefix, char *tag)
   {
-    multifok_test_write_grayscale_image(vimg, outPrefix, tag, "v", -ZMAX, +ZMAX);
+    multifok_test_write_grayscale_image(ezimg, outPrefix, tag, "ez", -ZMAX, +ZMAX);
   }
       
-void multifok_test_write_reconstructed_color_image(float_image_t *rimg, char *outPrefix, char *tag)
+void multifok_test_write_reconstructed_color_image(float_image_t *crimg, char *outPrefix, char *tag)
   {
-    multifok_test_write_color_image(rimg, outPrefix, tag, "r", 0.0, 1.0);
+    multifok_test_write_color_image(crimg, outPrefix, tag, "cr", 0.0, 1.0);
   }
 
-void multifok_test_write_color_error_image(float_image_t *qimg, char *outPrefix, char *tag)
+void multifok_test_write_color_error_image(float_image_t *erimg, char *outPrefix, char *tag)
   { float vMin = -1.0f;
     float vMax = +1.0f;
-    multifok_test_write_color_image(qimg, outPrefix, tag, "q", vMin, vMax);
+    multifok_test_write_color_image(erimg, outPrefix, tag, "er", vMin, vMax);
   }
 
 void multifok_test_write_window_average_image(float_image_t *avimg, char *outPrefix, char *tag)
@@ -681,48 +661,48 @@ void multifok_test_write_window_deviation_image(float_image_t *dvimg, char *outP
     multifok_test_write_grayscale_image(dvimg, outPrefix, tag, "dv", vMin, vMax);
   };
 
-void multifok_test_write_normalized_image(float_image_t *nimg, char *outPrefix, char *tag)
+void multifok_test_write_normalized_image(float_image_t *nrimg, char *outPrefix, char *tag)
   { float vMin = -1.0e-38f;  /* To void {NAN} values if {img} is all zeros. */
     float vMax = +1.0e-38f;  /* To void {NAN} values if {img} is all zeros. */
-    float_image_update_sample_range(nimg, 0, &vMin, &vMax);
+    float_image_update_sample_range(nrimg, 0, &vMin, &vMax);
     double vR = fmax(fabs(vMin), fabs(vMax));
     vMin = (float)-vR;
     vMax = (float)+vR;
 
-    multifok_test_write_grayscale_image(nimg, outPrefix, tag, "n", vMin, vMax);
+    multifok_test_write_grayscale_image(nrimg, outPrefix, tag, "nr", vMin, vMax);
   };
 
-void multifok_test_write_sample_weights_image(float_image_t *wimg, char *outPrefix, char *tag)
+void multifok_test_write_sample_weights_image(float_image_t *wsimg, char *outPrefix, char *tag)
   { float vMin = 0.0f;  /* To void {NAN} values if {img} is all zeros. */
     float vMax = +1.0e-38f;  /* To void {NAN} values if {img} is all zeros. */
-    float_image_update_sample_range(wimg, 0, &vMin, &vMax);
+    float_image_update_sample_range(wsimg, 0, &vMin, &vMax);
     demand(vMin == 0.0f, "image has negative sample weights");
 
-    multifok_test_write_grayscale_image(wimg, outPrefix, tag, "w", vMin, vMax);
+    multifok_test_write_grayscale_image(wsimg, outPrefix, tag, "ws", vMin, vMax);
   }
        
-void multifok_test_write_basis_elem_image(float_image_t *aimg, char *outPrefix, char *tag)       
+void multifok_test_write_basis_elem_image(float_image_t *beimg, char *outPrefix, char *tag)       
   {
     float vMin = -1.0e-38f;  /* To void {NAN} values if {img} is all zeros. */
     float vMax = +1.0e-38f;  /* To void {NAN} values if {img} is all zeros. */
-    float_image_update_sample_range(aimg, 0, &vMin, &vMax);
+    float_image_update_sample_range(beimg, 0, &vMin, &vMax);
     double vR = fmax(fabs(vMin), fabs(vMax));
     vMin = (float)-vR;
     vMax = (float)+vR;
 
-    multifok_test_write_grayscale_image(aimg, outPrefix, tag, "a", vMin, vMax);
+    multifok_test_write_grayscale_image(beimg, outPrefix, tag, "be", vMin, vMax);
   }
 
-void multifok_test_write_basis_coeff_image(float_image_t *bimg, char *outPrefix, char *tag)
+void multifok_test_write_basis_coeff_image(float_image_t *bcimg, char *outPrefix, char *tag)
   {
     float vMin = -1.0e-38f;  /* To void {NAN} values if {img} is all zeros. */
     float vMax = +1.0e-38f;  /* To void {NAN} values if {img} is all zeros. */
-    float_image_update_sample_range(bimg, 0, &vMin, &vMax); /* Ignores infinities. */
+    float_image_update_sample_range(bcimg, 0, &vMin, &vMax); /* Ignores infinities. */
     float vR = (float)fmax(fabs(vMin), fabs(vMax));
     vMin = -vR;
     vMax = +vR;
 
-    multifok_test_write_grayscale_image(bimg, outPrefix, tag, "b", vMin, vMax);
+    multifok_test_write_grayscale_image(bcimg, outPrefix, tag, "bc", vMin, vMax);
   }
 
 void multifok_test_write_basis_coeff_squared_image(float_image_t *bqimg, char *outPrefix, char *tag)
@@ -731,29 +711,61 @@ void multifok_test_write_basis_coeff_squared_image(float_image_t *bqimg, char *o
     float_image_compute_sample_avg_dev(bqimg, 0, &avg, &dev);
     
     float vMin = 0.0; 
-    float vMax = (float)fmax(1.0e-38, avg + 2*dev);
+    float vMax = (float)fmax(1.0e-38, avg + 2.5*dev);
 
     multifok_test_write_grayscale_image(bqimg, outPrefix, tag, "bq", vMin, vMax);
   }
 
+void multifok_test_write_quadratic_term_image(float_image_t *tmimg, char *outPrefix, char *tag)
+  {
+    float vMin = -1.0e-38f;  /* To void {NAN} values if {img} is all zeros. */
+    float vMax = +1.0e-38f;  /* To void {NAN} values if {img} is all zeros. */
+    float_image_update_sample_range(tmimg, 0, &vMin, &vMax); /* Ignores infinities. */
+    float vR = (float)fmax(fabs(vMin), fabs(vMax));
+    vMin = -vR;
+    vMax = +vR;
+    multifok_test_write_grayscale_image(tmimg, outPrefix, tag, "tm", vMin, vMax);
+  }
+
+void multifok_test_write_pixel_mask_image(float_image_t *mkimg, char *outPrefix, char *tag)
+  {
+    multifok_test_write_grayscale_image(mkimg, outPrefix, tag, "mk", 0.0, 1.0);
+  }
+
+void multifok_test_read_term_indices_names_and_weights
+  ( char *twfname, 
+    int32_t NB, 
+    char *belName[], 
+    int32_t *NP_P, 
+    multifok_term_prod_t **prix_P,
+    int32_t *NT_P,
+    double **wt_P, 
+    char ***termName_P,
+    bool_t verbose
+  )
+  {
+    /* Read term names and weights from file: */
+    FILE *rd = open_read(twfname, TRUE);
+    multifok_score_read_term_names_and_weights(rd, NB, belName, NP_P, prix_P, NT_P, wt_P, termName_P, verbose);
+    fclose(rd);
+  }
+
 void multifok_test_write_basis_elem_names(char *outPrefix, int32_t NB, char *belName[])  
   { char *fname = NULL;
-    asprintf(&fname, "%s-belnames.txt", outPrefix);
+    asprintf(&fname, "%s-bnames.txt", outPrefix);
     FILE *wr = open_write(fname, TRUE);
-    for (int32_t kb = 0; kb < NB; kb++)
-      { fprintf(wr, "%s\n", belName[kb]); }
-    fclose(wr);
-  }
-       
-void multifok_test_write_term_names_and_weights(char *outPrefix, int32_t NT, char *tname[], double wt[])  
-  { char *fname = NULL;
-    asprintf(&fname, "%s-terms.txt", outPrefix);
-    FILE *wr = open_write(fname, TRUE);
-    for (int32_t kt = 0; kt < NT; kt++)
-      { fprintf(wr, "%-12s %+12.4f\n", tname[kt], wt[kt]); }
+    multifok_basis_write_elem_names(wr, NB, belName);
     fclose(wr);
   }
 
+void multifok_test_write_term_names(char *outPrefix, int32_t NT, char *termName[])  
+  { char *fname = NULL;
+    asprintf(&fname, "%s-tnames.txt", outPrefix);
+    FILE *wr = open_write(fname, TRUE);
+    multifok_term_write_names(wr, NT, termName);
+    fclose(wr);
+  }
+       
 #define multifok_test_C_COPYRIGHT \
     "© 2023 by the State University of Campinas (UNICAMP)"
 

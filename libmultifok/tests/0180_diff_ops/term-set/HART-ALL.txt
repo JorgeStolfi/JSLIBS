@@ -1,0 +1,11 @@
+  0 Hoo*Hoo
+  1 Hom*Hom+Hop*Hop+Hmo*Hmo+Hpo*Hpo
+  2 Hmm*Hmm+Hpp*Hpp+Hmp*Hmp+Hpm*Hpm
+  3 Hoo*Hom+Hoo*Hop+Hoo*Hmo+Hoo*Hpo
+  4 Hom*Hop+Hmo*Hpo
+  5 Hop*Hmo+Hom*Hmo+Hop*Hpo+Hom*Hpo
+  6 Hpo*Hmm+Hop*Hmm+Hmo*Hpp+Hpo*Hmp+Hom*Hpp+Hmo*Hpm+Hom*Hmp+Hop*Hpm
+  7 Hmm*Hpp+Hmp*Hpm
+  8 Hpp*Hmp+Hmm*Hmp+Hpp*Hpm+Hmm*Hpm
+  9 Hmo*Hmm+Hpo*Hpp+Hom*Hmm+Hop*Hpp+Hmo*Hmp+Hpo*Hpm+Hop*Hmp+Hom*Hpm
+ 10 Hoo*Hmm+Hoo*Hpp+Hoo*Hmp+Hoo*Hpm

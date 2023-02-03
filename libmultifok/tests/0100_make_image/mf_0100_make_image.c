@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {multifok_test_image_make.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-01-25 22:16:12 by stolfi */ 
+/* Last edited on 2023-02-01 06:23:13 by stolfi */ 
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
 #define mf_0100_make_image_COPYRIGHT \
@@ -36,15 +36,14 @@
 typedef struct mfmi_options_t 
   { int32_t imgSize_X;   /* Image width. */
     int32_t imgSize_Y;   /* Image height. */
-    bool_t backTilt;     /* If true, generates a tilted backplane and no disks. */
-    bool_t overlap;      /* If true, generates overlapping disks. */
+    char *sceneType;     /* Scene type: "R", "F", "T", etc. */
     int32_t pixSampling; /* Number of sampling points per axis and pixel. */
     int32_t dirSampling; /* Min number of aperture rays per point. */
     double focDepth;     /* Depth of focus. */
     double zRange_lo;    /* {Z} value of lowest frame. */
     double zRange_hi;    /* {Z} value of highest frame. */
     double zStep;        /* {Z} increment between frames. */
-    char *pattern;       /* File name of pattern to use to paint objects. */
+    char *patternFile;   /* File name of pattern to use to paint objects. */
     char *outPrefix;     /* Prefix for output filenames. */
   } mfmi_options_t;
   /* Command line parameters. */
@@ -54,16 +53,16 @@ int32_t main(int32_t argn, char **argv);
 mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv);
   /* Parses the command line options. */
   
-multifok_scene_t *mfmi_make_scene(int32_t NX, int32_t NY, bool_t back_tilt, double minSep);
+multifok_scene_t *mfmi_make_scene(int32_t NX, int32_t NY, bool_t rampOnly, double minSep);
   /* Generates a test scene with disks, balls, and a back plane, roughly spanning the 
     image domain {[0_NX]×[0_NY]} in {X} and {Y}, and the interval {[1.0 _ZMAX-1.0]} in {Z},
     where  {ZMAX} is {multifok_scene_ZMAX}.
   
-    If {back_tilt} is true, the scene will have just a tilted backplane, 
+    If {rampOnly} is true, the scene will have just a tilted floor, 
     that rises from {Z=box[2].end[0]} at {X=0} to {Z=box[2].end[1]} at {X=NX}.  The {minSep} is
     ignored in this case.
     
-    If {bak_tilt} is false, the backplane will be horizontal a {Z=0}, 
+    If {bak_tilt} is false, the floor will be horizontal a {Z=0}, 
     and there will be a number of textured horizontal disks or balls
     of random radii and centers in front of it.
     
@@ -103,11 +102,11 @@ void mfmi_make_single_Z_images
     for the given {scene}, as described in {multifok_scene_images_make}.
     
     Writes the images out to files
-    "(outPrefix}-fd{DDD.DDDD}-z{ZZZ.ZZZZ}{tail}" where {DDD.DDDD} is
-    {zDep}, {ZZZ.ZZZZ} is {zFoc}, and {tail} is "-c.ppm" for the color
-    image, "-s.pgm" for the sharpness image, "-z.pgm" for the
-    {Z} average image, and "-d.pgm" for the {Z} deviation image. If 
-    {zDep} is infinite then the "-fd{DDD.DDDD}-z{ZZZ.ZZZZ}" part is replaced by "-sharp". */
+    "(outPrefix}-fd{DD.DD}-z{ZZ.ZZ}{tail}" where {DD.DD} is
+    {zDep}, {ZZ.ZZ} is {zFoc}, and {tail} is "-cs.ppm" for the color
+    image, "-sh.pgm" for the sharpness image, "-az.pgm" for the
+    {Z} average image, and "-dz.pgm" for the {Z} deviation image. If 
+    {zDep} is infinite then the "-fd{DD.DD}-zf{ZZ.ZZ}" part is replaced by "-sharp". */
 
 float_image_t *mfmi_read_pattern_image(char *fname);
   /* Reads an image from file {fname}, to be used as pattern to paint the scene.
@@ -125,11 +124,30 @@ int32_t main (int32_t argc, char **argv)
     double zDep = o->focDepth;
 
     /* Create the test scene: */
-    double minSep = (o->overlap ? -1 : multifok_scene_ZMAX/(2*zDep));
+    bool_t rampOnly; /* If true the scene is just a rampOnly, else it has balls and disks. */
+    double minSep; /* Min {XY} sep of non-overlapping objs. */
+    if (strcmp(o->sceneType, "R") == 0)
+      { /* Tilted floor surface only: */
+        rampOnly = TRUE;
+        minSep = NAN;
+      }
+    else 
+      { /* Disk, balls, etc: */
+        rampOnly = FALSE;
+        if (strcmp(o->sceneType, "F") == 0)
+          { /* Non-overlapping objects: */
+            minSep  = multifok_scene_ZMAX/(2*zDep);
+          }
+        else if (strcmp(o->sceneType, "T") == 0)
+          { /* Overlapping objcts: */
+            minSep = -1.0;
+          }
+        else
+          { demand(FALSE, "invalid \"-sceneType\""); }
+      }
 
     /* The max number of disks is adjusted to give a reasonable cover fraction in overlap mode: */
-    multifok_scene_t *scene = mfmi_make_scene(NX, NY, o->backTilt, minSep);
-    fprintf(stderr, "generated a scene with %d %sdisks\n", scene->ND, (o->overlap ? "" : "non-overlapping "));
+    multifok_scene_t *scene = mfmi_make_scene(NX, NY, rampOnly, minSep);
     
     mfmi_make_images_from_pattern_image(o, scene);
       
@@ -138,28 +156,29 @@ int32_t main (int32_t argc, char **argv)
   
 void mfmi_make_images_from_pattern_image(mfmi_options_t *o, multifok_scene_t *scene)
   { 
-  
-    int32_t NC = 3;
     
-    float_image_t *pimg = mfmi_read_pattern_image(o->pattern);
+    float_image_t *pimg = mfmi_read_pattern_image(o->patternFile);
     int32_t NC_pat, NX_pat, NY_pat;
     float_image_get_size(pimg, &NC_pat, &NX_pat, &NY_pat);
     demand(NC_pat == 1, "pattern image must be grayscale");
-    
 
     int32_t NX_img = o->imgSize_X;
     int32_t NY_img = o->imgSize_Y;
      
-    auto void photo_pattern(double x, double y, double z, int32_t iobj, int32_t NC1, float fs[]);
+    auto double photo_pattern(double x, double y, double z, int32_t iobj);
       /* Returns a grayscale pattern value as function of the point {(x,y,z)}.
-        Currently the value of {pimg}, rotated by an angle that depends on {iobj},
-        used to interpolate between the object's {bg} and {fg} colors.  */
+        Currently the value of {pimg} interpolated at {x,y}, rotated
+        by an angle that depends on {iobj}.  Used to interpolate between
+        the object's {bg} and {fg} colors.  
+        
+        The coordinates are shifted so that the center of {pimg} 
+        is centered in the new image. */
 
     mfmi_make_images_from_pattern_function(o, scene, photo_pattern);
     
     return;
 
-    void photo_pattern(double x, double y, double z, int32_t iobj, int32_t NC1, float fs[])
+    double photo_pattern(double x, double y, double z, int32_t iobj)
       {
         /* Rotate {x,y} proportional to {z}: */
         double rot = iobj*M_PI/5; 
@@ -173,12 +192,7 @@ void mfmi_make_images_from_pattern_image(mfmi_options_t *o, multifok_scene_t *sc
         int32_t order = 1;  /* Bicubic C1 interpolation. */
         ix_reduction_t red = ix_reduction_PXMIRR;
         double r = float_image_interpolate_sample(pimg, 0, xr, yr, order, red);
-        
-        /* Use it to mix the object's colors: */
-        frgb_t *bg = (iobj < 0 ? &(scene->bg) : &(scene->obj[iobj].bg));
-        frgb_t *fg = (iobj < 0 ? &(scene->fg) : &(scene->obj[iobj].fg));
-        for (int32_t ic = 0; ic < NC; ic++) 
-          { fs[ic] = (float)((1-r)*bg->c[ic] + r*fg->c[ic]); }
+        return r;
       }
   }
 
@@ -210,7 +224,7 @@ void mfmi_make_images_from_pattern_function
     mfmi_make_single_Z_images(NX, NY, scene, pattern, zFoc_sharp, zDep_sharp, NP, NR_sharp, o->outPrefix);
   }
 
-multifok_scene_t *mfmi_make_scene(int32_t NX, int32_t NY, bool_t back_tilt, double minSep)
+multifok_scene_t *mfmi_make_scene(int32_t NX, int32_t NY, bool_t rampOnly, double minSep)
   {
     /* Compute the box that has to contain all disks and balls: */
     double ZMAX = multifok_scene_ZMAX;
@@ -219,13 +233,21 @@ multifok_scene_t *mfmi_make_scene(int32_t NX, int32_t NY, bool_t back_tilt, doub
     box[1] = (interval_t){{ 0.0, (double)NY }};
     box[2] = (interval_t){{ 1.0, ZMAX-1.0 }};
     
-    /* Disk size range: */
-    double rMin = 10.0; /* Min object radius (pixels). */
-    double rMax = 30.0; /* Max object radius (pixels). */
-
-    /* Generate the scene: */
     bool_t verbose = TRUE;
-    multifok_scene_t *scene = multifok_scene_throw(box, back_tilt, rMin, rMax, minSep, verbose);
+    bool_t flatFloor = (! rampOnly);
+    multifok_scene_t *scene = multifok_scene_new(box, flatFloor, verbose);
+    if (rampOnly)
+      { assert(scene->NO == 0);
+        fprintf(stderr, "generated a ramp-only scene\n");
+      }
+    else
+      { /* Disk size range: */
+        double rMin = 2.5; /* Min object radius (pixels). */
+        double rMax = 3.5; /* Max object radius (pixels). */
+        multifok_scene_throw_objects(scene, rMin, rMax, minSep, verbose);
+        char *olapx = (minSep < 0.0 ? "" : "non-overlapping ");
+        fprintf(stderr, "generated a scene with %d %sdisks\n", scene->NO, olapx);
+      }
     return scene;
   }
 
@@ -248,25 +270,25 @@ void mfmi_make_single_Z_images
     if (zDep == +INF)
       { asprintf(&tag, "-sharp"); }
     else
-      { asprintf(&tag, "-fd%05.2f-z%04.1f", zDep, zFoc); }
+      { asprintf(&tag, "-fd%05.2f-zf%05.2f", zDep, zFoc); }
     
     /* Generate the images: */
-    float_image_t *cimg = NULL;
-    float_image_t *simg = NULL;
-    float_image_t *zimg = NULL;
-    float_image_t *dimg = NULL;
-    multifok_test_images_make(NX, NY, scene, pattern, zFoc, zDep, NP, NR_min, &cimg, &simg, &zimg, &dimg);
+    float_image_t *csimg = NULL;
+    float_image_t *shimg = NULL;
+    float_image_t *azimg = NULL;
+    float_image_t *dzimg = NULL;
+    multifok_test_images_make(NX, NY, scene, pattern, zFoc, zDep, NP, NR_min, &csimg, &shimg, &azimg, &dzimg);
 
-    multifok_test_write_scene_color_image(cimg, outPrefix, tag);
-    multifok_test_write_sharpness_image(simg, outPrefix, tag);
-    multifok_test_write_zavg_image(zimg, outPrefix, tag);
-    multifok_test_write_zdev_image(dimg, outPrefix, tag);
+    multifok_test_write_scene_color_image(csimg, outPrefix, tag);
+    multifok_test_write_zavg_image(azimg, outPrefix, tag);
+    multifok_test_write_zdev_image(dzimg, outPrefix, tag);
+    multifok_test_write_sharpness_image(shimg, outPrefix, tag);
 
     free(tag);
-    float_image_free(cimg);
-    float_image_free(simg);
-    float_image_free(zimg);
-    float_image_free(dimg);
+    float_image_free(csimg);
+    float_image_free(azimg);
+    float_image_free(dzimg);
+    float_image_free(shimg);
   }
 
 #define mfmi_image_gamma 1.000
@@ -288,10 +310,10 @@ float_image_t *mfmi_read_pattern_image(char *fname)
     float_image_get_size(img, &NC, &NX, &NY);
     if (NC == 3)
       { /* Convert color image to grayscale: */
-        float_image_t *gimg = float_image_new(1, NX, NY);
-        float_image_map_channels_RGB_to_YUV(img, gimg);
+        float_image_t *grimg = float_image_new(1, NX, NY);
+        float_image_map_channels_RGB_to_YUV(img, grimg);
         float_image_free(img);
-        img = gimg;
+        img = grimg;
         NC = 1;
       }
     demand(NC == 1, "pattern image must be RGB or grayscale");
@@ -311,11 +333,8 @@ mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv)
     o->imgSize_X = (int32_t)argparser_get_next_int(pp, 30, 4096);
     o->imgSize_Y = (int32_t)argparser_get_next_int(pp, 30, 4096);
 
-    argparser_get_keyword(pp, "-backTilt");
-    o->backTilt = argparser_get_next_bool(pp);  
-
-    argparser_get_keyword(pp, "-overlap");
-    o->overlap = argparser_get_next_bool(pp);  
+    argparser_get_keyword(pp, "-sceneType");
+    o->sceneType = argparser_get_next_non_keyword(pp);  
     
     argparser_get_keyword(pp, "-pixSampling");
     o->pixSampling = (int32_t)argparser_get_next_int(pp, 1, 9999);  
@@ -333,8 +352,8 @@ mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv)
     o->zRange_lo = argparser_get_next_double(pp, 0.0, multifok_scene_ZMAX);  
     o->zRange_hi = argparser_get_next_double(pp, o->zRange_lo, multifok_scene_ZMAX);  
 
-    argparser_get_keyword(pp, "-pattern");
-    o->pattern = argparser_get_next(pp);
+    argparser_get_keyword(pp, "-patternFile");
+    o->patternFile = argparser_get_next(pp);
 
     argparser_get_keyword(pp, "-outPrefix");
     o->outPrefix = argparser_get_next(pp);

@@ -2,7 +2,7 @@
 #define PROG_DESC "test an analysis of basis functions from {multifok_focus_op.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-01-25 17:54:07 by stolfi */ 
+/* Last edited on 2023-01-29 15:26:33 by stolfi */ 
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
 #define mf_0150_show_basis_COPYRIGHT \
@@ -51,7 +51,10 @@
 #include <float_image_write_pnm.h>
 #include <float_image.h>
 
-#include <multifok_focus_op.h>
+#include <multifok_window.h>
+#include <multifok_basis.h>
+#include <multifok_term.h>
+#include <multifok_score.h>
 #include <multifok_test.h>
 
 typedef struct mfsb_options_t 
@@ -76,7 +79,7 @@ void mfsb_show_sample_weights
 void mfsb_show_single_basis
   ( int32_t NW,                            /* Window width and height. */
     double ws[],                           /* Sample window weights. */
-    multifok_focus_op_basis_type_t bType,  /* Basis type. */
+    multifok_basis_type_t bType,  /* Basis type. */
     bool_t ortho,                          /* True to ortho normalize basis. */
     char *outPrefix                        /* Prefix for outupt file names. */
   );
@@ -84,17 +87,14 @@ void mfsb_show_single_basis
     {NNN} and {KKK} are {NW} and {k} zero-padded to 3 digits.  Each image pixel is a basis value {bas[kb][ks]}
     times {sqrt(ws[ks])}. */
 
-void mfsb_write_image(char *fname, float_image_t *img);
-  /* Writes image {img} to file "{fname}". */
-
 /* IMPLEMENTATIONS */
 
-#define CANC multifok_focus_op_basis_type_CANC  
-#define LAPL multifok_focus_op_basis_type_LAPL  
-#define DIFF multifok_focus_op_basis_type_DIFF  
-#define HART multifok_focus_op_basis_type_HART  
-#define FIRST multifok_focus_op_basis_type_FIRST
-#define LAST multifok_focus_op_basis_type_LAST
+#define CANC multifok_basis_type_CANC  
+#define LAPL multifok_basis_type_LAPL  
+#define DIFF multifok_basis_type_DIFF  
+#define HART multifok_basis_type_HART  
+#define FIRST multifok_basis_type_FIRST
+#define LAST multifok_basis_type_LAST
 
 int32_t main (int32_t argc, char **argv)
   {
@@ -103,11 +103,11 @@ int32_t main (int32_t argc, char **argv)
     int32_t NW = o->winSize;
     demand((NW % 2 == 1) && (NW >= 3), "invalid window size");
 
-    double *ws = multifok_focus_op_sample_weights(NW);
+    double *ws = multifok_window_sample_weights(NW);
     mfsb_show_sample_weights(NW, ws, o->outPrefix);
 
     bool_t ortho;
-    for (multifok_focus_op_basis_type_t bt = FIRST; bt <= LAST; bt++)
+    for (multifok_basis_type_t bt = FIRST; bt <= LAST; bt++)
       { if ((NW == 3) || (bt != DIFF))
           { ortho = FALSE;
             mfsb_show_single_basis(NW, ws, bt, ortho, o->outPrefix);
@@ -117,33 +117,6 @@ int32_t main (int32_t argc, char **argv)
       }
 
     return 0;
-  }
-
-#define mfsb_image_gamma 1.000
-  /* Assumed encoding gamma of input and output images. */
-
-#define mfsb_image_bias 0.0327
-  /* Assumed encoding bias of input and output images. */
-
-void mfsb_write_image(char *fname, float_image_t *img)
-  {
-    assert(img->sz[0] == 1);
-
-    float vMin = -1.0e-38f;  /* To void {NAN} values if {img} is all zeros. */
-    float vMax = +1.0e-38f;  /* To void {NAN} values if {img} is all zeros. */
-    float_image_update_sample_range(img, 0, &vMin, &vMax);
-    double vR = fmax(fabs(vMin), fabs(vMax));
-    vMin = (float)-vR;
-    vMax = (float)+vR;
-    float_image_rescale_samples(img, 0, vMin, vMax, 0.0, 1.0);
-    
-    bool_t isMask = FALSE; /* Assume uniform distr. of pixel values in encoding/decoding. */
-    double gamma = mfsb_image_gamma;
-    double bias = mfsb_image_bias;
-    bool_t yup = TRUE;
-    bool_t warn = TRUE;
-    bool_t verbose = TRUE;
-    float_image_write_pnm_named(fname, img, isMask, gamma, bias, yup, warn, verbose);
   }
 
 void mfsb_show_sample_weights
@@ -157,23 +130,24 @@ void mfsb_show_sample_weights
     int32_t NC = 1;
     int32_t NX = NW;
     int32_t NY = NW;
-    float_image_t *wimg = float_image_new(NC, NX, NY);
+    float_image_t *wsimg = float_image_new(NC, NX, NY);
     
     /* Write weights as an image: */
-    for (int32_t ix = 0; ix < NX; ix++)
-      { for (int32_t iy = 0; iy < NY; iy++) 
+    for (int32_t ix = 0; ix < NW; ix++)
+      { for (int32_t iy = 0; iy < NW; iy++) 
           { int32_t ks = iy*NW + ix;
-            fprintf(stderr, "%3d %3d %3d %16.8f\n", ks, ix, iy, ws[ks]);
-            float_image_set_sample(wimg, 0, ix, iy, (float)ws[ks]);
+            float_image_set_sample(wsimg, 0, ix, iy, (float)ws[ks]);
+            double ws_check = (double)float_image_get_sample(wsimg, 0, ix, iy);
+            fprintf(stderr, "%3d %3d %3d %16.12f = %12.7f\n", ks, ix, iy, ws[ks], ws_check);
           }
       }
       
     char *tag = NULL;
     asprintf(&tag, "-n%03d", NW);
-    multifok_test_write_sample_weights_image(wimg, outPrefix, tag);
+    multifok_test_write_sample_weights_image(wsimg, outPrefix, tag);
     free(tag);
   
-    float_image_free(wimg);
+    float_image_free(wsimg);
 
     fprintf(stderr, "---------------------------------------------------------------------\n");
   }  
@@ -181,47 +155,45 @@ void mfsb_show_sample_weights
 void mfsb_show_single_basis
   ( int32_t NW,           /* Window width and height. */
     double ws[],          /* Sample window weights. */
-    multifok_focus_op_basis_type_t bType,          /* Basis type. */
+    multifok_basis_type_t bType,   /* Basis type. */
     bool_t ortho,         /* True to orthonormalize the basis. */
     char *outPrefix       /* Prefix for outupt file names. */
   )
   {
-    char bTypeX = "NDH"[bType]; 
-    fprintf(stderr, "--- showing basis NW = %d bType = %c ortho = %c -------------------\n", NW, bTypeX, "FT"[ortho]);
+    char *bTypeX = multifok_basis_type_to_text(bType); 
+    fprintf(stderr, "--- showing basis NW = %d bType = %s ortho = %c -------------------\n", NW, bTypeX, "FT"[ortho]);
 
     int32_t NC = 1;
     int32_t NX = NW;
     int32_t NY = NW;
-    float_image_t *bimg = float_image_new(NC, NX, NY);
+    float_image_t *bcimg = float_image_new(NC, NX, NY);
     
     /* Get and print the basis for the focus indicator: */
     int32_t NB;
     double **bas = NULL;
     char **belName = NULL;
-    multifok_focus_op_basis_make(NW, ws, bType, ortho, &NB, &bas, &belName);
+    multifok_basis_make(bType, NW, ws, ortho, &NB, &bas, &belName);
 
-    multifok_focus_op_basis_print(stderr, NW, NB, bas, belName);
-    multifok_focus_op_basis_ortho_check(stderr, NW, ws, NB, bas);
+    multifok_basis_print(stderr, NW, NB, bas, belName);
+    multifok_basis_ortho_check(stderr, NW, NB, bas);
 
     /* Write each basis element as an image: */
     for (int32_t kb = 0; kb < NB; kb++)
       { for (int32_t ix = 0; ix < NX; ix++)
           { for (int32_t iy = 0; iy < NY; iy++) 
               { int32_t ks = iy*NW + ix;
-                double wsk = ws[ks];
                 double phk = bas[kb][ks];
-                double vsk = phk*sqrt(wsk);
-                float_image_set_sample(bimg, 0, ix, iy, (float)vsk);
+                float_image_set_sample(bcimg, 0, ix, iy, (float)phk);
               }
           }
         char *tag = NULL;
-        asprintf(&tag, "-n%03d-b%c-o%c-%03d", NW, bTypeX, "FT"[ortho], kb);
-        multifok_test_write_basis_elem_image(bimg, outPrefix, tag);
+        asprintf(&tag, "-n%03d-%s-o%c-%03d", NW, bTypeX, "FT"[ortho], kb);
+        multifok_test_write_basis_elem_image(bcimg, outPrefix, tag);
         free(tag);
       }
  
-    float_image_free(bimg);
-    multifok_focus_op_basis_free(NB, bas, belName);
+    float_image_free(bcimg);
+    multifok_basis_free(NB, bas, belName);
 
     fprintf(stderr, "---------------------------------------------------------------------\n");
   }  
@@ -229,8 +201,8 @@ void mfsb_show_single_basis
 mfsb_options_t *mfsb_parse_options(int32_t argc, char **argv)
   { 
     argparser_t *pp = argparser_new(stderr, argc, argv);
-    argparser_set_help(pp, "HELP!");
-    argparser_set_info(pp, "KNOW THYSELF");
+    argparser_set_help(pp, PROG_HELP);
+    argparser_set_info(pp, PROG_INFO);
     argparser_process_help_info_options(pp);
     
     mfsb_options_t *o = notnull(malloc(sizeof(mfsb_options_t)), "no mem");
