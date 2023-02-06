@@ -1,4 +1,4 @@
-# Last edited on 2020-10-01 20:38:35 by jstolfi
+# Last edited on 2023-02-03 23:23:46 by stolfi
 
 PROG := test_pulse
 
@@ -8,7 +8,7 @@ TEST_LIB_DIR := ../..
 JS_LIBS =  \
   libbezier.a\
   libpspulse.a \
-  libps.a \
+  libeps.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

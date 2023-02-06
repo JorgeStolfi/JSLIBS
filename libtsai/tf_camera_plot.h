@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <math.h>
-#include <pswr.h>
+#include <epswr.h>
 #include <frgb.h>
 #include <tf_camera.h>
 #include <tf_errors.h>
@@ -12,7 +12,7 @@
 #include <tf_calib.h>
 
 void tf_plot_cameras
-  ( PSStream *ps, 
+  ( char *out_dir, 
     char *name, 
     int32_t np,
     r3_t p[], 
@@ -35,13 +35,13 @@ void tf_plot_cameras
     All marks are printed with size {mRadius}. */
 
 void tf_plot_marks
-  ( PSStream *ps, 
+  ( epswr_figure_t *eps, 
     int32_t np,
     r2_t q[], 
     double mRadius,
     int32_t mStyle
   );
-  /* Plots the image points {q[0..np-1]} to the Postscript stream {ps},
+  /* Plots the image points {q[0..np-1]} to the Postscript stream {eps},
     with style {mStyle}, size {mRadius}, using the current pen 
     and fill color.  The styles are: 0 = circle, 1 = cross,
     2 = diag.cross,  3 = asterisk, 4 = square, 5..oo = diamond. */

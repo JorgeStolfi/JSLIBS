@@ -1,5 +1,5 @@
 /* See {sheet_cut_write.h} */
-/* Last edited on 2019-12-08 13:27:16 by jstolfi */
+/* Last edited on 2023-02-03 22:15:26 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -11,7 +11,6 @@
 
 #include <r2.h>
 #include <bool.h>
-#include <pswr.h>
 #include <affirm.h>
 #include <jsmath.h>
 

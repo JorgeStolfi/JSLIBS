@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:28:59 by jstolfi
+# Last edited on 2023-02-04 07:06:06 by stolfi
 
 PROG = test_spectrum_table
 
@@ -87,7 +87,7 @@ endif
 
 MAG := 400%
 
-PSVIEW := okular
+PSVIEW := evince
 
 NAME := out/${KIND}-${COLS}x${ROWS}-${KX}-${KY}
 

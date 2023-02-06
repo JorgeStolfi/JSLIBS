@@ -1,5 +1,5 @@
 /* See {sheet_cut_plot.h} */
-/* Last edited on 2022-04-20 00:33:08 by stolfi */
+/* Last edited on 2023-02-04 09:05:35 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -38,13 +38,13 @@ epswr_figure_t *sheet_cut_plot_new_figure
     double hPlotSize = sheet_cut_plot_SCALE*sheet_dim.c[0];
     double vPlotSize = sheet_cut_plot_SCALE*sheet_dim.c[1];
     
-    char *fname = NULL;
-    asprintf(&fname, "%s_%s.eps", outPrefix, sheet_tag);
-    FILE *wr = open_write(fname, TRUE);
-    free(fname);
-    
     double topMrg = mrg + sheet_cut_plot_FONT_SIZE_PT + mrg;
-    epswr_figure_t *eps = epswr_new_figure(wr, hPlotSize, vPlotSize, mrg, mrg, mrg, topMrg, FALSE);
+    bool_t verbose = FALSE;
+    epswr_figure_t *eps = epswr_new_named_figure
+      ( NULL, outPrefix, sheet_tag, -1, NULL,
+        hPlotSize, vPlotSize, mrg, mrg, mrg, topMrg, 
+        verbose
+      );
     
     /* Compute the size of the sheet's usable area (plot window) in mm: */
     r2_t scrapVec = (r2_t){{ 2*scrap_mrg, 2*scrap_mrg }};

@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:22:54 by jstolfi
+# Last edited on 2023-02-03 23:25:07 by stolfi
 
 PROG := ic4a
 TEST_LIB := libarchdraw.a
@@ -7,7 +7,7 @@ TEST_LIB_DIR := ../..
 JS_LIBS := \
   libimg.a \
   libgeo.a \
-  libps.a \
+  libeps.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

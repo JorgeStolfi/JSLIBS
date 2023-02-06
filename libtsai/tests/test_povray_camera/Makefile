@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 03:40:58 by jstolfi
+# Last edited on 2023-02-04 00:08:40 by stolfi
 
 PROG := test_povray_camera
 TEST_LIB := libtsai.a
@@ -9,7 +9,6 @@ NON_PROGS :=
 IGNORE :=  
 
 JS_LIBS:= \
-  liblmdif.a \
   libimg.a \
   libgeo.a \
   libjs.a

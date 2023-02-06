@@ -1,4 +1,4 @@
-# Last edited on 2022-10-18 21:12:06 by stolfi
+# Last edited on 2023-02-04 07:05:47 by stolfi
 
 PROG  := msm_test_220_refining
   
@@ -61,7 +61,7 @@ run: ${PROG}
           ${OUTNAME}
 
 # PSVIEW := gv
-PSVIEW := okular
+PSVIEW := evince
 
 show: ${OUTNAME}-fin-cd.pgm
 	for psf in ${wildcard ${OUTDIR}*.eps} ; do \

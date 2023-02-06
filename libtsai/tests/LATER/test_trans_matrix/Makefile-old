@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:33:49 by jstolfi
+# Last edited on 2023-02-03 23:23:30 by stolfi
 
 PROG := test_trans_matrix
 TEST_LIB := libtsai.a
@@ -12,7 +12,7 @@ JS_LIBS:= \
   liblmdif.a \
   libimage.a \
   libgeo.a \
-  libps.a \
+  libeps.a \
   libjs.a
 
 all: check

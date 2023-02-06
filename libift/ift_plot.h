@@ -1,12 +1,15 @@
 /* ift_plot.h - Postscript plotting of IFT path forests. */
-/* Last edited on 2010-06-04 00:34:41 by stolfi */
+/* Last edited on 2023-02-03 22:20:56 by stolfi */
 
 #ifndef ift_plot_H
 #define ift_plot_H
 
-#include <pswr.h>
+#define _GNU_SOURCE
+#include <stdio.h>
+
 #include <bool.h>
 #include <frgb.h>
+#include <epswr.h>
 
 #include <ift.h>
 
@@ -16,7 +19,7 @@
   lower left corner is at plot coordinates {(0,0)}. */
 
 void ift_plot_pixel
-  ( PSStream *ps, 
+  ( epswr_figure_t *eps, 
     ift_graph_t *G, 
     ift_pixel_index_t col, 
     ift_pixel_index_t row,
@@ -28,7 +31,7 @@ void ift_plot_pixel
     If {outline} is true, also draws its outline with the current line parameters. */
 
 void ift_plot_node
-  ( PSStream *ps, 
+  ( epswr_figure_t *eps, 
     ift_graph_t *G, 
     ift_pixel_index_t col, 
     ift_pixel_index_t row,
@@ -40,7 +43,7 @@ void ift_plot_node
     with the current line parameters. The radius is in millimeters. */
 
 void ift_plot_arc
-  ( PSStream *ps, 
+  ( epswr_figure_t *eps, 
     ift_graph_t *G, 
     ift_pixel_index_t col1, 
     ift_pixel_index_t row1,
@@ -53,7 +56,7 @@ void ift_plot_arc
     If {arrow} is TRUE, also draws the arrowhead. */
 
 void ift_plot_pixel_values
-  ( PSStream *ps, 
+  ( epswr_figure_t *eps, 
     ift_graph_t *G,
     frgb_t rgb[],
     double whiten
@@ -63,7 +66,7 @@ void ift_plot_pixel_values
     in the proportion {(1-whiten):whiten}. */
 
 void ift_plot_forest_edges
-  ( PSStream *ps, 
+  ( epswr_figure_t *eps, 
     ift_graph_t *G
   );
   /* 
@@ -71,7 +74,7 @@ void ift_plot_forest_edges
     by the {P} map in {G}, using the current pen settings. */
 
 void ift_plot_forest_nodes
-  ( PSStream *ps, 
+  ( epswr_figure_t *eps, 
     ift_graph_t *G,
     bool_t roots,
     double radius,

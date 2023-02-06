@@ -16,6 +16,6 @@ nice povray +K0.0000 \
             +Lpovray/tt-fonts \
             +Ipovray/${name}.pov \
             +O${outfile} \
-          3>&2 | tee ${name}.log
+          3>&2 | tee out/${name}.log
 
 display ${outfile} &

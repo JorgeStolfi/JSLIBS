@@ -1,5 +1,5 @@
 /* See rmxn.h. */
-/* Last edited on 2023-02-01 20:30:37 by stolfi */
+/* Last edited on 2023-02-03 05:40:23 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -514,35 +514,41 @@ void rmxn_gen_print
     char *ilp, char *isep, char *irp
   )
   {
-    int32_t i,j, t;
-    if (olp == NULL) { olp = "(\n"; }
-    if (osep == NULL) { osep = "\n"; }
-    if (orp == NULL) { orp = "\n)"; }
-    if (ilp == NULL) { ilp = "  ("; }
-    if (isep == NULL) { isep = " "; }
-    if (irp == NULL) { irp = ")"; }
-    if (fmt == NULL) { fmt = "%16.8e"; }
-    fputs(olp, f);
-    t = 0;
-    for (i = 0; i < m; i++)
-      {
-        if (i > 0) { fputs(osep, f); }
-        fputs(ilp, f);
-        for (j = 0; j < n; j++) 
-          { if (j > 0) { fputs(isep, f); }
-            fprintf(f, fmt, A[t]); t++;
-          }
-        fputs(irp, f);
-      }
-    fputs(orp, f);
-    fflush(f);
+    rmxn_gen_print3 
+      ( f, m, 
+        n, A, -1, NULL, -1, NULL, 
+        fmt,
+        olp, osep, orp,
+        ilp, isep, irp,
+        NULL
+      );
   }  
-
 
 void rmxn_gen_print2 
   ( FILE *f, int32_t m,
     int32_t n1, double *A1,
     int32_t n2, double *A2,
+    char *fmt, 
+    char *olp, char *osep, char *orp,     /* Outer delimiters. */
+    char *ilp, char *isep, char *irp,     /* Inner delimiters. */
+    char *msep                            /* Matrix separator. */
+  )
+  {
+    rmxn_gen_print3 
+      ( f, m, 
+        n1, A1, n2, A2, -1, NULL, 
+        fmt,
+        olp, osep, orp,
+        ilp, isep, irp,
+        msep
+      );
+  }
+
+void rmxn_gen_print3 
+  ( FILE *f, int32_t m,
+    int32_t n1, double *A1,
+    int32_t n2, double *A2,
+    int32_t n3, double *A3,
     char *fmt, 
     char *olp, char *osep, char *orp,     /* Outer delimiters. */
     char *ilp, char *isep, char *irp,     /* Inner delimiters. */
@@ -558,24 +564,22 @@ void rmxn_gen_print2
     if (irp == NULL) { irp = ")"; }
     if (fmt == NULL) { fmt = "%16.8e"; }
     fputs(olp, f);
-    int32_t t1 = 0;
-    int32_t t2 = 0;
     for (int32_t i = 0; i < m; i++)
-      {
-        if (i > 0) { fputs(osep, f); }
-        fputs(ilp, f);
-        for (int32_t j = 0; j < n1; j++) 
-          { if (j > 0) { fputs(isep, f); }
-            fprintf(f, fmt, A1[t1]); t1++;
+      { if (i > 0) { fputs(osep, f); }
+        for (int32_t k = 1; k <= 3; k++)
+          { int32_t nk = (k == 1 ? n1 : (k == 2 ? n2 : n3));
+            double *Ak = (k == 1 ? A1 : (k == 2 ? A2 : A3));
+            if (nk >= 0)
+              { double *Aki = (nk == 0 ? NULL : &(Ak[i*nk]));
+                if (k > 1) { fputs(msep, f); }
+                fputs(ilp, f);
+                for (int32_t j = 0; j < nk; j++) 
+                  { if (j > 0) { fputs(isep, f); }
+                    fprintf(f, fmt, Aki[j]);
+                  }
+                fputs(irp, f);
+              }
           }
-        fputs(irp, f);
-        fputs(msep, f);
-        fputs(ilp, f);
-        for (int32_t j = 0; j < n2; j++) 
-          { if (j > 0) { fputs(isep, f); }
-            fprintf(f, fmt, A2[t2]); t2++;
-          }
-        fputs(irp, f);
       }
     fputs(orp, f);
     fflush(f);

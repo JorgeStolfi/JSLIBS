@@ -3,7 +3,7 @@ dir .
 dir ../..
 dir ../../../libjs
 dir ../../../libgeo
-dir ../../../libps
+dir ../../../libeps
 dir ../../../libimg
 dir ../../../libtsai
 

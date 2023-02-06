@@ -1,9 +1,5 @@
-#Last edited on 2020-10-11 03:46:52 by jstolfi
+#Last edited on 2023-02-04 10:35:17 by stolfi
 
-IGNOREDIRS := \
-  test_rot \
-  test_trans_matrix \
-  test_trans_matrix2 \
-  
+IGNOREDIRS :=
 
 include ${STOLFIHOME}/programs/c/GENERIC-ROOT-DIR.make

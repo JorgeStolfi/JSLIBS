@@ -1,4 +1,4 @@
-/* Last edited on 2022-10-20 05:57:11 by stolfi */
+/* Last edited on 2023-02-04 09:59:23 by stolfi */
 
 #define PROG_NAME "test_calib_guess"
 #define PROG_DESC "tests the initial camera calibration guess algorithms"
@@ -14,7 +14,7 @@
 #include <float_image.h>
 #include <r2x2.h>
 #include <r2.h>
-#include <pswr.h>
+#include <epswr.h>
 #include <jsfile.h>
 #include <tf_calib_refine2.h>
 #include <tf_camera.h>
@@ -132,11 +132,6 @@ void plot_cpars
     double hMrg = 4;
     double vMrg = 3;
 
-    /* Open the output Encapsulated Postscript file: */
-    char *ps_prefix = NULL;
-    asprintf(&ps_prefix, "%s/", out_dir);
-    PSStream *ps = pswr_new_stream(ps_prefix, NULL, TRUE, NULL, NULL, FALSE, hSize + 2*hMrg, vSize + 2*vMrg);
-
     /* Plot the figures: */
     int32_t np = cdat->np;
     r2_t *q = cdat->image;
@@ -145,11 +140,8 @@ void plot_cpars
     tf_camera_params_t *fig1[2] = { true_cpar, affine_cpar };
     tf_camera_params_t *fig2[2] = { true_cpar, guess_cpar };
 
-    tf_plot_cameras(ps, "true_affine", np, p, 2, fig1, q, hSize, vSize, hMrg, vMrg, Nx, Ny, 1.0, 0);
-    tf_plot_cameras(ps, "true_guess",  np, p, 2, fig2, q, hSize, vSize, hMrg, vMrg, Nx, Ny, 1.0, 0);
-
-    /* Finish the postscript file: */
-    pswr_close_stream(ps);
+    tf_plot_cameras(out_dir, "true_affine", np, p, 2, fig1, q, hSize, vSize, hMrg, vMrg, Nx, Ny, 1.0, 0);
+    tf_plot_cameras(out_dir, "true_guess",  np, p, 2, fig2, q, hSize, vSize, hMrg, vMrg, Nx, Ny, 1.0, 0);
   }
 
 tf_calib_data_t *read_calibration_data(char *in_dir, char *tag)

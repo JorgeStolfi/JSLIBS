@@ -1,4 +1,4 @@
-/* Last edited on 2022-10-20 05:56:12 by stolfi */
+/* Last edited on 2023-02-04 00:07:23 by stolfi */
 
 #define PROG_NAME "test_povray_camera"
 #define PROG_DESC "tests the conversion from Tsai camera matrix to POV-Ray camera spec"
@@ -31,14 +31,6 @@ void set_special_cpar (tf_camera_params_t *cpar);
 
 int32_t main (int32_t argc, char *argv[])
 {
-  /*Verify memory*/
-  void *trash = malloc(1);
-  struct mallinfo info;
-  int32_t MemDinInicial, MemDinFinal;
-  free(trash);
-  info = mallinfo();
-  MemDinInicial = info.uordblks;
-  /*End*/
 
   /* Get the fixed camera parameters: */
   tf_camera_specs_t *cspec = tf_camera_specs_for_povray_svga ();
@@ -78,10 +70,6 @@ int32_t main (int32_t argc, char *argv[])
 
   float_image_write_pnm_named ("out/crosses.pgm", img, FALSE, tpc_PNM_GAMMA, tpc_PNM_BIAS, FALSE, TRUE, FALSE);
 
-  info = mallinfo();
-  MemDinFinal = info.uordblks;
-  if (MemDinInicial != MemDinFinal)
-    { fprintf(stderr, "*** main: memory leak %d blocks\n", MemDinFinal - MemDinInicial); }
   return 0;
 }
 

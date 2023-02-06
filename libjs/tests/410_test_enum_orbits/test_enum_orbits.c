@@ -2,12 +2,13 @@
 #define PROG_DESC "tests the {enum_orbits.h} procedures"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2019-08-30 16:22:12 by jstolfi */
+/* Last edited on 2023-02-04 22:42:45 by stolfi */
 /* Created on 2007-01-31 by J. Stolfi, UNICAMP */
 
 #define PROG_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

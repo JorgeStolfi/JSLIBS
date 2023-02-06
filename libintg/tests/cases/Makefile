@@ -1,4 +1,4 @@
-# Last edited on 2009-02-10 19:08:46 by stolfi
+# Last edited on 2023-02-03 23:24:22 by stolfi
 
 PROG = test_cases
  
@@ -6,9 +6,9 @@ TEST_LIB := libintg.a
 TEST_LIB_DIR := ../..
   
 JS_LIBS = \
+  libeps.a \
   libgeo.a \
-  libjs.a \
-  libps.a
+  libjs.a
   
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 

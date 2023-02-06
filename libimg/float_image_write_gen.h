@@ -1,5 +1,5 @@
 /* Write a {float_image_t} to a file with variable format. */
-/* Last edited on 2020-11-06 00:02:27 by jstolfi */
+/* Last edited on 2023-02-04 00:32:59 by stolfi */
 
 #ifndef float_image_write_gen_H
 #define float_image_write_gen_H
@@ -40,7 +40,7 @@
   encoding, specify {gammaEnc=1}. */
     
 #define float_image_write_gen_INFO \
-  "The outpu file image format can be PNM (PBM, PGM, PPM), JPG," \
+  "The output file image format can be PNM (PBM, PGM, PPM), JPG," \
   " PNG, or FNI.  The number {NC} of channels in the image to be written must be between 1 and 4.  " \
   " The specific variant of the specified file format will depend on {NC}.  It may be either RGB" \
   " color (three samples per pixel) or grayscale (one sample" \

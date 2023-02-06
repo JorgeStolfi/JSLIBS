@@ -1,4 +1,4 @@
-# Last edited on 2011-05-29 10:49:55 by stolfi
+# Last edited on 2023-02-04 07:06:20 by stolfi
 
 PROG := curvefit
 
@@ -6,7 +6,7 @@ TEST_LIB := libbbopt.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS := \
-  libps.a \
+  libeps.a \
   libaa.a \
   libia.a \
   libjs.a \
@@ -31,7 +31,7 @@ PSFILES := \
 
 MAINPS := ${EPSFILE}
   
-PSVIEW := okular
+PSVIEW := evince
   
 do-test: ${MAINPS} show-ps
 

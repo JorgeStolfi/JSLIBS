@@ -1,5 +1,5 @@
 /* Tools for generating Encapsulated Postscript graphics files. */
-/* Last edited on 2022-10-20 06:53:30 by stolfi */
+/* Last edited on 2023-02-04 06:42:24 by stolfi */
 
 #ifndef epswr_H
 #define epswr_H
@@ -101,6 +101,30 @@ epswr_figure_t *epswr_new_figure
     The Client coordinates are initially set to coincide with
     the Device coordinates (in pt), except that the origin will
     be the lower left corner of the plot window. */
+
+epswr_figure_t *epswr_new_named_figure
+  ( char *dir,
+    char *prefix,
+    char *name,
+    int32_t seq, 
+    char *suffix,
+    double hPlotSize,    /* Initial plot window width (in pt). */
+    double vPlotSize,    /* Initial plot window height (in pt). */
+    double leftMargin,   /* Extra margin at left (pt). */
+    double rightMargin,  /* Extra margin at right (pt). */
+    double botMargin,    /* Extra margin at bottom (in pt). */
+    double topMargin,    /* Extra margin at top (in pt). */
+    bool_t verbose       /* TRUE to print diagnostics. */
+  );
+  /* Same as {epswr_new_figure}, but writes to a file named
+    "{dir}/{prefix}_{name}_{SEQ}_{suffix}.eps" that is opened
+    internally. The {SEQ} part is the {seq} parameter formatted as five
+    digits, zero-padded.
+    
+    If {seq} is negative, the "_{SEQ}" part is omitted. If {dir} is
+    {NULL} or empty, the "{dir}/" part is omitted. If {prefix} is {NULL}
+    or empty, the "{prefix}_" part is omitted. If {suffix} is {NULL} or
+    empty, the "_{suffix}" part is omitted. */
 
 void epswr_end_figure(epswr_figure_t *eps);
   /* Properly terminates the Encapsulated Postscript file, by writing

@@ -1,5 +1,5 @@
 /* Tolls for "butterfly" enclosures of univariate functions. */
-/* Last edited on 2007-12-26 15:05:44 by stolfi */
+/* Last edited on 2023-02-03 22:16:55 by stolfi */
 /* Created by Jorge Stolfi 93-01-13             */
 
 #ifndef ia_butfly_H
@@ -8,7 +8,6 @@
 #include <flt.h>
 #include <ia.h>
 #include <ia_trapez.h>
-#include <pswr.h>
 
 typedef struct ia_butfly_t { ia_trapez_t tp[2]; } ia_butfly_t;
   /* A region of the plane consisting of two trapezoids

@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2022-10-20 06:51:26 by stolfi */
+/* Last edited on 2023-02-04 06:49:20 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -80,6 +80,43 @@ epswr_figure_t *epswr_new_figure
     
     fflush(eps->wr);
  
+    return eps;
+  }
+  
+epswr_figure_t *epswr_new_named_figure
+  ( char *dir, 
+    char *prefix,
+    char *name,
+    int32_t seq, 
+    char *suffix,
+    double hPlotSize,    /* Initial plot window width (in pt). */
+    double vPlotSize,    /* Initial plot window height (in pt). */
+    double leftMargin,   /* Extra margin at left (pt). */
+    double rightMargin,  /* Extra margin at right (pt). */
+    double botMargin,    /* Extra margin at bottom (in pt). */
+    double topMargin,    /* Extra margin at top (in pt). */
+    bool_t verbose       /* TRUE to print diagnostics. */
+  )
+  {
+    if (dir == NULL) { dir = ""; }
+    if (prefix == NULL) { prefix = ""; }
+    if (name == NULL) { name = ""; }
+    if (suffix == NULL) { suffix = ""; }
+    char *dir_s = (dir[0] == 0 ? "" : "/");
+    char *prefix_u = (prefix[0] == 0 ? "" : "_");
+    char *suffix_u = (suffix[0] == 0 ? "" : "_");
+    char *fname = NULL;
+    if (seq >= 0)
+      { asprintf(&fname, "%s%s%s%s%s_%05d%s%s.eps", dir, dir_s, prefix, prefix_u, name, seq, suffix_u, suffix); }
+    else
+      { asprintf(&fname, "%s%s%s%s%s%s%s.eps", dir, dir_s, prefix, prefix_u, name, suffix_u, suffix); }
+    FILE *wr = open_write(fname, verbose);
+    epswr_figure_t *eps = epswr_new_figure
+      ( wr, hPlotSize, vPlotSize,
+        leftMargin, rightMargin, botMargin, topMargin,
+        verbose
+      );
+    free(fname);
     return eps;
   }
   

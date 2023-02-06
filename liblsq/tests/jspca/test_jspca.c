@@ -1,5 +1,5 @@
 /* test_jspca --- test program for {jspca.h}  */
-/* Last edited on 2023-02-02 22:41:43 by stolfi */
+/* Last edited on 2023-02-03 06:03:14 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -46,7 +46,7 @@ void tpca_throw_data_points(int32_t nd, int32_t nv, double E[], double e[], doub
     with {nd} rows and {nv} columns.  Each row {D[id]} is the barycenter {d[0..nv-1]}
     plus {\SUM{ ie in 0..nv-1 : rnd()*e[ie]*E[ie] }} where {rnd()} is a normal random variable
     and {E[ie]} is row {ie} of {E}. */
-
+    
 /* CHECKING PCAS AND DECOMPOSITION */
 
 void tpca_check_pcas
@@ -74,43 +74,61 @@ void tpca_do_one_test(int32_t trial, bool_t verbose)
     srandom(1665 + 2*trial);
     
     int32_t nv = int32_abrandom(1, MAX_VARS);            /* Number of coords of data points. */
-    int32_t nd = int32_abrandom(2*nv + 10, MAX_POINTS);  /* Number of data points. */
-    int32_t ne_exp = int32_abrandom(0, nv);              /* Number of significant pcas. */
+    int32_t nd_min = (2*nv + 10)*(3*trial + 1);
+    int32_t nd = (trial < 10 ? nd_min : int32_abrandom(nd_min, MAX_POINTS));  /* Number of data points. */
 
-    if (verbose) { fprintf(stderr, "choosing barycenter {d}...\n\n"); }
-    double d[nv];
-    rn_throw_ball(nv, d);
-    rn_scale(nv, 9.0, d, d);
+    if (verbose) 
+      { fprintf(stderr, "======================================================================\n");
+        fprintf(stderr, "tpca_do_one_test nd = %d nv = %d\n", nd, nv);
+      }
+   
+    if (verbose) { fprintf(stderr, "choosing barycenter {d}...\n"); }
+    double d_exp[nv];
+    rn_throw_ball(nv, d_exp);
+    rn_scale(nv, 9.0, d_exp, d_exp);
+    if (verbose) { jspca_prv("d_exp", nv, d_exp, "%+14.8f"); }
 
-    if (verbose) { fprintf(stderr, "choosing the principal directions {E} and deviations {e}...\n\n"); }
+    if (verbose) { fprintf(stderr, "choosing the principal directions {E} and deviations {e}...\n"); }
     double *E_exp = rmxn_alloc(nv, nv); /* Chosen PCA matrix. */
     double e_exp[nv]; 
     double maxMag = 2.0;
     tpca_throw_components(nv, E_exp, maxMag, e_exp);
+    if (verbose) { jspca_prm2("E_exp,e_exp", nv, nv, E_exp, 1, e_exp, "%+14.8f"); }
     assert(e_exp[nv-1] > 0);
     
-    double minMag = (ne_exp > 0 ? e_exp[ne_exp-1] : maxMag + 1); 
-    if (ne_exp < nv) { assert(e_exp[ne_exp] < minMag); }
-    if (verbose) { fprintf(stderr, "minimum PC magnitude {minMag} = %12.8f...\n\n", minMag); }
-    
-    if (verbose) { fprintf(stderr, "generating the data array {D} and weight vector {w}...\n\n"); }
+    if (verbose) { fprintf(stderr, "generating the data array {D} and weight vector {w}...\n"); }
     double *D = rmxn_alloc(nd,nv);
     double *w = rn_alloc(nd);
     for (int32_t id = 0; id < nd; id++)
       { double *Di = &(D[id*nv]);
-        for (int32_t jv = 0; jv < nv; jv++) { Di[jv] = d[jv]; }
+        rn_copy(nv, d_exp, Di);
+        /* Mix into {Di} all vectors of {E_exp}, even those to be discarded later: */
         for (int32_t ke = 0; ke < nv; ke++)
           { double *Ek = &(E_exp[ke*nv]);
             double rk = dgaussrand()*e_exp[ke];
-            for (int32_t jv = 0; jv < nv; jv++) { Di[jv] *= rk*Ek[jv]; }
+            rn_mix_in(nv, rk, Ek, Di);
           }
         w[id] = drandom();
       }
+    if (nd < 100) { jspca_prm2("D,w", nd, nv, D, 1, w, "%+14.8f"); }
+    
+    /* Choosing {ne} for synthesis: */
+    int32_t ne_min = (nv == 0 ? 0 : 1);
+    int32_t ne_max = (nv <= 1 ? nv : nv-1);
+    int32_t ne_exp = int32_abrandom(ne_min, ne_max);              /* Number of significant pcas. */
+    double minMag = (ne_exp < nv ? 1.01*e_exp[ne_exp] : 0.001); 
+    if (ne_exp < nv) { assert(e_exp[ne_exp] < minMag); }
+    if (verbose) { fprintf(stderr, "with minMag = %12.8f expecting ne = %d components out of %d\n", minMag, ne_exp, nv); }
     
     /* Compute the PCAs from the data: */
     double *E_cmp = rmxn_alloc(nv, nv); /* Chosen PCA matrix. */
     double e_cmp[nv]; 
-    int32_t ne_cmp = jspca_compute_components(nd, nv, D, w, d, minMag, E_cmp, e_cmp, verbose);
+    double d_cmp[nv];
+    int32_t ne_cmp = jspca_compute_components(nd, nv, D, w, d_cmp, minMag, E_cmp, e_cmp, verbose);
+    if (verbose) { fprintf(stderr, "returned %d principal components out of %d\n", ne_cmp, nv); }
+    double d_err = rn_dist(nv, d_exp, d_cmp);
+    if (verbose) { fprintf(stderr, "dist(d_exp, d_cmp) = %12.8f\n", d_err); }
+    if (verbose) { jspca_prm2("E_cmp,e_cmp", ne_cmp, nv, E_cmp, 1, e_cmp, "%+14.8f"); }
     
     /* Compare the results: */
     tpca_check_pcas(nv, minMag, ne_exp, E_exp, e_exp, ne_cmp, E_cmp, e_cmp);
@@ -118,11 +136,12 @@ void tpca_do_one_test(int32_t trial, bool_t verbose)
     /* Try the PCA decomposition: */
     double *C = rmxn_alloc(nd, ne_cmp); /* PCA coeffs. */
     double *P = rmxn_alloc(nd, nv);     /* Projection of {D - u*d} on {E} row subspace. */
-    double *R = rmxn_alloc(nv, nv);      /* Residual {D - u*d - P}. */
-    jspca_decompose_data(nd, nv, D, d, ne_cmp, E_cmp, C, P, R, verbose); 
+    double *R = rmxn_alloc(nd, nv);      /* Residual {D - u*d - P}. */
+    jspca_decompose_data(nd, nv, D, d_cmp, ne_cmp, E_cmp, C, P, R, verbose); 
+    if (verbose) { jspca_prm3("C", nd, ne_cmp, C, nv, P, nv, R, "%+9.5f"); }
     
     /* Check the results: */
-    tpca_check_decomp(nd, nv, D, d, ne_cmp, E_cmp, C, P, R);
+    tpca_check_decomp(nd, nv, D, d_cmp, ne_cmp, E_cmp, C, P, R);
 
     free(E_exp);
     free(D);
@@ -145,7 +164,6 @@ void tpca_throw_components(int32_t nv, double E[], double maxMag, double e[])
         mag = att*mag;
       }
   }
-
 
 void tpca_check_pcas
   ( int32_t nv, double minMag, 

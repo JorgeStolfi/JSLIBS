@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:23:14 by jstolfi
+# Last edited on 2023-02-04 07:06:27 by stolfi
 
 PROG := bbopt2
 
@@ -7,7 +7,7 @@ TEST_LIB_DIR := ../..
 
 JS_LIBS := \
   libfgraph.a \
-  libps.a \
+  libeps.a \
   libaa.a \
   libia.a \
   libflt.a \
@@ -54,7 +54,7 @@ PSFILES := \
 
 MAINPS := ${EPSFILE}
   
-PSVIEW := okular
+PSVIEW := evince
   
 single: ${MAINPS} show-ps
 

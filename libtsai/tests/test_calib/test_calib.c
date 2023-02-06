@@ -1,4 +1,4 @@
-/* Last edited on 2022-10-20 05:57:21 by stolfi */
+/* Last edited on 2023-02-04 09:04:43 by stolfi */
 
 #define PROG_NAME "test_calib"
 #define PROG_DESC "tests the Tsai camera calibration algorithm"
@@ -10,6 +10,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <math.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -145,11 +146,6 @@ void plot_cpars
     double hMrg = 4;
     double vMrg = 3;
 
-    /* Open the output Encapsulated Postscript file: */
-    char *ps_prefix = NULL;
-    asprintf(&ps_prefix, "%s/", out_dir);
-    PSStream *ps = pswr_new_stream(ps_prefix, NULL, TRUE, NULL, NULL, FALSE, hSize + 2*hMrg, vSize + 2*vMrg);
-
     /* Plot the figures: */
     int32_t np = cdat->np;
     r2_t *q = cdat->image;
@@ -157,10 +153,7 @@ void plot_cpars
 
     tf_camera_params_t *fig1[2] = { ref_cpar, cal_cpar };
 
-    tf_plot_cameras(ps, "true_calib", np, p, 2, fig1, q, hSize, vSize, hMrg, vMrg, Nx, Ny, 1.0, 0);
-
-    /* Finish the postscript file: */
-    pswr_close_stream(ps);
+    tf_plot_cameras(out_dir, "true_calib", np, p, 2, fig1, q, hSize, vSize, hMrg, vMrg, Nx, Ny, 1.0, 0);
   }
  
 tf_camera_params_t *read_camera_parameters(tf_camera_specs_t *cspec, char *in_dir, char *name)

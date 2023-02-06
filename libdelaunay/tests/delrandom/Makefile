@@ -1,4 +1,4 @@
-# Last edited on 2011-12-25 02:17:53 by stolfi
+# Last edited on 2023-02-04 07:06:10 by stolfi
 
 PROG := delrandom
 
@@ -7,7 +7,7 @@ TEST_LIB_DIR := ../..
 
 JS_LIBS = \
   libquad.a \
-  libps.a \
+  libeps.a \
   libgeo.a \
   libjs.a
  
@@ -22,7 +22,7 @@ check:  do-test
 PSFILE = out/${PROG}-doc.ps
 EPSFILE = out/${PROG}-000001.eps
 # PSVIEW := gv
-PSVIEW := okular
+PSVIEW := evince
 
 do-test: ${PSFILE} ${EPSFILE}
 

@@ -1,4 +1,4 @@
-/* Last edited on 2022-10-20 06:06:38 by stolfi */
+/* Last edited on 2023-02-04 10:20:27 by stolfi */
 
 #define PROG_NAME "test_povray_camera"
 #define PROG_DESC "tests the conversion from Tsai camera matrix to POV-Ray camera spec"
@@ -65,7 +65,7 @@ int32_t main (int32_t argc, char *argv[])
     tf_camera_params_t *ref_cpar = tf_camera_specs_get_new_mean_params(cspec);
 
     /* Get the world coordinates of fiducial marks: */
-    tf_calib_data_t * cdat = read_world_positions(data_dir);
+    tf_calib_data_t *cdat = tf_calib_data_read(data_dir);
 
     /* Loop on frames: */
     int32_t frame_num;
@@ -112,9 +112,11 @@ int32_t main (int32_t argc, char *argv[])
       fprintf(f_p_wgt, "%d\n", n_p_w);
 
       /* Process marks: */
-      int32_t i;
-      for (i = 0; i < n_p_w; i++) {
+      for (int32_t i = 0; i < n_p_w; i++) {
+          fprintf(stdout, "before tf_world_coords_to_image_coords\n"); 
           r2_t p_i = tf_world_coords_to_image_coords (cal_cpar, cdat->world[i]);
+          fprintf(stdout, "after tf_world_coords_to_image_coords\n"); 
+          
           double mark_radius = 5;
           (void)float_image_paint_cross(img, 0, p_i.c[0], p_i.c[1], mark_radius, 1.0, TRUE, 1.0, 3); 
           (void)float_image_paint_cross(img, 0, p_i.c[0], p_i.c[1], mark_radius, 0.5, TRUE, 0.0, 3); 
@@ -129,7 +131,7 @@ int32_t main (int32_t argc, char *argv[])
       fclose(f_pw);
       fclose(f_p_wgt);
 
-      fprintf(stdout, "Loop outside\n"); 
+      fprintf(stdout, "loop finished\n"); 
 
       char *cross_fname = NULL; 
       asprintf(&cross_fname, "out/cross_%05d.pgm", frame_frame_num);

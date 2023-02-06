@@ -2,7 +2,7 @@
 #define jspca_H
 
 /* JS tools for principal component analysis (PCA). */
-/* Last edited on 2023-02-02 21:35:17 by stolfi */
+/* Last edited on 2023-02-03 05:49:55 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -127,5 +127,22 @@ void jspca_decompose_data
     The arrays {D}, {d} and {E} need not be the result of
     {jspca_compute_components}, although they usually are. */
 
+/* DEBUGGING */
+
+void jspca_prv(char *name, int32_t n, double v[], char *fmt);
+  /* Prints to [stderr} the row vector {v[0..n-1]}. */
+  
+void jspca_prm(char *name, int32_t m, int32_t n, double A[], char *fmt);
+  /* Prints to [stderr} the array {A}, assumed {m} by {n}.  Each element is printed with the format {fmt}. */
+
+void jspca_prm2(char *names, int32_t m, int32_t n1, double A1[], int32_t n2, double A2[], char *fmt);
+  /* Prints to [stderr} the arrays {A1}, assumed {m} by {n1}, and {A2},
+    assumed {m} by {n2}, side by side. Each element is printed with the
+    format {fmt}. */
+
+void jspca_prm3(char *names, int32_t m, int32_t n1, double A1[], int32_t n2, double A2[], int32_t n3, double A3[], char *fmt);
+  /* Prints to [stderr} the arrays {A1}, assumed {m} by {n1}, {A2},
+    assumed {m} by {n2}, and {A3}, assumed {m} by {n3}, side by side.
+    Each element is printed with the format {fmt}. */
           
 #endif

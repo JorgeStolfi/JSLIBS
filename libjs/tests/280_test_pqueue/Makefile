@@ -1,4 +1,4 @@
-# Last edited on 2011-05-29 10:48:03 by stolfi
+# Last edited on 2023-02-04 07:06:00 by stolfi
 
 PROG := test_pqueue
 
@@ -6,7 +6,7 @@ TEST_LIB := libjs.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS = \
-  libps.a \
+  libeps.a \
   libgeo.a \
   libjs.a
   
@@ -34,7 +34,7 @@ TEST_FIELDS := ${subst :, ,${TEST}}
 NITEMS :=  ${word 1, ${TEST_FIELDS}}
   
 PREFIX := out/${subst :,-,${TEST}}
-PSVIEW := okular
+PSVIEW := evince
 
 single:${PROG}
 	${PROG} ${NITEMS}

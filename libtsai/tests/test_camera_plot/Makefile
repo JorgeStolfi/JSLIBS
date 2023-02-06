@@ -1,4 +1,4 @@
-# Last edited on 2020-12-08 13:59:40 by jstolfi
+# Last edited on 2023-02-04 07:05:34 by stolfi
 
 PROG := test_camera_plot
 TEST_LIB := libtsai.a
@@ -9,9 +9,8 @@ NON_PROGS :=
 IGNORE :=  
 
 JS_LIBS:= \
-  liblmdif.a \
   libgeo.a \
-  libps.a \
+  libeps.a \
   libjs.a
   
 all: check
@@ -21,7 +20,7 @@ check:  build run-tests
 # OTHER_C_FLAGS := -pg
 # OTHER_LD_FLAGS := -pg
 
-PSVIEW := okular
+PSVIEW := evince
 
 include ../../../../GENERIC-LIB-TEST.make
 

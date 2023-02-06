@@ -1,4 +1,4 @@
-# Last edited on 2021-07-21 12:56:28 by jstolfi
+# Last edited on 2023-02-03 23:24:03 by stolfi
 
 PROG := test_mst
 
@@ -6,7 +6,7 @@ TEST_LIB := libjs.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS = \
-  libps.a \
+  libeps.a \
   libgeo.a \
   libjs.a
   

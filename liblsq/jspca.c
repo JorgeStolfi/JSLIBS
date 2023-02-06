@@ -1,5 +1,5 @@
 /* See {jspca.h}.  */
-/* Last edited on 2023-02-02 22:43:03 by stolfi */
+/* Last edited on 2023-02-03 06:00:38 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -134,7 +134,8 @@ int32_t jspca_eigen_decomp(int32_t nv, double A[], double minMag, double E[], do
     int32_t me; /* Number of eugenvalues actually computed: */
     int32_t absrt = 0; /* Sort eigenvalues by *signed* value. */
     syei_trid_eigen(nv, dT, sT, R, &me, absrt);
-    if (me < nv) { fprintf(stderr, " eigendecomposition found only %d eigenvectors of %d\n", me, nv); }
+    if ((me < nv) || verbose) { fprintf(stderr, "  eigendecomposition found %d eigenvectors of %d\n", me, nv); }
+    if (verbose) { rmxn_gen_print2(stderr, me, nv, R, 1, dT,  "%+14.8f", "  E,e2 = [\n", "\n", "  ]\n", "    [ ", " ", " ]", "  "); }
 
     /* Copy those {me} eigenpairs in *decreasing* magnitude order discarding small ones: */
     int32_t ne = 0;
@@ -158,7 +159,7 @@ int32_t jspca_eigen_decomp(int32_t nv, double A[], double minMag, double E[], do
         if (e2k < 0) { fprintf(stderr, " ** negative eigenvalue - should not happen"); }
         fprintf(stderr, "\n");
       }
-    if (verbose) { rmxn_gen_print2(stderr, ne, nv, E, 1, e,  "%+14.8f", "  E,e = [\n", "\n", "  ]\n", "    [ ", " ", " ]\n", "  "); }
+    if (verbose) { rmxn_gen_print2(stderr, ne, nv, E, 1, e,  "%+14.8f", "  E,e = [\n", "\n", "  ]\n", "    [ ", " ", " ]", "  "); }
     
     jspca_check_ortho(ne, nv, E);
 
@@ -197,6 +198,7 @@ void jspca_decompose_data
   )
   {
     if (verbose) { fprintf(stderr, "computing the decompositon of {D} onto {E}...\n"); }
+    if (verbose) { fprintf(stderr, "nd = %d  nv = %d  ne = %d\n", nd, nv, ne); }
     
     if ((C == NULL) && (P == NULL) && (R == NULL)) { /* Silly, nothing to do: */ return; }
 
@@ -223,4 +225,45 @@ void jspca_decompose_data
             if (R != NULL) { double *Ri = &(R[id*nv]); rn_sub(nv, vi, pi, Ri); }
           }
       }
+  }
+   
+void jspca_prv(char *name, int32_t n, double v[], char *fmt)
+  { 
+    fprintf(stderr, "  %s (%d) = ", name, n);
+    rn_gen_print(stderr, n, v, fmt, "[ ", " ", " ]\n");
+  }
+   
+void jspca_prm(char *name, int32_t m, int32_t n, double A[], char *fmt)
+  { 
+    fprintf(stderr, "  %s (%dx%d) =\n", name, m, n);
+    rmxn_gen_print
+      ( stderr, m, n, A,
+        fmt, 
+        "  [\n    ", "\n    ", "\n  ]\n", 
+        "[ ", " ", " ]"
+      );
+  }
+ 
+void jspca_prm2(char *names, int32_t m, int32_t n1, double A1[], int32_t n2, double A2[], char *fmt)
+  { 
+    fprintf(stderr, "  %s (%dx%d, %dx%d) =\n", names, m, n1, m, n2);
+    rmxn_gen_print2
+      ( stderr, m, n1, A1, n2, A2,  
+        fmt, 
+        "  [\n    ", "\n    ", "\n  ]\n", 
+        "[ ", " ", " ]", 
+        "  "
+      );
+  }
+ 
+void jspca_prm3(char *names, int32_t m, int32_t n1, double A1[], int32_t n2, double A2[], int32_t n3, double A3[], char *fmt)
+  { 
+    fprintf(stderr, "  %s (%dx%d, %dx%d, %dx%d) =\n", names, m, n1, m, n2, m, n3);
+    rmxn_gen_print3
+      ( stderr, m, n1, A1, n2, A2, n3, A3,  
+        fmt, 
+        "  [\n    ", "\n    ", "\n  ]\n", 
+        "[ ", " ", " ]", 
+        "  "
+      );
   }

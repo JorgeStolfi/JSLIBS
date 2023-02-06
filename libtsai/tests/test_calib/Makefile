@@ -1,4 +1,4 @@
-# Last edited on 2021-07-19 05:00:37 by jstolfi
+# Last edited on 2023-02-03 23:21:11 by stolfi
 
 PROG := test_calib
 TEST_LIB := libtsai.a
@@ -10,7 +10,7 @@ IGNORE :=
 
 JS_LIBS := \
   libtsai.a \
-  libps.a \
+  libeps.a \
   libgeo.a \
   libjs.a
 

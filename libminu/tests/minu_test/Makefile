@@ -1,14 +1,14 @@
-# Last edited on 2011-05-29 10:51:20 by stolfi
+# Last edited on 2023-02-04 07:05:52 by stolfi
 
 PROG = minu_do_tests
 
 TEST_LIB := libminu.a
 TEST_LIB_DIR := ../..
 
-PSVIEW := okular
+PSVIEW := evince
 
 JS_LIBS := \
-  libps.a \
+  libeps.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

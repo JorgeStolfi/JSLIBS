@@ -1,5 +1,5 @@
 /* rntest --- test program for rn.h, rmxn.h  */
-/* Last edited on 2022-01-03 21:28:08 by stolfi */
+/* Last edited on 2023-02-03 05:37:09 by stolfi */
 
 /* We need to set these in order to get {isnan}. What a crock... */
 #define _GNU_SOURCE
@@ -67,7 +67,7 @@ void test_rmxn_LT_inv_map(int32_t m, double Qmm[], double Rmm[], double am[], do
 void test_rmxn_LT_div(int32_t m, int32_t n, double Qmm[], double Rmm[], double Smm[], double Amn[], double Bmn[], double Cmn[], bool_t verbose);
 void test_rmxn_mod_norm(int32_t m, double Qmm[], bool_t verbose);
 void test_rmxn_norms(int32_t m, int32_t n, double Amn[], bool_t verbose);
-void test_rmxn_print(int32_t m, int32_t n, double Amn[], bool_t verbose);
+void test_rmxn_print(int32_t m, int32_t n, bool_t verbose);
 void test_rmxn_canonical_simplex_and_measures(int32_t n, bool_t verbose);
 void test_rmxn_throw_canonical_simplex(int32_t n, bool_t verbose);
 void test_rmxn_regular_simplex_and_measures(int32_t n, bool_t verbose);
@@ -742,7 +742,6 @@ void test_rmxn_rectangular(int32_t m, int32_t n, bool_t verbose)
 
     test_rmxn_LT_div(m, n, Qmm, Rmm, Smm, Amn, Bmn, Cmn, verbose);
     test_rmxn_norms(m, n, Amn, verbose);
-    test_rmxn_print(m, n, Amn, verbose);
     test_rmxn_canonical_simplex_and_measures(n, verbose);
     test_rmxn_throw_canonical_simplex(n, verbose);
     test_rmxn_regular_simplex_and_measures(n, verbose);
@@ -752,6 +751,8 @@ void test_rmxn_rectangular(int32_t m, int32_t n, bool_t verbose)
     test_rmxn_perturb_unif(m, n, Amn, verbose);
     test_rmxn_transform_quadratic(m, n, Amn, verbose);
     
+    test_rmxn_print(m, n, verbose);
+
     free(Amn); free(Bmn); free(Cmn);
     free(Qmm); free(Rmm); free(Smm);
     free(am); free(bm); free(cm);
@@ -1234,19 +1235,44 @@ void test_rmxn_norms(int32_t m, int32_t n, double Amn[], bool_t verbose)
     affirm(fabs(rr - r) < 000000001, "rmxn_norm error");
   }
     
-void test_rmxn_print(int32_t m, int32_t n, double Amn[], bool_t verbose)
+void test_rmxn_print(int32_t m, int32_t n, bool_t verbose)
   {
     /* TEST: void rmxn_print (FILE *f, int32_t m, int32_t n, double *A); */
     /* TEST: void rmxn_gen_print  */
 
-    if (verbose) { fprintf(stderr, "--- rmxn_print ---\n"); }
+    if (verbose) {  }
     if (verbose)
-      { throw_matrix (m, n, Amn);
-        fprintf(stderr, "Amn = ");
-        rmxn_print(stderr, m, n, Amn);
+      { fprintf(stderr, "--- rmxn_print, rmxn_gen_print, rmxn_gen_print2, rmxn_gen_print3, ---\n");
+
+        int32_t n1 = n % 5;
+        int32_t n2 = (n + 2) % 5;
+        int32_t n3 = (n + 4) % 5;
+
+        double *Amn1 = rmxn_alloc(m, n1);
+        double *Amn2 = rmxn_alloc(m, n2);
+        double *Amn3 = rmxn_alloc(m, n3);
+
+        throw_matrix (m, n1, Amn1);
+        throw_matrix (m, n2, Amn2);
+        throw_matrix (m, n3, Amn3);
+        
+        fprintf(stderr, "  rmxn_print, %d x %d\n", m, n1);
+        rmxn_print(stderr, m, n1, Amn1);
         fputc('\n', stderr);
-        rmxn_gen_print(stderr, m, n, Amn, "%6.3f", "  <\n", " : ", "  >\n", "    { ", " ' ", " }\n");
+        
+        fprintf(stderr, "  rmxn_gen_print, %d x %d\n", m, n1);
+        rmxn_gen_print(stderr, m, n1, Amn1, "%6.3f", "  <\n    ", ",\n    ", "\n  >\n", "{ ", " ' ", " }");
         fputc('\n', stderr);
+        
+        fprintf(stderr, "  rmxn_gen_print2, %d x %d, %d x %d\n", m, n1, m, n2);
+        rmxn_gen_print2(stderr, m, n1, Amn1, n2, Amn2, "%6.3f", "  <\n    ", ",\n    ", "\n  >\n", "{ ", " ' ", " }", " | ");
+        fputc('\n', stderr);
+        
+        fprintf(stderr, "  rmxn_gen_print3, %d x %d, %d x %d, %d x %d\n", m, n1, m, n2, m, n3);
+        rmxn_gen_print3(stderr, m, n1, Amn1, n2, Amn2, n3, Amn3, "%6.3f", "  <\n    ", ";\n    ", "\n  >\n", "{ ", " ' ", " }", " | ");
+        fputc('\n', stderr);
+        
+        free(Amn1); free(Amn2); free(Amn3);
       }
   }
     

@@ -1,7 +1,12 @@
 /* Implementation of ift_plot.h. */
-/* Last edited on 2016-04-01 01:39:01 by stolfilocal */
+/* Last edited on 2023-02-03 22:22:14 by stolfi */
 
-#include <pswr.h>
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#include <epswr.h>
 #include <frgb.h>
 #include <affirm.h>
 #include <bool.h>
@@ -10,7 +15,7 @@
 #include <ift_plot.h>
 
 void ift_plot_pixel
-  ( PSStream *ps, 
+  ( epswr_figure_t *eps, 
     ift_graph_t *G, 
     ift_pixel_index_t col, 
     ift_pixel_index_t row,
@@ -23,12 +28,12 @@ void ift_plot_pixel
     double xchi = xclo + 1;
     double ychi = yclo + 1;
     
-    pswr_set_fill_color(ps, rgb->c[0], rgb->c[1], rgb->c[2]);
-    pswr_rectangle(ps, xclo,xchi, yclo,ychi, TRUE, outline);
+    epswr_set_fill_color(eps, rgb->c[0], rgb->c[1], rgb->c[2]);
+    epswr_rectangle(eps, xclo,xchi, yclo,ychi, TRUE, outline);
   }
 
 void ift_plot_node
-  ( PSStream *ps, 
+  ( epswr_figure_t *eps, 
     ift_graph_t *G, 
     ift_pixel_index_t col, 
     ift_pixel_index_t row,
@@ -37,12 +42,12 @@ void ift_plot_node
   )
   { double xp = 0.5+(double)col;
     double yp = 0.5+(double)(G->rows - 1 - row);
-    pswr_set_fill_color(ps, rgb->c[0], rgb->c[1], rgb->c[2]);
-    pswr_dot(ps, xp,yp, radius, TRUE, TRUE);
+    epswr_set_fill_color(eps, rgb->c[0], rgb->c[1], rgb->c[2]);
+    epswr_dot(eps, xp,yp, radius, TRUE, TRUE);
   }
 
 void ift_plot_arc
-  ( PSStream *ps, 
+  ( epswr_figure_t *eps, 
     ift_graph_t *G, 
     ift_pixel_index_t col1, 
     ift_pixel_index_t row1,
@@ -54,7 +59,7 @@ void ift_plot_arc
     If {arrow} is TRUE, also draws the arrowhead. */
 
 void ift_plot_pixel_values
-  ( PSStream *ps, 
+  ( epswr_figure_t *eps, 
     ift_graph_t *G,
     frgb_t rgb[],
     double whiten
@@ -68,12 +73,12 @@ void ift_plot_pixel_values
             yy.c[1] = (float)(whiten + (1-whiten)*yy.c[1]);
             yy.c[2] = (float)(whiten + (1-whiten)*yy.c[2]);
           }
-        ift_plot_pixel(ps, G, p->col, p->row, &yy, 0);
+        ift_plot_pixel(eps, G, p->col, p->row, &yy, 0);
       }
   }
 
 void ift_plot_forest_edges
-  ( PSStream *ps, 
+  ( epswr_figure_t *eps, 
     ift_graph_t *G
   )
   { int k;
@@ -85,13 +90,13 @@ void ift_plot_forest_edges
             double yp = 0.5+(double)(G->rows - 1 - p->row);
             double xq = 0.5+(double)q->col;
             double yq = 0.5+(double)(G->rows - 1 - q->row);
-            pswr_segment(ps, xp,yp, xq,yq);
+            epswr_segment(eps, xp,yp, xq,yq);
           }
       }
   }
 
 void ift_plot_forest_nodes
-  ( PSStream *ps, 
+  ( epswr_figure_t *eps, 
     ift_graph_t *G,
     bool_t roots,
     double radius,
@@ -103,7 +108,7 @@ void ift_plot_forest_nodes
         ift_node_t *q = p->P;
         bool_t isroot = ((q == NULL) | (q == p));
         if (isroot == roots)
-          { ift_plot_node(ps, G, p->col, p->row, radius, rgb); }
+          { ift_plot_node(eps, G, p->col, p->row, radius, rgb); }
       }
   }
 

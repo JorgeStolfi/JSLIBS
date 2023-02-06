@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:40:39 by jstolfi
+# Last edited on 2023-02-03 23:24:32 by stolfi
 
 TEST_LIB := libdnaenc.a
 TEST_LIB_DIR := ../..
@@ -7,7 +7,7 @@ PROG := test_dnae_filter
 JS_LIBS := \
   libmsmatch.a \
   libgeo.a \
-  libps.a \
+  libeps.a \
   libimg.a \
   libjs.a
 

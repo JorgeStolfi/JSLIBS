@@ -1,4 +1,4 @@
-# Last edited on 2021-07-19 04:12:06 by jstolfi
+# Last edited on 2023-02-04 08:07:31 by stolfi
 
 PROG := test_calib_opt
 TEST_LIB := libtsai.a
@@ -8,18 +8,23 @@ NON_PROGS :=
 
 IGNORE :=  
 
+.PHONY:: do-all-tests do-test
+
 JS_LIBS := \
-  liblmdif.a \
   libgeo.a \
-  libps.a \
+  libeps.a \
   libjs.a
+  
+TNAMES := ${shell cd in && ls -d [a-z][0-9][0-9]}
 
 all: check
 
-check:  build run-tests
+check:  build do-all-tests
 
-run-all-tests: \
-  ${MAKE} TNAME=t01 run-test
+do-all-tests: 
+	for tn in ${TNAMES} ; do \
+	  ${MAKE} TNAME=$${tn} do-test ; \
+        done
 
 # OTHER_C_FLAGS := -pg
 # OTHER_LD_FLAGS := -pg
@@ -30,7 +35,7 @@ include ../../../../GENERIC-LIB-TEST.make
 # Recursive make - client must define ${TNAME}
 ifneq "/${TNAME}" "/"
 
-run-test: ${PROG} in/${TNAME}
+do-test: ${PROG} in/${TNAME} run_test.sh
 	./run_test.sh ${TNAME}
 
 endif

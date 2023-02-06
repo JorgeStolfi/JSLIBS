@@ -1,5 +1,5 @@
 /* rmxn.h --- m by n matrices and operations on them */
-/* Last edited on 2023-02-01 20:27:28 by stolfi */
+/* Last edited on 2023-02-03 05:43:54 by stolfi */
 
 #ifndef rmxn_H
 #define rmxn_H
@@ -162,10 +162,25 @@ void rmxn_LT_pre_div(int32_t m, int32_t n, double *L, double *A, double *M);
     equation {L*M = A}. The result has size {m} by {n}, and may be
     the same as {A}. */
     
-/* MATRIX FORMATTING */
+/* SIMPLE MATRIX PRINTOUT */
 
 void rmxn_print (FILE *f, int32_t m, int32_t n, double *A);
   /* Prints the {m x n} matrix {A} to file {f}, with default format. */
+    
+/* FLEXIBLE MATRIX PRINTOUT 
+
+  The following procedures use {fmt} to print each element. Each matrix
+  is bounded by {olp} and {orp}, and rows are separated by {osep}. Each
+  row is bounded by {ilp} and {irp}, and elements are separated by
+  {isep}. If there are two or more matrices side by side, the string
+  {msep} is printed between them, in each row. Defaults are provided for
+  any of {olp,osep,orp,ilp,isep,irp,msep} which are NULL. 
+  
+  If the number of columns ({n},{n1},{n2}, or {n3}) is given as 0, the
+  corresponding matrix may be {NULL}, and an empty matrix (with the
+  {ilp} and {irp} delimiters only) is printed. If the number of columns
+  is negative, the matrix and its preceding {msep}, if any, are
+  omitted. */
 
 void rmxn_gen_print 
   ( FILE *f, int32_t m, int32_t n, double *A,
@@ -173,11 +188,7 @@ void rmxn_gen_print
     char *olp, char *osep, char *orp, /* Outer delimiters. */
     char *ilp, char *isep, char *irp  /* Inner delimiters. */
   );
-  /* Prints the {m x n} matrix {A} to file {f}, using {fmt} for each
-    element. The matrix is bounded by {olp} and {orp}, and rows are
-    separated by {osep}. Each row is bounded by {ilp} and {irp}, and
-    elements are separated by {isep}. Defaults are provided for any of
-    these strings which are NULL. */
+  /* Prints the {m x n} matrix {A} to file {f}. */
 
 void rmxn_gen_print2 
   ( FILE *f, int32_t m,
@@ -188,12 +199,19 @@ void rmxn_gen_print2
     char *ilp, char *isep, char *irp,     /* Inner delimiters. */
     char *msep                            /* Matrix separator. */
   );
-  /* Prints the {m x n1} matrix {A1} and {m x n2} matrix {A2}, side by side, to file {f}, using {fmt} for each
-    element. The two matrices are bounded by {olp} and {orp}, and rows are
-    separated by {osep}. Each row of {A1} and {A2} is bounded by {ilp} and {irp}, and
-    elements are separated by {isep}. The string {msep} is printed between each row 
-    of {A1} and the corresponding row of {A2}. Defaults are provided for any of
-    these strings which are NULL. */
+  /* Prints the {m x n1} matrix {A1} and the {m x n2} matrix {A2}, side by side, to file {f}. */
+ 
+void rmxn_gen_print3 
+  ( FILE *f, int32_t m,
+    int32_t n1, double *A1,
+    int32_t n2, double *A2,
+    int32_t n3, double *A3,
+    char *fmt, 
+    char *olp, char *osep, char *orp,     /* Outer delimiters. */
+    char *ilp, char *isep, char *irp,     /* Inner delimiters. */
+    char *msep                            /* Matrix separator. */
+  );
+  /* Prints the {m x n1} matrix {A1}, the {m x n2} matrix {A2}, and the {m x n3} matrix {A3}, side by side, to file {f}. */
 
 /* HEAP ALLOCATION */
 

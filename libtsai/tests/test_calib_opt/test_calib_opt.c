@@ -1,4 +1,4 @@
-/* Last edited on 2022-10-20 05:57:02 by stolfi */
+/* Last edited on 2023-02-04 10:31:17 by stolfi */
 
 #define PROG_NAME "test_calib_opt"
 #define PROG_DESC "tests the camera calibration optimization algorithms"
@@ -15,7 +15,7 @@
 #include <affirm.h>
 #include <r2x2.h>
 #include <r2.h>
-#include <pswr.h>
+#include <epswr.h>
 #include <jsfile.h>
 
 #include <tf_calib_refine2.h>
@@ -162,11 +162,6 @@ void plot_cpars
     double hMrg = 4;
     double vMrg = 3;
 
-    /* Output Postscript file: */
-    char *ps_prefix = NULL;
-    asprintf(&ps_prefix, "%s/", out_dir);
-    PSStream *ps = pswr_new_stream(ps_prefix, NULL, TRUE, NULL, NULL, FALSE, hSize + 2*hMrg, vSize + 2*vMrg);
-
     /* Plot the figures: */
     int32_t nmarks = cdat->np;
     r2_t *q = cdat->image;
@@ -176,11 +171,9 @@ void plot_cpars
     tf_camera_params_t *fig2[2] = { true_cpar, opt1_cpar  };
     tf_camera_params_t *fig3[2] = { true_cpar, opt2_cpar  };
 
-    tf_plot_cameras(ps, "true_guess",  nmarks, p, 2, fig1, q, hSize, vSize, hMrg, vMrg, Nx, Ny, 1.5, 0);
-    tf_plot_cameras(ps, "true_opt1",   nmarks, p, 2, fig2, q, hSize, vSize, hMrg, vMrg, Nx, Ny, 1.5, 0);
-    tf_plot_cameras(ps, "true_opt2",   nmarks, p, 2, fig3, q, hSize, vSize, hMrg, vMrg, Nx, Ny, 1.5, 0);
-
-    pswr_close_stream(ps);
+    tf_plot_cameras(out_dir, "true_guess",  nmarks, p, 2, fig1, q, hSize, vSize, hMrg, vMrg, Nx, Ny, 1.5, 0);
+    tf_plot_cameras(out_dir, "true_opt1",   nmarks, p, 2, fig2, q, hSize, vSize, hMrg, vMrg, Nx, Ny, 1.5, 0);
+    tf_plot_cameras(out_dir, "true_opt2",   nmarks, p, 2, fig3, q, hSize, vSize, hMrg, vMrg, Nx, Ny, 1.5, 0);
   }
 
 tf_calib_data_t *read_calibration_data(char *in_dir, char *tag)

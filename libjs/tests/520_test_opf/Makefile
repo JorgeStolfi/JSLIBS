@@ -1,4 +1,4 @@
-# Last edited on 2019-04-09 19:37:23 by jstolfi
+# Last edited on 2023-02-03 23:23:58 by stolfi
 
 PROG := test_opf
 
@@ -6,7 +6,7 @@ TEST_LIB := libjs.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS = \
-  libps.a \
+  libeps.a \
   libgeo.a \
   libjs.a
   

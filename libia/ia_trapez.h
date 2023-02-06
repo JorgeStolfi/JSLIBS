@@ -1,5 +1,5 @@
 /* Tolls for trapezoidal enclosures of univariate functions. */
-/* Last edited on 2008-01-18 22:01:37 by stolfi */
+/* Last edited on 2023-02-03 22:16:38 by stolfi */
 /* Created by Jorge Stolfi 93-01-13             */
 
 #ifndef ia_trapez_H
@@ -7,7 +7,6 @@
 
 #include <flt.h>
 #include <ia.h>
-#include <pswr.h>
 
 typedef struct ia_trapez_t { Interval x, yxlo, yxhi; } ia_trapez_t;
   /* A trapezoidal region of the plane {R^2}.  The projection 

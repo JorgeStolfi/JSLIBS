@@ -1,4 +1,4 @@
-/* Last edited on 2022-10-20 05:56:39 by stolfi */
+/* Last edited on 2023-02-04 06:53:00 by stolfi */
 
 #define PROG_NAME "test_camera_plot"
 #define PROG_DESC "tests the initial camera calibration guess algorithms"
@@ -12,7 +12,7 @@
 #include <math.h>
 
 #include <r2.h>
-#include <pswr.h>
+#include <epswr.h>
 #include <jsrandom.h>
 #include <tf_camera_plot.h>
 
@@ -39,29 +39,30 @@ void write_test_plots(int32_t Nx, int32_t Ny, char *out_dir)
     double vMrg = 3;
 
     /* Open the output Encapsulated Postscript file: */
-    char *ps_prefix = NULL;
-    asprintf(&ps_prefix, "%s/", out_dir);
-    PSStream *ps = pswr_new_stream(ps_prefix, NULL, TRUE, NULL, NULL, FALSE, hSize + 2*hMrg, vSize + 2*vMrg);
-
-    pswr_new_canvas(ps, "test");
+    bool_t verbose = TRUE;
+    epswr_figure_t *eps = epswr_new_named_figure
+      ( out_dir, NULL, "test", -1, NULL,
+        hSize, vSize, hMrg, hMrg, vMrg, vMrg, 
+        verbose
+      );
 
     /* Negate all Y coordinates to get the proper orientation for the Y axis: */
-    pswr_set_window(ps, 0.0, Nx,  -Ny, 0.0, hMrg, hSize+hMrg, vMrg, vSize+vMrg);
-    pswr_set_pen(ps, 0.0,0.0,0.0, 0.10, 0,0); /* Black lines */
+    epswr_set_window(eps, hMrg, hSize+hMrg, vMrg, vSize+vMrg, FALSE, 0.0, Nx,  -Ny, 0.0);
+    epswr_set_pen(eps, 0.0,0.0,0.0, 0.10, 0,0); /* Black lines */
     /* Draw a frame around the image: */
-    pswr_frame(ps);
+    epswr_frame(eps);
     /* Draw the axes: */
-    pswr_set_pen(ps, 0.0,0.0,1.0, 0.25, 0,0); /* Blue lines */
-    pswr_axis(ps, HOR, -0.5*Ny, 0.0, +Nx);
-    pswr_axis(ps, VER, +0.5*Nx, -Ny, 0.0);
+    epswr_set_pen(eps, 0.0,0.0,1.0, 0.25, 0,0); /* Blue lines */
+    epswr_axis(eps, epswr_axis_HOR, -0.5*Ny, 0.0, +Nx);
+    epswr_axis(eps, epswr_axis_VER, +0.5*Nx, -Ny, 0.0);
 
     /* Plot random points in various styles: */
     /* frgb_t mColor = (frgb_t){{ 1.000, 1.000, 0.400 }}; */ /* Mark fill color */
     frgb_t mColor = (frgb_t){{ -1.00, -1.00, -1.00 }}; /* Mark fill color */
-    pswr_set_fill_color(ps, mColor.c[0], mColor.c[1], mColor.c[2]);
-    pswr_set_pen(ps, 0.0,0.0,0.0, 0.20, 0,0); /* Black lines */
+    epswr_set_fill_color(eps, mColor.c[0], mColor.c[1], mColor.c[2]);
+    epswr_set_pen(eps, 0.0,0.0,0.0, 0.20, 0,0); /* Black lines */
 
-    pswr_set_pen(ps, 0.0,0.0,0.0, 0.25, 0,0); /* Thick black lines */
+    epswr_set_pen(eps, 0.0,0.0,0.0, 0.25, 0,0); /* Thick black lines */
     int32_t nq = 10;
     int32_t maxStyle = 5;
     r2_t q[nq];
@@ -75,9 +76,9 @@ void write_test_plots(int32_t Nx, int32_t Ny, char *out_dir)
         /* Other points are random: */
         int32_t i;
         for (i = 2; i < nq; i++) { q[i] = (r2_t){{ 0.5*drandom()*Nx, drandom()*Ny }}; }
-        tf_plot_marks(ps, nq, q, 1.0, m);
+        tf_plot_marks(eps, nq, q, 1.0, m);
       }
 
     /* Finish the postscript file: */
-    pswr_close_stream(ps);
+    epswr_end_figure(eps);
   }
