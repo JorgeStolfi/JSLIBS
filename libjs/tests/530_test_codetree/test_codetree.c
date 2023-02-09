@@ -2,7 +2,7 @@
 #define PROG_DESC "tests the {codetree.h} procedures"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2023-02-06 19:34:22 by stolfi */
+/* Last edited on 2023-02-07 17:11:19 by stolfi */
 /* Created on 2007-01-31 by J. Stolfi, UNICAMP */
 
 #define PROG_COPYRIGHT \
@@ -44,12 +44,12 @@ void tcot_check_single(void);
 void tcot_check_small(void);
   /* Checks {codetree.h} functions with a small hand-built tree. */
 
-void tcot_check_tree(codetree_node_t *tree, uint32_t nv, uint64_t freq[]);
+void tcot_check_tree(codetree_t *tree, uint32_t nv, uint64_t freq[]);
   /* Verifies if the tree is well-formed, including the child order 
     property with tie-breaking by smallest leaf value. */
 
 void tcot_check_generic
-  ( codetree_node_t *tree, 
+  ( codetree_t *tree, 
     codetree_value_t maxval, 
     codetree_node_count_t nv, 
     codetree_value_t vals[], 
@@ -100,7 +100,7 @@ void tcot_check_empty(void)
     codetree_node_count_t nv = 0; /* Number of valid values. */
     codetree_value_t vals[nv];
 
-    codetree_node_t *tree = NULL;
+    codetree_t *tree = NULL;
 
     tcot_check_generic(tree, maxval, nv, vals, code);
   }
@@ -118,7 +118,7 @@ void tcot_check_single(void)
     vals[0] = 27; code[vals[0]] = "";
     
     codetree_node_t *L = codetree_new_leaf(vals[0]);
-    codetree_node_t *tree = L;
+    codetree_t *tree = L;
 
     tcot_check_generic(tree, maxval, nv, vals, code);
  }
@@ -151,13 +151,13 @@ void tcot_check_small(void)
     codetree_node_t *M34 = codetree_new_internal(seq, L3, L4); seq++;
     codetree_node_t *M12534 = codetree_new_internal(seq, M125, M34); seq++;
     
-    codetree_node_t *tree = M12534;
+    codetree_t *tree = M12534;
   
     tcot_check_generic(tree, maxval, nv, vals, code);
   }
  
 void tcot_check_generic
-  ( codetree_node_t *tree, 
+  ( codetree_t *tree, 
     codetree_value_t maxval, 
     codetree_node_count_t nv, 
     codetree_value_t vals[], 
@@ -173,8 +173,8 @@ void tcot_check_generic
       { fprintf(stderr, "given values and codes:\n");
         for (int32_t iv = 0; iv < nv; iv++)
           { fprintf(stderr, "%12d (%s)\n", vals[iv], code[vals[iv]]); }
-        fprintf(stderr, "testing {codetree_list_codes}:\n");
-        codetree_list_codes(stderr, tree);
+        fprintf(stderr, "testing {codetree_print_codes}:\n");
+        codetree_print_codes(stderr, tree);
       }
     
     fprintf(stderr, "testing {codetree_num_leaves}...\n");
@@ -234,6 +234,11 @@ void tcot_check_generic
         fprintf(stderr, "used %lu bits in %lu bytes ({ib} = %lu)\n", nu, mb, ib);
         assert(mb == ib);
         demand(mb < nb, "impossible used bit count {nu}");
+        
+        fprintf(stderr, "hand-encoded bits = "); 
+        codetree_print_bits(stderr, (mb < 3 ? mb : 3), buf, " ");
+        if (mb > 3) { fprintf(stderr, " ..."); }
+        fprintf(stderr, "\n"); 
         
         fprintf(stderr, "testing {codetree_decode} on the encoded string...\n");
         codetree_value_t smp2[ns];

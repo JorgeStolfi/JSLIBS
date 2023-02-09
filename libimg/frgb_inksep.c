@@ -1,5 +1,5 @@
 /* See {frgb_inksep.h}. */
-/* Last edited on 2013-10-21 02:42:05 by stolfilocal */ 
+/* Last edited on 2023-02-08 10:47:38 by stolfi */ 
 
 #include <frgb_inksep.h>
 #include <frgb.h>
@@ -9,6 +9,9 @@
 #include <affirm.h>
 
 #include <math.h>
+
+#define CHNS frgb_inksep_CHNS
+#define LAYS frgb_inksep_LAYS
 
 void frgb_inksep_shrink_color_set(r4x4_t *mix, double shrink)
   { if (shrink != 0)

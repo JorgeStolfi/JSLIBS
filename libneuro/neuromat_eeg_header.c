@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_header.h}. */
-/* Last edited on 2021-08-28 02:31:42 by stolfi */
+/* Last edited on 2023-02-07 20:44:55 by stolfi */
   
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -104,6 +104,8 @@ void neuromat_eeg_header_write(FILE *wr, neuromat_eeg_header_t *h)
 
 neuromat_eeg_header_t *neuromat_eeg_header_read(FILE *rd, int32_t neDef, double fsmpDef, int32_t *nlP)
   {
+    bool_t verbose = FALSE;
+    
     neuromat_eeg_header_t *h = neuromat_eeg_header_new();
     
     auto void skip_line(void);
@@ -166,6 +168,13 @@ neuromat_eeg_header_t *neuromat_eeg_header_read(FILE *rd, int32_t neDef, double 
           { fprintf(stderr, "** cannot guess trigger channel names: h.ne = %d  h.nc = %d\n", h->ne, h->nc); 
             exit(1);
           }
+        if (verbose)
+          { fprintf(stderr, "channel names = ");
+            for (int32_t ie = 0; ie < h->ne; ie++) 
+              { fprintf(stderr, " %d=%s", ie, chnames[ie]); }
+            fprintf(stderr, "\n");
+          }
+              
       }
   }
 

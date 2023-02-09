@@ -1,5 +1,5 @@
 /* See {ia_trapez.h} */
-/* Last edited on 2012-12-08 23:35:19 by stolfilocal */
+/* Last edited on 2023-02-07 20:42:38 by stolfi */
 
 #include <ia_trapez.h>
 
@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <flt.h>
 #include <ia.h>
-#include <pswr.h>
+#include <epswr.h>
 
 #include <math.h>
 #include <stdlib.h>
@@ -41,7 +41,7 @@ void ia_trapez_print(FILE *wr, ia_trapez_t *tr)
     putc(']', wr);
   }
 
-void ia_trapez_fill(PSStream *ps, Interval *yr, ia_trapez_t *tr, float cr, float cg, float cb)
+void ia_trapez_fill(epswr_figure_t *eps, Interval *yr, ia_trapez_t *tr, float cr, float cg, float cb)
   { int is_full = ia_is_full(&(tr->yxlo)) || ia_is_full(&(tr->yxhi));
     ROUND_NEAR;
     double xp[4], yp[4];
@@ -49,11 +49,11 @@ void ia_trapez_fill(PSStream *ps, Interval *yr, ia_trapez_t *tr, float cr, float
     xp[1] = tr->x.hi;   yp[1] = (is_full ? yr->lo : tr->yxhi.lo);
     xp[2] = tr->x.hi;   yp[2] = (is_full ? yr->hi : tr->yxhi.hi);
     xp[3] = tr->x.lo;   yp[3] = (is_full ? yr->hi : tr->yxlo.hi);
-    pswr_set_fill_color(ps, cr,cg,cb); 
-    pswr_polygon(ps, TRUE, xp, yp, 4, TRUE, FALSE, FALSE); 
+    epswr_set_fill_color(eps, cr,cg,cb); 
+    epswr_polygon(eps, TRUE, xp, yp, 4, TRUE, FALSE, FALSE); 
   }    
 
-void ia_trapez_draw(PSStream *ps, Interval *yr, ia_trapez_t *tr)
+void ia_trapez_draw(epswr_figure_t *eps, Interval *yr, ia_trapez_t *tr)
   { int is_full = ia_is_full(&(tr->yxlo)) || ia_is_full(&(tr->yxhi));
     ROUND_NEAR;
     double xp[4], yp[4];
@@ -61,7 +61,7 @@ void ia_trapez_draw(PSStream *ps, Interval *yr, ia_trapez_t *tr)
     xp[1] = tr->x.hi;   yp[1] = (is_full ? yr->lo : tr->yxhi.lo);
     xp[2] = tr->x.hi;   yp[2] = (is_full ? yr->hi : tr->yxhi.hi);
     xp[3] = tr->x.lo;   yp[3] = (is_full ? yr->hi : tr->yxlo.hi);
-    pswr_polygon(ps, TRUE, xp, yp, 4, FALSE, TRUE, FALSE); 
+    epswr_polygon(eps, TRUE, xp, yp, 4, FALSE, TRUE, FALSE); 
   }
 
 ia_trapez_t ia_trapez_clip(Interval *xr, ia_trapez_t *tp)

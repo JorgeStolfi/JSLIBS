@@ -1,5 +1,5 @@
 /* Binary tree based encoding and decoding. */
-/* Last edited on 2023-02-06 19:29:14 by stolfi */
+/* Last edited on 2023-02-07 17:11:26 by stolfi */
 
 #ifndef codetree_H
 #define codetree_H
@@ -15,9 +15,7 @@
   A /code tree/ is a data structure that can be used to parse and decode
   a stream of bits into a sequence of integer values from some set {V},
   with possibly different number of bits used for different values. See
-  {codetree_encode} and {codetree_decode} below.
-  
-  As usual, a code tree is usually represented by a pointer to its root node. */
+  {codetree_encode} and {codetree_decode} below. */
 
 typedef int32_t codetree_value_t;
   /* Type of the {value} field of a code tree node. */
@@ -40,6 +38,9 @@ typedef struct codetree_node_t
     The {child} fields of a leaf are irrelevant and should not
     be accessed since they may not have been allocated in memory. */
 
+typedef codetree_node_t codetree_t;
+  /* As usual, a pointer to a code tree is a pointer to its root node. */
+
 typedef uint32_t codetree_node_count_t;
   /* A type large enough to store the number of nodes in a code tree. */
 
@@ -58,12 +59,12 @@ codetree_node_t *codetree_new_leaf(codetree_value_t val);
     its address. Fails if {val} is {NO_VALUE}. The {child} fields of the
     node should not be accessed as they may not exist. */
   
-codetree_node_count_t codetree_free(codetree_node_t *tree);
+codetree_node_count_t codetree_free(codetree_t *tree);
   /* Reclaims the storage (with {free}) of all nodes of the tree
     with root node {*tree}. Returns the count of nodes reclaimed.
     If {tree} is {NULL}, does nothing and returns 0.*/
  
-codetree_node_count_t codetree_num_leaves(codetree_node_t *tree);
+codetree_node_count_t codetree_num_leaves(codetree_t *tree);
   /* Returns the number of leaf nodes in the subtree with 
     root node {tree}. */
 
@@ -86,7 +87,7 @@ typedef uint8_t byte_t;
 codetree_bit_count_t codetree_decode
   ( codetree_byte_count_t nb, 
     byte_t buf[], 
-    codetree_node_t *tree, 
+    codetree_t *tree, 
     codetree_value_t maxval, 
     codetree_sample_count_t ns, 
     codetree_value_t smp[]
@@ -198,7 +199,7 @@ codetree_bit_count_t codetree_encode
     return zero. */
 
 codetree_node_count_t codetree_get_encoding_table
-  ( codetree_node_t *tree, 
+  ( codetree_t *tree, 
     codetree_value_t maxval, 
     codetree_node_count_t nd,
     codetree_delta_t delta[]
@@ -217,7 +218,7 @@ codetree_node_count_t codetree_get_encoding_table
     of if the table needs more than {nd} elements, or the
     tree is malformed. */ 
 
-codetree_node_t *codetree_get_decoding_tree
+codetree_t *codetree_get_decoding_tree
   ( codetree_node_count_t nd,
     codetree_delta_t delta[], 
     codetree_value_t maxval 
@@ -233,7 +234,7 @@ codetree_node_t *codetree_get_decoding_tree
  
 /* VALIDATION */
 
-void codetree_check_tree(codetree_node_t *tree, codetree_value_t maxval);
+void codetree_check_tree(codetree_t *tree, codetree_value_t maxval);
   /* Verifies the consistency of the given decoding {tree}, which should
     have leaf values in {0..maxval} only. */
 
@@ -241,22 +242,27 @@ void codetree_check_table(codetree_node_count_t nd, codetree_delta_t delta[], co
   /* Verifies the consistency of the encoding table {delta[0..nd-1]},
     which should allow encoding of some values in {0..maxval} only. */
 
-void codetree_check_iso(codetree_node_t *p, codetree_node_t *q);
+void codetree_check_iso(codetree_t *p, codetree_t *q);
   /* Checks if the subtrees with roots {p} and {q} are 
     isomorphic, meaning that they assign the same codes to the same
     set of values.  The procedure fails with error if they are not. */
 
-codetree_node_count_t codetree_check_codes(codetree_node_t *tree, codetree_value_t maxval, char *code[]);
+codetree_node_count_t codetree_check_codes(codetree_t *tree, codetree_value_t maxval, char *code[]);
   /* Every element of {code[0..maxval]} must be either {NULL} or a string with characters '0' or '1'. 
     Checks whether {code[val]} is not {NULL} if and only if {val} is a member of the set {tree.V},
     and then checks whether that string is the bit code implied by {tree} for the value {val}.
     If it succeeds, returns the number of non-{NULL} codes, that is, the number {|tree.V|} of 
     leaf nodes in {tree}. Otherwise it fails with an error message. */
 
-codetree_node_count_t codetree_list_codes(FILE *wr, codetree_node_t *tree);
+codetree_node_count_t codetree_print_codes(FILE *wr, codetree_t *tree);
   /* Prints to {wr} the set of values {V} stored in the leaves of 
     the given {tree}, and the binary sequences that describe
     the path from {tree}'s root to each leaf.  Returns the number {|V|}
     of valid values. */
+
+void codetree_print_bits(FILE *wr, codetree_byte_count_t nb, byte_t buf[], char *sep);
+  /* Prints to {wr} the bits of the bytes {buf[0..nb-1]}, 
+    from bit 7 (value 128) to bit 0 (value 1), with the string 
+    {sep} between consecutive bytes. */
 
 #endif

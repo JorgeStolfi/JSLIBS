@@ -1,5 +1,5 @@
 /* See float_image_average.h */
-/* Last edited on 2017-06-26 16:57:19 by stolfilocal */ 
+/* Last edited on 2023-02-08 00:16:07 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <limits.h>
@@ -177,7 +177,7 @@ void float_image_average_parallelogram
 
     /* Accumulate samples: */
     double vs[chns];  /* Pixel at one sample point. */
-    double wtot = 0;
+    double wtot = 1.0e-200;
     int k0, k1;
     for (k0 = -ns[0]; k0 <= +ns[0]; k0++)
       { double f0 = k0*step[0]; /* Sample displacement along evec {R[0]}. */

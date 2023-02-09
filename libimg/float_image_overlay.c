@@ -1,5 +1,5 @@
 /* See {float_image_overlay.h}. */
-/* Last edited on 2021-08-28 03:49:07 by stolfi */
+/* Last edited on 2023-02-07 22:03:01 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -51,7 +51,7 @@ void float_image_overlay(float_image_t *A, float_image_t *B, int32_t icop, int32
                         (*vAP) = (float)(sB*vB + sA*vA);
                       }
                     else
-                      { *(oAP) = oC; }
+                      { *(oAP) = (float)oC; }
                   }
               }
           }

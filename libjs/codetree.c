@@ -1,5 +1,5 @@
 /* See {codetree.h}. */
-/* Last edited on 2023-02-06 19:31:50 by stolfi */
+/* Last edited on 2023-02-07 20:16:47 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -26,7 +26,7 @@
 
 /* IMPS */
 
-codetree_node_count_t codetree_free(codetree_node_t *tree)
+codetree_node_count_t codetree_free(codetree_t *tree)
   { if (tree == NULL) 
       { return 0; }
     else 
@@ -40,7 +40,7 @@ codetree_node_count_t codetree_free(codetree_node_t *tree)
       }
   }
  
-codetree_node_count_t codetree_num_leaves(codetree_node_t *tree)
+codetree_node_count_t codetree_num_leaves(codetree_t *tree)
   { if (tree == NULL) 
       { return 0; }
     else 
@@ -80,42 +80,48 @@ codetree_node_t *codetree_new_internal(codetree_node_count_t seq, codetree_node_
 codetree_bit_count_t codetree_decode
   ( codetree_byte_count_t nb, 
     byte_t buf[], 
-    codetree_node_t *tree, 
+    codetree_t *tree, 
     codetree_value_t maxval, 
     codetree_sample_count_t ns, 
     codetree_value_t smp[]
   )
   {
+    bool_t debug = FALSE;
+    
     if (ns == 0) { return 0; }
     demand((nb >= 0) && (nb <= MAX_BYTES), "invalid byte count {nb}");
     demand((maxval >= 1) && (maxval <= MAX_VALUE), "invalid {maxval}");
     demand(tree != NULL, "decoding tree is {NULL}");
     demand((ns >= 0) && (ns <= MAX_SAMPLES), "too many samples");
 
-    uint64_t ib = 0; /* Index of next unparsed byte in {buf}. */
-    byte_t mask = 0;   /* Mask of next unprocessed by of {buf[ib-1]}, or 0. */
-    uint64_t nu = 0; /* Number of bits used. */
+    int64_t ib = 0;    /* Index of byte of {buf} being parsed. */
+    byte_t mask = 128; /* Mask of next unprocessed by of {buf[ib]}. */
+    uint64_t nu = 0;   /* Number of bits used. */
     for (codetree_sample_count_t ks = 0; ks < ns; ks++)
       { /* Decode next sample {smp[ks]}: */
         codetree_node_t *p = tree;
         while (p->value < 0)
           { /* Get next bit: */
-            if (mask == 0)
-              { demand(ib < nb, "buffer exhausted before {ns} samples");
-                ib++;
-                mask = 128;
-              }
-            int8_t ich = ((buf[ib-1] & mask) != 0 ? 1 : 0);
+            demand(ib < nb, "buffer exhausted before {ns} samples");
+            int8_t ich = ((buf[ib] & mask) != 0 ? 1 : 0);
             p = p->child[ich];
             mask >>= 1;
+            if (mask == 0)
+              { ib++;
+                mask = 128;
+              }
             demand(nu < MAX_BITS, "too many bits in encoded string");
             nu++;
           }
         codetree_value_t val = p->value;
+        if (debug) 
+          { fprintf(stderr, " smp[%3lu] = %d", ks, val);
+            fprintf(stderr, "\n");
+          }
         demand(val <= maxval, "invalid value in tree leaf");
         smp[ks] = val;
       }
-    assert(ib == (nu + 7)/8);
+    assert(ib == nu/8);
     return nu;
   }
 
@@ -136,8 +142,8 @@ codetree_bit_count_t codetree_encode
     demand(nd > maxval, "table too short");
     demand(nd <= MAX_NODES, "invalid table size {nd}");
 
-    uint64_t ib = 0; /* Index of next unused byte in {buf}. */
-    byte_t mask = 0; /* Mask of next unused by of {buf[ib-1]}, or 0. */
+    uint64_t nb_used = 0; /* Index of next unused byte in {buf}. */
+    byte_t mask = 0; /* Mask of next unused by of {buf[nb_used-1]}, or 0. */
     uint64_t nu = 0; /* Number of bits stored. */
     
     auto void enc(codetree_node_count_t id);
@@ -150,7 +156,7 @@ codetree_bit_count_t codetree_encode
         codetree_node_count_t id = val; /* Index into {delta} */
         enc(id);
       }
-    assert(ib == (nu + 7)/8);
+    assert(nb_used == (nu + 7)/8);
     return nu;
     
     /* -------------------------------------------------- */
@@ -163,13 +169,13 @@ codetree_bit_count_t codetree_encode
             demand((ip > id) && (ip < nd), "inconsistent {delta} table");
             enc(ip);
             if (mask == 0)
-              { demand(ib < nb, "buffer exhausted before {ns} samples");
-                ib++;
-                buf[ib-1] = 0;
+              { demand(nb_used < nb, "buffer exhausted before {ns} samples");
+                nb_used++;
+                buf[nb_used-1] = 0;
                 mask = 128;
               }
-            assert(ib > 0);
-            if (ich != 0) { buf[ib-1] |= mask; }
+            assert(nb_used > 0);
+            if (ich != 0) { buf[nb_used-1] |= mask; }
             demand(nu < MAX_BITS, "too many bits in encoded string");
             nu++;
             mask >>= 1;
@@ -178,7 +184,7 @@ codetree_bit_count_t codetree_encode
   }
   
 codetree_node_count_t codetree_get_encoding_table
-  ( codetree_node_t *tree, 
+  ( codetree_t *tree, 
     codetree_value_t maxval, 
     codetree_node_count_t nd,
     codetree_delta_t delta[]
@@ -250,7 +256,7 @@ codetree_node_count_t codetree_get_encoding_table
       }
   }
 
-codetree_node_t *codetree_get_decoding_tree
+codetree_t *codetree_get_decoding_tree
   ( codetree_node_count_t nd,
     codetree_delta_t delta[],
     codetree_value_t maxval
@@ -317,7 +323,7 @@ codetree_node_t *codetree_get_decoding_tree
     return root;
   }
 
-void codetree_check_iso(codetree_node_t *p, codetree_node_t *q)
+void codetree_check_iso(codetree_t *p, codetree_t *q)
   { demand((p == NULL) == (q == NULL), "only one is null");
     if (p == NULL) { return; }
     demand((p->value >= 0) == (q->value >= 0), "only one is leaf");
@@ -332,7 +338,7 @@ void codetree_check_iso(codetree_node_t *p, codetree_node_t *q)
       }
   }
 
-void codetree_check_tree(codetree_node_t *tree, codetree_value_t maxval)
+void codetree_check_tree(codetree_t *tree, codetree_value_t maxval)
   { 
     fprintf(stderr, "\n");
     fprintf(stderr, "----------------------------------------------------------------------\n");
@@ -358,7 +364,7 @@ void codetree_check_tree(codetree_node_t *tree, codetree_value_t maxval)
         codetree_get_encoding_table(tree, maxval, nd, delta);
         
         fprintf(stderr, "  rebuilding the tree from the encoding table...\n");
-        codetree_node_t *tree2 = codetree_get_decoding_tree(nd, delta, maxval);
+        codetree_t *tree2 = codetree_get_decoding_tree(nd, delta, maxval);
         
         fprintf(stderr, "  comparing the two trees...\n");
         codetree_check_iso(tree, tree2);
@@ -381,7 +387,7 @@ void codetree_check_table(codetree_node_count_t nd, codetree_delta_t delta[], co
     demand((nd >= maxval) && (nd <= MAX_NODES), "invalid table size {nd}");
     
     fprintf(stderr, "  obtaining the decoding tree from the table...\n");
-    codetree_node_t *tree = codetree_get_decoding_tree(nd, delta, maxval);
+    codetree_t *tree = codetree_get_decoding_tree(nd, delta, maxval);
     
     fprintf(stderr, "  getting back the table from the tree...\n");
     codetree_delta_t *delta2 = (codetree_delta_t*)notnull(malloc(nd*sizeof(codetree_delta_t)), "no mem");
@@ -419,7 +425,7 @@ void codetree_check_table(codetree_node_count_t nd, codetree_delta_t delta[], co
     fprintf(stderr, "\n");
   }
 
-codetree_node_count_t codetree_list_codes(FILE *wr, codetree_node_t *tree)
+codetree_node_count_t codetree_print_codes(FILE *wr, codetree_t *tree)
   { 
     if (tree == NULL) { fprintf(wr, "empty tree\n"); return 0; }
 
@@ -444,13 +450,13 @@ codetree_node_count_t codetree_list_codes(FILE *wr, codetree_node_t *tree)
               }
           }
         else
-          { fprintf(wr, "%12u (%s)\n", p->value, pref);
+          { fprintf(stderr, "%12d (%s)\n", p->value, pref);
             nv++;
           }
       }
   }
 
-codetree_node_count_t codetree_check_codes(codetree_node_t *tree, codetree_value_t maxval, char *code[])
+codetree_node_count_t codetree_check_codes(codetree_t *tree, codetree_value_t maxval, char *code[])
   { /* Check if the codes lead to the desired values, note max code length {maxlen}: */
     int32_t ncode = 0; /* Number of non-null codes. */
     for (codetree_value_t val = 0; val <= maxval; val++)
@@ -478,4 +484,23 @@ codetree_node_count_t codetree_check_codes(codetree_node_t *tree, codetree_value
     demand(ncode == codetree_num_leaves(tree), "{code} count does not match leaf count");
     if (ncode == 0) { assert(tree == NULL); }
     return ncode;
+  }
+
+void codetree_print_bits(FILE *wr, codetree_byte_count_t nb, byte_t buf[], char *sep)
+  { 
+    if (nb ==  0) { return; }
+    int64_t ib = 0;    /* Byte currently being printed. */
+    byte_t mask = 128; /* Mask of next unprocessed by of {buf[ib]}, or 0. */
+    while (TRUE)
+      { char ch = ((buf[ib] & mask) != 0 ? '1' : '0');
+        fputc(ch, wr);
+        mask >>= 1;
+        if (mask == 0)
+          { ib++;
+            if (ib >= nb) { break; }
+            if (sep != NULL) { fputs(sep, wr); }
+            mask = 128;
+          }
+      }     
+    fflush(wr);
   }

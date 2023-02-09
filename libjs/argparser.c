@@ -1,5 +1,5 @@
 /* See argparser.h. */
-/* Last edited on 2013-10-25 01:06:19 by stolfilocal */
+/* Last edited on 2023-02-09 08:41:05 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 /* Based on Params.m3 by J.Stolfi, DEC-SRC, 1988.  */
@@ -55,6 +55,10 @@ bool_t argparser_seems_keyword(char *n);
   /* Returns true iff the string {n} looks superficially like a UNIX keyword argument,
     namely begins with "-{X}" where {X} is an ASCII letter, or with "--". */
     
+bool_t argparser_key_matches(char *a, char *b);
+  /* Returns {TRUE} if the strings {a} and {b} are equal,
+    or differ only by replacement of an initial "--" by "-". */ 
+
 /* IMPLEMENTATIONS */
 
 argparser_t *argparser_new(FILE *wr, int argc, char **argv)
@@ -86,9 +90,9 @@ void argparser_set_info(argparser_t *pp, char *info)
   }
     
 void argparser_process_help_info_options(argparser_t *pp)
-  { if (argparser_keyword_present(pp, "-info") || argparser_keyword_present(pp, "--info"))
+  { if (argparser_keyword_present(pp, "-info"))
       { argparser_print_info(pp, 72); exit(0); }
-    if (argparser_keyword_present(pp, "-help") || argparser_keyword_present(pp, "--help"))
+    if (argparser_keyword_present(pp, "-help"))
       { argparser_print_help_and_halt(pp, 0); }
   }
 
@@ -125,11 +129,12 @@ void argparser_arg_msg(argparser_t *pp, char *msg1, int index, char *msg2, char 
   }
 
 bool_t argparser_keyword_present(argparser_t *pp, char *key)
-  { char **a = pp->arg.e;
+  { demand((key != NULL) && ((*key) != 0), "invalid null/empty key");
+    char **a = pp->arg.e;
     bool_t *p = pp->parsed.e;
     int i;
     for (i = 0; i < pp->arg.ne; i++)
-      { if ((! p[i]) && (strcmp(key, a[i]) == 0))
+      { if ((! p[i]) && argparser_key_matches(key, a[i]))
           { pp->next = i + 1;
             p[i] = TRUE;
             return TRUE;
@@ -137,6 +142,17 @@ bool_t argparser_keyword_present(argparser_t *pp, char *key)
       }
     return FALSE;
   }
+  
+bool_t argparser_key_matches(char *a, char *b)
+  { if (strcmp(a, b) == 0) 
+      { return TRUE; }
+    else if ((a[0] == '-') && (b[0] == '-'))
+      { if ((a[1] == '-') && (strcmp(a+1,b) == 0)) { return TRUE; }
+        if ((b[1] == '-') && (strcmp(a,b+1) == 0)) { return TRUE; }
+      }
+    return FALSE;
+  }
+  
 
 void argparser_get_keyword(argparser_t *pp, char *key)
   { if (! argparser_keyword_present(pp, key))
@@ -303,7 +319,7 @@ bool_t argparser_is_next(argparser_t *pp, char *key)
   { char **a = pp->arg.e;
     bool_t *p = pp->parsed.e;
     if (pp->next >= pp->arg.ne) { return FALSE; }
-    return (! p[pp->next]) && (strcmp(key, a[pp->next]) == 0); 
+    return (! p[pp->next]) && (argparser_key_matches(key, a[pp->next])); 
   }
   
 bool_t argparser_seems_keyword(char *n)

@@ -1,5 +1,5 @@
 /* Tolls for "butterfly" enclosures of univariate functions. */
-/* Last edited on 2023-02-03 22:16:55 by stolfi */
+/* Last edited on 2023-02-07 20:33:43 by stolfi */
 /* Created by Jorge Stolfi 93-01-13             */
 
 #ifndef ia_butfly_H
@@ -8,6 +8,7 @@
 #include <flt.h>
 #include <ia.h>
 #include <ia_trapez.h>
+#include <epswr.h>
 
 typedef struct ia_butfly_t { ia_trapez_t tp[2]; } ia_butfly_t;
   /* A region of the plane consisting of two trapezoids
@@ -46,7 +47,7 @@ void ia_butfly_print (FILE *wr, ia_butfly_t *bt, char *sep);
   /* Prints {bt} to {wr}.  Each trapezoid is printed
     with {ia_trapez_print}, separated by the string {sep}. */
     
-void ia_butfly_draw(PSStream *ps, Interval *yr, ia_butfly_t *bt);
+void ia_butfly_draw(epswr_figure_t *eps, Interval *yr, ia_butfly_t *bt);
   /* Draws the butterfly {bt} to Postscript file {ps}, as
     a pair of trapezoids. If the Y range of either trapezoid
     is full, plots a box with Y range {yr} instead. */

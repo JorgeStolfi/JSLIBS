@@ -1,15 +1,15 @@
-/* see frgb_ops.h 
-** Last edited on 2017-06-25 01:00:46 by stolfilocal
-**
-** Copyright (C) 2003 by Jorge Stolfi, the University of Campinas, Brazil.
-** See the rights and conditions notice at the end of this file.
-*/
+/* See {frgb_ops.h}. */
+/* Last edited on 2023-02-08 08:44:15 by stolfi */
+
+/* Copyright (C) 2003 by Jorge Stolfi, the University of Campinas, Brazil. */
+/* See the rights and conditions notice at the end of this file. */
 
 #define _GNU_SOURCE
 #include <math.h>
 #include <limits.h>
 #include <float.h>
 #include <assert.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -22,40 +22,41 @@
 #include <bool.h>
 #include <fget.h>
 
-int frgb_DEBUG = 0;
+int32_t frgb_DEBUG = 0;
 
 frgb_t frgb_scale(double s, frgb_t *a)
   { frgb_t p;
-    int i;
-    for (i = 0; i < 3; i++) { p.c[i] = (float)(s * a->c[i]); }
+    for (int32_t i = 0; i < 3; i++) { p.c[i] = (float)(s * a->c[i]); }
+    return p;
+  }
+
+frgb_t frgb_shift(double d, frgb_t *a)
+  { frgb_t p;
+    for (int32_t i = 0; i < 3; i++) { p.c[i] = (float)(a->c[i] + d); }
     return p;
   }
 
 frgb_t frgb_add(frgb_t *a, frgb_t *b)
   { frgb_t p;
-    int i;
-    for (i = 0; i < 3; i++) { p.c[i] = (float)(a->c[i] + b->c[i]); }
+    for (int32_t i = 0; i < 3; i++) { p.c[i] = (float)(a->c[i] + b->c[i]); }
     return p;
   }
   
 frgb_t frgb_sub(frgb_t *a, frgb_t *b)
   { frgb_t p;
-    int i;
-    for (i = 0; i < 3; i++) { p.c[i] = a->c[i] - b->c[i]; }
+    for (int32_t i = 0; i < 3; i++) { p.c[i] = a->c[i] - b->c[i]; }
     return p;
   }
   
 frgb_t frgb_mul(frgb_t *a, frgb_t *b)
   { frgb_t p;
-    int i;
-    for (i = 0; i < 3; i++) { p.c[i] = a->c[i]*b->c[i]; }
+    for (int32_t i = 0; i < 3; i++) { p.c[i] = a->c[i]*b->c[i]; }
     return p;
   }
 
 frgb_t frgb_mix(double ca, frgb_t *a, double cb, frgb_t *b)
   { frgb_t p;
-    int i;
-    for (i = 0; i < 3; i++) { p.c[i] = (float)(ca*a->c[i] + cb*b->c[i]); }
+    for (int32_t i = 0; i < 3; i++) { p.c[i] = (float)(ca*a->c[i] + cb*b->c[i]); }
     return p;
   }
 
@@ -70,8 +71,7 @@ bool_t frgb_eq(frgb_t *a, frgb_t *b)
 
 frgb_t frgb_parse(argparser_t *pp, double lo, double hi)
   { frgb_t p;
-    int i;
-    for (i = 0; i < 3; i++)
+    for (int32_t i = 0; i < 3; i++)
       { p.c[i] = (float)argparser_get_next_double(pp, lo, hi); }
     return p;
   }
@@ -80,22 +80,20 @@ frgb_t frgb_parse_color(argparser_t *pp)
   { frgb_t p;
     double v[3];
     double scale;
-    int i;
-    for (i = 0; i < 3; i++)
+    for (int32_t i = 0; i < 3; i++)
       { v[i] = argparser_get_next_double(pp, -DBL_MAX, +DBL_MAX); }
     if (argparser_keyword_present_next(pp, "/"))
       { scale = argparser_get_next_double(pp, -DBL_MAX, +DBL_MAX); }
     else
       { scale = 1.0; }
-    for (i = 0; i < 3; i++)
+    for (int32_t i = 0; i < 3; i++)
       { p.c[i] = (float)(v[i]/scale); }
     return p;
   }
 
 frgb_t frgb_read(FILE *rd, double lo, double hi)
   { frgb_t p;
-    int i;
-    for (i = 0; i < 3; i++)
+    for (int32_t i = 0; i < 3; i++)
       { double pi = fget_double(rd);
         if ((pi < lo) || (pi > hi))
           { fprintf(stderr, "  component [%d] = %25.16e\n", i, pi);
@@ -110,20 +108,19 @@ frgb_t frgb_read_color(FILE *rd)
   { frgb_t p;
     double v[3];
     double scale;
-    int i;
-    for (i = 0; i < 3; i++)
+    for (int32_t i = 0; i < 3; i++)
       { v[i] = fget_double(rd); }
     fget_skip_spaces(rd);
     if (fget_test_char(rd, '/'))
       { scale = fget_double(rd); }
     else
       { scale = 1.0; }
-    for (i = 0; i < 3; i++)
+    for (int32_t i = 0; i < 3; i++)
       { p.c[i] = (float)(v[i]/scale); }
     return p;
   }
 
-double frgb_floatize(int ival, int maxval, double zero, double scale)
+double frgb_floatize(int32_t ival, int32_t maxval, double zero, double scale)
   { 
     return (float)(((double)ival - zero)/scale);
   }
@@ -133,9 +130,8 @@ double frgb_log_scale_gray(double x)
     return log(x);
   }
 
-void frgb_log_scale(frgb_t *p, int chns)
-  { int i;
-    for (i = 0; i < chns; i++)
+void frgb_log_scale(frgb_t *p, int32_t chns)
+  { for (int32_t i = 0; i < chns; i++)
       { double xi = p->c[i];
         if (xi < VAL_EPS) { xi = VAL_EPS; }
         p->c[i] = (float)log(xi);
@@ -160,11 +156,10 @@ double frgb_gamma_decoding_gray(double y, double gamma, double bias)
 #define BT_BIAS (sample_conv_BT709_BIAS)
   /* !!! This should be a parameter of {frgb_correct_arg}. !!! */
 
-frgb_t frgb_correct_arg(frgb_t *p, frgb_t *inGamma, int gray)
+frgb_t frgb_correct_arg(frgb_t *p, frgb_t *inGamma, int32_t gray)
   { frgb_t res = *p;
-    int i;
     if (inGamma != NULL)
-      { for (i = 0; i < 3; i++)
+      { for (int32_t i = 0; i < 3; i++)
           { res.c[i] = sample_conv_gamma(res.c[i], inGamma->c[i], BT_BIAS); }
       }
     if (gray)
@@ -192,10 +187,9 @@ void frgb_clip_rgb_towards_grey(frgb_t *p)
   }
 
 void frgb_clip_rgb_towards(frgb_t *p, frgb_t *q)
-  { int i;
-    /* Compute the min {s >= 1} such that {q + (p - q)/s} is in the cube: */
+  { /* Compute the min {s >= 1} such that {q + (p - q)/s} is in the cube: */
     double s = 1.0;
-    for (i = 0; i < 3; i++)
+    for (int32_t i = 0; i < 3; i++)
       { double pi = p->c[i];
         double qi = q->c[i];
         double qf = 1 - qi;
@@ -208,7 +202,7 @@ void frgb_clip_rgb_towards(frgb_t *p, frgb_t *q)
       }
     if (s > 1.0)
       { /* Pull {p} towards {q} until inside the unit cube: */
-        for (i = 0; i < 3; i++) 
+        for (int32_t i = 0; i < 3; i++) 
           { double ri = q->c[i] + (p->c[i] - q->c[i])/s;
             /* Guarding against roundoff: */
             if (ri < 0) { ri = 0; }
@@ -258,8 +252,7 @@ void frgb_apply_glob_kappa_sat_clip(frgb_t *p, double kap, double satf)
           for the desired luminosity {lumO}:
             { satO = MAX{ s : lumO*White + p/s IN [0_1]^3 } }
         */
-        int i;
-        for (i = 0; i < 3; i++)
+        for (int32_t i = 0; i < 3; i++)
           { double pi = p->c[i];
             pi = pi - lumI;
             if (satf < 1.0) { pi = pi * satf; }
@@ -286,13 +279,13 @@ void frgb_apply_glob_kappa_sat_clip(frgb_t *p, double kap, double satf)
             { *p = (frgb_t){{ (float)lumO, (float)lumO, (float)lumO }}; }
           else
             { double f = r/((1.0 - satI) + r*satO);
-              for (i = 0; i < 3; i++) { p->c[i] = (float)(lumO + f * (double)(p->c[i])); }
+              for (int32_t i = 0; i < 3; i++) { p->c[i] = (float)(lumO + f * (double)(p->c[i])); }
             }
         }
       }
   }
 
-int frgb_quantize(double fval, double zero, double scale, int maxval)
+int32_t frgb_quantize(double fval, double zero, double scale, int32_t maxval)
   { if (fval == +INF)
       { return maxval; }
     else if (fval == -INF)
@@ -306,44 +299,40 @@ int frgb_quantize(double fval, double zero, double scale, int maxval)
         else if (ival >= (double)maxval)
           { return maxval; }
         else
-          { return (int)(floor(ival + 0.5)); }
+          { return (int32_t)(floor(ival + 0.5)); }
       }
   }
   
-int frgb_dequal(double *a, double *b, int chns)
-  { int i;
-    for (i = 0; i < chns; i++)
+int32_t frgb_dequal(double *a, double *b, int32_t chns)
+  { for (int32_t i = 0; i < chns; i++)
       { if (a[i] != b[i]) return 0; }
     return 1;
   }
   
-int frgb_fequal(float *a, float *b, int chns)
-  { int i;
-    for (i = 0; i < chns; i++)
+int32_t frgb_fequal(float *a, float *b, int32_t chns)
+  { for (int32_t i = 0; i < chns; i++)
       { if (a[i] != b[i]) return 0; }
     return 1;
   }
 
-void frgb_print(FILE *f, char *pref, frgb_t *p, int chns, char *fmt, char *suff)
+void frgb_print(FILE *f, char *pref, frgb_t *p, int32_t chns, char *fmt, char *suff)
   { demand(chns <= 3, "invalid channel count"); 
-    int k;
     fprintf(f, "%s", pref);
-    for (k = 0; k < chns; k++) 
+    for (int32_t k = 0; k < chns; k++) 
       { if (k > 0) { fputc(' ', f); }
         fprintf(f, fmt, p->c[k]);
       }
     fprintf(f, "%s", suff);
   }
 
-void frgb_print_int_pixel(FILE *f, char *pref, int *p, int chns, char *suff)
-  { int k;
-    fprintf(f, "%s", pref);
-    for (k = 0; k < chns; k++) 
+void frgb_print_int_pixel(FILE *f, char *pref, int32_t *p, int32_t chns, char *suff)
+  { fprintf(f, "%s", pref);
+    for (int32_t k = 0; k < chns; k++) 
       { fprintf(f, "%s%5d", (k == 0 ? "" : " "), p[k]); }
     fprintf(f, "%s", suff);
   }
 
-void frgb_debug(char *label, int col, int row, frgb_t *p, int chns, char *tail)
+void frgb_debug(char *label, int32_t col, int32_t row, frgb_t *p, int32_t chns, char *tail)
   { 
     if (frgb_DEBUG) 
       { fprintf(stderr, "%s[%3d][%3d] = ", label, row, col);
@@ -352,7 +341,7 @@ void frgb_debug(char *label, int col, int row, frgb_t *p, int chns, char *tail)
       }
   }
 
-void frgb_debug_int_pixel(char *label, int col, int row, int *p, int chns, char *tail)
+void frgb_debug_int_pixel(char *label, int32_t col, int32_t row, int32_t *p, int32_t chns, char *tail)
   { 
     if (frgb_DEBUG) 
       { fprintf(stderr, "%s[%3d][%3d] = ", label, row, col);
@@ -790,7 +779,7 @@ void frgb_from_HSV_CG(frgb_t *p)
     assert((H >= 0) && (H < 1));
     /* Scale {H} to the range [0_6], split into integer {q} and fraction {f}: */
     H = H * 6;
-    int q = (int)floor(H);
+    int32_t q = (int32_t)floor(H);
     double f = H - q;
     /* Snap to integer to account for roundoff in {1/6}, {2/6}, etc: */
     float sixth = ((float)1)/((float)6);

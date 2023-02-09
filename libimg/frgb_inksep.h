@@ -12,11 +12,11 @@
 #include <bool.h>
 #include <frgb.h>
 
-/* Number of input channels: */
-#define CHNS 3
+#define frgb_inksep_CHNS 3
+  /* Number of input channels. */
   
-/* Number of color layers is always 1 + number of input channels: */
-#define LAYS (CHNS+1)
+#define frgb_inksep_LAYS (frgb_inksep_CHNS+1)
+  /* Number of color layers is always 1 + number of input channels. */
 
 void frgb_inksep_shrink_color_set(r4x4_t *mix, double shrink);
   /* Each row of the matrix {mix} should be the RGB coordinates of the
@@ -28,8 +28,9 @@ void frgb_inksep_shrink_color_set(r4x4_t *mix, double shrink);
 
 void frgb_inksep_separate_layers(frgb_t fv, r4x4_t *sep, r4_t *m);
   /* Analyzes the color {fv} into the affine mixing of {LAYS} ink layers,
-    unsing the analysis matrix {sep} (the inverse of the mixing matrix).
-    Returns in {mix[0..LAYS-1]} the mixing coefficients. */
+    unsing the analysis matrix {sep} (the inverse of the mixing matrix);
+    where {LAYS} is {frgb_inksep_LAYS}. Returns in {mix[0..LAYS-1]} 
+    the mixing coefficients. */
 
 void frgb_inksep_clip_to_simplex(r4_t *m, int *nbadP);
   /* Given an array {m[0..LAYS-1]} of ink mixing coefficients, adjusts

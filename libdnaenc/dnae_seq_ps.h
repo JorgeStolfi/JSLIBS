@@ -2,7 +2,7 @@
 #define dnae_seq_ps_H
 
 /* Postsscript plotting of numerically encoded DNA sequences */
-/* Last edited on 2014-06-09 21:23:02 by stolfilocal */
+/* Last edited on 2023-02-07 20:36:53 by stolfi */
 
 #define dnae_seq_ps_H_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)" \
@@ -12,7 +12,6 @@
 #include <stdio.h>
 
 #include <vec.h>
-#include <pswr.h>
 
 #include <msm_ps_tools.h>
 

@@ -1,12 +1,12 @@
-/* frgb_ops.h - basic operations on colors
-** Last edited on 2013-03-24 22:24:50 by stolfi
-*/
+/* frgb_ops.h - basic operations on colors. */
+/* Last edited on 2023-02-08 08:40:07 by stolfi */
 
 #ifndef frgb_ops_H
 #define frgb_ops_H
 
 #include <limits.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
@@ -21,6 +21,9 @@ frgb_t frgb_mix(double ca, frgb_t *a, double cb, frgb_t *b);
 
 frgb_t frgb_scale(double s, frgb_t *a);
   /* Multiplies all components of {a} by {s}. */
+
+frgb_t frgb_shift(double d, frgb_t *a);
+  /* Adds {d} to all components of {a}. */
 
 frgb_t frgb_add(frgb_t *a, frgb_t *b);
 frgb_t frgb_sub(frgb_t *a, frgb_t *b);
@@ -55,13 +58,13 @@ double frgb_gamma_decoding_gray(double y, double gamma, double bias);
     {[-1 _ +1]}. Typically used when {y} is an integer sample read
     from an image file that was linearly scaled to {[0-1]}. */
 
-typedef frgb_t frgb_adjuster_t(frgb_t *p, int col, int row);
+typedef frgb_t frgb_adjuster_t(frgb_t *p, int32_t col, int32_t row);
   /* A function called by other procs to adjust a user-supplied 
      color argument {p}, which presumably applies to pixel 
      {col,row}, before internal use. (A typical use of this
      proc is to apply gamma-correction on argument colors.) */
 
-frgb_t frgb_correct_arg(frgb_t *p, frgb_t *inGamma, int gray);
+frgb_t frgb_correct_arg(frgb_t *p, frgb_t *inGamma, int32_t gray);
   /* First computes a new triplet {x} by applying {frgb_undo_gamma} to
     each component of the RGB triplet {*p} with {gamma} set to the
     corresponding component of {inGamma}. If {inGamma == NULL},
@@ -76,7 +79,7 @@ double frgb_log_scale_gray(double x);
   /* Computes the logarithm of {x}, after ensuring that it 
     is not less than {VAL_EPS}. */
 
-void frgb_log_scale(frgb_t *p, int chns);
+void frgb_log_scale(frgb_t *p, int32_t chns);
   /* Computes the logarithm of {p[0..chns-1]}, 
     after ensuring that it is not less than {VAL_EPS}. */
 
@@ -109,16 +112,16 @@ void frgb_apply_glob_kappa_sat_clip(frgb_t *p, double kap, double satf);
     pixel {p.c[0..3]}, then adjusts the saturation of {p} 
     by the factor {satf}, and clips it to the [0_1]^3 cube:  */
 
-int frgb_dequal(double *a, double *b, int chns);
-int frgb_fequal(float *a, float *b, int chns);
+int32_t frgb_dequal(double *a, double *b, int32_t chns);
+int32_t frgb_fequal(float *a, float *b, int32_t chns);
   /* TRUE iff {a[i]} equals {b[i]} for {i} in {0..chns-1}. */
 
-double frgb_floatize(int ival, int maxval, double zero, double scale);
+double frgb_floatize(int32_t ival, int32_t maxval, double zero, double scale);
   /* Converts an integer pixel value {ival} (read from the input file) to
     an interval of floating-point intensities. Maps pixel value {zero}
     to 0, {zero+scale} to 1. */
 
-int frgb_quantize(double fval, double zero, double scale, int maxval);
+int32_t frgb_quantize(double fval, double zero, double scale, int32_t maxval);
   /* Converts an interval of floating-point intensities to an integer 
     intensity value, suitable for output.  Maps 0 to {zero}, 1 to 
     {zero+scale}, clipping the result to the interval {[0..maxval]}. */
@@ -298,27 +301,27 @@ void frgb_YUV_from_Yuv(frgb_t *p, double ybias);
 
 /* PRINTING */
 
-void frgb_print(FILE *f, char *pref, frgb_t *p, int chns, char *fmt, char *suff);
+void frgb_print(FILE *f, char *pref, frgb_t *p, int32_t chns, char *fmt, char *suff);
   /* Prints the first {chns} channels of {*p} to file {f}, surrounded
     by the given {pref} and {suff} strings. Each component is printed
     with the format {fmt}, which should be suitable for a float
     value. */
 
-void frgb_print_int_pixel(FILE *f, char *pref, int *p, int chns, char *suff);
+void frgb_print_int_pixel(FILE *f, char *pref, int32_t *p, int32_t chns, char *suff);
   /* Prints {p[0..chns-1]} to file {f}, surrounded by the
     given {pref} and {suff} strings.  (This function should be moved
     to some other interface.) */
 
 /* DEBUGGING */
 
-extern int frgb_DEBUG;    /* Set this variable to activate the following procs. */
+extern int32_t frgb_DEBUG;    /* Set this variable to activate the following procs. */
 
-void frgb_debug(char *label, int col, int row, frgb_t *p, int chns, char *tail);
+void frgb_debug(char *label, int32_t col, int32_t row, frgb_t *p, int32_t chns, char *tail);
   /* Prints {col}, {row}, and the first {chns} channels of {*p} to
     {stderr}, if the global flag {frgb_DEBUG} is true. The printout is
     preceded by the string {label} and followed by {tail}. */
 
-void frgb_debug_int_pixel(char *label, int col, int row, int *p, int chns, char *tail);
+void frgb_debug_int_pixel(char *label, int32_t col, int32_t row, int32_t *p, int32_t chns, char *tail);
   /* Prints {col}, {row}, and {p[0..chns-1]} to {stderr}, if the global flag 
     {frgb_DEBUG} is true.  The printout is preceded by the string {label}
     and followed by {tail}.  (This function should be moved

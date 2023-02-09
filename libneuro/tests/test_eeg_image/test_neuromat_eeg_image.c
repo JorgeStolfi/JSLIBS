@@ -4,7 +4,7 @@
 
 #define test_neuromat_eeg_image_C_COPYRIGHT \
   "Copyright © 2021 by the State University of Campinas (UNICAMP)"
-/* Last edited on 2021-08-28 21:10:12 by stolfi */
+/* Last edited on 2023-02-07 20:52:38 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -88,9 +88,10 @@ int32_t main(int32_t argc, char **argv)
     double mkdots_rad;
     int32_t track_xlo, track_xsz;
     int32_t track_y[nm];
-    int32_t slider_hw, slider_hh;
+    int32_t slider_hh;
     float_image_t *trk = neuromat_eeg_image_make_time_tracks
       ( nt, nc, val, nm,  marker, hwd_tb, NX, &mkdots_xctr, &mkdots_rad, &track_xlo, &track_xsz, track_y, &slider_hh );
+    int32_t slider_hw = 1;
     double tlo = 0.0;
     double thi = (double)nt;
     double t = 0.67*tlo + 0.33*thi;

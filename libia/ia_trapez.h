@@ -1,5 +1,5 @@
 /* Tolls for trapezoidal enclosures of univariate functions. */
-/* Last edited on 2023-02-03 22:16:38 by stolfi */
+/* Last edited on 2023-02-07 20:31:32 by stolfi */
 /* Created by Jorge Stolfi 93-01-13             */
 
 #ifndef ia_trapez_H
@@ -7,6 +7,7 @@
 
 #include <flt.h>
 #include <ia.h>
+#include <epswr.h>
 
 typedef struct ia_trapez_t { Interval x, yxlo, yxhi; } ia_trapez_t;
   /* A trapezoidal region of the plane {R^2}.  The projection 
@@ -45,8 +46,8 @@ void ia_trapez_print(FILE *wr, ia_trapez_t *tr);
     "[{x.lo}: {yxlo} __ {xb}: {yxhi}]", where {yxlo} and {yxhi}
     are printed with {ia_print}. */
     
-void ia_trapez_fill(PSStream *ps, Interval *yr, ia_trapez_t *tr, float cr, float cg, float cb);
-void ia_trapez_draw(PSStream *ps, Interval *yr, ia_trapez_t *tr);
+void ia_trapez_fill(epswr_figure_t *eps, Interval *yr, ia_trapez_t *tr, float cr, float cg, float cb);
+void ia_trapez_draw(epswr_figure_t *eps, Interval *yr, ia_trapez_t *tr);
   /* These procedures plot a trapezoid {tr} into a Postscript file
     {ps}. The procedure {ia_trapez_fill} fills the trapezoid with
     color {cr,cg,cb} in the RGB model, with each component in [0_1].

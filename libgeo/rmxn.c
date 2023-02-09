@@ -1,5 +1,5 @@
 /* See rmxn.h. */
-/* Last edited on 2023-02-03 05:40:23 by stolfi */
+/* Last edited on 2023-02-08 12:49:07 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -570,7 +570,7 @@ void rmxn_gen_print3
           { int32_t nk = (k == 1 ? n1 : (k == 2 ? n2 : n3));
             double *Ak = (k == 1 ? A1 : (k == 2 ? A2 : A3));
             if (nk >= 0)
-              { double *Aki = (nk == 0 ? NULL : &(Ak[i*nk]));
+              { double *Aki = (nk <= 0 ? NULL : &(Ak[i*nk]));
                 if (k > 1) { fputs(msep, f); }
                 fputs(ilp, f);
                 for (int32_t j = 0; j < nk; j++) 

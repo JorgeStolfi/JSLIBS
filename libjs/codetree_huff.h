@@ -1,13 +1,8 @@
 /* Huffman tree and Huffman decoding. */
-/* Last edited on 2023-02-06 19:32:26 by stolfi */
+/* Last edited on 2023-02-07 20:55:14 by stolfi */
 
-#ifndef huff_tree_H
-#define huff_tree_H
-
-/* This implementation of Hufmann encode/decode is hopefully
-  compatible with the one used in the NASA-JPL-PDS ".IMQ" images,
-  e.g. Voyager's -- in the sense of generatin the same codes 
-  even when there are ties in the node weights. */
+#ifndef codtree_huff_H
+#define codtree_huff_H
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -15,13 +10,13 @@
 
 #include <codetree.h>
 
-typedef uint64_t huff_tree_freq_t;
+typedef uint64_t codtree_huff_freq_t;
   /* Type of a frequency count for this module. */
   
-#define huff_tree_MAX_FREQ UINT64_MAX
+#define codtree_huff_MAX_FREQ UINT64_MAX
   /* Maximum value of of a frequency count. */
 
-codetree_node_t *huff_tree_build(codetree_value_t maxval, huff_tree_freq_t freq[]);
+codetree_t *codtree_huff_build(codetree_value_t maxval, codtree_huff_freq_t freq[]);
   /* Builds the Huffman tree {T} for a set of values {V},
     based on the frequency counts {freq[0..maxval]}. Returns a pointer 
     to the root node.  
@@ -36,12 +31,12 @@ codetree_node_t *huff_tree_build(codetree_value_t maxval, huff_tree_freq_t freq[
     {NULL}.  
     
     The number {maxval} must not exceed {codetree_MAX_VALUE}.
-    The sum of all entries of {freq} must not exceed {huff_tree_MAX_FREQ}.
+    The sum of all entries of {freq} must not exceed {codtree_huff_MAX_FREQ}.
     
     HUFMMAN TREE INVARIANTS
 
     The returned tree will have the following properties, besides those
-    described under {codetree_node_t}. With respect to weights:
+    described under {codetree_t}. With respect to weights:
 
      * Each node of the tree has an implicit weight. The weight of a leaf
        node {p} is the frequency associated to its value, that is,
@@ -88,7 +83,7 @@ codetree_node_t *huff_tree_build(codetree_value_t maxval, huff_tree_freq_t freq[
     ((uint64_t)p2.value)}.
    */
 
-void huff_tree_check_huffman(codetree_node_t *root);
-  /* Checks the Huffman properties of the tree descending from {root}. */ 
+void codtree_huff_check_huffman(codetree_t *tree);
+  /* Checks the Huffman properties of the given {tree}. */ 
   
 #endif

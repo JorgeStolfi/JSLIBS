@@ -1,12 +1,12 @@
 /* See ia_butfly.h */
-/* Last edited on 2017-01-02 12:22:57 by jstolfi */
+/* Last edited on 2023-02-07 20:42:28 by stolfi */
 
 #include <ia_butfly.h>
 
 #include <flt.h>
 #include <ia.h>
 #include <ia_trapez.h>
-#include <pswr.h>
+#include <epswr.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -37,7 +37,7 @@ void ia_butfly_print(FILE *wr, ia_butfly_t *bt, char *sep)
     ia_trapez_print(wr, &(bt->tp[1])); 
   }
 
-void ia_butfly_draw(PSStream *ps, Interval *yr, ia_butfly_t *bt)
-  { ia_trapez_draw(ps, yr, &(bt->tp[0]));
-    ia_trapez_draw(ps, yr, &(bt->tp[1]));
+void ia_butfly_draw(epswr_figure_t *eps, Interval *yr, ia_butfly_t *bt)
+  { ia_trapez_draw(eps, yr, &(bt->tp[0]));
+    ia_trapez_draw(eps, yr, &(bt->tp[1]));
   }

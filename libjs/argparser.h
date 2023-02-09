@@ -1,5 +1,5 @@
 /* argparser.h -- facilities for parsing command line arguments. */
-/* Last edited on 2015-10-01 19:07:31 by stolfilocal */
+/* Last edited on 2023-02-09 08:26:59 by stolfi */
 
 #ifndef argparser_H
 #define argparser_H
@@ -81,7 +81,14 @@ void argparser_process_help_info_options(argparser_t *pp);
   "\n" \
   "  -info\n" \
   "  --info\n" \
-  "    Prints this manpage and exits."
+  "    Prints this manpage and exits.\n" \
+  "\n" \
+  "  For compatibility with GNU/Linux tradition, any keyword that" \
+  " starts with \"-\" may also starts with \"--\", and vice-versa.  Thus \"-size\" is the" \
+  " same as \"--size\", and \"-v\" is the same as \"--v\".  However the legacy Unix" \
+  " practice of condensing single-character keywords is NOT" \
+  " supported: \"-rs\" (and \"--rs\") is always considered a single keyword," \
+  " not equivalent to \"-r -s\". "
 
 #define argparser_help_info_NO_WARRANTY \
   "  This software is provided \"as is\", WITHOUT ANY EXPLICIT OR" \
@@ -105,7 +112,8 @@ bool_t argparser_keyword_present(argparser_t *pp, char *key);
   /*  Looks for the first unparsed argument {arg[i]} that is equal to
     {key}. If found, marks it as parsed, sets {pp->next} to {i+1}, and
     returns {TRUE}. Otherwise returns {FALSE} and leaves {pp->next}
-    unchanged. */
+    unchanged.  If {key} begins with "-", also accepts the version with "--",
+    and vice-versa. */
 
 void argparser_get_keyword(argparser_t *pp, char *key);
   /* Same as {argparser_keyword_present}, but raises error if the 
@@ -149,7 +157,9 @@ int_vec_t argparser_get_int_list(argparser_t *pp, char *key, int min, int max);
   /* Parses all (zero or more) unparsed occurrences of the keyword
     {key}, not necessarily in consecutive positions. Requires that each
     occurrence is immediately followed by an integer in {[min..max]}.
-    Returns an array with those integers, in the order found. */
+    Returns an array with those integers, in the order found.  
+    If {key} begins with "-", also accepts the version with "--",
+    and vice-versa. */
 
 /* PARSING SPECIAL SYNTAX */
   
@@ -179,7 +189,9 @@ bool_t argparser_next_is_number(argparser_t *pp);
 bool_t argparser_is_next(argparser_t *pp, char *key);
   /* Returns TRUE if and only if {arg[pp->next]} exists, is still 
     unparsed, and is equal to {key}. Does not change {pp->next}
-    and does not mark that argument as parsed. */
+    and does not mark that argument as parsed.  If {key} 
+    begins with "-", also accepts the version with "--",
+    and vice-versa. */
 
 void argparser_skip_parsed(argparser_t *pp);
   /* Points {pp->next} at the first unparsed argument. If there are
