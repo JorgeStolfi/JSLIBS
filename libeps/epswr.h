@@ -1,5 +1,5 @@
 /* Tools for generating Encapsulated Postscript graphics files. */
-/* Last edited on 2023-02-04 06:42:24 by stolfi */
+/* Last edited on 2023-02-12 12:01:56 by stolfi */
 
 #ifndef epswr_H
 #define epswr_H
@@ -677,7 +677,7 @@ void epswr_set_text_geometry
     /topline/ coordinate {yvT}, initially at {yvMax}. Each line of text
     written by {epswr_text} will be drawn with the top of its bounding
     box at {yvT}, and then {yvT} will be reduced by an amount equal to the
-    current point size.  The coordinates {xhMin} and {xhMax} are used to
+    current font size.  The coordinates {xhMin} and {xhMax} are used to
     define the alignment of each line; see {epswr_text}.
     
     The actual text will be rotated by {rot} degrees counterclockwise

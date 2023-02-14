@@ -1,5 +1,5 @@
 /* See nget.h */
-/* Last edited on 2008-07-24 17:49:52 by stolfi */
+/* Last edited on 2023-02-12 07:39:24 by stolfi */
 
 #include <nget.h>
 #include <stdint.h>
@@ -23,16 +23,6 @@ char nget_char(FILE *f, char *name)
 bool_t nget_bool(FILE *f, char *name)
   { nget_name_eq(f, name); 
     return fget_bool(f);
-  }
-
-int nget_int(FILE *f, char *name)
-  { nget_name_eq(f, name);
-    return fget_int(f);
-  }
-
-unsigned int nget_uint(FILE *f, char *name, int base)
-  { nget_name_eq(f, name);
-    return fget_uint(f, base);
   }
   
 int32_t nget_int32(FILE *f, char *name)

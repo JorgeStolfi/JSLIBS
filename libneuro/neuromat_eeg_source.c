@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_source.h}. */
-/* Last edited on 2017-09-16 15:53:49 by jstolfi */
+/* Last edited on 2023-02-12 07:52:33 by stolfi */
   
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -52,12 +52,12 @@ void neuromat_eeg_source_read_field(FILE *rd, char *name, neuromat_eeg_source_t 
     if (strcmp(name, "file") == 0) 
       { ho->file = fget_string(rd); }
     else if (strcmp(name, "nt") == 0) 
-      { ho->nt = fget_int(rd); 
+      { ho->nt = fget_int32(rd); 
         demand(ho->nt > 0, "invalid original file length");
       }
     else  if (strcmp(name, "sample_range") == 0) 
-      { ho->it_ini = fget_int(rd); 
-        ho->it_fin = fget_int(rd); 
+      { ho->it_ini = fget_int32(rd); 
+        ho->it_fin = fget_int32(rd); 
         demand(ho->it_fin >= ho->it_ini, "invalid sample index range");
       }
     else if (strcmp(name, "fsmp") == 0) 
@@ -65,11 +65,11 @@ void neuromat_eeg_source_read_field(FILE *rd, char *name, neuromat_eeg_source_t 
         demand((! isnan(ho->fsmp)) && (ho->fsmp > 0), "invalid sampling frequency");
       }
     else if (strcmp(name, "subject") == 0) 
-      { ho->subject = fget_int(rd); 
+      { ho->subject = fget_int32(rd); 
         demand(ho->subject > 0, "invalid subject number");
       }
     else if (strcmp(name, "run") == 0) 
-      { ho->run = fget_int(rd); 
+      { ho->run = fget_int32(rd); 
         demand(ho->run > 0, "invalid run number");
       }
     else

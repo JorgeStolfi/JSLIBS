@@ -1,5 +1,5 @@
 /* See {multifok_term.h}. */
-/* Last edited on 2023-01-30 19:30:40 by stolfi */
+/* Last edited on 2023-02-12 06:52:08 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -221,40 +221,26 @@ void multifok_term_read_index_table
     if (verbose) { fprintf(stderr, "reading index triples...\n"); }
 
     while (TRUE)
-      { fget_skip_spaces(rd);
-        int32_t c = fgetc(rd);
-        if (c == EOF) 
-          { break; }
-        else if (c == '\n') 
-          { /* Blank line, ignore. */ }
-        else if (c == '#') 
-          { /* Comment line, skip rest: */ 
-            fget_skip_to_eol(rd); 
-          }
-        else if ((c < '0') || (c > '9'))
-          { /* Bad line: */
-            demand(FALSE, "bad line format, expected digit.");
+      { bool_t ok = fget_test_comment_or_eol(rd, '#');
+        if (ok) { continue; }
+        if (fget_test_eof(rd)) { break; }
+        /* There is something there: */
+        int32_t jb1, jb2, kt;
+        char *pr;
+        read_data_line(&jb1, &jb2, &kt, &pr);
+        if (kt == NT)
+          { /* Should be a new term: */
+            nr_kt[kt] = 1;
+            NT++;
           }
         else
-          { /* Looks like a data line: */
-            ungetc(c, rd);
-            int32_t jb1, jb2, kt;
-            char *pr;
-            read_data_line(&jb1, &jb2, &kt, &pr);
-            if (kt == NT)
-              { /* Should be a new term: */
-                nr_kt[kt] = 1;
-                NT++;
-              }
-            else
-              { /* Previously started term: */
-                assert(nr_kt[kt] > 0);
-                nr_kt[kt]++;
-              }
-            prix[NP] = (multifok_term_prod_t){ jb1, jb2, kt, pr };
-            if (verbose) { fprintf(stderr, "  %3d  %3d %3d  %3d %s\n", NP, jb1, jb2, kt, pr); }
-            NP++;
+          { /* Previously started term: */
+            assert(nr_kt[kt] > 0);
+            nr_kt[kt]++;
           }
+        prix[NP] = (multifok_term_prod_t){ jb1, jb2, kt, pr };
+        if (verbose) { fprintf(stderr, "  %3d  %3d %3d  %3d %s\n", NP, jb1, jb2, kt, pr); }
+        NP++;
       }
       
    if (NP < NP_max) { prix = (multifok_term_prod_t*)notnull(realloc(prix, NP*sizeof(multifok_term_prod_t)), "no mem"); }

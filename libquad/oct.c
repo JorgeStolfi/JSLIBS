@@ -1,5 +1,5 @@
 /* See oct.h. */
-/* Last edited on 2016-04-01 02:58:18 by stolfilocal */
+/* Last edited on 2023-02-12 07:52:27 by stolfi */
 
 #define oct_C_copyright \
   "Copyright © 1996, 2006 Institute of Computing, Unicamp."
@@ -527,8 +527,8 @@ void oct_read_map(FILE *rd, oct_arc_vec_t *root, oct_arc_vec_t *et)
   { /* Check and consume the header line: */
     filefmt_read_header(rd, FILE_TYPE, FILE_VERSION);
     /* Parse the root count {nr} and the edge count {nE}: */
-    int nr = nget_int(rd, "roots"); fget_eol(rd);
-    int nE = nget_int(rd, "edges"); fget_eol(rd);
+    int nr = nget_int32(rd, "roots"); fget_eol(rd);
+    int nE = nget_int32(rd, "edges"); fget_eol(rd);
     /* Make sure that {et} is non-null and points to a table with {nE} slots: */
     oct_arc_vec_t etb = oct_arc_vec_new(0); /* A local edge table. */
     if (et == NULL) { et = &etb; }

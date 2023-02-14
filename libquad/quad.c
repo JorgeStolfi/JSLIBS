@@ -1,5 +1,5 @@
 /* See quad.h. */
-/* Last edited on 2016-04-01 02:57:51 by stolfilocal */
+/* Last edited on 2023-02-13 21:42:45 by stolfi */
  
 #define quad_C_copyright \
   "Copyright © 2011 Institute of Computing, Unicamp."
@@ -142,7 +142,7 @@ quad_arc_t quad_rnext(quad_arc_t e)
 quad_arc_t quad_rprev(quad_arc_t e)
   { return RPREV(e); }
 
-quad_arc_t quad_walk(quad_arc_t e, int r, int n)
+quad_arc_t quad_walk(quad_arc_t e, int32_t r, int32_t n)
   { /* Reduce {r} mod 4: */
     r = (r & 3);
     /* Apply {rot^r}: */
@@ -297,8 +297,7 @@ void quad_enum(quad_arc_vec_t *root, void visit_proc(quad_arc_t e))
     uint64_t mark = next_mark;
     assert(mark != 0);
     next_mark++;
-    int i;
-    for (i = 0; i < root->ne; i++) 
+    for (int32_t i = 0; i < root->ne; i++) 
       { quad_do_enum(root->e[i], visit_proc, mark); }
   }
 
@@ -321,7 +320,7 @@ quad_edge_num_t quad_renumber_edges(quad_arc_vec_t *root, quad_arc_vec_t *et)
         and increments {nE}. */
 
     quad_enum(root, &renumber_edge);
-    if (et != NULL) { quad_arc_vec_trim(et, (unsigned int)nE); }
+    if (et != NULL) { quad_arc_vec_trim(et, (uint32_t)nE); }
     return nE;
 
     /* IMPLEMENTATIONS OF LOCAL PROCS */
@@ -329,18 +328,18 @@ quad_edge_num_t quad_renumber_edges(quad_arc_vec_t *root, quad_arc_vec_t *et)
     void renumber_edge(quad_arc_t p)
       { quad_edge_t E = quad_edge(p);
         E->num = nE; 
-        if (et != NULL) { quad_arc_vec_expand(et, (unsigned int)nE); et->e[nE] = p; }
+        if (et != NULL) { quad_arc_vec_expand(et, (uint32_t)nE); et->e[nE] = p; }
         nE++;
       }
   }
 
 /* ARC INPUT/OUTPUT */
 
-void quad_write_arc(FILE *wr, quad_arc_t e, int width)
+void quad_write_arc(FILE *wr, quad_arc_t e, int32_t width)
   { fprintf(wr, 
       ("%*" uaddress_u_fmt ":%u%u"), width, 
       EDGE(e)->mark, 
-      (unsigned int)SYMBIT(e), (unsigned int)DOPBIT(e));
+      (uint32_t)SYMBIT(e), (uint32_t)DOPBIT(e));
   }
 
 quad_arc_t quad_read_arc(FILE *rd, quad_arc_vec_t *et)
@@ -366,9 +365,9 @@ void quad_write_map(FILE *wr, quad_arc_vec_t *root, quad_arc_vec_t *et)
     /* Write the header line: */
     filefmt_write_header(wr, FILE_TYPE, FILE_VERSION);
     /* Grab the number {nr} of roots and the root index width {wa}: */
-    int nr = root->ne;
+    int32_t nr = root->ne;
     /* Compute the width in digits {wr} of the root index: */
-    int dr = (nr < 10 ? 1 : digits(nr-1));
+    int32_t dr = (nr < 10 ? 1 : digits(nr-1));
     /* Make sure that {et} is non-null and points to an empty table: */
     quad_arc_vec_t etb = quad_arc_vec_new(0); /* A local edge table. */
     if (et == NULL) { et = &etb; }
@@ -378,31 +377,28 @@ void quad_write_map(FILE *wr, quad_arc_vec_t *root, quad_arc_vec_t *et)
     assert(nE == et->ne);
     
     /* Determine the width {eE} in digits of the edge number: */
-    int dE = (nE < 10 ? 1 : digits(nE-1));
+    int32_t dE = (nE < 10 ? 1 : digits(nE-1));
     /* We should have zero edges if and only if we have zero roots: */
     assert((nr == 0) == (nE == 0)); 
     /* Write the root and edge counts: */
     fprintf(wr, "roots = %d\n", nr);
     fprintf(wr, "edges = %lu\n", nE);
     /* Write the roots, one per line: */
-    unsigned int i;
-    for (i = 0; i < nr; i++)
+    for (uint32_t i = 0; i < nr; i++)
       { /* Write {i} and the root arc number {i}: */
         fprintf(wr, "%*u ", dr, i);
         quad_write_arc(wr, root->e[i], dE);
         fputc('\n', wr);
       }
     /* Write the edge records, one per line: */
-    uint64_t num;
-    for (num = 0; num < nE; num++)
+    for (uint64_t num = 0; num < nE; num++)
       { /* Get the reachable edge number {num}: */
         quad_edge_t E = quad_edge(et->e[num]);
         /* Check whether the renumbering worked: */
         assert(E->num == num);
         /* Write the edge's number and its {onext} links: */
         fprintf(wr, ("%*" uint64_u_fmt), dE, E->num);
-        int r;
-        for (r = 0; r < 4; r++)
+        for (int32_t r = 0; r < 4; r++)
           { fputc(' ', wr); quad_write_arc(wr, E->next[r], dE); }
         fputc('\n', wr);
       }
@@ -418,23 +414,21 @@ void quad_read_map(FILE *rd, quad_arc_vec_t *root, quad_arc_vec_t *et)
   { /* Check and consume the header line: */
     filefmt_read_header(rd, FILE_TYPE, FILE_VERSION);
     /* Parse the root count {nr} and the edge count {nE}: */
-    int nr = nget_int(rd, "roots"); fget_eol(rd);
-    int nE = nget_int(rd, "edges"); fget_eol(rd);
+    int32_t nr = nget_int32(rd, "roots"); fget_eol(rd);
+    int32_t nE = nget_int32(rd, "edges"); fget_eol(rd);
     /* Make sure that {et} is non-null and points to a table with {nE} slots: */
     quad_arc_vec_t etb = quad_arc_vec_new(0); /* A local edge table. */
     if (et == NULL) { et = &etb; }
     quad_arc_vec_trim(et, nE);
     /* Create the edge records, save their base arcs in {et->e[0..nE-1]}: */
-    uint64_t num;
-    for (num = 0; num < nE; num++) 
+    for (uint64_t num = 0; num < nE; num++) 
       { quad_arc_t a = quad_make_edge(); 
         EDGE(a)->num = num; 
         et->e[num] = a;
       }
     /* (Re)alocate the root record and read the root arcs, one per line: */
     quad_arc_vec_trim(root, nr);
-    uint64_t i;
-    for (i = 0; i < nr; i++)
+    for (uint64_t i = 0; i < nr; i++)
       { /* Parse the root index {i} and the root arc {root->e[i]}: */
         uint64_t iread = fget_uint64(rd, 10);
         demand(iread == i, "root index mismatch");
@@ -444,15 +438,14 @@ void quad_read_map(FILE *rd, quad_arc_vec_t *root, quad_arc_vec_t *et)
         fget_eol(rd);
       }
     /* Read the contents of the edge records {0..nE-1}: */
-    for (num = 0; num < nE; num++) 
+    for (uint64_t num = 0; num < nE; num++) 
       { /* Parse the edge number {num}: */
         uint64_t numread = fget_uint64(rd, 10);
         demand(numread == num, "edge number mismatch");
         /* Get the edge {E} from the edge table {et}: */
         quad_edge_t E = quad_edge(et->e[num]);
         /* Read its links {E->next[0..3]}: */
-        int r;
-        for (r = 0; r < 4; r++) { E->next[r] = quad_read_arc(rd, et); } 
+        for (int32_t r = 0; r < 4; r++) { E->next[r] = quad_read_arc(rd, et); } 
         /* Skip to the next line: */
         fget_eol(rd);
       }

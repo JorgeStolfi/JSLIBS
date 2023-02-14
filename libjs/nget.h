@@ -1,5 +1,5 @@
 /* nget.h -- read named parameters, in the format "NAME = VALUE". */
-/* Last edited on 2013-05-28 02:12:12 by stolfilocal */
+/* Last edited on 2023-02-12 07:40:01 by stolfi */
 
 #ifndef nget_H
 #define nget_H
@@ -24,16 +24,15 @@ void nget_name_eq(FILE *f, char *name);
 
 char nget_char(FILE *f, char *name);
 bool_t nget_bool(FILE *f, char *name);
-int nget_int(FILE *f, char *name);
 int32_t nget_int32(FILE *f, char *name);
 int64_t nget_int64(FILE *f, char *name);
-unsigned int nget_uint(FILE *f, char *name, int base);
 uint32_t nget_uint32(FILE *f, char *name, int base);
 uint64_t nget_uint64(FILE *f, char *name, int base);
 double nget_double(FILE *f, char *name);
 char *nget_string(FILE *f, char *name);
   /* These procedures parse a {NAME = VALUE} pair. The syntax of the
     {VALUE} token is the same as in the corresponding {fget}
-    procedures. */
+    procedures. They fail if end-of-line or end-of-file occurs before the
+    pair is complete. */
 
 #endif

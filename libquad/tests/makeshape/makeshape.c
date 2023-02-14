@@ -2,7 +2,7 @@
 #define PROG_DESC "creates some 2D maps using the quad-edge structure"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2011-12-22 04:25:33 by stolfilocal */ 
+/* Last edited on 2023-02-13 21:46:06 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2007  State University of Campinas (UNICAMP)"
@@ -83,10 +83,10 @@
   
 typedef struct options_t
   { char *shape;  /* Name of map to build. */
-    int refine;   /* Degree of refinement requested. */
+    int32_t refine;   /* Degree of refinement requested. */
   } options_t;
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 string_vec_t split_shape_names(char *names);
   /* Splits a single string {names}, containing shape names
@@ -95,20 +95,20 @@ string_vec_t split_shape_names(char *names);
 oct_arc_t make_map(char *name);
   /* Returns the oct-edge representation of the map called {name}. */
 
-oct_arc_t refine_map(oct_arc_t m, int refine);
+oct_arc_t refine_map(oct_arc_t m, int32_t refine);
 
 void write_map(oct_arc_t a);
 
-options_t *get_options (int argc, char **argv, string_vec_t *shape_name);
+options_t *get_options (int32_t argc, char **argv, string_vec_t *shape_name);
 
-int get_shape_num(char *shp, string_vec_t *shape_name);
+int32_t get_shape_num(char *shp, string_vec_t *shape_name);
   /* Returns the index {i} in {0..NS-1} such that
     {shape_name->e[i]===shp}, or {NS} if not there; where
     {NS==shape_name->ne}. */
 
 /* IMPLEMENTATIONS */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     /* Prepare the table of shape names: */
     string_vec_t shape_name = split_shape_names(SHAPE_NAMES);
@@ -149,7 +149,7 @@ oct_arc_t make_map(char *name)
       { demand(FALSE, "invalid shape number"); return oct_arc_NULL; }
   } 
   
-oct_arc_t refine_map(oct_arc_t m, int refine)
+oct_arc_t refine_map(oct_arc_t m, int32_t refine)
   {
     demand(FALSE, "!!! not implemented yet !!!");
   }
@@ -161,7 +161,7 @@ void write_map(oct_arc_t a)
     fflush(stdout);
   }
 
-options_t *get_options (int argc, char **argv, string_vec_t *shape_name)
+options_t *get_options (int32_t argc, char **argv, string_vec_t *shape_name)
   {
     /* Initialize argument parser: */
     argparser_t *pp = argparser_new(stderr, argc, argv);
@@ -176,12 +176,12 @@ options_t *get_options (int argc, char **argv, string_vec_t *shape_name)
 
     argparser_get_keyword(pp, "-shape");  
     o->shape = argparser_get_next(pp);
-    int num = get_shape_num(o->shape, shape_name);
+    int32_t num = get_shape_num(o->shape, shape_name);
     if (num >= shape_name->ne) 
       { argparser_error(pp, "invalid shape name"); }
 
     if (argparser_keyword_present(pp, "-refine"))
-      { o->refine = argparser_get_next_int(pp, 1, 1000); }
+      { o->refine = (int32_t)argparser_get_next_int(pp, 1, 1000); }
     else
       { o->refine = 1; }
 
@@ -194,25 +194,24 @@ options_t *get_options (int argc, char **argv, string_vec_t *shape_name)
     return o;
   }
 
-int get_shape_num(char *shp, string_vec_t *shape_name)
+int32_t get_shape_num(char *shp, string_vec_t *shape_name)
   {
-    int i;
-    for (i = 0; i < shape_name->ne; i++)
-      { if (0 == strcmp(shp, shape_name->e[i])) { break; } }
-    return i;
+    for (int32_t i = 0; i < shape_name->ne; i++)
+      { if (0 == strcmp(shp, shape_name->e[i])) { return i; } }
+    return shape_name->ne;
   }
 
 string_vec_t split_shape_names(char *names)
   {
     string_vec_t shape_names = string_vec_new(0);
-    int NS = 0;
+    int32_t NS = 0;
     char *p = names;
     while (TRUE)
       { while ((*p) == ' ') { p++; } 
         if ((*p) == 0) { break; }
         char *q = p;
         while (((*q) != 0) && ((*q) != ' ')) { q++; }
-        int nc = q - p;
+        int32_t nc = (int32_t)(q - p);
         char *s = notnull(malloc(nc + 1), "no mem");
         (void)strncpy(s, p, nc);
         s[nc] = 0;

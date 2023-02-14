@@ -2,7 +2,7 @@
 #define jspca_H
 
 /* JS tools for principal component analysis (PCA). */
-/* Last edited on 2023-02-03 05:49:55 by stolfi */
+/* Last edited on 2023-02-12 05:19:27 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -26,7 +26,6 @@ int32_t jspca_compute_components
     double D[], 
     double w[], 
     double d[], 
-    double minMag,
     double E[], 
     double e[],
     bool_t verbose
@@ -63,9 +62,6 @@ int32_t jspca_compute_components
     interpreted as a 1 by {nv} row vector, {u} is the {nd} by 1 column
     vector whose elements are all 1, where {W} is the {nd} by {nd}
     diagonal matrix with the weights {w[0..nd-1]} in the diagonal. 
-    
-    The procedure will return only the eigenvectors whose eigenvalues
-    are positive and not less than {minMag^2}.
     
     The output parameter {e} should be allocated with {nv} elements, but
     only the first {ne} will be used. The procedure will set{e[ie]} to

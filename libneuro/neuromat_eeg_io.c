@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_io.h}. */
-/* Last edited on 2021-08-21 12:36:40 by stolfi */
+/* Last edited on 2023-02-12 07:38:12 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -20,41 +20,36 @@ int32_t neuromat_eeg_frame_read(FILE *rd, int32_t nc, double frm[], int32_t *nlP
     int32_t nf = (nfP == NULL ? 0 : (*nfP)); /* Number of data frames already read/skipped. */
     int32_t nfr = 0; /* Number of data lines read/skipped in this call. */
     
-    auto void skip_line(void);
-      /* Consumes the remaining characters up to and including the EOL. 
-        Bombs out if EOF before EOL. */
-    
     /* Loop until EOF or one data line: */
     while (TRUE)
       { /* Try to read one more line from the file: */
-        int32_t r = fgetc(rd);
-        if (r == EOF)
-          { break; } 
-        else
-          { /* There is a line there: */
-            nl++;
-            if ((r == '#') || ((r >= 'A') && (r <= 'Z')) || ((r >= 'a') && (r <= 'z')))
-              { /* Looks like a header line or comment, ignore it: */
-                if (nf > 0) { fprintf(stderr, "!! spurious header/comment line at line %d, ignored\n", nl); } 
-                skip_line();
+        bool_t ok = fget_test_comment_or_eol(rd, '#');
+        if (ok) { nl++; continue; }
+        if (fget_test_eof(rd)) { break; }
+        /* There is something there: */
+        nl++;
+        char r = fget_char(rd);
+        if (((r >= 'A') && (r <= 'Z')) || ((r >= 'a') && (r <= 'z')))
+          { /* Looks like a header line or comment, ignore it: */
+            if (nf > 0) { fprintf(stderr, "!! spurious header/comment line at line %d, ignored\n", nl); } 
+            fget_skip_to_eol(rd);
+          }
+        else 
+          { /* Looks like a data line: */
+            nf++;
+            nfr++;
+            if (frm == NULL) 
+              { /* Just skip to EOL, inclusive: */
+                fget_skip_to_eol(rd);
               }
-            else 
-              { /* Looks like a data line: */
-                nf++;
-                nfr++;
-                if (frm == NULL) 
-                  { /* Just skip to EOL, inclusive: */
-                    skip_line();
-                  }
-                else
-                  { /* Parse the data values, store in {frm}: */
-                    ungetc(r, rd);
-                    for (int32_t ic = 0; ic < nc; ic++) { frm[ic] = fget_double(rd); }
-                    (void)fget_skip_and_test_char(rd, '\015');
-                    fget_eol(rd);
-                  }
-                break;
+            else
+              { /* Parse the data values, store in {frm}: */
+                ungetc(r, rd);
+                for (int32_t ic = 0; ic < nc; ic++) { frm[ic] = fget_double(rd); }
+                (void)fget_skip_and_test_char(rd, '\015');
+                fget_comment_or_eol(rd, '#');
               }
+            break;
           }
       }
       
@@ -62,14 +57,6 @@ int32_t neuromat_eeg_frame_read(FILE *rd, int32_t nc, double frm[], int32_t *nlP
     (*nlP) = nl;
     (*nfP) = nf;
     return nfr;
-    
-    /* Internal implementations: */
-    
-    void skip_line(void)
-      { int32_t r;
-        do { r = fgetc(rd); } while ((r != EOF) && (r != '\n'));
-        if (r == EOF) { fprintf(stderr, "** EOF found while skipping line %d\n", nl+1); exit(1); } 
-      }
   }
 
 double **neuromat_eeg_data_read(FILE *rd, int32_t nskip, int32_t nread, int32_t nc, int32_t *nlP, int32_t *ntP)

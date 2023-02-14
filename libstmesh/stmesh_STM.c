@@ -1,5 +1,5 @@
 /* See {stmesh_io.h} */
-/* Last edited on 2022-10-20 06:02:52 by stolfi */
+/* Last edited on 2023-02-12 07:21:07 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -135,7 +135,7 @@ stmesh_t stmesh_STM_read(FILE *rd)
     stmesh_t mesh = stmesh_new_desc(eps, (uint32_t)nv, (uint32_t)ne, (uint32_t)nf);
     
     /* Read the vertices: */
-    { fget_skip_and_match(rd, "vertices"); fget_eol(rd);
+    { fget_skip_spaces_and_match(rd, "vertices"); fget_eol(rd);
       stmesh_vert_unx_t uxv;
       for (uxv = 0; uxv < nv; uxv++) 
         { /* Parse the vertex index: */
@@ -164,7 +164,7 @@ stmesh_t stmesh_STM_read(FILE *rd)
     }
 
     /* Read the edges: */
-    { fget_skip_and_match(rd, "edges"); fget_eol(rd);
+    { fget_skip_spaces_and_match(rd, "edges"); fget_eol(rd);
       stmesh_edge_unx_t uxe;
       for (uxe = 0; uxe < ne; uxe++) 
         { /* Parse the edge index: */
@@ -199,7 +199,7 @@ stmesh_t stmesh_STM_read(FILE *rd)
     }
 
     /* Read the faces: */
-    { fget_skip_and_match(rd, "faces"); fget_eol(rd);
+    { fget_skip_spaces_and_match(rd, "faces"); fget_eol(rd);
       stmesh_face_unx_t uxf;
       for (uxf = 0; uxf < nf; uxf++) 
         { /* Parse the face index: */

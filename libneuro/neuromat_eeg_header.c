@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_header.h}. */
-/* Last edited on 2023-02-07 20:44:55 by stolfi */
+/* Last edited on 2023-02-12 07:37:52 by stolfi */
   
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -107,47 +107,25 @@ neuromat_eeg_header_t *neuromat_eeg_header_read(FILE *rd, int32_t neDef, double 
     bool_t verbose = FALSE;
     
     neuromat_eeg_header_t *h = neuromat_eeg_header_new();
-    
-    auto void skip_line(void);
-      /* Consumes the remaining characters up to and including the EOL. 
-        Bombs out if EOF before EOL. */
 
     int32_t nl = (nlP == NULL ? 0 : (*nlP)); /* File line number (including comments and headers), from 1. */
     int32_t nh = 0; /* Header lines read (excluding comments and headers). */
     while (TRUE) 
       { /* Try to read one more line: */
-        int32_t r = fgetc(rd);
-        if (r == EOF)
-          { break; } 
-        else if (r == '#')
-          { /* Comment line: */
-            skip_line();
-          }
-        else if (((r >= 'A') && (r <= 'Z')) || ((r >= 'a') && (r <= 'z')))
-          { /* Looks like a header line: */
-            ungetc(r, rd);
-            char *name = fget_string(rd);
-            fget_skip_and_match(rd, "=");
-            fget_skip_spaces(rd);         
-            neuromat_eeg_header_read_field_value(rd, name, h);
-            fget_eol(rd);
-            nh++;
-          }
-        else
-          { ungetc(r, rd);
-            break;
-          }
+        bool_t ok = fget_test_comment_or_eol(rd, '#');
+        if (ok) { nl++; continue; }
+        if (fget_test_eof(rd)) { break; }
+        /* There is something there: */
         nl++;
+        char *name = fget_string(rd);
+        fget_skip_spaces_and_match(rd, "=");
+        fget_skip_spaces(rd);         
+        neuromat_eeg_header_read_field_value(rd, name, h);
+        fget_comment_or_eol(rd, '#');
+        nh++;
       }
     if (nlP != NULL) { (*nlP) = nl; }
     return h;
-    
-    void skip_line(void)
-      { 
-        int32_t r;
-        do { r = fgetc(rd); } while ((r != EOF) && (r != '\n'));
-        if (r == EOF) { fprintf(stderr, "** EOF found while skipping line %d\n", nl+1); exit(1); } 
-      }
 
     /* Provide essential defaults: */
     if (isnan(h->fsmp)) { h->fsmp = 600.0; }

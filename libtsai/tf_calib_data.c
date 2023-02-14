@@ -1,5 +1,5 @@
 /* See {tf_calib_data.h}.  */
-/* Last edited on 2022-10-20 07:45:30 by stolfi */
+/* Last edited on 2023-02-12 07:41:41 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -36,8 +36,7 @@ void tf_calib_data_read_world_points (char *fname, int32_t *np, r3_t **pp)
         pi->c[0] = fget_double(rd);
         pi->c[1] = fget_double(rd);
         pi->c[2] = fget_double(rd);
-        tf_calib_data_skip_comment (rd);
-        fget_eol(rd);
+        fget_comment_or_eol(rd, '#');
       }
     fclose(rd);
     (*pp) = p; 
@@ -55,8 +54,7 @@ void tf_calib_data_read_image_points (char *fname, int32_t *np, r2_t **qq)
       { r2_t *qi = &(q[i]);
         qi->c[0] = fget_double(rd);
         qi->c[1] = fget_double(rd);
-        tf_calib_data_skip_comment (rd);
-        fget_eol(rd);
+        fget_comment_or_eol(rd, '#');
       }
     fclose(rd);
     (*qq) = q; 
@@ -72,8 +70,7 @@ void tf_calib_data_read_weights (char *fname, int32_t *np, double **ww)
     int32_t i;
     for (i = 0; i < n; i++)
       { w[i] = fget_double(rd);
-        tf_calib_data_skip_comment (rd);
-        fget_eol(rd);
+        fget_comment_or_eol(rd, '#');
       }
     fclose(rd);
     (*ww) = w; 
@@ -190,14 +187,6 @@ void tf_calib_data_print_weights (FILE *wr, int32_t np, double w[])
         fprintf(wr, "  w = %11.9f\n", w[i]);
       }
     fprintf(wr, "------------------------------------------------------------\n");
-  }
-
-void  tf_calib_data_skip_comment (FILE *rd)
-  {
-    int32_t ch;
-    while ((ch=fgetc(rd)) == ' ') { }
-    if (ch == '#') { while (((ch=fgetc(rd)) != '\n') && (ch != EOF)) { } }
-    if (ch != EOF) { ungetc(ch, rd);}
   }
 
 void tf_calib_data_set_weights(tf_calib_data_t *cdat, double w[])

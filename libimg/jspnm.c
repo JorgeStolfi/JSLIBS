@@ -1,5 +1,5 @@
 /* See jspnm.h */
-/* Last edited on 2016-04-10 03:51:40 by stolfilocal */
+/* Last edited on 2023-02-12 08:21:48 by stolfi */
 
 #define _GNU_SOURCE
 #include <limits.h>
@@ -158,7 +158,7 @@ uint16_t pnm_file_max_maxval(pnm_format_t format)
   }
 
 int pnm_read_plain_int(FILE *rd)
-  { return fget_int(rd); }
+  { return fget_int32(rd); }
 
 void pnm_write_plain_int(FILE *wr, int ival)
   { fprintf(wr, "%d", ival); }
@@ -167,7 +167,7 @@ uint16_t pnm_read_plain_sample(FILE *rd, uint16_t maxval)
   { /* Skip any blanks or newlines: */
     fget_skip_formatting_chars(rd);
     /* Read and check the sample value {ival}: */
-    unsigned int x = fget_uint(rd, 10);
+    unsigned int x = fget_uint32(rd, 10);
     assert(x <= PNM_MAX_SAMPLE);
     uint16_t ival = (uint16_t)x;
     pnm_check_sample_range(&ival, maxval);

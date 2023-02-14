@@ -1,5 +1,5 @@
 /* See {jspca.h}.  */
-/* Last edited on 2023-02-03 06:00:38 by stolfi */
+/* Last edited on 2023-02-12 07:08:42 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -25,23 +25,23 @@ void jspca_compute_barycenter(int32_t nd, int32_t nv, double D[], double w[], do
 double *jspca_compute_covariance_matrix(int32_t nd, int32_t nv, double D[], double w[], double d[], bool_t verbose);
   /* Returns the covariance matrix {(D - u*d)'*W*(D - u*d)/det(W)} */
 
-int32_t jspca_eigen_decomp(int32_t nv, double A[], double minMag, double E[], double e[], bool_t verbose);
+int32_t jspca_eigen_decomp(int32_t nv, double A[], double E[], double e[], bool_t verbose);
   /* Computes the eigendecompostion of the matrix {A}, assumed
     to be square of size {nv × nv}, symmetric, non-negative definite,
     and stored by rows.
     
-    Returns the number {ne} of eigenvectors actually found, discarding
-    those whose eigenvalues are negative or less than {minMag^2}. This
+    Returns the number {ne} of eigenvectors actually found. This
     number will be between 0 and {nv}, inclusive.
     
-    The eigenvectors are returned as the first {ne} rows of the array
-    {E}, which should be allocated with {nv} rows of {nv} columns and is
-    linearized by rows. Namely, for each {ie} in {0...ne-1} and each {jv} in
-    {0..nv-1}, component {jv} of eigenvector number {ie} is stored in {E[ie*nv + jv]}.
+    The eigenvectors are returned as the first {ne} rows of the array {E}, which
+    should be allocated with {nv} rows of {nv} columns and is linearized
+    by rows. Namely, for each {ie} in {0...nv-1} and each {jv} in {0..nv-1},
+    component {jv} of eigenvector number {ie} is stored in {E[ie*nv + jv]}.
     
     The output vector {e} should be allocated with {nv} elements. The procedure
     stores in {e[0..ne-1]} is the square roots of the eigenvalue
-    corresponding to eigenvector {ie}. */
+    corresponding to eigenvector {ie}.  The eigenvalues are expected 
+    to be all non-negative. */
 
 void jspca_check_ortho(int32_t ne, int32_t nv, double E[]);
   /* Sanity check that the rows of the {ne} by {nv} matrix {E} are orthonormal. */ 
@@ -52,7 +52,6 @@ int32_t jspca_compute_components
     double D[], 
     double w[], 
     double d[], 
-    double minMag,
     double E[], 
     double e[],
     bool_t verbose
@@ -60,7 +59,7 @@ int32_t jspca_compute_components
   { 
     jspca_compute_barycenter(nd, nv, D, w, d, verbose);
     double *A = jspca_compute_covariance_matrix(nd, nv, D, w, d, verbose);
-    int32_t ne = jspca_eigen_decomp(nv, A, minMag, E, e, verbose);
+    int32_t ne = jspca_eigen_decomp(nv, A, E, e, verbose);
     free(A);
     return ne;
   }
@@ -116,11 +115,9 @@ double *jspca_compute_covariance_matrix(int32_t nd, int32_t nv, double D[], doub
     return A;
   }
 
-int32_t jspca_eigen_decomp(int32_t nv, double A[], double minMag, double E[], double e[], bool_t verbose)
+int32_t jspca_eigen_decomp(int32_t nv, double A[], double E[], double e[], bool_t verbose)
   { 
     if (verbose) { fprintf(stderr, "computing the eigenvectors of {A}...\n"); }
-    
-    demand(minMag >= 0, "bad {minMag}");
     
     /* Convert {A} to symmetric tridiagnonal form {T}: */
     if (verbose) { fprintf(stderr, "  tridiagonalizing {A}...\n"); }
@@ -131,33 +128,28 @@ int32_t jspca_eigen_decomp(int32_t nv, double A[], double minMag, double E[], do
 
     /* Compute the eigensystem for {T}: */
     if (verbose) { fprintf(stderr, "  computing the eigenvalues of the tridiagonal matrix...\n"); }
-    int32_t me; /* Number of eugenvalues actually computed: */
+    int32_t ne; /* Number of eugenvalues actually computed: */
     int32_t absrt = 0; /* Sort eigenvalues by *signed* value. */
-    syei_trid_eigen(nv, dT, sT, R, &me, absrt);
-    if ((me < nv) || verbose) { fprintf(stderr, "  eigendecomposition found %d eigenvectors of %d\n", me, nv); }
-    if (verbose) { rmxn_gen_print2(stderr, me, nv, R, 1, dT,  "%+14.8f", "  E,e2 = [\n", "\n", "  ]\n", "    [ ", " ", " ]", "  "); }
+    syei_trid_eigen(nv, dT, sT, R, &ne, absrt);
+    if ((ne < nv) || verbose) { fprintf(stderr, "  eigendecomposition found %d eigenvectors out of %d\n", ne, nv); }
+    if (verbose) { rmxn_gen_print2(stderr, ne, nv, R, 1, dT,  "%+14.8f", "  E,e2 = [\n", "\n", "  ]\n", "    [ ", " ", " ]", "  "); }
 
     /* Copy those {me} eigenpairs in *decreasing* magnitude order discarding small ones: */
-    int32_t ne = 0;
-    for (int32_t ke = me-1; ke >= 0; ke--)
+    int32_t ie = 0;
+    for (int32_t ke = ne-1; ke >= 0; ke--)
       { double e2k = dT[ke];         /* Eigenvalue of eigenvector {ke}. */
-        double ek = sqrt(fabs(e2k)); /* Magnitude ignoring sign. */
-        fprintf(stderr, "eigenvector %3d eigenvalue = %18.10f magnitude = %18.10f", ke, e2k, ek);
-        /* Note that sign of {e2k} is important here: */
-        if (e2k >= minMag*minMag)
-          { /* Eigenvalue is non-negative and large enough: copy eigenpair to {e,E}: */
-            int32_t ie = ne; /* Next free position. */
-            fprintf(stderr, " renumbered %3d", ie);
-            e[ie] = ek;
-            double *Rk = &(R[ke*nv]); /* Row {ke} of {R}. */
-            double *Ei = &(E[ie*nv]); /* Row {ie} of {E}. */
-            for (int32_t jv = 0; jv < nv; jv++) { Ei[jv] = Rk[jv]; }
-            ne++;
-          }
-        else
-          { fprintf(stderr, " discarded"); }
+        assert(e2k > -1.0e-300); /* Damn minus zero! */
+        double ek = sqrt(fmax(e2k, 0.0));
+        if (verbose) { fprintf(stderr, "eigenvector %3d eigenvalue = %18.10f magnitude = %18.10f", ke, e2k, ek); }
+        /* copy eigenpair to row {ie} of {e,E}: */
+        if (verbose) { fprintf(stderr, " renumbered %3d\n", ie); }
+        e[ie] = ek;
+        double *Rk = &(R[ke*nv]); /* Row {ke} of {R}. */
+        double *Ei = &(E[ie*nv]); /* Row {ie} of {E}. */
+        for (int32_t jv = 0; jv < nv; jv++) { Ei[jv] = Rk[jv]; }
+        ie++;
+        /* A covariance matrix should not have negative eigenvalues: */
         if (e2k < 0) { fprintf(stderr, " ** negative eigenvalue - should not happen"); }
-        fprintf(stderr, "\n");
       }
     if (verbose) { rmxn_gen_print2(stderr, ne, nv, E, 1, e,  "%+14.8f", "  E,e = [\n", "\n", "  ]\n", "    [ ", " ", " ]", "  "); }
     

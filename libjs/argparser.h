@@ -1,5 +1,5 @@
 /* argparser.h -- facilities for parsing command line arguments. */
-/* Last edited on 2023-02-09 08:26:59 by stolfi */
+/* Last edited on 2023-02-11 09:48:32 by stolfi */
 
 #ifndef argparser_H
 #define argparser_H
@@ -29,7 +29,7 @@ typedef struct argparser_t /* A parser for command line arguments. */
     string_vec_t info;  /* {info.e[0..ninfo-1]}  is the program info text. */
   } argparser_t;
   
-argparser_t *argparser_new(FILE *wr, int argc, char **argv);
+argparser_t *argparser_new(FILE *wr, int32_t argc, char **argv);
   /* Saves pointers to the given command line arguments. Marks the
    command name {arg[0]} as parsed, all other arguments as unparsed.
    The next argument to be parsed will be {arg[1]}. Any parsing
@@ -153,14 +153,6 @@ bool_t argparser_get_next_bool(argparser_t *pp);
     and the numeric value 0 are converted to {FALSE}. Any other value is
     an error. */
 
-int_vec_t argparser_get_int_list(argparser_t *pp, char *key, int min, int max);
-  /* Parses all (zero or more) unparsed occurrences of the keyword
-    {key}, not necessarily in consecutive positions. Requires that each
-    occurrence is immediately followed by an integer in {[min..max]}.
-    Returns an array with those integers, in the order found.  
-    If {key} begins with "-", also accepts the version with "--",
-    and vice-versa. */
-
 /* PARSING SPECIAL SYNTAX */
   
 char *argparser_next(argparser_t *pp);
@@ -178,7 +170,7 @@ bool_t argparser_next_is_non_keyword(argparser_t *pp);
   /* Returns TRUE if and only if {arg[pp->next]} exists, is still
     unparsed, and does NOT look like a keyword as per above. Does not
     change {pp->next} and does not mark that argument as parsed. Note
-    that it is not the same as {(!argparser_next_is_keyword(pp))}. */
+    that it is not the same as {(! argparser_next_is_keyword(pp))}. */
 
 bool_t argparser_next_is_number(argparser_t *pp);
   /* Returns TRUE if and only if {arg[pp->next]} exists, is still
@@ -241,15 +233,15 @@ void argparser_get_keyword_next(argparser_t *pp, char *key);
     #define MaxFontSize 100
     
     / * Arguments from command line: * /
-    int fontSize;
+    int32_t fontSize;
     bool_t landscape;
-    int nRanges = 0;
-    int ini[MaxRanges], fin[MaxRanges];
+    int32_t nRanges = 0;
+    int32_t ini[MaxRanges], fin[MaxRanges];
     bool_t reverse[MaxRanges];
-    int nFiles = 0;
+    int32_t nFiles = 0;
     char *files[MaxFiles];
     
-    void parse_args(int argc, char **argv)
+    void parse_args(int32_t argc, char **argv)
       {
         static char *help = 
           "prt \\\n"
@@ -264,7 +256,7 @@ void argparser_get_keyword_next(argparser_t *pp, char *key);
     
         / * The "-fontSize" parameter is mandatory: * /
         argparser_get_keyword(pp, "-fontSize");
-        fontSize = argparser_get_next_int(pp, MinFontsize, MaxFontSize);
+        fontSize = (int32_t)argparser_get_next_int(pp, MinFontsize, MaxFontSize);
     
         / * Either "-landscape" or "-portrait", but not both: * /
         if (argparser_keyword_present(pp, "-landscape"))
@@ -281,8 +273,8 @@ void argparser_get_keyword_next(argparser_t *pp, char *key);
         while (argparser_keyword_present(pp, "-lines"))
           { if (nRanges >= MaxRanges) 
               { argparser_error(pp, "Too many page ranges"); }
-            ini[nRanges] = argparser_get_next_int(pp, 1,MaxLines);
-            fin[nRanges] = argparser_get_next_int(pp, ini[nRanges],MaxLines);
+            ini[nRanges] = (int32_t)argparser_get_next_int(pp, 1,MaxLines);
+            fin[nRanges] = (int32_t)argparser_get_next_int(pp, ini[nRanges],MaxLines);
             rev[nRanges] = argparser_keyword_present_next(pp, "-reverse");
             nRanges = nRanges+1;
           }
@@ -314,7 +306,7 @@ void argparser_get_keyword_next(argparser_t *pp, char *key);
   and arguments.
 */  
 
-/* Copyright © 2003 by Jorge Stolfi.
+/* Copyright © 2003 by State University of Campinas (UNICAMP).
 **
 ** Permission to use, copy, modify, and distribute this software and its
 ** documentation for any purpose and without fee is hereby granted, provided

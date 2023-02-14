@@ -1,5 +1,5 @@
 /* See {multifok_score.h}. */
-/* Last edited on 2023-01-29 10:01:53 by stolfi */
+/* Last edited on 2023-02-12 06:52:35 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -47,32 +47,22 @@ void multifok_score_read_term_names_and_weights
     string_vec_t termName = string_vec_new(50);
     double_vec_t wt = double_vec_new(50);
     while (TRUE)
-      { fget_skip_spaces(rd);
-        int32_t c = fgetc(rd);
-        if (c == EOF) 
-          { break; }
-        else if (c == '#')
-          { do { c = fgetc(rd); } while ((c != '\n') && (c != EOF)); 
-            if (c == EOF) { break; }
-            continue;
-          }
-        else if (c == '\n')
-          { continue; }
-        else
-          { ungetc(c, rd); 
-            char *tnk = fget_string(rd);
-            double wtk = fget_double(rd);
-            fget_comment_or_eol(rd, '#');
-            
-            /* Save in tables: */
-            int32_t kt = NT;
-            if (verbose) { fprintf(stderr, "%3d  %+16.12f %s", kt, wtk, tnk); }
-            string_vec_expand(&termName,NT);
-            double_vec_expand(&wt,NT);
-            termName.e[kt] = tnk;
-            wt.e[kt] = wtk;
-            NT++;
-          }
+      { bool_t ok = fget_test_comment_or_eol(rd, '#');
+        if (ok) { continue; }
+        if (fget_test_eof(rd)) { break; }
+        /* There is something there: */
+        char *tnk = fget_string(rd);
+        double wtk = fget_double(rd);
+        fget_comment_or_eol(rd, '#');
+
+        /* Save in tables: */
+        int32_t kt = NT;
+        if (verbose) { fprintf(stderr, "%3d  %+16.12f %s", kt, wtk, tnk); }
+        string_vec_expand(&termName,NT);
+        double_vec_expand(&wt,NT);
+        termName.e[kt] = tnk;
+        wt.e[kt] = wtk;
+        NT++;
       }
     string_vec_trim(&termName,NT);
     double_vec_trim(&wt,NT);

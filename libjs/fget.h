@@ -1,5 +1,5 @@
 /* fget.h -- alternatives to fscanf that die on error. */
-/* Last edited on 2023-01-28 01:48:36 by stolfi */
+/* Last edited on 2023-02-12 07:19:24 by stolfi */
 
 #ifndef fget_H
 #define fget_H
@@ -30,24 +30,30 @@ void fget_match(FILE *f, char *t);
   /* Requires the string {t} to be the next thing on {f}, and
     consumes that string. */
 
-bool_t fget_test_char(FILE *f, int c);
-  /* Checks whether the next character is {c} (which may be anything, including
-    space, line-break, page-break, or even EOF). If it is, consumes that
-    character and returns TRUE. If it is something else (even if it is a
-    space, line-break or page-break, or end-of-file), returns FALSE and
-    leaves the character there.  */
+bool_t fget_test_eof(FILE *f);
+  /* Returns {TRUE} iff there are no more characters to be read from {f}.
+    Otherwise leaves {f} effectively unchanged.  */
 
-void fget_skip_to_eol(FILE *f);
-  /* Reads arbitrary characters from {f} until an end-of-line or end-of-file.
-    The end-of-line character is consumed. */
+bool_t fget_test_char(FILE *f, char c);
+  /* If {f} is exhausted, returns {FALSE}.
+    Otherwise, checks whether the next character is {c} (which may be anything,
+    including space or formatting char). If it is, consumes that
+    character and returns TRUE.  If it is some other character, (even if it is a
+    space or formatting char), returns FALSE and leaves the character
+    there. 
+    
+    Note that {c = -1 = '\377'} will match only the byte 0xff, not {EOF}. */
 
 /* The following procedures will skip spaces (SPACEs, NBSPs, TABs and NULs)
   before the desired input.  They will NOT skip line-breaks or page-breaks. */
 
 char fget_char(FILE *f);
   /* Skips spaces, then reads a single character --- which must
-    not be a space, line break, or page break. Fails
-    if a line break, page break, or end-of-file occurs before the character. */
+    not be a space or formatting char (such as newline). Fails
+    if a formatting char or end-of-file occurs before the character.
+    
+    Note that a result of {-1 = '\377'} means the byte 0xff
+    not {EOF}. */
 
 bool_t fget_bool(FILE *f);
   /* The procedure {fget_bool_t} will skip spaces, then read a single
@@ -55,21 +61,28 @@ bool_t fget_bool(FILE *f);
     else is an error.  Note that, if the file contains "TRUE" or
     "FALSE", only the first letter will be consumed. */
     
-char *fget_to_delim(FILE *f, char *dels);
-  /* Skips spaces, then reads zero or more characters, until end-of-file
+char *fget_to_delim(FILE *f, char del);
+  /* Skips spaces, then takes zero or more characters, until end-of-file
     or the first formatting character (space, line break, or page
-    break), or one of the characters in {dels}, which is not consumed.
-    If {dels} is {NULL}, it is ignored. The result is returned as a
-    newly allocated, zero-terminated string (which may be empty). */
+    break), or the character {del}, which is not consumed.
+    
+    If {del} is '\n', it just takes characters until a formatting char
+    or end-of-file. The result is returned as a newly allocated,
+    zero-terminated string (which may be empty). */
+
+char *fget_to_delims(FILE *f, char *dels);
+  /* Similar to {fget_to_delim}, but any of the characters in
+    {dels} will act as a delimiter, and will not be consumed.
+    If {dels} is {NULL}, empty, or "\n", it just takes characters
+    unit a formatting char or end-of-file. */
 
 char *fget_string(FILE *f);
   /* Skips spaces. Fails if hits end_of_file, line break, or page break.
     Otherwise reads one or more characters, until end-of-file or the
-    first formatting character (space, line break, or page break), which
-    is not consumed. The result is returned as a newly allocated,
+    a formatting character (space, line break, or page break), which
+    is not consumed.  The result is returned as a newly allocated,
     zero-terminated string (which has at least one character). */
     
-int fget_int(FILE *f);
 int32_t fget_int32(FILE *f);
 int64_t fget_int64(FILE *f);
   /* Skips spaces, reads the longest possible non-empty string that
@@ -77,9 +90,8 @@ int64_t fget_int64(FILE *f);
     tries to convert it to a signed integer value of the specified
     size. A failure in any of these steps is a fatal error. */
     
-unsigned int fget_uint(FILE *f, int base);
-uint32_t fget_uint32(FILE *f, int base);
-uint64_t fget_uint64(FILE *f, int base);
+uint32_t fget_uint32(FILE *f, uint32_t base);
+uint64_t fget_uint64(FILE *f, uint32_t base);
   /* Skips spaces, reads the longest possible non-empty string that
     looks like an unsigned integer, and tries to convert it to an 
     unsigned integer value of the specified size. A failure in any 
@@ -107,27 +119,50 @@ double fget_double(FILE *f);
 void fget_eol(FILE *f);
   /* Skips any spaces and requires the next non-space character to be a 
     newline, which it consumes.  It is a fatal error if the next non-space is not a newline,
-    or end-of-file is found.  Equivalent to
-    {fget_skip_spaces(f); fget_match(f, "\n")}. */
+    or end-of-file is found.  Equivalent to  {fget_skip_spaces(f); fget_match(f, "\n")}. */
 
-void fget_comment_or_eol(FILE *f, int cmtc);
+void fget_skip_to_eol(FILE *f);
+  /* Reads arbitrary characters from {f} until an end-of-line or end-of-file.
+    The end-of-line character is consumed. */
+
+void fget_comment_or_eol(FILE *f, char cmtc);
   /* Similar to {fget_eol}, but allows arbitrary comment string,
     preceded by spaces and the character {cmtc}, before the newline.
-    Namely, first does {fget_skip_spaces(rd)}. Then, if the next character is newline,
-    consumes it; if it is {cmtc}, consumes it and any others up to and including the newline. 
     
-    Otherwise it fails.  The character {cmtc} should not be a space or newline. */
+    Namely, first does {fget_skip_spaces(f)}. Then, if the next
+    character is newline, consumes it; if it is {cmtc}, consumes it and
+    any other characters up to and including the newline.
+    
+    Fails in all other cases, including if EOF occurs before the newline
+    while skipping the comment. The character {cmtc} had better not be a
+    space or {EOF}. If {cmtc} is '\n', the effect is the same as {fget_eol}. */
 
-bool_t fget_test_comment_or_eol(FILE *f, int cmtc);
-  /* First does {fget_skip_spaces(rd)}. Then, if the next character
-    is {cmtc}, consumes it and other characters up to the newline and returns {true}; if it is newline,
-    consumes it and returns {TRUE}; otherwise, leaves that character there 
-    and returns {FALSE}. The character {cmtc} should not be a space or newline. */
+bool_t fget_test_comment_or_eol(FILE *f, char cmtc);
+  /* Similar to {fget_comment_or_eol}, but returns {FALSE}
+    if it finds anything (including end-of-file) before a newline
+    or {cmtc}. In this case, that character is not consumed.
+    Otherwise the procedure returns {TRUE}, after consuming all characteds
+    up to and including the newline.
+    
+    The character {cmtc} should not be a space or {EOF}. */
 
-void fget_skip_and_match(FILE *f, char *t);
+void fget_skip_spaces_and_match(FILE *f, char *t);
   /* Equivalent to {fget_skip_spaces(f); fget_match(f, t)}. */
 
-bool_t fget_skip_and_test_char(FILE *f, int c);
+bool_t fget_skip_and_test_char(FILE *f, char c);
   /* Equivalent to {fget_skip_spaces(f); fget_test_char(f, c)}. */
+
+/* HANDY TOOLS */
+
+bool_t fget_is_formatting_char(char c);
+  /* Returns TRUE iff {c} is a formatting character, namely a space
+    (SPACE, TAB, NUL, NBSP) line break (CR, LF) or page break (FF, VT).
+    Note that {c} cannot be {EOF}, since {(char)EOF} coincides with
+    '\240', non-breaking space. */
+    
+bool_t fget_is_space(char c);
+  /* Returns TRUE iff {c} is a space char (SPACE, TAB, NUL, NBSP). Note
+    that {c} cannot be {EOF}, since {(char)EOF} coincides with '\240',
+    non-breaking space.. */
 
 #endif
