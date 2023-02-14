@@ -1,5 +1,5 @@
 /* See dnae_seq_ps.h */
-/* Last edited on 2022-10-31 09:43:13 by stolfi */
+/* Last edited on 2023-02-14 03:26:09 by stolfi */
 
 #define dnae_seq_C_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)" \
@@ -17,7 +17,6 @@
 #include <jsrandom.h>
 #include <jsmath.h>
 #include <jsfile.h>
-#include <pswr.h>
 
 #include <msm_ps_tools.h>
 

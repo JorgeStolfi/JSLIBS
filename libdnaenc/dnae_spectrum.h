@@ -2,14 +2,13 @@
 #define dnae_spectrum_H
 
 /* Filtered DNA sequences */
-/* Last edited on 2014-08-05 22:46:29 by stolfilocal */
+/* Last edited on 2023-02-14 03:25:51 by stolfi */
 
 #define dnae_spectrum_H_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)" \
   " and the Federal Fluminense University (UFF)"
 
 #include <vec.h>
-#include <pswr.h>
 
 #include <msm_ps_tools.h>
 

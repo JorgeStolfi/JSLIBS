@@ -1,4 +1,4 @@
-# Last edited on 2023-02-03 23:24:32 by stolfi
+# Last edited on 2023-02-14 04:02:35 by stolfi
 
 TEST_LIB := libdnaenc.a
 TEST_LIB_DIR := ../..
@@ -12,7 +12,7 @@ JS_LIBS := \
   libjs.a
 
 OTHER_LIBS := \
-  /lib64/libfftw3.so.3
+  /usr/lib/x86_64-linux-gnu/libfftw3.so
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 

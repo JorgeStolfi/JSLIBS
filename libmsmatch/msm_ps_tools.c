@@ -1,5 +1,5 @@
 /* See msm_ps_tools.h */
-/* Last edited on 2022-10-31 13:08:41 by stolfi */
+/* Last edited on 2023-02-14 17:45:58 by stolfi */
 
 #define msm_ps_tools_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -62,8 +62,8 @@ msm_ps_tools_t *msm_ps_tools_new
       }
     /* Create an Encapsulated Postscript stream from {wr}: */
     double ptPmm = msm_PT_PER_MM;
-    double hSize_pt = hSize + 2*mrg; /* (mm) */
-    double vSize_pt = vSize + 2*mrg; /* (mm) */
+    double hSize_pt = (hSize + 2*mrg) * ptPmm; /* (pt) */
+    double vSize_pt = (vSize + 2*mrg) * ptPmm; /* (pt) */
     double mrg_pt = mrg*ptPmm;
     epswr_figure_t *eps = epswr_new_figure(wr, hSize_pt, vSize_pt, mrg_pt, mrg_pt, mrg_pt, mrg_pt, TRUE);
     /* Set {epswr} client coordinates to mm: */

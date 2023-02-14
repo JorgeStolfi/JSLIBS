@@ -1,5 +1,5 @@
 /* See {jspca.h}.  */
-/* Last edited on 2023-02-12 07:08:42 by stolfi */
+/* Last edited on 2023-02-14 03:50:22 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -15,7 +15,6 @@
 #include <affirm.h>
 #include <sym_eigen.h>
 
-#include <neuromat_eeg.h>
 #include <jspca.h>
 
 void jspca_compute_barycenter(int32_t nd, int32_t nv, double D[], double w[], double d[], bool_t verbose);

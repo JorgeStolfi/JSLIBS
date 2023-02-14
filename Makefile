@@ -1,5 +1,5 @@
 # Makefile for C libraries
-# Last edited on 2021-07-19 05:18:07 by jstolfi
+# Last edited on 2023-02-14 03:44:34 by stolfi
 
 # ----------------------------------------------------------------------
 # Good libraries, in import-compatible order:
@@ -49,6 +49,7 @@ LIB_TESTS := ${LIB_TESTS_ALL}
 
 # all:  all-clean all-build all-check
 # all:  all-clean all-build
+# all:  all-clean
 all:  all-build
 # all:  all-check
  

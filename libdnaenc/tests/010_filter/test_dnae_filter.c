@@ -2,7 +2,7 @@
 #define PROG_DESC "test of DNA signal filtering routines (also spectrum plots)"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-31 12:17:27 by stolfi */
+/* Last edited on 2023-02-14 04:01:00 by stolfi */
 
 #define test_dnae_filter_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -627,7 +627,7 @@ void dnae_plot_spectra
     double vTotSize = vPlotSize + mrgB + mrgT; /* Tot height of plottable area (incl scales). */
     double mrgE = 0.5; /* Extra margin around plottable area. */
 
-    /* Create plotter object {dp} and get its Postscript stream {ps}: */
+    /* Create plotter object {dp} and get its Postscript stream {eps}: */
     char *levTag = NULL;
     asprintf(&levTag, "-%02d%s", level, tag);
     msm_ps_tools_t *dp = 
@@ -635,7 +635,7 @@ void dnae_plot_spectra
         ( NULL, outName, levTag, hTotSize, vTotSize, 
           fontSize, maxXLabChars, maxYLabChars, mrgE
         );
-    PSStream *ps = msm_ps_tools_get_ps_stream(dp);
+    epswr_figure_t *eps = msm_ps_tools_get_eps_figure(dp);
     
     /* Choose nominal X range {[xMin_xMax]}: */
     double xSkosh = 0.0; /* Was  0.05*fMax;; */
@@ -655,11 +655,11 @@ void dnae_plot_spectra
     double yMax = vMax + ySkosh;
     double yMin = 0.0; /* Was 0.0 - ySkosh; */
     
-    /* Set client reference window, with some skosh: */
-    msm_ps_tools_set_client_ref_window(dp, xMin, xMax, yMin, yMax);
+    /* Set Graph reference window, with some skosh: */
+    msm_ps_tools_set_graph_ref_window(dp, xMin, xMax, yMin, yMax);
     
-    /* Shrink device window to leave space for tick labels: */
-    msm_ps_tools_shrink_device_ref_window(dp, mrgL, mrgR, mrgB, mrgT);
+    /* Shrink the Epswr window to leave space for tick labels: */
+    msm_ps_tools_shrink_epswr_ref_window(dp, mrgL, mrgR, mrgB, mrgT);
     
     /* Decide whether to plot dots at individual samples: */
     double hStep = msm_ps_tools_map_x(dp, 1) - msm_ps_tools_map_x(dp, 0);
@@ -668,7 +668,7 @@ void dnae_plot_spectra
     /* Draw axes, ticks, labels, etc: */
     char *font = "Times-Roman";
     double tickSize = 0.30*fontSize*mmpt;  /* In mm. */
-    pswr_set_label_font(ps, font, fontSize);
+    epswr_set_label_font(eps, font, fontSize);
     /* msm_ps_tools_draw_ref_axis(dp, epswr_axis_HOR, 0.5,0.5,0.5); */
     /* msm_ps_tools_draw_ref_axis(dp, epswr_axis_VER, 0.5,0.5,0.5); */
     msm_ps_tools_draw_ref_frame(dp, 0.5,0.5,0.5);
@@ -677,7 +677,7 @@ void dnae_plot_spectra
     
     if ((fSep > 0) && (fSep < fMax))
       { /* Draw a vertical line at {fSep}: */
-        pswr_set_pen(ps, C[0],C[1],C[2], 0.25, 0.0, 0.0);
+        epswr_set_pen(eps, C[0],C[1],C[2], 0.25, 0.0, 0.0);
         msm_ps_tools_draw_segment(dp, (double)fSep, yMin, (double)fSep, yMax);
       }
     
@@ -693,11 +693,11 @@ void dnae_plot_spectra
 void dnae_plot_graph(msm_ps_tools_t *dp, int32_t fMax, double xP[], bool_t skipZero, double R, double G, double B, bool_t show_dots)
   { assert(fMax >= 0);
     int32_t skip = (skipZero ? 1 : 0); /* How many data points to skip from start. */
-    PSStream *ps = msm_ps_tools_get_ps_stream(dp);
-    pswr_set_pen(ps, R,G,B, 0.25, 0.0, 0.0);
+    epswr_figure_t *eps = msm_ps_tools_get_eps_figure(dp);
+    epswr_set_pen(eps, R,G,B, 0.25, 0.0, 0.0);
     msm_ps_tools_draw_y_polyline(dp, skip, fMax, xP+skip, fMax+1-skip);
     if (show_dots) 
-      { pswr_set_fill_color(ps, R,G,B);
+      { epswr_set_fill_color(eps, R,G,B);
         msm_ps_tools_draw_y_dots(dp, skip, fMax, xP+skip, fMax+1-skip, 0.5, TRUE, FALSE);
       }
   }

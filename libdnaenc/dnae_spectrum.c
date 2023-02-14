@@ -1,5 +1,5 @@
 /* See dnae_spectrum.h */
-/* Last edited on 2022-10-31 11:15:25 by stolfi */
+/* Last edited on 2023-02-14 03:26:35 by stolfi */
 
 #define dnae_spectrum_C_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)"
@@ -14,7 +14,6 @@
 
 #include <fftw3.h>
 
-#include <pswr.h>
 #include <jsrandom.h>
 #include <filefmt.h>
 #include <fget.h>
