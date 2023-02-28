@@ -1,5 +1,5 @@
 #! /bin/bash 
-# Last edited on 2007-11-11 00:58:31 by stolfi
+# Last edited on 2023-02-26 10:37:13 by stolfi
 
 PROG_NAME=${0##*/}
 PROG_DESC="displays a tabulated light response function."
@@ -66,6 +66,6 @@ plot "${name}.txt" using 4:5 with linespoints
 quit
 EOF
 
-ghostview "${name}-lin.eps" &
-ghostview "${name}-inv.eps" &
-ghostview "${name}-log.eps"
+atril "${name}-lin.eps" &
+atril "${name}-inv.eps" &
+atril "${name}-log.eps"

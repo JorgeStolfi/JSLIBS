@@ -1,5 +1,5 @@
 /* See {codtree_huff.h}. */
-/* Last edited on 2023-02-09 08:40:47 by stolfi */
+/* Last edited on 2023-02-19 00:37:42 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -18,23 +18,23 @@
 #define MAX_VALUE codetree_MAX_VALUE
 #define MIN_VALUE codetree_MIN_VALUE
 #define MAX_LEAVES codetree_MAX_LEAVES
-#define MAX_FREQ codtree_huff_MAX_FREQ
+#define MAX_FREQ codetree_huff_MAX_FREQ
 
-void codtree_huff_print_queue(char *tag, codetree_node_count_t nv, codetree_node_t *node[], codtree_huff_freq_t weight[]);
+void codetree_huff_print_queue(char *tag, codetree_node_count_t nv, codetree_node_t *node[], codetree_huff_freq_t weight[]);
   /* Prints a few entries of the Huffman algorithm queue 
     {node[0..nv-1],weight[0..nv-1]} for debugging, on s aingle line, 
-    preceded by "{tag} ". Eachentry is printed with {codtree_huff_print_queue_entry}. */
+    preceded by "{tag} ". Eachentry is printed with {codetree_huff_print_queue_entry}. */
 
-void codtree_huff_print_queue_entry(codetree_node_t *nd, codtree_huff_freq_t wt);
+void codetree_huff_print_queue_entry(codetree_node_t *nd, codetree_huff_freq_t wt);
   /* Prints the Huffman queue entry {(nd,wt)} for debugging, as "[{nd}:{wt}]".
-    The node {nd} is  printed with {codtree_huff_print_node}. */
+    The node {nd} is  printed with {codetree_huff_print_node}. */
 
-void codtree_huff_print_node(codetree_node_t *nd);
+void codetree_huff_print_node(codetree_node_t *nd);
   /* Prints the Huffman tree node {nd} for debugging.
     If {nd} is a leaf, prints its {value} in "%+d" format; otherwise 
     prints it as "@{seq}" where {seq} is the node's sequence number. */
 
-void codtree_huff_sort_by_weight(codetree_node_count_t nv, codetree_node_t *node[], codtree_huff_freq_t weight[]);
+void codetree_huff_sort_by_weight(codetree_node_count_t nv, codetree_node_t *node[], codetree_huff_freq_t weight[]);
   /* Sorts the lists {weight[0..nv-1]} and {node[0..nv-1]} by decreasing
     {weight[i]}. In case of ties, preserves the original order of the
     nodes (which should be the order of increasing value for leaves, and the 
@@ -43,7 +43,7 @@ void codtree_huff_sort_by_weight(codetree_node_count_t nv, codetree_node_t *node
     The running time is quadratic on first call, but should be linear
     when only the last element is out of order. */
 
-codetree_t *codtree_huff_build(codetree_value_t maxval, codtree_huff_freq_t freq[])
+codetree_t *codetree_huff_build(codetree_value_t maxval, codetree_huff_freq_t freq[])
   {
     bool_t debug = FALSE;
     
@@ -71,7 +71,7 @@ codetree_t *codtree_huff_build(codetree_value_t maxval, codtree_huff_freq_t freq
     for (codetree_value_t val = 0; val <= maxval; val++) { if (freq[val] != 0) { nvalid++; } }
     
     /* Working vectors: */
-    codtree_huff_freq_t *weight = (uint64_t *)notnull(malloc(nvalid*sizeof(codtree_huff_freq_t)), "no mem");
+    codetree_huff_freq_t *weight = (uint64_t *)notnull(malloc(nvalid*sizeof(codetree_huff_freq_t)), "no mem");
     codetree_node_t **node = (codetree_node_t **)notnull(malloc(nvalid*sizeof(codetree_node_t *)), "no mem");
 
     /* Build the leaf nodes and copy their frequencies: */
@@ -93,8 +93,8 @@ codetree_t *codtree_huff_build(codetree_value_t maxval, codtree_huff_freq_t freq
         codetree_node_count_t nv = nvalid; /* The nodes yet to be combined are {node[0..nv-1]} with weight {weight[0..nv-1]}. */ 
         while (nv >= 2)
           { /* (Re)sort {weight[0..nv-1],node[0..nv-1]} by decreasing {weight}: */
-            codtree_huff_sort_by_weight(nv, node, weight);
-            if (debug) { codtree_huff_print_queue("\nS", nv, node, weight); }
+            codetree_huff_sort_by_weight(nv, node, weight);
+            if (debug) { codetree_huff_print_queue("\nS", nv, node, weight); }
             codetree_node_t *child0 = node[nv-2];
             codetree_node_t *child1 = node[nv-1];
             codetree_node_t *p = codetree_new_internal(nint, child0, child1);
@@ -103,7 +103,7 @@ codetree_t *codtree_huff_build(codetree_value_t maxval, codtree_huff_freq_t freq
             demand(weight[nv-2] <= UINT64_MAX - weight[nv-1], "total {freq} values too large, overflow");
             weight[nv-2] += weight[nv-1];
             nv--;
-            if (debug) { codtree_huff_print_queue("M", nv, node, weight); }
+            if (debug) { codetree_huff_print_queue("M", nv, node, weight); }
           }
         assert(nint == nvalid-1);
         root = node[0];
@@ -114,7 +114,7 @@ codetree_t *codtree_huff_build(codetree_value_t maxval, codtree_huff_freq_t freq
     return root;
   }
   
-void codtree_huff_sort_by_weight(codetree_node_count_t nv, codetree_node_t *node[], codtree_huff_freq_t weight[])
+void codetree_huff_sort_by_weight(codetree_node_count_t nv, codetree_node_t *node[], codetree_huff_freq_t weight[])
   { bool_t debug = FALSE;
 
     /* Insertion sort: */
@@ -146,12 +146,12 @@ void codtree_huff_sort_by_weight(codetree_node_count_t nv, codetree_node_t *node
       }
   }
             
-void codtree_huff_print_queue(char *tag, codetree_node_count_t nv, codetree_node_t *node[], codtree_huff_freq_t weight[])
+void codetree_huff_print_queue(char *tag, codetree_node_count_t nv, codetree_node_t *node[], codetree_huff_freq_t weight[])
   { fprintf(stderr, "%s ", tag);
     for (codetree_node_count_t iv = 0; iv < nv; iv++)
       { if ((iv < 3) || (iv == nv-1))
           { if (iv > 0) { fprintf(stderr, " "); }
-            codtree_huff_print_queue_entry(node[nv-1-iv], weight[nv-1-iv]);
+            codetree_huff_print_queue_entry(node[nv-1-iv], weight[nv-1-iv]);
           }
         else if ((nv > 4) && (iv == 3))
           { fprintf(stderr, " ... "); }
@@ -160,24 +160,24 @@ void codtree_huff_print_queue(char *tag, codetree_node_count_t nv, codetree_node
     if (nu->value < 0)
       { /* Print children of first node: */
         fprintf(stderr, " ");
-        codtree_huff_print_node(nu);
+        codetree_huff_print_node(nu);
         fprintf(stderr, "=(");
-        codtree_huff_print_node(nu->child[0]);
+        codetree_huff_print_node(nu->child[0]);
         fprintf(stderr, ",");
-        codtree_huff_print_node(nu->child[1]);
+        codetree_huff_print_node(nu->child[1]);
         fprintf(stderr, ")");
       }
     fprintf(stderr, "\n");
   }
 
-void codtree_huff_print_queue_entry(codetree_node_t *nd, codtree_huff_freq_t wt)
+void codetree_huff_print_queue_entry(codetree_node_t *nd, codetree_huff_freq_t wt)
   { fprintf(stderr, "[");
-    codtree_huff_print_node(nd);
+    codetree_huff_print_node(nd);
     fprintf(stderr, ":%lu", wt);
     fprintf(stderr, "]");
   }
   
-void codtree_huff_print_node(codetree_node_t *nd)
+void codetree_huff_print_node(codetree_node_t *nd)
   { demand(nd != NULL, "null node in Huffman queue");
     if (nd->value >= 0)
       { fprintf(stderr, "%+d", nd->value); }

@@ -1,8 +1,9 @@
 /* See {delaunay_plot_POV.h}. */
-/* Last edited on 2013-03-18 00:49:59 by stolfilocal */
+/* Last edited on 2023-02-20 06:09:45 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>

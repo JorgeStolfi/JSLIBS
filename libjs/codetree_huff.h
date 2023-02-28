@@ -1,8 +1,8 @@
 /* Huffman tree and Huffman decoding. */
-/* Last edited on 2023-02-07 20:55:14 by stolfi */
+/* Last edited on 2023-02-19 00:37:36 by stolfi */
 
-#ifndef codtree_huff_H
-#define codtree_huff_H
+#ifndef codetree_huff_H
+#define codetree_huff_H
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -10,13 +10,13 @@
 
 #include <codetree.h>
 
-typedef uint64_t codtree_huff_freq_t;
+typedef uint64_t codetree_huff_freq_t;
   /* Type of a frequency count for this module. */
   
-#define codtree_huff_MAX_FREQ UINT64_MAX
+#define codetree_huff_MAX_FREQ UINT64_MAX
   /* Maximum value of of a frequency count. */
 
-codetree_t *codtree_huff_build(codetree_value_t maxval, codtree_huff_freq_t freq[]);
+codetree_t *codetree_huff_build(codetree_value_t maxval, codetree_huff_freq_t freq[]);
   /* Builds the Huffman tree {T} for a set of values {V},
     based on the frequency counts {freq[0..maxval]}. Returns a pointer 
     to the root node.  
@@ -31,7 +31,7 @@ codetree_t *codtree_huff_build(codetree_value_t maxval, codtree_huff_freq_t freq
     {NULL}.  
     
     The number {maxval} must not exceed {codetree_MAX_VALUE}.
-    The sum of all entries of {freq} must not exceed {codtree_huff_MAX_FREQ}.
+    The sum of all entries of {freq} must not exceed {codetree_huff_MAX_FREQ}.
     
     HUFMMAN TREE INVARIANTS
 
@@ -83,7 +83,7 @@ codetree_t *codtree_huff_build(codetree_value_t maxval, codtree_huff_freq_t freq
     ((uint64_t)p2.value)}.
    */
 
-void codtree_huff_check_huffman(codetree_t *tree);
+void codetree_huff_check_huffman(codetree_t *tree);
   /* Checks the Huffman properties of the given {tree}. */ 
   
 #endif

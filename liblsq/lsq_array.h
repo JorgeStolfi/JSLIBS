@@ -2,7 +2,7 @@
 #define lsq_array_H
 
 /* Fits a linear map of {R^nx} to {R^nf} by least squares, given sample arrays. */
-/* Last edited on 2019-12-18 16:15:59 by jstolfi */
+/* Last edited on 2023-02-23 16:51:10 by stolfi */
 
 #define lsq_array_H_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
@@ -14,10 +14,10 @@ int32_t lsq_array_fit
   ( int32_t nt,     /* Number of data points. */
     int32_t nx,     /* Number of independent variables (argument coordinates per data point). */
     int32_t nf,     /* Number of dependent variables (function samples per data point). */
-    double X[], /* Argument coordinates for all data points ({nt} by {nx}). */
-    double F[], /* Corresponding function samples ({nt} by {nf}). */
-    double W[], /* Corresponding reliability weights ({nt} elements). */
-    double U[], /* (OUT) Fitted linear transformation matrix ({nx} by {nt}). */
+    double X[],     /* Argument coordinates for all data points ({nt} by {nx}). */
+    double F[],     /* Corresponding function samples ({nt} by {nf}). */
+    double W[],     /* Corresponding reliability weights ({nt} elements). */
+    double U[],     /* (OUT) Fitted linear transformation matrix ({nx} by {nt}). */
     bool_t verbose
   );
   /* Finds the linear function {s} from {R^nx} to {R^nf} that best

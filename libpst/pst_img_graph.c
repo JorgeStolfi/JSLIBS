@@ -1,5 +1,5 @@
 /* See {pst_img_graph.h} */
-/* Last edited on 2013-10-02 03:23:42 by stolfilocal */
+/* Last edited on 2023-02-25 16:19:40 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #define _GNU_SOURCE
@@ -13,6 +13,7 @@
 #include <float_image.h>
 #include <jsfile.h>
 #include <affirm.h>
+#include <rn.h>
 
 #include <pst_img_graph.h>
 
@@ -1141,7 +1142,7 @@ void pst_img_graph_solve_system(
      fprintf(stderr,"IGUAL\n");
    }else{ fprintf(stderr,"NAO IGUAL\n"); }
    
-    double *Z = (double*)malloc(sizeof(double)*S->N);
+    double *Z = rn_alloc(S->N);
     
     long int count_vt = 0;
     long int i;
@@ -1767,8 +1768,8 @@ void pst_img_graph_integration_recursive(
     pst_img_graph_shrink(jg,NULL,wmag);
 //     fprintf(stderr,"OK.\nNext\n");
 
-    double *jZ = (double*)notnull(malloc(sizeof(double)*jg->n),"bug");
-    double *jW = (double*)notnull(malloc(sizeof(double)*jg->n),"bug");
+    double *jZ = rn_alloc(jg->n);
+    double *jW = rn_alloc(jg->n);
     
 //     pst_img_graph_integration_recursive(jg,jZ,jW,wmag,(int)ceil(maxIter*M_SQRT2),convTol/M_SQRT2,para,szero,verbose,level+1,OZ,RZ,out_prefix,debug);
     double ratio = (((double)g->n_valid)/((double)jg->n_valid));

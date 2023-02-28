@@ -1,5 +1,5 @@
 /* See {r2_opt.h}. */
-/* Last edited on 2017-06-11 20:39:10 by stolfilocal */
+/* Last edited on 2023-02-27 10:35:10 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -8,8 +8,8 @@
 #include <string.h>
 #include <limits.h>
 #include <math.h>
- 
- 
+#include <stdint.h>
+  
 #include <bool.h>
 #include <sign.h>
 #include <r2.h>
@@ -31,7 +31,7 @@ bool_t r2_opt_coord_is_variable(double arij, double asij);
 /* IMPLEMENTATIONS */
 
 void r2_opt_single_scale_enum
-  ( int ni,                   /* Number of points to optimize. */
+  ( int32_t ni,                   /* Number of points to optimize. */
     i2_t iscale,              /* Object scaling exponent along each axis. */  
     r2_opt_goal_func_t *f2,   /* Function that evaluates the goal function. */
     r2_t arad[],              /* Max coordinate adjustment for each point. */
@@ -49,20 +49,20 @@ void r2_opt_single_scale_enum
        divided by the corresponding steps.  Each {v[k]} 
        is at most {r[k]} in absolute value. */
 
-    int nc = 2*ni; /* Number of coordinates (including fixed ones). */
-    int v[nc];     /* Enumeration variables. */
-    int r[nc];     /* Limits for the enumeration variables. */
-    int nv = 0;    /* Number of variable coordinates. */
+    int32_t nc = 2*ni; /* Number of coordinates (including fixed ones). */
+    int32_t v[nc];     /* Enumeration variables. */
+    int32_t r[nc];     /* Limits for the enumeration variables. */
+    int32_t nv = 0;    /* Number of variable coordinates. */
 
     /* Save {p0}, compute the integer radii {r[k]} and initialize {v[k]}: */
-    for (int i = 0; i < ni; i++)
+    for (int32_t i = 0; i < ni; i++)
       { p0[i] = p[i];
-        for (int j = 0; j < 2; j++)
-          { int k = 2*i + j;
+        for (int32_t j = 0; j < 2; j++)
+          { int32_t k = 2*i + j;
             double arij = arad[i].c[j];
             double asij = astp[i].c[j];
             if (r2_opt_coord_is_variable(arij, asij))
-              { r[k] = (int)floor(arij/asij);
+              { r[k] = (int32_t)floor(arij/asij);
                 affirm(r[k] > 0, "bug in r[k]");
                 nv++;
               }
@@ -78,9 +78,9 @@ void r2_opt_single_scale_enum
     r2_t pv[nc];     /* Trial alignment vector. */
     while (TRUE) 
       { /* Compute {pv} from {v}: */
-        for (int i = 0; i < ni; i++)
-          { for (int j = 0; j < 2; j++)
-              { int k = 2*i + j;
+        for (int32_t i = 0; i < ni; i++)
+          { for (int32_t j = 0; j < 2; j++)
+              { int32_t k = 2*i + j;
                 pv[i].c[j] = p0[i].c[j] + v[k]*astp[i].c[j];
               }
           }
@@ -89,11 +89,11 @@ void r2_opt_single_scale_enum
         if (f2v < (*f2p))
           { /* Update the current optimum: */
             if (debug) { fprintf(stderr, "found better solution f2 = %24.15e\n", f2v); }
-            for (int i = 0; i < ni; i++) { p[i] = pv[i]; }
+            for (int32_t i = 0; i < ni; i++) { p[i] = pv[i]; }
             (*f2p) = f2v;
           }
         /* Increment the next {v[k]} that can be incremented, reset previous ones to min: */
-        { int k = 0;
+        { int32_t k = 0;
           while ((k < nc) && (v[k] >= r[k])) { v[k] = -r[k]; k++; }
           if (k >= nc){ /* Done: */ return; }
           v[k]++;
@@ -103,7 +103,7 @@ void r2_opt_single_scale_enum
   }
 
 void r2_opt_single_scale_quadopt
-  ( int ni,                   /* Number of points to optimize. */
+  ( int32_t ni,                   /* Number of points to optimize. */
     i2_t iscale,              /* Object scaling exponent along each axis. */  
     r2_opt_goal_func_t *f2,   /* Function that evaluates the goal function. */
     r2_t arad[],              /* Max coordinate adjustment for each point. */
@@ -114,13 +114,13 @@ void r2_opt_single_scale_quadopt
   )
   {
     if (debug) { fprintf(stderr, ">> enter %s >>\n", __FUNCTION__); }
-    int maxIters = 10;
+    int32_t maxIters = 10;
     
     /* Find the number {nv} of variables to optimize and the relative precision {tol}: */
-    int nv = 0;
+    int32_t nv = 0;
     double tol = +INF;
-    for (int i = 0; i < ni; i++) 
-      { for (int j = 0; j < 2; j++)
+    for (int32_t i = 0; i < ni; i++) 
+      { for (int32_t j = 0; j < 2; j++)
           { double arij = arad[i].c[j];
             double asij = astp[i].c[j];
             if (r2_opt_coord_is_variable(arij, asij))
@@ -144,7 +144,7 @@ void r2_opt_single_scale_quadopt
 
         /* Save initial guess {p} in {p0}: */
         r2_t p0[ni]; /* Saved initial guess. */
-        for (int i = 0; i < ni; i++) { p0[i] = p[i]; }
+        for (int32_t i = 0; i < ni; i++) { p0[i] = p[i]; }
         
         /* These functions assume that the initial guess was saved in {p0[0..ni-1]}: */ 
 
@@ -154,7 +154,7 @@ void r2_opt_single_scale_quadopt
         auto void vars_to_points(double y[], r2_t q[]);
           /* Stores the optimization variables {y[0..nv-1]} into the candidate {q[0..ni-1]}, adding {p0[0..ni-1]}. */
 
-        auto double f2_for_sve(int nx, double x[]);
+        auto double f2_for_sve(int32_t nx, double x[]);
           /* Computes the minimization goal function from the given argument {x[0..nv-1]}.
             Expects {nx == nv}. Also sets {p[0..ni-1]} from {x[0..nx-1]}. */
 
@@ -188,9 +188,9 @@ void r2_opt_single_scale_quadopt
         /* Local implementations: */
 
         void points_to_vars(r2_t q[], double y[])
-          { int k = 0;
-            for (int i = 0; i < ni; i++)
-              { for (int j = 0; j < 2; j++)
+          { int32_t k = 0;
+            for (int32_t i = 0; i < ni; i++)
+              { for (int32_t j = 0; j < 2; j++)
                   { double asij = astp[i].c[j];
                     double arij = arad[i].c[j];
                     if (r2_opt_coord_is_variable(arij, asij)) 
@@ -204,9 +204,9 @@ void r2_opt_single_scale_quadopt
           }
 
         void vars_to_points(double y[], r2_t q[])
-          { int k = 0;
-            for (int i = 0; i < ni; i++)
-              { for (int j = 0; j < 2; j++)
+          { int32_t k = 0;
+            for (int32_t i = 0; i < ni; i++)
+              { for (int32_t j = 0; j < 2; j++)
                   { double asij = astp[i].c[j];
                     double arij = arad[i].c[j];
                     if (r2_opt_coord_is_variable(arij, asij))
@@ -218,7 +218,7 @@ void r2_opt_single_scale_quadopt
             assert(k == nv);
           }
 
-        double f2_for_sve(int nx, double x[])
+        double f2_for_sve(int32_t nx, double x[])
           { assert(nx == nv);
             /* Convert variables {x[0..nx-1]} to displacements {p[0..ni-1]}: */
             vars_to_points(x, p);
@@ -238,7 +238,7 @@ void r2_opt_single_scale_quadopt
   }
 
 void r2_opt_multi_scale
-  ( int ni,                  /* Number of points to optimize. */
+  ( int32_t ni,                  /* Number of points to optimize. */
     r2_opt_goal_func_t *f2,  /* Function that evaluates the goal function. */
     bool_t quadopt,          /* Use quadratic optimization? */
     r2_t arad[],             /* Max coordinate adjustment for each point. */
@@ -251,9 +251,9 @@ void r2_opt_multi_scale
     if (debug) { fprintf(stderr, ">> enter %s >>\n", __FUNCTION__); }
     /* Find the num of variables {nv} and max relative search radius {umax.c[j]} on each axis: */
     r2_t umax = (r2_t){{ -INF, -INF }};
-    int nv = 0;
-    for (int i = 0; i < ni; i++)
-      { for (int j = 0; j < 2; j++)
+    int32_t nv = 0;
+    for (int32_t i = 0; i < ni; i++)
+      { for (int32_t j = 0; j < 2; j++)
           { double arij = arad[i].c[j];
             double asij = astp[i].c[j];
             if (r2_opt_coord_is_variable(arij, asij))
@@ -273,12 +273,12 @@ void r2_opt_multi_scale
     else
       { /* Save the initial guess as it defines the center of the domain: */
         r2_t p0[ni];
-        for (int i = 0; i < ni; i++) { p0[i] = p[i]; }
+        for (int32_t i = 0; i < ni; i++) { p0[i] = p[i]; }
       
         /* Compute the initial scale {mscale}: */
         i2_t mscale = (i2_t){{ 0, 0 }};
         while ((umax.c[0] >= 0.5) || (umax.c[1] >= 0.5)) 
-          { for (int j = 0; j < 2; j++) 
+          { for (int32_t j = 0; j < 2; j++) 
               { if (umax.c[j] >= 0.5) 
                   { mscale.c[j]++;
                     umax.c[j] = umax.c[j]/2;
@@ -323,8 +323,8 @@ void r2_opt_multi_scale
             if ((iscale.c[0] == 0) && (iscale.c[1] == 0)) { break; }
 
             /* Reduce the lasgest elements of {iscale}: */
-            int xscale = (int)imax(iscale.c[0], iscale.c[1]);
-            for (int j = 0; j < 2; j++) 
+            int32_t xscale = (int32_t)imax(iscale.c[0], iscale.c[1]);
+            for (int32_t j = 0; j < 2; j++) 
               { if (iscale.c[j] == xscale) 
                   { iscale.c[j]--; }
               }
@@ -333,9 +333,9 @@ void r2_opt_multi_scale
         /* INTERNAL IMPLEMENTATIONS */
 
         void initialize_stp(void)
-          { int nv1 = 0;
-            for (int i = 0; i < ni; i++)
-              { for (int j = 0; j < 2; j++) 
+          { int32_t nv1 = 0;
+            for (int32_t i = 0; i < ni; i++)
+              { for (int32_t j = 0; j < 2; j++) 
                   { /* Get original search radius and step: */
                     double arij = arad[i].c[j];
                     double asij = astp[i].c[j];
@@ -349,9 +349,9 @@ void r2_opt_multi_scale
           }
 
         void update_rad_stp(i2_t cscale)
-          { int nv1 = 0;
-            for (int i = 0; i < ni; i++)
-              { for (int j = 0; j < 2; j++) 
+          { int32_t nv1 = 0;
+            for (int32_t i = 0; i < ni; i++)
+              { for (int32_t j = 0; j < 2; j++) 
                   { /* Get original search radius and step: */
                     double arij = arad[i].c[j];
                     double asij = astp[i].c[j];
@@ -396,11 +396,11 @@ bool_t r2_opt_coord_is_variable(double arij, double asij)
     return ((arij > 0.0) && (arij >= asij));  
   }
 
-double r2_opt_rel_disp_sqr(int ni, r2_t p[], r2_t q[], r2_t arad[], r2_t astp[])
+double r2_opt_rel_disp_sqr(int32_t ni, r2_t p[], r2_t q[], r2_t arad[], r2_t astp[])
   {
     double d2 = 0.0;
-    for (int j = 0; j < 2; j++)
-      { for (int i = 0; i < ni; i++)
+    for (int32_t j = 0; j < 2; j++)
+      { for (int32_t i = 0; i < ni; i++)
           { double arij = arad[i].c[j];
             double asij = astp[i].c[j];
             if (r2_opt_coord_is_variable(arij, asij))

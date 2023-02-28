@@ -2,7 +2,7 @@
 #define sve_minn_H
 
 /* Quadratic minimzation by the simplex vertex-edge method. */
-/* Last edited on 2021-06-17 11:22:30 by jstolfi */
+/* Last edited on 2023-02-27 10:34:34 by stolfi */
 
 /* SIMPLICES
 
@@ -34,10 +34,13 @@
   
   The number of such /nodes/ is {K(n) = (n+1)*(n+2)/2}. */
 
+#define _GNU_SOURCE
+#include <stdint.h>
+
 #include <bool.h>
 #include <sign.h>
 
-void sve_minn_step(int n, double Fv[], double cm[]);
+void sve_minn_step(int32_t n, double Fv[], double cm[]);
   /* Given the values {Fv[0..K(n)-1]} of a quadratic function {F} at the 
     nodes of some {n}-simplex {V}, returns in {cm[0..n]} 
     the barycentric coordinates of the stationary point of {F} in the 
@@ -47,12 +50,12 @@ void sve_minn_step(int n, double Fv[], double cm[]);
     that {Fv[i*(i+1)/2+j] == F(V(i,j))} for all {i,j} such that 
     {0 <= j <= i <= n}. */
 
-typedef double sve_goal_t(int n, double x[]);
+typedef double sve_goal_t(int32_t n, double x[]);
   /* The type of a procedure that can be provided as argument to
     {sve_sample_function} and {sve_optimize} below. It should compute
     some function of the point {x[0..n-1]}. */
     
-void sve_sample_function(int n, sve_goal_t *F, double v[], double Fv[]);
+void sve_sample_function(int32_t n, sve_goal_t *F, double v[], double Fv[]);
   /* Evaluates the {n}-variate goal function {F} at the nodes of an
     {n}-simplex {V} in {R^n}, ad stores the values into
     {Fv[0..K(n)-1]}, in the order expected by {sve_minn_step}.
@@ -62,14 +65,14 @@ void sve_sample_function(int n, sve_goal_t *F, double v[], double Fv[]);
     More precisely, sets {Fv[i*(i+1)/2+j]} to {F(V(i,j))} for all
     {i,j} such that {0 <= j <= i <= n}. */
 
-typedef bool_t sve_pred_t(int n, double x[], double Fx);
+typedef bool_t sve_pred_t(int32_t n, double x[], double Fx);
   /* The type of a procedure that can be provided as argument to
     {sve_minn_iterate} below. It should check the current solution
     {x[0..n-1]} and the corresponding goal function value {Fx}, and
     return {TRUE} to stop the iteration, {FALSE} to continue it. */
     
 void sve_minn_iterate
-  ( int n, 
+  ( int32_t n, 
     sve_goal_t *F, 
     sve_pred_t *OK,
     double x[],
@@ -81,7 +84,7 @@ void sve_minn_iterate
     double rMin, 
     double rMax,
     double stop,
-    int maxIters,
+    int32_t maxIters,
     bool_t debug
   );
   /*  Tries to find a stationary point {x[0..n-1]} of the {n}-argument

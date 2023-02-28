@@ -1,3 +1,6 @@
+/* Last edited on 2023-02-25 16:14:05 by stolfi */
+
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -5,14 +8,18 @@
 #include <math.h>
 #include <ctype.h>
 #include <assert.h>
+
 #include <r3.h>
 #include <r2.h>
 #include <affirm.h>
 #include <jsfile.h>
+#include <rn.h>
+
 #include <tf_camera.h>
 #include <tf_calib.h>
-#include <tf_targets.h>
 #include <tf_math.h>
+
+#include <tf_targets.h>
 
 targets_data_t tf_targets_data_create (int32_t size)
 {
@@ -26,7 +33,7 @@ targets_data_t tf_targets_data_create (int32_t size)
     tdat->v_i = NULL;
     tdat->alpha = NULL;
     tdat->beta = NULL;
-    tdat->conf = (double *)malloc(size*sizeof(double));
+    tdat->conf = rn_alloc(size);
     return tdat;
 }
 
@@ -105,7 +112,7 @@ targets_data_t tf_targets_data_read
   } 
   else {
     /* assume unit weight for all marks */
-    tdat->conf = (double *)notnull(malloc(n_p_w * sizeof(double)), "no mem");
+    tdat->conf = rn_alloc(n_p_w );
     int32_t k;
     for (k = 0; k < n_p_w; k++) { tdat->conf[k] = 1.0; }
   }
@@ -113,8 +120,8 @@ targets_data_t tf_targets_data_read
   /* Allocate other fields and set them to default values: */
   tdat->u_i = (r2_t *)notnull(malloc(n_p_w*sizeof(r2_t)), "no mem");
   tdat->v_i = (r2_t *)notnull(malloc(n_p_w*sizeof(r2_t)), "no mem");
-  tdat->alpha = (double *)notnull(malloc(n_p_w*sizeof(double)), "no mem");
-  tdat->beta = (double *)notnull(malloc(n_p_w*sizeof(double)), "no mem");
+  tdat->alpha = rn_alloc(n_p_w);
+  tdat->beta = rn_alloc(n_p_w);
   int32_t i;
   for (i = 0; i < n_p_w; i++) {
     tdat->u_i[i] = (r2_t){{ 0, 0 }};

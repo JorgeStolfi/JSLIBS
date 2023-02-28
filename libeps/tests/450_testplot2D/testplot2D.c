@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {epswr_plot_2D.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-20 06:52:42 by stolfi */
+/* Last edited on 2023-02-27 20:14:57 by stolfi */
 
 #define testplot_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
@@ -21,6 +21,7 @@
 #include <jsrandom.h>
 #include <jsmath.h>
 #include <jsfile.h>
+#include <rn.h>
 
 #include <epswr.h>
 #include <epswr_iso.h>
@@ -214,7 +215,7 @@ void PlotFunc2D
     /* Generate corner values for bilinear test function: */
     double *bf = NULL;  /* {bf[(2*i1 + i0)*nf + j]} is value {j} of corner {(i0,i1)}. */ 
     if (! messy)
-      { bf = (double *)notnull(malloc(ipow(2,DDIM)*nf*sizeof(double)), "no mem");
+      { bf = rn_alloc((int32_t)ipow(2,DDIM)*nf);
         fprintf(stderr, "bilinear corner values:\n");
         fprintf(stderr, "\n");
         srandom(4615);

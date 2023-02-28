@@ -1,5 +1,5 @@
 /* See {tf_calib_guess3.h}. */
-/* Last edited on 2022-10-20 05:57:54 by stolfi */
+/* Last edited on 2023-02-25 16:11:19 by stolfi */
 
 #define _GNU_SOURCE
 #include <assert.h>
@@ -13,6 +13,8 @@
 #include <tf_errors.h>
 #include <tf_math.h>
 #include <tf_calib.h>
+#include <rn.h>
+
 #include <tf_calib_guess3.h>
 
 void tf_calib_guess3_initial_camera_parameters 
@@ -59,7 +61,7 @@ void tf_calib_guess3_initial_camera_parameters
   tf_compute_undistorted_coords_barycenter(nmarks, p_u, cdat->weight, &b_u);
 
   /* Compute the mark weights to use: */
-  double* wt_loc = (double*)notnull(malloc(nmarks*sizeof(double)), "no mem");
+  double* wt_loc = rn_alloc(nmarks);
   int32_t k;
   for (k = 0; k < nmarks; k++) {
     wt_loc[k] = cdat->weight[k];

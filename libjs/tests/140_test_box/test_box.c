@@ -2,7 +2,7 @@
 #define PROG_DESC "tests the ordered table search procedure"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2022-10-30 12:11:52 by stolfi */
+/* Last edited on 2023-02-18 23:34:34 by stolfi */
 /* Created on 2021-09-25 or earler by J. Stolfi, UNICAMP */
 
 #define test_box_COPYRIGHT \
@@ -21,6 +21,7 @@
 #include <interval.h>
 #include <interval_io.h>
 #include <bool.h>
+#include <jsmath.h>
 
 #include <box.h>
 
@@ -30,15 +31,16 @@
 /* PROTOTYPES */
 
 int32_t main (int32_t argc, char **argv);
-void do_tests(box_dim_t d);
-void test_attribs(box_dim_t d, interval_t B[]);
-void test_equal(box_dim_t d, interval_t B[]);
-void test_include_point(box_dim_t d, interval_t B[]);
-void test_join_meet(box_dim_t d, interval_t B[]);
-void test_split(box_dim_t d, interval_t B[]);
-void test_widen_round(box_dim_t d, interval_t B[]);
-void test_box_map(box_dim_t d, interval_t B[]);
-void test_face(box_dim_t d, interval_t B[]);
+void do_tests(box_dim_t d, bool_t verbose);
+void test_print(box_dim_t d, interval_t B[], bool_t verbose);
+void test_attribs(box_dim_t d, interval_t B[], bool_t verbose);
+void test_equal(box_dim_t d, interval_t B[], bool_t verbose);
+void test_include_point(box_dim_t d, interval_t B[], bool_t verbose);
+void test_join_meet(box_dim_t d, interval_t B[], bool_t verbose);
+void test_split(box_dim_t d, interval_t B[], bool_t verbose);
+void test_widen_round(box_dim_t d, interval_t B[], bool_t verbose);
+void test_box_map(box_dim_t d, interval_t B[], bool_t verbose);
+void test_face(box_dim_t d, interval_t B[], bool_t verbose);
 
 /* IMPLEMENTATIONS */
 
@@ -51,13 +53,14 @@ int32_t main (int32_t argc, char **argv)
     for (int32_t it = 0; it < nt; it++)
       { /* Choose the dimension {d}: */
         box_dim_t d = (box_dim_t)int32_abrandom(0, box_MAX_DIM);
-        do_tests(d);
+        bool_t verbose = (it < 10);
+        do_tests(d, verbose);
       }
     fprintf(stderr, "done.\n");
     return 0;
   }
   
-void do_tests(box_dim_t d)
+void do_tests(box_dim_t d, bool_t verbose)
   { 
     /* TESTING: void box_throw(box_dim_t d, double elo, double ehi, double p_empty, double p_single, interval_t B[]); */
     /* TESTING: void box_is_empty(box_dim_t d, interval_t B[]); */
@@ -65,23 +68,57 @@ void do_tests(box_dim_t d)
 
     interval_t B[d]; box_throw(d, GLOB_LO, GLOB_HI, 0.100, 0.100, B);
   
-    test_attribs(d, B);
+    test_print(d, B, verbose);
+  
+    test_attribs(d, B, verbose);
     
-    test_equal(d, B);
+    test_equal(d, B, verbose);
     
-    test_include_point(d, B);
-    test_join_meet(d, B);
-    test_widen_round(d, B);
+    test_include_point(d, B, verbose);
+    test_join_meet(d, B, verbose);
+    test_widen_round(d, B, verbose);
     
-    test_split(d, B);
+    test_split(d, B, verbose);
             
-    test_box_map(d, B);   
-    test_face(d, B);   
+    test_box_map(d, B, verbose);   
+    test_face(d, B, verbose);   
   }
   
-void test_attribs(box_dim_t d, interval_t B[])
+void test_print(box_dim_t d, interval_t B[], bool_t verbose)
   {
-    fprintf(stderr, "--- testing {box_{lo_corner,hi_corner,corner,center,half_widths,widths,max_width,radius}} ---\n");
+    if ((! verbose) || (d > 8)) { return; }
+    if (verbose) { fprintf(stderr, "--- testing {box_{print,gen_print,face_print}} d = %d ---\n", d); }
+    
+    /* TESTING: void box_lo_corner(box_dim_t d, interval_t B[], double p[]); */
+    /* TESTING: void box_hi_corner(box_dim_t d, interval_t B[], double p[]); */
+    /* TESTING: void box_corner(box_dim_t d, interval_t B[], interval_side_t dir[], double p[]); */
+    /* TESTING: void box_center(box_dim_t d, interval_t B[], double p[]); */
+    /* TESTING: void box_half_widths(box_dim_t d, interval_t B[], double h[]); */
+    /* TESTING: void box_widths(box_dim_t d, interval_t B[], double w[]); */
+    /* TESTING: double box_max_width(box_dim_t d, interval_t B[], bool_t verbose); */
+    /* TESTING: double box_radius(box_dim_t d, interval_t B[], bool_t verbose); */
+    
+    fprintf(stderr, "testing {box_print}: ");
+    box_print(stderr, d, B);
+    fprintf(stderr, "\n");
+    
+    fprintf(stderr, "testing {box_gen_print}:\n");
+    box_gen_print(stderr, d, B, "%+.4f", "B = ", " × ", "\n");
+    
+    if (d <= 4)
+      { fprintf(stderr, "testing {box_face_print}:\n");
+        int32_t nf = (int32_t)ipow(3,d);
+        for (int32_t fi = 0; fi < nf; fi++)
+          { fprintf(stderr, "face %3d = ", fi); 
+            box_face_print(stderr, d, fi);
+            fprintf(stderr, "\n"); 
+          }
+      }
+  }
+  
+void test_attribs(box_dim_t d, interval_t B[], bool_t verbose)
+  {
+    if (verbose) { fprintf(stderr, "--- testing {box_{lo_corner,hi_corner,corner,center,half_widths,widths,max_width,radius}} ---\n"); }
     
     double ctr[d], h[d], w[d], plo[d], phi[d], pdir[d];
     double er, mw;
@@ -95,8 +132,8 @@ void test_attribs(box_dim_t d, interval_t B[])
     /* TESTING: void box_center(box_dim_t d, interval_t B[], double p[]); */
     /* TESTING: void box_half_widths(box_dim_t d, interval_t B[], double h[]); */
     /* TESTING: void box_widths(box_dim_t d, interval_t B[], double w[]); */
-    /* TESTING: double box_max_width(box_dim_t d, interval_t B[]); */
-    /* TESTING: double box_radius(box_dim_t d, interval_t B[]); */
+    /* TESTING: double box_max_width(box_dim_t d, interval_t B[], bool_t verbose); */
+    /* TESTING: double box_radius(box_dim_t d, interval_t B[], bool_t verbose); */
     
     if (! box_is_empty(d, B))
       { box_lo_corner(d, B, plo);
@@ -113,14 +150,18 @@ void test_attribs(box_dim_t d, interval_t B[])
     double sum2 = 0;
     for (int32_t i = 0; i < d; i++)
       { interval_t Bi = B[i];
-        if (! box_is_empty(d, B))
+        if (box_is_empty(d, B))
+          { assert(w[i] == 0);
+            assert(h[i] == 0);
+          }
+        else
           { assert(LO(Bi) == plo[i]);
             assert(HI(Bi) == phi[i]);
             assert(Bi.end[dir[i]] == pdir[i]);
             assert(interval_mid(&Bi) == ctr[i]);
+            assert(interval_rad(&Bi) == h[i]);
+            assert(fabs(w[i] - 2*h[i]) < 1.0e-13);
           }
-        assert(interval_rad(&Bi) == h[i]);
-        assert(fabs(w[i] - 2*h[i]) < 1.0e-13);
         mw_cmp = fmax(mw_cmp, w[i]);
         sum2 += h[i]*h[i];
       }
@@ -128,9 +169,9 @@ void test_attribs(box_dim_t d, interval_t B[])
     assert(fabs(er - sqrt(sum2)) < 1.0e-12);
   }
      
-void test_equal(box_dim_t d, interval_t B[])
+void test_equal(box_dim_t d, interval_t B[], bool_t verbose)
   {
-    fprintf(stderr, "--- testing {box_equal} ---\n");
+    if (verbose) { fprintf(stderr, "--- testing {box_equal} ---\n"); }
 
     interval_t A[d]; box_throw(d, GLOB_LO, GLOB_HI, 0.100, 0.100, A);
 
@@ -151,9 +192,9 @@ void test_equal(box_dim_t d, interval_t B[])
       }
   }
   
-void test_include_point(box_dim_t d, interval_t B[])
+void test_include_point(box_dim_t d, interval_t B[], bool_t verbose)
   {
-    fprintf(stderr, "--- testing {box_include_point} ---\n");
+    if (verbose) { fprintf(stderr, "--- testing {box_include_point} ---\n"); }
 
     /* TESTING: void box_include_point(box_dim_t d, interval_t B[], double p[], interval_t C[]); */
 
@@ -177,9 +218,9 @@ void test_include_point(box_dim_t d, interval_t B[])
       }
   }
 
-void test_join_meet(box_dim_t d, interval_t B[])
+void test_join_meet(box_dim_t d, interval_t B[], bool_t verbose)
   {
-    fprintf(stderr, "--- testing {box_join,box_meet} ---\n");
+    if (verbose) { fprintf(stderr, "--- testing {box_join,box_meet} ---\n"); }
 
     /* TESTING: void box_join(box_dim_t d, interval_t A[], interval_t B[], interval_t C[]); */
     /* TESTING: void box_meet(box_dim_t d, interval_t A[], interval_t B[], interval_t C[]); */
@@ -231,11 +272,11 @@ void test_join_meet(box_dim_t d, interval_t B[])
       }
   }
 
-void test_split(box_dim_t d, interval_t B[])
+void test_split(box_dim_t d, interval_t B[], bool_t verbose)
   {
     bool_t debug = FALSE;
     
-    fprintf(stderr, "--- testing {box_split} ---\n");
+    if (verbose || debug) { fprintf(stderr, "--- testing {box_split} d = %d ---\n", d); }
     if (d == 0) { return; }
 
     interval_t BLO[d], BMD[d], BHI[d];
@@ -263,33 +304,25 @@ void test_split(box_dim_t d, interval_t B[])
           { /* Pick the upper bound: */
             x = ahi;
           }
-        else if (alo== ahi)
+        else if (alo == ahi)
           { /* Pick the singleton value: */
             x = alo;
           }
         else
           { /* Pick a value inside the range: */
-            do 
-              { x = dabrandom(alo, ahi); } 
-            while ((x != alo) && (x != ahi));
+            x = dabrandom(alo, ahi);
           }
       }
       
     if (debug)
-      { for (int32_t i = 0; i < d; i++)
-          { interval_t Bi = B[i];
-            fprintf(stderr, "  B[%02d] = ", i);
-            interval_gen_print(stderr, &Bi,   "%12.6f", "( ", " ", " )");
-            if (i == a) { fprintf(stderr, "  x = %12.6f", x); }
-            fprintf(stderr, "\n");
-          }
+      { box_gen_print(stderr, d, B, "%+.6f", "B = \n  ", "\n  ", "\n");
+        fprintf(stderr, "  splitting axis a = %d by x = %12.6f\n", a, x);
       }
 
     box_split(d, B, a, x, BLO, BMD, BHI);
     
     if (ety)
-      {
-        assert(box_is_empty(d, BLO));
+      { assert(box_is_empty(d, BLO));
         assert(box_is_empty(d, BMD));
         assert(box_is_empty(d, BHI));
       }
@@ -310,8 +343,7 @@ void test_split(box_dim_t d, interval_t B[])
             interval_t BMDi = BMD[i];
             interval_t BHIi = BHI[i];
             if (debug)
-              { fprintf(stderr, "  splitting axis a = %d by x = %12.6f\n", a, x);
-                interval_gen_print(stderr, &Bi,   "%12.6f", "    Bi =   ( ", " ", " )\n");
+              { interval_gen_print(stderr, &Bi,   "%12.6f", "    Bi =   ( ", " ", " )\n");
                 interval_gen_print(stderr, &BLOi, "%12.6f", "    BLOi = ( ", " ", " )\n");
                 interval_gen_print(stderr, &BMDi, "%12.6f", "    BMDi = ( ", " ", " )\n");
                 interval_gen_print(stderr, &BHIi, "%12.6f", "    BHIi = ( ", " ", " )\n");
@@ -349,9 +381,9 @@ void test_split(box_dim_t d, interval_t B[])
       }
   }
 
-void test_widen_round(box_dim_t d, interval_t B[])
+void test_widen_round(box_dim_t d, interval_t B[], bool_t verbose)
   {
-    fprintf(stderr, "--- testing {box_{widen,widen_var,round}} ---\n");
+    if (verbose) { fprintf(stderr, "--- testing {box_{widen,widen_var,round}} ---\n"); }
 
     /* TESTING: void box_widen(box_dim_t d, interval_t B[], double margin, interval_t C[]); */
     /* TESTING: void box_widen_var(box_dim_t d, interval_t B[], double mrglo[], double mrghi[], interval_t C[]); */
@@ -372,25 +404,25 @@ void test_widen_round(box_dim_t d, interval_t B[])
     box_round(d, B, unit, TRUE,  CRO);
     box_round(d, B, unit, FALSE, CRI);
                 
-    fprintf(stderr, "!!! NOT TESTED !!!\n");
+    if (verbose) { fprintf(stderr, "!!! NOT TESTED !!!\n"); }
   }
                   
-void test_box_map(box_dim_t d, interval_t B[])
+void test_box_map(box_dim_t d, interval_t B[], bool_t verbose)
   {
-    fprintf(stderr, "--- testing {box_{point,box}_{mpa,unmap)}} ---\n");
+    if (verbose) { fprintf(stderr, "--- testing {box_{point,box}_{mpa,unmap)}} ---\n"); }
       
     /* TESTING: void box_point_map(box_dim_t d, double z[], interval_t B[], double x[]); */
     /* TESTING: void box_point_unmap(box_dim_t d, double x[], interval_t B[], double z[]); */
     /* TESTING: void box_box_map(box_dim_t d, interval_t Z[], interval_t B[], interval_t X[]); */
     /* TESTING: void box_box_unmap(box_dim_t d, interval_t X[], interval_t B[], interval_t Z[]); */
                 
-    fprintf(stderr, "!!! NOT TESTED !!!\n");
+    if (verbose) { fprintf(stderr, "!!! NOT TESTED !!!\n"); }
 
   }
                   
-void test_face(box_dim_t d, interval_t B[])
+void test_face(box_dim_t d, interval_t B[], bool_t verbose)
   {
-    fprintf(stderr, "--- testing {box_face_{dimension,position,signature,rel_box,print}} ---\n");
+    if (verbose) { fprintf(stderr, "--- testing {box_face_{dimension,position,signature,rel_box,print}} ---\n"); }
       
     /* TESTING: box_dim_t box_face_dimension(box_dim_t m, box_face_index_t fi); */
     /* TESTING: box_signed_dir_t box_face_position(box_face_index_t fi, box_axis_index_t j); */
@@ -398,6 +430,6 @@ void test_face(box_dim_t d, interval_t B[])
     /* TESTING: void box_face_rel_box(box_dim_t m, box_face_index_t fi, interval_t F[]); */
     /* TESTING: void box_face_print(FILE *wr, box_dim_t m, box_face_index_t fi); */
                 
-    fprintf(stderr, "!!! NOT TESTED !!!\n");
+    if (verbose) { fprintf(stderr, "!!! NOT TESTED !!!\n"); }
 
   }

@@ -1,11 +1,10 @@
 /* Delaunay triangulation by straightline divide-and-conquer. */
-/* Last edited on 2011-12-25 02:13:19 by stolfi */ 
+/* Last edited on 2023-02-20 06:10:44 by stolfi */ 
 
-/* 
-** Written by J. Stolfi on april 1993, based on an original
-** implementation by Jim Roth (DEC CADM Advanced Group, May 1986).  
-** See the copyright notice at the end of this file.
-*/
+/* Written by J. Stolfi in april 1993, based on an original
+implementation by Jim Roth (DEC CADM Advanced Group, May 1986). */
+
+/* See the copyright notice at the end of this file. */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -36,21 +35,21 @@ sign_t delaunay_cmp_sites(delaunay_site_t *a, delaunay_site_t *b);
     {a} is less than,equal to, or greater than that of {b},
     respectively. */
 
-void sort_sites(delaunay_site_t sites[], int nsites);
+void sort_sites(delaunay_site_t st[], int32_t nsites);
 
 void rec_delaunay(
-    delaunay_site_t sites[], /* The sites, sorted left to right. */
-    int sl,                  /* Index of first site to consider. */
-    int sh,                  /* Index of first site not to consider. */
+    delaunay_site_t st[], /* The sites, sorted left to right. */
+    int32_t sl,              /* Index of first site to consider. */
+    int32_t sh,              /* Index of first site not to consider. */
     quad_arc_t *le,          /* Output: leftmost edge. */
     quad_arc_t *re,          /* Output: rightmost edge. */
-    int indent               /* Indentation of debugging messages. */
+    int32_t indent           /* Indentation of debugging messages. */
   );
-  /* Recursively create the Delaunay triangulation of {sites[sl..sh-1]}.
+  /* Recursively create the Delaunay triangulation of {st[sl..sh-1]}.
     Returns the leftmost edge {le} and the rightmost edge {re} of the 
     trangulation. */
 
-void delaunay_find_common_tangent(quad_arc_t *ldiP, quad_arc_t *rdiP, int indent);
+void delaunay_find_common_tangent(quad_arc_t *ldiP, quad_arc_t *rdiP, int32_t indent);
   /* Finds the lower common tangent {T} between two Delaunay diagrams {L,R}.
     Assumes that they are separated by a straight vertical line.
     On input and output, the right face of {*ldiP} and the left face of
@@ -75,15 +74,15 @@ void delaunay_find_common_tangent(quad_arc_t *ldiP, quad_arc_t *rdiP, int indent
 
 /* Main procedure: */
 
-quad_arc_t delaunay_build(delaunay_site_t sites[], int nsites)
+quad_arc_t delaunay_build(delaunay_site_t st[], int32_t nsites)
   {
     quad_arc_t le, re;
     bool_t verbose = DEBUG;
     demand(nsites > 1, "cannot build the delaunay for a single site");
     if (verbose) { fprintf(stderr, "Sorting sites...\n"); }
-    sort_sites(sites, nsites);
+    sort_sites(st, nsites);
     if (verbose) { fprintf(stderr, "Recursive build...\n"); }
-    rec_delaunay(sites, 0, nsites, &le, &re, 1);
+    rec_delaunay(st, 0, nsites, &le, &re, 1);
     return (le);
   }
 
@@ -106,20 +105,20 @@ sign_t delaunay_cmp_sites(delaunay_site_t *a, delaunay_site_t *b)
     return s;
   }
 
-void sort_sites(delaunay_site_t sites[], int nsites)
+void sort_sites(delaunay_site_t st[], int32_t nsites)
   {
-    int gap;
+    int32_t gap;
     for (gap = nsites/2; gap > 0; gap /= 2)
-      { int i;
+      { int32_t i;
         for (i = gap; i < nsites; i++)
-          { int j;
+          { int32_t j;
             for (
                 j = i-gap; 
-                (j >= 0) && (delaunay_cmp_sites(&(sites[j]), &(sites[j+gap])) > 0);
+                (j >= 0) && (delaunay_cmp_sites(&(st[j]), &(st[j+gap])) > 0);
                 j -= gap
               ) 
               {
-                delaunay_site_t tmp = sites[j]; sites[j] = sites[j+gap]; sites[j+gap] = tmp;
+                delaunay_site_t tmp = st[j]; st[j] = st[j+gap]; st[j+gap] = tmp;
               }
           }
       }
@@ -156,10 +155,10 @@ quad_arc_t delaunay_connect(quad_arc_t a, quad_arc_t b)
   }
 
 void rec_delaunay(
-    delaunay_site_t sites[],
-    int sl, int sh,
+    delaunay_site_t st[],
+    int32_t sl, int32_t sh,
     quad_arc_t *le, quad_arc_t *re,
-    int indent
+    int32_t indent
   )
   {
     bool_t verbose = DEBUG;
@@ -168,20 +167,20 @@ void rec_delaunay(
     if (sh == sl+2) 
       {
 	quad_arc_t a = delaunay_make_edge();
-	SET_ORG(a, &sites[sl]); 
-        SET_DST(a, &sites[sl+1]);
+	SET_ORG(a, &st[sl]); 
+        SET_DST(a, &st[sl+1]);
 	*le = a; *re = quad_sym(a);
       }
     else if (sh == sl+3) 
       {
 	quad_arc_t a = delaunay_make_edge();
 	quad_arc_t b = delaunay_make_edge();
-	int ct = delaunay_orient(&sites[sl], &sites[sl+1], &sites[sl+2]);
+	int32_t ct = delaunay_orient(&st[sl], &st[sl+1], &st[sl+2]);
 	quad_splice(quad_sym(a), b);
-	SET_ORG(a, &sites[sl]); 
-        SET_DST(a, &sites[sl+1]);
-	SET_ORG(b, &sites[sl+1]);  
-        SET_DST(b, &sites[sl+2]);
+	SET_ORG(a, &st[sl]); 
+        SET_DST(a, &st[sl+1]);
+	SET_ORG(b, &st[sl+1]);  
+        SET_DST(b, &st[sl+2]);
 	if (ct == 0.0) 
 	  { *le = a; *re = quad_sym(b); }
 	else 
@@ -197,10 +196,10 @@ void rec_delaunay(
 	quad_arc_t ldo, ldi, rdi, rdo;
 	quad_arc_t basel, lcand, rcand;
 
-        int sm = (sl+sh)/2;
+        int32_t sm = (sl+sh)/2;
 
-        rec_delaunay(sites, sl, sm, &ldo, &ldi, indent+2);
-	rec_delaunay(sites, sm, sh, &rdi, &rdo, indent+2);
+        rec_delaunay(st, sl, sm, &ldo, &ldi, indent+2);
+	rec_delaunay(st, sm, sh, &rdi, &rdo, indent+2);
         
         delaunay_find_common_tangent(&ldi, &rdi, indent);
 
@@ -254,7 +253,7 @@ void rec_delaunay(
     if (verbose) { fprintf(stderr, "%*s- rec_delaunay...\n", indent, ""); }
   }
 
-void delaunay_find_common_tangent(quad_arc_t *ldiP, quad_arc_t *rdiP, int indent)
+void delaunay_find_common_tangent(quad_arc_t *ldiP, quad_arc_t *rdiP, int32_t indent)
   {
     quad_arc_t ldi = (*ldiP);
     quad_arc_t rdi = (*rdiP);
@@ -291,11 +290,11 @@ hi2_point_t delaunay_hi2_from_r2(r2_t *pc)
     if (pm < 1.0)
       { hw = MC; }
     else 
-      { hw = (int)floor(((double)MC)/pm);
+      { hw = (int32_t)floor(((double)MC)/pm);
         demand(hw > 0, "cartesian coordinates are too large");
       }
-    int32_t hx = (int)(floor(px*(double)hw + 0.5 + MC)) - MC; assert(abs(hx) <= MC);
-    int32_t hy = (int)(floor(py*(double)hw + 0.5 + MC)) - MC; assert(abs(hy) <= MC);
+    int32_t hx = (int32_t)(floor(px*(double)hw + 0.5 + MC)) - MC; assert(abs(hx) <= MC);
+    int32_t hy = (int32_t)(floor(py*(double)hw + 0.5 + MC)) - MC; assert(abs(hy) <= MC);
     return (hi2_point_t){{{ hw, hx, hy }}};
   }
 

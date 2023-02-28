@@ -1,10 +1,11 @@
 /* test_sve_near_quadratic --- test of {sve_minn.h} for a nearly quadratic func */
-/* Last edited on 2017-03-13 21:02:11 by stolfilocal */
+/* Last edited on 2023-02-27 10:58:28 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <assert.h>
 #include <math.h>
 #include <limits.h>
@@ -32,28 +33,27 @@ typedef struct options_t
 
 /* INTERNAL PROTOTYPES */
 
-int main (int argc, char **argv);
+int32_t main (int32_t argc, char **argv);
 
-options_t *get_options(int argc, char **argv);
+options_t *get_options(int32_t argc, char **argv);
   /* Parses the command-line options. */
 
-void test_minimizer(int id, int n);
+void test_minimizer(int32_t id, int32_t n);
   /* Tests the minimizer on problem with index {id} and dimension {n}. */ 
 
-void write_solution(char *prefix, char *tag, int n, sve_goal_t *F, double x[], double Fx);
+void write_solution(char *prefix, char *tag, int32_t n, sve_goal_t *F, double x[], double Fx);
   /* Writes the solution to problem with index {id} and dimension {n},
     also shows it to {stderr}, together with the function value {Fx}. */
 
-void write_vector(char *prefix, char *tag, int n, double x[]);
+void write_vector(char *prefix, char *tag, int32_t n, double x[]);
   /* Writes the solution to problem with index {id} and dimension {n}. */
 
 /* IMPLEMENTATIONS */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   { /* options_t *o = get_options(argc, argv); */
-    int id;
-    for (id = 0; id < 10; id++) 
-      { int n = (id % 3) + 1;
+    for (int32_t id = 0; id < 10; id++) 
+      { int32_t n = (id % 3) + 1;
         test_minimizer(id, n);
       }
     fclose(stderr);
@@ -61,7 +61,7 @@ int main (int argc, char **argv)
     return (0);
   }
   
-void test_minimizer(int id, int n)
+void test_minimizer(int32_t id, int32_t n)
   { 
     fprintf(stderr, "=== %s ===\n", __FUNCTION__);
     fprintf(stderr, "test id = %d\n", id);
@@ -81,21 +81,19 @@ void test_minimizer(int id, int n)
     
     /* Choose the true minimum: */
     double x_tru[n];
-    int k;
-    for (k = 0; k < n; k++) { x_tru[k] = 2*drandom() - 1; }
+    for (int32_t k = 0; k < n; k++) { x_tru[k] = 2*drandom() - 1; }
     
     /* Fill the matrices: */
-    int i, j;
-    for (i = 0; i < n; i++)
-      { for (j = 0; j < n; j++)
+    for (int32_t i = 0; i < n; i++)
+      { for (int32_t j = 0; j < n; j++)
           { A[i*n + j] = 2*drandom() - 1; }
       }
     rmxn_mul_tr(n, n, n, A, A, M);
     
-    auto double F(int n, double x[]); 
+    auto double F(int32_t n, double x[]); 
       /* The goal function for optimization. */
       
-    double F(int n, double x[])
+    double F(int32_t n, double x[])
       { assert(n == n);
         /* Subtract the true minimum: */
         rn_sub(n, x, x_tru, dx);
@@ -105,20 +103,19 @@ void test_minimizer(int id, int n)
         rn_scale(n, scale, dx, dx);
         /* Evaluate the quadric at {dx}: */
         double S = 0;
-        int i0, i1;
-        for (i0 = 0; i0 < n; i0++)
-          { for (i1 = 0; i1 < n; i1++)
+        for (int32_t i0 = 0; i0 < n; i0++)
+          { for (int32_t i1 = 0; i1 < n; i1++)
               { S += dx[i0]*dx[i1]*M[i0*n + i1]; }
           }
         return S;
       }
       
-    int nok = 0;      /* Counts iterations (actually, calls to {OK}). */
+    int32_t nok = 0;      /* Counts iterations (actually, calls to {OK}). */
     
-    auto bool_t OK(int n, double x[], double Fx); 
+    auto bool_t OK(int32_t n, double x[], double Fx); 
       /* Acceptance criterion function. */
       
-    bool_t OK(int n, double x[], double Fx)
+    bool_t OK(int32_t n, double x[], double Fx)
       { assert(n == n);
         fprintf(stderr, "iteration %d:\n", nok);
         write_solution(NULL, "tmp", n, &F, x, Fx);
@@ -148,7 +145,7 @@ void test_minimizer(int id, int n)
     double rIni = 0.5;
     double stop = 0.01*rMin;
     sign_t dir = -1;
-    int maxIters = 200;
+    int32_t maxIters = 200;
     bool_t debug = TRUE;
     
     sve_minn_iterate(n, &F, &OK, x, &Fx, dir, dMax, dBox, rIni, rMin, rMax, stop, maxIters, debug);
@@ -158,7 +155,7 @@ void test_minimizer(int id, int n)
     write_solution(prefix, "fin", n, &F, x, Fx);
   }
 
-void write_solution(char *prefix, char *tag, int n, sve_goal_t *F, double x[], double Fx)
+void write_solution(char *prefix, char *tag, int32_t n, sve_goal_t *F, double x[], double Fx)
   { /* Print and write the pulse: */
     fprintf(stderr, "  point =\n");
     write_vector(NULL, tag, n, x); 
@@ -169,7 +166,7 @@ void write_solution(char *prefix, char *tag, int n, sve_goal_t *F, double x[], d
     /* if (prefix != NULL) { write_vector(prefix, tag, n, x); }a */
   }
 
-void write_vector(char *prefix, char *tag, int n, double x[])
+void write_vector(char *prefix, char *tag, int32_t n, double x[])
   { char *fname = NULL;
     FILE *wr;
     if (prefix != NULL) 
@@ -178,14 +175,13 @@ void write_vector(char *prefix, char *tag, int n, double x[])
       }
     else
       { wr = stderr; }
-    int k;
-    for (k = 0; k < n; k++)
+    for (int32_t k = 0; k < n; k++)
       { fprintf(wr, "%5d %12.8f\n", k, x[k]); }
     if ((wr != stderr) && (wr != stdout)) { fclose(wr); }
     if (fname != NULL) { free(fname); }
   }
   
-options_t *get_options(int argc, char **argv)
+options_t *get_options(int32_t argc, char **argv)
   { argparser_t *pp = argparser_new(stderr, argc, argv);
     options_t *o = notnull(malloc(sizeof(options_t)), "no mem"); 
     argparser_finish(pp);

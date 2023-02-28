@@ -1,10 +1,11 @@
 /* Floorlans of IC-1+2 building */
-/* Last edited on 2017-02-26 02:25:26 by stolfilocal */
+/* Last edited on 2023-02-27 21:04:37 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include <r2.h>
 #include <vec.h>
@@ -16,11 +17,13 @@
 #include <archdraw.h>
 #include <archdraw_ic.h>
 
+#define OUT_PREFIX "ic12"
+
 adrw_point_vec_t adrw_ic12_define_points(void);
-int adrw_ic12_get_office_number(int wing, int side, int slot);
-int adrw_ic12_get_first_corner_of_office(int noff);
-void adrw_ic12_get_office_corners(int wing, int side, int slot, r2_t *p00, r2_t *p01, r2_t *p10, r2_t *p11);
-void adrw_ic12_get_office_type_and_span(int noff, adrw_ic_space_type_t *toffP, int *xspanP);
+int32_t adrw_ic12_get_office_number(int32_t wing, int32_t side, int32_t slot);
+int32_t adrw_ic12_get_first_corner_of_office(int32_t noff);
+void adrw_ic12_get_office_corners(int32_t wing, int32_t side, int32_t slot, r2_t *p00, r2_t *p01, r2_t *p10, r2_t *p11);
+void adrw_ic12_get_office_type_and_span(int32_t noff, adrw_ic_space_type_t *toffP, int32_t *xspanP);
 char **adrw_ic12_get_office_descriptions(void);
 
 void adrw_ic12_append_building_outline(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[]);
@@ -30,23 +33,23 @@ void adrw_ic12_append_offices(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit
 void adrw_ic12_append_normal_office
   ( adrw_building_t *B, 
     adrw_point_vec_t *P, 
-    int wing, /* Wing (0 = south, 1 = north). */
-    int side, /* Side of corridor (0 = south, 1 = north). */
-    int slot, /* Office slot along one side of a wing (0 = easternmost). */
+    int32_t wing, /* Wing (0 = south, 1 = north). */
+    int32_t side, /* Side of corridor (0 = south, 1 = north). */
+    int32_t slot, /* Office slot along one side of a wing (0 = easternmost). */
     adrw_unit_style_t *style[], /* Plot styles, indexed by type. */
     char *descr[]              /* Office descriptions, indexed by {noff}. */
   );
 void adrw_ic12_append_coord_courses_office(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[], char *descr[]);
 void adrw_ic12_append_secr_courses(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[], char *descr[]);
-void adrw_ic12_append_central_cabinet(adrw_building_t *B, adrw_point_vec_t *P, int wing,adrw_unit_style_t *style[], char *descr[]);
+void adrw_ic12_append_central_cabinet(adrw_building_t *B, adrw_point_vec_t *P, int32_t wing,adrw_unit_style_t *style[], char *descr[]);
 void adrw_ic12_append_auditorium_seating(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[]);
 void adrw_ic12_append_entrance_arrow(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[]);
 
-void adrw_ic12_plot_all(epswr_figure_t *epsf, adrw_building_t *B, int nx, int ny, bool_t show_dots);
+void adrw_ic12_plot_all(adrw_building_t *B, int32_t nx, int32_t ny, bool_t show_dots);
 
 #define ADDPOLY(PTS,KFL,LABEL,DESC,NMODS,TYPE,...)      \
   do \
-    { int v[] = { __VA_ARGS__ , -1 }; \
+    { int32_t v[] = { __VA_ARGS__ , -1 }; \
       adrw_unit_t *rm = adrw_make_poly((LABEL),(DESC),(NMODS),(PTS),v,0.0,(KFL),(TYPE),style[(TYPE)]); \
       adrw_append_unit(B, rm); \
     } \
@@ -66,20 +69,20 @@ void adrw_ic12_plot_all(epswr_figure_t *epsf, adrw_building_t *B, int nx, int ny
 
 #define ADDPIPE(PTS,KFL,LABEL,DESC,TYPE,...) \
   do \
-    { int v[] = { __VA_ARGS__ , -1 }; \
+    { int32_t v[] = { __VA_ARGS__ , -1 }; \
       adrw_unit_t *rm = adrw_make_poly((LABEL),(DESC),0.0,(PTS),v,0.0,(KFL),(TYPE),style[(TYPE)]); \
       adrw_append_unit(B, rm); \
     } \
   while(0)
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   {
-    int ntypes = adrw_ic_space_type_MAX+1;
+    int32_t ntypes = adrw_ic_space_type_MAX+1;
     adrw_unit_style_t **style = adrw_ic_define_type_styles();
     char **type_tag = adrw_ic_define_type_tags();
     bool_t *type_is_printable = adrw_ic_define_printable_types();
     bool_t *type_is_movable = adrw_ic_define_movable_types();
-    int *color_key_types = adrw_ic_define_color_key_types();
+    int32_t *color_key_types = adrw_ic_define_color_key_types();
     
     adrw_point_vec_t P = adrw_ic12_define_points();
     
@@ -93,26 +96,23 @@ int main (int argc, char **argv)
     adrw_ic12_append_entrance_arrow(B, &P, style);
     
     /* Print the point table: */
-    { FILE *wr = open_write("out/ic12-p.txt", TRUE);
+    { FILE *wr = open_write("out/" OUT_PREFIX "_P.txt", TRUE);
       adrw_print_points(wr, &P);
       fclose(wr);
     }
 
     /* Plot the floorplan etc.: */
-    { bool_t eps_fmt = TRUE;
-      epswr_figure_t *epsf = pswr_new_stream("out/ic12-", NULL, eps_fmt, "d", "letter", FALSE, 788.0, 508.0);
-      /* Plot the floorplan: */
-      adrw_ic12_plot_all(epsf, B, 1, 1, FALSE);
+    { /* Plot the floorplan: */
+      adrw_ic12_plot_all(B, 1, 1, FALSE);
       /* Plot the legend: */
-      adrw_plot_type_legend(epsf, "tkey", color_key_types, ntypes, 5, type_tag, style);
+      adrw_plot_type_legend("out", OUT_PREFIX, "T", color_key_types, ntypes, 5, type_tag, style);
       /* Plot the unit area bars: */
-      adrw_ic_plot_histogram_bars(epsf, B, type_is_movable, type_tag, style);
+      adrw_ic_plot_histogram_bars("out", OUT_PREFIX, B, type_is_movable, type_tag, style);
       /* adrw_ic12_plot_all(epsf, B, 1, 1, TRUE); */
-      pswr_close_stream(epsf);
     }
 
     /* Print the units table: */
-    { FILE *wr = open_write("out/ic12-u.tex", TRUE);
+    { FILE *wr = open_write("out/" OUT_PREFIX "_U.tex", TRUE);
       bool_t TeX = TRUE;
       adrw_print_building(wr, B, type_is_printable, type_tag, TRUE, TRUE, FALSE, TeX);
       fclose(wr);
@@ -121,43 +121,47 @@ int main (int argc, char **argv)
     return 0;
   }
 
-void adrw_ic12_plot_all(epswr_figure_t *epsf, adrw_building_t *B, int nx, int ny, bool_t show_dots)
+void adrw_ic12_plot_all(adrw_building_t *B, int32_t nx, int32_t ny, bool_t show_dots)
   {
-    /* Plot domain in cm. */
+    /* Building dimensions: */
     double xwid = 7200;
     double ywid = 4000;
+    /* Plot domain in cm, for all three floors. */
     double xmrg = 300;
     double ymrg = 300;
     double xmin = 00 - xmrg, xmax = xwid + xmrg;
     double ymin = 00 - ymrg, ymax = ywid + ymrg;
 
-    int ox, oy;
-    for (ox = 0; ox < nx; ox++)
-      for (oy = 0; oy < ny; oy++)
-        {
-          fprintf(stderr, "=== PLOTTING PAGE [%d,%d] OF [%d,%d] ===\n", ox,oy,nx,ny);
-          adrw_start_page(epsf, xmin, xmax, ymin, ymax, ox, nx, oy, ny, "Atual - IC-1+2");
-          pswr_set_label_font(epsf, "Courier", 8.0);
-          adrw_plot_building(epsf, B, show_dots);
-        }
+    for (int32_t ox = 0; ox < nx; ox++)
+      { for (int32_t oy = 0; oy < ny; oy++)
+          {
+            fprintf(stderr, "=== PLOTTING PAGE [%d,%d] OF [%d,%d] ===\n", ox,oy,nx,ny);
+            epswr_figure_t *epsf = adrw_new_figure
+              ( "out", OUT_PREFIX "_A", "P", xmin, xmax, ymin, ymax,
+                ox, nx, oy, ny, "Atual - Predio IC-1+2"
+              );
+            adrw_plot_building(epsf, B, show_dots);
+            epswr_end_figure(epsf);
+          }
+      }
   }
    
-int adrw_ic12_get_office_number(int wing, int side, int slot)
+int32_t adrw_ic12_get_office_number(int32_t wing, int32_t side, int32_t slot)
   { return wing*50 + slot*2 + side + 1; }
 
-int adrw_ic12_get_first_corner_of_office(int noff)
+int32_t adrw_ic12_get_first_corner_of_office(int32_t noff)
   { return 400 + 4*noff; }
  
 adrw_point_vec_t adrw_ic12_define_points(void)
   {
     adrw_point_vec_t P = adrw_point_vec_new(100);
-    int np = 0;
+    int32_t np = 0;
     
-    auto void s(int j, double dX, double dY, int i);
+    auto void s(int32_t j, double dX, double dY, int32_t i);
       /* Defines point {P[j]+(dX,dY)} as {P[i]}.  If {P[i]} was defined
         previously, checks whether the definitions agree. */
        
-    void s(int j, double dX, double dY, int i)
+    void s(int32_t j, double dX, double dY, int32_t i)
       { char *lab = NULL;
         asprintf(&lab, "P%03d", i);
         adrw_append_point(lab, i, j, j, j, dX, dY, 0.0, &P, &np); 
@@ -292,13 +296,13 @@ adrw_point_vec_t adrw_ic12_define_points(void)
     s(204,   -20,  +610, 216);
     
     fprintf(stderr, "--- office corners for main wings ---\n");
-    int wing; /* Wing (0 = south, 1 = north). */
-    int side; /* Side of corridor (0 = south, 1 = north). */
-    int slot; /* Office slot along one side of a wing (0 = easternmost). */
+    int32_t wing; /* Wing (0 = south, 1 = north). */
+    int32_t side; /* Side of corridor (0 = south, 1 = north). */
+    int32_t slot; /* Office slot along one side of a wing (0 = easternmost). */
     for (wing = 0; wing < 2; wing++)
       { for (side = 0; side < 2; side++)
           { for (slot = 0; slot < 24; slot++)
-              { int noff = adrw_ic12_get_office_number(wing,side,slot); /* Office number (regularized). */
+              { int32_t noff = adrw_ic12_get_office_number(wing,side,slot); /* Office number (regularized). */
                 /* Note that some numbers are changed here because {xspan} is always westward: */
                 /*   LIS   is room 95 (labeled 93), spanning 95 and 97. */
                 /*   LSD   is room 91 (labeled 91), spanning 91 and 93. */
@@ -313,7 +317,7 @@ adrw_point_vec_t adrw_ic12_define_points(void)
                 /*   Copa  is room 46 (labeled 46), spanning 46 and 48. */
                 /*   Aud   is room 85 (labeled 85), spanning 85, 87, and 89. */
                 /*   These glitches should be fixed by allowing negative span. */
-                int fco = adrw_ic12_get_first_corner_of_office(noff); /* Number of easternmost outer corner. */
+                int32_t fco = adrw_ic12_get_first_corner_of_office(noff); /* Number of easternmost outer corner. */
                 fprintf(stderr, "  office %d - corners %d..%d\n", noff, fco, fco + 3);
                 
                 /* Get X and Y cords of office (excluding walls) rel to floor origin: */
@@ -333,7 +337,7 @@ adrw_point_vec_t adrw_ic12_define_points(void)
       }
 
     fprintf(stderr, "--- auditorium seating ---\n");
-    int auc = adrw_ic12_get_first_corner_of_office(85);
+    int32_t auc = adrw_ic12_get_first_corner_of_office(85);
     s(auc+0,   00,  +12, 130);
     s(130,     00, +240, 131);
     s(131,   -640,   00, 132);
@@ -398,9 +402,9 @@ adrw_point_vec_t adrw_ic12_define_points(void)
     return P;
   }
 
-void adrw_ic12_get_office_corners(int wing, int side, int slot, r2_t *p00, r2_t *p01, r2_t *p10, r2_t *p11)
+void adrw_ic12_get_office_corners(int32_t wing, int32_t side, int32_t slot, r2_t *p00, r2_t *p01, r2_t *p10, r2_t *p11)
   {
-    int noff = adrw_ic12_get_office_number(wing,side,slot); /* Office number (regularized). */
+    int32_t noff = adrw_ic12_get_office_number(wing,side,slot); /* Office number (regularized). */
 
     /* X and Y cords of office (excluding walls): */
     double xe, xw;    /* East and west X coords of office: */
@@ -488,15 +492,15 @@ void adrw_ic12_get_office_corners(int wing, int side, int slot, r2_t *p00, r2_t 
 void adrw_ic12_append_pillars(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[])
   {
     fprintf(stderr, "--- pillars ---\n");
-    int wing; /* Wing (0 = south, 1 = north). */
-    int side; /* Side of wing (0 = south, 1 = north). */
-    int pill; /* Pillar index (0 = westernmost). */
+    int32_t wing; /* Wing (0 = south, 1 = north). */
+    int32_t side; /* Side of wing (0 = south, 1 = north). */
+    int32_t pill; /* Pillar index (0 = westernmost). */
     for (wing = 0; wing < 2; wing++)
       { for (side = 0; side < 2; side++)
           { for (pill = 0; pill <= 12; pill++)
               { 
-                int ctr = 160 + 100*wing + 20*side + pill;
-                int npil = 26*wing + 13*side + pill;
+                int32_t ctr = 160 + 100*wing + 20*side + pill;
+                int32_t npil = 26*wing + 13*side + pill;
                 char *lpil = NULL;
                 asprintf(&lpil, "P%02d", npil);
                 char *dpil = NULL;
@@ -537,9 +541,9 @@ void adrw_ic12_append_hallways(adrw_building_t *B, adrw_point_vec_t *P, adrw_uni
   
 void adrw_ic12_append_offices(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[], char *descr[])
   {
-    int wing; /* Wing (0 = south, 1 = north). */
-    int side; /* Side of corridor (0 = south, 1 = north). */
-    int slot; /* Office slot along one side of a wing (0 = easternmost). */
+    int32_t wing; /* Wing (0 = south, 1 = north). */
+    int32_t side; /* Side of corridor (0 = south, 1 = north). */
+    int32_t slot; /* Office slot along one side of a wing (0 = easternmost). */
     for (wing = 0; wing < 2; wing++)
       { for (slot = 0; slot < 24; slot++)
           { for (side = 0; side < 2; side++)
@@ -556,20 +560,20 @@ void adrw_ic12_append_offices(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit
 void adrw_ic12_append_normal_office
   ( adrw_building_t *B, 
     adrw_point_vec_t *P, 
-    int wing, /* Wing (0 = south, 1 = north). */
-    int side, /* Side of corridor (0 = south, 1 = north). */
-    int slot, /* Office slot along one side of a wing (0 = easternmost). */
+    int32_t wing, /* Wing (0 = south, 1 = north). */
+    int32_t side, /* Side of corridor (0 = south, 1 = north). */
+    int32_t slot, /* Office slot along one side of a wing (0 = easternmost). */
     adrw_unit_style_t *style[], /* Plot styles, indexed by type. */
     char *descr[]              /* Office descriptions, indexed by {noff}. */
   )
   {              
-    int noff = adrw_ic12_get_office_number(wing, side, slot); /* Office number. */
+    int32_t noff = adrw_ic12_get_office_number(wing, side, slot); /* Office number. */
     char *loff = NULL;
     asprintf(&loff, "%02d", noff);
     char *doff = descr[noff];
     /*  Decide office type {toff} and span {xspan,yspan}: */
     adrw_ic_space_type_t toff; /* Office type. */
-    int xspan; /* How many modules it spans in X direction (1 or more). */
+    int32_t xspan; /* How many modules it spans in X direction (1 or more). */
     adrw_ic12_get_office_type_and_span(noff, &toff, &xspan);
     double modules = xspan;
     if (noff == 17)
@@ -581,11 +585,11 @@ void adrw_ic12_append_normal_office
       { /* Skip it. */ }
     else if (xspan == 1)
       { /* Get the numbers of the four corners, decreasing X. */
-        int fco = adrw_ic12_get_first_corner_of_office(noff); /* Number of easternmost outer corner. */
-        int c00 = fco + 0;  /* X0, Yot0. */
-        int c01 = c00 + 1;  /* X0, Yin0. */
-        int c10 = c00 + 2;  /* X1, Yot1. */
-        int c11 = c01 + 2;  /* X1, Yin1. */
+        int32_t fco = adrw_ic12_get_first_corner_of_office(noff); /* Number of easternmost outer corner. */
+        int32_t c00 = fco + 0;  /* X0, Yot0. */
+        int32_t c01 = c00 + 1;  /* X0, Yin0. */
+        int32_t c10 = c00 + 2;  /* X1, Yot1. */
+        int32_t c11 = c01 + 2;  /* X1, Yin1. */
         fprintf(stderr, "--- office %d - corners %d,%d,%d,%d ---\n", noff, c00,c01,c10,c11);
         ADDPOLY
           ( P, 0, loff, doff, modules, toff,
@@ -594,15 +598,15 @@ void adrw_ic12_append_normal_office
       }
     else if (xspan == 2)
       { /* Get the numbers of the eight corners, decreasing X. */
-        int fco = adrw_ic12_get_first_corner_of_office(noff); /* Number of easternmost outer corner. */
-        int c00 = fco + 0;  /* X0, Yot0. */
-        int c01 = c00 + 1;  /* X0, Yin0. */
-        int c10 = c00 + 2;  /* X1, Yot1. */
-        int c11 = c01 + 2;  /* X1, Yin1. */
-        int c20 = c00 + 8;  /* X3, Yot3. */
-        int c21 = c01 + 8;  /* X3, Yin3. */
-        int c30 = c20 + 2;  /* X2, Yot2. */
-        int c31 = c21 + 2;  /* X2, Yin2. */
+        int32_t fco = adrw_ic12_get_first_corner_of_office(noff); /* Number of easternmost outer corner. */
+        int32_t c00 = fco + 0;  /* X0, Yot0. */
+        int32_t c01 = c00 + 1;  /* X0, Yin0. */
+        int32_t c10 = c00 + 2;  /* X1, Yot1. */
+        int32_t c11 = c01 + 2;  /* X1, Yin1. */
+        int32_t c20 = c00 + 8;  /* X3, Yot3. */
+        int32_t c21 = c01 + 8;  /* X3, Yin3. */
+        int32_t c30 = c20 + 2;  /* X2, Yot2. */
+        int32_t c31 = c21 + 2;  /* X2, Yin2. */
         fprintf
           ( stderr, "--- office %d - corners %d %d  %d %d  %d %d  %d %d ---\n", 
             noff, 
@@ -618,19 +622,19 @@ void adrw_ic12_append_normal_office
       }
     else if (xspan == 3)
       { /* Get the numbers of the 12 corners, decreasing X. */
-        int fco = adrw_ic12_get_first_corner_of_office(noff); /* Number of easternmost outer corner. */
-        int c00 = fco + 0;  /* X0, Yot0. */
-        int c01 = c00 + 1;  /* X0, Yin0. */
-        int c10 = c00 + 2;  /* X1, Yot1. */
-        int c11 = c01 + 2;  /* X1, Yin1. */
-        int c20 = c00 + 8;  /* X2, Yot2. */
-        int c21 = c01 + 8;  /* X2, Yin2. */
-        int c30 = c20 + 2;  /* X3, Yot3. */
-        int c31 = c21 + 2;  /* X3, Yin3. */
-        int c40 = c20 + 8;  /* X4, Yot4. */
-        int c41 = c21 + 8;  /* X4, Yin4. */
-        int c50 = c40 + 2;  /* X5, Yot5. */
-        int c51 = c41 + 2;  /* X5, Yin5. */
+        int32_t fco = adrw_ic12_get_first_corner_of_office(noff); /* Number of easternmost outer corner. */
+        int32_t c00 = fco + 0;  /* X0, Yot0. */
+        int32_t c01 = c00 + 1;  /* X0, Yin0. */
+        int32_t c10 = c00 + 2;  /* X1, Yot1. */
+        int32_t c11 = c01 + 2;  /* X1, Yin1. */
+        int32_t c20 = c00 + 8;  /* X2, Yot2. */
+        int32_t c21 = c01 + 8;  /* X2, Yin2. */
+        int32_t c30 = c20 + 2;  /* X3, Yot3. */
+        int32_t c31 = c21 + 2;  /* X3, Yin3. */
+        int32_t c40 = c20 + 8;  /* X4, Yot4. */
+        int32_t c41 = c21 + 8;  /* X4, Yin4. */
+        int32_t c50 = c40 + 2;  /* X5, Yot5. */
+        int32_t c51 = c41 + 2;  /* X5, Yin5. */
         fprintf
           ( stderr, "--- office %d - corners %d %d  %d %d  %d %d  %d %d  %d %d  %d %d ---\n", 
             noff, 
@@ -651,12 +655,12 @@ void adrw_ic12_append_normal_office
   
 void adrw_ic12_append_coord_courses_office(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[], char *descr[]) 
   {
-    int noff = 103; /* Office number, actually 20C */
+    int32_t noff = 103; /* Office number, actually 20C */
     /* Get the numbers of the four corners, decreasing X. */
-    int c10 = 801;  /* X0, Ylo0. */
-    int c11 = 901;  /* X0, Yhi0. */
-    int c00 = 802;  /* X1, Ylo1. */
-    int c01 = 902;  /* X1, Yhi1. */
+    int32_t c10 = 801;  /* X0, Ylo0. */
+    int32_t c11 = 901;  /* X0, Yhi0. */
+    int32_t c00 = 802;  /* X1, Ylo1. */
+    int32_t c01 = 902;  /* X1, Yhi1. */
     fprintf(stderr, "--- office %d - coord courses - corners %d %d  %d %d\n", noff, c00, c01, c10, c11);
     ADDPOLY
       ( P, 0, "20C", descr[noff], 1.0, adrw_ic_space_type_ADM,
@@ -666,14 +670,14 @@ void adrw_ic12_append_coord_courses_office(adrw_building_t *B, adrw_point_vec_t 
   
 void adrw_ic12_append_secr_courses(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[], char *descr[]) 
   {
-    int noff = 100; /* Office number, actually 20 */
+    int32_t noff = 100; /* Office number, actually 20 */
     /* Get the numbers of the six corners, ccw order. */
-    int c0 = 804;  
-    int c1 = 812;
-    int c2 = 813;
-    int c3 = 803;
-    int c4 = 903;
-    int c5 = 904;
+    int32_t c0 = 804;  
+    int32_t c1 = 812;
+    int32_t c2 = 813;
+    int32_t c3 = 803;
+    int32_t c4 = 903;
+    int32_t c5 = 904;
     fprintf(stderr, "--- office %d - secr courses corners %d %d %d %d %d %d\n", noff, c0, c1, c2, c3, c4, c5);
     ADDPOLY
       ( P, 0, "20", descr[noff], 2.0, adrw_ic_space_type_ADM,
@@ -681,15 +685,15 @@ void adrw_ic12_append_secr_courses(adrw_building_t *B, adrw_point_vec_t *P, adrw
       ); 
   }
   
-void adrw_ic12_append_central_cabinet(adrw_building_t *B, adrw_point_vec_t *P, int wing,adrw_unit_style_t *style[], char *descr[])
+void adrw_ic12_append_central_cabinet(adrw_building_t *B, adrw_point_vec_t *P, int32_t wing,adrw_unit_style_t *style[], char *descr[])
   {
-    int noff = 101 + wing; /* Office number, actually 20A or 20B */
+    int32_t noff = 101 + wing; /* Office number, actually 20A or 20B */
     char *loff = (wing == 0 ? "20A" : "20B");
     /* Get the numbers of the four corners, decreasing X. */
-    int c10 = 805 + 100*wing;  /* Xhi, Ylo0. */
-    int c11 = 806 + 100*wing;  /* Xhi, Yhi0. */
-    int c00 = 807 + 100*wing;  /* Xlo, Ylo1. */
-    int c01 = 808 + 100*wing;  /* Xlo, Yhi1. */
+    int32_t c10 = 805 + 100*wing;  /* Xhi, Ylo0. */
+    int32_t c11 = 806 + 100*wing;  /* Xhi, Yhi0. */
+    int32_t c00 = 807 + 100*wing;  /* Xlo, Ylo1. */
+    int32_t c01 = 808 + 100*wing;  /* Xlo, Yhi1. */
     fprintf(stderr, "--- office %d - central cabinet - wing %d - corners %d %d %d %d\n", noff, wing, c00, c01, c10, c11);
     adrw_ic_space_type_t toff = (wing == 0 ? adrw_ic_space_type_SRV : adrw_ic_space_type_DEP);
     ADDPOLY
@@ -700,21 +704,21 @@ void adrw_ic12_append_central_cabinet(adrw_building_t *B, adrw_point_vec_t *P, i
   
 void adrw_ic12_append_auditorium_seating(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[]) 
   {
-    int noff = 85; /* Office number, spans 85, 87, 89. */
-    int bank; /* Bank of seats (0 or 1). */
+    int32_t noff = 85; /* Office number, spans 85, 87, 89. */
+    int32_t bank; /* Bank of seats (0 or 1). */
     for (bank = 0; bank < 2; bank++)
       { /* Get the numbers of the four corners in cyclic order. */
-        int fco = 130 + 4*bank; /* Index of back corner. */
-        int c0 = fco + 0; /* Index of a back corner. */
-        int c2 = fco + 2; /* Index of opposite front corner. */
+        int32_t fco = 130 + 4*bank; /* Index of back corner. */
+        int32_t c0 = fco + 0; /* Index of a back corner. */
+        int32_t c2 = fco + 2; /* Index of opposite front corner. */
         fprintf(stderr, "--- auditorium %d seats - bank %d - corners %d %d\n", noff, bank, c0, c2);
         ADDSEATS
           ( P, 0, adrw_ic_space_type_SIT,
             c0, c2, 80, 60
           ); 
       }
-    { int c0 = 131;
-      int c2 = 138;
+    { int32_t c0 = 131;
+      int32_t c2 = 138;
       fprintf(stderr, "--- auditorium %d seats lone seat in back - corners %d %d\n", noff, c0, c2);
       ADDSEATS
         ( P, 0, adrw_ic_space_type_SIT,
@@ -726,14 +730,14 @@ void adrw_ic12_append_auditorium_seating(adrw_building_t *B, adrw_point_vec_t *P
 void adrw_ic12_append_entrance_arrow(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[])
   {
     /* Get the numbers of the 7 corners in cyclic order. */
-    int fco = 850; /* Index of arrow tip. */
-    int c0 = fco + 0;
-    int c1 = fco + 1;
-    int c2 = fco + 2;
-    int c3 = fco + 3;
-    int c4 = fco + 4;
-    int c5 = fco + 5;
-    int c6 = fco + 6;
+    int32_t fco = 850; /* Index of arrow tip. */
+    int32_t c0 = fco + 0;
+    int32_t c1 = fco + 1;
+    int32_t c2 = fco + 2;
+    int32_t c3 = fco + 3;
+    int32_t c4 = fco + 4;
+    int32_t c5 = fco + 5;
+    int32_t c6 = fco + 6;
     fprintf(stderr, "--- entrance arrow - corners %d %d %d %d %d %d %d\n", c0, c1, c2, c3, c4, c5, c6);
     ADDPOLY
       ( P, 0, "Ent", "Entrada", 0.0, adrw_ic_space_type_ARR,
@@ -741,10 +745,10 @@ void adrw_ic12_append_entrance_arrow(adrw_building_t *B, adrw_point_vec_t *P, ad
       ); 
   }
 
-void adrw_ic12_get_office_type_and_span(int noff, adrw_ic_space_type_t *toffP, int *xspanP)
+void adrw_ic12_get_office_type_and_span(int32_t noff, adrw_ic_space_type_t *toffP, int32_t *xspanP)
   {
     adrw_ic_space_type_t toff = adrw_ic_space_type_ETC; /* Office type. */
-    int xspan = 1; /* How many modules it spans in -X direction (1 or more). */
+    int32_t xspan = 1; /* How many modules it spans in -X direction (1 or more). */
     switch(noff)
       { 
         case   1 : toff = adrw_ic_space_type_DOC; break;
@@ -857,11 +861,10 @@ void adrw_ic12_get_office_type_and_span(int noff, adrw_ic_space_type_t *toffP, i
 
 char **adrw_ic12_get_office_descriptions(void)
   { 
-    int max_noff = 103;
-    int no = max_noff + 1;
+    int32_t max_noff = 103;
+    int32_t no = max_noff + 1;
     char **descr = (char **)notnull(malloc(no*sizeof(char *)), "no mem");
-    int i;
-    for (i = 0; i < no; i++) { descr[i] = "Inexistente"; }
+    for (int32_t i = 0; i < no; i++) { descr[i] = "Inexistente"; }
     
     descr[  1] = "Escr.Rtorres";
     descr[  2] = "Escr.Helio";
@@ -883,7 +886,7 @@ char **adrw_ic12_get_office_descriptions(void)
     descr[ 18] = "Escr.Islene";
     descr[ 19] = "Reun.Limp./Dep.";
     /* 20: inexistente (passagem) */
-    /* A Secr.Cursos tem número oficial 20, mas não neste programa. */
+    /* A Secr.Cursos tem nï¿½mero oficial 20, mas nï¿½o neste programa. */
     descr[ 21] = "Serv.Inform.";
     descr[ 22] = "Banh.Masc.Doc.";
     descr[ 23] = "Escr.Zanoni";
@@ -909,13 +912,13 @@ char **adrw_ic12_get_office_descriptions(void)
     descr[ 43] = "Escr.Neucimar";
     descr[ 44] = "Escr.Afalcao";
     descr[ 45] = "Escr.Guido";
-    descr[ 46] = "Copa(46,48)"; /* Número oficial: 46. */
+    descr[ 46] = "Copa(46,48)"; /* Nï¿½mero oficial: 46. */
     descr[ 47] = "Escr.RTP/RTC";
     /* 48 inexistente (juntada com 46). */
     /* 49 inexistente. */
     /* 50 inexistente. */
-    descr[ 51] = "Reun.Ger.(51,53)";   /* Número oficial: 53. */
-    descr[ 52] = "Fin./Patr.(52,54)"; /* Número oficial: 54. */
+    descr[ 51] = "Reun.Ger.(51,53)";   /* Nï¿½mero oficial: 53. */
+    descr[ 52] = "Fin./Patr.(52,54)"; /* Nï¿½mero oficial: 54. */
     /* 53 inexistente (juntada com 51). */
     /* 54 inexistente (juntada com 52). */
     descr[ 55] = "Secr.Dir.";
@@ -929,13 +932,13 @@ char **adrw_ic12_get_office_descriptions(void)
     descr[ 63] = "Analistas[2]";
     descr[ 64] = "LOCO[1]";
     descr[ 65] = "Secr.Deptos.";
-    descr[ 66] = "LSC(66,68)"; /* Número oficial: 68. */
+    descr[ 66] = "LSC(66,68)"; /* Nï¿½mero oficial: 68. */
     descr[ 67] = "Secr.Ext.";
     /* 68 inexistente (juntada com 66). */
     /* 69 inexistente (passagem). */
     descr[ 70] = "Brazil-IP";
-    descr[ 71] = "Escr.Dr.[0](71,73)"; /* Número oficial: 71. */
-    descr[ 72] = "LIV(72,74)";       /* Número oficial: 74. */
+    descr[ 71] = "Escr.Dr.[0](71,73)"; /* Nï¿½mero oficial: 71. */
+    descr[ 72] = "LIV(72,74)";       /* Nï¿½mero oficial: 74. */
     /* 73 inexistente (juntada com 71). */
     /* 74 inexistente (juntada com 72). */
     descr[ 75] = "Banh.Fem.Alu.";
@@ -944,29 +947,29 @@ char **adrw_ic12_get_office_descriptions(void)
     descr[ 78] = "Of.Manut.";
     descr[ 79] = "Atend.PED";
     descr[ 80] = "Reun.Alu.";
-    descr[ 81] = "Of.Eletron.(81,83)"; /* Número oficial: 83. */
-    descr[ 82] = "LAS/LCA(82,84)";     /* Número oficial: 84. */
+    descr[ 81] = "Of.Eletron.(81,83)"; /* Nï¿½mero oficial: 83. */
+    descr[ 82] = "LAS/LCA(82,84)";     /* Nï¿½mero oficial: 84. */
     /* 83 inexistente (juntada com 81). */
     /* 84 inexistente (juntada com 82). */
-    descr[ 85] = "Audit.(85,87,89)"; /* Número oficial: 85. */
-    descr[ 86] = "Escr.Dr.[1](86,88)"; /* Número oficial: 86. */
+    descr[ 85] = "Audit.(85,87,89)"; /* Nï¿½mero oficial: 85. */
+    descr[ 86] = "Escr.Dr.[1](86,88)"; /* Nï¿½mero oficial: 86. */
     /* 87 inexistente (juntada com 85). */
     /* 88 inexistente (juntada com 86). */
     /* 89 inexistente (juntada com 85). */
     descr[ 90] = "Escr.Dr[2]";
-    descr[ 91] = "LSD(91,93)";       /* Número oficial: 91. */
-    descr[ 92] = "Escr.Dr.[3](92,94)"; /* Número oficial: 92. */
+    descr[ 91] = "LSD(91,93)";       /* Nï¿½mero oficial: 91. */
+    descr[ 92] = "Escr.Dr.[3](92,94)"; /* Nï¿½mero oficial: 92. */
     /* 93 inexistente (juntada com 91). */
     /* 94 inexistente (juntada com 92). */
-    descr[ 95] = "LIS(95,97)";       /* Número oficial: 93. */
-    descr[ 96] = "LRC(96,98)";       /* Número oficial: 96. */
+    descr[ 95] = "LIS(95,97)";       /* Nï¿½mero oficial: 93. */
+    descr[ 96] = "LRC(96,98)";       /* Nï¿½mero oficial: 96. */
     /* 97 inexistente (juntada com 95). */
     /* 98 inexistente (juntada com 96). */
     /* 99 inexistente */
-    descr[100] = "Secr.Cursos";       /* Número oficial: 20. */
-    descr[101] = "Xerox/Impr.";       /* Número oficial: 20A. */
-    descr[102] = "Almoxarifado";      /* Número oficial: 20B. */
-    descr[103] = "Coord.Cursos";      /* Número oficial: 20C. */
+    descr[100] = "Secr.Cursos";       /* Nï¿½mero oficial: 20. */
+    descr[101] = "Xerox/Impr.";       /* Nï¿½mero oficial: 20A. */
+    descr[102] = "Almoxarifado";      /* Nï¿½mero oficial: 20B. */
+    descr[103] = "Coord.Cursos";      /* Nï¿½mero oficial: 20C. */
     
     return descr;
   }

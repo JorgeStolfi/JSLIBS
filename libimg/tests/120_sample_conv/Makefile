@@ -1,4 +1,4 @@
-# Last edited on 2010-08-14 23:11:15 by stolfi
+# Last edited on 2023-02-27 11:39:24 by stolfi
 
 PROG = test_sample_conv
 
@@ -7,6 +7,7 @@ TEST_LIB_DIR := ../..
 
 JS_LIBS := \
   libminu.a \
+  libgeo.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

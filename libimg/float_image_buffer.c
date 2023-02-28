@@ -1,10 +1,11 @@
 /* See {float_image_buffer.h}. */
-/* Last edited on 2010-08-04 17:29:22 by stolfi */
+/* Last edited on 2023-02-25 16:01:57 by stolfi */
 
 #include <stdlib.h>
 #include <assert.h>
 #include <affirm.h>
 #include <bool.h>
+#include <rmxn.h>
 
 #include <float_image_buffer.h>
 
@@ -53,7 +54,7 @@ double **float_image_buffer_alloc_rows(int NC, int NX, int NB, bool_t clear)
     int NCX = NC*NX; /* Samples per row. */
     int yb;
     for (yb = 0; yb < NB; yb++) 
-      { double *p = (double *)notnull(malloc(NCX*sizeof(double)), "no mem");
+      { double *p = rmxn_alloc(NC,NX);
         rowptr[yb] = p;
         if (clear) { int k; for (k = 0; k < NCX; k++, p++) { (*p) = 0.0; } }
       }

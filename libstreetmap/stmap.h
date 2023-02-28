@@ -1,5 +1,5 @@
 /* stmap - tools for reading, plotting, and manipulating street maps */
-/* Last edited on 2022-10-20 05:58:29 by stolfi */
+/* Last edited on 2023-02-21 21:32:38 by stolfi */
 
 #ifndef stmap_H
 #define stmap_H
@@ -12,7 +12,7 @@
 #include <vec.h>
 
 #include <stdio.h>
-#include <pswr.h>
+#include <epswr.h>
 
 typedef struct Interval { double lo, hi; } Interval;
 
@@ -158,7 +158,7 @@ void st_increment_coverage
     {st_map_compute_costs}. */
 
 void st_map_plot
-  ( PSStream *ps, 
+  ( epswr_figure_t *eps, 
     Map *m, 
     Interval xr, Interval yr, 
     float *vwidth, RGBColor *vcolor,
@@ -187,11 +187,11 @@ void st_map_get_bbox(Map *m, Interval *xr, Interval *yr);
 
 /* DATA I/O */
 
-void st_write_double_vec_t(char *name, double_vec_t *d);
-  /* Writes to file {name} an arbitrary data vector {d}.
+void st_write_double_vec_t(char *name, char *fmt, double_vec_t *d);
+  /* Writes to file {name} an arbitrary data vector {d}, using format {fmt} for each element.
     If {name} is "-", writes to {stdout}. */
   
-void st_fwrite_double_vec_t(FILE *wr, double_vec_t *d);
+void st_fwrite_double_vec_t(FILE *wr, char *fmt, double_vec_t *d);
   /* Same as {st_write_double_vec_t}, but writes to the open file {wr}. */
 
 double_vec_t st_read_double_vec_t(char *name);

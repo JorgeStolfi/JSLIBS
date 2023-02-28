@@ -1,14 +1,17 @@
 /* Defines a target function F for bbopt2.c */
-/* Last edited on 2017-01-02 16:21:37 by jstolfi */
+/* Last edited on 2023-02-20 06:41:21 by stolfi */
   
-#include <fbb_f3_ia.h>
-#include <bbgoal.h>
+#define _GNU_SOURCE
+#include <stdint.h>
 
 #include <ia.h>
 
+#include <bbgoal.h>
+#include <fbb_f3_ia.h>
+
 /* PROTOTYPES */
 
-int fbb_f3_ia_dim = 2;
+int32_t fbb_f3_ia_dim = 2;
 char *fbb_f3_ia_tag = "f3_ia";
 char *fbb_f3_ia_descr = "(IA) u = x - 2/7; v = y - 3/7; u^2 + v^2 + u*v + 1";
 
@@ -56,7 +59,7 @@ void fbb_f3_ia_true_opt(Interval *xr, Interval *sr)
     Interval mr[2];
     mr[0] = ia_scale(ia_const(One, Zero), fbb_f3_XMINN, fbb_f3_XMIND);
     mr[1] = ia_scale(ia_const(One, Zero), fbb_f3_YMINN, fbb_f3_YMIND);
-    int i;
+    int32_t i;
     for (i = 0; i < fbb_f3_ia_dim; i++)
       { Float mlo = mr[i].lo, mhi = mr[i].hi;
         Float xlo = xr[i].lo, xhi = xr[i].hi;

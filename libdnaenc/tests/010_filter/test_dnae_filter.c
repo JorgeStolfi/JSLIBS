@@ -2,7 +2,7 @@
 #define PROG_DESC "test of DNA signal filtering routines (also spectrum plots)"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-02-14 04:01:00 by stolfi */
+/* Last edited on 2023-02-25 16:06:03 by stolfi */
 
 #define test_dnae_filter_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -125,6 +125,7 @@
 #include <vec.h>
 #include <epswr.h>
 #include <wt_table.h>
+#include <rn.h>
 
 #include <msm_multi.h>
 #include <msm_ps_tools.h>
@@ -330,7 +331,7 @@ void dnae_generate_and_plot_spectra(options_t *o, int32_t N)
     int32_t curF = origF;  /* Max freq in {vP,aP}. */
     
     /* Spectrum of filtered DNA signal at max resolution, assuming no resampling: */
-    double *fP = (double *)notnull(malloc((maxF+1)*sizeof(double)), "no mem");
+    double *fP = rn_alloc((maxF+1));
     for (f = 0; f <= maxF; f++) { fP[f] = (f <= origF ? origP[f] : 0.0); }
 
     /* Spectra of components of the current signal (filtered and resampled): */
@@ -339,10 +340,10 @@ void dnae_generate_and_plot_spectra(options_t *o, int32_t N)
     for (f = 0; f <= curF; f++) { vP[f] = fP[f]; aP[f] = 0; }
     
     /* Effective filter kernel, at max sample count: */
-    double *wft = (double *)notnull(malloc(maxN*sizeof(double)), "no mem");
+    double *wft = rn_alloc(maxN);
     
     /* Spectrum of effective filter kernel, at max resolution: */
-    double *wfP = (double *)notnull(malloc((maxF+1)*sizeof(double)), "no mem");
+    double *wfP = rn_alloc(maxF+1);
     
     /* Simulate filtering and plot spectra: */
     while (TRUE)
@@ -432,7 +433,7 @@ void dnae_generate_and_plot_spectra(options_t *o, int32_t N)
         for (f = 0; f <= maxF; f++) { fP[f] *= wfP[f]; }
     
         /* Compute power spectrum of incremental filter in current resolution: */
-        double *wcP = (double *)notnull(malloc((curF+1)*sizeof(double)), "no mem");
+        double *wcP = rn_alloc(curF+1);
         fprintf(stderr, "computing current-res spectrum of incremental filter for level %d --> %d:\n", curL, curL+1);
         dnae_compute_filter_spectrum(wt->ne, wt->e, curN, wcP);
         dnae_plot_spectra(curF, wcP, NULL, NULL, nextF, maxW, TRUE, hSz, vSz, fSz, o->outName, curL+1, "-fr");

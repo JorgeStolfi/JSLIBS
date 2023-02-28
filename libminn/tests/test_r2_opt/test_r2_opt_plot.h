@@ -1,5 +1,5 @@
 /* Test plot tools for {r2_opt.h}. */
-/* Last edited on 2017-06-06 23:20:09 by stolfilocal */
+/* Last edited on 2023-02-27 10:36:03 by stolfi */
 
 #ifndef test_r2_opt_plot_H
 #define test_r2_opt_plot_H
@@ -16,7 +16,7 @@
 
 void tr2o_plot_goal
   ( r2_opt_goal_func_t *f2, 
-    int NI, 
+    int32_t NI, 
     i2_t iscale, 
     r2_t ctr[],
     char *ctrtag,
@@ -30,7 +30,7 @@ void tr2o_plot_goal
 
 void tr2o_write_test_image
   ( tr2o_image_eval_proc_t *eval, 
-    int i,        /* Image index. */
+    int32_t i,        /* Image index. */
     i2_t iscale,  /* Image shrink scale in each axis. */
     i2_t wsize,   /* Comparison widow size along each axis. */
     r2_t ctr,     /* Center of image. */
@@ -49,13 +49,13 @@ void tr2o_write_test_image
     {2*rad.c[j]+wsize.c[j]} centered on that point. Note that {rad} is
     not scaled but used "as is". */
 
-void tr2o_plot_grid_normalize_to_span(int NI, r2_t u[], r2_t rad[]);
+void tr2o_plot_grid_normalize_to_span(int32_t NI, r2_t u[], r2_t rad[]);
   /* Scales all vectors {u[0..N-1]} by the same scale factor, so 
     that at least one {u[i]} lies on the axis-aligned 
     ellipse with principal radii {rad[i]}, and all the others are inside
     their respective ellipses. */
        
-double tr2o_compute_rel_span(int NI, r2_t u[], r2_t rad[]);
+double tr2o_compute_rel_span(int32_t NI, r2_t u[], r2_t rad[]);
   /* Returns the max ratio of the norm of each {u[i]} to the radius of 
     the axis-aligned ellipse with principal radii {rad[i]} along the
     same direction as {u[i]}. */

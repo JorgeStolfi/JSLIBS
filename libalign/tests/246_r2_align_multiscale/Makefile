@@ -1,13 +1,13 @@
-# Last edited on 2022-02-28 11:52:44 by stolfi
+# Last edited on 2023-02-19 09:12:01 by stolfi
 
 PROG = r2_align_multiscale_test
 
 TEST_LIB := libalign.a
 TEST_LIB_DIR := ../..
 
-JS_LIBS :=  \
+JS_LIBS := \
   libminn.a \
-  libgeo.a \ 
+  libgeo.a \
   libimg.a \
   libjs.a
 

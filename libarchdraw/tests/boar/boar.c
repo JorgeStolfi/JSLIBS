@@ -1,5 +1,5 @@
 /* Planta basica da casa na Boaretto da Silva 113 */
-/* Last edited on 2012-12-07 20:54:43 by stolfilocal */
+/* Last edited on 2023-02-21 05:25:43 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -14,11 +14,11 @@
 
 #include <archdraw.h>
 
-/* !!! First build the units then draw them. !!! */
+#define OUT_PREFIX "boar"
 
 adrw_point_vec_t define_points(void);
 
-void plot_all(char *prefix, adrw_point_vec_t *P, int nx, int ny, bool_t show_dots);
+void plot_all(char *prefix, adrw_point_vec_t *P, int32_t nx, int32_t ny, bool_t show_dots);
 
 void draw_perimeter_wall(epswr_figure_t *epsf, adrw_point_vec_t *P, bool_t show_dots);
 void draw_old_sidewalk(epswr_figure_t *epsf, adrw_point_vec_t *P, bool_t show_dots);
@@ -31,11 +31,11 @@ void draw_drain_pipes(epswr_figure_t *epsf, adrw_point_vec_t *P, bool_t show_dot
 
 #define PSHAPE(LABEL,DESC,R,G,B,SHOW_DOTS,...)  \
   do \
-    { int v[] = { __VA_ARGS__ , -1 }; \
+    { int32_t v[] = { __VA_ARGS__ , -1 }; \
       frgb_t color = (frgb_t){{(float)(R),(float)(G),(float)(B)}}; \
       frgb_t black = (frgb_t){{0,0,0}}; \
       adrw_unit_style_t *st = adrw_make_unit_style(&color,&black,0.10,NULL,0.0); \
-      int kfloor = 0, type = 0; \
+      int32_t kfloor = 0, type = 0; \
       adrw_unit_t *rm = adrw_make_poly((LABEL),(DESC),0.0,P,v,0.0,kfloor,type,st); \
       adrw_plot_unit(epsf, rm, (SHOW_DOTS)); \
       free(st); free(rm->pt.e); free(rm); \
@@ -47,7 +47,7 @@ void draw_drain_pipes(epswr_figure_t *epsf, adrw_point_vec_t *P, bool_t show_dot
     { frgb_t color = (frgb_t){{(float)(R),(float)(G),(float)(B)}}; \
       frgb_t black = (frgb_t){{0,0,0}}; \
       adrw_unit_style_t *st = adrw_make_unit_style(&color,&black,0.10,NULL,0.0); \
-      int kfloor = 0, type = 0; \
+      int32_t kfloor = 0, type = 0; \
       adrw_unit_t *rm = adrw_make_box((LABEL),(DESC),P,(PT),0.0,0.0,0.0,28,28,0.0,kfloor,type,st); \
       adrw_plot_unit(epsf, rm, (SHOW_DOTS)); \
       free(st); free(rm->pt.e); free(rm); \
@@ -56,81 +56,89 @@ void draw_drain_pipes(epswr_figure_t *epsf, adrw_point_vec_t *P, bool_t show_dot
 
 #define DRPIPE(LABEL,DESC,R,G,B,SHOW_DOTS,PTA,PTB) \
   do \
-    { int v[] = { (PTA), (PTB), -1 };        \
+    { int32_t v[] = { (PTA), (PTB), -1 };        \
       frgb_t color = (frgb_t){{(float)(R),(float)(G),(float)(B)}}; \
       adrw_unit_style_t *st = adrw_make_unit_style(NULL,&color,0.50,NULL,0.0); \
-      int kfloor = 0, type = 0; \
+      int32_t kfloor = 0, type = 0; \
       adrw_unit_t *rm = adrw_make_poly((LABEL),(DESC),0.0,P,v,0.0,kfloor,type,st); \
       adrw_plot_unit(epsf, rm, (SHOW_DOTS)); \
       free(st); free(rm->pt.e); free(rm); \
     } \
   while(0)
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   {
-
     adrw_point_vec_t P = define_points();
     
     /* Print the point table: */
-    FILE *wr = open_write("out/boar_p.txt", TRUE);
+    FILE *wr = open_write("out/" OUT_PREFIX "_P.txt", TRUE);
     adrw_print_points(wr, &P);
     fclose(wr);
 
     /* Plot the floorplan: */
-    plot_all("out/boar_A", &P, 1, 1, FALSE);
-    plot_all("out/boar_B", &P, 2, 3, FALSE);
-    plot_all("out/boar_C", &P, 1, 1, TRUE);
+    plot_all(OUT_PREFIX "_A", &P, 1, 1, FALSE);
+    plot_all(OUT_PREFIX "_B", &P, 2, 3, FALSE);
+    plot_all(OUT_PREFIX "_C", &P, 1, 1, TRUE);
     
     return 0;
   }
 
-void plot_all(char *prefix, adrw_point_vec_t *P, int nx, int ny, bool_t show_dots)
+void plot_all(char *prefix, adrw_point_vec_t *P, int32_t nx, int32_t ny, bool_t show_dots)
   {
-    double hSize = 460;
-    double vSize = 640;
-    
+    /* Plot domain in cm. */
     double xmin = -100, xmax = +1700;
     double ymin = -100, ymax = +3300;
     
-    int ox, oy;
-    for (ox = 0; ox < nx; ox++)
-      for (oy = 0; oy < ny; oy++)
-        {
-          char *fname = NULL;
-          asprintf(&fname, "%s_%03d_%03d.eps", prefix, ox, oy);
-          FILE *wr = open_write(fname, TRUE);
-          bool_t verbose = TRUE;
-          double hvMarg = 4.0;
-          epswr_figure_t *epsf = epswr_new_figure(wr, hSize, vSize, hvMarg, hvMarg, hvMarg, hvMarg, verbose);
+    for (int32_t ox = 0; ox < nx; ox++)
+      { for (int32_t oy = 0; oy < ny; oy++)
+          { epswr_figure_t *epsf = adrw_new_figure
+              ( "out", prefix, "1S", xmin, xmax, ymin, ymax,
+                ox, nx, oy, ny, "Situacao atual"
+              );
 
-          adrw_start_page(epsf, xmin, xmax, ymin, ymax, ox, nx, oy, ny, "Situacao atual");
-          draw_old_sidewalk(epsf, P, show_dots);
-          draw_building(epsf, P, show_dots);
-          draw_perimeter_wall(epsf, P, show_dots);
+            draw_old_sidewalk(epsf, P, show_dots);
+            draw_building(epsf, P, show_dots);
+            draw_perimeter_wall(epsf, P, show_dots);
+            
+            epswr_end_figure(epsf);
 
-          adrw_start_page(epsf, xmin, xmax, ymin, ymax, ox, nx, oy, ny, "Remocao de ladrilhos");
-          draw_old_sidewalk(epsf, P, show_dots);
-          draw_sidewalk_cuts(epsf, P, show_dots);
-          draw_building(epsf, P, show_dots);
-          draw_perimeter_wall(epsf, P, show_dots);
+            epsf = adrw_new_figure
+              ( "out", prefix, "2R", xmin, xmax, ymin, ymax,
+                ox, nx, oy, ny, "Remocao de ladrilhos"
+              );
 
-          adrw_start_page(epsf, xmin, xmax, ymin, ymax, ox, nx, oy, ny, "Tubulacao e caixas de drenagem");
-          draw_trimmed_sidewalk(epsf, P, show_dots);
-          draw_drain_pipes(epsf, P, show_dots);
-          draw_drain_boxes(epsf, P, show_dots);
-          draw_building(epsf, P, show_dots);
-          draw_perimeter_wall(epsf, P, show_dots);
+            draw_old_sidewalk(epsf, P, show_dots);
+            draw_sidewalk_cuts(epsf, P, show_dots);
+            draw_building(epsf, P, show_dots);
+            draw_perimeter_wall(epsf, P, show_dots);
+            epswr_end_figure(epsf);
 
-          adrw_start_page(epsf, xmin, xmax, ymin, ymax, ox, nx, oy, ny, "Assentamento de ladrilhos");
-          draw_trimmed_sidewalk(epsf, P, show_dots);
-          draw_drain_boxes(epsf, P, show_dots);
-          draw_sidewalk_additions(epsf, P, show_dots);
-          draw_building(epsf, P, show_dots);
-          draw_perimeter_wall(epsf, P, show_dots);
+            epsf = adrw_new_figure
+              ( "out", prefix, "3T", xmin, xmax, ymin, ymax,
+                ox, nx, oy, ny, "Tubulacao e caixas de drenagem"
+              );
 
-          epswr_end_figure(epsf);
-          free(fname);
-        }
+            draw_trimmed_sidewalk(epsf, P, show_dots);
+            draw_drain_pipes(epsf, P, show_dots);
+            draw_drain_boxes(epsf, P, show_dots);
+            draw_building(epsf, P, show_dots);
+            draw_perimeter_wall(epsf, P, show_dots);
+            epswr_end_figure(epsf);
+
+            epsf = adrw_new_figure
+              ( "out", prefix, "4A", xmin, xmax, ymin, ymax,
+                ox, nx, oy, ny, "Assentamento de ladrilhos"
+              );
+
+            draw_trimmed_sidewalk(epsf, P, show_dots);
+            draw_drain_boxes(epsf, P, show_dots);
+            draw_sidewalk_additions(epsf, P, show_dots);
+            draw_building(epsf, P, show_dots);
+            draw_perimeter_wall(epsf, P, show_dots);
+            epswr_end_figure(epsf);
+
+          }
+      }
   }
 
 void draw_perimeter_wall(epswr_figure_t *epsf, adrw_point_vec_t *P, bool_t show_dots)
@@ -283,13 +291,13 @@ void draw_drain_pipes(epswr_figure_t *epsf, adrw_point_vec_t *P, bool_t show_dot
 adrw_point_vec_t define_points(void)
   {
     adrw_point_vec_t P = adrw_point_vec_new(40);
-    int np = 0;
+    int32_t np = 0;
     
-    auto void s(int j, double dX, double dY, int i);
+    auto void s(int32_t j, double dX, double dY, int32_t i);
       /* Defines point {P[j]+(dX,dY)} as {P[i]}.  If {P[i]} was defined
         previously, checks whether the definitions agree. */
        
-    void s(int j, double dX, double dY, int i)
+    void s(int32_t j, double dX, double dY, int32_t i)
       { char *lab = NULL;
         asprintf(&lab, "P%03d", i);
         adrw_append_point(lab, i, j, j, j, dX, dY, 0.0, &P, &np); 

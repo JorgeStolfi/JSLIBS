@@ -1,5 +1,5 @@
 /* Test tools for {r2_opt.h}. */
-/* Last edited on 2017-06-06 20:54:05 by stolfilocal */
+/* Last edited on 2023-02-27 10:36:12 by stolfi */
 
 #ifndef test_r2_opt_tools_H
 #define test_r2_opt_tools_H
@@ -14,7 +14,7 @@
 double tr2o_tools_eval_mother_image
   ( r2_t *p, 
     r2_t *scale,
-    int mom_NF, 
+    int32_t mom_NF, 
     r2_t mom_frq[], 
     r2_t mom_phi[], 
     double mom_amp[]
@@ -37,7 +37,7 @@ double tr2o_tools_eval_mother_image
     the point {p} was reduced by the same amount. */
 
 void tr2o_tools_initialize_mother_image
-  ( int mom_NF, 
+  ( int32_t mom_NF, 
     r2_t mom_frq[], 
     r2_t mom_phi[], 
     double mom_amp[],

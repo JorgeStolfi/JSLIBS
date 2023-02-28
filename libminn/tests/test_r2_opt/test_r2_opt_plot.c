@@ -1,5 +1,5 @@
 /* See {test_r2_opt_plot.h}. */
-/* Last edited on 2017-06-06 23:23:14 by stolfilocal */
+/* Last edited on 2023-02-27 10:39:11 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -19,8 +19,7 @@
 
 #include <test_r2_opt_plot.h>
 
-
-void tr2o_choose_plot_directions(int NI, r2_t rad[], r2_t u[], r2_t v[]);
+void tr2o_choose_plot_directions(int32_t NI, r2_t rad[], r2_t u[], r2_t v[]);
   /* Chooses displacement vectors {u[0..NI-1],v[0..NI-1]} that define
     the grid of sampling points for {tr2o_plot_goal}.  Namely, sample point
     {q[ku,kv][i]} will be {ctr[i] + ku/NS*u[i] + kv/NS*v[i]}. */
@@ -31,7 +30,7 @@ double tr2o_throw_nonzero_U(void);
 
 void tr2o_plot_goal
   ( r2_opt_goal_func_t *f2, 
-    int NI, 
+    int32_t NI, 
     i2_t iscale, 
     r2_t ctr[],
     char *ctrtag,
@@ -47,16 +46,16 @@ void tr2o_plot_goal
     asprintf(&fname, "out/f2-%02d-%02d-%s.dat", iscale.c[0], iscale.c[1], ctrtag);
     FILE *fpl = open_write(fname, TRUE);
     
-    int NS = 20; /* Number of steps in each direction, in each sense. */
+    int32_t NS = 20; /* Number of steps in each direction, in each sense. */
     r2_t q[NI]; /* Probe points. */
     fprintf(stderr, "\n");
-    for (int ku = -NS; ku <= +NS; ku++)
+    for (int32_t ku = -NS; ku <= +NS; ku++)
       { double du = ((double)ku)/((double)NS);
         fprintf(stderr, ".");
-        for (int kv = -NS; kv <= +NS; kv++)
+        for (int32_t kv = -NS; kv <= +NS; kv++)
           { double dv = ((double)kv)/((double)NS);
             /* Compute the probe points {q[0..NI-1]}. */
-            for(int i = 0; i < NI; i++)
+            for(int32_t i = 0; i < NI; i++)
               { r2_mix(du,&(u[i]), dv, &(v[i]), &(q[i])); 
                 r2_add(&(ctr[i]), &(q[i]), &(q[i])); 
               }
@@ -73,7 +72,7 @@ void tr2o_plot_goal
     fclose(fpl);
   }
 
-void tr2o_choose_plot_directions(int NI, r2_t rad[], r2_t u[], r2_t v[])
+void tr2o_choose_plot_directions(int32_t NI, r2_t rad[], r2_t u[], r2_t v[])
   { /* For each {i} in {0..NI-1}, we generate
       two orthogonal vectors {u[i],v[i]},
       that are nonzero along the variable coords of {ctr[i]}.
@@ -81,11 +80,11 @@ void tr2o_choose_plot_directions(int NI, r2_t rad[], r2_t u[], r2_t v[])
       are zero.  If {p[i]} has only one variable coord, then 
       {u[i]} is nonzero along that coord, and {v[i]} is zero.
     */
-    for (int i = 0; i < NI; i++) 
+    for (int32_t i = 0; i < NI; i++) 
       { /* Count variable coords {nv} of {p[i]}, find last nonzero var {jf}: */
-        int nv = 0;
-        int jf = -1;
-        for (int j = 0; j < 2; j++)
+        int32_t nv = 0;
+        int32_t jf = -1;
+        for (int32_t j = 0; j < 2; j++)
           { double rij = rad[i].c[j];
             if (rij > 0.0) { nv++; jf = j; }
           }
@@ -105,7 +104,7 @@ void tr2o_choose_plot_directions(int NI, r2_t rad[], r2_t u[], r2_t v[])
           }
         else if (nv == 2)
           { /* Generate a random vector {ui} in {[-1 _ +1]^2}, nonzero along variable coords: */
-            for (int j = 0; j < 2; j++)
+            for (int32_t j = 0; j < 2; j++)
               { double rij = rad[i].c[j];
                 u[i].c[j] = rij*tr2o_throw_nonzero_U();
               }
@@ -133,16 +132,16 @@ void tr2o_choose_plot_directions(int NI, r2_t rad[], r2_t u[], r2_t v[])
     tr2o_debug_points(0, "plot direction v", NI, "pltv", v, NULL, NULL, rad, NULL, NAN, NAN);
   }
 
-void tr2o_plot_grid_normalize_to_span(int NI, r2_t u[], r2_t rad[])
+void tr2o_plot_grid_normalize_to_span(int32_t NI, r2_t u[], r2_t rad[])
   {
     double tmax = tr2o_compute_rel_span(NI, u, rad); 
     double sf = 1.0/tmax; /* Scaling factor. */
-    for (int i = 0; i < NI; i++) { r2_scale(sf, &(u[i]), &(u[i])); }
+    for (int32_t i = 0; i < NI; i++) { r2_scale(sf, &(u[i]), &(u[i])); }
   }
   
-double tr2o_compute_rel_span(int NI, r2_t u[], r2_t rad[]) 
+double tr2o_compute_rel_span(int32_t NI, r2_t u[], r2_t rad[]) 
   { double tmax = 0.0;
-    for (int i = 0; i < NI; i++) 
+    for (int32_t i = 0; i < NI; i++) 
       { /* Get the direction {dui} of {u[i]}: */
         r2_t dui; 
         double mu = r2_dir(&(u[i]), &dui);
@@ -159,7 +158,7 @@ double tr2o_compute_rel_span(int NI, r2_t u[], r2_t rad[])
 
 void tr2o_write_test_image
   ( tr2o_image_eval_proc_t *eval, 
-    int i,        /* Image index. */
+    int32_t i,        /* Image index. */
     i2_t iscale,  /* Image shrink scale in each axis. */
     i2_t wsize,   /* Comparison widow size along each axis. */
     r2_t ctr,     /* Center of image (unscaled). */
@@ -170,31 +169,31 @@ void tr2o_write_test_image
     /* Get half-widths of sampling window: */
     demand((wsize.c[0] % 2) == 1, "window width must be odd");
     demand((wsize.c[1] % 2) == 1, "window height must be odd");
-    int hwx = (wsize.c[0]-1)/2; 
-    int hwy = (wsize.c[1]-1)/2;
+    int32_t hwx = (wsize.c[0]-1)/2; 
+    int32_t hwy = (wsize.c[1]-1)/2;
 
     r2_t scale = (r2_t){{ pow(2.0, iscale.c[0]), pow(2.0, iscale.c[1]) }};
     
     char *fname = NULL;
     asprintf(&fname, "out/image-%02d-%02d-%03d-%s.pgm", iscale.c[0], iscale.c[1], i, ctrtag);
     /* Image size: */
-    int HX = 2*((int)ceil(rad.c[0])+hwx)+1; int NX = 2*HX + 1;
-    int HY = 2*((int)ceil(rad.c[1])+hwy)+1; int NY = 2*HY + 1;
+    int32_t HX = 2*((int32_t)ceil(rad.c[0])+hwx)+1; int32_t NX = 2*HX + 1;
+    int32_t HY = 2*((int32_t)ceil(rad.c[1])+hwy)+1; int32_t NY = 2*HY + 1;
     fprintf(stderr, "writing image file %s (%d x %d)\n", fname, NX, NY);
     
     /* We cannot import {libimg} yet so let's write ASCII PGM: */
     FILE *wr = open_write(fname, TRUE);
-    int maxval = 65535;
+    int32_t maxval = 65535;
     fprintf(wr, "P2\n");
     fprintf(wr, "%d %d\n", NX, NY);
     fprintf(wr, "%d", maxval);
-    for (int iy = -HY; iy <= +HY; iy++)
+    for (int32_t iy = -HY; iy <= +HY; iy++)
       { double ysc = ctr.c[1]/scale.c[1] + iy;
-        for (int ix = -HX; ix <= +HX; ix++)
+        for (int32_t ix = -HX; ix <= +HX; ix++)
           { double xsc = ctr.c[0]/scale.c[0] + ix;
             double val = eval(i, iscale, xsc, ysc);
             assert((val >= 0.0) && (val <= 1.0));
-            int ival = (int)floor(val*(maxval + 0.9999999));
+            int32_t ival = (int32_t)floor(val*(maxval + 0.9999999));
             assert((ival >= 0) && (ival <= maxval));
             fprintf(wr, (((ix + HX) % 20) == 0 ? "\n" : " "));
             fprintf(wr, "%d", ival);

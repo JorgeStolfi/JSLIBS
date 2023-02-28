@@ -1,4 +1,4 @@
-# Last edited on 2023-02-03 23:23:58 by stolfi
+# Last edited on 2023-02-18 13:17:07 by stolfi
 
 PROG := test_opf
 
@@ -36,15 +36,16 @@ NSITES :=  ${word 1, ${TEST_FIELDS}}
 DISTR :=   ${word 2, ${TEST_FIELDS}}
 PCOST :=   ${word 3, ${TEST_FIELDS}}
   
-PREFIX := out/${subst :,-,${TEST}}
-EPSFILE = ${PREFIX}-000001.eps
-PSVIEW := atril
+OUT_PREFIX := out/opf_${subst :,_,${TEST}}
+PSVIEW := evince
 
-single: ${EPSFILE}
+EPS_FILE := ${OUT_PREFIX}.eps
 
-${EPSFILE}: ${PROG}
-	${PROG} ${NSITES} ${DISTR} ${PCOST} ${PREFIX}
-	${PSVIEW} ${EPSFILE}
+single: ${EPS_FILE}
+
+${EPS_FILE}: ${PROG}
+	${PROG} ${NSITES} ${DISTR} ${PCOST}
+	${PSVIEW} ${EPS_FILE}
 
 # End ${TEST} section
 ########################################################################

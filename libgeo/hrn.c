@@ -1,5 +1,5 @@
 /* See {hrn.h}. */
-/* Last edited on 2021-07-18 00:42:18 by jstolfi */
+/* Last edited on 2023-02-25 15:29:35 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -41,9 +41,8 @@ sign_t hrn_side(int32_t n, double p[], double h[])
 hrn_pmap_t hrn_pmap_alloc(int32_t m, int32_t n)
   { hrn_pmap_t M;
     M.m = m; M.n = n;
-    int32_t sz = (m+1)*(n+1);
-    M.dir = (double *)notnull(malloc(sz*sizeof(double)), "out of mem");
-    M.inv = (double *)notnull(malloc(sz*sizeof(double)), "out of mem");
+    M.dir = rmxn_alloc(m+1,n+1);
+    M.inv = rmxn_alloc(m+1,n+1);
     return M;
   }
 

@@ -2,11 +2,12 @@
 #define archdraw_H
 
 /* Primitives for architectural drawings */
-/* Last edited on 2012-12-07 20:49:01 by stolfilocal */
+/* Last edited on 2023-02-20 18:15:24 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <values.h>
+#include <stdint.h>
 
 #include <epswr.h>
 #include <r3.h>
@@ -20,7 +21,7 @@
 typedef struct adrw_point_t 
   { r3_t p;      /* Point coordinates (cm). */
     char *lab;   /* Point label (possibly NULL). */
-    int krot;    /* Direction angle of label, degrees ccw from {+X}. */
+    int32_t krot;    /* Direction angle of label, degrees ccw from {+X}. */
     bool_t used; /* {TRUE} if point has been used by a command from this library. */
   } adrw_point_t;
  
@@ -33,15 +34,15 @@ vec_typedef(adrw_point_vec_t, adrw_point_vec, adrw_point_t);
 
 void adrw_append_point
   ( char *lab, 
-    int ip, 
-    int jpx, 
-    int jpy, 
-    int jpz, 
+    int32_t ip, 
+    int32_t jpx, 
+    int32_t jpy, 
+    int32_t jpz, 
     double dX, 
     double dY, 
     double dZ, 
     adrw_point_vec_t *P,
-    int *nP
+    int32_t *nP
   );
   /* Defines {P->el[ip]} as point {(P[jpx].x,P[jpy].y,P[jpz].z)+(dX,dY,dZ)}, with label {lab}.
     If {ip} is {*np} or more, also marks all points in {*np..ip-1} as undefined,
@@ -57,7 +58,7 @@ void adrw_append_point
     
     All points created are marked with {used=FALSE}. */
 
-adrw_point_t adrw_make_derived_point(adrw_point_t *ap, int k, double dx, double dy, double dz, int krot);
+adrw_point_t adrw_make_derived_point(adrw_point_t *ap, int32_t k, double dx, double dy, double dz, int32_t krot);
   /* Creates an {adrw_point_t} record that is the point {*ap} 
      displaced by {(dx,dy,dz)}.
     
@@ -66,7 +67,7 @@ adrw_point_t adrw_make_derived_point(adrw_point_t *ap, int k, double dx, double 
     label will be "{ap.lab}.{k}" and the rotation angle will be
     {krot}. */
 
-void show_holes(adrw_point_vec_t *P, int ini, int fin);
+void show_holes(adrw_point_vec_t *P, int32_t ini, int32_t fin);
   /* Lists all points in {P} in the range {ini..fin} that are still undefined. */
     
 bool_t adrw_polygon_is_closed(adrw_point_vec_t *P);
@@ -79,7 +80,7 @@ void adrw_compute_area_and_length(adrw_point_vec_t *P, double *areaP, double *le
 
 /* UNIT TYPES AND PLOTTING STYLES */ 
 
-typedef unsigned int adrw_space_type_t;
+typedef uint32_t adrw_space_type_t;
 
 typedef struct adrw_unit_style_t
   { frgb_t fill_rgb;   /* Area fill color. */
@@ -110,7 +111,7 @@ typedef struct adrw_unit_t
     char *descr;               /* Description of unit (full name, occupants, detailed use, etc.). */
     adrw_point_vec_t pt;       /* Points that define the outline. */
     double round;              /* Corner rounding radius. */
-    int kfloor;                /* Floor index (0 = ground). */
+    int32_t kfloor;                /* Floor index (0 = ground). */
     adrw_space_type_t type;    /* Usage type class (for tabulations, etc.). */
     adrw_unit_style_t *style;  /* Style to use when drawing the unit. */
     /* Computed fields: */
@@ -136,9 +137,9 @@ adrw_unit_t *adrw_make_poly
     char *descr, 
     double modules,
     adrw_point_vec_t *P, 
-    int v[], 
+    int32_t v[], 
     double round,
-    int kfloor, 
+    int32_t kfloor, 
     adrw_space_type_t type, 
     adrw_unit_style_t *style
   );
@@ -151,14 +152,14 @@ adrw_unit_t *adrw_make_box
   ( char *label, 
     char *descr, 
     adrw_point_vec_t *P, 
-    int ip, 
+    int32_t ip, 
     double ctrx,
     double ctry,
     double ctrz,
     double wdx,
     double wdy,
     double round,
-    int kfloor, 
+    int32_t kfloor, 
     adrw_space_type_t type, 
     adrw_unit_style_t *style
   );
@@ -171,11 +172,11 @@ adrw_unit_t *adrw_make_dot
   ( char *label, 
     char *descr, 
     adrw_point_vec_t *P, 
-    int ip, 
+    int32_t ip, 
     double ctrx,
     double ctry,
     double ctrz,
-    int kfloor, 
+    int32_t kfloor, 
     adrw_space_type_t type, 
     adrw_unit_style_t *style
   );
@@ -186,7 +187,7 @@ adrw_unit_t *adrw_make_dot
 vec_typedef(adrw_unit_vec_t, adrw_unit_vec, adrw_unit_t *);
   
 typedef struct adrw_building_t
-  { int NU;                /* Number of units (incl. pillars, external outline, pipes, etc.) */
+  { int32_t NU;                /* Number of units (incl. pillars, external outline, pipes, etc.) */
     adrw_unit_vec_t unit;  /* Valid rooms are {unit.e[0..NR-1]}. */
   } adrw_building_t;
   /* A {adrw_building_t} is a set of floorplans for a building.
@@ -202,11 +203,11 @@ void adrw_append_unit(adrw_building_t *B, adrw_unit_t *rm);
 void adrw_append_seats
   ( adrw_building_t *B, 
     adrw_point_vec_t *P, 
-    int v00,
-    int v11,
+    int32_t v00,
+    int32_t v11,
     double szx,
     double szy,
-    int kfloor, 
+    int32_t kfloor, 
     adrw_space_type_t type, 
     adrw_unit_style_t *style
   );
@@ -240,7 +241,7 @@ void adrw_print_unit
 
 void adrw_compute_building_stats
   ( adrw_building_t *B,
-    int ntypes,
+    int32_t ntypes,
     double units[],
     double modules[],
     double area[],
@@ -268,25 +269,35 @@ void adrw_print_building
 
 /* PLOTTING */
 
-void adrw_start_page
-  ( epswr_figure_t *epsf, 
+epswr_figure_t *adrw_new_figure
+  ( char *dir,
+    char *prefix,
+    char *suffix,
     double xmin, 
     double xmax, 
     double ymin, 
     double ymax, 
-    int ox, 
-    int nx, 
-    int oy, 
-    int ny, 
+    int32_t ox, 
+    int32_t nx, 
+    int32_t oy, 
+    int32_t ny, 
     char *title
   );
-  /* Starts a new page of a PS document, or a new EPS figure.
-    The plot is assumed to span a rectangle 
-    {[xmin _ xmax} × [ymin _ ymax]} in Client coordinates.  
-    This rectangle is divided into {nx} by {ny} sub-rectangles.
-    Then the scale is set so that the sub-rectangle 
-    in column {ox} from left and row {oy} from bottom 
-    fits into the available plotting area. */
+  /* Starts a new EPS figure, writing to a file 
+    "{dir}/{prefix}_{name}_{NNNNN}_{suffix}.eps". 
+   
+    The whole plot is assumed to span a rectangle {[xmin _ xmax} × [ymin
+    _ ymax]} in Client coordinates. This rectangle is divided into {nx}
+    by {ny} sub-rectangles. Then the scale is set so that the
+    sub-rectangle in column {ox} from left and row {oy} from bottom fits
+    into the available plotting area.
+    
+    The {title} as well as the ranges are printed at the bottom of the
+    figure.
+    
+    Any of the {dir}, {prefix}, {name}, or {suffix} arguments may be
+    {NULL} in which case those parts of the name and the associated "/"
+    or "_" are omitted. */
 
 void adrw_plot_unit
   ( epswr_figure_t *epsf,
@@ -305,7 +316,7 @@ void adrw_plot_building
 void adrw_plot_point
   ( epswr_figure_t *epsf, 
     char *lab, 
-    int ip, 
+    int32_t ip, 
     double x, 
     double y, 
     double rot, 
@@ -319,29 +330,35 @@ void adrw_plot_point
     the label relative to {(x,y)}, as in {epswr_label}. */
 
 void adrw_plot_type_legend
-  ( char *fname,
-    int key_type[], 
-    int ntypes,
-    int ncols, 
+  ( char *dir,
+    char *prefix,
+    char *suffix,
+    int32_t key_type[], 
+    int32_t ntypes,
+    int32_t ncols, 
     char *type_tag[], 
     adrw_unit_style_t *style[]
   );
-  /* Creates and EPS file called {fname} containing the color key for
-    the usage types {tp[0..nt-1]}, where {nt} is the first index such
-    that {tp[nt] == -1}. The key will have {ncols} columns, pairing the
-    color in {style[type[ip]]} with the tag in {type_tag[type[ip]]}.
+  /* Creates an EPS file called "{dir}/{prefix}_{suffix}.eps" containing
+    the color key for the usage types {tp[0..nt-1]}, where {nt} is the
+    first index such that {tp[nt] == -1}. The key will have {ncols}
+    columns, pairing the color in {style[type[ip]]} with the tag in
+    {type_tag[type[ip]]}.
     
     Each entry in the key is 8 mm tall and 24 mm wide, including spacing
     and margins. */
 
 void adrw_plot_histogram_bar
-  ( char *fname,
+  ( char *dir,
+    char *prefix,
+    char *name,
+    char *suffix,
     adrw_space_type_t type,
     adrw_unit_style_t *st,
     double val,
     double vmax
   );
-  /* Writes an EPS file called {fname} that contains a single 
+  /* Writes an EPS file called "{dir}/{prefix}_{name}_{suffix}.eps" that contains a single 
     horizontal histogram bar, with length proportional to {val/valmax}.
 
     The bar will be filled with the color specified in {st} and 

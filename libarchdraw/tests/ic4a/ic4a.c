@@ -1,10 +1,11 @@
 /* Floorlans of IC-4a building */
-/* Last edited on 2017-02-26 02:33:36 by stolfilocal */
+/* Last edited on 2023-02-21 05:05:35 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include <r2.h>
 #include <vec.h>
@@ -16,42 +17,44 @@
 #include <archdraw.h>
 #include <archdraw_ic.h>
 
+#define OUT_PREFIX "ic4a"
+
 adrw_point_vec_t adrw_ic4a_define_points(void);
-void adrw_ic4a_define_points_in_floor(adrw_point_vec_t *P, int kfl, int *np);
-int adrw_ic4a_get_office_number_in_floor(int wing, int side, int slot);
-int adrw_ic4a_get_first_corner_of_office_in_floor(int noff);
-void adrw_ic4a_get_office_corners(int kfl, int wing, int side, int slot, r2_t *p00, r2_t *p01, r2_t *p10, r2_t *p11);
-void adrw_ic4a_get_office_type_and_span(int kfl, int noff, adrw_space_type_t *toffP, int *xspanP, int *yspanP);
+void adrw_ic4a_define_points_in_floor(adrw_point_vec_t *P, int32_t kfl, int32_t *np);
+int32_t adrw_ic4a_get_office_number_in_floor(int32_t wing, int32_t side, int32_t slot);
+int32_t adrw_ic4a_get_first_corner_of_office_in_floor(int32_t noff);
+void adrw_ic4a_get_office_corners(int32_t kfl, int32_t wing, int32_t side, int32_t slot, r2_t *p00, r2_t *p01, r2_t *p10, r2_t *p11);
+void adrw_ic4a_get_office_type_and_span(int32_t kfl, int32_t noff, adrw_space_type_t *toffP, int32_t *xspanP, int32_t *yspanP);
 char **adrw_ic4a_get_office_descriptions(void);
 
-void adrw_ic4a_plot_all(epswr_figure_t *epsf, adrw_building_t *B, int nx, int ny, bool_t show_dots);
+void adrw_ic4a_plot_all(adrw_building_t *B, int32_t nx, int32_t ny, bool_t show_dots);
 
 void adrw_ic4a_append_building_outline(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[]);
 void adrw_ic4a_append_pillars(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[]);
-void adrw_ic4a_append_pillar(adrw_building_t *B, adrw_point_vec_t *P, int kfl, int npil, double wdx, double wdy, adrw_unit_style_t *style[]);
+void adrw_ic4a_append_pillar(adrw_building_t *B, adrw_point_vec_t *P, int32_t kfl, int32_t npil, double wdx, double wdy, adrw_unit_style_t *style[]);
 void adrw_ic4a_append_hallways(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[]);
 void adrw_ic4a_append_offices(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[], char *descr[]);
 void adrw_ic4a_append_normal_office
   ( adrw_building_t *B, 
     adrw_point_vec_t *P, 
-    int kfl,  /* Floor (0, 1, 2). */
-    int wing, /* Wing in floor (0 = west, 1 = east). */
-    int side, /* Side of corridor (0 = south, 1 = north). */
-    int slot, /* Office slot along one side of a wing (0 = next to stairs). */
+    int32_t kfl,  /* Floor (0, 1, 2). */
+    int32_t wing, /* Wing in floor (0 = west, 1 = east). */
+    int32_t side, /* Side of corridor (0 = south, 1 = north). */
+    int32_t slot, /* Office slot along one side of a wing (0 = next to stairs). */
     adrw_unit_style_t *style[],
     char *descr[]
   );
-void adrw_ic4a_append_power_cabinet(adrw_building_t *B, adrw_point_vec_t *P, int kfl, adrw_unit_style_t *style[], char *descr[]);
-void adrw_ic4a_append_stairblock_storage(adrw_building_t *B, adrw_point_vec_t *P, int kfl, adrw_unit_style_t *style[], char *descr[]);
-void adrw_ic4a_append_bathroom(adrw_building_t *B, adrw_point_vec_t *P, int kfl, int wing, adrw_unit_style_t *style[], char *descr[]);
+void adrw_ic4a_append_power_cabinet(adrw_building_t *B, adrw_point_vec_t *P, int32_t kfl, adrw_unit_style_t *style[], char *descr[]);
+void adrw_ic4a_append_stairblock_storage(adrw_building_t *B, adrw_point_vec_t *P, int32_t kfl, adrw_unit_style_t *style[], char *descr[]);
+void adrw_ic4a_append_bathroom(adrw_building_t *B, adrw_point_vec_t *P, int32_t kfl, int32_t wing, adrw_unit_style_t *style[], char *descr[]);
 void adrw_ic4a_append_auditorium_seating(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[]);
 void adrw_ic4a_append_entrance_arrow(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[]);
 
 #define ADDPOLY(PTS,KFL,LABEL,DESC,NMODS,TYPE,...) \
   do \
-    { int v[] = { __VA_ARGS__ , -1 }; \
-      int bc = 1000*((KFL)+1); /* Base of corner numbering for this floor. */ \
-      int i = 0; while (v[i] >= 0) { v[i] += bc; i++; } \
+    { int32_t v[] = { __VA_ARGS__ , -1 }; \
+      int32_t bc = 1000*((KFL)+1); /* Base of corner numbering for this floor. */ \
+      int32_t i = 0; while (v[i] >= 0) { v[i] += bc; i++; } \
       adrw_unit_t *rm = adrw_make_poly((LABEL),(DESC),(NMODS),(PTS),v,0.0,(KFL),(TYPE),style[(TYPE)]); \
       adrw_append_unit(B, rm); \
     } \
@@ -59,14 +62,14 @@ void adrw_ic4a_append_entrance_arrow(adrw_building_t *B, adrw_point_vec_t *P, ad
 
 #define ADDSEATS(PTS,KFL,TYPE,PTA,PTB,SZX,SZY)       \
   do \
-    { int bc = 1000*((KFL)+1); /* Base of corner numbering for this floor. */ \
+    { int32_t bc = 1000*((KFL)+1); /* Base of corner numbering for this floor. */ \
       adrw_append_seats(B,(PTS),bc+(PTA),bc+(PTB),(SZX),(SZY),(KFL),(TYPE),style[(TYPE)]); \
     } \
   while(0)
 
 #define ADDBOX(PTS,KFL,LABEL,DESC,TYPE,CTR,WDX,WDY)      \
   do \
-    { int bc = 1000*((KFL)+1); /* Base of corner numbering for this floor. */ \
+    { int32_t bc = 1000*((KFL)+1); /* Base of corner numbering for this floor. */ \
       adrw_unit_t *rm = adrw_make_box((LABEL),(DESC),(PTS),bc+(CTR),0.0,0.0,0.0,(WDX),(WDY),0.0,(KFL),(TYPE),style[(TYPE)]); \
       adrw_append_unit(B, rm); \
     } \
@@ -74,22 +77,22 @@ void adrw_ic4a_append_entrance_arrow(adrw_building_t *B, adrw_point_vec_t *P, ad
 
 #define ADDPIPE(PTS,KFL,LABEL,DESC,TYPE,...) \
   do \
-    { int v[] = { __VA_ARGS__ , -1 }; \
-      int bc = 1000*(KFL+1); /* Base of corner numbering for this floor. */ \
-      int i = 0; while (v[i] >= 0) { v[i] += bc; i++; } \
+    { int32_t v[] = { __VA_ARGS__ , -1 }; \
+      int32_t bc = 1000*(KFL+1); /* Base of corner numbering for this floor. */ \
+      int32_t i = 0; while (v[i] >= 0) { v[i] += bc; i++; } \
       adrw_unit_t *rm = adrw_make_poly((LABEL),(DESC),(PTS),v,0.0,(KFL),(TYPE),style[(TYPE)]); \
       adrw_append_unit(B, rm); \
     } \
   while(0)
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   {
-    int ntypes = adrw_ic_space_type_MAX+1;
+    int32_t ntypes = adrw_ic_space_type_MAX+1;
     adrw_unit_style_t **style = adrw_ic_define_type_styles();
     char **type_tag = adrw_ic_define_type_tags();
     bool_t *type_is_printable = adrw_ic_define_printable_types();
     bool_t *type_is_movable = adrw_ic_define_movable_types();
-    int *color_key_types = adrw_ic_define_color_key_types();
+    int32_t *color_key_types = adrw_ic_define_color_key_types();
     
     char **descr = adrw_ic4a_get_office_descriptions();
     adrw_point_vec_t P = adrw_ic4a_define_points();
@@ -103,23 +106,23 @@ int main (int argc, char **argv)
     adrw_ic4a_append_entrance_arrow(B, &P, style);
     
     /* Print the point table: */
-    { FILE *wr = open_write("out/ic4a-p.txt", TRUE);
+    { FILE *wr = open_write("out/" OUT_PREFIX "_P.txt", TRUE);
       adrw_print_points(wr, &P);
       fclose(wr);
     }
 
     /* Plot the floorplan: */
-    { bool_t eps_fmt = TRUE;
-      epswr_figure_t *epsf = pswr_new_stream("out/ic4a-", NULL, eps_fmt, "d", "letter", FALSE, 788.0, 508.0);
-      adrw_ic4a_plot_all(epsf, B, 1, 1, FALSE);
-      adrw_plot_type_legend(epsf, "tkey", color_key_types, ntypes, 5, type_tag, style);
-      adrw_ic_plot_histogram_bars(epsf, B, type_is_movable, type_tag, style);
-      /* adrw_ic4a_plot_all(epsf, B, 1, 1, TRUE); */
-      pswr_close_stream(epsf);
-    }
+    adrw_ic4a_plot_all(B, 1, 1, FALSE);
+    /* adrw_ic4a_plot_all(epsf, B, 1, 1, TRUE); */
     
+    /* Plot the floor type legend: */
+    adrw_plot_type_legend("out", OUT_PREFIX, "T", color_key_types, ntypes, 5, type_tag, style);
+
+    /* Plot the unit area bars: */
+    adrw_ic_plot_histogram_bars("out", OUT_PREFIX, B, type_is_movable, type_tag, style);
+   
     /* Print the units table: */
-    { FILE *wr = open_write("out/ic4a-u.tex", TRUE);
+    { FILE *wr = open_write("out/" OUT_PREFIX "_U.tex", TRUE);
       bool_t TeX = TRUE;
       adrw_print_building(wr, B, type_is_printable, type_tag, TRUE, TRUE, FALSE, TeX);
       fclose(wr);
@@ -128,38 +131,40 @@ int main (int argc, char **argv)
     return 0;
   }
 
-void adrw_ic4a_plot_all(epswr_figure_t *epsf, adrw_building_t *B, int nx, int ny, bool_t show_dots)
+void adrw_ic4a_plot_all(adrw_building_t *B, int32_t nx, int32_t ny, bool_t show_dots)
   {
-    /* Plot domain in cm, for all three floors together. */
-    /* Use nominal width = 7200 cm to get same scale as IC-1+2 plots. */
+    /* Building dimensions: */
     double xwid = 6490;
     double ywid = 1190;
+    /* Plot domain in cm, for all three floors. */
+    /* Adjust X margins to get same scale as IC1+2. */
     double xmrg = 300 + (7200 - xwid)/2;
-    double ymrg = 300;
-    double xmin = 00 - xmrg, xmax =          xwid + xmrg;
-    double ymin = 00 - ymrg, ymax = 2*1500 + ywid + ymrg;
+    double xmin = -xmrg, xmax =   xwid+xmrg;
+    double ymin =  -300, ymax = 3*(ywid+300);
 
-    int ox, oy;
-    for (ox = 0; ox < nx; ox++)
-      for (oy = 0; oy < ny; oy++)
-        {
-          fprintf(stderr, "=== PLOTTING PAGE [%d,%d] OF [%d,%d] ===\n", ox,oy,nx,ny);
-          adrw_start_page(epsf, xmin, xmax, ymin, ymax, ox, nx, oy, ny, "Proposta - IC-4a");
-          pswr_set_label_font(epsf, "Courier", 8.0);
-          adrw_plot_building(epsf, B, show_dots);
-        }
+    for (int32_t ox = 0; ox < nx; ox++)
+      { for (int32_t oy = 0; oy < ny; oy++)
+          { fprintf(stderr, "=== PLOTTING PAGE [%d,%d] OF [%d,%d] ===\n", ox,oy,nx,ny);
+            epswr_figure_t *epsf = adrw_new_figure
+              ( "out", OUT_PREFIX "_A", "P", xmin, xmax, ymin, ymax,
+                ox, nx, oy, ny, "Proposta - Predio IC-4a"
+              );
+            adrw_plot_building(epsf, B, show_dots);
+            epswr_end_figure(epsf);
+          }
+      }
   }
   
-int adrw_ic4a_get_office_number_in_floor(int wing, int side, int slot)
+int32_t adrw_ic4a_get_office_number_in_floor(int32_t wing, int32_t side, int32_t slot)
   { return wing*16 + slot*2 + side; }
 
-int adrw_ic4a_get_first_corner_of_office_in_floor(int noff)
+int32_t adrw_ic4a_get_first_corner_of_office_in_floor(int32_t noff)
   { return 300 + 4*noff; }
   
 adrw_point_vec_t adrw_ic4a_define_points(void)
   {
     adrw_point_vec_t P = adrw_point_vec_new(100);
-    int np = 0;
+    int32_t np = 0;
     
     fprintf(stderr, "=== DEFINING POINTS ===\n");
     
@@ -172,7 +177,7 @@ adrw_point_vec_t adrw_ic4a_define_points(void)
     return P;
   }
   
-void adrw_ic4a_define_points_in_floor(adrw_point_vec_t *P, int kfl, int *np)
+void adrw_ic4a_define_points_in_floor(adrw_point_vec_t *P, int32_t kfl, int32_t *np)
   {
     /* All dimensions in centimeters. */
 
@@ -181,16 +186,16 @@ void adrw_ic4a_define_points_in_floor(adrw_point_vec_t *P, int kfl, int *np)
     double Yor = +150 + 1500*kfl; /* Y of outer edge of south-most wall. */
     double Zor = 350*kfl;         /* Z of floor. */
 
-    auto void s(int dj, double dX, double dY, int di);
+    auto void s(int32_t dj, double dX, double dY, int32_t di);
       /* Defines {P[dj]+(dX,dY,350*kfl)} as the coordinates of
         point {P[di]}.  If {P[di]} was defined
         previously, checks whether the definitions agree.
         The point numbers {di,dj} are relative to the floor. */
        
-    void s(int dj, double dX, double dY, int di)
+    void s(int32_t dj, double dX, double dY, int32_t di)
       { char *lab = NULL;
-        int i = 1000*(kfl+1) + di;
-        int j = (dj < 0 ? dj : 1000*(kfl+1) + dj);
+        int32_t i = 1000*(kfl+1) + di;
+        int32_t j = (dj < 0 ? dj : 1000*(kfl+1) + dj);
         double dZ = (dj < 0 ? Zor : 00);
         asprintf(&lab, "P%04d", i);
         adrw_append_point(lab, i, j, j, j, dX, dY, dZ, P, np); 
@@ -219,17 +224,17 @@ void adrw_ic4a_define_points_in_floor(adrw_point_vec_t *P, int kfl, int *np)
     s(101,    00, +1040, 112); /* Redundant check. */ 
     
     fprintf(stderr, "--- pillar centers ---\n");
-    { int fpi = 260;
-      int wing; /* Wing (0 = west, 1 = east). */
-      int side; /* Side of wing (0 = south, 1 = north). */
-      int pill; /* Pillar index (0 = innermost). */
-      int kfl;
+    { int32_t fpi = 260;
+      int32_t wing; /* Wing (0 = west, 1 = east). */
+      int32_t side; /* Side of wing (0 = south, 1 = north). */
+      int32_t pill; /* Pillar index (0 = innermost). */
+      int32_t kfl;
       for (kfl = 0; kfl < 3; kfl++)
         { for (wing = 0; wing < 2; wing++)
             { for (side = 0; side < 2; side++)
                 { for (pill = 0; pill <= 4; pill++)
                     { 
-                      int ctr = fpi + 5*wing + 10*side + pill;
+                      int32_t ctr = fpi + 5*wing + 10*side + pill;
                       double xpill, ypill;  /* Pillar center rel to SW wall corner. */
                       if (wing == 0)
                         { xpill = 10 + 720*(4 - pill); }
@@ -366,20 +371,14 @@ void adrw_ic4a_define_points_in_floor(adrw_point_vec_t *P, int kfl, int *np)
     s(165,    00,   -10, 167); /* Front of elevator doorwall. */
 
     fprintf(stderr, "--- office corners ---\n");
-    int wing; /* Wing in floor (0 = west, 1 = east). */
-    int side; /* Side of corridor (0 = south, 1 = north). */
-    int slot; /* Office slot along one side of a wing (0 = next to stairs). */
+    int32_t wing; /* Wing in floor (0 = west, 1 = east). */
+    int32_t side; /* Side of corridor (0 = south, 1 = north). */
+    int32_t slot; /* Office slot along one side of a wing (0 = next to stairs). */
     for (side = 0; side < 2; side++)
-      { /* Compute basic Y cords of office: */
-        double yot, yin; /* Inner and outer Y of office, excl. walls. */
-        if (side == 0)
-          { yot =   +10; yin = yot + 400; }
-        else
-          { yot = +1030; yin = yot - 400; }
-        for (wing = 0; wing < 2; wing++)
+      { for (wing = 0; wing < 2; wing++)
           { for (slot = 0; slot < 8; slot++)
-              { int noff = adrw_ic4a_get_office_number_in_floor(wing, side, slot);
-                int fco = adrw_ic4a_get_first_corner_of_office_in_floor(noff);
+              { int32_t noff = adrw_ic4a_get_office_number_in_floor(wing, side, slot);
+                int32_t fco = adrw_ic4a_get_first_corner_of_office_in_floor(noff);
                 fprintf(stderr, "office %d corners %d..%d\n", 100*kfl + noff, 1000*kfl + fco, 1000*kfl + fco + 3);
                 
                 /* Get X and Y cords of office (excluding walls) rel to floor origin: */
@@ -415,7 +414,7 @@ void adrw_ic4a_define_points_in_floor(adrw_point_vec_t *P, int kfl, int *np)
     if (kfl ==0)
       { 
         fprintf(stderr, "--- auditorium seating ---\n");
-        int auc = adrw_ic4a_get_first_corner_of_office_in_floor(30); /* Outer proximal corner */
+        int32_t auc = adrw_ic4a_get_first_corner_of_office_in_floor(30); /* Outer proximal corner */
         s(auc+2,  -10,   00, 181);
         s(181,   -600,   00, 180);
         s(181,     00, +720, 182);
@@ -441,9 +440,9 @@ void adrw_ic4a_define_points_in_floor(adrw_point_vec_t *P, int kfl, int *np)
       }
   }
 
-void adrw_ic4a_get_office_corners(int kfl, int wing, int side, int slot, r2_t *p00, r2_t *p01, r2_t *p10, r2_t *p11)
+void adrw_ic4a_get_office_corners(int32_t kfl, int32_t wing, int32_t side, int32_t slot, r2_t *p00, r2_t *p01, r2_t *p10, r2_t *p11)
   {
-    int noff = adrw_ic4a_get_office_number_in_floor(wing, side, slot);
+    int32_t noff = adrw_ic4a_get_office_number_in_floor(wing, side, slot);
                 
     /* X and Y cords of office (excluding walls) rel to floor origin: */
     double xp;   /* Proximal X coord of office: */
@@ -494,7 +493,7 @@ void adrw_ic4a_get_office_corners(int kfl, int wing, int side, int slot, r2_t *p
 
 void adrw_ic4a_append_building_outline(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[])
   {
-    int kfl;
+    int32_t kfl;
     for (kfl = 0; kfl < 3; kfl++)
       { 
         fprintf(stderr, "--- building outline - floor %d ---\n", kfl);
@@ -510,16 +509,16 @@ void adrw_ic4a_append_building_outline(adrw_building_t *B, adrw_point_vec_t *P, 
 void adrw_ic4a_append_pillars(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[])
   {
     fprintf(stderr, "--- pillars ---\n");
-    int wing; /* Wing (0 = south, 1 = north). */
-    int side; /* Side of wing (0 = south, 1 = north). */
-    int pill; /* Pillar index (0 = westernmost). */
-    int kfl;
+    int32_t wing; /* Wing (0 = south, 1 = north). */
+    int32_t side; /* Side of wing (0 = south, 1 = north). */
+    int32_t pill; /* Pillar index (0 = westernmost). */
+    int32_t kfl;
     for (kfl = 0; kfl < 3; kfl++)
       { for (wing = 0; wing < 2; wing++)
           { for (side = 0; side < 2; side++)
               { for (pill = 0; pill <= 4; pill++)
                   { 
-                    int npil = 5*wing + 10*side + pill;
+                    int32_t npil = 5*wing + 10*side + pill;
                     adrw_ic4a_append_pillar(B, P, kfl, npil, 40, 60, style);
                   }
               }
@@ -531,10 +530,10 @@ void adrw_ic4a_append_pillars(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit
       }
   }
 
-void adrw_ic4a_append_pillar(adrw_building_t *B, adrw_point_vec_t *P, int kfl, int npil, double wdx, double wdy, adrw_unit_style_t *style[])
+void adrw_ic4a_append_pillar(adrw_building_t *B, adrw_point_vec_t *P, int32_t kfl, int32_t npil, double wdx, double wdy, adrw_unit_style_t *style[])
   {
-    int fpi = 260; /* Index of first pillar center point in floor. */
-    int ctr = fpi + npil;
+    int32_t fpi = 260; /* Index of first pillar center point in floor. */
+    int32_t ctr = fpi + npil;
     char *lpil = NULL;
     asprintf(&lpil, "P%02d", npil);
     char *dpil = NULL;
@@ -547,7 +546,7 @@ void adrw_ic4a_append_pillar(adrw_building_t *B, adrw_point_vec_t *P, int kfl, i
 
 void adrw_ic4a_append_hallways(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[])
   {
-    int kfl;
+    int32_t kfl;
     
     fprintf(stderr, "--- hallways and stairs - floor 0 ---\n");
     ADDPOLY
@@ -588,13 +587,13 @@ void adrw_ic4a_append_hallways(adrw_building_t *B, adrw_point_vec_t *P, adrw_uni
     
     for (kfl = 0; kfl < 3; kfl++)
       { 
-        int bc = 1000*(kfl+1);
+        int32_t bc = 1000*(kfl+1);
         fprintf(stderr, "--- elevator - floor %d ---\n", kfl);
         /* Get the numbers of the four corners. */
-        int c00 = 145;  /* Xp, Yot. */
-        int c01 = 164;  /* Xp, Yin. */
-        int c10 = 146;  /* Xd, Yot. */
-        int c11 = 165;  /* Xd, Yin. */
+        int32_t c00 = 145;  /* Xp, Yot. */
+        int32_t c01 = 164;  /* Xp, Yin. */
+        int32_t c10 = 146;  /* Xd, Yot. */
+        int32_t c11 = 165;  /* Xd, Yin. */
         fprintf
           ( stderr, "  corners %d %d %d %d\n", 
             bc+c00, bc+c01, bc+c10, bc+c11
@@ -608,12 +607,12 @@ void adrw_ic4a_append_hallways(adrw_building_t *B, adrw_point_vec_t *P, adrw_uni
 
 void adrw_ic4a_append_offices(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[], char *descr[])
   {
-    int kfl;
+    int32_t kfl;
     for (kfl = 0; kfl < 3; kfl++)
       { 
-        int wing; /* Wing in floor (0 = west, 1 = east). */
-        int side; /* Side of corridor (0 = south, 1 = north). */
-        int slot; /* Office slot along one side of a wing (0 = next to stairs). */
+        int32_t wing; /* Wing in floor (0 = west, 1 = east). */
+        int32_t side; /* Side of corridor (0 = south, 1 = north). */
+        int32_t slot; /* Office slot along one side of a wing (0 = next to stairs). */
         for (side = 0; side < 2; side++)
           { for (wing = 0; wing < 2; wing++)
               { for (slot = 0; slot < 8; slot++)
@@ -630,24 +629,24 @@ void adrw_ic4a_append_offices(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit
 void adrw_ic4a_append_normal_office
   ( adrw_building_t *B, 
     adrw_point_vec_t *P, 
-    int kfl,  /* Floor (0, 1, 2). */
-    int wing, /* Wing in floor (0 = west, 1 = east). */
-    int side, /* Side of corridor (0 = south, 1 = north). */
-    int slot, /* Office slot along one side of a wing (0 = next to stairs). */
+    int32_t kfl,  /* Floor (0, 1, 2). */
+    int32_t wing, /* Wing in floor (0 = west, 1 = east). */
+    int32_t side, /* Side of corridor (0 = south, 1 = north). */
+    int32_t slot, /* Office slot along one side of a wing (0 = next to stairs). */
     adrw_unit_style_t *style[],
     char *descr[]
   )
   {
-    int noff = adrw_ic4a_get_office_number_in_floor(wing, side, slot); /* Office number in floor. */
-    int boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
+    int32_t noff = adrw_ic4a_get_office_number_in_floor(wing, side, slot); /* Office number in floor. */
+    int32_t boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
     char *loff = NULL;
     asprintf(&loff, "%03d", boff+noff);
     char *doff = descr[boff+noff];
-    int bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
+    int32_t bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
     /*  Decide office type {toff} and span {xspan,yspan}: */
     adrw_space_type_t toff; /* Type of office. */
-    int xspan; /* How many modules it spans in X direction (1 to 8). */
-    int yspan; /* How many modules it spans in Y direction (1 or 2). */
+    int32_t xspan; /* How many modules it spans in X direction (1 to 8). */
+    int32_t yspan; /* How many modules it spans in Y direction (1 or 2). */
     adrw_ic4a_get_office_type_and_span(kfl, noff, &toff, &xspan, &yspan);
     double modules = xspan*yspan;
     if (toff == adrw_ic_space_type_NEX)
@@ -656,11 +655,11 @@ void adrw_ic4a_append_normal_office
       }
     else if (xspan == 1)
       { /* Get the numbers of the four corners. */
-        int fco = adrw_ic4a_get_first_corner_of_office_in_floor(noff);
-        int c00 = fco + 0;            /* Xin, Yot. */
-        int c01 = c00 + (yspan == 1 ? 1 : 4);  /* Xin, Yin. */
-        int c10 = c00 + 2;                     /* Xot, Yot. */
-        int c11 = c01 + 2;                     /* Xot, Yin. */
+        int32_t fco = adrw_ic4a_get_first_corner_of_office_in_floor(noff);
+        int32_t c00 = fco + 0;            /* Xin, Yot. */
+        int32_t c01 = c00 + (yspan == 1 ? 1 : 4);  /* Xin, Yin. */
+        int32_t c10 = c00 + 2;                     /* Xot, Yot. */
+        int32_t c11 = c01 + 2;                     /* Xot, Yin. */
         fprintf
           ( stderr, "  office %d - corners %d %d %d %d\n", 
             boff+noff, bc+c00, bc+c01, bc+c10, bc+c11
@@ -672,15 +671,15 @@ void adrw_ic4a_append_normal_office
       }
     else if (xspan == 2) 
       { /* Get the numbers of the eight corners. */
-        int fco = adrw_ic4a_get_first_corner_of_office_in_floor(noff);
-        int c00 = fco + 0;            /* Xin, Yot. */
-        int c01 = c00 + (yspan == 1 ? 1 : 4);  /* Xin, Yin. */
-        int c10 = c00 + 2;                     /* Xm1, Yo1. */
-        int c11 = c01 + 2;                     /* Xm1, Yi1. */
-        int c20 = c00 + 8;                     /* Xm2, Yo2. */
-        int c21 = c01 + 8;                     /* Xm2, Yi2. */
-        int c30 = c20 + 2;                     /* Xot, Yot. */
-        int c31 = c21 + 2;                     /* Xot, Yin. */
+        int32_t fco = adrw_ic4a_get_first_corner_of_office_in_floor(noff);
+        int32_t c00 = fco + 0;            /* Xin, Yot. */
+        int32_t c01 = c00 + (yspan == 1 ? 1 : 4);  /* Xin, Yin. */
+        int32_t c10 = c00 + 2;                     /* Xm1, Yo1. */
+        int32_t c11 = c01 + 2;                     /* Xm1, Yi1. */
+        int32_t c20 = c00 + 8;                     /* Xm2, Yo2. */
+        int32_t c21 = c01 + 8;                     /* Xm2, Yi2. */
+        int32_t c30 = c20 + 2;                     /* Xot, Yot. */
+        int32_t c31 = c21 + 2;                     /* Xot, Yin. */
         fprintf
           ( stderr, "  office %d - corners %d %d  %d %d  %d %d  %d %d\n", 
             boff+noff, 
@@ -696,19 +695,19 @@ void adrw_ic4a_append_normal_office
       }
     else if (xspan == 3)
       { /* Get the numbers of the 12 corners. */
-        int fco = adrw_ic4a_get_first_corner_of_office_in_floor(noff);
-        int c00 = fco + 0;           /* Xin, Yot. */
-        int c01 = c00 + (yspan == 1 ? 1 : 4); /* Xin, Yin. */
-        int c10 = c00 + 2;                    /* Xm1, Yo1. */
-        int c11 = c01 + 2;                    /* Xm1, Yi1. */
-        int c20 = c00 + 8;                    /* Xm2, Yo2. */
-        int c21 = c01 + 8;                    /* Xm2, Yi2. */
-        int c30 = c20 + 2;                    /* Xm3, Yo3. */
-        int c31 = c21 + 2;                    /* Xm3, Yi3. */
-        int c40 = c20 + 8;                    /* Xm4, Yo4. */
-        int c41 = c21 + 8;                    /* Xm4, Yi4. */
-        int c50 = c40 + 2;                    /* Xot, Yot. */
-        int c51 = c41 + 2;                    /* Xot, Yin. */
+        int32_t fco = adrw_ic4a_get_first_corner_of_office_in_floor(noff);
+        int32_t c00 = fco + 0;           /* Xin, Yot. */
+        int32_t c01 = c00 + (yspan == 1 ? 1 : 4); /* Xin, Yin. */
+        int32_t c10 = c00 + 2;                    /* Xm1, Yo1. */
+        int32_t c11 = c01 + 2;                    /* Xm1, Yi1. */
+        int32_t c20 = c00 + 8;                    /* Xm2, Yo2. */
+        int32_t c21 = c01 + 8;                    /* Xm2, Yi2. */
+        int32_t c30 = c20 + 2;                    /* Xm3, Yo3. */
+        int32_t c31 = c21 + 2;                    /* Xm3, Yi3. */
+        int32_t c40 = c20 + 8;                    /* Xm4, Yo4. */
+        int32_t c41 = c21 + 8;                    /* Xm4, Yi4. */
+        int32_t c50 = c40 + 2;                    /* Xot, Yot. */
+        int32_t c51 = c41 + 2;                    /* Xot, Yin. */
         fprintf
           ( stderr, "  office %d - corners %d %d  %d %d  %d %d  %d %d  %d %d  %d %d\n", 
             boff+noff, 
@@ -727,22 +726,22 @@ void adrw_ic4a_append_normal_office
       { affirm(FALSE, "invalid xspan/yspan combination"); }
   }
           
-void adrw_ic4a_append_stairblock_storage(adrw_building_t *B, adrw_point_vec_t *P, int kfl, adrw_unit_style_t *style[], char *descr[])
+void adrw_ic4a_append_stairblock_storage(adrw_building_t *B, adrw_point_vec_t *P, int32_t kfl, adrw_unit_style_t *style[], char *descr[])
   { 
     if (kfl > 0)
       { fprintf(stderr, "--- storage cabinet next to elevator - floor %d ---\n", kfl);
-        int noff = 32; /* Office number in floor. */
-        int boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
+        int32_t noff = 32; /* Office number in floor. */
+        int32_t boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
         char *loff = NULL;
         asprintf(&loff, "%03d", boff+noff);
         char *doff = descr[boff+noff];
-        int bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
+        int32_t bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
         double modules = 0.1;     /* Only {1.7 m^2} */
         /* Get the numbers of the four corners. */
-        int c00 = 161;  /* Xd, Yot. */
-        int c01 = 141;  /* Xd, Yin. */
-        int c10 = 140;  /* Xp, Yot. */
-        int c11 = 142;  /* Xp, Yin. */
+        int32_t c00 = 161;  /* Xd, Yot. */
+        int32_t c01 = 141;  /* Xd, Yin. */
+        int32_t c10 = 140;  /* Xp, Yot. */
+        int32_t c11 = 142;  /* Xp, Yin. */
         fprintf
           ( stderr, "  corners %d %d %d %d\n", 
             bc+c00, bc+c01, bc+c10, bc+c11
@@ -755,18 +754,18 @@ void adrw_ic4a_append_stairblock_storage(adrw_building_t *B, adrw_point_vec_t *P
       
     if (kfl == 0)
       { fprintf(stderr, "--- outer storage cabinet under stairs - floor %d ---\n", kfl);
-        int noff = 37; /* Office number in floor. */
-        int boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
+        int32_t noff = 37; /* Office number in floor. */
+        int32_t boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
         char *loff = NULL;
         asprintf(&loff, "%03d", boff+noff);
         char *doff = descr[boff+noff];
-        int bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
+        int32_t bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
         double modules = 0.4;     /* Only {5.3 m^2} */
         /* Get the numbers of the four corners. */
-        int c00 = 131;  /* Xd, Yot. */
-        int c01 = 197;  /* Xd, Yin. */
-        int c10 = 132;  /* Xp, Yot. */
-        int c11 = 199;  /* Xp, Yin. */
+        int32_t c00 = 131;  /* Xd, Yot. */
+        int32_t c01 = 197;  /* Xd, Yin. */
+        int32_t c10 = 132;  /* Xp, Yot. */
+        int32_t c11 = 199;  /* Xp, Yin. */
         fprintf
           ( stderr, "  corners %d %d %d %d\n", 
             bc+c00, bc+c01, bc+c10, bc+c11
@@ -779,18 +778,18 @@ void adrw_ic4a_append_stairblock_storage(adrw_building_t *B, adrw_point_vec_t *P
       
     if (kfl == 0)
       { fprintf(stderr, "--- inner storage cabinet under stairs - floor %d ---\n", kfl);
-        int noff = 36; /* Office number in floor. */
-        int boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
+        int32_t noff = 36; /* Office number in floor. */
+        int32_t boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
         char *loff = NULL;
         asprintf(&loff, "%03d", boff+noff);
         char *doff = descr[boff+noff];
-        int bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
+        int32_t bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
         double modules = 0.4;     /* Only {5.5 m^2} */
         /* Get the numbers of the four corners. */
-        int c00 = 198;  /* Xd, Yot. */
-        int c01 = 201;  /* Xd, Yin. */
-        int c10 = 196;  /* Xp, Yot. */
-        int c11 = 192;  /* Xp, Yin. */
+        int32_t c00 = 198;  /* Xd, Yot. */
+        int32_t c01 = 201;  /* Xd, Yin. */
+        int32_t c10 = 196;  /* Xp, Yot. */
+        int32_t c11 = 192;  /* Xp, Yin. */
         fprintf
           ( stderr, "  corners %d %d %d %d\n", 
             bc+c00, bc+c01, bc+c10, bc+c11
@@ -802,20 +801,20 @@ void adrw_ic4a_append_stairblock_storage(adrw_building_t *B, adrw_point_vec_t *P
       }
   }
 
-void adrw_ic4a_append_power_cabinet(adrw_building_t *B, adrw_point_vec_t *P, int kfl, adrw_unit_style_t *style[], char *descr[])
+void adrw_ic4a_append_power_cabinet(adrw_building_t *B, adrw_point_vec_t *P, int32_t kfl, adrw_unit_style_t *style[], char *descr[])
   { fprintf(stderr, "--- power cabinet - floor %d ", kfl);
-    int noff = 33; /* Office number in floor. */
-    int boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
+    int32_t noff = 33; /* Office number in floor. */
+    int32_t boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
     char *loff = NULL;
     asprintf(&loff, "%03d", boff+noff);
     char *doff = descr[boff+noff];
-    int bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
+    int32_t bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
     double modules = 0.0;     /* Only {0.6 m^2} */
     /* Get the numbers of the four corners. */
-    int c00 = 138;  /* Xp, Yot. */
-    int c01 = 162;  /* Xp, Yin. */
-    int c10 = 137;  /* Xd, Yot. */
-    int c11 = 163;  /* Xd, Yin. */
+    int32_t c00 = 138;  /* Xp, Yot. */
+    int32_t c01 = 162;  /* Xp, Yin. */
+    int32_t c10 = 137;  /* Xd, Yot. */
+    int32_t c11 = 163;  /* Xd, Yin. */
     fprintf
       ( stderr, " - corners %d %d %d %d---\n", 
         bc+c00, bc+c01, bc+c10, bc+c11
@@ -826,21 +825,21 @@ void adrw_ic4a_append_power_cabinet(adrw_building_t *B, adrw_point_vec_t *P, int
       ); 
   }
           
-void adrw_ic4a_append_bathroom(adrw_building_t *B, adrw_point_vec_t *P, int kfl, int wing, adrw_unit_style_t *style[], char *descr[])
+void adrw_ic4a_append_bathroom(adrw_building_t *B, adrw_point_vec_t *P, int32_t kfl, int32_t wing, adrw_unit_style_t *style[], char *descr[])
   { fprintf(stderr, "--- bathroom - floor %d - wing %d ---\n", kfl, wing);
-    int noff = 34 + wing; /* Office number in floor. */
-    int boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
+    int32_t noff = 34 + wing; /* Office number in floor. */
+    int32_t boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
     char *loff = NULL;
     asprintf(&loff, "%03d", boff+noff);
     char *doff = descr[boff+noff];
-    int bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
+    int32_t bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
     double modules = 1.0;     /* Only {1.7 m^2} */
     /* Get the numbers of the four corners. */
-    int fco = 150 + 5*wing;
-    int c01 = fco + 0;  /* Xp, Yin. */
-    int c11 = fco + 1;  /* Xd, Yin. */
-    int c00 = fco + 2;  /* Xp, Yot. */
-    int c10 = fco + 3;  /* Xd, Yot. */
+    int32_t fco = 150 + 5*wing;
+    int32_t c01 = fco + 0;  /* Xp, Yin. */
+    int32_t c11 = fco + 1;  /* Xd, Yin. */
+    int32_t c00 = fco + 2;  /* Xp, Yot. */
+    int32_t c10 = fco + 3;  /* Xd, Yot. */
     fprintf
       ( stderr, "  corners %d %d %d %d\n", 
         bc+c00, bc+c01, bc+c10, bc+c11
@@ -853,22 +852,22 @@ void adrw_ic4a_append_bathroom(adrw_building_t *B, adrw_point_vec_t *P, int kfl,
 
 void adrw_ic4a_append_auditorium_seating(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[]) 
   {
-    int kfl = 0;
-    int noff = 28; /* Office number, spans 4 */
-    int bank; /* Bank of seats (0 for now). */
+    int32_t kfl = 0;
+    int32_t noff = 28; /* Office number, spans 4 */
+    int32_t bank; /* Bank of seats (0 for now). */
     for (bank = 0; bank < 1; bank++)
       { /* Get the numbers of the four corners in cyclic order. */
-        int fco = 180 + 4*bank; /* Index of first corner. */
-        int c0 = fco + 0;
-        int c2 = fco + 2;
+        int32_t fco = 180 + 4*bank; /* Index of first corner. */
+        int32_t c0 = fco + 0;
+        int32_t c2 = fco + 2;
         fprintf(stderr, "--- auditorium %d seats - bank %d - corners %d %d\n", noff, bank, c0, c2);
         ADDSEATS
           ( P, kfl, adrw_ic_space_type_SIT,
             c0, c2, 60, 80
           ); 
       }
-    { int c0 = 180;
-      int c2 = 184;
+    { int32_t c0 = 180;
+      int32_t c2 = 184;
       fprintf(stderr, "--- auditorium %d seats lone seat in back - corners %d %d\n", noff, c0, c2);
       ADDSEATS
         ( P, kfl, adrw_ic_space_type_SIT,
@@ -880,14 +879,14 @@ void adrw_ic4a_append_auditorium_seating(adrw_building_t *B, adrw_point_vec_t *P
 void adrw_ic4a_append_entrance_arrow(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[])
   {
     /* Get the numbers of the 7 corners in cyclic order. */
-    int fco = 220; /* Index of arrow tip. */
-    int c0 = fco + 0;
-    int c1 = fco + 1;
-    int c2 = fco + 2;
-    int c3 = fco + 3;
-    int c4 = fco + 4;
-    int c5 = fco + 5;
-    int c6 = fco + 6;
+    int32_t fco = 220; /* Index of arrow tip. */
+    int32_t c0 = fco + 0;
+    int32_t c1 = fco + 1;
+    int32_t c2 = fco + 2;
+    int32_t c3 = fco + 3;
+    int32_t c4 = fco + 4;
+    int32_t c5 = fco + 5;
+    int32_t c6 = fco + 6;
     fprintf(stderr, "--- entrance arrow - corners %d %d %d %d %d %d %d\n", c0, c1, c2, c3, c4, c5, c6);
     ADDPOLY
       ( P, 0, "Ent", "Entrada", 0.0, adrw_ic_space_type_ARR,
@@ -895,11 +894,11 @@ void adrw_ic4a_append_entrance_arrow(adrw_building_t *B, adrw_point_vec_t *P, ad
       ); 
   }
 
-void adrw_ic4a_get_office_type_and_span(int kfl, int noff, adrw_space_type_t *toffP, int *xspanP, int *yspanP)
+void adrw_ic4a_get_office_type_and_span(int32_t kfl, int32_t noff, adrw_space_type_t *toffP, int32_t *xspanP, int32_t *yspanP)
   {
     adrw_space_type_t toff = adrw_ic_space_type_ETC; /* Type of office. */
-    int xspan = 1; /* How many modules it spans in X direction (1 to 8). */
-    int yspan = 1; /* How many modules it spans in Y direction (1 or 2). */
+    int32_t xspan = 1; /* How many modules it spans in X direction (1 to 8). */
+    int32_t yspan = 1; /* How many modules it spans in Y direction (1 or 2). */
     if (kfl == 0)
       { 
         switch(noff)
@@ -961,10 +960,10 @@ void adrw_ic4a_get_office_type_and_span(int kfl, int noff, adrw_space_type_t *to
 
 char **adrw_ic4a_get_office_descriptions(void)
   { 
-    int max_noff = 399;
-    int no = max_noff + 1;
+    int32_t max_noff = 399;
+    int32_t no = max_noff + 1;
     char **descr = (char **)notnull(malloc(no*sizeof(char *)), "no mem");
-    int i;
+    int32_t i;
     for (i = 0; i < no; i++) { descr[i] = "Inexistente"; }
     
     /* TÉRREO */

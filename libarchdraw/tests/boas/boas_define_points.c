@@ -1,4 +1,5 @@
 /* See {boas_define_points.h} */
+/* Last edited on 2023-02-20 17:25:03 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -34,7 +35,7 @@ adrw_point_vec_t boas_define_points(void)
     double Xtr = +1483; /* X extent of land plot at rear wall. */
 
     double Yfw =  +296; /* Y of front of street wall rel to curb edge. */
-    double Ytt = +2990; /* Y extent of land plot (excl. sidewalk, curb, border walls). */
+    /* double Ytt = +2990; */ /* Y extent of land plot (excl. sidewalk, curb, border walls). */
     
     double Ybd =  +398; /* Y of front of building rel to front of street wall. */
     double Ypo =  +961; /* Y of back of rear wall of living room rel front of building. */
@@ -50,7 +51,7 @@ adrw_point_vec_t boas_define_points(void)
     double Wgp =    35; /* X and Y size of garage and back porch pillars. */
     double Wcg =    24; /* W distance from front pillar to car way. */
     
-    double Ygr =  +164; /* Y dist from curb edge to grassy areas on sidewalk */
+    /* double Ygr =  +164; */ /* Y dist from curb edge to grassy areas on sidewalk */
    
     /* The "owned" land plot is the area delimited by the W, N, and E perimeter walls,
       excluding said walls, and the front wall, including it.  Plus the sidewalk

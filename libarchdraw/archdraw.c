@@ -1,10 +1,11 @@
 /* See {archdraw.h}. */
-/* Last edited on 2021-06-26 18:40:39 by jstolfi */
+/* Last edited on 2023-02-21 04:43:04 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <values.h>
 #include <string.h>
+#include <stdint.h>
 
 #include <epswr.h>
 #include <r2.h>
@@ -17,13 +18,13 @@
 
 /* INTERNAL PROTOTYPES */
 
-void check_defined(r3_t *p, int ip);
+void check_defined(r3_t *p, int32_t ip);
   /* Bombs out if {p} is not defined. The {ip} is used in the message. */
 
 void r3_shift(r3_t *p, double dx, double dy, double dz, r3_t *r);
   /* Same as {r3_add(p, &d, r)} where {d = (r3_p){{dx,dy,dz}}}. */
 
-char *adrw_make_derived_label(char *main_label, int k);
+char *adrw_make_derived_label(char *main_label, int32_t k);
   /* Creates a label for a point derived from another point.
     Namely returns "{main_label}.{k}". */
 
@@ -49,7 +50,7 @@ void adrw_print_unit_table_sep_line
   );
   /* Prints a separator line for a table with data for building units. */
 
-adrw_point_t adrw_get_point(adrw_point_vec_t *P, int ip);
+adrw_point_t adrw_get_point(adrw_point_vec_t *P, int32_t ip);
   /* If {ip} is positive, returns a copy of point number {ip}
     from the point list {P}, checks whether it is defined,
     and marks it as used.
@@ -62,7 +63,7 @@ adrw_point_t adrw_get_point(adrw_point_vec_t *P, int ip);
 bool_t is_defined(r3_t *p)
   { return (! (isnan(p->c[0]) || isnan(p->c[1]) || isnan(p->c[2]))); }
   
-void check_defined(r3_t *p, int ip)
+void check_defined(r3_t *p, int32_t ip)
   { if (! is_defined(p)) 
       { fprintf(stderr, "** point %04d is undefined\n", ip);
         exit(1);
@@ -71,23 +72,23 @@ void check_defined(r3_t *p, int ip)
 
 void adrw_append_point
   ( char *lab, 
-    int ip, 
-    int jpx, 
-    int jpy, 
-    int jpz, 
+    int32_t ip, 
+    int32_t jpx, 
+    int32_t jpy, 
+    int32_t jpz, 
     double dX, 
     double dY, 
     double dZ, 
     adrw_point_vec_t *P, 
-    int *nP
+    int32_t *nP
   )
   {
     /* Print the data: */
     fprintf(stderr, "%-8s P[%04d]", lab, ip); 
     fprintf(stderr, " = P[ ");
     r3_t r;
-    for (int i = 0; i < 3; i++) 
-      { int jp = (int[]){ jpx, jpy, jpz }[i];
+    for (int32_t i = 0; i < 3; i++) 
+      { int32_t jp = (int32_t[]){ jpx, jpy, jpz }[i];
         adrw_point_t apj = adrw_get_point(P, jp);
         if (i > 0) { fprintf(stderr, ", "); }
         if (jp < 0)
@@ -112,7 +113,7 @@ void adrw_append_point
     double Z = r.c[2] + dZ;
     
     /* Make sure that {P.e[ip]} exists: */
-    int n = (*nP);
+    int32_t n = (*nP);
     adrw_point_vec_expand(P, ip); 
 
     /* If {ip >= n}, mark all points {n..ip} as undefined, bump {n}: */
@@ -143,11 +144,11 @@ void adrw_append_point
     (*nP) = n;
   }
   
-void show_holes(adrw_point_vec_t *P, int ini, int fin)
-  { int ip;
+void show_holes(adrw_point_vec_t *P, int32_t ini, int32_t fin)
+  { int32_t ip;
     demand(ini >= 0, "invalid ini");
-    int hole_ini = -999;  /* Beginning of most recent gap. */
-    int hole_fin = -998;  /* End of most recent gap. */
+    int32_t hole_ini = -999;  /* Beginning of most recent gap. */
+    int32_t hole_fin = -998;  /* End of most recent gap. */
     for (ip = ini; ip <= fin+1; ip++)
       { bool_t defined;
         if (ip >= fin) 
@@ -200,7 +201,7 @@ adrw_unit_style_t *adrw_make_unit_style
 
 bool_t adrw_polygon_is_closed(adrw_point_vec_t *P)
   { 
-    int n = P->ne;
+    int32_t n = P->ne;
     if (n < 3) { return FALSE; }
     double x0 = P->e[0].p.c[0], xn = P->e[n-1].p.c[0];
     double y0 = P->e[0].p.c[1], yn = P->e[n-1].p.c[1];
@@ -209,10 +210,10 @@ bool_t adrw_polygon_is_closed(adrw_point_vec_t *P)
 
 void adrw_compute_area_and_length(adrw_point_vec_t *P, double *areaP, double *lengthP)
   {
-    int n = P->ne;
+    int32_t n = P->ne;
     double length = 0.0;          /* Length (or perimeter) in 3D. */
     double area = 0.0;            /* Area of XY projection. */
-    int ip;
+    int32_t ip;
     bool_t closed = adrw_polygon_is_closed(P);
     for (ip = 1; ip < n; ip++)
       { adrw_point_t *ap0 = &(P->e[ip-1]);
@@ -235,15 +236,15 @@ adrw_unit_t *adrw_make_poly
     char *descr, 
     double modules,
     adrw_point_vec_t *P, 
-    int v[], 
+    int32_t v[], 
     double round,
-    int kfloor, 
+    int32_t kfloor, 
     adrw_space_type_t type, 
     adrw_unit_style_t *style
   )
   { 
     /* Count corners: */
-    int m = 0;  while(v[m] >= 0) { m++; }
+    int32_t m = 0;  while(v[m] >= 0) { m++; }
     demand(m > 0, "no points in polygon");
     /* Convert corner indices to points and pack as {adrw_unit_t}: */
     adrw_unit_t *rm = notnull(malloc(sizeof(adrw_unit_t)), "no mem");
@@ -259,7 +260,7 @@ adrw_unit_t *adrw_make_poly
         .area = NAN,
         .length = NAN
       };
-    int k;
+    int32_t k;
     for (k = 0; k < m; k++) { rm->pt.e[k] = adrw_get_point(P, v[k]); }
     adrw_compute_area_and_length(&(rm->pt), &(rm->area), &(rm->length));
     return rm;
@@ -272,7 +273,7 @@ void r3_shift(r3_t *p, double dx, double dy, double dz, r3_t *r)
     r->c[2] = p->c[2] + dz;
   }
   
-adrw_point_t adrw_make_derived_point(adrw_point_t *ap, int k, double dx, double dy, double dz, int krot)
+adrw_point_t adrw_make_derived_point(adrw_point_t *ap, int32_t k, double dx, double dy, double dz, int32_t krot)
   { 
     adrw_point_t dp;
     r3_shift(&(ap->p), dx, dy, dz, &(dp.p)); 
@@ -289,7 +290,7 @@ adrw_point_t adrw_make_derived_point(adrw_point_t *ap, int k, double dx, double 
     return dp;
   }
 
-char *adrw_make_derived_label(char *main_label, int k)
+char *adrw_make_derived_label(char *main_label, int32_t k)
   { 
     if (main_label == NULL)
       { return NULL; }
@@ -300,7 +301,7 @@ char *adrw_make_derived_label(char *main_label, int k)
       }
   }
 
-adrw_point_t adrw_get_point(adrw_point_vec_t *P, int ip)
+adrw_point_t adrw_get_point(adrw_point_vec_t *P, int32_t ip)
   {
     adrw_point_t dp;
     if (ip >= 0)
@@ -318,14 +319,14 @@ adrw_unit_t *adrw_make_box
   ( char *label, 
     char *descr, 
     adrw_point_vec_t *P, 
-    int ip, 
+    int32_t ip, 
     double ctrx,
     double ctry,
     double ctrz,
     double wdx,
     double wdy,
     double round,
-    int kfloor, 
+    int32_t kfloor, 
     adrw_space_type_t type, 
     adrw_unit_style_t *style
   )
@@ -360,11 +361,11 @@ adrw_unit_t *adrw_make_dot
   ( char *label, 
     char *descr, 
     adrw_point_vec_t *P, 
-    int ip, 
+    int32_t ip, 
     double ctrx,
     double ctry,
     double ctrz,
-    int kfloor, 
+    int32_t kfloor, 
     adrw_space_type_t type, 
     adrw_unit_style_t *style
   )
@@ -403,7 +404,7 @@ adrw_building_t *adrw_make_building(void)
 
 void adrw_append_unit(adrw_building_t *B, adrw_unit_t *rm)
   {
-    int k = B->NU;
+    int32_t k = B->NU;
     adrw_unit_vec_expand(&(B->unit),k);
     B->unit.e[k] = rm;
     B->NU++;
@@ -412,11 +413,11 @@ void adrw_append_unit(adrw_building_t *B, adrw_unit_t *rm)
 void adrw_append_seats
   ( adrw_building_t *B, 
     adrw_point_vec_t *P, 
-    int v00,
-    int v11,
+    int32_t v00,
+    int32_t v11,
     double szx,
     double szy,
-    int kfloor, 
+    int32_t kfloor, 
     adrw_space_type_t type, 
     adrw_unit_style_t *style
   )
@@ -436,8 +437,8 @@ void adrw_append_seats
     szy = fabs(szy);
     
     /* Compute number of seats: */
-    int nx = (int)floor(fabs(x11 - x00)/szx + 0.001);
-    int ny = (int)floor(fabs(y11 - y00)/szy + 0.001);
+    int32_t nx = (int32_t)floor(fabs(x11 - x00)/szx + 0.001);
+    int32_t ny = (int32_t)floor(fabs(y11 - y00)/szy + 0.001);
     
     /* Compute actual spacing of seats (signed): */
     double dx = (x11 - x00)/nx;
@@ -445,8 +446,8 @@ void adrw_append_seats
     double dz = (z11 - z00)/ny; /* Sic: {ny} not {nz}. */
     
     /* Compute signd of displacements: */
-    int signx = (dx < 0 ? -1 : +1);
-    int signy = (dy < 0 ? -1 : +1);
+    int32_t signx = (dx < 0 ? -1 : +1);
+    int32_t signy = (dy < 0 ? -1 : +1);
     
     /* Determine signed size {wdx,wdy} of seat proper, and signed margins to leave around it: */
     double wdx, wdy;
@@ -469,7 +470,7 @@ void adrw_append_seats
       }
    
     /* Append the seats as little boxes: */
-    int ix, iy;
+    int32_t ix, iy;
     for (ix = 0; ix < nx; ix++)
       { for (iy = 0; iy < ny; iy++)
           { double xc = ix*dx + xmlo + 0.5*wdx;
@@ -481,19 +482,23 @@ void adrw_append_seats
       }
   }
 
-void adrw_start_page
-  ( epswr_figure_t *epsf, 
+epswr_figure_t *adrw_new_figure
+  ( char *dir,
+    char *prefix,
+    char *suffix,
     double xmin, 
     double xmax, 
     double ymin, 
     double ymax, 
-    int ox, 
-    int nx, 
-    int oy, 
-    int ny, 
+    int32_t ox, 
+    int32_t nx, 
+    int32_t oy, 
+    int32_t ny, 
     char *title
   )
   {
+    bool_t segmented = ((nx > 1) || (ny > 1)); /* Only part of a multipage plot. */
+    
     /* Compute the desired sub-rectangle {[xlo_xhi]×[ylo_yhi]}: */
     double dx = (xmax - xmin)/nx, mx = (nx == 0 ? 0.00 : 0.02*dx);
     double dy = (ymax - ymin)/ny, my = (ny == 0 ? 0.00 : 0.02*dy);
@@ -501,17 +506,50 @@ void adrw_start_page
     double xlo = xmin + ox*dx - mx, xhi = xmin + (ox+1)*dx + mx;
     double ylo = ymin + oy*dy - my, yhi = ymin + (oy+1)*dy + my;
 
-    /* Start a new picture: */
-    epswr_set_client_window(epsf, xlo, xhi, ylo, yhi);
+    double maxHSize = 190*epswr_pt_per_mm;
+    double maxVSize = 210*epswr_pt_per_mm;
+    int32_t capLines = (title != NULL ? 1 : 0) + (segmented ? 2 : 0);
+    double textFontHeight = 10.0;
+    bool_t eps_verbose = FALSE;
+    int32_t npage = (segmented ? 10000 + oy*nx + ox : 0);
+    epswr_figure_t *epsf = epswr_new_captioned_figure
+      ( dir, prefix, NULL, npage, suffix,
+        xlo,xhi, ylo,yhi, maxHSize, maxVSize,
+        capLines, textFontHeight, eps_verbose
+      );
+      
+    /* Draw a light gray frame: */
+    epswr_set_pen(epsf,  0.800f,0.800f,0.800f,  0.10, 0,0);
+    epswr_frame(epsf);
+    
+    /* Write the caption text: */
+    epswr_set_text_font(epsf, "Courier", textFontHeight);
+    epswr_text(epsf, title, FALSE, 0.5, TRUE,FALSE);
+    if (segmented)
+      { char *title1 = NULL;
+        asprintf(&title1, "page (%d,%d) of (%d,%d)", ox,oy,nx,ny);
+        epswr_text(epsf, title1, FALSE, 0.5, TRUE,FALSE);
+        free(title1);
+        char *title2 = NULL;
+        asprintf(&title2, "[%.1f _ %.1f] x [%.1f _ %.1f]", xlo,xhi,ylo,yhi);
+        epswr_text(epsf, title2, FALSE, 0.5, TRUE,FALSE);
+        free(title2);
+      }
+
+    double labelFontHeight = 10.0;
+    epswr_set_label_font(epsf, "Courier", labelFontHeight);
 
     /* epswr_set_pen(epsf,  0.000,0.000,0.000,  0.10, 0,0); */
     /* epswr_coord_line(epsf, epswr_axis_HOR, 0.0); */
     /* epswr_coord_line(epsf, epswr_axis_VER, 0.0); */
     epswr_set_pen(epsf,  0.000,0.000,0.000,  0.10, 0,0);
+    epswr_set_fill_color(epsf,  0.000,0.000,0.000);
+    
+    return epsf;
   }
 
 void adrw_print_points(FILE *wr, adrw_point_vec_t *P)
-  { int ip;
+  { int32_t ip;
     for (ip = 0; ip < P->ne; ip++)
       { fprintf(wr, "P%04d = ", ip);
         adrw_point_t *api = &(P->e[ip]);
@@ -531,7 +569,7 @@ void adrw_print_points(FILE *wr, adrw_point_vec_t *P)
 void adrw_plot_point
   ( epswr_figure_t *epsf, 
     char *lab, 
-    int ip, 
+    int32_t ip, 
     double x, 
     double y, 
     double rot, 
@@ -586,11 +624,11 @@ void adrw_plot_unit
       }
     
     /* Extract corner coordinates {x[0..n-1], y[0..n-1]} minus closer: */
-    int n = (closed ? rm->pt.ne - 1 : rm->pt.ne);
+    int32_t n = (closed ? rm->pt.ne - 1 : rm->pt.ne);
     double x[n], y[n];
     char *lab[n];
-    int krot[n];
-    int k;
+    int32_t krot[n];
+    int32_t k;
     for (k = 0; k < n; k++)
       { adrw_point_t *api = &(rm->pt.e[k]);
         r3_t *p = &(api->p);
@@ -611,7 +649,7 @@ void adrw_plot_unit
         epswr_set_fill_color(epsf, 0,0,0);
         epswr_set_pen(epsf,  0.000,0.000,0.000,  0.10, 0,0);
         for (k = 0; k < n; k++) {           /* Reduce label direction angle to {-90..269}: */
-          int krotk = krot[k] % 360; 
+          int32_t krotk = krot[k] % 360; 
           if (krotk < 0) { krotk += 360; }
           if (krotk >= 270) { krotk -= 360; }
           double rot, hAlign;
@@ -637,7 +675,7 @@ void adrw_plot_building
     bool_t show_dots
   )
   { 
-    int iu;
+    int32_t iu;
     for (iu = 0; iu < B->NU; iu++)
       { adrw_unit_t *rm = B->unit.e[iu];
         adrw_plot_unit(epsf, rm, show_dots);
@@ -685,7 +723,7 @@ void adrw_print_unit_data
     void prnt(char *fmt, double val) 
       { char *s = NULL;
         asprintf(&s, fmt, val);
-        int i = 0; while (s[i] != 0) { if (s[i] == '.') { s[i] = ','; } i++; }
+        int32_t i = 0; while (s[i] != 0) { if (s[i] == '.') { s[i] = ','; } i++; }
         fputs(s, wr);
         free(s);
       }
@@ -746,9 +784,9 @@ void adrw_print_building
   { 
     /* Sort building units by type, label: */
     
-    auto int ucomp(const void *a, const void *b);
+    auto int32_t ucomp(const void *a, const void *b);
     
-    int ucomp(const void *a, const void *b)
+    int32_t ucomp(const void *a, const void *b)
       { adrw_unit_t *rma = *((adrw_unit_t **)a);
         adrw_unit_t *rmb = *((adrw_unit_t **)b);
         if (rma->type < rmb->type)
@@ -782,8 +820,8 @@ void adrw_print_building
       }
     
     adrw_print_unit_table_sep_line(wr, TeX, print_modules, print_area, print_length);
-    int iu;
-    int old_type = -1;
+    int32_t iu;
+    int32_t old_type = -1;
     double tot_modules = 0, tot_area = 0, tot_length = 0;
     double sub_modules = 0, sub_area = 0, sub_length = 0;
     for (iu = 0; iu < B->NU; iu++)
@@ -808,21 +846,21 @@ void adrw_print_building
 
 void adrw_compute_building_stats
   ( adrw_building_t *B,
-    int ntypes,
+    int32_t ntypes,
     double units[],
     double modules[],
     double area[],
     double length[]
   )
   {
-    int type;
+    int32_t type;
     for (type = 0; type < ntypes; type++)
       { if (units != NULL) units[type] = 0.0;
         if (modules != NULL) modules[type] = 0.0;
         if (area != NULL) area[type] = 0.0; 
         if (length != NULL) length[type] = 0.0;
       }
-    int iu;
+    int32_t iu;
     for (iu = 0; iu < B->NU; iu++)
       { adrw_unit_t *rm = B->unit.e[iu];
         type = rm->type;
@@ -835,18 +873,18 @@ void adrw_compute_building_stats
   }
   
 void adrw_plot_type_legend
-  ( char *fname,
-    int key_type[], 
-    int ntypes,
-    int ncols, 
+  ( char *dir,
+    char *prefix,
+    char *suffix,
+    int32_t key_type[], 
+    int32_t ntypes,
+    int32_t ncols, 
     char *type_tag[], 
     adrw_unit_style_t *style[]
   )
   {
-    double pt_per_mm = 72.0/25.4;
-
     /* Count the keys to be plotted: */
-    int nkeys = 0;  /* Number of keys actually plotted. */
+    int32_t nkeys = 0;  /* Number of keys actually plotted. */
     while (key_type[nkeys] >= 0) 
       { demand((key_type[nkeys] >= 0) && (key_type[nkeys] < ntypes), "invalid type");
         nkeys++;
@@ -861,63 +899,71 @@ void adrw_plot_type_legend
     double dx = 6.0*wdy;
 
     /* Compute the number of rows: */
-    int nrows = (nkeys + ncols - 1)/ncols;
+    int32_t nrows = (nkeys + ncols - 1)/ncols;
     
     /* Compute the Client sub-rectangle {[xlo_xhi]×[ylo_yhi]} (mm): */
     double xlo = 0.0, xhi = ncols*dx;
     double ylo = 0.0, yhi = nrows*dy;
     
     /* Compute the size of the plot area in pt: */
-    double hSize = (xhi - xlo)*pt_per_mm;
-    double vSize = (yhi - ylo)*pt_per_mm;
+    double hSize = (xhi - xlo)*epswr_pt_per_mm;
+    double vSize = (yhi - ylo)*epswr_pt_per_mm;
         
     /* Choose margins and set up the plot window */
     double hvMarg = 4.0;
-    FILE *wr = open_write(fname, TRUE);
-    bool_t verbose = TRUE;
-    epswr_figure_t *epsf = epswr_new_figure(wr, hSize, vSize, hvMarg, hvMarg, hvMarg, hvMarg, verbose);
+    bool_t eps_verbose = TRUE;
+    epswr_figure_t *epsf = epswr_new_named_figure
+      ( dir, prefix, NULL, -1, suffix, 
+        hSize, vSize, hvMarg, hvMarg, hvMarg, hvMarg, 
+        eps_verbose
+      );
     epswr_set_client_window(epsf, xlo, xhi, ylo, yhi);
-
     epswr_set_label_font(epsf, "Courier", 14.0);
     epswr_set_pen(epsf,  0.000,0.000,0.000,  0.10, 0,0);
-    int slot; 
+
+    int32_t slot; 
     for (slot = 0; slot < nkeys; slot++)
-      { int type = key_type[slot];
-        int row = nrows - 1 - (slot / ncols);
-        int col = slot % ncols;
+      { int32_t type = key_type[slot];
+        int32_t row = nrows - 1 - (slot / ncols);
+        int32_t col = slot % ncols;
         double rxlo = col*dx + 2.0, rxhi = rxlo + wdx;
         double rylo = row*dy + (dy - wdy)/2, ryhi = rylo + wdy;
         adrw_unit_style_t *st = style[type];
         frgb_t *rgb = &(st->fill_rgb);
         epswr_set_fill_color(epsf, rgb->c[0],rgb->c[1],rgb->c[2]);
         epswr_rectangle(epsf, rxlo, rxhi, rylo, ryhi, TRUE, TRUE);
+        epswr_set_fill_color(epsf, 0,0,0);
         epswr_label(epsf, type_tag[type], "P", rxhi + 1.5, rylo + 0.5, 0.0, FALSE, 0.0,0.0, TRUE, FALSE);
       }
     epswr_end_figure(epsf);
   }
   
 void adrw_plot_histogram_bar
-  ( char *fname,
+  ( char *dir,
+    char *prefix,
+    char *name,
+    char *suffix,
     adrw_space_type_t type,
     adrw_unit_style_t *st,
     double val,
     double vmax
   )
   {
-    double pt_per_mm = 72.0/25.4;
-
     /* Compute the height and width of the bar in mm, including stroked border: */
     double wdx = 160.0;
     double wdy = 4.0;
 
     /* Compute the size of the plot area in pt: */
-    double hSize = wdx * pt_per_mm;
-    double vSize = wdx * pt_per_mm;
+    double hSize = wdx * epswr_pt_per_mm;
+    double vSize = wdy * epswr_pt_per_mm;
         
     /* Choose margins and set up the plot window */
-    FILE *wr = open_write(fname, TRUE);
-    bool_t verbose = TRUE;
-    epswr_figure_t *epsf = epswr_new_figure(wr, hSize, vSize, 0, 0, 0, 0, verbose);
+    bool_t eps_verbose = TRUE;
+    epswr_figure_t *epsf = epswr_new_named_figure
+      ( dir, prefix, name, -1, suffix, 
+        hSize, vSize, 0.0, 0.0, 0.0, 0.0, 
+        eps_verbose
+      );
     
     /* Pen width in mm: */
     double pwd = 0.20;

@@ -1,5 +1,5 @@
 /* See {pst_graph.h}. */
-/* Last edited on 2016-04-01 02:01:31 by stolfilocal */
+/* Last edited on 2023-02-25 16:09:14 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #define _GNU_SOURCE
@@ -7,12 +7,15 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <pst_graph.h>
-#include <pst_slope_map.h>
-#include <pst_interpolate.h>
 #include <assert.h>
 #include <affirm.h>
 #include <jsfile.h>
+#include <rn.h>
+
+#include <pst_slope_map.h>
+#include <pst_interpolate.h>
+
+#include <pst_graph.h>
 
 long int pst_graph_compute_vertex_index(long int ix, long int iy, long int NX, long int NY)
   {
@@ -601,7 +604,7 @@ void pst_graph_solve_system
     int szero, 
     bool_t verbose 
   )
-  { double *Z = (double*)malloc(sizeof(double)*S->N);
+  { double *Z = rn_alloc(S->N);
     pst_slope_map_copy_height_map_to_sol_vec(S, OZ, Z);
     pst_imgsys_solve(S, Z, NULL, (int)maxIter, convTol, para, szero, verbose, 0, NULL);
     pst_slope_map_copy_sol_vec_to_height_map(S, Z, OZ);

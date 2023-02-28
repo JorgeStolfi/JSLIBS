@@ -1,5 +1,5 @@
 /* See aa.h */
-/* Last edited on 2016-12-26 22:05:36 by stolfilocal */
+/* Last edited on 2023-02-18 02:29:00 by stolfi */
 
 #include <aa.h>
 #include <affirm.h>
@@ -2156,7 +2156,8 @@ AAP aa_fix_eps(AAP x, AATermCount neps, AATerm eps[])
 
 void aa_get_eps_coef(AAP x, AATermCount neps, AATerm eps[])
   {
-    int full = aa_ISFULL(x);
+    demand(! aa_ISFULL(x), "affine form is full");
+    if (neps == 0) { return; }
     AATermP xp = (AATermP) (x + 1);
     AATermP ep = (AATermP) eps;
     AATermCount xn = x->nterms;
@@ -2168,7 +2169,7 @@ void aa_get_eps_coef(AAP x, AATermCount neps, AATerm eps[])
         else if (ep->id < xp->id)
           { ep->coef = Zero; ep++; en--; }
         else
-          { ep->coef = (full ? Infinity : xp->coef);
+          { ep->coef = xp->coef;
             xp++; xn--;
             ep++; en--;
           }

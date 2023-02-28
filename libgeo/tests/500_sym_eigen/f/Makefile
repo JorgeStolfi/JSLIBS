@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:38:10 by jstolfi
+# Last edited on 2023-02-15 12:42:29 by stolfi
 
 PROG = testf
 
@@ -18,7 +18,7 @@ ${OUT_NAME}.txt: ${PROG} Makefile
 	cat ${OUT_NAME}.txt
 
 clean::
-	-/bin/rm -f ${OUT_NAME}.txt
+	-/bin/rm -f ${PROG} *.o ${OUT_NAME}.txt
 
 # ======================================================================
 # Rules to compile the FORTRAN sources

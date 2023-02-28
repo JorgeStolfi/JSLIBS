@@ -1,5 +1,5 @@
 /* See pst_signature.h */
-/* Last edited on 2016-03-16 16:09:18 by stolfilocal */ 
+/* Last edited on 2023-02-25 16:10:07 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -10,10 +10,12 @@
 #include <vec.h>
 #include <affirm.h>
 #include <float_image.h>
+#include <rn.h>
 
 #include <pst_basic.h>
-#include <pst_signature.h>
 #include <pst_normal_map.h>
+
+#include <pst_signature.h>
 
 #define ltn_normals_debug TRUE
 
@@ -194,7 +196,7 @@ void pst_signature_search_table
 
 signature_t pst_signature_new(int NF)
   { signature_t sig;
-    sig.rin = (double *)notnull(malloc(NF*sizeof(double)), "no mem");
+    sig.rin = rn_alloc(NF);
     sig.mag = 1.0;
     sig.var = 0.0;
     return sig;

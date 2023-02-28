@@ -1,5 +1,5 @@
 # Makefile for C libraries
-# Last edited on 2023-02-14 03:44:34 by stolfi
+# Last edited on 2023-02-19 10:08:49 by stolfi
 
 # ----------------------------------------------------------------------
 # Good libraries, in import-compatible order:
@@ -25,24 +25,26 @@ LIB_TESTS_UNCERTAIN :=  ${shell gawk '/^[?] /   { print $$2; }' ${LIB_TESTS_DIR}
 LIB_TESTS_BUGGY :=      ${shell gawk '/^[!] /   { print $$2; }' ${LIB_TESTS_DIR}}
 LIB_TESTS_JUNK :=       ${shell gawk '/^[J] /   { print $$2; }' ${LIB_TESTS_DIR}}
 
-LIB_TESTS_ALL :=        ${LIB_TESTS_OK} ${LIB_TESTS_UNCERTAIN} ${LIB_TESTS_BUGGY}
-LIB_TESTS_NOT_OK :=     ${LIB_TESTS_UNCERTAIN} ${LIB_TESTS_BUGGY}
-LIB_TESTS_NOT_BUGGY :=  ${LIB_TESTS_OK} ${LIB_TESTS_UNCERTAIN} 
+LIB_TESTS_ALL :=        ${sort ${LIB_TESTS_OK} ${LIB_TESTS_UNCERTAIN} ${LIB_TESTS_BUGGY}}
+LIB_TESTS_NOT_OK :=     ${sort ${LIB_TESTS_UNCERTAIN} ${LIB_TESTS_BUGGY}}
+LIB_TESTS_NOT_BUGGY :=  ${sort ${LIB_TESTS_OK} ${LIB_TESTS_UNCERTAIN}}
 
 # ----------------------------------------------------------------------
 # Libraries to process:
 
 # LIBS := ${LIBS_UNCERTAIN}
+# LIBS := ${LIBS_OK}
 # LIBS := ${LIBS_NOT_OK}
-# LIBS := ${LIBS_ALL}
-LIBS := ${LIBS_NOT_BUGGY}
+LIBS := ${LIBS_ALL}
+# LIBS := ${LIBS_NOT_BUGGY}
  
 # ----------------------------------------------------------------------
 # Library tests to run:
 
 # LIB_TESTS := ${LIB_TESTS_UNCERTAIN}
-# LIB_TESTS := ${LIB_TESTS_NOT_OK}
-LIB_TESTS := ${LIB_TESTS_ALL}
+LIB_TESTS := ${LIB_TESTS_NOT_OK}
+# LIB_TESTS := ${LIB_TESTS_OK}
+# LIB_TESTS := ${LIB_TESTS_ALL}
 
 # ----------------------------------------------------------------------
 # Actions to perform:
@@ -50,8 +52,8 @@ LIB_TESTS := ${LIB_TESTS_ALL}
 # all:  all-clean all-build all-check
 # all:  all-clean all-build
 # all:  all-clean
-all:  all-build
-# all:  all-check
+# all:  all-build
+all:  all-check
  
 all-clean:
 	@for dir in ${LIBS_ALL}; do \

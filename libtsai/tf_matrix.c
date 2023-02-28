@@ -1,5 +1,5 @@
 /* See {tf_matrix.h}. */
-/* Last edited on 2022-10-20 05:50:22 by stolfi */
+/* Last edited on 2023-02-25 16:13:18 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -8,6 +8,8 @@
 #include <stdlib.h>
 
 #include <rmxn.h>
+#include <rn.h>
+
 #include <tf_matrix.h>
 
 void tf_solve_system_mxn (mat_rm_t M, rm_t U, rm_t b, double wgts[])
@@ -128,7 +130,7 @@ rmxn_t tf_alloc_rmxn (int32_t nrows, int32_t ncols)
 
     /* Allocates columns */
     for (row = 0; row < nrows; row++){
-        m->c[row] = (double *)malloc(ncols * sizeof(double));
+        m->c[row] = rn_alloc(ncols);
         if (m->c[row] == NULL ){
             fprintf( stderr, "error: allocating array" );
             return NULL;
@@ -155,7 +157,7 @@ rm_t tf_alloc_rm (int32_t size)
     rm_t v = (rm_t)malloc(sizeof(struct _rm_t));
 
     v->size = size;
-    v->c  = (double *)malloc(size * sizeof (double));
+    v->c  = rn_alloc(size);
 
     return v;
 }
@@ -183,7 +185,7 @@ mat_rm_t tf_alloc_mat_rm (int32_t nrows, int32_t ncols)
    m->nrows = nrows;
    m->ncols = ncols;
 
-   m->c  = (double *)malloc((nrows*ncols) * sizeof (double));
+   m->c  = rmxn_alloc(nrows,ncols);
 
    return m;
 }

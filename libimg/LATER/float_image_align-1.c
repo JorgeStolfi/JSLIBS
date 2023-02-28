@@ -1,4 +1,4 @@
-/* Last edited on 2007-10-28 19:49:04 by stolfi */
+/* Last edited on 2023-02-25 15:43:04 by stolfi */
 
 /* INTERNAL PROTOTYPES */
 
@@ -531,8 +531,8 @@ alignment_t alloc_alignment(int nims)
   {
     alignment_t al;
     int i;
-    al.dcol = (double *)malloc(nims*sizeof(double));
-    al.drow = (double *)malloc(nims*sizeof(double));
+    al.dcol = rn_alloc(nims);
+    al.drow = rn_alloc(nims);
     al.mism = (interval_t *)malloc(nims*sizeof(interval_t));
     if ((al.dcol == NULL) || (al.drow == NULL) || (al.mism == NULL))
       { pnm_error("out of memory for displacement vectors"); }
@@ -715,7 +715,7 @@ void fial_recenter_displacements(int nims, double *dcol, double *drow)
 
 double *fial_gaussian_distr(int width, double sigma)
   { double m = ((double)width)/2.0;
-    double *g = (double *)malloc(width*sizeof(double));
+    double *g = rn_alloc(width);
     double s = 0;
     int i;
     if (g == NULL) { pnm_error("out of memory for gaussian weight"); }

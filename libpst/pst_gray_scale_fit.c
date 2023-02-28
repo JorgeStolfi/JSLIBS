@@ -1,5 +1,5 @@
 /* See pst_gray_scale_fit.h */
-/* Last edited on 2016-03-16 16:08:27 by stolfilocal */
+/* Last edited on 2023-02-26 03:52:07 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -940,7 +940,9 @@ void pgsf_solve_lsq_system(int n, double A[], double b[], bool_t nonneg, double 
     if (nonneg) 
       { qms_quadratic_min(n, A, b, z); }
     else
-      { gsel_solve(n, n, A, 1, b, z, 0.0); }
+      { int32_t r = gsel_solve(n, n, A, 1, b, z, 0.0);
+        demand(r == n, "indeterminate system");
+      }
 
     if (debug)
       { int p;

@@ -1,4 +1,4 @@
-# Last edited on 2023-02-04 07:06:10 by stolfi
+# Last edited on 2023-02-20 06:23:37 by stolfi
 
 PROG := delrandom
 
@@ -17,24 +17,30 @@ include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 
 all: check
 
-check:  do-test
+check:  
+	${MAKE} NSITES=60 DISTR=uniform do-test
+	${MAKE} NSITES=60 DISTR=normal do-test
   
-PSFILE = out/${PROG}-doc.ps
-EPSFILE = out/${PROG}-000001.eps
 # PSVIEW := gv
 PSVIEW := evince
 
-do-test: ${PSFILE} ${EPSFILE}
+# ######################################################################
+# The ${NSITES} ${DISTR} section
+ifneq "/${NSITES}" "/"
+ifneq "/${DISTR}" "/"
+
+EPSFILE = ${shell printf "out/delrandom_%05d_%s.eps" ${NSITES} "${DISTR}"}
+
+do-test: ${EPSFILE}
 
 clean::
-	rm -f ${PSFILE} ${EPSFILE}
-  
+	rm -f ${EPSFILE}
 
-${PSFILE}: ${PROG}
-	${PROG} 80 uniform ps
-	${PSVIEW} ${PSFILE}
-  
 ${EPSFILE}: ${PROG}
-	${PROG} 12 normal eps
+	${PROG} ${NSITES} ${DISTR}
 	${PSVIEW} ${EPSFILE}
 
+endif
+endif
+# End ${NSITES} ${DISTR} section
+# ######################################################################

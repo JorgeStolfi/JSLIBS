@@ -1,21 +1,23 @@
 /* See bbopt.h */
-/* Last edited on 2008-05-25 01:27:07 by stolfi */
+/* Last edited on 2023-02-20 06:44:14 by stolfi */
 
 #define _GNU_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <affirm.h>
+#include <ia.h>
+#include <aa.h>
+
 #include <fbox.h>
 #include <fboxheap.h>
 #include <fboxlist.h>
-#include <aa.h>
-#include <ia.h>
-#include <affirm.h>
-#include <ps.h>
-#include <stdlib.h>
-#include <stdio.h>
+
 #include <bbopt.h>
 
 #define MaxPieces 2
 
-void bb_partition(FBox *b, Float *tol, Interval F(Interval *xr), FBox **c, int *ncp);
+void bb_partition(FBox *b, Float *tol, Interval F(Interval *xr), FBox **c, int32_t *ncp);
   /* Partitions the box {b} into two or more sub-boxes {c[0..n-1]} and
     sets {*ncp} to the count {n} of those sub-boxes. The new boxes will 
     not share any storage with {b}, and their ranges are estimated with the
@@ -35,7 +37,7 @@ sign bb_Q_compare(FBox *a, FBox *b);
   /* Compares boxes according to lower bound {b.fr.lo} */
 
 FBoxList bb_optimize
-  ( int d, 
+  ( int32_t d, 
     Interval F(Interval *xr),
     Interval *xr,
     Float *tol,
@@ -45,7 +47,7 @@ FBoxList bb_optimize
   { Float fmhi = PlusInfinity; /* Upper bound for global minimum */
     FBoxHeap *L = fbox_heap_new(100, bb_L_compare);
     FBoxHeap *Q = fbox_heap_new(100, bb_Q_compare);
-    int nc; 
+    int32_t nc; 
     
     FBox *c[MaxPieces]; /* Return area for {partition()} */
     FBox *b = fbox_make(d, 0, xr, F(xr));
@@ -62,7 +64,7 @@ FBoxList bb_optimize
             fbox_discard(b);
           }
         else
-          { int i;
+          { int32_t i;
             bb_partition(b, tol, F, &(c[0]), &nc);
             affirm(nc <= MaxPieces, "oops, too many pieces");
             for(i = 0; i < nc; i++)
@@ -95,9 +97,9 @@ FBoxList bb_optimize
     }
   }
        
-void bb_partition(FBox *b, Float *tol, Interval F(Interval *xr), FBox **c, int *ncp)
-  { int i;
-    int imax = -1;
+void bb_partition(FBox *b, Float *tol, Interval F(Interval *xr), FBox **c, int32_t *ncp)
+  { int32_t i;
+    int32_t imax = -1;
     Float wmax = -1.0, mmax = NAN;
     Interval *xr = &(b->xr[0]);
     for (i = 0; i < b->d; i++)

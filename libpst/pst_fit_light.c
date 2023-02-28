@@ -1,5 +1,5 @@
 /* See pst_fit_light.h */
-/* Last edited on 2016-03-16 16:08:48 by stolfilocal */ 
+/* Last edited on 2023-02-26 03:52:39 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -804,7 +804,9 @@ void pst_flt_solve_lsq_system(int n, double A[], double b[], double u[], bool_t 
     if (nonNegative) 
       { qms_quadratic_min(n, A, b, u); }
     else
-      { gsel_solve(n, n, A, n, b, u, 0.0); }
+      { int32_t r = gsel_solve(n, n, A, n, b, u, 0.0);
+        demand(r == n, "indeterminate system");
+      }
   }
 
 /* COMMAND LINE PARSING */

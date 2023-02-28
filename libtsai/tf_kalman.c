@@ -2,7 +2,10 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+
 #include <affirm.h>
+#include <rn.h>
+
 #include <tf_kalman.h>
 
 kalman_parameters_t tf_kalman_new_parameters (int32_t order)
@@ -12,7 +15,7 @@ kalman_parameters_t tf_kalman_new_parameters (int32_t order)
    K->order = order;
    K->avg = 0.0;
    K->dev = 1.0;
-   K->coeffs = (double *)malloc(order * sizeof(double));
+   K->coeffs = rn_alloc(order);
    int32_t i;
    for (i = 0; i < K->order; i++) { K->coeffs[i] = 0.0; }
    return K;

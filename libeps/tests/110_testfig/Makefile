@@ -1,4 +1,4 @@
-
+# Last edited on 2023-02-26 08:53:15 by stolfi
 
 PROG := testfig
 
@@ -6,6 +6,7 @@ TEST_LIB := libeps.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS := \
+  libgeo.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
@@ -16,29 +17,28 @@ all: check
 
 check:  do-test
 
-OUTDIR := out
+OUT_DIR := out
+OUT_PREFIX := ${OUT_DIR}/test_fig
 
-EPSFILES := \
-  ${OUTDIR}/fig_A.eps \
-  ${OUTDIR}/fig_B.eps
+MAIN_EPS := ${OUT_PREFIX}_00000_A.eps
 
 # PSVIEW := ghostview
 # PSVIEW := gv
 PSVIEW := evince
         
-do-test: ${EPSFILES} show-epsf
+do-test: ${MAIN_EPS} show-epsf
   
-${EPSFILES} : ${PROG} ${OUTDIR}
+${MAIN_EPS} : ${PROG} ${OUT_DIR}
 	${PROG}
 
-show-epsf: ${EPSFILES}
-	for f in ${EPSFILES} ; do \
+show-epsf: ${MAIN_EPS}
+	for f in `ls ${OUT_PREFIX}_*.eps | sort` ; do \
 	  ${PSVIEW} $$f ; \
         done
         
-${OUTDIR}:
-	mkdir -p ${OUTDIR}
+${OUT_DIR}:
+	mkdir -p ${OUT_DIR}
 
 clean::
-	-/bin/rm -f ${EPSFILES}
+	-/bin/rm -f ${OUT_PREFIX}_*.eps
   

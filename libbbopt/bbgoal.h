@@ -1,15 +1,18 @@
 /* A generic goal function for branch-and-bound optimization programs. */
-/* Last edited on 2005-09-26 00:29:01 by stolfi */
+/* Last edited on 2023-02-20 06:49:07 by stolfi */
 
 #ifndef bbgoal_H
 #define bbgoal_H
+
+#define _GNU_SOURCE
+#include <stdint.h>
 
 #include <flt.h>
 #include <ia.h>
 
 typedef struct bbgoal_data_t
   {
-    int dim;      /* Dimension {d} of domain. */
+    int32_t dim;      /* Dimension {d} of domain. */
     
     Float (*eval_fp)(Float *x);
       /* Returns an approximate value of the goal function

@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:31:22 by jstolfi
+# Last edited on 2023-02-27 11:02:13 by stolfi
 
 PROG = test_sve_blpulse
  
@@ -11,7 +11,7 @@ JS_LIBS := \
   libjs.a
   
 OTHER_LIBS := \
-  /usr/lib64/libfftw3.so
+  /usr/lib/x86_64-linux-gnu/libfftw3.so
   
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
  

@@ -1,5 +1,5 @@
 /* See stmap.h */
-/* Last edited on 2022-10-20 07:45:46 by stolfi */
+/* Last edited on 2023-02-21 21:34:10 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -12,7 +12,7 @@
 #include <stmap.h>
 #include <stheap.h>
 
-#include <pswr.h>
+#include <epswr.h>
 #include <affirm.h>
 #include <r2.h>
 #include <fget.h>
@@ -245,7 +245,7 @@ void st_increment_coverage
   }
 
 void st_map_plot(
-    PSStream *ps, 
+    epswr_figure_t *eps, 
     Map *m, 
     Interval xr, Interval yr, 
     float *vwidth, RGBColor *vcolor,
@@ -279,8 +279,8 @@ void st_map_plot(
                   { pr = 1.0; pg = 0.0; pb = 0.0; }
                 pwd = (ewidth != NULL ? ewidth[ei] : 0.250f);
                 if (pwd > 0.0)
-                  { pswr_set_pen(ps, pr,pg,pb, pwd, 0.0, 0.0);
-                    pswr_segment(ps, od->p.c[0], od->p.c[1], dd->p.c[0], dd->p.c[1]);
+                  { epswr_set_pen(eps, pr,pg,pb, pwd, 0.0, 0.0);
+                    epswr_segment(eps, od->p.c[0], od->p.c[1], dd->p.c[0], dd->p.c[1]);
                   }
               }
           }
@@ -298,8 +298,8 @@ void st_map_plot(
             pwd = (vwidth != NULL ? vwidth[vi] : (vd->deg == 2 ? 0.000f : 0.500f));
             /* Plot dot: */
             if (pwd > 0.0)
-              { pswr_set_pen(ps, pr,pg,pb, pwd, 0.0, 0.0);
-                pswr_segment(ps, vd->p.c[0], vd->p.c[1], vd->p.c[0], vd->p.c[1]);
+              { epswr_set_pen(eps, pr,pg,pb, pwd, 0.0, 0.0);
+                epswr_segment(eps, vd->p.c[0], vd->p.c[1], vd->p.c[0], vd->p.c[1]);
               }
           }
       }
@@ -465,16 +465,16 @@ double_vec_t st_fread_double_vec_t(FILE *rd)
     return d;
   }
   
-void st_write_double_vec_t(char *name, double_vec_t *d)
+void st_write_double_vec_t(char *name, char *fmt, double_vec_t *d)
   { FILE *wr = open_write(name, TRUE);
-    st_fwrite_double_vec_t(wr, d);
+    st_fwrite_double_vec_t(wr, fmt, d);
     if (wr == stdout) { fflush(wr); } else { fclose(wr); }
   }
 
-void st_fwrite_double_vec_t(FILE *wr, double_vec_t *d)
+void st_fwrite_double_vec_t(FILE *wr, char *fmt, double_vec_t *d)
   { int32_t i;
     fprintf(wr, "vertices = %d\n", d->ne);
-    for (i = 0; i < d->ne; i++) { fprintf(wr, "%24.16e\n", d->e[i]); }
+    for (i = 0; i < d->ne; i++) { fprintf(wr, fmt, d->e[i]); fputc('\n', wr); }
     fflush(wr);
   }
 

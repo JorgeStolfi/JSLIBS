@@ -2,25 +2,25 @@
 #define delaunay_H
 
 /* Delaunay triangulation. */
-/* Last edited on 2011-12-25 01:44:20 by stolfi */
+/* Last edited on 2023-02-20 06:11:02 by stolfi */
 
-/*
-** The divide-and-conquer algorithm for computing the Delaunay
-** triangulation of a set of points (sites) on the plane. 
-** For details, see 
-**
-**   "Primitives for the Manipulation of General Subdivisions 
-**   and the Computation of Voronoi Diagrams"
-**
-**   L. Guibas, J. Stolfi, ACM Transactions on Graphics, April 1985
-**
-** Implemented by Jim Roth (DEC CADM Advanced Group) on May 1986.
-** Adapted by J. Stolfi on April 1993.
-** See the copyright notice at the end of this file.
+/* The divide-and-conquer algorithm for computing the Delaunay
+  triangulation of a set of points (sites) on the plane. 
+  For details, see 
+
+    "Primitives for the Manipulation of General Subdivisions 
+    and the Computation of Voronoi Diagrams"
+    L. Guibas, J. Stolfi, ACM Transactions on Graphics, April 1985
+
+  Implemented by Jim Roth (DEC CADM Advanced Group) on May 1986.
+  Adapted by J. Stolfi in April 1993.
+  See the copyright notice at the end of this file.
 */
 
-#include <quad.h>
+#define _GNU_SOURCE
 #include <stdint.h>
+
+#include <quad.h>
 #include <bool.h>
 #include <sign.h>
 #include <i3.h>
@@ -35,12 +35,12 @@
 
 typedef struct delaunay_site_t
   { hi2_point_t pt;  /* Homogeneous site coordinates (cooordinate 0 is the weight). */
-    int index;       /* Site index. */
+    int32_t index;   /* Site index. */
   } delaunay_site_t;
 
 /* The Delaunay triangulation: */
 
-quad_arc_t delaunay_build(delaunay_site_t sites[], int nsites);
+quad_arc_t delaunay_build(delaunay_site_t st[], int32_t nsites);
   /* Builds the Delaunay trinagulation of {site[0..nsites-1]}.
     Returns an arc {e} on the perimeter of the triangulation,
     oriented so that {LEFT(e)} is the outer (unbounded) face. */

@@ -1,5 +1,5 @@
 /* Basic Affine Arithmetic definitions and operations */
-/* Last edited on 2016-12-26 20:23:13 by stolfilocal */
+/* Last edited on 2023-02-18 02:30:29 by stolfi */
 
 #ifndef aa_H
 #define aa_H
@@ -216,6 +216,8 @@ AAP aa_fix_eps(AAP x, AATermCount neps, AATerm eps[]);
     Any noise symbols that appear in {x} but not in {eps} are retained
     in the result.  A new noise symbol is added, if necessary, to
     account for rounding errors.
+    
+    If {x} is the full affine form, return the full affine form.
 
     The fields {eps[i].id} must be sorted in increasing order.
     The values {eps[i].coef} need not be in [-1 __ +1]. */
@@ -226,6 +228,8 @@ void aa_get_eps_coef(AAP x, AATermCount neps, AATerm eps[]);
     for every {i} in {0..neps-1}. In particular, if {x} does not
     depend on the noise variable {eps[i].id}, stores zero into
     {eps[i].coef}.
+    
+    The procedure fails if {x} is the full affine form.
 
     The fields {eps[i].id} must be sorted in increasing order. */
 

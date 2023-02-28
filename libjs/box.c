@@ -1,5 +1,5 @@
 /* See box.h */
-/* Last edited on 2021-12-31 23:44:19 by stolfi */ 
+/* Last edited on 2023-02-18 23:44:58 by stolfi */ 
 
 /* We need to set these in order to get {asinh}. What a crock... */
 #undef __STRICT_ANSI__
@@ -14,6 +14,7 @@
 #include <bool.h>
 #include <affirm.h>
 #include <interval.h>
+#include <interval_io.h>
 #include <set32.h>
 #include <jsrandom.h>
 #include <box.h>
@@ -79,7 +80,7 @@ void box_widths(box_dim_t d, interval_t B[], double w[])
   { if (box_is_empty(d, B))
       { for (int32_t i = 0; i < d; i++) { w[i] = 0.0; } }
     else
-      { int oround = fegetround();
+      { int32_t oround = fegetround();
         fesetround(FE_UPWARD);
         for (int32_t i = 0; i < d; i++) { w[i] = HI(B[i]) - LO(B[i]); }
         fesetround(oround);
@@ -90,7 +91,7 @@ double box_max_width(box_dim_t d, interval_t B[])
   { if ((d == 0) || (box_is_empty(d, B)))
       { return 0.0; }
     else
-      { int oround = fegetround();
+      { int32_t oround = fegetround();
         fesetround(FE_UPWARD);
         double sz = 0;
         for (int32_t i = 0; i < d; i++) 
@@ -106,7 +107,7 @@ double box_radius(box_dim_t d, interval_t B[])
   { if ((d == 0) || (box_is_empty(d, B)))
       { return 0.0; }
     else
-      { int oround = fegetround();
+      { int32_t oround = fegetround();
         fesetround(FE_UPWARD);
         double sum2 = 0;
         for (int32_t i = 0; i < d; i++) 
@@ -139,7 +140,8 @@ bool_t box_equal(box_dim_t d, interval_t A[], interval_t B[])
 
 void box_empty(box_dim_t d,  interval_t C[])
   { 
-    for (int32_t i = 0; i < d; i++) { C[i] = (interval_t){{ +INF, -INF }}; }
+    for (int32_t i = 0; i < d; i++) 
+      { C[i] = (interval_t){{ +INF, -INF }}; }
   }
 
 void box_include_point(box_dim_t d, interval_t B[], double p[], interval_t C[])
@@ -262,81 +264,65 @@ void box_split
     interval_t BMD[],  
     interval_t BHI[] 
   )
-  { 
-    
-    bool_t debug = FALSE;
+  { bool_t debug = FALSE;
     
     demand((a >= 0) && (a < d), "invalid axis");
     if (box_is_empty(d, B))
-      { 
-        if (BLO != NULL) { box_empty(d, BLO); }
+      { if (BLO != NULL) { box_empty(d, BLO); }
         if (BMD != NULL) { box_empty(d, BMD); }
         if (BHI != NULL) { box_empty(d, BHI); }
       }
     else
-      { 
-        /* Decide which parts are empty: */
+      { /* Decide which parts are not empty: */
         interval_t *Ba = &(B[a]);
         assert(LO(*Ba) <= HI(*Ba));
-        bool_t ety_BLO = (x <= LO(*Ba));
-        bool_t ety_BHI = (x >= HI(*Ba));
-        bool_t ety_BMD; 
-        if (LO(*Ba) == HI(*Ba))
-          { ety_BMD = (x != LO(*Ba)); }
+        if ((LO(*Ba) < x) && (x < HI(*Ba)))
+          { /* All three parts are non-empty: */
+            for (int32_t i = 0; i < d; i++) 
+              { if (i == a)
+                  { if (BLO != NULL) { LO(BLO[i]) = LO(B[i]); HI(BLO[i]) = x; assert(LO(BLO[i]) < HI(BLO[i])); }
+                    if (BMD != NULL) { LO(BMD[i]) = x; HI(BMD[i]) = x; }
+                    if (BHI != NULL) { LO(BHI[i]) = x; HI(BHI[i]) = HI(B[i]); assert(LO(BHI[i]) < HI(BHI[i])); }
+                  }
+                else
+                  { if (BLO != NULL) { BLO[i] = B[i]; }
+                    if (BMD != NULL) { BMD[i] = B[i]; } 
+                    if (BHI != NULL) { BHI[i] = B[i]; }
+                  }
+              }
+          }
+        else if ((LO(*Ba) == x) && (HI(*Ba) == x))
+          { /* {BLO} and {BHI} are empty, {BMD} is {B}: */
+            if (BLO != NULL) { box_empty(d, BLO); }
+            if (BMD != NULL) { for (int32_t i = 0; i < d; i++) { BMD[i] = B[i]; } }
+            if (BHI != NULL) { box_empty(d, BHI); }
+          }
+        else if (x <= LO(*Ba))
+          { /* {BLO} and {BMD} are empty, {BHI} is {B}: */
+            if (BLO != NULL) { box_empty(d, BLO); }
+            if (BMD != NULL) { box_empty(d, BMD); }
+            if (BHI != NULL) { for (int32_t i = 0; i < d; i++) { BHI[i] = B[i]; } }
+          }
+        else if (x >= HI(*Ba))
+          { /* {BMD} {BHI} are empty, {BLO} is {B}: */
+            if (BLO != NULL) { for (int32_t i = 0; i < d; i++) { BLO[i] = B[i]; } }
+            if (BMD != NULL) { box_empty(d, BMD); }
+            if (BHI != NULL) { box_empty(d, BHI); }
+          }
         else
-          { ety_BMD = (x <= LO(*Ba)) || (x >= HI(*Ba)); }
-        if (debug) 
-          { fprintf(stderr, "  ety BLO = %d BMD = %d BHI = %d\n", ety_BLO, ety_BMD, ety_BHI); }
-        
-        /* Return the parts: */
-        if (BLO != NULL) 
-          { if (ety_BLO) 
-              { box_empty(d, BLO); }
-            else 
-              { for (int32_t i = 0; i < d; i++) 
-                  { if (i == a)
-                      { LO(BLO[i]) = LO(B[i]); 
-                        HI(BLO[i]) = x;
-                        assert(LO(BLO[i]) < HI(BLO[i]));
-                      }
-                    else
-                      { BLO[i] = B[i]; }
-                  }
-              }
-          }
-        if (BMD != NULL)
-          { if (ety_BMD)
-              { box_empty(d, BMD); } 
-            else 
-              { for (int32_t i = 0; i < d; i++) 
-                  { if (i == a)
-                      { LO(BMD[i]) = x; 
-                        HI(BMD[i]) = x;
-                      }
-                    else
-                      { BMD[i] = B[i]; }
-                  }
-              }
-          }
-        if (BHI != NULL) 
-          { if (ety_BHI) 
-              { box_empty(d, BHI); } 
-            else
-              { for (int32_t i = 0; i < d; i++) 
-                  if (i == a)
-                    { LO(BHI[i]) = x; 
-                      HI(BHI[i]) = HI(B[i]);
-                      assert(LO(BHI[i]) < HI(BHI[i]));
-                    }
-                  else 
-                    { BHI[i] = B[i];  }
-              }
-          }
+          { assert(FALSE); }
+      }
+    if (debug)
+      { box_gen_print(stderr, d, B, "%12.6f", "B =   ", " × ", "\n");
+        if (BLO != NULL) { box_gen_print(stderr, d, BLO, "%12.6f", "BLO = ", " × ", "\n"); }
+        if (BMD != NULL) { box_gen_print(stderr, d, BMD, "%12.6f", "BMD = ", " × ", "\n"); }
+        if (BHI != NULL) { box_gen_print(stderr, d, BHI, "%12.6f", "BHI = ", " × ", "\n"); }
       }
   }
 
 void box_throw(box_dim_t d, double elo, double ehi, double p_empty, double p_single, interval_t B[])
   {
+    if (d == 0) { return; }
     if (drandom() < p_empty)
       { /* Generate an empty box: */
         box_empty(d, B); 
@@ -403,7 +389,7 @@ void box_point_unmap(box_dim_t d, double x[], interval_t B[], double z[])
   }
 
 void box_box_map(box_dim_t d, interval_t Z[], interval_t B[], interval_t X[])
-  { int i, j;
+  { int32_t i, j;
     for (i = 0, j = 0; i < d; i++)
       { double lo = LO(B[i]);
         double hi = HI(B[i]);
@@ -421,7 +407,7 @@ void box_box_map(box_dim_t d, interval_t Z[], interval_t B[], interval_t X[])
   }
 
 void box_box_unmap(box_dim_t d, interval_t X[], interval_t B[], interval_t Z[])
-  { int i, j;
+  { int32_t i, j;
     for (i = 0, j = 0; i < d; i++)
       { double lo = LO(B[i]);
         double hi = HI(B[i]);
@@ -474,8 +460,51 @@ void box_face_rel_box(box_dim_t m, box_face_index_t fi, interval_t F[])
       }
   }
 
+void box_print(FILE *wr, box_dim_t d, interval_t B[])
+  { 
+    box_gen_print(wr, d, B, NULL, NULL, NULL, NULL); 
+  }
+
+void box_gen_print
+  ( FILE *wr, 
+    box_dim_t d, 
+    interval_t B[], 
+    char *fmt, 
+    char *pref, 
+    char *sep, 
+    char *suff
+  )
+  { if (fmt == NULL) { fmt = "%16.8e"; }
+    if (sep == NULL) { sep = " "; }
+
+    if (pref != NULL) { fputs(pref, wr); }
+    bool_t ety = box_is_empty(d, B);
+    for (int32_t i = 0; i < d; i++) 
+      { if (i > 0) { fputs(sep, wr); }
+        if (ety) 
+          { fputs("[]", wr); }
+        else
+          { interval_t *Bi = &(B[i]);
+            if (LO(*Bi) == HI(*Bi))
+              { /* Singleton: */
+                fputs("{", wr);
+                fprintf(wr, fmt, LO(*Bi));
+                fputs("}", wr);
+              }
+            else
+              { /* Open interval: */
+                interval_gen_print(wr, Bi, fmt, "(", "_", ")");
+              }
+          }
+      }
+    if (suff != NULL) { fputs(suff, wr); }
+  }
+
 void box_face_print(FILE *wr, box_dim_t m, box_face_index_t fi)
   { box_axis_index_t j;
     for (j = 0; j < m; j++)
-      { int dj = (fi % 3); fprintf(stderr, "%c", ("0+-")[dj]);  fi /= 3; }
+      { int32_t dj = (fi % 3); 
+        fprintf(stderr, "%c", ("0+-")[dj]);  
+        fi /= 3;
+      }
   }

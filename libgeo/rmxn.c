@@ -1,11 +1,12 @@
 /* See rmxn.h. */
-/* Last edited on 2023-02-08 12:49:07 by stolfi */
+/* Last edited on 2023-02-27 08:56:02 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include <rn.h>
 #include <bool.h>
@@ -163,7 +164,7 @@ void rmxn_tr_mul (int32_t p, int32_t m, int32_t n, double *A, double *B, double 
 
 double rmxn_det (int32_t n, double *A)
   { int32_t n2 = n*n, t;
-    double *C = (double *)notnull(malloc(n2*sizeof(double)), "no mem for C");
+    double *C = rmxn_alloc(n,n);
     double det = 1.0;
     for (t = 0; t < n2; t++) { C[t] = A[t]; }
     gsel_triangularize(n, n, C, FALSE, 0.0);
@@ -173,27 +174,36 @@ double rmxn_det (int32_t n, double *A)
   }
 
 double rmxn_inv (int32_t n, double *A, double *M)
-  { int32_t i, j;
-    int32_t nC = 2*n;
+  { int32_t nC = 2*n;
     int32_t nA = n;
     int32_t nM = n;
-    double *C = (double *)notnull(malloc(n*nC*sizeof(double)), "no mem for C");
+    double *C = rmxn_alloc(n,nC);
     /* Copy {A} into the left half of {C}, fill the right half with the identity: */
-    for (i = 0; i < n; i++) 
+    for (int32_t i = 0; i < n; i++) 
       { double *Cij = &(C[nC*i]); 
         double *Aij = &(A[nA*i]);
-        for (j = 0; j < nA; j++) { (*Cij) = (*Aij); Cij++; Aij++; }
-        for (j = 0; j < nM; j++) { (*Cij) = (j == i ? 1.0 : 0.0); Cij++; }
+        for (int32_t j = 0; j < nA; j++) { (*Cij) = (*Aij); Cij++; Aij++; }
+        for (int32_t j = 0; j < nM; j++) { (*Cij) = (j == i ? 1.0 : 0.0); Cij++; }
       }
-    gsel_triangularize(n, nC, C, FALSE, 0.0);
+    gsel_triangularize(n, nC, C, TRUE, 0.0);
     double det = 1.0;
-    for (i = 0; i < n; i++) { det *= C[nC*i + i]; }
-    gsel_diagonalize(n, nC, C, 0);
-    gsel_normalize(n, nC, C, 0);
-    for (i = 0; i < n; i++) 
-      { double *Cij = &(C[nC*i + n]); 
-        double *Mij = &(M[nM*i]);
-        for (j = 0; j < nM; j++) { (*Mij) = (*Cij); Mij++; Cij++; }
+    for (int32_t i = 0; i < n; i++) { det *= C[nC*i + i]; }
+    if (det == 0.0)
+      { /* Singular matrix: */
+        double *Mij = M;
+        for (int32_t i = 0; i < n; i++) 
+          { for (int32_t j = 0; j < n; j++)
+              { (*Mij) = NAN; Mij++; }
+          }
+      }
+    else
+      { gsel_diagonalize(n, nC, C);
+        gsel_normalize(n, nC, C);
+        for (int32_t i = 0; i < n; i++) 
+          { double *Cij = &(C[nC*i + n]); 
+            double *Mij = &(M[nM*i]);
+            for (int32_t j = 0; j < nM; j++) { (*Mij) = (*Cij); Mij++; Cij++; }
+          }
       }
     free(C);
     return det;

@@ -1,4 +1,4 @@
-# Last edited on 2023-02-04 07:06:06 by stolfi
+# Last edited on 2023-02-26 10:53:28 by stolfi
 
 PROG = test_spectrum_table
 
@@ -53,9 +53,9 @@ TESTS := ${TESTS_MISC}
 
 all: check
 
-check:  clean do-test do-show
+check:  clean do-all do-show
 
-do-test:  ${PROG}
+do-all:  ${PROG}
 	for tt in ${TESTS} ; do \
           ${MAKE} TEST_ARGS="$$tt" do-test do-show ; \
         done

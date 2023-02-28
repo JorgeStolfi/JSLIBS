@@ -1,13 +1,17 @@
 /* See fbox.h */
-/* Last edited on 2003-01-02 06:00:28 by stolfi */
+/* Last edited on 2023-02-20 06:40:36 by stolfi */
 
-#include <ia.h>
-#include <fbox.h>
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <stdlib.h>
 
-FBox *fbox_make(int d, int depth, Interval *xr, Interval fr)
+#include <ia.h>
+
+#include <fbox.h>
+
+FBox *fbox_make(int32_t d, int32_t depth, Interval *xr, Interval fr)
   { FBox *b = (FBox *)malloc(sizeof(FBox) + (d-1)*sizeof(Interval));
-    int i;
+    int32_t i;
     b->d = d;
     b->depth = depth;
     b->fr = fr;
@@ -19,7 +23,7 @@ void fbox_discard(FBox *b)
   { free(b); }
 
 void fbox_print(FILE *f, FBox *b)
-  { int i;
+  { int32_t i;
     fprintf(f, "(%02d)", b->depth);
     ia_print(f, b->xr[0]);
     for (i = 0; i < b->d; i++)

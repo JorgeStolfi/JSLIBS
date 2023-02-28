@@ -1,5 +1,5 @@
 /* test_sve_charges --- test of {sve_minn.h} with Rutherford's atom potential.  */
-/* Last edited on 2017-03-13 22:20:43 by stolfilocal */
+/* Last edited on 2023-02-27 10:46:43 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -30,9 +30,9 @@
 /* GENERAL PARAMETERS */
 
 typedef struct options_t
-  { int nq;   /* Number of electrons. */
-    int dim;  /* Free dimensions. */
-    int sym;  /* Symmetry class (0 = no symmetry). */
+  { int32_t nq;   /* Number of electrons. */
+    int32_t dim;  /* Free dimensions. */
+    int32_t sym;  /* Symmetry class (0 = no symmetry). */
   } options_t;
 
 #define MAXNQ 100
@@ -51,12 +51,12 @@ typedef enum {
 
 /* INTERNAL PROTOTYPES */
 
-int main (int argc, char **argv);
+int32_t main (int32_t argc, char **argv);
 
-options_t *get_options(int argc, char **argv);
+options_t *get_options(int32_t argc, char **argv);
   /* Parses the command-line options. */
 
-double electric_potential(int nq, double Q[], double C, r3_t p[]);
+double electric_potential(int32_t nq, double Q[], double C, r3_t p[]);
   /* The electric potential of a set of pointlike `electrons' with
     charges {Q[0..nq-1]} at positions {p[0..nq-1]}, immersed in a
     uniform spherical `nuclear cloud' with center at the origin whose
@@ -65,29 +65,29 @@ double electric_potential(int nq, double Q[], double C, r3_t p[]);
     Assumes that the electric potential inside the cloud grows like
     {r^2} whil the potential between point charges decays like {1/r}. */
 
-void find_electron_positions(int nq, int dim, int sym);
+void find_electron_positions(int32_t nq, int32_t dim, int32_t sym);
   /* Computes electron coordinates {p[0..nq-1]} that minimize the value of
      {electric_potential(nq, Q, C, p)}. Assumes all point electrons
      have charge {Q[i] = -1} and the cloud charge {C = +nq}.  The 
      electron positions are constained to have the last
      {3-dim} coordinates equal to zero, and symmetry class {sym} */
 
-void write_electron_positions(char *fname, int nq, r3_t p[]);
+void write_electron_positions(char *fname, int32_t nq, r3_t p[]);
   /* Writes the electron coordinates {p[0..nq-1]} to a file named
     "{fname}". Each line contains an electron index {i} and three coordinates
     of electron {i}. If {fname} is NULL, writes to {stderr} instead. */
 
 void plot_potential
   ( char *fname, 
-    int nq, 
+    int32_t nq, 
     double Q[], 
     double C, 
-    int dim, 
-    int sym, 
-    int nx, 
+    int32_t dim, 
+    int32_t sym, 
+    int32_t nx, 
     double x0[], 
     double R, 
-    int N
+    int32_t N
   );
   /* Writes a file with sampled values of
     {electric_potential(C,nq,Q,dim,p)} for various sample
@@ -107,41 +107,41 @@ void plot_potential
 
 /* PARAMETER MAPPING */
 
-int num_parameters(int nq, int dim, int sym);
+int32_t num_parameters(int32_t nq, int32_t dim, int32_t sym);
   /* Returns the number {nx} of optimization parameters, given the charge count {nq},
     the space dimension {dim}, and the symmetry class {sym}. */
 
-void params_to_coords(int nx, double x[], int nq, int dim, int sym, r3_t p[]);
+void params_to_coords(int32_t nx, double x[], int32_t nq, int32_t dim, int32_t sym, r3_t p[]);
   /* Maps the parameters {x[0..nx-1]} to the charge coordinates {p[0..nq-1].c[0..dim-1]},
     according to the symmetry class {sym}. */
 
-void coords_to_params(int nq, int dim, int sym, r3_t p[], int nx, double x[]);
+void coords_to_params(int32_t nq, int32_t dim, int32_t sym, r3_t p[], int32_t nx, double x[]);
   /* Maps the charge coordinates {p[0..nq-1].c[0..dim-1]}, assumed
     to have symmetry class [sym}, to the parameters {x[0..nx-1]}. */
 
-void params_to_coords_plain(int nx, double x[], int nq, int dim, r3_t p[]);
-void coords_to_params_plain(int nq, int dim, r3_t p[], int nx, double x[]);
+void params_to_coords_plain(int32_t nx, double x[], int32_t nq, int32_t dim, r3_t p[]);
+void coords_to_params_plain(int32_t nq, int32_t dim, r3_t p[], int32_t nx, double x[]);
   /* Plain mapping. Parameters are the coordinates. */
 
-void params_to_coords_centersym(int nx, double x[], int nq, int dim, r3_t p[]);       
-void coords_to_params_centersym(int nq, int dim, r3_t p[], int nx, double x[]);
+void params_to_coords_centersym(int32_t nx, double x[], int32_t nq, int32_t dim, r3_t p[]);       
+void coords_to_params_centersym(int32_t nq, int32_t dim, r3_t p[], int32_t nx, double x[]);
   /* Mapping for center-symmetric configurations. Parameters are the coordinates
     of the first {nq/2} charges. */
 
-void params_to_coords_regular(int nx, double x[], int nq, int dim, r3_t p[]);       
-void coords_to_params_regular(int nq, int dim, r3_t p[], int nx, double x[]);       
+void params_to_coords_regular(int32_t nx, double x[], int32_t nq, int32_t dim, r3_t p[]);       
+void coords_to_params_regular(int32_t nq, int32_t dim, r3_t p[], int32_t nx, double x[]);       
   /* Mapping for regular polygons ({dim==2}) or polyhedra ({dim ==3}). 
     The single parameter is the distance from center to the electrons. */
 
-void params_to_coords_regcenter(int nx, double x[], int nq, int dim, r3_t p[]);         
-void coords_to_params_regcenter(int nq, int dim, r3_t p[], int nx, double x[]);     
+void params_to_coords_regcenter(int32_t nx, double x[], int32_t nq, int32_t dim, r3_t p[]);         
+void coords_to_params_regcenter(int32_t nq, int32_t dim, r3_t p[], int32_t nx, double x[]);     
   /* Mapping for regular polygons ({dim==2}) or polyhedra ({dim ==3})
     with {nq-1} corners, plus one particle at the origin. 
     The single parameter is the distance from center to the electrons. */         
 
 /* IMPLEMENTATIONS */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   { options_t *o = get_options(argc, argv);
     find_electron_positions(o->nq, o->dim, o->sym);
     fclose(stderr);
@@ -149,7 +149,7 @@ int main (int argc, char **argv)
     return (0);
   }
   
-void find_electron_positions(int nq, int dim, int sym)
+void find_electron_positions(int32_t nq, int32_t dim, int32_t sym)
   { 
     /* Output file names: */
     char *prefix = NULL; /* Prefix for output file names. */
@@ -157,19 +157,18 @@ void find_electron_positions(int nq, int dim, int sym)
     char *solfname = txtcat(prefix, "-sol.dat"); /* Name of final solution file. */
     char *potfname = txtcat(prefix, "-pot.dat"); /* Name of potential field file. */
     
-    int i; 
     /* Local storage: */
     double Q[nq];     /* Signed charge of each electron. */
     double C;         /* Total signed charge in nuclear cloud. */
     r3_t p[nq];       /* Electron positions. */
-    int nx = num_parameters(nq, dim, sym);  /* Size of parameter vector. */
+    int32_t nx = num_parameters(nq, dim, sym);  /* Size of parameter vector. */
     
-    int neval = 0; /* Number of function evaluations: */
+    int32_t neval = 0; /* Number of function evaluations: */
 
-    auto double F(int n, double x[]); 
+    auto double F(int32_t n, double x[]); 
       /* The goal function for uptimization. */
       
-    double F(int n, double x[])
+    double F(int32_t n, double x[])
       { assert(n == nx);
         params_to_coords(n, x, nq, dim, sym, p);
         double Fx = electric_potential(nq, Q, C, p);
@@ -178,12 +177,12 @@ void find_electron_positions(int nq, int dim, int sym)
       }
       
     double Xprev[nx]; /* Guess in previous call of {OK} function. */
-    int nok = 0;      /* Counts iterations (actually, calls to {OK}). */
+    int32_t nok = 0;      /* Counts iterations (actually, calls to {OK}). */
     
-    auto bool_t OK(int n, double x[], double Fx); 
+    auto bool_t OK(int32_t n, double x[], double Fx); 
       /* Acceptance criterion function. */
       
-    bool_t OK(int n, double x[], double Fx)
+    bool_t OK(int32_t n, double x[], double Fx)
       { assert(n == nx);
         params_to_coords(n, x, nq, dim, sym, p);
         fprintf(stderr, "iteration %d\n", nok);
@@ -191,8 +190,10 @@ void find_electron_positions(int nq, int dim, int sym)
           { double d = rn_dist(n, Xprev, x);
             fprintf(stderr, "displacement = %16.10f\n", d);
           }
-        fprintf(stderr, "electron positions =\n");
-        write_electron_positions(NULL, nq, p);
+        if ((nok < 5) || ((nok % 20) == 0))
+          { fprintf(stderr, "electron positions =\n");
+            write_electron_positions(NULL, nq, p);
+          }
         /* Save guess in {Xprev} for next call: */
         rn_copy(n, x, Xprev); 
         nok++;
@@ -203,13 +204,13 @@ void find_electron_positions(int nq, int dim, int sym)
       
     /* Define the electron charges {Q[0..nq-1]} and the total cloud charge {C}: */
     C = 0;
-    for (i = 0; i < nq; i++) { Q[i] = -1; C += (-Q[i]); }
+    for (int32_t i = 0; i < nq; i++) { Q[i] = -1; C += (-Q[i]); }
     
     double x[nx];     /* Initial guess and final solution. */
 
     /* Initial electron coordinates: */
     srand(4615);  srandom(4615);
-    for (i = 0; i < nq; i++) 
+    for (int32_t i = 0; i < nq; i++) 
       { p[i] = (r3_t){{ 0,0,0 }};
         rn_throw_ball(dim, p[i].c);
         r3_scale(0.80, &(p[i]), &(p[i]));
@@ -225,7 +226,7 @@ void find_electron_positions(int nq, int dim, int sym)
     double rMax = 0.500;
     double rIni = 0.125;
     double stop = 0.01*rMin;
-    int maxIters = 300;
+    int32_t maxIters = 300;
     sign_t dir = -1;
     bool_t debug = FALSE;
     
@@ -247,7 +248,7 @@ void find_electron_positions(int nq, int dim, int sym)
 
     /* Dump the potential field around the optimum: */
     double RPlot = 1.5;  /* Half-width of plot domain. */
-    int NPlot = 40;
+    int32_t NPlot = 40;
     plot_potential(potfname, nq, Q, C, dim, sym, nx, x, RPlot, NPlot);
     
     free(potfname);
@@ -257,38 +258,38 @@ void find_electron_positions(int nq, int dim, int sym)
 
 void plot_potential
   ( char *fname, 
-    int nq, 
+    int32_t nq, 
     double Q[], 
     double C, 
-    int dim, 
-    int sym, 
-    int nx, 
+    int32_t dim, 
+    int32_t sym, 
+    int32_t nx, 
     double x0[], 
     double R, 
-    int N
+    int32_t N
   )
   { demand(nx >= 1, "too few coordinates to plot");
     assert(nx == num_parameters(nq, dim, sym));
 
     r3_t p[nq];  /* Work area: Electron positions. */
 
-    auto double F(int n, double x[]); 
+    auto double F(int32_t n, double x[]); 
       /* The goal function for uptimization. */
       
-    double F(int n, double x[])
+    double F(int32_t n, double x[])
       { assert(n == nx);
         params_to_coords(n, x, nq, dim, sym, p);
         double Fx = electric_potential(nq, Q, C, p);
         return Fx;
       }
     
-    int NS = 30;
+    int32_t NS = 30;
     FILE *wr = open_write(fname, TRUE);
     minn_plot_2D_gnuplot(wr, nx, F, x0, NS, R);
     if ((wr != stderr) && (wr != stdout)) { fclose(wr); }
   }
 
-void write_electron_positions(char *fname, int nq, r3_t p[])
+void write_electron_positions(char *fname, int32_t nq, r3_t p[])
   { FILE *wr;
     if (fname == NULL) 
       { wr = stderr; }
@@ -296,11 +297,10 @@ void write_electron_positions(char *fname, int nq, r3_t p[])
       { wr = open_write(fname, TRUE);
         fprintf(wr, "# fields: index X Y Z dorg\n");
       }
-    int i, j, k;
-    for (i = 0; i < nq; i++)
+    for (int32_t i = 0; i < nq; i++)
       { fprintf(wr, "%5d", i);
         double d2 = 0;
-        for (k = 0; k < 3; k++)
+        for (int32_t k = 0; k < 3; k++)
           { double Xik = p[i].c[k];
             fprintf(wr, " %12.8f", Xik);
             d2 += Xik*Xik;
@@ -311,8 +311,8 @@ void write_electron_positions(char *fname, int nq, r3_t p[])
 
     /* Write electron-electron distances as comments: */
     fprintf(wr, "# fields: i j dij\n");
-    for (i = 0; i < nq; i++)
-      { for (j = 0; j < i; j++)
+    for (int32_t i = 0; i < nq; i++)
+      { for (int32_t j = 0; j < i; j++)
           { fprintf(wr, "# %5d %5d", i, j);
             double dij = r3_dist(&(p[i]), &(p[j]));
             fprintf(wr, " %12.8f", dij);
@@ -324,14 +324,13 @@ void write_electron_positions(char *fname, int nq, r3_t p[])
     if ((wr != stderr) && (wr != stdout)) { fclose(wr); }
   }
 
-double electric_potential(int nq, double Q[], double C, r3_t p[])
-  { int i, j;
-    double Pcloud = 0; /* Potential electrons-vs-cloud. */
+double electric_potential(int32_t nq, double Q[], double C, r3_t p[])
+  { double Pcloud = 0; /* Potential electrons-vs-cloud. */
     double Ppairs = 0; /* Potential electrons-vs-electrons. */
     /* Fudge factors to avoid infinities and nans: */
     double relfudge = 1.0e-6;  /* Relative fudge factor. */
     double absfudge = 1.0e-12; /* Absolute fudge term. */
-    for (i = 0; i < nq; i++)
+    for (int32_t i = 0; i < nq; i++)
       { /* Compute the potential {Pi} due to the cloud on electron {i}: */
         /* {Pi} is 0 at center, {-C*Q[i]} at surface (ri = 1): */
         double Pi = 0.0;
@@ -348,7 +347,7 @@ double electric_potential(int nq, double Q[], double C, r3_t p[])
         /* fprintf(stderr, "  ri =  %8.4f Pi =  %8.4f\n", r, Pi); */
         Pcloud += Pi;
         /* Add the potential of electrons {0..i-1} on electron {i}: */
-        for (j = 0; j < i; j++) 
+        for (int32_t j = 0; j < i; j++) 
           { double dij2 = r3_dist_sqr(&(p[i]), &(p[j]));
             double rj2 = r3_norm_sqr(&(p[j]));
             double dij = sqrt(dij2 + relfudge*(ri2+rj2) + absfudge*absfudge);
@@ -361,17 +360,17 @@ double electric_potential(int nq, double Q[], double C, r3_t p[])
     return Pcloud + Ppairs;
   }
   
-options_t *get_options(int argc, char **argv)
+options_t *get_options(int32_t argc, char **argv)
   { argparser_t *pp = argparser_new(stderr, argc, argv);
     options_t *o = notnull(malloc(sizeof(options_t)), "no mem"); 
-    o->nq = (int)argparser_get_next_int(pp, 1, MAXNQ);
-    o->dim = (int)argparser_get_next_int(pp, 1, 3);
-    o->sym = (int)argparser_get_next_int(pp, 0, symclass_LIMIT - 1);
+    o->nq = (int32_t)argparser_get_next_int(pp, 1, MAXNQ);
+    o->dim = (int32_t)argparser_get_next_int(pp, 1, 3);
+    o->sym = (int32_t)argparser_get_next_int(pp, 0, symclass_LIMIT - 1);
     argparser_finish(pp);
     return o;
   }
 
-int num_parameters(int nq, int dim, int sym)
+int32_t num_parameters(int32_t nq, int32_t dim, int32_t sym)
   { switch(sym)
       { 
       case symclass_plain:
@@ -414,7 +413,7 @@ int num_parameters(int nq, int dim, int sym)
       }
   }
 
-void params_to_coords(int nx, double x[], int nq, int dim, int sym, r3_t p[])
+void params_to_coords(int32_t nx, double x[], int32_t nq, int32_t dim, int32_t sym, r3_t p[])
   { switch(sym)
       { 
       case symclass_plain:
@@ -442,7 +441,7 @@ void params_to_coords(int nx, double x[], int nq, int dim, int sym, r3_t p[])
       }
   }
 
-void coords_to_params(int nq, int dim, int sym, r3_t p[], int nx, double x[])
+void coords_to_params(int32_t nq, int32_t dim, int32_t sym, r3_t p[], int32_t nx, double x[])
   { switch(sym)
       { 
       case symclass_plain:
@@ -471,50 +470,46 @@ void coords_to_params(int nq, int dim, int sym, r3_t p[], int nx, double x[])
   }
 
 
-void params_to_coords_plain(int nx, double x[], int nq, int dim, r3_t p[])
+void params_to_coords_plain(int32_t nx, double x[], int32_t nq, int32_t dim, r3_t p[])
   { assert(nx == nq*dim);
-    int k = 0;
-    int i, j;
-    for (i = 0; i < nq; i++)
+    int32_t k = 0;
+    for (int32_t i = 0; i < nq; i++)
       { p[i] = (r3_t){{ 0,0,0 }};
-        for (j = 0; j < dim; j++)
+        for (int32_t j = 0; j < dim; j++)
           { p[i].c[j] = x[k]; k++; }
       }
   }
 
-void coords_to_params_plain(int nq, int dim, r3_t p[], int nx, double x[])
+void coords_to_params_plain(int32_t nq, int32_t dim, r3_t p[], int32_t nx, double x[])
   { assert(nx == nq*dim);
-    int k = 0;
-    int i, j;
-    for (i = 0; i < nq; i++)
-      { for (j = 0; j < dim; j++) 
+    int32_t k = 0;
+    for (int32_t i = 0; i < nq; i++)
+      { for (int32_t j = 0; j < dim; j++) 
           { x[k] = p[i].c[j]; k++; }
       }
   }
 
-void params_to_coords_centersym(int nx, double x[], int nq, int dim, r3_t p[])        
+void params_to_coords_centersym(int32_t nx, double x[], int32_t nq, int32_t dim, r3_t p[])        
   { assert(nx == dim*(nq/2));
-    int k = 0;
-    int i, j;
-    for (i = 0; i < nq/2; i++)
+    int32_t k = 0;
+    for (int32_t i = 0; i < nq/2; i++)
       { p[i] = (r3_t){{ 0,0,0 }};
-        for (j = 0; j < dim; j++) { p[i].c[j] = x[k]; k++; }
+        for (int32_t j = 0; j < dim; j++) { p[i].c[j] = x[k]; k++; }
         r3_scale(-1, &(p[i]), &(p[nq-1-i]));
       }
     if ((nq % 2) > 0) { p[nq/2] = (r3_t){{ 0,0,0 }}; }
   }
 
-void coords_to_params_centersym(int nq, int dim, r3_t p[], int nx, double x[])        
+void coords_to_params_centersym(int32_t nq, int32_t dim, r3_t p[], int32_t nx, double x[])        
   { assert(nx == dim*(nq/2));
-    int k = 0;
-    int i, j;
-    for (i = 0; i < nq/2; i++)
-      { for (j = 0; j < dim; j++) 
+    int32_t k = 0;
+    for (int32_t i = 0; i < nq/2; i++)
+      { for (int32_t j = 0; j < dim; j++) 
           { x[k] = p[i].c[j] ; k++; }
       }
   }
 
-void params_to_coords_regular(int nx, double x[], int nq, int dim, r3_t p[])        
+void params_to_coords_regular(int32_t nx, double x[], int32_t nq, int32_t dim, r3_t p[])        
   { assert(nx == 1);
     double R = x[0];
     if ((dim == 2) || (nq < 4))
@@ -537,19 +532,19 @@ void params_to_coords_regular(int nx, double x[], int nq, int dim, r3_t p[])
       }
   }
 
-void coords_to_params_regular(int nq, int dim, r3_t p[], int nx, double x[])        
+void coords_to_params_regular(int32_t nq, int32_t dim, r3_t p[], int32_t nx, double x[])        
   { assert(nx == 1);
     assert(nq >= 1);
     x[0] = r3_norm(&(p[0]));
   }
 
-void params_to_coords_regcenter(int nx, double x[], int nq, int dim, r3_t p[])        
+void params_to_coords_regcenter(int32_t nx, double x[], int32_t nq, int32_t dim, r3_t p[])        
   { assert(nx == 1);
     params_to_coords_regular(nx, x, nq-1, dim, p);
     p[nq-1] = (r3_t){{ 0,0,0 }};
   }
 
-void coords_to_params_regcenter(int nq, int dim, r3_t p[], int nx, double x[])        
+void coords_to_params_regcenter(int32_t nq, int32_t dim, r3_t p[], int32_t nx, double x[])        
   { assert(nx == 1);
     assert(nq >= 1);
     x[0] = r3_norm(&(p[0]));

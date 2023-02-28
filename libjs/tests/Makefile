@@ -1,28 +1,7 @@
 # Tests of libflt 
-# Last edited on 2019-04-09 19:08:13 by jstolfi
+# Last edited on 2023-02-19 00:41:18 by stolfi
 
-LIB_TEST_DIRS := \
-  test_fget \
-  test_hermite3 \
-  test_spline_interp \
-  test_ulist \
-  test_indexing \
-  test_enum_orbits \
-  test_jsmath \
-  test_now \
-  test_sleep \
-  test_sort \
-  test_sort_speed \
-  test_tbfind \
-  test_jsrandom \
-  test_mst \
-  test_opf \
-  test_pqueue
-  
-LIB_TEST_DIRS_LATER :=
-
-IGNOREDIRS := \
-  220_test_ulist
+IGNOREDIRS := 
    
 include ${STOLFIHOME}/programs/c/GENERIC-ROOT-DIR.make
  

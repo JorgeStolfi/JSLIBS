@@ -1,17 +1,20 @@
 /* Interval branch-and-bound optimizer for non-linear funcrions */
-/* Last edited on 2007-01-04 03:00:01 by stolfi */
+/* Last edited on 2023-02-20 06:43:27 by stolfi */
 
 #ifndef bbopt_h
 #define bbopt_h
 
+#define _GNU_SOURCE
+#include <stdint.h>
+
+#include <bool.h>
+#include <ia.h>
+
 #include <fbox.h>
 #include <fboxlist.h>
 
-#include <ia.h>
-#include <bool.h>
-
 FBoxList bb_optimize
-  ( int d, 
+  ( int32_t d, 
     Interval F(Interval *xs),
     Interval *xr,
     Float *tol,

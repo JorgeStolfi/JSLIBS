@@ -1,10 +1,12 @@
 /* Generic mathematical pseudocode */
-/* Last edited on 2005-02-14 23:00:30 by stolfi */ 
+/* Last edited on 2023-02-22 20:42:03 by stolfi */ 
 
 #ifndef pcode_H
 #define pcode_H
 
+#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 typedef enum {
     pcode_op_given =   0,
@@ -27,18 +29,21 @@ typedef enum {
   
 typedef struct { 
     pcode_op_t op;  /* Operation code */
-    int arg;        /* Operation's argument */
+    int32_t arg;        /* Operation's argument */
   } pcode_instr_t;
   
 typedef struct {
-    char *title;         /* Function's legible description */
-    int nin;             /* Number of input arguments. */
-    int nout;            /* Number of output results. */
-    int nregs;           /* Number of working registers needed. */
-    int nstack;          /* Number of stack entries needed. */
-    int nops;            /* Number of instructions */
-    pcode_instr_t *code; /* Instructions */
+    char *title;          /* Function's legible description */
+    int32_t nin;          /* Number of input arguments. */
+    int32_t nout;         /* Number of output results. */
+    int32_t nregs;        /* Number of working registers needed. */
+    int32_t nstack;       /* Number of stack entries needed. */
+    int32_t nops;         /* Number of instructions */
+    pcode_instr_t *code;  /* Instructions */
   } pcode_proc_t;
+  
+void pcode_proc_null(pcode_proc_t *pc);
+  /* Sets {*pc} to a null p-code procedure, with all fields {NULL} or 0. */
 
 pcode_proc_t pcode_parse (FILE *f);
   /*

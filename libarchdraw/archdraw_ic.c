@@ -1,13 +1,13 @@
 /* See {archdraw_ic.h} */
-/* Last edited on 2012-12-01 19:03:30 by stolfilocal */
+/* Last edited on 2023-02-20 18:20:30 by stolfi */
 
 #define _GNU_SOURCE
-/* #include <stdio.h> */
 #include <stdlib.h>
+#include <stdint.h>
 
 #include <affirm.h>
 #include <frgb.h>
-#include <epswr.h>
+/* #include <epswr.h> */
 
 /* #include <archdraw.h> */
 #include <archdraw_ic.h>
@@ -15,8 +15,9 @@
 /* INTERNAL PROTOTYPES */
 
 void adrw_ic_plot_histogram_bar_pair
-  ( char *prefix,
-    int type,
+  ( char *dir,
+    char *prefix,
+    int32_t type,
     char *type_tag,
     adrw_unit_style_t *style,
     double mods,
@@ -31,7 +32,7 @@ void adrw_ic_plot_histogram_bar_pair
 
 frgb_t *adrw_ic_define_type_fill_colors(void)
   {
-    int ntypes = adrw_ic_space_type_MAX + 1;
+    int32_t ntypes = adrw_ic_space_type_MAX + 1;
     frgb_t *color = (frgb_t *)notnull(malloc(ntypes*sizeof(frgb_t)), "no mem");
     
     color[adrw_ic_space_type_ADM] = (frgb_t){{ 0.000f, 0.600f, 0.550f }}; /* Y = 0.4150 */
@@ -57,7 +58,7 @@ frgb_t *adrw_ic_define_type_fill_colors(void)
   }
 
 char **adrw_ic_define_type_tags(void)
-  { int ntypes = adrw_ic_space_type_MAX + 1;
+  { int32_t ntypes = adrw_ic_space_type_MAX + 1;
     char **tag = (char **)notnull(malloc(ntypes*sizeof(char *)), "no mem");
     tag[adrw_ic_space_type_ADM] = "ADM";
     tag[adrw_ic_space_type_AUD] = "AUD";
@@ -78,9 +79,9 @@ char **adrw_ic_define_type_tags(void)
   } 
 
 bool_t *adrw_ic_define_printable_types(void)
-  { int ntypes = adrw_ic_space_type_MAX + 1;
+  { int32_t ntypes = adrw_ic_space_type_MAX + 1;
     bool_t *prt = (bool_t *)notnull(malloc(ntypes*sizeof(bool_t)), "no mem");
-    int type;
+    int32_t type;
     for (type = 0; type < ntypes; type++) { prt[type] = TRUE; }
     prt[adrw_ic_space_type_ETC] = FALSE;
     prt[adrw_ic_space_type_HAL] = FALSE;
@@ -92,9 +93,9 @@ bool_t *adrw_ic_define_printable_types(void)
   } 
 
 bool_t *adrw_ic_define_movable_types(void)
-  { int ntypes = adrw_ic_space_type_MAX + 1;
+  { int32_t ntypes = adrw_ic_space_type_MAX + 1;
     bool_t *mov = (bool_t *)notnull(malloc(ntypes*sizeof(bool_t)), "no mem");
-    int type;
+    int32_t type;
     for (type = 0; type < ntypes; type++) { mov[type] = FALSE; }
     mov[adrw_ic_space_type_ADM] = TRUE;
     mov[adrw_ic_space_type_AUD] = TRUE;
@@ -103,9 +104,9 @@ bool_t *adrw_ic_define_movable_types(void)
     return mov;
   } 
 
-int *adrw_ic_define_color_key_types(void)
-  { int nkeys = 10;
-    int *tp = (int *)notnull(malloc((nkeys+1)*sizeof(int)), "no mem");
+int32_t *adrw_ic_define_color_key_types(void)
+  { int32_t nkeys = 10;
+    int32_t *tp = (int32_t *)notnull(malloc((nkeys+1)*sizeof(int32_t)), "no mem");
     tp[ 0] = adrw_ic_space_type_DOC;
     tp[ 1] = adrw_ic_space_type_ADM;
     tp[ 2] = adrw_ic_space_type_INF;
@@ -127,64 +128,57 @@ int *adrw_ic_define_color_key_types(void)
 
 adrw_unit_style_t **adrw_ic_define_type_styles(void)
   {
-    int ntypes = adrw_ic_space_type_MAX + 1;
+    int32_t ntypes = adrw_ic_space_type_MAX + 1;
     adrw_unit_style_t **style = (adrw_unit_style_t **)notnull(malloc(ntypes*sizeof(adrw_unit_style_t *)), "no mem");
     frgb_t *color = adrw_ic_define_type_fill_colors();
     frgb_t black = (frgb_t){{0,0,0}};
-    int i;
+    int32_t i;
     for (i = 0; i <= adrw_ic_space_type_MAX; i++)
       { style[i] = adrw_make_unit_style(&(color[i]),&black,0.10,NULL,0.0); }
     return style;
   }
 
 void adrw_ic_plot_histogram_bars
-  ( char *prefix,
+  ( char *dir,
+    char *prefix,
     adrw_building_t *B,
     bool_t select[], 
     char *type_tag[], 
     adrw_unit_style_t *style[]
   )
   { fprintf(stderr, "--- plotting histogram bars ---\n");
-    int ntypes = adrw_ic_space_type_MAX+1;
+    int32_t ntypes = adrw_ic_space_type_MAX+1;
     double modules[ntypes];
     double area[ntypes];
     adrw_compute_building_stats(B, ntypes, NULL, modules, area, NULL);
     double tot_modules = 0, tot_area = 0;
-    int type;
+    int32_t type;
     for (type = 0; type < ntypes; type++)
       { if ((select != NULL) && (! select[type])) { continue; }
         fprintf(stderr, "type %2d modules = %6.1f area = %6.1f\n", type, modules[type], area[type]);
         
-        adrw_ic_plot_histogram_bar_pair(prefix, type, type_tag[type], style[type], modules[type], area[type]);
+        adrw_ic_plot_histogram_bar_pair(dir, prefix, type, type_tag[type], style[type], modules[type], area[type]);
 
         tot_modules += modules[type];
         tot_area += area[type];
       }
       
     type = adrw_ic_space_type_SIT;
-    adrw_ic_plot_histogram_bar_pair(prefix, type, "TUT", style[type], tot_modules, tot_area);
+    adrw_ic_plot_histogram_bar_pair(dir, prefix, type, "TUT", style[type], tot_modules, tot_area);
 
     type = adrw_ic_space_type_ETC;
-    adrw_ic_plot_histogram_bar_pair(prefix, type, "TCO", style[type], modules[type], area[type]);
+    adrw_ic_plot_histogram_bar_pair(dir, prefix, type, "TCO", style[type], modules[type], area[type]);
   }
 
 void adrw_ic_plot_histogram_bar_pair
-  ( char *prefix,
-    int type,
+  ( char *dir,
+    char *prefix,
+    int32_t type,
     char *type_tag,
     adrw_unit_style_t *style,
     double mods,
     double area
    )
-   {
-      char *fname_mods = NULL;
-      asprintf(&fname_mods, "%s_%s_mods.eps", prefix, type_tag);
-      adrw_plot_histogram_bar(fname_mods, type, style, mods, 100.0);
-      free(fname_mods);
-
-      char *fname_area = NULL;
-      asprintf(&fname_area, "%s_%s_area.eps", prefix, type_tag);
-      adrw_plot_histogram_bar(fname_area, type, style, area/10000, 2400.0);
-      free(fname_area);
-   
+   { adrw_plot_histogram_bar(dir, prefix, type_tag, "mods", type, style, mods, 100.0);
+     adrw_plot_histogram_bar(dir, prefix, type_tag, "area", type, style, area/10000, 2400.0);
    }

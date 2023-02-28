@@ -1,7 +1,6 @@
-# Last edited on 2020-11-15 16:23:43 by jstolfi
+# Last edited on 2023-02-15 12:45:35 by stolfi
 
 IGNOREDIRS := \
-  440_align \
   00-DATA
   
 include ${STOLFIHOME}/programs/c/GENERIC-ROOT-DIR.make

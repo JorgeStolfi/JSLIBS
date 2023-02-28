@@ -1,8 +1,9 @@
 /* See {delaunay_debug.h} */
-/* Last edited on 2011-12-25 02:16:58 by stolfi */
+/* Last edited on 2023-02-20 06:10:22 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
@@ -23,7 +24,7 @@
 delaunay_face_t *EXT = NULL; /* Created by the first call to {deldebug_make_edge}. */
     
 /* List of edges created so far: */
-static int nec = 0; /* Number of edges created so far. */
+static int32_t nec = 0; /* Number of edges created so far. */
 static quad_arc_vec_t ec; /* Edges created so far are {ex.e[0..nec-1]}. */
 
 quad_arc_t deldebug_make_edge(void)
@@ -70,9 +71,8 @@ void deldebug_destroy_edge(quad_arc_t e)
         assert(quad_dnext(e) == e);
         deldebug_set_all_left_faces(e, EXT);
         /* Remove {e} from the list of created edges: */
-        int i;
-        int m = 0;
-        for (i = 0; i < nec; i++) 
+        int32_t m = 0;
+        for (int32_t i = 0; i < nec; i++) 
           { if (quad_edge(e) == quad_edge(ec.e[i])) 
               { ec.e[i] = quad_arc_NULL; m++; }
           }
@@ -86,7 +86,7 @@ void deldebug_destroy_edge(quad_arc_t e)
      return;
   }
 
-void deldebug_check_left_triangle(quad_arc_t b, int depth)
+void deldebug_check_left_triangle(quad_arc_t b, int32_t depth)
   {
     if (DEBUGGING_DELAUNAY)
       { demand(LEFT(b) != EXT, "non-interior face");
@@ -120,7 +120,7 @@ void deldebug_check_delaunay_edge_property(quad_arc_t e)
 
 void deldebug_check_interior_face(quad_arc_t e)
   {
-    int n = 0;
+    int32_t n = 0;
     quad_arc_t a = e;
     do
       { assert(LEFT(a) != EXT);
@@ -182,8 +182,7 @@ void deldebug_print_edge (char *msg, quad_arc_t e)
 
 void deldebug_check_quad_edge(quad_arc_t e)
   {
-    int k;
-    for (k = 0; k < 4; k++)
+    for (int32_t k = 0; k < 4; k++)
       { assert(! quad_arc_is_null(quad_onext(e))); 
         e = quad_rot(e);
       }
@@ -191,8 +190,7 @@ void deldebug_check_quad_edge(quad_arc_t e)
 
 void deldebug_check_quad_all_edges(void)
   {
-    int i;
-    for (i = 0; i < nec; i++)
+    for (int32_t i = 0; i < nec; i++)
       { quad_arc_t e = ec.e[i];
         if (! quad_arc_is_null(e)) { deldebug_check_quad_edge(e); }
       }

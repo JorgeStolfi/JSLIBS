@@ -2,7 +2,7 @@
 #define lsq_robust_H
 
 /* Fits a linear map of {R^nx} to {R} to samples by least squares, ignoring outliers. */
-/* Last edited on 2019-12-18 16:06:46 by jstolfi */
+/* Last edited on 2023-02-23 16:49:54 by stolfi */
 
 #define lsq_robust_H_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
@@ -17,7 +17,7 @@ typedef void lsq_robust_report_t(int32_t iter, int32_t nt, int32_t nx, double Pc
     iteration.
 
     The argument {iter} will be the mumber of adjustment iterations
-    already done. When {iter} is zero, {Fc[0..nt-1]} will be copy of the
+    already done. When {iter} is zero, {Fc[0..nt-1]} will be a copy of the
     original function samples {F[0..nt-1]}, and {Pc} will be
     null. When {iter} is positive, {Fc[0..nt-1]} will be {F[0..nt-1]}
     adjusted so as to reduce the influence of outliers; and
@@ -27,14 +27,14 @@ typedef void lsq_robust_report_t(int32_t iter, int32_t nt, int32_t nx, double Pc
     approximation, computed from {Fc}, as in {lin_fit}. */
 
 void lsq_robust_fit
-  ( int32_t nt,          /* Number of data points. */
-    int32_t nx,          /* Number of independent variables (argument coordinates per data point). */
-    double X[],      /* Argument coordiantes of data points ({nt} by {nx}). */
+  ( int32_t nt,      /* Number of data points. */
+    int32_t nx,      /* Number of independent variables (argument coordinates per data point). */
+    double X[],      /* Argument coordinates of data points ({nt} by {nx}). */
     double F[],      /* Function samples of data points ({nt} elements). */
-    double W[],      /* Reliability weights ({nt} elements). */
-    int32_t maxiter,     /* Max iteration count. */
+    double W[],      /* Reliability weights ({nt} elements) o {NULL}. */
+    int32_t maxiter, /* Max iteration count. */
     double U[],      /* (OUT) Fitted linear function coeffs ({nx} elements). */
-    double P[],      /* (OUT) Assumed inlier probabilities, or NULL. */
+    double P[],      /* (OUT) Assumed inlier probabilities, or {NULL}. */
     lsq_robust_report_t *report,
     bool_t verbose
   );

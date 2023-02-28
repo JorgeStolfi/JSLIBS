@@ -1,5 +1,5 @@
 /* test_sve_catenary --- test of {sve_minn.h} for hanging-chain energy minimization. */
-/* Last edited on 2017-03-13 22:21:53 by stolfilocal */
+/* Last edited on 2023-02-27 10:43:05 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -27,7 +27,7 @@
 /* GENERAL PARAMETERS */
 
 typedef struct options_t
-  { int nk; /* Number of links in the chain. */
+  { int32_t nk; /* Number of links in the chain. */
     double wd; /* Ideal distance between attachment points. */
   } options_t;
 
@@ -36,12 +36,12 @@ typedef struct options_t
 
 /* INTERNAL PROTOTYPES */
 
-int main (int argc, char **argv);
+int32_t main (int32_t argc, char **argv);
 
-options_t *get_options(int argc, char **argv);
+options_t *get_options(int32_t argc, char **argv);
   /* Parses the command-line options. */
 
-void find_chain_shape(int nk, double wd);
+void find_chain_shape(int32_t nk, double wd);
   /* Tries to find node positions that minimize the 
     potential energy of an {nk}-link chain with unit-length links,
     whose left endpoint is attached to {(0,0)} and whose
@@ -52,10 +52,10 @@ void write_solution
   ( char *prefix, 
     char *tag, 
     sve_goal_t *F, 
-    int nc,
+    int32_t nc,
     double c[],
     double Fc,
-    int nk,
+    int32_t nk,
     double x[],
     double y[],
     double wd
@@ -64,13 +64,13 @@ void write_solution
     also to file "{prefix}-{tag}.dat". Also prints the function value {Fx}
     to {stderr}. */
   
-void write_node_positions(char *prefix, char*tag, int nk, double x[], double y[]);
+void write_node_positions(char *prefix, char*tag, int32_t nk, double x[], double y[]);
   /* Writes the chain node positions to a file named "{fname}". Each
     line contains the node index and two values {(x[i],y[i])} for {i =
     0..nk}.  Note that {x} and {y} must have {nk+1} elements each.
     If {fname} is NULL, writes to {stderr} instead. */
 
-void compute_node_positions(int nk, double c[], double x[], double y[]);
+void compute_node_positions(int32_t nk, double c[], double x[], double y[]);
   /* Computes the node positions implied by the coefficients
     {c[0..nk-2]}. Coefficient {c[i]} is the angle between links
     {i} and {i+1} of the chain (angle zero means the links
@@ -81,7 +81,7 @@ void compute_node_positions(int nk, double c[], double x[], double y[]);
     left. In particular, the point {(x[0],y[0])} is always {(0,0)} and
     point {(x[nk-1],y[nk-1])} is {(a,0)} for some {a}. */
 
-double chain_energy(int nk, double x[], double y[], double wd);
+double chain_energy(int32_t nk, double x[], double y[], double wd);
   /* The potential energy of the chain, plus the elastic energy of a spring
     that tries to keep the right end-point of the chain at abscissa {x[nk] = 1}. */
 
@@ -89,7 +89,7 @@ void plot_energy
   ( char *prefix,
     char *tag,
     sve_goal_t *F,
-    int nc,
+    int32_t nc,
     double c[]
   );
   /* Writes a FNI file "{prefix}-{tag}-plt.fni"
@@ -98,7 +98,7 @@ void plot_energy
 
 /* IMPLEMENTATIONS */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   { options_t *o = get_options(argc, argv);
     srand(4615);  srandom(4615);
     find_chain_shape(o->nk, o->wd);
@@ -107,7 +107,7 @@ int main (int argc, char **argv)
     return (0);
   }
   
-void find_chain_shape(int nk, double wd)
+void find_chain_shape(int32_t nk, double wd)
   { 
     /* Debugging printout: */
     bool_t debug = FALSE;
@@ -117,15 +117,15 @@ void find_chain_shape(int nk, double wd)
     asprintf(&prefix, "out/%03d", nk);
     
     /* Number of minimization variables: */
-    int nc = nk - 1;
+    int32_t nc = nk - 1;
     
     /* Working storage for the goal function: */
     double x[nk+1], y[nk+1];  /* Node positions. */
     
-    auto double F(int n, double c[]); 
+    auto double F(int32_t n, double c[]); 
       /* The goal function for optimization. */
       
-    double F(int n, double c[])
+    double F(int32_t n, double c[])
       { assert(n == nc);
         /* Compute the potential energy of the chain: */
         compute_node_positions(nk, c, x, y);
@@ -134,12 +134,12 @@ void find_chain_shape(int nk, double wd)
       }
       
     double cprev[nc]; /* Guess in previous call of {OK} function. */
-    int nok = 0;      /* Counts iterations (actually, calls to {OK}). */
+    int32_t nok = 0;      /* Counts iterations (actually, calls to {OK}). */
     
-    auto bool_t OK(int n, double c[], double Fc); 
+    auto bool_t OK(int32_t n, double c[], double Fc); 
       /* Acceptance criterion function. */
       
-    bool_t OK(int n, double c[], double Fc)
+    bool_t OK(int32_t n, double c[], double Fc)
       { assert(n == nc);
         fprintf(stderr, "iteration %d\n", nok);
         if (nok > 0)
@@ -159,8 +159,7 @@ void find_chain_shape(int nk, double wd)
     double c[nc];     /* Initial guess and final solution. */
     
     /* Initialize {c} with a semicircle: */
-    int i;
-    for (i = 0; i < nc; i++) { c[i] = M_PI/nc; }
+    for (int32_t i = 0; i < nc; i++) { c[i] = M_PI/nc; }
     
     /* Print and write the initial guess: */
     fprintf(stderr, "initial guess:\n");
@@ -175,7 +174,7 @@ void find_chain_shape(int nk, double wd)
     double rMax = 0.50*M_PI;
     double rIni = 0.10*M_PI;
     double stop = 0.01*rMin;
-    int maxIters = 200;
+    int32_t maxIters = 200;
     sign_t dir = -1;
     
     sve_minn_iterate(nc, &F, &OK, c, &Fc, dir, dMax, dBox, rIni, rMin, rMax, stop, maxIters, debug);
@@ -190,10 +189,10 @@ void write_solution
   ( char *prefix, 
     char *tag, 
     sve_goal_t *F, 
-    int nc,
+    int32_t nc,
     double c[],
     double Fc,
-    int nk,
+    int32_t nk,
     double x[],
     double y[],
     double wd
@@ -216,7 +215,7 @@ void write_solution
       }
   }
 
-void write_node_positions(char *prefix, char *tag, int nk, double x[], double y[])
+void write_node_positions(char *prefix, char *tag, int32_t nk, double x[], double y[])
   { char *fname = NULL;
     FILE *wr;
     if (prefix == NULL)
@@ -225,8 +224,7 @@ void write_node_positions(char *prefix, char *tag, int nk, double x[], double y[
       { asprintf(&fname, "%s-%s.dat", prefix, tag);
         wr = open_write(fname, TRUE);
       }
-    int i;
-    for (i = 0; i <= nk ; i++)
+    for (int32_t i = 0; i <= nk ; i++)
       { fprintf(wr, "%5d %12.8f %12.8f\n", i, x[i], y[i]); }
     if ((wr != stderr) && (wr != stdout)) { fclose(wr); }
   }
@@ -235,13 +233,12 @@ void plot_energy
   ( char *prefix,
     char *tag,
     sve_goal_t *F,
-    int nc,
+    int32_t nc,
     double c[]
   )
-  { int NS = 30;
-    int i;
+  { int32_t NS = 30;
     double ca[nc], cb[nc];
-    for (i = 0; i < nc; i++) 
+    for (int32_t i = 0; i < nc; i++) 
       { ca[i] = c[i] + 0.2*M_PI/nc;
         cb[i] = c[i] + 0.2*sin((i+0.5)*2*M_PI/nc)*M_PI/nc;
       }
@@ -253,16 +250,15 @@ void plot_energy
     free(fname);
   }
 
-void compute_node_positions(int nk, double c[], double x[], double y[])
-  { int nc = nk - 1;
+void compute_node_positions(int32_t nk, double c[], double x[], double y[])
+  { int32_t nc = nk - 1;
     /* Initial node is always {(0,0)}: */
     x[0] = y[0] = 0;
     /* Assume that link 0 is horizontal: */
     double a = 0;        /* Angle of next link. */
     x[1] = 1; y[1] = 0; 
     /* Compute {(x[i],y[i]) for {i} in {2..nk}: */
-    int i;
-    for (i = 0; i < nc; i++)
+    for (int32_t i = 0; i < nc; i++)
       { a = a + c[i];
         double dx = cos(a), dy = sin(a);
         x[i+2] = x[i+1] + dx;
@@ -272,18 +268,17 @@ void compute_node_positions(int nk, double c[], double x[], double y[])
     double r = - atan2(y[nk], x[nk]);
     /* Apply the rotation to all joints: */
     double cr = cos(r), sr = sin(r);
-    for (i = 1; i <= nk; i++)
+    for (int32_t i = 1; i <= nk; i++)
       { double xr = cr*x[i] - sr*y[i];
         double yr = sr*x[i] + cr*y[i];
         x[i] = xr; y[i] = yr;
       }
   }
 
-double chain_energy(int nk, double x[], double y[], double wd)
+double chain_energy(int32_t nk, double x[], double y[], double wd)
   { /* Compute the gravitational energy {G}: */
     double G = 0;
-    int i;
-    for (i = 0; i < nk; i++) 
+    for (int32_t i = 0; i < nk; i++) 
       { double yb = (y[i] + y[i+1])/2;
         G += yb;
       }
@@ -294,11 +289,11 @@ double chain_energy(int nk, double x[], double y[], double wd)
     return G + E;
   }
   
-options_t *get_options(int argc, char **argv)
+options_t *get_options(int32_t argc, char **argv)
   { argparser_t *pp = argparser_new(stderr, argc, argv);
     options_t *o = notnull(malloc(sizeof(options_t)), "no mem"); 
-    o->nk = (int)argparser_get_next_int(pp, 1, MAXLINKS);
-    o->wd = (int)argparser_get_next_double(pp, 0.0, DBL_MAX);
+    o->nk = (int32_t)argparser_get_next_int(pp, 1, MAXLINKS);
+    o->wd = argparser_get_next_double(pp, 0.0, DBL_MAX);
     argparser_finish(pp);
     return o;
   }

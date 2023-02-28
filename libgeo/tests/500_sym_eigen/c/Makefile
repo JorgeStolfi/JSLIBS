@@ -1,4 +1,4 @@
-# Last edited on 2011-06-06 22:18:37 by stolfi
+# Last edited on 2023-02-15 12:42:52 by stolfi
 
 PROG = testc
  
@@ -26,4 +26,4 @@ ${OUT_NAME}.txt: ${PROG}
 	cat ${OUT_NAME}.txt
 
 clean::
-	-/bin/rm -f ${OUT_NAME}.txt
+	-/bin/rm -f ${PROG} *.o ${OUT_NAME}.txt

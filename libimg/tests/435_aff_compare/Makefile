@@ -1,4 +1,4 @@
-# Last edited on 2022-10-19 19:03:48 by stolfi
+# Last edited on 2023-02-27 16:01:08 by stolfi
 
 PROG = test_aff_compare
 
@@ -13,7 +13,12 @@ PROG = test_aff_compare
 
 NS := 11
 
-SOME_TESTS :=
+SOME_TESTS := \
+  ident_r010_010/1.00/scan-01/64.00:64.00/1:0:0:1/0.10/scan-01/64.00:64.00/1:0:0:1/0.10/xytrans \
+  ident_r010_010/1.00/scan-01/64.00:64.00/1:0:0:1/0.10/scan-01/64.00:64.00/1:0:0:1/0.10/xyshear \
+  rotof_r011_009/1.00/scan-01/64.00:64.00/1:0:0:1/0.11/scan-03/62.35:64.76/+0.52992:+0.84805:-0.84805:+0.52992/0.09/rotmag \
+  magnf_r020_010/1.00/scan-01/64.00:64.00/1:0:0:1/0.20/scan-04/62.00:62.00/1:0:0:1/0.10/xytrans \
+  persp_r010_009/1.00/scan-01/64.00:64.00/1:0:0:1/0.10/scan-06/65.60:64.26/+1.1338:-0.4113:-0.0161:+0.7384/0.09/xystretch
 
 MORE_TESTS := \
   ident_r010_010/1.00/scan-01/64.00:64.00/1:0:0:1/0.10/scan-01/64.00:64.00/1:0:0:1/0.10/xytrans \
@@ -44,8 +49,8 @@ MORE_TESTS := \
 
 ALL_TESTS := ${SOME_TESTS} ${MORE_TESTS}
 
-# TESTS := ${SOME_TESTS}
-TESTS := ${ALL_TESTS}
+TESTS := ${SOME_TESTS}
+# TESTS := ${ALL_TESTS}
 
 TEST_LIB := libimg.a
 TEST_LIB_DIR := ../..

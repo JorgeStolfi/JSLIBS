@@ -1,8 +1,11 @@
 // Test problems for univariate minimizers
-// Last edited on 2002-07-15 12:26:15 by stolfi
+// Last edited on 2023-02-19 13:02:12 by stolfi
 
 #ifndef minu_test_problems_H
 #define minu_test_problems_H
+
+#define _GNU_SOURCE
+#include <stdio.h>
 
 #include <minu_test.h>
 

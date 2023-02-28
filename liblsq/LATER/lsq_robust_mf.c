@@ -1,5 +1,5 @@
 /* See {lsq_robust_mf.h} */
-/* Last edited on 2022-10-20 06:48:00 by stolfi */
+/* Last edited on 2023-02-25 16:08:10 by stolfi */
 
 #define lsq_robust_mf_C_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
@@ -17,6 +17,7 @@
 #include <rmxn.h>
 #include <jsmath.h>
 #include <gauss_elim.h>
+#include <rn.h>
 
 #include <lsq.h>
 #include <lsq_array.h>

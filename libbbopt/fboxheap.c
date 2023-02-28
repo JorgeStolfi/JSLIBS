@@ -1,15 +1,19 @@
 /* See fboxheap.h */
-/* Last edited on 2005-06-05 15:22:58 by stolfi */
+/* Last edited on 2023-02-20 06:39:18 by stolfi */
+
+#define _GNU_SOURCE
+#include <stdlib.h>
+#include <stdint.h>
+
+#include <affirm.h>
 
 #include <fbox.h>
 #include <fboxheap.h>
-#include <stdlib.h>
-#include <affirm.h>
 
-void fbox_heap_resize(FBoxHeap *h, int sz);
+void fbox_heap_resize(FBoxHeap *h, int32_t sz);
   /* Resizes the heap to have space for exaclty `sz' boxes. */
 
-FBoxHeap *fbox_heap_new(int sz, FBoxCmp cmp)
+FBoxHeap *fbox_heap_new(int32_t sz, FBoxCmp cmp)
   { FBoxHeap *h;
     h = (FBoxHeap *)malloc(sizeof(FBoxHeap));
     affirm(h != NULL, "out of memory while allocating f-box heap header");
@@ -21,8 +25,8 @@ FBoxHeap *fbox_heap_new(int sz, FBoxCmp cmp)
     return h;
   }
   
-void fbox_heap_resize(FBoxHeap *h, int sz)
-  { FBox **b; int i; int n = h->n;
+void fbox_heap_resize(FBoxHeap *h, int32_t sz)
+  { FBox **b; int32_t i; int32_t n = h->n;
     b = (FBox **)malloc(sz * sizeof(FBox *));
     affirm(b != NULL, "out of memory while extending box heap");
     for (i = 0; i < n; i++) { b[i] = h->b[i]; }
@@ -31,7 +35,7 @@ void fbox_heap_resize(FBoxHeap *h, int sz)
   }
 
 void fbox_heap_insert(FBoxHeap *h, FBox *b)
-  { int i, j;
+  { int32_t i, j;
     i = h->n;
     if (i >= h->sz) { fbox_heap_resize(h, 2*h->n+1); }
     affirm(i < h->sz, "failed to extend box heap");
@@ -47,7 +51,7 @@ void fbox_heap_insert(FBoxHeap *h, FBox *b)
   }
   
 FBox *fbox_heap_pop(FBoxHeap *h)
-  { int n = h->n; int i, j, ia, ib; FBox *b;
+  { int32_t n = h->n; int32_t i, j, ia, ib; FBox *b;
     affirm(n > 0, "prog error: popping an empty heap");
     /* Save current root: */
     j = 0; b = h->b[j];

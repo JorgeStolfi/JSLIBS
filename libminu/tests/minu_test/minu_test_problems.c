@@ -1,10 +1,13 @@
 // See minu_test_problems.h
-// Last edited on 2008-07-14 20:41:49 by stolfi
+// Last edited on 2023-02-19 13:02:45 by stolfi
+
+#define _GNU_SOURCE
+#include <values.h>
+#include <math.h>
 
 #include <minu_test.h>
+
 #include <minu_test_problems.h>
-#include <math.h>
-#include <values.h>
 
 #define ABS(x) ((x) < 0 ? -(x) : (x))
 #define MAX(x,y) ((x) > (y) ? (x) : (y))

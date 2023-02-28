@@ -1,15 +1,18 @@
 /* See bbgoal.h */
-/* Last edited on 2005-09-26 00:52:08 by stolfi */
+/* Last edited on 2023-02-20 06:50:40 by stolfi */
+
+#define _GNU_SOURCE
+#include <stdint.h>
+#include <string.h>
+
+#include <bool.h>
+#include <affirm.h>
+
+#include <fbb_f3_ia.h>
+#include <fbb_f2_ia.h>
+#include <fbb_f1_ia.h>
 
 #include <bbgoal.h>
-#include <fbb_f1_ia.h>
-#include <fbb_f2_ia.h>
-#include <fbb_f3_ia.h>
-
-#include <affirm.h>
-#include <bool.h>
-
-#include <string.h>
 
 bbgoal_data_t bbgoal_from_tag(char *tag)
   {

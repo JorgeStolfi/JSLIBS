@@ -1,5 +1,5 @@
 /* See {tf_calib_data.h}.  */
-/* Last edited on 2023-02-12 07:41:41 by stolfi */
+/* Last edited on 2023-02-25 16:11:55 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -12,6 +12,7 @@
 #include <r2.h>
 #include <r3.h>
 #include <fget.h>
+#include <rn.h>
 
 #include <tf_calib_data.h>
 
@@ -91,7 +92,7 @@ tf_calib_data_t *tf_calib_data_read (char *world_fname, char *image_fname, char 
     else
       { /* Assume unit weight for all points */
         n_weight = n_world;
-        cdat->weight = (double *)notnull(malloc(n_weight * sizeof(double)), "no mem");
+        cdat->weight = rn_alloc(n_weight);
         tf_calib_data_set_weights_uniform(cdat);
       }
     cdat->np = n_world;

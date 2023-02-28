@@ -1,17 +1,20 @@
 /* Defines a target function F for bbopt1.c */
-/* Last edited on 2017-01-02 13:41:59 by jstolfi */
+/* Last edited on 2023-02-20 06:42:12 by stolfi */
   
-#include <fbb_f2_ia.h>
-#include <bbgoal.h>
-
-#include <ia.h>
-#include <bool.h>
-#include <affirm.h>
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <limits.h>
+
+#include <affirm.h>
+#include <bool.h>
+#include <ia.h>
+
+#include <bbgoal.h>
+#include <fbb_f2_ia.h>
 
 /* PROTOTYPES */
 
-int fbb_f2_ia_dim = 1;
+int32_t fbb_f2_ia_dim = 1;
 char *fbb_f2_ia_tag = "f2_ia";
 char *fbb_f2_ia_descr = "(IA) u = x - 1/7; v = x - 6/7; u^2(v^2 + 1/32) + 1/32";
 

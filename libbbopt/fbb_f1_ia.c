@@ -1,14 +1,17 @@
 /* Defines a target function F for bbopt1.c */
-/* Last edited on 2017-01-02 13:41:30 by jstolfi */
+/* Last edited on 2023-02-20 06:42:52 by stolfi */
   
-#include <fbb_f1_ia.h>
-#include <bbgoal.h>
+#define _GNU_SOURCE
+#include <stdint.h>
 
 #include <ia.h>
 
+#include <bbgoal.h>
+#include <fbb_f1_ia.h>
+
 /* PROTOTYPES */
 
-int fbb_f1_ia_dim = 1;
+int32_t fbb_f1_ia_dim = 1;
 char *fbb_f1_ia_tag = "f1_ia";
 char *fbb_f1_ia_descr = "(IA) u = x - 2/7; u^2 + 1";
 

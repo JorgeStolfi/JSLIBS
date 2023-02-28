@@ -1,18 +1,21 @@
 /* See {tf_calib_guess1.h}. */
-/* Last edited on 2022-10-20 05:54:39 by stolfi */
+/* Last edited on 2023-02-25 16:12:27 by stolfi */
 
 #define _GNU_SOURCE
+#include <stdint.h>
+#include <stdio.h>
 
 #include <jsfile.h>
-#include <stdint.h>
+#include <rn.h>
 
 #include <tf_camera.h>
 #include <tf_matrix.h>
 #include <tf_errors.h>
 #include <tf_math.h>
 #include <tf_calib.h>
-#include <tf_calib_guess1.h>
 #include <tf_calib_refine2.h>
+
+#include <tf_calib_guess1.h>
 
 void tf_calib_guess1_initial_camera_parameters 
   ( tf_calib_data_t * cdat, 
@@ -333,7 +336,7 @@ calibration_aux_data_t tf_calib_guess1_create_auxiliary_calibration_aux_data_str
    
   caux->nmarks = nmarks;
   caux->distorted_coords = (r2_t *)malloc(nmarks * sizeof(r2_t));
-  caux->r_squared = (double *)malloc(nmarks * sizeof(double));
+  caux->r_squared = rn_alloc(nmarks);
 
   return caux; 
 }

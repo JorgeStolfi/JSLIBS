@@ -2,9 +2,11 @@
 #define archdraw_ic_H
 
 /* Common defs for IC architectural drawings */
-/* Last edited on 2009-09-18 01:45:25 by stolfi */
+/* Last edited on 2023-02-20 18:18:05 by stolfi */
 
 #define _GNU_SOURCE
+#include <stdint.h>
+
 #include <frgb.h>
 #include <r3.h>
 #include <vec.h>
@@ -55,13 +57,14 @@ bool_t *adrw_ic_define_movable_types(void);
   /* Returns an array, indexed by {adrw_ic_space_type_t}, with TRUE iff
     the usage type should be included in the total area to be moved to IC-4a. */
 
-int *adrw_ic_define_color_key_types(void);
+int32_t *adrw_ic_define_color_key_types(void);
   /* Returns an array with the types which should be displayed in 
     the color key, in the proper order.  The end of the array 
     is inicated by a {-1} value. */
 
 void adrw_ic_plot_histogram_bars
-  ( char *prefix, 
+  ( char *dir,
+    char *prefix,
     adrw_building_t *B, 
     bool_t select[], 
     char *type_tag[], 

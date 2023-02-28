@@ -1,10 +1,12 @@
-# Last edited on 2019-04-09 19:41:05 by jstolfi
+# Last edited on 2023-02-15 12:41:49 by stolfi
 
 .PHONY:: diffs
 
-all: check
+all: check 
 
 check:  diffs
+
+actions: ${ACTIONS}
 
 # Output files of the C and Fortran versions of the code:
 C_OUTPUT := out/testc.txt
@@ -19,3 +21,8 @@ f/${F_OUTPUT}:
 
 c/${C_OUTPUT}: 
 	cd c && make ${C_OUTPUT}
+
+clean:: 
+	for dir in f c ; do \
+          ( cd $$dir && make clean ) ; \
+        done

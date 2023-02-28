@@ -1,14 +1,20 @@
 /* See {test_r2_opt_basic.h}. */
-/* Last edited on 2017-06-05 22:54:43 by stolfilocal */
+/* Last edited on 2023-02-27 10:38:55 by stolfi */
 
 #define _GNU_SOURCE
+#include <stdint.h>
+#include <stdio.h>
+#include <math.h>
+
+#include <r2.h>
+#include <bool.h>
 
 #include <test_r2_opt_basic.h>
 
 void tr2o_debug_points
-  ( int ind,
+  ( int32_t ind,
     char *title,
-    int NI, 
+    int32_t NI, 
     char *pname,
     r2_t p[], 
     r2_t pini[], 
@@ -30,7 +36,7 @@ void tr2o_debug_points
         named {rtag}. */
        
     fprintf(stderr, "%*s%s\n", ind, "", title);
-    for (int i = 0; i < NI; i++)
+    for (int32_t i = 0; i < NI; i++)
       { fprintf(stderr, "%*s  %s[%02d] =       ( %9.4f %9.4f )\n", ind, "", pname, i, p[i].c[0], p[i].c[1]);
         r2_t *r = (arad != NULL ? &(arad[i]) : NULL);
         r2_t *s = (astp != NULL ? &(astp[i]) : NULL);
@@ -68,9 +74,9 @@ void tr2o_debug_points
    }
 
 void tr2o_debug_r2
-  ( int ind,
+  ( int32_t ind,
     char *pname,
-    int i,
+    int32_t i,
     r2_t *p
   )
   { 
@@ -78,12 +84,12 @@ void tr2o_debug_r2
   }
 
 void tr2o_debug_params
-  ( int ind,
+  ( int32_t ind,
     char *pname,
-    int NI, 
+    int32_t NI, 
     r2_t p[]
   )
-  { for (int i = 0; i < NI; i++) { tr2o_debug_r2(ind, pname, i, &(p[i])); }
+  { for (int32_t i = 0; i < NI; i++) { tr2o_debug_r2(ind, pname, i, &(p[i])); }
     fprintf(stderr, "\n");
     return;
   }

@@ -1,5 +1,5 @@
+/*Last edited on 2023-02-27 08:16:32 by stolfi */
 /*
-  Last edited on 2014-03-24 23:32:23 by stolfilocal
   Based on VectorN.mg, created  95-02-27 by J. Stolfi.
   Last edited by stolfi 
 */
@@ -11,8 +11,10 @@
 #include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include <rn.h>
+#include <rmxn.h>
 #include <bool.h>
 #include <jsrandom.h>
 #include <jsmath.h>
@@ -249,34 +251,41 @@ double rn_angle (int32_t n, double *a, double *b)
   }
 
 void rn_cross (int32_t n, double **a, double *r)
-  { int32_t nn1 = (n-1)*n, t = 0, s, i, j, izer;
-    double *C = (double *)notnull(malloc(nn1*sizeof(double)), "no mem for C");
-    double d;
-    for (i = 0; i < n-1; i++) 
-      { double *ai = a[i]; 
-        for (j = 0; j < n; j++) { C[t] = ai[j]; t++; }
-      }
+  { int32_t nn1 = (n-1)*n;
+    double *C = rmxn_alloc(n-1,n);
+    { int32_t t = 0;
+      for (int32_t i = 0; i < n-1; i++) 
+        { double *ai = a[i]; 
+          for (int32_t j = 0; j < n; j++) { C[t] = ai[j]; t++; }
+        }
+    }
     gsel_triangularize(n-1, n, C, TRUE, 0.0);
-    gsel_diagonalize(n-1, n, C, TRUE);
+    gsel_diagonalize(n-1, n, C);
     /* If {det(C)} is not zero, set {d = det(C)}, {izer = -1}.
-      Else set {izer} to the first zero column in {C}, and 
-      set {d} to the determinant of {C} excluding that column. */
-    d = 1.0; izer = -1; t = 0;
-    for (i = 0; i < n-1; i++)
-      { if (C[t] == 0.0)
-          { if (izer < 0) { izer = i; t++; } else { d = 0.0; break; } }
-        d *= C[t]; t += n+1;
-      }
+      Else set {izer} to the first row {i} such that {C[i,i]} is zero, 
+      and  {d} to the determinant of {C} excluding column {izer}. */
+    double d = 1.0; 
+    int32_t izer = -1; 
+    { int32_t t = 0;
+      for (int32_t i = 0; i < n-1; i++)
+        { if (C[t] == 0.0)
+            { if (izer < 0) { izer = i; t++; } else { d = 0.0; break; } }
+          d *= C[t]; t += n+1;
+        }
+    }
     if (izer < 0)
-      { r[n-1] = d;
+      { /* The main diagonal of {C} is non-zero, and possibly column {n-1}. */
+        r[n-1] = d;
         /* For {i=0..n-2}, set {r[i] = -d*(C[i,n-1]/C[i,i])}: */  
-        s = nn1-1; t = nn1-2;
-        for (i = n-2; i >= 0; i--) 
+        int32_t s = nn1-1; 
+        int32_t t = nn1-2;
+        for (int32_t i = n-2; i >= 0; i--) 
           { r[i] = -d*C[s]/C[t]; s -= n; t -= n+1; }
       }
     else
       { /* Set {r[izer] = (-1)^(n-1-izer)*d}, all other elems to 0; */
-        for (i = 0; i < n; i++) { r[i] = 0.0; }
+        assert(izer < n-1); 
+        for (int32_t i = 0; i < n; i++) { r[i] = 0.0; }
         r[izer] = ((n - 1 - izer) % 2 == 0 ? d : -d);
       }
     free(C);
@@ -284,7 +293,7 @@ void rn_cross (int32_t n, double **a, double *r)
 
 double rn_det (int32_t n, double **a)
   { int32_t n2 = n*n, t = 0, i, j;
-    double *C = (double *)notnull(malloc(n2*sizeof(double)), "no mem for C");
+    double *C = rmxn_alloc(n,n);
     double d;
     for (i = 0; i < n; i++) 
       { double *ai = a[i]; 

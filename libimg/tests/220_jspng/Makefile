@@ -1,4 +1,4 @@
-# Last edited on 2019-04-09 21:15:46 by jstolfi
+# Last edited on 2023-02-26 10:36:30 by stolfi
 
 PROG := test_jspng
 
@@ -6,6 +6,7 @@ TEST_LIB := libimg.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS := \
+  libgeo.a \
   libjs.a
   
 OTHER_LIBS := \

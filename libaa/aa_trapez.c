@@ -1,5 +1,5 @@
 /* See {aa_trapez.h}. */
-/* Last edited on 2008-01-18 21:41:32 by stolfi */
+/* Last edited on 2023-02-18 02:05:39 by stolfi */
 
 #include <aa_trapez.h>
 
@@ -14,6 +14,11 @@ ia_trapez_t aa_trapez_from_pair(Interval *xr, AAP xf, AAP yf)
     if (xf->nterms == 0)
       { /* {xf} is a constant. */
         tr.yxlo = aa_range(yf);
+        tr.yxhi = tr.yxlo;
+      }
+    else if (aa_is_full(yf))
+      { /* {yf} is the whole real line: */
+        tr.yxlo = ia_full();
         tr.yxhi = tr.yxlo;
       }
     else

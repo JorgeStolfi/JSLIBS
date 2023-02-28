@@ -1,4 +1,4 @@
-# Last edited on 2023-02-03 23:24:03 by stolfi
+# Last edited on 2023-02-18 11:17:09 by stolfi
 
 PROG := test_mst
 
@@ -37,17 +37,18 @@ DISTR :=   ${word 2, ${TEST_FIELDS}}
 ACOST :=   ${word 3, ${TEST_FIELDS}}
   
 OUTDIR := out
-PREFIX := ${OUTDIR}/${subst :,-,${TEST}}
-EPSFILE = ${PREFIX}-000001.eps
+OUT_PREFIX := ${OUTDIR}/mst_${subst :,_,${TEST}}
 
 # PSVIEW := gv
 PSVIEW := atril
 
-single: ${EPSFILE}
+MAIN_EPS = ${OUT_PREFIX}.eps
 
-${EPSFILE}: ${PROG} ${OUTDIR}
-	${PROG} ${NSITES} ${DISTR} ${ACOST} ${PREFIX}
-	${PSVIEW} ${EPSFILE}
+single: ${MAIN_EPS}
+
+${MAIN_EPS}: ${PROG} ${OUTDIR}
+	${PROG} ${NSITES} ${DISTR} ${ACOST}
+	${PSVIEW} ${MAIN_EPS}
         
 ${OUTDIR}:
 	mkdir -p ${OUTDIR}

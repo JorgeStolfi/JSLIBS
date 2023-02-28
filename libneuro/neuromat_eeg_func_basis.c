@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_func_basis.h}. */
-/* Last edited on 2023-01-14 01:08:31 by stolfi */
+/* Last edited on 2023-02-25 15:24:12 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -47,7 +47,7 @@ void neuromat_eeg_func_basis_eval
 
 double *neuromat_eeg_func_basis_nearest_dists(int32_t ne, r3_t pos3D[])
   {
-    double *erad = (double *)notnull(malloc(ne*sizeof(double)), "no mem");
+    double *erad = rn_alloc(ne);
     for (int32_t ie = 0; ie < ne; ie++)
       { /* Find the distance squared {d2min} from {pos[ie]} to its nearest neighbor: */
         r3_t *pi = &(pos3D[ie]);

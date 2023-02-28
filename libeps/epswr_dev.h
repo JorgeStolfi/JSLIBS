@@ -1,5 +1,5 @@
 /* epswr_dev.h - draw EPS files in Device coordinates. */
-/* Last edited on 2022-10-20 06:54:08 by stolfi */
+/* Last edited on 2023-02-21 12:14:28 by stolfi */
 
 #ifndef epswr_dev_H
 #define epswr_dev_H
@@ -122,14 +122,14 @@ void epswr_dev_shrink_window
 
 void epswr_dev_set_window_to_grid_cell
   ( epswr_figure_t *eps, 
-    double hMin, double hMax, int32_t ih, int32_t nh, 
-    double vMin, double vMax, int32_t iv, int32_t nv
+    double hMin, double hMax, int32_t col, int32_t cols, 
+    double vMin, double vMax, int32_t row, int32_t rows
   );
   /* Conceptually divides the the rectangle {[hMin _ hMax] × [vMin _ vmax]}
     (in absolute Device coordinates) into a grid of rectangular
-    cells with {nh} columns, numbered {0..nh-1} from left to right,
-    and {nv} rows, numbered {0..nv-1} from bottom to top;
-    and sets the plot window to the cell in column {ih} and row {iv},
+    cells with {cols} columns, numbered {0..cols-1} from left to right,
+    and {rows} rows, numbered {0..rows-1} from bottom to top;
+    and sets the plot window to the cell in column {col} and row {row},
     using {epswr_dev_set_window}.
     
     The geometry and position of the text area
@@ -168,6 +168,18 @@ void epswr_dev_coord_line
   /* Draws a reference line PERPENDICULAR to the given axis 
     at the given coordinate value, extending across the whole
     plot window. */
+
+void epswr_dev_coord_lines
+  ( epswr_figure_t *eps, 
+    epswr_axis_t axis, 
+    double psstart,
+    double psstep
+  );
+  /* Draws equally spaced reference lines PERPENDICULAR to the given axis 
+    at the given coordinate value, extending across the whole
+    plot window.  One of the lines will have coordinate {psstart},
+    and the lines will be {psstep} apart on that axis.  Only lines
+    that interesect the plot window will be drawn. */
 
 void epswr_dev_axis
   ( epswr_figure_t *eps, 
@@ -405,20 +417,20 @@ void epswr_dev_arrowhead
     
 /* GRID LINES AND GRID CELLS */
 
-void epswr_dev_grid_lines(epswr_figure_t *eps, int32_t nh, int32_t nv);
+void epswr_dev_grid_lines(epswr_figure_t *eps, int32_t cols, int32_t rows);
   /* The plot window is implicitly divided into a grid of rectangular
-    cells, with {nh} columns and {nv} rows. Draws all grid cell boundaries
+    cells, with {cols} columns and {rows} rows. Draws all grid cell boundaries
     with the current pen and color. */
 
 void epswr_dev_grid_cell
   ( epswr_figure_t *eps, 
-    int32_t ih, int32_t nh,
-    int32_t iv, int32_t nv,
+    int32_t col, int32_t cols,
+    int32_t row, int32_t rows,
     bool_t fill, bool_t draw
   );
   /* The plot window is implicitly divided into a grid of rectangular
-    cells, with {nh} columns and {nv} rows. Fills and/or outlines cell 
-    in column {ih} and row {iv} of that grid.  Cell {[0,0]}
+    cells, with {cols} columns and {rows} rows. Fills and/or outlines cell 
+    in column {col} and row {row} of that grid.  Cell {[0,0]}
     lies at the bottom left corner. */
 
 /* LABELS */

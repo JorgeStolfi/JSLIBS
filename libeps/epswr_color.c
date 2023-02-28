@@ -1,15 +1,17 @@
 /* See pscolor.h */
-/* Last edited on 2022-10-20 06:54:18 by stolfi */
+/* Last edited on 2023-02-25 16:06:52 by stolfi */
 
-#include <epswr_color.h>
-#include <stdint.h>
-#include <epswr_iso.h>
+#define _GNU_SOURCE
+#include <limits.h>
+#include <stdlib.h>
+#include <math.h>
 
+#include <rn.h>
 #include <affirm.h>
 
-#include <math.h>
-#include <stdlib.h>
-#include <limits.h>
+#include <epswr_iso.h>
+#include <stdint.h>
+#include <epswr_color.h>
 
 #define M_SQRT3 (1.73205080756887729352)
   /* Precomputed sqrt(3). */
@@ -30,9 +32,9 @@ void epswr_make_color_table
   {
     /* Create gradual color table: */
     int32_t N = kMax - kMin + 2;     /* Number of color bands: */
-    double *R = (double *)malloc(N*sizeof(double));
-    double *G = (double *)malloc(N*sizeof(double));
-    double *B = (double *)malloc(N*sizeof(double));
+    double *R = rn_alloc(N);
+    double *G = rn_alloc(N);
+    double *B = rn_alloc(N);
     double vMin = vStart + (kMin - 0.5)*vStep;
     double vMax = vStart + (kMax + 0.5)*vStep;
     

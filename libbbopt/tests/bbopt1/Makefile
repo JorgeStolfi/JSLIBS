@@ -1,4 +1,4 @@
-# Last edited on 2023-02-04 07:06:31 by stolfi
+# Last edited on 2023-02-20 10:07:45 by stolfi
 
 PROG := bbopt1
 
@@ -6,7 +6,7 @@ TEST_LIB := libbbopt.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS := \
-  libfgraph.a \
+  libaagraph.a \
   libeps.a \
   libaa.a \
   libia.a \
@@ -44,30 +44,23 @@ clean::
 FUNCTION := FUNCTION.IS.UNDEFINED
 ifneq "/${FUNCTION}" "/FUNCTION.IS.UNDEFINED"
 
-OUTNAME := bb1-out-${FUNCTION}
+OUTNAME := out/bb1_${FUNCTION}
   
-PSFILE := ${OUTNAME}-doc.ps
-EPSFILE := ${OUTNAME}-000001.eps
-
-PSFILES := \
-  ${PSFILE} \
-  ${EPSFILE}
-
-MAINPS := ${EPSFILE}
-  
+EPSFILE := ${OUTNAME}.eps
+ 
 PSVIEW := evince
   
-single: ${MAINPS} show-ps
+single: ${EPSFILE} show-ps
 
 clean-single: 
-	/bin/rm -f ${PSFILES}
+	/bin/rm -f ${OUTNAME}*.eps
 
-show-ps: ${MAINPS}
-	${PSVIEW} ${PSFILE}
+show-ps: ${EPSFILE}
+	${PSVIEW} ${EPSFILE}
   
 # Generating the plots:
 
-${MAINPS}: ${PROG}
+${EPSFILE}: ${PROG}
 	${PROG} ${FUNCTION}
   
 endif

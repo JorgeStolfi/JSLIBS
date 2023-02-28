@@ -1,5 +1,5 @@
 /* test_sve_blpulse --- test of {sve_minn.h} for bandlimited pulse design */
-/* Last edited on 2017-03-13 22:12:51 by stolfilocal */
+/* Last edited on 2023-02-27 10:59:49 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -29,7 +29,7 @@
 /* GENERAL PARAMETERS */
 
 typedef struct options_t
-  { int ns; /* Number of samples in signal. */
+  { int32_t ns; /* Number of samples in signal. */
   } options_t;
 
 #define MAXNS 256
@@ -37,12 +37,12 @@ typedef struct options_t
 
 /* INTERNAL PROTOTYPES */
 
-int main (int argc, char **argv);
+int32_t main (int32_t argc, char **argv);
 
-options_t *get_options(int argc, char **argv);
+options_t *get_options(int32_t argc, char **argv);
   /* Parses the command-line options. */
 
-void find_compact_pulse(int ns);
+void find_compact_pulse(int32_t ns);
   /* Tries to find a pulse that is compact in time and frequency 
     by nonlinear optimization. */ 
 
@@ -50,11 +50,11 @@ void write_solution
   ( char *prefix,
     char *tag,
     sve_goal_t *F,
-    int ns,
+    int32_t ns,
     double x[],
     double Fx,
-    int nf,
-    int fMax,
+    int32_t nf,
+    int32_t fMax,
     double P[],
     double W[]
   );
@@ -64,7 +64,7 @@ void write_solution
     weight function {W[0..fmax]}. Also prints the function value {Fx}
     to {stderr} */
 
-void write_pulse(char *prefix, char *tag, int ns, int nf, double x[]);
+void write_pulse(char *prefix, char *tag, int32_t ns, int32_t nf, double x[]);
   /* Writes the pulse samples {x[0..ns-1]} to a file named
     "{fname}". Each line contains a sample index and 
     the sample's value. If {fname} is NULL, writes to {stderr}
@@ -75,7 +75,7 @@ void write_pulse(char *prefix, char *tag, int ns, int nf, double x[]);
     periodic with period {nf}; samples with indices in {ns..nf-1} are
     assumed to be zero. */
 
-void write_spectrum(char *prefix, char *tag, int fMax, double P[], double W[]);
+void write_spectrum(char *prefix, char *tag, int32_t fMax, double P[], double W[]);
   /* Writes the power spectrum {P[0..fMax]} to a file named
     "{fname}". Each line contains an absolute frequency {f},
     the power {P[f]}, and the badness weight {W[f]}.
@@ -84,8 +84,8 @@ void write_spectrum(char *prefix, char *tag, int fMax, double P[], double W[]);
     instead. */
 
 void pulse_spectrum
-  ( int ns,
-    int nf,
+  ( int32_t ns,
+    int32_t nf,
     double x[], 
     fftw_complex in[], 
     fftw_complex ot[], 
@@ -98,12 +98,12 @@ void pulse_spectrum
     {fMax+1} elements. Assumes that {in} and {ot} have {nf} complex
     elements. */
 
-double pulse_badness(int fMax, double P[], double W[]);
+double pulse_badness(int32_t fMax, double P[], double W[]);
   /* A badness score that measures the high freq contents of the power
     spectrum {P[0..fMax]}, according to the weights {W[0..fMax]}. Note
     that {P} and {W} must have {fMax+1} elements. */
 
-void fourier_to_spectrum(int nf, fftw_complex ot[], double P[]);
+void fourier_to_spectrum(int32_t nf, fftw_complex ot[], double P[]);
   /* Reduces a complex Fourier transform {ot[0..nf-1][0..1]}
     to a power spectrum {P[0..fMax]} where {fMax == nf/2}. Note
     that {P} must have {fMax+1} elements. */
@@ -112,7 +112,7 @@ void plot_spillover
   ( char *prefix,
     char *tag,
     sve_goal_t *F,
-    int ns,
+    int32_t ns,
     double x[]
   );
   /* Writes a FNI file "{prefix}-{tag}-plt.fni"
@@ -121,7 +121,7 @@ void plot_spillover
 
 /* IMPLEMENTATIONS */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   { options_t *o = get_options(argc, argv);
     find_compact_pulse(o->ns);
     fclose(stderr);
@@ -129,7 +129,7 @@ int main (int argc, char **argv)
     return (0);
   }
   
-void find_compact_pulse(int ns)
+void find_compact_pulse(int32_t ns)
   { 
     /* Debugging printout: */
     bool_t debug = TRUE;
@@ -139,28 +139,28 @@ void find_compact_pulse(int ns)
     asprintf(&prefix, "out/%03d", ns);
     
     /* Working storage for the goal function: */
-    int nf = 2*ns;   /* Number of terms in FFT of expanded pulse. */
-    int fMax = nf/2; /* Max frequency in power spectrum of expanded pulse. */
+    int32_t nf = 2*ns;   /* Number of terms in FFT of expanded pulse. */
+    int32_t fMax = nf/2; /* Max frequency in power spectrum of expanded pulse. */
     fftw_complex *in = fftw_malloc(sizeof(fftw_complex)*nf); 
     fftw_complex *ot = fftw_malloc(sizeof(fftw_complex)*nf);
     fftw_plan plan = fftw_plan_dft_1d(nf, in, ot, FFTW_FORWARD, FFTW_ESTIMATE);
     double P[fMax+1];  /* Power spectrum of pulse, indexed by absolute frequency. */
     
     /* Frequency-domain penalty weights {W[0..fMaxEx]}: */
-    int nfOk = ns;       /* Max desired nonzero terms in FFT. */
-    int fMaxOk = nfOk/2; /* Max desired freq. in nonzero spectrum. */
+    int32_t nfOk = ns;       /* Max desired nonzero terms in FFT. */
+    int32_t fMaxOk = nfOk/2; /* Max desired freq. in nonzero spectrum. */
     double W[fMax+1];
-    int f;
+    int32_t f;
     for (f = 0; f <= fMax; f++) 
       { /* double df = (f - fMaxOk)/(fMax - fMaxOk);  */
         /* W[f] = (f <= fMaxOk ? 0 : exp(df*df)-1); */
         W[f] = (f <= fMaxOk ? 0 : 1);
       }
     
-    auto double F(int n, double x[]); 
+    auto double F(int32_t n, double x[]); 
       /* The goal function for uptimization. */
       
-    double F(int n, double x[])
+    double F(int32_t n, double x[])
       { assert(n == ns);
         /* Compute the pulse's power spectrum after padding to {2*n} samples: */
         pulse_spectrum(ns, nf, x, in, ot, plan, P);
@@ -169,12 +169,12 @@ void find_compact_pulse(int ns)
       }
       
     double Xprev[ns]; /* Guess in previous call of {OK} function. */
-    int nok = 0;      /* Counts iterations (actually, calls to {OK}). */
+    int32_t nok = 0;      /* Counts iterations (actually, calls to {OK}). */
     
-    auto bool_t OK(int n, double x[], double Fx); 
+    auto bool_t OK(int32_t n, double x[], double Fx); 
       /* Acceptance criterion function. */
       
-    bool_t OK(int n, double x[], double Fx)
+    bool_t OK(int32_t n, double x[], double Fx)
       { assert(n == ns);
         fprintf(stderr, "iteration %d\n", nok);
         if (nok > 0)
@@ -195,7 +195,7 @@ void find_compact_pulse(int ns)
     
     /* Initialize {x} with a Hann pulse: */
     srand(4615);  srandom(4615);
-    int i;
+    int32_t i;
     for (i = 0; i < ns; i++) 
       { double z = 2*M_PI*((double)i)/((double)ns);
         x[i] = 1.0 - cos(z);
@@ -215,7 +215,7 @@ void find_compact_pulse(int ns)
     double rIni = 0.01;
     double stop = 0.1*rMin;
     sign_t dir = -1;
-    int maxIters = 200;
+    int32_t maxIters = 200;
     
     sve_minn_iterate(ns, &F, &OK, x, &Fx, dir, dMax, dBox, rIni, rMin, rMax, stop, maxIters, debug);
     
@@ -229,11 +229,11 @@ void write_solution
   ( char *prefix,
     char *tag,
     sve_goal_t *F,
-    int ns,
+    int32_t ns,
     double x[],
     double Fx,
-    int nf,
-    int fMax,
+    int32_t nf,
+    int32_t fMax,
     double P[],
     double W[]
   )
@@ -262,7 +262,7 @@ void write_solution
       }
   }
 
-void write_pulse(char *prefix, char *tag, int ns, int nf, double x[])
+void write_pulse(char *prefix, char *tag, int32_t ns, int32_t nf, double x[])
   { char *fname = NULL;
     FILE *wr;
     if (prefix != NULL) 
@@ -271,16 +271,16 @@ void write_pulse(char *prefix, char *tag, int ns, int nf, double x[])
       }
     else
       { wr = stderr; }
-    int i;
+    int32_t i;
     for (i = -2; i < nf+2; i++)
-      { int k = ((i % nf) + nf) % nf;
+      { int32_t k = ((i % nf) + nf) % nf;
         double Xi = (k < ns ? x[k] : 0);
         fprintf(wr, "%5d %12.8f\n", i, Xi);
       }
     if ((wr != stderr) && (wr != stdout)) { fclose(wr); }
   }
 
-void write_spectrum(char *prefix, char *tag, int fMax, double P[], double W[])
+void write_spectrum(char *prefix, char *tag, int32_t fMax, double P[], double W[])
   { char *fname = NULL;
     FILE *wr;
     if (prefix != NULL) 
@@ -289,7 +289,7 @@ void write_spectrum(char *prefix, char *tag, int fMax, double P[], double W[])
       }
     else
       { wr = stderr; }
-    int f;
+    int32_t f;
     for (f = 0; f <= fMax; f++)
       { fprintf(wr, "%5d %12.8f %12.8f\n", f, P[f], W[f]); }
     if ((wr != stderr) && (wr != stdout)) { fclose(wr); }
@@ -299,11 +299,11 @@ void plot_spillover
   ( char *prefix,
     char *tag,
     sve_goal_t *F,
-    int ns,
+    int32_t ns,
     double x[]
   )
-  { int NS = 30; /* Number of pixels on each side of optimum. */
-    int i;
+  { int32_t NS = 30; /* Number of pixels on each side of optimum. */
+    int32_t i;
     double xa[ns], xb[ns];
     for (i = 0; i < ns; i++) 
       { xa[i] = x[i] + 0.2*(1 - cos((i+0.5)*2*M_PI/ns));
@@ -318,8 +318,8 @@ void plot_spillover
   }
 
 void pulse_spectrum
-  ( int ns, 
-    int nf,
+  ( int32_t ns, 
+    int32_t nf,
     double x[], 
     fftw_complex in[], 
     fftw_complex ot[], 
@@ -327,7 +327,7 @@ void pulse_spectrum
     double P[]
   )
   { /* The input pulse is {x[0..ns-1]} padded with {nf-ns} zeros: */
-    int i;
+    int32_t i;
     for (i = 0; i < nf; i++) 
       { in[i][0] = (i < ns ? x[i] : 0);
         in[i][1] = 0;
@@ -338,11 +338,11 @@ void pulse_spectrum
     fourier_to_spectrum(nf, ot, P);
   }
 
-double pulse_badness(int fMax, double P[], double W[])
+double pulse_badness(int32_t fMax, double P[], double W[])
   { /* Compute the total power {sumP} and weighted total power {sumPW}: */
     double sumP = 0;
     double sumPW = 0;
-    int f;
+    int32_t f;
     for (f = 0; f <= fMax; f++) { sumP += P[f]; sumPW += P[f]*W[f]; }
     /* Compute high-frequency content penalty {hfcp}, independent of absolute power: */
     double hfcp = sumPW / sumP;
@@ -351,28 +351,31 @@ double pulse_badness(int fMax, double P[], double W[])
     return hfcp + nupp;
   }
 
-void fourier_to_spectrum(int nf, fftw_complex ot[], double P[])
-  {  int fMax = nf/2;  /* Max frequency */
-     auto double cmod2(fftw_complex c); /* Complex modulus of {c}, squared. */
-     double cmod2(fftw_complex c) { return c[0]*c[0] + c[1]*c[1]; }
+void fourier_to_spectrum(int32_t nf, fftw_complex ot[], double P[])
+  {  int32_t fMax = nf/2;  /* Max frequency */
+     
+     auto double cmod2(/* fftw_complex */ double c[]); /* Complex modulus of {c}, squared. */
+     
+     double cmod2(/* fftw_complex */ double c[]) { return c[0]*c[0] + c[1]*c[1]; }
+     
      /* We must combine Fourier terms with same freq. */
      /* They are {ot[i]} and {ot[n-i]}, modulo {n}. */
      /* Frequency 0 has a single term: */
      P[0] = cmod2(ot[0])/nf;
      /* Other freqs have two terms, except possibly for {fMax}: */
-     int f;
+     int32_t f;
      for (f = 1; f <= fMax; f++) 
        { double Pi = cmod2(ot[f]); 
-         int j = nf - f;
+         int32_t j = nf - f;
          if (j != f) { Pi += cmod2(ot[j]); }
          P[f] = Pi/nf;
        }
   }
   
-options_t *get_options(int argc, char **argv)
+options_t *get_options(int32_t argc, char **argv)
   { argparser_t *pp = argparser_new(stderr, argc, argv);
     options_t *o = notnull(malloc(sizeof(options_t)), "no mem"); 
-    o->ns = (int)argparser_get_next_int(pp, 1, MAXNS);
+    o->ns = (int32_t)argparser_get_next_int(pp, 1, MAXNS);
     argparser_finish(pp);
     return o;
   }

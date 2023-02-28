@@ -2,11 +2,15 @@
 #define delaunay_debug_H
 
 /* Debugging tools for {delaunay.c}. */
-/* Last edited on 2011-12-25 02:55:17 by stolfi */
+/* Last edited on 2023-02-20 06:10:02 by stolfi */
 
+#define _GNU_SOURCE
+#include <stdint.h>
+ 
 #include <quad.h>
 #include <bool.h>
 #include <sign.h>
+
 #include <delaunay.h>
 
 #define DEBUGGING_QUAD FALSE
@@ -55,7 +59,7 @@ void deldebug_check_interior_face(quad_arc_t e);
 void deldebug_set_all_left_faces(quad_arc_t e, delaunay_face_t *F);
   /* Sets {F} as the {LEFT} pointers of all arcs with the same left face as {e}. */
 
-void deldebug_check_left_triangle(quad_arc_t b, int depth);
+void deldebug_check_left_triangle(quad_arc_t b, int32_t depth);
   /* Checks the triangle at the left of edge {e}, assuming that
     it is an internal triangle. If {depth > 0}, also 
     looks at the two other edges {e,f} of the triangle, oriented 

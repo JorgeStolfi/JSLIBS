@@ -1,4 +1,4 @@
-# Last edited on 2022-10-19 09:12:53 by stolfi
+# Last edited on 2023-02-26 10:49:40 by stolfi
 
 PROG := test_jspnm
 
@@ -6,6 +6,7 @@ TEST_LIB := libimg.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS := \
+  libgeo.a \
   libjs.a
   
 OTHER_LIBS := \

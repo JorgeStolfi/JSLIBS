@@ -1,5 +1,5 @@
 /* See {tf_calib.h}. */
-/* Last edited on 2022-10-20 08:01:31 by stolfi */
+/* Last edited on 2023-02-25 16:11:40 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -11,14 +11,17 @@
 
 #include <jsfile.h>
 #include <affirm.h>
+#include <rn.h>
+#include <rmxn.h>
 
 #include <tf_lmdif.h>
 
 #include <tf_camera.h>
-#include <tf_calib.h>
 #include <tf_matrix.h>
 #include <tf_math.h>
 #include <tf_errors.h>
+
+#include <tf_calib.h>
 
 /* Parameters controlling MINPACK's lmdif() optimization routine. */
 /* See the file lmdif.f for definitions of each parameter.        */
@@ -381,9 +384,9 @@ void tf_generic_optimization
   double *fjac;
   double *wa4;  
 
-  fvec = (double *)notnull(malloc((uint32_t)m*(uint32_t)sizeof(double)), "no mem for fvec");
-  fjac = (double *)notnull(malloc((uint32_t)(m*n)*(uint32_t)sizeof(double)),"no mem for fjac");
-  wa4 =  (double *)notnull(malloc((uint32_t)m*(uint32_t)sizeof(double)), "no mem for wa4"); 
+  fvec = rn_alloc(m);
+  fjac = rmxn_alloc(m,n);
+  wa4 =  rn_alloc(m); 
 
 
   if (debug) 

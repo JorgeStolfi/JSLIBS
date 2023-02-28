@@ -1,16 +1,19 @@
 /* fbox.h -- function boxes for branch and bound optimization */ 
-/* Last edited on 2003-09-21 12:01:23 by stolfi */
+/* Last edited on 2023-02-20 06:40:00 by stolfi */
 
 #ifndef fbox_h
 #define fbox_h
+
+#define _GNU_SOURCE
+#include <stdint.h>
 
 #include <ia.h>
 
 typedef signed char sign;
 
 typedef struct FBox  /* An axis-aligned multidimensional box. */
-  { int d;            /* Dimension */
-    int depth;        /* Subdivision depth */
+  { int32_t d;            /* Dimension */
+    int32_t depth;        /* Subdivision depth */
     Interval fr;      /* Estimated range of function over this box. */
     Interval xr[1];   /* Coordinate ranges for this box (actually `d' of them). */
   } FBox;
@@ -27,7 +30,7 @@ typedef struct FBox  /* An axis-aligned multidimensional box. */
 
 typedef sign (*FBoxCmp)(FBox *a, FBox *b); /* A box comparison function. */
 
-FBox *fbox_make(int d, int depth, Interval *xr, Interval fr);
+FBox *fbox_make(int32_t d, int32_t depth, Interval *xr, Interval fr);
   /* Packages the given data as a box, making a copy of the 
     coordinate range list {xr}. */
 

@@ -1,5 +1,5 @@
 /* See {fine2.h}. */
-/* Last edited on 2022-10-20 05:53:42 by stolfi */
+/* Last edited on 2023-02-25 16:12:44 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -8,11 +8,14 @@
 
 #include <jsfile.h>
 #include <affirm.h>
+#include <rn.h>
+
 #include <tf_camera.h>
 #include <tf_calib.h>
 #include <tf_matrix.h>
 #include <tf_math.h>
 #include <tf_calib.h>
+
 #include <tf_calib_refine2.h>
  
 /* !!! A conversao (f,Tz)<-->(logf,L) deveria estar em tf_camera_opt ou vice-versa !!! */
@@ -129,7 +132,7 @@ double tf_calib_refine2_calc_zc_star
     int32_t i;
     double sum_mean = 0.0, sum_std = 0.0, sum_w = 0.0;
 
-    double *z_v = (double *)malloc(cdat->np*sizeof(double));
+    double *z_v = rn_alloc(cdat->np);
 
     for (i = 0; i < cdat->np; i++) {
          /* map the known world coordinates to (predicted) undistorted sensor plane coordinates */
@@ -161,7 +164,7 @@ double tf_calib_refine2_calc_Tz
 {
     int32_t i;
     double sum_mean = 0.0, sum_std = 0.0, sum_w = 0.0;
-    double *dzc = (double *)malloc(cdat->np*sizeof(double));
+    double *dzc = rn_alloc(cdat->np);
 
     for (i = 0; i < cdat->np; i++) {
 

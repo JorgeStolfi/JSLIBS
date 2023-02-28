@@ -1,5 +1,5 @@
 /* See {test_r2_opt_tools.h}. */
-/* Last edited on 2017-06-06 23:25:20 by stolfilocal */
+/* Last edited on 2023-02-27 10:39:34 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -19,13 +19,13 @@
 double tr2o_tools_eval_mother_image
   ( r2_t *p, 
     r2_t *scale,
-    int mom_NF, 
+    int32_t mom_NF, 
     r2_t mom_frq[], 
     r2_t mom_phi[], 
     double mom_amp[]
   )
   {
-    int t;
+    int32_t t;
     double x = p->c[0];      /* Point (unscaled) in X. */
     double y = p->c[1];      /* Point (unscaled) in Y. */
     double sx = scale->c[0]; /* Image scaling factor in X. */
@@ -66,7 +66,7 @@ double tr2o_tools_eval_mother_image
   }
       
 void tr2o_tools_initialize_mother_image
-  ( int mom_NF, 
+  ( int32_t mom_NF, 
     r2_t mom_frq[], 
     r2_t mom_phi[], 
     double mom_amp[],
@@ -79,14 +79,14 @@ void tr2o_tools_initialize_mother_image
     double Pmin =  2.5;       /* Min wavelength (pixels). */
     double Pmax = 1024*Pmin;  /* Max wavelength (pixels). */
     double Pstep = exp(log(Pmax/Pmin)/(mom_NF-1));
-    for (int t = 0; t < mom_NF; t++)
+    for (int32_t t = 0; t < mom_NF; t++)
       { /* Choose the frequency vector of term {t}: */
         double P = Pmin*pow(Pstep,t);     /* Wavelength at scale 0 (pixels). */
         double azm = gold*2*M_PI*t;       /* Azimuth of wave direction (radians). */ 
         double fx = cos(azm)/P;           /* X frequency at scale 0 (cycles per pixel). */
         double fy = sin(azm)/P;           /* Y frequency at scale 0 (cycles per pixel). */
         mom_frq[t] = (r2_t){{ fx, fy }};  /* Frequency vector at scale 0 (cycles per pixel). */
-        for (int r = 0; r < 2; r++)
+        for (int32_t r = 0; r < 2; r++)
           { double phi = gold*(2*t+7+r);          /* Wave initial phase (as fraction of cycle). */
             mom_phi[t].c[r] = phi - floor(phi);   /* Reduce to {[0 _ 1]}. */
           }

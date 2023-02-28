@@ -1,5 +1,5 @@
 /* See dnae_seq_ps.h */
-/* Last edited on 2023-02-14 03:26:09 by stolfi */
+/* Last edited on 2023-02-25 16:05:48 by stolfi */
 
 #define dnae_seq_C_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)" \
@@ -17,6 +17,7 @@
 #include <jsrandom.h>
 #include <jsmath.h>
 #include <jsfile.h>
+#include <rn.h>
 
 #include <msm_ps_tools.h>
 
@@ -79,7 +80,7 @@ void dnae_seq_ps_plot(msm_ps_tools_t *dp, dnae_seq_t *seq)
     
     /* Extract the data to plot: */
     int32_t ny = nd*nc;
-    double *y = (double*) malloc(sizeof(double)*ny);
+    double *y = rn_alloc(ny);
     int32_t i;
     for (i = 0; i < nd; i++)
       { for (c = 0; c < nc; c++)

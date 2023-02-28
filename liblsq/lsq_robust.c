@@ -1,5 +1,5 @@
 /* See {lsq_robust.h} */
-/* Last edited on 2019-12-18 16:07:59 by jstolfi */
+/* Last edited on 2023-02-25 16:08:16 by stolfi */
 
 #define lsq_robust_C_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
@@ -17,20 +17,21 @@
 #include <rmxn.h>
 #include <jsmath.h>
 #include <gauss_elim.h>
+#include <rn.h>
 
 #include <lsq.h>
 #include <lsq_array.h>
 #include <lsq_robust.h>
 
 void lsq_robust_fit
-  ( int32_t nt,       /* Number of data points to generate. */
-    int32_t nx,       /* Number of independent variables (argument coordinates per data point). */
-    double X[],   /* Argument coordinates of data points ({nt} by {nx}). */
-    double F[],   /* Values of dependent variable ({nt} elements). */
-    double W[],   /* Corresponding weights ({nt} elements). */
-    int32_t maxiter,  /* Max iteration count. */
-    double U[],   /* (OUT) Fitted linear function coeffs ({nx} elements). */
-    double P[],   /* (OUT) Assumed outlier probabilities, or NULL. */
+  ( int32_t nt,
+    int32_t nx,
+    double X[],
+    double F[],
+    double W[],
+    int32_t maxiter,
+    double U[],
+    double P[],
     lsq_robust_report_t *report,
     bool_t verbose
   )

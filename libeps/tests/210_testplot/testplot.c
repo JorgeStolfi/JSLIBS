@@ -1,7 +1,7 @@
 #define PROG_NAME "testplot"
 #define PROG_DESC "test of {epswr.h} plotting ops"
 #define PROG_VERS "1.0"
-/* Last edited on 2022-10-20 06:52:14 by stolfi */
+/* Last edited on 2023-02-21 12:18:32 by stolfi */
 
 #define testplot_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
@@ -76,6 +76,11 @@ void DrawThings(epswr_figure_t *epsf)
     epswr_set_pen(epsf, 0.000, 0.000, 0.000,  0.20,  0.0, 0.0);
     epswr_coord_line(epsf, epswr_axis_HOR, 0.17);
     epswr_coord_line(epsf, epswr_axis_VER, 3.14);
+
+    epswr_comment(epsf, "Medium solid light blue coordinate line grid:");
+    epswr_set_pen(epsf, 0.500, 0.750, 1.000,  0.20,  0.0, 0.0);
+    epswr_coord_lines(epsf, epswr_axis_HOR, 1.0, 2.0);
+    epswr_coord_lines(epsf, epswr_axis_VER, 2.0, 4.0);
 
     epswr_comment(epsf, "Thin dashed light yellow gridlines:");
     epswr_set_pen(epsf, 0.800, 0.800, 0.300,  0.10,  2.0, 1.0);

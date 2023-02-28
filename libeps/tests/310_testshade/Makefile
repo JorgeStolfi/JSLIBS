@@ -5,6 +5,7 @@ TEST_LIB := libeps.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS := \
+  libgeo.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

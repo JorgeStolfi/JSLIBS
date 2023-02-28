@@ -1,5 +1,5 @@
 /* gauss_elim.h - Gaussian triangulation and elimination. */
-/* Last edited on 2021-06-09 20:28:44 by jstolfi */
+/* Last edited on 2023-02-27 08:11:39 by stolfi */
 
 #ifndef gauss_elim_H
 #define gauss_elim_H
@@ -7,6 +7,8 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
+
+#include <bool.h>
 
 /* In all the procedures below, two-dimensional matrices are stored
   into one-dimensional vectors, in row-by-row order. That is, an {m×n}
@@ -42,7 +44,7 @@ double gsel_determinant(int32_t m, int32_t n, double A[], int32_t q);
 
 /* ARRAY TRIANGULARIZATION, DIAGONALIZATION, NORMALIZATION, DETERMINANT */
 
-void gsel_triangularize(int32_t m, int32_t n, double M[], int32_t total, double tiny);
+void gsel_triangularize(int32_t m, int32_t n, double M[], bool_t total, double tiny);
   /* Applies the Gaussian elimination method to the {m×n} matrix
     {M}, leaving it upper triangular. 
     
@@ -54,7 +56,7 @@ void gsel_triangularize(int32_t m, int32_t n, double M[], int32_t total, double 
     the determinant of {M} will be the product of its diagonal
     elements.
     
-    If {total == TRUE}, the output matrix satisfies a stronger
+    If {total} is true, the output matrix satisfies a stronger
     condition: for all {i < k}, {lead(M,i) < lead(M,k)}, or {lead(M,i)
     == lead(M,k) = +oo}. In this case, the non-zero rows of {M} are a
     basis for the space spanned by the original rows.
@@ -63,28 +65,21 @@ void gsel_triangularize(int32_t m, int32_t n, double M[], int32_t total, double 
     reduced to {tiny} or less times its previous value is set to zero.
     If {tiny} is zero or negative, this cleanup is supressed. */
 
-void gsel_diagonalize(int32_t m, int32_t n, double M[], int32_t total);
-  /* Assumes that the {m×n} matrix {M} has been triangularized,
-    namely that {lead(M,i) >= i} for every {i}.  Applies 
-    row operations to {M} so that it becomes diagonal-like,
-    without change to its determinant.
+void gsel_diagonalize(int32_t m, int32_t n, double M[]);
+  /* Assumes that the {m×n} matrix {M} has been triangularized with
+    {total = TRUE}, namely that {lead(M,i) = +oo} or {lead(M,i) >=
+    lead(M,i-1)} for every {i}. Applies row operations to {M} so that it
+    becomes diagonal-like, without change to its determinant. Namely,
+    whenever {j := lead(M,i)} is finite, all elements {M[k,j]} in rows
+    {k < i} are set to zero. */
     
-    If {total == 0}, then, whenever {M[i,i] != 0}, all other elements
-    on column {i} are set to zero. 
+void gsel_normalize(int32_t m, int32_t n, double M[]);
+  /* Assumes that the {m×n} matrix {M} has been triangularized with
+    {total=TRUE}, namely that {lead(M,i)} is {+oo} or {lead(M,i) >
+    lead(M,i-1)} for every {i}; and possibly diagonalized).
     
-    If {total == 1}, then, whenever {j := lead(M,i)} is finite,
-    all elements {M[k,j]} in rows {k != i} are set to zero. */
-    
-void gsel_normalize(int32_t m, int32_t n, double M[], int32_t total);
-  /* Assumes that the {m×n} matrix {M} has been 
-    triangularized (and possibly diagonalized), namely that {lead(M,i) >= i}
-    for every {i}.  
-    
-    If {total == 0}, scales every row that has a nonzero diagonal
-    element so as to make that element 1.0.
-    
-    If {total == 1}, then, whenever {j := lead(M,i)} is finite,
-    scales the row so that {M[i,j] == 1.0}. */
+    Then, whenever {j := lead(M,i)} is finite, scales the row
+    so that {M[i,j] == 1.0}. */
 
 /* SYSTEM SOLVING UTILITIES */
 
@@ -95,10 +90,9 @@ double gsel_triangular_det(int32_t m, int32_t n, double M[], int32_t q);
     Note that when {q == m} the result is the determinant of the first
     {m} columns of {M}. */
 
-int32_t gsel_extract_solution(int32_t m, int32_t n, double M[], int32_t p, double X[], int32_t total);
+int32_t gsel_extract_solution(int32_t m, int32_t n, double M[], int32_t p, double X[]);
   /* Assumes that {M} is an {m×n} matrix that has been
-    triangularized, diagonalized, and normalized with the 
-    specified {total} flag.
+    triangularized with {total = TRUE}, diagonalized, and normalized flag.
     
     The procedure interprets {M} as two blocks {M = (A B)} side by
     side, where {A} is {m×q} and {B} is {m×p}, with {q = n-p}. The
@@ -112,20 +106,9 @@ int32_t gsel_extract_solution(int32_t m, int32_t n, double M[], int32_t p, doubl
     have {m-r} nonzero rows. If {r < q}, then the system has multiple
     solutions, and {q-m} rows of {X} have been set to zero.
     
-    Specifically, if {total = FALSE}:
-      
-      * The result {r} is the number of rows {i < min(m,q)} such that
-      {M[i,i]} is nonzero.
+    Specifically,
     
-      * For every {j} in {0..q-1} such that {j > m} or {M[j,j] == 0},
-      {X[j,0..p-1]} is set to zero;
-      
-      * For every {i} in {0..m-1} such that {i > q} or {M[i,i] == 0},
-      {Y[i,0..p-1]} will be equal to {-B[i,0..p-1]}.
-
-    If {total = TRUE}:
-    
-      * The result {r} is the number of rows {i < min(m,q)} such that
+      * The returned result {r} is the number of rows {i < min(m,q)} such that
       {lead(M,i) < q}.
     
       * If {j} in {0..q-1} is not {lead(M,i)} for any

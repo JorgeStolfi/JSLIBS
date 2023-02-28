@@ -1,4 +1,4 @@
-# Last edited on 2023-02-14 04:02:35 by stolfi
+# Last edited on 2023-02-27 19:46:36 by stolfi
 
 TEST_LIB := libdnaenc.a
 TEST_LIB_DIR := ../..
@@ -17,42 +17,46 @@ OTHER_LIBS := \
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 
 DATA_DIR := ${STOLFIHOME}/programs/c/DNA/DATA
-IN_DIR := ${DATA_DIR}/small/bas
+
+SOME_SEQS := \
+  small-old:SM_001542 \
+  small/bas:250B \
+  small/bas:1500A \
+  small/bas:2500A
 
 SMALL_SEQS := \
-  100A \
-  250A \
-  250B \
-  250E \
-  250E-in01 \
-  250E-in02 \
-  250E-in04 \
-  250E-in08 \
-  250E-mt01 \
-  250E-mt02 \
-  250E-mt04 \
-  250E-mt08 \
-  500A \
-  500A-in01 \
-  500A-in02 \
-  500A-in04 \
-  500A-in08 \
-  500A-mt01 \
-  500A-mt02 \
-  500A-mt04 \
-  500A-mt08 \
-  500B \
-  1500A \
-  2500A \
-  2500B \
-  2500C
+  small/bas:100A \
+  small/bas:250A \
+  small/bas:250B \
+  small/bas:250E \
+  small/bas:250E-in01 \
+  small/bas:250E-in02 \
+  small/bas:250E-in04 \
+  small/bas:250E-in08 \
+  small/bas:250E-mt01 \
+  small/bas:250E-mt02 \
+  small/bas:250E-mt04 \
+  small/bas:250E-mt08 \
+  small/bas:500A \
+  small/bas:500A-in01 \
+  small/bas:500A-in02 \
+  small/bas:500A-in04 \
+  small/bas:500A-in08 \
+  small/bas:500A-mt01 \
+  small/bas:500A-mt02 \
+  small/bas:500A-mt04 \
+  small/bas:500A-mt08 \
+  small/bas:500B \
+  small/bas:1500A \
+  small/bas:2500A \
+  small/bas:2500B \
+  small/bas:2500C
 
-# SEQS := SM_001542
-# SEQS := QQ_002489_s1
-# SEQS := /Dsimulans/Dsimulans_4-norm
-# SEQS := AF_018985-droso-1-norm
+# SEQS := small-old/bas:SM_001542
+# SEQS := small-old/bas:QQ_002489_s1
 
-SEQS := ${SMALL_SEQS}
+# SEQS := ${SMALL_SEQS}
+SEQS := ${SOME_SEQS}
 
 MAX_LEVEL := 11
 
@@ -85,9 +89,13 @@ run-all:
 # Recursive make - must define ${SEQ}
 ifneq "/${SEQ}" "/"        
 
-IN_NAME := ${IN_DIR}/${SEQ}
+ARGS := ${subst :, ,${SEQ}}
+IN_DIR :=  ${word 1, ${ARGS}}
+IN_NAME := ${word 2, ${ARGS}}
 
-OUT_NAME := out/${SEQ}-${INIT_WEIGHTS}-${INCR_WEIGHTS}
+IN_PREFIX := ${DATA_DIR}/${IN_DIR}/${IN_NAME}
+
+OUT_PREFIX := out/${IN_NAME}-${INIT_WEIGHTS}-${INCR_WEIGHTS}
 
 SHOWPS := gv
 VIEWEQS := dna_seq_view -resample 0.25 -seqFile
@@ -102,14 +110,14 @@ run-single: ${PROG}
           -plotSpectra \
           -plotSize ${PLOT_WIDTH} ${PLOT_HEIGHT} \
           -fontSize ${FONT_SIZE} \
-          ${IN_NAME} \
-          ${OUT_NAME}
+          ${IN_PREFIX} \
+          ${OUT_PREFIX}
 
-EPS_FILE_00 := ${OUT_NAME}-00.eps
-EPS_FILES := ${sort ${wildcard ${OUT_NAME}-??.eps} ${wildcard ${OUT_NAME}-??-f?.eps}}
+EPS_FILE_00 := ${OUT_PREFIX}-00.eps
+EPS_FILES := ${sort ${wildcard ${OUT_PREFIX}-??.eps} ${wildcard ${OUT_PREFIX}-??-f?.eps}}
 
-EQS_FILE_00 := ${OUT_NAME}-00.eqs
-EQS_FILES := ${sort ${wildcard ${OUT_NAME}-??.eqs}}
+EQS_FILE_00 := ${OUT_PREFIX}-00.eqs
+EQS_FILES := ${sort ${wildcard ${OUT_PREFIX}-??.eqs}}
 
 show-single: ${EPS_FILE_00}
 	@for psf in ${EPS_FILES} ; do \
@@ -122,9 +130,9 @@ view-single: ${EQS_FILE_00}
         done
   
 clean-single:: 
-	-/bin/rm -f ${OUT_NAME}-*.pgm ;
-	-/bin/rm -f ${OUT_NAME}-*.egs ;
-	-/bin/rm -f ${OUT_NAME}-*.eps ;
+	-/bin/rm -f ${OUT_PREFIX}-*.pgm ;
+	-/bin/rm -f ${OUT_PREFIX}-*.egs ;
+	-/bin/rm -f ${OUT_PREFIX}-*.eps ;
  
 endif
 # ======================================================================

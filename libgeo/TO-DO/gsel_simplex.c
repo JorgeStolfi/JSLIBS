@@ -1,4 +1,4 @@
-/* Last edited on 2021-06-09 20:13:27 by jstolfi */
+/* Last edited on 2023-02-27 08:15:20 by stolfi */
 /* TO FINISH !!! */
 
 #include <stdint.h>
@@ -284,10 +284,11 @@ void qms_project_simplex(int32_t m, int32_t n, double M[], double p[], double x[
         double ua[na];
         if (debug) { gsel_print_array(stderr, "%9.5f", "  subsystem:",  na, na+1, Ab, ""); }
         gsel_triangularize(na, na+1, Ab, TRUE, 0.0);
-        gsel_diagonalize(na, na+1, Ab, TRUE);
-        gsel_normalize(na, na+1, Ab, TRUE);
-        gsel_extract_solution(na, na+1, Ab, 1, ua, TRUE);
+        gsel_diagonalize(na, na+1, Ab);
+        gsel_normalize(na, na+1, Ab);
+        int32_t rank_ext = gsel_extract_solution(na, na+1, Ab, 1, ua);
         if (debug) { gsel_print_array(stderr, "%9.5f", "  subsystem's solution:",  na, 1, ua, ""); }
+        arrsert(rank_ext <= na);
         /* Unpack {ua} into {u}: */
         int32_t i;
         for (i = 0; i < n; i++)

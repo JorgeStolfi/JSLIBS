@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_aff_compare.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-19 19:03:10 by stolfi */ 
+/* Last edited on 2023-02-27 19:16:40 by stolfi */ 
 /* Created on 2020-09-26 by J. Stolfi, UNICAMP */
 
 #define taffc_COPYRIGHT \
@@ -83,7 +83,7 @@ hr2_pmap_t taffc_make_rotate_scale_map(double u, double v);
     radians and magnifies it by {S^v}, where {T = taffc_rotation_REF}
     and {S = taffc_scale_REF}. */
  
-#define taffc_stretch_REF (2.0)
+#define taffc_stretch_REF (1.2)
 hr2_pmap_t taffc_make_xy_stretch_map(double u, double v);
   /* Generates an affine map that scales {x} and {y} by {S^u}
     and {S^v}, respectively, where {S = taffc_stretch_REF}. */
@@ -170,7 +170,6 @@ hr2_pmap_t taffc_make_rotate_scale_map(double u, double v)
   {
     double R = taffc_rotation_REF;
     double S = taffc_scale_REF;
-    
     double ang = R*u;
     double scale = pow(S, v);
     hr2_pmap_t M = hr2_pmap_rotation_and_scaling(ang, scale);
@@ -180,8 +179,7 @@ hr2_pmap_t taffc_make_rotate_scale_map(double u, double v)
 hr2_pmap_t taffc_make_xy_stretch_map(double u, double v)
   {
     double S = taffc_stretch_REF;
-
-    r2_t scale = (r2_t){{ S*u, S*v }};
+    r2_t scale = (r2_t){{ pow(S,u), pow(S,v) }};
     hr2_pmap_t M = hr2_pmap_scaling(&scale);
     return M;
   }
@@ -189,13 +187,11 @@ hr2_pmap_t taffc_make_xy_stretch_map(double u, double v)
 hr2_pmap_t taffc_make_xy_shear_map(double u, double v)
   {
     double S = taffc_shear_REF;
-
     r2x2_t L;
     r2x2_ident(&L);
     L.c[0][1] = S*u;
     L.c[1][0] = S*v;
     r2_t disp = (r2_t){{ 0.0, 0.0 }};
-    
     hr2_pmap_t M = hr2_pmap_aff_from_mat_and_disp(&L, &disp);
     return M;
   }
@@ -228,7 +224,6 @@ void taffc_plot_square_mismatch
     hr2_pmap_t *A1,
     float_image_t *img2,
     hr2_pmap_t *A2,
-    
     int32_t NS,
     double uvMax,
     taffc_make_map_func_t *M

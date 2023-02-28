@@ -1,5 +1,5 @@
 /* See {dnae_sample.h}. */
-/* Last edited on 2022-10-31 09:41:34 by stolfi */
+/* Last edited on 2023-02-25 16:05:38 by stolfi */
 
 #define dnae_sample_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -14,6 +14,7 @@
 #include <vec.h>
 #include <bool.h>
 #include <affirm.h>
+#include <rn.h>
 
 #include <dnae_nucleic.h>
 #include <dnae_seq.h>
@@ -52,7 +53,7 @@ void dnae_decode_table_setup(void)
     assert(dnae_sample_enc_VALID_MIN + dnae_sample_enc_VALID_MAX == 0);
     
     int32_t N = dnae_sample_BIAS + dnae_sample_enc_VERY_MAX + 1;
-    double *tb = (double *)notnull(malloc(N*sizeof(double)), "no mem");
+    double *tb = rn_alloc(N);
     int32_t v; /* Must be {int32_t} and not {dnae_sample_t} to avoid overflow. */
     /* Fill the table with {NaN}s: */
     for (v = dnae_sample_enc_VERY_MIN; v <= dnae_sample_enc_VERY_MAX; v++)

@@ -2,7 +2,7 @@
 #define PROG_DESC "tests the ordered table search procedure"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2008-05-25 03:25:09 by stolfi */
+/* Last edited on 2023-02-25 16:08:01 by stolfi */
 /* Created on 2003-09-25 or earler by J. Stolfi, UNICAMP */
 
 #define test_tbfind_COPYRIGHT \
@@ -13,6 +13,7 @@
 #include <bool.h>
 #include <affirm.h>
 #include <jsrandom.h>
+#include <rn.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,7 +27,7 @@ double *make_exp_table(int n, double fMin, double fMax);
 void test_table(char *kind, int n, double *v, int nSteps, double fMin, double fMax);
 
 double *make_lin_table(int n, double fMin, double fMax)
-  { double *v = (double *)malloc(n*sizeof(double));
+  { double *v = rn_alloc(n);
     int i;
     for (i = 0; i < n; i++)
       { double r = ((double)i)/((double)(n-1));
@@ -36,7 +37,7 @@ double *make_lin_table(int n, double fMin, double fMax)
   }
 
 double *make_rnd_table(int n, double fMin, double fMax)
-  { double *v = (double *)malloc(n*sizeof(double));
+  { double *v = rn_alloc(n);
     int i;
     for (i = 0; i < n; i++)
       { double s = drandom();
@@ -48,7 +49,7 @@ double *make_rnd_table(int n, double fMin, double fMax)
   }
 
 double *make_exp_table(int n, double fMin, double fMax)
-  { double *v = (double *)malloc(n*sizeof(double));
+  { double *v = rn_alloc(n);
     double fBas = (fMin >= 0 ? 0 : fMin) - 0.001*(fMax - fMin);
     double h = log((fMax - fBas)/(fMin - fBas));
     int i;

@@ -1,5 +1,5 @@
 /* Control schematic of the Mazoni-Zabini IG-UNICAMP multifocus microscope */
-/* Last edited on 2022-10-20 06:52:25 by stolfi */
+/* Last edited on 2023-02-21 10:29:29 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -95,7 +95,7 @@ void miguec_draw_diagram(char *fname)
     double xv[10], yv[10];
     double xText, yText;
     double xADisp = xBSize/8, yADisp = yBSize/8; /* Displacement of arrows when there are 2 arrows. */
-    double xTDisp = xBSize/6, yTDisp = yBSize/6; /* Displacement of label rel to arrow. */
+    double /* xTDisp = xBSize/6, */ yTDisp = yBSize/6; /* Displacement of label rel to arrow. */
     
     xv[0] = xBMin + 0*xBStep - xADisp, yv[0] = yBMin + 1*yBStep + 0.5*yBSize;
     xv[1] = xv[0], yv[1] = yBMin + 2*yBStep + yADisp;

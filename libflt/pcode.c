@@ -1,25 +1,27 @@
 /* See pcode.h */
-/* Last edited on 2016-04-01 01:03:45 by stolfilocal */
+/* Last edited on 2023-02-22 20:43:18 by stolfi */
+
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <malloc.h>
+
+#include <jsfile.h>
+#include <affirm.h>
 
 #include <pcode.h>
-
-#include <affirm.h>
-#include <jsfile.h>
-
-#include <stdio.h>
-#include <malloc.h>
-#include <string.h>
-#include <stdlib.h>
 
 /*** INSTRUCTION INFO TABLE ***/
 
 typedef struct {
     pcode_op_t op;   /* The internal opcode */
     char *name;      /* The external opcode */
-    int has_arg;     /* TRUE if takes an argument */
-    int arg_is_reg;  /* TRUE if takes a register argument */
-    int stack_used;  /* Number of operands expected on stack */
-    int stack_delta; /* Number of entries added/removed from stack */
+    int32_t has_arg;     /* TRUE if takes an argument */
+    int32_t arg_is_reg;  /* TRUE if takes a register argument */
+    int32_t stack_used;  /* Number of operands expected on stack */
+    int32_t stack_delta; /* Number of entries added/removed from stack */
   } pcode_op_info_t;
   
 #define MAXOPCODE pcode_op_return
@@ -49,10 +51,20 @@ pcode_op_info_t pcode_op_info[MAXOPCODE+1] =
   
 char *pcode_parse_title(FILE *f, char **next_line);
 
-void pcode_parse_instr(char *s, pcode_op_info_t **opinfo, int *arg);
+void pcode_parse_instr(char *s, pcode_op_info_t **opinfo, int32_t *arg);
 
 /*** IMPLEMENTATIONS ***/
 
+void pcode_proc_null(pcode_proc_t *pc)
+  { pc->title  = NULL;
+    pc->nin    = 0;
+    pc->nout   = 0;
+    pc->nregs  = 0;
+    pc->nstack = 0;
+    pc->nops   = 0;
+    pc->code   = NULL;
+  }
+  
 pcode_proc_t pcode_parse (FILE *f)
   {
     pcode_proc_t proc;
@@ -67,16 +79,16 @@ pcode_proc_t pcode_parse (FILE *f)
 
     /* Parse instructions until RETURN: */
     { pcode_instr_t *pi;   /* The instructions read so far */
-      int ni = 0;          /* Current instruction count */
-      int mi = 10;         /* Current allocated size of $*pi$ */
+      int32_t ni = 0;          /* Current instruction count */
+      int32_t mi = 10;         /* Current allocated size of $*pi$ */
 
-      int top = -1;        /* Simulated top-of-stack */
-      int max_top = -1;    /* Simulated top-of-stack */
+      int32_t top = -1;        /* Simulated top-of-stack */
+      int32_t max_top = -1;    /* Simulated top-of-stack */
       
-      int max_reg_arg = -1;  /* Largest register number ever mentioned */
+      int32_t max_reg_arg = -1;  /* Largest register number ever mentioned */
       
       pcode_op_info_t *opinfo;
-      int arg;             
+      int32_t arg;             
 
       /* should check whether any reg is used before defined. */
 
@@ -149,10 +161,10 @@ char *pcode_parse_title(FILE *f, char **next_line)
     after the title. */
   { 
     char **t;      /* The title lines */
-    int nt = 0;    /* Number of title lines read */
-    int nc = 0;    /* Number of title characters read */
-    int maxt = 10; /* current allocated size of $t$ */
-    int i;
+    int32_t nt = 0;    /* Number of title lines read */
+    int32_t nc = 0;    /* Number of title characters read */
+    int32_t maxt = 10; /* current allocated size of $t$ */
+    int32_t i;
     char *p, *q, *s, *title;
 
     t = (char **)malloc(sizeof(char*)*maxt);
@@ -163,7 +175,7 @@ char *pcode_parse_title(FILE *f, char **next_line)
 	  { maxt *= 2; t = (char**) realloc((void*)t, sizeof(char*)*maxt); }
 	affirm(t != NULL, "pcode_parse_title: alloc failed");
 	t[nt++] = s;
-	nc += (int)strlen(s);
+	nc += (int32_t)strlen(s);
 	s = read_line(f);
       }
     *next_line = s;
@@ -182,10 +194,10 @@ char *pcode_parse_title(FILE *f, char **next_line)
     return(title);
   }
   
-void pcode_parse_instr(char *s, pcode_op_info_t **opinfo, int *arg)
+void pcode_parse_instr(char *s, pcode_op_info_t **opinfo, int32_t *arg)
   {
     pcode_op_info_t *info;
-    int iarg;
+    int32_t iarg;
     char *tok;
     
     /* get and decode the opcode: */
@@ -194,7 +206,7 @@ void pcode_parse_instr(char *s, pcode_op_info_t **opinfo, int *arg)
       { *opinfo = NULL; *arg = 0; return; }
     
     /* decode the opcode */
-    { int j;
+    { int32_t j;
       for (j=0; (j <= MAXOPCODE) && (strcmp(tok, pcode_op_info[j].name) != 0); j++) { }
       affirm(j <= MAXOPCODE, "pcode_parse_instr: invalid op code");
       info = &(pcode_op_info[j]);
@@ -222,8 +234,8 @@ void pcode_parse_instr(char *s, pcode_op_info_t **opinfo, int *arg)
 void pcode_print (FILE *f, pcode_proc_t proc)
   { pcode_op_info_t *opinfo;
     pcode_op_t op;
-    int arg; 
-    int i = 0;
+    int32_t arg; 
+    int32_t i = 0;
     fprintf(f, "%s\n", proc.title);
     do
       { op = proc.code[i].op;

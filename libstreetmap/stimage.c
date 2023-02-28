@@ -1,5 +1,5 @@
 /* See stimage.h */
-/* Last edited on 2022-10-20 07:45:56 by stolfi */
+/* Last edited on 2023-02-25 16:10:54 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -16,6 +16,7 @@
 #include <uint16_image.h>
 #include <uint16_image_read_pnm.h>
 #include <uint16_image_write_pnm.h>
+#include <rn.h>
 
 #include <stmap.h>
 #include <stimage.h>
@@ -47,7 +48,7 @@ DataImage *st_image_new
     img->mmYLo = mmYLo;
     /* Compute image size: */
     int32_t ns = nx*ny;
-    img->d = (double*)malloc(ns*sizeof(double));
+    img->d = rn_alloc(ns);
     affirm(img->d != NULL, "out of mem");
     int32_t i;
     for (i = 0; i < ns; i++) { img->d[i] = 0; }
@@ -119,7 +120,7 @@ double st_image_interpolate(DataImage *img, double x, double y)
 DataImage *st_image_blur(DataImage *img, double rad)
   { /* Compute a unidimensional Gaussian with variance {rad^2/2}: */
     int32_t nr = (int32_t)ceil(3.0*rad*1000/img->mmStep);
-    double *mask = (double *)malloc((nr+1)*sizeof(double));
+    double *mask = rn_alloc(nr+1);
     double S = rad*rad/2.0;
     int32_t i;
     for (i = 0; i <= nr; i++) 

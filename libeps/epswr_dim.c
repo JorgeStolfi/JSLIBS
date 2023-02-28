@@ -1,5 +1,5 @@
 /* See epswr_dim.h */
-/* Last edited on 2020-10-27 17:02:45 by jstolfi */
+/* Last edited on 2023-02-19 22:29:03 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -39,12 +39,12 @@ void epswr_dim_linear
     double psagap; epswr_xy_to_hv_dist(eps, agap, &(psagap));
     double psbgap; epswr_xy_to_hv_dist(eps, bgap, &(psbgap));
 
-    double pselen = elen * epswr_mm;
+    double pselen = elen * epswr_pt_per_mm;
     
-    double psdpos = dpos * epswr_mm;
-    double psdlen = dlen * epswr_mm;
-    double pshoff = hoff * epswr_mm;
-    double psvoff = voff * epswr_mm;
+    double psdpos = dpos * epswr_pt_per_mm;
+    double psdlen = dlen * epswr_pt_per_mm;
+    double pshoff = hoff * epswr_pt_per_mm;
+    double psvoff = voff * epswr_pt_per_mm;
     if (dabP != NULL) { (*dabP) = dab; }
     double psxr, psyr;
     epswr_dev_dim_linear

@@ -1,4 +1,4 @@
-/* Last edited on 2011-12-25 01:46:09 by stolfi */
+/* Last edited on 2023-02-20 06:22:57 by stolfi */
 
 #include <delaunay.h>
 #include <delaunay_plot.h>
@@ -6,7 +6,7 @@
 
 #include <quad.h>
 #include <affirm.h>
-#include <pswr.h>
+#include <epswr.h>
 #include <jsrandom.h>
 
 #include <stdio.h>
@@ -22,30 +22,45 @@
 
 #define MC (delaunay_MAX_COORD)
 
-delaunay_site_t *makesites(int nsites, bool_t normal);
+delaunay_site_t *makesites(int32_t nsites, bool_t normal);
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
-int main(int argc, char **argv)
-  { int nsites = atoi(argv[1]);
-    bool_t normal = (strcmp(argv[2], "normal") == 0);
-    bool_t eps = (strcmp(argv[3], "eps") == 0);
-    quad_arc_t e;
+int32_t main(int32_t argc, char **argv)
+  { int32_t nsites = atoi(argv[1]);
+    char *distr = argv[2];
+    bool_t normal = (strcmp(distr, "normal") == 0);
+    
     fprintf(stderr, "Creating %d sites...\n", nsites);
     delaunay_site_t *st = makesites(nsites, normal);
+
     fprintf(stderr, "Building delaunay...\n");
-    e = delaunay_build (st, nsites);
+    quad_arc_t e = delaunay_build (st, nsites);
+    
     fprintf(stderr, "Plotting delaunay...\n");
-    plot_delaunay(e, st, nsites, "out/delrandom", eps);
+    
+    char *prefix = "out/delrandom";
+    char *tag = distr;
+    int32_t capLines = 2;
+    epswr_figure_t *eps = delaunay_plot_new_figure(prefix, tag, capLines, st, nsites); 
+    
+    epswr_text(eps, "Delaunay and Voronoi", FALSE, 0.5, TRUE, FALSE);
+    char *capt2 = NULL;
+    asprintf(&capt2, "%s random sites", distr);
+    epswr_text(eps, capt2, FALSE, 0.5, TRUE, FALSE);
+    free(capt2);
+
+    delaunay_plot_diagram(eps, e, st, nsites);
+    epswr_end_figure(eps);
     return(0);
   }
 
-delaunay_site_t *makesites(int nsites, bool_t normal)
+delaunay_site_t *makesites(int32_t nsites, bool_t normal)
   { delaunay_site_t *st = notnull(malloc(nsites*sizeof(delaunay_site_t)), "no mem");
     
     srandom(4615);
 
-    int k;
+    int32_t k;
     for (k=0; k < nsites; k++) 
       { st[k].index = k;
         /* Generate a random point {p} in the square {[-1 _ =1]^2}: */
@@ -53,7 +68,7 @@ delaunay_site_t *makesites(int nsites, bool_t normal)
         if (normal) 
           { /* Central limit approx to normal distribuition: */
             double s = 0, t = 0;
-            int j;
+            int32_t j;
             for (j=0; j<NTOSS; j++)
               { s += 2 * (drandom() - 0.5);
                 t += 2 * (drandom() - 0.5);

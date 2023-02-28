@@ -1,28 +1,29 @@
-/* See FBas.h
-**
-** Last edited on 2012-12-15 09:42:05 by stolfilocal
-**
-** Copyright © 2003 by Jorge Stolfi and Anamaria Gomide, the
-** University of Campinas, Brazil. See the rights and conditions
-** notice at the end of this file.
-*/
+/* See FBas.h */
+/* Last edited on 2023-02-27 08:15:38 by stolfi */
+/* Copyright © 2003 by Jorge Stolfi and Anamaria Gomide, the
+  University of Campinas, Brazil. See the rights and conditions
+  notice at the end of this file. */
 
-#include <FBas.h>
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
 #include <stdint.h>
+#include <assert.h>
+   
+#include <jsstring.h> 
+#include <affirm.h> 
+#include <fget.h>
+#include <nget.h>
+#include <filefmt.h>
+#include <gauss_elim.h>
+#include <rmxn.h>
+#include <rn.h>
+#include <bool.h> 
+
 #include <FBasPoly2.h>
 
-#include <bool.h> 
-#include <rn.h>
-#include <gauss_elim.h>
-#include <filefmt.h>
-#include <nget.h>
-#include <fget.h>
-#include <affirm.h> 
-#include <jsstring.h> 
-    
-#include <stdlib.h>
-#include <math.h>
-#include <stdio.h>
+#include <FBas.h>
 
 #define T FBas
 
@@ -186,14 +187,15 @@ void FBas_Fit
     /* Solve system: */   
     if (FBas_Debug) { FBas_PrintSystem(ne, nc, A, nb); }
     gsel_triangularize(ne, nc, A, TRUE, 0.0);
-    gsel_diagonalize(ne, nc, A, TRUE);
-    gsel_normalize(ne, nc, A, TRUE);
+    gsel_diagonalize(ne, nc, A);
+    gsel_normalize(ne, nc, A);
     if (FBas_Debug) { FBas_PrintSystem(ne, nc, A, nb); }
 
     /* Extract solution: */
     int32_t nx = nc - dv;
     double X[nx*dv];
-    gsel_extract_solution(ne, nc, A, dv, X, TRUE);
+    int32_t rank_ext = gsel_extract_solution(ne, nc, A, dv, X);
+    assert(rank_ext <= ne);
     free(A);
 
     if(FBas_Debug)
@@ -247,7 +249,7 @@ void FBas_BuildLeastSquaresSystem
     int32_t nx = nb;       /* Total number of unknowns (coeffs). */ 
     int32_t ne = nx;       /* Total number of equations. */
     int32_t nc = nx + dv;  /* Total number of cols in the {A} matrix. */
-    double *A = (double *)malloc(ne*nc*sizeof(double));
+    double *A = rmxn_alloc(ne,nc);
     affirm(A != NULL, "out of mem");
     
     /* The total energy {E} of a set of coefficients {W[0..nb-1]} is
@@ -309,7 +311,7 @@ void FBas_BuildInterpolationSystem
     int32_t nx = nb + nm;     /* Total number of unknowns (coeffs + lambdas). */
     int32_t ne = nx;          /* Total number of equations. */
     int32_t nc = nx + dv;   /* Total number of cols in the {A} matrix. */
-    double *A = (double *)malloc(ne*nc*sizeof(double));
+    double *A = rmxn_alloc(ne,nc);
     affirm(A != NULL, "out of mem");
 
     /* The first {nb} equations are energy minimization conditions. */

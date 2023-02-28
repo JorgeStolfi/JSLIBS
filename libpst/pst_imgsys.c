@@ -2,7 +2,7 @@
 
 /* Created on 2005-10-01 by Jorge Stolfi, unicamp, <stolfi@dcc.unicamp.br> */
 /* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2013-05-24 04:29:49 by stolfilocal */
+/* Last edited on 2023-02-25 16:09:50 by stolfi */
 /* See the copyright and authorship notice at the end of this file.  */
 
 
@@ -12,12 +12,14 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include <pst_imgsys.h>
+#include <rn.h>
+#include <affirm.h>
+#include <float_image_mscale.h>
+#include <float_image.h>
+
 #include <pst_height_map.h>
 
-#include <float_image.h>
-#include <float_image_mscale.h>
-#include <affirm.h>
+#include <pst_imgsys.h>
 
 double pst_imgsys_sol_change(double *Zold, double *Z, int N);
   /* Returns the maximum of {abs(Zold[k]-Z[k])}, for {k = 0..N-1}. */
@@ -69,7 +71,7 @@ void pst_imgsys_solve
     int N = S->N;
 
     /* Previous solution: */
-    double *Zold = (double*)malloc(sizeof(double)*N);
+    double *Zold = rn_alloc(N);
     
     int iter;
     double change = +INF;  /* Max {Z} change in last iteration. */

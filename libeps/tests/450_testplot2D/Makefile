@@ -1,4 +1,4 @@
-# Last edited on 2021-06-26 22:02:39 by jstolfi
+# Last edited on 2023-02-27 20:15:52 by stolfi
 
 PROG := testplot2D
   
@@ -8,6 +8,7 @@ TEST_LIB_DIR := ../..
 JS_LIBS := \
   libeps.a \
   libimg.a \
+  libgeo.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
@@ -28,6 +29,8 @@ PSVIEW = evince
         
 run: ${PROG} show-eps
 	-rm -rf ${EPSFILES}
+
+${EPSFILES}: ${PROG} Makefile 
 	${PROG}
 
 show-eps: ${EPSFILES}        

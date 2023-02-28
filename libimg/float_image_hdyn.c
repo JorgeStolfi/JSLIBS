@@ -1,5 +1,5 @@
 /* See {float_image_hdyn.h}. */
-/* Last edited on 2013-10-20 23:06:11 by stolfilocal */
+/* Last edited on 2023-02-26 03:59:09 by stolfi */
 
 #define _GNU_SOURCE
 #include <assert.h>
@@ -514,8 +514,9 @@ void float_image_hdyn_solve_diff_eqs
     
     /* Solve the system: */
     if (verbose) { fprintf(stderr, "solving the linear system...\n"); }
-    gsel_solve(N, N, A, 1, B, X, 0.0);
-    
+    int32_t rank = gsel_solve(N, N, A, 1, B, X, 0.0);
+    demand(rank == N, "indeterminate system");
+        
     free(B);
     free(A);
   }

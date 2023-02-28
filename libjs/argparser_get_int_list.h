@@ -1,5 +1,5 @@
 /* argparser_get_int_list.h -- Parsing lists of integers from command line. */
-/* Last edited on 2023-02-11 09:50:25 by stolfi */
+/* Last edited on 2023-02-21 10:04:01 by stolfi */
 
 #ifndef argparser_get_int_list_H
 #define argparser_get_int_list_H
@@ -16,7 +16,7 @@
 
 int64_vec_t argparser_get_int_list(argparser_t *pp, int32_t n_max, char *key, int64_t min, int64_t max);
   /* Parses all (zero or more) unparsed occurrences of the keyword
-    {key}, not necessarily in consecutive positions. Each keyword must
+    {key}, not necessarily in consecutive positions, in order. Each keyword must
     be followed by one or more non-keyword arguments, and each of these should be an
     integer, an integer range "{a}-{b}" or "{a}..{b}", or one or more
     integers or ranges separated by commas. The integers thus specified,

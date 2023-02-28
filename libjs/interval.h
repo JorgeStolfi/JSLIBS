@@ -2,7 +2,7 @@
 #define interval_H
 
 /* Intervals with {double} endpoints. */
-/* Last edited on 2021-12-31 23:44:51 by stolfi */ 
+/* Last edited on 2023-02-18 21:53:18 by stolfi */ 
 
 /* Should be merged with (or replaced by) {ia.h}. */
  
@@ -29,6 +29,7 @@
 #undef __STRICT_ANSI__
 #define _ISOC99_SOURCE 1
 
+#include <stdio.h>
 #include <jsmath.h>
 
 typedef struct interval_t { double end[2]; } interval_t;

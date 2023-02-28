@@ -2,7 +2,7 @@
 #define PROG_DESC "tests {sve_minn.h} on an image matching problem"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-30 19:35:26 by stolfi */
+/* Last edited on 2023-02-27 10:49:54 by stolfi */
 
 #define test_sve_img_match_C_COPYRIGHT "Copyright © 2009 by the State University of Campinas (UNICAMP)"
 
@@ -133,7 +133,7 @@ typedef struct options_t
     char *obj;        /* Object image (to be sought). */
     char *msk;        /* Mask image for {obj}. */
     char *outPrefix;  /* Prefix for output file names.*/
-    int shrink;       /* Image reduction factor, or 1 if none. */
+    int32_t shrink;       /* Image reduction factor, or 1 if none. */
     /* Initial guess parameters of {obj} relative to {img}: */
     r2_t center;      /* Center position, or {(NAN,NAN)} to mean center of {img}. */
     double angle;     /* Rotation angle (degrees ccw). */
@@ -148,12 +148,12 @@ typedef struct options_t
 
 /* INTERNAL PROTOTYPES */
 
-int main (int argc, char **argv);
+int32_t main (int32_t argc, char **argv);
 
-options_t *get_options(int argc, char **argv);
+options_t *get_options(int32_t argc, char **argv);
   /* Parses the command-line options. */
 
-float_image_t *read_input_image(char *img_name, int shrink, int *NCP, int *NXP, int *NYP);
+float_image_t *read_input_image(char *img_name, int32_t shrink, int32_t *NCP, int32_t *NXP, int32_t *NYP);
   /* If {img_name} is NULL, returns NULL. 
   
     Otherwise reads an FNI image from file "{img_name}", and shrinks it
@@ -161,17 +161,17 @@ float_image_t *read_input_image(char *img_name, int shrink, int *NCP, int *NXP, 
     number of channels {NC} in the image; otherwise requires {*NCP ==
     NC}. Ditto for {*NXP} and {NYP}. */
 
-float_image_t *shrink_image(float_image_t *A, int shrink);
+float_image_t *shrink_image(float_image_t *A, int32_t shrink);
   /* Returns a copy of image {A} shrunk by the factor {1/shrink}. */
 
 void initial_matrices
-  ( int NXO, 
-    int NYO, 
+  ( int32_t NXO, 
+    int32_t NYO, 
     double mag, 
     double ang, 
     r2_t ctr, 
-    int NXI, 
-    int NYI,
+    int32_t NXI, 
+    int32_t NYI,
     r3x3_t *P,
     r3x3_t *Q
   );
@@ -195,14 +195,14 @@ double mismatch(float_image_t *img, float_image_t *obj, float_image_t *msk, r3x3
     {obj} (which must be the domain of {msk}), and {A} is the area of
     that domain. */
 
-int num_parameters(adjust_options_t *adop);
+int32_t num_parameters(adjust_options_t *adop);
   /* The number of parameters neeeded to specify a particular matrix in 
     the class of matrices allowed by {adop}. */
 
 void param_to_matrix
   ( r3x3_t *P, 
     adjust_options_t *adop, 
-    int n, 
+    int32_t n, 
     double x[], 
     r3x3_t *Q,
     r3x3_t *M, 
@@ -256,20 +256,20 @@ void write_matched_object_images
 
 /* IMPLEMENTATIONS */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   { options_t *o = get_options(argc, argv);
   
     /* Read the target image {img}: */
-    int NC = -1; /* Number of channels in {img,obj}. */
-    int NXI = -1, NYI = -1; /* Size of {img}. */
+    int32_t NC = -1; /* Number of channels in {img,obj}. */
+    int32_t NXI = -1, NYI = -1; /* Size of {img}. */
     float_image_t *img = read_input_image(o->img, o->shrink, &NC, &NXI, &NYI);
     
     /* Read the object image {obj}: */
-    int NXO = -1, NYO = -1; /* Size of {obj} and {msk}. */
+    int32_t NXO = -1, NYO = -1; /* Size of {obj} and {msk}. */
     float_image_t *obj = read_input_image(o->obj, o->shrink, &NC, &NXO, &NYO);
 
     /* Read or manufacture the mask image {msk} for {obj}: */
-    int NCM = 1;  /* Number of channels in {msk}. */
+    int32_t NCM = 1;  /* Number of channels in {msk}. */
     float_image_t *msk = read_input_image(o->msk, o->shrink, &NCM, &NXO, &NYO);
     if (msk == NULL) 
       { msk = float_image_new(1, NXO, NYO); 
@@ -280,7 +280,7 @@ int main (int argc, char **argv)
     if (o->shrink != 1) { r2_scale(1/((double)o->shrink), &(o->center), &(o->center)); }
     
     float bgrf[NC]; /* Background pixel value for output images. */
-    int c; for (c = 0; c < NC; c++) { bgrf[c] = 0.5; }
+    for (int32_t c = 0; c < NC; c++) { bgrf[c] = 0.5; }
     
     /* Compute the left and right matrices {Q,P}: */
     r3x3_t P, Q;
@@ -301,7 +301,7 @@ int main (int argc, char **argv)
     return (0);
   }
 
-float_image_t *read_input_image(char *img_name, int shrink, int *NCP, int *NXP, int *NYP)
+float_image_t *read_input_image(char *img_name, int32_t shrink, int32_t *NCP, int32_t *NXP, int32_t *NYP)
   {
     if ((img_name == NULL) || (strlen(img_name) == 0))
       { return NULL; }
@@ -315,9 +315,9 @@ float_image_t *read_input_image(char *img_name, int shrink, int *NCP, int *NXP, 
             img = red;
           }
         /* Get/check dimensions: */
-        int NC = (int)img->sz[0];
-        int NX = (int)img->sz[1];
-        int NY = (int)img->sz[2];
+        int32_t NC = (int32_t)img->sz[0];
+        int32_t NX = (int32_t)img->sz[1];
+        int32_t NY = (int32_t)img->sz[2];
         if ((*NCP) == -1) { (*NCP) = NC; } else { demand((*NCP) == NC, "invalid channel count"); }
         if ((*NXP) == -1) { (*NXP) = NX; } else { demand((*NXP) == NX, "invalid column count"); }
         if ((*NYP) == -1) { (*NYP) = NY; } else { demand((*NYP) == NY, "invalid row count"); }
@@ -325,46 +325,44 @@ float_image_t *read_input_image(char *img_name, int shrink, int *NCP, int *NXP, 
       }
   }
 
-float_image_t *shrink_image(float_image_t *A, int shrink)
+float_image_t *shrink_image(float_image_t *A, int32_t shrink)
   { 
     demand(shrink >= 1, "invalid reduction factor");
 
     /* Generate the 1D weight mask: */
-    int nw = 3*shrink;
+    int32_t nw = 3*shrink;
     double wt[nw];
     bool_t norm = TRUE;
     wt_table_fill_hann(nw, wt, norm);
     
     /* Get the image dimensions: */
-    int NC  = (int)A->sz[0];
-    int NXA = (int)A->sz[1];
-    int NYA = (int)A->sz[2];
+    int32_t NC  = (int32_t)A->sz[0];
+    int32_t NXA = (int32_t)A->sz[1];
+    int32_t NYA = (int32_t)A->sz[2];
 
     /* Create the output image {R}: */
-    int NXR = (NXA + shrink - 1)/shrink;
-    int NYR = (NYA + shrink - 1)/shrink;
+    int32_t NXR = (NXA + shrink - 1)/shrink;
+    int32_t NYR = (NYA + shrink - 1)/shrink;
     float_image_t *R = float_image_new(NC, NXR, NYR);
     
     /* Fill the pixels of {R}: */
-    int xR, yR, c;
-    for(yR = 0; yR < NYR; yR++)
-      { for(xR = 0; xR < NXR; xR++)
+    for (int32_t yR = 0; yR < NYR; yR++)
+      { for (int32_t xR = 0; xR < NXR; xR++)
           { /* Accumulate the weighted pixel sum over the window: */
             double sum_w = 0;    /* Sum of weights. */
             double sum_w_v[NC];  /* Sum of weighted pixels. */
-            for (c = 0; c < NC; c++) { sum_w_v[c] = 0; }
-            int xD, yD;
-            for(yD = 0; yD < nw; yD++)
-              { int yA = shrink*yR - shrink + yD;
+            for (int32_t c = 0; c < NC; c++) { sum_w_v[c] = 0; }
+            for (int32_t yD = 0; yD < nw; yD++)
+              { int32_t yA = shrink*yR - shrink + yD;
                 double wty = ((yA < 0) || (yA >= NYA) ? 0.0 : wt[yD]);
-                for(xD = 0; xD < nw; xD++)
-                  { int xA = shrink*xR - shrink + xD;
+                for (int32_t xD = 0; xD < nw; xD++)
+                  { int32_t xA = shrink*xR - shrink + xD;
                     double wtx = ((xA < 0) || (xA >= NXA) ? 0.0 : wt[xD]);
                     double w = wtx*wty;
                     if (w > 0)
                       { /* Multiply by the mask weight, if any: */
                         sum_w += w; 
-                        for (c = 0; c < NC; c++)
+                        for (int32_t c = 0; c < NC; c++)
                           { double v = float_image_get_sample(A, c, xA, yA);
                             sum_w_v[c] += w*v;
                           }
@@ -383,13 +381,13 @@ float_image_t *shrink_image(float_image_t *A, int shrink)
   }
 
 void initial_matrices
-  ( int NXO, 
-    int NYO, 
+  ( int32_t NXO, 
+    int32_t NYO, 
     double mag, 
     double ang, 
     r2_t ctr, 
-    int NXI, 
-    int NYI,
+    int32_t NXI, 
+    int32_t NYI,
     r3x3_t *P,
     r3x3_t *Q
   )
@@ -444,17 +442,17 @@ void find_best_matrix
     char *outPrefix
   )
   { 
-    int NXO = (int)obj->sz[1];
-    int NYO = (int)obj->sz[2];
+    int32_t NXO = (int32_t)obj->sz[1];
+    int32_t NYO = (int32_t)obj->sz[2];
     
-    int nx = num_parameters(adop); /* Number of degrees of freedom in matrix. */
+    int32_t nx = num_parameters(adop); /* Number of degrees of freedom in matrix. */
     
     bool_t plot_goal = TRUE;
     
-    auto double F(int n, double x[]); 
+    auto double F(int32_t n, double x[]); 
       /* The goal function for uptimization.  Also sets {M} to the corresp. matrix. */
       
-    double F(int n, double x[])
+    double F(int32_t n, double x[])
       { assert(n == nx);
         r3x3_t MM;
         param_to_matrix(P, adop, n, x, Q, &MM, FALSE);
@@ -465,12 +463,12 @@ void find_best_matrix
       
     double xPrev[nx]; /* Parameter vector in previous call of {OK} function. */
     r3x3_t MPrev;     /* Matrix in previous call of  {OK} function. */
-    int nok = 0;      /* Counts iterations (actually, calls to {OK}). */
+    int32_t nok = 0;      /* Counts iterations (actually, calls to {OK}). */
     
-    auto bool_t OK(int n, double x[], double Fx); 
+    auto bool_t OK(int32_t n, double x[], double Fx); 
       /* Acceptance criterion function. */
       
-    bool_t OK(int n, double x[], double Fx)
+    bool_t OK(int32_t n, double x[], double Fx)
       { assert(n == nx);
         fprintf(stderr, "\n");
         fprintf(stderr, "iteration %d matrix:\n", nok);
@@ -493,7 +491,7 @@ void find_best_matrix
     double xx[nx];     /* Initial guess and final solution. */
 
     /* Start with the null paramenter vector, which should be the identity matrix: */
-    { int ix; for (ix = 0; ix < nx; ix++) { xx[ix] = 0.0; } }
+    { int32_t ix; for (ix = 0; ix < nx; ix++) { xx[ix] = 0.0; } }
 
     fprintf(stderr, "initial matrix:\n");
     param_to_matrix(P, adop, nx, xx, Q, M, TRUE);
@@ -511,12 +509,12 @@ void find_best_matrix
         double rIni = 0.25*dMax;
         double stop = 0.0001*rMin;
         sign_t dir = -1;
-        int maxIters = 100;
+        int32_t maxIters = 100;
         bool_t debugMinn = TRUE;
         
         if (plot_goal)
           { /* Plot goal function: */
-            int NSteps = 30;
+            int32_t NSteps = 30;
             double Rad = rIni;
             char *fname = NULL;
             asprintf(&fname, "%s-f2-plot.txt", outPrefix);
@@ -553,9 +551,9 @@ void write_matched_object_images
   )
   {
     /* Get/check the input image dimensions: */
-    int NC  = (int)img->sz[0];                    /* Number of channels of {img,obj}. */
-    int NXI = (int)img->sz[1], NYI = (int)img->sz[2]; /* Size of {img}. */
-    int NXO = (int)obj->sz[1], NYO = (int)obj->sz[2]; /* Size of {obj} and {msk}. */
+    int32_t NC  = (int32_t)img->sz[0];                    /* Number of channels of {img,obj}. */
+    int32_t NXI = (int32_t)img->sz[1], NYI = (int32_t)img->sz[2]; /* Size of {img}. */
+    int32_t NXO = (int32_t)obj->sz[1], NYO = (int32_t)obj->sz[2]; /* Size of {obj} and {msk}. */
 
     assert(msk != NULL);
     assert(obj->sz[0] == NC);
@@ -574,12 +572,12 @@ void write_matched_object_images
     float_image_t *obj_out = float_image_new(NC, NXI, NYI);
     float_image_t *msk_out = float_image_new(1,  NXI, NYI);
     
-    int order = 1;                             /* C1 bicubic interpolation. */
+    int32_t order = 1;                             /* C1 bicubic interpolation. */
     ix_reduction_t red = ix_reduction_SINGLE;  /* Index reduction method. */
     float imgf[NC];                            /* Pixel from {img}, unmapped. */
     float objf[NC];                            /* Pixel from {obj} mapped by {M}. */
     float mskf;                                /* Sample from {msk} mapped by {M}. */
-    int ic, ix, iy;
+    int32_t ic, ix, iy;
     for (iy = 0; iy < NYI; iy++)
       for (ix = 0; ix < NXI; ix++)
         { /* Get the (mapped) mask value {mskf[0]} for the output pixel {ix,iy}: */
@@ -614,8 +612,7 @@ void write_matched_object_images
         }
         
     /* Write the images: */
-    int it;
-    for (it = 0; it < 3; it++)
+    for (int32_t it = 0; it < 3; it++)
       { /* Write image number {it}: */
         char *tag = ((char*[]){ "img", "obj", "msk" })[it];
         float_image_t *out = ((float_image_t *[]){ img_out, obj_out, msk_out })[it];
@@ -639,8 +636,8 @@ void write_matched_object_images
       }
   }
 
-int num_parameters(adjust_options_t *adop)
-  { int n = 0;
+int32_t num_parameters(adjust_options_t *adop)
+  { int32_t n = 0;
 
     if (adop->translate) 
       { n += 2;}
@@ -662,14 +659,14 @@ int num_parameters(adjust_options_t *adop)
 void param_to_matrix
   ( r3x3_t *P, 
     adjust_options_t *adop, 
-    int n, 
+    int32_t n, 
     double x[], 
     r3x3_t *Q,
     r3x3_t *M, 
     bool_t verbose
   )
   { r3x3_t A; r3x3_ident(&A);
-    int k = 0;
+    int32_t k = 0;
     
     if (adop->translate) 
       { /* Translation terms: */
@@ -753,8 +750,8 @@ double mismatch
   )
   {
     /* Get/check the input image dimensions: */
-    int NC  = (int)img->sz[0];  /* Number of channels of {img,obj}. */
-    int NXO = (int)obj->sz[1], NYO = (int)obj->sz[2]; /* Size of {obj} and {msk}. */
+    int32_t NC  = (int32_t)img->sz[0];  /* Number of channels of {img,obj}. */
+    int32_t NXO = (int32_t)obj->sz[1], NYO = (int32_t)obj->sz[2]; /* Size of {obj} and {msk}. */
 
     assert(msk != NULL);
     assert(obj->sz[0] == NC);
@@ -765,18 +762,17 @@ double mismatch
     auto void map_obj_to_img(r2_t *p, r2x2_t *J);
       /* Maps a point {p} of {obj} and {msk} domain to the corresponding point in {img} domain. */ 
       
-    int order = 1; /* C1 bicubic interpolation. */
+    int32_t order = 1; /* C1 bicubic interpolation. */
     ix_reduction_t red = ix_reduction_SINGLE;
     float undef = 0.5;
     bool_t avg = TRUE;
 
     float objf[NC];
     float imgf[NC];
-    int ic, ix, iy;
     double sumw = 0;
     double sumwd2 = 0;
-    for (iy = 0; iy < NYO; iy++)
-      for (ix = 0; ix < NXO; ix++)
+    for (int32_t iy = 0; iy < NYO; iy++)
+      for (int32_t ix = 0; ix < NXO; ix++)
         { /* Get pixel {ix,iy} of {obj} in {objf[0..NC-1]} and of {msk} in {mskf[0]}: */
           float_image_get_pixel(obj, ix, iy, objf);
           float mskf = float_image_get_sample(msk, 0, ix, iy);
@@ -786,7 +782,7 @@ double mismatch
               float_image_transform_get_pixel
                 ( img, red, ix, iy, &map_obj_to_img, undef, avg, order, imgf, debug_pix );
               /* Accumulate square diff: */
-              for (ic = 0; ic < NC; ic++)
+              for (int32_t ic = 0; ic < NC; ic++)
                 { if (! isnan(imgf[ic]))
                     { double d = ((double)imgf[ic]) - ((double)objf[ic]);
                       sumw += mskf;
@@ -805,7 +801,7 @@ double mismatch
       }
   }    
 
-options_t *get_options(int argc, char **argv)
+options_t *get_options(int32_t argc, char **argv)
   { argparser_t *pp = argparser_new(stderr, argc, argv);
     options_t *o = notnull(malloc(sizeof(options_t)), "no mem");
     
@@ -839,7 +835,7 @@ options_t *get_options(int argc, char **argv)
       { o->scale = 1.0; }
     
     if (argparser_keyword_present(pp, "-shrink"))
-      { o->shrink = (int)argparser_get_next_int(pp, 1, 100000); }
+      { o->shrink = (int32_t)argparser_get_next_int(pp, 1, 100000); }
     else
       { o->shrink = 1; }
     

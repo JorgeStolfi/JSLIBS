@@ -1,5 +1,5 @@
 /* See {rfn.h}. */
-/* Last edited on 2021-08-20 16:16:40 by stolfi */
+/* Last edited on 2023-02-27 08:16:40 by stolfi */
 /* Based on VectorN.mg, created  95-02-27 by J. Stolfi. */
 
 /* !!! We should use Kahan's summation for all scalar products. */
@@ -9,8 +9,10 @@
 #include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include <rn.h>
+#include <rmxn.h>
 #include <bool.h>
 #include <jsrandom.h>
 #include <jsmath.h>
@@ -249,14 +251,14 @@ double rfn_angle (int32_t n, float *a, float *b)
 
 void rfn_cross (int32_t n, float **a, float *r)
   { int32_t nn1 = (n-1)*n; int32_t t;
-    double *C = (double *)notnull(malloc(nn1*sizeof(double)), "no mem for C");
+    double *C = rmxn_alloc(n-1,n);
     t = 0;
     for (int32_t i = 0; i < n-1; i++) 
       { float *ai = a[i]; 
         for (int32_t j = 0; j < n; j++) { C[t] = (double)ai[j]; t++; }
       }
     gsel_triangularize(n-1, n, C, TRUE, 0.0);
-    gsel_diagonalize(n-1, n, C, TRUE);
+    gsel_diagonalize(n-1, n, C);
     /* If {det(C)} is not zero, set {d = det(C)}, {izer = -1}.
       Else set {izer} to the first zero column in {C}, and 
       set {d} to the determinant of {C} excluding that column. */
@@ -286,14 +288,13 @@ void rfn_cross (int32_t n, float **a, float *r)
 double rfn_det (int32_t n, float **a)
   { int32_t n2 = n*n; int32_t t;
     t = 0;
-    double *C = (double *)notnull(malloc(n2*sizeof(double)), "no mem for C");
-    double d;
+    double *C = rmxn_alloc(n,n);
     for (int32_t i = 0; i < n; i++) 
       { float *ai = a[i]; 
         for (int32_t j = 0; j < n; j++) { C[t] = (double)ai[j]; t++; }
       }
     gsel_triangularize(n, n, C, FALSE, 0.0);
-    d = 1.0;
+    double d = 1.0;
     for (int32_t k = 0; k < n2; k += n+1) { d *= C[k]; }
     free(C);
     return d;

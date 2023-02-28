@@ -1,4 +1,4 @@
-# Last edited on 2017-06-26 03:40:35 by stolfilocal
+# Last edited on 2023-02-26 05:40:38 by stolfi
 
 PROG = test_geostereo
 
@@ -28,7 +28,7 @@ do-test: ${PROG} in/${NAME0}.${EXT} in/${NAME1}.${EXT}
 	${PROG} ${NAME0} ${NAME1}
 	display \
             -title '%f' \
-            -filter Point -resize '800%' \
+            -filter Point -resize '200%' \
             in/${NAME0}.${EXT} \
             in/${NAME1}.${EXT} \
             out/disp-*.p?m \

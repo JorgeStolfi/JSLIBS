@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2023-02-04 06:49:20 by stolfi */
+/* Last edited on 2023-02-25 16:06:24 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -15,6 +15,7 @@
 #include <jsstring.h>
 #include <jsfile.h>
 #include <jstime.h>
+#include <rn.h>
 
 #include <epswr.h>
 #include <epswr_def.h>
@@ -102,24 +103,90 @@ epswr_figure_t *epswr_new_named_figure
     if (prefix == NULL) { prefix = ""; }
     if (name == NULL) { name = ""; }
     if (suffix == NULL) { suffix = ""; }
-    char *dir_s = (dir[0] == 0 ? "" : "/");
-    char *prefix_u = (prefix[0] == 0 ? "" : "_");
-    char *suffix_u = (suffix[0] == 0 ? "" : "_");
-    char *fname = NULL;
-    if (seq >= 0)
-      { asprintf(&fname, "%s%s%s%s%s_%05d%s%s.eps", dir, dir_s, prefix, prefix_u, name, seq, suffix_u, suffix); }
+    FILE *wr;
+    if (strlen(dir) + strlen(prefix) + strlen(name) + strlen(suffix) == 0)
+      { /* All name parts are omitted: */
+        wr = stdout;
+      }
     else
-      { asprintf(&fname, "%s%s%s%s%s%s%s.eps", dir, dir_s, prefix, prefix_u, name, suffix_u, suffix); }
-    FILE *wr = open_write(fname, verbose);
+      { char *dir_s = (dir[0] == 0 ? "" : "/");
+        char *prefix_u = ((prefix[0] == 0) || (name[0] == 0) ? "" : "_");
+        char *fname = NULL;
+        if (seq >= 0) 
+          { char *name_u = ((prefix[0] == 0) && (name[0] == 0) ? "" : "_");
+            char *seq_u = (suffix[0] == 0 ? "" : "_");
+            asprintf(&fname, "%s%s%s%s%s%s%05d%s%s.eps", dir, dir_s, prefix, prefix_u, name, name_u, seq, seq_u, suffix); }
+        else
+          { char *name_u = (((prefix[0] == 0) && (name[0] == 0)) || (suffix[0] == 0) ? "" : "_");
+            asprintf(&fname, "%s%s%s%s%s%s%s.eps", dir, dir_s, prefix, prefix_u, name, name_u, suffix);
+          }
+        wr = open_write(fname, verbose);
+        free(fname);
+      }
     epswr_figure_t *eps = epswr_new_figure
       ( wr, hPlotSize, vPlotSize,
         leftMargin, rightMargin, botMargin, topMargin,
         verbose
       );
-    free(fname);
     return eps;
   }
   
+epswr_figure_t *epswr_new_captioned_figure
+  ( char *dir,
+    char *prefix,
+    char *name,
+    int32_t seq, 
+    char *suffix,
+    double xMin,         
+    double xMax,         
+    double yMin,
+    double yMax,
+    double hMaxSize,     /* Max plot window width (in pt). */
+    double vMaxSize,     /* Max plot window height (in pt). */
+    int32_t capLines,    /* Number of lines to reserve for caption. */
+    double fontHeight,   /* Font height for caption text. */
+    bool_t verbose       /* TRUE to print diagnostics. */
+  )
+  {
+    double mrg = 4.0; /* Margin width in {pt}. */
+    double mrg_bot = mrg + (capLines == 0 ? 0 : capLines*fontHeight + mrg);
+    
+    /* Determine the plot area size {hSize,vSize} (pt): */
+    double wx = fabs(xMax-xMin);
+    double wy = fabs(yMax-yMin);
+    demand((wx > 1.0e-200) && (wy > 1.0e-200), "client window too small");
+    double scale = +INF;
+    if (isfinite(hMaxSize))
+      { demand(hMaxSize > 1.0e-200, "invalid {hMaxSize}");
+        scale = fmin(scale, hMaxSize/wx);
+      }
+    if (isfinite(vMaxSize))
+      { demand(vMaxSize > 1.0e-200, "invalid {vMaxSize}");
+        scale = fmin(scale, vMaxSize/wy);
+      }
+    demand(isfinite(scale), "must specify at least one {hMaxSize,vMaxSize}");
+    double hSize = scale*wx;
+    double vSize = scale*wy;
+    /* Sanity check: */
+    demand((hSize <= epswr_MAX_SIZE) && (vSize <= epswr_MAX_SIZE), "figure too big");
+    
+    /* Create the figure:  */
+    epswr_figure_t *eps = epswr_new_named_figure
+      ( dir, prefix, name, seq, suffix,
+        hSize, vSize, mrg, mrg, mrg_bot, mrg,
+        verbose
+      ); 
+      
+    /* Client window: */
+    epswr_set_client_window(eps, xMin,xMax, yMin,yMax);
+    
+    /* Caption area: */
+    epswr_set_text_geometry(eps, FALSE, 0,hSize, mrg-mrg_bot, -mrg, 0.0);
+    epswr_set_text_font(eps, "Courier", fontHeight);
+    epswr_set_fill_color(eps, 0,0,0);
+    return eps;
+  }
+
 void epswr_end_figure(epswr_figure_t *eps)
   { epswr_dev_end_figure(eps); }
 
@@ -160,10 +227,10 @@ void epswr_shrink_device_window
     
 void epswr_set_device_window_to_grid_cell
   ( epswr_figure_t *eps, 
-    double hMin, double hMax, int32_t ih, int32_t nh,
-    double vMin, double vMax, int32_t iv, int32_t nv
+    double hMin, double hMax, int32_t col, int32_t cols,
+    double vMin, double vMax, int32_t row, int32_t rows
   )
-  { epswr_dev_set_window_to_grid_cell(eps, hMin, hMax, ih, nh, vMin, vMax, iv, nv);
+  { epswr_dev_set_window_to_grid_cell(eps, hMin, hMax, col, cols, vMin, vMax, row, rows);
     epswr_def_reset_client_window(eps);
   }
 
@@ -251,9 +318,9 @@ void epswr_set_pen
     double dashLength,
     double dashSpace
   )
-  { double pswidth = width * epswr_mm;
-    double psdashLength = dashLength * epswr_mm;
-    double psdashSpace = dashSpace * epswr_mm;
+  { double pswidth = width * epswr_pt_per_mm;
+    double psdashLength = dashLength * epswr_pt_per_mm;
+    double psdashSpace = dashSpace * epswr_pt_per_mm;
     epswr_dev_set_pen(eps, R, G, B, pswidth, psdashLength, psdashSpace);
   }
 
@@ -296,6 +363,23 @@ void epswr_coord_line(epswr_figure_t *eps, epswr_axis_t axis, double pos)
     else
       { affirm(FALSE, "invalid axis"); pspos = 0.0; }
     epswr_dev_coord_line(eps, axis, pspos);
+  }
+
+void epswr_coord_lines(epswr_figure_t *eps, epswr_axis_t axis, double start, double step)
+  { double psstart, psstep;
+    if (axis == epswr_axis_HOR)
+      { epswr_x_to_h_coord(eps, start, &(psstart));
+        epswr_x_to_h_dist(eps, step, &(psstep));
+      }
+    else if (axis == epswr_axis_VER)
+      { epswr_y_to_v_coord(eps, start, &(psstart));
+        epswr_y_to_v_dist(eps, step, &(psstep));
+      }
+    else
+      { affirm(FALSE, "invalid axis"); 
+        psstart = 0.0; psstep = 0.0;
+      }
+    epswr_dev_coord_lines(eps, axis, psstart, psstep);
   }
 
 void epswr_axis(epswr_figure_t *eps, epswr_axis_t axis, double pos, double lo, double hi)
@@ -378,8 +462,8 @@ void epswr_polygon
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
     if (! closed) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
-    double *psx = (double *)malloc(n*sizeof(double));
-    double *psy = (double *)malloc(n*sizeof(double));
+    double *psx = rn_alloc(n);
+    double *psy = rn_alloc(n);
     /* Map points to Device coordinates: */
     for (int32_t i=0; i<n; i++)
       { epswr_x_to_h_coord(eps, x[i], &(psx[i]));
@@ -402,8 +486,8 @@ void epswr_rounded_polygon
     if (! closed) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
     /* Corners: */
-    double *psx = (double *)malloc(n*sizeof(double));
-    double *psy = (double *)malloc(n*sizeof(double));
+    double *psx = rn_alloc(n);
+    double *psy = rn_alloc(n);
     /* Map points and radius to Device coordinates: */
     for (int32_t i=0; i<n; i++)
       { epswr_x_to_h_coord(eps, x[i], &(psx[i]));
@@ -426,8 +510,8 @@ void epswr_bezier_polygon
     if (! closed) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
     int32_t np = 4*n; /* Number of points. */
-    double *psx = (double *)malloc(np*sizeof(double));
-    double *psy = (double *)malloc(np*sizeof(double));
+    double *psx = rn_alloc(np);
+    double *psy = rn_alloc(np);
     /* Map points to Device coordinates: */
     for (int32_t i = 0; i < np; i++)
       { epswr_x_to_h_coord(eps, x[i], &(psx[i]));
@@ -491,7 +575,7 @@ void epswr_dot
     if ((!draw) && (!fill)) { return; }
     double psxc; epswr_x_to_h_coord(eps, xc, &(psxc));
     double psyc; epswr_y_to_v_coord(eps, yc, &(psyc));
-    double psrad = rad * epswr_mm;
+    double psrad = rad * epswr_pt_per_mm;
     epswr_dev_dot(eps, psxc, psyc, psrad, fill, draw);
   }
 
@@ -504,7 +588,7 @@ void epswr_tic
   )
   { double psxc; epswr_x_to_h_coord(eps, xc, &(psxc));
     double psyc; epswr_y_to_v_coord(eps, yc, &(psyc));
-    double psticSize = ticSize*epswr_mm;
+    double psticSize = ticSize*epswr_pt_per_mm;
     epswr_dev_tic(eps, axis, psxc, psyc, psticSize, align);
   }   
  
@@ -516,7 +600,7 @@ void epswr_cross
   { if (! draw) { return; }
     double psxc; epswr_x_to_h_coord(eps, xc, &(psxc));
     double psyc; epswr_y_to_v_coord(eps, yc, &(psyc));
-    double psrad = rad * epswr_mm;
+    double psrad = rad * epswr_pt_per_mm;
     epswr_dev_cross(eps, psxc, psyc, psrad, diag, draw);
   }
 
@@ -528,7 +612,7 @@ void epswr_asterisk
   { if (!draw) { return; }
     double psxc; epswr_x_to_h_coord(eps, xc, &(psxc));
     double psyc; epswr_y_to_v_coord(eps, yc, &(psyc));
-    double psrad = rad * epswr_mm;
+    double psrad = rad * epswr_pt_per_mm;
     epswr_dev_asterisk(eps, psxc, psyc, psrad, draw);
   }
 
@@ -541,7 +625,7 @@ void epswr_square
     if ((!draw) && (!fill)) { return; }
     double psxc; epswr_x_to_h_coord(eps, xc, &(psxc));
     double psyc; epswr_y_to_v_coord(eps, yc, &(psyc));
-    double psrad = rad * epswr_mm;
+    double psrad = rad * epswr_pt_per_mm;
     epswr_dev_square(eps, psxc, psyc, psrad, fill, draw);
   }
 
@@ -555,8 +639,8 @@ void epswr_diamond
     if ((!draw) && (!fill)) { return; }
     double psxc; epswr_x_to_h_coord(eps, xc, &(psxc));
     double psyc; epswr_y_to_v_coord(eps, yc, &(psyc));
-    double psxRad = xRad * epswr_mm;
-    double psyRad = yRad * epswr_mm;
+    double psxRad = xRad * epswr_pt_per_mm;
+    double psyRad = yRad * epswr_pt_per_mm;
     epswr_dev_diamond(eps, psxc, psyc, psxRad, psyRad, fill, draw);
   }   
 
@@ -576,23 +660,23 @@ void epswr_arrowhead
     double psxb; epswr_x_to_h_coord(eps, xb, &(psxb));
     double psyb; epswr_y_to_v_coord(eps, yb, &(psyb));
     
-    double pswidth = width*epswr_mm;
-    double pslength = length * epswr_mm;
+    double pswidth = width*epswr_pt_per_mm;
+    double pslength = length * epswr_pt_per_mm;
     epswr_dev_arrowhead(eps, psxa, psya, psxb, psyb, pswidth, pslength, fraction, fill, draw);
   } 
 
-void epswr_grid_lines(epswr_figure_t *eps, int32_t nh, int32_t nv)
-  { epswr_dev_grid_lines(eps, nh, nv); }
+void epswr_grid_lines(epswr_figure_t *eps, int32_t cols, int32_t rows)
+  { epswr_dev_grid_lines(eps, cols, rows); }
 
 void epswr_grid_cell
   ( epswr_figure_t *eps, 
-    int32_t ih, int32_t nh,
-    int32_t iv, int32_t nv,
+    int32_t col, int32_t cols,
+    int32_t row, int32_t rows,
     bool_t fill, bool_t draw
   )
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
-    epswr_dev_grid_cell(eps, ih, nh, iv, nv, fill, draw);
+    epswr_dev_grid_cell(eps, col, cols, row, rows, fill, draw);
   }
     
 void epswr_set_label_font(epswr_figure_t *eps, const char *font, double size)

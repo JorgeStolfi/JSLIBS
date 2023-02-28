@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:24:04 by jstolfi
+# Last edited on 2023-02-27 19:21:19 by stolfi
 
 TEST_LIB  := libdnaenc.a
 TEST_LIB_DIR  := ../..
@@ -6,6 +6,7 @@ TEST_LIB_DIR  := ../..
 PROG := test_dnae_coding
 
 JS_LIBS := \
+  libgeo.a \
   libjs.a
  
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

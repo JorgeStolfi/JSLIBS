@@ -1,10 +1,14 @@
 /* See fboxlist.h */
-/* Last edited on 2005-06-05 15:23:16 by stolfi */
+/* Last edited on 2023-02-20 06:38:08 by stolfi */
 
-#include <fbox.h>
-#include <fboxlist.h>
-#include <affirm.h>
+#define _GNU_SOURCE
 #include <stdlib.h>
+#include <stdint.h>
+
+#include <affirm.h>
+
+#include <fboxlist.h>
+#include <fbox.h>
 
 FBoxList fbox_cons(FBox *b, FBoxList L)
   { void *v = notnull(malloc(sizeof(FBoxListNode)), "no mem for FBoxListNode");

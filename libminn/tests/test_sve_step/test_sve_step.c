@@ -1,12 +1,12 @@
 /* test_sve_step --- test program for {sve_minn_step} in sve_minn.h */
-/* Last edited on 2017-03-13 21:17:59 by stolfilocal */
+/* Last edited on 2023-02-27 10:54:40 by stolfi */
 
 #define _GNU_SOURCE
-
 #include <values.h>
 #include <math.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include <vec.h>
@@ -32,16 +32,16 @@
 
 /* INTERNAL PROTOTYPES */
 
-int main (int argc, char **argv);
+int32_t main (int32_t argc, char **argv);
 
-void test_sve_minn_step(int m, int n, int trial, bool_t nice, bool_t verbose);
+void test_sve_minn_step(int32_t m, int32_t n, int32_t trial, bool_t nice, bool_t verbose);
   /* Tests the routine {sve_minn_step} with some function of {n}
     variables on some {m}-dimensional affine subspace of {R^n}. If
     {nice} is TRUE, uses a nice test function and simplex, otherwise
     uses random ones. */
 
-void pick_nice_problem(int n, double A[], double Xref[], double *CP, bool_t verbose);
-void throw_problem(int n, double A[], double Xref[], double *CP, bool_t verbose);
+void pick_nice_problem(int32_t n, double A[], double Xref[], double *CP, bool_t verbose);
+void throw_problem(int32_t n, double A[], double Xref[], double *CP, bool_t verbose);
   /* These procedures pick the parameters {Xref,A,C} of a quadratic
      function with the formula {F(x)=(x-Xref)'*A*(x-Xref)+C}.
      
@@ -54,26 +54,26 @@ void throw_problem(int n, double A[], double Xref[], double *CP, bool_t verbose)
      constant term {C} will be in {U}. The parameter {C} will be
      stored into {*CP}. */
 
-void throw_simplex(int m, int n, double v[], double x[], bool_t nice, bool_t verbose);
+void throw_simplex(int32_t m, int32_t n, double v[], double x[], bool_t nice, bool_t verbose);
   /* Picks a regular {m}-dimensional simplex {v} of unit
     radius in {R^n}, such that the point {x[0..n-1]} lies in the affine span of
     {v} and inside its canonical ellipsoid. They store into {v[i*n +
     j]} the coordinate {j} of vertex {i}, for {i} in {0..m} and {j} in
     {0..n-1}.  If {nice} is TRUE, chooses a rather nice simplex. */
 
-void check_function_values(int m, int n, double A[], double Xref[], double Xcmp[], double C, double v[]);
+void check_function_values(int32_t m, int32_t n, double A[], double Xref[], double Xcmp[], double C, double v[]);
   /* Compares the values of {F(x)=(x-xc)'*A*(x-xc) + C} where {xc==Xref} (original
     function) and {xc==Xcmp} (function translated from {Xref} to {Xcmp}).
     The comparison is made at the corners and edge midpoints of the 
     {m}-dimensional simplex in {R^n} whose corners are stord in {v}. */
 
-void check_optimum_position(int m, double Xref[], double Xcmp[]);
+void check_optimum_position(int32_t m, double Xref[], double Xcmp[]);
   /* Compares the computed optimum {Xcmp[0..m-1]} against the 
     `true' optimum { Xref[0..m-1]} */
 
 void sample_function
-  ( int m,
-    int n,
+  ( int32_t m,
+    int32_t n,
     double A[],
     double Xref[], 
     double C, 
@@ -85,29 +85,28 @@ void sample_function
     corners {i} and {j} of the simplex {v}. Stores the values
     into {fv[0..M-1]}, as expected by {sve_minn_step}. */
 
-double eval_function(int n, double A[], double Xref[], double C, double x[]);
+double eval_function(int32_t n, double A[], double Xref[], double C, double x[]);
   /* Evaluates the function {F(x)=(x-Xref)'*A*(x-Xref) + C} at the point {x[0..n-1]}. */
 
-void convert_to_cartesian(int m, int n, double cm[], double v[], double Xcmp[], bool_t verbose);
+void convert_to_cartesian(int32_t m, int32_t n, double cm[], double v[], double Xcmp[], bool_t verbose);
   /* Converts the computed stationary point from barycentric
     coordinates {cm[0..m]}, relative to the simplex {v}, to Cartesian
     coordinates {Xcmp[0..n-1]}. */
 
-double max_abs_elem(int n, int m, double N[]);
+double max_abs_elem(int32_t n, int32_t m, double N[]);
   /* Returns the maximum absolute value of the elements in the {n × m} matrix {N}. */
 
-double max_abs_col_elem(int n, int m, double N[], int j);
+double max_abs_col_elem(int32_t n, int32_t m, double N[], int32_t j);
   /* Returns the maximum absolute value of the elements in column {j} of
      the {n × m} matrix {N}. */
 
 /* IMPLEMENTATIONS */
 
-int main (int argc, char **argv)
-  { int i;
-    for (i = 0; i < MAX_RUNS; i++) 
+int32_t main (int32_t argc, char **argv)
+  { for (int32_t i = 0; i < MAX_RUNS; i++) 
       { /* Choose simplex dimension {m}, num of variables {n}, niceness, and verbosity: */
-        int m = (i < 10 ? i : rand()/(RAND_MAX/MAX_DIM)) + 1;
-        int n = m + (i < 10 ? i % 3 : rand()/(RAND_MAX/MAX_VARS) + 1);
+        int32_t m = (i < 10 ? i : rand()/(RAND_MAX/MAX_DIM)) + 1;
+        int32_t n = m + (i < 10 ? i % 3 : rand()/(RAND_MAX/MAX_VARS) + 1);
         if (n > MAX_VARS) { n = MAX_VARS; }
         if (n < m) { n = m; }
         bool_t nice = (i < 5);
@@ -120,7 +119,7 @@ int main (int argc, char **argv)
     return (0);
   }
 
-void test_sve_minn_step(int m, int n, int trial, bool_t nice, bool_t verbose)
+void test_sve_minn_step(int32_t m, int32_t n, int32_t trial, bool_t nice, bool_t verbose)
   { srand(1665 + 2*trial);
     srandom(1665 + 2*trial);
 
@@ -143,7 +142,7 @@ void test_sve_minn_step(int m, int n, int trial, bool_t nice, bool_t verbose)
     throw_simplex(m, n, v, Xref, nice, verbose);
 
     if (verbose) { fprintf(stderr, "  gathering the function samples...\n"); }
-    int nf = (m+1)*(m+2)/2;
+    int32_t nf = (m+1)*(m+2)/2;
     double fv[nf]; /* Function values at simplex corners and edge midpoints. */
     sample_function(m, n, A, Xref, C, v, fv, verbose);
     
@@ -167,11 +166,10 @@ void test_sve_minn_step(int m, int n, int trial, bool_t nice, bool_t verbose)
     fprintf(stderr, "======================================================================\n");
   }
 
-void throw_problem(int n, double A[], double Xref[], double *CP, bool_t verbose)
+void throw_problem(int32_t n, double A[], double Xref[], double *CP, bool_t verbose)
   {
-    int i, j;
     /* Generate a random stationary point {Xref} in the signed unit cube: */
-    for (j = 0; j < n; j++) { Xref[j] = 2*drandom() - 1.0; }
+    for (int32_t j = 0; j < n; j++) { Xref[j] = 2*drandom() - 1.0; }
 
     if (verbose) 
       { rn_gen_print(stderr, n, Xref, "%12.8f", "  true optimum:\n  [ ", "\n    ", " ]\n"); }
@@ -193,11 +191,10 @@ void throw_problem(int n, double A[], double Xref[], double *CP, bool_t verbose)
     if (verbose) { fprintf(stderr, "  true stationary value = %12.8f\n", *CP); }
   }
 
-void pick_nice_problem(int n, double A[], double Xref[], double *CP, bool_t verbose)
+void pick_nice_problem(int32_t n, double A[], double Xref[], double *CP, bool_t verbose)
   {
-    int i, j;
     /* Pick the stationary point {Xref}: */
-    for (j = 0; j < n; j++) { Xref[j] = ((double)j+1)/((double)n+1); }
+    for (int32_t j = 0; j < n; j++) { Xref[j] = ((double)j+1)/((double)n+1); }
 
     if (verbose) 
       { rn_gen_print(stderr, n, Xref, "%12.8f", "  true optimum:\n  [ ", "\n    ", " ]\n"); }
@@ -219,7 +216,7 @@ void pick_nice_problem(int n, double A[], double Xref[], double *CP, bool_t verb
     if (verbose) { fprintf(stderr, "  true stationary value = %12.8f\n", *CP); }
   }
 
-void throw_simplex(int m, int n, double v[], double x[], bool_t nice, bool_t verbose)
+void throw_simplex(int32_t m, int32_t n, double v[], double x[], bool_t nice, bool_t verbose)
   { /* Generate a regular {m}-simplex in {R^n}, with unit radius and center at origin: */
     assert(n >= m); 
     
@@ -244,10 +241,9 @@ void throw_simplex(int m, int n, double v[], double x[], bool_t nice, bool_t ver
     double y[n]; /* Point of simplex to be matched to {x}: */
     if (nice) 
       { /* Let the reference point {y} be the simplex's center: */
-        int i, j;
-        for (j = 0; j < n; j++)
+        for (int32_t j = 0; j < n; j++)
           { double sum = 0;
-            for (i = 0; i <= m; i++) { sum += v[i*n + j]; }
+            for (int32_t i = 0; i <= m; i++) { sum += v[i*n + j]; }
             y[j] = sum/(m+1);
           }
       }
@@ -276,8 +272,8 @@ void throw_simplex(int m, int n, double v[], double x[], bool_t nice, bool_t ver
   }
 
 void sample_function
-  ( int m,
-    int n,
+  ( int32_t m,
+    int32_t n,
     double A[],
     double Xref[], 
     double C, 
@@ -286,12 +282,10 @@ void sample_function
     bool_t verbose
   )
   { double x[n];
-    int i0, i1;
-    for (i0 = 0; i0 <= m; i0++)
-      { for (i1 = 0; i1 <= i0; i1++)
+    for (int32_t i0 = 0; i0 <= m; i0++)
+      { for (int32_t i1 = 0; i1 <= i0; i1++)
           { /* Set {x[0..n-1]} to the midpoint of simplex corners {i0,i1}: */
-            int j;
-            for (j = 0; j < n; j++) { x[j] = (v[i0*n + j] + v[i1*n + j])/2; }
+            for (int32_t j = 0; j < n; j++) { x[j] = (v[i0*n + j] + v[i1*n + j])/2; }
             /* Get the function's value {F(x)} at {x}: */
             double Fx = eval_function(n, A, Xref, C, x);
             if (verbose) 
@@ -305,15 +299,13 @@ void sample_function
       }
   }
 
-void check_function_values(int m, int n, double A[], double Xref[], double Xcmp[], double C, double v[])
+void check_function_values(int32_t m, int32_t n, double A[], double Xref[], double Xcmp[], double C, double v[])
   { double tol = 1.0e-6;
     double x[n];
-    int i0, i1;
-    for (i0 = 0; i0 <= m; i0++)
-      { for (i1 = 0; i1 <= i0; i1++)
+    for (int32_t i0 = 0; i0 <= m; i0++)
+      { for (int32_t i1 = 0; i1 <= i0; i1++)
           { /* Set {x[0..n-1]} to the midpoint of cartesian simplex corners {i,j}: */
-            int j;
-            for (j = 0; j < n; j++) { x[j] = (v[i0*n + j] + v[i1*n + j])/2; }
+            for (int32_t j = 0; j < n; j++) { x[j] = (v[i0*n + j] + v[i1*n + j])/2; }
             /* Get the original and new function values {F(x)} at {x}: */
             double FXref = eval_function(n, A, Xref, C, x);
             double FXcmp = eval_function(n, A, Xcmp, C, x);
@@ -331,10 +323,9 @@ void check_function_values(int m, int n, double A[], double Xref[], double Xcmp[
       }
   }
 
-void check_optimum_position(int n, double Xref[], double Xcmp[])
+void check_optimum_position(int32_t n, double Xref[], double Xcmp[])
   { double tol = 1.0e-6 * sqrt((rn_norm_sqr(n, Xref) + rn_norm_sqr(n, Xcmp))/2);
-    int j; 
-    for (j = 0; j < n; j++)
+    for (int32_t j = 0; j < n; j++)
       { double Xcmpj = Xcmp[j];
         double Xrefj = Xref[j];
         double diffj = Xcmpj - Xrefj;
@@ -348,32 +339,29 @@ void check_optimum_position(int n, double Xref[], double Xcmp[])
       }
   }
 
-double eval_function(int n, double A[], double Xref[], double C, double x[])
-  { int i, j;
-    double F = C;
-    for (i = 0; i < n; i++)
-      { for (j = 0; j < n; j++)
+double eval_function(int32_t n, double A[], double Xref[], double C, double x[])
+  { double F = C;
+    for (int32_t i = 0; i < n; i++)
+      { for (int32_t j = 0; j < n; j++)
           { F += (x[i] - Xref[i])*A[i*n + j]*(x[j] - Xref[j]); }
       }
     return F;
   }
 
-void convert_to_cartesian(int m, int n, double cm[], double v[], double Xcmp[], bool_t verbose)
-  { int i, j;
-    for (j = 0; j < n; j++)
+void convert_to_cartesian(int32_t m, int32_t n, double cm[], double v[], double Xcmp[], bool_t verbose)
+  { for (int32_t j = 0; j < n; j++)
       { double Xsum = 0;
-        for (i = 0; i <= m; i++) { Xsum += cm[i] * v[i*n + j]; }
+        for (int32_t i = 0; i <= m; i++) { Xsum += cm[i] * v[i*n + j]; }
         Xcmp[j] = Xsum;
       }
     if (verbose) 
       { rn_gen_print(stderr, n, Xcmp, "%12.8f", "  computed optimum:\n  [ ", "\n    ", " ]\n"); }
   }
 
-double max_abs_elem(int n, int m, double N[])
-  { int i, j;
-    double emax = 0.0;
-    for (i = 0; i < n; i++)
-      { for (j = 0; j < m; j++)
+double max_abs_elem(int32_t n, int32_t m, double N[])
+  { double emax = 0.0;
+    for (int32_t i = 0; i < n; i++)
+      { for (int32_t j = 0; j < m; j++)
           { double Mij = fabs(N[i*m + j]);
             if (Mij > emax) { emax = Mij; }
           }
@@ -381,10 +369,9 @@ double max_abs_elem(int n, int m, double N[])
     return emax;
   }
 
-double max_abs_col_elem(int n, int m, double N[], int j)
-  { int i;
-    double emax = 0.0;
-    for (i = 0; i < n; i++)
+double max_abs_col_elem(int32_t n, int32_t m, double N[], int32_t j)
+  { double emax = 0.0;
+    for (int32_t i = 0; i < n; i++)
       { double Mij = fabs(N[i*m + j]);
         if (Mij > emax) { emax = Mij; }
       }

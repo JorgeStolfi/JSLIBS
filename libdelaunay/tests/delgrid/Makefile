@@ -1,4 +1,4 @@
-# Last edited on 2023-02-04 07:06:15 by stolfi
+# Last edited on 2023-02-20 05:57:55 by stolfi
 
 PROG := delgrid
 
@@ -17,23 +17,32 @@ include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 
 all: check
 
-check:  do-test
+check:  
+	${MAKE} NI=5 NJ=10 GTYPE=polar do-test
+	${MAKE} NI=7 NJ=7 GTYPE=rect do-test
 
-PSFILE = out/${PROG}-doc.ps
-EPSFILE = out/${PROG}-000001.eps
 PSVIEW := evince
 
-do-test: ${PSFILE} ${EPSFILE}
+# ######################################################################
+# The ${NI} ${NJ} ${GTYPE} section
+ifneq "/${NI}" "/"
+ifneq "/${NJ}" "/"
+ifneq "/${GTYPE}" "/"
+
+NSITES = ${shell echo "${NI}*${NJ}" | bc -lq }
+EPSFILE = ${shell printf "out/delgrid_%05d_%s.eps" ${NSITES} "${GTYPE}"}
+
+do-test: ${EPSFILE}
 
 clean::
-	rm -f ${PSFILE} ${EPSFILE}
-  
+	rm -f ${EPSFILE}
 
-${PSFILE}: ${PROG}
-	${PROG} 5 10 polar ps
-	${PSVIEW} ${PSFILE}
-  
 ${EPSFILE}: ${PROG}
-	${PROG} 5 10 rect eps
+	${PROG} ${NI} ${NJ} ${GTYPE}
 	${PSVIEW} ${EPSFILE}
 
+endif
+endif
+endif
+# End ${NI} ${NJ} ${GTYPE} section
+# ######################################################################

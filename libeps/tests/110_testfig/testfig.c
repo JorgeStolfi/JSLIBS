@@ -3,7 +3,7 @@
 #define PROG_VERS "1.0"
 
 /* Created by J. Stolfi, UNICAMP sometime before 2003-10-11. */
-/* Last edited on 2022-10-20 06:52:03 by stolfi */
+/* Last edited on 2023-02-19 22:28:56 by stolfi */
 
 #define testfig_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include <affirm.h>
 #include <jsfile.h>
@@ -68,33 +69,64 @@ int32_t main (int32_t argc, char **argv)
   
 void DoTests(void)
   { 
-    /* Subfigure dimensions: */
-    int32_t nh = 5; double hFigSize = 180.0;
-    int32_t nv = 4; double vFigSize = 160.0;
+    /* Subfigure dimensions (pt): */
+    int32_t nh = 5; double hFigSize = 160.0;
+    int32_t nv = 4; double vFigSize = 120.0;
     
+    /* Figrue dimensions (pt) for {epswr_new_figure,epswr_new_named_figure}: */
     double hPlotSize = nh * hFigSize;
     double vPlotSize = nv * vFigSize;
     double leftMargin = 8.0;
     double rightMargin = 36.0;
     double botMargin = 72.0;
     double topMargin = 12.0;
+    
+    /* Temporary client window for {epswr_new_captioned_figure}: */
+    double xw = hPlotSize/epswr_pt_per_mm;
+    double yw = vPlotSize/epswr_pt_per_mm;
+    double xmin = -xw/2, xmax = +xw/2;
+    double ymin = -yw/2, ymax = +yw/2;
+    int32_t capLines = 3;
+    int32_t fontHeight = 10;
+
+    int32_t nFig = 3;
     bool_t verbose = TRUE;
-
-    int32_t nFig = 2;
     for (int32_t iFig = 0; iFig < nFig; iFig++)
-      { 
-        /* Create the figure file: */
-        char *fileName = NULL;
-        asprintf(&fileName, "out/fig_%c.eps", 'A' + iFig);
-        FILE *wr = open_write(fileName, TRUE);
-        free(fileName);
+      { epswr_figure_t *epsf = NULL;
+        if ((iFig % 3) == 0)
+          { /* Test {epswr_new_figure}, with given open file: */
+            char *fileName = NULL;
+            asprintf(&fileName, "out/test_fig_%05d_A.eps", iFig);
+            FILE *wr = open_write(fileName, TRUE);
+            free(fileName);
 
-        /* Create the figure object: */
-        epswr_figure_t *epsf = epswr_new_figure
-          ( wr, hPlotSize, vPlotSize, 
-            leftMargin, rightMargin, botMargin, topMargin, 
-            verbose    
-          );
+            /* Create the figure object: */
+            epsf = epswr_new_figure
+              ( wr, hPlotSize, vPlotSize, 
+                leftMargin, rightMargin, botMargin, topMargin, 
+                verbose    
+              );
+          }
+        else if ((iFig % 3) == 1)
+          { /* Test {epswr_new_named_figure}: */
+            epsf = epswr_new_named_figure
+              ( "out", "test", "fig", iFig, "B",
+                hPlotSize, vPlotSize, 
+                leftMargin, rightMargin, botMargin, topMargin, 
+                verbose    
+              );
+          }
+        else if ((iFig % 3) == 2)
+          { /* Test {epswr_new_captioned_figure}: */
+            epsf = epswr_new_captioned_figure
+              ( "out", "test", "fig", iFig, "C",
+                xmin,xmax, ymin,ymax, hPlotSize, 1.2*vPlotSize,
+                capLines, fontHeight,
+                verbose    
+              );
+          }
+        else
+          { assert(FALSE); }
         
         /* Plot the cube in various positions: */
         double lightDir = ((double)iFig + 0.5)/((double)nFig);
@@ -280,17 +312,6 @@ void DrawPicture(epswr_figure_t *epsf, double lightDir, double cubeRot)
     double hMin, hMax, vMin, vMax;
     epswr_get_device_window(epsf, &hMin, &hMax, &vMin, &vMax);
     
-    /* Write the caption: */
-    double capFontSize = 8.0;
-    epswr_set_text_font(epsf, "Courier", capFontSize);
-    double vTopText = - 2.0;
-    double vBotText = vTopText - 2*capFontSize;
-    epswr_dev_set_text_geometry(epsf, hMin, hMax, vBotText, vTopText, 0.0);
-    char *xRot = NULL;
-    asprintf(&xRot, "%5.3f", cubeRot);
-    epswr_set_fill_color(epsf, 0.000,0.000,1.000);
-    epswr_text(epsf, xRot, FALSE, 0.5, TRUE, FALSE);
-    
     /* Paint and draw the cube: */
     double t = cubeRot*0.5*M_PI; /* Cube rotation angle in radians. */
     double ct = cos(t), st = sin(t);
@@ -307,6 +328,18 @@ void DrawPicture(epswr_figure_t *epsf, double lightDir, double cubeRot)
         for (int32_t fc = -1; fc <= +1; fc += 2)
           { DrawCubeFace(epsf, ax, bx, cx, fc, ct, st, cs, ss); }
       }
+
+    /* Write the caption: */
+    double capFontSize = 12.0;
+    epswr_set_text_font(epsf, "Courier", capFontSize);
+    double vTopText = vMin - 4.0;
+    double vBotText = vTopText - 2*capFontSize;
+    epswr_dev_set_text_geometry(epsf, hMin, hMax, vBotText, vTopText, 0.0);
+    char *xRot = NULL;
+    asprintf(&xRot, "# %5.3f #", cubeRot);
+    epswr_set_fill_color(epsf, 0.000,0.000,1.000);
+    epswr_text(epsf, xRot, FALSE, 0.5, TRUE, FALSE);
+    free(xRot);
   }
             
 void DrawCubeFace

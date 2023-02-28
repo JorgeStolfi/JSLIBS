@@ -1,5 +1,5 @@
 /* See pst_slope_map.h */
-/* Last edited on 2017-01-04 18:25:21 by stolfilocal */
+/* Last edited on 2023-02-25 16:10:29 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -11,13 +11,15 @@
 #include <jsfile.h>
 #include <r2.h>
 #include <jswsize.h>
+#include <rn.h>
 
 #include <pst_basic.h>
 #include <pst_imgsys.h>
 #include <pst_interpolate.h>
-#include <pst_slope_map.h>
 #include <pst_weight_map.h>
 #include <pst_height_map.h>
+
+#include <pst_slope_map.h>
 
 /* INTERNAL PROTOTYPES */
 
@@ -255,7 +257,7 @@ void pst_slope_map_solve_system
           }
       }
 
-    double *Z = (double*)malloc(sizeof(double)*S->N);
+    double *Z = rn_alloc(S->N);
     pst_slope_map_copy_height_map_to_sol_vec(S, OZ, Z);
     pst_imgsys_solve(S, Z, ord, maxIter, convTol, para, szero, verbose, indent, reportSol);
     /* {reportSol} must have copied the final solution into {OZ}. */

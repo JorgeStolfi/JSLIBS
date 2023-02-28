@@ -1,17 +1,19 @@
 /* Tools for plotting Delaunay and Voronoi diagrams */
-/* Last edited on 2017-06-21 00:30:59 by stolfilocal */
+/* Last edited on 2023-02-20 06:09:20 by stolfi */
 
 #ifndef delaunay_plot_POV_H
 #define delaunay_plot_POV_H
 
-#include <quad.h>
-#include <delaunay.h>
-#include <bool.h>
-
+#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
+
+#include <bool.h>
+#include <delaunay.h>
+#include <quad.h>
 
 void delaunay_plot_POV_triangles(FILE *wr, quad_arc_t e, double height[], char* texture);
   /* Writes to {wr} a triangle mesh whose corners are the sites of the delaunay triangulation {e},

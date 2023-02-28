@@ -1,5 +1,5 @@
 /* Tools for generating Encapsulated Postscript graphics files. */
-/* Last edited on 2023-02-12 12:01:56 by stolfi */
+/* Last edited on 2023-02-21 12:06:56 by stolfi */
 
 #ifndef epswr_H
 #define epswr_H
@@ -124,7 +124,45 @@ epswr_figure_t *epswr_new_named_figure
     If {seq} is negative, the "_{SEQ}" part is omitted. If {dir} is
     {NULL} or empty, the "{dir}/" part is omitted. If {prefix} is {NULL}
     or empty, the "{prefix}_" part is omitted. If {suffix} is {NULL} or
-    empty, the "_{suffix}" part is omitted. */
+    empty, the "_{suffix}" part is omitted.
+    
+    If all parts are omitted, writes the image to {stdout}. */
+
+epswr_figure_t *epswr_new_captioned_figure
+  ( char *dir,
+    char *prefix,
+    char *name,
+    int32_t seq, 
+    char *suffix,
+    double xMin,         
+    double xMax,         
+    double yMin,
+    double yMax,
+    double hMaxSize,     /* Max plot window width (in pt). */
+    double vMaxSize,     /* Max plot window height (in pt). */
+    int32_t capLines,    /* Number of lines to reserve for caption. */
+    double fontHeight,   /* Font height for caption text. */
+    bool_t verbose       /* TRUE to print diagnostics. */
+  );
+  /* Same as {epswr_new_named_figure}, but chooses the Device window 
+    and margins internally.  
+    
+    The procedure then defines the Client window to be the rectangle
+    {[xMin_xMax]×[yMin_yMax]}. The value {xMin} may be greater than
+    {xMax} to obtain a reversed coordinate axis, but the two must not be
+    equal. Ditto for {yMin} and {yMax}.
+    
+    The procedure leaves space at the bottom of the figure (below the
+    plot window) for a caption with {capLines} lines in a font with the
+    specified nominal {fontHeight}. It calls {epswr_set_text_geometry}
+    to define that space as the nominal text area, and
+    {epswr_set_text_font} with "Courier" and the given {fontHeight}.
+    
+    The Device window will be the largest rectangle with the same aspect
+    ratio as the Client window, whose width is at most {hMaxSize} and
+    whose height is at most {vMaxSize}.  At most one of these parameters
+    may be {+INF} or {NAN}, in which case only the other one defines the
+    figure size. */
 
 void epswr_end_figure(epswr_figure_t *eps);
   /* Properly terminates the Encapsulated Postscript file, by writing
@@ -173,7 +211,7 @@ void epswr_set_device_window
     points and the Client origin is the lower left corner of the plot
     window. The Client should use {epswr_set_client_window} to change
     the Client to Device coordinate mapping. The geometry and position
-    of the text area (see {epswr_set_text_device_geometry} is not
+    of the text area (see {epswr_set_text_geometry} is not
     changed. */
 
 void epswr_get_device_window
@@ -197,23 +235,23 @@ void epswr_shrink_device_window
     
     The Client to Device mapping is reset as in
     {epswr_set_device_window} The geometry and position of the text area
-    (see {epswr_set_text_device_geometry} is not changed. */
+    (see {epswr_set_text_geometry} is not changed. */
     
 void epswr_set_device_window_to_grid_cell
   ( epswr_figure_t *eps, 
-    double hMin, double hMax, int32_t ih, int32_t nh, 
-    double vMin, double vMax, int32_t iv, int32_t nv
+    double hMin, double hMax, int32_t col, int32_t cols, 
+    double vMin, double vMax, int32_t row, int32_t rows
   );
   /* Conceptually divides the rectangle {[hMin _ hMax] × [vMin _ vmax]}
     (in absolute Device coordinates) into a grid of rectangular
-    cells with {nh} columns, numbered {0..nh-1} from left to right,
-    and {nv} rows, numbered {0..nv-1} from bottom to top;
-    and sets the plot window to the cell in column {ih} and row {iv},
+    cells with {cols} columns, numbered {0..cols-1} from left to right,
+    and {rows} rows, numbered {0..rows-1} from bottom to top;
+    and sets the plot window to the cell in column {col} and row {row},
     using {epswr_set_device_window}.
     
     The Client to Device mapping is reset as in
     {epswr_set_device_window}. The geometry and position of the text area
-    (see {epswr_set_text_device_geometry} is not changed. */ 
+    (see {epswr_set_text_geometry} is not changed. */ 
 
 /* CLIENT COORDINATE SYSTEM */
 
@@ -344,6 +382,18 @@ void epswr_coord_line
   /* Draws a reference line PERPENDICULAR to the given axis 
     at the given coordinate value, extending across the whole
     plot window. */
+
+void epswr_coord_lines
+  ( epswr_figure_t *eps, 
+    epswr_axis_t axis, 
+    double start,
+    double step
+  );
+  /* Draws equally spaced reference lines PERPENDICULAR to the given axis 
+    at the given coordinate value, extending across the whole
+    plot window.  One of the lines will have coordinate {start},
+    and the lines will be {step} apart on that axis.  Only lines
+    that interesect the plot window will be drawn. */
 
 void epswr_axis
   ( epswr_figure_t *eps, 
@@ -582,9 +632,9 @@ void epswr_arrowhead
     
 /* GRID LINES AND GRID CELLS */
 
-void epswr_grid_lines(epswr_figure_t *eps, int32_t nh, int32_t nv);
+void epswr_grid_lines(epswr_figure_t *eps, int32_t cols, int32_t rows);
   /* The current plot window is implicitly divided into a grid of rectangular
-    cells, with {xn} columns and {yn} rows. Draws all grid cell boundaries
+    cells, with {cols} columns and {rows} rows. Draws all grid cell boundaries
     with the current pen and color.  
     
     The first and last lines will extend beyond the current plot window
@@ -592,13 +642,13 @@ void epswr_grid_lines(epswr_figure_t *eps, int32_t nh, int32_t nv);
 
 void epswr_grid_cell
   ( epswr_figure_t *eps, 
-    int32_t ih, int32_t nh,
-    int32_t iv, int32_t nv,
+    int32_t col, int32_t cols,
+    int32_t row, int32_t rows,
     bool_t fill, bool_t draw
   );
   /* The curren plot window is implicitly divided into a grid of
-    rectangular cells, with {nh} columns and {nv} rows. Fills and/or
-    outlines the cell in column {ih} and row {iv} of that grid. Cell
+    rectangular cells, with {cols} columns and {rows} rows. Fills and/or
+    outlines the cell in column {col} and row {row} of that grid. Cell
     {[0,0]} lies at the bottom left corner.
     
     The borders of the cells in the first and last column or row will
@@ -717,8 +767,8 @@ void epswr_text
     points below the bottom of the last line previously written, where
     {dy} is the current nominal text font size (as set by
     {epswr_set_text_font}); or at top of the text rectangle, if no lines
-    have been written since the last call to
-    {epswr_set_text_device_geometry} Successive baselines are spaced
+    have been written since the last call to]9
+    {epswr_set_text_geometry} Successive baselines are spaced
     {dy} points down.
     
     The parameter {hAlign} defines the alignment of each line of
@@ -767,10 +817,13 @@ void epswr_flush (epswr_figure_t *eps);
 
 /* UTILITIES */
 
-#define epswr_MAX_SIZE (72000000.0)
-  /* Max figure size in pt (1 million inches), just for paranoia. */
+#define epswr_MAX_SIZE (72000.0)
+  /* Max figure size in pt (1 thousand inches), just for paranoia. */
 
-#define epswr_mm (72.0/25.4)
+#define epswr_dev_MAX_COORD_LINES (2000)
+  /* Maximum number of lines that can be drawn by {epswr_coord_lines}. */
+
+#define epswr_pt_per_mm (72.0/25.4)
   /* One millimeter in Postscript points. */
 
 void epswr_check_param

@@ -1,5 +1,5 @@
 /* See {multifok_test.h}. */
-/* Last edited on 2023-01-31 21:45:44 by stolfi */
+/* Last edited on 2023-02-25 16:08:26 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -21,6 +21,7 @@
 #include <jsrandom.h>
 #include <jsfile.h>
 #include <jsqroots.h>
+#include <rn.h>
 
 #include <float_image.h>
 #include <float_image_read_pnm.h>
@@ -436,7 +437,7 @@ void multifok_test_choose_ray_tilts_and_weights
     assert(NR >= NR_min);
     /* Allocate the arrays: */
     r2_t *tilt = (r2_t*)notnull(malloc(NR*sizeof(r2_t)), "no mem"); 
-    double *wr = (double*)notnull(malloc(NR*sizeof(double)), "no mem"); 
+    double *wr = rn_alloc(NR); 
     /* Fill the central ray: */
     tilt[0] = (r2_t){{ 0.0, 0.0 }};
     wr[0] = 1.0;

@@ -1,8 +1,8 @@
-#define PROG_NAME "test_huff_tree"
-#define PROG_DESC "tests the {huff_tree.h} procedures"
+#define PROG_NAME "test_codetree_huff"
+#define PROG_DESC "tests the {codetree_huff.h} procedures"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2023-02-07 17:11:05 by stolfi */
+/* Last edited on 2023-02-15 12:24:59 by stolfi */
 /* Created on 2007-01-31 by J. Stolfi, UNICAMP */
 
 #define PROG_COPYRIGHT \
@@ -21,7 +21,7 @@
 #include <affirm.h>
 
 #include <codetree.h>
-#include <huff_tree.h>
+#include <codetree_huff.h>
      
 #define MAX_VALUE codetree_MAX_VALUE
 #define MIN_VALUE codetree_MIN_VALUE
@@ -30,33 +30,33 @@
 #define MAX_NODES codetree_MAX_NODES
 #define MAX_SAMPLES codetree_MAX_SAMPLES
 
-#define MAX_FREQ huff_tree_MAX_FREQ
+#define MAX_FREQ codetree_huff_MAX_FREQ
 
 void thuf_check_types(void);
   /* Checks if data types have sufficient size. */
 
 void thuf_check_empty(void);
-  /* Test {huff_tree_build} with an empty set {V}. */
+  /* Test {codetree_huff_build} with an empty set {V}. */
     
 void thuf_check_single(void);
-  /* Test {huff_tree_build} with a singleton set {V}. */
+  /* Test {codetree_huff_build} with a singleton set {V}. */
    
 void thuf_check_small(void);
-  /* Test {huff_tree_build} with a simple example that requires tie-breaking. */
+  /* Test {codetree_huff_build} with a simple example that requires tie-breaking. */
    
 void thuf_check_unif(void);
-  /* Test {huff_tree_build} with a uniform freq distribution. */
+  /* Test {codetree_huff_build} with a uniform freq distribution. */
     
 void thuf_check_ruler(void);
-  /* Test {huff_tree_build} with a very non-uniform freq distribution. */
+  /* Test {codetree_huff_build} with a very non-uniform freq distribution. */
 
 void thuf_check_generic
   ( codetree_value_t maxval, 
-    huff_tree_freq_t freq[],
+    codetree_huff_freq_t freq[],
     codetree_t *tree, 
     char *code[]
   );
-  /* Test {huff_tree_build} for a set {V} of values given the
+  /* Test {codetree_huff_build} for a set {V} of values given the
     frequencies {freqs[0..maxval]}. The set {V} consists of every value
     {val} in {0..maxval} with {freq[val] > 0}. 
     
@@ -68,14 +68,14 @@ void thuf_check_generic
 codetree_node_count_t thuf_check_tree
   ( codetree_t *tree, 
     codetree_value_t maxval, 
-    huff_tree_freq_t freq[]
+    codetree_huff_freq_t freq[]
   );
   /* Verifies if the given {tree} is well-formed, including the child order 
     property with tie-breaking by smallest leaf value.
     
     Returns the total number of nodes in the tree. */
 
-huff_tree_freq_t thuf_ruler_func(codetree_node_count_t iv);
+codetree_huff_freq_t thuf_ruler_func(codetree_node_count_t iv);
   /* Returns a "ruler function" of the non-negative integer {iv}. */
   
 int32_t main (int32_t argc, char **argv);
@@ -108,14 +108,14 @@ void thuf_check_types(void)
     check_type(byte_t,                  x7, uint64_t, 255);                    
     check_type(codetree_delta_t,        x8, uint64_t, codetree_MAX_DELTA);     
 
-    check_type(huff_tree_freq_t,        x9, uint64_t, huff_tree_MAX_FREQ);     
+    check_type(codetree_huff_freq_t,        x9, uint64_t, codetree_huff_MAX_FREQ);     
   }
    
 void thuf_check_empty(void)
   { 
     fprintf(stderr, "testing with empty {V}...\n");
     codetree_value_t maxval = 40; /* Some upper bound on valid values ({V}). */
-    huff_tree_freq_t freq[maxval+1];
+    codetree_huff_freq_t freq[maxval+1];
     char *code[maxval+1];
     for (codetree_value_t val = 0; val <= maxval; val++) { freq[val] = 0; code[val] = NULL; }
     
@@ -129,7 +129,7 @@ void thuf_check_single(void)
   { 
     fprintf(stderr, "testing with singleton {V}...\n");
     codetree_value_t maxval = 40; /* Some upper bound on valid values ({V}). */
-    huff_tree_freq_t freq[maxval+1];
+    codetree_huff_freq_t freq[maxval+1];
     char *code[maxval+1];
     for (codetree_value_t val = 0; val <= maxval; val++) { freq[val] = 0; code[val] = NULL; }
 
@@ -147,7 +147,7 @@ void thuf_check_small(void)
   { 
     fprintf(stderr, "testing with small fixed tree...\n");
     codetree_value_t maxval = 40; /* Some upper bound on valid values ({V}). */
-    huff_tree_freq_t freq[maxval+1];
+    codetree_huff_freq_t freq[maxval+1];
     char *code[maxval+1];
     for (codetree_value_t val = 0; val <= maxval; val++) { freq[val] = 0; code[val] = NULL; }
     
@@ -182,7 +182,7 @@ void thuf_check_unif(void)
   { 
     fprintf(stderr, "testing with uniform frequencies...\n");
     codetree_value_t maxval = 100; /* Some upper bound on valid values ({V}). */
-    huff_tree_freq_t freq[maxval+1];
+    codetree_huff_freq_t freq[maxval+1];
     char **code = NULL;
     for (codetree_value_t val = 0; val <= maxval; val++) { freq[val] = 0; }
     
@@ -201,7 +201,7 @@ void thuf_check_unif(void)
 void thuf_check_ruler(void)
   { fprintf(stderr, "testing with 'ruler' frequencies...\n");
     codetree_value_t maxval = 100; /* Some upper bound on valid values ({V}). */
-    huff_tree_freq_t freq[maxval+1];
+    codetree_huff_freq_t freq[maxval+1];
     char **code = NULL;
     for (codetree_value_t val = 0; val <= maxval; val++) { freq[val] = 0; }
 
@@ -217,7 +217,7 @@ void thuf_check_ruler(void)
     thuf_check_generic(maxval, freq, tree, code);
   }
         
-huff_tree_freq_t thuf_ruler_func(codetree_node_count_t iv)
+codetree_huff_freq_t thuf_ruler_func(codetree_node_count_t iv)
   { demand(iv >= 0, "bad {iv}");
     uint32_t kv = iv+1;
     uint64_t fr = 1; /* Frequency of leaf. */
@@ -232,13 +232,13 @@ huff_tree_freq_t thuf_ruler_func(codetree_node_count_t iv)
     
 void thuf_check_generic
   ( codetree_value_t maxval, 
-    huff_tree_freq_t freq[],
+    codetree_huff_freq_t freq[],
     codetree_t *tree, 
     char *code[]
   )
   {
     fprintf(stderr, "building a tree {tree2} for the given {freq} vector...\n");
-    codetree_t *tree2 = huff_tree_build(maxval, freq);
+    codetree_t *tree2 = codetree_huff_build(maxval, freq);
     
     fprintf(stderr, "counting leaves of {tree2}...\n");
     codetree_node_count_t nv2 = codetree_num_leaves(tree2);
@@ -276,7 +276,7 @@ void thuf_check_generic
 codetree_node_count_t thuf_check_tree
   ( codetree_t *tree, 
     codetree_value_t maxval, 
-    huff_tree_freq_t freq[]
+    codetree_huff_freq_t freq[]
   )
   { 
     /* Get count of representable values: */
@@ -285,7 +285,7 @@ codetree_node_count_t thuf_check_tree
     
     /* Check Huffman tree invariants on child order: */
 
-    auto huff_tree_freq_t checkit(codetree_node_t *nd);
+    auto codetree_huff_freq_t checkit(codetree_node_t *nd);
       /* Checks the child ordering of all internal nodes of the 
         tree rooted at {nd}. Returns its total total leaf weight.
         Also increments {nleaf}. */
@@ -294,7 +294,7 @@ codetree_node_count_t thuf_check_tree
     if (tree == NULL) 
       { fprintf(stderr, "tree is empty\n"); }
     else
-      { huff_tree_freq_t tree_weight = checkit(tree);
+      { codetree_huff_freq_t tree_weight = checkit(tree);
         fprintf(stderr, "total tree weight = %lu\n", tree_weight);
       }
     demand(nleaf == nvalid, "leaf count does not match {V} size");
@@ -303,7 +303,7 @@ codetree_node_count_t thuf_check_tree
   
     /* IMPS */
     
-    huff_tree_freq_t checkit(codetree_node_t *nd)
+    codetree_huff_freq_t checkit(codetree_node_t *nd)
       { demand(nd != NULL, "child pointer is null");
         if (nd->value < 0)
           { /* Internal node: */

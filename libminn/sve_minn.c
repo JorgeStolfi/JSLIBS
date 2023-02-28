@@ -1,9 +1,11 @@
 /* See {sve_minn.h} */
-/* Last edited on 2017-03-16 21:33:30 by stolfilocal */
+/* Last edited on 2023-02-27 10:58:40 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
 #include <assert.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #include <gauss_elim.h>
 #include <bool.h>
@@ -21,7 +23,7 @@
 /* INTERNAL PROTOTYPES */
 
 void sve_clip_candidate
-  ( int n,
+  ( int32_t n,
     double y[],
     double x0[],
     double dMax,
@@ -34,16 +36,16 @@ void sve_clip_candidate
     If {dBox} is {FALSE}, the domain is a ball with radius {dMax}. 
     Used by {sve_minn_iterate}. */
 
-int sve_take_step
-  ( int n,
+int32_t sve_take_step
+  ( int32_t n,
     sign_t dir,
     double y[],
     double *FyP,
     double x[],
     double Fx,
-    int nv,
+    int32_t nv,
     double v[],
-    int nf,
+    int32_t nf,
     double Fv[],
     bool_t debug
   );
@@ -73,66 +75,66 @@ int sve_take_step
     {y}, 1 if it is one of the probe point, and 2 if it is the
     original center itself (i.e. if the step failed altogether). */
 
-void sve_print_probes(FILE *wr, int nv, int n, double v[], int nf, double Fv[]);
+void sve_print_probes(FILE *wr, int32_t nv, int32_t n, double v[], int32_t nf, double Fv[]);
   /* Prints the probe values {Fv[0..nf-1]} and the probe points.
     Assumes that {v[0..nv*n-1]} are the coordinates of the vertices,
     stored by rows. */
 
-void sve_minn_step(int n, double Fv[], double cm[])
-  { int nv = n+1; /* Number of vertices in simplex. */
-    int rows = nv+1; /* {n+1} stationary eqs, and one unit-sum eq. */
-    int cols = nv+2; /* {n+1} barycentric coords, one Lagrange multip, and the indep term. */
+void sve_minn_step(int32_t n, double Fv[], double cm[])
+  { int32_t nv = n+1; /* Number of vertices in simplex. */
+    int32_t rows = nv+1; /* {n+1} stationary eqs, and one unit-sum eq. */
+    int32_t cols = nv+2; /* {n+1} barycentric coords, one Lagrange multip, and the indep term. */
     double M[rows*cols];
     /* Fill in the main submatrix: */
-    int jb = cols - 1; /* Column of independent term. */
-    for (int i = 0; i < nv; i++)
-      { for (int j = 0; j < nv; j++)
-          { int ij = (j <= i ? i*(i+1)/2 + j : j*(j+1)/2 + i);
+    int32_t jb = cols - 1; /* Column of independent term. */
+    for (int32_t i = 0; i < nv; i++)
+      { for (int32_t j = 0; j < nv; j++)
+          { int32_t ij = (j <= i ? i*(i+1)/2 + j : j*(j+1)/2 + i);
             double Fij = Fv[ij];
             M[i*cols + j] = Fij;
             if (i == j) { M[i*cols + jb] = Fij/4; }
           }
       }
     /* Fill in the row {nv} and column {nv} with the unit-sum constraint: */
-    int ije = n+1; /* Index of constraint row & column. */
-    for (int i = 0; i <= n; i++) { M[i*cols + ije] = 1; M[ije*cols + i] = 1; }
+    int32_t ije = n+1; /* Index of constraint row & column. */
+    for (int32_t i = 0; i <= n; i++) { M[i*cols + ije] = 1; M[ije*cols + i] = 1; }
     M[ije*cols + ije] = 0;
     M[ije*cols + jb] = 1;
     /* Solve the system: */
     gsel_triangularize(rows, cols, M, TRUE, 0.0);
-    gsel_diagonalize(rows, cols, M, TRUE);
-    gsel_normalize(rows, cols, M, TRUE);
+    gsel_diagonalize(rows, cols, M);
+    gsel_normalize(rows, cols, M);
     double x[n+2];
-    int r = gsel_extract_solution(rows, cols, M, 1, x, TRUE);
-    if (r < rows) 
-      { Pr(Er, "%s: warning - solution with %d degrees of indeterminacy\n", __FUNCTION__, rows - r); }
+    int32_t rank_ext = gsel_extract_solution(rows, cols, M, 1, x);
+    if (rank_ext < rows) 
+      { Pr(Er, "%s: warning - solution with %d degrees of indeterminacy\n", __FUNCTION__, rows - rank_ext); }
     /* Extract the solution: */
     double sum = 0.0;
-    for (int i = 0; i <= n; i++) { cm[i] = x[i]; sum += cm[i]; }
+    for (int32_t i = 0; i <= n; i++) { cm[i] = x[i]; sum += cm[i]; }
     if (fabs(sum - 1.0) > 0.5e-7) 
       { Pr(Er, "%s: warning - normalization failed, sum = %24.16e\n", __FUNCTION__, sum); }
     /* Just to be sure: */
-    if ((sum != 0) && (sum != 1)) { for (int i = 0; i <= n; i++) { cm[i] /= sum; } }
+    if ((sum != 0) && (sum != 1)) { for (int32_t i = 0; i <= n; i++) { cm[i] /= sum; } }
   }
 
-void sve_sample_function(int n, sve_goal_t *F, double v[], double Fv[])
+void sve_sample_function(int32_t n, sve_goal_t *F, double v[], double Fv[])
   { double x[n];
-    int nv = n + 1;
-    for (int i = 0; i < nv; i++)
-      { for (int j = 0; j <= i; j++)
+    int32_t nv = n + 1;
+    for (int32_t i = 0; i < nv; i++)
+      { for (int32_t j = 0; j <= i; j++)
           { /* Set {x[0..n-1]} to the midpoint of simplex corners {i,j}: */
             double *vi = &(v[i*n]);
             double *vj = &(v[j*n]);
-            for (int k = 0; k < n; k++) { x[k] = (vi[k] + vj[k])/2; }
+            for (int32_t k = 0; k < n; k++) { x[k] = (vi[k] + vj[k])/2; }
             /* Get the function's value {F(x)} at {x}, store {F(x)} into {Fv}: */
-            int ij = i*(i+1)/2 + j;
+            int32_t ij = i*(i+1)/2 + j;
             Fv[ij] = F(n, x);
           }
       }
   }
 
 void sve_minn_iterate
-  ( int n, 
+  ( int32_t n, 
     sve_goal_t *F, 
     sve_pred_t *OK,
     double x[],
@@ -144,7 +146,7 @@ void sve_minn_iterate
     double rMin, 
     double rMax,
     double stop,
-    int maxIters,
+    int32_t maxIters,
     bool_t debug
   )
   { 
@@ -158,15 +160,15 @@ void sve_minn_iterate
     
     /* Save first guess: */
     double x0[n];   /* Cartesian coords of initial guess. */
-    for (int k = 0; k < n; k++) { x0[k] = x[k]; }
+    for (int32_t k = 0; k < n; k++) { x0[k] = x[k]; }
     
     /* Allocate storage for the simplex: */
-    int nv = n+1; /* Number of vertices in simplex. */
+    int32_t nv = n+1; /* Number of vertices in simplex. */
     double_vec_t vv = double_vec_new(nv*n); 
     double *v = vv.e; /* Cartesian coords of simplex vertices. */
     
     /* Allocate storage for the sample values: */
-    int nf = (n+1)*(n+2)/2; /* Number of probe points. */
+    int32_t nf = (n+1)*(n+2)/2; /* Number of probe points. */
     double_vec_t Fvv = double_vec_new(nf);
     double *Fv = Fvv.e; /* Sampled function values. */
 
@@ -175,8 +177,8 @@ void sve_minn_iterate
     double y[n];    /* Cartesian coords of next solution; also simplex center. */
     double radius = rIni; /* Current probe simplex radius: */
     double dPrev = -1; /* Distance moved in previous iteration (-1 if none). */
-    int nIters = 0; /* Counts quadratic step iterations. */
-    int nEvals = 0; /* Counts function evaluations. */
+    int32_t nIters = 0; /* Counts quadratic step iterations. */
+    int32_t nEvals = 0; /* Counts function evaluations. */
     
     /* Get initial function value: */
     double Fx = (*FxP);
@@ -283,7 +285,7 @@ void sve_minn_iterate
             Pr(Er, "\n");
           }
         /* Set {y} to the best of all points seen so far: */
-        int stepKind = sve_take_step(n, dir, y, &Fy, x, Fx, nv, v, nf, Fv, debug);
+        int32_t stepKind = sve_take_step(n, dir, y, &Fy, x, Fx, nv, v, nf, Fv, debug);
         double dStep = rn_dist(n, x, y); /* Length of this step: */
 
         /* Update the point {x}: */
@@ -345,7 +347,7 @@ void sve_minn_iterate
   }
 
 void sve_clip_candidate
-  ( int n,
+  ( int32_t n,
     double y[],
     double x0[],
     double dMax,
@@ -361,20 +363,20 @@ void sve_clip_candidate
           { Pr(Er, "  moved too far from initial guess d = %20.16e\n", dyx0);
             Pr(Er, "  contracting towards initial guess by s = %20.16f\n", s);
           }
-        for (int k = 0; k < n; k++) { y[k] = x0[k] + s*(y[k] - x0[k]); }
+        for (int32_t k = 0; k < n; k++) { y[k] = x0[k] + s*(y[k] - x0[k]); }
       }
   }
 
-int sve_take_step
-  ( int n,
+int32_t sve_take_step
+  ( int32_t n,
     sign_t dir,
     double y[],
     double *FyP,
     double x[],
     double Fx,
-    int nv,
+    int32_t nv,
     double v[],
-    int nf,
+    int32_t nf,
     double Fv[],
     bool_t debug
   )
@@ -387,10 +389,10 @@ int sve_take_step
     
     /* Find the optimum value among {Fv[0..nf-1]}: */
     double FOpt = -INF*(double)dir; /* {FOpt} is the optimum sample value. */
-    int iOpt = -1, jOpt = -1; /* {V(iOpt,jOpt)} is the optimum sample point. */
-    for (int i = 0; i < nv; i++)
-      { for (int j = 0; j <= i; j++)
-          { int ij = i*(i+1)/2 + j;
+    int32_t iOpt = -1, jOpt = -1; /* {V(iOpt,jOpt)} is the optimum sample point. */
+    for (int32_t i = 0; i < nv; i++)
+      { for (int32_t j = 0; j <= i; j++)
+          { int32_t ij = i*(i+1)/2 + j;
             if (dir*Fv[ij] >= dir*FOpt) { iOpt = i; jOpt = j; FOpt = Fv[ij]; }
           }
       }
@@ -412,7 +414,7 @@ int sve_take_step
             if (debug) { Pr(Er, "    the optimum is V(%d,%d)\n", iOpt, jOpt); }
             double *vi = &(v[iOpt*n]);
             double *vj = &(v[jOpt*n]);
-            for (int k = 0; k < n; k++) { y[k] = (vi[k] + vj[k])/2; }
+            for (int32_t k = 0; k < n; k++) { y[k] = (vi[k] + vj[k])/2; }
             (*FyP) = FOpt;
             return 1;
           }
@@ -424,16 +426,16 @@ int sve_take_step
       }
   }
 
-void sve_print_probes(FILE *wr, int nv, int n, double v[], int nf, double Fv[])
+void sve_print_probes(FILE *wr, int32_t nv, int32_t n, double v[], int32_t nf, double Fv[])
   {
-    for (int i = 0; i < nv; i++)
-      { for (int j = 0; j <= i; j++)
-          { int ij = i*(i+1)/2 + j;
+    for (int32_t i = 0; i < nv; i++)
+      { for (int32_t j = 0; j <= i; j++)
+          { int32_t ij = i*(i+1)/2 + j;
             fprintf(wr, "    %24.16e", Fv[ij]);
             fprintf(wr, "  ");
             double *vi = &(v[i*n]);
             double *vj = &(v[j*n]);
-            for (int k = 0; k < n; k++) { fprintf(wr, " %20.16f", (vi[k] + vj[k])/2); }
+            for (int32_t k = 0; k < n; k++) { fprintf(wr, " %20.16f", (vi[k] + vj[k])/2); }
             fprintf(wr, "\n");
           }
       }

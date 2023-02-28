@@ -1,5 +1,5 @@
 /* Diagram of the internet */
-/* Last edited on 2012-12-07 21:02:18 by stolfilocal */
+/* Last edited on 2023-02-21 05:30:02 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -14,6 +14,8 @@
 #include <jsfile.h>
 
 #include <archdraw.h>
+
+#define OUT_PREFIX "inet"
 
 typedef enum 
   { 
@@ -38,7 +40,7 @@ char **inet_define_type_tags(void);
 adrw_point_vec_t inet_define_points(void);
   /* Returns the reference points of the drawing. */
 
-void inet_define_points_in_diagram(adrw_point_vec_t *P, int *np);
+void inet_define_points_in_diagram(adrw_point_vec_t *P, int32_t *np);
   /* Appends to {P} the main reference points of the diagram.
     Assumes {P->e[0..np-1]} are already defined and updates {*np}.
     Points along a vertical edge of a module are numbered {N+0..N+ncy}
@@ -46,13 +48,13 @@ void inet_define_points_in_diagram(adrw_point_vec_t *P, int *np);
     is the upper corner and coincides with point {N+MMY+0}, the lower corner
     of the module above it. */
 
-void inet_plot_all(epswr_figure_t *epsf, adrw_building_t *B, int nx, int ny, bool_t show_dots);
+void inet_plot_all(char *prefix, adrw_building_t *B, int32_t nx, int32_t ny, bool_t show_dots);
 
 void inet_append_backbone(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[]);
 void inet_append_services(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[]);
 void inet_append_connections(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[]);
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   {
     /* Define block types, names and styles: */
     adrw_unit_style_t **style = inet_define_type_styles();
@@ -67,17 +69,13 @@ int main (int argc, char **argv)
     inet_append_connections(B, &P, style);
     
     /* Print the point table: */
-    { FILE *wr = open_write("out/inet-p.txt", TRUE);
+    { FILE *wr = open_write("out/" OUT_PREFIX "_P.txt", TRUE);
       adrw_print_points(wr, &P);
       fclose(wr);
     }
 
     /* Plot the diagram: */
-    { bool_t eps_fmt = TRUE;
-      epswr_figure_t *epsf = pswr_new_stream("out/inet-", NULL, eps_fmt, "d", "letter", FALSE, 788.0, 508.0);
-      inet_plot_all(epsf, B, 1, 1, FALSE);
-      pswr_close_stream(epsf);
-    }
+    inet_plot_all(OUT_PREFIX "_A", B, 1, 1, FALSE);
     
     return 0;
   }
@@ -85,7 +83,7 @@ int main (int argc, char **argv)
 adrw_point_vec_t inet_define_points(void)
   {
     adrw_point_vec_t P = adrw_point_vec_new(100);
-    int np = 0;
+    int32_t np = 0;
     
     fprintf(stderr, "=== DEFINING POINTS ===\n");
     
@@ -126,7 +124,7 @@ adrw_point_vec_t inet_define_points(void)
 #define RRND 1.0
   /* Corner rounding radius (diagram units). */
 
-void inet_define_points_in_diagram(adrw_point_vec_t *P, int *np)
+void inet_define_points_in_diagram(adrw_point_vec_t *P, int32_t *np)
   {
     /* All dimensions in millimeters. */
 
@@ -134,32 +132,32 @@ void inet_define_points_in_diagram(adrw_point_vec_t *P, int *np)
     double Yor = 0; /* Y of diagram's lower left corner. */
     double Zor = 0; /* Z of diagram (arbitrary). */
 
-    auto void s(int dj, double dX, double dY, int di);
+    auto void s(int32_t dj, double dX, double dY, int32_t di);
       /* Defines {P[dj]+(dX,dY,Zor)} as the coordinates of
         point {P[di]}.  If {P[di]} was defined
         previously, checks whether the definitions agree.
         The point numbers {di,dj} are added to {PTBASE}. */
        
-    void s(int dj, double dX, double dY, int di)
+    void s(int32_t dj, double dX, double dY, int32_t di)
       { char *lab = NULL;
-        int i = di + (PTBASE);
-        int j = (dj < 0 ? dj : dj + (PTBASE));
+        int32_t i = di + (PTBASE);
+        int32_t j = (dj < 0 ? dj : dj + (PTBASE));
         double dZ = Zor;
         asprintf(&lab, "P%04d", i);
         adrw_append_point(lab, i, j, j, j, dX, dY, dZ, P, np); 
       } 
     
     fprintf(stderr, "--- module corners and connection points ---\n");
-    int ndx = NBX + 2*NSX; /* Modules in diagram (X). */
-    int ndy = NBY;  /* Modules in diagram (Y). */
-    int ncy = NCY;  /* Reference points per module (Y). */
+    int32_t ndx = NBX + 2*NSX; /* Modules in diagram (X). */
+    int32_t ndy = NBY;  /* Modules in diagram (Y). */
+    int32_t ncy = NCY;  /* Reference points per module (Y). */
     assert(MMY >= (ncy+1));
     assert(MMX > MMY*(ndy+1));
-    int ix, iy, cy;
+    int32_t ix, iy, cy;
     for (ix = 0; ix <= ndx; ix++)
       for (iy = 0; iy <= ndy; iy++)
         for (cy = 0; cy <= ncy; cy++)
-          { int ip = MMX*(ix+1) + MMY*(iy+1) + cy;
+          { int32_t ip = MMX*(ix+1) + MMY*(iy+1) + cy;
             double xp = Xor+SZX*ix;
             double yp = Yor+SZY*(iy + ((double)cy)/ncy);
             s( -1, xp, yp, ip);
@@ -171,8 +169,8 @@ void inet_define_points_in_diagram(adrw_point_vec_t *P, int *np)
 #define ADDPOLY(DIAG,PTS,LABEL,DESC,TYPE,ROUND,...) \
   do \
     { fprintf(stderr, " [%s]", LABEL); \
-      int v[] = { __VA_ARGS__ , -1 }; \
-      int i = 0; while (v[i] >= 0) { v[i] += (PTBASE); i++; } \
+      int32_t v[] = { __VA_ARGS__ , -1 }; \
+      int32_t i = 0; while (v[i] >= 0) { v[i] += (PTBASE); i++; } \
       adrw_unit_t *rm = adrw_make_poly((LABEL),(DESC),1,(PTS),v,(ROUND),0,(TYPE),style[(TYPE)]); \
       adrw_append_unit((DIAG), rm); \
     } \
@@ -243,15 +241,15 @@ void inet_append_services(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_sty
 void inet_append_connections(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_style_t *style[])
   {
     fprintf(stderr, "--- backbone connection dots ---\n");
-    int nsx = NSX; /* Modules in service blocks (X). */
-    int nbx = NBX; /* Modules in backbone (X). */
-    int nby = NBY; /* Modules in backbone (Y). */
-    int ix, iy, kc;
+    int32_t nsx = NSX; /* Modules in service blocks (X). */
+    int32_t nbx = NBX; /* Modules in backbone (X). */
+    int32_t nby = NBY; /* Modules in backbone (Y). */
+    int32_t ix, iy, kc;
     for (ix = nsx; ix <= nsx+nbx; ix += nbx)
       for (iy = 0; iy < nby; iy++)
-        { int ib = MMX*(ix+1) + MMY*(iy+1);  /* Lower corner. */
+        { int32_t ib = MMX*(ix+1) + MMY*(iy+1);  /* Lower corner. */
           for (kc = 2; kc <= 6; kc += 2)
-            { int ip = ib + kc;
+            { int32_t ip = ib + kc;
               ADDDOT(B, P, ip, inet_block_type_BKC);
             }
         }
@@ -259,7 +257,7 @@ void inet_append_connections(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit_
   }
 
 
-void inet_plot_all(epswr_figure_t *epsf, adrw_building_t *B, int nx, int ny, bool_t show_dots)
+void inet_plot_all(char *prefix, adrw_building_t *B, int32_t nx, int32_t ny, bool_t show_dots)
   {
     double xwid = DIAG_SZX;
     double ywid = DIAG_SZY;
@@ -267,21 +265,23 @@ void inet_plot_all(epswr_figure_t *epsf, adrw_building_t *B, int nx, int ny, boo
     double ymrg =  5;
     double xmin = 00 - xmrg, xmax = xwid + xmrg;
     double ymin = 00 - ymrg, ymax = ywid + ymrg;
-
-    int ox, oy;
-    for (ox = 0; ox < nx; ox++)
-      for (oy = 0; oy < ny; oy++)
-        {
-          fprintf(stderr, "=== PLOTTING PAGE [%d,%d] OF [%d,%d] ===\n", ox,oy,nx,ny);
-          adrw_start_page(epsf, xmin, xmax, ymin, ymax, ox, nx, oy, ny, "Situacao atual");
-          pswr_set_label_font(epsf, "Courier", 8.0);
-          adrw_plot_building(epsf, B, show_dots);
-        }
+    
+    for (int32_t ox = 0; ox < nx; ox++)
+      { for (int32_t oy = 0; oy < ny; oy++)
+          { fprintf(stderr, "=== PLOTTING PAGE [%d,%d] OF [%d,%d] ===\n", ox,oy,nx,ny);
+            epswr_figure_t *epsf = adrw_new_figure
+              ( "out", prefix, "P", xmin, xmax, ymin, ymax,
+                ox, nx, oy, ny, "Network"
+              );
+            adrw_plot_building(epsf, B, show_dots);
+            epswr_end_figure(epsf);
+          }
+      }
   }
 
 adrw_unit_style_t **inet_define_type_styles(void)
   {
-    int ntypes = inet_block_type_MAX + 1;
+    int32_t ntypes = inet_block_type_MAX + 1;
     adrw_unit_style_t **style = (adrw_unit_style_t **)notnull(malloc(ntypes*sizeof(adrw_unit_style_t *)), "no mem");
     frgb_t fill_rgb[ntypes];
     frgb_t draw_rgb[ntypes];
@@ -290,7 +290,7 @@ adrw_unit_style_t **inet_define_type_styles(void)
     double dot_radius[ntypes];
     
     /* Defaults: */
-    int i;
+    int32_t i;
     for (i = 0; i < ntypes; i++)
       { fill_rgb[i] = (frgb_t){{ -1,-1,-1 }};
         draw_rgb[i] = (frgb_t){{ 0.000, 0.000, 0.000 }}; /* Y = 0.0000 */
@@ -342,7 +342,7 @@ adrw_unit_style_t **inet_define_type_styles(void)
   }
 
 char **inet_define_type_tags(void)
-  { int ntypes = inet_block_type_MAX + 1;
+  { int32_t ntypes = inet_block_type_MAX + 1;
     char **tag = (char **)notnull(malloc(ntypes*sizeof(char *)), "no mem");
     tag[inet_block_type_BKB] = "BKB";
     tag[inet_block_type_DNS] = "DNS";

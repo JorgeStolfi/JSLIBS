@@ -1,5 +1,5 @@
 /* Basic test defs for {r2_opt.h}. */
-/* Last edited on 2017-06-05 22:59:16 by stolfilocal */
+/* Last edited on 2023-02-27 10:35:50 by stolfi */
 
 #ifndef test_r2_opt_basic_H
 #define test_r2_opt_basic_H
@@ -12,33 +12,33 @@
 #include <i2.h>
 #include <bool.h> 
 
-typedef double tr2o_image_eval_proc_t(int i, i2_t iscale, double x, double y); 
+typedef double tr2o_image_eval_proc_t(int32_t i, i2_t iscale, double x, double y); 
   /* Type of a procedure that evaluates image number {i} at the
     domain point {(x,y)}. The image's domain is implicitly shrunk by
     {1/2^iscale.c[j]} along each axis {j} (with antialiasing).  The point {(x,y)} is
     not scaled. */
 
 void tr2o_debug_params
-  ( int ind,
+  ( int32_t ind,
     char *pname,
-    int NI, 
+    int32_t NI, 
     r2_t p[]
   );
   /* Prints a list of {r2_t} valued parameters {p[0..NI-1]}.  Indents by {ind}
     columns. */
 
 void tr2o_debug_r2
-  ( int ind,
+  ( int32_t ind,
     char *pname,
-    int i,
+    int32_t i,
     r2_t *p
   );
   /* Prints the point {p} with label "{pname}[{i}]". Indents by {ind} columns. */
 
 void tr2o_debug_points
-  ( int ind, 
+  ( int32_t ind, 
     char *title, 
-    int NI, 
+    int32_t NI, 
     char *pname, 
     r2_t p[], 
     r2_t pini[], 

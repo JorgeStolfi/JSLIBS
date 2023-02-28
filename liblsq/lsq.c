@@ -1,5 +1,5 @@
 /* See {lsq.h} */
-/* Last edited on 2023-01-24 10:12:24 by stolfi */
+/* Last edited on 2023-02-26 03:57:21 by stolfi */
 
 #define lsq_C_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
@@ -174,6 +174,8 @@ int32_t lsq_solve_system
     if (nc == 0)
       { /* Just solve {A * U = B}: */
         rank = gsel_solve(nx, nx, A, nf, B, U, 0.0);
+        if (verbose) { fprintf(stderr, "  rank = %d, should be %d\n", rank, nx); }
+        demand(rank == nx, "indeterminate system");
       }
     else
       { /* Build the augmented matrices {AR}, {BS}, {UL}: */
@@ -183,13 +185,13 @@ int32_t lsq_solve_system
         double *UL = notnull(malloc(nxc*nf*sizeof(double)), "no mem");
         lsq_assemble_constrained_system(nx, nf, A, B, nc, R, S, AR, BS);
         rank = gsel_solve(nxc, nxc, AR, nf, BS, UL, 0.0);
+        if (verbose) { fprintf(stderr, "  rank = %d, should be %d", rank, nxc); }
+        demand(rank == nxc, "indeterminate system");
         lsq_split_constrained_solution(nx, nf, nc, UL, U, L);
         free(UL); free(BS); free(AR);
       } 
     if (verbose)
-      { fprintf(stderr, "  rank = %d", rank);
-        if (rank < nx) { fprintf(stderr, " (%s)", "indeterminate"); }
-        fprintf(stderr, "  system solution:\n");
+      { fprintf(stderr, "  system solution:\n");
         for (int32_t ix = 0; ix < nx; ix++)
           { fprintf(stderr, "  %-4s", (ix == nx/2 ? "U = " : ""));
             lsq_debug_double_vec(nf, &(U[ix*nf]), "%12.5f");

@@ -1,11 +1,12 @@
 /* See rfmxn.h. */
-/* Last edited on 2021-08-17 15:04:49 by stolfi */
+/* Last edited on 2023-02-27 07:17:06 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include <rn.h>
 #include <rmxn.h>
@@ -165,7 +166,7 @@ void rfmxn_tr_mul (int32_t p, int32_t m, int32_t n, float *A, float *B, float *M
 
 double rfmxn_det (int32_t n, float *A)
   { int32_t n2 = n*n;
-    double *C = (double *)notnull(malloc(n2*sizeof(double)), "no mem for C");
+    double *C = rmxn_alloc(n,n);
     for (int32_t t = 0; t < n2; t++) { C[t] = (double)A[t]; }
     gsel_triangularize(n, n, C, FALSE, 0.0);
     double det = 1.0;
@@ -176,7 +177,7 @@ double rfmxn_det (int32_t n, float *A)
 
 double rfmxn_inv (int32_t n, float *A, float *M)
   { int32_t n2 = n*n;
-    double *C = (double *)notnull(malloc(n2*sizeof(double)), "no mem for C");
+    double *C = rmxn_alloc(n,n);
     for (int32_t t = 0; t < n2; t++) { C[t] = (double)A[t]; }
     double det = rmxn_inv(n, C, C);
     for (int32_t t = 0; t < n2; t++) { M[t] = (float)C[t]; }
@@ -186,7 +187,7 @@ double rfmxn_inv (int32_t n, float *A, float *M)
   
 double rfmxn_inv_full (int32_t n, float *A, float *M)
   { int32_t n2 = n*n;
-    double *C = (double *)notnull(malloc(n2*sizeof(double)), "no mem for C");
+    double *C = rmxn_alloc(n,n);
     for (int32_t t = 0; t < n2; t++) { C[t] = (double)A[t]; }
     double det = rmxn_inv_full(n, C, C);
     for (int32_t t = 0; t < n2; t++) { M[t] = (float)C[t]; }
@@ -340,7 +341,7 @@ void rfmxn_LT_pre_div(int32_t m, int32_t n, float *L, float *A, float *M)
 void rfmxn_cholesky(int32_t n, float *A, float *L)
   { 
     int32_t n2 = n*n;
-    double *C = (double *)notnull(malloc(n2*sizeof(double)), "no mem for C");
+    double *C = rmxn_alloc(n,n);
     for (int32_t t = 0; t < n2; t++) { C[t] = (double)A[t]; }
     rmxn_cholesky(n, C, C);
     for (int32_t t = 0; t < n2; t++) { L[t] = (float)C[t]; }

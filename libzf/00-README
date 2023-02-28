@@ -1,0 +1,15 @@
+# Last edited on 2005-09-25 18:09:21 by stolfi
+
+UNIVARIATE ZERO FINDERS USING IA / AA
+
+SUMMARY
+
+  This package contains procedures that find
+  all zeros of functions, using validated
+  evaluators (IA and AA).
+  
+    zf.h, zf.c
+    
+      Enumerates all zeros of an univariate function using general
+      enclosures (box, slab, trapezoid, butterfly) which can be
+      computed with IA or AA.

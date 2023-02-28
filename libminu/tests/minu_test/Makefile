@@ -1,4 +1,4 @@
-# Last edited on 2023-02-04 07:05:52 by stolfi
+# Last edited on 2023-02-19 16:51:21 by stolfi
 
 PROG = minu_do_tests
 
@@ -20,10 +20,10 @@ all: check
 check:  do-test
 
 do-test: ${PROG}
-	rm -f *.ps *.eps
+	rm -f out/*.eps
 	${PROG}
-	for f in *.ps *.eps ; do \
-          echo $$f; ${PSVIEW} $$f ; \
+	for f in out/*opt01*.eps ; do \
+          echo $$f; ${PSVIEW} $${f/opt01/opt*} ; \
         done
 
 clean::

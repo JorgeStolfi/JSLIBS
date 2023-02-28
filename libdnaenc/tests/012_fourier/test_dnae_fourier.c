@@ -2,7 +2,7 @@
 #define PROG_DESC "Fourier analysis of DNA signal filtering routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-02-14 17:56:08 by stolfi */
+/* Last edited on 2023-02-25 16:06:14 by stolfi */
 
 #define test_dnae_fourier_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -98,6 +98,7 @@
 #include <affirm.h>
 #include <vec.h>
 #include <wt_table.h>
+#include <rn.h>
 
 #include <msm_multi.h>
 #include <msm_ps_tools.h>
@@ -240,15 +241,15 @@ int32_t main(int32_t argc, char**argv)
     int32_t f;
     
     /* Spectrum of filtered DNA signal, without any sampling: */
-    double *fP = (double *)notnull(malloc((fMax+1)*sizeof(double)), "no mem");
+    double *fP = rn_alloc(fMax+1);
     for (f = 0; f < fMax; f++) { fP[f] = dnaP[f]; }
     
     /* Spectrum of non-aliased part of filtered and downsampled DNA signal: */
-    double *vP = (double *)notnull(malloc((fMax+1)*sizeof(double)), "no mem");
+    double *vP = rn_alloc(fMax+1);
     for (f = 0; f < fMax; f++) { vP[f] = dnaP[f]; }
     
     /* Spectrum of aliased part of filtered and downsampled DNA signal: */
-    double *aP = (double *)notnull(malloc((fMax+1)*sizeof(double)), "no mem"); 
+    double *aP = rn_alloc(fMax+1); 
     for (f = 0; f < fMax; f++) { aP[f] = 0; }
     
     /* Current filtering level: */
@@ -330,8 +331,8 @@ int32_t main(int32_t argc, char**argv)
 
 
         /* Allocate new storage for valid and aliased spectra after downsampling: */
-        double *vfP =  (double *)notnull(malloc((hMax+1)*sizeof(double)), "no mem");
-        double *afP =  (double *)notnull(malloc((hMax+1)*sizeof(double)), "no mem");
+        double *vfP =  rn_alloc(hMax+1);
+        double *afP =  rn_alloc(hMax+1);
         
         /* Simulate downsampling of {vP,aP} to {vfP,afP}: */
         int32_t h;

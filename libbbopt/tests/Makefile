@@ -1,6 +1,6 @@
-# Last edited on 2019-04-09 18:10:22 by jstolfi
+# Last edited on 2023-02-20 09:44:07 by stolfi
 
 IGNOREDIRS := \
-  curvefit
+  LATER
   
 include ${STOLFIHOME}/programs/c/GENERIC-ROOT-DIR.make

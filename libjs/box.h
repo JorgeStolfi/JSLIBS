@@ -2,7 +2,7 @@
 #define box_H
 
 /*  Axis-aligned boxes in {R^d}.  */
-/*  Last edited on 2021-12-31 23:44:30 by stolfi */
+/*  Last edited on 2023-02-18 22:14:25 by stolfi */
 
 /* We need to set these in order to get {asinh}. What a crock... */
 #undef __STRICT_ANSI__
@@ -137,17 +137,32 @@ void box_split
     interval_t BMD[],
     interval_t BHI[] 
   );
-  /* Splits the box {B[0..d-1]} by a plane perpendicular to axis {a} at
-    coordinate {x}, into boxes {BLO[0..d-1]} (below {x}), {BMD[0..d-1]}
-    (at {x}) and {BHI[0..d-1]} (above {x}).
+  /* Splits the box {B[0..d-1]} by a plane perpendicular to axis {a}
+    (which must be in {0..d-1}) at coordinate {x}, into boxes
+    {BLO[0..d-1]} (below {x}), {BMD[0..d-1]} (at {x}) and {BHI[0..d-1]}
+    (above {x}).
     
-    If {B} is empty, all three boxes {BLO,BMD,BHI} will be empty.
-    Otherwise, depending on the position of {x} relative to {B[i]} and
-    on whether {B[i]} is a singleton or an open interval, one or two of
-    these boxes may be empty.
+    If {B} is empty, all three boxes {BLO,BMD,BHI} will be empty. 
     
-    If any of the parameters {BLO,BMD,BHI} is {NULL}, the correspoinding box is not
-    generated. */
+    Otherwise, two of the boxes may be empty, depending on the position
+    of {x} relative to the interval {B[a]} and on whether {B[a]} is a
+    singleton or an open interval.
+    Specifically,
+    
+      {BLO} will be empty iff {x <= LO(B[a])};
+      
+      {BHI} will be empty iff {x >= HI(B[a])};
+      
+      {BMD} will not be empty iff {LO(B[a] < x < H(B[a])}
+            or {LO(B[a]) == x == HI(B[a])}
+    
+    if {LO(B[a]) < x < HI(B[a]}, the three boxes will be not empty,
+    and will have {BLO[a] = (LO(B[a]) _ x)}, {BMD[a] = [x_x]}, and {BHI = (x, BHI(a))}.
+    Otherwise the only non-empty box will be the whole of {B}. In any case, the result boxes that
+    are not empty will be equal to {B} along all axes except {a}.
+    
+    If any of the parameters {BLO,BMD,BHI} is {NULL}, the corresponding
+    box is not generated. */
 
 void box_throw(box_dim_t d, double elo, double ehi, double p_empty, double p_single, interval_t B[]);
   /* Stores into {B[0..d-1]} a random {d}-dimensional box. 
@@ -291,7 +306,32 @@ void box_face_rel_box(box_dim_t m, box_face_index_t fi, interval_t F[]);
     singleton sets {\set{0}} and {\set{1}}, while the latter means the
     open interval {(0_1)}. */
 
+void box_print(FILE *wr, box_dim_t d, interval_t B[]);
+  /* Prints the box {B} as a series of intervals, in some default format */
+  
+void box_gen_print
+  ( FILE *wr, 
+    box_dim_t d, 
+    interval_t B[], 
+    char *fmt, 
+    char *pref, 
+    char *sep, 
+    char *suff
+  );
+  /* Prints the box {B} as a series of intervals, preceded by {pref},
+    separated by {sep}, and followed by {suff}. Each end of the interval
+    is printed with format {fmt}, which must have exactly one "%f",
+    "%g", or "%e" spec. 
+    
+    If the box is empty, all intervals are printed as "[]". If an
+    interval is a single value ({LO == HI}), it is printed as that value
+    between "{" and "}". Otherwise each interval is printed as
+    "({LO}_{HI})" where {LO} and {HI} are the endpoints.
+    
+    Suitable defaults are provided if any of {fmt,pref,sep,suff} are
+    {NULL}. */
+
 void box_face_print(FILE *wr, box_dim_t m, box_face_index_t fi);
   /* Prints the signature of face number {fi} of an {m}-dimensional box. */
-
+  
 #endif

@@ -1,6 +1,6 @@
-# Last edited on 2023-02-06 06:02:46 by stolfi
+# Last edited on 2023-02-15 12:23:55 by stolfi
 
-PROG := test_huff_tree
+PROG := test_codetree_huff
 
 TEST_LIB := libjs.a
 TEST_LIB_DIR := ../..

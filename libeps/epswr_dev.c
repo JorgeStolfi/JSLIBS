@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2022-10-20 06:54:34 by stolfi */
+/* Last edited on 2023-02-25 16:07:07 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -8,12 +8,14 @@
 #include <stdlib.h>
 #include <math.h>
 #include <limits.h>
+#include <assert.h>
 
 #include <affirm.h>
 #include <bool.h>
 #include <jsfile.h>
 #include <jstime.h>
 #include <jsstring.h>
+#include <rn.h>
 
 #include <epswr.h>
 #include <epswr_def.h>
@@ -788,7 +790,7 @@ void epswr_dev_write_proc_defs(FILE *wr)
       "    %% --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, cy-loy1, cx-lox\n"
       "  exch\n"
       "    %% --- draw, fill, rot, str, xa, ya, lox, loy1, hix, hiy1, cx-lox, cy-loy1\n"
-      "  10 -1 roll (C) pstack pop\n"
+      "  10 -1 roll\n"
       "    %% --- draw, fill, str, xa, ya, lox, loy, hix1, hiy1, cx-lox, cy-loy1, rot\n"
       "  gsave\n"
       "  rotate\n"
@@ -807,10 +809,10 @@ void epswr_dev_write_proc_defs(FILE *wr)
       "    %% --- draw, fill, str, xa, ya, dy1, hix, lox\n"
       "  sub\n"
       "    %% --- draw, fill, str, xa, ya, dy1, dx\n"
-      "  exch (D) pstack pop\n"
+      "  exch\n"
       "    %% --- draw, fill, str, xa, ya, dx, dy1\n"
       "  exch 4 1 roll mul -1 mul\n"
-      "  3 1 roll mul -1 mul exch (E) pstack pop\n"
+      "  3 1 roll mul -1 mul exch\n"
       "    %% --- draw, fill, str, -dx*xa, -dy1*ya\n"
       "  rmoveto\n"
       "    %% --- draw, fill, str\n"
@@ -1031,6 +1033,34 @@ void epswr_dev_coord_line
     fprintf(wr, "%6.1f %sgrd\n", pspos, (axis == epswr_axis_HOR ? "x" : "y"));
   }
 
+void epswr_dev_coord_lines
+  ( epswr_figure_t *eps, 
+    epswr_axis_t axis, 
+    double psstart,
+    double psstep
+  )
+  { psstep = fabs(psstep); 
+    /* Find actual index range: */
+    double hMin, hMax, vMin, vMax;
+    epswr_dev_get_window(eps, &hMin, &hMax, &vMin, &vMax);
+    double hvMin = (axis == epswr_axis_HOR ? hMin : vMin);
+    double hvMax = (axis == epswr_axis_HOR ? hMax : vMax);
+    demand(psstep > (hvMax - hvMin)/epswr_dev_MAX_COORD_LINES, "step too small, too many lines");
+    int64_t iMin = (int64_t)floor((hvMin - psstart - 1.0e-100)/psstep);
+    int64_t iMax = (int64_t)ceil((hvMax - psstart + 1.0e-100)/psstep);
+    /* Shift to reduce roundoff errors: */
+    psstart = psstart + ((double)iMin)*psstep;
+    assert(psstart <= hvMin);
+    iMax = iMax - iMin; iMin = 0;
+    
+    FILE *wr = eps->wr;
+    char *op = (axis == epswr_axis_HOR ? "xgrd" : "ygrd");
+    for (int64_t i = iMin; i <= iMax; i++)
+      { double h = psstart + ((double)i)*psstep;
+        fprintf(wr, "%6.1f %s\n", h, op);
+      }
+  }
+
 void epswr_dev_frame (epswr_figure_t *eps)
   { FILE *wr = eps->wr;
     fprintf(wr, "wframe\n");
@@ -1146,7 +1176,7 @@ void epswr_dev_rounded_polygon
     if ((!draw) && (!fill)) { return; }
     if (! epswr_polygon_is_invisible(eps, psx, psy, n))
       { /* Compute the radii to use at each corner: */
-        double *arad = (double *)malloc(n*sizeof(double));
+        double *arad = rn_alloc(n);
         for (int32_t i = 0; i<n; i++)
           { int32_t j = (i + 1) % n;
             int32_t k = (i + 2) % n;
@@ -1478,14 +1508,14 @@ void epswr_dev_grid_lines(epswr_figure_t *eps, int32_t nh, int32_t nv)
 
 void epswr_dev_grid_cell
   ( epswr_figure_t *eps, 
-    int32_t ih, int32_t nh,
-    int32_t iv, int32_t nv,
+    int32_t col, int32_t cols,
+    int32_t row, int32_t rows,
     bool_t fill, bool_t draw
   )
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
     FILE *wr = eps->wr;
-    fprintf(wr, "%d %d   %3d %3d  %3d %3d", draw, fill, ih, nh, iv, nv);
+    fprintf(wr, "%d %d   %3d %3d  %3d %3d", draw, fill, col, cols, row, rows);
     fprintf(wr, " cel\n");
     fflush(wr);
   }
