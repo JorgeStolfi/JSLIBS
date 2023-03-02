@@ -1,5 +1,5 @@
 /* gauss_elim_test --- test program for gauss_elim.h  */
-/* Last edited on 2023-02-27 08:57:24 by stolfi */
+/* Last edited on 2023-03-01 21:28:04 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -50,13 +50,26 @@ void test_solve(int32_t trial, bool_t verbose);
 void test_quadratic_min(int32_t trial, bool_t verbose);
   /* Tests {gsel_quadratic_min}. */
 
+void choose_system
+  ( int32_t trial,
+    int32_t *m_P,
+    int32_t *n_P,
+    double **A_P,
+    int32_t *p_P,
+    double **B_P, 
+    double **X_P,
+    bool_t verbose
+  );
+  /* Choses the problem size {m,n,p} and the arrays {A,X}, then
+    computes {B = A*X}.  If {verbose}, also prints the system
+    to {stderr}. */
+    
 void throw_matrix(int32_t m, int32_t n, double A[], bool_t verbose);
   /* Generates a random {m × n} matrix {A}. */
 
-void throw_system(int32_t m, int32_t n, double A[], int32_t p, double B[], double X[], bool_t verbose);
+void throw_system(int32_t m, int32_t n, double A[], int32_t p, double X[], bool_t verbose);
   /* Generates a random {m × n} coefficient matrix {A} and a random {m × p}
-    solution matrix {X}, then computes the {n × p} right-hand-side matrix 
-    {B = A X}. */
+    solution matrix {X}. */
 
 void throw_quadratic_fn(int32_t n, double A[], double b[], bool_t verbose);
   /* Generates a random {n × n} coefficient matrix {A}, positive semidefinite,
@@ -239,24 +252,16 @@ void test_triangularize (int32_t trial, bool_t verbose)
 
 void test_gauss_elim (int32_t trial, bool_t verbose)
   { 
-    srand(1665 + 2*trial);
-    srandom(1665 + 2*trial);
-    int32_t m = rand()/(RAND_MAX/MAX_ROWS) + 1; /* Rows (equations). */
-    int32_t n = rand()/(RAND_MAX/MAX_COLS) + 1; /* Main columns (unknowns). */
-    int32_t p = rand()/(RAND_MAX/MAX_PRBS) + 1; /* RHS columns (problems). */
-
     fprintf(stderr, "\n");
     fprintf(stderr, "======================================================================\n");
     fprintf(stderr, "%s (%d)\n", __FUNCTION__, trial);
+    
+    int32_t m, n, p;
+    double *A, *B, *X_ref;
+    choose_system(trial, &m, &n, &A, &p, &B, &X_ref, verbose);
+
     fprintf(stderr, "testing with m = %d  n = %d  p = %d ...\n", m, n, p);
     
-    double A[m*n]; /* Main systems matrix. */
-    double B[m*p]; /* Right-hand-side matrix. */
-    double X_ref[n*p];  /* True (mostly) solution. */
-
-    if (verbose) { fprintf(stderr, "  generating system...\n\n"); }
-    throw_system(m, n, A, p, B, X_ref, verbose);
-
     /* Compute the determinant of the first {max(m,n)} columns of {A}, recursively: */
     int32_t q = (m > n ? m : n);
     if (verbose) { fprintf(stderr, "  computing 'true' determinant...\n"); }
@@ -326,30 +331,22 @@ void test_gauss_elim (int32_t trial, bool_t verbose)
 
     if ((rank_ext == m) && (rank_ext >= n)) { check_solution_with_reference(m, n, p, X, X_ref, Bmax); }
 
+    free(A); free(B); free(X_ref);
     fprintf(stderr, "done.\n");
     fprintf(stderr, "======================================================================\n");
   }
 
 void test_solve (int32_t trial, bool_t verbose)
   { 
-    srand(1665 + 12*trial);
-    srandom(1665 + 12*trial);
-    int32_t m = rand()/(RAND_MAX/MAX_ROWS) + 1; /* Rows (equations). */
-    int32_t n = rand()/(RAND_MAX/MAX_COLS) + 1; /* Main columns (unknowns). */
-    int32_t p = rand()/(RAND_MAX/MAX_PRBS) + 1; /* RHS columns (problems). */
-    
     fprintf(stderr, "\n");
     fprintf(stderr, "======================================================================\n");
     fprintf(stderr, "%s (%d)\n", __FUNCTION__, trial);
-    fprintf(stderr, "testing with m = %d  n = %d  p = %d ...\n", m, n, p);
-    
-    double A[m*n];      /* Main systems matrix. */
-    double B[m*p];      /* Right-hand-side matrix. */
-    double X_ref[n*p];  /* True (mostly) solution. */
-    double R[m*p];      /* Residual {A X - B}. */
 
-    if (verbose) { fprintf(stderr, "  generating system...\n\n"); }
-    throw_system(m, n, A, p, B, X_ref, verbose);
+    int32_t m, n, p;
+    double *A, *B, *X_ref;
+    choose_system(trial, &m, &n, &A, &p, &B, &X_ref, verbose);
+
+    fprintf(stderr, "testing with m = %d  n = %d  p = %d ...\n", m, n, p);
 
     /* Compute the determinant of the first {max(m,n)} columns of {A}, recursively: */
     int32_t q = (m > n ? m : n);
@@ -364,28 +361,89 @@ void test_solve (int32_t trial, bool_t verbose)
 
     /* Call procedures and check results: */
     if (verbose) { fprintf(stderr, "  running tests...\n\n"); }
-    double X[n*p];      /* Computed solution. */
 
     /* Check the determinant: */
     double detA = gsel_determinant(m, n, A, q);
     if (verbose) { fprintf(stderr, "  gsel_determinant: result = %24.16e\n\n", detA); }
     check_determinant(q, Amax, detA, detA_ref);
 
+    double X[n*p];      /* Computed solution. */
     int32_t r = gsel_solve(m, n, A, p, B, X, 0.0);
-    if (verbose) { gsel_print_array(stderr, "%12.6f", "  gsel_solve:", n, p, X, ""); }
+    if (verbose) { gsel_print_array(stderr, "%12.6f", "  solution {X}:", n, p, X, ""); }
     if (verbose) { fprintf(stderr, "  used %d out of %d equations\n", r, m); }
     check_solve(m, n, A, p, B, X, r, Bmax);
 
     if ((r == m) && (r >= n)) 
       { check_solution_with_reference(m, n, p, X, X_ref, Bmax); }
 
+    double R[m*p];      /* Residual {A X - B}. */
     gsel_residual(m, n, A, p, B, X, R);
     if (verbose) { gsel_print_array(stderr, "%12.6f", "  gsel_residual:", m, p, R, ""); }
     check_residual(m, n, A, p, B, X, R, Bmax);
 
+    free(A); free(B); free(X_ref);
     fprintf(stderr, "done.\n");
     fprintf(stderr, "======================================================================\n");
   }
+    
+void choose_system
+  ( int32_t trial,
+    int32_t *m_P,
+    int32_t *n_P,
+    double **A_P,
+    int32_t *p_P,
+    double **B_P, 
+    double **X_P,
+    bool_t verbose
+  ) 
+  { 
+    srand(1665 + 12*trial);
+    srandom(1665 + 12*trial);
+    
+    int32_t special_trials = 4;  /* Num trial with special systems */
+    
+    int32_t m, n, p;
+    if (trial < special_trials) 
+      { m = trial+1; n = trial+1; p = 2; }
+    else
+      { m = rand()/(RAND_MAX/MAX_ROWS) + 1; /* Rows (equations). */
+        n = rand()/(RAND_MAX/MAX_COLS) + 1; /* Main columns (unknowns). */
+        p = rand()/(RAND_MAX/MAX_PRBS) + 1; /* RHS columns (problems). */
+      }
+
+    double *A = rmxn_alloc(m,n); /* Main systems matrix. */
+    double *X = rmxn_alloc(n,p);  /* True (mostly) solution. */
+
+    if (verbose) { fprintf(stderr, "  generating system...\n\n"); }
+    if (trial < special_trials)
+      { for (int32_t j = 0; j < n; j++)
+          { for (int32_t i = 0; i < m; i++) 
+              { A[i*n + j] = i + n*sin(i*j + 1); }
+            for (int32_t k = 0; k < p; k++) 
+              { X[j*p + k] = (k+1)*(j + cos(k*j + 1))/n; }
+          }
+      }
+    else
+      { throw_system(m, n, A, p, X, verbose); }
+
+    /* Compute the right-hand side {B = A X}: */
+    double *B = rmxn_alloc(m,p);  /* True (mostly) solution. */
+    for (int32_t i = 0; i < m; i++) 
+      { for (int32_t k = 0; k < p; k++) 
+          { double s = 0;
+            for (int32_t j = 0; j < n; j++) { s += A[i*n + j]*X[j*p + k]; }
+            B[i*p + k] = s;
+          }
+      }
+    if (verbose) { gsel_print_system(stderr, "%12.6f", "  original system:", m, n, A, p, B, ""); }
+
+    (*m_P) = m;
+    (*n_P) = n;
+    (*A_P) = A;
+    (*p_P) = p;
+    (*B_P) = B;
+    (*X_P) = X;
+  } 
 
 void test_quadratic_min (int32_t trial, bool_t verbose)
   { 
@@ -728,7 +786,7 @@ void throw_matrix(int32_t m, int32_t n, double A[], bool_t verbose)
    if (verbose) { gsel_print_array(stderr, "%12.6f", "  original matrix:", m, n, A, ""); }
   }
 
-void throw_system(int32_t m, int32_t n, double A[], int32_t p, double B[], double X[], bool_t verbose)
+void throw_system(int32_t m, int32_t n, double A[], int32_t p, double X[], bool_t verbose)
   {
     /* Generate power-of-ten scale factors: */
     double Ascale = pow(10.0, rand()/(RAND_MAX/3));
@@ -748,15 +806,6 @@ void throw_system(int32_t m, int32_t n, double A[], int32_t p, double B[], doubl
       { for (int32_t j = 0; j < n; j++)
           { A[i*n + j] = Ascale * (double)((rand() % (n*p)) - (n*p)/2); }
       }
-    /* Compute the right-hand side {B = A X}: */
-    for (int32_t i = 0; i < m; i++) 
-      { for (int32_t k = 0; k < p; k++) 
-          { double s = 0;
-            for (int32_t j = 0; j < n; j++) { s += A[i*n + j]*X[j*p + k]; }
-            B[i*p + k] = s;
-          }
-      }
-    if (verbose) { gsel_print_system(stderr, "%12.6f", "  original system:", m, n, A, p, B, ""); }
   }
 
 #define MAX_PHIS MAX_COLS

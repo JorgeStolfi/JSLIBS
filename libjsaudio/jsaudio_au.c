@@ -1,6 +1,7 @@
 /* See jsaudio_au.h */
-/* Last edited on 2017-01-02 13:43:58 by jstolfi */
+/* Last edited on 2023-03-02 12:31:24 by stolfi */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -13,7 +14,7 @@
 
 /* IMPLEMENTATIONS */
 
-int jsa_au_file_bytes_per_sample(int enc)
+int32_t jsa_au_file_bytes_per_sample(int32_t enc)
   {
     switch(enc)
       {
@@ -62,9 +63,9 @@ sound_t jsa_read_au_file(FILE *rd)
     au_file_header_t h = jsa_read_au_file_header(rd);
     
     /* Compute number of channels {nc} and samples per channel {ns}: */
-    int nc = h.channels;
-    int bps = jsa_au_file_bytes_per_sample(h.encoding);
-    int ns = h.data_size / nc / bps;
+    int32_t nc = h.channels;
+    int32_t bps = jsa_au_file_bytes_per_sample(h.encoding);
+    int32_t ns = h.data_size / nc / bps;
     assert(h.data_size == ns * nc * bps); 
     
     /* Allocates the {sound_t} structure and fills header data: */
@@ -101,28 +102,27 @@ au_file_header_t jsa_read_au_file_header(FILE *rd)
     assert((h.channels >= 1) && (h.channels <= 16));
     
     /* Consume stream until first data byte: */
-    int nread = 24;
-    while(nread < h.hdr_size) { int c = fgetc(rd); assert(c != EOF); nread++; }
+    int32_t nread = 24;
+    while(nread < h.hdr_size) { int32_t chr = fgetc(rd); assert(chr != EOF); nread++; }
       
     return h;
   }
 
-#define SCALE_INT (2.0 * 1024.0 * 1024.0 * 1024.0) /* {2^31} */
+#define SCALE_INT32_T (2.0 * 1024.0 * 1024.0 * 1024.0) /* {2^31} */
 #define SCALE_SHORT (32.0 * 1024.0) /* {2^15} */
 
-void jsa_skip_au_file_samples(FILE *rd, au_file_header_t *h, int ns)
+void jsa_skip_au_file_samples(FILE *rd, au_file_header_t *h, int32_t ns)
   {
-    int bps = jsa_au_file_bytes_per_sample(h->encoding); /* Bytes per sample. */
-    int bskip = ns * bps; /* Bytes to skip. */
-    int i;
-    for (i = 0; i < bskip; i++)
-      { int c = fgetc(rd); assert(c != EOF); }
+    int32_t bps = jsa_au_file_bytes_per_sample(h->encoding); /* Bytes per sample. */
+    int32_t bskip = ns * bps; /* Bytes to skip. */
+    for (int32_t i = 0; i < bskip; i++)
+      { int32_t chr = fgetc(rd); assert(chr != EOF); }
   }
 
-void jsa_read_au_file_samples(FILE *rd, au_file_header_t *h, sound_t *s, int skip, int ns)
+void jsa_read_au_file_samples(FILE *rd, au_file_header_t *h, sound_t *s, int32_t skip, int32_t ns)
   {
     /* Get number of channels: */
-    int nc = h->channels;
+    int32_t nc = h->channels;
     assert(nc == s->nc);
     
     /* Check if elements do exist in {s}: */
@@ -130,11 +130,9 @@ void jsa_read_au_file_samples(FILE *rd, au_file_header_t *h, sound_t *s, int ski
     assert(skip + ns <= s->ns);
 
     /* Loop on samples and channels: */
-    int enc = h->encoding; /* A shorter name for the encoding tag. */
-    int i;
-    for (i = 0; i < ns; i++) 
-      { int c;
-        for (c = 0; c < nc; c++)
+    int32_t enc = h->encoding; /* A shorter name for the encoding tag. */
+    for (int32_t i = 0; i < ns; i++) 
+      { for (int32_t ic = 0; ic < nc; ic++)
           { double dv;
             switch(enc)
               {
@@ -146,8 +144,8 @@ void jsa_read_au_file_samples(FILE *rd, au_file_header_t *h, sound_t *s, int ski
                   break;
                 case 5:
                   { /* Reads 32 bit integer, converts to {double}. */
-                    int rv = jsa_read_int_be(rd);
-                    dv = ((double)rv)/SCALE_INT;
+                    int32_t rv = jsa_read_int32_t_be(rd);
+                    dv = ((double)rv)/SCALE_INT32_T;
                   }
                   break;
                 case 6:
@@ -160,7 +158,7 @@ void jsa_read_au_file_samples(FILE *rd, au_file_header_t *h, sound_t *s, int ski
                   fprintf(stderr, "decoding of encoding type %d is not supported\n", enc);
                   exit(1);
               }
-            s->sv[c][i] = dv;
+            s->sv[ic][i] = dv;
           }
       }
   }
@@ -168,8 +166,8 @@ void jsa_read_au_file_samples(FILE *rd, au_file_header_t *h, sound_t *s, int ski
 void jsa_write_au_file(FILE *wr, sound_t *s)
   {
     /* Chooses the encoding: */
-    int enc = 6; /* For now, use 32-bit float encoding. */
-    int bps = jsa_au_file_bytes_per_sample(enc); /* Bytes per sample. */
+    int32_t enc = 6; /* For now, use 32-bit float encoding. */
+    int32_t bps = jsa_au_file_bytes_per_sample(enc); /* Bytes per sample. */
 
     /* Allocate a file header: */
     au_file_header_t h;
@@ -179,7 +177,7 @@ void jsa_write_au_file(FILE *wr, sound_t *s)
     h.hdr_size = 24;    
     h.data_size = s->nc * s->ns * bps; 
     h.encoding = enc;   
-    h.sample_rate = (int)(s->fsmp + 0.5);
+    h.sample_rate = (int32_t)(s->fsmp + 0.5);
     if (fabs(s->fsmp - (double)h.sample_rate)/s->fsmp > 1.0e-4)
       { fprintf(stderr, "warning: sample rate %14.8e rounded to %d\n", s->fsmp, h.sample_rate); }
     h.channels = s->nc;
@@ -201,17 +199,15 @@ void jsa_write_au_file_header(FILE *wr, au_file_header_t *h)
     fflush(wr);
   }
 
-void jsa_write_au_file_samples(FILE *wr, au_file_header_t *h, sound_t *s, int skip, int ns)
+void jsa_write_au_file_samples(FILE *wr, au_file_header_t *h, sound_t *s, int32_t skip, int32_t ns)
   {
     assert(skip >= 0);
     assert(skip + ns <= s->ns);
     assert(h->encoding == 6); /* For now. */
     
-    int i;
-    for (i = 0; i < ns; i++) 
-      { int c;
-        for (c = 0; c < s->nc; c++)
-          { float fv = (float)(s->sv[c][skip + i]);
+    for (int32_t i = 0; i < ns; i++) 
+      { for (int32_t ic = 0; ic < s->nc; ic++)
+          { float fv = (float)(s->sv[ic][skip + i]);
             jsa_write_float_be(wr, &fv);
           }
       }

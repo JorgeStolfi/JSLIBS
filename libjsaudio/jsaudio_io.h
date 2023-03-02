@@ -1,11 +1,12 @@
 /* jsaudio_io.h - basic I/O tools for audio files */
-/* Last edited on 2006-10-29 20:24:16 by stolfi */
+/* Last edited on 2023-03-02 08:01:31 by stolfi */
 
 /* Created by Jorge Stolfi on sep/2006. */
 
 #ifndef jsaudio_io_H
 #define jsaudio_io_H
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 
@@ -23,7 +24,7 @@ short jsa_read_short_be(FILE *rd);
 uint32_t jsa_read_uint32_be(FILE *rd);
   /* Reads a 32-bit unsigned integer from {rd}. */
 
-int jsa_read_int_be(FILE *rd);
+int32_t jsa_read_int32_t_be(FILE *rd);
   /* Reads a 32-bit signed integer from {rd}. */
 
 uint64_t jsa_read_uint64_be(FILE *rd);
@@ -32,7 +33,7 @@ uint64_t jsa_read_uint64_be(FILE *rd);
 float jsa_read_float_be(FILE *rd);
   /* Reads a 32-bit {float} from {rd}. */
 
-void jsa_read_chars(FILE *rd, int n, char s[]);
+void jsa_read_chars(FILE *rd, int32_t n, char s[]);
   /* Reads the next {n} characters in {rd}, stores them in {s[0..n-1]}. */
 
 /* WRITING DATA */

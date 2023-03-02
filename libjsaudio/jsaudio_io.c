@@ -1,6 +1,7 @@
 /* See jsaudio_io.h */
-/* Last edited on 2017-01-02 21:31:00 by jstolfi */
+/* Last edited on 2023-03-02 12:32:31 by stolfi */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -12,16 +13,16 @@
 
 uint8_t jsa_read_uint8(FILE *rd)
   { uint8_t u;
-    int c;
-    c = fgetc(rd); assert(c != EOF); u = (uint8_t)(c & 0xff);
+    int32_t chr;
+    chr = fgetc(rd); assert(chr != EOF); u = (uint8_t)(chr & 0xff);
     return u;
   }
 
 uint16_t jsa_read_uint16_be(FILE *rd)
   { uint16_t u;
-    int c;
-    c = fgetc(rd); assert(c != EOF); u = (uint16_t)(c & 0xff);
-    c = fgetc(rd); assert(c != EOF); u = (uint16_t)((u << 8) | (c & 0xff));
+    int32_t chr;
+    chr = fgetc(rd); assert(chr != EOF); u = (uint16_t)(chr & 0xff);
+    chr = fgetc(rd); assert(chr != EOF); u = (uint16_t)((u << 8) | (chr & 0xff));
     return u;
   }
 
@@ -34,31 +35,31 @@ short jsa_read_short_be(FILE *rd)
 
 uint32_t jsa_read_uint32_be(FILE *rd)
   { uint32_t u;
-    int c;
-    c = fgetc(rd); assert(c != EOF); u = (c & 0xff);
-    c = fgetc(rd); assert(c != EOF); u = (u << 8) | (c & 0xff);
-    c = fgetc(rd); assert(c != EOF); u = (u << 8) | (c & 0xff);
-    c = fgetc(rd); assert(c != EOF); u = (u << 8) | (c & 0xff);
+    int32_t chr;
+    chr = fgetc(rd); assert(chr != EOF); u = (chr & 0xff);
+    chr = fgetc(rd); assert(chr != EOF); u = (u << 8) | (chr & 0xff);
+    chr = fgetc(rd); assert(chr != EOF); u = (u << 8) | (chr & 0xff);
+    chr = fgetc(rd); assert(chr != EOF); u = (u << 8) | (chr & 0xff);
     return u;
   }
 
 uint64_t jsa_read_uint64_be(FILE *rd)
   { uint64_t u;
-    int c;
-    c = fgetc(rd); assert(c != EOF); u = (c & 0xff);
-    c = fgetc(rd); assert(c != EOF); u = (u << 8) | (c & 0xff);
-    c = fgetc(rd); assert(c != EOF); u = (u << 8) | (c & 0xff);
-    c = fgetc(rd); assert(c != EOF); u = (u << 8) | (c & 0xff);
-    c = fgetc(rd); assert(c != EOF); u = (u << 8) | (c & 0xff);
-    c = fgetc(rd); assert(c != EOF); u = (u << 8) | (c & 0xff);
-    c = fgetc(rd); assert(c != EOF); u = (u << 8) | (c & 0xff);
-    c = fgetc(rd); assert(c != EOF); u = (u << 8) | (c & 0xff);
+    int32_t chr;
+    chr = fgetc(rd); assert(chr != EOF); u = (chr & 0xff);
+    chr = fgetc(rd); assert(chr != EOF); u = (u << 8) | (chr & 0xff);
+    chr = fgetc(rd); assert(chr != EOF); u = (u << 8) | (chr & 0xff);
+    chr = fgetc(rd); assert(chr != EOF); u = (u << 8) | (chr & 0xff);
+    chr = fgetc(rd); assert(chr != EOF); u = (u << 8) | (chr & 0xff);
+    chr = fgetc(rd); assert(chr != EOF); u = (u << 8) | (chr & 0xff);
+    chr = fgetc(rd); assert(chr != EOF); u = (u << 8) | (chr & 0xff);
+    chr = fgetc(rd); assert(chr != EOF); u = (u << 8) | (chr & 0xff);
     return u;
   }
 
-int jsa_read_int_be(FILE *rd)
+int32_t jsa_read_int32_t_be(FILE *rd)
   { uint32_t u = jsa_read_uint32_be(rd);
-    int r;
+    int32_t r;
     (*(uint32_t*)(&r)) = u;
     return r;
   }

@@ -1,6 +1,7 @@
 /* See jsaudio_dvf.h */
-/* Last edited on 2006-10-29 20:27:06 by stolfi */
+/* Last edited on 2023-03-02 12:31:47 by stolfi */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -221,8 +222,7 @@ dvf_file_header_t jsa_read_dvf_file_header(FILE *rd)
     assert(unk_175_2 == 144);
     
     /* Bytes 177..431 */
-    int i; 
-    for (i = 177; i <= 431; i++) { int c = fgetc(rd); assert(c == 0); }
+    for (int32_t i = 177; i <= 431; i++) { int32_t chr = fgetc(rd); assert(chr == 0); }
     
     /* Byte 432 */
     uint8_t unk_432_1 = jsa_read_uint8(rd);
@@ -242,21 +242,21 @@ dvf_file_header_t jsa_read_dvf_file_header(FILE *rd)
     assert(unk_448_1 == 144);
     
     /* Bytes 449..479 */
-    for (i = 449; i <= 479; i++) { int c = fgetc(rd); assert(c == 0); }
+    for (int32_t i = 449; i <= 479; i++) { int32_t chr = fgetc(rd); assert(chr == 0); }
     
     /* Bytes 480..483 */
     h.length_su = jsa_read_uint32_be(rd);
     assert(h.length_su % 216 == 0);
     
     /* Bytes 484..495 */
-    for (i = 484; i <= 495; i++) { int c = fgetc(rd); assert(c == 0); }
+    for (int32_t i = 484; i <= 495; i++) { int32_t chr = fgetc(rd); assert(chr == 0); }
     
     /* Bytes 496..499 */
     uint32_t unk_496_4 = jsa_read_uint32_be(rd);
     assert(unk_496_4 == 255);
     
     /* Bytes 500..544 */
-    for (i = 500; i <= 544; i++) { int c = fgetc(rd); assert(c == 0); }
+    for (int32_t i = 500; i <= 544; i++) { int32_t chr = fgetc(rd); assert(chr == 0); }
     
     /* Byte 545 */
     h.unk_545_1 = jsa_read_uint8(rd);
@@ -282,7 +282,7 @@ dvf_file_header_t jsa_read_dvf_file_header(FILE *rd)
     assert(strncmp(h.model, "SONY ICD-P\0", 11) == 0);
     
     /* Bytes 566..579 */
-    for (i = 566; i <= 579; i++) { int c = fgetc(rd); assert(c == 0); }
+    for (int32_t i = 566; i <= 579; i++) { int32_t chr = fgetc(rd); assert(chr == 0); }
     
     /* Byte 580 */
     uint8_t unk_580_1 = jsa_read_uint8(rd);
@@ -317,13 +317,13 @@ dvf_file_header_t jsa_read_dvf_file_header(FILE *rd)
     assert(unk_587_1 == 197);
     
     /* Bytes 588..595 */
-    for (i = 588; i <= 595; i++) { int c = fgetc(rd); assert(c == 0); }
+    for (int32_t i = 588; i <= 595; i++) { int32_t chr = fgetc(rd); assert(chr == 0); }
     
     /* Bytes 596..599 */
-    for (i = 596; i <= 599; i++) { int c = fgetc(rd); assert(c == 255); }
+    for (int32_t i = 596; i <= 599; i++) { int32_t chr = fgetc(rd); assert(chr == 255); }
     
     /* Consume stream until first data byte: */
-    /* for (i = 600; i < file_header_size; i++) { int c = fgetc(rd); assert(c != EOF); } */
+    /* for (int32_t i = 600; i < file_header_size; i++) { int32_t chr = fgetc(rd); assert(chr != EOF); } */
       
     return h;
   }
