@@ -1,5 +1,5 @@
 /* See argparser_geo.h. */
-/* Last edited on 2022-10-19 17:10:49 by stolfi */
+/* Last edited on 2023-03-03 05:41:28 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 
@@ -120,7 +120,7 @@ hr2_pmap_t argparser_get_proj_map(argparser_t *pp)
     if (argparser_keyword_present(pp, "-matrix"))
       { M = argparser_get_next_proj_map_matrix(pp); }
     else if (argparser_keyword_present(pp, "-points"))
-      { argparser_get_next_proj_map_from_points(pp); }
+      { M = argparser_get_next_proj_map_from_points(pp); }
     else 
       { r3x3_ident(&(M.dir));  r3x3_ident(&(M.inv)); }
     return M;

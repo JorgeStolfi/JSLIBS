@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2023-02-25 16:07:07 by stolfi */
+/* Last edited on 2023-03-02 22:40:02 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -1637,6 +1637,7 @@ void epswr_dev_text_line
   { FILE *wr = eps->wr;
     fprintf(wr, "%d %d ", draw, fill);
     epswr_dev_write_ps_string(wr, text);
+    fprintf(wr, " ");
     epswr_dev_write_ps_string(wr, strut);
     fprintf(wr, "  %5.3f %5.3f  %7.3f",  hAlign, vAlign, rot);
     fprintf(wr, "  %6.1f %6.1f", hAbs, vAbs);
