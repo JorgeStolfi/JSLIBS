@@ -1,5 +1,5 @@
 /* See float_image.h */
-/* Last edited on 2023-01-07 12:49:42 by stolfi */ 
+/* Last edited on 2023-03-07 13:02:35 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <limits.h>
@@ -683,7 +683,7 @@ void float_image_make_grayscale(float_image_t *A)
     for (y = 0; y < NY; y++)
       { for (x = 0; x < NX; x++)
           { frgb_t pix = fic_get_frgb_pixel(A, 0, 1, 2, x, y);
-            double value = frgb_Y(&pix);
+            double value = frgb_get_Y(&pix);
             int32_t c;
   	    for (c = 0; c < NC; c++) { pix.c[c] = (float)value; }
             fic_set_frgb_pixel(A, 0, 1, 2, x, y, &pix);

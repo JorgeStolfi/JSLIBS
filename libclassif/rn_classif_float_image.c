@@ -1,5 +1,5 @@
 /* See rn_classif_float_image.h. */
-/* Last edited on 2020-10-11 03:18:01 by jstolfi */
+/* Last edited on 2023-03-07 17:15:53 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -210,7 +210,7 @@ frgb_t rn_classif_float_image_compute_pixel
                 int cl2 = lab2(NA, NC2, psmp.c);
                 assert((cl2 >= 0) && (cl2 <= NC2));
                 /* Use it to modify the saturation and brightness of {val}: */
-                frgb_to_HTY_UV(&val);
+                frgb_to_HTY(&val);
                 double H = val.c[0], T = val.c[1], Y = val.c[2];
                 if (cl2 != 0)
                   { /* Reduce the brightness proportionally to {cl2}: */
@@ -221,7 +221,7 @@ frgb_t rn_classif_float_image_compute_pixel
                 val.c[0] = (float)H; 
                 val.c[1] = (float)T; 
                 val.c[2] = (float)Y;
-                frgb_from_HTY_UV(&val);
+                frgb_from_HTY(&val);
               }
             for (c = 0; c < 3; c++) { sum[c] += (double)(val.c[c]); }
           }

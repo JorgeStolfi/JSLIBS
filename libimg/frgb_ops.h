@@ -1,9 +1,10 @@
 /* frgb_ops.h - basic operations on colors. */
-/* Last edited on 2023-02-08 08:40:07 by stolfi */
+/* Last edited on 2023-03-07 17:13:45 by stolfi */
 
 #ifndef frgb_ops_H
 #define frgb_ops_H
 
+#define _GNU_SOURCE
 #include <limits.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -174,16 +175,22 @@ frgb_t frgb_read_color(FILE *rd);
     
 /* COLORSPACE CONVERSIONS */
 
-typedef struct frgb_matrix_t
-  { /* Coefficients of RGB->YUV transformation: */
-    double RY, GY, BY;
-    double RU, GU, BU;
-    double RV, GV, BV;
-    /* Coefficients of YUV->RGB transformation: */
-    double YR, UR, VR;
-    double YG, UG, VG;
-    double YB, UB, VB;
-  } frgb_matrix_t;
+/* The following XYZ coordinates of the RGB primaries are used by the procedure 
+  {frgb_to_CIE_XYZrec601_1} below. Not clear where these numbers
+  came from. They are claimed to use the "European TV RGB standard.
+  according to CIE XYZ Rec. 601-1" */
+
+#define frgb_YR (+0.298911)
+#define frgb_YG (+0.586611)
+#define frgb_YB (+0.114478)
+  
+#define frgb_XR (+0.606881)
+#define frgb_XG (+0.173505)
+#define frgb_XB (+0.200336)
+
+#define frgb_ZR (00.000000)
+#define frgb_ZG (+0.066097)
+#define frgb_ZB (+1.116157)
 
 void frgb_to_CIE_XYZrec601_1(frgb_t *p);
 void frgb_from_CIE_XYZrec601_1(frgb_t *p);
@@ -204,14 +211,14 @@ void frgb_to_YUV(frgb_t *p);
 void frgb_from_YUV(frgb_t *p);
   /* Converts the RGB triple {p} to/from European TV YUV coordinates. */
 
-double frgb_Y(frgb_t *p);
+double frgb_get_Y(frgb_t *p);
   /* The luminance of the RGB triple {p} (the Y coord
     of European TV YUV coords). */
 
-double frgb_Y_pbm(frgb_t *p);
+double frgb_get_Y_pbm(frgb_t *p);
   /* The luminance of the RGB triple {p} by the formula
     used in the PBMplus package (almost, but not exactly,
-    the same as {frgb_Y}). */
+    the same as {frgb_get_Y}). */
 
 void frgb_to_HSV_CG(frgb_t *p);
 void frgb_from_HSV_CG(frgb_t *p);
@@ -240,7 +247,7 @@ void frgb_from_HSV_CG(frgb_t *p);
     that, mixed with the proper shade of gray, gives {p}. The value V
     is the maximum of the R,G, and B coordinates. */
 
-double frgb_H_UV(frgb_t *p);
+double frgb_get_H(frgb_t *p);
   /* The hue of the RGB triple {p}, as implied by 
     its UV chroma coordinates in the European TV standard. The
     hue {H} is direction of the vector {(U,V)}, converted from the
@@ -249,25 +256,46 @@ double frgb_H_UV(frgb_t *p);
     result is 0. */
 
 double frgb_H_from_UV(double U, double V);
-  /* Same as {frgb_H_UV} but from the given European TV {U,V}
+  /* Same as {frgb_get_H} but from the given European TV {U,V}
     coordinates.  Only the direction of {(U,V)} matters. */
 
-void frgb_H_to_UV(double H, double *U, double *V);
-  /* The inverse of {frgb_H_from_UV}. The result {U,V}
-    are normalized so that {U^2+V^2=1}. */
+void frgb_H_to_uv(double H, double *u, double *v);
+  /* The partial inverse of {frgb_H_from_UV}. The result {u,v} is a vector {U,V}
+    with hue {H}, but  normalized so that {u^2+v^2=1}. */
 
-void frgb_to_HTY_UV(frgb_t *p);
-void frgb_from_HTY_UV(frgb_t *p);
-  /* Converts the RGB triple {p} to/from HTY (hue, relative
-    saturation, luminance) color system, based on {frgb_to_YUV}. The
-    hue {H} is direction of the vector {(U,V)}, converted from the
-    range {[0 _ 2*PI)} to {[0 _ 1)} with a shift (see {frgb_H_UV}).
-    The relative saturation {T} is the linear position of the given
-    color {p} along the segment that connects the gray {g} with
-    luminance {Y} to the color {s} with same hue and luminance that
-    lies on the boundary of the unit RGB cube. Thus {T} is 0 for a
+double frgb_T_from_YUV(double Y, double U, double V);
+  /* Computes the relative saturation {T} of a color {p} given its YUV
+    coordinates {Y,U,V}.
+    
+    The relative saturation {T} of a color {p} is the linear position of 
+    {p} along the segment of colors with the same luminance
+    that goes trough {p} and extends from the gray diagonal
+    to the boundary of the unit RGB cube. Thus {T} is 0 for a
     gray color, and 1 for any color on the boundary of the RGB
-    cube. */
+    cube. 
+    
+    By convention, {T} is zero if {Y} is outside the interval {[0_1]}.
+    
+    The relative saturation {T} is a continuous function of the RGB
+    coordinates, but it is not smooth (C1): it has a kink whenever the
+    distal end of the segment crosses an edge of the cube. */
+    
+void frgb_to_HTY(frgb_t *p);
+void frgb_from_HTY(frgb_t *p);
+  /* Converts the RGB triple {p} to/from the HTY color system, whose
+    coordinates are hue {H}, relative saturation {T}, and luminance {Y}.
+    The hue is defined by {frgb_get_H}. */
+
+void frgb_YUV_to_YHS(frgb_t *p);
+void frgb_YHS_to_YUV(frgb_t *p);
+  /* Converts the triple {p} betweem the {YUV}
+    and the {YHS} coordinate systems.  In the latter, the {Y} coordinate 
+    is the same as in {YUV}; the {H} coordinate is given by {frgb_H_from_UV(U,V)},
+    and the "Euclidean" saturation {S} is {hypot(U,V)/Y}. 
+    
+    Note that {S} is not silply related to the relative saturation {T} of the {HTY} 
+    system. In particular, a color with {S==1} may liee inside or outside the {RGB}
+    unit cube. */
 
 void frgb_to_YIQ(frgb_t *p);
 void frgb_from_YIQ(frgb_t *p);

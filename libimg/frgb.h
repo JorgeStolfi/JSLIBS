@@ -2,8 +2,10 @@
 #define frgb_H
 
 /* frgb.h - floating-point RGB color data type */
-/* Last edited on 2008-05-25 03:23:58 by stolfi */
+/* Last edited on 2023-03-07 01:41:46 by stolfi */
 
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <limits.h>
 
 /* Channels in a color image: */

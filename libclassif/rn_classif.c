@@ -1,5 +1,5 @@
 /* See rn_classif.h. */
-/* Last edited on 2017-01-04 19:07:50 by stolfilocal */
+/* Last edited on 2023-03-07 17:15:58 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -326,7 +326,7 @@ frgb_t *rn_classif_pick_class_colors(int NC)
         /* Use the maximum saturation possible in the RGB cube: */
         double T = 1;
         frgb_t val = (frgb_t){{ (float)H, (float)T, (float)Y }};
-        frgb_from_HTY_UV(&val);
+        frgb_from_HTY(&val);
         /* fprintf(stderr, "cmap[%d] = ( %6.4f %6.4f %6.4f )\n", cl, val.c[0], val.c[1], val.c[2]); */
         cmap[cl] = val;
       }

@@ -1,12 +1,12 @@
 #ifndef frgb_path_H
 #define frgb_path_H
 
-/* frgb_path.h - mapping real numbers to paths in the RGB cube
-** Last edited on 2013-05-24 22:43:39 by stolfilocal
-**
-** Copyright (C) 2007 by Jorge Stolfi, the University of Campinas, Brazil.
-** See the rights and conditions notice at the end of this file.
-*/
+/* frgb_path.h - mapping real numbers to paths in the RGB cube */
+/* Last edited on 2023-03-07 16:22:57 by stolfi */
+/* See the rights and conditions notice at the end of this file. */
+
+#define _GNU_SOURCE
+#include <stdint.h>
 
 #include <frgb.h>
 #include <bool.h>
@@ -29,34 +29,49 @@
   monotonically with {z} over the whole range {V}. For others, {Y} is
   a monotonic function of {|z|}.
   
-  Some procedures take a {cycles} parameters that determines
-  how varied are the hues (and, sometimes, saturation). */ 
+  Some procedures take a {cycles} parameters that determines how varied
+  are the hues (and, sometimes, saturation). The simplest color
+  gradation is obtained with {cycles=1}. */ 
 
-frgb_t frgb_path_map_unsigned_0(double z);
+frgb_t frgb_path_map_unsigned_0(double z, int32_t cycles);
   /* Chooses a pseudocolor appropriate for a pixel with value {z}.
     Maps 0 (or less) to black, 1 (or greater) to white, and
-    intermediate values to intermediate colors. */ 
-
-frgb_t frgb_path_map_unsigned_1(double z, double H0, double Y0, double H1, double Y1);
-  /* A color path consisting of a polygonal spiral of saturated colors
-    that sweeps from hue {H0} and brightness {Y0} to hue {H1} and brightness {Y1}.
-
-    The point {R,G,B} corresponding to a given {z} is the maximally
-    saturated color with brightness {Y = (1-z)*Y0 + z*Y1} and hue {H =
-    (1-z)*H0 + z*H1}, where {H0} and {H1} are two client-given hues.
-    Note that by giving {H1 = H0 + k} one obtains a path that cycles
-    {k} times over the whole hue spectrum. */
-
-frgb_t frgb_path_map_signed_0(double z, int cycles);
-frgb_t frgb_path_map_signed_1(double z, int cycles);
-frgb_t frgb_path_map_signed_2(double z, int cycles);
-  /* Chooses a pseudocolor appropriate for a pixel with value {z},
-    assumed to range in [-1_+1]. Value {0} is mapped to 50% gray,
-    values in [0_+1] are mapped to light warm colors, and values in
-    [-1_0] to the complementary (bluish) colors. In each half-range, 
-    the hues will sweep through the spectrum {cycles} times. */ 
+    intermediate values to intermediate colors.
     
-frgb_t frgb_path_map_signed(double z, int cycles, int style);
+    The returned color will be maximally saturated, that is, on the
+    surface of the unit RGB cube. The {R}, {G}, and {B} coordinates are
+    continuous functions of {z}. The hue and brightness are also smooth
+    (C1) functions of {z}, but the saturation has kinks (derivative
+    jumps).
+    
+    The hue will make {|cycles|-1} full sweeps over the hue spectrum,
+    plus one partial sweep over the arc from purple to yellow. If
+    {cycles} is negative, the hues will run in the opposite sense.  If
+    {cycles} is zero, the result is a gray scale. */ 
+
+int32_t frgb_path_map_unsigned_max_style(void);
+  /* The largest value of the {style} parameter for an unsigned path. */
+
+frgb_t frgb_path_map_unsigned(double z, int32_t cycles, int32_t style);
+  /* Same as {frgb_path_map_unsigned_{style}}. */ 
+    
+frgb_t frgb_path_map_signed_0(double z, int32_t cycles);
+frgb_t frgb_path_map_signed_1(double z, int32_t cycles);
+frgb_t frgb_path_map_signed_2(double z, int32_t cycles);
+  /* Chooses a pseudocolor appropriate for a pixel with value {z},
+    assumed to range in [-1_+1]. Value {0} is mapped to a gray tone,
+    values in [0_+1] are mapped to light warm hues, and values in
+    [-1_0] to cold hues.
+    
+    In each half-range, the hue will make {|cycles|-1} times sweeps over
+    the appropriate half of the hue spectrum, plus one partial sweep. If
+    {cycles} is negative, the hues will run in the opposite sense. If
+    {cycles} is zero, the result is a gray scale. */  
+
+int32_t frgb_path_map_signed_max_style(void);
+  /* The largest value of the {style} parameter for a signed path. */
+
+frgb_t frgb_path_map_signed(double z, int32_t cycles, int32_t style);
   /* Same as {frgb_path_map_signed_{style}}. */ 
 
 /* PATH PARAMETER ADJUSTMENT */

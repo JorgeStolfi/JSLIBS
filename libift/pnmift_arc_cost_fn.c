@@ -1,5 +1,5 @@
 /* pnmift_arc_cost_fn.c - implementation of pnmift_arc_cost_fn.h */
-/* Last edited on 2010-06-07 13:19:47 by stolfi */
+/* Last edited on 2023-03-07 17:15:18 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -54,5 +54,5 @@ pnmift_arc_cost_t pnmift_arc_cost_fn_ediff_yuv(frgb_t p, ift_rel_arc_t *ra, frgb
 
 pnmift_arc_cost_t pnmift_arc_cost_fn_lum(frgb_t p, ift_rel_arc_t *ra, frgb_t q, int chns)
   {
-    return frgb_Y(&q);
+    return frgb_get_Y(&q);
   }

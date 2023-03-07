@@ -2,7 +2,7 @@
 #define float_image_H
 
 /* Multichannel images with floating-point samples. */
-/* Last edited on 2023-01-07 12:48:59 by stolfi */ 
+/* Last edited on 2023-03-07 17:13:55 by stolfi */ 
 
 #define _GNU_SOURCE_
 #include <stdio.h>
@@ -419,7 +419,7 @@ void float_image_make_grayscale(float_image_t *A);
     does nothing. If {A} has three channels, assumes that they are 
     the red, green and blue channels of the RGB model with linear
     enconding, and replaces all samples of each pixel by its brightness,
-    computed with {frgb_Y}. If the number of channels is not 1 or 3,
+    computed with {frgb_get_Y}. If the number of channels is not 1 or 3,
     the procedure fails. */ 
 
 void float_image_apply_gamma(float_image_t *A, int32_t c, double gamma, double bias);

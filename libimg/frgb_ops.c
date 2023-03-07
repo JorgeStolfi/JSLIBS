@@ -1,5 +1,5 @@
 /* See {frgb_ops.h}. */
-/* Last edited on 2023-02-08 08:44:15 by stolfi */
+/* Last edited on 2023-03-07 14:14:53 by stolfi */
 
 /* Copyright (C) 2003 by Jorge Stolfi, the University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
@@ -385,9 +385,9 @@ void frgb_to_CIE_XYZrec601_1(frgb_t *p)
     double G = (double)p->c[1];
     double B = (double)p->c[2];
     
-    double X = +0.606881*R +0.173505*G +0.200336*B;
-    double Y = +0.298911*R +0.586611*G +0.114478*B;
-    double Z = 00.000000*R +0.066097*G +1.116157*B;
+    double X = frgb_XR*R + frgb_XG*G + frgb_XB*B;
+    double Y = frgb_YR*R + frgb_YG*G + frgb_YB*B;
+    double Z = frgb_ZR*R + frgb_ZG*G + frgb_ZB*B;
     
     p->c[0] = (float)X;
     p->c[1] = (float)Y; 
@@ -414,7 +414,7 @@ double frgb_luminance_CIE_XYZrec601_1(frgb_t *p)
     double R = (double)p->c[0];
     double G = (double)p->c[1];
     double B = (double)p->c[2];
-    return +0.298911*R +0.586611*G +0.114478*B;
+    return frgb_YR*R + frgb_YG*G + frgb_YB*B;
   }
 
 void frgb_to_CIE_XYZccir709(frgb_t *p)
@@ -494,16 +494,15 @@ double frgb_luminance_CIE_XYZitu_D65(frgb_t *p)
     return +0.222015*R +0.706655*G +0.071330*B;
   }
 
-
 void frgb_to_YUV(frgb_t *p)
   { 
     double R = (double)p->c[0];
     double G = (double)p->c[1];
     double B = (double)p->c[2];
     
-    double Y = +0.298911*R +0.586611*G +0.114478*B;
-    double U = -0.147000*R -0.289000*G +0.436000*B;
-    double V = +0.615000*R -0.515000*G -0.100000*B;
+    double Y = frgb_YR*R + frgb_YG*G + frgb_YB*B;
+    double U = -0.147000*R - 0.289000*G +0.436000*B;
+    double V = +0.615000*R - 0.515000*G -0.100000*B;
    
     p->c[0] = (float)Y;
     p->c[1] = (float)U; 
@@ -525,17 +524,17 @@ void frgb_from_YUV(frgb_t *p)
     p->c[2] = (float)B;
   }
 
-double frgb_Y(frgb_t *p)
+double frgb_get_Y(frgb_t *p)
   { double R = (double)p->c[0];
     double G = (double)p->c[1];
     double B = (double)p->c[2];
     
-    double Y = +0.298911*R +0.586611*G +0.114478*B;
+    double Y = frgb_YR*R + frgb_YG*G + frgb_YB*B;
     
     return Y;
   }
 
-double frgb_Y_pbm(frgb_t *p)
+double frgb_get_Y_pbm(frgb_t *p)
   { double R = (double)p->c[0];
     double G = (double)p->c[1];
     double B = (double)p->c[2];
@@ -551,7 +550,7 @@ void frgb_to_YIQ(frgb_t *p)
     double G = (double)p->c[1];
     double B = (double)p->c[2];
 
-    double Y = +0.298911*R +0.586611*G +0.114478*B;
+    double Y = frgb_YR*R + frgb_YG*G + frgb_YB*B;
     double I = +0.596018*R -0.274147*G -0.321871*B;
     double Q = +0.211646*R -0.522976*G +0.311330*B;
    
@@ -582,7 +581,7 @@ void frgb_to_YCbCr_601_1(frgb_t *p)
     double G = (double)p->c[1];
     double B = (double)p->c[2];
 
-    double Y  = +0.298911*R +0.586611*G +0.114478*B;
+    double Y  = frgb_YR*R + frgb_YG*G + frgb_YB*B;
     double Cb = -0.168777*R -0.331223*G +0.500000*B;
     double Cr = +0.500000*R -0.418357*G -0.081643*B;
 
@@ -621,7 +620,7 @@ void frgb_to_YUV_a(frgb_t *p)
     double G = (double)p->c[1];
     double B = (double)p->c[2];
     
-    double Y = +0.298911*R +0.586611*G +0.114478*B;
+    double Y = frgb_YR*R + frgb_YG*G + frgb_YB*B;
     double U = +0.132812*R -0.132812*G;
     double V = -0.165039*R +0.038086*G +0.126953*B;
 
@@ -653,7 +652,7 @@ void frgb_to_YUV_b(frgb_t *p)
     double G = (double)p->c[1];
     double B = (double)p->c[2];
     
-    double Y = +0.298911*R +0.586611*G +0.114478*B;
+    double Y = frgb_YR*R + frgb_YG*G + frgb_YB*B;
     double U = +0.284000*R -0.284000*G;
     double V = -0.139000*R -0.085000*G +0.224000*B;
 
@@ -822,35 +821,12 @@ double frgb_H_from_UV(double U, double V)
     return H;
   }
   
-void frgb_H_to_UV(double H, double *U, double *V)
+void frgb_H_to_uv(double H, double *u, double *v)
   { double Hrad = H*2*M_PI + arg_UV_red;
-    *U = cos(Hrad); *V = sin(Hrad);
+    *u = cos(Hrad); *v = sin(Hrad);
   }
 
-void frgb_to_HTY_UV(frgb_t *p)
-  { /* Grab the coordinates {R,G,B} of {p}: */
-    double R = p->c[0], G = p->c[1], B = p->c[2];
-    /* Convert to YUV and grab those coordinates: */
-    frgb_to_YUV(p);
-    double Y = p->c[0], U = p->c[1], V = p->c[2];
-    /* The hue {H} is the argument of the {U,V} vector, scaled to period 1: */
-    double H = frgb_H_from_UV(U, V);
-    /* Compute the relative saturation {T}: */
-    double T;
-    if ((Y <= 0) || (Y >= 1))
-      { T = 0; }
-    else
-      { T = 0;
-        R -= Y; G -= Y; B -= Y;
-        double TR = (R > 0 ? R/(1-Y) : -R/Y); if (TR > T) { T = TR; }
-        double TG = (G > 0 ? G/(1-Y) : -G/Y); if (TG > T) { T = TG; }
-        double TB = (B > 0 ? B/(1-Y) : -B/Y); if (TB > T) { T = TB; }
-      }
-    /* Repack: */
-    (*p) = (frgb_t){{ (float)H, (float)T, (float)Y }};
-  }
-
-double frgb_H_UV(frgb_t *p)
+double frgb_get_H(frgb_t *p)
   { /* Convert to YUV and grab the U,V coordinates: */
     frgb_t q = (*p);
     frgb_to_YUV(&q);
@@ -859,34 +835,96 @@ double frgb_H_UV(frgb_t *p)
     return frgb_H_from_UV(U, V);
   }
 
-void frgb_from_HTY_UV(frgb_t *p)
+void frgb_YUV_to_YHS(frgb_t *p)
+  { double Y = p->c[0];
+    if ((Y <= 0) || (Y >= 1))
+      { (*p) = (frgb_t){{ (float)Y, 0, 0 }}; }
+    else
+      { double U = p->c[1], V = p->c[2];
+        double S = hypot(U, V)/Y;
+        double H = frgb_H_from_UV(U, V);
+        /* Fix possible roundoff overflows: */
+        if (H >= 1.0) { H = H - 1; }
+        if (H < 0.0) { H = H + 1; }
+        (*p) = (frgb_t){{ (float)Y, (float)H, (float)S }};
+      }
+  }
+ 
+void frgb_YHS_to_YUV(frgb_t *p)
+  { 
+    double Y = p->c[0];
+    if ((Y <= 0) || (Y >= 1))
+      { (*p) = (frgb_t){{ (float)Y, 0, 0 }}; }
+    else
+      { double S = p->c[2];
+        if (S == 0)
+          { (*p) = (frgb_t){{ (float)Y, 0, 0 }}; }
+        else
+          { demand(S > 0, "invalid saturation value"); 
+            double H = p->c[1];
+            double u, v;
+            frgb_H_to_uv(H, &u, &v);
+            (*p) = (frgb_t){{ (float)Y, (float)(Y*S*u), (float)(Y*S*v) }};
+          }
+      }
+  }
+  
+double frgb_T_from_YUV(double Y, double U, double V)
+  { if ((Y <= 0) || (Y >= 1))
+      { return 0.0; }
+    else
+      { /* Compute a  zero-luminance RGB vector in direction {U,V}: */
+        frgb_t Q = (frgb_t){{ 0.0, (float)U, (float)V  }};
+        frgb_from_YUV(&Q);
+        double R = Q.c[0], G = Q.c[1], B = Q.c[2];
+        
+        double T = 0;
+        if (R != 0) { double TR = (R > 0 ? R/(1-Y) : -R/Y); if (TR > T) { T = TR; } }
+        if (G != 0) { double TG = (G > 0 ? G/(1-Y) : -G/Y); if (TG > T) { T = TG; } }
+        if (B != 0) { double TB = (B > 0 ? B/(1-Y) : -B/Y); if (TB > T) { T = TB; } }
+        assert(isfinite(T) && (T >= 0));
+        return T;
+      }        
+  }
+
+void frgb_to_HTY(frgb_t *p)
+  { /* Convert to YUV and grab those coordinates: */
+    frgb_to_YUV(p);
+    double Y = p->c[0], U = p->c[1], V = p->c[2];
+    if ((Y <= 0) || (Y >= 1))
+      { (*p) = (frgb_t){{ 0.0, 0.0, (float)Y }}; }
+    else 
+      { /* The hue {H} is the argument of the {U,V} vector, scaled to period 1: */
+        double H = frgb_H_from_UV(U, V);
+        assert((H >= 0) && (H <= 1.0));
+        /* Compute the relative saturation {T}: */
+        double T = frgb_T_from_YUV(Y, U, V);
+        /* Repack: */
+        (*p) = (frgb_t){{ (float)H, (float)T, (float)Y }};
+      }
+  }
+
+void frgb_from_HTY(frgb_t *p)
   { /* Grab the coordinates {H,T,Y} of {p}: */
     double H = p->c[0], T = p->c[1], Y = p->c[2];
-    /* Compute the {U,V} of the `pure' color of hue {H}: */
-    double U, V;
-    frgb_H_to_UV(H, &U, &V);
-    /* Compute the {R,G,B} coordinates for {U,V} at luminance {0}: */
-    p->c[0] = 0; p->c[1] = (float)U; p->c[2] = (float)V;
-    frgb_from_YUV(p);
-    double R = p->c[0], G = p->c[1], B = p->c[2];
-    if ((Y <= 0) || (Y >= 1))
-      { /* Ignore {T}, return a gray: */
-        R = G = B = Y;
+    demand(T >= 0, "invalid relative saturation {T}");
+    if ((Y <= 0) || (Y >= 1.0) || (T == 0.0))
+      { /* Gray color: */
+        (*p) = (frgb_t) {{ (float)Y, (float)Y, (float)Y }};
       }
     else
-      { /* Find the max {K} such that {(Y,Y,Y) + K*(R,G,B)} is in the unit cube: */
-        double K = INFINITY; 
-        if (R != 0) { double KR = (R > 0 ? (1-Y)/R : -Y/R); if (KR < K) { K = KR; } }
-        if (G != 0) { double KG = (G > 0 ? (1-Y)/G : -Y/G); if (KG < K) { K = KG; } }
-        if (B != 0) { double KB = (B > 0 ? (1-Y)/B : -Y/B); if (KB < K) { K = KB; } }
-        assert(K != INFINITY);
-        /* Reduce {K} by the relative saturation {T} */
-        K = K*T;
-        /* Return {(Y,Y,Y) + K*(R,G,B)} */
-        R = Y + K*R;
-        G = Y + K*G;
-        B = Y + K*B;
+      { /* Compute the {U,V} diretion {u,v} of hue {H}: */
+        double u, v;
+        frgb_H_to_uv(H, &u, &v);
+        /* Compute the relative saturation of the unit {(u,v)} vector: */
+        double t = frgb_T_from_YUV(Y, u, v);
+        /* Compute the {(U,V)} coordinates from {t,T,u,v}: */
+        assert(t > 0);
+        double U = T*u/t, V = T*v/t;
+        /* Repack as YUV: */
+        (*p) = (frgb_t){{ (float)Y, (float)U, (float)V }}; 
+        /* Convert to RGB: */
+        frgb_from_YUV(p);
       }
-    /* Repack: */
-    (*p) = (frgb_t){{ (float)R, (float)G, (float)B }};
   }
+  

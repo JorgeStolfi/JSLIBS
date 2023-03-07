@@ -2,7 +2,7 @@
 #define PROG_DESC "test of various ops from {frgb_ops.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2013-10-21 01:48:21 by stolfilocal */
+/* Last edited on 2023-03-07 14:00:31 by stolfi */
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_frgb_ops_C_COPYRIGHT \
@@ -10,7 +10,6 @@
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
-  "    { -dilate | -gradSqr | -gradSqrRel } \\\n" \
   "    " argparser_help_info_HELP ""
 
 #define PROG_INFO \
@@ -80,17 +79,34 @@ void tfop_do_tests(options_t *o);
   /* Creates a test image using various
     {float_image_gradient.h} tools. */
   
-void tfop_ttr(char *tr_name, tfop_tr_t *fdir, tfop_tr_t *finv, char *fn_name, tfop_fn_t *fval, int k);
-  /* Tests a pair of mutually inverse functions: {fdir} from RGB to some space,
-    {finv} for the opposite. Checks only whether the inverse returns to the orignal
-    value. Also if {fval} isnot NULL tests whether {fval(rgb) = fdir(rgb).c[k]},
-    but is forgiving when {rgb} is a gray value. */
+void tfop_test_transform(tfop_tr_t *fpre, char *sdom, char *simg, tfop_tr_t *fdir, tfop_tr_t *finv);
+  /* Tests if a pair of functions {fdir}, {finv} are mutually inverse,
+    namely whether {finv(fdir(p)) == p} for a bunch of triples {p}.
+    
+    The strings {sdom} and {simg} are the names of the color spaces for
+    the arguments of {fdir} and {finv}, respectively. If {fpre} is
+    {NULL}, the argument of {fdir} is in the RGB color space, hence in
+    the unit RGB cube; then {sdom} should be "RGB". If {fpre} is not
+    {NULL}, assumes that the argument of {fdir} is in some other color
+    space {sdom}, and {fpre} transforms valid RGB values to valid {sdom}
+    values. */
 
-bool_t tfop_check_tr(char *name, frgb_t *rgb, frgb_t *xyz, frgb_t *XYZ);
-  /* Compares {rgb} with {RGB}, complains if not close enough. */
+void tfop_test_float_fn(char *simg, tfop_tr_t *fdir, int k, char *fn_name, tfop_fn_t *fval);
+  /* Tests if a colorspace transformation {fdir} from RGB to some colorspace {simg}
+    is consistent with a single-value projection function {fval}; namely, whether {fval(p) = fdir(p).c[k]} for 
+    a bunch of non-gray RGB triples {p}. */
+
+bool_t tfop_check_tr(frgb_t *rgb, char *sdom, frgb_t *fp, char *simg, frgb_t *fq, frgb_t *fr);
+  /* Compares {*fp} with {*fr}. Complains and returns true if not close enough.
+    Assumes that {fq} is the result of mapping {fp} from space {sdom} to space {simg},
+    and {fr} is the result of mapping {fq} back to space {sdom}.  The color's RGB coordinates
+    are assumed to be {rgb}. */
   
-bool_t tfop_check_fn(char *name, frgb_t *rgb, frgb_t *xyz, int k, float coord, double fvalu);
-  /* Compaers {coord} with {fvalu} and complains if not close enough. */
+bool_t tfop_check_fn(frgb_t *rgb, char *sdom, frgb_t *fq, int k, char *fn_name, double fvalu);
+  /* Compares {fq.c[k]} with {fvalu}. Complains and returns true if not close enough.
+    assumes that {fq} is the result of transforming the triple {rgb} from RGB space
+    to {simg} space. Also assumes that {fvalu} is the result of applying {fn_name}
+    to {rgb}. */
 
 int main(int argc, char **argv)
   {
@@ -144,7 +160,6 @@ void tfop_do_tests(options_t *o)
     
     void frgb_YUV_to_Yuv(frgb_t *p, double ybias);
     void frgb_YUV_from_Yuv(frgb_t *p, double ybias);
-    
 
     void frgb_print(FILE *f, char *pref, frgb_t *p, int chns, char *fmt, char *suff);
     void frgb_print_int_pixel(FILE *f, char *pref, int *p, int chns, char *suff);
@@ -153,87 +168,127 @@ void tfop_do_tests(options_t *o)
     */
     
     
-    tfop_ttr("CIE_XYZrec601_1", &frgb_to_CIE_XYZrec601_1, &frgb_from_CIE_XYZrec601_1, "luminance_CIE_XYZrec601_1", &frgb_luminance_CIE_XYZrec601_1, 1);
+    tfop_test_transform(NULL, "RGB", "CIE_XYZrec601_1", &frgb_to_CIE_XYZrec601_1, &frgb_from_CIE_XYZrec601_1);
+    tfop_test_float_fn("CIE_XYZrec601_1", &frgb_to_CIE_XYZrec601_1, 1, "luminance_CIE_XYZrec601_1", &frgb_luminance_CIE_XYZrec601_1);
     
-    tfop_ttr("CIE_XYZccir709", &frgb_to_CIE_XYZccir709, &frgb_from_CIE_XYZccir709, "luminance_CIE_XYZccir709", &frgb_luminance_CIE_XYZccir709, 1);
+    tfop_test_transform(NULL, "RGB", "CIE_XYZccir709", &frgb_to_CIE_XYZccir709, &frgb_from_CIE_XYZccir709);
+    tfop_test_float_fn("CIE_XYZccir709", &frgb_to_CIE_XYZccir709, 1, "luminance_CIE_XYZccir709", &frgb_luminance_CIE_XYZccir709);
     
-    tfop_ttr("CIE_XYZitu_D65", &frgb_to_CIE_XYZitu_D65, &frgb_from_CIE_XYZitu_D65, "luminance_CIE_XYZitu_D65", frgb_luminance_CIE_XYZitu_D65, 1);
+    tfop_test_transform(NULL, "RGB", "CIE_XYZitu_D65", &frgb_to_CIE_XYZitu_D65, &frgb_from_CIE_XYZitu_D65);
+    tfop_test_float_fn("CIE_XYZitu_D65", &frgb_to_CIE_XYZitu_D65, 1, "luminance_CIE_XYZitu_D65", frgb_luminance_CIE_XYZitu_D65);
     
-    tfop_ttr("YUV", &frgb_to_YUV, &frgb_from_YUV, "Y", &frgb_Y, 0);
+    tfop_test_transform(NULL, "RGB", "YUV", &frgb_to_YUV, &frgb_from_YUV);
+    tfop_test_float_fn("YUV", &frgb_to_YUV, 0, "get_Y", &frgb_get_Y);
     
-    tfop_ttr("HSV_CG", &frgb_to_HSV_CG, &frgb_from_HSV_CG, "", NULL, 0);
+    tfop_test_transform(&frgb_to_YUV, "YUV", "YHS", &frgb_YUV_to_YHS, &frgb_YHS_to_YUV);
     
-    tfop_ttr("HTY_UV", &frgb_to_HTY_UV, &frgb_from_HTY_UV, "H_UV", frgb_H_UV, 0);
+    tfop_test_transform(NULL, "RGB", "HSV_CG", &frgb_to_HSV_CG, &frgb_from_HSV_CG);
     
-    tfop_ttr("YIQ", &frgb_to_YIQ, &frgb_from_YIQ, "", NULL, 0);
+    tfop_test_transform(NULL, "RGB", "HTY_UV", &frgb_to_HTY, &frgb_from_HTY);
+    tfop_test_float_fn("HTY_UV", &frgb_to_HTY, 0, "get_H", frgb_get_H);
     
-    tfop_ttr("YCbCr_601_1", &frgb_to_YCbCr_601_1, &frgb_from_YCbCr_601_1, "", NULL, 0);
+    tfop_test_transform(NULL, "RGB", "YIQ", &frgb_to_YIQ, &frgb_from_YIQ);
+    tfop_test_float_fn("YIQ", &frgb_to_YIQ, 0, "get_Y", &frgb_get_Y);
     
-    tfop_ttr("YUV_a", &frgb_to_YUV_a, &frgb_from_YUV_a, "", NULL, 0);
+    tfop_test_transform(NULL, "RGB", "YCbCr_601_1", &frgb_to_YCbCr_601_1, &frgb_from_YCbCr_601_1);
+    tfop_test_float_fn("YCbCr_601_1", &frgb_to_YCbCr_601_1, 0, "get_Y", &frgb_get_Y);
     
-    tfop_ttr("YUV_b", &frgb_to_YUV_b, &frgb_from_YUV_b, "", NULL, 0);
+    tfop_test_transform(NULL, "RGB", "YUV_a", &frgb_to_YUV_a, &frgb_from_YUV_a);
+    tfop_test_float_fn("YUV_a", &frgb_to_YUV_a, 0, "get_Y", &frgb_get_Y);
+    
+    tfop_test_transform(NULL, "RGB", "YUV_b", &frgb_to_YUV_b, &frgb_from_YUV_b);
+    tfop_test_float_fn("YUV_b", &frgb_to_YUV_b, 0, "get_Y", &frgb_get_Y);
   }
 
-void tfop_ttr(char *tr_name, tfop_tr_t *fdir, tfop_tr_t *finv, char *fn_name, tfop_fn_t *fval, int k)
+void tfop_test_transform(tfop_tr_t *fpre, char *sdom, char *simg, tfop_tr_t *fdir, tfop_tr_t *finv)
   {
+    fprintf(stderr, "--- tfop_test_transform: frgb");
+    if (fpre != NULL) { fprintf(stderr, "_%s", sdom); }
+    fprintf(stderr, "_{to,from}_%s ---\n", simg); 
+    
     int N = 11; /* Better be odd? */
     int bugs = 0;
     int tics = 0;
     int ir, ig, ib;
-    frgb_t rgb, xyz, RGB;
+    frgb_t rgb, fp, fq, fr;
     for (ir = 0; ir < N; ir++)
       { for (ig = 0; ig < N; ig++) 
           { for (ib = 0; ib < N; ib++)
               { rgb.c[0] = (float)(0.0001 + 0.9998*((double)ir)/(N - 1 + 1.0e-200));
                 rgb.c[1] = (float)(0.0001 + 0.9998*((double)ig)/(N - 1 + 1.0e-200));
                 rgb.c[2] = (float)(0.0001 + 0.9998*((double)ib)/(N - 1 + 1.0e-200));
-                xyz = rgb;
-                fdir(&xyz);
-                bool_t res_fn = TRUE;
-                if ((fval != NULL) && ((ir != ig) || (ig != ib)))
-                  { res_fn = tfop_check_fn(fn_name, &rgb, &xyz, k, xyz.c[k], fval(&rgb)); }
-                RGB = xyz;
-                finv(&RGB);
-                bool_t res_tr = tfop_check_tr(tr_name, &rgb, &xyz, &RGB); 
-                if ((!res_tr) || (!res_fn)) { bugs++; if (bugs > 100) { exit(1); } }
+                fp = rgb; /* Argument of the direct function. */
+                if (fpre != NULL) { fpre(&fp); }
+                fq = fp; fdir(&fq); /* Result of the direct function. */
+                fr = fq; finv(&fr); /* Result of the inverse function. */
+                bool_t res_tr = tfop_check_tr(&rgb, sdom, &fp, simg, &fq, &fr); 
+                if (! res_tr) { bugs++; if (bugs > 100) { exit(1); } }
                 tics++;
               }
           }
       }
-    fprintf(stderr, "tfop_ttr: tested %d points in the RGB cube, %d errors --", tics, bugs); 
-    fprintf(stderr, " frgb_{to,from}_%s", tr_name); 
-    if (fval != NULL) { fprintf(stderr, ", frgb_%s", fn_name); }
-    fprintf(stderr, "\n"); 
+    fprintf(stderr, "tested %d points in the RGB cube, %d errors\n", tics, bugs); 
+  }
+  
+bool_t tfop_check_tr(frgb_t *rgb, char *sdom, frgb_t *fp, char *simg, frgb_t *fq, frgb_t *fr)
+  {
+    for (int c = 0; c < 3; c++)
+      {if (fabs(fp->c[c] - fr->c[c]) > 0.0001) 
+          { char *sa = (strcmp(sdom, "RGB") == 0  ? "" : "_");
+            char *sb = (strcmp(sdom, "RGB") == 0  ? "" : sdom);
+            fprintf(stderr, "** inconsistency for frgb%s%s_{to,from}_%s:\n", sa, sb, simg);
+            frgb_print(stderr, "rgb = ", rgb, 3, "%7.4f", "\n");
+            frgb_print(stderr, "fp =  ", fp, 3, "%7.4f", "\n");
+            frgb_print(stderr, "fq =  ", fq, 3, "%7.4f", "\n");
+            frgb_print(stderr, "fr =  ", fr, 3, "%7.4f", "\n");
+            return FALSE;
+          }
+      }
+    return TRUE;
   }
 
-bool_t tfop_check_fn(char *name, frgb_t *rgb, frgb_t *xyz, int k, float coord, double fvalu)
+void tfop_test_float_fn(char *simg, tfop_tr_t *fdir, int k, char *fn_name, tfop_fn_t *fval)
   {
-    if (fabs(coord - fvalu) > 0.0001) 
-      { fprintf(stderr, "** inconsistency for frgb_%s:\n", name);
+    fprintf(stderr, "--- tfop_test_float_fn: frgb_to_%s.c[%d] and frgb_%s ---\n", simg, k, fn_name);
+
+    int N = 11; /* Better be odd? */
+    int bugs = 0;
+    int tics = 0;
+    int ir, ig, ib;
+    frgb_t rgb, fq;
+    for (ir = 0; ir < N; ir++)
+      { for (ig = 0; ig < N; ig++) 
+          { for (ib = 0; ib < N; ib++)
+              { rgb.c[0] = (float)(0.0001 + 0.9998*((double)ir)/(N - 1 + 1.0e-200));
+                rgb.c[1] = (float)(0.0001 + 0.9998*((double)ig)/(N - 1 + 1.0e-200));
+                rgb.c[2] = (float)(0.0001 + 0.9998*((double)ib)/(N - 1 + 1.0e-200));
+                fq = rgb; /* Argument of the transform. */
+                fdir(&fq); /* Result of the direct function. */
+                bool_t res_fn = TRUE;
+                if ((ir != ig) || (ig != ib))
+                  { double fvalu = fval(&rgb);
+                    res_fn = tfop_check_fn(&rgb, simg, &fq, k, fn_name, fvalu);
+                  }
+                if (! res_fn) { bugs++; if (bugs > 100) { exit(1); } }
+                tics++;
+              }
+          }
+      }
+    fprintf(stderr, "tested %d points in the RGB cube, %d errors\n", tics, bugs); 
+  }
+
+bool_t tfop_check_fn(frgb_t *rgb, char *simg, frgb_t *fq, int k, char *fn_name, double fvalu)
+  {
+    if (fabs(fq->c[k] - fvalu) > 0.0001) 
+      { fprintf(stderr, "** inconsistency between frgb_to_%s.c[%d] and frgb_%s:\n", simg, k, fn_name);
         frgb_print(stderr, "rgb = ", rgb, 3, "%7.4f", "\n");
-        frgb_print(stderr, "xyz = ", xyz, 3, "%7.4f", "\n");
-        fprintf(stderr, "coord xyz.c[%d] = %12.9f\n", k, xyz->c[k]);
+        frgb_print(stderr, "fq = ", fq, 3, "%7.4f", "\n");
+        fprintf(stderr, "coord fq.c[%d] = %12.9f\n", k, fq->c[k]);
         fprintf(stderr, "function value = %12.9f\n", fvalu);
         return FALSE;
       }
     else
       { return TRUE; }
-  }
-  
-bool_t tfop_check_tr(char *name, frgb_t *rgb, frgb_t *xyz, frgb_t *RGB)
-  {
-    int c;
-    for (c = 0; c < 3; c++)
-      {
-        if (fabs(rgb->c[c] - RGB->c[c]) > 0.0001) 
-          { fprintf(stderr, "** inconsistency for frgb_{to,from}_%s:\n", name);
-            frgb_print(stderr, "rgb = ", rgb, 3, "%7.4f", "\n");
-            frgb_print(stderr, "xyz = ", xyz, 3, "%7.4f", "\n");
-            frgb_print(stderr, "RGB = ", RGB, 3, "%7.4f", "\n");
-            return FALSE;
-          }
-      }
-    return TRUE;
   }
 
 options_t *tfop_parse_options(int argc, char **argv)

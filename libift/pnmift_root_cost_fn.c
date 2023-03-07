@@ -1,5 +1,5 @@
 /* pnmift_root_cost_fn.c - implementation of pnmift_root_cost_fn.h */
-/* Last edited on 2010-06-06 16:54:32 by stolfi */
+/* Last edited on 2023-03-07 17:14:01 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -33,5 +33,5 @@ pnmift_root_cost_t pnmift_root_cost_fn_zero(frgb_t q, int chns)
 
 pnmift_root_cost_t pnmift_root_cost_fn_lum(frgb_t q, int chns)
   {
-    return frgb_Y(&q);
+    return frgb_get_Y(&q);
   }

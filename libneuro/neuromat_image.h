@@ -2,7 +2,7 @@
 #define neuromat_image_H
 
 /* NeuroMat generic image tools. */
-/* Last edited on 2021-08-28 21:08:20 by stolfi */
+/* Last edited on 2023-03-07 17:17:49 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -25,7 +25,7 @@ void neuromat_image_colorize_field
   );
   /* Stores into {cim} a false-color version of image {fld}, where the
     value range {[-vmax__+vmax]} is turned into various colors with
-    {frgb_path_signed(z,1,style)}. 
+    {frgb_path_map_signed(z,1,style)}. 
     
     The image {cim} must have 4 chanels (RGB plus opacity). If {msk} is not null, it
     must be be a monochromatic image with samples in {[0__1]}, no

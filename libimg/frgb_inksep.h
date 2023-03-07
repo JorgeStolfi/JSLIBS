@@ -1,12 +1,14 @@
+/* frgb_inksep.h - decomposing a color into a mixture of inks */
+
 #ifndef frgb_inksep_H
 #define frgb_inksep_H
 
-/* frgb_inksep.h - decomposing a color into a mixture of inks
-** Last edited on 2007-01-03 10:37:23 by stolfi
-**
-** Copyright (C) 2006 by Jorge Stolfi, the University of Campinas, Brazil.
-** See the rights and conditions notice at the end of this file.
-*/
+/* Last edited on 2023-03-04 18:07:44 by stolfi */
+/* Copyright (C) 2006 by Jorge Stolfi, the University of Campinas, Brazil. */
+/* See the rights and conditions notice at the end of this file. */
+
+#define _GNU_SOURCE
+#include <stdint.h>
 
 #include <r4x4.h>
 #include <bool.h>
@@ -32,7 +34,7 @@ void frgb_inksep_separate_layers(frgb_t fv, r4x4_t *sep, r4_t *m);
     where {LAYS} is {frgb_inksep_LAYS}. Returns in {mix[0..LAYS-1]} 
     the mixing coefficients. */
 
-void frgb_inksep_clip_to_simplex(r4_t *m, int *nbadP);
+void frgb_inksep_clip_to_simplex(r4_t *m, int32_t *nbadP);
   /* Given an array {m[0..LAYS-1]} of ink mixing coefficients, adjusts
     it so that all elements are non-negative and add to 1.
     Also returns in {*nbadP} the number of mixing coefficients

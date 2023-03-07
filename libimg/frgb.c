@@ -1,5 +1,8 @@
 /* See frgb.h */
-/* Last edited on 2004-11-05 22:41:10 by stolfi */ 
+/* Last edited on 2023-03-04 18:05:18 by stolfi */ 
+
+#define _GNU_SOURCE
+#include <stdint.h>
 
 #include <frgb.h>
 
