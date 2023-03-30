@@ -1,9 +1,10 @@
 /* See interval.h */
-/* Last edited on 2021-12-31 23:44:41 by stolfi */
+/* Last edited on 2023-03-18 11:27:59 by stolfi */
 
 /* We need to set these in order to get {asinh}. What a crock... */
 #undef __STRICT_ANSI__
 #define _ISOC99_SOURCE 1
+#include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
 #include <limits.h>
@@ -46,7 +47,7 @@ void interval_mid_rad (interval_t *X, double *mid, double *rad)
       { if (mid != NULL) { (*mid) = +INF; } if (rad != NULL) { (*rad) = +INF; } }
     else
       { double m;
-        int oround = fegetround();
+        int32_t oround = fegetround();
         fesetround(FE_TONEAREST);
         /* We divide before adding, to avoid overflow: */
         m = (LO(*X) * 0.5) + (HI(*X) * 0.5);
@@ -107,7 +108,7 @@ interval_t interval_from_mid_rad (double mid, double rad)
     else
       { /* Finite {mid} and finite, positive {rad}. */
         /* The result is a finite interval (except for possible overflows: */
-        int oround = fegetround();
+        int32_t oround = fegetround();
         /* We must round {LO = mid - rad} down and {HI = mid + rad} up, so: */
         fesetround(FE_UPWARD);
         double nlo = rad - mid; /* {-LO}. */
@@ -118,7 +119,7 @@ interval_t interval_from_mid_rad (double mid, double rad)
   }
 
 double interval_width (interval_t *X)
-  { int oround = fegetround();
+  { int32_t oround = fegetround();
     fesetround(FE_UPWARD);
     double w = HI(*X) - LO(*X);
     fesetround(oround);
@@ -178,7 +179,7 @@ interval_t interval_meet(interval_t *X, interval_t *Y)
 
 void interval_widen(interval_t *X, double margin)
   { if (interval_IS_EMPTY(*X)) { return; }
-    int oround = fegetround();
+    int32_t oround = fegetround();
     fesetround(FE_UPWARD);
     double nlo = margin - LO(*X);
     double phi = margin + HI(*X);

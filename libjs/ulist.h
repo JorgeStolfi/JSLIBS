@@ -2,8 +2,9 @@
 #define ulist_H
 
 /* A finite list of 64-bit strings, with fast lookup by sequential hashing. */
-/* Last edited on 2009-03-06 20:37:32 by stolfi */
+/* Last edited on 2023-03-18 11:06:40 by stolfi */
 
+#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <vec.h>
@@ -76,7 +77,7 @@ typedef struct ulist_t ulist_t;
 
 typedef uint64_t ulist_item_t;
   /* A {ulist_item_t} is an item that can be stored in an {ulist_t},
-    namey a 64-bit string (actually a 64-bit {unsigned int}). */
+    namey a 64-bit string (actually a 64-bit unsigned integer). */
 
 typedef uint32_t ulist_count_t;
   /* A count of items in an {ulist_t}. */
@@ -263,7 +264,7 @@ ulist_hash_size_t ulist_hash_size(ulist_t *S);
 
 /* RESIZING A LIST */
 
-void ulist_resize(ulist_t *S, int n, ulist_hash_func_t *hash);
+void ulist_resize(ulist_t *S, int32_t n, ulist_hash_func_t *hash);
   /* Changes the capacity {sz(S)} of {S} to be exactly {n}. Also
     changes the hash function to be {hash}. All the items stored in
     {S} are preserved, in their current ordering.

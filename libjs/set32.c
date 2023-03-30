@@ -1,11 +1,12 @@
 /* See set32.h */
-/* Last edited on 2013-10-25 01:21:15 by stolfilocal */
+/* Last edited on 2023-03-18 11:14:50 by stolfi */
 
-#include <set32.h>
+#define _GNU_SOURCE
 #include <stdint.h>
+#include <set32.h>
 
-int set32_count(set32_t A)
-  { int n = 0;
+int32_t set32_count(set32_t A)
+  { int32_t n = 0;
     while (A != 0) { if (A & 1) { n++; }  A >>= 1; }
     return n;
   }

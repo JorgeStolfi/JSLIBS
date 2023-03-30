@@ -1,5 +1,5 @@
 /* See float_image.h */
-/* Last edited on 2023-03-07 13:02:35 by stolfi */ 
+/* Last edited on 2023-03-19 08:41:31 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <limits.h>
@@ -56,22 +56,19 @@ void float_image_set_sample(float_image_t *A, int32_t c, int32_t x, int32_t y, f
 void float_image_get_pixel(float_image_t *A, int32_t x, int32_t y, float v[])
   { float *sp = float_image_get_sample_address(A, 0, x, y);
     int32_t NC = (int32_t)A->sz[0];
-    int32_t c;
-    for (c = 0; c < NC; c++) { v[c] = (*sp); sp += A->st[0]; }
+    for (int32_t c = 0; c < NC; c++) { v[c] = (*sp); sp += A->st[0]; }
   }
 
 void float_image_set_pixel(float_image_t *A, int32_t x, int32_t y, float v[])
   { float *sp = float_image_get_sample_address(A, 0, x, y);
     int32_t NC = (int32_t)A->sz[0];
-    int32_t c;
-    for (c = 0; c < NC; c++) { (*sp) = v[c]; sp += A->st[0]; }
+    for (int32_t c = 0; c < NC; c++) { (*sp) = v[c]; sp += A->st[0]; }
   }
 
 void float_image_fill_pixel(float_image_t *A, int32_t x, int32_t y, float v)
   { float *sp = float_image_get_sample_address(A, 0, x, y);
     int32_t NC = (int32_t)A->sz[0];
-    int32_t c;
-    for (c = 0; c < NC; c++) { (*sp) = v; sp += A->st[0]; }
+    for (int32_t c = 0; c < NC; c++) { (*sp) = v; sp += A->st[0]; }
   }
 
 void float_image_get_sample_row
@@ -317,9 +314,8 @@ void float_image_mix_channels
     int32_t NY = (int32_t)R->sz[2];
     float_image_check_size(A, -1, NX, NY);
     float_image_check_size(B, -1, NX, NY);
-    int32_t x, y;
-    for (y = 0; y < NY; y++)
-      { for (x = 0; x < NX; x++)
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
           { float vA = float_image_get_sample(A, cA, x, y);
             float vB = float_image_get_sample(B, cB, x, y);
             float_image_set_sample(R, cR, x, y, (float)(sA*vA + sB*vB));
@@ -329,21 +325,18 @@ void float_image_mix_channels
 
 void float_image_fill(float_image_t *A, float v)
   { int32_t NC = (int32_t)A->sz[0];
-    int32_t c;
-    for (c = 0; c < NC; c++) { float_image_fill_channel(A, c, v); }
+    for (int32_t c = 0; c < NC; c++) { float_image_fill_channel(A, c, v); }
   }
 
 void float_image_fill_pixels(float_image_t *A, float v[])
   { int32_t NC = (int32_t)A->sz[0];
-    int32_t c;
-    for (c = 0; c < NC; c++) { float_image_fill_channel(A, c, v[c]); }
+    for (int32_t c = 0; c < NC; c++) { float_image_fill_channel(A, c, v[c]); }
   }
 
 void float_image_assign(float_image_t *A, float_image_t *V)
   { int32_t NC = (int32_t)A->sz[0];
     demand(V->sz[0] == NC, "incompatible channel counts");
-    int32_t c;
-    for (c = 0; c < NC; c++) { float_image_set_channel(A, c, V, c); }
+    for (int32_t c = 0; c < NC; c++) { float_image_set_channel(A, c, V, c); }
   }
 
 void float_image_fill_rectangle
@@ -358,12 +351,11 @@ void float_image_fill_rectangle
     demand((xmin >= 0) && (xmax < A->sz[1]), "invalid column range");
     demand((ymin >= 0) && (ymax < A->sz[2]), "invalid row range");
     float *prow = float_image_get_sample_address(A, 0, xmin, ymin);
-    int32_t x, y, c;
-    for (y = ymin; y <= ymax; y++)
+    for (int32_t y = ymin; y <= ymax; y++)
       { float *ppix = prow;
-        for (x = xmin; x <= xmax; x++)
+        for (int32_t x = xmin; x <= xmax; x++)
           { float *psmp = ppix;
-            for (c = 0; c < A->sz[0]; c++) { (*psmp) = v; psmp += A->st[0]; }
+            for (int32_t c = 0; c < A->sz[0]; c++) { (*psmp) = v; psmp += A->st[0]; }
             ppix += A->st[1];
           }
         prow += A->st[2];
@@ -384,10 +376,9 @@ void float_image_fill_channel_rectangle
     demand((xmin >= 0) && (xmax < A->sz[1]), "invalid column range");
     demand((ymin >= 0) && (ymax < A->sz[2]), "invalid row range");
     float *prow = float_image_get_sample_address(A, c, xmin, ymin);
-    int32_t x, y;
-    for (y = ymin; y <= ymax; y++)
+    for (int32_t y = ymin; y <= ymax; y++)
       { float *psmp = prow;
-        for (x = xmin; x <= xmax; x++) { (*psmp) = v; psmp += A->st[1]; }
+        for (int32_t x = xmin; x <= xmax; x++) { (*psmp) = v; psmp += A->st[1]; }
         prow += A->st[2];
       }
   }
@@ -404,12 +395,11 @@ void float_image_fill_rectangle_pixels
     demand((xmin >= 0) && (xmax < A->sz[1]), "invalid column range");
     demand((ymin >= 0) && (ymax < A->sz[2]), "invalid row range");
     float *prow = float_image_get_sample_address(A, 0, xmin, ymin);
-    int32_t x, y, c;
-    for (y = ymin; y <= ymax; y++)
+    for (int32_t y = ymin; y <= ymax; y++)
       { float *ppix = prow;
-        for (x = xmin; x <= xmax; x++)
+        for (int32_t x = xmin; x <= xmax; x++)
           { float *psmp = ppix;
-            for (c = 0; c < A->sz[0]; c++) { (*psmp) = v[c]; psmp += A->st[0]; }
+            for (int32_t c = 0; c < A->sz[0]; c++) { (*psmp) = v[c]; psmp += A->st[0]; }
             ppix += A->st[1];
           }
         prow += A->st[2];
@@ -435,11 +425,10 @@ void float_image_assign_channel_rectangle
     demand((yminA >= 0) && (ymaxA < A->sz[2]) && (ymaxV < V->sz[2]), "invalid row range");
     float *prowA = float_image_get_sample_address(A, cA, xminA, yminA);
     float *prowV = float_image_get_sample_address(V, cV, xminV, yminV);
-    int32_t x, y;
-    for (y = yminA; y <= ymaxA; y++)
+    for (int32_t y = yminA; y <= ymaxA; y++)
       { float *psmpA = prowA;
         float *psmpV = prowV;
-        for (x = xminA; x <= xmaxA; x++) 
+        for (int32_t x = xminA; x <= xmaxA; x++) 
           { (*psmpA) = (*psmpV); psmpA += A->st[1]; psmpV += V->st[1]; }
         prowA += A->st[2];
         prowV += V->st[2];
@@ -463,14 +452,13 @@ void float_image_assign_rectangle
     demand((yminA >= 0) && (ymaxA < A->sz[2]) && (ymaxV < V->sz[2]), "invalid row range");
     float *prowA = float_image_get_sample_address(A, 0, xminA, yminA);
     float *prowV = float_image_get_sample_address(V, 0, xminV, yminV);
-    int32_t x, y, c;
-    for (y = yminA; y <= ymaxA; y++)
+    for (int32_t y = yminA; y <= ymaxA; y++)
       { float *ppixA = prowA;
         float *ppixV = prowV;
-        for (x = xminA; x <= xmaxA; x++)
+        for (int32_t x = xminA; x <= xmaxA; x++)
           { float *psmpA = ppixA;
             float *psmpV = ppixV;
-            for (c = 0; c < NC; c++) 
+            for (int32_t c = 0; c < NC; c++) 
               { (*psmpA) = (*psmpV); psmpA += A->st[0]; psmpV += V->st[0]; }
             ppixA += A->st[1];
             ppixV += V->st[1];
@@ -496,8 +484,7 @@ void float_image_get_gradient_sobel
     double sum_wy = 0.0;
     double sum_wx_fy = 0.0;
     double sum_wx = 0.0;
-    int32_t d;
-    for (d = -1; d <= +1; d++)
+    for (int32_t d = -1; d <= +1; d++)
       { /* Sobel weight for slice {d}: */
         double wd = (d == 0 ? 2.0 : 1.0);
         if ((x-1 >= 0) && (x+1 < NX))
@@ -548,11 +535,10 @@ void float_image_get_local_avg_var
     double sum_w = 0.0;
     double sum_w_f = 0.0;
     double sum_w_f2 = 0.0;
-    int32_t dx, dy;
-    for (dx = -hw; dx <= +hw; dx++)
+    for (int32_t dx = -hw; dx <= +hw; dx++)
       { int32_t xs = x + dx;
         double wx = ((xs < 0) || (xs >= NX) ? 0 : wt[dx + hw]); 
-        for (dy = -hw; dy <= +hw; dy++)
+        for (int32_t dy = -hw; dy <= +hw; dy++)
           { int32_t ys = y + dy;
             double wy = ((ys < 0) || (ys >= NY) ? 0 : wt[dy + hw]); 
             double w = wx*wy;
@@ -620,9 +606,8 @@ void float_image_local_avg_var
     int32_t dXV = (NX - NXV)/2;
     int32_t dYV = (NY - NYV)/2;
     
-    int32_t x, y;
-    for (x = 0; x < NX; x++)
-      { for (y = 0; y < NY; y++)
+    for (int32_t x = 0; x < NX; x++)
+      { for (int32_t y = 0; y < NY; y++)
           { /* Extract local mean and variance: */
             double avg, var;
             float_image_get_local_avg_var(A, cA, x - dXA, y - dYA, hw, wt, &avg, &var);
@@ -654,11 +639,10 @@ double float_image_get_dilated
     int32_t NX = (int32_t)A->sz[1]; 
     int32_t NY = (int32_t)A->sz[2];
     double max_w_a = -INF;
-    int32_t dx, dy;
-    for (dx = -hw; dx <= +hw; dx++)
+    for (int32_t dx = -hw; dx <= +hw; dx++)
       { int32_t xs = x + dx;
         double wx = ((xs < 0) || (xs >= NX) ? 0 : wt[dx + hw]); 
-        for (dy = -hw; dy <= +hw; dy++)
+        for (int32_t dy = -hw; dy <= +hw; dy++)
           { int32_t ys = y + dy;
             double wy = ((ys < 0) || (ys >= NY) ? 0 : wt[dy + hw]); 
             double w = wx*wy;
@@ -679,13 +663,11 @@ void float_image_make_grayscale(float_image_t *A)
     int32_t NY = (int32_t)A->sz[2];
     if (NC == 1) { return; }
     demand(NC == 3, "channel count must be 1 or 3");
-    int32_t x, y;
-    for (y = 0; y < NY; y++)
-      { for (x = 0; x < NX; x++)
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
           { frgb_t pix = fic_get_frgb_pixel(A, 0, 1, 2, x, y);
             double value = frgb_get_Y(&pix);
-            int32_t c;
-  	    for (c = 0; c < NC; c++) { pix.c[c] = (float)value; }
+            for (int32_t c = 0; c < NC; c++) { pix.c[c] = (float)value; }
             fic_set_frgb_pixel(A, 0, 1, 2, x, y, &pix);
           }
       }
@@ -698,9 +680,8 @@ void float_image_apply_gamma(float_image_t *A, int32_t c, double gamma, double b
     int32_t NX = (int32_t)A->sz[1];
     int32_t NY = (int32_t)A->sz[2];
     demand((c >= 0) && (c < NC), "invalid channel index");
-    int32_t x, y;
-    for (y = 0; y < NY; y++)
-      { for (x = 0; x < NX; x++)
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
           { float *pA = float_image_get_sample_address(A, c, x, y);
             (*pA) = sample_conv_gamma((*pA), gamma, bias);
           }
@@ -715,9 +696,8 @@ void float_image_log_scale(float_image_t *A, int32_t c, double vref, double base
     int32_t NX = (int32_t)A->sz[1];
     int32_t NY = (int32_t)A->sz[2];
     demand((c >= 0) && (c < NC), "invalid channel index");
-    int32_t x, y;
-    for (y = 0; y < NY; y++)
-      { for (x = 0; x < NX; x++)
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
           { float *pA = float_image_get_sample_address(A, c, x, y);
             (*pA) = sample_conv_log((*pA), vref, logBase);
           }
@@ -732,9 +712,8 @@ void float_image_undo_log_scale(float_image_t *A, int32_t c, double vref, double
     int32_t NX = (int32_t)A->sz[1];
     int32_t NY = (int32_t)A->sz[2];
     demand((c >= 0) && (c < NC), "invalid channel index");
-    int32_t x, y;
-    for (y = 0; y < NY; y++)
-      { for (x = 0; x < NX; x++)
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
           { float *pA = float_image_get_sample_address(A, c, x, y);
             (*pA) = sample_conv_undo_log((*pA), vref, logBase);
           }
@@ -748,9 +727,8 @@ void float_image_rescale_samples(float_image_t *A, int32_t c, float a0, float a1
     demand((c >= 0) && (c < NC), "invalid channel index");
     double scale = (z1 - z0)/(a1 - a0);
     demand(! isnan(scale), "scale factor is NaN");
-    int32_t x, y;
-    for (y = 0; y < NY; y++)
-      { for (x = 0; x < NX; x++)
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
           { float *v = float_image_get_sample_address(A, c, x, y);
             (*v) = (float)(z0 + scale*((*v) - a0));
           }
@@ -762,14 +740,34 @@ void float_image_square_samples(float_image_t *A, int32_t c)
     int32_t NX = (int32_t)A->sz[1];
     int32_t NY = (int32_t)A->sz[2];
     demand((c >= 0) && (c < NC), "invalid channel index");
-    int32_t x, y;
-    for (y = 0; y < NY; y++)
-      { for (x = 0; x < NX; x++)
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
           { float *smp = float_image_get_sample_address(A, c, x, y);
             float v = *smp;
             if (!isnan(v)) { (*smp) = v*v; }
           }
       }
+  }
+
+double float_image_compute_sample_sum(float_image_t *A, int32_t c)
+  { int32_t NC = (int32_t)A->sz[0];
+    int32_t NX = (int32_t)A->sz[1];
+    int32_t NY = (int32_t)A->sz[2];
+    if ((c < 0) || (c >= NC))
+      { /* Invalid channel, all samples are zero (or there are no samples). */
+        return 0.0;
+      }
+
+    /* Compute the sum of samples {sum}: */
+    double sum = 0;
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
+          { double v = float_image_get_sample(A, c, x, y);
+            if (isfinite(v))
+              { /* Neither {±INF} nor {NAN}: */ sum += v; }
+          }
+      }
+    return sum;
   }
 
 double float_image_compute_total_energy(float_image_t *A, int32_t c, double avg)
@@ -783,9 +781,8 @@ double float_image_compute_total_energy(float_image_t *A, int32_t c, double avg)
 
     /* Compute the sum of squares {sum2}: */
     double sum2 = 0;
-    int32_t x, y;
-    for (y = 0; y < NY; y++)
-      { for (x = 0; x < NX; x++)
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
           { double v = float_image_get_sample(A, c, x, y);
             if (isfinite(v))
               { /* Neither {±INF} nor {NAN}: */ v -= avg; sum2 += v*v; }
@@ -799,9 +796,8 @@ void float_image_replace_nan_samples(float_image_t *A, int32_t c, float v)
     int32_t NX = (int32_t)A->sz[1];
     int32_t NY = (int32_t)A->sz[2];
     demand((c >= 0) && (c < NC), "invalid channel index");
-    int32_t x, y;
-    for (y = 0; y < NY; y++)
-      { for (x = 0; x < NX; x++)
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
           { float *p = float_image_get_sample_address(A, c, x, y);
             if (isnan(*p)) { (*p) = v; }
           }
@@ -821,10 +817,9 @@ void float_image_compute_sample_avg_dev(float_image_t *A, int32_t c, double *avg
       { /* Valid channel. */
         /* Compute the sample average {sa}: */
         double sum = 0;
-        int32_t x, y;
         int32_t tot = 0;
-         for (y = 0; y < NY; y++)
-          { for (x = 0; x < NX; x++)
+        for (int32_t y = 0; y < NY; y++)
+          { for (int32_t x = 0; x < NX; x++)
               { double v = float_image_get_sample(A, c, x, y);
                 if (isfinite(v))
                   { /* Neither {±INF} nor {NAN}: */ sum += v; tot++; }
@@ -833,8 +828,8 @@ void float_image_compute_sample_avg_dev(float_image_t *A, int32_t c, double *avg
         double sa = (tot <= 0 ? 0.0 : sum/tot);
         /* Compute the sample variance {sv}: */
         sum = 0;
-        for (y = 0; y < NY; y++)
-          { for (x = 0; x < NX; x++)
+        for (int32_t y = 0; y < NY; y++)
+          { for (int32_t x = 0; x < NX; x++)
               { double v = float_image_get_sample(A, c, x, y);
                 if (isfinite(v))
                   { /* Neither {±INF} nor {NAN}: */ v -= sa; sum += v*v; }
@@ -863,9 +858,8 @@ void float_image_update_sample_range(float_image_t *A, int32_t c, float *vMin, f
       }
     else
       { /* Valid channel. */
-        int32_t x, y;
-        for (y = 0; y < NY; y++)
-          { for (x = 0; x < NX; x++)
+        for (int32_t y = 0; y < NY; y++)
+          { for (int32_t x = 0; x < NX; x++)
               { float v = float_image_get_sample(A, c, x, y);
                 if (isfinite(v))
                   { /* Neither {±INF} nor {NAN}: */ 
@@ -875,6 +869,33 @@ void float_image_update_sample_range(float_image_t *A, int32_t c, float *vMin, f
               }
           }
       }
+  }
+
+float float_image_spectrum_max_sample(float_image_t *A, int32_t c, bool_t centered)
+  { 
+    int32_t NC = (int32_t)A->sz[0];
+    int32_t NX = (int32_t)A->sz[1];
+    int32_t NY = (int32_t)A->sz[2];
+    /* Determine the constant term position: */
+    int32_t x0 = (centered ? NX/2 : 0);
+    int32_t y0 = (centered ? NY/2 : 0);
+    /* Collect the max sample value: */
+    float vMax = 0.0;
+    if ((c >= 0) && (c < NC))
+      { /* Valid channel. */
+        for (int32_t y = 0; y < NY; y++)
+          { for (int32_t x = 0; x < NX; x++)
+              { if ((x != x0) || (y != y0))
+                  { float v = float_image_get_sample(A, c, x, y);
+                    if (isfinite(v))
+                      { assert(v >= 0.0);
+                        vMax = fmaxf(vMax, v);
+                      }
+                  }
+              }
+          }
+      }
+    return vMax;
   }
 
 void float_image_flip_x(float_image_t *A, int32_t c, int32_t ix)
@@ -889,9 +910,8 @@ void float_image_flip_x(float_image_t *A, int32_t c, int32_t ix)
     /* Compute the first and last indices for the X loop: */
     int32_t fst_x = ix / 2 + 1; 
     int32_t lst_x = (ix + NX - 1) / 2;
-    int32_t x1, y;
-    for (y = 0; y < NY; y++)
-      { for (x1 = fst_x; x1 <= lst_x; x1++)
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x1 = fst_x; x1 <= lst_x; x1++)
           { /* Compute the partner: */
             int32_t x2 = ix - x1; if (x2 < 0) { x2 += NX; }
             assert(x2 != x1);
@@ -915,9 +935,8 @@ void float_image_flip_y(float_image_t *A, int32_t c, int32_t iy)
     /* Compute the first and last indices for the Y loop: */
     int32_t fst_y = iy / 2 + 1; 
     int32_t lst_y = (iy + NY - 1) / 2;
-    int32_t y1, x;
-    for (x = 0; x < NX; x++)
-      { for (y1 = fst_y; y1 <= lst_y; y1++)
+    for (int32_t x = 0; x < NX; x++)
+      { for (int32_t y1 = fst_y; y1 <= lst_y; y1++)
           { /* Compute the partner: */
             int32_t y2 = iy - y1; if (y2 < 0) { y2 += NY; }
             assert(y2 < NY);
@@ -984,10 +1003,9 @@ float_image_t *float_image_copy (float_image_t *A)
     int32_t NX = (int32_t)A->sz[1];
     int32_t NY = (int32_t)A->sz[2];
     float_image_t *B = float_image_new(NC, NX, NY);
-    int32_t c, x, y;
-    for(y = 0; y < NY; y++)
-      { for(x = 0; x < NX; x++)
-          { for (c = 0; c < NC; c++) 
+    for(int32_t y = 0; y < NY; y++)
+      { for(int32_t x = 0; x < NX; x++)
+          { for (int32_t c = 0; c < NC; c++) 
               { float v = float_image_get_sample(A, c, x, y);
                 float_image_set_sample(B, c, x, y, v);
               }
@@ -1015,14 +1033,13 @@ float_image_t *float_image_crop
     int32_t NYR = (int32_t)imax(0, yHi - yLo);
     float_image_t *R = float_image_new(NCR, NXR, NYR);
     /* Fill {R} as appropriate: */
-    int32_t c, x, y;
-    for (c = 0; c < NCR; c++)
+    for (int32_t c = 0; c < NCR; c++)
       { int32_t cA = cLo + c;
         bool_t cOK = ((cA >= 0) && (cA < NCA));
-        for (x = 0; x < NXR; x++)
+        for (int32_t x = 0; x < NXR; x++)
           { int32_t xA = xLo + x;
             bool_t xOK = ((xA >= 0) && (xA < NXA));
-            for (y = 0; y < NYR; y++)
+            for (int32_t y = 0; y < NYR; y++)
               { int32_t yA = yLo + y;
                 bool_t yOK = ((yA >= 0) && (yA < NYA));
                 float v;
@@ -1066,12 +1083,11 @@ void float_image_write(FILE *wr, float_image_t *A)
     fprintf(wr, "NC = %d\n", NC);
     fprintf(wr, "NX = %d\n", NX);
     fprintf(wr, "NY = %d\n", NY);
-    int32_t c, x, y;
-    for(y = 0; y < NY; y++)
+    for(int32_t y = 0; y < NY; y++)
       { if (y > 0) { fprintf(wr, "\n"); }
-        for(x = 0; x < NX; x++)
+        for(int32_t x = 0; x < NX; x++)
           { fprintf(wr, "%5d %5d", x, y);
-            for (c = 0; c < NC; c++) 
+            for (int32_t c = 0; c < NC; c++) 
               { float v = float_image_get_sample(A, c, x, y);
                 fprintf(wr, " %+14.7e", v);
               }
@@ -1089,15 +1105,14 @@ float_image_t *float_image_read(FILE *rd)
     int32_t NX = nget_int32(rd, "NX"); fget_eol(rd);
     int32_t NY = nget_int32(rd, "NY"); fget_eol(rd);
     float_image_t *A = float_image_new(NC, NX, NY);
-    int32_t c, x, y;
-    for (y = 0; y < NY; y++)
+    for (int32_t y = 0; y < NY; y++)
       { if (y > 0) { fget_eol(rd); }
-        for (x = 0; x < NX; x++)
+        for (int32_t x = 0; x < NX; x++)
           { int32_t xr = fget_int32(rd);
             int32_t yr = fget_int32(rd);
             demand((xr == x) && (yr == y), "bad pixel indices");
             /* Read channels of pixel {(x,y)}: */
-            for (c = 0; c < NC; c++)
+            for (int32_t c = 0; c < NC; c++)
               { double v = fget_double(rd);
                 float_image_set_sample(A, c, x, y, (float)v);
               }
@@ -1110,18 +1125,16 @@ float_image_t *float_image_read(FILE *rd)
 
 void float_image_debug_pixel(char *label, double x, double y, int32_t chns, float f[], char *tail)
   { 
-    int32_t ich;
     fprintf(stderr, "%s(%9.4f,%9.4f) = (", label, x, y);
-    for (ich = 0; ich < chns; ich++) 
+    for (int32_t ich = 0; ich < chns; ich++) 
       { fprintf(stderr, " %7.4f", f[ich]); }
     fprintf(stderr, " )%s", tail);
   }
 
 void float_image_debug_double_pixel(char *label, double x, double y, int32_t chns, double v[], char *tail)
   { 
-    int32_t ich;
     fprintf(stderr, "%s(%9.4f,%9.4f) = (", label, x, y);
-    for (ich = 0; ich < chns; ich++) 
+    for (int32_t ich = 0; ich < chns; ich++) 
       { fprintf(stderr, " %7.4f", v[ich]); }
     fprintf(stderr, " )%s", tail);
   }

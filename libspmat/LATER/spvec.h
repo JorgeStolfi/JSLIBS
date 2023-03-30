@@ -1,13 +1,16 @@
 /* spvec.h -- sparse vectors (one-dimensional arrays) of things */
-/* Last edited on 2008-03-29 14:48:11 by stolfi */
+/* Last edited on 2023-03-18 10:50:31 by stolfi */
 
 #ifndef spvec_H
 #define spvec_H
 
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <stdlib.h>
+
 #include <bool.h>
 #include <ref.h>
-#include <stdint.h>
+
 #include <spvec_gen.h>
 
 /* SPARSE VECTORS 
@@ -100,7 +103,7 @@
 /* STORAGE EXPANSION */
   
 #define spvec_DECLARE_EXPAND(VEC_TYPE,PREFIX,ELEM_TYPE) \
-  void PREFIX##_expand(VEC_TYPE *M, int pos)
+  void PREFIX##_expand(VEC_TYPE *M, int32_t pos)
 /*
   The call {{PREFIX}_expand(&M,pos)} makes sure that the entry
   {M.en[pos]} exists. If necessary, it allocates a larger entry list
@@ -186,7 +189,7 @@
     }
 
 #define spvec_IMPLEMENT_EXPAND(VEC_TYPE,PREFIX,ELEM_TYPE) \
-  void PREFIX##_expand(VEC_TYPE *M, int pos) \
+  void PREFIX##_expand(VEC_TYPE *M, int32_t pos) \
     { if (pos >= M->nen) \
         { spvec_expand((spvec_t *)M, pos, sizeof(PREFIX##_entry_t)); } \
     }
@@ -224,8 +227,8 @@
     
 /* SOME USEFUL TYPED SPARSE VECTORS */
 
-spvec_typedef(int_spvec_t,    int_spvec,    int);
-  /* Sparse Vectors of {int}s. */
+spvec_typedef(int32_t_spvec_t,    int32_t_spvec,    int32_t);
+  /* Sparse Vectors of {int32_t}s. */
 
 spvec_typedef(uint_spvec_t,   uint_spvec,   uint32_t);
   /* Sparse Vectors of {uint32_t}s. */

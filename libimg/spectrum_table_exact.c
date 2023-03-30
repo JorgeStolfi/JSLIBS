@@ -1,7 +1,8 @@
 /* See spectrum_table_exact.h */
-/* Last edited on 2013-10-21 00:16:25 by stolfilocal */ 
+/* Last edited on 2023-03-19 13:43:13 by stolfi */ 
 
 #define _GNU_SOURCE
+#include <stdint.h>
 #include <limits.h>
 #include <float.h>
 #include <assert.h>
@@ -19,7 +20,7 @@
 
 /* INTERNAL PROTOTYPES */
 
-urat64_t spectrum_table_exact_compute_freq2(int fn[], int fd[]);
+urat64_t spectrum_table_exact_compute_freq2(int32_t fn[], int32_t fd[]);
   /* Computes the absolute natural frequency squared {freq2} given the
     natural frequencies {fn[0]/fd[0], fn[1]/fd[1]} per axis (all in
     waves per pixel). */
@@ -30,13 +31,12 @@ vec_typeimpl(spectrum_table_exact_t,spectrum_table_exact,spectrum_table_exact_en
 
 void spectrum_table_exact_append_all
   ( float_image_t *P, 
-    int c,
+    bool_t center,
+    int32_t c,
     spectrum_table_exact_t *tx, 
     bool_t verbose
   )
-  { 
-    
-    /* To reduce the cost of {spectrum_table_exact_sort}, we try to 
+  { /* To reduce the cost of {spectrum_table_exact_sort}, we try to 
       generate the entries in approx sorting order, and pre-combine
       entries with the same absolute natural frequency. 
       
@@ -56,39 +56,47 @@ void spectrum_table_exact_append_all
       that would be used by the naive approach (one entry for each
       term of the spectrum). */
 
-    int fd[2] = { (int)P->sz[1], (int)P->sz[2] };  /* Denominators of int freq vectors. */
-    int fnMax[2] = { fd[0]/2, fd[1]/2 }; /* Max value of numerators {fn[0],fn[1]}. */
-    int s; /* Sum of numerators {fn[0]+fn[1]}. */
-    int sMax = fnMax[0] + fnMax[1];  /* Max value of {s}. */
-    int ntx = tx->ne; /* Table entries in use are {tx.e[0..ntx-1]}. */
+    int32_t cols = (int32_t)P->sz[1];
+    int32_t rows = (int32_t)P->sz[2];
+    int32_t fd[2] = { cols, rows };  /* Denominators of int32_t freq vectors. */
+    int32_t fnMax[2] = { fd[0]/2, fd[1]/2 }; /* Max value of numerators {fn[0],fn[1]}. */
+    int32_t s; /* Sum of numerators {fn[0]+fn[1]}. */
+    int32_t sMax = fnMax[0] + fnMax[1];  /* Max value of {s}. */
+    int32_t ntx = tx->ne; /* Table entries in use are {tx.e[0..ntx-1]}. */
     for (s = 0; s <= sMax; s++)
-      { int d; /* Difference of numerators {fn[0] - fn[1]}. */
-        int dMin = (int)imax(s - 2*fnMax[1], -s);
-        int dMax = (int)imin(2*fnMax[0] - s, +s);
+      { int32_t d; /* Difference of numerators {fn[0] - fn[1]}. */
+        int32_t dMin = (int32_t)imax(s - 2*fnMax[1], -s);
+        int32_t dMax = (int32_t)imin(2*fnMax[0] - s, +s);
         for (d = dMin; d <= dMax; d += 2)
-          { /* Compute the numerators {fn[0],fn[1]} from {s,d}: */
-            int fn[2]; /* Integer natural frequency vector (waves/cols, waves/rows). */
+          { /* Compute the numerators {fxp,fyp} from {s,d}: */
             assert((s + d) % 2 == 0);
-            fn[0] = (s + d)/2; assert((fn[0] >= 0) && (fn[0] <= fnMax[0]));
-            fn[1] = (s - d)/2; assert((fn[1] >= 0) && (fn[1] <= fnMax[1]));
             
-            /* Add the terms that have integer natural freqs {±fn[0],±fn[1]}: */
+            /* Main frequency vector corodinates: */
+            int32_t fxp = (s + d)/2; assert((fxp >= 0) && (fxp <= fnMax[0]));
+            int32_t fyp = (s - d)/2; assert((fyp >= 0) && (fyp <= fnMax[1]));
+            
+            /* Mirrored frequency vector corodinates: */
+            int32_t fxn = (fd[0] - fxp) % fd[0]; /* {-fxp mod fd[0]} */
+            int32_t fyn = (fd[1] - fyp) % fd[1]; /* {-fyp mod fd[1]} */ 
+            
+            /* Add the terms {fxn,fxp}×{fyn,fyp} but avoiding duplicates: */
             double nTerms = 0;
             double power = 0; 
             
-            auto void add_term(int fx, int fy);
+            auto void add_term(int32_t fx, int32_t fy);
               /* Adds the Hartley spectrum term with indices {fx,fy} to {nTerms,power}. */
               
-            void add_term(int fx, int fy)
-              { double val = float_image_get_sample(P, c, fx, fy);
-                /* fprintf(stderr, "    adding %2d %4d %4d = %18.10f\n", c, fx, fy, val); */
+            void add_term(int32_t fx, int32_t fy)
+              { int32_t rx = (center ? (fx + cols/2) % cols : fx);
+                int32_t ry = (center ? (fy + rows/2) % rows : fy);
+
+                double val = float_image_get_sample(P, c, rx, ry);
+                if (verbose) { fprintf(stderr, "    adding %2d %4d %4d = %18.10f\n", c, fx, fy, val); }
                 nTerms += 1;
                 power += val;
               }
               
             /* Enumerate the four (or less) terms with freqs {±fn[0],±fn[1]}: */
-            int fxp = fn[0], fxn = (fd[0] - fn[0]) % fd[0]; /* {±fn[0] mod fd[0]} */
-            int fyp = fn[1], fyn = (fd[1] - fn[1]) % fd[1]; /* {±fn[1] mod fd[1]} */ 
             
             add_term(fxp, fyp);
             if (fxn != fxp) { add_term(fxn, fyp); }
@@ -96,6 +104,7 @@ void spectrum_table_exact_append_all
             if ((fxn != fxp) && (fyn != fyp)) { add_term(fxn, fyn); }
             
             /* Append term to spectrum table: */
+            int32_t fn[2] = { fxp, fyp };
             spectrum_table_exact_append_term(tx, &ntx, fn, fd, nTerms, power);
           }
       }
@@ -105,14 +114,14 @@ void spectrum_table_exact_append_all
   
 void spectrum_table_exact_append_term
   ( spectrum_table_exact_t *tx, 
-    int *ntxp,
-    int fn[], 
-    int fd[],
+    int32_t *ntxp,
+    int32_t fn[], 
+    int32_t fd[],
     double nTerms,
     double power
   )
   {
-    int ntx = (*ntxp);
+    int32_t ntx = (*ntxp);
     spectrum_table_exact_expand(tx, ntx);
     spectrum_table_exact_entry_t *txn = &(tx->e[ntx]);
     txn->freq2 = spectrum_table_exact_compute_freq2(fn, fd);
@@ -122,10 +131,10 @@ void spectrum_table_exact_append_term
     (*ntxp) = ntx;
   }
 
-urat64_t spectrum_table_exact_compute_freq2(int fn[], int fd[])
+urat64_t spectrum_table_exact_compute_freq2(int32_t fn[], int32_t fd[])
   { 
     urat64_t F2[2]; /* {(fn[i]/fd[i])^2}, after reductions. */
-    int i;
+    int32_t i;
     for (i = 0; i < 2; i++)
       { /* Convert axial frequency {fn[i]/fd[i]} to 64 bits: */
         int64_t Fn = fn[i]; 
@@ -161,8 +170,8 @@ void spectrum_table_exact_sort(spectrum_table_exact_t *tx, bool_t verbose)
   { 
   
     /* Sort the table by increasing term frequency {freq}: */
-    auto int cmp_freq(const void *a, const void *b);
-    int cmp_freq(const void *a, const void *b) 
+    auto int32_t cmp_freq(const void *a, const void *b);
+    int32_t cmp_freq(const void *a, const void *b) 
       { /* Get hold the two entries: */
         spectrum_table_exact_entry_t *tba = (spectrum_table_exact_entry_t *)a;
         spectrum_table_exact_entry_t *tbb = (spectrum_table_exact_entry_t *)b;
@@ -171,8 +180,8 @@ void spectrum_table_exact_sort(spectrum_table_exact_t *tx, bool_t verbose)
     qsort(tx->e, tx->ne, sizeof(spectrum_table_exact_entry_t), &cmp_freq);
     
     /* Merge entries with identical frequencies: */
-    int nc = 0; /* The condensed entries are {tb.e[0..nc-1]}. */
-    int k;
+    int32_t nc = 0; /* The condensed entries are {tb.e[0..nc-1]}. */
+    int32_t k;
     for (k = 0; k < tx->ne; k++)
       { if (nc == 0)
           { /* First entry -- leave it there: */
@@ -183,7 +192,7 @@ void spectrum_table_exact_sort(spectrum_table_exact_t *tx, bool_t verbose)
             spectrum_table_exact_entry_t *ek = &(tx->e[k]);
             /* Grab the previous condensed term {*ec}: */
             spectrum_table_exact_entry_t *ec = &(tx->e[nc-1]);
-            int ord = cmp_freq(ek, ec);
+            int32_t ord = cmp_freq(ek, ec);
             if (ord < 0)
               { /* Sorting bug? */ assert(FALSE); }
             else if (ord > 0)

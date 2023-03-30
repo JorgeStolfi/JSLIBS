@@ -1,56 +1,56 @@
-/* Last edited on 2009-08-31 21:58:22 by stolfi */
+/* Last edited on 2023-03-18 11:03:56 by stolfi */
 
 /* INTERNAL PROTOTYPES */
 
-void float_array_get_pixel(float_array_t *A, int x, int y, float v[])
+void float_array_get_pixel(float_array_t *A, int32_t x, int32_t y, float v[])
   { float *sp = float_array_get_elem_address(A, 0, x, y);
-    int NC = A->sz[0];
-    int c;
+    int32_t NC = A->sz[0];
+    int32_t c;
     for (c = 0; c < NC; c++) { v[c] = (*sp); sp += A->st[0]; }
   }
 
-void float_array_set_pixel(float_array_t *A, int x, int y, float v[])
+void float_array_set_pixel(float_array_t *A, int32_t x, int32_t y, float v[])
   { float *sp = float_array_get_elem_address(A, 0, x, y);
-    int NC = A->sz[0];
-    int c;
+    int32_t NC = A->sz[0];
+    int32_t c;
     for (c = 0; c < NC; c++) { (*sp) = v[c]; sp += A->st[0]; }
   }
 
-void float_array_fill_pixel(float_array_t *A, int x, int y, float v)
+void float_array_fill_pixel(float_array_t *A, int32_t x, int32_t y, float v)
   { float *sp = float_array_get_elem_address(A, 0, x, y);
-    int NC = A->sz[0];
-    int c;
+    int32_t NC = A->sz[0];
+    int32_t c;
     for (c = 0; c < NC; c++) { (*sp) = v; sp += A->st[0]; }
   }
 
 
-void float_array_get_elem_row(float_array_t *A, int c, int y, float v[])
+void float_array_get_elem_row(float_array_t *A, int32_t c, int32_t y, float v[])
   { float *sp = float_array_get_elem_address(A, c, 0, y);
-    int NX = A->sz[1];
-    int x;
+    int32_t NX = A->sz[1];
+    int32_t x;
     for (x = 0; x < NX; x++) { v[x] = (*sp); sp += A->st[1]; }
   }
 
-void float_array_set_elem_row(float_array_t *A, int c, int y, float v[])
+void float_array_set_elem_row(float_array_t *A, int32_t c, int32_t y, float v[])
   { float *sp = float_array_get_elem_address(A, c, 0, y);
-    int NX = A->sz[1];
-    int x;
+    int32_t NX = A->sz[1];
+    int32_t x;
     for (x = 0; x < NX; x++) { (*sp) = v[x]; sp += A->st[1]; }
   }
 
-void float_array_fill_elem_row(float_array_t *A, int c, int y, float v)
+void float_array_fill_elem_row(float_array_t *A, int32_t c, int32_t y, float v)
   { float *sp = float_array_get_elem_address(A, c, 0, y);
-    int NX = A->sz[1];
-    int x;
+    int32_t NX = A->sz[1];
+    int32_t x;
     for (x = 0; x < NX; x++) { (*sp) = v; sp += A->st[1]; }
   }
 
 
-void float_array_get_pixel_row(float_array_t *A, int y, float v[])
+void float_array_get_pixel_row(float_array_t *A, int32_t y, float v[])
   { float *pxp = float_array_get_elem_address(A, 0, 0, y);
-    int NC = A->sz[0];
-    int NX = A->sz[1];
-    int c, x; int k = 0;
+    int32_t NC = A->sz[0];
+    int32_t NX = A->sz[1];
+    int32_t c, x; int32_t k = 0;
     for (x = 0; x < NX; x++)
       { float *sp = pxp;
         for (c = 0; c < NC; c++) 
@@ -59,11 +59,11 @@ void float_array_get_pixel_row(float_array_t *A, int y, float v[])
       }
   }
 
-void float_array_set_pixel_row(float_array_t *A, int y, float v[])
+void float_array_set_pixel_row(float_array_t *A, int32_t y, float v[])
   { float *pxp = float_array_get_elem_address(A, 0, 0, y);
-    int NC = A->sz[0];
-    int NX = A->sz[1];
-    int c, x; int k = 0;
+    int32_t NC = A->sz[0];
+    int32_t NX = A->sz[1];
+    int32_t c, x; int32_t k = 0;
     for (x = 0; x < NX; x++)
       { float *sp = pxp;
         for (c = 0; c < NC; c++) 
@@ -72,11 +72,11 @@ void float_array_set_pixel_row(float_array_t *A, int y, float v[])
       }
   }
 
-void float_array_fill_pixel_row(float_array_t *A, int y, float v)
+void float_array_fill_pixel_row(float_array_t *A, int32_t y, float v)
   { float *pxp = float_array_get_elem_address(A, 0, 0, y);
-    int NC = A->sz[0];
-    int NX = A->sz[1];
-    int c, x;
+    int32_t NC = A->sz[0];
+    int32_t NX = A->sz[1];
+    int32_t c, x;
     for (x = 0; x < NX; x++)
       { float *sp = pxp;
         for (c = 0; c < NC; c++) 
@@ -85,12 +85,12 @@ void float_array_fill_pixel_row(float_array_t *A, int y, float v)
       }
   }
 
-void float_array_fill_channel(float_array_t *A, int c, float v)
-  { int NC = A->sz[0];
-    int NX = A->sz[1]; 
-    int NY = A->sz[2];
+void float_array_fill_channel(float_array_t *A, int32_t c, float v)
+  { int32_t NC = A->sz[0];
+    int32_t NX = A->sz[1]; 
+    int32_t NY = A->sz[2];
     demand((c >= 0) && (c < NC), "invalid channel");
-    int x, y;
+    int32_t x, y;
     for (y = 0; y < NY; y++)
       { for (x = 0; x < NX; x++)
           { float_array_set_elem(A, c, x, y, v); }
@@ -98,14 +98,14 @@ void float_array_fill_channel(float_array_t *A, int c, float v)
   }
 
 void float_array_fill(float_array_t *A, float v)
-  { int NC = A->sz[0];
-    int c;
+  { int32_t NC = A->sz[0];
+    int32_t c;
     for (c = 0; c < NC; c++) { float_array_fill_channel(A, c, v); }
   }
 
 /* IMAGE INTERPOLATION */
 
-float float_array_interpolate_elems(float_array_t *A, int c, double x, double y)
+float float_array_interpolate_elems(float_array_t *A, int32_t c, double x, double y)
   { /* Get pixel addresses and weights: */
     double wx0, wx1;    /* Column weights. */
     double wy0, wy1;    /* Sample weights. */
@@ -126,9 +126,9 @@ void float_array_interpolate_pixels(float_array_t *A, double x, double y, float 
       (A, 0, x, y, &p00, &p10, &p01, &p11, &wx0, &wx1, &wy0, &wy1);
     
     /* Apply interpolation formula to all channels: */
-    int NC = A->sz[0];         /* Number of channels. */
+    int32_t NC = A->sz[0];         /* Number of channels. */
     ix_step_t cst = A->st[0];  /* Position increment between channels. */
-    int c;
+    int32_t c;
     for (c = 0; c < NC; c++)
       { /* Interpolate: */
         v[c] = ((*p00)*wx0 + (*p10)*wx1)*wy0 + ((*p01)*wx0 + (*p11)*wx1)*wy1;
@@ -139,7 +139,7 @@ void float_array_interpolate_pixels(float_array_t *A, double x, double y, float 
 
 void float_array_get_interpolation_data
   ( float_array_t *A,
-    int c,
+    int32_t c,
     double x, 
     double y,
     float **p00,
@@ -152,13 +152,13 @@ void float_array_get_interpolation_data
     double *wy1
   )
   {
-    int ix0, ix1;       /* Column indices to interpolate. */
+    int32_t ix0, ix1;       /* Column indices to interpolate. */
     float_array_get_interp_indices_and_weights(x, A->sz[1], &ix0, &ix1, wx0, wx1);
-    int dx = ix1 - ix0; /* Usually 1, may be 0. */
+    int32_t dx = ix1 - ix0; /* Usually 1, may be 0. */
     
-    int iy0, iy1;       /* Row indices to interpolate. */
+    int32_t iy0, iy1;       /* Row indices to interpolate. */
     float_array_get_interp_indices_and_weights(y, A->sz[2], &iy0, &iy1, wy0, wy1);
-    int dy = iy1 - iy0; /* Usually 1, may be 0. */
+    int32_t dy = iy1 - iy0; /* Usually 1, may be 0. */
     
     /* Get sample addresses: */
     (*p00) = float_array_get_elem_address(A, c, ix0, iy0);
@@ -169,15 +169,15 @@ void float_array_get_interpolation_data
   
 void float_array_get_interp_indices_and_weights
   ( double z, 
-    int N, 
-    int *i0, 
-    int *i1, 
+    int32_t N, 
+    int32_t *i0, 
+    int32_t *i1, 
     double *w0,
     double *w1
   )
   {
     /* Get the `low' index {i0}: */
-    (*i0) = (int)floor(z - 0.5);
+    (*i0) = (int32_t)floor(z - 0.5);
     
     /* Compute the interpolation weights {w0} and {w1}: */
     (*w1) = z - (*i0) - 0.5;
@@ -195,10 +195,10 @@ void float_array_get_interp_indices_and_weights
       { (*i0) = (*i1) = N-1; }
   }
 
-void float_array_update_elem_range(float_array_t *A, int c, float *vmin, float *vmax)
-  { int NC = A->sz[0];
-    int NX = A->sz[1];
-    int NY = A->sz[2];
+void float_array_update_elem_range(float_array_t *A, int32_t c, float *vmin, float *vmax)
+  { int32_t NC = A->sz[0];
+    int32_t NX = A->sz[1];
+    int32_t NY = A->sz[2];
     if ((c < 0) || (c >= NC))
       { /* Invalid channel, all samples are zero. (But there may be no samples!) */
         if ((NX > 0) && (NY > 0))
@@ -209,7 +209,7 @@ void float_array_update_elem_range(float_array_t *A, int c, float *vmin, float *
       }
     else
       { /* Valid channel. */
-        int x, y;
+        int32_t x, y;
         for (y = 0; y < NY; y++)
           { for (x = 0; x < NX; x++)
               { float v = float_array_get_elem(A, c, x, y);
@@ -225,7 +225,7 @@ void float_array_update_elem_range(float_array_t *A, int c, float *vmin, float *
 
 void float_image_get_interpolation_data
   ( float_image_t *fim,
-    int c,
+    int32_t c,
     double x, 
     double y,
     float **p00,
@@ -256,9 +256,9 @@ void float_image_get_interpolation_data
 
 void float_image_get_interp_indices_and_weights
   ( double z, 
-    int N, 
-    int *i0, 
-    int *i1, 
+    int32_t N, 
+    int32_t *i0, 
+    int32_t *i1, 
     double *w0,
     double *w1
   );

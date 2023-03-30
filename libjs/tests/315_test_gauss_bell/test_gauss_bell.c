@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {gauss_bell.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2019-12-05 14:29:39 by jstolfi */ 
+/* Last edited on 2023-03-18 11:29:33 by stolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_hermite3_COPYRIGHT \
@@ -41,11 +41,11 @@ double test_arg(int32_t k, int32_t N, double vmin, double vmax);
     returns {(-1)^k*vmin*(vmax/vmin)^k/N}. If {k} is in {-N-3}, {-N-2}, or {-N-1},
     returns {-INF}, {0}, or {+INF}, respectively. */
 
-int main(int argn, char **argv);
+int32_t main(int32_t argn, char **argv);
 
 /* IMPLEMENTATIONS */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   {
     test_basics();
     return 0;
@@ -80,7 +80,7 @@ void test_basics(void)
 void test_eval(double z, double ln_v_exp)
   { double avg = 20.0; 
     double dmin = 0.01, dmax = 10.0; /* Range of deviations to try. */
-    int Nd = 3; /* Number of deviations to try, besides {±INF} and zero. */
+    int32_t Nd = 3; /* Number of deviations to try, besides {±INF} and zero. */
     for (int32_t kd = -3; kd <= Nd; kd++)
       { double dev = test_arg(kd, Nd, dmin, dmax);
         double x; /* Argument of generic bell function. */

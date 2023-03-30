@@ -1,5 +1,5 @@
 /* See pst_scaling.h */
-/* Last edited on 2008-11-11 01:36:16 by stolfi */
+/* Last edited on 2023-03-19 15:29:03 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -20,7 +20,7 @@
 
 void pst_scaling_debug_vecs
   ( char *label, 
-    int_vec_t *channel, 
+    int32_vec_t *channel, 
     double_vec_t *min,
     double_vec_t *max,
     double_vec_t *ctr,
@@ -141,19 +141,19 @@ bool_t pst_scaling_parse_uniform(argparser_t *pp, bool_t next)
     return pst_keyword_present(pp, "-uniform", next);
   }
 
-void pst_scaling_fix_channels(int NC, int_vec_t *channel)
+void pst_scaling_fix_channels(int NC, int32_vec_t *channel)
   { int c;
     if ((channel->ne == 0) && (NC > 0))
       { /* Provide default channel indices: */
-        int_vec_expand(channel, NC-1);
+        int32_vec_expand(channel, NC-1);
         for (c = 0; c < NC; c++) { channel->e[c] = c; }
-        int_vec_trim(channel, NC);
+        int32_vec_trim(channel, NC);
       }
     else if ((channel->ne == 1) && (NC > 1))
       { /* Replicate the selected channel: */
-        int_vec_expand(channel, NC-1);
+        int32_vec_expand(channel, NC-1);
         for (c = 1; c < NC; c++) { channel->e[c] = channel->e[0]; }
-        int_vec_trim(channel, NC);
+        int32_vec_trim(channel, NC);
       }
     /* Checking (always, just for paranoia): */
     demand(channel->ne == NC, "inconsistent number of channels");
@@ -167,7 +167,7 @@ void pst_scaling_fix_params
     double_vec_t *ctr,
     double_vec_t *wid,
     float_image_t *fim, 
-    int_vec_t *channel
+    int32_vec_t *channel
   )
   { bool_t debug = FALSE;
     demand((channel == NULL) || (channel->ne == NC), "inconsistent channel map");
@@ -263,7 +263,7 @@ void pst_scaling_fix_params
 
 void pst_scaling_debug_vecs
   ( char *label, 
-    int_vec_t *channel, 
+    int32_vec_t *channel, 
     double_vec_t *min,
     double_vec_t *max,
     double_vec_t *ctr,

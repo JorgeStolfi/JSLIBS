@@ -1,5 +1,5 @@
 /* See {r2_align_enum.h}. */
-/* Last edited on 2021-12-19 10:17:39 by stolfi */
+/* Last edited on 2023-03-26 21:57:11 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -22,13 +22,13 @@ void r2_align_enum_grid
   ( int32_t ni,               /* Number of images to align. */
     r2_align_mismatch_t *F2,  /* Function that evaluates the mismatch between the images. */
     r2_t ctr[],               /* (IN/OUT) Corresponding points in each image. */
-    r2_t arad[],              /* Max alignment adjustment for each image. */
+    r2_t arad[],              /* Max delta vector coordinates for each image. */
     int32_t nd,               /* Degrees of freedom (dimension of {\RF}). */
     r2_t U[],                 /* Adjstment vectors parallet to axes of {\RF}. */
     double urad[],            /* Radii of {\RF} along those directions. */
     double step,              /* Grid step. */
     r2_t p[],                 /* (OUT) Optimum alignment vector. */
-    double *F2valP            /* (OUT) Value of {F2} for the optimum alignment vector. */
+    double *F2val_P            /* (OUT) Value of {F2} for the optimum alignment vector. */
   );
   /* Enumerates every point {psmp} that is {ctr} plus a linear combination of the
     lattice vectors {U[k]} for {k} in {0..nv-1} with coefficients that are {step} times
@@ -39,7 +39,7 @@ void r2_align_enum_grid
     
     Then evaluates {F2(ni, psmp)} at every alignment vector {psmp} 
     that is inside the ellipsoid with center {ctr} and radius vector {arad}.
-    Sets {*F2valP} to the minimum of those values, and sets {p[0..ni-1]}
+    Sets {*F2val_P} to the minimum of those values, and sets {p[0..ni-1]}
     to the alignment vector {psmp} that realizes the minimum. */
 
 /* IMPLEMENTATIONS */
@@ -47,10 +47,10 @@ void r2_align_enum_grid
 void r2_align_enum
   ( int32_t ni,               /* Number of images to align. */
     r2_align_mismatch_t *F2,  /* Function that evaluates the mismatch between the images. */
-    r2_t arad[],              /* Max alignment adjustment for each image. */
+    r2_t arad[],              /* Max delta vector coordinates for each image. */
     double tol,               /* Desired precision. */
     r2_t p[],                 /* (IN/OUT) Corresponding points in each image. */
-    double *F2valP            /* (OUT) Mismatch for the computed alignment vector. */
+    double *F2val_P            /* (OUT) Mismatch for the computed alignment vector. */
   )
   {
     demand(tol > 0, "invalid {tol}");
@@ -61,26 +61,26 @@ void r2_align_enum
     for (int32_t i = 0; i < ni; i++) { ctr[i] = p[i]; }
 
     /* Compute the axes and radii of the search ellipsoid {\RF}: */
-    r2_t U[nd*ni]; /* Alignment adjustment vectrors. */
+    r2_t U[nd*ni]; /* Basis of conformal balanced delta vectors. */
     double urad[nd];
     r2_align_compute_search_ellipsoid (ni, arad, nd, U, urad);
 
     /* !!! Convert {U} to the packed lattice basis !!! */
 
-    r2_align_enum_grid(ni, F2, ctr, arad, nd, U, urad, tol, p, F2valP);
+    r2_align_enum_grid(ni, F2, ctr, arad, nd, U, urad, tol, p, F2val_P);
   }
   
 void r2_align_enum_grid
   ( int32_t ni,               /* Number of images to align. */
     r2_align_mismatch_t *F2,  /* Function that evaluates the mismatch between the images. */
     r2_t ctr[],               /* (IN/OUT) Corresponding points in each image. */
-    r2_t arad[],              /* Max alignment adjustment for each image. */
+    r2_t arad[],              /* Max delta vector coordinates for each image. */
     int32_t nd,               /* Degrees of freedom (dimension of {\RF}). */
     r2_t U[],                 /* Adjstment vectors parallet to axes of {\RF}. */
     double urad[],            /* Radii of {\RF} along those directions. */
     double step,              /* Grid step. */
     r2_t p[],                 /* (OUT) Optimum alignment vector. */
-    double *F2valP            /* (OUT) Value of {F2} for the optimum alignment vector. */
+    double *F2val_P            /* (OUT) Value of {F2} for the optimum alignment vector. */
   )    
   {
     bool_t debug = FALSE;
@@ -97,7 +97,7 @@ void r2_align_enum_grid
       }
     
     /* Enumerate all integer tuples {t[0..nd-1]} where {t[k]} ranges in {-n[k]..+n[k]}: */
-    (*F2valP) = +INF;  /* Minimum mismatch found so far. */
+    (*F2val_P) = +INF;  /* Minimum mismatch found so far. */
     int32_t t[nd];     /* Enumeration variables. */
     for (int32_t k = 0; k < nd; k++) { t[k] = -n[k]; }
     r2_t psmp[ni];     /* Sampling point. */
@@ -137,10 +137,10 @@ void r2_align_enum_grid
             /* Evaluate the mismatch function at {psmp}: */
             double F2val = F2(ni, psmp);
             
-            if (F2val < (*F2valP))
+            if (F2val < (*F2val_P))
               { /* Update the current optimum: */
                 for (int32_t i = 0; i < ni; i++) { p[i] = psmp[i]; }
-                (*F2valP) = F2val;
+                (*F2val_P) = F2val;
               }
           }
 

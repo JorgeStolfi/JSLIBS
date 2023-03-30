@@ -1,16 +1,18 @@
 /* AA test: finding the zeros of a 1-argument function. */
-/* Last edited on 2023-02-18 09:05:50 by stolfi */
+/* Last edited on 2023-03-18 10:41:58 by stolfi */
 
 #ifndef fn1_zf_H
 #define fn1_zf_H
 
-#include <fn1_functions.h>
-
-#include <aa.h>
-#include <flt.h>
-#include <ia.h>
-
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
+
+#include <ia.h>
+#include <flt.h>
+#include <aa.h>
+
+#include <fn1_functions.h>
 
 void fn1_zf_find_and_plot_zeros(
     char *prefix,
@@ -23,7 +25,7 @@ void fn1_zf_find_and_plot_zeros(
     Interval yd,
     double epsilon,
     double delta,
-    int m
+    int32_t m
   );
   /* 
     Generates Encapsulated PostScript files with plots of a curve {y =

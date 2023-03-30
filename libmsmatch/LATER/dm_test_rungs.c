@@ -2,7 +2,7 @@
 #define PROG_DESC "test of procedures that deal with rungs"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-20 07:58:26 by stolfi */
+/* Last edited on 2023-03-18 11:36:02 by stolfi */
 
 #define dm_test_rungs_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -136,13 +136,13 @@ options_t *msm_get_options(int32_t argc, char**argv)
     
     argparser_skip_parsed(pp);
     
-    o->lengthX = argparser_get_next_int32_t(pp, 0, INT32_MAX);
+    o->lengthX = argparser_get_next_int(pp, 0, INT32_MAX);
     o->circX = argparser_get_next_bool(pp);
     
-    o->lengthY = argparser_get_next_int32_t(pp, 0, INT32_MAX);
+    o->lengthY = argparser_get_next_int(pp, 0, INT32_MAX);
     o->circY = argparser_get_next_bool(pp);
     
-    o->nPairings = argparser_get_next_int32_t(pp, 0, INT32_MAX);
+    o->nPairings = argparser_get_next_int(pp, 0, INT32_MAX);
     o->outName = argparser_get_next(pp);
 
     argparser_finish(pp);

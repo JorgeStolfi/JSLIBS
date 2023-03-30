@@ -1,26 +1,27 @@
 /* See jstime.h */
-/* Last edited on 2017-08-02 10:51:19 by jstolfi */
+/* Last edited on 2023-03-18 11:18:14 by stolfi */
 
 #define _GNU_SOURCE
-#include <jstime.h>
+#include <stdint.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/resource.h>
+#include <sys/times.h>
+#include <sys/time.h>
+#include <time.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include <affirm.h>
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <time.h>
-#include <sys/time.h>
-#include <sys/times.h>
-#include <sys/resource.h>
-#include <sys/types.h>
-#include <unistd.h>
+#include <jstime.h>
 
 char *today(void)
   {
 #define TODAY_BUFSIZE 200
     char buf[TODAY_BUFSIZE];
-    int rcode;
+    int32_t rcode;
     time_t today_secs = time(NULL);
     struct tm today;
     today = *localtime(&today_secs);
@@ -30,7 +31,7 @@ char *today(void)
       today.tm_hour, today.tm_min, today.tm_sec
     );
     affirm (rcode >= 0, "snprintf failed");
-    { int n = (int)strlen(buf);
+    { int32_t n = (int32_t)strlen(buf);
       char *res = (char *)malloc(n+1);
       strcpy(res, buf);
       return res;

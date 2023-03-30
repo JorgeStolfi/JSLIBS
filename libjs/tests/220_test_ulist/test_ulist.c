@@ -2,12 +2,14 @@
 #define PROG_DESC "tests the {ulist.h} procedures"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2018-03-04 22:57:20 by stolfilocal */
+/* Last edited on 2023-03-18 11:32:06 by stolfi */
 /* Created on 2007-01-31 by J. Stolfi, UNICAMP */
 
 #define PROG_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -25,16 +27,16 @@
 
 #include <ulist.h>
 
-int main (int argc, char **argv);
+int32_t main (int32_t argc, char **argv);
 
-void test_ulist_suite(int nItems, int nSlots);
+void test_ulist_suite(int32_t nItems, int32_t nSlots);
   /* Tests the {ulist.h} operations on a set vector with static size
     {nSlots} and containing at most {nItems} items. The test is
     repeated for several combinations of item sizes, sometimes with
     opaque addresses, sometimes with strings under {strcmp}
     equivalence. */
 
-void test_ulist_static(int nItems, int nSlots, int nTimes, int szMin, int szMax, bool_t strings);
+void test_ulist_static(int32_t nItems, int32_t nSlots, int32_t nTimes, int32_t szMin, int32_t szMax, bool_t strings);
   /* Tests the {ulist.h} operations on a list {S} with static size
     {nSlots} and containing at most {nItems} items. The timing
     loops execute each operation about {nTimes} times. The test
@@ -44,12 +46,12 @@ void test_ulist_static(int nItems, int nSlots, int nTimes, int szMin, int szMax,
     functions. */
 
 void create_items
-  ( int nItems, 
-    int szMin, 
-    int szMax, 
+  ( int32_t nItems, 
+    int32_t szMin, 
+    int32_t szMax, 
     bool_t strings, 
     ref_t item[], 
-    int eqix[]
+    int32_t eqix[]
   );
   /* Carves the {zone} array into {nItems} disjoint items with sizes in the range
     {szMin..szMax}, and saves their addresses in {item[0..nItems-1]},
@@ -70,17 +72,17 @@ void create_items
     {malloc} are random and do not repeat between two runs of the
     program; which is terrible for debugging. */
 
-void test_ulist_hash_eq(int nItems, ref_t item[], int eqix[], ulist_t *S);
-void test_ulist_correctness(int nItems, ref_t item[], int eqix[], ulist_t *S, bool_t strings);
-void test_ulist_speed(int nItems, ref_t item[], int eqix[], ulist_t *S, int nTimes, bool_t strings);
-void print_timing(char *func, double usec, int nops);
+void test_ulist_hash_eq(int32_t nItems, ref_t item[], int32_t eqix[], ulist_t *S);
+void test_ulist_correctness(int32_t nItems, ref_t item[], int32_t eqix[], ulist_t *S, bool_t strings);
+void test_ulist_speed(int32_t nItems, ref_t item[], int32_t eqix[], ulist_t *S, int32_t nTimes, bool_t strings);
+void print_timing(char *func, double usec, int32_t nops);
 
-unsigned int string_eq_class_index(unsigned int i);
+uint32_t string_eq_class_index(uint32_t i);
   /* Maps an integer {i} to some integer {j} in {0..i}, in
     such a way that there are at most 2 distinct integers {i1,i2}
     such that {string_eq_class_index(i1) == string_eq_class_index(i2)}. */
     
-unsigned int string_eq_class_mate(unsigned int i);
+uint32_t string_eq_class_mate(uint32_t i);
   /* If there is an integer {j != i} such that 
     {string_eq_class_index(j) = string_eq_class_index(i)},
     returns that {j}; otherwise returns -1. */
@@ -115,7 +117,7 @@ bool_t string_eq(ulist_item_t a, ulist_item_t b);
     the same. Fails if either {(char*)a} or {(char*)b} is NULL. Cost:
     {K*min(strlen((char*)a),strlen((char*)b))}. */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   {
     srandom(4615);
     fprintf(stderr, "random() = %ld\n", random());
@@ -138,9 +140,9 @@ int main (int argc, char **argv)
     return 0;
   }
   
-void test_ulist_suite(int nItems, int nSlots)
+void test_ulist_suite(int32_t nItems, int32_t nSlots)
   {
-    int nTimes = 100000; /* Number of timing calls per function. */
+    int32_t nTimes = 100000; /* Number of timing calls per function. */
     /* Tests with addresses: */
     test_ulist_static(nItems, nSlots, nTimes,    1,    1, FALSE);
     test_ulist_static(nItems, nSlots, nTimes,  100,  200, FALSE);
@@ -149,7 +151,7 @@ void test_ulist_suite(int nItems, int nSlots)
     test_ulist_static(nItems, nSlots, nTimes,    8,    8,  TRUE);
   }
 
-void test_ulist_static(int nItems, int nSlots, int nTimes, int szMin, int szMax, bool_t strings)
+void test_ulist_static(int32_t nItems, int32_t nSlots, int32_t nTimes, int32_t szMin, int32_t szMax, bool_t strings)
   { 
     fprintf(stderr, "============================================================\n");
     fprintf(stderr, "testing with %d items in %d slots", nItems, nSlots);
@@ -160,7 +162,7 @@ void test_ulist_static(int nItems, int nSlots, int nTimes, int szMin, int szMax,
     /* Create the items {item[0..nItems-1]} to store in the set: */
     fprintf(stderr, "creating the items ...\n");
     ref_t item[nItems]; /* The items to use for the test. */
-    int eqix[nItems];   /* {eqix[i]} is the {j!=i} such that {eq(item[i],item[j])}, or {-1} */
+    int32_t eqix[nItems];   /* {eqix[i]} is the {j!=i} such that {eq(item[i],item[j])}, or {-1} */
     create_items(nItems, szMin, szMax, strings, item, eqix);
           
     /* Allocate the set for the specified occupancy ratio: */
@@ -186,12 +188,12 @@ void test_ulist_static(int nItems, int nSlots, int nTimes, int szMin, int szMax,
   }
     
 void create_items
-  ( int nItems, 
-    int szMin, 
-    int szMax, 
+  ( int32_t nItems, 
+    int32_t szMin, 
+    int32_t szMax, 
     bool_t strings, 
     ref_t item[], 
-    int eqix[]
+    int32_t eqix[]
   )
   {
     /* Sanity check for memory size: */
@@ -202,7 +204,7 @@ void create_items
         demand(szMin == szMax, "{szMin} must be equal to {szMax} for strings");
       }
     
-    int i; 
+    int32_t i; 
     /* Carve the items out of {zone}: */
     char *next = zone;
     for (i = 0; i < nItems; i++)
@@ -213,10 +215,10 @@ void create_items
         eqix[i] = -1; /* By default. */
         if (strings)
           { /* Map {i} to some equivalence class index {vi}. */
-            int vi = string_eq_class_index(i);
+            int32_t vi = string_eq_class_index(i);
             char *p = item[i];
             /* Set {*(item[i])} to be {vi} in reverse base 26 with digits [a-z]: */
-            int k;
+            int32_t k;
             for (k = 0; k < sz-1; k++)
               { (*p) = (char)('a' + (vi % 26));
                 p++; vi /= 26;
@@ -224,7 +226,7 @@ void create_items
             /* Terminate the string with a zero byte: */
             (*p) = 0;
             /* Compute {eqi != i} such that {eq(item[i],item[eqi])}: */
-            int eqi = string_eq_class_mate(i);
+            int32_t eqi = string_eq_class_mate(i);
             /* If the mate exists and is already in {item}, set {eqix} accordingly: */
             if ((eqi != -1) && (eqi < i)) 
               { assert(strcmp(item[i],item[eqi]) == 0);
@@ -235,10 +237,10 @@ void create_items
 
     /* Apply a random permutation to the items: */
     for (i = 1; i < nItems; i++)
-      { int j = int32_abrandom(0,i);
+      { int32_t j = int32_abrandom(0,i);
         if (j < i) 
           { /* Grab their eq indices {eqi,eqj}: */
-            int eqi = eqix[i], eqj = eqix[j]; 
+            int32_t eqi = eqix[i], eqj = eqix[j]; 
             assert((eqi != i) && (eqj != j));
             /* Swap {item[i]} with {item[j]}: */
             { ref_t t = item[i]; item[i] = item[j]; item[j] = t; }
@@ -263,7 +265,7 @@ void create_items
         if (debug) 
           { fprintf(stderr, "  item[%d] = %16p", i, item[i]);
             if (strings) { fprintf(stderr, " = \"%s\"", (char*)(item[i])); }
-            int eqi = eqix[i];
+            int32_t eqi = eqix[i];
             if (eqi != -1) 
               { assert(strings);
                 fprintf(stderr, "  eq to item[%d]", eqi);
@@ -271,7 +273,7 @@ void create_items
               }
             fprintf(stderr, "\n");
           }
-        int j = eqix[i];
+        int32_t j = eqix[i];
         if (j != -1)
           { assert(strings);
             assert(string_eq(UITEM(item[i]), UITEM(item[j])));
@@ -279,12 +281,12 @@ void create_items
       }
   }
   
-unsigned int string_eq_class_index(unsigned int i)
+uint32_t string_eq_class_index(uint32_t i)
   {
     return i & ((i >> 1) | (~ 2u));
   }
 
-unsigned int string_eq_class_mate(unsigned int i)
+uint32_t string_eq_class_mate(uint32_t i)
   {
     if ((i & 4u) != 0)
       { /* Index has no equivalents: */ return -1; }
@@ -298,7 +300,7 @@ ulist_item_t UITEM(char *x)
 char *PCHAR(ulist_item_t x)
   { return ((char*)(x == 0 ? NULL : (&(zone[0]) + (uint32_t)x - 1))); }
 
-void test_ulist_hash_eq(int nItems, ref_t item[], int eqix[], ulist_t *S)
+void test_ulist_hash_eq(int32_t nItems, ref_t item[], int32_t eqix[], ulist_t *S)
   {
     fprintf(stderr, "TESTING HASH AND EQUALITY\n");
     
@@ -310,11 +312,11 @@ void test_ulist_hash_eq(int nItems, ref_t item[], int eqix[], ulist_t *S)
     ulist_hash_val_t h;
     for (h = 0; h < nh; h++) { hct[h] = 0; }
     /* Check all items: */
-    int i;
+    int32_t i;
     for (i = 0; i < nItems; i++) 
       { h = hash(UITEM(item[i]), nh);
         affirm(h < nh, "{S.hash} returns out-of-bounds result");
-        int j = eqix[i];
+        int32_t j = eqix[i];
         if (j >= 0)
           { /* Check whether {item[i]} and {item[j]} are equivalent by {eq}: */
             affirm(eq(UITEM(item[i]), UITEM(item[j])), "{S.eq} error");
@@ -332,11 +334,11 @@ void test_ulist_hash_eq(int nItems, ref_t item[], int eqix[], ulist_t *S)
     /* The estimated total probes for a bucket of size {m} is {m*(m+1)/2}. */
     /* This estimate ignores the merging of buckets that occurs in linear hashing. */
     int64_t tm2 = 0; /* Sum of {hct[i]*(hct[i]+1)} for {i} in {0..nh-1}. */
-    int szct[nItems+1]; /* {szct[m]} is the number of keys that are shared by {m} items. */
-    int m;
+    int32_t szct[nItems+1]; /* {szct[m]} is the number of keys that are shared by {m} items. */
+    int32_t m;
     for (m = 0; m <= nItems; m++) { szct[m] = 0; }
     for (h = 0; h < nh; h++)
-      { int m = hct[h];
+      { int32_t m = hct[h];
         assert(m <= nItems);
         szct[m]++;
         tm2 += ((uint64_t)m)*((uint64_t)m+1);
@@ -352,11 +354,11 @@ void test_ulist_hash_eq(int nItems, ref_t item[], int eqix[], ulist_t *S)
       }
   }
 
-void test_ulist_correctness(int nItems, ref_t item[], int eqix[], ulist_t *S, bool_t strings)
+void test_ulist_correctness(int32_t nItems, ref_t item[], int32_t eqix[], ulist_t *S, bool_t strings)
   {
     fprintf(stderr, "TESTING CORRECTNESS\n");
-    int i;
-    int nne = 0; /* Number of non-equivalent items added to {S}. */
+    int32_t i;
+    int32_t nne = 0; /* Number of non-equivalent items added to {S}. */
     
     affirm(ulist_count(S) == 0, "{ulist_count} error 1 (not zero initially)");
 
@@ -367,7 +369,7 @@ void test_ulist_correctness(int nItems, ref_t item[], int eqix[], ulist_t *S, bo
         ulist_item_t a = UITEM(item[i]);
         assert(a != 0);
         /* Get the item {e} that is equiv to {a} and is in {S}, or 0 if nonesuch. */
-        int eqi = eqix[i]; /* Index of item equivalent to {a}, or {-1}. */
+        int32_t eqi = eqix[i]; /* Index of item equivalent to {a}, or {-1}. */
         ulist_item_t e = ((eqi >= 0) && (eqi < i) ? UITEM(item[eqi]) : 0);
         /* Perform some operations while adding {a} to {S}: */
         ulist_index_t r0 = ulist_count(S);
@@ -417,22 +419,22 @@ void test_ulist_correctness(int nItems, ref_t item[], int eqix[], ulist_t *S, bo
     free(E.e);
   }
 
-void test_ulist_speed(int nItems, ref_t item[], int eqix[], ulist_t *S, int nTimes, bool_t strings)
+void test_ulist_speed(int32_t nItems, ref_t item[], int32_t eqix[], ulist_t *S, int32_t nTimes, bool_t strings)
   {
     fprintf(stderr, "TESTING SPEED\n");
     
-    int i;
+    int32_t i;
     double start, stop; /* Clock readings. */
     
     /* Pick a number {step} that is relatively prime to {nItems}: */
-    int step = (int)(0.61803398874989484820 * nItems);
+    int32_t step = (int32_t)(0.61803398874989484820 * nItems);
     while(gcd(step, nItems) != 1) { step--; }
 
     /* Measure mean time of {ulist_append_last} from empty to full: */
     ulist_stats_clear(S);
     double tAdd = 0;
-    int kAdd = 0; /* Next item to add. */
-    int nAdd = 0;   /* Number of calls to {ulist_insert_last}. */
+    int32_t kAdd = 0; /* Next item to add. */
+    int32_t nAdd = 0;   /* Number of calls to {ulist_insert_last}. */
     while(nAdd < nTimes)
       { /* Clear the list and insert all items: */
         ulist_clear(S);
@@ -452,8 +454,8 @@ void test_ulist_speed(int nItems, ref_t item[], int eqix[], ulist_t *S, int nTim
     /* Measure mean time of {ulist_index_of} in full table: */
     ulist_stats_clear(S);
     double tInd = 0;
-    int kInd = 0;     /* Next item to look up. */
-    int nInd = 0;   /* Number of calls to {ulist_index_of}. */
+    int32_t kInd = 0;     /* Next item to look up. */
+    int32_t nInd = 0;   /* Number of calls to {ulist_index_of}. */
     while(nInd < nTimes)
       { /* Clear the list and insert all items: */
         ulist_clear(S);
@@ -478,12 +480,12 @@ void test_ulist_speed(int nItems, ref_t item[], int eqix[], ulist_t *S, int nTim
     ulist_stats_print(S);
   }
 
-void print_timing(char *func, double usec, int nops)
+void print_timing(char *func, double usec, int32_t nops)
   {
     fprintf(stderr, "%-25s  %13.0f usec / %10d ops = %13.6f usec/op\n", func, usec, nops, usec/nops);
   }
 
-unsigned int string_hash(ulist_item_t a, unsigned int n)
+uint32_t string_hash(ulist_item_t a, uint32_t n)
   { char *sa = PCHAR(a);
     demand(sa != NULL, "cannot hash NULL");
     demand(n > 0, "cannot hash to empty range");
@@ -491,8 +493,8 @@ unsigned int string_hash(ulist_item_t a, unsigned int n)
     unsigned uh = 0u;
     unsigned char *p = (unsigned char *)sa;
     while ((*p) != 0)
-      { unsigned int uc = (*p);
-        unsigned int ur = 
+      { uint32_t uc = (*p);
+        uint32_t ur = 
           (4615u * ((uc & 208u) >> 4)) + \
           (417u * ((uc & 13u) << 13)) + \
           (471703u *((uc & 34u) << 3));

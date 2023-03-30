@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {r2_align_multiscale.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-30 19:45:54 by stolfi */ 
+/* Last edited on 2023-03-22 19:40:11 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_align_COPYRIGHT \
@@ -15,20 +15,19 @@
 #include <string.h>
 #include <math.h>
 
-#include <float_image.h>
-
-#include <float_image_align.h>
-#include <float_image_interpolate.h>
-#include <float_image_read_pnm.h>
-#include <wt_table.h>
-#include <ix.h>
-#include <r2.h>
-#include <r2x2.h>
-#include <bool.h>
-#include <jsfile.h>
-#include <jsrandom.h>
-#include <affirm.h>
 #include <assert.h>
+#include <affirm.h>
+#include <jsrandom.h>
+#include <jsfile.h>
+#include <bool.h>
+#include <r2x2.h>
+#include <r2.h>
+#include <ix.h>
+#include <wt_table.h>
+
+#include <r2_align.h>
+
+#include <r2_align_multiscale.h>
 
 int32_t main(int32_t argn, char **argv);
 
@@ -44,7 +43,7 @@ void test_align_one
     r2_t cmp_rad, 
     r2_t adj_rad
   );
-  /* Tests alignment algorithms for {NI} images derived by adjustment of the
+  /* Tests alignment algorithms for {NI} images derived by mapping of the
     mother function {fname}.  Uses window radius {cmp_rad},
     search radius {adj_rad}. */
 
@@ -53,18 +52,18 @@ void test_align_choose_optimum(int32_t NI, r2_t pini[], r2_t adj_rad, r2_t popt[
     with {NI} images, initial guess {pini[0..NI-1]}, and search radius {adj_rad}.
     makes sure that {popt-pini} is balanced. */
 
-bool_t test_align_ckeck_result
+bool_t test_align_check_result
   ( int32_t NI, 
     r2_t psol[], 
     double Q2sol,
     r2_t pini[], 
     r2_t popt[], 
     r2_t rad[],
-    r2_t step[]
+    double tol
   ); 
   /* Check correctness of solution {psol} against known optimum {popt} (if not NULL).
     The solution is correct if every point {psol[i]} differs from {popt[i]}
-    by the same adjustment vector. Also checks that the adjustments from {pini[i]}
+    by the same delta vector. Also checks that the delta vectors from {pini[i]}
     to {psol[i]} are within the stated search radii. */
 
 void test_image_debug_points
@@ -83,7 +82,7 @@ void test_image_debug_points
     each {p[i]} and the corresponding {pini[i]}.  Ditto if {popt} is not NULL */
 
 void test_image_plot_goal
-  ( float_image_align_mismatch_t *f2, 
+  ( r2_align_multiscale_mismatch_t *f2, 
     int32_t NI, 
     int32_t scale, 
     int32_t hwx, 
@@ -98,13 +97,13 @@ void test_image_plot_goal
     of {p}, with each {q[i]} inside the rectangle defined by {adj_rad}. */
 
 double test_align_compute_image_mismatch_sqr
-  ( int32_t ni,                     /* Number of images being compared. */
+  ( int32_t ni,                 /* Number of images being compared. */
     procedural_image_t *eval,   /* procedural image evaluator. */
-    int32_t scale,                  /* Reduction scale. */
-    int32_t hwx,                    /* Half-width of comparison window. */
+    int32_t scale,              /* Reduction scale. */
+    int32_t hwx,                /* Half-width of comparison window. */
     double dx,                  /* X sampling step. */
     double wx[],                /* Horizontal weight table. */
-    int32_t hwy,                    /* Half-height of comparison window. */
+    int32_t hwy,                /* Half-height of comparison window. */
     double dy,                  /* Y sampling step. */
     double wy[],                /* Vertical weight table. */
     r2_t p[]                    /* Sampling grid center for each image. */
@@ -186,7 +185,7 @@ void test_align_one
     bool_t debug_points = FALSE; /* TRUE to print every probe point. */
     
     r2_t rad[NI];   /* Search radius for each coordinate. */
-    r2_t step[NI];  /* Search step for each coordinate (if {monoscale & !quadopt}). */ 
+    double tol;     /* Search tolerance for each coordinate at each scale. */
     
     r2_t popt[NI];  /* Actual optimum alignment. */
     r2_t pini[NI];  /* Initial alignment. */
@@ -226,7 +225,7 @@ void test_align_one
         If {bias} is FALSE, the minimum of this function
         should be very close to {popt}. */
     
-    float_image_align_mismatch_t *f2_raw = NULL; /* The raw goal function, withot bias. */
+    r2_align_multiscale_mismatch_t *f2_raw = NULL; /* The raw goal function, withot bias. */
     
     auto double Q2(int32_t ni, r2_t p[], i2_t iscale);
       /* The goal function that evaluates {f2_raw(ni, scale, p)} and
@@ -254,16 +253,15 @@ void test_align_one
     
     /* Procedure body: */
     initialize_mother_image();
-    
        
     /* Choose the goal function {f2_raw} according to {fname}. */
     /* Also set auxiliary parameters {pini[],popt[]}: */
-    /* Choose the initial guess {pini}, radii {rad}, steps {step}: */
+    /* Choose the initial guess {pini}, radii {rad}, tolerance {tol}: */
+    tol = 0.25;
     for (int32_t i = 0; i < NI; i++) 
       { pini[i] = (r2_t){{ 0.5*NX, 0.5*NY }};
         rad[i].c[0] = (i == 1 ? 0.0 : 0.5*(1 + sin(i))*adj_rad.c[0]);
         rad[i].c[1] = 0.5*(1 + cos(i))*adj_rad.c[1];
-        step[i] = (r2_t){{ 0.25, 0.25 }};
       }
         
     if (strcmp(fname, "indiff") == 0)
@@ -280,7 +278,7 @@ void test_align_one
      }
     else if (strcmp(fname, "images") == 0)
       { f2_raw = &f2_images;
-        /* Choose the optimum adjustments {popt} near the initial point {pini}: */
+        /* Choose the optimum alignment {popt} near the initial point {pini}: */
         test_align_choose_optimum(NI, pini, adj_rad, popt);
         cmp_opt = ! bias; /* If {bias} is false, the solution should be {popt}. */
       }
@@ -290,12 +288,12 @@ void test_align_one
     /* Print raw function value and bias term for initial point: */
     i2_t iscale0 = (i2_t){{ 0, 0 }};
     double f2ini = f2_raw(NI, pini, iscale0);
-    double b2ini = (bias ? bias_factor * float_image_align_rel_disp_sqr(NI, pini, pini, rad) : 0);
+    double b2ini = (bias ? bias_factor * r2_align_rel_disp_sqr(NI, pini, pini, rad) : 0);
     test_image_debug_points("initial guess ", NI, pini, 0, NULL, NULL, rad, f2ini, b2ini);
     
     /* Print raw function value and bias term for optimum point: */
     double f2opt = f2_raw(NI, popt, iscale0);
-    double b2opt = (bias ? bias_factor * float_image_align_rel_disp_sqr(NI, popt, pini, rad) : 0);
+    double b2opt = (bias ? bias_factor * r2_align_rel_disp_sqr(NI, popt, pini, rad) : 0);
     test_image_debug_points("actual optimum", NI, popt, 0, pini, NULL, rad, f2opt, b2opt);
     
     /* Plot the goal function in the neighborhood of the initial guess: */ 
@@ -311,26 +309,26 @@ void test_align_one
     if (monoscale)
       { if (quadopt)
           { fprintf(stderr, " (single_scale_quadopt)...\n");
-            float_image_align_single_scale_quadopt(NI, iscale0, Q2, rad, step, psol, &Q2sol);
+            r2_align_multiscale_single_scale_quadopt(NI, iscale0, Q2, rad, tol, psol, &Q2sol);
           }
         else
           { fprintf(stderr, " (single_scale_enum)...\n");
-            float_image_align_single_scale_enum(NI, iscale0, Q2, rad, step, psol, &Q2sol);
+            r2_align_multiscale_single_scale_enum(NI, iscale0, Q2, rad, tol, psol, &Q2sol);
           }
       }
     else
       { fprintf(stderr, " (multi_scale)...\n");
-        float_image_align_multi_scale(NI, Q2, quadopt, rad, step, psol, &Q2sol);
+        r2_align_multiscale(NI, Q2, quadopt, rad, tol, psol, &Q2sol);
       }
     fprintf(stderr, "done optimizing.\n");
     
     /* Print raw function value and bias term for computed optimum: */
     double f2sol = f2_raw(NI, psol, iscale0);
-    double b2sol = (bias ? bias_factor * float_image_align_rel_disp_sqr(NI, psol, pini, rad) : 0);
+    double b2sol = (bias ? bias_factor * r2_align_rel_disp_sqr(NI, psol, pini, rad) : 0);
     test_image_debug_points("computed optimum", NI, psol, 0, pini, popt, rad, f2sol, b2sol);
     assert(Q2sol == f2sol + b2sol);
     
-    bool_t ok = test_align_ckeck_result(NI, psol, Q2sol, pini, (cmp_opt ? popt : NULL), rad, step);
+    bool_t ok = test_align_check_result(NI, psol, Q2sol, pini, (cmp_opt ? popt : NULL), rad, tol);
 
     if(! ok) { exit(1); }
     
@@ -344,7 +342,7 @@ void test_align_one
         double b2p = 0.0;
         if (bias)
           { /* Add a tiny term that pulls the function towards the initial point: */
-            double d2ini = float_image_align_rel_disp_sqr(ni, p,  pini, rad); 
+            double d2ini = r2_align_rel_disp_sqr(ni, p,  pini, rad); 
             b2p = bias_factor * d2ini;
           }
         if (debug_points) 
@@ -359,7 +357,7 @@ void test_align_one
     
     double f2_points(int32_t ni, r2_t p[], i2_t iscale)
       { /* Compute sum of relative square distances from actual optimum {opt}: */
-        double f2p = float_image_align_rel_disp_sqr(ni, p, popt, rad);
+        double f2p = r2_align_rel_disp_sqr(ni, p, popt, rad);
         return f2p;
       }
       
@@ -433,13 +431,13 @@ void test_align_choose_optimum(int32_t NI, r2_t pini[], r2_t adj_rad, r2_t popt[
         /* Adjust {da} so that it is balanced: */
         double corr = -sumd/NI;
         for (int32_t i = 0; i < NI; i++) { da[i] += corr; }
-        /* Convert {da[0..NI-1]} to adjustments {iopt[0..NI-1].c[a]} from {p}: */
+        /* Convert delta vector {da[0..NI-1]} to alignment vector {popt[0..NI-1].c[a]}: */
         for (int32_t i = 0; i < NI; i++) { popt[i].c[a] = pini[i].c[a] + da[i]; }
       }
   }
     
 void test_image_plot_goal
-  ( float_image_align_mismatch_t *f2, 
+  ( r2_align_multiscale_mismatch_t *f2, 
     int32_t NI, 
     int32_t scale, 
     int32_t hwx, 
@@ -502,14 +500,14 @@ void test_image_plot_goal
     fclose(fpl);
   }
 
-bool_t test_align_ckeck_result
+bool_t test_align_check_result
   ( int32_t NI, 
     r2_t psol[], 
     double Q2sol,
     r2_t pini[], 
     r2_t popt[], 
     r2_t rad[],
-    r2_t step[]
+    double tol
   )
   {
     auto void compare_to_point(char *tag, r2_t pref[]);
@@ -552,8 +550,8 @@ bool_t test_align_ckeck_result
           }
         double rms_d2 = (nv == 0 ? 0.0 : sqrt(sum_d2/nv));
         double rms_e2 = (nv == 0 ? 0.0 : sqrt(sum_e2/nv));
-        /* Check whether adjustment from initial point add to (0,0): */
-        fprintf(stderr, "%*s  Abs and rel RMS adjustment from %s = %10.6f %10.6f\n", ind, "", tag, rms_d2, rms_e2);
+        /* Check whether delta vector is balanced: */
+        fprintf(stderr, "%*s  Abs and rel RMS delta vector from %s = %10.6f %10.6f\n", ind, "", tag, rms_d2, rms_e2);
       }
   }
 
@@ -597,16 +595,14 @@ void test_image_debug_points
       }
    }
 
-/* IMPLEMENTATIONS */
-
 double test_align_compute_image_mismatch_sqr
-  ( int32_t ni,                     /* Number of images being compared. */
+  ( int32_t ni,                 /* Number of images being compared. */
     procedural_image_t *eval,   /* Procedural image evaluator. */
-    int32_t scale,                  /* Reduction scale. */
-    int32_t hwx,                    /* Half-width of comparison window. */
+    int32_t scale,              /* Reduction scale. */
+    int32_t hwx,                /* Half-width of comparison window. */
     double dx,                  /* X sampling step. */
     double wx[],                /* Horizontal weight table. */
-    int32_t hwy,                    /* Half-height of comparison window. */
+    int32_t hwy,                /* Half-height of comparison window. */
     double dy,                  /* Y sampling step. */
     double wy[],                /* Vertical weight table. */
     r2_t p[]                    /* Sampling grid center for each image. */

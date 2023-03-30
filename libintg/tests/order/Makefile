@@ -1,4 +1,4 @@
-# Last edited on 2023-02-03 23:24:15 by stolfi
+# Last edited on 2023-03-29 19:37:10 by stolfi
 
 PROG := test_order
  
@@ -16,7 +16,7 @@ all: check
 
 check:  clean run
 
-run: ${PROG} show-error-plots
+run: ${PROG} show_error_plots.sh
 	${PROG}
-	show-error-plots
+	show_error_plots.sh
  

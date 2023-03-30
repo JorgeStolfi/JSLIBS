@@ -1,10 +1,13 @@
 /* intmerge - in-place merging of integer lists. */
-/* Last edited on 2004-10-31 16:53:02 by stolfi */
+/* Last edited on 2023-03-18 11:26:20 by stolfi */
 
 #ifndef intmerge_H
 #define intmerge_H
+
+#define _GNU_SOURCE
+#include <stdint.h>
   
-void imrg_merge(int *a, int *b, int *c, int cmp(int x, int y), int sgn);
+void imrg_merge(int32_t *a, int32_t *b, int32_t *c, int32_t cmp(int32_t x, int32_t y), int32_t sgn);
 /* 
   Merges two consecutive blocks of an array of integers, from {*a}
   through {*(b-1)} and from {*b} through {*(c-1)}, leaving the result

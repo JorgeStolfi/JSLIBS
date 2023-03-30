@@ -4,7 +4,7 @@
 
 #define array_io_def_H_COPYRIGHT "Copyright © 2009 by J. Stolfi, UNICAMP"
 /* Created on 2009-08-31 by J.Stolfi, UNICAMP */
-/* Last edited on 2020-10-02 11:18:57 by jstolfi */
+/* Last edited on 2023-03-18 11:03:16 by stolfi */
 
 /* These inclusions are necessary if this file is included or compiled on its own: */
 #define _GNU_SOURCE
@@ -25,7 +25,7 @@ void array_write_header
     char *type,
     char *cmt,
     ix_descr_t *D,
-    int dix[]
+    int32_t dix[]
   );
 
 void array_write_footer(FILE *wr, char *type);
@@ -65,8 +65,8 @@ void array_read_footer(FILE *rd, char *type);
   array_DECLARE_write(ARRAY_TYPE,PREFIX,ELEM_TYPE) \
     { ix_descr_t *DA = &(A->ds); \
       ix_dim_t na = DA->na; \
-      int ia; \
-      int dix[na]; /* Number of columns to use for each index. */ \
+      int32_t ia; \
+      int32_t dix[na]; /* Number of columns to use for each index. */ \
       array_write_header(wr, #ARRAY_TYPE, NULL, DA, dix); \
       ix_index_t ix[na]; \
       bool_t first = TRUE; \
@@ -96,7 +96,7 @@ void array_read_footer(FILE *rd, char *type);
       ix_descr_t *DA = &(A->ds); \
       array_read_header(rd, #ARRAY_TYPE, NULL, DA); \
       ix_dim_t na = DA->na; \
-      int ia; \
+      int32_t ia; \
       /* Allocate the element store: */ \
       ix_count_t ne = ix_descr_num_positions(DA); \
       if (ne == 0) \

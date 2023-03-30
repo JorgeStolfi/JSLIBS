@@ -1,4 +1,4 @@
-/* Last edited on 2009-08-31 23:44:38 by stolfi */
+/* Last edited on 2023-03-18 11:03:47 by stolfi */
 
 /* DESCRIPTOR ALLOCATION */
 
@@ -114,7 +114,7 @@ void float_array_fill(float_array_t *A, float v);
   For the procedures in this section, the pixel on column {ix} and 
   row {iy} is assumed to be centered at point {(ix+0.5,iy+0.5)}. */
 
-float float_array_interpolate_elements(float_array_t *fim, int c, double x, double y);
+float float_array_interpolate_elements(float_array_t *fim, int32_t c, double x, double y);
   /* Returns the value of channel {c} of array {fim} at the point
     {(x,y)}, computed by bilinear interpolation from nearby
     elements. 

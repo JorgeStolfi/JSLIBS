@@ -1,11 +1,14 @@
 /* Portable multi-dimensional sample arrays. */
-/* Last edited on 2021-07-13 20:50:40 by jstolfi */
+/* Last edited on 2023-03-18 10:58:20 by stolfi */
 
 #ifndef ppv_array_H
 #define ppv_array_H
 
-#include <ppv_types.h>
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
+
+#include <ppv_types.h>
 
 /* !!! Add more parameters to {ppv_index_next,ppb_index_prev} as in {indexing.h} !!! */
 /* !!! Allow {bpw} to be 64 too. !!! */
@@ -681,7 +684,7 @@ void ppv_choose_test_size(ppv_dim_t d, ppv_sample_count_t npos, ppv_size_t sz[])
     The min size will be at least 1. If {d >= 2}, the max size will be
     about 3 times the min size. */
     
-void ppv_dump_storage(FILE *wr, void *el, ppv_pos_t pos, ppv_nbits_t bps, ppv_nbits_t bpw, int nxw);
+void ppv_dump_storage(FILE *wr, void *el, ppv_pos_t pos, ppv_nbits_t bps, ppv_nbits_t bpw, int32_t nxw);
   /* Prints the word(s) of the storage area {*el} that contain(s) the 
     element with position {pos}, plus {nxw} words of context.
     Assumes that the element is {bps}  bits long and that elements

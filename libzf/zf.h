@@ -2,13 +2,16 @@
 #define zf_H
 
 /* General interval-based zero finder for a 1-argument function. */
-/* Last edited on 2023-02-17 18:32:57 by stolfi */
+/* Last edited on 2023-03-18 10:42:34 by stolfi */
 
+#define _GNU_SOURCE
+#include <stdint.h>
+#include <stdio.h>
+
+#include <bool.h>
+#include <flt.h>
 #include <ia.h>
 #include <ia_butfly.h>
-#include <flt.h>
-#include <bool.h>
-#include <stdio.h>
 
 typedef enum
   { zf_kind_undefined = 0,  /* F undefined in whole interval */

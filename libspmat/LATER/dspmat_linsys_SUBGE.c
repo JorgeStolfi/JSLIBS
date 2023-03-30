@@ -2,7 +2,7 @@
 
 #define dspmat_linsys_SUBGE_C_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2009-08-31 21:50:26 by stolfi */
+/* Last edited on 2023-03-18 10:51:04 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -68,7 +68,7 @@ void dspmat_linsys_SUBGE_solve
     dspmat_t *A, 
     double x[], 
     dspmat_size_t nx,
-    int max_iter, 
+    int32_t max_iter, 
     double omega,
     double abs_tol, 
     double rel_tol
@@ -101,7 +101,7 @@ void dspmat_linsys_SUBGE_solve
     dspmat_mix(1.0, A, -1.0, &Q, &M);
     
     /* Bootstrap loop: */
-    int iter = 0;
+    int32_t iter = 0;
     while (TRUE)
       { if (debug_level >= 2) { fprintf(stderr, "---------------------------\n"); }
         if (debug_level >= 1) { fprintf(stderr, "iteration %3d", iter); }
@@ -137,7 +137,7 @@ void dspmat_inv_mul_SUBGE
   ( dspmat_t *A,
     dspmat_t *B,
     dspmat_t *X,
-    int max_iter, 
+    int32_t max_iter, 
     double abs_tol, 
     double rel_tol
   )
@@ -167,7 +167,7 @@ void dspmat_inv_mul_SUBGE
     dspmat_mix(1.0, A, -1.0, &Q, &M);
     
     /* Bootstrap loop: */
-    int iter = 0;
+    int32_t iter = 0;
     while (TRUE)
       { if (debug_level >= 2) { fprintf(stderr, "---------------------------\n"); }
         if (debug_level >= 1) { fprintf(stderr, "iteration %3d", iter); }

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {r2_align.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-02-28 13:11:45 by stolfi */ 
+/* Last edited on 2023-03-22 19:40:44 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_align_COPYRIGHT \
@@ -21,14 +21,13 @@
 #include <jsfile.h>
 #include <jsrandom.h>
 #include <affirm.h>
-#include <float_image.h>
 
 #include <r2_align.h>
 
 int32_t main(int32_t argn, char **argv);
 
-void ralt_test_rel_dist_sqr(int32_t ni);
-  /* Tests {r2_align_rel_dist_sqr} for alignment vectors of {ni} elements.
+void ralt_test_rel_disp_sqr(int32_t ni);
+  /* Tests {r2_align_rel_disp_sqr} for alignment vectors of {ni} elements.
     The parameter {ni} must be 2 or more. */
 
 void ralt_test_compute_search_ellipsoid(int32_t ni);
@@ -41,9 +40,9 @@ void ralt_choose_ctr(int32_t ni, r2_t ctr[]);
   /* Stores into {ctr[0..ni-1]} a random alignment vector to be the center of the basic 
     domain ellipsoid {\RE}. */
 
-void ralt_plot_rel_dist_sqr(int32_t ni, r2_t ctr[], r2_t arad[]);
+void ralt_plot_rel_disp_sqr(int32_t ni, r2_t ctr[], r2_t arad[]);
   /* Writes a  file "out/f2.dat" with a random 2D slice of the function
-    {r2_align_rel_dist_sqr} over the ellipsoid with semi-axes {arad}. */
+    {r2_align_rel_disp_sqr} over the ellipsoid with semi-axes {arad}. */
 
 /* IMPLEMENTATIONS */
 
@@ -51,7 +50,7 @@ int32_t main(int32_t argc, char **argv)
   {
     srandom(4615*417);
 
-    ralt_test_rel_dist_sqr(5);
+    ralt_test_rel_disp_sqr(5);
 
     ralt_test_compute_search_ellipsoid(1);
     ralt_test_compute_search_ellipsoid(2);
@@ -61,9 +60,9 @@ int32_t main(int32_t argc, char **argv)
     return 0;
   }
   
-void ralt_test_rel_dist_sqr(int32_t ni)
+void ralt_test_rel_disp_sqr(int32_t ni)
   { 
-    fprintf(stderr, "-- testing {r2_align_rel_dist_sqr} ni = %d ---\n", ni);
+    fprintf(stderr, "-- testing {r2_align_rel_disp_sqr} ni = %d ---\n", ni);
 
     r2_t arad[ni];  /* Search radius for each coordinate. */
     ralt_choose_arad(ni, arad);
@@ -71,7 +70,7 @@ void ralt_test_rel_dist_sqr(int32_t ni)
     r2_t ctr[ni];  /* Initial alignment. */
     ralt_choose_ctr(ni, ctr);
 
-    ralt_plot_rel_dist_sqr(ni, ctr, arad);
+    ralt_plot_rel_disp_sqr(ni, ctr, arad);
     return;
   }
     
@@ -165,21 +164,21 @@ void ralt_test_compute_search_ellipsoid(int32_t ni)
               { double skij = urad[k]*uk[i].c[j];
                 double rij = arad[i].c[j];
                 if (rij != 0) { double ekij = skij/rij; sum2 += ekij*ekij; }
-                /* Add pole adjustment to diagonal adjustment {t}: */
+                /* Add pole delta vector to diagonal delta vector {t}: */
                 t[i].c[j] += skij;
               }
           }
         if (debug) { fprintf(stderr, "      rel dist = %.8f\n", sqrt(sum2)); }
         demand(fabs(sum2 - 1.0) < 1.0e-8, "{urad[k]*uk} not on boundary of {\\RE}");
       }
-    fprintf(stderr, "  checking diagonal adjustment ...\n");
-    double dr2 = r2_align_rel_dist_sqr (ni, t, NULL, arad);
+    fprintf(stderr, "  checking diagonal delta vector ...\n");
+    double dr2 = r2_align_rel_disp_sqr (ni, t, NULL, arad);
     demand(fabs(dr2 - nd) < 1.0e-8, "diagonal mismatch");
 
     fprintf(stderr, "  search ellipsoid OK!\n\n");
   }
     
-void ralt_plot_rel_dist_sqr(int32_t ni, r2_t ctr[], r2_t arad[])
+void ralt_plot_rel_disp_sqr(int32_t ni, r2_t ctr[], r2_t arad[])
   {
     char *fname = NULL;
     asprintf(&fname, "out/f%03d.dat", ni);
@@ -199,7 +198,7 @@ void ralt_plot_rel_dist_sqr(int32_t ni, r2_t ctr[], r2_t arad[])
     /* Internal implementations: */
     
     double f2 (int32_t ni, r2_t p[])
-      { double fval = r2_align_rel_dist_sqr(ni, ctr, p, arad);
+      { double fval = r2_align_rel_disp_sqr(ni, ctr, p, arad);
         return fval; 
       }
 

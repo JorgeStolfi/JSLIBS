@@ -1,9 +1,11 @@
 /* See ulist.h */
-/* Last edited on 2013-10-25 01:35:59 by stolfilocal */
+/* Last edited on 2023-03-18 11:31:38 by stolfi */
 
 /* !!! Test and debug throughly !!! */
 /* !!! There may be performance problems (unnecessary collisions?) !!! */
 
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -63,7 +65,7 @@ ulist_hash_size_t ulist_choose_hash_size(ulist_count_t n)
         if (p > pmax) { /* No more primes to avoid: */ break; }
         if (m > 3*nh/2/p) { /* Avoiding {p} would require too many entries: */ break; }
         /* Adjust {r} so that it is about {m/2} and {gcd(r,m*p) = 1}: */
-        unsigned int q = (int)(floor(0.61803398874989484820*p));
+        uint32_t q = (uint32_t)(floor(0.61803398874989484820*p));
         r = q*m + r;
         /* Include {p} in {m}: */
         m = p*m;
@@ -249,7 +251,7 @@ void ulist_swap(ulist_t *S, ulist_index_t i, ulist_index_t j)
     S->ix.e[S->hx.e[j]] = j;
   }
 
-void ulist_resize(ulist_t *S, int n, ulist_hash_func_t *hash)
+void ulist_resize(ulist_t *S, int32_t n, ulist_hash_func_t *hash)
   { 
     #if (ulist_DEBUG)
     S->ct_rsz++;
@@ -295,7 +297,7 @@ bool_t ulist_verify(ulist_t *S, bool_t die)
     else
       { if (nh <= sz) { fail_test(die, "hash table too small"); } }
     /* Check the structural invariants: */
-    int i;
+    int32_t i;
     for (i = 0; i < ct; i++)
       { ulist_item_t a = S->it.e[i];
         ulist_hash_val_t k = S->hx.e[i];

@@ -1,7 +1,8 @@
-/* Last edited on 2021-06-24 17:26:13 by jstolfi */ 
+/* Last edited on 2023-03-18 10:57:22 by stolfi */ 
 /* Test of the {ppv_brush.h} module. */
 
 #define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,7 +27,7 @@
 void test_brush_make_ball(ppv_dim_t d, double rad);
 void test_brush_enum_stop(ppv_dim_t d, double rad);
 
-int main (int argn, char **argv)
+int32_t main (int32_t argn, char **argv)
   {
     ppv_dim_t dmax = 4;
     double rad = 3.1416; /* A random radius for test */

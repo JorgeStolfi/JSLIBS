@@ -2,10 +2,12 @@
 #define sign_get_H
 
 /* Extract sign of a value as a {sign_t} data type. */
-/* Last edited on 2007-10-28 19:32:37 by stolfi */
+/* Last edited on 2023-03-18 11:14:08 by stolfi */
+
+#define _GNU_SOURCE
+#include <stdint.h>
 
 #include <sign.h>
-#include <stdint.h>
 
 sign_t sign_int(int x);
 sign_t sign_long_int(long int x);

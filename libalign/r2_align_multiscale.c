@@ -1,5 +1,5 @@
-/* See {float_image_align.h}. */
-/* Last edited on 2021-12-18 18:04:30 by stolfi */
+/* See {r2_align_multiscale.h}. */
+/* Last edited on 2023-03-22 19:50:24 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -16,38 +16,27 @@
 #include <i2.h>
 #include <jsmath.h>
 #include <affirm.h>
-#include <float_image.h>
 #include <sve_minn.h>
 #include <wt_table.h>
 
-#include <float_image_align.h>
+#include <r2_align.h>
+#include <r2_align_enum.h>
+#include <r2_align_quadopt.h>
+
+#include <r2_align_multiscale.h>
 
 /* INTERNAL PROTOTYPES */
 
 /* IMPLEMENTATIONS */
 
-bool_t coord_is_variable(r2_t arad[], int32_t i, int32_t j);
-  /* {TRUE} if coordinate {j} of point {p[i]} is variable, {FALSE} if it is fixed.
-    Namely, it returns {TRUE} if {arad[i].c[j]} is 1.0 pr more. */
-
-int32_t count_variable_coords(int32_t ni, r2_t arad[]);
-  /* Returns the number of coordinates in the alignment vectors that are variable,
-    as per {coord_is_variable(arad, i, j)} for {i} in {0..ni-1} and {j} in {0..1}. */
-  
-void points_to_vars(int32_t ni, r2_t p[], r2_t arad[], r2_t (1,1)[], r2_t p0[], int32_t nv, double y[]);
-  /* Stores the active adjustments {p[0..ni-1][0..1]-p0[0..ni-1][0..1]} into {y[0..nv-1]}. */
-
-void vars_to_points(int32_t nv, double y[], int32_t ni, r2_t arad[], r2_t (1,1)[], r2_t p0[], r2_t p[]);
-  /* Stores {y[0..nv-1]} into the active {p[0..ni-1][0..1]}, adding {p0[0..ni-1][0..1]}. */
-
-void float_image_align_multi_scale
-  ( int32_t ni,                        /* Number of images to align. */
-    float_image_align_mismatch_t *f2,  /* Function that evaluates the mismatch between the images. */
-    bool_t quadopt,                    /* Use quadratic optimization? */
-    r2_t arad[],                       /* Max alignment adjustment along each axis. */
-    r2_t (1,1)[],                       /* Adjustment (1,1) or desired precision for each object. */
-    r2_t p[],                          /* (IN/OUT) Corresponding points in each image. */
-    double *f2p                        /* (OUT) Mismatch for the computed alignment vector. */
+void r2_align_multiscale
+  ( int32_t ni,                          /* Number of images to align. */
+    r2_align_multiscale_mismatch_t *F2,  /* Function that evaluates the mismatch between the images. */
+    bool_t quadopt,                      /* Use quadratic optimization? */
+    r2_t arad[],                         /* Max delta vector coordinates along each axis. */
+    double tol,                          /* Desired precision. */
+    r2_t p[],                            /* (IN/OUT) Corresponding points in each image. */
+    double *F2val_P                      /* (OUT) Mismatch for the computed alignment vector. */
   )
   {
     /* Find the maximum search radius: */
@@ -63,7 +52,7 @@ void float_image_align_multi_scale
     if (rmax == 0)
       { /* Nothing to do: */ 
         i2_t iscale0 = (i2_t){{ 0, 0 }};
-        (*f2p) = f2(ni, p, iscale0);
+        (*F2val_P) = F2(ni, p, iscale0);
       }
     else
       { 
@@ -73,12 +62,10 @@ void float_image_align_multi_scale
         while (rmax > 0.5) { smax = smax+1; rmax = rmax/2; fscale = fscale/2; }
         /* Reduce the problem to scale {smax}: */
         r2_t srad[ni];  /* Search radius at current scale. */
-        r2_t (1,1)[ni];  /* Search (1,1) at current scale (if {quadopt} is false). */
         for (int32_t i = 0; i < ni; i++)
           { for (int32_t j = 0; j < 2; j++) 
               { srad[i].c[j] = arad[i].c[j]*fscale;
                 p[i].c[j] = p[i].c[j]*fscale;
-                (1,1)[i].c[j] = 0.5;
               }
           }
         /* Now solve the problem at increasing scales: */
@@ -87,9 +74,9 @@ void float_image_align_multi_scale
           { /* Solve the problem at scale {scale}: */
             i2_t iscale = (i2_t){{ scale, scale }};
             if (quadopt)
-              { float_image_align_single_scale_quadopt(ni, iscale, f2, srad, (1,1), p, f2p); }
+              { r2_align_multiscale_single_scale_quadopt(ni, iscale, F2, srad, tol, p, F2val_P); }
             else
-              { float_image_align_single_scale_enum(ni, iscale, f2, srad, (1,1), p, f2p); }
+              { r2_align_multiscale_single_scale_enum(ni, iscale, F2, srad, tol, p, F2val_P); }
             /* Are we done? */
             if (scale == 0) { break; }
             /* Expand to the next finer scale: */
@@ -104,3 +91,40 @@ void float_image_align_multi_scale
       }
   }
 
+void r2_align_multiscale_single_scale_enum
+  ( int32_t ni,                         /* Number of objects to align. */
+    i2_t iscale,                        /* Object scaling exponent along each axis. */  
+    r2_align_multiscale_mismatch_t *F2, /* Function that evaluates the mismatch between the objects. */
+    r2_t arad[],                        /* Max delta vector coordinates for each object. */
+    double tol,                         /* Desired precision. */
+    r2_t p[],                           /* (IN/OUT) Corresponding points in each object. */
+    double *F2val_P                     /* (OUT) Mismatch for the computed alignment vector. */
+  )
+  {
+    auto double single_F2(int32_t ni, r2_t p[]);
+    
+    r2_align_enum(ni, single_F2, arad, tol, p, F2val_P);
+    return;
+    
+    double single_F2(int32_t ni, r2_t p[])
+      { return F2(ni, p, iscale); }
+  }
+  
+void r2_align_multiscale_single_scale_quadopt
+  ( int32_t ni,                         /* Number of objects to align. */
+    i2_t iscale,                        /* Object scaling exponent along each axis. */  
+    r2_align_multiscale_mismatch_t *F2, /* Function that evaluates the mismatch between the objects. */
+    r2_t arad[],                        /* Max delta vector coordinates for each object. */
+    double tol,                         /* Desired precision. */
+    r2_t p[],                           /* (IN/OUT) Corresponding points in each object. */
+    double *F2val_P                     /* (OUT) Mismatch for the computed alignment vector. */
+  )
+  {
+    auto double single_F2(int32_t ni, r2_t p[]);
+    
+    r2_align_quadopt(ni, single_F2, arad, tol, p, F2val_P);
+    return;
+    
+    double single_F2(int32_t ni, r2_t p[])
+      { return F2(ni, p, iscale); }
+  }

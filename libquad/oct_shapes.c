@@ -1,18 +1,19 @@
 /* See oct_shapes.h. */
-/* Last edited on 2011-12-22 15:02:49 by stolfilocal */
+/* Last edited on 2023-03-18 10:54:26 by stolfi */
 
 #define oct_shapes_C_copyright \
   "Copyright © 1996, 2006 Institute of Computing, Unicamp."
 
-#include <oct_shapes.h>
-
-#include <oct.h>
-#include <bool.h>
-
 #define _GNU_SOURCE
+#include <stdint.h>
 #include <stdlib.h>
 
-oct_arc_t make_ring(int n)
+#include <bool.h>
+#include <oct.h>
+
+#include <oct_shapes.h>
+
+oct_arc_t make_ring(int32_t n)
   { oct_arc_t fst, a, b;
     a = oct_make_edge(); 
     fst = a;

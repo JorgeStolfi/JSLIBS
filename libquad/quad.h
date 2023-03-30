@@ -1,5 +1,5 @@
 /* The quad-edge data structure (oriented surface version). */
-/* Last edited on 2012-10-18 16:05:34 by stolfilocal */
+/* Last edited on 2023-03-18 10:53:17 by stolfi */
 
 #define quad_H_copyright \
   "Copyright © 1996, 2006 Institute of Computing, Unicamp."
@@ -87,7 +87,7 @@ quad_arc_t quad_tor(quad_arc_t e);
 
   Note that the operators {sym,rot,tor} commute. */
 
-quad_arc_t quad_rot_n(quad_arc_t e, int r);
+quad_arc_t quad_rot_n(quad_arc_t e, int32_t r);
   /* This generic operator applies {r} times the {quad_rot} to arc {e}. */
 
 /* VERTEX/FACE WALKING OPERATORS
@@ -134,7 +134,7 @@ quad_arc_t quad_rprev(quad_arc_t e);
  /* The next and previous arc, respectively,
    among the arcs with same right face as {e}.  */
 
-quad_arc_t quad_walk(quad_arc_t e, int r, int n);
+quad_arc_t quad_walk(quad_arc_t e, int32_t r, int32_t n);
   /* Returns {tor^r(onext^n(rot^r(e)))}.
     For negative values of {r} and/or {f}, the result is defined by
     the identities {walk(e,-r,n) = rot^r(onext^n(tor^r(e)))} and
@@ -313,7 +313,7 @@ quad_edge_num_t quad_renumber_edges(quad_arc_vec_t *root, quad_arc_vec_t *et);
 
 /* ARC INPUT/OUTPUT */
 
-void quad_write_arc(FILE *wr, quad_arc_t e, int width);
+void quad_write_arc(FILE *wr, quad_arc_t e, int32_t width);
   /* Writes the arc {e} to {wr} in the format "{num}:{t}" where {num}
     is {quad_edge_num(edge(e))}, and {t} is {quad_tumble_code(e)} in binary.
     The {num} is padded with spaces to have at least {width}

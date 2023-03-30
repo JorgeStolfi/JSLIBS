@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {r2_align_quadopt.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-02-28 11:54:39 by stolfi */ 
+/* Last edited on 2023-03-20 05:38:34 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_align_COPYRIGHT \
@@ -112,7 +112,7 @@ void talq_do_test(int32_t ni)
                   }
               }
             ntry++;
-            dr = sqrt(r2_align_rel_dist_sqr(ni, popt, ctr, arad));
+            dr = sqrt(r2_align_rel_disp_sqr(ni, popt, ctr, arad));
             de = sqrt(r2_align_dist_sqr(ni, popt, ctr));
             fprintf(stderr, "  dr = %.8f  de = %.8f\n", dr, de);
             /* Check if well within the ellipsoid and not too close to {ctr}: */
@@ -199,7 +199,7 @@ void talq_test_align_quadopt(int32_t ni, r2_t ctr[], r2_t arad[], double tol, r2
         fprintf(stderr, " )\n");
       }
 
-    double dr = sqrt(r2_align_rel_dist_sqr(ni, psol, ctr, arad));
+    double dr = sqrt(r2_align_rel_disp_sqr(ni, psol, ctr, arad));
     demand(dr < 1.0 + 1.0e-8, "solution outside the ellipsoid");
     
     double de = sqrt(r2_align_dist_sqr(ni, psol, popt));

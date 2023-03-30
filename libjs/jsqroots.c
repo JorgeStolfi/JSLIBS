@@ -1,7 +1,8 @@
 /* See jsqroots.h */
-/* Last edited on 2018-06-30 19:45:46 by stolfilocal */
+/* Last edited on 2023-03-18 11:19:52 by stolfi */
 
 #define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
 #include <math.h>
 #include <limits.h>
@@ -14,7 +15,7 @@
 
 #define jsqroots_DEBUG FALSE
 
-int roots_quadratic(double A, double B, double C, double *r1, double *r2, double *im)
+int32_t roots_quadratic(double A, double B, double C, double *r1, double *r2, double *im)
   {
     
     /* Check for degenerate cases otherwise {roots_proper_quadratic}. */
@@ -25,7 +26,7 @@ int roots_quadratic(double A, double B, double C, double *r1, double *r2, double
         fprintf(stderr, "  A = %24.16e  B = %24.16e  C = %24.16e\n", A, B, C);
       }
     
-    int discr; /* Discriminat sign to return. */
+    int32_t discr; /* Discriminat sign to return. */
     if ((! isfinite(A)) || (! isfinite(B)) || (! isfinite(C)))
       { /* Garbage in, garbage out: */
         (*r1) = (*r2) = (*im) = NAN; discr = 00;
@@ -86,7 +87,7 @@ int roots_quadratic(double A, double B, double C, double *r1, double *r2, double
 #define jsqroots_MIN_DISCR_EXP (-900)
   /* Max and min exponents in discriminant. */
 
-int roots_proper_quadratic(double A, double B, double C, double *r1, double *r2, double *im)
+int32_t roots_proper_quadratic(double A, double B, double C, double *r1, double *r2, double *im)
   { 
     assert(isfinite(A));
     assert(isfinite(B));
@@ -99,11 +100,11 @@ int roots_proper_quadratic(double A, double B, double C, double *r1, double *r2,
     (*r1) = (*r2) = (*im) = 0.0; 
 
     /* Determine the binary exponents of {A,C}: */
-    int eA; (void)frexp(A, &eA);
-    int eC; (void)frexp(C, &eC);
+    int32_t eA; (void)frexp(A, &eA);
+    int32_t eC; (void)frexp(C, &eC);
 
     /* Rescale {A = A/2^eS}, {C = C*2^eS} so that they have about the same magnitude: */
-    int eS = (eA - eC)/2;
+    int32_t eS = (eA - eC)/2;
     if (eS != 0)
       { if (jsqroots_DEBUG) { fprintf(stderr, "  scaling {A,C} by {2^%d,2^%d}\n", -eS, +eS); }
         A = ldexp(A, -eS); C = ldexp(C, +eS);
@@ -148,13 +149,13 @@ int roots_proper_quadratic(double A, double B, double C, double *r1, double *r2,
 
     /* General case, with all coefs non-zero. */
     /* Make sure that the discriminant {B^2/4 - A*C} will not {over,under}flow: */
-    int eB; (void)frexp(B, &eB);
-    int eBB4 = 2*eB - 2, eAC = eA + eC;
-    int eU = (eBB4 > eAC ? eBB4 : eAC) + 1; /* Upper bound to exp of discriminant. */
-    int eTmax = jsqroots_MAX_DISCR_EXP;
-    int eTmin = jsqroots_MIN_DISCR_EXP;
-    int eT = (eU > eTmax ? eTmax : (eU < eTmin ? eTmin : eU));  /* Target dis exp after scaling. */
-    int eN = (eT - eU)/2; /* Scaling exp on coefs to get discr exp {eT}. */
+    int32_t eB; (void)frexp(B, &eB);
+    int32_t eBB4 = 2*eB - 2, eAC = eA + eC;
+    int32_t eU = (eBB4 > eAC ? eBB4 : eAC) + 1; /* Upper bound to exp of discriminant. */
+    int32_t eTmax = jsqroots_MAX_DISCR_EXP;
+    int32_t eTmin = jsqroots_MIN_DISCR_EXP;
+    int32_t eT = (eU > eTmax ? eTmax : (eU < eTmin ? eTmin : eU));  /* Target dis exp after scaling. */
+    int32_t eN = (eT - eU)/2; /* Scaling exp on coefs to get discr exp {eT}. */
     if (eN != 0)
       { if (jsqroots_DEBUG) { fprintf(stderr, "  scaling {A,B,C} by 2^{%d}\n", eN); }
         A = ldexp(A, eN); B = ldexp(B, eN); C = ldexp(C, eN);

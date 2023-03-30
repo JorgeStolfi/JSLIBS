@@ -2,7 +2,7 @@
 #define float_image_H
 
 /* Multichannel images with floating-point samples. */
-/* Last edited on 2023-03-07 17:13:55 by stolfi */ 
+/* Last edited on 2023-03-19 08:40:50 by stolfi */ 
 
 #define _GNU_SOURCE_
 #include <stdio.h>
@@ -20,7 +20,11 @@ typedef struct float_image_t
     float *sample;   /* Linearized sample vector. */
   } float_image_t; 
   /* The sample value for channel {c}, column {x}, and row {y} 
-    of the image is stored in {sample[bp + c*st[0] + x*st[1] + y*st[2]]}. */
+    of the image is stored in {sample[bp + c*st[0] + x*st[1] + y*st[2]]}.
+    
+    In the comments that follow, we use {NC}, {NX}, and {NY} to mean
+    the number of channels, columns, and rows of the relevant image, 
+    respectively. */
 
 #define float_image_max_size 65356
   /* Maximum dimension along any axis (2^16), for sanity checks. */
@@ -458,6 +462,11 @@ void float_image_square_samples(float_image_t *A, int32_t c);
     In particular, leaves {+INF} and {NAN} alone, and maps {-INF} to {+INF}.
     Fails is {c} is not a valid channel index. */
 
+double float_image_compute_sample_sum(float_image_t *A, int32_t c);
+  /* Computes the sum of all samples in channel {c} of {A}.
+    Ignores samples that are {±INF} or {NAN}. If {c} is not a valid
+    channel index, returns 0. */
+
 double float_image_compute_total_energy(float_image_t *A, int32_t c, double avg);
   /* Computes the sum of {(s - avg)^2} over all samples {s} in channel {c} of {A}.
     Ignores samples that are {±INF} or {NAN}. If {c} is not a valid
@@ -490,6 +499,18 @@ void float_image_update_sample_range(float_image_t *A, int32_t c, float *vMin, f
     zero. If there are no valid samples, does not modify {*vMax}
     and {*vMin}.  Either pointer may be null. */
     
+float float_image_spectrum_max_sample(float_image_t *A, int32_t c, bool_t centered);
+  /* Returns the maximum sample value in channel {c} the image {A}, which is assumed to 
+    be a power spectrum image.  Ignores samples that are {±INF} or {NAN},
+    and the sample corresponding to the zero-frequency (constant) Fourier 
+    term. 
+    
+    The entries of {A} must be non-negative. 
+    The zero-frequency term is assumed to be pixel {0,0} if {centered}
+    is false, and {NX/2,NY/2} if {centered} is true.  Returns 0.0
+    if there are no valid pixels in channel {c}, or {c} is an
+    invalid channel index. */
+
 /* IN-PLACE PIXEL REARRANGEMENT */
 
 void float_image_flip_x(float_image_t *A, int32_t c, int32_t ix);

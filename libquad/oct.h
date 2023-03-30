@@ -2,7 +2,7 @@
 #define oct_H
 
 /* The quad-edge data structure for orientable and non-orientable maps. */
-/* Last edited on 2011-12-22 15:01:49 by stolfilocal */
+/* Last edited on 2023-03-18 10:54:48 by stolfi */
 
 #define oct_H_copyright \
   "Copyright © 1996, 2006 Institute of Computing, Unicamp."
@@ -185,7 +185,7 @@ oct_arc_t oct_duar(oct_arc_t e);
   Note also that the tumblings under composition constitute a group,
   isomorphic to the symmetry group of a non-cubical square prism. */
 
-oct_arc_t oct_rot_fflip(oct_arc_t e, int r, int f);
+oct_arc_t oct_rot_fflip(oct_arc_t e, int32_t r, int32_t f);
   /* This generic operator changes the orientation of {e}
     by applying {rot} to {e}, {r} times, then applying
     {fflip} to the result, {f} times.  
@@ -253,7 +253,7 @@ oct_arc_t oct_rprev(oct_arc_t e);
  /* The next and previous arc, respectively,
    among the arcs with same right face as {e}.  */
 
-oct_arc_t oct_walk(oct_arc_t e, int r, int n);
+oct_arc_t oct_walk(oct_arc_t e, int32_t r, int32_t n);
   /* Returns {tor^r(onext^n(rot^r(e)))}.
     For negative values of {r} and/or {f}, the result is defined by
     the identities {walk(e,-r,n) = rot^r(onext^n(tor^r(e)))} and
@@ -452,7 +452,7 @@ vec_typedef(oct_edge_vec_t,oct_edge_vec,oct_edge_t);
   
 /* ARC INPUT/OUTPUT  */
 
-void oct_write_arc(FILE *wr, oct_arc_t e, int width);
+void oct_write_arc(FILE *wr, oct_arc_t e, int32_t width);
   /* Writes the arc {e} to {wr} in the format "{num}:{t}" where {num}
     is {edge_num(edge(e))}, and {t} is {tumble_code(e)} in binary.
     The {num} is padded with spaces to have at least {width}

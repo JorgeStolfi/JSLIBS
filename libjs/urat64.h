@@ -2,8 +2,9 @@
 #define urat64_H
 
 /* Unsigned rational fractions with 64-bit numerators and denominators. */
-/* Last edited on 2008-09-29 01:11:50 by stolfi */
+/* Last edited on 2023-03-18 11:06:22 by stolfi */
 
+#define _GNU_SOURCE
 #include <stdint.h>
 
 typedef struct urat64_t { uint64_t num, den; } urat64_t;
@@ -26,7 +27,7 @@ void urat64_sqr(urat64_t *x, urat64_t *z);
 void urat64_add(urat64_t *x, urat64_t *y, urat64_t *z);
   /* Sets {z} to {x+y}.  The result is reduced iff {x,y} are.  */
 
-int urat64_compare(urat64_t *x, urat64_t *y);
+int32_t urat64_compare(urat64_t *x, urat64_t *y);
   /* Returns {-1,00,+1} depending on whether {*x} is less than,
     equal to, or greater than {*y}, respectively.  Fails
     if either argument is {NAN}.  */

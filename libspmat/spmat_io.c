@@ -2,7 +2,7 @@
 
 #define spmat_io_C_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2019-04-09 13:01:49 by jstolfi */
+/* Last edited on 2023-03-18 10:45:19 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -65,7 +65,7 @@ void spmat_write_header
     filefmt_write_header(wr, type, spmat_FILE_VERSION);
 
     /* Write comment lines, if any: */
-    int ind = 0; /* Comment indentation. */
+    int32_t ind = 0; /* Comment indentation. */
     if (cmt != NULL) { filefmt_write_comment(wr, cmt, ind, '#'); }
 
     /* Write the matrix dimensions: */

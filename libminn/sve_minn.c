@@ -1,5 +1,5 @@
 /* See {sve_minn.h} */
-/* Last edited on 2023-02-27 10:58:40 by stolfi */
+/* Last edited on 2023-03-27 10:01:46 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -14,6 +14,7 @@
 #include <jsmath.h>
 #include <rmxn.h>
 #include <rmxn_extra.h>
+#include <rmxn_regular_simplex.h>
 
 #include <sve_minn.h>
 
@@ -27,14 +28,11 @@ void sve_clip_candidate
     double y[],
     double x0[],
     double dMax,
-    bool_t dBox, 
+    bool_t box, 
     bool_t debug
   );
-  /* Pulls the point {y[0..n-1]} towards {x0[0..n-1]} so that 
-    it is in the domain of centered in the latter.
-    If {dBox} is {TRUE}, the domain is a cube with side {2*dMax}.
-    If {dBox} is {FALSE}, the domain is a ball with radius {dMax}. 
-    Used by {sve_minn_iterate}. */
+  /* Pulls the point {y[0..n-1]} towards the point {x0[0..n-1]} so that 
+    it lies within the search domain defined by {dMax} and {box}. */
 
 int32_t sve_take_step
   ( int32_t n,
@@ -80,7 +78,7 @@ void sve_print_probes(FILE *wr, int32_t nv, int32_t n, double v[], int32_t nf, d
     Assumes that {v[0..nv*n-1]} are the coordinates of the vertices,
     stored by rows. */
 
-void sve_minn_step(int32_t n, double Fv[], double cm[])
+void sve_minn_step(int32_t n, double Fv[], double cm[], bool_t debug)
   { int32_t nv = n+1; /* Number of vertices in simplex. */
     int32_t rows = nv+1; /* {n+1} stationary eqs, and one unit-sum eq. */
     int32_t cols = nv+2; /* {n+1} barycentric coords, one Lagrange multip, and the indep term. */
@@ -100,6 +98,8 @@ void sve_minn_step(int32_t n, double Fv[], double cm[])
     for (int32_t i = 0; i <= n; i++) { M[i*cols + ije] = 1; M[ije*cols + i] = 1; }
     M[ije*cols + ije] = 0;
     M[ije*cols + jb] = 1;
+    if (debug)
+      { rmxn_gen_print(stderr, rows, cols, M, "%12.7f", "  [", "\n    ", " ]\n", "[ ", " ", " ]"); }
     /* Solve the system: */
     gsel_triangularize(rows, cols, M, TRUE, 0.0);
     gsel_diagonalize(rows, cols, M);
@@ -141,7 +141,7 @@ void sve_minn_iterate
     double *FxP,
     sign_t dir, 
     double dMax,
-    bool_t dBox,
+    bool_t box,
     double rIni,
     double rMin, 
     double rMax,
@@ -151,12 +151,11 @@ void sve_minn_iterate
   )
   { 
     if (debug) { Pr(Er, ">> enter %s >>\n", __FUNCTION__); }
-    bool_t debug_probes = FALSE;     /* TRUE to print probe points & values. */
+    bool_t debug_probes = TRUE;     /* TRUE to print probe points & values. */
     bool_t debug_termination = TRUE; /* TRUE to print iteration termination info. */
     
     demand((rMin >= sve_minn_MIN_RADIUS) && (rMin <= rMax), "invalid {rMin,rMax}");
     demand((rMin <= rIni) && (rIni <= rMax), "invalid {rIni}");
-    demand(dMax >= 0.0, "invalid {dMax}");
     
     /* Save first guess: */
     double x0[n];   /* Cartesian coords of initial guess. */
@@ -215,7 +214,7 @@ void sve_minn_iterate
         /* Adjust simplex center {y} and {radius} so that there is room for the probe simplex: */
         if (dMax < INFINITY)
           { /* Get distance {dist} from starting point {x0} to current center candiate {y}: */
-            double dist = (dBox ? rn_L_inf_dist(n, x0, y) : rn_dist(n, x0, y));
+            double dist = (box ? rn_L_inf_dist(n, x0, y) : rn_dist(n, x0, y));
             /* Ensure that the simplex fits in the ball/box {x0,dMax}, i.e. {dist+radius <= dMax}. */
             double dExtra = dist + radius - dMax; 
             if (dExtra > 0.0)
@@ -227,7 +226,7 @@ void sve_minn_iterate
                 if (rSafe > dMax) { rSafe = dMax; }
                 assert((rMin <= rSafe) && (rSafe <= rMax)); /* Should be always the case. */
                 /* Adjust {y} so that it is at {dMax-rSafe} from {x0}: */
-                sve_clip_candidate(n, y, x0, dMax - rSafe, dBox, debug);
+                sve_clip_candidate(n, y, x0, dMax - rSafe, box, debug);
                 /* Use this adjusted radius: */
                 assert(rSafe <= radius); /* Should always be the case. */
                 radius = rSafe;
@@ -259,7 +258,7 @@ void sve_minn_iterate
           }
         nEvals += nf;
         /* Optimize as a quadratic obtaining barycentric coords {cm[0..nv-1]}: */
-        sve_minn_step(n, Fv, cm);
+        sve_minn_step(n, Fv, cm, debug);
         nIters++;
         /* Convert solution {cm} to Cartesian coordinates {y[0..n-1]}: */
         rmxn_map_row(nv, n, cm, v, y);
@@ -273,7 +272,7 @@ void sve_minn_iterate
         
         if (dMax < INFINITY)
           { /* Adjust the estimated min {y} to be inside the sphere/box {x0,dMax}: */
-            sve_clip_candidate(n, y, x0, dMax, dBox, debug);
+            sve_clip_candidate(n, y, x0, dMax, box, debug);
           }
         /* Evaluate at new point: */
         double Fy = F(n, y);
@@ -351,11 +350,11 @@ void sve_clip_candidate
     double y[],
     double x0[],
     double dMax,
-    bool_t dBox,
+    bool_t box,
     bool_t debug
   )
   {
-    double dyx0 = (dBox ? rn_L_inf_dist(n, x0, y) : rn_dist(n, x0, y));
+    double dyx0 = (box ? rn_L_inf_dist(n, x0, y) : rn_dist(n, x0, y));
     if (dyx0 > dMax) 
       { /* Moved too much, curb it: */
         double s = (1.0 - 1.0e-12)*dMax/dyx0;

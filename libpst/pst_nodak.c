@@ -1,5 +1,5 @@
 /* See pst_nodak.h */
-/* Last edited on 2022-01-01 22:22:27 by stolfi */
+/* Last edited on 2023-03-19 15:28:51 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -59,7 +59,7 @@ void debug_matrix(char *head, r3x3_t *M, char *foot, double R)
      if (foot != NULL) { fprintf(stderr, "  %s\n", foot); }
   }
 
-r3x3_t pst_nodak_get_matrix(r2_vec_t* geo_ctr, double geo_radius, int_vec_t* img_num, r2_vec_t* img_ctr)
+r3x3_t pst_nodak_get_matrix(r2_vec_t* geo_ctr, double geo_radius, int32_vec_t* img_num, r2_vec_t* img_ctr)
   {
     bool_t debug = TRUE;
 

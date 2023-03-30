@@ -1,5 +1,5 @@
 /* {float_array_au.h} - read/write Sun AU audio files as {float_array_t}s */
-/* Last edited on 2009-08-31 21:02:14 by stolfi */
+/* Last edited on 2023-03-18 11:02:46 by stolfi */
 
 /* Derived from {rusound.h}, created by Rumiko Oishi Stolfi
   and Jorge Stolfi on sep/2006.
@@ -8,8 +8,9 @@
 #ifndef float_array_au_H
 #define float_array_au_H
 
-#include <stdio.h>
+#define _GNU_SOURCE
 #include <stdint.h>
+#include <stdio.h>
 
 #include <float_array.h>
 #include <jsaudio.h>
@@ -41,7 +42,7 @@ float_array_t *float_array_from_sound(sound_t *snd, bool_t verbose);
     If {verbose} is TRUE, the procedure prints statistics of the
     conversion to {stderr}. */
 
-sound_t *float_array_to_sound(float_array_t *A, int chns, int ch[], double freq, bool_t verbose);
+sound_t *float_array_to_sound(float_array_t *A, int32_t chns, int32_t ch[], double freq, bool_t verbose);
   /* Converts a {float_array_t} {A} to a sound file {snd}.
   
     The number of channels of {snd} will be {chns} --- usually 1 for

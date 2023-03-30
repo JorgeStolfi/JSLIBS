@@ -1,4 +1,4 @@
-/* Last edited on 2022-10-30 19:35:15 by stolfi */ 
+/* Last edited on 2023-03-18 10:57:32 by stolfi */ 
 /* Test of the {ppv_array_blur.h} module. */
 
 #define _GNU_SOURCE
@@ -26,9 +26,9 @@
 void pbt_do_test(ppv_dim_t d, int32_t radius, int32_t stride);
 ppv_array_t *pbt_make_array(ppv_dim_t d);
 
-int main (int argn, char **argv);
+int32_t main (int32_t argn, char **argv);
 
-int main (int argn, char **argv)
+int32_t main (int32_t argn, char **argv)
   {
     ppv_dim_t dmax = 4;
     int32_t rmax  = 3;

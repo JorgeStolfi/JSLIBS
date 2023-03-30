@@ -1,4 +1,4 @@
-/* Last edited on 2021-07-09 23:04:52 by jstolfi */ 
+/* Last edited on 2023-03-18 10:57:57 by stolfi */ 
 /* Test of the PPV library. */
 
 #define _GNU_SOURCE
@@ -88,7 +88,7 @@ void test_chop(ppv_array_t *A);
 
 void check_size(ppv_dim_t d, ppv_size_t *sza, ppv_size_t *szb);
 
-int main (int argn, char **argv)
+int32_t main (int32_t argn, char **argv)
   {
     test_best_bpw();
     for (ppv_nbits_t bps = 0; bps <= ppv_MAX_BPS; bps++)
@@ -250,7 +250,7 @@ void test_packing(ppv_array_t *A)
     fprintf(stderr, "Checking {ppv_{get,set}_sample_at_pos} on a few elems...\n");
     bool_t verbose = TRUE;
     if (verbose) { ppv_print_descriptor(stderr, "A = { ", A, " }\n"); } 
-    int npos = 5; /* Number of positions to test */
+    int32_t npos = 5; /* Number of positions to test */
     fprintf(stderr, "\n");
     for (ppv_pos_t pos = 0; pos < npos; pos++)
       { ppv_sample_t smp_set = pos_to_sample(pos, 417, 4615, A->maxsmp);
@@ -665,8 +665,8 @@ void test_swap_indices(ppv_array_t *A)
           { /* Perform a transposition: */
             ppv_axis_t axa1 = (ppv_axis_t)((trial/(1+pass)) % d);
             ppv_axis_t axb1 = (ppv_axis_t)((trial/(2+pass)) % d);
-            int d1 = (axa1 < axb1 ? axb1 - axa1 : axa1 - axb1);
-            int m1 = d - (axa1 > axb1 ? axa1 : axb1);
+            int32_t d1 = (axa1 < axb1 ? axb1 - axa1 : axa1 - axb1);
+            int32_t m1 = d - (axa1 > axb1 ? axa1 : axb1);
             ppv_dim_t n1 = (ppv_dim_t)((trial/(3+pass)) % (d1 == 0 ? m1 : (d1 < m1 ? d1 : m1)));
             assert(axa1 + n1 <= d);
             assert(axb1 + n1 <= d);

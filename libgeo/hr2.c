@@ -1,5 +1,5 @@
 /* See hr2.h */
-/* Last edited on 2022-10-19 11:42:11 by stolfi */ 
+/* Last edited on 2023-03-20 21:01:09 by stolfi */ 
 
 /* Based on HR2.m3 created 1994-05-04 by J. Stolfi. */
 
@@ -386,6 +386,26 @@ double hr2_pmap_deform_sqr(r2_t ph[], hr2_pmap_t *M)
     return var;
   }
 
+double hr2_pmap_diff_sqr(hr2_pmap_t *M, hr2_pmap_t *N)
+  { double sum_d2 = 0;
+    for (int32_t sense = 0; sense < 2; sense++)
+      { r3x3_t *A = (sense == 0 ? &(M->dir) : &(M->inv));
+        double Am = r3x3_norm_sqr(A) + 1.0e-200;
+        r3x3_t *B = (sense == 0 ? &(N->dir) : &(N->inv));
+        double Bm = r3x3_norm_sqr(B) + 1.0e-200;
+        for (int32_t i = 0; i < 3; i++)
+          { for (int32_t j = 0; j < 3; j++)
+             { double Aij = A->c[i][j]/Am;
+               double Bij = B->c[i][j]/Bm;
+               double dij = Aij - Bij;
+               sum_d2 += dij*dij;
+             }
+          }
+      }
+    return sum_d2;
+  }
+        
+
 bool_t hr2_pmap_is_affine(hr2_pmap_t *M)
   { r3x3_t *A = &(M->dir);
     if (A->c[0][0] <= 0) { return FALSE; }
@@ -413,15 +433,15 @@ void hr2_pmap_normalize(r3x3_t *A)
 
 void hr2_pmap_print (FILE *wr, hr2_pmap_t *M, char *pref, char *suff)
   { 
-    hr2_pmap_gen_print(wr, M, "%12.6f", pref, "[ ", " ", " ]", "  ", "  ", "\n", suff);
+    hr2_pmap_gen_print(wr, M, "%12.6f", pref, "  ", "  ", "\n", "[ ", " ", " ]", suff);
     fflush(wr);
   }
 
 void hr2_pmap_gen_print
   ( FILE *wr, hr2_pmap_t *M,
-    char *fmt, char *pref,                           /* Overall prefix. */
-    char *elp, char *esep, char *erp,     /* Delimiters for each row. */
+    char *fmt, char *pref,                /* Overall prefix. */
     char *rpref, char *rsep, char *rsuff, /* Row prefix, matrix separator, and suffix. */
+    char *elp, char *esep, char *erp,     /* Delimiters for each row. */
     char *suff                            /* Overall sufffix. */
   )
   {
@@ -442,7 +462,7 @@ void hr2_pmap_gen_print
             fputs(elp, wr);
             for (int32_t j = 0; j < NH; j++)
               { if (j != 0) { fputs(esep, wr); }
-                fprintf(wr, fmt, M->dir.c[i][j]);
+                fprintf(wr, fmt, (k == 0 ? M->dir : M->inv).c[i][j]);
               }
             fputs(erp, wr);
           }

@@ -2,7 +2,7 @@
 #define indexing_H
 
 /* Multidimensional array indexing tools */
-/* Last edited on 2021-07-17 15:48:41 by jstolfi */
+/* Last edited on 2023-03-18 11:22:12 by stolfi */
 
 #include <bool.h>
 #include <sign.h>
@@ -522,7 +522,7 @@ sign_t ix_compare ( ix_dim_t d, const ix_index_t ixa[], const ix_index_t ixb[], 
     comes before, coincides, or follows {ixb} in the order defined by {ixor}.
     The result is undefined if any index is negative. */
     
-int ix_sync_level 
+int32_t ix_sync_level 
   ( ix_dim_t d, 
     const ix_size_t sz[], 
     const ix_index_t ix[], 

@@ -1,5 +1,5 @@
 /* See oct.h. */
-/* Last edited on 2023-02-12 07:52:27 by stolfi */
+/* Last edited on 2023-03-18 11:31:01 by stolfi */
 
 #define oct_C_copyright \
   "Copyright © 1996, 2006 Institute of Computing, Unicamp."
@@ -158,7 +158,7 @@ oct_arc_t oct_dual(oct_arc_t e)
 oct_arc_t oct_duar(oct_arc_t e)
   { return DUAR(e); }
 
-oct_arc_t oct_rot_fflip(oct_arc_t e, int r, int f)
+oct_arc_t oct_rot_fflip(oct_arc_t e, int32_t r, int32_t f)
   { /* Reduce {r} mod 8 (math mod): */
     r = r & 3;
     /* Apply {ROT} {r} times: */
@@ -298,7 +298,7 @@ oct_arc_t oct_rnext(oct_arc_t e)
 oct_arc_t oct_rprev(oct_arc_t e)
   { return RPREV(e); }
 
-oct_arc_t oct_walk(oct_arc_t e, int r, int n)
+oct_arc_t oct_walk(oct_arc_t e, int32_t r, int32_t n)
   { /* Reduce {r} mod 4: */
     r = (r & 3);
     /* Apply {rot^r}: */
@@ -381,7 +381,7 @@ void oct_destroy_edge(oct_arc_t e)
     if (EDGE(E->next[0]) != E) { oct_splice(e, OPREV(e)); }
     if (EDGE(E->next[2]) != E) { oct_splice(f, OPREV(f)); }
     /* Paranoia check -- assumes that the oct-edge is well-formed: */
-    int i;
+    int32_t i;
     for (i = 0; i < 4; i++) { assert(EDGE(E->next[i]) == E); }
     /* OK, reclaim the edge record: */
     free(E);
@@ -427,12 +427,12 @@ void oct_splice(oct_arc_t a, oct_arc_t b)
 
 /* ARC INPUT/OUTPUT */
 
-void oct_write_arc(FILE *wr, oct_arc_t e, int width)
+void oct_write_arc(FILE *wr, oct_arc_t e, int32_t width)
   { oct_edge_t E = EDGE(e);
     oct_bits_t et = TUMBLECODE(e);
     fprintf
       ( wr, ("%*" uint64_u_fmt ":%u%u%u"), width, 
-        E->num, (unsigned int)((et & 4u) >> 2), (unsigned int)((et & 2u) >> 1), (unsigned int)(et & 1u)
+        E->num, (uint32_t)((et & 4u) >> 2), (uint32_t)((et & 2u) >> 1), (uint32_t)(et & 1u)
       );
   }
 
@@ -457,7 +457,7 @@ oct_arc_t oct_read_arc(FILE *rd, oct_arc_vec_t *et)
 void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *et)
   { 
   
-    int nE = 0;  /* Count of reachable octets (edge records). */
+    int32_t nE = 0;  /* Count of reachable octets (edge records). */
     
     auto bool_t renumber_edge(oct_arc_t p);
       /* Visit-proc that renumbers the base edge of {p} with {nE}
@@ -466,9 +466,9 @@ void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *et)
     /* Write the header line: */
     filefmt_write_header(wr, FILE_TYPE, FILE_VERSION);
     /* Grab the number {nr} of roots and the root index width {wa}: */
-    int nr = root->ne;
+    int32_t nr = root->ne;
     /* Compute the width in digits {wr} of the root index: */
-    int dr = (nr < 10 ? 1 : digits(nr-1));
+    int32_t dr = (nr < 10 ? 1 : digits(nr-1));
     /* Make sure that {et} is non-null and points to an empty table: */
     oct_arc_vec_t etb = oct_arc_vec_new(0); /* A local edge table. */
     if (et == NULL) 
@@ -479,14 +479,14 @@ void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *et)
     oct_enum_octets(*root, &renumber_edge, et);
     assert(et->ne == nE);
     /* Determine the width {eE} in digits of the edge number: */
-    int dE = (nE < 10 ? 1 : digits(nE-1));
+    int32_t dE = (nE < 10 ? 1 : digits(nE-1));
     /* We should have zero edges if and only if we have zero roots: */
     assert((nr == 0) == (nE == 0)); 
     /* Write the root and edge counts: */
     fprintf(wr, "roots = %d\n", nr);
     fprintf(wr, "edges = %d\n", nE);
     /* Write the roots, one per line: */
-    unsigned int i;
+    uint32_t i;
     for (i = 0; i < nr; i++)
       { /* Write {i} and the root arc number {i}: */
         fprintf(wr, "%*u ", dr, i);
@@ -502,7 +502,7 @@ void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *et)
         assert(E->num == num);
         /* Write the edge's number and its {onext} links: */
         fprintf(wr, ("%*" uint64_u_fmt), dE, num);
-        int r;
+        int32_t r;
         for (r = 0; r < 4; r++)
           { fputc(' ', wr); oct_write_arc(wr, E->next[r], dE); }
         fputc('\n', wr);
@@ -527,8 +527,8 @@ void oct_read_map(FILE *rd, oct_arc_vec_t *root, oct_arc_vec_t *et)
   { /* Check and consume the header line: */
     filefmt_read_header(rd, FILE_TYPE, FILE_VERSION);
     /* Parse the root count {nr} and the edge count {nE}: */
-    int nr = nget_int32(rd, "roots"); fget_eol(rd);
-    int nE = nget_int32(rd, "edges"); fget_eol(rd);
+    int32_t nr = nget_int32(rd, "roots"); fget_eol(rd);
+    int32_t nE = nget_int32(rd, "edges"); fget_eol(rd);
     /* Make sure that {et} is non-null and points to a table with {nE} slots: */
     oct_arc_vec_t etb = oct_arc_vec_new(0); /* A local edge table. */
     if (et == NULL) { et = &etb; }
@@ -559,7 +559,7 @@ void oct_read_map(FILE *rd, oct_arc_vec_t *root, oct_arc_vec_t *et)
         /* Get the edge {E} from the edge table {et}: */
         oct_edge_t E = oct_edge(et->e[num]);
         /* Read its links {E->next[0..3]}: */
-        int r;
+        int32_t r;
         for (r = 0; r < 4; r++) { E->next[r] = oct_read_arc(rd, et); } 
         /* Skip to the next line: */
         fget_eol(rd);

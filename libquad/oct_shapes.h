@@ -2,13 +2,17 @@
 #define oct_shapes_H
 
 /* Procedures that build oct-edge structures for various simple maps. */
-/* Last edited on 2007-02-05 01:22:55 by stolfi */
+/* Last edited on 2023-03-18 10:53:39 by stolfi */
 
 #define oct_shapes_H_copyright \
   "Copyright © 1996, 2006 Institute of Computing, Unicamp."
   
-#include <oct.h>
+#define _GNU_SOURCE
+#include <stdint.h>
+
 #include <bool.h>
+
+#include <oct.h>
 
 void buld_tower(uint m, uint h, oct_arc_t a);
   /* Builds a cylindrical tower on the face {oct_right(a)}, 
@@ -16,7 +20,7 @@ void buld_tower(uint m, uint h, oct_arc_t a);
     and a roof; each stage will be a ring with {m} square faces.
     The roof of the tower will be a single face of {m} edges. */
 
-oct_arc_t make_ring (int n);
+oct_arc_t make_ring (int32_t n);
   /* Builds a map on the sphere with two faces separated by
     a ring with {n} edges and {n} vertices. */
 

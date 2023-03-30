@@ -2,7 +2,7 @@
 #define pst_nodak_H
 
 /* Extracting sub-images of the N-Spot grayscale chart  and elements thereof. */
-/* Last edited on 2008-12-12 16:21:17 by stolfi */
+/* Last edited on 2023-03-19 15:27:41 by stolfi */
 
 #include <bool.h>
 #include <r2.h>
@@ -14,7 +14,7 @@
 
 /* GEOMETRIC CORRECTION */
 
-r3x3_t pst_nodak_get_matrix(r2_vec_t* geo_ctr, double geo_radius, int_vec_t* img_num, r2_vec_t* img_ctr);
+r3x3_t pst_nodak_get_matrix(r2_vec_t* geo_ctr, double geo_radius, int32_vec_t* img_num, r2_vec_t* img_ctr);
   /* Computes the {3×3} projective map matrix that maps
     coordinates on the N-Spot chart to image coordinates. 
     

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {fget.h}, {fget_data.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-02-12 07:52:39 by stolfi */ 
+/* Last edited on 2023-03-26 11:03:57 by stolfi */ 
 /* Created on 2007-01-02 by J. Stolfi, UNICAMP */
 
 #define test_jsmath_COPYRIGHT \
@@ -46,7 +46,7 @@ void check_doubles(double x_wr, char *fmt, double y_rd);
 void test_fget_skip_spaces(bool_t verbose);
 void test_fget_double(bool_t verbose);
 void test_fget_chars(bool_t verbose);
-void test_fget_int32_t(bool_t verbose);
+void test_fget_int(bool_t verbose);
 void test_fget_data(bool_t verbose);
 
 int32_t main (int32_t argn, char **argv)
@@ -56,7 +56,7 @@ int32_t main (int32_t argn, char **argv)
     test_fget_chars(TRUE);
     for (int32_t it = 0; it < nt; it++)
       { bool_t verbose = (it == 0); 
-        test_fget_int32_t(verbose);
+        test_fget_int(verbose);
         test_fget_double(verbose);
         test_fget_data(verbose);
       }
@@ -258,7 +258,7 @@ void test_fget_double(bool_t verbose)
     fclose(rd);
   }
 
-void test_fget_int32_t(bool_t verbose)
+void test_fget_int(bool_t verbose)
   { if (verbose) { fprintf(stderr, "=== Checking {fget_int64,fget_uint64}... ===\n"); }
 
     /* !!! Should check other bases !!! */

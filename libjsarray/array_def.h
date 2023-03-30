@@ -4,7 +4,7 @@
 
 #define array_def_H_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2021-06-13 11:32:14 by jstolfi */
+/* Last edited on 2023-03-18 11:03:37 by stolfi */
 
 /* These inclusions are necessary if this file is included or compiled on its own: */
 #include <stdint.h>
@@ -150,14 +150,14 @@
 #define array_IMPLEMENT_get_size(ARRAY_TYPE,PREFIX,ELEM_TYPE) \
   array_DECLARE_get_size(ARRAY_TYPE,PREFIX,ELEM_TYPE) \
     { ix_descr_t *DA = &(A->ds); \
-      int ia; \
+      int32_t ia; \
       for (ia = 0; ia < DA->na; ia++) { sz[ia] = DA->sz[ia]; } \
     }
 
 #define array_IMPLEMENT_check_size(ARRAY_TYPE,PREFIX,ELEM_TYPE) \
   array_DECLARE_check_size(ARRAY_TYPE,PREFIX,ELEM_TYPE) \
     { ix_descr_t *DA = &(A->ds); \
-      int ia; \
+      int32_t ia; \
       demand(DA->na == na, "wrong number of indices"); \
       for (ia = 0; ia < DA->na; ia++) \
         { demand(DA->sz[ia] == sz[ia], "wrong size"); } \

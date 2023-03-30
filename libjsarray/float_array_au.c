@@ -1,5 +1,5 @@
 /* See float_array_au.h */
-/* Last edited on 2019-08-30 07:25:10 by jstolfi */
+/* Last edited on 2023-03-19 15:25:32 by stolfi */
 
 #define _GNU_SOURCE
 #include <limits.h>
@@ -27,8 +27,8 @@
 float_array_t *float_array_from_sound(sound_t *snd, bool_t verbose)
   { 
     /* Get sound channel and sample counts: */
-    int NC = snd->nc; /* Num of channels. */
-    int NS = snd->ns; /* Num of samples per channel. */
+    int32_t NC = snd->nc; /* Num of channels. */
+    int32_t NS = snd->ns; /* Num of samples per channel. */
     
     /* Allocate float image: */
     ix_dim_t na = 2;
@@ -39,16 +39,16 @@ float_array_t *float_array_from_sound(sound_t *snd, bool_t verbose)
     
     /* Input and output range registers: */
     float vmin[NC], vmax[NC];  /* Output range registers. */ 
-    int c; /* Channel index. */
+    int32_t c; /* Channel index. */
     for (c = 0; c < NC; c++) { vmin[c] = +INFINITY; vmax[c] = -INFINITY; }
     
     /* Convert pixels, keep statistics: */
     ix_index_t ix[na];
-    int s;
+    int32_t s;
     for(s = 0; s < NS; s++)
       { double *srow = snd->sv[s];
         for (c = 0; c < NC; c++)
-          { /* Convert int sample {*srow} to float {v}, store, keep stats: */
+          { /* Convert int32_t sample {*srow} to float {v}, store, keep stats: */
             double ismp = (*srow);
             float osmp = (float)ismp;
             if (osmp < vmin[c]) { vmin[c] = osmp; }
@@ -61,12 +61,12 @@ float_array_t *float_array_from_sound(sound_t *snd, bool_t verbose)
     
     if (verbose) 
       { /* Print statistics: */
-        long int NCS = ((long int)NC)*((long int)NS);
+        int64_t NCS = ((int64_t)NC)*((int64_t)NS);
         fprintf(stderr, "  %d channels, %d samples per channel, %ld tot samples\n", NC, NS, NCS);
         if (NCS > 0)
           { for (c = 0; c < NC; c++)
-              { int iChan = c;  /* Channel index in input sound array. */
-                int oChan = c;  /* Channel index in output float array. */
+              { int32_t iChan = c;  /* Channel index in input sound array. */
+                int32_t oChan = c;  /* Channel index in output float array. */
                 fprintf(stderr, "  converted au channel %d to array channel %d:\n", iChan, oChan);
                 fprintf(stderr, "    actual output range = [ %14.7e _ %14.7e]\n", vmin[c], vmax[c]);
               }
@@ -75,17 +75,17 @@ float_array_t *float_array_from_sound(sound_t *snd, bool_t verbose)
     return A;
   }
 
-sound_t *float_array_to_sound(float_array_t *A, int chns, int ch[], double freq, bool_t verbose)
+sound_t *float_array_to_sound(float_array_t *A, int32_t chns, int32_t ch[], double freq, bool_t verbose)
   { 
     /* Get indexing descriptor {DA}: */
     ix_descr_t *DA = &(A->ds);
     
     /* Get integer image dimensions: */
-    int na = DA->na;
+    int32_t na = DA->na;
     assert(na == 2);
-    int NS = (int)DA->sz[1];  /* Num of samples per channel. */
-    int sNC = chns;           /* Num channels in sound array. */
-    int fNC = (int)DA->sz[0]; /* Num channels in float image. */
+    int32_t NS = (int32_t)DA->sz[1];  /* Num of samples per channel. */
+    int32_t sNC = chns;           /* Num channels in sound array. */
+    int32_t fNC = (int32_t)DA->sz[0]; /* Num channels in float image. */
     
     /* Allocate sound array: */
     sound_t *snd = (sound_t *)notnull(malloc(sizeof(sound_t)), "no mem");
@@ -95,8 +95,8 @@ sound_t *float_array_to_sound(float_array_t *A, int chns, int ch[], double freq,
     snd->fsmp = freq;
     
     /* Channel indexing variables: */
-    int k; /* Channel of sound array. */
-    int c; /* Channel of float array. */
+    int32_t k; /* Channel of sound array. */
+    int32_t c; /* Channel of float array. */
     
     /* Input and output range registers: */
     double vmin[sNC], vmax[sNC];   /* Sound pixel range. */
@@ -104,7 +104,7 @@ sound_t *float_array_to_sound(float_array_t *A, int chns, int ch[], double freq,
     
     /* Convert pixels, store in {snd}, keep statistics: */
     ix_index_t ix[na];
-    int s;
+    int32_t s;
     for(s = 0; s < NS; s++)
       { double *srow = snd->sv[s];
         /* Convert float pixel {fpxy[c..c+2]} to integer pixel {ipxy[0..2]}, keep stats: */
@@ -122,13 +122,13 @@ sound_t *float_array_to_sound(float_array_t *A, int chns, int ch[], double freq,
     
     if (verbose)
       { /* Print statistics: */
-        long int NCS = ((long int)sNC)*((long int)NS);
+        int64_t NCS = ((int64_t)sNC)*((int64_t)NS);
         fprintf(stderr, "  %d channels, %d samples per channel, %ld tot samples\n", sNC, NS, NCS);
         if (NCS > 0)
           { for (k = 0; k < chns; k++)
               { c = (ch == NULL ? k : ch[k]);
-                int iChan = c;  /* Channel index in input float array. */
-                int oChan = k;  /* Channel index in output sound array. */
+                int32_t iChan = c;  /* Channel index in input float array. */
+                int32_t oChan = k;  /* Channel index in output sound array. */
                 fprintf(stderr, "  converted array channel %d to sound channel %d:\n", iChan, oChan);
                 fprintf(stderr, "    actual output range = [ %24.16e .. %24.16e ]\n", vmin[k], vmax[k]);
               }

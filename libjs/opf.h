@@ -1,12 +1,15 @@
 /* opf.h -- build forests of minimum-cost paths. */
-/* Last edited on 2010-05-24 01:40:38 by stolfi */ 
+/* Last edited on 2023-03-18 11:16:38 by stolfi */ 
 
 #ifndef opf_H
 #define opf_H
 
+#define _GNU_SOURCE
+#include <stdint.h>
+
 #include <bool.h>
 
-typedef double opf_arc_cost_t(int u, int v);
+typedef double opf_arc_cost_t(int32_t u, int32_t v);
   /* Type of a function that returns the cost of an arc between vertices {u} and {v} of a graph.
     The result must be non-negative and not {NAN}. If there is no such arc, it should 
     return {+INF}. */
@@ -16,7 +19,7 @@ typedef double opf_path_cost_t(double Ca, double Cp);
      one arc with cost{Ca} followed by a path of cost {Cp} It must never
      be smaller than {Ca} and {Cp}. */
 
-void opf_build_complete(int n, double C[], opf_arc_cost_t *acost, opf_path_cost_t *pcost, int P[], int R[], bool_t verbose);
+void opf_build_complete(int32_t n, double C[], opf_arc_cost_t *acost, opf_path_cost_t *pcost, int32_t P[], int32_t R[], bool_t verbose);
    /* Builds a spanning rooted optimum-path forest for the complete
      graph {G} with vertices {0..n-1}.
      

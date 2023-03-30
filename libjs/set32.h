@@ -2,8 +2,9 @@
 #define set32_H
 
 /* Subsets of the set {0..31}. */
-/* Last edited on 2013-10-25 01:12:05 by stolfilocal */
+/* Last edited on 2023-03-18 11:15:12 by stolfi */
 
+#define _GNU_SOURCE
 #include <stdint.h>
 
 typedef uint32_t set32_t;
@@ -29,7 +30,7 @@ typedef int8_t set32_elem_t;
 #define set32_range(i,j)         ((1 << ((j)+1)) - (1 << (i)))
   /* The range {i..j}, with {i,j} in {0..31}; empty iff {i > j}. */
 
-int set32_count(set32_t A);
+int32_t set32_count(set32_t A);
   /* The cardinality of the set {A}.  */
 
 typedef int8_t set32_index_t;

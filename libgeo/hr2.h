@@ -1,5 +1,5 @@
 /* Oriented projective geometry in two dimensions. */
-/* Last edited on 2022-03-01 12:02:54 by stolfi */ 
+/* Last edited on 2023-03-20 20:54:56 by stolfi */ 
    
 #ifndef hr2_H
 #define hr2_H
@@ -179,6 +179,11 @@ typedef enum
     combined with a translation. {hr2_pmat_type_PROJECTIVE} means
     a general (unrestricted) projecive map. */
 
+double hr2_pmap_diff_sqr(hr2_pmap_t *M, hr2_pmap_t *N);
+  /* Computes the sum of squares differences between corresponding
+    elements of {M.dir} and {N.dir} and of {M,inv} and {N.inv},
+    after implicitly scaling both so that the sum of squared elements is 1. */
+
 double hr2_pmap_mismatch_sqr(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[]);
   /* Computes the mean squared distance between the
      mapped points {p1[0..np-1]} mapped by {M.dir} and the 
@@ -186,7 +191,7 @@ double hr2_pmap_mismatch_sqr(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[]);
 
 double hr2_pmap_deform_sqr(r2_t h[], hr2_pmap_t *M);
   /* Measures the amount of deformation produced by the projective map
-    {M}, on the quadrilateral {Q} whose corners are {h[0..3]}. The
+    {M} on the quadrilateral {Q} whose corners are {h[0..3]}. The
     procedure compares each side and diagonal of {Q} with those of the
     quadrilateral {Q'} that is {Q} mapped by {M}. For each of these line
     segments, it computes the original length {d} and the length {d'} of
@@ -199,7 +204,6 @@ double hr2_pmap_deform_sqr(r2_t h[], hr2_pmap_t *M);
     -- a translation combined with a rotation or mirroring and a uniform
     change of scale (by the common factor {s}). */
 
-
 void hr2_pmap_print (FILE *wr, hr2_pmap_t *M, char *pref, char *suff);
   /* Prints {M} on file {wr}, with some default format.  The printout
     starts with the given {pref}, if not {NULL}, and ends with the given {suff},
@@ -207,9 +211,9 @@ void hr2_pmap_print (FILE *wr, hr2_pmap_t *M, char *pref, char *suff);
 
 void hr2_pmap_gen_print
   ( FILE *wr, hr2_pmap_t *M,
-    char *fmt, char *pref,                           /* Overall prefix. */
-    char *elp, char *esep, char *erp,     /* Delimiters for each row. */
+    char *fmt, char *pref,                /* Overall prefix. */
     char *rpref, char *rsep, char *rsuff, /* Row prefix, matrix separator, and suffix. */
+    char *elp, char *esep, char *erp,     /* Delimiters for each row. */
     char *suff                            /* Overall sufffix. */
   );
   /* Prints the projective map {M} to file {wr}, using {fmt} for each

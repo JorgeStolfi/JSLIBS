@@ -1,5 +1,5 @@
 /* Self-bounded vectors (one-dimensional arrays) of things */
-/* Last edited on 2019-01-11 19:54:22 by jstolfi */
+/* Last edited on 2023-03-18 11:05:06 by stolfi */
 
 #ifndef vec_H
 #define vec_H
@@ -29,7 +29,7 @@
   saves them into a self-bounded vector (a {double_vec_t}):
   
     double_vec_t x = double_vec_new(100);
-    { int nx = 0;
+    { int32_t nx = 0;
       while(! finished(...))
         { double z = generate_next_value(...); 
           double_vec_expand(&x, nx);
@@ -183,12 +183,6 @@ void PREFIX##_expand(VEC_TYPE *vp, vec_index_t index) \
   
 /* SOME USEFUL TYPED VECTORS */
 
-vec_typedef(int_vec_t,    int_vec,     int);
-  /* Vectors of {int}s. */
-
-vec_typedef(uint_vec_t,   uint_vec,    unsigned int);
-  /* Vectors of {unsigned int}s. */
-
 vec_typedef(char_vec_t,   char_vec,    char);
   /* Vectors of {char}s. */
 
@@ -211,7 +205,7 @@ vec_typedef(int8_vec_t,   int8_vec,    int8_t);
   /* Vectors of {int8_t}s (signed bytes, {signed char}s). */
 
 vec_typedef(int16_vec_t,  int16_vec,   int16_t);
-  /* Vectors of {int16_t}s (signed half-words, {signed short int}s). */
+  /* Vectors of {int16_t}s (signed half-words, {signed short int32_t}s). */
 
 vec_typedef(int32_vec_t,  int32_vec,   int32_t);
   /* Vectors of {int32_t}s. */
@@ -223,7 +217,7 @@ vec_typedef(uint8_vec_t,  uint8_vec,   uint8_t);
   /* Vectors of {unit8_t}s (unsigned bytes, {unsigned char}s). */
 
 vec_typedef(uint16_vec_t, uint16_vec,  uint16_t);
-  /* Vectors of {unit16_t}s (unsigned half-words, {unsigned short int}s. */
+  /* Vectors of {unit16_t}s (unsigned half-words, {unsigned short int32_t}s. */
 
 vec_typedef(uint32_vec_t, uint32_vec,  uint32_t);
   /* Vectors of {uint32_t}s. */

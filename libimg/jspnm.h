@@ -1,5 +1,5 @@
 /* jspnm.h - basic definitions for reading/writing PBM/PGM/PBM files. */
-/* Last edited on 2017-06-20 22:46:13 by stolfilocal */ 
+/* Last edited on 2023-03-07 19:45:59 by stolfi */ 
 
 #ifndef jspnm_H
 #define jspnm_H
@@ -179,7 +179,7 @@ void pnm_read_pixels
     bool_t raw,
     bool_t bits
   );
-  /* Reads a row of grayscale pixels from the PGM or PPM file {rd} and
+  /* Reads a row of pixels from the PNM file {rd} and
     stores them in {smp[0..cols*chns-1]}. Assumes that each sample
     ranges in {0..maxval}, and that the file is positioned right
     before the first sample of the row.

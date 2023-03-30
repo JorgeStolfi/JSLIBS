@@ -1,5 +1,5 @@
 # Makefile for C libraries
-# Last edited on 2023-02-19 10:08:49 by stolfi
+# Last edited on 2023-03-19 18:22:54 by stolfi
 
 # ----------------------------------------------------------------------
 # Good libraries, in import-compatible order:
@@ -42,9 +42,9 @@ LIBS := ${LIBS_ALL}
 # Library tests to run:
 
 # LIB_TESTS := ${LIB_TESTS_UNCERTAIN}
-LIB_TESTS := ${LIB_TESTS_NOT_OK}
+# LIB_TESTS := ${LIB_TESTS_NOT_OK}
 # LIB_TESTS := ${LIB_TESTS_OK}
-# LIB_TESTS := ${LIB_TESTS_ALL}
+LIB_TESTS := ${LIB_TESTS_ALL}
 
 # ----------------------------------------------------------------------
 # Actions to perform:
@@ -52,11 +52,12 @@ LIB_TESTS := ${LIB_TESTS_NOT_OK}
 # all:  all-clean all-build all-check
 # all:  all-clean all-build
 # all:  all-clean
-# all:  all-build
-all:  all-check
+all:  all-build
+# all:  all-check
  
+# "make all-clean" removes all derived objects from lib and test dirs:
 all-clean:
-	@for dir in ${LIBS_ALL}; do \
+	@for dir in ${LIBS_ALL} ${LIB_TESTS_ALL}; do \
           ( echo '= = all-clean = = = = = = = = = = = = = = = = = = = = = = = = = = = ='; \
             echo "$$dir"; \
             cd $$dir/. && \
@@ -64,6 +65,7 @@ all-clean:
           ) ; \
         done
 
+# "make all-build" builds the libs listed in ${LIBS}:
 all-build:
 	@for dir in ${LIBS}; do \
           ( echo '= = all-build = = = = = = = = = = = = = = = = = = = = = = = = = = = = ='; \
@@ -73,11 +75,12 @@ all-build:
           ) ; \
         done
 
+# "make all-check" builds and executes all test programs listed in ${LIB_TESTS}:
 all-check:
 	@for dir in ${LIB_TESTS}; do \
           ( echo '= = all-check = = = = = = = = = = = = = = = = = = = = = = = = = = = ='; \
             echo "$$dir"; \
             cd $$dir/. && \
-            make depend build-tests check ; \
+            make clean depend build-tests check ; \
           ) ; \
         done

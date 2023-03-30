@@ -1,28 +1,28 @@
 /* Tests univariate zero-finders with AA and IA test. */
-/* Last edited on 2023-02-17 19:06:03 by stolfi */
+/* Last edited on 2023-03-18 10:43:43 by stolfi */
 
 #define _GNU_SOURCE
-
-#include <fn1_zf.h>
-#include <fn1_functions.h>
-
-#include <aa.h>
-#include <ia.h>
-#include <flt.h>
-#include <affirm.h>
-#include <bool.h>
-
-#include <math.h>
-#include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#include <bool.h>
+#include <affirm.h>
+#include <flt.h>
+#include <ia.h>
+#include <aa.h>
+
+#include <fn1_functions.h>
+#include <fn1_zf.h>
 
 /*** INTERNAL PROTOTYPES ***/
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 /*** MAIN PROGRAM ***/
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { 
     aa_init();
     fprintf(stderr, "aa_stack_top = %p (%lud)\n", aa_top(), (long unsigned)aa_top());
@@ -30,7 +30,7 @@ int main(int argc, char **argv)
     /* Get function tag, and subd psteps: */
     affirm(argc == 3, "wrong number of arguments");
     char *ftag = argv[1];
-    int psteps = atoi(argv[2]);
+    int32_t psteps = atoi(argv[2]);
     fprintf(stderr, "function = %s plot steps = %d\n", ftag, psteps);
     
     /* Get function data: */

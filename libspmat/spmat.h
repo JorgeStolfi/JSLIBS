@@ -4,7 +4,7 @@
 
 #define spmat_H_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2012-12-21 00:15:46 by stolfilocal */
+/* Last edited on 2023-03-18 10:46:14 by stolfi */
 
 /* 
   !!! change sort_entries so that (+1,+2) means row-by-row ? !!!
@@ -67,10 +67,10 @@
     dspmat_t M = dspmat_new(50,200,400); // Guesing ~400 entries.
     
     // Store some elements into {M}, in arbitrary order:
-    int count = 0;
+    int32_t count = 0;
     while(! finished(...))
-      { int i = ...;
-        int j = ...;
+      { int32_t i = ...;
+        int32_t j = ...;
         double Mij = ...; 
         count = dspmat_add_element(&M, count, i, j, Mij);
       }
@@ -82,7 +82,7 @@
     dspmat_sort_entries(&M, +1, 0);
     
     // Print the elements, one row per line:
-    int r = -1; // Current row index.
+    int32_t r = -1; // Current row index.
     for (k = 0; k < M.ents; k++)
       { dspmat_entry_t *ek = &(M.e[k]);
         if (ek->row != r) { r = ek->row; printf("\n [%d] :", r); }
@@ -99,6 +99,7 @@
   specified size, freeing the unused space.
 */
 
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -530,8 +531,8 @@ void PREFIX##_extract_col
       dspmat_sort_entries(&M, +1, 0);  // Sort entries of {M} by row.
       dspmat_t R = dspmat_new(M->rows,M->cols,0);  // Matrix for result.
       double v[M.cols];
-      int pM = 0, pR = 0; // Scan the entries of {M} and {R}.
-      int i;              // Scans the rows of {M} and {R}.
+      int32_t pM = 0, pR = 0; // Scan the entries of {M} and {R}.
+      int32_t i;              // Scans the rows of {M} and {R}.
       for (i = 0; i < M.rows; i++)
         { pM = dspmat_extract_row(&M, pM, i, v);
           for (j = 0; j < M.cols; j++) { modify(v[j]); }
@@ -638,7 +639,7 @@ spmat_pos_t PREFIX##_fill_diagonal
 /* SORTING ENTRIES BY INDICES*/
 
 /* ------------------------------------------------------------
-void PREFIX##_sort_entries(MATRIX_TYPE *M, int orow, int ocol);
+void PREFIX##_sort_entries(MATRIX_TYPE *M, int32_t orow, int32_t ocol);
 ------------------------------------------------------------ */
   /* Rearranges the entries {M->e[0..M->ents-1]} in an order that depends
     on the integers {orow} and {ocol}. The function swaps whole entries
@@ -663,8 +664,8 @@ void PREFIX##_sort_entries(MATRIX_TYPE *M, int orow, int ocol);
 /* ------------------------------------------------------------
 void PREFIX##_sort_entries_ins
   ( MATRIX_TYPE *M, 
-    int orow, 
-    int ocol, 
+    int32_t orow, 
+    int32_t ocol, 
     spmat_pos_t posIni, 
     spmat_pos_t posLim
   );
@@ -744,13 +745,13 @@ void PREFIX##_condense(MATRIX_TYPE *A, PREFIX##_entry_condense_proc_t proc);
 
 /* AUXILIARY FUNCTIONS */
 
-int spmat_compare_indices
+int32_t spmat_compare_indices
   ( spmat_index_t arow, 
     spmat_index_t acol, 
     spmat_index_t brow, 
     spmat_index_t bcol, 
-    int orow, 
-    int ocol
+    int32_t orow, 
+    int32_t ocol
   );
   /* Compares two index pairs {arow,acol} and {brow,bcol}
     according to the partial order specified by {orow} and {ocol}.

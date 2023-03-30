@@ -3,7 +3,7 @@
 
 /* pst_scaling.h -- tools for scaling sample values. */
 /* Created 2006-04-20 by Jorge Stolfi, IC-UNICAMP. */
-/* Last edited on 2008-11-10 23:43:03 by stolfi */
+/* Last edited on 2023-03-19 15:27:58 by stolfi */
 
 #include <bool.h>
 #include <vec.h>
@@ -101,7 +101,7 @@ bool_t pst_scaling_parse_uniform(argparser_t *pp, bool_t next);
 
 /* UNIFORMIZATION AND COMPLETION OF SCALING PARAMETERS */
 
-void pst_scaling_fix_channels(int NC, int_vec_t *channel);
+void pst_scaling_fix_channels(int NC, int32_vec_t *channel);
   /* Adjusts a list of channel indices to have exactly {NC} elements.
     
     If the {*channel} vector has exactly {NC} channels, the procedure
@@ -153,7 +153,7 @@ void pst_scaling_fix_params
     double_vec_t *ctr,
     double_vec_t *wid,
     float_image_t *fim, 
-    int_vec_t *channel
+    int32_vec_t *channel
   );
   /* Adjusts a bunch of channel selection and scaling parameters for
     {NC} channels, as may be given in the command line.

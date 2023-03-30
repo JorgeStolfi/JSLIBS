@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of the {oct.h} procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2011-12-22 19:50:59 by stolfilocal */ 
+/* Last edited on 2023-03-18 10:52:36 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2007  State University of Campinas (UNICAMP)"
@@ -16,6 +16,7 @@
   "  " PROG_NAME ""
 
 #define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -31,20 +32,20 @@
 oct_arc_t make_map_klein(void);
   /* Builds a Klein bottle with two edges. */
 
-oct_arc_t make_map_star(int n);
+oct_arc_t make_map_star(int32_t n);
   /* Builds a star with {n} edges. */
 
-oct_arc_t make_map_pyramid(int n);
+oct_arc_t make_map_pyramid(int32_t n);
   /* Builds a pyramid with {n} sides. */
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 void putwr (oct_arc_t a);
 void do_tests(char *name, oct_arc_t m);
 void write_map(char *name, oct_arc_t a);
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { do_tests("klein", make_map_klein());
     do_tests("star4", make_map_star(4));
     do_tests("pyra4", make_map_pyramid(4));
@@ -56,11 +57,11 @@ void do_tests(char *name, oct_arc_t m)
     /* Check edge/tumblecode decomposition: */
     oct_edge_t E = oct_edge(m);
     assert(E != NULL);
-    fprintf(stderr, "sizeof(void *) = %d\n", (int)(sizeof(void*)));
-    fprintf(stderr, "sizeof(oct_edge_t) = %d\n", (int)(sizeof(oct_edge_t)));
-    fprintf(stderr, "sizeof(oct_arc_t) = %d\n", (int)(sizeof(oct_arc_t)));
+    fprintf(stderr, "sizeof(void *) = %d\n", (int32_t)(sizeof(void*)));
+    fprintf(stderr, "sizeof(oct_edge_t) = %d\n", (int32_t)(sizeof(oct_edge_t)));
+    fprintf(stderr, "sizeof(oct_arc_t) = %d\n", (int32_t)(sizeof(oct_arc_t)));
     write_map(name, m);
-    int it;
+    int32_t it;
     for (it = 0; it < 8; it++)
       { oct_bits_t t = it;
         oct_arc_t e = oct_orient(E, t);
@@ -157,10 +158,10 @@ oct_arc_t make_map_klein(void)
     return a;
   } 
      
-oct_arc_t make_map_star(int n)
+oct_arc_t make_map_star(int32_t n)
   { oct_arc_t a, b;
     a = oct_make_edge();
-    int k;
+    int32_t k;
     for(k = 1; k < n; k++)
       { b = oct_make_edge();
         oct_splice(a, b);
@@ -169,7 +170,7 @@ oct_arc_t make_map_star(int n)
     return a;
   } 
      
-oct_arc_t make_map_pyramid(int n)
+oct_arc_t make_map_pyramid(int32_t n)
   { /* Build an {n}-armed star: */
     oct_arc_t a = make_map_star(n);
     /* Build an {n}-sided ring: */
@@ -177,7 +178,7 @@ oct_arc_t make_map_pyramid(int n)
     b = oct_fflip(oct_rot(b));
     /* Stitch them together: */
     oct_arc_t c = oct_sym(a);
-    int k;
+    int32_t k;
     for(k = 0; k < n; k++)
       { oct_splice(b, c);
         c = oct_dnext(c);

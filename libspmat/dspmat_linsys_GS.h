@@ -4,7 +4,7 @@
 
 #define dspmat_linsys_GS_H_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-08-17 by J.Stolfi, UNICAMP */
-/* Last edited on 2009-08-31 21:40:56 by stolfi */
+/* Last edited on 2023-03-18 10:49:07 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -20,7 +20,7 @@ void dspmat_linsys_GS_solve
     dspmat_t *A, 
     double x[], 
     dspmat_size_t nx,
-    int max_iter, 
+    int32_t max_iter, 
     double omega,
     double abs_tol, 
     double rel_tol
@@ -44,7 +44,7 @@ void dspmat_inv_mul_GS
   ( dspmat_t *A, 
     dspmat_t *B, 
     dspmat_t *X,
-    int max_iter, 
+    int32_t max_iter, 
     double omega,
     double abs_tol, 
     double rel_tol

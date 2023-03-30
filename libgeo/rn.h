@@ -1,5 +1,5 @@
 /* rn.h --- operations on points and vectors of R^n */
-/* Last edited on 2021-08-20 16:07:37 by stolfi */
+/* Last edited on 2023-03-27 15:52:18 by stolfi */
 /* 
   Based on VectorN.mg, created  95-02-27 by J. Stolfi.
 */
@@ -50,7 +50,7 @@ void rn_weigh (int32_t n, double *a, double *w, double *r);
   /* Sets {r[i] := a[i] * w[i]}. */
 
 void rn_unweigh (int32_t n, double *a, double *w, double *r);
-  /* Sets {r[i] := a[i] / w[i]}. */
+  /* Sets {r[i] := a[i] / w[i]}.  */
   
 void rn_rot_axis (int32_t n, double *a, int32_t i, int32_t j, double ang, double *r);
   /* Sets {r} to {a} after a rotation that moves axis {i} towards 
@@ -77,6 +77,11 @@ double rn_dist_sqr (int32_t n, double *a, double *b);
 double rn_L_inf_dist (int32_t n, double *a, double *b);
   /* Returns the L-infinity distance between {a} and {b} 
     (max absolute diff). */
+
+double rn_abs_rel_diff (int32_t n, double *a, double *b, double abs_tol, double rel_tol);
+  /* Computes the maximum difference between each pair {a[i],b[i]},
+    divided by {abs_tol} or by {rel_tol} times the largest of the two
+    elements. See {abs_rel_diff} in {jsmath.h} for details. */
  
 double rn_dir (int32_t n, double *a, double *r);
   /* Sets {r} to {a} normalized to unit Euclidean length; 
@@ -118,6 +123,42 @@ double rn_mirror (int32_t n, double *a, double *u, double *r);
   /* Stores into {r} the vector {a} mirrored in the direction
     of the unit vector {u}, namely {a - 2*dot(a,u)*u}.
     Also returns the value of {dot(a,u)}. */
+    
+/* NON-UNIFORM DISTANCE FUNCTIONS */
+
+double rn_rad_rel_max_diff (int32_t n, double a[], double b[], double rad[]);
+  /* Given two {n}-vectors {a,b}, returns the maximum
+    differences between the coordinates, relative to the radius vector {rad[0..n-1]}.
+    That is, returns the maximum of {fabs(a[i] - b[i])/rad[i]} for all {i} in
+    {0..n-1}. 
+    
+    The radii {rad[0..n-1]} must be non-negative.  If any {rad[i]} is
+    zero, the elements {a[i]} and {b[i]} must be equal, and are ignored.
+    If all {rad}s are zero, or {n} is zero, the result is zero.
+    
+    If {a} or {b} is {NULL}, assumes a vector of {n} zeros.  If {rad}
+    is {NULL}, assumes a vector of ones -- so that the result is just
+    {rn_L_inf_dist(n,a,b)}. 
+    
+    Thus the axis-aligned, origin-centered box with with radius {rad[i]}
+    along axis {i} consists of all vectors {v} of {\RR^n} such that
+    {rn_rad_rel_max_diff(n,v,NULL,rad) <= 1}. */
+
+double rn_rad_rel_dist_sqr (int32_t n, double a[], double b[], double rad[]);
+  /* Given two {n}-vectors {a,b}, returns the total squared coordinate
+    differences between them, relative to the radius vector {rad[0..n-1]}. That
+    is, returns the sum of {((a[i] - b[i])/rad[i])^2} for all {i} in
+    {0..n-1}. 
+    
+    If {a} or {b} is {NULL}, assumes a vector of {n} zeros.  If {rad}
+    is {NULL}, assumes a vector of ones -- so that the result is just
+    {rn_dist_sqr(n,a,b)}. 
+    
+    Thus the axis-aligned, origin-centered ellipsoid with radius {rad[i]}
+    along axis {i} consists of all vectors {a} such 
+    that {rn_rad_rel_dist_sqr(n,a,NULL,rad) <= 1}. */
+
+/* RANDOM VECTOR GENERATION */
 
 void rn_throw_cube (int32_t n, double *r);
   /* Sets {r} to a uniformly random point of the {n}-cube {[-1 _ +1]^n}. */
@@ -134,13 +175,9 @@ void rn_throw_normal (int32_t n, double *r);
   /* Sets each coordinate {r[i]} to an independent Gaussian random
     number with zero mean and unit standard deviation. */
 
-double rn_abs_rel_diff(int32_t n, double *a, double *b, double abs_tol, double rel_tol);
-  /* Computes the maximum difference between each pair {a[i],b[i]},
-    divided by {abs_tol} or {rel_tol} times the largest of the two
-    elements. See {abs_rel_diff} in {jsmath.h} for details. */
-
 void rn_print (FILE *f, int32_t n, double *a);
-  /* Prints {a} on file {f}, with some default format. */
+  /* Prints {a} on file {f}, with some default format. The printout does
+    NOT end with newline. */
 
 void rn_gen_print
   ( FILE *f, int32_t n, double *a, 
@@ -151,6 +188,10 @@ void rn_gen_print
     The strings {lp}, {sep}, and {rp} are printed respectively before,
     between, and after all the coordinates of {a}.  When NULL, they default 
     to "%16.8e", "(", " ", and ")", respectively. */
+
+void rn_rad_rel_print(FILE *wr, int32_t n, double a[], double rad[]);
+  /* Prints to {wr} three lines with the vector {a[0..n-1]}, the radii {rad[0..n-1]},
+    and each {a[i]} divided by the corresponding {rad[i]}. */
 
 /* HEAP ALLOCATION */
 

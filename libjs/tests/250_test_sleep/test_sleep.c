@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {jstime.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2016-12-28 23:56:22 by stolfilocal */
+/* Last edited on 2023-03-26 11:05:55 by stolfi */
 /* Created on 2007-01-14 by J. Stolfi, UNICAMP */
 
 #define test_sleep_COPYRIGHT \
@@ -55,26 +55,26 @@ double getres_sleep(void);
 
 #define MAXSLEEPER 3
 
-char *get_sleeper_name(int it);
+char *get_sleeper_name(int32_t it);
   /* Returns the name of sleeper procedure number {it}. */
   
-double get_sleeper_resolution(int it);  
+double get_sleeper_resolution(int32_t it);  
   /* Returns the nominal resolution of sleeper procedure {it},
     in microseconds. */
   
-double call_sleeper_proc(int it, double tus);
+double call_sleeper_proc(int32_t it, double tus);
   /* Calls the sleeper procedure {it} to sleep for {tus} microseconds.
     Returns the time that was not slept due to early wakeup (as
     reported by that procedure itself). */
 
-void debug_sleeper_proc(int it);
+void debug_sleeper_proc(int32_t it);
   /* Debugs the sleeping function selected by {it}, 
     which should be a number in {0..MAXSLEEPER}. */
     
 /* MAIN */
 
-int main(int argc, char **argv)
-  { int it;
+int32_t main(int32_t argc, char **argv)
+  { int32_t it;
     fprintf(stderr, "=== testing the various Linux sleeping pills ===\n");
     for (it = 0; it <= MAXSLEEPER; it++) { debug_sleeper_proc(it); }
     return 0;
@@ -85,8 +85,8 @@ int main(int argc, char **argv)
 double sleep_nanosleep(clockid_t clk, double tus)
   { struct timespec buf, rem;
     double ts = tus / MILLION; /* Convert microseconds to seconds. */
-    long int s = (int)floor(ts); /* Integer number of seconds. */
-    long int n = (int)floor((ts - (double)s)*1e9 + 0.5); /* Fraction of second in nanoseconds. */
+    int64_t s = (int32_t)floor(ts); /* Integer number of seconds. */
+    int64_t n = (int32_t)floor((ts - (double)s)*1e9 + 0.5); /* Fraction of second in nanoseconds. */
     /* We should have {0 <= n <= BILLION}, but, just to be sure: */
     assert(n >= 0);
     while (n >= BILLION) { n -= BILLION; s++; }
@@ -94,7 +94,7 @@ double sleep_nanosleep(clockid_t clk, double tus)
     buf.tv_nsec = n;
     rem.tv_sec = rem.tv_nsec = 0; /* Just in case. */
     fprintf(stderr, "  %-22s   %17ld.%09ld sec\n", "trying to sleep for", buf.tv_sec, buf.tv_nsec);
-    long int err = clock_nanosleep(clk, TIMER_ABSTIME, &buf, &rem);
+    int64_t err = clock_nanosleep(clk, TIMER_ABSTIME, &buf, &rem);
     if (err) 
       { perror("**clock_nanosleep() failed"); 
         fprintf(stderr, "**result = %ld\n", err); 
@@ -106,7 +106,7 @@ double sleep_nanosleep(clockid_t clk, double tus)
 double getres_nanosleep(clockid_t clk)
   { /* The nominal resolution is that of {clock_gettime}: */
     struct timespec buf;
-    long int err = clock_getres(clk, &buf);
+    int64_t err = clock_getres(clk, &buf);
     if (err) 
       { perror("**clock_getres() failed"); 
         fprintf(stderr, "**result = %ld\n", err); 
@@ -117,9 +117,9 @@ double getres_nanosleep(clockid_t clk)
 
 double sleep_sleep(double tus)
   { double ts = tus / MILLION; /* Convert microseconds to seconds. */
-    unsigned int s = (int)ceil(ts); /* Integer number of seconds. */
+    uint32_t s = (int32_t)ceil(ts); /* Integer number of seconds. */
     fprintf(stderr, "  %-22s   %17u sec\n", "trying to sleep for", s);
-    unsigned int r = sleep(s);
+    uint32_t r = sleep(s);
     return ((double)r)*MILLION;
   }
 
@@ -132,9 +132,9 @@ double sleep_usleep(double tus)
   { if (tus >= MILLION)
       { fprintf(stderr, "  cannot sleep that much!\n"); }
     else
-      { unsigned int us = (int)ceil(tus); /* Integer number of microseconds. */
+      { uint32_t us = (int32_t)ceil(tus); /* Integer number of microseconds. */
         fprintf(stderr, "  %-22s   %17u.%06d sec\n", "trying to sleep for", 0, us);
-        int res = usleep(us);
+        int32_t res = usleep(us);
         if (res < 0)
           { perror("**usleep() failed"); 
             fprintf(stderr, "**result = %d\n", res); 
@@ -151,7 +151,7 @@ double getres_usleep(void)
 
 /* GENERIC SLEEPER FUNCTIONS */
 
-char *get_sleeper_name(int it)
+char *get_sleeper_name(int32_t it)
   { switch(it)
       { case 0: return "nanosleep with CLOCK_MONOTONIC"; break;
         case 1: return "nanosleep with CLOCK_REALTIME"; break;
@@ -161,7 +161,7 @@ char *get_sleeper_name(int it)
       }
   }
  
-double get_sleeper_resolution(int it) 
+double get_sleeper_resolution(int32_t it) 
   { switch(it)
       { case  0: return getres_nanosleep(CLOCK_MONOTONIC);
         case  1: return getres_nanosleep(CLOCK_REALTIME);
@@ -171,7 +171,7 @@ double get_sleeper_resolution(int it)
       }
   }
  
-double call_sleeper_proc(int it, double tus)
+double call_sleeper_proc(int32_t it, double tus)
   { switch(it)
       { case  0: return sleep_nanosleep(CLOCK_MONOTONIC, tus);
         case  1: return sleep_nanosleep(CLOCK_REALTIME, tus);
@@ -183,7 +183,7 @@ double call_sleeper_proc(int it, double tus)
 
 /* ANALYSIS PROCS */
 
-void debug_sleeper_proc(int it)
+void debug_sleeper_proc(int32_t it)
   { char *name = get_sleeper_name(it);
     double res = get_sleeper_resolution(it);
     fprintf(stderr, "sleeper[%d] = %s\n", it, name);

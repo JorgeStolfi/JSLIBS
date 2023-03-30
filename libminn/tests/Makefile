@@ -1,7 +1,6 @@
-# Last edited on 2019-04-09 17:41:23 by jstolfi
+# Last edited on 2023-03-24 12:50:36 by stolfi
 
-IGNOREDIRS := \
-  test_sve_img_match
+IGNOREDIRS :=
   
 all: check
 

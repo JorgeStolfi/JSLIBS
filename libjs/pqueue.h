@@ -1,5 +1,5 @@
 /* pqueue - priority queue of integers with real values. */
-/* Last edited on 2017-01-02 21:51:59 by jstolfi */
+/* Last edited on 2023-03-18 11:15:41 by stolfi */
 
 #ifndef pqueue_H
 #define pqueue_H
@@ -56,7 +56,7 @@ typedef uint32_t pqueue_count_t;
 pqueue_count_t pqueue_count(pqueue_t *Q);
   /* The number of items currently in {Q}. Time: {O(1)}.  */
 
-int pqueue_order(pqueue_t *Q);
+int32_t pqueue_order(pqueue_t *Q);
   /* The ordering of items in {Q}: +1 means INCREASING (default), 
     -1 means DECREASING. Time: {O(1)}.  */
 
@@ -88,7 +88,7 @@ void pqueue_delete(pqueue_t *Q, pqueue_item_t z);
 void pqueue_set_value(pqueue_t *Q, pqueue_item_t z, pqueue_value_t v);
   /* Sets the value of item {z} to {v}. Time: {O(log(n))}. */
 
-void pqueue_set_order(pqueue_t *Q, int order);
+void pqueue_set_order(pqueue_t *Q, int32_t order);
   /* Specifies the ordering of elements for {pqueue_head}.
     Time: {O(n log n)}. */
 
@@ -120,7 +120,7 @@ void pqueue_realloc(pqueue_t *Q, pqueue_count_t nmax, pqueue_item_t zlim);
 
 /* HANDY TOOLS */
 
-int pqueue_dblcmp(pqueue_value_t x, pqueue_value_t y);
+int32_t pqueue_dblcmp(pqueue_value_t x, pqueue_value_t y);
   /* Returns -1, 0, or +1 depending on whether the value {x} is less than,
     equal to, or greater than {y}. */
 

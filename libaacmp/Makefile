@@ -1,5 +1,5 @@
-# Last edited on 2007-11-01 17:28:57 by stolfi
+# Last edited on 2023-03-20 01:12:56 by stolfi
 
-LIBNAME = libaa
+LIBNAME = libaacmp
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB.make

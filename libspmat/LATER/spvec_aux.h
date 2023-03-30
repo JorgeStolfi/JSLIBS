@@ -1,13 +1,15 @@
 /* Auxiliary definitions for sparse vectors */
-/* Last edited on 2008-03-29 14:27:04 by stolfi */
+/* Last edited on 2023-03-18 10:50:04 by stolfi */
 
 #ifndef spvec_aux_H
 #define spvec_aux_H
 
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <stdlib.h>
+
 #include <bool.h>
 #include <ref.h>
-#include <stdint.h>
 
 /* UNTYPED SPARSE VECTORS 
   
@@ -28,7 +30,7 @@ typedef struct spvec_t /* Untyped sparse vector descriptor. */
 
 /* PROCEDURES */
 
-spvec_t spvec_new(int nen, size_t esz);
+spvec_t spvec_new(int32_t nen, size_t esz);
   /* Allocates a new sparse vector with {nen} elements of size {esz}.
     Bombs out if there is no space for the request. 
     If {nen == 0}, the result has {en == NULL}. */

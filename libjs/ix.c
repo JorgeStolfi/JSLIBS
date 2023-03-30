@@ -1,5 +1,5 @@
 /* See indexing.h */
-/* Last edited on 2021-06-13 12:27:11 by jstolfi */
+/* Last edited on 2023-03-18 11:22:19 by stolfi */
 /* Copyright © 2003 by Jorge Stolfi, from University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
@@ -609,7 +609,7 @@ sign_t ix_compare ( ix_dim_t d, const ix_index_t ixa[], const ix_index_t ixb[], 
     return ZER;
   }
     
-int ix_sync_level 
+int32_t ix_sync_level 
   ( ix_dim_t d, 
     const ix_size_t sz[], 
     const ix_index_t ix[], 
@@ -776,7 +776,7 @@ bool_t ix_sort_steps
                 if (bpwP != NULL) { (*bpwP) = (*bpwP) - sti*(szi-1); }
               }
             /* Save {szi,sti} in increasing order: */
-            int jw = dw;
+            int32_t jw = dw;
             while ((jw > 0) && (stw[jw-1] > sti))
               { stw[jw] = stw[jw-1];
                 szw[jw] = szw[jw-1];
@@ -873,10 +873,10 @@ ix_pos_t ix_packed_position
   { ix_pos_t p = bp;
     if (d == 0) { return p; }
     ix_step_t sti = 1;
-    int k = 0;
+    int32_t k = 0;
     while (TRUE)
       { /* Grab the index {i} in fast-to-slow order: */
-        int i = (ixor == ix_order_F ? k : (ix_axis_t)(d - 1 - k));
+        int32_t i = (ixor == ix_order_F ? k : (ix_axis_t)(d - 1 - k));
         /* Check validity of index {ix[i]}: */
         if ((ix[i] < 0) || (ix[i] >= sz[i])) { return ix_pos_NONE; }
         /* Update position {p} to include index {ix[i]}: */
@@ -915,7 +915,7 @@ void ix_packed_steps
         ix_count_t sti = 1;
         for (ix_axis_t k = 0; k < d; k++)
           { /* Grab the index {i} in fast-to-slow order: */
-            int i = (ixor == ix_order_F ? k : (ix_axis_t)(d - 1 - k));
+            int32_t i = (ixor == ix_order_F ? k : (ix_axis_t)(d - 1 - k));
             /* Grab the size along axis {i}: */
             ix_size_t szi = sz[i]; 
             if (szi == 1) 
@@ -946,7 +946,7 @@ void ix_packed_indices
     /* assert(dp >= 0); */
     for (ix_axis_t k = 0; k < d; k++)
       { /* Grab the index {i} in fast-to-slow order: */
-        int i = (ixor == ix_order_F ? k : (ix_axis_t)(d - 1 - k));
+        int32_t i = (ixor == ix_order_F ? k : (ix_axis_t)(d - 1 - k));
         /* Grab the size along axis {i}: */
         ix_size_t szi = sz[i]; 
         assert(szi > 0);
@@ -1001,6 +1001,6 @@ ix_index_t ix_reduce ( ix_index_t i, ix_size_t N, ix_reduction_t red )
 
 void ix_reduce_range ( ix_index_t i0, ix_size_t m, ix_size_t N, ix_reduction_t red, ix_index_t i[] )
   { 
-    for (int k = 0; k < m; k++) { i[k] = ix_reduce(i0+k, N, red); }
+    for (int32_t k = 0; k < m; k++) { i[k] = ix_reduce(i0+k, N, red); }
   }
 

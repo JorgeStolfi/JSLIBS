@@ -1,22 +1,24 @@
 /* See {zf.h} */
-/* Last edited on 2023-02-17 18:36:39 by stolfi */
+/* Last edited on 2023-03-18 10:41:00 by stolfi */
+
+#define _GNU_SOURCE
+#include <stdint.h>
+#include <stdio.h>
+#include <assert.h>
+#include <math.h>
+
+#include <bool.h>
+#include <affirm.h>
+#include <ia.h>
+#include <flt.h>
 
 #include <zf.h>
-
-#include <flt.h>
-#include <ia.h>
-#include <affirm.h>
-#include <bool.h>
-
-#include <math.h>
-#include <assert.h>
-#include <stdio.h>
 
 typedef struct zf_stack_entry_t {
     Interval xr;
     Interval yr;
     zf_kind_t kind;
-    int level;
+    int32_t level;
   } zf_stack_entry_t;
 
 /*** PROTOTYPES FOR INTERNAL PROCEDURES ***/
@@ -53,9 +55,9 @@ bool_t zf_output_interval
 void zf_split_and_stack_trapezoid
   ( ia_trapez_t *tr,
     Interval yr,
-    int level,
+    int32_t level,
     zf_stack_entry_t **topp,  /* Top-of-stack entry */
-    int *nstp               /* Num of entries on stack */
+    int32_t *nstp               /* Num of entries on stack */
   );
   /* Pushes back a trapezoid onto the stack, whole or in pieces.
     
@@ -77,9 +79,9 @@ void zf_stack_interval
   ( Interval *xr,
     Interval *yr,
     zf_kind_t kind,
-    int level,
+    int32_t level,
     zf_stack_entry_t **topp,
-    int *nstp
+    int32_t *nstp
   );
   /* Pushes the interval {xr} and its properties ({yr}, {kind}, {level})
     onto the stack, merging it with the top entry if possible. */
@@ -104,7 +106,7 @@ zf_kind_t zf_enum_zeros
     double epsilon,
     double delta
   )
-  { int nst = 0;                            /* Count of stacked intervals */
+  { int32_t nst = 0;                            /* Count of stacked intervals */
     zf_stack_entry_t stack[STACKSIZE];      /* Stacked intervals */
     zf_stack_entry_t *top = &(stack[0])-1;  /* The top-of-stack entry */
 
@@ -112,7 +114,7 @@ zf_kind_t zf_enum_zeros
     Interval y_this = ia_full();  /* The range of defined values of F in {x_this} */
 
     zf_kind_t k_this = zf_kind_mixed;  /* The kind of {x_this}. */
-    int l_this = 0;                    /* Generation number of {x_this} */
+    int32_t l_this = 0;                    /* Generation number of {x_this} */
     
     Interval x_prev = (Interval) { One, Zero };   /* Previous interval */
     Interval y_prev;   /* Its range of values */
@@ -343,9 +345,9 @@ zf_kind_t zf_classify_interval
 void zf_split_and_stack_trapezoid
   ( ia_trapez_t *tr,
     Interval yr,
-    int level,
+    int32_t level,
     zf_stack_entry_t **topp,
-    int *nstp
+    int32_t *nstp
   )
   { /* Shrink {yr} ito tight-fit {tr}: */
     yr = ia_meet(yr, ia_join(tr->yxlo, tr->yxhi));
@@ -367,7 +369,7 @@ void zf_split_and_stack_trapezoid
       { /* At this point the trapezoid {tr} includes zero, so it must be split. */
         affirm ((yr.lo <= Zero) && (yr.hi >= Zero), "zf_split_trapezoid: bad interval");
         Interval xm, ym;
-        int l_new = level+1;
+        int32_t l_new = level+1;
         Float xsplit;
         
         zf_refine_interval(tr, &xm, &ym);
@@ -497,12 +499,12 @@ void zf_stack_interval
   ( Interval *xr,
     Interval *yr,
     zf_kind_t kind,
-    int level,
+    int32_t level,
     zf_stack_entry_t **topp,
-    int *nstp
+    int32_t *nstp
   )
   { zf_stack_entry_t *top = *topp;
-    int nst = *nstp;
+    int32_t nst = *nstp;
     if (nst > 0)
       { if ((kind == top->kind) && (kind != zf_kind_mixed))
           { /* Merge {xr} with top-of-stack interval */

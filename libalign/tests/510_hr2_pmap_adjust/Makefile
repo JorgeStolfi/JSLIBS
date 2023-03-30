@@ -1,4 +1,4 @@
-# Last edited on 2022-02-28 16:18:37 by stolfi
+# Last edited on 2023-03-20 21:35:58 by stolfi
 
 PROG = hr2_pmap_adjust_test
 
@@ -13,22 +13,24 @@ JS_LIBS :=  \
   libjs.a
 
 # Test runs
-# Format: ${TAG}/${AM00}:${AM01}:${AM10}:${AM11}:${AD0}:${AD1}/${RM00}:${RM01}:${RM10}:${RM11}:${RD0}:${RD1}
-# where ${AM00}...${AD1} is the target optimum, ${RM00}..${RD1} is the max deviation in 
+# Format: ${TAG}/${A00}:${A01}:${A02}:${A10}:...:${A22}/${R00}:${R01}:${R02}:${R10}:...:${R22}
+# where ${A00}...${A22} is the target optimum, ${R00}..${R22} is the max deviation in 
 # each element.
 
 TESTS := \
-  scaleonly/10:2:-2:10:20:30/5:0:0:5:0:0 \
-  shearonly/10:2:-2:10:20:30/0:5:5:0:0:0 \
-  matonly/10:2:-2:10:20:30/5:5:5:5:0:0 \
-  everything/10:2:-2:10:20:30/5:5:5:5:5:5
+  scaleonly/1:10:20:0:10:2:0:-2:10/0:0:0:0:5:0:0:0:5 \
+  shearonly/1:10:20:0:10:2:0:-2:10/0:0:0:0:0:5:0:5:0 \
+  matonly/1:10:20:0:10:2:0:-2:10/0:0:0:0:5:5:0:5:5 \
+  affine/1:10:20:0:10:2:0:-2:10/0:5:5:0:5:5:0:5:5 \
+  persp/1:10:20:0:10:2:0:-2:10/0:0:0:5:0:0:5:0:0
 
 ALL_TESTS := \
-  disponly/10:2:-3:12:20:30/0:0:0:0:5:5 \
-  scaleonly/10:2:-2:10:20:30/5:0:0:5:0:0 \
-  shearonly/10:2:-2:10:20:30/0:5:5:0:0:0 \
-  matonly/10:2:-2:10:20:30/5:5:5:5:0:0 \
-  everything/10:2:-2:10:20:30/5:5:5:5:5:5
+  disponly/1:12:20:0:10:2:0:-3:12/0:5:5:0:0:0:0:0:0 \
+  scaleonly/1:10:20:0:10:2:0:-2:10/0:0:0:0:5:0:0:0:5 \
+  shearonly/1:10:20:0:10:2:0:-2:10/0:0:0:0:0:5:0:5:0 \
+  matonly/1:10:20:0:10:2:0:-2:10/0:0:0:0:5:5:0:5:5 \
+  affine/1:10:20:0:10:2:0:-2:10/0:5:5:0:5:5:0:5:5 \
+  persp/1:10:20:0:10:2:0:-2:10/0:0:0:5:0:0:5:0:0
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 

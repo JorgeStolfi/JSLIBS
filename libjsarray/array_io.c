@@ -2,7 +2,7 @@
 
 #define array_io_C_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2020-10-03 21:10:18 by jstolfi */
+/* Last edited on 2023-03-18 11:03:26 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -29,7 +29,7 @@ void array_write_header
     char *type, 
     char *cmt, 
     ix_descr_t *D,
-    int dix[]
+    int32_t dix[]
   )
   {
     ix_dim_t na = D->na;
@@ -38,11 +38,11 @@ void array_write_header
     filefmt_write_header(wr, type, array_FILE_VERSION);
 
     /* Write comment lines, if any: */
-    int ind = 0; /* Comment indentation. */
+    int32_t ind = 0; /* Comment indentation. */
     if (cmt != NULL) { filefmt_write_comment(wr, cmt, ind, '#'); }
 
     /* Write the effective dimension {na} and the respective sizes: */
-    int ia;
+    int32_t ia;
     fprintf(wr, "axes = %d\n", na);
     fprintf(wr, "size =");
     for (ia = 0; ia < na; ia++)
@@ -84,7 +84,7 @@ void array_read_header
     /* Read the size vector: */
     ix_size_t sz[na];
     nget_name_eq(rd, "size");
-    int i;
+    int32_t i;
     for (i = 0; i < na; i++)
       { uint64_t sz64 = (i < na ? fget_uint64(rd, 10) : 1);
         demand(sz64 <= ix_MAX_SIZE, "size too large");

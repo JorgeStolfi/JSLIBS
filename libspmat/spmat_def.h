@@ -4,9 +4,10 @@
 
 #define spmat_def_H_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2009-08-31 21:49:45 by stolfi */
+/* Last edited on 2023-03-18 10:46:34 by stolfi */
 
 /* These inclusions are necessary if this file is included or compiled on its own: */
+#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -159,13 +160,13 @@
     )
 
 #define spmat_DECLARE_sort_entries(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
-  void PREFIX##_sort_entries(MATRIX_TYPE *M, int orow, int ocol)
+  void PREFIX##_sort_entries(MATRIX_TYPE *M, int32_t orow, int32_t ocol)
 
 #define spmat_DECLARE_sort_entries_ins(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
   void PREFIX##_sort_entries_ins \
     ( MATRIX_TYPE *M, \
-      int orow, \
-      int ocol, \
+      int32_t orow, \
+      int32_t ocol, \
       spmat_pos_t posIni, \
       spmat_pos_t posLim \
     )
@@ -271,7 +272,7 @@
   spmat_DECLARE_copy(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
     { N->rows = M->rows; N->cols = M->cols; \
       PREFIX##_trim(N, M->ents); \
-      int k; \
+      int32_t k; \
       for (k = 0; k < M->ents; k++) { N->e[k] = M->e[k]; } \
     }
 
@@ -316,7 +317,7 @@
       demand(nv <= spmat_MAX_COLS, "too many cols"); \
       if (row >= M->rows) { M->rows = row + 1; } \
       if (nv > M->cols) { M->cols = nv; } \
-      int k; \
+      int32_t k; \
       for (k = 0; k < nv; k++) \
         { ELEM_TYPE *vk = &(val[k]); \
           if (! PREFIX##_elem_is_trivial(*vk)) \
@@ -334,7 +335,7 @@
       demand(nv <= spmat_MAX_ROWS, "too many rows"); \
       if (nv > M->rows) { M->rows = nv; } \
       if (col >= M->cols) { M->cols = col + 1; } \
-      int k; \
+      int32_t k; \
       for (k = 0; k < nv; k++) \
         { ELEM_TYPE *vk = &(val[k]); \
           if (! PREFIX##_elem_is_trivial(*vk)) \
@@ -350,7 +351,7 @@
   spmat_DECLARE_add_diagonal(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
     { row = row % M->rows; \
       col = col % M->cols; \
-      int k; \
+      int32_t k; \
       for (k = 0; k < nv; k++) \
         { ELEM_TYPE *vk = &(val[k]); \
           if (! PREFIX##_elem_is_trivial(*vk)) \
@@ -369,7 +370,7 @@
     { if (PREFIX##_elem_is_trivial(val)) { return pos; } \
       row = row % M->rows; \
       col = col % M->cols; \
-      int k; \
+      int32_t k; \
       for (k = 0; k < nv; k++) \
         { PREFIX##_expand(M, pos); \
           M->e[pos] = (PREFIX##_entry_t){ .row = row, .col = col, .val = val }; \
@@ -383,7 +384,7 @@
 #define spmat_IMPLEMENT_extract_row(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
   spmat_DECLARE_extract_row(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
     { demand(nv == M->cols, "incompatible vector size"); \
-      int k; \
+      int32_t k; \
       for (k = 0; k < nv; k++) { val[k] = PREFIX##_trivial_elem; } \
       while (pos < M->ents) \
         { PREFIX##_entry_t *eP = &(M->e[pos]); \
@@ -398,7 +399,7 @@
 #define spmat_IMPLEMENT_extract_col(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
   spmat_DECLARE_extract_col(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
     { demand(nv == M->rows, "incompatible vector size"); \
-      int k; \
+      int32_t k; \
       for (k = 0; k < nv; k++) { val[k] = PREFIX##_trivial_elem; } \
       while (pos < M->ents) \
         { PREFIX##_entry_t *eP = &(M->e[pos]); \
@@ -439,8 +440,8 @@
 #define spmat_IMPLEMENT_sort_entries(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
   spmat_DECLARE_sort_entries(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
     { if ((orow == 0) && (ocol == 0)) { return; } \
-      auto int cmp(const void *avP, const void *bvP); \
-      int cmp(const void *avP, const void *bvP) \
+      auto int32_t cmp(const void *avP, const void *bvP); \
+      int32_t cmp(const void *avP, const void *bvP) \
         { const PREFIX##_entry_t *aP = avP; \
           const PREFIX##_entry_t *bP = bvP; \
           return spmat_compare_indices \
@@ -456,7 +457,7 @@
         { spmat_pos_t k = j, p = k - 1; \
           PREFIX##_entry_t *ek = &(M->e[k]); \
           PREFIX##_entry_t *ep = &(M->e[p]); \
-          int cmp = spmat_compare_indices \
+          int32_t cmp = spmat_compare_indices \
             (ep->row, ep->col, ek->row, ek->col, orow, ocol); \
           if (cmp > 0) \
             { /* Entry {*ek} is out of order, insert it in its proper place: */ \
@@ -494,7 +495,7 @@
       while ((posA < A->ents) || (posB < B->ents)) \
         { PREFIX##_entry_t *aP = (posA < A->ents ? &(A->e[posA]) : NULL); \
           PREFIX##_entry_t *bP = (posB < B->ents ? &(B->e[posB]) : NULL); \
-          int cmp; /* Which entry comes first? */ \
+          int32_t cmp; /* Which entry comes first? */ \
           if (aP == NULL) \
             { cmp = +1; } \
           else if (bP == NULL) \

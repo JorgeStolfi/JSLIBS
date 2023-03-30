@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of the {quad.h} procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2011-12-22 19:47:06 by stolfilocal */ 
+/* Last edited on 2023-03-18 10:52:55 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2007  State University of Campinas (UNICAMP)"
@@ -16,6 +16,7 @@
   "  " PROG_NAME ""
 
 #define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -31,20 +32,20 @@
 quad_arc_t make_map_torus(void);
   /* Builds a Torus bottle with two edges. */
 
-quad_arc_t make_map_star(int n);
+quad_arc_t make_map_star(int32_t n);
   /* Builds a star with {n} edges. */
 
-quad_arc_t make_map_pyramid(int n);
+quad_arc_t make_map_pyramid(int32_t n);
   /* Builds a pyramid with {n} sides. */
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 void putwr (quad_arc_t a);
 void do_tests(char *name, quad_arc_t m);
 void write_map(char *name, quad_arc_t a);
 
 /* IMPLEMENTATIONS: */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   { do_tests("torus", make_map_torus());
     do_tests("star4", make_map_star(4));
     do_tests("pyra4", make_map_pyramid(4));
@@ -56,11 +57,11 @@ void do_tests(char *name, quad_arc_t m)
     /* Check edge/tumblecode decomposition: */
     quad_edge_t E = quad_edge(m);
     assert(E != NULL);
-    fprintf(stderr, "sizeof(void *) = %d\n", (int)(sizeof(void*)));
-    fprintf(stderr, "sizeof(quad_edge_t) = %d\n", (int)(sizeof(quad_edge_t)));
-    fprintf(stderr, "sizeof(quad_arc_t) = %d\n", (int)(sizeof(quad_arc_t)));
+    fprintf(stderr, "sizeof(void *) = %d\n", (int32_t)(sizeof(void*)));
+    fprintf(stderr, "sizeof(quad_edge_t) = %d\n", (int32_t)(sizeof(quad_edge_t)));
+    fprintf(stderr, "sizeof(quad_arc_t) = %d\n", (int32_t)(sizeof(quad_arc_t)));
     write_map(name, m);
-    int it;
+    int32_t it;
     for (it = 0; it < 4; it++)
       { quad_bits_t t = it;
         quad_arc_t e = quad_orient(E, t);
@@ -122,10 +123,10 @@ quad_arc_t make_map_torus(void)
     return a;
   } 
      
-quad_arc_t make_map_star(int n)
+quad_arc_t make_map_star(int32_t n)
   { quad_arc_t a, b;
     a = quad_make_edge();
-    int k;
+    int32_t k;
     for(k = 1; k < n; k++)
       { b = quad_make_edge();
         quad_splice(a, b);
@@ -134,7 +135,7 @@ quad_arc_t make_map_star(int n)
     return a;
   } 
      
-quad_arc_t make_map_pyramid(int n)
+quad_arc_t make_map_pyramid(int32_t n)
   { /* Build an {n}-armed star: */
     quad_arc_t a = make_map_star(n);
     /* Build an {n}-sided ring: */
@@ -142,7 +143,7 @@ quad_arc_t make_map_pyramid(int n)
     b = quad_rot(b);
     /* Stitch them together: */
     quad_arc_t c = quad_sym(a);
-    int k;
+    int32_t k;
     for(k = 0; k < n; k++)
       { quad_splice(b, c);
         c = quad_dnext(c);

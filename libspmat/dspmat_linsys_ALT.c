@@ -2,7 +2,7 @@
 
 #define dspmat_linsys_ALT_solve_C_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2009-08-31 21:43:07 by stolfi */
+/* Last edited on 2023-03-18 10:49:40 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -100,7 +100,7 @@ void dspmat_linsys_ALT_solve
     dspmat_t *A, 
     double x[], 
     dspmat_size_t nx,
-    int max_iter, 
+    int32_t max_iter, 
     double omega,
     double abs_tol, 
     double rel_tol
@@ -145,7 +145,7 @@ void dspmat_linsys_ALT_solve
     /* Clear the vector {x}: */
     for (col = 0; col < n; col++) { x[col] = 0.0; }
     /* Iteration loop: */
-    int iter = 0;
+    int32_t iter = 0;
     while (TRUE)
       { /* Check number of iterations: */
         if (iter >= max_iter) 

@@ -2,12 +2,15 @@
 
 #define spmat_linalg_C_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2009-08-31 21:48:46 by stolfi */
+/* Last edited on 2023-03-18 10:48:07 by stolfi */
 
-#include <spmat.h>
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdint.h>
+
 #include <affirm.h>
+
+#include <spmat.h>
 
 void *spmat_alloc(spmat_count_t ents, size_t esz)
   { demand(ents <= spmat_MAX_ENTS, "too many entries");
@@ -45,16 +48,16 @@ void spmat_trim(void **eP, spmat_count_t *entsP, spmat_count_t ents, size_t esz)
       }
   }
 
-int spmat_compare_indices
+int32_t spmat_compare_indices
   ( spmat_index_t arow, 
     spmat_index_t acol, 
     spmat_index_t brow, 
     spmat_index_t bcol, 
-    int orow, 
-    int ocol
+    int32_t orow, 
+    int32_t ocol
   )
-  { unsigned int zrow = (orow < 0 ? -orow : orow);
-    unsigned int zcol = (ocol < 0 ? -ocol : ocol);
+  { uint32_t zrow = (orow < 0 ? -orow : orow);
+    uint32_t zcol = (ocol < 0 ? -ocol : ocol);
     demand(zrow != zcol, "ambiguous sorting criterion");
     if (zrow > zcol)
       { /* Row index is more important: */

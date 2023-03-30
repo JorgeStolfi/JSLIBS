@@ -1,5 +1,5 @@
 /* Infinite multi-dimensional arrays. */
-/* Last edited on 2021-06-22 13:43:03 by jstolfi */
+/* Last edited on 2023-03-18 11:31:23 by stolfi */
 
 /*  
   INFINITE ARRAYS
@@ -25,9 +25,12 @@
 #ifndef ppv_grid_H
 #define ppv_grid_H
 
+#define _GNU_SOURCE
+#include <stdint.h>
+#include <stdio.h>
+
 #include <ppv_types.h>
 #include <ppv_array.h>
-#include <stdio.h>
 
 /* !!! Give up on all these.  Keep only {NONE} (or {UNIF}, or {CLIP}) and {PREP}. !!! */
 
@@ -259,7 +262,7 @@ bool_t ppv_grid_descriptor_is_valid ( ppv_grid_t *A, bool_t die );
     For this implementation, the word size {A.bpw} must be 8, 16, or
     32. The implementation below assumes that words can be directly
     addressed by a pointer of the appropriate type, and that an
-    {unsigned int} variable is at least 32 bits long.
+    {uint32_t} variable is at least 32 bits long.
 
   Packing of "small" samples
 

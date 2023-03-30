@@ -1,16 +1,16 @@
 /* See aa_compile.h */
-/* Last edited on 2021-06-26 22:11:22 by jstolfi */
+/* Last edited on 2023-03-20 00:57:44 by stolfi */
 
 #define _GNU_SOURCE_
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 
-#include <aa_compile.h>
-
 #include <ia.h>
 #include <affirm.h>
 #include <pcode.h>
+
+#include <aa_compile.h>
 
 /* INTERNAL PROTOTYPES */
 
@@ -1044,7 +1044,7 @@ void aa_generate_op_const
   )
   { if (ie != -1)
       { /* Large integer, we have to include a rounding term. */
-        fprintf(c_file, "    %s_range = ia_from_int32_t(%d);\n", name_v, arg);
+        fprintf(c_file, "    %s_range = ia_from_int(%d);\n", name_v, arg);
         /* The code below should neither oferflow nor underflow: */
         fprintf(c_file, "    ROUND_NEAR;\n");
         fprintf(c_file, "    %s_ctr = (Half * %s_range.lo) + (Half * %s_range.hi);\n",

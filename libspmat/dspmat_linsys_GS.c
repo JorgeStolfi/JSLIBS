@@ -2,7 +2,7 @@
 
 #define dspmat_linsys_GS_C_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2009-08-31 21:43:19 by stolfi */
+/* Last edited on 2023-03-18 10:49:20 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -93,7 +93,7 @@ void dspmat_linsys_GS_solve
     dspmat_t *A, 
     double x[],
     dspmat_size_t nx,
-    int max_iter, 
+    int32_t max_iter, 
     double omega,
     double abs_tol, 
     double rel_tol
@@ -111,7 +111,7 @@ void dspmat_linsys_GS_solve
     /* Clear the vector {x}: */
     for (col = 0; col < nA; col++) { x[col] = 0.0; }
     /* Gauss-Seidel loop: */
-    int iter = 0;
+    int32_t iter = 0;
     while (iter < max_iter)
       { /* Gauss-Seidel pass, recomputes {x[0..nA-1]}: */
         if (debug_level >= 2) { fprintf(stderr, "---------------------------\n"); }
@@ -128,7 +128,7 @@ void dspmat_inv_mul_GS
   ( dspmat_t *A, 
     dspmat_t *B, 
     dspmat_t *X,
-    int max_iter, 
+    int32_t max_iter, 
     double omega,
     double abs_tol, 
     double rel_tol
@@ -142,10 +142,10 @@ void dspmat_inv_mul_GS
     X->rows = A->rows;
     X->cols = B->cols;
     
-    int nb = B->rows; 
+    int32_t nb = B->rows; 
     double *b = notnull(malloc(nb * sizeof(double)), "no mem"); /* Will hold a col of {B}. */
     
-    int nx = X->rows;
+    int32_t nx = X->rows;
     double *x = notnull(malloc(nx * sizeof(double)), "no mem"); /* Will hold a col of {X}. */
     
     /* Sort the entries of {B} by column: */
@@ -158,7 +158,7 @@ void dspmat_inv_mul_GS
     /* Process column by column: */
     dspmat_pos_t posB = 0;
     dspmat_pos_t posX = 0;
-    int j;
+    int32_t j;
     if (debug_level > 0) { fprintf(stderr, "  processing columns o {B}:"); }
     for (j = 0; j < B->cols; j++)
       { dspmat_pos_t oposB = posB;

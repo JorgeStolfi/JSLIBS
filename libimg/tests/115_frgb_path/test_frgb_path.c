@@ -2,7 +2,7 @@
 #define PROG_DESC "test of various functions from {frgb_path.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-07 16:56:23 by stolfi */
+/* Last edited on 2023-03-17 21:15:02 by stolfi */
 /* Created on 2023-03-03 by J. Stolfi, UNICAMP */
 
 #define test_frgb_ops_C_COPYRIGHT \
@@ -149,7 +149,7 @@ void test_frgb_path(char *tag, path_proc_t path, int32_t cycles, int32_t style)
     for (int32_t iy = 0; iy <= N; iy++)
       { double s = ((double)iy)/((double)N);
         if (tag[0] == 's') { s = 2*s - 1; }
-        qfrgb_t f = path(s, cycles, style);
+        frgb_t f = path(s, cycles, style);
         frgb_t g = f; frgb_to_YUV(&g); frgb_YUV_to_YHS(&g);
         fprintf(txwr, "%5d %+12.8f", iy, s);
         fprintf(txwr, " %7.4f %7.4f %7.4f", f.c[0], f.c[1], f.c[2]);

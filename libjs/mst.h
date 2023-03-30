@@ -1,18 +1,21 @@
 /* mst.h -- build minimum-cost spanning trees. */
-/* Last edited on 2010-05-24 02:42:03 by stolfi */ 
+/* Last edited on 2023-03-18 11:17:34 by stolfi */ 
 
 #ifndef mst_H
 #define mst_H
 
+#define _GNU_SOURCE
+#include <stdint.h>
+
 #include <bool.h>
 
-typedef double mst_arc_cost_t(int u, int v);
+typedef double mst_arc_cost_t(int32_t u, int32_t v);
   /* Type of a function that returns the cost of an arc between
     vertices {u} and {v} of a graph. The result must be non-negative
     and not {NAN}. If there is no such arc, it should return
     {+INF}. */
 
-void mst_build_complete(int n, mst_arc_cost_t *acost, int P[], double C[], bool_t verbose);
+void mst_build_complete(int32_t n, mst_arc_cost_t *acost, int32_t P[], double C[], bool_t verbose);
    /* Builds a minimum-cost spanning rooted forest for a
      graph {G} with vertices {0..n-1}.
      

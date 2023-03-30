@@ -1,5 +1,5 @@
 /* rntest --- test program for rn.h, rmxn.h  */
-/* Last edited on 2023-02-03 05:37:09 by stolfi */
+/* Last edited on 2023-03-26 21:53:06 by stolfi */
 
 /* We need to set these in order to get {isnan}. What a crock... */
 #define _GNU_SOURCE
@@ -15,11 +15,14 @@
 #include <jsmath.h>
 #include <flt.h>
 #include <bool.h>
+#include <rn_test_tools.h>
 
 #include <rn.h>
 #include <rmxn.h>
 #include <rmxn_extra.h>
-#include <rn_test_tools.h>
+#include <rmxn_canonical_simplex.h>
+#include <rmxn_regular_simplex.h>
+#include <rmxn_ellipsoid.h>
 
 #define NO NULL
 
@@ -69,13 +72,13 @@ void test_rmxn_mod_norm(int32_t m, double Qmm[], bool_t verbose);
 void test_rmxn_norms(int32_t m, int32_t n, double Amn[], bool_t verbose);
 void test_rmxn_print(int32_t m, int32_t n, bool_t verbose);
 void test_rmxn_canonical_simplex_and_measures(int32_t n, bool_t verbose);
-void test_rmxn_throw_canonical_simplex(int32_t n, bool_t verbose);
+void test_rmxn_canonical_simplex_throw(int32_t n, bool_t verbose);
 void test_rmxn_regular_simplex_and_measures(int32_t n, bool_t verbose);
 void test_rmxn_throw_ortho_spin(int32_t n, bool_t verbose);
+void test_rmxn_throw_ortho_complement(int32_t n, bool_t verbose);
 void test_rmxn_max_abs_elem(int32_t m, int32_t n, double Amn[], bool_t verbose);
 void test_rmxn_perturb_unif(int32_t m, int32_t n, double Amn[], bool_t verbose);
 void test_rmxn_transform_quadratic(int32_t m, int32_t n, double Amn[], bool_t verbose);
-
 
 void throw_matrix(int32_t m, int32_t n, double *Amn);
 void throw_LT_matrix(int32_t m, double *Lmm);
@@ -88,8 +91,8 @@ void check_simplex(int32_t d, int32_t n, double V[], double rExp, double iExp, d
     circum-radius {rExp}, the in-radius {iExp}, the edge length
     {sExp}, the height {hExp}, and the measure {mExp}. */
 
-void check_ortho_matrix(int32_t n, double M[]);
-  /* Checks whether the {n x n} matrix {M} orthonormal; that is
+void check_ortho_matrix(int32_t m, int32_t n, double M[]);
+  /* Checks whether the {m x n} matrix {M} has orthonormal rows; that is
     whether the rows are pairwise orthogonal and have length 1. */
 
 int32_t main (int32_t argc, char **argv)
@@ -743,9 +746,10 @@ void test_rmxn_rectangular(int32_t m, int32_t n, bool_t verbose)
     test_rmxn_LT_div(m, n, Qmm, Rmm, Smm, Amn, Bmn, Cmn, verbose);
     test_rmxn_norms(m, n, Amn, verbose);
     test_rmxn_canonical_simplex_and_measures(n, verbose);
-    test_rmxn_throw_canonical_simplex(n, verbose);
+    test_rmxn_canonical_simplex_throw(n, verbose);
     test_rmxn_regular_simplex_and_measures(n, verbose);
     test_rmxn_throw_ortho_spin(n, verbose);
+    test_rmxn_throw_ortho_complement(n, verbose);
     
     test_rmxn_max_abs_elem(m, n, Amn, verbose);
     test_rmxn_perturb_unif(m, n, Amn, verbose);
@@ -1298,31 +1302,31 @@ void test_rmxn_canonical_simplex_and_measures(int32_t n, bool_t verbose)
     }
   }
     
-void test_rmxn_throw_canonical_simplex(int32_t n, bool_t verbose)
+void test_rmxn_canonical_simplex_throw(int32_t n, bool_t verbose)
   {
-    /* TEST: void rmxn_throw_canonical_simplex(int32_t d, double x[]); */
-    /* TEST: void rmxn_throw_canonical_simplex_ball(int32_t d, double x[]); */
+    /* TEST: void rmxn_canonical_simplex_throw(int32_t d, double x[]); */
+    /* TEST: void rmxn_canonical_simplex_throw_ball(int32_t d, double x[]); */
 
-    if (verbose) { fprintf(stderr, "--- rmxn_throw_canonical_simplex ---\n"); }
+    if (verbose) { fprintf(stderr, "--- rmxn_canonical_simplex_throw ---\n"); }
     { int32_t d = n-1;
       double x[d+1];
       double tol = 1.0e-12;
-      rmxn_throw_canonical_simplex(d, x);
+      rmxn_canonical_simplex_throw(d, x);
       /* Check sign, unit-sum: */
       double sObs = 0;
       for (int32_t i = 0; i <= d; i++)
-        { demand(x[i] >= 0, "rmxn_throw_canonical_simplex error (1)"); 
+        { demand(x[i] >= 0, "rmxn_canonical_simplex_throw error (1)"); 
           sObs += x[i]; 
         }
       double sExp = 1.0;
-      rn_check_eps(sObs, sExp, tol, NO, NO, "rmxn_throw_canonical_simplex error (2)");
+      rn_check_eps(sObs, sExp, tol, NO, NO, "rmxn_canonical_simplex_throw error (2)");
     }
 
-    if (verbose) { fprintf(stderr, "--- rmxn_throw_canonical_simplex_ball ---\n"); }
+    if (verbose) { fprintf(stderr, "--- rmxn_canonical_simplex_ball_throw ---\n"); }
     { int32_t d = n-1;
       double x[d+1];
       double tol = 1.0e-12;
-      rmxn_throw_canonical_simplex_ball(d, x);
+      rmxn_canonical_simplex_ball_throw(d, x);
       /* Check unit-sum, radius: */
       double sObs = 0, r2 = 0;
       double c = 1.0/(d+1);
@@ -1332,10 +1336,10 @@ void test_rmxn_throw_canonical_simplex(int32_t n, bool_t verbose)
           r2 += d*d;
         }
       double sExp = 1.0;
-      rn_check_eps(sObs, sExp, tol, NO, NO, "rmxn_throw_canonical_simplex_ball error (1)");
+      rn_check_eps(sObs, sExp, tol, NO, NO, "rmxn_canonical_simplex_ball_throw error (1)");
       double rObs = sqrt(r2);
       double rExp = rmxn_canonical_simplex_radius(d);
-      demand(rObs <= rExp*(1 + tol), "rmxn_throw_canonical_simplex_ball error (2)");
+      demand(rObs <= rExp*(1 + tol), "rmxn_canonical_simplex_ball_throw error (2)");
     }
   }
 
@@ -1371,7 +1375,36 @@ void test_rmxn_throw_ortho_spin(int32_t n, bool_t verbose)
     if (verbose) { fprintf(stderr, "--- rmxn_throw_ortho ---\n"); }
     { double M[n*n];
       rmxn_throw_ortho(n, M);
-      check_ortho_matrix(n, M);
+      check_ortho_matrix(n, n, M);
+    }
+
+    if (verbose) { fprintf(stderr, "--- rmxn_spin_rows ---\n"); }
+    if (verbose) { fprintf(stderr, "!! warning: rmxn_spin_rows not tested\n"); }
+    
+    if (verbose) { fprintf(stderr, "--- rmxn_shift_rows ---\n"); }
+    if (verbose) { fprintf(stderr, "!! warning: rmxn_shift_rows not tested\n"); }
+
+    if (verbose) { fprintf(stderr, "--- rmxn_spin_cols ---\n"); }
+    if (verbose) { fprintf(stderr, "!! warning: rmxn_spin_cols not tested\n"); }
+    
+    if (verbose) { fprintf(stderr, "--- rmxn_shift_cols ---\n"); }
+    if (verbose) { fprintf(stderr, "!! warning: rmxn_shift_cols not tested\n"); }
+  }
+    
+void test_rmxn_throw_ortho_complement(int32_t n, bool_t verbose)
+  {
+    /* TEST: void rmxn_throw_ortho_complement(int32_t n, double M[]); */
+    if (verbose) { fprintf(stderr, "--- rmxn_throw_ortho_complement ---\n"); }
+    int32_t p = int32_abrandom(0, n);     /* Number of rows of {A}. */
+    int32_t q = int32_abrandom(0, n - p); /* Number of rows of {M}. */
+    { /* Throw a random orthonormal {p}-basis {A}: */
+      double A[p*n];
+      rmxn_throw_ortho_complement(n, 0, NULL, p, A);
+      check_ortho_matrix(p, n, A);
+      /* Throw a random ortho complement {q}-basis: */
+      double M[q*n];
+      rmxn_throw_ortho_complement(n, p, A, q, M);
+      check_ortho_matrix(q, n, M);
     }
 
     if (verbose) { fprintf(stderr, "--- rmxn_spin_rows ---\n"); }
@@ -1545,10 +1578,10 @@ void check_simplex(int32_t d, int32_t n, double V[], double rExp, double iExp, d
     }
   }
 
-void check_ortho_matrix(int32_t n, double M[])
+void check_ortho_matrix(int32_t m, int32_t n, double M[])
   { 
     double tol = 1.0e-12;
-    for (int32_t i0 = 0; i0 < n; i0++)
+    for (int32_t i0 = 0; i0 < m; i0++)
       { for (int32_t i1 = 0; i1 <= i0; i1++)
           { /* Compute dot product {sObs} of rows {i0} and {i1}: */
             double sObs = 0;

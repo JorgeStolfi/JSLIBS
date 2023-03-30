@@ -2,12 +2,14 @@
 #define PROG_DESC "test of sorting routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2011-05-29 10:37:56 by stolfi */
+/* Last edited on 2023-03-26 11:06:09 by stolfi */
 /* Created on 2004-11-02 (or earlier) by J. Stolfi, UNICAMP */
 
 #define test_sort_COPYRIGHT \
   "Copyright © 2004  by the State University of Campinas (UNICAMP)"
 
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -49,25 +51,25 @@
   For the tests to be effective, the result of {cmp(a,b)} should bear
   no relation to {a < b}.  */
 
-typedef int int_cmp_t(int a, int b); 
+typedef int32_t int32_t_cmp_t(int32_t a, int32_t b); 
   /* A signed comparison predicate for integers (indices, etc.). */
 
-typedef void tsr_sort_t(int *h, int n, int_cmp_t cmp, int sgn);
+typedef void tsr_sort_t(int32_t *h, int32_t n, int32_t_cmp_t cmp, int32_t sgn);
   /* A procedure that sorts {h[0..n-1]} */
 
-typedef void tsr_merge_t(int *a, int *b, int *c, int_cmp_t cmp, int sgn);
+typedef void tsr_merge_t(int32_t *a, int32_t *b, int32_t *c, int32_t_cmp_t cmp, int32_t sgn);
   /* A procedure that, given two consecutive sorted blocks of elements
     in {h}, from {*a} through {*(b-1)} and from {b} through {*(cm-1)},
     interleaves them in order. */
 
-void tsr_test_sort(int *h, int n, tsr_sort_t sort, char *name, int_cmp_t cmp);
+void tsr_test_sort(int32_t *h, int32_t n, tsr_sort_t sort, char *name, int32_t_cmp_t cmp);
 /* Tests the sorting routine {sort} on the array {h[0..n-1]}, with comparison
   procedure {cmp} and both directions ({sgn = +1} and {sgn = -1}).
   The {name} should be the name of the sorting routine.
 
   Before the test, the array {h} is initialized with {h[i]=i}. */
 
-void tsr_test_merge(int *h, int n, tsr_merge_t merge, char *name, int_cmp_t cmp);
+void tsr_test_merge(int32_t *h, int32_t n, tsr_merge_t merge, char *name, int32_t_cmp_t cmp);
 /* Tests the merge routine {merge} on the array {h[0..n-1]}, with comparison
   procedure {cmp} and both directions ({sgn = +1} and {sgn = -1}).
   The {name} should be the name of the sorting routine.
@@ -76,24 +78,24 @@ void tsr_test_merge(int *h, int n, tsr_merge_t merge, char *name, int_cmp_t cmp)
   divided into two unequal blocks, and each block is sorted with
   binsertion sort. */
 
-void tsr_check_order(int *h, int n, int_cmp_t cmp, int sgn, bool_t print);
+void tsr_check_order(int32_t *h, int32_t n, int32_t_cmp_t cmp, int32_t sgn, bool_t print);
 /* Checks whether the order of {h[0..n-1]} is consistent with {cmp}
   and {sgn}. If {print = TRUE}, also prints the elements {h[i]} of {h}
   and their "hidden" values {c[h[i]]}. */
 
-void tsr_parse_options (int argc, char **argv, int *np);
+void tsr_parse_options (int32_t argc, char **argv, int32_t *np);
 
 /* THE TEST ORDER */
 
 double_vec_t c;
 
-int tsr_cmp(int i, int j);
+int32_t tsr_cmp(int32_t i, int32_t j);
 /* Compares {i} and {j} in a contrived order.
   (Actually, compares {c[i]} with {c[j]}.) */
 
 /* IMPLEMENTATIONS */
 
-int tsr_cmp(int i, int j)
+int32_t tsr_cmp(int32_t i, int32_t j)
   { affirm((i >= 0) && (i < c.ne), "bad i");
     affirm((j >= 0) && (j < c.ne), "bad j");
     double ci = c.e[i], cj = c.e[j];
@@ -107,20 +109,20 @@ int tsr_cmp(int i, int j)
 
 /* TEST PROCEDURES */
 
-void tsr_test_sort(int *h, int n, tsr_sort_t sort, char *name, int_cmp_t cmp)
+void tsr_test_sort(int32_t *h, int32_t n, tsr_sort_t sort, char *name, int32_t_cmp_t cmp)
   {
     fprintf(stderr, "============================================================\n");
     fprintf(stderr, "Sorting with %s:\n", name);
     
     bool_t print = (n <= 100);
 
-    int sgn;
+    int32_t sgn;
     for (sgn = +1; sgn >= -1; sgn -= 2)
       { 
         fprintf(stderr, "Order = %d (%s):\n", sgn, (sgn > 0 ? "increasing" : "decreasing"));
 
         /* Restore {h[0..n-1]} to the original increasing order (random by {cmp}): */
-        int i;
+        int32_t i;
         for (i = 0; i < n; i++) { h[i] = i; }
 
         /* Sort them by {sgn*cmp}: */
@@ -135,21 +137,21 @@ void tsr_test_sort(int *h, int n, tsr_sort_t sort, char *name, int_cmp_t cmp)
 
   }
 
-void tsr_test_merge(int *h, int n, tsr_merge_t merge, char *name, int_cmp_t cmp)
+void tsr_test_merge(int32_t *h, int32_t n, tsr_merge_t merge, char *name, int32_t_cmp_t cmp)
   { 
     fprintf(stderr, "============================================================\n");
     fprintf(stderr, "Merging with %s:\n", name);
     
-    int m = 3*n/5; /* Size of first block. */
+    int32_t m = 3*n/5; /* Size of first block. */
     bool_t print = (n <= 100);
 
-    int sgn;
+    int32_t sgn;
     for (sgn = +1; sgn >= -1; sgn -= 2)
       { 
         fprintf(stderr, "Order = %d (%s):\n", sgn, (sgn > 0 ? "increasing" : "decreasing"));
         
         /* Restore {h[0..n-1]} to the original increasing order (random by {cmp}): */
-        int i;
+        int32_t i;
         for (i = 0; i < n; i++) { h[i] = i; }
         
         /* Sort the two blocks: */
@@ -170,12 +172,12 @@ void tsr_test_merge(int *h, int n, tsr_merge_t merge, char *name, int_cmp_t cmp)
       }
   }
 
-void tsr_check_order(int *h, int n, int_cmp_t cmp, int sgn, bool_t print)
+void tsr_check_order(int32_t *h, int32_t n, int32_t_cmp_t cmp, int32_t sgn, bool_t print)
   {
     bool_t printed;
             
-    auto void prt(int i);
-    void prt(int i)
+    auto void prt(int32_t i);
+    void prt(int32_t i)
       { fprintf(stderr, "%5d %5d %6.3f", i, h[i], c.e[h[i]]);
         printed = TRUE;
       } 
@@ -183,12 +185,12 @@ void tsr_check_order(int *h, int n, int_cmp_t cmp, int sgn, bool_t print)
     bool_t unstable = FALSE;
     bool_t buggy = FALSE;
     
-    int i;
+    int32_t i;
     for (i = 0; i < n; i++)
       { printed = FALSE;
         if (print) { prt(i); }
         if (i > 0)
-          { int b = sgn*cmp(h[i-1],h[i]);
+          { int32_t b = sgn*cmp(h[i-1],h[i]);
             if (b > 0)
               { if (! printed) { prt(i); }
                 fprintf(stderr, " ** out of order");
@@ -207,15 +209,15 @@ void tsr_check_order(int *h, int n, int_cmp_t cmp, int sgn, bool_t print)
       { fprintf(stderr, "!! unstable sort\n"); }
   }
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   {
-    int n;
+    int32_t n;
     tsr_parse_options(argc, argv, &n);
-    int h[n];
+    int32_t h[n];
 
     /* Prepare table of actual values to be sorted: */
     c = double_vec_new(n);
-    int i;
+    int32_t i;
     for (i = 0; i < n; i++)
       { /* Insert about 10% equal values, if n >= 10: */
         c.e[i] = (i < (9*n + 9)/10 ? (1.0 + sin(22.2*i*i))/2 : c.e[n-i-1]);
@@ -243,7 +245,7 @@ int main(int argc, char **argv)
     /* Tests heap push/pop routines (used by some heapsorts): */
     if (TEST_ihp_push_pop)
       { fprintf(stderr, "Heapified:\n");
-        int k = 0;
+        int32_t k = 0;
         while (k < n) { ihp_heap_insert(h, &k, h[k], tsr_cmp, +1); }
         for (i = 0; i < n; i++)
           { fprintf(stderr, "%5d %5d %6.3f\n", i, h[i], c.e[h[i]]); }
@@ -284,8 +286,8 @@ int main(int argc, char **argv)
     return(0);
   }
 
-void tsr_parse_options (int argc, char **argv, int *np)
-  { long int nn;
+void tsr_parse_options (int32_t argc, char **argv, int32_t *np)
+  { int64_t nn;
     char *p = NULL;
     
     if (argc != 2)
@@ -294,5 +296,5 @@ void tsr_parse_options (int argc, char **argv, int *np)
     if (((*p) != '\000') || (nn < 0) || (nn > NMAX))
       { fprintf(stderr, "invalid n = %ld\n", nn); exit(1); }
 
-    (*np) = (int)nn;
+    (*np) = (int32_t)nn;
   }

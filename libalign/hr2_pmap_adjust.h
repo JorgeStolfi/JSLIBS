@@ -1,8 +1,8 @@
 #ifndef hr2_pmap_adjust_H
 #define hr2_pmap_adjust_H
 
-/* Tools for optimizing affine maps. */
-/* Last edited on 2022-03-01 11:53:31 by stolfi */ 
+/* Tools for optimizing projective maps. */
+/* Last edited on 2023-03-21 12:48:03 by stolfi */ 
 
 #define _GNU_SOURCE
 
@@ -14,7 +14,7 @@
 
 typedef double hr2_pmap_adjust_func_t(hr2_pmap_t *A); 
   /* Type of a procedure that evaluates some badness function of
-    the affine map {*A}. The function had better achieve a minimum
+    the projective map {*A}. The function had better achieve a minimum
     value for some finite {*A}. */
 
 hr2_pmap_t hr2_pmap_from_many_pairs
@@ -92,4 +92,19 @@ void hr2_pmap_adjust_quad
     the search region, and preferably be approximately quadratic on all
     variable element of the affine map within that region. */
  
+void hr2_pmap_adjust_get_var_elems
+  ( r3x3_t *M, 
+    r3x3_t *R, 
+    double *Mp[],
+    double Re[],
+    int32_t *nvP
+  );
+  /* Identifies the elements of {*M} that are to be adjusted 
+    (that is, whose corresponding element of {*R} is nonzero.
+    Returns the number {nv} of such elements (a number in {0..8}) in {*nvP},
+    the addresses of those elemens of {*M} in {Mp[0..nv-1]},
+    and the values of the corresponding elements of {*R}
+    in {Re[0..nv-1]}.  These vectors should have at leat 8 elements.
+    The procedure fails if all 9 elements of {*R} are nonzero.*/
+
 #endif

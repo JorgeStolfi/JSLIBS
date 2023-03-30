@@ -1,5 +1,5 @@
 /* See rmxn_extra.h. */
-/* Last edited on 2021-06-09 19:58:03 by jstolfi */
+/* Last edited on 2023-03-27 16:08:58 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -11,6 +11,7 @@
 #include <rn.h>
 #include <rmxn.h>
 #include <jsrandom.h>
+#include <jsmath.h>
 #include <affirm.h>
 #include <cmp.h>
 
@@ -67,6 +68,65 @@ void rmxn_throw_ortho(int32_t n, double M[])
     if (flip != 0) { for (j = 0; j < n; j++) { M[j] = -M[j]; } }
   }
 
+void rmxn_throw_ortho_complement(int32_t n, int32_t p, double A[], int32_t q, double M[])
+  {
+    demand(p + q <= n, "invalid {p+q}");
+    if (q == 0) { return; }
+    for (int32_t k = 0; k < q; k++)
+      { double *Mk = &(M[k*n]); /* Row {k} o f{M}. */
+        while (TRUE)
+          { /* Pick a random unit vector in {\RR^n}: */
+            rn_throw_dir (n, Mk);
+            /* Project it onto the space orthogonal to {A} and {M}: */
+            for (int32_t r = 0; r < p; r++)
+              { double *Ar = &(A[r*n]);
+                double s = rn_dot(n, Ar, Mk);
+                rn_mix_in(n, -s, Ar, Mk);
+              }
+            for (int32_t r = 0; r < k; r++)
+              { double *Mr = &(M[r*n]);
+                double s = rn_dot(n, Mr, Mk);
+                rn_mix_in(n, -s, Mr, Mk);
+              }
+            /* Normalize and accept if not too small: */
+            double len = rn_dir(n, Mk, Mk);
+            if (len >= 1.0e-4) { break; }
+          }
+      }
+  }
+
+void rmxn_throw_directions(int32_t m, int32_t n, double U[])
+  {
+    for (int32_t i = 0; i < m; i++)
+      { double *Ui = &(U[i*n]); 
+        if (i < n)
+          { rn_axis(n, i, Ui); }
+        else
+          { double minMaxCos = +INF;
+            double u[n];
+            int32_t maxTry = 10;
+            int32_t nTry = 0;
+            while(TRUE)
+              { nTry++;
+                /* Generate a random direction {u}: */
+                rn_throw_dir (n, u);
+                /* Check whether {u} is far enough from previous directions: */
+                double maxCos = 0.0; /* Max {fabs(cos(u,Uk))} for previous rows {Uk}. */
+                for (int32_t k = 0; k < i; k++)
+                  { double *Uk = &(U[k*n]); 
+                    double cos = fabs(rn_dot(n, u, Uk));
+                    if (cos > maxCos) { maxCos = cos; }
+                  }
+                if (maxCos < minMaxCos)
+                  { rn_copy(n, u, Ui); 
+                    minMaxCos = maxCos;
+                    if ((nTry >= maxTry) || (minMaxCos < cos(M_PI/6))) { break; }
+                  }
+              }
+          }
+      }
+  }
+
 void rmxn_spin_rows(int32_t m, int32_t n, double A[], double M[])
   { /* Generate a random orthonormal {n×n} matrix {N}: */
     double N[n*n];
@@ -110,120 +170,3 @@ void rmxn_shift_cols(int32_t m, int32_t n, double v[], double A[], double M[])
       }
   }
 
-void rmxn_canonical_simplex(int32_t d, int32_t n, double V[])
-  { 
-    demand(0 <= d, "bad dimension {d}");
-    demand(d < n, "space dimension {n} is too small for {d}");
-    int32_t i, j;
-    for (i = 0; i <= d; i++) 
-      { for (j = 0; j < n; j++)
-          { V[i*n + j] = (i == j ? 1 : 0); }
-      }
-  }
-
-double rmxn_canonical_simplex_radius(int32_t d)
-  { double D = (double)d;
-    return sqrt(D/(D+1));
-  }
-
-double rmxn_canonical_simplex_subradius(int32_t d, int32_t k)
-  { double D = (double)d;
-    double K = (double)k;
-    return sqrt((D-K)/((D+1)*(K+1)));
-  }
-  
-double rmxn_canonical_simplex_edge(int32_t d)  
-  { return M_SQRT2; }
-  
-double rmxn_canonical_simplex_height(int32_t d)
-  { double D = (double)d;
-    return sqrt((D+1)/D);
-  }
-
-double rmxn_canonical_simplex_measure(int32_t d)
-  { double D = (double)d;
-    return sqrt(D+1)*exp(-lgamma(D+1));
-  }
-
-void rmxn_regular_simplex(int32_t n, double V[])
-  { double N = (double)n;
-    double SN1 = sqrt(N+1);
-    double c = (SN1 - 1)/N;
-    double d = 1 + (N-1)*c;
-    int32_t i, j;
-    /* Set the matrix {p}: */
-    for (i = 0; i <= n; i++) 
-      { int32_t ni = i*n;
-        if (i == 0)
-          { /* Set the first row to {(-1,-1,..-1)}: */
-            for (j = 0; j < n; j++) { V[ni + j] = -1; }
-          }
-        else
-          { /* Set row {i} to {(1+d+c)*u_{i-1} - (c,c,..c)}: */
-            for (j = 0; j < n; j++) { V[ni + j] = (i == j+1 ? d : -c); }
-          }
-      }
-    }
-
-double rmxn_regular_simplex_radius(int32_t n)
-  { double N = (double)n;
-    return sqrt(N);
-  }
-
-double rmxn_regular_simplex_subradius(int32_t n, int32_t k)
-  { double N = (double)n;
-    double K = (double)k;
-    return sqrt((N-K)/(K+1));
-  }
-  
-double rmxn_regular_simplex_edge(int32_t n)  
-  { double N = (double)n;
-    return sqrt(2*(N+1));
-  }
-  
-double rmxn_regular_simplex_height(int32_t n)
-  { double N = (double)n;
-    return (N+1)/sqrt(N);
-  }
-  
-double rmxn_regular_simplex_measure(int32_t n)
-  { double N = (double)n;
-    return exp((N+1)*log(N+1)/2 - lgamma(N+1));
-  }
-
-void rmxn_throw_canonical_simplex(int32_t d, double x[])
-  { /* Generate a random point in the unit cube {[0_1]^d}: */
-    int32_t i;
-    for (i = 0; i < d; i++) { x[i] = drandom(); }
-    /* Sort {x} by increasing value: */
-    auto int32_t cmp(const void *a, const void *b);
-    int32_t cmp(const void *a, const void *b) { return cmp_double((double *)a, (double *)b); }
-    qsort(x, d, sizeof(double), &cmp);
-    /* Now map the ordered {d}-simplex to the canonical {d}-simplex: */
-    x[d] = 1;
-    for (i = d; i > 0; i--) { x[i] = x[i] - x[i-1]; }
-  }
-  
-void rmxn_throw_canonical_simplex_ball(int32_t d, double x[]) 
-  { /* Generate a random point in the unit {(d+1)}-dimensional ball: */
-    rn_throw_ball(d+1, x);
-    /* Compute projection {s} of {x} on {u = (1,1,..1)/sqrt(d+1)}: */
-    double sum = 0.0;
-    int32_t i;
-    for (i = 0; i <= d; i++) { sum += x[i]; }
-    double s = sum/sqrt(d+1);
-    /* Ensure projection is in {[-1_+1]}: */
-    if (s > +1.0) { s = +1.0; }
-    if (s < -1.0) { s = -1.0; }
-    /* Compute radius of ball slice at coordinate {s}: */
-    double rx = sqrt(1.0 - s*s);
-    /* Expand unit ball to cylinder with axis {u} and project normal to {u}: */
-    if (rx == 0) { rx = 1; }
-    double q = sum/(d+1);
-    for (i = 0; i <= d; i++) { x[i] = (x[i] - q)/rx; }
-    /* Scale to the radius of the canonical {d}-simplex: */
-    double rc = rmxn_canonical_simplex_radius(d);
-    rn_scale(d+1, rc, x, x);
-    /* Shift to center in {(1,1,..1)/(d+1)}: */
-    rn_shift(d+1, 1.0/(d+1), x, x);
-  }

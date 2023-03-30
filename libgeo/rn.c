@@ -1,4 +1,4 @@
-/*Last edited on 2023-02-27 08:16:32 by stolfi */
+/*Last edited on 2023-03-26 11:14:01 by stolfi */
 /*
   Based on VectorN.mg, created  95-02-27 by J. Stolfi.
   Last edited by stolfi 
@@ -347,6 +347,43 @@ double rn_mirror (int32_t n, double *a, double *u, double *r)
     return sau;
   }
 
+double rn_rad_rel_max_diff (int32_t n, double a[], double b[], double rad[])
+  {
+    double dmax = 0.0;
+    for (int32_t i = 0; i < n; i++)
+      { double di = fabs(a[i] - b[i]);
+        if (rad != NULL)
+          { double ri = rad[i];
+            demand(isfinite(ri) && (ri >= 0), "invalid search radius");
+            if (ri != 0)
+              { di /= ri; }
+            else
+              { demand(di == 0, "null {rad[i]} with unequal {a[i],b[i]}"); }
+          }
+        dmax = fmax(dmax, di);
+      }
+    return dmax;
+  }
+
+double rn_rad_rel_dist_sqr (int32_t n, double a[], double b[], double rad[])
+  {
+    double d2 = 0.0;
+    for (int32_t i = 0; i < n; i++)
+      { double di = a[i] - b[i];
+        if (rad != NULL)
+          { double ri = rad[i];
+            demand(isfinite(ri) && (ri >= 0), "invalid search radius");
+            if (ri != 0)
+              { di /= ri; }
+            else
+              { demand(di == 0, "null {rad[i]} with unequal {a[i],b[i]}"); }
+          }
+        d2 += di*di;
+      }
+    return d2;
+  }
+
+
 void rn_throw_cube (int32_t n, double *r)
   { int32_t i;
     for (i = 0; i < n; i++)
@@ -426,6 +463,15 @@ void rn_gen_print
         fprintf(f, fmt, a[i]);
       }
     fputs(rp, f);
+  }
+
+void rn_rad_rel_print(FILE *wr, int32_t n, double a[], double rad[])
+  {
+    rn_gen_print(wr, n, a, "%12.7f", "[", " ", "]\n");
+    rn_gen_print(wr, n, rad, "%12.7f", "[", " ", "]\n");
+    double ar[n];
+    rn_unweigh(n, a, rad, ar);
+    rn_gen_print(wr, n, ar, "%12.7f", "[", " ", "]\n");
   }
 
 double *rn_alloc(int32_t n)

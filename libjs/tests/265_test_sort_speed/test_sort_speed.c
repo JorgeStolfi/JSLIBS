@@ -2,7 +2,7 @@
 #define PROG_DESC "tests speed of quick-sort, heap-sort, binsertion-sort and merge-sort"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2013-10-25 18:48:00 by stolfilocal */
+/* Last edited on 2023-03-26 11:06:24 by stolfi */
 
 #define test_sort_speed_COPYRIGHT \
   "Copyright © 2004  by the State University of Campinas (UNICAMP)"
@@ -22,6 +22,7 @@
 /* We must set _GNU_SOURCE to get {asprintf}. */
 /* Why can't we just include "gnuio.h"??? */
 #define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -34,9 +35,9 @@
 #include <jsfile.h>
 #include <jstime.h>
 
-static int ncmp;
-static long int *data; /* Random values to be compared. */
-static int ndata; /* Size of {data} vector. */
+static int32_t ncmp;
+static int64_t *data; /* Random values to be compared. */
+static int32_t ndata; /* Size of {data} vector. */
 
 /* Max number of runs for each algorithm and each array size: */
 #define MAXRUNS 50
@@ -46,14 +47,14 @@ static int ndata; /* Size of {data} vector. */
 /* #define MAXSIZE (128*256) */
 #define MAXSIZE (4*256)
 
-typedef int int_cmp_t(int a, int b); 
+typedef int32_t int32_t_cmp_t(int32_t a, int32_t b); 
   /* A signed comparison predicate for integers (indices, etc.). */
 
-typedef void tss_sorter_t(int *h, int n, int_cmp_t cmp, int sgn);
+typedef void tss_sorter_t(int32_t *h, int32_t n, int32_t_cmp_t cmp, int32_t sgn);
   /* A procedure that sorts {h} so that  {sgn*cmp(h[i-1],h[i]) <= 0}
     for all {i} */
   
-typedef double tss_timer_t(int n);
+typedef double tss_timer_t(int32_t n);
   /* A procedure that estimates how many comparisons (or equivalent
     ops) an algorithm will take for an {n}-element array. 
     
@@ -65,7 +66,7 @@ typedef struct tss_alg_t
   { tss_sorter_t *srt;  /* The sorting procedure. */
     char *name;         /* The procedure's name. */
     char *descr;        /* A short description. */
-    int thr;            /* Max {n} included in the base case. */
+    int32_t thr;            /* Max {n} included in the base case. */
     tss_timer_t *tmr;   /* Estimates the number of operations. */
   } tss_alg_t;
 
@@ -73,7 +74,7 @@ typedef enum {TP_NCMP = 0, TP_TIME = 1} stype_t;
   /* Type of statistics to print (comparisons or running times). */
   
 typedef struct tss_stats_t 
-  { int ncmp;    /* Number of comparisons */
+  { int32_t ncmp;    /* Number of comparisons */
     double time; /* Time in microseconds. */
   } tss_stats_t;
 
@@ -84,11 +85,11 @@ void tss_all_tests(char *outname);
     statistics to the file "{outname}-{tpname}.tex" where 
     {tpname} is "ncmp" or "time". */
 
-tss_stats_t tss_test_sorter(int *h, int n, tss_sorter_t srt, int_cmp_t cmp, int sgn);
+tss_stats_t tss_test_sorter(int32_t *h, int32_t n, tss_sorter_t srt, int32_t_cmp_t cmp, int32_t sgn);
   /* Tests sorter {srt} on {h} with comparator {sgn*cmp}; checks
     order of result, returns statistics. */
     
-void tss_print_stats(FILE *wr, char *sname, int n, tss_stats_t *st, int ntests, stype_t tp);
+void tss_print_stats(FILE *wr, char *sname, int32_t n, tss_stats_t *st, int32_t ntests, stype_t tp);
   /* Writes to {wr} the summarized statistics of type {tp} for sorter {sname}
     acting on arrays of {n} elements, given the statitistics {st[0..ntests-1]} 
     obtained in {ntests} test runs. */
@@ -97,43 +98,43 @@ char *tss_protect(char *name);
   /* Returns a copy of {name} wrapped in '{}'s
     with every '_' changed into '\_'. */
 
-void tss_fill_algorithms_table(int *nalgsP, tss_alg_t *alg[]);
+void tss_fill_algorithms_table(int32_t *nalgsP, tss_alg_t *alg[]);
   /* Stores into {alg[0..nalgs-1]} a set of algorithms to test.
     Also sets {*nalgsP} the number {nalgs} of algorithms 
     defined.  Assumes that {alg} has at least {MAXALGS} entries. */
 
-void tss_write_tex_algorithms_table(char *outname, int nalgs, tss_alg_t *alg[]);
+void tss_write_tex_algorithms_table(char *outname, int32_t nalgs, tss_alg_t *alg[]);
   /* Writes to "{outname}-algs.tex" a TeX table with procedure name,
     algorithm description, and recursion threshold {SMALL}. */
 
-void tss_begin_tex_performance_table(FILE *wr, char *outname, char *tpname, int n);
+void tss_begin_tex_performance_table(FILE *wr, char *outname, char *tpname, int32_t n);
   /* Writes into {wr} the preamble of a TeX table with performance data for various
     algorithms on tables with {n} entries. */
     
-void tss_finish_tex_performance_table(FILE *wr, char *tpname, int n);
+void tss_finish_tex_performance_table(FILE *wr, char *tpname, int32_t n);
   /* The file {wr} must have been opened with
     {tss_begin_tex_performance_table}. Writes into {wr} the
     postamble of the table */
 
-int tss_cmp(int a, int b);
+int32_t tss_cmp(int32_t a, int32_t b);
   /* Compares {data[a]} with {data[b]}. */
 
-tss_alg_t *tss_new_alg(tss_sorter_t *srt, char *name, char *descr, int thr, tss_timer_t *tmr);
+tss_alg_t *tss_new_alg(tss_sorter_t *srt, char *name, char *descr, int32_t thr, tss_timer_t *tmr);
   /* Creates a new algorithm data record. */
   
-double tss_n_logn(int n);
-double tss_n2_2(int n);
-double tss_n2_4(int n);
+double tss_n_logn(int32_t n);
+double tss_n2_2(int32_t n);
+double tss_n2_4(int32_t n);
   /* Useful time estimators. */
 
 /* IMPLEMENTATIONS */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   { tss_all_tests(PROG_NAME);
     return 0;
   }
 
-tss_alg_t *tss_new_alg(tss_sorter_t *srt, char *name, char *descr, int thr, tss_timer_t *tmr)
+tss_alg_t *tss_new_alg(tss_sorter_t *srt, char *name, char *descr, int32_t thr, tss_timer_t *tmr)
   { tss_alg_t *pa = (tss_alg_t *)notnull(malloc(sizeof(tss_alg_t)), "no mem");
     pa->srt = srt; 
     pa->name = name;
@@ -153,7 +154,7 @@ void tss_all_tests(char *outname)
     tpname[TP_TIME] = "time";
     stype_t tp;
     
-    int nalgs = 0;
+    int32_t nalgs = 0;
     tss_alg_t *alg[MAXALGS];
     
     /* Assemble a table of algorithms and parameters: */
@@ -175,31 +176,31 @@ void tss_all_tests(char *outname)
         free(fname);
       }
 
-    int n = 0;
+    int32_t n = 0;
     while (n <= MAXSIZE) 
       { /* Allocate data array */
-        long int dt[n]; data = dt; ndata = n;
-        int h[n];
+        int64_t dt[n]; data = dt; ndata = n;
+        int32_t h[n];
 
         /* Performance statistics for the various runs of each algorithm: */
         tss_stats_t st[nalgs*MAXRUNS];
         
         /* Define the max number of runs for each algorithm: */
-        int max_runs[nalgs];
-        int ialg;
+        int32_t max_runs[nalgs];
+        int32_t ialg;
         for (ialg = 0; ialg < nalgs; ialg++)
           { double relcost = alg[ialg]->tmr(n)/tss_n_logn(n);
-            max_runs[ialg] = (int)(MAXRUNS/relcost);
+            max_runs[ialg] = (int32_t)(MAXRUNS/relcost);
           }
 
-        int sgn = +1;
+        int32_t sgn = +1;
 
         fprintf(stderr, "\n");
-        int it;
+        int32_t it;
         for (it = 0; it < MAXRUNS; it++)
           { fprintf(stderr, "=");
             /* Generate "random" numbers and test the two sorters on them: */
-            int i;
+            int32_t i;
             srandom(it+1);
             for (i = 0; i < n; i++) { dt[i] = random(); }
             
@@ -231,9 +232,9 @@ void tss_all_tests(char *outname)
 
   }
     
-void tss_fill_algorithms_table(int *nalgsP, tss_alg_t *alg[])
+void tss_fill_algorithms_table(int32_t *nalgsP, tss_alg_t *alg[])
   {
-    int nalgs = 0;
+    int32_t nalgs = 0;
     
     #define defalg(DESCR,SRT,THR,TMR) \
       do { \
@@ -306,7 +307,7 @@ void tss_fill_algorithms_table(int *nalgsP, tss_alg_t *alg[])
     (*nalgsP) = nalgs;
   }
 
-void tss_begin_tex_performance_table(FILE *wr, char *outname, char *tpname, int n)
+void tss_begin_tex_performance_table(FILE *wr, char *outname, char *tpname, int32_t n)
   {
     fprintf(wr, "\\advance\\endlinechar by -256\n");
     fprintf(wr, "\\jstab\n");
@@ -321,7 +322,7 @@ void tss_begin_tex_performance_table(FILE *wr, char *outname, char *tpname, int 
     fprintf(wr, "      \\hline\n"); 
   }
 
-void tss_finish_tex_performance_table(FILE *wr, char *tpname, int n)
+void tss_finish_tex_performance_table(FILE *wr, char *tpname, int32_t n)
   {
     fprintf(wr, "      \\hline\n"); 
     fprintf(wr, "    \\end{tabular}\n"); 
@@ -333,7 +334,7 @@ void tss_finish_tex_performance_table(FILE *wr, char *tpname, int n)
     fprintf(wr, "\\advance\\endlinechar by 256\n");
   }
   
-void tss_write_tex_algorithms_table(char *outname, int nalgs, tss_alg_t *alg[])
+void tss_write_tex_algorithms_table(char *outname, int32_t nalgs, tss_alg_t *alg[])
   {
     char *fname = NULL;
     asprintf(&fname, "%s-algs.tex", outname);
@@ -349,7 +350,7 @@ void tss_write_tex_algorithms_table(char *outname, int nalgs, tss_alg_t *alg[])
     fprintf(wr, "      %-35s & %-40s & %5s\\\\\n", "Procedure", "Algorithm", "SMALL");
     fprintf(wr, "      \\hline\n"); 
     fprintf(wr, "      \\hline\n"); 
-    int ialg;
+    int32_t ialg;
     for (ialg = 0; ialg < nalgs; ialg++)
       { tss_alg_t *pa = alg[ialg]; 
         fprintf(wr, "      \\pn%-35s & %-40s & %5d \\\\\n", 
@@ -365,17 +366,17 @@ void tss_write_tex_algorithms_table(char *outname, int nalgs, tss_alg_t *alg[])
     fprintf(wr, "\\advance\\endlinechar by 256\n");
   } 
 
-double tss_n_logn(int n)
+double tss_n_logn(int32_t n)
   { double x = (double)(n + 1);
     return x*log(x)/log(2.0);
   }
   
-double tss_n2_2(int n)
+double tss_n2_2(int32_t n)
   { double x = (double)(n + 1);
     return x*x/2.0;
   }
   
-double tss_n2_4(int n)
+double tss_n2_4(int32_t n)
   { double x = (double)(n + 1);
     return x*x/4.0;
   }
@@ -386,7 +387,7 @@ double tss_n2_4(int n)
 char *tss_protect(char *name)
   {
     /* Compute length of new string: */
-    int nnew = 0; /* Length of protected string. */
+    int32_t nnew = 0; /* Length of protected string. */
     char *p = name;
     while ((*p) != 0) { if ((*p) == '_') { nnew++; } p++; nnew++; }
     char *new = notnull(malloc((nnew+3)*sizeof(char)), "no mem");
@@ -405,12 +406,12 @@ char *tss_protect(char *name)
     return new;      
   }
 
-void tss_print_stats(FILE *wr, char *sname, int n, tss_stats_t *st, int ntests, stype_t tp)
+void tss_print_stats(FILE *wr, char *sname, int32_t n, tss_stats_t *st, int32_t ntests, stype_t tp)
   {
     /* Extract the relevant statistics: */
     double x[ntests];
-    int nok = 0;
-    int it;
+    int32_t nok = 0;
+    int32_t it;
     for (it = 0; it < ntests; it++)
       { tss_stats_t *sti = &(st[it]);
         double stx;
@@ -445,7 +446,7 @@ void tss_print_stats(FILE *wr, char *sname, int n, tss_stats_t *st, int ntests, 
     /* Print min and max: */
     switch(tp)
       { case TP_NCMP:
-          { int nmin = (int)(xmin+0.5), nmax = (int)(xmax+0.5);
+          { int32_t nmin = (int32_t)(xmin+0.5), nmax = (int32_t)(xmax+0.5);
             fprintf(wr, " & %8d & %8d", nmin, nmax); 
             fprintf(stderr, "  %8d .. %8d", nmin, nmax);
           }
@@ -506,11 +507,11 @@ void tss_print_stats(FILE *wr, char *sname, int n, tss_stats_t *st, int ntests, 
     fflush(wr);
   }
 
-tss_stats_t tss_test_sorter(int *h, int n, tss_sorter_t srt, int_cmp_t cmp, int sgn)
+tss_stats_t tss_test_sorter(int32_t *h, int32_t n, tss_sorter_t srt, int32_t_cmp_t cmp, int32_t sgn)
   { 
     tss_stats_t st;
     /* Start with trivial perm */
-    int i;
+    int32_t i;
     for (i = 0; i < n; i++) { h[i] = i; }
     /* Sort the data: */
     ncmp = 0;
@@ -520,7 +521,7 @@ tss_stats_t tss_test_sorter(int *h, int n, tss_sorter_t srt, int_cmp_t cmp, int 
     st.ncmp = ncmp;
     /* Check range: */
     for (i = 0; i < n; i++)
-      { int hi = h[i]; 
+      { int32_t hi = h[i]; 
         if ((hi < 0) || (hi >= n)) {  affirm(FALSE, "not 0..n-1"); }
       }
     /* Check ordering: */
@@ -529,22 +530,22 @@ tss_stats_t tss_test_sorter(int *h, int n, tss_sorter_t srt, int_cmp_t cmp, int 
           { affirm(FALSE, "out of order"); }
       }
     /* Check permutation: */
-    int seen[n]; 
+    int32_t seen[n]; 
     for (i = 0; i < n; i++) { seen[i] = 0; }
     for (i = 0; i < n; i++)
-      { int hi = h[i]; 
+      { int32_t hi = h[i]; 
         if (seen[hi]) {  affirm(FALSE, "not perm"); }
         seen[hi] = 1;
       }
     return st;
   }
 
-int tss_cmp(int a, int b)
+int32_t tss_cmp(int32_t a, int32_t b)
   {
     affirm((a >= 0) && (a < ndata), "tss_cmp: bad a");
     affirm((b >= 0) && (b < ndata), "tss_cmp: bad b");
     ncmp++;
-    long int da = data[a], db = data[b];
+    int64_t da = data[a], db = data[b];
     if (da < db) 
       { return -1; }
     else if (da > db)

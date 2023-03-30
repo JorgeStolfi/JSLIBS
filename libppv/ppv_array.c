@@ -1,5 +1,5 @@
 /* See ppv_array.h */
-/* Last edited on 2021-07-16 10:14:00 by jstolfi */
+/* Last edited on 2023-03-18 10:58:31 by stolfi */
 /* Copyright © 2003 by Jorge Stolfi, from University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
@@ -259,7 +259,7 @@ ppv_sample_t ppv_get_sample_at_pos
   { if (bps == 0)
       { return 0; }
     else if (bps < bpw)
-      { int spw = bpw/bps; /* Samples per word. */
+      { int32_t spw = bpw/bps; /* Samples per word. */
         /* Fetch the word {qw} containing the sample: */
         ppv_word_t qw;
         if (bpw == 8) 
@@ -277,7 +277,7 @@ ppv_sample_t ppv_get_sample_at_pos
         return smp; 
       }
     else if (bps > bpw)
-      { int wps = (bps + bpw - 1) / bpw; /* Words per sample. */
+      { int32_t wps = (bps + bpw - 1) / bpw; /* Words per sample. */
         ppv_word_t mask = (ppv_word_t)((((uint64_t)1) << bps) - 1); /* Mask to remove padding. */
         /* Gather the sample words into {qw}: */
         ppv_word_t qw = 0;

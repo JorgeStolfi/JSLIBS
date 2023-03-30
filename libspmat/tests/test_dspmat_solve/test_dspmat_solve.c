@@ -4,7 +4,7 @@
 
 #define test_dspmat_solve_C_COPYRIGHT "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 /* Created on 2007-01-02 by J. Stolfi, UNICAMP */
-/* Last edited on 2018-03-04 23:00:22 by stolfilocal */ 
+/* Last edited on 2023-03-18 10:44:02 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -38,8 +38,8 @@ typedef enum
 #define i32min(X,Y) (((X) <= (Y) ? (X) : (Y)))
 #define i32max(X,Y) (((X) >= (Y) ? (X) : (Y)))
 
-void test_dspmat_extra(int nt);
-void test_dspmat_solve(int it, bool_t verbose, solver_t solver);
+void test_dspmat_extra(int32_t nt);
+void test_dspmat_solve(int32_t it, bool_t verbose, solver_t solver);
 
 void show_dspmat(char *Mname, dspmat_t *M, dspmat_count_t nPrint);
   /* Prints the first {nPrint} entries of {M} to {stderr}. */
@@ -64,14 +64,14 @@ void compare_vectors(double v[], char *vname, double r[], char *rname, dspmat_si
 
 /* IMPLEMENTATIONS */
 
-int main (int argn, char **argv)
+int32_t main (int32_t argn, char **argv)
   { test_dspmat_extra(30);  
     return 0;
   }
 
-void test_dspmat_extra(int nt)
+void test_dspmat_extra(int32_t nt)
   { fprintf(stderr, "Checking {dspmat_extra,dspmat_linsys_{GS,ALT,BOOT}} ...\n");
-    int it;
+    int32_t it;
     for (it = 0; it < nt; it++)
       { 
         fprintf(stderr, "=== pass %d ===\n", it);
@@ -85,7 +85,7 @@ void test_dspmat_extra(int nt)
       }
   }
    
-void test_dspmat_solve(int it, bool_t verbose, solver_t solver)
+void test_dspmat_solve(int32_t it, bool_t verbose, solver_t solver)
   {
     char *solver_name[3] = {"GS", "ALT", "BOOT"};
     if (verbose) 
@@ -95,7 +95,7 @@ void test_dspmat_solve(int it, bool_t verbose, solver_t solver)
     dspmat_size_t n = int32_abrandom(1,11)*int32_abrandom(1,17);
     dspmat_t A = dspmat_new(n,n,0); 
     double b[n];
-    int i;
+    int32_t i;
     if (it == 0)
       { /* Use a diagonal matrix and a simple right-hand-side vector: */ 
         dspmat_pos_t posA = dspmat_fill_diagonal(&A, 0, 0,0, 4.0, n);
@@ -112,7 +112,7 @@ void test_dspmat_solve(int it, bool_t verbose, solver_t solver)
     
     /* Solve it: */
     double x[n];
-    int max_iter = 30;
+    int32_t max_iter = 30;
     double omega = 0.50;
     double abs_tol = 1.0e-4;
     double rel_tol = 1.0e-3;
@@ -169,7 +169,7 @@ bool_t check_dspmat(dspmat_t *A, char *Aname, dspmat_t *R, char *Rname, bool_t v
   }
       
 void compare_vectors(double v[], char *vname, double r[], char *rname, dspmat_size_t n, double abs_tol, double rel_tol)
-  { int k;
+  { int32_t k;
     for (k = 0; k < n; k++) 
       { double vk = v[k];
         double rk = r[k];
@@ -233,7 +233,7 @@ void dspmat_throw_nzd(dspmat_t *M, double frac, double mag)
     dspmat_pos_t pos_old = 0;;
     dspmat_pos_t pos_new = M->ents; /* Current number of filled entries in {M}. */
     
-    int row;
+    int32_t row;
     for (row = 0; row < M->rows; row++)
       { bool_t has_diag = FALSE; /* TRUE iff row {row} has a diagonal elem. */
         while (pos_old < n_old)
@@ -256,7 +256,7 @@ void dspmat_throw_nzd(dspmat_t *M, double frac, double mag)
   }
 
 void show_vec(char *vname, double v[], dspmat_size_t n, dspmat_size_t nPrint)
-  { int i;
+  { int32_t i;
     for (i = 0; i < n; i++)
       { fprintf(stderr, "  %s[%4d] = %9.4f  %24.16e\n", vname, i, v[i], v[i]); }
   }

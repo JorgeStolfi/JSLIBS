@@ -2,12 +2,14 @@
 #define PROG_DESC "tests the {bvtable.h} procedures"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2018-03-04 22:55:33 by stolfilocal */
+/* Last edited on 2023-03-18 11:08:32 by stolfi */
 /* Created on 2007-01-31 by J. Stolfi, UNICAMP */
 
 #define PROG_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -26,7 +28,7 @@
 
 #include <bvtable.h>
 
-int main (int argc, char **argv);
+int32_t main (int32_t argc, char **argv);
 
 typedef unsigned char ubyte;
 
@@ -36,7 +38,7 @@ void test_bvtable_suite(uint32_t nItems);
     from minimum size. The test is repeated for several 
     item sizes. */
 
-void test_bvtable_static(uint32_t nItems, size_t szRel, size_t sz, int nTimes, bool_t preAlloc);
+void test_bvtable_static(uint32_t nItems, size_t szRel, size_t sz, int32_t nTimes, bool_t preAlloc);
   /* Tests the {bvtable.h} operations with {nItems}, each {sz} bytes 
     long, with only the first {szRel} being relevant for 
     item equivalence. If {preAlloc} is true, pre-allocates the table
@@ -50,7 +52,7 @@ uint64_t ubytes_hash(ubyte *p, size_t szRel);
   /* Computes a hash function from the frist {szRel} bytes starting at {*p}.
     Fails if {p} is NULL or {n} is 0. Cost: {K*szRel}. */
 
-int ubytes_cmp(ubyte *x, ubyte *y, size_t szRel);
+int32_t ubytes_cmp(ubyte *x, ubyte *y, size_t szRel);
   /* Compares lexicographically the first {szRel} unsigned 
     bytes that start at {*x} and {*y} respectively. 
     Returns {-1,0,+1} depending on the {x} string being less than,
@@ -88,8 +90,8 @@ void fill_item(ubyte *p, size_t szRel, uint32_t ic, size_t sz, uint32_t ii);
     usually depends on {ii}. */
     
 void test_bvtable_correctness(uint32_t nItems, uint32_t nGuess, size_t szRel, size_t sz, ubyte *item[], uint32_t eqix[]);
-// void test_bvtable_speed(uint32_t nItems, ubyte *item[], uint32_t eqix[], bvtable_t *S, int nTimes, bool_t strings);
-// void print_timing(char *func, double usec, int nops);
+// void test_bvtable_speed(uint32_t nItems, ubyte *item[], uint32_t eqix[], bvtable_t *S, int32_t nTimes, bool_t strings);
+// void print_timing(char *func, double usec, int32_t nops);
 
 #define MAX_ITEM_BYTES (64*1024*1024)
   /* Max total byte size of all items in test set. */
@@ -97,7 +99,7 @@ void test_bvtable_correctness(uint32_t nItems, uint32_t nGuess, size_t szRel, si
 static ubyte zone[MAX_ITEM_BYTES];
   /* The area where items are allocated from. */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   {
     srandom(4615);
     fprintf(stderr, "random() = %ld\n", random());
@@ -114,7 +116,7 @@ int main (int argc, char **argv)
 void test_bvtable_suite(uint32_t nItems)
   {
     uint32_t nTimes = 100000; /* Number of timing calls per function. */
-    int pa;
+    int32_t pa;
     for (pa = 0; pa < 2; pa++)
       { test_bvtable_static(nItems, 1,   2,   nTimes, (pa == 0));
         test_bvtable_static(nItems, 10,  20,  nTimes, (pa == 0));
@@ -122,7 +124,7 @@ void test_bvtable_suite(uint32_t nItems)
       }
   }
 
-void test_bvtable_static(uint32_t nItems, size_t szRel, size_t sz, int nTimes, bool_t preAlloc)
+void test_bvtable_static(uint32_t nItems, size_t szRel, size_t sz, int32_t nTimes, bool_t preAlloc)
   { 
     fprintf(stderr, "============================================================\n");
     fprintf(stderr, "testing with %u items of %lu bytes (first %lu relevant)\n", nItems, sz, szRel);
@@ -234,7 +236,7 @@ void test_bvtable_correctness(uint32_t nItems, uint32_t nGuess, size_t szRel, si
 
     bvtable_t *S = bvtable_new(sz, nGuess);
 
-    auto int cmp_proc(void *x, void *y, size_t szS);
+    auto int32_t cmp_proc(void *x, void *y, size_t szS);
     auto uint64_t hash_proc(void *p, size_t szS);
     
     /* Add the items to the set: */
@@ -302,7 +304,7 @@ void test_bvtable_correctness(uint32_t nItems, uint32_t nGuess, size_t szRel, si
     free(item_fin);
     return;
 
-    int cmp_proc(void *x, void *y, size_t szS)
+    int32_t cmp_proc(void *x, void *y, size_t szS)
       { 
         assert(szS == sz);
         return ubytes_cmp((ubyte*)x, (ubyte*)y, szRel); 
@@ -316,22 +318,22 @@ void test_bvtable_correctness(uint32_t nItems, uint32_t nGuess, size_t szRel, si
 
   }
 
-// void test_bvtable_speed(int nItems, ubyte *item[], int eqix[], bvtable_t *S, int nTimes, bool_t strings)
+// void test_bvtable_speed(int32_t nItems, ubyte *item[], int32_t eqix[], bvtable_t *S, int32_t nTimes, bool_t strings)
 //   {
 //     fprintf(stderr, "TESTING SPEED\n");
 //     
-//     int i;
+//     int32_t i;
 //     double start, stop; /* Clock readings. */
 //     
 //     /* Pick a number {step} that is relatively prime to {nItems}: */
-//     int step = (int)(0.61803398874989484820 * nItems);
+//     int32_t step = (int32_t)(0.61803398874989484820 * nItems);
 //     while(gcd(step, nItems) != 1) { step--; }
 // 
 //     /* Measure mean time of {bvtable_append_last} from empty to full: */
 //     bvtable_stats_clear(S);
 //     double tAdd = 0;
-//     int kAdd = 0; /* Next item to add. */
-//     int nAdd = 0;   /* Number of calls to {bvtable_insert_last}. */
+//     int32_t kAdd = 0; /* Next item to add. */
+//     int32_t nAdd = 0;   /* Number of calls to {bvtable_insert_last}. */
 //     while(nAdd < nTimes)
 //       { /* Clear the list and insert all items: */
 //         bvtable_clear(S);
@@ -351,8 +353,8 @@ void test_bvtable_correctness(uint32_t nItems, uint32_t nGuess, size_t szRel, si
 //     /* Measure mean time of {bvtable_get_index} in full table: */
 //     bvtable_stats_clear(S);
 //     double tInd = 0;
-//     int kInd = 0;     /* Next item to look up. */
-//     int nInd = 0;   /* Number of calls to {bvtable_get_index}. */
+//     int32_t kInd = 0;     /* Next item to look up. */
+//     int32_t nInd = 0;   /* Number of calls to {bvtable_get_index}. */
 //     while(nInd < nTimes)
 //       { /* Clear the list and insert all items: */
 //         bvtable_clear(S);
@@ -377,7 +379,7 @@ void test_bvtable_correctness(uint32_t nItems, uint32_t nGuess, size_t szRel, si
 //     bvtable_stats_print(S);
 //   }
 // 
-// void print_timing(char *func, double usec, int nops)
+// void print_timing(char *func, double usec, int32_t nops)
 //   {
 //     fprintf(stderr, "%-25s  %13.0f usec / %10d ops = %13.6f usec/op\n", func, usec, nops, usec/nops);
 //   }
@@ -388,7 +390,7 @@ uint64_t ubytes_hash(ubyte *p, size_t szRel)
     return bvhash_bytes(p, szRel);
   }
 
-int ubytes_cmp(ubyte *x, ubyte *y, size_t szRel)
+int32_t ubytes_cmp(ubyte *x, ubyte *y, size_t szRel)
   { if (x == y) { return 0; }
     while (szRel > 0)
       { ubyte xk = (*x); x++;

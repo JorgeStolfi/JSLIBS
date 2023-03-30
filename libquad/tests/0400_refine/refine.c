@@ -2,7 +2,7 @@
 #define PROG_DESC "Refinement of quad-edge maps by quad triangulation."
 #define PROG_VERS "1.0"
 
-/* Last edited on 2007-02-05 10:13:34 by stolfi */ 
+/* Last edited on 2023-03-18 10:52:07 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2007  State University of Campinas (UNICAMP)"
@@ -20,13 +20,14 @@
   "    -order {ORDER} \\\n" \
   "    -output {NAME_OUT}"
 
-#include <oct.h>
-#include <bool.h>
-
 #define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
+#include <oct.h>
+#include <bool.h>
 
 typedef struct options_t
   { char *input;
@@ -75,7 +76,7 @@ oct_arc_t mk_edge(uint grid_order)
     return a;
   }
   
- int main(int argc, char **argv)
+ int32_t main(int32_t argc, char **argv)
   { options_t *o = get_options(argc, argv);
     oct_arc_t m = read_map(o->input);
     write_map(o->output, m);
@@ -152,7 +153,7 @@ void putwr (oct_arc_t a)
   "\n" \
   argparser_help_info_STANDARD_RIGHTS
 
-options_t *get_options (int argc, char **argv)
+options_t *get_options (int32_t argc, char **argv)
   {
     /* Initialize argument parser: */
     argparser_t *pp = argparser_new(stderr, argc, argv);

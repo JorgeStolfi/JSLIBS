@@ -1,5 +1,5 @@
 /* See {salamic_xml.h}. */
-/* Last edited on 2022-10-20 07:57:32 by stolfi */
+/* Last edited on 2023-03-18 11:30:54 by stolfi */
 
 /*
 Original code {tinyxml2.cpp} by Lee Thomason (www.grinninglizard.com)
@@ -1132,7 +1132,7 @@ XMLError XMLAttribute::QueryIntValue( int32_t* value ) const
 }
 
 
-XMLError XMLAttribute::QueryUnsignedValue( unsigned int32_t* value ) const
+XMLError XMLAttribute::QueryUnsignedValue( uint32_t* value ) const
 {
     if ( XMLUtil::ToUnsigned( Value(), value )) {
         return XML_NO_ERROR;
@@ -3135,7 +3135,7 @@ public:
     */
     XMLError QueryIntValue( int32_t* value ) const;
     /// See QueryIntValue
-    XMLError QueryUnsignedValue( unsigned int32_t* value ) const;
+    XMLError QueryUnsignedValue( uint32_t* value ) const;
     /// See QueryIntValue
     XMLError QueryBoolValue( bool* value ) const;
     /// See QueryIntValue
@@ -3282,7 +3282,7 @@ public:
         return a->QueryIntValue( value );
     }
     /// See QueryIntAttribute()
-    XMLError QueryUnsignedAttribute( const char* name, unsigned int32_t* value ) const      {
+    XMLError QueryUnsignedAttribute( const char* name, uint32_t* value ) const      {
         const XMLAttribute* a = FindAttribute( name );
         if ( !a ) {
             return XML_NO_ATTRIBUTE;
@@ -3336,7 +3336,7 @@ public:
                 return QueryIntAttribute( name, value );
         }
 
-        int32_t QueryAttribute( const char* name, unsigned int32_t* value ) const {
+        int32_t QueryAttribute( const char* name, uint32_t* value ) const {
                 return QueryUnsignedAttribute( name, value );
         }
 

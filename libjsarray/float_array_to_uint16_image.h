@@ -2,8 +2,10 @@
 #define float_array_to_uint16_image_H
 
 /* Conversion between {uint16_image_t} images and multi-dimensional float arrays. */
-/* Last edited on 2017-06-21 22:34:37 by stolfilocal */ 
+/* Last edited on 2023-03-18 11:01:19 by stolfi */ 
 
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
 
 #include <bool.h>
@@ -37,8 +39,8 @@ float_array_t *float_array_from_uint16_image
 uint16_image_t *float_array_to_uint16_image
   ( float_array_t *A,
     bool_t isMask,
-    int chns,
-    int ch[],
+    int32_t chns,
+    int32_t ch[],
     double lo[], 
     double hi[], 
     bool_t yrev,

@@ -1,5 +1,5 @@
 /* See jsaudio_au.h */
-/* Last edited on 2023-03-02 12:31:24 by stolfi */
+/* Last edited on 2023-03-19 15:35:59 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -109,7 +109,7 @@ au_file_header_t jsa_read_au_file_header(FILE *rd)
   }
 
 #define SCALE_INT32_T (2.0 * 1024.0 * 1024.0 * 1024.0) /* {2^31} */
-#define SCALE_SHORT (32.0 * 1024.0) /* {2^15} */
+#define SCALE_INT16_T (32.0 * 1024.0) /* {2^15} */
 
 void jsa_skip_au_file_samples(FILE *rd, au_file_header_t *h, int32_t ns)
   {
@@ -138,13 +138,13 @@ void jsa_read_au_file_samples(FILE *rd, au_file_header_t *h, sound_t *s, int32_t
               {
                 case 3:
                   { /* Reads 16 bit integer, converts to {double}. */
-                    short rv = jsa_read_short_be(rd);
-                    dv = ((double)rv)/SCALE_SHORT;
+                    int16_t rv = jsa_read_int16_be(rd);
+                    dv = ((double)rv)/SCALE_INT16_T;
                   }
                   break;
                 case 5:
                   { /* Reads 32 bit integer, converts to {double}. */
-                    int32_t rv = jsa_read_int32_t_be(rd);
+                    int32_t rv = jsa_read_int32_be(rd);
                     dv = ((double)rv)/SCALE_INT32_T;
                   }
                   break;

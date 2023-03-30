@@ -1,14 +1,17 @@
 /* Sampled multi-dimensional signals. */
-/* Last edited on 2021-07-08 15:54:54 by jstolfi */
+/* Last edited on 2023-03-18 11:31:14 by stolfi */
 
 #ifndef ppv_signal_H
 #define ppv_signal_H
 
 #define _GNU_SOURCE
-#include <ppv_types.h>
-#include <ppv_array.h>
-#include <interval.h>
+#include <stdint.h>
 #include <stdio.h>
+
+#include <interval.h>
+
+#include <ppv_array.h>
+#include <ppv_types.h>
 
 /* 
   Multi-dimensional sampled signals
@@ -106,7 +109,7 @@ ppv_signal_t ppv_signal_new(ppv_array_t A);
     converted to the final sample value by the affine map that takes
     the interval {[0_1]} to the range {f.rng}. */
     
-double_vec_t *ppv_signal_table_mu_law(int n, double lo, double hi);
+double_vec_t *ppv_signal_table_mu_law(int32_t n, double lo, double hi);
   /* Returns a table that maps integers {0..n-1} to 
     real values spaced according to the mu-law encoding formula,
     shifted and scaled to the range {[lo _ hi]}.  
@@ -115,7 +118,7 @@ double_vec_t *ppv_signal_table_mu_law(int n, double lo, double hi);
     one should specify {lo = 0}, {hi = 1}, and {f.rng = [-1 _ +1]}.
     One could also use {lo = -1}, {hi = +1}, and {f.rng = [0 _ 1]}. */
     
-double_vec_t *ppv_signal_table_gamma(int n, double lo, double hi, double gamma);    
+double_vec_t *ppv_signal_table_gamma(int32_t n, double lo, double hi, double gamma);    
   /* Returns a table that maps each integer {q} in {0..n-1} to 
     the real value {(q/n)^gamma}, scaled and shifted to
     the range {[lo _ hi]}.
@@ -159,7 +162,7 @@ double_vec_t *ppv_signal_table_gamma(int n, double lo, double hi, double gamma);
     signal value is obtained by linear interpolation of two {i}-slices
     that bracket {x[i]}. */
     
-double ppv_signal_univariate_interp(int deg, double s[], double z);
+double ppv_signal_univariate_interp(int32_t deg, double s[], double z);
   /* Returns the univariate interpolation of sample values {s[0..deg]}
      at the argument {z}; which should lie in {[0_1]} 
      if {deg} is odd, and in {-0.5 _ +0.5]} if {deg} is even. */
@@ -483,7 +486,7 @@ bool_t ppv_descriptor_is_valid ( ppv_signal_t *A, bool_t die );
     For this implementation, the word size {A.bpw} must be 8, 16, or
     32. The implementation below assumes that words can be directly
     addressed by a pointer of the appropriate type, and that an
-    {unsigned int} variable is at least 32 bits long.
+    {uint32_t} variable is at least 32 bits long.
 
   Packing of "small" samples
 

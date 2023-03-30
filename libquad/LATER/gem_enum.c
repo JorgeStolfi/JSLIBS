@@ -1,5 +1,5 @@
 /* See gem_enum.h. */
-/* Last edited on 2009-03-06 15:10:09 by stolfi */
+/* Last edited on 2023-03-18 10:55:51 by stolfi */
 
 #define gem_enum_C_copyright \
   "Copyright © 1996, 2006 Institute of Computing, Unicamp."
@@ -11,10 +11,13 @@
   latter was converted to C by J. Stolfi in 1996 and was substantially
   revised by him in January 2007. */
 
-#include <oct.h>
-#include <gem_enum.h>
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <malloc.h>
 #include <stdint.h>
+
+#include <oct.h>
+#include <gem_enum.h>
 
 uint gem_node_degree(gem_arc_t p)
   { uint deg = 0;
@@ -104,7 +107,7 @@ bool_t EnumElemsEven(gem_arcs_t root, uint dimObj, gem_visit_t visit, gem_arcs_t
     vis[2] = MyVisit;
     vis[3] = MyVisit;
 
-    int nP = 0; /* Visited places are {vP->el[0..nP-1]}, if {vP != NULL}. */ 
+    int32_t nP = 0; /* Visited places are {vP->el[0..nP-1]}, if {vP != NULL}. */ 
     
     bool_t stop = enum_orbits(root, 3, stp, vis, NULL);
     
@@ -161,7 +164,7 @@ bool_t EnumElemsAny(gem_arcs_t root, uint dimObj, gem_visit_t visit, gem_arcs_t 
     vis[3] = MyVisit;
     vis[4] = MyVisit;
 
-    int nP = 0; /* Visited places are {vP->el[0..nP-1]}, if {vP != NULL}. */ 
+    int32_t nP = 0; /* Visited places are {vP->el[0..nP-1]}, if {vP != NULL}. */ 
     
     bool_t stop = enum_orbits(root, 4, stp, vis, NULL);
     
@@ -222,7 +225,7 @@ bool_t EnumPlacesOfElem(gem_arcs_t root, uint dimPiv, gem_visit_t visit, gem_arc
     vis[1] = MyVisit; 
     vis[2] = MyVisit; 
     
-    int nP = 0; /* Visited places are {vP->el[0..nP-1]}, if {vP != NULL}. */ 
+    int32_t nP = 0; /* Visited places are {vP->el[0..nP-1]}, if {vP != NULL}. */ 
     
     /* OK, now enumerate the orbits: */
     bool_t stop = enum_orbits(root, 2, stp, vis, NULL);
@@ -300,7 +303,7 @@ bool_t EnumElemsOfElemEven(gem_arcs_t root, uint dimPiv, uint dimObj, gem_visit_
     vis[1] = &MyVisit;
     vis[2] = &MyVisit;
 
-    int nP = 0; /* Visited places are {vP->el[0..nP-1]}, if {vP != NULL}. */ 
+    int32_t nP = 0; /* Visited places are {vP->el[0..nP-1]}, if {vP != NULL}. */ 
 
     bool_t stop = enum_orbits(root, 2, stp, vis, vP);
     
@@ -370,7 +373,7 @@ bool_t EnumElemsOfElemAny(gem_arcs_t root, uint dimPiv, uint dimObj, gem_visit_t
     vis[2] = &MyVisit;
     vis[3] = &MyVisit;
 
-    int nP = 0; /* Visited places are {vP->el[0..nP-1]}, if {vP != NULL}. */ 
+    int32_t nP = 0; /* Visited places are {vP->el[0..nP-1]}, if {vP != NULL}. */ 
 
     bool_t stop = enum_orbits(root, 2, stp, vis, vP);
     
@@ -447,7 +450,7 @@ bool_t EnumIncidencesOfElem(gem_arcs_t root, uint dimPiv, uint dimObj, gem_visit
     vis[1] = MyVisit; 
     vis[2] = MyVisit; 
 
-    int nP = 0; /* Visited places are {vP->el[0..nP-1]}, if {vP != NULL}. */ 
+    int32_t nP = 0; /* Visited places are {vP->el[0..nP-1]}, if {vP != NULL}. */ 
 
     /* OK, now enumerate the orbits: */
     bool_t stop = enum_orbits(root, 2, stp, vis, NULL);

@@ -1,13 +1,16 @@
 /* pqueue - internal representation of a pqueue_t. */
-/* Last edited on 2010-06-04 19:26:05 by stolfi */
+/* Last edited on 2023-03-18 11:15:25 by stolfi */
 
 #ifndef pqueue_rep_H
 #define pqueue_rep_H
 
+#define _GNU_SOURCE
+#include <stdint.h>
+
 #include <pqueue.h>
     
 typedef struct pqueue_rep_t  /* A priority queue. */
-  { int order;               /* {-1} is max-first, {-1} is min-first. */
+  { int32_t order;               /* {-1} is max-first, {-1} is min-first. */
     pqueue_count_t n;        /* Number of items currently in queue */
     pqueue_item_t *itm;      /* {itm[0..n-1]} are the items in the queue. */
     double  *val;            /* {val[i]} is the value of item {itm[i]}. */

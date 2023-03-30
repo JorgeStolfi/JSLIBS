@@ -1,5 +1,5 @@
 /* See spectrum_table_binned.h */
-/* Last edited on 2013-10-21 02:44:29 by stolfilocal */ 
+/* Last edited on 2023-03-18 16:33:00 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <limits.h>
@@ -8,6 +8,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include <jsmath.h>
 #include <jsroot.h>
@@ -20,7 +21,7 @@
 
 /* INTERNAL PROTOTYPES */
 
-void spectrum_table_binned_freq_range(int fr[], int sz[], double *frLo, double *frHi);
+void spectrum_table_binned_freq_range(int32_t fr[], int32_t sz[], double *frLo, double *frHi);
   /* Given the frequency vector (in waves per image) and the image
     dimensions (in pixels) of a Hartley transform component, computes
     an interval {*frLo,*frHi} for its absolute frequency (in waves per
@@ -61,10 +62,10 @@ double spectrum_table_binned_splat_weight(double frLo, double frHi, double fmin,
 
 vec_typeimpl(spectrum_table_binned_t,spectrum_table_binned,spectrum_table_binned_entry_t); 
   
-spectrum_table_binned_t spectrum_table_binned_make(int nRanges)
+spectrum_table_binned_t spectrum_table_binned_make(int32_t nRanges)
   {
     demand(nRanges > 0, "invalid nRanges");
-    int i;
+    int32_t i;
    /* Allocate binned table and define its fmid ranges: */
     spectrum_table_binned_t tb = spectrum_table_binned_new(nRanges);
     double fmin = 0; /* Lower limit of next band. */
@@ -99,15 +100,16 @@ spectrum_table_binned_t spectrum_table_binned_make(int nRanges)
 
 void spectrum_table_binned_add_all
   ( float_image_t *P,  
-    int c,
+    bool_t center,
+    int32_t c,
     spectrum_table_binned_t *tb,
     bool_t verbose
   )
   {
-    int cols = (int)P->sz[1];
-    int rows = (int)P->sz[2];
+    int32_t cols = (int32_t)P->sz[1];
+    int32_t rows = (int32_t)P->sz[2];
 
-    int nRanges = tb->ne;
+    int32_t nRanges = tb->ne;
     demand(nRanges > 0, "invalid nRanges");
     
     if (verbose)
@@ -118,20 +120,23 @@ void spectrum_table_binned_add_all
     double P_power = 0;
     
     /* General parameters of frequencies: */
-    int fd[2] = { cols, rows };        /* Denominator of natural freq vector. */
-    int fnMax[2] = { cols/2, rows/2 }; /* Max numerators of natural freq vector. */
+    int32_t fd[2] = { cols, rows };        /* Denominator of natural freq vector. */
+    int32_t fnMax[2] = { cols/2, rows/2 }; /* Max numerators of natural freq vector. */
     
     /* Splat the spectrum terms over the table {tb}, with smoothing. */
-    int x, y;
-    for (y = 0; y < rows; y++)
-      for (x = 0; x < cols; x++)
-        { /* Grab the spectrum entry's power: */
-          double pwr = float_image_get_sample(P, c, x, y);
+    for (int32_t ry = 0; ry < rows; ry++)
+      for (int32_t rx = 0; rx < cols; rx++)
+        { /* Adjust for centering: */
+          int32_t fx = (center ? (rx + cols - cols/2) % cols : rx);
+          int32_t fy = (center ? (ry + rows - rows/2) % rows : ry);
+        
+          /* Grab the spectrum entry's power: */
+          double pwr = float_image_get_sample(P, c, fx, fy);
 
           /* Get its natural frequency vector: */
-          int fn[2]; /* Numerator of natural freq vector in waves/pixel. */
-          fn[0] = (x <= fnMax[0] ? x : x - cols);
-          fn[1] = (y <= fnMax[1] ? y : y - rows);
+          int32_t fn[2]; /* Numerator of natural freq vector in waves/pixel. */
+          fn[0] = (fx <= fnMax[0] ? fx : fx - cols);
+          fn[1] = (fy <= fnMax[1] ? fy : fy - rows);
           
           /* Splat it onto {tb}: */
           spectrum_table_binned_add_term(tb, fn, fd, 1.0, pwr, verbose);
@@ -151,8 +156,8 @@ void spectrum_table_binned_add_all
   
 void spectrum_table_binned_add_term
   ( spectrum_table_binned_t *tb,
-    int fn[], 
-    int fd[],
+    int32_t fn[], 
+    int32_t fd[],
     double nTerms,
     double power,
     bool_t verbose
@@ -166,7 +171,7 @@ void spectrum_table_binned_add_term
     /* Compute the init reduced frequency {fr} and the direction {dir} for {frLo}: */
     double fr = frLo; /* Section {[frLo _ fr]} of splat done, section {[fr _ frHi]} remaining. */
     double fr_folded = fr - M_SQRT2*floor(fr/M_SQRT2);
-    int dir = +1;
+    int32_t dir = +1;
     assert((fr_folded >= -1.0e-8) && (fr_folded < M_SQRT2+1.0e-8));
     if (fr_folded >= M_SQRT1_2) { fr_folded = M_SQRT2 - fr_folded; dir = -dir; }
     /* Fudge roundoff errors: */
@@ -174,7 +179,7 @@ void spectrum_table_binned_add_term
     if (fr_folded > M_SQRT1_2) { fr_folded = M_SQRT1_2; }
 
     /* Locate the entry in table {tb} that contains {fr_folded}: */
-    int i = spectrum_table_binned_locate_entry(tb, fr_folded);
+    int32_t i = spectrum_table_binned_locate_entry(tb, fr_folded);
     while (fr < frHi)
       { if (verbose) { fprintf(stderr, "    fr = %18.10f  fr_folded = %18.10f", fr, fr_folded); }
         /* At this point, entry {tb.e[i]} contains {fr_folded}. */
@@ -213,17 +218,17 @@ void spectrum_table_binned_add_term
     if (verbose) { fprintf(stderr, "  done splatting\n"); }
   }
 
-void spectrum_table_binned_freq_range(int fr[], int sz[], double *frLo, double *frHi)
+void spectrum_table_binned_freq_range(int32_t fr[], int32_t sz[], double *frLo, double *frHi)
   {
     /* Compute the natural frequencies and splay widths on each axis (waves/pixel): */ 
     double fr_wpp[2]; /* Natural frequency in waves per pixel. */
     double rd_wpp[2]; /* Radius of fuzz ellipse along each axis. */
-    int i;
+    int32_t i;
     for (i = 0; i < 2; i++)
       { /* Reduce the integer frequency modulo the image size: */
-        int szi = sz[i];
-        int frMax = szi/2;
-        int frNat = ((fr[i] % szi) + szi) % szi;
+        int32_t szi = sz[i];
+        int32_t frMax = szi/2;
+        int32_t frNat = ((fr[i] % szi) + szi) % szi;
         if (frNat > frMax) { frNat = frNat - szi; }
         assert((-frMax <= frNat) && (frNat <= +frMax)); 
         /* Compute the axial natural frequency and frequency fuzz in waves per pixel: */
@@ -251,19 +256,19 @@ void spectrum_table_binned_freq_range(int fr[], int sz[], double *frLo, double *
     /* fprintf(stderr, "\n"); */
   }
 
-int spectrum_table_binned_locate_entry(spectrum_table_binned_t *tb, double f)
+int32_t spectrum_table_binned_locate_entry(spectrum_table_binned_t *tb, double f)
   {
-    int ntb = tb->ne;
+    int32_t ntb = tb->ne;
     if (f <= tb->e[0].fmin) 
       { return 0; }
     else if (f >= tb->e[ntb-1].fmax)
       { return ntb-1; }
     else
-      { int iLo = 0;
-        int iHi = ntb-1;
+      { int32_t iLo = 0;
+        int32_t iHi = ntb-1;
         while (TRUE)
           { demand(iLo <= iHi, "table has gaps or is out of order");
-            int iMd = (iLo + iHi)/2;
+            int32_t iMd = (iLo + iHi)/2;
             assert((iLo <= iMd) && (iMd <= iHi));
             if (f < tb->e[iMd].fmin)
               { iHi = iMd - 1; }
@@ -286,8 +291,8 @@ double spectrum_table_binned_splat_weight(double frLo, double frHi, double fmin,
       /* A C2 sigmoid that goes from 0 to 1 over the interval {[frLo _ frHi]}. */
   
     double sigmoid(double fr)
-      { double x = (fr - frLo)/(frHi - frLo);
-        return x - sin(2*M_PI*x)/(2*M_PI);
+      { double fx = (fr - frLo)/(frHi - frLo);
+        return fx - sin(2*M_PI*fx)/(2*M_PI);
       }
       
     return sigmoid(fmax) - sigmoid(fmin);

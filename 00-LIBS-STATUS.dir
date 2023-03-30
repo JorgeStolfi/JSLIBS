@@ -1,5 +1,5 @@
 # Libraries in compile order
-# Last edited on 2023-02-19 12:09:18 by stolfi
+# Last edited on 2023-03-20 00:57:22 by stolfi
 
 # + = OK.
 # ? = Status uncertain.
@@ -35,7 +35,7 @@
 + libaagraph
 + libaacmp
 
-? libzf
++ libzf
 
 + libbbopt
 

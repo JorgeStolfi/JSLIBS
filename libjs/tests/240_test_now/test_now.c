@@ -2,28 +2,29 @@
 #define PROG_DESC "test of {jstime.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2019-04-09 19:21:17 by jstolfi */
+/* Last edited on 2023-03-26 11:05:21 by stolfi */
 /* Created on 2007-01-14 by J. Stolfi, UNICAMP */
 
 #define test_now_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
-#include <affirm.h>
-#include <jstime.h>
-#include <jsfile.h>
-#include <bool.h>
-
-#include <stdio.h>
-#include <math.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <unistd.h>
+#define _GNU_SOURCE
 #include <stdint.h>
-#include <time.h>
-#include <sys/times.h>
-#include <sys/time.h>
-/* #include <sys/resource.h> */
 /* #include <sys/types.h> */
+/* #include <sys/resource.h> */
+#include <sys/time.h>
+#include <sys/times.h>
+#include <time.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <math.h>
+#include <stdio.h>
+
+#include <bool.h>
+#include <jsfile.h>
+#include <jstime.h>
+#include <affirm.h>
 
 #define MILLION 1000000L
 #define BILLION 1000000000L
@@ -45,7 +46,7 @@ double gettime_ansiclock(void);
     in microseconds, according to the ANSI {clock} function and the
     {CLOCKS_PER_SECOND} variable. */
 
-double gettime_unixtimes(int mode);
+double gettime_unixtimes(int32_t mode);
   /* Return a time value, in microseconds, obtained from the UNIX
     {times} function and {sysconf(_SC_CLK_TCK)}. The result depend on
     {mode}:
@@ -57,7 +58,7 @@ double gettime_unixtimes(int mode);
     The epoch for {mode=2} is fixed during the life of the process,
     but may change from process to process. */
 
-double gettime_jstime(int mode);
+double gettime_jstime(int32_t mode);
   /* Return a time value, in microseconds, obtained from 
     the functions in {jstime.h}: 
     
@@ -68,8 +69,8 @@ double gettime_jstime(int mode);
 double getres_nanoclock(clockid_t clk);
 double getres_ansiclock(void);
 double getres_utctime(void);
-double getres_unixtimes(int mode);
-double getres_jstime(int mode);
+double getres_unixtimes(int32_t mode);
+double getres_jstime(int32_t mode);
   /* These functions return the *nominal* granularity of the corresponding 
     clock functions, as defined in the documentation. */
 
@@ -77,16 +78,16 @@ double getres_jstime(int mode);
 
 #define MAXTIMER 11
 
-char *get_timer_name(int it);
-char *get_timer_tag(int it);
+char *get_timer_name(int32_t it);
+char *get_timer_tag(int32_t it);
   /* Returns a descriptive name and a short tag
     for timer procedure number {it}. */
   
-double get_timer_value(int it);
+double get_timer_value(int32_t it);
   /* Returns the current reading of timer procedure {it},
     converted to microseconds. */
   
-double get_timer_resolution(int it);
+double get_timer_resolution(int32_t it);
   /* Returns the nominal resolution of timer procedure {it},
     in microseconds. */
 
@@ -95,13 +96,13 @@ void compute(double *q, double *r, double *s);
     to {q} and twaddles the pair {r,s}. It's safe to call it several
     billion times. */
 
-void debug_timer_proc(int it, int64_t nmax);
+void debug_timer_proc(int32_t it, int64_t nmax);
   /* Debugs the timing function selected by {it}, which should be a
     number in {0..MAXTIMER}. Executes the {compute} operation multiple
     times between clock readings, from a small number up to {nmax}
     times. */
     
-void compare_timer_procs(FILE *wr, int nsteps, int64_t nops);
+void compare_timer_procs(FILE *wr, int32_t nsteps, int64_t nops);
   /* Compares all timing functions by reading them periodically during
     a long computation. Writes to {wr} a table with {MAXTIMER+2}
     colums: the total operation count {n} and {MAXTIMER+1} accumutated
@@ -109,8 +110,8 @@ void compare_timer_procs(FILE *wr, int nsteps, int64_t nops);
     rows. The first row should be all zeros, and the procedure
     executes the {compute} operation {nops} times between each row. */
 
-void start_timers(int nt, double beg[]);
-void stop_timers(int nt, double beg[]);
+void start_timers(int32_t nt, double beg[]);
+void stop_timers(int32_t nt, double beg[]);
   /* These procedures read all timers {0..nt-1} and update {beg[it]}
     appropriately. The sequence
     
@@ -127,8 +128,8 @@ void plot_timer_table(char *filename);
     
 /* MAIN */
 
-int main(int argc, char **argv)
-  { int it;
+int32_t main(int32_t argc, char **argv)
+  { int32_t it;
   
     bool_t debug_timers = FALSE;
     bool_t compare_timers = TRUE;
@@ -158,7 +159,7 @@ void plot_timer_table(char *filename)
     affirm(gp != NULL, "could not start 'gnuplot'");
     fprintf(gp, "set terminal x11\n");
     char *sep = "plot ";
-    int it;
+    int32_t it;
     for (it = 0; it <= MAXTIMER; it++)
       { char *tag = get_timer_tag(it);
         fprintf(gp, "%s \\\n", sep);
@@ -173,7 +174,7 @@ void plot_timer_table(char *filename)
 
 double getres_nanoclock(clockid_t clk)
   { struct timespec buf;
-    long int err = clock_getres(clk, &buf);
+    int64_t err = clock_getres(clk, &buf);
     if (err) 
       { perror("**clock_getres() failed"); 
         fprintf(stderr, "**result = %ld\n", err); 
@@ -184,7 +185,7 @@ double getres_nanoclock(clockid_t clk)
 
 double gettime_nanoclock(clockid_t clk)
   { struct timespec buf;
-    long int err = clock_gettime(clk, &buf);
+    int64_t err = clock_gettime(clk, &buf);
     if (err) 
       { perror("**clock_gettime() failed"); 
         fprintf(stderr, "**result = %ld\n", err); 
@@ -219,10 +220,10 @@ double gettime_ansiclock(void)
     return ((double)ticks)*MILLION/((double)CLOCKS_PER_SEC);
   }
   
-double getres_unixtimes(int mode)
+double getres_unixtimes(int32_t mode)
   { return ((double)MILLION)/((double)sysconf(_SC_CLK_TCK)); }
 
-double gettime_unixtimes(int mode)
+double gettime_unixtimes(int32_t mode)
   { struct tms ustimes;
     clock_t etime = times(&ustimes);
     if (etime < 0) 
@@ -230,7 +231,7 @@ double gettime_unixtimes(int mode)
         fprintf(stderr, "**result = %ld\n", etime); 
         exit(1);
       }
-    long int CPS = sysconf(_SC_CLK_TCK);
+    int64_t CPS = sysconf(_SC_CLK_TCK);
     switch(mode)
       { case 0: 
           return ((double)ustimes.tms_utime)*MILLION/((double)CPS);
@@ -244,13 +245,13 @@ double gettime_unixtimes(int mode)
       }
   }
 
-double getres_jstime(int mode)
+double getres_jstime(int32_t mode)
   { double maxus = 100.0 * 365.0 * 24.0 * 3600.0 * 1.0e6; /* 100 years in microseconds */
     double relres = 1.0e-15; /* Approx relative resolution of a {double}. */
     return maxus*relres; 
   }
 
-double gettime_jstime(int mode)
+double gettime_jstime(int32_t mode)
   { switch(mode)
       {
         case 0: return user_cpu_time_usec(); 
@@ -262,7 +263,7 @@ double gettime_jstime(int mode)
   
 /* GENERIC TIMER FUNCTIONS */
 
-char *get_timer_name(int it)
+char *get_timer_name(int32_t it)
   { switch(it)
       { case  0: return "nanoclock with CLOCK_PROCESS_CPUTIME_ID"; break;
         case  1: return "nanoclock with CLOCK_THREAD_CPUTIME_ID"; break;
@@ -280,7 +281,7 @@ char *get_timer_name(int it)
       }
   }
 
-char *get_timer_tag(int it)
+char *get_timer_tag(int32_t it)
   { switch(it)
       { case  0: return "nanoc(P)"; break;
         case  1: return "nanoc(T)"; break;
@@ -298,7 +299,7 @@ char *get_timer_tag(int it)
       }
   }
 
-double get_timer_value(int it)
+double get_timer_value(int32_t it)
   { switch(it)
       { case  0: return gettime_nanoclock(CLOCK_PROCESS_CPUTIME_ID);
         case  1: return gettime_nanoclock(CLOCK_THREAD_CPUTIME_ID);
@@ -316,7 +317,7 @@ double get_timer_value(int it)
       }
   }
 
-double get_timer_resolution(int it)
+double get_timer_resolution(int32_t it)
   { switch(it)
       { case  0: return getres_nanoclock(CLOCK_PROCESS_CPUTIME_ID);
         case  1: return getres_nanoclock(CLOCK_THREAD_CPUTIME_ID);
@@ -336,7 +337,7 @@ double get_timer_resolution(int it)
 
 /* ANALYSIS PROCS */
 
-void start_timers(int nt, double beg[])
+void start_timers(int32_t nt, double beg[])
   { /* We read each timer {it} 4 times, obtaining readings
       {t0,t1,t2,t3}, in such a way that the means {a=(t0+t1)/2} and
       {b=(t2+t3)/2} are coincident for all timers. We then compute
@@ -344,7 +345,7 @@ void start_timers(int nt, double beg[])
       should be the correct reading (on the average) when the
       procedure exits.  We set {beg[it]} to {-D} in preparation
       for {stop_timers}. */
-    int it;
+    int32_t it;
     for (it = 0; it < nt; it++)    { beg[it] = 0; }
     for (it = 0; it < nt; it++)    { beg[it] += 0.25*get_timer_value(it); }
     for (it = nt-1; it >= 0; it--) { beg[it] += 0.25*get_timer_value(it); }
@@ -352,13 +353,13 @@ void start_timers(int nt, double beg[])
     for (it = nt-1; it >= 0; it--) { beg[it] -= 0.75*get_timer_value(it); }
   }
 
-void stop_timers(int nt, double beg[])
+void stop_timers(int32_t nt, double beg[])
   { /* We do the same trick as in {start_timers}, except that 
     we extrapolate the readings to the time of entering the procedure,
     rather than to its exit.  Namely, we compute 
     {D = a-(b-a)/2 = (3a-b)/2 = (3t0+3t1-t2-t3)}
     and add that to {beg[it]}. */
-    int it;
+    int32_t it;
     for (it = 0; it < nt; it++)    { beg[it] += 0.75*get_timer_value(it); }
     for (it = nt-1; it >= 0; it--) { beg[it] += 0.75*get_timer_value(it); }
     for (it = 0; it < nt; it++)    { beg[it] -= 0.25*get_timer_value(it); }
@@ -374,10 +375,10 @@ void compute(double *q, double *r, double *s)
     (*s) += 5/(2*(*r) +1) - M_SQRT5;
   }
 
-void compare_timer_procs(FILE *wr, int nsteps, int64_t nops)
-  { int nt = MAXTIMER + 1;
+void compare_timer_procs(FILE *wr, int32_t nsteps, int64_t nops)
+  { int32_t nt = MAXTIMER + 1;
     /* Print timer names: */
-    int it;
+    int32_t it;
     for (it = 0; it < nt; it++)
       { char *name = get_timer_name(it);
         double res = get_timer_resolution(it);
@@ -400,7 +401,7 @@ void compare_timer_procs(FILE *wr, int nsteps, int64_t nops)
     /* Read all timers, save them negated in {beg[it]}: */
     start_timers(nt, beg);
     int64_t tops = 0; /* Number of operations performed so far. */
-    int st = 0;  /* Number of table steps already done. */
+    int32_t st = 0;  /* Number of table steps already done. */
     while(TRUE)
       { /* Read timers and set {beg[it]} to the interval since last {start_timers}: */
         stop_timers(nt, beg);
@@ -432,7 +433,7 @@ void compare_timer_procs(FILE *wr, int nsteps, int64_t nops)
     fflush(wr);
   }
        
-void debug_timer_proc(int it, int64_t nmax)
+void debug_timer_proc(int32_t it, int64_t nmax)
   { char *name = get_timer_name(it);
     double res = get_timer_resolution(it);
     fprintf(stderr, "timer[%02d] res = %28.10f  %s\n", it, res, name);

@@ -1,5 +1,5 @@
 /* See {hr2_pmap_adjust.h}. */
-/* Last edited on 2022-03-01 11:52:40 by stolfi */
+/* Last edited on 2023-03-20 23:01:18 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -23,21 +23,6 @@
 #include <hr2_pmap_adjust.h>
 
 /* INTERNAL PROTOTYPES */
-
-void hr2_pmap_adjust_get_var_elems
-  ( hr2_pmap_t *A, 
-    r3x3_t *R, 
-    double *Ap[],
-    double Re[],
-    int32_t *nvP
-  );
-  /* Identifies the elements of {*A} that are to be adjusted 
-    (that is, whose corresponding element of {*R} is nonzero.
-    Returns the number {nv} of such elements (a number in {0..8}) in {*nvP},
-    the addresses of those elemens of {*A} in {Ap[0..nv-1]},
-    and the values of the corresponding elements of {*R}
-    in {Re[0..nv-1]}.  These vectors should have at leat 8 elements.
-    The procedure fails if all 9 elements of {*R} are nonzero.*/
 
 /* IMPLEMENTATIONS */
 
@@ -219,7 +204,7 @@ void hr2_pmap_adjust_quad
     int32_t nv;
     double *Ap[8]; /* Pointers to adjustable elements of {A.dir}. */
     double Re[8];  /* Max adjustment amount of each element. */
-    hr2_pmap_adjust_get_var_elems(A, R, Ap, Re, &nv);
+    hr2_pmap_adjust_get_var_elems(&(A->dir), R, Ap, Re, &nv);
     fprintf(stderr, "%d adjustable elements found\n", nv);
     assert (nv <= 8);
    
@@ -303,21 +288,21 @@ void hr2_pmap_adjust_quad
   }
     
 void hr2_pmap_adjust_get_var_elems
-  ( hr2_pmap_t *A, 
+  ( r3x3_t *M, 
     r3x3_t *R, 
-    double *Ap[],
+    double *Mp[],
     double Re[],
     int32_t *nvP
   )
   {
     int32_t nv = 0;
-    for (int32_t i = 0; i < 6; i++) 
-      { for (int32_t j = 0; j < 6; j++) 
+    for (int32_t i = 0; i < 3; i++) 
+      { for (int32_t j = 0; j < 3; j++) 
           { double *Rp = &(R->c[i][j]); /* Pointer to element of {*R}. */
             assert((*Rp) >= 0.0);
             if ((*Rp) != 0)
-              { demand(nv < 8, "at least one element of {A} must be fixed}");
-                Ap[nv] = &(A->dir.c[i][j]); /* Pointer to element of {*A}. */
+              { demand(nv <= 8, "at least one element of {M} must be fixed}");
+                Mp[nv] = &(M->c[i][j]); /* Pointer to element of {*M}. */
                 Re[nv] = (*Rp);
                 nv++;
               }

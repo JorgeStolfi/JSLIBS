@@ -1,4 +1,4 @@
-# Last edited on 2021-06-26 04:22:00 by jstolfi
+# Last edited on 2023-03-29 19:25:06 by stolfi
 
 PROG := fn1_graphs
   
@@ -11,6 +11,7 @@ JS_LIBS := \
   libaa.a \
   libia.a \
   libflt.a \
+  libgeo.a \
   libjs.a
   
 all: check
@@ -55,12 +56,11 @@ clean::
 FUNCTION = FUNCTION.IS.UNDEFINED
 ifneq "/${FUNCTION}" "/FUNCTION.IS.UNDEFINED"
 
-OUTNAME := pf-${FUNCTION}
+OUTNAME := out/pf-${FUNCTION}
 
 PLOTSTEPS := 512
 
-MAINEPS := \
-  ${OUTNAME}-ia.eps
+MAINEPS := ${OUTNAME}-ia.eps
 
 OTHEREPS :=  \
   ${filter-out ${MAINEPS},${wildcard ${OUTNAME}-*.eps}}
@@ -74,13 +74,13 @@ EPSVIEW = evince
 run-single: ${MAINEPS} show-eps
 
 clean-single: 
-	/bin/rm -f ${PROG}.o ${PROG} ${EPSFILES}
+	/bin/rm -f ${PROG}.o ${PROG} ${OUTNAME}-*.eps
   
 ${MAINEPS}: ${PROG}
 	${PROG} ${FUNCTION} ${PLOTSTEPS}
 
 show-eps: ${MAINEPS}        
-	${EPSVIEW} ${EPSFILES}
+	${EPSVIEW} ${OUTNAME}-*.eps
         
 endif
 # ${FUNCTION}

@@ -1,36 +1,40 @@
-#ifndef float_image_align_H
-#define float_image_align_H
+#ifndef r2_align_multiscale_H
+#define r2_align_multiscale_H
 
 /* Tools for optimizing a vector of points on the plane. */
-/* Last edited on 2022-10-20 06:16:41 by stolfi */ 
+/* Last edited on 2023-03-22 19:48:56 by stolfi */ 
+
+#define _GNU_SOURCE
+#include <stdint.h>
 
 #include <bool.h>
-#include <stdint.h>
 #include <r2.h>
 #include <i2.h>
-#include <float_image.h>
 
 /* 
+  
   ALIGNMENT VECTOR
   
-  A (two-dimensional) /alignment vector/ for {ni} objects is a list of points 
-  {p[0..ni-1]} of the plane.  It says that point {p[i]} of each object {i}
-  corresponds in some sense to object {p[j]} of some other object {j}. 
+  The procedures in this interface look the two-dimensional alignment of
+  {ni} objects. See {r2_align.h} for the concepts of /alignment vector/.
+  As in that interface, we denote by {\RC = (\RR^2)^ni} the set of all
+  alignment vectors, and by {\BX} and {\BY} the alignment vectors such
+  that {\BX[i]} = (1,0)} sand {\BY[i] = (0,1)} for all {i} in {0..ni-1}.
+
+  See that interface also for the definition of the /basic ellipsoid/
+  {\RE \sub \RC}, defined by alignment vectors {ctr[0..ni-1]} (the
+  /domain center/) and {arad[0..ni-1]} (the /radius vector/); of its
+  affine span {\RB}; and of the space of /conformal delta vectors/
+  {\RV}, namely the linear subspace {\RV} of {\RC}
+  that is tangent to {\RB}.
   
-  For example, the objects could be images, and the alignment {p[0..ni-1]} could be 
-  claiming that some neighborhood of point {p[i]} of image {i} looks like
-  the similar neighborhood of point {p[j]} of image {j}.
+  Note the dimension of {\RB} and {\RV} is {nv = 2*ni - nz}, where
+  {nz} is the number of coordinates of {arad} that are zero.
   
-  SEARCH RADIUS
-  
-  The procedures below that look for an optimum alignment vector {p}
-  take a search radius {arad} that defines the maximum adjustment
-  allowed to the coordinates of the alignment vector, relative to the initial guess
-  {p0}.  Namely, the procedures will not allow the sum of squares
-  of {(p[i].c[j] - p0[i].c[j])/arad[i].c[j]} to exceed 1.
-  
-  If {arad[i].c[j]} is zero, in particular, the coordinate {p[i].c[j]} is
-  assumed to fixed at {p0[i].c[j]}. 
+  See that interface also for the definition of /balanced conformal delta vector/, and the
+  space {\RU \subseteq \RV} of all such delta vectors; of /balanced alignment/,
+  and the affine space {\CB = ctr + \RU}; and of the balanced the /search ellipsoid/
+  {\CF = \CE \cap \CB}
   
   SEARCH PRECISION
   
@@ -50,7 +54,7 @@
   with no adjustment. 
   */
 
-typedef double float_image_align_mismatch_t(int32_t ni, r2_t p[], i2_t iscale); 
+typedef double r2_align_multiscale_mismatch_t(int32_t ni, r2_t p[], i2_t iscale); 
   /* Type of a function that evaluates the mismatch of {ni} objects.
     in some neighborhood of points {p[0..ni-1]}, at a specified
     scale of resolution {iscale}.  The size of the neighborhood
@@ -80,83 +84,83 @@ typedef double float_image_align_mismatch_t(int32_t ni, r2_t p[], i2_t iscale);
     The function had better be C2 near the optimum alignment for
     quadratic optimization (see below). */
 
-void float_image_align_single_scale_enum
-  ( int32_t ni,                           /* Number of objects to align. */
-    i2_t iscale,                      /* Object scaling exponent along each axis. */  
-    float_image_align_mismatch_t *f2, /* Function that evaluates the mismatch between the objects. */
-    r2_t arad[],                      /* Max alignment adjustment for each object. */
-    double tol,                       /* Desired precision. */
-    r2_t p[],                         /* (IN/OUT) Corresponding points in each object. */
-    double *f2p                       /* (OUT) Mismatch for the computed alignment vector. */
+void r2_align_multiscale_single_scale_enum
+  ( int32_t ni,                         /* Number of objects to align. */
+    i2_t iscale,                        /* Object scaling exponent along each axis. */  
+    r2_align_multiscale_mismatch_t *F2, /* Function that evaluates the mismatch between the objects. */
+    r2_t arad[],                        /* Max delta vector coordinates for each object. */
+    double tol,                         /* Desired precision. */
+    r2_t p[],                           /* (IN/OUT) Corresponding points in each object. */
+    double *F2val_P                     /* (OUT) Mismatch for the computed alignment vector. */
   );
   /* Adjusts an alignment vector {p[0..ni-1]} for some {ni} objects so
     that they are as similar as possible in the neighborhoords of those
-    points, as defined by the mismatch function {f2(ni,p,iscale)}.
+    points, as defined by the mismatch function {F2(ni,p,iscale)}.
     Uses exhaustive enumeration of balanced alignment vectors withing the 
     allowed region defined by {arad} and {tol}.
     
     On input, {p[0..ni-1]}, must be a guess for the optimum alignment.
     On output, {p[0..ni-1]} will be the best alignment found.
     
-    The value of {f2(ni,iscale,p)} is returned on {*f2p}. */
+    The value of {F2(ni,iscale,p)} is returned on {*F2val_P}. */
 
-void float_image_align_single_scale_quadopt
-  ( int32_t ni,                   /* Number of objects to align. */
-    i2_t iscale,              /* Object scaling exponent along each axis. */  
-    float_image_align_mismatch_t *f2,  /* Function that evaluates the mismatch between the objects. */
-    r2_t arad[],              /* Max alignment adjustment for each object. */
-    double tol,               /* Desired precision. */
-    r2_t p[],                 /* (IN/OUT) Corresponding points in each object. */
-    double *f2p               /* (OUT) Mismatch for the computed alignment vector. */
+void r2_align_multiscale_single_scale_quadopt
+  ( int32_t ni,                         /* Number of objects to align. */
+    i2_t iscale,                        /* Object scaling exponent along each axis. */  
+    r2_align_multiscale_mismatch_t *F2, /* Function that evaluates the mismatch between the objects. */
+    r2_t arad[],                        /* Max delta vector coordinates for each object. */
+    double tol,                         /* Desired precision. */
+    r2_t p[],                           /* (IN/OUT) Corresponding points in each object. */
+    double *F2val_P                     /* (OUT) Mismatch for the computed alignment vector. */
   );
   /* Adjusts an alignment vector {p[0..ni-1]} for certain {ni} objects so
     that they are as similar as possible in the neighborhoords of those
-    points, as defined by the mismatch function {f2(ni,iscale,p)}.
+    points, as defined by the mismatch function {F2(ni,iscale,p)}.
     Uses iterated quadratic minimization within the set of balanced alignment
     vectors allowed by {arad} and {tol}. 
     
     On input, {p[0..ni-1]} must be a guess for the optimum alignment
     vector. On output, {p[0..ni-1]} will be the best alignment found.
     
-    The value of {f2(ni,iscale,p)} is returned on {*f2p}.
+    The value of {F2(ni,iscale,p)} is returned on {*F2val_P}.
     
-    The mismatch function {f2} had better have a single minimum within
+    The mismatch function {F2} had better have a single minimum within
     the search region, and preferably be approximately quadratic on {p}
     within that region. */
 
-void float_image_align_multi_scale
-  ( int32_t ni,                           /* Number of objects to align. */
-    float_image_align_mismatch_t *f2, /* Function that evaluates the mismatch between the objects. */
-    bool_t quadopt,                   /* Use quadratic optimization? */
-    r2_t arad[],                      /* Max alignment adjustment for each object. */
-    double tol,                       /* Desired precision. */
-    r2_t p[],                         /* (IN/OUT) Corresponding points in each object. */
-    double *f2p                       /* (OUT) Mismatch for the computed alignment vector. */
+void r2_align_multiscale
+  ( int32_t ni,                         /* Number of objects to align. */
+    r2_align_multiscale_mismatch_t *F2, /* Function that evaluates the mismatch between the objects. */
+    bool_t quadopt,                     /* Use quadratic optimization? */
+    r2_t arad[],                        /* Max delta vector coordinates for each object. */
+    double tol,                         /* Desired precision. */
+    r2_t p[],                           /* (IN/OUT) Corresponding points in each object. */
+    double *F2val_P                     /* (OUT) Mismatch for the computed alignment vector. */
   );
   /* Adjusts an alignment vector {p[0..ni-1]} for certain {ni} objects
     so that they are as similar as possible in the neighborhoords of
-    those points, as defined by the mismatch function {f2(ni,(0,0),p)}. Uses
+    those points, as defined by the mismatch function {F2(ni,(0,0),p)}. Uses
     a multiscale alignment strategy to efficiently search large alignment ranges.
     
     On input, {p[0..ni-1]} must be a guess for the optimum alignment
     vector at scale {(0,0)}. On output, {p[0..ni-1]} will be the best 
     alignment found at scale {(0,0)}.
     
-    The value of {f2(ni,(0,0),p)} is returned on {*f2p}.
+    The value of {F2(ni,(0,0),p)} is returned on {*F2val_P}.
     
     The procedure performs an enumerative or quadratic optimization of
-    the adjustment vector at various scales {iscale}, starting with
+    the delta vector vector at various scales {iscale}, starting with
     some coarsest scale {ismax} and ending with scale {(0,0)}.
     Successive scales have at least one of the coordinates reduced by 1.
     The radii and tolerances are adjusted so that the procedure does 
     aproximately constant work at each scale.
     
     At each scale, the procedure uses
-    {float_image_align_single_scale_enum} or
-    {float_image_align_single_scale_quadopt}, accordng to the parameter
+    {r2_align_multiscale_single_scale_enum} or
+    {r2_align_multiscale_single_scale_quadopt}, accordng to the parameter
     {quadopt}. */
 
-double float_image_align_rel_disp_sqr(int32_t ni, r2_t p[], r2_t q[], r2_t arad[]);
+double r2_align_multiscale_rel_disp_sqr(int32_t ni, r2_t p[], r2_t q[], r2_t arad[]);
   /* Computes the total squared displacement between {p[0..ni-1]} and 
     {q[0..ni-1]} relative to the radius {arad[i]}, that is,
     

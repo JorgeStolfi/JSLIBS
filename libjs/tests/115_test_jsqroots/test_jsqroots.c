@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {jsqroots.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2018-12-04 22:07:36 by stolfilocal */ 
+/* Last edited on 2023-03-18 11:29:22 by stolfi */ 
 /* Created on 2018-06-30 by J. Stolfi, UNICAMP */
 
 #define testjsqroots_COPYRIGHT \
@@ -24,7 +24,7 @@
 
 double tjsr_random_double(void); /* A random double with random magnitude. */
 
-void tjsr_one_test_from_roots(double M, double r1T, double r2T, double imT, int sdT, bool_t verbose);
+void tjsr_one_test_from_roots(double M, double r1T, double r2T, double imT, int32_t sdT, bool_t verbose);
   /* Tests {roots_quadratic} on the equation {A*x^2 + B*x + C = 0} with expected 
     roots {r1T,r2T,imT} and discriminant sign {sdT}.
     The coefficient {A} of {x^2} is set to {M}, and {B,C}
@@ -32,8 +32,8 @@ void tjsr_one_test_from_roots(double M, double r1T, double r2T, double imT, int 
 
 bool_t tjsr_check_roots
   ( double A, double B, double C,                /* Coefficients. */
-    double r1T, double r2T, double imT, int sdT, /* "True" solution. */
-    double r1C, double r2C, double imC, int sdC, /* Computed solution. */
+    double r1T, double r2T, double imT, int32_t sdT, /* "True" solution. */
+    double r1C, double r2C, double imC, int32_t sdC, /* Computed solution. */
     bool_t verbose
   );
   /* Compares the computed roots {r1C,r2C,imC} and computed sign 
@@ -45,7 +45,7 @@ void tjsr_compare(double reC, double imC, double reT, double imT, double *xE, do
     and returns the absolute and relative Euclidean half-errors in {*xE,*xR}. 
     Takes {NAN}s into account. */
 
-void tjsr_do_multiple_tests(int nt);
+void tjsr_do_multiple_tests(int32_t nt);
 
 #define N_double_nice 10
 
@@ -63,7 +63,7 @@ static double double_nice[N_double_nice] =
     0
   };
 
-int main (int argn, char **argv)
+int32_t main (int32_t argn, char **argv)
   { tjsr_do_multiple_tests(200);  
     return 0;
   }
@@ -107,14 +107,14 @@ void tjsr_compare(double reC, double imC, double reT, double imT, double *xE, do
       }
   }  
 
-void tjsr_do_multiple_tests(int nt)
+void tjsr_do_multiple_tests(int32_t nt)
   { fprintf(stderr, "Checking {roots_quadratic}...\n");
     
     /* Some simple cases: */
     double A, B, C;
     double r1T, r2T, imT;
     double r1C, r2C, imC;
-    int sdC, sdT;
+    int32_t sdC, sdT;
     
     /* Check some degenerate cases: */
     
@@ -154,7 +154,7 @@ void tjsr_do_multiple_tests(int nt)
     sdC = roots_quadratic(A, B, C, &r1C, &r2C, &imC);
     (void)tjsr_check_roots(A, B, C,  r1T, r2T, imT, sdT,  r1C, r2C, imC, sdC, TRUE);
     
-    for (int sgnM = -1; sgnM <= +1; sgnM += 2)
+    for (int32_t sgnM = -1; sgnM <= +1; sgnM += 2)
       { double M = 8*sgnM;
     
         /* Check some cases with real distinct roots: */
@@ -176,9 +176,9 @@ void tjsr_do_multiple_tests(int nt)
       }
 
     /* Checks random non-degenerate cases: */
-    int i,j,k,sd,sx,sy;
-    int nbug = 0; /* Number of buggy cases. */
-    int ngud = 0; /* Number of checked-ok cases. */
+    int32_t i,j,k,sd,sx,sy;
+    int32_t nbug = 0; /* Number of buggy cases. */
+    int32_t ngud = 0; /* Number of checked-ok cases. */
     for (i = 0; i < N_double_nice + nt; i++)
       { /* Choose the absolute midpoint {M} of the two roots: */
         double M = (i < nt ? tjsr_random_double() : double_nice[i-nt]);
@@ -238,7 +238,7 @@ void tjsr_do_multiple_tests(int nt)
                                     A = R*A; B = R*B; C = R*C;
                                     /* Try solving the quadratic: */
                                     double r1C = NAN, r2C = NAN, imC = NAN;
-                                    int sdC = roots_quadratic(A, B, C, &r1C, &r2C, &imC);
+                                    int32_t sdC = roots_quadratic(A, B, C, &r1C, &r2C, &imC);
                                     /* Check against the expected solution: */
                                     bool_t vb = (ngud < 10);
                                     bool_t ok = tjsr_check_roots(A, B, C, r1T, r2T, imT, sd, r1C, r2C, imC, sdC, vb);
@@ -254,7 +254,7 @@ void tjsr_do_multiple_tests(int nt)
       }
   }
   
-void tjsr_one_test_from_roots(double M, double r1T, double r2T, double imT, int sdT, bool_t verbose)
+void tjsr_one_test_from_roots(double M, double r1T, double r2T, double imT, int32_t sdT, bool_t verbose)
   { double A, B, C;
     assert(! isnan(r1T));
     assert(! isnan(r2T));
@@ -286,14 +286,14 @@ void tjsr_one_test_from_roots(double M, double r1T, double r2T, double imT, int 
       }
     double r1C, r2C, imC;
     r1C = r2C = imC = 4615.17031947; /* To check for undef returns. */
-    int sdC = roots_quadratic(A, B, C, &r1C, &r2C, &imC);
+    int32_t sdC = roots_quadratic(A, B, C, &r1C, &r2C, &imC);
     (void)tjsr_check_roots(A, B, C, r1T, r2T, imT, sdT, r1C, r2C, imC, sdC, verbose);
   }
 
 bool_t tjsr_check_roots
   ( double A, double B, double C,                /* Coefficients. */
-    double r1T, double r2T, double imT, int sdT, /* "True" solution. */
-    double r1C, double r2C, double imC, int sdC, /* Computed solution. */
+    double r1T, double r2T, double imT, int32_t sdT, /* "True" solution. */
+    double r1C, double r2C, double imC, int32_t sdC, /* Computed solution. */
     bool_t verbose
   )
   {

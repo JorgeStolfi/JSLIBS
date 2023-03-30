@@ -3,7 +3,7 @@
 #define PROG_VERS "1.0"
 
 #define curvefit_C_COPYRIGHT "Copyright © 2004 by the State University of Campinas (UNICAMP)"
-/* Last edited on 2023-02-20 09:25:54 by stolfi */
+/* Last edited on 2023-03-18 11:38:07 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -286,7 +286,7 @@ options_t *cf_parse_options(int32_t argc, char **argv)
     o->sigma = argparser_get_next_double(pp, 1.0e-10, 1.0e+10);
    
     if (argparser_keyword_present(pp, "-maxEvals"))
-      { o->maxEvals = argparser_get_next_int32_t(pp, 0, 10000000); }
+      { o->maxEvals = argparser_get_next_int(pp, 0, 10000000); }
     else
       { o->maxEvals = 1000; }
     

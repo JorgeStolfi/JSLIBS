@@ -1,7 +1,8 @@
 /* See float_array_from_uint16_image.h */
-/* Last edited on 2019-08-30 07:22:33 by jstolfi */ 
+/* Last edited on 2023-03-19 15:25:53 by stolfi */ 
 
 #define _GNU_SOURCE
+#include <stdint.h>
 #include <limits.h>
 #include <assert.h>
 #include <math.h>
@@ -32,11 +33,11 @@ float_array_t *float_array_from_uint16_image
   )
   { 
     /* Get image dimensions: */
-    int NX = img->cols;
-    int NY = img->rows;
+    int32_t NX = img->cols;
+    int32_t NY = img->rows;
     
     /* Channel counts: */
-    int NC = img->chns; /* Num of channels. */
+    int32_t NC = img->chns; /* Num of channels. */
     
     /* Allocate float image: */
     ix_dim_t na = 3;
@@ -51,7 +52,7 @@ float_array_t *float_array_from_uint16_image
     /* Input and output range registers: */
     sample_uint32_t imin[NC], imax[NC]; /* Input range registers. */ 
     float vmin[NC], vmax[NC];    /* Output range registers. */ 
-    for (int c = 0; c < NC; c++) 
+    for (int32_t c = 0; c < NC; c++) 
       { imin[c] = maxval;
         imax[c] = 0;
         vmin[c] = +INFINITY;
@@ -60,13 +61,13 @@ float_array_t *float_array_from_uint16_image
     
     /* Convert pixels, keep statistics: */
     ix_index_t ix[na];
-    for(int fy = 0; fy < NY; fy++)
+    for(int32_t fy = 0; fy < NY; fy++)
       { /* Fill array plane {ix[2]==fy}: */
-        int iy = (yrev ? NY - 1 - fy : fy); /* Row index in image array. */
+        int32_t iy = (yrev ? NY - 1 - fy : fy); /* Row index in image array. */
         uint16_t *prow = img->smp[iy];
-        for(int x = 0; x < NX; x++)
-          { for (int c = 0; c < NC; c++)
-              { /* Convert int sample {*prow} to float {v}, store, keep stats: */
+        for(int32_t x = 0; x < NX; x++)
+          { for (int32_t c = 0; c < NC; c++)
+              { /* Convert int32_t sample {*prow} to float {v}, store, keep stats: */
                 sample_uint32_t ismp = (*prow);
                 double loc = (lo == NULL ? 0.0 : lo[c]);
                 double hic = (hi == NULL ? 1.0 : hi[c]);
@@ -81,10 +82,10 @@ float_array_t *float_array_from_uint16_image
     
     if (verbose) 
       { /* Print statistics: */
-        long int NPIX = ((long int)NX)*((long int)NY);
+        int64_t NPIX = ((int64_t)NX)*((int64_t)NY);
         fprintf(stderr, "  %ld pixels in PNM image\n", NPIX);
         if (NPIX > 0)
-          { for (int c = 0; c < NC; c++)
+          { for (int32_t c = 0; c < NC; c++)
               { double loc = (lo == NULL ? 0.0 : lo[c]);
                 double hic = (hi == NULL ? 1.0 : hi[c]);
                 sample_conv_print_floatize_stats

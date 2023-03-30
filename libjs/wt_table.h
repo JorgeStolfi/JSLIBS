@@ -2,7 +2,7 @@
 #define wt_table_H
 
 /* Weight tables for filtering digital signals */
-/* Last edited on 2022-10-31 03:08:11 by stolfi */
+/* Last edited on 2023-03-17 20:03:21 by stolfi */
 
 #define wt_table_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -128,9 +128,9 @@ void wt_table_normalize_sum(int32_t n, double wt[]);
 /* SHIFTED SUMMATION */
 
 void wt_table_shifted_sum(int32_t n, double wt[], int32_t stride, double ws[]);
-  /* Returns in {ws[0..n-1]} the result of adding all copies of {wf}
+  /* Returns in {ws[0..n-1]} the result of adding all copies of {wt}
     shifted by integer multiples of {stride}. Namely, sets {ws[k]} to
-    the sum of {wf[k+i*stride]} for all integer {i}, assuming that
+    the sum of {wt[k+i*stride]} for all integer {i}, assuming that
     non-existent elements of {wf} are zero. Requires {stride >= 1}. */
 
 double_vec_t wt_table_convolution(int32_t n1, double wt1[], int32_t n2, double wt2[], int32_t stride);

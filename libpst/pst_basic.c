@@ -1,5 +1,5 @@
 /* See pst_basic.h */
-/* Last edited on 2016-04-01 01:48:56 by stolfilocal */
+/* Last edited on 2023-03-19 15:28:19 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -72,24 +72,24 @@ double_vec_t pst_double_vec_parse(argparser_t *pp, int *NC)
     return v;
   }
 
-void pst_int_vec_regularize(int_vec_t *v, int NC, int defval)
+void pst_int32_vec_regularize(int32_vec_t *v, int NC, int defval)
   { int KC = v->ne;
     if ((KC != NC) && (KC <= 1))
       { int val = (KC == 1 ? v->e[0] : defval);
         /* Provide default value: */
-        int_vec_expand(v, NC);
+        int32_vec_expand(v, NC);
         int c;
         for (c = 0; c < NC; c++) { v->e[c] = val; }
-        int_vec_trim(v, NC);
+        int32_vec_trim(v, NC);
       }
   }
 
-int_vec_t pst_int_vec_parse(argparser_t *pp, int *NC)
-  { int_vec_t v = int_vec_new(0);
+int32_vec_t pst_int32_vec_parse(argparser_t *pp, int *NC)
+  { int32_vec_t v = int32_vec_new(0);
     int NP = 0; /* Number of values actually parsed. */
     int NPMAX = ((NC == NULL) || ((*NC) < 0) ? MAXINT : (*NC)); /* Max to parse. */
     while ((NP < NPMAX) && argparser_next_is_number(pp))
-      { int_vec_expand(&v, NP);
+      { int32_vec_expand(&v, NP);
         v.e[NP] = (int)argparser_get_next_int(pp, -MAXINT, +MAXINT);
         NP++;
       }
@@ -100,7 +100,7 @@ int_vec_t pst_int_vec_parse(argparser_t *pp, int *NC)
         else
           { if (NP != (*NC)) { argparser_error(pp, "wrong number of elements"); } }
       }
-    int_vec_trim(&v, NP);
+    int32_vec_trim(&v, NP);
     return v;
   }
           

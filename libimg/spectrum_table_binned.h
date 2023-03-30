@@ -2,9 +2,12 @@
 #define spectrum_table_binned_H
 
 /* Tools for gathering binned (histogram-like) power spectra of images. */
-/* Last edited on 2009-01-06 23:54:04 by stolfi */ 
+/* Last edited on 2023-03-18 10:26:13 by stolfi */ 
 
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
+
 #include <bool.h>
 #include <vec.h>
 #include <float_image.h>
@@ -24,7 +27,7 @@ typedef struct spectrum_table_binned_entry_t
 
 vec_typedef(spectrum_table_binned_t,spectrum_table_binned,spectrum_table_binned_entry_t); 
 
-int spectrum_table_binned_locate_entry(spectrum_table_binned_t *tb, double f);
+int32_t spectrum_table_binned_locate_entry(spectrum_table_binned_t *tb, double f);
   /* Returns the index of entry in {tb->e[0..n-1]} whose range
     {fmin,fmax} contains the frequency {f}; where {n = tb.ne}.
 
@@ -35,7 +38,7 @@ int spectrum_table_binned_locate_entry(spectrum_table_binned_t *tb, double f);
     less than the {fmin} of entry 0, returns 0; if {f} is greater than
     the {fmax} of entry {n-1}, returns {n-1}. */
 
-spectrum_table_binned_t spectrum_table_binned_make(int nRanges);
+spectrum_table_binned_t spectrum_table_binned_make(int32_t nRanges);
   /* Builds a `binned' power spectrum table {tb} with exactly {nRanges}
     consecutive frequency ranges, spanning the interval from frequency 0
     to frequency {sqrt(0.5)} (waves per pixel).
@@ -47,14 +50,18 @@ spectrum_table_binned_t spectrum_table_binned_make(int nRanges);
     {nTerms} and {power} of all entries are initialized with zero. */
 
 void spectrum_table_binned_add_all
-  ( float_image_t *P,  
-    int c,
+  ( float_image_t *P,
+    bool_t center,
+    int32_t c,
     spectrum_table_binned_t *tb,
     bool_t verbose
   );
   /* Accumulates the terms of channel {c} of the Hartley power
     spectrum {P} onto a binned table {tb}. If {verbose} is TRUE,
     prints diagnostics to {stderr}.
+    
+    The procedure assumes that {P} was obtained from the Hartley transform
+    {H} of an image as with {float_image_hartley_spectrum(H,P,center)}.
 
     Each entry of {P} with natural frequency vector {(fX,fY)} is
     splatted onto {tb}, assuming that it is smoothly spread over the
@@ -63,8 +70,8 @@ void spectrum_table_binned_add_all
   
 void spectrum_table_binned_add_term
   ( spectrum_table_binned_t *tb,
-    int fn[], 
-    int fd[],
+    int32_t fn[], 
+    int32_t fd[],
     double nTerms,
     double power,
     bool_t verbose

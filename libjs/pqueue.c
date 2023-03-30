@@ -1,5 +1,5 @@
 /* See pqueue.h */
-/* Last edited on 2017-01-02 21:52:14 by jstolfi */
+/* Last edited on 2023-03-18 11:15:49 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -58,15 +58,15 @@ pqueue_t *pqueue_new(void)
     return Q;
   }
   
-void pqueue_set_order(pqueue_t *Q, int order)
+void pqueue_set_order(pqueue_t *Q, int32_t order)
   {
     demand(order != 0, "zero order");
-    int old = Q->order;
+    int32_t old = Q->order;
     Q->order = (order < 0 ? -1 : +1);
     if (old != Q->order)
      { /* Negate all values and re-bubble all elements: */
-       int n = Q->n;
-       int p;
+       int32_t n = Q->n;
+       int32_t p;
        for (p = 0; p < n; p++)
          { Q->val[p] = - Q->val[p];
            pqueue_bubble_up(Q->itm, Q->val, Q->pos, p);
@@ -142,7 +142,7 @@ pqueue_item_t pqueue_item(pqueue_t *Q, pqueue_position_t p)
     return Q->itm[p];
   }
 
-int pqueue_order(pqueue_t *Q)
+int32_t pqueue_order(pqueue_t *Q)
   { return Q->order; }
 
 /* MODIFYING */
@@ -302,11 +302,11 @@ void pqueue_check(pqueue_t *Q)
         assert(k == p);
         /* Check heap invatiant: */
         if (p > 0)
-          { int p = (k-1)/2; /* Parent of slot {k}. */
+          { int32_t p = (k-1)/2; /* Parent of slot {k}. */
             assert(Q->order*pqueue_dblcmp(Q->val[p], Q->val[p]) >= 0);
           }
       }
   }
   
-int pqueue_dblcmp(pqueue_value_t x, pqueue_value_t y) 
+int32_t pqueue_dblcmp(pqueue_value_t x, pqueue_value_t y) 
   { return (x < y ? -1 : ( x > y ? +1 : 0)); }

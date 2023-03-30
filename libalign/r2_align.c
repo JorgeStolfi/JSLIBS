@@ -1,5 +1,5 @@
 /* See {r2_align.h}. */
-/* Last edited on 2021-12-19 08:11:19 by stolfi */
+/* Last edited on 2023-03-22 20:04:41 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -20,14 +20,14 @@
 /* INTERNAL PROTOTYPES */
 
 void r2_align_throw_ortho_disp_vector(int32_t ni, r2_t arad[], int32_t k, r2_t U[]);
-  /* Assumes that {U} contains {k} alignment vectors with {ni} points
-    each, orthonormal, balanced, and conformal to {arad}, and has space
-    for at least one more. Stores into row {k} of {U} another alignment
+  /* Assumes that the rows of {U} are {k} delta vectors with {ni} points
+    each, orthonormal, balanced, and conformal to {arad}, and {U} has space
+    for at least one more row. Stores into row {k} of {U} another alignment
     vector that is normalized, balanced, conformal to {arad}, and
     orthogonal to all of them.
     
-    Specifically, assumes that the adjustment vector with index {kb} is
-    points {U[kb*ni + i]} for {i} in {0..ni-1}. 
+    Specifically, assumes that the delta vector basis element {u[kb]} with index {kb} is
+    points {u[kb][i] = U[kb*ni + i]} for {i} in {0..ni-1}. 
     
     The parameter {ni} must be at least 2, and {k} must be less than {nd}
     where {nv} is the number of non-zero coordinates in {arad}. */
@@ -103,7 +103,7 @@ double r2_align_dist_sqr(int32_t ni, r2_t p[], r2_t q[])
     return sum2;
   }
             
-double r2_align_rel_dist_sqr(int32_t ni, r2_t p[], r2_t q[], r2_t arad[])
+double r2_align_rel_disp_sqr(int32_t ni, r2_t p[], r2_t q[], r2_t arad[])
   { double d2 = 0.0;
     for (int32_t i = 0; i < ni; i++)
       { for (int32_t j = 0; j < 2; j++)
@@ -298,7 +298,7 @@ void r2_align_throw_ortho_disp_vector(int32_t ni, r2_t arad[], int32_t k, r2_t H
               }
           }
         
-        /* Project {hk} perpendicular to the previous adjustment vectors. */
+        /* Project {hk} perpendicular to the previous delta vectors. */
         /* Since the previous vectors are conformal to {arad} and balanced, 
           the projection preserves these properties: */
         for (int32_t r = 0; r < k; r++)
@@ -359,7 +359,7 @@ void r2_align_plot_mismatch
   {
     bool_t debug = TRUE;
 
-    /* Choose two balanced orthononmal adjustment vectors: */
+    /* Choose two conformal balanced orthonormal delta vectors: */
     int32_t nd = r2_align_count_degrees_of_freedom(ni, arad);
     demand(nd >= 2, "not enough degrees of freedom to plot");
     r2_t U[nd*ni];
@@ -417,7 +417,7 @@ void r2_align_plot_mismatch_lines
                 r2_add(&(ctr[i]), &(psmp[i]), &(psmp[i])); 
               }
             /* Evaluate the function and plot: */
-            double rdist2 = r2_align_rel_dist_sqr(ni, ctr, psmp, arad);
+            double rdist2 = r2_align_rel_disp_sqr(ni, ctr, psmp, arad);
             if (rdist2 <= 1.0) 
               { double F2val = F2(ni, psmp);
                 fprintf(wr, "%+9.6f %+9.6f  %12.6f\n", d0, d1, F2val);

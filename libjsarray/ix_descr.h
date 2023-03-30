@@ -2,9 +2,12 @@
 #define indexing_descr_H
 
 /* Multidimensional array descriptors. */
-/* Last edited on 2021-06-13 11:33:58 by jstolfi */ 
+/* Last edited on 2023-03-18 11:00:50 by stolfi */ 
 
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
+
 #include <bool.h>
 #include <ix.h>
 
@@ -388,7 +391,7 @@ bool_t ix_descr_positions_are_distinct ( ix_descr_t *D, bool_t die );
 
 /* INPUT/OUTPUT */
 
-void ix_descr_print_descr ( FILE *wr, char *pre, ix_descr_t *D, int wd, char *suf );
+void ix_descr_print_descr ( FILE *wr, char *pre, ix_descr_t *D, int32_t wd, char *suf );
   /* Writes the descriptor {D} to {wr}, in readable ASCII format. 
     The output consists of four lines 
     

@@ -1,18 +1,22 @@
 /* See tbfind.h */
-/* Last edited on 2008-01-16 20:38:54 by stolfi */ 
+/* Last edited on 2023-03-18 11:13:25 by stolfi */ 
 
-#include <tbfind.h>
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
 #include <math.h>
+
 #include <affirm.h>
 #include <assert.h>
 #include <bool.h>
 
+#include <tbfind.h>
+
 #define TB_DEBUG FALSE
 
-int tb_find(double f(int i), int iMin, int iMax)
+int32_t tb_find(double f(int32_t i), int32_t iMin, int32_t iMax)
   {
-    int i;
+    int32_t i;
     if (TB_DEBUG) fprintf(stderr, "\n[");
     double fMin = (iMin > iMax ? 0 : f(iMin));
     double fMax = (iMax <= iMin ? fMin : f(iMax));
@@ -28,13 +32,13 @@ int tb_find(double f(int i), int iMin, int iMax)
           { /* Now {f(iMin) < 0 <= f(iMax)} and there are at least two intervals. */
             if (TB_DEBUG) fprintf(stderr, "(%d:%d)", iMin,iMax);
             
-            int nOld = iMax - iMin; /* Number of intervals remaining. */
+            int32_t nOld = iMax - iMin; /* Number of intervals remaining. */
             
-            int iTry;
+            int32_t iTry;
             if (use_lin)
               { /* Get an index {iTry} in {iMin+1..iMax-1} by linear linterpolation: */
                 double r = (0 - fMin)/(fMax - fMin);
-                iTry = iMin + (int)(rint(r*(iMax - iMin)));
+                iTry = iMin + (int32_t)(rint(r*(iMax - iMin)));
                 if (iTry <= iMin) { iTry = iMin+1; }
                 if (iTry >= iMax) { iTry = iMax-1; }
               }

@@ -1,5 +1,5 @@
 /* See vec.h */
-/* Last edited on 2019-01-11 19:55:36 by jstolfi */
+/* Last edited on 2023-03-18 11:05:22 by stolfi */
 
 #include <vec.h>
 #include <stdlib.h>
@@ -44,15 +44,12 @@ void vec_trim(vec_size_t *nep, void **ep, vec_size_t ne, size_t esz)
 
 /* SOME USEFUL TYPED VECTORS */
 
-vec_typeimpl(int_vec_t,    int_vec,    int);
-vec_typeimpl(uint_vec_t,   uint_vec,   unsigned int);
 vec_typeimpl(char_vec_t,   char_vec,   char);
 vec_typeimpl(bool_vec_t,   bool_vec,   bool_t);
 vec_typeimpl(float_vec_t,  float_vec,  float);
 vec_typeimpl(double_vec_t, double_vec, double);
 vec_typeimpl(ref_vec_t,    ref_vec,    void*);
 vec_typeimpl(string_vec_t, string_vec, char*);
-
 
 vec_typeimpl(int8_vec_t,    int8_vec,   int8_t);
 vec_typeimpl(int16_vec_t,   int16_vec,  int16_t);

@@ -1,5 +1,5 @@
 /* See jsmath.h */
-/* Last edited on 2021-06-27 12:22:36 by jstolfi */
+/* Last edited on 2023-03-18 11:20:33 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -344,13 +344,13 @@ double erf_inv(double z)
 
 double **alloc_C_matrix(size_t rows, size_t cols)
   { double **mat = notnull(malloc(rows*sizeof(double*)), "no mem");
-    for (int i = 0; i < rows; i++)
+    for (int32_t i = 0; i < rows; i++)
       { mat[i] = notnull(malloc(cols*sizeof(double)), "no mem"); }
     return mat;
   }
 
 void free_C_matrix(double **mat, size_t rows)
-  { for (int i = 0; i < rows; i++) { free(mat[i]); }
+  { for (int32_t i = 0; i < rows; i++) { free(mat[i]); }
     free(mat);
   }
     

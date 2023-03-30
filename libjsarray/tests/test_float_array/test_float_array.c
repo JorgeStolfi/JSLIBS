@@ -4,7 +4,7 @@
 
 #define test_float_array_C_COPYRIGHT "Copyright © 2009  by the State University of Campinas (UNICAMP)"
 /* Created on 2009-08-31 by J. Stolfi, UNICAMP */
-/* Last edited on 2021-07-18 19:16:49 by jstolfi */ 
+/* Last edited on 2023-03-18 11:00:21 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -37,23 +37,23 @@
 
 /* PROTOTYPES */
 
-void test_float_array(int nt); 
+void test_float_array(int32_t nt); 
 
-float_array_t *float_array_new_random(int it, bool_t verbose);
+float_array_t *float_array_new_random(int32_t it, bool_t verbose);
   /* Creates an array with random number of axes, random size vector, 
     and random element order, using {float_array_new}. Also does 
     some consistency checks on the result. */
 
-void test_float_array_new(int it, bool_t verbose);
-void test_float_array_get_elem_set_elem(int it, bool_t verbose);
-void test_float_array_copy( int it, bool_t verbose);
-void test_float_array_new_descr(int it, bool_t verbose);
-void test_float_array_copy_descr(int it, bool_t verbose);
-void test_float_array_free_elems(int it, bool_t verbose);
-void test_float_array_free_descr(int it, bool_t verbose);
-void test_float_array_get_size(int it, bool_t verbose);
-void test_float_array_check_size(int it, bool_t verbose);
-void test_float_array_write_float_array_read(int it, bool_t verbose);
+void test_float_array_new(int32_t it, bool_t verbose);
+void test_float_array_get_elem_set_elem(int32_t it, bool_t verbose);
+void test_float_array_copy( int32_t it, bool_t verbose);
+void test_float_array_new_descr(int32_t it, bool_t verbose);
+void test_float_array_copy_descr(int32_t it, bool_t verbose);
+void test_float_array_free_elems(int32_t it, bool_t verbose);
+void test_float_array_free_descr(int32_t it, bool_t verbose);
+void test_float_array_get_size(int32_t it, bool_t verbose);
+void test_float_array_check_size(int32_t it, bool_t verbose);
+void test_float_array_write_float_array_read(int32_t it, bool_t verbose);
 
 void show_float_array(FILE *wr, char *Mname, float_array_t *A, float_array_count_t nPrint);
 void show_indices(FILE *wr, char *pf, ix_dim_t d, ix_index_t ix[], char *sf);
@@ -71,18 +71,18 @@ void float_array_scramble_entries(float_array_t *A);
  /* Permutes the entries of {*A} in random order. */
 
 void compare_vectors(double v[], char *vname, double r[], char *rname, float_array_count_t n, double tol);
-void check_order_of_entries(float_array_t *A, int orow, int ocol);
+void check_order_of_entries(float_array_t *A, int32_t orow, int32_t ocol);
 
 /* IMPLEMENTATIONS */
 
-int main (int argn, char **argv)
+int32_t main (int32_t argn, char **argv)
   { test_float_array(30);  
     return 0;
   }
 
-void test_float_array(int nt)
+void test_float_array(int32_t nt)
   { fprintf(stderr, "Checking {float_array_t} and its operations...\n");
-    int it;
+    int32_t it;
     for (it = 0; it < nt; it++)
       { 
         fprintf(stderr, "=== pass %d ===\n", it);
@@ -103,11 +103,11 @@ void test_float_array(int nt)
       }
   }
    
-float_array_t *float_array_new_random(int it, bool_t verbose)
+float_array_t *float_array_new_random(int32_t it, bool_t verbose)
   {
     float_array_dim_t na = (float_array_dim_t)(it % array_MAX_AXES);
     float_array_size_t sz[na];
-    int ia;
+    int32_t ia;
     ix_count_t ne = 1;
     for (ia = 0; ia < na; ia++) 
       { sz[ia] = int32_abrandom(0, 3)+int32_abrandom(0, 4); ne *= (ix_count_t)(sz[ia]); }
@@ -133,7 +133,7 @@ float_array_t *float_array_new_random(int it, bool_t verbose)
     return A;
   }
 
-void test_float_array_new(int it, bool_t verbose)  
+void test_float_array_new(int32_t it, bool_t verbose)  
   {
     if (verbose) fprintf(stderr, "Checking {float_array_new} ...\n");
     srandom(4634 + 17*(2*it + 1));
@@ -148,7 +148,7 @@ void test_float_array_new(int it, bool_t verbose)
     float_array_free_elems(A); float_array_free_descr(A);
   }
 
-void test_float_array_get_elem_set_elem(int it, bool_t verbose)
+void test_float_array_get_elem_set_elem(int32_t it, bool_t verbose)
   { if (verbose) fprintf(stderr, "Checking {float_array_{get_elem,get_elem_pos,set_elem}} ...\n");
     srandom(4634 + 19*(2*it + 1));
     
@@ -159,12 +159,12 @@ void test_float_array_get_elem_set_elem(int it, bool_t verbose)
     
     /* If the array has replication along any axes, make them trivial, */
     /* otherwise the test becomes much more difficult. */
-    int ia;
+    int32_t ia;
     for (ia = 0; ia < na; ia++)
       { if ((DA->sz[ia] > 1) && (DA->st[ia] == 0)) { DA->sz[ia] = 1; } }
     
     /* Fill all elements with distinct numbers: */
-    int k = 4615;
+    int32_t k = 4615;
     if (ix_descr_indices_first(DA, ix))
       { do {
           float v_set = (float)k;
@@ -202,7 +202,7 @@ void test_float_array_get_elem_set_elem(int it, bool_t verbose)
     
   }
 
-void test_float_array_write_float_array_read(int it, bool_t verbose)
+void test_float_array_write_float_array_read(int32_t it, bool_t verbose)
   {
     if (verbose) fprintf(stderr, "Checking {float_array_write} ...\n");
     char *fname = NULL;
@@ -246,7 +246,7 @@ bool_t check_float_array(float_array_t *A, char *Aname, float_array_t *R, char *
       }
       
     float_array_dim_t na = DA->na;
-    int ia;
+    int32_t ia;
     for (ia = 0; ia < na; ia++)
       {
         if ((DA->sz[ia]) != (DR->sz[ia]))
@@ -289,7 +289,7 @@ void show_float_array(FILE *wr, char *Aname, float_array_t *A, float_array_count
     float_array_dim_t na = DA->na;
     ix_count_t ne = ix_descr_num_positions(DA);
     if (nPrint > ne) { nPrint = ne; }
-    int ia;
+    int32_t ia;
     fprintf(wr, "%s = { na: %3u", Aname, na); 
     fprintf(wr, " sz: ["); 
     for (ia = 0; ia < na; ia++) { fprintf(wr, " %2ld", DA->sz[ia]); }
@@ -318,7 +318,7 @@ void show_float_array(FILE *wr, char *Aname, float_array_t *A, float_array_count
 
 void show_indices(FILE *wr, char *pf, ix_dim_t d, ix_index_t ix[], char *sf)
   { fprintf(wr, "%s", pf); 
-    int i;
+    int32_t i;
     for (i = 0; i < d; i++)
       { fprintf(wr, " %2ld", ix[i]); }
     fprintf(wr, "%s", sf);
@@ -338,7 +338,7 @@ void float_array_throw(float_array_t *A, double frac)
   }
 
 // void compare_vectors(double v[], char *vname, double r[], char *rname, float_array_dim_t n, double tol)
-//   { int k;
+//   { int32_t k;
 //     for (k = 0; k < n; k++) 
 //       { if ((v[k] != r[k]) && (fabs(rel_diff(v[k], r[k])) > tol))
 //           { fprintf(stderr, "** vector element mismatch\n");
@@ -350,7 +350,7 @@ void float_array_throw(float_array_t *A, double frac)
 //       }
 //   }
 // 
-// void test_float_array_add_elem(int it, bool_t verbose)
+// void test_float_array_add_elem(int32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_add_elem} ...\n");
 //     
@@ -359,12 +359,12 @@ void float_array_throw(float_array_t *A, double frac)
 //     float_array_t A = float_array_new(Arows,Acols,12);
 //     float_array_t R = float_array_new(0,0,ngen);
 //     
-//     int k;
+//     int32_t k;
 //     float_array_index_t rowMax = 0, colMax = 0;
 //     float_array_pos_t posA = 0, posR = 0;
 //     for (k = 0; k < 100; k++)
-//       { int i = (k + (k*k/3)) / 19;
-//         int j = (k + (k*k/3)) % 19;
+//       { int32_t i = (k + (k*k/3)) / 19;
+//         int32_t j = (k + (k*k/3)) % 19;
 //         if (i > rowMax) { rowMax = i; }
 //         if (j > colMax) { colMax = j; }
 //         double Aij = 1 + sin(i)*sin(3*j);
@@ -395,18 +395,18 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(R.e);
 //   }
 //   
-// void test_float_array_trim(int it, bool_t verbose)
+// void test_float_array_trim(int32_t it, bool_t verbose)
 //   {
 //    if (verbose) fprintf(stderr, "Checking {float_array_trim} ...\n");
 //     
 //     float_array_count_t ngen = 100;
 //     float_array_t A = float_array_new(17,21,15);
 //     
-//     int k;
+//     int32_t k;
 //     float_array_pos_t posA = 0;
 //     for (k = 0; k < ngen; k++)
-//       { int i = (k + (k*k/3)) / 19;
-//         int j = (k + (k*k/3)) % 19;
+//       { int32_t i = (k + (k*k/3)) / 19;
+//         int32_t j = (k + (k*k/3)) % 19;
 //         double Aij = drandom();
 //         posA = float_array_add_elem(&A, posA, i, j, Aij);
 //       }
@@ -418,7 +418,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(A.e);
 //   }
 // 
-// void test_float_array_sort_entries(int it, bool_t verbose)
+// void test_float_array_sort_entries(int32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_sort_entries} ...\n");
 //     
@@ -427,9 +427,9 @@ void float_array_throw(float_array_t *A, double frac)
 //     float_array_scramble_entries(&A);
 //     if (verbose) show_float_array(stderr, "A", &A, 10);
 //     
-//     auto void do_test(int orow, int ocol);
+//     auto void do_test(int32_t orow, int32_t ocol);
 //     
-//     void do_test(int orow, int ocol)
+//     void do_test(int32_t orow, int32_t ocol)
 //       { if (verbose) fprintf(stderr, "ordering: orow = %+2d ocol = %+2d\n", orow, ocol);
 //         float_array_scramble_entries(&A); 
 //         float_array_sort_entries(&A, orow, ocol);
@@ -443,7 +443,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(A.e);
 //   }
 //   
-// void test_float_array_copy(int it, bool_t verbose)
+// void test_float_array_copy(int32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_copy} ...\n");
 //     
@@ -459,7 +459,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(R.e);
 //   }
 //   
-// void test_float_array_sort_entries_ins(int it, bool_t verbose)
+// void test_float_array_sort_entries_ins(int32_t it, bool_t verbose)
 //   {
 //     float_array_t A = float_array_new(11,17,0); 
 //     float_array_throw(&A, 0.25); 
@@ -479,22 +479,22 @@ void float_array_throw(float_array_t *A, double frac)
 //     check_float_array(&A, "A", &R, "R", verbose);
 //   }
 //   
-// void test_float_array_condense(int it, bool_t verbose)
+// void test_float_array_condense(int32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_condense} ...\n");
 //     
 //     float_array_t A = float_array_new(0,0,0);
 //     float_array_t R = float_array_new(0,0,0);
 //     
-//     int k, r;
-//     int rMax = 5; /* Max repetitions of each index pair. */
+//     int32_t k, r;
+//     int32_t rMax = 5; /* Max repetitions of each index pair. */
 //     float_array_pos_t posA = 0, posR = 0;
 //     for (r = 0; r < rMax; r++)
 //       { /* Generate some set of distinct pairs {i,j}: */
 //         for (k = 0; k < 300; k++)
-//           { int i = (k + (k*k/3)) / 19;
-//             int j = (k + (k*k/3)) % 19;
-//             int rCount = ((i + 3*j) % rMax) + 1; /* Number of repetitions for this {i,j}. */
+//           { int32_t i = (k + (k*k/3)) / 19;
+//             int32_t j = (k + (k*k/3)) % 19;
+//             int32_t rCount = ((i + 3*j) % rMax) + 1; /* Number of repetitions for this {i,j}. */
 //             if (r < rCount)
 //               { double Aij = r;
 //                 posA = float_array_add_elem(&A, posA, i, j, Aij);
@@ -520,7 +520,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(R.e);
 //   }
 // 
-// void test_float_array_mix(int it, bool_t verbose)
+// void test_float_array_mix(int32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_mix} ...\n");
 //     
@@ -528,11 +528,11 @@ void float_array_throw(float_array_t *A, double frac)
 //     float_array_t B = float_array_new(0,0,0);
 //     float_array_t R = float_array_new(0,0,0);
 //     
-//     int k;
+//     int32_t k;
 //     float_array_pos_t posA = 0, posB = 0, posR = 0;
 //     for (k = 0; k < 100; k++)
-//       { int i = (k + (k*k/3)) / 19;
-//         int j = (k + (k*k/3)) % 19;
+//       { int32_t i = (k + (k*k/3)) / 19;
+//         int32_t j = (k + (k*k/3)) % 19;
 //         double Aij = 1 + sin(i)*sin(3*j);
 //         double Bij = 1 + cos(i)*cos(5*j);
 //         double Rij = 0.5 * Aij + 2.0 * Bij;
@@ -554,7 +554,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(R.e);
 //   }
 //   
-// void test_float_array_transpose(int it, bool_t verbose)
+// void test_float_array_transpose(int32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_transpose} ...\n");
 //     
@@ -566,7 +566,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(A.e);
 //   }
 //   
-// void test_float_array_extract_row_float_array_extract_col_float_array_mul(int it, bool_t verbose)
+// void test_float_array_extract_row_float_array_extract_col_float_array_mul(int32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array,float_array_extract_col,float_array_mul} ...\n");
 //     
@@ -590,16 +590,16 @@ void float_array_throw(float_array_t *A, double frac)
 //     
 //     float_array_t R = float_array_new(0,0,0);
 //     float_array_pos_t posR = 0;
-//     int i;
+//     int32_t i;
 //     float_array_pos_t posA = 0;
 //     for (i = 0; i < A.rows; i++)
 //       { posA = float_array_extract_row(&A, posA, i, Arow, A.cols);
-//         int j;
+//         int32_t j;
 //         float_array_pos_t posB = 0; 
 //         for (j = 0; j < B.cols; j++)
 //           { posB = float_array_extract_col(&B, posB, j, Bcol, B.rows);
 //             double sum = 0;
-//             int k;
+//             int32_t k;
 //             for (k = 0; k < A.cols; k++) { sum += Arow[k]*Bcol[k]; }
 //             posR = float_array_add_elem(&R, posR, i,j, sum);
 //           }
@@ -613,7 +613,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(R.e);
 //   }
 //   
-// void test_float_array_map_row(int it, bool_t verbose)
+// void test_float_array_map_row(int32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_map_row} ...\n");
 //     
@@ -625,7 +625,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     double u[nu];
 //     float_array_dim_t nv = A.cols;
 //     double v[nv];
-//     int i,j;
+//     int32_t i,j;
 //     for (i = 0; i < nu; i++) { u[i] = drandom(); }
 //     /* By {float_array_map_row}, result in {v}: */
 //     float_array_map_row(u, nu, &A, v, nv);
@@ -647,7 +647,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(A.e);
 //   }
 //   
-// void test_float_array_map_col(int it, bool_t verbose)
+// void test_float_array_map_col(int32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_map_col} ...\n");
 //     
@@ -659,7 +659,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     double u[nu];
 //     float_array_dim_t nv = A.rows;
 //     double v[nv];
-//     int i,j;
+//     int32_t i,j;
 //     for (i = 0; i < nu; i++) { u[i] = drandom(); }
 //     /* By {float_array_map_col}, result in {v}: */
 //     float_array_map_col(&A, u, nu, v, nv);
@@ -680,14 +680,14 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(A.e);    
 //   }
 //   
-// void test_float_array_add_diagonal_float_array_fill_diagonal(int it, bool_t fill, bool_t verbose)
+// void test_float_array_add_diagonal_float_array_fill_diagonal(int32_t it, bool_t fill, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_add_diagonal,float_array_fill_diagonal} ...\n");
 //     
 //     float_array_t C = float_array_new(17,31,0);
 //     float_array_count_t nd = imin(lcm(C.cols, C.rows), 300);
 //     double d[nd];
-//     int k;
+//     int32_t k;
 //     double vfill = drandom();
 //     for (k = 0; k < nd; k++) { d[k] = (fill ? vfill : drandom()); }
 //     float_array_pos_t posC = 0;
@@ -716,7 +716,7 @@ void float_array_throw(float_array_t *A, double frac)
 //   {
 //     float_array_pos_t p;
 //     for (p = 0; p < A->ents; p++)
-//       { float_array_pos_t q = p + (int)floor(drandom()*(A->ents - p));
+//       { float_array_pos_t q = p + (int32_t)floor(drandom()*(A->ents - p));
 //         if (q >= A->ents) { q = A->ents - 1; }
 //         float_array_entry_t e = A->e[p];
 //         A->e[p] = A->e[q];
@@ -724,7 +724,7 @@ void float_array_throw(float_array_t *A, double frac)
 //       }
 //   }
   
-// void check_order_of_entries(float_array_t *A, int orow, int ocol)
+// void check_order_of_entries(float_array_t *A, int32_t orow, int32_t ocol)
 //   {
 //     float_array_pos_t p1;
 //     for (p1 = 1; p1 < A->ents; p1++)
@@ -733,7 +733,7 @@ void float_array_throw(float_array_t *A, double frac)
 //         float_array_entry_t *e1 = &(A->e[p1]);
 //         assert((e0->col < A->cols) && (e0->row < A->rows));
 //         assert((e1->col < A->cols) && (e1->row < A->rows));
-//         int cmp = array_compare_indices(e0->row, e0->col, e1->row, e1->col, orow, ocol);
+//         int32_t cmp = array_compare_indices(e0->row, e0->col, e1->row, e1->col, orow, ocol);
 //         if (cmp > 0) 
 //           { fprintf(stderr, "** entries out of order (args = %+d %+d)\n", orow, ocol);
 //             fprintf(stderr, "  A->e[%d] = [%d][%d] (%24.16e)\n", p0, e0->row, e0->col, e0->val);

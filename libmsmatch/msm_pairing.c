@@ -1,5 +1,5 @@
 /* See msm_pairing.h */
-/* Last edited on 2022-10-20 07:59:10 by stolfi */
+/* Last edited on 2023-03-18 11:35:35 by stolfi */
 
 #define msm_pairing_C_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)" \
@@ -591,9 +591,10 @@ msm_pairing_t *msm_pairing_sub_throw(msm_pairing_t *pr, int32_t len)
     
     /* Find the index {kMax} in {0..ng-1} of the last rung that can be initial: */
     int32_t kMax;
-    {int32_t k = 0;
-    while ((k < ng) && (msm_pairing_sub_span(pr, k, ng-1, -1) >= span)) { k++; }
-    kMax = k - 1;}
+    { int32_t k = 0;
+      while ((k < ng) && (msm_pairing_sub_span(pr, k, ng-1, -1) >= span)) { k++; }
+      kMax = k - 1;
+    }
     
     /* Pick the index {ini} in {0..kMax} of the central rung of the pairing: */
     int32_t ini = int32_abrandom(0, kMax);

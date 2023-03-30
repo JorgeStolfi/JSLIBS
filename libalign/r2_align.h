@@ -2,7 +2,7 @@
 #define r2_align_H
 
 /* General tools and concepts for translational alignment of 2D objects. */
-/* Last edited on 2021-12-19 09:33:39 by stolfi */ 
+/* Last edited on 2023-03-22 20:02:43 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -66,9 +66,9 @@ void r2_align_throw_ball_vector (int32_t ni, double rmin, double rmax, r2_t p[])
   the squares of {(p[i].c[j] - ctr[i].c[j])/arad[i].c[j]}, over all
   {i,j} such that {arad[i].c[j]!=0}, is at most 1. */
 
-double r2_align_rel_dist_sqr (int32_t ni, r2_t p[], r2_t q[], r2_t arad[]);
+double r2_align_rel_disp_sqr (int32_t ni, r2_t p[], r2_t q[], r2_t arad[]);
   /* Given two alignment vectors {p,q} with {ni} components, returns the
-    total squared adjustment between them, relative to the radius
+    total squared coordinate differences between them, relative to the radius
     vector {arad}. 
     
     If {q} is NULL, assumes it is the alignment vector with all zeros.
@@ -78,7 +78,7 @@ double r2_align_rel_dist_sqr (int32_t ni, r2_t p[], r2_t q[], r2_t arad[]);
     for all {i} in {0..ni-1} and {j} in {0..1} such that {arad[i].c[j]} is non-zero.
     
     Thus the basic domain ellipsoid {\CE} consists of all alignment
-    vectors {p} such that {r2_align_rel_dist_sqr(ni, p, ctr,arad) <= 1}. */
+    vectors {p} such that {r2_align_rel_disp_sqr(ni, p, ctr,arad) <= 1}. */
 
 /* 
   CONFORMAL ADJUSTMENT VECTORS
@@ -88,8 +88,8 @@ double r2_align_rel_dist_sqr (int32_t ni, r2_t p[], r2_t q[], r2_t arad[]);
   is {nv = 2*ni - nz}, where {nz} is the number of coordinates of {arad}
   that are zero.
   
-  Each element of {\RV} is called a/conformal adjustment/. It is an
-  alignment vector {d} such that {d[i].c[j]} is zero whenever
+  Each element of {\RV} is called a /conformal delta vector/. It is 
+  a vector {d} of {\RC} such that {d[i].c[j]} is zero whenever
   {arad[i].c[j]} is zero. */
 
 bool_t r2_align_coord_is_variable (r2_t arad[], int32_t i, int32_t j);
@@ -109,7 +109,7 @@ i2_t r2_align_count_variable_coords (int32_t ni, r2_t arad[]);
     respectively. */
 
 void r2_align_points_to_vars (int32_t ni, r2_t p[], r2_t arad[], r2_t ctr[], int32_t nv, double y[]);
-  /* Stores the non-fixed coordinates of the adjustment from
+  /* Stores the non-fixed coordinates of the delta vector from
     {p[0..ni-1]} to {ctr[0..ni-1]}, into the vector {y[0..nv-1]}. 
     
     The number {nv} must be the total number of non-fixed coordinates ,
@@ -127,58 +127,61 @@ void r2_align_vars_to_points (int32_t nv, double y[], int32_t ni, r2_t arad[], r
     zeros. */
   
 /*   
-  BALANCED ADJUSTMENT VECTORS
+  BALANCED DELTA VECTOR VECTORS
   
-  A /balanced adjustment/ is an alignment vector {d} such that
+  A /balanced delta vector/ is a vector {d} of {\RC} such that
   the sum of {d[i].c[j]} over all {i} in {0..ni-1} is zero, for each {j}.
   
-  That is, a balanced adjustment is an element of {\RC} that is
+  That is, a balanced delta vector is an element of {\RC} that is
   orthogonal to the alignment vectors {\BX} and {\BY}.
   
   We will denote by {\RU} the subspace of {\RV} (hence of {\RC})
-  consisting of all balanced and conformal adjustments; and by
-  {\RA} the affine subspace of {\RC} that contains the center {ctr} and
-  is parallel to {\RC}.
+  consisting of all balanced and conformal delta vectors.
+  
+  A /balanced conformal alignment/ is an alignment vector that is {ctr} plus
+  a balanced and conformal delta vector. We denote by {\RA} the affine space 
+  {ctr + \RU} of all balanced conformal alignments.
   
   THE SEARCH ELLIPSOID
   
   Procedures that look for an optimal alignment vector will consider only
   alignments {p} in {\CE} that such that the difference {p-ctr}
-  is a balanced adjustment. Since {p} is in {\CE}, that difference 
-  will also be a conformal adjustment.  
+  is a balanced delta vector. Since {p} is in {\CE}, that difference 
+  will also be a conformal delta vector.  
   
-  Thus those procedures will consider only adjustment vectors
+  Thus those procedures will consider only delta vectors
   {p} in the /search ellipsoid/ {\CF} that is the intersection of 
   the basic ellipsoid {\CE} and the affine subspace {\CB}.  */
   
 int32_t r2_align_count_degrees_of_freedom (int32_t ni, r2_t arad[]);
-  /* Returns the max number of linearly independent balanced adjustment
+  /* Returns the max number of linearly independent balanced delta vector
     vectors that are conformal with the radius vector {arad}.  That is,
-    the dimension of the spaces {\RU}, {\RA} and 
+    the dimension of the spaces {\RU} and {\RA}.
     
     Namely, let {nv} be {r2_align_count_variable_coords(ni,arad)}.
     Each axis {j} contributes {nv.c[j]-1} degrees of freedom,
     unless {nv.c[j]} is zero, in which case it contributes none. */
 
 void r2_align_compute_search_ellipsoid (int32_t ni, r2_t arad[], int32_t nd, r2_t U[], double urad[]);
-  /* Stores into {U} a set of {nd} orthonormal adjustment vectors with {ni} points each, and in {urad} 
-    a list of {nd} real radii, that together define the search ellipsoid {\RF}.
+  /* Stores into the rows of {U} a set of {nd} orthonormal balanced
+    conformal delta vectors with {ni} points each, and in {urad} a list
+    of {nd} real radii, that together define the search ellipsoid {\RF}.
     
-    Specifically, for each {k} in {0..nd-1}, the adjustment vector
+    Specifically, for each {k} in {0..nd-1}, the delta vector
     {u[k]} will be points {u[k][i] = U[k*ni + i]}, for {i} in {0..ni-1}.
     That vector will have the following properties:
       
       * It will be conformal to {arad}, in the sense that {u[k][i].c[j]} will be
       zero whenever {arad[i].c[j]} is zero.
     
-      * It will be a balanced adjustment, meaning that for each {j} in
+      * It will be a balanced delta vector, meaning that for each {j} in
       {0..1}, the coordinates {u[k][i].c[j]} summed over all {i}, will add to
       zero.
         
       * It will be normalized, meaning that the squares of the coordinates
       {u[k][i].c[j]}, summed over all {i,j}, will add to 1.
       
-      * It will be orthogonal to every other adjustment vector {u[r]} with
+      * It will be orthogonal to every other delta vector vector {u[r]} with
       {r!=k}, meaning that the products {u[k][i].c[j] * u[r][i].c[j]},
       summed over all {i,j}, add to zero.
       
@@ -190,7 +193,7 @@ void r2_align_compute_search_ellipsoid (int32_t ni, r2_t arad[], int32_t nd, r2_
     ignored by the procedure.
     
     The parameter {ni} must be at least 1, and the number of directions
-    {nd} must be the dimension of the balanced conformal adjustment space {\RU}. */
+    {nd} must be the dimension of the balanced conformal delta vector space {\RU}. */
 
 /* MISMATCH FUNCTIONS */
 
@@ -215,7 +218,7 @@ void r2_align_print_vector (FILE *wr, int32_t ni, char *name, int32_t ix, r2_t p
      
      If {ctvars} is true, assumes that {p} is the {arad} ellipsoid size vector, 
      and also prints the number {nz} of zero coordinates and the number {nv=2*ni-2-nz} 
-     of degrees of freedom of balanced adjustments. */
+     of degrees of freedom of a conformal balanced delta vector. */
 
 void r2_align_plot_mismatch
   ( FILE *wr,

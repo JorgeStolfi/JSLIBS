@@ -2,9 +2,12 @@
 #define spectrum_table_exact_H
 
 /* Tools for computing unsmoothed radial power spectra of images. */
-/* Last edited on 2008-10-05 16:31:40 by stolfi */ 
+/* Last edited on 2023-03-18 10:28:51 by stolfi */ 
 
+#define _GNU_SOURCE
+#include <stdint.h>
 #include <stdio.h>
+
 #include <bool.h>
 #include <urat64.h>
 #include <vec.h>
@@ -32,12 +35,16 @@ vec_typedef(spectrum_table_exact_t,spectrum_table_exact,spectrum_table_exact_ent
 
 void spectrum_table_exact_append_all
   ( float_image_t *P,
-    int c,
+    bool_t center,
+    int32_t c,
     spectrum_table_exact_t *tx, 
     bool_t verbose
   );
   /* Appends to the table {tx} the terms of channel {c} 
     of the Hartley power spectrum {P}.
+    
+    The procedure assumes that {P} was obtained from the Hartley transform
+    {H} of an image as with {float_image_hartley_spectrum(H,P,center)}.
     
     Terms which have exactly the same absolute natural frequency may
     be collapsed together. The table is expanded and trimmed as needed.
@@ -46,9 +53,9 @@ void spectrum_table_exact_append_all
 
 void spectrum_table_exact_append_term
   ( spectrum_table_exact_t *tx, 
-    int *ntxp,
-    int fn[], 
-    int fd[],
+    int32_t *ntxp,
+    int32_t fn[], 
+    int32_t fd[],
     double nTerms,
     double power
   );

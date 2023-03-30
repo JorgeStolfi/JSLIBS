@@ -1,4 +1,4 @@
-/* Last edited on 2021-07-09 02:19:23 by jstolfi */ 
+/* Last edited on 2023-03-18 10:57:41 by stolfi */ 
 /* Test of the {ppv_image.h} module. */
 
 #define _GNU_SOURCE
@@ -22,7 +22,7 @@
 void pit_do_test(ppv_dim_t d, int32_t chns, uint16_t maxsmp);
 void pit_fill_array(ppv_array_t *A);
 
-int main (int argn, char **argv)
+int32_t main (int32_t argn, char **argv)
   {
     ppv_dim_t dmin = 2; /* Min number of axes. */
     ppv_dim_t dmax = 3; /* Max number of axes. */

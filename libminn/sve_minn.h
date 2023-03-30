@@ -2,7 +2,7 @@
 #define sve_minn_H
 
 /* Quadratic minimzation by the simplex vertex-edge method. */
-/* Last edited on 2023-02-27 10:34:34 by stolfi */
+/* Last edited on 2023-03-27 09:59:39 by stolfi */
 
 /* SIMPLICES
 
@@ -40,7 +40,7 @@
 #include <bool.h>
 #include <sign.h>
 
-void sve_minn_step(int32_t n, double Fv[], double cm[]);
+void sve_minn_step(int32_t n, double Fv[], double cm[], bool_t debug);
   /* Given the values {Fv[0..K(n)-1]} of a quadratic function {F} at the 
     nodes of some {n}-simplex {V}, returns in {cm[0..n]} 
     the barycentric coordinates of the stationary point of {F} in the 
@@ -53,7 +53,8 @@ void sve_minn_step(int32_t n, double Fv[], double cm[]);
 typedef double sve_goal_t(int32_t n, double x[]);
   /* The type of a procedure that can be provided as argument to
     {sve_sample_function} and {sve_optimize} below. It should compute
-    some function of the point {x[0..n-1]}. */
+    some function of the vector {x[0..n-1]}. The function had better be
+    C2 near the optimum for fast convergence. */
     
 void sve_sample_function(int32_t n, sve_goal_t *F, double v[], double Fv[]);
   /* Evaluates the {n}-variate goal function {F} at the nodes of an
@@ -79,7 +80,7 @@ void sve_minn_iterate
     double *FxP,
     sign_t dir,
     double dMax,
-    bool_t dBox,
+    bool_t box,
     double rIni,
     double rMin, 
     double rMax,
@@ -90,31 +91,30 @@ void sve_minn_iterate
   /*  Tries to find a stationary point {x[0..n-1]} of the {n}-argument
     function {F}, by repeated calls to {sve_minn_step}.
     
-    Upon entry, the vector {x[0..n-1]} should contain the initial
-    guess, and {*FxP} should contain its function value {F(n,x)}. 
-    Upon exit, {x} will contain the final guess, and {*FxP}
-    with contain the value of {F(n,x)}. At each iteration, the procedure
-    chooses a random probe simplex centered on the current guess
-    {x[0..n-1]}. The radius {r} of the simplex is dynamically
-    adjusted, starting with {rIni} but staying within the range {[rMin
-    _ rMax]}.
+    Upon entry, the vector {x[0..n-1]} should contain the initial guess,
+    and {*FxP} should contain its function value {F(n,x)}. Upon exit,
+    {x} will contain the final guess, and {*FxP} with contain the value
+    of {F(n,x)}. At each iteration, the procedure chooses a random probe
+    simplex centered on the current guess {x[0..n-1]}. The radius {r} of
+    the simplex is dynamically adjusted, starting with {rIni} but
+    staying within the range {[rMin _ rMax]}.
     
-    The parameter {dir} specifies the minimization drection.
-    If {dir == +1}, the procedure looks for a local maximum of {F}.
-    If {dir == -1}, it looks for a local minimum. If {dir == 0},
-    it looks for any stationary point of {F}, which may be a
-    local minimum, a local maximum, or a saddle point. In this case, the value
-    of {F} at the current guess {x} may increase or decrease during
-    the search; especially if the function is neither concave nor
-    convex, or has a significant non-quadratic behavior in the region
-    searched. In that case, the final guess {x} may be neither the
-    minimum nor the maximum of all sample points.
+    The parameter {dir} specifies the minimization drection. If {dir ==
+    +1}, the procedure looks for a local maximum of {F}. If {dir == -1},
+    it looks for a local minimum. If {dir == 0}, it looks for any
+    stationary point of {F}, which may be a local minimum, a local
+    maximum, or a saddle point. In the latter case, the value of {F} at
+    the current guess {x} may increase or decrease during the search;
+    especially if the function is neither concave nor convex, or has a
+    significant non-quadratic behavior in the region searched. In that
+    case, the final guess {x} may be neither the minimum nor the maximum
+    of all sample points.
     
-    If {dMax} is not {+INF}, the search will be limited to a domain of
-    size {dMax} centered on the original guess. If {dBox} is {FALSE},
-    the domain is an {n}-dimensional cube with side {2*dMax}. If {dBox}
-    is {FALSE}, the domain is an {n}-dimensional ball with radius
-    {dMax}.
+    If {dMax} is {+INF}, the search domain is the whole of {\RR}, and
+    the {box} parameter is ignored. Otherwise, if {box} is {FALSE}, the
+    search is limited to the signed unit cube {[-dMa_+dMax]^n}. If {box}
+    is {FALSE}, the search domain is the unit {n}-ball {{ x\in \RR^n :
+    |x| <= dMax }}.
     
     The iterations will stop when (A) the current guess {x} satisfies
     the predicate {OK(n,x,F(n,x))}; or (B) the distance between

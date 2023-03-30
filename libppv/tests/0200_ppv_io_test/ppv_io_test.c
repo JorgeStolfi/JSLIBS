@@ -1,4 +1,4 @@
-/* Last edited on 2021-07-10 04:26:43 by jstolfi */ 
+/* Last edited on 2023-03-18 10:57:50 by stolfi */ 
 /* Test of the I/O functions from the PPV library. */
 
 /* Must define _GNU_SOURCE in order to get {asprintf} */
@@ -48,7 +48,7 @@ void do_test_read(ppv_array_t *A, char *fname, int64_t *nerrP);
     2005 format or a 2021 format file. If {A} is not {NULL}, compares it
     to {A} with {check_array_equality(A,B,nerrP)}. */
 
-int main (int argn, char **argv)
+int32_t main (int32_t argn, char **argv)
   {
     int64_t nerr = 0; /* Number of errors. */
     

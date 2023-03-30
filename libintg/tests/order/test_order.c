@@ -1,21 +1,22 @@
 /* text_intg - test ODE integrators. */
-/* Last edited on 2007-01-04 03:41:52 by stolfi */
+/* Last edited on 2023-03-29 19:32:02 by stolfi */
 
-#include <intg_Euler.h>
-#include <intg_RKF2.h>
-#include <intg_RKF4.h>
-#include <intg_gen.h>
-#include <intg_problem.h>
-
-#include <vec.h>
-#include <rn.h>
-#include <jsstring.h>
-#include <jsfile.h>
-
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#define _GNU_SOURCE
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#include <jsfile.h>
+#include <jsstring.h>
+#include <rn.h>
+#include <vec.h>
+
+#include <intg_problem.h>
+#include <intg_gen.h>
+#include <intg_RKF4.h>
+#include <intg_RKF2.h>
+#include <intg_Euler.h>
 
 typedef intg_prob_t Problem;
   
@@ -25,9 +26,9 @@ typedef struct Grater
   } Grater;
   
 typedef struct TestResults
-  { int nEvals;     /* Number of RHS evaluations */
-    int nSteps;     /* Number of steps really taken */
-    int nRedos;     /* Number of steps discarded because of large error */
+  { int32_t nEvals;     /* Number of RHS evaluations */
+    int32_t nSteps;     /* Number of steps really taken */
+    int32_t nRedos;     /* Number of steps discarded because of large error */
     double tf;      /* Stopping time */
     double ec, ek;  /* Estimated integration error was approximately {c*dt^k} */
     double mc, mk;  /* Measured integration error was approximately {c*dt^k} */
@@ -49,7 +50,7 @@ typedef struct Stats
   
 /* INTERNAL PROTOTYPES */
 
-int main(int argn, char **argc);
+int32_t main(int32_t argn, char **argc);
 void DoErrorTest(Grater *g, intg_prob_vec_t *p);
 void ErrorTest
   ( Grater *g,       /* Integrator */
@@ -66,15 +67,15 @@ void Trace(char c);
 
 /* IMPLEMENTATIONS */
 
-int main(int argn, char **argc)
+int32_t main(int32_t argn, char **argc)
   { intg_prob_vec_t p = intg_prob_t_Sample();
-    int ng = 3;
+    int32_t ng = 3;
     Grater g[ng];
     g[0] = (Grater){"euler", (Intg_T *)Intg_Euler_new()};
     g[1] = (Grater){"rkfo2", (Intg_T *)Intg_RKF2_new()};
     g[2] = (Grater){"rkfo4", (Intg_T *)Intg_RKF4_new()};
     /* Plot true solutions of all problems: */
-    int j;
+    int32_t j;
     /* Make plot of error variation with step size: */
     for (j = 0; j < ng; j++)
       { DoErrorTest(&(g[j]), &p);
@@ -88,12 +89,13 @@ void DoErrorTest(Grater *g, intg_prob_vec_t *p)
     bool_t ms; /* TRUE for measured error, FALSE for estimated error. */
     for (ms = FALSE; ms <= TRUE; ms++)
       { char *msTag = (ms ? "merr" : "eerr") ;
-        int i;
+        int32_t i;
         for (i = 0; i < p->ne; i++)
           { intg_prob_t *pi = &(p->e[i]);
-            char *pgTag = txtcat(pi->tag, txtcat("-", g->tag));
-            char *outName = txtcat(pgTag, txtcat("-", msTag));
-            FILE *wr = open_write(txtcat(outName, ".plot"), TRUE);
+            char *fname = NULL;
+            asprintf(&fname, "out/%s-%s-%s.plot", pi->tag, g->tag, msTag);
+            FILE *wr = open_write(fname, TRUE);
+            free(fname);
             double ek;
             WriteErrorTestPlotHeader(wr, g->i->descr, p, ms);
             ErrorTest(g, pi, wr, dtSkip, ms, &ek); 
@@ -111,15 +113,15 @@ void ErrorTest
     bool_t ms,         /* TRUE for measured errors, FALSE for estimated ones. */
     double *ek       /* Error grows proportionally to {dt^ek}. */
   )
-  { int NSizes = 11;
+  { int32_t NSizes = 11;
     double dtMin = 1.0e-6;
     double dtMax = 1.0e-1;
     double dtRef = 1.0e-4;
     
-    int n = p->n; /* Dimension of state vector. */
+    int32_t n = p->n; /* Dimension of state vector. */
     
     double sumSlope = 0.0;
-    int nSlope = 0;
+    int32_t nSlope = 0;
     
     auto void GatherErrorStats(double dt, double error, double errorRef);
     void GatherErrorStats(double dt, double error, double errorRef)
@@ -179,7 +181,7 @@ void ErrorTest
         double errorRef = GetError(ta,&sa,&va, dtRef);
         
         /* Compute and tally errors for various stepsizes: */
-        int k;
+        int32_t k;
         for (k = 0; k < NSizes; k++)
           { double e = (NSizes == 1 ? 0.5 : ((double)k)/((double)NSizes-1));
             double dt = dtMin * exp(log(dtMax/dtMin)*e);
@@ -202,17 +204,17 @@ void WriteErrorTestPoint(FILE *wr, double x, double y)
 void WriteErrorTestPlotHeader(FILE *wr, char *gName, intg_prob_vec_t *p, bool_t ms)
   { fprintf(wr, "# integrator = %s\n", gName);
     fprintf(wr, "# problems =");
-    int i;
+    int32_t i;
     for (i = 0; i < p->ne; i++) { fprintf(wr, " %s", p->e[i].tag); }
     fprintf(wr, "\n");
     fprintf(wr, "# %12s %12s\n", "dt/dt0", "err/err0");
   }
 
 void WriteErrorTestIdealPoints(FILE *wr, double ek)
-  { int NPoints = 51;
+  { int32_t NPoints = 51;
     double rdtMin = 1.0e-3;
     double rdtMax = 1.0e+5;
-    int k;
+    int32_t k;
     for (k = 0; k <= NPoints; k++) 
       { double e = (NPoints == 1 ? 0.5 : ((double)k)/((double)NPoints-1));
         double rdt = rdtMin * exp(log(rdtMax/rdtMin)*e);

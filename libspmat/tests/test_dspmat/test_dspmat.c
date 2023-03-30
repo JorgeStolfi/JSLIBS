@@ -4,7 +4,7 @@
 
 #define test_dspmat_C_COPYRIGHT "Copyright © 2008  by the State University of Campinas (UNICAMP)"
 /* Created on 2008-07-05 by J. Stolfi, UNICAMP */
-/* Last edited on 2021-07-18 00:03:44 by jstolfi */ 
+/* Last edited on 2023-03-18 10:44:36 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -34,21 +34,21 @@
 
 /* PROTOTYPES */
 
-void test_dspmat(int nt);
-void test_dspmat_new(int it, bool_t verbose);  
-void test_dspmat_add_element(int it, bool_t verbose);
-void test_dspmat_trim(int it, bool_t verbose);
-void test_dspmat_sort_entries(int it, bool_t verbose);
-void test_dspmat_copy(int it, bool_t verbose);
-void test_dspmat_sort_entries_ins(int it, bool_t verbose);
-void test_dspmat_condense(int it, bool_t verbose);
-void test_dspmat_mix(int it, bool_t verbose);
-void test_dspmat_transpose(int it, bool_t verbose);
-void test_dspmat_write_dspmat_read(int it, bool_t verbose);
-void test_dspmat_extract_row_dspmat_extract_col_dspmat_mul(int it, bool_t verbose);
-void test_dspmat_map_row(int it, bool_t verbose);
-void test_dspmat_map_col(int it, bool_t verbose);
-void test_dspmat_add_diagonal_dspmat_fill_diagonal(int it, bool_t fill, bool_t verbose);
+void test_dspmat(int32_t nt);
+void test_dspmat_new(int32_t it, bool_t verbose);  
+void test_dspmat_add_element(int32_t it, bool_t verbose);
+void test_dspmat_trim(int32_t it, bool_t verbose);
+void test_dspmat_sort_entries(int32_t it, bool_t verbose);
+void test_dspmat_copy(int32_t it, bool_t verbose);
+void test_dspmat_sort_entries_ins(int32_t it, bool_t verbose);
+void test_dspmat_condense(int32_t it, bool_t verbose);
+void test_dspmat_mix(int32_t it, bool_t verbose);
+void test_dspmat_transpose(int32_t it, bool_t verbose);
+void test_dspmat_write_dspmat_read(int32_t it, bool_t verbose);
+void test_dspmat_extract_row_dspmat_extract_col_dspmat_mul(int32_t it, bool_t verbose);
+void test_dspmat_map_row(int32_t it, bool_t verbose);
+void test_dspmat_map_col(int32_t it, bool_t verbose);
+void test_dspmat_add_diagonal_dspmat_fill_diagonal(int32_t it, bool_t fill, bool_t verbose);
 
 void show_dspmat(char *Mname, dspmat_t *M, dspmat_count_t nPrint);
 
@@ -65,18 +65,18 @@ void dspmat_scramble_entries(dspmat_t *M);
  /* Permutes the entries of {*M} in random order. */
 
 void compare_vectors(double v[], char *vname, double r[], char *rname, dspmat_count_t n, double tol);
-void check_order_of_entries(dspmat_t *A, int orow, int ocol);
+void check_order_of_entries(dspmat_t *A, int32_t orow, int32_t ocol);
 
 /* IMPLEMENTATIONS */
 
-int main (int argn, char **argv)
+int32_t main (int32_t argn, char **argv)
   { test_dspmat(30);  
     return 0;
   }
 
-void test_dspmat(int nt)
+void test_dspmat(int32_t nt)
   { fprintf(stderr, "Checking {dspmat_t} and its operations...\n");
-    int it;
+    int32_t it;
     for (it = 0; it < nt; it++)
       { 
         fprintf(stderr, "=== pass %d ===\n", it);
@@ -103,7 +103,7 @@ void test_dspmat(int nt)
       }
   }
    
-void test_dspmat_new(int it, bool_t verbose)  
+void test_dspmat_new(int32_t it, bool_t verbose)  
   {
     if (verbose) fprintf(stderr, "\ntesting {dspmat_new} ...\n");
     
@@ -132,7 +132,7 @@ void test_dspmat_new(int it, bool_t verbose)
     free(R.e);
   }
 
-void test_dspmat_add_element(int it, bool_t verbose)
+void test_dspmat_add_element(int32_t it, bool_t verbose)
   {
     if (verbose) fprintf(stderr, "\ntesting {dspmat_add_element} ...\n");
     
@@ -141,12 +141,12 @@ void test_dspmat_add_element(int it, bool_t verbose)
     dspmat_t A = dspmat_new(Arows,Acols,12);
     dspmat_t R = dspmat_new(0,0,ngen);
     
-    int k;
+    int32_t k;
     dspmat_index_t rowMax = 0, colMax = 0;
     dspmat_pos_t posA = 0, posR = 0;
     for (k = 0; k < 100; k++)
-      { int i = (k + (k*k/3)) / 19;
-        int j = (k + (k*k/3)) % 19;
+      { int32_t i = (k + (k*k/3)) / 19;
+        int32_t j = (k + (k*k/3)) % 19;
         if (i > rowMax) { rowMax = i; }
         if (j > colMax) { colMax = j; }
         double Aij = 1 + sin(i)*sin(3*j);
@@ -177,18 +177,18 @@ void test_dspmat_add_element(int it, bool_t verbose)
     free(R.e);
   }
   
-void test_dspmat_trim(int it, bool_t verbose)
+void test_dspmat_trim(int32_t it, bool_t verbose)
   {
    if (verbose) fprintf(stderr, "\ntesting {dspmat_trim} ...\n");
     
     dspmat_count_t ngen = 100;
     dspmat_t A = dspmat_new(17,21,15);
     
-    int k;
+    int32_t k;
     dspmat_pos_t posA = 0;
     for (k = 0; k < ngen; k++)
-      { int i = (k + (k*k/3)) / 19;
-        int j = (k + (k*k/3)) % 19;
+      { int32_t i = (k + (k*k/3)) / 19;
+        int32_t j = (k + (k*k/3)) % 19;
         double Aij = drandom();
         posA = dspmat_add_element(&A, posA, i, j, Aij);
       }
@@ -200,7 +200,7 @@ void test_dspmat_trim(int it, bool_t verbose)
     free(A.e);
   }
 
-void test_dspmat_sort_entries(int it, bool_t verbose)
+void test_dspmat_sort_entries(int32_t it, bool_t verbose)
   {
     if (verbose) fprintf(stderr, "\ntesting {dspmat_sort_entries} ...\n");
     
@@ -209,9 +209,9 @@ void test_dspmat_sort_entries(int it, bool_t verbose)
     dspmat_scramble_entries(&A);
     if (verbose) show_dspmat("A", &A, 10);
     
-    auto void do_test(int orow, int ocol);
+    auto void do_test(int32_t orow, int32_t ocol);
     
-    void do_test(int orow, int ocol)
+    void do_test(int32_t orow, int32_t ocol)
       { if (verbose) fprintf(stderr, "ordering: orow = %+2d ocol = %+2d\n", orow, ocol);
         dspmat_scramble_entries(&A); 
         dspmat_sort_entries(&A, orow, ocol);
@@ -225,7 +225,7 @@ void test_dspmat_sort_entries(int it, bool_t verbose)
     free(A.e);
   }
   
-void test_dspmat_copy(int it, bool_t verbose)
+void test_dspmat_copy(int32_t it, bool_t verbose)
   {
     if (verbose) fprintf(stderr, "\ntesting {dspmat_copy} ...\n");
     
@@ -241,7 +241,7 @@ void test_dspmat_copy(int it, bool_t verbose)
     free(R.e);
   }
   
-void test_dspmat_sort_entries_ins(int it, bool_t verbose)
+void test_dspmat_sort_entries_ins(int32_t it, bool_t verbose)
   {
     dspmat_t A = dspmat_new(11,17,0); 
     dspmat_throw(&A, 0.25); 
@@ -261,22 +261,22 @@ void test_dspmat_sort_entries_ins(int it, bool_t verbose)
     check_dspmat(&A, "A", &R, "R", verbose);
   }
   
-void test_dspmat_condense(int it, bool_t verbose)
+void test_dspmat_condense(int32_t it, bool_t verbose)
   {
     if (verbose) fprintf(stderr, "\ntesting {dspmat_condense} ...\n");
     
     dspmat_t A = dspmat_new(0,0,0);
     dspmat_t R = dspmat_new(0,0,0);
     
-    int k, r;
-    int rMax = 5; /* Max repetitions of each index pair. */
+    int32_t k, r;
+    int32_t rMax = 5; /* Max repetitions of each index pair. */
     dspmat_pos_t posA = 0, posR = 0;
     for (r = 0; r < rMax; r++)
       { /* Generate some set of distinct pairs {i,j}: */
         for (k = 0; k < 300; k++)
-          { int i = (k + (k*k/3)) / 19;
-            int j = (k + (k*k/3)) % 19;
-            int rCount = ((i + 3*j) % rMax) + 1; /* Number of repetitions for this {i,j}. */
+          { int32_t i = (k + (k*k/3)) / 19;
+            int32_t j = (k + (k*k/3)) % 19;
+            int32_t rCount = ((i + 3*j) % rMax) + 1; /* Number of repetitions for this {i,j}. */
             if (r < rCount)
               { double Aij = r;
                 posA = dspmat_add_element(&A, posA, i, j, Aij);
@@ -302,7 +302,7 @@ void test_dspmat_condense(int it, bool_t verbose)
     free(R.e);
   }
 
-void test_dspmat_mix(int it, bool_t verbose)
+void test_dspmat_mix(int32_t it, bool_t verbose)
   {
     if (verbose) fprintf(stderr, "\ntesting {dspmat_mix} ...\n");
     
@@ -310,11 +310,11 @@ void test_dspmat_mix(int it, bool_t verbose)
     dspmat_t B = dspmat_new(0,0,0);
     dspmat_t R = dspmat_new(0,0,0);
     
-    int k;
+    int32_t k;
     dspmat_pos_t posA = 0, posB = 0, posR = 0;
     for (k = 0; k < 100; k++)
-      { int i = (k + (k*k/3)) / 19;
-        int j = (k + (k*k/3)) % 19;
+      { int32_t i = (k + (k*k/3)) / 19;
+        int32_t j = (k + (k*k/3)) % 19;
         double Aij = 1 + sin(i)*sin(3*j);
         double Bij = 1 + cos(i)*cos(5*j);
         double Rij = 0.5 * Aij + 2.0 * Bij;
@@ -336,7 +336,7 @@ void test_dspmat_mix(int it, bool_t verbose)
     free(R.e);
   }
   
-void test_dspmat_transpose(int it, bool_t verbose)
+void test_dspmat_transpose(int32_t it, bool_t verbose)
   {
     if (verbose) fprintf(stderr, "\ntesting {dspmat_transpose} ...\n");
     
@@ -348,7 +348,7 @@ void test_dspmat_transpose(int it, bool_t verbose)
     free(A.e);
   }
   
-void test_dspmat_write_dspmat_read(int it, bool_t verbose)
+void test_dspmat_write_dspmat_read(int32_t it, bool_t verbose)
   {
     if (verbose) fprintf(stderr, "\ntesting {dspmat_write} ...\n");
     
@@ -368,7 +368,7 @@ void test_dspmat_write_dspmat_read(int it, bool_t verbose)
     free(R.e);
   }
 
-void test_dspmat_extract_row_dspmat_extract_col_dspmat_mul(int it, bool_t verbose)
+void test_dspmat_extract_row_dspmat_extract_col_dspmat_mul(int32_t it, bool_t verbose)
   {
     if (verbose) fprintf(stderr, "\ntesting {dspmat,dspmat_extract_col,dspmat_mul} ...\n");
     
@@ -392,16 +392,16 @@ void test_dspmat_extract_row_dspmat_extract_col_dspmat_mul(int it, bool_t verbos
     
     dspmat_t R = dspmat_new(0,0,0);
     dspmat_pos_t posR = 0;
-    int i;
+    int32_t i;
     dspmat_pos_t posA = 0;
     for (i = 0; i < A.rows; i++)
       { posA = dspmat_extract_row(&A, posA, i, Arow, A.cols);
-        int j;
+        int32_t j;
         dspmat_pos_t posB = 0; 
         for (j = 0; j < B.cols; j++)
           { posB = dspmat_extract_col(&B, posB, j, Bcol, B.rows);
             double sum = 0;
-            int k;
+            int32_t k;
             for (k = 0; k < A.cols; k++) { sum += Arow[k]*Bcol[k]; }
             posR = dspmat_add_element(&R, posR, i,j, sum);
           }
@@ -415,7 +415,7 @@ void test_dspmat_extract_row_dspmat_extract_col_dspmat_mul(int it, bool_t verbos
     free(R.e);
   }
   
-void test_dspmat_map_row(int it, bool_t verbose)
+void test_dspmat_map_row(int32_t it, bool_t verbose)
   {
     if (verbose) fprintf(stderr, "\ntesting {dspmat_map_row} ...\n");
     
@@ -427,7 +427,7 @@ void test_dspmat_map_row(int it, bool_t verbose)
     double u[nu];
     dspmat_size_t nv = A.cols;
     double v[nv];
-    int i,j;
+    int32_t i,j;
     for (i = 0; i < nu; i++) { u[i] = drandom(); }
     /* By {dspmat_map_row}, result in {v}: */
     dspmat_map_row(u, nu, &A, v, nv);
@@ -449,7 +449,7 @@ void test_dspmat_map_row(int it, bool_t verbose)
     free(A.e);
   }
   
-void test_dspmat_map_col(int it, bool_t verbose)
+void test_dspmat_map_col(int32_t it, bool_t verbose)
   {
     if (verbose) fprintf(stderr, "\ntesting {dspmat_map_col} ...\n");
     
@@ -461,7 +461,7 @@ void test_dspmat_map_col(int it, bool_t verbose)
     double u[nu];
     dspmat_size_t nv = A.rows;
     double v[nv];
-    int i,j;
+    int32_t i,j;
     for (i = 0; i < nu; i++) { u[i] = drandom(); }
     /* By {dspmat_map_col}, result in {v}: */
     dspmat_map_col(&A, u, nu, v, nv);
@@ -482,14 +482,14 @@ void test_dspmat_map_col(int it, bool_t verbose)
     free(A.e);    
   }
   
-void test_dspmat_add_diagonal_dspmat_fill_diagonal(int it, bool_t fill, bool_t verbose)
+void test_dspmat_add_diagonal_dspmat_fill_diagonal(int32_t it, bool_t fill, bool_t verbose)
   {
     if (verbose) fprintf(stderr, "\ntesting {dspmat_add_diagonal,dspmat_fill_diagonal} ...\n");
     
     dspmat_t C = dspmat_new(17,31,0);
     dspmat_count_t nd = imin(lcm(C.cols, C.rows), 300);
     double d[nd];
-    int k;
+    int32_t k;
     double vfill = drandom();
     for (k = 0; k < nd; k++) { d[k] = (fill ? vfill : drandom()); }
     dspmat_pos_t posC = 0;
@@ -544,7 +544,7 @@ bool_t check_dspmat(dspmat_t *A, char *Aname, dspmat_t *R, char *Rname, bool_t v
   }
       
 void compare_vectors(double v[], char *vname, double r[], char *rname, dspmat_size_t n, double tol)
-  { int k;
+  { int32_t k;
     for (k = 0; k < n; k++) 
       { if ((v[k] != r[k]) && (fabs(rel_diff(v[k], r[k])) > tol))
           { fprintf(stderr, "** vector element mismatch\n");
@@ -594,7 +594,7 @@ void dspmat_scramble_entries(dspmat_t *M)
   {
     dspmat_pos_t p;
     for (p = 0; p < M->ents; p++)
-      { dspmat_pos_t q = p + (int)floor(drandom()*(M->ents - p));
+      { dspmat_pos_t q = p + (int32_t)floor(drandom()*(M->ents - p));
         if (q >= M->ents) { q = M->ents - 1; }
         dspmat_entry_t e = M->e[p];
         M->e[p] = M->e[q];
@@ -602,7 +602,7 @@ void dspmat_scramble_entries(dspmat_t *M)
       }
   }
   
-void check_order_of_entries(dspmat_t *A, int orow, int ocol)
+void check_order_of_entries(dspmat_t *A, int32_t orow, int32_t ocol)
 {
   dspmat_pos_t p1;
   for (p1 = 1; p1 < A->ents; p1++)
@@ -611,7 +611,7 @@ void check_order_of_entries(dspmat_t *A, int orow, int ocol)
       dspmat_entry_t *e1 = &(A->e[p1]);
       assert((e0->col < A->cols) && (e0->row < A->rows));
       assert((e1->col < A->cols) && (e1->row < A->rows));
-      int cmp = spmat_compare_indices(e0->row, e0->col, e1->row, e1->col, orow, ocol);
+      int32_t cmp = spmat_compare_indices(e0->row, e0->col, e1->row, e1->col, orow, ocol);
       if (cmp > 0) 
         { fprintf(stderr, "** entries out of order (args = %+d %+d)\n", orow, ocol);
           fprintf(stderr, "  A->e[%d] = [%d][%d] (%24.16e)\n", p0, e0->row, e0->col, e0->val);

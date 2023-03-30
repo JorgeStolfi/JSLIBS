@@ -1,4 +1,4 @@
-# Last edited on 2023-02-26 10:53:28 by stolfi
+# Last edited on 2023-03-19 14:15:54 by stolfi
 
 PROG = test_spectrum_table
 
@@ -16,9 +16,14 @@ include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 
 .PHONY:: do-test do-show do-show-single
 
-TESTS_MISC :=  \
-  real:3:0240:0180:0000:0001:0200 \
-  peak:1:0007:0007:0001:0002:0100
+# Format: {KIND}:{CHNS}:{COLS}:{ROWS}:{KX}:{KY}:{BINS}
+
+
+TESTS_MISC := \
+  peak:1:0004:0004:0001:0002:0005 \
+  peak:1:0005:0005:0001:0002:0005 \
+  peak:1:0006:0006:0001:0002:0010 \
+  real:3:0240:0180:0000:0001:0200
 
 TESTS_SMALL_WAVE := \
   wave:1:0007:0007:0000:0000:0500 \
@@ -33,7 +38,9 @@ TESTS_SMALL_WAVE := \
   wave:1:0007:0007:0003:0003:0500
   
 TESTS_SMALL_PEAK := \
+  peak:1:0004:0004:0001:0002:0005 \
   peak:1:0005:0005:0001:0002:0005 \
+  peak:1:0006:0006:0001:0002:0010 \
   peak:1:0007:0007:0001:0002:0100 \
   peak:1:0007:0009:0001:0003:0011
 
@@ -95,22 +102,22 @@ do-test: ${PROG}
 	${PROG} ${KIND} ${CHNS} ${COLS} ${ROWS} ${KX} ${KY} ${BINS}
 
 do-show:         
-	plot_spectrum_exact "${NAME}-2-tbex"
-	@echo ${PSVIEW} ${NAME}-2-tbex-in.eps &
-	@echo ${PSVIEW} ${NAME}-2-tbex-ip.eps &
-	@echo ${PSVIEW} ${NAME}-2-tbex-cn.eps &
-	@echo ${PSVIEW} ${NAME}-2-tbex-cp.eps &
-	@echo ${PSVIEW} ${NAME}-2-tbex-cr.eps &
-	plot_spectrum_binned "${NAME}-3-tbbn"
-	@echo ${PSVIEW} ${NAME}-3-tbbn-b.eps &
-	@echo ${PSVIEW} ${NAME}-3-tbbn-n.eps &
+	plot_spectrum_exact.sh "${NAME}-2-tbex" &
+	${PSVIEW} ${NAME}-2-tbex-in.eps &
+	${PSVIEW} ${NAME}-2-tbex-ip.eps &
+	${PSVIEW} ${NAME}-2-tbex-cn.eps &
+	${PSVIEW} ${NAME}-2-tbex-cp.eps &
+	${PSVIEW} ${NAME}-2-tbex-cr.eps &
+	plot_spectrum_binned.sh "${NAME}-3-tbbn" &
+	${PSVIEW} ${NAME}-3-tbbn-b.eps &
+	${PSVIEW} ${NAME}-3-tbbn-n.eps &
 	${PSVIEW} ${NAME}-3-tbbn-p.eps &
-	@echo ${PSVIEW} ${NAME}-3-tbbn-r.eps &
-	plot_spectrum_binned "${NAME}-4-tbcv"
-	@echo ${PSVIEW} ${NAME}-4-tbcv-b.eps &
-	@echo ${PSVIEW} ${NAME}-4-tbcv-n.eps &
+	${PSVIEW} ${NAME}-3-tbbn-r.eps &
+	plot_spectrum_binned.sh "${NAME}-4-tbcv"
+	${PSVIEW} ${NAME}-4-tbcv-b.eps &
+	${PSVIEW} ${NAME}-4-tbcv-n.eps &
 	${PSVIEW} ${NAME}-4-tbcv-p.eps &
-	@echo ${PSVIEW} ${NAME}-4-tbcv-r.eps &
+	${PSVIEW} ${NAME}-4-tbcv-r.eps &
 	display \
             -title '%f' \
             -filter Point \

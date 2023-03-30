@@ -1,7 +1,8 @@
 /* See float_array_to_uint16_image.h */
-/* Last edited on 2017-06-21 22:55:03 by stolfilocal */ 
+/* Last edited on 2023-03-19 15:26:34 by stolfi */ 
 
 #define _GNU_SOURCE
+#include <stdint.h>
 #include <limits.h>
 #include <assert.h>
 #include <math.h>
@@ -26,8 +27,8 @@
 uint16_image_t *float_array_to_uint16_image
   ( float_array_t *A, 
     bool_t isMask,
-    int chns,
-    int ch[],
+    int32_t chns,
+    int32_t ch[],
     double lo[], 
     double hi[], 
     bool_t yrev, 
@@ -41,11 +42,11 @@ uint16_image_t *float_array_to_uint16_image
     /* Get integer image dimensions: */
     ix_dim_t na = DA->na;
     assert(na == 3);
-    int NX = (int)DA->sz[1];  /* Num of columns. */
-    int NY = (int)DA->sz[2];  /* Num of rows. */
+    int32_t NX = (int32_t)DA->sz[1];  /* Num of columns. */
+    int32_t NY = (int32_t)DA->sz[2];  /* Num of rows. */
     
-    int iNC = chns;           /* Num channels in integer image. */
-    int fNC = (int)DA->sz[0]; /* Num channels in float image. */
+    int32_t iNC = chns;           /* Num channels in integer image. */
+    int32_t fNC = (int32_t)DA->sz[0]; /* Num channels in float image. */
     
     /* Allocate PGM/PPM image: */
     uint16_image_t *img = uint16_image_new(NX, NY, iNC);
@@ -56,9 +57,9 @@ uint16_image_t *float_array_to_uint16_image
     
     /* Input and output range registers: */
     float vmin[iNC], vmax[iNC];         /* Float pixel range. */
-    sample_uint32_t imin[iNC], imax[iNC]; /* Int pixel range. */
-    int clo[iNC], chi[iNC];             /* Counts of lo-clipped and hi-clipped pixels. */
-    for (int ic = 0; ic < iNC; ic++) 
+    sample_uint32_t imin[iNC], imax[iNC]; /* Int32_T pixel range. */
+    int32_t clo[iNC], chi[iNC];             /* Counts of lo-clipped and hi-clipped pixels. */
+    for (int32_t ic = 0; ic < iNC; ic++) 
       { clo[ic] = chi[ic] = 0;
         vmin[ic] = +INFINITY;
         vmax[ic] = -INFINITY; 
@@ -68,14 +69,14 @@ uint16_image_t *float_array_to_uint16_image
     
     /* Convert pixels, store in {img}, keep statistics: */
     ix_index_t ix[na];
-    for(int y = 0; y < NY; y++)
+    for(int32_t y = 0; y < NY; y++)
       { /* Fill pixel row {y} of {img}: */
-        int fy = (yrev ? NY-1-y : y); /* Row index in float array. */
+        int32_t fy = (yrev ? NY-1-y : y); /* Row index in float array. */
         uint16_t *prow = img->smp[fy];
-        for(int x = 0; x < NX; x++)
+        for(int32_t x = 0; x < NX; x++)
           { /* Convert float pixel {fpxy[c..c+2]} to integer pixel {ipxy[0..2]}, keep stats: */
-            for (int ic = 0; ic < iNC; ic++)
-              { int fc = (ch == NULL ? ic : ch[ic]); /* Channel of float image. */
+            for (int32_t ic = 0; ic < iNC; ic++)
+              { int32_t fc = (ch == NULL ? ic : ch[ic]); /* Channel of float image. */
                 ix[0] = fc; ix[1] = x; ix[2] = y; ix[3] = ix[4] = ix[5] = 0;
                 float v = ((fc < 0) || (fc >= fNC) ? 0.0f : float_array_get_elem(A, ix));
                 double loc = (lo == NULL ? 0.0 : lo[fc]);
@@ -91,11 +92,11 @@ uint16_image_t *float_array_to_uint16_image
     
     if (verbose)
       { /* Print statistics: */
-        long int NPIX = ((long int)NX)*((long int)NY);
+        int64_t NPIX = ((int64_t)NX)*((int64_t)NY);
         fprintf(stderr, "  %ld pixels in float image\n", NPIX);
         if (NPIX > 0)
-          { for (int ic = 0; ic < chns; ic++)
-              { int fc = (ch == NULL ? ic : ch[ic]);
+          { for (int32_t ic = 0; ic < chns; ic++)
+              { int32_t fc = (ch == NULL ? ic : ch[ic]);
                 double loc = (lo == NULL ? 0.0 : lo[fc]);
                 double hic = (hi == NULL ? 1.0 : hi[fc]);
                 sample_conv_print_quantize_stats

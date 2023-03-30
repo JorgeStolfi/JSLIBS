@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 /* J. Stolfi's miscellaneous general-purpose definitions */
-/* Last edited on 2021-06-27 12:22:47 by jstolfi */
+/* Last edited on 2023-03-26 09:19:49 by stolfi */
 
 #ifndef INF
 #define INF INFINITY
@@ -111,8 +111,8 @@ double abs_rel_diff(double x, double y, double abs_tol, double rel_tol);
     {D = hypot(abs_tol, rel_tol*hypot(x,y)/sqrt(2))}.
     
     If {fabs(x),fabs(y)} are both very small, the denominator {D} is
-    approximately {abs_tol}. In that case, if the result {d/D} is 1.0 in
-    absolute value, then {fabs(d)} is approximately {abs_tol}.
+    approximately {abs_tol}. In that case, if the result is
+    approximately {±1}, then {fabs(d)} is approximately {abs_tol}.
     
     If either of {fabs(x),fabs(y)} is large compared to {abs_tol}, {D}
     is between {0.7*M} and {M}, where {M = max{fabs(x),fabs(y)}};

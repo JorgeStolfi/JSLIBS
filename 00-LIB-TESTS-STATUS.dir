@@ -1,4 +1,4 @@
-# Last edited on 2023-02-19 17:00:45 by stolfi
+# Last edited on 2023-03-20 01:19:05 by stolfi
 # Library tests to run, in priority order
 # + = OK.
 # ? = Status uncertain.
@@ -13,7 +13,15 @@
 + libalign/tests/240_r2_align
 + libalign/tests/242_r2_align_enum
 + libalign/tests/244_r2_align_quadopt
++ libarchdraw/tests/boar
++ libarchdraw/tests/ic12
++ libarchdraw/tests/ic4a
++ libarchdraw/tests/inet
++ libbbopt/tests/curvefit
++ libbezier/tests/test_bz
 + libclassif/tests/test_nnclassif
++ libdelaunay/tests/delgrid
++ libdelaunay/tests/delrandom
 + libdicio/tests/rdag_test_basic
 + libdnaenc/tests/005_coding
 + libdnaenc/tests/007_seqio
@@ -24,8 +32,10 @@
 + libeps/tests/210_testplot
 + libeps/tests/310_testshade
 + libeps/tests/410_testiso
++ libeps/tests/450_testplot2D
 + libeps/tests/510_boag
 + libeps/tests/520_boap
++ libeps/tests/610_miguec
 + libflt/tests/flttests
 + libflt/tests/flttimes
 + libflt/tests/ieeetests
@@ -53,7 +63,6 @@
 + libimg/tests/120_sample_conv
 + libimg/tests/140_bt709_bias
 + libimg/tests/210_jspnm
-+ libimg/tests/220_jspng
 + libimg/tests/230_jsjpeg
 + libimg/tests/310_interpolate
 + libimg/tests/320_paint
@@ -63,7 +72,7 @@
 + libimg/tests/360_image_window_op
 + libimg/tests/370_image_mask
 + libimg/tests/380_map_channels
-+ libimg/tests/430_spectrum_table
++ libimg/tests/420_hartley
 + libimg/tests/433_aff_extract
 + libimg/tests/435_aff_compare
 + libimg/tests/450_geostereo
@@ -74,11 +83,6 @@
 + libjs/tests/210_test_fget
 + libjs/tests/220_test_ulist
 + libjs/tests/230_test_indexing
-+ libjs/tests/240_test_now
-+ libjs/tests/250_test_sleep
-+ libjs/tests/260_test_sort
-+ libjs/tests/265_test_sort_speed
-+ libjs/tests/270_test_tbfind
 + libjs/tests/280_test_pqueue
 + libjs/tests/290_test_bvtable
 + libjs/tests/310_test_hermite3
@@ -92,16 +96,15 @@
 + libjs/tests/540_test_codetree_huff
 + libkdtom/tests/0100_test_kdtom
 + libkdtom/tests/0200_test_kdtom_const
++ libkdtom/tests/0300_test_kdtom_array
 + liblsq/tests/0100_lsq
 + liblsq/tests/0130_lsq_robust
 + liblsq/tests/0300_jspca
 + libminn/tests/test_r2_opt
-+ libminn/tests/test_sve_near_quadratic
-+ libminn/tests/test_sve_step
-+ libmsmatch/tests/110_cands
-+ libmsmatch/tests/120_mapping
++ libminn/tests/test_sve_blpulse
 + libmsmatch/tests/220_refining
 + libmultifok/tests/0100_make_image
++ libmultifok/tests/0180_diff_ops
 + libneuro/tests/test_image
 + libneuro/tests/test_poly_fit
 + libneuro/tests/test_shepard_1
@@ -130,38 +133,46 @@
 + libtsai/tests/test_calib_guess
 + libtsai/tests/test_camera_plot
 + libtsai/tests/test_povray_camera
-+ libzf/tests/0100_zftest
-+ libzf/tests/0200_fn1_zeros
-+ libzf/tests/0300_fn2_zeros
-+ libminu/tests/minu_test
 
 # Buggy as of 2023-02-19:
 
-! libminn/tests/test_sve_charges
-! libaacmp/tests/aa-compile-test
-! libaagraph/tests/fn1_graphs
++ libaacmp/tests/aa-compile-test
++ libaagraph/tests/fn1_graphs
 ! libalign/tests/246_r2_align_multiscale
 ! libalign/tests/510_hr2_pmap_adjust
-! libbezier/tests/test_bz
-! libeps/tests/450_testplot2D
+! libarchdraw/tests/boas
+! libbbopt/tests/bbopt1
+! libbbopt/tests/bbopt2
+! libdgraph/tests/test_dgraph_basic
 ! libgeo/tests/500_sym_eigen
 ! libgmap/tests/00_basic
 ! libimg/tests/130_encode_gamma
+! libimg/tests/220_jspng
 ! libimg/tests/335_waves
 ! libimg/tests/410_hog
-! libimg/tests/420_hartley
+! libimg/tests/430_spectrum_table
 ! libintg/tests/cases
 ! libintg/tests/order
+! libjs/tests/240_test_now
+! libjs/tests/250_test_sleep
+! libjs/tests/260_test_sort
+! libjs/tests/265_test_sort_speed
+! libjs/tests/270_test_tbfind
 ! libjs/tests/317_test_gauss_distr
 ! libjs/tests/330_test_gauss_table
 ! libjsarray/tests/test_float_array
 ! libkdtom/tests/0400_test_kdtom_split
 ! liblsq/tests/0120_lsq_constr
-! libminn/tests/test_sve_blpulse
 ! libminn/tests/test_sve_catenary
+! libminn/tests/test_sve_charges
 ! libminn/tests/test_sve_img_match
+! libminn/tests/test_sve_near_quadratic
+! libminn/tests/test_sve_step
+! libminu/tests/minu_test
+! libmroc/tests/0100_mroc_basic
+! libmsmatch/tests/110_cands
+! libmsmatch/tests/120_mapping
 ! libmultifok/tests/0150_show_basis
-! libmultifok/tests/0180_diff_ops
 ! libmultifok/tests/0190_make_terms
 ! libmultifok/tests/0200_op_correl
 ! libmultifok/tests/0300_merge_images
@@ -180,18 +191,7 @@
 ! libtsai/tests/test_calib_opt
 ! libvoxb/tests/0100_test_voxb
 ! libvoxm/tests/voxm
-! libarchdraw/tests/boar
-! libarchdraw/tests/boas
-! libarchdraw/tests/ic12
-! libarchdraw/tests/ic4a
-! libarchdraw/tests/inet
-! libbbopt/tests/bbopt1
-! libbbopt/tests/bbopt2
-! libbbopt/tests/curvefit
-! libdelaunay/tests/delgrid
-! libdelaunay/tests/delrandom
-! libdgraph/tests/test_dgraph_basic
-! libeps/tests/610_miguec
-! libkdtom/tests/0300_test_kdtom_array
-! libmroc/tests/0100_mroc_basic
+! libzf/tests/0100_zftest
+! libzf/tests/0200_fn1_zeros
+! libzf/tests/0300_fn2_zeros
 

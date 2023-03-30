@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {jsmath.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2021-06-27 12:37:19 by jstolfi */ 
+/* Last edited on 2023-03-18 11:12:17 by stolfi */ 
 /* Created on 2007-01-02 by J. Stolfi, UNICAMP */
 
 #define test_jsmath_COPYRIGHT \
@@ -57,7 +57,7 @@ void test_minbits(int32_t nt);
 
 void test_expand_contract(int32_t nt);
 
-void test_erf_inv(int nt);
+void test_erf_inv(int32_t nt);
 
 typedef void range_map_t(double *zP, double zlo, double zhi, double *dzP);
 
@@ -508,14 +508,14 @@ void test_expand_contract(int32_t nt)
       }
   }
 
-void test_erf_inv(int nt)
+void test_erf_inv(int32_t nt)
   {
    fprintf(stderr, "Checking {erf_inv}...\n");
    double emax = 0.0; /* Max error {p - erf(erf_inv(p))}. */
    double p1emax = 0.0; /* {p1} for which the erroris maximum. */
    double z1emax = 0.0; /* {z1} for which the erroris maximum. */
    double p2emax = 0.0; /* {p2} for which the erroris maximum. */
-   for (int k = 0; k <= nt; k++)
+   for (int32_t k = 0; k <= nt; k++)
      {
        double z0 = 2*((double)k)/((double)nt) - 1.0;
        double p1 = erf(10*z0);

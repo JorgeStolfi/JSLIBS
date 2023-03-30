@@ -1,5 +1,5 @@
 /* See jsaudio_io.h */
-/* Last edited on 2023-03-02 12:32:31 by stolfi */
+/* Last edited on 2023-03-19 15:34:42 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -26,7 +26,7 @@ uint16_t jsa_read_uint16_be(FILE *rd)
     return u;
   }
 
-short jsa_read_short_be(FILE *rd)
+short jsa_read_int16_be(FILE *rd)
   { uint16_t u = jsa_read_uint16_be(rd);
     short r;
     (*(uint16_t*)(&r)) = u;
@@ -57,7 +57,7 @@ uint64_t jsa_read_uint64_be(FILE *rd)
     return u;
   }
 
-int32_t jsa_read_int32_t_be(FILE *rd)
+int32_t jsa_read_int32_be(FILE *rd)
   { uint32_t u = jsa_read_uint32_be(rd);
     int32_t r;
     (*(uint32_t*)(&r)) = u;

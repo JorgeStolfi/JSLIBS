@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {gauss_distr.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2019-12-05 20:24:31 by jstolfi */ 
+/* Last edited on 2023-03-18 11:07:33 by stolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_hermite3_COPYRIGHT \
@@ -65,11 +65,11 @@ double test_arg(int32_t k, int32_t N, double vmin, double vmax);
     returns {(-1)^k*vmin*(vmax/vmin)^k/N}. If {k} is in {-N-3}, {-N-2}, or {-N-1},
     returns {-INF}, {0}, or {+INF}, respectively. */
 
-int main(int argn, char **argv);
+int32_t main(int32_t argn, char **argv);
 
 /* IMPLEMENTATIONS */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   {
     test_basics();
     return 0;
@@ -115,7 +115,7 @@ void test_all(double z)
 void test_func(int32_t which, double z, double z1, double v_pre)
   { /* Range of deviations to consider: */
     double dmin = 1.0e-6, dmax = 1.0e+6;
-    int Nd = 3;
+    int32_t Nd = 3;
     double avg = 20.0;
     char *fname = NULL;
     for (int32_t kd = - Nd - 3; kd <= + Nd; kd++)
