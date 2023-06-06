@@ -1,37 +1,55 @@
-#define PROG_NAME "mf_0180_diff_ops"
+#define PROG_NAME "test_mfok_diff_ops"
 #define PROG_DESC "Amalyzes dependency of differential operators on sharpness.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-02-01 18:43:02 by stolfi */ 
+/* Last edited on 2023-04-28 17:30:53 by stolfi */ 
 /* Created on 2023-01-24 by J. Stolfi, UNICAMP */
 
-#define mf_0180_diff_ops_COPYRIGHT \
+#define test_mfok_diff_ops_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
 
 #define PROG_HELP \
   "Duh?"
 
 #define PROG_INFO \
-  "SYNOPSIS" \
-  "  Reads {NI} images with focus blur. Computes the coefficients of the {NB} elements" \
-  " of a specified local operator basis at every pixel.  Writes images of those" \
-  " coefficients.  Computes {NT} specified quadratic terms from those coefficients.  Writes" \
+  "SYNOPSIS\n" \
+  "  Tries to indentify an optimum local focus sharpness formula from" \
+  " images where that information is known.\n" \
+  "\n" \
+  "  Reads {NI} images with focus blur.  For each image, enumerates" \
+  " the {NW} by {NW} windows centered at each pixel.  For each window" \
+  " position, maps the {NS = NW*NW} image samples in the window to" \
+  " coefficients {coeff[0..NB-1]} of a  specified local operator" \
+  " basis with {NB} elements.  Writes {NI*NB} images showing those" \
+  " coefficients.  Then computes {NT} specified quadratic" \
+  " terms {term[0..NT-1]} from those coefficients.  Writes" \
   " this data as a text file for plotting and regression.\n" \
   "\n" \
-  "  The basis coefficients are computed from normalized window samples so as to" \
-  " be independent of local image brightness and contrast.\n" \
-  "INPUTS" \
-  "  Reads a collection of image quadruples {csimg[ki]}, {azimg[ki]}, {dzimg[ki]}, {shimg[ki]} for {ki} in {0..NI-1}, where\n" \
+  "  Before computing the basis coefficients, he samples in each" \
+  " window are normalized to have zero average and gradient and unit deviation.  Thus" \
+  " the basis coefficients and the quadratic terms are independent of local" \
+  " image brightness, gradient, and contrast.\n" \
+  "INPUTS\n" \
+  "  INPUT IMAGES\n" \
+  "    Reads a collection of image quadruples {csimg[ki]}, {azimg[ki]}," \
+  " {dzimg[ki]}, {shimg[ki]} for {ki} in {0..NI-1}, where\n" \
   "\n" \
-  "   {csimg[ki]} is sythetic image of a 3D scene  with simulated focus blurring.\n" \
-  "   {azimg[ki]} specifies the average {Z}-coord of the scene within each pixel.\n" \
-  "   {dzimg[ki]} specifies the deviation of that {Z} coordinate within each pixel.\n" \
-  "   {shimg[ki]} specifies the actual sharpness of {csimg[k]} at each pixel, from the ray tracing.\n" \
+  "      {csimg[ki]} is sythetic image of a 3D scene  with simulated focus blurring.\n" \
+  "      {azimg[ki]} specifies the average {Z}-coord of the scene within each pixel.\n" \
+  "      {dzimg[ki]} specifies the deviation of that {Z} coordinate within each pixel.\n" \
+  "      {shimg[ki]} specifies the actual sharpness of {csimg[k]} at each pixel, from the ray tracing.\n" \
   "\n" \
-  "  The {csimg} images should be in color, but are converted internally to a" \
+  "    The {csimg} images should be in color, but are converted internally to a" \
   " grayscale image {grimg[ki]}. The other images are greyscale with linear" \
   " encoding (gamma = 1).  They may have different sizes and focus plane" \
   " positions {zFoc}, but must all have the same depth of focus {zDep}.\n" \
+  "\n" \
+  "  TERMS TABLE\n" \
+  "    The formula terms {term[0..NT-1]} are" \
+  " computed from the basis coeffs as described" \
+  " under {multifok_focus_op_terms_from_basis_coeffs}, using" \
+  " the terms descriptions read from the specified {termSetFile}. See" \
+  " {multifok_term_indices_from_names} and {multifok_term_read_term_table} for the file format.\n" \
   "\n" \
   "OUTPUTS\n" \
   "\n" \
@@ -57,24 +75,28 @@
   " to \"{outPrefix}-n.txt\" a grayscale image showing the central window pixel after window" \
   " normalization, mapped from {[-1_+1]} to {[0_1]}.\n" \
   "\n" \
-  "  PLOT DATA FILE\n" \
+  "  REGRESSION DATA FILE\n" \
   "    Writes to \"{outPrefix}-odata.txt\" a file with columns\n" \
   "\n" \
-  "    P{ki}.{ix}.{iy} {vave} {vdev} {sharp} {coeff[0]} .. {coeff[NB-1]} {term[0]} .. {term[NT-1]} \n" \
+  "    P{ki}.{ix}.{iy} {vave} {vgrd} {vdev} {sharp} {zrav} {zdev} {coeff[0]} .. {coeff[NB-1]} {term[0]} .. {term[NT-1]} \n" \
   "\n" \
   " where \n" \
   "\n" \
   "    {ki} is the image index.\n" \
   "    {ix} and {iy} are the column and row of the pixel.\n" \
-  "    {vave} and {vdev} are the window sample average and deviation.\n" \
+  "    {vave} is the average of the samples in the window centered at that pixel.\n" \
+  "    {vgrd} is the gradient modulus within that window.\n" \
+  "    {vdev} is the rms of window samples values after removing average and gradient.\n" \
   "    {sharp} is the \"actual\" sharpness at that pixel (as read from the {shimg[ki]} image).\n" \
-  "    {coeff[0..NB-1]} are the basis coefficients of the normalized window samples.\n" \
+  "    {zrav} is average of the {Z}-coord of the scene within that pixel, rel to focused plane {Z}.\n" \
+  "    {zdev} is the deviation of the {Z}-coord of the scene within that pixel.\n" \
+  "    {coeff[0..NB-1]} are the basis coefficients computed from the normalized window samples.\n" \
   "    {term[0..NT-1]} are the quadratic terms computed from those coefficients.\n" \
   "\n" \
   "  The values of {vave} and {vdev} are computed from the window of {grimg[hi]} centered" \
   " at the pixel, before they are normalized, taking the window sample weights" \
   " into account.  The basis coefficients and quadratic terms are computed after the" \
-  " window sanmples have been normalized for brightness and contrast.\n" \
+  " window samples have been normalized for brightness, gradient, and contrast.\n" \
   "\n" \
   "  PLOT MASK IMAGE FILE\n" \
   "    Writes to \"{outPrefix}-pixmask.pgm\" a binary image file that is 1 for pixels" \
@@ -130,7 +152,7 @@ typedef struct mfdo_options_t
     char *inDir;                               /* Directory where input image files live. */
     mfdo_image_spec_vec_t image;               /* Specifications of the input image files. */
     multifok_basis_type_t basisType;           /* Local operator basis type. */
-    string_vec_t term;                         /* Formulas of terms to compute. */
+    char *termSetFile;                         /* Name of file with formulas of quadratic terms. */
     double noise;                              /* Noise level to assume when normalizing window samples. */
     char *outPrefix;                           /* Prefix for output filenames. */
   } mfdo_options_t;
@@ -149,15 +171,19 @@ void mfdo_create_basis
   );
   /* Creates an operator basis of the specified {basisType} for an {NW} by {NW} window with
     with window sample weights {ws[0..NS-1]}, where {NS=NW*NW}.  See {multifok_basis_make}. 
-    The basis will be orrthonormal.  The number {NB} of basis elements is returned in {*NB_P},
+    The basis will be orthonormal.  The number {NB} of basis elements is returned in {*NB_P},
     the basis elements {bas[0..NB-1][0..NS-1]}  are returned in {*bas_P}, and their names
     {belName[0..NB-1]} are returned in {*belName_P}.
     
     Also prints the basis and writes its names out to file with
     {mfdo_write_basis_elem_names(outPrefix,NP,belName)}. */
 
+void mfdo_read_term_names(char *fname, int32_t *NT_P, char ***termName_P);
+  /* Reads term names (formulas) from file {fname}.
+    See {multifok_term_read_names} for the file format. */
+    
 void mfdo_process_image_set
-  ( FILE *wr_ops,
+  ( FILE *wr_dat,
     int32_t ki, 
     char *inDir,
     mfdo_image_spec_t *imo,
@@ -175,7 +201,7 @@ void mfdo_process_image_set
     {tail} is "-cs.ppm" (simulated view), "-az.pgm" ({Z}-coordinates), "-dz.pgm" ({Z}-deviation),
     and "-sh.pgm" ("actual" sharpness {sharp}). 
     
-    For each {kb} in {0..NB-1}, writes an image "{outPrefix}-{KKK}-bq.pgm" with the coeff values SQUARED
+    For each {kb} in {0..NB-1}, writes an image "{outPrefix}-{KKK}-bq.pgm" with the coefficient SQUARED
     of basis element {kb} at each pixel, where {KKK} is {kb} zero-padded to 3 digits.
     
     Also, for each {kt} in {0..NT-1}, writes an image "{outPrefix}-{KKK}-tm.pgm" with the value of quadratic 
@@ -185,16 +211,52 @@ void mfdo_process_image_set
     the normalized image {nrimg[ki]} to files "{outPrefix}{tail}" where {tail} is "-av.pgm",
     "-dv.pgm", and "-nr.pgm", respectively.
     
-    Writes out to {wr_ops} one line for each pixel considered
+    Writes out to {wr_dat} one line for each pixel considered
     useful for plotting and analysis, as explained in {PROG_INFO}.
+    
     Also writes a mask image file "{outPrefix}-mk.pgm" that shows which pixels 
     had their data written out. */
 
+void mfdo_read_term_index_table
+  ( char *fname, 
+    int32_t NB,
+    char *belName[],
+    int32_t *NP_P,
+    multifok_term_prod_t **prix_P,
+    int32_t *NT_P,
+    char ***termName_P
+  );
+  /* Calls {multifok_term_read_index_table} on the file "{fname}". */
+
+bool_t mfdo_pixel_is_useful
+  ( double vave, 
+    double vgrd, 
+    double vdev, 
+    double zave, 
+    double zdev, 
+    double zFoc, 
+    double zDep,
+    int32_t *nd_vdev_P,
+    int32_t *nd_zdev_P,
+    int32_t *nd_zave_P,
+    int32_t *nd_zrav_P
+  );
+  /* Decides if a pixel is useful for analysis or regression, based on
+    the average {vave}, gradient modulus {vgrd}, anddeviation {vdev} of
+    window samples, the average {zave} and deviation {zdev} of absolute
+    scene {Z} within the pixel, the {Z} position of the focused plane
+    {zFoc}, and the focus depth {zDep}.
+    
+    Increments the counters on these conditions:
+      
+      {*nr_vdev_P} Sample deviation {vdev} in window too high.
+      {*nr_zdev_P} Scene {Z} deviation in sampled area too high.
+      {*nr_zave_P} Scene {Z} average in sampled area too low (fat floor).
+      {*nr_zrav_P} Scene {Z} average too far from focused plane position {zFoc}. 
+  */
+
 mfdo_options_t *mfdo_parse_options(int32_t argc, char **argv);
   /* Parses the command line options. */
-
-FILE *mfdo_open_text_file(char *outPrefix, char *tag);
-  /* Returns the open handle of a file called "{outPrefix}{tag}.txt" for writing. */
 
 /* IMPLEMENTATIONS */
 
@@ -207,32 +269,40 @@ int32_t main (int32_t argc, char **argv)
     /* Read the images: */
     int32_t NI = o->image.ne; /* Number of input images. */
    
-    /* Get the window dimnsions: */
+    /* Get the window size: */
     int32_t NW = 3;
     demand((NW % 2 == 1) && (NW >= 3), "invalid window size");
 
     /* Generate the window sample weights {ws}: */
     double *ws = multifok_window_sample_weights(NW);
 
+    /* Create the basis elements:*/
     int32_t NB;
     double **bas = NULL;
     char **belName = NULL;
     mfdo_create_basis(NW, ws, o->basisType, &NB, &bas, &belName, o->outPrefix);
 
-    /* Get term indices and coefficients for computed sharpness score, if any: */
-    int32_t NT = o->term.ne;   /* Number of quadratic terms to analyze. */
+    /* Get term descriptions: */
+    int32_t NT;   /* Number of quadratic terms to analyze. */
+    char **termName; /* Term names. */
     int32_t NP;   /* Number of coeff products in the quadratic terms. */
     multifok_term_prod_t *prix;    /* Mapping of basis element index pairs to terms. */
-    bool_t verbose = TRUE;
-    multifok_term_indices_from_names(NB, belName, NT, o->term.e, &NP, &prix, verbose);
-    multifok_test_write_term_names(o->outPrefix, NT, o->term.e);
+    multifok_test_read_term_weights_names_get_indices
+      ( o->termSetFile,
+        NB, belName,
+        &NT, NULL, &termName,
+        &NP, &prix,
+        TRUE
+      ); 
+    multifok_test_write_term_names(o->outPrefix, NT, termName);
+    multifok_test_write_term_index_table(o->outPrefix, NP, prix, TRUE);
 
-    /* File with sharpness and basis element coeffs for regression: */
-    FILE *wr_ops = mfdo_open_text_file(o->outPrefix, "-odata");
+    /* File with basis coeffs and quadratic terms for regression: */
+    FILE *wr_dat = multifok_test_open_text_file(o->outPrefix, "-odata");
 
     for (int32_t ki = 0; ki < NI; ki++)
       { mfdo_process_image_set
-          ( wr_ops, 
+          ( wr_dat, 
             ki, o->inDir, &(o->image.e[ki]),
             NW, ws, o->noise, 
             NB, bas,
@@ -242,7 +312,7 @@ int32_t main (int32_t argc, char **argv)
           );
       } 
       
-    fclose(wr_ops);
+    fclose(wr_dat);
       
     return 0;
   }
@@ -276,7 +346,7 @@ void mfdo_create_basis
   }
 
 void mfdo_process_image_set
-  ( FILE *wr_ops,
+  ( FILE *wr_dat,
     int32_t ki, 
     char *inDir,
     mfdo_image_spec_t *imo,
@@ -333,8 +403,9 @@ void mfdo_process_image_set
     for (int32_t kt = 0; kt < NT; kt++) 
       { tmimg[kt] = float_image_new(1, NX, NY); }
 
-    fprintf(stderr, "allocating window average and deviation images...\n");
+    fprintf(stderr, "allocating window average, gradient, and deviation images...\n");
     float_image_t *avimg = float_image_new(1, NX, NY);
+    float_image_t *gvimg = float_image_new(1, NX, NY);
     float_image_t *dvimg = float_image_new(1, NX, NY);
       
     fprintf(stderr, "allocating the locally normalized image...\n");
@@ -350,18 +421,22 @@ void mfdo_process_image_set
     double coeff[NB];       /* Coefficients of normalized window in be basis. */
     double term[NT];        /* Quadratic terms. */
     int32_t NL_scan = 0;    /* Number of pixels processed. */
-    int32_t NL_floor = 0;   /* Number of pixels discarded because of low {zave}. */
-    int32_t NL_ops = 0;     /* Number of pixels written to {wr_ops}. */
+    int32_t nd_vdev_P = 0;  /* Number of pixels rejected for high {vdev}. */ 
+    int32_t nd_zdev_P = 0;  /* Number of pixels rejected for high {zdev}. */ 
+    int32_t nd_zave_P = 0;  /* Number of pixels rejected for low {zave}. */ 
+    int32_t nd_zrav_P = 0;  /* Number of pixels rejected for {zave} too far from {zFoc}. */ 
+    int32_t NL_dat = 0;     /* Number of pixels written to {wr_dat}. */
     for (int32_t ix = HW; ix < NX-HW; ix++)
       { for (int32_t iy = HW; iy < NY-HW; iy++) 
           { /* Get the samples in the window and normalize them for brightness and contrast: */
             float_image_get_window_samples(grimg, 0,ix,iy, NW, NW, FALSE, fsmp);
             for (int32_t ks = 0; ks < NS; ks++) { dsmp[ks] = fsmp[ks]; }
-            double vave, vdev; /* Weighted window average and deviation */
-            multifok_window_normalize_samples(NW, dsmp, ws, noise, &vave, &vdev); 
+            double vave, vgrd, vdev; /* Weighted window average and deviation */
+            multifok_window_normalize_samples(NW, dsmp, ws, noise, &vave, &vgrd, &vdev); 
             
             /* Save the average, deviation, and normalized value in respective images: */
             float_image_set_sample(avimg, 0, ix, iy, (float)vave);
+            float_image_set_sample(gvimg, 0, ix, iy, (float)vgrd);
             float_image_set_sample(dvimg, 0, ix, iy, (float)vdev);
             float_image_set_sample(nrimg, 0, ix, iy, (float)dsmp[HW*NW + HW]);
             
@@ -383,34 +458,39 @@ void mfdo_process_image_set
             double sharp = float_image_get_sample(shimg, 0, ix, iy);
             assert((sharp >= 0.0) && (sharp <= 1.0));
             
-            /* Get the scene {Z} height average {zave} at this pixel: */
+            /* Get the absolute scene {Z} height average {zave} at this pixel: */
             float zave = float_image_get_sample(azimg, 0, ix, iy);
+            double zrav = zave - imo->zFoc; /* Average scene {Z} rel to focused plane. */
             
             /* Get the scene {Z} height deviation {zdev} at this pixel: */
             float zdev = float_image_get_sample(dzimg, 0, ix, iy);
             
             /* Decide whether the pixel is useful for analysis: */
-            double zave_min = 1.5;       /* Ignore pixels with {Z} below this level. */
+            bool_t pix_ok = mfdo_pixel_is_useful
+              ( vave, vgrd, vdev, zave, zdev, 
+                imo->zFoc, imo->zDep,
+                &nd_vdev_P, &nd_zdev_P, &nd_zave_P, &nd_zrav_P 
+              );
             float mkval;  /* Value to write in pixel mask image. */
-            if (zave < zave_min)
-              { NL_floor++;
-                mkval = 0.0;
+            if (pix_ok)
+              { mkval = 0.0;
               }
             else
               { /* Write the data for analysis: */
-                fprintf(wr_ops, "P%d.%d.%d ", ki, ix, iy);
-                fprintf(wr_ops, " %12.6f ", vave); /* Window average. */
-                fprintf(wr_ops, " %12.6f ", vdev); /* Window deviation. */
-                fprintf(wr_ops, " %14.10f ", sharp); /* "Actual" sharpness. */
-                fprintf(wr_ops, " %+12.6f ", zave - imo->zFoc); /* Avg scene height rel to focus plane in pixel. */
-                fprintf(wr_ops, " %12.6f ", zdev); /* Deviation of scene height in pixel. */
-                fprintf(wr_ops, "   ");
-                for (int32_t kb = 0; kb < NB; kb++) { fprintf(wr_ops, " %16.12f", coeff[kb]); }
-                fprintf(wr_ops, "   ");
-                for (int32_t kt = 0; kt < NT; kt++) { fprintf(wr_ops, " %16.12f", term[kt]); }
-                fprintf(wr_ops, "\n");
+                fprintf(wr_dat, "P%d.%d.%d ", ki, ix, iy);
+                fprintf(wr_dat, " %12.6f ", vave);   /* Window average. */
+                fprintf(wr_dat, " %12.6f ", vgrd);   /* Window gradient modulus. */
+                fprintf(wr_dat, " %12.6f ", vdev);   /* Window deviation after removing average and gradient. */
+                fprintf(wr_dat, " %14.10f ", sharp); /* "Actual" sharpness. */
+                fprintf(wr_dat, " %+12.6f ", zrav);  /* Avg scene height rel to focus plane in pixel. */
+                fprintf(wr_dat, " %12.6f  ", zdev);  /* Deviation of scene height in pixel. */
+                fprintf(wr_dat, "   ");
+                for (int32_t kb = 0; kb < NB; kb++) { fprintf(wr_dat, " %16.12f", coeff[kb]); }
+                fprintf(wr_dat, "   ");
+                for (int32_t kt = 0; kt < NT; kt++) { fprintf(wr_dat, " %16.12f", term[kt]); }
+                fprintf(wr_dat, "\n");
                 
-                NL_ops++;
+                NL_dat++;
                 mkval = 1.0;
               }
             float_image_set_sample(mkimg, 0, ix, iy, mkval);
@@ -418,8 +498,13 @@ void mfdo_process_image_set
           }
       }
     fprintf(stderr, "scanned %d pixels\n", NL_scan); 
-    fprintf(stderr, "ignored %d pixels for low {Z}\n", NL_floor); 
-    fprintf(stderr, "written %d pixels for analysis\n", NL_ops); 
+    fprintf(stderr, "rejected %d pixels for high {vdev}\n", nd_vdev_P);  
+    fprintf(stderr, "rejected %d pixels for high {zdev}\n", nd_zdev_P);  
+    fprintf(stderr, "rejected %d pixels for low {zave}\n", nd_zave_P);  
+    fprintf(stderr, "rejected %d pixels for {zave} too far from {zFoc}\n", nd_zrav_P);  
+    fprintf(stderr, "wrote %d pixels for analysis\n", NL_dat); 
+
+    demand(NL_dat > 0, "ABORTED");
 
     /* Prefix for outopt image files: */
     char *outImagePrefix = NULL;
@@ -443,6 +528,7 @@ void mfdo_process_image_set
 
     /* Write the average, deviation, and normalized images: */
     multifok_test_write_window_average_image(avimg, outImagePrefix, frameTag);
+    multifok_test_write_window_gradient_image(gvimg, outImagePrefix, frameTag);
     multifok_test_write_window_deviation_image(dvimg, outImagePrefix, frameTag);
     multifok_test_write_normalized_image(nrimg, outImagePrefix, frameTag);
 
@@ -453,13 +539,30 @@ void mfdo_process_image_set
     free(frameTag);
     free(outImagePrefix);
   }
-
-FILE *mfdo_open_text_file(char *outPrefix, char *tag)
-  { char *fname = NULL;
-    asprintf(&fname, "%s%s.txt", outPrefix, tag);
-    FILE *wr = open_write(fname, TRUE);
-    return wr;
-    free(fname);
+            
+bool_t mfdo_pixel_is_useful
+  ( double vave, 
+    double vgrd, 
+    double vdev, 
+    double zave, 
+    double zdev, 
+    double zFoc, 
+    double zDep,
+    int32_t *nd_vdev_P,
+    int32_t *nd_zdev_P,
+    int32_t *nd_zave_P,
+    int32_t *nd_zrav_P
+  )
+  { double vdev_min = 0.02; /* Reject pixels with {vdev} below this value. */
+    if (vdev < vdev_min) { (*nd_vdev_P)++; return FALSE; } 
+    double zdev_max = 0.75; /* Ignore pixels which more than this variance. */
+    if (zdev > zdev_max) { (*nd_zdev_P)++; return FALSE; }
+    double zave_min = 1.1;       /* Ignore pixels with actual scene {Z} below this level. */
+    if (zave < zave_min) { (*nd_zave_P)++; return FALSE; }
+    double zrav_max = 10.0*zDep; /* Ignore pixels with abs relative {Z} above this value. */
+    double zrav = zave - zFoc;
+    if (fabs(zrav) > zrav_max) { (*nd_zrav_P)++; return FALSE; }
+    return TRUE;
   }
 
 mfdo_options_t *mfdo_parse_options(int32_t argc, char **argv)
@@ -491,22 +594,14 @@ mfdo_options_t *mfdo_parse_options(int32_t argc, char **argv)
       }
     mfdo_image_spec_vec_trim(&(o->image), NI);
     if (NI == 0) { argparser_error(pp, "must specify at least one \"-image\""); }
-    
-    o->term = string_vec_new(20);
-    int32_t NT = 0; /* Number of terms to plot. */
-    while (argparser_keyword_present(pp, "-term"))
-      { char *tnk = argparser_get_next_non_keyword(pp);
-        string_vec_expand(&(o->term), NT);
-        o->term.e[NT] = tnk;
-        NT++;
-      }
-    string_vec_trim(&(o->term), NT);
-    if (NT == 0) { argparser_error(pp, "must specify at least one \"-term\""); }
 
     argparser_get_keyword(pp, "-basisName");
     char *bName = argparser_get_next_non_keyword(pp);
     o->basisType = multifok_basis_type_from_text(bName, FALSE);
     if (bName < 0) { argparser_error(pp, "invalid basis type"); }
+      
+    argparser_get_keyword(pp, "-termSetFile");
+    o->termSetFile = argparser_get_next_non_keyword(pp);
 
     argparser_get_keyword(pp, "-noise");
     o->noise = argparser_get_next_double(pp, 0.0, 100.0);  

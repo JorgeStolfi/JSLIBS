@@ -1,11 +1,11 @@
-#define PROG_NAME "mf_0100_make_image"
+#define PROG_NAME "test_mfok_make_image"
 #define PROG_DESC "test of {multifok_test_image_make.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-02-01 06:23:13 by stolfi */ 
+/* Last edited on 2023-04-28 17:38:37 by stolfi */ 
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
-#define mf_0100_make_image_COPYRIGHT \
+#define test_mfok_make_image_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
 
 #define _GNU_SOURCE
@@ -20,8 +20,11 @@
 #include <jsfile.h>
 #include <argparser.h>
 #include <bool.h>
+#include <jsmath.h>
+#include <jsrandom.h>
 #include <r3.h>
 #include <ix.h>
+#include <i2.h>
 #include <frgb.h>
 #include <float_image.h>
 #include <float_image_waves.h>
@@ -47,6 +50,9 @@ typedef struct mfmi_options_t
     char *outPrefix;     /* Prefix for output filenames. */
   } mfmi_options_t;
   /* Command line parameters. */
+  
+#define ZMAX multifok_scene_ZMAX
+  /* Max scene {Z} coord. */
 
 int32_t main(int32_t argn, char **argv);
 
@@ -55,8 +61,7 @@ mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv);
   
 multifok_scene_t *mfmi_make_scene(int32_t NX, int32_t NY, bool_t rampOnly, double minSep);
   /* Generates a test scene with disks, balls, and a back plane, roughly spanning the 
-    image domain {[0_NX]×[0_NY]} in {X} and {Y}, and the interval {[1.0 _ZMAX-1.0]} in {Z},
-    where  {ZMAX} is {multifok_scene_ZMAX}.
+    image domain {[0_NX]×[0_NY]} in {X} and {Y}, and the interval {[1.0 _ ZMAX-1.0]} in {Z}.
   
     If {rampOnly} is true, the scene will have just a tilted floor, 
     that rises from {Z=box[2].end[0]} at {X=0} to {Z=box[2].end[1]} at {X=NX}.  The {minSep} is
@@ -95,7 +100,9 @@ void mfmi_make_single_Z_images
     double zDep, 
     int32_t NP,
     int32_t NR_min,
-    char *outPrefix
+    char *outPrefix,
+    i2_vec_t plotixy,
+    FILE *plt_wr
   );
   /* Creates test images with size {NX,NY} showing the color, nominal
     sharpness, scene {Z} average, and scene {Z} deviation at each pixel
@@ -106,11 +113,26 @@ void mfmi_make_single_Z_images
     {zDep}, {ZZ.ZZ} is {zFoc}, and {tail} is "-cs.ppm" for the color
     image, "-sh.pgm" for the sharpness image, "-az.pgm" for the
     {Z} average image, and "-dz.pgm" for the {Z} deviation image. If 
-    {zDep} is infinite then the "-fd{DD.DD}-zf{ZZ.ZZ}" part is replaced by "-sharp". */
+    {zDep} is infinite then the "-fd{DD.DD}-zf{ZZ.ZZ}" part is replaced by "-sharp".
+    
+    Also, if {plot_wr} is not {NULL}, writes to it a line with format
+
+      {zFoc} {zDep} {zave[0]} {zdev[0]} {sharp[0]} ... {zave[NQ-1]} {zdev[NQ-1]} {sharp[NQ-1]}
+
+    where {zave[k]}, {zdev[k]}, and {sharp[k]} are the average and deviation 
+    of the scene {Z} and the sharpness for the pixel whose indices are {plotixy.e[k]},
+    and {NQ} is {plotixy.ne}.  */
 
 float_image_t *mfmi_read_pattern_image(char *fname);
   /* Reads an image from file {fname}, to be used as pattern to paint the scene.
     If the image is in color, converts it to grayscale. */
+
+i2_vec_t mfmi_select_plot_pixels(int32_t NX, int32_t NY, multifok_scene_t *scene);
+  /* Seletcts a small number of pixels in the image, biased to where the scene {Z} is close 
+    to {ZMAX/2}.  May return 0 pixels.  */
+    
+FILE *mfmi_open_pixel_plot_data_file(char *outPrefix);
+  /* Opens the file {outPrefix-pixplot.txt} for writing. */
 
 /* IMPLEMENTATIONS */
 
@@ -136,7 +158,7 @@ int32_t main (int32_t argc, char **argv)
         rampOnly = FALSE;
         if (strcmp(o->sceneType, "F") == 0)
           { /* Non-overlapping objects: */
-            minSep  = multifok_scene_ZMAX/(2*zDep);
+            minSep  = ZMAX/(2*zDep);
           }
         else if (strcmp(o->sceneType, "T") == 0)
           { /* Overlapping objcts: */
@@ -205,29 +227,49 @@ void mfmi_make_images_from_pattern_function
     int32_t NX = o->imgSize_X;
     int32_t NY = o->imgSize_Y;
 
-    double zDep = o->focDepth;
+    /* Select the pixels for sharpness x {Z} plot: */
+    i2_vec_t plotixy = mfmi_select_plot_pixels(NX, NY, scene);
+    FILE *plot_wr = mfmi_open_pixel_plot_data_file(o->outPrefix);
     
-    int32_t NP = o->pixSampling;
+    /* Generate the sharp image for reference: */
+    int32_t NP_sharp = o->pixSampling;
+    int32_t NR_sharp = 1;
+    double zDep_sharp = +INF;
+    double zFoc_sharp = 0.5*ZMAX;
+    mfmi_make_single_Z_images
+      ( NX, NY, 
+        scene, pattern, 
+        zFoc_sharp, zDep_sharp, 
+        NP_sharp, NR_sharp, 
+        o->outPrefix,
+        plotixy, NULL
+      );
+
+    /* Generate the blurred image stack: */
+    double zDep = o->focDepth;
+    int32_t NP_frame = o->pixSampling;
     int32_t NR_min = o->dirSampling;
     double zMin = o->zRange_lo;
     double zMax = o->zRange_hi;
     double zStep = o->zStep;
-    double zFoc = zMin;
-
-    while (zFoc <= zMax + 0.0001*zStep)
-      { mfmi_make_single_Z_images(NX, NY, scene, pattern, zFoc, zDep, NP, NR_min, o->outPrefix);
-        zFoc += zStep;
+    double zFoc_frame = zMin;
+    while (zFoc_frame <= zMax + 0.0001*zStep)
+      { mfmi_make_single_Z_images
+        ( NX, NY, 
+          scene, pattern, 
+          zFoc_frame, zDep, 
+          NP_frame, NR_min, 
+          o->outPrefix,
+          plotixy, plot_wr
+        );
+        zFoc_frame += zStep;
       }
-    int32_t NR_sharp = 1;
-    double zDep_sharp = +INF;
-    double zFoc_sharp = 0.5*multifok_scene_ZMAX;
-    mfmi_make_single_Z_images(NX, NY, scene, pattern, zFoc_sharp, zDep_sharp, NP, NR_sharp, o->outPrefix);
+    fclose(plot_wr);
   }
 
 multifok_scene_t *mfmi_make_scene(int32_t NX, int32_t NY, bool_t rampOnly, double minSep)
   {
     /* Compute the box that has to contain all disks and balls: */
-    double ZMAX = multifok_scene_ZMAX;
     interval_t box[3];
     box[0] = (interval_t){{ 0.0, (double)NX }};
     box[1] = (interval_t){{ 0.0, (double)NY }};
@@ -242,8 +284,8 @@ multifok_scene_t *mfmi_make_scene(int32_t NX, int32_t NY, bool_t rampOnly, doubl
       }
     else
       { /* Disk size range: */
-        double rMin = 2.5; /* Min object radius (pixels). */
-        double rMax = 3.5; /* Max object radius (pixels). */
+        double rMin = 5.0; /* Min object radius (pixels). */
+        double rMax = 7.0; /* Max object radius (pixels). */
         multifok_scene_throw_objects(scene, rMin, rMax, minSep, verbose);
         char *olapx = (minSep < 0.0 ? "" : "non-overlapping ");
         fprintf(stderr, "generated a scene with %d %sdisks\n", scene->NO, olapx);
@@ -260,7 +302,9 @@ void mfmi_make_single_Z_images
     double zDep, 
     int32_t NP,
     int32_t NR_min,
-    char *outPrefix
+    char *outPrefix,
+    i2_vec_t plotixy,
+    FILE *plot_wr
   )
   {
     fprintf(stderr, "generating images for zDep = %12.6f zFoc = %12.6f\n", zDep, zFoc);
@@ -278,11 +322,25 @@ void mfmi_make_single_Z_images
     float_image_t *azimg = NULL;
     float_image_t *dzimg = NULL;
     multifok_test_images_make(NX, NY, scene, pattern, zFoc, zDep, NP, NR_min, &csimg, &shimg, &azimg, &dzimg);
+    
+    if (plot_wr != NULL)
+      { /* Write data of seected pixels for plot: */
+        fprintf(plot_wr, "%10.6f %10.6f", zFoc, zDep);
+        for (int32_t k = 0; k < plotixy.ne; k++)
+          { i2_t ixy = plotixy.e[k];
+            float zave = float_image_get_sample(azimg, 0, ixy.c[0], ixy.c[1]);
+            float zdev = float_image_get_sample(dzimg, 0, ixy.c[0], ixy.c[1]);
+            float sharp = float_image_get_sample(shimg, 0, ixy.c[0], ixy.c[1]);
+            fprintf(plot_wr, "  %10.6f %10.6f %12.8f", zave, zdev, sharp);
+          }
+        fprintf(plot_wr, "\n");
+      }
 
     multifok_test_write_scene_color_image(csimg, outPrefix, tag);
-    multifok_test_write_zavg_image(azimg, outPrefix, tag);
+    multifok_test_write_zave_image(azimg, outPrefix, tag);
     multifok_test_write_zdev_image(dzimg, outPrefix, tag);
     multifok_test_write_sharpness_image(shimg, outPrefix, tag);
+    multifok_test_write_pix_sel_image(csimg, plotixy, outPrefix, tag);
 
     free(tag);
     float_image_free(csimg);
@@ -318,6 +376,78 @@ float_image_t *mfmi_read_pattern_image(char *fname)
       }
     demand(NC == 1, "pattern image must be RGB or grayscale");
     return img;
+  }
+
+i2_vec_t mfmi_select_plot_pixels(int32_t NX, int32_t NY, multifok_scene_t *scene)
+  {
+    bool_t debug = TRUE;
+    
+    fprintf(stderr, "selecting plot pixels...\n");
+    int32_t NO = scene->NO; /* Number of objects inscene. */
+    int32_t NQ_exp = 10; /* Number of sample pixels to generate.*/
+    
+    /* Select the pixels: */
+    i2_vec_t ixy = i2_vec_new(NQ_exp);
+    int32_t NQ = 0; /* Pixels actually selected. */
+    
+    auto void selpix(int32_t ix, int32_t iy);
+      /* Appends {ix,iy} to the list of sample pixels. */
+    
+    if (NO > 0)
+      { /* Pick {NQ_exp} object centers, preferably flat: */
+        /* Count the number of disks {NO_disk}: */
+        int32_t NO_disk = 0;
+        for (int32_t ko = 0; ko < NO; ko++)
+          { multifok_scene_object_t *objk = &(scene->objs[ko]);
+            if (objk->flat) { NO_disk++; }
+          }
+        bool_t disk_only =  (NO_disk >= NQ_exp);
+
+        int32_t NO_rem = (disk_only ? NO_disk : NO); /* Number of candidate objects remaining. */
+        for (int32_t ko = 0; ko < NO; ko++)
+          { if ((NQ >= NQ_exp) || (NO_rem == 0)) { break; }
+            multifok_scene_object_t *objk = &(scene->objs[ko]);
+            if ((! disk_only) || objk->flat)
+              { int32_t NQ_rem = NQ_exp - NQ;  /* Number of pixels still to be selected. */
+                double prpick = (NO_rem <= NQ_rem ? 1.0 : ((double)NQ_rem)/NO_rem);
+                if (drandom() < prpick) 
+                  { int32_t ix = (int32_t)floor(objk->ctr.c[0] + 0.5);
+                    int32_t iy = (int32_t)floor(objk->ctr.c[1] + 0.5);
+                    selpix(ix, iy);
+                  }
+                NO_rem--;
+              }
+          }
+      }
+    else if (! scene->flatFloor)
+      { /* Scene has only a slanted floor: */
+        for (int32_t kq = 0; kq < NQ_exp; kq++)
+          { int32_t ix = (int32_t)floor((kq + 0.5)*NX/NQ_exp + 0.5);
+            int32_t iy = (int32_t)floor((kq + 0.5)*NY/NQ_exp + 0.5);
+            selpix(ix, iy);
+          }
+      }
+    
+    i2_vec_trim(&ixy, NQ);
+    return ixy;
+      
+    void selpix(int32_t ix, int32_t iy) 
+      { if ((ix >= 0) && (ix < NX) && (iy >= 0) && (iy < NY))
+          { if (debug) { fprintf(stderr, "  selected %d,%d\n", ix, iy); }
+            i2_vec_expand(&ixy, NQ);
+            ixy.e[NQ] = (i2_t){{ ix, iy }};
+            NQ++;
+          }
+      }
+  }    
+  
+FILE *mfmi_open_pixel_plot_data_file(char *outPrefix)  
+  {
+    char *fname = NULL;
+    asprintf(&fname, "%s-pixplot.txt", outPrefix);
+    FILE *wr = open_write(fname, TRUE);
+    free(fname);
+    return wr;
   }
 
 mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv)

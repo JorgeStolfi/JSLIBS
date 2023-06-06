@@ -1,5 +1,5 @@
 #! /usr/bin/gawk -f
-# Last edited on 2023-01-29 14:00:04 by stolfi
+# Last edited on 2023-04-28 11:31:59 by stolfi
 
 # Reads one or more formula files as produced by {linear_fit -writeFormula},
 # writes them in colums, matching the coeffs by the term name after "#".
@@ -15,9 +15,6 @@ BEGIN {
   split("", fname);  # {fname[0..nf-1]} are the names of the files already started processing.
   
   split("", tcoeff); # {tcoeff[kf,kt]} is the coefficient of term {termName[kt]} in file {fname[kf]}.
-  
-  tcoeff[20,15] = "BOO";
-  if (! ((20,15) in tcoeff)) { data_error("BUG"); }
   
   # Start the term list with the avg and dev errors:
   termName[nt] = "AVG_ERR"; termIndex[termName[nt]] = nt; nt++;
@@ -80,14 +77,14 @@ END {
     { printf "file %2d = %s\n", kf, fname[kf]; }
   printf "\n"
     
-  printf "%12s ", " ";
   for (kf = 0; kf < nf; kf++)
-    { printf " %12s", ("file " kf); }
+    { printf " %16s", ("file " kf); }
+  printf " %s", " term name";
   printf "\n"
      
-  printf "%12s ", " ";
   for (kf = 0; kf < nf; kf++)
-    { printf " %12s", "------------"; }
+    { printf " %16s", "------------"; }
+  printf " %s", " ----------------------";
   printf "\n"
  
   for (it = 2; it < nt; it++) {
@@ -129,14 +126,14 @@ function process_term(na,  kt,kf) {
 
 function print_term(na, kt,cf,kf) {
   kt = termIndex[na];
-  printf "%-12s ", na;
   for (kf = 0; kf < nf; kf++) {
     if ((kf,kt) in tcoeff) {
-      printf " %+12.4f", tcoeff[kf,kt];
+      printf " %+16.4f", tcoeff[kf,kt];
     } else {
-      printf " %12s", "---";
+      printf " %16s", "---";
     }
   }
+  printf " %s", na;
   printf "\n";
 }
 

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {jsmath.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-18 11:12:17 by stolfi */ 
+/* Last edited on 2023-03-31 03:46:21 by stolfi */ 
 /* Created on 2007-01-02 by J. Stolfi, UNICAMP */
 
 #define test_jsmath_COPYRIGHT \
@@ -58,6 +58,8 @@ void test_minbits(int32_t nt);
 void test_expand_contract(int32_t nt);
 
 void test_erf_inv(int32_t nt);
+
+void test_ball_vol(int32_t nt);
 
 typedef void range_map_t(double *zP, double zlo, double zhi, double *dzP);
 
@@ -154,6 +156,7 @@ int32_t main (int32_t argn, char **argv)
     test_64bit_mul(200);
     test_expand_contract(200);
     test_erf_inv(2000);
+    test_ball_vol(20);
 
     return 0;
   }
@@ -532,6 +535,108 @@ void test_erf_inv(int32_t nt)
     fprintf(stderr, "  max error:\n");
     fprintf(stderr, "  p1 = %25.20f  z1 = %25.20f p2 = %25.20f", p1emax, z1emax, p2emax);
     fprintf(stderr, "  err = %25.16e\n", emax); 
+  }
+
+void test_ball_vol(int32_t nt)
+  {
+    for (int32_t d = 0; d <= nt; d++)
+      { bool_t verbose = (d <= 5);
+        /* TEST: double ball_vol(int32_t d); */
+        /* TEST: double ball_cap_vol_frac_pos(int32_t d, double u); */
+        /* TEST: double ball_zone_vol_frac_ang(int32_t d, double w); */
+
+        if (verbose) { fprintf(stderr, "Checking {ball_vol} d = %d...\n", d); }
+        { 
+          double vball = ball_vol(d);
+          if (verbose) { fprintf(stderr, "  measure of %d-ball with unit radius = %12.7f\n", d, vball); } 
+          /* Checking: */
+          if (d <= 5)
+            { double vv;
+              if (d == 0)
+                { vv = 1; }
+              else if (d == 1)
+                { vv = 2; }
+              else if (d == 2)
+                { vv = M_PI; }
+              else if (d == 3)
+                { vv = M_PI*4/3; }
+              else if (d == 4)
+                { vv = M_PI*M_PI/2; }
+              else if (d == 5)
+                { vv = M_PI*M_PI*8/15; }
+              else 
+                { assert(FALSE); vv = 0.0; }
+              affirm(fabs(vv - vball) <= 1.0e-6, "{ball_vol} error");
+            }
+        }
+
+        if (verbose) { fprintf(stderr, "Checking {ball_zone_vol_frac_ang} d = %d...\n", d); }
+        { int32_t NW = 10; /* Number of latitude steps. */
+          if (verbose) { fprintf(stderr, "  volume fraction between lat = 0 and lat = z:\n"); }
+          for (int32_t i = -NW; i <= NW; i++)
+            { double w = M_PI/2*((double)i)/((double)NW);
+              double f = ball_zone_vol_frac_ang(d, w);
+              if (verbose) { fprintf(stderr, "    %+8.5f  %+8.5f\n", w, f); } 
+              /* Checking: */
+              if (d <= 4)
+                { double ff;
+                  if (i <= -NW)
+                    { ff = -0.5; }
+                  else if (i >= +NW)
+                    { ff = +0.5; }
+                  else if (d == 0)
+                    { ff = 0.0; }
+                  else if (d == 1)
+                    { ff = sin(w)/2; }
+                  else  if (d == 2)
+                    { ff = (w + sin(w)*cos(w))/M_PI; }
+                  else if (d == 3)
+                    { ff = sin(w)*(3 - sin(w)*sin(w))/4; }
+                  else if (d == 4)
+                    { ff = (w + 2*sin(2*w)/3 + sin(4*w)/12)/M_PI; }
+                  else 
+                    { assert(FALSE); ff = 0.0; }
+                  affirm(fabs(ff - f) <= 1.0e-6, "{ball_zone_vol_frac_ang} error");
+                }
+              if (i == -NW)
+                { affirm (fabs(f + 0.5) < 1.0e-8, "{ball_zone_vol_frac_ang} error for {w = -PI/2}"); }
+              else if (i == +NW)
+                { affirm (fabs(f - 0.5) < 1.0e-8, "{ball_zone_vol_frac_ang} error for {w = +PI/2}"); }
+              else if (i == 0)
+                { affirm (f == 0, "{ball_zone_vol_frac_ang} error for {w = 0}"); }
+            }
+          fprintf(stderr, "\n");
+        }
+
+        if (verbose) { fprintf(stderr, "Checking {ball_cap_vol_frac_pos} d = %d\n", d); }
+        { int32_t NX = 10; /* Number of position steps in each hemisphere. */
+          int32_t imin = -NX-1;
+          int32_t imax = +NX+1;
+          if (verbose) { fprintf(stderr, "  volume fraction between x = -1 and x = u:\n"); }
+          for (int32_t i = imin; i <= imax; i++)
+            { double u = ((double)i)/((double)NX);
+              double f = ball_cap_vol_frac_pos(d, u);
+              if (verbose) { fprintf(stderr, "  %8.5f  %8.5f\n", u, f); } 
+              double ff;
+              if (u < -1)
+                { ff = 0.0; }
+              else if (u == -1)
+                { ff = (d == 0 ? 0.25 : 0.0); }
+              else if (u > +1)
+                { ff = 1.0; }
+              else if (u == +1)
+                { ff = (d == 0 ? 0.75 : 1.0); }
+              else
+                { /* Checking consistency with {ball_zone_vol_frac_ang}: */
+                  double w = asin(u);
+                  double vw = ball_zone_vol_frac_ang(d, w);
+                  ff = 0.5 + vw;
+                }
+              affirm(fabs(ff - f) <= 1.0e-6, "{ball_cap_vol_frac_pos} error");
+            }
+          fprintf(stderr, "\n");
+        }
+    }
   }
 
 double compute_map_derivative(double z, double zlo, double zhi, range_map_t *map)

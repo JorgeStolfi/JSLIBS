@@ -1,5 +1,5 @@
 /* rntest --- test program for rn.h, rmxn.h  */
-/* Last edited on 2023-03-26 21:53:06 by stolfi */
+/* Last edited on 2023-03-31 02:40:05 by stolfi */
 
 /* We need to set these in order to get {isnan}. What a crock... */
 #define _GNU_SOURCE
@@ -49,7 +49,6 @@ void test_rn_cross(int32_t n, double b[], double c[], bool_t verbose);
 void test_rn_det(int32_t n, double a[], bool_t verbose);
 void test_rn_decomp(int32_t n, double a[], double b[], double c[], double d[], bool_t verbose);
 void test_rn_print(int32_t n, double a[], bool_t verbose);
-void test_rn_ball_vol(int32_t n, bool_t verbose);
 
 void test_rmxn_zero_ident(int32_t m, int32_t n, double Amn[], double Bmn[], bool_t verbose);
 void test_rmxn_copy(int32_t m, int32_t n, double Amn[], double Bmn[], bool_t verbose);
@@ -135,7 +134,6 @@ void test_rn (bool_t verbose)
     test_rn_det(n, a, verbose);
     test_rn_decomp(n, a, b, c, d, verbose);
     test_rn_print(n, a, verbose);
-    test_rn_ball_vol(n, verbose);
       
     /* NOT TESTED: */
     /* TEST: rn_copy (int32_t n, double *a, double *r); */
@@ -594,82 +592,6 @@ void test_rn_print(int32_t n, double a[], bool_t verbose)
       }
   }
      
-void test_rn_ball_vol(int32_t n, bool_t verbose)
-  {
-    /* TEST: double rn_ball_vol(double r, int32_t d); */
-    /* TEST: double rn_ball_cap_vol_frac_pos(int32_t d, double u); */
-    /* TEST: double rn_ball_cap_vol_frac_ang(int32_t d, double w); */
-
-    fprintf(stderr, "test_rn_ball_vol:  n = %d\n", n);
-    
-    if (verbose) { fprintf(stderr, "--- testing rn_ball_vol ---\n"); }
-    { 
-      for (int32_t ir = 1; ir <= 3; ir++)
-        { double r = (double)ir;
-          double v = rn_ball_vol(r, n);
-          if (verbose) { fprintf(stderr, "  measure of %d-ball with radius %.3f = %8.5f\n", n, r, v); } 
-          /* Checking: */
-          if (n <= 4)
-            { double vv;
-              if (n == 1)
-                { vv = 2*r; }
-              else if (n == 2)
-                { vv = M_PI*r*r; }
-              else if (n == 3)
-                { vv = M_PI*4/3*r*r*r; }
-              else if (n == 4)
-                { vv = M_PI*M_PI/2*r*r*r*r; }
-              else { assert(FALSE); vv = 0.0; }
-              affirm(fabs(vv - v) <= 1.0e-6, "rn_ball_vol error");
-            }
-        }
-    }
-    
-    if (verbose) { fprintf(stderr, "--- testing rn_ball_cap_vol_frac_ang ---\n"); }
-    { int32_t NW = 10; /* Number of latitude steps. */
-      int32_t imin = 0;
-      int32_t imax = NW;
-      double wmax = M_PI;
-      if (verbose) { fprintf(stderr, "  volume fraction between lat = 0 and lat = z:\n"); }
-      for (int32_t i = imin; i <= imax; i++)
-        { double w = wmax*((double)i)/((double)NW);
-          double f = rn_ball_cap_vol_frac_ang(n, w);
-          if (verbose) { fprintf(stderr, "    %8.5f  %8.5f\n", w, f); } 
-          /* Checking: */
-          if (n <= 4)
-            { double ff;
-              if (n == 1)
-                { ff = sin(w)/2; }
-              else if (n == 2)
-                { ff = (w + sin(w)*cos(w))/M_PI; }
-              else if (n == 3)
-                { ff = sin(w)*(3 - sin(w)*sin(w))/4; }
-              else if (n == 4)
-                { ff = (w + 2*sin(2*w)/3 + sin(4*w)/12)/M_PI; }
-              else { assert(FALSE); ff = 0.0; }
-              affirm(fabs(ff - f) <= 1.0e-6, "rn_ball_cap_vol_frac_ang error");
-            }
-        }
-      fprintf(stderr, "\n");
-    }
-
-    if (verbose) { fprintf(stderr, "--- testing rn_ball_cap_vol_frac_pos ---\n"); }
-    { int32_t NX = 10; /* Number of position steps in each hemisphere. */
-      int32_t imin = -NX-1;
-      int32_t imax = +NX+1;
-      double xmax = 1.0;
-      if (verbose) { fprintf(stderr, "  volume fraction between x = -1 and x = z:\n"); }
-      for (int32_t i = imin; i <= imax; i++)
-        { double u = xmax*((double)i)/((double)NX);
-          double f = rn_ball_cap_vol_frac_pos(n, u);
-          if (verbose) { fprintf(stderr, "  %8.5f  %8.5f\n", u, f); }  
-          /* !!! Should check the value of {f} for {n <= 4} !!! */
-        }
-      fprintf(stderr, "\n");
-    }
-      
-  }
-
 void test_rmxn(bool_t verbose)
   {
     int32_t maxsize = (verbose ? 5 : 10);

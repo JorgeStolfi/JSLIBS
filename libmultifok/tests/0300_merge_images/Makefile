@@ -1,8 +1,8 @@
-# Last edited on 2023-01-24 16:46:54 by stolfi
+# Last edited on 2023-04-28 17:25:14 by stolfi
 
 TEST_LIB := libmultifok.a
 TEST_LIB_DIR := ../..
-PROG := mf_0300_merge_images
+PROG := test_mfok_merge_images
 
 JS_LIBS := \
   libimg.a \

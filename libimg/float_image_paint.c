@@ -1,5 +1,5 @@
 /* See {float_image_paint.h}. */
-/* Last edited on 2021-08-28 23:25:18 by stolfi */
+/* Last edited on 2023-04-23 11:28:58 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -270,6 +270,7 @@ double float_image_paint_cross
     double xctr, 
     double yctr, 
     double rad,
+    bool_t empty,
     double hwd, 
     bool_t diagonal, 
     float vdraw,
@@ -297,8 +298,11 @@ double float_image_paint_cross
     int xLo, xHi; float_image_func_get_index_range(xctr, rMax, nx, &xLo, &xHi);
     int yLo, yHi; float_image_func_get_index_range(yctr, rMax, ny, &yLo, &yHi);
     
-    double orad = rad + hwd;  /* Outer half-side. */
+    double orad = rad + hwd;  /* Outer radius of cross (incuding {hwd}). */
     double hwd2 = hwd*hwd;    /* Tip radius, squared. */
+    
+    double rlo = (empty ? 0.50*rad : -0.1); /* Inner radius of cross (not counting {hwd}). */
+    double irad = rlo - hwd; /* Inner radius of cross (including {hwd}). */
 
     auto float func_cross(double x, double y);
 
@@ -314,13 +318,17 @@ double float_image_paint_cross
         dx = fabs(dx);
         dy = fabs(dy);
         if (dx < dy) { double t = dx; dx = dy; dy = t; }
-        if ((dx < rad) && (dy < hwd))
-          { return vdraw; }
-        else if ((dx > orad) || (dy > hwd))
-          { return NAN; }
-        else 
-          { /* Round tip: */
-            dx -= rad;
+        if ((dx > rlo) && (dx < rad) && (dy < hwd))
+          { /* Rectangular part of arm: */
+            return vdraw;
+          }
+        else if ((dx < irad) || (dx > orad) || (dy > hwd))
+          { /* Not in arm: */
+            return NAN;
+          }
+        else
+          { /* Round inner or outer tip: */
+            if (dx >= rad) { dx = dx - rad; } else { dx = rlo - dx; }
             double dr2 = dx*dx + dy*dy;
             if (dr2 < hwd2) 
               { return vdraw; }

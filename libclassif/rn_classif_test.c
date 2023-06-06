@@ -1,5 +1,5 @@
 /* See rn_classif_test.h */
-/* Last edited on 2017-01-04 19:03:55 by stolfilocal */
+/* Last edited on 2023-03-31 03:48:03 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -8,10 +8,11 @@
 
 #include <r2.h>
 #include <rn.h>
-#include <rn_classif_test.h>
-
 #include <jsrandom.h>
 #include <affirm.h>
+#include <jsmath.h>
+
+#include <rn_classif_test.h>
 
 double rn_classif_test_dist_ellipse(double x, double y, double A, double B, double eps);
   /* Approximate signed distance from {(x,y)} to the ellipse with radii {A,B}.
@@ -288,8 +289,8 @@ void rn_classif_test_throw_mballs(int i, int NA, int NC, double p[], int *class)
     assert(i >= 0);
     /* In each sampling subperiod we generate one point in one ball and {NH} points in the rest of the cubelet: */
     /* Compute {NH} so that the sampling density is about the same: */
-    double H = pow(S,NA);              /* Measure of one cubelet. */
-    double B = rn_ball_vol(r_abs,NA);  /* Measure of one ball. */
+    double H = pow(S,NA);                  /* Measure of one cubelet. */
+    double B = pow(r_abs,NA)*ball_vol(NA); /* Measure of one ball. */
     assert(B <= 0.5001*H);
     int NH = (int)((H - B)/B + 0.5); 
     if (NH < 1) { NH = 1; }

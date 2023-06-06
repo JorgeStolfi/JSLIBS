@@ -1,11 +1,11 @@
-#define PROG_NAME "mf_0150_show_basis"
+#define PROG_NAME "test_mfok_show_basis"
 #define PROG_DESC "test an analysis of basis functions from {multifok_focus_op.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-01-29 15:26:33 by stolfi */ 
+/* Last edited on 2023-04-28 17:30:11 by stolfi */ 
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
-#define mf_0150_show_basis_COPYRIGHT \
+#define test_mfok_show_basis_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
 
 #define PROG_HELP \

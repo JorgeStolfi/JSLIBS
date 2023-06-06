@@ -1,5 +1,5 @@
 /* See {r2_align.h}. */
-/* Last edited on 2023-03-22 20:04:41 by stolfi */
+/* Last edited on 2023-04-01 04:29:59 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -19,18 +19,12 @@
 
 /* INTERNAL PROTOTYPES */
 
-void r2_align_throw_ortho_disp_vector(int32_t ni, r2_t arad[], int32_t k, r2_t U[]);
-  /* Assumes that the rows of {U} are {k} delta vectors with {ni} points
-    each, orthonormal, balanced, and conformal to {arad}, and {U} has space
-    for at least one more row. Stores into row {k} of {U} another alignment
-    vector that is normalized, balanced, conformal to {arad}, and
-    orthogonal to all of them.
-    
-    Specifically, assumes that the delta vector basis element {u[kb]} with index {kb} is
-    points {u[kb][i] = U[kb*ni + i]} for {i} in {0..ni-1}. 
-    
-    The parameter {ni} must be at least 2, and {k} must be less than {nd}
-    where {nv} is the number of non-zero coordinates in {arad}. */
+bool_t r2_align_coord_is_variable (r2_t arad[], int32_t i, int32_t j);
+  /* Returns {TRUE} iff {arad[i].c[j]} is nonzero. */
+
+i2_t r2_align_count_variable_coords (int32_t ni, r2_t arad[]);
+  /* Returns a integer pair {nv} such that {nv.c[j]} is the number of
+    indices {i} such that {arad[i].c[j]} is not zero. */
 
 void r2_align_plot_mismatch_lines
   ( FILE *wr,
@@ -50,7 +44,221 @@ void r2_align_plot_mismatch_lines
     sampled point {p}, writes a line with two independent coordinates
     {s0,s1} along {u0,u1}, and the value of {F2(ni,p)} . */
 
+/* ---------------------------------------------------------------------- */
+
+void r2_align_throw_ortho_disp_vector(int32_t ni, r2_t arad[], int32_t k, r2_t U[]);
+  /* Assumes that the rows of {U} are {k} delta vectors with {ni} points
+    each, orthonormal, balanced, and conformal to {arad}, and {U} has space
+    for at least one more row. Stores into row {k} of {U} another alignment
+    vector that is normalized, balanced, conformal to {arad}, and
+    orthogonal to all of them.
+    
+    Specifically, assumes that the delta vector basis element {u[kb]} with index {kb} is
+    points {u[kb][i] = U[kb*ni + i]} for {i} in {0..ni-1}. 
+    
+    The parameter {ni} must be at least 2, and {k} must be less than {nd}
+    where {nv} is the number of non-zero coordinates in {arad}. */
+
+
 /* IMPLEMENTATIONS */
+
+i2_t r2_align_count_variable_coords(int32_t ni, r2_t arad[])
+  { 
+    i2_t nv = (i2_t){{ 0, 0 }};
+    for (int32_t i = 0; i < ni; i++) 
+      { for (int32_t j = 0; j < 2; j++)
+          { double arij = arad[i].c[j];
+            demand (isfinite(arij) && (arij >= 0), "invalid {arad}");
+            if (arij != 0) { nv.c[j]++; }
+          }
+      }
+    return nv;
+  }
+
+int32_t r2_align_count_degrees_of_freedom(i2_t nv, bool_t bal)
+  { int32_t nd;
+    if (bal) 
+      { nd = (nv.c[0] >= 1 ? nv.c[0]-1 : 0) + (nv.c[1] >= 1 ? nv.c[1]-1 : 0); }
+    else
+      { nd = nv.c[0] + nv.c[1]; }
+    return nd;
+  }
+
+void r2_align_compute_search_ellipsoid
+  ( int32_t ni,
+    r2_t arad[],
+    bool_t bal, 
+    int32_t *nd_P,
+    r2_t U[], 
+    double urad[]
+  )
+  { 
+    bool_t debug = TRUE;
+    
+    if (debug) { fprintf(stderr, "--> entering %s\n", __FUNCTION__); }
+
+    demand(ni >= 0, "invalid {ni}");
+    i2_t nv = r2_align_count_variable_coords(ni, arad); /* Variable coords count per axis of {\R^2}. */
+    int32_t nh = nv.c[0] + nv.c[1]; /* Total count of variable coords of {\RC}. */
+    int32_t nd == r2_align_count_degrees_of_freedom(nv, bal);
+    if (nd == 0) { return; }
+   
+    /* If there are no balancing constraints, the rows of the search
+      basis {U} are simply the {nh} canonical unit vectors of {\RC}
+      corresponding to the variable coordinates (those with positive
+      {arad}), and {urad[0..nd-1]} are the non-zero elelements of
+      {arad[0..ni-1].c[0..1]}. Otherwise we must cut the unconstrained
+      ellipsoid defined by {arad} with the balancing equations. */
+    
+    if (bal && (nd < nh))
+      { if (debug) { fprintf(stderr, "  ... lienarizing {arad}\n"); } 
+        double hrad[2*ni]; /* The radii {arad[0..ni-1].c[0..1]}, linearized. */
+        for (int32_t i = 0; i < ni; i++)
+          { for (int32_t j = 0; j < 2; j++)
+              { hrad[2*i + j] = arad[i].c[j]; }
+          }
+
+        if (debug) { fprintf(stderr, "  ... computing the blancing constraints\n"); } 
+        int32_t nc_bal = nh - nd;   /* Number of balancing constraints. */
+        double A[nc_bal*2*ni];  /* Constraint equation coefficients on linearized {\RC} coords. */
+        int32_t kc = 0;   /* Next free row of {A}. */
+        for (int32_t j = 0; j < 2; j++)
+          { if (nv.c[j] >= 2)
+              { /* Append the the balancing constraint on coordinate {j} of {\RR^2}: */
+                assert(kc < nc_bal);
+                double *Ak = &(A[kc*2*ni]);
+                for (int32_t i = 0; i < ni; i++)
+                  { double arij = arad[i].c[j];
+                    if (arij != 0) { Ak[2*i + j] = 1.0; }
+                  }
+                kc++;
+              }
+          }
+        assert(kc == nc_bal);
+        
+        if (debug) { fprintf(stderr, "  ... orthonormalizing balancing and conform constraints\n"); } 
+        int32_t nc; /* Number of independent constraints. */
+        double *C = NULL; /* Orthonormalized constraints over {\RR^{2*ni}}. */
+        rmxn_ellipsoid_normalize_constraints(2*ni, hrad, nc_bal, A, verbose_norm, &nc, &C);
+        int32_t nc_zer = 2*ni - nh; /* Number of conformation constraints. */
+        assert(nc == nc_bal + nc_zer); /* Balancing and conform constraints should be indep. */
+          
+        /* Cut the ellipsoid in the linearized space {\RR^{2*ni}}: */
+        double V[nd*2*ni]; /* Linearized search basis {U}. */
+        rmxn_ellipsoid_cut(2*ni, hrad, nc, C, nd, V, urad);
+        
+        /* Repack basis {V} as alignment vectors in {\RC}: */
+        for (int32_t kd = 0; kd < nd; kd++)
+          { r2_t *Uk = &(U[k*ni]);
+            double Vk = &(V[k*2*ni]);
+            for (int32_t i = 0; i < ni; i++)
+              { for (int32_t j = 0; j < 2; j++)
+                  { double Vkij = Vk[2*i + j];
+                    /* All {U} vectors must be conformal: */
+                    if (arad[i].c[j] == 0) { assert(Vkij == 0); }
+                    Uk[i].c[j] = Vkij; 
+                  }
+              }
+          }
+      }
+    else
+      { int32_t kd = 0; /* Count nonzero elements of {arad}. */
+        for (int32_t i = 0; i < ni; i++)
+          { for (int32_t j = 0; j < 2; j++)
+              { double arij = arad[i].c[j];
+                if (arij != 0) 
+                  { assert(kd < nd);
+                    /* Store into row {kd} the {i,j} canonical vector of {\RC}: */
+                    r2_t *Uk = &(U[kd*ni]);
+                    for (int32_t i1 = 0; i1 < ni; i1++)
+                      { for (int32_t j1 = 0; j1 < 2; j1++)
+                         { Uk[i1].c[j1] = 0.0; }
+                      }
+                    Uk[i].c[j] = 1.0;
+                    urad[kd] = arij;
+                    kd++;
+                  }
+              }
+          }
+      }
+    assert(kd = nd;
+  }
+  
+        
+        
+    
+
+    if (debug) { fprintf(stderr, "... finding an orthonormal basis {H} for {\\RU} ...\n"); }
+
+    r2_t H[nd*ni];
+    for (int32_t k = 0; k < nd; k++)
+      { r2_t *hk = &(H[k*ni]);
+        r2_align_throw_ortho_disp_vector(ni, arad, k, H);
+        if (debug) { r2_align_print_vector(stderr, ni, "h", k, hk, FALSE); }
+      }
+      
+    if (debug) { fprintf(stderr, "... computing the metric matrix {M} for {\\RF} ...\n"); }
+    double M[nd*nd];
+    for (int32_t r = 0; r < nd; r++)
+      { r2_t *hr = &(H[r*ni]);
+        for (int32_t s = 0; s <= r; s++)
+          { r2_t *hs = &(H[s*ni]);
+            double sum = 0.0;
+            for (int32_t i = 0; i < ni; i++)
+              { for (int32_t j = 0; j < 2; j++)
+                  { double hrij = hr[i].c[j];
+                    double hsij = hs[i].c[j];
+                    double rij = arad[i].c[j];
+                    if (rij == 0)
+                      { assert((hrij == 0) && (hsij == 0)); }
+                    else
+                      { sum += hrij*hsij/(rij*rij); }
+                  }
+              }
+            M[r*nd + s] = sum;
+            M[s*nd + r] = sum; /* Diag is assigned twice, but OK. */
+          }
+      }
+    
+    if (debug) { fprintf(stderr, "... computing the eigen decomp {S,d} of {M} ...\n"); }
+    double Q[nd*nd]; /* Eigenvector matrix. */
+    double d[nd]; /* Eigenvalues. */
+    { /* Convert {M} to tridiag with diagonal {d[0..nd-1]} and subdiagonal {e[1..nd-1]}: */
+      double e[nd]; /* Sub-diagonal elements of temporary tridiagonal matrix. */
+      syei_tridiagonalize(nd, M, d, e, Q);
+      /* Compute eigenvalues and eigenvectors from {Q} and tridiag matrix: */
+      int32_t p; /* Number of eigenvalues computed. */
+      int32_t absrt = 0; /* Sort eigenvalues by signed value. */
+      syei_trid_eigen(nd, d, e, Q, &p, absrt);
+      /* Check that all eigenvalues are positive: */
+      demand(p == nd, "failed to determine eigenvalues of {M}");
+    }
+    /* Compute the radii {urad[0..nd-1]} of {\RF}: */
+    for (int32_t k = 0; k < nd; k++)
+      { demand(d[k] > 0.0, "non-positive eigenvalue");
+        urad[k] = 1.0/sqrt(d[k]);
+      }
+    
+    if (debug) { fprintf(stderr, "... computing the basis {U = Q H} aligned with axes of {\\RF} ...\n"); }
+    for (int32_t r = 0; r < nd; r++)
+      { double *qr = &(Q[r*nd]);
+        r2_t *ur = &(U[r*ni]);
+        for (int32_t i = 0; i < ni; i++)
+          { for (int32_t j = 0; j < 2; j++)
+              { double sum = 0.0;
+                for (int32_t s = 0; s < nd; s++)
+                  { r2_t *hs = &(H[s*ni]);
+                    double qrs = qr[s];
+                    double hsij = hs[i].c[j];
+                    sum += qrs*hsij;
+                  }
+                ur[i].c[j] = sum;
+              }
+          }
+        if (debug) { r2_align_print_vector(stderr, ni, "u", r, ur, FALSE); }
+        if (debug) { fprintf(stderr, "radius {urad[%d]} = %.8f\n", r, urad[r]); }
+      }
+  }
 
 void r2_align_throw_ball_vector(int32_t ni, double rmin, double rmax, r2_t p[])
   { demand ((0 <= rmin) && (rmin <= 0.80*rmax), "bad norm range");
@@ -127,18 +335,6 @@ bool_t r2_align_coord_is_variable(r2_t arad[], int32_t i, int32_t j)
     return (rij > 0);
   }
 
-i2_t r2_align_count_variable_coords(int32_t ni, r2_t arad[])
-  { 
-    i2_t nv = (i2_t){{ 0, 0 }};
-    for (int32_t i = 0; i < ni; i++) 
-      { for (int32_t j = 0; j < 2; j++)
-          { double rij = arad[i].c[j];
-            if (rij != 0) { nv.c[j]++; }
-          }
-      }
-    return nv;
-  }
-
 void r2_align_points_to_vars(int32_t ni, r2_t p[], r2_t arad[], r2_t ctr[], int32_t nv, double y[])
   { int32_t k = 0;
     for (int32_t i = 0; i < ni; i++)
@@ -169,92 +365,6 @@ void r2_align_vars_to_points(int32_t nv, double y[], int32_t ni, r2_t arad[], r2
           }
       }
     demand(k == nv, "wrong {nv}");
-  }
-
-int32_t r2_align_count_degrees_of_freedom(int32_t ni, r2_t arad[])
-  { i2_t nv = r2_align_count_variable_coords(ni, arad);
-    int32_t nd = (nv.c[0] >= 1 ? nv.c[0]-1 : 0) + (nv.c[1] >= 1 ? nv.c[1]-1 : 0);
-    return nd;
-  }
-
-void r2_align_compute_search_ellipsoid (int32_t ni, r2_t arad[], int32_t nd, r2_t U[], double urad[])
-  { 
-    bool_t debug = TRUE;
-    
-    demand(ni >= 1, "invalid {ni}");
-    demand(nd == r2_align_count_degrees_of_freedom(ni, arad), "invalid {nd}");
-    if (nd == 0) { return; }
-
-    if (debug) { fprintf(stderr, "... finding an orthonormal basis {H} for {\\RU} ...\n"); }
-
-    r2_t H[nd*ni];
-    for (int32_t k = 0; k < nd; k++)
-      { r2_t *hk = &(H[k*ni]);
-        r2_align_throw_ortho_disp_vector(ni, arad, k, H);
-        if (debug) { r2_align_print_vector(stderr, ni, "h", k, hk, FALSE); }
-      }
-      
-    if (debug) { fprintf(stderr, "... computing the metric matrix {M} for {\\RF} ...\n"); }
-    double M[nd*nd];
-    for (int32_t r = 0; r < nd; r++)
-      { r2_t *hr = &(H[r*ni]);
-        for (int32_t s = 0; s <= r; s++)
-          { r2_t *hs = &(H[s*ni]);
-            double sum = 0.0;
-            for (int32_t i = 0; i < ni; i++)
-              { for (int32_t j = 0; j < 2; j++)
-                  { double hrij = hr[i].c[j];
-                    double hsij = hs[i].c[j];
-                    double rij = arad[i].c[j];
-                    if (rij == 0)
-                      { assert((hrij == 0) && (hsij == 0)); }
-                    else
-                      { sum += hrij*hsij/(rij*rij); }
-                  }
-              }
-            M[r*nd + s] = sum;
-            M[s*nd + r] = sum; /* Diag is assigned twice, but OK. */
-          }
-      }
-    
-    if (debug) { fprintf(stderr, "... computing the eigen decomp {S,d} of {M} ...\n"); }
-    double Q[nd*nd]; /* Eigenvector matrix. */
-    double d[nd]; /* Eigenvalues. */
-    { /* Convert {M} to tridiag with diagonal {d[0..nd-1]} and subdiagonal {e[1..nd-1]}: */
-      double e[nd]; /* Sub-diagonal elements of temporary tridiagonal matrix. */
-      syei_tridiagonalize(nd, M, d, e, Q);
-      /* Compute eigenvalues and eigenvectors from {Q} and tridiag matrix: */
-      int32_t p; /* Number of eigenvalues computed. */
-      int32_t absrt = 0; /* Sort eigenvalues by signed value. */
-      syei_trid_eigen(nd, d, e, Q, &p, absrt);
-      /* Check that all eigenvalues are positive: */
-      demand(p == nd, "failed to determine eigenvalues of {M}");
-    }
-    /* Compute the radii {urad[0..nd-1]} of {\RF}: */
-    for (int32_t k = 0; k < nd; k++)
-      { demand(d[k] > 0.0, "non-positive eigenvalue");
-        urad[k] = 1.0/sqrt(d[k]);
-      }
-    
-    if (debug) { fprintf(stderr, "... computing the basis {U = Q H} aligned with axes of {\\RF} ...\n"); }
-    for (int32_t r = 0; r < nd; r++)
-      { double *qr = &(Q[r*nd]);
-        r2_t *ur = &(U[r*ni]);
-        for (int32_t i = 0; i < ni; i++)
-          { for (int32_t j = 0; j < 2; j++)
-              { double sum = 0.0;
-                for (int32_t s = 0; s < nd; s++)
-                  { r2_t *hs = &(H[s*ni]);
-                    double qrs = qr[s];
-                    double hsij = hs[i].c[j];
-                    sum += qrs*hsij;
-                  }
-                ur[i].c[j] = sum;
-              }
-          }
-        if (debug) { r2_align_print_vector(stderr, ni, "u", r, ur, FALSE); }
-        if (debug) { fprintf(stderr, "radius {urad[%d]} = %.8f\n", r, urad[r]); }
-      }
   }
 
 void r2_align_throw_ortho_disp_vector(int32_t ni, r2_t arad[], int32_t k, r2_t H[]) 

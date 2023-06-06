@@ -1,5 +1,5 @@
 #! /bin/bash
-# Last edited on 2023-01-26 21:51:05 by stolfi
+# Last edited on 2023-04-28 18:51:37 by stolfi
 
 sceneType="$1"; shift    # Scene type: "R" ramp only, "F" non-olap disks/balls, "T" olap.
 NX="$1"; shift           # Image width.
@@ -51,7 +51,7 @@ mkdir -pv ${outDir}
 rm -f ${outPrefix}-sharp-*.{ppm,pgm}
 rm -f ${outPrefix}-fd{zDep_FMT}-*.{ppm,pgm}
 
-./mf_0100_make_image \
+./test_mfok_make_image \
   -imgSize ${NX} ${NY} \
   -sceneType ${sceneType} \
   -pixSampling ${NP} \

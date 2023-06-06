@@ -1,5 +1,5 @@
 /* See {multifok_term.h}. */
-/* Last edited on 2023-02-12 06:52:08 by stolfi */
+/* Last edited on 2023-04-18 22:37:15 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -63,6 +63,69 @@ void multifok_term_values_from_basis_coeffs
       }
   }
 
+void multifok_term_read_weights_and_names
+  ( FILE *rd, 
+    int32_t *NT_P,
+    double **wt_P, 
+    char ***termName_P,
+    bool_t verbose
+  )
+  {
+    if (verbose) { fprintf(stderr, "reading term weights and names...\n"); }
+    
+    int32_t NT = 0; /* Number of terms seen in file. */
+    double_vec_t wt = double_vec_new(50);
+    string_vec_t termName = string_vec_new(50); /* Term formulas. */
+    while (TRUE)
+      { bool_t ok = fget_test_comment_or_eol(rd, '#');
+        if (ok) { continue; }
+        if (fget_test_eof(rd)) { break; }
+        /* There is something there: */
+        int32_t kt = fget_int32(rd);
+        demand(kt == NT, "unexpected product index");
+        double wtk = fget_double(rd);
+        char *tnamek = fget_string(rd);
+        fget_comment_or_eol(rd, '#');
+        double_vec_expand(&wt,NT);
+        wt.e[kt] = wtk;
+        string_vec_expand(&termName, NT);
+        termName.e[NT] = tnamek;
+        if (verbose) { fprintf(stderr, "  %3d %12.8f %s\n", NT, wtk, tnamek); }
+        NT++;
+      }
+    string_vec_trim(&termName, NT);
+    double_vec_trim(&wt,NT);
+      
+    (*NT_P) = NT;
+    if (wt_P == NULL) { free(wt.e); } else { (*wt_P) = wt.e; }
+    (*termName_P) = termName.e;
+  }
+
+void multifok_term_write_names
+  ( FILE *wr, 
+    int32_t NT,
+    char *termName[]
+  )
+  { for (int32_t kt = 0; kt < NT; kt++)
+      { fprintf(wr, "%s\n", termName[kt]); }
+    fflush(wr);
+  }
+
+void multifok_term_write_weights_and_names
+  ( FILE *wr, 
+    int32_t NT,
+    double wt[],
+    char *termName[]
+  )
+  { for (int32_t kt = 0; kt < NT; kt++)
+      { if (wt == NULL)
+          { fprintf(wr, "%4d 1 %s\n", kt, termName[kt]); }
+        else
+          { fprintf(wr, "%4d %12.8f %s\n", kt, wt[kt], termName[kt]); }
+      }
+    fflush(wr);
+  }
+
 void multifok_term_indices_from_names
   ( int32_t NB, 
     char *belName[],
@@ -97,7 +160,7 @@ void multifok_term_indices_from_names
             char *pend = pbeg + 1; /* Past the end of the product. */
             /* if (verbose) { fprintf(stderr, "      (*pbeg) = %c\n", (*pbeg)); } */
             if ((*pbeg) != '1')
-              { demand(((*pbeg) >= 'A') && ((*pbeg) <= 'Z'), "invalid term name");  }
+              { demand(((*pbeg) >= 'A') && ((*pbeg) <= 'Z'), "invalid basis name");  }
             while 
               ( ( ((*pend) >= '0') && ((*pend) <= '9') ) ||
                 ( ((*pend) >= 'A') && ((*pend) <= 'Z') ) ||
@@ -112,7 +175,7 @@ void multifok_term_indices_from_names
 
             /* Check for repeated products: */
             for (int32_t rp = 0; rp < NP; rp++)
-              { demand(strcmp(pr, prix[rp].name) != 0, "repeated product in term names"); }
+              { demand(strcmp(pr, prix[rp].pname) != 0, "repeated product in term names"); }
 
             /* Store product in tables: */
             demand (NP < NP_max, "too many products");
@@ -160,11 +223,15 @@ void multifok_term_parse_product
         demand((past != NULL) && (past < pend), "linear terms not allowed");
         jb1 = find_belName(pbeg, past);
         jb2 = find_belName(past+1, pend);
-        demand(jb1 <= jb2, "product is not canonical ({jb1 > jb2})");
+        /* Ensure factors are in canonical order: */
+        if (jb1 > jb2) { int32_t tmp = jb1; jb1 = jb2; jb2 = tmp; }
       }
-    /* Create a fresh copy {pr} of product name: */
+    /* Create a fresh copy {pr} of product name, with factors sorted: */
     char *pr = NULL;
-    asprintf(&pr, "%*s", nc, pbeg);
+    if (jb1 == -1)
+      { asprintf(&pr, "1"); }
+    else
+      { asprintf(&pr, "%s*%s", belName[jb1], belName[jb2]); }
     
     (*jb1_P) = jb1;
     (*jb2_P) = jb2;
@@ -248,7 +315,7 @@ void multifok_term_read_index_table
    char **termName = (char **)notnull(malloc(NT*sizeof(char*)), "no mem");
    for (int32_t kt = 0; kt < NT; kt++) { termName[kt] = NULL; }
    for (int32_t ip = 0; ip < NP; ip++)
-     { char *pr = prix[ip].name;
+     { char *pr = prix[ip].pname;
        int32_t kt = prix[ip].kt;
        char *otm = termName[kt];
        char *tm = NULL;
@@ -283,7 +350,7 @@ void multifok_term_read_index_table
 
         int32_t jb2 = fget_int32(rd);
         demand((jb2 >= 0) && (jb2 < NB), "invalid basis coeff index {jb2}");
-        demand(jb1 <= jb2, "non-canonical produc {jb1>jb2}");
+        demand(jb1 <= jb2, "non-canonical product {jb1>jb2}");
         
         int32_t jjb = jb1*NB + jb2;
         demand(! jjseen[jjb], "repeated produc {jb1,jb2}");
@@ -310,13 +377,21 @@ void multifok_term_read_index_table
       }
   }
 
-
-void multifok_term_write_names(FILE *wr, int32_t NT, char *termName[])  
-  { for (int32_t kt = 0; kt < NT; kt++)
-      { fprintf(wr, "%s\n", termName[kt]); }
+void multifok_term_write_index_table
+  ( FILE *wr, 
+    int32_t NP,
+    multifok_term_prod_t *prix,
+    bool_t verbose
+  )
+  {
+    demand(NP >= 1, "invalid {NP}");
+    for (int32_t ip = 0; ip < NP; ip++)
+      { multifok_term_prod_t *pri = &(prix[ip]);
+        fprintf(wr, "%4d %4d %4d", ip, pri->jb1, pri->jb2);
+        fprintf(wr, "  %4d %s\n", pri->kt, pri->pname);
+      }
     fflush(wr);
   }
-
 
 #define multifok_term_C_COPYRIGHT \
     "© 2022 by the State University of Campinas (UNICAMP)"

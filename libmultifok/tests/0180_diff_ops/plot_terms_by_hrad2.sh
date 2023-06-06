@@ -1,16 +1,16 @@
 #! /bin/bash
-# Last edited on 2023-02-01 18:24:24 by stolfi
+# Last edited on 2023-04-28 11:31:47 by stolfi
 
 # Reads the file {histDataFile} = "{prefix}-rhdata.txt" which is supposed to contain one line
-# for each sharpness bin, with data
+# for each sampling radius bin, with data
 # 
-#   "{kh} {sharp} {term[0..nt-1]}"
+#   "{i} {hrad_h[i]} {term[i][0..nt-1]}"
 #
-# where {kk} is the sharpness bin index, {sharp} is the central sharpness of that bin, in the
-# pixel, and {term[0..nt-1]} are the average values of the {nt} quadratic terms to use 
+# where {i} is the sharpness bin index, {hrad_h[i]} is the central sampling radius of that bin, in the
+# pixel, and {term[i][0..nt-1]} are the average values of the {nt} quadratic terms to use 
 # for regression.
 
-echo "=== plot_terms_by_sharp.sh =============================" 1>&2
+echo "=== plot_terms_by_hrad2.sh =============================" 1>&2
 echo "$@" 1>&2
 
 prefix="$1"; shift      # File name minus the "-odata.txt" tail.
@@ -52,7 +52,7 @@ while [[ ${kt} -lt ${nt} ]]; do
   printf "  term[%d] = %s...\n" ${kt} "${termName[${kt}]}"
   printf " "${sep}'\\'"\n" >> ${tmpGplFile}
   tnk="${termName[${kt}]}"
-  printf "  \"${histDataFile}\" using 2:(column(3+${kt})) title \"term[%02d]\"" ${kt} >> ${tmpGplFile}
+  printf "  \"${histDataFile}\" using (hrad2(2)):(term(${kt})) title \"%s %02d\"" "${tnk}" ${kt} >> ${tmpGplFile}
   printf " with linespoints lw 2 pt 7 ps 2.0 lc rgb '${color[${kt}]}'"  >> ${tmpGplFile}
   sep=","
   kt=$(( ${kt} + 1 ))
@@ -65,14 +65,17 @@ cat  ${tmpGplFile} 1>&2
 export GDFONTPATH="${HOME}/tt-fonts"
 rm -f ${histPlotFile}
 gnuplot << EOF
-set term png size 1600,1500 noenhanced font "arial,24"
+set term png size 2200,1700 noenhanced font "arial,24"
 set output "${tmpPlotFile}"
 
+set key right top
 set title "${title}"
-set xlabel "pixel sharpness"
+set xlabel "sampling radius squared hrad2"
 set ylabel "quadratic term value"
 
-set key top left
+hrad(k) = column(2)
+hrad2(k) = hrad(k)**2
+term(k) = column(3+k)
 
 load "${tmpGplFile}"
 

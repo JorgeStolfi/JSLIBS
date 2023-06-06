@@ -1,10 +1,10 @@
-# Last edited on 2023-02-01 06:25:27 by stolfi
+# Last edited on 2023-04-29 04:30:24 by stolfi
 
 SHELL := /bin/bash
 
 TEST_LIB := libmultifok.a
 TEST_LIB_DIR := ../..
-PROG := mf_0100_make_image
+PROG := test_mfok_make_image
 
 JS_LIBS := \
   libimg.a \
@@ -25,88 +25,91 @@ all: check
 NX := 160
 NY := 120
 
-SOME_TESTS := \
-  cloth-84:S \
-  fiber-01:S \
-  grave-02:S \
-  pebbl-87:S \
-  rebar-03:S \
-  trees-07:S \
-  wavys-09:S \
-   \
-  wavys-09:M \
-  fiber-01:M
+# {TEXTURE}:{MULTIPLICITY}:{SCENE_TYPE}
+# where {MULTIPLICITY} is "S" for single frame, "M" for frame stack,
+# and {SCENE_TYPE} is "R" for ramp only, "F" for non-overlapping objs,
+# "T" for overlapping.
 
-SOME_MORE_TESTS := \
-  chalk-82:S \
-  cloth-84:S \
-  decor-82:S \
-  falls-83:S \
-  fiber-01:S \
-  grave-02:S \
-  india-81:S \
-  pebbl-87:S \
-  rebar-03:S \
-  trees-07:S \
-  wavys-09:S \
+QUICK_TESTS := \
+  wavyu-zz:S:R \
+  cloth-84:S:F \
+  wavys-09:M:F
+
+SOME_TESTS := \
+  cloth-84:S:R \
+  fiber-01:S:R \
+  fiber-01:S:R \
+  grave-02:S:R \
+  pebbl-87:S:R \
+  wavys-09:S:R \
+  wavyu-zz:S:R \
    \
-  wavys-09:M
+  cloth-84:S:F \
+  grave-02:S:F \
+  wavys-09:S:F \
+   \
+  wavys-09:M:F \
+  fiber-01:M:F \
 
 ALL_TESTS := \
-  chalk-82:S \
-  cloth-84:S \
-  cloth-86:S \
-  coral-03:S \
-  decor-82:S \
-  fallf-01:S \
-  falls-83:S \
-  falls-87:S \
-  fiber-01:S \
-  gecko-02:S \
-  grass-02:S \
-  grass-04:S \
-  grass-09:S \
-  grave-02:S \
-  gravl-87:S \
-  husks-01:S \
-  india-81:S \
-  leafy-09:S \
-  leafy-82:S \
-  leafy-86:S \
-  mosic-96:S \
-  pebbl-87:S \
-  rebar-03:S \
-  sqirt-01:S \
-  tampi-86:S \
-  tarmc-81:S \
-  tarmc-82:S \
-  trees-07:S \
-  wavys-09:S \
-  wavys-33:S \
-  wheat-81:S \
+  cloth-84:S:R \
+  fiber-01:S:R \
+  fiber-01:S:R \
+  grave-02:S:R \
+  pebbl-87:S:R \
+  wavys-09:S:R \
+  wavyu-zz:S:R \
    \
-  wavys-09:M
+  chalk-82:S:F \
+  cloth-84:S:F \
+  cloth-86:S:F \
+  coral-03:S:F \
+  decor-82:S:F \
+  fallf-01:S:F \
+  falls-83:S:F \
+  falls-87:S:F \
+  fiber-01:S:F \
+  gecko-02:S:F \
+  grass-02:S:F \
+  grass-04:S:F \
+  grass-09:S:F \
+  grave-02:S:F \
+  gravl-87:S:F \
+  husks-01:S:F \
+  india-81:S:F \
+  leafy-09:S:F \
+  leafy-82:S:F \
+  leafy-86:S:F \
+  mosic-96:S:F \
+  pebbl-87:S:F \
+  rebar-03:S:F \
+  sqirt-01:S:F \
+  tampi-86:S:F \
+  tarmc-81:S:F \
+  tarmc-82:S:F \
+  trees-07:S:F \
+  wavys-09:S:F \
+  wavys-33:S:F \
+  wheat-81:S:F \
+   \
+  wavys-09:M:F \
+  fiber-01:M:F
 
-check: some-tests
+TESTS := ${QUICK_TESTS}
 
-# SCENE_TYPES := T F R
-SCENE_TYPES := F
-
-some-tests:
-	for targs in ${SOME_TESTS} ; do \
-	  for st in ${SCENE_TYPES} ; do \
-            ${MAKE} TARGS=$${targs} SCENE_TYPE=$${st} single-test ; \
-          done ; \
+check: 
+	for targs in ${TESTS} ; do \
+	  ${MAKE} TARGS=$${targs} single-test ; \
         done
 
 ######################################################################
-# recursive section - caller must define ${TARGS}, ${SCENE_TYPE}
+# recursive section - caller must define ${TARGS}
 ifneq "/${TARGS}" "/"
-ifneq "/${SCENE_TYPE}" "/"
 
-TEST_ARGS := ${subst :, , ${TARGS}}
-PATTERN := ${word 1, ${TEST_ARGS}}
-ZOPT :=    ${word 2, ${TEST_ARGS}}
+TEST_ARGS :=  ${subst :, , ${TARGS}}
+PATTERN :=    ${word 1, ${TEST_ARGS}}
+ZOPT :=       ${word 2, ${TEST_ARGS}}
+SCENE_TYPE := ${word 3, ${TEST_ARGS}}
 
 ifeq "/${ZOPT}" "/S"
   # Single image at midway focus plane {Z}:
@@ -131,8 +134,9 @@ PATTERN_FILE := ${PATTERN_DIR}/${PATTERN}.pgm
 SIZE_TAG := ${shell printf "%04dx%04d" ${NX} ${NY}}
 OUT_PREFIX := out/st${SCENE_TYPE}-${SIZE_TAG}-${PATTERN}/frame
 SHARP_IMAGE := ${OUT_PREFIX}-sharp-cs.ppm
+PIX_PLOT_FILE := ${OUT_PREFIX}-pixplot.txt
 
-RUN_SCRIPT := run_make_image.sh
+RUN_SCRIPT := run_mfok_make_image.sh
 
 clean-out-test:
 	rm -fv ${OUT_PREFIX}-*.{ppm,pgm}
@@ -142,8 +146,10 @@ single-test: clean-out-test ${SHARP_IMAGE}
 
 ${SHARP_IMAGE}: ${PROG} ${RUN_SCRIPT} Makefile
 	./${RUN_SCRIPT} ${SCENE_TYPE} ${NX} ${NY} ${PATTERN_DIR} ${PATTERN} ${Z_DEP} ${ZFOC_MIN} ${ZFOC_MAX} ${ZFOC_STEP}
+	if [[ "/${ZOPT}" == "/M" ]]; then \
+          plot_hrad2_by_z.sh ${PIX_PLOT_FILE} ; \
+        fi
 
 endif
-endif
-# End ${TARGS}, ${SCENE_TYPE} section
+# End ${TARGS} section
 #######################################################################

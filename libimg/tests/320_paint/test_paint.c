@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_paint.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-10-11 02:52:35 by jstolfi */
+/* Last edited on 2023-04-23 11:29:29 by stolfi */
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_paint_C_COPYRIGHT \
@@ -81,13 +81,13 @@ typedef struct options_t
   { 
   } options_t;
 
-options_t *fitp_parse_options(int argc, char **argv);
+options_t *fitp_parse_options(int32_t argc, char **argv);
   /* Parses the command line arguments and returns them as
     an {options_t} record. */
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
-float_image_t *fitp_make_test_image(int nx, int ny, int m, options_t *o);
+float_image_t *fitp_make_test_image(int32_t nx, int32_t ny, int32_t m, options_t *o);
   /* Creates a test image using various
     {float_image_paint.h} tools. */
 
@@ -97,83 +97,81 @@ void fitp_write_image(char *name, float_image_t *A);
 
 void test_paint_dot
   ( float_image_t *A,
-    int channel, 
+    int32_t channel, 
     double xctr,
     double yctr, 
     double rad,
     double hwd, 
     float vfill,
     float vdraw,
-    int m
+    int32_t m
   );
 
 void test_paint_ellipse
   ( float_image_t *A,
-    int channel, 
+    int32_t channel, 
     double xctr,
     double yctr, 
     double rad,
     double hwd, 
     float vfill,
     float vdraw,
-    int m
+    int32_t m
   );
 
 void test_paint_cross
   ( float_image_t *A,
-    int channel, 
+    int32_t channel, 
     double xctr,
     double yctr, 
     double rad,
     double hwd, 
     float vfill,
     float vdraw,
-    int m
+    int32_t m
   );
 
 void test_paint_smudge
   ( float_image_t *A,
-    int channel, 
+    int32_t channel, 
     double xctr,
     double yctr, 
     double rad,
     float vfill,
-    int m
+    int32_t m
   );
 
 void test_paint_rectangle
   ( float_image_t *A,
-    int channel,  
+    int32_t channel,  
     double xctr,
     double yctr, 
     double rad, 
     double hwd,
     float vfill,
     float vdraw,
-    int m
+    int32_t m
   );
 
 /* IMPLEMENTATIONS */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   {
    /* Parse the command line options: */
     options_t *o = fitp_parse_options(argc, argv);
 
     char *outPrefix = "out/img"; /* Prefix of output file names. */
 
-    /* int nx = 640; */
-    /* int ny = 480; */
-    int nx = 320;
-    int ny = 240;
+    int32_t nx = 640;
+    int32_t ny = 480;
     
-    int m; /* Subsampling order. */
+    int32_t m; /* Subsampling order. */
     for (m = 0; m <= 3; m++)
       { /* Generate the test image {A} with antialiasing {m}: */
         float_image_t *A = fitp_make_test_image(nx, ny, m, o);
         char *filename = NULL;
         asprintf(&filename, "%s-%02d", outPrefix, m);
-        int c;
+        int32_t c;
         for (c = 0; c < 3; c++) 
           { float_image_apply_gamma(A, c, BT_GAMMA, BT_BIAS); }
         fitp_write_image(filename, A);
@@ -186,7 +184,7 @@ int main(int argc, char **argv)
     return 0;
   }
 
-float_image_t *fitp_make_test_image(int nx, int ny, int m, options_t *o)
+float_image_t *fitp_make_test_image(int32_t nx, int32_t ny, int32_t m, options_t *o)
   {
     /* Create image, fill it with  black: */
     float_image_t *A = float_image_new(3, nx, ny);
@@ -196,65 +194,68 @@ float_image_t *fitp_make_test_image(int nx, int ny, int m, options_t *o)
     srandom(4615 + 418*747);
 
     /* Paint various shapes: */
-    int ntrials = nx*ny/4000;
-    /* int ntrials = 6; */
+    double rad_max = 15;
+    int32_t step = (int32_t)ceil(2.5*rad_max);
     
-    int ntypes = 5; /* See below. */
+    int32_t ntypes = 5; /* See below. */
     
-    int trial;
-    for (trial = 0; trial < ntrials; trial++)
-      { bool_t sync = (trial < 3*ntypes); /* If TRUE, uses only integer or half-integer centers. */
-        fprintf(stderr, "\n");
-        
-        /* Choose the channel where to paint: */
-        int channel = int32_abrandom(0,2);
-        
-        /* Choose the center of the symbol: */
-        double xctr = drandom()*nx;
-        double yctr = drandom()*ny;
-        if (sync)
-          { if (drandom() < 0.5)
-              { /* Sync to integer: */
-                xctr = (int)floor(xctr + 0.5);
-                yctr = (int)floor(yctr + 0.5);
-              }
-            else
-              { /* Sync to half-integer: */
-                xctr = (int)floor(xctr) + 0.5;
-                yctr = (int)floor(yctr) + 0.5;
-              }
-          }
-        
-        /* Choose some parameters used by more than one shape: */
-        double rad = drandom()*10;
-        double hwd = drandom()*4;
-        float vdraw = (float)(drandom() < 0.250 ? NAN : 0.600 + 0.400*drandom());
-        float vfill = (float)(drandom() < 0.250 ? NAN : 0.400 + 0.600*drandom());
+    int32_t trial = 0;
+    for (int32_t tx = step/2; tx < nx; tx += step)
+      { for (int32_t ty = step/2; ty < ny; ty += step)
+          { bool_t sync = (trial < 3*ntypes); /* If TRUE, uses only integer or half-integer centers. */
+            fprintf(stderr, "\n");
 
-        int mtype = trial % ntypes;
-        
-        fprintf(stderr, " channel = %d", channel);
-        fprintf(stderr, " type = %d", mtype);
-       
-        switch (mtype)
-          {
-          case 0:
-            test_paint_ellipse(A, channel, xctr, yctr, rad, hwd, vfill, vdraw, m);
-            break;
-          case 1:
-            test_paint_cross(A, channel, xctr, yctr, rad, hwd, vfill, vdraw, m);
-            break;
-          case 2:
-            test_paint_dot(A, channel, xctr, yctr, rad, hwd, vfill, vdraw, m);
-            break;
-          case 3:
-            test_paint_smudge(A, channel, xctr, yctr, rad, vfill, m);
-            break;
-          case 4:
-            test_paint_rectangle(A, channel, xctr, yctr, rad, hwd, vfill, vdraw, m);
-            break;
-          default:
-            assert(FALSE);
+            /* Choose the channel where to paint: */
+            int32_t channel = int32_abrandom(0,2);
+
+            /* Choose the center of the symbol: */
+            double xctr = tx + 2.0*drandom() - 1;
+            double yctr = ty + 2.0*drandom() - 1;
+            if (sync)
+              { if (drandom() < 0.5)
+                  { /* Sync to integer: */
+                    xctr = (int32_t)floor(xctr + 0.5);
+                    yctr = (int32_t)floor(yctr + 0.5);
+                  }
+                else
+                  { /* Sync to half-integer: */
+                    xctr = (int32_t)floor(xctr) + 0.5;
+                    yctr = (int32_t)floor(yctr) + 0.5;
+                  }
+              }
+
+            /* Choose some parameters used by more than one shape: */
+            double rad = drandom()*rad_max;
+            double hwd = drandom()*4;
+            float vdraw = (float)(drandom() < 0.250 ? NAN : 0.600 + 0.400*drandom());
+            float vfill = (float)(drandom() < 0.250 ? NAN : 0.400 + 0.600*drandom());
+
+            int32_t mtype = trial % ntypes;
+
+            fprintf(stderr, " channel = %d", channel);
+            fprintf(stderr, " type = %d", mtype);
+
+            switch (mtype)
+              { case 0:
+                  test_paint_ellipse(A, channel, xctr, yctr, rad, hwd, vfill, vdraw, m);
+                  break;
+                case 1:
+                  test_paint_cross(A, channel, xctr, yctr, rad, hwd, vfill, vdraw, m);
+                  break;
+                case 2:
+                  test_paint_dot(A, channel, xctr, yctr, rad, hwd, vfill, vdraw, m);
+                  break;
+                case 3:
+                  test_paint_smudge(A, channel, xctr, yctr, rad, vfill, m);
+                  break;
+                case 4:
+                  test_paint_rectangle(A, channel, xctr, yctr, rad, hwd, vfill, vdraw, m);
+                  break;
+                default:
+                  assert(FALSE);
+              }
+              
+            trial++;
           }
       }
     return A;
@@ -262,14 +263,14 @@ float_image_t *fitp_make_test_image(int nx, int ny, int m, options_t *o)
 
 void test_paint_dot
   ( float_image_t *A,
-    int channel, 
+    int32_t channel, 
     double xctr,
     double yctr, 
     double rad,
     double hwd, 
     float vfill,
     float vdraw,
-    int m
+    int32_t m
   )
   { /* Paint a dot: */
     fprintf(stderr, " [dot]\n");
@@ -296,14 +297,14 @@ void test_paint_dot
 
 void test_paint_ellipse
   ( float_image_t *A,
-    int channel, 
+    int32_t channel, 
     double xctr,
     double yctr, 
     double rad,
     double hwd, 
     float vfill,
     float vdraw,
-    int m
+    int32_t m
   )
   { /* Paint an ellipse: */
     fprintf(stderr, " [ellipse]\n");
@@ -332,30 +333,31 @@ void test_paint_ellipse
 
 void test_paint_cross
   ( float_image_t *A,
-    int channel, 
+    int32_t channel, 
     double xctr,
     double yctr, 
     double rad,
     double hwd, 
     float vfill,
     float vdraw,
-    int m
+    int32_t m
   )
   { /* Paint a cross: */
     fprintf(stderr, " [cross]\n");
 
+    bool_t empty = (drandom() < 0.500);
     bool_t diagonal = (drandom() < 0.500);
 
     fprintf(stderr, "  ");
     fprintf(stderr, " ctr = ( %9.5f %9.5f )", xctr, yctr);
     fprintf(stderr, " rad = %9.5f", rad);
-    fprintf(stderr, " diag = %c", "FT"[diagonal]);
+    fprintf(stderr, " empty = %c", "FT"[empty]);
+    fprintf(stderr, " diagonal = %c", "FT"[diagonal]);
     fprintf(stderr, "  ");
     fprintf(stderr, " hwd = %9.5f", hwd);
     fprintf(stderr, " vdraw = %5.3f", vdraw);
 
-    double w_tot = float_image_paint_cross
-      ( A, channel, xctr, yctr, rad, hwd, diagonal, vdraw, m );
+    double w_tot = float_image_paint_cross(A, channel, xctr, yctr, rad, empty, hwd, diagonal, vdraw, m);
 
     fprintf(stderr, " w_tot = %8.4f", w_tot);
     fprintf(stderr, "\n");
@@ -363,12 +365,12 @@ void test_paint_cross
 
 void test_paint_smudge
   ( float_image_t *A,
-    int channel, 
+    int32_t channel, 
     double xctr,
     double yctr, 
     double rad, 
     float vfill,
-    int m
+    int32_t m
   )
   { /* Paint a smudge: */
     fprintf(stderr, " [smudge]\n");
@@ -392,14 +394,14 @@ void test_paint_smudge
 
 void test_paint_rectangle
   ( float_image_t *A,
-    int channel, 
+    int32_t channel, 
     double xctr,
     double yctr, 
     double rad,
     double hwd, 
     float vfill,
     float vdraw,
-    int m
+    int32_t m
   )
   { /* Paint a dot: */
     fprintf(stderr, " [rectangle]\n");
@@ -435,7 +437,7 @@ void fitp_write_image(char *name, float_image_t *A)
     char *fname = NULL;
     asprintf(&fname, "%s%s", name, suff);
     FILE *wr = open_write(fname, TRUE);
-    int chns = (int)A->sz[0];
+    int32_t chns = (int32_t)A->sz[0];
     bool_t yup = TRUE, verbose = TRUE;
     bool_t isMask = FALSE; /* Assume uniform distr. of pixel values in encoding/decoding. */
     uint16_image_t *pimg = float_image_to_uint16_image(A, isMask, chns, NULL, NULL, NULL, 255, yup,verbose);
@@ -446,7 +448,7 @@ void fitp_write_image(char *name, float_image_t *A)
     free(fname);
   }
 
-options_t *fitp_parse_options(int argc, char **argv)
+options_t *fitp_parse_options(int32_t argc, char **argv)
   {
     /* INITIALIZATION: */
 

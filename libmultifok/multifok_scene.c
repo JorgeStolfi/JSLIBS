@@ -1,5 +1,5 @@
 /* See {multifok_scene.h}. */
-/* Last edited on 2023-01-31 19:17:10 by stolfi */
+/* Last edited on 2023-04-23 01:01:33 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -74,27 +74,27 @@ void multifok_scene_ray_trace_tree
     double zMin,
     bool_t debug, 
     int32_t level,
-    multifok_scene_object_t **hob_P, 
-    r3_t *hpt_P
+    multifok_scene_object_t **htob_P, 
+    r3_t *htpt_P
   );
   /* Finds the first intersection of the ray defined by {p} and {d} and the objects in the tree {tr}.
     Only considers the part of the ray between {Z=zMin} and {Z=ZMAX}.
     
     Assumes that the ray is mostly vertical ({d.c[2] >> 0}) and directed towards {-d}. If the ray hits at least one object,
-    returns in {*hpt_P} the hit point with largest {Z}, and in {*hob_P} the corresponding object.
-    If the ray misses all objects, returns {NULL} in {*hob_P}, and {*hpt_P} will be undefined.
+    returns in {*htpt_P} the hit point with largest {Z}, and in {*htob_P} the corresponding object.
+    If the ray misses all objects, returns {NULL} in {*htob_P}, and {*htpt_P} will be undefined.
     
     The {level} is used for indenting printouts. */
 
-bool_t multifok_scene_ray_trace_object(multifok_scene_object_t *obj, r3_t *p, r3_t *d, double zMin, bool_t debug, r3_t *hpt_P);
+bool_t multifok_scene_ray_trace_object(multifok_scene_object_t *obj, r3_t *p, r3_t *d, double zMin, bool_t debug, r3_t *htpt_P);
   /* Traces one ray {R} that goes through the point {p} with the direction parallel to {d}, assumed to be 
     not horizontal, and limited in {Z} to the range {zMin,ZMAX}.
-    If the ray hits the object {obj}, returns {TRUE} and stores the hit point in {*hpt_P}.
-    Otherwise returns {FALSE} and leaves {*hpt_P} unchanged. */
+    If the ray hits the object {obj}, returns {TRUE} and stores the hit point in {*htpt_P}.
+    Otherwise returns {FALSE} and leaves {*htpt_P} unchanged. */
     
-void multifok_scene_ray_trace_floor(interval_t dom[], bool_t flatFloor, r3_t *p, r3_t *d, bool_t debug, r3_t *hpt_P);   
+void multifok_scene_ray_trace_floor(interval_t dom[], bool_t flatFloor, r3_t *p, r3_t *d, bool_t debug, r3_t *htpt_P);   
   /* Traces one ray {R} that goes through the point {p} with the direction parallel to {d}, assumed to be 
-    not horizontal.  Computes the intersection of the ray with the floor and returns that point in {*hpt_P}.
+    not horizontal.  Computes the intersection of the ray with the floor and returns that point in {*htpt_P}.
     The floor is defined by the scene's domain {scene.dom[0..2]} and the flag {scene.flatFloor}, as
     described under {multifok_scene_t}. */
     
@@ -431,8 +431,8 @@ void multifok_scene_ray_trace
     r3_t *p, 
     r3_t *d, 
     bool_t debug,
-    multifok_scene_object_t **hob_P, 
-    r3_t *hpt_P
+    multifok_scene_object_t **htob_P, 
+    r3_t *htpt_P
   )
   {
     bool_t verbose = debug;
@@ -448,37 +448,37 @@ void multifok_scene_ray_trace
     demand(p->c[2] >= 0, "invalid focus plane {Z}");
     
     /* Get highest ray-object hit: */
-    multifok_scene_object_t *obj_hob; /* Highest object that was hit, or {NULL}. */
-    r3_t obj_hpt; /* Hit point on {obj_hob}, or {(NAN,NAN,NAN)} */
+    multifok_scene_object_t *obj_htob; /* Highest object that was hit, or {NULL}. */
+    r3_t obj_htpt; /* Hit point on {obj_htob}, or {(NAN,NAN,NAN)} */
     double zMin = 0.0 - FUDGE; /* Assume that the ray does not go below this {Z}. */
     int32_t level = 0;
-    multifok_scene_ray_trace_tree(tr, p, d, zMin, debug, level, &obj_hob, &obj_hpt);
+    multifok_scene_ray_trace_tree(tr, p, d, zMin, debug, level, &obj_htob, &obj_htpt);
     if (verbose) 
-      { if (obj_hob == NULL) 
+      { if (obj_htob == NULL) 
           { fprintf(stderr, "    hit no object\n"); }
         else
-          { fprintf(stderr, "    hit object %d", obj_hob->ID);
+          { fprintf(stderr, "    hit object %d", obj_htob->ID);
             r3_gen_print(stderr, p, "%12.8f", " at ( ", " ", " )\n");
           }
       }
     /* Compute ray hit with floor: */
-    r3_t flo_hpt;
-    multifok_scene_ray_trace_floor(scene->dom, scene->flatFloor, p, d, debug, &flo_hpt);
+    r3_t flo_htpt;
+    multifok_scene_ray_trace_floor(scene->dom, scene->flatFloor, p, d, debug, &flo_htpt);
  
     /* Decide if ray hit floor or objects first. */
-    multifok_scene_object_t *hob; /* Object that was hit, or {NULL}. */
-    r3_t hpt;  /* Point where {hob} was hit. */
-    if ((obj_hob == NULL) || (flo_hpt.c[2] > obj_hpt.c[2]))
+    multifok_scene_object_t *htob; /* Object that was hit, or {NULL}. */
+    r3_t htpt;  /* Point where {htob} was hit. */
+    if ((obj_htob == NULL) || (flo_htpt.c[2] > obj_htpt.c[2]))
       { /* Floor hit: */
-        hob = NULL; hpt = flo_hpt;
+        htob = NULL; htpt = flo_htpt;
       }
     else
       { /* Object hit: */
-        hob = obj_hob;  hpt = obj_hpt;
+        htob = obj_htob;  htpt = obj_htpt;
       }
 
-    (*hob_P) = hob;
-    (*hpt_P) = hpt;
+    (*htob_P) = htob;
+    (*htpt_P) = htpt;
     if (verbose) { fprintf(stderr, "    " DASHES "\n"); }
   }
 
@@ -489,14 +489,14 @@ void multifok_scene_ray_trace_tree
     double zMin,
     bool_t debug, 
     int32_t level,
-    multifok_scene_object_t **hob_P, 
-    r3_t *hpt_P
+    multifok_scene_object_t **htob_P, 
+    r3_t *htpt_P
   )
   { 
     bool_t verbose = debug;
     
-    multifok_scene_object_t *hob = NULL;
-    r3_t hpt = (r3_t){{ NAN, NAN, NAN }};
+    multifok_scene_object_t *htob = NULL;
+    r3_t htpt = (r3_t){{ NAN, NAN, NAN }};
     
     if (tr != NULL) 
       { if (verbose) { fprintf(stderr, "    %*sray zMin = %12.8f tree zMax = %12.8f\n", 2*level, "", zMin, tr->bbox[2].end[1]); }
@@ -516,17 +516,17 @@ void multifok_scene_ray_trace_tree
                 /* Ray-trace the root object: */
                 if (verbose) { fprintf(stderr, "    %*strying root obj %d\n", 2*level, "", tr->obj->ID); }
                 multifok_scene_object_t *obj = tr->obj;
-                r3_t obj_hpt;
-                bool_t obj_hit = multifok_scene_ray_trace_object(obj, p, d, zMin, debug, &obj_hpt);
+                r3_t obj_htpt;
+                bool_t obj_hit = multifok_scene_ray_trace_object(obj, p, d, zMin, debug, &obj_htpt);
                 if (obj_hit)
                   { /* Root object hit replaces previous hit: */
-                    hob = obj;
-                    hpt = obj_hpt;
-                    if (verbose || (hpt.c[2] < zMin-FUDGE))
-                      { fprintf(stderr, "    %*shit root obj %d at Z = %12.8f zMin = %12.8f\n", 2*level, "", hob->ID, hpt.c[2], zMin); }
+                    htob = obj;
+                    htpt = obj_htpt;
+                    if (verbose || (htpt.c[2] < zMin-FUDGE))
+                      { fprintf(stderr, "    %*shit root obj %d at Z = %12.8f zMin = %12.8f\n", 2*level, "", htob->ID, htpt.c[2], zMin); }
                     /* Adjust ray {zMin}: */
-                    assert(hpt.c[2] >= zMin-FUDGE);
-                    zMin = hpt.c[2];
+                    assert(htpt.c[2] >= zMin-FUDGE);
+                    zMin = htpt.c[2];
                   }
                 else
                   { if (verbose) { fprintf(stderr, "    %*smissed/rejected root obj %d\n", 2*level, "", obj->ID); } }
@@ -547,19 +547,19 @@ void multifok_scene_ray_trace_tree
                 for (int32_t kc = 0; kc < 2; kc++) 
                   { /* Ray-trace {child[ic]} */
                     if (verbose) { fprintf(stderr, "    %*strying child %d\n", 2*level, "", ic); }
-                    multifok_scene_object_t *ch_hob;
-                    r3_t ch_hpt;
-                    multifok_scene_ray_trace_tree(tr->child[ic], p, d, zMin, debug, level+1, &ch_hob, &ch_hpt);
-                    if (ch_hob != NULL)
+                    multifok_scene_object_t *ch_htob;
+                    r3_t ch_htpt;
+                    multifok_scene_ray_trace_tree(tr->child[ic], p, d, zMin, debug, level+1, &ch_htob, &ch_htpt);
+                    if (ch_htob != NULL)
                       { /* We got a hit: */
-                       if ((hob == NULL) || (ch_hpt.c[2] >= hpt.c[2]))
-                          { hob = ch_hob;
-                            hpt = ch_hpt;
-                            if (verbose || (hpt.c[2] < zMin-FUDGE)) 
-                              { fprintf(stderr, "    %*skept hit with child %d obj %d at Z = %12.8f zMin = %12.8f\n", 2*level, "", ic, hob->ID, hpt.c[2], zMin); }
+                       if ((htob == NULL) || (ch_htpt.c[2] >= htpt.c[2]))
+                          { htob = ch_htob;
+                            htpt = ch_htpt;
+                            if (verbose || (htpt.c[2] < zMin-FUDGE)) 
+                              { fprintf(stderr, "    %*skept hit with child %d obj %d at Z = %12.8f zMin = %12.8f\n", 2*level, "", ic, htob->ID, htpt.c[2], zMin); }
                             /* Adjust ray {zMin}: */
-                            assert(hpt.c[2] >= zMin-FUDGE);
-                            zMin = hpt.c[2];
+                            assert(htpt.c[2] >= zMin-FUDGE);
+                            zMin = htpt.c[2];
                           }
                         else
                           { if (verbose) { fprintf(stderr, "    %*srehected hit with child %d\n", 2*level, "", ic); } }
@@ -574,13 +574,13 @@ void multifok_scene_ray_trace_tree
       }
     /* Return to caller: */
     if (verbose) 
-      { if (hob != NULL) 
-          { fprintf(stderr, "    %*sreturning hit with obj %d at Z = %12.8f\n", 2*level, "", hob->ID, hpt.c[2]); }
+      { if (htob != NULL) 
+          { fprintf(stderr, "    %*sreturning hit with obj %d at Z = %12.8f\n", 2*level, "", htob->ID, htpt.c[2]); }
         else
           { fprintf(stderr, "    %*sreturning with no hit\n", 2*level, ""); }
       }
-    (*hob_P) = hob;
-    (*hpt_P) = hpt;
+    (*htob_P) = htob;
+    (*htpt_P) = htpt;
   }
         
 void multifok_scene_get_ray_bbox(r3_t *p, r3_t *d, double zMin, interval_t bbox[])
@@ -596,7 +596,7 @@ void multifok_scene_get_ray_bbox(r3_t *p, r3_t *d, double zMin, interval_t bbox[
       }
   }
 
-bool_t multifok_scene_ray_trace_object(multifok_scene_object_t *obj, r3_t *p, r3_t *d, double zMin, bool_t debug, r3_t *hpt_P)
+bool_t multifok_scene_ray_trace_object(multifok_scene_object_t *obj, r3_t *p, r3_t *d, double zMin, bool_t debug, r3_t *htpt_P)
   { 
     bool_t verbose = debug;
     
@@ -607,7 +607,7 @@ bool_t multifok_scene_ray_trace_object(multifok_scene_object_t *obj, r3_t *p, r3
     
     /* Check bbox intersection: */
     bool_t hit = TRUE; /* Set to false if bboxes are disjoint. */
-    double eZ_hpt = NAN;  /* Value of {Z - p.c[2]} at hit point, if {hit} is true. */
+    double eZ_htpt = NAN;  /* Value of {Z - p.c[2]} at hit point, if {hit} is true. */
     for (int32_t j = 0; j < 3; j++)
       { if (ray_bbox[j].end[1] < obj->bbox[j].end[0]) { hit = FALSE; }
         if (ray_bbox[j].end[0] > obj->bbox[j].end[1]) { hit = FALSE; }
@@ -630,10 +630,10 @@ bool_t multifok_scene_ray_trace_object(multifok_scene_object_t *obj, r3_t *p, r3
 
         if (obj->flat)
           { /* Compute the point {h = ray(cZ)} where the ray hits the object's plane: */
-            eZ_hpt = cZ - pZ; /* {Z} distance from object plane to {p}. */
+            eZ_htpt = cZ - pZ; /* {Z} distance from object plane to {p}. */
             /* Compute displacement {sX,sY} from object's center to {h}: */ 
-            double sX = pX + dX*eZ_hpt - cX; /* {X} position of ray hit rel to object ctr */
-            double sY = pY + dY*eZ_hpt - cY; /* {Y} position of ray hit rel to object ctr */
+            double sX = pX + dX*eZ_htpt - cX; /* {X} position of ray hit rel to object ctr */
+            double sY = pY + dY*eZ_htpt - cY; /* {Y} position of ray hit rel to object ctr */
             /* Check if ray hits object: */
             double r2_ray = sX*sX + sY*sY;
             hit = (r2_ray <= r2_obj);
@@ -656,14 +656,14 @@ bool_t multifok_scene_ray_trace_object(multifok_scene_object_t *obj, r3_t *p, r3
 
             double Delta = B*B - 4*A*C;
             hit = (Delta > 0);
-            if (hit) { eZ_hpt = (sqrt(Delta) - B)/(2*A); }
+            if (hit) { eZ_htpt = (sqrt(Delta) - B)/(2*A); }
           }
       }
 
     /* If we still have a hit, check its {Z} against {zMIn}: */
     if (hit) 
       { /* Ray hits object,  but maybe below {zMin}: */
-        double hZ = eZ_hpt + p->c[2];
+        double hZ = eZ_htpt + p->c[2];
         char *what = (obj->flat ? "disk" : "ball");
         if (verbose) { fprintf(stderr, "    hit %s %d at Z = %+12.8f", what, obj->ID, hZ); } 
         if (hZ < zMin)
@@ -672,15 +672,15 @@ bool_t multifok_scene_ray_trace_object(multifok_scene_object_t *obj, r3_t *p, r3
           }
         else
           { if (verbose) { fprintf(stderr, " (accepted)\n"); }
-            double hX = p->c[0] + d->c[0]*eZ_hpt;
-            double hY = p->c[1] + d->c[1]*eZ_hpt;
-            (*hpt_P) = (r3_t) {{ hX, hY, hZ }};
+            double hX = p->c[0] + d->c[0]*eZ_htpt;
+            double hY = p->c[1] + d->c[1]*eZ_htpt;
+            (*htpt_P) = (r3_t) {{ hX, hY, hZ }};
           }
        }
     return hit;
   }
   
-void multifok_scene_ray_trace_floor(interval_t dom[], bool_t flatFloor, r3_t *p, r3_t *d, bool_t debug, r3_t *back_hpt_P)
+void multifok_scene_ray_trace_floor(interval_t dom[], bool_t flatFloor, r3_t *p, r3_t *d, bool_t debug, r3_t *back_htpt_P)
   {     
     bool_t verbose = debug;
     
@@ -696,7 +696,7 @@ void multifok_scene_ray_trace_floor(interval_t dom[], bool_t flatFloor, r3_t *p,
     double bZlo = dom[2].end[0];
     double bZhi = dom[2].end[1];
     
-    double Z_hpt; /* {Z} of point where ray hits floor. */
+    double Z_htpt; /* {Z} of point where ray hits floor. */
     if (! flatFloor)
       { demand(dZ = 1.0, "invalid direction vector");
         /* The floor is a slanted plane that contains the */
@@ -717,19 +717,19 @@ void multifok_scene_ray_trace_floor(interval_t dom[], bool_t flatFloor, r3_t *p,
         /* That is, {Z = (bZ + A*(pX - bX - dX*pZ))/(1 - A*dX): */
         double den = 1 - A*dX;
         demand(den > 1.0e-4, "floor too tilted for aperture");
-        Z_hpt = (bZ + A*(pX - bX - dX*pZ))/den;
+        Z_htpt = (bZ + A*(pX - bX - dX*pZ))/den;
         /* We must clip the floor to the dom {Z} range anyway because of tilted rays. */
-        if (Z_hpt < bZlo) { Z_hpt = bZlo; }
-        if (Z_hpt > bZhi) { Z_hpt = bZhi; }
+        if (Z_htpt < bZlo) { Z_htpt = bZlo; }
+        if (Z_htpt > bZhi) { Z_htpt = bZhi; }
       }
     else
-      { Z_hpt = bZlo; }
+      { Z_htpt = bZlo; }
     
-    if (verbose) { fprintf(stderr, "    hit floor Z = %+12.8f\n", Z_hpt); }
+    if (verbose) { fprintf(stderr, "    hit floor Z = %+12.8f\n", Z_htpt); }
 
     /* For generic {Z}, let {eZ} be {Z - pZ}, then {ray(Z) = p + d*eZ}. */
-    double eZ = Z_hpt - pZ; /* {Z} distance from hit point to {p}. */
-    (*back_hpt_P) = (r3_t){{ pX + dX*eZ, pY + dY*eZ, Z_hpt }};
+    double eZ = Z_htpt - pZ; /* {Z} distance from hit point to {p}. */
+    (*back_htpt_P) = (r3_t){{ pX + dX*eZ, pY + dY*eZ, Z_htpt }};
   }
    
 frgb_t multifok_scene_compute_hit_color(multifok_scene_object_t *obj, r3_t *q, multifok_scene_pattern_t *pattern)

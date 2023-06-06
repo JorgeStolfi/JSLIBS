@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 /* J. Stolfi's miscellaneous general-purpose definitions */
-/* Last edited on 2023-03-26 09:19:49 by stolfi */
+/* Last edited on 2023-03-31 03:26:20 by stolfi */
 
 #ifndef INF
 #define INF INFINITY
@@ -151,5 +151,25 @@ double **alloc_C_matrix(size_t rows, size_t cols);
 void free_C_matrix(double **mat, size_t rows);
   /* Reclaims a C-style matrix {mat} (a vector of pointers to row vectors)
     with the specified number of rows. */
+
+/* SPHERE INTEGRALS */
+   
+double ball_vol(int32_t d);
+  /* Returns the volume of the {d}-ball with radius {r}, namely
+    {V(d) = V(d) = Pi^(d/2)/((d/2)!)} */
+
+double ball_cap_vol_frac_pos(int32_t d, double u);
+  /* Returns the fraction {S(d,u)} of the volume of the unit {d}-ball
+    that is contained in the slice between {x=-1} and {x=u},
+    for {u} in {[-1,+1]}. */
+
+double ball_zone_vol_frac_ang(int32_t d, double w);
+  /* Returns the fraction of the volume of the unit {d}-ball contained
+    in the slice between {x=0} and {x=sin(w)}, for {w} in
+    {[-PI/2,PI/2]}; namely, 
+    
+      {F(d,w) = (V(d-1)/V(d))*integral((cos(z))^d, z \in 0 _ w)}
+      
+    where {V(d)} is the volume of the unit {d}-ball. */
 
 #endif

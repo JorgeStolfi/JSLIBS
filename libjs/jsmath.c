@@ -1,5 +1,5 @@
 /* See jsmath.h */
-/* Last edited on 2023-03-18 11:20:33 by stolfi */
+/* Last edited on 2023-03-31 03:37:52 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -354,3 +354,75 @@ void free_C_matrix(double **mat, size_t rows)
     free(mat);
   }
     
+double ball_vol(int32_t d)
+  {
+    demand(d >= 0, "bad d");
+    if (d == 0)
+      { return 1; }
+    else if (d == 1)
+      { return 2; }
+    else
+      { return M_PI/(((double)d)/2) * ball_vol(d-2); }
+  }
+
+double ball_cap_vol_frac_pos(int32_t d, double z)
+  {
+    /* fprintf(stderr, "    vol_frac_pos(%3d,%.10f)", d, z); */
+    demand(d >= 0, "bad d");
+    double f;
+    if (z < -1.0) 
+      { f = 0.0; }
+    else if (z > 1.0) 
+      { f = 1.0; }
+    else if (d == 0)
+      { /* The zero-dimensional sphere has just two points: */
+        f = (z == -1.0 ? 0.25 : (z == 1 ? 0.75 : 0.50));
+      }
+    else if (z == -1.0) 
+      { f = 0.0; }
+    else if (z == 1.0) 
+      { f = 1.0; }
+    else if (d == 1)
+      { /* The one-dimensional sphere is the interval [-1 _ +1]: */
+        f = (z + 1)/2;
+      }
+    else
+      { double w = asin(z);
+        f = 0.5 + ball_zone_vol_frac_ang(d,w);
+      }
+    /* fprintf(stderr, " = %.10f\n", f); */
+    return f;
+  }
+
+double ball_zone_vol_frac_ang(int32_t d, double w)
+  {
+    /* fprintf(stderr, "    vol_frac_ang(%3d,%.10f)", d, w); */
+    demand(d >= 0, "bad d");
+    if (w + M_PI/2 < +1.0e-14)
+      { return -0.5; }
+    else if (w - M_PI/2 > -1.0e-14)
+      { return +0.5; }
+    else if (d == 0)
+      { return 0; }
+    else if (d == 1)
+      { return 0.5*sin(w); }
+    else if (d == 2)
+      { return (w + 0.5*sin(2*w))/M_PI; }
+    else
+      { int32_t p = (d % 2);
+        double cw = cos(w);
+
+        double K = (p == 0 ? cw : 1);
+        double f = K;
+        int32_t i;
+        for (i = 3 - p; i < d; i += 2)
+          { K = K * cw*cw*((double)i-1)/((double) i); 
+            f += K; 
+          }
+        f = f*sin(w);
+        if (p == 0) { f = 2*(f + w)/M_PI; }
+        f = 0.5*f;
+        /* fprintf(stderr, " = %.10f\n", f); */
+        return f;
+      }
+  }

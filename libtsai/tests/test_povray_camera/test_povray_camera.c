@@ -1,4 +1,4 @@
-/* Last edited on 2023-02-04 00:07:23 by stolfi */
+/* Last edited on 2023-04-23 11:09:06 by stolfi */
 
 #define PROG_NAME "test_povray_camera"
 #define PROG_DESC "tests the conversion from Tsai camera matrix to POV-Ray camera spec"
@@ -60,7 +60,9 @@ int32_t main (int32_t argc, char *argv[])
 	     xw, yw, zw, 
              pi.c[0], pi.c[1]
 	     );
-     (void)float_image_paint_cross (img, 0, pi.c[0], pi.c[1], 5.0, 1.0, TRUE, 0.0, 3);	     
+     bool_t empty = FALSE;
+     bool_t diagonal = TRUE;
+     (void)float_image_paint_cross (img, 0, pi.c[0], pi.c[1], 5.0, empty, 1.0, diagonal, 0.0, 3);	     
   }
   
   paint_cross(0.0, 0.0, 0.0);

@@ -1,5 +1,5 @@
 /* Window operations for multi-focus stereo. */
-/* Last edited on 2023-01-30 06:56:05 by stolfi */
+/* Last edited on 2023-04-28 10:56:16 by stolfi */
 
 #ifndef multifok_window_H
 #define multifok_window_H
@@ -55,18 +55,25 @@ void multifok_window_normalize_samples
     double ws[], 
     double noise, 
     double *avg_P,
+    double *grd_P,
     double *dev_P
   );
-  /* Computes the weighted average {avg} and deviation {dev} of the window samples {s[0..NS-1]},
-    with sample weights {ws[0..NS-1]}, returning them in {*ave_P} and {*dev_P}.
+  /* Computes the weighted average {avg} and gradient {grd_x,grd_y} of
+    the window samples {s[0..NS-1]}, with sample weights {ws[0..NS-1]}.
+    Then subtracts {avg} and the ramp with that gradient from the window
+    samples. Then computes the weighted rms value {dev} of the residual samples.
     
-    Then normalizes the samples {s[0..NS-1]} by subtracting {avg}
-    dividing by {hypot(dev, noise}, so that they have zero mean and unit deviation.
+    Then normalizes the residual samples by dividing by {hypot(dev,
+    noise}, so that they have zero mean, zero gradient,
+    and unit deviation (weighted).
     
-    This correction elimines the effect of brightness and contrast
-    variations, assuming that the samples are contaminated with random
-    noise with mean 0 and deviation {noise}. Variations that are
-    small compared to {noise} are not amplified. */
+    This correction elimines the influence of regional brightness,
+    gradient, and contrast, assuming that the samples are contaminated
+    with random noise with mean 0 and deviation {noise}. Variations that
+    are small compared to {noise} are not amplified.
+    
+    Return {ave} and {dev} in {*ave_P} and {*dev_P}, and the gradient 
+    modulus {grd = hypot(grd_x,grd_y)} in {*vgrd_P}. */
 
 void multifok_window_set_samples_3x3
   ( double s[], 

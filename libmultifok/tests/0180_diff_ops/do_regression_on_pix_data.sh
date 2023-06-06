@@ -1,5 +1,5 @@
 #! /bin/bash
-# Last edited on 2023-02-01 18:10:30 by stolfi
+# Last edited on 2023-04-28 11:34:22 by stolfi
 
 echo "=== ${0/*\/} =============================" 1>&2
 echo "$@" 1>&2
@@ -14,14 +14,14 @@ pixDataFile="${prefix}-odata.txt"     # File with per-pixel sharpness and term d
 belNameFile="${prefix}-bnames.txt"    # File with basis element names.
 termNameFile="${prefix}-tnames.txt"   # File with quadratic term names.
 
-# Internal files:
-
-regrDataFile="${prefix}-un${unitTerm}-rodata.txt"  # Version of {pixDataFile} modified for regression.
-
 # Output files:
 
 outFormFile="${prefix}-un${unitTerm}-oform.txt"  # Fitted formula for sharp as function of the quadratic terms.
 outRegrFile="${prefix}-un${unitTerm}-oregr.txt"  # File with true and fitted sharpness.
+
+# Internal files:
+
+regrDataFile="${prefix}-un${unitTerm}-rtmpix.txt"  # Version of {pixDataFile} modified for regression.
 
 # Get the basis element names:
 belName=( `cat ${belNameFile}` )
@@ -31,48 +31,43 @@ if [[ ${nb} -gt 9 ]]; then echo "** too many coeffs" 1>&2; exit 1; fi
 
 # Get the quadratic term names:
 termName=( `cat ${termNameFile}` )
-if [[ ${unitTerm} -ne 0 ]]; then
-  termName+=( "1" )
-  unitX=" (including unit)"
-fi
 nt=${#termName[@]}
-echo "found ${nt} quadratic terms${unitX}" 1>&2 
+echo "found ${nt} quadratic terms" 1>&2 
 echo "termName = ${termName[*]}" 1>&2 
 
-# Prepare the data for regression:
-echo "generating the regression input file ${regrDataFile}..." 1>&2
+# Preparing data file for regression:
+echo "preparing regression data file ${regrDataFile}..." 1>&2
 cat ${pixDataFile} \
-  | filter_pixel_data.gawk \
-  | gawk \
-      -v unitTerm=${unitTerm} \
+  | gawk  \
       -v nb=${nb} \
       -v nt=${nt} \
       ' /^ *P[0-9]/{ 
-          if (NF + unitTerm  != 6 + nb + nt) { printf "BUG\n" > "/dev/stderr"; exit(1); }
-          pi = $1; va = $2; vd = $3; sh = $4; za = $5; zd = $6; 
-          # wp = sh;
-          wp = 1.0;
-          printf "%s %s %12.6f ", pi, sh, wp;
-          for (kf = 7+nb; kf <= NF; kf++) { printf " %s", $(kf) }
-          if (unitTerm+0 > 0) { printf " 1"; }
+          if (NF != 7 + nb + nt) { printf "BUG\n" > "/dev/stderr"; exit(1); }
+          pixid = $1; vavg = $2; vgrd = $3; vdev = $4; sharp = $5; zrav = $6; zdev = $7; 
+          wt = sharp;   # Weight equal to "true" sharpness.
+          # wt = 1.0;  # Uniform weight.
+          hrad = (1.0/sharp);
+          hrad2 = hrad*hrad;
+          printf "%s %12.6f %12.6f ", pixid, hrad2, wt;
+          for (kt = 0; kt < nt; kt++) { kf = 8 + nb + kt; printf " %s", $(kf) }
           printf "\n";
         }
       ' \
+  | sort -b -k2g \
   > ${regrDataFile}
-  
-if [[ ! ( -s ${regrDataFile} ) ]]; then
-  echo "** failed to create the regression data file" 1>&2; exit 1
-fi
 
-# Do a regression on the modified histogram file:
+# Do the regression:
+echo "performing regression on ${regrDataFile}..." 1>&2
 linear_fit \
     -terms ${nt} \
     -weighted T \
+    -unitTerm ${unitTerm} \
     -termNames "${termName[@]}" \
+    -verbose T \
     -writeFormula ${outFormFile} \
   < ${regrDataFile} \
   > ${outRegrFile}
 
 # Plot summary of regression:
-plot_regression_result.sh SHOW ${outRegrFile/.txt/} "${title}" "Sharpness" "Fitted"
+plot_regression_result.sh SHOW ${outRegrFile/.txt/} "${title}" "hrad2" "Fitted"
  

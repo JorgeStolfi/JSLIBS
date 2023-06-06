@@ -1,5 +1,5 @@
 /* Test tools for {multifok_focus_op} and related funcs. */
-/* Last edited on 2023-01-30 18:04:49 by stolfi */
+/* Last edited on 2023-04-28 11:59:40 by stolfi */
 
 #ifndef multifok_test_H
 #define multifok_test_H
@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <interval.h>
+#include <i2.h>
 #include <r3.h>
 #include <bool.h>
 #include <frgb.h>
@@ -56,60 +57,108 @@ void multifok_test_images_make
     The value of each pixel of the four images is computed by taking a
     regular grid of {NP} by {NP} sample points around the center of the
     pixel on the plane {Z = zFoc}. The procedure computes the apparent
-    color {clr(p)}, sharpness {shr(p), average {Z} height {zht(p)}, and
+    color {colr(p)}, sharpness {shrp(p), average {Z} height {zval(p)}, and
     deviation of height {zdv(p)} at each sample point {p}, then averages
     those values with a 2D Hann window weight function.
     
-    The values {clr(p)}, {shr(p)}, {zht(p)} at each sample point {p} are
+    The values {colr(p)}, {shrp(p)}, {zval(p)} at each sample point {p} are
     obtained by tracing at least {NR_min} rays through {p}, computing
-    color {clr(R)}, the nominal sharpness {shr(R)}, and the {Z}
-    coordinate {zht(R)} of each ray {R}, and averaging those values over
+    color {colr(R)}, the nominal sharpness {shrp(R)}, and the {Z}
+    coordinate {zval(R)} of each ray {R}, and averaging those values over
     all rays, with proper weights to simulate an apodizing mask. The
-    value of {zdv(p)} is the deviation of {zht(R)} over those rays.
+    value of {zdv(p)} is the deviation of {zval(R)} over those rays.
     
     The rays will have random directions that deviate from the vertical
-    by maximum distance of about 2 pixels over a vertical travel of {zDep}. If
-    {zDep=+INF}, then {NR_min} must be 1, and there will be only one
-    strictly vertical ray per sampling piint {p}.
+    by maximum distance of about 2 pixels over a vertical travel of
+    {zDep}. If {zDep=+INF}, then {NR_min} must be 1, and there will be
+    only one strictly vertical ray per sampling piint {p}.
     
-    The color {clr(R)} is determined by computing {r = pattern(x,y,z,kd,3,fs)}
-    where {x,y,z} are the coordinates of the hit point, and {kd} is the 
-    index of the object hit by the ray, or {-1} if the ray hit the background surface. */
+    The color {colr(R)} is determined by computing {r =
+    pattern(x,y,z,kd,3,fs)} where {x,y,z} are the coordinates of the hit
+    point, and {kd} is the index of the object hit by the ray, or {-1}
+    if the ray hit the background surface. */
+
+void multifok_test_estimate_zave_zdev(int32_t ix, int32_t iy, multifok_scene_t *scene, double *zave_P, double *zdev_P);
+  /* Compute a quick estimate of the average {zave} and deviation {zdev} of {Z}
+    of scene at image pixel {ix,iy}.  Returns them in {*zave_P} and {*zdev_P}. */
 
 /* BASIS AND TERM DATA I/O */
 
-void multifok_test_read_term_indices_names_and_weights
+FILE* multifok_test_open_text_file(char *outPrefix, char *tag);
+  /* Opens a text file called "{outPrefix}{tag}.txt" for writing,
+    returns the handle. */
+
+void multifok_test_write_basis_elem_names(char *outPrefix, int32_t NB, char *belName[]);
+  /* Writes the basis element names {belName[0..NB-1]} to a file file
+    "{outPrefix}-bnames.txt" one per line. */
+ 
+void multifok_test_write_term_names
+  ( char *outPrefix, 
+    int32_t NT, 
+    char *termName[]
+  ); 
+  /* Same as {multifok_term_write_names}, but 
+    to a file file "{outPrefix}-tnames.txt" instead of a {FILE} descriptor. */
+  
+void multifok_test_read_term_weights_names_get_indices
   ( char *fname, 
     int32_t NB, 
-    char *belName[],
-    int32_t *NP_P, 
-    multifok_term_prod_t **prix_P, 
+    char *belName[], 
     int32_t *NT_P, 
+    double **wt_P, 
+    char ***termName_P,
+    int32_t *NP_P, 
+    multifok_term_prod_t **prix_P,
+    bool_t verbose
+  );
+  /* Same as {multifok_score_read_term_weights_names_indices} but reads
+    from file {fname} instead of a {FILE descriptor. */
+
+void multifok_test_read_term_weights_and_names
+  ( char *fname, 
+    int32_t *NT_P,
     double **wt_P, 
     char ***termName_P,
     bool_t verbose
   );
-  /* Reads from file "{fname}" a list of a certain number {NT} of
-    quadratic local operators that are products of basis
-    coefficients, and the weights of each term in a sharpness score.
-    
-    See {multifok_score_read_term_names_and_weights} for the file format.
-    
-    The information is returned in {*NP_P,*prix_P,*NT_P,*wt_P,*termName_P}. */
+  /* Same as {multifok_term_read_weights_and_names},
+    but reads from file {fname} instead of a file. */
+
+void multifok_test_write_term_weights_and_names
+  ( char *outPrefix, 
+    int32_t NT, 
+    double wt[], 
+    char *termName[]
+  ); 
+  /* Same as {multifok_score_write_term_weights_and_names}, but 
+    to a file file "{outPrefix}-twts.txt" instead of a {FILE} descriptor. */
+
+void multifok_test_read_term_index_table
+  ( char *fname, 
+    int32_t NB,
+    char *belName[],
+    int32_t *NP_P,
+    multifok_term_prod_t **prix_P,
+    int32_t *NT_P,
+    char ***termName_P,
+    bool_t verbose
+  );
+  /* Same as {multifok_term_read_index_table}, but reads from a file {fname}
+    instead of a {FILE} descriptor. */
   
-void multifok_test_write_term_names_and_weights(char *outPrefix, int32_t NT, char *termName[], double wt[]); 
-  /* Writes the names {termName[0..NT-1]} and weights {wt[0..NT-1]} of the terms of a quadratic score
-    formula to a file file "{outPrefix}-termNames.txt", one per line. */
+void multifok_test_write_term_index_table
+  ( char *outPrefix, 
+    int32_t NP, 
+    multifok_term_prod_t prix[],
+    bool_t verbose
+  );
+  /* Same as {multifok_term_write_index_table}, but writes to a file "{outPrefix}
+    "{outPrefix}-prix.txt" instead of a {FILE} descriptor. */
 
-void multifok_test_write_basis_elem_names(char *outPrefix, int32_t NB, char *belName[]);
-  /* Writes the basis element names {belName[0..NB-1]} to a file file "{outPrefix}-bnames.txt"
-    one per line. */
-
-void multifok_test_write_term_names(char *outPrefix, int32_t NT, char *termName[])  ;
-  /* Writes the basis element names {termName[0..NT-1]} to a file file "{outPrefix}-tnames.txt"
-    one per line. */
-
-/* TEST IMAGE I/O */
+/* TEST IMAGE I/O 
+  
+  All procedures in this section writte their image files so that pixel {0,0}
+  is at the LOWER left corner. */
 
 #define multifok_test_image_gamma 1.000
   /* Assumed encoding gamma of input and output images. */
@@ -138,9 +187,10 @@ void multifok_test_write_scene_color_image(float_image_t *csimg, char *outPrefix
 
 void multifok_test_write_sharpness_image(float_image_t *shimg, char *outPrefix, char *tag);
   /* Writes the sharpness image {shimg} to file "{outPrefix}{tag}-sh.pgm".
-    Assumes that samples are in {[0 _ 1]}. */
+    Samples are implicitly mapped linearly from {[0 _ vMax]} to {[0 _ 1]}]
+    where {vMax} is the max sample value. */
 
-void multifok_test_write_zavg_image(float_image_t *azimg, char *outPrefix, char *tag);
+void multifok_test_write_zave_image(float_image_t *azimg, char *outPrefix, char *tag);
   /* Writes the scene {Z} average image {azimg} to file "{outPrefix}{tag}-az.pgm".
     Pixels are scaled from {[0 _ ZMAX]} to {[0 _ 1]} where {ZMAX}
     is {multifok_scene_ZMAX}. */
@@ -152,7 +202,8 @@ void multifok_test_write_zdev_image(float_image_t *dzimg, char *outPrefix, char 
 
 void multifok_test_write_score_image(float_image_t *scimg, char *outPrefix, char *tag);
   /* Writes the estimated sharpness score image {scimg} to file "{outPrefix}{tag}-sc.pgm".
-    Assumes that the sample values are in {[0 _ 1]}. */
+    Samples are implicitly mapped linearly from {[0 _ vMax]} to {[0 _ 1]}]
+    where {vMax} is the max sample value. */
 
 void multifok_test_write_score_error_image(float_image_t *esimg, char *outPrefix, char *tag);
   /* Writes the sharpness error image {esimg} (computed {score} minus actual sharpness 
@@ -175,19 +226,29 @@ void multifok_test_write_reconstructed_color_image(float_image_t *crimg, char *o
   /* Writes the color image {crimg} as "{outPrefix}{tag}-cr.ppm" */
       
 void multifok_test_write_color_error_image(float_image_t *erimg, char *outPrefix, char *tag);
-  /* Writes the color image {erimg} as "{outPrefix}{tag}-er.ppm", mapping its samples
-    from {[-1 _ +1]} to {[0_1]}. */
+  /* Writes the color image {erimg} as "{outPrefix}{tag}-er.ppm",
+    mapping its samples from {[-1 _ +1]} to {[0_1]}. */
 
 void multifok_test_write_window_average_image(float_image_t *avimg, char *outPrefix, char *tag);
-  /* Writes the average sample image {avimg} as "{outPrefix}{tag}-av.pgm". */
+  /* Writes the image {avimg} with window value averages as "{outPrefix}{tag}-av.pgm".
+    Assumes that the samples of {avimg} are in {[0 _ 1]}. */
+
+void multifok_test_write_window_gradient_image(float_image_t *gvimg, char *outPrefix, char *tag);
+  /* Writes the image {gvimg} with window gradient moduli as
+    "{outPrefix}{tag}-gv.pgm". The samples of {gvimg}, which must be
+    non-negative, are implicitly mapped from {[0 _ vMax]} to {[0 _ 1]}
+    where {vMax} is the max sample value. */
 
 void multifok_test_write_window_deviation_image(float_image_t *dvimg, char *outPrefix, char *tag);
-  /* Writes the sample deviation image {dvimg} as "{outPrefix}{tag}-dv.pgm", mapping its samples
-    from {[0 _ vMax]} to {[0_1]} where {vMax} is the max sample value. */
+  /* Writes the image {dvimg} with window value deviations as
+    "{outPrefix}{tag}-dv.pgm" The samples of {dvimg}, which must be
+    non-negative, are implicitly mapped from {[0 _ vMax]} to {[0_1]},
+    where {vMax} is the max sample value. */
 
 void multifok_test_write_normalized_image(float_image_t *nrimg, char *outPrefix, char *tag);
-  /* Writes the locally normalized grayscale image {nrimg} as "{outPrefix}{tag}-nr.pgm", mapping its samples
-    from {[-1 _ +1]} to {[0_1]}. */
+  /* Writes the locally normalized grayscale image {nrimg} as
+    "{outPrefix}{tag}-nr.pgm", mapping its samples from {[-1 _ +1]} to
+    {[0_1]}. */
 
 void multifok_test_write_sample_weights_image(float_image_t *wsimg, char *outPrefix, char *tag);
   /* Writes the square {NW} by {NW} grayscale image {wsimg} as a file "{outPrefix}{tag}-ws.pgm" 
@@ -195,10 +256,10 @@ void multifok_test_write_sample_weights_image(float_image_t *wsimg, char *outPre
     is the max sample value. */
 
 void multifok_test_write_basis_elem_image(float_image_t *beimg, char *outPrefix, char *tag);
-  /* Writes the square {NW} by {NW} grayscale image {beimg}, presumed to be a basis element,
-    as a file "{outPrefix}{tag}-be.pgm".
-    The samples if {beimg} are rescaled from {[-vAbsMax _ +vAbsMax]} to {[0 _ 1]}, where {vAbsMax}
-    is the max absolute sample value. */
+  /* Writes the square {NW} by {NW} grayscale image {beimg}, presumed to
+    be a basis element, as a file "{outPrefix}{tag}-be.pgm". The samples
+    if {beimg} are rescaled from {[-vAbsMax _ +vAbsMax]} to {[0 _ 1]},
+    where {vAbsMax} is the max absolute sample value. */
 
 void multifok_test_write_basis_coeff_image(float_image_t *bcimg, char *outPrefix, char *tag);
   /* Writes the basis coeff image {bcimg} to file "{outPrefix}{tag}-bc.pgm".
@@ -219,6 +280,10 @@ void multifok_test_write_pixel_mask_image(float_image_t *mkimg, char *outPrefix,
   /* Writes the pixel mask image {mkimg} to file "{outPrefix}{tag}-mk.pgm".
     The sample values are assumed to be in {[0_1]}. */
 
+void multifok_test_write_pix_sel_image(float_image_t *bgimg, i2_vec_t pix, char *outPrefix, char *tag);
+  /* Writes to file "{outPrefix}{tag}-ps.pgm" the color image {bgimg} with crosses
+    centered at the pixels whose indices are listed in {pix}. */
+    
 /* GENERIC IMAGE I/O */
 
 float_image_t *multifok_test_read_color_image(char *inPrefix, char *tag, char *code, float vMin, float vMax);
@@ -226,15 +291,30 @@ float_image_t *multifok_test_read_color_image(char *inPrefix, char *tag, char *c
     After reading, all samples are remapped from {[0 _ 1]} to {[vMin _ vMax]}. */
   
 float_image_t *multifok_test_read_grayscale_image(char *inPrefix, char *tag, char *code, float vMin, float vMax);
-  /* Reads a grayscale image from file "{inPrefix}{tag}-{code}.pgm". It should have 1 channel. 
-    After reading, all samples are remapped from {[0 _ 1]} to {[vMin _ vMax]}. */
+  /* Reads a grayscale image from file "{inPrefix}{tag}-{code}.pgm". It
+    should have 1 channel. After reading, all samples are remapped from
+    {[0 _ 1]} to {[vMin _ vMax]}. */
     
-void multifok_test_write_color_image(float_image_t *img, char *outPrefix, char *tag, char *code, float vMin, float vMax);
-  /* Writes the color image {img} to file "{outPrefix}{tag}-{code}.ppm". It should have 3 channels. 
-    Before writing, all samples are remapped from {[vMin _ vMax]} to {[0 _ 1]}. */
+void multifok_test_write_color_image
+  ( float_image_t *img, 
+    char *outPrefix, 
+    char *tag, 
+    char *code, 
+    float vMin, 
+    float vMax
+  );
+  /* Writes the color image {img} to file "{outPrefix}{tag}-{code}.ppm".
+    It should have 3 channels. Before writing, all samples are remapped
+    from {[vMin _ vMax]} to {[0 _ 1]}. */
     
 void multifok_test_write_grayscale_image(float_image_t *img, char *outPrefix, char *tag, char *code, float vMin, float vMax);
-  /* Writes the grayscale image {img} to file "{outPrefix}{tag}-{code}.pgm". It should have 1 channel. 
-    Before writing, all samples are remapped from {[vMin _ vMax]} to {[0 _ 1]}. */
+  /* Writes the grayscale image {img} to file
+    "{outPrefix}{tag}-{code}.pgm". It should have 1 channel. Before
+    writing, all samples are remapped from {[vMin _ vMax]} to {[0 _ 1]}. */
+
+void multifok_test_draw_crosses(float_image_t *img, int32_t ch, i2_vec_t pix, float val);
+  /* Draws open crosses into image {img} at the positions listed in {pix}
+    The corsses are drawn with value {val} into channel {ch}, and with value 0 in any other
+    channels. */
 
 #endif

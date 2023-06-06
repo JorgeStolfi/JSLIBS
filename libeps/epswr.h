@@ -1,5 +1,5 @@
 /* Tools for generating Encapsulated Postscript graphics files. */
-/* Last edited on 2023-02-21 12:06:56 by stolfi */
+/* Last edited on 2023-06-05 21:33:15 by stolfi */
 
 #ifndef epswr_H
 #define epswr_H
@@ -356,7 +356,8 @@ void epswr_set_pen
   );
   /* Sets pen parameters and ink color for line/outline drawing.
     Dimensions are in *millimeters*. Fails if any of {R,G,B} is
-    {NAN}; otherwise clips them to the range [0_1]. */
+    {NAN}; otherwise clips them to the range [0_1]. Fails if any
+    of {width,dashLength,dashSpace} is {NAN}, infinite, or negative. */
 
 void epswr_segment
   ( epswr_figure_t *eps,

@@ -1,5 +1,5 @@
 /* Private definitions for epswr.h. */
-/* Last edited on 2022-10-20 06:56:10 by stolfi */
+/* Last edited on 2023-06-05 21:42:57 by stolfi */
 
 #ifndef epswr_def_H
 #define epswr_def_H
@@ -19,7 +19,11 @@ typedef struct epswr_def_figure_t
     double yMin, yMax;     /* Client Y plotting range (in Client coords). */
     
     /* Drawing parameters: */
-    double fillColor[3];   /* Fill color for subsequent graphics ops. */
+    double drawColor[3];   /* Draw color; tracks "setrgbcolor". */
+    double fillColor[3];   /* Fill color; tracks "sfc". */
+    double pswidth;        /* Line width (pt); tracks "setlinewidth". */
+    double psdashLength;   /* Line dash length (pt); tracks "setdash". */
+    double psdashSpace;    /* Line dash space (pt); tracks "setdash". */
     
     /* Text layout parameters: */
     double hCtrText;       /* Device {h} coordinate of center of nominal text rectangle. */

@@ -1,5 +1,5 @@
 /* See {multifok_window.h}. */
-/* Last edited on 2023-01-30 06:56:14 by stolfi */
+/* Last edited on 2023-04-28 19:22:18 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -53,6 +53,7 @@ void multifok_window_normalize_samples
     double ws[], 
     double noise, 
     double *avg_P,
+    double *grd_P,
     double *dev_P
   )
   {
@@ -66,10 +67,39 @@ void multifok_window_normalize_samples
       }
     assert(sum_w > 0);
     double avg = sumw_s/sum_w;
+    
+    /* Compute weighted gradient by dot product with basis {X,Y}: */
+    int32_t HW = (NW-1)/2;
+    double sumw_sx = 0;
+    double sumw_sy = 0;
+    double sumw_xx = 0;
+    double sumw_yy = 0;
+    for (int32_t ks = 0; ks < NS; ks++) 
+      { double dk = s[ks] - avg;
+        double xk = (ks % NW) - HW;
+        double yk = (ks / NW) - HW;
+        double wk = ws[ks];
+        sumw_sx += wk*dk*xk; 
+        sumw_sy += wk*dk*yk; 
+        sumw_xx += wk*xk*xk;
+        sumw_yy += wk*yk*yk;
+      }
+    assert(sumw_xx > 0);
+    assert(sumw_yy > 0);
+    double grd_x = sumw_sx/sumw_xx;
+    double grd_y = sumw_sy/sumw_yy;
+    
+    /* Subtract average and gradient: */
+    for (int32_t ks = 0; ks < NS; ks++) 
+      { double xk = (ks % NW) - HW;
+        double yk = (ks / NW) - HW;
+        s[ks] = s[ks] - avg - grd_x*xk - grd_y*yk;
+      }
+
     /* Compute the weighted deviation: */
     double sum_w_d2 = 0;
     for (int32_t ks = 0; ks < NS; ks++) 
-      { double d = s[ks] - avg;
+      { double d = s[ks];
         sum_w_d2 += ws[ks]*d*d;
       }
     double dev = sqrt(sum_w_d2/sum_w);
@@ -78,8 +108,9 @@ void multifok_window_normalize_samples
     double mag = hypot(dev, noise);
     /* Normalize samples: */
     for (int32_t ks = 0; ks < NS; ks++) 
-      { s[ks] = (s[ks] - avg) / mag; }
+      { s[ks] = s[ks]/ mag; }
     (*avg_P) = avg;
+    (*grd_P) = hypot(grd_x, grd_y);
     (*dev_P) = dev;
   }
 

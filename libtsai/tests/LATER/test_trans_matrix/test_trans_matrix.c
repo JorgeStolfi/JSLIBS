@@ -1,4 +1,4 @@
-/* Last edited on 2023-02-04 10:20:27 by stolfi */
+/* Last edited on 2023-04-23 11:09:42 by stolfi */
 
 #define PROG_NAME "test_povray_camera"
 #define PROG_DESC "tests the conversion from Tsai camera matrix to POV-Ray camera spec"
@@ -118,8 +118,10 @@ int32_t main (int32_t argc, char *argv[])
           fprintf(stdout, "after tf_world_coords_to_image_coords\n"); 
           
           double mark_radius = 5;
-          (void)float_image_paint_cross(img, 0, p_i.c[0], p_i.c[1], mark_radius, 1.0, TRUE, 1.0, 3); 
-          (void)float_image_paint_cross(img, 0, p_i.c[0], p_i.c[1], mark_radius, 0.5, TRUE, 0.0, 3); 
+          bool_t empty = FALSE;
+          bool_t diagonal = TRUE;
+          (void)float_image_paint_cross(img, 0, p_i.c[0], p_i.c[1], mark_radius, empty, 1.0, diagonal, 1.0, 3); 
+          (void)float_image_paint_cross(img, 0, p_i.c[0], p_i.c[1], mark_radius, empty, 0.5, diagonal, 0.0, 3); 
 
           fprintf(f_pi, "%f %f\n", p_i.c[0], p_i.c[1]);
           fprintf(f_pw, "%f %f %f\n", cdat->world[i].c[0], cdat->world[i].c[1], cdat->world[i].c[2]);

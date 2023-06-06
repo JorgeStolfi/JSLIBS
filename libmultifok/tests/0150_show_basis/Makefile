@@ -1,8 +1,8 @@
-# Last edited on 2023-01-29 15:10:29 by stolfi
+# Last edited on 2023-04-28 17:21:35 by stolfi
 
 TEST_LIB := libmultifok.a
 TEST_LIB_DIR := ../..
-PROG := mf_0150_show_basis
+PROG := test_mfok_show_basis
 
 JS_LIBS := \
   libimg.a \

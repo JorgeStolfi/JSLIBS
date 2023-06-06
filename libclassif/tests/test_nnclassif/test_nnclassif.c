@@ -5,7 +5,7 @@
 #define make_test_classif_data_C_COPYRIGHT \
   "Copyright © 2010 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2020-10-11 03:22:30 by jstolfi */
+/* Last edited on 2023-03-31 03:48:54 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -834,7 +834,7 @@ void generate_raw_dataset_grid(problem_t *P, int NA, int NS, uint32_t seed, data
     
     /* Compute the grid order {NG} such that {NG^NAR >= NS}: */
     int NG = (int)ceil(pow(NS, 1.0/NAR));
-    int NT = ipow(NG, NAR); /* Total number of tentative samples. */
+    int NT = (int)ipow(NG, NAR); /* Total number of tentative samples. */
     assert(NT >= NS);
     demand(NT <= MAX_SAMPLES, "too many samples in grid");
     

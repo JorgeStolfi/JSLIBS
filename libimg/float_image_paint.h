@@ -2,7 +2,7 @@
 #define float_image_paint_H
 
 /* Tools for drawing into float images. */
-/* Last edited on 2021-08-28 23:26:44 by stolfi */ 
+/* Last edited on 2023-04-23 11:28:32 by stolfi */ 
 
 #include <bool.h>
 #include <ellipse_crs.h>
@@ -150,16 +150,23 @@ double float_image_paint_cross
     double xctr,     /* Center's X coordinate. */
     double yctr,     /* Center's Y coordinate. */
     double rad,      /* Radius of cross (not counting {hwd}). */ 
+    bool_t empty,    /* If {TRUE}, the center will be empty. */
     double hwd,      /* Radius of pen tip. */
     bool_t diagonal, /* If {TRUE}, rotate 45 degrees. */
     float vdraw,     /* Ink value for stroking. */  
     int m            /* Subsampling parameter. */
   );
   /* Draws into channel {c} of image {A} a cross centered
-    at {ctr,yctr}, with arms of length {rad}. 
+    at {xctr,yctr}, with arms of length {rad}. 
     
-    If {diagonal} is true, the cross is rotated 45
-    degrees.  The signs of {rad} and {hwd} are ignored. */
+    If {empty} is true, the center of the cross will be left empty,
+    and only the outer quarters of the arms will be drawn.  
+    Note that the inner ends of the arms will have round caps that
+    will partly fill the gap.
+    
+    If {diagonal} is true, the cross is rotated 45 degrees. 
+    
+    The signs of {rad} and {hwd} are ignored. */
 
 /* ELLIPSE PAINTING */
 

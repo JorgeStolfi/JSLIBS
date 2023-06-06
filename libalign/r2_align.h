@@ -2,7 +2,7 @@
 #define r2_align_H
 
 /* General tools and concepts for translational alignment of 2D objects. */
-/* Last edited on 2023-03-22 20:02:43 by stolfi */ 
+/* Last edited on 2023-04-01 03:21:02 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -31,169 +31,95 @@
   We denote by {\BX} and {\BY} the alignment vectors such that {\BX[i]} = (1,0)}
   sand {\BY[i] = (0,1)} for all {i} in {0..ni-1}. */
 
-double r2_align_norm_sqr (int32_t ni, r2_t p[]);
-  /* Given an alignment vector {p} with {ni} components, returns the square of its total
-    Euclidean norm. Namely, returns the sum of squares of all {p[i].c[j]}
-    for {i} in {0..ni-1]} and {j} in {0..1}. */
+/* MISMATCH FUNCTIONS */
 
-double r2_align_dot (int32_t ni, r2_t p[], r2_t q[]);
-  /* Returns the dot product of the alignment vectors {p} and {q} with {ni}
-    components each. Namely, returns the sum of products {p[i].c[j]*q[i].c[j]}
-    for {i} in {0..ni-1]} and {j} in {0..1}. */
-
-double r2_align_dist_sqr (int32_t ni, r2_t p[], r2_t q[]);
-  /* Given two alignment vectors {p,q} with {ni} components, returns the square of its total
-    Euclidean distance. Namely, returns the sum of squares of {p[i].c[j] - q[i].c[j]}
-    for {i} in {0..ni-1]} and {j} in {0..1}. */
-
-void r2_align_throw_ball_vector (int32_t ni, double rmin, double rmax, r2_t p[]);
-  /* Fills {p[0..ni-1]} with an alignment vector uniformly distributed in the
-    ball centered at the origin, whose norm is in {[rmin _ rmax]}. */
-
+typedef double r2_align_mismatch_t (int32_t ni, r2_t p[]); 
+  /* Type of a function that evaluates the mismatch of {ni} objects.
+    in some neighborhood of points {p[0..ni-1]}.  The size of the neighborhood
+    is client-defined.
+    
+    The client must ensure that the sampling is reliable, e.g. by
+    interpolating, smoothing, or shrinking the object according to
+    Nyquist's criterion.
+    
+    The function had better be C2 near the optimum alignment for
+    quadratic optimization (see below). */
+  
 /* 
-  BASIC DOMAIN ELLIPSOID
+  THE SEARCH DOMAIN
   
-  Searches for an optimal alignment vector are confined to a /basic
-  ellipsoid/ {\RE \sub \RC}, defined by two alignment vectors
-  {ctr[0..ni-1]} (the /domain center/) and {arad[0..ni-1]} (the /radius
-  vector/). The coordinates {arad[i].c[j]} of the radius vector must be
-  non-negative. In the rest of these comments, the vectors {ctr} and
-  {arad} are assumed fixed.
+  The main functions in this library will search for an optimal
+  alignment vector in a /seacrh domain/ {\RD}, an ellipsoid in {\RC}
+  defined by two alignment vectors {ctr[0..ni-1]} and {arad[0..ni-1]}.
+  The domain consists of all alignment vectors {p} in {\RC} such that the
+  difference {v = p - ctr} satisfies these properties:
   
-  The ellipsoid {\RE} has the main axes aligned with the coordinate axes
-  of {\RC}, and its radius along the axis {i,j} is {arad[i].c[j]}.
-  Namely, it consists of all alignment vectors {p} such that the sum of
-  the squares of {(p[i].c[j] - ctr[i].c[j])/arad[i].c[j]}, over all
-  {i,j} such that {arad[i].c[j]!=0}, is at most 1. */
+    * {v} is /conformal/, meaning that {{v[i].c[j]} is zero whenever
+    {arad[i].c[j]} is zero.
+    
+    * {v} is in the axis-aligned ellipsoid with center {ctr} and radii
+    {arad}, meaning that  the squares of
+    the coordinates {v[i].c[j]/arad[i].c[j]}, summed over all {i,j}
+    for which the denominator is nonzero, add to at most 1.
+    
+  Optionally, the following /balancing constraint/ may be required,
+  depending on a boolean parameter {bal}
 
-double r2_align_rel_disp_sqr (int32_t ni, r2_t p[], r2_t q[], r2_t arad[]);
-  /* Given two alignment vectors {p,q} with {ni} components, returns the
-    total squared coordinate differences between them, relative to the radius
-    vector {arad}. 
+    * {v} is /balanced/, meaning that for each {j} in
+    {0..1}, the coordinates {v[i].c[j]} summed over all {i}, will add to
+    zero.
     
-    If {q} is NULL, assumes it is the alignment vector with all zeros.
+  The balancing constrait for a given {j} is always omitted if there is
+  only one {i} such that {arad[i].c[j]} is non-zero. */
+  
+int32_t r2_align_count_degrees_of_freedom(int32_t ni, r2_t arad[], bool_t bal);
+  /* Returns the the dimension of the search domain {\RD}. 
+    This is the number of coordinates {arad[i].c[j]}
+    that are nonzero, minus the number of applicable 
+    balancing constraints.  */
     
-    That is, if {p-q} is not conformal to {arad}, returns {+INF}.
-    Otherwise returns the sum of ((p[i].c[j] - q[i].c[j])/arad[i].c[j])^2 
-    for all {i} in {0..ni-1} and {j} in {0..1} such that {arad[i].c[j]} is non-zero.
-    
-    Thus the basic domain ellipsoid {\CE} consists of all alignment
-    vectors {p} such that {r2_align_rel_disp_sqr(ni, p, ctr,arad) <= 1}. */
-
 /* 
-  CONFORMAL ADJUSTMENT VECTORS
+  THE SEARCH BASIS AND RADII
   
-  We will denote by {\RB} the affine span of the ellipsoid {\RE}, and by
-  {\RV} the linear subspace of {\RC} parallel to {\RB}. Their dimension
-  is {nv = 2*ni - nz}, where {nz} is the number of coordinates of {arad}
-  that are zero.
+  Let {nd} be the dimension of the seach ellipsoid {\RD}.
+  The search for the optimum alignment vector in {\RD} 
+  entails the consytuction of a /normal search basis/ {U}, 
+  consisting of {nd} alignment vectors {u[0..nd-1]}, and a set
+  of {nd} /normal radii/ {urad[0..nd-1]}, such that each vector {u[k]}:
   
-  Each element of {\RV} is called a /conformal delta vector/. It is 
-  a vector {d} of {\RC} such that {d[i].c[j]} is zero whenever
-  {arad[i].c[j]} is zero. */
+    * is balanced and conformal,
+    
+    * is /normalized/, meaning that the sum of squares of the coordinates
+    {u[k][i].c[j]} over all {i,j} is 1,
+    
+    * is /orthogonal/ to every previous vector {u[r]}, meaning that 
+    the sum {u[k][i].c[j]*u[r][i].c[j]} over all {i,j} is zero.
+    
+    * is a major direction of the ellipsoid {\RD}
+    
+  Furthermore, each {urad[k]} is the radius of the ellipsoid {\RD} in the 
+  direction {u[k]}. 
+  
+  Thus the search ellipsoid {\RD} is the set of all alignment vectors
+  {p = ctr + SUM{ k \in 0..nd-1 : s[k]*urad[k]*u[k]}} where {s}
+  is a vector in the unit ball of {\RR^nd}. */
 
-bool_t r2_align_coord_is_variable (r2_t arad[], int32_t i, int32_t j);
-  /* Returns {TRUE} iff {arad[i].c[j]} is nonzero. 
-  
-    Namely, returns {TRUE} if the coordinate axis {i,j} of {\RC} is in
-    the subspace {\RV}; that is, if coordinate {p[i].c[j]} of a point
-    {p} in the basic ellipsoid {\CE} can be different from
-    {ctr[i].c[j]}. */
-
-i2_t r2_align_count_variable_coords (int32_t ni, r2_t arad[]);
-  /* Returns a integer pair {nv} such that {nv.c[j]} is the number of
-    coordinates {arad[i].c[j]} that are not zero.
-    
-    That is, {nv.c[0]} and {nv.c[1]} are the counts of axes of the
-    conformal subspace {\CV} that are parallel to {\BX} and {\BY},
-    respectively. */
-
-void r2_align_points_to_vars (int32_t ni, r2_t p[], r2_t arad[], r2_t ctr[], int32_t nv, double y[]);
-  /* Stores the non-fixed coordinates of the delta vector from
-    {p[0..ni-1]} to {ctr[0..ni-1]}, into the vector {y[0..nv-1]}. 
-    
-    The number {nv} must be the total number of non-fixed coordinates ,
-    that is, the number of non-zero coordinates {arad[i].c[j]}. If {ctr}
-    is {NULL}, assumes it is all zeros. */
-
-void r2_align_vars_to_points (int32_t nv, double y[], int32_t ni, r2_t arad[], r2_t ctr[], r2_t p[]);
-  /* Stores {ctr[0..ni-1]} plus {y[0..nv-1]} into the non-fixed 
-    coordinates of the alignment vector {p[0..ni-1]}. 
-    
-    Namely sets {p[i].c[j]} to {ctr[i].c[j] + y[k]} whenever
-    {arad[i].c[j]} is nonzero. The number {nv} must be the total number
-    of non-fixed coordinates , that is, the number of non-zero
-    coordinates {arad[i].c[j]}. If {ctr} is {NULL}, assumes it is all
-    zeros. */
-  
-/*   
-  BALANCED DELTA VECTOR VECTORS
-  
-  A /balanced delta vector/ is a vector {d} of {\RC} such that
-  the sum of {d[i].c[j]} over all {i} in {0..ni-1} is zero, for each {j}.
-  
-  That is, a balanced delta vector is an element of {\RC} that is
-  orthogonal to the alignment vectors {\BX} and {\BY}.
-  
-  We will denote by {\RU} the subspace of {\RV} (hence of {\RC})
-  consisting of all balanced and conformal delta vectors.
-  
-  A /balanced conformal alignment/ is an alignment vector that is {ctr} plus
-  a balanced and conformal delta vector. We denote by {\RA} the affine space 
-  {ctr + \RU} of all balanced conformal alignments.
-  
-  THE SEARCH ELLIPSOID
-  
-  Procedures that look for an optimal alignment vector will consider only
-  alignments {p} in {\CE} that such that the difference {p-ctr}
-  is a balanced delta vector. Since {p} is in {\CE}, that difference 
-  will also be a conformal delta vector.  
-  
-  Thus those procedures will consider only delta vectors
-  {p} in the /search ellipsoid/ {\CF} that is the intersection of 
-  the basic ellipsoid {\CE} and the affine subspace {\CB}.  */
-  
-int32_t r2_align_count_degrees_of_freedom (int32_t ni, r2_t arad[]);
-  /* Returns the max number of linearly independent balanced delta vector
-    vectors that are conformal with the radius vector {arad}.  That is,
-    the dimension of the spaces {\RU} and {\RA}.
-    
-    Namely, let {nv} be {r2_align_count_variable_coords(ni,arad)}.
-    Each axis {j} contributes {nv.c[j]-1} degrees of freedom,
-    unless {nv.c[j]} is zero, in which case it contributes none. */
-
-void r2_align_compute_search_ellipsoid (int32_t ni, r2_t arad[], int32_t nd, r2_t U[], double urad[]);
-  /* Stores into the rows of {U} a set of {nd} orthonormal balanced
-    conformal delta vectors with {ni} points each, and in {urad} a list
-    of {nd} real radii, that together define the search ellipsoid {\RF}.
-    
-    Specifically, for each {k} in {0..nd-1}, the delta vector
-    {u[k]} will be points {u[k][i] = U[k*ni + i]}, for {i} in {0..ni-1}.
-    That vector will have the following properties:
+void r2_align_compute_search_ellipsoid
+  ( int32_t ni,
+    r2_t arad[],
+    bool_t bal, 
+    int32_t nd,
+    r2_t U[], 
+    double urad[]
+  );
+  /* Stores into the first {nd} rows of {U} a normal search basis 
+    and into {urad[0..nd-1]} the corresponding normal radii 
+    that that together describe the search ellipsoid {\RD},
+    as defined by {arad[0..ni-1]} and {bal}.
       
-      * It will be conformal to {arad}, in the sense that {u[k][i].c[j]} will be
-      zero whenever {arad[i].c[j]} is zero.
-    
-      * It will be a balanced delta vector, meaning that for each {j} in
-      {0..1}, the coordinates {u[k][i].c[j]} summed over all {i}, will add to
-      zero.
-        
-      * It will be normalized, meaning that the squares of the coordinates
-      {u[k][i].c[j]}, summed over all {i,j}, will add to 1.
-      
-      * It will be orthogonal to every other delta vector vector {u[r]} with
-      {r!=k}, meaning that the products {u[k][i].c[j] * u[r][i].c[j]},
-      summed over all {i,j}, add to zero.
-      
-      * It will be the direction of a major axis of the search ellipsoid {\CF}.
-      
-    Moreover, {urad[k]} will be the radius of the ellipsoid {\CF} in the direction {u[k]}.
-      
-    If {arad[i].c[j]} is non-zero, its value must be positive, but it is otherwise
-    ignored by the procedure.
-    
-    The parameter {ni} must be at least 1, and the number of directions
-    {nd} must be the dimension of the balanced conformal delta vector space {\RU}. */
+    The radii {arad[i].c[j]} must be non-negative. The 
+    parameter {nd} must be as computted by 
+    {r2_align_count_degrees_of_freedom}. */
 
 /* MISMATCH FUNCTIONS */
 

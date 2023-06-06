@@ -1,5 +1,5 @@
 /* Test scenes and ray-tracing for {multifok_test}. */
-/* Last edited on 2023-01-31 13:24:24 by stolfi */
+/* Last edited on 2023-04-23 01:00:56 by stolfi */
 
 #ifndef multifok_scene_H
 #define multifok_scene_H
@@ -114,14 +114,14 @@ void multifok_scene_ray_trace
     r3_t *p, 
     r3_t *d, 
     bool_t debug,
-    multifok_scene_object_t **hob_P, 
+    multifok_scene_object_t **htob_P, 
     r3_t *hit_pos_P
   );
   /* Traces one ray {R} that goes through the point {p} with the
     direction parallel to {d}, assumed to be not horizontal. Finds the
     object (disk, sphere, or floor) with max {Z} that hits that ray.
-    Returns that object in {*hob_P} and the hit point
-    {hpt(R)} in {*hpt_P}.  If the 
+    Returns that object in {*htob_P} and the hit point
+    {htpt(R)} in {*htpt_P}.  If the 
     
     Uses the tree structure {tr} to speed up the computation. */
     
@@ -132,7 +132,7 @@ typedef double multifok_scene_pattern_t(double x, double y, double z, int32_t io
     an arbitrary /object index/ {iobj} and the point {(x,y,z)}. */
     
 frgb_t multifok_scene_compute_hit_color(multifok_scene_object_t *obj, r3_t *q, multifok_scene_pattern_t *pattern);
-  /* Computes the color {clr} of the surface of object {obj} at the point {hpt}.
+  /* Computes the color {clr} of the surface of object {obj} at the point {htpt}.
     
     If {obj} is not {NULL}, the procedure evaluates
     {r=pattern(x,y,z,obj.ID)}, where {(x,y,z) = q - obj.ctr}, and

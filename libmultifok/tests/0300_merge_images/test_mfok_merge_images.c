@@ -1,58 +1,87 @@
-#define PROG_NAME "mf_0400_sort_stack"
+#define PROG_NAME "test_mfok_merge_images"
 #define PROG_DESC "Merges several registered images with focus blur at different heights"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-01-29 13:58:47 by stolfi */ 
-/* Created on 2023-01-24 by J. Stolfi, UNICAMP */
+/* Last edited on 2023-04-28 17:29:43 by stolfi */ 
+/* Created on 2023-01-19 by J. Stolfi, UNICAMP */
 
-#define mf_0400_sort_stack_COPYRIGHT \
+#define test_mfok_merge_images_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
 
 #define PROG_HELP \
   "Duh?"
 
-???
-
 #define PROG_INFO \
   "SYNOPSIS" \
   "\n" \
-  "  \n" \
+  "  Merges a stack of registerd images taken with same lighting and" \
+  " view geometry but with short depth of focus and different focus plane position\n" \
   "\n" \
-  "INPUTS" \
-  "  Reads a stack of {NI} images {csimg[ki]}, {shimg[ki]}, where\n" \
+  "INPUTS\n" \
   "\n" \
-  "   {csimg[ki]} is sythetic image a scene with simulated focus blurring.\n" \
-  "   {shimg[ki]} specifies the actual sharpness of {csimg[k]} at each pixel.\n" \
+  "  BLURRED IMAGES\n" \
+  "    The program reads a stack of {NI} images {csimg[ki]}, {shimg[ki]}, where\n" \
   "\n" \
-  "  These images are read from files \"{inPrefix}-z{ZZZ.ZZZZ}{tail}\" where {ZZZ.ZZZZ} is" \
+  "      {csimg[ki]} is sythetic image a scene with simulated focus blurring.\n" \
+  "      {shimg[ki]} specifies the actual sharpness of {csimg[k]} at each pixel.\n" \
+  "\n" \
+  "    These images are read from files \"{inPrefix}-z{ZZZ.ZZZZ}{tail}\" where {ZZZ.ZZZZ} is" \
   " the coordinate {zFoc[ki]} of the focus plane, formated as \"%8.4f\", and" \
-  " {tail} is \"-cs.ppm\" or \"-sh.pgm\", respectively.  The values of {zFoc[ki]} are" \
-  " spefified by the \"-Zrange\" and \"-zStep\" options." \
+  " {tail} is \"-cs.ppm\" or \"-sh.pgm\", respectively.  The number {NI} of" \
+  " images and the values of {zFoc[0..NI-1]} are" \
+  " specified by the \"-Zrange\" and \"-zStep\" options.\n" \
   "\n" \
-  "  Also reads two \"unblurred\" images {azimg}, {dzimg}, where\n" \
+  "  REFERENCE IMAGES\n" \
+  "    Also, for comparison purposes, reads \"unblurred\" images {azimg}, {dzimg}, where\n" \
   "\n" \
-  "   {azimg} specifies the average {Z}-coord of the scene within each pixel.\n" \
-  "   {dzimg} specifies the deviation of that {Z} coordinate within each pixel.\n" \
+  "      {timg} an unblurred color view of the scene.\n" \
+  "      {azimg} specifies the average {Z}-coord of the scene within each pixel.\n" \
+  "      {dzimg} specifies the deviation of that {Z} coordinate within each pixel.\n" \
   "\n" \
-  "  These images are read from files \"{inPrefix}-sharp{tail}\" where" \
-  " {tail} is \"-az.pgm\" or \"-g.pgm\", respectively. " \
+  "    These images are read from files \"{inPrefix}-sharp{tail}\" where" \
+  " {tail} is \"-cs.ppm\", \"-az.pgm\" or \"-g.pgm\", respectively.\n" \
   "\n" \
   "  All images must be of same scene and must have the same size, lighting, and viewing" \
-  " parameters. The {csimg} images are in color, the other images are greyscale with linear" \
-  " encoding (gamma = 1).  The images {csimg[ki]} and {shimg[ki]} must have the same depth of focus {zDep}, with the focus plane at" \
-  " the {Z} coordinate {zFoc[ki]}.  The samples of the image {azimg} are assumed to be {Z} coordinates relative to {sharpImage_zFoc}. " \
+  " parameters. The {csimg} images are in color, the other images are greyscale" \
+  " with linear encoding (gamma = 1).  The images {csimg[ki]} and {shimg[ki]}" \
+  " must have the same depth of focus {zDep}, with the focus plane at" \
+  " the {Z} coordinate {zFoc[ki]}.  The samples of the image {azimg} are assumed" \
+  " to be {Z} coordinates relative to {sharpImage_zFoc}. " \
   " scaled as described in {mutifok_test_write_zave_image}.\n" \
+  "\n" \
+  "  TERM NAMES AND WEIGHTS\n" \
+  "    The term weights are read from a" \
+  " file \"term-weights/ptBEST-bt{BBBB}-trm{T}-qsh0-ns{NNNN}\" where" \
+  " {BBBB} and {T} are chosen by the program, and {NNNN} is the" \
+  " value of {noise} formatted with \"%05.2f\".\n" \
   "\n" \
   "OUTPUTS\n" \
   "\n" \
-  "  COMPOSITE IMAGE\n" \
-  "    Writes to \"{outPrefix}-comp.ppm\" an image composited from the images {csimg[0..NI-1]}, using" \
-  " at each pixel a set of weights determined from the sharpness scores obtained at that pixel on those" \
+  "  RECONSTRUCTED COLOR IMAGE\n" \
+  "    Writes to \"{outPrefix}-cr.ppm\" an image {crimg} reconstructed" \
+  " from the images {csimg[0..NI-1]}, using" \
+  " at each pixel a set of weights determined from the sharpness" \
+  " scores obtained at that pixel on those" \
   " images.\n" \
   "\n" \
   "  ESTIMATED Z IMAGE\n" \
-  "    Also writes an image \"{outPrefix}-zest.pgm\" with the estimated {Z} depth of the scene, based" \
-  " on the sharpness scores and the focus plane positions {zFoc[ki]}."
+  "    Also writes to \"{outPrefix}-cz.pgm\" an image {czimg} with" \
+  " the {zEst} for each pixel, the estimated {Z} depth of the" \
+  " scene, based on the sharpness scores and the focus plane positions {zFoc[ki]}.\n" \
+  "\n" \
+  "  ESTIMATED Z ERROR IMAGE\n" \
+  "    Also writes to \"{outPrefix}-ez.pgm\" an image {ezimg}  with the difference" \
+  " between the estimated {Z} depth of the scene {zEst} and the \"actual\" depth" \
+  " {zAve} as read from the {azimg} image.\n" \
+  "\n" \
+  "  COLOR ERROR IMAGE\n" \
+  "    Also writes to \"{outPrefix}-er.ppm\" a color image {erimg}  with the difference" \
+  " between the reconstructed color estimated at each pixel, as in" \
+  " the {crimg} image,  and the \"actual\" color as in the {timg}.\n" \
+  "\n" \
+  "  TERMS AND WEIGHTS\n" \
+  "    Also writes to \"{outPrefix}-terms.txt\" the term names and" \
+  " weights used, for documentation."
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -72,7 +101,6 @@
 #include <float_image.h>
 #include <lsq.h>
 
-#include <multifok_focus_op.h>
 #include <multifok_test.h>
 
 typedef struct mfmi_options_t 
@@ -100,11 +128,12 @@ void mfmi_choose_basis_and_terms
     int32_t *NB_P,
     double ***bas_P,
     char ***belName_P,
-    double noise,
-    int32_t *NT_P, 
-    char ***termName_P, 
-    double **wt_P, 
+    double noise, 
+    int32_t *NP_P, 
     multifok_term_prod_t **prix_P,
+    int32_t *NT_P, 
+    double **wt_P, 
+    char ***termName_P,
     char *outPrefix
   );
   /* Chooses and creates an operator basis for an {NW} by {NW} window
@@ -118,11 +147,13 @@ void mfmi_choose_basis_and_terms
     "{outPrefix}-belnames.txt" with
     {multifok_test_write_basis_elem_names(outPrefix,NP,belName)}.
     
-    Then chooses the terms of the quadratic formula to be used to
-    compute the sharpness score. That includes the number of terms {NT},
-    their names {termName[0..NT-1]}, the index paits {prix[0..NT-1]}, and
-    their respective weights {wt[0..NT-1]}. These data are returned in
-    {*NT_P}, {*termName_P}, {*wt_P} and {*prix_P}.
+    Then it defines the quadratic formula to be used to compute the
+    sharpness score. That includes the number of independent quadratic
+    terms {NT}, their formulas {termName[0..NT-1]}, and and their
+    respective weights {wt[0..NT-1]}. It also defines the number of
+    distinct canonical coeff products {NP} and the table {prix[0..NP-1]}
+    that tells which products are part of which terms. These data are
+    returned in {*NP_P,*prix_P,*NT_P,*wt_P,*termName_P}.
     
     The term names and weights are read from a file
     "term-weights/ptBEST-bt{BASNAME}-trm{T}-qsh0-ns{NOISE}.txt" where
@@ -131,19 +162,24 @@ void mfmi_choose_basis_and_terms
     squared order 1 and 2 diff ops only, etc.) and {NOISE} is the
     {noise} bias formatted with "%05.2f".
     
-    Also writes the terms, weights, and basis index pairs to {stderr} and writes the names and weights to a file "{outPrefix}-termName.txt" with
+    Also writes the terms, weights, and basis index pairs to {stderr}
+    and writes the names and weights to a file
+    "{outPrefix}-termName.txt" with
     {multifok_test_write_term_names(outPrefix,NT,termName)}. */
 
 void mfmi_choose_terms
   ( int32_t NB, 
     char *belName[], 
-    int32_t *NT_P, 
-    char ***termName_P, 
-    double **wt_P, 
+    int32_t *NP_P, 
     multifok_term_prod_t **prix_P,
+    int32_t *NT_P, 
+    double **wt_P, 
+    char ***termName_P,
     char *outPrefix
+  )
+  ( char *outPrefix
   );
-  /* Given the basis element names {belName[0..NB-1]}, */
+  /* Given the basis element names {belName[0..NB-1]}, ?? */
 
 void mfmi_process_image_stack
   ( FILE *wr_cmp,
@@ -152,6 +188,7 @@ void mfmi_process_image_stack
     float_image_t *grimg[], 
     float_image_t *shimg[],
     double zFoc[],
+    float_image_t *timg, 
     float_image_t *azimg, 
     float_image_t *dzimg, 
     bool_t actualSharp,
@@ -162,18 +199,20 @@ void mfmi_process_image_stack
     double **bas,
     int32_t NT,
     double wt[],
+    int32_t NP,
     multifok_term_prod_t prix[],
     char *outPrefix
   );
   /* Processes the image stack {csimg[0..NI-1]} 
     
-    Writes images "{outPrefix}-{KKK}-bc.pgm" with the basis 
-    coeff values at each pixel, where {KKK} is the basis element index 
-    in {0..NB-1} zero-padded to 3 digits.
+    Writes images "{outPrefix}-{KKK}-bc.pgm" with the basis coeff values
+    at each pixel, where {KKK} is the basis element index in {0..NB-1}
+    zero-padded to 3 digits.
     
-    Also writes images {scimg} = "{outPrefix}-sc.pgm" with the sharpness {score} computed
-    from the basis coeffs, and {esimg} = "{outPrefix}-es.pgm" with the error {score-sharp}.
-    See {multifok_score_from_basis_coeffs} for how the {score} is computed.
+    Also writes images {scimg} = "{outPrefix}-sc.pgm" with the sharpness
+    {score} computed from the basis coeffs, and {esimg} =
+    "{outPrefix}-es.pgm" with the error {score-sharp}. See
+    {multifok_score_from_basis_coeffs} for how the {score} is computed.
     
     Writes out to {wr_reg} and {wr_cmp} one line for each pixel considered
     useful for the regression, as explained in {PROG_INFO}. */
@@ -189,11 +228,13 @@ void mfmi_compute_pixel_scores
     double **bas,
     int32_t NT,
     double wt[],
+    int32_t NP,
     multifok_term_prod_t prix[],
     double score[]
   );
-  /* Estimates the sharpness scores {score[0..NI-1]} of grayscale images {grimg[0..NI-1]} at the pixel {ix,iy},
-    as per {multifok_score_from_basis_coeffs}. */
+  /* Estimates the sharpness scores {score[0..NI-1]} of grayscale images
+    {grimg[0..NI-1]} at the pixel {ix,iy}, as per
+    {multifok_score_from_basis_coeffs}. */
 
 void mfmi_get_pixel_actual_sharpness
   ( int32_t NI, 
@@ -237,15 +278,16 @@ void mfmi_fit_quadratics
     double Cclr[],
     bool_t verbose
   );
-  /* Computes the coefficient of a quadratic
-    {score_fit(Z) = Asc*Z^2 + Bsc*Z + Csc} fitted by least squares to the data points 
-    {(zFoc[k],score[k])} with {k} in {0..NP-1}. 
+  /* Computes the coefficient of a quadratic {score_fit(Z) = Asc*Z^2 +
+    Bsc*Z + Csc} fitted by least squares to the data points
+    {(zFoc[k],score[k])} with {k} in {0..NP-1}.
     
-    Also, for each {ic} in {0..NC-1], computes the coefficient of a quadratic
-    {clr_fit[ic] = Aclr[ic]*Z^2 + Bclr[ic]*Z + Cclr[ic]} fitted by least squares 
-    to the data points {(zFoc[k],clr[ic][k])} where {clr[ic][k] = csmp[k*NC+ic]}. 
-    The number of points must be at least 3. The coefficients {Asc,Bsc,Csc} are returned in 
-    {*Asc_P}, {*Bsc_P}, and {*Csc_P}. */
+    Also, for each {ic} in {0..NC-1], computes the coefficient of a
+    quadratic {clr_fit[ic] = Aclr[ic]*Z^2 + Bclr[ic]*Z + Cclr[ic]}
+    fitted by least squares to the data points {(zFoc[k],clr[ic][k])}
+    where {clr[ic][k] = csmp[k*NC+ic]}. The number of points must be at
+    least 3. The coefficients {Asc,Bsc,Csc} are returned in {*Asc_P},
+    {*Bsc_P}, and {*Csc_P}. */
 
 FILE *mfmi_open_text_file(char *outPrefix, char *tag);
   /* Returns the open handle of a file called "{outPrefix}{tag}.txt" for writing. */
@@ -278,10 +320,10 @@ int32_t main (int32_t argc, char **argv)
     double zMax = o->zRange_hi;
     double zStep = o->zStep;
     int32_t NI = (int32_t)ceil((zMax - zMin + 0.0001*zStep)/zStep);
-    float_image_t *csimg[NI]; /* Sythetic images of scene with simulated focus blurring. */
-    float_image_t *grimg[NI]; /* Grayscale versions of {csimg[0..NI-1]}. */
-    float_image_t *shimg[NI]; /* Specify the actual sharpness of {csimg[k]} at each pixel. */
-    double zFoc[NI];         /* The {Z} coordinates of focus planes. */
+    float_image_t *csimg[NI];  /* Sythetic images of scene with simulated focus blurring. */
+    float_image_t *grimg[NI];  /* Grayscale versions of {csimg[0..NI-1]}. */
+    float_image_t *shimg[NI];  /* Specify the actual sharpness of {csimg[k]} at each pixel. */
+    double zFoc[NI];           /* The {Z} coordinates of focus planes. */
     double zDep = o->focDepth; /* Depth of focus. */
     
     int32_t NC; /* Number of channels of {csimg[ki]}. */
@@ -306,7 +348,11 @@ int32_t main (int32_t argc, char **argv)
         float_image_check_size(shimg[ki], 1, NX, NY);
       } 
 
-    /* Read {azimg}, the true scene {Z} map, for comparison: */
+    /* Read {timg}, the unblurred true scene colors, for comparison: */
+    float_image_t *timg = multifok_test_read_scene_color_image(o->inPrefix, "-sharp");
+    float_image_check_size(timg, NC, NX, NY);
+
+    /* Read {azimg}, the unblurred true scene {Z} map, for comparison: */
     float_image_t *azimg = multifok_test_read_zave_image(o->inPrefix, "-sharp");
     float_image_check_size(azimg, 1, NX, NY);
    
@@ -318,7 +364,7 @@ int32_t main (int32_t argc, char **argv)
     mfmi_process_image_stack
       ( wr_cmp, 
         NI, csimg, grimg, shimg, zFoc,
-        azimg, dzimg,
+        timg, azimg, dzimg,
         o->actualSharp,
         NW, ws, o->noise, 
         NB, bas, 
@@ -338,6 +384,7 @@ void mfmi_process_image_stack
     float_image_t *grimg[], 
     float_image_t *shimg[],
     double zFoc[],
+    float_image_t *timg, 
     float_image_t *azimg, 
     float_image_t *dzimg, 
     bool_t actualSharp,
@@ -434,6 +481,26 @@ void mfmi_process_image_stack
     double rms_err = sqrt(sum_wp_dz2/sum_wp);
     fprintf(stderr, "RMS {Z} error (computed minus actual) = %12.4f\n", rms_err);
 
+    /* Compute the image {erimg = crimg-timg}, the error in the reconstructed image {crimg}: */
+    float_image_t *erimg = float_image_new(NC, NX, NY);
+    for (int32_t ix = HW; ix < NX-HW; ix++)
+      { for (int32_t iy = HW; iy < NY-HW; iy++) 
+          { for (int32_t ic = 0; ic < NC; ic++)
+              { float rv = float_image_get_sample(crimg, ic, ix, iy);
+                float tv = float_image_get_sample(timg, ic, ix, iy);
+                float_image_set_sample(erimg, ic, ix, iy, (float)(rv - tv));
+              }
+          }
+      }
+    double sum_var = 0;
+    for (int32_t ic = 0; ic < NC; ic++)
+      { double avg, dev;
+        float_image_compute_sample_avg_dev(erimg, ic, &avg, &dev);
+        sum_var += dev*dev;
+      }
+    double qrms = sqrt(sum_var/NC); /* RMS sample error. */
+    fprintf(stderr, "RMS color sample error = %16.8f\n", qrms);
+
     /* Write the estimated {Z} image {czimg}: */
     multifok_test_write_zavg_image(czimg, outPrefix, "");
 
@@ -442,6 +509,9 @@ void mfmi_process_image_stack
       
     /* Write the reconstructed (deblurred) image {crimg}: */
     multifok_test_write_reconstructed_color_image(crimg, outPrefix, "");
+      
+    /* Write the color error image {erimg}: */
+    multifok_test_write_color_error_image(erimg, outPrefix, "");
 
   }
   
@@ -673,6 +743,8 @@ void mfmi_compute_pixel_scores
         multifok_window_normalize_samples(NW, dsmp, ws, noise, &avg, &dev); 
 
         /* Compute coefficients of window in basis and estimated sharpness score: */
+
+        /* Compute coefficients of window in basis and estimated sharpness score: */
         multifok_basis_compute_coeffs(NW, dsmp, ws, NB, bas, coeff);
         score[ki] = multifok_score_from_basis_coeffs(NW, NB, coeff, NT, prix, wt, term, squared);
       }
@@ -684,11 +756,12 @@ void mfmi_choose_basis_and_terms
     int32_t *NB_P,
     double ***bas_P,
     char ***belName_P,
-    double noise,
-    int32_t *NT_P, 
-    char ***termName_P, 
-    double **wt_P, 
+    double noise, 
+    int32_t *NP_P, 
     multifok_term_prod_t **prix_P,
+    int32_t *NT_P, 
+    double **wt_P, 
+    char ***termName_P,
     char *outPrefix
   )
   {

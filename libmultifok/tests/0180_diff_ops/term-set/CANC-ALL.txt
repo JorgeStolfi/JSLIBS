@@ -1,11 +1,11 @@
-  0 Soo*Soo
-  1 Smo*Smo+Spo*Spo+Som*Som+Sop*Sop
-  2 Smm*Smm+Spp*Spp+Smp*Smp+Spm*Spm
-  3 Soo*Smo+Soo*Spo+Soo*Som+Soo*Sop
-  4 Smo*Spo+Som*Sop
-  5 Spo*Som+Smo*Som+Spo*Sop+Smo*Sop
-  6 Sop*Smm+Spo*Smm+Som*Spp+Som*Smp+Sop*Spm+Smo*Spp+Spo*Smp+Smo*Spm
-  7 Smm*Spp+Smp*Spm
-  8 Spp*Smp+Smm*Smp+Spp*Spm+Smm*Spm
-  9 Som*Smm+Sop*Spp+Sop*Smp+Smo*Smm+Spo*Spp+Som*Spm+Smo*Smp+Spo*Spm
- 10 Soo*Smm+Soo*Spp+Soo*Smp+Soo*Spm
+  0 1 Soo*Soo
+  1 1 Smo*Smo+Spo*Spo+Som*Som+Sop*Sop
+  2 1 Smm*Smm+Spp*Spp+Smp*Smp+Spm*Spm
+  3 1 Soo*Smo+Soo*Spo+Soo*Som+Soo*Sop
+  4 1 Smo*Spo+Som*Sop
+  5 1 Spo*Som+Smo*Som+Spo*Sop+Smo*Sop
+  6 1 Sop*Smm+Spo*Smm+Som*Spp+Som*Smp+Sop*Spm+Smo*Spp+Spo*Smp+Smo*Spm
+  7 1 Smm*Spp+Smp*Spm
+  8 1 Spp*Smp+Smm*Smp+Spp*Spm+Smm*Spm
+  9 1 Som*Smm+Sop*Spp+Sop*Smp+Smo*Smm+Spo*Spp+Som*Spm+Smo*Smp+Spo*Spm
+ 10 1 Soo*Smm+Soo*Spp+Soo*Smp+Soo*Spm

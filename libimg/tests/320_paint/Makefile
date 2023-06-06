@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 02:54:04 by jstolfi
+# Last edited on 2023-04-23 11:29:39 by stolfi
 
 PROG = test_paint
 
@@ -21,7 +21,8 @@ OUTNAME := out/img
 
 do-test: ${PROG}
 	${PROG} 
-	display -filter Box -resize '400%' ${OUTNAME}-*.ppm
+	display -filter Box -resize '200%' ${OUTNAME}-*.ppm
+	display ${OUTNAME}-*.ppm
 
 clean::
 	/bin/rm -fv out-*.ppm

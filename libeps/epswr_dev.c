@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2023-03-02 22:40:02 by stolfi */
+/* Last edited on 2023-06-05 21:47:52 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -91,6 +91,32 @@ void epswr_dev_write_font_set_cmds(FILE *wr, const char *psname, const char *fon
 void epswr_dev_write_proc_defs(FILE *psFile);
   /* Writes to {psFile} the definition of the operators assumed
     by other plotting and text writing commands. */
+    
+#define epswr_dev_color_unit 0.001;
+  /* Round color coordinates to multiples of this unit.  
+    Should match the format used by {epswr_dev_write_color}. */
+    
+#define epswr_dev_line_unit 0.001;
+  /* Round linewidth, dash lengths, and dash spaces to multiples of this unit.  
+    Should match the format used by {epswr_dev_write_color}. */
+
+void epswr_dev_normalize_draw_color(double *R_P, double *G_P, double *B_P);
+  /* Normalizes the color arguments of {set_pen}, which will be given to
+    the Postscript command "setrgbcolor" and tracked by {eps.drawColor}.
+    
+    Namely clips the color coordinates {*R_P}, {*G_P}, {*B_P} to the
+    range {[0.0 _ 1.0]} and rounds them to integer multiples of
+    {epswr_dev_color_unit}. Bombs out if any of them is {NAN}. */
+    
+void epswr_dev_normalize_fill_color(double *R_P, double *G_P, double *B_P);
+  /* Normalizes the color arguments of {set_fill_color}, which will be given to
+    the Postscript command "sfc" and tracked by {eps.fillColor}. 
+    
+    Namely, if {*R_P} is negative, {±INF}, or {NAN}, sets all three to
+    {-1.0}. Otherwise clips the oordinates {*R_P}, {*G_P}, {*B_P} to the
+    range {[0.0 _ 1.0]} and rounds them to integer multiples of
+    {epswr_dev_color_unit}. Bombs out {*R_P} is, finite, positive, and
+    not {NAN}, but any of the other two is {NAN}. */
 
 void epswr_dev_write_color(FILE *psFile, double *clr);
   /* Writes the color value {clr[0..2]} to the Postscript file,
@@ -200,9 +226,23 @@ void epswr_dev_write_font_set_cmds(FILE *wr, const char *psname, const char *fon
 void epswr_dev_write_color(FILE *wr, double *clr)
   { fprintf(wr, "  %5.3f %5.3f %5.3f", clr[0], clr[1], clr[2]); }
 
-void epswr_dev_write_fill_color_set_cmds(FILE *wr, double *fc)
-  { epswr_dev_write_color(wr, fc);
-    fprintf(wr, " sfc\n");
+void epswr_dev_normalize_draw_color(double *R_P, double *G_P, double *B_P)
+  { double unit = epswr_dev_color_unit;
+    double clr[3];
+    clr[0] = (*R_P); clr[1] = (*G_P); clr[2] = (*B_P);
+    for (int32_t c = 0; c < 3; c++)
+      { demand(! isnan(clr[c]), "invalid color");
+        if (clr[c] < 0.0) { clr[c] = 0.0; } else if (clr[c] > 1.0) { clr[c] = 1.0; }
+        clr[c] = floor(clr[c]/unit + 0.5)*unit;
+      }
+    (*R_P) = clr[0]; (*G_P) = clr[1]; (*B_P) = clr[2];
+  }
+
+void epswr_dev_normalize_fill_color(double *R_P, double *G_P, double *B_P)
+  { if (isfinite(*R_P) && ((*R_P) >= 0.0))
+      { epswr_dev_normalize_draw_color(R_P, G_P, B_P); }
+    else
+      { (*R_P) = -1.0; (*G_P) = -1.0; (*B_P) = -1.0; }
   }
 
 void epswr_dev_write_ps_string(FILE *wr, const char *text)
@@ -875,8 +915,16 @@ epswr_figure_t *epswr_dev_new_figure
     epswr_dev_set_window(eps, 0, hSize, 0, vSize, FALSE);
 
     /* Initialize the plotting state, just in case the client forgets to set it up: */
+    eps->fillColor[0] = 1.000; /* To force write a "sfc" command. */
     epswr_dev_set_fill_color(eps, 0.500,0.500,0.500);
+    
+    eps->drawColor[0] = 1.000; /* To force write a "setrgbcolor" command. */
+    eps->pswidth = -1.000; /* To force write a "setlinewidth" command. */
+    eps->pswidth = -1.000; /* To force write a "setlinewidth" command. */
+    eps->psdashLength = -1.000; /* To force write a "setdash" command. */
+    eps->psdashSpace = -1.000; /* To force write a "setdash" command. */
     epswr_dev_set_pen(eps, 0.000,0.000,0.000, 1.0, 0.0, 0.0);
+    
     epswr_dev_set_label_font(eps, "Courier", 10.0); 
     epswr_dev_set_text_font(eps, "Courier", 14.0); 
     epswr_dev_set_text_geometry(eps, 0, hSize, 0, hSize, 0.0); 
@@ -977,19 +1025,40 @@ void epswr_dev_set_pen
     double psdashSpace
   )
   { FILE *wr = eps->wr;
-    demand((!isnan(R)) && (!isnan(G)) && (!isnan(B)), "invalid pen color");
-    if (R < 0.0) { R = 0.0; } else if (R > 1.0) { R = 1.0; }
-    if (G < 0.0) { G = 0.0; } else if (G > 1.0) { G = 1.0; }
-    if (B < 0.0) { B = 0.0; } else if (B > 1.0) { B = 1.0; }
-    fprintf(wr, "%5.3f %5.3f %5.3f setrgbcolor\n", R, G, B);
-    fprintf(wr, "%.3f setlinewidth\n", pswidth);
-    if ((psdashLength == 0.0) | (psdashSpace == 0.0))
-      { fprintf(wr, " [ ] 0 setdash\n"); }
-    else
-      { fprintf(wr,
-          " [ %.3f %.3f ] 0 setdash\n",
-          psdashLength, psdashSpace
-        );
+    /* Set the main (draw) color, if changed: */
+    epswr_dev_normalize_draw_color(&R, &G, &B);
+    double *dc = eps->drawColor;
+    if ((dc[0] != R) || (dc[1] != G) || (dc[2] != B))
+      { dc[0] = R; dc[1] = G; dc[2] = B; 
+        epswr_dev_write_color(wr, dc);
+        fprintf(wr, " setrgbcolor\n");
+      }
+    
+    /* Set the line width, if it changed: */
+    demand(isfinite(pswidth) && (pswidth >= 0), "invalid line width");
+    double unit = epswr_dev_line_unit; /* Quantization unit for line/dash widths. */
+    pswidth = floor(pswidth/unit + 0.5)*unit;
+    if (eps->pswidth != pswidth)
+      { eps->pswidth = pswidth;
+        fprintf(wr, "%.3f setlinewidth\n", pswidth);
+      }
+        
+    /* Set the dash pattern: */
+    demand(isfinite(psdashLength) && (psdashLength >= 0), "invalid dash length");
+    demand(isfinite(psdashSpace) && (psdashSpace >= 0), "invalid dash spacing");
+    psdashLength = floor(psdashLength/unit + 0.5)*unit;
+    psdashSpace = floor(psdashSpace/unit + 0.5)*unit;
+    if ((eps->psdashLength != psdashLength) || (eps->psdashSpace != psdashSpace))
+      { eps->psdashLength = psdashLength;
+        eps->psdashSpace = psdashSpace;
+        if ((psdashLength == 0.0) | (psdashSpace == 0.0))
+          { fprintf(wr, " [ ] 0 setdash\n"); }
+        else
+          { fprintf(wr,
+              " [ %.3f %.3f ] 0 setdash\n",
+              psdashLength, psdashSpace
+            );
+          }
       }
   }
 
@@ -1067,12 +1136,13 @@ void epswr_dev_frame (epswr_figure_t *eps)
   }
 
 void epswr_dev_set_fill_color(epswr_figure_t *eps, double R, double G, double B)
-  { if (isnan(R) || (fabs(R) == INFINITY) || (R < 0.0)) { R = G = B = -1.0; }
+  { epswr_dev_normalize_fill_color(&R, &G, &B);
     double *fc = eps->fillColor;
     if ((R != fc[0]) || (G != fc[1]) || (B != fc[2]))
       { FILE *wr = eps->wr;
         fc[0] = R; fc[1] = G; fc[2] = B;
-        epswr_dev_write_fill_color_set_cmds(wr, fc); 
+        epswr_dev_write_color(wr, fc);
+        fprintf(wr, " sfc\n");
       }
   }
 

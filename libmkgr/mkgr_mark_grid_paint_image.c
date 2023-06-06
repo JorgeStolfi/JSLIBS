@@ -1,5 +1,5 @@
 /* See {mkgr_mark_grid_paint_image.h} */
-/* Last edited on 2020-11-29 18:26:37 by jstolfi */
+/* Last edited on 2023-04-23 11:10:48 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -57,8 +57,9 @@ void mkgr_mark_grid_paint_image
                 /* Paint the mark: */
                 if (cross)
                   { double ared = fmod(ang, 0.25); /* Angle mod 90 degrees. */
+                    bool_t ety = FALSE;
                     bool_t diag = ((ared > 0.0625) && (ared < 0.1875)); 
-                    (void)float_image_paint_cross(img, c, xc, yc, rad, lwd/2, diag, vdraw, m);
+                    (void)float_image_paint_cross(img, c, xc, yc, rad, ety, lwd/2, diag, vdraw, m);
                   }
                 else
                   { bool_t round = TRUE;
