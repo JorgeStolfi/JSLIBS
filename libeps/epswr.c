@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2023-06-05 21:33:49 by stolfi */
+/* Last edited on 2023-06-15 15:05:18 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -106,6 +106,7 @@ epswr_figure_t *epswr_new_named_figure
     FILE *wr;
     if (strlen(dir) + strlen(prefix) + strlen(name) + strlen(suffix) == 0)
       { /* All name parts are omitted: */
+        fprintf(stderr, "writing EPS figure to {stdout}\n");
         wr = stdout;
       }
     else
@@ -120,7 +121,7 @@ epswr_figure_t *epswr_new_named_figure
           { char *name_u = (((prefix[0] == 0) && (name[0] == 0)) || (suffix[0] == 0) ? "" : "_");
             asprintf(&fname, "%s%s%s%s%s%s%s.eps", dir, dir_s, prefix, prefix_u, name, name_u, suffix);
           }
-        wr = open_write(fname, verbose);
+        wr = open_write(fname, TRUE);
         free(fname);
       }
     epswr_figure_t *eps = epswr_new_figure
