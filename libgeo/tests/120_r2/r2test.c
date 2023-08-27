@@ -1,5 +1,5 @@
 /* r2test --- test program for r2.h, r2x2.h  */
-/* Last edited on 2022-01-04 08:41:20 by stolfi */
+/* Last edited on 2023-08-27 17:12:17 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -371,7 +371,7 @@ void test_r2maps(int32_t verbose)
     
     auto void do_project(r2_t *p, r2x2_t *J);
     void do_project(r2_t *p, r2x2_t *J)
-      { r2_map_projective(p, &M, J); }
+      { r2_map_projective(p, &M, p, J); }
     
     for (ii = 0; ii <= 2; ii++)
       { for (jj = 0; jj <= 2; jj++)
@@ -381,7 +381,7 @@ void test_r2maps(int32_t verbose)
             r2x2_t J;    
             b = a;
             r2x2_ident(&J);
-            r2_map_projective(&b, &M, &J);
+            r2_map_projective(&b, &M, &b, &J);
             r2_map_check_jacobian(&a, &do_project, "r2_map_projective", 1.0e-6, debug);
             c = (r2_t){{ (X + 2.0)/(X + 1.0), (Y + 3.0)/(X + 1.0) }};
             for (k = 0; k < N; k++)

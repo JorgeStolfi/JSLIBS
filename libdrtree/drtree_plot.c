@@ -1,5 +1,5 @@
 /* See {grd_plot.h} */
-/* Last edited on 2023-06-25 01:18:30 by stolfi */
+/* Last edited on 2023-06-25 18:07:46 by stolfi */
 
 #define drtree_plot_C_COPYRIGHT \
   "Duh?"
@@ -67,11 +67,14 @@ void drtree_plot_individuals
     
     /* Colors for each individual: */
     frgb_t *color = NULL;
-    frgb_t defColor = (frgb_t){{ 0.800f, 0.500f, 0.200f }}; /* Default color for 'no family' */
+    frgb_t defColor; /* Default color for 'no family' */
     double phi = (sqrt(5) - 1)/2; /* Golden ratio. */
     
-    if (chf != NULL)
-      { color = (frgb_t*)notnull(malloc(ni*sizeof(frgb_t)), "no mem");
+    if (chf == NULL)
+      { defColor = (frgb_t){{ 0.900f, 0.600f, 0.200f }}; }
+    else
+      { defColor = (frgb_t){{ 0.750f, 0.720f, 0.700f }};
+        color = (frgb_t*)notnull(malloc(ni*sizeof(frgb_t)), "no mem");
         double nextHue = 0.000; /* Next hue to assign. */
         for (int32_t iq = 0; iq < ni; iq++)
           { int32_t ic = chf[iq]; /* Chief of {q}'s family. */
@@ -81,7 +84,7 @@ void drtree_plot_individuals
               }
             else if (ic == iq)
               { /* {q} is a family chielf; assign a new color: */
-                frgb_t colorq = (frgb_t){{ (float)nextHue, 1.000f, 0.750f }};
+                frgb_t colorq = (frgb_t){{ (float)nextHue, 1.000f, 0.500f }};
                 frgb_from_HTY(&colorq);
                 color[iq] = colorq;
                 nextHue += phi; 

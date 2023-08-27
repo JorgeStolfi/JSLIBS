@@ -1,5 +1,5 @@
 /* See {drtree_planar.h} */
-/* Last edited on 2023-06-25 01:53:43 by stolfi */
+/* Last edited on 2023-06-27 13:07:27 by stolfi */
 
 #define drtree_planar_C_COPYRIGHT \
   "Duh?"
@@ -325,7 +325,7 @@ void drtree_planar_arrange
       subtree of {q}, which is {SUM{ uph[k]+loh[k]+1 : k \in
       {0..q.jhi-q.jlo}}}. Of all those possibilities that are considered,
       the procedure will choose the one which results in the minimum
-      area. */
+      radius. */
       
     /* Allocate the info records: */
     drtree_planar_info_t *af = drtree_planar_info_collect(ni, dt, nch, tMin, tMax);
@@ -387,7 +387,9 @@ drtree_planar_info_t *drtree_planar_info_collect
     int32_t tMin, 
     int32_t tMax
   )
-  {
+  { bool_t debug = TRUE;
+    if (debug) { fprintf(stderr, "      > %s\n", __FUNCTION__); }
+
     assert((ni >= 0) && (ni < drtree_indivs_MAX));
     assert(tMin < tMax);
 
@@ -396,34 +398,53 @@ drtree_planar_info_t *drtree_planar_info_collect
     /* Scan in chrono order, setting {q.nch}, allocating {q.chi}, and 
       initializing {q.jhi} and {q.jlo} to the life span of the node only: */
     for (int32_t iq = 0; iq < ni; iq++) 
-      { drtree_node_t *q = &(dt[iq]);
+      { if (debug) { fprintf(stderr, "        iq = %d", iq); }
+        drtree_node_t *q = &(dt[iq]);
+        drtree_planar_info_t *afq = &(af[iq]);
         if (! drtree_node_is_null(q))
-          { drtree_planar_info_t *afq = &(af[iq]); 
-            afq->nch = nch[iq];
+          { afq->nch = nch[iq];
             afq->chi = (afq->nch == 0 ? NULL : (int32_t *)notnull(malloc(nch[iq]*sizeof(int32_t)), "no mem"));
             afq->jlo = q->tbr - tMin;
             afq->jhi = q->tdt - tMin;
-            afq->uph = NULL;
-            afq->upMax = drtree_planar_NO_ROW;
-            afq->loh = NULL;
-            afq->loMax = drtree_planar_NO_ROW;
-            afq->row = drtree_planar_NO_ROW;
-            afq->flp = FALSE;
+            if (debug) { fprintf(stderr, " nch = %d span {%d..%d} -> {%d..%d}", afq->nch, q->tbr, q->tdt, afq->jlo, afq->jhi); }
+           }
+        else
+          { assert(nch[iq] == 0);
+            assert(q->par == -1);
+            afq->nch = 0;
+            afq->chi = NULL;
+            afq->jlo = 1;
+            afq->jhi = 0;
+            if (debug) { fprintf(stderr, " null"); }
           }
+          
+        afq->uph = NULL;
+        afq->upMax = drtree_planar_NO_ROW;
+        afq->loh = NULL;
+        afq->loMax = drtree_planar_NO_ROW;
+        afq->row = drtree_planar_NO_ROW;
+        afq->flp = FALSE;
+        if (debug) { fprintf(stderr, "\n"); }
+        
         nch[iq] = 0; /* Temporarily, to be restored. */
       }
 
     /* Scan in reverse chrono order, including the column extent
       of children in that of the  parent and filling its {chi} list: */
+    if (debug) { fprintf(stderr, "\n"); }
     for (int32_t iq = ni-1; iq >= 0; iq--)
-      { drtree_node_t *q = &(dt[iq]);
+      { if (debug) { fprintf(stderr, "        iq = %d", iq); }
+        drtree_node_t *q = &(dt[iq]);
         if (! drtree_node_is_null(q))
-          { drtree_planar_info_t *afq = &(af[iq]);
+          { if (debug) { fprintf(stderr, " tbr = %d", q->tbr); }
+            drtree_planar_info_t *afq = &(af[iq]);
             assert((afq->jhi >= afq->jlo) && (q->tbr >= tMin) && (q->tdt <= tMax));
             int32_t ip = q->par;
+            if (debug) { fprintf(stderr, " parent = %d", ip); }
             if (ip != -1)
               { assert((ip >= 0) && (ip < iq));
                 drtree_node_t *p = &(dt[ip]);
+                if (debug) { fprintf(stderr, " span {%d..%d}", p->tbr, p->tdt); }
                 assert(! drtree_node_is_null(p)); /* A null node can't be parent. */
                 assert(p->tbr < q->tbr); /* Can't be parent at or before birth. */
                 assert(p->tdt >= q->tbr); /* Can't be parent after death. */
@@ -433,13 +454,19 @@ drtree_planar_info_t *drtree_planar_info_collect
 
                 /* Update {p.jlo..p.jhi} to include the subtree of {iq}: */
                 afp->jhi = (int32_t)imax(afp->jhi, afq->jhi);
-
+                if (debug) { fprintf(stderr, " col span expanded to {%d..%d}", afp->jlo, afp->jhi); }
+                
                 /* Add {q} to the children or {p}: */
                 assert(afp->chi != NULL);
                 afp->chi[nch[ip]] = iq;
                 nch[ip]++; /* This should eventually restore the {nch} fields. */
               }
+            else
+              { if (debug) { fprintf(stderr, " root"); } }
           }
+        else
+          { if (debug) { fprintf(stderr, " null"); } }
+        if (debug) { fprintf(stderr, "\n"); }
       }
       
     /* Now scan in chrono order sorting the children, just in case: */
@@ -454,6 +481,7 @@ drtree_planar_info_t *drtree_planar_info_collect
           }
       }
       
+    if (debug) { fprintf(stderr, "      < %s\n", __FUNCTION__); }
     return af;
   }
  
@@ -508,15 +536,16 @@ void drtree_planar_place_subtrees_relative
     /* Best above/below and flip arrangement found: */
     bool_t abo_best[nch]; /* Tells which children go above the parent. */          
     bool_t flp_best[nch]; /* Tells which subtrees should be flipped up/down */         
-    int32_t area_best = INT32_MAX; /* Envelope area for {abo_best,flp_best}. */ 
+    int32_t radius_best = INT32_MAX; /* Radius extent of {abo_best,flp_best}. */ 
     
     auto void try_abo_flp(bool_t abo[], bool_t flp[]);
       /* To be given to {drtree_planar_enum_subtree_placements}. Assumes
         {abo[0..nch-1]} are above/below for the children of {q}, and
         {flp[0..nch-1]} are their up/down flip assignments. Computes the
         relative row assignments for that arrangement, the resulting
-        horizons of {q}, and the area between the two horizons; and
-        updates {abo_best,flp_best,area_best} accordingly. */
+        horizons of {q}, and the radius (maximum deviation
+        of the horizons from the parent row); and
+        updates {abo_best,flp_best,radius_best} accordingly. */
     
     auto void assign_relative_child_rows(bool_t abo[], bool_t flp[]);
       /* For each child {c = dt[ic]} of {q}, where {ic = q.chi[r]} with {r} in {0..q.nch-1},
@@ -531,7 +560,7 @@ void drtree_planar_place_subtrees_relative
         birth time, and that the horizons {c.uph[0..c.nco-1]} and
         {c.loh[0..c.nco-1]} of each child {c} are defined. */
     
-    auto int32_t compute_envelope_area(void);
+    auto int32_t compute_envelope_radius(void);
       /* Computes the ares of the subtree of {q}, that is,
         the number of grid cells in the interval
         {-q.loh[j] .. +q.uph[j]} for {j} in 
@@ -558,12 +587,12 @@ void drtree_planar_place_subtrees_relative
     
     void try_abo_flp(bool_t abo[], bool_t flp[])
       { assign_relative_child_rows(abo, flp);
-        int32_t area = compute_envelope_area();
-        if (area < area_best)
+        int32_t radius = compute_envelope_radius();
+        if (radius < radius_best)
           { for (int32_t r = 0; r < nch; r++)
               { abo_best[r] = abo[r];
                 flp_best[r] = flp[r];
-                area_best = area; 
+                radius_best = radius; 
               }
           }
       }   
@@ -632,18 +661,18 @@ void drtree_planar_place_subtrees_relative
         if (debug) { fprintf(stderr, "          < %s\n", __FUNCTION__); }
       }
       
-     int32_t compute_envelope_area(void)
+     int32_t compute_envelope_radius(void)
        { 
-        if (debug) { fprintf(stderr, "          > %s\n", __FUNCTION__); }
-        if (debug) { fprintf(stderr, "            iq = %d\n", iq); }
-         int32_t area = 0;
+         if (debug) { fprintf(stderr, "          > %s\n", __FUNCTION__); }
+         if (debug) { fprintf(stderr, "            iq = %d\n", iq); }
+         int32_t radius = 0;
          for (int32_t jq = 0; jq < ncoq; jq++)
-           {assert((+ afq->uph[jq]) >= (- afq->loh[jq]));
-             int32_t dhj = afq->uph[jq] - afq->loh[jq] + 1;
-             area += dhj;
+           { assert((+ afq->uph[jq]) >= (- afq->loh[jq]));
+             int32_t rhj = (int32_t)imax(abs(afq->uph[jq]), abs(afq->loh[jq]));
+             if (rhj > radius) { radius = rhj; }
            }
          if (debug) { fprintf(stderr, "          < %s\n", __FUNCTION__); }
-         return area;
+         return radius;
        }
 
     void free_child_horizons(void)

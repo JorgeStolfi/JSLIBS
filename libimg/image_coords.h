@@ -1,5 +1,5 @@
 /* Coordinate systems for images. */
-/* Last edited on 2017-03-11 19:05:28 by stolfilocal */
+/* Last edited on 2023-08-27 17:43:35 by stolfi */
 
 #ifndef image_coords_H
 #define image_coords_H
@@ -13,56 +13,120 @@
 hr2_pmap_t imgc_coord_sys_map
   ( bool_t xRev, 
     bool_t yRev, 
+    double unit,
     bool_t center, 
     r2_t *org, 
     int cols, 
     int rows
   );
   /* Returns a projective map {M} that converts point coordinates from
-    the {float_image.h} native coordinate system (FS) to the user's
-    coordinate system (US).
+    some /pixel coordinate system/ (PS), based on pixel indices, to a /user
+    coordinate system/ (US).
     
-    The FS has the first (X) coordinate increasing with column index,
+    The PS has the first (X) coordinate increasing with column index,
     the second (Y) coordinate increasing with row index. The image
-    domain if the rectangle {[0 _ cols] × [0 _ rows]} where {cols,rows} are
-    the image's {sz[1]} and {sz[2]} parameters. The pixel with indices
-    {x} and {y} is the unit square with corners {(x,y)} and
-    {(x+1,y+1)}.
+    domain is the rectangle {[0 _ cols] × [0 _ rows]} where {cols,rows} are
+    the image dimensions in pixels. The pixel with indices
+    {x} and {y} is assumed to be the unit square with corners {(x,y)} and
+    {(x+1,y+1)} in pixel coordinates.
     
     In the US, the X axis increases with the column index if {xRev} is
     FALSE, and opposite to the column index if {xRev} is TRUE. The Y
     axis increases with row index if {yRev} is FALSE, and opposite to
-    row index if {yRev} is true. The US origin is located at the
-    center of the image's domain if {center} is TRUE, or at the
-    position {org} if {center} is FALSE. In the second case, each
-    coordinate of {org} is measured from the edge of the image's
-    domain that has lowest coordinate (that is, column 0 if {xRev} is
-    FALSE, column {cols-1} if {xRev} is true; row 0 if {yRev} is FALSE,
-    row {rows-1} if {yRev} is TRUE).
+    row index if {yRev} is true. 
     
-    In any case, all coordinates are measured in pixels. The image's
-    domain is assumed to be a rectangle of width {cols} and height
-    {rows}. This is equivalent to assuming that a pixel with indices
-    {[ix,iy]} is a square, displaced {ix} units to the right and {iy}
-    units up from the domain's lower left corner. */
+    The unit of the {US}, on both axes, is assumed to be {unit} times
+    the pixel size.
+    
+    The US origin is located at the center of the image's domain if
+    {center} is TRUE, or at the position {org} if {center} is FALSE. In
+    the second case, each coordinate of {org} is measured (in user
+    units) from the edge of the image's domain that has lowest user
+    coordinate (that is, from pixel X coordinate {X=0} if {xRev} is
+    FALSE or {X=cols} if {xRev} is true; from pixel Y coordinate {Y=0}
+    if {yRev} is FALSE, {Y=rows} if {yRev} is TRUE). */
 
-/* COMMAND LINE PARSING */
+/* HELP AND INFO TEXTS */
 
-/* General help about image coordinate systems */
+/* The following are standard texts to include in the {PROG_HELP} and {PROG_INFO} strings in 
+  programs with let the user define user coordinate systems on both input and output, with 
+  variable units. */
 
-#define imgc_axes_INFO \
+#define imgc_input_output_coords_HELP \
+  "    " imgc_parse_x_axis_HELP " \\\n" \
+  "    " imgc_parse_y_axis_HELP " \\\n" \
+  "    " imgc_parse_input_unit_HELP " \\\n" \
+  "    " imgc_parse_input_center_org_HELP " \\\n" \
+  "    " argparser_proj_map_HELP " \\\n" \
+  "    " imgc_parse_output_unit_HELP " \\\n" \
+  "    " imgc_parse_output_center_org_HELP " \\\n" \
+  "    " imgc_parse_output_size_HELP
+
+#define imgc_input_output_coords_intro_INFO \
+  "  " imgc_user_axes_INFO "" \
+  "  " imgc_pixel_axes_INFO "" \
+  "  " imgc_pixel_centers_INFO "" \
+  "  " imgc_input_origin_INFO "" \
+  "  " imgc_output_origin_INFO
+
+#define imgc_parse_input_output_coords_INFO_OPTS \
+  imgc_parse_x_axis_HELP_INFO \
+  "  This parameter affects the" \
+  " interpretation of all X coordinates in the arguments, including" \
+  " {CX_IN}, {CX_OUT}, {X_IN[i]}, {X_OUT[i]}, and the matrix" \
+  " coefficients." \
+  "  " imgc_parse_x_axis_pbm_default_INFO "\n" \
+  "\n" \
+  imgc_parse_y_axis_HELP_INFO "" \
+  "  This parameter affects the interpretation of all Y" \
+  " coordinates in the arguments, including" \
+  " {CY_IN}, {CY_OUT}, {Y_IN[i]}, {Y_OUT[i]}, and the matrix" \
+  " coefficients." \
+  "  " imgc_parse_y_axis_pbm_default_INFO "\n" \
+  "\n" \
+  imgc_parse_input_unit_HELP_INFO "\n" \
+  "\n" \
+  imgc_parse_input_center_org_HELP_INFO \
+  "  " imgc_input_unit_affects_org_INFO "\n" \
+  "\n" \
+  imgc_parse_output_unit_HELP_INFO "\n" \
+  "\n" \
+  imgc_parse_output_size_HELP_INFO \
+  "  " imgc_output_unit_affects_output_size_INFO \
+  "  " imgc_output_size_defaults_to_input_INFO \
+  "  " imgc_input_unit_affects_default_output_size_INFO "\n" \
+  "\n" \
+  imgc_parse_output_center_org_HELP_INFO \
+  "  " imgc_output_unit_org_INFO
+
+/* INDIVIDUAL HELP AND INFO TEXTS */
+
+/* The texts below are elements used to compose the {PROG_HELP}, 
+  {PROG_INFO_DESC}, and {PROG_INFO_OPTS} of programs that may 
+  give the user moer limited options when defining input and output
+  coordinate systems and the output image sizes. */
+
+#define imgc_user_axes_INFO \
   "Points in image domains" \
-  " are expressed in terms of a coordinate system" \
+  " are expressed in terms of a /user coordinate system/" \
   " specific to each image, input or output.  In both systems," \
-  " the directions of the axes are determined by" \
+  " the first (X) axis is horizontal and the second (Y) is vertical.  The" \
+  " directions of the axes are determined by" \
   " the \"-xAxis\" and \"-yAxis\" command line arguments.  These" \
-  " arguments also affect the default origin of the coordinate" \
-  " system.  In the default coordinate systems, the origin lies" \
+  " arguments also affect the default origin of the user coordinate" \
+  " system.  In the default user coordinate systems, the origin lies" \
   " at the low corner of the domain (which depends on the axis directions)."
+
+#define imgc_pixel_axes_INFO \
+  "Internally, positions on each image are identified by" \
+  " a /pixel coordinate system/" \
+  " in which the X axis points right, the Y axis points" \
+  " down, te origin is at the upper left corner, and" \
+  " the unit is the pixel spacing."
   
 #define imgc_pixel_centers_INFO \
-  "The unit of length is the pixel size; in the default coordinate systems," \
-  " pixel *corners* have integer coordinates, and pixel *centers* have half-integer coordinates."
+  "In pixel coordinate systems, pixel *corners* have integer" \
+  " coordinates, and pixel *centers* have half-integer coordinates."
   
 /* Horizontal axis direction */
 
@@ -78,7 +142,7 @@ void imgc_parse_x_axis(argparser_t *pp, bool_t *xLeft);
 #define imgc_parse_x_axis_HELP_INFO \
   "  -xAxis { right | left }\n" \
   "    This optional argument specifies the direction of the" \
-  " horizontal axis of image coordinate systems.  It also defines the" \
+  " horizontal axis of the user coordinate system in each image.  It also defines the" \
   " default horizontal position of the origin: at the left edge" \
   " of the image if \"right\", or at the right edge" \
   " if \"left\".  The keyword \"-hAxis\" is accepted as synonymous of \"-xAxis\"."
@@ -103,7 +167,7 @@ void imgc_parse_y_axis(argparser_t *pp, bool_t *yDown);
 #define imgc_parse_y_axis_HELP_INFO \
   "  -yAxis { down | up }\n" \
   "    This optional argument specifies the direction of" \
-  " the vertical axis of image coordinate systems.  It also defines the" \
+  " the vertical axis of the user coordinate system in each image.  It also defines the" \
   " default vertical position of the origin: at the top edge of the" \
   " image if \"down\", or at the bottom edge if \"up\".  The" \
   " keyword \"-vAxis\" is accepted as synonymous of \"-yAxis\"."
@@ -114,6 +178,67 @@ void imgc_parse_y_axis(argparser_t *pp, bool_t *yDown);
 #define imgc_parse_y_axis_math_default_INFO \
   "The default is \"-yAxis up\" following mathematical tradition." \
   
+/* Input user unit. */
+
+void imgc_parse_input_unit(argparser_t *pp, double *iUnit);
+  /* Parses the command line argument "-iUnit" according to the syntax
+    specs {imgc_parse_input_unit_HELP}, and returns it in {*iUnit}. If
+    \"-iUnit\" is not present, sets it to 1. */
+
+#define imgc_parse_input_unit_HELP \
+  "[ -iUnit {IUNIT} ]"
+
+#define imgc_parse_input_unit_HELP_INFO \
+  "  -iUnit {IUNIT}\n" \
+  "    This optional argument specifies the size of " \
+  " the user coordinate unit in pixels.  If this argument is not specified, the program" \
+  " assumes \"-iUnit 1\" (which means that user units are in pixels)."
+  
+#define imgc_input_unit_affects_org_INFO \
+  "The option \"-iUnit\" affects the interpretation of \"-iOrg\" as" \
+  " well as other coordinate parameters for input images.  Thus, given \"-iUnit 0.5\", the" \
+  " option \"-iOrg 24 30\" will set the user input image origin at 12 pixel columns" \
+  " and 15 pixel rows away from the default origin."
+
+/* Output user unit. */
+
+void imgc_parse_output_unit(argparser_t *pp, double *oUnit);
+  /* Parses the command line argument "-oUnit" according to the syntax
+    specs {imgc_parse_output_unit_HELP}, and returns it in {*oUnit}. If
+    \"-oUnit\" is not present, sets it to 1. */
+
+#define imgc_parse_output_unit_HELP \
+  "[ -oUnit {OUNIT} ]"
+
+#define imgc_parse_output_unit_HELP_INFO \
+  "  -oUnit {OUNIT}\n" \
+  "    This optional argument specifies the size of " \
+  " the user coordinate unit in pixels.  If this argument is not specified, the program" \
+  " assumes \"-oUnit 1\" (which means that output user units are in pixels)."
+  
+#define imgc_output_unit_org_INFO \
+  "The option \"-oUnit\" affects the interpretation of \"-oOrg\".  Thus, given \"-oUnit 0.5\", the" \
+  " option \"-oOrg 24 30\" will set the user output image origin at 12 pixel columns" \
+  " and 15 pixel rows away from the default origin."
+  
+#define imgc_output_unit_affects_output_size_INFO \
+  "The option \"-oUnit\" affects the interpretation" \
+  " of \"-oSize\".  Thus, given \"-oUnit 2.0\", the" \
+  " option \"-oSize 30 40\" will set the actual user output" \
+  " image size to 60 columns and 80 rows."
+
+#define imgc_output_size_defaults_to_input_INFO \
+  "If \"-oUnit\" is omitted, assumes that the output image" \
+  " size (in output user coords units) is the same as the input" \
+  " image size (in input user coords units)."
+  
+#define imgc_input_unit_affects_default_output_size_INFO \
+  "The parameter \"-iUnit\" affects the default output" \
+  " image size.  Suppose the input image has 200 by 300 pixels.  Given the" \
+  " argument \"-iUnit 0.5\", the default output image size would be 400 by 600" \
+  " user units.  Given also \"-oUnit 3.0\", the default output" \
+  " image size would then be 1200 by 1800 pixels."
+
 /* Input image origin */
 
 void imgc_parse_input_center_org(argparser_t *pp, bool_t *iCenter, r2_t *iOrg);
@@ -126,7 +251,7 @@ void imgc_parse_input_center_org(argparser_t *pp, bool_t *iCenter, r2_t *iOrg);
     and {*iOrg} unchanged. */
 
 #define imgc_parse_input_center_org_HELP \
-  "[ -iCenter | -iOrg {CX_IN} {CY_IN} ]" \
+  "[ -iCenter | -iOrg {CX_IN} {CY_IN} ]"
 
 #define imgc_input_origin_INFO \
   "The default coordinate system origin for input images" \
@@ -136,11 +261,12 @@ void imgc_parse_input_center_org(argparser_t *pp, bool_t *iCenter, r2_t *iOrg);
   "  -iCenter\n" \
   "  -iOrg {CX_IN} {CY_IN}\n" \
   "    These mutually exclusive optional arguments specify" \
-  " the origin of the coordinate system for input" \
+  " the origin of the user coordinate system for input" \
   " images.  The \"-iCenter\" option sets the origin" \
   " at the center of the image domain.  The \"-iOrg\" option sets" \
-  " the origin at the point {(CX_IN,CY_IN)} relative to the" \
-  " default origin.  If this argument is not specified, the program" \
+  " the origin displaced {CX_IN} and {CY_IN} /user/ units from the" \
+  " default origin, in the directions specified by \"-xAxis\" and \"-yAxis\".  If" \
+  " this argument is not specified, the program" \
   " assumes \"-iOrg 0 0\" (which means the default origin)."
 
 /* Output image origin */
@@ -151,7 +277,7 @@ void imgc_parse_output_center_org(argparser_t *pp, bool_t *oCenter, r2_t *oOrg);
     Looks for the keywords "-oCenter" and "-oOrg". */
 
 #define imgc_parse_output_center_org_HELP \
-  "[ -oCenter | -oOrg {CX_OUT} {CY_OUT} ]" \
+  "[ -oCenter | -oOrg {CX_OUT} {CY_OUT} ]"
 
 #define imgc_output_origin_INFO \
   "The default coordinate system origin for output images" \
@@ -161,12 +287,13 @@ void imgc_parse_output_center_org(argparser_t *pp, bool_t *oCenter, r2_t *oOrg);
   "  -oCenter\n" \
   "  -oOrg {CX_OUT} {CY_OUT}\n" \
   "    These mutually exclusive optional arguments specify" \
-  " the origin of the coordinate system for output" \
+  " the origin of the user coordinate system for output" \
   " images.  The \"-oCenter\" option sets the origin" \
   " at the center of the image domain.  The \"-oOrg\" option sets" \
-  " the origin at the point {(CX_OUT,CY_OUT)} relative to the" \
-  " default origin.  If this argument is not specified, the program" \
-  " assumes \"-oOrg 0 0\" (which means the default origin).\n"
+  " the origin displaced by {CX_OUT} and {CY_OUT} from the" \
+  " default origin, in the directions specificed by the \"-xAxis\" and \"-yAxis\" options.  If" \
+  " this argument is not specified, the program" \
+  " assumes \"-oOrg 0 0\" (which means the default origin)."
 
 /* Output image size: */
 
@@ -181,7 +308,7 @@ void imgc_parse_output_size(argparser_t *pp, int *oCols, int *oRows, int max_siz
 
 #define imgc_parse_output_size_HELP_INFO \
   "  -oSize {NX} {NY}\n" \
-  "    Specifies the horizontal and vertical size of the output image."
+  "    Specifies the horizontal and vertical size of the output image, in output /user/ units."
 
 /* Projective maps between images: */
 

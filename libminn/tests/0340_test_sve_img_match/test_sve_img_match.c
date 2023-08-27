@@ -2,7 +2,7 @@
 #define PROG_DESC "tests {sve_minn.h} on an image matching problem"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-29 11:51:34 by stolfi */
+/* Last edited on 2023-08-27 14:29:25 by stolfi */
 
 #define test_sve_img_match_C_COPYRIGHT "Copyright © 2009 by the State University of Campinas (UNICAMP)"
 
@@ -632,7 +632,7 @@ void write_matched_object_images
     
     void map_img_to_obj(r2_t *p, r2x2_t *J)
       { r2x2_ident(J);
-        r2_map_projective(p, &R, J);
+        r2_map_projective(p, &R, p, J);
       }
   }
 
@@ -797,7 +797,7 @@ double mismatch
     
     void map_obj_to_img(r2_t *p, r2x2_t *J)
       { r2x2_ident(J);
-        r2_map_projective(p, M, J);
+        r2_map_projective(p, M, p, J);
       }
   }    
 

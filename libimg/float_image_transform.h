@@ -2,7 +2,7 @@
 #define float_image_transform_H
 
 /* Tools for projective and barrel/pincushion image correction. */
-/* Last edited on 2021-06-09 20:57:26 by jstolfi */ 
+/* Last edited on 2023-08-27 17:58:21 by stolfi */ 
 
 #include <r2.h>
 #include <r2_extra.h>
@@ -19,7 +19,7 @@ void float_image_transform_all
     float undef,             /* Sample value for undefined output pixels. */
     bool_t avg,              /* TRUE to average pixels, FALSE to add them. */
     int order,               /* Interpolation order. */
-    r2_pred_t *debugp,       /* Predicate, tells whether pixel should be debugged (NULL means "no"). */
+    r2_pred_t *debugp,       /* Predicate, tells whether pixel should be debugged (NULL means "never"). */
     float_image_t *oimg      /* Output image. */
   );
   /* Applies the transformation {map} to the image {iimg} and

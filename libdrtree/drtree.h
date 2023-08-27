@@ -1,7 +1,7 @@
 /* Drawings of asexual descent trees. */
 #ifndef drtree_H
 #define drtree_H
-/* Last edited on 2023-06-24 11:09:01 by stolfi */
+/* Last edited on 2023-06-25 18:59:05 by stolfi */
 
 #define drtree_H_COPYRIGHT \
   "Duh?"
@@ -26,7 +26,7 @@ typedef struct drtree_node_t
     int32_t tdt; /* Time of death. */
     int32_t par; /* Parent index, or -1. */
   } drtree_node_t; 
-  /* Basic data abaout an individual.
+  /* Basic data about an individual.
 
     Each individual {q} in the history has a /time of birth/ {q.tbr} and a
     /time of death/ {q.tdt}, such that q.{tbr <= q.tdt}. Both may be

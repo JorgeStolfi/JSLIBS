@@ -1,5 +1,9 @@
 /* See {image_coords.h}. */
-/* Last edited on 2013-10-21 02:44:11 by stolfilocal */
+/* Last edited on 2023-08-27 17:33:04 by stolfi */
+
+#define _GNU_SOURCE
+#include <stdint.h>
+#include <assert.h>
 
 #include <bool.h>
 #include <r2.h>
@@ -11,9 +15,14 @@
 #define BIG  (1.0e+100)
   /* A very large value, but still far from overflow. */
 
+#define imgc_unit_MAX (1024.0*1024.0*1024.0)
+#define imgc_unit_MIN (1.0/imgc_unit_MAX)
+  /* Paranoia bounds for "-iUnit", "-oUnit". */
+
 hr2_pmap_t imgc_coord_sys_map
   ( bool_t xRev, 
     bool_t yRev, 
+    double unit,
     bool_t center, 
     r2_t *org, 
     int cols, 
@@ -22,18 +31,22 @@ hr2_pmap_t imgc_coord_sys_map
   {
     /* Start with the identity matrix {A}, get its weight {w}: */
     r3x3_t A; r3x3_ident(&A);
-    double w = A.c[0][0];
-    
-    /* Apply the axis-reversal and default origin changes: */
-    if (xRev) { A.c[1][1] = -w; A.c[0][1] = w*cols; }
-    if (yRev) { A.c[2][2] = -w; A.c[0][2] = w*rows; }
-    
-    /* Apply the origin shift: */
-    if (center) 
-      { A.c[0][1] -= 0.5*w*cols; A.c[0][2] -= 0.5*w*rows; }
-    else
-      { A.c[0][1] -= w*org->c[0]; A.c[0][2] -= w*org->c[1]; }
+    assert(A.c[0][0] == 1.0);
       
+    for (int32_t ax = 1; ax <= 2; ax++)
+      { bool_t rev = (ax == 1 ? xRev : yRev);
+        double oc = org->c[ax-1];            /* Position of origin in pixel units. */
+        double sz = (ax == 1 ? cols : rows); /* Image size in pixels. */
+        double d = (rev ? -1/unit : +1/unit);
+        double t; /* Translation term. */
+        A.c[ax][ax] = d;
+        if (center)
+          { t = oc - d*0.5*sz; }
+        else
+          { t = (rev ? oc - d*sz : oc); }
+        A.c[0][ax] = t;
+      }
+   
     /* Build the map: */
     hr2_pmap_t M;
     M.dir = A; r3x3_inv(&A, &(M.inv));
@@ -98,4 +111,20 @@ void imgc_parse_output_size(argparser_t *pp, int *oCols, int *oRows, int max_siz
       { (*oCols) = (int)argparser_get_next_int(pp, 1, max_size);
         (*oRows) = (int)argparser_get_next_int(pp, 1, max_size);
       }
+  }
+
+void imgc_parse_input_unit(argparser_t *pp, double *iUnit)
+  { 
+    if (argparser_keyword_present(pp, "-iUnit"))
+      { (*iUnit) = argparser_get_next_double(pp, imgc_unit_MIN, imgc_unit_MAX); }
+    else
+      { (*iUnit) = 1.0; }
+  }
+
+void imgc_parse_output_unit(argparser_t *pp, double *oUnit)
+  { 
+    if (argparser_keyword_present(pp, "-oUnit"))
+      { (*oUnit) = argparser_get_next_double(pp, imgc_unit_MIN, imgc_unit_MAX); }
+    else
+      { (*oUnit) = 1.0; }
   }

@@ -1,5 +1,5 @@
 /* See {float_image_transform.h}. */
-/* Last edited on 2021-06-09 20:56:05 by jstolfi */
+/* Last edited on 2023-08-27 14:29:30 by stolfi */
 
 #define _GNU_SOURCE
 #include <assert.h>
@@ -175,6 +175,6 @@ void float_image_transform_copy_persp_rectangle
     return;
     
     void projmap(r2_t *p, r2x2_t *J)
-      { r2_map_projective(p, &M, J); }
+      { r2_map_projective(p, &M, p, J); }
   }
 

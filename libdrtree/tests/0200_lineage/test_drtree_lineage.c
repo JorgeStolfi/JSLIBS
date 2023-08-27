@@ -3,7 +3,7 @@
 
 /* Draws the evolution of asexual traits. */
 
-/* Last edited on 2023-06-16 20:23:21 by stolfi */
+/* Last edited on 2023-06-25 18:11:00 by stolfi */
 
 #define test_drtree_lineage_C_COPYRIGHT \
   "???"
@@ -48,6 +48,7 @@
 #include <drtree.h>
 #include <drtree_test.h>
 #include <drtree_compact.h>
+#include <drtree_planar.h>
 #include <drtree_plot.h>
 #include <drtree_lineage.h>
 
@@ -111,7 +112,7 @@ int32_t main(int32_t argc, char **argv)
     drtree_test_create_individuals(ni, o->nRoots,o->tStart,o->tStop,o->orphans,o->ageMax,o->nchMax, dt);
       
     tdl_do_test(o, "A", ni, dt, o->tRef);
-    tdl_do_test(o, "B", ni, dt, o->tRef + o->ageMax + 1);
+    tdl_do_test(o, "B", ni, dt, o->tRef + 3*o->ageMax + 1);
     
     return 0;
   } 
@@ -124,6 +125,8 @@ void tdl_do_test
     int32_t tRef
   )
   {
+    bool_t planar = TRUE;
+    
     int32_t ni = o->nIndivs;
     
     /* Determine full time range: */
@@ -137,7 +140,10 @@ void tdl_do_test
 
     int32_t ncols, nrows;
     int32_t rdr[ni];
-    drtree_compact_arrange(ni, dt, tMin, tMax, rdr, &ncols, &nrows);
+    if (planar)
+      { drtree_planar_arrange(ni, dt, tMin, tMax, rdr, &ncols, &nrows); }
+    else
+      { drtree_compact_arrange(ni, dt, tMin, tMax, rdr, &ncols, &nrows); }
     fprintf(stderr, "  ncols = %d (times {%d .. %d}) nrows = %d\n", ncols, tMin, tMin+ncols-1, nrows);
     assert(tMax == tMin+ncols-1);
     tdl_plot_named(o->outPrefix, tag, tMin, tMax, ni, dt, ncols, nrows, rdr, o->tStart, o->tStop, tRef);

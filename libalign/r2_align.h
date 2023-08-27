@@ -2,7 +2,7 @@
 #define r2_align_H
 
 /* General tools and concepts for translational alignment of 2D objects. */
-/* Last edited on 2023-04-01 03:21:02 by stolfi */ 
+/* Last edited on 2023-08-22 19:38:58 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -69,7 +69,7 @@ typedef double r2_align_mismatch_t (int32_t ni, r2_t p[]);
     {0..1}, the coordinates {v[i].c[j]} summed over all {i}, will add to
     zero.
     
-  The balancing constrait for a given {j} is always omitted if there is
+  The balancing constraint for a given {j} is always omitted if there is
   only one {i} such that {arad[i].c[j]} is non-zero. */
   
 int32_t r2_align_count_degrees_of_freedom(int32_t ni, r2_t arad[], bool_t bal);
@@ -83,7 +83,7 @@ int32_t r2_align_count_degrees_of_freedom(int32_t ni, r2_t arad[], bool_t bal);
   
   Let {nd} be the dimension of the seach ellipsoid {\RD}.
   The search for the optimum alignment vector in {\RD} 
-  entails the consytuction of a /normal search basis/ {U}, 
+  entails the construction of a /normal search basis/ {U}, 
   consisting of {nd} alignment vectors {u[0..nd-1]}, and a set
   of {nd} /normal radii/ {urad[0..nd-1]}, such that each vector {u[k]}:
   

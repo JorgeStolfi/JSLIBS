@@ -1,5 +1,5 @@
 /* r2_extra.h --- additional operations on points and vectors of {R^2} */
-/* Last edited on 2021-06-09 21:08:24 by jstolfi */
+/* Last edited on 2023-08-27 14:25:40 by stolfi */
 
 #ifndef r2_extra_H
 #define r2_extra_H
@@ -30,9 +30,10 @@ typedef void r2_map_jacobian_t (r2_t *p, r2x2_t *J);
     modified. The procedure should do this, in particular, if either
     coordinate of input {*p} is {NAN}. */
 
-void r2_map_projective(r2_t *p, r3x3_t *M, r2x2_t *J);
-  /* Applies to {p} a projective transformation defined by the matrix {M}.
-    Also post-multiplies the matrix {J} by the Jacobian of the map. */
+void r2_map_projective(r2_t *p, r3x3_t *M, r2_t *q, r2x2_t *J);
+  /* Applies to {p} a projective transformation defined by the matrix {M},
+    writing the result to {*q}.  Also post-multiplies the matrix {J}
+    by the Jacobian of the map at {p}. */
 
 void r2_map_radial(r2_t *p, r2_t *h, double kappa, r2x2_t *J);
   /* Applies to point {p} a radial deformation map with parameter

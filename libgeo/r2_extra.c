@@ -1,5 +1,5 @@
 /* see r2_extra.h */
-/* Last edited on 2021-08-17 05:54:22 by stolfi */
+/* Last edited on 2023-08-27 14:30:20 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -15,10 +15,10 @@
 
 #include <r2_extra.h>
 
-void r2_map_projective(r2_t *p, r3x3_t *M, r2x2_t *J)
+void r2_map_projective(r2_t *p, r3x3_t *M, r2_t *q, r2x2_t *J)
   { 
-    /* If {p} is already invalid, do nothing: */
-    if (isnan(p->c[0]) || isnan(p->c[1])) { return; }
+    /* If {p} is already invalid, return it: */
+    if (isnan(p->c[0]) || isnan(p->c[1])) { (*q) = (*p); return; }
     
     /* Convert {p} to homogeneous coordinates {hp}: */
     r3_t hp = (r3_t) {{ 1.0, p->c[0], p->c[1] }}; 
@@ -33,7 +33,7 @@ void r2_map_projective(r2_t *p, r3x3_t *M, r2x2_t *J)
     /* Check for validity of result: */
     if (qw <= 0.0)
       { /* Result is at infinity, or beyond: */
-        p->c[0] = p->c[1] = NAN;; 
+        q->c[0] = q->c[1] = NAN;; 
         return; 
       }
     else
@@ -42,7 +42,7 @@ void r2_map_projective(r2_t *p, r3x3_t *M, r2x2_t *J)
         double qY = qy/qw;
         
         /* Update the given point {p}: */
-        p->c[0] = qX; p->c[1] = qY;
+        q->c[0] = qX; q->c[1] = qY;
         
         if (J != NULL)
           { /* Compute the Jacobian of {hq} (homogeneous) w.r.t {p} (Cartesian): */
@@ -50,7 +50,7 @@ void r2_map_projective(r2_t *p, r3x3_t *M, r2x2_t *J)
             double dqx_dpX = M->c[1][1], dqx_dpY = M->c[2][1];
             double dqy_dpX = M->c[1][2], dqy_dpY = M->c[2][2];
 
-            /* Compute the Jacobian of {q} (Cartesian) w.r.t {p} (Cartesian): */
+            /* Compute the Jacobian {K} of {q} (Cartesian) w.r.t {p} (Cartesian): */
             r2x2_t K;
             K.c[0][0]= (dqx_dpX - qX*dqw_dpX)/qw; /* dqX_dpX */ 
             K.c[0][1]= (dqy_dpX - qY*dqw_dpX)/qw; /* dqY_dpX */ 
@@ -134,7 +134,7 @@ void r2_get_persp_rectangle_bbox
             double typ = tbox[1].end[dy] + (2*dy - 1)*0.00001*wy;
             r2_t p = (r2_t){{ txp, typ }};
             /* Map {p} to the image coord system: */
-            r2_map_projective(&p, T2I, NULL);
+            r2_map_projective(&p, T2I, &p, NULL);
             /* Expand box: */
             for (ax = 0; ax < 2; ax++)
               { if (p.c[ax] < ibox[ax].end[0]) { ibox[ax].end[0] = p.c[ax]; }
@@ -168,7 +168,7 @@ void r2_get_persp_disk_bbox
 	    for (swap = 0; swap < 2; swap++)
 	      { /* Map it to the image coord system: */
                 r2_t p = (r2_t){{ txp, typ }};
-                r2_map_projective(&p, T2I, NULL);
+                r2_map_projective(&p, T2I, &p, NULL);
                 /* Expand box: */
                 for (ax = 0; ax < 2; ax++)
                   { if (p.c[ax] < ibox[ax].end[0]) { ibox[ax].end[0] = p.c[ax]; }
@@ -198,7 +198,7 @@ bool_t r2_pixel_is_inside_persp_rectangle
             double iyp = y + 0.5 + dy*(0.5 + mrg);
 	    r2_t p = (r2_t){{ ixp, iyp }};
             /* Map it to the true coord system: */
-            r2_map_projective(&p, I2T, NULL);
+            r2_map_projective(&p, I2T, &p, NULL);
             /* Check if it is inside the rectangle: */
             if ((p.c[0] < LO(tbox[0])) || (p.c[0] > HI(tbox[0]))) { return FALSE; }
             if ((p.c[1] < LO(tbox[1])) || (p.c[1] > HI(tbox[1]))) { return FALSE; }
@@ -226,7 +226,7 @@ bool_t r2_pixel_is_inside_persp_disk
             double iyp = y + 0.5 + dy*(0.5 + mrg);
 	    r2_t p = (r2_t){{ ixp, iyp }};
             /* Map it to the true coord system: */
-            r2_map_projective(&p, I2T, NULL);
+            r2_map_projective(&p, I2T, &p, NULL);
             /* Check if it is inside the disk: */
             double d2 = r2_dist_sqr(&p, ctr);
             if (d2 > r2) { return FALSE; }
