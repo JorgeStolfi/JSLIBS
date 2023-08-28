@@ -1,5 +1,5 @@
 /* Coordinate systems for images. */
-/* Last edited on 2023-08-27 17:43:35 by stolfi */
+/* Last edited on 2023-08-28 02:25:44 by stolfi */
 
 #ifndef image_coords_H
 #define image_coords_H
@@ -137,15 +137,16 @@ void imgc_parse_x_axis(argparser_t *pp, bool_t *xLeft);
     not present, leaves {*xLeft} unchanged. */
 
 #define imgc_parse_x_axis_HELP \
-  "[ -xAxis { right | left } ]"
+  "[ -xAxis { right | r | left | l } ]"
 
 #define imgc_parse_x_axis_HELP_INFO \
-  "  -xAxis { right | left }\n" \
+  "  -xAxis { right | r | left | l }\n" \
   "    This optional argument specifies the direction of the" \
   " horizontal axis of the user coordinate system in each image.  It also defines the" \
   " default horizontal position of the origin: at the left edge" \
   " of the image if \"right\", or at the right edge" \
-  " if \"left\".  The keyword \"-hAxis\" is accepted as synonymous of \"-xAxis\"."
+  " if \"left\".  The keyword \"-hAxis\" is accepted as synonymous of \"-xAxis\", and" \
+  " the directions may be abbreviated as \"r\" and \"l\", respectively."
   
 #define imgc_parse_x_axis_pbm_default_INFO \
   "The default is \"-xAxis right\" as in most image processing tools."
@@ -162,15 +163,16 @@ void imgc_parse_y_axis(argparser_t *pp, bool_t *yDown);
     option is not present, leaves {*yDown} unchanged. */
 
 #define imgc_parse_y_axis_HELP \
-  "[ -yAxis { down | up } ]"
+  "[ -yAxis { down | d | up | u } ]"
 
 #define imgc_parse_y_axis_HELP_INFO \
-  "  -yAxis { down | up }\n" \
+  "  -yAxis { down | d | up | u }\n" \
   "    This optional argument specifies the direction of" \
   " the vertical axis of the user coordinate system in each image.  It also defines the" \
   " default vertical position of the origin: at the top edge of the" \
   " image if \"down\", or at the bottom edge if \"up\".  The" \
-  " keyword \"-vAxis\" is accepted as synonymous of \"-yAxis\"."
+  " keyword \"-vAxis\" is accepted as synonymous of \"-yAxis\", and" \
+  " the durections may be abbreviated as \"d\" and \"u\", respectively."
   
 #define imgc_parse_y_axis_pbm_default_INFO \
   "The default is \"-yAxis down\" as in most image processing tools." \

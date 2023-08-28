@@ -1,5 +1,5 @@
 /* See {image_coords.h}. */
-/* Last edited on 2023-08-27 17:33:04 by stolfi */
+/* Last edited on 2023-08-28 02:29:27 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -55,13 +55,19 @@ hr2_pmap_t imgc_coord_sys_map
 
 void imgc_parse_x_axis(argparser_t *pp, bool_t *xLeft)
   {
-    if 
-      ( (argparser_keyword_present(pp, "-xAxis")) ||
-        (argparser_keyword_present(pp, "-hAxis"))
+    if
+      ( argparser_keyword_present(pp, "-xAxis") ||
+        argparser_keyword_present(pp, "-hAxis")
       )
-      { if (argparser_keyword_present_next(pp, "left"))
+      { if
+          ( argparser_keyword_present_next(pp, "left") ||
+            argparser_keyword_present_next(pp, "l")
+          )
           { (*xLeft) = TRUE; }
-        else if (argparser_keyword_present_next(pp, "right"))
+        else if 
+          (  argparser_keyword_present_next(pp, "right")||
+            argparser_keyword_present_next(pp, "r")
+          )
           { (*xLeft) = FALSE; }
         else
           { argparser_error(pp, "invalid horizontal axis direction"); }
@@ -71,12 +77,18 @@ void imgc_parse_x_axis(argparser_t *pp, bool_t *xLeft)
 void imgc_parse_y_axis(argparser_t *pp, bool_t *yDown)
   {
     if  
-      ( (argparser_keyword_present(pp, "-yAxis"))||
-        (argparser_keyword_present(pp, "-vAxis"))
+      ( argparser_keyword_present(pp, "-yAxis") ||
+        argparser_keyword_present(pp, "-vAxis")
       )
-      { if (argparser_keyword_present_next(pp, "up"))
+      { if 
+          ( argparser_keyword_present_next(pp, "up") ||
+            argparser_keyword_present_next(pp, "u")
+          )
           { (*yDown) = FALSE; }
-        else if (argparser_keyword_present_next(pp, "down"))
+        else if 
+          ( argparser_keyword_present_next(pp, "down")||
+            argparser_keyword_present_next(pp, "d")
+          )
           { (*yDown) = TRUE; }
         else
           { argparser_error(pp, "invalid vertical axis direction"); }
