@@ -32,7 +32,7 @@
 //                  ur[i].c[j] = sum;
 //                }
 //            }
-//          if (debug) { r2_align_print_vector(stderr, (n/2), "u", r, ur, FALSE); }
+//          if (debug) { r2_align_print_vector(stderr, (n/2), "u", r, ur); }
 //          if (debug) { fprintf(stderr, "radius {f[%f]} = %.8f\n", r, f[r]); }
 //        }
 

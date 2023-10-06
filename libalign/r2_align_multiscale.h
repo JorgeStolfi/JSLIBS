@@ -2,7 +2,7 @@
 #define r2_align_multiscale_H
 
 /* Tools for optimizing a vector of points on the plane. */
-/* Last edited on 2023-03-22 19:48:56 by stolfi */ 
+/* Last edited on 2023-09-07 18:10:40 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -21,12 +21,11 @@
   alignment vectors, and by {\BX} and {\BY} the alignment vectors such
   that {\BX[i]} = (1,0)} sand {\BY[i] = (0,1)} for all {i} in {0..ni-1}.
 
-  See that interface also for the definition of the /basic ellipsoid/
-  {\RE \sub \RC}, defined by alignment vectors {ctr[0..ni-1]} (the
-  /domain center/) and {arad[0..ni-1]} (the /radius vector/); of its
-  affine span {\RB}; and of the space of /conformal delta vectors/
-  {\RV}, namely the linear subspace {\RV} of {\RC}
-  that is tangent to {\RB}.
+  We define the /basic ellipsoid/ {\RE(ctr,arad)} as the axis-aligned ellipsoid
+  of {\RC} with center {ctr[0..ni-1]} and {arad[0..ni-1]} as the /radius vector/.
+  We denote by {\RB(ctr,arad)} its affine span, and by {\RV(arad)}
+  the space of all /conformal delta vectors/, namely the linear subspace of {\RC}
+  that is tangent to {\RB(ctr,arad)}.
   
   Note the dimension of {\RB} and {\RV} is {nv = 2*ni - nz}, where
   {nz} is the number of coordinates of {arad} that are zero.
@@ -89,15 +88,17 @@ void r2_align_multiscale_single_scale_enum
     i2_t iscale,                        /* Object scaling exponent along each axis. */  
     r2_align_multiscale_mismatch_t *F2, /* Function that evaluates the mismatch between the objects. */
     r2_t arad[],                        /* Max delta vector coordinates for each object. */
+    bool_t bal,                         /* True if alignment vector adjustments should be balanced. */
     double tol,                         /* Desired precision. */
-    r2_t p[],                           /* (IN/OUT) Corresponding points in each object. */
+    r2_t p[],                           /* (IN/OUT) Initial and optimized alignment vector. */
     double *F2val_P                     /* (OUT) Mismatch for the computed alignment vector. */
   );
   /* Adjusts an alignment vector {p[0..ni-1]} for some {ni} objects so
     that they are as similar as possible in the neighborhoords of those
     points, as defined by the mismatch function {F2(ni,p,iscale)}.
-    Uses exhaustive enumeration of balanced alignment vectors withing the 
-    allowed region defined by {arad} and {tol}.
+    
+    Uses {r2_align_enum} to do exhaustive enumeration on a grid of points that
+    includes the initial {p}. See that function for the meaning of {arad,bal,tol}.
     
     On input, {p[0..ni-1]}, must be a guess for the optimum alignment.
     On output, {p[0..ni-1]} will be the best alignment found.
@@ -109,15 +110,18 @@ void r2_align_multiscale_single_scale_quadopt
     i2_t iscale,                        /* Object scaling exponent along each axis. */  
     r2_align_multiscale_mismatch_t *F2, /* Function that evaluates the mismatch between the objects. */
     r2_t arad[],                        /* Max delta vector coordinates for each object. */
+    bool_t bal,                         /* True if alignment vector adjustments should be balanced. */
     double tol,                         /* Desired precision. */
-    r2_t p[],                           /* (IN/OUT) Corresponding points in each object. */
+    r2_t p[],                           /* (IN/OUT) Initial and optimized alignment vector. */
     double *F2val_P                     /* (OUT) Mismatch for the computed alignment vector. */
   );
   /* Adjusts an alignment vector {p[0..ni-1]} for certain {ni} objects so
     that they are as similar as possible in the neighborhoords of those
     points, as defined by the mismatch function {F2(ni,iscale,p)}.
-    Uses iterated quadratic minimization within the set of balanced alignment
-    vectors allowed by {arad} and {tol}. 
+    
+    Uses {r2_align_quadopt} to locate the optimum on the search ellipsoid
+    {\RD} defined by the initial alignment vector {p} and the parameters
+    {arad,bal}. See that function for details and the meaning of {tol}.
     
     On input, {p[0..ni-1]} must be a guess for the optimum alignment
     vector. On output, {p[0..ni-1]} will be the best alignment found.
@@ -133,14 +137,16 @@ void r2_align_multiscale
     r2_align_multiscale_mismatch_t *F2, /* Function that evaluates the mismatch between the objects. */
     bool_t quadopt,                     /* Use quadratic optimization? */
     r2_t arad[],                        /* Max delta vector coordinates for each object. */
+    bool_t bal,                         /* True if alignment vector adjustments should be balanced. */
     double tol,                         /* Desired precision. */
     r2_t p[],                           /* (IN/OUT) Corresponding points in each object. */
     double *F2val_P                     /* (OUT) Mismatch for the computed alignment vector. */
   );
   /* Adjusts an alignment vector {p[0..ni-1]} for certain {ni} objects
     so that they are as similar as possible in the neighborhoords of
-    those points, as defined by the mismatch function {F2(ni,(0,0),p)}. Uses
-    a multiscale alignment strategy to efficiently search large alignment ranges.
+    those points, as defined by the mismatch function {F2(ni,(0,0),p)}.
+    Uses a multiscale alignment strategy to efficiently search large
+    alignment ranges.
     
     On input, {p[0..ni-1]} must be a guess for the optimum alignment
     vector at scale {(0,0)}. On output, {p[0..ni-1]} will be the best 
@@ -151,14 +157,15 @@ void r2_align_multiscale
     The procedure performs an enumerative or quadratic optimization of
     the delta vector vector at various scales {iscale}, starting with
     some coarsest scale {ismax} and ending with scale {(0,0)}.
-    Successive scales have at least one of the coordinates reduced by 1.
-    The radii and tolerances are adjusted so that the procedure does 
-    aproximately constant work at each scale.
+    Successive scales have at least one of the exponents reduced by 1
+    (that is, the sixe of the problem is redudec by 1/2 along at least
+    one coordinate). The radii and tolerances are adjusted so that the
+    procedure does aproximately constant work at each scale.
     
     At each scale, the procedure uses
     {r2_align_multiscale_single_scale_enum} or
-    {r2_align_multiscale_single_scale_quadopt}, accordng to the parameter
-    {quadopt}. */
+    {r2_align_multiscale_single_scale_quadopt}, accordng to the
+    parameter {quadopt}. */
 
 double r2_align_multiscale_rel_disp_sqr(int32_t ni, r2_t p[], r2_t q[], r2_t arad[]);
   /* Computes the total squared displacement between {p[0..ni-1]} and 

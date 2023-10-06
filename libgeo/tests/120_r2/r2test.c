@@ -1,5 +1,5 @@
 /* r2test --- test program for r2.h, r2x2.h  */
-/* Last edited on 2023-08-27 17:12:17 by stolfi */
+/* Last edited on 2023-10-01 19:25:02 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -355,7 +355,8 @@ void test_r2(int32_t verbose)
         fprintf(stderr, "!! r2_orient NOT TESTED\n");
         fprintf(stderr, "!! r2_incircle NOT TESTED\n");
         fprintf(stderr, "!! r2_throw_normal NOT TESTED\n");
-      }
+        fprintf(stderr, "!! r2_bezier.h NOT TESTED\n");
+     }
   }
 
 void test_r2maps(int32_t verbose)

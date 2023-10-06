@@ -2,7 +2,7 @@
 #define hr2_pmap_adjust_H
 
 /* Tools for optimizing projective maps. */
-/* Last edited on 2023-03-21 12:48:03 by stolfi */ 
+/* Last edited on 2023-09-07 01:31:16 by stolfi */ 
 
 #define _GNU_SOURCE
 
@@ -13,9 +13,9 @@
 #include <i2.h>
 
 typedef double hr2_pmap_adjust_func_t(hr2_pmap_t *A); 
-  /* Type of a procedure that evaluates some badness function of
-    the projective map {*A}. The function had better achieve a minimum
-    value for some finite {*A}. */
+  /* Type of a procedure that evaluates some badness function of the
+    projective map {*A}. The function had better achieve a minimum value
+    for some finite {*A}. */
 
 hr2_pmap_t hr2_pmap_from_many_pairs
   ( int32_t np,
@@ -33,8 +33,8 @@ hr2_pmap_t hr2_pmap_from_many_pairs
     Cartesian points {p2[0..np-1]}. The number of points should preferably be 
     the minimum needed by the type, or more:
     
-    (If {np} is 4, one should probably use
-    {hr2_pmap_from_four_points} instead.)
+    (If {np} is 4, one should probably use {hr2_pmap_from_four_points}
+    instead.)
     
     Uses the iterated edge-divided simplex method for optimization, with
     a maximum {maxIter} iterations. Stops when it thinks that it found a
@@ -50,17 +50,18 @@ hr2_pmap_t hr2_pmap_from_many_pairs
     
     In general there are many maps that would do that, because the
     square root of a matrix is not unique. Also, the map {M^2} is not
-    unique if each set of points lies on a common quadric curve.  The arguments
-    {h1} and {h2} are meant to solve that problem.
+    unique if each set of points lies on a common quadric curve. The
+    arguments {h1} and {h2} are meant to solve that problem.
     
-    The arrays {h1} and {h2} should have four elements each, which are taken 
-    to be the corners of quadrilaterals {Q1} and {Q2} on the domain of point lists {p1}
-    and {p2}, respectively.  Typically, but not necessarily, each quadrilateral will 
-    enclose the corresponding piint list. The procedure is
-    lightly biased towards the map {M} such that {M.dir} causes the smallest
-    deformation of {Q1}, and {M.inv} causes the smallest deformation of {Q2}.
-    If {h1} is {NULL}, the bounding rectangle of the points {p1} is used
-    instead; and similarly for {h2} and {p2}.
+    The arrays {h1} and {h2} should have four elements each, which are
+    taken to be the corners of quadrilaterals {Q1} and {Q2} on the
+    domain of point lists {p1} and {p2}, respectively. Typically, but
+    not necessarily, each quadrilateral will enclose the corresponding
+    point list. The procedure is lightly biased towards the map {M} such
+    that {M.dir} causes the smallest deformation of {Q1}, and {M.inv}
+    causes the smallest deformation of {Q2}. If {h1} is {NULL}, the
+    bounding rectangle of the points {p1} is used instead; and similarly
+    for {h2} and {p2}.
     
     The {report} function, if not {NULL}, is called every time the 
     goal function is evaluated by that method. */

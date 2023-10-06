@@ -1,16 +1,17 @@
 /* See oct_shapes.h. */
-/* Last edited on 2023-03-18 10:54:26 by stolfi */
+/* Last edited on 2023-10-05 12:18:28 by stolfi */
 
 #define oct_shapes_C_copyright \
-  "Copyright © 1996, 2006 Institute of Computing, Unicamp."
+  "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
 
 #define _GNU_SOURCE
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <jslibs_copyright.h>
 #include <bool.h>
-#include <oct.h>
 
+#include <oct.h>
 #include <oct_shapes.h>
 
 oct_arc_t make_ring(int32_t n)

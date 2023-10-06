@@ -1,5 +1,5 @@
 /* See {r2_align_multiscale.h}. */
-/* Last edited on 2023-03-22 19:50:24 by stolfi */
+/* Last edited on 2023-09-07 17:46:22 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -34,6 +34,7 @@ void r2_align_multiscale
     r2_align_multiscale_mismatch_t *F2,  /* Function that evaluates the mismatch between the images. */
     bool_t quadopt,                      /* Use quadratic optimization? */
     r2_t arad[],                         /* Max delta vector coordinates along each axis. */
+    bool_t bal,                          /* True if alignment vector adjustments should be balanced. */
     double tol,                          /* Desired precision. */
     r2_t p[],                            /* (IN/OUT) Corresponding points in each image. */
     double *F2val_P                      /* (OUT) Mismatch for the computed alignment vector. */
@@ -74,9 +75,9 @@ void r2_align_multiscale
           { /* Solve the problem at scale {scale}: */
             i2_t iscale = (i2_t){{ scale, scale }};
             if (quadopt)
-              { r2_align_multiscale_single_scale_quadopt(ni, iscale, F2, srad, tol, p, F2val_P); }
+              { r2_align_multiscale_single_scale_quadopt(ni, iscale, F2, srad, bal, tol, p, F2val_P); }
             else
-              { r2_align_multiscale_single_scale_enum(ni, iscale, F2, srad, tol, p, F2val_P); }
+              { r2_align_multiscale_single_scale_enum(ni, iscale, F2, srad, bal, tol, p, F2val_P); }
             /* Are we done? */
             if (scale == 0) { break; }
             /* Expand to the next finer scale: */
@@ -96,6 +97,7 @@ void r2_align_multiscale_single_scale_enum
     i2_t iscale,                        /* Object scaling exponent along each axis. */  
     r2_align_multiscale_mismatch_t *F2, /* Function that evaluates the mismatch between the objects. */
     r2_t arad[],                        /* Max delta vector coordinates for each object. */
+    bool_t bal,                         /* True if alignment vector adjustments should be balanced. */
     double tol,                         /* Desired precision. */
     r2_t p[],                           /* (IN/OUT) Corresponding points in each object. */
     double *F2val_P                     /* (OUT) Mismatch for the computed alignment vector. */
@@ -103,7 +105,7 @@ void r2_align_multiscale_single_scale_enum
   {
     auto double single_F2(int32_t ni, r2_t p[]);
     
-    r2_align_enum(ni, single_F2, arad, tol, p, F2val_P);
+    r2_align_enum(ni, single_F2, arad, bal, tol, p, F2val_P);
     return;
     
     double single_F2(int32_t ni, r2_t p[])
@@ -115,6 +117,7 @@ void r2_align_multiscale_single_scale_quadopt
     i2_t iscale,                        /* Object scaling exponent along each axis. */  
     r2_align_multiscale_mismatch_t *F2, /* Function that evaluates the mismatch between the objects. */
     r2_t arad[],                        /* Max delta vector coordinates for each object. */
+    bool_t bal,                         /* True if alignment vector adjustments should be balanced. */
     double tol,                         /* Desired precision. */
     r2_t p[],                           /* (IN/OUT) Corresponding points in each object. */
     double *F2val_P                     /* (OUT) Mismatch for the computed alignment vector. */
@@ -122,7 +125,7 @@ void r2_align_multiscale_single_scale_quadopt
   {
     auto double single_F2(int32_t ni, r2_t p[]);
     
-    r2_align_quadopt(ni, single_F2, arad, tol, p, F2val_P);
+    r2_align_quadopt(ni, single_F2, arad, bal, tol, p, F2val_P);
     return;
     
     double single_F2(int32_t ni, r2_t p[])

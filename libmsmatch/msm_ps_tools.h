@@ -2,7 +2,7 @@
 #define msm_ps_tools_H
 
 /* Postscript plots of graphs and such. */
-/* Last edited on 2022-10-31 13:08:48 by stolfi */
+/* Last edited on 2023-10-01 19:43:49 by stolfi */
 
 #define msm_ps_tools_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -12,9 +12,6 @@
 
 #include <vec.h>
 #include <epswr.h>
-
-#define msm_PT_PER_MM (72.0/25.4)
-  /* Postscript points (pt) per millimeter (mm). */ 
 
 #define msm_EPS_MARGIN_MM (1.0)
   /* EPS figure margin width (in mm). */

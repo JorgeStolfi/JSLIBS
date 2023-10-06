@@ -1,5 +1,5 @@
 /* See {r2_align_quadopt.h}. */
-/* Last edited on 2023-03-26 21:56:57 by stolfi */
+/* Last edited on 2023-09-07 17:47:31 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -26,16 +26,18 @@ void r2_align_quadopt
   ( int32_t ni,               /* Number of objects to align. */
     r2_align_mismatch_t *F2,  /* Function that evaluates the mismatch between the objects. */
     r2_t arad[],              /* Max delta vector coordinates for each object. */
+    bool_t bal,               /* True if alignment vector adjustments should be balanced. */
     double tol,               /* Desired precision. */
     r2_t p[],                 /* (IN/OUT) Corresponding points in each object. */
-    double *F2val_P            /* (OUT) Mismatch for the computed alignment vector. */
+    double *F2val_P           /* (OUT) Mismatch for the computed alignment vector. */
   )
   {
     int32_t maxIters = 10;
     bool_t debug = TRUE;
     
     demand(tol > 0, "invalid {tol}");
-    int32_t nd = r2_align_count_degrees_of_freedom(ni, arad); 
+    i2_t nv = r2_align_count_variable_coords (ni, arad);
+    int32_t nd = r2_align_count_degrees_of_freedom(nv, bal);
 
     /* Save the initial guess: */
     r2_t ctr[ni]; /* Center of ellipsoid (aved initial guess). */
@@ -46,7 +48,7 @@ void r2_align_quadopt
         /* Compute the axes and radii of the search ellipsoid {\RF}: */
         r2_t U[nd*ni]; /* Delta vector basis. */
         double urad[nd];
-        r2_align_compute_search_ellipsoid (ni, arad, nd, U, urad);
+        r2_align_compute_search_ellipsoid (ni, arad, bal, nd, U, urad);
 
         /* The optimization variables {x[0..nd-1]} are the coordinates in the {U} basis
           of balanced conformal delta vectors, divided by the corresponding radii

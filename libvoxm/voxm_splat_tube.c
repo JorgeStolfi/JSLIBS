@@ -1,5 +1,5 @@
 /* See voxm_splat_tube.h */
-/* Last edited on 2021-06-22 13:48:18 by jstolfi */
+/* Last edited on 2023-10-01 19:04:43 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -208,7 +208,7 @@ void voxm_splat_tube_round_segment
     r3_t *p0 = &(S->p);
     r3_t p1, p2;
     r3_t *p3 = &(T->p);
-    r3_bezier_from_path_states(S, T, &p1, &p2);
+    r3_path_bezier_from_states(S, T, &p1, &p2);
     voxm_splat_tube_round_bezier(A, p0, &p1, &p2, p3, inR, otR, fuzzR, sub);
   }
   

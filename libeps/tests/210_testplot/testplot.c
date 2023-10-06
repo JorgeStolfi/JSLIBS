@@ -1,7 +1,7 @@
 #define PROG_NAME "testplot"
 #define PROG_DESC "test of {epswr.h} plotting ops"
 #define PROG_VERS "1.0"
-/* Last edited on 2023-02-21 12:18:32 by stolfi */
+/* Last edited on 2023-10-01 20:26:48 by stolfi */
 
 #define testplot_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
@@ -14,8 +14,8 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include <jsfile.h>
 #include <bool.h>
+#include <jsfile.h>
 #include <affirm.h>
 #include <jsstring.h>
 
@@ -341,13 +341,14 @@ void DrawFigures(epswr_figure_t *epsf, double xc, double yc, bool_t fill, bool_t
     epswr_lune(epsf, 9.0+xc, 7.0+yc, 1.5, 45.0, fill, draw);
     epswr_slice(epsf, 3.0+xc, 12.0+yc, 2.0, 60.0, 165.0, fill, draw);
     epswr_quadrilateral(epsf, 5.0+xc, 8.0+yc, 9.0+xc, 10.0+yc, 7.0+xc, 12.0+yc, 6.0+xc, 9.0+yc, fill, draw);
+    epswr_parallelogram(epsf, 5.2+xc, 6.2+yc, -0.30, +0.30,  -1.20, -0.80,  fill, draw);
     epswr_triangle(epsf, 7.0+xc, 10.0+yc, 11.0+xc, 12.0+yc, 9.0+xc, 14.0+yc, fill, draw);
 
     double rmk = 1.5;
     epswr_dot(epsf, 3.0+xc, 8.0+yc, rmk, fill, draw);
-    epswr_square(epsf, 5.0+xc, 6.0+yc, rmk, fill, draw);
-    epswr_diamond(epsf, 6.5+xc, 6.0+yc, rmk, rmk, fill, draw);
-    epswr_diamond(epsf, 10.0+xc, 9.0+yc, rmk, 2.0, fill, draw);
+    epswr_square(epsf,  10.0+xc, 10.5+yc, rmk, fill, draw);
+    epswr_diamond(epsf,  9.0+xc,  9.2+yc, rmk, rmk, fill, draw);
+    epswr_diamond(epsf, 10.0+xc,  9.2+yc, rmk, 2.0, fill, draw);
     
     epswr_cross(epsf, 5.5+xc, 13.0+yc, rmk, FALSE, draw);
     epswr_cross(epsf, 7.0+xc, 13.0+yc, rmk, TRUE, draw);

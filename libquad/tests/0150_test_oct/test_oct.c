@@ -2,10 +2,10 @@
 #define PROG_DESC "basic tests of the {oct.h} procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-18 10:52:36 by stolfi */ 
+/* Last edited on 2023-10-05 20:21:31 by stolfi */ 
 
 #define PROG_COPYRIGHT \
-  "Copyright © 2007  State University of Campinas (UNICAMP)"
+  "Copyright © 2007  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
   
 #define PROG_AUTH \
   "Created by J. Stolfi on 2009-03-06"
@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include <jslibs_copyright.h>
 #include <bool.h>
 #include <frgb.h>
 #include <argparser.h>
@@ -55,8 +56,8 @@ int32_t main(int32_t argc, char **argv)
 void do_tests(char *name, oct_arc_t m)
   {
     /* Check edge/tumblecode decomposition: */
-    oct_edge_t E = oct_edge(m);
-    assert(E != NULL);
+    oct_edge_t ed = oct_edge(m);
+    assert(ed != NULL);
     fprintf(stderr, "sizeof(void *) = %d\n", (int32_t)(sizeof(void*)));
     fprintf(stderr, "sizeof(oct_edge_t) = %d\n", (int32_t)(sizeof(oct_edge_t)));
     fprintf(stderr, "sizeof(oct_arc_t) = %d\n", (int32_t)(sizeof(oct_arc_t)));
@@ -64,9 +65,9 @@ void do_tests(char *name, oct_arc_t m)
     int32_t it;
     for (it = 0; it < 8; it++)
       { oct_bits_t t = it;
-        oct_arc_t e = oct_orient(E, t);
+        oct_arc_t e = oct_orient(ed, t);
         assert(t == oct_tumble_code(e));
-        assert(E == oct_edge(e));
+        assert(ed == oct_edge(e));
       
         fprintf(stderr, "  %-10s ", "e =");          oct_write_arc(stderr, e, 1);             fprintf(stderr, "\n");
         fprintf(stderr, "  %-10s ", "rot(e) =");     oct_write_arc(stderr, oct_rot(e), 1);    fprintf(stderr, "\n");
@@ -193,8 +194,8 @@ void write_map(char *name, oct_arc_t a)
     FILE *wr = open_write(filename, TRUE);
     oct_arc_vec_t root = oct_arc_vec_new(1); /* Root list. */
     root.e[0] = a;
-    oct_arc_vec_t et = oct_arc_vec_new(0); /* Edge table. */
-    oct_write_map(wr, &root, &et);
+    oct_arc_vec_t A = oct_arc_vec_new(0); /* Edge table. */
+    oct_write_map(wr, &root, &A);
     fclose(wr);
     free(filename);
   }

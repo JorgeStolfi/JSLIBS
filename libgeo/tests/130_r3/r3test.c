@@ -1,5 +1,5 @@
 /* r3test --- test program for r3.h, r3x3.h  */
-/* Last edited on 2022-01-05 14:23:32 by stolfi */
+/* Last edited on 2023-10-01 19:25:48 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -378,7 +378,7 @@ void test_r3(int32_t verbose)
         r3_print(stderr, &a);
         fputc('\n', stderr);
       }
-
+      
     /* Checking the regular polyhedra: */
     { r3_t pv[20];
       double R = drandom();
@@ -670,6 +670,9 @@ void test_r3x3(int32_t verbose)
         fprintf(stderr, "!! r3x3_mix NOT TESTED\n");
         fprintf(stderr, "!! r3x3_adj NOT TESTED\n");
         fprintf(stderr, "!! r3x3_is_unif_scaling NOT TESTED\n");
+        fprintf(stderr, "!! r3_bezier.h NOT TESTED\n");
+        fprintf(stderr, "!! r3_path.h NOT TESTED\n");
+        fprintf(stderr, "!! r3_motion.h NOT TESTED\n");
       }
   }  
 

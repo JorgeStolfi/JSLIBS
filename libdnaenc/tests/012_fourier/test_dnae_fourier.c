@@ -2,7 +2,7 @@
 #define PROG_DESC "Fourier analysis of DNA signal filtering routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-02-25 16:06:14 by stolfi */
+/* Last edited on 2023-10-01 19:48:30 by stolfi */
 
 #define test_dnae_fourier_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -489,11 +489,11 @@ void dnae_plot_spectra
     int32_t maxYLabChars = 5; /* E.g. "+1.00". */
     
     /* Figure dimensions in mm: */
-    double mmpt = 25.4/72.0;  /* Size of a point in mm. */
-    double mrgL =  0.75*maxYLabChars*fontSize*mmpt;  /* Width of Y scale and ticks. */
-    double mrgR =  0.40*maxXLabChars*fontSize*mmpt;  /* Possible right overflow of X scale. */
-    double mrgB =  1.25*fontSize*mmpt;  /* Height of X scale and ticks. */
-    double mrgT =  0.25*fontSize*mmpt;  /* Possible top overflow of Y scale. */
+    double mm_per_pt = 25.4/72.0;  /* Size of a point in mm. */
+    double mrgL =  0.75*maxYLabChars*fontSize*mm_per_pt;  /* Width of Y scale and ticks. */
+    double mrgR =  0.40*maxXLabChars*fontSize*mm_per_pt;  /* Possible right overflow of X scale. */
+    double mrgB =  1.25*fontSize*mm_per_pt;  /* Height of X scale and ticks. */
+    double mrgT =  0.25*fontSize*mm_per_pt;  /* Possible top overflow of Y scale. */
     double hTotSize = hPlotSize + mrgL + mrgR; /* Tot width of plottable area (incl scales). */
     double vTotSize = vPlotSize + mrgB + mrgT; /* Tot height of plottable area (incl scales). */
     double mrgE = 0.5; /* Extra margin around plottable area. */

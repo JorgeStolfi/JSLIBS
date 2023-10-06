@@ -1,5 +1,5 @@
 /* See {grd_plot.h} */
-/* Last edited on 2023-06-25 18:07:46 by stolfi */
+/* Last edited on 2023-10-01 19:47:38 by stolfi */
 
 #define drtree_plot_C_COPYRIGHT \
   "Duh?"
@@ -314,8 +314,6 @@ epswr_figure_t *drtree_plot_create_eps_figure
     double Ystep
   )
   {
-    double pt_per_mm = 72.0/25.4;
-    
     Xstep = fabs(Xstep);
     Ystep = fabs(Ystep);
    
@@ -323,9 +321,9 @@ epswr_figure_t *drtree_plot_create_eps_figure
     double Ysize = Ystep*nrows;
     
     /* Device plot window size and margins (pt): */
-    double hPlotSize = Xsize*pt_per_mm;
-    double vPlotSize = Ysize*pt_per_mm;
-    double figMrg = 2.0*pt_per_mm;  /* Margin outside device plot window. */
+    double hPlotSize = Xsize*epswr_pt_per_mm;
+    double vPlotSize = Ysize*epswr_pt_per_mm;
+    double figMrg = 2.0*epswr_pt_per_mm;  /* Margin outside device plot window. */
     
     bool_t eps_verbose = FALSE;
 

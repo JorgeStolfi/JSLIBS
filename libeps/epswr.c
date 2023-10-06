@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2023-06-15 15:05:18 by stolfi */
+/* Last edited on 2023-10-01 20:03:02 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -449,6 +449,23 @@ void epswr_quadrilateral
     x[1] = x01; y[1] = y01;
     x[2] = x11; y[2] = y11;
     x[3] = x10; y[3] = y10;
+    epswr_polygon(eps, TRUE, x, y, 4, fill, draw, TRUE);
+  }
+
+void epswr_parallelogram
+  ( epswr_figure_t *eps,
+    double xc, double yc,
+    double xu, double yu,
+    double xv, double yv,
+    bool_t fill, bool_t draw
+  )
+  { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
+    if ((!draw) && (!fill)) { return; }
+    double x[4], y[4];
+    x[0] = xc - xu - xv; y[0] = yc - yu - yv;
+    x[1] = xc - xu + xv; y[1] = yc - yu + yv;
+    x[2] = xc + xu + xv; y[2] = yc + yu + yv;
+    x[3] = xc + xu - xv; y[3] = yc + yu - yv;
     epswr_polygon(eps, TRUE, x, y, 4, fill, draw, TRUE);
   }
 

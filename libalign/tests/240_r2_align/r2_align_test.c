@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {r2_align.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-22 19:40:44 by stolfi */ 
+/* Last edited on 2023-09-07 19:23:23 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_align_COPYRIGHT \
@@ -26,89 +26,72 @@
 
 int32_t main(int32_t argn, char **argv);
 
-void ralt_test_rel_disp_sqr(int32_t ni);
-  /* Tests {r2_align_rel_disp_sqr} for alignment vectors of {ni} elements.
-    The parameter {ni} must be 2 or more. */
-
-void ralt_test_compute_search_ellipsoid(int32_t ni);
+void ralt_test_compute_search_ellipsoid(int32_t ni, bool_t bal);
   /* Tests {r2_align_compute_search_ellipsoid} for alignment vectors of {ni} elements. */
 
-void ralt_choose_arad(int32_t ni, r2_t arad[]);
-  /* Stores into {arad[0..ni-1]} a random reference radius vector. */
+void ralt_plot_rel_disp_sqr(int32_t ni, r2_t ctr[], r2_t arad[], bool_t bal);
+  /* Writes a  file "out/f2-bal{BAL}.dat" with a random 2D slice of the function
+    {r2_align_rel_disp_sqr} over the ellipsoid with semi-axes {arad} and balancing 
+    condition {bal}. The {BAL} part is the value of {bal} as "F" or "T". */
 
-void ralt_choose_ctr(int32_t ni, r2_t ctr[]);
-  /* Stores into {ctr[0..ni-1]} a random alignment vector to be the center of the basic 
-    domain ellipsoid {\RE}. */
-
-void ralt_plot_rel_disp_sqr(int32_t ni, r2_t ctr[], r2_t arad[]);
-  /* Writes a  file "out/f2.dat" with a random 2D slice of the function
-    {r2_align_rel_disp_sqr} over the ellipsoid with semi-axes {arad}. */
+void ralt_test_rel_disp_sqr(int32_t ni, bool_t bal);
+  /* Tests {r2_align_rel_disp_sqr} for alignment vectors of {ni} elements
+    and balancing condiiton {bal}.  The parameter {ni} must be 2 or more. */
 
 /* IMPLEMENTATIONS */
 
 int32_t main(int32_t argc, char **argv)
   {
     srandom(4615*417);
+  
+    ralt_test_rel_disp_sqr(5, FALSE);
+    ralt_test_rel_disp_sqr(5, TRUE);
 
-    ralt_test_rel_disp_sqr(5);
-
-    ralt_test_compute_search_ellipsoid(1);
-    ralt_test_compute_search_ellipsoid(2);
-    ralt_test_compute_search_ellipsoid(3);
-    ralt_test_compute_search_ellipsoid(5);
-    ralt_test_compute_search_ellipsoid(7);
+    for (int32_t ni = 1; ni < 8; ni = ni + (ni+1)/2)
+      { ralt_test_compute_search_ellipsoid(ni, FALSE);
+        ralt_test_compute_search_ellipsoid(ni, TRUE);
+      }
     return 0;
   }
-  
-void ralt_test_rel_disp_sqr(int32_t ni)
+
+void ralt_test_rel_disp_sqr(int32_t ni, bool_t bal)
   { 
-    fprintf(stderr, "-- testing {r2_align_rel_disp_sqr} ni = %d ---\n", ni);
+    fprintf(stderr, "-- testing {r2_align_rel_disp_sqr}: {ni} = %d  {bal} = %c ---\n", ni, "FT"[bal]);
 
-    r2_t arad[ni];  /* Search radius for each coordinate. */
-    ralt_choose_arad(ni, arad);
+    r2_t ctr[ni], arad[ni];  /* Search radius for each coordinate. */
+    r2_align_throw_ctr(ni, 5.000, ctr, TRUE);
+    r2_align_throw_arad(ni, 3.000, 1, arad, TRUE);
 
-    r2_t ctr[ni];  /* Initial alignment. */
-    ralt_choose_ctr(ni, ctr);
+    i2_t nv = r2_align_count_variable_coords (ni, arad);
+    fprintf(stderr, "num of variable coords nv = (%d,%d)\n", nv.c[0], nv.c[1]);
+    int32_t nd = r2_align_count_degrees_of_freedom(nv, bal);
+    fprintf(stderr, "search dimensions nd = %d\n", nd);
 
-    ralt_plot_rel_disp_sqr(ni, ctr, arad);
-    return;
-  }
-    
-void ralt_choose_arad(int32_t ni, r2_t arad[])
-  { 
-    fprintf(stderr, "... choosing the basic domain radius {arad} ...\n");
-    double rmax = 4.999;
-    double rmin = 1.500;
-    r2_t zfrac = (r2_t){{ 0.25, 0.75 }};
-    r2_align_throw_arad(ni, zfrac, rmin, rmax, arad);
-    r2_align_print_vector(stderr, ni, "arad", -1, arad, TRUE);
-    return;
-  }  
-
-void ralt_choose_ctr(int32_t ni, r2_t ctr[])
-  { 
-    fprintf(stderr, "... choosing the center alighnment {ctr} ...\n");
-    r2_align_throw_ball_vector(ni, 0.0, 9.995, ctr);
-    r2_align_print_vector(stderr, ni, "ctr", -1, ctr, FALSE);
+    ralt_plot_rel_disp_sqr(ni, ctr, arad, bal);
     return;
   }
 
-void ralt_test_compute_search_ellipsoid(int32_t ni)
+void ralt_test_compute_search_ellipsoid(int32_t ni, bool_t bal)
   {
     bool_t debug = TRUE;
     
-    fprintf(stderr, "--- testing {r2_align_compute_search_ellipsoid} ni = %d ---\n", ni);
+    fprintf(stderr, "--- testing {r2_align_compute_search_ellipsoid}: {ni} = %d  {bal} = %c ---\n", ni, "FT"[bal]);
 
-    /* Choose the radius vector {arad} of the basic domain ellipsoid {\RE}: */
-    r2_t arad[ni];  /* Search radius for each coordinate. */
-    ralt_choose_arad(ni, arad);
+    /* Choose the center and radius vector {arad} of the basic domain ellipsoid {\RE}: */
+    r2_t ctr[ni], arad[ni];  /* Search radius for each coordinate. */
+    r2_align_throw_ctr(ni, 5.000, ctr, TRUE);
+    r2_align_throw_arad(ni, 3.000, 1, arad, TRUE);
 
-    /* Compute the eigenvectors {U} and eigenvalues {urad} of the search ellipsoid {\RF}: */
+    fprintf(stderr, "... Computing the dimension of the search ellipsoid {\\RF} ...\n");
+    i2_t nv = r2_align_count_variable_coords (ni, arad);
+    fprintf(stderr, "num of variable coords nv = (%d,%d)\n", nv.c[0], nv.c[1]);
+    int32_t nd = r2_align_count_degrees_of_freedom(nv, bal);
+    fprintf(stderr, "search dimensions nd = %d\n", nd);
+    
     fprintf(stderr, "... computing the search ellipsoid basis {U,urad} ...\n");
-    int32_t nd = r2_align_count_degrees_of_freedom(ni, arad);
     r2_t U[nd*ni];
     double urad[nd];
-    r2_align_compute_search_ellipsoid (ni, arad, nd, U, urad);
+    r2_align_compute_search_ellipsoid (ni, arad, bal, nd, U, urad);
     
     /* Validate {U,urad}: */
     fprintf(stderr, "... validating the search ellipsoid basis ...\n");
@@ -118,7 +101,7 @@ void ralt_test_compute_search_ellipsoid(int32_t ni)
       { fprintf(stderr, "  checking vector {U[%d]} and radius {urad[%d]} ...\n", k, k);
         
         r2_t *uk = &(U[k*ni]);
-        if (debug) { r2_align_print_vector(stderr, ni, "    u", k, uk, FALSE); }
+        if (debug) { r2_align_print_vector(stderr, ni, "    u", k, uk); }
         if (debug) { fprintf(stderr, "    urad[%d] = %.8f\n", k, urad[k]); }
         
         if (k > 0)
@@ -178,10 +161,10 @@ void ralt_test_compute_search_ellipsoid(int32_t ni)
     fprintf(stderr, "  search ellipsoid OK!\n\n");
   }
     
-void ralt_plot_rel_disp_sqr(int32_t ni, r2_t ctr[], r2_t arad[])
+void ralt_plot_rel_disp_sqr(int32_t ni, r2_t ctr[], r2_t arad[], bool_t bal)
   {
     char *fname = NULL;
-    asprintf(&fname, "out/f%03d.dat", ni);
+    asprintf(&fname, "out/f%03d-bal%c.dat", ni, "FT"[bal]);
     FILE *wr = open_write(fname, TRUE);
     free(fname);
 
@@ -189,7 +172,7 @@ void ralt_plot_rel_disp_sqr(int32_t ni, r2_t ctr[], r2_t arad[])
       /* The function to plot. */
     
     double step = 0.25;
-    r2_align_plot_mismatch(wr, ni, ctr, arad, step, &f2);
+    r2_align_plot_mismatch(wr, ni, ctr, arad, bal, step, &f2);
     fclose(wr);
 
     fprintf(stderr, "done.\n");

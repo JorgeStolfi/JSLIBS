@@ -2,10 +2,10 @@
 #define PROG_DESC "creates some 2D maps using the quad-edge structure"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-02-13 21:46:06 by stolfi */ 
+/* Last edited on 2023-10-05 20:21:48 by stolfi */ 
 
 #define PROG_COPYRIGHT \
-  "Copyright © 2007  State University of Campinas (UNICAMP)"
+  "Copyright © 2007  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
   
 #define PROG_AUTH \
   "Modula-3 version {MakeShape.m3} created by Rober M. Rosi"\
@@ -68,7 +68,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define _GNU_SOURCE
+#include <jslibs_copyright.h>
 #include <bool.h>
 #include <oct.h>
 #include <oct_shapes.h>

@@ -1,5 +1,5 @@
 /* r3_path.h --- Paths defined by points, velocities, times */
-/* Last edited on 2021-06-09 19:48:53 by jstolfi */
+/* Last edited on 2023-10-01 19:02:21 by stolfi */
 
 #ifndef r3_path_H
 #define r3_path_H
@@ -38,15 +38,21 @@ r3_path_state_t r3_path_state_from_r3_motion_state(double t, r3_motion_state_t *
 
 double r3_path_length_estimate(r3_path_state_t *S, r3_path_state_t *T, int32_t order);
   /* Estimates the length of the path from state {S} to state {T}
-     by converting it to a Bezier arc with {r3_bezier_from_path_states}
+     by converting it to a Bezier arc with {r3_path_bezier_from_states}
      and calling {r3_bezier_length_estimate}. */
 
 void r3_path_interpolate_some(r3_path_state_t S[], int32_t N);
   /* Computes the times, positions and velocities of {S[1..N-2]} to
     smoothly interpolate between {S[0]} and {S[N-1]},
-    which are not changed. Currently uses the {r3_bezier_from_path_states}
+    which are not changed. Currently uses the {r3_path_bezier_from_states}
     and {r3_bezier_split}. */
-    
+   
+void r3_path_bezier_from_states(r3_path_state_t *S, r3_path_state_t *T, r3_t *p1, r3_t *p2);
+  /* Computes the two middle Bezier control points of a cubic arc that starts 
+    at time {S.t} and position {S.p} with velocity {S.v} and ends at time {T.t} 
+    and position {T.p} with velocity {T.v}. The control points
+    of the arc will be {p0=S.p}, {p1}, {p2}, and {p3=T.p}. */
+ 
 /* PRINTOUT */
 
 void r3_path_state_print (FILE *f, r3_path_state_t *S);

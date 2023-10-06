@@ -1,5 +1,5 @@
 /* Tools for generating Encapsulated Postscript graphics files. */
-/* Last edited on 2023-06-05 21:33:15 by stolfi */
+/* Last edited on 2023-10-01 20:13:44 by stolfi */
 
 #ifndef epswr_H
 #define epswr_H
@@ -373,7 +373,7 @@ void epswr_curve
     double xc, double yc,
     double xd, double yd
   );
-  /* Draws a Bezier arc with given control points. */
+  /* Draws a Bézier arc with given control points. */
 
 void epswr_coord_line
   ( epswr_figure_t *eps, 
@@ -437,6 +437,17 @@ void epswr_rectangle
     bool_t fill, bool_t draw
   );
   /* Fills and/or outlines the given rectangle. */
+  
+void epswr_parallelogram
+  ( epswr_figure_t *eps,
+    double xc, double yc,
+    double xu, double yu,
+    double xv, double yv,
+    bool_t fill, bool_t draw
+  );
+  /* Fills and/or outlines the parallelogram with center {(xc,yc)}
+    and side vectors {2*(xu,yu)} and {2*(xv,yv)}.  Namely, the
+    corners will be {(xc,yc)±(xu,yu)±(xv,yv)}. */
   
 void epswr_triangle
   ( epswr_figure_t *eps,

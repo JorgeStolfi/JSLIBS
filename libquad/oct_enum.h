@@ -2,10 +2,17 @@
 #define oct_enum_H
 
 /* Element enumeration procedures for the general quad-edge structure. */
-/* Last edited on 2011-12-21 21:46:47 by stolfi */
+/* Last edited on 2023-10-05 12:23:56 by stolfi */
 
 #define oct_enum_H_copyright \
-  "Copyright © 1996, 2006 Institute of Computing, Unicamp."
+  "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
+
+#define _GNU_SOURCE
+#include <stdint.h>
+
+#include <jslibs_copyright.h>
+#include <bool.h>
+#include <vec.h>
 
 #include <oct.h>
 

@@ -1,5 +1,5 @@
 /* See paper_size.h */
-/* Last edited on 2020-01-11 05:46:11 by jstolfi */
+/* Last edited on 2023-10-01 19:46:52 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -10,7 +10,7 @@
 
 #include <paper_size.h>
 
-#define mm (72.0/25.4)
+#define pt_per_mm (72.0/25.4)
   /* One millimeter in Postscript points. */
 
 void paper_size_get_dimensions
@@ -32,12 +32,12 @@ void paper_size_get_dimensions
        (strcmp(paperSize, "a4") == 0) ||
         (strcmp(paperSize, "A4") == 0)
       )
-      { (*xpt) = 210 * mm; (*ypt) = 297 * mm; }
+      { (*xpt) = 210 * pt_per_mm; (*ypt) = 297 * pt_per_mm; }
     else if (
         (strcmp(paperSize, "a3") == 0) ||
         (strcmp(paperSize, "A3") == 0)
       )
-      { (*xpt) = 297 * mm; (*ypt) = 420 * mm; }
+      { (*xpt) = 297 * pt_per_mm; (*ypt) = 420 * pt_per_mm; }
     else if (
         (strcmp(paperSize, "legal") == 0) ||
         (strcmp(paperSize, "Legal") == 0)
@@ -64,58 +64,58 @@ void paper_size_get_dimensions
         (strcmp(paperSize, "a10") == 0) ||
         (strcmp(paperSize, "A10") == 0)
       )
-      { (*xpt) = 26 * mm; (*ypt) = 37 * mm; }
+      { (*xpt) = 26 * pt_per_mm; (*ypt) = 37 * pt_per_mm; }
     else if (
         (strcmp(paperSize, "a9") == 0) ||
         (strcmp(paperSize, "A9") == 0)
       )
-      { (*xpt) = 37 * mm; (*ypt) = 52 * mm; }
+      { (*xpt) = 37 * pt_per_mm; (*ypt) = 52 * pt_per_mm; }
     else if (
       (strcmp(paperSize, "a8") == 0) ||
       (strcmp(paperSize, "A8") == 0))
-      { (*xpt) = 52 * mm; (*ypt) = 74 * mm; }
+      { (*xpt) = 52 * pt_per_mm; (*ypt) = 74 * pt_per_mm; }
     else if (
         (strcmp(paperSize, "a7") == 0) ||
         (strcmp(paperSize, "A7") == 0)
       )
-      { (*xpt) = 74 * mm; (*ypt) = 105 * mm; }
+      { (*xpt) = 74 * pt_per_mm; (*ypt) = 105 * pt_per_mm; }
     else if (
         (strcmp(paperSize, "a6") == 0) ||
         (strcmp(paperSize, "A6") == 0)
       )
-      { (*xpt) = 105 * mm; (*ypt) = 148 * mm; }
+      { (*xpt) = 105 * pt_per_mm; (*ypt) = 148 * pt_per_mm; }
     else if (
         (strcmp(paperSize, "a5") == 0) ||
         (strcmp(paperSize, "A5") == 0)
       )
-      { (*xpt) = 148 * mm; (*ypt) = 210 * mm; }
+      { (*xpt) = 148 * pt_per_mm; (*ypt) = 210 * pt_per_mm; }
     else if (
         (strcmp(paperSize, "a2") == 0) ||
         (strcmp(paperSize, "A2") == 0)
       )
-      { (*xpt) = 420 * mm; (*ypt) = 594 * mm; }
+      { (*xpt) = 420 * pt_per_mm; (*ypt) = 594 * pt_per_mm; }
     else if (
         (strcmp(paperSize, "a1") == 0) ||
         (strcmp(paperSize, "A1") == 0)
       )
-      { (*xpt) = 594 * mm; (*ypt) = 841 * mm; }
+      { (*xpt) = 594 * pt_per_mm; (*ypt) = 841 * pt_per_mm; }
     else if (
         (strcmp(paperSize, "a0") == 0) ||
         (strcmp(paperSize, "A0") == 0)
       )
-      { (*xpt) = 841 * mm; (*ypt) = 1189 * mm; }
+      { (*xpt) = 841 * pt_per_mm; (*ypt) = 1189 * pt_per_mm; }
     else if (
         (strcmp(paperSize, "2a0") == 0) ||
         (strcmp(paperSize, "2A0") == 0)
       )
-      { (*xpt) = 1189 * mm; (*ypt) = 1682 * mm; }
+      { (*xpt) = 1189 * pt_per_mm; (*ypt) = 1682 * pt_per_mm; }
     else if (
         (strcmp(paperSize, "4a0") == 0) ||
         (strcmp(paperSize, "4A0") == 0)
       )
-      { (*xpt) = 1682 * mm; (*ypt) = 2378 * mm; }
+      { (*xpt) = 1682 * pt_per_mm; (*ypt) = 2378 * pt_per_mm; }
     else
-      { demand(FALSE, "unkown paper size"); }
+      { demand(FALSE, "unknown paper size"); }
     if (landscape)
       { /* Swap the dimensons: */
         double tmp = (*xpt); (*xpt) = (*ypt); (*ypt) = tmp;

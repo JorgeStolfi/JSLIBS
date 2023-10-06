@@ -1,5 +1,5 @@
 /* See {r2_align_enum.h}. */
-/* Last edited on 2023-03-26 21:57:11 by stolfi */
+/* Last edited on 2023-09-07 18:11:05 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -28,7 +28,7 @@ void r2_align_enum_grid
     double urad[],            /* Radii of {\RF} along those directions. */
     double step,              /* Grid step. */
     r2_t p[],                 /* (OUT) Optimum alignment vector. */
-    double *F2val_P            /* (OUT) Value of {F2} for the optimum alignment vector. */
+    double *F2val_P           /* (OUT) Value of {F2} for the optimum alignment vector. */
   );
   /* Enumerates every point {psmp} that is {ctr} plus a linear combination of the
     lattice vectors {U[k]} for {k} in {0..nv-1} with coefficients that are {step} times
@@ -48,13 +48,15 @@ void r2_align_enum
   ( int32_t ni,               /* Number of images to align. */
     r2_align_mismatch_t *F2,  /* Function that evaluates the mismatch between the images. */
     r2_t arad[],              /* Max delta vector coordinates for each image. */
+    bool_t bal,              /* True if alignment vector adjustments should be balanced. */
     double tol,               /* Desired precision. */
-    r2_t p[],                 /* (IN/OUT) Corresponding points in each image. */
-    double *F2val_P            /* (OUT) Mismatch for the computed alignment vector. */
+    r2_t p[],                 /* (IN/OUT) Initial and optimized alignment vector. */
+    double *F2val_P           /* (OUT) Mismatch for the computed alignment vector. */
   )
   {
     demand(tol > 0, "invalid {tol}");
-    int32_t nd = r2_align_count_degrees_of_freedom(ni, arad); 
+    i2_t nv = r2_align_count_variable_coords (ni, arad);
+    int32_t nd = r2_align_count_degrees_of_freedom(nv, bal);
 
     /* Save the initial guess: */
     r2_t ctr[ni]; /* Center of ellipsoid (aved initial guess). */
@@ -63,7 +65,7 @@ void r2_align_enum
     /* Compute the axes and radii of the search ellipsoid {\RF}: */
     r2_t U[nd*ni]; /* Basis of conformal balanced delta vectors. */
     double urad[nd];
-    r2_align_compute_search_ellipsoid (ni, arad, nd, U, urad);
+    r2_align_compute_search_ellipsoid (ni, arad, bal, nd, U, urad);
 
     /* !!! Convert {U} to the packed lattice basis !!! */
 
@@ -92,7 +94,7 @@ void r2_align_enum_grid
         if (debug)
           { fprintf(stderr, "plot axis %d length = %.8f steps = %d\n", k, urad[k], n[k]);
             r2_t *uk = &(U[k*ni]);
-            r2_align_print_vector(stderr, ni, "u", k, uk, FALSE);
+            r2_align_print_vector(stderr, ni, "u", k, uk);
           }
       }
     

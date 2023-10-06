@@ -2,7 +2,7 @@
 #define affirm_H
 
 /* Variants of {assert} with explicit message argument. */
-/* Last edited on 2022-10-18 21:10:06 by stolfi */
+/* Last edited on 2023-10-04 17:17:49 by stolfi */
 
 /* ERRORS AND ASSERTIONS */
 
@@ -58,5 +58,12 @@ void programerror (const char *msg, const char *file, unsigned int line, const c
 void *checknotnull(void *p, const char *msg, const char *file, unsigned int line, const char *proc);
   /* If {p == NULL}, prints {file ":" line ": (" *proc ")" *msg} to {stderr} and
     stops; otherwise returns {p} itself.  Meant for {notnull} below. */
-    
+
+/* SANE HEAP ALLOCATION */
+   
+#define talloc(n, T) \
+  ((T*)((n) == 0 ? NULL : notnull(calloc((n), sizeof(T)), "no mem")))
+  /* Allocates an array of {n} elements of type {T}, casting the result as a {T*} pointer.
+    Aborts with error if {n} is positive but the allocation returns {NULL} (not enough memory). */
+ 
 #endif

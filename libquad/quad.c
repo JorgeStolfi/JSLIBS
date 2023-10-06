@@ -1,15 +1,16 @@
 /* See quad.h. */
-/* Last edited on 2023-02-13 21:42:45 by stolfi */
- 
+/* Last edited on 2023-10-05 20:53:09 by stolfi */
+  
+/* Written by J. Stolfi in Apr/1993, based on an original
+  implementation by Jim Roth (DEC CADM Advanced Group, May/1986).
+  Changed by J. Stolfi in Dec/2011 to be procedure-based instead of
+  macro-based. */ 
+
 #define quad_C_copyright \
-  "Copyright © 2011 Institute of Computing, Unicamp."
- 
-/* 
-** Written by J. Stolfi on april 1993, based on an original 
-** implementation by Jim Roth (DEC CADM Advanced Group, May 1986).  
-** Changed by J. Stolfi on dec/2011 to be procedure-based instead of macro-based.
-** See the copyright notice at the end of this file.
-*/ 
+  "Copyright © 2011 State University of Campinas (UNICAMP).\n\n" jslibs_copyright "\n\n" \
+  "NOTE: this copyright notice does not claim to supersede any copyrights" \
+  " that may apply to the original DEC implementation of the quad-edge" \
+  " data structure."
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -17,6 +18,7 @@
 #include <assert.h>
 #include <stdint.h>
 
+#include <jslibs_copyright.h>
 #include <vec.h>
 #include <bool.h>
 #include <jswsize.h>
@@ -48,17 +50,17 @@ quad_edge_t quad_edge(quad_arc_t e)
 #define TUMBLECODE(e) (UADDR(e) & TMASK)
   /* The tumble code of an arc {e} (as an address-size word). */
 
-#define BASEARC(E) ((quad_arc_t)(UADDR(E) & EMASK))
-  /* The base arc of the edge record {E}. */
+#define BASEARC(ed) ((quad_arc_t)(UADDR(ed) & EMASK))
+  /* The base arc of the edge record {ed}. */
 
-#define ORIENT(E,t) ((quad_arc_t)(UADDR(E) | ((t) & TMASK)))
-  /* The base arc of the edge record {E}. */
+#define ORIENT(ed,tc) ((quad_arc_t)(UADDR(ed) | ((tc) & TMASK)))
+  /* The base arc of the edge record {ed}. */
 
 quad_bits_t quad_tumble_code(quad_arc_t e)
   { return TUMBLECODE(e); }
 
-quad_arc_t quad_orient(quad_edge_t E, quad_bits_t t)
-  { return ORIENT(E,t); }
+quad_arc_t quad_orient(quad_edge_t ed, quad_bits_t tc)
+  { return ORIENT(ed,tc); }
 
 bool_t quad_arc_is_null(quad_arc_t e)
   { return (EDGE(e) == NULL); }
@@ -66,7 +68,7 @@ bool_t quad_arc_is_null(quad_arc_t e)
 #define LONBIT(e) (quad_bits_t)(((UADDR(e) & 2u) >> 1))
 #define DOPBIT(e) (quad_bits_t)((UADDR(e) & 1u))
   /*  
-    In this implementation, the tumble code {t} of an arc {e} with base
+    In this implementation, the tumble code {tc} of an arc {e} with base
     arc {b} consists of two bits {s=LONBIT(e)} and {d=DOPBIT(e)}. 
     They are such that {e = b.sym^s.rot^d}, or  {e = b.rot^{2*s+d}}. */
 
@@ -98,7 +100,7 @@ typedef struct quad_edge_rec_t { /* Edge record (four arcs). */
     quad_arc_t next[4];  /* Topological links. */
     void *data[4];       /* Client data fields. */
     uint64_t mark;       /* For internal use; set to 0 when record is created. */
-    uint64_t num;        /* Edge record number. */
+    uint64_t eid;        /* Edge record number. */
   } quad_edge_rec_t;
 
 /* Vertex/face walking operators (internal): */
@@ -216,8 +218,8 @@ void quad_set_ldata(quad_arc_t e, void *p)
 #define MARK(e)  (EDGE(e)->mark)
   /* The {mark} field of the edge record of arc [e}. */
   
-#define EDGENUM(e)  (EDGE(e)->num)
-  /* The {num} field of the edge record of arc [e}. */
+#define EDGE_ID(e)  (EDGE(e)->eid)
+  /* The {eid} field of the edge record of arc [e}. */
   
 quad_arc_t quad_make_edge(void)
   {
@@ -233,7 +235,7 @@ quad_arc_t quad_make_edge(void)
     LDATA(e) = NULL;
     RDATA(e) = NULL;
     MARK(e) = 0;
-    EDGENUM(e) = 0;
+    EDGE_ID(e) = 0;
     return e;
   }
 
@@ -249,14 +251,14 @@ void quad_destroy_edge(quad_arc_t e)
 
 /* Edge numbers: */
 
-quad_edge_num_t quad_edge_num(quad_edge_t E)
+quad_edge_id_t quad_edge_id(quad_edge_t ed)
   { 
-    return E->num;
+    return ed->eid;
   }
 
-void quad_set_edge_num(quad_edge_t E, quad_edge_num_t n)
+void quad_set_edge_id(quad_edge_t ed, quad_edge_id_t eid)
   { 
-    E->num = n;
+    ed->eid = eid;
   }
 
 /* Splice primitive: */
@@ -311,25 +313,25 @@ void quad_do_enum (quad_arc_t e, void visit_proc(quad_arc_t e), uint64_t mark)
       }
   }
 
-quad_edge_num_t quad_renumber_edges(quad_arc_vec_t *root, quad_arc_vec_t *et)
+quad_edge_id_t quad_renumber_edges(quad_arc_vec_t *root, quad_arc_vec_t *A)
   {
-    quad_edge_num_t nE = 0;
+    quad_edge_id_t ne = 0;
     
     auto void renumber_edge(quad_arc_t p);
-      /* Visit-proc that renumbers the base edge of {p} with {nE}
-        and increments {nE}. */
+      /* Visit-proc that renumbers the base edge of {p} with {ne}
+        and increments {ne}. */
 
     quad_enum(root, &renumber_edge);
-    if (et != NULL) { quad_arc_vec_trim(et, (uint32_t)nE); }
-    return nE;
+    if (A != NULL) { quad_arc_vec_trim(A, (uint32_t)ne); }
+    return ne;
 
     /* IMPLEMENTATIONS OF LOCAL PROCS */
     
     void renumber_edge(quad_arc_t p)
-      { quad_edge_t E = quad_edge(p);
-        E->num = nE; 
-        if (et != NULL) { quad_arc_vec_expand(et, (uint32_t)nE); et->e[nE] = p; }
-        nE++;
+      { quad_edge_t ed = quad_edge(p);
+        ed->eid = ne; 
+        if (A != NULL) { quad_arc_vec_expand(A, (uint32_t)ne); A->e[ne] = p; }
+        ne++;
       }
   }
 
@@ -337,22 +339,22 @@ quad_edge_num_t quad_renumber_edges(quad_arc_vec_t *root, quad_arc_vec_t *et)
 
 void quad_write_arc(FILE *wr, quad_arc_t e, int32_t width)
   { fprintf(wr, 
-      ("%*" uaddress_u_fmt ":%u%u"), width, 
+      ("%*" uint64_u_fmt ":%u%u"), width, 
       EDGE(e)->mark, 
       (uint32_t)SYMBIT(e), (uint32_t)DOPBIT(e));
   }
 
-quad_arc_t quad_read_arc(FILE *rd, quad_arc_vec_t *et)
-  { /* Parse the edge number {num} and get the edge {E} from the edge table {ET}: */
-    uint64_t num = fget_uint64(rd, 10);
-    demand(num < et->ne, "invalid edge number");
-    quad_edge_t E = quad_edge(et->e[num]);
-    /* Parse ":" and the tumble code {t} in binary: */
+quad_arc_t quad_read_arc(FILE *rd, quad_arc_vec_t *A)
+  { /* Parse the edge number {eid} and get the edge {ed} from the edge table {ET}: */
+    uint64_t eid = fget_uint64(rd, 10);
+    demand(eid < A->ne, "invalid edge number");
+    quad_edge_t ed = quad_edge(A->e[eid]);
+    /* Parse ":" and the tumble code {tc} in binary: */
     fget_match(rd, ":");
-    uint64_t ut = fget_uint64(rd, 2);
-    demand(ut <= 3, "invalid tumble code");
+    uint64_t tc = fget_uint64(rd, 2);
+    demand(tc <= 3, "invalid tumble code");
     /* Put it all together: */
-    return quad_orient(E, (quad_bits_t)ut);
+    return quad_orient(ed, (quad_bits_t)tc);
   }
 
 /* MAP INPUT/OUTPUT */
@@ -360,7 +362,7 @@ quad_arc_t quad_read_arc(FILE *rd, quad_arc_vec_t *et)
 #define FILE_TYPE "quad-edge"
 #define FILE_VERSION "2011-12-22"
 
-void quad_write_map(FILE *wr, quad_arc_vec_t *root, quad_arc_vec_t *et)
+void quad_write_map(FILE *wr, quad_arc_vec_t *root, quad_arc_vec_t *A)
   { 
     /* Write the header line: */
     filefmt_write_header(wr, FILE_TYPE, FILE_VERSION);
@@ -368,21 +370,21 @@ void quad_write_map(FILE *wr, quad_arc_vec_t *root, quad_arc_vec_t *et)
     int32_t nr = root->ne;
     /* Compute the width in digits {wr} of the root index: */
     int32_t dr = (nr < 10 ? 1 : digits(nr-1));
-    /* Make sure that {et} is non-null and points to an empty table: */
-    quad_arc_vec_t etb = quad_arc_vec_new(0); /* A local edge table. */
-    if (et == NULL) { et = &etb; }
+    /* Make sure that {A} is non-null and points to an empty table: */
+    quad_arc_vec_t A_local = quad_arc_vec_new(0); /* A local edge table. */
+    if (A == NULL) { A = &A_local; }
     
-    /* Renumbers all edge records reachable from {root[0..nr-1]} and saves them in {et}: */
-    quad_edge_num_t nE = quad_renumber_edges(root, et);
-    assert(nE == et->ne);
+    /* Renumbers all edge records reachable from {root[0..nr-1]} and saves them in {A}: */
+    quad_edge_id_t ne = quad_renumber_edges(root, A);
+    assert(ne == A->ne);
     
     /* Determine the width {eE} in digits of the edge number: */
-    int32_t dE = (nE < 10 ? 1 : digits(nE-1));
+    int32_t dE = (ne < 10 ? 1 : digits(ne-1));
     /* We should have zero edges if and only if we have zero roots: */
-    assert((nr == 0) == (nE == 0)); 
+    assert((nr == 0) == (ne == 0)); 
     /* Write the root and edge counts: */
     fprintf(wr, "roots = %d\n", nr);
-    fprintf(wr, "edges = %lu\n", nE);
+    fprintf(wr, "edges = %lu\n", ne);
     /* Write the roots, one per line: */
     for (uint32_t i = 0; i < nr; i++)
       { /* Write {i} and the root arc number {i}: */
@@ -391,40 +393,40 @@ void quad_write_map(FILE *wr, quad_arc_vec_t *root, quad_arc_vec_t *et)
         fputc('\n', wr);
       }
     /* Write the edge records, one per line: */
-    for (uint64_t num = 0; num < nE; num++)
-      { /* Get the reachable edge number {num}: */
-        quad_edge_t E = quad_edge(et->e[num]);
+    for (uint64_t eid = 0; eid < ne; eid++)
+      { /* Get the reachable edge number {eid}: */
+        quad_edge_t ed = quad_edge(A->e[eid]);
         /* Check whether the renumbering worked: */
-        assert(E->num == num);
+        assert(ed->eid == eid);
         /* Write the edge's number and its {onext} links: */
-        fprintf(wr, ("%*" uint64_u_fmt), dE, E->num);
+        fprintf(wr, ("%*" uint64_u_fmt), dE, ed->eid);
         for (int32_t r = 0; r < 4; r++)
-          { fputc(' ', wr); quad_write_arc(wr, E->next[r], dE); }
+          { fputc(' ', wr); quad_write_arc(wr, ed->next[r], dE); }
         fputc('\n', wr);
       }
     /* Write the footer line: */
     filefmt_write_footer(wr, FILE_TYPE);
     /* Reclaim the edge table if local: */
-    if (et == &etb) { quad_arc_vec_trim(&etb, 0); }
+    if (A == &A_local) { quad_arc_vec_trim(&A_local, 0); }
     return;
     
   }
 
-void quad_read_map(FILE *rd, quad_arc_vec_t *root, quad_arc_vec_t *et)
+void quad_read_map(FILE *rd, quad_arc_vec_t *root, quad_arc_vec_t *A)
   { /* Check and consume the header line: */
     filefmt_read_header(rd, FILE_TYPE, FILE_VERSION);
-    /* Parse the root count {nr} and the edge count {nE}: */
+    /* Parse the root count {nr} and the edge count {ne}: */
     int32_t nr = nget_int32(rd, "roots"); fget_eol(rd);
-    int32_t nE = nget_int32(rd, "edges"); fget_eol(rd);
-    /* Make sure that {et} is non-null and points to a table with {nE} slots: */
-    quad_arc_vec_t etb = quad_arc_vec_new(0); /* A local edge table. */
-    if (et == NULL) { et = &etb; }
-    quad_arc_vec_trim(et, nE);
-    /* Create the edge records, save their base arcs in {et->e[0..nE-1]}: */
-    for (uint64_t num = 0; num < nE; num++) 
+    int32_t ne = nget_int32(rd, "edges"); fget_eol(rd);
+    /* Make sure that {A} is non-null and points to a table with {ne} slots: */
+    quad_arc_vec_t A_local = quad_arc_vec_new(0); /* A local edge table. */
+    if (A == NULL) { A = &A_local; }
+    quad_arc_vec_trim(A, ne);
+    /* Create the edge records, save their base arcs in {A->e[0..ne-1]}: */
+    for (uint64_t eid = 0; eid < ne; eid++) 
       { quad_arc_t a = quad_make_edge(); 
-        EDGE(a)->num = num; 
-        et->e[num] = a;
+        EDGE(a)->eid = eid; 
+        A->e[eid] = a;
       }
     /* (Re)alocate the root record and read the root arcs, one per line: */
     quad_arc_vec_trim(root, nr);
@@ -433,19 +435,19 @@ void quad_read_map(FILE *rd, quad_arc_vec_t *root, quad_arc_vec_t *et)
         uint64_t iread = fget_uint64(rd, 10);
         demand(iread == i, "root index mismatch");
         /* Parse the root arc number {i}, save it in {root}: */
-        root->e[i] = quad_read_arc(rd, et); 
+        root->e[i] = quad_read_arc(rd, A); 
         /* Skip to the next line: */
         fget_eol(rd);
       }
-    /* Read the contents of the edge records {0..nE-1}: */
-    for (uint64_t num = 0; num < nE; num++) 
-      { /* Parse the edge number {num}: */
-        uint64_t numread = fget_uint64(rd, 10);
-        demand(numread == num, "edge number mismatch");
-        /* Get the edge {E} from the edge table {et}: */
-        quad_edge_t E = quad_edge(et->e[num]);
-        /* Read its links {E->next[0..3]}: */
-        for (int32_t r = 0; r < 4; r++) { E->next[r] = quad_read_arc(rd, et); } 
+    /* Read the contents of the edge records {0..ne-1}: */
+    for (uint64_t eid = 0; eid < ne; eid++) 
+      { /* Parse the edge number {eid}: */
+        uint64_t eid_read = fget_uint64(rd, 10);
+        demand(eid_read == eid, "edge number mismatch");
+        /* Get the edge {ed} from the edge table {A}: */
+        quad_edge_t ed = quad_edge(A->e[eid]);
+        /* Read its links {ed->next[0..3]}: */
+        for (int32_t r = 0; r < 4; r++) { ed->next[r] = quad_read_arc(rd, A); } 
         /* Skip to the next line: */
         fget_eol(rd);
       }
@@ -453,31 +455,8 @@ void quad_read_map(FILE *rd, quad_arc_vec_t *root, quad_arc_vec_t *et)
     /* Check and consume the footer line: */
     filefmt_read_footer(rd, FILE_TYPE);
     /* Reclaim the edge table if local: */
-    if (et == &etb) { quad_arc_vec_trim(&etb, 0); }
+    if (A == &A_local) { quad_arc_vec_trim(&A_local, 0); }
   }
 
 vec_typeimpl(quad_arc_vec_t,quad_arc_vec,quad_arc_t);
 vec_typeimpl(quad_edge_vec_t,quad_edge_vec,quad_edge_t);
-
-/*
-** Copyright notice:
-**
-** Copyright © 1996, 2005 Institute of Computing, Unicamp.
-**
-** Permission to use this software for any purpose is hereby granted,
-** provided that any substantial copy or mechanically derived version
-** of this file that is made available to other parties is accompanied
-** by this copyright notice in full, and is distributed under these same
-** terms. 
-**
-** NOTE: this copyright notice does not claim to supersede any copyrights
-** that may apply to the original DEC implementation of the quad-edge
-** data structure.
-**
-** DISCLAIMER: This software is provided "as is" with no explicit or
-** implicit warranty of any kind.  Neither the authors nor their
-** employers can be held responsible for any losses or damages
-** that might be attributed to its use.
-**
-** End of copyright notice.
-*/

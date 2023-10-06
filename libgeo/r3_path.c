@@ -1,5 +1,5 @@
 /* See r3_path.h */
-/* Last edited on 2021-06-09 19:57:50 by jstolfi */
+/* Last edited on 2023-10-01 19:05:15 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -61,7 +61,7 @@ void r3_path_interpolate_some(r3_path_state_t S[], int32_t N)
         r3_t p1, p2;
         double t3 = S[N-1].t;
         r3_t *p3 = &(S[N-1].p);
-        r3_bezier_from_path_states(&(S[0]), &(S[N-1]), &p1, &p2);
+        r3_path_bezier_from_states(&(S[0]), &(S[N-1]), &p1, &p2);
         int32_t im;
         for (im = 1; im <= N-2; im++)
           { r3_path_state_t *Sm = &(S[im]);
@@ -74,11 +74,30 @@ void r3_path_interpolate_some(r3_path_state_t S[], int32_t N)
       }
   }
 
+void r3_path_bezier_from_states(r3_path_state_t *S, r3_path_state_t *T, r3_t *p1, r3_t *p2)
+  { 
+    bool_t debug = TRUE;
+    if (debug) { fprintf(stderr, "enter %s\n", __FUNCTION__); }
+
+    if (debug) 
+      { r3_path_state_debug(stderr, S, "  ", "initial"); 
+        r3_path_state_debug(stderr, T, "  ", "final"); 
+      }
+    
+    r3_t *p0 = &(S->p);
+    r3_t *p3 = &(T->p);
+    double dt = T->t - S->t;  /* Duration of path. */
+    r3_mix(1.0, p0, +dt/3.0, &(S->v), p1);
+    r3_mix(1.0, p3, -dt/3.0, &(T->v), p2);
+    
+    if (debug) { fprintf(stderr, "exit %s\n", __FUNCTION__); }
+  }
+
 double r3_path_length_estimate(r3_path_state_t *S, r3_path_state_t *T, int32_t order)
   { r3_t *p0 = &(S->p);
     r3_t p1, p2;
     r3_t *p3 = &(T->p);
-    r3_bezier_from_path_states(S, T, &p1, &p2);
+    r3_path_bezier_from_states(S, T, &p1, &p2);
     return r3_bezier_length_estimate(p0, &p1, &p2, p3, order);
   }
 

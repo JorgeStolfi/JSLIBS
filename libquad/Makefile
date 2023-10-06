@@ -1,7 +1,8 @@
-# Last edited on 2009-03-06 20:15:58 by stolfi
+# Last edited on 2023-10-05 06:02:14 by stolfi
 
 LIBNAME = libquad
 
-IGNORE :=
+IGNORE := \
+  haf_draw.h haf_draw.c
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB.make

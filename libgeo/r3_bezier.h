@@ -1,5 +1,5 @@
-/* r3_bezier.h --- voxel-based modeling of antialiased 3D objects */
-/* Last edited on 2021-06-09 19:57:20 by jstolfi */
+/* r3_bezier.h --- Bezier arcs in {\RR^3} */
+/* Last edited on 2023-10-01 19:22:14 by stolfi */
 
 #ifndef r3_bezier_H
 #define r3_bezier_H
@@ -9,19 +9,27 @@
 
 #include <bool.h>
 #include <r3.h>
-#include <r3_motion.h>
-#include <r3_path.h>
-
-void r3_bezier_from_path_states(r3_path_state_t *S, r3_path_state_t *T, r3_t *p1, r3_t *p2);
-  /* Conmputes the two middle Bezier control points of a cubic arc that starts 
-    at time {S.t} and position {S.p} with velocity {S.v} and ends at time {T.t} 
-    and position {T.p} with velocity {T.v}. The control points
-    of the arc will be {p0=S.p}, {p1}, {p2}, and {p3=T.p}. */
 
 double r3_bezier_length_estimate(r3_t *p0, r3_t *p1, r3_t *p2, r3_t *p3, int32_t order);
   /* Estimates the length of the cubic curve arc defined by the Bezier 
      control points {p0,p1,p2,p3}, by bisecting it recursively {order} times. */
 
+void r3_bezier_eval
+  ( double t0, 
+    double t1,
+    r3_t *p0, 
+    r3_t *p1, 
+    r3_t *p2, 
+    r3_t *p3, 
+    double t,
+    r3_t *p,
+    r3_t *v
+  );
+  /* Evaluates a Bezier arc defined by {*p0,*p1,*p2,*p3} 
+    at time {t}, assumed to vary between {t0} and {t1}.
+    Returns the result in {*p}.  If {v} is not {NULL}, returns in {*v} the velocity of the 
+    curve (the time derivative of {*p}) at time {t}. */
+    
 void r3_bezier_split
   ( double t0, 
     double t1,

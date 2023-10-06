@@ -1,5 +1,5 @@
 /* See pst_Kodak_Q13.h */
-/* Last edited on 2012-07-22 11:21:05 by stolfilocal */
+/* Last edited on 2023-10-01 19:50:48 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -212,7 +212,7 @@ float_image_t *pst_Kodak_Q13_extract_frame_strip
 float_image_t *pst_Kodak_Q13_extract_patches
   ( float_image_t *img,   /* Photo of a scene that includes a Kodak Q-13 chart. */
     r3x3_t *P,            /* Chart-to-image projective map matrix. */
-    double pixelSize,          /* Output pixel size (mm). */
+    double pixelSize,     /* Output pixel size (mm). */
     double ylo,           /* Bottom Y of patches to extract (mm). */
     double yhi            /* Top Y of patches to extract (mm). */
   )
@@ -220,25 +220,25 @@ float_image_t *pst_Kodak_Q13_extract_patches
     /* Get input image dimensions (samples): */
     int NC, NX, NY;
     float_image_get_size(img, &NC, &NX, &NY);
-    /* Compute extracted patch dimensions {mmX_pt,mmY_pt} in mm: */
-    double mmX_pt = pst_Kodak_Q13_mid_patch_width - 2*pst_Kodak_Q13_patch_trim_x;
-    double mmY_pt = yhi - ylo;
-    /* Compute extracted patch dimensions {SNX_pt,SNY_pt} in pixels: */
-    int SNX_pt = (int)floor(mmX_pt/pixelSize + 0.00001);
-    int SNY_pt = (int)floor(mmY_pt/pixelSize + 0.00001);
-    demand(SNX_pt > 0, "pixel size {pixelSize} is larger than patch width");
-    demand(SNY_pt > 0, "pixel size {pixelSize} is larger than patch height");
-    /* Recompute ideal extracted patch Y dimensions{mmX_pt,mmY_pt} in mm: */
-    mmX_pt = SNX_pt*pixelSize;
-    mmY_pt = SNY_pt*pixelSize;
+    /* Compute extracted patch dimensions {mmX_patch,mmY_patch} in mm: */
+    double mmX_patch = pst_Kodak_Q13_mid_patch_width - 2*pst_Kodak_Q13_patch_trim_x;
+    double mmY_patch = yhi - ylo;
+    /* Compute extracted patch dimensions {SNX_patch,SNY_patch} in pixels: */
+    int SNX_patch = (int)floor(mmX_patch/pixelSize + 0.00001);
+    int SNY_patch = (int)floor(mmY_patch/pixelSize + 0.00001);
+    demand(SNX_patch > 0, "pixel size {pixelSize} is larger than patch width");
+    demand(SNY_patch > 0, "pixel size {pixelSize} is larger than patch height");
+    /* Recompute ideal extracted patch Y dimensions{mmX_patch,mmY_patch} in mm: */
+    mmX_patch = SNX_patch*pixelSize;
+    mmY_patch = SNY_patch*pixelSize;
     /* Recompute ideal extracted patch Y range in mm: */
     double yCenter = (ylo + yhi)/2;
-    ylo = yCenter - mmY_pt/2;
-    yhi = yCenter + mmY_pt/2;
+    ylo = yCenter - mmY_patch/2;
+    yhi = yCenter + mmY_patch/2;
     /* Compute output image dimensions (pixels): */
     int nSteps = pst_Kodak_Q13_num_steps; 
-    int SNX = SNX_pt * nSteps;
-    int SNY = SNY_pt;
+    int SNX = SNX_patch * nSteps;
+    int SNY = SNY_patch;
     /* Create output image: */
     float_image_t *omg = float_image_new(NC, SNX, SNY);
     /* Compute X displacement from chart edge to regularized gray scale: */
@@ -248,15 +248,15 @@ float_image_t *pst_Kodak_Q13_extract_patches
       { /* Compute center X coordinate of patch {i}: */
         double xCenter = xShift + (i + 0.5)*pst_Kodak_Q13_mid_patch_width;
         /* Compute left and right edges {xlo,xhi} of patch {i}: */
-        double xlo = xCenter - mmX_pt/2;
-        double xhi = xCenter + mmX_pt/2;
+        double xlo = xCenter - mmX_patch/2;
+        double xhi = xCenter + mmX_patch/2;
         /* Extract patch: */
         ix_reduction_t red = ix_reduction_SINGLE;
         float undef = 0.5;
         bool_t avg = TRUE;
         int order = 1;
         float_image_transform_copy_persp_rectangle
-          ( img, red, xlo, xhi, ylo, yhi, P, undef, avg, order, i*SNX_pt, 0, SNX_pt, SNY_pt, NULL, omg );
+          ( img, red, xlo, xhi, ylo, yhi, P, undef, avg, order, i*SNX_patch, 0, SNX_patch, SNY_patch, NULL, omg );
       }
         
     return omg;

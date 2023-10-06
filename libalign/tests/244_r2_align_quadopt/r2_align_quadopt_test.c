@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {r2_align_quadopt.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-20 05:38:34 by stolfi */ 
+/* Last edited on 2023-09-07 16:28:52 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_align_COPYRIGHT \
@@ -75,7 +75,9 @@ void talq_do_test(int32_t ni)
     talq_choose_arad(ni, arad);
     
     fprintf(stderr, "... Computing the main axes and radii of the search ellipsoid {\\RF} ...\n");
-    int32_t nd = r2_align_count_degrees_of_freedom(ni, arad);
+    i2_t nv = r2_align_count_variable_coords (ni, arad);
+    fprintf(stderr, "num of variable coords nv = (%d,%d)\n", nv.c[0], nv.c[1]);
+    int32_t nd = r2_align_count_degrees_of_freedom(nv, bal);
     fprintf(stderr, "search dimensions nd = %d\n", nd);
     r2_t U[ni*nd];
     double urad[nd];
@@ -119,7 +121,7 @@ void talq_do_test(int32_t ni)
             if ((dr <= drmax) && (de >= demin)) { break; }
           }
         fprintf(stderr, "chose {popt} with %d attempts dr = %.8f de = %.8f\n", ntry, dr, de);
-        r2_align_print_vector(stderr, ni, "popt", -1, popt, FALSE);
+        r2_align_print_vector(stderr, ni, "popt", -1, popt);
         demand(dr <= 1.0 + 1.0e-8, "{popt} outside the ellipsoid");
       }
     else
@@ -141,7 +143,7 @@ void talq_choose_arad(int32_t ni, r2_t arad[])
     double rmin = 1.500;
     r2_t zfrac = (ni == 2 ? (r2_t){{ 0.00, 0.00 }} : (r2_t){{ 0.25, 0.75 }});
     r2_align_throw_arad(ni, zfrac, rmin, rmax, arad);
-    r2_align_print_vector(stderr, ni, "arad", -1, arad, TRUE);
+    r2_align_print_vector(stderr, ni, "arad", -1, arad);
     return;
   }  
   
@@ -150,7 +152,7 @@ void talq_choose_ctr(int32_t ni, r2_t ctr[])
     fprintf(stderr, "... choosing the center {ctr} ...\n");
     /* r2_align_throw_ball_vector(ni, 0.0, 1.995, ctr);  */
     for (int32_t i = 0; i < ni; i++) { ctr[i] = (r2_t){{ 1.0, 2.0 }}; }
-    r2_align_print_vector(stderr, ni, "ctr", -1, ctr, FALSE);
+    r2_align_print_vector(stderr, ni, "ctr", -1, ctr);
     return;
   }
     
@@ -212,7 +214,7 @@ void talq_test_align_quadopt(int32_t ni, r2_t ctr[], r2_t arad[], double tol, r2
     return;
     
     double FD2(int32_t ni, r2_t q[])
-      { if (debug) { r2_align_print_vector(stderr, ni, "  psmp", -1, q, FALSE); }
+      { if (debug) { r2_align_print_vector(stderr, ni, "  psmp", -1, q); }
         double F2val = r2_align_dist_sqr(ni, q, popt);
         if (plot && (wr != NULL))
           { r2_t dsmp[ni];

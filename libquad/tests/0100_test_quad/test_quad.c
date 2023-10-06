@@ -2,10 +2,10 @@
 #define PROG_DESC "basic tests of the {quad.h} procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-18 10:52:55 by stolfi */ 
+/* Last edited on 2023-10-05 20:21:25 by stolfi */ 
 
 #define PROG_COPYRIGHT \
-  "Copyright © 2007  State University of Campinas (UNICAMP)"
+  "Copyright © 2007  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
   
 #define PROG_AUTH \
   "Created by J. Stolfi on 2009-03-06"
@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include <jslibs_copyright.h>
 #include <bool.h>
 #include <frgb.h>
 #include <argparser.h>
@@ -55,18 +56,18 @@ int32_t main(int32_t argc, char **argv)
 void do_tests(char *name, quad_arc_t m)
   {
     /* Check edge/tumblecode decomposition: */
-    quad_edge_t E = quad_edge(m);
-    assert(E != NULL);
+    quad_edge_t ed = quad_edge(m);
+    assert(ed != NULL);
     fprintf(stderr, "sizeof(void *) = %d\n", (int32_t)(sizeof(void*)));
     fprintf(stderr, "sizeof(quad_edge_t) = %d\n", (int32_t)(sizeof(quad_edge_t)));
     fprintf(stderr, "sizeof(quad_arc_t) = %d\n", (int32_t)(sizeof(quad_arc_t)));
     write_map(name, m);
     int32_t it;
     for (it = 0; it < 4; it++)
-      { quad_bits_t t = it;
-        quad_arc_t e = quad_orient(E, t);
-        assert(t == quad_tumble_code(e));
-        assert(E == quad_edge(e));
+      { quad_bits_t tc = it;
+        quad_arc_t e = quad_orient(ed, tc);
+        assert(tc == quad_tumble_code(e));
+        assert(ed == quad_edge(e));
       
         fprintf(stderr, "  %-10s ", "e =");          quad_write_arc(stderr, e, 1);              fprintf(stderr, "\n");
         fprintf(stderr, "  %-10s ", "rot(e) =");     quad_write_arc(stderr, quad_rot(e), 1);    fprintf(stderr, "\n");
@@ -158,8 +159,8 @@ void write_map(char *name, quad_arc_t a)
     FILE *wr = open_write(filename, TRUE);
     quad_arc_vec_t root = quad_arc_vec_new(1); /* Root list. */
     root.e[0] = a;
-    quad_arc_vec_t et = quad_arc_vec_new(0); /* Edge table. */
-    quad_write_map(wr, &root, &et);
+    quad_arc_vec_t A = quad_arc_vec_new(0); /* Edge table. */
+    quad_write_map(wr, &root, &A);
     fclose(wr);
     free(filename);
   }

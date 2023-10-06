@@ -1,34 +1,35 @@
-/* The quad-edge data structure (oriented surface version). */
-/* Last edited on 2023-03-18 10:53:17 by stolfi */
-
-#define quad_H_copyright \
-  "Copyright © 1996, 2006 Institute of Computing, Unicamp."
-
-/* 
-** The quad-edge data structure encodes the topology of a 
-** graph drawn on an orientable compact 2-D manifold
-** (i.e. a borderless surface of finite extent)
-** in such a way that every face is a topological disk.
-** For details, see 
-**
-**   "Primitives for the Manipulation of General Subdivisions 
-**   and the Computation of Voronoi Diagrams"
-**
-**   L. Guibas, J. Stolfi, ACM Transcations on Graphics, April 1985
-**
-** Originally written by Jim Roth (DEC CADM Advanced Group) on may/1986.
-** Modified by J. Stolfi on apr/1993.
-** Changed by J. Stolfi on dec/2011 to be procedure-based instead of macro-based.
-** See the copyright notice at the end of this file.
-*/
-
 #ifndef quad_H
 #define quad_H
+
+/* The quad-edge data structure (oriented surface version). */
+/* Last edited on 2023-10-05 20:52:09 by stolfi */
+
+#define quad_H_copyright \
+  "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright "\n\n" \
+  "NOTE: this copyright notice does not claim to supersede any copyrights" \
+  " that may apply to the original DEC implementation of the quad-edge" \
+  " data structure."
+
+/* The quad-edge data structure encodes the topology of a graph drawn on
+  an orientable compact 2-D manifold (i.e. a borderless surface of
+  finite extent) in such a way that every face is a topological disk.
+  For details, see
+ 
+    "Primitives for the Manipulation of General Subdivisions 
+    and the Computation of Voronoi Diagrams"
+ 
+    L. Guibas, J. Stolfi, ACM Transcations on Graphics, April 1985
+ 
+  Originally written by Jim Roth (DEC CADM Advanced Group) in May/1986.
+  Modified by J. Stolfi in Apr/1993. Changed by J. Stolfi in Dec/2011 to
+  be procedure-based instead of macro-based. */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 
+#include <jslibs_copyright.h>
+#include <bool.h>
 #include <vec.h>
 
 typedef struct quad_rep_t *quad_arc_t; 
@@ -58,7 +59,7 @@ quad_arc_t quad_sym(quad_arc_t e);
 quad_arc_t quad_rot(quad_arc_t e);
 quad_arc_t quad_tor(quad_arc_t e);
   /* The {rot} operation returns an arc {f} on the dual edge {F} of
-    the edge {E} underlying {e}, oriented so that {f} crosses {e}
+    the edge {ed} underlying {e}, oriented so that {f} crosses {e}
     leftwards and {e} crosses {f} rightwards. Intuitively, {rot}
     rotates {e} by a positive quarter-turn. Thus, {rot(e) != e},
     {rot(e) != sym(e)}, but {rot(rot(e)) == sym(e)}, for any {e}.
@@ -171,9 +172,9 @@ void quad_splice(quad_arc_t a, quad_arc_t b);
 /* EDGE RECORDS */
 
 typedef struct quad_edge_rec_t *quad_edge_t;
-  /* An edge record, representing an undirected and unoriented edge {E}
+  /* An edge record, representing an undirected and unoriented edge {ed}
     of the primal map together with the corresponding edge {F} of
-    the dual map. It is shared by the four arcs that consist of {E} or {F}
+    the dual map. It is shared by the four arcs that consist of {ed} or {F}
     taken with both logitudinal orientations. */
 
 quad_edge_t quad_edge(quad_arc_t e);
@@ -201,17 +202,17 @@ void quad_set_ldata(quad_arc_t e, void *p);
 /* TUMBLE CODE
 
   A value {e} of type {arc_t} consists of a pointer
-  {p = edge(e)} to an /edge record/, of type {edge_rec_t}, 
-  and a two-bit /tumble code/ {t = tumble_code(e)}.
+  {ed = edge(e)} to an /edge record/, of type {edge_rec_t}, 
+  and a two-bit /tumble code/ {tc = tumble_code(e)}.
   
-  The pointer {p} and the tumble code {t} are packed together as a
+  The pointer {ed} and the tumble code {tc} are packed together as a
   single {void *} value. This trick assumes that the address of any
-  edge record is a multiple of 4 bytes (32 bits), so {t} can be stored
+  edge record is a multiple of 4 bytes (32 bits), so {tc} can be stored
   in its lowest two bits, without ambiguity. Thus, although an {arc_t}
   is formally an address, it should not be used as such, since it
   generally points to some random byte inside the edge record. */
 
-typedef unsigned char quad_bits_t;
+typedef uint8_t quad_bits_t;
    /* A data type used to hold a few bits (usually at the low-order end). */
     
 quad_bits_t quad_tumble_code(quad_arc_t e);
@@ -220,9 +221,9 @@ quad_bits_t quad_tumble_code(quad_arc_t e);
     arcs {e,f} are identical if and only if {edge(e)==edge(f)} and
     {tumble_code(e)==tumble_code(f)}. */
   
-quad_arc_t quad_orient(quad_edge_t E, quad_bits_t t);
-  /* Returns the unique arc that has edge record {E} and tumble code {t}. 
-    Only the two lower-order bits of {t} are used.
+quad_arc_t quad_orient(quad_edge_t ed, quad_bits_t tc);
+  /* Returns the unique arc that has edge record {ed} and tumble code {tc}. 
+    Only the two lower-order bits of {tc} are used.
     
     This procedure can be convenient in special situations, like
     reading or writing a quad-edge structure, or enumerating all arcs
@@ -292,82 +293,63 @@ void quad_enum(quad_arc_vec_t *root, void visit_proc(quad_arc_t e));
 
 /* Edge numbers: */
 
-typedef uint64_t quad_edge_num_t; 
+typedef uint64_t quad_edge_id_t; 
   /* An integer stored in an edge record. */
 
-quad_edge_num_t quad_edge_num(quad_edge_t E);
-  /* Returns the current number of edge {E}. */
+quad_edge_id_t quad_edge_id(quad_edge_t ed);
+  /* Returns the current number of edge {ed}. */
 
-void quad_set_edge_num(quad_edge_t E, quad_edge_num_t n);
-  /* Sets the number of edge {E} to {n}. */
+void quad_set_edge_id(quad_edge_t ed, quad_edge_id_t eid);
+  /* Sets the number of edge {ed} to {eid}. */
 
-quad_edge_num_t quad_renumber_edges(quad_arc_vec_t *root, quad_arc_vec_t *et);
+quad_edge_id_t quad_renumber_edges(quad_arc_vec_t *root, quad_arc_vec_t *A);
   /* Renumbers all edge records reachable from {root[0..nr-1]}
-    sequentially from 0, where {nr = root->ne}. Returns the number {nE}
+    sequentially from 0, where {nr = root->ne}. Returns the number {ne}
     of edges found. 
     
-    If {et} is not NULL, stores into each element {et->e[k]} with {k} in
-    {0..nE} one reachable arc from the edge {E} such that
-    {quad_edge_num(E) == k}. The vector {et} is expanded as needed and
-    trimmed to {nE} elements. */
+    If {A} is not NULL, stores into each element {A->e[k]} with {k} in
+    {0..ne} one reachable arc from the edge {ed} such that
+    {quad_edge_id(ed) == k}. The vector {A} is expanded as needed and
+    trimmed to {ne} elements. */
 
 /* ARC INPUT/OUTPUT */
 
 void quad_write_arc(FILE *wr, quad_arc_t e, int32_t width);
-  /* Writes the arc {e} to {wr} in the format "{num}:{t}" where {num}
-    is {quad_edge_num(edge(e))}, and {t} is {quad_tumble_code(e)} in binary.
-    The {num} is padded with spaces to have at least {width}
+  /* Writes the arc {e} to {wr} in the format "{eid}:{tc}" where {eid}
+    is {quad_edge_id(edge(e))}, and {tc} is {quad_tumble_code(e)} in binary.
+    The {eid} is padded with spaces to have at least {width}
     characters. */
 
-quad_arc_t quad_read_arc(FILE *rd, quad_arc_vec_t *et);
+quad_arc_t quad_read_arc(FILE *rd, quad_arc_vec_t *A);
   /* Parses from file {rd} a description of an arc, in the format
-    "{num}:{t}" where {num} is an edge number and {t} is a tumble
-    code. Requires an edge table {et}, which is a vector of arcs such
-    that {et->e[i]} is any arc on an edge edge {E} with {E->num == i}.
-    The resulting arc {e} has {quad_edge(e) == quad_edge(et->e[num])} and
-    {quad_tumble_code(e) == t}. */
+    "{eid}:{tc}" where {eid} is an edge number and {tc} is a tumble
+    code. Requires an edge table {A}, which is a vector of arcs such
+    that {A->e[i]} is any arc on an edge edge {ed} with {quad_edge_id(ed) == i}.
+    The resulting arc {e} has {quad_edge(e) == quad_edge(A->e[eid])} and
+    {quad_tumble_code(e) == tc}. */
 
 /* MAP INPUT/OUTPUT */
 
-void quad_write_map(FILE *wr, quad_arc_vec_t *root, quad_arc_vec_t *et);
+void quad_write_map(FILE *wr, quad_arc_vec_t *root, quad_arc_vec_t *A);
   /* Writes to {wr} a description of the map(s) that can be reached by
     {sym} and {onext} steps on the quad-edge structure from the root
     arcs {root->e[0..nr-1]}, where {nr = root->ne}.
     
     As a side effect, the procedure renumbers all edges in the reachable
-    submap, with {quad_renumber_edges(root, et)}. */
+    submap, with {quad_renumber_edges(root, A)}. */
 
-void quad_read_map(FILE *rd, quad_arc_vec_t *root, quad_arc_vec_t *et);
+void quad_read_map(FILE *rd, quad_arc_vec_t *root, quad_arc_vec_t *A);
   /* Reads from {rd} a description of a map in the format used by
     {write_map}, and builds the corresponding quad-edge structure in
     memory.
     
     The procedure allocates all the edge records needed to build the
     input map, and assigns them sequential numbers starting from 0. It
-    also stores into the table {et} the base arc on each edge record,
+    also stores into the table {A} the base arc on each edge record,
     indexed by the edge number. It also reads from the file the root
     arcs of that map, and saves them in the table {root}. The tables
-    {et} and {root} are (re)allocated or trimmed as needed, so that
-    {et->ne} will be the number of edges in the map, and {root->ne}
+    {A} and {root} are (re)allocated or trimmed as needed, so that
+    {A->ne} will be the number of edges in the map, and {root->ne}
     the number of roots. */
 
 #endif
-
-/*
-** Copyright notice:
-**
-** Copyright © 1996, 2005 Institute of Computing, Unicamp.
-**
-** Permission to use this software for any purpose is hereby granted,
-** provided that any substantial copy or mechanically derived version
-** of this file that is made available to other parties is accompanied
-** by this copyright notice in full, and is distributed under these same
-** terms. 
-**
-** DISCLAIMER: This software is provided "as is" with no explicit or
-** implicit warranty of any kind.  Neither the authors nor their
-** employers can be held responsible for any losses or damages
-** that might be attributed to its use.
-**
-** End of copyright notice.
-*/

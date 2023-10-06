@@ -1,5 +1,5 @@
 /* See {pst_img_graph.h} */
-/* Last edited on 2023-02-25 16:19:40 by stolfi */
+/* Last edited on 2023-10-05 20:55:49 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #define _GNU_SOURCE
@@ -63,12 +63,12 @@ long int  pst_img_graph_vertex_add(pst_img_graph_t *g, long int id,oct_arc_t edg
 
 long int pst_img_graph_get_dir_edge_num(oct_arc_t e)
   { if (e == oct_arc_NULL) { return  -1; }
-    return (2*oct_edge_num(oct_edge(e))) + oct_lon_bit(e);
+    return (2*oct_edge_id(oct_edge(e))) + oct_lon_bit(e);
   }
 
 long int pst_img_graph_get_edge_num(oct_arc_t e)
   { if (e == oct_arc_NULL) { return -1; }
-    return oct_edge_num(oct_edge(e));
+    return oct_edge_id(oct_edge(e));
   }
 
 long int pst_img_graph_get_edge_origin(pst_img_graph_t *g, oct_arc_t e)

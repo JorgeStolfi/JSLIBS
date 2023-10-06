@@ -2,10 +2,10 @@
 #define PROG_DESC "Refinement of quad-edge maps by quad triangulation."
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-18 10:52:07 by stolfi */ 
+/* Last edited on 2023-10-05 20:22:00 by stolfi */ 
 
 #define PROG_COPYRIGHT \
-  "Copyright © 2007  State University of Campinas (UNICAMP)"
+  "Copyright © 2007  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
   
 #define PROG_AUTH \
   "ALgorithms taken from {MakeShape.m3} by Rober M. Rosi"\
@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <jslibs_copyright.h>
 #include <oct.h>
 #include <bool.h>
 

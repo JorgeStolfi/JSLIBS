@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {r2_align_enum.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-20 05:38:25 by stolfi */ 
+/* Last edited on 2023-09-07 19:24:35 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_align_COPYRIGHT \
@@ -30,12 +30,6 @@ int32_t main(int32_t argn, char **argv);
 
 void ralent_do_test(int32_t ni);
   /* Performs a test with alignment vectors of {ni} points. */
-
-void ralent_choose_arad(int32_t ni, r2_t arad[]);
-  /* Stores into {arad[0..ni-1]} a random radius vector for the basic ellipsoid {\RE}. */
-
-void ralent_choose_ctr(int32_t ni, r2_t ctr[]);
-  /* Stores into {ctr[0..ni-1]} a random center for the basic ellipsoid {\RE}. */
 
 void ralent_test_align_enum(int32_t ni, r2_t ctr[], r2_t arad[], double tol, r2_t u0[], r2_t u1[], r2_t popt[]);
   /* Tests the {r2_align_enum} function in the ellipsoid {\RF} defined
@@ -68,15 +62,20 @@ void ralent_do_test(int32_t ni)
 
     fprintf(stderr, "... choosing ellipsoid center {ctr} ...\n");
     r2_t ctr[ni];   /* Central alignment vector. */
-    ralent_choose_ctr(ni, ctr);
+    r2_align_throw_ctr(ni, 5.000, ctr, TRUE);
 
     fprintf(stderr, "... choosing basic ellipsoid radius {arad} ...\n");
-    r2_t arad[ni];  /* Radius vector if basic ellipsoid {\RE}. */
-    ralent_choose_arad(ni, arad);
+    r2_t ctr[ni], arad[ni];  /* Radius vector if basic ellipsoid {\RE}. */
+    r2_align_throw_ctr(ni, 5.000, ctr, TRUE);
+    r2_align_throw_arad(ni, 3.000, 1, arad, TRUE);    
+    
+    fprintf(stderr, "... Computing the dimension of the search ellipsoid {\\RF} ...\n");
+    i2_t nv = r2_align_count_variable_coords (ni, arad);
+    fprintf(stderr, "num of variable coords nv = (%d,%d)\n", nv.c[0], nv.c[1]);
+    int32_t nd = r2_align_count_degrees_of_freedom(nv, bal);
+    fprintf(stderr, "search dimensions nd = %d\n", nd);
     
     fprintf(stderr, "... Computing the main axes and radii of the search ellipsoid {\\RF} ...\n");
-    int32_t nd = r2_align_count_degrees_of_freedom(ni, arad);
-    fprintf(stderr, "search dimensions nd = %d\n", nd);
     r2_t U[ni*nd];
     double urad[nd];
     r2_align_compute_search_ellipsoid (ni, arad, nd, U, urad);
@@ -119,7 +118,7 @@ void ralent_do_test(int32_t ni)
             if ((dr <= drmax) && (de >= demin)) { break; }
           }
         fprintf(stderr, "chose {popt} with %d attempts dr = %.8f de = %.8f\n", ntry, dr, de);
-        r2_align_print_vector(stderr, ni, "popt", -1, popt, FALSE);
+        r2_align_print_vector(stderr, ni, "popt", -1, popt);
         demand(dr <= 1.0 + 1.0e-8, "{popt} outside the ellipsoid");
       }
     else
@@ -136,21 +135,19 @@ void ralent_do_test(int32_t ni)
     
 void ralent_choose_arad(int32_t ni, r2_t arad[])
   { 
-    fprintf(stderr, "... choosing the basic domain radius {arad} ...\n");
     double rmax = 4.999;
     double rmin = 1.500;
-    r2_t zfrac = (ni == 2 ? (r2_t){{ 0.00, 0.00 }} : (r2_t){{ 0.25, 0.75 }});
-    r2_align_throw_arad(ni, zfrac, rmin, rmax, arad);
-    r2_align_print_vector(stderr, ni, "arad", -1, arad, TRUE);
+    
+    r2_align_throw_arad(ni, zfrac, rmin, rmax, arad, TRUE);
     return;
   }  
   
 void ralent_choose_ctr(int32_t ni, r2_t ctr[])
   { 
     fprintf(stderr, "... choosing the center {ctr} ...\n");
-    /* r2_align_throw_ball_vector(ni, 0.0, 1.995, ctr);  */
+    r2_align_throw(ni, 1.0, 1.995, ctr);
     for (int32_t i = 0; i < ni; i++) { ctr[i] = (r2_t){{ 1.0, 2.0 }}; }
-    r2_align_print_vector(stderr, ni, "ctr", -1, ctr, FALSE);
+    r2_align_print_vector(stderr, ni, "ctr", -1, ctr);
     return;
   }
     
@@ -212,7 +209,7 @@ void ralent_test_align_enum(int32_t ni, r2_t ctr[], r2_t arad[], double tol, r2_
     return;
     
     double FD2(int32_t ni, r2_t q[])
-      { if (debug) { r2_align_print_vector(stderr, ni, "  psmp", -1, q, FALSE); }
+      { if (debug) { r2_align_print_vector(stderr, ni, "  psmp", -1, q); }
         double F2val = r2_align_dist_sqr(ni, q, popt);
         if (plot && (wr != NULL))
           { r2_t dsmp[ni];

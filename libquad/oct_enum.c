@@ -1,12 +1,10 @@
 /* See oct_enum.h. */
-/* Last edited on 2023-03-18 10:54:34 by stolfi */
+/* Last edited on 2023-10-05 12:18:06 by stolfi */
 
 #define oct_enum_C_copyright \
-  "Copyright © 1996, 2006 Institute of Computing, Unicamp."
+  "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright"
 
-/* AUTHORS
-
-  These enumeration procedures were originally developed as the
+/* These enumeration procedures were originally developed as the
   Modula-3 file {Oct.m3} by J. Stolfi and Rober M. Rosi in 1993. The
   latter was converted to C by J. Stolfi in 1996 and was substantially
   revised by him in January 2007. */
@@ -16,9 +14,11 @@
 #include <stdint.h>
 #include <assert.h>
 
+#include <jslibs_copyright.h>
+#include <enum_orbits.h>
+
 #include <oct.h>
 #include <oct_enum.h>
-#include <enum_orbits.h>
 
 bool_t oct_enum
   ( oct_arc_vec_t root, 

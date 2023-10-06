@@ -1,5 +1,5 @@
-/* See voxm_bezier.h */
-/* Last edited on 2021-06-09 19:56:34 by jstolfi */
+/* See r3_bezier.h */
+/* Last edited on 2023-10-01 19:22:30 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -12,27 +12,7 @@
 #include <r3.h>
 #include <affirm.h>
 
-#include <r3_path.h>
 #include <r3_bezier.h>
-
-void r3_bezier_from_path_states(r3_path_state_t *S, r3_path_state_t *T, r3_t *p1, r3_t *p2)
-  { 
-    bool_t debug = TRUE;
-    if (debug) { fprintf(stderr, "enter %s\n", __FUNCTION__); }
-
-    if (debug) 
-      { r3_path_state_debug(stderr, S, "  ", "initial"); 
-        r3_path_state_debug(stderr, T, "  ", "final"); 
-      }
-    
-    r3_t *p0 = &(S->p);
-    r3_t *p3 = &(T->p);
-    double dt = T->t - S->t;  /* Duration of path. */
-    r3_mix(1.0, p0, +dt/3.0, &(S->v), p1);
-    r3_mix(1.0, p3, -dt/3.0, &(T->v), p2);
-    
-    if (debug) { fprintf(stderr, "exit %s\n", __FUNCTION__); }
-  }
 
 double r3_bezier_length_estimate(r3_t *p0, r3_t *p1, r3_t *p2, r3_t *p3, int32_t order)
   { 
@@ -86,3 +66,18 @@ void r3_bezier_split
       }
   }
 
+void r3_bezier_eval
+  ( double t0, 
+    double t1,
+    r3_t *p0, 
+    r3_t *p1, 
+    r3_t *p2, 
+    r3_t *p3, 
+    double t,
+    r3_t *p,
+    r3_t *v
+  )
+  {
+    r3_t p01, p12, p23, p012, p123;
+    r3_bezier_split(t0, t1, p0, p1, p2, p3, t, &p01, &p12, &p23, &p012, &p123, p, v);
+  }

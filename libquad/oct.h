@@ -2,10 +2,10 @@
 #define oct_H
 
 /* The quad-edge data structure for orientable and non-orientable maps. */
-/* Last edited on 2023-03-18 10:54:48 by stolfi */
+/* Last edited on 2023-10-05 20:51:28 by stolfi */
 
 #define oct_H_copyright \
-  "Copyright © 1996, 2006 Institute of Computing, Unicamp."
+  "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
   
 /* THE (FULL) QUAD-EDGE STRUCTURE
 
@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include <jslibs_copyright.h>
 #include <vec.h>
 #include <bool.h>
 
@@ -53,18 +54,18 @@
 
 typedef struct oct_rep_t *oct_arc_t; 
   /* A value {e} of type {arc_t} specifies an /arc/ {e} of a quad-edge
-    structure, which is an edge {E = e.edge} belonging to any of the
+    structure, which is an edge {ed = e.edge} belonging to any of the
     two dual maps represented by the structure, taken with specific
     /longitudinal/ and /transversal orientations/.
     
     The longitudinal orientation of {e} is a choice among the two
-    senses of motion along the edge {E}, as to which one is to be
+    senses of motion along the edge {ed}, as to which one is to be
     considered /forwards/ and which one is /backwards/. It allows us
     to distinguish the /destination/ vertex (reached by going forwards
     on {e}) from the /origin/ one (reached by going backwards).
     
     The transversal orientation of {e} is a choice among the two ways
-    of crossing the edge {E}, as to which one is /leftwards/ and which
+    of crossing the edge {ed}, as to which one is /leftwards/ and which
     one is /rightwards/. It allows us to distinguish the /left face/
     of {e} from its /right face/.
     
@@ -117,7 +118,7 @@ oct_arc_t oct_vflip(oct_arc_t e);
 oct_arc_t oct_rot(oct_arc_t e);
 oct_arc_t oct_tor(oct_arc_t e);
   /* The {rot} operation returns an arc {f} on the dual edge {F} of
-    the edge {E} underlying {e}, oriented so that {f} crosses {e}
+    the edge {ed} underlying {e}, oriented so that {f} crosses {e}
     leftwards and {e} crosses {f} rightwards. Intuitively, {rot}
     rotates {e} by a positive quarter-turn. Thus, {rot(e) != e},
     {rot(e) != sym(e)}, but {rot(rot(e)) == sym(e)}, for any {e}.
@@ -291,7 +292,7 @@ oct_arc_t oct_make_edge(void);
   /* Adds to the quad-edge structure a new connected component,
     consisting of a map on the sphere with a single edge, a 
     single vertex, and two faces.  The edge number is set to zero;
-    use {oct_set_edge_num} to change it.  */
+    use {oct_set_edge_id} to change it.  */
 
 void oct_destroy_edge(oct_arc_t e);
   /* The arc {e} must belong to a connected component of the map with
@@ -311,48 +312,48 @@ void oct_splice(oct_arc_t a, oct_arc_t b);
 /* EDGE RECORDS */
 
 typedef struct oct_edge_rec_t *oct_edge_t;
-  /* An edge record, representing an undirected and unoriented edge {E}
+  /* An edge record, representing an undirected and unoriented edge {ed}
     of the primal map together with the corresponding edge {F} of
-    the dual map. It is shared by the eight arcs that consist of {E} or {F}
+    the dual map. It is shared by the eight arcs that consist of {ed} or {F}
     taken with all possible logitudinal and transversal orientations. */
   
 oct_edge_t oct_edge(oct_arc_t e);
   /* Obtains the edge record of an arc reference {e}. Satisfies
     {edge(rot(e)) == edge(fflip(e)) == edge(e)}.  */
 
-/* ARC AND EDGE NUMBERS */
+/* ARC AND EDGE ID NUMBERS */
 
-uint64_t oct_edge_num(oct_edge_t E);
-void oct_set_edge_num(oct_edge_t E, uint64_t num);
-  /* These functions get and set the current number of an edge {E}.
+uint64_t oct_edge_id(oct_edge_t ed);
+void oct_set_edge_id(oct_edge_t ed, uint64_t eid);
+  /* These functions get and set the current number of an edge {ed}.
     The number must be limited to 61 bits (i.e. in {0..2^61-1}). */
 
 uint64_t oct_arc_num(oct_arc_t *e);
   /* Returns a numeric identifier for the arc {e}, consisting of
-    {8*edge_num(edge(e)) + tumble_code(e)}. Thus, if edge numbers are
+    {8*edge_id(edge(e)) + tumble_code(e)}. Thus, if edge numbers are
     unique in a given set of edges, then the arc numbers will be
     unique among the set of all arcs on those edges.
     
     Other sorts of arc numbers can be obtained by combining the edge
     number and the orientation bits, in a similar way. For instance,
-    the formula {2*edge_num(edge(e)) + lon_bit(e)} gives unique
+    the formula {2*edge_id(edge(e)) + lon_bit(e)} gives unique
     numbers to all longitudinally directed primal edges. */
 
 /* TUMBLE CODE
 
   A value {e} of type {arc_t} consists of a pointer
-  {p = edge(e)} to an /edge record/, of type {edge_rec_t}, 
-  and a three-bit /tumble code/ {t = tumble_code(e)}.
+  {ed = edge(e)} to an /edge record/, of type {edge_rec_t}, 
+  and a three-bit /tumble code/ {tc = tumble_code(e)}.
   
-  The pointer {p} and the tumble code {t} are packed together as a single
+  The pointer {ed} and the tumble code {tc} are packed together as a single
   {void *} value. This trick assumes that the address of any edge
-  record is a multiple of 8 bytes (64 bits), so {t} can be stored in
+  record is a multiple of 8 bytes (64 bits), so {tc} can be stored in
   its lowest three bits, without ambiguity. Thus, although an
   {arc_t} is formally an address, it should not be used as such,
   since it generally points to some random byte inside the edge
   record. */
 
-typedef unsigned char oct_bits_t;
+typedef uint8_t oct_bits_t;
    /* A data type used to hold a few bits (usually at the low-order end). */
     
 oct_bits_t oct_tumble_code(oct_arc_t e);
@@ -361,9 +362,9 @@ oct_bits_t oct_tumble_code(oct_arc_t e);
     arcs {e,f} are identical if and only if {edge(e)==edge(f)} and
     {tumble_code(e)==tumble_code(f)}. */
   
-oct_arc_t oct_orient(oct_edge_t E, oct_bits_t t);
-  /* Returns the unique arc that has edge record {E} and tumble code {t}. 
-    Only the three lower-order bits of {t} are used.
+oct_arc_t oct_orient(oct_edge_t ed, oct_bits_t tc);
+  /* Returns the unique arc that has edge record {ed} and tumble code {tc}. 
+    Only the three lower-order bits of {tc} are used.
     
     This procedure can be convenient in special situations, like
     reading or writing a quad-edge structure, or enumerating all arcs
@@ -394,7 +395,7 @@ oct_bits_t oct_trn_bit(oct_arc_t e);
 oct_bits_t oct_dop_bit(oct_arc_t e); 
   /* The /dual-primal bit/ of {e}. This attribute is reversed by {rot}, {tor}, {dual}
     and {duar}, but preserved by {fflip}, {vflip} and {sym}. Therefore, it
-    can distinguish between the arcs of the edge {E} ({e,sym(e),fflip(e),vflip(e)})
+    can distinguish between the arcs of the edge {ed} ({e,sym(e),fflip(e),vflip(e)})
     and those of its dual edge ({rot(e),tor(e),dual(e),duar(e)}). */
 
 oct_bits_t oct_cir_bit(oct_arc_t e);
@@ -453,45 +454,45 @@ vec_typedef(oct_edge_vec_t,oct_edge_vec,oct_edge_t);
 /* ARC INPUT/OUTPUT  */
 
 void oct_write_arc(FILE *wr, oct_arc_t e, int32_t width);
-  /* Writes the arc {e} to {wr} in the format "{num}:{t}" where {num}
-    is {edge_num(edge(e))}, and {t} is {tumble_code(e)} in binary.
-    The {num} is padded with spaces to have at least {width}
+  /* Writes the arc {e} to {wr} in the format "{eid}:{tc}" where {eid}
+    is {edge_id(edge(e))}, and {tc} is {tumble_code(e)} in binary.
+    The {eid} is padded with spaces to have at least {width}
     characters. */
 
-oct_arc_t oct_read_arc(FILE *rd, oct_arc_vec_t *et);
+oct_arc_t oct_read_arc(FILE *rd, oct_arc_vec_t *A);
   /* Parses from file {rd} a description of an arc, in the format
-    "{num}:{t}" where {num} is an edge number and {t} is a tumble
-    code. Requires an edge table {et}, which is a vector of arcs such
-    that {et->e[i]} is any arc on an edge edge {E} with {E->num == i}.
-    The resulting arc {e} has {oct_edge(e) == et->e[num]} and
-    {oct_tumblecode(e) == t}. */
+    "{eid}:{tc}" where {eid} is an edge number and {tc} is a tumble
+    code. Requires an edge table {A}, which is a vector of arcs such
+    that {A->e[i]} is any arc on an edge edge {ed} with {oct_edge_id(ed) == i}.
+    The resulting arc {e} has {oct_edge(e) == A->e[eid]} and
+    {oct_tumblecode(e) == tc}. */
 
 /* MAP INPUT/OUTPUT  */
 
-void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *et);
+void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *A);
   /* Writes to {wr} a description of the map(s) that can be reached by
     {sym} and {onext} steps on the quad-edge structure from the root
     arcs {root->e[0..nr-1]}, where {nr = root->ne}.
     
     As a side effect, the procedure renumbers all octets (primal/dual
     edge pairs) in the reachable submap, sequentially from 0.
-    If {et} is not NULL, stores into {et->e[0..et->ne-1]} one arc
+    If {A} is not NULL, stores into {A->e[0..A->ne-1]} one arc
     out of every reachable octet, indexed by the edge number.
-    The table {*et} is trimmed or expanded by the procedure
+    The table {*A} is trimmed or expanded by the procedure
     as needed. */
 
-void oct_read_map(FILE *rd, oct_arc_vec_t *root, oct_arc_vec_t *et);
+void oct_read_map(FILE *rd, oct_arc_vec_t *root, oct_arc_vec_t *A);
   /* Reads from {rd} a description of a map in the format used by
     {write_map}, and builds the corresponding quad-edge structure in
     memory.
     
     The procedure allocates all the edge records needed to build the
     input map, and assigns them sequential numbers starting from 0. It
-    also stores into the table {et} the base arc on each edge record,
+    also stores into the table {A} the base arc on each edge record,
     indexed by the edge number. It also reads from the file the root
     arcs of that map, and saves them in the table {root}. The tables
-    {et} and {root} are (re)allocated or trimmed as needed, so that
-    {et->ne} will be the number of edges in the map, and {root->ne}
+    {A} and {root} are (re)allocated or trimmed as needed, so that
+    {A->ne} will be the number of edges in the map, and {root->ne}
     the number of roots. */
 
 #endif

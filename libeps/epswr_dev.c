@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2023-06-05 21:47:52 by stolfi */
+/* Last edited on 2023-10-02 17:16:36 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -146,17 +146,17 @@ void epswr_dev_write_file_header
     double hSize, 
     double vSize
   )
-  { fprintf(wr, "%%!PS-Adobe-3.0 EPS-2.0\n");
-
-    char *date = today();
-    fprintf(wr, "%%%%CreationDate: %s\n", date);
-    free(date);
+  { fprintf(wr, "%%!PS-Adobe-3.0 EPSF-3.2\n");
 
     demand(hSize == floor(hSize) && hSize > 0.0, "invalid hSize"); 
     demand(vSize == floor(vSize) && vSize > 0.0, "invalid hSize"); 
     fprintf(wr, "%%%%BoundingBox: %.0f %.0f %.0f %.0f\n", 0.0, 0.0, hSize, vSize);
 
-    fprintf(wr, "%%%%Pages: 1\n");
+    char *date = today();
+    fprintf(wr, "%%%%CreationDate: %s\n", date);
+    free(date);
+
+    fprintf(wr, "%%%%Pages: 0\n");
     fprintf(wr, "%%%%DocumentFonts: (atend)\n");
     fprintf(wr, "%%%%EndComments\n");
     
@@ -171,8 +171,10 @@ void epswr_dev_write_file_header
   }
 
 void epswr_dev_write_file_trailer(FILE *wr, int32_t nFonts, char **fonts)
-  { fprintf(wr, "%%%%Trailer\n" );
+  { fprintf(wr, "end %% Pops the dictionary epswr$dict.\n" );
+    fprintf(wr, "%%%%Trailer\n" );
     epswr_dev_write_font_list(wr, nFonts, fonts);
+    fprintf(wr, "%%%%EOF\n" );
   }
 
 void epswr_dev_write_font_list(FILE *wr, int32_t nFonts, char **fonts)

@@ -1,24 +1,26 @@
 /* See oct.h. */
-/* Last edited on 2023-03-18 11:31:01 by stolfi */
+/* Last edited on 2023-10-05 20:49:45 by stolfi */
 
-#define oct_C_copyright \
-  "Copyright © 1996, 2006 Institute of Computing, Unicamp."
-
-/* AUTHORS
-
-  This implementation was originally created by J. Stolfi in April 1993.
+/* This implementation was originally created by J. Stolfi in Apr/1993.
   It was based on the orientable-map version {quad.c} implemented by
-  Jim Roth (DEC CADM Advanced Group) in May 1986, which was the basis for
+  Jim Roth (DEC CADM Advanced Group) in May/1986, which was the basis for
   the full Modula-3 file {Oct.m3} by Rober M. Rosi in 1993.
   The latter was converted to C by J. Stolfi in 1996.  It was substantially
-  revised by J. Stolfi between January 2007 and March 2009, to add support
+  revised by J. Stolfi between Jan/2007 and Mar/2009, to add support
   general orbit enumeration and other enhancements. */
+
+#define oct_C_copyright \
+  "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright "\n\n" \
+  "NOTE: this copyright notice does not claim to supersede any copyrights" \
+  " that may apply to the original DEC implementation of the quad-edge" \
+  " data structure."
 
 #define _GNU_SOURCE
 #include <assert.h>
 #include <malloc.h>
 #include <stdint.h>
 
+#include <jslibs_copyright.h>
 #include <vec.h>
 #include <bool.h>
 #include <jswsize.h>
@@ -49,16 +51,16 @@ oct_edge_t oct_edge(oct_arc_t e)
   /* The tumble code of an arc {e} (as an address-size word). */
 
 #define BASEARC(E) ((oct_arc_t)(UADDR(E) & EMASK))
-  /* The base arc of the edge record {E}. */
+  /* The base arc of the edge record {ed}. */
 
-#define ORIENT(E,t) ((oct_arc_t)(UADDR(E) | ((t) & TMASK)))
-  /* The base arc of the edge record {E}. */
+#define ORIENT(ed,tc) ((oct_arc_t)(UADDR(ed) | ((tc) & TMASK)))
+  /* The arc whose edge is {ed} tumble code {tc}. */
 
 oct_bits_t oct_tumble_code(oct_arc_t e)
   { return TUMBLECODE(e); }
 
-oct_arc_t oct_orient(oct_edge_t E, oct_bits_t t)
-  { return ORIENT(E,t); }
+oct_arc_t oct_orient(oct_edge_t ed, oct_bits_t tc)
+  { return ORIENT(ed,tc); }
 
 bool_t oct_is_null(oct_arc_t e)
   { return (EDGE(e) == NULL); }
@@ -67,7 +69,7 @@ bool_t oct_is_null(oct_arc_t e)
 #define DOPBIT(e) ((oct_bits_t)((UADDR(e) & 2u) >> 1))
 #define FLPBIT(e) ((oct_bits_t)(UADDR(e) & 1u))
   /*  
-    In this implementation, the tumble code {t} of an arc {e} with base
+    In this implementation, the tumble code {tc} of an arc {e} with base
     arc {b} consists of three bits {s=SYMBIT(e)}, {d=DOPBIT(e)}, and
     {f=FLPBIT(e)}. They are such that
 
@@ -106,7 +108,7 @@ oct_bits_t oct_cir_bit(oct_arc_t e)
   /* The basic tumbling operators, assuming that the tumble code is
     defined as above. They act on the tumble code as follows:
 
-      arc              sdf t | rot    sym    tor    fflip  vflip  dual   duar
+      arc              sdf tc | rot    sym    tor    fflip  vflip  dual   duar
       ---------------  --- - | -----  -----  -----  -----  -----  -----  -----
       e = b.nop        000 0 | 010 2  100 4  110 6  001 1  101 5  011 3  111 7     
       e = b.nop.fflip  001 1 | 111 7  101 5  011 3  000 0  100 4  110 6  010 2     
@@ -180,11 +182,11 @@ oct_arc_t oct_rot_fflip(oct_arc_t e, int32_t r, int32_t f)
 
 typedef struct oct_edge_rec_t 
   { oct_arc_t next[4];   /* Topological links. */
-    uint64_t num;        /* Edge number (multipurpose). */
+    uint64_t eid;        /* Edge number (multipurpose). */
   } oct_edge_rec_t;
   /* An {oct_edge_rec_t} describes the connections of an unoriented,
-    undirected edge {E} of the map, as well as of its dual edge. 
-    If {b} is the base edge of {E}, then {next[i] = b.rot^i.onext}.
+    undirected edge {ed} of the map, as well as of its dual edge. 
+    If {b} is the base edge of {ed}, then {next[i] = b.rot^i.onext}.
     That is,
     
       {next[0] = onext(b)}
@@ -197,16 +199,16 @@ typedef struct oct_edge_rec_t
 #define NMASK ((((int64_t)1) << 61) - 1)
   /* Mask for valid edge numbers, {0..2^61-1}. */
 
-uint64_t oct_edge_num(oct_edge_t E)
-  { return E->num; }
+uint64_t oct_edge_id(oct_edge_t ed)
+  { return ed->eid; }
 
-void oct_set_edge_num(oct_edge_t E, uint64_t num)
-  { demand((num & (~ NMASK)) == 0, "edge number is too big"); 
-    E->num = num;
+void oct_set_edge_id(oct_edge_t ed, uint64_t eid)
+  { demand((eid & (~ NMASK)) == 0, "edge number is too big"); 
+    ed->eid = eid;
   }
 
 uint64_t oct_arc_num(oct_arc_t *e)
-  { return ((EDGE(e))->num << 3) | TUMBLECODE(e); }
+  { return ((EDGE(e))->eid << 3) | TUMBLECODE(e); }
 
 /* WALKING  OPERATORS 
   
@@ -361,30 +363,30 @@ uint oct_rdegree(oct_arc_t e)
 
 oct_arc_t oct_make_edge(void)
   { /* Allocate a new edge record: */
-    oct_edge_t E = (oct_edge_t)notnull(malloc(ESIZE), "no mem");
+    oct_edge_t ed = (oct_edge_t)notnull(malloc(ESIZE), "no mem");
     /* Get the edge's base arc: */
-    oct_arc_t e = BASEARC(E);
+    oct_arc_t e = BASEARC(ed);
     /* Set the fields for a map on {S^2} with {e} as the single (non-loop) edge {e}: */
-    E->next[0] = NOP(e);
-    E->next[1] = TOR(e);
-    E->next[2] = SYM(e);
-    E->next[3] = ROT(e);
-    E->num = 0;
+    ed->next[0] = NOP(e);
+    ed->next[1] = TOR(e);
+    ed->next[2] = SYM(e);
+    ed->next[3] = ROT(e);
+    ed->eid = 0;
     return e;
   }
 
 void oct_destroy_edge(oct_arc_t e)
-  { /* Grab the edge record {E}: */
-    oct_edge_t E = EDGE(e);
+  { /* Grab the edge record {ed}: */
+    oct_edge_t ed = EDGE(e);
     /* Make sure that the edge is isolated: */
     oct_arc_t f = SYM(e);
-    if (EDGE(E->next[0]) != E) { oct_splice(e, OPREV(e)); }
-    if (EDGE(E->next[2]) != E) { oct_splice(f, OPREV(f)); }
+    if (EDGE(ed->next[0]) != ed) { oct_splice(e, OPREV(e)); }
+    if (EDGE(ed->next[2]) != ed) { oct_splice(f, OPREV(f)); }
     /* Paranoia check -- assumes that the oct-edge is well-formed: */
     int32_t i;
-    for (i = 0; i < 4; i++) { assert(EDGE(E->next[i]) == E); }
+    for (i = 0; i < 4; i++) { assert(EDGE(ed->next[i]) == ed); }
     /* OK, reclaim the edge record: */
-    free(E);
+    free(ed);
   }
 
 /* MAP SPLICING */
@@ -428,25 +430,25 @@ void oct_splice(oct_arc_t a, oct_arc_t b)
 /* ARC INPUT/OUTPUT */
 
 void oct_write_arc(FILE *wr, oct_arc_t e, int32_t width)
-  { oct_edge_t E = EDGE(e);
-    oct_bits_t et = TUMBLECODE(e);
+  { oct_edge_t ed = EDGE(e);
+    oct_bits_t tc = TUMBLECODE(e);
     fprintf
       ( wr, ("%*" uint64_u_fmt ":%u%u%u"), width, 
-        E->num, (uint32_t)((et & 4u) >> 2), (uint32_t)((et & 2u) >> 1), (uint32_t)(et & 1u)
+        ed->eid, (uint32_t)((tc & 4u) >> 2), (uint32_t)((tc & 2u) >> 1), (uint32_t)(tc & 1u)
       );
   }
 
-oct_arc_t oct_read_arc(FILE *rd, oct_arc_vec_t *et)
-  { /* Parse the edge number {num} and get the edge {E} from the edge table {ET}: */
-    uint64_t num = fget_uint64(rd, 10);
-    demand(num < et->ne, "invalid edge number");
-    oct_edge_t E = oct_edge(et->e[num]);
-    /* Parse ":" and the tumble code {t} in binary: */
+oct_arc_t oct_read_arc(FILE *rd, oct_arc_vec_t *A)
+  { /* Parse the edge number {eid} and get the edge {ed} from the edge table {ET}: */
+    uint64_t eid = fget_uint64(rd, 10);
+    demand(eid < A->ne, "invalid edge number");
+    oct_edge_t ed = oct_edge(A->e[eid]);
+    /* Parse ":" and the tumble code {tc} in binary: */
     fget_match(rd, ":");
-    uint64_t ut = fget_uint64(rd, 2);
-    demand(ut <= 7, "invalid tumble code");
+    uint64_t tc = fget_uint64(rd, 2);
+    demand(tc <= 7, "invalid tumble code");
     /* Put it all together: */
-    return oct_orient(E, (oct_bits_t)ut);
+    return oct_orient(ed, (oct_bits_t)tc);
   }
 
 /* MAP INPUT/OUTPUT */
@@ -454,14 +456,14 @@ oct_arc_t oct_read_arc(FILE *rd, oct_arc_vec_t *et)
 #define FILE_TYPE "oct-edge"
 #define FILE_VERSION "2007-01-16"
 
-void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *et)
+void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *A)
   { 
   
-    int32_t nE = 0;  /* Count of reachable octets (edge records). */
+    int32_t ne = 0;  /* Count of reachable octets (edge records). */
     
     auto bool_t renumber_edge(oct_arc_t p);
-      /* Visit-proc that renumbers the base edge of {p} with {nE}
-        and increments {nE}. */
+      /* Visit-proc that renumbers the base edge of {p} with {ne}
+        and increments {ne}. */
     
     /* Write the header line: */
     filefmt_write_header(wr, FILE_TYPE, FILE_VERSION);
@@ -469,22 +471,22 @@ void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *et)
     int32_t nr = root->ne;
     /* Compute the width in digits {wr} of the root index: */
     int32_t dr = (nr < 10 ? 1 : digits(nr-1));
-    /* Make sure that {et} is non-null and points to an empty table: */
-    oct_arc_vec_t etb = oct_arc_vec_new(0); /* A local edge table. */
-    if (et == NULL) 
-      { et = &etb; }
+    /* Make sure that {A} is non-null and points to an empty table: */
+    oct_arc_vec_t A_local = oct_arc_vec_new(0); /* A local edge table. */
+    if (A == NULL) 
+      { A = &A_local; }
     else
-      { oct_arc_vec_trim(et, 0); }
+      { oct_arc_vec_trim(A, 0); }
     /* Renumber all edge records reachable from {root[0..nr-1]}: */
-    oct_enum_octets(*root, &renumber_edge, et);
-    assert(et->ne == nE);
+    oct_enum_octets(*root, &renumber_edge, A);
+    assert(A->ne == ne);
     /* Determine the width {eE} in digits of the edge number: */
-    int32_t dE = (nE < 10 ? 1 : digits(nE-1));
+    int32_t dE = (ne < 10 ? 1 : digits(ne-1));
     /* We should have zero edges if and only if we have zero roots: */
-    assert((nr == 0) == (nE == 0)); 
+    assert((nr == 0) == (ne == 0)); 
     /* Write the root and edge counts: */
     fprintf(wr, "roots = %d\n", nr);
-    fprintf(wr, "edges = %d\n", nE);
+    fprintf(wr, "edges = %d\n", ne);
     /* Write the roots, one per line: */
     uint32_t i;
     for (i = 0; i < nr; i++)
@@ -494,50 +496,50 @@ void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *et)
         fputc('\n', wr);
       }
     /* Write the edge records, one per line: */
-    uint64_t num;
-    for (num = 0; num < nE; num++)
-      { /* Get the reachable edge number {num}: */
-        oct_edge_t E = oct_edge(et->e[num]);
+    uint64_t eid;
+    for (eid = 0; eid < ne; eid++)
+      { /* Get the reachable edge number {eid}: */
+        oct_edge_t ed = oct_edge(A->e[eid]);
         /* Check whether the renumbering worked: */
-        assert(E->num == num);
+        assert(ed->eid == eid);
         /* Write the edge's number and its {onext} links: */
-        fprintf(wr, ("%*" uint64_u_fmt), dE, num);
+        fprintf(wr, ("%*" uint64_u_fmt), dE, eid);
         int32_t r;
         for (r = 0; r < 4; r++)
-          { fputc(' ', wr); oct_write_arc(wr, E->next[r], dE); }
+          { fputc(' ', wr); oct_write_arc(wr, ed->next[r], dE); }
         fputc('\n', wr);
       }
     /* Write the footer line: */
     filefmt_write_footer(wr, FILE_TYPE);
     /* Reclaim the edge table if local: */
-    if (et == &etb) { oct_arc_vec_trim(&etb, 0); }
+    if (A == &A_local) { oct_arc_vec_trim(&A_local, 0); }
     return;
     
     /* IMPLEMENTATIONS OF LOCAL PROCS */
     
     bool_t renumber_edge(oct_arc_t p)
       {
-        oct_edge_t E = oct_edge(p);
-        E->num = nE; nE++;
+        oct_edge_t ed = oct_edge(p);
+        ed->eid = ne; ne++;
         return FALSE;
       }
   }
 
-void oct_read_map(FILE *rd, oct_arc_vec_t *root, oct_arc_vec_t *et)
+void oct_read_map(FILE *rd, oct_arc_vec_t *root, oct_arc_vec_t *A)
   { /* Check and consume the header line: */
     filefmt_read_header(rd, FILE_TYPE, FILE_VERSION);
-    /* Parse the root count {nr} and the edge count {nE}: */
+    /* Parse the root count {nr} and the edge count {ne}: */
     int32_t nr = nget_int32(rd, "roots"); fget_eol(rd);
-    int32_t nE = nget_int32(rd, "edges"); fget_eol(rd);
-    /* Make sure that {et} is non-null and points to a table with {nE} slots: */
-    oct_arc_vec_t etb = oct_arc_vec_new(0); /* A local edge table. */
-    if (et == NULL) { et = &etb; }
-    oct_arc_vec_trim(et, nE);
-    /* Create the edge records, save their base arcs in {et->e[0..nE-1]}: */
-    uint64_t num;
-    for (num = 0; num < nE; num++) 
-      { et->e[num] = oct_make_edge(); 
-        oct_set_edge_num(oct_edge(et->e[num]), num);
+    int32_t ne = nget_int32(rd, "edges"); fget_eol(rd);
+    /* Make sure that {A} is non-null and points to a table with {ne} slots: */
+    oct_arc_vec_t A_local = oct_arc_vec_new(0); /* A local edge table. */
+    if (A == NULL) { A = &A_local; }
+    oct_arc_vec_trim(A, ne);
+    /* Create the edge records, save their base arcs in {A->e[0..ne-1]}: */
+    uint64_t eid;
+    for (eid = 0; eid < ne; eid++) 
+      { A->e[eid] = oct_make_edge(); 
+        oct_set_edge_id(oct_edge(A->e[eid]), eid);
       }
     /* (Re)alocate the root record and read the root arcs, one per line: */
     oct_arc_vec_trim(root, nr);
@@ -547,20 +549,20 @@ void oct_read_map(FILE *rd, oct_arc_vec_t *root, oct_arc_vec_t *et)
         uint64_t iread = fget_uint64(rd, 10);
         demand(iread == i, "root index mismatch");
         /* Parse the root arc number {i}, save it in {root}: */
-        root->e[i] = oct_read_arc(rd, et); 
+        root->e[i] = oct_read_arc(rd, A); 
         /* Skip to the next line: */
         fget_eol(rd);
       }
-    /* Read the contents of the edge records {0..nE-1}: */
-    for (num = 0; num < nE; num++) 
-      { /* Parse the edge number {num}: */
-        uint64_t numread = fget_uint64(rd, 10);
-        demand(numread == num, "edge number mismatch");
-        /* Get the edge {E} from the edge table {et}: */
-        oct_edge_t E = oct_edge(et->e[num]);
-        /* Read its links {E->next[0..3]}: */
+    /* Read the contents of the edge records {0..ne-1}: */
+    for (eid = 0; eid < ne; eid++) 
+      { /* Parse the edge number {eid}: */
+        uint64_t eid_read = fget_uint64(rd, 10);
+        demand(eid_read == eid, "edge number mismatch");
+        /* Get the edge {ed} from the edge table {A}: */
+        oct_edge_t ed = oct_edge(A->e[eid]);
+        /* Read its links {ed->next[0..3]}: */
         int32_t r;
-        for (r = 0; r < 4; r++) { E->next[r] = oct_read_arc(rd, et); } 
+        for (r = 0; r < 4; r++) { ed->next[r] = oct_read_arc(rd, A); } 
         /* Skip to the next line: */
         fget_eol(rd);
       }
@@ -568,7 +570,7 @@ void oct_read_map(FILE *rd, oct_arc_vec_t *root, oct_arc_vec_t *et)
     /* Check and consume the footer line: */
     filefmt_read_footer(rd, FILE_TYPE);
     /* Reclaim the edge table if local: */
-    if (et == &etb) { oct_arc_vec_trim(&etb, 0); }
+    if (A == &A_local) { oct_arc_vec_trim(&A_local, 0); }
   }
 
 vec_typeimpl(oct_arc_vec_t,oct_arc_vec,oct_arc_t);

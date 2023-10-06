@@ -1,5 +1,5 @@
 /* See msm_ps_tools.h */
-/* Last edited on 2023-02-14 17:45:58 by stolfi */
+/* Last edited on 2023-10-01 19:50:44 by stolfi */
 
 #define msm_ps_tools_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -61,10 +61,9 @@ msm_ps_tools_t *msm_ps_tools_new
         wr = msm_open_write(name, tag, ".eps", TRUE);
       }
     /* Create an Encapsulated Postscript stream from {wr}: */
-    double ptPmm = msm_PT_PER_MM;
-    double hSize_pt = (hSize + 2*mrg) * ptPmm; /* (pt) */
-    double vSize_pt = (vSize + 2*mrg) * ptPmm; /* (pt) */
-    double mrg_pt = mrg*ptPmm;
+    double hSize_pt = (hSize + 2*mrg) * epswr_pt_per_mm; /* (pt) */
+    double vSize_pt = (vSize + 2*mrg) * epswr_pt_per_mm; /* (pt) */
+    double mrg_pt = mrg*epswr_pt_per_mm;
     epswr_figure_t *eps = epswr_new_figure(wr, hSize_pt, vSize_pt, mrg_pt, mrg_pt, mrg_pt, mrg_pt, TRUE);
     /* Set {epswr} client coordinates to mm: */
     epswr_set_client_window(eps, 0, hSize, 0, vSize); 
@@ -103,10 +102,8 @@ msm_ps_tools_t *msm_ps_tools_new_graph
     double mrg
   )
   {
-    double ptPmm = msm_PT_PER_MM;
-    
     /* Estimate the character dimensions in mm: */
-    double vCharSize = fontSize/ptPmm; /* Estimated character height (mm), with skosh. */
+    double vCharSize = fontSize/epswr_pt_per_mm; /* Estimated character height (mm), with skosh. */
     double hCharSize = 0.8*vCharSize;  /* Estimated character width (mm), with skosh; guess. */
     
     /* Compute the max label dimensions in mm: */
@@ -678,8 +675,7 @@ void msm_ps_tools_draw_graphs
     msm_ps_tools_set_graph_ref_window(mps, xMin, xMax, yMin, yMax);
 
     /* Estimate the character dimensions in mm: */
-    double ptPmm = msm_PT_PER_MM;
-    double vCharSize = mps->fontSize/ptPmm; /* Estimated character height (mm), with skosh. */
+    double vCharSize = mps->fontSize/epswr_pt_per_mm; /* Estimated character height (mm), with skosh. */
     double hCharSize = 0.8*vCharSize;  /* Estimated character width (mm), with skosh; guess. */
   
     /* Shrink Epswr window to leave space for tics and labels: */
@@ -824,10 +820,9 @@ void msm_ps_tools_draw_histogram
     msm_ps_tools_set_graph_ref_window(mps, xMin, xMax, yMin, yMax);
   
     /* Shrink Epswr window to leave space for tics and labels: */
-    double ptPmm = msm_PT_PER_MM;
     double ticSz = 1.0;  /* In mm. */
-    double yScaleWd = 2*mps->fontSize/ptPmm + (ticSz + 2.0); /* Width of Y scale and tics. */
-    double xScaleHt = mps->fontSize/ptPmm + (ticSz + 2.0); /* Height of X scale and tics. */
+    double yScaleWd = 2*mps->fontSize/epswr_pt_per_mm + (ticSz + 2.0); /* Width of Y scale and tics. */
+    double xScaleHt = mps->fontSize/epswr_pt_per_mm + (ticSz + 2.0); /* Height of X scale and tics. */
     msm_ps_tools_shrink_epswr_ref_window(mps, yScaleWd, 0.0, xScaleHt, 0.0);
     
     /* Draw axes, tics, labels, etc: */
