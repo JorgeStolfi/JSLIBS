@@ -1,5 +1,5 @@
 /* See rmxn.h. */
-/* Last edited on 2023-02-27 08:56:02 by stolfi */
+/* Last edited on 2023-10-09 09:03:40 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -362,6 +362,26 @@ double rmxn_norm(int32_t m, int32_t n, double *A)
           }
       }
     return sqrt(s);
+  }
+
+double rmxn_normalize(int32_t m, int32_t n, double *A)
+  { 
+    double w = rmxn_norm(m, n, A);
+    if (w != 0)
+      { int32_t k = 0;
+        for (int32_t i = 0; i < m; i++)
+          { for (int32_t j = 0; j < n; j++)
+             { A[k] /= w; k++; }
+          }
+      }
+    else
+      { int32_t k = 0;
+        for (int32_t i = 0; i < m; i++)
+          { for (int32_t j = 0; j < n; j++)
+             { A[k] = NAN; k++; }
+          }
+      }
+    return w;
   }
 
 double rmxn_mod_norm_sqr(int32_t n, double *A)

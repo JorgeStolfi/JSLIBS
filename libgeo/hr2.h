@@ -1,5 +1,5 @@
 /* Oriented projective geometry in two dimensions. */
-/* Last edited on 2023-03-20 20:54:56 by stolfi */ 
+/* Last edited on 2023-10-09 19:38:04 by stolfi */ 
    
 #ifndef hr2_H
 #define hr2_H
@@ -61,7 +61,15 @@ r2_t hr2_line_normal(hr2_line_t *L);
   /* The normal direction of line {L}: a unit vector which,
     on the hither side of the plane, points from {L} into 
     {L}'s positive halfplane.  Assumes {L} is not at infinity. */
-    
+   
+hr2_point_t hr2_point_throw(void);
+  /* Returns a point with homogeneous coordinates uniformly
+    distributed over the unit sphere of {\RR^3}. */
+   
+hr2_line_t hr2_line_throw(void);
+  /* Returns a line with homogeneous coefficienys uniformly
+    distributed over the unit sphere of {\RR^3}. */
+ 
 /* PROJECTIVE MAPS */
 
 typedef struct hr2_pmap_t { r3x3_t dir; r3x3_t inv; } hr2_pmap_t;
@@ -71,18 +79,18 @@ bool_t hr2_pmap_is_identity(hr2_pmap_t *M);
   /* TRUE iff {M} is the identity map (apart from homogeneous scaling). */
 
 hr2_point_t hr2_pmap_point(hr2_point_t *p, hr2_pmap_t *M);
-  /* Applies projective map {M} to point {p}. */
+hr2_point_t hr2_pmap_inv_point(hr2_point_t *p, hr2_pmap_t *M);
+  /* Applies projective map {M} or its inverse, respectively, to point {p}. */
 
 r2_t hr2_pmap_r2_point(r2_t *p, hr2_pmap_t *M);
-  /* Maps the Cartesian point {p} by the projective map {M}, and returns
-    the result converted to Cartesian coordinates. If the result is at
-    infinity, returns {(NAN,NAN)}. */
+r2_t hr2_pmap_inv_r2_point(r2_t *p, hr2_pmap_t *M);
+  /* Maps the Cartesian point {p} by the projective map {M} or its inverse,
+    respectively, and returns the result converted to Cartesian coordinates. 
+    If the result is at  infinity, returns {(NAN,NAN)}. */
 
 hr2_line_t hr2_pmap_line(hr2_line_t *L, hr2_pmap_t *M);
-  /* Applies projective map {M} to line {L}. */
-
-hr2_pmap_t hr2_pmap_identity(void);
-  /* Returns the identity projective map, defiend by the iedntity 3x3 matrix. */
+hr2_line_t hr2_pmap_inv_line(hr2_line_t *L, hr2_pmap_t *M);
+  /* Applies projective map {M} or its inverse, respectively, to line {L}. */
 
 hr2_pmap_t hr2_pmap_compose(hr2_pmap_t *M, hr2_pmap_t *N);
   /* Returns the composition of {M} and {N}, applied in that order. */
@@ -90,8 +98,52 @@ hr2_pmap_t hr2_pmap_compose(hr2_pmap_t *M, hr2_pmap_t *N);
 hr2_pmap_t hr2_pmap_inv(hr2_pmap_t *M);
   /* Returns the inverse of map {M}. */
 
-hr2_pmap_t hr2_pmap_inv_comp(hr2_pmap_t *M, hr2_pmap_t *N);
+hr2_pmap_t hr2_pmap_inv_compose(hr2_pmap_t *M, hr2_pmap_t *N);
   /* Returns the composition of the inverse of {M} and {N}, applied in that order. */
+    
+bool_t hr2_pmap_is_affine(hr2_pmap_t *M);
+  /* Returns true iff {M} is an affine map; that is, the first column of
+    its direct matrix is {w,0,0} for some positive {w}. Note that a
+    proper projective map is affine if and only if its inverse is
+    affine. */
+
+double hr2_pmap_diff_sqr(hr2_pmap_t *M, hr2_pmap_t *N);
+  /* Computes the sum of squares differences between corresponding
+    elements of {M.dir} and {N.dir} and of {M.inv} and {N.inv},
+    after implicitly scaling both so that the sum of squared elements is 1. */
+
+double hr2_pmap_mismatch_sqr(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[]);
+  /* Computes the mean squared distance between the
+     mapped points {p1[0..np-1]} mapped by {M.dir} and the 
+     points {p2[0..np-1]} mapped by {M.inv}. */
+
+double hr2_pmap_deform_sqr(r2_t h[], hr2_pmap_t *M);
+  /* Measures the amount of deformation produced by the projective map
+    {M} on the quadrilateral {Q} whose corners are {h[0..3]}. The
+    procedure compares each side and diagonal of {Q} with those of the
+    quadrilateral {Q'} that is {Q} mapped by {M}. For each of these line
+    segments, it computes the original length {d} and the length {d'} of
+    the mapped segment, and the log of the ratio {d'/d}. The result is
+    is the variance of these logs.
+    
+    Thus the result will be zero if and an only if every distance {d'}
+    is the corresponding distance {d} times a common factor {s}; that
+    is, if {Q} is congruent to {Q'}, meaning that {M} is an similarity
+    -- a translation combined with a rotation or mirroring and a uniform
+    change of scale (by the common factor {s}). */
+
+double hr2_pmap_aff_discr_sqr(hr2_pmap_t *M, hr2_pmap_t *N);
+  /* Assumes that {M} and {N} are affine maps.  Returns the total
+    squared mismatch between them, defined as 
+    
+      { INTEGRAL { |(A - B)(u(t))|^2 : t \in [0 _ 1] } }
+    
+    where {u(t)} is the unit vector {(cos(2\pi t),sin(2\pi t))}. */
+
+/* SPECIAL PROJECTIVE MAPS */
+
+hr2_pmap_t hr2_pmap_identity(void);
+  /* Returns the identity projective map, defiend by the iedntity 3x3 matrix. */
 
 hr2_pmap_t hr2_pmap_translation(r2_t *vec);
   /* Returns a projective map that performs a translation by the Cartesian vector {vec}.
@@ -147,6 +199,20 @@ hr2_pmap_t hr2_pmap_similarity_from_two_points(r2_t *p, r2_t *q, bool_t flip);
     uniform scaling by a negative factor is equivalent to a rotation by
     180 degrees.  */
 
+hr2_pmap_t hr2_pmap_aff_from_mat_and_disp(r2x2_t *E, r2_t *d);
+  /* Returns an affine map {M} that performs the linear map 
+    described by the matrix {E} followed by translation by {d}.
+    That is, maps the point with Cartesian coordinates {p \in \RR^2} 
+    to {p*E + d}. The map will have unit weight (that is, 
+    {M.dir.c[0][0] == 1}). */
+     
+hr2_pmap_t hr2_pmap_aff_from_three_points(r2_t *o, r2_t *p, r2_t *q);
+  /* Returns a projective map that takes the points {(0,0)},
+    {(0,1)}, and {(1,0)} to {o}, {p}, and {q}, respectively.
+    
+    The procedure returns a degenerate (non-invertble) map
+    if {o,p,q} are collinear.  */
+
 hr2_pmap_t hr2_pmap_from_four_points(hr2_point_t *p, hr2_point_t *q, hr2_point_t *r, hr2_point_t *u);
   /* Returns a projective map that takes the cardinal points {[1,0,0]},
     {[0,1,0]}, and {[0,0,1]} to {p}, {q}, and {r}, respectively; and
@@ -157,14 +223,6 @@ hr2_pmap_t hr2_pmap_from_four_points(hr2_point_t *p, hr2_point_t *q, hr2_point_t
     
     The procedure fails if the set {p,q,r,u} contains three collinear
     points.  */
-    
-typedef void hr2_pmap_opt_report_proc_t (hr2_pmap_t *M, double F);
-  /* Type of a procedure used by {hr2_pmap_from_many_pairs} to report
-    the probes made during optimization.  
-    
-    It is called after every call to the internal goal function. The map {M}
-    is the projective map that was tried, and {F} is the value of
-    the goal function for it. */
 
 typedef enum 
   { hr2_pmat_type_TRANSLATION,
@@ -178,31 +236,6 @@ typedef enum
     plus a uniform scaling. An affine map is a linear map of {\RR^2}
     combined with a translation. {hr2_pmat_type_PROJECTIVE} means
     a general (unrestricted) projecive map. */
-
-double hr2_pmap_diff_sqr(hr2_pmap_t *M, hr2_pmap_t *N);
-  /* Computes the sum of squares differences between corresponding
-    elements of {M.dir} and {N.dir} and of {M,inv} and {N.inv},
-    after implicitly scaling both so that the sum of squared elements is 1. */
-
-double hr2_pmap_mismatch_sqr(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[]);
-  /* Computes the mean squared distance between the
-     mapped points {p1[0..np-1]} mapped by {M.dir} and the 
-     points {p2[0..np-1]} mapped by {M.inv}. */
-
-double hr2_pmap_deform_sqr(r2_t h[], hr2_pmap_t *M);
-  /* Measures the amount of deformation produced by the projective map
-    {M} on the quadrilateral {Q} whose corners are {h[0..3]}. The
-    procedure compares each side and diagonal of {Q} with those of the
-    quadrilateral {Q'} that is {Q} mapped by {M}. For each of these line
-    segments, it computes the original length {d} and the length {d'} of
-    the mapped segment, and the log of the ratio {d'/d}. The result is
-    is the variance of these logs.
-    
-    Thus the result will be zero if and an only if every distance {d'}
-    is the corresponding distance {d} times a common factor {s}; that
-    is, if {Q} is congruent to {Q'}, meaning that {M} is an similarity
-    -- a translation combined with a rotation or mirroring and a uniform
-    change of scale (by the common factor {s}). */
 
 void hr2_pmap_print (FILE *wr, hr2_pmap_t *M, char *pref, char *suff);
   /* Prints {M} on file {wr}, with some default format.  The printout
@@ -226,46 +259,5 @@ void hr2_pmap_gen_print
     NULL. */
 
 /* SPECIAL PROCEDURES FOR AFFINE MAPS */
-
-bool_t hr2_pmap_is_affine(hr2_pmap_t *M);
-  /* Returns true iff {M} is an affine map; that is, the first column of
-    its direct matrix is {w,0,0} for some positive {w}. Note that a
-    proper projective map is affine if and only if its inverse is
-    affine. */
-
-hr2_pmap_t hr2_pmap_aff_from_mat_and_disp(r2x2_t *E, r2_t *d);
-  /* Returns an affine map {M} that performs the linear map 
-    described by the matrix {E} followed by translation by {d}.
-    That is, maps the point with Cartesian coordinates {p \in \RR^2} 
-    to {p*E + d}. The map will have unit weight (that is, 
-    {M.dir.c[0][0] == 1}). */
-
-double hr2_pmap_aff_mismatch_sqr(hr2_pmap_t *M, hr2_pmap_t *N);
-  /* Returns the total squared mismatch between the affine maps {*M} and 
-    {*B}, defined as 
-    
-      { INTEGRAL { |(A - B)(u(t))|^2 : t \in [0 _ 1] } }
-    
-    where {u(t)} is the unit vector {(cos(2\pi t),sin(2\pi t))}. */
-     
-hr2_pmap_t hr2_pmap_aff_from_points(r2_t *o, r2_t *p, r2_t *q);
-  /* Returns a projective map that takes the points {(0,0)},
-    {(0,1)}, and {(1,0)} to {o}, {p}, and {q}, respectively.
-    
-    The procedure returns a degenerate (non-invertble) map
-    if {o,p,q} are collinear.  */
-
-hr2_pmap_t hr2_pmap_aff_from_point_pairs(int32_t np, r2_t p1[], r2_t p2[], double w[]);
-  /* Returns an affine map {M} that best maps the points {p1[0..np-1]}
-    to the points {p2[0..np-1]}, in the sense of minimizing the
-    mean squared error with weights {w[0..np-1]}.  
-    
-    The weights had better have positive sum.  If {w == NULL}, assumes
-    equal weights for all points.
-    
-    If {np} is 3 or less, the map is exact. If {np} is zero, the result is
-    the identity map.  If {np==1}, the result is a translation. If {np==2}, the result is an
-    Euclidean similarity (translation, rotation and scaling). If {np}
-    is 3 or more the result is a general affine map. */
 
 #endif

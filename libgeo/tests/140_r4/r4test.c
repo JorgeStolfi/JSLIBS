@@ -1,5 +1,5 @@
 /* r4test --- test program for r4.h, r4x4.h  */
-/* Last edited on 2022-01-04 08:44:05 by stolfi */
+/* Last edited on 2023-10-09 09:13:18 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -606,6 +606,24 @@ void test_r4x4(int32_t verbose)
     affirm(tt >= 0, "r4x4_mod_norm_sqr error");
     affirm(fabs(tt - t) < 000000001, "r4x4_mod_norm_sqr error");
  
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- r4x4_normalize ---\n"); }
+    throw_matrix(&A);
+    B = A;
+    s = r4x4_norm(&B);
+    ss = r4x4_normalize(&B);
+    affirm(fabs(ss - s) < 000000001, "r4x4_normalize result error");
+    t = r4x4_norm(&B);
+    tt = 1.0;
+    affirm(fabs(tt - t) < 000000001, "r4x4_normalize norm error");
+    for (i = 0; i < N; i++)
+      { for (j = 0; j < N; j++)
+          { double Aij = A.c[i][j];
+            double Bij = B.c[i][j];
+            affirm(fabs(Bij*ss - Aij) < 000000001, "r4x4_normalize elem error");
+          }
+      }
+
     /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r4x4_print ---\n"); }
     if (verbose)

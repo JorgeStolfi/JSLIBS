@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {r2_align_enum.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-09-07 19:24:35 by stolfi */ 
+/* Last edited on 2023-10-05 21:35:48 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_align_COPYRIGHT \
@@ -28,10 +28,11 @@
 
 int32_t main(int32_t argn, char **argv);
 
-void ralent_do_test(int32_t ni);
-  /* Performs a test with alignment vectors of {ni} points. */
+void ralent_do_test(int32_t ni, bool_t bal);
+  /* Performs a test with alignment vectors of {ni} points. 
+    The alignments will be balanced if {bal} is true.. */
 
-void ralent_test_align_enum(int32_t ni, r2_t ctr[], r2_t arad[], double tol, r2_t u0[], r2_t u1[], r2_t popt[]);
+void ralent_test_align_enum(int32_t ni, r2_t ctr[], r2_t arad[], bool_t bal, double tol, r2_t u0[], r2_t u1[], r2_t popt[]);
   /* Tests the {r2_align_enum} function in the ellipsoid {\RF} defined
     by center {ctr[0..ni-1]} and radius vector {arad[0..ni-1]}. Searches
     on a grid with step {tol}. The goal function is the squared distance
@@ -44,30 +45,37 @@ void ralent_test_align_enum(int32_t ni, r2_t ctr[], r2_t arad[], double tol, r2_
     variables are the projections of {psmp-ctr} along those two
     vectors */
 
+void ralent_choose_arad(int32_t ni, r2_t arad[]);
+void ralent_choose_ctr(int32_t ni, r2_t ctr[]);
+
 /* IMPLEMENTATIONS */
 
 int32_t main(int32_t argc, char **argv)
   {
     srandom(4615*417);
 
-    ralent_do_test(2);
-    ralent_do_test(5);
+    for (int32_t bal = 0; bal < 2; bal++)
+      { ralent_do_test(2, (bool_t)bal);
+        ralent_do_test(5, (bool_t)bal);
+      }
     
     return 0;
   }
   
-void ralent_do_test(int32_t ni)
+void ralent_do_test(int32_t ni, bool_t bal)
   { 
     fprintf(stderr, "--- testing {r2_align_enum} ni = %d ---\n", ni);
 
     fprintf(stderr, "... choosing ellipsoid center {ctr} ...\n");
     r2_t ctr[ni];   /* Central alignment vector. */
-    r2_align_throw_ctr(ni, 5.000, ctr, TRUE);
+    double cmax = 5.000;
+    r2_align_throw_ctr(ni, cmax, ctr, TRUE);
 
     fprintf(stderr, "... choosing basic ellipsoid radius {arad} ...\n");
-    r2_t ctr[ni], arad[ni];  /* Radius vector if basic ellipsoid {\RE}. */
-    r2_align_throw_ctr(ni, 5.000, ctr, TRUE);
-    r2_align_throw_arad(ni, 3.000, 1, arad, TRUE);    
+    r2_t arad[ni];  /* Radius vector if basic ellipsoid {\RE}. */
+    double rmax = 3.000;
+    int32_t nvmin = 1;
+    r2_align_throw_arad(ni, rmax, nvmin, arad, TRUE);    
     
     fprintf(stderr, "... Computing the dimension of the search ellipsoid {\\RF} ...\n");
     i2_t nv = r2_align_count_variable_coords (ni, arad);
@@ -78,7 +86,7 @@ void ralent_do_test(int32_t ni)
     fprintf(stderr, "... Computing the main axes and radii of the search ellipsoid {\\RF} ...\n");
     r2_t U[ni*nd];
     double urad[nd];
-    r2_align_compute_search_ellipsoid (ni, arad, nd, U, urad);
+    r2_align_compute_search_ellipsoid (ni, arad, bal, nd, U, urad);
 
     fprintf(stderr, "... Finding the largest dimension of {\\RF} ...\n");
     double ursup = 0.0;
@@ -129,33 +137,35 @@ void ralent_do_test(int32_t ni)
     /* If {nd} is 2, define the axis vectors of the indep plot variables: */
     r2_t *u0 = (nd == 2 ? &(U[0*ni]) : NULL);
     r2_t *u1 = (nd == 2 ? &(U[1*ni]) : NULL);
-    ralent_test_align_enum(ni, ctr, arad, tol, u0, u1, popt);
+    ralent_test_align_enum(ni, ctr, arad, bal, tol, u0, u1, popt);
     return;
   }
     
 void ralent_choose_arad(int32_t ni, r2_t arad[])
   { 
     double rmax = 4.999;
-    double rmin = 1.500;
+    int32_t nvmin = 1;
     
-    r2_align_throw_arad(ni, zfrac, rmin, rmax, arad, TRUE);
+    r2_align_throw_arad(ni, rmax, nvmin, arad, TRUE);
     return;
   }  
   
 void ralent_choose_ctr(int32_t ni, r2_t ctr[])
   { 
+    double cmax = 1.995;
     fprintf(stderr, "... choosing the center {ctr} ...\n");
-    r2_align_throw(ni, 1.0, 1.995, ctr);
+    r2_align_throw_ctr(ni, cmax, ctr, TRUE);
     for (int32_t i = 0; i < ni; i++) { ctr[i] = (r2_t){{ 1.0, 2.0 }}; }
     r2_align_print_vector(stderr, ni, "ctr", -1, ctr);
     return;
   }
     
-void ralent_test_align_enum(int32_t ni, r2_t ctr[], r2_t arad[], double tol, r2_t u0[], r2_t u1[], r2_t popt[])
+void ralent_test_align_enum(int32_t ni, r2_t ctr[], r2_t arad[], bool_t bal, double tol, r2_t u0[], r2_t u1[], r2_t popt[])
   {
     bool_t debug = FALSE;
     
-    int32_t nd = r2_align_count_degrees_of_freedom(ni, arad);
+    i2_t nv = r2_align_count_variable_coords (ni, arad);
+    int32_t nd = r2_align_count_degrees_of_freedom(nv, bal);
     FILE *wr = NULL;
     
     /* Find index {ip[j]} of alignment coord to plot from each axis, or {-1} if none: */
@@ -180,7 +190,7 @@ void ralent_test_align_enum(int32_t ni, r2_t ctr[], r2_t arad[], double tol, r2_
     
     double F2sol = NAN;
     plot = TRUE;
-    r2_align_enum(ni, &FD2, arad, tol, psol, &F2sol);
+    r2_align_enum(ni, &FD2, arad, bal, tol, psol, &F2sol);
     
     fprintf(stderr, "  F2 (sol) = %12.6f\n", F2sol);
     for (int32_t i = 0; i < ni; i++) 

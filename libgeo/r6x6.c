@@ -1,5 +1,5 @@
 /* See r6x6.h. */
-/* Last edited on 2021-06-09 19:55:51 by jstolfi */
+/* Last edited on 2023-10-09 09:02:44 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -155,6 +155,24 @@ double r6x6_norm(r6x6_t* A)
           s += Aij*Aij;
         }
     return sqrt(s); 
+  }
+
+double r6x6_normalize(r6x6_t *A)
+  { 
+    double w = r6x6_norm(A);
+    if (w != 0)
+      { for (int32_t i = 0; i < N; i++)
+          { for (int32_t j = 0; j < N; j++)
+             { A->c[i][j] /= w; }
+          }
+      }
+    else
+      { for (int32_t i = 0; i < N; i++)
+          { for (int32_t j = 0; j < N; j++)
+             { A->c[i][j] = NAN; }
+          }
+      }
+    return w;
   }
 
 double r6x6_mod_norm_sqr(r6x6_t* A)

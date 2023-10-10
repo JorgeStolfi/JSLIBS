@@ -1,8 +1,8 @@
-#ifndef hr2_pmap_adjust_H
-#define hr2_pmap_adjust_H
+#ifndef hr2_pmap_opt_H
+#define hr2_pmap_opt_H
 
 /* Tools for optimizing projective maps. */
-/* Last edited on 2023-09-07 01:31:16 by stolfi */ 
+/* Last edited on 2023-10-08 11:37:24 by stolfi */ 
 
 #define _GNU_SOURCE
 
@@ -12,10 +12,19 @@
 #include <hr2.h>
 #include <i2.h>
 
-typedef double hr2_pmap_adjust_func_t(hr2_pmap_t *A); 
+typedef double hr2_pmap_opt_func_t(hr2_pmap_t *A); 
   /* Type of a procedure that evaluates some badness function of the
     projective map {*A}. The function had better achieve a minimum value
     for some finite {*A}. */
+    
+typedef void hr2_pmap_opt_report_proc_t (hr2_pmap_t *M, double F);
+  /* Type of a procedure used by projective map
+    optimization functions to report
+    the probes made during optimization.  
+    
+    It is called after every call to the internal goal function. The map {M}
+    is the projective map that was tried, and {F} is the value of
+    the goal function for it. */
 
 hr2_pmap_t hr2_pmap_from_many_pairs
   ( int32_t np,
@@ -66,8 +75,8 @@ hr2_pmap_t hr2_pmap_from_many_pairs
     The {report} function, if not {NULL}, is called every time the 
     goal function is evaluated by that method. */
 
-void hr2_pmap_adjust_quad
-  ( hr2_pmap_adjust_func_t *f2,  /* Goal function to minimize. */
+void hr2_pmap_opt_quad
+  ( hr2_pmap_opt_func_t *f2,  /* Goal function to minimize. */
     r3x3_t *R,                   /* Max adjustment for {A.dir}. */
     double rtol,                 /* Desired relative adjustment precision for {*A}. */
     hr2_pmap_t *A,               /* (IN/OUT) The affine map to adjust. */
@@ -93,7 +102,7 @@ void hr2_pmap_adjust_quad
     the search region, and preferably be approximately quadratic on all
     variable element of the affine map within that region. */
  
-void hr2_pmap_adjust_get_var_elems
+void hr2_pmap_opt_get_var_elems
   ( r3x3_t *M, 
     r3x3_t *R, 
     double *Mp[],

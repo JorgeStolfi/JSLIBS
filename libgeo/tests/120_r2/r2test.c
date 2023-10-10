@@ -1,5 +1,5 @@
 /* r2test --- test program for r2.h, r2x2.h  */
-/* Last edited on 2023-10-01 19:25:02 by stolfi */
+/* Last edited on 2023-10-09 09:11:20 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -701,6 +701,24 @@ void test_r2x2(int32_t verbose)
     affirm(fabs(rr - r) < 000000001, "r2x2_norm error");
     affirm(tt >= 0, "r2x2_mod_norm_sqr error");
     affirm(fabs(tt - t) < 000000001, "r2x2_mod_norm_sqr error");
+
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- r2x2_normalize ---\n"); }
+    throw_matrix(&A);
+    B = A;
+    s = r2x2_norm(&B);
+    ss = r2x2_normalize(&B);
+    affirm(fabs(ss - s) < 000000001, "r2x2_normalize result error");
+    t = r2x2_norm(&B);
+    tt = 1.0;
+    affirm(fabs(tt - t) < 000000001, "r2x2_normalize norm error");
+    for (i = 0; i < N; i++)
+      { for (j = 0; j < N; j++)
+          { double Aij = A.c[i][j];
+            double Bij = B.c[i][j];
+            affirm(fabs(Bij*ss - Aij) < 000000001, "r2x2_normalize elem error");
+          }
+      }
 
     /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r2x2_sym_eigen ---\n"); }

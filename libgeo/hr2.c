@@ -1,5 +1,5 @@
 /* See hr2.h */
-/* Last edited on 2023-03-20 21:01:09 by stolfi */ 
+/* Last edited on 2023-10-09 21:03:18 by stolfi */ 
 
 /* Based on HR2.m3 created 1994-05-04 by J. Stolfi. */
 
@@ -25,13 +25,19 @@
 #define NC 2
   /* Number of Cartesian coordinates in a point. */
 
-/* INTERNAL PROTOPTYPES */
+void hr2_point_to_r2_nan(hr2_point_t *p, r2_t *c);
+  /* Converts a point from homogeneous coordinates {p} to Cartesian
+    coordinates {c}.  If {p} is at infinity, returns {(NAN,NAN)}. */
 
-void hr2_pmap_normalize(r3x3_t *A);
-  /* Divides the matrix {A} by the absolute value of element {A[0][0]}. 
-    If that element is zero, the matrix is filled with {NAN}. */
-
-/* IMPLEMENTATIONS */
+void hr2_point_to_r2_nan(hr2_point_t *p, r2_t *c)
+  {
+    double w = p->c.c[0];
+    double m = fmax(fabs(p->c.c[1]), fabs(p->c.c[2]));
+    if (fabs(w) <= m*1e-200) 
+      { (*c) = (r2_t){{ NAN, NAN }}; }
+    else
+      { (*c) = (r2_t){{ p->c.c[1]/w, p->c.c[2]/w }}; } 
+  }
 
 hr2_point_t hr2_from_r2(r2_t *c)
   {
@@ -88,6 +94,13 @@ hr2_point_t hr2_pmap_point(hr2_point_t *p, hr2_pmap_t *M)
     return (hr2_point_t){q};
   }
 
+hr2_point_t hr2_pmap_inv_point(hr2_point_t *p, hr2_pmap_t *M)
+  {
+    r3_t q; 
+    r3x3_map_row(&(p->c), &(M->inv), &q);
+    return (hr2_point_t){q};
+  }
+
 hr2_line_t hr2_pmap_line(hr2_line_t *L, hr2_pmap_t *M)
   {
     r3_t f;
@@ -95,17 +108,29 @@ hr2_line_t hr2_pmap_line(hr2_line_t *L, hr2_pmap_t *M)
     return (hr2_line_t){f};
   }
 
+hr2_line_t hr2_pmap_inv_line(hr2_line_t *L, hr2_pmap_t *M)
+  {
+    r3_t f;
+    r3x3_map_col(&(M->dir), &(L->f), &f);
+    return (hr2_line_t){f};
+  }
+
 r2_t hr2_pmap_r2_point(r2_t *p, hr2_pmap_t *M)
   {
-    r3_t ph = (r3_t){{ 1, p->c[0], p->c[1] }};
-    r3_t qh;
-    r3x3_map_row(&ph, &(M->dir), &qh);
-    double w = qh.c[0];
-    double m = fmax(fabs(qh.c[1]), fabs(qh.c[2]));
-    if (w <= m*1e-200) 
-      { return (r2_t){{ NAN, NAN }}; }
-    else
-      { return (r2_t){{ qh.c[1]/w, qh.c[2]/w }}; } 
+    hr2_point_t ph = (hr2_point_t){{{ 1.0, p->c[0], p->c[1] }}};
+    hr2_point_t qh;
+    r3x3_map_row(&(ph.c), &(M->dir), &(qh.c));
+    r2_t qc; hr2_point_to_r2_nan(&qh, &qc);
+    return qc;
+  }
+
+r2_t hr2_pmap_inv_r2_point(r2_t *p, hr2_pmap_t *M)
+  {
+    hr2_point_t ph = (hr2_point_t){{{ 1, p->c[0], p->c[1] }}};
+    hr2_point_t qh;
+    r3x3_map_row(&(ph.c), &(M->inv), &(qh.c));
+    r2_t qc; hr2_point_to_r2_nan(&qh, &qc);
+    return qc;
   }
 
 hr2_pmap_t hr2_pmap_identity(void)
@@ -200,7 +225,7 @@ hr2_pmap_t hr2_pmap_inv(hr2_pmap_t *M)
     return (hr2_pmap_t){M->inv, M->dir};
   }
 
-hr2_pmap_t hr2_pmap_inv_comp(hr2_pmap_t *M, hr2_pmap_t *N)
+hr2_pmap_t hr2_pmap_inv_compose(hr2_pmap_t *M, hr2_pmap_t *N)
   {
     r3x3_t dir, inv;
     r3x3_mul(&(M->inv), &(N->dir), &dir);
@@ -239,6 +264,18 @@ r2_t hr2_point_point_dir(hr2_point_t *frm, hr2_point_t *tto)
     
     double length = hypot(dx, dy);
     return (r2_t){{dx/length, dy/length}};
+  }
+
+hr2_point_t hr2_point_throw(void)
+  { hr2_point_t p;
+    r3_throw_dir(&(p.c));
+    return p;
+  }
+
+hr2_line_t hr2_line_throw(void)
+  { hr2_line_t A;
+    r3_throw_dir(&(A.f));
+    return A;
   }
 
 hr2_pmap_t hr2_pmap_congruence_from_point_and_dir(r2_t *p, r2_t *u, bool_t flip)
@@ -318,8 +355,9 @@ hr2_pmap_t hr2_pmap_from_four_points(hr2_point_t *p, hr2_point_t *q, hr2_point_t
       Q.c[0][0] = p->c.c[0]; Q.c[0][1] = p->c.c[1]; Q.c[0][2] = p->c.c[2];
       Q.c[1][0] = q->c.c[0]; Q.c[1][1] = q->c.c[1]; Q.c[1][2] = q->c.c[2];
       Q.c[2][0] = r->c.c[0]; Q.c[2][1] = r->c.c[1]; Q.c[2][2] = r->c.c[2];
+      /* Map {u} by the inverse of {Q}: */
       r3x3_inv(&Q, &Q);
-      w.c[0] = u->c.c[0];  w.c[1] = u->c.c[1];  w.c[2] = u->c.c[2];
+      w = u->c;
       r3x3_map_row(&w, &Q, &w);
     }
     
@@ -339,96 +377,11 @@ hr2_pmap_t hr2_pmap_from_four_points(hr2_point_t *p, hr2_point_t *q, hr2_point_t
 
   }
 
-double hr2_pmap_mismatch_sqr(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[])
-  {
-    double sum2 = 0.0;
-    hr2_pmap_t N = hr2_pmap_inv(M);
-    for (int32_t k = 0; k < np; k++)
-      { r2_t *p1k = &(p1[k]);
-        r2_t q1k = hr2_pmap_r2_point(p1k, M);
-        r2_t *p2k = &(p2[k]);
-        r2_t q2k = hr2_pmap_r2_point(p2k, &N);
-        double d2 = r2_dist_sqr(&q1k, &q2k);
-        sum2 += d2;
-      }
-    return sum2/np;
-  }
-
-double hr2_pmap_deform_sqr(r2_t ph[], hr2_pmap_t *M)
-  {
-    int32_t nk = 4;           /* Number of corners of the quadrilateral. */
-    r2_t qh[nk];
-    for (int32_t k = 0; k < nk; k++)
-      { qh[k] = hr2_pmap_r2_point(&(ph[k]), M); }
-    
-    int32_t nd = nk*(nk-1)/2; /* Number of distances to probe. */
-    assert(nd == 6);
-    double logr[nd];
-    int32_t kd = 0;
-    for (int32_t ik = 1; ik < nk; ik++)
-      { for (int32_t jk = 0; jk < ik; jk++)
-          { double dp2 = r2_dist_sqr(&(ph[ik]), &(ph[jk]));
-            double dq2 = r2_dist_sqr(&(qh[ik]), &(qh[jk]));
-            assert(kd < nk);
-            logr[kd] = log(dq2/dp2)/2;
-            kd++;
-          }
-      }
-    assert(kd == nd);
-    
-    /* Compute the variance of the logs: */
-    double sum = 0;
-    for (int32_t kd = 0; kd < nd; kd++) { sum += logr[kd]; }
-    double avg = sum/nd;
-    double sum2 = 0;
-    for (int32_t kd = 0; kd < nd; kd++) { double dk = logr[kd] - avg; sum2 += dk*dk; }
-    double var = sum2/(nd-1);
-    return var;
-  }
-
-double hr2_pmap_diff_sqr(hr2_pmap_t *M, hr2_pmap_t *N)
-  { double sum_d2 = 0;
-    for (int32_t sense = 0; sense < 2; sense++)
-      { r3x3_t *A = (sense == 0 ? &(M->dir) : &(M->inv));
-        double Am = r3x3_norm_sqr(A) + 1.0e-200;
-        r3x3_t *B = (sense == 0 ? &(N->dir) : &(N->inv));
-        double Bm = r3x3_norm_sqr(B) + 1.0e-200;
-        for (int32_t i = 0; i < 3; i++)
-          { for (int32_t j = 0; j < 3; j++)
-             { double Aij = A->c[i][j]/Am;
-               double Bij = B->c[i][j]/Bm;
-               double dij = Aij - Bij;
-               sum_d2 += dij*dij;
-             }
-          }
-      }
-    return sum_d2;
-  }
-        
-
 bool_t hr2_pmap_is_affine(hr2_pmap_t *M)
   { r3x3_t *A = &(M->dir);
     if (A->c[0][0] <= 0) { return FALSE; }
     if ((A->c[1][0] != 0.0) || (A->c[2][0] != 0.0)) { return FALSE; }
     return TRUE;
-  }
-
-void hr2_pmap_normalize(r3x3_t *A)
-  { 
-    double w = fabs(A->c[0][0]);
-    if (w != 0)
-      { for (int32_t i = 0; i < 3; i++)
-          { for (int32_t j = 0; j < 3; j++)
-             { A->c[i][j] /= w; }
-          }
-        assert(fabs(A->c[0][0]) == 1.0);
-      }
-    else
-      { for (int32_t i = 0; i < 3; i++)
-          { for (int32_t j = 0; j < 3; j++)
-             { A->c[i][j] = NAN; }
-          }
-      }
   }
 
 void hr2_pmap_print (FILE *wr, hr2_pmap_t *M, char *pref, char *suff)
@@ -507,22 +460,7 @@ hr2_pmap_t hr2_pmap_aff_from_mat_and_disp(r2x2_t *E, r2_t *d)
     return M;
   }
 
-double hr2_pmap_aff_mismatch_sqr(hr2_pmap_t *M, hr2_pmap_t *N)
-  {
-    r3x3_t A = M->dir;
-    hr2_pmap_normalize(&A);
-    r3x3_t B = N->dir;
-    hr2_pmap_normalize(&B);
-    /* Hope the math is right: */
-    r3x3_t E, H;
-    r3x3_sub(&A, &B, &E);
-    r3x3_mul_tr(&E, &E, &H);
-    double h2 = (H.c[1][1] + H.c[2][2])/2;
-    double d2 = H.c[0][0];
-    return h2 + d2;
-  }
-
-hr2_pmap_t hr2_pmap_aff_from_points(r2_t *o, r2_t *p, r2_t *q)
+hr2_pmap_t hr2_pmap_aff_from_three_points(r2_t *o, r2_t *p, r2_t *q)
   {
     hr2_pmap_t M; 
     /* The resulting map. */
@@ -544,89 +482,95 @@ hr2_pmap_t hr2_pmap_aff_from_points(r2_t *o, r2_t *p, r2_t *q)
     return M;
   }
 
-hr2_pmap_t hr2_pmap_aff_from_point_pairs(int32_t np, r2_t p1[], r2_t p2[], double w[])
+double hr2_pmap_diff_sqr(hr2_pmap_t *M, hr2_pmap_t *N)
+  { double sum_d2 = 0;
+    for (int32_t sense = 0; sense < 2; sense++)
+      { r3x3_t *A = (sense == 0 ? &(M->dir) : &(M->inv));
+        double Am = r3x3_norm(A) + 1.0e-200;
+        r3x3_t *B = (sense == 0 ? &(N->dir) : &(N->inv));
+        double Bm = r3x3_norm(B) + 1.0e-200;
+        for (int32_t i = 0; i < 3; i++)
+          { for (int32_t j = 0; j < 3; j++)
+             { double Aij = A->c[i][j]/Am;
+               double Bij = B->c[i][j]/Bm;
+               double dij = Aij - Bij;
+               sum_d2 += dij*dij;
+             }
+          }
+      }
+    return sum_d2;
+  }
+
+double hr2_pmap_mismatch_sqr(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[])
   {
-    double debug = FALSE;
+    bool_t debug = FALSE;
     
-    if (debug) { fprintf(stderr, "--- computing the affine matrix ---\n"); }
+    double sum2 = 0.0;
+    for (int32_t k = 0; k < np; k++)
+      { r2_t *p1k = &(p1[k]);
+        r2_t *p2k = &(p2[k]);
+        r2_t q1k = hr2_pmap_r2_point(p1k, M);
+        r2_t q2k = hr2_pmap_inv_r2_point(p2k, M);
+        double d2 = r2_dist_sqr(&q1k, &q2k);
+        if (debug)
+          { r2_gen_print(stderr, p1k, "%+8.5f", "  @ ( ", " ", " )");
+            r2_gen_print(stderr, &q1k, "%+12.8f", " -> ( ", " ", " )");
+            fprintf(stderr, " |%.6f| ", d2);
+            r2_gen_print(stderr, &q2k, "%+12.8f", "( ", " ", " ) <- ");
+            r2_gen_print(stderr, p2k, "%+8.5f", "( ", " ", " )\n");
+          }
+        sum2 += d2;
+      }
+    return sum2/np;
+  }
+
+double hr2_pmap_deform_sqr(r2_t ph[], hr2_pmap_t *M)
+  {
+    int32_t nk = 4;           /* Number of corners of the quadrilateral. */
+    r2_t qh[nk];
+    for (int32_t k = 0; k < nk; k++)
+      { qh[k] = hr2_pmap_r2_point(&(ph[k]), M); }
     
-    r3x3_t A;
-    r3x3_ident(&A);
-    if (np > 0)
-      { /* Compute the barycenters of {p1} and {p2}: */
-        r2_t bar1; r2_barycenter(np, p1, w, &bar1);
-        if (debug) { r2_gen_print(stderr, &bar1, "%10.4f", "  bar1 = ( ", " ", " )\n"); }
-        demand(r2_is_finite(&bar1), "barycenter of {p1} is undefined");
-
-        r2_t bar2; r2_barycenter(np, p2, w, &bar2);
-        if (debug) { r2_gen_print(stderr, &bar2, "%10.4f", "  bar2 = ( ", " ", " )\n"); }
-        demand(r2_is_finite(&bar2), "barycenter of {p2} is undefined");
-
-        r2_t d; /* Displacement vector */
-        
-        if (np == 1)
-          { /* Just translate {bar1} to {bar2}: */
-            r2_sub(&bar2, &bar1, &d);
+    int32_t nd = nk*(nk-1)/2; /* Number of distances to probe. */
+    assert(nd == 6);
+    double logr[nd];
+    int32_t kd = 0;
+    for (int32_t ik = 1; ik < nk; ik++)
+      { for (int32_t jk = 0; jk < ik; jk++)
+          { double dp2 = r2_dist_sqr(&(ph[ik]), &(ph[jk]));
+            double dq2 = r2_dist_sqr(&(qh[ik]), &(qh[jk]));
+            assert(kd < nk);
+            logr[kd] = log(dq2/dp2)/2;
+            kd++;
           }
-        else
-          { /* Determine the linear map matrix {L = A.c[1..2][1..2]}: */
-            r2x2_t L;
-            if (np == 2)
-              { /* Compute {L} by composing rotation & scale matrices: */
-                r2_t q1; r2_sub(&(p1[0]), &bar1, &q1);
-                r2x2_t R1; r2x2_rot_and_scale(&q1, &R1);
-
-                r2_t q2; r2_sub(&(p2[0]), &bar2, &q2);
-                r2x2_t R2; r2x2_rot_and_scale(&q2, &R2);
-
-                r2x2_inv(&R1, &R1); r2x2_mul(&R1, &R2, &L);
-              }
-            else
-              { /* Compute {L} by least squares: */
-
-                r2x2_t E; r2x2_zero(&E); /* Moment matrix. */
-                r2x2_t P; r2x2_zero(&P); /* Projection matrix. */
-                for (int32_t k = 0; k < np; k++)
-                  { double wk = (w == NULL ? 1.0 : w[k]);
-                    /* Reduce points relative to barycenter: */
-                    r2_t q1k, q2k;
-                    r2_sub(&(p1[k]), &bar1, &q1k);
-                    r2_sub(&(p2[k]), &bar2, &q2k);
-                    /* Accumulate moments and projections: */
-                    for (int32_t i = 0; i < 2; i ++)
-                      { for (int32_t j = 0; j < 2; j++)
-                          { E.c[i][j] += wk*q1k.c[i]*q1k.c[j];
-                            P.c[i][j] += wk*q1k.c[i]*q2k.c[j];
-                          }
-                      }
-                  }
-                r2x2_t Z; r2x2_inv(&E, &Z);
-                r2x2_mul(&Z, &P, &L);
-              }
-              
-            /* Store linear part into {A}: */
-            A.c[1][1] = L.c[0][0];
-            A.c[1][2] = L.c[0][1];
-            A.c[2][1] = L.c[1][0];
-            A.c[2][2] = L.c[1][1];
-            
-            /* Compute the displacement taking {L} into account: */
-            r2_t v1; r2x2_map_row(&bar1, &L, &v1);
-            r2_sub(&bar2, &v1, &d);
-          }
-
-        /* Store the displacement vector {d}: */
-        A.c[0][1] = d.c[0];
-        A.c[0][2] = d.c[1];
       }
+    assert(kd == nd);
+    
+    /* Compute the variance of the logs: */
+    double sum = 0;
+    for (int32_t kd = 0; kd < nd; kd++) { sum += logr[kd]; }
+    double avg = sum/nd;
+    double sum2 = 0;
+    for (int32_t kd = 0; kd < nd; kd++) { double dk = logr[kd] - avg; sum2 += dk*dk; }
+    double var = sum2/(nd-1);
+    return var;
+  }
 
-    if (debug) 
-      { fprintf(stderr, "  matrix:\n");
-        r3x3_gen_print(stderr, &(A), "%13.6e", "", "\n", "\n", "    [ ", " ", " ]");
-      }
-      
-    hr2_pmap_t M;
-    M.dir = A;
-    r3x3_inv(&A, &(M.inv));
-    return M;
+double hr2_pmap_aff_discr_sqr(hr2_pmap_t *M, hr2_pmap_t *N)
+  {
+    demand((M->dir.c[1][0] == 0) && (M->dir.c[2][0] == 0), "{M} is not affine");
+    demand(M->dir.c[0][0] > 0, "map {M} does not preserve side");
+    r3x3_t A; double wA = M->dir.c[0][0]; r3x3_scale(1/wA, &(M->dir), &A);
+   
+    demand((N->dir.c[1][0] == 0) && (N->dir.c[2][0] == 0), "{N} is not affine");
+    demand(M->dir.c[0][0] > 0, "map {N} does not preserve side");
+    r3x3_t B; double wB = N->dir.c[0][0]; r3x3_scale(1/wB, &(N->dir), &B);
+   
+    /* Hope the math is right: */
+    r3x3_t E, H;
+    r3x3_sub(&A, &B, &E);
+    r3x3_mul_tr(&E, &E, &H);
+    double h2 = (H.c[1][1] + H.c[2][2])/2;
+    double d2 = H.c[0][0];
+    return h2 + d2;
   }

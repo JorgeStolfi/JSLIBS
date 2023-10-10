@@ -1,5 +1,5 @@
 /* See {r2_align.h}. */
-/* Last edited on 2023-09-07 19:10:37 by stolfi */
+/* Last edited on 2023-10-05 21:40:43 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -319,7 +319,7 @@ void r2_align_throw_arad (int32_t ni, double rmax, int32_t nvmin, r2_t arad[], b
     for (int32_t j = 0; j < 2; j++)
       { /* Decide how many coordinates {arad[0..ni-1].c[j]} will be non-zero. */
         int32_t nvgoal = (int32_t)floor(vfrac.c[j]*ni + 0.5); 
-        if ((ni > 0) && (nvgoal == ni) && (vfrac.c[j] < 1.0)) { nvgoal = ni-1; }
+        if ((nvgoal == ni) && (vfrac.c[j] < 1.0) && (ni >= 2)) { nvgoal = ni-1; }
         if (nvgoal < nvmin) { nvgoal = nvmin; }
         if (nvgoal > ni) { nvgoal = ni; }
         int32_t nc = ni;      /* Number of coordinates remaining. */
@@ -328,9 +328,9 @@ void r2_align_throw_arad (int32_t ni, double rmax, int32_t nvmin, r2_t arad[], b
           { assert(nv <= nc);
             double rij;
             if ((nv == nc) || (nc*drandom() < nv))
-              { rij = rmin + (rmax - rmin)*drandom(); }
+              { rij = rmin + (rmax - rmin)*drandom(); nv--; }
             else
-              { rij = 0.0; nv--; }
+              { rij = 0.0; }
             arad[i].c[j] = rij;
             nc--;
           }
@@ -350,6 +350,19 @@ double r2_align_dot(int32_t ni, r2_t p[], r2_t q[])
       }
     return sdot;
   }
+  
+double r2_align_dist_sqr(int32_t ni, r2_t p[], r2_t q[])
+  { 
+    double sum2 = 0.0; /* Sum of squares of all coordinates. */
+    for (int32_t i = 0; i < ni; i++) 
+      { for (int32_t j = 0; j < 2; j++) 
+          { double dij = p[i].c[j] - q[i].c[j];
+            sum2 += dij*dij;
+          }
+      }
+    return sum2;
+  }
+  
 double r2_align_rel_disp_sqr(int32_t ni, r2_t p[], r2_t q[], r2_t arad[])
   { double d2 = 0.0;
     for (int32_t i = 0; i < ni; i++)

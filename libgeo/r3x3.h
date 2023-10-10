@@ -1,5 +1,5 @@
 /* r3x3.h --- 3x3 matrices and operations on them */
-/* Last edited on 2023-01-12 06:51:28 by stolfi */
+/* Last edited on 2023-10-09 08:50:13 by stolfi */
 
 #ifndef r3x3_H
 #define r3x3_H
@@ -72,6 +72,11 @@ double r3x3_norm_sqr(r3x3_t* A);
 
 double r3x3_norm(r3x3_t* A);
   /* Frobenius norm of {A}, i.e. square root of sum of squares of elements */
+
+double r3x3_normalize(r3x3_t *A);
+  /* Divides the matrix {A} by its {r3x3_norm}. 
+    If that norm is zero, the matrix is filled with {NAN}.
+    Returns the norm. */
 
 double r3x3_mod_norm_sqr (r3x3_t *A);
   /* Returns the square of the Frobenius norm of {A-I} */

@@ -1,5 +1,5 @@
 /* r6test --- test program for r6.h, r6x6.h  */
-/* Last edited on 2022-01-04 08:42:00 by stolfi */
+/* Last edited on 2023-10-09 09:13:47 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -622,6 +622,23 @@ void test_r6x6(int32_t verbose)
     affirm(tt >= 0, "r6x6_mod_norm_sqr error");
     affirm(fabs(tt - t) < 000000001, "r6x6_mod_norm_sqr error");
 
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- r6x6_normalize ---\n"); }
+    throw_matrix(&A);
+    B = A;
+    s = r6x6_norm(&B);
+    ss = r6x6_normalize(&B);
+    affirm(fabs(ss - s) < 000000001, "r6x6_normalize result error");
+    t = r6x6_norm(&B);
+    tt = 1.0;
+    affirm(fabs(tt - t) < 000000001, "r6x6_normalize norm error");
+    for (i = 0; i < N; i++)
+      { for (j = 0; j < N; j++)
+          { double Aij = A.c[i][j];
+            double Bij = B.c[i][j];
+            affirm(fabs(Bij*ss - Aij) < 000000001, "r6x6_normalize elem error");
+          }
+      }
     /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- r6x6_print ---\n"); }
     if (verbose)

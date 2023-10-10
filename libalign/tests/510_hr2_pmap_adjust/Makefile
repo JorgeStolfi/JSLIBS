@@ -1,6 +1,6 @@
-# Last edited on 2023-03-20 21:35:58 by stolfi
+# Last edited on 2023-10-08 11:25:32 by stolfi
 
-PROG = hr2_pmap_adjust_test
+PROG = hr2_pmap_opt_test
 
 TEST_LIB := libalign.a
 TEST_LIB_DIR := ../..

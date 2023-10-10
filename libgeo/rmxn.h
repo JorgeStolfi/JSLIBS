@@ -1,5 +1,5 @@
 /* rmxn.h --- m by n matrices and operations on them */
-/* Last edited on 2023-02-03 05:43:54 by stolfi */
+/* Last edited on 2023-10-09 09:03:31 by stolfi */
 
 #ifndef rmxn_H
 #define rmxn_H
@@ -111,6 +111,11 @@ double rmxn_norm_sqr(int32_t m, int32_t n, double *A);
 double rmxn_norm(int32_t m, int32_t n, double *A);
   /* Frobenius norm of the {m × n} matrix {A},
     i.e. square root of sum of squares of elements */
+
+double rmxn_normalize(int32_t m, int32_t n, double *A);
+  /* Divides the matrix {A} by its {rmxn_norm}. 
+    If that norm is zero, the matrix is filled with {NAN}.
+    Returns the norm. */
 
 double rmxn_mod_norm_sqr (int32_t n, double *A);
   /* Returns the square of the Frobenius norm of {A-I}.

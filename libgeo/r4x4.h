@@ -1,5 +1,5 @@
 /* r4x4.h --- 4x4 matrices and operations on them */
-/* Last edited on 2023-01-12 06:51:37 by stolfi */
+/* Last edited on 2023-10-09 09:01:55 by stolfi */
 
 #ifndef r4x4_H
 #define r4x4_H
@@ -60,6 +60,11 @@ double r4x4_norm_sqr(r4x4_t* A);
 
 double r4x4_norm(r4x4_t* A);
   /* Frobenius norm of {A}, i.e. square root of sum of squares of elements */
+
+double r4x4_normalize(r4x4_t *A);
+  /* Divides the matrix {A} by its {r4x4_norm}. 
+    If that norm is zero, the matrix is filled with {NAN}.
+    Returns the norm. */
 
 double r4x4_mod_norm_sqr (r4x4_t *A);
   /* Returns the square of the Frobenius norm of {A-I} */

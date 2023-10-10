@@ -1,5 +1,5 @@
 /* r2x2.h --- 2x2 matrices and operations on them */
-/* Last edited on 2023-01-12 06:51:15 by stolfi */
+/* Last edited on 2023-10-09 09:00:03 by stolfi */
 
 #ifndef r2x2_H
 #define r2x2_H
@@ -80,6 +80,11 @@ double r2x2_norm_sqr(r2x2_t* A);
 
 double r2x2_norm(r2x2_t* A);
   /* Frobenius norm of {A}, i.e. square root of sum of squares of elements */
+
+double r2x2_normalize(r2x2_t *A);
+  /* Divides the matrix {A} by its {r2x2_norm}. 
+    If that norm is zero, the matrix is filled with {NAN}.
+    Returns the norm. */
 
 double r2x2_mod_norm_sqr (r2x2_t *A);
   /* Returns the square of the Frobenius norm of {A-I} */

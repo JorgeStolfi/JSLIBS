@@ -1,5 +1,5 @@
 /* See r3x3.h. */
-/* Last edited on 2022-01-05 14:17:01 by stolfi */
+/* Last edited on 2023-10-09 09:01:23 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -232,6 +232,24 @@ double r3x3_norm(r3x3_t* A)
     double A22 = A->c[2][2];
 
     return sqrt( A00*A00 + A01*A01 + A02*A02 + A10*A10 + A11*A11 + A12*A12 + A20*A20 + A21*A21 + A22*A22 ); 
+  }
+
+double r3x3_normalize(r3x3_t *A)
+  { 
+    double w = r3x3_norm(A);
+    if (w != 0)
+      { for (int32_t i = 0; i < N; i++)
+          { for (int32_t j = 0; j < N; j++)
+             { A->c[i][j] /= w; }
+          }
+      }
+    else
+      { for (int32_t i = 0; i < N; i++)
+          { for (int32_t j = 0; j < N; j++)
+             { A->c[i][j] = NAN; }
+          }
+      }
+    return w;
   }
 
 double r3x3_mod_norm_sqr(r3x3_t* A)

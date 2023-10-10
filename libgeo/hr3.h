@@ -1,5 +1,5 @@
 /* Oriented projective geometry in three dimensions. */
-/* Last edited on 2021-06-09 20:29:44 by jstolfi */ 
+/* Last edited on 2023-10-09 21:03:08 by stolfi */ 
 
 #ifndef hr3_H
 #define hr3_H
@@ -10,6 +10,7 @@
 #define _GNU_SOURCE
 
 #include <r3.h>
+#include <r3x3.h>
 #include <r4.h>
 #include <r4x4.h>
 #include <r6.h>
@@ -48,8 +49,8 @@ hr3_line_t hr3_line_from_two_points(hr3_point_t *p, hr3_point_t *q);
 hr3_plane_t hr3_plane_from_three_points(hr3_point_t *p, hr3_point_t *q, hr3_point_t *r);
   /* The plane through {p}, {q}, and {r}. */
     
-hr3_plane_t hr3_plane_from_line_and_point(hr3_line_t *n, hr3_point_t *r);
-  /* The plane through {n} and {r}. */
+hr3_plane_t hr3_plane_from_line_and_point(hr3_line_t *L, hr3_point_t *r);
+  /* The plane through {L} and {r}. */
     
 hr3_line_t hr3_line_from_two_planes(hr3_plane_t *P, hr3_plane_t *Q);
   /* The line where {P} meets {Q}. */
@@ -57,8 +58,8 @@ hr3_line_t hr3_line_from_two_planes(hr3_plane_t *P, hr3_plane_t *Q);
 hr3_point_t hr3_point_from_three_planes(hr3_plane_t *P, hr3_plane_t *Q, hr3_plane_t *R);
   /* The point where {P}, {Q}, and {R} meet. */
     
-hr3_point_t hr3_point_from_line_and_plane(hr3_line_t *n, hr3_plane_t *R);
-  /* The point where {n} meets {R}. */
+hr3_point_t hr3_point_from_line_and_plane(hr3_line_t *L, hr3_plane_t *R);
+  /* The point where {L} meets {R}. */
 
 r3_t hr3_point_point_dir(hr3_point_t *frm, hr3_point_t *tto);
   /* Direction (a unit-length vector) of point {tto} seen from point {frm}.
@@ -75,8 +76,8 @@ double hr3_dist(hr3_point_t *a, hr3_point_t *b);
 double hr3_dist_sqr(hr3_point_t *a, hr3_point_t *b);
   /* Distance squared between {a} and {b}, which must lie in the front half-plane. */
     
-r3_t hr3_line_dir(hr3_line_t *n);
-  /* The direction along line {n}.  Assumes {n} is not at infinity. */
+r3_t hr3_line_dir(hr3_line_t *L);
+  /* The direction along line {L}.  Assumes {L} is not at infinity. */
     
 r3_t hr3_plane_normal(hr3_plane_t *P);
   /* The normal direction of plane {P}, on the hither side, pointing into 
@@ -89,7 +90,7 @@ hr3_point_t hr3_point_mix(double pt, hr3_point_t *p, double qt, hr3_point_t *q);
 
 void hr3_L_inf_normalize_point(hr3_point_t *p);
 void hr3_L_inf_normalize_plane(hr3_plane_t *P);
-void hr3_L_inf_normalize_line(hr3_line_t *n);
+void hr3_L_inf_normalize_line(hr3_line_t *L);
   /* Scales the homogeneous coordinates of the given object by a positive
     factor so that the maximum absolute value among them is 1.
     If all coordinates are zero, they are turned into NaNs. */
@@ -99,27 +100,50 @@ void hr3_L_inf_normalize_line(hr3_line_t *n);
 typedef struct hr3_pmap_t { r4x4_t dir; r4x4_t inv; } hr3_pmap_t;  
   /* A projective map. Field {dir} is the map's matrix, {inv} is its inverse. */
 
-bool_t hr3_pmap_is_identity(hr3_pmap_t *m);
-  /* TRUE iff {m} is the identity map (apart from homogeneous scaling). */
+bool_t hr3_pmap_is_identity(hr3_pmap_t *M);
+  /* TRUE iff {M} is the identity map (apart from homogeneous scaling). */
 
-hr3_point_t hr3_pmap_point(hr3_point_t *p, hr3_pmap_t *m);
-  /* Applies projective map {m} to point {p}. */
+hr3_point_t hr3_pmap_point(hr3_point_t *p, hr3_pmap_t *M);
+  /* Applies projective map {M} to point {p}. */
 
-hr3_point_t hr3_pmap_inv_point(hr3_point_t *p, hr3_pmap_t *m);
-  /* Applies the inverse of projective map {m} to point {p}. */
+hr3_point_t hr3_pmap_inv_point(hr3_point_t *p, hr3_pmap_t *M);
+  /* Applies the inverse of projective map {M} to point {p}. */
 
-hr3_plane_t hr3_pmap_plane(hr3_plane_t *P, hr3_pmap_t *m);
-  /* Applies projective map {m} to plane {P} */
+hr3_plane_t hr3_pmap_plane(hr3_plane_t *P, hr3_pmap_t *M);
+  /* Applies projective map {M} to plane {P} */
 
-hr3_plane_t hr3_pmap_inv_plane(hr3_plane_t *P, hr3_pmap_t *m);
-  /* Applies the inverse of projective map {m} to plane {P} */
+hr3_plane_t hr3_pmap_inv_plane(hr3_plane_t *P, hr3_pmap_t *M);
+  /* Applies the inverse of projective map {M} to plane {P} */
+
+r3_t hr3_pmap_r3_point(r3_t *p, hr3_pmap_t *M);
+  /* Applies projective map {M} to the point with Cartesian coordinates {p}. 
+    If the result is at infinity, returns {(NAN,NAN,NAN)}. */
+
+r3_t hr3_pmap_inv_r3_point(r3_t *p, hr3_pmap_t *M);
+  /* Applies the inverse of projective map {M} to point with Cartesian {p}. 
+    If the result is at infinity, returns {(NAN,NAN,NAN)}. */
+
+hr3_pmap_t hr3_pmap_compose(hr3_pmap_t *M, hr3_pmap_t *N);
+  /* Returns the composition of {M} and {N}, applied in that order */
+    
+hr3_pmap_t hr3_pmap_inv(hr3_pmap_t *M);
+  /* Returns the inverse of map {M}. */
+  
+hr3_pmap_t hr3_pmap_inv_compose(hr3_pmap_t *M, hr3_pmap_t *N);
+  /* Returns the composition of the inverse of {M} and {N}, applied in that order. */
 
 hr3_pmap_t hr3_pmap_translation(r3_t *v);
-  /* Returns the projective map {m} that performs an Euclidean
+  /* Returns the projective map {M} that performs an Euclidean
     translation by the Cartesian vector {v}. */
     
+hr3_pmap_t hr3_pmap_scaling(r3_t *scale);
+  /* Returns a projective map that performs a scaling of each Cartesian
+    coordinate {j} by the factor {scale.c[j]} (that should not be zero).
+    The map is actually linear map of {\RR^3} (has {[1 0 0 0]} as the
+    first column and the first row). */
+
 hr3_pmap_t hr3_pmap_u_v_rotation(r3_t *u, r3_t *v);
-  /* Returns the projective map {m} that performs an Euclidean
+  /* Returns the projective map {M} that performs an Euclidean
     rotation, around some axis through the origin, that takes the
     Cartesian unit vector {u} to the Cartesian unit vector {v} by the
     shortest route.
@@ -129,11 +153,30 @@ hr3_pmap_t hr3_pmap_u_v_rotation(r3_t *u, r3_t *v);
     around a random axis through the origin that is orthogonal to
     both. */
 
-hr3_pmap_t hr3_pmap_comp(hr3_pmap_t *m, hr3_pmap_t *n);
-  /* Returns the composition of {m} and {n}, applied in that order */
+hr3_pmap_t hr3_pmap_aff_from_mat_and_disp(r3x3_t *E, r3_t *d);
+  /* Returns an affine map {M} that performs the linear map 
+    described by the matrix {E} followed by translation by {d}.
+    That is, maps the point with Cartesian coordinates {p \in \RR^3} 
+    to {p*E + d}. The map will have unit weight (that is, 
+    {M.dir.c[0][0] == 1}). */
+
+hr3_pmap_t hr3_pmap_aff_from_four_points(r3_t *o, r3_t *p, r3_t *q, r3_t *r);
+  /* Returns a projective map that takes the Cartesian points {(0,0,0)},
+    {(1,0,0)}, {(0,1,0)}, and {(0,0,1)} to {o}, {p}, {q}, and {r}, respectively.
     
-hr3_pmap_t hr3_pmap_inv(hr3_pmap_t *m);
-  /* Returns the inverse of map {m}. */
+    The procedure returns a degenerate (non-invertble) map
+    if {o,p,q,r} are coplanar.  */
+
+hr3_pmap_t hr3_pmap_from_five_points(hr3_point_t *p, hr3_point_t *q, hr3_point_t *r, hr3_point_t *s, hr3_point_t *u);
+  /* Returns a projective map that takes the cardinal points {[1,0,0,0]},
+    {[0,1,0,0]}, {[0,0,1,0]}, and {[0,0,0,1]} to {p}, {q}, {r}, and {s}, respectively; and
+    also some point {t} of the form {[±1,±1,±1]} to {u}. 
+    
+    The point {t} is unique, and is the signature of {u} relative to
+    the ordered quadruple {p,q,r,s}.
+    
+    The procedure fails if the set {p,q,r,s,u} contains four coplanar
+    points.  */
 
 hr3_pmap_t hr3_pmap_persp(hr3_point_t *obs, hr3_point_t *foc, double rad, hr3_point_t *upp);
   /* Computes a perspective transformation with given viewing parameters:
@@ -155,6 +198,14 @@ hr3_pmap_t hr3_pmap_persp(hr3_point_t *obs, hr3_point_t *foc, double rad, hr3_po
     scaling by {1/rad}. Thus the circle of radius {rad} centered at
     {ctr} and normal to the line {obs--ctr} is mapped to the unit
     circle of the XY plane. */
+  
+hr3_point_t hr3_point_throw(void);
+  /* Returns a point with homogeneous coordinates uniformly
+    distributed over the unit sphere of {\RR^4}. */
+   
+hr3_plane_t hr3_plane_throw(void);
+  /* Returns a plane with homogeneous coefficienys uniformly
+    distributed over the unit sphere of {\RR^4}. */
 
 /* PRINTOUT 
 
@@ -168,7 +219,28 @@ void hr3_point_print (FILE *f, char *pre, hr3_point_t *a, char *fmt, char *suf);
 void hr3_plane_print (FILE *f, char *pre, hr3_plane_t *P, char *fmt, char *suf);
   /* Prints plane {P} to file {f} as "<{W} {X} {Y} {Z}>". */
 
-void hr3_line_print (FILE *f, char *pre, hr3_line_t *n, char *fmt, char *suf);
-  /* Prints line {n} to file {f} as "[{wx} {wy} {xy} {wz} {xz} {yz}]". */
+void hr3_line_print (FILE *f, char *pre, hr3_line_t *L, char *fmt, char *suf);
+  /* Prints line {L} to file {f} as "[{wx} {wy} {xy} {wz} {xz} {yz}]". */
+
+void hr3_pmap_print (FILE *wr, hr3_pmap_t *M, char *pref, char *suff);
+  /* Prints {M} on file {wr}, with some default format.  The printout
+    starts with the given {pref}, if not {NULL}, and ends with the given {suff},
+    if not {NULL}. */
+
+void hr3_pmap_gen_print
+  ( FILE *wr, hr3_pmap_t *M,
+    char *fmt, char *pref,                /* Overall prefix. */
+    char *rpref, char *rsep, char *rsuff, /* Row prefix, matrix separator, and suffix. */
+    char *elp, char *esep, char *erp,     /* Delimiters for each row. */
+    char *suff                            /* Overall sufffix. */
+  );
+  /* Prints the projective map {M} to file {wr}, using {fmt} for each
+    matrix element.  The printout consists of the string {pref},
+    followed by one section for each row of the matrices {M.dir} and {M.inv}, followed by the string {suff}.
+    Each section has the string {rpref}, a row of the matrix {M.dir},
+    the string {rsep}, a row of matrix {M.inv}, and the string {rsuff}.
+    Each row of each matrix is bounded by {elp} and {erp}, and elements are
+    separated by {esep}. Defaults are provided for any of these strings which are
+    NULL. */
 
 #endif

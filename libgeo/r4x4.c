@@ -1,5 +1,5 @@
 /* See r4x4.h. */
-/* Last edited on 2021-06-09 19:56:11 by jstolfi */
+/* Last edited on 2023-10-09 09:02:06 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -322,6 +322,24 @@ double r4x4_norm(r4x4_t* A)
         A20*A20 + A21*A21 + A22*A22 + A23*A23 +
         A30*A30 + A31*A31 + A32*A32 + A33*A33
       ); 
+  }
+
+double r4x4_normalize(r4x4_t *A)
+  { 
+    double w = r4x4_norm(A);
+    if (w != 0)
+      { for (int32_t i = 0; i < N; i++)
+          { for (int32_t j = 0; j < N; j++)
+             { A->c[i][j] /= w; }
+          }
+      }
+    else
+      { for (int32_t i = 0; i < N; i++)
+          { for (int32_t j = 0; j < N; j++)
+             { A->c[i][j] = NAN; }
+          }
+      }
+    return w;
   }
 
 double r4x4_mod_norm_sqr(r4x4_t* A)

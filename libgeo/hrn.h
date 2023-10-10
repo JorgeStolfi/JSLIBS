@@ -1,5 +1,5 @@
 /* Oriented projective geometry in {N} dimensions.  */
-/* Last edited on 2021-06-09 20:21:35 by jstolfi */
+/* Last edited on 2023-10-09 19:35:49 by stolfi */
 
 #ifndef hrn_H
 #define hrn_H
@@ -137,7 +137,7 @@ void hrn_map_point(double p[], hrn_pmap_t *M, double q[]);
 void hrn_map_hyperplane(double h[], hrn_pmap_t *M);
   /* Applies the projective function {M} to the hyperplane {h[0..m]} of {T^m}. */
 
-void hrn_pmap_comp(hrn_pmap_t *M, hrn_pmap_t *N, hrn_pmap_t *R);
+void hrn_pmap_compose(hrn_pmap_t *M, hrn_pmap_t *N, hrn_pmap_t *R);
   /* Sets {R} to the composition of {M} and {N}, applied in that order.
     The client must allocate {R} before calling this procedure. */
 

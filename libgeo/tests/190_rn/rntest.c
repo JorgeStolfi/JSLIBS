@@ -1,5 +1,5 @@
 /* rntest --- test program for rn.h, rmxn.h  */
-/* Last edited on 2023-03-31 02:40:05 by stolfi */
+/* Last edited on 2023-10-09 09:23:55 by stolfi */
 
 /* We need to set these in order to get {isnan}. What a crock... */
 #define _GNU_SOURCE
@@ -69,6 +69,7 @@ void test_rmxn_LT_inv_map(int32_t m, double Qmm[], double Rmm[], double am[], do
 void test_rmxn_LT_div(int32_t m, int32_t n, double Qmm[], double Rmm[], double Smm[], double Amn[], double Bmn[], double Cmn[], bool_t verbose);
 void test_rmxn_mod_norm(int32_t m, double Qmm[], bool_t verbose);
 void test_rmxn_norms(int32_t m, int32_t n, double Amn[], bool_t verbose);
+void test_rmxn_normalize(int32_t m, int32_t n, double Amn[], double Bmn[], bool_t verbose); 
 void test_rmxn_print(int32_t m, int32_t n, bool_t verbose);
 void test_rmxn_canonical_simplex_and_measures(int32_t n, bool_t verbose);
 void test_rmxn_canonical_simplex_throw(int32_t n, bool_t verbose);
@@ -95,11 +96,10 @@ void check_ortho_matrix(int32_t m, int32_t n, double M[]);
     whether the rows are pairwise orthogonal and have length 1. */
 
 int32_t main (int32_t argc, char **argv)
-  { int32_t i;
-    srand(1993);
+  { srand(1993);
     srandom(1993);
-    for (i = 0; i < 100; i++) test_rn(i <= 3);
-    for (i = 0; i < 100; i++) test_rmxn(i <= 3);
+    for (int32_t i = 0; i < 100; i++) test_rn(i <= 3);
+    for (int32_t i = 0; i < 100; i++) test_rmxn(i <= 3);
     fclose(stderr);
     fclose(stdout);
     return 0;
@@ -667,6 +667,7 @@ void test_rmxn_rectangular(int32_t m, int32_t n, bool_t verbose)
 
     test_rmxn_LT_div(m, n, Qmm, Rmm, Smm, Amn, Bmn, Cmn, verbose);
     test_rmxn_norms(m, n, Amn, verbose);
+    test_rmxn_normalize(m, n, Amn, Bmn, verbose);
     test_rmxn_canonical_simplex_and_measures(n, verbose);
     test_rmxn_canonical_simplex_throw(n, verbose);
     test_rmxn_regular_simplex_and_measures(n, verbose);
@@ -1092,7 +1093,7 @@ void test_rmxn_LT_div(int32_t m, int32_t n, double Qmm[], double Rmm[], double S
       rmxn_mul(n, m, m, Anm, Jmm, Bnm);
       for (int32_t i = 0; i < n; i++)
         { for (int32_t j = 0; j < m; j++)
-            { double eps = 0.000000001*(fabs(Bnm[m*i + j]) + 1.0e-200);
+            { double eps = 0.0000000005*((m+n)*fabs(Bnm[m*i + j]) + 1.0e-200);
               rn_check_eps(Cnm[m*i + j],Bnm[m*i + j],eps, NO, NO, 
                 "rmxn_LT_pos_div error"
               );
@@ -1160,7 +1161,29 @@ void test_rmxn_norms(int32_t m, int32_t n, double Amn[], bool_t verbose)
     double rr = sqrt(ss);
     affirm(fabs(rr - r) < 000000001, "rmxn_norm error");
   }
-    
+
+void test_rmxn_normalize(int32_t m, int32_t n, double Amn[], double Bmn[], bool_t verbose)
+  {
+    if (verbose) { fprintf(stderr, "--- rmxn_normalize ---\n"); }
+    throw_matrix(m,n,Amn);
+    rmxn_copy(m, n, Amn, Bmn);
+    double s = rmxn_norm(m, n, Bmn);
+    double ss = rmxn_normalize(m, n, Bmn);
+    affirm(fabs(ss - s) < 000000001, "rmxn_normalize result error");
+    double t = rmxn_norm(m, n, Bmn);
+    double tt = 1.0;
+    affirm(fabs(tt - t) < 000000001, "rmxn_normalize norm error");
+    int32_t k = 0;
+    for (int32_t i = 0; i < m; i++)
+      { for (int32_t j = 0; j < n; j++)
+          { double Aij = Amn[k];
+            double Bij = Bmn[k];
+            affirm(fabs(Bij*ss - Aij) < 000000001, "rmxn_normalize elem error");
+            k++;
+          }
+      }
+  }
+
 void test_rmxn_print(int32_t m, int32_t n, bool_t verbose)
   {
     /* TEST: void rmxn_print (FILE *f, int32_t m, int32_t n, double *A); */

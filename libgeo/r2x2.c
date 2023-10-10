@@ -1,5 +1,5 @@
 /* See r2x2.h. */
-/* Last edited on 2022-01-05 01:44:14 by stolfi */
+/* Last edited on 2023-10-09 09:01:12 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -213,6 +213,25 @@ double r2x2_norm(r2x2_t* A)
     double A11 = A->c[1][1];
 
     return sqrt( A00*A00 + A01*A01 + A10*A10 + A11*A11 ); 
+  }
+
+
+double r2x2_normalize(r2x2_t *A)
+  { 
+    double w = r2x2_norm(A);
+    if (w != 0)
+      { A->c[0][0] /= w; 
+        A->c[0][1] /= w; 
+        A->c[1][0] /= w; 
+        A->c[1][1] /= w;
+      }
+    else
+      { A->c[0][0] = NAN; 
+        A->c[0][1] = NAN; 
+        A->c[1][0] = NAN; 
+        A->c[1][1] = NAN;
+      } 
+    return w;
   }
 
 double r2x2_mod_norm_sqr(r2x2_t* A)

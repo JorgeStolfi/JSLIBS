@@ -1,5 +1,5 @@
 /* r3test --- test program for r3.h, r3x3.h  */
-/* Last edited on 2023-10-01 19:25:48 by stolfi */
+/* Last edited on 2023-10-09 09:12:29 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -639,6 +639,24 @@ void test_r3x3(int32_t verbose)
     affirm(fabs(rr - r) < 000000001, "r3x3_norm error");
     affirm(tt >= 0, "r3x3_mod_norm_sqr error");
     affirm(fabs(tt - t) < 000000001, "r3x3_mod_norm_sqr error");
+
+    /* ---------------------------------------------------------------------- */
+    if (verbose) { fprintf(stderr, "--- r3x3_normalize ---\n"); }
+    throw_matrix(&A);
+    B = A;
+    s = r3x3_norm(&B);
+    ss = r3x3_normalize(&B);
+    affirm(fabs(ss - s) < 000000001, "r3x3_normalize result error");
+    t = r3x3_norm(&B);
+    tt = 1.0;
+    affirm(fabs(tt - t) < 000000001, "r3x3_normalize norm error");
+    for (i = 0; i < N; i++)
+      { for (j = 0; j < N; j++)
+          { double Aij = A.c[i][j];
+            double Bij = B.c[i][j];
+            affirm(fabs(Bij*ss - Aij) < 000000001, "r3x3_normalize elem error");
+          }
+      }
 
     /* ---------------------------------------------------------------------- */
     /* ---------------------------------------------------------------------- */

@@ -1,12 +1,12 @@
-#define PROG_NAME "hr2_pmap_adjust_test"
-#define PROG_DESC "test of {hr2_pmap_adjust.h}"
+#define PROG_NAME "hr2_pmap_opt_test"
+#define PROG_DESC "test of {hr2_pmap_opt.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-21 12:39:43 by stolfi */ 
+/* Last edited on 2023-10-09 19:38:39 by stolfi */ 
 /* Created on 2020-07-11 by J. Stolfi, UNICAMP */
 /* Based on {test_align.c} by J. Stolfi, UNICAMP */
 
-#define hr2_pmap_adjust_test_COPYRIGHT \
+#define hr2_pmap_opt_test_COPYRIGHT \
   "Copyright © 2020  by the State University of Campinas (UNICAMP)"
 
 #define _GNU_SOURCE
@@ -28,7 +28,7 @@
 #include <affirm.h>
 #include <assert.h>
 
-#include <hr2_pmap_adjust.h>
+#include <hr2_pmap_opt.h>
 
 typedef struct hpmat_options_t 
   { char *prefix;         /* Prefix for output files. */
@@ -65,7 +65,7 @@ void hpmat_show_disp
     The arrays are compared with {hr2_pmap_diff_sqr(A,B)} and with
     {hpmat_diff_rel_sqr(D,R)} where {D=A.dir-B.dir}. If {print} is true
     also prints {D}. If the maps {A} and {B} are affine, they are also
-    compared with {hr2_pmap_aff_mismatch_sqr(A,B)}. */
+    compared with {hr2_pmap_aff_discr_sqr(A,B)}. */
 
 void hpmat_debug_map
   ( char *label,
@@ -84,7 +84,7 @@ void hpmat_debug_map
 void hpmat_plot_goal
   ( char *prefix,
     char *method,
-    hr2_pmap_adjust_func_t *F2, 
+    hr2_pmap_opt_func_t *F2, 
     hr2_pmap_t *A,
     r3x3_t *U,
     r3x3_t *V,
@@ -191,7 +191,7 @@ void hpmat_one(hpmat_options_t *o, char *method, bool_t verbose)
     double F2sol;   /* Goal function at {Asol}. */
     if (strcmp(method, "quad") == 0)
       { double tol = 0.02;
-        hr2_pmap_adjust_quad(F2_mismatch, R, tol, &Asol, &F2sol);
+        hr2_pmap_opt_quad(F2_mismatch, R, tol, &Asol, &F2sol);
       }
     else
       { demand(FALSE, "invalid method"); }
@@ -218,7 +218,7 @@ double hpmat_mismatch_sqr_1(hr2_pmap_t *A, hr2_pmap_t *B)
 
 double hpmat_mismatch_sqr_2(hr2_pmap_t *A, hr2_pmap_t *B)
   { 
-    hr2_pmap_t ABdif = hr2_pmap_inv_comp(A, B); /* The map {A^{-1} B}. */
+    hr2_pmap_t ABdif = hr2_pmap_inv_compose(A, B); /* The map {A^{-1} B}. */
     /* Compare the matrix of {ABdif} with the identity map, using a non-trivial metric: */
     double d2 = 0;
     for (int32_t i = 0; i < 3; i++)
@@ -244,7 +244,7 @@ void hpmat_choose_initial_guess(hr2_pmap_t *Aopt, r3x3_t *R, hr2_pmap_t *Aini)
 void hpmat_plot_goal
   ( char *prefix,
     char *method,
-    hr2_pmap_adjust_func_t *F2, 
+    hr2_pmap_opt_func_t *F2, 
     hr2_pmap_t *A,
     r3x3_t *U,
     r3x3_t *V,
@@ -292,8 +292,8 @@ void hpmat_choose_plot_directions(r3x3_t *R, r3x3_t *U, r3x3_t *V)
     double Re[9]; /* Nonzero elements of {R} are  {Re[0..ne-1]}. */
     double *Up[9], *Vp[9]; /* Pointers of elements of {U} and {V} where {R} is nonzero. */
     
-    hr2_pmap_adjust_get_var_elems(U, R, Up, Re, &ne);
-    hr2_pmap_adjust_get_var_elems(V, R, Vp, Re, &ne);
+    hr2_pmap_opt_get_var_elems(U, R, Up, Re, &ne);
+    hr2_pmap_opt_get_var_elems(V, R, Vp, Re, &ne);
       
     /* Throw a random unit vector {ue[0..ne-1]}:*/
     double ue[ne];
@@ -380,7 +380,7 @@ void hpmat_show_disp
     
     if (hr2_pmap_is_affine(A) && hr2_pmap_is_affine(B))
       { /* Difference between {A} and {B} over the unit circle: */
-        double mism2 = hr2_pmap_aff_mismatch_sqr(A, B);
+        double mism2 = hr2_pmap_aff_discr_sqr(A, B);
         fprintf(stderr, " aff mism = %12.7f", sqrt(mism2));
       }
     fprintf(stderr, "\n");

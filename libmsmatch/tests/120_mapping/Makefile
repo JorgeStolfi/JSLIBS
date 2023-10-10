@@ -1,4 +1,4 @@
-# Last edited on 2022-10-18 21:11:53 by stolfi
+# Last edited on 2023-10-06 10:57:04 by stolfi
 
 PROG  := msm_test_120_mapping
 
@@ -6,8 +6,8 @@ TEST_LIB := libmsmatch.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS := \
-  libgeo.a \
   libimg.a \
+  libgeo.a \
   libeps.a \
   libjs.a
 

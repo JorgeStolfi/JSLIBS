@@ -1,5 +1,5 @@
 /* r6x6.h --- 4x4 matrices and operations on them */
-/* Last edited on 2023-01-12 06:51:47 by stolfi */
+/* Last edited on 2023-10-09 09:02:35 by stolfi */
 
 #ifndef r6x6_H
 #define r6x6_H
@@ -63,6 +63,11 @@ double r6x6_norm_sqr(r6x6_t* A);
 double r6x6_norm(r6x6_t* A);
   /* Frobenius norm of {A}, i.e. square root of sum of squares of elements */
 
+double r6x6_normalize(r6x6_t *A);
+  /* Divides the matrix {A} by its {r6x6_norm}. 
+    If that norm is zero, the matrix is filled with {NAN}.
+    Returns the norm. */
+ 
 double r6x6_mod_norm_sqr (r6x6_t *A);
   /* Returns the square of the Frobenius norm of {A-I} */
   

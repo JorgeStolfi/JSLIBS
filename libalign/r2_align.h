@@ -2,7 +2,7 @@
 #define r2_align_H
 
 /* General tools and concepts for translational alignment of 2D objects. */
-/* Last edited on 2023-09-07 19:10:32 by stolfi */ 
+/* Last edited on 2023-10-05 21:17:07 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -193,6 +193,11 @@ void r2_align_throw_arad (int32_t ni, double rmax, int32_t nvmin, r2_t arad[], b
 double r2_align_dot (int32_t ni, r2_t p[], r2_t q[]);
   /* Returns the dot product of the alignment vectors {p} and {q} with {ni}
     components each. Namely, returns the sum of products {p[i].c[j]*q[i].c[j]}
+    for {i} in {0..ni-1]} and {j} in {0..1}. */
+
+double r2_align_dist_sqr (int32_t ni, r2_t p[], r2_t q[]);
+  /* Given two alignment vectors {p,q} with {ni} components, returns the square of its total
+    Euclidean distance. Namely, returns the sum of squares of {p[i].c[j] - q[i].c[j]}
     for {i} in {0..ni-1]} and {j} in {0..1}. */
 
 double r2_align_rel_disp_sqr (int32_t ni, r2_t p[], r2_t q[], r2_t arad[]);
