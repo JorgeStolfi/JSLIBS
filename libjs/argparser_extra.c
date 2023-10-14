@@ -1,5 +1,5 @@
 /* See argparser_extra.h. */
-/* Last edited on 2023-02-11 11:10:02 by stolfi */
+/* Last edited on 2023-10-10 12:27:42 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 /* Based on Params.m3 by J.Stolfi, DEC-SRC, 1988.  */
@@ -18,11 +18,6 @@
 #include <argparser.h>
 
 #include <argparser_extra.h>
-
-void argparser_print_info_text(FILE *wr, char *info, int32_t wd);
-  /* Prints a string {info} (terminated by '\000') to {wr}. The text
-    may have multiple lines, separated by '\n'. Each line is
-    formatted {argparser_print_info_line} to the requested width {wd}. */
 
 char *argparser_print_info_line(FILE *wr, char *lin, int32_t wd);
   /* Prints the string {lin} (terminated by '\000' or '\n') to {wr}.
@@ -102,11 +97,11 @@ void argparser_error_at(argparser_t *pp, char *msg, char* pos, int32_t index)
 void argparser_print_info(argparser_t *pp, int32_t wd)
   { int32_t i;
     for (i = 0; i < pp->nhelp; i++)
-      { argparser_print_info_text(pp->wr, pp->info.e[i], wd); }
+      { argparser_print_text(pp->wr, pp->info.e[i], wd); }
     fprintf(pp->wr, "\n");
   }
 
-void argparser_print_info_text(FILE *wr, char *info, int32_t wd)
+void argparser_print_text(FILE *wr, char *info, int32_t wd)
   { char *lin = info;
     while ((*lin) != '\000')
       { /* Print line starting at {lin}, advance {lin} to its end: */

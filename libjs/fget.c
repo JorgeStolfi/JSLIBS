@@ -1,5 +1,5 @@
 /* See fget.h */
-/* Last edited on 2023-02-12 09:57:58 by stolfi */
+/* Last edited on 2023-10-13 13:50:42 by stolfi */
 
 #define _GNU_SOURCE_
 #include <stdio.h>
@@ -192,6 +192,11 @@ char *fget_to_delims(FILE *f, char *dels)
     buf[nb] = '\000'; nb++; 
     if (nb < bufsz) { buf = (char *)notnull(realloc(buf, nb), "out of mem for result"); }
     return buf;
+  }
+
+char *fget_line(FILE *f)
+  { char *s = fget_to_delims(f, NULL);
+    return s;
   }
 
 char *fget_string(FILE *f)

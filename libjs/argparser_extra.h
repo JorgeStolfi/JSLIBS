@@ -1,5 +1,5 @@
 /* argparser_extra.h -- internal functions for {argparser.h}. */
-/* Last edited on 2023-02-11 11:10:54 by stolfi */
+/* Last edited on 2023-10-10 12:27:21 by stolfi */
 
 #ifndef argparser_extra_H
 #define argparser_extra_H
@@ -47,6 +47,11 @@ void argparser_error_at(argparser_t *pp, char *msg, char* pos, int32_t index);
     prints also the string {pos}, which should be "at" or "after",
     and the argument {pp.arg.e[index]}. Then aborts the program 
     with status 1. */
+
+void argparser_print_text(FILE *wr, char *info, int32_t wd);
+  /* Prints a string {info} (terminated by '\000') to {wr}. The text
+    may have multiple lines, separated by '\n'. Each line is
+    formatted {argparser_print_info_line} to the requested width {wd}. */
 
 void argparser_print_info(argparser_t *pp, int32_t wd);
   /* Prints the info texts stored in {pp->help}. Each text is

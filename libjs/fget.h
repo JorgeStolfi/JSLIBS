@@ -1,5 +1,5 @@
 /* fget.h -- alternatives to fscanf that die on error. */
-/* Last edited on 2023-02-12 07:19:24 by stolfi */
+/* Last edited on 2023-10-13 13:48:50 by stolfi */
 
 #ifndef fget_H
 #define fget_H
@@ -75,6 +75,12 @@ char *fget_to_delims(FILE *f, char *dels);
     {dels} will act as a delimiter, and will not be consumed.
     If {dels} is {NULL}, empty, or "\n", it just takes characters
     unit a formatting char or end-of-file. */
+
+char *fget_line(FILE *f);
+  /* Collects all characters from the current point up to but 
+    not including the end of the line or end of file into as a newly allocated,
+    zero-terminated string, which is returned.  The end-of-file,
+    if any, is not consumed. */
 
 char *fget_string(FILE *f);
   /* Skips spaces. Fails if hits end_of_file, line break, or page break.

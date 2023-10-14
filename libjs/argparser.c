@@ -1,5 +1,5 @@
 /* See argparser.h. */
-/* Last edited on 2023-02-11 11:00:04 by stolfi */
+/* Last edited on 2023-10-14 10:26:28 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 /* Based on Params.m3 by J.Stolfi, DEC-SRC, 1988.  */
@@ -33,7 +33,7 @@ argparser_t *argparser_new(FILE *wr, int32_t argc, char **argv)
     pp->wr = wr;
     pp->parsed = bool_vec_new(argc);
     pp->parsed.e[0] = TRUE;
-    { int32_t i; for (i = 1; i < argc; i++) { pp->parsed.e[i] = FALSE; } }
+    for (int32_t i = 1; i < argc; i++) { pp->parsed.e[i] = FALSE; }
     pp->next = 1;
     pp->nhelp = 0;
     pp->help = string_vec_new(10);
@@ -55,8 +55,9 @@ void argparser_set_info(argparser_t *pp, char *info)
   }
     
 void argparser_process_help_info_options(argparser_t *pp)
-  { if (argparser_keyword_present(pp, "-info"))
-      { argparser_print_info(pp, 72); exit(0); }
+  { int32_t info_wd = 90; /* Line width for the INFO part. */
+    if (argparser_keyword_present(pp, "-info"))
+      { argparser_print_info(pp, info_wd); exit(0); }
     if (argparser_keyword_present(pp, "-help"))
       { argparser_print_help_and_halt(pp, 0); }
   }
@@ -65,8 +66,7 @@ void argparser_error(argparser_t *pp, char *msg)
   { argparser_error_at(pp, msg, "after", pp->next-1); }
 
 void argparser_print_help_and_halt(argparser_t *pp, int32_t status)
-  { int32_t i;
-    for (i = 0; i < pp->nhelp; i++)
+  { for (int32_t i = 0; i < pp->nhelp; i++)
       { fprintf(pp->wr, "%s", pp->help.e[i]); }
     fprintf(pp->wr, "\n");
     exit(status);
@@ -76,8 +76,7 @@ bool_t argparser_keyword_present(argparser_t *pp, char *key)
   { demand((key != NULL) && ((*key) != 0), "invalid null/empty key");
     char **a = pp->arg.e;
     bool_t *p = pp->parsed.e;
-    int32_t i;
-    for (i = 0; i < pp->arg.ne; i++)
+    for (int32_t i = 0; i < pp->arg.ne; i++)
       { if ((! p[i]) && argparser_key_matches(key, a[i]))
           { pp->next = i + 1;
             p[i] = TRUE;
@@ -274,8 +273,7 @@ bool_t argparser_keyword_present_next(argparser_t *pp, char *key)
 void argparser_check_all_parsed(argparser_t *pp, int32_t num)
   { int32_t bogus = 0;
     bool_t *p = pp->parsed.e;
-    int32_t i;
-    for (i = 0; i < num; i++)
+    for (int32_t i = 0; i < num; i++)
       { if (! p[i])
           { bogus++;
             if (bogus <= argparser_show_bogus_max)
