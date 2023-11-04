@@ -1,5 +1,5 @@
 /* See fget.h */
-/* Last edited on 2023-10-13 13:50:42 by stolfi */
+/* Last edited on 2023-10-15 03:39:42 by stolfi */
 
 #define _GNU_SOURCE_
 #include <stdio.h>
@@ -29,7 +29,6 @@ int32_t fget_digit(FILE *f, uint32_t base);
 bool_t fget_is_formatting_char(char c)
   {
     return 
-      (c == '\000') ||
       (c == ' ') || 
       (c == '\240') || 
       ((c >= '\011') && (c <= '\015'));
@@ -38,7 +37,6 @@ bool_t fget_is_formatting_char(char c)
 bool_t fget_is_space(char c)
   {
     return 
-      (c == '\000') || 
       (c == ' ') || 
       (c == '\240') || 
       (c == '\011');
@@ -93,7 +91,7 @@ void fget_match(FILE *f, char *t)
   { while ((*t) != '\000')
       { int32_t r = fgetc(f);
         if ((r == EOF) || ((char)r != (*t)))
-          { demand(FALSE, txtcat("cannot find \"", txtcat(t, "\""))); }
+          { demand(FALSE, txtcat3("cannot find \"", t, "\"")); }
         t++;
       }
   }
@@ -101,7 +99,7 @@ void fget_match(FILE *f, char *t)
 void fget_skip_to_eol(FILE *f)
   { int32_t r = fgetc(f);
     while ((r != EOF) && ((char)r != '\n')) { r = fgetc(f); }
-    demand(r != EOF, "no newline at end of file");
+    demand(r != EOF, "no end-of-line at end of file");
     return;
   }
 
@@ -109,40 +107,35 @@ void fget_eol(FILE *f)
   { int32_t r;
     fget_skip_spaces(f);
     r = fgetc(f);
-    demand(r != EOF, "no newline at end of file");
+    demand(r != EOF, "no end-of-line at end of file");
     demand((char)r == '\n', "extraneous data on input line");
   }
 
-void fget_comment_or_eol(FILE *f, char cmtc)
-  { fget_skip_spaces(f);
-    int32_t r = fgetc(f);
-    demand(r != EOF, "unexpected EOF");
-    if ((char)r == '\n')
-      { return; }
-    else if ((char)r == cmtc)
-      { do { r = fgetc(f); } while ((r != EOF) && ((char)r != '\n'));
-        demand(r != EOF, "no newline at end of file");
-      }
-    else
-      { demand(FALSE, "extraneous data on input line"); }
-  }
-
-bool_t fget_test_comment_or_eol(FILE *f, char cmtc)
+bool_t fget_test_comment_or_eol(FILE *f, char cmtc, char **text_P)
   { fget_skip_spaces(f);
     int32_t r = fgetc(f);
     if (r == EOF)
       { return FALSE; }
     else if ((char)r == '\n')
-      { return TRUE; }
+      { if (text_P != NULL) { (*text_P) = NULL; }
+        return TRUE; 
+      }
     else if ((char)r == cmtc)
-      { do { r = fgetc(f); } while ((r != EOF) && ((char)r != '\n'));
-        demand(r != EOF, "no newline at end of file");
+      { if (text_P != NULL)
+          { (*text_P) = fget_line(f); }
+        else 
+          { fget_skip_to_eol(f); }
         return TRUE;
       }
     else
-      { if (r != EOF) { ungetc(r, f); }
+      { ungetc(r, f);
         return FALSE;
-      } 
+      }
+  }
+
+void fget_comment_or_eol(FILE *f, char cmtc, char **text_P)
+  { 
+    demand(fget_test_comment_or_eol(f, cmtc, text_P), "extraneous data on input line");
   }
 
 char fget_char(FILE *f)
@@ -166,41 +159,41 @@ bool_t fget_bool(FILE *f)
 
 #define INITEXTLENGTH 1024
 
-char *fget_to_delim(FILE *f, char del)
-  { char dels[2];
-    dels[0] = del;
-    dels[1] = '\000';
-    return fget_to_delims(f, dels);
-  }
-
-char *fget_to_delims(FILE *f, char *dels)
+char *fget_to_delims(FILE *f, char delim, char *delims)
   { int32_t bufsz = INITEXTLENGTH+1;
-    char *buf = (char *)notnull(malloc(bufsz), "out of mem for buf");;
+    char *buf = talloc(bufsz, char);
     int32_t nb = 0; /* Number of chars stored into {buf}. */
-    fget_skip_spaces(f);
     int32_t r = fgetc(f);
-    while ((r != EOF) && (! fget_is_formatting_char((char)r)) && ((dels == NULL) || (strchr(dels,(char)r) == NULL)))
-      { /* Save char, expanding as needed, and leaving space for final '\0': */
+    while (TRUE)
+      { demand(r != EOF, "no end-of-line at end of file");
+        char ch = (char)r;
+        if (ch == '\n') { break; }
+        if (ch == delim) { break; }
+        if ((delims != NULL) && (strchr(delims,ch) != NULL)) { break; }
+        /* Save char, expanding as needed, and leaving space for final '\0': */
         if (nb >= bufsz-1)
-          { int32_t bufsz = 2*bufsz;
+          { bufsz = 2*bufsz;
             buf = (char *)notnull(realloc(buf, bufsz), "out of mem for buf");
           }
-        buf[nb] = (char)r; nb++;
+        buf[nb] = ch; nb++;
         r = fgetc(f);
       }
-    if (r != EOF) { ungetc(r, f); }
+    assert(r != EOF);
+    ungetc(r, f);
     buf[nb] = '\000'; nb++; 
     if (nb < bufsz) { buf = (char *)notnull(realloc(buf, nb), "out of mem for result"); }
     return buf;
   }
 
 char *fget_line(FILE *f)
-  { char *s = fget_to_delims(f, NULL);
+  { char *s = fget_to_delims(f, '\n', NULL);
+    fget_eol(f);
     return s;
   }
 
 char *fget_string(FILE *f)
-  { char *s = fget_to_delim(f, '\n');
+  { fget_skip_spaces(f);
+    char *s = fget_to_delims(f, '\n', fget_formatting_chars);
     demand ((*s) != '\000', "item not found");
     return s;
   }

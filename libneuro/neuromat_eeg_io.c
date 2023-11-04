@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_io.h}. */
-/* Last edited on 2023-02-12 07:38:12 by stolfi */
+/* Last edited on 2023-10-21 21:46:12 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -23,7 +23,7 @@ int32_t neuromat_eeg_frame_read(FILE *rd, int32_t nc, double frm[], int32_t *nlP
     /* Loop until EOF or one data line: */
     while (TRUE)
       { /* Try to read one more line from the file: */
-        bool_t ok = fget_test_comment_or_eol(rd, '#');
+        bool_t ok = fget_test_comment_or_eol(rd, '#', NULL);
         if (ok) { nl++; continue; }
         if (fget_test_eof(rd)) { break; }
         /* There is something there: */
@@ -47,7 +47,7 @@ int32_t neuromat_eeg_frame_read(FILE *rd, int32_t nc, double frm[], int32_t *nlP
                 ungetc(r, rd);
                 for (int32_t ic = 0; ic < nc; ic++) { frm[ic] = fget_double(rd); }
                 (void)fget_skip_and_test_char(rd, '\015');
-                fget_comment_or_eol(rd, '#');
+                fget_comment_or_eol(rd, '#', NULL);
               }
             break;
           }
@@ -134,11 +134,11 @@ void neuromat_eeg_frame_write(FILE *wr, int32_t nc, double val[])
     fprintf(wr, "\n");
   }
 
-void neuromat_eeg_frame_print(FILE *wr, char *pre, int32_t nc, char **chnames, double val[], char *sep, char *suf)
+void neuromat_eeg_frame_print(FILE *wr, char *pre, int32_t nc, char **chname, double val[], char *sep, char *suf)
   { if (pre != NULL) { fprintf(wr, "%s", pre); }
     for (int32_t i = 0; i < nc; i++)
       { if ((i > 0) && (sep != NULL)) { fprintf(wr, "%s", sep); } 
-        if (chnames != NULL) { fprintf(wr, "%s = ", chnames[i]); }
+        if (chname != NULL) { fprintf(wr, "%s = ", chname[i]); }
         fprintf(wr, "%14.8e", val[i]);
       }
     if (suf != NULL) { fprintf(wr, "%s", suf); }

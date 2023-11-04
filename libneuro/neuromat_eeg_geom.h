@@ -2,7 +2,7 @@
 #define neuromat_geom_H
 
 /* NeuroMat geometry tools. */
-/* Last edited on 2021-08-31 12:27:35 by stolfi */
+/* Last edited on 2023-10-21 21:47:19 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -48,29 +48,26 @@
     stereographic projection of its idealized 3D position from the
     point {(0,0,-rZ)} onto the plane {Z=0}. Thus the upper half of the
     scalp (with {Z>0}) projects to the interior of the ellipse on the
-    idealized plane with center {(0,0)} and radii {(rX,rY)}.
-*/
+    idealized plane with center {(0,0)} and radii {(rX,rY)}. */
 
-r2_t *neuromat_eeg_geom_get_schematic_2D_points(int32_t ne);
-  /* If {rad} is {NULL}, returns a vector {pos2D[0..ne-1]} with the
-    two-dimensional schematic positions of the electrodes in the
-    {ne}-electrode experiments.
+void neuromat_eeg_geom_get_schematic_2D_points(char *capType, int32_t *ne_P, char ***chname_P, r2_t **pos2D_P);
+  /*  Returns in {*ne_P} the number {ne} of electrodes in the cap of type {capType}.
+    Reaturns in {*chname_P} a vector {chname[0..ne-1]} with the names
+    of those electrodes, and in {*pos2D_P} a vector {pos2D[0..ne-1]} with the
+    two-dimensional schematic positions of the electrodes.
     
-    Currently supports only {ne} equal to 20, 128, or 129.
-    The latter includes the votage reference ("CZ") electrode 
-    as {pos2D[128]}. */
-
+    Currently supports only {capType} equal to "R20", "R128", "R129", and "FN3". 
+    The "R129" cap is the same as "R128" plus the voltage reference ("CZ") electrode as {pos2D[128]}. */
     
-r2_t *neuromat_eeg_geom_get_schematic_2D_points_by_name(int32_t ne, char *chnames[], int32_t ne_full);
+r2_t *neuromat_eeg_geom_get_schematic_2D_points_by_name(char *capType, int32_t ne, char *chname[]);
   /* Returns a vector {pos2D[0..ne-1]} with the schematic 2D coordinates
-    of the electrodes whose names are {chnames[0..ne-1]}.
+    of the electrodes whose names are {chname[0..ne-1]}.
     
     Assumes that those electrodes are a subset of the full set of
-    {ne_full} electrodes availabe on the cap, whose names are
-    provided by {neuromat_eeg_get_channel_names(ne_full,0,NULL)}. Thus
-    {ne_full} must be one of the electrode counts recognized by that
+    electrodes availabe on the cap {capType}, whose names are
+    provided by {neuromat_eeg_get_channel_names(capType,0,NULL)}. Thus
+    {capType} must be one of the cap types recognized by that
     function. */
-
 
 /* STEREOGRAPHIC PROJECTION 2D TO/FROM 3D  */
     

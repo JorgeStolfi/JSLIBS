@@ -1,0 +1,36 @@
+# Last edited on 2023-02-19 10:06:25 by stolfi
+
+CHEKING STATUS OF LIBS
+
+  ls -d lib* \
+    | sort | uniq \
+    > .libs-all
+  
+  cat 00-LIBS-STATUS.dir \
+    | gawk '/^[^#]/{ print $2}' \
+    | sort | uniq \
+    > .libs-statused
+  bool 1-2 .libs-{all,statused} > .libs-not-statused
+  bool 1-2 .libs-{statused,all} > .libs-bogusly-statused
+
+
+CHECKING STATUS OF TESTS
+
+  ls -d */tests/* \
+   | egrep -v -e 'Makefile|Notebook|tests/tests|[~]$|[.](sh|gawk)|JUNK|OLD|DATA|LATER' \
+   | sort | uniq \
+   > .tests-all
+  
+  cat 00-LIB-TESTS-STATUS.dir | gawk '/^[^#]/{ print $2}' | sort | uniq > .tests-statused
+  bool 1-2 .tests-{all,statused} > .tests-not-statused
+  bool 1-2 .tests-{statused,all} > .tests-bogusly-statused
+  
+  [COMPILATION BUFFER] \
+    | egrep -e 'Entering.*tests/' \
+    | sed -e 's:make\[.*JSLIBS/::g' -e "s:' *$::g" \
+    | sort | uniq \
+    > .tests-compiled
+    
+  Collected by hand ".tests-failed"
+  
+  

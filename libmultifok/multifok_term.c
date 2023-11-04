@@ -1,5 +1,5 @@
 /* See {multifok_term.h}. */
-/* Last edited on 2023-04-18 22:37:15 by stolfi */
+/* Last edited on 2023-10-14 21:10:14 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -77,7 +77,7 @@ void multifok_term_read_weights_and_names
     double_vec_t wt = double_vec_new(50);
     string_vec_t termName = string_vec_new(50); /* Term formulas. */
     while (TRUE)
-      { bool_t ok = fget_test_comment_or_eol(rd, '#');
+      { bool_t ok = fget_test_comment_or_eol(rd, '#', NULL);
         if (ok) { continue; }
         if (fget_test_eof(rd)) { break; }
         /* There is something there: */
@@ -85,7 +85,7 @@ void multifok_term_read_weights_and_names
         demand(kt == NT, "unexpected product index");
         double wtk = fget_double(rd);
         char *tnamek = fget_string(rd);
-        fget_comment_or_eol(rd, '#');
+        fget_comment_or_eol(rd, '#', NULL);
         double_vec_expand(&wt,NT);
         wt.e[kt] = wtk;
         string_vec_expand(&termName, NT);
@@ -288,7 +288,7 @@ void multifok_term_read_index_table
     if (verbose) { fprintf(stderr, "reading index triples...\n"); }
 
     while (TRUE)
-      { bool_t ok = fget_test_comment_or_eol(rd, '#');
+      { bool_t ok = fget_test_comment_or_eol(rd, '#', NULL);
         if (ok) { continue; }
         if (fget_test_eof(rd)) { break; }
         /* There is something there: */
@@ -367,7 +367,7 @@ void multifok_term_read_index_table
         demand(strcmp(pr_read, pr) == 0, "product name does not match {jb1,jb2}");
         free(pr_read);
         
-        fget_comment_or_eol(rd, '#');
+        fget_comment_or_eol(rd, '#', NULL);
         demand(kt <= NT, "{kt} skipped term");
         
         (*jb1_P) = jb1;

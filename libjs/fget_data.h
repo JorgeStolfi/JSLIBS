@@ -1,5 +1,5 @@
 /* fget_data.h -- flexible parsing of multicolum data files. */
-/* Last edited on 2023-02-11 16:54:11 by stolfi */
+/* Last edited on 2023-10-15 02:31:39 by stolfi */
 
 #ifndef fget_data_H
 #define fget_data_H
@@ -19,7 +19,7 @@ bool_t fget_data_fields(FILE *rd, char cmtc, int32_t nf, int8_t type[], char* al
      
     Those fields are implicitly indexed {0.nf-1}, and their parsing and
     handling is determined by the table {type[0..nf-1]}. Each {type[kf]}
-    may be 0 to skip field {kf}, 1 to parse it as a string [alf[kf]}, or
+    may be 0 to skip field {kf}, 1 to parse it as a string {alf[kf]}, or
     2 to parse it as a number {num[kf]}.
  
     Specifically, this procedure skips any formatting chars (spaces,
@@ -32,7 +32,7 @@ bool_t fget_data_fields(FILE *rd, char cmtc, int32_t nf, int8_t type[], char* al
     
     The procedure skips spaces, but not line breaks or comments, before parsing each
     field after the first one. If {type[kf]} is 2, field {kf} is parsed
-    as parsed with {fget_double} and stored in {num[kf]}. Otherwise
+    with {fget_double} and stored in {num[kf]}. Otherwise
     field {kf} is parsed as a sequence of one or more arbitrary
     characters up to the next formatting character, end-of-file, or
     comment -- like {fget_string}, but excluding the {cmtc} character.

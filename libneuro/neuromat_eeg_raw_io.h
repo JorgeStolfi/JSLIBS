@@ -2,7 +2,7 @@
 #define neuromat_eeg_raw_io_H
 
 /* Reading plain-text NeuroMat EEG signals. */
-/* Last edited on 2021-08-21 13:11:16 by stolfi */
+/* Last edited on 2023-10-21 21:45:40 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -10,9 +10,9 @@
 
 #include <neuromat_eeg.h>
 
-int32_t neuromat_eeg_raw_frame_read(FILE *rd, int32_t version, double unit, int32_t nc, char **chnames, double val[]);
+int32_t neuromat_eeg_raw_frame_read(FILE *rd, int32_t version, double unit, int32_t nc, char **chname, double val[]);
   /* Reads a data frame from the raw EEG file {rd}, assumed to consist
-    of {nc} channel samples, called {chnames[0..nc-1]}.  Converts
+    of {nc} channel samples, called {chname[0..nc-1]}.  Converts
     the samples to {double} values and saves  them into {val[0..nc-1]}. 
     Each sample is read with {neuromat_eeg_raw_read_raw_sample}.
     

@@ -1,14 +1,15 @@
-# Last edited on 2013-06-14 01:57:23 by stolfilocal
+# Last edited on 2023-10-22 03:29:15 by stolfi
 
 TEST_LIB := libneuro.a
 TEST_LIB_DIR := ../..
 PROG := test_butterworth
 
 JS_LIBS := \
+  libgeo.a \
   libjs.a
   
 OTHER_LIBS := \
-  /usr/lib64/libfftw3.so \
+  /usr/lib/x86_64-linux-gnu/libfftw3.so \
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 

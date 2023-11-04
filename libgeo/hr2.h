@@ -1,5 +1,5 @@
 /* Oriented projective geometry in two dimensions. */
-/* Last edited on 2023-10-09 19:38:04 by stolfi */ 
+/* Last edited on 2023-10-21 07:03:16 by stolfi */ 
    
 #ifndef hr2_H
 #define hr2_H
@@ -143,7 +143,7 @@ double hr2_pmap_aff_discr_sqr(hr2_pmap_t *M, hr2_pmap_t *N);
 /* SPECIAL PROJECTIVE MAPS */
 
 hr2_pmap_t hr2_pmap_identity(void);
-  /* Returns the identity projective map, defiend by the iedntity 3x3 matrix. */
+  /* Returns the identity projective map, defined by the iedntity 3x3 matrix. */
 
 hr2_pmap_t hr2_pmap_translation(r2_t *vec);
   /* Returns a projective map that performs a translation by the Cartesian vector {vec}.
@@ -179,8 +179,8 @@ hr2_pmap_t hr2_pmap_congruence_from_point_and_dir(r2_t *p, r2_t *u, bool_t flip)
     
     If {flip} is false, the map will preserve handedness, i. e. will be
     a combination of a rotation plus a translation. If {flip} is true,
-    the map will reverse handedness; it will be a reflection about 
-    some line. */
+    the map will reverse handedness; it will be a combination
+    of rotation, translation, and mirroring about a line. */
 
 hr2_pmap_t hr2_pmap_similarity_from_two_points(r2_t *p, r2_t *q, bool_t flip);
   /* Returns a projective map that is a Cartesian similarity taking the points {[1,0,0]},
@@ -194,8 +194,8 @@ hr2_pmap_t hr2_pmap_similarity_from_two_points(r2_t *p, r2_t *q, bool_t flip);
     If {flip} is false, the map will preserve handedness, i. e. will be
     the combination of a uniform scaling by a positive factor, a
     rotation, and a translation. If {flip} is true, the map will reverse
-    handedness, i.e. will be the combination of a uniform scaling by a
-    positive factor and a reflection about some line. Note that a
+    handedness, i.e. will be the combination of those and
+    and a reflection about some line. Note that a
     uniform scaling by a negative factor is equivalent to a rotation by
     180 degrees.  */
 
@@ -236,6 +236,9 @@ typedef enum
     plus a uniform scaling. An affine map is a linear map of {\RR^2}
     combined with a translation. {hr2_pmat_type_PROJECTIVE} means
     a general (unrestricted) projecive map. */
+
+#define hr2_pmat_type_LAST hr2_pmat_type_PROJECTIVE
+  /* The last value in the enum {hr2_pmat_type_t}. */
 
 void hr2_pmap_print (FILE *wr, hr2_pmap_t *M, char *pref, char *suff);
   /* Prints {M} on file {wr}, with some default format.  The printout

@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_source.h}. */
-/* Last edited on 2023-02-12 07:52:33 by stolfi */
+/* Last edited on 2023-11-02 06:03:21 by stolfi */
   
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -20,12 +20,12 @@ neuromat_eeg_source_t *neuromat_eeg_source_new(void)
     neuromat_eeg_source_t *ho = notnull(malloc(sizeof(neuromat_eeg_source_t)), "no mem");
     (*ho) = (neuromat_eeg_source_t)
       { .file = NULL,
-        .nt = INT_MIN,
-        .it_ini = INT_MIN,
-        .it_fin = INT_MIN,
+        .nt = INT32_MIN,
+        .it_ini = INT32_MIN,
+        .it_fin = INT32_MIN,
         .fsmp = NAN,
-        .subject = INT_MIN,
-        .run = INT_MIN       
+        .subject = INT32_MIN,
+        .run = INT32_MIN       
       };
     return ho;
   }
@@ -40,7 +40,7 @@ void neuromat_eeg_source_write(FILE *wr, char *pref, neuromat_eeg_source_t *ho)
   {
     neuromat_eeg_header_write_field_string(wr, pref, "file", ho->file);
     neuromat_eeg_header_write_field_int(wr, pref, "nt", ho->nt, 1, INT_MAX-1);
-    neuromat_eeg_header_write_field_int_range(wr, pref, "sample_range", ho->it_ini, ho->it_fin, INT_MIN+1, INT_MAX-1);
+    neuromat_eeg_header_write_field_int_range(wr, pref, "sample_range", ho->it_ini, ho->it_fin, INT32_MIN+1, INT_MAX-1);
     neuromat_eeg_header_write_field_double(wr, pref, "fsmp", ho->fsmp, 0.01, 1.0e12);
     neuromat_eeg_header_write_field_int(wr, pref, "subject", ho->subject, 1, INT_MAX-1);
     neuromat_eeg_header_write_field_int(wr, pref, "run", ho->run, 1, INT_MAX-1);

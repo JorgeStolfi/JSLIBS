@@ -1,5 +1,5 @@
 /* See {imq_huff.h}. */
-/* Last edited on 2023-02-07 22:07:21 by stolfi */
+/* Last edited on 2023-10-14 11:10:35 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -13,25 +13,25 @@
 #include <fget.h>
 #include <affirm.h>
 
-#include <huff_tree.h>
+#include <codetree_huff.h>
 #include <imq_huff.h>
 
 #define MAX_VALUE codetree_MAX_VALUE
 #define MIN_VALUE codetree_MIN_VALUE
 #define MAX_LEAVES codetree_MAX_LEAVES
-#define MAX_FREQ huff_tree_MAX_FREQ
+#define MAX_FREQ codetree_huff_MAX_FREQ
 
-codetree_t *imq_huff_build_tree(huff_tree_freq_t freq[])
+codetree_t *imq_huff_build_tree(codetree_huff_freq_t freq[])
   {
     uint32_t nh = 511;
-    huff_tree_freq_t hist[nh];
+    codetree_huff_freq_t hist[nh];
     
     /* Complement the diffs to get proper tie-breaking in Huffman tree: */
     for (int32_t ih = 0; ih < nh; ih++) { hist[ih] = freq[nh-1-ih]; }
     
     /* Build the Huffman tree for the set {V} = {0..510}: */
     codetree_value_t maxval = nh-1;
-    codetree_t *tree = huff_tree_build(maxval, hist);
+    codetree_t *tree = codetree_huff_build(maxval, hist);
     return tree;
   }
   

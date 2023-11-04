@@ -1,5 +1,5 @@
 /* See {tf_calib_data.h}.  */
-/* Last edited on 2023-02-25 16:11:55 by stolfi */
+/* Last edited on 2023-10-14 21:09:22 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -37,7 +37,7 @@ void tf_calib_data_read_world_points (char *fname, int32_t *np, r3_t **pp)
         pi->c[0] = fget_double(rd);
         pi->c[1] = fget_double(rd);
         pi->c[2] = fget_double(rd);
-        fget_comment_or_eol(rd, '#');
+        fget_comment_or_eol(rd, '#', NULL);
       }
     fclose(rd);
     (*pp) = p; 
@@ -55,7 +55,7 @@ void tf_calib_data_read_image_points (char *fname, int32_t *np, r2_t **qq)
       { r2_t *qi = &(q[i]);
         qi->c[0] = fget_double(rd);
         qi->c[1] = fget_double(rd);
-        fget_comment_or_eol(rd, '#');
+        fget_comment_or_eol(rd, '#', NULL);
       }
     fclose(rd);
     (*qq) = q; 
@@ -71,7 +71,7 @@ void tf_calib_data_read_weights (char *fname, int32_t *np, double **ww)
     int32_t i;
     for (i = 0; i < n; i++)
       { w[i] = fget_double(rd);
-        fget_comment_or_eol(rd, '#');
+        fget_comment_or_eol(rd, '#', NULL);
       }
     fclose(rd);
     (*ww) = w; 

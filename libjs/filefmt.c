@@ -1,5 +1,5 @@
 /* See filefmt.h */
-/* Last edited on 2023-02-12 07:19:29 by stolfi */
+/* Last edited on 2023-10-15 00:35:57 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -50,7 +50,7 @@ void filefmt_read_gen_header(FILE *rd, char **typeP, char **versionP)
     if (fget_test_char(rd, '('))
       { fget_match(rd, "format of");
         fget_skip_spaces(rd);
-        version = fget_to_delims(rd, " )");
+        version = fget_to_delims(rd, ')', fget_formatting_chars);
         fget_skip_spaces_and_match(rd, ")");
         fget_skip_spaces(rd);
       }

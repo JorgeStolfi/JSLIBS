@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_raw_header.h}. */
-/* Last edited on 2021-08-28 02:38:26 by stolfi */
+/* Last edited on 2023-11-02 05:30:51 by stolfi */
   
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <limits.h>
+#include <assert.h>
 #include <math.h>
 
 #include <affirm.h>
@@ -81,12 +82,25 @@ neuromat_eeg_header_t *neuromat_eeg_raw_header_to_plain_header
   )
   {
     int32_t nc = hr->nc;
-    demand((nc == 21) || (nc == 129) || (nc == 130), "invalid channel count");
-    int32_t ne = nc-1;  /* ??? MAY BE WRONG ??? */
+    int32_t ne = nc - hr->nv;  /* ??? MAY BE WRONG ??? */
+    /* Hack: guess the cap type from number of electrodes. */
+    /* !!! Cap type should be a parameter. !!! */
+    char *capType = NULL;
+    if (ne == 20)
+      { capType = "R20"; }
+    else if ((ne == 128) || (ne == 129))
+      { capType = "R128"; }
+    else if (ne == 3)
+      { capType = "FN3"; }
+    else
+      { demand(FALSE, "invalid electrode count"); }
     int32_t ntOrig = hr->nt; /* Number of frames in original file. */
     
     /* Get the complete channel count and names (including event channels): */
-    char **chnames = neuromat_eeg_get_channel_names(ne, hr->nv, hr->evnames);
+    int32_t ne_full = -1;
+    char **chname = NULL;
+    neuromat_eeg_get_channel_names(capType, hr->nv, hr->evnames, &ne_full, &chname);
+    assert((ne == ne_full) || ((ne == 128) && (ne_full == 129)));
     
     /* Allocate the plain-format header: */
     neuromat_eeg_header_t *ht = neuromat_eeg_header_new();
@@ -95,28 +109,30 @@ neuromat_eeg_header_t *neuromat_eeg_raw_header_to_plain_header
     (*ht) = (neuromat_eeg_header_t)
       {
         /* Dataset size and content: */
-        .nt = copy, /* Num of data frames. */
-        .nc = nc,   /* Num of channels (incl. trigger, reference, event, etc.) */
+        .nt = copy,           /* Num of data frames. */
+        .nc = nc,             /* Num of channels (incl. trigger, reference, event, etc.) */
 
         /* Nature of data: */
         .fsmp = (double)(hr->rate), /* Sampling rate. */
-        .ne = ne,          /* Num of electrode channels. */
-        .type = NULL,      /* Type of run. */
-        .chnames = chnames,
+        .ne = ne,             /* Num of electrode channels. */
+        .subject = subject,   /* Subject ID number. */
+        .run = run,           /* Run rumber. */
+        .type = NULL,         /* Type of run. */
+        .chname = chname,     /* Channel names. */
         .kfmax = INT32_MIN,   /* Max frequency index (only if spectrum data). */
-        .component = NULL,  /* Principal component name. */
+        .component = NULL,    /* Principal component name. */
 
         /* Filtering data: */
         .tdeg = INT32_MIN,     /* Degree of polynomial trend. */
         .tkeep = INT32_MIN,    /* Whether the polynomial trend was kept (1) or suppressed (0). */
-        .flo0 = NAN,         /* Lower cutoff frequency. */
-        .flo1 = NAN,         /* Nominal lowest preserved frequency. */
-        .fhi1 = NAN,         /* Nominal highest preserved frequency. */
-        .fhi0 = NAN,         /* Higher cutoff frequency. */
+        .flo0 = NAN,           /* Lower cutoff frequency. */
+        .flo1 = NAN,           /* Nominal lowest preserved frequency. */
+        .fhi1 = NAN,           /* Nominal highest preserved frequency. */
+        .fhi0 = NAN,           /* Higher cutoff frequency. */
         .finvert = INT32_MIN,  /* Filter complementation: 0 for bandpass, 1 for bandkill. */
         
         /* Source file information: */
-        .orig = orig         /* Source parameters. */
+        .orig = orig           /* Source parameters. */
       };
       
     (*orig) = (neuromat_eeg_source_t)

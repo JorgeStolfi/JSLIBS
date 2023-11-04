@@ -1,5 +1,5 @@
 /* See fget_data.h */
-/* Last edited on 2023-02-12 07:26:41 by stolfi */
+/* Last edited on 2023-10-15 02:56:50 by stolfi */
 
 #define _GNU_SOURCE_
 #include <stdio.h>
@@ -17,12 +17,14 @@
 
 bool_t fget_data_fields(FILE *rd, char cmtc, int32_t nf, int8_t type[], char* alf[], double num[])
   {
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
+    
+    auto void debug_next(void);
     
     while(TRUE)
       { /* Skip spaces and comments on the current line: */
         if (debug) { fprintf(stderr, "checking for comment or endline...\n"); }
-        bool_t eol = fget_test_comment_or_eol(rd, cmtc);
+        bool_t eol = fget_test_comment_or_eol(rd, cmtc, NULL);
         if (eol) 
           { /* Consumed the end-of-line: */  
             if (debug) { fprintf(stderr, "skipped empty/blank/comment line\n"); }
@@ -43,6 +45,7 @@ bool_t fget_data_fields(FILE *rd, char cmtc, int32_t nf, int8_t type[], char* al
     /* Parse or skip the next {nf} data fields: */
     for (int32_t kf = 0; kf < nf; kf++)
       { alf[kf] = NULL; num[kf] = NAN;
+        if (debug) { debug_next(); }
         if (type[kf] == 2)
           { /* Get a numeric field: */
             if (debug) { fprintf(stderr, "parsing field %d as numeric ...", kf); }
@@ -55,11 +58,14 @@ bool_t fget_data_fields(FILE *rd, char cmtc, int32_t nf, int8_t type[], char* al
         else
           { /* Get a non-numeric field or skip the next field: */
             if (debug) { fprintf(stderr, "parsing field %d as alpha ...", kf); }
-            /* This will skip spaces before the next field,and gobble up */
-            /* zero of more chars until the first char that is */
-            /* space, eol, eof, or {cmtc}: */
-            char *fk = fget_to_delim(rd, cmtc);
-            /* If it hit eol, eof, or {cmtc} right away, it*/
+            if (debug) { debug_next(); }
+            fget_skip_spaces(rd);
+            if (debug) { debug_next(); }
+            /* This will gobble up zero of more chars until the */
+            /* formatting char (including end-of-line) or {cmtc}): */
+            char *fk = fget_to_delims(rd, cmtc, fget_formatting_chars);
+            if (debug) { debug_next(); }
+            /* If it hit a formatting char or {cmtc} right away, it*/
             /* would have returned an empty string: */
             assert(fk != NULL);
             if (debug) { fprintf(stderr, " got \"%s\"", fk); }
@@ -77,7 +83,18 @@ bool_t fget_data_fields(FILE *rd, char cmtc, int32_t nf, int8_t type[], char* al
               { demand(FALSE, "invalid field type"); }    
           }
       }
+    fget_skip_to_eol(rd);
+      
     return TRUE;
+        
+    void debug_next(void)
+      { 
+        int32_t rr = fgetc(rd);
+        if (rr == EOF) 
+          { fprintf(stderr, " < at EOF >\n"); }
+        else
+          { fprintf(stderr, "  < next char = '\\%03o' = '%c' >\n", rr, (char)rr); ungetc(rr, rd); }
+      }
   }
 
 void fget_data_set_field_type(int kf, int8_t tkf, bool_t rep_ok, int32_t nf, int8_t type[])

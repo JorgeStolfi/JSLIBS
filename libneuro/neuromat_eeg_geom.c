@@ -1,10 +1,11 @@
 /* See {neuromat_{eeg_|}image.h}. */
-/* Last edited on 2021-08-31 12:11:20 by stolfi */
+/* Last edited on 2023-10-21 21:47:36 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include <r2.h>
@@ -14,47 +15,60 @@
 #include <neuromat_eeg.h>
 #include <neuromat_eeg_geom.h>
 
-void neuromat_eeg_geom_get_20_schematic_2D_points(int32_t ne, r2_t pos2D[]);
+void neuromat_eeg_geom_get_R20_schematic_2D_points(int32_t ne, r2_t pos2D[]);
   /* Puts into {posdD[0..ne-1]} the  two-dimensional
     schematic positions of the electrodes in 20-electrode
-    experiments.  The value of {ne} must be 20. */
+    cap used at INDC some time before 2013 by Ghislaine et al.
+    The value of {ne} must be 20. */
 
-void neuromat_eeg_geom_get_128_schematic_2D_points(int32_t ne, r2_t pos2D[]);
+void neuromat_eeg_geom_get_R128_schematic_2D_points(int32_t ne, r2_t pos2D[]);
+  /* Puts into {posdD[0..ne-1]} the two-dimensional schematic positions
+    of the electrodes in 128-electrode cap used at INDC sometime before
+    2013 by Gislaine et al, Andressa et al.  The value of {ne}
+    must be 128 or 129; if the latter, {pos2D[128]} will be the 
+    position of the the voltage reference electrode ("CZ") as the last element. */
+ 
+void neuromat_eeg_geom_get_FN3_schematic_2D_points(int32_t ne, r2_t pos2D[]);
   /* Puts into {posdD[0..ne-1]} the two-dimensional schematic positions
     of the electrodes in 128-electrode experiments. The value of {ne}
-    must be 128 or 129; if the latter, includes the voltage reference
-    electrode ("CZ") as the last element. */
-    
-r2_t *neuromat_eeg_geom_get_schematic_2D_points(int32_t ne)
+    must be 3; the elctrode names are "RPF", "LPF", and "OCC". */
+   
+void neuromat_eeg_geom_get_schematic_2D_points(char *capType, int32_t *ne_P, char ***chname_P, r2_t **pos2D_P)
   {
-    r2_t *pos2D = (r2_t *)notnull(malloc(ne*sizeof(r2_t)), "no mem");
-    if (ne == 20)
-      { neuromat_eeg_geom_get_20_schematic_2D_points(ne, pos2D); }
-    else if ((ne == 128) || (ne == 129))
-      { neuromat_eeg_geom_get_128_schematic_2D_points(ne, pos2D); }
+    int32_t ne = -1;
+    char **chname = NULL;
+    neuromat_eeg_get_channel_names(capType, 0, NULL, &ne, &chname);
+    r2_t *pos2D = talloc(ne,r2_t);
+    if (strcmp(capType, "R20") == 0)
+      { neuromat_eeg_geom_get_R20_schematic_2D_points(ne, pos2D); }
+    else if (strcmp(capType, "R128") == 0)
+      { neuromat_eeg_geom_get_R128_schematic_2D_points(ne, pos2D); }
+    else if (strcmp(capType, "FN3") == 0)
+      { neuromat_eeg_geom_get_FN3_schematic_2D_points(ne, pos2D); }
     else
       { demand(FALSE, "invalid electrode count"); }
-    return pos2D;
+    (*ne_P) = ne;
+    (*chname_P) = chname;
+    (*pos2D_P) = pos2D;
   }
-
-    
-r2_t *neuromat_eeg_geom_get_schematic_2D_points_by_name(int32_t ne, char *chnames[], int32_t ne_full)
-  { r2_t *pos2D_full = neuromat_eeg_geom_get_schematic_2D_points(ne_full);
-    char **chnames_full = neuromat_eeg_get_channel_names(ne_full, 0, NULL); /* Names of full electrode set. */
-    r2_t *pos2D = (r2_t *)notnull(malloc(ne*sizeof(r2_t)), "no mem");
+ 
+r2_t *neuromat_eeg_geom_get_schematic_2D_points_by_name(char *capType, int32_t ne, char *chname[])
+  { int32_t ne_full; char **chname_full; r2_t *pos2D_full; 
+    neuromat_eeg_geom_get_schematic_2D_points(capType, &ne_full, &chname_full, &pos2D_full);
+    r2_t *pos2D = talloc(ne,r2_t);
     for (int32_t ie = 0; ie < ne; ie++)
-      { char *name = chnames[ie];
-        int32_t ie_full = neuromat_eeg_find_channel_by_name(name, 0, ne_full-1, chnames_full, TRUE);
+      { char *name = chname[ie];
+        int32_t ie_full = neuromat_eeg_find_channel_by_name(name, 0, ne_full-1, chname_full, TRUE);
         pos2D[ie] = pos2D_full[ie_full];
       }
-    for (int32_t ie_full = 0; ie_full < ne_full; ie_full++) { free(chnames_full[ie_full]); }
-    free(chnames_full);
+    for (int32_t ie_full = 0; ie_full < ne_full; ie_full++) { free(chname_full[ie_full]); }
+    free(chname_full);
     free(pos2D_full);
     return pos2D;
   }
 
 
-void neuromat_eeg_geom_get_20_schematic_2D_points(int32_t ne, r2_t pos2D[])
+void neuromat_eeg_geom_get_R20_schematic_2D_points(int32_t ne, r2_t pos2D[])
   {
     demand(ne == 20, "invalid number of electrodes");
     /* Positions in arbitrary coordinates:  */
@@ -92,7 +106,7 @@ void neuromat_eeg_geom_get_20_schematic_2D_points(int32_t ne, r2_t pos2D[])
       }
   }
 
-void neuromat_eeg_geom_get_128_schematic_2D_points(int32_t ne, r2_t pos2D[])
+void neuromat_eeg_geom_get_R128_schematic_2D_points(int32_t ne, r2_t pos2D[])
   {
     demand((ne = 128) || (ne == 129), "invalid {ne}");
 
@@ -254,6 +268,13 @@ void neuromat_eeg_geom_get_128_schematic_2D_points(int32_t ne, r2_t pos2D[])
       }
   }
  
+void neuromat_eeg_geom_get_FN3_schematic_2D_points(int32_t ne, r2_t pos2D[])
+  {
+    pos2D[  0] = (r2_t){{ 420, 400 }}; /* "RPF" */
+    pos2D[  1] = (r2_t){{ 220, 400 }}; /* "LPF" */
+    pos2D[  2] = (r2_t){{ 320, 170 }}; /* "OCC" */
+  }
+
 r3_t neuromat_eeg_geom_3D_from_2D(r2_t *p, r2_t *rad2, r3_t *rad3)
   {
     r2_t q2 = (*p);

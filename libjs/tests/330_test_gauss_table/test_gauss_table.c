@@ -2,10 +2,10 @@
 #define PROG_DESC "test of {gauss_table.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2021-07-04 05:11:37 by jstolfi */ 
+/* Last edited on 2023-11-02 22:22:26 by stolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
-#define test_hermite3_COPYRIGHT \
+#define test_gauss_table_COPYRIGHT \
   "Copyright © 2017  by the State University of Campinas (UNICAMP)"
 
 #define _GNU_SOURCE

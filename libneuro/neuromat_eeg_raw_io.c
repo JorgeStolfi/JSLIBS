@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_raw_io.h}. */
-/* Last edited on 2021-08-23 00:44:26 by stolfi */
+/* Last edited on 2023-10-21 21:45:48 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -15,14 +15,14 @@
 
 #include <neuromat_eeg_raw_io.h>
 
-int32_t neuromat_eeg_raw_frame_read(FILE *rd, int32_t version, double unit, int32_t nc, char **chnames, double val[])
+int32_t neuromat_eeg_raw_frame_read(FILE *rd, int32_t version, double unit, int32_t nc, char **chname, double val[])
   {
     int32_t c = fgetc(rd);
     if (c == EOF) { return 0; }
     ungetc(c, rd);
     
     for (int32_t i = 0; i < nc; i++)
-      { val[i] = neuromat_eeg_raw_read_raw_sample(rd, version, unit, chnames[i]); }
+      { val[i] = neuromat_eeg_raw_read_raw_sample(rd, version, unit, chname[i]); }
     return 1;
   }
 

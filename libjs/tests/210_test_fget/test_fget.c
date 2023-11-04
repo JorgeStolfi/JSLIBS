@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {fget.h}, {fget_data.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-26 11:03:57 by stolfi */ 
+/* Last edited on 2023-10-15 03:06:37 by stolfi */ 
 /* Created on 2007-01-02 by J. Stolfi, UNICAMP */
 
 #define test_jsmath_COPYRIGHT \
@@ -19,6 +19,7 @@
 
 #include <jsfile.h>
 #include <jsmath.h>
+#include <jsstring.h>
 #include <jsrandom.h>
 #include <affirm.h>
 #include <bool.h>
@@ -66,17 +67,14 @@ int32_t main (int32_t argn, char **argv)
 void test_fget_skip_spaces(bool_t verbose)
   { if (verbose) { fprintf(stderr, "=== Checking {fget_skip_spaces} and related stuff... ===\n"); }
 
-    assert(fget_is_space('\040'));
-    assert(fget_is_space('\011'));
-    assert(fget_is_space('\240'));
-
-    assert(fget_is_formatting_char('\040'));
-    assert(fget_is_formatting_char('\011'));
-    assert(fget_is_formatting_char('\012'));
-    assert(fget_is_formatting_char('\013'));
-    assert(fget_is_formatting_char('\014'));
-    assert(fget_is_formatting_char('\015'));
-    assert(fget_is_formatting_char('\240'));
+    assert(fget_is_space('\040'));  assert(fget_is_formatting_char('\040'));
+    assert(fget_is_space('\011'));  assert(fget_is_formatting_char('\011'));
+    assert(fget_is_space('\240'));  assert(fget_is_formatting_char('\240'));
+    
+    assert(! fget_is_space('\012'));  assert(fget_is_formatting_char('\012'));
+    assert(! fget_is_space('\013'));  assert(fget_is_formatting_char('\013'));
+    assert(! fget_is_space('\014'));  assert(fget_is_formatting_char('\014'));
+    assert(! fget_is_space('\015'));  assert(fget_is_formatting_char('\015'));
   
     char chc = '\377';
     char *str = "\377";
@@ -90,75 +88,156 @@ void test_fget_skip_spaces(bool_t verbose)
     assert(! fget_is_space('\377'));
     assert(! fget_is_formatting_char('\377'));
 
-    /* Write three lines of stuff to disk: */
-    char cmtc = '#'; /* Allowed comment chars. */
-    char* fname = "out/test.txt";
+    auto void check_cmt(bool_t ok_cmp, bool_t ok_exp, char *text_cmp, char *text_exp);
+    auto bool_t eq_cmt_text(char *text_cmp, char *text_exp);
+    auto void print_cmt_res(char *which, bool_t ok, char *text);
+    auto void print_cmt_text(char *text);
+
+    /* Write six lines of stuff to disk: */
+    int32_t nlines = 6;
+    char *x[nlines];
+    x[0] = " \t \t \t \240 ";                
+    x[1] = " \t \t \t \240 FOO ";            
+    x[2] = " \t \t \t \240 # FOO ";   
+    x[3] = " # BAR ";                 
+    x[4] = " ";                              
+    x[5] = " \t @ FOO ";
+    assert(nlines == 6);
+    char* fname = "out/test_skip.txt";
     FILE* wr = open_write(fname, verbose);
-    fprintf(wr, " \t \t \t \240 \n");
-    fprintf(wr, " \t \t \t \240 FOO \n");
-    fprintf(wr, " \t \t \t \240 %c FOO \n", cmtc);
+    for (int32_t i = 0; i < nlines; i++) { fprintf(wr, "%s\n", x[i]); }                  
     fclose(wr);
     
     /* Read back with {fget_skip_spaces} etc: */
+    char cmtc = '#'; /* Comment char. */
     FILE* rd = open_read(fname, verbose);
     
-    /* First line should be all spaces: */
+    fprintf(stderr, "\n-- line 0 = \"%s\":\n", escapify(x[0]));
+    /* Should be all spaces: */
     fprintf(stderr, "calling {fget_skip_spaces}...\n");
     fget_skip_spaces(rd);
     fprintf(stderr, "checking next char...");
-    int32_t r = fgetc(rd);
-    demand(r != EOF, " unexpected EOF");
-    char ch = (char)r;
-    fprintf(stderr, " got '%c' = \\%03o\n", ch, ch);
-    demand(! fget_is_space(ch), "should have skipped it");
-    demand(ch != '\240', "should have skipped NBSP");
-    demand(ch == '\n', "should have skipped to eol");
-    ungetc(r, rd);
+    int32_t r0 = fgetc(rd);
+    demand(r0 != EOF, " unexpected EOF");
+    char ch0 = (char)r0;
+    fprintf(stderr, " got '%c' = \\%03o\n", ch0, ch0);
+    demand(! fget_is_space(ch0), "should have skipped it");
+    demand(ch0 != '\240', "should have skipped NBSP");
+    demand(ch0 == '\n', "should have skipped to eol");
+    ungetc(r0, rd);
     fprintf(stderr, "calling {fget_eol}...\n");
-    fget_eol(rd); /* Skip the newline. */
+    fget_eol(rd); /* Skip the end-of-line. */
     
-    /* Second line should be bunch of blanks plus something: */
+    fprintf(stderr, "\n-- line 1 = \"%s\":\n", escapify(x[1]));
+    /* Should be bunch of blanks plus something: */
     fprintf(stderr, "calling {fget_skip_spaces}...\n");
     fget_skip_spaces(rd);
     fprintf(stderr, "checking next char...");
-    r = fgetc(rd);
-    demand(r != EOF, " unexpected EOF");
-    ch = (char)r;
-    fprintf(stderr, " got '%c' = \\%03o\n", ch, ch);
-    demand(! fget_is_space(ch), "should have skipped it");
-    demand(ch != '\240', "should have skipped NBSP");
-    demand(ch == 'F', "should have skipped to 'F' ");
-    ungetc(r, rd);
+    int32_t r1 = fgetc(rd);
+    demand(r1 != EOF, " unexpected EOF");
+    char ch1 = (char)r1;
+    fprintf(stderr, " got '%c' = \\%03o\n", ch1, ch1);
+    demand(! fget_is_space(ch1), "should have skipped it");
+    demand(ch1 != '\240', "should have skipped NBSP");
+    demand(ch1 == 'F', "should have skipped to 'F' ");
+    ungetc(r1, rd);
     fprintf(stderr, "calling {fget_skip_to_eol}...\n");
-    fget_skip_to_eol(rd); /* Should consume the newline newline. */
+    fget_skip_to_eol(rd); /* Should consume the end-of-line. */
     
-    /* Third line should be bunch of blanks plus the comment char {cmtc}: */
+    fprintf(stderr, "\n-- line 2 = \"%s\":\n", escapify(x[2]));
+    /* Should be bunch of blanks plus the comment "{cmtc} FOO ": */
     fprintf(stderr, "calling {fget_skip_spaces}...\n");
     fget_skip_spaces(rd);
     fprintf(stderr, "checking next char...");
-    r = fgetc(rd);
-    demand(r != EOF, " unexpected EOF");
-    ch = (char)r;
-    fprintf(stderr, " got '%c' = \\%03o\n", ch, ch);
-    demand(! fget_is_space(ch), "should have skipped it");
-    demand(ch != '\240', "should have skipped NBSP");
-    demand(ch == cmtc, "should have skipped to {cmtc}");
-    ungetc(r, rd);
+    int32_t r2 = fgetc(rd);
+    demand(r2 != EOF, " unexpected EOF");
+    char ch2 = (char)r2;
+    fprintf(stderr, " got '%c' = \\%03o\n", ch2, ch2);
+    demand(! fget_is_space(ch2), "should have skipped it");
+    demand(ch2 != '\240', "should have skipped NBSP");
+    demand(ch2 == cmtc, "should have skipped to {cmtc}");
+    ungetc(r2, rd);
     fprintf(stderr, "calling {fget_test_comment_or_eol}...\n");
-    bool_t ok = fget_test_comment_or_eol(rd, cmtc); /* Should consume the newline newline. */
-    demand(ok, "should have found a comment + newline");
+    char *text2 = "UNCHANGED";
+    bool_t ok2 = fget_test_comment_or_eol(rd, cmtc, &text2); /* Should consume the end-of-line too. */
+    check_cmt(ok2, TRUE, text2, " FOO ");
 
-    /* Next should be EOF: */
-    r = fgetc(rd);
-    demand(r == EOF, "expected EOF, not found");
+    fprintf(stderr, "\n-- line 3 = \"%s\":\n", escapify(x[3]));
+    /* Should be bunch of blanks plus the comment "{cmtc} BAR ": */
+    char *text3 = "UNCHANGED";
+    fget_comment_or_eol(rd, cmtc, &text3); /* Should consume the end-of-line too. */
+    fprintf(stderr, "computed: text = "); print_cmt_text(text3); fprintf(stderr, "\n");
+    demand(eq_cmt_text(text3, " BAR "), "did not return the comment text");
+
+    fprintf(stderr, "\n-- line 4 = \"%s\":\n", escapify(x[4]));
+    /* Should be just blanks: */
+    char *text4 = "UNCHANGED";
+    fget_comment_or_eol(rd, cmtc, &text4); /* Should consume the end-of-line too. */
+    fprintf(stderr, "computed: text = "); print_cmt_text(text4); fprintf(stderr, "\n");
+    demand(eq_cmt_text(text4, NULL), "returned a non-{NULL} comment text");
+
+    fprintf(stderr, "\n-- line 5 = \"%s\":\n", escapify(x[5]));
+    /* Should be blanks then a '@': */
+    char *text5 = "UNCHANGED";
+    bool_t ok5 = fget_test_comment_or_eol(rd, cmtc, &text5); /* Should consume the end-of-line too. */
+    check_cmt(ok5, FALSE, text5, "UNCHANGED");
+    int32_t r5 = fgetc(rd);
+    demand(r5 != EOF, " unexpected EOF");
+    char ch5 = (char)r5;
+    fprintf(stderr, " got '%c' = \\%03o\n", ch5, ch5);
+    demand(ch5 == '@', "was expecting '@'");
+    ungetc(r5, rd);
+    fprintf(stderr, "calling {fget_skip_to_eol}...\n");
+    fget_skip_to_eol(rd); /* Should consume the end-of-line. */
+
+    fprintf(stderr, "\n-- end of file:\n");
+    /* Should be at EOF: */
+    int32_t rEOF = fgetc(rd);
+    demand(rEOF == EOF, "expected EOF, not found");
     fclose(rd);
+
+    return;
+
+    void check_cmt(bool_t ok_cmp, bool_t ok_exp, char *text_cmp, char *text_exp)
+      { 
+        print_cmt_res("computed", ok_cmp, text_cmp);
+        print_cmt_res("expected", ok_exp, text_exp);
+        demand(ok_cmp == ok_exp, "wrong test result");
+        demand(eq_cmt_text(text_cmp, text_exp), "wrong {text} returned");
+      }
+
+    bool_t eq_cmt_text(char *text_cmp, char *text_exp)
+      { if ((text_cmp == NULL) && (text_exp == NULL))
+          { return TRUE; }
+        else if ((text_cmp != NULL) && (text_exp != NULL))
+          { return strcmp(text_cmp, text_exp) == 0; }
+        else
+          { return FALSE; }
+      }
+
+    void print_cmt_res(char *which, bool_t ok, char *text)
+      { fprintf(stderr, "%s: result = %c text = ", which, "FT"[ok]);
+        print_cmt_text(text);
+        fprintf(stderr, "\n");
+      }
+
+    void print_cmt_text(char *text)
+      { if (text == NULL) 
+          { fprintf(stderr, "{NULL}"); }
+        else if (strcmp(text, "UNCHANGED") == 0)
+           { fprintf(stderr, "unchanged"); }
+        else
+          { fprintf(stderr, "\"%s\"", text); }
+      }
+
+
   }
   
 void test_fget_chars(bool_t verbose)
   { if (verbose) { fprintf(stderr, "=== Checking {fget_char} etc... ===\n"); }
 
     /* Write a test file: */
-    char* fname = "out/testc.txt";
+    char* fname = "out/test_chars.txt";
     FILE* wr = open_write(fname, TRUE);
     fprintf(wr, "1X YZ\n");
     fprintf(wr, "1XYZ \n");
@@ -234,7 +313,7 @@ void test_fget_double(bool_t verbose)
     assert(k == nfmt);
     
     /* Write {x[0..nt]} to disk in various formats: */
-    char* fname = "out/test.txt";
+    char* fname = "out/test_double.txt";
     FILE* wr = open_write(fname, verbose);
     for (i = 0; i < nt; i++)
       { if (verbose) { fprintf(stderr, "x[%2d] = %+26.16e\n", i, x[i]); }
@@ -289,7 +368,7 @@ void test_fget_int(bool_t verbose)
     assert(k == nfmt);
     
    /* Write {xu[0..nt], xs[0..nt]} to disk in various formats: */
-    char* fname = "out/test.txt";
+    char* fname = "out/test_int.txt";
     FILE* wr = open_write(fname, verbose);
     for (i = 0; i < nt; i++)
       { if (verbose) { fprintf(stderr, "xu[%2d] = %lu  xs[%2d] = %ld\n", i, xu[i], i, xs[i]); }
@@ -302,9 +381,9 @@ void test_fget_int(bool_t verbose)
         fprintf(wr, "\n");
       }
     fclose(wr);
-    
+
     /* Read back with {fget_uint32,fget_int32} and check: */
-    FILE* rd = open_read(fname, verbose);
+    FILE *rd = open_read(fname, verbose);
     for (i = 0; i < nt; i++)
       { for (k = 0; k < nfmt; k++)
           { uint64_t yui = fget_uint64(rd, 10);
@@ -327,7 +406,7 @@ void test_fget_int(bool_t verbose)
 void test_fget_data(bool_t verbose)
   { if (verbose) { fprintf(stderr, "=== Checking {fget_data_fields}... ===\n"); }
   
-    int32_t nt = 20;
+    int32_t nt = 20; /* Number of data fields of each type. */
     double   xd[nt]; /* Float numbers to write and read back. */
     char*    xa[nt]; /* Strings to write and read back. */
     int32_t i = 0;
@@ -372,35 +451,67 @@ void test_fget_data(bool_t verbose)
     
     /* Write {xd[0..nt], xa[0..nt]} to disk in various formats: */
     char cmtc = '#'; /* Allowed comment chars. */
-    char* fname = "out/test.txt";
+    char* fname = "out/test_data.txt";
     FILE* wr = open_write(fname, verbose);
-    fprintf(wr, " \t \t \t \240 \n");
     int32_t nd = nfmt; /* Number of data records. */
+    int32_t kd_to_kl[nd+1]; /* The file lines which have data records. */
+    int32_t nl = 0; /* Number of lines (including blanks): */
     for (int32_t kd = 0; kd < nd; kd++)
-      { if (drandom() < 0.25) { fprintf(wr, " \240 # chances of rain are 25%%\n"); }
-        if (drandom() < 0.25) { fprintf(wr, " \t \n"); }
+      { /* Maybe write some blank or comment lines: */
+        if (drandom() < 0.25) { fprintf(wr, " \240 # chances of rain are 25%%\n"); nl++; }
+        if (drandom() < 0.25) { fprintf(wr, " \t \n"); nl++; }
+        /* Write a data line: */
+        kd_to_kl[kd] = nl;
         if (drandom() < 0.25) { fprintf(wr, "      "); }
         char *fmtk = fmt[kd % nfmt]; 
         for (int32_t kf = 0; kf < nf; kf++)
-          { fprintf(wr, (drandom() < 0.25 ? "\t" : " "));
-            if (type[kf] == 2)
-              { fprintf(wr, fmtk, xd[kf/3]); } 
+          { /* Print a space or tab: */
+            fprintf(wr, (drandom() < 0.25 ? "\t" : " "));
+            if (type[kf] == 0)
+              { /* Ignored: */ fprintf(wr, "<%s>", xa[kf/3]); } 
+            else if (type[kf] == 1)
+              { /* Alpha: */ fprintf(wr, "%s", xa[kf/3]); } 
+            else if (type[kf] == 2)
+              { /* Numeric: */ fprintf(wr, fmtk, xd[kf/3]); } 
             else
-              { fprintf(wr, "%s", xa[kf/3]); } 
+              { assert(FALSE); }
           }
         if (drandom() < 0.25) 
           { fprintf(wr, " # bla bla bla."); }
-        fprintf(wr, "\n");
-        if (drandom() < 0.25) { fprintf(wr, " \t \n"); }
+        fprintf(wr, "\n"); nl++;
+        if (drandom() < 0.25) { fprintf(wr, " \t \n"); nl++; }
       }
+    kd_to_kl[nd] = nl; /* Sentinel. */
     fclose(wr);
+    fprintf(stderr, "wrote %d file lines with %d data lines\n", nl, nd);
     
-    /* Read back with {fget_data_fields} and check: */
+    /* Read back each line as a string: */
     FILE* rd = open_read(fname, verbose);
+    char *x[nl];
+    for (int32_t kl = 0; kl < nl; kl++)
+      { x[kl] = fget_line(rd);
+        fprintf(stderr, "-- file line %d = \"%s\"\n", kl, escapify(x[kl]));
+      }
+    if (! fget_test_eof(rd))
+      { fprintf(stderr, "** expected EOF, not seen\n");
+        char *xtra = fget_line(rd);
+        fprintf(stderr, "-- extra line = \"%s\"\n", escapify(xtra));
+        assert(FALSE);
+      }
+    fclose(rd);
+
+    /* Read back with {fget_data_fields} and check: */
+    rd = open_read(fname, verbose);
     double num[nf];
     char *alf[nf];
-    for (int32_t kd = 0; kd < nd; kd++)
-      { bool_t ok = fget_data_fields(rd, cmtc, nf, type, alf, num);
+    int32_t kl = 0;
+    for (int32_t kd = 0; kd <= nd; kd++)
+      { while ((kl < nl) && (kl < kd_to_kl[kd]))
+          { fprintf(stderr, "-- file line %d = \"%s\"\n", kl, escapify(x[kl])); kl++; }
+        if (kd >= nd) {break; }
+        assert(kl < nl);
+        fprintf(stderr, "\n!! file line %d (data record %d) = \"%s\"\n", kl, kd, escapify(x[kl])); kl++;
+        bool_t ok = fget_data_fields(rd, cmtc, nf, type, alf, num);
         demand(ok, "unexpected EOF");
         char *fmtk = fmt[kd % nfmt]; 
         for (int32_t kf = 0; kf < nf; kf++)

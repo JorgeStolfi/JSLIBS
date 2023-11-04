@@ -2,7 +2,7 @@
 #define neuromat_eeg_io_H
 
 /* Reading plain-text NeuroMat EEG signals. */
-/* Last edited on 2021-08-21 12:37:05 by stolfi */
+/* Last edited on 2023-10-21 21:46:05 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -76,11 +76,11 @@ void neuromat_eeg_frame_write(FILE *wr, int32_t nc, double val[]);
     {val[0..nc-1]}. The values are written in "%e" format with 8
     significant digits, separated by blanks. */
     
-void neuromat_eeg_frame_print(FILE *wr, char *pre, int32_t nc, char **chnames, double val[], char *sep, char *suf);
+void neuromat_eeg_frame_print(FILE *wr, char *pre, int32_t nc, char **chname, double val[], char *sep, char *suf);
   /* Prints to {wr} the samples {val[0..nc-1]}.  The list is preceded by the 
     string {pre}, closed with the string {suf}, and values are separated by {sep};
     if any of these strings is null, it is omitted. 
-    Each sample {val[i]} ispreceded by "{chnames[i]} = " if {chnames} is not null.  */
+    Each sample {val[i]} ispreceded by "{chname[i]} = " if {chname} is not null.  */
 
 
 #endif

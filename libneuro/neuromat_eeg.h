@@ -2,7 +2,7 @@
 #define neuromat_H
 
 /* NeuroMat tools. */
-/* Last edited on 2021-08-28 02:04:04 by stolfi */
+/* Last edited on 2023-10-21 21:48:21 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -10,18 +10,24 @@
 
 #include <bool.h>
 
-char **neuromat_eeg_get_channel_names(int32_t ne, int32_t nv, char *evname[]);
-  /* Returns a vector {chname[0..nc-1]} with the names of the 
-    {nc=ne+nv} channels for {ne}-electrode EEG datasets. 
+void neuromat_eeg_get_channel_names(char *capType, int32_t nv, char *evnames[], int32_t *ne_P, char ***chname_P);
+  /* Returns the number and names of EEG channels in the cap with the given {capType}.
+  
+    Assumes that the channels comprise {ne} electrode voltages, with standard names,
+    that depend on {capType}; followed by {nv} event channels named {evname[0..nv-1]}.
+  
+    Returns in {*ne_P} the number {ne} of electrodes and in {*chname_P} 
+    a vectro {chname[0..ne+nv-1]} with the standard names of the {ne}
+    electrodes followed by the given event channel names {evnames[0..ne-1]}. 
     
-    Currently accepts only {ne=20} (the 20-electrode setup), {ne=128}
-    (the 128-electrode setup), or {ne=129} (the 128-electrodes plus the
-    voltage reference electrode "CZ"). In all cases, assumes that the
-    channels comprise {ne} electrode voltages, with standard names,
-    followed by {nv} event channels named {evname[0..nv-1]}. (If {nv} is
+    Currently {capType} must be "R20" (the 20-electrode cap
+    used in the early INDC experiments), "R128" (the 128-electrode cap
+    used in later INDC experiments), "R129" (the 128-electrodes plus the
+    voltage reference electrode "CZ"), or "FN3" (the three virtual electrodes
+    used by Fernando Najman in the 2023 "renewal points" paper). In all cases,  (If {nv} is
     zero then {evname} may be null.)
     
-    All the strings as well as the vector are newly allocated by the procedure.
+    All the strings as well as the vector {chname} are newly allocated by the procedure.
     In particular, the strings {evname[0..nv-1]} are copied to new storage. */
 
 int32_t neuromat_eeg_find_channel_by_name(char *name, int32_t ic_start, int32_t ic_end, char *chname[], bool_t die);

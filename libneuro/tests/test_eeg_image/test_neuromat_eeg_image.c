@@ -4,7 +4,7 @@
 
 #define test_neuromat_eeg_image_C_COPYRIGHT \
   "Copyright © 2021 by the State University of Campinas (UNICAMP)"
-/* Last edited on 2023-02-07 20:52:38 by stolfi */
+/* Last edited on 2023-10-22 03:23:16 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -24,8 +24,8 @@
 #include <neuromat_eeg_header.h>
 #include <neuromat_eeg_io.h>
  
-void tnei_read_dataset(char *fname, double ***valP, int32_t *ntP, int32_t *ncP, int32_t *neP, int32_t *nmP, char ***chnamesP);
-float_image_t **tnei_read_basis_images(char *prefix, int32_t ne, char *chnames[], int32_t NX, int32_t NY);
+void tnei_read_dataset(char *fname, double ***valP, int32_t *ntP, int32_t *ncP, int32_t *neP, int32_t *nmP, char ***chnameP);
+float_image_t **tnei_read_basis_images(char *prefix, int32_t ne, char *chname[], int32_t NX, int32_t NY);
 void tnei_write_fni(char *tag, float_image_t *img);
 
 int32_t main(int32_t argc, char **argv)
@@ -34,16 +34,17 @@ int32_t main(int32_t argc, char **argv)
     /* Read an EEG dataset: */
     double **val = NULL;
     int32_t nt, nc, ne, nm;
-    char **chnames = NULL;
-    tnei_read_dataset("in/s019_r00418.txt", &val, &nt, &nc, &ne, &nm, &chnames);
+    char **chname = NULL;
+    tnei_read_dataset("in/s019_r00418.txt", &val, &nt, &nc, &ne, &nm, &chname);
     assert(nm >= 2);
+    char *capType = "R128"; /* !!! Should be a header field !!! */
 
     /* Define the imag size: */
     int32_t NX = 450;
     int32_t NY = 630;
     
     /* Read an image basis: */
-    float_image_t **bas = tnei_read_basis_images("in/bdir/450_630_e128_gauss_i1_n1", ne, chnames, NX, NY);
+    float_image_t **bas = tnei_read_basis_images("in/bdir/450_630_e128_gauss_i1_n1", ne, chname, NX, NY);
     
     fprintf(stderr, "--- testing {neuromat_eeg_image_make_idealized_scalp_mask} ---\n");
     r2_t ctr = (r2_t){{ (225.0/450.0)*NX, (315.0/630.0)*NY }};
@@ -65,7 +66,11 @@ int32_t main(int32_t argc, char **argv)
     double drad_el = 5.0;
     double hwd_el = 2.0;
     int32_t ie_spec = 3; /* Electrode to highlight. */
-    r2_t *pos2D = neuromat_eeg_geom_get_schematic_2D_points(ne); 
+    int32_t ne_full = -1;
+    r2_t *pos2D = NULL;
+    char **chname_full = NULL;
+    neuromat_eeg_geom_get_schematic_2D_points(capType, &ne_full, &chname_full, &pos2D);
+    demand(ne_full == ne, "wrong electrode count");
     r2_t pos_img[ne]; /* Position of elecrodes on image. */
     neuromat_eeg_geom_map_many_disk_to_ellipse(ne, pos2D, &ctr, &rad, pos_img);
     float_image_t *elp = neuromat_eeg_image_electrodes_overlay(ne, pos_img, drad_el, hwd_el, ie_spec, &fcfill, &fcdraw, NX, NY);
@@ -127,13 +132,13 @@ void tnei_write_fni(char *tag, float_image_t *img)
     free(fname);
   }
  
-float_image_t **tnei_read_basis_images(char *prefix, int32_t ne, char *chnames[], int32_t NX, int32_t NY)
+float_image_t **tnei_read_basis_images(char *prefix, int32_t ne, char *chname[], int32_t NX, int32_t NY)
   {
     float_image_t **bas = notnull(malloc(ne*sizeof(float_image_t*)), "no mem");
     int32_t ie;
     for (ie = 0; ie < ne; ie++)
       { char *fname = NULL;
-        asprintf(&fname, "%s_%s.fni", prefix, chnames[ie]);
+        asprintf(&fname, "%s_%s.fni", prefix, chname[ie]);
         FILE *rd = open_read(fname, TRUE);
         float_image_t *bsi = float_image_read(rd);
         fclose(rd);
@@ -146,7 +151,7 @@ float_image_t **tnei_read_basis_images(char *prefix, int32_t ne, char *chnames[]
     return bas;
   }
 
-void tnei_read_dataset(char *fname, double ***valP, int32_t *ntP, int32_t *ncP, int32_t *neP, int32_t *nmP, char ***chnamesP)
+void tnei_read_dataset(char *fname, double ***valP, int32_t *ntP, int32_t *ncP, int32_t *neP, int32_t *nmP, char ***chnameP)
   { 
     FILE *rd = open_read(fname, TRUE);
     
@@ -156,7 +161,7 @@ void tnei_read_dataset(char *fname, double ***valP, int32_t *ntP, int32_t *ncP, 
     int32_t nc = h->nc;    /* Number of channels per data frame (including markers etc.). */
     int32_t ne = h->ne;    /* Number of electrodes. */
     int32_t nm = nc - ne;  /* Number of marker channel dots. */
-    char **chnames = h->chnames;
+    char **chname = h->chname;
     fprintf(stderr, "input file has %d channels\n", nc);
     fprintf(stderr, "channels comprise %d electrodes and %d marker channels\n", ne, nm);
     
@@ -175,6 +180,6 @@ void tnei_read_dataset(char *fname, double ***valP, int32_t *ntP, int32_t *ncP, 
     (*neP) = ne;
     (*nmP) = nm;
     (*valP) = val;
-    (*chnamesP) = chnames;
+    (*chnameP) = chname;
   }
 

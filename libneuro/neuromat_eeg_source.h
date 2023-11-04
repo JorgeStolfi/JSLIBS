@@ -2,7 +2,7 @@
 #define neuromat_eeg_source_H
 
 /* Tools for reading and writing the data-source lines of NeuroMat EEG dataset headers. */
-/* Last edited on 2013-06-05 21:47:02 by stolfilocal */
+/* Last edited on 2023-11-02 06:03:15 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -23,7 +23,7 @@ void neuromat_eeg_source_free(neuromat_eeg_source_t *ho);
 void neuromat_eeg_source_write(FILE *wr, char *pref, neuromat_eeg_source_t *ho);
   /* Writes to {wr} zero or more header lines with 
     information from {ho}.  Field names are prefixed with {pref}, Fields that have `null' values
-    ({INT_MIN} for integers, {NAN} for [double}s, {NULL} for strings
+    ({INT32_MIN} for integers, {NAN} for [double}s, {NULL} for strings
     and lists) are omitted. */
 
 void neuromat_eeg_source_read_field(FILE *rd, char *name, neuromat_eeg_source_t *ho);

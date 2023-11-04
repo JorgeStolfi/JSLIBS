@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_header.h}. */
-/* Last edited on 2023-02-12 07:37:52 by stolfi */
+/* Last edited on 2023-11-02 13:16:18 by stolfi */
   
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -33,8 +33,10 @@ neuromat_eeg_header_t *neuromat_eeg_header_new(void)
     (*h) = (neuromat_eeg_header_t)
       { .nt = INT32_MIN,
         .nc = INT32_MIN,
-        .chnames = NULL,
+        .chname = NULL,
         .ne = INT32_MIN,
+        .subject = INT32_MIN,
+        .run = INT32_MIN,
         .type = NULL,
         .component = NULL,
         .kfmax = INT32_MIN,
@@ -54,10 +56,10 @@ neuromat_eeg_header_t *neuromat_eeg_header_new(void)
 
 void neuromat_eeg_header_free(neuromat_eeg_header_t *h)
   {
-    if (h->chnames != NULL)
-      { demand(h->nc > 0, "cannot have {chnames} without {nc}");
-        for (int32_t ic = 0; ic < h->nc; ic++) { free(h->chnames[ic]); }
-        free(h->chnames);
+    if (h->chname != NULL)
+      { demand(h->nc > 0, "cannot have {chname} without {nc}");
+        for (int32_t ic = 0; ic < h->nc; ic++) { free(h->chname[ic]); }
+        free(h->chname);
       }
     if (h->rebase_wt != NULL) { free(h->rebase_wt); }
     neuromat_eeg_source_free(h->orig);
@@ -65,28 +67,31 @@ void neuromat_eeg_header_free(neuromat_eeg_header_t *h)
 
 void neuromat_eeg_header_write(FILE *wr, neuromat_eeg_header_t *h)
   {
-    if (h->nt != INT32_MIN) { fprintf(wr, "nt = %d\n",h->nt); }   
-    if (h->nc != INT32_MIN) { fprintf(wr, "nc = %d\n", h->nc); }   
-    if (h->chnames != NULL) 
+    if (h->nt != INT32_MIN) { neuromat_eeg_header_write_field_int(wr, "", "nt", h->nt, 0, INT32_MAX-1); }   
+    if (h->nc != INT32_MIN) { neuromat_eeg_header_write_field_int(wr, "", "nc", h->nc, 0, INT32_MAX-1); }   
+    if (h->chname != NULL) 
       { demand(h->nc > 0, "cannot have {channels} without {nc}");
         fprintf(wr, "channels =");
-        for (int32_t ic = 0; ic < h->nc; ic++) { fprintf(wr, " %s", h->chnames[ic]); }
+        for (int32_t ic = 0; ic < h->nc; ic++) { fprintf(wr, " %s", h->chname[ic]); }
         fprintf(wr, "\n");
       }   
-    if (h->kfmax != INT32_MIN) { fprintf(wr, "kfmax = %d\n", h->kfmax); }   
-    if (h->ne != INT32_MIN) { fprintf(wr,   "ne = %d\n", h->ne); } 
+    if (h->kfmax != INT32_MIN) { neuromat_eeg_header_write_field_int(wr, "", "kfmax", h->kfmax, 0, INT32_MAX-1); }   
+    if (h->ne != INT32_MIN) { neuromat_eeg_header_write_field_int(wr, "",   "ne", h->ne, 0, INT32_MAX-1); } 
+    if (h->subject != INT32_MIN) { neuromat_eeg_header_write_field_int(wr, "", "subject", h->subject, 1, INT32_MAX-1); }
+    if (h->run != INT32_MIN) { neuromat_eeg_header_write_field_int(wr, "", "run", h->run, 1, INT32_MAX-1); }
     if (h->type != NULL) 
       { demand(strlen(h->type) > 0, "empty run type");
-        fprintf(wr, "type = %s\n", h->type);
-      }   
+        neuromat_eeg_header_write_field_string(wr, "", "type", h->type);
+      }
     if (h->component != NULL) 
       { demand(strlen(h->component) > 0, "empty component");
-        fprintf(wr, "component = %s\n", h->component);
+        neuromat_eeg_header_write_field_string(wr, "", "component", h->component);
       }   
-    if (! isnan(h->fsmp)) { fprintf(wr, "fsmp = %.10f\n", h->fsmp); }  
+    if (! isnan(h->fsmp)) { neuromat_eeg_header_write_field_double(wr, "", "fsmp", h->fsmp, 0.01, 1.0e9); }  
     if (h->tdeg >= 0) 
       { demand((h->tkeep == 0) || (h->tkeep == 1), "inconsistent trend preservation flag");
-        fprintf(wr, "trend = %d %d\n", h->tdeg, h->tkeep); }   
+        fprintf(wr, "trend = %d %d\n", h->tdeg, h->tkeep);
+      }   
     if ((! isnan(h->flo0)) || (! isnan(h->flo1)) || (! isnan(h->fhi1)) || (! isnan(h->fhi0)) || (h->finvert >= 0))
       { demand((! isnan(h->flo0)) && (! isnan(h->flo1)) && (! isnan(h->fhi1)) && (! isnan(h->fhi0)), "inconsistent band limits");
         demand((h->finvert == 0) || (h->finvert == 1), "inconsistent filter inversion flag");
@@ -105,6 +110,7 @@ void neuromat_eeg_header_write(FILE *wr, neuromat_eeg_header_t *h)
 neuromat_eeg_header_t *neuromat_eeg_header_read(FILE *rd, int32_t neDef, double fsmpDef, int32_t *nlP)
   {
     bool_t verbose = FALSE;
+    bool_t debug = FALSE;
     
     neuromat_eeg_header_t *h = neuromat_eeg_header_new();
 
@@ -112,48 +118,77 @@ neuromat_eeg_header_t *neuromat_eeg_header_read(FILE *rd, int32_t neDef, double 
     int32_t nh = 0; /* Header lines read (excluding comments and headers). */
     while (TRUE) 
       { /* Try to read one more line: */
-        bool_t ok = fget_test_comment_or_eol(rd, '#');
+        bool_t ok = fget_test_comment_or_eol(rd, '#', NULL);
         if (ok) { nl++; continue; }
-        if (fget_test_eof(rd)) { break; }
-        /* There is something there: */
+        int32_t r = fgetc(rd);
+        if (r == EOF) { break; }
+        ungetc(r, rd); 
+        if (((r < 'a') || (r > 'z')) && ((r < 'A') || (r > 'Z'))) { break; }
+        /* Looks like another header line: */
         nl++;
         char *name = fget_string(rd);
         fget_skip_spaces_and_match(rd, "=");
         fget_skip_spaces(rd);         
         neuromat_eeg_header_read_field_value(rd, name, h);
-        fget_comment_or_eol(rd, '#');
+        fget_comment_or_eol(rd, '#', NULL);
         nh++;
       }
     if (nlP != NULL) { (*nlP) = nl; }
-    return h;
+    
+    /* Backwards compatibility: copy {.subject} and {.run} from {.orig} to header: */
+    if (h->orig != NULL)
+      { neuromat_eeg_header_merge_int32(&(h->subject), h->orig->subject, "subject");
+        neuromat_eeg_header_merge_int32(&(h->run), h->orig->run, "run");
+      }
 
     /* Provide essential defaults: */
-    if (isnan(h->fsmp)) { h->fsmp = 600.0; }
+    if (isnan(h->fsmp)) 
+      { h->fsmp = 600.0; 
+        fprintf(stderr, "assuming fsmp = %.1f\n", h->fsmp);
+      }
     if (h->ne < 0) 
-      { int32_t ne = (h->nc > 0 ? h->nc - 1 : neDef);
-        fprintf(stderr, "assuming ne = %d\n", ne);
-        h->ne = ne;
+      { h->ne = (h->nc > 0 ? h->nc - 1 : neDef);
+        fprintf(stderr, "assuming ne = %d\n", h->ne);
       }
     if (h->nc < 0) 
-      { int32_t nc = h->ne + 1;
-        fprintf(stderr, "assuming nc = %d\n", nc);
-        h->nc = nc;
+      { h->nc = h->ne + 1;
+        fprintf(stderr, "assuming nc = %d\n", h->nc);
       }
-    if (h->chnames == NULL) 
+    if (h->chname == NULL) 
       { fprintf(stderr, "providing standard channel names for %d electrodes (without extra events)\n", h->ne);
-        char **chnames = neuromat_eeg_get_channel_names(h->ne, 0, NULL);
         if (h->nc > h->ne)
           { fprintf(stderr, "** cannot guess trigger channel names: h.ne = %d  h.nc = %d\n", h->ne, h->nc); 
             exit(1);
           }
+        char *capType; /* Inferred cap type. */
+        /* Guess cap type from number of electrodes: */
+        if (h->ne == 20)
+          { capType = "R20"; }
+        else if (h->ne == 128)
+          { capType = "R128"; }
+        else if (h->ne == 129)
+          { capType = "R129"; }
+        else
+          { fprintf(stderr, "** cannot guess cap type: h.ne = %d  h.nc = %d\n", h->ne, h->nc); 
+            exit(1);
+          }
+        int32_t ne_full = -1;
+        char **chname_full = NULL;
+        neuromat_eeg_get_channel_names(capType, 0, NULL, &ne_full, &chname_full);
+        h->chname = chname_full;
+        assert(h->ne == ne_full);
         if (verbose)
           { fprintf(stderr, "channel names = ");
             for (int32_t ie = 0; ie < h->ne; ie++) 
-              { fprintf(stderr, " %d=%s", ie, chnames[ie]); }
+              { fprintf(stderr, " %d=%s", ie, h->chname[ie]); }
             fprintf(stderr, "\n");
           }
-              
       }
+
+    if (debug) { fprintf(stderr, "nc = %d ne = %d\n", h->nc, h->ne); }
+    demand(h->ne <= h->nc, "more electrodes than channels");
+
+    return h;
   }
 
 void neuromat_eeg_header_merge(neuromat_eeg_header_t *dst, neuromat_eeg_header_t *src)
@@ -166,7 +201,8 @@ void neuromat_eeg_header_merge(neuromat_eeg_header_t *dst, neuromat_eeg_header_t
     neuromat_eeg_header_merge_double(&(dst->fsmp), src->fsmp, "fsmp");
     neuromat_eeg_header_merge_int32(&(dst->ne), src->ne, "ne");
     neuromat_eeg_header_merge_string(&(dst->type), src->type, "type");
-    neuromat_eeg_header_merge_strings(dst->nc, &(dst->chnames), src->chnames, "chnames");
+    neuromat_eeg_header_merge_int32(&(dst->subject), src->subject, "subject");
+    neuromat_eeg_header_merge_strings(dst->nc, &(dst->chname), src->chname, "chname");
     neuromat_eeg_header_merge_int32(&(dst->kfmax), src->kfmax, "kfmax");
     neuromat_eeg_header_merge_string(&(dst->component), src->component, "component");
     
@@ -181,6 +217,12 @@ void neuromat_eeg_header_merge(neuromat_eeg_header_t *dst, neuromat_eeg_header_t
     neuromat_eeg_header_merge_double_vec(dst->ne, &(dst->rebase_wt), src->rebase_wt, "rebase_wt"); 
 
     neuromat_eeg_header_merge_orig(dst->orig, src->orig);
+    
+    /* Backwards compatibility: copy {.subject} and {.run} from {.orig} to header: */
+    if (dst->orig != NULL)
+      { neuromat_eeg_header_merge_int32(&(dst->subject), dst->orig->subject, "subject");
+        neuromat_eeg_header_merge_int32(&(dst->run), dst->orig->run, "run");
+       }
   }
 
 void neuromat_eeg_header_merge_orig(neuromat_eeg_source_t *dst, neuromat_eeg_source_t *src)
@@ -275,27 +317,26 @@ void neuromat_eeg_header_merge_strings(int32_t n, char ***dst, char **src, char 
 
 int32_t neuromat_eeg_header_append_electrode_channel(neuromat_eeg_header_t *h, char *name)
   {
-    demand((h->nc != INT32_MIN) && (h->chnames != NULL) && (h->ne != INT32_MIN), "uninitialized header");
+    demand((h->nc != INT32_MIN) && (h->chname != NULL) && (h->ne != INT32_MIN), "uninitialized header");
     int32_t ie_new = h->ne;
     h->ne++;
     h->nc++;
-    h->chnames = notnull(realloc(h->chnames, h->nc*sizeof(char*)), "no mem");
+    h->chname = notnull(realloc(h->chname, h->nc*sizeof(char*)), "no mem");
     for (int32_t ic = h->nc-1; ic > ie_new; ic--)
-      { h->chnames[ic] = h->chnames[ic-1]; }
-    h->chnames[ie_new] = txtcat(name,"");
+      { h->chname[ic] = h->chname[ic-1]; }
+    h->chname[ie_new] = txtcat(name,"");
     return ie_new;
   }
 
 int32_t neuromat_eeg_header_append_marker_channel(neuromat_eeg_header_t *h, char *name)
   {
-    demand((h->nc != INT32_MIN) && (h->chnames != NULL) && (h->ne != INT32_MIN), "uninitialized header");
+    demand((h->nc != INT32_MIN) && (h->chname != NULL) && (h->ne != INT32_MIN), "uninitialized header");
     int32_t ic_new = h->nc;
     h->nc++;
-    h->chnames = notnull(realloc(h->chnames, h->nc*sizeof(char*)), "no mem");
-    h->chnames[ic_new] = name;
+    h->chname = notnull(realloc(h->chname, h->nc*sizeof(char*)), "no mem");
+    h->chname[ic_new] = name;
     return ic_new;
   }
-
 
 #define neh_NT_MAX 10000000
 #define neh_NC_MAX 200
@@ -303,6 +344,9 @@ int32_t neuromat_eeg_header_append_marker_channel(neuromat_eeg_header_t *h, char
 
 void neuromat_eeg_header_read_field_value(FILE *rd, char *name, neuromat_eeg_header_t *h)
   {
+    bool_t debug = FALSE;
+    
+    if (debug) { fprintf(stderr, "  name = %s\n", name); }
     if (strcmp(name, "nt") == 0) 
       { h->nt = fget_int32(rd); 
         demand((h->nt > 0) && (h->nt <= neh_NT_MAX), "invalid {nt} in file header");
@@ -319,6 +363,10 @@ void neuromat_eeg_header_read_field_value(FILE *rd, char *name, neuromat_eeg_hea
       { h->ne = fget_int32(rd); 
         demand((h->ne > 0) && (h->ne <= neh_NC_MAX), "invalid {ne} in file header");
       }
+    else if (strcmp(name, "subject") == 0) 
+      { h->subject = fget_int32(rd); 
+        demand(h->subject > 0, "invalid subject number");
+      }
     else if (strcmp(name, "type") == 0) 
       { h->type = fget_string(rd); }
     else if (strcmp(name, "component") == 0) 
@@ -326,7 +374,7 @@ void neuromat_eeg_header_read_field_value(FILE *rd, char *name, neuromat_eeg_hea
     else if (strcmp(name, "channels") == 0) 
       { /* The number of channels {h->nc} must be known: */
         demand(h->nc != INT32_MIN, "{channels} in file header before {nc}");
-        h->chnames = notnull(malloc(h->nc*sizeof(char*)), "no mem");
+        h->chname = notnull(malloc(h->nc*sizeof(char*)), "no mem");
         int32_t ic = 0;
         while(TRUE)
           { fget_skip_spaces(rd);
@@ -334,8 +382,10 @@ void neuromat_eeg_header_read_field_value(FILE *rd, char *name, neuromat_eeg_hea
             demand(r != EOF, "unexpected end-of-file");
             ungetc(r, rd); 
             if (r == '\n') { break; }
+            if (debug) { fprintf(stderr, "    r = %c\n", (char)r); } 
             demand(ic < h->nc, "too many channel names");
-            h->chnames[ic] = fget_string(rd);
+            h->chname[ic] = fget_string(rd);
+            if (debug) { fprintf(stderr, "    channel = %s\n",  h->chname[ic]); }
             /* !!! should check valid syntax. !!! */
             ic++;
           }

@@ -1,5 +1,5 @@
 /* Huffman tree and Huffman decoding for the NASA/JPL/PDS IMQ image format. */
-/* Last edited on 2023-02-07 22:07:12 by stolfi */
+/* Last edited on 2023-10-14 11:09:53 by stolfi */
 
 #ifndef imq_huff_H
 #define imq_huff_H
@@ -29,9 +29,9 @@
 #include <stdio.h>
 
 #include <codetree.h>
-#include <huff_tree.h>
+#include <codetree_huff.h>
 
-codetree_t *imq_huff_build_tree(huff_tree_freq_t freq[]);
+codetree_t *imq_huff_build_tree(codetree_huff_freq_t freq[]);
   /* Builds the Huffman tree {T} for a set of pixel differences
     based on the frequency counts {freq[0..510]}. Returns a pointer 
     to the root node. 

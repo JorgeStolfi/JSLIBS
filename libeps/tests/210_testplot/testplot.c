@@ -1,7 +1,7 @@
 #define PROG_NAME "testplot"
 #define PROG_DESC "test of {epswr.h} plotting ops"
 #define PROG_VERS "1.0"
-/* Last edited on 2023-10-01 20:26:48 by stolfi */
+/* Last edited on 2023-10-22 10:36:54 by stolfi */
 
 #define testplot_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
@@ -108,13 +108,13 @@ void DrawThings(epswr_figure_t *epsf)
     epswr_comment(epsf, "Medium solid red figures, open, unfilled:");
     epswr_set_pen(epsf, 1.000, 0.000, 0.000,  0.20,  0.0, 0.0);
     epswr_set_fill_color(epsf, -1.00, -1.00, -1.00);
-    epswr_grid_cell(epsf,  5, 44, 2, 33,  TRUE, TRUE);
+    epswr_grid_cell(epsf,  4, 44, 2, 33,  TRUE, TRUE);
     DrawFigures(epsf, -14.0,  +0.5,  TRUE, TRUE, FALSE, FALSE);
 
     epswr_comment(epsf, "Unstroked figures, closed, pink e-o-filled:");
     epswr_set_pen(epsf, 0.000, 0.000, 0.000,  0.50,  0.0, 0.0);
     epswr_set_fill_color(epsf, 1.000, 0.800, 0.700);
-    epswr_grid_cell(epsf,  7, 44, 2, 33,  TRUE, FALSE);
+    epswr_grid_cell(epsf,  2, 44, 2, 33,  TRUE, FALSE);
     DrawFigures(epsf,  +1.0,  +0.5,  TRUE, FALSE, TRUE, TRUE);
   }
 
@@ -129,13 +129,15 @@ void DrawLabels(epswr_figure_t *epsf, double xc, double yc)
         char *strut, 
         double xd, double yd, 
         double rot, double xalign, double yalign, 
-        double R, double G, double B
+        double lwd,
+        double Rf, double Gf, double Bf,
+        double Rd, double Gd, double Bd
       );
     
-    do_lab("Courier-Bold", 10.0, "lb-g-CB10", "g",   +6.50,   +9.50, +180.0, 0.0,0.0, 0.000,0.800,0.000);
-    do_lab("Courier",       8.0, "lb-x-C8",   "x",   +1.00,   +6.00,    0.0, 0.0,0.0, 1.000,0.000,0.000);
-    do_lab("Times-Roman",  12.0, "cb-X-TR12", "X",   +6.00,   +5.50,  +90.0, 0.5,0.0, 1.000,0.000,0.000);
-    do_lab("Helvetica",     6.0, "rc-Xg-H6",  "Xg", +11.00,  +12.00,  -45.0, 1.0,0.5, 0.000,0.000,1.000);
+    do_lab("Courier-Bold", 10.0, "lb-g-CB10", "g",   +6.50,  +10.00, +180.0, 0.0,0.0, 0.20, 1.0,0.5,0.5, 0.3,0.5,0.3);
+    do_lab("Courier",       8.0, "lb-x-C8",   "x",   +0.50,   +6.00,    0.0, 0.0,0.0, 0.05, 0.7,0.3,0.0, 0.0,0.0,1.0);
+    do_lab("Times-Roman",  12.0, "cb-X-TR12", "X",   +6.50,   +5.50,  +90.0, 0.5,0.0, 0.24, 1.0,0.5,0.0, 0.0,0.3,0.7);
+    do_lab("Helvetica",     6.0, "rc-Xg-H6",  "Xg", +11.00,  +12.00,  -45.0, 1.0,0.5, 0.07, 1.0,0.3,0.0, 0.3,0.2,1.0);
     
     return;
     
@@ -145,46 +147,48 @@ void DrawLabels(epswr_figure_t *epsf, double xc, double yc)
         char *strut,
         double xd, double yd, 
         double rot, double xalign, double yalign, 
-        double R, double G, double B
+        double lwd,  
+        double Rf, double Gf, double Bf,
+        double Rd, double Gd, double Bd
       )
       { 
         epswr_set_label_font(epsf, fontname, fontsize);
     
-        double h = fontsize/8.0; /* Estimated intrline displacement. */
+        double h = fontsize/9.0; /* Estimated intrline displacement. */
         double ddx = +h*sin(rot*M_PI/180);
         double ddy = -h*cos(rot*M_PI/180);
         
-        epswr_set_pen(epsf, R, G, B, 0.05,  0.0, 0.0);
+        epswr_set_pen(epsf, Rd, Gd, Bd, lwd,  0.0, 0.0);
         
         epswr_set_fill_color(epsf, 0.00,0.00,0.00);
         epswr_dot(epsf, xc+xd, yc+yd, 0.2,  TRUE, FALSE);
 
-        epswr_set_fill_color(epsf, 1-R, 1-G, 1-B);
-        epswr_label(epsf, txtcat("1-",text), strut, xc+xd, yc+yd,  rot, FALSE, xalign, yalign, TRUE, FALSE);
+        epswr_set_fill_color(epsf, Rd, Gd, Bd);
+        epswr_label(epsf, txtcat("1-TF-",text), strut, xc+xd, yc+yd,  rot, FALSE, xalign, yalign, TRUE, FALSE);
         
         xd += ddx; yd += ddy;
         
         epswr_set_fill_color(epsf, 0.00,0.00,0.00);
         epswr_dot(epsf, xc+xd, yc+yd, 0.2,  TRUE, FALSE);
       
-        epswr_set_fill_color(epsf, 1-R, 1-G, 1-B);
-        epswr_label(epsf, txtcat("2-",text), strut,  xc+xd, yc+yd,  rot, FALSE, xalign, yalign, TRUE, FALSE);
+        epswr_set_fill_color(epsf, Rd, Gd, Bd);
+        epswr_label(epsf, txtcat("2-TT-",text), strut,  xc+xd, yc+yd,  rot, FALSE, xalign, yalign, TRUE, TRUE);
         
         xd += ddx; yd += ddy;
         
         epswr_set_fill_color(epsf, 0.00,0.00,0.00);
         epswr_dot(epsf, xc+xd, yc+yd, 0.2,  TRUE, FALSE);
         
-        epswr_set_fill_color(epsf, 1-R, 1-G, 1-B);
-        epswr_label(epsf, txtcat("3-",text), strut,  xc+xd, yc+yd,  rot, FALSE, xalign, yalign, FALSE, TRUE);
+        epswr_set_fill_color(epsf, Rf, Gf, Bf);
+        epswr_label(epsf, txtcat("3-FT-",text), strut,  xc+xd, yc+yd,  rot, FALSE, xalign, yalign, FALSE, TRUE);
         
         xd += ddx; yd += ddy;
         
         epswr_set_fill_color(epsf, 0.00,0.00,0.00);
         epswr_dot(epsf, xc+xd, yc+yd, 0.2,  TRUE, FALSE);
       
-        epswr_set_fill_color(epsf, 1-R, 1-G, 1-B);
-        epswr_label(epsf, txtcat("4-",text), strut,  xc+xd, yc+yd,  rot, FALSE, xalign, yalign, TRUE, TRUE);
+        epswr_set_fill_color(epsf, Rf, Gf, Bf);
+        epswr_label(epsf, txtcat("4-TT-",text), strut,  xc+xd, yc+yd,  rot, FALSE, xalign, yalign, TRUE, TRUE);
       }
 
   }

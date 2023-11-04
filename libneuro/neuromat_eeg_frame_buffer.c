@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_frame_buffer.oh}. */
-/* Last edited on 2021-08-21 13:09:34 by stolfi */
+/* Last edited on 2023-10-21 21:48:08 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -246,7 +246,7 @@ void neuromat_eeg_frame_buffer_get_next_pulse_pair
     int32_t ichs[], 
     int32_t nt_fx_default,
     bool_t verbose,
-    char *chnames[], 
+    char *chname[], 
     double fsmp,
     int32_t *it_fx_iniP,
     int32_t *it_fx_finP, 
@@ -272,7 +272,7 @@ void neuromat_eeg_frame_buffer_get_next_pulse_pair
         neuromat_eeg_frame_buffer_get_next_fixation_pulse
           ( buf, read_frame, it_next, 
             ns, ichs, nt_fx_default,
-            verbose, chnames, fsmp, 
+            verbose, chname, fsmp, 
             &it_fx_ini, &it_fx_fin
           );
 
@@ -291,7 +291,7 @@ void neuromat_eeg_frame_buffer_get_next_pulse_pair
             neuromat_eeg_frame_buffer_get_next_stimulus_pulse
               ( buf, read_frame, it_next, 
                 ns, ichs, 
-                verbose, chnames, fsmp, 
+                verbose, chname, fsmp, 
                 &it_st_ini, &it_st_fin, &s_st
               );
             if (it_st_ini == INT32_MIN)
@@ -344,7 +344,7 @@ void neuromat_eeg_frame_buffer_get_next_fixation_pulse
     int32_t ichs[],
     int32_t nt_fx_default,
     bool_t verbose,
-    char *chnames[], 
+    char *chname[], 
     double fsmp,
     int32_t *it_fx_iniP,
     int32_t *it_fx_finP
@@ -377,7 +377,7 @@ void neuromat_eeg_frame_buffer_get_next_fixation_pulse
             int32_t ic_pu = ichs[s_pu];
             if (verbose)
               { neuromat_eeg_report_pulse
-                  ( stderr, " [fx] ", ic_pu, chnames[ic_pu], it_pu_ini, it_pu_fin, fsmp, "\n" );
+                  ( stderr, " [fx] ", ic_pu, chname[ic_pu], it_pu_ini, it_pu_fin, fsmp, "\n" );
               }
             (*it_fx_iniP) = it_pu_ini;
             (*it_fx_finP) = it_pu_fin;
@@ -405,7 +405,7 @@ void neuromat_eeg_frame_buffer_get_next_stimulus_pulse
     int32_t ns, 
     int32_t ichs[], 
     bool_t verbose,
-    char *chnames[], 
+    char *chname[], 
     double fsmp,
     int32_t *it_st_iniP, 
     int32_t *it_st_finP,
@@ -440,7 +440,7 @@ void neuromat_eeg_frame_buffer_get_next_stimulus_pulse
             int32_t ic_pu = ichs[s_pu];
             if (verbose)
               { neuromat_eeg_report_pulse
-                  ( stderr, " [st] ", ic_pu, chnames[ic_pu], it_pu_ini, it_pu_fin, fsmp, "\n" );
+                  ( stderr, " [st] ", ic_pu, chname[ic_pu], it_pu_ini, it_pu_fin, fsmp, "\n" );
               }
             (*it_st_iniP) = it_pu_ini;
             (*it_st_finP) = it_pu_fin;

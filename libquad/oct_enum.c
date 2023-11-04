@@ -1,8 +1,8 @@
 /* See oct_enum.h. */
-/* Last edited on 2023-10-05 12:18:06 by stolfi */
+/* Last edited on 2023-11-04 02:43:44 by stolfi */
 
 #define oct_enum_C_copyright \
-  "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright"
+  "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright ""
 
 /* These enumeration procedures were originally developed as the
   Modula-3 file {Oct.m3} by J. Stolfi and Rober M. Rosi in 1993. The

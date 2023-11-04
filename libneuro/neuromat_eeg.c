@@ -1,5 +1,5 @@
 /* See {neuromat_eeg.h}. */
-/* Last edited on 2021-08-28 02:41:22 by stolfi */
+/* Last edited on 2023-10-28 09:31:52 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -13,12 +13,12 @@
 #include <jsstring.h>
 #include <neuromat_eeg.h>
 
-void neuromat_eeg_get_20_channel_names(int32_t ne, char *chname[]);
-  /* Returns in {chname[0..ne-1]} the names of the raw electrode channels in the 20-electrode experiment.
-    They are assumed to be the 20 eelectrodes followed by {nv} extra marker channels, called {evname[0..nv-1]}. 
-    The size of {channels} must be at least {ne}.
+void neuromat_eeg_get_R20_channel_names(int32_t ne, char *chname[]);
+  /* Returns in {chname[0..ne-1]} the names of the raw electrode names in the 20-electrode cap
+    used at INDC sometime before 2013 by Ghislain et al. 
+    The size of {channels} must be at least {ne} which must be 20.
     
-    The 20 electrode names are as follows.
+    Set {chname[0..19]} as follows.
     Note that the C-language indices ("C" in the table below) range from
     0 to 19 while the Fortran/Matlab indices ("F") range from 1 to 20.
     
@@ -33,40 +33,73 @@ void neuromat_eeg_get_20_channel_names(int32_t ne, char *chname[]);
     A 20-electrode data file usually has at least one marker channel, 
     a trigger channel with C-index 20 (F-index 21) and name "TR". 
     
-    All the strings {chname[0..ne-1]} are newly allocated by the procedure.
-  */
+    All the strings {chname[0..ne-1]} are newly allocated by the procedure. */
 
-void neuromat_eeg_get_128_channel_names(int32_t ne, char *chname[]);
-  /* Returns in {*chname[0..ne-1]} the names of the electrode channels channels for {ne}-electrode EEG datasets, 
-    where {ne} is 128 or 129.
-    The size of {channels} must be at least {ne}.
+void neuromat_eeg_get_R128_channel_names(int32_t ne, char *chname[]);
+  /* Returns in {*chname[0..ne-1]} the electrode names for
+    {ne}-electrode EEG cap used at INDC sometime before 2013,
+    by Ghislain et al, Andressa et al.
     
-    Specifically, names {chname[0..127]} are "C001" to "C128" (ie.
-    {chname[i]} is "C{i+1}"), for {i} in {0..127}. If {ne} is 129, the
-    extra channel is assumed to be the reference (ground) electrode, so
-    {chname[128] is set to "CZ" which is (name used by the Neuromat
-    team; labeled "VREF" in the electrode diagram).
+    The size of {channels} must be at least {ne}, which must be 128 or 129.
+    
+    Sets {chname[0..127]} to "C001" to "C128" (ie. {chname[i]} is "C{i+1}"), 
+    for {i} in {0..127}. If {ne} is 129, {chname[128]} is set to "CZ" which 
+    is name used by the Neuromat team for the reference (ground) electrode 
+    (labeled "VREF" in the electrode diagram).
     
     All the strings {chname[0..ne-1]} are newly allocated by the procedure. */
 
-char **neuromat_eeg_get_channel_names(int32_t ne, int32_t nv, char *evname[])
-  { int32_t nc = ne + nv; /* Number of electrodes plus marker channels. */
-    char **chname = notnull(malloc(nc*sizeof(char*)), "no mem"); /* Electrode names and trigger/reference channel name. */
-    if (ne == 20)
-      { neuromat_eeg_get_20_channel_names(ne, chname); }
-    else if ((ne == 128) || (ne == 129))
-      { neuromat_eeg_get_128_channel_names(ne, chname); }
-    else
-      { demand(FALSE, "invalid electrode count"); }
+void neuromat_eeg_get_FN3_channel_names(int32_t ne, char *chname[]);
+  /* Returns in {*chname[0..ne-1]} the electrode names for
+    virtual electrodes used in the Renewal Points paper by Fernando
+    Najman et al in 2023.
+    
+    The size of {channels} must be at least {ne}, which must be 3.
+    The three channel names are "RPF", "LPF", and "OCC".
+    
+    All the strings {chname[0..ne-1]} are newly allocated by the procedure. */
+
+void neuromat_eeg_get_FN128_channel_names(int32_t ne, char *chname[]);
+  /* Returns in {*chname[0..ne-1]} the electrode names for
+    the real raw electrodes used in the Renewal Points paper by Fernando
+    Najman et al in 2023.
+    
+    The size of {channels} must be at least {ne}, which must be 128.
+    The channel names will be "C001",.. "C128". 
+    
+    All the strings {chname[0..ne-1]} are newly allocated by the procedure. */
+
+void neuromat_eeg_get_channel_names(char *capType, int32_t nv, char *evname[], int32_t *ne_P, char ***chname_P)
+  { int32_t ne = 0;
+    char **chname = NULL;
+    for (int32_t pass = 0; pass < 2; pass++)
+      { if (strcmp(capType, "R20") == 0)
+          { if (pass == 0) { ne = 20; }  else { neuromat_eeg_get_R20_channel_names(ne, chname); } }
+        else if (strcmp(capType, "R128") == 0)
+          { if (pass == 0) { ne = 128; }  else { neuromat_eeg_get_R128_channel_names(ne, chname); } }
+        else if (strcmp(capType, "R129") == 0)
+          { if (pass == 0) { ne = 129; }  else { neuromat_eeg_get_R128_channel_names(ne, chname); } }
+        else if (strcmp(capType, "FN3") == 0)
+          { if (pass == 0) { ne = 3; }  else { neuromat_eeg_get_FN3_channel_names(ne, chname); } }
+        else if (strcmp(capType, "FN128") == 0)
+          { if (pass == 0) { ne = 128; }  else { neuromat_eeg_get_FN128_channel_names(ne, chname); } }
+        else
+          { demand(FALSE, "unknown cap type"); }
+        if (pass == 0)
+          { int32_t nc = ne + nv; /* Number of electrodes plus marker channels. */
+            chname = talloc(nc, char*); /* Electrode names and trigger/reference channel name. */
+          }
+      }
     if (nv > 0)
       { /* Append the trigger channel names: */
         for (int32_t iv = 0; iv < nv; iv++) { chname[ne+iv] = txtcat(evname[iv], ""); }
       }
     /* Return results: */
-    return chname;
+    (*ne_P) = ne;
+    (*chname_P) = chname;
   }
 
-void neuromat_eeg_get_20_channel_names(int32_t ne, char *chname[])
+void neuromat_eeg_get_R20_channel_names(int32_t ne, char *chname[])
   { 
     demand(ne == 20, "invalid {ne}");
     chname[ 0] = "F7";
@@ -93,7 +126,7 @@ void neuromat_eeg_get_20_channel_names(int32_t ne, char *chname[])
     for (int32_t ie = 0; ie < ne; ie++) { chname[ie] = txtcat(chname[ie], ""); }
   }
   
-void neuromat_eeg_get_128_channel_names(int32_t ne, char *chname[])  
+void neuromat_eeg_get_R128_channel_names(int32_t ne, char *chname[])  
   {
     demand((ne == 128) || (ne == 129), "invalid {ne}");
     /* Electrode channels: */
@@ -105,6 +138,23 @@ void neuromat_eeg_get_128_channel_names(int32_t ne, char *chname[])
     if (ne == 129)
       { /* Reference electrode: */
         chname[128] = txtcat("CZ", ""); /* To get a newly allocated copy. */
+      }
+  }
+
+void neuromat_eeg_get_FN3_channel_names(int32_t ne, char *chname[]) 
+  {
+    demand(ne == 3, "invalid {ne}");
+    chname[0] = txtcat("RPF","");
+    chname[1] = txtcat("LPF","");
+    chname[2] = txtcat("OCC","");
+  }
+
+void neuromat_eeg_get_FN128_channel_names(int32_t ne, char *chname[])
+  { demand(ne == 128, "invalid {ne}");
+    for (int32_t ke = 0; ke < ne; ke++)
+      { char *name = NULL;
+        asprintf(&name, "C%03d", ke+1);
+        chname[ke] = name;
       }
   }
 

@@ -2,7 +2,7 @@
 #define neuromat_eeg_header_H
 
 /* Tools for reading and writing headers of plain-text NeuroMat EEG datasets. */
-/* Last edited on 2021-08-26 12:32:15 by stolfi */
+/* Last edited on 2023-11-02 06:15:54 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -42,10 +42,12 @@ typedef struct neuromat_eeg_header_t
 
     /* Nature of data: */
     double fsmp;       /* Sampling frequency (Hz) of dataset. */
-    int32_t ne;            /* Number of electric measurement channels, in {0..nc}. */
+    int32_t ne;        /* Number of electric measurement channels, in {0..nc}. */
+    int32_t subject;   /* Subject ID number, or {INT32_MIN}. */
+    int32_t run;       /* Run number, or {INT32_MIN}. */
     char *type;        /* Type of experiment, e.g. "B" (bio) or "N" (non-bio). */
-    char **chnames;    /* Names of channels, indexed {0..nc-1}. */
-    int32_t kfmax;         /* Maximum frequency index (if spectral data), in {0..nt/2}. */
+    char **chname;     /* Names of channels, indexed {0..nc-1}. */
+    int32_t kfmax;     /* Maximum frequency index (if spectral data), in {0..nt/2}. */
     char *component;   /* Name of a component of original signal, or NULL. */
     
     /* Filtering data: */
@@ -79,14 +81,14 @@ typedef struct neuromat_eeg_header_t
       PCA components, power spectra). The remaining {nc-ne} channels, if any,
       are assumed to be trigger signals or other non-physical data. 
   
-    o The {chnames} field is specified in the file by a line
+    o The {chname} field is specified in the file by a line
     
-        "channel = {chnames[0]} {chnames[1]} ...  {chnames[nc-1]}"
+        "channel = {chname[0]} {chname[1]} ...  {chname[nc-1]}"
     
-      Each channel name in {chnames[0..ne-1]} must be an identifier,
+      Each channel name in {chname[0..ne-1]} must be an identifier,
       beginnng with ascii letter and continuing with decimal digits,
       ascii letters, periods or underscores, with no embedded blanks.
-      The pointer {chnames} may be {NULL}.
+      The pointer {chname} may be {NULL}.
       
     o If the field {rebase_wt} is not {NULL}, it means that the
       electrode potentials were changed to a different reference
@@ -104,7 +106,7 @@ typedef struct neuromat_eeg_source_t
     int32_t it_ini;    /* Index of first time frame in original data file (from 0). */
     int32_t it_fin;    /* Index of last time frame in original data file (from 0). */
     double fsmp;       /* Sampling frequency (Hz) of original dataset. */
-    int32_t subject;   /* Index of subject (from 1). */
+    int32_t subject;   /* Subject ID number (from 1). */
     int32_t run;       /* Index of experimental run (from 1). */
   } neuromat_eeg_source_t;
   /* Describes the raw EEG data this file was ultimately derived from.
@@ -171,7 +173,7 @@ int32_t neuromat_eeg_header_append_electrode_channel(neuromat_eeg_header_t *h, c
 int32_t neuromat_eeg_header_append_marker_channel(neuromat_eeg_header_t *h, char *name);
   /* These procedures insert a new channel with the given {name} in the header,
     at the end of the electrode channels and at the end of all channels, respectively.
-    The {h.chnames} table is reallocated and the counts {h.ne,h.nc} are updated,
+    The {h.chname} table is reallocated and the counts {h.ne,h.nc} are updated,
     as appropriate.  They return the index of the inserted channel, in {0..h.nc-1}
     for the new {h.nc}. */
   
@@ -194,7 +196,7 @@ void neuromat_eeg_header_write_field_int_range(FILE *wr, char *pref, char *name,
     written on the same lines after the "=", and must satisfy
     {vmin<=vini<=vfin<=vmax}. String values must not be empty and must
     not contain any embedded blanks; they are written without any
-    quotes, and. String vector elements are written all on the same
+    quotes. String vector elements are written all on the same
     line, without quotes, separated by blanks. */
 
 #endif

@@ -2,7 +2,7 @@
 #define neuromat_eeg_frame_buffer_H
 
 /* Buffer for readin consecutive dataframes from plain text NeuroMat EEG datasets. */
-/* Last edited on 2021-08-21 13:09:54 by stolfi */
+/* Last edited on 2023-10-21 21:47:52 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -175,7 +175,7 @@ void neuromat_eeg_frame_buffer_get_next_pulse_pair
     int32_t ichs[], 
     int32_t nt_fx_default,
     bool_t verbose,
-    char *chnames[], 
+    char *chname[], 
     double fsmp,
     int32_t *it_fx_iniP,
     int32_t *it_fx_finP, 
@@ -203,7 +203,7 @@ void neuromat_eeg_frame_buffer_get_next_pulse_pair
     {*it_st_iniP,*it_st_finP} the first and last frames of the
     start-of-stimulus pulse. Also returns in {*s_stP} the the stimulus
     type in {0..ns-2}. Reports the pulse to
-    {stderr}, assuming {chnames[o..buf->nc-1]} are the channel names and
+    {stderr}, assuming {chname[o..buf->nc-1]} are the channel names and
     {fsmp} is the sampling rate (in Hz).
 
     If there are no more runs in the input, returns {INT32_MIN} in {*it_fx_iniP}.
@@ -227,7 +227,7 @@ void neuromat_eeg_frame_buffer_get_next_fixation_pulse
     int32_t ichs[],
     int32_t nt_fx_default,
     bool_t verbose,
-    char *chnames[], 
+    char *chname[], 
     double fsmp,
     int32_t *it_fx_iniP,
     int32_t *it_fx_finP
@@ -247,7 +247,7 @@ void neuromat_eeg_frame_buffer_get_next_fixation_pulse
 
     If it succeeds, returns in {*it_fx_iniP,*it_fx_finP} the first and
     last frames of the start-of-fixation pulse. Reports the pulse to
-    {stderr}, assuming {chnames[o..buf->nc-1]} are the channel names and
+    {stderr}, assuming {chname[o..buf->nc-1]} are the channel names and
     {fsmp} is the sampling rate (in Hz).
 
     If there are no more runs in the input, returns {INT32_MIN} in {*it_fx_iniP}.
@@ -266,7 +266,7 @@ void neuromat_eeg_frame_buffer_get_next_stimulus_pulse
     int32_t ns, 
     int32_t ichs[], 
     bool_t verbose,
-    char *chnames[], 
+    char *chname[], 
     double fsmp,
     int32_t *it_st_iniP, 
     int32_t *it_st_finP,
@@ -289,7 +289,7 @@ void neuromat_eeg_frame_buffer_get_next_stimulus_pulse
     If it succeeds, returns in {*it_st_iniP,*it_st_finP} the first and
     last frames of the start-of-stimulus pulse, and in {*s_stP} the 
     phase {s_st}. Reports the pulse to
-    {stderr}, assuming {chnames[o..buf->nc-1]} are the channel names and
+    {stderr}, assuming {chname[o..buf->nc-1]} are the channel names and
     {fsmp} is the sampling rate (in Hz).
 
     If reaches the end-of-file before finding such a frame,

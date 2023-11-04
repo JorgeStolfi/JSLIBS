@@ -1,5 +1,5 @@
 /* See {btc_bubble_parms_read.h} */
-/* Last edited on 2015-04-29 23:53:45 by stolfilocal */
+/* Last edited on 2023-10-14 23:05:42 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -75,7 +75,7 @@ void btc_bubble_parms_read(char* fName, int nd, char* dt[], int* nbP, btc_bubble
         ok &= btc_bubble_parms_validate(fName,nlin, nd,dt, bpj);
 
         nb++;
-        fget_comment_or_eol(rd, '#');
+        fget_comment_or_eol(rd, '#', NULL);
       }
     fclose(rd);
     if (debug) { fprintf(stderr, "bubbles = %d\n", nb); }

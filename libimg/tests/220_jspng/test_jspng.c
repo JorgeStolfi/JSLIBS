@@ -1,5 +1,5 @@
 /* Test of jspng.h, uint16_image_io_png.h */
-/* Last edited on 2023-02-12 09:58:11 by stolfi */
+/* Last edited on 2023-10-14 23:05:34 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -273,7 +273,7 @@ void do_uint16_image_io_png_official_tests(char *iDir, char *oDir)
     while (TRUE)
       { nline++;
         if (debug) { fprintf(stderr, "parsing line %d...\n", nline); }
-        bool_t ok = fget_test_comment_or_eol(rd, '#');
+        bool_t ok = fget_test_comment_or_eol(rd, '#', NULL);
         if (ok) { continue; }
         if (fget_test_eof(rd)) { break; }
         /* Found something, not space, break, or EOF: */ 
@@ -306,7 +306,7 @@ void do_uint16_image_io_png_official_tests(char *iDir, char *oDir)
             
             if (debug) { fprintf(stderr, "skipping blanks comments eol...\n"); }
             
-            fget_comment_or_eol(rd, '#');
+            fget_comment_or_eol(rd, '#', NULL);
             
             /* Write expected data summary to {stderr}: */
             fprintf(stderr, "| %s %5d %5d", iName, NX, NY);

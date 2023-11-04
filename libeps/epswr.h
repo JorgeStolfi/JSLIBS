@@ -1,5 +1,5 @@
 /* Tools for generating Encapsulated Postscript graphics files. */
-/* Last edited on 2023-10-01 20:13:44 by stolfi */
+/* Last edited on 2023-10-22 10:40:21 by stolfi */
 
 #ifndef epswr_H
 #define epswr_H
@@ -713,6 +713,11 @@ void epswr_label
     If {clipped} is TRUE, the label will be clipped to the 
     current plot area.  Otherwise it may extend over the 
     whole figure.
+    
+    The normal appearance of the font is obtained with {fill=TRUE}
+    and {draw=FALSE}.  Setting {draw=TRUE} draws the outline
+    of each character with the current pen parameters over the
+    filled shape, half inside it and half outside it.
     
     Beware that the label's bounding box is computed from the actual
     outlines of the character in the string, not from the nominal
