@@ -1,5 +1,5 @@
 /* See {neuromat_eeg.h}. */
-/* Last edited on 2023-10-28 09:31:52 by stolfi */
+/* Last edited on 2023-11-22 10:16:21 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -12,6 +12,17 @@
 #include <affirm.h>
 #include <jsstring.h>
 #include <neuromat_eeg.h>
+
+double **neuromat_eeg_new(int32_t nc, int32_t nt)
+  { double **val = talloc(nc, double*);
+    for (int32_t ic = 0; ic < nc; ic++) { val[ic] = talloc(nt, double); }
+    return val;
+  }
+  
+void neuromat_eeg_free(double **val, int32_t nc, int32_t nt)
+  { for (int32_t ic = 0; ic < nc; ic++) { free(val[ic]); }
+    free(val);
+  }
 
 void neuromat_eeg_get_R20_channel_names(int32_t ne, char *chname[]);
   /* Returns in {chname[0..ne-1]} the names of the raw electrode names in the 20-electrode cap

@@ -2,13 +2,22 @@
 #define neuromat_H
 
 /* NeuroMat tools. */
-/* Last edited on 2023-10-21 21:48:21 by stolfi */
+/* Last edited on 2023-11-22 10:16:55 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 
 #include <bool.h>
+
+double **neuromat_eeg_new(int32_t nc, int32_t nt);
+  /* Allocates a (headerless) EEG data array {val} with {nc} channels and {nt} frames. 
+    The sample in channel {ic} and frame {it} will be {val[ic][it]}, for {ic} in {0..nc-1}
+    and {it} in {0..nt-1}. */
+
+void neuromat_eeg_free(double **val, int32_t nc, int32_t nt);
+  /* Frees the storage used by the EEG data array {val}, assumed to have {nc}
+    channels and {nt} frames. */
 
 void neuromat_eeg_get_channel_names(char *capType, int32_t nv, char *evnames[], int32_t *ne_P, char ***chname_P);
   /* Returns the number and names of EEG channels in the cap with the given {capType}.
