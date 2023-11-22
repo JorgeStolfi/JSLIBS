@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {wt_table.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-31 04:01:47 by stolfi */ 
+/* Last edited on 2023-11-04 18:55:17 by stolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_hermite3_COPYRIGHT \
@@ -16,18 +16,22 @@
 #include <math.h>
 #include <assert.h>
 
-#include <wt_table.h>
-
 #include <bool.h>
 #include <jsfile.h>
 #include <jsmath.h>
 #include <jsrandom.h>
 #include <affirm.h>
 
+#include <wt_table.h>
+#include <wt_table_quantize.h>
+
 int32_t main(int32_t argn, char **argv);
 
 void do_test_basics(void);
   /* Basic consistency tests. */
+
+void do_test_quantize(int32_t n);
+  /* Tests {wt_table_quantize}. */
 
 void do_test_avg_var(int32_t n);
   /* Checks {wt_table_avg}, {wt_table_var} for a table of size {n}. */
@@ -58,12 +62,13 @@ void do_test_print(int32_t n, char *tname, bool_t norm);
 int32_t main (int32_t argc, char **argv)
   {
     do_test_basics();
-    for (int32_t n = 1; n <= 13; n = 3*n/2+1)
+    for (int32_t n = 1; n <= 100; n = 3*n/2+1)
       { do_test_avg_var(n);
         do_test_normalize_sum(n);
         do_test_convolution(n);
         double sigma = n/5.0;
         do_test_gaussian_loss(n, sigma);
+        do_test_quantize(n);
         for (int32_t inorm = 0; inorm < 2; inorm++)
           { bool_t norm = (inorm == 1);
             do_test_print(n, "gaussian", norm);
@@ -83,6 +88,76 @@ int32_t main (int32_t argc, char **argv)
 void do_test_basics(void)
   {
   
+  }
+
+void do_test_quantize(int32_t n)
+  {
+    bool_t verbose = (n < 10);
+    fprintf(stderr, "--- testing {wt_table_quantize} n = %d ---\n", n);
+    /* Create an weight table: */
+    double wf[n];
+    int32_t wi[n];
+    for (int32_t pass = 0; pass < 16; pass++)
+      { bool_t norm = ((pass & 1) == 0);
+        if (n > 1) 
+          { double sigma = 0.25*n; wt_table_fill_gaussian(sigma, n, wf, norm); }
+        else
+          { wt_table_fill_binomial(n, wf, norm); }
+        if ((n > 1) && ((pass & 2) == 0))
+          { /* Flip half of the table: */
+            for (int32_t k = 0; k < n; k++) 
+              { double x = n*(((double)k)/((double)n-1) - 0.5);
+                wf[k] *= x;
+              }
+          }
+        if (verbose) 
+          { fprintf(stderr, "  wf =");
+            for (int32_t k = 0; k < n; k++) { fprintf(stderr, " %+11.8f", wf[k]); }
+            fprintf(stderr, "\n");
+          }
+        int32_t wi_min = ((pass & 4) == 0 ? 100 : 0);
+        int32_t wi_sum = ((pass & 8) == 0 ? 1000*n : (wi_min == 0 ? 0 : wt_table_quantize_WI_SUM_MAX));
+        int32_t wi_sum_res = wt_table_quantize(n, wf, wi_min, wi_sum, wi);
+        demand(wi_sum_res > 0, "returned sum is zero");
+        /* Gather some data about {wf,wi}: */
+        double wf_sum = 0, wf_min = +INF, wf_max = -INF;
+        int32_t wi_sum_cmp = 0, wi_max_cmp = 0;
+        for (int32_t k = 0; k < n; k++)
+          { double wfk = wf[k];
+            int32_t wik = wi[k];
+            if (wfk == 0)
+              { demand(wik == 0, "zero not preserved"); }
+            else
+              { double wfak = fabs(wfk);
+                wf_sum += wfak;
+                if (wfak < wf_min) { wf_min = wfak; }
+                if (wfak > wf_max) { wf_max = wfak; }
+                int32_t wiak = abs(wik);
+                if (wi_min != 0) { demand(wiak >= wi_min, "{wi_min} not honored"); }
+                if (wiak != 0) { demand((wfk < 0) == (wik < 0), "sign not preserved"); }
+                wi_sum_cmp += wiak;
+                if (wiak > wi_max_cmp) { wi_max_cmp = wiak; }
+              }
+          }
+        demand(wi_sum_res == wi_sum_cmp, "returned sum is incorrect");
+        assert(wi_max_cmp > 0);
+        if (wi_max_cmp > 2*(wi_min + 1))
+          { /* Check if scaling is roughly OK: */
+            double scale = ((double)wi_max_cmp)/wf_max;
+            for (int32_t k = 0; k < n; k++)
+              { double wfk = wf[k];
+                int32_t wik = wi[k];
+                int32_t wiak = abs(wik);
+                if ((wiak > 0) && (wiak > wi_min))
+                  { /* Should be scaled and rounded: */
+                    int32_t wiak_cmp = (int32_t)floor(fabs(wfk)*scale + 0.5);
+                    demand(abs(wiak_cmp - wiak) <= 2, "rounding too big");
+                  }
+              }
+          }
+      }
+        
+    if (verbose) { fprintf(stderr, "--- end testing {wt_table_quantize} ---\n"); }
   }
 
 void do_test_avg_var(int32_t n)

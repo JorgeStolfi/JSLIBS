@@ -1,5 +1,5 @@
 /* See wt_median.h */
-/* Last edited on 2023-11-04 00:13:19 by stolfi */
+/* Last edited on 2023-11-21 18:28:00 by stolfi */
 
 #define wt_median_C_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
@@ -17,212 +17,223 @@
 
 #include <wt_median.h>
 
-int32_t wt_median_index_set_update(int32_t nt, int32_t tx[], int32_t nx, int32_t ix, int32_t nw);
-  /* Assumes that, on entry, {tx[0..nt-1]} is a set of {nt} consecutive
-    indices in {0..nx-1}. On exit, {tx[0..nw-1]} will contain the {nw}
-    consecutive indices centered at {ix} namely {ix-hw..ix+hw} where
-    {hw=nw/2}.
-    
-    The input set size {nt} may be bigger or smaller than the window
-    width {nw}, which must be odd.  In any case, the indices of the
-    output set which are in the input set are merely copied, preserving
-    their order.  The procedure returns the number of new indices, which
-    will be appended at the end.  The range {ix-hw..ix+hw} must be a sub-range
-    of {0..nx-1}. */
-
-void wt_median_index_set_full_sort(int32_t nx, double x[], int32_t nw, int32_t tx[]);
-void wt_median_index_set_insertion_sort(int32_t nx, double x[], int32_t nw, int32_t tx[]);
-  /* These procedures sort the indices {tx[0..nw-1]}, a subset of {0..nx-1}, so that 
-    the elements {x[tx[i]]} are in non-decreasing order when {i} ranges from 0 to {nw-1}.
-    
-    The insertion sort version may be faster if the list {tx[0..nw-1]}
-    is already almost sorted. Otherwise the full sort version (which
-    uses {qsort}) is probably faster. */
-
-
-/* IMPLEMENTATIONS */
-
-double wt_median(int32_t nx, double x[], int32_t ix, int32_t nw, double w[], bool_t interp, int32_t *nk_P, int32_t kx[])
+double wt_median_sorted
+  ( int32_t ns,     /* Count of samples. */
+    double xs[],    /* The samples are {xs[0..ns-1]}. */
+    int32_t ws[],   /* The respective weights are {ws[0..ns-1]}. */
+    bool_t interp   /* Should interpolate the median? */
+  )
   {
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
     
-    demand((nw >= 1) && ((nw % 2) == 1), "invalid window width {nw}");
-    int32_t hw = nw/2;
-    demand((ix-hw >= 0) && (ix+hw < nx), "window spills outside {0..nx-1}");
+    /* Check weights and sample order and compute total weight: */
+    demand(ns >= 0, "invalid number of samples");
+    if (ns == 0) { return NAN; }    
     
-    if (nw == 1)
-      { /* Trivial median: */
-        if (kx != NULL) { kx[0] = ix; (*nk_P) = 1; }
-        return x[ix];
+    double xprev = -INF;
+    int32_t wsum = 0;
+    for (int32_t i = 0; i < ns; i++) 
+      { int32_t wsi = ws[i];
+        demand(wsi > 0, "invalid weight");
+        demand(wsum <= wt_median_WSUM_MAX - wsi, "total weight too large");
+        wsum += wsi;
+        double xsi = xs[i];
+        demand(isfinite(xsi), "samples must be finite");
+        demand(xsi > xprev, "samples must be strictly increasing");
+        xprev = xsi;
       }
-
-    /* Get the set {tx[0..nw-1]} of indices of elems in window, sorted by {x} value: */
-    int32_t *tx = NULL;
-    { int32_t nt;
-      if (kx == NULL)
-        { nt = 0; tx = talloc(nw, int32_t); }
-      else
-        { demand(nk_P != NULL, "invalid {nk_P}");
-          nt = (*nk_P);
-          tx = kx;
-        }
-      int32_t nt_add = wt_median_index_set_update(nt, tx, nx, ix, nw);
-      if (nt_add < 5)
-        { wt_median_index_set_insertion_sort(nx, x, nw, tx); }
-      else
-        { wt_median_index_set_full_sort(nx, x, nw, tx); }
-    }
-    
-    /* Find the highest {ia} such that the sum of weights in {0..ia} is at most 0.5: */
-    int32_t ia = -1; double suma = 0;
-    while (ia < nw-1)
-      { double wa = w[hw + tx[ia+1]-ix];
-        if (suma + wa > 0.5) { break; }
-        ia++; suma += wa;
-      }
-    
-    /* Find the lowest {ib} such that the sum of weights in {ib..nw-1} is at most 0.5: */
-    int32_t ib = nw; double sumb = 0;
-    while (ib >= 1)
-      { double wb = w[hw + tx[ib-1]-ix];
-        if (sumb + wb > 0.5) { break; }
-        ib--; sumb += wb;
-      }
-    demand((suma <= 0.5) && (sumb <= 0.5), "weights add to more than 1.");
+    if (debug) { fprintf(stderr, "    wsum = %+d\n", wsum); }
+    assert(wsum > 0);
       
-    if (ia > ib) 
-      { /* The indices {ia} and {ib} should not have crossed. */
-        /* Either there were roundoff errors or the weights did not quite add to 1. */
-        /* Fix by force: */
-        if (debug) { fprintf(stderr, "  ia = %d suma = %24.15e  ib = %d sumb = %24.15e", ia, suma, ib, sumb); }
-        int32_t im = (ia + ib)/2; 
-        if (im < 0) 
-          { im = 0; }
-        else if (im >= nw)
-          { im = nw-1; }
-        else
-          { im = (ia + ib + (im % 2))/2; /* Round to even if {ia+ib} is odd. */ }
-        ia = im; ib = im; 
-        if (debug) { fprintf(stderr, " fixed to %d\n", ia); }
-        suma = sumb = 0.5; /* Fake it, just in case. */
+    /* Find indices {ia,ib} bracketing the median, and the corresponding {F} values: */
+    int32_t ia, ib;
+    int32_t Fa, Fb;
+    if (ns == 1)
+      { ia = ib = 0; Fa = Fb = 0; }
+    else
+      { /* Find {ia} = max {i} with {F(xs[i]) <= 0} : */
+        ia = -1;
+        Fa = -wsum;
+        int32_t wa_prev = 0;
+        while (ia < ns-1)
+          { int32_t wa_next = ws[ia+1];
+            int32_t Fa_next = Fa + (wa_prev + wa_next);
+            if (debug) { fprintf(stderr, "      ia = %d wa_prev = %d wa_prev = %d Fa_next = %+d\n", ia, wa_prev, wa_next, Fa_next); }
+            if (Fa_next > 0) { break; }
+            ia++; Fa = Fa_next;
+            if (Fa == 0) { break; }
+            wa_prev = wa_next;
+          }
+        assert((Fa <= 0) && (Fa >= -wsum));
+        assert((ia >= 0) && (ia < ns));
+        /* Find {ib} = min{i} with {F(xs[i]) >= 0}: */
+        ib = ns;
+        Fb = +wsum;
+        int32_t wb_prev = 0;
+        while (ib > 0)
+          { int32_t wb_next = ws[ib-1];
+            int32_t Fb_next = Fb - (wb_prev + wb_next);
+            if (debug) { fprintf(stderr, "      ib = %d wb_prev = %d wb_prev = %d Fb_next = %+d\n", ib, wb_prev, wb_next, Fb_next); }
+            if (Fb_next < 0) { break; }
+            ib--; Fb = Fb_next;
+            if (Fb == 0) { break; }
+            wb_prev = wb_next;
+          }
+        assert((Fb >= 0) && (Fb <= +wsum));
+        assert((ib >= 0) && (ib < ns));
       }
-      
-    assert((0 <= ia) && (ia <= ib) && (ib < nw));
-    double xm;
-    if (ib == ia)
-      { /* Perfect median: */
-        xm = x[tx[ia]];
+    if (debug) { fprintf(stderr, "    ia = %d xs[ia] = %20.14f F(xs[ia]) = %+d\n", ia, xs[ia], Fa); }
+    if (debug) { fprintf(stderr, "    ib = %d xs[ib] = %20.14f F(xs[ib]) = %+d\n", ib, xs[ib], Fb); }
+    assert((0 <= ia) && (ia <= ib) && (ib < ns));
+    assert((Fa <= 0) && (Fb >= 0));
+    if (ia == ib)
+      { /* Median is exact and unique: */
+        assert((Fa == 0) && (Fb == 0));
+        return xs[ia];
       }
-    else if (ib == ia+1)
-      { double xa = x[tx[ia]], wa = w[hw + tx[ib]-ix];
-        double xb = x[tx[ib]], wb = w[hw + tx[ib]-ix];
-        /* Median is in the range {[xa_xb]}: */
+    else
+      { /* Median is between two samples {xs[ia],xs[ib]}: */
+        assert(ia+1 == ib);
+        assert((Fa < 0) && (Fb > 0));
+        double xa = xs[ia], xb = xs[ib];
         assert(xa < xb);
-        double da = fabs(sumb - suma + wa); /* What {|sumb-suma|} would be if {xa} is chosen. */ 
-        double db = fabs(sumb - suma - wb); /* What {|sumb-suma|} would be if {xb} is chosen. */
-        assert(db + da > 0);
         if (interp)
-          { double f = da/(db + da);
-            xm = (1-f)*xa + f*xb;
+          { /* Estimate {xm} where {F(xm)==0} by interpolation: */
+            double f = ((double)Fb)/((double)(Fb - Fa));
+            double xm = f*xs[ia] + (1-f)*xs[ib];
+            if (xm <= xa) { xm = nextafter(xm, +INF); }
+            if (xm >= xb) { xm = nextafter(xm, -INF); }
+            return xm;
           }
+        else if (abs(Fa) < abs(Fb))
+          { return xa; }
+        else if (abs(Fa) > abs(Fb))
+          { return xb; }
         else
-          { /* Median is either {ib} or {ia}: */
-            if (da < db)
-              { xm = xa; }
-            else if (db < da) 
-              { xm = xb; }
-            else
-              { /* Choose the one with even window index: */
-                xm = ((ib % 2) == 0 ? xb : xa);
-              }
+          { /* Choose the one with even rank: */
+            return ((ia & 1) == 0 ? xa : xb);
           }
       }
-    else
-      { /* The median is between {ib} and {ia}: */
-        assert(ib - ia >= 2);
-        double xmb = x[tx[ib-1]], xma = x[tx[ia+1]];
-        assert(xmb == xma);
-        xm = xmb;
+  }
+
+double wt_median_unsorted
+  ( int32_t n,      /* Count of samples. */
+    double x[],     /* The samples are {x[0..n-1]}. */
+    int32_t w[],    /* The respective weights are {w[0..n-1]}. */
+    bool_t interp,  /* Should interpolate the median? */
+    int32_t *ns_P,  /* (OUT) Number of distinct sample values with nonzero weight. */
+    double *xs,     /* (WORK) Condensed sample table with {n} entries, or {NULL}. */
+    int32_t *ws,    /* (WORK) Condensed weight table with {n} entries, or {NULL}. */
+    int32_t *kx     /* (WORK) Index table with {n} entries, or {NULL}. */
+  )
+  {
+    bool_t debug = FALSE;
+    
+    demand (n >= 0, "invalid sample count {n}");
+    int32_t ns = 0;
+    double xm = NAN;
+    if (n > 0)
+      { /* Provide work arrays if needed, and remember those to be freed: */
+        double *xs_alloc = NULL;
+        if (xs == NULL) { xs_alloc = talloc(n, double); xs = xs_alloc; }
+        int32_t *ws_alloc = NULL;
+        if (ws == NULL) { ws_alloc = talloc(n, int32_t); ws = ws_alloc; }
+        int32_t *kx_alloc = NULL;
+        if (kx == NULL) { kx_alloc = talloc(n, int32_t); kx = kx_alloc; }
+
+        /* Create a trivial index set {kx[0..n-1]}: */
+        for (int32_t j = 0; j < n; j++) { kx[j] = j; }
+        
+        /* Sort the index set: */
+        wt_median_index_set_sort(n, x, n, kx, n);
+
+        /* Gather distinct samples, sorted, with nonzero weights: */
+        ns = wt_median_gather_samples(n, x, 0, n, w, kx, xs, ws);
+        if (debug) { fprintf(stderr, "    ns = %d\n", ns); }
+        if (debug)
+          { fprintf(stderr, "    xs = \n"); 
+            for (int32_t ks = 0; ks < ns; ks++) { fprintf(stderr, " %+14.8f", xs[ks]); }
+            fprintf(stderr, "\n"); 
+            fprintf(stderr, "    ws = \n"); 
+            for (int32_t ks = 0; ks < ns; ks++) { fprintf(stderr, " %14d", ws[ks]); }
+            fprintf(stderr, "\n"); 
+          }
+    
+        /* Compute median: */
+        xm = wt_median_sorted(ns, xs, ws, interp);
+        
+        /* Free internally allocated storage: */
+        if (xs_alloc != NULL) { free(xs_alloc); }
+        if (ws_alloc != NULL) { free(ws_alloc); }
+        if (kx_alloc != NULL) { free(kx_alloc); }
       }
-      
-    /* Return {nt} or cleanup: */
-    if (tx == kx)
-      { (*nk_P) = nw; }
-    else
-      { free(tx); }
+    /* Return results: */
+    if (ns_P != NULL) { (*ns_P) = ns; }
     return xm;
   }
-    
-int32_t wt_median_index_set_update(int32_t nt, int32_t tx[], int32_t nx, int32_t ix, int32_t nw)
-  { bool_t debug = TRUE;
-  
-    demand((nw >= 1) && ((nw % 2) == 1), "invalid window width {nw}");
-    int32_t hw = nw/2;
-    demand((ix-hw >= 0) && (ix+hw < nx), "window spills outside {0..nx-1}");
-    
-    demand((nt >= 0) && (nt <= nx), "invalid index set size {nt}");
-    int32_t nt_add = -1; /* Indices that were added to {tx[0..nt-1]}. */
-    if (nt == 0)
-      { if (debug) { fprintf(stderr, "  index set was empty\n"); }
-        for (int32_t k = -hw; k <= +hw; k++) { tx[nt] = ix + k; nt++; }
-        nt_add = nw;
-      }
-    else
-      { int32_t tx_min = INT32_MAX, tx_max = INT32_MIN;  /* Min and max valid indices in {tx[0..nt-1]}. */
 
-        /* Remove from {tx[0..nt-1]} the indices that are outside the window: */
-        /* Also find min and max indices {tx_min,tx_max} in remaining set: */
-        int32_t mt = 0;
-        for (int32_t jt = 0; jt < nt; jt++)
-          { int32_t txj = tx[jt];
-            demand((txj >= 0) && (txj < nx), "invalid index in {kx[..]}");
-            if ((txj >= ix-hw) && (txj <= ix+hw))
-              { tx[mt] = txj; mt++;
-                if (txj < tx_min) { tx_min = txj; }
-                if (txj > tx_max) { tx_max = txj; }
+int32_t wt_median_gather_samples
+  ( int32_t nx,     /* Count of samples. */
+    double x[],     /* The samples are {x[0..nx-1]}. */
+    int32_t ix,     /* Lowest sample index in window. */
+    int32_t nw,     /* Window width. */
+    int32_t w[],    /* The window weights are {w[0..nw-1]}. */
+    int32_t kx[],   /* The previously sorted window indices are {kx[0..nw-1]}. */
+    double xs[],    /* (OUT) the rearrranged and condensed samples are {xs[0..*ns-1]}. */
+    int32_t ws[]    /* (OUT) the corresponding weights are {ws[0..*ns-1]}. */
+  )
+  {
+    bool_t debug = FALSE;
+    
+    double x_prev = -INF;
+    int32_t ns = 0;
+    for (int32_t ik = 0; ik < nw; ik++)
+      { int32_t jx = kx[ik];
+        demand((jx >= 0) && (jx < nx), "invalid index in {kx}");
+        double xj = x[jx];
+        demand(isfinite(xj), "sample value is not finite");
+        demand(xj >= x_prev, "list {kx} is not sorted by sample value");
+        int32_t iw = jx - ix;
+        demand((iw >= 0) && (iw < nw), "index in {kx} lies outside the window");
+        int32_t wi = w[iw];
+        demand(wi >= 0, "weight is negative");
+        if (wi > 0)
+          { /* Append or condense to {xs,ws}: */
+            if (xj != x_prev)
+              { xs[ns] = xj; ws[ns] = 0; 
+                ns++;
               }
-          }
-        if (debug) { fprintf(stderr, "  removed %d indices, left %d", nt - mt, mt); }
-        if (mt != 0) 
-          { if (debug) { fprintf(stderr, "  = {%d..%d}", tx_min, tx_max); }
-            demand(mt == tx_max - tx_min + 1, "indices {kx[..]} are not consecutive");
-          }
-        if (debug) { fprintf(stderr, "\n"); }
-        demand(mt <= nw, "there are repeated indices in {kx[..]}");
-        nt = mt;
-        
-        /* Complete {tx[0..nt-1]} to the set of all window indices: */
-        nt_add = nw - nt;
-        if (nt == 0)
-          { for (int32_t k = -hw; k <= +hw; k++) { tx[nt] = ix + k; nt++; } }
-        else
-          { /* Complete the set of window indices: */
-            assert((tx_min >= ix-hw) && (tx_max <= ix+hw));
-            if (debug && (tx_min > ix-hw)) { fprintf(stderr, "  adding {%d..%d}\n", ix-hw, tx_min-1); }
-            while(tx_min > ix-hw) { tx_min--; tx[nt] = tx_min; nt++; }
-            if (debug && (tx_max < ix+hw)) { fprintf(stderr, "  adding {%d..%d}\n", tx_max+1, ix+hw); }
-            while(tx_max < ix+hw) { tx_max++; tx[nt] = tx_max; nt++; }
-            assert(nt == nw);
+            assert(ns > 0);
+            demand(wi <= wt_median_WSUM_MAX - ws[ns-1], "condensed weight is too big");
+            ws[ns-1] += wi;
+            if (debug) { fprintf(stderr, "    xj = %24.15e wi = %d ns = %d ws[%d] = %d\n", xj, wi, ns, ns-1, w[ns-1]); }
           }
       }
-    assert(nt_add >= 0);
-    return nt_add;
+    return ns;
+  }
+
+void wt_median_index_set_sort(int32_t nx, double x[], int32_t nw, int32_t kx[], int32_t np)
+  {
+    if (np < 5)
+      { wt_median_index_set_insertion_sort(nx, x, nw, kx); }
+    else
+      { wt_median_index_set_quick_sort(nx, x, nw, kx); }
   }
   
-void wt_median_index_set_insertion_sort(int32_t nx, double x[], int32_t nw, int32_t tx[])
+void wt_median_index_set_insertion_sort(int32_t nx, double x[], int32_t nw, int32_t kx[])
   { for (int32_t i = 1; i < nw; i++)
-      { int32_t txi = tx[i];
+      { int32_t txi = kx[i];
         int32_t j = i;
-        while ((j > 0) && (x[tx[j-1]] > x[txi])) { tx[j] = tx[j-1]; j--; }
-        tx[j] = txi;
+        while ((j > 0) && (x[kx[j-1]] > x[txi])) { kx[j] = kx[j-1]; j--; }
+        kx[j] = txi;
       }
   }
   
-void wt_median_index_set_full_sort(int32_t nx, double x[], int32_t nw, int32_t tx[])
+void wt_median_index_set_quick_sort(int32_t nx, double x[], int32_t nw, int32_t kx[])
   {
     auto int32_t compx(const void *a, const void *b);
     
-    qsort(tx, nw, sizeof(int32_t), compx);
+    qsort(kx, nw, sizeof(int32_t), compx);
     return;
     
     int32_t compx(const void *a, const void *b)
@@ -237,3 +248,4 @@ void wt_median_index_set_full_sort(int32_t nx, double x[], int32_t nw, int32_t t
           { return 0; }
       }
   }     
+
