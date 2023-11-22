@@ -1,5 +1,5 @@
 /* See {neuromat_eeg.h}. */
-/* Last edited on 2023-11-22 10:21:10 by stolfi */
+/* Last edited on 2023-11-22 10:22:32 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -13,13 +13,13 @@
 #include <jsstring.h>
 #include <neuromat_eeg.h>
 
-double **neuromat_eeg_new(int32_t nc, int32_t nt)
+double **neuromat_eeg_new(int32_t nt, int32_t nc)
   { double **val = talloc(nt, double*);
     for (int32_t it = 0; it < nt; it++) { val[it] = talloc(nc, double); }
     return val;
   }
   
-void neuromat_eeg_free(double **val, int32_t nc, int32_t nt)
+void neuromat_eeg_free(double **val, int32_t nt, int32_t nc)
   { for (int32_t it = 0; it < nt; it++) { free(val[it]); }
     free(val);
   }
