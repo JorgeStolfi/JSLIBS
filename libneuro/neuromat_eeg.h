@@ -2,7 +2,7 @@
 #define neuromat_H
 
 /* NeuroMat tools. */
-/* Last edited on 2023-11-22 10:16:55 by stolfi */
+/* Last edited on 2023-11-22 10:20:29 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -12,8 +12,8 @@
 
 double **neuromat_eeg_new(int32_t nc, int32_t nt);
   /* Allocates a (headerless) EEG data array {val} with {nc} channels and {nt} frames. 
-    The sample in channel {ic} and frame {it} will be {val[ic][it]}, for {ic} in {0..nc-1}
-    and {it} in {0..nt-1}. */
+    The sample in frame {it} and channel {ic} will be {val[it][ic]}, for
+    {it} in {0..nt-1} and {ic} in {0..nc-1}. */
 
 void neuromat_eeg_free(double **val, int32_t nc, int32_t nt);
   /* Frees the storage used by the EEG data array {val}, assumed to have {nc}
