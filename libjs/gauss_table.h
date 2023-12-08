@@ -2,7 +2,9 @@
 #define gauss_table_H
 
 /* Tools for Gaussian kernel tables */
-/* Last edited on 2020-10-11 18:53:06 by jstolfi */
+/* Last edited on 2023-11-25 19:35:06 by stolfi */
+
+/* !!! Merge into {wt_table_gaussian} !!! */
 
 #include <bool.h>
 #include <gauss_bell.h>

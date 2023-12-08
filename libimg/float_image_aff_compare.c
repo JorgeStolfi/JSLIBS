@@ -1,5 +1,5 @@
 /* See {float_image_aff_compare.h}. */
-/* Last edited on 2022-10-19 18:40:02 by stolfi */
+/* Last edited on 2023-11-25 18:19:44 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -19,7 +19,6 @@
 #include <jsmath.h>
 #include <affirm.h>
 #include <ix.h>
-#include <wt_table.h>
 #include <gauss_table.h>
 #include <float_image.h>
 #include <float_image_interpolate.h>

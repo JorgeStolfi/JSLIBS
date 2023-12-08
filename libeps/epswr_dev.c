@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2023-10-02 17:16:36 by stolfi */
+/* Last edited on 2023-12-08 08:28:18 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -1042,7 +1042,7 @@ void epswr_dev_set_pen
     pswidth = floor(pswidth/unit + 0.5)*unit;
     if (eps->pswidth != pswidth)
       { eps->pswidth = pswidth;
-        fprintf(wr, "%.3f setlinewidth\n", pswidth);
+        fprintf(wr, " %.3f setlinewidth\n", pswidth);
       }
         
     /* Set the dash pattern: */

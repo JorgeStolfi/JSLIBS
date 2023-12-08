@@ -1,5 +1,5 @@
 /* See {multifok_basis.h}. */
-/* Last edited on 2023-01-30 13:00:03 by stolfi */
+/* Last edited on 2023-11-25 17:07:54 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -11,7 +11,6 @@
 
 #include <vec.h>
 #include <jsmath.h>
-#include <wt_table.h>
 #include <affirm.h>
 #include <bool.h>
 #include <i2.h>

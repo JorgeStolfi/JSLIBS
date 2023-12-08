@@ -1,11 +1,12 @@
 /* See {neuromat_eeg_io.h}. */
-/* Last edited on 2023-10-21 21:46:12 by stolfi */
+/* Last edited on 2023-12-05 23:33:02 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
+#include <string.h>
 
 #include <fget.h>
 #include <affirm.h>
@@ -116,30 +117,52 @@ double **neuromat_eeg_data_read(FILE *rd, int32_t nskip, int32_t nread, int32_t 
     return val;
   }
 
-void neuromat_eeg_data_write(FILE *wr, int32_t nt, int32_t nc, double **val, int32_t it_ini, int32_t it_fin, int32_t it_step)
+void neuromat_eeg_data_write
+  ( FILE *wr,
+    int32_t nt,
+    int32_t nc,
+    double **val,
+    char *fmt,
+    int32_t it_ini,
+    int32_t it_fin,
+    int32_t it_step
+  )
   {
     demand((0 <= it_ini) && (it_ini <= it_fin) && (it_fin < nt), "invalid sample index range");
     demand(it_step > 0, "invalid sample index increment");
+    if ((fmt == NULL) || (strchr(fmt,'%') == NULL)) { fmt = "%14.8e"; }
     int32_t nw = 0;
     for (int32_t it = it_ini; it <= it_fin; it += it_step) 
-      { neuromat_eeg_frame_write(wr, nc, val[it]);
+      { neuromat_eeg_frame_write(wr, nc, val[it], fmt);
         nw++;
       }
     fprintf(stderr, "wrote %d data frames\n", nw);
     fflush(wr);
   }
 
-void neuromat_eeg_frame_write(FILE *wr, int32_t nc, double val[])
-  { for (int32_t ic = 0; ic < nc; ic++) { fprintf(wr, " %15.7e", val[ic]); }
+void neuromat_eeg_frame_write(FILE *wr, int32_t nc, double val[], char *fmt)
+  { if ((fmt == NULL) || (strchr(fmt,'%') == NULL)) { fmt = "%14.8e"; }
+    for (int32_t ic = 0; ic < nc; ic++) 
+      { fputc(' ', wr); fprintf(wr, fmt, val[ic]); }
     fprintf(wr, "\n");
   }
 
-void neuromat_eeg_frame_print(FILE *wr, char *pre, int32_t nc, char **chname, double val[], char *sep, char *suf)
+void neuromat_eeg_frame_print
+  ( FILE *wr,
+    char *pre,
+    int32_t nc,
+    char **chname,
+    double val[],
+    char *fmt,
+    char *sep,
+    char *suf
+  )
   { if (pre != NULL) { fprintf(wr, "%s", pre); }
+    if ((fmt == NULL) || (strchr(fmt,'%') == NULL)) { fmt = "%14.8e"; }
     for (int32_t i = 0; i < nc; i++)
       { if ((i > 0) && (sep != NULL)) { fprintf(wr, "%s", sep); } 
         if (chname != NULL) { fprintf(wr, "%s = ", chname[i]); }
-        fprintf(wr, "%14.8e", val[i]);
+        fprintf(wr, fmt, val[i]);
       }
     if (suf != NULL) { fprintf(wr, "%s", suf); }
   }

@@ -1,7 +1,7 @@
-/* See wt_window_median.h */
-/* Last edited on 2023-11-21 18:16:49 by stolfi */
+/* See wt_median_window.h */
+/* Last edited on 2023-11-23 16:02:10 by stolfi */
 
-#define wt_window_median_C_COPYRIGHT \
+#define wt_median_window_C_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
 
 #define _GNU_SOURCE
@@ -16,9 +16,9 @@
 #include <jsmath.h>
 #include <wt_median.h>
 
-#include <wt_window_median.h>
+#include <wt_median_window.h>
 
-double wt_window_median
+double wt_median_window
   ( int32_t nx,
     double x[],
     int32_t ix,
@@ -32,16 +32,27 @@ double wt_window_median
     int32_t ws[]
   )
   {
-    int32_t np = wt_window_median_index_set_update(nx, ix, nw, nk, kx);
+    bool_t debug = FALSE;
+    
+    int32_t np = wt_median_window_index_set_update(nx, ix, nw, nk, kx);
     wt_median_index_set_sort(nx, x, nw, kx, np);
     int32_t ns = wt_median_gather_samples(nx, x, ix, nw, w, kx, xs, ws);
+    if (debug)
+      { fprintf(stderr, "    xs[0..%d] = ", ns-1);
+        for (int32_t js = 0; js < ns; js++)
+          { fprintf(stderr, " %24.16e", xs[js]);
+            if (js > 0) { assert(xs[js] > xs[js-1]); }
+          }
+        fprintf(stderr, "\n");
+      }
+            
     double xm = wt_median_sorted(ns, xs, ws, interp);
     
     (*ns_P) = ns;
     return xm;
   }
 
-int32_t wt_window_median_index_set_update
+int32_t wt_median_window_index_set_update
   ( int32_t nx,     /* Count of samples. */
     int32_t ix,     /* Index of first sample in window. */
     int32_t nw,     /* Window width. */

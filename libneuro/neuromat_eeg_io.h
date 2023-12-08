@@ -2,7 +2,7 @@
 #define neuromat_eeg_io_H
 
 /* Reading plain-text NeuroMat EEG signals. */
-/* Last edited on 2023-10-21 21:46:05 by stolfi */
+/* Last edited on 2023-12-05 23:34:13 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -60,27 +60,62 @@ double **neuromat_eeg_data_read(FILE *rd, int32_t nskip, int32_t nread, int32_t 
     of data frames actually read (excluding all '#'-comments and header
     lines). */
     
-void neuromat_eeg_data_write(FILE *wr, int32_t nt, int32_t nc, double **val, int32_t it_ini, int32_t it_fin, int32_t it_step);
+void neuromat_eeg_data_write
+  ( FILE *wr,
+    int32_t nt,
+    int32_t nc,
+    double **val,
+    char *fmt,
+    int32_t it_ini,
+    int32_t it_fin,
+    int32_t it_step
+  );
   /* Assumes that {val[0..nt-1][0..nc-1]} is an EEG dataset consisting
-    of {nc} analog signals sampled at {nt} equally spaced moments. 
+    of {nt} frames each with {nc} analog signals. 
+    
     Writes to {wr} the samples {val[it][0..nc-1]} where {it} 
     begins with {it_ini}, increases by {it_step} and does not exceed {it_fin}.
     Requires {0 <= it_ini <= it_fin < nt} and {it_step > 0}.
     
-    The values are written in "%e" format with 8 significant digits, separated by 
-    blanks.  Does not write any header or trailer. */
+    Each frame is written with {neuromat_eeg_frame_write(wr,nc,val[it],fmt)}
+    Does not write any header or trailer. */
       
-void neuromat_eeg_frame_write(FILE *wr, int32_t nc, double val[]);
-  /* Assumes that {val[0..nc-1]} is an EEG data frame consisting of
-    {nc} analog signal samples. Writes to {wr} the samples
-    {val[0..nc-1]}. The values are written in "%e" format with 8
-    significant digits, separated by blanks. */
+void neuromat_eeg_frame_write(FILE *wr, int32_t nc, double val[], char *fmt);
+  /* Assumes that {val[0..nc-1]} is an EEG data frame consisting of {nc}
+    analog signal samples. Writes to {wr} the samples {val[0..nc-1]}.
     
-void neuromat_eeg_frame_print(FILE *wr, char *pre, int32_t nc, char **chname, double val[], char *sep, char *suf);
+    Each value is written with the format {fmt}, which must include
+    exactly one '%' float {printf} format spec ('e' or 'f'). If {fmt} is
+    null or empty, provides the default "%14.8e". An extra blank is always written
+    between values. */
+    
+void neuromat_eeg_frame_print
+  ( FILE *wr,
+    char *pre,
+    int32_t nc,
+    char **chname,
+    double val[],
+    char *fmt,
+    char *sep,
+    char *suf
+  );
   /* Prints to {wr} the samples {val[0..nc-1]}.  The list is preceded by the 
     string {pre}, closed with the string {suf}, and values are separated by {sep};
     if any of these strings is null, it is omitted. 
-    Each sample {val[i]} ispreceded by "{chname[i]} = " if {chname} is not null.  */
+    
+    If {chname} is not null, each sample {val[i]} will be preceded by "{chname[i]} = " if.
+    Each value is written with the format {fmt}, which must include
+    exactly one '%' float {printf} format spec ('e' or 'f'). If {fmt} is
+    null or empty, provides the default "%14.8e". */
+    
+#define neuromat_eeg_io_FORMAT_OPT_HELP \
+  "[ -format {FMT} ]"
 
-
+#define neuromat_eeg_io_FORMAT_OPT_INFO(default) \
+  " -format {FMT}\n" \
+  "    This optional argument specifies the format for the data samples in" \
+  " output files. The string {FMT} must include exactly" \
+  " one {printf}-sryle '%' float format spec ('e' or 'f'). If omitted or empty," \
+  " it defaults to default \"" default "\"."
+  
 #endif

@@ -1,5 +1,5 @@
 /* See {r2_align_multiscale.h}. */
-/* Last edited on 2023-09-07 17:46:22 by stolfi */
+/* Last edited on 2023-11-25 18:26:15 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -17,7 +17,6 @@
 #include <jsmath.h>
 #include <affirm.h>
 #include <sve_minn.h>
-#include <wt_table.h>
 
 #include <r2_align.h>
 #include <r2_align_enum.h>

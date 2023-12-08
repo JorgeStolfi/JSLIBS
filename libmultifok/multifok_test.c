@@ -1,5 +1,5 @@
 /* See {multifok_test.h}. */
-/* Last edited on 2023-04-28 18:52:06 by stolfi */
+/* Last edited on 2023-11-26 07:01:52 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -11,6 +11,7 @@
 
 #include <bool.h>
 #include <wt_table.h>
+#include <wt_table_hann.h>
 #include <affirm.h>
 #include <interval.h>
 #include <fget.h>
@@ -165,8 +166,8 @@ void multifok_test_images_make
    
     /* Pixel sampling weights: */
     double wp[NP];
-    bool_t normalize_wp = FALSE;
-    wt_table_fill_hann(NP, wp, normalize_wp);
+    wt_table_hann_fill(NP, 0.0, wp, NULL);
+    wt_table_normalize_sum(NP, wp);
     
     /* Ray tilts and weights: */
     int32_t NR; /* Actual number of aperture rays. */

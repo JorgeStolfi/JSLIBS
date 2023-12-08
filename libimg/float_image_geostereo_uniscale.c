@@ -1,5 +1,5 @@
 /* See {float_image_geostereo.h}. */
-/* Last edited on 2022-10-30 19:45:11 by stolfi */
+/* Last edited on 2023-11-26 06:43:05 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -12,6 +12,7 @@
 #include <bool.h>
 #include <affirm.h>
 #include <wt_table.h>
+#include <wt_table_binomial.h>
 #include <float_image.h>
 #include <float_image_geostereo.h>
 
@@ -48,9 +49,10 @@ void float_image_geostereo_uniscale
     
     /* Window pixel weight table: */
     double *wt = notnull(malloc(npix*sizeof(double)), "no mem");
-    bool_t norm = TRUE;
-    double wtx[nwx]; wt_table_fill_binomial(nwx, wtx, norm);
-    double wty[nwy]; wt_table_fill_binomial(nwy, wty, norm);
+    double wtx[nwx]; wt_table_binomial_fill(nwx, wtx, NULL);
+    wt_table_normalize_sum(nwx, wtx);
+    double wty[nwy]; wt_table_binomial_fill(nwy, wty, NULL);
+    wt_table_normalize_sum(nwy, wty);
     for (int32_t iy = 0; iy < nwy; iy++)
       { for (int32_t ix = 0; ix < nwx; ix++)
           { wt[ix + nwx*iy] = wtx[ix]*wty[iy]; }

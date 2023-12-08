@@ -1,5 +1,5 @@
 /* See wt_median.h */
-/* Last edited on 2023-11-21 18:28:00 by stolfi */
+/* Last edited on 2023-11-23 15:53:40 by stolfi */
 
 #define wt_median_C_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
@@ -208,6 +208,7 @@ int32_t wt_median_gather_samples
             ws[ns-1] += wi;
             if (debug) { fprintf(stderr, "    xj = %24.15e wi = %d ns = %d ws[%d] = %d\n", xj, wi, ns, ns-1, w[ns-1]); }
           }
+        x_prev = xj;
       }
     return ns;
   }

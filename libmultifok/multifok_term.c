@@ -1,5 +1,5 @@
 /* See {multifok_term.h}. */
-/* Last edited on 2023-10-14 21:10:14 by stolfi */
+/* Last edited on 2023-11-25 17:07:41 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -10,7 +10,6 @@
 #include <assert.h>
 
 #include <vec.h>
-#include <wt_table.h>
 #include <affirm.h>
 #include <bool.h>
 #include <fget.h>

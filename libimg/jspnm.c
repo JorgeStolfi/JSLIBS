@@ -1,5 +1,5 @@
 /* See jspnm.h */
-/* Last edited on 2023-02-25 16:07:43 by stolfi */
+/* Last edited on 2023-11-26 07:10:18 by stolfi */
 
 #define _GNU_SOURCE
 #include <limits.h>
@@ -299,7 +299,7 @@ double pnm_floatize(uint16_t ival, uint16_t maxval, bool_t isMask, uint32_t badv
 
 double *pnm_make_floatize_table(uint16_t maxval, bool_t isMask, uint32_t badval)
   { uint32_t size = ((uint32_t)maxval) + 1;
-    double *cvt = rn_alloc(size);
+    double *cvt = talloc(size, double);
     int intval;
     for (intval = 0; intval <= maxval; intval++)
       { cvt[intval] = pnm_floatize((uint16_t)intval, maxval, isMask, badval); }

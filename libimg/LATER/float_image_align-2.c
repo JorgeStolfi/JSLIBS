@@ -1,5 +1,5 @@
 /* See {float_image_align.h}. */
-/* Last edited on 2012-01-22 15:22:45 by stolfilocal */
+/* Last edited on 2023-11-25 18:20:29 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -18,7 +18,6 @@
 #include <affirm.h>
 #include <float_image.h>
 #include <sve_minn.h>
-#include <wt_table.h>
 
 #include <float_image_align.h>
 

@@ -2,7 +2,7 @@
 #define float_image_paint_H
 
 /* Tools for drawing into float images. */
-/* Last edited on 2023-04-23 11:28:32 by stolfi */ 
+/* Last edited on 2023-11-26 06:42:18 by stolfi */ 
 
 #include <bool.h>
 #include <ellipse_crs.h>
@@ -17,6 +17,14 @@
   {nx = A->sz[1]} and {ny = A->sz[2]}. Each pixel with indices {(x,y)}
   is conceptually a square with side 1, whose corners are {(x,y)} and
   {(x+1,y+1)}, and whose center is {(x+0.5,y+0.5)}.   */
+  
+/* RETURN VALUES
+    
+    The return value of all these procedures is the sum of the opacities
+    of the overlaid samples (between 0 = transparent, 1 = opaque);
+    namely, the value of the {mask} function, clipped to the range
+    {[0_1]} and antialiased as above. This value is computed even if {A}
+    is {NULL}. */
    
 double float_image_paint_sample
   ( float_image_t *A, 
@@ -47,11 +55,7 @@ double float_image_paint_sample
     pixels centered on pixel {ix,iy}, with C1 piecewise quadratic
     weights.  In particular, if {m} is zero, samples {func} and 
     {mask} only at the center of the pixel.  If {m} is 1, samples them
-    at the pixel center, corners, and edge midpoints.
-    
-    The return value is the opacity of the overlaid sample (between 0 = transparent,
-    1 = opaque); namely, the value of the {mask} function, clipped to the
-    range {[0_1]} and antialiased as above.  */
+    at the pixel center, corners, and edge midpoints.  */
 
 double float_image_paint_samples
   ( float_image_t *A, 
@@ -65,10 +69,7 @@ double float_image_paint_samples
     int m
   );
   /* Applies {float_image_paint_sample} to all pixels {ix,iy}
-    with {ix} in {xLo..xHi} and {iy} in {yLo..yHi}.
-    
-    The return value is the sum of the opacities of the overlaid 
-    samples. */
+    with {ix} in {xLo..xHi} and {iy} in {yLo..yHi}. */
 
 /* SYMBOL PAINTING
 
@@ -88,9 +89,7 @@ double float_image_paint_samples
   {hwd} is zero.
 
   The shape is antialiased by taking {2*m+1} subsamples per pixel
-  along each axis, as per {float_image_paint_sample}. 
-  
-  The return value is the total opacity of the overlaid samples. */
+  along each axis, as per {float_image_paint_sample}.  */
 
 double float_image_paint_rectangle
   ( float_image_t *A, 

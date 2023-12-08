@@ -1,5 +1,5 @@
 /* See jsstring.h */
-/* Last edited on 2023-10-15 03:31:23 by stolfi */
+/* Last edited on 2023-11-25 10:30:01 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -17,6 +17,14 @@ int32_t isprefix(const char *s, const char *t)
   { while (((*s)!='\000') &&((*t)!='\000') && ((*s) == (*t)))
       { s++; t++; }
     return (*s) == '\000';
+  }
+
+char *prefix(const char *s, int32_t len)
+  { demand((len >= 0) && (len <= strlen(s)), "invalid {len}");
+    char *r = NULL;
+    asprintf(&r, "%.*s", len, s);
+    assert((r != NULL) && strlen(r) == len);
+    return r;
   }
 
 char *txtcat (const char *a, const char *b)

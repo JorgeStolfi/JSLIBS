@@ -2,7 +2,7 @@
 #define PROG_DESC "Fourier analysis of DNA signal filtering routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-10-01 19:48:30 by stolfi */
+/* Last edited on 2023-11-26 06:55:11 by stolfi */
 
 #define test_dnae_fourier_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -11,8 +11,8 @@
   PROG_NAME " \\\n" \
   "  -maxLevel {MAX_LEVEL} \\\n" \
   "  -numPoints {N_POINTS} \\\n" \
-  "  -initFilter " wt_table_args_HELP " \\\n" \
-  "  -incrFilter " wt_table_args_HELP " \\\n" \
+  "  -initFilter " wt_table_args_parse_weights_HELP " \\\n" \
+  "  -incrFilter " wt_table_args_parse_weights_HELP " \\\n" \
   "  [ -plotSize {PLOT_WIDTH} {PLOT_HEIGHT} ] \\\n" \
   "  [ -fontSize {FONT_SIZE} ] \\\n" \
   "  {OUT_NAME}"
@@ -51,12 +51,12 @@
   " number of data points (nucleotide bases)" \
   " to use at the lowest (unfiltered) scale.\n" \
   "\n" \
-  "  -initFilter " wt_table_args_HELP " \n" \
-  "  -incrFilter " wt_table_args_HELP " \n" \
+  "  -initFilter " wt_table_args_parse_weights_HELP " \n" \
+  "  -incrFilter " wt_table_args_parse_weights_HELP " \n" \
   "    These mandatory arguments specify the" \
   " weights of the filter to be used at the" \
   " first filtering step and at subsequent" \
-  " filtering steps.  " wt_table_args_norm_sum_INFO "\n" \
+  " filtering steps.  " wt_table_args_parse_weights_norm_sum_INFO "\n" \
   "\n" \
   "  -plotSize {PLOT_WIDTH} {PLOT_HEIGHT} \n" \
   "    This optional argument specifies the width and height of the" \
@@ -98,6 +98,7 @@
 #include <affirm.h>
 #include <vec.h>
 #include <wt_table.h>
+#include <wt_table_args_parse.h>
 #include <rn.h>
 
 #include <msm_multi.h>
@@ -220,12 +221,13 @@ int32_t main(int32_t argc, char**argv)
     dnae_plot_spectra(dnaP, NULL, NULL, fMax, 0, dnaMax, FALSE, hSz, vSz, fSz, o->outName, 0, "-db");
     
     fprintf(stderr, "computing the power spectra of the two filters ...\n");
-    wt_table_print(stderr, "initial", o->w0.ne, o->w0.e, 2);
+    int32_t stride = 2;
+    wt_table_print(stderr, "initial", o->w0.ne, o->w0.e, stride);
     double w0P[fMax+1];
     dnae_compute_filter_spectrum(o->w0.ne, o->w0.e, N, w0P);
     dnae_plot_spectra(w0P, NULL, NULL, fMax, 0, wMax, FALSE, hSz, vSz, fSz, o->outName, 0, "-f0");
 
-    wt_table_print(stderr, "incremental", o->w1.ne, o->w1.e, 2);
+    wt_table_print(stderr, "incremental", o->w1.ne, o->w1.e, stride);
     double w1P[fMax+1];
     dnae_compute_filter_spectrum(o->w1.ne, o->w1.e, N, w1P);
     dnae_plot_spectra(w1P, NULL, NULL, fMax, 0, wMax, FALSE, hSz, vSz, fSz, o->outName, 0, "-f1");
@@ -588,10 +590,10 @@ options_t* dnae_get_options(int32_t argc, char**argv)
     o->numPoints = (int32_t)argparser_get_next_int(pp, 0, (1 << 18));
 
     argparser_get_keyword(pp, "-initFilter");
-    o->w0 = wt_table_args_parse(pp, TRUE);
+    o->w0 = wt_table_args_parse_weights(pp, TRUE);
 
     argparser_get_keyword(pp, "-incrFilter");
-    o->w1 = wt_table_args_parse(pp, TRUE);
+    o->w1 = wt_table_args_parse_weights(pp, TRUE);
 
     if (argparser_keyword_present(pp, "-plotSize"))
       { o->plotSize_h = argparser_get_next_double(pp, 20.0, 1000.0);

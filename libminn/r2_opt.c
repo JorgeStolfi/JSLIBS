@@ -1,5 +1,5 @@
 /* See {r2_opt.h}. */
-/* Last edited on 2023-02-27 10:35:10 by stolfi */
+/* Last edited on 2023-11-25 17:16:03 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -16,7 +16,6 @@
 #include <i2.h>
 #include <jsmath.h>
 #include <affirm.h>
-#include <wt_table.h>
 
 #include <sve_minn.h>
 

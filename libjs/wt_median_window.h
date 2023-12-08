@@ -1,10 +1,10 @@
-#ifndef wt_window_median_H
-#define wt_window_median_H
+#ifndef wt_median_window_H
+#define wt_median_window_H
 
 /* Running median filter tools */
-/* Last edited on 2023-11-21 09:47:03 by stolfi */
+/* Last edited on 2023-11-22 11:01:30 by stolfi */
 
-#define wt_window_median_H_COPYRIGHT \
+#define wt_median_window_H_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
 
 #define _GNU_SOURCE
@@ -15,10 +15,10 @@
 #include <bool.h>
 #include <argparser.h>
 
-#define wt_window_median_WSUM_MAX (INT32_MAX/2 - 1)
+#define wt_median_window_WSUM_MAX (INT32_MAX/2 - 1)
   /* Maximum allowed weight sum. */
     
-double wt_window_median
+double wt_median_window
   ( int32_t nx,    /* Total number of samples. */ 
     double x[],    /* Samples are {x[0..nx-1]}. */
     int32_t ix,    /* First sample in window. */
@@ -40,7 +40,7 @@ double wt_window_median
     {ws[0..ns-1]}, respectively, and the count {ns} is returned in
     {*ns_P}.  These vectors must have at least {nw} elements each.
     
-    The {interp} parameter has the same meaning as in {wt_window_median}. Note
+    The {interp} parameter has the same meaning as in {wt_median_window}. Note
     that samples with zero weight are ignored for all purposes, so that
     the result is either a sample value with nonzero weight or is
     interpolated between the two closest values with nonzero weight that
@@ -49,17 +49,17 @@ double wt_window_median
     The parameters {nk} and {kx} are hints that can be used to speed up
     the computation.  On entry, {kx[0..nk-1]} should be a list
     of distinct consecutive indices in the range {0..nx-1}. The
-    procedure updates that list with {wt_window_median_index_set_update}, so
+    procedure updates that list with {wt_median_window_index_set_update}, so
     that is becomes a permutation of {ix..jx}. It is OK if {nk} is
     zero or greater than {nw}, but the vector {kx} must have at least
     {nw} elements. The procedure then sorts {kx[0..nw-1]} with
     {wt_median_index_set_sort}, so that {x[kx[k]]} is strictly
     non-decreasing as {k} ranges from 0 to {nw-1}. The vector {kx} is
-    then used for {wt_window_median_gather_samples}. When computing multiple
+    then used for {wt_median_window_gather_samples}. When computing multiple
     medians of  multiple overlapping windows, the use of {kx} between
     successive windows may reduce the sorting time substantially. */
 
-int32_t wt_window_median_index_set_update
+int32_t wt_median_window_index_set_update
   ( int32_t nx,     /* Count of samples. */
     int32_t ix,     /* Index of first sample in window. */
     int32_t nw,     /* Window width. */

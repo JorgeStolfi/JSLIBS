@@ -1,4 +1,4 @@
-/* Last edited on 2023-03-18 10:57:32 by stolfi */ 
+/* Last edited on 2023-11-26 07:09:50 by stolfi */ 
 /* Test of the {ppv_array_blur.h} module. */
 
 #define _GNU_SOURCE
@@ -15,6 +15,7 @@
 #include <jsrandom.h>
 #include <jsstring.h>
 #include <wt_table.h>
+#include <wt_table_hann.h>
 #include <uint16_image.h>
 #include <uint16_image_write_png.h>
 
@@ -61,9 +62,12 @@ void pbt_do_test(ppv_dim_t d, int32_t radius, int32_t stride)
     
     /* Create the weight table: */
     int32_t szw = 2*radius + 1;
-    bool_t norm = TRUE;
     double wt[szw]; /* Hahn weight table, sums to 1. */
-    wt_table_fill_hann(szw, wt, norm);
+    int32_t stride_nat;
+    wt_table_hann_fill(szw, 0.0, wt, &stride_nat);
+    demand(stride_nat != 0, "weight table is not partition of constant");
+    demand(stride_nat % stride == 0, "given {stride} is wrong");
+    wt_table_normalize_sum(szw, wt);
     wt_table_print(stderr, "hann", szw, wt, stride);
     
     /* Create the array and fill it with a suitable test pattern: */

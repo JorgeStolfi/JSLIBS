@@ -1,5 +1,5 @@
 /* See uint16_image_Pike_F100.h */
-/* Last edited on 2022-10-30 19:44:17 by stolfi */
+/* Last edited on 2023-11-26 06:44:06 by stolfi */
 
 #include <math.h>
 #include <stdlib.h>
@@ -17,6 +17,7 @@
 #include <float_image_from_uint16_image.h>
 #include <float_image_to_uint16_image.h>
 #include <wt_table.h>
+#include <wt_table_binomial.h>
 #include <sample_conv.h>
 
 uint16_image_t *uint16_image_Pike_F100_read(char *name, bool_t verbose)
@@ -310,8 +311,8 @@ uint16_image_t *pnm_Pike_F100_bayer_channel_white_mask(uint16_image_t *img, bool
     int hw = 64;     /* Window half-width */
     int nw = 2*hw-1; /* Window width */
     double wt[nw];   /* One-dimensional window weights. */
-    bool_t norm = TRUE;
-    wt_table_fill_binomial(nw, wt, norm);
+    wt_table_binomial_fill(nw, wt, NULL);
+    wt_table_normalize_sum(nw, wt);
     double bias = 4.0/256.0; /* A reasonable black level. */
     double base = 2.0;
     int chn;

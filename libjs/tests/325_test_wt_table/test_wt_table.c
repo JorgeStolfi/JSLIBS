@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {wt_table.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-11-04 18:55:17 by stolfi */ 
+/* Last edited on 2023-11-26 05:52:40 by stolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_hermite3_COPYRIGHT \
@@ -23,6 +23,12 @@
 #include <affirm.h>
 
 #include <wt_table.h>
+#include <wt_table_generic.h>
+#include <wt_table_gaussian.h>
+#include <wt_table_hann.h>
+#include <wt_table_binomial.h>
+#include <wt_table_triangular.h>
+#include <wt_table_uniform.h>
 #include <wt_table_quantize.h>
 
 int32_t main(int32_t argn, char **argv);
@@ -46,41 +52,45 @@ void do_test_normalize_sum(int32_t n);
 void do_test_gaussian_loss(int32_t n, double sigma);
   /* Checks {wt_table_gaussian_loss}  for the given {n} and {sigma}. */
     
-void do_test_make_fill_gaussian(double sigma, double maxLoss, bool_t norm);
-  /* Check {wt_table_fill_gaussian}, {wt_table_make_gaussian} for the given
+void do_test_gaussian_fill_make(double sigma, double maxLoss);
+  /* Check {wt_table_gaussian_fill}, {wt_table_gaussian_make} for the given
     {sigma,maxLoss,norm}. */
     
-void do_test_make_fill(int32_t n, char *tname, bool_t norm);
-  /* Check {wt_table_fill_{tname}}, {wt_table_make_{tname}}
-    where {tname} is "binomial", "triangular",
-    or "hann", for the given {n,norm}. */
+void do_test_make_fill(int32_t n, wt_table_kind_t kind, double parm, bool_t norm);
+  /* Check {wt_table_fill}, {wt_table_make} for the given{kind} and parameter {parm}
+    and normalization option {norm}. */
 
-void do_test_print(int32_t n, char *tname, bool_t norm);
-  /* Generates aa table with {wt_table_make_{tname}(n,...,norm)} and prints it
-    with {wt_table_print}. */
+void do_test_print(int32_t n);
+  /* Generates a table with and prints it with {wt_table_print}. */
 
 int32_t main (int32_t argc, char **argv)
   {
     do_test_basics();
     for (int32_t n = 1; n <= 100; n = 3*n/2+1)
-      { do_test_avg_var(n);
+      { do_test_print(n);
+        do_test_avg_var(n);
         do_test_normalize_sum(n);
         do_test_convolution(n);
         double sigma = n/5.0;
+
         do_test_gaussian_loss(n, sigma);
-        do_test_quantize(n);
+        do_test_gaussian_fill_make(sigma, 0.0001);
+        do_test_gaussian_fill_make(sigma, 0.01);
         for (int32_t inorm = 0; inorm < 2; inorm++)
-          { bool_t norm = (inorm == 1);
-            do_test_print(n, "gaussian", norm);
-            do_test_print(n, "binomial", norm);
-            do_test_print(n, "triangular", norm);
-            do_test_print(n, "hann", norm);
-            do_test_make_fill_gaussian(sigma, 0.01, norm);
-            do_test_make_fill_gaussian(sigma, 0.0001, norm);
-            do_test_make_fill(n, "binomial", norm);
-            do_test_make_fill(n, "triangular", norm);
-            do_test_make_fill(n, "hann", norm);
+          { bool_t norm = (inorm > 0);
+
+            do_test_make_fill(n, wt_table_kind_GAUSSIAN, 0.25*n, norm);
+            do_test_make_fill(n, wt_table_kind_GAUSSIAN, 0.0, norm);
+            do_test_make_fill(n, wt_table_kind_TRIANGULAR, 0.0, norm);
+            do_test_make_fill(n, wt_table_kind_BINOMIAL, 0.0, norm);
+            do_test_make_fill(n, wt_table_kind_UNIFORM, 17.0, norm);
+            do_test_make_fill(n, wt_table_kind_HANN, 0.0, norm);
+            do_test_make_fill(n, wt_table_kind_HANN, 1.0, norm);
+            do_test_make_fill(n, wt_table_kind_HANN, 0.5, norm);
           }
+          
+        do_test_quantize(n);
+        
       }
     return 0;
   }
@@ -100,9 +110,12 @@ void do_test_quantize(int32_t n)
     for (int32_t pass = 0; pass < 16; pass++)
       { bool_t norm = ((pass & 1) == 0);
         if (n > 1) 
-          { double sigma = 0.25*n; wt_table_fill_gaussian(sigma, n, wf, norm); }
+          { double sigma = 0.25*n; 
+            wt_table_gaussian_fill(n, sigma, wf, NULL);
+          }
         else
-          { wt_table_fill_binomial(n, wf, norm); }
+          { wt_table_binomial_fill(n, wf, NULL); }
+        if (norm) { wt_table_normalize_sum(n, wf); }
         if ((n > 1) && ((pass & 2) == 0))
           { /* Flip half of the table: */
             for (int32_t k = 0; k < n; k++) 
@@ -202,9 +215,8 @@ void do_test_convolution(int32_t n)
     fprintf(stderr, "--- testing {wt_table_convolution}");
     fprintf(stderr, " n1 = %d n2 = %d stride = %d ---\n", n1, n2, stride);
     
-    bool_t norm = FALSE;
-    double_vec_t wt1 = wt_table_make_binomial(n1, norm);
-    double_vec_t wt2 = wt_table_make_binomial(n2, norm);
+    double_vec_t wt1 = wt_table_binomial_make(n1);
+    double_vec_t wt2 = wt_table_binomial_make(n2);
     double_vec_t ws = wt_table_convolution(n1, wt1.e, n2, wt2.e, stride);
 
     int32_t ns = ws.ne;
@@ -256,55 +268,38 @@ void do_test_gaussian_loss(int32_t n, double sigma)
     assert(fabs(1 - (win+wot)) < 1.0e-10);
   }
     
-void do_test_make_fill_gaussian(double sigma, double maxLoss, bool_t norm)
+void do_test_gaussian_fill_make(double sigma, double maxLoss)
   {
-    fprintf(stderr, "--- testing {wt_table_fill_gaussian}, {wt_table_make_gaussian}");
-    fprintf(stderr, " sigma = %22.18f maxLoss = %22.18f norm = %c---\n", sigma, maxLoss, "FT"[norm]);
+    fprintf(stderr, "--- testing {wt_table_gaussian_fill}, {wt_table_gaussian_make} with auto {n}");
+    fprintf(stderr, " sigma = %22.18f maxLoss = %22.18f ---\n", sigma, maxLoss);
     
-    double_vec_t wm = wt_table_make_gaussian(sigma, maxLoss, norm);
+    double_vec_t wm = wt_table_gaussian_make(0, sigma, maxLoss);
     int32_t n = wm.ne;
     fprintf(stderr, "n = %d\n", n);
-    demand(n % 2 == 1, "table shoudl have odd length");
+    demand(n % 2 == 1, "table should have odd length");
     double wf[n]; 
-    wt_table_fill_gaussian(sigma, n, wf, norm); 
-    for (int32_t k = 0; k < n; k++) { assert(wf[k] == wm.e[k]); }
-
-    if (norm)
-      { bool_t die = TRUE;
-        double tol = 1.0e-12;
-        wt_table_check_normalization(n, wf, tol, die);
-      }
+    int32_t stride;
+    wt_table_gaussian_fill(n, sigma, wf, &stride);
+    demand(stride == ((sigma == 0) || (n == 1) ? 1 : 0), "fill returned wrong {stride}");
+    for (int32_t k = 0; k < n; k++) { demand(wf[k] == wm.e[k], "fill inconsistent with make"); }
     free(wm.e);
   }
      
-void do_test_make_fill(int32_t n, char *tname, bool_t norm)
+void do_test_make_fill(int32_t n, wt_table_kind_t kind, double parm, bool_t norm)
   {
-    fprintf(stderr, "--- testing {wt_table_fill_%s}, {wt_table_make_%s}", tname, tname);
-    fprintf(stderr, " n = %d norm = %c ---\n", n, "FT"[norm]);
+    char *tname = wt_table_kind_to_string(kind);
+    fprintf(stderr, "--- testing {wt_table_fill}, {wt_table_make}\n");
+    fprintf(stderr, " kind = %s n = %d", tname, n);
+    fprintf(stderr, "  parm = %14.8f = %24.16e norm = %c ---\n", parm, parm, "FT"[norm]);
     
-    double_vec_t wm = double_vec_new(0); /* To be created with {make} function. */
     double wf[n];   /* To be created with {fill} function, if {n} is odd. */
+    double_vec_t wm = double_vec_new(0); /* To be created with {make} function. */
     int32_t stride;  /* Stride for partition of unit check. */
-    double tol = 1.0e-10;  /* Tolerance for unit sum and partition of unit checks. */
-    
-    if (strcmp(tname, "binomial") == 0)
-      { wm = wt_table_make_binomial(n, norm);
-        wt_table_fill_binomial(n, wf, norm);
-        stride = (n == 1 ? 1 : 2); 
-        tol = (n <= 40 ? 0 : 1.0e-10);  /* Shoud be exact for {n} up to 40 at least. */
-      }
-    else if (strcmp(tname, "triangular") == 0)
-      { wm = wt_table_make_triangular(n, norm);
-        wt_table_fill_triangular(n, wf, norm);
-        stride = (n % 2 == 1? (n+1)/2 : 0);
-      }
-    else if (strcmp(tname, "hann") == 0)
-      { wm = wt_table_make_hann(n, norm);
-        wt_table_fill_hann(n, wf, norm); 
-        stride = (n % 2 == 1? (n+1)/2 : 0);
-      }
-    else 
-      { assert(FALSE); }
+    wm = wt_table_make(kind, n, parm, norm, &stride);
+    int32_t stride_fill;  /* Stride for partition of unit check. */
+    wt_table_fill(kind, n, parm, wf, norm, &stride_fill);
+    demand(stride == stride_fill, "mismatched make and fill {stride}"); 
+    if (n < 20) { wt_table_print(stderr, tname, n, wf, stride_fill); }
 
     if (wm.ne != n)
       { fprintf(stderr, "** {wt_make_%s} returned wrong size = %d\n", tname, wm.ne); 
@@ -318,46 +313,58 @@ void do_test_make_fill(int32_t n, char *tname, bool_t norm)
             assert(FALSE);
           } 
       }
+      
+    if (norm)
+      { double tol_norm = 1.0e-12;
+        bool_t die = TRUE;
+        wt_table_check_normalization(n, wf, tol_norm, die);
+      }
 
-    if (tol < +INF)
-      { bool_t die = TRUE; /* Abort on error. */
-        if (norm) { wt_table_check_normalization(n, wf, tol, die); }
-        /* Check partition of unit property with shift {stride}: */
-        if (norm && (stride != 0))
-          { fprintf(stderr, "checking partition of unity property with stride %d\n", stride);
-            wt_table_check_partition_of_unity(n, wf, stride, tol, die); 
+    if (stride != 0)
+      { double tol_poc = 1.0e-10;  /* Tolerance for checking values. */
+        if (! norm)
+          { /* Some cases are exact: */
+            switch(kind)
+              { case wt_table_kind_GAUSSIAN:
+                  if (parm == 0) { /* Should be exact: */ tol_poc = 0.0; }
+                  break;
+                case wt_table_kind_BINOMIAL: 
+                  if (n <= 40) 
+                    { /* Should be exact, even with {norm}: */ tol_poc = 0.0; }
+                  else
+                    { tol_poc = 1.0e-12*wf[n/2]; }
+                  break;
+                case wt_table_kind_UNIFORM: 
+                case wt_table_kind_TRIANGULAR: 
+                  /* Exact if not normalized: */
+                  tol_poc = 0.0;
+                  break; 
+                case wt_table_kind_HANN: 
+                  if (parm == 1.0) { /* Should be exact 1.0: */ tol_poc = 0.0; }
+                  break;
+                default:
+                  assert(FALSE);
+              } 
+          }
+        bool_t die = TRUE; /* Abort on error. */
+        if (stride_fill != 0)
+          { fprintf(stderr, "checking partition of constant property with stride %d\n", stride);
+            wt_table_check_partition_of_constant(n, wf, stride, tol_poc, die); 
           }
       }
     free(wm.e);
   }
 
-void do_test_print(int32_t n, char *tname, bool_t norm)
+void do_test_print(int32_t n)
   {
-    fprintf(stderr, "--- testing {wt_table_print} tname = %s n = %d norm = %c ---\n", tname, n, "FT"[norm]);
+    fprintf(stderr, "--- testing {wt_table_print} n = %d ---\n", n);
     
     double wf[n];         
     int32_t stride;  /* Stride for partition of unit display. */
-    
-    if (strcmp(tname, "gaussian") == 0)
-      { double sigma = n/5.0;
-        wt_table_fill_gaussian(sigma, n, wf, norm); 
-        stride = 0; /* No partition of unit check. */
-      }
-    else if (strcmp(tname, "binomial") == 0)
-      { wt_table_fill_binomial(n, wf, norm); 
-        stride = (n == 1 ? 1 : 2);
-      }
-    else if (strcmp(tname, "triangular") == 0)
-      { wt_table_fill_triangular(n, wf, norm);
-        stride = (n % 2 == 1? (n+1)/2 : 0);
-      }
-    else if (strcmp(tname, "hann") == 0)
-      { wt_table_fill_hann(n, wf, norm); 
-        stride = (n % 2 == 1? (n+1)/2 : 0);
-      }
-    else 
-      { assert(FALSE); }
-
+    wt_table_binomial_fill(n, wf, &stride);
+    char *tname = NULL;
+    asprintf(&tname, "binomial(%d)", n);
     wt_table_print(stderr, tname, n, wf, stride);
+    free(tname);
   }
 

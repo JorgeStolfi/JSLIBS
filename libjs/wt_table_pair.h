@@ -2,7 +2,7 @@
 #define wt_table_pair_H
 
 /* Weight tables for filtering digital signals */
-/* Last edited on 2022-10-31 14:11:39 by stolfi */
+/* Last edited on 2023-11-25 17:16:59 by stolfi */
 
 #define wt_table_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -24,6 +24,8 @@
   
   If {verbose} is true, each procedure prints the two tables and 
   their startistical properties.
+  
+  !!! Change to use generic tables with {wt_table_kind_t}. !!!
   
   !!! These procedures should be generalized to even lengths. !!! */
 

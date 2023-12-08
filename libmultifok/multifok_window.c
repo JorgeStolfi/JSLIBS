@@ -1,5 +1,5 @@
 /* See {multifok_window.h}. */
-/* Last edited on 2023-04-28 19:22:18 by stolfi */
+/* Last edited on 2023-11-25 17:05:08 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -11,6 +11,7 @@
 
 #include <vec.h>
 #include <wt_table.h>
+#include <wt_table_binomial.h>
 #include <affirm.h>
 #include <bool.h>
 
@@ -26,8 +27,7 @@ double *multifok_window_sample_weights(int32_t NW)
     int32_t HW = (NW-1)/2;
     /* Create a unidimensional weight table: */
     double u[NW]; /* Unidimensional weights. */
-    bool_t normalize = FALSE;
-    wt_table_fill_binomial(NW, u, normalize);
+    wt_table_binomial_fill(NW, u, NULL);
 
     /* Normalize so that the central element is 1: */
     double umax = u[HW];

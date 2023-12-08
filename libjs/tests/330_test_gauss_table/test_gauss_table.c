@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {gauss_table.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-11-02 22:22:26 by stolfi */ 
+/* Last edited on 2023-11-25 19:36:42 by stolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_gauss_table_COPYRIGHT \
@@ -20,6 +20,7 @@
 #include <jsfile.h>
 #include <affirm.h>
 #include <wt_table.h>
+#include <wt_table_gaussian.h>
 
 #include <gauss_table.h>
 
@@ -55,9 +56,9 @@ void do_test_print(int32_t nw, bool_t normSum, bool_t folded)
     
     double avg = 0.37 * nw;
     double dev = 0.21 * nw;
-    double *wt = gauss_table_make(nw, avg, dev, normSum, folded);         
+    double *wt = gauss_table_make(nw, avg, dev, normSum, folded);
 
-    wt_table_print(stderr, "gauss_table_make", nw, wt, 0);
+    wt_table_print(stderr, "wt_table_gaussian_make", nw, wt, 0);
     if (normSum) { wt_table_check_normalization(nw, wt, 1.0e-8, TRUE); }
     
     /* Build a table {wc[0..nw-1]} independently of the lib: */

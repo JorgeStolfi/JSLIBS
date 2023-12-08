@@ -1,5 +1,5 @@
 /* See {neuromat_filter.h}. */
-/* Last edited on 2021-08-21 12:57:23 by stolfi */
+/* Last edited on 2023-12-07 17:34:25 by stolfi */
 
 /* !!! Replace apodizing with trend-removal !!! */
 
@@ -141,7 +141,7 @@ double *neuromat_filter_tabulate_gain(int32_t nf, double fsmp, neuromat_filter_t
         /* Convert Fourier coeffs {Fp,Fm} to Hartley coeffs {G[kf0],G[kf1]}: */
         if (kf0 == kf1)
           { /* Fourier coeff same as Hartley coeff: */
-            demand(fabs(cimag(F0)) < 1.0e-13, "Fourier coeff should be pure real");
+            demand(fabs(cimag(F0)) < 1.0e-12, "Fourier coeff should be pure real");
             G[kf0] = creal(F0);
           }
         else

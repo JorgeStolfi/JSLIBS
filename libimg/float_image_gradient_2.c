@@ -1,5 +1,5 @@
 /* See {float_image_gradient_2.h}. */
-/* Last edited on 2022-10-30 19:44:47 by stolfi */
+/* Last edited on 2023-11-26 06:43:23 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -10,6 +10,7 @@
 #include <bool.h>
 #include <affirm.h>
 #include <wt_table.h>
+#include <wt_table_binomial.h>
 #include <float_image.h>
 #include <float_image_gradient.h>
 #include <float_image_gradient_2.h>
@@ -43,8 +44,8 @@ void float_image_gradient_sqr_relative_2
     /* Weight table: */
     int hw = 2, nw = 2*hw+1;
     double wt[nw];
-    bool_t norm = TRUE;
-    wt_table_fill_binomial(nw, wt, norm);
+    wt_table_binomial_fill(nw, wt, NULL);
+    wt_table_normalize_sum(nw, wt);
  
     /* Process channel by channel: */
     int cMin = (cA >= 0 ? cA : 0);

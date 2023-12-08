@@ -1,8 +1,8 @@
 #define PROG_NAME "test_wt_median"
-#define PROG_DESC "test of {wt_median.h} and {wt_window_median.h}"
+#define PROG_DESC "test of {wt_median.h} and {wt_median_window.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-11-21 19:00:41 by stolfi */ 
+/* Last edited on 2023-11-25 17:19:50 by stolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_wt_median_COPYRIGHT \
@@ -22,10 +22,14 @@
 #include <jsmath.h>
 #include <jsrandom.h>
 #include <wt_table.h>
+#include <wt_table_gaussian.h>
+#include <wt_table_binomial.h>
+#include <wt_table_triangular.h>
+#include <wt_table_hann.h>
 #include <wt_table_quantize.h>
 
 #include <wt_median.h>
-#include <wt_window_median.h>
+#include <wt_median_window.h>
 
 int32_t main(int32_t argn, char **argv);
 
@@ -290,9 +294,9 @@ void twtm_test_index_set_update(int32_t nx_max, int32_t nw_max)
         for (int32_t ik = 0; ik < nk0; ik++) { kx_save[ik] = kx[ik]; }
         
         /* Update the index set: */
-        if (verbose) { fprintf(stderr, "  wt_median_index_set_update ...\n"); }
+        if (verbose) { fprintf(stderr, "  wt_median_window_index_set_update ...\n"); }
         int32_t ix1 = abrandom(0, nx - nk1);
-        int32_t np = wt_window_median_index_set_update(nx, ix1, nk1, nk0, kx);
+        int32_t np = wt_median_window_index_set_update(nx, ix1, nk1, nk0, kx);
         if (verbose && (nk1 <= 15)) { twtm_prkx(nk1, kx, np); }
 
         /* Check whether it worked: */

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of DNA signal filtering routines (also spectrum plots)"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-10-01 19:48:46 by stolfi */
+/* Last edited on 2023-11-26 06:53:10 by stolfi */
 
 #define test_dnae_filter_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -10,9 +10,9 @@
 #define PROG_HELP \
   PROG_NAME " \\\n" \
   "  -maxLevel {MAX_LEVEL} \\\n" \
-  "  -initFilter " wt_table_args_HELP " \\\n" \
+  "  -initFilter " wt_table_args_parse_weights_HELP " \\\n" \
   "  -initStep {INIT_STEP} \\\n " \
-  "  -incrFilter " wt_table_args_HELP " \\\n" \
+  "  -incrFilter " wt_table_args_parse_weights_HELP " \\\n" \
   "  [ -plotSignals ] [ -plotSpectra ] \\\n" \
   "  [ -plotSize {PLOT_WIDTH} {PLOT_HEIGHT} ] \\\n" \
   "  [ -fontSize {FONT_SIZE} ] \\\n" \
@@ -54,12 +54,12 @@
   " sequence, and each subsequent level is sampled at half" \
   " the frequency of the previous one.\n" \
   "\n" \
-  "  -initFilter " wt_table_args_HELP " \n" \
-  "  -incrFilter " wt_table_args_HELP " \n" \
+  "  -initFilter " wt_table_args_parse_weights_HELP " \n" \
+  "  -incrFilter " wt_table_args_parse_weights_HELP " \n" \
   "    These mandatory arguments specify the" \
   " weights of the filter to be used at the" \
   " first filtering step (from level 0 to level 1) and at subsequent" \
-  " filtering steps.  " wt_table_args_norm_sum_INFO "\n" \
+  " filtering steps.  " wt_table_args_parse_weights_norm_sum_INFO "\n" \
   "\n" \
   "  -initStep {INIT_STEP} \n" \
   "    This mandatory argument specifies the initial resampling step, which must" \
@@ -125,6 +125,7 @@
 #include <vec.h>
 #include <epswr.h>
 #include <wt_table.h>
+#include <wt_table_args_parse.h>
 #include <rn.h>
 
 #include <msm_multi.h>
@@ -712,10 +713,10 @@ options_t* dnae_get_options(int32_t argc, char**argv)
     argparser_process_help_info_options(pp);
     
     argparser_get_keyword(pp, "-initFilter");
-    o->w0 = wt_table_args_parse(pp, TRUE);
+    o->w0 = wt_table_args_parse_weights(pp, TRUE);
 
     argparser_get_keyword(pp, "-incrFilter");
-    o->w1 = wt_table_args_parse(pp, TRUE);
+    o->w1 = wt_table_args_parse_weights(pp, TRUE);
 
     argparser_get_keyword(pp, "-maxLevel");
     o->maxLevel = (int32_t)argparser_get_next_int(pp, 0, 20);

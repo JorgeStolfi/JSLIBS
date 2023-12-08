@@ -6,11 +6,16 @@
 #include <bool.h>
 
 /* J. Stolfi's miscellaneous string utilities. */
-/* Last edited on 2023-10-15 03:26:18 by stolfi */
+/* Last edited on 2023-11-25 10:30:10 by stolfi */
 
 int32_t isprefix(const char *s, const char *t);
   /* Returns TRUE iff the string {*s} is a prefix of {*t},
     including the cases when {*s} is empty or is equal to {*t}. */
+
+char *prefix(const char *s, int32_t len);
+  /* Returns a newly allocated string which is a copy
+    of the first {len} characters of {s}.  The {len}
+    must be non-negative and no more than {strlen(s)}. */
 
 char *txtcat (const char *a, const char *b);
   /* Returns a string that is the concatenation of {*a} and {*b}. 

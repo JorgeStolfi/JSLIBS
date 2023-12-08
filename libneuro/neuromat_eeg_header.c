@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_header.h}. */
-/* Last edited on 2023-11-02 13:16:18 by stolfi */
+/* Last edited on 2023-12-08 05:13:53 by stolfi */
   
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -77,8 +77,6 @@ void neuromat_eeg_header_write(FILE *wr, neuromat_eeg_header_t *h)
       }   
     if (h->kfmax != INT32_MIN) { neuromat_eeg_header_write_field_int(wr, "", "kfmax", h->kfmax, 0, INT32_MAX-1); }   
     if (h->ne != INT32_MIN) { neuromat_eeg_header_write_field_int(wr, "",   "ne", h->ne, 0, INT32_MAX-1); } 
-    if (h->subject != INT32_MIN) { neuromat_eeg_header_write_field_int(wr, "", "subject", h->subject, 1, INT32_MAX-1); }
-    if (h->run != INT32_MIN) { neuromat_eeg_header_write_field_int(wr, "", "run", h->run, 1, INT32_MAX-1); }
     if (h->type != NULL) 
       { demand(strlen(h->type) > 0, "empty run type");
         neuromat_eeg_header_write_field_string(wr, "", "type", h->type);
@@ -88,6 +86,8 @@ void neuromat_eeg_header_write(FILE *wr, neuromat_eeg_header_t *h)
         neuromat_eeg_header_write_field_string(wr, "", "component", h->component);
       }   
     if (! isnan(h->fsmp)) { neuromat_eeg_header_write_field_double(wr, "", "fsmp", h->fsmp, 0.01, 1.0e9); }  
+    if (h->subject != INT32_MIN) { neuromat_eeg_header_write_field_int(wr, "", "subject", h->subject, 1, INT32_MAX-1); }
+    if (h->run != INT32_MIN) { neuromat_eeg_header_write_field_int(wr, "", "run", h->run, 1, INT32_MAX-1); }
     if (h->tdeg >= 0) 
       { demand((h->tkeep == 0) || (h->tkeep == 1), "inconsistent trend preservation flag");
         fprintf(wr, "trend = %d %d\n", h->tdeg, h->tkeep);
@@ -366,6 +366,10 @@ void neuromat_eeg_header_read_field_value(FILE *rd, char *name, neuromat_eeg_hea
     else if (strcmp(name, "subject") == 0) 
       { h->subject = fget_int32(rd); 
         demand(h->subject > 0, "invalid subject number");
+      }
+    else if (strcmp(name, "run") == 0) 
+      { h->run = fget_int32(rd); 
+        demand(h->run > 0, "invalid run number");
       }
     else if (strcmp(name, "type") == 0) 
       { h->type = fget_string(rd); }

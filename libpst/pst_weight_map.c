@@ -1,5 +1,5 @@
 /* See pst_weight_map.h */
-/* Last edited on 2022-10-30 19:46:58 by stolfi */
+/* Last edited on 2023-11-26 07:11:36 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -9,6 +9,7 @@
 #include <float_image.h>
 #include <float_image_mscale.h>
 #include <wt_table.h>
+#include <wt_table_binomial.h>
 
 #include <pst_basic.h>
 #include <pst_weight_map.h>
@@ -95,9 +96,11 @@ float_image_t *pst_weight_map_slope_to_height(float_image_t *W, bool_t harmonic,
 
     /* Get the weight table: */
     double wt[nw];
-    bool_t norm = TRUE;
-    wt_table_fill_binomial(nw, wt, norm);
-    
+    int32_t stride;
+    wt_table_binomial_fill(nw, wt, &stride);
+    wt_table_normalize_sum(nw, wt);
+    assert(stride == (nw - 1)/2);
+
     /* Compute displacement of window: */
     int dxy = (nw - 1)/2;
     

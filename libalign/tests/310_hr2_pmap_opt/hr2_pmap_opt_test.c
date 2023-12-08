@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {hr2_pmap_opt.h} and related modules"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-10-21 16:00:44 by stolfi */ 
+/* Last edited on 2023-11-25 18:25:31 by stolfi */ 
 /* Created on 2020-07-11 by J. Stolfi, UNICAMP */
 /* Based on {test_align.c} by J. Stolfi, UNICAMP */
 
@@ -16,7 +16,6 @@
 #include <string.h>
 #include <math.h>
 
-#include <wt_table.h>
 #include <ix.h>
 #include <r2.h>
 #include <hr2.h>

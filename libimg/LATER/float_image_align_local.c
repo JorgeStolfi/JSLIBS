@@ -1,5 +1,5 @@
 /* See {float_image_align_local.h}. */
-/* Last edited on 2022-10-30 19:45:20 by stolfi */
+/* Last edited on 2023-11-25 18:20:15 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -33,8 +33,8 @@ void float_image_align_local
     int32_t hw = ceil(2*crad);
     int32_t nw = 2*hw + 1;
     double wt[nw];
-    bool_t norm = TRUE;
-    wt_table_fill_hann(nw, wt, norm)
+    wt_table_hann_fill(nw, wt, NULL);
+    wt_table_normalize_sum(wt.ne, wt.e);
 
     auto double F2(int32_t ni1, r2_t p1[]);
       /* A quadratic mismatch function

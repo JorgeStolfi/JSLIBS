@@ -1,5 +1,5 @@
 /* See {neuromat_median_filter.h}. */
-/* Last edited on 2023-11-04 02:38:28 by stolfi */
+/* Last edited on 2023-12-05 23:44:32 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -13,7 +13,10 @@
 #include <rn.h>
 #include <jsmath.h>
 #include <wt_table.h>
+#include <wt_table_generic.h>
+#include <wt_table_quantize.h>
 #include <wt_median.h>
+#include <wt_median_window.h>
 
 #include <neuromat_median_filter.h>
  
@@ -23,49 +26,61 @@ void neuromat_median_filter_apply
     double **val, 
     double **med, 
     int32_t nw,
+    int32_t wt[],
     bool_t verbose
   )
   {
+    if (verbose) { fprintf(stderr, "  > %s nw = %d\n", __FUNCTION__, nw); }
+    
     demand((nw >= 3) && ((nw % 2) == 1), "invalid window width {nw}");
     int32_t hw = nw/2; /* Window radius. */
    
-    /* The window weights are {wt[0..2*hw_cur]}, where {hw_cur} is in {0..hw}: */
-    int32_t hw_cur = -1;  /* Current window radius. */ 
-    int32_t nw_cur = -1;  /* Current window width. */ 
-    double *wt = rn_alloc(nw);  /* Allocated with max size, use {wt[0..nw_cur-1]}. */
-    
-    double *x = rn_alloc(nt); /* Signal to be filtered. */
-    double *s = rn_alloc(nt); /* Median-smoothed signal. */
+    /* Raw samples and filtered samples: */
+    int32_t nx = nt + 2*hw;    /* Number of samples to be filtered, including mirrored ends. */
+    double *x = rn_alloc(nx);  /* Signal to be filtered, with mirrored ends. */
+    double *s = rn_alloc(nt);  /* Median-smoothed signal. */
     
     /* Indices of window samples sorted by increasing value: */
     int32_t nk; 
     int32_t kx[nw]; /* Indices of previous window are {kx[0..nk-1]} in sorted {x} order. */
     
+    /* Conslidated and sorted samples and weight: */
+    double xs[nw];  /* Sorted distinct sample values. */
+    int32_t ws[nw]; /* Consolidated weights of those values. */
+    
+    if (verbose) { fprintf(stderr, "    filtering electrodes \n"); }
     for (int32_t ie = 0; ie < ne; ie++)
-      { /* Extract electrode {ie} signal to {x[0..nt-1]}: */
-        for (int32_t it = 0; it < nt; it++) { x[it] = val[it][ie]; }
-        
+      { if (verbose) { fprintf(stderr, "."); }
+        /* Extract signal of electrode {ie} to {x[0..nt-1]}: */
+        for (int32_t ix = 0; ix < nx; ix++)
+          { int32_t it = ix - hw; /* Index of sample {x[jx]} in {val}. */
+            /* Mirror about ends: */
+            if (it < 0) { it = -it; }
+            it = it % (2*nt - 2);
+            if (it >= nt) { it = 2*nt-2 - it; }
+            assert((it >= 0) && (it < nt));
+            x[ix] = val[it][ie];
+            demand(isfinite(x[ix]), "sample is infinite or {NAN}"); 
+          }
+            
         /* Apply running median filter: */
         nk = 0;
         for (int32_t it = 0; it < nt; it++)
-          { /* Compute the window radius {hwi} and width {nwi} to use for this sample: */
-            int32_t hwi = (it < hw ? it : (it > nt - hw - 1 ?  nt - 1 - it : hw));
-            int32_t nwi = 2*hwi + 1; 
-            assert(nwi <= nw);
-            /* Make sure that the weight table has size {2*hwi+1} */
-            if (hw_cur != hwi)
-              { /* Recompute table: */
-                hw_cur = hwi; nw_cur = nwi;
-                bool_t normalize = TRUE; /* Normalize table to unit weight. */
-                wt_table_fill_hann(nw_cur, wt, normalize);
-              }
-
-            s[it] = wt_median(nt, x, it, nw_cur, wt, TRUE, &nk, kx);
+          { /* Now {x[it+hw]} is the central sample of the window. */
+            /* Check that the window fits in the sample vector: */
+            assert(it+nw-1 < nx);
+            int32_t ns = -1;
+            s[it] = wt_median_window(nx, x, it, nw, wt, TRUE, nk, kx, &ns, xs, ws);
+            assert(isfinite(s[it]));
+            assert ((ns >= 1) && (ns <= nt));
+            nk = nw;
           }
-        /* Store the smoothed signal: */
+        /* Store the median signal into {med}: */
         for (int32_t it = 0; it < nt; it++) { med[it][ie] = s[it]; }
       }
+    if (verbose) { fprintf(stderr, "\n"); }
     free(x);
     free(s);
+    if (verbose) { fprintf(stderr, "  < %s\n", __FUNCTION__); }
     return;
   }
