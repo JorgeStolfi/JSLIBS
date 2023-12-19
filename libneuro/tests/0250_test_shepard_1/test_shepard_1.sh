@@ -1,5 +1,5 @@
 #! /bin/bash
-# Last edited on 2023-10-22 03:35:51 by stolfi
+# Last edited on 2023-12-14 11:11:11 by stolfi
 
 # Tests the proper weights for unidimensional Shepard-like interpolation of first order.
 
@@ -48,8 +48,7 @@ printf "\n" >> ${wtgpl}
 
 printf "\n" >> ${basgpl}
 
-export GDFONTPATH=.
-
+export GDFONTPATH=.:${HOME}/ttf
 gnuplot << EOF
 set term png size 2800,2000 font "arial,20"
 set grid xtics lt 1 lw 3 lc rgb '#ffddaa', lt 1 lw 3.0 lc rgb '#ffddaa'

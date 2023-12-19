@@ -1,17 +1,17 @@
 #! /bin/bash
-# Last edited on 2013-11-23 00:33:08 by stolfilocal
+# Last edited on 2023-12-14 11:10:55 by stolfi
 
 initf="$1"; shift
 iterf="$1"; shift
 echo "== ${iterf}"
 
-export GDFONTPATH=.
 
 tmp=/tmp/$$
 
 bimgf="${tmp}.png" # Raw image.
 simgf="${iterf%%.*}.png" # Downscaled PNG file.
 
+export GDFONTPATH=.:${HOME}/ttf
 gnuplot <<EOF
 set term png size 1600,1600 font "arial,16"
 set output "${bimgf}"
