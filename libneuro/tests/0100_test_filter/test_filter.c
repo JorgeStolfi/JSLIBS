@@ -1,10 +1,11 @@
 /* Tests the Butterworth filter formulas. */
-/* Last edited on 2023-12-18 21:49:31 by stolfi */
+/* Last edited on 2024-01-06 08:25:37 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include <complex.h>
 #include <math.h>
 #include <assert.h>
@@ -23,7 +24,12 @@
 #include <neuromat_filter_lowpass_gauss.h>
 #include <neuromat_filter_lowpass_biquadratic.h>
 #include <neuromat_filter_lowpass_butterworth.h>
+
 #include <neuromat_filter_bandpass_log_gauss.h>
+#include <neuromat_filter_bandpass_sgerf.h>
+#include <neuromat_filter_bandpass_butterworth.h>
+#include <neuromat_filter_bandpass_biquadratic.h>
+#include <neuromat_filter_bandpass_gauss.h>
 
 typedef double tfi_function_t(double f, int32_t np);
   /* A function that returns a gain for frequency {f}.  The parameter {np} is the order
@@ -42,14 +48,23 @@ void tfi_test_hartley_fourier_conversion(void);
   /* Tests the Hartley <--> Fourier conversion functions
     {neuromat_filter_hartley_to_fourier} and {neuromat_filter_fourier_to_hartley}. */
 
+void tfi_test_clear_tiny_gains(int32_t nf, double eps);
+  /* Tests {neuromat_filter_clear_tiny_gains} with {nf} frequencies and
+    threshold {eps}. Writes a file "out/clear_tiny.txt". Each line has a
+    freq index {kf} then three sets of three numbers for the original
+    Fourier coeff {Fraw}, the cleaned Fourier coeff {Fkuk}, and the
+    difference {D} between them. Each group has the real part, imaginary
+    part, and modulus of the complex number. */
+
 void tfi_test_filters(double fsmp, double flo0, double flo1, double fhi1, double fhi0);
   /* Plots various filters with the given parameters. */
 
-void tfi_test_tabulate_filter(int32_t nf, int32_t kfil, double fsmp);
+void tfi_test_tabulate_hartley_gains(int32_t nf, char *ftype, double fsmp);
   /* Tests {neuromat_filter_tabulate_hartley_gains} with {nf} frequencies,
-    sampling frequency {fsmp}, and filter type {kfil}.  The latter 
-    is {0} for a delay filter, {1} for a gaussoid bandpass filter
-    that needs folding and tiny-gain cleanup. */
+    sampling frequency {fsmp}, and filter type {ftype}.  The latter 
+    is "UG" for unsymmetric Gaussian, "DL" for delay, "BQ", "ER", "BW" for
+    lowpass biquadratic sigmoid, erf-log-sigmoid, and Butterworth.
+    Those filters except "DL" will be subjected to folding and small-value cleanup. */
 
 void tfi_plot_function(FILE *wr, int32_t npmax, tfi_function_t *gain); 
   /* Writes to {wr} the plot of the function {gain(f,np)} varying {f} gradually from 0 to 0.5. 
@@ -86,13 +101,18 @@ int32_t main(int32_t argc, char **argv)
     tfi_test_hartley_basis();
     tfi_test_fourier_basis();
     tfi_test_hartley_fourier_conversion();
+    tfi_test_clear_tiny_gains(300, 1.0e-11);
     tfi_test_filters(fsmp, flo0, flo1, fhi1, fhi0);
     
-    for (int32_t nf = 9; nf <= 10; nf++)
-      { for (int32_t kfil = 0; kfil <= 1; kfil++)
-          { tfi_test_tabulate_filter(nf, kfil, fsmp);
-            tfi_test_tabulate_filter(50*nf, kfil, fsmp);
-          }
+    for (int32_t bnf = 9; bnf <= 10; bnf++)
+      { for (int32_t mnf = 0; mnf < 2; mnf++)
+        { int32_t nf = (mnf == 0 ? bnf : 50*bnf + (bnf % 2));
+          tfi_test_tabulate_hartley_gains(nf, "UG", fsmp);
+          tfi_test_tabulate_hartley_gains(nf, "ER", fsmp);
+          tfi_test_tabulate_hartley_gains(nf, "BQ", fsmp);
+          tfi_test_tabulate_hartley_gains(nf, "BW", fsmp);
+          tfi_test_tabulate_hartley_gains(nf, "DL", fsmp);
+        }
       }
     
     return 0;
@@ -101,7 +121,7 @@ int32_t main(int32_t argc, char **argv)
 void tfi_test_hartley_basis(void)
   { double tol = 1.0e-14;
     for (int32_t nf = 5; nf <= 6; nf++)
-      { fprintf(stderr, "  --- %s nf = %d ---\n", __FUNCTION__, nf);
+      { fprintf(stderr, "--- %s nf = %d ---\n", __FUNCTION__, nf);
         double *etai = talloc(nf, double);
         double *etaj = talloc(nf, double);
         for (int32_t jf = 0; jf < nf; jf++)
@@ -128,7 +148,7 @@ void tfi_test_hartley_basis(void)
 void tfi_test_fourier_basis(void)
   { double tol = 1.0e-14;
     for (int32_t nf = 5; nf <= 6; nf++)
-      { fprintf(stderr, "  --- %s nf = %d ---\n", __FUNCTION__, nf);
+      { fprintf(stderr, "--- %s nf = %d ---\n", __FUNCTION__, nf);
         complex *phii = talloc(nf, complex);
         complex *phij = talloc(nf, complex);
         for (int32_t jf = 0; jf < nf; jf++)
@@ -156,7 +176,7 @@ void tfi_test_fourier_basis(void)
 void tfi_test_hartley_fourier_conversion(void)
   { double tol = 1.0e-14;
     for (int32_t nf = 5; nf <= 6; nf++)
-      { fprintf(stderr, "  --- %s nf = %d ---\n", __FUNCTION__, nf);
+      { fprintf(stderr, "--- %s nf = %d ---\n", __FUNCTION__, nf);
         double *x = talloc(nf, double);      /* A random sample vector. */
         double *eta = talloc(nf, double);    /* A Hartley basis element. */
         double *H = talloc(nf, double);      /* The Hartley transform of {x}. */
@@ -235,122 +255,123 @@ void tfi_test_hartley_fourier_conversion(void)
  
 void tfi_test_filters(double fsmp, double flo0, double flo1, double fhi1, double fhi0)
   { 
-    double tiny_sgerf = 1.0e-8;
-    double fm_lo_sgerf = sqrt(flo0*flo1);
-    double sigma_lo_sgerf = neuromat_filter_lowpass_sgerf_compute_sigma(fm_lo_sgerf, flo0, tiny_sgerf);
-    double fm_hi_sgerf = sqrt(fhi0*fhi1);
-    double sigma_hi_sgerf = neuromat_filter_lowpass_sgerf_compute_sigma(fm_hi_sgerf, fhi0, tiny_sgerf);
-    fprintf(stderr, "erf: fm_lo = %16.12f  sigma_lo = %16.12f", fm_lo_sgerf, sigma_lo_sgerf);
-    fprintf(stderr, "  fm_hi = %16.12f  sigma_hi = %16.12f\n", fm_hi_sgerf, sigma_hi_sgerf);
-   
-    /* double fm_lgauss = sqrt(sqrt(flo0*flo1*fhi1*fhi0)); */ /* Mean frequency. */
-    double tiny_lgauss = 1.0e-8;
-    double fm_lgauss = fhi1; /* Mean frequency of highest hump. */
-    double sigma_lgauss = fabs(neuromat_filter_bandpass_log_gauss_compute_sigma(fm_lgauss, fhi0, tiny_lgauss));
-    int32_t np_lgauss = (int32_t)ceil(fmax(0, (log(fhi1) - log(flo1))/(2*sigma_lgauss))) + 1; /* Number of humps. */
-    fprintf(stderr, "log_gauss: fm = %16.8f  sigma = %16.8f  np = %d\n", fm_lgauss, sigma_lgauss, np_lgauss);
+    fprintf(stderr, "--- %s fsmp = %12.8f parms = %12.8f %12.8f  %12.8f %12.8f ---\n", __FUNCTION__, fsmp, flo0, flo1, fhi1, fhi0);
+    demand((0 < flo0) && (flo0 < flo1) && (flo1 < fhi1) && (fhi1 < +INF), "invalid key freqs");
     
-    double tiny_gauss = 1.0e-8;
-    double fc_lo_gauss = flo1;
-    double sigma_lo_gauss = neuromat_filter_lowpass_gauss_compute_sigma(fc_lo_gauss, tiny_gauss);
-    double fc_hi_gauss = fhi0;
-    double sigma_hi_gauss = neuromat_filter_lowpass_gauss_compute_sigma(fc_hi_gauss, tiny_gauss);
-    fprintf(stderr, "gauss: sigma_lo = %16.12f  sigma_hi = %16.12f\n", sigma_lo_gauss, sigma_hi_gauss);
-    
-    double tiny_buttw = 1.0e-8;
-    double fs_lo_buttw = (flo0 <= 0 ? 0: exp(log(flo0) + 0.05*(log(flo1) - log(flo0))));
-    double fs_hi_buttw = (fhi1 >= +INF ? +INF : exp(log(fhi1) + 0.05*(log(fhi0) - log(fhi1))));
-    int32_t ord_lo_buttw = neuromat_filter_lowpass_butterworth_compute_order(fs_lo_buttw, flo1, tiny_buttw);
-    int32_t ord_hi_buttw = neuromat_filter_lowpass_butterworth_compute_order(fs_hi_buttw, fhi0, tiny_buttw);
-    int32_t ord_buttw = (int32_t)imax(ord_lo_buttw, ord_hi_buttw);
-    fprintf(stderr, "butterworth: fs_lo = %16.12f  fs_hi = %16.12f  ord = %d\n", fs_lo_buttw, fs_hi_buttw, ord_buttw);
+    /* Filter gain functions (real): */
 
-    auto double lopa_gauss(double f, int32_t np);
-    auto double band_gauss(double f, int32_t np);
+    auto double band_lgaus(double f, int32_t np);
 
     auto double lopa_sgerf(double f, int32_t np);
     auto double band_sgerf(double f, int32_t np);
+
+    auto double lopa_gauss(double f, int32_t np);
+    auto double band_gauss(double f, int32_t np);
 
     auto double lopa_biqua(double f, int32_t np);
     auto double band_biqua(double f, int32_t np);
 
     auto double lopa_buttw(double f, int32_t np);
     auto double band_buttw(double f, int32_t np);
+    
+    /* Parameters for the filter gain functions: */
+    
+    double fm_lgaus, sigma_lgaus, fsup_lgaus, mag_lgaus; int32_t np_lgaus;
+    neuromat_filter_bandpass_log_gauss_compute_parms
+      ( flo0, flo1, fhi1, fhi0, 
+        &fm_lgaus, &np_lgaus, &sigma_lgaus, &mag_lgaus,
+        &fsup_lgaus,
+        TRUE 
+      );
+    
+    double fm_lo_sgerf, sigma_lo_sgerf, fm_hi_sgerf, sigma_hi_sgerf, fsup_sgerf;
+    neuromat_filter_bandpass_sgerf_compute_parms
+      ( flo0, flo1, fhi1, fhi0, 
+        &fm_lo_sgerf, &sigma_lo_sgerf, &fm_hi_sgerf, &sigma_hi_sgerf,
+        &fsup_sgerf,
+        TRUE 
+      );
+   
+    double fs_lo_buttw, fs_hi_buttw, fsup_buttw;
+    int32_t ord_buttw;
+    neuromat_filter_bandpass_butterworth_compute_parms
+      ( flo0, flo1, fhi1, fhi0, 
+        &fs_lo_buttw, &fs_hi_buttw, &ord_buttw, 
+        &fsup_buttw,
+        TRUE 
+      );
+    
+    double sigma_lo_gauss, sigma_hi_gauss, mag_gauss, fsup_gauss;
+    neuromat_filter_bandpass_gauss_compute_parms
+      ( flo0, flo1, fhi1, fhi0, 
+        &sigma_lo_gauss, &sigma_hi_gauss, &mag_gauss, 
+        &fsup_gauss,
+        TRUE 
+      );
 
-    auto double band_lgauss(double f, int32_t np);
-
-    tfi_plot_function_pair("LG", np_lgauss, NULL,         band_lgauss);
-
-    tfi_plot_function_pair("BQ", 1,         lopa_biqua,   band_biqua);
+    tfi_plot_function_pair("LG", np_lgaus,  NULL,         band_lgaus);
     tfi_plot_function_pair("ER", 1,         lopa_sgerf,   band_sgerf);
+    tfi_plot_function_pair("BQ", 1,         lopa_biqua,   band_biqua);
     tfi_plot_function_pair("GA", 1,         lopa_gauss,   band_gauss);
-
-    tfi_plot_function_pair("BU", ord_buttw, lopa_buttw,   band_buttw);
+    tfi_plot_function_pair("BW", ord_buttw, lopa_buttw,   band_buttw);
 
     return;
 
-    double band_lgauss(double f, int32_t np)
-      { double g = neuromat_filter_bandpass_log_gauss(f, fm_lgauss, np, -sigma_lgauss);
+    double band_lgaus(double f, int32_t np)
+      { double g = neuromat_filter_bandpass_log_gauss_eval(f, fm_lgaus, np, sigma_lgaus, mag_lgaus);
         return g;
       }
 
     double lopa_sgerf(double f, int32_t np)
-      { double g = neuromat_filter_lowpass_sgerf(f, fm_hi_sgerf, sigma_hi_sgerf);
+      { double g = neuromat_filter_lowpass_sgerf_eval(f, fm_hi_sgerf, sigma_hi_sgerf);
         return g;
       }
 
     double band_sgerf(double f, int32_t np)
-      { double ghi = neuromat_filter_lowpass_sgerf(f, fm_hi_sgerf, sigma_hi_sgerf);
-        double glo = neuromat_filter_lowpass_sgerf(f, fm_lo_sgerf, sigma_lo_sgerf);
-        double g = ghi*(1 - glo);
+      { double g = neuromat_filter_bandpass_sgerf_eval(f, fm_lo_sgerf, sigma_lo_sgerf, fm_hi_sgerf, sigma_hi_sgerf);
         return g;
       }
 
     double lopa_biqua(double f, int32_t np)
-      { double g = neuromat_filter_lowpass_biquadratic(f, fhi1, fhi0);
+      { double g = neuromat_filter_lowpass_biquadratic_eval(f, fhi1, fhi0);
         return g;
       }
 
     double band_biqua(double f, int32_t np)
-      { double ghi = neuromat_filter_lowpass_biquadratic(f, fhi1, fhi0);
-        double glo = neuromat_filter_lowpass_biquadratic(f, flo0, flo1);
-        double g = ghi*(1 - glo);
+      { double g = neuromat_filter_bandpass_biquadratic_eval(f, flo0, flo1, fhi1, fhi0);
         return g;
       }
 
     double lopa_gauss(double f, int32_t np)
-      { double g = neuromat_filter_lowpass_gauss(f, sigma_hi_gauss);
+      { double g = neuromat_filter_lowpass_gauss_eval(f, sigma_hi_gauss);
         return g;
       }
 
     double band_gauss(double f, int32_t np)
-      { double ghi = neuromat_filter_lowpass_gauss(f, sigma_hi_gauss);
-        double glo = neuromat_filter_lowpass_gauss(f, sigma_lo_gauss);
-        double g = ghi*(1 - glo);
+      { double g = neuromat_filter_bandpass_gauss_eval(f, sigma_lo_gauss, sigma_hi_gauss, mag_gauss);
         return g;
       }
 
     double lopa_buttw(double f, int32_t np)
-      { double g = neuromat_filter_lowpass_butterworth(f, fs_hi_buttw, np);
+      { double g = neuromat_filter_lowpass_butterworth_eval(f, fs_hi_buttw, np);
         return g;
       }
 
     double band_buttw(double f, int32_t np)
-      { double ghi = neuromat_filter_lowpass_butterworth(f, fs_hi_buttw, np);
-        double glo = neuromat_filter_lowpass_butterworth(f, fs_lo_buttw, np);
-        double g = ghi*(1 - glo);
+      { double g = neuromat_filter_bandpass_butterworth_eval(f, fs_lo_buttw, fs_hi_buttw, np);
         return g;
       }
-
   }
   
 void tfi_plot_function_pair(char *tag, int32_t npmax, tfi_function_t *lopa, tfi_function_t *band)
   { 
     for (int32_t which = 0; which < 2; which++)
       { tfi_function_t *gain = (which == 0 ? lopa : band); /* version to plot: low-pass or bandpass. */
+        char *xwhich = (which == 0 ? "low" : "band"); 
+        fprintf(stderr, "    --- %s tag = %s npmax = %d func = %s pass ---\n", __FUNCTION__, tag, npmax, xwhich);
         if (gain != NULL)
           { char *fname = NULL;
-            asprintf(&fname, "out/%s-%s.txt", tag, (which == 0 ? "lopa" : "band"));
+            asprintf(&fname, "out/%s_%s.txt", tag, (which == 0 ? "lopa" : "band"));
             FILE *wr = open_write(fname, TRUE);
             free(fname);
             tfi_plot_function(wr, npmax, gain);
@@ -367,11 +388,18 @@ void tfi_plot_function(FILE *wr, int32_t npmax, tfi_function_t *gain)
 
     int32_t kpmax = (npmax <= 8 ? npmax : 8);
     int32_t np[kpmax+1];     /* Value of {np} for each {kp}. */
-    double fg_half[kpmax+1]; /* Freq where the filter of order {np[kp]} has gain 0.5. */
-    double fg_tiny[kpmax+1]; /* Freq where the filter of order {np[kp]} has gain 0.001. */
-
+    double fg_lo_half[kpmax+1]; /* Freq where the lo shoulder of filter of order {np[kp]} has gain 0.5. */
+    double fg_lo_tiny[kpmax+1]; /* Freq where the lo shoulder of filter of order {np[kp]} has gain 0.001. */
+    double fg_hi_half[kpmax+1]; /* Freq where the hi shoulder of filter of order {np[kp]} has gain 0.5. */
+    double fg_hi_tiny[kpmax+1]; /* Freq where the hi shoulder of filter of order {np[kp]} has gain 0.001. */
+    double G_prev[kpmax+1]; /* Prev gain for order {np[kp]}. */
+    
     int32_t kfmax = nf/2;
-    for (int32_t kp = 0; kp <= kpmax; kp++) { fg_half[kp] = fg_tiny[kp] = NAN; }
+    for (int32_t kp = 0; kp <= kpmax; kp++) 
+      { fg_lo_half[kp] = fg_lo_tiny[kp] = NAN;
+        fg_hi_half[kp] = fg_hi_tiny[kp] = NAN;
+        G_prev[kp] = -INF;
+      }
     fprintf(wr, "# npmax = %d\n", npmax); /* For the plot script. */
     for (int32_t kf = 1; kf < kfmax; kf++)
       { double f = ((double)kf)/nf;
@@ -380,81 +408,193 @@ void tfi_plot_function(FILE *wr, int32_t npmax, tfi_function_t *gain)
           { np[kp] = ((kp == kpmax) && (npmax > kpmax) ? npmax : kp);
             double G = gain(f, np[kp]);
             fprintf(wr, " %15.12f", G);
-            if ((fabs(G) < 0.5) && (isnan(fg_half[kp]))) { fg_half[kp] = f; }
-            if ((fabs(G) < g_tiny) && (isnan(fg_tiny[kp]))) { fg_tiny[kp] = f; }
+            if (G > G_prev[kp])
+              { /* Increasing half: */
+                if (fabs(G) < 0.5) { fg_lo_half[kp] = f; }
+                if (fabs(G) < g_tiny) { fg_lo_tiny[kp] = f; }
+              }
+            else if (G < G_prev[kp])
+              { /* Decreasing half: */
+                if ((fabs(G) < 0.5) && (isnan(fg_hi_half[kp]))) { fg_hi_half[kp] = f; }
+                if ((fabs(G) < g_tiny) && (isnan(fg_hi_tiny[kp]))) { fg_hi_tiny[kp] = f; }
+              }
+            G_prev[kp] = G;
           }
         fprintf(wr, "\n");
       }
 
     for (int32_t kp = 1; kp <= kpmax; kp++)
-      { fprintf(stderr, " order = %3d", np[kp]);
-        fprintf(stderr, " gain is 0.5 at f = %10.6f", fg_half[kp]);
-        fprintf(stderr, " gain is %12.4e at f = %10.6f", g_tiny, fg_tiny[kp]);
+      { fprintf(stderr, " LO ramp order = %3d:", np[kp]);
+        if (! isnan(fg_lo_half[kp])) { fprintf(stderr, " gain is 0.5 at f = %10.6f", fg_lo_half[kp]); }
+        if (! isnan(fg_lo_tiny[kp])) { fprintf(stderr, " gain is %12.4e at f = %10.6f", g_tiny, fg_lo_tiny[kp]); }
+        fprintf(stderr, "\n");
+      }
+    fprintf(stderr, "\n");
+    for (int32_t kp = 1; kp <= kpmax; kp++)
+      { fprintf(stderr, " HI ramp order = %3d:", np[kp]);
+        if (! isnan(fg_hi_half[kp])) { fprintf(stderr, " gain is 0.5 at f = %10.6f", fg_hi_half[kp]); }
+        if (! isnan(fg_hi_tiny[kp])) { fprintf(stderr, " gain is %12.4e at f = %10.6f", g_tiny, fg_hi_tiny[kp]); }
         fprintf(stderr, "\n");
       }
   }
+  
+void tfi_test_clear_tiny_gains(int32_t nf, double eps)
+  { fprintf(stderr, "--- %s  nf = %d eps = %24.16e ---\n", __FUNCTION__, nf, eps);
+    demand(nf >= 4, "bad {NF}");
+    
+    char *fname =  "out/clear_tiny.txt";
+    FILE *wr = open_write(fname, TRUE);
+    
+    /* Create a vector of conjugate Fourier coeffs of all sizes with random phases, with some zeros: */
+    complex Fraw[nf];
+    for (int32_t kf = 0; kf < nf; kf++) { Fraw[kf] = 0; }
+    double Gmax = 2.0, Gmin = 1.0e-20;
+    int32_t nftest = nf/2 - 3;
+    for (int32_t kfa = 0; kfa <= nftest; kfa++)
+      { int32_t kfb = (nf - kfa) % nf;
+        double phk = (kfa == kfb ? 0 : dabrandom(0, M_2_PI));
+        complex Fk = Gmax*exp(kfa*(log(Gmin) - log(Gmax))/nftest)*cexp(I*phk);
+        Fraw[kfa] = Fk; Fraw[kfb] = conj(Fk);
+      }
+   
+    /* Convert the Fourier coeffs to Hartley form: */
+    double Hraw[nf];
+    for (int32_t kfa = 0; kfa <= nf/2; kfa++) 
+      { int32_t kfb = (nf - kfa) % nf;
+        neuromat_filter_fourier_to_hartley(Fraw[kfa], Fraw[kfb], &(Hraw[kfa]), &(Hraw[kfb]));
+      }
+      
+    /* Cleanup the Hartley coeffs: */
+    double Hkuk[nf];
+    for (int32_t kf = 0; kf < nf; kf++) { Hkuk[kf] = Hraw[kf]; }
+    double fsmp = 1.0;
+    bool_t verbose = TRUE;
+    neuromat_filter_clear_tiny_gains(nf, Hkuk, eps, fsmp, verbose);
+    
+    /* Convert the cleaned coeffs back to Fourier and compare: */
+    complex Fkuk[nf];
+    double Emax = -INF;
+    double Gtop = NAN;
+    for (int32_t kfa = 0; kfa <= nf/2; kfa++) 
+      { int32_t kfb = (nf - kfa) % nf;
+        neuromat_filter_hartley_to_fourier(Hkuk[kfa], Hkuk[kfb], &(Fkuk[kfa]), &(Fkuk[kfb]));
+        assert(fabs(creal(Fkuk[kfa]) - creal(Fkuk[kfb])) < 1.0e-15);
+        assert(fabs(cimag(Fkuk[kfa]) + cimag(Fkuk[kfb])) < 1.0e-15);
+        double Grawk = cabs(Fraw[kfa]);
+        double Gkukk = cabs(Fkuk[kfa]);
+        complex Dk = Fkuk[kfa] - Fraw[kfa];
+        double Ek = cabs(Dk);
+        fprintf(wr, "%5d", kfa);
+        fprintf(wr, "  %24.16e %24.16e %24.16e", creal(Fraw[kfa]), cimag(Fraw[kfa]), Grawk);
+        fprintf(wr, "  %24.16e %24.16e %24.16e", creal(Fkuk[kfa]), cimag(Fkuk[kfa]), Gkukk);
+        fprintf(wr, "  %24.16e %24.16e %24.16e", creal(Dk), cimag(Dk), Ek);
+        fprintf(wr, "\n");
+        if (Ek > Emax) { Emax = Ek; Gtop = Grawk; }
+      }
+    fclose(wr);
+    fprintf(stderr, "  max correction = %24.16e for original gain %24.16e\n", Emax, Gtop);
+  }
 
-void tfi_test_tabulate_filter(int32_t nf, int32_t kfil, double fsmp)
+void tfi_test_tabulate_hartley_gains(int32_t nf, char *ftype, double fsmp)
   {
-    /* Filter is delay with attenuation if {kfil=0}, gaussoid band if {kfil=1}: */
-    demand((kfil >= 0) && (kfil <= 1), "invalid filter type");
-    char *ftype = (kfil == 0 ? "DL" : "GB");
     fprintf(stderr, "--- %s  nf = %d  filter = %s  fsmp = %12.8f ---\n", __FUNCTION__, nf, ftype, fsmp);
-    double tol = 1.0e-8;
+    double tol = 4.0e-8;
 
     /* Tabulating parameters: */
     neuromat_filter_gain_t *gain = NULL; /* Filter function to use. */
-    int32_t kf_min = INT32_MAX;  /* Min freq index to evaluate. */
-    int32_t kf_max = INT32_MIN;  /* Max freq index to eavluat. */
-    double fsup;         /* Max freq with nonzero gain for folding, or 0. */
+    double fsup = NAN;           /* Max freq with nonzero gain for folding, or 0. */
     bool_t normalize;    /* True normalizes to unit max gain. */
-    double eps_clean;    /* Threshold for small elem cleanup. */
 
-    /* Filter-specific parameters: */
-    double delay_amount = NAN;     /* Delay amount (sec) for delay filter. */
-    double gauss_fmean = NAN;   /* Mean freq of gaussoid filter. */
-    double gauss_fsigma = NAN;  /* Deviation of gaussoid filter. */
+    /* Filter gain functions and their specific parameters: */
 
+    double delay_amount = NAN;
     auto complex gain_delay(double f);
-    auto complex gain_gauss(double f);
+    
+    double ungau_fm = NAN, ungau_sigma = NAN;
+    auto complex gain_ungau(double f);
+    
+    double biqua_fa = NAN, biqua_fb = NAN;
+    auto complex gain_biqua(double f);
+    
+    double sgerf_fm = NAN, sgerf_sigma = NAN;
+    auto complex gain_sgerf(double f);
+    
+    double buttw_fs = NAN; int32_t buttw_ord = INT32_MIN;
+    auto complex gain_buttw(double f);
 
-    if (kfil == 0)
+    if (strcmp(ftype, "DL") == 0)
       { /* Delay filter: */
         gain = &gain_delay;
         int32_t kdelay = nf/100 + 3;
         delay_amount = kdelay/fsmp; /* Delay in seconds. */
-        kf_min = 0;
-        kf_max = nf-1;
         fsup = 0.0; /* No {fsmp}-folding */
         normalize = FALSE;  /* No unit-max normalization. */
-        eps_clean = 0; /* No small elem cleanup. */
         fprintf(stderr, "  delay filter, amount = %12.8f s\n", delay_amount);
       }
-    else
-      { /* Gaussian bump with mean below {fsmp/2} but tail well over {fsmp}: */
-        gain = &gain_gauss;
-        kf_min = -3*nf + 1;
-        kf_max = +3*nf - 1;
-        gauss_fmean = fsmp/6;
-        double f_min = kf_min*fsmp/nf;
-        double f_max = kf_max*fsmp/nf;
-        double df = fmin(fabs(f_min - gauss_fmean), fabs(f_max - gauss_fmean));
-        double gain_tiny = 1.0e-15;
-        gauss_fsigma = df/sqrt(-2*log(gain_tiny));
-        fsup = fmax(fabs(f_min), fabs(f_max));
-        normalize = TRUE;    /* Apply unit-max normalization. */
-        eps_clean = 1.0e-13; /* Clean gains less than this. */
-        fprintf(stderr, "  gauss hump filter  f_avg = %12.8f  f_dev = %12.8f\n", gauss_fmean, gauss_fsigma);
+    else 
+      { /* Real filters: */ 
+        normalize = TRUE;
+        double gain_tiny = 1.0e-6;
+        if (strcmp(ftype, "UG") == 0)
+          { /* Unsymmetric Gaussian bump on lin freq space with mean below {fsmp/2} but tail well over {fsmp}: */
+            gain = &gain_ungau;
+            ungau_fm = fsmp/4;
+            ungau_sigma = fsmp/3;
+            fsup = ungau_fm + 9.0*ungau_sigma;
+            fprintf(stderr, "  gauss hump filter  f_avg = %12.8f  f_dev = %12.8f\n", ungau_fm, ungau_sigma);
+          }
+        else if (strcmp(ftype, "ER") == 0)
+          { /* Erf-sigmoid bandpass with midlevel below {fsmp/2} but tail well over {fsmp}: */
+            gain = &gain_sgerf;
+            sgerf_fm = fsmp/3;
+            double fc = 2*fsmp/3;
+            sgerf_sigma = neuromat_filter_lowpass_sgerf_compute_sigma(sgerf_fm, fc, gain_tiny);
+            fsup = neuromat_filter_lowpass_sgerf_compute_fsup(sgerf_fm, sgerf_sigma);
+            fprintf(stderr, "  erf-log-sigmoid filter  fm = %12.8f  sigma = %12.8f\n", sgerf_fm, sgerf_sigma);
+          }
+        else if (strcmp(ftype, "BQ") == 0)
+          { /* Biquadratic sigmoid bandpass with midlevel below {fsmp/2} but tail well over {fsmp}: */
+            gain = &gain_biqua;
+            biqua_fa = fsmp/3;
+            biqua_fb = 2*fsmp/3;
+            fsup = biqua_fb;
+            fprintf(stderr, "  biquadratic sigmoid filter  fa = %12.8f  fb = %12.8f\n", biqua_fa, biqua_fb);
+          }
+        else if (strcmp(ftype, "BW") == 0)
+          { /* Butterworth bandpass with knee freq below {fsmp/2} but tail well over {fsmp}: */
+            gain = &gain_buttw;
+            buttw_fs = fsmp/3;
+            double fc = 2*fsmp/3;
+            buttw_ord = neuromat_filter_lowpass_butterworth_compute_order(buttw_fs, fc, gain_tiny);
+            fsup = neuromat_filter_lowpass_butterworth_compute_fsup(buttw_fs, buttw_ord);
+            fprintf(stderr, "  Butterworth lowpass filter  fs = %12.8f  ord = %d\n", buttw_fs, buttw_ord);
+          }
+        else
+          { demand(FALSE, "invalid filter type"); }
       }
+      
+    /* Get the freq index range for plotting/folding: */
+    int32_t kf_min, kf_max;
+    if (fsup == 0)
+      { /* No folding: */
+        kf_min = 0; 
+        kf_max = nf - 1;
+      }
+    else
+      { kf_max = (int32_t)ceil(fsup/fsmp + 1.0e-8)*nf - 1; 
+        kf_min = -kf_max;
+      }
+    assert(kf_max > 0);
+    double f_max = kf_max*fsmp/nf;
+    double f_min = kf_min*fsmp/nf;
+      
     if ((kf_min != 0) || (kf_max != nf-1))
-      { fprintf(stderr, "  folding kf in {%d..%d) fsup = %12.8f\n", kf_min, kf_max, fsup); }
+      { fprintf(stderr, "  folding kf in {%d..%d)", kf_min, kf_max);
+        fprintf(stderr, "  = [%12.8f _ %12.8f]", f_min, f_max);
+        fprintf(stderr, "  fsup = %12.8f\n", fsup);
+      }
     else
       { fprintf(stderr, "  no folding\n"); }
-      
-    if (eps_clean > 0)
-      { fprintf(stderr, "  cleaning gains below %12.4e\n", eps_clean); }
-    else
-      { fprintf(stderr, "  no small gain cleaning\n"); }
 
     /* Evaluate the gain without folding or conj-mirroring: */
     int32_t nf_eval = (kf_max - kf_min + 1);
@@ -464,8 +604,8 @@ void tfi_test_tabulate_filter(int32_t nf, int32_t kfil, double fsmp)
         F_org[kf - kf_min] = gain(f);
       }
 
-    /* Tabulate the gains in Hartley form without normalization and cleanup: */
-    double *H_raw = talloc(nf, double);   /* Tabulated Hartley before normalization, cleanup. */
+    /* Tabulate the gains in Hartley form without normalization: */
+    double *H_raw = talloc(nf, double);   /* Tabulated Hartley before normalization. */
     bool_t tab_verbose = (nf <= 20);
     neuromat_filter_tabulate_hartley_gains(nf, fsmp, gain, fsup, FALSE, H_raw, tab_verbose);
 
@@ -509,14 +649,12 @@ void tfi_test_tabulate_filter(int32_t nf, int32_t kfil, double fsmp)
     demand(nerr == 0, "{neuromat_filter_tabulate_hartley_gains} failed");
     
     double *H_kuk = NULL;
-    if (normalize || (eps_clean > 0))
+    if (normalize)
       { /* Tabulate again with unit-max norm and eps-cleaning: */
         H_kuk = talloc(nf, double);
         neuromat_filter_tabulate_hartley_gains(nf, fsmp, gain, fsup, normalize, H_kuk, FALSE);
-        if (eps_clean > 0)
-          { neuromat_filter_clear_tiny_gains(nf, H_kuk, eps_clean, fsmp, FALSE); }
       }
-      
+
     if (nf >= 100)
       { /* Write file for plot: */
         char *fname = NULL;
@@ -528,12 +666,32 @@ void tfi_test_tabulate_filter(int32_t nf, int32_t kfil, double fsmp)
         for (int32_t kf = kf_min; kf <= kf_max; kf++)
           { double fk = ((double)kf)*fsmp/nf; 
             complex Fk_org = F_org[kf - kf_min];
-            double Hk_raw = ((kf >= 0) && (kf < nf) ? H_raw[kf] : -100);
-            double Hk_kuk = ((H_kuk != NULL) && (kf >= 0) && (kf < nf) ? H_kuk[kf] : -100);
+            double Hk_raw, Hk_kuk;
+            complex Fk_rec;
+            if ((kf >= 0) && (kf < nf))
+              { int32_t jf = (nf - kf) % nf;
+                Hk_raw = H_raw[kf]; 
+                complex Fj_rec;
+                if (H_kuk != NULL)
+                  { Hk_kuk = H_kuk[kf];
+                    double Hj_kuk = H_kuk[jf];
+                    neuromat_filter_hartley_to_fourier(Hk_kuk, Hj_kuk, &Fk_rec, &Fj_rec);
+                  }
+                else
+                  { Hk_kuk = -100;
+                    double Hj_raw = H_raw[jf];
+                    neuromat_filter_hartley_to_fourier(Hk_raw, Hj_raw, &Fk_rec, &Fj_rec);
+                  }
+              }
+            else
+              { Hk_raw = Hk_kuk = -100;
+                Fk_rec = -100 - 100*I;
+              }
             fprintf(wr, "%+4d %+20.15f", kf, fk);
             fprintf(wr, "  %+20.15f %+20.15f", creal(Fk_org), cimag(Fk_org));
             fprintf(wr, "  %+20.15f", Hk_raw);
             fprintf(wr, "  %+20.15f", Hk_kuk);
+            fprintf(wr, "  %+20.15f %+20.15f", creal(Fk_rec), cimag(Fk_rec));
             fprintf(wr, "\n");
           }
         fclose(wr);
@@ -549,8 +707,26 @@ void tfi_test_tabulate_filter(int32_t nf, int32_t kfil, double fsmp)
       { return cexp(-2*M_PI*I*f*delay_amount);
       }
       
-    complex gain_gauss(double f)
-      { double z = (f - gauss_fmean)/gauss_fsigma;
-        return exp(-0.5*z*z);
+    complex gain_ungau(double f)
+      { double z = (f - ungau_fm)/ungau_sigma;
+        return (complex)(exp(-0.5*z*z));
       }
+
+    complex gain_sgerf(double f)
+      { double g = neuromat_filter_lowpass_sgerf_eval(f, sgerf_fm, sgerf_sigma);
+        return (complex)g;
+      }
+
+    complex gain_biqua(double f)
+      { double g = neuromat_filter_lowpass_biquadratic_eval(f, biqua_fa, biqua_fb);
+        return (complex)g;
+      }
+
+    complex gain_buttw(double f)
+      { double g = neuromat_filter_lowpass_butterworth_eval(f, buttw_fs, buttw_ord);
+        double z = 2.0*buttw_ord*(log(f) - log(buttw_fs) + log(M_2_PI));
+        if (f > fsmp/2) { fprintf(stderr, "      gain_buttw: f = %12.8f  fs = %12.8f  z = %12.8f  g = %12.8f\n", f, buttw_fs, z, g); }
+        return (complex)g;
+      }
+
   }

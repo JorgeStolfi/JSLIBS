@@ -1,5 +1,5 @@
 /* See {neuromat_filter_lowpass_gauss.h}. */
-/* Last edited on 2023-12-15 22:54:23 by stolfi */
+/* Last edited on 2024-01-05 17:33:25 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -19,7 +19,12 @@ double neuromat_filter_lowpass_gauss_compute_sigma(double fc, double gc)
     return sigma;
   }
 
-double neuromat_filter_lowpass_gauss(double f, double sigma)
+double neuromat_filter_lowpass_gauss_compute_fsup(double sigma)
+  { demand(isfinite(sigma) && (sigma > 0), "invalid {sigma}");
+    return 9*sigma;
+  }
+
+double neuromat_filter_lowpass_gauss_eval(double f, double sigma)
   { 
     demand(isfinite(sigma) && (sigma > 0), "invalid {sigma}");
     double zf = f/sigma;

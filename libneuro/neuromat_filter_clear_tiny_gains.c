@@ -1,5 +1,5 @@
 /* See {neuromat_filter_clear_tiny_gains.h}. */
-/* Last edited on 2023-12-16 14:06:36 by stolfi */
+/* Last edited on 2024-01-05 18:10:42 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -15,39 +15,53 @@
 #include <neuromat_filter_clear_tiny_gains.h>
        
 int32_t neuromat_filter_clear_tiny_gains(int32_t nf, double H[], double eps, double fsmp, bool_t verbose)
-  { int32_t kfa = nf/2; /* Indices of conjugate Hartley freqs. */
-    /* Clear all small gains: */
-    for (int32_t kfa = 0; kfa <= nf/2; kfa++) 
-      { int32_t kfb = (nf - kfa) % nf;
-        if ((H[kfa] != 0) || (H[kfb] != 0))
-          { double Gabs = M_SQRT1_2*hypot(H[kfa], H[kfb]);
-            double Gmult = ((Gabs - eps) < 1.0e-140 ? 0.0 : exp(1/(1-eps) - 1/(Gabs - eps)));
-            double Ga = H[kfa] * Gmult, Gb = H[kfb] * Gmult;
-            if ((Ga == 0) && (Gb == 0))
-              { if (verbose)
-                  { fprintf(stderr, "  cleared gains for %.8f Hz", ((double)kfa)*fsmp/nf);
-                    fprintf(stderr, " H[%d] = %24.16e ", kfa, H[kfa]);
-                    if (kfb != kfa) 
-                      { fprintf(stderr, " H[%d] = %24.16e ", kfb, H[kfb]);
-                        fprintf(stderr, " Gm = %24.16e\n", Gabs);
-                      }
-                    fprintf(stderr, "\n");
+  { demand((eps >= 0) && (eps <= 0.5), "invalid {eps}");
+    if (eps > 0)
+      { 
+        /* Clear all small gains: */
+        double beta = 0.9; /* 0.5; */
+        double logA = -beta/(1-eps);
+        for (int32_t kfa = 0; kfa <= nf/2; kfa++) 
+          { int32_t kfb = (nf - kfa) % nf;
+            if ((H[kfa] != 0) || (H[kfb] != 0))
+              { double Ha, Hb;  /* Adjusted {H[kfa],H[kfb]}. */
+                double Gabs = M_SQRT1_2*hypot(H[kfa], H[kfb]);
+                if (Gabs < eps + 1.0e-140)
+                  { /* Correct to  zero: */
+                    Ha = Hb = 0;
                   }
+                else
+                  { /* Correct smoothly down: */
+                    double logGmult = -(logA + beta*Gabs/(Gabs-eps));
+                    double Gmult = exp(logGmult);
+                    if ((verbose) && ((Gabs < 10*eps) || (Gabs >= 0.9)))
+                      { fprintf(stderr, "  Gabs = %24.16e logGmult = %24.16e Gmult = %24.16e\n", Gabs, logGmult, Gmult); }
+                    Ha = H[kfa] * Gmult, Hb = H[kfb] * Gmult;
+                  }
+                if ((Ha == 0) && (Hb == 0))
+                  { if (verbose)
+                      { fprintf(stderr, "  cleared gains for %.8f Hz", ((double)kfa)*fsmp/nf);
+                        fprintf(stderr, " H[%d] = %24.16e ", kfa, H[kfa]);
+                        if (kfb != kfa) 
+                          { fprintf(stderr, " H[%d] = %24.16e ", kfb, H[kfb]);
+                            fprintf(stderr, " |H| = %24.16e", Gabs);
+                          }
+                        fprintf(stderr, "\n");
+                      }
+                  }
+                H[kfa] = Ha; H[kfb] = Hb;
               }
-            H[kfa] = Ga; H[kfb] = Gb;
           }
       }
     /* Get highest surviving frequency: */
-    kfa = nf/2;
-    { int32_t kfb = (nf - kfa) % nf;
-      while ((kfa >= 0) && (H[kfa] == 0) && (H[kfb] == 0)) 
-        { kfa--; kfb = (kfb + 1) % nf; }
+    { int32_t kfa = nf/2, kfb = (nf - kfa) % nf;
+      while ((kfa >= 0) && (H[kfa] == 0) && (H[kfb] == 0)) { kfa--; kfb = (kfb + 1) % nf; }
       if (kfa < 0)
-        { if (verbose) { fprintf(stderr, "filter gains are all zero\n"); } }
+        { if (verbose) { fprintf(stderr, "  filter gains are all zero\n"); } }
       else
         { if (verbose) 
             { double fa = ((double)kfa)*fsmp/nf;
-              fprintf(stderr, "max preserved frequency = %.8f Hz", fa);
+              fprintf(stderr, "  max preserved frequency = %.8f Hz", fa);
               if (kfb == kfa) 
                 { fprintf(stderr, " gain H[%d] = %+24.16e\n", kfa, H[kfa]); }
               else
@@ -59,6 +73,6 @@ int32_t neuromat_filter_clear_tiny_gains(int32_t nf, double H[], double eps, dou
                 }
             }
         }
-      }
-    return kfa;
+      return kfa;
+    }
   }

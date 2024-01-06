@@ -1,5 +1,5 @@
 /* See {neuromat_filter_tabulate_hartley_gains.h}. */
-/* Last edited on 2023-12-18 21:53:38 by stolfi */
+/* Last edited on 2024-01-03 14:26:06 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -64,10 +64,9 @@ void neuromat_filter_tabulate_hartley_gains
             /* Convert Fourier coeff pair to Hartley coeff pair: */
             H[kf0] = wr + wi;
             H[kf1] = wr - wi;
-            Wmax = fmax(Wmax, hypot(H[kf0], H[kf1]));
             if (verbose) 
               { fprintf(stderr, "  F[%d] = ( %16.12f + %16.12f * I )", kf0, creal(w0), cimag(w0)); 
-                fprintf(stderr, ", F[%d] = ( %16.12f + %16.12f * I )", kf1, creal(w0), cimag(w0)); 
+                fprintf(stderr, ", F[%d] = ( %16.12f + %16.12f * I )", kf1, creal(w1), cimag(w1)); 
                 fprintf(stderr, " --> H[%d] = %16.12f, H[%d] = %16.12f\n\n", kf0, H[kf0], kf1, H[kf1]); 
               }
           }

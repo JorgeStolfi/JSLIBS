@@ -2,7 +2,7 @@
 #define neuromat_filter_clear_tiny_gains_H
 
 /* NeuroMat tools for cleaning up Hartley filter coeff tables */
-/* Last edited on 2023-12-16 03:53:55 by stolfi */
+/* Last edited on 2024-01-05 15:51:25 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -22,7 +22,7 @@ int32_t neuromat_filter_clear_tiny_gains(int32_t nf, double H[], double eps, dou
     In particular, clears {H[0]}, and also {H[nf/2]} if {nf} is
     even, if they are smaller than {eps} in absolute value.
     
-    The procedure return the largest frequency index {kmax} in {0..nf/2}
+    The procedure returns the largest frequency index {kmax} in {0..nf/2}
     such that {H[kmax]} and/or {H[kmax']} are still is non-zero; or
     {-1} if all gains {H[0..nf-1]} became became all zeros as a result of
     this clearing. */

@@ -1,5 +1,5 @@
 /* See {neuromat_filter_lowpass_sgerf.h}. */
-/* Last edited on 2023-12-16 03:16:00 by stolfi */
+/* Last edited on 2024-01-05 17:33:02 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -29,11 +29,17 @@ double neuromat_filter_lowpass_sgerf_compute_sigma(double fm, double fc, double 
     return sigma;
   }
 
-double neuromat_filter_lowpass_sgerf(double f, double fm, double sigma)
+double neuromat_filter_lowpass_sgerf_compute_fsup(double fm, double sigma)
+  { demand(isfinite(fm) && (fm > 0), "invalid {fm}");
+    demand(isfinite(sigma) && (sigma > 0), "invalid {sigma}");
+    return fm*exp(6.0*sigma);
+  }
+
+double neuromat_filter_lowpass_sgerf_eval(double f, double fm, double sigma)
   {
-    demand(f >= 0, "invalid {f}");
     demand(isfinite(fm) && (fm > 0), "invalid {fm}");
     demand(isfinite(sigma) && (sigma > 0), "invalid {sigma}");
+    f = fabs(f);
     if (f == 0) { return 1.0; }
     double z = (log(f) - log(fm))/sigma;
     if (z >= 6.0) 

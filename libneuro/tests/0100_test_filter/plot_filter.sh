@@ -1,6 +1,7 @@
 #! /bin/bash 
-# Last edited on 2023-12-18 10:56:34 by stolfi
+# Last edited on 2024-01-05 13:57:59 by stolfi
 
+ylog="$1"; shift;  # Y scale: 0 = linear, 1 = log. 
 dfile="$1"; shift; # File with gains per frequency. 
 fsmp="$1"; shift;  # Nominal sampling frequency (Hz).
 flo0="$1"; shift;  # Nominal lowest pass freq (Hz).
@@ -8,7 +9,7 @@ flo1="$1"; shift;  # Nominal lowest preserved frew (Hz).
 fhi1="$1"; shift;  # Nominal highest preserved freq (Hz).
 fhi0="$1"; shift;  # Nominal highest pass frew (Hz). 
 
-pfile="${dfile/.txt/.png}"
+pfile="${dfile/.txt/}_${ylog}.png"
 rm -f ${pfile}
   
 tmp="/tmp/$$"
@@ -58,18 +59,30 @@ tfile="${tmp}.png"
 export GDFONTPATH=.:${HOME}/ttf
 gnuplot <<EOF
 
+flo0=${flo0}
+fhi0=${fhi0}
+ylog=${ylog}
+
 set term png size 2800,1200 font "arial,24"
 set output "${tfile}"
 Gmin = 1.0e-9
 Gmax = 1
-set logscale y
-fmin = 0.001
-fmax = 1.000
+
+if (ylog == 1) {
+  set logscale y;
+  set yrange [(0.5*Gmin):(2.0*Gmax)]
+} else {
+  set yrange [(-0.05*Gmax):(1.2*Gmax)]
+}
+
+fmin = 0.1*flo0
+fmax = 10*fhi0
+set format x "%.4f"
+
 set logscale x
 set grid xtics
 set grid ytics
 set xrange [(0.9*fmin):(1.1*fmax)]
-set yrange [(0.5*Gmin):(2.0*Gmax)]
 load "${gfile}"
 EOF
 
