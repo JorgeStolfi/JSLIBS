@@ -1,0 +1,9 @@
+# Last edited on 2007-01-13 00:42:35 by stolfi
+
+This is one of the earliest versions of the "libgeo" library.
+This version uses "naked" arrays, e.g.
+
+  typedef double r3_t [3];
+  
+    J.Stolfi, UNICAMP, 2007-01-12
+    

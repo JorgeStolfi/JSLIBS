@@ -1,0 +1,34 @@
+#! /bin/sef -f
+# Last edited on 2013-10-01 13:24:49 by stolfilocal
+
+s:neuromat[.]h:neuromat_eeg.h:g
+s:neuromat_geom[.]h:neuromat_eeg_geom.h:g
+s:neuromat_image[.]h:neuromat_{eeg_|}image.h:g
+s:neuromat_image_basis[.]h:neuromat_eeg_image_basis.h:g
+s:neuromat_stats[.]h:neuromat_eeg_stats.h:g
+
+
+s:neuromat_write_eeg_signals:neuromat_eeg_data_write:g
+s:neuromat_write_eeg_signal_frame:neuromat_eeg_frame_write:g
+s:neuromat_stats_per_channel_print:neuromat_eeg_stats_per_channel_print:g
+s:neuromat_stats_per_channel:neuromat_eeg_stats_per_channel:g
+s:neuromat_stats_covariance_matrix:neuromat_eeg_stats_covariance_matrix:g
+s:neuromat_read_eeg_signals:neuromat_eeg_data_read:g
+s:neuromat_locate_pulses:neuromat_eeg_locate_pulses:g
+s:neuromat_image_schematic_head_mask:neuromat_eeg_image_schematic_head_mask:g
+s:neuromat_image_paint_trigger_marks:neuromat_eeg_image_paint_trigger_marks:g
+s:neuromat_image_paint_potentials:neuromat_eeg_image_paint_potentials:g
+s:neuromat_image_draw_electrodes:neuromat_eeg_image_draw_electrodes:g
+s:neuromat_image_basis_make:neuromat_eeg_image_basis_make:g
+s:neuromat_image_basis_fill_voronoi:neuromat_eeg_image_basis_fill_voronoi:g
+s:neuromat_image_basis_fill_shepard:neuromat_eeg_image_basis_fill_shepard:g
+s:neuromat_image_basis_fill_radial:neuromat_eeg_image_basis_fill_radial:g
+s:neuromat_image_basis_fill_poly:neuromat_eeg_image_basis_fill_poly:g
+s:neuromat_image_basis_fill_lagrangian:neuromat_eeg_image_basis_fill_lagrangian:g
+s:neuromat_geom_map_points:neuromat_eeg_geom_map_points:g
+s:neuromat_geom_e20_schematic_2D_points:neuromat_eeg_geom_20_schematic_2D_points:g
+s:neuromat_geom_e128_schematic_2D_points:neuromat_eeg_geom_128_schematic_2D_points:g
+s:neuromat_frame_print:neuromat_eeg_frame_print:g
+s:neuromat_eeg_raw_read_frame:neuromat_eeg_raw_frame_read:g
+s:neuromat_e20_channel_names:neuromat_eeg_20_channel_names:g
+s:neuromat_e128_channel_names:neuromat_eeg_128_channel_names:g

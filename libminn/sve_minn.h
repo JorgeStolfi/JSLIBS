@@ -2,7 +2,7 @@
 #define sve_minn_H
 
 /* Quadratic minimzation by the simplex vertex-edge method. */
-/* Last edited on 2023-03-27 09:59:39 by stolfi */
+/* Last edited on 2024-01-10 13:30:53 by stolfi */
 
 /* SIMPLICES
 
@@ -79,6 +79,7 @@ void sve_minn_iterate
     double x[],
     double *FxP,
     sign_t dir,
+    double ctr[],
     double dMax,
     bool_t box,
     double rIni,
@@ -111,10 +112,11 @@ void sve_minn_iterate
     of all sample points.
     
     If {dMax} is {+INF}, the search domain is the whole of {\RR}, and
-    the {box} parameter is ignored. Otherwise, if {box} is {FALSE}, the
-    search is limited to the signed unit cube {[-dMa_+dMax]^n}. If {box}
+    the {ctr} and {box} parameters are ignored. Otherwise, if {box} is {TRUE}, the
+    search is limited to the signed unit cube {ctr + [-dMax _ +dMax]^n}. If {box}
     is {FALSE}, the search domain is the unit {n}-ball {{ x\in \RR^n :
-    |x| <= dMax }}.
+    |x - ctr| <= dMax }}.  In any case, the initial guess {x} had better
+    be inside the domain.
     
     The iterations will stop when (A) the current guess {x} satisfies
     the predicate {OK(n,x,F(n,x))}; or (B) the distance between

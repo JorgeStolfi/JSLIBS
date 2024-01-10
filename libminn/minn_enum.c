@@ -1,5 +1,5 @@
 /* See {minn_enum.h}. */
-/* Last edited on 2023-03-27 15:09:46 by stolfi */
+/* Last edited on 2024-01-10 13:47:11 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -20,7 +20,6 @@
 void minn_enum
   ( int32_t n,        /* Dimension of search space. */
     minn_goal_t *F,   /* Function to be minimized. */
-    double dMax,      /* Radius of domain, or {+INF}. */ 
     bool_t box,       /* True to search in the unit cube, false in the unit ball. */
     double tol[],     /* Desired precision. */
     double v[],       /* (OUT) Minimum vector found. */
@@ -28,13 +27,12 @@ void minn_enum
   )
   {
     demand(tol > 0, "invalid {tol}");
-    demand(isfinite(dMax) && (dMax >= 0), "invalid {dMax}");
     bool_t debug = FALSE;
     
     /* Compute the number of samples {ns[i]} along each half-axis {i}: */
     double fudge = 1.0e-10; /* Fudge domain expansion to ensure grid edge is in. */
     int32_t ns[n];
-    for (int32_t i = 0; i < n; i++) { ns[i] = (int32_t)floor(dMax/tol[i] + fudge); }
+    for (int32_t i = 0; i < n; i++) { ns[i] = (int32_t)floor(1.0/tol[i] + fudge); }
     
     /* Enumerate all integer tuples {t[0..n-1]} where {t[k]} ranges in {-ns..+ns}: */
     (*Fval_P) = +INF;  /* Minimum goal found so far. */
@@ -53,7 +51,7 @@ void minn_enum
         /* Build the sample vector {u}: */
         for (int32_t i = 0; i < n; i++) 
           { u[i] = ((double)t[i])*tol[i];
-            assert(fabs(u[i]) <= dMax + 2*fudge*tol[i]);
+            assert(fabs(u[i]) <= 1.0 + 2*fudge*tol[i]);
           }
 
         /* Determine whether the point is inside the domain: */

@@ -1,0 +1,166 @@
+# Last edited on 2011-05-29 09:54:40 by stolfi
+
+# ----------------------------------------------------------------------
+Problems in the version of Stolfi's libraries that are 
+in Rafael's LIV directory as of 2009-01:
+
+In libimg/float_image.c:
+
+  The function {float_image_update_sample_range} in Rafael's version
+  uses {isnormal()} instead of {isfinite()}. This error causes the
+  procedure to ignore pixels that are zero or very small. So if an
+  image has pixels with values in {0,1,2,3} the range will come out as
+  [1..3] instead of [0..3].
+  
+In libimg/float_image_masked.c:
+  
+  The function {float_image_masked_interpolate_exclusive} added by
+  Rafael seems broken, and was not incorporated in the new version.
+  Anyway the function does not seem to be used anywhere in Rafael's
+  code.
+
+In libimg/float_pnm_image.h, libimg/float_pnm_image.c:
+  
+  In the function {float_image_to_pnm_image}, the order and meaning of
+  the parameters {ch[],lo[],hi[]} has been changed. Now {lo[k],hi[k]}
+  is the range of *input* (float) values to be used when converting
+  channel {k} of the *output* (pnm) image.
+  
+In libimg/float_pnm_image_io.h, libimg/float_pnm_image_io.c:
+
+  In the function {float_pnm_image_read}, Rafael added a {gray}
+  parameter that transforms the input image from 3-channel RGB image
+  into 3-channel grayscale. This parameter was not incorporated in the
+  new version. Instead a new function was added to
+  libimg/float_image.h, called {float_image_make_grayscale}. Call this
+  function after {float_pnm_image_read} instead of passing {gray =
+  TRUE}.
+  
+  Ditto for {float_pnm_image_list_read}.
+
+In libimg/frgb_ops.c:
+
+  The function {frgb_print_flt_pixel} of the old version printed 
+  each channel value with the fixed format "%7.4f".  In the new version,
+  the function was renamed {frgb_print} and requires an explicit
+  format parameter {fmt} for each channel sample. (At least five decimal digits
+  are needed for colors that come from 16-bit integer pixels.
+  Even more are needed, e.g. "%10.7f", for gamma correction or 
+  temporary images.)
+  
+  The function {frgb_debug_flt_pixel} was renamed {frgb_debug}.
+  
+  The functions {frgb_debug*} are now activated by setting
+  the variable {frgb_DEBUG = TRUE} instead of {debug = TRUE}.
+
+In libimg/image_coords.h, image_coords.c:
+
+  The command line options to specify the image coordinate system have
+  been renamed to use CamelCase, for consistency with other libraries:
+
+    "-haxis"    --> "-xAxis" or "-hAxis"
+    "-vaxis"    --> "-yAxis" or "-vAxis"
+    "-icenter"  --> "-iCenter"
+    "-iorg"     --> "-iOrg"
+    "-ocenter"  --> "-oCenter"
+    "-oorg"     --> "-oOrg"
+    "-osize"    --> "-oSize"
+    
+In libjs/interval.c:
+
+  The function {interval_mid} in Rafael version could produce a
+  midpoint outside the interval if both endpoints are denormalized
+  numbers with the same sign.  Fixed now.
+    
+In libjs/jsmath.c:
+
+  The function {ipow} now is faster for the special cases
+  {x^0,x^1,0^y,1^y} and for small {y}. 
+
+The library "libjspbm" was renamed "libjspnm".
+
+In libjspnm/jspnm_image.h, jspnm_image.c:
+
+  The functions {pnm_image_read} and {pnm_image_write} now have an
+  extra parameter {verbose} that specifies whether the message ("reading
+  {fname}..." or "writing {fname}...") should be printed to {stderr}.
+
+# ----------------------------------------------------------------------
+Problems in the version of Stolfi's libraries that are 
+in Minetto's {liv:affine_tracker} directory as of 2009-01:
+
+In libgeo/r2x2.h, libgeo/r2x2.c:
+
+  The function {r2x2_scalar_mul} that was added to Minetto's version
+  has been replaced by {r2x2_scale(s, A, M)}.
+  
+In libgeo/r3x3.h, libgeo/r3x3.c:
+
+  The function {r3x3_mag_sqr} that was added to Minetto's version of
+  {r3x3.h,r3x3.c} is not included in the new version. Be sure to copy
+  it to some private package before installing the new version.
+  
+  On 2011-05 that function was added to r3x3.h (and other modules)
+  with the name {r3x3_mod_norm_sqr}. Also available are
+  {r3x3_norm_sqr} (sum of squares of elements) and its 
+  square root {r3x3_norm}.
+  
+In libgeo/rmxn.h, libgeo/rmxn.c:
+
+  The function {rmxn_inv} in Minetto's version was redefined to 
+  return the determinant of {A} as a {double}.  This change has been
+  incorporated in the new version.
+  
+  The function {rmxn_inv2} (matrix inversion with full pivoting) that
+  was added to Minetto's version of {rmxn.h,rmxn.c} is included in the
+  new version but was renamed {rmxn_inv_full}. Like {rmxn_inv},
+  it returns the determinant as a {double}.
+
+In {libimg/float_image.h,float_image.c}: 
+
+  There is an indexing bug in the functions {float_image_flip_x} and
+  {float_image_flip_x} in Minetto's version.
+
+In {libimg/float_image_paint.h,float_image_paint.c}: 
+
+  In the new version, the functions {float_image_paint_sample} and
+  {float_image_paint_samples} have an extra parameter, a procedural
+  {mask} image, which did not exist in Minetto's version. The old
+  effect can still be obtained by passing {mask = NULL}.
+  
+  The function {float_image_get_index_range} was renamed
+  {float_image_paint_get_index_range}.
+  
+In {libjs/vec.h,vec.c}:
+
+  The fields of any vector type defined by {vec_typedef} have been
+  renamed: number of elements {.nel} --> {.ne}, elements {.el[]} --> {.e[]}.
+
+In {libps/pswr.h,pswr.c}:
+
+  The procedure {pswr_square} defined in Minetto's version has been
+  included in the new version.
+  
+  In Minetto's version, the procedures {pswr_new_stream} and
+  {pswr_new_canvas} created output files called "{streamName}.ps",
+  "{streamName}-{figName}.eps". In Minetto's version, those procedures
+  were modified so that the EPS output files were called
+  "{streamName}{figName}.eps" (without the dash). This change has been
+  incorporated in the new version. However, {pswr_new_stream} now has
+  one additional parameter ({docName}, the filename suffix for ".ps"
+  output); and a different parameter order.
+
+# ----------------------------------------------------------------------
+Problems in the version of Stolfi's libraries that are 
+in Zampieri's {liv:affine_tracker} directory:
+
+In pnmift/ift_image.c:
+
+  The Carlos's version of {ift_get_root_image} was modified to write files with {maxval=2}
+  instead of {maxval=1}, since the latter forced a ".pbm" format
+  that was either buggy or misunderstood by some tools.
+  The fix is included in the new version.
+  
+  Carlos's version of {ift_get_spread_image} was fixed to work for 
+  color images as well as grayscale.  The fix is included in the new version.
+  

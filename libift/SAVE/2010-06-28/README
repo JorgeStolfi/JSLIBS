@@ -1,0 +1,61 @@
+# Last edited on 2024-01-09 16:39:45 by stolfi
+# libift - version by Alexandre Falcao
+
+This software is a free distribution of the image foresting
+transform [1].  
+
+The image foresting transform (IFT) is a graph-based approach to the
+design of image processing operators based on connectivity. The IFT
+defines a minimum-cost path forest in a graph, whose nodes are the
+image pixels and whose arcs are defined by an adjacency relation
+between pixels. The cost of a path in this graph is determined by an
+application-specific path-cost function, which usually depends on
+local image properties along the path--- such as color, gradient, and
+pixel position. The roots of the forest are drawn from a given set of
+seed pixels.  For suitable path-cost functions, the IFT assigns one
+minimum-cost path from the seed set to each pixel, in such a way that
+the union of those paths is an oriented forest, spanning the whole
+image. The IFT outputs three attributes for each pixel: its
+predecessor in the optimum path, the cost of that path, and the
+corresponding root (or some label associated with it). 
+
+The input image and the three attributes above are put together as an
+annotated image. The software is implemented exactly as described in
+the paper [1]. It offers adjacency relations (adjacency.c), labeling
+functions (seeds.c), and path-cost functions for algorithms 2 and 3 of
+the paper (genift.c). It is important to note that not all
+optimizations described in the paper are included here, since the idea
+is to provide a generic tool for people interested in studying the
+IFT. One can make some functions even more efficient by specializing
+them for different operators. Some hints are told in the respective .c
+files.
+
+Different image operators can be designed by choosing an
+application-specific path-cost functions and applying a local
+processing to the annotated image. The software illustrates the IFT
+for watershed transform, boundary tracking, EDT, multiscale
+skeletonization, morphological reconstructions (global and local), and
+geodesic path computation. The same examples of the paper and some
+others are provided here in order to teach how to use the generic IFT
+algorithms. These examples can be found in the ./examples directory.
+
+In order to verify the examples one can just type <make example>, then
+type <./example>, and use any image program, such as gimp and xv, to
+visualize the output. For example: To see image segmentations based on
+the IFT-watershed transform do
+
+cd ./examples
+make watershed
+../bin/watershed
+gimp *.pgm
+
+Some examples create files in the LaTex format. Any need for
+assistance, please contact me <afalcao@ic.unicamp.br>.
+
+Enjoy the IFT.
+
+Bibliography
+
+1. A.X. Falcão, J. Stolfi, R.A. Lotufo, The Image Foresting Transform:
+Theory, Algorithms, and Applications, IEEE Trans. on Pattern Analysis
+and Machine Intelligence, Vol. 26, No. 1, pp. 19--29, Jan. 2004.

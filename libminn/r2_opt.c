@@ -1,5 +1,5 @@
 /* See {r2_opt.h}. */
-/* Last edited on 2023-11-25 17:16:03 by stolfi */
+/* Last edited on 2024-01-10 17:52:48 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -14,6 +14,7 @@
 #include <sign.h>
 #include <r2.h>
 #include <i2.h>
+#include <rn.h>
 #include <jsmath.h>
 #include <affirm.h>
 
@@ -163,19 +164,20 @@ void r2_opt_single_scale_quadopt
         double Fz = f2_for_sve(nv, z);
         
         /* Optimize: */
-        sign_t dir = -1; /* Look for minimum. */
+        sign_t dir = -1;                   /* Look for minimum. */
         /* All these parameters are realative to the search radius in each coord: */
-        double dMax = 1.0;   /* Max deviation from initial guess. */
-        bool_t dBox = TRUE;  /* Search in box, not ball. */
-        double rIni = 0.5;   /* Initial probe simplex radius. */
-        double rMin = fmin(tol, 0.25);   /* Minimum probe simplex radius. */
-        double rMax = 0.70;   /* Maximum probe simplex radius. */
-        double stop = 0.25*tol; /* Stop when {x} moves less than this. */
+        double ctr[nv]; rn_zero(nv,ctr);   /* Center of search domain. */
+        double dMax = 1.0;                 /* Max deviation from initial guess. */
+        bool_t dBox = TRUE;                /* Search in box, not ball. */
+        double rIni = 0.5;                 /* Initial probe simplex radius. */
+        double rMin = fmin(tol, 0.25);     /* Minimum probe simplex radius. */
+        double rMax = 0.70;                /* Maximum probe simplex radius. */
+        double stop = 0.25*tol;            /* Stop when {x} moves less than this. */
         sve_minn_iterate
           ( nv, 
             &f2_for_sve, NULL, 
             z, &Fz,
-            dir, dMax, dBox, rIni, rMin, rMax, stop,
+            dir, ctr, dMax, dBox, rIni, rMin, rMax, stop,
             maxIters,
             debug
           );

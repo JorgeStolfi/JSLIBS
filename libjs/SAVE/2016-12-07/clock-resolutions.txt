@@ -1,0 +1,25 @@
+# Last edited on 2007-01-13 21:13:16 by stolfi
+
+Actual clock resolutions measured in some machines:
+
+  * AMD Duron 1110.001 MHz
+
+      --------------------------------------------------------------------
+                                                                resolution
+                                                --------------------------
+      clock                                          nominal        actual
+      ----------------------------------------  --------------  ----------
+      nanoclock with CLOCK_PROCESS_CPUTIME_ID         0.001 us     4000 us
+      nanoclock with CLOCK_THREAD_CPUTIME_ID          0.001 us     4000 us
+      nanoclock with CLOCK_MONOTONIC               4000.250 us      <10 us
+      nanoclock with CLOCK_REALTIME                4000.250 us      <10 us
+      POSIX UTC {time} function                 1000000.000 us  1000000 us
+      ANSI {clock} function                           1.000 us    10000 us
+      Unix {times} function (user)                10000.000 us    10000 us   
+      Unix {times} function (elapsed)             10000.000 us    10000 us 
+      --------------------------------------------------------------------
+      nanosleep with CLOCK_MONOTONIC                           >1000000 us
+      nanosleep with CLOCK_REALTIME                            >1000000 us
+      POSIX {sleep} function                    1000000.000 us >1000000 us
+      BSD/SUSv2 {usleep} function
+      --------------------------------------------------------------------

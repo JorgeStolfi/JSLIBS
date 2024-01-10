@@ -2,7 +2,7 @@
 #define minn_quad_H
 
 /* Tools for optimizing {d}-dimensional function by enumeration. */
-/* Last edited on 2023-03-27 15:09:28 by stolfi */ 
+/* Last edited on 2024-01-10 13:44:57 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -13,7 +13,6 @@
 void minn_quad
   ( int32_t n,        /* Dimension of search space. */
     minn_goal_t *F,   /* Function to be minimized. */
-    double dMax,      /* Radius of search domain, or {+INF}. */
     bool_t box,       /* True to search in the cube, false in the ball. */
     double tol,       /* Desired precision. */
     double v[],       /* (OUT) Minimum vector found. */
@@ -25,10 +24,9 @@ void minn_quad
     Uses a quadratic approximation method of optimization, specifically
     the iterated SVE (Simplex Vertex-Edge) with some max number of iterations. 
     
-    If {dMax} is {+INF}, the search domain {\RD} is the whole of {\RR^n},
-    and {box} is ignored. Otherwise, if {box} is true the search domain
-    is the signed cube {[-dMax _ +dMax]^n}, else it is the ball 
-    {{v \in \RR^n : |v| <= dMax}}.
+    If {box} is true the search domain
+    is the signed cube {[-1 _ +1]^n}, else it is the unit ball 
+    {{v \in \RR^n : |v| <= 1}}.
     
     The parameter {tol} must be a positive number. The procedure will attempt 
     find an approximation to the minimum with Euclidean error {tol} or less.

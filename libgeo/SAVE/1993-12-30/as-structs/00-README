@@ -1,0 +1,8 @@
+# Last edited on 2007-01-13 00:43:32 by stolfi
+
+This is one of the earliest versions of the "libgeo" library.
+This version uses arrays "dressed" as structs, e.g.
+
+  typedef struct { double c[3]; } r3_t;
+  
+    J.Stolfi, UNICAMP, 2007-01-12

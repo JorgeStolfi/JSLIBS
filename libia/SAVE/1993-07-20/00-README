@@ -1,0 +1,7 @@
+# Last edited on 2007-01-13 00:19:12 by stolfi
+
+This is an early version of the libraries "libia" (interval
+arithmetic; "interval.h" is the current "ia.h") and the "libaa"
+(affine arithmetic; "foi.h" is the current "aa.h").
+
+    J.Stolfi, UNICAMP 2007-01-12

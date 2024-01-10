@@ -1,0 +1,17 @@
+# Last edited on 2007-01-13 00:39:14 by stolfi
+
+This is an old experimental version of "libgeo",
+using "naked" arrays 
+
+  typedef double r3_t [3];
+  
+whereas the current version uses arrays "dressed" as structs:
+
+  typedef struct { double c[3]; } r3_t;
+  
+The former version produces shorter and cleaner code
+({p[i]} instead of {p.c[i]}), but the latter seems to be 
+more programmer-friendly --- e.g. allows functions 
+returning an {r3_t}. 
+
+   J.Stolfi, UNICAMP, 2007-01-12

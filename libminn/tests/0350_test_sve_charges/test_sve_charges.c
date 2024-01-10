@@ -1,5 +1,5 @@
 /* test_sve_charges --- test of {sve_minn.h} with Rutherford's atom potential.  */
-/* Last edited on 2023-02-27 10:46:43 by stolfi */
+/* Last edited on 2024-01-10 18:31:39 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -220,6 +220,7 @@ void find_electron_positions(int32_t nq, int32_t dim, int32_t sym)
     coords_to_params(nq, dim, sym, p, nx, x);
     
     /* Optimize iteratively: */
+    double ctr[nx]; rn_zero(nx, ctr);
     double dMax = 2.000; /* If all electrons are on the surface. */
     bool_t dBox = TRUE; /* Let charges roam in box. */
     double rMin = 0.050;
@@ -231,7 +232,7 @@ void find_electron_positions(int32_t nq, int32_t dim, int32_t sym)
     bool_t debug = FALSE;
     
     double Fx = F(nx, x);
-    sve_minn_iterate(nx, &F, &OK, x, &Fx, dir, dMax, dBox, rIni, rMin, rMax, stop, maxIters, debug);
+    sve_minn_iterate(nx, &F, &OK, x, &Fx, dir, ctr, dMax, dBox, rIni, rMin, rMax, stop, maxIters, debug);
     fprintf(stderr, "iterations = %d\n", nok);
     fprintf(stderr, "function evaluations = %d\n", neval);
     
@@ -282,10 +283,28 @@ void plot_potential
         double Fx = electric_potential(nq, Q, C, p);
         return Fx;
       }
-    
-    int32_t NS = 30;
+      
     FILE *wr = open_write(fname, TRUE);
-    minn_plot_2D_gnuplot(wr, nx, F, x0, NS, R);
+    if (nx == 1)
+      { minn_plot_1D_gnuplot(wr, nx, x0, R, R/N, F); }
+    else
+      { double u0[nx], u1[nx];
+        if (nx == 2)
+          { rn_axis(nx, 0, u0); rn_axis(nx, 1, u1); }
+        else
+          { rn_throw_dir(nx, u0);
+            while (TRUE) 
+              { rn_throw_dir(nx, u1);
+                double dot = rn_dot(nx, u0, u1);
+                rn_mix(nx, 1.0, u1, -dot, u0, u1);
+                if (rn_norm(nx, u1) >= 0.1) { break; }
+              }
+            (void)rn_dir(nx, u1, u1);
+          }
+          
+        bool_t box = FALSE;
+        minn_plot_2D_gnuplot(wr, nx, x0, u0, R, u1, R, box, R/N, F);
+      }
     if ((wr != stderr) && (wr != stdout)) { fclose(wr); }
   }
 

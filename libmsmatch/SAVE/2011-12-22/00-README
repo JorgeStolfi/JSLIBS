@@ -1,0 +1,6 @@
+# Last edited on 2013-10-21 22:50:38 by stolfilocal
+
+Library of general-purpose multiscale matching routines.
+
+This is the last version to use the "circ" flags (never 
+fully debugged anyway).

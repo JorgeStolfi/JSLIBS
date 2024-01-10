@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {minn.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-27 15:04:51 by stolfi */ 
+/* Last edited on 2024-01-10 17:57:17 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define tmnn_COPYRIGHT \
@@ -39,7 +39,6 @@ void tmnn_test_minn_uniform
   ( int32_t n, 
     tmnn_goal_func_t *F2,
     tmnn_goal_func_t *B2,
-    double dMax,
     bool_t box, 
     minn_method_t meth, 
     int32_t it,
@@ -223,19 +222,11 @@ void tmnn_do_one_test (int32_t it, char *fname, int32_t n, bool_t verbose)
     else 
       { demand(FALSE, "invalid goal function name"); }
     
-    /* Choose the search domain size for {minn_uniform}: */
-    double dMax = (drandom() < 0.25 ? +INF : 2.5); /* An arbitrary radius. */ 
-
     for (int32_t ibox = 0; ibox < 2; ibox++)
       { bool_t box = (ibox != 0);
-        /* If {dMax} is {+INF} then {box} is irrelevant, so do only {box=TRUE}: */
-        if ((dMax == +INF) && (! box))
-          { fprintf(stderr, "  redundant test, skipped\n");
-            continue;
-          }
         for (int32_t imeth = 0; imeth < 2; imeth++)
           { minn_method_t meth = (imeth == 0 ? minn_method_ENUM : minn_method_QUAD);
-            tmnn_test_minn_uniform(n, F, B, dMax, box, meth, it, verbose);
+            tmnn_test_minn_uniform(n, F, B, box, meth, it, verbose);
             tmnn_test_minn_subspace(n, F, B, box, meth, it, verbose);
             if (! box)
               { /* Has no {box} option, the domain is always an ellipsoid: */
@@ -300,7 +291,6 @@ void tmnn_test_minn_uniform
   ( int32_t n, 
     tmnn_goal_func_t *F,
     tmnn_goal_func_t *B,
-    double dMax,
     bool_t box, 
     minn_method_t meth, 
     int32_t it,
@@ -311,13 +301,13 @@ void tmnn_test_minn_uniform
 
     if (verbose) 
       { fprintf(stderr, "--- testing {minn_uniform}");
-        fprintf(stderr, " n = %d dMax = %12.7f", n, dMax);
+        fprintf(stderr, " n = %d", n);
         fprintf(stderr, " box = %c meth = %c\n", "FT"[box], "EQ"[meth]);
       }
       
     /* Create an {arad} vector for convenience: */
     double arad[n];
-    for (int32_t i = 0; i < n; i++) { arad[i] = dMax; }
+    for (int32_t i = 0; i < n; i++) { arad[i] = 1.0; }
     
     /* Choose the tolerance on each axis: */
     double atol[n]; /* Tolerance on each axis. */
@@ -341,7 +331,7 @@ void tmnn_test_minn_uniform
     /* Call the minimizer: */
     double vSol[n];   /* Computed minimum. */
     double FSol = NAN;
-    minn_uniform(n, F_minn, dMax, box, atol, meth, vSol, &FSol);
+    minn_uniform(n, F_minn, box, atol, meth, vSol, &FSol);
     if (verbose)
       { fprintf(stderr, "did %d function evaluations\n", nF);
         tmnn_debug_points("v", -1, n, vSol, vOpt, box, arad, atol, FSol, NAN);

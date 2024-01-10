@@ -1,0 +1,2 @@
+  0 1 Smo*Smo+Spo*Spo+Som*Som+Sop*Sop+Sop*Smm+Spo*Smm+Som*Spp+Som*Smp+Sop*Spm+Smo*Spp+Spo*Smp+Smo*Spm                    
+  1 1 Smm*Smm+Spp*Spp+Smp*Smp+Spm*Spm+Som*Smm+Sop*Spp+Sop*Smp+Smo*Smm+Spo*Spp+Som*Spm+Smo*Smp+Spo*Spm                          

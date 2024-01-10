@@ -1,5 +1,5 @@
 /* test_sve_near_quadratic --- test of {sve_minn.h} for a nearly quadratic func */
-/* Last edited on 2023-03-27 10:02:00 by stolfi */
+/* Last edited on 2024-01-10 17:54:00 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -139,6 +139,7 @@ void test_minimizer(int32_t id, int32_t n)
     
     /* Optimize iteratively: */
     double dMax = +INFINITY;
+    double *ctr = NULL;
     bool_t dBox = FALSE;
     double rMin = 0.0000001;
     double rMax = 10.0;
@@ -148,7 +149,7 @@ void test_minimizer(int32_t id, int32_t n)
     int32_t maxIters = 200;
     bool_t debug = TRUE;
     
-    sve_minn_iterate(n, &F, &OK, x, &Fx, dir, dMax, dBox, rIni, rMin, rMax, stop, maxIters, debug);
+    sve_minn_iterate(n, &F, &OK, x, &Fx, dir, ctr, dMax, dBox, rIni, rMin, rMax, stop, maxIters, debug);
     
     /* Evaluate and write the final solution: */
     fprintf(stderr, "final solution:\n");

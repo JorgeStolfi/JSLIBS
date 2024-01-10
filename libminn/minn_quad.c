@@ -1,5 +1,5 @@
 /* See {minn_quad.h}. */
-/* Last edited on 2023-03-27 15:09:50 by stolfi */
+/* Last edited on 2024-01-10 13:49:10 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -21,7 +21,6 @@
 void minn_quad
   ( int32_t n,        /* Dimension of search space. */
     minn_goal_t *F,   /* Function to be minimized. */
-    double dMax,      /* Radius of search domain, or {+INF}. */
     bool_t box,       /* True to search in the unit cube, false in the unit ball. */
     double tol,       /* Desired precision. */
     double v[],       /* (OUT) Minimum vector found. */
@@ -42,15 +41,17 @@ void minn_quad
         /* Optimize: */
         sign_t dir = -1; /* Look for minimum. */
         int32_t maxIters = 10;
-        double rIni = 0.5*dMax;   /* Initial probe simplex radius. */
-        double rMin = tol;        /* Minimum probe simplex radius. */
-        double rMax = 0.70*dMax;  /* Maximum probe simplex radius. */
-        double stop = 0.25*tol;   /* Stop when {x} moves less than this. */
+        double ctr[n]; rn_zero(n, ctr); /* Search domain center. */
+        double dMax = 1.0;              /* Search domain radius. */
+        double rIni = 0.5;              /* Initial probe simplex radius. */
+        double rMin = tol;              /* Minimum probe simplex radius. */
+        double rMax = 0.70*dMax;        /* Maximum probe simplex radius. */
+        double stop = 0.25*tol;         /* Stop when {x} moves less than this. */
         sve_minn_iterate
           ( n, 
             F, NULL, 
             v, &Fv,
-            dir, dMax, box, rIni, rMin, rMax, stop,
+            dir, ctr, dMax, box, rIni, rMin, rMax, stop,
             maxIters,
             debug
           );

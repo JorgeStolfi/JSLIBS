@@ -1,0 +1,1702 @@
+/* Last edited on 2007-01-15 17:24:02 by stolfi */
+
+/* Various enumeration procedures for graph-like structures. */
+
+/* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
+/* oct-marcone/Oct.m3 */
+
+PROCEDURE Enum(a: Arc; visit: VisitProc; edges: BOOLEAN := FALSE)=
+  CONST stacksize = 16*1024; (* Guess: max edges in a connected component *)
+  VAR stack: ARRAY [0..stacksize-1] OF Edge;
+      bitstack: ARRAY [0..stacksize-1] OF (* BITS 3 FOR *) [0..7];
+      top: [0..stacksize];
+      
+  PROCEDURE VisitandMark (c: Arc)=
+    (* If edge(c) is unmarked: visit, mark, and stack it. *)
+    BEGIN
+      IF NOT c.edge.marks[FlipBit(c)] THEN 
+(*      IF NOT c.edge.marks[0] THEN        *)
+        visit(c);
+        IF NOT edges THEN visit(Sym(c)) END;
+        <* ASSERT top < stacksize *>
+        c.edge.marks[FlipBit(c)] := TRUE; 
+        stack[top] := c.edge; bitstack[top] := c.bits;
+        top := top + 1;
+      END;
+    END VisitandMark;
+  
+  VAR seen: [0..stacksize]; (* # of quads whose childeren were looked at *)
+      atop: Arc;
+  BEGIN
+    <* ASSERT NOT a.edge.marks[FlipBit(a)] *>
+    top := 0;
+    seen := 0;
+    TRY
+      VisitandMark (a);
+      WHILE seen < top DO 
+        atop.edge := stack[seen]; atop.bits := bitstack[seen];
+        VisitandMark(Onext(atop));
+        VisitandMark(Onext(Sym(atop)));
+        seen := seen + 1
+      END;
+    FINALLY
+      (* Erase all marks *)
+      WHILE top > 0 DO
+        top := top - 1;
+        atop.edge := stack[top]; atop.bits := bitstack[top];
+        atop.edge.marks[FlipBit(atop)] := FALSE; 
+      END;
+
+(*      WHILE top > 0 DO
+        top := top - 1;
+        stack[top].marks[FlipBit(stack[top]) := FALSE
+      END;
+   *)
+    END;
+  END Enum;
+
+PROCEDURE EnumVertices (a: Arc; visit: VisitProc)=
+  CONST stacksize = 16*1024; (* Guess: max quads in a connected component *)
+  VAR stack: ARRAY [0..stacksize-1] OF Edge;
+      bitstack: ARRAY [0..stacksize-1] OF (* BITS 3 FOR *) [0..7];
+      top: [0..stacksize]; (* # of visited(=marked=stacked) vertices *)
+  
+  PROCEDURE VisitandMark (c: Arc)=
+    (* If org(c) is unmarked: visit, mark, and stack it *)
+    VAR cn: Arc;
+    BEGIN
+      IF NOT c.edge.marks[SenseBit(c)] THEN
+        visit(c);
+        <* ASSERT top < stacksize *>
+        cn := c;
+        REPEAT
+          cn.edge.marks[SenseBit(cn)] := TRUE;
+          cn := Onext(cn);
+        UNTIL (cn = c);
+        stack[top] := c.edge; bitstack[top] := c.bits;
+        top := top + 1;
+      END;
+    END VisitandMark;
+  
+  VAR seen: [0..stacksize]; (* # of vertices whose neighbs were looked at *)
+      atop, atn: Arc;
+  BEGIN
+    <* ASSERT NOT a.edge.marks[0] *>
+    top := 0;
+    seen := 0;
+    TRY
+      VisitandMark (a);
+      WHILE seen < top DO
+        atop.edge := stack[seen]; atop.bits := bitstack[seen];
+        atn := atop;
+        REPEAT
+          VisitandMark(Sym(atn));
+          atn := Onext(atn);
+        UNTIL (atn = atop);
+        seen := seen + 1;
+      END; 
+    FINALLY
+      (* Erase all marks *)
+      WHILE top > 0 DO
+        top := top - 1;
+        atop.edge := stack[top]; atop.bits := bitstack[top];
+        atn := atop;
+        REPEAT
+          atn.edge.marks[SenseBit(atn)] := FALSE;
+          atn:= Onext(atn);
+        UNTIL (atop = atn);
+      END;
+    END;
+  END EnumVertices;
+  
+PROCEDURE NumberArcs(READONLY a: ARRAY OF Arc; primal: BOOLEAN): REF ARRAY OF Arc =
+  VAR 
+    sz: CARDINAL := 1024;     (* Number of edges allocated on stack *)
+    ne: CARDINAL := 0;        (* Number of edges seen *)
+    estack := NEW(REF ARRAY OF Edge, sz);  (* Edge stack *)
+    
+    na: CARDINAL := 0;    (* Number of arcs seen *)
+    astack := NEW(REF ARRAY OF Arc, 8 * sz);  (* Arc stack *)
+      
+  (* An arc "a" is "marked" if astack[8 * a.edge.no + a.bits] = a. *)
+
+  PROCEDURE VisitAndMark (t: Arc) =
+    (* If t is unmarked: visit, mark, and stack it. *)
+    BEGIN
+      WITH teno = t.edge.no, tno = 8*teno + t.bits DO
+        IF teno < ne AND astack[tno] = t THEN
+          (* Arc is already marked *)
+        ELSE
+          IF teno < ne AND estack[teno] = t.edge THEN
+            (* New arc of old edge *)
+          ELSE
+            (* New edge *)
+            IF nstack = sz THEN
+              WITH newstack = NEW(REF ARRAY OF Arc, 2 * sz) DO
+                SUBARRAY(newstack^, 0, sz) := stack^;
+                stack := newstack
+              END;
+            END;
+            t.edge.no := nstack;
+            stack[nstack] := t;
+            INC(nstack);
+          t.edge.no := nstack;
+          stack[nstack] := t;
+          INC(nstack);
+        END
+      END
+    END VisitAndMark;
+  
+  VAR 
+    seen: CARDINAL := 0; (* # of edges whose childeren were looked at *)
+    s: Arc;
+  BEGIN
+    nstack := 0;
+    seen := 0;
+    FOR i := 0 TO LAST(a) DO
+      VisitAndMark (a[i])
+    END;
+    WHILE seen < nstack DO
+      s := stack[seen];
+      VisitAndMark(Onext(s));
+      VisitAndMark(Onext(Sym(s)));
+      seen := seen + 1
+    END;
+    WITH
+      r = NEW(REF ARRAY OF Arc, nstack)
+    DO
+      r^ := SUBARRAY(stack^, 0, nstack);
+      RETURN r
+    END;
+  END NumberEdges;
+
+PROCEDURE NumberVertices(READONLY e: ARRAY OF Arc): REF ARRAY OF Arc =
+  VAR 
+    sz: CARDINAL := 1024;
+    stack := NEW(REF ARRAY OF Arc, sz);
+    
+    nstack: CARDINAL := 0;
+      
+  (* An arc "a" is "marked" if stack[Get].edge = e. *)
+
+  PROCEDURE VisitAndMark (t: Arc) =
+    (* If t is unmarked: visit, mark, and stack it. *)
+    BEGIN
+      IF t.edge.no < nstack AND stack[t.edge.no].edge = t.edge THEN
+        (* Edge is already marked *)
+      ELSE
+        IF nstack = sz THEN
+          WITH newstack = NEW(REF ARRAY OF Arc, 2 * sz) DO
+            SUBARRAY(newstack^, 0, sz) := stack^;
+            stack := newstack
+          END;
+        END;
+        t.edge.no := nstack;
+        stack[nstack] := t;
+        INC(nstack);
+      END
+    END VisitAndMark;
+  
+  VAR 
+    seen: CARDINAL := 0; (* # of edges whose childeren were looked at *)
+    s: Arc;
+  BEGIN
+    nstack := 0;
+    seen := 0;
+    FOR i := 0 TO LAST(a) DO
+      VisitAndMark (a[i])
+    END;
+    WHILE seen < nstack DO
+      s := stack[seen];
+      VisitAndMark(Onext(s));
+      VisitAndMark(Onext(Sym(s)));
+      seen := seen + 1
+    END;
+    WITH
+      r = NEW(REF ARRAY OF Arc, nstack)
+    DO
+      r^ := SUBARRAY(stack^, 0, nstack);
+      RETURN r
+    END;
+  END NumberVertices;
+
+PROCEDURE NumberVerticesAndFaces(
+    READONLY e: ARRAY OF Arc
+  ): RECORD v, f: REF ARRAY OF Arc END =
+  (* 
+    Assumes "e[i]" is one of the arcs of edge number "i".
+    Numbers the origin and destination vertices of all those arcs,
+    and also the left and right faces.
+    Returns a vector "v" with one arc out of each vertex,
+    and a vector "f" with one arc on the ccw boundary of each face. *)
+
+  VAR nv: CARDINAL := 0;
+      nf: CARDINAL := 0;
+      
+      v: REF ARRAY OF Arc;
+      f: REF ARRAY OF Arc;
+
+  BEGIN
+    WITH
+      NE = NUMBER(e),
+      rep = NEW(REF ARRAY OF ArcNo, 8*NE)^
+        (* 
+          Define #a = GetArcNo(a), a[i] = arc such that #a = i.
+          Invariant: rep[#a] = #a if arc "a" is the least arc out of its origin;
+          otherwise rep[#a] = #b where b is some lesser arc with Org(a)=Org(b). *)
+    DO
+      PROCEDURE Identify(a: Arc) =
+        (* Records the fact that "a" and "Onext(a)" have the same origin *)
+        VAR ia := GetArcNo(a);
+            ib := GetArcNo(Onext(a));
+        BEGIN
+          WHILE rep[ia] # ia DO ia := rep[ia] END;
+          WHILE rep[ib] # ib DO ib := rep[ib] END;
+          IF ia < ib THEN
+            rep[ib] := ia
+          ELSIF ib < ia THEN
+            rep[ia] := ib
+          ELSE
+            (* Ok *)
+          END
+        END Identify;
+        
+      BEGIN
+        (* Initialize "rep" *)
+        FOR ia := 0 TO LAST(rep) DO rep[ia] := ia END;
+        
+        (* Identify arcs with same origin: *)
+        FOR ie := 0 TO LAST(e) DO
+          VAR ee := e[ie];
+          BEGIN
+            FOR r := 0 TO 3 DO
+              Identify(ee); Identify(Flip(ee));
+              ee := Rot(ee)
+            END;
+          END
+        END;
+        
+        (* Count and collect distinct vertices and faces: *)
+        
+        PROCEDURE Count(a: Arc; VAR n: CARDINAL) =
+          BEGIN
+            WITH ia = GetArcNo(a) DO
+              IF rep[ia] = ia THEN INC(n) END;
+            END
+          END Count;
+          
+        PROCEDURE Collect(a: Arc; VAR n: CARDINAL; VAR r: ARRAY OF Arc) =
+          BEGIN
+            WITH ia = GetArcNo(a) DO
+              IF rep[ia] = ia THEN r[n] := a; INC(n) END;
+            END
+          END Collect;
+          
+        BEGIN
+          nv := 0; nf := 0;
+          FOR ie := 0 TO LAST(e) DO
+            WITH ei = e[i] DO
+              Count(ei, nv);
+              Count(Rot(ei), nf);
+              Count(Sym(ei), nv);
+              Count(Tor(ei), nf)
+            END;
+          END;
+          v := NEW(REF ARRAY OF Arc, nv);
+          f := NEW(REF ARRAY OF Arc, nf);
+          nv := 0; nf := 0;
+          FOR ie := 0 TO LAST(e) DO
+            WITH ei = e[i] DO
+            
+              Collect(ei, nv, v^);
+              Collect(Rot(ei), nf, f^);
+              Collect(Sym(ei), nv, v^);
+              Collect(Tor(ei), nf, f^)
+            END;
+          END;
+        END
+      END
+    END;
+    RETURN 
+  END NumberVerices;
+
+/* ---------------------------------------------------------------------- */
+/* oct-marcone/NewOct.m3 */
+  
+PROCEDURE NumberEdges(READONLY e: ARRAY OF Edge): REF ARRAY OF Edge =
+  (*
+    Enumerates all edges reachable from "a", and assigns
+    them consecutive serial numbers starting from 0.
+    Returns a vector of those edges, indexeed by serial number. *)
+
+  CONST InitNE = 64;
+  VAR 
+    et := NEW(REF ARRAY OF Edge, InitNE);
+    NE: CARDINAL := 0;  (* Num of Edges seen so far *)
+    KE: CARDINAL := 0;  (* Num of Edges whose "enext"s have been seen. *)
+    
+    (* An edge "e" has been seen iff "et[e.no] = e". *)
+
+  PROCEDURE VisitAndMark (t: Edge) =
+    (* If t is unmarked: visit, mark, and es it. *)
+    BEGIN
+      WITH tno = t.edge DO
+        IF tno >= NE OR et[tno] # t THEN
+          tno := NE;  StoreEdge(t, NE, et)
+        END
+      END
+    END VisitAndMark;
+  
+  BEGIN
+    FOR i := 0 TO LAST(e) DO VisitAndMark (e[i]) END;
+    WHILE KE < NE DO
+      VisitAndMark(et[KE].enext[0]);
+      VisitAndMark(et[KE].enext[1]);
+      VisitAndMark(et[KE].enext[2]);
+      VisitAndMark(et[KE].enext[3]);
+      INC(KE)
+    END;
+    WITH
+      r = NEW(REF ARRAY OF Edge, NE)
+    DO
+      r^ := SUBARRAY(et^, 0, NE);
+      RETURN r
+    END;
+  END NumberEdges;
+
+/* ---------------------------------------------------------------------- */
+/* oct-marcone/DOct.m3 */
+
+PROCEDURE NumberVertices(a: Arc): CARDINAL =
+  VAR nv: CARDINAL := 0;
+  PROCEDURE Visit(c: Arc) =
+  VAR cn: Arc;
+  BEGIN
+    cn := c;
+    REPEAT
+      NARROW(cn.edge, DataOctet).org[SenseBit(cn)] := nv;
+      cn := Onext(cn);
+    UNTIL (cn = c);
+    INC(nv);
+  END Visit;
+BEGIN
+  EnumVertices(a, Visit);
+  RETURN nv
+END NumberVertices;
+
+/* ---------------------------------------------------------------------- */
+/* libm3octet-2/Triang.m3 */
+
+PROCEDURE NumberVertices(a: Arc): CARDINAL = 
+  VAR n: CARDINAL := 0;
+  
+  PROCEDURE Visit(c: Arc) =
+    VAR cn: Arc;  
+    BEGIN
+      WITH v = Org(c) DO
+        cn := c;
+        REPEAT
+          WITH vn = Org(cn) DO
+            <* ASSERT vn = v *>
+            vn.num := n
+          END;
+          cn := Onext(cn);
+        UNTIL (cn = c);
+      END;
+      INC(n);
+    END Visit;
+    
+  BEGIN
+    Oct.EnumVertices(a, Visit);
+    RETURN n
+  END NumberVertices;
+
+/* ---------------------------------------------------------------------- */
+/* libm3octet-2/Triang.i3 */
+
+PROCEDURE EnumGridVertices(
+    a: Arc; 
+    nx, ny: CARDINAL;
+    visit: GridVisitProc;
+  );
+  (*
+    Assumes "a" is the east-pointing arc out of the 
+    southwest corner of a triangulated grid.
+    Calls "visit(e, x, y)" for each vertex of the grid,
+    where "e" is one arc out of the vertex, and "x,y"
+    are its indices.  
+    
+    The vertices are numbered from [0,0] to [2*nx, 2*ny];
+    both indices are even for cell corners, and both are
+    odd for cell centers. 
+  *)
+    
+
+/* ---------------------------------------------------------------------- */
+/* libm3map3d/Triangulation.m3 */
+
+(* === GLOBAL PROCEDURES === *)
+
+VAR
+  seenNode: REF ARRAY OF Node := NIL;
+  nodeOnum: REF ARRAY OF CARDINAL := NIL;
+  seenNodeCount: CARDINAL := 0;
+
+PROCEDURE MarkNode(n: Node) =
+  BEGIN
+    IF seenNode = NIL OR NUMBER(seenNode^) <= seenNodeCount THEN
+      DoubleseenNode()
+    END;
+    WITH k = seenNodeCount+0 DO
+      seenNode[k] := n;
+      nodeOnum[k] := n.num;
+      n.num := k;
+      INC(seenNodeCount)
+    END
+  END MarkNode;
+
+PROCEDURE DoubleseenNode() =
+  VAR sz: CARDINAL;
+  BEGIN
+    IF seenNode = NIL THEN sz := 0 ELSE sz := NUMBER(seenNode^) END;
+    WITH 
+      szNew = MAX(2*sz, 1000),
+      seenNodeNew  = NEW(REF ARRAY OF Node, szNew),
+      nodeOnumNew  = NEW(REF ARRAY OF CARDINAL, szNew)
+    DO
+      IF seenNode # NIL THEN
+        SUBARRAY(seenNodeNew^, 0, sz) := seenNode^;
+        SUBARRAY(nodeOnumNew^, 0, sz) := nodeOnum^;
+      END;
+      seenNode := seenNodeNew;
+      nodeOnum := nodeOnumNew;
+    END
+  END DoubleseenNode;
+
+PROCEDURE NodeIsMarked(n: Node) : BOOLEAN  =
+  BEGIN
+    RETURN (n.num < seenNodeCount) AND (seenNode[n.num] = n)
+  END NodeIsMarked;
+
+PROCEDURE UnmarkMarkedNodes() =
+  BEGIN
+    WHILE seenNodeCount > 0 DO
+      WITH k = seenNodeCount-1, n = seenNode[k] DO
+        n.num := nodeOnum[k];
+        DEC(seenNodeCount)
+      END
+    END
+  END UnmarkMarkedNodes;
+
+PROCEDURE EnumVertices(a: Handle; visit: VisitProc) =
+  CONST IniStackSize = 1000;
+  VAR
+    festack := NEW(REF ARRAY OF FaceEdge, IniStackSize);
+    bstack := NEW(REF ARRAY OF VFEBits, IniStackSize);
+    top : CARDINAL;    (* top for "festack" stack *)
+
+  PROCEDURE DoubleStack() =
+    BEGIN
+      WITH 
+        sz = NUMBER(festack^), szNew = 2*sz,
+        festackNew = NEW(REF ARRAY OF FaceEdge, szNew),
+        bstackNew  = NEW(REF ARRAY OF VFEBits, szNew)
+      DO
+        SUBARRAY(festackNew^, 0, sz):= festack^; festack := festackNew;
+        SUBARRAY(bstackNew^, 0, sz) := bstack^; bstack := bstackNew;
+      END
+    END DoubleStack;
+    
+  PROCEDURE Stack(c: Handle) =
+    VAR cn : Handle := c;
+        dn : Handle;
+    BEGIN
+      REPEAT
+        IF top > LAST(festack^) THEN DoubleStack() END;
+        festack[top] := cn.fe;
+        bstack[top] := cn.bits; 
+        top := top + 1;
+        dn := Flip(prevE(cn));
+        REPEAT
+	  IF top > LAST(festack^) THEN DoubleStack() END;
+          festack[top] := dn.fe; bstack[top] := dn.bits;
+          top := top + 1;
+          dn := nextF(dn);
+        UNTIL( dn = Flip(prevE(cn)) );
+        cn := nextF(cn);
+      UNTIL (cn = c);
+    END Stack;
+
+  PROCEDURE VisitAndMark(c: Handle)=
+    (* If org(c) is diferent that the origins handles stacked, stack the handle
+       "c".
+    *)
+    VAR cn : Handle;
+    BEGIN
+      WITH n = Org(c) DO
+        IF n # NIL AND NOT NodeIsMarked(n) THEN
+          visit(c);
+          MarkNode(n);
+          Stack(c);
+          cn := c;
+          REPEAT
+            Stack(cn);
+            cn := Onext(cn);
+          UNTIL (cn = c)
+        END
+      END;        
+    END VisitAndMark;
+
+  VAR seen: CARDINAL;
+  BEGIN
+    top := 0;
+    seen := 0;
+    <* ASSERT seenNodeCount = 0 *>
+    VisitAndMark(a);
+    WHILE seen < top  DO
+      WITH b = Handle{festack[seen], bstack[seen]} DO
+        VisitAndMark(nextF(b));
+        VisitAndMark(nextF(nextE(b)));
+        VisitAndMark(nextE(b));
+        VisitAndMark(prevF(prevE(b)));
+      END;
+      seen := seen + 1;
+    END;
+    UnmarkMarkedNodes();
+  END EnumVertices;
+
+
+PROCEDURE NumberVertices(a: Handle): CARDINAL = 
+  VAR n: CARDINAL := 0;
+  
+  PROCEDURE Visit(c: Handle) =
+  
+    PROCEDURE Visit_(c: Handle) =
+      VAR cn,dn: Handle;  
+      BEGIN
+        WITH v = Org(c) DO
+          cn := c;
+          REPEAT
+            WITH vn = Org(cn) DO
+              <* ASSERT vn = v *>
+              vn.num := n;
+              dn := Flip(prevE(cn));
+              REPEAT
+                WITH wn = Org(dn) DO
+                  <* ASSERT wn = vn *>
+                  wn.num := n;
+                  dn := nextF(dn);
+                END;
+              UNTIL ( dn = Flip(prevE(cn)) );
+              cn := nextF(cn);
+            END;
+          UNTIL ( cn = c );
+        END;
+      END Visit_;
+
+    VAR cn: Handle := c;
+    BEGIN
+      REPEAT        
+        Visit_(cn);
+        cn := Onext(cn);
+      UNTIL cn = c;
+      INC(n);
+   END Visit;
+
+   PROCEDURE VisitDual(c: Handle) =
+     PROCEDURE VisitDual_(c: Handle) =
+       VAR
+         cn: Handle;
+	 p,pn: Node;
+       BEGIN
+         p := Org(c);
+	 IF p # NIL THEN
+           cn := c;
+           REPEAT
+             pn := Org(cn);
+	     IF pn # NIL THEN
+               <* ASSERT pn = p *> 
+               pn.num := n;
+             END;
+             cn := nextF(cn);
+           UNTIL( cn = c )
+         END;
+       END VisitDual_;
+
+     VAR cn: Handle := c;
+     BEGIN
+       VisitDual_(cn);
+       VisitDual_(Flip(prevE(cn)));
+       INC(n);
+     END VisitDual;
+
+    BEGIN
+      IF Map3D.DualBit(a) = 0 THEN
+        EnumVertices(a, Visit);
+      ELSE
+        EnumVertices(a, VisitDual);
+      END;
+    RETURN n    
+  END NumberVertices;
+ 
+/* ---------------------------------------------------------------------- */
+/* libm3map3d/Map3D.m3 */
+
+(*
+   Tridimensional maps.
+
+   The facet-edge data structure for tridimensional maps, decorated with
+   material properties of vertices, edges, faces, and cells.
+   Written by L. Lozada (see copyright at end of file). *)
+
+(* ================ TRAVESAL ===================== *)
+
+CONST
+   InitHandleStackSize = 1024;
+   InitEdgeStackSize = 1024;
+   InitVertexStackSize = 1024;
+   InitOutStackSize = 20;
+
+PROCEDURE EnsureStackSpace(VAR stack: REF ARRAY OF Handle; VAR top: CARDINAL) =
+  (* If the stack is full, allocates a new one, copying the old contents to it. *)
+  BEGIN
+    IF top >= NUMBER(stack^) THEN
+      WITH 
+    	sz = NUMBER(stack^), szNew = 2*sz,
+    	stackNew = NEW(REF ARRAY OF Handle, szNew)
+      DO
+    	SUBARRAY(stackNew^, 0, sz) := stack^; stack := stackNew;
+      END
+    END
+  END EnsureStackSpace;
+
+PROCEDURE EnumHandles(READONLY a: ARRAY OF Handle; visit: VisitProc; fes: BOOLEAN := FALSE) =
+  VAR
+    stack := NEW(REF ARRAY OF Handle, InitHandleStackSize);
+    np: CARDINAL;
+
+  (* The fe record of handle "t" is marked by setting "t.fe.emark[DualBit(t)]". *)
+  (* Note that only the primal or dual half of the record is marked, but each mark *)
+  (* applies to both t and Flip(t). *)
+  PROCEDURE VisitAndMark(t: Handle)=
+    (* If fe(t) is unmarked: visit, mark, and stack it. *)
+    BEGIN
+      IF NOT t.fe.emark[DualBit(t)] THEN 
+        visit(t);
+        IF NOT fes THEN visit(Flip(t)) END;
+        t.fe.emark[DualBit(t)] := TRUE; 
+        EnsureStackSpace(stack, np);
+        stack[np] := t; INC(np);
+      END;
+    END VisitAndMark;
+
+  VAR seen: CARDINAL; (* # of quads whose childeren were looked at *)
+  BEGIN
+    IF NUMBER(a) > 0 THEN <* ASSERT NOT a[0].fe.emark[DualBit(a[0])] *> END;
+    np := 0;
+    seen := 0;
+    TRY
+      FOR i := 0 TO LAST(a) DO VisitAndMark(a[i]) END; 
+      WHILE seen < np DO 
+        WITH b = stack[seen] DO
+          VisitAndMark(nextE(b));
+          VisitAndMark(nextF(b));
+        END;
+        seen := seen + 1
+      END;
+    FINALLY
+      (* Erase all marks *)
+      FOR i := 0 TO np-1 DO
+        WITH b = stack[i] DO
+          b.fe.emark[DualBit(b)] := FALSE;
+        END
+      END
+    END
+  END EnumHandles;
+
+(* ====== Numbering ====== *)
+
+PROCEDURE NumberFaceEdges(READONLY a: ARRAY OF Handle): REF ARRAY OF Handle =
+
+  VAR stack := NEW(REF ARRAY OF Handle, InitHandleStackSize);
+      nfe: CARDINAL := 0;
+
+  (* The fe record of handle "t" is marked by setting "t.fe.num" to the index "k" *)
+  (* such that stack[k] = t. *)
+  (* Note that the mark applies to all eight handles of that facet-edge. *)
+  PROCEDURE VisitAndMark(t: Handle) =
+    (* If t is unmarked: visit, mark, and stack it. *)
+    BEGIN
+      WITH num = t.fe.num DO
+        IF NOT (num < nfe AND stack[num].fe = t.fe) THEN
+          EnsureStackSpace(stack, nfe);
+          num := nfe;
+          stack[nfe] := t; INC(nfe);
+        END
+      END
+  END VisitAndMark;
+
+  VAR seen: CARDINAL := 0; (* # of fes whose childeren were looked at *)
+  BEGIN
+    nfe := 0;
+    seen := 0;
+    FOR i := 0 TO LAST(a) DO VisitAndMark(a[i]) END; 
+    WHILE seen < nfe DO
+      WITH s = stack[seen] DO
+        VisitAndMark(nextF(s));
+        VisitAndMark(nextE(s));
+      END;
+      seen := seen + 1
+    END;
+    WITH r = NEW(REF ARRAY OF Handle, nfe) DO
+      r^ := SUBARRAY(stack^, 0, nfe);
+      RETURN r
+    END;
+  END NumberFaceEdges;
+
+PROCEDURE NumberEdgesOrFacets(READONLY a: ARRAY OF Handle; facets: BOOLEAN := FALSE): REF ARRAY OF Handle =
+  VAR
+    stack := NEW(REF ARRAY OF Handle, InitHandleStackSize);
+    ne: CARDINAL; 
+
+  (* The edge "e" is marked by setting t.fe.mark[DualBit(t)] for every handle t *)
+  (* with that same edge.  *)
+    
+  PROCEDURE VisitAndMark(t: Handle) =
+    (* If t is unmarked: visit, mark, and stack it. *)
+    VAR tn: Handle;
+    BEGIN
+      IF NOT t.fe.emark[DualBit(t)] THEN
+        tn := t;
+        REPEAT
+          tn.fe.emark[DualBit(tn)] := TRUE;
+          WITH e = Edg(tn) DO IF e # NIL THEN e.num := ne END END;
+          tn := nextF(tn);
+        UNTIL (tn = t);
+        EnsureStackSpace(stack, ne);
+        stack[ne] := t; INC(ne);
+      END; 
+    END VisitAndMark;
+
+  VAR seen: CARDINAL := 0; sn: Handle;
+  BEGIN
+    seen := 0;
+    ne := 0;
+    FOR i := 0 TO LAST(a) DO
+      IF facets THEN VisitAndMark(Sdual(a[i])) ELSE VisitAndMark(a[i]) END
+    END;
+    WHILE seen < ne DO
+      WITH s = stack[seen] DO
+        sn := s;
+        REPEAT
+          VisitAndMark(nextE(sn));
+          sn := nextF(sn);
+        UNTIL (sn = s);
+      END;
+      seen := seen + 1
+    END;
+
+    (* Erase all marks *)
+    FOR i := 0 TO ne-1 DO
+      WITH b = stack[i] DO
+        VAR bn: Handle := b;
+        BEGIN
+          REPEAT
+            bn.fe.emark[DualBit(bn)] := FALSE;
+            bn:= nextF(bn);
+          UNTIL (bn = b);
+        END;
+      END
+    END;
+
+    WITH r = NEW(REF ARRAY OF Handle, ne) DO
+      r^ := SUBARRAY(stack^, 0, ne);
+      IF facets THEN FOR i := 0 TO ne-1 DO r[i] := Sdual(r[i]) END END;
+      RETURN r
+    END;
+  END NumberEdgesOrFacets;
+
+PROCEDURE NumberFaceEdges(READONLY a: ARRAY OF Handle): REF ARRAY OF Handle;
+  (*
+    Assigns distinct serial numbers to all fes reachable from "a" by
+    nextE/nextF chains. Stores those numbers in the "num" field
+    of each face-edge record. Returns a vector with one reachable handle 
+    from each face-edge (not necessarily the reference one).  *)
+
+PROCEDURE NumberEdges(READONLY a: ARRAY OF Handle): REF ARRAY OF Handle;
+  (*
+    Enumerates all edges that are reachable from "a" by
+    nextE/nextF chains. Assigns distinct serial numbers to those edges and stores
+    them in the ".num" field of the corresponding EFNode records, if they exist. 
+    In any case, returns a representative handle "b" for each edge "e" such that 
+    Edge(b) = e (resp. for each facet f such that Face(b) = f). *)
+
+PROCEDURE NumberVerticesOrCells(READONLY a: ARRAY OF Handle; cells: BOOLEAN := FALSE): REF ARRAY OF Handle; 
+  (*
+    Enumerates all vertices (resp. cells, if "cells = TRUE") that are
+    reachable from "a" by nextE/nextF chains. Assigns distinct serial numbers to
+    those vertices (resp. cells) and stores them in the ".num" field
+    of the corresponding VPNode records, if they exist.  In any case, 
+    returns a representative handle "b" for of each vertex v such that Org(b) = v
+    (resp. for each cell p such that NegC(b) = p). *)
+
+/* ---------------------------------------------------------------------- */
+/* libm3delaunay/DelauTest.m3 */
+
+PROCEDURE PlotDelaunay(e: Arc; name: TEXT) =
+  (* Uses "Ldata" and "Rdata" to mark visited edges. *)
+
+  <* FATAL Wr.Failure, Thread.Alerted *>
+
+  VAR (*CONST*) PltMark: REF INTEGER := NEW(REF INTEGER);
+      f: Wr.T := FileStream.OpenWrite(name) ;
+
+  PROCEDURE DoPlotDelaunay(e:Arc) =
+    BEGIN
+      WHILE (Ldata(e) # PltMark) AND (Rdata(e) # PltMark) DO
+        WITH op = Org(e)^, dp = Dest(e)^ DO
+          PSPlot.DrawSegment(f, L(op.x), L(op.y), L(dp.x), L(dp.y));
+        END;
+        SetLdata(e, PltMark);
+        SetRdata(e, PltMark);
+        DoPlotDelaunay(Onext(Sym(e)));
+        e := Onext(e)
+      END
+    END DoPlotDelaunay;
+
+  BEGIN
+    PSPlot.BeginFile(f);
+    PSPlot.BeginPage(f, 1, -0.6D0, 0.6D0, -0.6D0, 0.6D0, 1, 1);
+    PSPlot.AddCaption(f, "Delaunay triangulation");
+    
+    DoPlotDelaunay(e);
+
+    PSPlot.DrawFrame(f);
+    PSPlot.EndPage(f);
+    PSPlot.EndFile(f);
+    Wr.Close(f);
+  END PlotDelaunay;
+
+/* ---------------------------------------------------------------------- */
+/* fgc-quad/QuadEdge.m3 */
+
+(*** TRAVERSAL ***)
+
+TYPE VisitProc = PROCEDURE (a: Arc) RAISES ANY;
+
+PROCEDURE EnumArcs (a: Arc; visit: VisitProc) RAISES ANY;
+PROCEDURE EnumEdges (a: Arc; visit: VisitProc) RAISES ANY;
+PROCEDURE EnumVertices (a: Arc; visit: VisitProc) RAISES ANY;
+(* 
+  Calls "visit(e)" for arcs "e" that can be reached from
+  "a" by repeated application of "Sym"s and "Onext"s.
+  
+  "EnumArcs" visits all such arcs.  
+  
+  "EnumEdges" visits only one arc on each edge: that is, if
+  arc "e" is reachable from "root", exactly one of "e" and "Sym(e)"
+  will be visited.
+  
+  "EnumVertices" visits exactly one arc out of each reachable
+  vertex.
+
+  Note that if arc "e" is reachable then neither "Rot(e)" 
+  nor "Tor(e)" are reachable (unless "Splice" has been
+  improperly used.)
+  
+*)
+
+(*** ELEMENT NUMBERING ***)
+
+PROCEDURE ArcId(a: Arc): CARDINAL;
+PROCEDURE EdgeId(a: Arc): CARDINAL;
+PROCEDURE VertexId(a: Arc): CARDINAL;
+(*
+  Each arc, edge, and vertex is identified by a distinct numerical id.
+  
+  The four arcs corresponding to the same edge have consecutive ids;
+  the lowest of them is divisible by four, and is the edge id.
+  
+  The id of a vertex is that of the lowest arc with the same origin.
+  
+  Thus, the following hold
+
+    EdgeId(a) = EdgeId(Rot(a)) <= ArcId(a)
+
+    VertexId(a) = VertexId(ONext(a)) <= ArcId(a)
+
+  The cost of "VertexId" s proprotional to the vertex's degree.
+*)
+
+PROCEDURE EnumOrbits (
+    e: Edge; 
+    s1, s2: EdgeStep;
+    vEdge, vOrbit: EdgeProc; 
+  ) RAISES ANY =
+  (*
+    Enumerates all edges that can be reached from "e" through 
+    any combination of "s1" and "s2".
+    
+    If "vEdge" is not NIL, applies it to every reachable edge.
+    
+    If "vOrbit" is not NIL, applies it to exactly one reachable edge
+    out of each "s1"-orbit.
+  *)
+  CONST 
+    InitialPileSize = 1024;
+  VAR 
+    orb: REF ARRAY OF Edge := NEW(REF ARRAY OF Edge, InitialPileSize);
+    nOrb: CARDINAL := 0;
+    (* 
+      Invariant: The array "orb[0..nOrb-1]" contains exactly one edge
+      (the entry one) out of each "s1"-orbit seen so far.
+      If the "mark" bit of an edge is TRUE, its "s1"-orbit
+      has been stored in "orb"; all the edges in it have been
+      marked and visited.
+    *)
+
+  PROCEDURE Stack(f: Edge) =
+    BEGIN
+      IF nOrb >= NUMBER(orb^) THEN
+        WITH vNew := NEW(REF ARRAY OF Edge, 2*nOrb) DO
+          SUBARRAY(vNew^, 0, nOrb) := orb^;
+          orb := vNew
+        END
+      END;
+      orb[nOrb] := f; INC(nOrb)
+    END Stack;
+  
+  PROCEDURE VisitAndMarkOrbit (f: Edge) RAISES ANY =
+    (* 
+      Assumes edge "f" is unmarked; puts "f" in the pile "orb", 
+      and visits and marks all the edges in its "s1"-orbit.
+    *)
+    VAR g: Edge := f;
+    BEGIN
+      IF vOrbit # NIL THEN vOrbit(f) END;
+      Stack(f); 
+      REPEAT
+        IF vEdge # NIL THEN vEdge(g) END;
+        WITH ge = g.p.edge[g.r] DO
+          <* ASSERT NOT ge.mark *>
+          ge.mark := TRUE;
+        END;
+        g := s1(g)
+      UNTIL g = f
+    END VisitAndMarkOrbit;
+    
+  PROCEDURE CheckNeighbors (f: Edge) =
+    (* 
+      Applies VisitAndMarkOrbit to all "s1"-orbits reachable
+      from the "s1"-orbit of "f" through one "s2" step.
+    *)
+    VAR g: Edge := f;
+    BEGIN
+      REPEAT
+        WITH h = s2(g) DO
+          IF NOT h.p.edge[h.r].mark THEN VisitAndMarkOrbit(h) END;
+        END;
+        g := s1(g)
+      UNTIL g = f;
+    END CheckNeighbors;
+  
+  PROCEDURE UnmarkOrbit (c: Edge) =
+    (* Removes the mark from all edges in the "s1"-orbit of "f". *)
+    VAR g: Edge := f;
+    BEGIN
+      REPEAT
+        g.p.edge[g.r].mark := FALSE;
+        g := s1(g)
+      UNTIL g = f;
+    END UnmarkOrbit;
+
+  VAR ns: CARDINAL := 0;
+  BEGIN
+    TRY
+      VisitandMarkVertex(a);
+      WHILE ns < nOrb DO 
+        CheckNeighbors(orb[ns]);
+        INC(ns);
+      END;
+    FINALLY
+      (* Erase all marks *)
+      WHILE nOrb > 0 DO
+        DEC(nOrb);
+        UnmarkOrbit(orb[nOrb])
+      END
+    END
+  END EnumOrbits;
+  
+PROCEDURE EdgeId(e: Edge): CARDINAL =
+  BEGIN
+    RETURN e.p.id + e.r 
+  END EdgeId;
+  
+PROCEDURE PatchId(e: Edge): CARDINAL =
+  BEGIN
+    RETURN e.p.id 
+  END PatchId;
+
+/* ---------------------------------------------------------------------- */
+/* fgc-quad/EnumOrbits.mg */
+
+GENERIC MODULE EnumOrbits(Elem);
+
+(* WHERE TYPE Elem.T *)
+
+PROCEDURE Enum3 (
+    e: Elem.T; 
+    mark:     MarkProc; 
+    vElem:    VisitProc; s1: StepProc;
+    v1Orbit:  VisitProc; s2: StepProc;
+    v12Orbit: VisitProc; s3: StepProc;
+  ) RAISES ANY =
+  (*
+    Enumerates every Elem.T that can be reached from "e" through 
+    any combination of "s1", "s2", and "s3".
+    
+    Applies "vElem" to every reachable Elem.T.
+    
+    Applies "v1Orbit" to exactly one reachable Elem.T
+    out of each "s1"-orbit.
+
+    Applies "v12Orbit" to exactly one reachable Elem.T
+    out of each "(s1,s2)"-orbit.
+    
+    For exach Elem.T "e", the first call to "mark(e)" from within one
+    call to "Enum3" should return FALSE, and succeeding ones should
+    return TRUE.
+    
+    A null "VisitProc" is treated as a no-op.
+    
+    A null StepProc is treated as the identity function.
+  *)
+  CONST 
+    InitialPileSize = 1024;
+  VAR 
+    orb: REF ARRAY OF Elem.T := NEW(REF ARRAY OF Elem.T, InitialPileSize);
+    n: CARDINAL := 0;
+
+  PROCEDURE Stack(f: Elem.T) =
+    BEGIN
+      IF nOrb >= NUMBER(orb^) THEN
+        WITH vNew := NEW(REF ARRAY OF Elem.T, 2*nOrb) DO
+          SUBARRAY(vNew^, 0, nOrb) := orb^;
+          orb := vNew
+        END
+      END;
+      orb[nOrb] := f; INC(nOrb)
+    END Stack;
+  
+  PROCEDURE VisitAndMark1Orbit (f: Elem.T) RAISES ANY =
+    (* 
+      Applies "v1Orbit" to "f", and "vElem" to each Elem.T in its
+      "s1" orbit.  Assumes Elem.T "f" was unmarked. 
+      
+      In/Out Invariant: The array "orb[0..n-1]" contains exactly one
+      Elem.T out of each "s1"-orbit seen so far, and these Elem.Ts are
+      all marked.  An Elem.T "f" has "mark = TRUE" if and only if its
+      "s1"-orbit is all marked. (Thus, the set of all marked Elem.Ts
+      is closed under "s1".) If an Elem.T is marked, it doesn't need
+      to be visited. 
+    *)
+    VAR g: Elem.T := f;
+    BEGIN
+      IF vElem # NIL THEN vElem(g) END;
+      IF v1Orbit # NIL THEN v1Orbit(f) END;
+      Stack(f); 
+      IF s1 # NIL THEN g := s1(g) END;
+      WHILE g # f DO
+        IF vElem # NIL THEN vElem(g) END;
+        <* ASSERT NOT mark(g) *>
+        IF s1 # NIL THEN g := s1(g) END;
+      UNTIL g = f
+    END VisitAndMark1Orbit;
+    
+  VisitAndMark12Orbit (f: Elem.T) RAISES ANY =
+    (* 
+      Applies "v12Orbit" to "f"; then applies "VisitAndMark1Orbit"
+      to one Elem.T from each "s1"-orbit that is reachable from "f" 
+      through chains of "s1" and "s2". Assumes "f" is unmarked.
+      
+      In/Out Invariant: Same as for VisitAndMark1Orbit, plus:
+      the set of all Elem.Ts marked so far is closed under "s2"
+      (besides being closed under "s1"). 
+    *)
+    VAR g: Elem.T := f;
+        nc: CARDINAL := n;
+    BEGIN
+      IF v12Orbit # NIL THEN v12Orbit(f) END;
+      VisitAndMark1Orbit(f);
+      IF s2 # NIL THEN
+        WHILE nc < n DO
+          (* 
+            Loop Invariant: if Elem.T "e" is in the "s1"-closure of "orb[0..nc-1]",
+            then "s2(e)" is in "orb[0..n-1]".
+          *)
+          WITH g = orb[nc] DO
+            (* Checks "s2(h)" for every "h" in the "s1"-orbit of "g": *)
+            VAR h: Elem.T := g;
+            BEGIN
+              REPEAT
+                WITH a = s2(h) DO
+                  IF NOT a.p.Elem.T[a.r].mark THEN 
+                    VisitAndMark1Orbit(a)
+                  END
+                END;
+                IF s1 # NIL THEN h := s1(h) END;
+              UNTIL h = g;
+            END
+          END;
+          INC(nc)
+        END
+      END
+    END VisitAndMark12Orbit
+    
+  VisitAndMark123Orbit (f: Elem.T) RAISES ANY =
+    (* 
+      Applies "VisitAndMark12Orbit" to one Elem.T in each "(s1,s2)"-orbit
+      that is reachable from "f" through chains of "s1", "s2", and "s3"
+      steps.  Assumes "f" is unmarked.
+      
+      In/Out Invariant: Same as for VisitAndMark12Orbit, plus:
+      the set of all Elem.Ts marked so far is closed under "s3"
+      (besides being closed under "s1" and "s2"). 
+    *)
+    VAR g: Elem.T := f;
+        nc: CARDINAL := n;
+    BEGIN
+      VisitAndMark12Orbit(f);
+      IF s3 # NIL THEN
+        WHILE nc < n DO
+          (* 
+            Loop Invariant: if Elem.T "e" is in the "s1"-closure of "orb[0..nc-1]",
+            then "s3(e)" is in "orb[0..n-1]".
+          *)
+          WITH g = orb[nc] DO
+            (* Checks "s3(h)" for every "h" in the "s1"-orbit of "g": *)
+            VAR h: Elem.T := g;
+            BEGIN
+              REPEAT
+                WITH a = s3(h) DO
+                  IF NOT a.p.Elem.T[a.r].mark THEN 
+                    VisitAndMark12Orbit(a)
+                  END
+                END;
+                IF s1 # NIL THEN h := s1(h) END;
+              UNTIL h = g;
+            END;
+            INC(nc)
+          END
+        END
+      END
+    END VisitAndMark123Orbit
+    
+  PROCEDURE Unmark1Orbit (f: Elem.T) =
+    (* Removes the mark from all Elem.Ts in the "s1"-orbit of "f". *)
+    VAR g: Elem.T := f;
+    BEGIN
+      REPEAT
+        g.p.Elem.T[g.r].mark := FALSE;
+        IF s1 # NIL THEN g := s1(g) END;
+      UNTIL g = f;
+    END Unmark1Orbit;
+
+  BEGIN
+    TRY
+      VisitandMark123Orbit(a);
+    FINALLY
+      (* Erase all marks *)
+      WHILE n > 0 DO
+        DEC(n);
+        UnmarkOrbit(orb[n])
+      END
+    END
+  END Enum3;
+  
+BEGIN
+END EnumOrbits.
+
+
+
+/* ---------------------------------------------------------------------- */
+/* sphere-splines/SPTriang.c */
+
+Arc_vec_t RenumberVertices(Arc_vec_t arc)
+  { auto void VisitOrg(Arc a);
+      /* Visits vertex {Org(a)}. */
+
+    auto bool_t VisitedOrg(Arc a);
+      /* TRUE if {Org(a)} has been visited already. */
+   
+    Arc_vec_t r = SPQuad_Arc_vec_new(1);
+    int nVertices = 0;
+    int i;
+   
+    bool_t VisitedOrg(Arc a)
+      { Site *v = Org(a);
+        return (v != NULL) && (v->num < nVertices) && (Org(r.el[v->num]) == v);
+      }
+
+    void VisitOrg(Arc a)
+      { Site *v = Org(a);
+        Arc b = a;
+        v->num = nVertices;
+        do 
+          { affirm(Org(b) == v, "inconsistent Org");
+            b = Onext(b);
+          }
+        while (b != a);
+        SPQuad_Arc_vec_expand(&(r), nVertices);
+        r.el[nVertices] = a;
+        nVertices++;
+      }
+
+    for (i = 0; i < arc.nel; i++)
+      { if (! VisitedOrg(arc.el[i])) { VisitOrg(arc.el[i]); } }
+
+    SPQuad_Arc_vec_trim(&(r), nVertices);
+    return r;
+  }
+  
+#define INIT_VISITED_SIZE 1024
+
+Arc_vec_t SPTriang_CreateFaceRecords(Arc_vec_t arc)
+  {
+    auto bool_t VisitedLeft(SPQuad_Arc a);
+      /* TRUE if face {Left(a)} has been visited before. */
+
+    auto void VisitLeft(Arc a);
+      /* If the left face of {a} has not been visited yet, 
+        create its face record, set all pointers to it,
+        and mark that face as visited. */
+
+    Arc_vec_t side = SPQuad_Arc_vec_new(INIT_VISITED_SIZE);
+    int nFaces = 0; 
+      /* A face has been visited if all arcs around it have the {Left}
+        field pointing to the same triangle record {t}, and
+        {Left(side[f.num]) == t}. Outside of {VisitLeft}, either all
+        arcs around the face satisfy this condition, or none of them
+        does. */
+
+    void VisitLeft(Arc a)
+      { if (! VisitedLeft(a))
+          { Face *t = (Face *)malloc(sizeof(Face));
+            Arc b = a;
+            int order = 0;
+            t->num = nFaces;
+            r3x3_zero(&(t->b2c));
+            r3x3_zero(&(t->c2b));
+            t->sp = (S2Point_vec_t){ 0, NULL };
+            t->wp = (double_vec_t){ 0, NULL };
+            do 
+              { Ldata(b) =  t;
+                b = Lnext(b);
+                order++;
+              }
+            while (b != a);
+            affirm(order == 3, "non-triangular face");
+            SPQuad_Arc_vec_expand(&side, nFaces);
+            side.el[nFaces] = a;
+            nFaces++;
+          }
+      }
+
+    bool_t VisitedLeft(Arc a)
+      { Face *t = Left(a);
+        return (t != NULL) && (t->num < nFaces) && 
+          (Left(side.el[t->num]) == t);
+      }
+
+    int i;
+    int nClosed = 0; 
+      /* Faces {Left(side.el[0..nClosed-1])} are the visited faces whose 
+        children were already visited.  The children of {Left(e)}, by 
+        definition, are all faces that share a vertex or edge with 
+        {Left(e)}. */
+
+    /* Put the given faces on the visited (minus repetitions): */
+    for (i = 0; i < arc.nel; i++) { VisitLeft(arc.el[i]); }
+      
+    /* Visit descendants of visited faces in BFS order: */
+    while (nClosed < nFaces )
+      { Arc s = side.el[nClosed];
+        /* Enumerate edges around {Left(s)} including {s}: */
+        Arc e = s;
+        do
+          { /* Enumerate edges around {Dest(e)} except {e}: */
+            Arc a = Dnext(e);
+            while (a != e) { VisitLeft(a); a = Dnext(a); }
+            e = Lnext(e);
+          }
+        while (e != s);
+        nClosed = nClosed + 1;
+      }
+    /* Return the triangles which were found: */
+    SPQuad_Arc_vec_trim(&side, nFaces);
+    return side;
+  }
+
+/* ---------------------------------------------------------------------- */
+/* sphere-splines/SPQuad.c */
+
+#define Mark(e)  (((SPQuad_EdgeRec *)((e)&0xfffffffcu))->mark)
+
+SPQuad_Arc SPQuad_MakeEdge(void)
+  { SPQuad_Arc e;
+    e = (SPQuad_Arc)notnull(malloc(sizeof(SPQuad_EdgeRec)), "no mem for edge");
+    Onext(e) = e;
+    SymDnext(e) = Sym(e);
+    RotRnext(e) = Tor(e);
+    TorLnext(e) = Rot(e);
+    Edge(e)->num = 0;
+    Odata(e) = NULL; Ldata(e) = NULL;
+    Ddata(e) = NULL; Rdata(e) = NULL;
+    return e;
+  }
+
+void SPQuad_DestroyEdge(SPQuad_Arc e)
+  { SPQuad_Arc f = Sym(e);
+    if (Onext(e) != e) SPQuad_Splice(e, Oprev(e));
+    if (Onext(f) != f) SPQuad_Splice(f, Oprev(f));  
+    free((char *)((e) & 0xfffffffcu));
+  }
+
+void SPQuad_Splice(SPQuad_Arc a, SPQuad_Arc b)
+  { SPQuad_Arc ta, tb;
+    SPQuad_Arc alpha = Rot(Onext(a));
+    SPQuad_Arc beta = Rot(Onext(b));
+
+    ta = Onext(a);
+    tb = Onext(b);
+    Onext(a) = tb;
+    Onext(b) = ta;
+    ta = Onext(alpha);
+    tb = Onext(beta);
+    Onext(alpha) = tb;
+    Onext(beta) = ta;    
+  }
+
+SPQuad_Arc_vec_t SPQuad_RenumberEdges(SPQuad_Arc_vec_t a, nat_t start)
+  {
+    auto void VisitEdge(SPQuad_Arc a);
+      /* If {Edge(a)} has not been visited before, renumber it. */
+
+    auto bool_t VisitedEdge(SPQuad_Arc a);
+      /* TRUE if {Edge(a)} has been visited before. */
+    
+    #define GUESS_NVISITED 1024
+    SPQuad_Arc_vec_t visited = SPQuad_Arc_vec_new(GUESS_NVISITED);
+    int nVisited = 0;
+      /* {visited.el[0..nVisited-1]} contain one arc from each visited
+        edge. An edge record {e} has been visited if
+        {Edge(visited.el[e->num - start]) == e}. */
+
+    bool_t VisitedEdge(SPQuad_Arc a)
+      { nat_t en = Edge(a)->num;
+        return 
+          (en >= start) && 
+          (en < start + nVisited) && 
+          (Edge(visited.el[en-start]) == Edge(a));
+      }
+
+    void VisitEdge(SPQuad_Arc a)
+      { if (! VisitedEdge(a))
+          { /* Edge {Edge(a)} hasn't been visited yet. */
+            SPQuad_Arc_vec_expand(&visited, nVisited);
+            Edge(a)->num = start + nVisited;
+            visited.el[nVisited] = a;
+            nVisited++;
+          }
+      }
+
+    int i;
+    int nClosed = 0; 
+      /* Edges {Edge(visited.el[0..nClosed-1])} are the edges whose
+        children were already visited.  The children of {e}, by 
+        definition, are {Onext(e)} and {Onext(Sym(e))}. */
+
+    /* Put the given arcs on the visited (minus repetitions): */
+    for (i = 0; i < a.nel; i++) { VisitEdge(a.el[i]); }
+    /* Visit descendants of visited edges in BFS order: */
+    while (nClosed < nVisited )
+      { SPQuad_Arc s = visited.el[nClosed];
+        VisitEdge(Onext(s));
+        VisitEdge(Onext(Sym(s)));
+        nClosed++;
+      }
+    /* Return the edges which were found: */
+    SPQuad_Arc_vec_trim(&visited, nVisited);
+    return visited;
+  }
+
+/* ---------------------------------------------------------------------- */
+/* quadwfc/wavefront.c */
+
+qarc_vec_t renumber_edges(qarc_vec_t a, unsigned int start)
+  {
+    auto void visit_edge(qarc_t a);
+      /* If {Edge(a)} has not been visited before, renumber it. */
+
+    auto bool_t edge_is_visited(qarc_t a);
+      /* TRUE if {Edge(a)} has been visited before. */
+    
+    #define GUESS_NVISITED 1024
+    qarc_vec_t visited = qarc_vec_new(GUESS_NVISITED);
+    int nVisited = 0;
+      /* {visited.el[0..nVisited-1]} contain one arc from each visited
+        edge. An edge record {e} has been visited if
+        {Edge(visited.el[e->num - start]) == e}. */
+
+    bool_t edge_is_visited(qarc_t a)
+      { unsigned int en = EDGE(a)->mark;
+        return 
+          (en >= start) && 
+          (en < start + nVisited) && 
+          (EDGE(visited.el[en-start]) == EDGE(a));
+      }
+
+    void visit_edge(qarc_t a)
+      { if (! edge_is_visited(a))
+          { /* Edge {Edge(a)} hasn't been visited yet. */
+            qarc_vec_expand(&visited, nVisited);
+            EDGE(a)->mark = start + nVisited;
+            visited.el[nVisited] = a;
+            nVisited++;
+          }
+      }
+
+    int i;
+    int nClosed = 0; 
+      /* Edges {EDGE(visited.el[0..nClosed-1])} are the edges whose
+        children were already visited.  The children of {e}, by 
+        definition, are {Onext(e)} and {Onext(Sym(e))}. */
+
+    /* Put the given arcs on the visited (minus repetitions): */
+    for (i = 0; i < a.nel; i++) { visit_edge(a.el[i]); }
+    /* Visit descendants of visited edges in BFS order: */
+    while (nClosed < nVisited )
+      { qarc_t s = visited.el[nClosed];
+        visit_edge(ONEXT(s));
+        visit_edge(ONEXT(SYM(s)));
+        nClosed++;
+      }
+    /* Return the edges which were found: */
+    qarc_vec_trim(&visited, nVisited);
+    /* fprintf(stderr, "visited %d edges\n", nVisited); */
+    return visited;
+  }
+
+qarc_vec_t arcs_from_edges(qarc_vec_t edge)
+  { qarc_vec_t arc = qarc_vec_new(2*edge.nel);
+    int i;
+    for (i = 0; i < edge.nel; i++)
+      { arc.el[2*i] = edge.el[i];
+        arc.el[2*i+1] = SYM(edge.el[i]);
+      }
+    return arc;
+  }
+  
+qarc_vec_t renumber_vertices(qarc_vec_t arc)
+  { 
+    auto void visit_org(qarc_t a);
+      /* Visits vertex {ORG(a)}. */
+
+    auto bool_t org_is_visited(qarc_t a);
+      /* TRUE if {ORG(a)} has been visited already. */
+   
+    qarc_vec_t r = qarc_vec_new(1);
+    int nVertices = 0;
+    int i;
+   
+    for (i = 0; i < arc.nel; i++)
+      { if (! org_is_visited(arc.el[i])) { visit_org(arc.el[i]); } }
+
+    qarc_vec_trim(&(r), nVertices);
+    /* fprintf(stderr, "visited %d vertices\n", nVertices); */
+    return r;
+
+    bool_t org_is_visited(qarc_t a)
+      { segment_t *v = ORG(a);
+        affirm(v != NULL, "null vertex");
+        return (v->num < nVertices) && (ORG(r.el[v->num]) == v);
+      }
+
+    void visit_org(qarc_t a)
+      { segment_t *v = ORG(a);
+        affirm(v != NULL, "null vertex");
+        qarc_t b = a;
+        v->num = nVertices;
+        do 
+          { affirm(ORG(b) == v, "inconsistent ORG");
+            b = ONEXT(b);
+          }
+        while (b != a);
+        qarc_vec_expand(&(r), nVertices);
+        r.el[nVertices] = a;
+        nVertices++;
+      }
+  }
+  
+qarc_vec_t renumber_faces(qarc_vec_t arc)
+  { auto void visit_left(qarc_t a);
+      /* Visits face {Left(a)}. */
+
+    auto bool_t left_is_visited(qarc_t a);
+      /* TRUE if {Left(a)} has been visited already. */
+   
+    qarc_vec_t r = qarc_vec_new(1);
+    int nFaces = 0;
+    int i;
+   
+    bool_t left_is_visited(qarc_t a)
+      { face_t *f = LEFT(a);
+        affirm(f != NULL, "null face");
+        return (f->num < nFaces) && (LEFT(r.el[f->num]) == f);
+      }
+
+    void visit_left(qarc_t a)
+      { face_t *f = LEFT(a);
+        affirm(f != NULL, "null face");
+        qarc_t b = a;
+        f->num = nFaces;
+        do 
+          { affirm(LEFT(b) == f, "inconsistent Left");
+            b = LNEXT(b);
+          }
+        while (b != a);
+        qarc_vec_expand(&(r), nFaces);
+        r.el[nFaces] = a;
+        nFaces++;
+      }
+
+    for (i = 0; i < arc.nel; i++)
+      { if (! left_is_visited(arc.el[i])) { visit_left(arc.el[i]); } }
+
+    qarc_vec_trim(&(r), nFaces);
+    /* fprintf(stderr, "visited %d faces\n", nFaces); */
+    return r;
+  }
+  
+#define INIT_VISITED_SIZE 1024
+
+void create_face_records(qarc_t e)
+  {
+    auto bool_t left_is_visited(qarc_t a);
+      /* TRUE if face {LEFT(a)} has been visited before. */
+
+    auto void visit_left(qarc_t a);
+      /* If the left face of {a} has not been visited yet, 
+        create its face record, set all pointers to it,
+        and mark that face as visited. */
+
+    qarc_vec_t side = qarc_vec_new(INIT_VISITED_SIZE);
+    int nFaces = 0; 
+      /* A face has been visited if all arcs around it have the {Left}
+        field pointing to the same triangle record {f}, and
+        {LEFT(side[f.num]) == f}. Outside of {visit_left}, either all
+        arcs around the face satisfy this condition, or none of them
+        does. */
+
+    void visit_left(qarc_t a)
+      { 
+        if (! left_is_visited(a))
+          { 
+            face_t *f = (face_t *)malloc(sizeof(face_t));
+            qarc_t b = a;
+            int order = 0;
+            f->num = nFaces;
+            f->omit = FALSE;
+            do 
+              { SET_LEFT(b, f);
+                b = LNEXT(b);
+                order++;
+              }
+            while (b != a);
+            qarc_vec_expand(&side, nFaces);
+            side.el[nFaces] = a;
+            nFaces++;
+          }
+      }
+
+    bool_t left_is_visited(qarc_t a)
+      { face_t *f = LEFT(a);
+        return 
+          (f != NULL) && 
+          (f->num < nFaces) && 
+          (LEFT(side.el[f->num]) == f);
+      }
+
+    int nClosed = 0; 
+      /* Faces {LEFT(side.el[0..nClosed-1])} are the visited faces whose 
+        children were already visited.  The children of {LEFT(e)}, by 
+        definition, are all faces that share a face or edge with 
+        {LEFT(e)}. */
+
+    /* Put the given face on the visited (minus repetitions): */
+    visit_left(e);
+      
+    /* Visit descendants of visited faces in BFS order: */
+    while (nClosed < nFaces )
+      { qarc_t s = side.el[nClosed];
+        /* Enumerate edges around {LEFT(s)} including {s}: */
+        qarc_t e = s;
+        do
+          { /* Enumerate edges around {Dest(e)} except {e}: */
+            qarc_t a = DNEXT(e);
+            while (a != e) { visit_left(a); a = DNEXT(a); }
+            e = LNEXT(e);
+          }
+        while (e != s);
+        nClosed = nClosed + 1;
+      }
+    /* Be nice, recycle: */
+    free(side.el);
+  }
+
+/* ---------------------------------------------------------------------- */
+/* libquad/quad.c */
+
+/* Enumerate edge quads */
+
+void quad_do_enum (
+    quad_arc_t a, 
+    void visit_proc(quad_arc_t e, void *closure), 
+    void *closure,
+    unsigned mark
+  );
+
+unsigned next_mark = 1;
+
+void quad_enum(
+    quad_arc_t a, 
+    void visit_proc(quad_arc_t e, void *closure), 
+    void *closure
+  )
+  {
+    unsigned mark = next_mark;
+    next_mark++;
+    if (next_mark == 0) next_mark = 1;
+    quad_do_enum(a, visit_proc, closure, mark); 
+  }
+
+void quad_do_enum (
+    quad_arc_t e, 
+    void visit_proc(quad_arc_t e, void *closure), 
+    void *closure,
+    unsigned mark
+  )
+  {
+    while (MARK(e) != mark)
+      {
+        visit_proc(e, closure);
+        MARK(e) = mark;
+        quad_do_enum (ONEXT(SYM(e)), visit_proc, closure, mark);
+        e = ONEXT(e);
+      }
+  }

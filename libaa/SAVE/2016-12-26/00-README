@@ -1,0 +1,40 @@
+# Last edited on 2016-12-28 22:32:11 by stolfilocal
+
+Snapshot of J.Stolfi's Affine Arithmetic library,
+some auxiliary libraries, and some test programs,
+as of 2016-12-28.
+
+The subdirectory structure is more complicated 
+than what it should be because it mirrors my 
+working environment.  Basically:
+
+  Main libraries:
+  
+    libaa -- Affine arithmetic library.
+    
+    libia -- Interval arithmetic library.
+    
+    libflt -- Floating point tools used by the above.
+    
+  IA/AA application libraries:
+  
+    libaagraph -- Tools to plot functions with IA or AA.
+    
+    libaazf -- Procedures to find zeros of functions with IA or AA.
+    
+    libaafuncs -- Test functions evaluated with floating point, IA, and AA.
+    
+  Auxiliary libraries:
+    
+    libps -- My library of tools to create PS/EPS figures.
+    
+    libgeo -- My library of linear algebra and analytic geometry.
+  
+    libjs -- My library of general-purpose routines.
+
+The Makefiles should work in any Linux system (except maybe
+for the GL library used in one test program).
+If they don't, consider deleting all Makefile and *.make
+files and links, and rolling your own makefile.  
+The subdirectories should be compiled in the order 
+specified by the top-level makefile.

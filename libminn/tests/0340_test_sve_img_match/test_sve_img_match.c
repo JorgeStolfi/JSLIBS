@@ -2,7 +2,7 @@
 #define PROG_DESC "tests {sve_minn.h} on an image matching problem"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-11-26 06:59:08 by stolfi */
+/* Last edited on 2024-01-10 18:11:46 by stolfi */
 
 #define test_sve_img_match_C_COPYRIGHT "Copyright © 2009 by the State University of Campinas (UNICAMP)"
 
@@ -503,6 +503,7 @@ void find_best_matrix
 
     if (nx > 0)
       { /* Optimize iteratively: */
+        double ctr[nx]; rn_zero(nx, ctr);
         double dMax = 0.250;
         bool_t dBox = FALSE;
         double rMin = 1.0/hypot(0.5*NXO,0.5*NYO);
@@ -525,7 +526,7 @@ void find_best_matrix
             free(fname);
           }
 
-        sve_minn_iterate(nx, &F, &OK, xx, &Fx, dir, dMax, dBox, rIni, rMin, rMax, stop, maxIters, debugMinn);
+        sve_minn_iterate(nx, &F, &OK, xx, &Fx, dir, ctr, dMax, dBox, rIni, rMin, rMax, stop, maxIters, debugMinn);
         fprintf(stderr, "\n");
       }
 

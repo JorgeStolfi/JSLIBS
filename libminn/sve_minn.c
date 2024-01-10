@@ -1,5 +1,5 @@
 /* See {sve_minn.h} */
-/* Last edited on 2023-03-27 10:01:46 by stolfi */
+/* Last edited on 2024-01-10 13:33:12 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -140,6 +140,7 @@ void sve_minn_iterate
     double x[],
     double *FxP,
     sign_t dir, 
+    double ctr[],
     double dMax,
     bool_t box,
     double rIni,
@@ -156,10 +157,6 @@ void sve_minn_iterate
     
     demand((rMin >= sve_minn_MIN_RADIUS) && (rMin <= rMax), "invalid {rMin,rMax}");
     demand((rMin <= rIni) && (rIni <= rMax), "invalid {rIni}");
-    
-    /* Save first guess: */
-    double x0[n];   /* Cartesian coords of initial guess. */
-    for (int32_t k = 0; k < n; k++) { x0[k] = x[k]; }
     
     /* Allocate storage for the simplex: */
     int32_t nv = n+1; /* Number of vertices in simplex. */
@@ -213,25 +210,29 @@ void sve_minn_iterate
         
         /* Adjust simplex center {y} and {radius} so that there is room for the probe simplex: */
         if (dMax < INFINITY)
-          { /* Get distance {dist} from starting point {x0} to current center candiate {y}: */
-            double dist = (box ? rn_L_inf_dist(n, x0, y) : rn_dist(n, x0, y));
-            /* Ensure that the simplex fits in the ball/box {x0,dMax}, i.e. {dist+radius <= dMax}. */
+          { /* Get distance {dist} from domain center {ctr} to current center candiate {y}: */
+            double dist = (box ? rn_L_inf_dist(n, ctr, y) : rn_dist(n, ctr, y));
+            if (debug) { Pr(Er, "  dist(y, ctr) = %16.12f radius = %16.12f sum = %16.12f\n", dist, radius, dist+radius); }
+            /* Ensure that the simplex fits in the ball/box {ctr,dMax}, i.e. {dist+radius <= dMax}. */
             double dExtra = dist + radius - dMax; 
             if (dExtra > 0.0)
-              { /* Simplex risks falling out of {x0,dMax} ball/box. */
+              { /* Simplex risks falling out of {ctr,dMax} ball/box. */
+                if (debug) { Pr(Er, "  simplex sphere overshoots box/ball by %16.12f\n", dExtra); }
                 /* Compute new radius {rSafe} such that the ball 
                   with center at the adjusted point will fit inside that ball/box. */
                 double rSafe = radius - 0.50000001*dExtra;
                 if (rSafe < rMin) { rSafe = rMin; }              
                 if (rSafe > dMax) { rSafe = dMax; }
                 assert((rMin <= rSafe) && (rSafe <= rMax)); /* Should be always the case. */
-                /* Adjust {y} so that it is at {dMax-rSafe} from {x0}: */
-                sve_clip_candidate(n, y, x0, dMax - rSafe, box, debug);
+                /* Adjust {y} so that it is at {dMax-rSafe} from {ctr}: */
+                sve_clip_candidate(n, y, ctr, dMax - rSafe, box, debug);
                 /* Use this adjusted radius: */
                 assert(rSafe <= radius); /* Should always be the case. */
                 radius = rSafe;
                 if (debug) { Pr(Er, "  radius adjusted for {dMax} = %12.8f\n", radius); }
               }
+            else
+              { Pr(Er, "  simplex is inside domain box/ball\n"); }
           }
         if(debug) { Pr(Er, "\n"); }
 
@@ -248,6 +249,10 @@ void sve_minn_iterate
             Pr(Er, "    simplex vertices:\n");
             rmxn_gen_print(Er, nv, n, v, "%20.16f", "", "\n", "", "    [ ", " ", " ]");
             Pr(Er, "\n");
+            for (int32_t iv = 0; iv < nv; iv++)
+              { double *vi = &(v[iv*n]);
+                Pr(Er, "    dist(v[%3d], y) = %16.12f\n", iv, rn_dist(n, vi, y));
+              }
           } 
         sve_sample_function(n, F, v, Fv);
         if (debug && debug_probes)
@@ -271,8 +276,8 @@ void sve_minn_iterate
         /* STEP ADJUSTMENT */
         
         if (dMax < INFINITY)
-          { /* Adjust the estimated min {y} to be inside the sphere/box {x0,dMax}: */
-            sve_clip_candidate(n, y, x0, dMax, box, debug);
+          { /* Adjust the estimated min {y} to be inside the sphere/box {ctr,dMax}: */
+            sve_clip_candidate(n, y, ctr, dMax, box, debug);
           }
         /* Evaluate at new point: */
         double Fy = F(n, y);

@@ -1,0 +1,9 @@
+# Last edited on 2007-01-13 00:20:17 by stolfi
+
+This is an early version of the "libaa"
+affine arithmetic library, just after "foi.h"
+got renamed "aa.h".
+
+    J.Stolfi, UNICAMP, 2007-01-12
+
+ 

@@ -1,5 +1,5 @@
 /* See {minn.h}. */
-/* Last edited on 2023-03-27 15:09:43 by stolfi */
+/* Last edited on 2024-01-10 13:46:38 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -23,7 +23,6 @@
 void minn_uniform
   ( int32_t n,          /* Dimension of search space. */
     minn_goal_t *F,     /* Function to be minimized. */
-    double dMax,        /* Radius of domain, or {+INF}. */ 
     bool_t box,         /* True to search in the unit cube, false in the unit ball. */
     double atol[],      /* Desired precision along each coordinate. */
     minn_method_t meth, /* Minimizaton method do use.*/
@@ -32,19 +31,17 @@ void minn_uniform
   )
   {
     demand(n >= 0, "invalid {n}");
-    demand((! isnan(dMax)) && (dMax >= 0), "invalid {dMax}");
     switch (meth)
       {
-        demand(isfinite(dMax), "{dMax} must be finite for ENUM mathod");
         case minn_method_ENUM:
-          minn_enum(n, F, dMax, box, atol, v, Fval_P);
+          minn_enum(n, F, box, atol, v, Fval_P);
           break;
           
         case minn_method_QUAD:
           /* Compute the general tolerance {tol}: */
           double tol = +INF;
           for (int32_t i = 0; i < n; i++) { tol = fmin(tol, atol[i]); }
-          minn_quad(n, F, dMax, box, tol, v, Fval_P);
+          minn_quad(n, F, box, tol, v, Fval_P);
           break;
           
         default:
@@ -87,7 +84,7 @@ void minn_subspace
         the given goal function {F} on it. Expects {nx} to be {d}. */
         
     double x[d]; /* Minumum in the unit ball/cube. */
-    minn_uniform(d, &F_unit, box, 1.0, xtol, meth, x, Fval_P);
+    minn_uniform(d, &F_unit, box, xtol, meth, x, Fval_P);
     unmap_vec(x, v);
     return;
     

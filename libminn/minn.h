@@ -2,7 +2,7 @@
 #define minn_H
 
 /* Basic defs for n-dimensional minimization. */
-/* Last edited on 2023-03-27 15:00:35 by stolfi */ 
+/* Last edited on 2024-01-10 13:40:21 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -30,7 +30,6 @@ typedef enum
 void minn_uniform
   ( int32_t n,          /* Dimension of search space. */
     minn_goal_t *F,     /* Function to be minimized. */
-    double dMax,        /* Radius of domain, or {+INF}. */ 
     bool_t box,         /* True to search in the unit cube, false in the unit ball. */
     double atol[],      /* Desired precision along each coordinate. */
     minn_method_t meth, /* Minimizaton method do use.*/

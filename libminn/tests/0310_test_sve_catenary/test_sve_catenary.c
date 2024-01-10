@@ -1,5 +1,5 @@
 /* test_sve_catenary --- test of {sve_minn.h} for hanging-chain energy minimization. */
-/* Last edited on 2023-03-27 18:16:25 by stolfi */
+/* Last edited on 2024-01-10 18:08:05 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -72,9 +72,10 @@ void write_node_positions(char *prefix, char*tag, int32_t nk, double x[], double
 
 void compute_node_positions(int32_t nk, double c[], double x[], double y[]);
   /* Computes the node positions implied by the coefficients
-    {c[0..nk-2]}. Coefficient {c[i]} is the angle between links
-    {i} and {i+1} of the chain (angle zero means the links
-    are aligned, positive means an upward bend).
+    {c[0..nk-2]}. Coefficient {c[i]} encodes the angle between links
+    {i} and {i+1} of the chain, in the range {{-1 _ +1]}; where {-1}
+    means a bend downward by 175 degrees and {+1} means a bend upwards 
+    by 175 degrees..
     
     The arrays {x,y} must have {nk+1} elements each. Each pair
     {(x[j],y[j])} will be the coordinates of articulation {j} from the
@@ -168,7 +169,8 @@ void find_chain_shape(int32_t nk, double wd)
     write_solution(prefix, "ini", F, nc, c, Fc, nk, x, y, wd);
     
     /* Optimize iteratively: */
-    double dMax = +INFINITY;
+    double ctr[nc]; rn_zero(nc, c);
+    double dMax = (175.0/180.0)*M_PI;
     bool_t dBox = FALSE;
     double rMin = 0.000001;
     double rMax = 0.50*M_PI;
@@ -177,7 +179,7 @@ void find_chain_shape(int32_t nk, double wd)
     int32_t maxIters = 200;
     sign_t dir = -1;
     
-    sve_minn_iterate(nc, &F, &OK, c, &Fc, dir, dMax, dBox, rIni, rMin, rMax, stop, maxIters, debug);
+    sve_minn_iterate(nc, &F, &OK, c, &Fc, dir, ctr, dMax, dBox, rIni, rMin, rMax, stop, maxIters, debug);
     
     /* Print and write final solution: */
     fprintf(stderr, "final solution:\n");
@@ -261,12 +263,13 @@ void compute_node_positions(int32_t nk, double c[], double x[], double y[])
     /* Initial node is always {(0,0)}: */
     x[0] = y[0] = 0;
     /* Assume that link 0 is horizontal: */
-    double a = 0;        /* Angle of next link. */
+    double aabs = 0;        /* Angle of next link, relative to X axis. */
     x[1] = 1; y[1] = 0; 
     /* Compute {(x[i],y[i]) for {i} in {2..nk}: */
     for (int32_t i = 0; i < nc; i++)
-      { a = a + c[i];
-        double dx = cos(a), dy = sin(a);
+      { double arel = c[i]*175.0/180.0*M_PI;
+        aabs = aabs + arel;
+        double dx = cos(aabs), dy = sin(aabs);
         x[i+2] = x[i+1] + dx;
         y[i+2] = y[i+1] + dy;
       }
