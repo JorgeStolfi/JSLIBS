@@ -1,5 +1,5 @@
 /* See {btc_bubble_nl_opt_adjust_continuous_parameters.h} */
-/* Last edited on 2017-03-13 21:06:32 by stolfilocal */
+/* Last edited on 2024-01-11 08:28:00 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -158,6 +158,7 @@ void btc_bubble_nl_opt_adjust_continuous_parameters
                 x_opt,      /* double x[],     */
                 &Q_opt,     /* double *FxP,    */
                 -1,         /* sign_t dir,     */
+                x_ini,      /* Center of search domain. */
                 dMax,       /* double dMax,    */
                 dBox,       /* bool_t dBox,    */
                 rIni,       /* double rIni,    */

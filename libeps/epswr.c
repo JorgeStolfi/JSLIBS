@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2023-10-01 20:03:02 by stolfi */
+/* Last edited on 2024-05-24 14:36:41 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -312,6 +312,30 @@ void epswr_set_window
 
 /* DRAWING COMMANDS */
 
+void epswr_set_pen_color
+  ( epswr_figure_t *eps,
+    double R, double G, double B
+  )
+  { epswr_dev_set_pen_color(eps, R, G, B); }
+
+void epswr_set_pen_width
+  ( epswr_figure_t *eps,
+    double width
+  )
+  { double pswidth = width * epswr_pt_per_mm;
+    epswr_dev_set_pen_width(eps, pswidth);
+  }
+
+void epswr_set_pen_dashing
+  ( epswr_figure_t *eps,
+    double dashLength,
+    double dashSpace
+  )
+  { double psdashLength = dashLength * epswr_pt_per_mm;
+    double psdashSpace = dashSpace * epswr_pt_per_mm;
+    epswr_dev_set_pen_dashing(eps, psdashLength, psdashSpace);
+  }
+
 void epswr_set_pen
   ( epswr_figure_t *eps,
     double R, double G, double B,
@@ -319,10 +343,9 @@ void epswr_set_pen
     double dashLength,
     double dashSpace
   )
-  { double pswidth = width * epswr_pt_per_mm;
-    double psdashLength = dashLength * epswr_pt_per_mm;
-    double psdashSpace = dashSpace * epswr_pt_per_mm;
-    epswr_dev_set_pen(eps, R, G, B, pswidth, psdashLength, psdashSpace);
+  { epswr_set_pen_color(eps, R, G, B);
+    epswr_set_pen_width(eps, width);
+    epswr_set_pen_dashing(eps, dashLength, dashSpace);
   }
 
 void epswr_segment

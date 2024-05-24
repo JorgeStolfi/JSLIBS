@@ -1,5 +1,5 @@
 /* test_sve_catenary --- test of {sve_minn.h} for hanging-chain energy minimization. */
-/* Last edited on 2024-01-10 18:08:05 by stolfi */
+/* Last edited on 2024-01-11 07:16:45 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -160,7 +160,7 @@ void find_chain_shape(int32_t nk, double wd)
     double c[nc];     /* Initial guess and final solution. */
     
     /* Initialize {c} with a semicircle: */
-    for (int32_t i = 0; i < nc; i++) { c[i] = M_PI/nc; }
+    for (int32_t i = 0; i < nc; i++) { c[i] = (175.0/180.0)/nc; }
     
     /* Print and write the initial guess: */
     fprintf(stderr, "initial guess:\n");
@@ -169,7 +169,7 @@ void find_chain_shape(int32_t nk, double wd)
     write_solution(prefix, "ini", F, nc, c, Fc, nk, x, y, wd);
     
     /* Optimize iteratively: */
-    double ctr[nc]; rn_zero(nc, c);
+    double *ctr = NULL;
     double dMax = (175.0/180.0)*M_PI;
     bool_t dBox = FALSE;
     double rMin = 0.000001;
@@ -267,7 +267,7 @@ void compute_node_positions(int32_t nk, double c[], double x[], double y[])
     x[1] = 1; y[1] = 0; 
     /* Compute {(x[i],y[i]) for {i} in {2..nk}: */
     for (int32_t i = 0; i < nc; i++)
-      { double arel = c[i]*175.0/180.0*M_PI;
+      { double arel = c[i]*175.0/180.0*M_PI; /* Angle of link relative to previous link. */
         aabs = aabs + arel;
         double dx = cos(aabs), dy = sin(aabs);
         x[i+2] = x[i+1] + dx;

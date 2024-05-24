@@ -1,5 +1,5 @@
 /* See {sve_minn.h} */
-/* Last edited on 2024-01-10 13:33:12 by stolfi */
+/* Last edited on 2024-01-11 07:06:44 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -26,13 +26,14 @@
 void sve_clip_candidate
   ( int32_t n,
     double y[],
-    double x0[],
+    double ctr[],
     double dMax,
     bool_t box, 
     bool_t debug
   );
-  /* Pulls the point {y[0..n-1]} towards the point {x0[0..n-1]} so that 
-    it lies within the search domain defined by {dMax} and {box}. */
+  /* Pulls the point {y[0..n-1]} towards the point {ctr[0..n-1]} so that 
+    it lies within the search domain defined by {dMax} and {box}. 
+    If {ctr} is {NULL}, assumes a vector of {n} zeros. */
 
 int32_t sve_take_step
   ( int32_t n,
@@ -211,9 +212,13 @@ void sve_minn_iterate
         /* Adjust simplex center {y} and {radius} so that there is room for the probe simplex: */
         if (dMax < INFINITY)
           { /* Get distance {dist} from domain center {ctr} to current center candiate {y}: */
-            double dist = (box ? rn_L_inf_dist(n, ctr, y) : rn_dist(n, ctr, y));
+            double dist;
+            if (ctr == NULL)
+              { dist = (box ? rn_L_inf_norm(n, y) : rn_norm(n, y)); }
+            else
+              { dist = (box ? rn_L_inf_dist(n, ctr, y) : rn_dist(n, ctr, y)); }
             if (debug) { Pr(Er, "  dist(y, ctr) = %16.12f radius = %16.12f sum = %16.12f\n", dist, radius, dist+radius); }
-            /* Ensure that the simplex fits in the ball/box {ctr,dMax}, i.e. {dist+radius <= dMax}. */
+            /* Ensure that the simplex fits in the domain box/ball: */
             double dExtra = dist + radius - dMax; 
             if (dExtra > 0.0)
               { /* Simplex risks falling out of {ctr,dMax} ball/box. */
@@ -353,21 +358,25 @@ void sve_minn_iterate
 void sve_clip_candidate
   ( int32_t n,
     double y[],
-    double x0[],
+    double ctr[],
     double dMax,
     bool_t box,
     bool_t debug
   )
   {
-    double dyx0 = (box ? rn_L_inf_dist(n, x0, y) : rn_dist(n, x0, y));
-    if (dyx0 > dMax) 
+    double dist;
+    if (ctr == NULL)
+      { dist = (box ? rn_L_inf_norm(n, y) : rn_norm(n, y)); }
+    else
+      { dist = (box ? rn_L_inf_dist(n, ctr, y) : rn_dist(n, ctr, y)); }
+    if (dist > dMax) 
       { /* Moved too much, curb it: */
-        double s = (1.0 - 1.0e-12)*dMax/dyx0;
+        double s = (1.0 - 1.0e-12)*dMax/dist;
         if (debug) 
-          { Pr(Er, "  moved too far from initial guess d = %20.16e\n", dyx0);
+          { Pr(Er, "  moved too far from initial guess d = %20.16e\n", dist);
             Pr(Er, "  contracting towards initial guess by s = %20.16f\n", s);
           }
-        for (int32_t k = 0; k < n; k++) { y[k] = x0[k] + s*(y[k] - x0[k]); }
+        for (int32_t k = 0; k < n; k++) { y[k] = (1-s)*(ctr == NULL ? 0.0 : ctr[k]) + s*y[k]; }
       }
   }
 

@@ -1,5 +1,5 @@
 /* See pst_fit_sphere.h */
-/* Last edited on 2017-03-13 21:03:34 by stolfilocal */ 
+/* Last edited on 2024-01-11 08:25:54 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -192,6 +192,7 @@ double pst_fit_sphere
         double dMax = 1.000; /* Since each param ranges in {[-1_+1]}. */
         
         /* Call the nonlinear optimizer: */
+        double ctr[NP]; rn_copy(NP, x, ctr);
         sve_minn_iterate
           ( /*n:*/        NP,
             /*F:*/        sve_goal,
@@ -199,6 +200,7 @@ double pst_fit_sphere
             /*x:*/        x,
             /*FxP:*/      &H,
             /*dir:*/      -1,
+            /*ctr:*/      ctr,
             /*dMax:*/     dMax,
             /*dBox:*/     TRUE,
             /*rIni:*/     0.50*dMax,

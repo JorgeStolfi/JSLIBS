@@ -1,5 +1,5 @@
 /* See {r2_opt.h}. */
-/* Last edited on 2024-01-10 17:52:48 by stolfi */
+/* Last edited on 2024-01-11 06:30:39 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -166,7 +166,7 @@ void r2_opt_single_scale_quadopt
         /* Optimize: */
         sign_t dir = -1;                   /* Look for minimum. */
         /* All these parameters are realative to the search radius in each coord: */
-        double ctr[nv]; rn_zero(nv,ctr);   /* Center of search domain. */
+        double *ctr = NULL;                /* Center of search domain is the origin. */
         double dMax = 1.0;                 /* Max deviation from initial guess. */
         bool_t dBox = TRUE;                /* Search in box, not ball. */
         double rIni = 0.5;                 /* Initial probe simplex radius. */

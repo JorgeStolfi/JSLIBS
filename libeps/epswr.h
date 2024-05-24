@@ -1,5 +1,5 @@
 /* Tools for generating Encapsulated Postscript graphics files. */
-/* Last edited on 2023-10-22 10:40:21 by stolfi */
+/* Last edited on 2024-05-24 14:49:52 by stolfi */
 
 #ifndef epswr_H
 #define epswr_H
@@ -347,6 +347,19 @@ void epswr_hv_to_xy_dist(epswr_figure_t *eps, double dhv, double *dxyP);
 
 /* DRAWING COMMANDS */
 
+void epswr_set_pen_color(epswr_figure_t *eps, double R, double G, double B);
+  /* Sets the ink color for line/outline drawing. Fails if any of {R,G,B} is
+    {NAN}; otherwise clips them to the range [0_1]. */
+
+void epswr_set_pen_width(epswr_figure_t *eps, double width);
+  /* Sets pen width for line/outline drawing. The {width} is in 
+    *millimeters*. Fails if {width} is {NAN}, infinite, or negative. */
+
+void epswr_set_pen_dashing(epswr_figure_t *eps, double dashLength, double dashSpace);
+  /* Sets the dash length and inter-dash gap for line/outline drawing.
+    Both are in *millimeters*. If either is zero, drawn lines will be solid.
+    Fails if either is {NAN}, infinite, or negative. */
+
 void epswr_set_pen 
   ( epswr_figure_t *eps,
     double R, double G, double B,
@@ -354,10 +367,8 @@ void epswr_set_pen
     double dashLength,
     double dashSpace
   );
-  /* Sets pen parameters and ink color for line/outline drawing.
-    Dimensions are in *millimeters*. Fails if any of {R,G,B} is
-    {NAN}; otherwise clips them to the range [0_1]. Fails if any
-    of {width,dashLength,dashSpace} is {NAN}, infinite, or negative. */
+  /* Equivalent to {epswr_set_pen_color(eps,R,G,B)}, {epswr_set_pen_width(eps,width)}, and {epswr_set_pen_dashing(eps,dashLength,dashSpace)}.
+    Mostly for compatibility with older clients. */
 
 void epswr_segment
   ( epswr_figure_t *eps,

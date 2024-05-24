@@ -1,5 +1,5 @@
 /* See pst_fit_ellipse.h */
-/* Last edited on 2023-01-14 01:06:55 by stolfi */ 
+/* Last edited on 2024-01-11 08:26:39 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -124,6 +124,7 @@ double pst_fit_ellipse
         double dMax = 1.000; /* Since each param ranges in {[-1_+1]}. */
         
        /* Call the nonlinear optimizer: */
+        double ctr[NP]; rn_copy(NP, x, ctr);
         sve_minn_iterate
           ( /*n:*/        NP,
             /*F:*/        sve_goal,
@@ -131,6 +132,7 @@ double pst_fit_ellipse
             /*x:*/        x,
             /*FxP:*/      &Q,
             /*dir:*/      -1,
+            /*ctr:*/      ctr,
             /*dMax:*/     dMax,
             /*dBox:*/     TRUE,
             /*rIni:*/     0.50*dMax,

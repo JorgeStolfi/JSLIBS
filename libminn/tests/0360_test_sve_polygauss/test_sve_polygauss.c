@@ -1,5 +1,5 @@
 /* test_polygauss --- test of {sve_minn.h} for flat-topped sum of gaussians */
-/* Last edited on 2024-01-10 18:33:53 by stolfi */
+/* Last edited on 2024-01-11 07:34:02 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -321,7 +321,7 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
     double Fv = F(nv, v);
     
     /* Optimize iteratively: */
-    double ctr[nv]; rn_zero(nv, ctr);
+    double *ctr = NULL;
     double dMax = 1.0;
     double dBox = TRUE;
     double rMin = 1.0e-8;
@@ -371,17 +371,9 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
 
 void tpg_initialize(int32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym)
   {
-    /* Must initialize with the center of the valid parameter
-      ranges, so that {sve_minn_iterate} will stay within that range. */
-      
-    int32_t nv_avg, nv_dev, nv_mag;
-    tpg_num_variables(np, sym, &nv_avg, &nv_dev, &nv_mag);
-    int32_t nv = nv_avg + nv_dev + nv_mag;
-    
-    double v[nv];
-    for (int32_t iv = 0; iv < nv; iv++) { v[iv] = 0; }
-    
-    tpg_unpack(nv, v, np, serial, avg, dev, mag, sym);
+    for (int32_t ia = 0; ia < np; ia++) { avg[ia] = ((double)ia)/(np-1); }
+    for (int32_t id = 0; id < np; id++) { dev[id] = 0.5/(np-1); }
+    for (int32_t im = 0; im < np; im++) { mag[im] = 1.0 ; }
   }
 
 void tpg_num_variables(int32_t np, tpg_sym_t *sym, int32_t *nv_avg_P, int32_t *nv_dev_P, int32_t *nv_mag_P)

@@ -1,5 +1,5 @@
 /* epswr_dev.h - draw EPS files in Device coordinates. */
-/* Last edited on 2023-02-21 12:14:28 by stolfi */
+/* Last edited on 2024-05-24 14:49:28 by stolfi */
 
 #ifndef epswr_dev_H
 #define epswr_dev_H
@@ -135,14 +135,18 @@ void epswr_dev_set_window_to_grid_cell
     The geometry and position of the text area
     (see {epswr_set_text_device_geometry} is not changed. */
 
-void epswr_dev_set_pen
-  ( epswr_figure_t *eps,
-    double R, double G, double B,
-    double pswidth,
-    double psdashLength,
-    double psdashSpace
-  );
-  /* */
+void epswr_dev_set_pen_color(epswr_figure_t *eps, double R, double G, double B);
+  /* Sets the ink color for line/outline drawing, if it changed. 
+    Fails if any of {R,G,B} is {NAN}; otherwise clips them to the range [0_1]. */
+
+void epswr_dev_set_pen_width(epswr_figure_t *eps, double pswidth);
+  /* Sets pen width for line/outline drawing, if it changed. The {pswidth} is in 
+    device units. Fails if {pswidth} is {NAN}, infinite, or negative. */
+    
+void epswr_dev_set_pen_dashing(epswr_figure_t *eps, double psdashLength, double psdashSpace);
+  /* Sets the dash length and inter-dash gap for line/outline drawing, if it changed.
+    Both dimensions are in device units. If either is zero, drawn lines will be solid.
+    Fails if either is {NAN}, infinite, or negative. */
 
 void epswr_dev_segment
   ( epswr_figure_t *eps,

@@ -1,5 +1,5 @@
 /* See {minn_quad.h}. */
-/* Last edited on 2024-01-10 13:49:10 by stolfi */
+/* Last edited on 2024-01-11 06:30:11 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -41,12 +41,12 @@ void minn_quad
         /* Optimize: */
         sign_t dir = -1; /* Look for minimum. */
         int32_t maxIters = 10;
-        double ctr[n]; rn_zero(n, ctr); /* Search domain center. */
-        double dMax = 1.0;              /* Search domain radius. */
-        double rIni = 0.5;              /* Initial probe simplex radius. */
-        double rMin = tol;              /* Minimum probe simplex radius. */
-        double rMax = 0.70*dMax;        /* Maximum probe simplex radius. */
-        double stop = 0.25*tol;         /* Stop when {x} moves less than this. */
+        double *ctr = NULL;        /* Search domain center is the origin. */
+        double dMax = 1.0;         /* Search domain radius. */
+        double rIni = 0.5;         /* Initial probe simplex radius. */
+        double rMin = tol;         /* Minimum probe simplex radius. */
+        double rMax = 0.70*dMax;   /* Maximum probe simplex radius. */
+        double stop = 0.25*tol;    /* Stop when {x} moves less than this. */
         sve_minn_iterate
           ( n, 
             F, NULL, 

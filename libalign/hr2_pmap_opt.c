@@ -1,5 +1,5 @@
 /* See {hr2_pmap_opt.h}. */
-/* Last edited on 2023-10-20 18:27:04 by stolfi */
+/* Last edited on 2024-01-11 08:28:53 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -87,11 +87,13 @@ void hr2_pmap_opt_aff_quadratic
         hr2_pmap_opt_encode(A, type, nv, rad, z);
 
         sign_t dir = -1; /* Look for minimum. */
+        double ctr[nv]; rn_copy(nv, z, ctr);
         sve_minn_iterate
           ( nv, 
             &sve_goal, NULL, 
             z, &Fz,
             dir,
+            /*ctr:*/  ctr,
             /*dMax:*/ 1.0,  
             /*dBox:*/ TRUE, 
             /*rIni:*/ 0.5,  

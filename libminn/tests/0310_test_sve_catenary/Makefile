@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:31:37 by jstolfi
+# Last edited on 2024-01-11 07:12:57 by stolfi
 
 PROG = test_sve_catenary
  
@@ -50,7 +50,7 @@ single-test: ${PROG}
 	show-plot.sh ${OUT_INI_FNI_FILE} &
 	show-curve.sh ${OUT_FIN_DAT_FILE} &
 	show-plot.sh ${OUT_FIN_FNI_FILE} &
-	gxmessage "OK"
+	xmessage "OK"
 
 
 endif

@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2023-12-08 08:28:18 by stolfi */
+/* Last edited on 2024-05-24 14:53:21 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -925,7 +925,9 @@ epswr_figure_t *epswr_dev_new_figure
     eps->pswidth = -1.000; /* To force write a "setlinewidth" command. */
     eps->psdashLength = -1.000; /* To force write a "setdash" command. */
     eps->psdashSpace = -1.000; /* To force write a "setdash" command. */
-    epswr_dev_set_pen(eps, 0.000,0.000,0.000, 1.0, 0.0, 0.0);
+    epswr_dev_set_pen_color(eps, 0.000,0.000,0.000);
+    epswr_dev_set_pen_width(eps, 1.0);
+    epswr_dev_set_pen_dashing(eps, 0.0, 0.0);
     
     epswr_dev_set_label_font(eps, "Courier", 10.0); 
     epswr_dev_set_text_font(eps, "Courier", 14.0); 
@@ -1019,15 +1021,8 @@ void epswr_dev_set_window_to_grid_cell
     epswr_dev_set_window(eps, hMinCell, hMaxCell, vMinCell, vMaxCell, FALSE);
   }
 
-void epswr_dev_set_pen
-  ( epswr_figure_t *eps,
-    double R, double G, double B,
-    double pswidth,
-    double psdashLength,
-    double psdashSpace
-  )
+void epswr_dev_set_pen_color(epswr_figure_t *eps, double R, double G, double B)
   { FILE *wr = eps->wr;
-    /* Set the main (draw) color, if changed: */
     epswr_dev_normalize_draw_color(&R, &G, &B);
     double *dc = eps->drawColor;
     if ((dc[0] != R) || (dc[1] != G) || (dc[2] != B))
@@ -1035,8 +1030,10 @@ void epswr_dev_set_pen
         epswr_dev_write_color(wr, dc);
         fprintf(wr, " setrgbcolor\n");
       }
-    
-    /* Set the line width, if it changed: */
+  }
+
+void epswr_dev_set_pen_width(epswr_figure_t *eps, double pswidth)
+  { FILE *wr = eps->wr;
     demand(isfinite(pswidth) && (pswidth >= 0), "invalid line width");
     double unit = epswr_dev_line_unit; /* Quantization unit for line/dash widths. */
     pswidth = floor(pswidth/unit + 0.5)*unit;
@@ -1044,16 +1041,19 @@ void epswr_dev_set_pen
       { eps->pswidth = pswidth;
         fprintf(wr, " %.3f setlinewidth\n", pswidth);
       }
-        
-    /* Set the dash pattern: */
+  }
+
+void epswr_dev_set_pen_dashing(epswr_figure_t *eps, double psdashLength, double psdashSpace)
+  { FILE *wr = eps->wr;
     demand(isfinite(psdashLength) && (psdashLength >= 0), "invalid dash length");
     demand(isfinite(psdashSpace) && (psdashSpace >= 0), "invalid dash spacing");
+    double unit = epswr_dev_line_unit; /* Quantization unit for line/dash widths. */
     psdashLength = floor(psdashLength/unit + 0.5)*unit;
     psdashSpace = floor(psdashSpace/unit + 0.5)*unit;
     if ((eps->psdashLength != psdashLength) || (eps->psdashSpace != psdashSpace))
       { eps->psdashLength = psdashLength;
         eps->psdashSpace = psdashSpace;
-        if ((psdashLength == 0.0) | (psdashSpace == 0.0))
+        if ((psdashLength == 0.0) || (psdashSpace == 0.0))
           { fprintf(wr, " [ ] 0 setdash\n"); }
         else
           { fprintf(wr,

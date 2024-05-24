@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:32:06 by jstolfi
+# Last edited on 2024-01-11 07:18:30 by stolfi
 
 PROG = test_sve_img_match
  
@@ -92,7 +92,7 @@ show-images:
 	    ${OIMG_INI}.png ${OOBJ_INI}.png ${OMSK_INI}.png \
 	    ${OIMG_OPT}.png ${OOBJ_OPT}.png ${OMSK_OPT}.png \
           & show-goalf-plot.sh ${OPLOT}.txt \
-	  & gxmessage "OK"
+	  & xmessage "OK"
 
 ${IIMG}.fni: ${IIMG}.png 
 	convert ${IIMG}.png PGM:- | pnm_to_fni -min 0 -max 1 > ${IIMG}.fni

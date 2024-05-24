@@ -1,5 +1,5 @@
 /* test_sve_charges --- test of {sve_minn.h} with Rutherford's atom potential.  */
-/* Last edited on 2024-01-10 18:31:39 by stolfi */
+/* Last edited on 2024-01-11 06:33:45 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -220,7 +220,7 @@ void find_electron_positions(int32_t nq, int32_t dim, int32_t sym)
     coords_to_params(nq, dim, sym, p, nx, x);
     
     /* Optimize iteratively: */
-    double ctr[nx]; rn_zero(nx, ctr);
+    double *ctr = NULL;
     double dMax = 2.000; /* If all electrons are on the surface. */
     bool_t dBox = TRUE; /* Let charges roam in box. */
     double rMin = 0.050;
