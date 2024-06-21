@@ -1,7 +1,7 @@
 #define PROG_NAME "testplot"
 #define PROG_DESC "test of {epswr.h} plotting ops"
 #define PROG_VERS "1.0"
-/* Last edited on 2023-10-22 10:36:54 by stolfi */
+/* Last edited on 2024-06-20 13:36:38 by stolfi */
 
 #define testplot_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
@@ -69,21 +69,27 @@ void DoTests(void)
 
 void DrawThings(epswr_figure_t *epsf)
   { epswr_comment(epsf, "Thick solid red frame:");
-    epswr_set_pen(epsf, 1.000, 0.000, 0.000,  0.40,  0.0, 0.0);
+    epswr_set_pen_color(epsf, 1.000, 0.000, 0.000);
+    epswr_set_pen_width(epsf, 0.40);
+    epswr_set_pen_dashing(epsf, 0.0, 0.0);
     epswr_frame(epsf);
     
     epswr_comment(epsf, "Medium solid black coordinate lines:");
-    epswr_set_pen(epsf, 0.000, 0.000, 0.000,  0.20,  0.0, 0.0);
+    epswr_set_pen_color(epsf, 0.000, 0.000, 0.000);
+    epswr_set_pen_width(epsf, 0.20);
     epswr_coord_line(epsf, epswr_axis_HOR, 0.17);
     epswr_coord_line(epsf, epswr_axis_VER, 3.14);
 
     epswr_comment(epsf, "Medium solid light blue coordinate line grid:");
-    epswr_set_pen(epsf, 0.500, 0.750, 1.000,  0.20,  0.0, 0.0);
+    epswr_set_pen_color(epsf, 0.500, 0.750, 1.000);
+    epswr_set_pen_width(epsf, 0.20);
     epswr_coord_lines(epsf, epswr_axis_HOR, 1.0, 2.0);
     epswr_coord_lines(epsf, epswr_axis_VER, 2.0, 4.0);
 
     epswr_comment(epsf, "Thin dashed light yellow gridlines:");
-    epswr_set_pen(epsf, 0.800, 0.800, 0.300,  0.10,  2.0, 1.0);
+    epswr_set_pen_color(epsf, 0.800, 0.800, 0.300);
+    epswr_set_pen_width(epsf, 0.10);
+    epswr_set_pen_dashing(epsf, 2.0, 1.0);
     epswr_grid_lines(epsf, 44, 33);
 
     epswr_comment(epsf, "Labels in various positions:");
@@ -275,17 +281,20 @@ void DrawLines(epswr_figure_t *epsf, double xc, double yc, bool_t arrowheads)
     /* Usable area [0 _ 12]×[0 _ 15] */
     DrawFrame(epsf, 0.00+xc, 12.00+xc, 0.00+yc, 15.00+yc);
     
-    auto void do_seg(double xa, double ya, double b, double yb);
-    void do_seg(double xa, double ya, double xb, double yb)
+    auto void do_seg(double xa, double ya, double b, double yb, double lw,double rw, bool_t drdots);
+    
+    void do_seg(double xa, double ya, double xb, double yb, double lw,double rw, bool_t drdots)
       { epswr_segment(epsf, xa+xc, ya+yc, xb+xc, yb+yc);
-        epswr_dot(epsf, xa+xc, ya+yc, 1.0, FALSE, TRUE);
-        epswr_dot(epsf, xb+xc, yb+yc, 1.0, FALSE, TRUE);
+        epswr_dot(epsf, xa+xc, ya+yc, 1.0, drdots,  drdots);
+        epswr_dot(epsf, xb+xc, yb+yc, 1.0, FALSE,   drdots);
         if (arrowheads)
-          { epswr_arrowhead(epsf, xa+xc, ya+yc, xb+xc, yb+yc, 2.0, 3.0, 0.85, TRUE, TRUE); }
+          { epswr_arrowhead(epsf, xa+xc, ya+yc, xb+xc, yb+yc, lw,rw,3.0, 0.85, TRUE, TRUE); }
       }
     
-    do_seg(1.0, 1.0, 11.0, 3.0);
-    do_seg(1.0, 3.0, 11.0, 1.0);
+    do_seg(1.0, 1.0, 11.0, 3.0, 1.5,0.0, TRUE);
+    do_seg(11.0, 1.0, 1.0, 3.0, 0.0,1.5, TRUE);
+    
+    do_seg(6.0, 1.0, 6.0, 4.0,  1.0,1.0, TRUE);
     
     auto void dodim(double xp, double yp);
     

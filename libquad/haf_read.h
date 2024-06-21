@@ -2,7 +2,7 @@
 #define haf_read_H
 
 /* Reading the half-edge representation of 2D meshes. */ 
-/* Last edited on 2023-10-05 20:25:46 by stolfi */
+/* Last edited on 2024-06-20 10:20:07 by stolfi */
 
 #define half_read_H_copyright \
   "Copyright (C) 2023 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
@@ -30,11 +30,16 @@ void haf_read_map(FILE *rd, haf_arc_vec_t *A, haf_edge_id_t *eid0_P, haf_arc_vec
     {write_map}, and builds the corresponding quad-edge structure in
     memory.
     
-    The procedure allocates all the edge records specified in {rd},
-    and assigning to them sequential edge id numbers starting from the 
-    {edge_id_min} parameter found in the file's header (which is returned in {*eid0_P}). The stores 
-    into {A.e[0..A.ne-1]} the base arcs of those edges.  It also stores into {R.e[0..R.ne-1]}  
-    the root arcs specified in the file.  The vectors {*A} and {*R} are expanded and trimmed
-    as needed. */
+    The procedure allocates all the edge records specified in {rd}, and
+    assigns to them sequential edge id numbers starting from the
+    {edge_id_min} parameter found in the file's header (which is
+    returned in {*eid0_P}). Then it stores into {A.e[0..A.ne-1]} the
+    base arcs of those edges. It also stores into {R.e[0..R.ne-1]} the
+    root arcs specified in the file. 
+    
+    The parameters {A} and {R} must not be null and the vectors
+    must be initialized by the user.  The arrays {A.e} and
+    {R.e} are resized as needed. If they are not empty on entry, 
+    their storage reused, and their previous contents is overwritten. */
 
 #endif

@@ -1,5 +1,5 @@
 /* See {haf.h}. */
-/* Last edited on 2023-10-05 20:38:50 by stolfi */
+/* Last edited on 2024-06-20 11:01:51 by stolfi */
  
 #define haf_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -125,6 +125,11 @@ haf_dir_bit_t haf_dir_bit(haf_arc_t a)
 haf_arc_t haf_orient(haf_edge_t ed, haf_dir_bit_t db)
   { demand(ed != NULL, "invalid {NULL} argument");
     return ARC(ed,db);
+  }
+
+haf_arc_t haf_base_arc(haf_arc_t a)
+  { demand(a != NULL, "invalid {NULL} argument");
+    return ARC(EDGE(a),0);
   }
 
 haf_edge_id_t haf_edge_id(haf_arc_t a)

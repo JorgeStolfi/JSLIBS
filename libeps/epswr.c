@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2024-05-24 14:36:41 by stolfi */
+/* Last edited on 2024-06-21 11:12:35 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -27,6 +27,8 @@
 
 #define INF INFINITY
   /* IEEE plus infinity. */
+  
+#define debug FALSE
 
 void epswr_write_file_preamble(epswr_figure_t *eps);
   /*   */
@@ -106,7 +108,7 @@ epswr_figure_t *epswr_new_named_figure
     FILE *wr;
     if (strlen(dir) + strlen(prefix) + strlen(name) + strlen(suffix) == 0)
       { /* All name parts are omitted: */
-        fprintf(stderr, "writing EPS figure to {stdout}\n");
+        if (verbose) { fprintf(stderr, "writing EPS figure to {stdout}\n"); }
         wr = stdout;
       }
     else
@@ -121,6 +123,7 @@ epswr_figure_t *epswr_new_named_figure
           { char *name_u = (((prefix[0] == 0) && (name[0] == 0)) || (suffix[0] == 0) ? "" : "_");
             asprintf(&fname, "%s%s%s%s%s%s%s.eps", dir, dir_s, prefix, prefix_u, name, name_u, suffix);
           }
+        if (verbose) { fprintf(stderr, "writing EPS figure to \"%s\"\n", fname); }
         wr = open_write(fname, TRUE);
         free(fname);
       }
@@ -688,7 +691,7 @@ void epswr_diamond
 void epswr_arrowhead 
   ( epswr_figure_t *eps,
     double xa, double ya, double xb, double yb,
-    double width, double length, 
+    double lwidth, double rwidth, double length, 
     double fraction,
     bool_t fill, bool_t draw
   )
@@ -701,9 +704,10 @@ void epswr_arrowhead
     double psxb; epswr_x_to_h_coord(eps, xb, &(psxb));
     double psyb; epswr_y_to_v_coord(eps, yb, &(psyb));
     
-    double pswidth = width*epswr_pt_per_mm;
+    double pslwidth = lwidth*epswr_pt_per_mm;
+    double psrwidth = rwidth*epswr_pt_per_mm;
     double pslength = length * epswr_pt_per_mm;
-    epswr_dev_arrowhead(eps, psxa, psya, psxb, psyb, pswidth, pslength, fraction, fill, draw);
+    epswr_dev_arrowhead(eps, psxa, psya, psxb, psyb, pslwidth, psrwidth, pslength, fraction, fill, draw);
   } 
 
 void epswr_grid_lines(epswr_figure_t *eps, int32_t cols, int32_t rows)

@@ -1,5 +1,5 @@
 /* See {haf_draw.h}. */
-/* Last edited on 2023-10-05 19:36:55 by stolfi */
+/* Last edited on 2024-06-20 07:54:40 by stolfi */
 
 #define haf_draw_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -115,10 +115,10 @@ void haf_draw_arc_arrow(epswr_figure_t *eps, haf_draw_data_t *dd, haf_arc_t a)
   { r2_t p, pu;
     double tm = haf_draw_arc_record_TIME;
     haf_draw_get_arc_point(a, tm, &p, &pu, NULL);
-    double width = draw_edge_arc_arrow_WIDTH;
+    double hwidth = draw_edge_arc_arrow_WIDTH/2;
     double length = draw_edge_arc_arrow_LENGTH;
     r2_t q; r2_mix(1.0, &p, 2.0, &pu, &q);
-    epswr_arrowhead(eps, dd, p.c[0], p.c[1], q.c[0], q.c[1], width, length, 1.0, TRUE, TRUE);
+    epswr_arrowhead(eps, dd, p.c[0], p.c[1], q.c[0], q.c[1], hwidth, hwidth, length, 1.0, TRUE, TRUE);
   }
 
 void haf_draw_vert(epswr_figure_t *eps, haf_draw_data_t *dd, uint64_t kv)
@@ -353,7 +353,7 @@ void haf_draw_link(epswr_figure_t *eps, haf_draw_data_t *dd, r2_t *p, r2_t *q, d
     double ahlen = haf_draw_link_arrow_LENGTH;
     epswr_arrowhead
       ( eps, p2.c[0], p2.c[1], q->c[0], q->c[1],
-        ahwid, ahlen, 1.0, 
+        ahwid/2, ahwid/2, ahlen, 1.0, 
         TRUE, TRUE
       );
   }

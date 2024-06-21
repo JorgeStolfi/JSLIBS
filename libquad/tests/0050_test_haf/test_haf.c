@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of the {haf.h} procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-10-05 20:27:33 by stolfi */ 
+/* Last edited on 2024-06-20 11:33:10 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2023  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
@@ -36,14 +36,27 @@
 
 int32_t main(int32_t argc, char **argv);
 void putwr (haf_arc_t a);
-void test_basic(char *name, haf_arc_t m);
+
 void test_edge_enum(void);
+void do_test_edge_enum(uint64_t nr, haf_arc_t root[], uint64_t ne_exp, uint64_t nc_exp);
+  /* Tests {haf_enum_edges} on {root[0..nr-1]}.
+    Checks whether the edge and component counts match {ne_exp} and {nc_exp},
+    respectively. */
+
+void test_basic(char *name, haf_arc_t m);
+  /* Tests the basic operation on the component reached from {m}.
+    Also creates an additional component {m1}, and calls 
+    {test_enum_write_read(name,m,m1,NULL)}. */
+    
 void test_enum_write_read(char *name, haf_arc_t a, haf_arc_t b, haf_arc_t c);
+  /* Writes to file "out/{name}.haf" the components reachable from {a,b,c}
+    and reads them back.  Any of {a,b,c} which are {NULL} are ignored. */
 
 /* IMPLEMENTATIONS: */
 
 int32_t main(int32_t argc, char **argv)
-  { test_basic("torus", haf_shapes_torus());
+  { test_edge_enum();
+    test_basic("torus", haf_shapes_torus());
     test_basic("star4", haf_shapes_star(4));
     test_basic("pyra4", haf_shapes_pyramid(4));
     return 0;
@@ -62,6 +75,7 @@ void test_basic(char *name, haf_arc_t m)
         haf_arc_t a = haf_orient(ed, t);
         assert(t == haf_dir_bit(a));
         assert(ed == haf_edge(a));
+        assert(haf_base_arc(a) == haf_orient(ed, 0));
       
         fprintf(stderr, "  %-10s ", "a =");          haf_write_arc(stderr, a, 1);             fprintf(stderr, "\n");
         fprintf(stderr, "  %-10s ", "sym(a) =");     haf_write_arc(stderr, haf_sym(a), 1);    fprintf(stderr, "\n");
@@ -93,20 +107,52 @@ void test_basic(char *name, haf_arc_t m)
     haf_arc_t m1 = haf_shapes_orange(5);
     test_enum_write_read(name, m, m1, NULL);
   }
-    
+  
 void test_edge_enum(void)
-  {
-    uint32_t ma = 10; haf_arc_t a = haf_shapes_star(ma);;
-    uint32_t mb =  7; haf_arc_t b = haf_shapes_pyramid(mb);
-    uint64_t ne_exp = ma + 2*mb; /* Expected number of edges in {a,b}. */
-    uint64_t nc_exp = 2;         /* Expected number of connected components in {a,b}. */
+  { fprintf(stderr, "> test_edge_enum\n");
+    
+    uint32_t m_z = 1; 
+    haf_arc_t z = haf_shapes_star(m_z);
+    uint64_t ne_exp_z = m_z;
+  
+    uint32_t m_a = 10; 
+    haf_arc_t a = haf_shapes_star(m_a);
+    uint64_t ne_exp_a = m_a;
+
+    uint32_t m_b =  7;
+    haf_arc_t b = haf_shapes_pyramid(m_b);
+    uint64_t ne_exp_b = 2*m_b;
 
     /* Root pointers and expected edge count: */
-    haf_arc_count_t nr = 3;
-    haf_arc_t root[nr];
+    haf_arc_t root[3];
+    
+    fprintf(stderr, "  -- single edge:\n");
+    root[0] = z;
+    do_test_edge_enum(1, root, ne_exp_z, 1);
+
+    fprintf(stderr, "  -- star(%u):\n", m_a);
+    root[0] = a;
+    do_test_edge_enum(1, root, ne_exp_a, 1);
+
+    fprintf(stderr, "  -- pyramid(%u):\n", m_b);
+    root[0] = b;
+    do_test_edge_enum(1, root, ne_exp_b, 1);
+
+    fprintf(stderr, " star(%u) and pyramid(%u)×2:\n", m_a, m_b);
     root[0] = a;
     root[1] = b;
     root[2] = haf_sym(haf_lnext(haf_lnext(a)));
+    do_test_edge_enum(3, root, ne_exp_a + ne_exp_b, 2);
+    
+    fprintf(stderr, "< test_edge_enum\n");
+    
+  }
+    
+void do_test_edge_enum(uint64_t nr, haf_arc_t root[], uint64_t ne_exp, uint64_t nc_exp)
+  {
+    bool_t debug = FALSE;
+    
+    if (debug) { fprintf(stderr, "  > {do_test_edge_enum}\n"); }
     
     /* Enumerate edges: */
     haf_edge_id_t eid0 = 1003;
@@ -125,10 +171,12 @@ void test_edge_enum(void)
         demand(haf_sym(ak) != NULL, "null {.sym} pointer");
         demand(haf_arc_id(haf_sym(ak)) == akid + 1, "bad arc number (odd)");
       }
+    if (debug) { fprintf(stderr, "  < {do_test_edge_enum}\n"); }
   }    
  
 void test_enum_write_read(char *name, haf_arc_t a, haf_arc_t b, haf_arc_t c)
-  { fprintf(stderr, "--- testing map enum/write/read name = %s ---\n", name);
+  { fprintf(stderr, "> test_enum_write_read}\n");
+    fprintf(stderr, "  testing enum/write/read name = %s\n", name);
     
     haf_arc_t root_wr[3]; /* Root list. */
     haf_arc_count_t nr_wr = 0;
@@ -142,6 +190,7 @@ void test_enum_write_read(char *name, haf_arc_t a, haf_arc_t b, haf_arc_t c)
     haf_arc_vec_t C_wr = haf_arc_vec_new(0); /* One arc on each component. */
     haf_enum_edges(nr_wr, root_wr, eid0_wr, &A_wr, &C_wr);
     haf_edge_count_t ne_wr = A_wr.ne;
+    fprintf(stderr, "found %u edges\n", A_wr.ne);
     fprintf(stderr, "found %u connected components\n", C_wr.ne);
     assert(C_wr.ne <= nr_wr);
     for (haf_edge_count_t ke = 0; ke < ne_wr; ke++)
@@ -158,8 +207,8 @@ void test_enum_write_read(char *name, haf_arc_t a, haf_arc_t b, haf_arc_t c)
     
     fprintf(stderr, "running {haf_read_map}...\n");
     FILE *rd = open_read(filename, TRUE);
-    haf_arc_vec_t A_rd; /* One arc out of each edge. */
-    haf_arc_vec_t R_rd; /* One arc on each component. */
+    haf_arc_vec_t A_rd = haf_arc_vec_new(0); /* One arc out of each edge. */
+    haf_arc_vec_t R_rd = haf_arc_vec_new(0); /* One arc on each component. */
     haf_edge_id_t eid0_rd = 4634;
     haf_read_map(rd, &A_rd, &eid0_rd, &R_rd);
     fclose(rd);
@@ -202,4 +251,5 @@ void test_enum_write_read(char *name, haf_arc_t a, haf_arc_t b, haf_arc_t c)
       }
 
     free(filename);
+    fprintf(stderr, "< test_enum_write_read}\n");
   }

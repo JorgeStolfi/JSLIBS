@@ -1,5 +1,5 @@
 /* Tools for generating Encapsulated Postscript graphics files. */
-/* Last edited on 2024-05-24 14:49:52 by stolfi */
+/* Last edited on 2024-06-20 07:45:49 by stolfi */
 
 #ifndef epswr_H
 #define epswr_H
@@ -643,14 +643,15 @@ void epswr_diamond
 void epswr_arrowhead 
   ( epswr_figure_t *eps,
     double xa, double ya, double xb, double yb,
-    double width, double length, 
+    double lwidth, double rwidth, double length,
     double fraction,
     bool_t fill, bool_t draw
   );
   /* Fills and/or outlines a triangular head for an arrow with base
     at {a = (xa,ya)} and tip at {b = (xb,yb)}. The head will have
-    the specified {width} and {length} (in millimeters, irrespective
-    of the current plot scale) and its tip will be positioned at the
+    the specified {length}, and will extend {lwidth} to the left and
+    {rwidth} to the right (all in millimeters, irrespective
+    of the current plot scale). Its tip will be positioned at the
     given {fraction} of the way from {a} to {b}. */
     
 /* GRID LINES AND GRID CELLS */

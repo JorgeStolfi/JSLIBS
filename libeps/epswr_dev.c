@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2024-05-24 14:53:21 by stolfi */
+/* Last edited on 2024-06-20 08:14:31 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -1524,7 +1524,7 @@ void epswr_dev_diamond
 void epswr_dev_arrowhead 
   ( epswr_figure_t *eps,
     double psxa, double psya, double psxb, double psyb,
-    double pswidth, double pslength, 
+    double pslwidth, double psrwidth, double pslength, 
     double fraction,
     bool_t fill, bool_t draw
   )
@@ -1537,18 +1537,14 @@ void epswr_dev_arrowhead
     double d = sqrt(dx*dx + dy*dy);
     dx /= d; dy /= d;
     
-    /* Arrow dimensions in Device units: */
-    double psw = pswidth/2.0;
-    double psh = pslength;
-    
     /* Corners of triangle: */
     double noitcarf = 1.0 - fraction;
     double psxt = noitcarf*psxa + fraction*psxb;
     double psyt = noitcarf*psya + fraction*psyb;
-    double psxu = psxt - psh * dx + psw * dy;
-    double psyu = psyt - psh * dy - psw * dx;
-    double psxv = psxt - psh * dx - psw * dy;
-    double psyv = psyt - psh * dy + psw * dx;
+    double psxu = psxt - pslength * dx + psrwidth * dy;
+    double psyu = psyt - pslength * dy - psrwidth * dx;
+    double psxv = psxt - pslength * dx - pslwidth * dy;
+    double psyv = psyt - pslength * dy + pslwidth * dx;
     
     if (epswr_triangle_is_invisible(eps, psxt, psyt, psxu, psyu, psxv, psyv))
       { return; }

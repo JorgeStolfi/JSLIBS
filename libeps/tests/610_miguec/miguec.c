@@ -1,5 +1,5 @@
 /* Control schematic of the Mazoni-Zabini IG-UNICAMP multifocus microscope */
-/* Last edited on 2023-02-21 10:29:29 by stolfi */
+/* Last edited on 2024-06-20 07:55:10 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -192,7 +192,7 @@ void miguec_draw_arrow
   {
     epswr_polygon(epsf, FALSE, xv, yv, n, FALSE, TRUE, FALSE);
     epswr_set_fill_color(epsf, 0.000,0.000,0.000);
-    epswr_arrowhead(epsf, xv[n-2], yv[n-2], xv[n-1], yv[n-1], 1.0, 2.5,  1.0, TRUE, TRUE);
+    epswr_arrowhead(epsf, xv[n-2], yv[n-2], xv[n-1], yv[n-1], 0.5, 0.5, 2.5,  1.0, TRUE, TRUE);
     if ((text1 != NULL) && (strlen(text1) > 0))
       { epswr_label(epsf, text1, text1, xText1, yText1, 0.0, TRUE, 0.5, 0.5, TRUE, FALSE); }
     if ((text2 != NULL) && (strlen(text2) > 0))

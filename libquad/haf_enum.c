@@ -1,5 +1,5 @@
 /* See {haf_enum.h}. */
-/* Last edited on 2023-10-05 19:37:33 by stolfi */
+/* Last edited on 2024-06-20 11:31:43 by stolfi */
  
 #define haf_enum_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -23,6 +23,8 @@
 void haf_enum_cycles(haf_edge_count_t ne, haf_arc_t a[], haf_edge_id_t eid0, uint64_t cid[], bool_t face);
   /* If {face} is true, does {haf_get_faces(ne,a,cid)}, else does 
     {haf_get_verts(ne,a,cid)}. */
+    
+#define debug FALSE
 
 /* IMPLEMENTATIONS */
 
@@ -30,24 +32,33 @@ void haf_enum_edges
   ( haf_arc_count_t nr,
     haf_arc_t root[],
     haf_edge_id_t eid0,
-    haf_arc_vec_t *E,
-    haf_arc_vec_t *C
+    haf_arc_vec_t *E_P,
+    haf_arc_vec_t *C_P
   )
   { 
-    /* Provide an internal edge table if {E} is {NULL} */
+    /* Provide internal edge table if {E_P} is {NULL}: */
     haf_arc_vec_t E_local = haf_arc_vec_new(0);
-    if (E == NULL) { E = &E_local; }
-      
+    haf_arc_vec_t *E = (E_P != NULL ? E_P : &E_local);
+    haf_arc_vec_t *C = C_P; 
+    
     haf_edge_count_t ne = 0; /* The edges seen so far are {E.e[0..ne-1]}. */
     haf_edge_count_t nc = 0; /* Number of connected components found so far. */ 
    
+    auto haf_arc_t get_next_cand_edge(void);
+      /* Returns a next candidate for the next unseen edge.
+        If the queue is not empty, namely {pe < ne}, and {a = E.e[pe].lnext}
+        is not seen, returns {a}; else returns {b = E[pe].sym.next} and increments {pe}.
+        If the queue is empty but the root list is not exhausted, namely {kr < nr},
+        return {root[kr]} and increments {kr}. . */
+        
     auto bool_t edge_is_seen(haf_arc_t a);
       /* True iff the arc {a} or its opposite have been saved in {E.e[0..ne-1]}. */
     
     int32_t pe = 0;  /* The arcs {E.e[0..pe-1]} and their opposites have been processed. */
     haf_arc_count_t kr = 0; /* The arcs {root[0..kr-1]} have been processed. */
     while ((kr < nr) || (pe < ne))
-      { /* At this point {E.e[0..ne-1]} are the even-numbered arcs of
+      { if (debug) { fprintf(stderr, "  kr = %lu pe = %d\n", kr, pe); } 
+        /* At this point {E.e[0..ne-1]} are the even-numbered arcs of
           all edges (opposite arc pairs) we have seen (renumbered), and
           {E.e[ke].aid = 2*(ke + eid0)} for all {ke} in {0..ne-1}. Those edges
           include all edges of the arcs {root[0..kr-1]},
@@ -57,50 +68,40 @@ void haf_enum_edges
           edges. */
           
         /* Get the next arc {a} that is still possibly un-numbered: */
-        haf_arc_t a;
-        if (pe < ne)
-          { /* Get the next edge from the queue {E.e[pe..ne-1]}: */
-            haf_arc_t c = E->e[pe];
-            assert(c != NULL); /* We never put {NULL} there. */
-            haf_arc_t a = haf_lnext(c); demand(a != NULL, "{.lnext} pointer is {NULL}");
-            if (! edge_is_seen(a)) { break; /* Note the other {.lnext} may be unseen too. */ }
-            a = haf_lnext(haf_sym(c)); demand(a != NULL, "{.sym.lnext} pointer is {NULL}");
-            if (! edge_is_seen(a)) { pe++; break; }
-            a = NULL;
-          }
-        else 
-          { /* Get the next root edge: */
-            assert(kr < nr);
-            a = root[kr];
-            demand(a != NULL, "root arc is {NULL}");
-            if (! edge_is_seen(a))
-              { if (C != NULL)
-                  { /* Another connected component: */
-                    haf_arc_vec_expand(C, (vec_index_t)nc);
-                    C->e[nc] = a;
-                    nc++;
-                  }
-              }
-            else
-              { a = NULL; }
-            kr++;
-          }
-        /* Now {a} is either {NULL} or an arc of a still-unseen edge: */
-        if (a != NULL)
+        haf_arc_t a = get_next_cand_edge();
+        demand(a != NULL, "{get_next_cand_edge} returned {NULL}");
+        if (! edge_is_seen(a)) 
           { /* New edge; renumber and store in {E}: */
             demand(ne <= haf_edge_count_MAX, "too many edges");
             demand(eid0 <= haf_edge_id_MAX - ne, "edge identifier got too big");
             haf_set_edge_id(a, eid0 + ne);
             haf_arc_vec_expand(E, (vec_index_t)ne);
-            E->e[ne] = a;
+            if (debug) { fprintf(stderr, "    unseen, saving in {E[%lu]}\n", ne); }
+            E->e[ne] = haf_base_arc(a);
             ne++;
           }
+        else
+          { if (debug) { fprintf(stderr, "    already seen, skipped\n"); }
+          }
       }
-    if (E == &E_local)
-      { /* Free storage: */ haf_arc_vec_trim(E, 0); }
-    else
-      { /* Trim table for caller: */ haf_arc_vec_trim(E, (vec_index_t)ne); }
+      
+    /* Trim or recycle the edge table: */
+    if (E == &E_local) 
+      { /* Edge table is local, reclaim: */
+        assert(E_P == NULL);
+        free(E->e);
+      } 
+    else 
+      { /* Edge table is client's, trim: */
+        assert(E == E_P);
+        assert(E_local.ne == 0);
+        haf_arc_vec_trim(E, (vec_index_t)ne);
+      }
+      
+    /* Trim component table, if any: */
+    assert(C == C_P);
     if (C != NULL) { haf_arc_vec_trim(C, (vec_index_t)nc); }
+    
     return;
       
     bool_t edge_is_seen(haf_arc_t a)
@@ -108,8 +109,43 @@ void haf_enum_edges
         haf_edge_id_t eid = haf_edge_id(a);
         if (eid < eid0) { return FALSE; }
         haf_edge_count_t ke = eid - eid0;
-        if (ke > ne) { return FALSE; }
+        if (ke >= ne) { return FALSE; }
         return (haf_edge(E->e[ke]) == haf_edge(a));
+      }
+      
+    haf_arc_t get_next_cand_edge(void)
+      { if (pe < ne)
+          { /* Get the next edge from the queue {E.e[pe..ne-1]}: */
+            haf_arc_t c = E->e[pe];
+            assert(c != NULL); /* We never put {NULL} there. */
+            haf_arc_t a = haf_lnext(c); demand(a != NULL, "{.lnext} pointer is {NULL}");
+            if (debug) { fprintf(stderr, "  trying E[%u].lnext = %lu:%u\n", pe, haf_edge_id(a), haf_dir_bit(a)); } 
+            if (! edge_is_seen(a)) { return a; /* Note the other {.lnext} may be unseen too. */ }
+            if (debug) { fprintf(stderr, "    already seen, skipped\n"); }
+            haf_arc_t b = haf_lnext(haf_sym(c)); demand(b != NULL, "{.sym.lnext} pointer is {NULL}");
+            if (debug) { fprintf(stderr, "  trying E[%d].sym.lnext = %lu:%u\n", pe, haf_edge_id(b), haf_dir_bit(b)); } 
+            pe++; 
+            return b;
+          }
+        else 
+          { /* Get the next root edge: */
+            assert(kr < nr);
+            haf_arc_t r = root[kr];
+            demand(r != NULL, "root arc is {NULL}");
+            if (debug) { fprintf(stderr, "  trying root[%lu] = %lu:%u\n", kr, haf_edge_id(r), haf_dir_bit(r)); } 
+            if (! edge_is_seen(r))
+              { if (C_P != NULL)
+                  { /* Another connected component: */
+                    if (debug) { fprintf(stderr, "    new component, saved in {C[%lu]}\n", nc); }
+                    haf_arc_vec_expand(C_P, (vec_index_t)nc);
+                    /* Pick the base edge: */
+                    C_P->e[nc] = haf_base_arc(r);
+                    nc++;
+                  }
+              }
+            kr++;
+            return r;
+          }
       }
   }
   

@@ -1,5 +1,5 @@
 /* epswr_dev.h - draw EPS files in Device coordinates. */
-/* Last edited on 2024-05-24 14:49:28 by stolfi */
+/* Last edited on 2024-06-20 07:47:16 by stolfi */
 
 #ifndef epswr_dev_H
 #define epswr_dev_H
@@ -410,14 +410,14 @@ void epswr_dev_diamond
 void epswr_dev_arrowhead 
   ( epswr_figure_t *eps,
     double psxa, double psya, double psxb, double psyb,
-    double pswidth, double pslength, 
+    double pslwidth, double psrwidth, double pslength, 
     double fraction,
     bool_t fill, bool_t draw
   );
   /* Fills and/or outlines a triangular head for an arrow with base
     at {a = (psxa,psya)} and tip at {b = (psxb,psyb)}. The head will have
-    the specified {width} and {length} and its tip will be positioned at the
-    given {fraction} of the way from {a} to {b}. */
+    the specified {lwidth}, {rwidth}, and {length} and its tip will
+    be positioned at the given {fraction} of the way from {a} to {b}. */
     
 /* GRID LINES AND GRID CELLS */
 

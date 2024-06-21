@@ -2,7 +2,7 @@
 #define haf_H
 
 /* The half-edge data structure to encode the topology of 2D meshes. */
-/* Last edited on 2023-10-05 20:31:53 by stolfi */
+/* Last edited on 2024-06-20 10:56:01 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -134,6 +134,9 @@ typedef uint8_t haf_dir_bit_t;
 
 haf_dir_bit_t haf_dir_bit(haf_arc_t a);
   /* The direction bit of arc {a}. */
+
+haf_arc_t haf_base_arc(haf_arc_t a);
+  /* The base arc with same edge as {a}, with direction bit 0. */
 
 /* UNORIENTED EDGES */
 

@@ -1,5 +1,5 @@
 /* See {haf_read.h}. */
-/* Last edited on 2023-10-05 18:48:33 by stolfi */
+/* Last edited on 2024-06-20 10:21:02 by stolfi */
  
 #define haf_read_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -44,6 +44,9 @@ haf_arc_t haf_read_arc(FILE *rd, haf_edge_id_t eid0, haf_arc_vec_t *A)
 void haf_read_map(FILE *rd, haf_arc_vec_t *A, haf_edge_id_t *eid0_P, haf_arc_vec_t *R)
   { /* Check and consume the header line: */
     filefmt_read_header(rd, FILE_TYPE, FILE_VERSION);
+    
+    demand(A != NULL, "edge table {A} is {NULL}");
+    demand(R != NULL, "root table {R} is {NULL}");
     
     /* Read the edge count and the min edge id: */
     haf_edge_count_t ne = nget_uint64(rd, "edges", 10); fget_eol(rd);

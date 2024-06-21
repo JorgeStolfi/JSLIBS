@@ -1,5 +1,5 @@
 /* See {grd_plot.h} */
-/* Last edited on 2023-10-01 19:47:38 by stolfi */
+/* Last edited on 2024-06-20 07:56:09 by stolfi */
 
 #define drtree_plot_C_COPYRIGHT \
   "Duh?"
@@ -243,13 +243,13 @@ void drtree_plot_individuals
           { /* Draw the white shadow: */
             epswr_set_pen(eps, 1.000,1.000,1.000, arlw + 2*halw, 0,0);
             epswr_segment(eps, X0, Y0, X1, Y1);
-            epswr_arrowhead(eps, X0, Y0, X1, Y1, awid, alen, 1.0, TRUE, TRUE);
+            epswr_arrowhead(eps, X0, Y0, X1, Y1, awid/2, awid/2, alen, 1.0, TRUE, TRUE);
           }
         else
           { /* Draw the arrow proper: */
             epswr_set_pen(eps, 0.000,0.000,0.000, arlw, 0,0);
             epswr_segment(eps, X0, Y0, X1, Y1);
-            epswr_arrowhead(eps, X0, Y0, X1, Y1, awid, alen, 1.0, TRUE, TRUE);
+            epswr_arrowhead(eps, X0, Y0, X1, Y1, awid/2, awid/2, alen, 1.0, TRUE, TRUE);
           }
       }
 

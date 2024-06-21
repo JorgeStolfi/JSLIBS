@@ -1,5 +1,5 @@
 /* Self-bounded vectors (one-dimensional arrays) of things */
-/* Last edited on 2023-03-18 11:05:06 by stolfi */
+/* Last edited on 2024-06-20 08:27:29 by stolfi */
 
 #ifndef vec_H
 #define vec_H
@@ -128,11 +128,11 @@ typedef int32_t vec_index_t;
   void PREFIX##_expand(VEC_TYPE *vp, vec_index_t index)
 /*
   This macro declares the function {{PREFIX}_expand}. The call
-  {{PREFIX}_expand(&v,pos)} makes sure that the element {v.e[pos]}
+  {{PREFIX}_expand(&v,index)} makes sure that the element {v.e[index]}
   exists. If necessary, it allocates a larger area from the heap,
   copies the old elements of {v} into it, reclaims the old area {v.e},
   and finally sets {v.e} to the new area and {v.ne} to its size (which
-  will be strictly greater than {pos}). The element count {v.ne} is
+  will be strictly greater than {index}). The element count {v.ne} is
   approximately doubled at each reallocation, to ensure total {O(N)}
   time for adding {N} elements. */
 

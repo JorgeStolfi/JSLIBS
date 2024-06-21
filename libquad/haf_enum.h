@@ -2,7 +2,7 @@
 #define haf_enum_H
 
 /* Enumerating and renumbering elements of a half-edge structure. */
-/* Last edited on 2023-10-05 20:33:13 by stolfi */
+/* Last edited on 2024-06-20 10:21:13 by stolfi */
 
 #define half_enum_H_copyright \
   "Copyright (C) 2023 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
@@ -37,11 +37,11 @@ void haf_enum_edges
     
     On return, if {C} is not {NULL}, {nc=C.ne} will the number of
     connected components formed by those edges, and {C.e[0..nc-1]} is
-    one arc on each connected component. These arcs will be a subset of
-    {root[0..nr-1]}.  
+    one base arc on each connected component. These arcs will be a subset of
+    {root[0..nr-1]} or their {.sym}.  
     
-    The arrays {E.e} and {C.e} are resized as needed. If they are not {NULL}
-    on entry, they are reused, and their previous contents is overwritten. */
+    The arrays {E.e} and {C.e} are resized as needed. If either is not {NULL}
+    on entry, it is reused, and their previous contents is overwritten. */
 
 typedef uint64_t haf_face_id_t; /* Numeric identifier of a face of the structure. */
 

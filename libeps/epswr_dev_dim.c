@@ -1,5 +1,5 @@
 /* See epswr_dim.h */
-/* Last edited on 2020-10-27 17:04:59 by jstolfi */
+/* Last edited on 2024-06-20 08:01:03 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -112,12 +112,12 @@ void epswr_dev_dim_linear
         double pswidth = 2.0;  /* Arrow width (pt). */
         epswr_dev_arrowhead
           ( eps, psxa0, psya0, psxa1, psya1,
-            pswidth, pslength, 1.0, 
+            pswidth/2, pswidth/2, pslength, 1.0, 
             TRUE, TRUE
           );
         epswr_dev_arrowhead
           ( eps, psxb0, psyb0, psxb1, psyb1,
-            pswidth, pslength, 1.0, 
+            pswidth/2, pswidth/2, pslength, 1.0, 
             TRUE, TRUE
           );
       }
