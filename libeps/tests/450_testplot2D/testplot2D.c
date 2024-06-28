@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {epswr_plot_2D.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-02-27 20:14:57 by stolfi */
+/* Last edited on 2024-06-22 17:46:24 by stolfi */
 
 #define testplot_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"

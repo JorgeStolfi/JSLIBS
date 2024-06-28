@@ -1,5 +1,5 @@
 /* See msm_ps_tools.h */
-/* Last edited on 2023-10-01 19:50:44 by stolfi */
+/* Last edited on 2024-06-22 17:40:27 by stolfi */
 
 #define msm_ps_tools_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -272,12 +272,12 @@ void msm_ps_tools_draw_ref_axis(msm_ps_tools_t *mps, epswr_axis_t axis, double R
 
 void msm_ps_tools_draw_ref_frame(msm_ps_tools_t *mps, double R, double G, double B)
   { epswr_set_pen(mps->eps, R,G,B, 0.10, 0.0, 0.0);
-    epswr_rectangle(mps->eps, mps->epswrMin[0], mps->epswrMax[0], mps->epswrMin[1], mps->epswrMax[1], FALSE, TRUE);
+    epswr_rectangle(mps->eps, mps->epswrMin[0],mps->epswrMax[0], mps->epswrMin[1],mps->epswrMax[1], FALSE, TRUE);
   }
 
 void msm_ps_tools_draw_plot_frame(msm_ps_tools_t *mps, double R, double G, double B)
   { epswr_set_pen(mps->eps, R,G,B, 0.10, 0.0, 0.0);
-    epswr_rectangle(mps->eps, 0, mps->size[0], 0, mps->size[1], FALSE, TRUE);
+    epswr_rectangle(mps->eps, 0,mps->size[0], 0,mps->size[1], FALSE, TRUE);
   }
   
 void msm_ps_tools_draw_tic

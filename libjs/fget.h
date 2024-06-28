@@ -1,5 +1,5 @@
 /* fget.h -- reading items from text files. */
-/* Last edited on 2023-10-28 15:27:09 by stolfi */
+/* Last edited on 2024-06-27 19:11:09 by stolfi */
 
 #ifndef fget_H
 #define fget_H
@@ -41,7 +41,7 @@ bool_t fget_is_space(char c);
     that {c} cannot be {EOF}, since {(char)EOF} coincides with '\240',
     non-breaking space.. */
 
-void fget_skip_spaces(FILE *f); 
+void fget_skip_spaces(FILE *rd); 
   /* Skips space characters until the first non-space character, or end-of-file.
     Will NOT skip over any other characters, including end-of-line and 
     the other non-space formatting characters. */
@@ -57,7 +57,7 @@ bool_t fget_is_formatting_char(char c);
   /* Returns TRUE iff {c} is a formatting character. Note that {c} cannot be {EOF},
     since {EOF} is not in the {char} range {-128..+127}. */
 
-void fget_skip_formatting_chars(FILE *f); 
+void fget_skip_formatting_chars(FILE *rd); 
   /* Skips all blank `formatting' characters until the first character that is not
     in that list, or end-of-file. */
 
@@ -66,7 +66,7 @@ void fget_skip_formatting_chars(FILE *f);
 /* The following procedures will skip spaces (SPACEs, NBSPs, TABs and NULs)
   before the desired input.  They will NOT skip line-breaks or page-breaks. */
 
-char fget_char(FILE *f);
+char fget_char(FILE *rd);
   /* Skips spaces, then reads a single character --- which must
     not be a space or formatting char (such as end-of-line , '\n'). Fails
     if a formatting char or end-of-file occurs before the character.
@@ -74,28 +74,28 @@ char fget_char(FILE *f);
     Note that a result of {-1 = '\377'} means the byte 0xff
     not {EOF}. */
 
-bool_t fget_bool(FILE *f);
+bool_t fget_bool(FILE *rd);
   /* The procedure {fget_bool_t} will skip spaces, then read a single
     character: 'T','t','Y','y','1' for TRUE, 'F','f','N','n','0' for FALSE. Anything
     else is an error.  Note that, if the file contains "TRUE" or
     "FALSE", only the first letter will be consumed. */
 
-char *fget_string(FILE *f);
+char *fget_string(FILE *rd);
   /* Skips spaces. Fails if hits end-fo-file or a formatting character.
     Otherwise reads one or more characters, until end-of-file or the
     a formatting character (space, line break, or page break), which
     is not consumed.  The result is returned as a newly allocated,
     zero-terminated string (which has at least one character). */
     
-int32_t fget_int32(FILE *f);
-int64_t fget_int64(FILE *f);
+int32_t fget_int32(FILE *rd);
+int64_t fget_int64(FILE *rd);
   /* Skips spaces, reads the longest possible non-empty string that
     looks like a decimal integer (with optional '+' or '-' sign), and
     tries to convert it to a signed integer value of the specified
     size. A failure in any of these steps is a fatal error. */
     
-uint32_t fget_uint32(FILE *f, uint32_t base);
-uint64_t fget_uint64(FILE *f, uint32_t base);
+uint32_t fget_uint32(FILE *rd, uint32_t base);
+uint64_t fget_uint64(FILE *rd, uint32_t base);
   /* Skips spaces, reads the longest possible non-empty string that
     looks like an unsigned integer, and tries to convert it to an 
     unsigned integer value of the specified size. A failure in any 
@@ -108,13 +108,13 @@ uint64_t fget_uint64(FILE *f, uint32_t base);
     (or 'A'..'Z') which represent values in 10..35. In either case,
     the procedure fails if any digit has a value {base} or more. */
 
-uint64_t fget_bin64(FILE *f);
+uint64_t fget_bin64(FILE *rd);
   /* Skips spaces, reads the longest possible non-empty string of
     digits, ans tries to parseit as the binary representation of an
     {uint64_t} value. Fails if there are no digits, if it runs into
     a digit greater than 1, or if the value is greater than {2^64-1}. */
 
-double fget_double(FILE *f);
+double fget_double(FILE *rd);
   /* Skips spaces, reads the longest possible non-empty string that
     looks like a floating-point number (including optional exponent),
     and tries to convert it to a {double} value. A failure in any of
@@ -122,30 +122,30 @@ double fget_double(FILE *f);
 
 /* STRING AND CHAR PARSING */
 
-bool_t fget_test_eof(FILE *f);
-  /* Returns {TRUE} iff there are no more characters to be read from {f}.
-    Otherwise leaves {f} effectively unchanged.  */
+bool_t fget_test_eof(FILE *rd);
+  /* Returns {TRUE} iff there are no more characters to be read from {rd}.
+    Otherwise leaves {rd} effectively unchanged.  */
  
-void fget_eol(FILE *f);
+void fget_eol(FILE *rd);
   /* Skips any spaces and requires the next non-space character to be a
     end-of-line  (ASCII LF, '\n', '\012', ^J), which it consumes. It is a
     fatal error if the next non-space is not a end-of-line, or end-of-file
-    is found. Equivalent to {fget_skip_spaces(f);
-    fget_match(f,"\n")}. */
+    is found. Equivalent to {fget_skip_spaces(rd);
+    fget_match(rd,"\n")}. */
 
-void fget_skip_to_eol(FILE *f);
-  /* Reads and discards arbitrary ] characters from {f} until an
+void fget_skip_to_eol(FILE *rd);
+  /* Reads and discards arbitrary ] characters from {rd} until an
     end-of-line  or end-of-file. The end-of-line  character is
     consumed. */
    
-char *fget_line(FILE *f);
+char *fget_line(FILE *rd);
   /* Collects all characters from the current point up to but 
     not including the end of the line or end of file into as a newly allocated,
     zero-terminated string, which will be the returned result.  Then,
     if the next character is end-of-line , consumes it. The end-of-file,
     if any, is not consumed. */
 
-bool_t fget_test_comment_or_eol(FILE *f, char cmtc, char **text_P);
+bool_t fget_test_comment_or_eol(FILE *rd, char cmtc, char **text_P);
   /* Skips spaces, and then checks whether the next character is either
     end-of-line , or a comment that starts with the character {cmtc} and
     extends to the end of the line. In either case, returns {TRUE} and
@@ -164,13 +164,13 @@ bool_t fget_test_comment_or_eol(FILE *f, char cmtc, char **text_P);
     will always contain the terminating '\000' byte. If end-of-line was
     found instead of {cmtc}, the procedure sets {*text_P} to {NULL}. */
 
-void fget_comment_or_eol(FILE *f, char cmtc, char **text_P);
+void fget_comment_or_eol(FILE *rd, char cmtc, char **text_P);
   /* Like {fget_eol}, but allows for a comment that begins 
     with {cmtc} and extends to the end of the line.  
-    Namely, the same as {fget_test_comment_or_eol(f,cmtc,text_P)},
+    Namely, the same as {fget_test_comment_or_eol(rd,cmtc,text_P)},
     but fails with an error instead of returning {FALSE}. */
 
-char *fget_to_delims(FILE *f, char delim, char *delims);
+char *fget_to_delims(FILE *rd, char delim, char *delims);
   /* Reads zero or more characters, until a terminating character -- which
     is either end-of-line , or the character {delim}, or one of the characters in {delims},
     whichever comes first. 
@@ -187,8 +187,8 @@ char *fget_to_delims(FILE *f, char delim, char *delims);
     The procedure fails with error if end-of-file occurs before the
     terminating character is found. */
 
-bool_t fget_test_char(FILE *f, char c);
-  /* If {f} is exhausted, returns {FALSE}.
+bool_t fget_test_char(FILE *rd, char c);
+  /* If {rd} is exhausted, returns {FALSE}.
     Otherwise, checks whether the next character is {c} (which may be anything,
     including space or formatting char). If it is, consumes that
     character and returns TRUE.  If it is some other character, (even if it is a
@@ -197,15 +197,15 @@ bool_t fget_test_char(FILE *f, char c);
     
     Note that {c = -1 = '\377'} will match only the byte 0xff, not {EOF}. */
 
-bool_t fget_skip_and_test_char(FILE *f, char c);
-  /* Equivalent to {fget_skip_spaces(f); fget_test_char(f, c)}. */
+bool_t fget_skip_and_test_char(FILE *rd, char c);
+  /* Equivalent to {fget_skip_spaces(rd); fget_test_char(rd, c)}. */
 
-void fget_match(FILE *f, char *t);
-  /* Requires the string {t} to be the next thing on {f}, and
+void fget_match(FILE *rd, char *t);
+  /* Requires the string {t} to be the next thing on {rd}, and
     consumes that string. */
     
-void fget_skip_spaces_and_match(FILE *f, char *t);
-  /* Equivalent to {fget_skip_spaces(f); fget_match(f, t)}. */
+void fget_skip_spaces_and_match(FILE *rd, char *t);
+  /* Equivalent to {fget_skip_spaces(rd); fget_match(rd, t)}. */
  
 /* CHANGED on 2023-10-15:
 
@@ -231,5 +231,11 @@ void fget_skip_spaces_and_match(FILE *f, char *t);
       with error message instead of returning {FALSE}. Namely, if fails
       if, after skipping spaces, does not find either end-of-line or a
       complete comment ({cmtc}, zero or more chars, and end-of-line). */   
+
+/* DEBUGGING */
+
+void fget_show_next(FILE *wr, char *pref, FILE *rd, char *suff);
+  /* Prints to {wr} the next character from {rd}, legibly, without consuming it,
+    surrounded by {pref} and {suff}. */ 
 
 #endif

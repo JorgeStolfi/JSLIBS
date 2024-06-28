@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {epswr.h} and {epswr_shade.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-20 06:53:12 by stolfi */
+/* Last edited on 2024-06-22 17:47:19 by stolfi */
 
 #define testshade_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
@@ -164,7 +164,7 @@ void PlotShadedPoly
     /* int32_t tichi = (int32_t)floor(FIG_XY_SZ); */
     /* epswr_tics(epsf, epswr_axis_HOR, ticlo, tichi, tichi - ticlo, NULL, 1.0, 0.0); */
     /* epswr_tics(epsf, epswr_axis_VER, ticlo, tichi, tichi - ticlo, NULL, 1.0, 0.0); */
-    epswr_rectangle(epsf, -0.25, +0.25+wx, -0.25, +0.25+wy, FALSE, TRUE);
+    epswr_rectangle(epsf, -0.25,+0.25+wx, -0.25,+0.25+wy, FALSE, TRUE);
     
     epswr_set_pen(epsf, 0.000, 0.000, 0.333,  0.10,  0.0, 0.0);
     

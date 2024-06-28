@@ -1,5 +1,5 @@
 /* See epswr_vis.h */
-/* Last edited on 2022-10-20 06:51:09 by stolfi */
+/* Last edited on 2024-06-22 18:54:04 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -31,7 +31,7 @@
 #define CHECKBOX \
     return ((xlo > xMax) || (xhi < xMin) || (ylo > yMax) || (yhi < yMin))
 
-bool_t epswr_segment_is_invisible
+bool_t epswr_vis_segment_is_invisible
   ( epswr_figure_t *epsf,
     double xa, double ya, 
     double xb, double yb
@@ -43,7 +43,7 @@ bool_t epswr_segment_is_invisible
     CHECKBOX;
   }
 
-bool_t epswr_curve_is_invisible
+bool_t epswr_vis_curve_is_invisible
   ( epswr_figure_t *epsf,
     double xa, double ya, 
     double xb, double yb, 
@@ -59,7 +59,7 @@ bool_t epswr_curve_is_invisible
     CHECKBOX;
   }
 
-bool_t epswr_rectangle_is_invisible
+bool_t epswr_vis_rectangle_is_invisible
   ( epswr_figure_t *epsf,
     double xlo, double xhi, 
     double ylo, double yhi
@@ -68,7 +68,23 @@ bool_t epswr_rectangle_is_invisible
     CHECKBOX;
   }
 
-bool_t epswr_triangle_is_invisible
+bool_t epswr_vis_centered_rectangle_is_invisible
+  ( epswr_figure_t *epsf,
+    double xc, double yc, 
+    double wd, double ht,
+    double ca, double sa
+  )
+  { /* Get bounding box coords {psxlo,psxhi,psylo,psyhi}: */
+    double xr = (fabs(ca)*wd + fabs(sa)*ht)/2;
+    double yr = (fabs(sa)*wd + fabs(ca)*ht)/2;
+    double xlo = xc - xr;
+    double xhi = xc + xr;
+    double ylo = yc - yr;
+    double yhi = yc + yr;
+    return epswr_vis_rectangle_is_invisible(epsf, xlo, xhi, ylo, yhi);
+  }
+
+bool_t epswr_vis_triangle_is_invisible
   ( epswr_figure_t *epsf,
     double xa, double ya, 
     double xb, double yb, 
@@ -82,7 +98,7 @@ bool_t epswr_triangle_is_invisible
     CHECKBOX;
   }
 
-bool_t epswr_polygon_is_invisible
+bool_t epswr_vis_polygon_is_invisible
   ( epswr_figure_t *epsf,
     double x[], double y[], int32_t npoints
   )
@@ -93,7 +109,7 @@ bool_t epswr_polygon_is_invisible
     CHECKBOX;
   }
 
-bool_t epswr_circle_is_invisible
+bool_t epswr_vis_circle_is_invisible
   ( epswr_figure_t *epsf,
     double xc, double yc, double rad
   )
@@ -105,7 +121,7 @@ bool_t epswr_circle_is_invisible
   }
 
 
-bool_t epswr_lune_is_invisible
+bool_t epswr_vis_lune_is_invisible
   ( epswr_figure_t *epsf,
     double xc, double yc, double rad, 
     double tilt
@@ -119,7 +135,7 @@ bool_t epswr_lune_is_invisible
     CHECKBOX;
   }
 
-bool_t epswr_slice_is_invisible
+bool_t epswr_vis_slice_is_invisible
   ( epswr_figure_t *epsf,
     double xc, double yc, 
     double rad, 

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {fget.h}, {fget_data.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-10-15 03:06:37 by stolfi */ 
+/* Last edited on 2024-06-24 20:01:13 by stolfi */ 
 /* Created on 2007-01-02 by J. Stolfi, UNICAMP */
 
 #define test_jsmath_COPYRIGHT \
@@ -93,8 +93,8 @@ void test_fget_skip_spaces(bool_t verbose)
     auto void print_cmt_res(char *which, bool_t ok, char *text);
     auto void print_cmt_text(char *text);
 
-    /* Write six lines of stuff to disk: */
-    int32_t nlines = 6;
+    /* Write some lines of stuff to disk: */
+    int32_t nlines = 8;
     char *x[nlines];
     x[0] = " \t \t \t \240 ";                
     x[1] = " \t \t \t \240 FOO ";            
@@ -102,7 +102,9 @@ void test_fget_skip_spaces(bool_t verbose)
     x[3] = " # BAR ";                 
     x[4] = " ";                              
     x[5] = " \t @ FOO ";
-    assert(nlines == 6);
+    x[6] = " 23";
+    x[7] = "%$@";
+    assert(nlines == 8);
     char* fname = "out/test_skip.txt";
     FILE* wr = open_write(fname, verbose);
     for (int32_t i = 0; i < nlines; i++) { fprintf(wr, "%s\n", x[i]); }                  
@@ -165,6 +167,7 @@ void test_fget_skip_spaces(bool_t verbose)
     fprintf(stderr, "\n-- line 3 = \"%s\":\n", escapify(x[3]));
     /* Should be bunch of blanks plus the comment "{cmtc} BAR ": */
     char *text3 = "UNCHANGED";
+    fprintf(stderr, "calling {fget_test_comment_or_eol...\n");
     fget_comment_or_eol(rd, cmtc, &text3); /* Should consume the end-of-line too. */
     fprintf(stderr, "computed: text = "); print_cmt_text(text3); fprintf(stderr, "\n");
     demand(eq_cmt_text(text3, " BAR "), "did not return the comment text");
@@ -172,6 +175,7 @@ void test_fget_skip_spaces(bool_t verbose)
     fprintf(stderr, "\n-- line 4 = \"%s\":\n", escapify(x[4]));
     /* Should be just blanks: */
     char *text4 = "UNCHANGED";
+    fprintf(stderr, "calling {fget_test_comment_or_eol...\n");
     fget_comment_or_eol(rd, cmtc, &text4); /* Should consume the end-of-line too. */
     fprintf(stderr, "computed: text = "); print_cmt_text(text4); fprintf(stderr, "\n");
     demand(eq_cmt_text(text4, NULL), "returned a non-{NULL} comment text");
@@ -179,7 +183,8 @@ void test_fget_skip_spaces(bool_t verbose)
     fprintf(stderr, "\n-- line 5 = \"%s\":\n", escapify(x[5]));
     /* Should be blanks then a '@': */
     char *text5 = "UNCHANGED";
-    bool_t ok5 = fget_test_comment_or_eol(rd, cmtc, &text5); /* Should consume the end-of-line too. */
+    fprintf(stderr, "calling {fget_test_comment_or_eol...\n");
+    bool_t ok5 = fget_test_comment_or_eol(rd, cmtc, &text5); /* Should not find it. */
     check_cmt(ok5, FALSE, text5, "UNCHANGED");
     int32_t r5 = fgetc(rd);
     demand(r5 != EOF, " unexpected EOF");
@@ -189,6 +194,46 @@ void test_fget_skip_spaces(bool_t verbose)
     ungetc(r5, rd);
     fprintf(stderr, "calling {fget_skip_to_eol}...\n");
     fget_skip_to_eol(rd); /* Should consume the end-of-line. */
+
+    fprintf(stderr, "\n-- line 6 = \"%s\":\n", escapify(x[6]));
+    /* Should be blanks and an integer: */
+    char *text6 = "UNCHANGED";
+    fprintf(stderr, "calling {fget_test_comment_or_eol} (a)...\n");
+    bool_t ok6a = fget_test_comment_or_eol(rd, cmtc, &text6); /* Should not find it. */
+    check_cmt(ok6a, FALSE, text6, "UNCHANGED");
+    int32_t r6 = fget_int32(rd);
+    demand(r6 == 23, " {fget_int32} failed");
+    fprintf(stderr, " got %d\n", r6);
+    fprintf(stderr, "calling {fget_test_comment_or_eol} (b)...\n");
+    text6 = "UNCHANGED";
+    bool_t ok6b = fget_test_comment_or_eol(rd, cmtc, &text6); /* Should find it. */
+    check_cmt(ok6b, TRUE, text6, NULL);
+    ungetc('\n', rd);
+    fprintf(stderr, "calling {fget_test_comment_or_eol} (c)...\n");
+    text6 = "UNCHANGED";
+    bool_t ok6c = fget_test_comment_or_eol(rd, cmtc, &text6); /* Should find it. */
+    check_cmt(ok6c, TRUE, text6, NULL);
+
+    fprintf(stderr, "\n-- line 7 = \"%s\":\n", escapify(x[7]));
+    /* Should be "%$@": */
+    char *text7 = "UNCHANGED";
+    for (int32_t ik = 0; ik < 3; ik++)
+      { fprintf(stderr, "calling {fget_test_comment_or_eol} (a)...\n");
+        bool_t ok7a = fget_test_comment_or_eol(rd, cmtc, &text7); /* Should not find it. */
+        check_cmt(ok7a, FALSE, text7, "UNCHANGED");
+        int32_t ch7a = fget_char(rd);
+        demand(ch7a == "%$@"[ik], " {fget_char} failed");
+        fprintf(stderr, " got '%c'\n", ch7a);
+      }
+    fprintf(stderr, "calling {fget_test_comment_or_eol} (b)...\n");
+    text7 = "UNCHANGED";
+    bool_t ok7b = fget_test_comment_or_eol(rd, cmtc, &text7); /* Should find it. */
+    check_cmt(ok7b, TRUE, text7, NULL);
+    ungetc('\n', rd);
+    fprintf(stderr, "calling {fget_test_comment_or_eol} (c)...\n");
+    text7 = "UNCHANGED";
+    bool_t ok7c = fget_test_comment_or_eol(rd, cmtc, &text7); /* Should find it. */
+    check_cmt(ok7c, TRUE, text7, NULL);
 
     fprintf(stderr, "\n-- end of file:\n");
     /* Should be at EOF: */

@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2024-06-20 08:14:31 by stolfi */
+/* Last edited on 2024-06-22 19:36:37 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -25,6 +25,9 @@
 #include <epswr_dev.h>
 
 /* INTERNAL PROTOTYPES */
+     
+#define Pr fprintf
+#define Er stderr, "dev_" 
 
 void epswr_dev_write_file_header(FILE *wr, double hSize, double vSize);
   /* Writes to {wr} the file preamble for an encapsulated Postscript file.
@@ -898,8 +901,8 @@ epswr_figure_t *epswr_dev_new_figure
     epswr_check_param("vSize", vSize, 1.0, epswr_MAX_SIZE);
 
     if (eps->verbose)
-      { fprintf(stderr, "epswr_dev_new_figure:\n");
-        fprintf(stderr, "  total figure size = %6.1f × %6.1f (pt)\n", hSize, vSize);
+      { Pr(Er "new_figure:\n");
+        Pr(Er "  total figure size = %6.1f × %6.1f (pt)\n", hSize, vSize);
       }
 
     eps->hSize = hSize;
@@ -1069,9 +1072,8 @@ void epswr_dev_segment
     double psxa, double psya,
     double psxb, double psyb
   )
-  { if (eps->verbose) 
-      { fprintf(stderr, "segment: (%.3f %.3f) --> (%.3f %.3f)\n",  psxa, psya, psxb, psyb); }
-    if (epswr_segment_is_invisible(eps, psxa, psya, psxb, psyb)) 
+  { if (eps->verbose) { Pr(Er "segment: (%.3f %.3f) --> (%.3f %.3f)\n",  psxa, psya, psxb, psyb); }
+    if (epswr_vis_segment_is_invisible(eps, psxa, psya, psxb, psyb)) 
       { return; }
     FILE *wr = eps->wr;
     fprintf(wr,
@@ -1087,7 +1089,7 @@ void epswr_dev_curve
     double psxc, double psyc,
     double psxd, double psyd
   )
-  { if (epswr_curve_is_invisible(eps, psxa, psya, psxb, psyb, psxc, psyc, psxd, psyd))
+  { if (epswr_vis_curve_is_invisible(eps, psxa, psya, psxb, psyb, psxc, psyc, psxd, psyd))
       { return; }
     FILE *wr = eps->wr;
     fprintf(wr, "%6.1f %6.1f  %6.1f %6.1f  %6.1f %6.1f  %6.1f %6.1f arcd\n",
@@ -1155,15 +1157,52 @@ void epswr_dev_rectangle
     bool_t fill, bool_t draw
   )
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
-    if ((!draw) && (!fill)) { return; }
-    if (eps->verbose) 
-      { fprintf(stderr, "rectangle: [ %.3f _ %.3f] x [%.3f _ %.3f]\n",  psxlo, psxhi, psylo, psyhi); }
-    if (epswr_rectangle_is_invisible(eps, psxlo, psxhi, psylo, psyhi))
+    if ((!draw) && ((!fill) || (psxlo == psxhi) || (psylo == psyhi))) { return; }
+    if (eps->verbose) { Pr(Er "rectangle: [ %.3f _ %.3f] x [%.3f _ %.3f]\n",  psxlo, psxhi, psylo, psyhi); }
+    if (epswr_vis_rectangle_is_invisible(eps, psxlo, psxhi, psylo, psyhi))
       { return; }
     FILE *wr = eps->wr;
     fprintf(wr, "%d %d %6.1f %6.1f  %6.1f %6.1f",  draw, fill, psxlo, psxhi, psylo, psyhi);
     fprintf(wr, " rec\n");
     fflush(wr);
+  }
+
+void epswr_dev_centered_rectangle
+  ( epswr_figure_t *eps,
+    double psxc, double psyc,
+    double pswd, double psht,
+    double rot,
+    bool_t fill, bool_t draw
+  )
+  { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
+    if ((!draw) && ((!fill) || (pswd == 0) || (psht == 0))) { return; }
+    if (eps->verbose) 
+      { Pr(Er "centered_rectangle: (%.3f,%.3f) %.3f × %.3f rot %.3f\n",  psxc, psyc, pswd, psht, rot); }
+    pswd = fabs(pswd); psht = fabs(psht);
+    rot = rot - floor(rot/360)*360;
+    if ((rot == 0) || (rot == 180))
+      { epswr_dev_rectangle(eps, psxc-pswd/2, psxc+pswd/2, psyc-psht/2, psyc+psht/2, fill, draw); }
+    else if ((rot == 90) || (rot == 270))
+      { epswr_dev_rectangle(eps, psxc-psht/2, psxc+psht/2, psyc-pswd/2, psyc+pswd/2, fill, draw); }
+    else
+      { double ang = M_PI*(rot/180);
+        double ca = cos(ang), sa = sin(ang);  
+        if (epswr_vis_centered_rectangle_is_invisible(eps, psxc, psyc, pswd, psht, ca, sa))
+          { if (eps->verbose) { Pr(Er "centered_rectangle:  invisible\n"); }
+            return;
+          }
+        double psux = + ca*pswd/2;
+        double psuy = + sa*pswd/2;
+        double psvx = - sa*psht/2;
+        double psvy = + ca*psht/2;
+
+        double psx[4], psy[4];
+        psx[0] = psxc - psux - psvx;  psy[0] = psyc - psuy - psvy;
+        psx[1] = psxc - psux + psvx;  psy[1] = psyc - psuy + psvy;
+        psx[2] = psxc + psux + psvx;  psy[2] = psyc + psuy + psvy;
+        psx[3] = psxc + psux - psvx;  psy[3] = psyc + psuy - psvy;
+        epswr_dev_polygon(eps, TRUE, psx, psy, 4, fill, draw, TRUE);
+      }
   }
   
 void epswr_dev_triangle
@@ -1175,7 +1214,7 @@ void epswr_dev_triangle
   )
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
-    if (epswr_triangle_is_invisible(eps, psxa, psya, psxb, psyb, psxc, psyc))
+    if (epswr_vis_triangle_is_invisible(eps, psxa, psya, psxb, psyb, psxc, psyc))
       { return; }
     FILE *wr = eps->wr;
     fprintf(wr,
@@ -1217,7 +1256,7 @@ void epswr_dev_polygon
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
     if (! closed) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
-    if (! epswr_polygon_is_invisible(eps, psx, psy, n))
+    if (! epswr_vis_polygon_is_invisible(eps, psx, psy, n))
       { /* Plot them: */
         FILE *wr = eps->wr;
         fprintf(wr, "%d %d %d %d", draw, fill, evenOdd, closed);
@@ -1246,7 +1285,7 @@ void epswr_dev_rounded_polygon
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
     if (! closed) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
-    if (! epswr_polygon_is_invisible(eps, psx, psy, n))
+    if (! epswr_vis_polygon_is_invisible(eps, psx, psy, n))
       { /* Compute the radii to use at each corner: */
         double *arad = rn_alloc(n);
         for (int32_t i = 0; i<n; i++)
@@ -1304,7 +1343,7 @@ void epswr_dev_bezier_polygon
       any case, we should checl the convex hull of those points
       instead.
     */
-    if (! epswr_polygon_is_invisible(eps, psx, psy, np))
+    if (! epswr_vis_polygon_is_invisible(eps, psx, psy, np))
       { /* Plot it: */
         FILE *wr = eps->wr;
         fprintf(wr, "%d %d %d %d", draw, fill, evenOdd, closed);
@@ -1332,8 +1371,9 @@ void epswr_dev_circle
     bool_t fill, bool_t draw
   )
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
-    if ((!draw) && (!fill)) { return; }
-    if (epswr_circle_is_invisible(eps, psxc, psyc, psrad))
+    if ((!draw) && ((!fill) || (psrad == 0))) { return; }
+    if (eps->verbose) { Pr(Er "circle: (%.3f,%.3f) %.3f\n",  psxc, psyc, psrad); }
+    if (epswr_vis_circle_is_invisible(eps, psxc, psyc, psrad))
       { return; }
     FILE *wr = eps->wr;
     fprintf(wr, "%d %d %6.1f %6.1f  %6.2f", draw, fill, psxc, psyc, psrad); 
@@ -1348,7 +1388,7 @@ void epswr_dev_lune
   )
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
-    if (epswr_lune_is_invisible(eps, psxc, psyc, psrad, pstilt))
+    if (epswr_vis_lune_is_invisible(eps, psxc, psyc, psrad, pstilt))
       { return; }
     FILE *wr = eps->wr;
     fprintf(wr, "%d %d %6.1f %6.1f  %6.1f %6.2f",
@@ -1365,29 +1405,13 @@ void epswr_dev_slice
   )
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
-    if (epswr_slice_is_invisible(eps, psxc, psyc, psrad, start, stop))
+    if (epswr_vis_slice_is_invisible(eps, psxc, psyc, psrad, start, stop))
       { return; }
     FILE *wr = eps->wr;
     fprintf(wr, "%d %d %6.1f %6.1f  %6.1f  %6.2f %6.2f",
       draw, fill, psxc, psyc, psrad, start, stop); 
     fprintf(wr, " pie\n");
     fflush(wr);
-  }
-
-void epswr_dev_dot
-  ( epswr_figure_t *eps,
-    double psxc, double psyc, double psrad,
-    bool_t fill, bool_t draw
-  )
-  { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
-    if ((!draw) && (!fill)) { return; }
-    if (epswr_circle_is_invisible(eps, psxc, psyc, psrad))
-      { return; }
-    FILE *wr = eps->wr;
-    fprintf(wr, "%d %d %6.1f %6.1f  %6.1f", draw, fill, psxc, psyc, psrad); 
-    fprintf(wr, " cir\n");
-    fflush(wr);
-    
   }
   
 void epswr_dev_tic
@@ -1397,8 +1421,7 @@ void epswr_dev_tic
     double psticSize,
     double align 
   )
-  {
-    double psxa, psya, psxb, psyb;
+  { double psxa, psya, psxb, psyb;
     if (axis == epswr_axis_HOR)
       { psxa = psxb = psxc; 
         psya = psyc - align*psticSize; 
@@ -1416,11 +1439,9 @@ void epswr_dev_tic
   
 void epswr_dev_cross
   ( epswr_figure_t *eps, 
-    double psxc, double psyc, double psrad, bool_t diag,
-    bool_t draw
+    double psxc, double psyc, double psrad, bool_t diag
   )
-  { if (! draw) { return; }
-    if (epswr_rectangle_is_invisible(eps, psxc-psrad, psxc+psrad, psyc-psrad, psyc+psrad))
+  { if (epswr_vis_rectangle_is_invisible(eps, psxc-psrad, psxc+psrad, psyc-psrad, psyc+psrad))
       { return; }
     double psxA, psyA, psxB, psyB, psxC, psyC, psxD, psyD;
     if (diag)
@@ -1449,13 +1470,11 @@ void epswr_dev_cross
   
 void epswr_dev_asterisk
   ( epswr_figure_t *eps, 
-    double psxc, double psyc, double psrad,
-    bool_t draw
+    double psxc, double psyc, double psrad
   )
-  { if (!draw) { return; }
-    double ct = 0.92387953 * psrad;
+  { double ct = 0.92387953 * psrad;
     double st = 0.38268343 * psrad;
-    if (epswr_rectangle_is_invisible(eps, psxc-ct, psxc+ct, psyc-ct, psyc+ct))
+    if (epswr_vis_rectangle_is_invisible(eps, psxc-ct, psxc+ct, psyc-ct, psyc+ct))
       { return; }
     double psxA = psxc - st; double psyA = psyc - ct;
     double psxB = psxc + st; double psyB = psyc + ct;
@@ -1480,19 +1499,6 @@ void epswr_dev_asterisk
     );
   }
 
-void epswr_dev_square
-  ( epswr_figure_t *eps,
-    double psxc, double psyc, double psrad,
-    bool_t fill, bool_t draw
-  )
-  { double d = 0.7071067812 * psrad;
-    double psxlo = psxc - d;
-    double psxhi = psxc + d;
-    double psylo = psyc - d;
-    double psyhi = psyc + d;
-    epswr_dev_rectangle(eps, psxlo, psxhi, psylo, psyhi, fill, draw);
-  }
-
 void epswr_dev_diamond
   ( epswr_figure_t *eps, 
     double psxc, double psyc,
@@ -1505,7 +1511,7 @@ void epswr_dev_diamond
     double psxhi = psxc + psxRad;
     double psylo = psyc - psyRad;
     double psyhi = psyc + psyRad;
-    if (epswr_rectangle_is_invisible(eps, psxlo, psxhi, psylo, psyhi))
+    if (epswr_vis_rectangle_is_invisible(eps, psxlo, psxhi, psylo, psyhi))
       { return; }
     FILE *wr = eps->wr;
     bool_t evenOdd = TRUE;
@@ -1546,7 +1552,7 @@ void epswr_dev_arrowhead
     double psxv = psxt - pslength * dx - pslwidth * dy;
     double psyv = psyt - pslength * dy + pslwidth * dx;
     
-    if (epswr_triangle_is_invisible(eps, psxt, psyt, psxu, psyu, psxv, psyv))
+    if (epswr_vis_triangle_is_invisible(eps, psxt, psyt, psxu, psyu, psxv, psyv))
       { return; }
     FILE *wr = eps->wr;
     fprintf(wr, "%d %d %6.1f %6.1f  %6.1f %6.1f  %6.1f %6.1f",
@@ -1609,7 +1615,7 @@ void epswr_dev_label
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
     if (eps->verbose)
-      { fprintf(stderr, "label: \"%s\" at (%.3f,%.3f) rot = %.1f\n", text, psx, psy, rot); }
+      { Pr(Er "label: \"%s\" at (%.3f,%.3f) rot = %.1f\n", text, psx, psy, rot); }
 
     FILE *wr = eps->wr;
     fprintf(wr, "labelFont setfont\n");
@@ -1672,12 +1678,12 @@ void epswr_dev_text
             double vRefRaw = eps->vTopText; 
             /* Compute the horiz coord of the line's ref point rel to center, unrotated: */
             double hRefRaw = (hAlign - 0.5)*eps->hSizeText;
-            if (debug) { fprintf(stderr, "raw = ( %.3f %.3f )", hRefRaw, vRefRaw); }
+            if (debug) { Pr(Er "raw = ( %.3f %.3f )", hRefRaw, vRefRaw); }
             /* Rotate the ref point around the center: */
             double hRef = eps->hCtrText + ca*hRefRaw - sa*vRefRaw;
             double vRef = eps->vCtrText + sa*hRefRaw + ca*vRefRaw;
-            if (debug) { fprintf(stderr, " rot = ( %.3f %.3f )\n", hRef, vRef); }
-            if (debug) { epswr_dev_dot(eps, hRef, vRef, 0.5, TRUE, FALSE); }
+            if (debug) { Pr(Er " rot = ( %.3f %.3f )\n", hRef, vRef); }
+            if (debug) { epswr_dev_circle(eps, hRef, vRef, 0.5, TRUE, FALSE); }
             epswr_dev_text_line(eps, line, "Rg", hRef, vRef, rot, clipped, hAlign, vAlign, fill, draw);
           }
         /* Update the text "cursor" position: */
@@ -1723,7 +1729,7 @@ void epswr_dev_comment(epswr_figure_t *eps, const char *title)
     FILE *wr = eps->wr;
     affirm(wr != NULL, "no wr");
     fprintf(eps->wr, "\n%% [%s]\n", title);
-    if (eps->verbose) { fprintf(stderr, "[%s]\n", title); }
+    if (eps->verbose) { Pr(Er "[%s]\n", title); }
     fflush(wr);
   }
 
@@ -1731,7 +1737,7 @@ void epswr_dev_show_stack(epswr_figure_t *eps, int32_t code)
   { FILE *wr = eps->wr;
     affirm(wr != NULL, "no wr");
     fprintf(eps->wr, "\n%d stack pop\n", code);
-    if (eps->verbose) { fprintf(stderr, "epswr_show_stack(%d)\n", code); }
+    if (eps->verbose) { Pr(Er "show_stack(%d)\n", code); }
     fflush(wr);
   }
 

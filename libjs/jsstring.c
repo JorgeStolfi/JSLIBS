@@ -1,5 +1,5 @@
 /* See jsstring.h */
-/* Last edited on 2023-11-25 10:30:01 by stolfi */
+/* Last edited on 2024-06-28 02:20:17 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -13,48 +13,50 @@
 
 #include <jsstring.h>
 
-int32_t isprefix(const char *s, const char *t)
-  { while (((*s)!='\000') &&((*t)!='\000') && ((*s) == (*t)))
-      { s++; t++; }
-    return (*s) == '\000';
+int32_t isprefix(const string_t s, const string_t t)
+  { char *p = s;
+    char *q = t;
+    while (((*p)!='\000') &&((*q)!='\000') && ((*p) == (*q)))
+      { p++; q++; }
+    return (*p) == '\000';
   }
 
-char *prefix(const char *s, int32_t len)
+string_t prefix(const string_t s, int32_t len)
   { demand((len >= 0) && (len <= strlen(s)), "invalid {len}");
-    char *r = NULL;
+    string_t r = NULL;
     asprintf(&r, "%.*s", len, s);
     assert((r != NULL) && strlen(r) == len);
     return r;
   }
 
-char *txtcat (const char *a, const char *b)
-  { char *r = NULL;
+string_t txtcat (const string_t a, const string_t b)
+  { string_t r = NULL;
     asprintf(&r, "%s%s", a, b);
-    return (char*)notnull(r, "no mem");
+    return (string_t)notnull(r, "no mem");
   }
 
-char *txtcat3 (const char *a, const char *b, const char *c)
-  { char *r = NULL;
+string_t txtcat3 (const string_t a, const string_t b, const string_t c)
+  { string_t r = NULL;
     asprintf(&r, "%s%s%s", a, b, c);
-    return (char*)notnull(r, "no mem");
+    return (string_t)notnull(r, "no mem");
   }
 
-char *txtcat4 (const char *a, const char *b, const char *c, const char *d)
-  { char *r = NULL;
+string_t txtcat4 (const string_t a, const string_t b, const string_t c, const string_t d)
+  { string_t r = NULL;
     asprintf(&r, "%s%s%s%s", a, b, c, d);
-    return (char*)notnull(r, "no mem");
+    return (string_t)notnull(r, "no mem");
   }
   
-char *txtrep(const char* x, uint32_t n)
+string_t txtrep(const string_t  x, uint32_t n)
   { uint64_t m = strlen(x);
-    char *r = talloc(n*m  +  1, char);
-    char *p = r;
+    string_t r = talloc(n*m  +  1, char);
+    string_t p = r;
     uint32_t k;
     for (k = 0; k < n; k++) { strcpy(p, x); p += m; }
     return r;
   }  
 
-char *add_ext(const char *name, const char *ext)
+string_t add_ext(const string_t name, const string_t ext)
   { 
     if ((strcmp(name, "") == 0) || (strcmp(name, "-") == 0))
       { return txtcat(name, ""); }
@@ -64,7 +66,7 @@ char *add_ext(const char *name, const char *ext)
   
 #define is_space(ch) (((ch) == ' ') || ((ch) == '\240') || ((ch) == '\011'))
 
-char *trim_spaces(char *x, bool_t at_beg, bool_t at_end)
+string_t trim_spaces(string_t x, bool_t at_beg, bool_t at_end)
   { uint64_t m = strlen(x);
     char *p = x;
     if (at_beg) { while (is_space(*p)) { p++; } }
@@ -72,21 +74,21 @@ char *trim_spaces(char *x, bool_t at_beg, bool_t at_end)
     if (at_end) { while ((q > p) && is_space(*(q-1))) { q--; } }
     assert(p <= q);
     uint64_t n = (uint64_t)(q - p);
-    char *r = talloc(n+1, char);
+    string_t r = talloc(n+1, char);
     bcopy(p, r, n); 
     *(r + n) = '\000';
     return r;
   }
 
-char *fmt_int(int64_t x, uint32_t wid)
-  { char *r = NULL;
+string_t fmt_int(int64_t x, uint32_t wid)
+  { string_t r = NULL;
     asprintf(&r, "%0*ld", wid, x);
     return r;
   }
 
-char *escapify(char *x)
+string_t escapify(string_t x)
   { uint64_t m = strlen(x);
-    char *r = talloc(4*m + 1, char);
+    string_t r = talloc(4*m + 1, char);
     char *px = x;
     char *pr = r;
     while ((*px) != 0)

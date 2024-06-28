@@ -2,7 +2,7 @@
 #define haf_H
 
 /* The half-edge data structure to encode the topology of 2D meshes. */
-/* Last edited on 2024-06-20 10:56:01 by stolfi */
+/* Last edited on 2024-06-27 07:53:22 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -90,36 +90,36 @@ haf_arc_t haf_sym(haf_arc_t a);
   /* Same edge in opposite orientation.  Takes constant time. */
   
 haf_arc_t haf_lnext(haf_arc_t a);
-  /* Next edge /counterclockwise/ with the same left face. Takes constant time. */
+  /* Next arc /counterclockwise/ with the same left face. Takes constant time. */
  
 haf_arc_t haf_rnext(haf_arc_t a);
-  /* The next edge /counterclockwise/ with the same right face,
+  /* The next arc /counterclockwise/ with the same right face,
     namely {a.sym.lnext.sym}. Takes constant time. */
        
 haf_arc_t haf_oprev(haf_arc_t a);
-  /* The next edge /clockwise/ with the same origin vertex,
+  /* The next arc /clockwise/ with the same origin vertex,
     namely {a.sym.lnext}. Takes constant time. */
   
 haf_arc_t haf_dprev(haf_arc_t a);
-  /* he next edge /clockwise/ with the same destination vertex
+  /* he next arc /clockwise/ with the same destination vertex
     namely {a.lnext.sym}. Takes constant time. */
 
 /* SLOW WALKING OPERATORS */
 
 haf_arc_t haf_lprev(haf_arc_t a);
-  /* Inverse of {.lnext}: the next edge /clockwise/ with the same left face.
+  /* Inverse of {.lnext}: the next arc /clockwise/ with the same left face.
     Takes time proportional to the degree of that face. */
 
 haf_arc_t haf_rprev(haf_arc_t a);
-  /* Inverse of {.rnext}: next edge /clockwise/ with same right face.
+  /* Inverse of {.rnext}: next arc /clockwise/ with same right face.
     Takes time proportional to the degree of that face. */
       
 haf_arc_t haf_onext(haf_arc_t a);
-  /* Inverse of {.oprev}: the next edge /counterclockwise/ with the same origin vertex.
+  /* Inverse of {.oprev}: the next arc /counterclockwise/ with the same origin vertex.
     Takes time proportional to the degree of that vertex. */
    
 haf_arc_t haf_dnext(haf_arc_t a);
-  /* Inverse of {.dprev}: the next edge /counterclockwise/ with the same destination vertex.
+  /* Inverse of {.dprev}: the next arc /counterclockwise/ with the same destination vertex.
     Takes time proportional to the degree of that vertex. */
 
 /* ARC DIRECTION BIT 
@@ -243,7 +243,7 @@ void haf_set_edge_id(haf_arc_t a, haf_edge_id_t eid);
   
 /* DEBUGGING */
 
-void haf_check_topology(haf_edge_count_t ne, haf_arc_t a[], haf_edge_id_t eid0);
+void haf_check_topology(haf_edge_count_t ne, haf_arc_t a[], haf_edge_id_t eid0, bool_t verbose);
   /* Expects that the vector {a[0..ne-1]} has one {haf_arc_t} record
     out of every edge of the mesh.  
     Checks that the ids of arc {a[ke]} and {a[ke].sym} are {2*(eid0+ke)} and {2(eid0+ke)+1}

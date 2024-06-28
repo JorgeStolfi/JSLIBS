@@ -1,5 +1,5 @@
 /* Tools for generating Encapsulated Postscript graphics files. */
-/* Last edited on 2024-06-20 07:45:49 by stolfi */
+/* Last edited on 2024-06-22 18:52:12 by stolfi */
 
 #ifndef epswr_H
 #define epswr_H
@@ -447,7 +447,19 @@ void epswr_rectangle
     double ylo, double yhi,
     bool_t fill, bool_t draw
   );
-  /* Fills and/or outlines the given rectangle. */
+  /* Fills and/or outlines the rectangle
+    {[xlo _ xhi] × [ylo _ yhi]}. */
+  
+void epswr_centered_rectangle
+  ( epswr_figure_t *eps,
+    double xc, double yc,
+    double wd, double ht,
+    double rot,
+    bool_t fill, bool_t draw
+  );
+  /* Fills and/or outlines the rectangle with center {(xc,yc)},
+    width {wd}, height {ht}, all in Client coordinates,
+    but rotated {rot} degrees counterclockwise. */
   
 void epswr_parallelogram
   ( epswr_figure_t *eps,
@@ -575,9 +587,11 @@ void epswr_slice
 /* MARKER FILLING & DRAWING COMMANDS */
 
 /* All commands in this section, the size of the figure is specified
-  in millimeters, irrespecive of the current Client to-Device scale.
-  The specified size does not include the line width that is used
-  when {draw} is true. */
+  in millimeters, irrespecive of the current Client-to-Device scaling.
+  
+  The specified dimensions apply only to the basic shape with ideal
+  zero-width outline. If the outline is drawn, the actual dimensions
+  will be increased by half the current pen width. */
     
 void epswr_dot
   ( epswr_figure_t *eps,
@@ -599,36 +613,50 @@ void epswr_tic
     will be {ticSize} millimeters, irrespective of the current scale)
     The segment will extend {align*ticSize} mm in the negative
     direction, and {(1-align)*ticSize} mm in the positive
-    direction. */
+    direction. This mark has no interior, hence it it is drawn but not
+    filled. */
   
 void epswr_cross
   ( epswr_figure_t *eps, 
-    double xc, double yc, double rad, bool_t diag,
-    bool_t draw
+    double xc, double yc, double rad, bool_t diag
   );
   /* Draws a cross centered at {(xc,yc)} with radius {rad}. If
     {diag} is false the cross has vertical and horizontal branches;
     if {diag} is true the cross is rotated 45 degres. The radius is
-    in millimeters, irrespective of the current scale. The mark has
-    no interior. */
+    in millimeters, irrespective of the current scale. This mark has
+    no interior, hence it it is drawn but not filled. */
   
 void epswr_asterisk
   ( epswr_figure_t *eps, 
-    double xc, double yc, double rad,
-    bool_t draw
+    double xc, double yc, double rad
   );
-  /* Draws asn asterisk consisting of four crossed strokes at
+  /* Draws an asterisk consisting of four strokes crossing at
     {(xc,yc)} with radius {rad}. The {radius} is in millimeters,
-    irrespective of the current scale. The mark has no interior. */
+    irrespective of the current scale.  This mark has no interior, 
+    hence it is drawn but not filled. */
+
+void epswr_box
+  ( epswr_figure_t *eps,
+    double xc, double yc, 
+    double wd, double ht,
+    double rot,
+    bool_t fill, bool_t draw
+  );
+  /* Fills and/or draws a rectangle with center {xc,yc},
+    width {wd}, height {ht}, rotated {rot} degrees 
+    counterclockwise. The dimensions are in millimeters, irrespective
+    of the current scale. */
 
 void epswr_square
   ( epswr_figure_t *eps,
-    double xc, double yc, double rad,
+    double xc, double yc, 
+    double rad,
+    double rot,
     bool_t fill, bool_t draw
   );
   /* Fills and/or draws a square with center {xc,yc} and
-    circum-radius {rad}. The radius is in millimeters, irrespective
-    of the current scale. */
+    circum-radius {rad}, rotated {rot} dergees counterclockwise.
+    The radius is in millimeters, irrespective of the current scale. */
 
 void epswr_diamond
   ( epswr_figure_t *eps, 
@@ -637,7 +665,7 @@ void epswr_diamond
     bool_t fill, bool_t draw
   );
   /* Fills and/or draws a diamond with center {xc,yc}, width {2*xRad}
-    and height {2*yRad}. The last two parameters are in millimeters,
+    and height {2*yRad}. The parameters {xRad,yRad} are in millimeters,
     irrespective of the current scale. */
     
 void epswr_arrowhead 

@@ -83,7 +83,7 @@ void boap_plate_draw
     double B = (double)plt->color->c[2];
     epswr_set_fill_color(epsf, R,G,B);
     epswr_set_pen(epsf, 0,0,0, penwd, 0.0,0.0);
-    epswr_rectangle(epsf, xMin, xMax, yMin, yMax, fill, draw);
+    epswr_rectangle(epsf, xMin,xMax, yMin,yMax, fill, draw);
   }
 
 void boap_plate_print(FILE *wr, boap_plate_t *plt)

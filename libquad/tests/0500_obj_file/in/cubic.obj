@@ -1,0 +1,44 @@
+# This cube has a different material
+# applied to each of its faces.
+
+  mtllib master.mtl
+  v    0.000000    2.000000    2.000000
+  v    0.000000    0.000000    2.000000
+  v    2.000000    0.000000    2.000000
+  v    2.000000    2.000000    2.000000
+  v    0.000000    2.000000    0.000000
+  v    0.000000    0.000000    0.000000
+  v    2.000000    0.000000    0.000000
+  v    2.000000    2.000000    0.000000
+  
+  vt 1.000 0.500 0.000
+  vt 0.000 1.000 0.500
+  vt 0.500 0.000 1.000
+  
+  vn +1.000 00.000 00.000
+  vn 00.000 +1.000 00.000
+  vn 00.000 00.000 +1.000
+  vn -1.000 00.000 00.000
+  vn 00.000 -1.000 00.000
+  vn 00.000 00.000 -1.000
+  
+  # 8 vertices
+  g front
+  usemtl red
+  f 1/1/3 2/3/1 3/1/3 4/1/3
+  g back
+  usemtl blue
+  f 8//6 7//6 6//6 5//6
+  g right
+  usemtl green
+  f 4/1 3/1 7/1 8/1
+  g top
+  usemtl gold
+  f 5/1 1/1 4/1 8/1
+  g left
+  usemtl orange
+  f 5 6 2 1
+  g bottom
+  usemtl purple
+  f 2 6 7 3
+  # 6 elements

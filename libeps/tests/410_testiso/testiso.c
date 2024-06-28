@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {epswr.h} and {epswr_iso.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-20 06:52:31 by stolfi */
+/* Last edited on 2024-06-22 17:47:13 by stolfi */
 
 #define testiso_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
@@ -176,7 +176,7 @@ void PlotFunc2D
     double yw = 12.0 - 2*1.0;
     
     epswr_set_pen(epsf, 0.000, 0.000, 0.000,  0.20,  0.0, 0.0);
-    epswr_rectangle(epsf, -0.25+xc, +0.25+xw+xc, -0.25+yc, +0.25+yw+yc, FALSE, TRUE);
+    epswr_rectangle(epsf, -0.25+xc,+0.25+xw+xc, -0.25+yc,+0.25+yw+yc, FALSE, TRUE);
       
     int32_t nx = 20;
     int32_t ny = 20;

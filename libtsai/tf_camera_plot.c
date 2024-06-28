@@ -1,4 +1,4 @@
-/* Last edited on 2023-02-04 06:52:10 by stolfi */
+/* Last edited on 2024-06-22 18:51:26 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -98,19 +98,19 @@ void tf_plot_marks
 	break;
       case 1:
         oRadius = 0.8408964 * 0.75;
-        epswr_cross(eps, qi.c[0], -qi.c[1], mRadius/oRadius, FALSE, TRUE);
+        epswr_cross(eps, qi.c[0], -qi.c[1], mRadius/oRadius, FALSE);
 	break;
       case 2:
         oRadius = 0.8408964 * 0.75;
-        epswr_cross(eps, qi.c[0], -qi.c[1], mRadius/oRadius, TRUE, TRUE);
+        epswr_cross(eps, qi.c[0], -qi.c[1], mRadius/oRadius, TRUE);
 	break;
       case 3:
         oRadius = 0.9659258 * 0.83;
-        epswr_asterisk(eps, qi.c[0], -qi.c[1], mRadius/oRadius, TRUE);
+        epswr_asterisk(eps, qi.c[0], -qi.c[1], mRadius/oRadius);
 	break;
       case 4:
         oRadius = 0.8408964;
-        epswr_square(eps, qi.c[0], -qi.c[1], mRadius/oRadius, TRUE, TRUE);
+        epswr_square(eps, qi.c[0], -qi.c[1], mRadius/oRadius, 0, TRUE, TRUE);
 	break;
       default:
         oRadius = 0.8408964;

@@ -1,5 +1,5 @@
 /* epswr_dev.h - draw EPS files in Device coordinates. */
-/* Last edited on 2024-06-20 07:47:16 by stolfi */
+/* Last edited on 2024-06-22 18:46:57 by stolfi */
 
 #ifndef epswr_dev_H
 #define epswr_dev_H
@@ -225,7 +225,17 @@ void epswr_dev_rectangle
     double psylo, double psyhi,
     bool_t fill, bool_t draw
   );
-  /* Fills and/or outlines the given rectangle. */
+  /* Fills and/or outlines the rectangle {[psxlo _psxhi] × [psylo _ psyhi]}. */
+
+void epswr_dev_centered_rectangle
+  ( epswr_figure_t *eps,
+    double psxc, double psyc,
+    double pswd, double psht,
+    double rot,
+    bool_t fill, bool_t draw
+  );
+  /* Fills and/or outlines the rectangle with center {(psxc,psyc)},
+    width {pswd}, height {psht}, rotated {rad} degrees counterclockwise. */
   
 void epswr_dev_triangle
   ( epswr_figure_t *eps,
@@ -341,18 +351,20 @@ void epswr_dev_slice
 
 /* MARKER FILLING & DRAWING COMMANDS */
 
-/* All commands in this section, the size of the figure is specified
-  in millimeters, irrespecive of the current Client-to-Device scale.
-  The specified size does not include the line width that is used
-  when {draw} is true. */
+/* All commands in this section, the coordinates and dimenions 
+  are in Device units (pt), irrespectove of the Client-to-Device scale.
+  
+  The specified dimensions apply only to the ideal shape with zero-width outline.
+  If the outline is drawn, the actual dimensions will be increased by half the 
+  current pen width. */
     
 void epswr_dev_dot
   ( epswr_figure_t *eps,
     double psxc, double psyc, double psrad,
     bool_t fill, bool_t draw
   );
-  /* Same as {epswr_circle}, except that the radius is in
-    millimeters, not Client units. */
+  /* Same as {epswr_dev_circle}, except that the coordinates are in the 
+    Device system and the radius is in pt. */
   
 void epswr_dev_tic
   ( epswr_figure_t *eps, 
@@ -361,41 +373,42 @@ void epswr_dev_tic
     double ticSize,
     double align 
   );
-  /* Draws a tic mark (short segment) at coordinates {(psxc,psyc)}. The
-    segment will be perpendicular to the given {axis} and its length
-    will be {ticSize} millimeters, irrespective of the current scale)
-    The segment will extend {align*ticSize} mm in the negative
-    direction, and {(1-align)*ticSize} mm in the positive
-    direction. */
+  /* Draws a tic mark (short segment) at coordinates {(psxc,psyc)} in
+    the Device system. The segment will be perpendicular to the given
+    {axis} and its length will be {ticSize} pt. The segment will extend
+    {align*ticSize} pt in the negative direction, and
+    {(1-align)*ticSize} pt in the positive direction. This mark has no
+    interior, hence it it is drawn but not filled. */
   
 void epswr_dev_cross
   ( epswr_figure_t *eps, 
-    double psxc, double psyc, double psrad, bool_t diag,
-    bool_t draw
+    double psxc, double psyc, double psrad, bool_t diag
   );
   /* Draws a cross centered at {(psxc,psyc)} with radius {psrad}. If
-    {diag} is false the cross has vertical and horizontal branches;
-    if {diag} is true the cross is rotated 45 degres. The radius is
-    in millimeters, irrespective of the current scale. The mark has
-    no interior. */
+    {diag} is false the cross has vertical and horizontal branches; if
+    {diag} is true the cross is rotated 45 degres. The coordinates are
+    in the Device system and the radius is in pt. This mark has no
+    interior, hence it it is drawn but not filled. */
   
 void epswr_dev_asterisk
   ( epswr_figure_t *eps, 
-    double psxc, double psyc, double psrad,
-    bool_t draw
+    double psxc, double psyc, double psrad
   );
-  /* Draws asn asterisk consisting of four crossed strokes at
-    {(psxc,psyc)} with radius {psrad}. The {radius} is in millimeters,
-    irrespective of the current scale. The mark has no interior. */
+  /* Draws an asterisk consisting of four crossed strokes at
+    {(psxc,psyc)} with radius {psrad}. The coordinates are in the Device
+    system and the radius is in pt. This mark has no interior, hence it
+    is drawn but not filled. */
 
-void epswr_dev_square
+void epswr_dev_box
   ( epswr_figure_t *eps,
-    double psxc, double psyc, double psrad,
+    double psxc, double psyc,
+    double pswd, double psht, 
+    double rot,
     bool_t fill, bool_t draw
   );
-  /* Fills and/or draws a square with center {psxc,psyc} and
-    circum-radius {psrad}. The radius is in millimeters, irrespective
-    of the current scale. */
+  /* Fills and/or draws a rectangle with center {psxc,psyc} and
+    width {pswd}, and height {psht}, rotated {rot} degrees counterclockwise.
+    The coordinates are in the Device system and thedimensions are in pt. */
 
 void epswr_dev_diamond
   ( epswr_figure_t *eps, 
@@ -404,8 +417,8 @@ void epswr_dev_diamond
     bool_t fill, bool_t draw
   );
   /* Fills and/or draws a diamond with center {psxc,psyc}, width {2*psxRad}
-    and height {2*psyRad}. The last two parameters are in millimeters,
-    irrespective of the current scale. */
+    and height {2*psyRad}. The coordinates are in the Device system and the
+    dimensions are in pt. */
     
 void epswr_dev_arrowhead 
   ( epswr_figure_t *eps,
@@ -414,10 +427,12 @@ void epswr_dev_arrowhead
     double fraction,
     bool_t fill, bool_t draw
   );
-  /* Fills and/or outlines a triangular head for an arrow with base
-    at {a = (psxa,psya)} and tip at {b = (psxb,psyb)}. The head will have
-    the specified {lwidth}, {rwidth}, and {length} and its tip will
-    be positioned at the given {fraction} of the way from {a} to {b}. */
+  /* Fills and/or outlines a triangular head for an arrow with base at
+    {a = (psxa,psya)} and tip at {b = (psxb,psyb)}. The head will have
+    the specified {lwidth}, {rwidth}, and {length} and its tip will be
+    positioned at the given {fraction} of the way from {a} to {b}. The
+    coordinates are in the Device system and the dimensions are in
+    pt. */
     
 /* GRID LINES AND GRID CELLS */
 

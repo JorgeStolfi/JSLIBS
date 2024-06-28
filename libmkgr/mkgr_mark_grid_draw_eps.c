@@ -1,5 +1,5 @@
 /* See {mkgr_mark_grid_draw_eps.h} */
-/* Last edited on 2020-11-29 20:32:50 by jstolfi */
+/* Last edited on 2024-06-22 17:21:21 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -49,7 +49,7 @@ void mkgr_mark_grid_draw_eps
               { assert(draw); /* No sense in filling a cross. */
                 double ared = fmod(ang, 0.25); /* Angle mod 90 degrees. */
                 bool_t diag = ((ared > 0.0625) && (ared < 0.1875)); 
-                epswr_cross(eps, xc, yc, rad, diag, draw); 
+                epswr_cross(eps, xc,yc, rad, diag); 
               }
             else
               { epswr_circle(eps, xc, yc, rad, fill, draw); }

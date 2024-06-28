@@ -1,5 +1,5 @@
 /* See epswr_shade_quad.h */
-/* Last edited on 2022-10-20 06:51:15 by stolfi */
+/* Last edited on 2024-06-22 18:52:42 by stolfi */
 
 #define _GNU_SOURCE
 #include <assert.h>
@@ -191,7 +191,7 @@ void epswr_shade_quadrilateral_gouraud
     epswr_x_to_h_coord(epsf, x10, &(psx[3])); 
     epswr_y_to_v_coord(epsf, y10, &(psy[3]));
     
-    if (! epswr_polygon_is_invisible(epsf, psx, psy, 4))
+    if (! epswr_vis_polygon_is_invisible(epsf, psx, psy, 4))
       { /* Plot them: */
         FILE *wr = epsf->wr;
         /* Note that {gsquadf} wants row-by-row order, i.e [0] [1] [3] [2]: */

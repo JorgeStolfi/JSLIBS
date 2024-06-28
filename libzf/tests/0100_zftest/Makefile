@@ -1,4 +1,4 @@
-# Last edited on 2023-02-18 03:21:13 by stolfi
+# Last edited on 2024-06-22 20:54:56 by stolfi
 
 PROG := zftest
 
@@ -9,6 +9,7 @@ JS_LIBS := \
   libia.a \
   libflt.a \
   libeps.a \
+  libgeo.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

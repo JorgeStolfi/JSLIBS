@@ -1,5 +1,5 @@
 /* See epswr_shade_tri.h */
-/* Last edited on 2022-10-20 06:54:52 by stolfi */
+/* Last edited on 2024-06-22 18:53:13 by stolfi */
 
 #define _GNU_SOURCE
 #include <assert.h>
@@ -155,7 +155,7 @@ void epswr_shade_triangle_gouraud
     double psyb; epswr_y_to_v_coord(epsf, yb, &(psyb));
     double psxc; epswr_x_to_h_coord(epsf, xc, &(psxc));
     double psyc; epswr_y_to_v_coord(epsf, yc, &(psyc));
-    if (epswr_triangle_is_invisible(epsf, psxa, psya, psxb, psyb, psxc, psyc))
+    if (epswr_vis_triangle_is_invisible(epsf, psxa, psya, psxb, psyb, psxc, psyc))
       { return; }
     FILE *wr = epsf->wr;
     fprintf(wr, "%6.1f %6.1f  %5.3f %5.3f %5.3f\n", psxa, psya, Ra, Ga, Ba);

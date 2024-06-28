@@ -1,5 +1,5 @@
 /* See {sheet_cut_plot.h} */
-/* Last edited on 2023-02-04 09:05:35 by stolfi */
+/* Last edited on 2024-06-22 17:40:11 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -138,7 +138,7 @@ void sheet_cut_plot_block_bbox(epswr_figure_t *eps, r2_t pos, r2_t size)
 
     /* Draw it: */
     epswr_set_pen(eps,  8.000,0.600,0.200,  0.25, 0,0);
-    epswr_rectangle(eps, xPos, xPos + xDim, yPos, yPos + yDim, FALSE, TRUE);
+    epswr_rectangle(eps, xPos,xPos + xDim, yPos,yPos + yDim, FALSE, TRUE);
   }
 
 void sheet_cut_plot_plate(epswr_figure_t *eps, r2_t pos, r2_t size, char *tag)
@@ -148,7 +148,7 @@ void sheet_cut_plot_plate(epswr_figure_t *eps, r2_t pos, r2_t size, char *tag)
     double xDim = size.c[0], yDim = size.c[1];
     epswr_set_pen(eps,  0.000,0.000,0.000,  0.25, 0,0);
     epswr_set_fill_color(eps, 1.000, 1.000, 0.850);
-    epswr_rectangle(eps, xPos, xPos + xDim, yPos, yPos + yDim, TRUE, TRUE);
+    epswr_rectangle(eps, xPos,xPos + xDim, yPos,yPos + yDim, TRUE, TRUE);
 
     /* Write the text with dimensions and tag: */
     sheet_cut_plot_labels(eps, pos, size, tag);

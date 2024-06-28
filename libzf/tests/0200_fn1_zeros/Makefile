@@ -1,4 +1,4 @@
-# Last edited on 2023-02-18 09:50:55 by stolfi
+# Last edited on 2024-06-22 20:55:08 by stolfi
 
 PROG := fn1_zeros
  
@@ -12,6 +12,7 @@ JS_LIBS := \
   libia.a \
   libflt.a \
   libeps.a \
+  libgeo.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

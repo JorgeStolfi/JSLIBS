@@ -1,5 +1,5 @@
 /* See fn2_zf_quad.h */
-/* Last edited on 2023-02-18 09:42:16 by stolfi */
+/* Last edited on 2024-06-22 17:39:54 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -164,11 +164,11 @@ void fn2_zf_quad_aa_zeros_aux(
 
     ROUND_NEAR;
     if ((zv.lo > Zero) || (zv.hi < Zero))
-      { epswr_rectangle(eps, xv.lo, xv.hi, yv.lo, yv.hi, FALSE, TRUE); }
+      { epswr_rectangle(eps, xv.lo,xv.hi, yv.lo,yv.hi, FALSE, TRUE); }
     else if ((mx == 1) && (my == 1))
       { (*ncells)++;
         epswr_set_fill_color(eps, gray, gray, gray);
-        epswr_rectangle(eps,  xv.lo, xv.hi, yv.lo, yv.hi, TRUE, TRUE); 
+        epswr_rectangle(eps,  xv.lo,xv.hi, yv.lo,yv.hi, TRUE, TRUE); 
       }
     else if (mx >= my)
       { int32_t mx2 = mx / 2;
@@ -253,10 +253,10 @@ void fn2_zf_quad_ia_zeros_aux(
 
     ROUND_NEAR;
     if ((zv.lo > Zero) || (zv.hi < Zero))
-      { epswr_rectangle(eps, xv.lo, xv.hi, yv.lo, yv.hi, FALSE, TRUE); }
+      { epswr_rectangle(eps, xv.lo,xv.hi, yv.lo,yv.hi, FALSE, TRUE); }
     else if ((mx == 1) && (my == 1))
       { epswr_set_fill_color(eps, gray, gray, gray);
-        epswr_rectangle(eps, xv.lo, xv.hi, yv.lo, yv.hi, TRUE, TRUE);
+        epswr_rectangle(eps, xv.lo,xv.hi, yv.lo,yv.hi, TRUE, TRUE);
         (*ncells)++;
       }
     else if (mx >= my)

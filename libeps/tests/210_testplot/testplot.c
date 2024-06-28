@@ -1,7 +1,7 @@
 #define PROG_NAME "testplot"
 #define PROG_DESC "test of {epswr.h} plotting ops"
 #define PROG_VERS "1.0"
-/* Last edited on 2024-06-20 13:36:38 by stolfi */
+/* Last edited on 2024-06-22 20:37:48 by stolfi */
 
 #define testplot_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
@@ -335,10 +335,14 @@ void DrawLines(epswr_figure_t *epsf, double xc, double yc, bool_t arrowheads)
        1.0+xc, 14.0+yc, 
        8.0+xc,  4.0+yc
     );
-    epswr_square(epsf,  4.0+xc,  4.0+yc, 1.0, FALSE, TRUE);  
+    epswr_square(epsf,  4.0+xc,  4.0+yc, 1.0,  0, FALSE, TRUE);  
     epswr_dot   (epsf, 11.0+xc, 14.0+yc, 0.5, FALSE, TRUE);
     epswr_dot   (epsf,  1.0+xc, 14.0+yc, 0.5, FALSE, TRUE); 
-    epswr_square(epsf,  8.0+xc,  4.0+yc, 1.0, FALSE, TRUE);
+    epswr_square(epsf,  8.0+xc,  4.0+yc, 1.0, 30, FALSE, TRUE);
+
+    epswr_set_fill_color(epsf, 0.80,0.60,0.50);
+    for (int32_t kr = 0; kr < 100; kr += 20)
+      { epswr_box(epsf,  4.0+xc,  7.0+yc, 8.0, 3.0, kr, TRUE, TRUE); }
     
     dodim(+10.0, +10.0);
 
@@ -349,23 +353,25 @@ void DrawFigures(epswr_figure_t *epsf, double xc, double yc, bool_t fill, bool_t
     /* Usable area [0 _ 12]×[0 _ 15] */
     DrawFrame(epsf, 0.00+xc, 12.00+xc, 0.00+yc, 15.00+yc);
 
-    epswr_rectangle(epsf, 1.5+xc, 4.5+xc, 10.0+yc, 11.5+yc, fill, draw);
-    epswr_circle(epsf, 3.0+xc, 8.0+yc, 1.75, fill, draw);
-    epswr_lune(epsf, 9.0+xc, 7.0+yc, 1.5, 45.0, fill, draw);
-    epswr_slice(epsf, 3.0+xc, 12.0+yc, 2.0, 60.0, 165.0, fill, draw);
-    epswr_quadrilateral(epsf, 5.0+xc, 8.0+yc, 9.0+xc, 10.0+yc, 7.0+xc, 12.0+yc, 6.0+xc, 9.0+yc, fill, draw);
-    epswr_parallelogram(epsf, 5.2+xc, 6.2+yc, -0.30, +0.30,  -1.20, -0.80,  fill, draw);
-    epswr_triangle(epsf, 7.0+xc, 10.0+yc, 11.0+xc, 12.0+yc, 9.0+xc, 14.0+yc, fill, draw);
+    epswr_rectangle             (epsf, 1.5+xc,  4.5+xc, 10.0+yc, 11.5+yc, fill, draw);
+    epswr_circle                (epsf, 3.0+xc,  8.0+yc,  1.75, fill, draw);
+    for (int32_t kr = 0; kr <= 100; kr += 20)
+      { epswr_centered_rectangle    (epsf, 3.0+xc, 8.0+yc, 2.00,1.00, kr, fill, draw); }
+    epswr_lune                  (epsf, 9.0+xc,  7.0+yc,  1.5, 45.0, fill, draw);
+    epswr_slice                 (epsf, 3.0+xc, 12.0+yc,  2.0, 60.0, 165.0, fill, draw);
+    epswr_quadrilateral         (epsf, 5.0+xc,  8.0+yc,  9.0+xc, 10.0+yc, 7.0+xc, 12.0+yc, 6.0+xc, 9.0+yc, fill, draw);
+    epswr_parallelogram         (epsf, 5.2+xc,  6.2+yc, -0.30, +0.30,  -1.20, -0.80,  fill, draw);
+    epswr_triangle              (epsf, 7.0+xc, 10.0+yc, 11.0+xc, 12.0+yc, 9.0+xc, 14.0+yc, fill, draw);
 
     double rmk = 1.5;
-    epswr_dot(epsf, 3.0+xc, 8.0+yc, rmk, fill, draw);
-    epswr_square(epsf,  10.0+xc, 10.5+yc, rmk, fill, draw);
-    epswr_diamond(epsf,  9.0+xc,  9.2+yc, rmk, rmk, fill, draw);
-    epswr_diamond(epsf, 10.0+xc,  9.2+yc, rmk, 2.0, fill, draw);
+    epswr_dot                   (epsf,  3.0+xc,  8.0+yc, rmk, fill, draw);
+    epswr_square                (epsf, 10.0+xc, 10.5+yc, rmk, 30, fill, draw);
+    epswr_diamond               (epsf,  9.0+xc,  9.2+yc, rmk, rmk, fill, draw);
+    epswr_diamond               (epsf, 10.0+xc,  9.2+yc, rmk, 2.0, fill, draw);
     
-    epswr_cross(epsf, 5.5+xc, 13.0+yc, rmk, FALSE, draw);
-    epswr_cross(epsf, 7.0+xc, 13.0+yc, rmk, TRUE, draw);
-    epswr_asterisk(epsf, 5.5+xc, 11.0+yc, rmk, draw);
+    if (draw) { epswr_cross     (epsf,  5.5+xc, 13.0+yc, rmk, FALSE); }
+    if (draw) { epswr_cross     (epsf,  7.0+xc, 13.0+yc, rmk, TRUE); }
+    if (draw) { epswr_asterisk  (epsf,  5.5+xc, 11.0+yc, rmk); }
     
     /* Ordinary polygon {eo} filled: */
     DrawPolygon(epsf, 2.5+xc, 3.0+yc, fill, draw, eo, closed);
@@ -382,9 +388,9 @@ void DrawFigures(epswr_figure_t *epsf, double xc, double yc, bool_t fill, bool_t
 
 void DrawFrame(epswr_figure_t *epsf, double xlo, double xhi, double ylo, double yhi)
   {
-    epswr_comment(epsf, "enter DrawFrame");
+    epswr_comment  (epsf, "enter DrawFrame");
     epswr_rectangle(epsf, xlo+0.25, xhi-0.25, ylo+0.25, yhi-0.25, FALSE, TRUE);
-    epswr_comment(epsf, "exit DrawFrame");
+    epswr_comment  (epsf, "exit DrawFrame");
   }
 
 void DrawPolygon(epswr_figure_t *epsf, double xc, double yc, bool_t fill, bool_t draw, bool_t eo, bool_t closed)

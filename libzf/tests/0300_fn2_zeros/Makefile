@@ -1,5 +1,5 @@
 # Tests of 2D zero finding (level curve, implicit curve) with AA and IA
-# Last edited on 2023-02-18 10:07:15 by stolfi
+# Last edited on 2024-06-22 20:55:19 by stolfi
 
 PROG := fn2_zeros
  
@@ -13,6 +13,7 @@ JS_LIBS := \
   libaa.a \
   libia.a \
   libflt.a \
+  libgeo.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

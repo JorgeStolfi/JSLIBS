@@ -1,4 +1,4 @@
-# Last edited on 2023-02-20 10:07:45 by stolfi
+# Last edited on 2024-06-22 21:02:13 by stolfi
 
 PROG := bbopt1
 
@@ -11,6 +11,7 @@ JS_LIBS := \
   libaa.a \
   libia.a \
   libflt.a \
+  libgeo.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

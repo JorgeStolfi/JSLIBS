@@ -6,48 +6,51 @@
 #include <bool.h>
 
 /* J. Stolfi's miscellaneous string utilities. */
-/* Last edited on 2023-11-25 10:30:10 by stolfi */
+/* Last edited on 2024-06-28 02:05:40 by stolfi */
 
-int32_t isprefix(const char *s, const char *t);
+typedef char* string_t;
+  /* A more logical name for strings. */
+
+int32_t isprefix(const string_t s, const string_t t);
   /* Returns TRUE iff the string {*s} is a prefix of {*t},
     including the cases when {*s} is empty or is equal to {*t}. */
 
-char *prefix(const char *s, int32_t len);
+string_t prefix(const string_t s, int32_t len);
   /* Returns a newly allocated string which is a copy
     of the first {len} characters of {s}.  The {len}
     must be non-negative and no more than {strlen(s)}. */
 
-char *txtcat (const char *a, const char *b);
+string_t txtcat (const string_t a, const string_t b);
   /* Returns a string that is the concatenation of {*a} and {*b}. 
     The result is always a newly allocated string. */
   
-char *txtcat3 (const char *a, const char *b, const char *c);
+string_t txtcat3 (const string_t a, const string_t b, const string_t c);
   /* Returns a string that is the concatenation of {*a,*b,*c}. 
     The result is always a newly allocated string. */
   
-char *txtcat4 (const char *a, const char *b, const char *c, const char *d);
+string_t txtcat4 (const string_t a, const string_t b, const string_t c, const string_t d);
   /* Returns a string that is the concatenation of {*a,*b,*c,*d}. 
     The result is always a newly allocated string. */
 
-char *txtrep(const char* x, uint32_t n);
+string_t txtrep(const string_t  x, uint32_t n);
   /* Return the string {x} concatenated with itself {n} times. */
   
-char *add_ext(const char *name, const char *ext);
+string_t add_ext(const string_t name, const string_t ext);
   /* Appends the string {*ext} (which should normally start with a
     period) to the given file {*name}. However, if {*name} is empty or
     "-", ignores {*ext} and returns a copy of {*name} itself. In any
     case, the result is a newly allocated string.*/
 
-char *trim_spaces(char *x, bool_t at_beg, bool_t at_end);
+string_t trim_spaces(string_t x, bool_t at_beg, bool_t at_end);
   /* Returns a newly allocated string {y} that is a copy of {x},
     minus any space charaters at the beginning (if {at_beg} is true)
     and/or end (if {at_end} is true.  */
 
-char *fmt_int(int64_t x, uint32_t wid);
+string_t fmt_int(int64_t x, uint32_t wid);
   /* Returns a newly allocated string containing the integer {x}
     converted to decimal and zero-padded to {wid} characters. */
 
-char *escapify(char *x);
+string_t escapify(string_t x);
   /* Returns a newly allocated copy of {x}, with any 
     special characters replaced by an escape code starting with a backslash.
     Specifically, 

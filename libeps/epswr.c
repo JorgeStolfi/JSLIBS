@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2024-06-21 11:12:35 by stolfi */
+/* Last edited on 2024-06-22 19:23:35 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -29,6 +29,9 @@
   /* IEEE plus infinity. */
   
 #define debug FALSE
+    
+#define Pr fprintf
+#define Er stderr,
 
 void epswr_write_file_preamble(epswr_figure_t *eps);
   /*   */
@@ -108,7 +111,7 @@ epswr_figure_t *epswr_new_named_figure
     FILE *wr;
     if (strlen(dir) + strlen(prefix) + strlen(name) + strlen(suffix) == 0)
       { /* All name parts are omitted: */
-        if (verbose) { fprintf(stderr, "writing EPS figure to {stdout}\n"); }
+        if (verbose) { Pr(Er "writing EPS figure to {stdout}\n"); }
         wr = stdout;
       }
     else
@@ -123,7 +126,7 @@ epswr_figure_t *epswr_new_named_figure
           { char *name_u = (((prefix[0] == 0) && (name[0] == 0)) || (suffix[0] == 0) ? "" : "_");
             asprintf(&fname, "%s%s%s%s%s%s%s.eps", dir, dir_s, prefix, prefix_u, name, name_u, suffix);
           }
-        if (verbose) { fprintf(stderr, "writing EPS figure to \"%s\"\n", fname); }
+        if (verbose) { Pr(Er "writing EPS figure to \"%s\"\n", fname); }
         wr = open_write(fname, TRUE);
         free(fname);
       }
@@ -442,6 +445,23 @@ void epswr_rectangle
     epswr_dev_rectangle(eps, psxlo, psxhi, psylo, psyhi, fill, draw);
   }
 
+void epswr_centered_rectangle
+  ( epswr_figure_t *eps,
+    double xc, double yc,
+    double wd, double ht,
+    double rot,
+    bool_t fill, bool_t draw
+  )
+  { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
+    if ((!draw) && (!fill)) { return; }
+    if (eps->verbose) { Pr(Er "centered_rectangle: (%.3f,%.3f) %.3f × %.3f rot %.3f\n",  xc, yc, wd, ht, rot); }
+    double psxc; epswr_x_to_h_coord(eps, xc, &(psxc));
+    double psyc; epswr_y_to_v_coord(eps, yc, &(psyc));
+    double pswd; epswr_x_to_h_dist(eps, wd, &(pswd));
+    double psht; epswr_y_to_v_dist(eps, ht, &(psht));
+    epswr_dev_centered_rectangle(eps, psxc, psyc, pswd, psht, rot, fill, draw);
+  }
+
 void epswr_triangle
   ( epswr_figure_t *eps,
     double xa, double ya,
@@ -620,7 +640,7 @@ void epswr_dot
     double psxc; epswr_x_to_h_coord(eps, xc, &(psxc));
     double psyc; epswr_y_to_v_coord(eps, yc, &(psyc));
     double psrad = rad * epswr_pt_per_mm;
-    epswr_dev_dot(eps, psxc, psyc, psrad, fill, draw);
+    epswr_dev_circle(eps, psxc, psyc, psrad, fill, draw);
   }
 
 void epswr_tic
@@ -638,40 +658,49 @@ void epswr_tic
  
 void epswr_cross
   ( epswr_figure_t *eps, 
-    double xc, double yc, double rad, bool_t diag,
-    bool_t draw
+    double xc, double yc, double rad, bool_t diag
   )
-  { if (! draw) { return; }
-    double psxc; epswr_x_to_h_coord(eps, xc, &(psxc));
+  { double psxc; epswr_x_to_h_coord(eps, xc, &(psxc));
     double psyc; epswr_y_to_v_coord(eps, yc, &(psyc));
     double psrad = rad * epswr_pt_per_mm;
-    epswr_dev_cross(eps, psxc, psyc, psrad, diag, draw);
+    epswr_dev_cross(eps, psxc, psyc, psrad, diag);
   }
 
 void epswr_asterisk
   ( epswr_figure_t *eps, 
-    double xc, double yc, double rad,
-    bool_t draw
+    double xc, double yc, double rad
   )
-  { if (!draw) { return; }
-    double psxc; epswr_x_to_h_coord(eps, xc, &(psxc));
+  { double psxc; epswr_x_to_h_coord(eps, xc, &(psxc));
     double psyc; epswr_y_to_v_coord(eps, yc, &(psyc));
     double psrad = rad * epswr_pt_per_mm;
-    epswr_dev_asterisk(eps, psxc, psyc, psrad, draw);
+    epswr_dev_asterisk(eps, psxc, psyc, psrad);
   }
 
-void epswr_square
+void epswr_box
   ( epswr_figure_t *eps,
-    double xc, double yc, double rad,
+    double xc, double yc, 
+    double wd, double ht,
+    double rot,
     bool_t fill, bool_t draw
   )
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
+    if (eps->verbose) { Pr(Er "box: (%6.3f,%6.3f) %6.3f×%6.3f mm %6.1f deg\n", xc,yc, wd,ht, rot); }
     double psxc; epswr_x_to_h_coord(eps, xc, &(psxc));
     double psyc; epswr_y_to_v_coord(eps, yc, &(psyc));
-    double psrad = rad * epswr_pt_per_mm;
-    epswr_dev_square(eps, psxc, psyc, psrad, fill, draw);
+    double pswd = wd * epswr_pt_per_mm;
+    double psht = ht * epswr_pt_per_mm;
+    epswr_dev_centered_rectangle(eps, psxc, psyc, pswd, psht, rot, fill, draw);
   }
+
+void epswr_square
+  ( epswr_figure_t *eps,
+    double xc, double yc,
+    double rad,
+    double rot,
+    bool_t fill, bool_t draw
+  )
+  { epswr_box(eps, xc, yc, M_SQRT2*rad, M_SQRT2*rad, rot, fill, draw); }
 
 void epswr_diamond
   ( epswr_figure_t *eps, 
@@ -859,7 +888,7 @@ void epswr_flush (epswr_figure_t *eps)
 
 void epswr_check_param(const char *name, double z, double zMin, double zMax)
   { if ((z < zMin) || (z > zMax))
-      { fprintf(stderr, "** error: %s = %8.3f not in [%8.3f __ %8.3f]\n", name, z, zMin, zMax);
+      { Pr(Er "** error: %s = %8.3f not in [%8.3f __ %8.3f]\n", name, z, zMin, zMax);
         assert(FALSE);
       }
   }

@@ -1,4 +1,4 @@
-# Last edited on 2023-10-05 06:02:14 by stolfi
+# Last edited on 2024-06-25 23:01:28 by stolfi
 
 LIBNAME = libquad
 

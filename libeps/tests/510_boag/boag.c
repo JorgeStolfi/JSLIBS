@@ -1,5 +1,5 @@
 /* Tech drawing for the new center gate of Boaretto da Silva 113 */
-/* Last edited on 2022-10-20 06:53:01 by stolfi */
+/* Last edited on 2024-06-22 17:45:59 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -704,11 +704,9 @@ void boag_draw_tube
     else
       { /* Cylindrical view from {+X}: */
         demand(axis != 0, "Tube along {X} axis not implemented");
-        double xMin = Yctr - Ysize/2, xMax = Yctr + Ysize/2;
-        double yMin = Zctr - Zsize/2, yMax = Zctr + Zsize/2;
         epswr_set_fill_color(epsf, 1.000,0.800,0.400);
         epswr_set_pen(epsf, 0.000,0.000,0.000, 0.25, 0.0,0.0);
-        epswr_rectangle(epsf, xMin, xMax, yMin, yMax, TRUE, TRUE);
+        epswr_centered_rectangle(epsf, Yctr,Zctr, Ysize,Zsize, 0, TRUE, TRUE);
       }
   }
   
@@ -725,11 +723,9 @@ void boag_draw_plate
       }
     else
       { /* Cylindrical view from {+X}: */
-        double xMin = Yctr - Ysize/2, xMax = Yctr + Ysize/2;
-        double yMin = Zctr - Zsize/2, yMax = Zctr + Zsize/2;
         epswr_set_fill_color(epsf, 1.000,0.800,0.400);
         epswr_set_pen(epsf, 0.000,0.000,0.000, 0.25, 0.0,0.0);
-        epswr_rectangle(epsf, xMin, xMax, yMin, yMax, TRUE, TRUE);
+        epswr_centered_rectangle(epsf, Yctr,Zctr, Ysize,Zsize, 0, TRUE, TRUE);
       }
   }
   
@@ -749,9 +745,11 @@ void boag_draw_vert_cylinder
       { /* Cylindrical view from {+X}: */
         double xMin = Yctr - Hrad, xMax = Yctr + Hrad;
         double yMin = Zmin, yMax = Zmax;
+        double xc = Yctr, yc = (Zmin + Zmax)/2;
+        double wd = 2*Hrad, ht = Zmax - Zmin;
         epswr_set_fill_color(epsf, 1.000,0.800,0.400);
         epswr_set_pen(epsf, 0.000,0.000,0.000, 0.25, 0.0,0.0);
-        epswr_rectangle(epsf, xMin, xMax, yMin, yMax, TRUE, TRUE);
+        epswr_centered_rectangle(epsf, xc, yc, wd, ht, 0, TRUE, TRUE);
       }
   }
   

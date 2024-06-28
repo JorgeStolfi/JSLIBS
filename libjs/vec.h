@@ -1,5 +1,5 @@
 /* Self-bounded vectors (one-dimensional arrays) of things */
-/* Last edited on 2024-06-20 08:27:29 by stolfi */
+/* Last edited on 2024-06-28 02:03:21 by stolfi */
 
 #ifndef vec_H
 #define vec_H

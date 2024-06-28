@@ -2,7 +2,7 @@
 #define haf_read_H
 
 /* Reading the half-edge representation of 2D meshes. */ 
-/* Last edited on 2024-06-20 10:20:07 by stolfi */
+/* Last edited on 2024-06-24 00:47:27 by stolfi */
 
 #define half_read_H_copyright \
   "Copyright (C) 2023 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
@@ -27,7 +27,7 @@ haf_arc_t haf_read_arc(FILE *rd, haf_edge_id_t eid0, haf_arc_vec_t *A);
 
 void haf_read_map(FILE *rd, haf_arc_vec_t *A, haf_edge_id_t *eid0_P, haf_arc_vec_t *R);
   /* Reads from {rd} a description of a map in the format used by
-    {write_map}, and builds the corresponding quad-edge structure in
+    {write_map}, and builds the corresponding half-edge structure in
     memory.
     
     The procedure allocates all the edge records specified in {rd}, and
