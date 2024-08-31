@@ -1,5 +1,5 @@
 /* See r4.h. */
-/* Last edited on 2021-08-20 16:10:44 by stolfi */
+/* Last edited on 2024-08-30 04:01:09 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -135,7 +135,7 @@ double r4_L_inf_norm (r4_t *a)
     if (a1 > d) d = a1;
     if (a2 > d) d = a2;
     if (a3 > d) d = a3;
-    return (d);
+    return d;
   }
 
 double r4_dist (r4_t *a, r4_t *b)
@@ -144,7 +144,7 @@ double r4_dist (r4_t *a, r4_t *b)
     double d2 = (a->c[2] - b->c[2]);
     double d3 = (a->c[3] - b->c[3]);
     double d = sqrt(d0*d0 + d1*d1 + d2*d2 + d3*d3);
-    return (d);
+    return d;
   }
 
 double r4_dist_sqr (r4_t *a, r4_t *b)
@@ -165,7 +165,7 @@ double r4_L_inf_dist (r4_t *a, r4_t *b)
     if (d1 > d) d = d1;
     if (d2 > d) d = d2;
     if (d3 > d) d = d3;
-    return (d);
+    return d;
   }
 
 double r4_dir (r4_t *a, r4_t *r)
@@ -179,7 +179,7 @@ double r4_dir (r4_t *a, r4_t *r)
     r->c[1] = a->c[1]/d;
     r->c[2] = a->c[2]/d;
     r->c[3] = a->c[3]/d;
-    return (d);
+    return d;
   }
 
 double r4_L_inf_dir (r4_t *a, r4_t *r)
@@ -196,7 +196,7 @@ double r4_L_inf_dir (r4_t *a, r4_t *r)
     r->c[1] = a->c[1]/d;
     r->c[2] = a->c[2]/d;
     r->c[3] = a->c[3]/d;
-    return (d);
+    return d;
   }
 
 double r4_dot (r4_t *a, r4_t *b)
@@ -266,6 +266,35 @@ bool_t r4_eq(r4_t *p, r4_t *q)
     if (p->c[3] != q->c[3]) return FALSE;
     return TRUE;
   }
+void r4_barycenter(int32_t np, r4_t p[], double w[], r4_t *bar)
+  { r4_t sum_wp = (r4_t){{ 0, 0, 0, 0 }};
+    double sum_w = 0.0;
+    for (int32_t k = 0; k < np; k++) 
+      { r4_t *pk = &(p[k]);
+        double wk = (w != NULL ? w[k] : 1.0);
+        r4_mix(1.0, &sum_wp, wk, pk, &sum_wp);
+        sum_w += wk;
+      }
+    r4_scale(1.0/sum_w, &sum_wp, bar);
+  }
+
+void r4_bbox(int32_t np, r4_t p[], interval_t B[], bool_t finite)
+  { double cmin[N], cmax[N];
+    for (int32_t j = 0; j < N; j++) { cmin[j] = +INF; cmax[j] = -INF; }
+    int32_t ip;
+    for (ip = 0; ip < np; ip++)
+      { r4_t *pi = &(p[ip]);
+        if ((! finite) || r4_is_finite(pi))
+          { for (int32_t j = 0; j < N; j++) 
+              { double cij = pi->c[j];
+                if (cij < cmin[j]) { cmin[j] = cij; }
+                if (cij > cmax[j]) { cmax[j] = cij; }
+              }
+          }
+      }
+    for (int32_t j = 0; j < N; j++)
+      { B[j] = (interval_t){{ cmin[j], cmax[j] }}; }
+  }
 
 void r4_throw_cube (r4_t *r)
   { int32_t i;
@@ -304,4 +333,4 @@ void r4_print (FILE *f, r4_t *a)
 void r4_gen_print (FILE *f, r4_t *a, char *fmt, char *lp, char *sep, char *rp)
   { rn_gen_print(f, N, &(a->c[0]), fmt, lp, sep, rp); }
 
-vec_typeimpl(r4_vec_t,r4_vec,r4_t);
+vec_typeimpl(r4_vec_t, r4_vec, r4_t);

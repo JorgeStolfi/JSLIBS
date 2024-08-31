@@ -1,20 +1,23 @@
 /* See hr3.h */
-/* Last edited on 2023-10-09 21:23:51 by stolfi */ 
+/* Last edited on 2024-08-30 17:52:59 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdint.h>
-#include <hr3.h>
-
-#include <r3.h>
-#include <r4.h>
-#include <r6.h>
-#include <r3x3.h>
-#include <r4x4.h>
-#include <affirm.h>
-#include <sign.h>
-#include <sign_get.h>
-
 #include <math.h>
+#include <assert.h>
+#include <stdio.h>
+
+#include <sign_get.h>
+#include <sign.h>
+#include <affirm.h>
+
+#include <r4x4.h>
+#include <r3x3.h>
+#include <r6.h>
+#include <r4.h>
+#include <r3.h>
+
+#include <hr3.h>
 
 /* Based on HR3.m3, created 1993-05-18 by Marcos C. Carrard. */
 /* Based on H3.pas by J. Stolfi. */
@@ -52,6 +55,15 @@ r3_t r3_from_hr3(hr3_point_t *p)
     double w = p->c.c[0];
     demand(w != 0.0, "point at infinity");
     return (r3_t){{ p->c.c[1]/w, p->c.c[2]/w, p->c.c[3]/w }};
+  }
+
+hr3_point_t hr3_point_at_infinity(r3_t *dir)
+  { hr3_point_t p;
+    p.c.c[0] = 0.0;
+    p.c.c[1] = dir->c[0];
+    p.c.c[2] = dir->c[1];
+    p.c.c[3] = dir->c[2];
+    return p;
   }
 
 double hr3_pt_pt_diff(hr3_point_t *p, hr3_point_t *q)
@@ -227,6 +239,13 @@ r3_t hr3_pmap_inv_r3_point(r3_t *p, hr3_pmap_t *M)
     return qc;
   }
 
+hr3_pmap_t hr3_pmap_identity(void)
+  { hr3_pmap_t M;
+    r4x4_ident(&(M.dir));
+    M.inv = M.dir;
+    return M;
+  }
+
 hr3_pmap_t hr3_pmap_translation(r3_t *v)
   {
     hr3_pmap_t M; 
@@ -379,16 +398,7 @@ double hr3_dist_sqr(hr3_point_t *a, hr3_point_t *b)
     double az = a->c.c[3];
     double bz = b->c.c[3];
     double dz = az*aw - bz*bw;
-    return dx * dx + dy * dy + dz * dz;
-  }
-
-hr3_point_t hr3_point_at_infinity(r3_t *dir)
-  { hr3_point_t p;
-    p.c.c[0] = 0.0;
-    p.c.c[1] = dir->c[0];
-    p.c.c[2] = dir->c[1];
-    p.c.c[3] = dir->c[2];
-    return p;
+    return dx*dx + dy*dy + dz*dz;
   }
 
 hr3_point_t hr3_point_mix(double pt, hr3_point_t *p, double qt, hr3_point_t *q)
@@ -604,7 +614,112 @@ hr3_plane_t hr3_plane_throw(void)
     return A;
   }
 
-void hr3_point_print (FILE *f, char *pre, hr3_point_t *p, char *fmt, char *suf)
+bool_t hr3_pmap_is_affine(hr3_pmap_t *M)
+  { r4x4_t *A = &(M->dir);
+    if (A->c[0][0] <= 0) { return FALSE; }
+    if ((A->c[1][0] != 0.0) || (A->c[2][0] != 0.0) || (A->c[3][0] != 0.0))
+      { return FALSE; }
+    return TRUE;
+  }
+  
+double hr3_pmap_diff_sqr(hr3_pmap_t *M, hr3_pmap_t *N)
+  { double sum_d2 = 0;
+    for (int32_t sense = 0; sense < 2; sense++)
+      { r4x4_t *A = (sense == 0 ? &(M->dir) : &(M->inv));
+        double Am = r4x4_norm(A) + 1.0e-200;
+        r4x4_t *B = (sense == 0 ? &(N->dir) : &(N->inv));
+        double Bm = r4x4_norm(B) + 1.0e-200;
+        for (int32_t i = 0; i < NH; i++)
+          { for (int32_t j = 0; j < NH; j++)
+             { double Aij = A->c[i][j]/Am;
+               double Bij = B->c[i][j]/Bm;
+               double dij = Aij - Bij;
+               sum_d2 += dij*dij;
+             }
+          }
+      }
+    return sum_d2;
+  }
+
+double hr3_pmap_mismatch_sqr(hr3_pmap_t *M, int32_t np, r3_t p1[], r3_t p2[])
+  {
+    bool_t debug = FALSE;
+    
+    double sum2 = 0.0;
+    for (int32_t k = 0; k < np; k++)
+      { r3_t *p1k = &(p1[k]);
+        r3_t *p2k = &(p2[k]);
+        r3_t q1k = hr3_pmap_r3_point(p1k, M);
+        r3_t q2k = hr3_pmap_inv_r3_point(p2k, M);
+        double d2 = r3_dist_sqr(&q1k, &q2k);
+        if (debug)
+          { r3_gen_print(stderr, p1k, "%+8.5f", "  @ ( ", " ", " )");
+            r3_gen_print(stderr, &q1k, "%+12.8f", " -> ( ", " ", " )");
+            fprintf(stderr, " |%.6f| ", d2);
+            r3_gen_print(stderr, &q2k, "%+12.8f", "( ", " ", " ) <- ");
+            r3_gen_print(stderr, p2k, "%+8.5f", "( ", " ", " )\n");
+          }
+        sum2 += d2;
+      }
+    return sum2/np;
+  }
+
+double hr3_pmap_deform_sqr(r3_t ph[], hr3_pmap_t *M)
+  {
+    int32_t nk = (1 << NC); /* Number of corners of the cuboid. */
+    r3_t qh[nk];
+    for (int32_t k = 0; k < nk; k++)
+      { qh[k] = hr3_pmap_r3_point(&(ph[k]), M); }
+    
+    int32_t nd = 12 + 4; /* Number of distances to probe. */
+    double logr[nd];
+    int32_t kd = 0;
+    for (int32_t ik = 1; ik < nk; ik++)
+      { for (int32_t jk = 0; jk < ik; jk++)
+          { int32_t eij = (ik ^ jk); /* Exclusive OR of indices. */
+            int32_t hij = (eij & 1) + (eij & 2) + (eij & 4); /* Hamming dist. */
+            if ((hij == 1) || (hij == 3))
+              { /* Side or main diagonal: */
+                double dp2 = r3_dist_sqr(&(ph[ik]), &(ph[jk]));
+                double dq2 = r3_dist_sqr(&(qh[ik]), &(qh[jk]));
+                assert(kd < nd);
+                logr[kd] = log(dq2/dp2)/2;
+                kd++;
+              }
+          }
+      }
+    assert(kd == nd);
+    
+    /* Compute the variance of the logs: */
+    double sum = 0;
+    for (int32_t kd = 0; kd < nd; kd++) { sum += logr[kd]; }
+    double avg = sum/nd;
+    double sum2 = 0;
+    for (int32_t kd = 0; kd < nd; kd++) { double dk = logr[kd] - avg; sum2 += dk*dk; }
+    double var = sum2/(nd-1);
+    return var;
+  }
+
+double hr3_pmap_aff_discr_sqr(hr3_pmap_t *M, hr3_pmap_t *N)
+  {
+    demand((M->dir.c[1][0] == 0) && (M->dir.c[2][0] == 0), "{M} is not affine");
+    demand(M->dir.c[0][0] > 0, "map {M} does not preserve side");
+    r4x4_t A; double wA = M->dir.c[0][0]; r4x4_scale(1/wA, &(M->dir), &A);
+   
+    demand((N->dir.c[1][0] == 0) && (N->dir.c[2][0] == 0), "{N} is not affine");
+    demand(M->dir.c[0][0] > 0, "map {N} does not preserve side");
+    r4x4_t B; double wB = N->dir.c[0][0]; r4x4_scale(1/wB, &(N->dir), &B);
+   
+    /* Hope the math is right: */
+    r4x4_t E, H;
+    r4x4_sub(&A, &B, &E);
+    r4x4_mul_tr(&E, &E, &H);
+    double h2 = (H.c[1][1] + H.c[2][2])/2;
+    double d2 = H.c[0][0];
+    return h2 + d2;
+  }
+
+void hr3_point_print(FILE *f, char *pre, hr3_point_t *p, char *fmt, char *suf)
   { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, f); }
     fputc('[', f);
     if (fmt == NULL) { fmt = "24.26e"; }
@@ -616,7 +731,7 @@ void hr3_point_print (FILE *f, char *pre, hr3_point_t *p, char *fmt, char *suf)
     if ((suf != NULL) && ((*suf) != 0)) { fputs(suf, f); }
   }
 
-void hr3_plane_print (FILE *f, char *pre, hr3_plane_t *P, char *fmt, char *suf)
+void hr3_plane_print(FILE *f, char *pre, hr3_plane_t *P, char *fmt, char *suf)
   { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, f); }
     fputc('[', f);
     if (fmt == NULL) { fmt = "24.26e"; }
@@ -628,7 +743,7 @@ void hr3_plane_print (FILE *f, char *pre, hr3_plane_t *P, char *fmt, char *suf)
     if ((suf != NULL) && ((*suf) != 0)) { fputs(suf, f); }
   }
 
-void hr3_line_print (FILE *f, char *pre, hr3_line_t *L, char *fmt, char *suf)
+void hr3_line_print(FILE *f, char *pre, hr3_line_t *L, char *fmt, char *suf)
   { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, f); }
     fputc('[', f);
     if (fmt == NULL) { fmt = "24.26e"; }
@@ -640,7 +755,7 @@ void hr3_line_print (FILE *f, char *pre, hr3_line_t *L, char *fmt, char *suf)
     if ((suf != NULL) && ((*suf) != 0)) { fputs(suf, f); }
   }
   
-void hr3_pmap_print (FILE *wr, hr3_pmap_t *M, char *pref, char *suff)
+void hr3_pmap_print(FILE *wr, hr3_pmap_t *M, char *pref, char *suff)
   { 
     hr3_pmap_gen_print(wr, M, "%12.6f", pref, "  ", "  ", "\n", "[ ", " ", " ]", suff);
     fflush(wr);

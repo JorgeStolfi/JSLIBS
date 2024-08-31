@@ -1,5 +1,5 @@
 /* See r3x3.h. */
-/* Last edited on 2023-10-09 09:01:23 by stolfi */
+/* Last edited on 2024-08-30 04:23:42 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -8,6 +8,7 @@
 #include <math.h>
 
 #include <r3.h>
+#include <affirm.h>
 #include <rmxn.h>
 
 #include <r3x3.h>
@@ -26,7 +27,7 @@ void r3x3_ident(r3x3_t *M)
         { M->c[i][j] = (i == j ? 1.0 : 0.0); }
   }
 
-void r3x3_transp (r3x3_t *A, r3x3_t *M)
+void r3x3_transp(r3x3_t *A, r3x3_t *M)
   {
     double a, b;
     /* Copy diagonal elements: */
@@ -69,7 +70,7 @@ void r3x3_set_col(r3x3_t *A, int32_t j, r3_t *x)
     A->c[2][j] = x->c[2];
   }
 
-void r3x3_map_row (r3_t *x, r3x3_t *A, r3_t *r)
+void r3x3_map_row(r3_t *x, r3x3_t *A, r3_t *r)
   { r3_t rr;
     for (int32_t j = 0; j < N; j++)
       { double s = 0.0;
@@ -79,7 +80,7 @@ void r3x3_map_row (r3_t *x, r3x3_t *A, r3_t *r)
     for (int32_t j = 0; j < N; j++) { r->c[j] = rr.c[j]; }
   }
 
-void r3x3_map_col (r3x3_t *A, r3_t *x, r3_t *r)
+void r3x3_map_col(r3x3_t *A, r3_t *x, r3_t *r)
   { r3_t rr;
     for (int32_t i = 0; i < N; i++)
       { double s = 0.0;
@@ -89,37 +90,37 @@ void r3x3_map_col (r3x3_t *A, r3_t *x, r3_t *r)
     for (int32_t i = 0; i < N; i++) { r->c[i] = rr.c[i]; }
   }
 
-void r3x3_add (r3x3_t *A, r3x3_t *B, r3x3_t *M)
+void r3x3_add(r3x3_t *A, r3x3_t *B, r3x3_t *M)
   { for (int32_t i = 0; i < N; i++)
       for (int32_t j = 0; j < N; j++)
         { M->c[i][j] = A->c[i][j] + B->c[i][j]; }
   }
 
-void r3x3_sub (r3x3_t *A, r3x3_t *B, r3x3_t *M)
+void r3x3_sub(r3x3_t *A, r3x3_t *B, r3x3_t *M)
   { for (int32_t i = 0; i < N; i++)
       for (int32_t j = 0; j < N; j++)
         { M->c[i][j] = A->c[i][j] - B->c[i][j]; }
   }
 
-void r3x3_neg (r3x3_t *A, r3x3_t *M)
+void r3x3_neg(r3x3_t *A, r3x3_t *M)
   { for (int32_t i = 0; i < N; i++)
       for (int32_t j = 0; j < N; j++)
         { M->c[i][j] = - A->c[i][j]; }
   }
 
-void r3x3_scale (double s, r3x3_t *A, r3x3_t *M)  
+void r3x3_scale(double s, r3x3_t *A, r3x3_t *M)  
   { for (int32_t i = 0; i < N; i++)
       for (int32_t j = 0; j < N; j++)
         { M->c[i][j] = s * A->c[i][j]; }
   }
 
-void r3x3_mix (double s, r3x3_t *A, double t, r3x3_t *B, r3x3_t *M)
+void r3x3_mix(double s, r3x3_t *A, double t, r3x3_t *B, r3x3_t *M)
   { for (int32_t i = 0; i < N; i++)
       for (int32_t j = 0; j < N; j++)
         { M->c[i][j] = s * A->c[i][j] + t * B->c[i][j]; }
   }
 
-void r3x3_mul (r3x3_t *A, r3x3_t *B, r3x3_t *M)
+void r3x3_mul(r3x3_t *A, r3x3_t *B, r3x3_t *M)
   { r3x3_t RR;
     for (int32_t i = 0; i < N; i++)
       for (int32_t j = 0; j < N; j++)
@@ -130,7 +131,7 @@ void r3x3_mul (r3x3_t *A, r3x3_t *B, r3x3_t *M)
     (*M) = RR;
   }
 
-void r3x3_mul_tr (r3x3_t *A, r3x3_t *B, r3x3_t *M)
+void r3x3_mul_tr(r3x3_t *A, r3x3_t *B, r3x3_t *M)
   {
     r3x3_t RR;
     for (int32_t i = 0; i < N; i++)
@@ -141,16 +142,28 @@ void r3x3_mul_tr (r3x3_t *A, r3x3_t *B, r3x3_t *M)
         }
     (*M) = RR;
   }
+  
+void r3x3_tr_mul(r3x3_t *A, r3x3_t *B, r3x3_t *M)
+  {
+    r3x3_t RR;
+    for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
+        { double s = 0.0;
+          for (int32_t k = 0; k < N; k++)  s += A->c[k][i]*B->c[k][j];
+          RR.c[i][j] = s;
+        }
+    (*M) = RR;
+  }
 
-double r3x3_det (r3x3_t *A)
+double r3x3_det(r3x3_t *A)
   { double d0 = A->c[1][1]*A->c[2][2] - A->c[1][2]*A->c[2][1];
     double d1 = A->c[1][0]*A->c[2][2] - A->c[1][2]*A->c[2][0];
     double d2 = A->c[1][0]*A->c[2][1] - A->c[1][1]*A->c[2][0];
     double det = d0 * A->c[0][0] - d1 * A->c[0][1] + d2 * A->c[0][2];
-    return (det);
+    return det;
   }
 
-void r3x3_adj (r3x3_t *A, r3x3_t *M)
+void r3x3_adj(r3x3_t *A, r3x3_t *M)
   { double A00 = A->c[0][0];
     double A01 = A->c[0][1];
     double A02 = A->c[0][2];
@@ -188,7 +201,7 @@ void r3x3_adj (r3x3_t *A, r3x3_t *M)
     M->c[2][2] =  A01_01;
   }
 
-void r3x3_inv (r3x3_t *A, r3x3_t *M)
+void r3x3_inv(r3x3_t *A, r3x3_t *M)
   { r3x3_t RR;
     r3x3_adj(A, &RR);
     double d = 
@@ -200,7 +213,7 @@ void r3x3_inv (r3x3_t *A, r3x3_t *M)
         M->c[i][j] = RR.c[i][j]/d;
   }
 
-double r3x3_norm_sqr(r3x3_t* A)
+double r3x3_norm_sqr(r3x3_t *A)
   {
     double A00 = A->c[0][0];
     double A01 = A->c[0][1];
@@ -217,7 +230,7 @@ double r3x3_norm_sqr(r3x3_t* A)
     return A00*A00 + A01*A01 + A02*A02 + A10*A10 + A11*A11 + A12*A12 + A20*A20 + A21*A21 + A22*A22; 
   }
 
-double r3x3_norm(r3x3_t* A)
+double r3x3_norm(r3x3_t *A)
   {
     double A00 = A->c[0][0];
     double A01 = A->c[0][1];
@@ -252,7 +265,7 @@ double r3x3_normalize(r3x3_t *A)
     return w;
   }
 
-double r3x3_mod_norm_sqr(r3x3_t* A)
+double r3x3_mod_norm_sqr(r3x3_t *A)
   {
     double D00 = A->c[0][0] - 1;
     double D01 = A->c[0][1];
@@ -270,6 +283,42 @@ double r3x3_mod_norm_sqr(r3x3_t* A)
       D00*D00 + D01*D01 + D02*D02 + 
       D10*D10 + D11*D11 + D12*D12 + 
       D20*D20 + D21*D21 + D22*D22; 
+  }
+
+double r3x3_L_inf_norm(r3x3_t *A)
+  {
+    double mv = 0.0;
+    mv = fmax(mv, fabs(A->c[0][0]));
+    mv = fmax(mv, fabs(A->c[0][1]));
+    mv = fmax(mv, fabs(A->c[0][2]));
+    
+    mv = fmax(mv, fabs(A->c[1][0]));
+    mv = fmax(mv, fabs(A->c[1][1]));
+    mv = fmax(mv, fabs(A->c[1][2]));
+    
+    mv = fmax(mv, fabs(A->c[2][0]));
+    mv = fmax(mv, fabs(A->c[2][1]));
+    mv = fmax(mv, fabs(A->c[2][2]));
+    
+    return mv;
+  }
+
+double r3x3_L_inf_normalize(r3x3_t *A)
+  { 
+    double mv = r3x3_L_inf_norm(A);
+    A->c[0][0] /= mv;
+    A->c[0][1] /= mv;
+    A->c[0][2] /= mv;
+              
+    A->c[1][0] /= mv;
+    A->c[1][1] /= mv;
+    A->c[1][2] /= mv;
+              
+    A->c[2][0] /= mv;
+    A->c[2][1] /= mv;
+    A->c[2][2] /= mv;
+    
+    return mv;
   }
 
 void r3x3_diff_sqr(r3x3_t *A, r3x3_t *B, r3x3_t *R, double *dabs2P, double *drel2P)
@@ -293,10 +342,10 @@ void r3x3_diff_sqr(r3x3_t *A, r3x3_t *B, r3x3_t *R, double *dabs2P, double *drel
     if (drel2P != NULL) { (*drel2P) = drel2; }
   }
 
-bool_t r3x3_is_unif_scaling(r3x3_t *A, double s)
+bool_t r3x3_is_unif_scaling(r3x3_t *M, double s)
   { for (int32_t i = 0; i < N; i++)
       for (int32_t j = 0; j < N; j++)
-        { if (A->c[i][j] != (i == j ? s : 0.0)) { return FALSE; } }
+        { if (M->c[i][j] != (i == j ? s : 0.0)) { return FALSE; } }
     return TRUE;
   }
 
@@ -351,7 +400,7 @@ void r3x3_u_v_rotation(r3_t *u, r3_t *v, r3x3_t *M)
     M->c[2][2] = zz + cost*(xx + yy);
   }
 
-void r3x3_print (FILE *f, r3x3_t *A)
+void r3x3_print(FILE *f, r3x3_t *A)
   { r3x3_gen_print(f, A, NULL, NULL, NULL, NULL, NULL, NULL, NULL); }
 
 void r3x3_gen_print 

@@ -1,5 +1,5 @@
 /* r4.h --- operations on points and vectors of R^4 */
-/* Last edited on 2023-01-12 06:50:09 by stolfi */
+/* Last edited on 2024-08-30 03:00:50 by stolfi */
 
 #ifndef r4_H
 #define r4_H
@@ -10,6 +10,7 @@
 #include <math.h>
 
 #include <vec.h>
+#include <interval.h>
 
 typedef struct r4_t { double c[4]; } r4_t;
 
@@ -105,20 +106,30 @@ double r4_decomp (r4_t *a, r4_t *u, r4_t *para, r4_t *perp);
     {c = r4_dot(a,u)/r4_dot(u,u)}. Also returns {c}. */
 
 bool_t r4_is_finite(r4_t *p);
-  /* True iff all coordinates of {p} are finite. */
+  /* True iff all coordinates of {p} are finite (neither {±INF} nor {NAN}). */
 
 bool_t r4_eq(r4_t *p, r4_t *q);
   /* True iff points {p} and {q} are identical. */
+  
+void r4_barycenter(int32_t np, r4_t p[], double w[], r4_t *bar);
+  /* Sets {*bar} to the barycenter of all points {p[0..np-1]}
+    with weights {w[0..np-1]}.  The weights must have positive sum.
+    Assumes equal weights if {w = NULL}. */
+
+void r4_bbox(int32_t np, r4_t p[], interval_t B[], bool_t finite);
+  /* Computes the coordinate ranges {B[0..3]} of the points 
+    {p.e[0..np-1]}. If {finite} is true, ignores points 
+    that have infinite or NAN coordinate(s). */
 
 void r4_throw_cube (r4_t *r);
   /* Sets {r} to a uniformly random point of the 4-cube {[-1 _ +1]^4}. */
   
 void r4_throw_dir (r4_t *r);
-  /* Sets {r} to a random direction of {R^4}; that is, a 
-    uniformly random point on the unit 3-sphere {S^3}. */
+  /* Sets {r} to a random direction of {\RR^4}; that is, a 
+    uniformly random point on the unit 3-sphere {\RS^3}. */
 
 void r4_throw_ball (r4_t *r);
-  /* Sets {r} to a uniformly random point of the unit N-ball. */
+  /* Sets {r} to a uniformly random point of the unit 4-ball. */
 
 void r4_throw_normal (r4_t *r);
   /* Sets each coordinate {r[i]} to an independent Gaussian random
@@ -135,7 +146,7 @@ void r4_gen_print (FILE *f, r4_t *a, char *fmt, char *lp, char *sep, char *rp);
 
 /* DERIVED TYPES */
 
-vec_typedef(r4_vec_t,r4_vec,r4_t);
+vec_typedef(r4_vec_t, r4_vec, r4_t);
   /* An {r4_vec_t} is a vector of {r4_t}s. */
 
 typedef bool_t r4_pred_t(r4_t *a);

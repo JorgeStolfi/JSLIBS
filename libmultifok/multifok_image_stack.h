@@ -1,8 +1,8 @@
 /* Stack of images with limited depth of focus. */
-/* Last edited on 2024-05-02 10:43:24 by stolfi */
+/* Last edited on 2024-08-02 15:46:21 by stolfi */
 
-#ifndef multifok_stack_H
-#define multifok_stack_H
+#ifndef multifok_image_stack_H
+#define multifok_image_stack_H
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -11,8 +11,8 @@
   
 typedef struct multifok_image_stack_t 
   { int32_t NI;              /* Number of images in stack. */
-    int32_t NX, NY;          /* Image dimensions of all images. */
     int32_t NC;              /* Number of channels in the scene images {csimg[ki]}. */
+    int32_t NX, NY;          /* Image dimensions of all images. */
     float_image_t *csimg[];  /* Images of scene. */
     float_image_t *shimg[];  /* Sharpness maps for the images. */
     double zFoc[];           /* Assumed height of focus plane in each image. */
@@ -23,7 +23,7 @@ typedef struct multifok_image_stack_t
     same number of columns {NX} and of rows {NY}.  All scene images {csimg[ki]}
     must have the same number of channels {NC}. */
      
-multifok_image_stack_t* mfmi_read_stack
+multifok_image_stack_t* multifok_image_stack_read
   ( char *inPrefix,
     int32_t NI,
     double *zFoc

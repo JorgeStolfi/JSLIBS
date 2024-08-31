@@ -1,13 +1,15 @@
 /* Oriented projective geometry in three dimensions. */
-/* Last edited on 2023-10-09 21:03:08 by stolfi */ 
+/* Last edited on 2024-08-30 11:40:42 by stolfi */ 
 
 #ifndef hr3_H
 #define hr3_H
 
 /* Based on HR3.i3, created 1993-04-18 by Marcos C. Carrard. */
-/* Based on H3.pas by J. Stolfi. */
+/* Also based on H3.pas by J. Stolfi. */
    
 #define _GNU_SOURCE
+
+#include <stdint.h>
 
 #include <r3.h>
 #include <r3x3.h>
@@ -17,20 +19,24 @@
 
 #include <sign.h>
 
-typedef struct hr3_point_t { r4_t c; } hr3_point_t; /* c[0..3] are coords [w,x,y,z]. */
-typedef struct hr3_plane_t { r4_t f; } hr3_plane_t; /* f[0..3] are coeffs <W,X,Y,Z>. */
-typedef struct hr3_line_t  { r6_t k; } hr3_line_t;  /* k[0..5] are Plücker coords [wx,wy,xy,wz,xz,yz] */
+typedef struct hr3_point_t { r4_t c; } hr3_point_t; /* {c.c[0..3]} are point's coords {[w,x,y,z]}. */
+typedef struct hr3_plane_t { r4_t f; } hr3_plane_t; /* {f.c[0..3]} are plane's coeffs {<W,X,Y,Z>}. */
+typedef struct hr3_line_t  { r6_t k; } hr3_line_t;  /* {k.c[0..5]} are Plücker coords {[wx,wy,xy,wz,xz,yz]} */
   
 hr3_point_t hr3_from_r3(r3_t *c);
-  /* Point on ``hither'' half of space (i.e, with positive weight)
+  /* Point on the ``hither'' half of the two-sided space (i.e, with positive weight)
     whose Cartesian coordinates are {c}. */
     
 r3_t r3_from_hr3(hr3_point_t *p);
   /* Cartesian coordinates of point {p} (which must be finite). */
+  
+hr3_point_t hr3_point_at_infinity(r3_t *dir);
+  /* The point at infinity whose direction, as seen from any hither
+    point, is {*dir}. */
 
 double hr3_pt_pt_diff(hr3_point_t *p, hr3_point_t *q);
   /* Distance between {p} and {q} in the spherical model; that is,
-     angle between the vectors {p.c} and {q.c} in {R^4}, in radians. */
+     angle between the vectors {p.c} and {q.c} in {\RR^4}, in radians. */
 
 sign_t hr3_side(hr3_point_t *p, hr3_plane_t *Q); 
   /* Returns the position of point {p} relative to plane {Q}: 
@@ -65,23 +71,19 @@ r3_t hr3_point_point_dir(hr3_point_t *frm, hr3_point_t *tto);
   /* Direction (a unit-length vector) of point {tto} seen from point {frm}.
     Works even if one of them is at infinity.  Does not work if both
     are at infinity, or coincident, or antipodal. */
-    
-hr3_point_t hr3_point_at_infinity(r3_t *dir);
-  /* The point at infinity whose direction, as seen from any hither
-    point, is {*dir}. */
-
-double hr3_dist(hr3_point_t *a, hr3_point_t *b);
-  /* Distance between {a} and {b}, which must lie in the front half-plane. */
-    
-double hr3_dist_sqr(hr3_point_t *a, hr3_point_t *b);
-  /* Distance squared between {a} and {b}, which must lie in the front half-plane. */
-    
-r3_t hr3_line_dir(hr3_line_t *L);
-  /* The direction along line {L}.  Assumes {L} is not at infinity. */
-    
+      
 r3_t hr3_plane_normal(hr3_plane_t *P);
   /* The normal direction of plane {P}, on the hither side, pointing into 
     {P}'s positive halfspace.  Assumes {P} is not at infinity. */
+
+double hr3_dist(hr3_point_t *a, hr3_point_t *b);
+  /* Euclidean distance between {a} and {b}, which must have weights of the same sign. */
+    
+double hr3_dist_sqr(hr3_point_t *a, hr3_point_t *b);
+  /* Euclidean distance squared between {a} and {b}, which must weights of the same sign. */
+    
+r3_t hr3_line_dir(hr3_line_t *L);
+  /* The direction along line {L}.  Assumes {L} is not at infinity. */
     
 hr3_point_t hr3_point_mix(double pt, hr3_point_t *p, double qt, hr3_point_t *q);
   /* The point whose homogeneous coordinates are the linear combination
@@ -94,6 +96,14 @@ void hr3_L_inf_normalize_line(hr3_line_t *L);
   /* Scales the homogeneous coordinates of the given object by a positive
     factor so that the maximum absolute value among them is 1.
     If all coordinates are zero, they are turned into NaNs. */
+  
+hr3_point_t hr3_point_throw(void);
+  /* Returns a point with homogeneous coordinates uniformly
+    distributed over the unit sphere of {\RR^4}. */
+   
+hr3_plane_t hr3_plane_throw(void);
+  /* Returns a plane with homogeneous coefficienys uniformly
+    distributed over the unit sphere of {\RR^4}. */
 
 /* PROJECTIVE MAPS */
 
@@ -104,24 +114,18 @@ bool_t hr3_pmap_is_identity(hr3_pmap_t *M);
   /* TRUE iff {M} is the identity map (apart from homogeneous scaling). */
 
 hr3_point_t hr3_pmap_point(hr3_point_t *p, hr3_pmap_t *M);
-  /* Applies projective map {M} to point {p}. */
-
 hr3_point_t hr3_pmap_inv_point(hr3_point_t *p, hr3_pmap_t *M);
-  /* Applies the inverse of projective map {M} to point {p}. */
-
-hr3_plane_t hr3_pmap_plane(hr3_plane_t *P, hr3_pmap_t *M);
-  /* Applies projective map {M} to plane {P} */
-
-hr3_plane_t hr3_pmap_inv_plane(hr3_plane_t *P, hr3_pmap_t *M);
-  /* Applies the inverse of projective map {M} to plane {P} */
+  /* Applies projective map {M} or its inverse, respectively, to point {p}. */
 
 r3_t hr3_pmap_r3_point(r3_t *p, hr3_pmap_t *M);
-  /* Applies projective map {M} to the point with Cartesian coordinates {p}. 
+r3_t hr3_pmap_inv_r3_point(r3_t *p, hr3_pmap_t *M);
+  /* Maps the Cartesian point {p} by the projective map {M} or its inverse,
+    respectively, and returns the result converted to Cartesian coordinates. 
     If the result is at infinity, returns {(NAN,NAN,NAN)}. */
 
-r3_t hr3_pmap_inv_r3_point(r3_t *p, hr3_pmap_t *M);
-  /* Applies the inverse of projective map {M} to point with Cartesian {p}. 
-    If the result is at infinity, returns {(NAN,NAN,NAN)}. */
+hr3_plane_t hr3_pmap_plane(hr3_plane_t *P, hr3_pmap_t *M);
+hr3_plane_t hr3_pmap_inv_plane(hr3_plane_t *P, hr3_pmap_t *M);
+  /* Applies projective map {M} or its inverse, respectively, to plane {P} */
 
 hr3_pmap_t hr3_pmap_compose(hr3_pmap_t *M, hr3_pmap_t *N);
   /* Returns the composition of {M} and {N}, applied in that order */
@@ -131,6 +135,53 @@ hr3_pmap_t hr3_pmap_inv(hr3_pmap_t *M);
   
 hr3_pmap_t hr3_pmap_inv_compose(hr3_pmap_t *M, hr3_pmap_t *N);
   /* Returns the composition of the inverse of {M} and {N}, applied in that order. */
+    
+bool_t hr3_pmap_is_affine(hr3_pmap_t *M);
+  /* Returns true iff {M} is an affine map; that is, the first column of
+    its direct matrix is {w,0,0,0} for some positive {w}. Note that a
+    proper projective map is affine if and only if its inverse is
+    affine. */
+
+double hr3_pmap_diff_sqr(hr3_pmap_t *M, hr3_pmap_t *N);
+  /* Computes the sum of squares differences between corresponding
+    elements of {M.dir} and {N.dir} and of {M.inv} and {N.inv},
+    after implicitly scaling both so that the sum of squared elements is 1. */
+
+double hr3_pmap_mismatch_sqr(hr3_pmap_t *M, int32_t np, r3_t p1[], r3_t p2[]);
+  /* Computes the mean squared distance between the
+     mapped points {p1[0..np-1]} mapped by {M.dir} and the 
+     points {p2[0..np-1]} mapped by {M.inv}. */
+
+double hr3_pmap_deform_sqr(r3_t ph[], hr3_pmap_t *M);
+  /* Measures the amount of deformation produced by the projective map
+    {M} on the cuboid {Q} whose corners {Q[0..1,0..1,0..1]} are stored 
+    in {ph[0..7]}, linearized. For meaningful results, the points should
+    be in general position (no four of them collinear).
+    
+    The procedure compares each of the 12 sides and each of the 4 main
+    diagonals of {Q} with those of the cuboid {Q'} that is {Q} mapped by
+    {M}. For each of these line segments, it computes the original
+    length {d} and the length {d'} of the mapped segment, and the log of
+    the ratio {d'/d}. The result is the variance of these logs.
+    
+    Thus the result will be zero if and an only if every distance {d'}
+    is the corresponding distance {d} times a common factor {s}; that
+    is, if {Q} is similar to {Q'}, meaning that {M} is an similarity
+    -- a translation combined with a rotation or mirroring and a uniform
+    change of scale (by the common factor {s}). */
+
+double hr3_pmap_aff_discr_sqr(hr3_pmap_t *M, hr3_pmap_t *N);
+  /* Assumes that {M} and {N} are affine maps.  Returns the total
+    squared mismatch between them, defined as 
+    
+      { INTEGRAL { |(A - B)(u)|^2 du: u \in \RS^2 } }
+    
+    */
+
+/* SPECIAL PROJECTIVE MAPS */
+
+hr3_pmap_t hr3_pmap_identity(void);
+  /* Returns the identity projective map, defined by the iedntity 4x4 matrix. */
 
 hr3_pmap_t hr3_pmap_translation(r3_t *v);
   /* Returns the projective map {M} that performs an Euclidean
@@ -198,14 +249,6 @@ hr3_pmap_t hr3_pmap_persp(hr3_point_t *obs, hr3_point_t *foc, double rad, hr3_po
     scaling by {1/rad}. Thus the circle of radius {rad} centered at
     {ctr} and normal to the line {obs--ctr} is mapped to the unit
     circle of the XY plane. */
-  
-hr3_point_t hr3_point_throw(void);
-  /* Returns a point with homogeneous coordinates uniformly
-    distributed over the unit sphere of {\RR^4}. */
-   
-hr3_plane_t hr3_plane_throw(void);
-  /* Returns a plane with homogeneous coefficienys uniformly
-    distributed over the unit sphere of {\RR^4}. */
 
 /* PRINTOUT 
 
@@ -213,16 +256,16 @@ hr3_plane_t hr3_plane_throw(void);
   and {suf} (if not NULL) after it.  The coordinates/coefficients are printed
   with the format {fmt} (or with "%24.16e" if {fmt} is NULL. */
 
-void hr3_point_print (FILE *f, char *pre, hr3_point_t *a, char *fmt, char *suf);
-  /* Prints point {a} to file {f} as "[{w} {x} {y} {z}]". */
+void hr3_point_print(FILE *f, char *pre, hr3_point_t *p, char *fmt, char *suf);
+  /* Prints point {p} to file {f} as "[{w} {x} {y} {z}]". */
 
-void hr3_plane_print (FILE *f, char *pre, hr3_plane_t *P, char *fmt, char *suf);
+void hr3_plane_print(FILE *f, char *pre, hr3_plane_t *P, char *fmt, char *suf);
   /* Prints plane {P} to file {f} as "<{W} {X} {Y} {Z}>". */
 
-void hr3_line_print (FILE *f, char *pre, hr3_line_t *L, char *fmt, char *suf);
+void hr3_line_print(FILE *f, char *pre, hr3_line_t *L, char *fmt, char *suf);
   /* Prints line {L} to file {f} as "[{wx} {wy} {xy} {wz} {xz} {yz}]". */
 
-void hr3_pmap_print (FILE *wr, hr3_pmap_t *M, char *pref, char *suff);
+void hr3_pmap_print(FILE *wr, hr3_pmap_t *M, char *pref, char *suff);
   /* Prints {M} on file {wr}, with some default format.  The printout
     starts with the given {pref}, if not {NULL}, and ends with the given {suff},
     if not {NULL}. */

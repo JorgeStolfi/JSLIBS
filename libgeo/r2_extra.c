@@ -1,5 +1,5 @@
 /* see r2_extra.h */
-/* Last edited on 2023-08-27 14:30:20 by stolfi */
+/* Last edited on 2024-08-30 18:44:04 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -352,7 +352,7 @@ void r2_clip_seg_to_unit_disk(r2_t *a, r2_t *b, double *ta, double *tb)
       }
   }
 
-void r2_debug_point_jac(char *label, r2_t *p, r2x2_t *J, char *tail)
+void r2_debug_point_jacobian(char *label, r2_t *p, r2x2_t *J, char *tail)
   {
     fprintf(stderr, "    %s", label);
     if (isnan(p->c[0]) || isnan(p->c[1]))
@@ -383,8 +383,8 @@ void r2_map_compute_numeric_jacobian(r2_t *p, r2_map_jacobian_t *map, double ste
             r2_t *qk = &(q[k]);
             (*qk) = pk;
             map(qk, NULL);
-            if (debug) { r2_debug_point_jac("    pk", &pk, NULL, ""); }
-            if (debug) { r2_debug_point_jac("  qk", qk, NULL, "\n"); }
+            if (debug) { r2_debug_point_jacobian("    pk", &pk, NULL, ""); }
+            if (debug) { r2_debug_point_jacobian("  qk", qk, NULL, "\n"); }
             if (isnan(qk->c[0]) || isnan(qk->c[1])) 
               { (*K) = (r2x2_t){{{ NAN, NAN}, {NAN, NAN}}};
                 return;

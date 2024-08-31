@@ -1,5 +1,5 @@
 /* See {hr2test_tools.h}. */
-/* Last edited on 2023-10-09 21:25:58 by stolfi */
+/* Last edited on 2024-08-30 04:25:30 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -38,7 +38,7 @@ void h2tt_do_check_eps(double x, double y, double eps, char *msg, char *file, in
   { double diff = fabs(x - y);
     if (diff > eps)
       { fprintf(stderr, " ** %+20.16e %+20.16e", x, y);
-        fprintf(stderr, " diff = %+20.16e  max = %+20.16e\n", diff, eps);
+        fprintf(stderr, " diff = %+20.16e  max = %20.16e\n", diff, eps);
         programerror(msg, file, lnum, func);
       }
   }
@@ -62,7 +62,7 @@ void h2tt_do_check_hr2_point_eps
 
         h2tt_show_hr2_point("was", q_cmp);
         h2tt_show_hr2_point("should be", q_exp);
-        fprintf(stderr, " diff = %20.16e  max = %+20.16e\n", diff, eps);
+        fprintf(stderr, " diff = %20.16e  max = %20.16e\n", diff, eps);
 
         programerror(msg, file, lnum, func);
       }
@@ -123,10 +123,39 @@ void h2tt_print_pmap(char *name, hr2_pmap_t *M)
     hr2_pmap_gen_print(stderr, M, "%+10.6f", NULL,  NULL,NULL,NULL, NULL,NULL,NULL, "\n");
   }
 
-void h2tt_do_check_r3_map
+void h2tt_do_check_pmap
+  ( char *name,
+    hr2_pmap_t *M, 
+    double eps, 
+    char *msg, 
+    char *file, 
+    int32_t lnum,
+    const char *func
+  )
+  { r3x3_t P; r3x3_mul(&(M->dir), &(M->inv), &P);
+    double mv = r3x3_L_inf_normalize(&P);
+    if (mv == 0)
+      { fprintf(stderr, " ** %s: {dir} x {inv} is the zero matrix\n", name);
+        programerror(msg, file, lnum, func);
+      }
+    for (int32_t i = 0; i < NH; i++)
+      for (int32_t j = 0; j < NH; j++)
+        { double vexp = (i == j ? 1.0 : 0.0);
+          double err = P.c[i][j] - vexp;
+          if (fabs(err) > eps)
+            { fprintf(stderr, " ** %s: {dir} x {inv} is not the identity\n", name);
+              fprintf(stderr, " element [%d][%d] of product is %24.16e", i, j, P.c[i][j]);
+              fprintf(stderr, " error = %+20.16e (max %20.16e)\n", err, eps);
+              programerror(msg, file, lnum, func);
+            }
+        }
+  } 
+
+void h2tt_do_check_map_r3
   ( char *name, 
     r3_t *p,
-    bool_t flip, 
+    bool_t anti, 
+    bool_t twirl, 
     bool_t row, 
     r3x3_t *M, 
     r3_t *q,
@@ -138,18 +167,31 @@ void h2tt_do_check_r3_map
   {
     r3_t qn; (void)r3_dir(q, &qn);
     r3_t pM;
-    if (flip)
-      { /* {b_exp} stands for any sign-flipped version of itself: */
-        double d2min = +INF;
+    if (anti)
+      { double d2min = +INF;
+        for (int32_t s = -1; s <= +1; s += 2)
+          { r3_t u = (r3_t){{s*p->c[0], s*p->c[1], s*p->c[2]}};
+            r3_t uM;
+            if (row) 
+              { r3x3_map_row(&u, M, &uM); }
+            else
+              { r3x3_map_col(M, &u, &uM); }
+            (void)r3_dir(&uM, &uM);
+            double d2 = r3_dist_sqr(&uM, &qn);
+            if (d2 < d2min) { d2min = d2; pM = uM; }
+          }
+      }
+    else if (twirl)
+      { double d2min = +INF;
         for (int32_t sy = -1; sy <= +1; sy += 2)
           for (int32_t sx = -1; sx <= +1; sx += 2)
             for (int32_t sw = -1; sw <= +1; sw += 2)
               { r3_t u = (r3_t){{sw*p->c[0], sx*p->c[1], sy*p->c[2]}};
                 r3_t uM;
                 if (row) 
-                  { r3x3_map_row(&u, M, &pM); }
+                  { r3x3_map_row(&u, M, &uM); }
                 else
-                  { r3x3_map_col(M, &u, &pM); }
+                  { r3x3_map_col(M, &u, &uM); }
                 (void)r3_dir(&uM, &uM);
                 double d2 = r3_dist_sqr(&uM, &qn);
                 if (d2 < d2min) { d2min = d2; pM = uM; }
@@ -168,7 +210,8 @@ void h2tt_do_check_r3_map
 void h2tt_do_check_pmap_point
   ( char *name, 
     hr2_point_t *p, 
-    bool_t flip,
+    bool_t anti,
+    bool_t twirl,
     hr2_pmap_t *M, 
     bool_t inv,
     hr2_point_t *q, 
@@ -179,13 +222,14 @@ void h2tt_do_check_pmap_point
   )
   { 
     r3x3_t *N = (inv ? &(M->inv) : &(M->dir));
-    h2tt_do_check_r3_map(name, &(p->c), flip, TRUE, N, &(q->c), msg, file, lnum, func);
+    h2tt_do_check_map_r3(name, &(p->c), anti, twirl, TRUE, N, &(q->c), msg, file, lnum, func);
   }
 
 void h2tt_do_check_pmap_line
   ( char *name, 
     hr2_line_t *A, 
-    bool_t flip,
+    bool_t anti,
+    bool_t twirl,
     hr2_pmap_t *M, 
     bool_t inv, 
     hr2_line_t *B, 
@@ -196,7 +240,7 @@ void h2tt_do_check_pmap_line
   )
   {
     r3x3_t *N = (inv ? &(M->dir) : &(M->inv));
-    h2tt_do_check_r3_map(name, &(A->f), flip, FALSE, N, &(B->f), msg, file, lnum, func);
+    h2tt_do_check_map_r3(name, &(A->f), anti, twirl, FALSE, N, &(B->f), msg, file, lnum, func);
   }
   
 void h2tt_do_check_pmap_r2_point
@@ -211,12 +255,9 @@ void h2tt_do_check_pmap_r2_point
     const char *func
   )
   { 
-    r2_t pM;
-    if (inv)
-      { pM = hr2_pmap_inv_r2_point(p, M); }
-    else
-      { pM = hr2_pmap_r2_point(p, M); }
-    h2tt_do_check_r2_eps(name, &pM, q, 0.00000001, msg, file, lnum, func);
+    hr2_point_t hp = hr2_from_r2(p);
+    hr2_point_t hq = hr2_from_r2(q);
+    h2tt_do_check_pmap_point(name, &hp, TRUE, FALSE, M, inv, &hq, msg, file, lnum, func);
   }
 
 void h2tt_do_check_num_eps

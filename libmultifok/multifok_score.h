@@ -1,5 +1,5 @@
 /* Focus detector for multi-focus stereo. */
-/* Last edited on 2023-04-18 16:55:07 by stolfi */
+/* Last edited on 2024-08-02 15:57:28 by stolfi */
 
 #ifndef multifok_score_H
 #define multifok_score_H
@@ -29,6 +29,9 @@
   by {NW} samples, stored in an array {x[0..NS-1]} of {float}s, where {NS
   = NW*NW}, linearized by rows.  See {multifok_window.h} for 
   mreo details. */ 
+
+typedef double multifok_score_op_t(int32_t NC, double wt[]);
+  /* Given an array of window samples ?? */ 
 
 double multifok_score_from_terms(int32_t NT, double wt[], double term[]);
   /* Computes the sharpness score as the weighted sum 

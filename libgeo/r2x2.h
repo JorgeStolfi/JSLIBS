@@ -1,5 +1,5 @@
 /* r2x2.h --- 2x2 matrices and operations on them */
-/* Last edited on 2023-10-09 09:00:03 by stolfi */
+/* Last edited on 2024-08-30 17:34:00 by stolfi */
 
 #ifndef r2x2_H
 #define r2x2_H
@@ -19,7 +19,7 @@ void r2x2_zero(r2x2_t *M);
 void r2x2_ident(r2x2_t *M);
   /* Stores in {M} the identity matrix. */
 
-void r2x2_transp (r2x2_t *A, r2x2_t *M);
+void r2x2_transp(r2x2_t *A, r2x2_t *M);
   /* Sets {M} to the transpose {A^t} of matrix {A}. */
 
 void r2x2_get_row(r2x2_t *A, int32_t i, r2_t *x);
@@ -30,64 +30,85 @@ void r2x2_get_col(r2x2_t *A, int32_t j, r2_t *x);
 void r2x2_set_col(r2x2_t *A, int32_t j, r2_t *x);
   /* These two procedures copy column {j} of matrix {A} to and from vector {x}, respectively. */
 
-void r2x2_map_row (r2_t *x, r2x2_t *A, r2_t *r);
+void r2x2_map_row(r2_t *x, r2x2_t *A, r2_t *r);
   /* Sets {r} to the product of row vector {x} by matrix {A}. */
 
-void r2x2_map_col (r2x2_t *A, r2_t *x, r2_t *r);
+void r2x2_map_col(r2x2_t *A, r2_t *x, r2_t *r);
   /* Sets {r} to the product of matrix {A} by column vector {x}. */
   
-void r2x2_add (r2x2_t *A, r2x2_t *B, r2x2_t *M);
-  /* Sets {M = A + B}. */
+void r2x2_add(r2x2_t *A, r2x2_t *B, r2x2_t *M);
+  /* Sets {M} to the matrix sum {A + B}. */
 
-void r2x2_sub (r2x2_t *A, r2x2_t *B, r2x2_t *M);
-  /* Sets {M = A - B}. */
+void r2x2_sub(r2x2_t *A, r2x2_t *B, r2x2_t *M);
+  /* Sets {M} to the matrix difference {A - B}. */
 
-void r2x2_neg (r2x2_t *A, r2x2_t *M);
-  /* Sets {M} to {-A}. */
+void r2x2_neg(r2x2_t *A, r2x2_t *M);
+  /* Sets {M} to the negated matrix {-A}. */
 
-void r2x2_scale (double s, r2x2_t *A, r2x2_t *M);
+void r2x2_scale(double s, r2x2_t *A, r2x2_t *M);
   /* Sets {M} to the product of scalar {s} and matrix {A}. */
 
-void r2x2_mix (double s, r2x2_t *A, double t, r2x2_t *B, r2x2_t *M);
-  /* Sets {M := s * A + t * B}. */
+void r2x2_mix(double s, r2x2_t *A, double t, r2x2_t *B, r2x2_t *M);
+  /* Sets {M} to the linear combination {s*A + t*B}. */
 
-void r2x2_mul (r2x2_t *A, r2x2_t *B, r2x2_t *M);
+void r2x2_mul(r2x2_t *A, r2x2_t *B, r2x2_t *M);
   /* Sets {M} to the product of matrices {A} and {B}. */
 
-void r2x2_mul_tr (r2x2_t *A, r2x2_t *B, r2x2_t *M);
+void r2x2_mul_tr(r2x2_t *A, r2x2_t *B, r2x2_t *M);
   /* Computes the matrix product {M = A * B^t}. (In other words, sets
     {M[i,j]} to the dot product of row {i} of {A} and row {j} of {B}.) */
 
-void r2x2_tr_mul (r2x2_t *A, r2x2_t *B, r2x2_t *M);
+void r2x2_tr_mul(r2x2_t *A, r2x2_t *B, r2x2_t *M);
   /* Computes the matrix product {M = A^t * B}. (In other words, sets
     {M[i,j]} to the dot product of column {i} of {A} and column {j} of {B}.) */
 
-double r2x2_det (r2x2_t *A);
+double r2x2_det(r2x2_t *A);
   /* Returns the determinant of matrix {A}. */
 
-void r2x2_adj (r2x2_t *A, r2x2_t *M);
+void r2x2_adj(r2x2_t *A, r2x2_t *M);
   /* Sets {M} to the adjoint of matrix {A}. */
 
-void r2x2_inv (r2x2_t *A, r2x2_t *M);
+void r2x2_inv(r2x2_t *A, r2x2_t *M);
   /* Sets {M} to the inverse of matrix {A}. */
 
 void r2x2_sqrt(r2x2_t *A, r2x2_t *M);
   /* Sets {M} to the square root of {A}. Bombs if the square root
     is non-real or does not exist. */
 
-double r2x2_norm_sqr(r2x2_t* A);
-  /* Squared Frobenius norm of {A}, i.e. sum of squares of elements */
+double r2x2_norm_sqr(r2x2_t *A);
+  /* Squared Frobenius norm of {A}, i.e. sum of squares of elements. */
 
-double r2x2_norm(r2x2_t* A);
-  /* Frobenius norm of {A}, i.e. square root of sum of squares of elements */
+double r2x2_norm(r2x2_t *A);
+  /* Frobenius norm of {A}, i.e. square root of sum of squares of elements. */
 
 double r2x2_normalize(r2x2_t *A);
   /* Divides the matrix {A} by its {r2x2_norm}. 
     If that norm is zero, the matrix is filled with {NAN}.
     Returns the norm. */
 
-double r2x2_mod_norm_sqr (r2x2_t *A);
-  /* Returns the square of the Frobenius norm of {A-I} */
+double r2x2_mod_norm_sqr(r2x2_t *A);
+  /* Returns the square of the Frobenius norm of {A-I}. */
+
+double r2x2_L_inf_norm(r2x2_t *A);
+  /* Infinity norm of {A}, i.e. max absolute element value. */
+
+double r2x2_L_inf_normalize(r2x2_t *A);
+  /* Divides the matrix {A} by its {r2x2_L_inf_norm}. 
+    If that norm is zero, the matrix is filled with {NAN}.
+    Returns the norm. */
+
+void r2x2_diff_sqr(r2x2_t *A, r2x2_t *B, r2x2_t *R, double *dabs2P, double *drel2P);
+  /* Returns in {*dabs2P} and {*drel2P} (if not NULL)
+    the total squared discrepancy between the matrices {*A} and 
+    {*B}, respectively absolute and relative to the matrix {*R}.  
+    Namely 
+    
+      { dabs2 = SUM { (Ae[s] - Be[s])^2 } }
+    
+      { drel2 = SUM { ((Ae[s] - Be[s])/Re[s])^2 } }
+    
+    where {Ae[s],Be[s],Re[s]} are all corresponding elements of
+    {*A,*B,*C}. excluding those where {Re[s]} is zero. */
 
 bool_t r2x2_is_unif_scaling(r2x2_t *M, double s);
   /* TRUE iff {M} is a diagonal matrix with all diagonal
@@ -99,7 +120,9 @@ void r2x2_from_rows(r2_t *a, r2_t *b, r2x2_t *M);
 void r2x2_from_cols(r2_t *a, r2_t *b, r2x2_t *M);
   /* Sets {M} to the matrix whose columns are the vectors {a,b}. */
 
-void r2x2_print (FILE *f, r2x2_t *A);
+/* I/O */
+
+void r2x2_print(FILE *f, r2x2_t *A);
   /* Prints matrix {A} to file {f}, with default format. */
 
 void r2x2_gen_print
@@ -123,12 +146,6 @@ void r2x2_rot90(r2x2_t *M);
 void r2x2_rot_and_scale(r2_t *p, r2x2_t *M);
   /* Stores in {M} the similarity (rotation and uniform scaling) matrix
     that keeps the origin fixed and maps {(1,0)} to {p}. */
-
-void r2x2_moments(r2x2_t *A, r2_t *e);
-  /* Stores in {e} the eigenvalues of {A*A^t} where {A^t} is the 
-    transpose of {A}.  The eigenvalues are non-negative and
-    sorted in decreasing order. They are the max and min 
-    values of {|u*A|^2/|u|^2} for any nonzero vector {u}. */
 
 void r2x2_sym_eigen(r2x2_t *A, r2_t *e, r2x2_t *M);
   /* Computes the eigenvalues {e.c[0],e.c[1]) of the symmetric matrix

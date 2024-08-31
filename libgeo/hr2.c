@@ -1,5 +1,5 @@
 /* See hr2.h */
-/* Last edited on 2023-10-09 21:03:18 by stolfi */ 
+/* Last edited on 2024-08-30 17:53:25 by stolfi */ 
 
 /* Based on HR2.m3 created 1994-05-04 by J. Stolfi. */
 
@@ -7,15 +7,18 @@
 #include <stdint.h>
 #include <math.h>
 #include <assert.h>
+#include <stdio.h>
 
-#include <r2.h>
-#include <r3.h>
-#include <rn.h>
-#include <r3x3.h>
-#include <r2x2.h>
-#include <affirm.h>
-#include <sign.h>
 #include <sign_get.h>
+#include <sign.h>
+#include <affirm.h>
+
+#include <r2x2.h>
+#include <r3x3.h>
+#include <rn.h>
+#include <r3.h>
+#include <r2.h>
+
 
 #include <hr2.h>
 
@@ -49,6 +52,14 @@ r2_t r2_from_hr2(hr2_point_t *p)
     double w = p->c.c[0];
     demand(w != 0.0, "point at infinity");
     return (r2_t){{p->c.c[1]/w, p->c.c[2]/w}};
+  }
+
+hr2_point_t hr2_point_at_infinity(r2_t *dir)
+  { hr2_point_t p;
+    p.c.c[0] = 0.0;
+    p.c.c[1] = dir->c[0];
+    p.c.c[2] = dir->c[1];
+    return p;
   }
 
 double hr2_pt_pt_diff(hr2_point_t *p, hr2_point_t *q)
@@ -248,6 +259,62 @@ r2_t hr2_line_normal(hr2_line_t *L)
     double length = hypot(nx, ny);
     return (r2_t){{nx/length, ny/length}};
   }
+  
+double hr2_dist(hr2_point_t *a, hr2_point_t *b)
+  {
+    double aw = 1.0/a->c.c[0];
+    double bw = 1.0/b->c.c[0];
+    
+    double ax = a->c.c[1];
+    double bx = b->c.c[1];
+    double dx = ax*aw - bx*bw;
+    
+    double ay = a->c.c[2];
+    double by = b->c.c[2];
+    double dy = ay*aw - by*bw;
+    return hypot(dx, dy);
+  }
+    
+double hr2_dist_sqr(hr2_point_t *a, hr2_point_t *b)
+  {
+    double aw = 1.0/a->c.c[0];
+    double bw = 1.0/b->c.c[0];
+    
+    double ax = a->c.c[1];
+    double bx = b->c.c[1];
+    double dx = ax*aw - bx*bw;
+    
+    double ay = a->c.c[2];
+    double by = b->c.c[2];
+    double dy = ay*aw - by*bw;
+    return dx*dx + dy*dy;
+  }
+
+hr2_point_t hr2_point_mix(double pt, hr2_point_t *p, double qt, hr2_point_t *q)
+  { hr2_point_t r;
+    r.c.c[0] = pt * p->c.c[0] + qt * q->c.c[0];
+    r.c.c[1] = pt * p->c.c[1] + qt * q->c.c[1];
+    r.c.c[2] = pt * p->c.c[2] + qt * q->c.c[2];
+    return r;
+  }
+
+void hr2_L_inf_normalize_point(hr2_point_t *p)
+  { double m = r3_L_inf_norm(&(p->c));
+    if (m != 1.0)
+      {	p->c.c[0] /= m;
+	p->c.c[1] /= m;
+	p->c.c[2] /= m;
+      }
+  }
+  
+void hr2_L_inf_normalize_line(hr2_line_t *L)
+  { double m = r3_L_inf_norm(&(L->f));
+    if (m != 1.0)
+      {	L->f.c[0] /= m;
+	L->f.c[1] /= m;
+	L->f.c[2] /= m;
+      }
+  }
 
 r2_t hr2_point_point_dir(hr2_point_t *frm, hr2_point_t *tto)
   {
@@ -357,8 +424,7 @@ hr2_pmap_t hr2_pmap_from_four_points(hr2_point_t *p, hr2_point_t *q, hr2_point_t
       Q.c[2][0] = r->c.c[0]; Q.c[2][1] = r->c.c[1]; Q.c[2][2] = r->c.c[2];
       /* Map {u} by the inverse of {Q}: */
       r3x3_inv(&Q, &Q);
-      w = u->c;
-      r3x3_map_row(&w, &Q, &w);
+      r3x3_map_row(&(u->c), &Q, &w);
     }
     
     /* Make the weights positive, so that {p,q,r} are strictly honored: */
@@ -374,7 +440,21 @@ hr2_pmap_t hr2_pmap_from_four_points(hr2_point_t *p, hr2_point_t *q, hr2_point_t
     r3x3_inv(&(M.dir), &(M.inv));
 
     return M;
+  }
 
+hr2_pmap_t hr2_pmap_from_four_r2_points(r2_t *p, r2_t *q, r2_t *r, r2_t *u)
+  {
+    hr2_point_t hp = hr2_from_r2(p);
+    hr2_point_t hq = hr2_from_r2(q);
+    hr2_point_t hr = hr2_from_r2(r);
+    hr2_point_t hu = hr2_from_r2(u);
+    hr2_pmap_t M = hr2_pmap_from_four_points(&hp, &hq, &hr, &hu);
+    for (int32_t j = 0; j < 3; j++)
+      { M.dir.c[1][j] -= M.dir.c[0][j];  
+        M.dir.c[2][j] -= M.dir.c[0][j];
+        M.inv.c[j][0] += M.inv.c[j][1] + M.inv.c[j][2];
+      }
+    return M;
   }
 
 bool_t hr2_pmap_is_affine(hr2_pmap_t *M)
@@ -489,8 +569,8 @@ double hr2_pmap_diff_sqr(hr2_pmap_t *M, hr2_pmap_t *N)
         double Am = r3x3_norm(A) + 1.0e-200;
         r3x3_t *B = (sense == 0 ? &(N->dir) : &(N->inv));
         double Bm = r3x3_norm(B) + 1.0e-200;
-        for (int32_t i = 0; i < 3; i++)
-          { for (int32_t j = 0; j < 3; j++)
+        for (int32_t i = 0; i < NH; i++)
+          { for (int32_t j = 0; j < NH; j++)
              { double Aij = A->c[i][j]/Am;
                double Bij = B->c[i][j]/Bm;
                double dij = Aij - Bij;
@@ -526,20 +606,19 @@ double hr2_pmap_mismatch_sqr(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[])
 
 double hr2_pmap_deform_sqr(r2_t ph[], hr2_pmap_t *M)
   {
-    int32_t nk = 4;           /* Number of corners of the quadrilateral. */
+    int32_t nk = (1 << NC); /* Number of corners of the quadrilateral. */
     r2_t qh[nk];
     for (int32_t k = 0; k < nk; k++)
       { qh[k] = hr2_pmap_r2_point(&(ph[k]), M); }
     
-    int32_t nd = nk*(nk-1)/2; /* Number of distances to probe. */
-    assert(nd == 6);
+    int32_t nd = 4 + 2; /* Number of distances to probe. */
     double logr[nd];
     int32_t kd = 0;
     for (int32_t ik = 1; ik < nk; ik++)
       { for (int32_t jk = 0; jk < ik; jk++)
           { double dp2 = r2_dist_sqr(&(ph[ik]), &(ph[jk]));
             double dq2 = r2_dist_sqr(&(qh[ik]), &(qh[jk]));
-            assert(kd < nk);
+            assert(kd < nd);
             logr[kd] = log(dq2/dp2)/2;
             kd++;
           }

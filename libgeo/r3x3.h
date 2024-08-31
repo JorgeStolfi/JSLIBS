@@ -1,5 +1,5 @@
 /* r3x3.h --- 3x3 matrices and operations on them */
-/* Last edited on 2023-10-09 08:50:13 by stolfi */
+/* Last edited on 2024-08-30 17:34:07 by stolfi */
 
 #ifndef r3x3_H
 #define r3x3_H
@@ -19,8 +19,8 @@ void r3x3_zero(r3x3_t *M);
 void r3x3_ident(r3x3_t *M);
   /* Stores in {M} the identity matrix. */
 
-void r3x3_transp (r3x3_t *A, r3x3_t *M);
-  /* Sets {M} to the transpose {A^t} of matrix {A} */
+void r3x3_transp(r3x3_t *A, r3x3_t *M);
+  /* Sets {M} to the transpose {A^t} of matrix {A}. */
 
 void r3x3_get_row(r3x3_t *A, int32_t i, r3_t *x);
 void r3x3_set_row(r3x3_t *A, int32_t i, r3_t *x);
@@ -30,56 +30,68 @@ void r3x3_get_col(r3x3_t *A, int32_t j, r3_t *x);
 void r3x3_set_col(r3x3_t *A, int32_t j, r3_t *x);
   /* These two procedures copy column {j} of matrix {A} to and from vector {x}, respectively. */
 
-void r3x3_map_row (r3_t *x, r3x3_t *A, r3_t *r);
-  /* Sets {r} to the product of row vector {x} by matrix {A} */
+void r3x3_map_row(r3_t *x, r3x3_t *A, r3_t *r);
+  /* Sets {r} to the product of row vector {x} by matrix {A}. */
 
-void r3x3_map_col (r3x3_t *A, r3_t *x, r3_t *r);
-  /* Sets {r} to the product of matrix {A} by column vector {x} */
+void r3x3_map_col(r3x3_t *A, r3_t *x, r3_t *r);
+  /* Sets {r} to the product of matrix {A} by column vector {x}. */
   
-void r3x3_add (r3x3_t *A, r3x3_t *B, r3x3_t *M);
-  /* Sets {M = A + B}. */
+void r3x3_add(r3x3_t *A, r3x3_t *B, r3x3_t *M);
+  /* Sets {M} to the matrix sum {A + B}. */
 
-void r3x3_sub (r3x3_t *A, r3x3_t *B, r3x3_t *M);
-  /* Sets {M = A - B}. */
+void r3x3_sub(r3x3_t *A, r3x3_t *B, r3x3_t *M);
+  /* Sets {M} to the matrix difference {A - B}. */
 
-void r3x3_neg (r3x3_t *A, r3x3_t *M);
-  /* Sets {M} to {-A}. */
+void r3x3_neg(r3x3_t *A, r3x3_t *M);
+  /* Sets {M} to the negated matrix {-A}. */
 
-void r3x3_scale (double s, r3x3_t *A, r3x3_t *M);
+void r3x3_scale(double s, r3x3_t *A, r3x3_t *M);
   /* Sets {M} to the product of scalar {s} and matrix {A}. */
 
-void r3x3_mix (double s, r3x3_t *A, double t, r3x3_t *B, r3x3_t *M);
+void r3x3_mix(double s, r3x3_t *A, double t, r3x3_t *B, r3x3_t *M);
   /* Sets {M} to the linear combination {s*A + t*B}. */
 
-void r3x3_mul (r3x3_t *A, r3x3_t *B, r3x3_t *M);
-  /* Sets {M} to the product of matrices {A} and {B} */
+void r3x3_mul(r3x3_t *A, r3x3_t *B, r3x3_t *M);
+  /* Sets {M} to the product of matrices {A} and {B}. */
 
-void r3x3_mul_tr (r3x3_t *A, r3x3_t *B, r3x3_t *M);
+void r3x3_mul_tr(r3x3_t *A, r3x3_t *B, r3x3_t *M);
   /* Computes the matrix product {M = A * B^t}. (In other words, sets
     {M[i,j]} to the dot product of row {i} of {A} and row {j} of {B}.) */
 
-double r3x3_det (r3x3_t *A);
-  /* Returns the determinant of matrix {A} */
+void r3x3_tr_mul(r3x3_t *A, r3x3_t *B, r3x3_t *M);
+  /* Computes the matrix product {M = A^t * B}. (In other words, sets
+    {M[i,j]} to the dot product of column {i} of {A} and column {j} of {B}.) */
 
-void r3x3_adj (r3x3_t *A, r3x3_t *M);
-  /* Sets {M} to the adjoint of matrix {A} */
+double r3x3_det(r3x3_t *A);
+  /* Returns the determinant of matrix {A}. */
 
-void r3x3_inv (r3x3_t *A, r3x3_t *M);
-  /* Sets {M} to the inverse of matrix {A} */
+void r3x3_adj(r3x3_t *A, r3x3_t *M);
+  /* Sets {M} to the adjoint of matrix {A}. */
 
-double r3x3_norm_sqr(r3x3_t* A);
-  /* Squared Frobenius norm of {A}, i.e. sum of squares of elements */
+void r3x3_inv(r3x3_t *A, r3x3_t *M);
+  /* Sets {M} to the inverse of matrix {A}. */
 
-double r3x3_norm(r3x3_t* A);
-  /* Frobenius norm of {A}, i.e. square root of sum of squares of elements */
+double r3x3_norm_sqr(r3x3_t *A);
+  /* Squared Frobenius norm of {A}, i.e. sum of squares of elements. */
+
+double r3x3_norm(r3x3_t *A);
+  /* Frobenius norm of {A}, i.e. square root of sum of squares of elements. */
 
 double r3x3_normalize(r3x3_t *A);
   /* Divides the matrix {A} by its {r3x3_norm}. 
     If that norm is zero, the matrix is filled with {NAN}.
     Returns the norm. */
 
-double r3x3_mod_norm_sqr (r3x3_t *A);
-  /* Returns the square of the Frobenius norm of {A-I} */
+double r3x3_mod_norm_sqr(r3x3_t *A);
+  /* Returns the square of the Frobenius norm of {A-I}. */
+
+double r3x3_L_inf_norm(r3x3_t *A);
+  /* Infinity norm of {A}, i.e. max absolute element value. */
+
+double r3x3_L_inf_normalize(r3x3_t *A);
+  /* Divides the matrix {A} by its {r3x3_L_inf_norm}. 
+    If that norm is zero, the matrix is filled with {NAN}.
+    Returns the norm. */
 
 void r3x3_diff_sqr(r3x3_t *A, r3x3_t *B, r3x3_t *R, double *dabs2P, double *drel2P);
   /* Returns in {*dabs2P} and {*drel2P} (if not NULL)
@@ -94,8 +106,8 @@ void r3x3_diff_sqr(r3x3_t *A, r3x3_t *B, r3x3_t *R, double *dabs2P, double *drel
     where {Ae[s],Be[s],Re[s]} are all corresponding elements of
     {*A,*B,*C}. excluding those where {Re[s]} is zero. */
 
-bool_t r3x3_is_unif_scaling(r3x3_t *A, double s);
-  /* TRUE iff {A} is a diagonal matrix with all diagonal
+bool_t r3x3_is_unif_scaling(r3x3_t *M, double s);
+  /* TRUE iff {M} is a diagonal matrix with all diagonal
     elements equal to {s}. */
 
 void r3x3_from_rows(r3_t *a, r3_t *b, r3_t *c, r3x3_t *M);
@@ -103,21 +115,10 @@ void r3x3_from_rows(r3_t *a, r3_t *b, r3_t *c, r3x3_t *M);
 
 void r3x3_from_cols(r3_t *a, r3_t *b, r3_t *c, r3x3_t *M);
   /* Sets {M} to the matrix whose columns are the vectors {a,b,c}. */
-  
-/* OPERATIONS SPECIFIC TO 3x3 MATRICES */
-
-void r3x3_u_v_rotation(r3_t *u, r3_t *v, r3x3_t *M);
-  /* Sets {M} to a rotation matrix, around some axis through the
-    origin, that takes the unit vector {u} to to the unit vector {v}
-    by the shortest route.
-    
-    If {u} is equal to {v}, then {M} will be the identity matrix.
-    If {u} is opposite to {v}, {M} will be a 180 degree rotation around a
-    random axis through the origin that is orthogonal to both. */
 
 /* I/O */
 
-void r3x3_print (FILE *f, r3x3_t *A);
+void r3x3_print(FILE *f, r3x3_t *A);
   /* Prints matrix {A} to file {f}, with default format. */
 
 void r3x3_gen_print
@@ -131,6 +132,17 @@ void r3x3_gen_print
     by {osep}.  Each row is bounded by {ilp} and {irp}, and elements
     are separated by {isep}. Defaults are provided for any of these
     strings which are NULL. */
+  
+/* OPERATIONS SPECIFIC TO 3x3 MATRICES */
+
+void r3x3_u_v_rotation(r3_t *u, r3_t *v, r3x3_t *M);
+  /* Sets {M} to a rotation matrix, around some axis through the
+    origin, that takes the unit vector {u} to to the unit vector {v}
+    by the shortest route.
+    
+    If {u} is equal to {v}, then {M} will be the identity matrix.
+    If {u} is opposite to {v}, {M} will be a 180 degree rotation around a
+    random axis through the origin that is orthogonal to both. */
 
 #endif
 

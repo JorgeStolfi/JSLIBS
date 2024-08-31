@@ -1,5 +1,5 @@
 /* See r4x4.h. */
-/* Last edited on 2023-10-09 09:02:06 by stolfi */
+/* Last edited on 2024-08-30 17:56:42 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -28,7 +28,7 @@ void r4x4_ident(r4x4_t *M)
         { M->c[i][j] = (i == j ? 1.0 : 0.0); }
   }
 
-void r4x4_transp (r4x4_t *A, r4x4_t *M)
+void r4x4_transp(r4x4_t *A, r4x4_t *M)
   {
     double a, b;
     /* Copy diagonal elements: */
@@ -79,7 +79,7 @@ void r4x4_set_col(r4x4_t *A, int32_t j, r4_t *x)
     A->c[3][j] = x->c[3];
   }
 
-void r4x4_map_row (r4_t *x, r4x4_t *A, r4_t *r)
+void r4x4_map_row(r4_t *x, r4x4_t *A, r4_t *r)
   { r4_t rr;
     int32_t j, k;
     for (j = 0; j < N; j++)
@@ -90,7 +90,7 @@ void r4x4_map_row (r4_t *x, r4x4_t *A, r4_t *r)
     (*r) = rr;
   }
 
-void r4x4_map_col (r4x4_t *A, r4_t *x, r4_t *r)
+void r4x4_map_col(r4x4_t *A, r4_t *x, r4_t *r)
   { r4_t rr;
     int32_t i, k;
     for (i = 0; i < N; i++)
@@ -101,14 +101,32 @@ void r4x4_map_col (r4x4_t *A, r4_t *x, r4_t *r)
     (*r) = rr;
   }
 
-void r4x4_scale (double s, r4x4_t *A, r4x4_t *M)  
+void r4x4_add(r4x4_t *A, r4x4_t *B, r4x4_t *M)
+  { for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
+        { M->c[i][j] = A->c[i][j] + B->c[i][j]; }
+  }
+
+void r4x4_sub(r4x4_t *A, r4x4_t *B, r4x4_t *M)
+  { for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
+        { M->c[i][j] = A->c[i][j] - B->c[i][j]; }
+  }
+
+void r4x4_neg(r4x4_t *A, r4x4_t *M)
+  { for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
+        { M->c[i][j] = - A->c[i][j]; }
+  }
+
+void r4x4_scale(double s, r4x4_t *A, r4x4_t *M)  
   { int32_t i, j;
     for (i = 0; i < N; i++)
       for (j = 0; j < N; j++)
         { M->c[i][j] = s * A->c[i][j]; }
   }
 
-void r4x4_mul (r4x4_t *A, r4x4_t *B, r4x4_t *M)
+void r4x4_mul(r4x4_t *A, r4x4_t *B, r4x4_t *M)
   { r4x4_t RR;
     int32_t i, j, k;
     for (i = 0; i < N; i++)
@@ -120,7 +138,7 @@ void r4x4_mul (r4x4_t *A, r4x4_t *B, r4x4_t *M)
     (*M) = RR;
   }
 
-void r4x4_mul_tr (r4x4_t *A, r4x4_t *B, r4x4_t *M)
+void r4x4_mul_tr(r4x4_t *A, r4x4_t *B, r4x4_t *M)
   {
     r4x4_t RR;
     int32_t i, j, k;
@@ -133,7 +151,7 @@ void r4x4_mul_tr (r4x4_t *A, r4x4_t *B, r4x4_t *M)
     (*M) = RR;
   }
 
-double r4x4_det (r4x4_t *A)
+double r4x4_det(r4x4_t *A)
   { double A00 = A->c[0][0];
     double A01 = A->c[0][1];
     double A02 = A->c[0][2];
@@ -175,7 +193,7 @@ double r4x4_det (r4x4_t *A)
     return d;
   }
 
-void r4x4_adj (r4x4_t *A, r4x4_t *M)
+void r4x4_adj(r4x4_t *A, r4x4_t *M)
   { double A00 = A->c[0][0];
     double A01 = A->c[0][1];
     double A02 = A->c[0][2];
@@ -251,7 +269,7 @@ void r4x4_adj (r4x4_t *A, r4x4_t *M)
     M->c[3][3] =  A012_012;
   }
 
-void r4x4_inv (r4x4_t *A, r4x4_t *M)
+void r4x4_inv(r4x4_t *A, r4x4_t *M)
   { r4x4_t RR;
     int32_t i, j;
     r4x4_adj(A, &RR);
@@ -265,7 +283,7 @@ void r4x4_inv (r4x4_t *A, r4x4_t *M)
         { M->c[i][j] = RR.c[i][j]/d; }
   }
 
-double r4x4_norm_sqr(r4x4_t* A)
+double r4x4_norm_sqr(r4x4_t *A)
   {
     double A00 = A->c[0][0];
     double A01 = A->c[0][1];
@@ -294,7 +312,7 @@ double r4x4_norm_sqr(r4x4_t* A)
       A30*A30 + A31*A31 + A32*A32 + A33*A33; 
   }
 
-double r4x4_norm(r4x4_t* A)
+double r4x4_norm(r4x4_t *A)
   {
     double A00 = A->c[0][0];
     double A01 = A->c[0][1];
@@ -342,7 +360,7 @@ double r4x4_normalize(r4x4_t *A)
     return w;
   }
 
-double r4x4_mod_norm_sqr(r4x4_t* A)
+double r4x4_mod_norm_sqr(r4x4_t *A)
   {
     double D00 = A->c[0][0] - 1;
     double D01 = A->c[0][1];
@@ -400,7 +418,7 @@ void r4x4_from_cols(r4_t *a, r4_t *b, r4_t *c, r4_t *d, r4x4_t *M)
       }
   }
 
-void r4x4_print (FILE *f, r4x4_t *A)
+void r4x4_print(FILE *f, r4x4_t *A)
   { r4x4_gen_print(f, A, NULL, NULL, NULL, NULL, NULL, NULL, NULL); }
 
 void r4x4_gen_print

@@ -1,5 +1,5 @@
 /* See r2x2.h. */
-/* Last edited on 2023-10-09 09:01:12 by stolfi */
+/* Last edited on 2024-08-30 04:23:16 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -29,7 +29,7 @@ void r2x2_ident(r2x2_t *M)
     M->c[1][1] = 1.0;
   }
     
-void r2x2_transp (r2x2_t *A, r2x2_t *M)
+void r2x2_transp(r2x2_t *A, r2x2_t *M)
   {
     double a, b;
     /* Copy diagonal elements: */
@@ -65,7 +65,7 @@ void r2x2_set_col(r2x2_t *A, int32_t j, r2_t *x)
     A->c[1][j] = x->c[1];
   }
 
-void r2x2_map_row (r2_t *x, r2x2_t *A, r2_t *r)
+void r2x2_map_row(r2_t *x, r2x2_t *A, r2_t *r)
   { r2_t rr;
     rr.c[0] = x->c[0] * A->c[0][0] + x->c[1] * A->c[1][0];
     rr.c[1] = x->c[0] * A->c[0][1] + x->c[1] * A->c[1][1];
@@ -74,7 +74,7 @@ void r2x2_map_row (r2_t *x, r2x2_t *A, r2_t *r)
     r->c[1] = rr.c[1];
   }
 
-void r2x2_map_col (r2x2_t *A, r2_t *x, r2_t *r)
+void r2x2_map_col(r2x2_t *A, r2_t *x, r2_t *r)
   { r2_t rr;
     rr.c[0] = A->c[0][0] * x->c[0] + A->c[0][1] * x->c[1];
     rr.c[1] = A->c[1][0] * x->c[0] + A->c[1][1] * x->c[1];
@@ -83,42 +83,42 @@ void r2x2_map_col (r2x2_t *A, r2_t *x, r2_t *r)
     r->c[1] = rr.c[1];
   }
   
-void r2x2_add (r2x2_t *A, r2x2_t *B, r2x2_t *M)
+void r2x2_add(r2x2_t *A, r2x2_t *B, r2x2_t *M)
   { M->c[0][0] = A->c[0][0] + B->c[0][0];
     M->c[0][1] = A->c[0][1] + B->c[0][1];
     M->c[1][0] = A->c[1][0] + B->c[1][0];
     M->c[1][1] = A->c[1][1] + B->c[1][1];
   }
 
-void r2x2_sub (r2x2_t *A, r2x2_t *B, r2x2_t *M)
+void r2x2_sub(r2x2_t *A, r2x2_t *B, r2x2_t *M)
   { M->c[0][0] = A->c[0][0] - B->c[0][0];
     M->c[0][1] = A->c[0][1] - B->c[0][1];
     M->c[1][0] = A->c[1][0] - B->c[1][0];
     M->c[1][1] = A->c[1][1] - B->c[1][1];
   }
 
-void r2x2_neg (r2x2_t *A, r2x2_t *M)
+void r2x2_neg(r2x2_t *A, r2x2_t *M)
   { M->c[0][0] = - A->c[0][0];
     M->c[0][1] = - A->c[0][1];
     M->c[1][0] = - A->c[1][0];
     M->c[1][1] = - A->c[1][1];
   }
 
-void r2x2_scale (double s, r2x2_t *A, r2x2_t *M)  
+void r2x2_scale(double s, r2x2_t *A, r2x2_t *M)  
   { M->c[0][0] = s * A->c[0][0];
     M->c[0][1] = s * A->c[0][1];
     M->c[1][0] = s * A->c[1][0];
     M->c[1][1] = s * A->c[1][1];
   }
 
-void r2x2_mix (double s, r2x2_t *A, double t, r2x2_t *B, r2x2_t *M)
+void r2x2_mix(double s, r2x2_t *A, double t, r2x2_t *B, r2x2_t *M)
   { M->c[0][0] = s * A->c[0][0] + t * B->c[0][0];
     M->c[0][1] = s * A->c[0][1] + t * B->c[0][1];
     M->c[1][0] = s * A->c[1][0] + t * B->c[1][0];
     M->c[1][1] = s * A->c[1][1] + t * B->c[1][1];
   }
 
-void r2x2_mul (r2x2_t *A, r2x2_t *B, r2x2_t *M)
+void r2x2_mul(r2x2_t *A, r2x2_t *B, r2x2_t *M)
   { r2x2_t RR;
     RR.c[0][0] = A->c[0][0]*B->c[0][0] + A->c[0][1]*B->c[1][0];
     RR.c[0][1] = A->c[0][0]*B->c[0][1] + A->c[0][1]*B->c[1][1];
@@ -127,7 +127,7 @@ void r2x2_mul (r2x2_t *A, r2x2_t *B, r2x2_t *M)
     (*M) = RR;
   }
 
-void r2x2_mul_tr (r2x2_t *A, r2x2_t *B, r2x2_t *M)
+void r2x2_mul_tr(r2x2_t *A, r2x2_t *B, r2x2_t *M)
   {
     r2x2_t RR;
     RR.c[0][0] = A->c[0][0]*B->c[0][0] + A->c[0][1]*B->c[0][1];
@@ -137,7 +137,7 @@ void r2x2_mul_tr (r2x2_t *A, r2x2_t *B, r2x2_t *M)
     (*M) = RR;
   }
 
-void r2x2_tr_mul (r2x2_t *A, r2x2_t *B, r2x2_t *M)
+void r2x2_tr_mul(r2x2_t *A, r2x2_t *B, r2x2_t *M)
   {
     r2x2_t RR;
     RR.c[0][0] = A->c[0][0]*B->c[0][0] + A->c[1][0]*B->c[1][0];
@@ -147,10 +147,10 @@ void r2x2_tr_mul (r2x2_t *A, r2x2_t *B, r2x2_t *M)
     (*M) = RR;
   }
 
-double r2x2_det (r2x2_t *A)
+double r2x2_det(r2x2_t *A)
   { return A->c[0][0] * A->c[1][1] - A->c[1][0] * A->c[0][1]; }
 
-void r2x2_adj (r2x2_t *A, r2x2_t *M)
+void r2x2_adj(r2x2_t *A, r2x2_t *M)
   { r2x2_t RR;
 
     RR.c[0][0] =   A->c[1][1];
@@ -161,7 +161,7 @@ void r2x2_adj (r2x2_t *A, r2x2_t *M)
     (*M) = RR;
   }
 
-void r2x2_inv (r2x2_t *A, r2x2_t *M)
+void r2x2_inv(r2x2_t *A, r2x2_t *M)
   { double d = A->c[0][0] * A->c[1][1] - A->c[1][0] * A->c[0][1];
     r2x2_t RR;
 
@@ -193,7 +193,7 @@ void r2x2_sqrt(r2x2_t *A, r2x2_t *M)
     M->c[1][1] = (A11 + sd)/R;
  }
 
-double r2x2_norm_sqr(r2x2_t* A)
+double r2x2_norm_sqr(r2x2_t *A)
   {
     double A00 = A->c[0][0];
     double A01 = A->c[0][1];
@@ -204,7 +204,7 @@ double r2x2_norm_sqr(r2x2_t* A)
     return A00*A00 + A01*A01 + A10*A10 + A11*A11; 
   }
 
-double r2x2_norm(r2x2_t* A)
+double r2x2_norm(r2x2_t *A)
   {
     double A00 = A->c[0][0];
     double A01 = A->c[0][1];
@@ -234,7 +234,7 @@ double r2x2_normalize(r2x2_t *A)
     return w;
   }
 
-double r2x2_mod_norm_sqr(r2x2_t* A)
+double r2x2_mod_norm_sqr(r2x2_t *A)
   {
     double D00 = A->c[0][0] - 1;
     double D01 = A->c[0][1];
@@ -243,6 +243,51 @@ double r2x2_mod_norm_sqr(r2x2_t* A)
     double D11 = A->c[1][1] - 1;
 
     return D00*D00 + D01*D01 + D10*D10 + D11*D11; 
+  }
+
+double r2x2_L_inf_norm(r2x2_t *A)
+  {
+    double mv = 0.0;
+    mv = fmax(mv, fabs(A->c[0][0]));
+    mv = fmax(mv, fabs(A->c[0][1]));
+    
+    mv = fmax(mv, fabs(A->c[1][0]));
+    mv = fmax(mv, fabs(A->c[1][1]));
+    
+    return mv;
+  }
+
+double r2x2_L_inf_normalize(r2x2_t *A)
+  {
+    double mv = r2x2_L_inf_norm(A);
+    A->c[0][0] /= mv;
+    A->c[0][1] /= mv;
+              
+    A->c[1][0] /= mv;
+    A->c[1][1] /= mv;
+    
+    return mv;
+  }
+
+void r2x2_diff_sqr(r2x2_t *A, r2x2_t *B, r2x2_t *R, double *dabs2P, double *drel2P)
+  {
+    double dabs2 = 0.0;
+    double drel2 = 0.0;
+    for (int32_t i = 0; i < N; i++) 
+      { for (int32_t j = 0; j < N; j++) 
+          { double *Rp = &(R->c[i][j]);
+            if ((*Rp) != 0.0)
+              { double Re = (*Rp);
+                double *Ap = &(A->c[i][j]); double Ae = (*Ap);
+                double *Bp = &(B->c[i][j]); double Be = (*Bp);
+                double d = Ae - Be;
+                dabs2 += d*d;
+                drel2 += (d/Re)*(d/Re);
+              }
+          }
+      }
+    if (dabs2P != NULL) { (*dabs2P) = dabs2; }
+    if (drel2P != NULL) { (*drel2P) = drel2; }
   }
 
 void r2x2_from_rows(r2_t *a, r2_t *b, r2x2_t *M)
@@ -368,14 +413,13 @@ void r2x2_from_point_pairs(r2_vec_t *p1, r2_t *bar1, r2_vec_t *p2, r2_t *bar2, r
     r2x2_t Z; r2x2_inv(&A, &Z);
     r2x2_mul(&Z, &B, M);
 
-
     if (debug) 
       { fprintf(stderr, "  linear matrix:\n");
         r2x2_gen_print(stderr, M, "%13.6e", "", "\n", "\n", "    [ ", " ", " ]");
       }
   }
 
-void r2x2_print (FILE *f, r2x2_t *A)
+void r2x2_print(FILE *f, r2x2_t *A)
   { r2x2_gen_print(f, A, NULL, NULL, NULL, NULL, NULL, NULL, NULL); }
 
 void r2x2_gen_print 

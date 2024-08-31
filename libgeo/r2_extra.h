@@ -1,5 +1,5 @@
 /* r2_extra.h --- additional operations on points and vectors of {R^2} */
-/* Last edited on 2023-08-27 14:25:40 by stolfi */
+/* Last edited on 2024-08-30 18:43:46 by stolfi */
 
 #ifndef r2_extra_H
 #define r2_extra_H
@@ -151,7 +151,7 @@ void r2_clip_seg_to_unit_disk(r2_t *a, r2_t *b, double *ta, double *tb);
 
 /* DEBUGGING AIDS */
 
-void r2_debug_point_jac(char *label, r2_t *p, r2x2_t *J, char *tail);
+void r2_debug_point_jacobian(char *label, r2_t *p, r2x2_t *J, char *tail);
   /* Prints the point {(x/w,y/w)} to {stderr}, tagged with the
     string {label} and terminated by the string {tail}. If the
     Jacobian {J} is not NULL, prints it too. */

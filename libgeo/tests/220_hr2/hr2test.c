@@ -1,5 +1,5 @@
 /* hr2test --- test program for hr2.h  */
-/* Last edited on 2023-10-09 19:39:06 by stolfi */
+/* Last edited on 2024-08-30 11:18:49 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -49,6 +49,7 @@ void test_hr2_line_normal(bool_t verbose);
 void test_hr2_pmap_congruence_from_point_and_dir(bool_t verbose, bool_t flip);
 void test_hr2_pmap_similarity_from_two_points(bool_t verbose, bool_t flip);
 void test_hr2_pmap_from_four_points(bool_t verbose);
+void test_hr2_pmap_from_four_r2_points(bool_t verbose);
 void test_hr2_pmap_gen_print(bool_t verbose);
 void test_hr2_pmap_identity(bool_t verbose);
 void test_hr2_pmap_inv(bool_t verbose);
@@ -70,7 +71,6 @@ void test_hr2_pmap_rotation(bool_t verbose);
 void test_hr2_pmap_rotation_and_scaling(bool_t verbose);
 void test_hr2_pmap_scaling(bool_t verbose);
 void test_hr2_pmap_translation(bool_t verbose);
-
 
 int32_t main (int32_t argc, char **argv)
   {
@@ -130,6 +130,7 @@ void test_hr2_pmap(bool_t verbose)
     test_hr2_pmap_inv_compose(verbose);
 
     test_hr2_pmap_from_four_points(verbose);
+    test_hr2_pmap_from_four_r2_points(verbose);
 
     test_hr2_pmap_diff_sqr(verbose);
     test_hr2_pmap_deform_sqr(verbose);
@@ -167,12 +168,13 @@ void test_hr2_pmap_aff(bool_t verbose)
 void test_hr2_pmap_diff_sqr(bool_t verbose)
   { if (verbose) { fprintf(stderr, "--- hr2_pmap_diff_sqr ---\n"); }
     hr2_pmap_t M, N;
-    /* Throw two maps and normalizes their matrices: */
+    /* Throw two maps and normalize their matrices: */
     for (int32_t k = 0; k < 2; k++)
       { N = M;
         h2tt_throw_pmap(&M);
         r3x3_normalize(&(M.dir));
         r3x3_normalize(&(M.inv));
+        h2tt_check_pmap("M (normalized)", &M, 1.0e-8, "{r3x3_normalize} failed");
       }
     /* Compute exepected diff sqr {d2_exp}: */
     double d2_exp = 0;
@@ -195,7 +197,7 @@ void test_hr2_pmap_diff_sqr(bool_t verbose)
       }
     /* Compute {hr2_pmap_diff_sqr} and compare: */
     double d2_cmp = hr2_pmap_diff_sqr(&M, &N);
-    h2tt_check_eps(d2_cmp, d2_exp, 1.0e-13, "hr2_pmap_diff_sqr failed");
+    h2tt_check_eps(d2_cmp, d2_exp, 1.0e-13, "{hr2_pmap_diff_sqr} failed");
   }
 
 void test_hr2_pmap_mismatch_sqr(bool_t verbose)
@@ -219,6 +221,7 @@ void test_hr2_pmap_mismatch_sqr(bool_t verbose)
     /* Compute the expected mismatch {m2_exp}: */
     double sum2 = 0.0;
     hr2_pmap_t N = hr2_pmap_inv(&M);
+    h2tt_check_pmap("N", &N, 1.0e-8, "{hr2_pmap_inv} failed");
     for (int32_t ip = 0; ip < np; ip++)
       { r2_t *p1k = &(p1[ip]);
         r2_t *p2k = &(p2[ip]);
@@ -248,12 +251,10 @@ void test_hr2_pmap_aff_discr_sqr(bool_t verbose)
     bool_t debug = FALSE;
 
     hr2_pmap_t M, N;
-     h2tt_throw_aff_map(&M);
-     h2tt_throw_aff_map(&N);
+    h2tt_throw_aff_map(&M); h2tt_throw_aff_map(&N);
     if (debug)
-      { h2tt_print_pmap("M", &M);
-        h2tt_print_pmap("N", &N);
-      }
+      { h2tt_print_pmap("M", &M); h2tt_print_pmap("N", &N); }
+    
     double mis2 = hr2_pmap_aff_discr_sqr(&M, &N);
     /* The integrand |(M - N)(u(t))|^2 is a sinusoidal function with freqs 0,1,2. */
     /* Can be integrated numerically with 5 or more samples. */
@@ -268,7 +269,7 @@ void test_hr2_pmap_aff_discr_sqr(bool_t verbose)
         sum_d2 += d2;
       }
     double cis2 = sum_d2/nang;
-    h2tt_check_num_eps("mis", mis2, cis2, 0.0000001, "hr2_pmap_aff_discr_sqr failed");
+    h2tt_check_num_eps("mis", mis2, cis2, 0.0000001, "{hr2_pmap_aff_discr_sqr} failed");
   }
 
 void test_hr2_pmap_deform_sqr(bool_t verbose)
@@ -467,16 +468,18 @@ void test_hr2_pmap_aff_from_mat_and_disp(bool_t verbose)
         mat.c[i][1] = s.c[1];
       }
     hr2_pmap_t A = hr2_pmap_aff_from_mat_and_disp(&mat, &disp);
+    h2tt_check_pmap("A", &A, 1.0e-8, "{hr2_pmap_aff_from_mat_and_disp} failed"); 
+    
     for (int32_t k = 0; k < 5; k++)
       { /* Should take the origin to {disp}* */
         r2_t o = (r2_t){{ 0.0, 0.0 }};
-        h2tt_check_pmap_r2_point("o", &o, &A, FALSE, &disp, "hr2_pmap_aff_from_mat_disp failed");
+        h2tt_check_pmap_r2_point("o", &o, &A, FALSE, &disp, "{hr2_pmap_aff_from_mat_disp} failed");
         /* Test with a few other points: */
         for (int32_t kp = 0; kp < 3; kp++)
           { r2_t p; r2_throw_cube(&p);
             r2_t q; r2x2_map_row(&p, &mat, &q);
             r2_add(&disp, &q, &q);
-            h2tt_check_pmap_r2_point("p", &p, &A, FALSE, &q, "hr2_pmap_aff_from_mat_disp failed");
+            h2tt_check_pmap_r2_point("p", &p, &A, FALSE, &q, "{hr2_pmap_aff_from_mat_disp} failed");
           }
       }
   }
@@ -489,6 +492,7 @@ void test_hr2_pmap_scaling(bool_t verbose)
     do { r2_throw_cube(&scale); } while ((scale.c[0] == 0) || (scale.c[1] == 0));
 
     hr2_pmap_t A = hr2_pmap_scaling(&scale);
+    h2tt_check_pmap("A", &A, 1.0e-8, "{hr2_pmap_scaling} failed");
 
     /* Check whether the map works: */
     r2_t oc = (r2_t){{ 0.0, 0.0 }};
@@ -500,10 +504,10 @@ void test_hr2_pmap_scaling(bool_t verbose)
     r2_t qcM = (r2_t){{ 0.0, scale.c[1] }};
     r2_t ucM = (r2_t){{ scale.c[0], scale.c[1] }};
 
-    h2tt_check_pmap_r2_point("o", &oc, &A, FALSE, &oc, "hr2_pmap_scaling failed");
-    h2tt_check_pmap_r2_point("p", &pc, &A, FALSE, &pcM, "hr2_pmap_scaling failed");
-    h2tt_check_pmap_r2_point("q", &qc, &A, FALSE, &qcM, "hr2_pmap_scaling failed");
-    h2tt_check_pmap_r2_point("u", &uc, &A, FALSE, &ucM, "hr2_pmap_scaling failed");
+    h2tt_check_pmap_r2_point("o", &oc, &A, FALSE, &oc,  "{hr2_pmap_scaling} failed");
+    h2tt_check_pmap_r2_point("p", &pc, &A, FALSE, &pcM, "{hr2_pmap_scaling} failed");
+    h2tt_check_pmap_r2_point("q", &qc, &A, FALSE, &qcM, "{hr2_pmap_scaling} failed");
+    h2tt_check_pmap_r2_point("u", &uc, &A, FALSE, &ucM, "{hr2_pmap_scaling} failed");
   }
 
 void test_hr2_pmap_congruence_from_point_and_dir(bool_t verbose, bool_t flip)
@@ -537,12 +541,13 @@ void test_hr2_pmap_congruence_from_point_and_dir(bool_t verbose, bool_t flip)
     r2_t rcM; r2_add(&pcM, &vdM, &rcM);
 
     hr2_pmap_t A = hr2_pmap_congruence_from_point_and_dir(&ocM, &udM, flip);
+    h2tt_check_pmap("A", &A, 1.0e-8, "{hr2_pmap_congruence_from_point_and_dir} failed");
 
     /* Check whether the map works: */
-    h2tt_check_pmap_r2_point("o", &oc, &A, FALSE, &ocM, "hr2_pmap_congruence_from_point_and_dir failed");
-    h2tt_check_pmap_r2_point("p", &pc, &A, FALSE, &pcM, "hr2_pmap_congruence_from_point_and_dir failed");
-    h2tt_check_pmap_r2_point("q", &qc, &A, FALSE, &qcM, "hr2_pmap_congruence_from_point_and_dir failed");
-    h2tt_check_pmap_r2_point("r", &rc, &A, FALSE, &rcM, "hr2_pmap_congruence_from_point_and_dir failed");
+    h2tt_check_pmap_r2_point("o", &oc, &A, FALSE, &ocM, "{hr2_pmap_congruence_from_point_and_dir} failed");
+    h2tt_check_pmap_r2_point("p", &pc, &A, FALSE, &pcM, "{hr2_pmap_congruence_from_point_and_dir} failed");
+    h2tt_check_pmap_r2_point("q", &qc, &A, FALSE, &qcM, "{hr2_pmap_congruence_from_point_and_dir} failed");
+    h2tt_check_pmap_r2_point("r", &rc, &A, FALSE, &rcM, "{hr2_pmap_congruence_from_point_and_dir} failed");
   }
 
 void test_hr2_pmap_similarity_from_two_points(bool_t verbose, bool_t flip)
@@ -577,12 +582,13 @@ void test_hr2_pmap_similarity_from_two_points(bool_t verbose, bool_t flip)
     r2_t rcM; r2_add(&pcM, &vdM, &rcM);
 
     hr2_pmap_t A = hr2_pmap_similarity_from_two_points(&ocM, &pcM, flip);
+    h2tt_check_pmap("A", &A, 1.0e-8, "{hr2_pmap_similarity_from_two_points} failed");
 
     /* Check whether the map works: */
-    h2tt_check_pmap_r2_point("o", &oc, &A, FALSE, &ocM, "hr2_pmap_similarity_from_two_points failed");
-    h2tt_check_pmap_r2_point("p", &pc, &A, FALSE, &pcM, "hr2_pmap_similarity_from_two_points failed");
-    h2tt_check_pmap_r2_point("q", &qc, &A, FALSE, &qcM, "hr2_pmap_similarity_from_two_points failed");
-    h2tt_check_pmap_r2_point("r", &rc, &A, FALSE, &rcM, "hr2_pmap_similarity_from_two_points failed");
+    h2tt_check_pmap_r2_point("o", &oc, &A, FALSE, &ocM, "{hr2_pmap_similarity_from_two_points} failed");
+    h2tt_check_pmap_r2_point("p", &pc, &A, FALSE, &pcM, "{hr2_pmap_similarity_from_two_points} failed");
+    h2tt_check_pmap_r2_point("q", &qc, &A, FALSE, &qcM, "{hr2_pmap_similarity_from_two_points} failed");
+    h2tt_check_pmap_r2_point("r", &rc, &A, FALSE, &rcM, "{hr2_pmap_similarity_from_two_points} failed");
   }
 
 void test_hr2_pmap_from_four_points(bool_t verbose)
@@ -593,66 +599,167 @@ void test_hr2_pmap_from_four_points(bool_t verbose)
 
     auto void print_pair(hr2_point_t *p, hr2_point_t *pM);
 
-    hr2_point_t p = (hr2_point_t){{{ 1.0, 0.0, 0.0 }}};
-    hr2_point_t q = (hr2_point_t){{{ 0.0, 1.0, 0.0 }}};
-    hr2_point_t r = (hr2_point_t){{{ 0.0, 0.0, 1.0 }}};
-    hr2_point_t u;
+    /* Source points: */
+    hr2_point_t p[4];
+    p[0] = (hr2_point_t){{{ 1.0, 0.0, 0.0 }}};
+    p[1] = (hr2_point_t){{{ 0.0, 1.0, 0.0 }}};
+    p[2] = (hr2_point_t){{{ 0.0, 0.0, 1.0 }}};
+    /* Will set {p[3]} later. */
 
     for (int32_t kt = 0; kt < 2*(1 << NH); kt++)
-      { hr2_point_t pM_exp, qM_exp, rM_exp, uM_exp;
-        u = (hr2_point_t){{{ 1.0, 1.0, 1.0 }}};
-        if (kt < (1 << NH))
-          { if (kt & 1) { u.c.c[0] = -u.c.c[0]; }
+      { if (debug) { fprintf(stderr, "  --- trial %d ---\n", kt); }
+        bool_t ident = (kt < (1 << NH));  /* Try to get the identity map: */
+        hr2_point_t pM_exp[4];
+        if (ident)
+          { /* Try all choices of {p[3] = [±1,±1,±1]} */
+            /* and set {pM_exp[0..4]} so that the map is the identity: */
+            hr2_point_t u = (hr2_point_t){{{ 1.0, 1.0, 1.0 }}};
+            if (kt & 1) { u.c.c[0] = -u.c.c[0]; }
             if (kt & 2) { u.c.c[1] = -u.c.c[1]; }
             if (kt & 4) { u.c.c[2] = -u.c.c[2]; }
-            pM_exp = p; qM_exp = q; rM_exp = r; uM_exp = u;
+            p[3] = u;
+            for (int32_t kp = 0; kp < 4; kp++) { pM_exp[kp] = p[kp]; }
           }
         else
-          { r3_throw_cube(&(pM_exp.c));
-            r3_throw_cube(&(qM_exp.c));
-            r3_throw_cube(&(rM_exp.c));
-            r3_throw_cube(&(uM_exp.c));
+          { /* Fix {p[3] = [1,1,1]} and throw {pM_exp} random: */
+            p[3] = (hr2_point_t){{{ 1.0, 1.0, 1.0 }}};
+            for (int32_t kp = 0; kp < 4; kp++) { r3_throw_cube(&(pM_exp[kp].c)); }
           }
 
-        hr2_pmap_t M = hr2_pmap_from_four_points(&pM_exp, &qM_exp, &rM_exp, &uM_exp);
+        hr2_pmap_t M = hr2_pmap_from_four_points(&(pM_exp[0]), &(pM_exp[1]), &(pM_exp[2]), &(pM_exp[3]));
+        h2tt_check_pmap("M", &M, 1.0e-8, "{hr2_pmap_from_four_points} failed");
+        
+        if (debug)
+          { hr2_pmap_gen_print (stderr, &M, "%+10.5f", "  map:\n", "    ", "  ", "\n", "[ ", " ", " ]", "\n"); }
 
-        if (kt >= (1 << NH))
-          { /* Choose {u = [±1,±1,±1]} based on inverse map of {uM_exp}: */
-            u = hr2_pmap_inv_point(&uM_exp, &M);
+        if (! ident)
+          { /* Set {p[3] = [±1,±1,±1]} based on inverse map of {pM_exp[3]}: */
+            hr2_point_t u = hr2_pmap_inv_point(&(pM_exp[3]), &M);
             for (int32_t i = 0; i < NH; i++)
-              { if (fabs(u.c.c[i]) < 1.0e-8)
-                  { u.c.c[i] = 0.0; }
-                else if (fabs(fabs(u.c.c[i]) - 1) < 1.0e-8)
+              { if (fabs(fabs(u.c.c[i]) - 1) < 1.0e-8)
                   { u.c.c[i] = (u.c.c[i] > 0 ? +1 : -1); }
                 else
                   { fprintf(stderr, "** bad u[%d] = %+14.11f\n", i, u.c.c[i]); }
               }
+            p[3] = u;
           }
 
         if (debug)
-          { fprintf(stderr, "  kt = %d goal:\n", kt);
-            print_pair(&p, &pM_exp);
-            print_pair(&q, &qM_exp);
-            print_pair(&r, &rM_exp);
-            print_pair(&u, &uM_exp);
+          { fprintf(stderr, "  trial kt = %d goal:\n", kt);
+            for (int32_t kp = 0; kp < 4; kp++) 
+              { print_pair(&(p[kp]), &(pM_exp[kp])); }
             fprintf(stderr, "  actual:\n");
-            hr2_point_t pM_cmp = hr2_pmap_point(&p, &M); print_pair(&p, &pM_cmp);
-            hr2_point_t qM_cmp = hr2_pmap_point(&q, &M); print_pair(&q, &qM_cmp);
-            hr2_point_t rM_cmp = hr2_pmap_point(&r, &M); print_pair(&r, &rM_cmp);
-            hr2_point_t uM_cmp = hr2_pmap_point(&u, &M); print_pair(&u, &uM_cmp);
+            for (int32_t kp = 0; kp < 4; kp++) 
+              { hr2_point_t pM_cmp = hr2_pmap_point(&(p[kp]), &M); 
+                print_pair(&(p[kp]), &pM_cmp);
+              }
+            fprintf(stderr, "\n");
           }
 
         /* Check whether the map works: */
-        h2tt_check_pmap_point("p", &p, FALSE, &M, FALSE, &pM_exp, "hr2_pmap_from_four_points failed");
-        h2tt_check_pmap_point("q", &q, FALSE, &M, FALSE, &qM_exp, "hr2_pmap_from_four_points failed");
-        h2tt_check_pmap_point("r", &r, FALSE, &M, FALSE, &rM_exp, "hr2_pmap_from_four_points failed");
-        h2tt_check_pmap_point("u", &u, FALSE, &M, FALSE, &uM_exp, "hr2_pmap_from_four_points failed");
+        for (int32_t kp = 0; kp < 4; kp++) 
+          { char *lab = (char*[4]){ "p[0]", "p[1]", "p[2]", "p[3]" }[kp];
+            h2tt_check_pmap_point(lab, &(p[kp]), FALSE, FALSE, &M, FALSE, &(pM_exp[kp]), "{hr2_pmap_from_four_points} failed");
+          }
       }
     return;
 
     void print_pair(hr2_point_t *p, hr2_point_t *pM)
-      { r3_gen_print(stderr, &(p->c), "%+4.1f", "    [ ", " ", " ]");
+      { r3_gen_print(stderr, &(p->c), "%+6.3f", "    [ ", " ", " ]");
         r3_gen_print(stderr, &(pM->c), "%+14.10f", " -> [ ", " ", " ]\n");
+      }
+  }
+
+void test_hr2_pmap_from_four_r2_points(bool_t verbose)
+  {
+    if (verbose) { fprintf(stderr, "--- hr2_pmap_from_four_r2_points ---\n"); }
+
+    bool_t debug = FALSE;
+
+    auto void print_pair(r2_t *p, r2_t *pM);
+
+    r2_t p[4];
+    p[0] = (r2_t){{ 0.0, 0.0 }};
+    p[1] = (r2_t){{ 1.0, 0.0 }};
+    p[2] = (r2_t){{ 0.0, 1.0 }};
+    /* Will set {p[3]} later. */
+
+    for (int32_t kt = 0; kt < 8; kt++)
+      { if (debug) { fprintf(stderr, "  --- trial %d ---\n", kt); }
+            
+        bool_t ident = (kt < 4);  /* Try to get the identity map: */
+        r2_t pM_exp[4];
+        if (ident)
+          { /* Try all choices {p[3]} {(+1,+1)}, {(-1,+1)}, {(+1,-1)}, or {(1/3,1/3)}, */
+            /* and set {pM_exp[0..3] = p[0..3]} so that the map is the identity: */
+            if (kt == 0)
+              { p[3] = (r2_t){{ +1.0, +1.0 }}; }
+            else if (kt == 1)
+              { p[3] = (r2_t){{ -1.0, +1.0 }}; }
+            else if (kt == 2)
+              { p[3] = (r2_t){{ +1.0, -1.0 }}; }
+            else if (kt == 3)
+              { p[3] = (r2_t){{ +1/3.0, +1/3.0 }}; }
+            for (int32_t kp = 0; kp < 4; kp++) { pM_exp[kp] = p[kp]; }
+          }
+        else
+          { /* Fix {p[3] = (1,1)} and throw {pM_exp} random: */
+            p[3] = (r2_t){{ 1.0, 1.0 }};
+            for (int32_t kp = 0; kp < 4; kp++) { r2_throw_cube(&(pM_exp[kp])); }
+          }
+
+        hr2_pmap_t M = hr2_pmap_from_four_r2_points(&(pM_exp[0]), &(pM_exp[1]), &(pM_exp[2]), &(pM_exp[3]));
+        h2tt_check_pmap("M", &M, 1.0e-8, "{hr2_pmap_from_four_r2_points} failed");
+        
+        if (debug)
+          { hr2_pmap_gen_print (stderr, &M, "%+10.5f", "  map:\n", "    ", "  ", "\n", "[ ", " ", " ]", "\n"); }
+
+        if (! ident)
+          { /* Set {p[3]} to {(+1,+1)}, {(-1,+1)}, {(+1,-1)}, or {(1/3,1/3)} */
+            /* based on inverse map of {pM_exp[3]}: */
+            r2_t u = hr2_pmap_inv_r2_point(&(pM_exp[3]), &M);
+            double tw = 1.0 - u.c[0] - u.c[1];
+            double tx = u.c[0];
+            double ty = u.c[1];
+            if (debug)
+              { r2_gen_print(stderr, &u, "%+20.16f", "  u = ( ", " ", " )\n");
+                fprintf(stderr, "  t = [ %+14.11f %+14.11f %+14.11f ]\n", tw, tx, ty);
+              }
+            if (((tw > 0) && (tx > 0) && (ty > 0)) || ((tw < 0) && (tx < 0) && (ty < 0)))
+              { p[3] = (r2_t){{ +1/3.0, +1/3.0 }}; }
+            else if (tx*ty > 0)
+              { p[3] = (r2_t){{ +1.0, +1.0 }}; }
+            else if (tw*tx > 0)
+              { p[3] = (r2_t){{ +1.0, -1.0 }}; }
+            else if (tw*ty > 0)
+              { p[3] = (r2_t){{ -1.0, +1.0 }}; }
+            else 
+              { fprintf(stderr, "** bad u\n"); }
+          }
+
+        if (debug)
+          { fprintf(stderr, "  goal:\n");
+            for (int32_t kp = 0; kp < 4; kp++) 
+              { print_pair(&(p[kp]), &(pM_exp[kp])); }
+            fprintf(stderr, "  actual:\n");
+            for (int32_t kp = 0; kp < 4; kp++) 
+              { r2_t pM_cmp = hr2_pmap_r2_point(&(p[kp]), &M);
+                print_pair(&(p[kp]), &(pM_cmp));
+              }
+            fprintf(stderr, "\n");
+          }
+
+        /* Check whether the map works: */
+        for (int32_t kp = 0; kp < 4; kp++) 
+          { char *lab = (char*[4]){ "p[0]", "p[1]", "p[2]", "p[3]" }[kp];
+            h2tt_check_pmap_r2_point(lab, &(p[kp]), &M, FALSE, &(pM_exp[kp]), "{hr2_pmap_from_four_r2_points} failed");
+          }
+      }
+    return;
+
+    void print_pair(r2_t *p, r2_t *pM)
+      { r2_gen_print(stderr, p, "%+7.4f", "    ( ", " ", " )");
+        r2_gen_print(stderr, pM, "%+14.10f", " -> ( ", " ", " )\n");
       }
   }
 
@@ -665,19 +772,20 @@ void test_hr2_pmap_r2_point(bool_t verbose)
     hr2_point_t ph = hr2_from_r2(&pc);
     hr2_point_t qh_exp = hr2_pmap_point(&ph, &M);
     r2_t qc_exp = r2_from_hr2(&qh_exp);
-    h2tt_check_pmap_r2_point("p", &pc,     &M, FALSE, &qc_exp, "hr2_pmap_r2_point failed");
-    h2tt_check_pmap_r2_point("q", &qc_exp, &M, TRUE,  &pc,     "hr2_pmap_inv_r2_point failed");
+    h2tt_check_pmap_r2_point("p", &pc,     &M, FALSE, &qc_exp, "{hr2_pmap_r2_point} failed");
+    h2tt_check_pmap_r2_point("q", &qc_exp, &M, TRUE,  &pc,     "{hr2_pmap_inv_r2_point} failed");
   }
 
 void test_hr2_pmap_inv(bool_t verbose)
   {
     if (verbose) { fprintf(stderr, "--- hr2_pmap_inv ---\n"); }
     hr2_pmap_t M;  h2tt_throw_aff_map(&M);
-    hr2_pmap_t N = hr2_pmap_inv(&M);
+    hr2_pmap_t N = hr2_pmap_inv(&M); 
+    h2tt_check_pmap("N", &N, 1.0e-8, "{hr2_pmap_inv} failed");
     for (int32_t k = 0; k < 5; k++)
       { hr2_point_t p = hr2_point_throw();
         hr2_point_t q = hr2_pmap_point(&p, &M);
-        h2tt_check_pmap_point("q", &q, FALSE, &N, FALSE, &p, "hr2_pmap_inv failed");
+        h2tt_check_pmap_point("q", &q, FALSE, FALSE, &N, FALSE, &p, "{hr2_pmap_inv} failed");
       }
  }
 
@@ -691,7 +799,7 @@ void test_hr2_pmap_compose(bool_t verbose)
       { hr2_point_t p = hr2_point_throw();
         hr2_point_t q = hr2_pmap_point(&p, &M);
         hr2_point_t r = hr2_pmap_point(&q, &N);
-        h2tt_check_pmap_point("p", &p, FALSE, &P, FALSE, &r, "hr2_pmap_compose failed");
+        h2tt_check_pmap_point("p", &p, FALSE, FALSE, &P, FALSE, &r, "{hr2_pmap_compose} failed");
       }
    }
 
@@ -699,14 +807,16 @@ void test_hr2_pmap_inv_compose(bool_t verbose)
   {
     if (verbose) { fprintf(stderr, "--- hr2_pmap_inv_compose ---\n"); }
     hr2_pmap_t M;  h2tt_throw_aff_map(&M);
-    hr2_pmap_t Minv = hr2_pmap_inv(&M);
+    hr2_pmap_t Minv = hr2_pmap_inv(&M); 
+    h2tt_check_pmap("Minv", &Minv, 1.0e-8, "{hr2_pmap_inv} failed"); 
     hr2_pmap_t N;  h2tt_throw_aff_map(&N);
-    hr2_pmap_t P = hr2_pmap_inv_compose(&M, &N);
+    hr2_pmap_t P = hr2_pmap_inv_compose(&M, &N); 
+    h2tt_check_pmap("P", &P, 1.0e-8, "{hr2_pmap_inv_compose} failed");
     for (int32_t k = 0; k < 5; k++)
       { hr2_point_t p = hr2_point_throw();
         hr2_point_t q = hr2_pmap_point(&p, &Minv);
         hr2_point_t r = hr2_pmap_point(&q, &N);
-        h2tt_check_pmap_point("p", &p, FALSE, &P, FALSE, &r, "hr2_pmap_inv_compose failed");
+        h2tt_check_pmap_point("p", &p, FALSE, FALSE, &P, FALSE, &r, "{hr2_pmap_inv_compose} failed");
       }
    }
 
@@ -714,11 +824,12 @@ void test_hr2_pmap_translation(bool_t verbose)
   {
     if (verbose) { fprintf(stderr, "--- hr2_pmap_translation ---\n"); }
     r2_t r; r2_throw_cube(&r);
-    hr2_pmap_t M = hr2_pmap_translation(&r);
+    hr2_pmap_t M = hr2_pmap_translation(&r); 
+    h2tt_check_pmap("M", &M, 1.0e-8, "{hr2_pmap_translation} failed");
     for (int32_t k = 0; k < 5; k++)
       { r2_t p; r2_throw_cube(&p);
         r2_t q; r2_add(&r, &p, &q);
-        h2tt_check_pmap_r2_point("p", &p, &M, FALSE, &q, "hr2_pmap_translation failed");
+        h2tt_check_pmap_r2_point("p", &p, &M, FALSE, &q, "{hr2_pmap_translation} failed");
       }
   }
 
@@ -726,7 +837,8 @@ void test_hr2_pmap_rotation(bool_t verbose)
   {
     if (verbose) { fprintf(stderr, "--- hr2_pmap_rotation ---\n"); }
     double ang = dabrandom(-1.58, +1.58);
-    hr2_pmap_t M = hr2_pmap_rotation(ang);
+    hr2_pmap_t M = hr2_pmap_rotation(ang); 
+    h2tt_check_pmap("M", &M, 1.0e-8, "{hr2_pmap_rotation} failed");
     double ca = cos(ang);
     double sa = sin(ang);
     for (int32_t k = 0; k < 5; k++)
@@ -734,7 +846,7 @@ void test_hr2_pmap_rotation(bool_t verbose)
         r2_t q;
         q.c[0] = + ca*p.c[0] - sa*p.c[1];
         q.c[1] = + sa*p.c[0] + ca*p.c[1];
-        h2tt_check_pmap_r2_point("p", &p, &M, FALSE, &q, "hr2_pmap_rotation failed");
+        h2tt_check_pmap_r2_point("p", &p, &M, FALSE, &q, "{hr2_pmap_rotation} failed");
       }
   }
 
@@ -743,7 +855,8 @@ void test_hr2_pmap_rotation_and_scaling(bool_t verbose)
     if (verbose) { fprintf(stderr, "--- hr2_pmap_rotation_and_scaling ---\n"); }
     double ang = dabrandom(-1.58, +1.58);
     double scale = dabrandom(0.5, 2.0);
-    hr2_pmap_t M = hr2_pmap_rotation_and_scaling(ang, scale);
+    hr2_pmap_t M = hr2_pmap_rotation_and_scaling(ang, scale); 
+    h2tt_check_pmap("M", &M, 1.0e-8, "{hr2_pmap_rotation_and_scaling} failed");
     double ca = cos(ang);
     double sa = sin(ang);
     for (int32_t k = 0; k < 5; k++)
@@ -751,7 +864,7 @@ void test_hr2_pmap_rotation_and_scaling(bool_t verbose)
         r2_t q;
         q.c[0] = + ca*scale*p.c[0] - sa*scale*p.c[1];
         q.c[1] = + sa*scale*p.c[0] + ca*scale*p.c[1];
-        h2tt_check_pmap_r2_point("p", &p, &M, FALSE, &q, "hr2_pmap_rotation_and_scaling failed");
+        h2tt_check_pmap_r2_point("p", &p, &M, FALSE, &q, "{hr2_pmap_rotation_and_scaling} failed");
       }
   }
 
@@ -761,15 +874,16 @@ void test_hr2_pmap_aff_from_three_points(bool_t verbose)
     r2_t o; r2_throw_cube(&o);
     r2_t p; r2_throw_cube(&p);
     r2_t q; r2_throw_cube(&q);
-    hr2_pmap_t M = hr2_pmap_aff_from_three_points(&o, &p, &q);
+    hr2_pmap_t M = hr2_pmap_aff_from_three_points(&o, &p, &q); 
+    h2tt_check_pmap("M", &M, 1.0e-8, "{hr2_pmap_aff_from_three_points} failed");
     /* Check whether the map works: */
     r2_t oo = (r2_t){{ 0.0, 0.0 }};
     r2_t pp = (r2_t){{ 1.0, 0.0 }};
     r2_t qq = (r2_t){{ 0.0, 1.0 }};
 
-    h2tt_check_pmap_r2_point("o", &oo, &M, FALSE, &o, "hr2_pmap_aff_from_three_points failed");
-    h2tt_check_pmap_r2_point("p", &pp, &M, FALSE, &p, "hr2_pmap_aff_from_three_points failed");
-    h2tt_check_pmap_r2_point("q", &qq, &M, FALSE, &q, "hr2_pmap_aff_from_three_points failed");
+    h2tt_check_pmap_r2_point("o", &oo, &M, FALSE, &o, "{hr2_pmap_aff_from_three_points} failed");
+    h2tt_check_pmap_r2_point("p", &pp, &M, FALSE, &p, "{hr2_pmap_aff_from_three_points} failed");
+    h2tt_check_pmap_r2_point("q", &qq, &M, FALSE, &q, "{hr2_pmap_aff_from_three_points} failed");
   }
 
 void test_hr2_pmap_point(bool_t inv, bool_t verbose)
@@ -783,7 +897,7 @@ void test_hr2_pmap_point(bool_t inv, bool_t verbose)
     r3x3_map_row(&(p.c), (inv ? &(M.inv) : &(M.dir)), &(q_exp.c));
 
     /* Compare with library func results: */
-    h2tt_check_pmap_point("p", &p, FALSE, &M, inv, &q_exp, txtcat3("hr2_pmap", tag,  "_point failed"));
+    h2tt_check_pmap_point("p", &p, FALSE, FALSE, &M, inv, &q_exp, txtcat3("hr2_pmap", tag,  "_point failed"));
   }
 
 void test_hr2_pmap_line(bool_t inv, bool_t verbose)
@@ -798,7 +912,7 @@ void test_hr2_pmap_line(bool_t inv, bool_t verbose)
     r3x3_map_col((inv ? &(M.dir) : &(M.inv)), &(A.f), &(B_exp.f));
 
     /* Compare with library func results: */
-    h2tt_check_pmap_line("A", &A, FALSE, &M, inv, &B_exp, txtcat3("hr2_pmap", tag, "_line failed"));
+    h2tt_check_pmap_line("A", &A, FALSE, FALSE, &M, inv, &B_exp, txtcat3("hr2_pmap", tag, "_line failed"));
 
     /* Pick a point on the line: */
     hr2_point_t p;

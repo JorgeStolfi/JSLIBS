@@ -1,5 +1,5 @@
 /* hr2test_tools.h --- test tools for program for hr2_test.c  */
-/* Last edited on 2023-10-09 09:49:40 by stolfi */
+/* Last edited on 2024-08-29 22:15:11 by stolfi */
 
 #ifndef hr2test_tools_H
 #define hr2test_tools_H
@@ -116,10 +116,26 @@ void h2tt_do_check_hr2_point_eps
 #define h2tt_check_hr2_point_eps(name, b_cmp, b_exp, eps, msg) \
   h2tt_do_check_hr2_point_eps((name), (b_cmp), (b_exp), (eps), (msg), __FILE__, __LINE__, __FUNCTION__)
 
-void h2tt_do_check_r3_map
+void h2tt_do_check_pmap
+  ( char *name,
+    hr2_pmap_t *M, 
+    double eps, 
+    char *msg, 
+    char *file, 
+    int32_t lnum,
+    const char *func
+  );
+  /* Checks the validity of the map {M}, namely if {M.dir} and {M.inv} are 
+    close inverses of each other, within tolerance {eps}. */
+
+#define h2tt_check_pmap(name, M, eps, msg) \
+  h2tt_do_check_pmap((name), (M), (eps), (msg), __FILE__, __LINE__, __FUNCTION__)
+
+void h2tt_do_check_map_r3
   ( char *name, 
     r3_t *p, 
-    bool_t flip, 
+    bool_t anti, 
+    bool_t twirl, 
     bool_t row,
     r3x3_t *M, 
     r3_t *q,
@@ -128,26 +144,34 @@ void h2tt_do_check_r3_map
     int32_t lnum,
     const char *func
   );
-  /* If {flip} is false, computes a point {pM} by mapping {p} through
-    {M}. If {flip} is true, considers all points that differ from {p} by
-    the signs of any or all coordinates, maps each through {M}, and lets
-    {pM} be the one that is closest to {q}, apart from a positive
-    scaling factor.
+  /* If {anti} and {twirl} are false, computes a point {pM} by mapping
+    {p} through {M}.
+    
+    If {anti} is true, tries reversing the signs of the three
+    coordinates of {p} simultaneously, and proceeds as above.
+    
+    If {twirl} is true, tries reversing the signs of the three
+    coordinates of {p} in all combinations, and proceeds as above.
+    
+    The parameters {anti} and {twirl} are mutually exclusive. If either
+    is true, takes {pM} to be the mapped point that is closest to {q},
+    apart from a positive scaling factor.
     
     Either way, the image of a point {u} by {M} is {u*M} if {row} true,
     or {M*u} if {row} is false.
     
-    In any case, returns silently if the final {pM} is equal to {q}
+    In any case, returns silently if the chosen {pM} is equal to {q}
     (modulo positive homogeneous scaling and a rounding error
     tolerance), and aborts with error {msg} if not. */ 
 
-#define h2tt_check_r3_map(name, p, flip, row, M, q, msg) \
-  h2tt_do_check_r3_map((name), (p), (flip), (row), (M), (q), (msg), __FILE__, __LINE__, __FUNCTION__)
+#define h2tt_check_map_r3(name, p, anti, twirl, row, M, q, msg) \
+  h2tt_do_check_map_r3((name), (p), (anti), (twirl), (row), (M), (q), (msg), __FILE__, __LINE__, __FUNCTION__)
 
 void h2tt_do_check_pmap_point
   ( char *name, 
     hr2_point_t *p, 
-    bool_t flip,
+    bool_t anti,
+    bool_t twirl,
     hr2_pmap_t *M, 
     bool_t inv,
     hr2_point_t *q, 
@@ -156,21 +180,33 @@ void h2tt_do_check_pmap_point
     int32_t lnum,
     const char *func
   );
-  /* If {flip} is FALSE, maps the point {p} by the given projective map
-    and compares it with {q}. If {flip} is true, tries reversing the
+  /* If {anti} and {twirl} are FALSE, maps the point {p} by the given projective map
+    and compares it with {q}. 
+    
+    If {anti} is true, tries reversing the signs of the three
+    coordinates of {p} simultaneously, and proceeds as above.
+    
+    If {twirl} is true, tries reversing the
     signs of the three coordinates of {p} in all combinations, and
-    proceeds as above. In either case, returns silently if some attempt
-    produced a match (modulo rounding errors); aborts with error {msg}
-    if all attempts failed. The projective map used is {M} if {inv} is
-    false, or its inverse if {inv} is true. */
+    proceeds as above. 
+    
+    The parameters {anti} and {twirl} are mutually exclusive. If either
+    is true, takes {pM} to be the mapped point that is closest to {q}
+    in the sperical model sense.
+     
+    In any case, returns silently if the chosen {pM} matches {q}
+    (modulo rounding errors); aborts with error {msg} if all attempts
+    failed. The projective map used is {M} if {inv} is false, or its
+    inverse if {inv} is true. */
 
-#define h2tt_check_pmap_point(name, p, flip, M, inv, q, msg) \
-  h2tt_do_check_pmap_point((name), (p), (flip), (M), (inv), (q), (msg), __FILE__, __LINE__, __FUNCTION__)
+#define h2tt_check_pmap_point(name, p, anti, twirl, M, inv, q, msg) \
+  h2tt_do_check_pmap_point((name), (p), (anti), (twirl), (M), (inv), (q), (msg), __FILE__, __LINE__, __FUNCTION__)
 
 void h2tt_do_check_pmap_line
   ( char *name, 
     hr2_line_t *A, 
-    bool_t flip,
+    bool_t anti,
+    bool_t twirl,
     hr2_pmap_t *M,
     bool_t inv,
     hr2_line_t *B, 
@@ -179,16 +215,22 @@ void h2tt_do_check_pmap_line
     int32_t lnum,
     const char *func
   );
-  /* If {flip} is FALSE, maps the line {A} by the specified projective
-    map and compares it with {B}. If {flip} is true, tries reversing the
-    signs of the three coordinates of {A} in all combinations, and
-    proceeds as above. In either case, returns silently if some attempt
-    produced a match (modulo rounding errors); aborts with error {msg}
-    if all attempts failed. The projective map used is {M} if {inv} is
-    false, or its inverse if {inv} is true. */
+  /* If {twirl} is FALSE, maps the line {A} by the specified projective
+    map and compares it with {B}. 
+    
+    If {anti} is true, tries reversing the signs of the three
+    coefficients of {A} simultaneously, and proceeds as above.
+    
+    If {twirl} is true, tries reversing the signs of the three
+    coefficients of {A} in all combinations, and proceeds as above.
+    
+    In either case, returns silently if some attempt produced a match
+    (modulo rounding errors); aborts with error {msg} if all attempts
+    failed. The projective map used is {M} if {inv} is false, or its
+    inverse if {inv} is true. */
 
-#define h2tt_check_pmap_line(name, A, flip, M, inv, B, msg) \
-  h2tt_do_check_pmap_line((name), (A), (flip), (M), (inv), (B), (msg), __FILE__, __LINE__, __FUNCTION__)
+#define h2tt_check_pmap_line(name, A, anti, twirl, M, inv, B, msg) \
+  h2tt_do_check_pmap_line((name), (A), (anti), (twirl), (M), (inv), (B), (msg), __FILE__, __LINE__, __FUNCTION__)
 
 void h2tt_do_check_pmap_r2_point
   ( char *name, 
@@ -202,8 +244,9 @@ void h2tt_do_check_pmap_r2_point
     const char *func
   );
   /* Same as {h2tt_do_check_pmap_point}, but {p} and {q} are
-    Cartesian points that are converted to/from homogeneous 
-    in order to apply the projective map. */
+    Cartesian points that are converted to homogeneous in order to
+    apply the projective map, and back to Cartesian in order to
+    compare them. */
 
 #define h2tt_check_pmap_r2_point(name, p, M, inv, q, msg) \
   h2tt_do_check_pmap_r2_point((name), (p), (M), (inv), (q), (msg), __FILE__, __LINE__, __FUNCTION__)

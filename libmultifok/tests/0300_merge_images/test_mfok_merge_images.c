@@ -2,7 +2,7 @@
 #define PROG_DESC "Merges several registered images with focus blur at different heights"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-05-02 21:52:20 by stolfi */ 
+/* Last edited on 2024-08-02 15:52:51 by stolfi */ 
 /* Created on 2023-01-19 by J. Stolfi, UNICAMP */
 
 #define test_mfok_merge_images_COPYRIGHT \
@@ -119,17 +119,7 @@ int32_t main(int32_t argc, char **argv);
 
 mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv);
   /* Parses the command line options. */
-    
-typedef struct mfok_result_t
-  { float_image_t *timg; 
-    float_image_t *azimg;
-    float_image_t *dzimg;
-    double noise;
-  } mfok_result_t;
-  /* The result of multifocus stereo: the composite sharp image {timg},
-    the estimated height map {azimg}, and the estimated height uncertainly 
-    map {dzimg}. */
-
+ 
 mfok_result_t* mfmi_process_image_stack(mfok_image_stack_t *stack);
   /* Processes the image stack {stack} and returns a newly allocated 
     {mfok_result_t} record {res} with the results. */
@@ -267,7 +257,7 @@ void mfmi_process_image_stack
               { mfmi_get_pixel_actual_sharpness(NI, shimg, ix, iy, score); }
             else
               { mfmi_compute_pixel_scores(NI, grimg, ix, iy, NW, ws, noise, NB, bas, NT, wt, prix, score); }
-            
+
             /* Estimate the surface {Z} and color {clr} at the pixel from {score[]} and {zFoc[]}: */
             double zEst;
             frgb_t clrEst;
