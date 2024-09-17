@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {hr2_pmap_aff_from_point_pairs.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-11-25 18:25:25 by stolfi */ 
+/* Last edited on 2024-09-16 14:11:27 by stolfi */ 
 /* Created on 2020-07-11 by J. Stolfi, UNICAMP */
 /* Based on {test_align.c} by J. Stolfi, UNICAMP */
 
@@ -93,7 +93,7 @@ void test_hr2_pmap_aff_from_point_pairs(bool_t verbose)
     else if (np == 1)
       { /* M translation: */
         r2_t v; r2_throw_cube(&v);
-        M = hr2_pmap_translation(&v);
+        M = hr2_pmap_translation(&v, +1, +1);
       }
     else if (np == 2)
       { /* M rotation, scaling, and translation: */
@@ -101,7 +101,7 @@ void test_hr2_pmap_aff_from_point_pairs(bool_t verbose)
         double scale = dabrandom(0.5, 2.0);
         hr2_pmap_t R = hr2_pmap_rotation_and_scaling(ang, scale);
         r2_t v; r2_throw_cube(&v);
-        hr2_pmap_t T = hr2_pmap_translation(&v);
+        hr2_pmap_t T = hr2_pmap_translation(&v, +1, +1);
         M = hr2_pmap_compose(&R, &T);
       }
     else

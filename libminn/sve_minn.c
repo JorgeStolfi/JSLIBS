@@ -1,5 +1,5 @@
 /* See {sve_minn.h} */
-/* Last edited on 2024-01-11 07:06:44 by stolfi */
+/* Last edited on 2024-09-15 15:40:16 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -100,7 +100,7 @@ void sve_minn_step(int32_t n, double Fv[], double cm[], bool_t debug)
     M[ije*cols + ije] = 0;
     M[ije*cols + jb] = 1;
     if (debug)
-      { rmxn_gen_print(stderr, rows, cols, M, "%12.7f", "  [", "\n    ", " ]\n", "[ ", " ", " ]"); }
+      { rmxn_gen_print(stderr, rows, cols, M, "%12.7f", "  [ ", "\n    ", " ]\n", "[ ", " ", " ]"); }
     /* Solve the system: */
     gsel_triangularize(rows, cols, M, TRUE, 0.0);
     gsel_diagonalize(rows, cols, M);
@@ -202,9 +202,14 @@ void sve_minn_iterate
         
         /* Ensure that the probe simplex radius is in {[rMin _ rMax]}: */
         if (debug)  { Pr(Er, "  raw radius = %12.8f\n", radius); }
-        if (radius < rMin) { radius = rMin; }
-        if (radius > rMax) { radius = rMax; }
-        if (debug)  { Pr(Er, "  radius clipped to {rMin,rMax} = %12.8f\n", radius); }
+        if (radius < rMin)
+          { radius = rMin;
+            if (debug)  { Pr(Er, "  radius augmented to {rMin} = %12.8f\n", radius); }
+          }
+        if (radius > rMax) 
+          { radius = rMax; 
+            if (debug)  { Pr(Er, "  radius reduced to {rMax} = %12.8f\n", radius); }
+          }
         
         /* The probe simplex center {y} is in principle the current guess {x}: */
         rn_copy(n, x, y);

@@ -1,5 +1,5 @@
 /* See hr2_pmap_aff_from_point_pairs.h */
-/* Last edited on 2023-10-08 11:54:50 by stolfi */ 
+/* Last edited on 2024-08-31 22:20:22 by stolfi */ 
 
 /* Based on HR2.m3 created 1994-05-04 by J. Stolfi. */
 
@@ -63,6 +63,27 @@ hr2_pmap_t hr2_pmap_aff_from_point_pairs(int32_t np, r2_t p1[], r2_t p2[], doubl
 
                 r2x2_inv(&R1, &R1); r2x2_mul(&R1, &R2, &L);
               }
+            else if (np == 3)
+              { /* Compute {L} by least squares: */
+                ???
+                r2x2_t E; r2x2_zero(&E); /* Moment matrix. */
+                r2x2_t P; r2x2_zero(&P); /* Projection matrix. */
+                for (int32_t k = 0; k < np; k++)
+                  { double wk = (w == NULL ? 1.0 : w[k]);
+                    /* Reduce points relative to barycenter: */
+                    r2_t q1k, q2k;
+                    r2_sub(&(p1[k]), &bar1, &q1k);
+                    r2_sub(&(p2[k]), &bar2, &q2k);
+                    /* Accumulate moments and projections: */
+                    for (int32_t i = 0; i < 2; i ++)
+                      { for (int32_t j = 0; j < 2; j++)
+                          { E.c[i][j] += wk*q1k.c[i]*q1k.c[j];
+                            P.c[i][j] += wk*q1k.c[i]*q2k.c[j];
+                          }
+                      }
+                  }
+                r2x2_t Z; r2x2_inv(&E, &Z);
+                r2x2_mul(&Z, &P, &L);
             else
               { /* Compute {L} by least squares: */
 

@@ -1,5 +1,5 @@
 /* See {r2_align_quadopt.h}. */
-/* Last edited on 2023-09-07 17:47:31 by stolfi */
+/* Last edited on 2024-09-03 17:16:15 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -40,12 +40,15 @@ void r2_align_quadopt
     int32_t nd = r2_align_count_degrees_of_freedom(nv, bal);
 
     /* Save the initial guess: */
-    r2_t ctr[ni]; /* Center of ellipsoid (aved initial guess). */
-    for (int32_t i = 0; i < ni; i++) { ctr[i] = p[i]; }
+    r2_t pctr[ni]; /* Center of {\RD} ellipsoid (saved initial guess). */
+    for (int32_t i = 0; i < ni; i++) { pctr[i] = p[i]; }
 
     if (nd > 0)
       { 
-        /* Compute the axes and radii of the search ellipsoid {\RF}: */
+        /* Compute the axes and radii of the search ellipsoid {\RF}. It
+          is a section of the ellipsoid {\RD} by the hyperplanes that
+          represent the X and Y balancing and conformation constraints
+          for the deltas {p[i]-pctr[i]}. */
         r2_t U[nd*ni]; /* Delta vector basis. */
         double urad[nd];
         r2_align_compute_search_ellipsoid (ni, arad, bal, nd, U, urad);
@@ -59,28 +62,33 @@ void r2_align_quadopt
         for (int32_t k = 0; k < nd; k++) 
           { double xtolk = tol/urad[k]; if (xtolk < xtol) { xtolk = xtol; } }
 
-        auto void compute_sample_point(int32_t nz, double z[]);
-          /* Converts the minimization variables {z[0..nz-1]} to the corresponding
-            sampling alignment and stores it in {p[0..ni-1]}. Expects {nz == nd}. */
+        auto void compute_sample_alignment(int32_t nxt, double xt[]);
+          /* Converts the minimization variables {xt[0..nxt-1]} to the corresponding
+            sampling alignment and stores it in {p[0..ni-1]}. Expects {nxt == nd}. */
         
-        auto double sve_goal(int32_t nz, double z[]);
-          /* Computes the minimization goal function from the given argument {z[0..nv-1]}.
-            Expects {nz == nd}. Also sets {p[0..ni-1]}. Assumes  that the initial guess was
-            saved in {ctr[0..ni-1]}. */
+        auto double sve_goal(int32_t nxt, double xt[]);
+          /* Computes the minimization goal function from the given
+            minimization variables {xt[0..nv-1]}. Expects {nxt == nd}.
+            Also sets {p[0..ni-1]}. Assumes that the initial alignment
+            guess was saved in {pctr[0..ni-1]}. */
 
         /* Compute the initial goal function value: */
         double x[nd]; for (int32_t k = 0; k < nd; k++) { x[k] = 0.0; }
         double Fx = sve_goal(nd, x);
+        
         sign_t dir = -1; /* Look for minimum. */
         double rMax = 0.5;                /* Max simplex radius. */
         double rMin = fmin(0.05, 3*xtol); /* Min simplex radius. */
         sve_minn_iterate
-          ( nd, 
-            &sve_goal, NULL, 
-            x, &Fx,
-            dir,
+          ( /*n:*/ nd, 
+            /*F:*/ &sve_goal,
+            /*OK:*/ NULL, 
+            /*x:*/ x,
+            /*FxP:*/ &Fx,
+            /*dir:*/ dir,
+            /*ctr:*/ NULL,
             /*dMax:*/ 1.0,
-            /*dBox:*/ FALSE,
+            /*box:*/ FALSE,
             /*rIni:*/ 0.5, 
             /*rMin:*/ rMin, 
             /*rMax:*/ rMax, 
@@ -90,22 +98,22 @@ void r2_align_quadopt
           );
 
         /* Return the optimal vector and its mismatch value: */
-        compute_sample_point(nd, x);
+        compute_sample_alignment(nd, x);
         (*F2val_P) = Fx;
 
         /* Local implementations: */
 
-        void compute_sample_point(int32_t nz, double z[])
-          { assert(nz == nd);
+        void compute_sample_alignment(int32_t nxt, double xt[])
+          { assert(nxt == nd);
             for (int32_t i = 0; i < ni; i++)
               { for (int32_t j = 0; j < 2; j++)
-                  { p[i].c[j] = ctr[i].c[j];
+                  { p[i].c[j] = pctr[i].c[j];
                     double rij = arad[i].c[j];
                     if (rij != 0)
                       { double dij = 0;
                         for (int32_t k = 0; k < nd; k++) 
                           { r2_t *uk = &(U[k*ni]);
-                            dij += z[k]*urad[k]*uk[i].c[j];
+                            dij += xt[k]*urad[k]*uk[i].c[j];
                           }
                         p[i].c[j] += dij;
                       }
@@ -113,17 +121,17 @@ void r2_align_quadopt
               }
           }
         
-        double sve_goal(int32_t nz, double z[])
-          { assert(nz == nd);
-            /* Convert variables {z[0..nx-1]} to delta vector {p[0..ni-1]}: */
-            compute_sample_point(nz, z);
+        double sve_goal(int32_t nxt, double xt[])
+          { assert(nxt == nd);
+            /* Convert variables {xt[0..nxt-1]} to the delta vector {p[0..ni-1]}: */
+            compute_sample_alignment(nxt, xt);
             /* Evaluate the client function: */
             double F2val = F2(ni, p);
             return F2val;
           }
       }
     else
-      { (*F2val_P) = F2(ni, ctr); }
+      { (*F2val_P) = F2(ni, pctr); }
     
     return;
             

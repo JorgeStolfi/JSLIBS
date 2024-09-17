@@ -1,14 +1,14 @@
 #! /bin/bash
-# Last edited on 2020-10-16 03:47:25 by jstolfi
+# Last edited on 2024-09-16 11:05:25 by stolfi
 
-prefix="$1"; shift
-method="$1"; shift
+dfile="$1"; shift
 
-dfile="${prefix}_${method}.dat"
+prefix="${dfile/.txt/}"
+
 tfile="/tmp/$$.png"
-pfile="${prefix}_${method}.png"
+pfile="${prefix}.png"
 
-title="${prefix/out\//} ${method}"
+title="${dfile/out\/test-/}"
 
 if [[ ! ( -s ${dfile} ) ]]; then echo "** file ${dfile} not found" 1>&2 ; exit 1 ; fi
 

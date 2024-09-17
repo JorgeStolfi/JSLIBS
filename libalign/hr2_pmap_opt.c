@@ -1,5 +1,5 @@
 /* See {hr2_pmap_opt.h}. */
-/* Last edited on 2024-01-11 08:28:53 by stolfi */
+/* Last edited on 2024-09-17 13:42:01 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -13,203 +13,193 @@
 #include <bool.h>
 #include <sign.h>
 #include <r2.h>
+#include <rn.h>
 #include <r3x3.h>
-#include <i2.h>
 #include <jsmath.h>
 #include <jsrandom.h>
+#include <jsfile.h>
 #include <affirm.h>
+#include <minn.h>
+#include <minn_plot.h>
 #include <sve_minn.h>
 
+#include <hr2_pmap_encode.h>
+
 #include <hr2_pmap_opt.h>
-#include <hr2_pmap_opt_translation.h>
-#include <hr2_pmap_opt_congruence.h>
-#include <hr2_pmap_opt_similarity.h>
-#include <hr2_pmap_opt_affine.h>
-#include <hr2_pmap_opt_generic.h>
- 
-int32_t hr2_pmap_opt_degrees_from_type(hr2_pmat_type_t type);
-  /* Number of degrees of freedom in a projective map of the specified {type}. */
 
-void hr2_pmap_opt_check_type(hr2_pmap_t *M, hr2_pmat_type_t type);
-  /* Checks that the map {*A} is of the given type. */
+double hr2_pmap_opt_eval_encoded
+  ( int32_t ny,
+    double y[],
+    hr2_pmap_type_t type,
+    sign_t sgn, 
+    hr2_pmap_t *M,
+    hr2_pmap_opt_func_t *f2
+  );
+  /* Performs {hr2_pmap_decode(ny, y, type, M, sgn)} and then
+    evaluates {f2} on {M}.  If {type} is general projective, also adds 
+    a small multiple of {hr2_pmap_opt_homo_scaling_bias(M)}. */
 
-void hr2_pmap_opt_encode(hr2_pmap_t *M, hr2_pmat_type_t type, int32_t nv, double  rad[], double y[]);
-  /* Converts the map {*A} into  the optmizaton variables {y[0..nv-1]}. */
-
-void hr2_pmap_opt_decode(int32_t nv, double y[], double  rad[], hr2_pmat_type_t type, hr2_pmap_t *M);
-  /* Converts the optimization variables {y[0..nv-1]} into 
-    the projective map {*A}. */
-
-void hr2_pmap_opt_aff_quadratic
-  ( hr2_pmap_opt_func_t *f2,  /* Goal function to minimize. */
-    hr2_pmat_type_t type,     /* Desired map type. */
-    int32_t max_iter,         /* Max outer loop iterations. */
-    double max_f2,            /* Stopping criterion. */
-    double max_mod,           /* Maximum change allowed in each matrix element. */
-    hr2_pmap_t *A,            /* (IN/OUT) The affine map to adjust. */
-    double *f2A_P             /* (OUT) Goal function value for the output {*A}. */
+double hr2_pmap_opt_homo_scaling_bias(hr2_pmap_t *M);
+  /* Returns {f2(M.dir)+f2(M.inv)}, where {f2} is a function of a 3x3
+    matrix that is minimum when the sum of the squares of the elements
+    is 1.
+    
+    This function can be used as a bias term when optimizing a general
+    projective map, to remove the spurious degree of freedom due to
+    homogeneous scaling of the matrices {M.dir} and {M.inv}. */
+  
+void hr2_pmap_opt_quadratic
+  ( hr2_pmap_type_t type,     /* Desired map type. */
+    sign_t sgn,               /* Handedness, when applicable. */
+    hr2_pmap_opt_func_t *f2,  /* Goal function to minimize. */
+    int32_t maxIter,          /* Max outer loop iterations. */
+    double maxMod,            /* Maximum change allowed in each matrix element. */
+    double f2Stop,            /* Stopping criterion. */
+    hr2_pmap_t *M,            /* (IN/OUT) The affine map to adjust. */
+    double *f2A_P,            /* (OUT) Goal function value for the output {*M}. */
+    bool_t verbose
   )
   {
     bool_t debug = TRUE;
     
-    demand(type != hr2_pmat_type_PROJECTIVE, "cannot be used for generic proj map");
-    
-    /* Identify the elements to optimize: */
-    int32_t nv = hr2_pmap_opt_degrees_from_type(type);
-    fprintf(stderr, "%d degrees of freedom in map\n", nv);
-    assert (nv <= 6);
+    if (verbose || debug) { fprintf(stderr, "    > --- %s ---\n", __FUNCTION__); }
+
+    /* Get the number of optimization variables {nz} */
+    int32_t nz = hr2_pmap_encode_num_parameters(type);
+    if (verbose) { fprintf(stderr, "    %d optimization variables\n", nz); }
+    assert (nz <= 9);
    
-    /* Ensure that the map {A} is of the proper type: */
-    hr2_pmap_opt_check_type(A, type);
-    double Fz = f2(A); /* Current goal function on {A}. */
-    (*f2A_P) = Fz;
+    double f2z = f2(M); /* Current goal function on {M}. */
+    if (verbose) { fprintf(stderr, "    initial f2(M) = %20.14f\n", f2z); }
+
+    /* Ensure that the map {M} is of the proper type and handedness: */
+    double tol = 1.0e-14; /* Tolerance for type match. */
+    demand(hr2_pmap_is_type(M, type, sgn, tol), "wrong map type or sign");
      
-    if ((Fz > max_f2) && (nv > 0))
+    if ((f2z > f2Stop) && (nz > 0))
       { 
         /* Apply nonlinear optimization. */
-
-        /* Initialize constant elements of the incremental map {M}: */
-        hr2_pmap_t M = hr2_pmap_identity(); 
-        
-        /* Scaling factors from the unit cube to the mod range: */
-        double rad[nv];
-        for (int32_t iv = 0; iv < nv; iv++) { rad[iv] = max_mod; }
             
-        /* Save the initial map: */
-        hr2_pmap_t A0 = (*A);
-        
         auto double sve_goal(int32_t ny, double y[]);
-          /* Converts the optimization variables {y[0..ny-1]} to the map {*A}, then computes {f2(A)}.
-            Expects {ny == nv}. */
+          /* Converts the optimization variables {y[0..ny-1]} to the map {*M}, then computes {f2(M)}.
+            Expects {ny == nz}. */
+        
+        auto bool_t sve_ok(int32_t ny, double y[], double f2y);
+          /* Returns {TRUE} iff the matrix defined by {y[0..ny-1]} is good enough.
+            Assumes that {f2y} is the value of {sve_goal(ny, y)}. */
         
         /* Convert given map tp optimization variables: */
-        double z[nv]; 
-        hr2_pmap_opt_encode(A, type, nv, rad, z);
+        double z[nz];
+        hr2_pmap_encode(M, type, nz, z);
 
         sign_t dir = -1; /* Look for minimum. */
-        double ctr[nv]; rn_copy(nv, z, ctr);
+        double ctr[nz]; rn_copy(nz, z, ctr);
+        double dMax = maxMod * sqrt(nz);
+        bool_t dBox = FALSE;
+        double rIni = 0.5*dMax;
+        double rMin = 0.01;
+        double rMax = 2.0*dMax;
+        double stop = 0.0001;  /* Min {z} change between iterations. */
+
+        if (verbose) 
+          { fprintf(stderr, "  max matrix element change = %13.6f\n", maxMod);
+            fprintf(stderr, "  estimated distance from optimum = %13.6f\n", dMax);
+            fprintf(stderr, "  probe radius = %13.6f [ %13.6f _ %13.6f ]\n", rIni, rMin, rMax);
+          }
+
         sve_minn_iterate
-          ( nv, 
-            &sve_goal, NULL, 
-            z, &Fz,
-            dir,
-            /*ctr:*/  ctr,
-            /*dMax:*/ 1.0,  
-            /*dBox:*/ TRUE, 
-            /*rIni:*/ 0.5,  
-            /*rMin:*/ 0.01, 
-            /*rMax:*/ 0.5,  
-            /*stop:*/ 0.0001, 
-            max_iter,
+          ( nz, &sve_goal, &sve_ok, z, &f2z,
+            dir, ctr, dMax, dBox, rIni, rMin, rMax, stop,
+            maxIter,
             debug
           );
 
-        /* Ensure that the optimum {z} is reflected in {A,f2A): */
-        Fz = sve_goal(nv, z);
-        (*f2A_P) = Fz;
+        /* Ensure that the optimum {z} is reflected in {M,f2A): */
+        f2z = sve_goal(nz, z);
+        (*f2A_P) = f2z;
 
         /* Local implementations: */
 
         double sve_goal(int32_t ny, double y[])
-          { assert(ny == nv);
-            /* Convert variables {y[0..ny-1]} to a modification {*A}: */
-            hr2_pmap_opt_decode(nv, y, rad, type, &M);
-            (*A) = hr2_pmap_compose(&A0, &M);
-            /* Evaluate the client function: */
-            double Q2 = f2(A);
-            (*f2A_P) = Q2;
+          { assert(ny == nz);
+            double Q2 = hr2_pmap_opt_eval_encoded(ny, y, type, sgn, M, f2);
             return Q2;
           }
+          
+        bool_t sve_ok(int32_t ny, double y[], double f2y)
+          { return f2y <= f2Stop; }
       }
-    assert(Fz == (*f2A_P));
+
+    if (verbose) { fprintf(stderr, "    final f2(M) =   %20.14f\n", f2z); }
+    (*f2A_P) = f2z;
+    
+    if (verbose || debug) { fprintf(stderr, "    < --- %s ---\n", __FUNCTION__); }
     return;
   }
-
-int32_t hr2_pmap_opt_degrees_from_type(hr2_pmat_type_t type)
+  
+double hr2_pmap_opt_eval_encoded
+  ( int32_t ny,
+    double y[],
+    hr2_pmap_type_t type,
+    sign_t sgn, 
+    hr2_pmap_t *M,
+    hr2_pmap_opt_func_t *f2
+  )
   {
-    switch(type)
-      { 
-        case hr2_pmat_type_TRANSLATION:
-          return 2;
-        case hr2_pmat_type_CONGRUENCE:
-          return 3;
-        case hr2_pmat_type_SIMILARITY:
-          return 4;
-        case hr2_pmat_type_AFFINE:
-          return 6;
-        case hr2_pmat_type_PROJECTIVE:
-          demand(FALSE, "generic projective map not supported");
-        default:
-          demand(FALSE, "unimplemented map type");
+    hr2_pmap_decode(ny, y, type, sgn, M);
+   
+    /* Evaluate the client function: */
+    double Q2 = f2(M);
+    if (type == hr2_pmap_type_GENERIC)
+      { /* Add hoogeneous bias term: */
+        Q2 += 0.001 * hr2_pmap_opt_homo_scaling_bias(M);
       }
+    return Q2;
   }
-
-void hr2_pmap_opt_check_type(hr2_pmap_t *M, hr2_pmat_type_t type)
-  { 
-    fprintf(stderr, "!! {hr2_pmap_opt_check_type} NOT IMPLEMENTED"); 
+  
+double hr2_pmap_opt_homo_scaling_bias(hr2_pmap_t *M)
+  { double sumA2 = r3x3_norm_sqr(&(M->dir));
+    double sumB2 = r3x3_norm_sqr(&(M->inv));
+    return 0.25*(sumA2 + 1/sumA2 + sumB2 + 1/sumB2);
   }
-
-void hr2_pmap_opt_encode(hr2_pmap_t *M, hr2_pmat_type_t type, int32_t nv, double y[], double rad[])
+        
+void hr2_pmap_opt_1D_plot
+  ( char *outPrefix,
+    char *tag,
+    hr2_pmap_t *M,
+    hr2_pmap_type_t type,
+    sign_t sgn,
+    hr2_pmap_opt_func_t *f2,
+    int32_t nu,
+    double urad,
+    int32_t ns
+  )
   {
-    /* Assumes that {M} is a positive matrix with {M[0,0] = 1}, near the identity. */
-    switch(type)
-      { 
-        case hr2_pmat_type_TRANSLATION:
-          { assert(nv == 2);
-            hr2_pmap_opt_translation_encode(M, rad, y);
-            return;
-          }
-        case hr2_pmat_type_CONGRUENCE:
-          { assert(nv == 3);
-            hr2_pmap_opt_congruence_encode(M, rad, y);
-            return;
-          }
-        case hr2_pmat_type_SIMILARITY:
-          { assert(nv == 4);
-            hr2_pmap_opt_similarity_encode(M, rad, y);
-            return;
-          }
-        case hr2_pmat_type_AFFINE:
-          { assert(nv == 6);
-            hr2_pmap_opt_affine_encode(M, rad, y);
-            return;
-          }
-        case hr2_pmat_type_PROJECTIVE:
-          demand(FALSE, "generic projective map not supported");
-        default:
-          demand(FALSE, "unimplemented map type");
-      }
-  }
+    demand(type != hr2_pmap_type_IDENTITY, "cannot vary maps of {type} indentity");
 
-void hr2_pmap_opt_decode(int32_t nv, double y[], double rad[], hr2_pmat_type_t type, hr2_pmap_t *M)
-  { 
-    /* Assumes that the non-variable elements of {M} are those of the identity matrix. */
-    switch(type)
-      { 
-        case hr2_pmat_type_TRANSLATION:
-          { assert(nv == 2);
-            hr2_pmap_opt_translation_decode(y, rad, M);
-            return;
-          }
-        case hr2_pmat_type_CONGRUENCE:
-          { assert(nv == 3);
-            hr2_pmap_opt_congruence_decode(y, rad, M);
-            return;
-          }
-        case hr2_pmat_type_SIMILARITY:
-          { assert(nv == 4);
-            hr2_pmap_opt_similarity_decode(y, rad, M);
-            break;
-          }
-        case hr2_pmat_type_AFFINE:
-          { assert(nv == 6);
-            hr2_pmap_opt_affine_decode(y, rad, M);
-            break;
-          }
-        case hr2_pmat_type_PROJECTIVE:
-          demand(FALSE, "generic projective map not supported");
-        default:
-          demand(FALSE, "unimplemented map type");
-      }
-  }
+    hr2_pmap_t N = (*M);
+    
+    auto double sve_goal(int32_t ny, double y[]);
+      /* Converts the optimization variables {y[0..ny-1]} to the map {*N}, then computes {f2(N)}.
+        Expects {ny == nz}. */
+
+    /* Get the number of optimization variables {nz} */
+    int32_t nz = hr2_pmap_encode_num_parameters(type);
+    assert (nz <= 9);
+    double z[nz];
+    hr2_pmap_encode(M, type, nz, z);
  
+    char *fname = NULL;
+    asprintf(&fname, "%s-%s-1D-plot.txt", outPrefix, tag);
+    FILE *wr = open_write(fname, TRUE);
+    double step = urad/ns;
+    minn_plot_1D_gnuplot(wr, nz, z, urad, step, sve_goal);
+    fclose(wr);
+    free(fname);
+
+    double sve_goal(int32_t ny, double y[])
+      { assert(ny == nz);
+        double Q2 = hr2_pmap_opt_eval_encoded(ny, y, type, sgn, &N, f2);
+        return Q2;
+      }
+  }

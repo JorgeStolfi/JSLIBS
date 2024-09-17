@@ -1,5 +1,5 @@
 /* See {float_image_transform.h}. */
-/* Last edited on 2023-08-27 14:29:30 by stolfi */
+/* Last edited on 2024-08-31 06:50:46 by stolfi */
 
 #define _GNU_SOURCE
 #include <assert.h>
@@ -117,8 +117,8 @@ void float_image_transform_get_pixel
     bool_t invalid = (isnan(ip.c[0]) || isnan(ip.c[1]));
     
     if (debug) { fprintf(stderr, "  computing output pixel with indices (%d,%d):\n", col,row); }
-    if (debug) { r2_debug_point_jac("    po", &op, NULL, "\n"); }
-    if (debug) { r2_debug_point_jac("    pi", &ip, &J, "\n"); }
+    if (debug) { r2_debug_point_jacobian("    po", &op, NULL, "\n"); }
+    if (debug) { r2_debug_point_jacobian("    pi", &ip, &J, "\n"); }
     if (debug & (!invalid)) { r2_map_check_jacobian(&op, map, "map", 1.0e-5, FALSE); }
 
    /* Get input image value at point {pt}: */

@@ -1,6 +1,6 @@
-# Last edited on 2016-04-03 13:27:15 by stolfilocal
+# Last edited on 2024-09-17 19:43:38 by stolfi
 
-PROG = hr3test
+PROG = hr3_test
  
 TEST_LIB := libgeo.a
 TEST_LIB_DIR := ../..

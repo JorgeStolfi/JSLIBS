@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {hr2_from_many_pairs.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-11-25 18:25:21 by stolfi */ 
+/* Last edited on 2024-09-03 20:27:27 by stolfi */ 
 /* Created on 2020-07-11 by J. Stolfi, UNICAMP */
 /* Based on {test_align.c} by J. Stolfi, UNICAMP */
 
@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 #include <ix.h>
 #include <r2.h>
@@ -25,9 +26,11 @@
 #include <jsfile.h>
 #include <jsrandom.h>
 #include <affirm.h>
-#include <assert.h>
+#include <argparser.h>
 
-#include <hr2_from_many_pairs.h>
+#include <hr2_pmap_opt.h>
+#include <hr2_pmap_from_many_pairs.h>
+#include <hr2_pmap_from_many_pairs_aux.h>
 
 typedef struct hpmat_options_t 
   { char *prefix;         /* Prefix for output files. */
@@ -154,7 +157,7 @@ void hpmat_one(hpmat_options_t *o, char *method, bool_t verbose)
     
     bool_t debug_maps = FALSE; /* TRUE to print every probe point. */
     
-    auto double F2_mismatch(hr2_pmap_t *A);
+    auto double mismatch_sqr(hr2_pmap_t *A);
       /* A goal function that returns the squared mismatch between a map
         {*A} and the optimum {*Aopt}. Also prints the map if
         {debug_maps} is true. */
@@ -172,16 +175,16 @@ void hpmat_one(hpmat_options_t *o, char *method, bool_t verbose)
     hpmat_choose_plot_directions(R, &U, &V); 
     
     /* Print raw function value and bias term for optimum map: */
-    double F2opt = F2_mismatch(Aopt);
+    double F2opt = mismatch_sqr(Aopt);
     hpmat_debug_map("actual optimum", TRUE, Aopt, NULL, NULL, R, F2opt);
     
     /* Print raw function value and bias term for initial map: */
-    double F2ini = F2_mismatch(&Aini);
+    double F2ini = mismatch_sqr(&Aini);
     hpmat_debug_map("initial guess ", TRUE, &Aini, NULL, Aopt, R, F2ini);
     
     /* Plot the goal function in the neighborhood of the initial guess: */ 
     fprintf(stderr, "Plotting goal function around initial point...\n");
-    hpmat_plot_goal(o->prefix, method, F2_mismatch, &Aini, &U, &V, o->ns);
+    hpmat_plot_goal(o->prefix, method, mismatch_sqr, &Aini, &U, &V, o->ns);
     
     /* Call the optimizer: */
     fprintf(stderr, "optimizing...\n");
@@ -190,18 +193,18 @@ void hpmat_one(hpmat_options_t *o, char *method, bool_t verbose)
     double F2sol;   /* Goal function at {Asol}. */
     if (strcmp(method, "quad") == 0)
       { double tol = 0.02;
-        hr2_pmap_opt_quadratic(F2_mismatch, type, maxIter, max_mismatch, &Asol, &F2sol);
+        hr2_pmap_opt_quadratic(type, mismatch_sqr, maxIter, max_mismatch, &Asol, &F2sol);
       }
     else
       { demand(FALSE, "invalid method"); }
     
     /* Print raw function value and bias term for computed optimum: */
-    F2sol = F2_mismatch(&Asol);
+    F2sol = mismatch_sqr(&Asol);
     hpmat_debug_map("computed optimum", TRUE, &Asol, &Aini, Aopt, R, F2sol);
 
     return;
     
-    double F2_mismatch(hr2_pmap_t *A)
+    double mismatch_sqr(hr2_pmap_t *A)
       { double d2 = hpmat_mismatch_sqr_1(Aopt, A);
         if (debug_maps) 
           { hpmat_debug_map("probe map", verbose, A, &Aini, Aopt, R, d2); }

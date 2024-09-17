@@ -1,5 +1,5 @@
 /* See argparser_geo.h. */
-/* Last edited on 2023-03-03 05:41:28 by stolfi */
+/* Last edited on 2024-08-31 20:07:53 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 
@@ -10,6 +10,7 @@
 #include <string.h>
 #include <limits.h>
 #include <float.h>
+#include <assert.h>
 
 #include <r2.h>
 #include <r3.h>
@@ -53,14 +54,25 @@ r3_t argparser_get_next_r3_dir(argparser_t *pp)
     r3_dir(&d, &d);
     return d;
   } 
-
-
+ 
 void argparser_get_next_adjust(argparser_t *pp, double *adjP, double min, double max)
   { if (adjP != NULL) 
       { if (argparser_keyword_present_next(pp, "adjust"))
           { (*adjP) = argparser_get_next_double(pp, min, max); }
         else
           { (*adjP) = 0; }
+      }
+  }
+
+hr2_pmap_type_t argparser_get_next_map_type(argparser_t *pp)
+  { char *tname = argparser_get_next_non_keyword(pp);
+    hr2_pmap_type_t type;
+    bool_t ok = hr2_pmap_type_from_string(tname, &type);
+    if (ok)
+      { return type; }
+    else
+      { argparser_error(pp, "invalid projective map type");
+        assert(FALSE); /* Should not get here. */
       }
   }
 

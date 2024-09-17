@@ -1,5 +1,5 @@
 /* See r2.h */
-/* Last edited on 2024-08-30 03:53:26 by stolfi */
+/* Last edited on 2024-09-02 03:38:50 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -219,10 +219,13 @@ void r2_barycenter(int32_t np, r2_t p[], double w[], r2_t *bar)
   { r2_t sum_wp = (r2_t){{ 0, 0 }};
     double sum_w = 0.0;
     for (int32_t k = 0; k < np; k++) 
-      { r2_t *pk = &(p[k]);
-        double wk = (w != NULL ? w[k] : 1.0);
-        r2_mix(1.0, &sum_wp, wk, pk, &sum_wp);
-        sum_w += wk;
+      { double wk = (w != NULL ? w[k] : 1.0);
+        demand(isfinite(wk) && wk >= 0, "bad weight");
+        if (wk != 0.0) 
+          { r2_t *pk = &(p[k]);
+            r2_mix(1.0, &sum_wp, wk, pk, &sum_wp);
+            sum_w += wk;
+          }
       }
     r2_scale(1.0/sum_w, &sum_wp, bar);
   }

@@ -1,5 +1,5 @@
 /* argparser.h -- facilities for parsing command line arguments. */
-/* Last edited on 2023-02-11 09:48:32 by stolfi */
+/* Last edited on 2024-08-31 11:37:48 by stolfi */
 
 #ifndef argparser_H
 #define argparser_H
@@ -84,7 +84,7 @@ void argparser_process_help_info_options(argparser_t *pp);
   "    Prints this manpage and exits.\n" \
   "\n" \
   "  For compatibility with GNU/Linux tradition, any keyword that" \
-  " starts with \"-\" may also starts with \"--\", and vice-versa.  Thus \"-size\" is the" \
+  " starts with \"-\" may also start with \"--\", and vice-versa.  Thus \"-size\" is the" \
   " same as \"--size\", and \"-v\" is the same as \"--v\".  However the legacy Unix" \
   " practice of condensing single-character keywords is NOT" \
   " supported: \"-rs\" (and \"--rs\") is always considered a single keyword," \

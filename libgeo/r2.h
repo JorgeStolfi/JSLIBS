@@ -1,5 +1,5 @@
 /* r2.h --- operations on points and vectors of R^2 */
-/* Last edited on 2024-08-30 03:43:28 by stolfi */
+/* Last edited on 2024-09-01 21:10:47 by stolfi */
 
 #ifndef r2_H
 #define r2_H
@@ -114,7 +114,8 @@ bool_t r2_eq(r2_t *p, r2_t *q);
   
 void r2_barycenter(int32_t np, r2_t p[], double w[], r2_t *bar);
   /* Sets {*bar} to the barycenter of all points {p[0..np-1]}
-    with weights {w[0..np-1]}. The weights must have positive sum.
+    with weights {w[0..np-1]}. The weights must have positive sum,
+    otherwise the result will be {(NAN,NAN)}.
     Assumes equal weights if {w = NULL}. */
 
 void r2_bbox(int32_t np, r2_t p[], interval_t B[], bool_t finite);

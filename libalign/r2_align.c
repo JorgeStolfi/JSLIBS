@@ -1,5 +1,5 @@
 /* See {r2_align.h}. */
-/* Last edited on 2023-10-05 21:40:43 by stolfi */
+/* Last edited on 2024-09-03 17:41:59 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -123,7 +123,7 @@ void r2_align_compute_search_ellipsoid
           }
         assert(kc == nc_bal);
         
-        if (debug) { fprintf(stderr, "  ... orthonormalizing balancing and conform constraints\n"); } 
+        if (debug) { fprintf(stderr, "  ... orthonormalizing the balancing and conformation constraints\n"); } 
         int32_t nc; /* Number of independent constraints. */
         double *C = NULL; /* Orthonormalized constraints over {\RR^{2*ni}}. */
         rmxn_ellipsoid_normalize_constraints(2*ni, hrad, nc_bal, A, verbose_norm, &nc, &C);
@@ -315,7 +315,7 @@ void r2_align_throw_arad (int32_t ni, double rmax, int32_t nvmin, r2_t arad[], b
   { 
     double rmin = 0.5*rmax;
     /* Choose the ideal fraction {zfrac.c[j]} of non-zeros in each coordinate {j}: */
-    r2_t vfrac = (r2_t){{ 0.25, 0.75 }};
+    r2_t vfrac = (ni <= 2 ? (r2_t){{ 1.00, 1.00 }} : (r2_t){{ 0.25, 0.75 }} );
     for (int32_t j = 0; j < 2; j++)
       { /* Decide how many coordinates {arad[0..ni-1].c[j]} will be non-zero. */
         int32_t nvgoal = (int32_t)floor(vfrac.c[j]*ni + 0.5); 

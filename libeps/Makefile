@@ -2,8 +2,8 @@
 
 LIBNAME = libeps
 
-IGNORE := \
-  epswr_tics.c \
-  epswr_tics.h \
+# IGNORE := \
+#   epswr_tics.c \
+#   epswr_tics.h \
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB.make

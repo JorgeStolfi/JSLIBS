@@ -1,5 +1,5 @@
 /* User coordinate system for images. */
-/* Last edited on 2023-10-14 10:57:01 by stolfi */
+/* Last edited on 2024-08-31 12:38:42 by stolfi */
 
 #ifndef image_coords_H
 #define image_coords_H
@@ -113,14 +113,14 @@ void imgc_parse_unit(argparser_t *pp, char *unit_key, double *unit);
   " option \"" size_key " 30 40\" will set the actual" \
   " size of " which_images ", in pixels, to 60 columns and 80 rows."
   
-#define imgc_unit_affects_default_size_INFO_OPTS(ref_unit_key,size_key,ref_images,out_unit_key,oimages) \
+#define imgc_unit_affects_default_size_INFO_OPTS(ref_unit_key,size_key,ref_images,out_unit_key,which_images) \
   "The parameter \"" ref_unit_key "\" affects the default" \
-  " size for " oimages ".  Suppose the size" \
+  " size for " which_images ".  Suppose the size" \
   " of " ref_images " is 200 by 300 pixels.  Given the" \
   " argument \"" ref_unit_key " 0.5\", the default" \
-  " size for " oimages " would be 400 by 600" \
+  " size for " which_images " would be 400 by 600" \
   " /user units/.  Given also \"" out_unit_key " 3.0\", the default" \
-  " size for " oimages ", in pixels, would then be 1200 by 1800."
+  " size for " which_images ", in pixels, would then be 1200 by 1800."
 
 /* IMAGE ORIGIN */
 
@@ -140,7 +140,7 @@ void imgc_parse_center_org(argparser_t *pp, char *ctr_key, bool_t *center, char 
   "The user coordinate system origin for " which_images " can" \
   " be specified by the \"" ctr_key "\" or \"" org_key "\" argument."  
 
-#define imgc_parse_center_org_INFO_OPTS(ctr_key,org_key,org_tag,iorg_default) \
+#define imgc_parse_center_org_INFO_OPTS(ctr_key,org_key,org_tag,org_default) \
   "  " ctr_key "\n" \
   "  " org_key " {CX" org_tag "} {CY" org_tag "}\n" \
   "    These mutually exclusive optional arguments specify" \
@@ -150,7 +150,7 @@ void imgc_parse_center_org(argparser_t *pp, char *ctr_key, bool_t *center, char 
   " the origin displaced {CX" org_tag "} and {CY" org_tag "} /user/ units" \
   " in the directions of the X and Y axes, from the" \
   " corner of the image opposite to those directions." \
-  "  " iorg_default
+  "  " org_default
   
 #define imgc_parse_center_org_INFO_OPTS_default_zero(org_key) \
   "If neither option is specified, the program" \

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_aff_compare.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-02-27 19:16:40 by stolfi */ 
+/* Last edited on 2024-09-16 14:03:29 by stolfi */ 
 /* Created on 2020-09-26 by J. Stolfi, UNICAMP */
 
 #define taffc_COPYRIGHT \
@@ -162,7 +162,7 @@ hr2_pmap_t taffc_make_xy_translation_map(double u, double v)
   {
     double D = taffc_translation_REF;
     r2_t disp = (r2_t){{ D*u, D*v }};
-    hr2_pmap_t M = hr2_pmap_translation(&disp);
+    hr2_pmap_t M = hr2_pmap_translation(&disp, +1, +1);
     return M;
   }
   

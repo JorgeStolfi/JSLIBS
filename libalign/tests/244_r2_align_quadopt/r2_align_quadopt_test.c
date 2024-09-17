@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {r2_align_quadopt.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-09-07 16:28:52 by stolfi */ 
+/* Last edited on 2024-09-03 17:47:43 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_align_COPYRIGHT \
@@ -28,20 +28,31 @@
 
 int32_t main(int32_t argn, char **argv);
 
-void talq_do_test(int32_t ni);
-  /* Performs a test with alignment vectors of {ni} points. */
+void talq_do_test(int32_t ni, bool_t bal, bool_t verbose);
+  /* Performs a test with alignment vectors of {ni} points,
+    required to be balanced or not depending on {bal}. */
 
-void talq_choose_arad(int32_t ni, r2_t arad[]);
+void talq_choose_arad(int32_t ni, r2_t arad[], bool_t verbose);
   /* Stores into {arad[0..ni-1]} a random radius vector for the basic ellipsoid {\RE}. */
 
-void talq_choose_ctr(int32_t ni, r2_t ctr[]);
+void talq_choose_ctr(int32_t ni, r2_t ctr[], bool_t verbose);
   /* Stores into {ctr[0..ni-1]} a random center for the basic ellipsoid {\RE}. */
 
-void talq_test_align_quadopt(int32_t ni, r2_t ctr[], r2_t arad[], double tol, r2_t u0[], r2_t u1[], r2_t popt[]);
+void talq_test_align_quadopt
+  ( int32_t ni,
+    r2_t ctr[],
+    r2_t arad[],
+    bool_t bal,
+    double tol,
+    r2_t u0[],
+    r2_t u1[],
+    r2_t popt[],
+    bool_t verbose
+  );
   /* Tests the {r2_align_quadopt} function in the ellipsoid {\RF} defined
-    by center {ctr[0..ni-1]} and radius vector {arad[0..ni-1]}. Searches
-    on a grid with step {tol}. The goal function is the squared distance
-    from {popt[0..ni-1]}.
+    by center {ctr[0..ni-1]}, radius vector {arad[0..ni-1]}, and balancing
+    option {bal}. Searches on a grid with step {tol}. The goal function is 
+    the squared distance from {popt[0..ni-1]}. 
     
     If {u0,u1} are not NULL, they should be unit vectors in the linear
     subspace {\RV} parallel to {\RF}. Then it also writes a file
@@ -56,39 +67,44 @@ int32_t main(int32_t argc, char **argv)
   {
     srandom(4615*417);
 
-    talq_do_test(2);
-    talq_do_test(5);
+    bool_t verbose = TRUE;
+    for (int32_t kbal = 0; kbal <= 1; kbal++)
+      { bool_t bal = kbal > 0;
+        talq_do_test(2, bal, verbose);
+        talq_do_test(5, bal, verbose);
+      }
     
     return 0;
   }
   
-void talq_do_test(int32_t ni)
+void talq_do_test(int32_t ni, bool_t bal, bool_t verbose)
   { 
+    fprintf(stderr, "======================================================================\n");
     fprintf(stderr, "--- testing {r2_align_quadopt} ni = %d ---\n", ni);
 
-    fprintf(stderr, "... choosing ellipsoid center {ctr} ...\n");
+    if (verbose) { fprintf(stderr, "... choosing ellipsoid center {ctr} ...\n"); }
     r2_t ctr[ni];   /* Central alignment vector. */
-    talq_choose_ctr(ni, ctr);
+    talq_choose_ctr(ni, ctr, verbose);
 
-    fprintf(stderr, "... choosing basic ellipsoid radius {arad} ...\n");
+    if (verbose) { fprintf(stderr, "... choosing basic ellipsoid radius {arad} ...\n"); }
     r2_t arad[ni];  /* Radius vector if basic ellipsoid {\RE}. */
-    talq_choose_arad(ni, arad);
+    talq_choose_arad(ni, arad, verbose);
     
-    fprintf(stderr, "... Computing the main axes and radii of the search ellipsoid {\\RF} ...\n");
+    if (verbose) { fprintf(stderr, "... Computing the main axes and radii of the search ellipsoid {\\RF} ...\n"); }
     i2_t nv = r2_align_count_variable_coords (ni, arad);
-    fprintf(stderr, "num of variable coords nv = (%d,%d)\n", nv.c[0], nv.c[1]);
+    if (verbose) { fprintf(stderr, "  num of variable coords nv = (%d,%d)\n", nv.c[0], nv.c[1]); }
     int32_t nd = r2_align_count_degrees_of_freedom(nv, bal);
-    fprintf(stderr, "search dimensions nd = %d\n", nd);
+    if (verbose) { fprintf(stderr, "  search dimensions nd = %d\n", nd); }
     r2_t U[ni*nd];
     double urad[nd];
-    r2_align_compute_search_ellipsoid (ni, arad, nd, U, urad);
+    r2_align_compute_search_ellipsoid (ni, arad, bal, nd, U, urad);
 
-    fprintf(stderr, "... Finding the largest dimension of {\\RF} ...\n");
+    if (verbose) { fprintf(stderr, "... Finding the largest dimension of {\\RF} ...\n"); }
     double ursup = 0.0;
     for (int32_t k = 0; k < nd; k++)  { if (urad[k] > ursup) { ursup = urad[k]; } }
-    fprintf(stderr, "largest radius of {\\RF} = %.8f\n", ursup);
+    if (verbose) { fprintf(stderr, "largest radius of {\\RF} = %.8f\n", ursup); }
 
-    fprintf(stderr, "... Choosing the optimum point {popt} in {\\RF} ...\n");
+    if (verbose) { fprintf(stderr, "... Choosing the optimum point {popt} in {\\RF} ...\n"); }
     double tol = 0.30;
     r2_t popt[ni];
     if (nd > 0)
@@ -116,12 +132,12 @@ void talq_do_test(int32_t ni)
             ntry++;
             dr = sqrt(r2_align_rel_disp_sqr(ni, popt, ctr, arad));
             de = sqrt(r2_align_dist_sqr(ni, popt, ctr));
-            fprintf(stderr, "  dr = %.8f  de = %.8f\n", dr, de);
+            if (verbose) { fprintf(stderr, "  dr = %.8f  de = %.8f\n", dr, de); }
             /* Check if well within the ellipsoid and not too close to {ctr}: */
             if ((dr <= drmax) && (de >= demin)) { break; }
           }
-        fprintf(stderr, "chose {popt} with %d attempts dr = %.8f de = %.8f\n", ntry, dr, de);
-        r2_align_print_vector(stderr, ni, "popt", -1, popt);
+        if (verbose) { fprintf(stderr, "chose {popt} with %d attempts dr = %.8f de = %.8f\n", ntry, dr, de); }
+        if (verbose) { r2_align_print_vector(stderr, ni, "popt", -1, popt); }
         demand(dr <= 1.0 + 1.0e-8, "{popt} outside the ellipsoid");
       }
     else
@@ -132,35 +148,47 @@ void talq_do_test(int32_t ni)
     /* If {nd} is 2, define the axis vectors of the indep plot variables: */
     r2_t *u0 = (nd == 2 ? &(U[0*ni]) : NULL);
     r2_t *u1 = (nd == 2 ? &(U[1*ni]) : NULL);
-    talq_test_align_quadopt(ni, ctr, arad, tol, u0, u1, popt);
+    talq_test_align_quadopt(ni, ctr, arad, bal, tol, u0, u1, popt, verbose);
     return;
   }
     
-void talq_choose_arad(int32_t ni, r2_t arad[])
+void talq_choose_arad(int32_t ni, r2_t arad[], bool_t verbose)
   { 
-    fprintf(stderr, "... choosing the basic domain radius {arad} ...\n");
+    if (verbose) { fprintf(stderr, "... choosing the basic domain radius {arad} ...\n"); }
     double rmax = 4.999;
-    double rmin = 1.500;
-    r2_t zfrac = (ni == 2 ? (r2_t){{ 0.00, 0.00 }} : (r2_t){{ 0.25, 0.75 }});
-    r2_align_throw_arad(ni, zfrac, rmin, rmax, arad);
-    r2_align_print_vector(stderr, ni, "arad", -1, arad);
+    int32_t nvmin = 2;
+    r2_align_throw_arad(ni, rmax, nvmin, arad, verbose);
     return;
   }  
   
-void talq_choose_ctr(int32_t ni, r2_t ctr[])
+void talq_choose_ctr(int32_t ni, r2_t ctr[], bool_t verbose)
   { 
-    fprintf(stderr, "... choosing the center {ctr} ...\n");
+    if (verbose) { fprintf(stderr, "... choosing the center {ctr} ...\n"); }
     /* r2_align_throw_ball_vector(ni, 0.0, 1.995, ctr);  */
     for (int32_t i = 0; i < ni; i++) { ctr[i] = (r2_t){{ 1.0, 2.0 }}; }
-    r2_align_print_vector(stderr, ni, "ctr", -1, ctr);
+    if (verbose) { r2_align_print_vector(stderr, ni, "ctr", -1, ctr); }
     return;
   }
     
-void talq_test_align_quadopt(int32_t ni, r2_t ctr[], r2_t arad[], double tol, r2_t u0[], r2_t u1[], r2_t popt[])
+void talq_test_align_quadopt
+  ( int32_t ni,
+    r2_t ctr[],
+    r2_t arad[],
+    bool_t bal,
+    double tol,
+    r2_t u0[],
+    r2_t u1[],
+    r2_t popt[],
+    bool_t verbose
+  )
   {
     bool_t debug = FALSE;
     
-    int32_t nd = r2_align_count_degrees_of_freedom(ni, arad);
+    /* Count variable coords along each axis: */
+    i2_t nv = r2_align_count_variable_coords (ni, arad); 
+    
+    /* Determine the dimension of the search space: */
+    int32_t nd = r2_align_count_degrees_of_freedom(nv, bal);
     FILE *wr = NULL;
     
     /* Find index {ip[j]} of alignment coord to plot from each axis, or {-1} if none: */
@@ -185,7 +213,7 @@ void talq_test_align_quadopt(int32_t ni, r2_t ctr[], r2_t arad[], double tol, r2
     
     double F2sol = NAN;
     plot = TRUE;
-    r2_align_quadopt(ni, &FD2, arad, tol, psol, &F2sol);
+    r2_align_quadopt(ni, &FD2, arad, bal, tol, psol, &F2sol);
     
     fprintf(stderr, "  F2 (sol) = %12.6f\n", F2sol);
     for (int32_t i = 0; i < ni; i++) 

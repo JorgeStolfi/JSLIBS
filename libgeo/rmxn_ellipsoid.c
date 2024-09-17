@@ -1,5 +1,5 @@
 /* See {minn_constr.h}. */
-/* Last edited on 2023-03-26 21:48:07 by stolfi */
+/* Last edited on 2024-09-03 17:45:56 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -137,7 +137,7 @@ void rmxn_ellipsoid_normalize_constraints
   { 
     bool_t debug = TRUE;
     
-    if (debug) { fprintf(stderr, "normalizing the constraints...\n"); }
+    if (debug) { fprintf(stderr, "  normalizing the constraints...\n"); }
     
     double *C = rmxn_alloc(n,n); /* The orthonormalized constraints. */
     int32_t m = 0; /* Number of independent constraints found. */
@@ -151,7 +151,7 @@ void rmxn_ellipsoid_normalize_constraints
     
     /* Add the given constraints: */    
     for (int32_t i = 0; i < q; i++)
-      { if (verbose) { fprintf(stderr, " adding given constraint {v*A[%d,*]' == 0} ...", i); }
+      { if (verbose) { fprintf(stderr, "    adding given constraint {v*A[%d,*]' == 0} ...", i); }
         double *Ai = &(A[i*n]);
         add_constraint(Ai);
       }
@@ -161,18 +161,18 @@ void rmxn_ellipsoid_normalize_constraints
     for (int32_t j = 0; j < n; j++) { e[j] = 0.0; }
     for (int32_t i = 0; i < n; i++)
       { demand(arad[i] >= 0, "invalid {arad}");
-        if (arad[i] >= 1.0e-100)
-          { if (verbose) { fprintf(stderr, "  adding axial constraint {v[%d] == 0} ...", i); }
+        if (arad[i] < 1.0e-100)
+          { if (verbose) { fprintf(stderr, "    adding axial constraint {v[%d] == 0} ...", i); }
             e[i] = 1.0;
             add_constraint(e);
             e[i] = 0.0; /* Restore {e} to all zeros. */
           }
       }
-    if (verbose) { fprintf(stderr, "  got %d non-redundant constraints", m); }
+    if (verbose) { fprintf(stderr, "  got %d non-redundant constraints\n", m); }
     if (m < n) { C = realloc(C, m*n); }
     (*m_P) = m;
     (*C_P) = C;
-    if (debug) { fprintf(stderr, "done normalizing the constraints.\n"); }
+    if (debug) { fprintf(stderr, "  done normalizing the constraints.\n"); }
     return;
      
      /* INTERNAL IMPLS */

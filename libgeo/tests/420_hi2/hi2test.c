@@ -1,5 +1,5 @@
 /* hi2test --- test program for hi2.h  */
-/* Last edited on 2022-01-04 08:43:00 by stolfi */
+/* Last edited on 2024-09-04 20:50:47 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -85,11 +85,11 @@ void test_hi2(int32_t verbose);
 //     double y, 
 //     hi2_pmap_t *M, 
 //     hi2_point_t *q, 
-//     bool_t flip,
+//     bool_t twirl,
 //     char *msg
 //   );
-//   /* If {flip} is FALSE, maps the point {[w,x,y]} by {M} and compares it
-//     with {q}. If {flip} is true, tries reversing the signs of {w,x,y} in
+//   /* If {twirl} is FALSE, maps the point {[w,x,y]} by {M} and compares it
+//     with {q}. If {twirl} is true, tries reversing the signs of {w,x,y} in
 //     all combinations, and proceeds as above. In either case, returns
 //     silently if some attempt produced a match (modulo rounding errors);
 //     aborts with error {msg} if all attempts failed. */
@@ -443,12 +443,12 @@ void test_hi2(int32_t verbose)
 //     double y, 
 //     hi2_pmap_t *M, 
 //     hi2_point_t *q, 
-//     bool_t flip,
+//     bool_t twirl,
 //     char *msg
 //   )
 //   { 
 //     hi2_point_t p, pM; 
-//     if (! flip)
+//     if (! twirl)
 //       { /* {w,x,y} must map to {p} as they are: */
 //         p = (hi2_point_t){{{w, x, y}}};
 //         pM = hi2_map_point(&p, M); 

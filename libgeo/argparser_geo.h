@@ -1,5 +1,5 @@
 /* argparser_geo.h -- extends argparser.h for geometric args. */
-/* Last edited on 2023-08-27 12:13:21 by stolfi */
+/* Last edited on 2024-09-17 16:28:40 by stolfi */
 
 #ifndef argparser_geo_H
 #define argparser_geo_H
@@ -16,6 +16,7 @@
 #include <r4.h>
 #include <r6.h>
 #include <hr2.h>
+#include <hr2_pmap.h>
 #include <argparser.h>
 
 r2_t argparser_get_next_r2(argparser_t *pp, double min, double max);
@@ -44,7 +45,18 @@ void argparser_get_next_adjust(argparser_t *pp, double *adjP, double min, double
     {[min _ max]}, and stores that value into {*adjP}. If the "adjust"
     keyword is not present, the procedure parses nothing and leaves
     {*adjP} unchanged. */
-    
+        
+/* ---------------------------------------------------------------------- */
+/* PROJECTIVE MAP TYPE */
+
+hr2_pmap_type_t argparser_get_next_map_type(argparser_t *pp);
+  /* Parses the next argument as a {hr2_pmap_type_t} value.
+    It should be a string in all-uppercase or all lowercase:
+    "IDENTITY" or "identity" for {hr2_pmap_type_IDENTITY},
+    "TRANSLATION" or "translation" for {hr2_pmap_type_TRANSLATION},
+    and so on.  Fails with error message if the next argument does
+    not exist, has been parsed, or is not one of the valid types. */
+
 /* ---------------------------------------------------------------------- */
 /* PROJECTIVE MAP AS MATRIX */
 
@@ -133,9 +145,9 @@ hr2_pmap_t argparser_get_proj_map(argparser_t *pp);
 hr2_pmap_t argparser_get_next_feature_map(argparser_t *pp);
   /* Parses the next command line arguments as an affine map that takes a canonical 
     orthogonal sampling grid to a grid of samples on {R^2}, as described by 
-    {argparser_featrue_map_HELP} and {argparser_feature_map_INFO}. */
+    {argparser_feature_map_HELP} and {argparser_feature_map_INFO}. */
     
-#define argparser_featrue_map_HELP \
+#define argparser_feature_map_HELP \
   " {CX} {CY}  {A00} {A01} {A10} {A11} / {MAG}"
   
 #define argparser_feature_map_INFO \
