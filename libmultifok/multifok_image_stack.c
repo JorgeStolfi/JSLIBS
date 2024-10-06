@@ -1,5 +1,5 @@
 /* See {multifok_image_stack.h}. */
-/* Last edited on 2024-08-02 15:44:38 by stolfi */
+/* Last edited on 2024-09-19 12:57:56 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -16,15 +16,15 @@
   
 #define DASHES "------------------------------------------------------------"
      
-multifok_image_stack_t* mfmi_read_stack
+multifok_image_stack_t* multifok_image_stack_read
   ( char *inPrefix,
+    double zDep,
     int32_t NI,
-    double *zFoc
+    double zFoc[]
   )
   {
-    
-    float_image_t *csimg = talloc(NI, float_image_t*);
-    float_image_t *shimg = talloc(NI, float_image_t*);
+    float_image_t **csimg = talloc(NI, float_image_t*);
+    float_image_t **shimg = talloc(NI, float_image_t*);
     
     int32_t NC, NX, NY; /* Image dimensions. */
  

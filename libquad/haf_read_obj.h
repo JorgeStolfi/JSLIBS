@@ -2,7 +2,7 @@
 #define haf_read_obj_H
 
 /* Reading the half-edge representation of 2D meshes. */ 
-/* Last edited on 2024-06-27 18:07:56 by stolfi */
+/* Last edited on 2024-10-01 09:41:55 by stolfi */
 
 #define half_read_obj_H_copyright \
   "Copyright (C) 2023 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
@@ -53,7 +53,7 @@ void haf_read_obj_file
     arc in {A} is the edge's ID minus {eid0}. 
     
     The procedure also stores in {*vorg_P} and {*fleft_P} two newly
-    allocated arrays of integers {vorg,fletf}, both with size {na =
+    allocated arrays of integers {vorg,fleft}, both with size {na =
     2*A.ne}, that specify the index into {V} of the origin vertex {vorg[ka]}
     and the index of the left face {fleft[ka]} of the arc with ID {ka + 2*eid0}.
     The index of a face is its sequential index in  the OBJ file, 

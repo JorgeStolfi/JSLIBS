@@ -1,4 +1,4 @@
-# Last edited on 2023-04-29 04:30:24 by stolfi
+# Last edited on 2024-10-01 16:10:42 by stolfi
 
 SHELL := /bin/bash
 
@@ -22,8 +22,19 @@ include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 
 all: check
 
-NX := 160
-NY := 120
+# Image dimensions:
+# IMAGE_NX := 640
+# IMAGE_NY := 480
+
+# IMAGE_NX := 160
+# IMAGE_NY := 120
+
+IMAGE_NX := 320
+IMAGE_NY := 240
+
+# Nominal scene dimensions:
+SCENE_WX := 160
+SCENE_WY := 120
 
 # {TEXTURE}:{MULTIPLICITY}:{SCENE_TYPE}
 # where {MULTIPLICITY} is "S" for single frame, "M" for frame stack,
@@ -31,9 +42,8 @@ NY := 120
 # "T" for overlapping.
 
 QUICK_TESTS := \
-  wavyu-zz:S:R \
-  cloth-84:S:F \
-  wavys-09:M:F
+  wavys-09:M:F \
+  cloth-84:S:F
 
 SOME_TESTS := \
   cloth-84:S:R \
@@ -121,7 +131,7 @@ else ifeq "/${ZOPT}" "/M"
   # Stack of images at multiple focus plane {Z}:
   Z_DEP := 6.0
   ZFOC_MIN := 0.5
-  ZFOC_MAX := 29.5
+  ZFOC_MAX := 30.5
   ZFOC_STEP := 3.0
 else
   # Unknown ${ZOPT}:
@@ -131,7 +141,7 @@ endif
 PATTERN_DIR := in/pgm-256x256
 PATTERN_FILE := ${PATTERN_DIR}/${PATTERN}.pgm
 
-SIZE_TAG := ${shell printf "%04dx%04d" ${NX} ${NY}}
+SIZE_TAG := ${shell printf "%04dx%04d" ${IMAGE_NX} ${IMAGE_NY}}
 OUT_PREFIX := out/st${SCENE_TYPE}-${SIZE_TAG}-${PATTERN}/frame
 SHARP_IMAGE := ${OUT_PREFIX}-sharp-cs.ppm
 PIX_PLOT_FILE := ${OUT_PREFIX}-pixplot.txt
@@ -145,7 +155,11 @@ single-test: clean-out-test ${SHARP_IMAGE}
 	@echo "SHARP_IMAGE = ${SHARP_IMAGE}" 1>&2
 
 ${SHARP_IMAGE}: ${PROG} ${RUN_SCRIPT} Makefile
-	./${RUN_SCRIPT} ${SCENE_TYPE} ${NX} ${NY} ${PATTERN_DIR} ${PATTERN} ${Z_DEP} ${ZFOC_MIN} ${ZFOC_MAX} ${ZFOC_STEP}
+	./${RUN_SCRIPT} \
+          ${SCENE_TYPE} ${SCENE_WX} ${SCENE_WY} \
+          ${IMAGE_NX} ${IMAGE_NY} \
+          ${PATTERN_DIR} ${PATTERN} \
+          ${Z_DEP} ${ZFOC_MIN} ${ZFOC_MAX} ${ZFOC_STEP}
 	if [[ "/${ZOPT}" == "/M" ]]; then \
           plot_hrad2_by_z.sh ${PIX_PLOT_FILE} ; \
         fi

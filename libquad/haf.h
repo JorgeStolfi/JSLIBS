@@ -2,7 +2,7 @@
 #define haf_H
 
 /* The half-edge data structure to encode the topology of 2D meshes. */
-/* Last edited on 2024-06-27 07:53:22 by stolfi */
+/* Last edited on 2024-10-01 09:20:38 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -101,7 +101,7 @@ haf_arc_t haf_oprev(haf_arc_t a);
     namely {a.sym.lnext}. Takes constant time. */
   
 haf_arc_t haf_dprev(haf_arc_t a);
-  /* he next arc /clockwise/ with the same destination vertex
+  /* The next arc /clockwise/ with the same destination vertex
     namely {a.lnext.sym}. Takes constant time. */
 
 /* SLOW WALKING OPERATORS */

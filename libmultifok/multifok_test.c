@@ -1,5 +1,5 @@
 /* See {multifok_test.h}. */
-/* Last edited on 2023-11-26 07:01:52 by stolfi */
+/* Last edited on 2024-10-01 14:37:06 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -105,10 +105,12 @@ void multifok_test_compute_focus_plane_point_color_sharpness_and_zave
     {zvar(p)} is the variance of {zval(R)} over those rays.*/
 
 void multifok_test_compute_pixel_color_sharpness_and_zave
-  ( multifok_scene_t *scene,
-    multifok_scene_pattern_t *pattern,
-    int32_t ix, 
+  ( int32_t ix,
     int32_t iy, 
+    multifok_scene_t *scene,
+    multifok_scene_pattern_t *pattern,
+    int32_t NX,
+    int32_t NY,
     double zFoc, 
     double zDep, 
     int32_t NP,
@@ -126,6 +128,9 @@ void multifok_test_compute_pixel_color_sharpness_and_zave
     average {zave(pix)}, and scene {Z} variance at the pixel {pix} on column {ix}
     and row {iy}, by ray-tracing the given {scene} with multiple rays.
     Returns these valus in {*pix_colr_P} {*pix_shrp_P}, {*pix_zave_P}, and {*pix_zvar_P}.
+    
+    The image-to-scene scale  implicitly chosen so that the image domain fits snugly in
+    the scene domain
     
     Specifically, the procedure generates an array of {NP} by {NP}
     sample point in and around the pixel {pix}, as explained in
@@ -159,6 +164,7 @@ void multifok_test_images_make
   {
     demand((NX >= 10) && (NY >= 10), "image is too small");
     int32_t NC = 3;
+    
     float_image_t *csimg = float_image_new(NC, NX, NY);
     float_image_t *shimg = float_image_new(1, NX, NY);
     float_image_t *azimg = float_image_new(1, NX, NY);
@@ -179,14 +185,16 @@ void multifok_test_images_make
       { for (int32_t ix = 0; ix < NX; ix++)
           { /* fprintf(stderr, "(%d,%d)", ix, iy); */
             bool_t debug = FALSE;
+            
             if (debug)
               { /* Restrict debugging to one pixel */ 
                 if (scene->NO == 0)
                   { debug = ((ix == 10) && (iy == 10)); }
                 else
                   { /* Lets debug a pixel right over object 0: */
-                    r3_t *ctr = &(scene->objs[0].ctr);
-                    debug = ((ix == (int32_t)(ctr->c[0] + 0.5)) && (iy == (int32_t)(ctr->c[1] + 0.5))); 
+                    r3_t *ctr_obj = &(scene->objs[0].ctr);
+                    r2_t p_img_obj = multifok_test_scene_to_pixel(ctr_obj->c[0], ctr_obj->c[1], scene->dom, NX, NY);
+                    debug = ((fabs(ix - p_img_obj.c[0]) < 0.55) && (fabs(iy - p_img_obj.c[1]) < 0.55)); 
                   }
               }
             
@@ -197,7 +205,7 @@ void multifok_test_images_make
             double pix_zvar;
             
             multifok_test_compute_pixel_color_sharpness_and_zave
-              ( scene, pattern, ix, iy, zFoc, zDep, NP, wp, NR, tilt, wr, debug,
+              ( ix, iy, scene, pattern, NX, NY, zFoc, zDep, NP, wp, NR, tilt, wr, debug,
                 &pix_colr, &pix_shrp, &pix_zave, &pix_zvar
               );
             for (int32_t ic = 0; ic < NC; ic++)
@@ -213,7 +221,15 @@ void multifok_test_images_make
     (*dzimg_P) = dzimg;
   }
     
-void multifok_test_estimate_zave_zdev(int32_t ix, int32_t iy, multifok_scene_t *scene, double *zave_P, double *zdev_P)
+void multifok_test_estimate_pixel_zave_zdev
+  ( int32_t ix,
+    int32_t iy,
+    multifok_scene_t *scene,
+    int32_t NX,
+    int32_t NY,
+    double *zave_P,
+    double *zdev_P
+  )
   { 
     r3_t d = (r3_t){{ 0.0, 0.0, 1.0 }}; /* Ray direction. */
     int32_t NR = 9; /* Number of rays to trace. */
@@ -221,9 +237,12 @@ void multifok_test_estimate_zave_zdev(int32_t ix, int32_t iy, multifok_scene_t *
     int32_t kz = 0;
     for (int32_t ex = -1; ex <= +1; ex++)
       { for (int32_t ey = -1; ey <= +1; ey++)
-          { multifok_scene_object_t *ray_htob; /* Object hit, or {NULL} if floor. */
+          { /* Compute a point {p}directly above center of pixel {(ix,iy)} perturbed by {0.5*(ex,ey)}: */
+            r3_t p2 = multifok_test_pixel_to_scene(ix + 0.5*(ex + 1), iy + 0.5*(ey + 1), NX, NY, scene->dom);
+            r3_t p = (r3_t){{ p2.c[0], p2.c[1], ZMAX + 1.0 }};
+            /* Ray-trace the scene from {p} straight down: */
+            multifok_scene_object_t *ray_htob; /* Object hit, or {NULL} if floor. */
             r3_t ray_htpt; /* Hit point. */
-            r3_t p = (r3_t){{ ix + 0.5*(ex + 1), iy + 0.5*(ey + 1), ZMAX + 1.0 }};
             multifok_scene_ray_trace(scene, &p, &d, FALSE, &ray_htob, &ray_htpt);
             assert(kz < NR);
             zval[kz] = ray_htpt.c[2]; /* {Z} of hit points. */
@@ -242,10 +261,12 @@ void multifok_test_estimate_zave_zdev(int32_t ix, int32_t iy, multifok_scene_t *
   }
 
 void multifok_test_compute_pixel_color_sharpness_and_zave
-  ( multifok_scene_t *scene,
-    multifok_scene_pattern_t *pattern,
-    int32_t ix, 
+  ( int32_t ix,
     int32_t iy, 
+    multifok_scene_t *scene,
+    multifok_scene_pattern_t *pattern,
+    int32_t NX,
+    int32_t NY,
     double zFoc, 
     double zDep, 
     int32_t NP,
@@ -266,7 +287,7 @@ void multifok_test_compute_pixel_color_sharpness_and_zave
       { fprintf(stderr, SHARPS "\n");
         fprintf(stderr, "computing pixel ix = %d iy = %d\n", ix, iy);
       }
-
+    
     int32_t NC = 3;
     /* Scan sampling points, store sample point averages and variances, and sample weights: */
     double sum_wp_colr[NC]; /* Sum of {w(p)*colr(p)}. */
@@ -275,8 +296,6 @@ void multifok_test_compute_pixel_color_sharpness_and_zave
     double sum_wp_zave = 0.0; /* Sum of {w(p)*zave(p)}. */
     double sum_wp_dp2 = 0.0; /* Sum of {w(p)*dp(p)^2}, {dp(p)=|(p.x-ctr.x,p.y-ctr.y)|}. */
     double sum_wp = 0.0; /* Sum of {w(p)}. */
-    r3_t p;
-    p.c[2] = zFoc;
     int32_t NS = NP*NP; /* Number of sampling points. */
     double pt_zaves[NS];
     double pt_zvars[NS];
@@ -284,10 +303,14 @@ void multifok_test_compute_pixel_color_sharpness_and_zave
     int32_t ks = 0; /* Sample index in {0..NS-1}. */
     for (int32_t jx = 0; jx < NP; jx++)
       { double dpx = 2*(jx + 0.5)/NP - 1.0;
-        p.c[0] = ix + 0.5 + dpx;
+        double x_img = ix + 0.5 + dpx;
         for (int32_t jy = 0; jy < NP; jy++)
           { double dpy = 2*(jy + 0.5)/NP - 1.0;
-            p.c[1] = iy + 0.5 + dpy;
+            double y_img = iy + 0.5 + dpy;
+            /* Map point of image to scene cordinates: */
+            r3_t p_scene = multifok_test_pixel_to_scene(x_img, y_img, NX, NY, scene->dom);
+            /* Set the {Z} coordinate to {zFoc} instead of zero: */
+            p_scene.c[2] = zFoc;
             double pt_wp = wp[jx]*wp[jy];
             frgb_t pt_colr;
             double pt_shrp;
@@ -295,10 +318,10 @@ void multifok_test_compute_pixel_color_sharpness_and_zave
             double pt_zvar;
             if (verbose) 
               { fprintf(stderr, "  sample point jx = %d jy = %d", jx, jy);
-                r3_gen_print(stderr, &p, "%12.6f", "  = ( ", " ", " )\n");
+                r3_gen_print(stderr, &p_scene, "%12.6f", "  = ( ", " ", " )\n");
               }
             multifok_test_compute_focus_plane_point_color_sharpness_and_zave
-              ( scene, pattern, &p, zDep, NR, tilt, wr, debug,
+              ( scene, pattern, &p_scene, zDep, NR, tilt, wr, debug,
                 &pt_colr, &pt_shrp, &pt_zave, &pt_zvar
               );
             if (verbose) { fprintf(stderr, "  shrp = %12.8f zave = %12.6f zvar = %16.12f\n", pt_shrp, pt_zave, pt_zvar); }
@@ -442,7 +465,51 @@ void multifok_test_compute_focus_plane_point_color_sharpness_and_zave
     
     if (verbose) { fprintf(stderr, "  " EQUALS "\n"); }
   }
+  
+r3_t multifok_test_pixel_to_scene
+  ( double x_img,
+    double y_img,
+    int32_t NX,
+    int32_t NY,
+    interval_t scene_dom[]
+  )
+  {
+    /* Scale from image pixel {XY} to scene {XY}: */
+    double WX_scene = 2*interval_rad(&(scene_dom[0]));
+    double WY_scene = 2*interval_rad(&(scene_dom[1]));
+    double scale_img = fmax(((double)NX)/WX_scene, ((double)NY)/WY_scene);
 
+    double x_scene_ctr = interval_mid(&(scene_dom[0]));
+    double y_scene_ctr = interval_mid(&(scene_dom[1]));
+    double x_img_ctr = 0.5*NX;
+    double y_img_ctr = 0.5*NY;
+    double x_scene = x_scene_ctr + (x_img - x_img_ctr)/scale_img;
+    double y_scene = y_scene_ctr + (y_img - y_img_ctr)/scale_img;
+    return (r3_t){{ x_scene, y_scene, 0 }};
+  }
+  
+r2_t multifok_test_scene_to_pixel
+  ( double x_scene,
+    double y_scene,
+    interval_t scene_dom[],
+    int32_t NX,
+    int32_t NY
+  )
+  {
+    /* Scale from image pixel {XY} to scene {XY}: */
+    double WX_scene = 2*interval_rad(&(scene_dom[0]));
+    double WY_scene = 2*interval_rad(&(scene_dom[1]));
+    double scale_img = fmax(((double)NX)/WX_scene, ((double)NY)/WY_scene);
+
+    double x_scene_ctr = interval_mid(&(scene_dom[0]));
+    double y_scene_ctr = interval_mid(&(scene_dom[1]));
+    double x_img_ctr = 0.5*NX;
+    double y_img_ctr = 0.5*NY;
+    double x_img = y_img_ctr + (x_scene - x_scene_ctr)*scale_img;
+    double y_img = x_img_ctr + (y_scene - y_scene_ctr)*scale_img;
+    return (r2_t){{ x_img, y_img }};    
+  }
+  
 void multifok_test_choose_ray_tilts_and_weights
   ( int32_t NR_min, 
     double zDep, 

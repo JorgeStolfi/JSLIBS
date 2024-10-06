@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {multifok_test_image_make.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-04-28 17:38:37 by stolfi */ 
+/* Last edited on 2024-10-06 05:46:40 by stolfi */ 
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
 #define test_mfok_make_image_COPYRIGHT \
@@ -42,12 +42,15 @@ typedef struct mfmi_options_t
     char *sceneType;     /* Scene type: "R", "F", "T", etc. */
     int32_t pixSampling; /* Number of sampling points per axis and pixel. */
     int32_t dirSampling; /* Min number of aperture rays per point. */
+    char *patternFile;   /* File name of pattern to use to paint objects. */
+    char *outPrefix;     /* Prefix for output filenames. */
+    /* These parameters are specified in user units: */
+    double sceneSize_X;  /* Nominal {X}-span of scene */
+    double sceneSize_Y;  /* Nominal {Y}-span of scene */
     double focDepth;     /* Depth of focus. */
     double zRange_lo;    /* {Z} value of lowest frame. */
     double zRange_hi;    /* {Z} value of highest frame. */
     double zStep;        /* {Z} increment between frames. */
-    char *patternFile;   /* File name of pattern to use to paint objects. */
-    char *outPrefix;     /* Prefix for output filenames. */
   } mfmi_options_t;
   /* Command line parameters. */
   
@@ -59,13 +62,21 @@ int32_t main(int32_t argn, char **argv);
 mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv);
   /* Parses the command line options. */
   
-multifok_scene_t *mfmi_make_scene(int32_t NX, int32_t NY, bool_t rampOnly, double minSep);
-  /* Generates a test scene with disks, balls, and a back plane, roughly spanning the 
-    image domain {[0_NX]×[0_NY]} in {X} and {Y}, and the interval {[1.0 _ ZMAX-1.0]} in {Z}.
+multifok_scene_t *mfmi_make_scene
+  ( double WX,
+    double WY,
+    int32_t NX,
+    int32_t NY,
+    bool_t rampOnly, 
+    double minSep
+  );
+  /* Generates a test scene with disks, balls, and a back plane, roughly
+    spanning the rectanle {[0_WX]×[0_WY]} in {X} and {Y}, and the
+    interval {[1.0 _ ZMAX-1.0]} in {Z}.
   
-    If {rampOnly} is true, the scene will have just a tilted floor, 
-    that rises from {Z=box[2].end[0]} at {X=0} to {Z=box[2].end[1]} at {X=NX}.  The {minSep} is
-    ignored in this case.
+    If {rampOnly} is true, the scene will have just a tilted floor, that
+    rises from {Z=box[2].end[0]} at {X=0} to {Z=box[2].end[1]} at
+    {X=WX}. The {minSep} is ignored in this case.
     
     If {bak_tilt} is false, the floor will be horizontal a {Z=0}, 
     and there will be a number of textured horizontal disks or balls
@@ -73,10 +84,12 @@ multifok_scene_t *mfmi_make_scene(int32_t NX, int32_t NY, bool_t rampOnly, doubl
     
     In this case, the number of objects is chosen by the procedure.
     
+    The object radius will range from {rMin} to {rMax} in scene coordinates.
+    
     If {minSep} is negative, the {XY} projections of the objects objects
     may overlap , and lie partly outside of the image's domain
-    {[0_NX]×[0_NY]}. If {minSep} is non-negative, their {XY} projections
-    will be at least {minSep} away from each other and from the edges of
+    {[0_WX]×[0_WY]}. If {minSep} is non-negative, their {XY} projections
+    will be at least {minSep} scene units away from each other and from the edges of
     that rectangle. In any case, the objects {Z} projections will be
     entirely contained in the interval {box[2]}. */
 
@@ -140,9 +153,6 @@ int32_t main (int32_t argc, char **argv)
   {
     mfmi_options_t *o = mfmi_parse_options(argc, argv);
 
-    int32_t NX = o->imgSize_X;
-    int32_t NY = o->imgSize_Y;
-
     double zDep = o->focDepth;
 
     /* Create the test scene: */
@@ -169,7 +179,7 @@ int32_t main (int32_t argc, char **argv)
       }
 
     /* The max number of disks is adjusted to give a reasonable cover fraction in overlap mode: */
-    multifok_scene_t *scene = mfmi_make_scene(NX, NY, rampOnly, minSep);
+    multifok_scene_t *scene = mfmi_make_scene(o->sceneSize_X, o->sceneSize_Y, o->imgSize_X, o->imgSize_Y, rampOnly, minSep);
     
     mfmi_make_images_from_pattern_image(o, scene);
       
@@ -178,23 +188,28 @@ int32_t main (int32_t argc, char **argv)
   
 void mfmi_make_images_from_pattern_image(mfmi_options_t *o, multifok_scene_t *scene)
   { 
-    
     float_image_t *pimg = mfmi_read_pattern_image(o->patternFile);
     int32_t NC_pat, NX_pat, NY_pat;
     float_image_get_size(pimg, &NC_pat, &NX_pat, &NY_pat);
     demand(NC_pat == 1, "pattern image must be grayscale");
 
-    int32_t NX_img = o->imgSize_X;
-    int32_t NY_img = o->imgSize_Y;
+    /* Scene size in user units:  */
+    double WX_scene = 2*interval_rad(&(scene->dom[0]));
+    double WY_scene = 2*interval_rad(&(scene->dom[1]));
+    
+    /* Scale from pattern pixel {XY} to scene {XY}: */
+    double scale_pat = fmin(((double)NX_pat)/WX_scene, ((double)NY_pat)/WY_scene);
      
     auto double photo_pattern(double x, double y, double z, int32_t iobj);
-      /* Returns a grayscale pattern value as function of the point {(x,y,z)}.
-        Currently the value of {pimg} interpolated at {x,y}, rotated
-        by an angle that depends on {iobj}.  Used to interpolate between
-        the object's {bg} and {fg} colors.  
+      /* Returns a grayscale pattern value as function of the point with
+        scene coordinates {(x,y,z)}. Currently the value of {pimg}
+        interpolated at {x,y}, rotated by an angle that depends on
+        the parameter {iobj}, typically the index of the scene's object. 
+        Used to interpolate between the object's {bg} and {fg}
+        colors.
         
         The coordinates are shifted so that the center of {pimg} 
-        is centered in the new image. */
+        is centered in scene's domain. */
 
     mfmi_make_images_from_pattern_function(o, scene, photo_pattern);
     
@@ -206,14 +221,15 @@ void mfmi_make_images_from_pattern_image(mfmi_options_t *o, multifok_scene_t *sc
         double rot = iobj*M_PI/5; 
         double cr = cos(rot); 
         double sr = sin(rot);
-        double dx = x - 0.5*NX_img, dy = y - 0.5*NY_img;
-        double xr = 0.5*NX_pat + cr*dx - sr*dy;
-        double yr = 0.5*NY_pat + sr*dx + cr*dy;
+        double dx_scene = x - 0.5*WX_scene;
+        double dy_scene = y - 0.5*WY_scene;
+        double xr_pat = 0.5*NX_pat + scale_pat*(cr*dx_scene - sr*dy_scene);
+        double yr_pat = 0.5*NY_pat + scale_pat*(sr*dx_scene + cr*dy_scene);
         
         /* Eval the pattern image: */
         int32_t order = 1;  /* Bicubic C1 interpolation. */
         ix_reduction_t red = ix_reduction_PXMIRR;
-        double r = float_image_interpolate_sample(pimg, 0, xr, yr, order, red);
+        double r = float_image_interpolate_sample(pimg, 0, xr_pat, yr_pat, order, red);
         return r;
       }
   }
@@ -224,6 +240,7 @@ void mfmi_make_images_from_pattern_function
     multifok_scene_pattern_t *pattern
   ) 
   {
+    /* Image size in pixels: */
     int32_t NX = o->imgSize_X;
     int32_t NY = o->imgSize_Y;
 
@@ -267,12 +284,12 @@ void mfmi_make_images_from_pattern_function
     fclose(plot_wr);
   }
 
-multifok_scene_t *mfmi_make_scene(int32_t NX, int32_t NY, bool_t rampOnly, double minSep)
+multifok_scene_t *mfmi_make_scene(double WX, double WY, int32_t NX, int32_t NY, bool_t rampOnly, double minSep)
   {
     /* Compute the box that has to contain all disks and balls: */
     interval_t box[3];
-    box[0] = (interval_t){{ 0.0, (double)NX }};
-    box[1] = (interval_t){{ 0.0, (double)NY }};
+    box[0] = (interval_t){{ 0.0, WX }};
+    box[1] = (interval_t){{ 0.0, WY }};
     box[2] = (interval_t){{ 1.0, ZMAX-1.0 }};
     
     bool_t verbose = TRUE;
@@ -284,8 +301,13 @@ multifok_scene_t *mfmi_make_scene(int32_t NX, int32_t NY, bool_t rampOnly, doubl
       }
     else
       { /* Disk size range: */
-        double rMin = 5.0; /* Min object radius (pixels). */
-        double rMax = 7.0; /* Max object radius (pixels). */
+        double Wmin = fmin(WX, WY);
+        double scale_img = fmax(NX/WX, NY/WY);
+        /* The min obj radius must be at least 5 pixels and 1/100 of scene: */
+        double rMin = fmax(5.0/scale_img, 0.01*Wmin); /* Min object radius. */
+        
+        /* The max obj radius must be 1/5 of scene size but fit in height: */
+        double rMax = fmin(0.45*ZMAX, 0.2*Wmin);       /* Max object radius. */
         multifok_scene_throw_objects(scene, rMin, rMax, minSep, verbose);
         char *olapx = (minSep < 0.0 ? "" : "non-overlapping ");
         fprintf(stderr, "generated a scene with %d %sdisks\n", scene->NO, olapx);
@@ -363,19 +385,19 @@ float_image_t *mfmi_read_pattern_image(char *fname)
     bool_t yup = TRUE;
     bool_t warn = TRUE;
     bool_t verbose = FALSE;
-    float_image_t *img = float_image_read_pnm_named(fname, isMask, gama, bias, yup, warn, verbose);
-    int32_t NC, NX, NY;
-    float_image_get_size(img, &NC, &NX, &NY);
-    if (NC == 3)
+    float_image_t *pat = float_image_read_pnm_named(fname, isMask, gama, bias, yup, warn, verbose);
+    int32_t NC_pat, NX_pat, NY_pat;
+    float_image_get_size(pat, &NC_pat, &NX_pat, &NY_pat);
+    if (NC_pat == 3)
       { /* Convert color image to grayscale: */
-        float_image_t *grimg = float_image_new(1, NX, NY);
-        float_image_map_channels_RGB_to_YUV(img, grimg);
-        float_image_free(img);
-        img = grimg;
-        NC = 1;
+        float_image_t *grimg = float_image_new(1, NX_pat, NY_pat);
+        float_image_map_channels_RGB_to_YUV(pat, grimg);
+        float_image_free(pat);
+        pat = grimg;
+        NC_pat = 1;
       }
-    demand(NC == 1, "pattern image must be RGB or grayscale");
-    return img;
+    demand(NC_pat == 1, "pattern image must be RGB or grayscale");
+    return pat;
   }
 
 i2_vec_t mfmi_select_plot_pixels(int32_t NX, int32_t NY, multifok_scene_t *scene)
@@ -390,8 +412,9 @@ i2_vec_t mfmi_select_plot_pixels(int32_t NX, int32_t NY, multifok_scene_t *scene
     i2_vec_t ixy = i2_vec_new(NQ_exp);
     int32_t NQ = 0; /* Pixels actually selected. */
     
-    auto void selpix(int32_t ix, int32_t iy);
-      /* Appends {ix,iy} to the list of sample pixels. */
+    auto void selpix(double x_scene, double y_scene);
+      /* Converts the point {(x_scene,y_scene)} from scene coordinates to
+        a pair of pixel indices, and appends that pair to the list of sample pixels. */
     
     if (NO > 0)
       { /* Pick {NQ_exp} object centers, preferably flat: */
@@ -411,9 +434,9 @@ i2_vec_t mfmi_select_plot_pixels(int32_t NX, int32_t NY, multifok_scene_t *scene
               { int32_t NQ_rem = NQ_exp - NQ;  /* Number of pixels still to be selected. */
                 double prpick = (NO_rem <= NQ_rem ? 1.0 : ((double)NQ_rem)/NO_rem);
                 if (drandom() < prpick) 
-                  { int32_t ix = (int32_t)floor(objk->ctr.c[0] + 0.5);
-                    int32_t iy = (int32_t)floor(objk->ctr.c[1] + 0.5);
-                    selpix(ix, iy);
+                  { double x_scene = objk->ctr.c[0];
+                    double y_scene = objk->ctr.c[1];
+                    selpix(x_scene, y_scene);
                   }
                 NO_rem--;
               }
@@ -421,18 +444,25 @@ i2_vec_t mfmi_select_plot_pixels(int32_t NX, int32_t NY, multifok_scene_t *scene
       }
     else if (! scene->flatFloor)
       { /* Scene has only a slanted floor: */
+        double WX_scene = 2*interval_rad(&(scene->dom[0]));
+        double WY_scene = 2*interval_rad(&(scene->dom[1]));
         for (int32_t kq = 0; kq < NQ_exp; kq++)
-          { int32_t ix = (int32_t)floor((kq + 0.5)*NX/NQ_exp + 0.5);
-            int32_t iy = (int32_t)floor((kq + 0.5)*NY/NQ_exp + 0.5);
-            selpix(ix, iy);
+          { double fr = (kq + 0.5)/NQ_exp;
+            double x_scene = fr*WX_scene;
+            double y_scene = fr*WY_scene;
+            selpix(x_scene, y_scene);
           }
       }
     
     i2_vec_trim(&ixy, NQ);
     return ixy;
       
-    void selpix(int32_t ix, int32_t iy) 
-      { if ((ix >= 0) && (ix < NX) && (iy >= 0) && (iy < NY))
+    void selpix(double x_scene, double y_scene) 
+      { 
+        r2_t p_img = multifok_test_scene_to_pixel(x_scene, y_scene, scene->dom, NX, NY);
+        int32_t ix = (int32_t)floor(p_img.c[0] + 0.5);
+        int32_t iy = (int32_t)floor(p_img.c[1] + 0.5);
+        if ((ix >= 0) && (ix < NX) && (iy >= 0) && (iy < NY))
           { if (debug) { fprintf(stderr, "  selected %d,%d\n", ix, iy); }
             i2_vec_expand(&ixy, NQ);
             ixy.e[NQ] = (i2_t){{ ix, iy }};
@@ -463,7 +493,11 @@ mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv)
     o->imgSize_X = (int32_t)argparser_get_next_int(pp, 30, 4096);
     o->imgSize_Y = (int32_t)argparser_get_next_int(pp, 30, 4096);
 
-    argparser_get_keyword(pp, "-sceneType");
+    argparser_get_keyword(pp, "-sceneSize");
+    o->sceneSize_X = (int32_t)argparser_get_next_int(pp, 30, 4096);
+    o->sceneSize_Y = (int32_t)argparser_get_next_int(pp, 30, 4096);
+
+   argparser_get_keyword(pp, "-sceneType");
     o->sceneType = argparser_get_next_non_keyword(pp);  
     
     argparser_get_keyword(pp, "-pixSampling");
@@ -480,7 +514,7 @@ mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv)
 
     argparser_get_keyword(pp, "-zRange");
     o->zRange_lo = argparser_get_next_double(pp, 0.0, multifok_scene_ZMAX);  
-    o->zRange_hi = argparser_get_next_double(pp, o->zRange_lo, multifok_scene_ZMAX);  
+    o->zRange_hi = argparser_get_next_double(pp, o->zRange_lo, multifok_scene_ZMAX + o->zStep);  
 
     argparser_get_keyword(pp, "-patternFile");
     o->patternFile = argparser_get_next(pp);

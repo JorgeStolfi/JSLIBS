@@ -1,0 +1,7 @@
+# Last edited on 2024-10-06 18:53:18 by stolfi
+
+Library of functions and algorithms for fast topology-based
+slicing of monotonic polygonal meshes representing 3D solids.
+
+See Minetto et al. (2004): "An optimal Z-monotone 3D mesh
+slicing algorithm for additive manufacturing". To appear."

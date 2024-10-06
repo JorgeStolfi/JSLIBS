@@ -1,9 +1,11 @@
 #! /bin/bash
-# Last edited on 2023-04-28 18:51:37 by stolfi
+# Last edited on 2024-10-01 14:04:49 by stolfi
 
 sceneType="$1"; shift    # Scene type: "R" ramp only, "F" non-olap disks/balls, "T" olap.
-NX="$1"; shift           # Image width.
-NY="$1"; shift           # Image height.
+SCENE_WX="$1"; shift     # Nominal scene {X} size.
+SCENE_WY="$1"; shift     # Nominal scene {Y} size.
+IMAGE_NX="$1"; shift     # Image width.
+IMAGE_NY="$1"; shift     # Image height.
 patternDir="$1"; shift   # Directory where pattern images live, e.g "in/pgm-256x256".
 pattern="$1"; shift      # Pattern name, e.g. "wavys-09".
 zDep="$1"; shift         # Nominal depth of focus (pixels)
@@ -30,13 +32,13 @@ zFoc_step="$1"; shift    # Increment in focus plane {Z} between stack frames.
 #   out/st{sceneType}-{size}-{pattern}/frame-sharp-show.ppm
 #   out/st{sceneType}-{size}-{pattern}/frame-fd{zDep}-zf{zFoc}-show.ppm
 #
-# where {size} is "{NX}x{NY}" each formatted with "%04d", 
+# where {size} is "{IMAGE_NX}x{IMAGE_NY}" each formatted with "%04d", 
 # and both {zDep} and {zFoc} are formatted with "%05.2f".
 
 NP=5      # Number of pixel subsampling points in {X} and {Y}.
 NR=40     # Min number of rays through each subsampling point.
 
-size_FMT="`printf "%04dx%04d" ${NX} ${NY}`"
+size_FMT="`printf "%04dx%04d" ${IMAGE_NX} ${IMAGE_NY}`"
 zDep_FMT="`printf "%05.2f" ${zDep}`"
 
 # ----------------------------------------------------------------------
@@ -52,8 +54,9 @@ rm -f ${outPrefix}-sharp-*.{ppm,pgm}
 rm -f ${outPrefix}-fd{zDep_FMT}-*.{ppm,pgm}
 
 ./test_mfok_make_image \
-  -imgSize ${NX} ${NY} \
+  -imgSize ${IMAGE_NX} ${IMAGE_NY} \
   -sceneType ${sceneType} \
+  -sceneSize ${SCENE_WX} ${SCENE_WY} \
   -pixSampling ${NP} \
   -dirSampling ${NR} \
   -zRange ${zFoc_min} ${zFoc_max} -zStep ${zFoc_step} \

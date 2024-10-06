@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {hr2_pmap_opt.h} and related modules"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-09-17 15:36:51 by stolfi */ 
+/* Last edited on 2024-09-17 21:53:54 by stolfi */ 
 /* Created on 2020-07-11 by J. Stolfi, UNICAMP */
 
 #define hr2_pmap_opt_test_COPYRIGHT \
@@ -27,10 +27,11 @@
 #include <affirm.h>
 #include <argparser.h>
 
+#include <hr2_pmap_throw_type.h>
 #include <hr2_pmap_from_many_pairs.h>
+#include <hr2_pmap_encode.h>
 
 #include <hr2_pmap_opt.h>
-#include <hr2_pmap_encode.h>
 
 /* The program takes one command line option, the type of map to 
   test ("IDENTITY", "TRANSLATION", etc.). */
@@ -214,7 +215,7 @@ void hpot_do_test_opt_plot
           }
       }
     
-    hr2_pmap_t M = hpot_throw_pmap(type, sgn); /* Initial guess matrix. */
+    hr2_pmap_t M = hr2_pmap_throw_type(type, sgn); /* Initial guess matrix. */
       
     /* Compute max distance between paired points mapped  by the initial guess: */
     double maxDist = 0.0;
@@ -253,6 +254,7 @@ void hpot_do_test_opt_plot
     if (tight && ident)
       { /* Solution should be the identity matrix: */
         hr2_pmap_t I = hr2_pmap_identity();
+        hr2_pmap_set_sign(&I, sgn);
         double d2 = hr2_pmap_diff_sqr(&M, &I);
         demand (d2 <= 1.0e-6, "solution should be the identity map");
       }
@@ -288,8 +290,8 @@ void hpot_choose_r2_point_pairs
     double *w = (drandom() < 0.2 ? NULL : talloc(np, double));
     
     /* Get maps {M1,M2} with the right type and sign: */
-    hr2_pmap_t M1 = hpot_throw_pmap((ident ? hr2_pmap_type_IDENTITY : type), +1);
-    hr2_pmap_t M2 = hpot_throw_pmap((ident ? hr2_pmap_type_IDENTITY : type), sgn);
+    hr2_pmap_t M1 = hr2_pmap_throw_type((ident ? hr2_pmap_type_IDENTITY : type), +1);
+    hr2_pmap_t M2 = hr2_pmap_throw_type((ident ? hr2_pmap_type_IDENTITY : type), sgn);
     
     /* Generate points {p1[0..np-1]} and weights {w[0..np-1]}: */
     for (int32_t kp = 0; kp < np; kp++)

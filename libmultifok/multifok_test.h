@@ -1,5 +1,5 @@
 /* Test tools for {multifok_focus_op} and related funcs. */
-/* Last edited on 2023-04-28 11:59:40 by stolfi */
+/* Last edited on 2024-10-01 13:44:21 by stolfi */
 
 #ifndef multifok_test_H
 #define multifok_test_H
@@ -9,6 +9,7 @@
 
 #include <interval.h>
 #include <i2.h>
+#include <r2.h>
 #include <r3.h>
 #include <bool.h>
 #include <frgb.h>
@@ -18,8 +19,8 @@
 #include <multifok_term.h>
 
 void multifok_test_images_make
-  ( int32_t NX, 
-    int32_t NY, 
+  ( int32_t NX_img, 
+    int32_t NY_img, 
     multifok_scene_t *scene,
     multifok_scene_pattern_t *pattern,
     double zFoc, 
@@ -32,8 +33,11 @@ void multifok_test_images_make
     float_image_t **dimg_P
   );
   /* Creates images {csimg}, {shimg}, {azimg}, and {dzimg} of the given {scene},
-    with simulated depth-of-focus blur. All four images will have {NX}
-    columns of {NY} pixels.
+    with simulated depth-of-focus blur. All four images will have {NX_img}
+    columns of {NY_img} pixels.
+    
+    The scene will be implicitly scaled so that the entire image fits in its
+    {XY} domain.
     
     The {csimg} image, returned in {*cimg_P}, will have 3 channels, and
     shows the color of the scene as seen through a camera or muscope
@@ -78,7 +82,47 @@ void multifok_test_images_make
     point, and {kd} is the index of the object hit by the ray, or {-1}
     if the ray hit the background surface. */
 
-void multifok_test_estimate_zave_zdev(int32_t ix, int32_t iy, multifok_scene_t *scene, double *zave_P, double *zdev_P);
+r3_t multifok_test_pixel_to_scene
+  ( double x_img,
+    double y_img,
+    int32_t NX_img,
+    int32_t NY_img,
+    interval_t scene_dom[]
+  );
+  /* Given the image coordinates {(x_img, y_img)} of a point in the
+    image domain, returns the scene coordinates {(x_scene,y_scene,0)of
+    the corresponding point on plane {Z=0} of the scene.
+    
+    Assumes that the image domain is {[0 _ NX_img] × [0 _ NY_img]} and that
+    the scene's domain is {scene_dom[0..2]}.  The mapping from 
+    scene to image coordinates is such that the image domain
+    fits snugly into the scene's domain. */
+
+r2_t multifok_test_scene_to_pixel
+  ( double x_scene,
+    double y_scene,
+    interval_t scene_dom[],
+    int32_t NX_img,
+    int32_t NY_img
+  );
+  /* Given the scene coordinates {(x_scene, y_scene)} of a point on the scene's {Z=0}
+    plane, returns the image coordinates {(x_img,y_img)} of the corresponding point 
+    on the image's domain.
+    
+    Assumes that the image domain is {[0 _ NX_img] × [0 _ NY_img]} and that
+    the scene's domain is {scene_dom[0..2]}.  The mapping from 
+    scene to image coordinates is such that the image domain
+    fits snugly into the scene's domain. */
+
+void multifok_test_estimate_pixel_zave_zdev
+  ( int32_t ix,
+    int32_t iy,
+    multifok_scene_t *scene,
+    int32_t NX_img,
+    int32_t NY_img,
+    double *zave_P,
+    double *zdev_P
+  );
   /* Compute a quick estimate of the average {zave} and deviation {zdev} of {Z}
     of scene at image pixel {ix,iy}.  Returns them in {*zave_P} and {*zdev_P}. */
 
