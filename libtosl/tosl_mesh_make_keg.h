@@ -1,5 +1,5 @@
 /* Creating a keg-shaped {tosl.h} mesh.  */
-/* Last edited on 2024-10-06 16:47:53 by stolfi  */
+/* Last edited on 2024-10-08 18:55:55 by stolfi  */
 
 #ifndef tosl_mesh_make_keg_H
 #define tosl_mesh_make_keg_H
@@ -14,7 +14,8 @@ tosl_mesh_t *tosl_mesh_make_keg
   ( int32_t NS,
     int32_t NR,
     int32_t NB,
-    tosl_coord_t Zmax
+    tosl_coord_t Zmax,
+    int32_t debug
   );
   /* 
     Creates a mesh data structure for testing the {tosl_mesh_slice}.  

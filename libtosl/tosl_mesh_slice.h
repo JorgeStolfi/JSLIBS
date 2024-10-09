@@ -1,5 +1,5 @@
 /* The topological slicing algorithm of Minetto et al. (2024).  */
-/* Last edited on 2024-10-06 18:53:09 by stolfi  */
+/* Last edited on 2024-10-09 10:18:32 by stolfi  */
 
 #ifndef tosl_mesh_slice_H
 #define tosl_mesh_slice_H
@@ -49,7 +49,8 @@ void tosl_mesh_slice
     tosl_coord_t Zplane[],
     tosl_arc_id_t L[],
     tosl_post_proc_t *post,
-    double *time_P
+    double *time_P,
+    int8_t debug
   );
 
   /* Slices the given {mesh} by a list of planes, using the {Topological-Slicing}

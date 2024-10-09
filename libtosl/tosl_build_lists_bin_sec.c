@@ -1,5 +1,5 @@
 /* See {tosl_build_lists_bin_sec.h}. */
-/* Last edited on 2024-10-06 16:48:41 by stolfi */
+/* Last edited on 2024-10-07 10:08:42 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -76,7 +76,7 @@ tosl_arc_id_t *tosl_build_lists_bin_sec
           { /* Arc is up-going and is not above or below all planes. */
             tosl_plane_id_t ip = tosl_build_lists_bin_sec_search
               ( Zorg, NP, Zplane, use_bin, use_sec, debug, ns_P );
-            /* Paranoia, checking {tosl_plane_search}: */
+            /* Paranoia, checking plane search result: */
             assert(Zorg < Zplane[ip]);
             assert((ip == 0) || (Zorg > Zplane[ip-1]));
             if (Zdst > Zplane[ip]) 

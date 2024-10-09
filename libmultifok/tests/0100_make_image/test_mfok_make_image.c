@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {multifok_test_image_make.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-10-06 05:46:40 by stolfi */ 
+/* Last edited on 2024-10-07 21:18:24 by stolfi */ 
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
 #define test_mfok_make_image_COPYRIGHT \
@@ -303,11 +303,12 @@ multifok_scene_t *mfmi_make_scene(double WX, double WY, int32_t NX, int32_t NY, 
       { /* Disk size range: */
         double Wmin = fmin(WX, WY);
         double scale_img = fmax(NX/WX, NY/WY);
-        /* The min obj radius must be at least 5 pixels and 1/100 of scene: */
-        double rMin = fmax(5.0/scale_img, 0.01*Wmin); /* Min object radius. */
+        /* The min obj radius must be at least 7 pixels and 1/100 of scene: */
+        double rMin = fmax(7.0/scale_img, 0.01*Wmin); /* Min object radius. */
         
-        /* The max obj radius must be 1/5 of scene size but fit in height: */
-        double rMax = fmin(0.45*ZMAX, 0.2*Wmin);       /* Max object radius. */
+        /* The max obj radius must be 1/4 of scene X or Y size. */
+        /* Don't worry about Z, will be fitted as needed if spherical: */
+        double rMax = fmin(0.75*ZMAX, 0.25*Wmin);       /* Max object radius. */
         multifok_scene_throw_objects(scene, rMin, rMax, minSep, verbose);
         char *olapx = (minSep < 0.0 ? "" : "non-overlapping ");
         fprintf(stderr, "generated a scene with %d %sdisks\n", scene->NO, olapx);

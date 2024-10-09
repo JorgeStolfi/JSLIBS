@@ -1,4 +1,4 @@
-/*  Last edited on 2024-10-06 16:59:58 by stolfi */
+/*  Last edited on 2024-10-08 18:56:45 by stolfi */
 /* Test of {tosl_mesh_make_keg.h} */
 
 #define _GNU_SOURCE
@@ -25,7 +25,12 @@ int32_t main(int32_t argc, char **argv)
     srandom(4615);
     
     do_test(4, 1, 0, 1);
+    do_test(4, 1, 1, 1);
     do_test(4, 1, 2, 1);
+    do_test(9, 3, 1, 0);
+    do_test(9, 3, 2, 0);
+    do_test(9, 4, 2, 0);
+    do_test(9, 6, 3, 0);
     do_test(100, 200, 10, 0);
     
     return 0;
@@ -42,7 +47,7 @@ void do_test(int32_t NS, int32_t NR, int32_t NB, int8_t debug)
     int32_t NE_exp = NS*(NR+1) + NS*NR*(NB+1); 
 
     fprintf(stderr, "creating mesh...\n");
-    tosl_mesh_t *mesh = tosl_mesh_make_keg(NS, NR, NB, Zmax);
+    tosl_mesh_t *mesh = tosl_mesh_make_keg(NS, NR, NB, Zmax, debug);
     assert(mesh->NE == NE_exp);
     
     if (debug) { tosl_mesh_print(stderr, mesh); } 

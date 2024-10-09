@@ -1,4 +1,4 @@
-# Last edited on 2024-10-06 18:27:24 by stolfi
+# Last edited on 2024-10-07 21:25:48 by stolfi
 
 SHELL := /bin/bash
 
@@ -11,6 +11,6 @@ JS_LIBS :=
 
 all: ${PROG}
 	${PROG}
-	f3d out/test.obj
+	mview out/test.obj
 
 include ../../../../GENERIC-LIB-TEST.make

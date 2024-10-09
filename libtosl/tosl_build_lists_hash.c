@@ -1,5 +1,5 @@
 /* See {tosl_build_lists_hash.h} */
-/* Last edited on 2024-10-06 16:50:14 by stolfi */
+/* Last edited on 2024-10-07 14:58:15 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -96,7 +96,6 @@ tosl_arc_id_t *tosl_build_lists_hash
       { double nspe = ((double)ns)/((double)mesh->NE);
         fprintf(stderr, "performed %.2f sequential steps per edge\n", nspe);
       }
-    
     free(iphash);
     return L;
   }

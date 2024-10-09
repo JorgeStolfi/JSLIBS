@@ -1,5 +1,5 @@
 /* See {tosl_mesh_make_keg.h} */
-/* Last edited on 2024-10-05 08:10:20 by stolfi */
+/* Last edited on 2024-10-09 10:07:39 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -16,7 +16,8 @@ tosl_mesh_t *tosl_mesh_make_keg
   ( int32_t NS,
     int32_t NR,
     int32_t NB,
-    tosl_coord_t Zmax
+    tosl_coord_t Zmax,
+    int32_t debug
   )
   {
     int32_t NV = NS*(NR+1) + NS*NR*NB;
@@ -73,8 +74,13 @@ tosl_mesh_t *tosl_mesh_make_keg
             for (int32_t b = 0; b < NB; b++)
               { tosl_point_t vsrb = interp_vert_pos(kv0, kv1, b);
                 tosl_arc_id_t kab = tosl_sym(iab);
-                mesh->Vpos[mesh->Arc[kab].ivorg] = vsrb;
-                kab = mesh->Arc[kab].skip;
+                tosl_vert_id_t kv = mesh->Arc[kab].ivorg;
+                mesh->Vpos[kv] = vsrb;
+                if (debug) 
+                  { fprintf(stderr, "    r = %d  s = %d  b = %d", r, s, b);
+                    tosl_mesh_arc_print(stderr, "  kab = ", kab, "\n", mesh);
+                  }
+                iab = mesh->Arc[iab].skip;
               }
             free(pref);
             ia0 = ja0; ja0 = mesh->Arc[ja0].skip;

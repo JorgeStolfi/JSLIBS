@@ -1,5 +1,5 @@
 /* See {tosl_mesh_slice.h} */
-/* Last edited on 2024-10-06 16:58:37 by stolfi */
+/* Last edited on 2024-10-09 10:18:17 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -39,12 +39,11 @@ void tosl_mesh_slice
     tosl_coord_t Zplane[],
     tosl_arc_id_t L[],
     tosl_post_proc_t *post,
-    double *time_P
+    double *time_P,
+    int8_t debug
   )
   {
-    int8_t debug = 1;
-    
-    if (debug) { fprintf(stderr, "> %s ----------------------------------------------------------------------\n", __FUNCTION__); }
+    if (debug) { fprintf(stderr, "> --- %s --------------------\n", __FUNCTION__); }
 
     tosl_arc_id_t B = -1; /* Active list remaining from previous iteration. */
     
@@ -76,7 +75,7 @@ void tosl_mesh_slice
         
         post(ip, S);
       }
-    if (debug) { fprintf(stderr, "< %s ----------------------------------------------------------------------\n", __FUNCTION__); }
+    if (debug) { fprintf(stderr, "< --- %s --------------------\n", __FUNCTION__); }
   }  
 
 void tosl_extract_contour
@@ -90,16 +89,19 @@ void tosl_extract_contour
   {
     tosl_coord_t Zp = S->Z;
 
-    if (debug) { fprintf(stderr, "  > %s ----------------------------------------------------------------------\n", __FUNCTION__); }
+    if (debug) { fprintf(stderr, "  > --- %s --------------------\n", __FUNCTION__); }
+    if (debug) { fprintf(stderr, "    Zp = %+d\n\n", Zp); }
+    if (debug) { tosl_mesh_arc_print(stderr, "    ia = ", ia, "\n\n", mesh); }
+    
     tosl_arc_id_t ka = ia;
     do
       {
-        if (debug) { tosl_mesh_arc_print(stderr, "    ka = ", ka, "\n", mesh); }
+        if (debug) { tosl_mesh_arc_print(stderr, "      ka = ", ka, "\n", mesh); }
     
         /* Get {Z} of origin and destination of {ka}:  */
         tosl_coord_t Zorg = mesh->Vpos[mesh->Arc[ka].ivorg].c[2]; /* {Z} of origin of {ka}.  */
-        tosl_arc_id_t ja = tosl_sym(ka);
-        tosl_coord_t Zdst = mesh->Vpos[mesh->Arc[ja].ivorg].c[2]; /* {Z} of destination of {ka}.  */
+        tosl_arc_id_t sa = tosl_sym(ka);
+        tosl_coord_t Zdst = mesh->Vpos[mesh->Arc[sa].ivorg].c[2]; /* {Z} of destination of {ka}.  */
 
         /* At this point {Arc[ka]} should be an upward-pointing arc that crosses the plane.  */
         assert(Zorg < Zp);
@@ -111,14 +113,24 @@ void tosl_extract_contour
         (S->NV)++;
 
         /*  Move arc {ka} from set {A} to set {B} */
-        ia = tosl_arc_list_pop(A_P, mesh);
+        tosl_arc_list_remove(A_P, ka, mesh);
         tosl_arc_list_add(B_P, ka, mesh);
 
         /* Search for next up-crossing arc {ja} using skip pointers:  */
-        do { ja = mesh->Arc[ja].skip; } while (mesh->Vpos[mesh->Arc[tosl_sym(ja)].ivorg].c[2] < Zp);
+        tosl_arc_id_t ja = sa;
+        while (1) { 
+          ja = mesh->Arc[ja].skip;
+          if (debug) { tosl_mesh_arc_print(stderr, "        ja = ", ja, "\n", mesh); }
+          tosl_vert_id_t jv = mesh->Arc[tosl_sym(ja)].ivorg;
+          if (mesh->Vpos[jv].c[2] > Zp) { break; }
+        }
         
         /* Update the skip pointer to short-cut from {ka} directly to {ja}:  */
-        mesh->Arc[ka].skip = ja;
+        if (debug) 
+          { tosl_arc_id_print(stderr, "      updating ", sa, ".skip");
+            tosl_arc_id_print(stderr, " to ", ja, "\n");
+          }
+        mesh->Arc[sa].skip = ja;
         
         /* Prepare for next iteration:  */
         ka = ja;
@@ -127,6 +139,6 @@ void tosl_extract_contour
     /* Mark the {S->iarc[S->NV-1]} as the last vertex of a contour:   */
     S->iarc[S->NV-1] = tosl_sym(S->iarc[S->NV-1]);
 
-    if (debug) { fprintf(stderr, "  < %s ----------------------------------------------------------------------\n", __FUNCTION__); }
+    if (debug) { fprintf(stderr, "  < --- %s --------------------\n", __FUNCTION__); }
     return;
   }

@@ -1,5 +1,5 @@
 /* Manipulating the linked lists of arcs in a {tosl_mesh_t}. */
-/* Last edited on 2024-10-06 16:45:19 by stolfi  */
+/* Last edited on 2024-10-08 22:55:09 by stolfi  */
 
 #ifndef tosl_arc_list_H
 #define tosl_arc_list_H
@@ -28,6 +28,16 @@ tosl_arc_id_t tosl_arc_list_pop(tosl_arc_id_t *L_P, tosl_mesh_t *mesh);
     {*L_P} to the index of an element of what remains of the list
     (possibly {-1}, if that was the last element). Then makes {mesh.Arc[ia]}
     into a singleton list and returns the index {ia}. */
+    
+void tosl_arc_list_remove(tosl_arc_id_t *L_P, tosl_arc_id_t ia, tosl_mesh_t *mesh);
+  /* Removes arc {ia} from its list.
+  
+    Expects {*L_P} to be the index into {mesh.Arc[]} of one element of a
+    non-empty arc list, and {ia} to be the index of some element of that 
+    list. Removes element {mesh.Arc[ia]} from that list and makes it into a 
+    singleton list.  If {ia} was {*L_P},
+    sets {*L_P} to the index of some other element of that list
+    (possibly {-1}, if that was the last element). */ 
     
 void tosl_arc_list_add(tosl_arc_id_t *L_P, tosl_arc_id_t ia, tosl_mesh_t *mesh); 
   /* Adds an element to a list.

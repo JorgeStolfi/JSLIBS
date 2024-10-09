@@ -1,5 +1,5 @@
 /* Build the arc lists for topological mesh slicing, using binary+secant search. */
-/* Last edited on 2024-10-06 16:47:09 by stolfi */
+/* Last edited on 2024-10-07 07:07:33 by stolfi */
 
 #ifndef tosl_build_lists_bin_sec_H
 #define tosl_build_lists_bin_sec_H
@@ -32,17 +32,18 @@ tosl_arc_id_t *tosl_build_lists_bin_sec
     into a singleton list.
     
     Assumes that the array Zplane[] is sorted in strictly increasing
-    order. The array {Zedge} may be in arbitrary order. Assumes that
-    {Zedge[ie]} is different from {Zplane[ip]} for all {ie,ip}.
+    order.  Every vertex {Z}-coordinate must be
+    different from {Zplane[ip]} for all {ip}.
     
     If the booleans {use_bin} and {use_sec} are both true (normal case)
     uses a combination of binary and secant search. The run time should
-    be almost {\O(NE+NP)} if the spacing of the planes has limited
-    variation.
+    be almost {A1*NE}, for some constant {A1}, if the spacing of the
+    planes has limited variation, and {A2*NE*log(NP)} in the worst case.
     
-    If only {use_bin} is true, uses pure binary search, which should
-    take time {\O(NP + NE\log NP)} for any plane spacing. If only
-    {use_sec} is true, uses pure secant search, which may take
-    {\THETA(NP*NE)} if the plane spacing is perverse enough. */
+    If only {use_bin} is true, uses pure binary search, which, for any
+    plane spacing, should take time {A3*NE*log(NP)}, for some constants
+    {A3,B} with {A3<A2}. If only {use_sec} is true, uses pure secant
+    search, which may take {A4*NP*NE)}, for some constant {A3}, if the
+    plane spacing is perverse enough. */
     
 #endif

@@ -1,5 +1,5 @@
 /* See {multifok_scene.h}. */
-/* Last edited on 2023-04-23 01:01:33 by stolfi */
+/* Last edited on 2024-10-07 21:14:10 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -270,7 +270,7 @@ multifok_scene_object_t multifok_scene_object_throw(int32_t ID, interval_t dom[]
     /* Reduce {rad} as needed so that the ball can be placed at all: */
     for (int32_t j = 0; j < 3; j++) 
       { double bw = bhi[j] - blo[j];
-        if (((minSep >= 0) || (j == 2)) && (2*obj.rad > bw))
+        if (((minSep >= 0) || (j == 2)) && (! obj.flat) && (2*obj.rad > bw))
           { obj.rad = 0.4999*bw; }
       }
 

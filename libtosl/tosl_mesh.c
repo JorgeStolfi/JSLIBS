@@ -1,5 +1,5 @@
 /* See {tosl_mesh.h} */
-/* Last edited on 2024-10-06 19:05:19 by stolfi */
+/* Last edited on 2024-10-08 22:06:02 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -23,8 +23,8 @@ void tosl_mesh_arc_print(FILE *wr, char *pref, tosl_arc_id_t ka, char *suff, tos
     char *xsucc = tosl_arc_id_to_string(arc->succ);
     fprintf(wr, "%-8s = { .skip = %-8s", xka, xskip);
     tosl_vert_id_t kv = arc->ivorg;
-    tosl_mesh_vert_print(wr, ", ivorg = ", kv, NULL, mesh);
-    fprintf(wr, ", .pred = %s, .succ = %s }", xpred, xsucc);
+    tosl_mesh_vert_print(wr, "  .ivorg = ", kv, NULL, mesh);
+    fprintf(wr, "  .pred = %s  .succ = %s }", xpred, xsucc);
     free(xka); free(xskip); free(xpred); free(xsucc);
     if (suff != NULL) { fputs(suff, wr); }
     fflush(wr);
@@ -34,7 +34,7 @@ void tosl_mesh_vert_print(FILE *wr, char *pref, tosl_vert_id_t kv, char *suff, t
   {
     if (pref != NULL) { fputs(pref, wr); }
     if ((kv >= 0) && (kv < mesh->NV)) 
-      { fprintf(wr, "    v%-7d", kv);
+      { fprintf(wr, "v%-7d", kv);
         if (mesh->Vlab != NULL)
           { if (mesh->Vlab[kv] != NULL)
               { fprintf(wr, " = %-8s", mesh->Vlab[kv]); }
@@ -145,72 +145,56 @@ void tosl_mesh_print(FILE *wr, tosl_mesh_t *mesh)
       }
     fprintf(wr, "\n");
 
-    fprintf(wr, "  faces:\n");
+    fprintf(wr, "  mesh has the following faces:\n");
     uint8_t *seen = malloc(NA*sizeof(uint8_t));
     assert(seen != NULL);
     for (tosl_arc_id_t ia = 0; ia < NA; ia++) { seen[ia] = 0; }
-
-    auto void acc_normal_barycenter(tosl_point_t *va, tosl_point_t *vb, tosl_point_t *vc, double nr[], double ba[]);
-      /* Adds to {nr[0..2]} the area of triange {va,vb,vc} times the normal direction.  Namely,
-        half the cross product of {vb-va} and {vc-va}.  Also adds to {ba[0..2]} the coordinates of 
-        the triangle's barycenter times its area. */
 
     int32_t kf = 0; /* Faces found so far. */
     for (tosl_arc_id_t ia = 0; ia < NA; ia++)
       { if (seen[ia] == 0)
           { fprintf(wr, "    f%-7d =", kf);
 
-            tosl_point_t *v0 = NULL; /* First vertex of face. */
-            tosl_point_t *vp = NULL; /* Previous vertex of face other than {v0}. */
-            double nrm[3] = { 0.0, 0.0, 0.0 }; /* Sum of face normal times area of face. */
-            double bar[3] = { 0.0, 0.0, 0.0 }; /* Sum of triangle barycenter times area. */
-
             tosl_arc_id_t ka = ia;
             int32_t face_ok = 1;
             do 
-              { tosl_vert_id_t kv = mesh->Arc[ka].ivorg;
-                assert((kv >= 0) && (kv < mesh->NV));
+              { /* Get and print vertex id: */
+                tosl_vert_id_t kv = mesh->Arc[ka].ivorg;
                 fprintf(wr, " v%d", kv);
+                if ((kv < 0) || (kv >= mesh->NV)) 
+                  { fprintf(wr, " !! invalid vertex");
+                    face_ok = 0;
+                    break;
+                  }
                 char *xka = tosl_arc_id_to_string(ka);
                 fprintf(wr, " %s", xka);
                 free(xka);
                 if (seen[ka] != 0)
-                  { fprintf(wr, " !! faces are not disjoint");
+                  { fprintf(wr, " !! faces merge at arc %d", ka);
                     face_ok = 0;
                     break;
                   }
-
-                /* Save the first and previous vertex: */
-                tosl_point_t *v = &(mesh->Vpos[kv]);
-                if (v0 == NULL)
-                  { v0 = v; }
-                else 
-                  { vp = v; }
 
                 seen[ka] = 1; 
-                ka = mesh->Arc[ka].skip;
-                if (ka == -1) 
-                  { fprintf(wr, " !! missing {.skip} link");
+                
+                /* Advance to next arc: */
+                tosl_arc_id_t ja = mesh->Arc[ka].skip;
+                if (ja == -1) 
+                  { fprintf(wr, " !! arc %d has no {.skip} link", ka);
                     face_ok = 0;
                     break;
                   }
+                ka = ja;
                 
-                if (vp != NULL) 
-                  { /* Add area of triangle {v0,vp,v}: */
-                    tosl_vert_id_t kv = mesh->Arc[ka].ivorg;
-                    assert((kv >= 0) && (kv < mesh->NV));
-                    tosl_point_t *v = &(mesh->Vpos[kv]);
-                    acc_normal_barycenter( v0, vp, v, nrm, bar);
-                  }
-                    
               } while (ka != ia);
               
             if (face_ok != 0)
-              { double area = sqrt(nrm[0]*nrm[0] + nrm[1]*nrm[1] + nrm[2]*nrm[2]); 
-                fprintf(wr, " # area %.2f normal (", area);
-                for (int32_t j = 0; j < 3; j++) { fprintf(wr, " %+6.4f", nrm[j]/area); }
-                fprintf(wr, " ) bary (");
-                for (int32_t j = 0; j < 3; j++) { fprintf(wr, " %+6.4f", bar[j]/area); }
+              { double area, nrm[3], ctr[3];
+                tosl_mesh_face_normal_area_center(ia, mesh, &area, nrm, ctr);
+                fprintf(wr, " area = %.2f normal = (", area);
+                for (int32_t j = 0; j < 3; j++) { fprintf(wr, " %+6.4f", nrm[j]); }
+                fprintf(wr, " ) center = (");
+                for (int32_t j = 0; j < 3; j++) { fprintf(wr, " %+11.3f", ctr[j]); }
                 fprintf(wr, " )");
               }
             fprintf(wr, "\n");
@@ -221,9 +205,83 @@ void tosl_mesh_print(FILE *wr, tosl_mesh_t *mesh)
     fflush(wr);
     free(seen);
     return;
+  }
 
-    void acc_normal_barycenter(tosl_point_t *va, tosl_point_t *vb, tosl_point_t *vc, double nr[], double ba[])
-      { double u[3], v[3];
+void tosl_mesh_face_normal_area_center(tosl_arc_id_t ka, tosl_mesh_t *mesh, double *area_P, double nrm[], double ctr[])
+  {
+    int32_t debug = 0;
+    
+    double sum_nrm[3] = { 0.0, 0.0, 0.0 }; /* Sum of face normal times area of face. */
+    double sum_ctr[3] = { 0.0, 0.0, 0.0 }; /* Sum of triangle barycenter times area. */
+
+    auto void acc_normal_barycenter(tosl_vert_id_t iva, tosl_vert_id_t ivb, tosl_vert_id_t ivc);
+      /* Gets the mesh vertices {va,vb,vc} with ids {iva,ivb,ivc}. Adds
+        to {sum_nrm[0..2]} the area of triangle {va,vb,vc} times its
+        normal direction. Namely, half the cross product of {vb-va} and
+        {vc-va}. Also adds to {sum_ctr[0..2]} the coordinates of the
+        triangle's barycenter times its area. */
+
+    tosl_vert_id_t iv0 = -1; /* First vertex of face. */
+    tosl_vert_id_t ivp = -1; /* Previous vertex of face other than {v0}. */
+ 
+    tosl_arc_id_t ia = ka;
+    tosl_arc_id_t ja = ka; /* Walks twice as fast around face, to catch bad loops. */
+    int32_t face_ok = 1;
+    int32_t deg = 0;
+    while (1) 
+      { /* Get the origin of {ia}: */
+        tosl_vert_id_t iv = mesh->Arc[ia].ivorg;
+        if ((iv < 0) || (iv >= mesh->NV)) 
+          { if (debug) { fprintf(stderr, " !! invalid vertex index %d\n", iv); }  face_ok = 0; break; }
+    
+        /* Save the first and previous vertex: */
+        if (iv0 == -1) 
+          { iv0 = iv; } 
+        else 
+          { if (ivp != -1) 
+              { /* Add area of triangle {v0,vp,vi}: */
+                
+                if (debug) { fprintf(stderr, "  accumulating v%d v%d v%d\n", iv0, ivp, iv); }
+                acc_normal_barycenter(iv0, ivp, iv);
+              }
+            ivp = iv;
+          }
+        deg++;
+
+        /* Advance {ia}: */
+        ia = mesh->Arc[ia].skip;
+        if (ia == -1) { if (debug) { fprintf(stderr, " !! missing {.skip} link\n"); } face_ok = 0; break; }
+
+        if (ia == ka) { /* Completed face: */ break; }
+
+        /* Advance {ja} by two steps: */
+        ja = mesh->Arc[ja].skip;
+        if (ja == -1) { if (debug) { fprintf(stderr, " !! missing {.skip} link\n"); } face_ok = 0; break; }
+        ja = mesh->Arc[ja].skip;
+        if (ja == -1) { if (debug) { fprintf(stderr, " !! missing {.skip} link\n"); } face_ok = 0; break; }
+        if (ja == ia) { if (debug) { fprintf(stderr, " !! bizarre loop\n"); } face_ok = 0; break; }
+      }
+    if (debug) {  fprintf(stderr, "  degree = %d face_ok = %c\n", deg, "FT"[face_ok]); }
+
+    if (face_ok != 0)
+      { assert(ia == ka); /* Must have ended after a full round. */
+        double sum_area2 = 0;
+        for (int32_t j = 0; j < 3; j++) { sum_area2 += sum_nrm[j]*sum_nrm[j]; }
+        double area = sqrt(sum_area2);
+        for (int32_t j = 0; j < 3; j++) { nrm[j] = sum_nrm[j]/area; ctr[j] = sum_ctr[j]/area; }
+        (*area_P) = area;
+      }
+    else
+      { for (int32_t j = 0; j < 3; j++) { nrm[j] = NAN; ctr[j] = NAN; }
+        (*area_P) = NAN;
+      }
+    return;
+
+    void acc_normal_barycenter(tosl_vert_id_t iva, tosl_vert_id_t ivb, tosl_vert_id_t ivc)
+      { tosl_point_t *va = &(mesh->Vpos[iva]);
+        tosl_point_t *vb = &(mesh->Vpos[ivb]);
+        tosl_point_t *vc = &(mesh->Vpos[ivc]);
+        double u[3], v[3];
         for (int32_t j = 0; j < 3; j++)
           { u[j] = ((double)vb->c[j] - va->c[j]);
             v[j] = ((double)vc->c[j] - va->c[j]);
@@ -234,8 +292,8 @@ void tosl_mesh_print(FILE *wr, tosl_mesh_t *mesh)
         cr[2] = 0.5*(u[0]*v[1] - u[1]*v[0]);
         double area = sqrt(cr[0]*cr[0] + cr[1]*cr[1] + cr[2]*cr[2]); /* Area of triangle. */
         for (int32_t j = 0; j < 3; j++)
-          { nr[j] += cr[j];
-            ba[j] += area*(va->c[j] + vb->c[j] + vc->c[j])/3;
+          { sum_nrm[j] += cr[j];
+            sum_ctr[j] += area*(va->c[j] + vb->c[j] + vc->c[j])/3;
           }
       }
   }

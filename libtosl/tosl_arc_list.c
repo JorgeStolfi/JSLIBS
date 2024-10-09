@@ -1,5 +1,5 @@
 /* See {tosl_arc_list.h} */
-/* Last edited on 2024-10-06 16:45:56 by stolfi */
+/* Last edited on 2024-10-08 22:55:46 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -67,6 +67,27 @@ tosl_arc_id_t tosl_arc_list_pop(tosl_arc_id_t *L_P, tosl_mesh_t *mesh)
         (*L_P) = ia_succ;
       }
     return ia;
+  }
+  
+void tosl_arc_list_remove(tosl_arc_id_t *L_P, tosl_arc_id_t ia, tosl_mesh_t *mesh)
+  { 
+    assert(ia != -1);
+    tosl_arc_id_t ia_pred = mesh->Arc[ia].pred;
+    tosl_arc_id_t ia_succ = mesh->Arc[ia].succ;
+    if (ia_pred == ia)
+      { /* Last element in list: */
+        assert(ia_succ == ia);
+        assert((*L_P) == ia);
+        (*L_P) = -1;
+      }
+    else
+      { /* At least two elements: */
+        mesh->Arc[ia_pred].succ = ia_succ;
+        mesh->Arc[ia_succ].pred = ia_pred;
+        mesh->Arc[ia].pred = ia;
+        mesh->Arc[ia].succ = ia;
+        if ((*L_P) == ia) { (*L_P) = ia_succ; }
+      }
   }
   
 void tosl_arc_list_add(tosl_arc_id_t *L_P, tosl_arc_id_t ia, tosl_mesh_t *mesh)

@@ -1,5 +1,5 @@
 /* See {tosl_mesh_make_ico.h} */
-/* Last edited on 2024-10-06 18:26:44 by stolfi */
+/* Last edited on 2024-10-07 13:45:07 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -14,8 +14,6 @@
 
 tosl_mesh_t *tosl_mesh_make_ico(double R)
   {
-    int8_t debug = 1;
-    
     /* Compute the two basic (quantized, even) coordinates {Rq, Sq}: */
     R = fmax(R, 10.0); 
     double golden = (sqrt(5) - 1.0)/2.0;
@@ -57,24 +55,24 @@ tosl_mesh_t *tosl_mesh_make_ico(double R)
             tosl_arc_id_t ja12 = tosl_mesh_add_edge(kv1, kv2, 0, mesh);
             tosl_arc_id_t ja13 = tosl_mesh_add_edge(kv1, kv3, 0, mesh);
             /* Triangles with the axial edge: */
-            tosl_mesh_link_triang((r+0)%2, ja, ja12, tosl_sym(ja02), mesh);
-            tosl_mesh_link_triang((r+1)%2, ja, ja13, tosl_sym(ja03), mesh);
+            tosl_mesh_link_triang((r+1)%2, ja, ja12, tosl_sym(ja02), mesh);
+            tosl_mesh_link_triang((r+0)%2, ja, ja13, tosl_sym(ja03), mesh);
           }
       }
     assert(mesh->NE == NE);
     
     /* Debug: */
-    if (debug) { tosl_mesh_print(stderr, mesh); }
+    /* if (debug) { tosl_mesh_print(stderr, mesh); } */
     
-    fprintf(stderr, "  adding the 30 edges...\n");
-    tosl_mesh_link_triang(0,  2, 42, 22, mesh);
-    tosl_mesh_link_triang(1, 12, 46, 24, mesh);
-    tosl_mesh_link_triang(1,  6, 44, 32, mesh);
-    tosl_mesh_link_triang(0, 16, 48, 34, mesh);
-    tosl_mesh_link_triang(1,  4, 52, 26, mesh);
-    tosl_mesh_link_triang(0, 14, 56, 28, mesh);
-    tosl_mesh_link_triang(0,  8, 54, 36, mesh);
-    tosl_mesh_link_triang(1, 18, 58, 38, mesh);
+    fprintf(stderr, "  linking the octant triangles...\n");
+    tosl_mesh_link_triang(1,  2, 42, 22, mesh);
+    tosl_mesh_link_triang(0, 12, 46, 24, mesh);
+    tosl_mesh_link_triang(0,  6, 44, 32, mesh);
+    tosl_mesh_link_triang(1, 16, 48, 34, mesh);
+    tosl_mesh_link_triang(0,  4, 52, 26, mesh);
+    tosl_mesh_link_triang(1, 14, 56, 28, mesh);
+    tosl_mesh_link_triang(1,  8, 54, 36, mesh);
+    tosl_mesh_link_triang(0, 18, 58, 38, mesh);
 
     return mesh;                   
   }

@@ -1,5 +1,5 @@
 /* General tools for creating {tosl.h} meshes.  */
-/* Last edited on 2024-10-06 17:20:39 by stolfi  */
+/* Last edited on 2024-10-07 11:24:15 by stolfi  */
 
 #ifndef tosl_mesh_H
 #define tosl_mesh_H
@@ -58,6 +58,11 @@ void tosl_mesh_vert_print(FILE *wr, char *pref, tosl_vert_id_t kv, char *suff, t
   /* Prints to {wr} the vertex id {kv} as "v{kv}" then the label {mesh.Vlab[kv]} (if not {NULL} 
     and coordinates {mesh.Vpos[kv]}. Everything is preceded by {pref} and followed by {suff}. */
  
+void tosl_mesh_face_normal_area_center(tosl_arc_id_t ka, tosl_mesh_t *mesh, double *area_P, double nrm[], double ctr[]);
+  /* Computes the area {*area_P}, unit normal {nrm[0..2]}, and barycenter {ctr[0..2]} 
+    of the left face of arc {ka} (the arcs reached from {ka} by {.skip} links).  
+    Returns all {NAN}s if there is something wrong with those arcs. */
+
 /* CREATING */
 
 tosl_mesh_t *tosl_mesh_new(int32_t NE_max, int32_t NV_max);
