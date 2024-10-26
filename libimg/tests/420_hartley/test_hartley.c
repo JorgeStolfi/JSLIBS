@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_transform.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2017-12-13 12:51:33 by stolfilocal */ 
+/* Last edited on 2024-10-12 17:38:17 by stolfi */ 
 /* Created on 2008-09-21 by J. Stolfi, UNICAMP */
 
 #define test_hartley_COPYRIGHT \
@@ -177,7 +177,8 @@ void do_test_transform
     write_image(kx, ky, wave, "out/tr", "0-orig", iimg);
     
     double ierg = 0.0;
-    for (c = 0; c < chns; c++) { ierg += float_image_compute_total_energy(iimg,c,0.0); }
+    for (c = 0; c < chns; c++) 
+      { ierg += float_image_compute_squared_sample_sum(iimg, c, 0.0, NULL); }
     fprintf(stderr, "input image energy = %24.16e\n", ierg);
     demand(fabs(ierg/chns - 1.0) < 1.0e-6, "input image does not have unit power per channel!"); 
     
@@ -190,7 +191,8 @@ void do_test_transform
     write_image(kx, ky, wave, "out/tr", "1-hart", timg);
     
     double terg = 0.0;
-    for (c = 0; c < chns; c++) { terg += float_image_compute_total_energy(timg,c,0.0); }
+    for (c = 0; c < chns; c++)
+      { terg += float_image_compute_squared_sample_sum(timg, c, 0.0, NULL); }
     double tmag = sqrt(terg/ierg);
     fprintf(stderr, "transform energy = %24.16e  magnification = %24.16e\n", terg, tmag);
     demand(fabs(tmag - 1.0) < 1.0e-6, "transform did not preserve power!"); 
@@ -204,7 +206,8 @@ void do_test_transform
     write_image(kx, ky, wave, "out/tr", "2-hinv", oimg);
     
     double oerg = 0.0;
-    for (c = 0; c < chns; c++) { oerg += float_image_compute_total_energy(oimg,c,0.0); }
+    for (c = 0; c < chns; c++) 
+      { oerg += float_image_compute_squared_sample_sum(oimg, c, 0.0, NULL); }
     double omag = sqrt(oerg/terg);
     fprintf(stderr, "transform energy = %24.16e  magnification = %24.16e\n", oerg, omag);
     demand(fabs(omag - 1.0) < 1.0e-6, "inverse transform did not preserve power!"); 

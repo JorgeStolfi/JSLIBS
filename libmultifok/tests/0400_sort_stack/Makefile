@@ -1,4 +1,4 @@
-# Last edited on 2023-04-28 17:27:40 by stolfi
+# Last edited on 2024-10-19 09:56:33 by stolfi
 
 TEST_LIB := libmultifok.a
 TEST_LIB_DIR := ../..
@@ -21,7 +21,7 @@ all: check
 PATTERN := wavys-09
 FOC_DEPTH := 6.0
 SCENE_TYPE := F
-FD_TAG := ${shell printf "fd%08.4f" ${FOC_DEPTH}}
+FD_TAG := ${shell printf "df%08.4f" ${FOC_DEPTH}}
 
 ZFOCS := -zRange 0.5 27.5 -zStep 3.0
 ACTUAL_SHARP := F
@@ -34,7 +34,7 @@ NOISE := 0.12
 
 check:  combine show
 
-MERGED_FILE := ${OUT_PREFIX}-cr.ppm
+??MERGED_FILE := ${OUT_PREFIX}-cr.ppm
 
 combine: ${MERGED_FILE}
 
@@ -50,5 +50,5 @@ ${MERGED_FILE}: ${PROG} Makefile
             -outPrefix ${OUT_PREFIX}
             
 show: ${MERGED_FILE}
-	display -title '%f' -filter Box -resize '400%' ${OUT_PREFIX}{-cr.ppm,-az.pgm,-ez.pgm}
+	??display -title '%f' -filter Box -resize '400%' ${OUT_PREFIX}{-cr.ppm,-az.pgm,-ez.pgm}
             

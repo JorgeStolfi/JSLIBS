@@ -1,23 +1,23 @@
 #! /bin/bash
-# Last edited on 2023-04-28 11:32:54 by stolfi
+# Last edited on 2024-10-16 13:47:43 by stolfi
 
 echo "=== do_regression_on_binned_data.sh =============================" 1>&2
 echo "$@" 1>&2
 
 prefix="$1"; shift      # File name minus the "-hdata.txt" tail.
-basisName="$1"; shift   # Basis name ("DIFF", "LAPL", "HART", etc).
+basisType="$1"; shift   # Basis name ("DIFF", "LAPL", "HART", etc).
 unitTerm="$1"; shift;   # True to include the unit term in the regression.
 title="$1"; shift       # Plot title.
 
 # Input files:
-histDataFile="${prefix}-hdata.txt"    # File with quadratic terms binned by sharpness.
+histDataFile="${prefix}-hdata.txt"    # File with quadratic terms binned by blurring.
 belNameFile="${prefix}-bnames.txt"    # File with basis element names.
 termNameFile="${prefix}-tnames.txt"   # File with quadratic term names.
 
 # Output files:
 
-outFormFile="${prefix}-un${unitTerm}-hform.txt"  # Fitted formula for sharp as function of the binned quadratic terms.
-outRegrFile="${prefix}-un${unitTerm}-hregr.txt"  # File with true and fitted sharpness.
+outFormFile="${prefix}-un${unitTerm}-hform.txt"  # Fitted formula for {shrp} as function of the binned quadratic terms.
+outRegrFile="${prefix}-un${unitTerm}-hregr.txt"  # File with true and fitted {shrp}.
 
 # Internal files:
 
@@ -37,6 +37,7 @@ echo "termName = ${termName[*]}" 1>&2
 
 # Preparing data file for regression:
 echo "converting ${histDataFile} to regression data file ${regrDataFile}..." 1>&2
+
 cat ${histDataFile} \
   | gawk  \
       ' /^ *[0-9]/{ 

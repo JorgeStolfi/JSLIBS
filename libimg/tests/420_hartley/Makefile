@@ -1,4 +1,4 @@
-# Last edited on 2020-10-01 21:19:02 by jstolfi
+# Last edited on 2024-10-17 07:01:15 by stolfi
 
 PROG = test_hartley
 
@@ -26,7 +26,7 @@ MAG := 400%
 
 do-test: ${PROG}
 	${PROG} ${NX} ${NY}
-	display -title '%f' -filter Point -resize '${MAG}' `ls out-*.ppm | sort`
+	display -title '%f' -filter Point -resize '${MAG}' `ls out/*.ppm | sort`
 
 clean::
 	/bin/rm -fv out-*.ppm

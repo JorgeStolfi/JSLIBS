@@ -1,5 +1,5 @@
 /* Window operations for multi-focus stereo. */
-/* Last edited on 2023-04-28 10:56:16 by stolfi */
+/* Last edited on 2024-10-12 03:10:07 by stolfi */
 
 #ifndef multifok_window_H
 #define multifok_window_H
@@ -32,14 +32,43 @@ int32_t multifok_window_num_samples(int32_t NW);
   The effective window usually has smooth boundaries and apodizing.
   Its effective shape is defined by a list of {NS} non-negative weights, 
   stored in a vector, linearized by rows. */
+  
+typedef enum { 
+    multifok_window_type_BIN,
+    multifok_window_type_GLD
+  } multifok_window_type_t;
+  /* Type of window sample weights distribution. */
 
-double *multifok_window_sample_weights(int32_t NW);
+#define multifok_window_type_FIRST multifok_window_type_BIN
+#define multifok_window_type_LAST  multifok_window_type_GLD
+  
+double *multifok_window_weights(int32_t NW, multifok_window_type_t type);
   /* Returns a newly allocated array {ws[0..NS-1}} with the weights of
     each sample in the window, for averaging and apodizing purposes.
-    
-    Currently uses binomial weights {ws[ks] = choose(NW-1,ix)*choose(NW-1,iy)/A}
-    where {ix,iy} vary in {0..NW-1}, {ks} is {iy*NW + ix}, and {A} is such that the
+    The {type} parameter selects the type of weight distribution. */
+  
+double *multifok_window_weights_binomial(int32_t NW);
+  /* Same as {multifok_window_weights}, but specifically binomial
+    weights {ws[ks] = choose(NW-1,ix)*choose(NW-1,iy)/A} where {ix,iy}
+    vary in {0..NW-1}, {ks} is {iy*NW + ix}, and {A} is such that the
     central weight is 1. */
+
+double *multifok_window_weights_golden(int32_t NW);
+  /* Same as {multifok_window_weights}, but specifically "golden"
+    weights {ws[ks] = C/(C + ix^2 + iy^2)} where {ix,iy} vary in
+    {-HW..+Hw}, {ks} is {(iy+HW)*NW + (ix+HW)}, {HW} is {(NW-1)/2}, and
+    {C} is the golden ratio {(sqrt*5)-1)/2}. Why the golden ratio, you
+    ask.  Why not, sez I. */
+
+char *multifok_window_type_to_text(multifok_window_type_t wType);
+  /* Converts the window weights distributoon type {wType} to text ("BIN", "GLD", etc.). 
+    Clients should NOT call {free} on the returned strings. */
+
+multifok_window_type_t multifok_window_type_from_text(char *name, bool_t fail);
+  /* Converts the {name} ("BIN", "GLD", etc.) to a sample weights distribution type.  
+    If the {name} invalid, fails if {fail} is true, and returns {-1} if false. */
+
+/* WINDOW WEIGHTING OPS */
 
 double multifok_window_prod(int32_t NW, double a[], double b[]);
   /* Computes the inner product of sample vectors {a[0..NS-1]} and {b[0..NS-1]}. 
@@ -49,31 +78,65 @@ double multifok_window_dist_sqr(int32_t NW, double a[], double b[]);
   /* Computes the squared distance of sample vectors {a[0..NS-1]} and {b[0..NS-1]}. 
     That is, {SUM{i \in 0..NS-1 : (a[i] - b[i])^2}}. */
 
+void multifok_window_compute_average_gradient_and_deviation
+  ( int32_t NW, 
+    double s[], 
+    double ws[], 
+    double *sAvg_P,
+    double *sGrx_P,
+    double *sGry_P,
+    double *sDev_P
+  );
+  /* Computes the weighted average {sAvg} and gradient {sGrx,sGry} of
+    the window samples {s[0..NS-1]}, with sample weights {ws[0..NS-1]}.
+    
+    Then computes the residual {d[ks]} at each sample as {s[ks]} minus the 
+    affine function {f(x,y) = sAvg _ sGrx*x + sGry*y}, where {x,y}
+    are pixel indices of the sample relative to the center pixel. 
+    The computes the RMS value {sDev} of {d[0..NS-1]}.
+    
+    Returns the average {sAvg} in {*sAvg_P}, the gradient {sGrx,sGry}
+    in {*sGrx_P,sGry_P}, and the deviation {sDev} in {*sDev_P}. */
+
+void multifok_window_remove_average_and_gradient
+  ( int32_t NW, 
+    double s[], 
+    double ws[], 
+    double sAvg,
+    double sGrx,
+    double sGry
+  );
+  /* Subtracts {sAvg} and the ramp with gradient {(sGrx,sGry)} from the window
+    samples.  
+    
+    This correction can be used before focus estimation to eliminate
+    the influence of gradient and brightness variations in the window. */
+
+double multifok_window_deviation(int32_t NW, double s[], double ws[]);
+  /* Computes the weighted RMS value {sDev} of the samples {s[0..NS-1]} with weights
+    {ws[0..NS-1]}, where {NS = NW*NW}. */
+
 void multifok_window_normalize_samples
   ( int32_t NW, 
     double s[], 
     double ws[], 
     double noise, 
-    double *avg_P,
-    double *grd_P,
-    double *dev_P
+    double *sAvg_P,
+    double *sGrx_P,
+    double *sGry_P,
+    double *sDev_P
   );
-  /* Computes the weighted average {avg} and gradient {grd_x,grd_y} of
-    the window samples {s[0..NS-1]}, with sample weights {ws[0..NS-1]}.
-    Then subtracts {avg} and the ramp with that gradient from the window
-    samples. Then computes the weighted rms value {dev} of the residual samples.
+  /* 
+    Performs {multifok_window_compute_average_gradient_and_deviation}
+    with parameters {NW,s,ws}, storing the results {sAvg,sGrx,sGry,sDev} in
+    {*sAvg_P,*sGrx_P,*sGry_P,*sDev_P}. Then performs
+    {multifok_window_remove_average_and_gradient}, subtracting from the
+    window samples {s[0..NS-1]} the affine function {sAvg + sGrx*x + sGry*y}. Then
+    divides the samples by {hypot(sDev, noise}.
     
-    Then normalizes the residual samples by dividing by {hypot(dev,
-    noise}, so that they have zero mean, zero gradient,
-    and unit deviation (weighted).
-    
-    This correction elimines the influence of regional brightness,
-    gradient, and contrast, assuming that the samples are contaminated
-    with random noise with mean 0 and deviation {noise}. Variations that
-    are small compared to {noise} are not amplified.
-    
-    Return {ave} and {dev} in {*ave_P} and {*dev_P}, and the gradient 
-    modulus {grd = hypot(grd_x,grd_y)} in {*vgrd_P}. */
+    This leaves the non-affine component of the window samples,
+    normalized to unit deviation; except that deviations 
+    that are small compared to {noise} are not amplified. */
 
 void multifok_window_set_samples_3x3
   ( double s[], 

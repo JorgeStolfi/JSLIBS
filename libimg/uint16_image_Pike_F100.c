@@ -1,5 +1,5 @@
 /* See uint16_image_Pike_F100.h */
-/* Last edited on 2023-11-26 06:44:06 by stolfi */
+/* Last edited on 2024-10-25 22:51:05 by stolfi */
 
 #include <math.h>
 #include <stdlib.h>
@@ -313,14 +313,14 @@ uint16_image_t *pnm_Pike_F100_bayer_channel_white_mask(uint16_image_t *img, bool
     double wt[nw];   /* One-dimensional window weights. */
     wt_table_binomial_fill(nw, wt, NULL);
     wt_table_normalize_sum(nw, wt);
-    double bias = 4.0/256.0; /* A reasonable black level. */
+    double vRef = 4.0/256.0; /* A reasonable black level. */
     double base = 2.0;
     int chn;
     for (chn = 0; chn < img->chns; chn++)
       { 
-        /* Convert channe {chn} of {fim} to log scale with a fixed bias: */
-        float_image_rescale_samples(fim, chn, 0.0f, 1.0f, (float)bias, (float)(1.0+bias));
-        float_image_log_scale(fim, chn, bias, base);
+        /* Convert channe {chn} of {fim} to log scale with a fixed vRef: */
+        float_image_rescale_samples(fim, chn, 0.0f, 1.0f, (float)vRef, (float)(1.0+vRef));
+        float_image_log_scale(fim, chn, 0.0, vRef, base);
         /* Extract the high-freq part, ignoring outliers: */
         int maxiter = 3;
         int iter = 0;       /* Iterations. */
@@ -362,8 +362,8 @@ uint16_image_t *pnm_Pike_F100_bayer_channel_white_mask(uint16_image_t *img, bool
           }
         while ((nout > 0) && (iter < maxiter));
         /* Convert the high-frequency signal from log to lin scale, so that {avg + maxd*dev --> 1}: */ 
-        double vref = 1.0/sample_conv_undo_log((float)(avg + maxd*dev), 1.0, log(base));
-        float_image_undo_log_scale(hif, chn, vref, base);
+        double uRef = 1.0/sample_conv_undo_log((float)(avg + maxd*dev), 0.0, 1.0, log(base));
+        float_image_undo_log_scale(hif, chn, 0.0, uRef, base);
       }
     /* Convert back to PNM image: */
     uint16_image_t *pot = float_image_to_uint16_image(hif, isMask, img->chns, NULL, NULL, NULL, uint16_image_MAX_SAMPLE, TRUE, verbose);

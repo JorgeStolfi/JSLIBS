@@ -2,7 +2,7 @@
 #define affirm_H
 
 /* Variants of {assert} with explicit message argument. */
-/* Last edited on 2023-10-04 17:17:49 by stolfi */
+/* Last edited on 2024-10-23 07:07:21 by stolfi */
 
 /* ERRORS AND ASSERTIONS */
 
@@ -64,6 +64,16 @@ void *checknotnull(void *p, const char *msg, const char *file, unsigned int line
 #define talloc(n, T) \
   ((T*)((n) == 0 ? NULL : notnull(calloc((n), sizeof(T)), "no mem")))
   /* Allocates an array of {n} elements of type {T}, casting the result as a {T*} pointer.
-    Aborts with error if {n} is positive but the allocation returns {NULL} (not enough memory). */
- 
+    If {n} is zero, returns {NULL}.  Aborts with error if {n} is positive but the allocation
+    returns {NULL} (presumably because of not enough memory).
+    Equivalent to {calloc(n,sizeof(T))} except for the type casting and {NULL} checking. */
+    
+#define retalloc(p, n, T) \
+  ((T*)((n) == 0 ? reallocarray((p), 0, sizeof(T)) : notnull(reallocarray((p), (n), sizeof(T)), "no mem")))
+  /* Re-allocates the heap area pointed by {p} as an array of {n} elements of type {T}, 
+    freeing the previous area (if {p} was not {NULL}), and casting the result as a {T*} pointer.
+    If {n} is zero, performs {free(p)} and returns {NULL}.  Aborts with error if {n} is positive
+    but the reallocation returns {NULL} (presumably because of not enough memory).
+    Equivalent to {reallocarray(p,n,sizeof(T))} except for the type casting and {NULL} checking. */
+
 #endif

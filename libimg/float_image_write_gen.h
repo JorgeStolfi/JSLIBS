@@ -1,5 +1,5 @@
 /* Write a {float_image_t} to a file with variable format. */
-/* Last edited on 2023-02-04 00:32:59 by stolfi */
+/* Last edited on 2024-10-12 19:17:52 by stolfi */
 
 #ifndef float_image_write_gen_H
 #define float_image_write_gen_H
@@ -41,33 +41,45 @@
     
 #define float_image_write_gen_INFO \
   "The output file image format can be PNM (PBM, PGM, PPM), JPG," \
-  " PNG, or FNI.  The number {NC} of channels in the image to be written must be between 1 and 4.  " \
-  " The specific variant of the specified file format will depend on {NC}.  It may be either RGB" \
-  " color (three samples per pixel) or grayscale (one sample" \
-  " per pixel), and may contain an alpha channel, depending on the format.  The samples will be quantized to integer in some range {0..maxval}, where {maxval} depends on the the file format:\n" \
+  " PNG, or FNI.  The number {NC} of channels in the image to be written" \
+  " must be between 1 and 4.  The specific variant of the specified file" \
+  " format will depend on {NC}.  It may be either RGB color (three samples" \
+  " per pixel) or grayscale (one sample" \
+  " per pixel), and may contain an alpha channel, depending on the format.  The" \
+  " samples will be quantized to integer in some range {0..maxval}, where" \
+  " {maxval} depends on the the file format:\n" \
   "\n" \
   "  PNM (PBM, PGM, PPM) FORMAT:\n" \
   "\n" \
-  "  The input image must not have an alpha channel.  The procedure will write a raw PGM file if {C} is 1, and a raw PPM file if {NC} is 3.  The max sample value will be 65535 (16 bits per sample).\n" \
+  "  The input image must not have an alpha channel.  The procedure will write" \
+  " a raw PGM file if {C} is 1, and a raw PPM file if {NC} is 3.  The max sample" \
+  " value will be 65535 (16 bits per sample).\n" \
   "\n" \
-  "  The given {gammaEnc} exponent will be used in the quantization but cannot be saved in the file.  PNM files assume the ITU-R BT709 gamma encoding.  See {sample_conv.h} for details.\n" \
+  "  The given {gammaEnc} exponent will be used in the quantization but cannot be" \
+  " saved in the file.  PNM files assume the ITU-R BT709 gamma" \
+  " encoding.  See {sample_conv.h} for details.\n" \
   "\n" \
   "  PNG FORMAT:\n" \
   "\n" \
-  "  The file will contain a true color (not colormapped) image in the {GRAY}, {GRAY+ALPHA}, {RGB}, or {RGB+ALPHA} format if {NC} is 1, 2, 3 or 4, respectively. The max quantized sample value {maxval} in the file will be 65535 (16 bits per sample).  The {gammaEnc} exponent will be written as a \"gAMA\" chunk.\n" \
+  "  The file will contain a true color (not colormapped) image in" \
+  " the {GRAY}, {GRAY+ALPHA}, {RGB}, or {RGB+ALPHA} format if {NC} is 1, 2, 3 or 4," \
+  " respectively. The max quantized sample value {maxval} in the file will be 65535 (16 bits" \
+  " per sample).  The {gammaEnc} exponent will be written as a \"gAMA\" chunk.\n" \
   "\n" \
   "  JPG (JPEG) FORMAT:\n" \
   "\n" \
-  "  The image may have only 1, 3 or 4 channels, and the file's colorspace will be {JCS_GRAYSCALE}, {JCS_RGB}, or {JCS_RGBA}, respectively.  The max quantized sample value will be 255 (8 bits per sample)."
+  "  The image may have only 1, 3 or 4 channels, and the file's colorspace will" \
+  " be {JCS_GRAYSCALE}, {JCS_RGB}, or {JCS_RGBA}, respectively.  The max quantized" \
+  " sample value will be 255 (8 bits per sample)."
 
 void float_image_write_gen_named
-  ( const char *fname,
-    float_image_t *fimg,
-    image_file_format_t ffmt,
-    double v0,      /* Output sample value corresponding to file sample value 0. */
-    double vM,      /* Output sample value corresponding to max file sample value. */
-    double gammaEnc,  /* Exponent parameter for gamma encoding. */
-    double bias,      /* Bias parameter for gamma encoding. */
+  ( const char *fname,         /* File name. */
+    float_image_t *fimg,       /* Image to write out. */
+    image_file_format_t ffmt,  /* File format. */
+    double v0,                 /* Output sample value corresponding to file sample value 0. */
+    double vM,                 /* Output sample value corresponding to max file sample value. */
+    double gammaEnc,           /* Exponent parameter for gamma encoding. */
+    double bias,               /* Bias parameter for gamma encoding. */
     bool_t verbose
   );
   /* Writes the image {fimg} to file {fname} in format {ffmt},

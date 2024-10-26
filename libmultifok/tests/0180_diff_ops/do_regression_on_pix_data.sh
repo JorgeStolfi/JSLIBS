@@ -1,23 +1,23 @@
 #! /bin/bash
-# Last edited on 2023-04-28 11:34:22 by stolfi
+# Last edited on 2024-10-16 13:47:56 by stolfi
 
 echo "=== ${0/*\/} =============================" 1>&2
 echo "$@" 1>&2
 
 prefix="$1"; shift      # File name minus the "-odata.txt" tail.
-basisName="$1"; shift   # Basis name ("DIFF", "LAPL", "HART", etc).
+basisType="$1"; shift   # Basis name ("DIFF", "LAPL", "HART", etc).
 unitTerm="$1"; shift;   # True to include the unit term in the regression.
 title="$1"; shift       # Plot title.
 
 # Input files:
-pixDataFile="${prefix}-odata.txt"     # File with per-pixel sharpness and term data.
+pixDataFile="${prefix}-odata.txt"     # File with per-pixel blurring indicator and term data.
 belNameFile="${prefix}-bnames.txt"    # File with basis element names.
 termNameFile="${prefix}-tnames.txt"   # File with quadratic term names.
 
 # Output files:
 
-outFormFile="${prefix}-un${unitTerm}-oform.txt"  # Fitted formula for sharp as function of the quadratic terms.
-outRegrFile="${prefix}-un${unitTerm}-oregr.txt"  # File with true and fitted sharpness.
+outFormFile="${prefix}-un${unitTerm}-oform.txt"  # Fitted formula for {shrp} as function of the quadratic terms.
+outRegrFile="${prefix}-un${unitTerm}-oregr.txt"  # File with true and fitted {shrp} indicator.
 
 # Internal files:
 
@@ -37,16 +37,17 @@ echo "termName = ${termName[*]}" 1>&2
 
 # Preparing data file for regression:
 echo "preparing regression data file ${regrDataFile}..." 1>&2
+
 cat ${pixDataFile} \
   | gawk  \
       -v nb=${nb} \
       -v nt=${nt} \
       ' /^ *P[0-9]/{ 
           if (NF != 7 + nb + nt) { printf "BUG\n" > "/dev/stderr"; exit(1); }
-          pixid = $1; vavg = $2; vgrd = $3; vdev = $4; sharp = $5; zrav = $6; zdev = $7; 
-          wt = sharp;   # Weight equal to "true" sharpness.
+          pixid = $1; vavg = $2; vgrd = $3; vdev = $4; shrp = $5; zrav = $6; zdev = $7; 
+          wt = sharp??;   # Weight equal to "true" sharpness.
           # wt = 1.0;  # Uniform weight.
-          hrad = (1.0/sharp);
+          hrad = (1.0/sharp??);
           hrad2 = hrad*hrad;
           printf "%s %12.6f %12.6f ", pixid, hrad2, wt;
           for (kt = 0; kt < nt; kt++) { kf = 8 + nb + kt; printf " %s", $(kf) }

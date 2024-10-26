@@ -2,7 +2,7 @@
 #define PROG_DESC "test an analysis of basis functions from {multifok_focus_op.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-04-28 17:30:11 by stolfi */ 
+/* Last edited on 2024-10-22 13:08:38 by stolfi */ 
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
 #define test_mfok_show_basis_COPYRIGHT \
@@ -17,24 +17,24 @@
   "OUTPUTS\n" \
   "\n" \
   "  WINDOW WEIGHT IMAGE FILE\n" \
-  "    The program writes a grayscale image" \
-  " showing the {NW} by {NW} values of basis element {kb}.\n" \
-  "\n" \
-  "    The image is written to file \"{outPrefix}-n{NNN}-ws.pgm\" where" \
+  "    For each window weight distribution type {wType} (\"BIN\", \"GLD\", etc.), the" \
+  " program writes an {NW} by {NW} grayscale image showing the weight values.  The" \
+  " file name will be \"{outDir}/weights-nw{NNN}-wt{wType}.png\", where" \
   " {NNN} is the window size {NW}, zero-padded to 3 digits.\n" \
   "\n" \
   "  BASIS IMAGE FILES\n" \
-  "    For each basis and each basis element index {kb}, the program writes grayscale image" \
-  " showing the {NW} by {NW} values of basis element {kb}.\n" \
-  "\n" \
-  "    The image is written to file \"{outPrefix}-n{NNN}-b{bType}-o{ortho}-{KKK}.pgm\" where" \
-  " {NNN} is the window size {NW}, {bType} is the basis type (\"LAPL\", \"DIFF\", etc.) {ortho}" \
-  " is 0 for the raw version of the basis and 1 for the orthonormalized one, and {KKK} is" \
-  " the element index {kb}. Both {NNN} and {KKK} are zero-padded to 3 digits.\n" \
+  "     For each each basis type {bType} (\"LAPL\", \"DIFF\", etc.), each window weight" \
+  " distribution type {wType},  with and without orthogonalization, and each" \
+  " basis element {kb}, the program writes  agrayscale image showing the {NW} by {NW} values" \
+  " of that element. The file name is \"{outDir}/basis-nw{NNN}-bt{bType}-wt{wType}-or{ortho}-{KKK}.pgm\" where" \
+  " {NNN} is the window size {NW}, {ortho}" \
+  " is \"F\" for the raw version of the basis and \"T\" for the orthonormalized" \
+  " version, and {KKK} is the element index {kb}. Both {NNN} and {KKK} are" \
+  " zero-padded to 3 digits.\n" \
   "\n" \
   "  BASIS NAMES FILE\n" \
-  "    Also writes to \"{outPrefix}-n{NNN}-b{bType}-belnames.txt\" the names of " \
-  " the basis elements, like \"DXDY\", one per line."
+  "    Also writes to \"{outDir}/bas-nw{NNN}-bt{bType}-belnames.txt\" the names of " \
+  " the basis elements, like \"FXY\", one per line."
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -52,6 +52,7 @@
 #include <float_image.h>
 
 #include <multifok_window.h>
+#include <multifok_image.h>
 #include <multifok_basis.h>
 #include <multifok_term.h>
 #include <multifok_score.h>
@@ -59,7 +60,7 @@
 
 typedef struct mfsb_options_t 
   { int32_t winSize;   /* Size of window. */
-    char *outPrefix;   /* Output image file name. */
+    char *outDir;   /* Output image file name. */
   } mfsb_options_t;
   /* Command line parameters. */
 
@@ -69,21 +70,24 @@ mfsb_options_t *mfsb_parse_options(int32_t argc, char **argv);
   /* Parses the command line options. */
 
 void mfsb_show_sample_weights
-  ( int32_t NW,           /* Window width and height. */
-    double ws[],          /* Sample window weights. */
-    char *outPrefix       /* Prefix for outupt file name. */
+  ( multifok_window_type_t wType,  /* Window weights distribution type. */
+    int32_t NW,                    /* Window width and height. */
+    double ws[],                   /* Sample window weights. */
+    char *outDir                   /* Output directory. */
   );
-  /* Writes the sample weights {ws[0..NS-1]} as an image file "{outPrefix}-n{NNN}-ws.ppm" where 
+  /* Writes the sample weights {ws[0..NS-1]} as an image file 
+    "{outDir}/weights.png" where 
     {NNN} is {NW} zero-padded to 3 digits. */
 
 void mfsb_show_single_basis
-  ( int32_t NW,                            /* Window width and height. */
-    double ws[],                           /* Sample window weights. */
-    multifok_basis_type_t bType,  /* Basis type. */
-    bool_t ortho,                          /* True to ortho normalize basis. */
-    char *outPrefix                        /* Prefix for outupt file names. */
+  ( int32_t NW,                    /* Window width and height. */
+    double ws[],                   /* Sample window weights. */
+    multifok_basis_type_t bType,   /* Basis type. */
+    multifok_window_type_t wType,  /* Window weights distribution type. */
+    bool_t ortho,                  /* True to ortho normalize basis. */
+    char *outDir                /* Prefix for outupt file names. */
   );
-  /* Writes each basis element {bas[k]} as an image file "{outPrefix}-n{NNN}-b{bType}-o{ortho}-{KKK}.ppm" where 
+  /* Writes each basis element {bas[k]} as an image file "{outDir}/basis-nw{NNN}-bt{bType}-wt{wType}-or{ortho}-{KKK}.ppm" where 
     {NNN} and {KKK} are {NW} and {k} zero-padded to 3 digits.  Each image pixel is a basis value {bas[kb][ks]}
     times {sqrt(ws[ks])}. */
 
@@ -93,8 +97,12 @@ void mfsb_show_single_basis
 #define LAPL multifok_basis_type_LAPL  
 #define DIFF multifok_basis_type_DIFF  
 #define HART multifok_basis_type_HART  
-#define FIRST multifok_basis_type_FIRST
-#define LAST multifok_basis_type_LAST
+
+#define BT_FIRST multifok_basis_type_FIRST
+#define BT_LAST multifok_basis_type_LAST
+
+#define WT_FIRST multifok_window_type_FIRST
+#define WT_LAST multifok_window_type_LAST
 
 int32_t main (int32_t argc, char **argv)
   {
@@ -103,16 +111,19 @@ int32_t main (int32_t argc, char **argv)
     int32_t NW = o->winSize;
     demand((NW % 2 == 1) && (NW >= 3), "invalid window size");
 
-    double *ws = multifok_window_sample_weights(NW);
-    mfsb_show_sample_weights(NW, ws, o->outPrefix);
-
-    bool_t ortho;
-    for (multifok_basis_type_t bt = FIRST; bt <= LAST; bt++)
-      { if ((NW == 3) || (bt != DIFF))
-          { ortho = FALSE;
-            mfsb_show_single_basis(NW, ws, bt, ortho, o->outPrefix);
-            ortho = TRUE;
-            mfsb_show_single_basis(NW, ws, bt, ortho, o->outPrefix);
+    for (multifok_window_type_t wt = WT_FIRST; wt <= WT_LAST; wt++)
+      { double *ws = multifok_window_weights(NW, wt);
+        mfsb_show_sample_weights(wt, NW, ws, o->outDir);
+        for (multifok_basis_type_t bt = BT_FIRST; bt <= BT_LAST; bt++)
+          { if ((NW == 3) || (bt != DIFF))
+              { for (int32_t io = 0; io <= 1; io++)
+                  { bool_t ortho = (io == 1);
+                    char *basDir = NULL;
+                    asprintf(&basDir, "%s/basis-nw%03d-bt%s-wt%s-or%c", o->outDir, NW, bTypeX, wTypeX, "FT"[ortho]);
+                    mfsb_show_single_basis(NW, ws, bt, wt, ortho, basDir);
+                    free(basDir);
+                  }
+              }
           }
       }
 
@@ -120,12 +131,14 @@ int32_t main (int32_t argc, char **argv)
   }
 
 void mfsb_show_sample_weights
-  ( int32_t NW,           /* Window width and height. */
-    double ws[],          /* Sample window weights. */
-    char *outPrefix       /* Prefix for outupt file names. */
-  )
+  ( multifok_window_type_t wType,  /* Window weights distribution type. */
+    int32_t NW,                    /* Window width and height. */
+    double ws[],                   /* Sample window weights. */
+    char *outDir                /* Prefix for outupt file names. */
+  )       
   {
-    fprintf(stderr, "--- testing sample weights NW = %d -------------------\n", NW);
+    char *wTypeX = multifok_window_type_to_text(wType); 
+    fprintf(stderr, "--- testing sample weights wType = %s NW = %d -------------------\n", wTypeX, NW);
 
     int32_t NC = 1;
     int32_t NX = NW;
@@ -142,10 +155,10 @@ void mfsb_show_sample_weights
           }
       }
       
-    char *tag = NULL;
-    asprintf(&tag, "-n%03d", NW);
-    multifok_test_write_sample_weights_image(wsimg, outPrefix, tag);
-    free(tag);
+    char *fileName = NULL;
+    asprintf(&fileName, "%s/weights-wt%s-nw%03d", outDir, wTypeX, NW);
+    multifok_image_sample_weights_write(wsimg, fileName);
+    free(fileName);
   
     float_image_free(wsimg);
 
@@ -153,47 +166,44 @@ void mfsb_show_sample_weights
   }  
 
 void mfsb_show_single_basis
-  ( int32_t NW,           /* Window width and height. */
-    double ws[],          /* Sample window weights. */
+  ( int32_t NW,                    /* Window width and height. */
+    double ws[],                   /* Sample window weights. */
     multifok_basis_type_t bType,   /* Basis type. */
-    bool_t ortho,         /* True to orthonormalize the basis. */
-    char *outPrefix       /* Prefix for outupt file names. */
+    multifok_window_type_t wType,  /* Basis type. */
+    bool_t ortho,                  /* True to orthonormalize the basis. */
+    char *basDir                   /* Prefix for outupt file names. */
   )
   {
     char *bTypeX = multifok_basis_type_to_text(bType); 
-    fprintf(stderr, "--- showing basis NW = %d bType = %s ortho = %c -------------------\n", NW, bTypeX, "FT"[ortho]);
+    char *wTypeX = multifok_window_type_to_text(wType); 
+    fprintf(stderr, "--- showing basis NW = %d bType = %s wType = %s ortho = %c -------------------\n", NW, bTypeX, wTypeX, "FT"[ortho]);
 
     int32_t NC = 1;
     int32_t NX = NW;
     int32_t NY = NW;
-    float_image_t *bcimg = float_image_new(NC, NX, NY);
+    float_image_t *bcimg[NB];
     
     /* Get and print the basis for the focus indicator: */
-    int32_t NB;
-    double **bas = NULL;
-    char **belName = NULL;
-    multifok_basis_make(bType, NW, ws, ortho, &NB, &bas, &belName);
+    multifok_basis_t *basis = multifok_basis_make(bType, NW, ws, ortho);
 
-    multifok_basis_print(stderr, NW, NB, bas, belName);
-    multifok_basis_ortho_check(stderr, NW, NB, bas);
+    multifok_basis_print(stderr, basis);
+    multifok_basis_ortho_check(stderr, basis);
 
     /* Write each basis element as an image: */
-    for (int32_t kb = 0; kb < NB; kb++)
-      { for (int32_t ix = 0; ix < NX; ix++)
+    for (int32_t kb = 0; kb < basis->NB; kb++)
+      { bcimg[kb] = float_image_new(NC, NX, NY);
+        for (int32_t ix = 0; ix < NX; ix++)
           { for (int32_t iy = 0; iy < NY; iy++) 
               { int32_t ks = iy*NW + ix;
-                double phk = bas[kb][ks];
-                float_image_set_sample(bcimg, 0, ix, iy, (float)phk);
+                double phk = basis->bas[kb][ks];
+                float_image_set_sample(bcimg[kb], 0, ix, iy, (float)phk);
               }
           }
-        char *tag = NULL;
-        asprintf(&tag, "-n%03d-%s-o%c-%03d", NW, bTypeX, "FT"[ortho], kb);
-        multifok_test_write_basis_elem_image(bcimg, outPrefix, tag);
-        free(tag);
       }
- 
+    multifok_image_basis_kernels_write(NB, bcimg, basDir);
+
     float_image_free(bcimg);
-    multifok_basis_free(NB, bas, belName);
+    multifok_basis_free(basis);
 
     fprintf(stderr, "---------------------------------------------------------------------\n");
   }  
@@ -211,8 +221,8 @@ mfsb_options_t *mfsb_parse_options(int32_t argc, char **argv)
     o->winSize = (int32_t)argparser_get_next_int(pp, 3, 99);  
     if (o->winSize % 2 != 1) { argparser_error(pp, "window size must be odd"); }
 
-    argparser_get_keyword(pp, "-outPrefix");
-    o->outPrefix = argparser_get_next(pp);
+    argparser_get_keyword(pp, "-outDir");
+    o->outDir = argparser_get_next(pp);
 
     argparser_skip_parsed(pp);
     argparser_finish(pp);

@@ -1,5 +1,5 @@
 #! /bin/bash
-# Last edited on 2023-04-28 19:10:43 by stolfi
+# Last edited on 2024-10-19 09:55:49 by stolfi
 
 echo "=== show_terms_images.sh =============================" 1>&2
 echo "$@" 1>&2
@@ -17,13 +17,13 @@ zFoc="$1"; shift;
 sizeTag="`printf '%04dx%04d' ${NX} ${NY}`"
 runPrefix="st${sceneType}-${sizeTag}-${pattern}"
 inPrefix="in/${runPrefix}/frame"
-frameTag="`printf -- '-fd%05.2f-zf%05.2f' ${zDep} ${zFoc}`"
+frameTag="`printf -- '-zf%08.4f-df%08.4f' ${zFoc} ${zDep}`"
 outImagePrefix="`printf -- '%s-img-%s' ${outPrefix} ${runPrefix}`"
 
 tmp="/tmp/$$"
 
 # Images with photo, {Z} height average {zave}, {Z} height deviation {zdev},
-# actual sharpness {sharp}, computed sharpness {score}, and error {score-sharp}:
+# actual blurring indicator {shrp}, computed blurring {shrp}, and error {score-sharp}:
 
 csimg=${inPrefix}${frameTag}-cs.ppm
 

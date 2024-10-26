@@ -1,5 +1,5 @@
 /* See float_image.h */
-/* Last edited on 2023-03-19 08:41:31 by stolfi */ 
+/* Last edited on 2024-10-25 22:45:47 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <limits.h>
@@ -688,8 +688,9 @@ void float_image_apply_gamma(float_image_t *A, int32_t c, double gamma, double b
       }
   }
 
-void float_image_log_scale(float_image_t *A, int32_t c, double vref, double base)
-  { demand((isfinite(vref)) && (vref > 0), "invalid vref");
+void float_image_log_scale(float_image_t *A, int32_t c, double bias, double vRef, double base)
+  { demand((isfinite(bias)) && (bias >= 0), "invalid bias");
+    demand((isfinite(vRef)) && (vRef > 0), "invalid vRef");
     demand((isfinite(base)) && (base != 1) && (base > 0), "invalid base");
     double logBase = (base == M_E ? 1.0 : log(base));
     int32_t NC = (int32_t)A->sz[0];
@@ -699,13 +700,14 @@ void float_image_log_scale(float_image_t *A, int32_t c, double vref, double base
     for (int32_t y = 0; y < NY; y++)
       { for (int32_t x = 0; x < NX; x++)
           { float *pA = float_image_get_sample_address(A, c, x, y);
-            (*pA) = sample_conv_log((*pA), vref, logBase);
+            (*pA) = sample_conv_log((*pA), bias, vRef, logBase);
           }
       }
   }
 
-void float_image_undo_log_scale(float_image_t *A, int32_t c, double vref, double base)
-  { demand((isfinite(vref)) && (vref > 0), "invalid vref");
+void float_image_undo_log_scale(float_image_t *A, int32_t c, double bias, double vRef, double base)
+  { demand((isfinite(bias)) && (bias >= 0), "invalid bias");
+    demand((isfinite(vRef)) && (vRef > 0), "invalid vRef");
     demand((isfinite(base)) && (base != 1) && (base > 0), "invalid base");
     double logBase = (base == M_E ? 1.0 : log(base));
     int32_t NC = (int32_t)A->sz[0];
@@ -715,7 +717,7 @@ void float_image_undo_log_scale(float_image_t *A, int32_t c, double vref, double
     for (int32_t y = 0; y < NY; y++)
       { for (int32_t x = 0; x < NX; x++)
           { float *pA = float_image_get_sample_address(A, c, x, y);
-            (*pA) = sample_conv_undo_log((*pA), vref, logBase);
+            (*pA) = sample_conv_undo_log((*pA), bias, vRef, logBase);
           }
       }
   }
@@ -749,45 +751,43 @@ void float_image_square_samples(float_image_t *A, int32_t c)
       }
   }
 
-double float_image_compute_sample_sum(float_image_t *A, int32_t c)
+double float_image_compute_sample_sum(float_image_t *A, int32_t c, int32_t *NS_P)
   { int32_t NC = (int32_t)A->sz[0];
     int32_t NX = (int32_t)A->sz[1];
     int32_t NY = (int32_t)A->sz[2];
-    if ((c < 0) || (c >= NC))
-      { /* Invalid channel, all samples are zero (or there are no samples). */
-        return 0.0;
-      }
-
     /* Compute the sum of samples {sum}: */
     double sum = 0;
-    for (int32_t y = 0; y < NY; y++)
-      { for (int32_t x = 0; x < NX; x++)
-          { double v = float_image_get_sample(A, c, x, y);
-            if (isfinite(v))
-              { /* Neither {±INF} nor {NAN}: */ sum += v; }
+    int32_t NS = 0;
+    if ((c >= 0) && (c < NC))
+      { for (int32_t y = 0; y < NY; y++)
+          { for (int32_t x = 0; x < NX; x++)
+              { double v = float_image_get_sample(A, c, x, y);
+                if (isfinite(v))
+                  { /* Neither {±INF} nor {NAN}: */ sum += v; NS++; }
+              }
           }
       }
+    if (NS_P != NULL) { (*NS_P) = NS; }
     return sum;
   }
 
-double float_image_compute_total_energy(float_image_t *A, int32_t c, double avg)
+double float_image_compute_squared_sample_sum(float_image_t *A, int32_t c, double avg, int32_t *NS_P)
   { int32_t NC = (int32_t)A->sz[0];
     int32_t NX = (int32_t)A->sz[1];
     int32_t NY = (int32_t)A->sz[2];
-    if ((c < 0) || (c >= NC))
-      { /* Invalid channel, all samples are zero (or there are no samples). */
-        return 0.0;
-      }
 
-    /* Compute the sum of squares {sum2}: */
     double sum2 = 0;
-    for (int32_t y = 0; y < NY; y++)
-      { for (int32_t x = 0; x < NX; x++)
-          { double v = float_image_get_sample(A, c, x, y);
-            if (isfinite(v))
-              { /* Neither {±INF} nor {NAN}: */ v -= avg; sum2 += v*v; }
+    int32_t NS = 0;
+    if ((c >= 0) && (c < NC))
+      { for (int32_t y = 0; y < NY; y++)
+          { for (int32_t x = 0; x < NX; x++)
+              { double v = float_image_get_sample(A, c, x, y);
+                if (isfinite(v))
+                  { /* Neither {±INF} nor {NAN}: */ v -= avg; sum2 += v*v; NS++; }
+              }
           }
       }
+    if (NS_P != NULL) { (*NS_P) = NS; }
     return sum2;
   }
 

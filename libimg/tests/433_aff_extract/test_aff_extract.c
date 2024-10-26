@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_aff_extract.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-19 17:00:32 by stolfi */ 
+/* Last edited on 2024-10-12 18:24:51 by stolfi */ 
 /* Created on 2020-11-05 by J. Stolfi, UNICAMP */
 
 #define taffe_COPYRIGHT \
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
     /* Input image and affine map: */
     float_image_t *img = taffe_read_image(o->imageName);
     hr2_pmap_t A = o->A;
-    demand(hr2_pmap_is_affine(&A), "map is not affine");
+    demand(hr2_pmap_is_affine(&A, 1.0e-12), "map is not affine");
     taffe_show_map("A", "", &A);
     
     /* Choose sampling step and sampling grid size: */

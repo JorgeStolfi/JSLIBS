@@ -1,5 +1,5 @@
 /* Test scenes and ray-tracing for {multifok_test}. */
-/* Last edited on 2023-04-23 01:00:56 by stolfi */
+/* Last edited on 2024-10-24 13:17:16 by stolfi */
 
 #ifndef multifok_scene_H
 #define multifok_scene_H
@@ -7,67 +7,50 @@
 #define _GNU_SOURCE
 #include <stdint.h>
 
-#include <interval.h>
 #include <r3.h>
 #include <hr3.h>
 #include <bool.h>
+#include <interval.h>
 #include <frgb.h>
-#include <float_image.h>
 
-typedef struct multifok_scene_object_t
-  { int32_t ID;         /* Object ID, used e.g. for patterning. */
-    r3_t ctr;           /* Center of disk/sphere. */
-    double rad;         /* Radius of disk/sphere. */
-    bool_t flat;        /* True if disk, false if sphere. */
-    interval_t bbox[3]; /* Bounding box for the object. */
-    frgb_t bg;          /* "Background" color of object texture. */
-    frgb_t fg;          /* "Foreground" color of object texture. */
-  } multifok_scene_object_t;
-  /* An object {obj} of this type pecifies a sphere (if {obj.flat} is false)
-    or horizontal disk (if {obj.flat} is true), with center {ctr} and radius {rad}.
-    Its color at each point {q} will be a varying combination of colors 
-    {obj.bg} and {obj.fg}, depending on the coordinates of {q} and its {ID}. */ 
+#include <multifok_image.h>
+#include <multifok_frame.h>
+#include <multifok_scene_object.h>
 
-#define multifok_scene_ZMAX 30.0
-  /* Total depth of simulated scene. */
-
-struct multifok_scene_tree_t;
-  /* A node in a tree of objets to speed up raytracing. */
+#define multifok_scene_ZMIN 0.0
+#define multifok_scene_ZMAX 60.0
+  /* The vertical range of the scene's visible surface is 
+    contained in {[multifok_scene_ZMIN _ multifok_scene_ZMAX]}. */
 
 typedef struct multifok_scene_t
-  { interval_t dom[3];
-    /* Disks and balls: */
-    int32_t NO;
+  { interval_t dom[3];  /* Clips and contains the scene. */ 
+    int32_t NO;         /* Number of objects (including floor or ramp). */
     multifok_scene_object_t *objs;
-    struct multifok_scene_tree_t *tree; /* Raytracing speedup tree. */
-    bool_t flatFloor; /* True if the floor is horizontal plane, false if relief: */
   } multifok_scene_t;
-  /* An object {scene} of this type specifies a set of solid objects that 
-    can be ray-traced.  It has a "floor" surface and some number {NO} of 
-    objects {objs[0..NO-1]}.
+  /* An object {scene} of this type specifies a set of solid objects
+    that can be ray-traced. It has some number {NO} of objects
+    {objs[0..NO-1]}.
     
-    The {dom} box is the interesting part of the scene. Usually its {XY}
-    projection {D = dom[0]×dom[1]} is the part that is projected onto
-    the image in vertical cylindrical projection. 
+    The {dom} box is the interesting part of the scene.
+    
+    If flatFloor} is false, the "floor" will be some surface that spans
+    the whole range of {Z} coordinates {dom[2]} within the rectangle
+    {D}. This shape is extended outside {D} with flat plane(s) as needed
+    to ensure that its {Z} coordinates, even outside {D}, are always
+    contained in {dom[2]}.
+    
+    The horizontal projection of some objects may extend outside {D},
+    but their {Z} ranges will be contained in {dom[2]}; which in turn
+    must be contained in {[multifok_scene_ZMIN _ multifok_scene_ZMAX]}. */ 
 
-    If {flatFloor} is true, the "floor" will be a horizontal plane at {Z = LO(dom[2])}. 
-    
-    If flatFloor} is false, the "floor" will be some surface that spans the whole range of {Z} coordinates {dom[2]} within
-    the rectangle {D}. This shape is extended outside {D} with flat plane(s)
-    as needed to ensure that its {Z} coordinates, even
-    outside {D}, are always contained in {dom[2]}.
-    
-    The horizontal projection of some objects may extend outside {D}, but their {Z} ranges will be
-    contained in {dom[2]}; which in turn must be contained in {[0_ZMAX]} where
-    {ZMAX=multifok_scene_ZMAX}. */ 
-
-multifok_scene_t *multifok_scene_new(interval_t dom[], bool_t flatFloor, bool_t verbose);
-  /* Creates a {scene} with the given {dom} box, consisting of a floor and no objects.  
-    The meaning of {flatFloor} is specified under {multifok_scene_t}.
-    The scene will have no objects ({NO=0}) */
+multifok_scene_t *multifok_scene_new(interval_t dom[], bool_t verbose);
+  /* Creates a {scene} with the given {dom} box, consisting of a floor and no objects.
+    The scene will have no objects ({scene.NO=0, scene.objs=NULL}) */
 
 void multifok_scene_throw_objects
   ( multifok_scene_t *scene,
+    bool_t floorOnly,
+    bool_t flatFloor,
     double rMin, 
     double rMax,
     double minSep, 
@@ -89,56 +72,16 @@ void multifok_scene_throw_objects
     {dom[2]}. 
     
     The procedure also builds a raytrace speedup tree for those objects. */ 
+    
+r3_t multifok_scene_box_center(interval_t box[]);
+  /* Returns the center of the box {box[0] × box[1] × box[2]}. */
+  
+r3_t multifok_scene_box_radius(interval_t box[]);
+  /* Returns a vector {rad} such that {rad.c[j]} is the half-size 
+    of {box[j]}. */
+    
+void multifok_scene_check_object_IDs(int32_t NO, multifok_scene_object_t objs[]);
+  /* Checks whether the {ID} fields of {objs[0..NO-1]} are a permutation
+    of {0..NO-1}. */
 
-multifok_scene_object_t multifok_scene_object_throw(int32_t ID, interval_t dom[], double margin, double rMin, double rMax);
-  /* Generates a random sphere or disk with the given {ID} and center in the given
-    3D domain {dom[0..2]}.  The object will have a random center and radius, and random
-    but contrasting {bg} and {fg} colors.
-    
-    The radius {rad} of the object will in principle be chosen randomly
-    in {[rMin _ rMax]}.
-    
-    In any case the object's {Z} projection will be strictly inside
-    {dom[2]}. If the given {margin} is non-negative, the {XY} projection
-    of the object coordinates will fit entirely within the rectangle
-    {dom[0]×dom[1]} and at least {margin} away from its four sides. The
-    object's radius may have to be reduced, even below {rMin}, if
-    necessary to satisfy these containment constraints. If {margin} is
-    negative, the center's {X} and {Y} will be inside that rectabgle,
-    but the object's {XY} projection may extend partially ouside it.
-    
-    In any case, the {dom} must be large enough to make the placement possible. */
-
-void multifok_scene_ray_trace
-  ( multifok_scene_t *scene,
-    r3_t *p, 
-    r3_t *d, 
-    bool_t debug,
-    multifok_scene_object_t **htob_P, 
-    r3_t *hit_pos_P
-  );
-  /* Traces one ray {R} that goes through the point {p} with the
-    direction parallel to {d}, assumed to be not horizontal. Finds the
-    object (disk, sphere, or floor) with max {Z} that hits that ray.
-    Returns that object in {*htob_P} and the hit point
-    {htpt(R)} in {*htpt_P}.  If the 
-    
-    Uses the tree structure {tr} to speed up the computation. */
-    
-/* OBJET TEXTURING */
-
-typedef double multifok_scene_pattern_t(double x, double y, double z, int32_t iobj);
-  /* Type of a function that computes a grayscale value as a function of 
-    an arbitrary /object index/ {iobj} and the point {(x,y,z)}. */
-    
-frgb_t multifok_scene_compute_hit_color(multifok_scene_object_t *obj, r3_t *q, multifok_scene_pattern_t *pattern);
-  /* Computes the color {clr} of the surface of object {obj} at the point {htpt}.
-    
-    If {obj} is not {NULL}, the procedure evaluates
-    {r=pattern(x,y,z,obj.ID)}, where {(x,y,z) = q - obj.ctr}, and
-    obtains {clr} by interpolating between {obj.bg} and {obj.fg} with
-    the ratio {r}. If {obj} is NULL, computes instead {r =
-    pattern(x,y,z,-1)} where {(x,y,z) = q}, and maps {r} lineary to a
-    grayscale value from back to white. */
- 
 #endif

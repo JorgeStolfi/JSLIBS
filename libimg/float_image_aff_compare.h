@@ -2,12 +2,13 @@
 #define float_image_aff_compare_H
 
 /* Tools for locally comparing two images with affine deformation. */
-/* Last edited on 2022-10-19 08:27:23 by stolfi */ 
+/* Last edited on 2024-10-12 18:22:58 by stolfi */ 
 
 #include <bool.h>
 #include <r2.h>
 #include <i2.h>
 #include <hr2.h>
+#include <hr2_pmap.h>
 #include <float_image.h>
 
 double float_image_aff_compare

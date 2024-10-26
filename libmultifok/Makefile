@@ -1,10 +1,8 @@
 # Geometry and linear algebra routines
-# Last edited on 2024-09-19 13:00:10 by stolfi
+# Last edited on 2024-10-14 13:53:40 by stolfi
 
 LIBNAME := libmultifok
 
-IGNORE := \
-  multifok_image_stack.h \
-  multifok_image_stack.c
+IGNORE :=
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB.make

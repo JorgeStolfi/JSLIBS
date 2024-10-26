@@ -2,12 +2,13 @@
 #define float_image_aff_extract_H
 
 /* Tools for locally comparing two images with affine deformation. */
-/* Last edited on 2022-10-19 08:36:07 by stolfi */ 
+/* Last edited on 2024-10-12 18:23:12 by stolfi */ 
 
 #include <bool.h>
 #include <r2.h>
 #include <i2.h>
 #include <hr2.h>
+#include <hr2_pmap.h>
 #include <float_image.h>
 
 float_image_t *float_image_aff_extract(float_image_t *img, hr2_pmap_t *A, r2_t dp, i2_t size);

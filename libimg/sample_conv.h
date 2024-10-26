@@ -2,7 +2,7 @@
 #define sample_conv_H
 
 /* {sample_conv.h} - conversion between floating-point and integer samples. */
-/* Last edited on 2023-01-14 12:04:13 by stolfi */
+/* Last edited on 2024-10-25 22:17:06 by stolfi */
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -103,20 +103,27 @@ float sample_conv_gamma(float z, double gamma, double bias);
     {sample_conv_BT709_DEC_GAMMA} respectively. 
     See {sample_conv_gamma_BT709_equiv_INFO} for details. */
 
-float sample_conv_log(float u, double uref, double logBase);
+float sample_conv_log(float u, double bias, double uref, double logBase);
   /* Converts {u} from linear to logarithmic scale, relative to the
     reference value {uref} and the base {exp(logBase)}. In particular,
     {logBase == 1} gives natural logarithms, {logBase == M_LOG2} gives
     result in octaves, {logBase == M_LOG10} gives result in decades, etc.
     
-    More precisely, returns {-INF} if {u} is zero, {+INF} if {u == +INF}, {NAN} if {u} is negative
-    or {NAN}, and log(u/uref)/logBase} otherwise.
+    More precisely, returns {+INF} if {u == +INF}, {NAN} if {u} is
+    negative or {NAN}, and log(hypot(u,bias)/uref)/logBase} otherwise.
     
-    Requires {uref} to be finite and positive, and {logBase}
-    to be finite and nonzero; otherwise returns {NAN} for any {u}. */
+    In particular, if {bias} and {u} are both zero, returns {-INF}. If
+    {bias = uref > 0}, the result will be non-negative, and will be zero
+    iff {u} is zero.
+    
+    Requires {bias} to be finite and non-negative, {uref} to be finite
+    and positive, and {logBase} to be finite and nonzero; otherwise
+    returns {NAN} for any {u}. */
 
-float sample_conv_undo_log(float u, double uref, double logBase);
-  /* Connverts {u} from log scale to linear scale. The inverse of {sample_conv_log( */
+float sample_conv_undo_log(float u, double bias, double uref, double logBase);
+  /* Converts {u} from log scale to linear scale. The inverse of {sample_conv_log}.
+    May return {NAN} if {u} is not a valid result of {sample_conv_log} for those
+    parameters. */
     
 float sample_conv_interp(float u, int np, double U[], double V[]);
   /* Computes a piecewise affine function of {u} defined by the 

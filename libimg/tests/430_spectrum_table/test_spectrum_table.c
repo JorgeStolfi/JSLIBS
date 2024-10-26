@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {spectrum_table_exact.h}, {spectrum_table_binned.h}, {spectrum_table_convert.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-19 14:28:59 by stolfi */ 
+/* Last edited on 2024-10-25 22:43:17 by stolfi */ 
 /* Created on 2008-10-05 by J. Stolfi, UNICAMP */
 
 #define test_spectrum_table_COPYRIGHT \
@@ -348,9 +348,9 @@ void compute_total_image_energy(float_image_t *img, bool_t squared, double *nsmp
     for (int32_t c = 0; c < chns; c++) 
       { nsmp += cols*rows;
         if (squared) 
-          { terg += float_image_compute_total_energy(img,c,0.0); }
+          { terg += float_image_compute_squared_sample_sum(img, c, 0.0, NULL); }
         else
-          { terg += float_image_compute_sample_sum(img, c); }
+          { terg += float_image_compute_sample_sum(img, c, NULL); }
       }
     fprintf(stderr, "input image:\n");
     fprintf(stderr, "  pixels = %9d\n", npix);
@@ -419,7 +419,7 @@ void write_image(char *dir, kind_t kind, int32_t kx, int32_t ky, char *suffix, f
         double vBase = 10.0;                       /* Base for log scale. */
         fprintf(stderr, "vRef for log scale = %24.16e\n", vRef);
         for (int32_t c = 0; c < chns; c++) 
-          { float_image_log_scale(fim, c, vRef, vBase); }
+          { float_image_log_scale(fim, c, 0.0, vRef, vBase); }
         vMin = 0.0;
         vMax = (float)(log(1.125*vMax/vRef)/log(vBase)); 
       }

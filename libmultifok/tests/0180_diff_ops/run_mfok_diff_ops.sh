@@ -1,12 +1,13 @@
 #! /bin/bash
-# Last edited on 2023-04-29 04:48:11 by stolfi
+# Last edited on 2024-10-19 09:55:30 by stolfi
 
 echo "=== run_mfok_diff_ops.sh =============================" 1>&2
 echo "$@" 1>&2
 
-imageSet="$1"; shift;    # Name of image set file ("HARD", "SOSO", etc.)
-basisName="$1"; shift;   # Name of local operato basis ("LAPL", "DIFF", etc.)
-termSet="$1"; shift;     # Term subset to use ("ALL", etc).
+imageSet="$1"; shift;    # Name of image set file ("HARD", "SOSO", etc.).
+basisType="$1"; shift;   # Name of local operato basis ("LAPL", "DIFF", etc.).
+weightsType="$1"; shift; # Name of window weights distribution ("BINOMIAL", "GOLDEN", etc).
+termSet="$1"; shift;     # Term subset to use ("ALL", etc.).
 noise="$1"; shift;       # Noise level for local brightness/contrast normalization.
 
 # ----------------------------------------------------------------------
@@ -14,7 +15,7 @@ noise="$1"; shift;       # Noise level for local brightness/contrast normalizati
 #
 # For the given {termSet}, it reads a file 
 #  
-#   term-set/{basisName}-{termSet}.txt
+#   term-set/{basisType}-{termSet}.txt
 #
 # Each line should have the form
 #
@@ -44,22 +45,22 @@ noise="$1"; shift;       # Noise level for local brightness/contrast normalizati
 #   {inPrefix}{frameTag}-sh.pgm
 #
 # where {inPrefix} is "in/st{sceneType}-{size}-{pattern}/frame" 
-# and {frameTag} is "-fd{zDep}-zf{zFoc}"
+# and {frameTag} is "-zf{zFoc}"-df{zDep}
 #
 # OUTPUT FILES
 #
-# For the given parameters {basisName}, {noise}, {imageSet}, the program writes
+# For the given parameters {basisType}, {weightsType}, {noise}, {imageSet}, the program writes
 #
 #   {outPrefix}-belnames.txt  Names of basis elements.
-#   {outPrefix}-odata.txt     Pixel data incl. sharpness and coeffs before binning.
-#   {outPrefix}-hdata.txt     Averages of {term[0..NT-1]}, binned by sharpness.
-#   {outPrefix}-hdata.png     Plot of terms, binned by sharpness.
+#   {outPrefix}-odata.txt     Pixel data incl. blurring indicator and coeffs before binning.
+#   {outPrefix}-hdata.txt     Averages of {term[0..NT-1]}, binned by {shrp}.
+#   {outPrefix}-hdata.png     Plot of terms, binned by sharpness{shrp}.
 #
-# where {outPrefix} is "out/bt{basisName}-{termSet}-ns{noise}-ims{imageSet}/run"
+# where {outPrefix} is "out/bt{basisType}-wt${weightsType}-{termSet}-ns{noise}-ims{imageSet}/run"
 # 
 # And also for {unitTerm} 1 (add the "1" term to regression) and 0 (don't add that term):
 #
-#   {outUnPrefix}-oregr.txt    Output of linear regression, with sharpness and fitted score per bin.
+#   {outUnPrefix}-oregr.txt    Output of linear regression, with {shrp} and fitted score per bin.
 #   {outUnPrefix}-oregr.png    Plot of "{outUnPrefix}-oregr.txt".
 #   {outUnPrefix}-oform.txt    Fitted regression formula to raw pixel data.
 # 
@@ -90,7 +91,7 @@ noise="$1"; shift;       # Noise level for local brightness/contrast normalizati
 #
 # Finally it writes a single file
 #
-#   out/bt${basisName}-ns${noise_TAG}-alltcoefs.txt
+#   out/bt${basisType}-wt${weightsType}-ns${noise_TAG}-alltcoefs.txt
 #
 # which has the term coefficients of all linear regressions, for all {imgSet} and {unitTerm},
 # side by side.
@@ -112,18 +113,19 @@ while [[ ${ko} -lt ${no} ]]; do
   ko=$(( ${ko} + 7 ))
 done
 
-outDir="out/bt${basisName}-${termSet}-ns${noise_TAG}-ims${imageSet}"
+outDir="out/bt${basisType}-wt${weightsType}-${termSet}-ns${noise_TAG}-ims${imageSet}"
 outPrefix="${outDir}/run"
 
 # Get the list of quadratic terms descriptions:
-termSetFile="term-set/${basisName}-${termSet}.txt"
+termSetFile="term-set/${basisType}-${termSet}.txt"
 
 mkdir -pv ${outDir}
 rm -fv ${outPrefix}*.ppm ${outPrefix}*.pgm ${outPrefix}*.txt
 ./test_mfok_diff_ops \
   -inDir ${inDir} \
   ${imageOptions[@]} \
-  -basisName ${basisName} \
+  -basisType ${basisType} \
+  -weightsType ${weightsType} \
   -termSetFile ${termSetFile} \
   -noise ${noise} \
   -outPrefix ${outPrefix}
@@ -150,9 +152,8 @@ if [[ -s ${pixDataFile} ]]; then
 
   wc -l ${pixDataFile} 1>&2
 
-  # Condense the quadratic terms by sharpness bin:
   histDataFile="${outPrefix}-hdata.txt"      # File with histogram data for plot and regression.
-
+  echo "condensing quadratic terms by {shrp} bin -> ${histDataFile} ..." 1>&2 
   cat ${pixDataFile} \
     | ./average_terms_by_hrad.gawk \
         -v nb=${nb} \
@@ -160,25 +161,22 @@ if [[ -s ${pixDataFile} ]]; then
     > ${histDataFile}
   wc -l ${histDataFile}
 
-  # Plot the averages of quadratic terms binned by sharpness:
-  coeffPlotTitle="Image set ${imageSet}  term set ${basisName}-${termSet}  noise ${noise}"
-  ./plot_terms_by_hrad2.sh ${outPrefix} ${basisName} ${termSet} "${coeffPlotTitle}"
+  coeffPlotTitle="Image set ${imageSet}  term set ${basisType}-${termSet}  noise ${noise}"
+  echo "plot the averages of quadratic terms binned by {shrp} -> ${coeffPlotTitle} ..." 1>&2 
+  ./plot_terms_by_hrad2.sh ${outPrefix} ${basisType} ${termSet} "${coeffPlotTitle}"
 
-  # Show images with the quadratic terms for the first image: 
+  echo "showing the quadratic terms term images for the firsts input image ..." 1>&2 
   ./show_term_images.sh ${inDir} ${outPrefix} ${imageOptions[@]:1:6}
 
-  # Do regression on sharpness as func of bin-averaged quadratic terms with and without the "1" term:
+  # Do regression on {shrp} as func of bin-averaged quadratic terms with and without the "1" term:
   for unitTerm in 0 1 ; do
 
     if [[ ${unitTerm} -gt 0 ]]; then unitTerm_TITLE="+UNIT"; else unitTerm_TITLE=""; fi
-    regrPlotTitle="Image set ${imageSet} terms ${basisName}-${termSet}${unitTerm_TITLE} noise ${noise}"
+    regrPlotTitle="Image set ${imageSet} terms ${basisType}-${termSet}${unitTerm_TITLE} noise ${noise}"
 
-    # Regression on binned data:
-
-    # File with formula fitted to histogram:
     histFormFile=${outPrefix}-un${unitTerm}-hform.txt
-
-    do_regression_on_binned_data.sh ${outPrefix} ${basisName} ${unitTerm} "${regrPlotTitle} (BINNED)"
+    echo "performing regression on binned data -> ${histFormFile} ..." 1>&2 
+    do_regression_on_binned_data.sh ${outPrefix} ${basisType} ${unitTerm} "${regrPlotTitle} (BINNED)"
     if [[ ! (-s ${histFormFile} ) ]]; then
       echo "** binned data regression failed - no file \"${histFormFile}\"" 1>&2 ; exit 1
     fi
@@ -186,10 +184,10 @@ if [[ -s ${pixDataFile} ]]; then
 
     # Regression on raw pixel data:
 
-    # File with formula fitted to pixel data:
     pixFormFile=${outPrefix}-un${unitTerm}-oform.txt
     if [[ ${unitTerm} -gt 0 ]]; then unitTerm_TITLE="+UNIT"; else unitTerm_TITLE=""; fi
-    do_regression_on_pix_data.sh ${outPrefix} ${basisName} ${unitTerm} "${regrPlotTitle} (PIXEL)"
+    echo "performing regression on raw pixel data -> ${pixFormFile} ..." 1>&2 
+    do_regression_on_pix_data.sh ${outPrefix} ${basisType} ${unitTerm} "${regrPlotTitle} (PIXEL)"
     if [[ ! (-s ${pixFormFile} ) ]]; then
       echo "** pixel data regression failed - no file \"${pixFormFile}\"" 1>&2 ; exit 1
     fi

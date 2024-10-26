@@ -1,22 +1,23 @@
 #! /bin/bash
-# Last edited on 2023-04-28 11:31:47 by stolfi
+# Last edited on 2024-10-16 13:48:03 by stolfi
 
 # Reads the file {histDataFile} = "{prefix}-rhdata.txt" which is supposed to contain one line
 # for each sampling radius bin, with data
 # 
 #   "{i} {hrad_h[i]} {term[i][0..nt-1]}"
 #
-# where {i} is the sharpness bin index, {hrad_h[i]} is the central sampling radius of that bin, in the
+# where {i} is the blurring indicator bin index, {hrad_h[i]} is the central sampling radius of that bin, in the
 # pixel, and {term[i][0..nt-1]} are the average values of the {nt} quadratic terms to use 
 # for regression.
 
 echo "=== plot_terms_by_hrad2.sh =============================" 1>&2
 echo "$@" 1>&2
 
-prefix="$1"; shift      # File name minus the "-odata.txt" tail.
-basisName="$1"; shift   # Basis name ("DIFF", "LAPL", "HART", etc).
-termSet="$1"; shift     # Term set ("ALL", etc.).
-title="$1"; shift       # Plot title.
+prefix="$1"; shift       # File name minus the "-odata.txt" tail.
+basisType="$1"; shift    # Basis name ("DIFF", "LAPL", "HART", etc).
+weightsType="$1"; shift; # Name of window weights distribution ("BINOMIAL", "GOLDEN", etc).
+termSet="$1"; shift      # Term set ("ALL", etc.).
+title="$1"; shift        # Plot title.
 
 # Input files:
 belNameFile="${prefix}-bnames.txt"      # File with basis element names.
@@ -24,7 +25,7 @@ termNameFile="${prefix}-tnames.txt"     # File with quadratic term names.
 
 # Output files:
 histDataFile="${prefix}-hdata.txt"      # File with histogram data for plot and regression.
-histPlotFile="${prefix}-hdata.png"      # Plot of binned coeffs squared by {sharp}. 
+histPlotFile="${prefix}-hdata.png"      # Plot of binned coeffs squared by {shrp}. 
 
 # Get the basis element names and count:
 belName=( `cat ${belNameFile}` )

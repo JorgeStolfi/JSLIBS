@@ -2,7 +2,7 @@
 #define float_image_hartley_H
 
 /* Tools for Hartley transform (real-valued Fourier-like transform). */
-/* Last edited on 2008-10-05 10:01:15 by stolfi */ 
+/* Last edited on 2024-10-17 14:23:12 by stolfi */ 
 
 #include <bool.h>
 #include <float_image.h>
@@ -30,7 +30,7 @@ void float_image_hartley_transform(float_image_t *A, float_image_t *T);
   " frequencies {0,0} is a uniform image with value {sqrt(1/(NX*NY))};" \
   " and, when {NX} and {NY} are both even, the component with" \
   " frequencies {NX/2,NY/2} is a checkerboard with values {± sqrt(1/(NX*NY))}.  Thus," \
-  " the frequencies {FX} and {FY} are measures in waves per image.\n" \
+  " the frequencies {FX} and {FY} are measured in waves per image.\n" \
   "\n" \
   "  Since a Hartley basis element is defined only at the pixel locations, its" \
   " frequencies {FX,FY} are determined only modulo {NX,NY}; that is, the" \

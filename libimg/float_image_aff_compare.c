@@ -1,5 +1,5 @@
 /* See {float_image_aff_compare.h}. */
-/* Last edited on 2023-11-25 18:19:44 by stolfi */
+/* Last edited on 2024-10-12 18:24:04 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -46,8 +46,8 @@ double float_image_aff_compare
     demand(NC == img2->sz[0], "images must have the same channel count");
     
     /* The maps must be affine: */
-    demand(hr2_pmap_is_affine(A1), "map {A1} is not affine");
-    demand(hr2_pmap_is_affine(A2), "map {A2} is not affine");
+    demand(hr2_pmap_is_affine(A1, 1.0e-12), "map {A1} is not affine");
+    demand(hr2_pmap_is_affine(A2, 1.0e-12), "map {A2} is not affine");
     
     bool_t debug_table = FALSE;
     bool_t debug_sampling = FALSE;

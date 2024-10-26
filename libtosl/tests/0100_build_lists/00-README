@@ -1,0 +1,5 @@
+# Last edited on 2024-10-02 23:43:31 by stolfi
+
+Program to test the procedures to build the initial arc
+lists for slicing programs, that are hopefuly faster than
+binary search when the spacing of the planes is close to uniform.

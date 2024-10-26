@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_aff_compare.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-09-16 14:03:29 by stolfi */ 
+/* Last edited on 2024-10-12 18:25:47 by stolfi */ 
 /* Created on 2020-09-26 by J. Stolfi, UNICAMP */
 
 #define taffc_COPYRIGHT \
@@ -128,11 +128,11 @@ int main(int argc, char **argv)
     /* Input images and affine maps: */
     float_image_t *img1 = taffc_read_image(o->img1);
     hr2_pmap_t A1 = o->A1;
-    assert(hr2_pmap_is_affine(&A1));
+    assert(hr2_pmap_is_affine(&A1, 1.0e-12));
     
     float_image_t *img2 = taffc_read_image(o->img2);
     hr2_pmap_t A2 = o->A2;
-    assert(hr2_pmap_is_affine(&A2));
+    assert(hr2_pmap_is_affine(&A2, 1.0e-12));
     
     int32_t NS = o->NS; /* Samples of {u,v} on each side of zero. */
     
@@ -162,7 +162,7 @@ hr2_pmap_t taffc_make_xy_translation_map(double u, double v)
   {
     double D = taffc_translation_REF;
     r2_t disp = (r2_t){{ D*u, D*v }};
-    hr2_pmap_t M = hr2_pmap_translation(&disp, +1, +1);
+    hr2_pmap_t M = hr2_pmap_translation(&disp);
     return M;
   }
   

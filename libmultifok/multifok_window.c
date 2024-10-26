@@ -1,5 +1,5 @@
 /* See {multifok_window.h}. */
-/* Last edited on 2023-11-25 17:05:08 by stolfi */
+/* Last edited on 2024-10-12 03:08:18 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -22,7 +22,24 @@ int32_t multifok_window_num_samples(int32_t NW)
     return NW*NW;
   }
  
-double *multifok_window_sample_weights(int32_t NW)
+double *multifok_window_weights(int32_t NW, multifok_window_type_t type)
+  { double *ws;
+    switch (type)
+      { case multifok_window_type_BIN:
+          ws = multifok_window_weights_binomial(NW);
+          break;
+        
+        case multifok_window_type_GLD:
+          ws = multifok_window_weights_golden(NW);
+          break;
+       
+        default:
+          affirm(FALSE, "invalid weights type");
+      }
+    return ws;
+  }
+
+double *multifok_window_weights_binomial(int32_t NW)
   { demand(NW % 2 == 1, "{NW} must be odd");
     int32_t HW = (NW-1)/2;
     /* Create a unidimensional weight table: */
@@ -46,72 +63,150 @@ double *multifok_window_sample_weights(int32_t NW)
 
     return ws;
   }
+ 
+double *multifok_window_weights_golden(int32_t NW)
+  { demand(NW % 2 == 1, "{NW} must be odd");
+    int32_t HW = (NW-1)/2;
 
+    /* Normalize so that the central element is 1: */
+    double C = (sqrt(5) - 1)/2;
+    
+    /* Now fill the bidimensional table: */
+    int32_t NS = multifok_window_num_samples(NW);
+    double *ws = notnull(malloc(NS*sizeof(double)), "no mem");
+    int32_t ks = 0;
+    for (int32_t iy = -HW; iy <= HW; iy++)
+      { for (int32_t ix = -HW; ix <= HW; ix++)
+          { ws[ks] = C/(C + ix*ix + iy*iy);
+            ks++;
+          }
+      }
+
+    return ws;
+  }
+char *multifok_window_type_to_text(multifok_window_type_t wType)
+  { switch(wType)
+      { case multifok_window_type_BIN: return "BIN";
+        case multifok_window_type_GLD: return "GLD";
+        default: assert(FALSE);
+      }
+  }
+
+multifok_window_type_t multifok_window_type_from_text(char *name, bool_t fail)
+  { if (strcmp(name, "BIN") == 0) { return multifok_window_type_BIN; }
+    if (strcmp(name, "GLD") == 0) { return multifok_window_type_GLD; }
+    if (fail) { demand(FALSE, "invalid window weighst type name"); } else { return -1; }
+  }
+
+void multifok_window_compute_average_gradient_and_deviation
+  ( int32_t NW, 
+    double s[], 
+    double ws[], 
+    double *sAvg_P,
+    double *sGrx_P,
+    double *sGry_P,
+    double *sDev_P
+  )
+  {
+    int32_t NS = NW*NW;
+
+    /* Compute weighted sample average {sAvg}: */
+    double sum_ws = 0;
+    double sum_w = 0;
+    for (int32_t ks = 0; ks < NS; ks++) 
+      { sum_ws += ws[ks]*s[ks]; 
+        sum_w += ws[ks];
+      }
+    assert(sum_w > 0);
+    double sAvg = sum_ws/sum_w;
+    
+    /* Compute gradient {(sGrx,sGry)} by weighted dot product with basis {X,Y}: */
+    int32_t HW = (NW-1)/2;
+    double sum_wsx = 0;
+    double sum_wsy = 0;
+    double sum_wxx = 0;
+    double sum_wyy = 0;
+    for (int32_t ks = 0; ks < NS; ks++) 
+      { double xk = (ks % NW) - HW;
+        double yk = (ks / NW) - HW;
+        double wk = ws[ks];
+        double dk = s[ks] - sAvg;
+        sum_wsx += wk*dk*xk; 
+        sum_wsy += wk*dk*yk; 
+        sum_wxx += wk*xk*xk;
+        sum_wyy += wk*yk*yk;
+      }
+    assert(sum_wxx > 0);
+    assert(sum_wyy > 0);
+    double sGrx = sum_wsx/sum_wxx;
+    double sGry = sum_wsy/sum_wyy;
+    
+    /* Compute deviation {sDev} of residual: */
+    double sum_wd2 = 0;
+    for (int32_t ks = 0; ks < NS; ks++) 
+      { double xk = (ks % NW) - HW;
+        double yk = (ks / NW) - HW;
+        double wk = ws[ks];
+        double dk = s[ks] - sAvg - sGrx*xk - sGry*yk;
+        sum_wd2 += wk*dk*dk;
+      }
+    double sDev = sqrt(sum_wd2/sum_w);
+    
+    (*sAvg_P) = sAvg;
+    (*sGrx_P) = sGrx;
+    (*sGry_P) = sGry;
+    (*sDev_P) = sDev;
+  }
+
+void multifok_window_remove_average_and_gradient
+  ( int32_t NW, 
+    double s[], 
+    double ws[], 
+    double sAvg,
+    double sGrx,
+    double sGry
+  )
+  {
+    int32_t NS = NW*NW;
+    int32_t HW = (NW-1)/2;
+    for (int32_t ks = 0; ks < NS; ks++) 
+      { double xk = (ks % NW) - HW;
+        double yk = (ks / NW) - HW;
+        s[ks] = s[ks] - sAvg - sGrx*xk - sGry*yk;
+      }
+  }
+  
+double multifok_window_deviation(int32_t NW, double s[], double ws[])
+  {
+    int32_t NS = NW*NW;
+    double sum_w_d2 = 0;
+    double sum_w = 0;
+    for (int32_t ks = 0; ks < NS; ks++) 
+      { double d = s[ks];
+        sum_w_d2 += ws[ks]*d*d;
+      }
+    assert(sum_w > 0);
+    double sDev = sqrt(sum_w_d2/sum_w);
+    return sDev;
+  }
+ 
 void multifok_window_normalize_samples
   ( int32_t NW, 
     double s[], 
     double ws[], 
     double noise, 
-    double *avg_P,
-    double *grd_P,
-    double *dev_P
+    double *sAvg_P,
+    double *sGrx_P,
+    double *sGry_P,
+    double *sDev_P
   )
   {
     int32_t NS = NW*NW;
-    /* Compute weighted sample average: */
-    double sumw_s = 0;
-    double sum_w = 0;
-    for (int32_t ks = 0; ks < NS; ks++) 
-      { sumw_s += ws[ks]*s[ks]; 
-        sum_w += ws[ks];
-      }
-    assert(sum_w > 0);
-    double avg = sumw_s/sum_w;
-    
-    /* Compute weighted gradient by dot product with basis {X,Y}: */
-    int32_t HW = (NW-1)/2;
-    double sumw_sx = 0;
-    double sumw_sy = 0;
-    double sumw_xx = 0;
-    double sumw_yy = 0;
-    for (int32_t ks = 0; ks < NS; ks++) 
-      { double dk = s[ks] - avg;
-        double xk = (ks % NW) - HW;
-        double yk = (ks / NW) - HW;
-        double wk = ws[ks];
-        sumw_sx += wk*dk*xk; 
-        sumw_sy += wk*dk*yk; 
-        sumw_xx += wk*xk*xk;
-        sumw_yy += wk*yk*yk;
-      }
-    assert(sumw_xx > 0);
-    assert(sumw_yy > 0);
-    double grd_x = sumw_sx/sumw_xx;
-    double grd_y = sumw_sy/sumw_yy;
-    
-    /* Subtract average and gradient: */
-    for (int32_t ks = 0; ks < NS; ks++) 
-      { double xk = (ks % NW) - HW;
-        double yk = (ks / NW) - HW;
-        s[ks] = s[ks] - avg - grd_x*xk - grd_y*yk;
-      }
-
-    /* Compute the weighted deviation: */
-    double sum_w_d2 = 0;
-    for (int32_t ks = 0; ks < NS; ks++) 
-      { double d = s[ks];
-        sum_w_d2 += ws[ks]*d*d;
-      }
-    double dev = sqrt(sum_w_d2/sum_w);
-    /* Adjust {dev} for the noise level: */
+    multifok_window_compute_average_gradient_and_deviation(NW, s, ws, sAvg_P, sGrx_P, sGry_P, sDev_P);
+    multifok_window_remove_average_and_gradient(NW, s, ws, *sAvg_P, *sGrx_P, *sGry_P);
     noise = fmax(1.0e-200, noise); /* To avoid division of zero by zero. */
-    double mag = hypot(dev, noise);
-    /* Normalize samples: */
-    for (int32_t ks = 0; ks < NS; ks++) 
-      { s[ks] = s[ks]/ mag; }
-    (*avg_P) = avg;
-    (*grd_P) = hypot(grd_x, grd_y);
-    (*dev_P) = dev;
+    double mag = hypot((*sDev_P), noise);
+    for (int32_t ks = 0; ks < NS; ks++) { s[ks] /= mag; }
   }
 
 double multifok_window_prod(int32_t NW, double a[], double b[])

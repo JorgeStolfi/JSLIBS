@@ -1,6 +1,6 @@
 /* See {float_image_test.h}. */
 
-/* Last edited on 2023-01-10 12:35:11 by stolfi */ 
+/* Last edited on 2024-10-17 15:38:04 by stolfi */ 
 /* Created on 2009-06-02 by J. Stolfi, UNICAMP */
 
 #define float_image_test_C_COPYRIGHT \
@@ -15,26 +15,93 @@
 #include <r2.h>
 
 #include <float_image.h>
+#include <float_image_waves.h>
 
 #include <float_image_test.h>
 
 void float_image_test_gen_ripples(r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[])
   {
-    /* Get coordinates of {p}, relative to image center: */
-    double x = p->c[0] - 0.5*NX;
-    double y = p->c[1] - 0.5*NY;
-    /* Compute circumradius {R} of image (in pixels): */
-    double R = 0.5*hypot(NX, NY);
-    /* Choose a min wavelength {PMin}: */
-    double PMin = 4.0;
-    /* Compute circular waves with freq prportional to distance. */
-    /* At distance {iR}, the waves must have period {PMin}. */
-    double arg = M_PI*(x*x + y*y)/R/PMin;
-    for (int32_t ic = 0; ic < NC; ic++)
-      { /* The wave has a different phase in each channel: */
-        fs[ic] = (float)(0.5 + 0.5*cos(arg + 2*M_PI*((double)ic)/((double)NC)));
+    /* Get coordinates of {p}: */
+    double x = p->c[0];
+    double y = p->c[1];
+    
+    double srand = M_PI - floor(M_PI); /* Pseudorandom state. */
+
+    auto double frand(void); /* Pseudorandom generator in {[0 _ 1]}. */
+
+    double R = 0.5*hypot(NX, NY); /* Image circumradius. */
+    double sigma = 0.30;
+    int32_t NW = 5; /* Number of waves. */
+    for (int32_t ic = 0; ic < NC; ic++) 
+      { /* Compute value {fs[ic]} of channel {ic}: */
+        double sum_val = 0.0;       /* Sum of values of all component waves. */
+        for (int32_t t = 0; t < NW; t++)
+          { 
+            double cx = NX*(0.1 + 0.8*frand()); /* {X} of wave's center. */
+            double cy = NY*(0.1 + 0.8*frand()); /* {Y} of wave's center. */
+            double rw = R*(0.05 + 0.40*frand()); /* Mid radius of wave packet. */
+            double hw = 6.0 + 6.0*frand(); /* Wavelength: */ 
+            double amp = 0.7 + 0.3*frand(); /* Max amplitude. */
+            
+            int32_t T = 1; /* {T=0} open borders, {T=1} torus topology. */
+            for (int32_t dx = -T; dx <= +T; dx++)
+              for (int32_t dy = -T; dy <= +T; dy++)
+                { double r = hypot(x - cx + dx*NX, y - cy + dy*NY); /* Distance from wave center. */
+                  double fr = r/rw; /* Distance ralative to packet radius. */
+                  if (fr >= 0.01)
+                    { double lor = log(fr)/log(2)/sigma;
+                      if (fabs(lor) < 8)
+                        { double ang = 2*M_PI*(r - rw)/hw; /* Wave argument angle. */
+                          double env = exp(-lor*lor/2); /* Packet envelope. */
+                          sum_val += amp*env*cos(ang);
+                        }
+                    }
+                }
+          }
+        /* Map to range {[0 _ 1]}: */
+        fs[ic] = (float)(0.5*(erf(sum_val) + 1));
+      }
+    
+    return;
+    
+    double frand(void)
+      { srand = 17*srand;
+        srand = srand - floor(srand);
+        return srand;
       }
   }
+  
+void float_image_test_gen_grittie(r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[])
+  {
+    /* Get coordinates of {p}: */
+    double x = p->c[0];
+    double y = p->c[1];
+  
+    int32_t NF = 10;
+    double amp[NF];
+    double fx[NF];
+    double fy[NF]; 
+    double phase[NF];
+    bool_t verbose = FALSE;
+    for (int32_t ic = 0; ic < NC; ic++) 
+      { 
+        float_image_waves_pick(NF, amp, fx, fy, phase, verbose);
+
+        double squash_amp; /* Squash amplitude. */
+        /* Choosing a middling squash amplitude: */
+        double sum_a2 = 0;
+        for (int32_t kf = 0; kf < NF; kf++) { sum_a2 += amp[kf]*amp[kf]; }
+        double amp_rms = sqrt(sum_a2); /* Root-mean-sum amplitude. */
+        squash_amp = 0.5*amp_rms;
+
+        /* Eval the waves: */
+        double r = float_image_waves_eval(x, y, NF, amp, fx, fy, phase, squash_amp);
+
+        /* Map {r} to {[0_1]}: */
+        r = (r + 1.0)/2;
+        fs[ic] = (float)r;
+      }
+  }  
 
 void float_image_test_gen_stripes(r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[])
   {
@@ -53,7 +120,7 @@ void float_image_test_gen_stripes(r2_t *p, int32_t NC, int32_t NX, int32_t NY, f
 
 void float_image_test_gen_checker(r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[])
   {
-    double P0 = 12.0;             /* Wavelength of fundamental. */
+    double P0 = 12.0;            /* Wavelength of fundamental. */
     double fr3 = 3.0;            /* Relative frequency of harmonic. */
     double am3 = 0.5/(fr3*fr3);  /* Amplitude of harmonic. */
     
@@ -97,8 +164,8 @@ void float_image_test_gen_chopsea(r2_t *p, int32_t NC, int32_t NX, int32_t NY, f
         double sum_amp = 0.0;       /* Sum of amplitude of all component waves. */
         for (int32_t t = 0; t < NW; t++)
           { /* Choose the parameters of wave {t}: */
-            double P = 3.0*pow(fBase,t);    /* Wavelength (pixels). */
-            int32_t ict = t*NC + ic;             /* A unique integer for channel and component. */
+            double P = 3.0*pow(fBase,t);     /* Wavelength (pixels). */
+            int32_t ict = t*NC + ic;         /* A unique integer for channel and component. */
             double azm = 0.618034*ict;       /* Azimuth of wave direction (turns). */ 
             double fx = cos(2*M_PI*azm)/P;   /* X frequency (cycles per pixel). */
             double fy = sin(2*M_PI*azm)/P;   /* Y frequency (cycles per pixel). */
@@ -122,6 +189,49 @@ void float_image_test_gen_chopsea(r2_t *p, int32_t NC, int32_t NX, int32_t NY, f
           }
         /* Map to range {[0 _ 1]}: */
         fs[ic] = (float)((sum_val/sum_amp + 1)/2);
+      }
+  }
+
+void float_image_test_gen_bullsex(r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[])
+  {
+    /* Get coordinates of {p} relative to image center: */
+    double x = p->c[0] - ((double)NX)/2;
+    double y = p->c[1] - ((double)NY)/2;
+    
+    /* Adjust parameters {A} and {B} so that the wavelength is {L} pixels at farthest edge: */
+    double L = 4.0;
+    double H = fmax(NX, NY)/2; 
+    double R = hypot(NX, NY)/2;
+    double s = R/H;
+    double B = log(s)/(R - H);
+    double A = M_PI/(B*sinh(B*H))/L;
+    
+    double r = hypot(x, y);
+    double arg = A*(cosh(B*r) - 1);
+    for (int32_t ic = 0; ic < NC; ic++)
+      { /* Vary the phase of the wave according to the channel: */
+        double phase = (0.25 + 0.50*ic)*M_PI;
+        fs[ic] = (float)(0.5*(cos(arg + phase) + 1)); 
+      }
+  }
+
+void float_image_test_gen_bullsqr(r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[])
+  {
+    /* Get coordinates of {p} relative to image center: */
+    double x = p->c[0] - ((double)NX)/2;
+    double y = p->c[1] - ((double)NY)/2;
+    
+    /* Determine {A} so that the wavelength is {L} pixels at the edge: */
+    double L = 4.0;
+    double H = fmax(NX, NY)/2;
+    double A = M_PI/(2*H)/L;
+    
+    double r = hypot(x, y);
+    double arg = A*r*r;
+    for (int32_t ic = 0; ic < NC; ic++)
+      { /* Vary the phase of the wave according to the channel: */
+        double phase = (0.25 + 0.50*ic)*M_PI;
+        fs[ic] = (float)(0.5*(cos(arg + phase) + 1)); 
       }
   }
 

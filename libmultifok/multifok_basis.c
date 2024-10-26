@@ -1,5 +1,5 @@
 /* See {multifok_basis.h}. */
-/* Last edited on 2023-11-25 17:07:54 by stolfi */
+/* Last edited on 2024-10-20 11:00:35 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -11,6 +11,7 @@
 
 #include <vec.h>
 #include <jsmath.h>
+#include <jsfile.h>
 #include <affirm.h>
 #include <bool.h>
 #include <i2.h>
@@ -21,49 +22,27 @@
 
 /* NON-NORMALIZED BASES 
 
-  The procedures below generate raw bases {bas[0..NB-1][0..NS-1]} of various
-  types. The linops  Each procedure defines the number {NB} of elements in
-  the basis, and fills {bas[0..NB-1][0..NS-1]} and {belName[0..NB-1]}. 
-  
-  Each procedure assumes that arrays {bas[]} and {belName[]} have been
-  allocated with {NS=NW*NW} elements each, and returns as result the
-  number {NB} of elements actually used.
-*/
+  The procedures below assume that arrays {basis->bas[][]} and
+  {basis->belName[]} have been allocated with {NS=NW*NW} elements
+  each.  Each procedure uses only {NB <= NS} of those
+  elements.  It sets {basis->NB}, {basis->bas[0..NB-1][0..NS-1]},
+  and {basis->belName[0..NB-1]} as appropriate for specific basis types. */
 
-int32_t multifok_basis_fill_CANC(int32_t NW, double *bas[], char *belName[]);
+void multifok_basis_fill_CANC(multifok_basis_t *basis);
   /* The window size {NW} must be odd.  Sets the basis size {NB} to {NS}, and
     {bas[0..NB-1]} to the canonical basis elements. That is, sets
-    {bas[kb][ks]} to 1 if {kb==ks}, and 0 otherwise. 
-    
-    The element names  will be "S{X}{Y}" where {X} and {Y} are as in
-    {multifok_window_sample_names}. */
+    {bas[kb][ks]} to 1 if {kb==ks}, and 0 otherwise.  */
 
-int32_t multifok_basis_fill_LAPL_CUBE_DIFF(int32_t NW, multifok_basis_type_t bType, double *bas[], char *belName[]);
-  /* Requires {NW=3}. 
+void multifok_basis_fill_LAPL_CUBE_DIFF(multifok_basis_type_t type, multifok_basis_t *basis);
+  /* Requires {NW=3}.  Sets {basis->NB} and {basis->bas} for the "LAPL", "CUBE", or "DIFF" basis,
+    according to the {type}. */
   
-    If {bType} is {multifok_basis_type_DIFF}, sets {NB} to 8, and
-    {bas[0..NB-1][0..NS-1]} to the sample coefficients used to compute
-    the derivative operators "DX", "DY", "DXX", "DXY", "DYY",
-    "S3" (3-saddle), "C3" (3-cosaddle), and "Q" (checkerboard).
-  
-    If {bType} is {multifok_basis_type_CUBE}, sets {NB} to 7,
-    and fills the basis with the same elements above, but
-    omitting the "Q" (checkerboard) element.
-  
-    If {bType} is {multifok_basis_type_LAPL}, sets {NB} to 5,
-    omitting the elements "S3", "C3", and "Q". */
-  
-int32_t multifok_basis_fill_HART(int32_t NW, double *bas[], char *belName[]);
-  /* Requires {NW} odd. Sets {*NB_P} to {NB=NS}, and sets
-    {bas[0..NB-1][0..NS-1]} to the Hartley waves with absolute {X} and
-    {Y} frequencies up tp {NW/2}. The element names will be "H{X}{Y}"
-    where {X} and {Y} are as in {multifok_window_sample_names}, only
-    referring to frequencies instead of sample indices. */
+void multifok_basis_fill_HART(multifok_basis_t *basis);
+  /* Requires {NW} odd. Sets {basis->NB} and {basis->bas} for the 
+    for the Hartley basis. */
 
-void multifok_basis_set_elem_and_name_3x3
-  ( double *bas[], 
-    char *belName[],
-    int32_t ib, 
+void multifok_basis_add_elem_and_name_3x3
+  ( multifok_basis_t *basis, 
     char *na,
     double x00, double x01, double x02, 
     double x10, double x11, double x12, 
@@ -74,141 +53,138 @@ void multifok_basis_set_elem_and_name_3x3
   
 /* BASIS NORMALIZATION */
 
-int32_t multifok_basis_orthize(int32_t NW, int32_t NB, double *bas[], char *belName[]);
-  /* Makes the elements {bas[0..NB-1]} orthonormal with respect to the dot product
-    {mulifok_window_prod}.
+void multifok_basis_orthize(multifok_basis_t *basis, bool_t verbose);
+  /* Makes the elements {basis->bas[0..basis->NB-1]} orthonormal with
+    respect to the dot product {multifok_window_prod} and window sample
+    weights {basis->ws[]}.
     
     The procedure may conclude that some basis elements are nearly
     dependent on others, and exclude them from the normalized basis. In
-    that case, the number of non-discarded elements {NK} is returned as
-    result, and those elements are rearranged to be {bas[0..NK-1]}.
+    that case, the number {basis->NB} is reduced and those elements are
+    compacted to be {basis->bas[0..basis->NB-1]}.
     
     The procedure also adjusts the names {belName[0..NB-1]} to account for
     rearrangements of the respective elements, but not for the
     orthonormalization. On output the name {belName[kb]} still corresponds
     to {bas[kb]} for {kb} in {0..NK-1}. */
     
-void multifok_basis_normalize_prod_range(int32_t NW, int32_t NB, double *bas[]);
-  /* Scales each basis element {bas[0..NB-1]} so that its dot product with any array {s[0..NS-1]}
-    of window samples is always in the range {[-1 _ +1]}, assuming that the window samples
-    are in that range. */
+void multifok_basis_normalize_prod_range(multifok_basis_t *basis);
+  /* Scales each basis element {bas[0..NB-1]} so that its dot product
+    with any array {s[0..NS-1]} of window samples is always in the range
+    {[-1 _ +1]}, assuming that the window samples are in that range. */
 
-void multifok_basis_make
-  ( multifok_basis_type_t bType,
+multifok_basis_t *multifok_basis_make
+  ( multifok_basis_type_t type,
     int32_t NW, 
     double ws[],
     bool_t ortho,
-    int32_t *NB_P, 
-    double ***bas_P,
-    char ***belName_P
+    bool_t verbose
   )
-  { int32_t NS = multifok_window_num_samples(NW);
+  { demand((NW > 0) && ((NW % 2) == 1), "window size {NW} must be odd");
     
+    int32_t NS = multifok_window_num_samples(NW);
+  
+    multifok_basis_t *basis = talloc(1, multifok_basis_t);
     int32_t NB_max = NS;  /* May be reduced later. */
-    double **bas = notnull(malloc(NB_max*sizeof(double*)), "no mem"); 
-    for (int32_t i = 0; i < NB_max; i++) { bas[i] = notnull(malloc(NS*sizeof(double)), "no mem"); }
-    char **belName = notnull(malloc(NB_max*sizeof(char*)), "no mem"); 
+    basis->bas = talloc(NB_max, double*);
+    basis->belName = talloc(NB_max, char*); 
+    for (int32_t i = 0; i < NB_max; i++) 
+      { basis->bas[i] = talloc(NS, double);
+        basis->belName [i] = NULL;
+      }
+    basis->NW = NW;
+    basis->ws = ws;
+   
+    basis->NB = 0; /* Actual basis size. */
     
-    int32_t NB; /* Number of basis elements actually created. */
-    
-    if (bType == multifok_basis_type_CANC)
-      { NB = multifok_basis_fill_CANC(NW, bas, belName); }
-    else if (bType == multifok_basis_type_LAPL)
-      { NB = multifok_basis_fill_LAPL_CUBE_DIFF(NW, bType, bas, belName); }
-    else if (bType == multifok_basis_type_CUBE)
-      { NB = multifok_basis_fill_LAPL_CUBE_DIFF(NW, bType, bas, belName); }
-    else if (bType == multifok_basis_type_DIFF)
-      { NB = multifok_basis_fill_LAPL_CUBE_DIFF(NW, bType, bas, belName); }
-    else if (bType == multifok_basis_type_HART)
-      { NB = multifok_basis_fill_HART(NW, bas, belName); }
+    if (type == multifok_basis_type_CANC)
+      { multifok_basis_fill_CANC(basis);  }
+    else if (type == multifok_basis_type_LAPL)
+      { multifok_basis_fill_LAPL_CUBE_DIFF(type, basis); }
+    else if (type == multifok_basis_type_CUBE)
+      { multifok_basis_fill_LAPL_CUBE_DIFF(type, basis); }
+    else if (type == multifok_basis_type_DIFF)
+      { multifok_basis_fill_LAPL_CUBE_DIFF(type, basis); }
+    else if (type == multifok_basis_type_HART)
+      { multifok_basis_fill_HART(basis); }
     else
       { assert(FALSE); }
 
-    if (ws != NULL)
-      { /* Apodize basis elements: */
-        for (int32_t kb = 0; kb < NB; kb++) 
-          { double *bask = bas[kb];
-            for (int32_t ks = 0; ks < NS; ks++) 
-              { bask[ks] *= ws[ks]; }
+    basis->ortho = ortho;
+    if (ortho) { multifok_basis_orthize(basis, verbose); }
+
+    /* Free unused space: */
+    if (basis->NB < NB_max)
+      { /* Free unused elements: */
+        for (int32_t kb = basis->NB; kb < NB_max; kb++)
+          { free(basis->bas[kb]); 
+            if (basis->belName[kb] != NULL) { free(basis->belName[kb]); }            
           }
+        basis->bas = realloc(basis->bas, basis->NB*sizeof(double*));
+        basis->belName = realloc(basis->belName, basis->NB*sizeof(char*));
       }
 
-    if (ortho)
-      { /* Orthonormalize basis. */
-        NB = multifok_basis_orthize(NW, NB, bas, belName);
-        /* Free unused space: */
-        if (NB < NB_max)
-          { /* Free unused elements: */
-            for (int32_t kb = NB; kb < NB_max; kb++) { free(bas[kb]); }
-            bas = realloc(bas, NB*sizeof(double*));
-            belName = realloc(belName, NB*sizeof(char*));
-          }
-      }
-    
-    (*NB_P) = NB;
-    (*bas_P) = bas;
-    (*belName_P) = belName;
+    return basis;
   }
   
-#define setbas multifok_basis_set_elem_and_name_3x3
+#define addbas multifok_basis_add_elem_and_name_3x3
 
-int32_t multifok_basis_fill_CANC(int32_t NW, double *bas[], char *belName[])
+void multifok_basis_fill_CANC(multifok_basis_t *basis)
   {
-    demand(NW == 3, "not implemented for this {NW}");
+    demand(basis->NW == 3, "{CANC} basis requires {NW=3}");
+    int32_t NS = multifok_window_num_samples(basis->NW);
+    basis->NB = 0;
+
+    addbas(basis, "Soo", 00.0, 00.0, 00.0,  00.0, +1.0, 00.0,  00.0, 00.0, 00.0 ); 
+
+    addbas(basis, "Smo", 00.0, 00.0, 00.0,  +1.0, 00.0, 00.0,  00.0, 00.0, 00.0 ); 
+    addbas(basis, "Spo", 00.0, 00.0, 00.0,  00.0, 00.0, +1.0,  00.0, 00.0, 00.0 ); 
+    addbas(basis, "Som", 00.0, +1.0, 00.0,  00.0, 00.0, 00.0,  00.0, 00.0, 00.0 ); 
+    addbas(basis, "Sop", 00.0, 00.0, 00.0,  00.0, 00.0, 00.0,  00.0, +1.0, 00.0 ); 
+
+    addbas(basis, "Smm", +1.0, 00.0, 00.0,  00.0, 00.0, 00.0,  00.0, 00.0, 00.0 ); 
+    addbas(basis, "Spp", 00.0, 00.0, 00.0,  00.0, 00.0, 00.0,  00.0, 00.0, +1.0 ); 
+    addbas(basis, "Smp", 00.0, 00.0, 00.0,  00.0, 00.0, 00.0,  +1.0, 00.0, 00.0 ); 
+    addbas(basis, "Spm", 00.0, 00.0, +1.0,  00.0, 00.0, 00.0,  00.0, 00.0, 00.0 ); 
     
-    int32_t NS = NW*NW;
-
-    int32_t NB = 0; /* Actual basis size. */
-
-    setbas(bas,belName, NB, "Soo", 00.0, 00.0, 00.0,  00.0, +1.0, 00.0,  00.0, 00.0, 00.0 ); NB++; 
-
-    setbas(bas,belName, NB, "Smo", 00.0, 00.0, 00.0,  +1.0, 00.0, 00.0,  00.0, 00.0, 00.0 ); NB++; 
-    setbas(bas,belName, NB, "Spo", 00.0, 00.0, 00.0,  00.0, 00.0, +1.0,  00.0, 00.0, 00.0 ); NB++; 
-    setbas(bas,belName, NB, "Som", 00.0, +1.0, 00.0,  00.0, 00.0, 00.0,  00.0, 00.0, 00.0 ); NB++; 
-    setbas(bas,belName, NB, "Sop", 00.0, 00.0, 00.0,  00.0, 00.0, 00.0,  00.0, +1.0, 00.0 ); NB++; 
-
-    setbas(bas,belName, NB, "Smm", +1.0, 00.0, 00.0,  00.0, 00.0, 00.0,  00.0, 00.0, 00.0 ); NB++; 
-    setbas(bas,belName, NB, "Spp", 00.0, 00.0, 00.0,  00.0, 00.0, 00.0,  00.0, 00.0, +1.0 ); NB++; 
-    setbas(bas,belName, NB, "Smp", 00.0, 00.0, 00.0,  00.0, 00.0, 00.0,  +1.0, 00.0, 00.0 ); NB++; 
-    setbas(bas,belName, NB, "Spm", 00.0, 00.0, +1.0,  00.0, 00.0, 00.0,  00.0, 00.0, 00.0 ); NB++; 
-    
-    assert(NB == NS);
-    
-    return NB;
+    assert(basis->NB == NS);
   }
 
-int32_t multifok_basis_fill_LAPL_CUBE_DIFF(int32_t NW, multifok_basis_type_t bType, double *bas[], char *belName[])
+void multifok_basis_fill_LAPL_CUBE_DIFF(multifok_basis_type_t type, multifok_basis_t *basis)
   {
-    demand(NW == 3, "{DIFF} basis requires {NW=3}");
+    int32_t NW = basis->NW;
+    demand(NW == 3, "{LAPL}, {DIFF}, and {CUBE} bases requires {NW=3}");
+    basis->NB = 0;
+    
+    addbas(basis, "F",  +1.0, +1.0, +1.0,  +1.0, +1.0, +1.0,  +1.0, +1.0, +1.0 ); /* F. */
 
-    int32_t NB = 0;
+    addbas(basis, "FX", -1.0, 00.0, +1.0,  -1.0, 00.0, +1.0,  -1.0, 00.0, +1.0 ); /* dF/dX. */
+    addbas(basis, "FY", -1.0, -1.0, -1.0,  00.0, 00.0, 00.0,  +1.0, +1.0, +1.0 ); /* dF/dY. */
+    addbas(basis, "FXX",+1.0, -2.0, +1.0,  +1.0, -2.0, +1.0,  +1.0, -2.0, +1.0 ); /* d^2F/dX^2. */
+    addbas(basis, "FYY",+1.0, +1.0, +1.0,  -2.0, -2.0, -2.0,  +1.0, +1.0, +1.0 ); /* d^2F/dY^2. */
+    addbas(basis, "FXY",-1.0, 00.0, +1.0,  00.0, 00.0, 00.0,  +1.0, 00.0, -1.0 ); /* d^2F/dXdY. */
     
-    setbas(bas,belName, NB, "DX", -1.0, 00.0, +1.0,  -1.0, 00.0, +1.0,  -1.0, 00.0, +1.0 ); NB++; /* d/dX. */
-    setbas(bas,belName, NB, "DY", -1.0, -1.0, -1.0,  00.0, 00.0, 00.0,  +1.0, +1.0, +1.0 ); NB++; /* d/dY. */
-    setbas(bas,belName, NB, "DXX",-1.0, +1.0, -1.0,  -1.0, +1.0, -1.0,  -1.0, +1.0, -1.0 ); NB++; /* d^2/dX^2. */
-    setbas(bas,belName, NB, "DYY",-1.0, -1.0, -1.0,  +1.0, +1.0, +1.0,  -1.0, -1.0, -1.0 ); NB++; /* d^2/dY^2. */
-    setbas(bas,belName, NB, "DXY",-1.0, 00.0, +1.0,  00.0, 00.0, 00.0,  +1.0, 00.0, -1.0 ); NB++; /* d^2/dXdY. */
+    if (type == multifok_basis_type_LAPL) { assert(basis->NB == 6); return; }
     
-    if (bType == multifok_basis_type_LAPL) { assert(NB == 5); return NB; }
+    addbas(basis, "S3", -1.0, +2.0, -1.0,  00.0, 00.0, 00.0,  +1.0, -2.0, +1.0 ); /* Saddle3. */
+    addbas(basis, "C3", +1.0, 00.0, -1.0,  -2.0, 00.0, +2.0,  +1.0, 00.0, -1.0 ); /* Cosaddle3. */
     
-    setbas(bas,belName, NB, "S3", -1.0, +1.0, -1.0,  00.0, 00.0, 00.0,  +1.0, -1.0, +1.0 ); NB++; /* Saddle3. */
-    setbas(bas,belName, NB, "C3", +1.0, 00.0, -1.0,  -1.0, 00.0, +1.0,  +1.0, 00.0, -1.0 ); NB++; /* Cosaddle3. */
+    if (type == multifok_basis_type_CUBE) { assert(basis->NB == 8); return; }
     
-    if (bType == multifok_basis_type_CUBE) { assert(NB == 7); return NB; }
+    addbas(basis, "Q",  +1.0, -2.0, +1.0,  -2.0, +4.0, -2.0,  +1.0, -2.0, +1.0 ); /* Checker. */
     
-    setbas(bas,belName, NB, "Q",  +1.0, -1.0, +1.0,  -1.0, +1.0, -1.0,  +1.0, -1.0, +1.0 ); NB++; /* Checker. */
+    if (type == multifok_basis_type_DIFF) { assert(basis->NB == 9); return; }
     
-    if (bType == multifok_basis_type_CUBE) { assert(NB == 8); return NB; }
-    
-    demand(FALSE, "invalid {bType}");
-    return -1;
+    demand(FALSE, "invalid {type}");
   }
 
-int32_t multifok_basis_fill_HART(int32_t NW, double *bas[], char *belName[])
+void multifok_basis_fill_HART(multifok_basis_t *basis)
   {
-    assert((NW % 2 ) == 1);
-    int32_t HW = NW/2;
-    int32_t NS = NW*NW;
+    int32_t NW = basis->NW;
+    demand((NW % 2) == 1, "window size {NW} must be odd");
+    int32_t HW = (NW-1)/2;
+    int32_t NS = multifok_window_num_samples(NW);
+
     int32_t NB = NS;
     
     /* Generate tables {fre[0..NB-1]} of frequency vectors: */
@@ -242,39 +218,47 @@ int32_t multifok_basis_fill_HART(int32_t NW, double *bas[], char *belName[])
               { int32_t ks = (iy+HW)*NW + (ix+HW);
                 double z = 0.125 + ((double)(fx*ix + fy*iy))/((double)NW); /* Hartley phase */
                 double f = sin(2*M_PI*z);
-                bas[kb][ks] = f;
+                basis->bas[kb][ks] = f;
               }
           }
-        belName[kb] = multifok_window_sample_name("H", fx, fy);
+        basis->belName[kb] = multifok_window_sample_name("H", fx, fy);
       }
-      
-    return NB;
+    basis->NB = NB;
+    return;
   }
 
-void multifok_basis_free(int32_t NB, double **bas, char **belName)
+void multifok_basis_free(multifok_basis_t *basis)
   {
-    for (int32_t kb = 0; kb < NB; kb++) { free(bas[kb]); free(belName[kb]); }
-    free(bas);
-    free(belName);
+    for (int32_t kb = 0; kb < basis->NB; kb++) 
+      { free(basis->bas[kb]); 
+        if (basis->belName[kb] != NULL) { free(basis->belName[kb]); }
+      }
+    free(basis->bas);
+    free(basis->belName);
+    free(basis);
   }
 
-void multifok_basis_compute_coeffs(int32_t NW, double x[], int32_t NB, double *bas[], double coeff[])
-  { for (int32_t kb = 0; kb  < NB; kb++) 
-      { coeff[kb] = multifok_window_prod(NW, x, bas[kb]); }
+void multifok_basis_compute_coeffs(double x[], multifok_basis_t *basis, double coeff[])
+  { for (int32_t kb = 0; kb  < basis->NB; kb++) 
+      { coeff[kb] = multifok_window_prod(basis->NW, x, basis->bas[kb]); }
   }
 
-void multifok_basis_set_elem_and_name_3x3
-  ( double *bas[], 
-    char *belName[],
-    int32_t ib, 
+void multifok_basis_add_elem_and_name_3x3
+  ( multifok_basis_t *basis,
     char *na,
     double x00, double x01, double x02, 
     double x10, double x11, double x12, 
     double x20, double x21, double x22
   )
   {
-    belName[ib] = NULL; asprintf(&(belName[ib]), "%s", na); /* Make sure {belName[ib]} is a heap-allocated string. */
-    double *pib = bas[ib];
+    int32_t NW = basis->NW;
+    demand(NW == 3, "window size should be 3x3");
+    int32_t NB_max = multifok_window_num_samples(NW);
+    int32_t ib = basis->NB;
+    assert(ib < NB_max); /* Too many elemets. */
+    /* Make sure {belName[ib]} is a heap-allocated copy of {na}: */
+    basis->belName[ib] = NULL; asprintf(&(basis->belName[ib]), "%s", na); 
+    double *pib = basis->bas[ib];
     pib[0] = x00;
     pib[1] = x01;
     pib[2] = x02;
@@ -284,55 +268,51 @@ void multifok_basis_set_elem_and_name_3x3
     pib[6] = x20;
     pib[7] = x21;
     pib[8] = x22;
+    basis->NB++;
   }
 
-int32_t multifok_basis_orthize(int32_t NW, int32_t NB, double *bas[], char *belName[])
+void multifok_basis_orthize(multifok_basis_t *basis, bool_t verbose)
   { 
-    bool_t verbose = TRUE;
-    double tiny = 1.0e-8; /* Insignificant relative length. */
+    int32_t NW = basis->NW;
     int32_t NS = multifok_window_num_samples(NW);
-    int32_t NK = 0; /* Nymber of basis elements that were kept. */
-    for (int32_t kb = 0; kb < NB; kb++)
+    double tiny = 1.0e-8; /* Insignificant relative length. */
+    int32_t NK = 0; /* Number of basis elements that were kept. */
+    for (int32_t kb = 0; kb < basis->NB; kb++)
       { 
-        /* Original norm of element {bas[kb]}: */
-        double d_old = sqrt(multifok_window_prod(NW, bas[kb], bas[kb]));
+        /* Original norm of element {basis->bas[kb]}: */
+        double d_old = sqrt(multifok_window_prod(NW, basis->bas[kb], basis->bas[kb]));
         
-        /* Make element {bas[kb]} orthogonal to the previous elements:*/
+        /* Make element {basis->bas[kb]} orthogonal to the previous elements:*/
         for (int32_t rb = 0; rb < NK; rb++)
-          { double ci = multifok_window_prod(NW, bas[kb], bas[rb]);
+          { double ci = multifok_window_prod(NW, basis->bas[kb], basis->bas[rb]);
             if (verbose && (ci > tiny*d_old))
               { fprintf(stderr, "  subtracting {%+12.8f*bas[%d]} from {bas[%d]}\n", ci, rb, kb); }
             for (int32_t js = 0; js < NS; js++)
-              { bas[kb][js] = bas[kb][js] - ci*bas[rb][js]; }
+              { basis->bas[kb][js] = basis->bas[kb][js] - ci*basis->bas[rb][js]; }
           }
 
         /* Norm of residual element {bas[kb]} after removing previous elements: */
-        double d_new = sqrt(multifok_window_prod(NW, bas[kb], bas[kb]));
+        double d_new = sqrt(multifok_window_prod(NW, basis->bas[kb], basis->bas[kb]));
         if (verbose) { fprintf(stderr, "d old = %16.12f new = %16.12f\n", d_old, d_new); }
-        if (d_new > 1.0e-8*d_old)
+        if (d_new > tiny*d_old)
           { /* Residual seems significant: */
             for (int32_t js = 0; js < NS; js++)
-              { bas[NK][js] = bas[kb][js]/d_new; }
-            belName[NK] = belName[kb];
+              { basis->bas[NK][js] = basis->bas[kb][js]/d_new; }
+            basis->belName[NK] = basis->belName[kb];
             NK++;
           }
         else
           { /* Element was mostly linear comb of previous ones, discard: */
-            if (verbose) { fprintf(stderr, "!! eliminated element {bas[%d]}\n", kb); }
+            if (verbose) 
+              { fprintf(stderr, "!! eliminated element {bas[%d] = %s}\n", kb, basis->belName[kb]); }
           }
       }
-    
-    return NK;
+    basis->NB = NK;
   }
 
-void multifok_basis_print
-  ( FILE *wr,
-    int32_t NW, 
-    int32_t NB, 
-    double *bas[],
-    char *belName[]
-  )
-  { int32_t NS = multifok_window_num_samples(NW);
+void multifok_basis_print(FILE *wr, multifok_basis_t *basis)
+  { int32_t NW = basis->NW;
+    int32_t NS = multifok_window_num_samples(NW);
     int32_t HW = (NW-1)/2;
     
     fprintf(wr, "--- basis ---------------------------------------------\n");
@@ -352,17 +332,17 @@ void multifok_basis_print
       }
     fprintf(wr, "\n");
     
-    for (int32_t ib = 0; ib < NB; ib++)
+    for (int32_t ib = 0; ib < basis->NB; ib++)
       { /* Find the smallest significant abs value in the row: */
         double bi_min = +INF;
         for (int32_t js = 0; js < NS; js++) 
-          { double bij = fabs(bas[ib][js]);
+          { double bij = fabs(basis->bas[ib][js]);
             if ((bij > 0.002) && (bij < bi_min)) { bi_min = bij; }
           }
         /* Row (element) index and name: */
-        fprintf(wr, "%3d %-12s [ ", ib, belName[ib]);
+        fprintf(wr, "%3d %-12s [ ", ib, basis->belName[ib]);
         for (int32_t js = 0; js < NS; js++)
-          { fprintf(wr, " %+10.6f", bas[ib][js]/bi_min); }
+          { fprintf(wr, " %+10.6f", basis->bas[ib][js]/bi_min); }
         /* Scale factor for row: */
         fprintf(wr, " ] * %12.8f", bi_min);
         fprintf(wr, "\n");
@@ -370,38 +350,50 @@ void multifok_basis_print
     fprintf(wr, "-------------------------------------------------------\n");
   }
 
-void multifok_basis_ortho_check(FILE *wr, int32_t NW, int32_t NB, double *bas[])
-  { /* Print basis products: */
-    fprintf(wr, "--- momentum matrix -----------------------------------\n");
-    fprintf(wr, "%3s", "");
-    for (int32_t jb = 0; jb < NB; jb++) { fprintf(wr, " %10d", jb); }
+void multifok_basis_ortho_check(FILE *wr, multifok_basis_t *basis)
+  { fprintf(wr, "--- moment matrix -----------------------------------\n");
+    fprintf(wr, "%4s", "");
+    for (int32_t jb = 0; jb < basis->NB; jb++) { fprintf(wr, " %10d", jb); }
     fprintf(wr, "\n");
-    for (int32_t ib = 0; ib < NB; ib++)
-      { fprintf(wr, "%3d", ib);
+    double orth_tol = 1.0e-7;  /* Tolerance for deviation from orthogonality. */
+    double norm_tol = 1.0e-7;  /* Tolerance for deviation from normality. */
+    double max_orth_err = 0.0; /* Max deviation from orthogonality. */
+    double max_norm_err = 0.0; /* Max deviation from normality. */
+    for (int32_t ib = 0; ib < basis->NB; ib++)
+      { fprintf(wr, "%4d", ib);
         for (int32_t jb = 0; jb <= ib; jb++)
-          { double pij = multifok_window_prod(NW, bas[ib], bas[jb]);
+          { double pij = multifok_window_prod(basis->NW, basis->bas[ib], basis->bas[jb]);
             fprintf(wr, " %+10.6f", pij);
+            if (ib == jb)
+              { double norm_err = fabs(pij - 1.0);
+                if (norm_err > max_norm_err) { max_norm_err = norm_err; }
+              }
+            else
+              { double orth_err = fabs(pij);
+                if (orth_err > max_orth_err) { max_orth_err = orth_err; }
+              }
           }
         fprintf(wr, "\n");
       }
+    char *msg_orth = (max_orth_err > orth_tol ? "(NOT orthogonal!)" : "(orthogonal)");
+    char *msg_norm = (max_norm_err > norm_tol ? "(NOT normalized!)" : "(normalized)");
+    fprintf(wr, "  max orthogonality error = %10.8f %s\n", max_orth_err, msg_orth);
+    fprintf(wr, "  max normalization error = %10.8f %s\n", max_norm_err, msg_norm);
     fprintf(wr, "-------------------------------------------------------\n");
   }
     
-void multifok_basis_check(int32_t NW, multifok_basis_type_t bType, bool_t ortho)
-  { double *ws = multifok_window_sample_weights(NW);
+void multifok_basis_module_check(int32_t NW, multifok_basis_type_t type, bool_t ortho, bool_t verbose)
+  { double *ws = multifok_window_weights_binomial(NW);
     
-    int32_t NB;
-    double **bas = NULL;
-    char **belName = NULL;
-    multifok_basis_make(bType, NW, ws, ortho, &NB, &bas, &belName);
-    multifok_basis_print(stderr, NW, NB, bas, belName);
-    if (ortho) { multifok_basis_ortho_check(stderr, NW, NB, bas); }
+    multifok_basis_t *basis = multifok_basis_make(type, NW, ws, ortho, verbose);
+    multifok_basis_print(stderr, basis);
+    if (ortho) { multifok_basis_ortho_check(stderr, basis); }
     free(ws);
-    multifok_basis_free(NB, bas, belName);
+    multifok_basis_free(basis);
   } 
 
-char *multifok_basis_type_to_text(multifok_basis_type_t bType)
-  { switch(bType)
+char *multifok_basis_type_to_text(multifok_basis_type_t type)
+  { switch(type)
       { case multifok_basis_type_LAPL: return "LAPL";
         case multifok_basis_type_CUBE: return "CUBE";
         case multifok_basis_type_DIFF: return "DIFF";
@@ -420,10 +412,18 @@ multifok_basis_type_t multifok_basis_type_from_text(char *name, bool_t fail)
     if (fail) { demand(FALSE, "invalid basis name"); } else { return -1; }
   }
 
-void multifok_basis_write_elem_names(FILE *wr, int32_t NB, char *belName[])  
+void multifok_basis_elem_names_write(FILE *wr, int32_t NB, char *belName[])  
   { for (int32_t kb = 0; kb < NB; kb++)
       { fprintf(wr, "%s\n", belName[kb]); }
     fflush(wr);
+  }
+
+void multifok_basis_elem_names_write_named(char *outPrefix, multifok_basis_t *basis)  
+  { char *fname = NULL;
+    asprintf(&fname, "%s-bnames.txt", outPrefix);
+    FILE *wr = open_write(fname, TRUE);
+    multifok_basis_elem_names_write(wr, basis->NB, basis->belName);
+    fclose(wr);
   }
 
 #define multifok_basis_C_COPYRIGHT \

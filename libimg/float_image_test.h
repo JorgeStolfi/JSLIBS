@@ -2,13 +2,16 @@
 #define float_image_test_H
 
 /* Tools for testing programs that deal with {float_image_t}. */
-/* Last edited on 2023-01-10 15:32:19 by stolfi */ 
+/* Last edited on 2024-10-17 06:05:21 by stolfi */ 
 
 #define _GNU_SOURCE_
 #include <stdint.h>
 
 #include <float_image.h>
 #include <r2.h>
+
+/* !!! Currently each fundtion has to choose its internal parameters again on every call. !!! */ 
+/* !!! Add a storage area argument where parameters can be stored on the first call. !!! */
 
 typedef void float_image_test_generator_t (r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[]);
   /* Type of a procedure that defines a procedural image with {NC} channels, 
@@ -30,16 +33,25 @@ void float_image_test_paint
 
 /* IMAGE GENERATORS: */
 
-void float_image_test_gen_ripples(r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[]);
-  /* A set of circular ripples centered at random points. */
-  
 void float_image_test_gen_stripes(r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[]);
   /* Horizontal green stripes plus vertical magenta stripes. */
     
 void float_image_test_gen_checker(r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[]);
   /* A checkerboard pattern, equal to the product of two waves. */
 
+void float_image_test_gen_bullsex(r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[]);
+  /* A ripple that increases frequency exponentially from center to corners. */
+
+void float_image_test_gen_bullsqr(r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[]);
+  /* A ripple that increases frequency linearly from center to corners. */
+
 void float_image_test_gen_chopsea(r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[]);
   /* A sum of several waves of various frequencies and directions. */
+
+void float_image_test_gen_ripples(r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[]);
+  /* A set of circular ripples centered at random points. */
+  
+void float_image_test_gen_grittie(r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[]);
+  /* Sum of many waves creating a gritty pseudo-noise pattern. */
 
 #endif

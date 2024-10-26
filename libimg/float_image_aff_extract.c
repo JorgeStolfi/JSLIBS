@@ -1,5 +1,5 @@
 /* See {float_image_aff_extract.h}. */
-/* Last edited on 2023-11-25 18:19:34 by stolfi */
+/* Last edited on 2024-10-12 18:24:15 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -40,7 +40,7 @@ float_image_t *float_image_aff_extract(float_image_t *img, hr2_pmap_t *A, r2_t d
     bool_t debug_sampling = FALSE;
     
     /* The map must be affine: */
-    demand(hr2_pmap_is_affine(A), "map {A} is not affine");
+    demand(hr2_pmap_is_affine(A, 1.0e-12), "map {A} is not affine");
     
     /* Get the result image size: */
     int32_t NC = (int32_t)img->sz[0]; /* Number of color channels. */

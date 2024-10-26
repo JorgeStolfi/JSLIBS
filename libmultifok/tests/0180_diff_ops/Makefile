@@ -1,4 +1,4 @@
-# Last edited on 2023-04-29 04:48:41 by stolfi
+# Last edited on 2024-10-09 17:40:11 by stolfi
 
 TEST_LIB := libmultifok.a
 TEST_LIB_DIR := ../..
@@ -17,10 +17,11 @@ OTHER_LIBS :=
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 
 IMAGE_SET := SMUF
-BASIS_NAME := CANC
+BASIS_TYPE := CANC
+WEIGHTS_TYPE := GLD
 TERM_SET := ALL
 NOISE := 0.02
 
 all: ${PROG} ${SCRIPT} Makefile
-	./${SCRIPT} ${IMAGE_SET} ${BASIS_NAME} ${TERM_SET} ${NOISE}
+	./${SCRIPT} ${IMAGE_SET} ${BASIS_TYPE} ${WEIGHTS_TYPE} ${TERM_SET} ${NOISE}
 	@echo "did it" 1>&2

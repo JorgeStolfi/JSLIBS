@@ -1,5 +1,5 @@
 /* See {multifok_term.h}. */
-/* Last edited on 2023-11-25 17:07:41 by stolfi */
+/* Last edited on 2024-10-11 21:11:51 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -13,10 +13,57 @@
 #include <affirm.h>
 #include <bool.h>
 #include <fget.h>
+#include <jsfile.h>
 
 #include <multifok_window.h>
 #include <multifok_basis.h>
+
 #include <multifok_term.h>
+
+void multifok_term_read_set_weights_and_names
+  ( FILE *rd,
+    bool_t weights,
+    int32_t *NT_P,
+    char ***termName_P,
+    double *wt_P[],
+    bool_t verbose
+  );
+  /* Reads from {rd} the weights {wt[0..NT-1]} (if {weights} is true)
+    and the term names {termName[0..NT-1]}, as per {multifok_term_read_set}.
+    
+    Deduces {NT} from the number of data lines in the file, and returns
+    it in {*NT_P}. The tables {wt} and {termName} are allocated by the
+    procedure and returned in {*termName_P} and {*wt_P}. */
+  
+void multifok_term_indices_from_names
+  ( multifok_basis_t *basis, 
+    int32_t NT, 
+    char *termName[], 
+    int32_t *NP_P, 
+    multifok_term_prod_t **prix_P, 
+    bool_t verbose
+  );
+  /* The parameter {termName[0..NT-1]} must be a list of formulas of
+    quadratic operator terms. Each formula must be a sum of products of
+    pairs of coefficients, like "FX*FY+FXX*FYY". Each product in that
+    sum must be "{el1}*{el2}" where {el1=belName[jb1]} and
+    {el2=belName[jb2]} for some jb1,jb2} with {0 <= jb1,jb2 < NB}. As
+    a special case, a product may be just "1".
+  
+    The procedure determines the total number {NP} of products appearing
+    in the {termName[0..NT-1]}, such as "FX*FY" or "Soo*Sop", and
+    creates a table {prix[0..NP-1]} that describes the products and the
+    terms they belong to. See {multifok_term_values_from_basis_coeffs}
+    for the meaning of {prix}.
+    
+    In each product, the two factors are internally swapped if needed so
+    that {jb1 <= jb2}. After this adjustment, each product should appear
+    only once. Thus {NP} is at most {NB*(NP+1)/2}. Also each term must
+    have at least one product, so {NT} is at most equal to {NP}.
+    
+    The product count {NP} and the table {prix} are returned in {*NP_P}
+    and {*prix_P}. The {pname} fields in the {prix} table will be newly
+    allocated strings. */
 
 void multifok_term_parse_product
   ( char *pbeg, 
@@ -35,18 +82,21 @@ void multifok_term_parse_product
     new copy {pr} of that string in {*jb1_P,*jb2_P,*pr_P}.  */
 
 void multifok_term_values_from_basis_coeffs
-  ( int32_t NB, 
-    double coeff[],
-    int32_t NP,
-    multifok_term_prod_t prix[],
-    int32_t NT,
+  ( double coeff[],
+    multifok_term_set_t *tset,
     double term[]
   )
   {
+    int32_t NT = tset->NT;
+    int32_t NP = tset->NP;
+    int32_t NB = tset->basis->NB;
+    
     for (int32_t kt = 0; kt < NT; kt++) { term[kt] = 0; }
     for (int32_t ip = 0; ip < NP; ip++) 
-      { int32_t jb1 = prix[ip].jb1; demand((jb1 >= 0) && (jb1 < NB), "bad basis index {jb1}");
-        int32_t jb2 = prix[ip].jb2; demand((jb2 >= 0) && (jb2 < NB), "bad basis index {jb2}");
+      { int32_t jb1 = tset->prix[ip].jb1; 
+        demand((jb1 >= 0) && (jb1 < NB), "bad basis index {jb1}");
+        int32_t jb2 = tset->prix[ip].jb2; 
+        demand((jb2 >= 0) && (jb2 < NB), "bad basis index {jb2}");
         double tvk;
         if (jb1 == -1)
           { demand(jb2 == -1, "inconsitent {jb1,jb1} for unit term");
@@ -57,21 +107,54 @@ void multifok_term_values_from_basis_coeffs
             demand((jb2 >= 0) && (jb2 < NB), "invalid basis coeff index {jb2}"); 
             tvk = coeff[jb1]*coeff[jb2];
           }
-        int32_t kt = prix[ip].kt;
+        int32_t kt = tset->prix[ip].kt;
         term[kt] += tvk;
       }
   }
 
-void multifok_term_read_weights_and_names
-  ( FILE *rd, 
-    int32_t *NT_P,
-    double **wt_P, 
-    char ***termName_P,
+multifok_term_set_t *multifok_term_set_read
+  ( FILE *rd,
+    bool_t weights,
+    multifok_basis_t *basis,
+    double *wt_P[],
     bool_t verbose
   )
   {
-    if (verbose) { fprintf(stderr, "reading term weights and names...\n"); }
+    multifok_term_set_t *tset = talloc(1, multifok_term_set_t);
     
+    tset->basis = basis;
+
+    if (verbose) { fprintf(stderr, "reading %sterms...\n", (weights ? "weights and " : "")); }
+    multifok_term_read_set_weights_and_names(rd, weights, &(tset->NT), &(tset->termName), wt_P, verbose);
+    if (verbose) { fprintf(stderr, "parsing term names into product index table...\n"); }
+    multifok_term_indices_from_names(basis, tset->NT, tset->termName, &(tset->NP), &(tset->prix), verbose);
+    
+    return tset;
+  }
+  
+multifok_term_set_t *multifok_term_set_read_named
+  ( char *fname,
+    bool_t weights,
+    multifok_basis_t *basis,
+    double **wt_P,
+    bool_t verbose
+  )
+  {
+    FILE *rd = open_read(fname, TRUE);
+    multifok_term_set_t *tset = multifok_term_set_read(rd, weights, basis, wt_P, verbose);
+    fclose(rd);
+    return tset;
+  }
+      
+void multifok_term_read_set_weights_and_names
+  ( FILE *rd,
+    bool_t weights,
+    int32_t *NT_P,
+    char ***termName_P,
+    double *wt_P[],
+    bool_t verbose
+  )
+  {
     int32_t NT = 0; /* Number of terms seen in file. */
     double_vec_t wt = double_vec_new(50);
     string_vec_t termName = string_vec_new(50); /* Term formulas. */
@@ -79,55 +162,36 @@ void multifok_term_read_weights_and_names
       { bool_t ok = fget_test_comment_or_eol(rd, '#', NULL);
         if (ok) { continue; }
         if (fget_test_eof(rd)) { break; }
-        /* There is something there: */
+
+        /* There is something there. Read the term index: */
         int32_t kt = fget_int32(rd);
-        demand(kt == NT, "unexpected product index");
-        double wtk = fget_double(rd);
-        char *tnamek = fget_string(rd);
-        fget_comment_or_eol(rd, '#', NULL);
-        double_vec_expand(&wt,NT);
+        demand(kt == NT, "unexpected term index");
+
+        /* Read the term weight, if any: */
+        double wtk = 1.0;
+        if (weights) { wtk = fget_double(rd); }
+        double_vec_expand(&wt, NT);
         wt.e[kt] = wtk;
+        
+        /* Read the term name, if any: */
+        char *tnamek = fget_string(rd);
         string_vec_expand(&termName, NT);
         termName.e[NT] = tnamek;
-        if (verbose) { fprintf(stderr, "  %3d %12.8f %s\n", NT, wtk, tnamek); }
+        
+        if (verbose) { fprintf(stderr, "  %3d %12.8f %s\n", NT, wtk, (tnamek == NULL ? "" : tnamek)); }
+        fget_comment_or_eol(rd, '#', NULL);
         NT++;
       }
     string_vec_trim(&termName, NT);
-    double_vec_trim(&wt,NT);
-      
+    double_vec_trim(&wt, NT);
+    
     (*NT_P) = NT;
-    if (wt_P == NULL) { free(wt.e); } else { (*wt_P) = wt.e; }
     (*termName_P) = termName.e;
-  }
-
-void multifok_term_write_names
-  ( FILE *wr, 
-    int32_t NT,
-    char *termName[]
-  )
-  { for (int32_t kt = 0; kt < NT; kt++)
-      { fprintf(wr, "%s\n", termName[kt]); }
-    fflush(wr);
-  }
-
-void multifok_term_write_weights_and_names
-  ( FILE *wr, 
-    int32_t NT,
-    double wt[],
-    char *termName[]
-  )
-  { for (int32_t kt = 0; kt < NT; kt++)
-      { if (wt == NULL)
-          { fprintf(wr, "%4d 1 %s\n", kt, termName[kt]); }
-        else
-          { fprintf(wr, "%4d %12.8f %s\n", kt, wt[kt], termName[kt]); }
-      }
-    fflush(wr);
+    if (wt_P == NULL) { free(wt.e); } else { (*wt_P) = wt.e; }
   }
 
 void multifok_term_indices_from_names
-  ( int32_t NB, 
-    char *belName[],
+  ( multifok_basis_t *basis,
     int32_t NT, 
     char *termName[], 
     int32_t *NP_P, 
@@ -135,8 +199,9 @@ void multifok_term_indices_from_names
     bool_t verbose
   )
   {
+    int32_t NB = basis->NB;
     int32_t NP_max = NB*(NB + 1)/2 + 1; /* Allocated size of {prodName,prix}. */
-    multifok_term_prod_t *prix = (multifok_term_prod_t*)notnull(malloc(NP_max*sizeof(multifok_term_prod_t)), "no mem");
+    multifok_term_prod_t *prix = talloc(NP_max, multifok_term_prod_t);
     
     int32_t NP = 0; /* Total number of products in all terms. */
     
@@ -170,7 +235,7 @@ void multifok_term_indices_from_names
             int32_t nc = (int32_t)(pend - pbeg);
             char *pr;
             int32_t jb1, jb2;
-            multifok_term_parse_product(pbeg, nc, NB, belName, &jb1, &jb2, &pr);
+            multifok_term_parse_product(pbeg, nc, NB, basis->belName, &jb1, &jb2, &pr);
 
             /* Check for repeated products: */
             for (int32_t rp = 0; rp < NP; rp++)
@@ -253,130 +318,60 @@ void multifok_term_parse_product
       }
   }
 
-void multifok_term_read_index_table
-  ( FILE *rd,
-    int32_t NB,
-    char *belName[],
-    int32_t *NP_P,
-    multifok_term_prod_t **prix_P,
-    int32_t *NT_P,
-    char ***termName_P,
-    bool_t verbose
+void multifok_term_set_names_write
+  ( FILE *wr, 
+    int32_t NT,
+    char *termName[]
   )
-  {
-    int32_t NP_max = NB*(NB+1)/2 + NB + 1; /* Number of coeffs, canonical coeff pairs, and the unit term. */
-
-    multifok_term_prod_t *prix = (multifok_term_prod_t *)notnull(malloc(NP_max*sizeof(multifok_term_prod_t)), "no mem");
-    for (int32_t ip = 0; ip < NP_max; ip++) 
-      { prix[ip] = (multifok_term_prod_t){ -1,-1, -1, NULL }; }
-    
-    int32_t NJJ = NB*NB; /* Number of possible basis element pairs {jb1,jb2} in any order. */
-    bool_t jjseen[NJJ]; /* {jjseen[jb1*NB+jb2]} is true if the pair {jb1,jb2} already occurred. */
-    for (int32_t jjb = 0; jjb < NJJ; jjb++) { jjseen[jjb] = FALSE; }
-
-    int32_t NT_max = NP_max;
-    int32_t nr_kt[NT_max]; /* Number of products assigned to each term. */
-    for (int32_t kt = 0; kt < NT_max; kt++) { nr_kt[kt] = -1; }
-    
-    int32_t NT = 0; /* Number of terms seen in file. */
-    int32_t NP = 0; /* Number of products read from file. */
-   
-    auto void read_data_line(int32_t *jb1_P, int32_t *jb2_P, int32_t *kt_P, char **pr_P);
-      /* Reads a non-blank data line and returns the data in {*jb1_P,*jb2_P,*kt_P,*pr_P}. */
-
-    if (verbose) { fprintf(stderr, "reading index triples...\n"); }
-
-    while (TRUE)
-      { bool_t ok = fget_test_comment_or_eol(rd, '#', NULL);
-        if (ok) { continue; }
-        if (fget_test_eof(rd)) { break; }
-        /* There is something there: */
-        int32_t jb1, jb2, kt;
-        char *pr;
-        read_data_line(&jb1, &jb2, &kt, &pr);
-        if (kt == NT)
-          { /* Should be a new term: */
-            nr_kt[kt] = 1;
-            NT++;
-          }
-        else
-          { /* Previously started term: */
-            assert(nr_kt[kt] > 0);
-            nr_kt[kt]++;
-          }
-        prix[NP] = (multifok_term_prod_t){ jb1, jb2, kt, pr };
-        if (verbose) { fprintf(stderr, "  %3d  %3d %3d  %3d %s\n", NP, jb1, jb2, kt, pr); }
-        NP++;
-      }
-      
-   if (NP < NP_max) { prix = (multifok_term_prod_t*)notnull(realloc(prix, NP*sizeof(multifok_term_prod_t)), "no mem"); }
-   if (verbose) { fprintf(stderr, "building term names...\n"); }
-   char **termName = (char **)notnull(malloc(NT*sizeof(char*)), "no mem");
-   for (int32_t kt = 0; kt < NT; kt++) { termName[kt] = NULL; }
-   for (int32_t ip = 0; ip < NP; ip++)
-     { char *pr = prix[ip].pname;
-       int32_t kt = prix[ip].kt;
-       char *otm = termName[kt];
-       char *tm = NULL;
-       if (otm == NULL)
-         { asprintf(&tm, "%s", pr); }
-       else
-         { asprintf(&tm, "%s+%s", otm, pr);
-           free(otm);
-         }
-       termName[kt] = tm;
-     }
-     if (verbose) 
-       { for (int32_t kt = 0; kt < NT; kt++) 
-           { fprintf(stderr, "  %3d  %s\n", kt, termName[kt]); }
-       }
-       
-    (*NP_P) = NP;
-    (*prix_P) = prix;
-    (*NT_P) = NT;
-    (*termName_P) = termName;
-
-    return;
-    
-    /* INTERNAL IMPLEMENTATIONS */
-    
-    void read_data_line(int32_t *jb1_P, int32_t *jb2_P, int32_t *kt_P, char **pr_P)
-      { int32_t ip = fget_int32(rd);
-        demand(ip == NP, "unexpected product index");
-
-        int32_t jb1 = fget_int32(rd);
-        demand((jb1 >= 0) && (jb1 < NB), "invalid basis coeff index {jb1}");
-
-        int32_t jb2 = fget_int32(rd);
-        demand((jb2 >= 0) && (jb2 < NB), "invalid basis coeff index {jb2}");
-        demand(jb1 <= jb2, "non-canonical product {jb1>jb2}");
-        
-        int32_t jjb = jb1*NB + jb2;
-        demand(! jjseen[jjb], "repeated produc {jb1,jb2}");
-        jjseen[jjb] = TRUE;
-        
-        int32_t kt = fget_int32(rd);
-        demand(kt > 0, "invalid {kt}");
-        demand(kt <= NT, "{kt} skipped term");
-
-        char *pr_read = fget_string(rd);
-        /* Validate {pr_read} with {jb1,jb2}: */
-        char *pr = NULL;
-        asprintf(&pr, "%s*%s", belName[jb1], belName[jb2]);
-        demand(strcmp(pr_read, pr) == 0, "product name does not match {jb1,jb2}");
-        free(pr_read);
-        
-        fget_comment_or_eol(rd, '#', NULL);
-        demand(kt <= NT, "{kt} skipped term");
-        
-        (*jb1_P) = jb1;
-        (*jb2_P) = jb2;
-        (*kt_P) = kt;
-        (*pr_P) = pr;
-      }
+  { for (int32_t kt = 0; kt < NT; kt++)
+      { fprintf(wr, "%s\n", termName[kt]); }
+    fflush(wr);
+  }
+ 
+void multifok_term_set_names_write_named
+  ( char *outPrefix, 
+    int32_t NT, 
+    char *termName[]
+  )
+  { char *fname = NULL;
+    asprintf(&fname, "%s-tnames.txt", outPrefix);
+    FILE *wr = open_write(fname, TRUE);
+    multifok_term_set_names_write(wr, NT, termName);
+    fclose(wr);
   }
 
-void multifok_term_write_index_table
+void multifok_term_set_write
+  ( FILE *wr, 
+    multifok_term_set_t *tset,
+    bool_t weights,
+    double wt[]
+  )
+  { int32_t NT = tset->NT;
+    for (int32_t kt = 0; kt < NT; kt++)
+      { if (weights)
+          { double wtk = (wt == NULL ? 1.0 : wt[kt]);
+            fprintf(wr, "%4d %12.8f %s\n", kt, wtk, tset->termName[kt]); 
+          }
+        else
+          { fprintf(wr, "%4d 1 %s\n", kt, tset-> termName[kt]); }
+      }
+    fflush(wr);
+  }
+
+void multifok_term_set_write_named
+  ( char *outPrefix,
+    multifok_term_set_t *tset,
+    bool_t weights,
+    double wt[]
+  )
+  { char *fname = NULL;
+    asprintf(&fname, "%s-twts.txt", outPrefix);
+    FILE *wr = open_write(fname, TRUE);
+    multifok_term_set_write(wr, tset, weights, wt);
+    fclose(wr);
+  }
+
+void multifok_term_set_product_table_write
   ( FILE *wr, 
     int32_t NP,
     multifok_term_prod_t *prix,
@@ -390,6 +385,21 @@ void multifok_term_write_index_table
         fprintf(wr, "  %4d %s\n", pri->kt, pri->pname);
       }
     fflush(wr);
+  }
+
+void multifok_term_set_product_table_write_named
+  ( char *outPrefix, 
+    int32_t NP, 
+    multifok_term_prod_t prix[],
+    bool_t verbose
+  )
+  {
+    char *fname = NULL;
+    asprintf(&fname, "%s-prix.txt", outPrefix);
+    FILE *wr = open_write(fname, TRUE);
+    multifok_term_set_product_table_write(wr, NP, prix, verbose);
+    fclose(wr);
+    free(fname);
   }
 
 #define multifok_term_C_COPYRIGHT \

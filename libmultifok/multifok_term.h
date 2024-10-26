@@ -1,5 +1,5 @@
 /* Quadratic operator terms for multi-focus stereo. */
-/* Last edited on 2023-04-18 22:36:28 by stolfi */
+/* Last edited on 2024-10-15 17:03:56 by stolfi */
 
 #ifndef multifok_term_H
 #define multifok_term_H
@@ -15,7 +15,7 @@
 
 /* QUADRATIC TERMS FOR SHARPNESS ESTIMATION
 
-  The {multifok} library uses local sharpness estimators
+  The {multifok} library uses local focus sharpness estimators
   that are quadratic functions of brightness- and contrast-normalized window
   samples.  
   
@@ -46,15 +46,16 @@
   
   */
 
+
 typedef struct multifok_term_prod_t
   { int32_t jb1; /* Index of first basis elem coeff. */
     int32_t jb2; /* Index of first basis elem coeff. */
     int32_t kt;  /* Index of term which this product belongs to. */
-    char *pname; /* Name (formula) of product, e.g. "DX*DX" of "Smm*Spp". */
+    char *pname; /* Name (formula) of product, e.g. "FX*FX" of "Smm*Spp". */
   } multifok_term_prod_t;
   /* Record describing a product of two coeffs {coeff[jb1]*coeff[jb2]}
     in some local linear basis, that contributes to one indpendent term
-    of a quadratic local sharpness estimator.
+    of a quadratic local focus sharpness estimator.
     
     The product must be in canonical form, meaning {jb1<=jb2}. The name
     shoud be "{el1}*{el2}" where {el1} and {el2} are the names of the
@@ -63,145 +64,102 @@ typedef struct multifok_term_prod_t
     As a special case, {jb1} and {jb2} may be {-1}, representing the
     empty product whose value is constant 1. The {pname} then should be
     "1". */
+typedef struct multifok_term_set_t 
+  { /* Basis of linear window operators: */
+    multifok_basis_t *basis;     /* Basis of linear window ops. */
+    int32_t NT;                  /* Number of quadratic terms to analyze. */
+    char **termName;             /* Term names. */
+    int32_t NP;                  /* Number of basis coeff products in the quadratic terms. */
+    multifok_term_prod_t *prix;  /* Mapping of basis element index pairs to terms. */
+  } multifok_term_set_t;
+  /* Tables describing a set of quadratic window operator terms that may be
+    combined into a focus estimator.
+    
+    The {NT} quadratic terms are described by the table {prix[0..NP-1]}.
+    Specifically, {prix[it]} specifies the indices {jb1,jb2} of two 
+    basis elements, and the index {kt} in {0..NT-1} of the quadratic term 
+    to which that product is to be added. */
 
 void multifok_term_values_from_basis_coeffs
-  ( int32_t NB, 
-    double coeff[],
-    int32_t NP,
-    multifok_term_prod_t prix[],
-    int32_t NT,
+  ( double coeff[],
+    multifok_term_set_t *tset,
     double term[]
   );
   /* Assumes that {coeff[0..NB-1]} are the coefficients of the window
-    samples in some local operator basis. Computes {NT} quadratic
-    operators that are sums of products of pairs of coefficients, as
-    specified by the table {prix[0..NT-1]}.
+    samples in the linear operator basis {tset.basis}, where {NB =
+    tset.basis.NB}. Computes the quadratic operator terms {term[0..NT-1]}
+    specified by {tset}, where {NT=tset.NT}.
     
-    Namely, for each entry {prix[k] = (jb1,jb2,kt,pname)}, computes the
-    product {coeff[jb1]*coeff[jb2]} and adds it to {term[kt]}. 
-    As a sepcial case, if {jb1=jb2=-1}, adds 1.0 to {term[kt]}. */ 
+    Namely, initializes {term[0..NT-1]} with zeros; then, for each entry
+    {tset.prix[kp] = (jb1,jb2,kt,pname)} with {kp} in {0..tset.NP-1},
+    computes the product {coeff[jb1]*coeff[jb2]} and adds it to
+    {term[kt]}. As a sepcial case, if {jb1=jb2=-1}, adds 1.0 to
+    {term[kt]}. */ 
 
-void multifok_term_write_names
-  ( FILE *wr, 
-    int32_t NT,
-    char *termName[]
-  );
-  /* Writes to {wr} the the 
-    term names (formulas) {termName[0..NT-1]}, one per line. */
-
-void multifok_term_read_weights_and_names
-  ( FILE *rd, 
-    int32_t *NT_P,
-    double **wt_P, 
-    char ***termName_P,
-    bool_t verbose
-  );
-  /* Reads from {rd} a table {termName[0..NT-1]} describing a certain
-    number {NT} of terms of degree 2 consisting ofproducts of pairs of
-    basis coefficients.
-  
-    The file has one line for each quadratic term. Each line has the
-    format "{kt} {wt[kt]} {termName[kt]}" where {kt} is the term index in
-    {0..NT-1}, {wt[kt]} is a non-negative fractional weight,
-    and {termName[kt]} is the term's name (formula). The
-    latter is a string, either just the string "1" or a sum of products
-    of names of basis elements like "Smm*Spp+Spm+Spp". These names must
-    be valid for {multifok_term_indices_from_names}.
-    
-    The number of terms {NT} is inferred from the number of lines in the
-    file.
-    
-    The value of {NT} and the arrays {wt} and {termName} are returned in
-    {*NT_P,*wt_P,*termName_P}. However, if {wt_P} is {NULL}, the weights are 
-    discarded.
-    
-    Comments starting with "#" and blank lines are ignored. If {verbose}
-    is true, also prints the data to stderr. */
-
-void multifok_term_write_weights_and_names
-  ( FILE *wr, 
-    int32_t NT,
-    double wt[],
-    char *termName[]
-  );
-  /* Writes to {wr} the weights {wt[0..NT-1]} and the 
-    term names (formulas) {termName[0..NT-1]}, one per line,
-    in the format expected by {multifok_term_read_weights_and_names}. 
-    
-    If {wt} is {NULL}, assumes it is a vector of ones. */
-
-void multifok_term_indices_from_names
-  ( int32_t NB, 
-    char *belName[],
+void multifok_term_set_names_write(FILE *wr, int32_t NT, char *termName[]);
+  /* Writes to {wr} the the term names (formulas) {termName[0..NT-1]}, one per line. */
+ 
+void multifok_term_set_names_write_named
+  ( char *outPrefix, 
     int32_t NT, 
-    char *termName[], 
-    int32_t *NP_P, 
-    multifok_term_prod_t **prix_P, 
+    char *termName[]
+  ); 
+  /* Same as {multifok_term_set_write_names}, but 
+    to a file file "{outPrefix}-tnames.txt" instead of a {FILE} descriptor. */
+
+multifok_term_set_t *multifok_term_set_read
+  ( FILE *rd,
+    bool_t weights,
+    multifok_basis_t *basis,
+    double *wt_P[],
     bool_t verbose
   );
-  /* The parameter {termName[0..NT-1]} must be a list of formulas of
-    quadratic operator terms. Each formula must be a sum of products of
-    pairs of coefficients, like "DX*DY+DXDX*DYDY". Each product in that
-    sum must be "{el1}*{el2}" where {el1=belName[jb1]} and
-    {el2=belName[jb2]} for some jb1,jb2} with {0 <= jb1,jb2 < NB}. As
-    a special case, a product may be just "1".
+  /* Reads a set of terms {tset} from {rd}.
   
-    The procedure determines the total number {NP} of products appearing
-    in the {termName[0..NT-1]}, such as "DX*DY" or "Soo*Sop", and
-    creates a table {prix[0..NP-1]} that describes the products and the
-    terms they belong to. See {multifok_term_values_from_basis_coeffs}
-    for the meaning of {prix}.
+    The number of terms {NT=tset.nt} and the number of products 
+    {NP=tset.NP} are inferred from the file's contents.
     
-    In each product, the two factors are internally swapped if needed so
-    that {jb1 <= jb2}. After this adjustment, each product should appear
-    only once. Thus {NP} is at most {NB*(NP+1)/2}. Also each term must
-    have at least one product, so {NT} is at most equal to {NP}.
+    The file {rd} must contain {NT} data lines, one per term.  Each line
+    must have the term index {kt} in {0..NT-1}, followed optionally by a numeric
+    weight {wt[kt]} (if {weights} is true) and the term's name {tset.termName[kt]}.
+    If {weights} is false, {wt[kt]=1.0} is assumed. 
     
-    The product count {NP} and the table {prix} are returned in {*NP_P}
-    and {*prix_P}. The {pname} fields in the {prix} table will be newly
-    allocated strings. */
-
-/* PARSED TERM TABLE I/O */
-
-void multifok_term_read_index_table
-  ( FILE *rd, 
-    int32_t NB,
-    char *belName[],
-    int32_t *NP_P,
-    multifok_term_prod_t **prix_P,
-    int32_t *NT_P,
-    char ***termName_P,
-    bool_t verbose
-  );
-  /* Reads from {rd} a table describing how a certain number {NT} of
-    terms of degree 2 are to be composed from {NP} products of pairs of
-    {NB} basis coefficients.
-  
-    The file has one line for each coeff product to be evaluated. Each
-    line has the format "{ip} {jb1} {jb2} {kt} {pname}" where {ip} is the product
-    index in {0..NP-1}, {jb1} and {jb2} are the indices of the two basis
-    coeffs, with {0 <= jb1 <= jb2 < NB}; {kt} is the index of the term to which
-    this product is part; and {pname} is the textual product
-    "{el1}*{el2}", e.g. "Xom*Xpp"; where {el1} must be {belName[jb1]} and 
-    {el2} must be {belName[jb2]}.
+    The term name must be a formula consisting either of the string "1"
+    or a sum of products of basis element names, like "Smm*Spp+Spm+Spp".
+    These strings are parsed to yield the produc index table
+    {tset.prix[0..NP-1]}.
     
-    The pairs {jb1,jb2} must be all distinct  so the
-    maximum value of {NP} is {NB*(NB+1)/2}. The quadruples {(jb1, jb2,
-    kt, pname)} are saved in a table {prix[0..NP-1]}.
-    
-    The number of terms {NT}, which is between 1 and {NP}, is inferred
-    from the indices {kt}. The procedure also assembles a formula
-    {termName[kt]} for each term, denoting the sum of all pairs of
-    products assigned to that term, e.g. "Xom*Xop+Xmo*Xpo". It assumes
-    that {belName[jb]} is the name of basis element {jb}.
-    
-    The values of {NP,prix,NT,termName} are returned in
-    {*NP_P,*prix_P,*NT_P,*termName_P}.
+    Returns the terms as a newly allcoated {multifok_term_set_t}
+    record, and the weight vector {wt} in {*wt_P}. However, if {wt_P} is
+    {NULL}, the weights are discarded.
     
     Comments starting with "#" and blank lines are ignored. If {verbose}
-    is true, also prints the data to stderr. */
+    is true, also prints the data to stderr.
+    
+    */
+  
+multifok_term_set_t *multifok_term_set_read_named
+  ( char *fname,
+    bool_t weights,
+    multifok_basis_t *basis,
+    double **wt_P,
+    bool_t verbose
+  );
+  /* Same as {multifok_term_set_read} but reads
+    from file {fname} instead of a {FILE descriptor. */
 
-void multifok_term_write_index_table
+void multifok_term_set_write(FILE *wr, multifok_term_set_t *tset, bool_t weights, double wt[]);
+  /* Writes to {wr} the weights {wt[0..NT-1]} and the 
+    term names (formulas) {tset.termName[0..NT-1]}, where {NT=tset.NT}, one per line,
+    in the format expected by {multifok_term_set_read(rd,weights,...)}. 
+    
+    If {weights} is true but {wt} is {NULL}, assumes it is a vector of ones. */
+
+void multifok_term_set_write_named(char *outPrefix, multifok_term_set_t *tset, bool_t weights, double wt[]); 
+  /* Same as {multifok_term_set_write}, but 
+    to a file file "{outPrefix}-twts.txt" instead of a {FILE} descriptor. */
+
+void multifok_term_set_product_table_write
   ( FILE *wr, 
     int32_t NP,
     multifok_term_prod_t *prix,
@@ -209,5 +167,14 @@ void multifok_term_write_index_table
   );
   /* Writes to {wr} the table {prix[0..NP-1]}, in the format expected 
     by {multifok_term_read_index_table}. */
+
+void multifok_term_set_product_table_write_named
+  ( char *outPrefix, 
+    int32_t NP, 
+    multifok_term_prod_t prix[],
+    bool_t verbose
+  );
+  /* Same as {multifok_term_write_index_table}, but writes to a file "{outPrefix}
+    "{outPrefix}-prix.txt" instead of a {FILE} descriptor. */
 
 #endif

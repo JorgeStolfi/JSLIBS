@@ -2,7 +2,7 @@
 #define float_image_H
 
 /* Multichannel images with floating-point samples. */
-/* Last edited on 2023-03-19 08:40:50 by stolfi */ 
+/* Last edited on 2024-10-25 22:44:39 by stolfi */ 
 
 #define _GNU_SOURCE_
 #include <stdio.h>
@@ -430,21 +430,16 @@ void float_image_apply_gamma(float_image_t *A, int32_t c, double gamma, double b
   /* Applies to channel {c} of image {A} the power correction with exponent {gamma}
     and offset {bias}. See {sample_conv_gamma} for details. */ 
 
-void float_image_log_scale(float_image_t *A, int32_t c, double vref, double base);
+void float_image_log_scale(float_image_t *A, int32_t c, double bias, double vRef, double base);
   /* Converts every sample {v} in channel {c} of image {A} from linear
-    to logarithmic scale, relative to value {vref} and the given
-    {base}, by calling {sample_conv_log(v, vref, log(base))}.
-    
-    The result is {NAN} if {v} is negative or {NAN}, {-INF} if {v} is
-    zero, otherwise {log(v/vref)/log(base))}, i.e. {k} such that 
-    {v=vref*base^k}. */ 
+    to logarithmic scale, relative to value {vRef} and the given {base},
+    by calling {sample_conv_log(v,bias,vRef,log(base))} (q.v.) for every
+    sample {v} in channel {c} of {A}. */ 
 
-void float_image_undo_log_scale(float_image_t *A, int32_t c, double vref, double base);
-  /* Undoes the effect of {float_image_log_scale}, by calling {sample_conv_undo_log(v, vref, log(base))}
-    for every sample {v} in channel {c} of {A}.
-    
-    The result is {NAN} if {v} is {NAN}, zero if {v} is {-INF},
-    otherwise {vref*exp(v*log(base)) = vref*base^v}. */ 
+void float_image_undo_log_scale(float_image_t *A, int32_t c, double bias, double vRef, double base);
+  /* Undoes the effect of {float_image_log_scale}, by calling
+    {sample_conv_undo_log(v, bias, vRef, log(base))} (q.v.) for every sample
+    {v} in channel {c} of {A}. */ 
 
 void float_image_rescale_samples(float_image_t *A, int32_t c, float a0, float a1, float z0, float z1);
   /* Applies to every sample of channel {c} of {A} the affine
@@ -462,15 +457,17 @@ void float_image_square_samples(float_image_t *A, int32_t c);
     In particular, leaves {+INF} and {NAN} alone, and maps {-INF} to {+INF}.
     Fails is {c} is not a valid channel index. */
 
-double float_image_compute_sample_sum(float_image_t *A, int32_t c);
+double float_image_compute_sample_sum(float_image_t *A, int32_t c, int32_t *NS_P);
   /* Computes the sum of all samples in channel {c} of {A}.
     Ignores samples that are {±INF} or {NAN}. If {c} is not a valid
-    channel index, returns 0. */
+    channel index, returns 0.  If {NS_P} is not {NULL}, returns 
+    in {*NS_P} the count of samples that were considered. */
 
-double float_image_compute_total_energy(float_image_t *A, int32_t c, double avg);
+double float_image_compute_squared_sample_sum(float_image_t *A, int32_t c, double avg, int32_t *NS_P);
   /* Computes the sum of {(s - avg)^2} over all samples {s} in channel {c} of {A}.
     Ignores samples that are {±INF} or {NAN}. If {c} is not a valid
-    channel index, returns 0. */
+    channel index, returns 0. If {NS_P} is not {NULL}, returns 
+    in {*NS_P} the count of samples that were considered. */
     
 void float_image_replace_nan_samples(float_image_t *A, int32_t c, float v);
   /* Replaces all {NAN} samples in channel {c} of {A} by {v}. */

@@ -1,4 +1,4 @@
-# Last edited on 2017-04-17 20:19:21 by stolfilocal
+# Last edited on 2024-10-16 22:58:05 by stolfi
 
 PROG = test_image_test
 
@@ -8,6 +8,11 @@ TEST_LIB_DIR := ../..
 JS_LIBS := \
   libgeo.a \
   libjs.a
+  
+OTHER_LIBS := \
+  /usr/lib/x86_64-linux-gnu/libjpeg.so \
+  /usr/lib/x86_64-linux-gnu/libpng.so \
+  /usr/lib/x86_64-linux-gnu/libz.so
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 
@@ -19,7 +24,7 @@ check:  clean do-test
 
 do-test: ${PROG}
 	${PROG}
-	display -title '%f' `ls out/test-*.ppm | sort`
+	display -title '%f' `ls out/test-*.png | sort`
 
 clean::
 	/bin/rm -fv out/test-*.ppm

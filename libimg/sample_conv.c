@@ -1,5 +1,5 @@
 /* See {sample_conv.h}. */
-/* Last edited on 2021-07-09 02:18:20 by jstolfi */
+/* Last edited on 2024-10-25 22:24:22 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -70,26 +70,33 @@ float sample_conv_gamma(float z, double gamma, double bias)
     return (z < 0 ? -a : a);
   }
 
-float sample_conv_log(float u, double uref, double logBase)
+float sample_conv_log(float u, double bias, double uref, double logBase)
   {
     if ((! isfinite(logBase)) || (logBase == 0)) { return NAN; }
+    if ((! isfinite(bias)) || (bias < 0)) { return NAN; }
     if ((! isfinite(uref)) || (uref <= 0)) { return NAN; }
+    if (isnan(u) || (u < 0)) { return NAN; }
+    if (u == +INFINITY) { return +INFINITY; }
+    if (bias != 0) { u = hypot(u, bias); }
     if (u == +INFINITY) { return +INFINITY; }
     if (u == 0.0) { return -INFINITY; }
-    if (isnan(u) || (u < 0)) { return NAN; }
     double ulog = log(u/uref)/logBase;
     return (float)ulog;
   }
 
-float sample_conv_undo_log(float u, double uref, double logBase)
+float sample_conv_undo_log(float u, double bias, double uref, double logBase)
   {
     if ((! isfinite(logBase)) || (logBase == 0)) { return NAN; }
+    if ((! isfinite(bias)) || (bias < 0)) { return NAN; }
     if ((! isfinite(uref)) || (uref <= 0)) { return NAN; }
     if (u == +INFINITY) { return +INFINITY; }
-    if (u == -INFINITY) { return 0.0; }
     if (isnan(u)) { return NAN; }
-    double uexp = uref*exp(u*logBase);
-    return (float)uexp;
+    if (u == -INFINITY) { u = 0.0; } else { u = uref*exp(u*logBase); }
+    if (u == +INFINITY) { return +INFINITY; }
+    if (u < bias) { return NAN; }
+    if (bias != 0) { u = sqrt(u*u - bias*bias); }
+    assert(isfinite(u));
+    return (float)u;
   }
 
 float sample_conv_interp(float z, int np, double U[], double V[])
