@@ -2,7 +2,7 @@
 #define gauss_table_H
 
 /* Tools for Gaussian kernel tables */
-/* Last edited on 2023-11-25 19:35:06 by stolfi */
+/* Last edited on 2024-11-06 00:52:59 by stolfi */
 
 /* !!! Merge into {wt_table_gaussian} !!! */
 
@@ -25,16 +25,16 @@ double *gauss_table_make(int n, double avg, double dev, bool_t normSum, bool_t f
   /* Allocates a vector {w} with {n} elements and sets element {w[i]}
     to {g((i-avg)/dev)}, where {g(z)} is the Gaussian bell {exp(-z*z/2)}.
     
-    If {folded} is true, the bell will be wrapped around the edges of the vector. That is,
-    {w[i]} is actually set to {SUM { g((i-avg+k*n)/dev) : k in Z }}.
-    The fold-over is considered not significant if the Gaussian is far from the
-    table ends --- that is, if {BIG*dev <= avg <= n - BIG*dev} where
-    {BIG = gauss_bell_BIG_ARG}.
+    If {folded} is true, the bell will be wrapped around the edges of
+    the vector. That is, {w[i]} is actually set to {SUM {
+    g((i-avg+k*n)/dev) : k in Z }}. The fold-over is considered not
+    significant if the Gaussian is far from the table ends --- that is,
+    if {BIG*dev <= avg <= n - BIG*dev} where {BIG = gauss_bell_BIG_ARG}.
     
-    In particular, if {dev} is zero, entry {w[i]} is set to 1 if {i}
-    is equat to {avg} (if {folded} is false) or congruent to {avg} modulo {n}
-    (if {folded} is true), and to 0 otherwise. If {dev} is
-    {+INF}, all entries are set to 1.
+    In particular, if {dev} is zero, entry {w[i]} is set to 1 if {i} is
+    equal to {avg} (if {folded} is false) or congruent to {avg} modulo
+    {n} (if {folded} is true), and to 0 otherwise. If {dev} is {+INF},
+    all entries are set to 1.
     
     These raw values are normalized before the procedure returns. If
     {normSum} is TRUE, the elements {w[0..n-1]} are scaled so that
@@ -48,8 +48,8 @@ double *gauss_table_make(int n, double avg, double dev, bool_t normSum, bool_t f
     that the Gaussian bell folded over {[0_h]} is practically constant. */
 
 double gauss_table_folded_bell(double z, double dev, int n);
-  /* Returns the sum of the Gaussian bell {exp(-(x/dev)^2/2)} evaluated 
-    at all arguments {x} that are congruent to {z} modulo {n}.
+  /* Returns the sum of the Gaussian bell {exp(-(x/dev)^2/2)}
+    evaluated at all arguments {x} that are congruent to {z} modulo {n}.
     
     As special cases, if {dev} is zero, returns 1 when {z} is
     congruent to 0 modulo {n}, and 0 otherwise. If {dev} is {+INF}, or

@@ -2,7 +2,7 @@
 #define PROG_DESC "tests {sve_minn.h} on an image matching problem"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-01-11 06:33:33 by stolfi */
+/* Last edited on 2024-11-08 09:53:00 by stolfi */
 
 #define test_sve_img_match_C_COPYRIGHT "Copyright © 2009 by the State University of Campinas (UNICAMP)"
 
@@ -25,6 +25,8 @@
 #include <r3.h>
 #include <r2_extra.h>
 #include <rn.h>
+#include <rmxn.h>
+#include <rmxn_extra.h>
 #include <affirm.h>
 #include <ix.h>
 #include <wt_table.h>
@@ -509,24 +511,36 @@ void find_best_matrix
         double rMin = 1.0/hypot(0.5*NXO,0.5*NYO);
         double rMax = 0.5*dMax;
         double rIni = 0.25*dMax;
-        double stop = 0.0001*rMin;
+        double minStep = 0.0001*rMin;
         sign_t dir = -1;
         int32_t maxIters = 100;
         bool_t debugMinn = TRUE;
         
         if (plot_goal)
-          { /* Plot goal function: */
+          { /* Choose the plot directions: */
+            int32_t nu = (nx < 6 ? nx : 6); /* Number of directions. */
+            double U[nu*nx]; /* The rows are the directions. */
+            rmxn_throw_directions(nu, nx, U);
+            /* Plot goal function along those directions: */
             double Rad = rIni;
             double Step = Rad/30;
             char *fname = NULL;
             asprintf(&fname, "%s-f2-plot.txt", outPrefix);
             FILE *wr = open_write(fname, TRUE);
-            minn_plot_1D_gnuplot(wr, nx, xx, Rad, Step, F);
+            for (int32_t ku = 0; ku < nu; ku++)
+              { double *u = &(U[ku*nx]);
+                minn_plot_1D_gnuplot(wr, nx, xx, u, Rad, Step, F);
+              }
             fclose(wr);
             free(fname);
           }
 
-        sve_minn_iterate(nx, &F, &OK, xx, &Fx, dir, ctr, dMax, dBox, rIni, rMin, rMax, stop, maxIters, debugMinn);
+        sve_minn_iterate
+          ( nx, &F, &OK, NULL,
+            xx, &Fx, dir, 
+            ctr, dMax, dBox, rIni, rMin, rMax, 
+            minStep, maxIters, debugMinn
+          );
         fprintf(stderr, "\n");
       }
 

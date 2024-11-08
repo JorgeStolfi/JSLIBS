@@ -1,5 +1,5 @@
 /* See {r2_align_quadopt.h}. */
-/* Last edited on 2024-09-03 17:16:15 by stolfi */
+/* Last edited on 2024-11-08 09:54:57 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -33,7 +33,7 @@ void r2_align_quadopt
   )
   {
     int32_t maxIters = 10;
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
     
     demand(tol > 0, "invalid {tol}");
     i2_t nv = r2_align_count_variable_coords (ni, arad);
@@ -80,19 +80,20 @@ void r2_align_quadopt
         double rMax = 0.5;                /* Max simplex radius. */
         double rMin = fmin(0.05, 3*xtol); /* Min simplex radius. */
         sve_minn_iterate
-          ( /*n:*/ nd, 
-            /*F:*/ &sve_goal,
-            /*OK:*/ NULL, 
-            /*x:*/ x,
-            /*FxP:*/ &Fx,
-            /*dir:*/ dir,
-            /*ctr:*/ NULL,
-            /*dMax:*/ 1.0,
-            /*box:*/ FALSE,
-            /*rIni:*/ 0.5, 
-            /*rMin:*/ rMin, 
-            /*rMax:*/ rMax, 
-            /*stop:*/ xtol,
+          ( /*n:*/       nd, 
+            /*F:*/       &sve_goal,
+            /*OK:*/      NULL, 
+            /*Proj:*/    NULL,
+            /*x:*/       x,
+            /*FxP:*/     &Fx,
+            /*dir:*/     dir,
+            /*ctr:*/     NULL,
+            /*dMax:*/    1.0,
+            /*box:*/     FALSE,
+            /*rIni:*/    0.5, 
+            /*rMin:*/    rMin, 
+            /*rMax:*/    rMax, 
+            /*minStep:*/ xtol,
             maxIters,
             debug
           );

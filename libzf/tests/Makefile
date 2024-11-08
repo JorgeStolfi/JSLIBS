@@ -1,7 +1,7 @@
-# Last edited on 2023-02-18 02:57:33 by stolfi
+# Last edited on 2024-11-08 12:47:13 by stolfi
 
 LIB_TEST_DIRS := \
-  0100_zftest \
+  0100_zf \
   0200_fn1_zeros \
   0300_fn2_zeros
    

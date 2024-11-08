@@ -1,5 +1,5 @@
 /* See rmxn.h. */
-/* Last edited on 2023-10-09 09:03:40 by stolfi */
+/* Last edited on 2024-11-07 14:08:18 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -61,6 +61,12 @@ void rmxn_ident(int32_t m, int32_t n, double *M)
       for (j = 0; j < n; j++)
         { M[t] = (i == j ? 1.0 : 0.0); t++; }
   }
+
+void rmxn_add(int32_t m, int32_t n, double *A, double *B, double *M)
+  { rn_add(m*n, A, B, M); }
+    
+void rmxn_sub(int32_t m, int32_t n, double *A, double *B, double *M)
+  { rn_sub(m*n, A, B, M); }
 
 void rmxn_map_row (int32_t m, int32_t n, double *x, double *A, double *r)
   { int32_t i, j;
@@ -538,7 +544,9 @@ void rmxn_print (FILE *f, int32_t m, int32_t n, double *A)
   { rmxn_gen_print(f, m, n, A, NULL, NULL, NULL, NULL, NULL, NULL, NULL); }
 
 void rmxn_gen_print
-  ( FILE *f, int32_t m, int32_t n, double *A,
+  ( FILE *f, 
+    int32_t m, 
+    int32_t n, double *A,
     char *fmt, 
     char *olp, char *osep, char *orp,
     char *ilp, char *isep, char *irp
@@ -546,7 +554,9 @@ void rmxn_gen_print
   {
     rmxn_gen_print3 
       ( f, m, 
-        n, A, -1, NULL, -1, NULL, 
+        n,  A, 
+        -1, NULL, 
+        -1, NULL, 
         fmt,
         olp, osep, orp,
         ilp, isep, irp,
@@ -555,7 +565,8 @@ void rmxn_gen_print
   }  
 
 void rmxn_gen_print2 
-  ( FILE *f, int32_t m,
+  ( FILE *f, 
+    int32_t m,
     int32_t n1, double *A1,
     int32_t n2, double *A2,
     char *fmt, 
@@ -566,7 +577,9 @@ void rmxn_gen_print2
   {
     rmxn_gen_print3 
       ( f, m, 
-        n1, A1, n2, A2, -1, NULL, 
+        n1, A1, 
+        n2, A2, 
+        -1, NULL, 
         fmt,
         olp, osep, orp,
         ilp, isep, irp,
@@ -575,7 +588,8 @@ void rmxn_gen_print2
   }
 
 void rmxn_gen_print3 
-  ( FILE *f, int32_t m,
+  ( FILE *f, 
+    int32_t m,
     int32_t n1, double *A1,
     int32_t n2, double *A2,
     int32_t n3, double *A3,
@@ -593,6 +607,7 @@ void rmxn_gen_print3
     if (msep == NULL) { msep = "  "; }
     if (irp == NULL) { irp = ")"; }
     if (fmt == NULL) { fmt = "%16.8e"; }
+    
     fputs(olp, f);
     for (int32_t i = 0; i < m; i++)
       { if (i > 0) { fputs(osep, f); }

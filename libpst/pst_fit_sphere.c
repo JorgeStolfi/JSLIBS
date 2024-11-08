@@ -1,5 +1,5 @@
 /* See pst_fit_sphere.h */
-/* Last edited on 2024-01-11 08:25:54 by stolfi */ 
+/* Last edited on 2024-11-08 09:51:57 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -14,6 +14,7 @@
 #include <float_image_mscale.h>
 #include <argparser.h>
 #include <r2.h>
+#include <rn.h>
 #include <ellipse_crs.h> 
 #include <affirm.h> 
 #include <sve_minn.h> 
@@ -193,10 +194,12 @@ double pst_fit_sphere
         
         /* Call the nonlinear optimizer: */
         double ctr[NP]; rn_copy(NP, x, ctr);
+        double minStep = 0.001*dMax;
         sve_minn_iterate
           ( /*n:*/        NP,
             /*F:*/        sve_goal,
             /*OK:*/       sve_check,
+            /*Proj:*/     NULL,
             /*x:*/        x,
             /*FxP:*/      &H,
             /*dir:*/      -1,
@@ -206,7 +209,7 @@ double pst_fit_sphere
             /*rIni:*/     0.50*dMax,
             /*rMin:*/     0.05*dMax,
             /*rMax:*/     dMax,
-            /*stop:*/     0.001*dMax,
+            /*minStep:*/  minStep,
             /*maxEvals:*/ maxIts,
             /*debug:*/    debug_sve
           );

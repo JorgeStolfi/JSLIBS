@@ -1,5 +1,5 @@
 /* fget.h -- reading items from text files. */
-/* Last edited on 2024-06-27 19:11:09 by stolfi */
+/* Last edited on 2024-10-31 03:39:41 by stolfi */
 
 #ifndef fget_H
 #define fget_H
@@ -147,13 +147,13 @@ char *fget_line(FILE *rd);
 
 bool_t fget_test_comment_or_eol(FILE *rd, char cmtc, char **text_P);
   /* Skips spaces, and then checks whether the next character is either
-    end-of-line , or a comment that starts with the character {cmtc} and
+    end-of-line, or a comment that starts with the character {cmtc} and
     extends to the end of the line. In either case, returns {TRUE} and
     consumes everything up to and including the end-of-line. If the
     next character after skipping the spaces is anything other than {cmtc} or
-    end-of-line , leaves that character there and returns {FALSE}. Fails with
+    end-of-line, leaves that character there and returns {FALSE}. Fails with
     error if {cmtc} occurs but end-of-file is reached before finding the 
-    end-of-line .
+    end-of-line.
     
     If the procedure returns {TRUE} (i.e., finds end-of-line  or
     {cmtc}), and {text_P} is not {NULL}, the procedure sets {*text_P} to the

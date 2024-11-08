@@ -2,7 +2,7 @@
 #define spectrum_table_exact_H
 
 /* Tools for computing unsmoothed radial power spectra of images. */
-/* Last edited on 2023-03-18 10:28:51 by stolfi */ 
+/* Last edited on 2024-11-06 10:04:51 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -35,8 +35,8 @@ vec_typedef(spectrum_table_exact_t,spectrum_table_exact,spectrum_table_exact_ent
 
 void spectrum_table_exact_append_all
   ( float_image_t *P,
-    bool_t center,
     int32_t c,
+    bool_t center,
     spectrum_table_exact_t *tx, 
     bool_t verbose
   );

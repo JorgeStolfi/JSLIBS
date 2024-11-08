@@ -2,7 +2,7 @@
 #define PROG_DESC "Analyzes relation between image sharpness and local quadratic operators."
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-10-22 03:33:55 by stolfi */ 
+/* Last edited on 2024-10-26 09:23:46 by stolfi */ 
 /* Created on 2023-01-24 by J. Stolfi, UNICAMP */
 
 #define test_mfok_diff_ops_COPYRIGHT \
@@ -58,8 +58,8 @@
   "\n" \
   "  The samples are assumed to be encoded" \
   " in the file with linear scale (gamma = 1).  The {hAvg} and {hDev} values are" \
-  " assumed to have been scaled from {[0 _ ZMAX]} to {[0 _ 1]} before being" \
-  " writen, where {ZMAX} is {multifok_scene_ZMAX}, and are unscaled to {[0 _ ZMAX]} as" \
+  " assumed to have been scaled from {[0 _ zMax]} to {[0 _ 1]} before being" \
+  " writen and are unscaled to {[0 _ zMax]} as" \
   " they are read.\n" \
   "\n" \
   "  TERMS TABLE\n" \
@@ -167,8 +167,6 @@
 #include <multifok_basis.h>
 #include <multifok_term.h>
 #include <multifok_test.h>
-
-#define ZMAX multifok_scene_ZMAX
 
 typedef struct mfdo_options_t 
   { /* Input images: */
@@ -406,7 +404,7 @@ multifok_stack_t *mfdo_read_stack(mfdo_options_t *o)
     asprintf(&stackDir, "%s/st%s-%04dx%04d-%s", o->inDir, o->sceneType, NX, NY, o->pattern);
     
     bool_t gray = TRUE;
-    multifok_stack_t *istack = multifok_stack_read(stackDir, gray, NI, o->zFoc, o->zDep, ZMAX);
+    multifok_stack_t *istack = multifok_stack_read(stackDir, gray, NI, o->zFoc, o->zDep, o->zMax);
     
     assert(istack->NI == NI);
     demand(istack->NX == NX, "inconsistent frame {NX}");
@@ -784,7 +782,7 @@ bool_t mfdo_pixel_is_useful
   { 
     /* Reject pixels whose {hAvg} is too close to the scene extremal {Z}  values: */
     double hAvg_min_ok = 1.1;         /* Ignore pixels with actual scene {Z} below this level. */
-    double hAvg_max_ok = ZMAX - 1.1;  /* Ignore pixels with actual scene {Z} above this level. */
+    double hAvg_max_ok = zmax - 1.1;  /* Ignore pixels with actual scene {Z} above this level. */
     if ((hAvg_min < hAvg_min_ok) || (hAvg_max > hAvg_max_ok)) { (*NXY_R_hAvg_ex_P)++; return FALSE; }
 
     /* Reject pixels which have too hight {hDev}: */
@@ -830,7 +828,7 @@ mfdo_options_t *mfdo_parse_options(int32_t argc, char **argv)
     int32_t NI = 0; /* Number of input images. */
     while (argparser_keyword_present(pp, "-frame"))
       { double_vec_expand(&(zFoc), NI);
-        imo.zFoc = argparser_get_next_double(pp, 0.0,2*ZMAX);
+        imo.zFoc = argparser_get_next_double(pp, 0.0,2*o->zMax);
         double_vec_expand(&(zDep), NI);
         imo.zDep = argparser_get_next_double(pp, 0.01,99.99);
         NI++;

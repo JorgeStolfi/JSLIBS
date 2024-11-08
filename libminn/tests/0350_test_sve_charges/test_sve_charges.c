@@ -1,5 +1,5 @@
 /* test_sve_charges --- test of {sve_minn.h} with Rutherford's atom potential.  */
-/* Last edited on 2024-01-11 06:33:45 by stolfi */
+/* Last edited on 2024-11-08 09:52:49 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -226,13 +226,18 @@ void find_electron_positions(int32_t nq, int32_t dim, int32_t sym)
     double rMin = 0.050;
     double rMax = 0.500;
     double rIni = 0.125;
-    double stop = 0.01*rMin;
+    double minStep = 0.01*rMin;
     int32_t maxIters = 300;
     sign_t dir = -1;
     bool_t debug = FALSE;
     
     double Fx = F(nx, x);
-    sve_minn_iterate(nx, &F, &OK, x, &Fx, dir, ctr, dMax, dBox, rIni, rMin, rMax, stop, maxIters, debug);
+    sve_minn_iterate
+      ( nx, &F, &OK, NULL, 
+        x, &Fx, dir, 
+        ctr, dMax, dBox, rIni, rMin, rMax, 
+        minStep, maxIters, debug
+      );
     fprintf(stderr, "iterations = %d\n", nok);
     fprintf(stderr, "function evaluations = %d\n", neval);
     
@@ -286,7 +291,9 @@ void plot_potential
       
     FILE *wr = open_write(fname, TRUE);
     if (nx == 1)
-      { minn_plot_1D_gnuplot(wr, nx, x0, R, R/N, F); }
+      { double u0[nx]; rn_axis(nx, 0, u0);
+        minn_plot_1D_gnuplot(wr, nx, x0, u0, R, R/N, F);
+      }
     else
       { double u0[nx], u1[nx];
         if (nx == 2)

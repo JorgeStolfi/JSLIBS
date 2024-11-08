@@ -1,7 +1,6 @@
-# Last edited on 2019-04-09 17:50:29 by jstolfi
+# Last edited on 2024-11-08 12:35:54 by stolfi
 
-IGNOREDIRS := \
-  testfptest-sun4-SunOS5
+IGNOREDIRS :=
   
 include ${STOLFIHOME}/programs/c/GENERIC-ROOT-DIR.make
   

@@ -1,5 +1,5 @@
 /* Test of jspng.h, uint16_image_io_png.h */
-/* Last edited on 2023-10-14 23:05:34 by stolfi */
+/* Last edited on 2024-11-06 01:56:06 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -168,7 +168,7 @@ void do_uint16_image_io_png_own_test(char *iDir, char *oDir, int32_t csp, int32_
     fprintf(stderr, "------------------------------------------------------------\n");
     
     /* Check attributes: */
-    if ((csp == 0) || (csp ==1))
+    if ((csp == 0) || (csp == 1))
       { /* Explicit GRAY or RGB, possibly with ALPHA:  */
         demand(img->chns == 1 + 2*csp + alp, "unexpected {chns}");
         demand(img->maxval == mxv, "unexpected {maxval}");
@@ -212,7 +212,6 @@ void do_uint16_image_io_png_own_test(char *iDir, char *oDir, int32_t csp, int32_
     else
       { demand(fabs(bGamma-oGamma)/sqrt(bGamma*oGamma) < 0.000001, "inconsistent {gamma}"); }
    
-    uint32_t iMaxval[MAX_CHNS]; /* Maxvals expected from {BY,BR,BG,BB,BA}. */
     int32_t NC = img->chns;
     int32_t icY = ( (NC == 1) || (NC == 2) ? 0 : -1 ); /* Index of intensity channel, or -1 if none. */
     int32_t icR = ( NC < 3 ? -1 : 0 ); /* Index of red channel, or -1 if none. */
@@ -220,14 +219,16 @@ void do_uint16_image_io_png_own_test(char *iDir, char *oDir, int32_t csp, int32_
     int32_t icB = ( NC < 3 ? -1 : 2 ); /* Index of red channel, or -1 if none. */
     int32_t icA = ( (NC == 2) || (NC == 4) ? NC-1 : -1 ); /* Index of red channel, or -1 if none. */
     
-    if (icY >= 0) { iMaxval[icY] = mxv; }
-    if (icR >= 0) { iMaxval[icR] = mxv; }
-    if (icG >= 0) { iMaxval[icG] = mxv; }
-    if (icB >= 0) { iMaxval[icB] = mxv; }
-    if (icA >= 0) { iMaxval[icA] = mxv; }
+    uint32_t iMaxval[MAX_CHNS]; /* Maxvals expected from {BY,BR,BG,BB,BA}. */
+    for (int32_t ic = 0; ic < MAX_CHNS; ic++) { iMaxval[ic] = UINT32_MAX; }
+    if (icY >= 0) { iMaxval[icY] = (csp == 2 ? 255 : mxv); }
+    if (icR >= 0) { iMaxval[icR] = (csp == 2 ? 255 : mxv); }
+    if (icG >= 0) { iMaxval[icG] = (csp == 2 ? 255 : mxv); }
+    if (icB >= 0) { iMaxval[icB] = (csp == 2 ? 255 : mxv); }
+    if (icA >= 0) { iMaxval[icA] = (csp == 2 ? 255 : mxv); }
     
-    for (int32_t ic = 0; ic < NC; ic++)
-      { if (fMaxval[ic] != iMaxval[ic]) 
+    for (int32_t ic = 0; ic < MAX_CHNS; ic++)
+      { if ((iMaxval[ic] != UINT32_MAX) && (iMaxval[ic] != fMaxval[ic]))
           { fprintf(stderr, "** %s: channel %d - maxval %u should be %u\n", iName, ic, fMaxval[ic], iMaxval[ic]); }
       }
 

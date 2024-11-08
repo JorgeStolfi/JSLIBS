@@ -1,6 +1,6 @@
-# Last edited on 2008-01-14 22:47:01 by stolfi
+# Last edited on 2024-11-08 11:36:55 by stolfi
 
-PROG = ppv_test
+PROG = test_ppv
 
 TEST_LIB := libppv.a
 TEST_LIB_DIR := ../..

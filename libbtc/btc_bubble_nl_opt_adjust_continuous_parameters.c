@@ -1,5 +1,5 @@
 /* See {btc_bubble_nl_opt_adjust_continuous_parameters.h} */
-/* Last edited on 2024-01-11 08:28:00 by stolfi */
+/* Last edited on 2024-11-08 09:54:30 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -146,15 +146,16 @@ void btc_bubble_nl_opt_adjust_continuous_parameters
             for (ip = 0; ip < npf; ip++) { x_opt[ip] = x_ini[ip]; }
             double Q_opt = eval_Q(npf, x_opt);
 
-            double rIni = 0.050;   /* Initial simplex radius. */
-            double rMin = 0.005;   /* Minimum simplex radius. */
-            double rMax = 0.200;   /* Maximum simplex radius. */
-            double stop = 1.0e-4;  /* Stop if step is less than this. */
+            double rIni = 0.050;      /* Initial simplex radius. */
+            double rMin = 0.005;      /* Minimum simplex radius. */
+            double rMax = 0.200;      /* Maximum simplex radius. */
+            double minStep = 1.0e-4;  /* Stop if step is less than this. */
 
             sve_minn_iterate
               ( npf,        /* int n,          */
                 eval_Q,     /* sve_goal_t *F,  */
                 examine,    /* sve_pred_t *OK, */
+                NULL,       /* sve_proj_t *Proj, */
                 x_opt,      /* double x[],     */
                 &Q_opt,     /* double *FxP,    */
                 -1,         /* sign_t dir,     */
@@ -164,7 +165,7 @@ void btc_bubble_nl_opt_adjust_continuous_parameters
                 rIni,       /* double rIni,    */
                 rMin,       /* double rMin,    */
                 rMax,       /* double rMax,    */
-                stop,       /* double stop,    */
+                minStep,    /* double minStep,    */
                 maxNLIters, /* int maxIters,   */
                 verbose     /* bool_t debug    */
               );

@@ -1,5 +1,5 @@
 /* See hr2.h */
-/* Last edited on 2024-09-17 16:22:48 by stolfi */ 
+/* Last edited on 2024-11-03 07:39:14 by stolfi */ 
 
 /* Based on HR2.m3 created 1994-05-04 by J. Stolfi. */
 
@@ -29,18 +29,16 @@
 #define NC 2
   /* Number of Cartesian coordinates in a point. */
 
-void hr2_point_to_r2_nan(hr2_point_t *p, r2_t *c);
-  /* Converts a point from homogeneous coordinates {p} to Cartesian
-    coordinates {c}.  If {p} is at infinity, returns {(NAN,NAN)}. */
-
-void hr2_point_to_r2_nan(hr2_point_t *p, r2_t *c)
+r2_t r2_from_hr2_nan(hr2_point_t *p)
   {
     double w = p->c.c[0];
     double m = fmax(fabs(p->c.c[1]), fabs(p->c.c[2]));
+    r2_t c;
     if (fabs(w) <= m*1e-200) 
-      { (*c) = (r2_t){{ NAN, NAN }}; }
+      { c = (r2_t){{ NAN, NAN }}; }
     else
-      { (*c) = (r2_t){{ p->c.c[1]/w, p->c.c[2]/w }}; } 
+      { c = (r2_t){{ p->c.c[1]/w, p->c.c[2]/w }}; }
+    return c;
   }
 
 hr2_point_t hr2_from_r2(r2_t *c)
@@ -196,3 +194,26 @@ hr2_line_t hr2_line_throw(void)
     return A;
   }
 
+void hr2_point_print(FILE *wr, char *pre, hr2_point_t *p, char *fmt, char *suf)
+  { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, wr); }
+    fputs("[ ", wr);
+    if (fmt == NULL) { fmt = "24.26e"; }
+    for (int32_t i = 0; i < NH; i++)
+      { if (i != 0) { fputc(' ', wr); }
+        fprintf(wr, fmt, p->c.c[i]);
+      }
+    fputs(" ]", wr);
+    if ((suf != NULL) && ((*suf) != 0)) { fputs(suf, wr); }
+  }
+
+void hr2_line_print(FILE *wr, char *pre, hr2_line_t *L, char *fmt, char *suf)
+  { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, wr); }
+    fputs("< ", wr);
+    if (fmt == NULL) { fmt = "24.26e"; }
+    for (int32_t i = 0; i < NH; i++)
+      { if (i != 0) { fputc(' ', wr); }
+        fprintf(wr, fmt, L->f.c[i]);
+      }
+    fputs(" >", wr);
+    if ((suf != NULL) && ((*suf) != 0)) { fputs(suf, wr); }
+  }

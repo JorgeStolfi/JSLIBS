@@ -1,6 +1,6 @@
-# Last edited on 2011-12-23 21:22:57 by stolfilocal
+# Last edited on 2024-11-08 12:43:41 by stolfi
 
-PROG = i2test
+PROG = test_i2
  
 TEST_LIB := libgeo.a
 TEST_LIB_DIR := ../..

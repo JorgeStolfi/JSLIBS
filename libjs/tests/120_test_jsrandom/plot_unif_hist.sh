@@ -1,5 +1,5 @@
 #! /bin/bash
-# Last edited on 2020-12-06 17:51:05 by jstolfi
+# Last edited on 2024-11-05 11:21:28 by stolfi
 
 # Usage: "plot-hist.sh {FILE}"
 # Plots histogram {FILE}.his to {FILE}.png
@@ -9,8 +9,8 @@ name="$1"; shift
 hfile="out/${name}.his"
 pfile="out/${name}.png"
 
-gnuplot -background white <<EOF
-set term png small truecolor
+gnuplot <<EOF
+set term png small truecolor background rgb '#ffffff'
 set output "${pfile}"
 set xrange [-0.20:+1.20]
 set yrange [-0.20:+1.20]

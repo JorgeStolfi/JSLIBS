@@ -1,5 +1,5 @@
 /* See {hr2_pmap_translation_encode.h}. */
-/* Last edited on 2024-09-17 12:20:51 by stolfi */
+/* Last edited on 2024-11-03 06:41:15 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -15,42 +15,47 @@
 
 void hr2_pmap_congruence_encode(hr2_pmap_t *M, double y[])
   { 
-    double A00 = M->dir.c[0][0];
-    demand(A00 > 1.0e-200, "map is not a congruence");
-    
-    y[0] = M->dir.c[0][1] / A00;
-    y[1] = M->dir.c[0][2] / A00;
-    
-    double A11 = M->dir.c[1][1] / A00;
-    double A12 = M->dir.c[1][2] / A00;
-    double A21 = M->dir.c[2][1] / A00;
-    double A22 = M->dir.c[2][2] / A00;
+    r3x3_t *A = &(M->dir);
 
-    if (A11*A22 - A21*A12 > 0)
-      { y[2] = atan2(A12, A11); }
-    else
-      { y[2] = atan2(A22, A21); }
-
-    /* Paranoia check: */
-    double R1 = hypot(A11, A12);
-    demand(fabs(R1 - 1) <= 1.0e-14, "map is not an isometry");
-    double R2 = hypot(A21, A22);
-    demand(fabs(R2 - 1) <= 1.0e-14, "map is not an isometry");
+    bool_t paranoia = TRUE;
+     if (paranoia)
+      { /* Paranoia checks: */
+        demand(hr2_pmap_is_congruence(M, 1.0e-14), "map is not a congruence");
+        demand(r3x3_det(A) > 0, "map is is not a positive congruence");
+      }
+   
+    double A00 = A->c[0][0];
+    demand(A00 > 1.0e-200, "map is not affine");
+    
+    /* Rotation: */
+    double A11 = A->c[1][1] / A00;
+    double A12 = A->c[1][2] / A00;
+    y[0] = atan2(A12, A11);
+    /* Hack to handle the DAMN minus zero: */
+    if (y[0] == -M_PI) { y[0] = +M_PI; }
+    
+    y[1] = A->c[0][1] / A00;
+    y[2] = A->c[0][2] / A00;
   }
 
 void hr2_pmap_congruence_decode(double y[], hr2_pmap_t *M)
   { 
+    r3x3_t *A = &(M->dir);
     r3x3_ident(&M->dir);
-    M->dir.c[0][1] = y[0];
-    M->dir.c[0][2] = y[1];
     
-    double c = cos(y[2]), s = sin(y[2]);
-    
-    M->dir.c[1][1] = + c;
-    M->dir.c[1][2] = + s;
+    /* Rotation: */
+    demand(isfinite(y[0]), "invalid rotation angle {y[0]}");
+    double c = cos(y[0]), s = sin(y[0]);
+    A->c[1][1] = + c;
+    A->c[1][2] = + s;
+    A->c[2][1] = - s;
+    A->c[2][2] = + c;
 
-    M->dir.c[2][1] = - s;
-    M->dir.c[2][2] = + c;
+    /* Translation: */
+    demand(isfinite(y[1]), "invalid X translation {y[1]}");
+    demand(isfinite(y[2]), "invalid Y translation {y[2]}");
+    A->c[0][1] = y[1];
+    A->c[0][2] = y[2];
       
     r3x3_inv(&(M->dir), &(M->inv));
 

@@ -1,5 +1,5 @@
 /* See {grd_plot.h} */
-/* Last edited on 2024-06-20 07:56:09 by stolfi */
+/* Last edited on 2024-11-04 07:31:31 by stolfi */
 
 #define drtree_plot_C_COPYRIGHT \
   "Duh?"
@@ -21,7 +21,6 @@
 #include <epswr.h> 
 
 #include <drtree.h>
-#include <drtree_private.h>
 
 #include <drtree_plot.h>
 

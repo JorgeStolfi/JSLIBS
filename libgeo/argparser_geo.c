@@ -1,5 +1,5 @@
 /* See argparser_geo.h. */
-/* Last edited on 2024-08-31 20:07:53 by stolfi */
+/* Last edited on 2024-10-31 02:46:10 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 
@@ -64,7 +64,7 @@ void argparser_get_next_adjust(argparser_t *pp, double *adjP, double min, double
       }
   }
 
-hr2_pmap_type_t argparser_get_next_map_type(argparser_t *pp)
+hr2_pmap_type_t argparser_get_next_hr2_pmap_type(argparser_t *pp)
   { char *tname = argparser_get_next_non_keyword(pp);
     hr2_pmap_type_t type;
     bool_t ok = hr2_pmap_type_from_string(tname, &type);

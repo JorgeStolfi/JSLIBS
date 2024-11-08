@@ -1,5 +1,5 @@
 /* Objects for a {multifok_scene_t}. */
-/* Last edited on 2024-10-24 13:09:17 by stolfi */
+/* Last edited on 2024-10-29 18:59:18 by stolfi */
 
 #ifndef multifok_scene_object_H
 #define multifok_scene_object_H
@@ -17,9 +17,13 @@ typedef enum
     multifok_scene_object_type_RAMP,   /* Ramp where {Z} increases with {X}. */
     multifok_scene_object_type_DISK,   /* A flat horizontal disk. */
     multifok_scene_object_type_BALL,   /* A ball. */
+    multifok_scene_object_type_CONE,   /* A cone with height twice its radius. */
   } multifok_scene_object_type_t;
   /* Type of scene object. */
-    
+      
+#define WD_RAMP 0.70
+  /* With of {ot_RAMP} inclined part relative to scene width. */ 
+
 typedef struct multifok_scene_object_t
   { int32_t ID;                        /* Object ID, used e.g. for patterning. */
     multifok_scene_object_type_t type; /* Type of object. */
@@ -38,6 +42,11 @@ typedef struct multifok_scene_object_t
     should be a square, and its {Z} coordinate is the midpoint of
     {box[2]}, which should have very small height.
     
+    If {type} is {CONE} the object is a cone. Its {XY}
+    projection is inscribed in the rectangle {box[0]×box[1]}, which
+    should be a square, and its {Z} spans {box[2]}, with the 
+    base at bottom.
+    
     If {type} is {FLAT}, the object is a horizontal rectangle whose {XY}
     projection is {box[0]×box[1]}, and whose {Z} coordinate is the
     midpoint of {box[2]}, which should have very small height.
@@ -46,8 +55,8 @@ typedef struct multifok_scene_object_t
     span the whole range {box[1]} in the {Y} direction and one third of
     the range {box[0]} in the {X} direction. The middle rectangle is
     parallel to the {Y} axis and rises from {Zlo} when {X} is {Xlo} to
-    {Zhi} when {X} is {Xhi}, where {Xlo,Xhi} are {1/3} and {2/3} of the
-    way across {box[0]}, and {Zlo,Zhi} are the limits of {box[2]}. The
+    {Zhi} when {X} is {Xhi}, where {Xhi-Xlo} is {WD_RAMP} times the
+    width of {box[0]}, and {Zlo,Zhi} are the limits of {box[2]}. The
     first rectangle is horizontal at height {Zlo}, and the third one is
     horizontal at height {Zhi}.
 
@@ -57,9 +66,9 @@ typedef struct multifok_scene_object_t
     combination of colors {obj.bg} and {obj.fg} in a way described 
     elsewhere. */ 
 
-void multifok_scene_object_print(FILE *wr, multifok_scene_object_t *obj);
-  /* Writes a readable description of object {obj} to {wr}, in one line. 
-    Does NOT write the end-of-line. */
+void multifok_scene_object_print(FILE *wr, char *pref, multifok_scene_object_t *obj, char *suff);
+  /* Writes a readable description of object {obj} to {wr}, in one line,
+    preceded by {pref} and folloed by {suff}. */
 
 bool_t multifok_scene_object_XY_is_inside
   ( multifok_scene_object_t *obj,

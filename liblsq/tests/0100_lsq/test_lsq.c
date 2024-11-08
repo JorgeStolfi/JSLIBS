@@ -1,5 +1,5 @@
 /* test_lsq --- test program for {lsq.h}  */
-/* Last edited on 2022-10-20 06:31:13 by stolfi */
+/* Last edited on 2024-11-07 16:23:28 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -88,11 +88,11 @@ void test_lsq_fit(int32_t trial, double eps, bool_t verbose)
     fprintf(stderr, "%s (%d)\n", __FUNCTION__, trial);
     fprintf(stderr, "testing with nt = %d  nx = %d  nf = %d  eps = %g ...\n", nt, nx, nf, eps);
     
-    double *M = rmxn_alloc(nx, nf); /* Correct linear map matrix. */
+    double *M = rmxn_alloc(nx, nf); /* Correct matrix. */
     
-    if (verbose) { fprintf(stderr, "  generating true map...\n\n"); }
+    if (verbose) { fprintf(stderr, "  generating true solution...\n\n"); }
     test_lsq_throw_linear_fn(nx, nf, M);
-    if (verbose) { gsel_print_array(stderr, "%12.6f", "  true map matrix:", nx, nf, M, "\n"); }
+    if (verbose) { gsel_print_array(stderr, 4, "%12.6f", "true solution matrix:", nx, nf, "M", M, ""); }
     
     /* Data arrays for {lsq_array_fit}: */
     double *X = rmxn_alloc(nt, nx);
@@ -126,14 +126,12 @@ void test_lsq_fit(int32_t trial, double eps, bool_t verbose)
     if (verbose) { fprintf(stderr, "  calling {lsq_fit}...\n\n"); }
     rank = lsq_fit(nt, nx, nf, gen_data_point, U, verbose);
     demand(rank == nx, "could not solve the least squares system");
-    if (verbose) { gsel_print_array(stderr, "%12.6f", "  fitted map matrix:", nx, nf, U, "\n"); }
     test_lsq_check_fit(nx, nf, M, eps, U);
 
     /* Call procedures in {lsq_array} and check results: */
     if (verbose) { fprintf(stderr, "  calling {lsq_array_fit}...\n\n"); }
     rank = lsq_array_fit(nt, nx, nf, X, F, W, U, verbose);
     demand(rank == nx, "could not solve the least squares system");
-    if (verbose) { gsel_print_array(stderr, "%12.6f", "  fitted map matrix:", nx, nf, U, "\n"); }
     test_lsq_check_fit(nx, nf, M, eps, U);
 
     /* Cleanup: */

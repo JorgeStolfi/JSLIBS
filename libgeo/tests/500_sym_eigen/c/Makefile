@@ -1,4 +1,4 @@
-# Last edited on 2023-02-15 12:42:52 by stolfi
+# Last edited on 2024-11-06 04:39:32 by stolfi
 
 PROG = testc
  
@@ -10,18 +10,22 @@ JS_LIBS := \
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
  
-.PHONY::
+.PHONY:: show
 
 OUT_DIR := out
 OUT_NAME := ${OUT_DIR}/${PROG}
 
-all: check
+all: check show
 
 check:  ${OUT_NAME}.txt
 
-${OUT_NAME}.txt: ${PROG}
+# DAMN MINUS ZEROS!!!!
+
+${OUT_NAME}.txt: ${PROG} Makefile
 	mkdir -p ${OUT_DIR}
-	${PROG} > ${OUT_NAME}.txt 2>&1
+	( ${PROG} 2>&1 ) | sed -e 's:[-]\(0[.]000*\b\): \1:g' > ${OUT_NAME}.txt
+
+show: ${OUT_NAME}.txt
 	@echo "=== ${OUT_NAME}.txt ==="
 	cat ${OUT_NAME}.txt
 

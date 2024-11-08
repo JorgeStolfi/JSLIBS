@@ -1,5 +1,5 @@
 /* See {multifok_scene.h}. */
-/* Last edited on 2024-10-25 08:59:33 by stolfi */
+/* Last edited on 2024-10-29 13:25:48 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -12,6 +12,7 @@
 #include <bool.h>
 #include <affirm.h>
 #include <interval.h>
+#include <interval_io.h>
 #include <r3.h>
 #include <frgb.h>
 #include <r2.h>
@@ -19,13 +20,6 @@
 
 #include <multifok_scene.h>
 #include <multifok_scene_object.h>
-
-#define ZMIN multifok_scene_ZMIN
-#define ZMAX multifok_scene_ZMAX
-  /* Shorter names. */
-  
-#define FUDGE (1.0e-6)
-  /* Fudge amount to expand bounding boxes to account for roundoff. */
 
 int32_t multifok_scene_choose_object_count(bool_t floorOnly, interval_t dom[], double rMin, double rMax, double minSep);
   /* Chooses the ideal number of objects (disks or balls) that {multifok_scene_throw_busy} 
@@ -36,8 +30,6 @@ int32_t multifok_scene_choose_object_count(bool_t floorOnly, interval_t dom[], d
 
 multifok_scene_t *multifok_scene_new(interval_t dom[], bool_t verbose)
   {
-    demand((dom[2].end[0] >= ZMIN) && (dom[2].end[1] <= ZMAX), "bad {dom[2]}");
-     
     /* Allocate record: */
     multifok_scene_t *scene = talloc(1, multifok_scene_t);
     
@@ -59,6 +51,8 @@ void multifok_scene_throw_objects
     bool_t verbose
   )
   {
+    bool_t debug = FALSE;
+    
     demand((scene->NO == 0) && (scene->objs == NULL), "scene already has objects");
     
     /* Determine the max number of objects: */
@@ -84,12 +78,9 @@ void multifok_scene_throw_objects
           { /* Subsequent objects are foreground ones: */
             assert(! floorOnly);
             /* Generate a random object {obj}: */
-            obj = multifok_scene_object_foreground_throw(dom, minSep, rMin, rMax, verbose);
+            obj = multifok_scene_object_foreground_throw(dom, minSep, rMin, rMax, debug);
           }
-        if (verbose) 
-          { fprintf(stderr, "  ");
-            multifok_scene_object_print(stderr, &obj);
-          }
+        if (debug) { multifok_scene_object_print(stderr, "  ", &obj, ""); }
         
         /* Check containment in {Z}: */
         assert(dom[2].end[0] <= obj.bbox[2].end[0]);
@@ -109,13 +100,14 @@ void multifok_scene_throw_objects
             assert(multifok_scene_object_XY_is_inside(&obj, scene->dom, minSep));
           }
         if (ko_overlap < 0)
-          { if (verbose) { fprintf(stderr, " (accepted, ID = %d)\n", NO); }
+          { if (debug) { fprintf(stderr, " (accepted, ID = %d)\n", NO); }
             obj.ID = NO;
+            if (verbose && (! debug)) {  multifok_scene_object_print(stderr, "  ", &obj, "\n"); }
             objs[NO] = obj;
             NO++;
           }
         else
-          { if (verbose) { fprintf(stderr, " (overlaps %d, rejected)\n", ko_overlap); } }
+          { if (debug) { fprintf(stderr, " (overlaps %d, rejected)\n", ko_overlap); } }
       }
     
     assert(NO <= NO_max);
@@ -180,6 +172,16 @@ r3_t multifok_scene_box_radius(interval_t box[])
     for (int32_t j = 0; j < 3; j++) { rad.c[j] = interval_rad(&(box[j])); }
     return rad;
   }
+
+void multifok_scene_print_box(FILE *wr, char *pref, interval_t box[], char *suff)
+  { if (pref != NULL) { fputs(pref, wr); }
+    for (int32_t j = 0; j < 3; j++)
+      { if (j > 0) { fputs(" × ", wr); }
+        interval_gen_print(wr, &(box[j]), "%12.6f", "[ ", " _ ", " ]");
+      }
+    if (suff != NULL) { fputs(suff, wr); }
+  }
+    
 
 void multifok_scene_check_object_IDs(int32_t NO, multifok_scene_object_t objs[])
   { fprintf(stderr, "checking object IDs...\n");

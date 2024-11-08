@@ -1,5 +1,5 @@
 /* Oriented projective geometry in two dimensions. */
-/* Last edited on 2024-09-17 16:18:23 by stolfi */ 
+/* Last edited on 2024-11-03 07:37:48 by stolfi */ 
    
 #ifndef hr2_H
 #define hr2_H
@@ -26,6 +26,10 @@ hr2_point_t hr2_from_r2(r2_t *c);
     
 r2_t r2_from_hr2(hr2_point_t *p);
   /* Cartesian coordinates of point {p} (which must be finite). */
+
+r2_t r2_from_hr2_nan(hr2_point_t *p);
+  /* Converts a point from homogeneous coordinates {p} to Cartesian
+    coordinates {c}.  If {p} is at infinity, returns {(NAN,NAN)}. */
 
 hr2_point_t hr2_point_at_infinity(r2_t *dir);
   /* The point at infinity whose direction, as seen from any hither
@@ -94,5 +98,18 @@ hr2_line_t hr2_line_throw(void);
   /* Returns a line with homogeneous coefficienys uniformly
     distributed over the unit sphere of {\RR^3}. */
  
+/* PRINTOUT 
+
+  The procedures below print the string {pre} (if not NULL) before the object, and 
+  and {suf} (if not NULL) after it.  The coordinates/coefficients are printed
+  with the format {fmt} (or with "%24.16e" if {fmt} is NULL. */
+
+void hr2_point_print(FILE *wr, char *pre, hr2_point_t *p, char *fmt, char *suf);
+  /* Prints {p} to {wr} as "[ {w} {x} {y} ]", prefixed by {pre}
+    and followed by {suf}, formatting  each coordinated with {fmt}. */
+    
+void hr2_line_print(FILE *wr, char *pre, hr2_line_t *L, char *fmt, char *suf);
+  /* Prints {L} to {wr} as "< {W} {X} {Y} >", prefixed by {pre} and followed
+    by {suf}, formatting each Grassmann coordinate with {fmt}. */
 
 #endif

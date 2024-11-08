@@ -1,5 +1,5 @@
 /* See {hr2_test_tools.h}. */
-/* Last edited on 2024-09-17 17:27:46 by stolfi */
+/* Last edited on 2024-11-04 06:36:53 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -8,7 +8,6 @@
 #include <assert.h>
 #include <math.h>
 
-#include <flt.h>
 #include <jsrandom.h>
 #include <affirm.h>
 

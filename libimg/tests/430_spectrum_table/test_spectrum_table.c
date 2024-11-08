@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {spectrum_table_exact.h}, {spectrum_table_binned.h}, {spectrum_table_convert.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-10-25 22:43:17 by stolfi */ 
+/* Last edited on 2024-11-06 09:07:12 by stolfi */ 
 /* Created on 2008-10-05 by J. Stolfi, UNICAMP */
 
 #define test_spectrum_table_COPYRIGHT \
@@ -169,7 +169,7 @@ void do_test
     int32_t ky,
     int32_t bins
   )
-  { bool_t verbose = (cols <= 5) & (rows <= 5);
+  { bool_t verbose = ((cols <= 9) && (rows <= 9));
     
     fprintf(stderr, "------------------------------------------------------------\n");
     fprintf(stderr, "testing with image of type %s\n", kind_name[kind]); 

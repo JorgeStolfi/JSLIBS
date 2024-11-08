@@ -1,5 +1,5 @@
 /* See {multifok_scene_object.h}. */
-/* Last edited on 2024-10-24 14:48:45 by stolfi */
+/* Last edited on 2024-10-29 13:25:27 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -30,6 +30,7 @@
 #define ot_RAMP multifok_scene_object_type_RAMP
 #define ot_DISK multifok_scene_object_type_DISK
 #define ot_BALL multifok_scene_object_type_BALL
+#define ot_CONE multifok_scene_object_type_CONE
 
 void multifok_scene_object_throw_colors(frgb_t *tone, frgb_t *bg, frgb_t *fg);
   /* Generates two random contrasting colors, with general hue depending on {warm}. */
@@ -47,7 +48,7 @@ void multifok_scene_object_throw_colors(frgb_t *tone, frgb_t *bg, frgb_t *fg);
   The {XY} radii {rad[0]} and {rad[1]} will be in {[rMin _ rMax]}. The
   procedures will fail if {srad} is too small given {rMin},
   {strict}, and the object type. */
-
+  
 void multifok_scene_object_throw_radius_DISK
   ( double rMin,
     double rMax,
@@ -63,12 +64,33 @@ void multifok_scene_object_throw_radius_BALL
     bool_t strict,
     double rad[]
   );
+
+void multifok_scene_object_throw_radius_CONE
+  ( double rMin,
+    double rMax,
+    double srad[],
+    bool_t strict,
+    double rad[]
+  );
+
+void   multifok_scene_object_throw_radius_round
+  ( double rMin,
+    double rMax,
+    double hRel,
+    double srad[],
+    bool_t strict,
+    double rad[]
+  );
+  /* Chooses the radius of an object with round {XY} projection
+    ({DIS}, {BALL}, or {CONE}) whose height is {hRel}
+    times the radius of that projection. */
   
 /* IMPLEMENTATIONS */
              
-void multifok_scene_object_print(FILE *wr, multifok_scene_object_t *obj)
-  { char *typeX = multifok_scene_object_type_to_string(obj->type);
-    if (obj->ID >= 0) { fprintf(wr, "ID = %d ", obj->ID); }
+void multifok_scene_object_print(FILE *wr, char *pref, multifok_scene_object_t *obj, char *suff)
+  { if (pref != NULL) { fputs(pref, wr); }
+    char *typeX = multifok_scene_object_type_to_string(obj->type);
+    if (obj->ID >= 0) { fprintf(wr, "ID = %3d ", obj->ID); }
     fprintf(wr, "type = %s", typeX);
     r3_t ctr = multifok_scene_box_center(obj->bbox);
     r3_gen_print(wr, &(ctr), "%12.8f", "  ctr = ( ", " ", " )");
@@ -76,6 +98,7 @@ void multifok_scene_object_print(FILE *wr, multifok_scene_object_t *obj)
     r3_gen_print(wr, &(rad), "%12.8f", "  rad = ( ", " ", " )");
     frgb_print(wr, " bg = ( ", &(obj->bg), 3, "%5.3f", " )");
     frgb_print(wr, " fg = ( ", &(obj->fg), 3, "%5.3f", " )");
+    if (suff != NULL) { fputs(suff, wr); }
   }
 
 bool_t multifok_scene_object_XY_is_inside
@@ -117,26 +140,25 @@ bool_t multifok_scene_object_XY_overlap
   { demand(minSep >=0, "invalid {minSep}");
   
     /* The {RAMP}  object is assumed to overlap with anything: */
-    if (obja->type == ot_RAMP) { return TRUE; }
+    if ((obja->type == ot_RAMP) || (objb->type == ot_RAMP)) { return TRUE; }
     
     /* The {FLAT} object only overlaps if it cuts the other in {Z}: */
-    if (obja->type == ot_FLAT) 
+    if ((obja->type == ot_FLAT) || (objb->type == ot_FLAT))
       { if (obja->bbox[2].end[1] <= objb->bbox[2].end[0]) { return FALSE; }
         if (objb->bbox[2].end[0] >= obja->bbox[2].end[1]) { return FALSE; }
+        return TRUE;
       }
     
     /* Neither {FLAT} nor {RAMP}. Check if boxes overlap in {X} and {Y}: */
-    bool_t boxes_olap = TRUE;
-    for (int32_t j = 0; (j < 2) & boxes_olap; j++) 
+    for (int32_t j = 0; j < 2; j++) 
       { /* Check if boxes have at least {minSep} separation along axis {j}: */
         if (obja->bbox[j].end[0] - objb->bbox[j].end[1] >= minSep) { return FALSE; } 
         if (objb->bbox[j].end[0] - obja->bbox[j].end[1] >= minSep) { return FALSE; } 
       }
       
     /* Boxes overlap, but maybe the objects don't: */
-    assert(boxes_olap);
-    bool_t around = (obja->type == ot_DISK) || (obja->type == ot_BALL);
-    bool_t bround = (objb->type == ot_DISK) || (objb->type == ot_BALL);
+    bool_t around = (obja->type == ot_DISK) || (obja->type == ot_BALL) || (obja->type == ot_CONE);
+    bool_t bround = (objb->type == ot_DISK) || (objb->type == ot_BALL) || (objb->type == ot_CONE);
     if (around && bround)
       { /* More detailed check using radii: */
         r3_t ctra = multifok_scene_box_center(obja->bbox);
@@ -171,7 +193,7 @@ multifok_scene_object_t multifok_scene_object_background_make(interval_t dom[], 
     if (flatFloor)
       { obj.type = ot_FLAT;
         /* The object's {Z} range is a singleton just above the scene's bottom: */
-        double Zlo = dom[2].end[0] + FUDGE; 
+        double Zlo = dom[2].end[0] + 2*FUDGE; 
         obj.bbox[2] = (interval_t){{ Zlo, Zlo }};
       }
     else
@@ -208,7 +230,7 @@ multifok_scene_object_t multifok_scene_object_foreground_throw
    
     /* Choose disk or ball: */
     
-    obj.type =  (drandom() < 0.5 ? ot_DISK : ot_BALL);
+    obj.type =  (drandom() < 0.33 ? ot_DISK : (drandom() < 0.50 ? ot_BALL : ot_CONE));
     bool_t strict = (margin >= 0); /* Whole {XY} projection must be inside {dom}. */
     
     /* Get the preliminary range of positions {sdom[0..2]} for the object: */
@@ -237,6 +259,10 @@ multifok_scene_object_t multifok_scene_object_foreground_throw
 
         case ot_BALL:
           multifok_scene_object_throw_radius_BALL(rMin, rMax, srad.c, strict, rad);
+          break;
+
+        case ot_CONE:
+          multifok_scene_object_throw_radius_CONE(rMin, rMax, srad.c, strict, rad);
           break;
           
         case ot_RAMP:
@@ -279,24 +305,8 @@ void multifok_scene_object_throw_radius_DISK
     bool_t strict,
     double rad[]
   )
-  { /* Reduce {rMax} according to {srad,strict}: */
-    for (int32_t j = 0; j < 2; j++) 
-      { if (strict)
-          { /* Whole disk must fit inside {sdom[j]}: */
-            rMax = fmin(rMax, srad[j]);
-          }
-        else
-          { /* At least half the disk must fit inside: */
-            rMax = fmin(rMax, 2*srad[j]);
-          }
-      }
-    demand(rMax > 0.1*rMin, "domain too small for {rMin,strict}");
-    double rObj;
-    if (rMin < rMax) 
-      { rObj = rMax; }
-    else
-      { rObj = rMin + drandom()*(rMax - rMin); }
-    rad[0] = rObj; rad[1] = rObj; rad[2] = 0.0;
+  { 
+    multifok_scene_object_throw_radius_round(rMin, rMax, 0.0, srad, strict, rad);
   }
       
 void multifok_scene_object_throw_radius_BALL
@@ -306,15 +316,41 @@ void multifok_scene_object_throw_radius_BALL
     bool_t strict,
     double rad[]
   )
-  { /* Reduce {rMax} according to {srad,strict}: */
-    rMax = fmin(rMax, srad[2]);
+  { 
+    multifok_scene_object_throw_radius_round(rMin, rMax, 2.0, srad, strict, rad);
+  }
+       
+void multifok_scene_object_throw_radius_CONE
+  ( double rMin,
+    double rMax,
+    double srad[],
+    bool_t strict,
+    double rad[]
+  )
+  {
+    multifok_scene_object_throw_radius_round(rMin, rMax, 2.0, srad, strict, rad);
+  }
+ 
+void   multifok_scene_object_throw_radius_round
+  ( double rMin,
+    double rMax,
+    double hRel,
+    double srad[],
+    bool_t strict,
+    double rad[]
+  )
+  {
+    /* Reduce {rMax} so that the height is at most {srad[2]}: */
+    rMax = fmin(rMax, 2*srad[2]/hRel);
+    
+    /* Reduce {rMax} according to {srad[0..1],strict}: */
     for (int32_t j = 0; j < 2; j++) 
       { if (strict)
-          { /* Whole disk must fit inside {sdom[j]}: */
+          { /* Radius of {XY} projection must be at most {srad[j]}: */
             rMax = fmin(rMax, srad[j]);
           }
         else
-          { /* At least half the disk must fit inside: */
+          { /* Radius of {XY} projection must be at most {2*srad[j]}: */
             rMax = fmin(rMax, 2*srad[j]);
           }
       }
@@ -324,15 +360,16 @@ void multifok_scene_object_throw_radius_BALL
       { rObj = rMax; }
     else
       { rObj = rMin + drandom()*(rMax - rMin); }
-    rad[0] = rObj; rad[1] = rObj; rad[2] = rObj;
+    rad[0] = rObj; rad[1] = rObj; rad[2] = hRel*rObj/2;
   }
 
 char *multifok_scene_object_type_to_string(multifok_scene_object_type_t type)
   { switch (type)
       { case ot_FLAT: return "FLAT";
         case ot_RAMP: return "RAMP";
-        case ot_DISK: return "DISk";
+        case ot_DISK: return "DISK";
         case ot_BALL: return "BALL";
+        case ot_CONE: return "CONE";
         default: demand(FALSE, "unrecognized object type");
       }
   }

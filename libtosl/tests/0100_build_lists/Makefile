@@ -1,11 +1,11 @@
-# Last edited on 2024-10-02 22:14:44 by stolfi
+# Last edited on 2024-11-08 11:40:40 by stolfi
 
 SHELL := /bin/bash
 
 TEST_LIB := libtosl.a
 TEST_LIB_DIR := ../..
 
-PROG := tosl_build_lists_test
+PROG := test_tosl_build_lists
 
 JS_LIBS :=
 

@@ -1,5 +1,5 @@
 /* See gauss_table.h */
-/* Last edited on 2020-10-11 18:51:28 by jstolfi */
+/* Last edited on 2024-11-06 01:25:55 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -19,31 +19,30 @@ double *gauss_table_make(int n, double avg, double dev, bool_t normSum, bool_t f
     demand(dev >= 0, "invalid standard deviation");
 
     /* Allocate table: */
-    double *w = notnull(malloc(n*sizeof(double)), "no mem");
+    double *w = talloc(n, double);
 
     /* Fill the table: */
-    int i;
     if (folded)
-      { for (int i = 0; i < n; i++) 
+      { for (int32_t i = 0; i < n; i++) 
           { w[i] = gauss_table_folded_bell((double)i - avg, dev, n); }
       }
     else
-      { for (int i = 0; i < n; i++) 
+      { for (int32_t i = 0; i < n; i++) 
           { w[i] = gauss_bell_eval((double)i, avg, dev); }
       }
       
     if (normSum)
       { /* Normalize to unit sum: */
         double sum = 0.0; 
-        for (i = 0; i < n; i++) { sum += w[i]; }
+        for (int32_t i = 0; i < n; i++) { sum += w[i]; }
         demand(sum > 0, "cannot normalize a zero-sum table");
-        for (i = 0; i < n; i++) { w[i] /= sum; }
+        for (int32_t i = 0; i < n; i++) { w[i] /= sum; }
       }
     else if (folded)
       { /* Normalize to unity at {avg}: */
         double wmax = gauss_table_folded_bell(0.0, dev, n);
         assert(wmax > 0.0);
-        for (i = 0; i < n; i++) { w[i] /= wmax; }
+        for (int32_t i = 0; i < n; i++) { w[i] /= wmax; }
       }
     return w;
   }
@@ -70,11 +69,11 @@ double gauss_table_folded_bell(double z, double dev, int n)
         /* !!! Find a faster formula !!! */
 
         /* Add all fold-over terms that are {10^{-16}} or more: */
-        int kmax = (n == 0 ? 0 : (int)ceil ((gauss_bell_BIG_ARG*dev + z)/n));
+        int kmax = (n == 0 ? 0 : (int)ceil((gauss_bell_BIG_ARG*dev + z)/n));
         assert(kmax >= 0);
         double sum = 0;
         
-        /* Add all terms for {z - kmax*n} to {z + kmax*n}: */
+        /* Add all terms {z ± kmax*n} to {z ± n}, from small to large: */
         int k = kmax;
         while (k > 0)
           { double um = (z - k*n)/dev; 
@@ -82,8 +81,9 @@ double gauss_table_folded_bell(double z, double dev, int n)
             sum += exp(-um*um/2) + exp(-up*up/2);
             k--;
           }
-        double uz = z/dev;
-        sum += exp(-uz*uz/2);
+        /* Add term for {z}: */
+        double u = z/dev;
+        sum += exp(-u*u/2);
         return sum;
       }
   }

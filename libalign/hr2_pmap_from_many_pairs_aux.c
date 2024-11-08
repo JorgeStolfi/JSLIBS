@@ -1,5 +1,5 @@
 /* See {hr2_pmap_from_many_pairs_aux.h}. */
-/* Last edited on 2024-09-16 18:33:55 by stolfi */
+/* Last edited on 2024-11-03 16:48:37 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -16,6 +16,7 @@
 #include <r3x3.h>
 #include <affirm.h>
 #include <hr2_pmap_opt.h>
+#include <hr2_pmap_special_opt.h>
 
 #include <hr2_pmap_from_many_pairs.h>
 #include <hr2_pmap_from_many_pairs_aux.h>
@@ -295,6 +296,10 @@ void hr2_pmap_from_many_pairs_optimize
     auto double goalf(hr2_pmap_t *M);
       /* Computes the mean squared distance between the positions of the
          mapped points {p1*M.dir} and {p2}, and {p2*M.inv} and {p1}. */
+        
+    auto bool_t ok_pred(hr2_pmap_t *A, double fA);
+      /* Checks whether {A} is acceptable. Currently, that
+        means {fA} is less than {maxErr}. */
 
     double f2M = goalf(M);
 
@@ -302,15 +307,18 @@ void hr2_pmap_from_many_pairs_optimize
 
     double maxMod = 1.0e6; /* !!! FIX THIS !!! */
     
-    hr2_pmap_opt_quadratic(type, sgn, &goalf, maxIter, maxErr, maxMod, M, &f2M, verbose);
+    hr2_pmap_special_opt_quadratic(type, sgn, &goalf, ok_pred, maxIter, maxMod, M, &f2M, verbose);
 
     if (verbose) { fprintf(stderr, "final rms error = %13.6f\n", sqrt(f2M)); }
 
     return;
     
     double goalf(hr2_pmap_t *M)
-     { 
-       double f2 = hr2_pmap_mismatch_sqr(M, np, p1, p2, w);
+     { double f2 = hr2_pmap_mismatch_sqr(M, np, p1, p2, w);
        return f2;
      }
+     
+    bool_t ok_pred(hr2_pmap_t *A, double fA)
+      { return fA < maxErr; }
+      
   }

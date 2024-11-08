@@ -1,15 +1,17 @@
 /* See r3x3.h. */
-/* Last edited on 2024-08-30 04:23:42 by stolfi */
+/* Last edited on 2024-11-07 23:50:05 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <math.h>
 
 #include <r3.h>
 #include <affirm.h>
 #include <rmxn.h>
+#include <sign.h>
 
 #include <r3x3.h>
 
@@ -25,6 +27,25 @@ void r3x3_ident(r3x3_t *M)
   { for (int32_t i = 0; i < N; i++)
       for (int32_t j = 0; j < N; j++)
         { M->c[i][j] = (i == j ? 1.0 : 0.0); }
+  }
+
+void r3x3_throw(r3x3_t *A, sign_t sgn)
+  { demand((sgn >= -1) && (sgn <= +1), "invalid {sgn}");
+    while (TRUE)
+      { for (int32_t i = 0; i < N; i++)
+          { for (int32_t j = 0; j < N; j++) 
+              { A->c[i][j] += 2*drand48() - 1; }
+          }
+        if (sgn == 0) { break; }
+        double det = r3x3_det(A);
+        if (det == 0) { continue; }
+        if (det*sgn < 0) 
+          { /* Negate first row: */
+            for (int32_t j = 0; j < N; j++) { A->c[0][j] = - A->c[0][j]; }
+          }
+        /* At this point, {sgn*det} must be positive: */
+        break;
+      }
   }
 
 void r3x3_transp(r3x3_t *A, r3x3_t *M)

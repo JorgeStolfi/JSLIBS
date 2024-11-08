@@ -1,6 +1,6 @@
-# Last edited on 2016-04-03 13:26:44 by stolfilocal
+# Last edited on 2024-11-08 11:26:17 by stolfi
 
-PROG = ellipse_test
+PROG = test_ellipse
  
 TEST_LIB := libgeo.a
 TEST_LIB_DIR := ../..

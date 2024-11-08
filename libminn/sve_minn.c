@@ -1,5 +1,5 @@
 /* See {sve_minn.h} */
-/* Last edited on 2024-09-15 15:40:16 by stolfi */
+/* Last edited on 2024-11-08 09:49:37 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -138,6 +138,7 @@ void sve_minn_iterate
   ( int32_t n, 
     sve_goal_t *F, 
     sve_pred_t *OK,
+    sve_proj_t *Proj,
     double x[],
     double *FxP,
     sign_t dir, 
@@ -147,7 +148,7 @@ void sve_minn_iterate
     double rIni,
     double rMin, 
     double rMax,
-    double stop,
+    double minStep,
     int32_t maxIters,
     bool_t debug
   )
@@ -186,6 +187,16 @@ void sve_minn_iterate
             Pr(Er, "    current x = \n");
             rn_gen_print(Er, n, x, "%20.16f", "    [ ", "\n      ", "   ]\n");
             Pr(Er, "    function = %22.16e\n", Fx);
+          }
+        if (Proj != NULL)
+          { /* Apply client's projection: */
+            if (debug) { Pr(Er, "    applying {Proj}\n"); }
+            Fx = Proj(n, x, Fx);
+            if (debug)
+              { Pr(Er, "    new x = \n");
+                rn_gen_print(Er, n, x, "%20.16f", "    [ ", "\n      ", "   ]\n");
+                Pr(Er, "    function = %22.16e\n", Fx);
+              }
           }
         /* Check for termination: */
         if ((OK != NULL) && (OK(n, x, Fx))) 
@@ -331,8 +342,8 @@ void sve_minn_iterate
         else
           { assert(FALSE); }
         /* Check for convergence: */
-        bool_t dEst_is_small = (dEst < stop);
-        bool_t no_progress = ((dStep < stop) && (radius <= rMin));
+        bool_t dEst_is_small = (dEst < minStep);
+        bool_t no_progress = ((dStep < minStep) && (radius <= rMin));
         if (dEst_is_small || no_progress) 
           { if (debug_termination) 
               { Pr(Er, "  seems to have converged:\n");

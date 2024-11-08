@@ -1,5 +1,5 @@
 /* User coordinate system for images. */
-/* Last edited on 2024-08-31 12:38:42 by stolfi */
+/* Last edited on 2024-10-31 11:47:30 by stolfi */
 
 #ifndef image_coords_H
 #define image_coords_H
@@ -86,14 +86,14 @@ void imgc_parse_unit(argparser_t *pp, char *unit_key, double *unit);
     the argument "{unit_key}" is not given on the command line, sets {*unit} to 1. */
 
 #define imgc_parse_unit_HELP(unit_key,unit_tag) \
-  "[ " unit_key " {UNIT" unit_tag "} ]"
+  "[ " unit_key " {unit" unit_tag "} ]"
 
 #define imgc_user_unit_intro_INFO(unit_key,which_images) \
   "The unit of length of the user coordinate system for " which_images " can" \
   " be specified by the \"" unit_key "\" argument."  
 
 #define imgc_parse_unit_INFO_OPTS(unit_key,unit_tag,which_images) \
-  "  " unit_key " {UNIT" unit_tag "}\n" \
+  "  " unit_key " {unit" unit_tag "}\n" \
   "    This optional argument specifies the size in pixels of" \
   " the user coordinate unit for " which_images ".  If this" \
   " argument is not specified, the program" \
@@ -130,8 +130,9 @@ void imgc_parse_center_org(argparser_t *pp, char *ctr_key, bool_t *center, char 
     according to the syntax specs {imgc_parse_center_org_HELP(ctr_key,org_key,...)}. If
     "{ctr_key}" is preent, sets {*center} to TRUE and leaves {*org}
     unchanged. If "{org_key}" is present, sets {*center} to FALSE, and sets
-    {*org} to the given point. If neither is present, leaves {*center}
-    and {*org} unchanged. */
+    {*org} to the given point.  NOTE: if neither is present, leaves {*center}
+    and {*org} unchanged.  Therefore, the caller must initialize
+    those variables with proper defaults. */
 
 #define imgc_parse_center_org_HELP(ctr_key,org_key,org_tag) \
   "[ " ctr_key " | " org_key " {CX" org_tag "} {CY" org_tag "} ]"
@@ -256,13 +257,14 @@ hr2_pmap_t imgc_coord_sys_map
     The unit of the {US}, on both axes, is assumed to be {unit} times
     the pixel size.
     
-    The US origin is located at the center of the image's domain if
-    {center} is TRUE, or at the position {org} if {center} is FALSE. In
-    the second case, each coordinate of {org} is measured (in user
-    units) from the edge of the image's domain that has lowest user
-    coordinate (that is, from pixel X coordinate {X=0} if {xRev} is
-    FALSE or {X=cols} if {xRev} is true; from pixel Y coordinate {Y=0}
-    if {yRev} is FALSE, {Y=rows} if {yRev} is TRUE). */
+    If {center} is true, the US origin is located at the center of the
+    image's domain, and the {org} parameter is ignored. If {center} is
+    false, the US origin is located, along each axis, at {org.c[ax]}
+    USER units from the edge of the image's domain that has lowest USER
+    coordinate on that axis. That is, from the left edge of the image if
+    {xRev} is false, or from the right edge if {xRev} is true; and from
+    the top edge of the image if {yRev} is false, or from the bottom
+    edge {yRev} is true. */
 
 /* COMMAND LINE ARGS FOT PROGS WITH BOTH INPUT IMAGES AND OUTPUT IMAGES */
 
@@ -273,11 +275,11 @@ hr2_pmap_t imgc_coord_sys_map
 #define imgc_input_output_coords_HELP \
   "    " imgc_parse_x_axis_HELP " \\\n" \
   "    " imgc_parse_y_axis_HELP " \\\n" \
-  "    " imgc_parse_unit_HELP("-iUnit","_IN") " \\\n" \
-  "    " imgc_parse_center_org_HELP("-iCenter","-iOrg","_IN") " \\\n" \
+  "    " imgc_parse_unit_HELP("-iUnit","In") " \\\n" \
+  "    " imgc_parse_center_org_HELP("-iCenter","-iOrg","In") " \\\n" \
   "    " argparser_proj_map_HELP " \\\n" \
-  "    " imgc_parse_unit_HELP("-oUnit","_OUT") " \\\n" \
-  "    " imgc_parse_center_org_HELP("-oCenter","-oOrg","_OUT") " \\\n" \
+  "    " imgc_parse_unit_HELP("-oUnit","Out") " \\\n" \
+  "    " imgc_parse_center_org_HELP("-oCenter","-oOrg","Out") " \\\n" \
   "    " imgc_parse_size_HELP("-oSize","")
 
 #define imgc_input_output_coords_intro_INFO(iimages,oimages) \
@@ -295,20 +297,20 @@ hr2_pmap_t imgc_coord_sys_map
   imgc_parse_x_axis_INFO_OPTS(xaxis_def) \
   "  This parameter affects the" \
   " interpretation of all X coordinates in the arguments, including" \
-  " {CX_IN} and {CX_OUT}." "\n" \
+  " {CXIn} and {CXOut}." "\n" \
   "\n" \
   imgc_parse_y_axis_INFO_OPTS(yaxis_def) "" \
   "  This parameter affects the interpretation of all Y" \
   " coordinates in the arguments, including" \
-  " {CY_IN} and {CY_OUT}." "\n" \
+  " {CYIn} and {CYOut}." "\n" \
   "\n" \
-  imgc_parse_unit_INFO_OPTS("-iUnit","_IN",iimages) "\n" \
+  imgc_parse_unit_INFO_OPTS("-iUnit","In",iimages) "\n" \
   "\n" \
-  imgc_parse_center_org_INFO_OPTS("-iCenter","-iOrg","_IN",iorg_def) "\n" \
+  imgc_parse_center_org_INFO_OPTS("-iCenter","-iOrg","In",iorg_def) "\n" \
   "\n" \
   "    " imgc_unit_affects_org_INFO_OPTS("-iUnit","-iOrg",iimages) "\n" \
   "\n" \
-  imgc_parse_unit_INFO_OPTS("-oUnit","_OUT",oimages) "\n" \
+  imgc_parse_unit_INFO_OPTS("-oUnit","Out",oimages) "\n" \
   "\n" \
   imgc_parse_size_INFO_OPTS("-oSize","",oimages,osize_def) "\n" \
   "\n" \
@@ -316,7 +318,7 @@ hr2_pmap_t imgc_coord_sys_map
   "\n" \
   "    " imgc_unit_affects_default_size_INFO_OPTS("-iUnit","-oSize",iimages,"-oUnit",oimages) "\n" \
   "\n" \
-  imgc_parse_center_org_INFO_OPTS("-oCenter","-oOrg","_OUT",oorg_def) "\n" \
+  imgc_parse_center_org_INFO_OPTS("-oCenter","-oOrg","Out",oorg_def) "\n" \
   "\n" \
   "    " imgc_unit_affects_org_INFO_OPTS("-oUnit","-oOrg",oimages)
 
@@ -348,18 +350,18 @@ void imgc_parse_input_output_coords_args
     if the option "-yAxis" is missing.
     
     The parameter {*iUnit} is set to the value speficied by "-iUint
-    {IUNIT}", or to 1 if that option is not specified. 
+    {iUnit}", or to 1 if that option is not specified. 
     
     The options "-iCenter" and "-iOrg" are mutually exclusive.
     If "-iCenter" is specified, the parameter {*iCenter} is set to {TRUE}, and
-    {*iOrg} is left unchanged. If "-iOrg {CX_IN} {CY_IN}" if present, then 
-    {*iCenter} is set to   {FALSE}, and {*iOrg} is set to {(CX_IN,CY_IN)} (which are
+    {*iOrg} is left unchanged. If "-iOrg {CXIn} {CYIn}" if present, then 
+    {*iCenter} is set to   {FALSE}, and {*iOrg} is set to {(CXIn,CYIn)} (which are
     in the /user input/ units). If both "-iCenter" and "-iOrg"
     are omitted, leaves {*iCenter} and {*iOrg} unchanged.
     
     The parameters {*oUnit}, {*oCenter}, and {*oOrg} are set in the same
-    way from the options "-oUinit {OUNIT}", "-oCenter", and "-oOrg
-    {CX_OUT} {CY_OUT}".  Note that the later are /user output/ units.
+    way from the options "-oUinit {oUnit}", "-oCenter", and "-oOrg
+    {CXOut} {CYOut}".  Note that the later are /user output/ units.
     
     The parameters {*oCols} and {*oRows} are the output image dimensions
     in /user/ coordinates. They are set to the values specified by the

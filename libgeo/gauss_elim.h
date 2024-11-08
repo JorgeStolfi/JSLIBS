@@ -1,5 +1,5 @@
 /* gauss_elim.h - Gaussian triangulation and elimination. */
-/* Last edited on 2023-02-27 08:11:39 by stolfi */
+/* Last edited on 2024-11-07 15:12:59 by stolfi */
 
 #ifndef gauss_elim_H
 #define gauss_elim_H
@@ -122,27 +122,50 @@ int32_t gsel_extract_solution(int32_t m, int32_t n, double M[], int32_t p, doubl
 
 /* PRINTOUT */
 
-void gsel_print_array(FILE *wr, char *fmt, char *head, int32_t m, int32_t n, double M[], char *foot);
+void gsel_print_array
+  ( FILE *wr,
+    int32_t indent,
+    char *fmt,
+    char *head,
+    int32_t m,
+    int32_t n,
+    char *Mname,
+    double M[],
+    char *foot
+  );
   /* Writes to {wr} the array {M}, in a human-readable format. Each
-    element is printed with format {fmt}. The strings {head} and
-    {foot}, if not NULL, are printed on separate lines before and
-    after the array. */
+    element is printed with format {fmt}. The strings {head} and {foot},
+    if not NULL, are printed on separate lines before and after the
+    array. The {Mname}, if not {NULL}, is printed to the left of the
+    middle row. Everything is indented by {indent} spaces. */
 
 void gsel_print_system
   ( FILE *wr, 
+    int32_t indent,
     char *fmt, 
     char *head, 
     int32_t m, 
     int32_t n, 
+    char *Aname,
     double A[], 
-    int32_t p, 
+    int32_t p,
+    char *Bname,
     double B[], 
+    int32_t q,
+    char *Cname,
+    double C[], 
     char *foot
   );
-  /* Writes to {wr} the coefficient matrix {A} and the right-hand-side
-    matrix {B} of the linear equation system {A X = B}, in a
-    human-readable format. Each element is printed with format {fmt}.
-    The strings {head} and {foot}, if not NULL, are printed on
-    separate lines before and after the system. */
+  /* Writes to {wr} the matrices {A} ({m×n}), {B} ({m×p}), and {C}
+    ({m×q}) and the right-hand-side side by side, in a human-readable
+    format. Each array element is printed with format {fmt}. The strings
+    {head} and {foot}, if not NULL, are printed on separate lines before
+    and after the system. The strings {Aname}, {Bname}, and {Cname} if
+    not {NULL}, are assumed to be the names of the matrices,} and
+    printed to the left of the respective middle rows.  
+    
+    If a matri is {NULL}, it is omitted. If a matrix has zero columns,
+    it is printed as brackets only, with no elements. Everything is
+    indented by {indent} spaces. */
 
 #endif

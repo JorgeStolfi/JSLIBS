@@ -1,5 +1,5 @@
 /* test_polygauss --- test of {sve_minn.h} for flat-topped sum of gaussians */
-/* Last edited on 2024-01-11 07:34:02 by stolfi */
+/* Last edited on 2024-11-08 09:52:39 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -327,11 +327,16 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
     double rMin = 1.0e-8;
     double rMax = 1.0/np;
     double rIni = 0.1/np;
-    double stop = 0.1*rMin;
+    double minStep = 0.1*rMin;
     sign_t dir = -1;
     int32_t maxIters = 300;
     
-    sve_minn_iterate(nv, &F, &OK, v, &Fv, dir, ctr, dMax, dBox, rIni, rMin, rMax, stop, maxIters, debug);
+    sve_minn_iterate
+      ( nv, &F, &OK, NULL, 
+        v, &Fv, 
+        dir, ctr, dMax, dBox, rIni, rMin, rMax, 
+        minStep, maxIters, debug
+      );
     
     /* Print the optimum solution, packed: */
     tpg_print_packed_parms("fin", nv, v);

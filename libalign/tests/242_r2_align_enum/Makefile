@@ -1,6 +1,6 @@
-# Last edited on 2022-02-28 11:53:01 by stolfi
+# Last edited on 2024-11-08 11:22:49 by stolfi
 
-PROG = r2_align_enum_test
+PROG = test_r2_align_enum
 
 TEST_LIB := libalign.a
 TEST_LIB_DIR := ../..

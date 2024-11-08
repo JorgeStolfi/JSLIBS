@@ -1,5 +1,5 @@
 /* See {minn_quad.h}. */
-/* Last edited on 2024-01-11 06:30:11 by stolfi */
+/* Last edited on 2024-11-08 09:54:05 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -18,6 +18,8 @@
 
 #include <minn_quad.h>
 
+/* !!! Add {OK} and {Proj} parameters. !!! */
+
 void minn_quad
   ( int32_t n,        /* Dimension of search space. */
     minn_goal_t *F,   /* Function to be minimized. */
@@ -27,7 +29,7 @@ void minn_quad
     double *Fval_P    /* (OUT) Goal function value at the minimum. */
   )
   {
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
     if (debug) { fprintf(stderr, ">> enter %s >>\n", __FUNCTION__); }
 
     demand(tol > 0, "invalid {tol}");
@@ -46,12 +48,11 @@ void minn_quad
         double rIni = 0.5;         /* Initial probe simplex radius. */
         double rMin = tol;         /* Minimum probe simplex radius. */
         double rMax = 0.70*dMax;   /* Maximum probe simplex radius. */
-        double stop = 0.25*tol;    /* Stop when {x} moves less than this. */
+        double minStep = 0.25*tol; /* Stop when {x} moves less than this. */
         sve_minn_iterate
-          ( n, 
-            F, NULL, 
-            v, &Fv,
-            dir, ctr, dMax, box, rIni, rMin, rMax, stop,
+          ( n, F, NULL, NULL,
+            v, &Fv, dir,
+            ctr, dMax, box, rIni, rMin, rMax, minStep,
             maxIters,
             debug
           );

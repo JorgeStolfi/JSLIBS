@@ -1,4 +1,4 @@
-# Last edited on 2022-10-19 17:21:44 by stolfi
+# Last edited on 2024-11-06 10:27:01 by stolfi
 
 PROG = test_aff_extract
 
@@ -42,7 +42,7 @@ JS_LIBS := \
   libjs.a 
   
 OTHER_LIBS := \
-  /usr/lib/libnetpbm.so.10 \
+  /usr/lib/x86_64-linux-gnu/libnetpbm.so \
   /usr/lib/x86_64-linux-gnu/libjpeg.so \
   /usr/lib/x86_64-linux-gnu/libpng16.so \
   /usr/lib/x86_64-linux-gnu/libz.so

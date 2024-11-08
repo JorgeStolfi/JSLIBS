@@ -1,5 +1,5 @@
 /* See {multifok_scene_raytrace.h}. */
-/* Last edited on 2024-10-25 07:16:12 by stolfi */
+/* Last edited on 2024-10-29 19:03:04 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -17,19 +17,13 @@
 #include <r2.h>
 #include <frgb_ops.h>
 #include <jsrandom.h>
+#include <jsqroots.h>
 
 #include <multifok_scene.h>
 #include <multifok_scene_raytrace.h>
+#include <multifok_scene_object_raytrace.h>
+#include <multifok_scene_object_normal.h>
 #include <multifok_scene_tree.h>
-
-#define ot_FLAT multifok_scene_object_type_FLAT
-#define ot_RAMP multifok_scene_object_type_RAMP
-#define ot_DISK multifok_scene_object_type_DISK
-#define ot_BALL multifok_scene_object_type_BALL
- 
-#define ZMIN multifok_scene_ZMIN
-#define ZMAX multifok_scene_ZMAX
-  /* Shorter name. */
 
 #define FUDGE (1.0e-6)
   /* Fudge amount to expand bounding boxes to account for roundoff. */
@@ -47,49 +41,7 @@ double multifok_scene_raytrace_tree
   /* Same as {multifok_scene_raytrace} but for a subtree {tr} of the whole
     scene tree, at depth {level}, with the ray clipped to the parameter
     range {[tMin _ tMax]}. */
-
-double multifok_scene_raytrace_object
-  ( multifok_scene_object_t *obj,
-    r3_t *p,
-    r3_t *d,
-    double tMin,
-    double tMax,
-    bool_t verbose
-  );
-  /* Checks whether the ray {R} defined by point {p} and unit direction vector {d}
-    intersects the upper surface of the object {obj} at 
-    a parameter value {tHit} in the range {[tMin _ tMax]}. If it does,
-    returns {tHit}, otherwise returns {+INF}. */
-
-void multifok_scene_raytrace_get_ray_bbox
-  ( r3_t *p,
-    r3_t *d,
-    double tMin,
-    double tMax,
-    interval_t bbox[]
-  );
-  /* Sets {bbox[0..2]} to the bounding box of the part of the ray
-    with parameter value in the range {[tMin _ tMax]}. */
-    
-/* TRACING SPECIFI OBJECTS */
-    
-double multifok_scene_raytrace_FLAT(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose);   
-  /* Like {multifok_scene_raytrace_object}, but specialized 
-    for a {FLAT} floor object. Returns the ray's {t} parameter 
-    if hit, {+INF} otherwise. */
-      
-double multifok_scene_raytrace_RAMP(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose);   
-  /* Like {multifok_scene_raytrace_object}, but specialized for a {RAMP}
-    object. Returns the ray's {t} parameter if hit, {+INF} otherwise. */
-      
-double multifok_scene_raytrace_DISK(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose);   
-  /* Like {multifok_scene_raytrace_object}, but specialized for a {DISK}
-    object. Returns the ray's {t} parameter if hit, {+INF} otherwise. */
-      
-double multifok_scene_raytrace_BALL(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose);   
-  /* Like {multifok_scene_raytrace_object}, but specialized for a {BALL} 
-    object. Returns the ray's {t} parameter if hit, {+INF} otherwise. */
-
+ 
 void multifok_scene_raytrace
   ( multifok_scene_t *scene,
     multifok_scene_tree_t *tree,
@@ -107,10 +59,13 @@ void multifok_scene_raytrace
       
     demand(d->c[2] < 0, "invalid direction vector");
     demand(p->c[2] >= 0, "invalid focus plane {Z}");
+    
+    double zMin = scene->dom[2].end[0];
+    double zMax = scene->dom[2].end[1];
    
-    /* Assumes that the {Z} of the scene's visible surface is in {[ZMIN _ ZMAX]}: */
-    double tMin = (ZMAX + 2*FUDGE - p->c[2])/d->c[2];
-    double tMax = (ZMIN + 2*FUDGE - p->c[2])/d->c[2]; 
+    /* Assumes that the {Z} of the scene's visible surface is in {[zMin _ zMax]}: */
+    double tMin = (zMax + 2*FUDGE - p->c[2])/d->c[2];  /* Note: {tMin} is at {zMax}. */
+    double tMax = (zMin + 2*FUDGE - p->c[2])/d->c[2];  /* Note: {tMax} is at {zMin}. */
     assert(tMin < tMax);
     int32_t level = 0;
     double tHit = multifok_scene_raytrace_tree(tree, p, d, tMin, tMax, verbose, level, oHit_P);
@@ -141,7 +96,7 @@ double multifok_scene_raytrace_tree
     double tHit = +INF;
     
     if (tr != NULL)
-      { if (verbose) { fprintf(stderr, "    %*sray tMin = %12.8f tMax = %12.8f\n", 2*level, "", tMin, tMax); }
+      { if (verbose) { fprintf(stderr, "      %*stracing tree with ray tMin = %12.8f tMax = %12.8f\n", 2*level, "", tMin, tMax); }
         assert(tMin <= tMax);
         /* Get the ray's bounding box {ray_bbox[0..2]}: */
         interval_t ray_bbox[3];
@@ -153,12 +108,17 @@ double multifok_scene_raytrace_tree
           { if (ray_bbox[j].end[1] < tr->bbox[j].end[0]) { ok = FALSE; }
             if (ray_bbox[j].end[0] > tr->bbox[j].end[1]) { ok = FALSE; }
           }
-        if (ok)
+        if (! ok)
+          { if (verbose){ fprintf(stderr, "        %*smissed bounding box\n", 2*level, ""); } }
+        else
           { /* Bounding boxes intersect, we have a chance. */
             /* Ray-trace the root object: */
             multifok_scene_object_t *oRoot = tr->obj;
-            if (verbose) { fprintf(stderr, "        %*strying root obj %d\n", 2*level, "", oRoot->ID); }
-            double tHit_root = multifok_scene_raytrace_object(oRoot, p, d, tMin, tMax, verbose);
+            if (verbose) 
+              { char *typeX = multifok_scene_object_type_to_string(oRoot->type);
+                fprintf(stderr, "        %*strying root obj %d type %s\n", 2*level, "", oRoot->ID, typeX);
+              }
+            double tHit_root = multifok_scene_object_raytrace(oRoot, p, d, tMin, tMax, verbose);
             if (tHit_root != +INF)
               { /* Root object hit replaces previous hit: */
                 assert((tHit_root >= tMin) && (tHit_root <= tMax));
@@ -193,21 +153,23 @@ double multifok_scene_raytrace_tree
 
             for (int32_t kc = 0; kc < 2; kc++) 
               { /* Ray-trace {sub[ic]} */
-                if (verbose) { fprintf(stderr, "        %*strying subtree %d\n", 2*level, "", ic); }
-                multifok_scene_object_t *oHit_sub;
-                double tHit_sub = multifok_scene_raytrace_tree(tr->sub[ic], p, d, tMin, tMax, verbose, level+1, &oHit_sub);
-                if (tHit_sub != +INF)
-                  { /* We got a hit: */
-                    assert((tHit_sub >= tMin) && (tHit_sub <= tMax));
-                    assert(oHit_sub != NULL);
-                    if (verbose) 
-                      { fprintf(stderr, "        %*sgot hit with subtree %d obj %d at t = %12.8f tMax = %12.8f\n", 2*level, "", ic, oHit_sub->ID, tHit_sub, tMax); }
-                    oHit = oHit_sub;
-                    tHit = tHit_sub;
-                    tMax = tHit_sub;
-                  }
-                else
-                  { if (verbose) { fprintf(stderr, "        %*smissed hit with subtree %d\n", 2*level, "", ic); } 
+                if (tr->sub[ic] != NULL)
+                  { if (verbose) { fprintf(stderr, "        %*strying subtree %d\n", 2*level, "", ic); }
+                    multifok_scene_object_t *oHit_sub;
+                    double tHit_sub = multifok_scene_raytrace_tree(tr->sub[ic], p, d, tMin, tMax, verbose, level+1, &oHit_sub);
+                    if (tHit_sub != +INF)
+                      { /* We got a hit: */
+                        assert((tHit_sub >= tMin) && (tHit_sub <= tMax));
+                        assert(oHit_sub != NULL);
+                        if (verbose) 
+                          { fprintf(stderr, "        %*sgot hit with subtree %d obj %d at t = %12.8f tMax = %12.8f\n", 2*level, "", ic, oHit_sub->ID, tHit_sub, tMax); }
+                        oHit = oHit_sub;
+                        tHit = tHit_sub;
+                        tMax = tHit_sub;
+                      }
+                    else
+                      { if (verbose) { fprintf(stderr, "        %*smissed hit with subtree %d\n", 2*level, "", ic); } 
+                      }
                   }
                 /* Try the other subtree: */
                 ic = 1 - ic;
@@ -241,183 +203,6 @@ void multifok_scene_raytrace_get_ray_bbox
       }
   }
 
-double multifok_scene_raytrace_object
-  ( multifok_scene_object_t *obj,
-    r3_t *p,
-    r3_t *d,
-    double tMin,
-    double tMax,
-    bool_t verbose
-  )
-  { 
-    /* Get the ray's bounding box */
-    interval_t ray_bbox[3];
-    multifok_scene_raytrace_get_ray_bbox(p, d, tMin, tMax, ray_bbox);
-    
-    /* Check bbox intersection: */
-    for (int32_t j = 0; j < 3; j++)
-      { if (ray_bbox[j].end[1] < obj->bbox[j].end[0]) { return +INF; }
-        if (ray_bbox[j].end[0] > obj->bbox[j].end[1]) { return +INF; }
-      }
-    /* Bounding boxes intersect.  Try th eobject itself: */
-    double tHit = +INF;
-    switch(obj->type)
-      { case ot_FLAT: 
-          tHit = multifok_scene_raytrace_FLAT(obj->bbox, p, d, verbose); break;
-        case ot_RAMP:
-          tHit = multifok_scene_raytrace_RAMP(obj->bbox, p, d, verbose); break;
-        case ot_DISK:
-          tHit = multifok_scene_raytrace_DISK(obj->bbox, p, d, verbose); break;
-        case ot_BALL:
-          tHit = multifok_scene_raytrace_BALL(obj->bbox, p, d, verbose); break;
-        default: demand(FALSE, "unrecogneized object type");
-      }
-    /* If we still have a hit, check its {Z} against {zMIn}: */
-    if (isfinite(tHit)) 
-      { /* Ray hits object, but maybe below {zMin}: */
-        char *typeX = multifok_scene_object_type_to_string(obj->type);
-        if (verbose) { fprintf(stderr, "    hit %s object %d at t = %+12.8f", typeX, obj->ID, tHit); } 
-        if (tHit < tMin)
-          { /* Must be rounding error? */
-            if (verbose) { fprintf(stderr, " (!! clipped, tMin = %12.8f)\n", tMin); }
-            tHit = tMin;
-          }
-        else if (tHit > tMax)
-          { if (verbose) { fprintf(stderr, " (rejected, tMax = %12.8f)\n", tMax); }
-            tHit = +INF;
-          }
-        else
-          { if (verbose) { fprintf(stderr, " (accepted)\n"); }
-          }
-      }
-    return tHit;
-  }
-
-double multifok_scene_raytrace_DISK(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose)
-  { double pX = p->c[0], pY = p->c[1], pZ = p->c[2];
-    double dX = d->c[0], dY = d->c[1], dZ = d->c[2];
-    demand(dZ < 0.0, "invalid direction vector");
-    
-    r3_t ctr = multifok_scene_box_center(bbox);
-    double cX = ctr.c[0], cY = ctr.c[1], cZ = ctr.c[2];
-    r3_t rad = multifok_scene_box_radius(bbox);
-    double r_obj = fmin(rad.c[0], rad.c[1]);
-
-    /* Compute the parameter {tHit} where {ray(tHit)} hits the disk's plane: */
-    double tHit = (cZ - pZ)/dZ; 
-    /* Compute horizontal displacement {sX,sY} from object's center to {ray(tHit)}: */ 
-    double sX = pX + dX*tHit - cX; /* {X} position of ray hit rel to object ctr */
-    double sY = pY + dY*tHit - cY; /* {Y} position of ray hit rel to object ctr */
-    /* Check if ray hits object: */
-    double r2_ray = sX*sX + sY*sY;
-    if (r2_ray <= r_obj*r_obj)
-      { return tHit; }
-    else
-      { return +INF; }
-  }
-        
-double multifok_scene_raytrace_BALL(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose)
-  { double pX = p->c[0], pY = p->c[1], pZ = p->c[2];
-    double dX = d->c[0], dY = d->c[1], dZ = d->c[2];
-    demand(dZ < 0.0, "invalid direction vector");
-    r3_t ctr = multifok_scene_box_center(bbox);
-    r3_t rad = multifok_scene_box_radius(bbox);
-    double cX = ctr.c[0], cY = ctr.c[1], cZ = ctr.c[2];
-    double r_obj = fmin(fmin(rad.c[0], rad.c[1]), rad.c[2]);
-
-    /* Form the coefficients {A*t^2 + B*t + C} of */
-    /* {d2_obj(t) = sX(t)^2 + sY(t)^2 + sZ(t)^2 - r2_obj} as function of {t}: */
-
-    double LX = pX - cX;
-    double LY = pY - cY;
-    double LZ = pZ - cZ;
-
-    /* sX(t) = pX + dX*t - cX  = LX + t*dX; */
-    /* sY(t) = pY + dY*t - cY  = LY + t*dY; */
-    /* sZ(t) = pZ + dZ*t - cZ  = LZ + t*dZ;    */
-
-    double A = dX*dX + dY*dY + dZ*dZ;
-    double B = 2*(LX*dX + LY*dY + LZ*dZ);
-    double C = LX*LX + LY*LY + LZ*LZ - r_obj*r_obj;
-    assert(A > 1.0e-12);
-
-    double Delta = B*B - 4*A*C;
-    if (Delta > 0) 
-      { return (sqrt(Delta) - B)/(2*A); }
-    else
-      { return +INF; }
-  }
-        
-double multifok_scene_raytrace_FLAT(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose)
-  { 
-    /* Get the ray parameters: */
-    double pX = p->c[0], pY = p->c[1], pZ = p->c[2];
-    double dX = d->c[0], dY = d->c[1], dZ = d->c[2];
-    demand(dZ < 0, "invalid ray direction");
-
-    /* Get the {Z} of the plane:: */
-    double zObj = interval_mid(&(bbox[2])); /* {Z} of object. */
-
-    /* Dertermine the ray time and coordinates of hit point: */
-    double tHit = (zObj - pZ)/dZ;
-    
-    /* Check if hit inside the {XY} bounding box: */
-    double xHit = pX + dX*tHit;
-    if ((xHit < bbox[0].end[0]) || (xHit > bbox[0].end[1])) { return +INF; }
-    double yHit = pY + dY*tHit;
-    if ((yHit < bbox[1].end[0]) || (xHit > bbox[1].end[1])) { return +INF; }
-    return tHit;
-  }
-
-double multifok_scene_raytrace_RAMP(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose)
-  { 
-    /* Get the ray parameters: */
-    double pX = p->c[0], pY = p->c[1], pZ = p->c[2];
-    double dX = d->c[0], dY = d->c[1], dZ = d->c[2];
-    demand(dZ < 0, "invalid ray direction");
-
-    /* Grab the {X} and {Z} ranges of the plane strip: */
-    double bXlo = (2*bbox[0].end[0] + bbox[0].end[1])/3;
-    double bXhi = (bbox[0].end[1] + 2*bbox[0].end[1])/3;
-    double bZlo = bbox[2].end[0] + FUDGE; /* In case of roundoff errors. */
-    double bZhi = bbox[2].end[1] - FUDGE; /* In case of roundoff errors. */
-
-    /* Determine the equation {A*X + B*Z + C = 0} of the tilted */
-    /* strip's plane, which goes through {(bXlo,0,bZlo)} and {(bXhi,0,bZhi)}: */
-    double A = -(bZhi - bZlo);
-    double B = +(bXhi - bXlo);
-    double C = -(A*bXlo + B*bZlo);
-    /* Substitute the ray's {X(t)} and {Z(t)} into that equation: */
-    /* Namely, {X(t) = pX + dX*t}, {Z(t) = pZ + dZ*t} to get {AR*t + BR = 0}. */
-    double AR = A*dX + B*dZ;
-    double BR = A*pX + B*pZ + C;
-    /* Get {tHit} of strip by solving the equation {AR*t + BR = 0}: */
-    double tHit_ramp;
-    if (fabs(AR) < 1.0e-12)
-      { /* Ray is almost parallel to the strip: */
-        tHit_ramp = +INF;
-      }
-    else
-      { /* Ray is oblique to strip: */
-        tHit_ramp = -BR/AR;
-      }
-
-    /* Get {tHit} of lower and upper flat parts: */
-    double tHit_lo = (bZlo - pZ)/dZ;
-    double tHit_hi = (bZhi - pZ)/dZ;
-    assert(tHit_lo < tHit_hi);
-    
-    /* Select the proper hit: */
-    double tHit = fmax(tHit_hi, fmin(tHit_lo, tHit_ramp));
-    
-    /* Check if hit inside the {XY} bounding box: */
-    double xHit = pX + dX*tHit;
-    if ((xHit < bbox[0].end[0]) || (xHit > bbox[0].end[1])) { return +INF; }
-    double yHit = pY + dY*tHit;
-    if ((yHit < bbox[1].end[0]) || (xHit > bbox[1].end[1])) { return +INF; }
-    return tHit;
-  }
- 
 /* SCENE TO IMAGE COORDINATE MAPPING */
 
 r3_t multifok_scene_coords_to_image_coords
@@ -474,9 +259,13 @@ double multifok_scene_pixel_size(int32_t NX, int32_t NY, interval_t scene_dom[])
 frgb_t multifok_scene_raytrace_compute_hit_color
   ( multifok_scene_object_t *obj,
     r3_t *q,
-    multifok_scene_raytrace_pattern_t *pattern
+    multifok_scene_raytrace_pattern_t *pattern,
+    r3_t *light_dir
   )
-  { if (obj == NULL)
+  { 
+    bool_t debug = FALSE;
+    
+    if (obj == NULL)
       { return (frgb_t){{ 0.500, 0.500, 0.500 }}; }
     else
       { interval_t *bbox = obj->bbox; 
@@ -496,6 +285,15 @@ frgb_t multifok_scene_raytrace_compute_hit_color
         double r = pattern(u.c[0],u.c[1],u.c[1]);
         /* Use it to mix the object's {fg} and {bg} colors: */
         frgb_t clr = frgb_mix((1-r), &(obj->bg), r, &(obj->fg));
+        if (light_dir != NULL)
+          { /* Apply shading: */
+            r3_t onorm = multifok_scene_object_normal(obj, q, debug);
+            double dot = r3_dot(&onorm, light_dir);
+            double ambient = 0.40;
+            double diffuse  = (dot <= 0 ? 0.0 : (1-ambient)*dot);
+            double shade = ambient + diffuse;
+            for (int32_t j = 0; j < 3; j++){ clr.c[j] = (float)(shade*clr.c[j]); }
+          }
         return clr;
       }
   }

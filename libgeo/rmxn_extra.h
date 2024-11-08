@@ -1,5 +1,5 @@
 /* rmxn_extra.h --- additional operation on MxN matrices */
-/* Last edited on 2023-03-27 15:56:32 by stolfi */
+/* Last edited on 2024-11-07 22:36:23 by stolfi */
 
 #ifndef rmxn_extra_H
 #define rmxn_extra_H
@@ -8,18 +8,18 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include <rn.h>
-#include <rmxn.h>
+void rmxn_throw(int32_t m, int32_t n, double M[]);
+  /* Fills {M} with random numbers in the interval {[-1 _ +1]}. */
 
-void rmxn_perturb_unif(int32_t m, int32_t n, double mag, double M[]);
+void rmxn_perturb_unif(int32_t m, int32_t n, double pabs, double prel, double M[]);
   /* Adds an independent random perturbation of with uniform distribution 
-    in {[-mag _ +mag]} to each element of {M}, which is assumed to
-    have {m} rows and {n} columns. */ 
+    in {[-mag _ +mag]} to each element {M[i][j]} of {M}, where {mag} is {pabs + prel*fabs(M[i][j])}.
+    The matrix {M} is assumed to have {m*n} elements. */ 
 
 void rmxn_throw_ortho(int32_t n, double M[]);
   /* Stores in {M} a random positive orthonormal {n×n} matrix. 
     Its rows and columns are pairwise orthogonal and with length 1, and ditto
-    for its columns; and its determinant is {+1}.  Assumes {M} has {N^2} elements. */
+    for its columns; and its determinant is {+1}.  Assumes {M} has {n^2} elements. */
 
 void rmxn_throw_ortho_complement(int32_t n, int32_t p, double A[], int32_t q, double M[]);
   /* Assumes that {A} is a {p} by {n} matrix and {M} is a {q} by {n} matrix, 

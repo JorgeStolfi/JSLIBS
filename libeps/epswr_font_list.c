@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2022-10-20 06:51:37 by stolfi */
+/* Last edited on 2024-11-04 06:45:49 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -45,7 +45,7 @@ void epswr_font_list_add(const char *font, int32_t *nFontsP, char ***fontsP)
         affirm(fonts != NULL, "out of mem"); 
       }
     /* Store a copy of the name: */
-    fonts[nFonts] = txtcat(font, "");
+    fonts[nFonts] = txtcat((char*)font, "");
     nFonts++;
     /* Update caller's variables: */
     (*nFontsP) = nFonts;

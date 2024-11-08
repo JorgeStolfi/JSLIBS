@@ -1,6 +1,6 @@
-# Last edited on 2008-01-14 23:23:01 by stolfi
+# Last edited on 2024-11-08 12:42:53 by stolfi
 
-PROG = r2test
+PROG = test_r2
  
 TEST_LIB := libgeo.a
 TEST_LIB_DIR := ../..

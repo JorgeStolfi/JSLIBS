@@ -2,12 +2,13 @@
 #define lsq_H
 
 /* Fits a linear map of {R^nx} to {R^nf} by least squares, given sampling proc. */
-/* Last edited on 2023-01-24 10:18:38 by stolfi */
+/* Last edited on 2024-11-07 16:19:44 by stolfi */
 
 #define lsq_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
 
 #include <stdint.h>
+#include <stdio.h>
 #include <bool.h>
 
 typedef void lsq_gen_data_point_t
@@ -115,24 +116,53 @@ int32_t lsq_solve_system
     double L[], 
     bool_t verbose
   );
-  /* Computes the solution matrix {U} ({nx × nf}) of the least squares problem with moment matrix {A}
-    ({nx × nx}) and right-hand side {B} ({nx × nf}).  
+  /* Computes the solution matrix {U} ({nx × nf}) of the least squares
+    problem with moment matrix {A} ({nx × nx}) and right-hand side {B}
+    ({nx × nf}).
     
-    If {nc > 0}, assumes that each colums of the solution is constrained by {nc} affine (first-degree)
-    equations.  In that case, the constraints are supposed to be {R * U = S}, where
-    {R} must be an {nc × nx} matrix and {S} an {nc × nf} matrix. In that  case,
-    it returns into matrix {L} ({nc × nf}) the Lagrange multipliers associated with the
-    constraints.
+    If {nc > 0}, assumes that each colum of the solution is constrained
+    by {nc} affine (first-degree) equations. In that case, the
+    constraints are supposed to be {R * U = S}, where {R} must be an {nc
+    × nx} matrix and {S} an {nc × nf} matrix. In that case, it returns
+    into matrix {L} ({nc × nf}) the Lagrange multipliers associated with
+    the constraints.
     
-    If {nc} is zero, the parameters {R}, {S}, and {L} are ignored, and may be {NULL}.
-    In that case, the procedure simply solves the system {A * U = B} for {U}. 
+    If {nc} is zero, the parameters {R}, {S}, and {L} are ignored, and
+    may be {NULL}. In that case, the procedure simply solves the system
+    {A * U = B} for {U}.
     
-    The procedure returns the apparent rank of the systems, that is, the number
-    of linearly independent rows in {A} and {R}. */
+    The procedure returns the apparent rank of the systems, that is, the
+    number of linearly independent rows in {A} and {R}. */
  
 void lsq_debug_double_vec(int32_t nx, double x[], char *fmt);
 void lsq_debug_int32_vec(int32_t nx, int32_t x[], char *fmt);
   /* These procedures print {x[0..nx-1]} to {stderr}, each with format {fmt},
     separated by spaces and bracketed by '[' and ']'. */
 
+void lsq_print_problem
+  ( FILE *wr,
+    int32_t indent,
+    char *fmt,
+    char *title, 
+    int32_t nx,
+    int32_t nc,
+    int32_t nf,
+    double A[],
+    double B[],
+    double R[],
+    double S[],
+    char *Uname,
+    double U[],
+    char *Lname,
+    double L[]
+  );
+  /* Prints the matrices of the full constained least squares system
+    {A*U + R1*L = B}, {R*U = S} to {wr}. Each element is printed with
+    the format {fmt}. 
+    
+    Matrices that are {NULL} are omitted. If {nc} is zero, omits the
+    {R,S,L} matrices. The {Uname} and {Lname} are the names to be shown
+    for {U} and {L}, respectively; the other names are "A", "B", etc..
+    Everything is indented bt {indent} columns. */
+  
 #endif

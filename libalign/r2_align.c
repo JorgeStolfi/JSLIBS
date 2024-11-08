@@ -1,5 +1,5 @@
 /* See {r2_align.h}. */
-/* Last edited on 2024-09-03 17:41:59 by stolfi */
+/* Last edited on 2024-11-08 00:03:29 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -77,7 +77,7 @@ void r2_align_compute_search_ellipsoid
     double urad[]
   )
   { 
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
     bool_t verbose_norm = TRUE;
     
     if (debug) { fprintf(stderr, "--> entering %s\n", __FUNCTION__); }
@@ -239,7 +239,7 @@ void r2_align_plot_mismatch_lines
     r2_align_mismatch_t *F2
   )
   { 
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
     auto int32_t num_points(int32_t k, r2_t *uk, double uradk);
       /* Chooses the unit displacement {*ukP} and the number of steps {*nkP}
         for plot axis {k} in {0..1}. */

@@ -1,5 +1,5 @@
 /* argparser_geo.h -- extends argparser.h for geometric args. */
-/* Last edited on 2024-09-17 16:28:40 by stolfi */
+/* Last edited on 2024-10-31 09:25:01 by stolfi */
 
 #ifndef argparser_geo_H
 #define argparser_geo_H
@@ -49,7 +49,7 @@ void argparser_get_next_adjust(argparser_t *pp, double *adjP, double min, double
 /* ---------------------------------------------------------------------- */
 /* PROJECTIVE MAP TYPE */
 
-hr2_pmap_type_t argparser_get_next_map_type(argparser_t *pp);
+hr2_pmap_type_t argparser_get_next_hr2_pmap_type(argparser_t *pp);
   /* Parses the next argument as a {hr2_pmap_type_t} value.
     It should be a string in all-uppercase or all lowercase:
     "IDENTITY" or "identity" for {hr2_pmap_type_IDENTITY},
@@ -83,20 +83,20 @@ hr2_pmap_t argparser_get_next_proj_map_from_points(argparser_t *pp);
     {argparser_proj_map_from_points_INFO}. */
     
 #define argparser_proj_map_from_points_HELP \
-  "        {X_IN[1]} {Y_IN[1]} \\\n" \
-  "        {X_IN[2]} {Y_IN[2]} \\\n" \
-  "        {X_IN[3]} {Y_IN[3]} \\\n" \
-  "        {X_IN[4]} {Y_IN[4]} \\\n" \
+  "        {XIn[1]} {YIn[1]} \\\n" \
+  "        {XIn[2]} {YIn[2]} \\\n" \
+  "        {XIn[3]} {YIn[3]} \\\n" \
+  "        {XIn[4]} {YIn[4]} \\\n" \
   "        \\\n" \
-  "        {X_OUT[1]} {Y_OUT[1]} \\\n" \
-  "        {X_OUT[2]} {Y_OUT[2]} \\\n" \
-  "        {X_OUT[3]} {Y_OUT[3]} \\\n" \
-  "        {X_OUT[4]} {Y_OUT[4]}"
+  "        {XOut[1]} {YOut[1]} \\\n" \
+  "        {XOut[2]} {YOut[2]} \\\n" \
+  "        {XOut[3]} {YOut[3]} \\\n" \
+  "        {XOut[4]} {YOut[4]}"
   
 #define argparser_proj_map_from_points_INFO \
   "states that the projective transformation must" \
-  " take each point {(X_IN[i],Y_IN[i])} of the input image to" \
-  " the corresponding point {(X_OUT[i],Y_OUT[i])} of the output" \
+  " take each point {(XIn[i],YIn[i])} of the input image to" \
+  " the corresponding point {(XOut[i],YOut[i])} of the output" \
   " image.  No three of the input-side points may be collinear," \
   " and ditto for the output-side points.  The input and output" \
   " coordinates are relative to the user input and output coordinate" \

@@ -2,7 +2,7 @@
 #define minn_plot_H
 
 /* Plots a minimizer's goal function in a 1D or 2D subspace of its domain. */
-/* Last edited on 2023-03-27 17:41:38 by stolfi */
+/* Last edited on 2024-11-03 21:33:13 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -15,25 +15,24 @@
    
 void minn_plot_1D_gnuplot
   ( FILE *wr, 
-    int32_t n, 
+    int32_t nx, 
     double org[], 
+    double u[],
     double rad,
     double step, 
     minn_goal_t *F
   );
-  /* Writes to {wr} the values {F(n,org+e*u)} for various directions
-    {u} in {\RR^{n}} and for an odd number of values of {e}
-    spanning {[-rad _ +rad]} with the given {step}.
+  /* Takes a point {org[0..nx-1]} of {\RR^{nx}} and a unit direction
+    vector {u[0..nx-1]} in {\RR^{nx}}. Writes to {wr} the values
+    {F(nx,org+e*u)} for and odd number of values of {e} spanning {[-rad
+    _ +rad]} with the given {step}.
     
-    The dimension {n} must be at least 1. If {org} is {NULL}, assumes
-    the origin {(0,..0)}.
-    
-    The directions {u} will include the cardinal directions and some
-    random diagonal ones. */
+    The dimension {nx} must be at least 1. If {org} is {NULL}, assumes
+    the origin {(0,..0)}. */
 
 void minn_plot_2D_gnuplot
   ( FILE *wr, 
-    int32_t n, 
+    int32_t nx, 
     double org[], 
     double u0[],
     double rad0,
@@ -44,11 +43,11 @@ void minn_plot_2D_gnuplot
     minn_goal_t *F
   );
   /* Writes to file {wr} a data for a 3D plot of {F}, over a
-    two-dimensional plot domain {\RD} of {\RR^n} defined by the major
-    directions {u0,u1} (unit {n}-vectors) and the respective radii
+    two-dimensional plot domain {\RD} of {\RR^nx} defined by the major
+    directions {u0,u1} (unit {nx}-vectors) and the respective radii
     {rad0,rad1}.
     
-    The dimension {n} must be at least 2, and the directions {u0,u1}
+    The dimension {nx} must be at least 2, and the directions {u0,u1}
     should be orthogonal. The domain {\RD} consisting points of the form
     {org + s0*rad0*u0 + s1*rad1*u1} for various values {s0,s1}. If {org}
     is {NULL}, assumes it is the origin {(0,..0)}.
@@ -66,10 +65,10 @@ void minn_plot_2D_gnuplot
     {(e0*u0,e1*u1)} of that grid that lies inside the plot domain {\RD},
     it computes the corresponding vector {v = org + e0*u0 + e1*u0} and
     writes to {wr} a line with {e0}, {e1}, and the goal function
-    {F(n,v)}.*/
+    {F(nx,v)}.*/
  
 float_image_t *minn_plot_2D_float_image
-  ( int32_t n, 
+  ( int32_t nx, 
     double org[], 
     double u0[],
     double rad0,

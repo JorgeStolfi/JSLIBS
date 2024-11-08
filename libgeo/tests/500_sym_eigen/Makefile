@@ -1,6 +1,6 @@
-# Last edited on 2023-02-15 12:41:49 by stolfi
+# Last edited on 2024-11-06 04:32:32 by stolfi
 
-.PHONY:: diffs
+.PHONY:: diffs f-out c-out
 
 all: check 
 
@@ -13,13 +13,16 @@ C_OUTPUT := out/testc.txt
 F_OUTPUT := out/testf.txt
 
 diffs: c/${C_OUTPUT} f/${F_OUTPUT}
-	diff -b f/${F_OUTPUT} c/${C_OUTPUT} \
-          | prettify-diff-output
+	prdiff -bB f/${F_OUTPUT} c/${C_OUTPUT}
 
-f/${F_OUTPUT}: 
+f/${F_OUTPUT}: f-out
+
+f-out:
 	cd f && make ${F_OUTPUT}
 
-c/${C_OUTPUT}: 
+c/${C_OUTPUT}: c-out
+
+c-out:
 	cd c && make ${C_OUTPUT}
 
 clean:: 

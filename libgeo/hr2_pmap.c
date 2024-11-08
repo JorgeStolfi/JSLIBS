@@ -1,5 +1,5 @@
 /* See hr2_pmap.h */
-/* Last edited on 2024-09-17 16:24:20 by stolfi */ 
+/* Last edited on 2024-11-07 23:45:56 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -62,7 +62,7 @@ r2_t hr2_pmap_r2_point(r2_t *p, hr2_pmap_t *M)
     hr2_point_t ph = (hr2_point_t){{{ 1.0, p->c[0], p->c[1] }}};
     hr2_point_t qh;
     r3x3_map_row(&(ph.c), &(M->dir), &(qh.c));
-    r2_t qc; hr2_point_to_r2_nan(&qh, &qc);
+    r2_t qc = r2_from_hr2_nan(&qh);
     return qc;
   }
 
@@ -71,7 +71,7 @@ r2_t hr2_pmap_inv_r2_point(r2_t *p, hr2_pmap_t *M)
     hr2_point_t ph = (hr2_point_t){{{ 1, p->c[0], p->c[1] }}};
     hr2_point_t qh;
     r3x3_map_row(&(ph.c), &(M->inv), &(qh.c));
-    r2_t qc; hr2_point_to_r2_nan(&qh, &qc);
+    r2_t qc = r2_from_hr2_nan(&qh);
     return qc;
   }
 
@@ -197,6 +197,7 @@ hr2_pmap_t hr2_pmap_inv_compose(hr2_pmap_t *M, hr2_pmap_t *N)
 
 hr2_pmap_t hr2_pmap_congruence_from_point_and_dir(r2_t *p, r2_t *u, sign_t sgn)
   { 
+    demand((sgn == -1) || (sgn == +1), "invalid {sgn}");
     /* Normalize {u} to unit length to get the image of the {(1,0)} vector: */
     r2_t du;  
     double mu = r2_dir(u, &du);
@@ -230,6 +231,8 @@ hr2_pmap_t hr2_pmap_congruence_from_point_and_dir(r2_t *p, r2_t *u, sign_t sgn)
 
 hr2_pmap_t hr2_pmap_similarity_from_two_points(r2_t *p, r2_t *q, sign_t sgn)
   {
+    demand((sgn == -1) || (sgn == +1), "invalid {sgn}");
+
     /* Compute the vector {u} that is the image of the {(1,0)} vector: */
     r2_t u; r2_sub(q, p, &u);
 
@@ -424,10 +427,49 @@ double hr2_pmap_mismatch_sqr(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[], do
         r2_t q2k = hr2_pmap_inv_r2_point(p2k, M);
         double D2k_dir = r2_dist_sqr(&q1k, p2k);
         double D2k_inv = r2_dist_sqr(p1k, &q2k);
+            
         sum_wD2 += wk*(D2k_dir + D2k_inv);
         sum_w += wk;
       }
     return 0.5*sum_wD2/sum_w;
+  }
+
+double hr2_pmap_max_mismatch(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[])
+  {
+    /* Compute max distance between paired points mapped  by the initial guess: */
+    double maxDist = 0.0;
+    for (int32_t kp = 0; kp < np; kp++)
+      { r2_t *p1k = &(p1[kp]);
+        r2_t *p2k = &(p2[kp]);
+        r2_t q1 = hr2_pmap_r2_point(p1k, M);
+        double dk12 = r2_dist(&q1, p2k);
+        if (dk12 > maxDist) { maxDist = dk12; }
+        r2_t q2 = hr2_pmap_inv_r2_point(p2k, M);
+        double dk21 = r2_dist(&q2, p1k);
+        if (dk21 > maxDist) { maxDist = dk21; }
+      }
+    return maxDist;
+  }
+
+void hr2_pmap_show_point_mismatch(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[], double w[])
+  { 
+    for (int32_t k = 0; k < np; k++)
+      { r2_t *p1k = &(p1[k]);
+        r2_t *p2k = &(p2[k]);
+        r2_t q1k = hr2_pmap_r2_point(p1k, M);
+        r2_t q2k = hr2_pmap_inv_r2_point(p2k, M);
+        double Dk_dir = r2_dist(&q1k, p2k);
+        double Dk_inv = r2_dist(p1k, &q2k);
+        
+        fprintf(stderr, "        %3d", k);
+        r2_gen_print(stderr, p1k, "%+12.8f", " p1 = ( ", " ", " )");
+        r2_gen_print(stderr, &(q1k), "%+12.8f", " --> ( ", " ", " )");
+        fprintf(stderr, " d = %12.8f\n", Dk_dir);
+        fprintf(stderr, "           ");
+        r2_gen_print(stderr, p2k, "%+12.8f", " p2 = ( ", " ", " )");
+        r2_gen_print(stderr, &(q2k), "%+12.8f", " --> ( ", " ", " )");
+        fprintf(stderr, " d = %12.8f\n", Dk_inv);
+      }
   }
 
 double hr2_pmap_deform_sqr(r2_t ph[], hr2_pmap_t *M)
@@ -719,15 +761,20 @@ char *hr2_pmap_type_to_string(hr2_pmap_type_t type)
     assert(FALSE);
   }
 
+void hr2_pmap_invert_sign(hr2_pmap_t *M)
+  {
+    r3x3_t *Md = &(M->dir), *Mi = &(M->inv);
+    for (int32_t j = 0; j < 3; j++)
+      { double td = Md->c[1][j]; Md->c[1][j] = Md->c[2][j]; Md->c[2][j] = td;
+        double ti = Mi->c[j][1]; Mi->c[j][1] = Mi->c[j][2]; Mi->c[j][2] = ti;
+      }
+  }
 
 void hr2_pmap_set_sign(hr2_pmap_t *M, sign_t sgn)
   { demand((sgn == -1) || (sgn == +1), "invalid {sgn}"); 
     double det = r3x3_det(&(M->dir));
     demand(fabs(det) > 1.0e-250, "invalid map - determinant is zero");
-    if (sgn*det < 0)
-      { hr2_pmap_t S = hr2_pmap_xy_swap();
-        (*M) = hr2_pmap_compose(&S, M);
-      }
+    if (sgn*det < 0) { hr2_pmap_invert_sign(M); }
   }
 
 bool_t hr2_pmap_is_type(hr2_pmap_t *M, hr2_pmap_type_t type, sign_t sgn, double tol)

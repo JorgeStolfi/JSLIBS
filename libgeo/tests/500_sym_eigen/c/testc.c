@@ -1,4 +1,4 @@
-/* Last edited on 2021-06-09 20:41:05 by jstolfi */
+/* Last edited on 2024-11-06 04:41:48 by stolfi */
 /* test of TriRed.c, TriQL.c */
 
 #define _GNU_SOURCE
@@ -37,20 +37,20 @@ int32_t main(int32_t argn, char **argc)
         if (test1)
           { 
             fprintf(stderr, "\n");
-            fprintf(stderr, "=== test %d ===\n\n", it);
+            fprintf(stderr, "=== C test %d ===\n\n", it);
             fprintf(stderr, "\n");
             
             fprintf(stderr, "\n");
             fprintf(stderr, "C - WITHOUT R\n\n");
             fprintf(stderr, "\n");
             filla(n,A,it);
-            fprintf(stderr, "input matrix\n");
+            fprintf(stderr, "C - input matrix\n");
             prta(n,A);
             syei_tridiagonalize(n,A,d,e,NULL);
-            fprintf(stderr, "tridiagonal form\n");
+            fprintf(stderr, "C - tridiagonal form\n");
             prtri(n,d,e);
             syei_trid_eigen(n,d,e,NULL,&p,absrt);
-            fprintf(stderr, "eigenvalues\n");
+            fprintf(stderr, "C - eigenvalues\n");
             preval(n,d,p);
             fprintf(stderr, "\n");
           }
@@ -61,30 +61,30 @@ int32_t main(int32_t argn, char **argc)
             fprintf(stderr, "C - WITH R\n");
             fprintf(stderr, "\n");
             filla(n,A,it);
-            fprintf(stderr, "input matrix\n");
+            fprintf(stderr, "C - input matrix\n");
             prta(n,A);
             syei_tridiagonalize(n,A,d,e,R);
-            fprintf(stderr, "tridiagonal form\n");
+            fprintf(stderr, "C - tridiagonal form\n");
             prtri(n,d,e);
-            fprintf(stderr, "orthogonal transf (tridiagonal)\n");
+            fprintf(stderr, "C - orthogonal transf (tridiagonal)\n");
             prevec(n,R,n);
 
             /* Check whether matrix {R} returns tridiagonal form: */
             filla(n,A,it);
             appsim(n,R,A,v);
-            fprintf(stderr, "transformed matrix (tridiagonal)\n");
+            fprintf(stderr, "C - transformed matrix (tridiagonal)\n");
             prta(n,A);
 
             syei_trid_eigen(n,d,e,R,&p,absrt);
-            fprintf(stderr, "eigenvalues\n");
+            fprintf(stderr, "C - eigenvalues\n");
             preval(n,d,p);
-            fprintf(stderr, "eigenvectors\n");
+            fprintf(stderr, "C - eigenvectors\n");
             prevec(n,R,p);
 
             /* Check whether matrix {R} returns diagonal form: */
             filla(n,A,it);
             appsim(n,R,A,v);
-            fprintf(stderr, "transformed matrix (diagonal)\n");
+            fprintf(stderr, "C - transformed matrix (diagonal)\n");
             prta(n,A);
             fprintf(stderr, "\n");
           }
@@ -103,9 +103,9 @@ void filla(int32_t n, double *A, int32_t it)
           { double Aij;
             if (it == 0)
               { /* Randomish: */
-                s = (i+j-n+1);
+                s = i + j - n + 1;
                 t = (i+1)*(j+1);
-                Aij = 1.0/((fabs(s)+1.0)*sqrt(t));
+                Aij = 0.0001/((fabs(s)+1.0)*sqrt(t));
               }
             else if (it == 1)
               { /* Tridiagonal, with 2x2 blocks: */
@@ -134,7 +134,7 @@ void prta(int32_t n, double *A)
     fprintf(stderr, "\n");
     for (i = 0; i < n; i++) 
       { for (j = 0; j < n; j++) 
-          { fprintf(stderr, "%10.6f", A[n*i+j]); }
+          { fprintf(stderr, "%14.10f", A[n*i+j]); }
         fprintf(stderr, "\n");
       }
     fprintf(stderr, "\n");
@@ -146,10 +146,10 @@ void prtri(int32_t n, double *d, double *e)
   { int32_t i, j;
     fprintf(stderr, "\n");
     for (i = 0; i < n; i++) 
-      { for (j = 0; j < i-1; j++)  { fprintf(stderr, "%8s", ""); }
-        if (i > 0) fprintf(stderr, "%10.6f", e[i]);
-        fprintf(stderr, "%10.6f", d[i]);
-        if (i < n-1) fprintf(stderr, "%10.6f", e[i+1]);
+      { for (j = 0; j < i-1; j++)  { fprintf(stderr, "%14s", ""); }
+        if (i > 0) fprintf(stderr, "%14.10f", e[i]);
+        fprintf(stderr, "%14.10f", d[i]);
+        if (i < n-1) fprintf(stderr, "%14.10f", e[i+1]);
         fprintf(stderr, "\n");
       }
     fprintf(stderr, "\n");
@@ -160,7 +160,7 @@ void preval(int32_t n, double *d, int32_t p)
   { int32_t i;
     fprintf(stderr, "\n");
     for (i = 0; i < p; i++) 
-      { fprintf(stderr, "%10.6f\n", d[i]); }
+      { fprintf(stderr, "%14.10f\n", d[i]); }
     fprintf(stderr, "\n");
   }
 
@@ -170,7 +170,7 @@ void prevec(int32_t n, double *R, int32_t p)
     fprintf(stderr, "\n");
     for (i = 0; i < p; i++)  
       { for (j = 0; j < n; j++)
-          { fprintf(stderr, "%10.6f", R[n*i+j]); }
+          { fprintf(stderr, "%14.10f", R[n*i+j]); }
         fprintf(stderr, "\n");
       }
     fprintf(stderr, "\n");

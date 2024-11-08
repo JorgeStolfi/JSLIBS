@@ -1,5 +1,5 @@
 /* See hr3_pmap.h */
-/* Last edited on 2024-09-17 16:27:32 by stolfi */ 
+/* Last edited on 2024-11-01 05:00:25 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -67,7 +67,7 @@ r3_t hr3_pmap_r3_point(r3_t *p, hr3_pmap_t *M)
     hr3_point_t ph = (hr3_point_t){{{ 1.0, p->c[0], p->c[1], p->c[2] }}};
     hr3_point_t qh;
     r4x4_map_row(&(ph.c), &(M->dir), &(qh.c));
-    r3_t qc; hr3_point_to_r3_nan(&qh, &qc);
+    r3_t qc = r3_from_hr3_nan(&qh);
     return qc;
   }
 
@@ -76,7 +76,7 @@ r3_t hr3_pmap_inv_r3_point(r3_t *p, hr3_pmap_t *M)
     hr3_point_t ph = (hr3_point_t){{{ 1, p->c[0], p->c[1], p->c[2] }}};
     hr3_point_t qh;
     r4x4_map_row(&(ph.c), &(M->inv), &(qh.c));
-    r3_t qc; hr3_point_to_r3_nan(&qh, &qc);
+    r3_t qc = r3_from_hr3_nan(&qh);
     return qc;
   }
 

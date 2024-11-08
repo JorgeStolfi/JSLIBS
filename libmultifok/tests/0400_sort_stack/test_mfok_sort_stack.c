@@ -2,7 +2,7 @@
 #define PROG_DESC "Merges several registered images with focus blur at different heights"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-10-22 03:33:11 by stolfi */ 
+/* Last edited on 2024-10-26 09:25:37 by stolfi */ 
 /* Created on 2023-01-24 by J. Stolfi, UNICAMP */
 
 #define test_mfok_sort_stack_COPYRIGHT \
@@ -86,8 +86,6 @@ typedef struct mfss_options_t
     char *outPrefix;     /* Prefix for output filenames. */
   } mfss_options_t;
   /* Command line parameters. */
-
-#define ZMAX multifok_scene_ZMAZ
 
 int32_t main(int32_t argc, char **argv);
 
@@ -401,7 +399,7 @@ void mfss_process_image_stack
 
             /* Decide whether the pixel is useful for the regression: */
             double hDev = float_image_get_sample(dzimg, 0, ix, iy);
-            double hDev_max = 0.05*multifok_scene_ZMAX; /* Ignore pixels which more than this variance. */
+            double hDev_max = 0.05*zMax; /* Ignore pixels which more than this variance. */
             if (hDev > hDev_max) 
               { NP_edge++; }
             else
@@ -744,11 +742,11 @@ mfss_options_t *mfss_parse_options(int32_t argc, char **argv)
     o->focDepth = argparser_get_next_double(pp, 0.1, 100.0);  
     
     argparser_get_keyword(pp, "-zStep");
-    o->zStep = argparser_get_next_double(pp, 0.001, multifok_scene_ZMAX);  
+    o->zStep = argparser_get_next_double(pp, 0.001, o->zMax);  
 
     argparser_get_keyword(pp, "-zRange");
-    o->zRange_lo = argparser_get_next_double(pp, 0.0, multifok_scene_ZMAX);  
-    o->zRange_hi = argparser_get_next_double(pp, o->zRange_lo, multifok_scene_ZMAX);  
+    o->zRange_lo = argparser_get_next_double(pp, -1000.0, +1000.0);  
+    o->zRange_hi = argparser_get_next_double(pp, o->zRange_lo, +1000.0);  
 
     argparser_get_keyword(pp, "-actualSharp");
     o->actualSharp = argparser_get_next_bool(pp);  

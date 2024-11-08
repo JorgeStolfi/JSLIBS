@@ -1,5 +1,5 @@
 /* Oriented projective maps in two dimensions. */
-/* Last edited on 2024-09-17 16:28:13 by stolfi */ 
+/* Last edited on 2024-11-07 23:44:58 by stolfi */ 
    
 #ifndef hr2_pmap_H
 #define hr2_pmap_H
@@ -54,6 +54,14 @@ double hr2_pmap_mismatch_sqr(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[], do
      The weights must be non-negative.  If {w} is {NULL}, assumes
      all equal weights.  If {np} is zero or the weights are all zero,
      returns 0.0. */
+
+double hr2_pmap_max_mismatch(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[]);
+  /* Compute max distance between {p1[k]} mapped by {M} and {p2[k]}
+    and between {p1[k]} and {p2[k]} mapped by {M^{-1}}, for {k} in {0..np-1}. */
+
+void hr2_pmap_show_point_mismatch(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[], double w[]);
+  /* Prints to {stderr} the mismatch between {M.dir(p1[k])} and {p2[k]}, and
+    between {p1[k]} and {M.inv(p2[k])}, for {k} in {0..np-1}. */
 
 double hr2_pmap_deform_sqr(r2_t ph[], hr2_pmap_t *M);
   /* Measures the amount of deformation produced by the projective map
@@ -225,7 +233,6 @@ sign_t hr2_pmap_sign(hr2_pmap_t *M);
 
   The following procedures check whether the map {M} is of the type
   specified by {type} and sign parameters.  All these procedures
-sign_t hr2_pmap_sign(hr2_pmap_t *M);
   allow from homogeneous scaling of the matrices, and noise of
   magnitude {M[0][0]*tol} in all elements. */
 
@@ -295,11 +302,16 @@ char *hr2_pmap_type_to_string(hr2_pmap_type_t type);
     {hr2_pmap_type_IDENTITY} to "IDENTITY", {hr2_pmap_type_TRANSLATION}
     to "TRANSLATION", and so on. The returned string should be treated
     as read-only and should not be given to {free}. */
+    
+void hr2_pmap_invert_sign(hr2_pmap_t *M);
+  /* Inverts the handedness of {M} by swapping rows 
+    1 and 2 of the direct matrix, and columns 1 and 2 of the 
+    inverse matrix. */
 
 void hr2_pmap_set_sign(hr2_pmap_t *M, sign_t sgn);
   /* Makes sure that {M} has the handedness {sgn} (either {-1} or {+1}), by
-    pre-composing it with a {XY} swapping map if necessary.  Fails if
-    the determinant of {M} is exactly zero. */
+    applying {hr2_pmap_invert_sign}.  Fails if the determinant
+    of {M} is exactly zero. */
 
 bool_t hr2_pmap_is_type(hr2_pmap_t *M, hr2_pmap_type_t type, sign_t sgn, double tol);
   /* If {sgn} is {+1}, returns true iff the map {*M} is of the given
@@ -307,10 +319,10 @@ bool_t hr2_pmap_is_type(hr2_pmap_t *M, hr2_pmap_type_t type, sign_t sgn, double 
     relative tolerance {tol}.
     
     If {sgn} is {-1}, {M} should have negative determinant. In that
-    case, returns true iff {M} is the composition of a {XY} swap and a
+    case, returns true iff {M} is the negative version of a
     map of the given type.
     
-    If {sgn} is zero, returns true if either condition is true.
+    If {sgn} is zero, returns true if either of the above conditions is true.
     
     Returns false if the appropriate condition is not satisfied. In
     particular, if the relative magnitude of the determinant of either

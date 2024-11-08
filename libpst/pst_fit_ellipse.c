@@ -1,5 +1,5 @@
 /* See pst_fit_ellipse.h */
-/* Last edited on 2024-01-11 08:26:39 by stolfi */ 
+/* Last edited on 2024-11-08 09:52:27 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -14,6 +14,7 @@
 #include <float_image_mscale.h>
 #include <argparser.h>
 #include <r2.h>
+#include <rn.h>
 #include <ellipse_crs.h> 
 #include <ellipse_crs.h> 
 #include <affirm.h> 
@@ -129,6 +130,7 @@ double pst_fit_ellipse
           ( /*n:*/        NP,
             /*F:*/        sve_goal,
             /*OK:*/       sve_check,
+            /*Proj:*/     NULL,
             /*x:*/        x,
             /*FxP:*/      &Q,
             /*dir:*/      -1,
@@ -138,7 +140,7 @@ double pst_fit_ellipse
             /*rIni:*/     0.50*dMax,
             /*rMin:*/     0.05*dMax,
             /*rMax:*/     dMax,
-            /*stop:*/     0.001*dMax,
+            /*minStep:*/  0.001*dMax,
             /*maxEvals:*/ maxIts,
             /*debug:*/    debug_sve
           );

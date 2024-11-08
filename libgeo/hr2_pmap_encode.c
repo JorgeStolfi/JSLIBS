@@ -1,5 +1,5 @@
 /* See {hr2_pmap_encode.h}. */
-/* Last edited on 2024-09-17 15:00:44 by stolfi */
+/* Last edited on 2024-11-07 23:43:31 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -17,7 +17,6 @@
 #include <hr2_pmap_congruence_encode.h>
 #include <hr2_pmap_similarity_encode.h>
 #include <hr2_pmap_affine_encode.h>
-#include <hr2_pmap_generic_encode.h>
 
 #include <hr2_pmap_encode.h>
 
@@ -36,7 +35,7 @@ int32_t hr2_pmap_encode_num_parameters(hr2_pmap_type_t type)
         case hr2_pmap_type_AFFINE:
           return 6;
         case hr2_pmap_type_GENERIC:
-          return 9;
+          demand(FALSE, "there is no encoding/decoding for general projective maps");
         case hr2_pmap_type_NONE:
           demand(FALSE, "invalid projective map type");
         default:
@@ -46,7 +45,9 @@ int32_t hr2_pmap_encode_num_parameters(hr2_pmap_type_t type)
 
 void hr2_pmap_encode(hr2_pmap_t *M, hr2_pmap_type_t type, int32_t ny, double y[])
   {
-    /* Assumes that {M} is a positive matrix with {M[0,0] = 1}, near the identity. */
+    double det = r3x3_det(&(M->dir));
+    demand(det != 0, "singular matrix");
+    
     switch(type)
       { 
         case hr2_pmap_type_IDENTITY:
@@ -61,24 +62,27 @@ void hr2_pmap_encode(hr2_pmap_t *M, hr2_pmap_type_t type, int32_t ny, double y[]
           }
         case hr2_pmap_type_CONGRUENCE:
           { assert(ny == 3);
+            if (det < 0) { hr2_pmap_invert_sign(M); }
             hr2_pmap_congruence_encode(M, y);
+            if (det < 0) { hr2_pmap_invert_sign(M); }
             break;
           }
         case hr2_pmap_type_SIMILARITY:
           { assert(ny == 4);
+            if (det < 0) { hr2_pmap_invert_sign(M); }
             hr2_pmap_similarity_encode(M, y);
+            if (det < 0) { hr2_pmap_invert_sign(M); }
             break;
           }
         case hr2_pmap_type_AFFINE:
           { assert(ny == 6);
+            if (det < 0) { hr2_pmap_invert_sign(M); }
             hr2_pmap_affine_encode(M, y);
+            if (det < 0) { hr2_pmap_invert_sign(M); }
             break;
           }
         case hr2_pmap_type_GENERIC:
-          { assert(ny == 9);
-            hr2_pmap_generic_encode(M, y);
-            break;
-          }
+          demand(FALSE, "there is no encoding for general projective maps");
         case hr2_pmap_type_NONE:
           demand(FALSE, "invalid projective map type");
         default:
@@ -88,7 +92,6 @@ void hr2_pmap_encode(hr2_pmap_t *M, hr2_pmap_type_t type, int32_t ny, double y[]
 
 void hr2_pmap_decode(int32_t ny, double y[], hr2_pmap_type_t type, sign_t sgn, hr2_pmap_t *M)
   { 
-    /* Assumes that the non-variable elements of {M} are those of the identity matrix. */
     demand((sgn == +1) || (sgn == -1), "invalid {sgn}");
     switch(type)
       { 
@@ -118,10 +121,7 @@ void hr2_pmap_decode(int32_t ny, double y[], hr2_pmap_type_t type, sign_t sgn, h
             break;
           }
         case hr2_pmap_type_GENERIC:
-          { assert(ny == 9);
-            hr2_pmap_generic_decode(y, M);
-            break;
-          }
+          demand(FALSE, "there is no decoding for general projective maps");
         case hr2_pmap_type_NONE:
           demand(FALSE, "invalid projective map type");
         default:

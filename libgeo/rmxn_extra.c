@@ -1,5 +1,5 @@
 /* See rmxn_extra.h. */
-/* Last edited on 2023-03-27 16:08:58 by stolfi */
+/* Last edited on 2024-11-07 22:37:56 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -17,13 +17,21 @@
 
 #include <rmxn_extra.h>
 
-void rmxn_perturb_unif(int32_t m, int32_t n, double mag, double M[])
+void rmxn_throw(int32_t m, int32_t n, double M[])
+  { for (int32_t i = 0; i < m; i++)
+      { for (int32_t j = 0; j < n; j++) 
+          { M[i*n + j] += dabrandom(-1.0, +1.0); }
+      }
+  }
+
+void rmxn_perturb_unif(int32_t m, int32_t n, double pabs, double prel, double M[])
   {
-    int32_t i, j;
-    for (i = 0; i < m; i++)
-      { for (j = 0; j < n; j++) 
-          { double d = dabrandom(-mag, +mag);
-            M[i*n + j] +=  d; 
+    for (int32_t i = 0; i < m; i++)
+      { for (int32_t j = 0; j < n; j++) 
+          { double *Mij = &(M[i*n + j]);
+            double mag = pabs + prel*fabs(*Mij);
+            double d = dabrandom(-mag, +mag);
+            (*Mij) += d; 
           }
       }
   }
@@ -36,10 +44,9 @@ void rmxn_throw_ortho(int32_t n, double M[])
   { /* Start with the identity matrix: */
     rmxn_ident(n, n, M);
     /* Now apply mirroring ops to it: */
-    int32_t k, i, j;
     double s[n];
     int32_t flip = 0;
-    for (k = 0; k < n; k++)
+    for (int32_t k = 0; k < n; k++)
       { /* Now the first {k} rows and cols of {M} are a random orthonormal {k×k} matrix. */
         double *Mk = &(M[n*k]); /* Row {k} of {M} */
         /* Pick a random direction {v} in {R^{k+1}}, store it in row {k} of {M}: */
@@ -47,7 +54,7 @@ void rmxn_throw_ortho(int32_t n, double M[])
         /* We now apply to rows {0..k-1} a reflection that takes {u_k} to {v}. */
         /* Compute the unit vector {s[0..k]} normal to the bisector of {u_k} and {v}: */
         double s2 = 0;
-        for (j = 0; j <= k; j++)
+        for (int32_t j = 0; j <= k; j++)
           { double sj = Mk[j] - (j == k ? 1 : 0); 
             s[j] = sj; 
             s2 += sj*sj;
@@ -55,9 +62,9 @@ void rmxn_throw_ortho(int32_t n, double M[])
         if (s2 != 0)
           { /* Reflection is not trivial. */
             double sm = sqrt(s2);
-            for (j = 0; j <= k; j++) { s[j] /= sm; }
+            for (int32_t j = 0; j <= k; j++) { s[j] /= sm; }
             /* Apply reflection along {s} to each row: */
-            for (i = 0; i < k; i++)
+            for (int32_t i = 0; i < k; i++)
               { double *Mi = &(M[i*n]);
                 (void)rn_mirror(k+1, Mi, s, Mi);
                 flip = 1 - flip;
@@ -65,7 +72,7 @@ void rmxn_throw_ortho(int32_t n, double M[])
           }
       }
     /* Now flip the first row if needed to keep the determinant positive: */
-    if (flip != 0) { for (j = 0; j < n; j++) { M[j] = -M[j]; } }
+    if (flip != 0) { for (int32_t j = 0; j < n; j++) { M[j] = -M[j]; } }
   }
 
 void rmxn_throw_ortho_complement(int32_t n, int32_t p, double A[], int32_t q, double M[])
@@ -133,8 +140,7 @@ void rmxn_spin_rows(int32_t m, int32_t n, double A[], double M[])
     rmxn_throw_ortho(n, N);
     /* Map each row of {A} by {N} (beware of aliasing between {A} and {M}): */
     double v[n];
-    int32_t i;
-    for (i = 0; i < m; i++)
+    for (int32_t i = 0; i < m; i++)
       { rmxn_map_row(n, n, &(A[i*n]), N, v);
         rn_copy(n, v, &(M[i*n]));
       }
@@ -146,8 +152,7 @@ void rmxn_spin_cols(int32_t m, int32_t n, double A[], double M[])
     rmxn_throw_ortho(m, N);
     /* Map each col of {A} by {N} (beware of aliasing between {A} and {M}): */
     double a[m], v[m];
-    int32_t j;
-    for (j = 0; j < n; j++)
+    for (int32_t j = 0; j < n; j++)
       { rmxn_get_col(m, n, A, j, a);
         rmxn_map_col(m, m, a, N, v);
         rmxn_set_col(m, n, M, j, v);
@@ -155,17 +160,15 @@ void rmxn_spin_cols(int32_t m, int32_t n, double A[], double M[])
   }
   
 void rmxn_shift_rows(int32_t m, int32_t n, double A[], double v[], double M[])
-  { int32_t i, j;
-    for (i = 0; i < m; i++)
-      { for (j = 0; j < n; j++) 
+  { for (int32_t i = 0; i < m; i++)
+      { for (int32_t j = 0; j < n; j++) 
           { int32_t ij = i*n + j; M[ij] = A[ij] + v[j]; }
       }
   }
   
 void rmxn_shift_cols(int32_t m, int32_t n, double v[], double A[], double M[])
-  { int32_t i, j;
-    for (i = 0; i < m; i++)
-      { for (j = 0; j < n; j++) 
+  { for (int32_t i = 0; i < m; i++)
+      { for (int32_t j = 0; j < n; j++) 
           { int32_t ij = i*n + j; M[ij] = A[ij] + v[i]; }
       }
   }

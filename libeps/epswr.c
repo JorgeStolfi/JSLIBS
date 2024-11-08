@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2024-06-22 19:23:35 by stolfi */
+/* Last edited on 2024-11-04 06:50:35 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -15,7 +15,6 @@
 #include <jsstring.h>
 #include <jsfile.h>
 #include <jstime.h>
-#include <rn.h>
 
 #include <epswr.h>
 #include <epswr_def.h>
@@ -526,8 +525,8 @@ void epswr_polygon
   { if (eps->fillColor[0] < 0.0) { fill = FALSE; }
     if (! closed) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
-    double *psx = rn_alloc(n);
-    double *psy = rn_alloc(n);
+    double *psx = talloc(n, double);
+    double *psy = talloc(n, double);
     /* Map points to Device coordinates: */
     for (int32_t i=0; i<n; i++)
       { epswr_x_to_h_coord(eps, x[i], &(psx[i]));
@@ -550,8 +549,8 @@ void epswr_rounded_polygon
     if (! closed) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
     /* Corners: */
-    double *psx = rn_alloc(n);
-    double *psy = rn_alloc(n);
+    double *psx = talloc(n, double);
+    double *psy = talloc(n, double);
     /* Map points and radius to Device coordinates: */
     for (int32_t i=0; i<n; i++)
       { epswr_x_to_h_coord(eps, x[i], &(psx[i]));
@@ -574,8 +573,8 @@ void epswr_bezier_polygon
     if (! closed) { fill = FALSE; }
     if ((!draw) && (!fill)) { return; }
     int32_t np = 4*n; /* Number of points. */
-    double *psx = rn_alloc(np);
-    double *psy = rn_alloc(np);
+    double *psx = talloc(np, double);
+    double *psy = talloc(np, double);
     /* Map points to Device coordinates: */
     for (int32_t i = 0; i < np; i++)
       { epswr_x_to_h_coord(eps, x[i], &(psx[i]));

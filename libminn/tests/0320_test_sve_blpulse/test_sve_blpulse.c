@@ -1,5 +1,5 @@
 /* test_sve_blpulse --- test of {sve_minn.h} for bandlimited pulse design */
-/* Last edited on 2024-01-10 18:10:01 by stolfi */
+/* Last edited on 2024-11-08 09:53:07 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -214,11 +214,16 @@ void find_compact_pulse(int32_t ns)
     double rMin = 0.000001;
     double rMax = 1000.0;
     double rIni = 0.01;
-    double stop = 0.01*rMin;
+    double minStep = 0.01*rMin;
     sign_t dir = -1;
     int32_t maxIters = 300;
     
-    sve_minn_iterate(ns, &F, &OK, x, &Fx, dir, ctr, dMax, dBox, rIni, rMin, rMax, stop, maxIters, debug);
+    sve_minn_iterate
+      ( ns, &F, &OK, NULL, 
+        x, &Fx, dir, 
+        ctr, dMax, dBox, rIni, rMin, rMax, 
+        minStep, maxIters, debug
+      );
     
     /* Print and write final solution: */
     fprintf(stderr, "final solution:\n");

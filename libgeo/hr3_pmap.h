@@ -1,5 +1,5 @@
 /* Oriented projective maps in three dimensions. */
-/* Last edited on 2024-09-17 16:21:24 by stolfi */ 
+/* Last edited on 2024-11-03 07:39:39 by stolfi */ 
 
 #ifndef hr3_pmap_H
 #define hr3_pmap_H
@@ -160,20 +160,7 @@ hr3_pmap_t hr3_pmap_persp(hr3_point_t *obs, hr3_point_t *foc, double rad, hr3_po
     {ctr} and normal to the line {obs--ctr} is mapped to the unit
     circle of the XY plane. */
 
-/* PRINTOUT 
-
-  The procedures below print the string {pre} (if not NULL) before the object, and 
-  and {suf} (if not NULL) after it.  The coordinates/coefficients are printed
-  with the format {fmt} (or with "%24.16e" if {fmt} is NULL. */
-
-void hr3_point_print(FILE *f, char *pre, hr3_point_t *p, char *fmt, char *suf);
-  /* Prints point {p} to file {f} as "[{w} {x} {y} {z}]". */
-
-void hr3_plane_print(FILE *f, char *pre, hr3_plane_t *P, char *fmt, char *suf);
-  /* Prints plane {P} to file {f} as "<{W} {X} {Y} {Z}>". */
-
-void hr3_line_print(FILE *f, char *pre, hr3_line_t *L, char *fmt, char *suf);
-  /* Prints line {L} to file {f} as "[{wx} {wy} {xy} {wz} {xz} {yz}]". */
+/* PRINTOUT */
 
 void hr3_pmap_print(FILE *wr, hr3_pmap_t *M, char *pref, char *suff);
   /* Prints {M} on file {wr}, with some default format.  The printout

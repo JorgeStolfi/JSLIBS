@@ -1,5 +1,5 @@
 /* See {sample_conv.h}. */
-/* Last edited on 2024-10-25 22:24:22 by stolfi */
+/* Last edited on 2024-11-04 07:20:07 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -77,7 +77,7 @@ float sample_conv_log(float u, double bias, double uref, double logBase)
     if ((! isfinite(uref)) || (uref <= 0)) { return NAN; }
     if (isnan(u) || (u < 0)) { return NAN; }
     if (u == +INFINITY) { return +INFINITY; }
-    if (bias != 0) { u = hypot(u, bias); }
+    if (bias != 0) { u = (float)hypot(u, bias); }
     if (u == +INFINITY) { return +INFINITY; }
     if (u == 0.0) { return -INFINITY; }
     double ulog = log(u/uref)/logBase;
@@ -91,10 +91,10 @@ float sample_conv_undo_log(float u, double bias, double uref, double logBase)
     if ((! isfinite(uref)) || (uref <= 0)) { return NAN; }
     if (u == +INFINITY) { return +INFINITY; }
     if (isnan(u)) { return NAN; }
-    if (u == -INFINITY) { u = 0.0; } else { u = uref*exp(u*logBase); }
+    if (u == -INFINITY) { u = 0.0; } else { u = (float)(uref*exp(u*logBase)); }
     if (u == +INFINITY) { return +INFINITY; }
     if (u < bias) { return NAN; }
-    if (bias != 0) { u = sqrt(u*u - bias*bias); }
+    if (bias != 0) { u = (float)sqrt(u*u - bias*bias); }
     assert(isfinite(u));
     return (float)u;
   }

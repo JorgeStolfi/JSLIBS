@@ -1,6 +1,6 @@
-# Last edited on 2024-10-16 22:58:05 by stolfi
+# Last edited on 2024-11-08 11:28:50 by stolfi
 
-PROG = test_image_test
+PROG = test_test_image
 
 TEST_LIB := libimg.a
 TEST_LIB_DIR := ../..

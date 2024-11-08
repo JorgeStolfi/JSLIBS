@@ -1,5 +1,5 @@
 /* See {hr3_pmap_test_tools.h}. */
-/* Last edited on 2024-09-17 19:51:20 by stolfi */
+/* Last edited on 2024-11-04 06:37:01 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -8,7 +8,6 @@
 #include <assert.h>
 #include <math.h>
 
-#include <flt.h>
 #include <jsrandom.h>
 #include <affirm.h>
 
@@ -19,6 +18,7 @@
 #include <r2.h>
 
 #include <hr3.h>
+#include <hr3_test_tools.h>
 #include <hr3_pmap_test_tools.h>
 
 void hr3_test_throw_pmap(hr3_pmap_t *M)

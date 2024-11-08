@@ -1,6 +1,6 @@
-# Last edited on 2016-04-03 13:26:38 by stolfilocal
+# Last edited on 2024-11-08 12:42:04 by stolfi
 
-PROG = rntest
+PROG = test_rn
  
 TEST_LIB := libgeo.a
 TEST_LIB_DIR := ../..

@@ -1,6 +1,6 @@
-# Last edited on 2021-07-03 21:33:30 by jstolfi
+# Last edited on 2024-11-08 11:37:55 by stolfi
 
-PROG = ppv_blur_test
+PROG = test_ppv_blur
 
 TEST_LIB := libppv.a
 TEST_LIB_DIR := ../..

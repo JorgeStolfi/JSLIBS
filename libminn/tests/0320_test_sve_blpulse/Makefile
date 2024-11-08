@@ -1,4 +1,4 @@
-# Last edited on 2023-02-27 11:02:13 by stolfi
+# Last edited on 2024-11-07 18:54:24 by stolfi
 
 PROG = test_sve_blpulse
  
@@ -55,7 +55,7 @@ single-test: ${PROG}
           ( show-pulse.sh $$ff-a.dat & ) ; \
           ( show-spectrum.sh $$ff-p.dat & ) ; \
           ( show-plot.sh $$ff-plt.fni ) ; \
-  	  xmessage "OK" ; \
+  	  ( xmessage "OK" ; echo "OK" 1>&2 ) ; \
         done
 
 endif

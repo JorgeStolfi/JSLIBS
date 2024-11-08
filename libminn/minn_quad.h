@@ -1,8 +1,8 @@
 #ifndef minn_quad_H
 #define minn_quad_H
 
-/* Tools for optimizing {d}-dimensional function by enumeration. */
-/* Last edited on 2024-01-10 13:44:57 by stolfi */ 
+/* Tools for quadratic optimization of a {d}-dimensional function by . */
+/* Last edited on 2024-11-08 00:07:30 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdint.h>

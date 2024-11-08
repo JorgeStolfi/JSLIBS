@@ -1,4 +1,4 @@
-# Last edited on 2023-02-26 10:49:40 by stolfi
+# Last edited on 2024-11-06 01:41:29 by stolfi
 
 PROG := test_jspnm
 
@@ -10,7 +10,7 @@ JS_LIBS := \
   libjs.a
   
 OTHER_LIBS := \
-  /usr/lib/libnetpbm.so.10
+  /usr/lib/x86_64-linux-gnu/libnetpbm.so
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 

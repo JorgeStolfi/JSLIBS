@@ -1,5 +1,5 @@
 /* See {r2_opt.h}. */
-/* Last edited on 2024-01-11 06:30:39 by stolfi */
+/* Last edited on 2024-11-08 09:53:51 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -172,12 +172,12 @@ void r2_opt_single_scale_quadopt
         double rIni = 0.5;                 /* Initial probe simplex radius. */
         double rMin = fmin(tol, 0.25);     /* Minimum probe simplex radius. */
         double rMax = 0.70;                /* Maximum probe simplex radius. */
-        double stop = 0.25*tol;            /* Stop when {x} moves less than this. */
+        double minStep = 0.25*tol;         /* Stop when {x} moves less than this. */
         sve_minn_iterate
           ( nv, 
-            &f2_for_sve, NULL, 
+            &f2_for_sve, NULL, NULL, 
             z, &Fz,
-            dir, ctr, dMax, dBox, rIni, rMin, rMax, stop,
+            dir, ctr, dMax, dBox, rIni, rMin, rMax, minStep,
             maxIters,
             debug
           );

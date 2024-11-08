@@ -1,5 +1,5 @@
 /* See {drtree_planar.h} */
-/* Last edited on 2023-06-27 13:07:27 by stolfi */
+/* Last edited on 2024-11-04 07:31:24 by stolfi */
 
 #define drtree_planar_C_COPYRIGHT \
   "Duh?"
@@ -20,7 +20,6 @@
 #include <vec.h> 
 
 #include <drtree.h>
-#include <drtree_private.h>
 #include <drtree_planar.h>
 
 /* INTERNAL STRUCTURES */

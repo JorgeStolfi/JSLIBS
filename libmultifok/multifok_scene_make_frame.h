@@ -1,5 +1,5 @@
 /* Creates focus-blurred images of a scene. */
-/* Last edited on 2024-10-24 03:37:56 by stolfi */
+/* Last edited on 2024-10-26 09:26:43 by stolfi */
 
 #ifndef multifok_scene_make_frame_H
 #define multifok_scene_make_frame_H
@@ -53,8 +53,7 @@ multifok_frame_t *multifok_scene_make_frame
     
     The {fr.hAvg} image will have 1 channel, and shows the average {Z}
     coordinate of the scene at each pixel. Its values will be contained in
-    {[zMin _ zMax] = scene.dom[2]} which in turn will be contained in 
-    {[multifok_scene_ZMIN _ multifok_scene_ZMIN]}.
+    {[zMin _ zMax] = scene.dom[2]}.
 
     The {fr.hDev} image will have 1 channel, and shows the standard
     deviation of the {Z} coordinate of the scene inside each pixel. It

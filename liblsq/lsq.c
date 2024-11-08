@@ -1,5 +1,5 @@
 /* See {lsq.h} */
-/* Last edited on 2023-02-26 03:57:21 by stolfi */
+/* Last edited on 2024-11-07 16:24:09 by stolfi */
 
 #define lsq_C_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
@@ -96,18 +96,15 @@ void lsq_compute_matrix_and_rhs
     rmxn_zero(nx, nx, A);
     rmxn_zero(nx, nf, B);
     for (int32_t kt = 0; kt < nt; kt++)
-      { 
-        bool_t verbacc = verbose & (kt < 20); /* Debug the stats accumulator? */
-        
-        /* Obtain data point number {kt} in {Xk,Fk,Wk}: */
+      { /* Obtain data point number {kt} in {Xk,Fk,Wk}: */
         double Wk = NAN;
         gen_data_point(kt, nx, Xk, nf, Fk, &Wk);
-        if (verbacc) 
+        if (verbose & ((kt < 20) || (kt == nt-1))) 
           { fprintf(stderr, "  k = %5d", kt);
             fprintf(stderr, "  Xk =");
-            lsq_debug_double_vec(nx, Xk, "%9.6f");
+            lsq_debug_double_vec(nx, Xk, "%11.6f");
             fprintf(stderr, "  Fk =");
-            lsq_debug_double_vec(nf, Fk, "%9.6f");
+            lsq_debug_double_vec(nf, Fk, "%11.6f");
             fprintf(stderr, "  Wk = %10.6f", Wk);
             fprintf(stderr, "\n");
           }
@@ -121,9 +118,8 @@ void lsq_compute_matrix_and_rhs
             for (int32_t jf = 0; jf < nf; jf++)
               { B[ix*nf+jf] += Xk[ix]*Wk*Fk[jf]; }
           }
-          
-        if (verbacc) { fprintf(stderr, "\n"); }
       }
+    if (verbose) { fprintf(stderr, "\n"); }
   }
   
 int32_t lsq_solve_system
@@ -147,26 +143,10 @@ int32_t lsq_solve_system
       
     if (verbose)
       { /* Print the least squares system: */
-        fprintf(stderr, "  main least squares system:\n");
-        for (int32_t ix = 0; ix < nx; ix++)
-          { fprintf(stderr, "  %-4s", (ix == nx/2 ? "A = " : ""));
-            lsq_debug_double_vec(nx, &(A[ix*nx]), "%12.5f");
-            fprintf(stderr, "  %-4s", (ix == nx/2 ? "B = " : ""));
-            lsq_debug_double_vec(nf, &(B[ix*nf]), "%12.5f");
-            fprintf(stderr, "\n");
-          }
-        fprintf(stderr, "\n");
+        gsel_print_system(stderr, 4, "%12.5f", "main least squares system (minus term {R1*L})", nx,nx, "A",A, nf,"B",B, 0,NULL,NULL, "");
         if (nc > 0)
-          { fprintf(stderr, "  constraints:\n");
-            for (int32_t ix = 0; ix < nc; ix++)
-              { fprintf(stderr, "  %-4s", (ix == nc/2 ? "R = " : ""));
-                lsq_debug_double_vec(nx, &(R[ix*nx]), "%12.5f");
-                fprintf(stderr, "  %-4s", (ix == nx/2 ? "S = " : ""));
-                lsq_debug_double_vec(nf, &(S[ix*nf]), "%12.5f");
-                fprintf(stderr, "\n");
-              }
-            fprintf(stderr, "\n");
-          }
+          { gsel_print_system(stderr, 4, "%12.5f", "constraints system", nc,nx, "R",R, nf,"S",S, 0,NULL,NULL, ""); }
+        fprintf(stderr, "\n");
       }
           
     /* Solve the least squares system: */
@@ -180,23 +160,26 @@ int32_t lsq_solve_system
     else
       { /* Build the augmented matrices {AR}, {BS}, {UL}: */
         int32_t nxc = nx + nc;
-        double *AR = notnull(malloc(nxc*nxc*sizeof(double)), "no mem");
-        double *BS = notnull(malloc(nxc*nf*sizeof(double)), "no mem");
-        double *UL = notnull(malloc(nxc*nf*sizeof(double)), "no mem");
+        double *AR = talloc(nxc*nxc, double);
+        double *BS = talloc(nxc*nf, double);
+        double *UL = talloc(nxc*nf, double);
         lsq_assemble_constrained_system(nx, nf, A, B, nc, R, S, AR, BS);
+        if (verbose)
+          { gsel_print_system(stderr, 4, "%12.6f", "combined system matrix {AR}:", nxc, nxc,"AR",AR, nf,"BS",BS, -1,NULL,NULL, ""); }
         rank = gsel_solve(nxc, nxc, AR, nf, BS, UL, 0.0);
-        if (verbose) { fprintf(stderr, "  rank = %d, should be %d", rank, nxc); }
+        if (verbose) { fprintf(stderr, "  rank = %d, should be %d\n", rank, nxc); }
+        if (verbose)
+          { gsel_print_array(stderr, 4, "%12.6f", "combined system solution {UL}:", nxc, nf,"UL",UL, "");
+            fprintf(stderr, "\n"); 
+          }
         demand(rank == nxc, "indeterminate system");
         lsq_split_constrained_solution(nx, nf, nc, UL, U, L);
         free(UL); free(BS); free(AR);
       } 
     if (verbose)
-      { fprintf(stderr, "  system solution:\n");
-        for (int32_t ix = 0; ix < nx; ix++)
-          { fprintf(stderr, "  %-4s", (ix == nx/2 ? "U = " : ""));
-            lsq_debug_double_vec(nf, &(U[ix*nf]), "%12.5f");
-            fprintf(stderr, "\n");
-          }
+      { gsel_print_array(stderr, 4, "%12.6f", "main system's solution:", nx, nf,"U",U, "");
+        if (nc > 0) 
+          { gsel_print_array(stderr, 4, "%12.6f", "Lagrange multipliers:", nc, nf,"L",L, ""); }
         fprintf(stderr, "\n");
       }
     return rank;
@@ -255,7 +238,7 @@ void lsq_split_constrained_solution
             if (ixc < nx)
               { /* Copy {U}: */ U[ixc*nf + jf] = (*ULij); }
             else if (L  != NULL)
-              { /* Copy {L}: */  U[(ixc-nx)*nf + jf] = (*ULij); }
+              { /* Copy {L}: */ L[(ixc-nx)*nf + jf] = (*ULij); }
           }
       }
   }
@@ -274,4 +257,35 @@ void lsq_debug_int32_vec(int32_t nx, int32_t x[], char *fmt)
     for (j = 0; j < nx; j++)
       { fprintf(stderr, " "); fprintf(stderr, fmt, x[j]); }
     fprintf(stderr, " ]");
+  }
+
+void lsq_print_problem
+  ( FILE *wr,
+    int32_t indent,
+    char *fmt,
+    char *title, 
+    int32_t nx,
+    int32_t nc,
+    int32_t nf,
+    double A[],
+    double B[],
+    double R[],
+    double S[],
+    char *Uname,
+    double U[],
+    char *Lname,
+    double L[]
+  )
+  { if (title != NULL) { fprintf(wr, "%*s%s\n", indent, "", title); }
+    char *mhead = (nc > 0 ? "main system (minus the {R1*L} term):" : "main system:");
+    gsel_print_system
+      ( wr, indent+2, fmt, mhead, nx,
+        nx,"A",A, nf,Uname,U, nf,"B",B, ""
+      );
+    if ((nc > 0) && ((R != NULL) || (L != NULL) || (S != NULL)))
+      { gsel_print_system
+          ( wr, indent+2, fmt, "constraints system:", nc,
+            nx,"R",R, nf,Lname,L, nf,"S",S, ""
+          );
+      }
   }

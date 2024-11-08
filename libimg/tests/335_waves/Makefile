@@ -1,6 +1,6 @@
-# Last edited on 2023-04-28 20:57:55 by stolfi
+# Last edited on 2024-11-08 11:27:58 by stolfi
 
-PROG = waves_test
+PROG = test_waves
 
 TEST_LIB := libimg.a
 TEST_LIB_DIR := ../..

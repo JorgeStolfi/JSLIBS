@@ -1,6 +1,6 @@
-# Last edited on 2011-12-23 22:11:21 by stolfilocal
+# Last edited on 2024-11-08 12:45:12 by stolfi
 
-PROG = i3test
+PROG = test_i3
  
 TEST_LIB := libgeo.a
 TEST_LIB_DIR := ../..

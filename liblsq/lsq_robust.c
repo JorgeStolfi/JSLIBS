@@ -1,5 +1,5 @@
 /* See {lsq_robust.h} */
-/* Last edited on 2023-02-25 16:08:16 by stolfi */
+/* Last edited on 2024-11-07 00:49:48 by stolfi */
 
 #define lsq_robust_C_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
@@ -81,6 +81,12 @@ void lsq_robust_fit
 
             /* Set {Fc} to the residuals relative to the current approximation: */
             rn_sub(nt, F, Fa, Fc);
+            if (debug)
+              { fprintf(stderr, "      %3s   %24s  %24s %24s  %24s %24s\n", "it", "F", "Fa", "Fc", "W", "Pc");
+                for (int32_t it = 0; it < nt; it++)
+                  { fprintf(stderr, "      %3d  %24.16e  %24.16e %24.16e  %24.16e %24.16e\n", it, F[it], Fa[it], Fc[it], W[it], Pc[it]); }
+                fprintf(stderr, "\n");
+              }
 
             /* Recompute parameters of inlier residuals: */
             lsq_robust_compute_stats(nt, Fc, W, Pc, TRUE,  0.0,     &avg_gud, &dev_gud, &pri_gud, debug);
@@ -100,6 +106,7 @@ void lsq_robust_fit
                 double avg_gud_k = Fak; /* Assumed average of inlier residual distribution at this point. */
                 /* Compute the probability of {Fk} being inlier: */
                 double Pk = lsq_robust_bayes(Fk, pri_gud, avg_gud_k, dev_gud, avg_bad, dev_bad, verbose);
+                assert(isfinite(Pk) && (Pk >= 0.0) && (Pk <= 1.0));
                 Pc[k] = Pk;
                 /* Set {Fc[k]} to the expected value of the inlier part of {F[k]}: */
                 Fc[k] = Pk*Fk + (1-Pk)*Fak;
@@ -113,6 +120,8 @@ void lsq_robust_fit
         free(Fa);
         free(Fc);
         if (Pc != P) { free(Pc); }
+        free(A);
+        free(B);
       }
   }
 
@@ -141,10 +150,12 @@ void lsq_robust_compute_stats
         sum_wp += Wk*Pk;
         sum_w += Wk;
       }
+    if (verbose) { fprintf(stderr, "    sum_wpy = %24.16e  sum_wp = %24.16e  sum_w = %24.16e\n", sum_wpy, sum_wp, sum_w); }
+    sum_wpy += 0.5e-300; /* To avoid division by zero. */
     sum_wp += 0.5e-300; /* To avoid division by zero. */
     sum_w += 1.0e-300; /* To avoid division by zero. */
-    double avg = sum_wpy/sum_wp; assert(! isnan(avg));
-    double pri = sum_wp/sum_w; assert(! isnan(pri));
+    double avg = sum_wpy/sum_wp; assert(isfinite(avg));
+    double pri = sum_wp/sum_w; assert(isfinite(pri));
 
     /* Compute the variance and deviation: */
     double sum_wpd2 = 0;
@@ -154,9 +165,11 @@ void lsq_robust_compute_stats
         double Pk = (P == NULL ? 0.5 : (inlier ? P[k] : 1.0 - P[k]));
         sum_wpd2 += Wk*Pk*Dk*Dk;
       }
-    double var = sum_wpd2/sum_wp; assert(! isnan(pri));
+    if (verbose) { fprintf(stderr, "    sum_wpd2 = %24.16e\n", sum_wpd2); }
+    double var = sum_wpd2/sum_wp; assert(isfinite(var));
     var += 1.0e-300; /* Make sure that the variance is nonzero. */
-
+    assert(isfinite(var) && (var > 0));
+     
     if (inlier)
       { /* Scale up the variance to compensate the shrink effect: */
         double alpha = 1.1; /* !!! Figure out the right factor !!! */
@@ -176,6 +189,9 @@ void lsq_robust_compute_stats
         lsq_robust_debug_distr(stderr, vname, tag, avg, dev, pri);
       }
     /* Return: */
+    assert(isfinite(avg));
+    assert(isfinite(dev) && (dev >= 0));
+    assert(isfinite(pri) && (pri >= 0) && (pri <= 1.0));
     (*avgP) = avg;
     (*devP) = dev;
     (*priP) = pri;
@@ -191,9 +207,19 @@ double lsq_robust_bayes
     bool_t verbose
   )
   {
+    /* Degenrate cases: */
+    if ((dev_gud < 1.0e-200) || (dev_bad < 1.0e-200))
+      { if (dev_gud < dev_bad) 
+          { return 0.0; }
+        else if (dev_gud > dev_bad) 
+          { return 1.0; }
+        else
+          { return pri_gud; }
+      }
     /* Compute the normalized discrepancies relative to the inlier and outlier means: */
     double d_gud = (F - avg_gud)/dev_gud; /* Normalized displacement of {F} from inlier average. */
     if (d_gud > 6.0) { return 0.0; }
+
     double d_bad = (F - avg_bad)/dev_bad; /* Normalized displacement of {F} from outlier average. */
     if (d_bad > 6.0) { return 1.0; }
 

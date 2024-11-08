@@ -1,6 +1,6 @@
-# Last edited on 2023-10-08 11:24:32 by stolfi
+# Last edited on 2024-11-08 11:20:36 by stolfi
 
-PROG = hr2_pmap_from_many_pairs_test
+PROG = test_hr2_pmap_from_many_pairs
 
 TEST_LIB := libalign.a
 TEST_LIB_DIR := ../..

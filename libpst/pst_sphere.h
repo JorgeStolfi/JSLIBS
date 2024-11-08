@@ -2,12 +2,13 @@
 #define pst_sphere_H
 
 /* pst_sphere.h -- geometric tools for images of spheres. */
-/* Last edited on 2009-03-03 13:49:16 by stolfi */
+/* Last edited on 2024-11-04 07:26:13 by stolfi */
 
 #include <ellipse_crs.h>
 #include <r2.h>
 #include <r3.h>
 #include <hr3.h> 
+#include <hr3_pmap.h> 
 #include <argparser.h>
 
 #include <pst_basic.h>

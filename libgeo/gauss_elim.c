@@ -1,9 +1,10 @@
 /* See gauss_elim.h */
-/* Last edited on 2023-02-27 08:58:47 by stolfi */
+/* Last edited on 2024-11-07 15:28:05 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
 #include <math.h>
+#include <string.h>
 #include <limits.h>
 #include <assert.h>
 
@@ -11,6 +12,7 @@
 #include <affirm.h>
 #include <bool.h>
 #include <rmxn.h>
+#include <jsmath.h>
 
 #include <gauss_elim.h>
 
@@ -31,22 +33,22 @@ int32_t gsel_solve(int32_t m, int32_t n, double A[], int32_t p, double B[], doub
       }
     
     /* Solve system: */
-    if (debug) { gsel_print_array(stderr, "%9.5f", "original:",  m, np, AB, ""); }
+    if (debug) { gsel_print_array(stderr, 4, "%9.5f", "original:",  m, np,"AB",AB, ""); }
     
     gsel_triangularize(m, np, AB, TRUE, tiny);
-    if (debug) { gsel_print_array(stderr, "%9.5f", "triangularized:",  m, np, AB, ""); }
+    if (debug) { gsel_print_array(stderr, 4, "%9.5f", "triangularized:",  m, np,"AB",AB, ""); }
     
     gsel_diagonalize(m, np, AB);
-    if (debug) { gsel_print_array(stderr, "%9.5f", "diagonalized:",  m, np, AB, ""); }
+    if (debug) { gsel_print_array(stderr, 4, "%9.5f", "diagonalized:",  m, np,"AB",AB, ""); }
 
     gsel_normalize(m, np, AB);
-    if (debug) { gsel_print_array(stderr, "%9.5f", "normalized:", m, np, AB, ""); }
+    if (debug) { gsel_print_array(stderr, 4, "%9.5f", "normalized:", m, np,"AB",AB, ""); }
 
     int32_t rank_ext = gsel_extract_solution(m, np, AB, p, X);
     if (debug) 
       { if (rank_ext < m) { fprintf(stderr, "there may be %d unsatisfied solutions\n", m - rank_ext); }
         if (rank_ext < np-p) { fprintf(stderr, "there are %d degrees of indeterminacy\n", np - p - rank_ext); }
-        gsel_print_array(stderr, "%9.5f", "solution:", n, p, X, "");
+        gsel_print_array(stderr, 4, "%9.5f", "solution:", n, p,"X",X, "");
       }
     
     return rank_ext;
@@ -63,43 +65,6 @@ double gsel_determinant(int32_t m, int32_t n, double A[], int32_t q)
     /* Triangularize and get determinant: */
     gsel_triangularize(q, q, M, FALSE, 0.0);
     return gsel_triangular_det(q, q, M, q);
-  }
-
-void gsel_print_system
-  ( FILE *wr, 
-    char *fmt, 
-    char *head, 
-    int32_t m, 
-    int32_t n, 
-    double A[], 
-    int32_t p, 
-    double B[], 
-    char *foot
-  )
-  { if (head != NULL) { fprintf(wr, "%s\n", head); }
-    
-    for (int32_t i = 0; i < m; i++)
-      { fprintf(wr, "  ");
-        for (int32_t j = 0; j < n; j++)
-          { fprintf(wr, " "); fprintf(wr, fmt, A[i*n + j]); }
-        fprintf(wr, " | "); 
-        for (int32_t k = 0; k < p; k++)
-          { fprintf(wr, " "); fprintf(wr, fmt, B[i*p + k]); }
-        fprintf(wr, "\n");
-      }
-    if (foot != NULL) { fprintf(wr, "%s\n", foot); }
-  }
-
-void gsel_print_array(FILE *wr, char *fmt, char *head, int32_t m, int32_t n, double M[], char *foot)
-  { if (head != NULL) { fprintf(wr, "%s\n", head); }
-    
-    for (int32_t i = 0; i < m; i++)
-      { fprintf(wr, "  ");
-        for (int32_t j = 0; j < n; j++)
-          { fprintf(wr, " "); fprintf(wr, fmt, M[i*n + j]); }
-        fprintf(wr, "\n");
-      }
-    if (foot != NULL) { fprintf(wr, "%s\n", foot); }
   }
 
 void gsel_triangularize(int32_t m, int32_t n, double M[], bool_t total, double tiny)
@@ -262,5 +227,72 @@ void gsel_residual(int32_t m, int32_t n, double A[], int32_t p, double B[], doub
             R[ipj] = sum; ipj++;
           }
         in0 += n;
+      }
+  }
+
+void gsel_print_array
+  ( FILE *wr,
+    int32_t indent,
+    char *fmt,
+    char *head,
+    int32_t m,
+    int32_t n,
+    char *Mname,
+    double M[],
+    char *foot
+  )
+  { 
+    gsel_print_system(wr, indent, fmt, head, m, n,Mname,M, -1,NULL,NULL, -1,NULL,NULL, foot);
+  }
+
+void gsel_print_system
+  ( FILE *wr, 
+    int32_t indent,
+    char *fmt, 
+    char *head, 
+    int32_t m, 
+    int32_t n, 
+    char *Aname,
+    double A[], 
+    int32_t p, 
+    char *Bname,
+    double B[], 
+    int32_t q,
+    char *Cname,
+    double C[], 
+    char *foot
+  )
+  { if (Aname == NULL) { Aname = ""; }
+    char *Aeq = (strlen(Aname) > 0 ? " = " : "");
+    
+    if (Bname == NULL) { Bname = ""; }
+    char *Beq = (strlen(Bname) > 0 ? " = " : "");
+    
+    if (Cname == NULL) { Cname = ""; }
+    char *Ceq = (strlen(Cname) > 0 ? " = " : "");
+    
+    auto void print_row(int32_t i, char *name, char *eq, int32_t r, double M[]);
+      /* Prints a row of {M} on the current line, without newline. */
+    
+    if (head != NULL) { fprintf(wr, "%*s%s\n", indent, "", head); }
+    for (int32_t i = 0; i < m; i++)
+      { if (indent > 0) { fprintf(wr, "%*s", indent, ""); }
+        if (A != NULL) { print_row(i, Aname, Aeq, n, A); }
+        if (B != NULL) { print_row(i, Bname, Beq, p, B); }
+        if (C != NULL) { print_row(i, Cname, Ceq, q, C); }
+        fprintf(wr, "\n");
+      }
+    if (foot != NULL) { fprintf(wr, "%*s%s\n", indent, "", foot); }
+    return;
+    
+    void print_row(int32_t i, char *name, char *eq, int32_t r, double M[])
+      { int32_t skip = (int32_t)(strlen(name) + strlen(eq));
+        if (i == (m-1)/2)
+          { fprintf(wr, "  %s%s[ ", name, eq); }
+        else
+          { fprintf(wr, "  %*s[ ", skip, ""); }
+        for (int32_t k = 0; k < r; k++)
+          { fprintf(wr, " "); fprintf(wr, fmt, M[i*r + k]); }
+        fprintf(wr, " ]");
       }
   }

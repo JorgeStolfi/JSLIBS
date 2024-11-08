@@ -1,5 +1,5 @@
 /* r3x3.h --- 3x3 matrices and operations on them */
-/* Last edited on 2024-08-30 17:34:07 by stolfi */
+/* Last edited on 2024-11-07 23:49:32 by stolfi */
 
 #ifndef r3x3_H
 #define r3x3_H
@@ -7,6 +7,8 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
+
+#include <sign.h>
 #include <r3.h>
 
 typedef struct r3x3_t { double c[3][3]; } r3x3_t;
@@ -18,6 +20,13 @@ void r3x3_zero(r3x3_t *M);
 
 void r3x3_ident(r3x3_t *M);
   /* Stores in {M} the identity matrix. */
+
+void r3x3_throw(r3x3_t *A, sign_t sgn);
+  /* Fills {A} with random elements in the range {[-1 _ +1]}.
+    The {sgn} must be {-1}, 0, or {+1}. If it is not zero,
+    the matrix will have a nonzero determinant of that sign.
+    If {sgn} is zero, the determinant may have any sign,
+    including zero. */
 
 void r3x3_transp(r3x3_t *A, r3x3_t *M);
   /* Sets {M} to the transpose {A^t} of matrix {A}. */

@@ -1,5 +1,5 @@
 /* Test tools for {hr3.h} test programs */
-/* Last edited on 2024-09-17 17:34:31 by stolfi */
+/* Last edited on 2024-11-04 06:37:21 by stolfi */
 
 #ifndef hr3_test_tools_H
 #define hr3_test_tools_H
@@ -11,7 +11,6 @@
 #include <assert.h>
 #include <math.h>
 
-#include <flt.h>
 #include <jsrandom.h>
 #include <affirm.h>
 

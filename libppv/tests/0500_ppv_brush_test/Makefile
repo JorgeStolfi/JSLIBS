@@ -1,6 +1,6 @@
-# Last edited on 2021-06-13 13:46:06 by jstolfi
+# Last edited on 2024-11-08 11:38:12 by stolfi
 
-PROG = ppv_brush_test
+PROG = test_ppv_brush
 
 TEST_LIB := libppv.a
 TEST_LIB_DIR := ../..

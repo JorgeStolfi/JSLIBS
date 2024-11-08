@@ -1,4 +1,4 @@
-# Last edited on 2024-01-11 07:28:47 by stolfi
+# Last edited on 2024-11-07 18:59:14 by stolfi
 
 PROG = test_sve_charges
  
@@ -156,7 +156,7 @@ single-test: ${PROG}
 	if [[ -r ${SOLFILE} ]] ; then \
           show-solution-3d.sh ${NQ} ${LMAX} ${SOLFILE} & \
         fi
-	xmessage "OK"
+	@-xmessage "OK"
 
 endif
 # end ${TEST} make

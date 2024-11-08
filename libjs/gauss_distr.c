@@ -1,5 +1,5 @@
 /* See gauss_distr.h */
-/* Last edited on 2019-12-05 20:03:22 by jstolfi */
+/* Last edited on 2024-11-05 20:55:29 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -33,7 +33,7 @@ double gauss_distr_PDF(double x, double avg, double dev)
   
 double gauss_distr_CDF(double x, double avg, double dev)
   { dev = fabs(dev);
-    if (dev == INF) { return (x == +INF ? NAN : 0.0); }
+    if (dev == INF) { return (x == +INF ? 1.0 : 0.0); }
     if (dev == 0.0) { return (x < avg ? 0.0 : (x > avg ? 1.0 : NAN)); }
     if (x == avg)
       { return (fabs(avg) == INF ? NAN : 0.5); }
@@ -48,7 +48,19 @@ double gauss_distr_CDF(double x, double avg, double dev)
 double gauss_distr_integral(double x0, double x1, double avg, double dev)
   { /* There seems to be no point in checking for too big args, {erf} does that itself: */
     dev = fabs(dev);
-    if (dev == INF) { return ((x0 == +INF) || (x1 == +INF) ? NAN : 0.0); }
+    if (dev == INF) 
+      { /* PDF is flat at 0, but integral is 1: */
+        if (x0 == x1)
+          { return 0.0; }
+        else if ((x0 == -INF) && (x1 == +INF))
+          { return +1.0; }
+        else if ((x0 == +INF) && (x1 == -INF))
+          { return -1.0; }
+        else if ((fabs(x0) == INF) || (fabs(x1) == INF))
+          { return NAN; }
+        else
+          { return 0.0; }
+      }
     if (dev == 0.0) 
       { /* Dirac pulse: */
         if ((x0 < avg) && (x1 > avg))
@@ -64,18 +76,23 @@ double gauss_distr_integral(double x0, double x1, double avg, double dev)
     double z0 = (x0 - avg)/dev2;
     double z1 = (x1 - avg)/dev2;
     
-    if ((z0 >= 0.0) && (z1 >= 0.0))
-      { /* Use the difference of {erfc} because it is more accurate: */
-        return (erfc(z0) - erfc(z1))/2;
-      }
-    else if ((z0 <= 0.0) && (z1 <= 0.0))
-      { /* Use the difference of {erfc} reversed because it is more accurate: */
-        return (erfc(-z1) - erfc(-z0))/2;
-      }
+    /* If {z>=1}, {1-erfc(z)} is more accurate than {erf(z)}. */
+    double a0, c0; /* Such that {erf(z0)} is {a0+c0}, where {a0} is 0 or {±1}. */
+    if (fabs(z0) <= 1)
+      { a0 = 00; c0 = erf(z0); }
+    else if (z0 > 0)
+      { a0 = +1; c0 = -erfc(z0); }
     else
-      { /* No point in using {erfc}: */
-        /* !!! Should check for {t0} near {t1} and try to get more accurate !!! */
-        return (erf(z1) - erf(z0))/2;
-      }
+      { a0 = -1; c0 = +erfc(-z0); }
+
+    double a1, c1; /* Such that {erf(z1)} is {a1+c1}, where {a1} is 0 or {±1}. */
+    if (fabs(z1) <= 1)
+      { a1 = 00; c1 = erf(z1); }
+    else if (z1 > 0)
+      { a1 = +1; c1 = -erfc(z1); }
+    else
+      { a1 = -1; c1 = +erfc(-z1); }
+      
+    return ((a1 - a0) + (c1 - c0))/2;
   }
 

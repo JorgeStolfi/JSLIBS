@@ -1,6 +1,6 @@
-# Last edited on 2016-04-03 13:26:52 by stolfilocal
+# Last edited on 2024-11-08 11:23:29 by stolfi
 
-PROG = gauss_elim_test
+PROG = test_gauss_elim
  
 TEST_LIB := libgeo.a
 TEST_LIB_DIR := ../..

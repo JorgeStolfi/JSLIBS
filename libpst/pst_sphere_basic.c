@@ -1,5 +1,5 @@
 /* See pst_geom.h */
-/* Last edited on 2009-03-03 13:51:22 by stolfi */
+/* Last edited on 2024-11-04 07:29:00 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -11,6 +11,7 @@
 #include <r2.h>
 #include <r3.h> 
 #include <hr3.h> 
+#include <hr3_pmap.h> 
 #include <r3x3.h> 
 #include <jsrandom.h>
 #include <affirm.h>

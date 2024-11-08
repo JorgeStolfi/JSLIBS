@@ -1,6 +1,6 @@
-# Last edited on 2022-02-28 11:52:52 by stolfi
+# Last edited on 2024-11-08 11:19:08 by stolfi
 
-PROG = r2_align_quadopt_test
+PROG = test_r2_align_quadopt
 
 TEST_LIB := libalign.a
 TEST_LIB_DIR := ../..

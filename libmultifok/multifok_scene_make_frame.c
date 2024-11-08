@@ -1,5 +1,5 @@
 /* See {multifok_scene.h}. */
-/* Last edited on 2024-10-24 15:32:20 by stolfi */
+/* Last edited on 2024-10-28 15:14:10 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -83,7 +83,7 @@ multifok_frame_t *multifok_scene_make_frame
         color of the scene's surface at that point. 
         
         If the ray does not hit any object, returns in {*pHit_P} the 
-        intersection of the ray with the plane {Z=ZMIN}, and 
+        intersection of the ray with the plane {Z=zMin}, and 
         sets {colr[0..NC-1]} to {0.500}. */
         
     auto void map_point(r2_t *p2_img, r3_t *p3_scene);
@@ -139,7 +139,9 @@ multifok_frame_t *multifok_scene_make_frame
                 assert(FALSE);
               }
             /* Compute the hit point's color: */
-            frgb_t colr_ray = multifok_scene_raytrace_compute_hit_color(oHit_ray, &(pHit_ray), pattern);
+            r3_t light_dir = (r3_t){{ 2.0, 3.0, 4.0 }};
+            (void)r3_dir(&light_dir, &light_dir);
+            frgb_t colr_ray = multifok_scene_raytrace_compute_hit_color(oHit_ray, &(pHit_ray), pattern, &light_dir);
             for (int32_t ic = 0; ic < NC; ic++) { colr[ic] = colr_ray.c[ic]; }
           }
         (*pHit_P) = pHit_ray;

@@ -1,5 +1,5 @@
 /* rmxn.h --- m by n matrices and operations on them */
-/* Last edited on 2023-10-09 09:03:31 by stolfi */
+/* Last edited on 2024-11-07 14:07:13 by stolfi */
 
 #ifndef rmxn_H
 #define rmxn_H
@@ -42,6 +42,14 @@ void rmxn_set_col(int32_t m, int32_t n, double *A, int32_t j, double *r);
 void rmxn_scale(int32_t m, int32_t n, double s, double *A, double *M);
   /* Stores in {M} the matrix {s*A}.  The matrix {M} may be the 
     same as {A}. */
+    
+void rmxn_add(int32_t m, int32_t n, double *A, double *B, double *M);
+  /* Stores in {M} the matrix {A+B}.  The matrix {M} may be the 
+    same as {A} and/or {B}. */
+    
+void rmxn_sub(int32_t m, int32_t n, double *A, double *B, double *M);
+  /* Stores in {M} the matrix {A-B}.  The matrix {M} may be the 
+    same as {A} and/or {B}. */
 
 void rmxn_mix (int32_t m, int32_t n, double s, double *A, double t, double *B, double *M);
   /* Stores in {M} the matrix {s*A + t*B}. The matrix {M} may be the 
@@ -188,15 +196,19 @@ void rmxn_print (FILE *f, int32_t m, int32_t n, double *A);
   omitted. */
 
 void rmxn_gen_print 
-  ( FILE *f, int32_t m, int32_t n, double *A,
+  ( FILE *f, 
+    int32_t m, 
+    int32_t n, double *A,
     char *fmt, 
     char *olp, char *osep, char *orp, /* Outer delimiters. */
     char *ilp, char *isep, char *irp  /* Inner delimiters. */
   );
-  /* Prints the {m x n} matrix {A} to file {f}. */
+  /* Prints the {m x n} matrix {A} to file {f}. 
+    The */
 
 void rmxn_gen_print2 
-  ( FILE *f, int32_t m,
+  ( FILE *f, 
+    int32_t m,
     int32_t n1, double *A1,
     int32_t n2, double *A2,
     char *fmt, 
@@ -207,7 +219,8 @@ void rmxn_gen_print2
   /* Prints the {m x n1} matrix {A1} and the {m x n2} matrix {A2}, side by side, to file {f}. */
  
 void rmxn_gen_print3 
-  ( FILE *f, int32_t m,
+  ( FILE *f, 
+    int32_t m,
     int32_t n1, double *A1,
     int32_t n2, double *A2,
     int32_t n3, double *A3,

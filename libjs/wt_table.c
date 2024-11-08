@@ -1,5 +1,5 @@
 /* See wt_table.h */
-/* Last edited on 2023-11-26 05:50:51 by stolfi */
+/* Last edited on 2024-11-06 01:30:28 by stolfi */
 
 #define wt_table_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -104,7 +104,7 @@ void wt_table_print(FILE *wr, char *wtname, int32_t n, double wt[], int32_t stri
     double wsExp = 1.0/stride; /* Expected value of overlapped windows. */
     for (int32_t k = 0; k < n; k++)
       { double wa = wt[k];
-        fprintf(wr, "  w[%03d] (%+6.1f) = %10.8f", k, k - ctr, wa);
+        fprintf(wr, "  w[%03d] (%+6.1f) = %18.16", k, k - ctr, wa);
         sum_w += wa;
         sum_bw[k%2] += wa;
         if (stride != 0)
@@ -118,11 +118,11 @@ void wt_table_print(FILE *wr, char *wtname, int32_t n, double wt[], int32_t stri
     fprintf(wr, "\n");
     fprintf(wr, "width =     %4d\n", n);
     fprintf(wr, "radius =    %6.1f\n", radius);
-    fprintf(wr, "sum =       %13.8f\n", sum_w);
+    fprintf(wr, "sum =       %21.16f\n", sum_w);
     if (sum_w == 0) { sum_w = 1.0e-200; }
-    fprintf(wr, "unbalance = %13.8f\n", (sum_bw[1] - sum_bw[0])/sum_w);
+    fprintf(wr, "unbalance = %21.16f\n", (sum_bw[1] - sum_bw[0])/sum_w);
     double avg = wt_table_avg(n, wt);
-    fprintf(wr, "mean =      %13.8f\n", avg);
+    fprintf(wr, "mean =      %21.16f\n", avg);
     double sum_d2w = 0;
     for (int32_t k = 0; k < n; k++)
       { double w = wt[k];
@@ -130,8 +130,8 @@ void wt_table_print(FILE *wr, char *wtname, int32_t n, double wt[], int32_t stri
         sum_d2w += d*d*w; 
       }
     double var = wt_table_var(n, wt, avg);
-    fprintf(wr, "variance =  %13.8f\n", var);
-    fprintf(wr, "deviation = %13.8f\n", sqrt(var));
+    fprintf(wr, "variance =  %21.16f\n", var);
+    fprintf(wr, "deviation = %21.16f\n", sqrt(var));
     fprintf(wr, "\n");
   }
 

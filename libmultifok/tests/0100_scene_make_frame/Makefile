@@ -1,4 +1,4 @@
-# Last edited on 2024-10-26 08:49:21 by stolfi
+# Last edited on 2024-10-28 15:14:00 by stolfi
 
 SHELL := /bin/bash
 
@@ -42,12 +42,8 @@ all: \
 IMAGE_NX := 320
 IMAGE_NY := 240
 
-# Nominal scene dimensions:
-SCENE_WX := 160
-SCENE_WY := 120
-
 # Subpixel and ray sampling:
-PIX_SAMPLING := 1  # {HS} in code.  There will be {(2*HS+1)^2} sampling points per pixel.
+PIX_SAMPLING := 2  # {HS} in code.  There will be {(2*HS+1)^2} sampling points per pixel.
 DIR_SAMPLING := 3  # {KR} in code.  There will be at least {KR} rays per sampling point.
 
 # {TEXTURE}:{MULTIPLICITY}:{SCENE_TYPE}
@@ -112,8 +108,8 @@ ALL_TESTS := \
   ${MORE_TESTS}
 
 # TESTS := ${QUICK_TESTS}
-TESTS := ${BASIC_TESTS}
-# TESTS := ${OBJECT_TESTS}
+# TESTS := ${BASIC_TESTS}
+TESTS := ${OBJECT_TESTS}
 
 all-stacks: 
 	for targs in ${TESTS} ; do \
@@ -139,18 +135,24 @@ PATTERN :=    ${word 1, ${TEST_ARGS}}
 ZOPT :=       ${word 2, ${TEST_ARGS}}
 SCENE_TYPE := ${word 3, ${TEST_ARGS}}
 
+Z_DEP := 12.0
+ZFOC_STEP := ${shell v=`echo '${Z_DEP}/2.0' | bc -lq` ; printf "%.3f" $$v}
+
+# Nominal scene dimensions.
+# Scene Z height had better be a multiple of ${ZFOC_STEP}.
+SCENE_WX := 160
+SCENE_WY := 120
+SCENE_ZMIN := 30
+SCENE_ZMAX := 90
+
 ifeq "/${ZOPT}" "/S"
   # Single image at midway focus plane {Z}:
-  Z_DEP := 12.0
-  ZFOC_MIN := 30.5
-  ZFOC_MAX := 30.5
-  ZFOC_STEP := 6.0
+  ZFOC_MIN := ${shell echo '(${SCENE_ZMIN} + ${SCENE_ZMAX})/2.0' | bc -lq}
+  ZFOC_MAX := ${ZFOC_MIN}
 else ifeq "/${ZOPT}" "/M"
   # Stack of images at multiple focus plane {Z}:
-  Z_DEP := 12.0
-  ZFOC_MIN := 0.50
-  ZFOC_MAX := 60.51
-  ZFOC_STEP := 6.00
+  ZFOC_MIN := ${shell v=`echo '${SCENE_ZMIN} - ${ZFOC_STEP}/2.0' | bc -lq` ; printf "%.3f" $$v}
+  ZFOC_MAX := ${shell v=`echo '${SCENE_ZMAX} + ${ZFOC_STEP}/2.0' | bc -lq` ; printf "%.3f" $$v}
 else
   # Unknown ${ZOPT}:
   :=:
@@ -182,7 +184,7 @@ ${SHARP_IMAGE}: ${PROG} ${RUN_SCRIPT} Makefile
 	./${PROG}  \
           -imageSize  ${IMAGE_NX} ${IMAGE_NY} \
           -sceneType ${SCENE_TYPE} \
-          -sceneSize ${SCENE_WX} ${SCENE_WY} \
+          -sceneSize 0 ${SCENE_WX}  0 ${SCENE_WY}  ${SCENE_ZMIN} ${SCENE_ZMAX} \
           -pixSampling ${PIX_SAMPLING} \
           -dirSampling ${DIR_SAMPLING} \
           -focusHeight ${ZFOC_MIN} to ${ZFOC_MAX} step ${ZFOC_STEP} \

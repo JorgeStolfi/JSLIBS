@@ -1,5 +1,5 @@
 /* test_sve_catenary --- test of {sve_minn.h} for hanging-chain energy minimization. */
-/* Last edited on 2024-01-11 07:16:45 by stolfi */
+/* Last edited on 2024-11-08 09:53:14 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -175,11 +175,16 @@ void find_chain_shape(int32_t nk, double wd)
     double rMin = 0.000001;
     double rMax = 0.50*M_PI;
     double rIni = 0.10*M_PI;
-    double stop = 0.01*rMin;
+    double minStep = 0.01*rMin;
     int32_t maxIters = 200;
     sign_t dir = -1;
     
-    sve_minn_iterate(nc, &F, &OK, c, &Fc, dir, ctr, dMax, dBox, rIni, rMin, rMax, stop, maxIters, debug);
+    sve_minn_iterate
+      ( nc, &F, &OK, NULL,
+        c, &Fc, dir, 
+        ctr, dMax, dBox, rIni, rMin, rMax, 
+        minStep, maxIters, debug
+      );
     
     /* Print and write final solution: */
     fprintf(stderr, "final solution:\n");

@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:30:51 by jstolfi
+# Last edited on 2024-11-06 11:16:13 by stolfi
 
 PROG = test_lsq_robust
  
@@ -20,8 +20,11 @@ check:  do-all-tests
 # Trial indices:
 BEZPOLYS :=  00:000  01:000 01:001  02:000 02:001 02:002  03:000 03:001 03:002 03:003   04:000 04:001 04:002 04:003 04:004
 RANPOLYS :=  01:002  02:003 02:004  03:004 03:005         04:005 04:006                 05:006 05:007
+BUGPOLYS :=                                               04:005 04:006                 05:006 05:007
+
 # TRIALS := ${RANPOLYS} ${BEZPOLYS}
-TRIALS := ${RANPOLYS}
+# TRIALS := ${RANPOLYS}
+TRIALS := ${BUGPOLYS}
 
 do-all-tests: 
 	for tt in ${TRIALS}  ; do \

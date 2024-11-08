@@ -1,5 +1,5 @@
 /* See pst_nodak.h */
-/* Last edited on 2023-03-19 15:28:51 by stolfi */
+/* Last edited on 2024-11-04 07:32:09 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -16,6 +16,7 @@
 #include <r3x3.h> 
 #include <rn.h> 
 #include <hr2.h>
+#include <hr2_pmap.h>
 #include <gauss_elim.h> 
 #include <qmin_simplex.h> 
 #include <affirm.h>

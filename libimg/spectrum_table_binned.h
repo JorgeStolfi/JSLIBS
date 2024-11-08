@@ -2,7 +2,7 @@
 #define spectrum_table_binned_H
 
 /* Tools for gathering binned (histogram-like) power spectra of images. */
-/* Last edited on 2023-03-18 10:26:13 by stolfi */ 
+/* Last edited on 2024-11-06 10:11:15 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -51,8 +51,8 @@ spectrum_table_binned_t spectrum_table_binned_make(int32_t nRanges);
 
 void spectrum_table_binned_add_all
   ( float_image_t *P,
-    bool_t center,
     int32_t c,
+    bool_t center,
     spectrum_table_binned_t *tb,
     bool_t verbose
   );

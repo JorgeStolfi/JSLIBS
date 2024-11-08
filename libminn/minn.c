@@ -1,5 +1,5 @@
 /* See {minn.h}. */
-/* Last edited on 2024-01-10 13:46:38 by stolfi */
+/* Last edited on 2024-11-08 00:06:13 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -120,7 +120,7 @@ void minn_ellipsoid_constrained
     double *Fval_P      /* (OUT) Goal function value at the minimum. */
   )
   {
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
     demand(n >= 0, "invalid {n}");
     demand(q >= 0, "invalid {q}");
 

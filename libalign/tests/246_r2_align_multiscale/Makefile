@@ -1,6 +1,6 @@
-# Last edited on 2023-02-19 09:12:01 by stolfi
+# Last edited on 2024-11-08 11:16:37 by stolfi
 
-PROG = r2_align_multiscale_test
+PROG = test_r2_align_multiscale
 
 TEST_LIB := libalign.a
 TEST_LIB_DIR := ../..

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {multifok_test_image_make.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-10-26 07:53:23 by stolfi */ 
+/* Last edited on 2024-10-29 23:39:40 by stolfi */ 
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
 #define test_mfok_scene_make_frame_COPYRIGHT \
@@ -52,31 +52,29 @@
   "\n" \
   PROG_OUTPUT_INFO
 
-#define ZMIN multifok_scene_ZMIN
-#define ZMAX multifok_scene_ZMAX
-  /* Shorter names. */
-  
 typedef struct mfmi_options_t 
-  { int32_t imageSize_X;   /* Image width. */
-    int32_t imageSize_Y;   /* Image height. */
-    char *sceneType;     /* Scene type: "R", "F", "T", etc. */
-    int32_t pixSampling; /* Number of sampling points per axis and pixel. */
-    int32_t dirSampling; /* Min number of aperture rays per point. */
-    char *patternFile;   /* File name of pattern to use to paint objects. */
-    char *outDir;        /* Prefix for output filenames. */
+  { int32_t imageSize_X;       /* Image width. */
+    int32_t imageSize_Y;       /* Image height. */
+    char *sceneType;           /* Scene type: "R", "F", "T", etc. */
+    int32_t pixSampling;       /* Number of sampling points per axis and pixel. */
+    int32_t dirSampling;       /* Min number of aperture rays per point. */
+    char *patternFile;         /* File name of pattern to use to paint objects. */
+    char *outDir;              /* Prefix for output filenames. */
     /* These parameters are specified in user units: */
-    double sceneSize_X;  /* Nominal {X}-span of scene */
-    double sceneSize_Y;  /* Nominal {Y}-span of scene */
-    double dephOfFocus;     /* Depth of focus. */
-    double focusHeight_lo;    /* Lowest focus plane {Z}. */
-    double focusHeight_hi;    /* Highest focus plane {Z}. */
-    double focusHeight_step;        /* {Z} increment between focus planes. */
+    interval_t sceneSize[3];   /* Nominal coordinate ranges of scene. */
+    double dephOfFocus;        /* Depth of focus. */
+    double focusHeight_lo;     /* Lowest focus plane {Z}. */
+    double focusHeight_hi;     /* Highest focus plane {Z}. */
+    double focusHeight_step;   /* {Z} increment between focus planes. */
   } mfmi_options_t;
   /* Command line parameters. */
   
 #define PROG_OUTPUT_INFO \
   "  RUN DIRECTORY\n" \
-  "    The program writes all its output files to a folder \"{outDir}/{stackDir}\" where {stackDir} is \"st{sceneType}-{patternName}-{HHHH}x{VVVV}-hs{SS}-kr{RR}\", {HHHH} and {VVVV} are the image dimensions {NX} and {NY} formatted as \"%04d\", and {SS} and {RR} are the pixel and ray sampling orders {HS} and {KR} formatted as \"%02d\".\n" \
+  "    The program writes all its output files to a folder \"{outDir}/{stackDir}\" where" \
+  " {stackDir} is \"st{sceneType}-{patternName}-{HHHH}x{VVVV}-hs{SS}-kr{RR}\", {HHHH} and" \
+  " {VVVV} are the image dimensions {NX} and {NY} formatted as \"%04d\", and {SS} and" \
+  " {RR} are the pixel and ray sampling orders {HS} and {KR} formatted as \"%02d\".\n" \
   "\n" \
   "  FRAME DIRECTORIES\n" \
   "    " multifok_FRAME_DIR_INFO "\n" \
@@ -87,23 +85,39 @@ typedef struct mfmi_options_t
   "\n" \
   "  PIXEL V FOCUS PLOT FILES\n" \
   "\n" \
-  "    The program also writes to the run directory \"{outDir}/{stackDir}\" zero or more files \"pixel-values-{XXXX}-{YYYY}.txt\" where {XXXX} and {YYYY} are the column and row indices {ix,iy} of a pixel that was selected for detailed debugging.  Each of these files contain one line for each frame, excluding the sharp one.  Each line has fields \"{kf} {zFoc[kf]} {zDep[kf]} {hAvg[kf]} {hDev[kf]} {shrp[kf]} {sVal[kf][0]} .. {sVal[kf][NC-1]} where {kf} is a frame index (from 0), {zFoc[kf]} and {zDep[kf]} are the frame's nominal {zFoc} and {zDep} parameters, and the other fields are the sample values of pixel {ix,it} of the corresponding image from that frame.  These files can be used to plot the variation of those pixel properties as a function of the parameters {zFoc} and/or {zDep}.\n" \
+  "    The program also writes to the run directory \"{outDir}/{stackDir}\" zero or more" \
+  " files \"pixel-values-{XXXX}-{YYYY}.txt\" where {XXXX} and {YYYY} are the column and" \
+  " row indices {ix,iy} of a pixel that was selected for detailed debugging.  Each of" \
+  " these files contain one line for each frame, excluding the sharp one.  Each line has" \
+  " fields\n" \
+  "\n" \
+  "     \"{kf} {zFoc[kf]} {zDep[kf]} {hAvg[kf]} {hDev[kf]} {shrp[kf]} {sVal[kf][0]} .. {sVal[kf][NC-1]}\n" \
+  "\n" \
+  " where {kf} is a frame index (from 0), {zFoc[kf]} and {zDep[kf]} are the frame's" \
+  " nominal {zFoc} and {zDep} parameters, and the other fields are the sample values of" \
+  " pixel {ix,it} of the corresponding image from that frame.  These files can be used" \
+  " to plot the variation of those pixel properties as a function of the" \
+  " parameters {zFoc} and/or {zDep}.\n" \
   "\n" \
   "  RAY DATA FILES\n" \
   "\n" \
-  "    The program will also write in each frame directory \"{outDir}/{stackDir}/{framedir}\" zero or more files \"pixel-rays-{XXXX}-{YYYY}.txt\" where {XXXX} and {YYYY} are the column and row indices {ix,iy} of a selected debigging pixel, as above.  This file contains one line for each ray that was cast in order to compute the values of the frame images at that pixel. \n" \
+  "    The program will also write in each frame directory \"{outDir}/{stackDir}/{framedir}\" zero" \
+  " or more files \"pixel-rays-{XXXX}-{YYYY}.txt\" where {XXXX} and {YYYY} are the column" \
+  " and row indices {ix,iy} of a selected debigging pixel, as above.  This file contains on" \
+  "e line for each ray that was cast in order to compute the values of the frame images" \
+  " at that pixel. \n" \
   "    " multifok_raytrace_write_ray_data_INFO "\n" \
   "\n" \
-  "    The fields {xPix}, {yPix}, and {pixSize} are the same on all lines of each file. Since the in-focus plane is horizontal and {zFoc} is its {Z} scene coordinate, the field {hHit} is the same as {pHit.z}, and {vBlr} is {(pHit.x-pRay.x)^2 +(pHit.y-pRay.y)^2}."
+  "    The fields {xPix}, {yPix}, and {pixSize} are the same on all lines of each" \
+  " file. Since the in-focus plane is horizontal and {zFoc} is its {Z} scene" \
+  " coordinate, the field {hHit} is the same as {pHit.z}, and {vBlr} is" \
+  " {(pHit.x-pRay.x)^2 +(pHit.y-pRay.y)^2}."
   
 #define ot_FLAT multifok_scene_object_type_FLAT
 #define ot_RAMP multifok_scene_object_type_RAMP
 #define ot_DISK multifok_scene_object_type_DISK
 #define ot_BALL multifok_scene_object_type_BALL
-
-#define ZMIN multifok_scene_ZMIN
-#define ZMAX multifok_scene_ZMAX
-  /* Min and max scene {Z} coords. */
+#define ot_CONE multifok_scene_object_type_CONE
 
 int32_t main(int32_t argn, char **argv);
 
@@ -112,23 +126,21 @@ mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv);
   
 multifok_scene_t *mfmi_make_scene
   ( char *sceneType,
-    double WX,
-    double WY,
+    interval_t dom[],
     int32_t NX,
     int32_t NY,
     double zDep
   );
   /* Generates a test scene with disks, balls, and a back plane, roughly
-    spanning the rectanle {[0_WX]×[0_WY]} in {X} and {Y}, and the
-    interval {[ZMIN+1.0 _ ZMAX-1.0]} in {Z}.
+    spanning the box {dom[0]×dom[1]×dom[2]} in scene coordinates.
     
     If {sceneType} is "R", the scene will have no disks or balls, just a
-    titled floor --- a ramp that rises from {Z=ZMIN+1.0} at {X=0} to
-    {Z=ZMAX-1} at {X=WX}.
+    titled floor --- a ramp that rises from {Z=0} at {X=0} to
+    {Z=WZ} at {X=WX}.
     
-    If {sceneType} is "F" or "T", the floor will be flat at {Z=1.0},
+    If {sceneType} is "F" or "T", the floor will be flat at {Z=0.0},
     and there will be some number of disks and balls at random
-    {XY} coordinates and contained between {Z=ZMIN+1.0} and {ZMAX-1.0} 
+    {XY} coordinates and contained between {Z=0} and {Z=WZ}.
     
     Specifically, if {sceneType} is "F", the {XY} projections of the
     disks and balls will be disjoint, even when out of focus (assuming
@@ -271,7 +283,7 @@ int32_t main (int32_t argc, char **argv)
 
     /* Create the test scene: */
     multifok_scene_t *scene = mfmi_make_scene
-      ( o->sceneType, o->sceneSize_X, o->sceneSize_Y,
+      ( o->sceneType, o->sceneSize,
         NX, NY, 
         o->dephOfFocus
       );
@@ -306,28 +318,22 @@ int32_t main (int32_t argc, char **argv)
 
 multifok_scene_t *mfmi_make_scene
   ( char *sceneType,
-    double WX,
-    double WY,
+    interval_t dom[],
     int32_t NX,
     int32_t NY,
     double zDep
   )
   {
-    bool_t debug_scene = FALSE;
 
     fprintf(stderr, "creating scene of type %s", sceneType); 
     /* Define the scene's domain: */
-    interval_t dom[3];
-    dom[0] = (interval_t){{ 0.0, WX }};
-    dom[1] = (interval_t){{ 0.0, WY }};
-    dom[2] = (interval_t){{ ZMIN, ZMAX }};
     for (int32_t j = 0; j < 3; j++)
       { fprintf(stderr, "%s[%.3f _ %.3f]", (j == 0 ? " size = " : " × "), dom[j].end[0], dom[j].end[1]); }
     fprintf(stderr, "\n");
 
     /* Parse the {sceneType} defining {floorOnly,flatFloor,minSep}: */
     bool_t floorOnly; /* If true the scene is just the floor, else it has foreground objs. */
-    bool_t flatFloor; /* If true the floor is a flat plane at {ZMIN}, else a ramp. */
+    bool_t flatFloor; /* If true the floor is a flat plane at {zMin}, else a ramp. */
     double minSep; /* Min {XY} sep of non-overlapping objs. */
     
     /* The {minSep} is ignored if {floorOnly} is true. */
@@ -355,17 +361,21 @@ multifok_scene_t *mfmi_make_scene
       }
 
     assert(floorOnly | flatFloor);
-    multifok_scene_t *scene = multifok_scene_new(dom, debug_scene);
+    bool_t verbose = TRUE;
+    multifok_scene_t *scene = multifok_scene_new(dom, verbose);
     /* Define the object radius range {rMin,rMax} (in scene units): */
+    double WX = 2*interval_rad(&(dom[0]));
+    double WY = 2*interval_rad(&(dom[1]));
+    double WZ = 2*interval_rad(&(dom[2]));
     double Wmin = fmin(WX, WY);
     double scale_out = fmax(NX/WX, NY/WY);
     /* The min obj radius must be at least 7 pixels and 1/100 of scene: */
     double rMin = fmax(7.0/scale_out, 0.01*Wmin); /* Min object radius. */
     /* The max obj radius must be 1/4 of scene X or Y size. */
     /* Don't worry about Z, will be fitted as needed if spherical: */
-    double rMax = fmin(0.30*(ZMAX-ZMIN), 0.25*Wmin);       /* Max object radius. */
+    double rMax = fmin(0.30*WZ, 0.25*Wmin);       /* Max object radius. */
     multifok_scene_throw_objects
-      ( scene, floorOnly, flatFloor, rMin, rMax, minSep, debug_scene );
+      ( scene, floorOnly, flatFloor, rMin, rMax, minSep, verbose );
     
     assert((scene->objs[0].type == ot_FLAT) || (scene->objs[0].type == ot_RAMP));
     char *floorX = multifok_scene_object_type_to_string(scene->objs[0].type);
@@ -489,7 +499,7 @@ multifok_stack_t *mfmi_make_and_write_stack_from_pattern_function
         char *frameDir = NULL; 
         if (ki == NI-1)
           { /* Sharp frame: */
-            zFoc_fri = 0.5 * ZMAX;
+            zFoc_fri = zFoc_min + 0.5*NI*zFoc_step;
             zDep_fri = +INF;
             KR_fri = 0;
             asprintf(&frameDir, "%s/frame-sharp", stackDir); 
@@ -503,7 +513,7 @@ multifok_stack_t *mfmi_make_and_write_stack_from_pattern_function
           }
         
         mkdir(frameDir, 0755);
-        bool_t verbose = (ki < 3);
+        bool_t verbose = FALSE;
         multifok_frame_t *fri = mfmi_make_and_write_frame
           ( NX, NY, scene, tree, pattern, 
             zFoc_fri, zDep_fri, HS, KR_fri, verbose,
@@ -687,12 +697,12 @@ void mfmi_select_debug_pixels
         multifok_scene_object_t *obj0 = &(scene->objs[0]);
         assert((obj0->type == ot_FLAT) || (obj0->type == ot_RAMP));
         int32_t NQ_exp = (obj0->type == ot_FLAT ? 1 : 5); /* Redefine the goal... */
-        double WX_scene = 2*interval_rad(&(scene->dom[0]));
-        double WY_scene = 2*interval_rad(&(scene->dom[1]));
+        interval_t *xr = &(scene->dom[0]);
+        interval_t *yr = &(scene->dom[1]);
         for (int32_t kq = 0; kq < NQ_exp; kq++)
-          { double fr = (kq + 0.5)/NQ_exp;
-            double x_scene = fr*WX_scene;
-            double y_scene = fr*WY_scene;
+          { double fr = (NQ_exp == 0 ? 0.0 : 0.95*((2.0*kq)/(NQ_exp-1) - 1.0));
+            double x_scene = interval_mid(xr) + fr*interval_rad(xr);
+            double y_scene = interval_mid(yr) + fr*interval_rad(yr);
             selpix(x_scene, y_scene);
           }
       }
@@ -778,8 +788,11 @@ mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv)
     o->imageSize_Y = (int32_t)argparser_get_next_int(pp, 30, 4096);
 
     argparser_get_keyword(pp, "-sceneSize");
-    o->sceneSize_X = (int32_t)argparser_get_next_int(pp, 30, 4096);
-    o->sceneSize_Y = (int32_t)argparser_get_next_int(pp, 30, 4096);
+    for (int32_t j = 0; j < 3; j++)
+      { double lo = argparser_get_next_double(pp, -4096.0, +4096.0);
+        double hi = argparser_get_next_double(pp, lo + 1.0, +4096.0);
+        o->sceneSize[j] = (interval_t){{ lo, hi }};
+      }
 
     argparser_get_keyword(pp, "-sceneType");
     o->sceneType = argparser_get_next_non_keyword(pp);  
@@ -794,11 +807,11 @@ mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv)
     o->dephOfFocus = argparser_get_next_double(pp, 0.1, 1.0e200);  
 
     argparser_get_keyword(pp, "-focusHeight");
-    o->focusHeight_lo = argparser_get_next_double(pp, ZMIN-1.0, ZMAX+1.0);  
+    o->focusHeight_lo = argparser_get_next_double(pp, -4096.0, +4096.0);  
     argparser_get_keyword_next(pp, "to");
-    o->focusHeight_hi = argparser_get_next_double(pp, o->focusHeight_lo, ZMAX+1.0);  
+    o->focusHeight_hi = argparser_get_next_double(pp, o->focusHeight_lo, +4096.0);  
     argparser_get_keyword_next(pp, "step");
-    o->focusHeight_step = argparser_get_next_double(pp, 0.001, ZMAX);  
+    o->focusHeight_step = argparser_get_next_double(pp, 0.001, 4096.0);  
 
     argparser_get_keyword(pp, "-patternFile");
     o->patternFile = argparser_get_next(pp);

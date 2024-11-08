@@ -1,6 +1,6 @@
-# Last edited on 2024-09-17 19:41:39 by stolfi
+# Last edited on 2024-11-08 11:27:07 by stolfi
 
-PROG = hr2_pmap_enc_dec_test
+PROG = test_hr2_pmap_enc_dec
 
 TEST_LIB := libgeo.a
 TEST_LIB_DIR := ../..

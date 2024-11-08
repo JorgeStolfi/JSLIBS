@@ -1,5 +1,5 @@
 /* Test scenes and ray-tracing for {multifok_test}. */
-/* Last edited on 2024-10-24 13:17:16 by stolfi */
+/* Last edited on 2024-10-29 13:18:45 by stolfi */
 
 #ifndef multifok_scene_H
 #define multifok_scene_H
@@ -16,11 +16,6 @@
 #include <multifok_image.h>
 #include <multifok_frame.h>
 #include <multifok_scene_object.h>
-
-#define multifok_scene_ZMIN 0.0
-#define multifok_scene_ZMAX 60.0
-  /* The vertical range of the scene's visible surface is 
-    contained in {[multifok_scene_ZMIN _ multifok_scene_ZMAX]}. */
 
 typedef struct multifok_scene_t
   { interval_t dom[3];  /* Clips and contains the scene. */ 
@@ -40,8 +35,7 @@ typedef struct multifok_scene_t
     contained in {dom[2]}.
     
     The horizontal projection of some objects may extend outside {D},
-    but their {Z} ranges will be contained in {dom[2]}; which in turn
-    must be contained in {[multifok_scene_ZMIN _ multifok_scene_ZMAX]}. */ 
+    but their {Z} ranges will be contained in {dom[2]}. */ 
 
 multifok_scene_t *multifok_scene_new(interval_t dom[], bool_t verbose);
   /* Creates a {scene} with the given {dom} box, consisting of a floor and no objects.
@@ -79,6 +73,9 @@ r3_t multifok_scene_box_center(interval_t box[]);
 r3_t multifok_scene_box_radius(interval_t box[]);
   /* Returns a vector {rad} such that {rad.c[j]} is the half-size 
     of {box[j]}. */
+  
+void multifok_scene_print_box(FILE *wr, char *pref, interval_t box[], char *suff);
+  /* Prints {box[0..2]} to {wr}, preceded by {pref} and followed by {suff}. */
     
 void multifok_scene_check_object_IDs(int32_t NO, multifok_scene_object_t objs[]);
   /* Checks whether the {ID} fields of {objs[0..NO-1]} are a permutation

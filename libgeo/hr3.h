@@ -1,5 +1,5 @@
 /* Oriented projective geometry in three dimensions. */
-/* Last edited on 2024-09-17 16:18:50 by stolfi */ 
+/* Last edited on 2024-11-03 07:36:54 by stolfi */ 
 
 #ifndef hr3_H
 #define hr3_H
@@ -30,6 +30,10 @@ hr3_point_t hr3_from_r3(r3_t *c);
 r3_t r3_from_hr3(hr3_point_t *p);
   /* Cartesian coordinates of point {p} (which must be finite). */
   
+r3_t r3_from_hr3_nan(hr3_point_t *p);
+  /* Converts a point from homogeneous coordinates {p} to Cartesian
+    coordinates {c}.  If {p} is at infinity, returns {(NAN,NAN,NAN)}. */
+
 hr3_point_t hr3_point_at_infinity(r3_t *dir);
   /* The point at infinity whose direction, as seen from any hither
     point, is {*dir}. */
@@ -105,5 +109,23 @@ hr3_plane_t hr3_plane_throw(void);
   /* Returns a plane with homogeneous coefficienys uniformly
     distributed over the unit sphere of {\RR^4}. */
 
+/* PRINTOUT 
+
+  The procedures below print the string {pre} (if not NULL) before the object, and 
+  and {suf} (if not NULL) after it.  The coordinates/coefficients are printed
+  with the format {fmt} (or with "%24.16e" if {fmt} is NULL. */
+
+void hr3_point_print(FILE *wr, char *pre, hr3_point_t *p, char *fmt, char *suf);
+  /* Prints {p} to {wr} as "[ {w} {x} {y} {z} ]", prefixed by {pre}
+    and followed by {suf}, formatting  each coordinated with {fmt}. */
+    
+void hr3_plane_print(FILE *wr, char *pre, hr3_plane_t *P, char *fmt, char *suf);
+  /* Prints {P} to {wr} as "< {W} {X} {Y} {Z} >", prefixed by {pre} 
+    and followed by {suf}, formatting each coefficient with {fmt}. */
+    
+void hr3_line_print(FILE *wr, char *pre, hr3_line_t *L, char *fmt, char *suf);
+  /* Prints {L} to {wr} as "[[ {wx} {wy} {xy} {wz} {xz} {yz} ]]", 
+    prefixed by {pre} and followed by {suf},
+    formatting each Grassmann coordinate with {fmt}. */
 
 #endif

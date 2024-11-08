@@ -1,6 +1,6 @@
-# Last edited on 2021-08-17 08:58:04 by stolfi
+# Last edited on 2024-11-08 12:46:10 by stolfi
 
-PROG = rfntest
+PROG = test_rfn
  
 TEST_LIB := libgeo.a
 TEST_LIB_DIR := ../..

@@ -1,5 +1,5 @@
 /* See {multifok_sampling.h}. */
-/* Last edited on 2024-10-22 13:08:00 by stolfi */
+/* Last edited on 2024-10-29 23:41:06 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -46,9 +46,8 @@ void multifok_sampling_generate_2D_hann_samples
     double **w_P
   )
   {   
-    bool_t debug = TRUE;
-    
     demand(H >= 0, "invalid {H}");
+    bool_t debug = FALSE;
     
     /* Allocate and fill the final arrays: */
     int32_t W = 2*H + 1;

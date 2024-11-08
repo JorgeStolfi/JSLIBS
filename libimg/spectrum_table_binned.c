@@ -1,5 +1,5 @@
 /* See spectrum_table_binned.h */
-/* Last edited on 2023-03-18 16:33:00 by stolfi */ 
+/* Last edited on 2024-11-06 10:11:03 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <limits.h>
@@ -100,8 +100,8 @@ spectrum_table_binned_t spectrum_table_binned_make(int32_t nRanges)
 
 void spectrum_table_binned_add_all
   ( float_image_t *P,  
-    bool_t center,
     int32_t c,
+    bool_t center,
     spectrum_table_binned_t *tb,
     bool_t verbose
   )

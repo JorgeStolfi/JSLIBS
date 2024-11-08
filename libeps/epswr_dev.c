@@ -1,5 +1,5 @@
 /* See epswr.h */
-/* Last edited on 2024-06-22 19:36:37 by stolfi */
+/* Last edited on 2024-11-07 18:44:10 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -15,7 +15,6 @@
 #include <jsfile.h>
 #include <jstime.h>
 #include <jsstring.h>
-#include <rn.h>
 
 #include <epswr.h>
 #include <epswr_def.h>
@@ -1287,7 +1286,7 @@ void epswr_dev_rounded_polygon
     if ((!draw) && (!fill)) { return; }
     if (! epswr_vis_polygon_is_invisible(eps, psx, psy, n))
       { /* Compute the radii to use at each corner: */
-        double *arad = rn_alloc(n);
+        double *arad = talloc(n, double);
         for (int32_t i = 0; i<n; i++)
           { int32_t j = (i + 1) % n;
             int32_t k = (i + 2) % n;

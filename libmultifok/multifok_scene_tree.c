@@ -1,5 +1,5 @@
 /* See {multifok_scene_tree.h}. */
-/* Last edited on 2024-10-25 08:50:12 by stolfi */
+/* Last edited on 2024-10-29 13:25:58 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -21,13 +21,6 @@
 #include <multifok_scene.h>
 #include <multifok_scene_object.h>
 #include <multifok_scene_tree.h>
-  
-#define ZMIN multifok_scene_ZMIN
-#define ZMAX multifok_scene_ZMAX
-  /* Shorter name. */
-
-#define FUDGE (1.0e-6)
-  /* Fudge amount to expand bounding boxes to account for roundoff. */
 
 void multifok_scene_tree_sort_objects(int32_t NO, multifok_scene_object_t objs[], int8_t axis);
   /* Rearranges {objs[0..NO-1]} in increasing order of coordinate {axis} (0 or 1). */

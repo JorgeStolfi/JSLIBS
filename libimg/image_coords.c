@@ -1,5 +1,5 @@
 /* See {image_coords.h}. */
-/* Last edited on 2023-10-10 13:44:52 by stolfi */
+/* Last edited on 2024-10-31 13:44:15 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -63,15 +63,16 @@ hr2_pmap_t imgc_coord_sys_map
       
     for (int32_t ax = 1; ax <= 2; ax++)
       { bool_t rev = (ax == 1 ? xRev : yRev);
-        double oc = org->c[ax-1];            /* Position of origin in pixel units. */
         double sz = (ax == 1 ? cols : rows); /* Image size in pixels. */
         double d = (rev ? -1/unit : +1/unit);
-        double t; /* Translation term. */
         A.c[ax][ax] = d;
+        double t; /* Translation term. */
         if (center)
-          { t = oc - d*0.5*sz; }
+          { t = -0.5*sz*d; }
         else
-          { t = (rev ? oc - d*sz : oc); }
+          { double oc = org->c[ax-1];            /* Position of origin in USER units. */
+            t = (rev ? sz/unit : 0) - oc; 
+          }
         A.c[0][ax] = t;
       }
    

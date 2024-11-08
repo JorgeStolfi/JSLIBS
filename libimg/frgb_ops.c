@@ -1,5 +1,5 @@
 /* See {frgb_ops.h}. */
-/* Last edited on 2023-03-07 14:14:53 by stolfi */
+/* Last edited on 2024-10-26 20:08:41 by stolfi */
 
 /* Copyright (C) 2003 by Jorge Stolfi, the University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
@@ -920,11 +920,12 @@ void frgb_from_HTY(frgb_t *p)
         double t = frgb_T_from_YUV(Y, u, v);
         /* Compute the {(U,V)} coordinates from {t,T,u,v}: */
         assert(t > 0);
-        double U = T*u/t, V = T*v/t;
+        double U = T*u/t, V = T*v/t; 
         /* Repack as YUV: */
         (*p) = (frgb_t){{ (float)Y, (float)U, (float)V }}; 
         /* Convert to RGB: */
         frgb_from_YUV(p);
+        for (int32_t j = 0; j < 3; j++) { if (fabs(p->c[j]) < 1.0e-7) { p->c[j] = 0; } }
       }
   }
   

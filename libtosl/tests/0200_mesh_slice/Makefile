@@ -1,11 +1,11 @@
-# Last edited on 2024-10-08 21:56:00 by stolfi
+# Last edited on 2024-11-08 11:40:21 by stolfi
 
 SHELL := /bin/bash
 
 TEST_LIB := libtosl.a
 TEST_LIB_DIR := ../..
 
-PROG := tosl_mesh_slice_test
+PROG := test_tosl_mesh_slice
 
 JS_LIBS :=
 

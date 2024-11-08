@@ -1,5 +1,5 @@
 /* Test tools for {hr2_pmap.h} test program  */
-/* Last edited on 2024-09-17 19:35:57 by stolfi */
+/* Last edited on 2024-11-07 23:43:08 by stolfi */
 
 #ifndef hr2_pmap_test_tools_H
 #define hr2_pmap_test_tools_H
@@ -11,7 +11,6 @@
 #include <assert.h>
 #include <math.h>
 
-#include <flt.h>
 #include <jsrandom.h>
 #include <affirm.h>
 
@@ -38,6 +37,42 @@ void hr2_test_throw_pmap(hr2_pmap_t *M);
 
 void hr2_test_throw_aff_map(hr2_pmap_t *M);
   /* Fills {M} with a random affine map. */
+
+void hr2_test_choose_r2_point_pairs
+  ( hr2_pmap_type_t type,
+    sign_t sgn,
+    bool_t tight,
+    bool_t ident,
+    bool_t verbose,
+    int32_t *np_P,
+    r2_t **p1_P,
+    r2_t **p2_P,
+    double **w_P,
+    hr2_pmap_t *M_P
+  );
+  /* Chooses a suitable number {np} of point pairs {p1[i],p2[i]} and
+    weights {w[i]}, with {i} in {0..np-1}, for testing the quadratic
+    optimization with maps of the given {type} and {sgn}.
+    The {sgn} must be {-1} or {+1}. 
+    
+    If {tight}, {np} will be the minimum number {nr} of points needed to
+    define such a map, and that map will be exact.
+    
+    The procedure will choose two maps {M1,M2} of the given {type} and
+    {sgn}, then generate each pair of points {p1[i],p2[i]} by mapping
+    the same random point {p0[i]} through these two maps, and adding to
+    both small amounts of random noise. Thus, for all {i}, {p1[i]} and
+    {p2[i]} will be approximately related by the nominal map {M=M1^{-1}
+    M2}.
+    
+    If {ident} is true, the nominal map {M} will be the identity if
+    {sgn} is {+1}, or the {XY} swap map if {sgn} is {-1}. Otherwise {M}
+    will be a random map of the given {type} and {sgn}.
+    
+    Returns {np,p1,p2,w} in {*np_P,*p1_P,*p2_P,*w_P}.  Sometimes,
+    the weight table {w} will be {NULL}.
+    
+    Also returns in {*M_P} the nominal projective map {M=M1^{-1} M2}. */
 
 void hr2_test_do_check_pmap
   ( char *name,

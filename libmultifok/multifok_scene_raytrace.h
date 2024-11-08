@@ -1,5 +1,5 @@
 /* Ray-tracing test scenes for multi-focus stereo. */
-/* Last edited on 2024-10-24 15:14:56 by stolfi */
+/* Last edited on 2024-10-29 19:03:14 by stolfi */
 
 #ifndef multifok_scene_raytrace_H
 #define multifok_scene_raytrace_H
@@ -14,7 +14,6 @@
 #include <frgb.h>
 
 #include <multifok_image.h>
-#include <multifok_frame.h>
 #include <multifok_scene.h>
 #include <multifok_scene_object.h>
 #include <multifok_scene_tree.h>
@@ -44,10 +43,21 @@ void multifok_scene_raytrace
     
     Uses the tree structure {tree} to speed up the computation.*/
 
+void multifok_scene_raytrace_get_ray_bbox
+  ( r3_t *p,
+    r3_t *d,
+    double tMin,
+    double tMax,
+    interval_t bbox[]
+  );
+  /* Sets {bbox[0..2]} to the bounding box of the part of the ray
+    with parameter value in the range {[tMin _ tMax]}. */
+
 frgb_t multifok_scene_raytrace_compute_hit_color
   ( multifok_scene_object_t *obj,
     r3_t *q,
-    multifok_scene_raytrace_pattern_t *pattern
+    multifok_scene_raytrace_pattern_t *pattern,
+    r3_t *light_dir
   );
   /* Computes the color {clr} of the surface of object 
     {obj} at the point {pHit}.
@@ -57,7 +67,12 @@ frgb_t multifok_scene_raytrace_compute_hit_color
     obtains {clr} by interpolating between {obj.bg} and {obj.fg} with
     the ratio {r}. If {obj} is NULL, computes instead {r =
     pattern(x,y,z,-1)} where {(x,y,z) = q}, and maps {r} lineary to a
-    grayscale value from back to white. */
+    grayscale value from back to white.
+    
+    If {light_dir} is not NULL, it should be a unit vector pointing
+    towards the simulated light source.  The object will be rendered 
+    using a mix of uniform ambient light and unidirectional light with
+    a Lambertain surface finish model. */
 
 /* SCENE TO IMAGE COORDINATE MAPPING */
 

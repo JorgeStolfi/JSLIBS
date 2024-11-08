@@ -1,5 +1,5 @@
 /* See hr3.h */
-/* Last edited on 2024-09-17 16:27:48 by stolfi */ 
+/* Last edited on 2024-11-03 07:34:52 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -31,18 +31,16 @@
 #define NC 3
   /* Number of Cartesian coordinates in a point. */
 
-void hr3_point_to_r3_nan(hr3_point_t *p, r3_t *c);
-  /* Converts a point from homogeneous coordinates {p} to Cartesian
-    coordinates {c}.  If {p} is at infinity, returns {(NAN,NAN,NAN)}. */
-
-void hr3_point_to_r3_nan(hr3_point_t *p, r3_t *c)
+r3_t r3_from_hr3_nan(hr3_point_t *p)
   {
     double w = p->c.c[0];
     double m = fmax(fmax(fabs(p->c.c[1]), fabs(p->c.c[2])), fabs(p->c.c[3]));
+    r3_t c;
     if (fabs(w) <= m*1e-200) 
-      { (*c) = (r3_t){{ NAN, NAN, NAN }}; }
+      { c = (r3_t){{ NAN, NAN, NAN }}; }
     else
-      { (*c) = (r3_t){{ p->c.c[1]/w, p->c.c[2]/w, p->c.c[3]/w }}; } 
+      { c = (r3_t){{ p->c.c[1]/w, p->c.c[2]/w, p->c.c[3]/w }}; } 
+    return c;
   }
 
 hr3_point_t hr3_from_r3(r3_t *c)
@@ -321,38 +319,38 @@ hr3_plane_t hr3_plane_throw(void)
     return A;
   }
 
-void hr3_point_print(FILE *f, char *pre, hr3_point_t *p, char *fmt, char *suf)
-  { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, f); }
-    fputc('[', f);
+void hr3_point_print(FILE *wr, char *pre, hr3_point_t *p, char *fmt, char *suf)
+  { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, wr); }
+    fputs("[ ", wr);
     if (fmt == NULL) { fmt = "24.26e"; }
     for (int32_t i = 0; i < NH; i++)
-      { if (i != 0) { fputc(' ', f); }
-        fprintf(f, fmt, p->c.c[i]);
+      { if (i != 0) { fputc(' ', wr); }
+        fprintf(wr, fmt, p->c.c[i]);
       }
-    fputc(']', f);
-    if ((suf != NULL) && ((*suf) != 0)) { fputs(suf, f); }
+    fputs(" ]", wr);
+    if ((suf != NULL) && ((*suf) != 0)) { fputs(suf, wr); }
   }
 
-void hr3_plane_print(FILE *f, char *pre, hr3_plane_t *P, char *fmt, char *suf)
-  { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, f); }
-    fputc('[', f);
+void hr3_plane_print(FILE *wr, char *pre, hr3_plane_t *P, char *fmt, char *suf)
+  { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, wr); }
+    fputs("< ", wr);
     if (fmt == NULL) { fmt = "24.26e"; }
     for (int32_t i = 0; i < NH; i++)
-      { if (i != 0) { fputc(' ', f); }
-        fprintf(f, fmt, P->f.c[i]);
+      { if (i != 0) { fputc(' ', wr); }
+        fprintf(wr, fmt, P->f.c[i]);
       }
-    fputc(']', f);
-    if ((suf != NULL) && ((*suf) != 0)) { fputs(suf, f); }
+    fputs(" >", wr);
+    if ((suf != NULL) && ((*suf) != 0)) { fputs(suf, wr); }
   }
 
-void hr3_line_print(FILE *f, char *pre, hr3_line_t *L, char *fmt, char *suf)
-  { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, f); }
-    fputc('[', f);
+void hr3_line_print(FILE *wr, char *pre, hr3_line_t *L, char *fmt, char *suf)
+  { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, wr); }
+    fputs("[[ ", wr);
     if (fmt == NULL) { fmt = "24.26e"; }
     for (int32_t i = 0; i < NG; i++)
-      { if (i != 0) { fputc(' ', f); }
-        fprintf(f, fmt, L->k.c[i]);
+      { if (i != 0) { fputc(' ', wr); }
+        fprintf(wr, fmt, L->k.c[i]);
       }
-    fputc(']', f);
-    if ((suf != NULL) && ((*suf) != 0)) { fputs(suf, f); }
+    fputs(" ]]", wr);
+    if ((suf != NULL) && ((*suf) != 0)) { fputs(suf, wr); }
   }

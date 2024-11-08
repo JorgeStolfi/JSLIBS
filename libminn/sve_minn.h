@@ -2,7 +2,7 @@
 #define sve_minn_H
 
 /* Quadratic minimzation by the simplex vertex-edge method. */
-/* Last edited on 2024-01-10 19:54:06 by stolfi */
+/* Last edited on 2024-11-08 09:49:28 by stolfi */
 
 /* SIMPLICES
 
@@ -51,7 +51,7 @@ void sve_minn_step(int32_t n, double Fv[], double cm[], bool_t debug);
     {0 <= j <= i <= n}. */
 
 typedef double sve_goal_t(int32_t n, double x[]);
-  /* The type of a procedure that can be provided as argument to
+  /* The type of a procedure that can be provided as the {F} parameter to
     {sve_sample_function} and {sve_optimize} below. It should compute
     some function of the vector {x[0..n-1]}. The function had better be
     C2 near the optimum for fast convergence. */
@@ -67,15 +67,21 @@ void sve_sample_function(int32_t n, sve_goal_t *F, double v[], double Fv[]);
     {i,j} such that {0 <= j <= i <= n}. */
 
 typedef bool_t sve_pred_t(int32_t n, double x[], double Fx);
-  /* The type of a procedure that can be provided as argument to
+  /* The type of a procedure that can be provided as the {OK} parameter to
     {sve_minn_iterate} below. It should check the current solution
     {x[0..n-1]} and the corresponding goal function value {Fx}, and
     return {TRUE} to stop the iteration, {FALSE} to continue it. */
-    
+ 
+typedef double sve_proj_t(int32_t n, double x[], double Fx);
+  /* The type of a procedure that can be provided as the {project} parameter to
+    {sve_minn_iterate} below.  It can modify the current guess {x[0..n-1]}
+    and return a paossibly changed value of the goal function at that point. */
+   
 void sve_minn_iterate
   ( int32_t n, 
     sve_goal_t *F, 
     sve_pred_t *OK,
+    sve_proj_t *Proj,
     double x[],
     double *FxP,
     sign_t dir,
@@ -85,7 +91,7 @@ void sve_minn_iterate
     double rIni,
     double rMin, 
     double rMax,
-    double stop,
+    double minStep,
     int32_t maxIters,
     bool_t debug
   );
@@ -95,21 +101,35 @@ void sve_minn_iterate
     Upon entry, the vector {x[0..n-1]} should contain the initial guess,
     and {*FxP} should contain its function value {F(n,x)}. Upon exit,
     {x} will contain the final guess, and {*FxP} with contain the value
-    of {F(n,x)}. At each iteration, the procedure chooses a random probe
-    simplex centered on the current guess {x[0..n-1]}. The radius {r} of
-    the simplex is dynamically adjusted, starting with {rIni} but
+    of {F(n,x)}. 
+    
+    At each iteration, if {Proj} is not {NULL}, the procedure calls it
+    to adjust the current guess {x[0..n-1]}, e. g. projecting or
+    normalizing it onto some special subspace. Then the procedure
+    chooses a random probe simplex centered on {x[0..n-1]}. The radius
+    {r} of the simplex is dynamically adjusted, starting with {rIni} but
     staying within the range {[rMin _ rMax]}.
+    
+    The procedure then evaluates the goal function {F} at the 
+    vertices and edge midpoints of this simplex. as per {sve_sample_function}.
+    Note that the {Proj} function is NOT called on these 
+    probe points.  It then does a quadratic optimization step
+    on these values, as per {sve_minn_step}.  It then updates 
+    the current guess to either the result of this quadratic 
+    optimizaton or to one of the probe points, depending 
+    on the values of {F} at those points and the parameter {dir}.
     
     The parameter {dir} specifies the minimization drection. If {dir ==
     +1}, the procedure looks for a local maximum of {F}. If {dir == -1},
     it looks for a local minimum. If {dir == 0}, it looks for any
     stationary point of {F}, which may be a local minimum, a local
-    maximum, or a saddle point. In the latter case, the value of {F} at
-    the current guess {x} may increase or decrease during the search;
-    especially if the function is neither concave nor convex, or has a
-    significant non-quadratic behavior in the region searched. In that
-    case, the final guess {x} may be neither the minimum nor the maximum
-    of all sample points.
+    maximum, or a saddle point. In the latter case, the next guess at
+    each iteration is always the result of the quadratic optimization.
+    In this case, the value of {F} at the current guess {x} may increase
+    or decrease during the search; especially if the function is neither
+    concave nor convex, or has a significant non-quadratic behavior in
+    the region searched. In this case, the final guess {x} may be
+    neither the minimum nor the maximum of all sample points.
     
     If {dMax} is {+INF}, the search domain is the whole of {\RR}, and
     the {ctr} and {box} parameters are ignored. Otherwise, if {box} is
@@ -121,7 +141,7 @@ void sve_minn_iterate
     
     The iterations will stop when (A) the current guess {x} satisfies
     the predicate {OK(n,x,F(n,x))}; or (B) the distance between
-    successive guesses is less than {stop}; or (C) the quadratic
+    successive guesses is less than {minStep}; or (C) the quadratic
     minimization loop has been performed {maxIters} times.
     
     If {debug} is TRUE, the procedure prints various diagnostic messages. */
