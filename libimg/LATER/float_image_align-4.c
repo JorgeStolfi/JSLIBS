@@ -1,7 +1,6 @@
 /* See {float_image_align.h}. */
 /* Last edited on 2023-11-25 18:20:25 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <limits.h>
 #include <assert.h>

@@ -1,7 +1,6 @@
 /* See hi2.h */
-/* Last edited on 2021-06-09 20:15:17 by jstolfi */ 
+/* Last edited on 2024-11-20 15:39:52 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <math.h>
 #include <assert.h>
@@ -100,8 +99,8 @@ urat64_t hi2_dist_sqr(hi2_point_t *a, hi2_point_t *b)
     int64_t dy = ya*(int64_t)wb - yb*(int64_t)wa;   /* {-2*M^2 .. +2*M^2} */
     int64_t dw = wa*(int64_t)wb;                    /* {-M^2 .. +M^2} */
     
-    uint64_t num = dx*dx + dy*dy; /* {0 .. +8*M^4} */
-    uint64_t den = dw*dw;         /* {0 .. +M^4} */
+    uint64_t num = (uint64_t)(dx*dx + dy*dy); /* {0 .. +8*M^4} */
+    uint64_t den = (uint64_t)(dw*dw);         /* {0 .. +M^4} */
     
     urat64_t d = (urat64_t){ num, den };
     return d;
@@ -213,7 +212,7 @@ sign_t hi2_in_circle(hi2_point_t *a, hi2_point_t *b, hi2_point_t *c, hi2_point_t
 //     }
 //     
 //     /* Make the weights positive, so that {p,q,r} are strictly honored: */
-//     for (i = 0; i < NH; i++) { w.c[i] = fabs(w.c[i]); }
+//     for (int32_t i = 0; i < NH; i++) { w.c[i] = fabs(w.c[i]); }
 // 
 //     /* Ensure that {m.dir} maps the cardinal points to {p,q,r} and some unit point to {u}: */
 //     i3x3_t *P = &(m.dir);

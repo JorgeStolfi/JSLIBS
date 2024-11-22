@@ -1,10 +1,9 @@
 /* See ulist.h */
-/* Last edited on 2023-03-18 11:31:38 by stolfi */
+/* Last edited on 2024-11-15 20:26:20 by stolfi */
 
 /* !!! Test and debug throughly !!! */
 /* !!! There may be performance problems (unnecessary collisions?) !!! */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -251,7 +250,7 @@ void ulist_swap(ulist_t *S, ulist_index_t i, ulist_index_t j)
     S->ix.e[S->hx.e[j]] = j;
   }
 
-void ulist_resize(ulist_t *S, int32_t n, ulist_hash_func_t *hash)
+void ulist_resize(ulist_t *S, uint32_t n, ulist_hash_func_t *hash)
   { 
     #if (ulist_DEBUG)
     S->ct_rsz++;

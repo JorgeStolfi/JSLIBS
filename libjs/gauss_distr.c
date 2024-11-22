@@ -1,7 +1,6 @@
 /* See gauss_distr.h */
-/* Last edited on 2024-11-05 20:55:29 by stolfi */
+/* Last edited on 2024-11-15 19:12:37 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdlib.h>
 #include <limits.h>

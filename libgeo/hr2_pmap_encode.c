@@ -1,7 +1,6 @@
 /* See {hr2_pmap_encode.h}. */
-/* Last edited on 2024-11-07 23:43:31 by stolfi */
+/* Last edited on 2024-11-20 12:00:22 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -20,7 +19,7 @@
 
 #include <hr2_pmap_encode.h>
 
-int32_t hr2_pmap_encode_num_parameters(hr2_pmap_type_t type)
+uint32_t hr2_pmap_encode_num_parameters(hr2_pmap_type_t type)
   {
     switch(type)
       { 
@@ -43,7 +42,7 @@ int32_t hr2_pmap_encode_num_parameters(hr2_pmap_type_t type)
       }
   }
 
-void hr2_pmap_encode(hr2_pmap_t *M, hr2_pmap_type_t type, int32_t ny, double y[])
+void hr2_pmap_encode(hr2_pmap_t *M, hr2_pmap_type_t type, uint32_t ny, double y[])
   {
     double det = r3x3_det(&(M->dir));
     demand(det != 0, "singular matrix");
@@ -90,7 +89,7 @@ void hr2_pmap_encode(hr2_pmap_t *M, hr2_pmap_type_t type, int32_t ny, double y[]
       }
   }
 
-void hr2_pmap_decode(int32_t ny, double y[], hr2_pmap_type_t type, sign_t sgn, hr2_pmap_t *M)
+void hr2_pmap_decode(uint32_t ny, double y[], hr2_pmap_type_t type, sign_t sgn, hr2_pmap_t *M)
   { 
     demand((sgn == +1) || (sgn == -1), "invalid {sgn}");
     switch(type)

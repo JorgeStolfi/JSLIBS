@@ -68,7 +68,7 @@ int64_t msm_round(double x)
 
 FILE *msm_open_read(char *name, char *tag, char *ext, bool_t verbose)
   { char *fileName = NULL;
-    asprintf(&fileName, "%s%s%s", name, tag, ext);
+    char *fileName = jsprintf("%s%s%s", name, tag, ext);
     FILE *rd = open_read(fileName, verbose);
     free(fileName);
     return rd;
@@ -76,7 +76,7 @@ FILE *msm_open_read(char *name, char *tag, char *ext, bool_t verbose)
 
 FILE *msm_open_write(char *name, char *tag, char *ext, bool_t verbose)
   { char *fileName = NULL;
-    asprintf(&fileName, "%s%s%s", name, tag, ext);
+    char *fileName = jsprintf("%s%s%s", name, tag, ext);
     FILE *wr = open_write(fileName, verbose);
     free(fileName);
     return wr;

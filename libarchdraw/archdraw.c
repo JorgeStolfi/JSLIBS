@@ -296,7 +296,7 @@ char *adrw_make_derived_label(char *main_label, int32_t k)
       { return NULL; }
     else
       { char *label = NULL;
-        asprintf(&label, "%s.%d", main_label, k);
+        char *label = jsprintf("%s.%d", main_label, k);
         return label;
       }
   }
@@ -527,11 +527,11 @@ epswr_figure_t *adrw_new_figure
     epswr_text(epsf, title, FALSE, 0.5, TRUE,FALSE);
     if (segmented)
       { char *title1 = NULL;
-        asprintf(&title1, "page (%d,%d) of (%d,%d)", ox,oy,nx,ny);
+        char *title1 = jsprintf("page (%d,%d) of (%d,%d)", ox,oy,nx,ny);
         epswr_text(epsf, title1, FALSE, 0.5, TRUE,FALSE);
         free(title1);
         char *title2 = NULL;
-        asprintf(&title2, "[%.1f _ %.1f] x [%.1f _ %.1f]", xlo,xhi,ylo,yhi);
+        char *title2 = jsprintf("[%.1f _ %.1f] x [%.1f _ %.1f]", xlo,xhi,ylo,yhi);
         epswr_text(epsf, title2, FALSE, 0.5, TRUE,FALSE);
         free(title2);
       }
@@ -578,7 +578,7 @@ void adrw_plot_point
   )
   { char *ptlab = NULL;
     if (lab == NULL)
-      { asprintf(&ptlab, "P%04d", ip); }
+      { char *ptlab = jsprintf("P%04d", ip); }
     else
       { ptlab = lab; }
     epswr_dot(epsf, x, y, 0.25, TRUE, FALSE);
@@ -722,7 +722,7 @@ void adrw_print_unit_data
 
     void prnt(char *fmt, double val) 
       { char *s = NULL;
-        asprintf(&s, fmt, val);
+        char *s = jsprintf(fmt, val);
         int32_t i = 0; while (s[i] != 0) { if (s[i] == '.') { s[i] = ','; } i++; }
         fputs(s, wr);
         free(s);

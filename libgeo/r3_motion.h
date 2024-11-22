@@ -1,5 +1,5 @@
 /* r3_motion.h --- paths in R^3 with local frames */
-/* Last edited on 2021-06-12 09:27:27 by jstolfi */
+/* Last edited on 2024-11-20 12:57:10 by stolfi */
 
 #ifndef r3_motion_H
 #define r3_motion_H
@@ -56,7 +56,7 @@ void r3_motion_sample_uniform
   ( r3_motion_proc_t path, 
     double t0,
     double t1,
-    int32_t n,
+    uint32_t n,
     bool_t mids,
     double t[],
     r3_motion_state_t S[]

@@ -510,7 +510,7 @@ void output_dataset(dataset_t *D, int classD[], int NC, options_t *o)
   { int cl;
     for (cl = 1; cl <= NC; cl++)
       { char *fname = NULL;
-        asprintf(&fname, "%s-c%03d.dat", o->prefix, cl);
+        char *fname = jsprintf("%s-c%03d.dat", o->prefix, cl);
         FILE *wr = open_write(fname, TRUE);
         rn_classif_dataset_write(wr, D, cl, classD);
         fclose(wr);
@@ -760,8 +760,7 @@ void output_nn_hand_cmp_image(problem_t *P, dataset_t *D, int classD[], double H
 
 void output_image(char *prefix, char *tag, char *kind, uint16_image_t *img)
   {
-    char *fname = NULL;
-    asprintf(&fname, "%s-%s-%s.%s", prefix, tag, kind, (img->chns == 1 ? "pgm" : "ppm"));
+    char *fname = jsprintf("%s-%s-%s.%s", prefix, tag, kind, (img->chns == 1 ? "pgm" : "ppm"));
     uint16_image_write_pnm_named(fname, img, FALSE, TRUE);
     free(fname);
   }

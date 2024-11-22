@@ -2,13 +2,12 @@
 #define PROG_DESC "test of {gauss_table.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-06 01:34:26 by stolfi */ 
+/* Last edited on 2024-11-19 06:14:51 by stolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_gauss_table_COPYRIGHT \
   "Copyright © 2017  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -26,36 +25,37 @@
 
 int32_t main(int32_t argn, char **argv);
 
-void tgat_do_test_print(int32_t nw, bool_t norm, bool_t fold);
+void test_gauss_table_make__gauss_table_folded_bell(uint32_t nw, bool_t norm, bool_t fold);
   /* Generates table with {nw} entries and options {norm,fold} 
     and prints it. */
 
-void tgat_compute_folded(int32_t nw, double avg, double dev, double wc[]);
+void tgat_compute_folded(uint32_t nw, double avg, double dev, double wc[]);
   /* Computes a folded table {wc[0..nw-1]} by building a big enough table
     with the lib function and then folding it. Also checks consistency
     with {gauss_table_folded_bell}. */
     
-void tgat_compute_unfolded(int32_t nw, double avg, double dev, double wc[]);
+void tgat_compute_unfolded(uint32_t nw, double avg, double dev, double wc[]);
   /* Computes a basic table {wc[0..nw-1]} by the definition, without shortcuts. */
 
 int32_t main (int32_t argc, char **argv)
   {
     for (int32_t nw = 1; nw <= 13; nw = 3*nw/2+1)
-      { tgat_do_test_print(nw, FALSE, FALSE);
-        tgat_do_test_print(nw, TRUE,  FALSE);
-        tgat_do_test_print(nw, FALSE, TRUE);
-        tgat_do_test_print(nw, TRUE,  TRUE);
+      { test_gauss_table_make__gauss_table_folded_bell(nw, FALSE, FALSE);
+        test_gauss_table_make__gauss_table_folded_bell(nw, TRUE,  FALSE);
+        test_gauss_table_make__gauss_table_folded_bell(nw, FALSE, TRUE);
+        test_gauss_table_make__gauss_table_folded_bell(nw, TRUE,  TRUE);
       }
         
     return 0;
   }
 
-void tgat_do_test_print(int32_t nw, bool_t norm, bool_t fold)
+void test_gauss_table_make__gauss_table_folded_bell(uint32_t nw, bool_t norm, bool_t fold)
   {
     fprintf(stderr, "=== testing nw = %d norm = %c fold = %c ===\n", nw, "FT"[norm], "FT"[fold]);
     
     double avg = 0.37 * nw;
     double dev = 0.21 * nw;
+    fprintf(stderr, "  avg = %+24.16e  dev = %24.16e\n", avg, dev);
     double *wt = gauss_table_make(nw, avg, dev, norm, fold);
 
     wt_table_print(stderr, "wt_table_gaussian_make", nw, wt, 0);
@@ -94,15 +94,16 @@ void tgat_do_test_print(int32_t nw, bool_t norm, bool_t fold)
     assert(ok);
   }
     
-void tgat_compute_folded(int32_t nw, double avg, double dev, double wc[])
-  { /* Reduce {avg} modulo {n}: */
-    avg = avg - nw*(int)floor(avg/nw);
+void tgat_compute_folded(uint32_t nw, double avg, double dev, double wc[])
+  { /* Reduce {avg} modulo {nw}: */
+    avg = avg - nw*floor(avg/nw);
     while (avg >= nw) { avg -= nw; }
+    while (avg < 0) { avg += nw; }
     assert(avg >= 0);
     assert(avg < nw);
     /* Allocate a table {wf} big enough to hold the full distribution: */
-    int32_t mw = 10*nw;
-    int32_t nf = mw + nw + mw;
+    uint32_t mw = 10*nw;
+    uint32_t nf = mw + nw + mw;
     /* Build unfolded table with average at {mw+avg}: */
     double *wf = gauss_table_make(nf, avg + (double)mw, dev, FALSE, FALSE);
     assert (wf[0] < 1.0e-16);
@@ -110,10 +111,10 @@ void tgat_compute_folded(int32_t nw, double avg, double dev, double wc[])
     /* Accumulate the entries congruent modulo {nw} into central segment, smallest first: */
     assert((mw % nw) == 0); 
     for (int32_t i = 0; i < mw; i++)
-      { int32_t ki = (i % nw);
+      { uint32_t ki = (i % nw);
         wc[ki] += wf[i];
-        int32_t j = nf - 1 - i;
-        int32_t kj = (j % nw);
+        uint32_t j = nf - 1 - i;
+        uint32_t kj = (j % nw);
         wc[kj] += wf[j];
       }
     for (int32_t i = 0; i < nw; i++) { wc[i] += wf[mw + i]; }
@@ -133,7 +134,7 @@ void tgat_compute_folded(int32_t nw, double avg, double dev, double wc[])
     assert(ok);
   }
     
-void tgat_compute_unfolded(int32_t nw, double avg, double dev, double wc[])
+void tgat_compute_unfolded(uint32_t nw, double avg, double dev, double wc[])
   { for (int32_t i = 0; i < nw; i++)
       { double z = (((double)i) - avg)/dev;
         wc[i] = exp(-z*z/2);

@@ -4,7 +4,6 @@
 /* Copyright (C) 2003 by Jorge Stolfi, the University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <limits.h>
 #include <float.h>

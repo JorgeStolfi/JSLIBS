@@ -1,5 +1,5 @@
 /* See {obj_file_read.h}. */
-/* Last edited on 2024-06-28 01:49:56 by stolfi */
+/* Last edited on 2024-11-20 05:25:21 by stolfi */
  
 #define obj_file_read_C_copyright \
   "Copyright © 2024 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -130,7 +130,6 @@ obj_file_data_t *obj_file_read(FILE *rd, bool_t verbose)
             if (ch2 == ' ')
               { /* New vertex: */
                 r3_t u = (r3_t){{ NAN, NAN, NAN }};
-                char *lab = NULL;
                 obj_file_read_coords(rd, nlin, "vertex", 3, &u, &lab);
                 r3_vec_expand(&(D->V), nv);
                 D->V.e[nv] = u;
@@ -163,7 +162,8 @@ obj_file_data_t *obj_file_read(FILE *rd, bool_t verbose)
                 nn++;
               }
             else
-              { char *msg = NULL; asprintf(&msg, "invalid line type \"%c%c\"", ch1, ch2);
+              { 
+                char *msg = jsprintf("invalid line type \"%c%c\"", ch1, ch2);
                 obj_file_read_err(nlin, msg);
               }
           }
@@ -196,7 +196,7 @@ obj_file_data_t *obj_file_read(FILE *rd, bool_t verbose)
             fget_skip_to_eol(rd); 
           }
         else
-          { char *msg = NULL; asprintf(&msg, "invalid line type \"%c%c\"", ch1, ch2);
+          { char *msg = NULL; char *msg = jsprintf("invalid line type \"%c%c\"", ch1, ch2);
             obj_file_read_err(nlin, msg);
           }
       }
@@ -297,7 +297,8 @@ void  obj_file_read_face
         nc++;
       }
     if (nc < 3)
-      { char *msg = NULL; asprintf(&msg, "face has only %d corners (min 3)", nc);
+      { 
+        char *msg = jsprintf("face has only %d corners (min 3)", nc);
         obj_file_read_err(nlin, msg);
       }
     int32_vec_trim(FVk, nc);  
@@ -314,14 +315,15 @@ int32_t obj_file_read_index(FILE *rd, int32_t nlin, char *elname, int32_t n)
     if (ix < 0) 
       { /* Negative indices are relative to last item defined: */
         if (ix < -n) 
-          { char *msg = NULL; asprintf(&msg, "invalid negative %s index %d", elname, ix);
+          { 
+            char *msg = jsprintf("invalid negative %s index %d", elname, ix);
             obj_file_read_err(nlin, msg);
           }
         ix = n + 1 + ix;
       }
     else
       { if ((ix < 1) || (ix > n))
-          { char *msg = NULL; asprintf(&msg, "invalid %s index %d", elname, ix);
+          { char *msg = NULL; char *msg = jsprintf("invalid %s index %d", elname, ix);
             obj_file_read_err(nlin, msg);
           }
       }
@@ -333,7 +335,6 @@ int32_t obj_file_read_index(FILE *rd, int32_t nlin, char *elname, int32_t n)
 void obj_file_read_coords(FILE * rd, int32_t nlin, char *elname, int32_t ncmin, r3_t *u_P, char **lab_P)
   {
     r3_t u = (r3_t){{ 0,0,0 }};
-    char *lab = NULL;
     int32_t nc = 0; /* Number of coordinates read. */
     while (TRUE)
       { if (fget_test_comment_or_eol(rd, '#', &lab))
@@ -348,11 +349,13 @@ void obj_file_read_coords(FILE * rd, int32_t nlin, char *elname, int32_t ncmin, 
         nc++;
       }
     if (nc > 3) 
-      { char *msg = NULL; asprintf(&msg, "too many %s coordinates (%d, max 3)", elname, nc);
+      { 
+        char *msg = jsprintf("too many %s coordinates (%d, max 3)", elname, nc);
         obj_file_read_err(nlin, msg);
       }
     else if (nc < ncmin)
-      { char *msg = NULL; asprintf(&msg, "too few %s coordinates (%d, min %d)", elname, nc, ncmin);
+      { 
+        char *msg = jsprintf("too few %s coordinates (%d, min %d)", elname, nc, ncmin);
         obj_file_read_err(nlin, msg);
       }
     (*u_P) = u;
@@ -367,7 +370,9 @@ char *obj_file_read_cleanup_label(char *lab)
         while(((*p) != 0) && (((*p) == '#') || fget_is_space(*p))) { p++; }
         char (*q) = p + strlen(p);
         while((q > p) && ( fget_is_space(*q) || ((*q) == '.'))) { q--; }
-        if (q > p) { asprintf(&res, "%*s", (int32_t)(q-p), p); }
+        if (q > p) { 
+          char *res = jsprintf("%*s", (int32_t)(q-p), p);
+        }
       }
     return res;
   }

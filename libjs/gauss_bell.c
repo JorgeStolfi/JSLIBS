@@ -1,7 +1,6 @@
 /* See gauss_bell.h */
-/* Last edited on 2019-12-05 10:27:06 by jstolfi */
+/* Last edited on 2024-11-15 19:12:34 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdlib.h>
 #include <limits.h>

@@ -1,5 +1,6 @@
 /* See {cmp.h}. */
-/* Last edited on 2007-10-28 21:33:29 by stolfi */
+/* Last edited on 2024-11-15 19:11:51 by stolfi */
+
 
 #include <cmp.h>
 #include <sign.h>

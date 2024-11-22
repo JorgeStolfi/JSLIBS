@@ -2,9 +2,8 @@
 #define jsrandom_H
 
 /* Alternative random generator functions */
-/* Last edited on 2021-06-25 19:03:13 by jstolfi */
+/* Last edited on 2024-11-15 19:14:32 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdlib.h> 
 

@@ -1,7 +1,6 @@
 /* See {codtree_huff.h}. */
-/* Last edited on 2023-02-19 00:37:42 by stolfi */
+/* Last edited on 2024-11-20 03:28:10 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <limits.h>
@@ -15,8 +14,7 @@
 #include <codetree.h>
 #include <codetree_huff.h>
 
-#define MAX_VALUE codetree_MAX_VALUE
-#define MIN_VALUE codetree_MIN_VALUE
+#define MAX_VALUE codetree_data_MAX_VALUE
 #define MAX_LEAVES codetree_MAX_LEAVES
 #define MAX_FREQ codetree_huff_MAX_FREQ
 
@@ -43,7 +41,7 @@ void codetree_huff_sort_by_weight(codetree_node_count_t nv, codetree_node_t *nod
     The running time is quadratic on first call, but should be linear
     when only the last element is out of order. */
 
-codetree_t *codetree_huff_build(codetree_value_t maxval, codetree_huff_freq_t freq[])
+codetree_t *codetree_huff_build(codetree_data_value_t maxval, codetree_huff_freq_t freq[])
   {
     bool_t debug = FALSE;
     
@@ -68,7 +66,7 @@ codetree_t *codetree_huff_build(codetree_value_t maxval, codetree_huff_freq_t fr
     
     /* Count valid values: */
     codetree_node_count_t nvalid = 0; /* Number of valid values in {V}: */
-    for (codetree_value_t val = 0; val <= maxval; val++) { if (freq[val] != 0) { nvalid++; } }
+    for (codetree_data_value_t val = 0; val <= maxval; val++) { if (freq[val] != 0) { nvalid++; } }
     
     /* Working vectors: */
     codetree_huff_freq_t *weight = (uint64_t *)notnull(malloc(nvalid*sizeof(codetree_huff_freq_t)), "no mem");
@@ -76,7 +74,7 @@ codetree_t *codetree_huff_build(codetree_value_t maxval, codetree_huff_freq_t fr
 
     /* Build the leaf nodes and copy their frequencies: */
     codetree_node_count_t iv = 0;
-    for (codetree_value_t val = 0; val <= maxval; val++) 
+    for (codetree_data_value_t val = 0; val <= maxval; val++) 
       { if (freq[val] > 0)
           { weight[iv] = freq[val];
             node[iv] = codetree_new_leaf(val);
@@ -119,7 +117,7 @@ void codetree_huff_sort_by_weight(codetree_node_count_t nv, codetree_node_t *nod
 
     /* Insertion sort: */
     for (int64_t iv = 1; iv < nv; iv++)
-      { int64_t fri = weight[iv];
+      { uint64_t fri = weight[iv];
         codetree_node_t *pi = node[iv];
         int64_t jv = iv;
         while ((jv > 0) && (weight[jv-1] < fri))
@@ -182,7 +180,7 @@ void codetree_huff_print_node(codetree_node_t *nd)
     if (nd->value >= 0)
       { fprintf(stderr, "%+d", nd->value); }
     else
-      { codetree_node_count_t seq = (codetree_node_count_t)(nd->value - MIN_VALUE);
+      { codetree_node_count_t seq = (codetree_node_count_t)(nd->value - codetree_node_MIN_VALUE);
         fprintf(stderr, "@%04u", seq);
       }
   }

@@ -1,9 +1,9 @@
 /* See r4.h. */
-/* Last edited on 2024-08-30 04:01:09 by stolfi */
+/* Last edited on 2024-11-20 15:51:39 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
+#include <assert.h>
 #include <math.h>
 
 #include <r4.h>
@@ -29,7 +29,7 @@ void r4_all (double x, r4_t *r)
     r->c[3] = x;
   }
 
-void r4_axis (int32_t i, r4_t *r)
+void r4_axis (uint32_t i, r4_t *r)
   { affirm((i >= 0) && (i < N), "r4_axis: bad index");
     r->c[0] = 0.0;
     r->c[1] = 0.0;
@@ -95,7 +95,7 @@ void r4_unweigh (r4_t *a, r4_t *w, r4_t *r)
     r->c[3] = a->c[3] / w->c[3];
   }
 
-void r4_rot_axis (r4_t *a, int32_t i, int32_t j, double ang, r4_t *r)
+void r4_rot_axis (r4_t *a, uint32_t i, uint32_t j, double ang, r4_t *r)
   {
     affirm((i >= 0) && (i < N), "r4_rot_axis: bad index {i}");
     affirm((j >= 0) && (j < N), "r4_rot_axis: bad index {j}");
@@ -266,7 +266,7 @@ bool_t r4_eq(r4_t *p, r4_t *q)
     if (p->c[3] != q->c[3]) return FALSE;
     return TRUE;
   }
-void r4_barycenter(int32_t np, r4_t p[], double w[], r4_t *bar)
+void r4_barycenter(uint32_t np, r4_t p[], double w[], r4_t *bar)
   { r4_t sum_wp = (r4_t){{ 0, 0, 0, 0 }};
     double sum_w = 0.0;
     for (int32_t k = 0; k < np; k++) 
@@ -278,11 +278,10 @@ void r4_barycenter(int32_t np, r4_t p[], double w[], r4_t *bar)
     r4_scale(1.0/sum_w, &sum_wp, bar);
   }
 
-void r4_bbox(int32_t np, r4_t p[], interval_t B[], bool_t finite)
+void r4_bbox(uint32_t np, r4_t p[], interval_t B[], bool_t finite)
   { double cmin[N], cmax[N];
     for (int32_t j = 0; j < N; j++) { cmin[j] = +INF; cmax[j] = -INF; }
-    int32_t ip;
-    for (ip = 0; ip < np; ip++)
+    for (int32_t ip = 0; ip < np; ip++)
       { r4_t *pi = &(p[ip]);
         if ((! finite) || r4_is_finite(pi))
           { for (int32_t j = 0; j < N; j++) 
@@ -297,34 +296,61 @@ void r4_bbox(int32_t np, r4_t p[], interval_t B[], bool_t finite)
   }
 
 void r4_throw_cube (r4_t *r)
-  { int32_t i;
-    for (i = 0; i < N; i++)
+  { for (int32_t i = 0; i < N; i++)
       { r->c[i] = 2.0 * drandom() - 1.0; }
   }
 
 void r4_throw_dir (r4_t *r)
   { /* Generate a nonzero Gaussian random vector: */
-    int32_t i;
     double r2;
     do
       { r4_throw_normal(r);
         /* Discard if too close to origin: */
         r2 = 0.0;
-        for (i = 0; i < N; i++) { double ci = r->c[i]; r2 += ci*ci; }
+        for (int32_t i = 0; i < N; i++) { double ci = r->c[i]; r2 += ci*ci; }
       }
     while (r2 < 1.0e-20);
     /* Normalize to unit length: */
     double m = sqrt(r2);
-    for (i = 0; i < N; i++) { r->c[i] /= m; }
+    for (int32_t i = 0; i < N; i++) { r->c[i] /= m; }
   }
 
 void r4_throw_ball (r4_t *r)
   { rn_throw_ball(N, &(r->c[0])); }
 
 void r4_throw_normal (r4_t *r)
-  { int32_t i;
-    for (i = 0; i < N; i++)
+  { for (int32_t i = 0; i < N; i++)
       { r->c[i] = dgaussrand(); }
+  }
+  
+double r4_throw_ortho(r4_t *u, r4_t *r)
+  { r4_t d = (*u);
+    double umag = r4_dir(&d, &d);
+    if (umag < 1.0e-320)
+      { r4_zero(r); }
+    else
+      { /* Get an {r} that is not zero nor too close to {±d}: */
+        double dvdot; 
+        do 
+          { r4_throw_ball(r);
+            double vnorm = r4_dir(r, r);
+            if (vnorm < 0.05) { continue; }
+            dvdot = r4_dot(&d, r);
+          }
+        while (fabs(dvdot) > 0.8);
+        /* Make {r} orthogonal to {d} and unit-norm: */
+        r4_mix_in(-dvdot, &d, r);
+        double vnorm = r4_dir(r, r);
+        assert(vnorm > 0.1); /* Paranoia. */
+        /* Once more, just to be sure: */
+        dvdot = r4_dot(&d, r);
+        r4_mix_in(-dvdot, &d, r);
+        vnorm = r4_dir(r, r);
+        assert(vnorm > 0.999); /* Paranoia. */
+        /* Rescale {r} with original length of {u}: */
+        if (fabs(umag - 1) > 1.0e-14) { r4_scale(umag, r, r); }
+      }
+    return umag;
   }
 
 void r4_print (FILE *f, r4_t *a)

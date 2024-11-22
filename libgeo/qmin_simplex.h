@@ -1,5 +1,5 @@
 /* qmin_simplex.h - quadratic minimization in a simplex. */
-/* Last edited on 2021-06-09 20:32:39 by jstolfi */
+/* Last edited on 2024-11-20 08:58:50 by stolfi */
 
 #ifndef qmin_simplex_H
 #define qmin_simplex_H
@@ -15,7 +15,7 @@
   vector. */
     
 
-void qms_quadratic_min(int32_t n, double A[], double b[], double x[]);
+void qms_quadratic_min(uint32_t n, double A[], double b[], double x[]);
   /* Finds the minimum argument {x} of a quadratic function 
     {Q(x) = x' A x - 2 x'b + c}, subject to the constraints
     {x[i] >= 0} for all {i}; where {A} is a known positive

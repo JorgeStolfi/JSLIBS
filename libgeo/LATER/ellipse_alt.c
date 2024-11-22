@@ -1,4 +1,4 @@
-/* Last edited on 2021-06-09 20:13:14 by jstolfi */
+/* Last edited on 2024-11-20 15:37:31 by stolfi */
 
 #include <stdint.h>
 
@@ -67,8 +67,7 @@ double DistancePointEllipseSpecial
   { // initial guess
     double dT = dB*(dV - dB);
     // Newton's method
-    int32_t i;
-    for (i = 0; i < iMax; i++)
+    for (int32_t i = 0; i < iMax; i++)
       {
         double dTpASqr = dT + dA*dA;
         double dTpBSqr = dT + dB*dB;

@@ -1,5 +1,5 @@
 /* test_polygauss --- test of {sve_minn.h} for flat-topped sum of gaussians */
-/* Last edited on 2024-11-08 09:52:39 by stolfi */
+/* Last edited on 2024-11-20 06:01:38 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -292,10 +292,7 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
 
     demand(np >= 2, "invalid {np}");
     
-    /* Debugging printout: */
-    bool_t debug = FALSE;
-    
-    auto double F(int32_t n, double v[]); 
+    auto double sve_goal(int32_t n, double v[]); 
       /* The goal function for uptimization. */
 
     /* Working storage for the goal function: */
@@ -304,10 +301,12 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
     int32_t nv = nv_avg + nv_dev + nv_mag; /* Number of optimization variables. */
     double v[nv];
       
-    double vprev[nv];  /* Guess in previous call of {OK} function. */
-    int32_t nok = 0;   /* Counts iterations (actually, calls to {OK}). */
+    double vprev[nv];  /* Guess in previous call of {sve_OK} function. */
+    int32_t nok = 0;   /* Counts iterations (actually, calls to {sve_OK}). */
+    bool_t sve_debug = FALSE;
+    bool_t sve_debug_probes = FALSE;
     
-    auto bool_t OK(int32_t n, double v[], double Fv); 
+    auto bool_t sve_OK(int32_t iter, int32_t n, double v[], double Fv, double dist, double step, double radius); 
       /* Acceptance criterion function. */
     
     srand(4615);  srandom(4615);
@@ -318,7 +317,7 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
     /* Print the initial solution, packed: */
     tpg_print_packed_parms("ini", nv, v);
     
-    double Fv = F(nv, v);
+    double Fv = sve_goal(nv, v);
     
     /* Optimize iteratively: */
     double *ctr = NULL;
@@ -332,10 +331,10 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
     int32_t maxIters = 300;
     
     sve_minn_iterate
-      ( nv, &F, &OK, NULL, 
+      ( nv, &sve_goal, &sve_OK, NULL, 
         v, &Fv, 
         dir, ctr, dMax, dBox, rIni, rMin, rMax, 
-        minStep, maxIters, debug
+        minStep, maxIters, sve_debug, sve_debug_probes
       );
     
     /* Print the optimum solution, packed: */
@@ -346,24 +345,24 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
 
     return;
       
-    double F(int32_t n, double v[])
+    double sve_goal(int32_t n, double v[])
       { assert(n == nv);
         tpg_unpack(nv, v, np, serial, avg, dev, mag, sym);
         double Fv = tpg_train_badness(np, serial, avg, dev, mag, FALSE);
         return Fv;
       }
       
-    bool_t OK(int32_t n, double v[], double Fv)
+    bool_t sve_OK(int32_t iter, int32_t n, double v[], double Fv, double dist, double step, double radius)
       { assert(n == nv);
         fprintf(stderr, "  iteration %4d", nok);
         if (nok > 0)
           { double d = rn_dist(n, vprev, v);
-            fprintf(stderr, "  F = %16.12f displacement = %16.10f ( ", Fv, d);
+            fprintf(stderr, "  sve_goal = %16.12f displacement = %16.10f ( ", Fv, d);
             for (int32_t iv = 0; iv < nv; iv++) { fprintf(stderr, " %16.10f", v[iv] - vprev[iv]); }
             fprintf(stderr, " )");
           }
         fprintf(stderr, "\n");
-        if (debug)
+        if (sve_debug)
           { tpg_unpack(nv, v, np, serial, avg, dev, mag, sym);
             tpg_write_plot("tmp", nok, np, serial, avg, dev, mag, sym);
           }
@@ -579,13 +578,13 @@ void tpg_write_plot(char *tag, int32_t iter, int32_t np, bool_t serial, double a
       }
 
     /* Open output file: */
-    char *itag = NULL, *fname = NULL;
+    char *itag;
     if (iter > 0) 
-      { asprintf(&itag, "_%04d", iter); }
+      { itag = jsprintf("_%04d", iter); }
     else
-      { asprintf(&itag, "%s", ""); }
-    asprintf
-      ( &fname, "out/train_%02d_%s%s_s%c_a%c_d%c_m%c.txt", 
+      { itag = jsprintf("%s", ""); }
+    char *fname = jsprintf
+      ( "out/train_%02d_%s%s_s%c_a%c_d%c_m%c.txt", 
         np, tag, itag, 
         "FT"[serial], 
         "FT"[sym->fixavg], "FT"[sym->samedev], "FT"[sym->fixmag]

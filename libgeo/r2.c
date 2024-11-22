@@ -1,7 +1,6 @@
 /* See r2.h */
-/* Last edited on 2024-09-02 03:38:50 by stolfi */
+/* Last edited on 2024-11-20 15:45:08 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
@@ -27,7 +26,7 @@ void r2_all(double x, r2_t *r)
     r->c[1] = x;
   }
 
-void r2_axis(int32_t i, r2_t *r)
+void r2_axis(uint32_t i, r2_t *r)
   { affirm((i >= 0) && (i < N), "r2_axis: bad index");
     r->c[0] = 0.0;
     r->c[1] = 0.0;
@@ -215,7 +214,7 @@ bool_t r2_eq(r2_t *p, r2_t *q)
     return (p->c[0] == q->c[0]) && (p->c[1] == q->c[1]);
   }
   
-void r2_barycenter(int32_t np, r2_t p[], double w[], r2_t *bar)
+void r2_barycenter(uint32_t np, r2_t p[], double w[], r2_t *bar)
   { r2_t sum_wp = (r2_t){{ 0, 0 }};
     double sum_w = 0.0;
     for (int32_t k = 0; k < np; k++) 
@@ -230,11 +229,26 @@ void r2_barycenter(int32_t np, r2_t p[], double w[], r2_t *bar)
     r2_scale(1.0/sum_w, &sum_wp, bar);
   }
 
-void r2_bbox(int32_t np, r2_t p[], interval_t B[], bool_t finite)
+double r2_mean_dist_sqr(uint32_t np, r2_t p[], double w[], r2_t *ctr)
+  { double sum_wd2 = 0.0;
+    double sum_w = 0.0;
+    for (int32_t k = 0; k < np; k++) 
+      { double wk = (w != NULL ? w[k] : 1.0);
+        demand(isfinite(wk) && wk >= 0, "bad weight");
+        if (wk != 0.0) 
+          { r2_t *pk = &(p[k]);
+            double d2 = r2_dist_sqr(ctr, pk);
+            sum_wd2 += wk*d2;
+            sum_w += wk;
+          }
+      }
+    return sum_wd2/sum_w;
+  }
+
+void r2_bbox(uint32_t np, r2_t p[], interval_t B[], bool_t finite)
   { double xmin = INF, xmax = -INF;
     double ymin = INF, ymax = -INF;
-    int32_t ip;
-    for (ip = 0; ip < np; ip++)
+    for (int32_t ip = 0; ip < np; ip++)
       { r2_t *pi = &(p[ip]);
         if ((! finite) || r2_is_finite(pi))
           { double xi = pi->c[0];

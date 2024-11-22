@@ -1,10 +1,9 @@
 /* pqueue - priority queue of integers with real values. */
-/* Last edited on 2023-03-18 11:15:41 by stolfi */
+/* Last edited on 2024-11-15 19:15:08 by stolfi */
 
 #ifndef pqueue_H
 #define pqueue_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <bool.h>
 

@@ -2,7 +2,10 @@
 #define affirm_H
 
 /* Variants of {assert} with explicit message argument. */
-/* Last edited on 2024-10-23 07:07:21 by stolfi */
+/* Last edited on 2024-11-20 08:19:21 by stolfi */
+
+#include <stdint.h>
+#include <stdlib.h>
 
 /* ERRORS AND ASSERTIONS */
 
@@ -43,7 +46,7 @@
     behave like a procedure call vis-a-vis semicolons, {else}s,
     etc..  This is an obfuscating but standard C programming trick. */
 
-void programerror (const char *msg, const char *file, unsigned int line, const char* proc)
+void programerror (const char *msg, const char *file, int32_t line, const char* proc)
   __attribute__ ((noreturn));
   /* Prints {file ":" line ": (" *proc ")" *msg} to {stderr} and stops.
     Meant for use by {affirm}. */
@@ -55,21 +58,21 @@ void programerror (const char *msg, const char *file, unsigned int line, const c
   /* If {p == NULL}, aborts with {*msg} with the program 
     location; otherwise returns {p} itself. */
   
-void *checknotnull(void *p, const char *msg, const char *file, unsigned int line, const char *proc);
+void *checknotnull(void *p, const char *msg, const char *file, int32_t line, const char *proc);
   /* If {p == NULL}, prints {file ":" line ": (" *proc ")" *msg} to {stderr} and
     stops; otherwise returns {p} itself.  Meant for {notnull} below. */
 
 /* SANE HEAP ALLOCATION */
    
 #define talloc(n, T) \
-  ((T*)((n) == 0 ? NULL : notnull(calloc((n), sizeof(T)), "no mem")))
+  ((T*)((n) == 0 ? NULL : notnull(calloc(((size_t)(n)), sizeof(T)), "no mem")))
   /* Allocates an array of {n} elements of type {T}, casting the result as a {T*} pointer.
     If {n} is zero, returns {NULL}.  Aborts with error if {n} is positive but the allocation
     returns {NULL} (presumably because of not enough memory).
     Equivalent to {calloc(n,sizeof(T))} except for the type casting and {NULL} checking. */
     
 #define retalloc(p, n, T) \
-  ((T*)((n) == 0 ? reallocarray((p), 0, sizeof(T)) : notnull(reallocarray((p), (n), sizeof(T)), "no mem")))
+  ((T*)((n) == 0 ? reallocarray((p), 0, sizeof(T)) : notnull(reallocarray((p), ((size_t)(n)), sizeof(T)), "no mem")))
   /* Re-allocates the heap area pointed by {p} as an array of {n} elements of type {T}, 
     freeing the previous area (if {p} was not {NULL}), and casting the result as a {T*} pointer.
     If {n} is zero, performs {free(p)} and returns {NULL}.  Aborts with error if {n} is positive

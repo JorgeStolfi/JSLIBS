@@ -1,7 +1,6 @@
 /* See {float_image_filter.h}. */
 /* Last edited on 2020-10-11 19:40:43 by jstolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <assert.h>
 #include <values.h>

@@ -1,5 +1,5 @@
 /* Tests the unidimensional mother pulses */
-/* Last edited on 2009-08-23 20:02:56 by stolfi */
+/* Last edited on 2024-11-20 05:32:37 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -138,14 +138,18 @@ char *tsp_make_name
     psp_pulse_t *p
   )
   {
-    char *fname = NULL; 
     char pkind_txt = psp_pulse_kind_to_char(fam->pkind);
-    char *c_txt = NULL;
-    if (fam->c >= 0) { asprintf(&c_txt, "%d", fam->c); } else { c_txt = "-"; }
-    char *gsz_txt = NULL;
-    if (p->gsz < p->msz) { asprintf(&gsz_txt, "%02lld", p->gsz); } else { gsz_txt = "--"; }
-    asprintf
-      ( &fname, 
+    char *c_txt;
+    if (fam->c >= 0) 
+      { c_txt = jsprintf("%d", fam->c); } 
+    else
+      { c_txt = "-"; }
+    char *gsz_txt;
+    if (p->gsz < p->msz) 
+      { gsz_txt = jsprintf("%02lld", p->gsz); }
+    else 
+      { gsz_txt = "--"; }
+    char *fname = jsprintf(
         "%s/pu-z%s-%c-c%s-g%02d-m%02d.plt", 
         OUT_DIR, gsz_txt, pkind_txt, c_txt, fam->g, p->pix
       );

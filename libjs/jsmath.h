@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 /* J. Stolfi's miscellaneous general-purpose definitions */
-/* Last edited on 2023-03-31 03:26:20 by stolfi */
+/* Last edited on 2024-11-16 06:37:53 by stolfi */
 
 #ifndef INF
 #define INF INFINITY
@@ -65,7 +65,7 @@ uint64_t comb(int64_t n, int64_t k);
     elements. Not efficient - number of operations
     is at least {imin(k,n-k)}. Will fail if {n} or {k} is too large,
     even if the result fits in {uint64_t}. Returns 0
-    if {k < 0} or {k > n}. */ 
+    if {n < 0}, {k < 0}, or {k > n}. */ 
 
 int64_t imin(int64_t x, int64_t y);
 int64_t imax(int64_t x, int64_t y);

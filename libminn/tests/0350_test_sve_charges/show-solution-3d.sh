@@ -1,5 +1,5 @@
 #! /bin/bash
-# Last edited on 2012-01-22 23:00:16 by stolfilocal
+# Last edited on 2024-11-08 17:23:47 by stolfi
 
 # Plots the electron positions found by {test_sve_charges}
 
@@ -56,8 +56,8 @@ background{ color rgb < 0.900, 0.970, 0.990 > }
   }
   
 #declare cloud_R =    1.00;
-#declare electron_R = 0.06;
-#declare bar_R =      0.01;
+#declare electron_R = 0.020;
+#declare bar_R =      0.007;
 #declare bar_Lmax =   ${Lmax};
 #declare platter_R =  1.25;
 #declare platter_th = 1.25;

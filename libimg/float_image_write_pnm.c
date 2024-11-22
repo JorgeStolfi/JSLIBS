@@ -1,7 +1,6 @@
 /* See {float_image_write_pnm.h}. */
 /* Last edited on 2017-06-22 18:08:20 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>

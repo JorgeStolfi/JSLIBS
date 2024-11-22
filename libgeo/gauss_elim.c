@@ -1,7 +1,6 @@
 /* See gauss_elim.h */
-/* Last edited on 2024-11-07 15:28:05 by stolfi */
+/* Last edited on 2024-11-22 02:16:21 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <math.h>
 #include <string.h>
@@ -18,11 +17,11 @@
 
 /* IMPLEMENTATIONS */
 
-int32_t gsel_solve(int32_t m, int32_t n, double A[], int32_t p, double B[], double X[], double tiny)
+uint32_t gsel_solve(uint32_t m, uint32_t n, double A[], uint32_t p, double B[], double X[], double tiny)
   { bool_t debug = FALSE;
   
     /* Work array: */
-    int32_t np = n+p; /* Total columns in {A} and {B}. */
+    uint32_t np = n+p; /* Total columns in {A} and {B}. */
     double AB[m*np]; /* Matrices {A} and {B} side by side. */
     
     /* Copy system matrices into work array: */
@@ -44,7 +43,7 @@ int32_t gsel_solve(int32_t m, int32_t n, double A[], int32_t p, double B[], doub
     gsel_normalize(m, np, AB);
     if (debug) { gsel_print_array(stderr, 4, "%9.5f", "normalized:", m, np,"AB",AB, ""); }
 
-    int32_t rank_ext = gsel_extract_solution(m, np, AB, p, X);
+    uint32_t rank_ext = gsel_extract_solution(m, np, AB, p, X);
     if (debug) 
       { if (rank_ext < m) { fprintf(stderr, "there may be %d unsatisfied solutions\n", m - rank_ext); }
         if (rank_ext < np-p) { fprintf(stderr, "there are %d degrees of indeterminacy\n", np - p - rank_ext); }
@@ -54,7 +53,7 @@ int32_t gsel_solve(int32_t m, int32_t n, double A[], int32_t p, double B[], doub
     return rank_ext;
   }
   
-double gsel_determinant(int32_t m, int32_t n, double A[], int32_t q)
+double gsel_determinant(uint32_t m, uint32_t n, double A[], uint32_t q)
   { if ((q > m) || (q > n)) { return 0.0; }
     /* Make a work copy of the first {q} rows and columns of {A}: */
     double M[q*q];
@@ -67,13 +66,14 @@ double gsel_determinant(int32_t m, int32_t n, double A[], int32_t q)
     return gsel_triangular_det(q, q, M, q);
   }
 
-void gsel_triangularize(int32_t m, int32_t n, double M[], bool_t total, double tiny)
+void gsel_triangularize(uint32_t m, uint32_t n, double M[], bool_t total, double tiny)
   { int32_t i = 0;
     int32_t j = 0;
     double *Mij = &(M[0]);
     while ((i < m) && (j < n))
       { double *Mkj;
         /* Elements {M[r][s]} with {r >= i} and {s < j} are all zero. */
+        assert(isfinite(*Mij));
         if (i < m-1)
           { /* Pivoting: */
             /* Find row {kmax} in {i..m-1} that maximizes {|M[kmax,j]|} */
@@ -81,7 +81,8 @@ void gsel_triangularize(int32_t m, int32_t n, double M[], bool_t total, double t
             double Mmax = (*Mij);
             Mkj = Mij + n;
             for (int32_t k = i+1; k < m; k++)
-              { if (fabs(*Mkj) > fabs(Mmax)) { kmax = k; Mmax = (*Mkj); } 
+              { assert(isfinite(*Mkj));
+                if (fabs(*Mkj) > fabs(Mmax)) { kmax = k; Mmax = (*Mkj); } 
                 Mkj += n;
               }
             if (kmax != i)
@@ -125,7 +126,7 @@ void gsel_triangularize(int32_t m, int32_t n, double M[], bool_t total, double t
       }
   }
 
-void gsel_diagonalize(int32_t m, int32_t n, double M[])
+void gsel_diagonalize(uint32_t m, uint32_t n, double M[])
   { int32_t i = 0;
     int32_t j = 0;
     double *Mij = &(M[0]);
@@ -133,7 +134,7 @@ void gsel_diagonalize(int32_t m, int32_t n, double M[])
       { if ((*Mij) != 0.0)
           { /* Clear elements {M[k][j]} with {k < i} */
             double *Mkj = Mij-n;
-            for (int32_t k = i-1; k >= 0; k--)
+            for (int32_t k = (int32_t)i-1; k >= 0; k--)
               { /* Sub from row {k} a multiple of row {i} that cancels {M[k,j]}: */
                 if ((*Mkj) != 0.0)
                   { double s = (*Mkj)/(*Mij);
@@ -151,7 +152,7 @@ void gsel_diagonalize(int32_t m, int32_t n, double M[])
       }
   }
 
-void gsel_normalize(int32_t m, int32_t n, double M[])
+void gsel_normalize(uint32_t m, uint32_t n, double M[])
   { int32_t i = 0;
     int32_t j = 0;
     double *Mij = &(M[0]);
@@ -168,15 +169,15 @@ void gsel_normalize(int32_t m, int32_t n, double M[])
       }
   }
 
-int32_t gsel_extract_solution(int32_t m, int32_t n, double M[], int32_t p, double X[])
+uint32_t gsel_extract_solution(uint32_t m, uint32_t n, double M[], uint32_t p, double X[])
   { affirm(n >= p, "bad array dimensions");
-    int32_t q = n-p;
+    uint32_t q = n-p;
     
     /* Scan unknowns and set them: */
     int32_t i = 0;
     int32_t j = 0; /* Elements of {M[i,k]} with {k < j} should be all zero. */
     double *Aij = &(M[0]);
-    int32_t neq = 0; /* Number of equations actually used. */
+    uint32_t neq = 0; /* Number of equations actually used. */
     while (j < q)
       { /* Set unknowns {X[j,0..p-1]}: */
         double *Xjk = &(X[j*p]);
@@ -198,7 +199,7 @@ int32_t gsel_extract_solution(int32_t m, int32_t n, double M[], int32_t p, doubl
     return neq;
   }
 
-double gsel_triangular_det(int32_t m, int32_t n, double M[], int32_t q)
+double gsel_triangular_det(uint32_t m, uint32_t n, double M[], uint32_t q)
   { if ((q > m) || (q > n)) { return 0.0; }
     double det = 1.0;
     
@@ -206,7 +207,7 @@ double gsel_triangular_det(int32_t m, int32_t n, double M[], int32_t q)
     return det;
   }
 
-void gsel_residual(int32_t m, int32_t n, double A[], int32_t p, double B[], double X[], double R[])
+void gsel_residual(uint32_t m, uint32_t n, double A[], uint32_t p, double B[], double X[], double R[])
   { /* Compute {A X - B} with care: */
     
     int32_t in0 = 0; /* {== i*n}. */
@@ -232,32 +233,32 @@ void gsel_residual(int32_t m, int32_t n, double A[], int32_t p, double B[], doub
 
 void gsel_print_array
   ( FILE *wr,
-    int32_t indent,
+    uint32_t indent,
     char *fmt,
     char *head,
-    int32_t m,
-    int32_t n,
+    uint32_t m,
+    uint32_t n,
     char *Mname,
     double M[],
     char *foot
   )
   { 
-    gsel_print_system(wr, indent, fmt, head, m, n,Mname,M, -1,NULL,NULL, -1,NULL,NULL, foot);
+    gsel_print_system(wr, indent, fmt, head, m, n,Mname,M, 0,NULL,NULL, 0,NULL,NULL, foot);
   }
 
 void gsel_print_system
   ( FILE *wr, 
-    int32_t indent,
+    uint32_t indent,
     char *fmt, 
     char *head, 
-    int32_t m, 
-    int32_t n, 
+    uint32_t m, 
+    uint32_t n, 
     char *Aname,
     double A[], 
-    int32_t p, 
+    uint32_t p, 
     char *Bname,
     double B[], 
-    int32_t q,
+    uint32_t q,
     char *Cname,
     double C[], 
     char *foot
@@ -271,7 +272,7 @@ void gsel_print_system
     if (Cname == NULL) { Cname = ""; }
     char *Ceq = (strlen(Cname) > 0 ? " = " : "");
     
-    auto void print_row(int32_t i, char *name, char *eq, int32_t r, double M[]);
+    auto void print_row(uint32_t i, char *name, char *eq, uint32_t r, double M[]);
       /* Prints a row of {M} on the current line, without newline. */
     
     if (head != NULL) { fprintf(wr, "%*s%s\n", indent, "", head); }
@@ -285,7 +286,7 @@ void gsel_print_system
     if (foot != NULL) { fprintf(wr, "%*s%s\n", indent, "", foot); }
     return;
     
-    void print_row(int32_t i, char *name, char *eq, int32_t r, double M[])
+    void print_row(uint32_t i, char *name, char *eq, uint32_t r, double M[])
       { int32_t skip = (int32_t)(strlen(name) + strlen(eq));
         if (i == (m-1)/2)
           { fprintf(wr, "  %s%s[ ", name, eq); }

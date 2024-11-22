@@ -707,16 +707,14 @@ void tf_write_cpar_and_errors
     tf_select_all_variable_parameters(cspec, &which);
         
     /* Output file with given parameters: */
-    char *cpar_fname = NULL;
-    asprintf(&cpar_fname, "%s/%s.cpar", out_dir, name);
+    char *cpar_fname = jsprintf("%s/%s.cpar", out_dir, name);
     FILE *cpar_file = open_write(cpar_fname, TRUE);
     free(cpar_fname);
     tf_camera_params_write(cpar_file, 0, cpar);
     fclose(cpar_file);
 
     /* Output file with errors for given parameters: */
-    char *ferr_fname = NULL;
-    asprintf(&ferr_fname, "%s/%s.ferr", out_dir, name);
+    char *ferr_fname = jsprintf("%s/%s.ferr", out_dir, name);
     FILE *ferr = open_write(ferr_fname, TRUE);
     free(ferr_fname);
 

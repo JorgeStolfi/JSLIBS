@@ -2,9 +2,8 @@
 #define urat64_H
 
 /* Unsigned rational fractions with 64-bit numerators and denominators. */
-/* Last edited on 2023-03-18 11:06:22 by stolfi */
+/* Last edited on 2024-11-15 19:16:48 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 typedef struct urat64_t { uint64_t num, den; } urat64_t;

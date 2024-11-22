@@ -1,7 +1,6 @@
 /* See float_image_interpolate.h */
 /* Last edited on 2017-06-26 18:16:29 by stolfilocal */ 
 
-#define _GNU_SOURCE
 #include <limits.h>
 #include <float.h>
 #include <assert.h>

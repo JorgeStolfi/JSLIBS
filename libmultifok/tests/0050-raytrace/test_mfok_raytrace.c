@@ -121,7 +121,7 @@ int32_t main (int32_t argc, char **argv)
     double zDep = zDep_DEFAULT;
 
     /* Define the output directory {frameDir}: */
-    char *stackDir = NULL; asprintf(&stackDir, "out/img-%s-%04dx%04d-hs%02d-kr%02d", o->imageType, NX, NY, HS, KR);
+    char *stackDir = NULL; char *stackDir = jsprintf("out/img-%s-%04dx%04d-hs%02d-kr%02d", o->imageType, NX, NY, HS, KR);
     mkdir(stackDir, 0755);
 
     int32_t kf = 0; /* Images generated so far. */
@@ -129,7 +129,7 @@ int32_t main (int32_t argc, char **argv)
     while (zFoc < zFoc_MAX + 0.0000001)
       { bool_t verbose = (kf == 0) || (kf == 1);
 
-        char *frameDir = NULL; asprintf(&frameDir, "%s/zf%08.4f-df%08.4f", stackDir, zFoc, zDep); 
+        char *frameDir = NULL; char *frameDir = jsprintf("%s/zf%08.4f-df%08.4f", stackDir, zFoc, zDep); 
         mkdir(frameDir, 0755);
 
         mfrs_make_and_write_image(NX, NY, fimg, HS, KR, zFoc, zDep, frameDir, verbose);
@@ -266,7 +266,7 @@ void mfrs_make_and_write_image
           }
         if (wr_ray == NULL)
           { char *fname_ray = NULL;
-            asprintf(&fname_ray, "%s/pixel-rays-%04d-%04d.txt", frameDir, iPix->c[0], iPix->c[1]);
+            char *fname_ray = jsprintf("%s/pixel-rays-%04d-%04d.txt", frameDir, iPix->c[0], iPix->c[1]);
             wr_ray = open_write(fname_ray, TRUE);
             free(fname_ray);
             iPix_wr = *iPix;
@@ -280,7 +280,7 @@ void mfrs_make_and_write_image
  
 void mfrs_write_image(float_image_t *oimg, char *frameDir)
   { char *fname = NULL;
-    asprintf(&fname, "%s/img-blur.png", frameDir);
+    char *fname = jsprintf("%s/img-blur.png", frameDir);
     image_file_format_t ffmt = image_file_format_PNG;
     double gammaEnc = 1.0;
     double bias = 0.0;

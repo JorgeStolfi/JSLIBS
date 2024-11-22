@@ -1,7 +1,6 @@
 /* See r4x4.h. */
-/* Last edited on 2024-08-30 17:56:42 by stolfi */
+/* Last edited on 2024-11-20 16:21:11 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
@@ -9,23 +8,41 @@
 
 #include <r4.h>
 #include <rmxn.h>
+#include <jsrandom.h>
 
 #include <r4x4.h>
 
 #define N 4
 
 void r4x4_zero(r4x4_t *M)
-  { int32_t i, j;
-    for (i = 0; i < N; i++)
-      for (j = 0; j < N; j++)
+  { for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
         { M->c[i][j] = 0.0; }
   }
 
 void r4x4_ident(r4x4_t *M)
-  { int32_t i, j;
-    for (i = 0; i < N; i++)
-      for (j = 0; j < N; j++)
+  { for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
         { M->c[i][j] = (i == j ? 1.0 : 0.0); }
+  }
+
+void r4x4_throw(r4x4_t *M, sign_t sgn)
+  { assert((sgn >= -1) && (sgn <= +1));
+    while (TRUE)
+      { for (int32_t i = 0; i < N; i++)
+          { for (int32_t j = 0; j < N; j++) 
+              { M->c[i][j] = 2*drandom() - 1; }
+          }
+        if (sgn == 0) { break; }
+        double det = r4x4_det(M);
+        if (det == 0) { continue; }
+        if (det*sgn < 0) 
+          { /* Negate first row: */
+            for (int32_t j = 0; j < N; j++) { M->c[0][j] = - M->c[0][j]; }
+          }
+        /* At this point, {sgn*det} must be positive: */
+        break;
+      }
   }
 
 void r4x4_transp(r4x4_t *A, r4x4_t *M)
@@ -45,8 +62,8 @@ void r4x4_transp(r4x4_t *A, r4x4_t *M)
     a = A->c[2][3]; b = A->c[3][2]; M->c[2][3] = b; M->c[3][2] = a;
   }
 
-void r4x4_get_row(r4x4_t *A, int32_t i, r4_t *x)
-  { assert((i >= 0) && (i < N));
+void r4x4_get_row(r4x4_t *A, uint32_t i, r4_t *x)
+  { assert(i < N);
     double *v = &(A->c[i][0]);
     x->c[0] = v[0];
     x->c[1] = v[1];
@@ -54,8 +71,8 @@ void r4x4_get_row(r4x4_t *A, int32_t i, r4_t *x)
     x->c[3] = v[3];
   }
   
-void r4x4_set_row(r4x4_t *A, int32_t i, r4_t *x)
-  { assert((i >= 0) && (i < N));
+void r4x4_set_row(r4x4_t *A, uint32_t i, r4_t *x)
+  { assert(i < N);
     double *v = &(A->c[i][0]);
     v[0] = x->c[0];
     v[1] = x->c[1];
@@ -63,16 +80,16 @@ void r4x4_set_row(r4x4_t *A, int32_t i, r4_t *x)
     v[3] = x->c[3];
   }
 
-void r4x4_get_col(r4x4_t *A, int32_t j, r4_t *x)
-  { assert((j >= 0) && (j < N));
+void r4x4_get_col(r4x4_t *A, uint32_t j, r4_t *x)
+  { assert(j < N);
     x->c[0] = A->c[0][j];
     x->c[1] = A->c[1][j];
     x->c[2] = A->c[2][j];
     x->c[3] = A->c[3][j];
   }
   
-void r4x4_set_col(r4x4_t *A, int32_t j, r4_t *x)
-  { assert((j >= 0) && (j < N));
+void r4x4_set_col(r4x4_t *A, uint32_t j, r4_t *x)
+  { assert(j < N);
     A->c[0][j] = x->c[0];
     A->c[1][j] = x->c[1];
     A->c[2][j] = x->c[2];
@@ -81,10 +98,9 @@ void r4x4_set_col(r4x4_t *A, int32_t j, r4_t *x)
 
 void r4x4_map_row(r4_t *x, r4x4_t *A, r4_t *r)
   { r4_t rr;
-    int32_t j, k;
-    for (j = 0; j < N; j++)
+    for (int32_t j = 0; j < N; j++)
       { double s = 0.0;
-        for (k = 0; k < N; k++) s += x->c[k] * A->c[k][j];
+        for (int32_t k = 0; k < N; k++) s += x->c[k] * A->c[k][j];
         rr.c[j] = s;
       }
     (*r) = rr;
@@ -92,10 +108,9 @@ void r4x4_map_row(r4_t *x, r4x4_t *A, r4_t *r)
 
 void r4x4_map_col(r4x4_t *A, r4_t *x, r4_t *r)
   { r4_t rr;
-    int32_t i, k;
-    for (i = 0; i < N; i++)
+    for (int32_t i = 0; i < N; i++)
       { double s = 0.0;
-        for (k = 0; k < N; k++) s += A->c[i][k] * x->c[k];
+        for (int32_t k = 0; k < N; k++) s += A->c[i][k] * x->c[k];
         rr.c[i] = s;
       }
     (*r) = rr;
@@ -120,19 +135,17 @@ void r4x4_neg(r4x4_t *A, r4x4_t *M)
   }
 
 void r4x4_scale(double s, r4x4_t *A, r4x4_t *M)  
-  { int32_t i, j;
-    for (i = 0; i < N; i++)
-      for (j = 0; j < N; j++)
+  { for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
         { M->c[i][j] = s * A->c[i][j]; }
   }
 
 void r4x4_mul(r4x4_t *A, r4x4_t *B, r4x4_t *M)
   { r4x4_t RR;
-    int32_t i, j, k;
-    for (i = 0; i < N; i++)
-      for (j = 0; j < N; j++)
+    for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
         { double s = 0.0;
-          for (k = 0; k < N; k++)  s += A->c[i][k]*B->c[k][j];
+          for (int32_t k = 0; k < N; k++)  s += A->c[i][k]*B->c[k][j];
           RR.c[i][j] = s;
         }
     (*M) = RR;
@@ -141,11 +154,10 @@ void r4x4_mul(r4x4_t *A, r4x4_t *B, r4x4_t *M)
 void r4x4_mul_tr(r4x4_t *A, r4x4_t *B, r4x4_t *M)
   {
     r4x4_t RR;
-    int32_t i, j, k;
-    for (i = 0; i < N; i++)
-      for (j = 0; j < N; j++)
+    for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
         { double s = 0.0;
-          for (k = 0; k < N; k++)  s += A->c[i][k]*B->c[j][k];
+          for (int32_t k = 0; k < N; k++)  s += A->c[i][k]*B->c[j][k];
           RR.c[i][j] = s;
         }
     (*M) = RR;
@@ -271,15 +283,14 @@ void r4x4_adj(r4x4_t *A, r4x4_t *M)
 
 void r4x4_inv(r4x4_t *A, r4x4_t *M)
   { r4x4_t RR;
-    int32_t i, j;
     r4x4_adj(A, &RR);
     double d = 
         A->c[0][0]*RR.c[0][0]
       + A->c[0][1]*RR.c[1][0] 
       + A->c[0][2]*RR.c[2][0] 
       + A->c[0][3]*RR.c[3][0];
-    for (i = 0; i < N; i++)
-      for (j = 0; j < N; j++)
+    for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
         { M->c[i][j] = RR.c[i][j]/d; }
   }
 
@@ -391,16 +402,14 @@ double r4x4_mod_norm_sqr(r4x4_t *A)
 
 bool_t r4x4_is_unif_scaling(r4x4_t *M, double s)
   {
-    int32_t i, j;
-    for (i = 0; i < N; i++)
-      for (j = 0; j < N; j++)
+    for (int32_t i = 0; i < N; i++)
+      for (int32_t j = 0; j < N; j++)
         { if (M->c[i][j] != (i == j ? s : 0.0)) { return FALSE; } }
     return TRUE;
   }
 
 void r4x4_from_rows(r4_t *a, r4_t *b, r4_t *c, r4_t *d, r4x4_t *M)
-  { int32_t j;
-    for (j = 0; j < N; j++)
+  { for (int32_t j = 0; j < N; j++)
       { M->c[0][j] = a->c[j];
         M->c[1][j] = b->c[j];
         M->c[2][j] = c->c[j];
@@ -409,8 +418,7 @@ void r4x4_from_rows(r4_t *a, r4_t *b, r4_t *c, r4_t *d, r4x4_t *M)
   }
 
 void r4x4_from_cols(r4_t *a, r4_t *b, r4_t *c, r4_t *d, r4x4_t *M)
-  { int32_t j;
-    for (j = 0; j < N; j++)
+  { for (int32_t j = 0; j < N; j++)
       { M->c[j][0] = a->c[j];
         M->c[j][1] = b->c[j];
         M->c[j][2] = c->c[j];
@@ -427,5 +435,7 @@ void r4x4_gen_print
     char *olp, char *osep, char *orp,
     char *ilp, char *isep, char *irp
   )
-  { rmxn_gen_print(f, N, N, &(A->c[0][0]), fmt, olp, osep, orp, ilp, isep, irp); }
+  { 
+    rmxn_gen_print(f, N, N, &(A->c[0][0]), fmt, olp, osep, orp, ilp, isep, irp);
+  }
 

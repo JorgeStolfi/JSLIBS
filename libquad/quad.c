@@ -386,14 +386,14 @@ void quad_write_map(FILE *wr, quad_arc_vec_t *root, quad_arc_vec_t *A)
     fprintf(wr, "roots = %d\n", nr);
     fprintf(wr, "edges = %lu\n", ne);
     /* Write the roots, one per line: */
-    for (uint32_t i = 0; i < nr; i++)
+    for (int32_t i = 0; i < nr; i++)
       { /* Write {i} and the root arc number {i}: */
         fprintf(wr, "%*u ", dr, i);
         quad_write_arc(wr, root->e[i], dE);
         fputc('\n', wr);
       }
     /* Write the edge records, one per line: */
-    for (uint64_t eid = 0; eid < ne; eid++)
+    for (int64_t eid = 0; eid < ne; eid++)
       { /* Get the reachable edge number {eid}: */
         quad_edge_t ed = quad_edge(A->e[eid]);
         /* Check whether the renumbering worked: */
@@ -423,14 +423,14 @@ void quad_read_map(FILE *rd, quad_arc_vec_t *root, quad_arc_vec_t *A)
     if (A == NULL) { A = &A_local; }
     quad_arc_vec_trim(A, ne);
     /* Create the edge records, save their base arcs in {A->e[0..ne-1]}: */
-    for (uint64_t eid = 0; eid < ne; eid++) 
+    for (int64_t eid = 0; eid < ne; eid++) 
       { quad_arc_t a = quad_make_edge(); 
         EDGE(a)->eid = eid; 
         A->e[eid] = a;
       }
     /* (Re)alocate the root record and read the root arcs, one per line: */
     quad_arc_vec_trim(root, nr);
-    for (uint64_t i = 0; i < nr; i++)
+    for (int64_t i = 0; i < nr; i++)
       { /* Parse the root index {i} and the root arc {root->e[i]}: */
         uint64_t iread = fget_uint64(rd, 10);
         demand(iread == i, "root index mismatch");
@@ -440,7 +440,7 @@ void quad_read_map(FILE *rd, quad_arc_vec_t *root, quad_arc_vec_t *A)
         fget_eol(rd);
       }
     /* Read the contents of the edge records {0..ne-1}: */
-    for (uint64_t eid = 0; eid < ne; eid++) 
+    for (int64_t eid = 0; eid < ne; eid++) 
       { /* Parse the edge number {eid}: */
         uint64_t eid_read = fget_uint64(rd, 10);
         demand(eid_read == eid, "edge number mismatch");

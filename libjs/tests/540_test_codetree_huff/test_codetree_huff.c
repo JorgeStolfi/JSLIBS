@@ -2,13 +2,12 @@
 #define PROG_DESC "tests the {codetree_huff.h} procedures"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2023-02-15 12:24:59 by stolfi */
+/* Last edited on 2024-11-20 03:33:00 by stolfi */
 /* Created on 2007-01-31 by J. Stolfi, UNICAMP */
 
 #define PROG_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -32,6 +31,8 @@
 
 #define MAX_FREQ codetree_huff_MAX_FREQ
 
+typedef codetree_data_value_t dvalue_t;
+
 void thuf_check_types(void);
   /* Checks if data types have sufficient size. */
 
@@ -51,7 +52,7 @@ void thuf_check_ruler(void);
   /* Test {codetree_huff_build} with a very non-uniform freq distribution. */
 
 void thuf_check_generic
-  ( codetree_value_t maxval, 
+  ( codetree_data_value_t maxval, 
     codetree_huff_freq_t freq[],
     codetree_t *tree, 
     char *code[]
@@ -67,7 +68,7 @@ void thuf_check_generic
 
 codetree_node_count_t thuf_check_tree
   ( codetree_t *tree, 
-    codetree_value_t maxval, 
+    codetree_data_value_t maxval, 
     codetree_huff_freq_t freq[]
   );
   /* Verifies if the given {tree} is well-formed, including the child order 
@@ -92,32 +93,35 @@ int32_t main (int32_t argc, char **argv)
     return 0;
   }
   
-#define check_type(TYPE,VAR,ITYPE,VAL) \
+#define thuf_check_type(TYPE,VAR,ITYPE,VAL) \
   TYPE VAR = (TYPE)(VAL); \
   demand(((ITYPE)VAR) == ((ITYPE)(VAL)), "value " #VAL " doesn't fit in type " #TYPE)
 
 void thuf_check_types(void)
   { 
     fprintf(stderr, "checking types...\n");
-    check_type(codetree_value_t,        x1, int64_t,  codetree_MAX_VALUE);     
-    check_type(codetree_value_t,        x2, int64_t,  codetree_MIN_VALUE);     
-    check_type(codetree_node_count_t,   x3, uint64_t, codetree_MAX_NODES);     
-    check_type(codetree_sample_count_t, x4, uint64_t, codetree_MAX_SAMPLES);   
-    check_type(codetree_bit_count_t,    x5, uint64_t, codetree_MAX_BYTES * 8); 
-    check_type(codetree_byte_count_t,   x6, uint64_t, codetree_MAX_BYTES);     
-    check_type(byte_t,                  x7, uint64_t, 255);                    
-    check_type(codetree_delta_t,        x8, uint64_t, codetree_MAX_DELTA);     
+    thuf_check_type(codetree_data_value_t,   x0, int64_t,  codetree_data_MAX_VALUE);     
 
-    check_type(codetree_huff_freq_t,        x9, uint64_t, codetree_huff_MAX_FREQ);     
+    thuf_check_type(codetree_node_value_t,   x1, int64_t,  codetree_node_MAX_VALUE);     
+    thuf_check_type(codetree_node_value_t,   x2, int64_t,  codetree_node_MIN_VALUE);     
+
+    thuf_check_type(codetree_node_count_t,   x3, uint64_t, codetree_MAX_NODES);     
+    thuf_check_type(codetree_sample_count_t, x4, uint64_t, codetree_MAX_SAMPLES);   
+    thuf_check_type(codetree_bit_count_t,    x5, uint64_t, codetree_MAX_BYTES * 8); 
+    thuf_check_type(codetree_byte_count_t,   x6, uint64_t, codetree_MAX_BYTES);     
+    thuf_check_type(byte_t,                  x7, uint64_t, 255);                    
+    thuf_check_type(codetree_delta_t,        x8, uint64_t, codetree_MAX_DELTA);     
+
+    thuf_check_type(codetree_huff_freq_t,    x9, uint64_t, codetree_huff_MAX_FREQ);     
   }
    
 void thuf_check_empty(void)
   { 
     fprintf(stderr, "testing with empty {V}...\n");
-    codetree_value_t maxval = 40; /* Some upper bound on valid values ({V}). */
+    dvalue_t maxval = 40; /* Some upper bound on valid values ({V}). */
     codetree_huff_freq_t freq[maxval+1];
     char *code[maxval+1];
-    for (codetree_value_t val = 0; val <= maxval; val++) { freq[val] = 0; code[val] = NULL; }
+    for (dvalue_t val = 0; val <= maxval; val++) { freq[val] = 0; code[val] = NULL; }
     
     /* Expected tree: */
     codetree_t *tree = NULL;
@@ -128,10 +132,10 @@ void thuf_check_empty(void)
 void thuf_check_single(void)
   { 
     fprintf(stderr, "testing with singleton {V}...\n");
-    codetree_value_t maxval = 40; /* Some upper bound on valid values ({V}). */
+    dvalue_t maxval = 40; /* Some upper bound on valid values ({V}). */
     codetree_huff_freq_t freq[maxval+1];
     char *code[maxval+1];
-    for (codetree_value_t val = 0; val <= maxval; val++) { freq[val] = 0; code[val] = NULL; }
+    for (dvalue_t val = 0; val <= maxval; val++) { freq[val] = 0; code[val] = NULL; }
 
     /* Define the elements of {V}, their freqs, and their expected encodings: */
     freq[27] = 100; code[27] = "";
@@ -146,14 +150,14 @@ void thuf_check_single(void)
 void thuf_check_small(void)
   { 
     fprintf(stderr, "testing with small fixed tree...\n");
-    codetree_value_t maxval = 40; /* Some upper bound on valid values ({V}). */
+    dvalue_t maxval = 40; /* Some upper bound on valid values ({V}). */
     codetree_huff_freq_t freq[maxval+1];
     char *code[maxval+1];
-    for (codetree_value_t val = 0; val <= maxval; val++) { freq[val] = 0; code[val] = NULL; }
+    for (dvalue_t val = 0; val <= maxval; val++) { freq[val] = 0; code[val] = NULL; }
     
     /* Define the elements of {V}, their freqs, and their expected encodings: */
     codetree_node_count_t nv = 5; /* Number of leaves. */
-    codetree_value_t vals[nv];
+    dvalue_t vals[nv];
     vals[0] =  7; freq[vals[0]] = 120; code[vals[0]] = "01";
     vals[1] = 14; freq[vals[1]] =  70; code[vals[1]] = "100";
     vals[2] = 21; freq[vals[2]] = 130; code[vals[2]] = "00";
@@ -181,15 +185,15 @@ void thuf_check_small(void)
 void thuf_check_unif(void)
   { 
     fprintf(stderr, "testing with uniform frequencies...\n");
-    codetree_value_t maxval = 100; /* Some upper bound on valid values ({V}). */
+    dvalue_t maxval = 100; /* Some upper bound on valid values ({V}). */
     codetree_huff_freq_t freq[maxval+1];
     char **code = NULL;
-    for (codetree_value_t val = 0; val <= maxval; val++) { freq[val] = 0; }
+    for (dvalue_t val = 0; val <= maxval; val++) { freq[val] = 0; }
     
     /* Define the elements of {V} and their freqs: */
     codetree_node_count_t nv = 64; /* Number of values in {V}. Better be power of 2. */
     for (codetree_node_count_t iv = 0; iv < nv; iv++)
-      { codetree_value_t val = maxval*iv/nv;
+      { dvalue_t val = maxval*iv/nv;
         freq[val] = 100;
       }
 
@@ -200,15 +204,15 @@ void thuf_check_unif(void)
    
 void thuf_check_ruler(void)
   { fprintf(stderr, "testing with 'ruler' frequencies...\n");
-    codetree_value_t maxval = 100; /* Some upper bound on valid values ({V}). */
+    dvalue_t maxval = 100; /* Some upper bound on valid values ({V}). */
     codetree_huff_freq_t freq[maxval+1];
     char **code = NULL;
-    for (codetree_value_t val = 0; val <= maxval; val++) { freq[val] = 0; }
+    for (dvalue_t val = 0; val <= maxval; val++) { freq[val] = 0; }
 
     /* Define the elements of {V} and their freqs: */
     codetree_node_count_t nv = 63; /* Number of values in {V}. Better be power of 2 minus 1. */
     for (codetree_node_count_t iv = 0; iv < nv; iv++) 
-      { codetree_value_t val = maxval*iv/nv;
+      { dvalue_t val = maxval*iv/nv;
         freq[val] = 100*thuf_ruler_func(iv);
       }
       
@@ -231,7 +235,7 @@ codetree_huff_freq_t thuf_ruler_func(codetree_node_count_t iv)
   }
     
 void thuf_check_generic
-  ( codetree_value_t maxval, 
+  ( dvalue_t maxval, 
     codetree_huff_freq_t freq[],
     codetree_t *tree, 
     char *code[]
@@ -275,13 +279,13 @@ void thuf_check_generic
 
 codetree_node_count_t thuf_check_tree
   ( codetree_t *tree, 
-    codetree_value_t maxval, 
+    dvalue_t maxval, 
     codetree_huff_freq_t freq[]
   )
   { 
     /* Get count of representable values: */
     codetree_node_count_t nvalid = 0;
-    for (codetree_value_t val = 0; val <= maxval; val++) { if (freq[val] > 0) { nvalid++; } }
+    for (dvalue_t val = 0; val <= maxval; val++) { if (freq[val] > 0) { nvalid++; } }
     
     /* Check Huffman tree invariants on child order: */
 
@@ -309,7 +313,7 @@ codetree_node_count_t thuf_check_tree
           { /* Internal node: */
             uint64_t wt_ch[2]; /* Total leaf weight of each subtree. */
             uint64_t ct_ch[2]; /* Creation "time" for tie-breaking. */
-            for (uint32_t ich = 0; ich < 2; ich++)
+            for (int32_t ich = 0; ich < 2; ich++)
               { codetree_node_t *ch = nd->child[ich];
                 wt_ch[ich] = checkit(ch);
                 ct_ch[ich] = (uint64_t)ch->value;
@@ -331,7 +335,7 @@ codetree_node_count_t thuf_check_tree
         else
           { /* Leaf node: */
             nleaf++;
-            codetree_value_t val = nd->value;
+            dvalue_t val = (dvalue_t)(nd->value);
             if (val > maxval) 
               { fprintf(stderr, "** leaf value = %d out of range 0..%d\n", val, maxval);
                 demand(FALSE, "** aborted");

@@ -1,10 +1,9 @@
 /* jswsize.h -- general definitions that depend on the word size. */
-/* Last edited on 2011-12-22 00:49:39 by stolfi */
+/* Last edited on 2024-11-15 19:14:42 by stolfi */
 
 #ifndef jswsize_H
 #define jswsize_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #if __WORDSIZE == 64

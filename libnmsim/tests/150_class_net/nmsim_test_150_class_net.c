@@ -65,8 +65,7 @@ void nmsim_class_net_test(int32_t nnc, int32_t nsc)
     /* Create the network: */
     nmsim_class_net_t *cnet = nmsim_class_net_throw(nnc, nsc);
     /* Test write and read: */
-    char *fname = NULL;
-    asprintf(&fname, "out/test_class_net_%04dnc_%04dsc.txt", nnc, nsc);
+    char *fname = jsprintf("out/test_class_net_%04dnc_%04dsc.txt", nnc, nsc);
     double timeStep = 1.0;
     nmsim_class_net_test_write(fname, cnet, timeStep);
     nmsim_class_net_test_read(fname, cnet, timeStep);

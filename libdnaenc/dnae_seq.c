@@ -370,7 +370,6 @@ dnae_seq_t dnae_seq_read_named(char *fname, char *tag, char *ext)
 dnae_seq_t dnae_seq_read_from_nucleic_file(FILE *rd, dnae_seq_id_t id, char *name, bool_t rev)
   { /* Read letter sequence from file: */
     char *bas = NULL;
-    char *cmt = NULL;
     dnae_nucleic_string_read(rd, &bas, &cmt);
     /* Pack it all up: */
     dnae_seq_t seq = dnae_seq_from_nucleic_string(id, name, rev, cmt, bas);
@@ -381,7 +380,6 @@ dnae_seq_t dnae_seq_read_from_nucleic_file(FILE *rd, dnae_seq_id_t id, char *nam
 dnae_seq_t dnae_seq_read_from_nucleic_file_named(char *fname, char *tag, char *ext, dnae_seq_id_t id, char *name, bool_t rev)
   { /* Read letter sequence from file "{fname}{tag}{ext}": */
     char *bas = NULL;
-    char *cmt = NULL;
     dnae_nucleic_string_read_named(fname, tag, ext, &bas, &cmt);
     /* Pack it all up: */
     dnae_seq_t seq = dnae_seq_from_nucleic_string(id, name, rev, cmt, bas);
@@ -473,7 +471,7 @@ dnae_seq_t dnae_seq_filter(dnae_seq_t *seq, double_vec_t *wt, int8_t ek, char *w
     char *old_cmt = (seq->cmt != NULL ? seq->cmt : "");
     char *sep = (strlen(old_cmt) == 0 ? "" : " ");
     char *new_cmt = NULL;
-    asprintf(&(new_cmt), "%s%sfiltered with %s (window width %d)\n", old_cmt, sep, wcmt, nw);
+    char *(new_cmt) = jsprintf("%s%sfiltered with %s (window width %d)\n", old_cmt, sep, wcmt, nw);
 
     /* Pack the filtered datum vector as a {dnae_seq_t}: */
     dnae_seq_t new = dnae_seq_from_datum_vec
@@ -545,7 +543,7 @@ dnae_seq_t dnae_seq_interpolate(dnae_seq_t *seq, int8_t ek)
     char *old_cmt = (seq->cmt != NULL ? seq->cmt : "");
     char *sep = (strlen(old_cmt) == 0 ? "" : " ");
     char *new_cmt = NULL;
-    asprintf(&(new_cmt), "%s%sinterpolated with step {1/%d}\n", old_cmt, sep, stpn);
+    char *(new_cmt) = jsprintf("%s%sinterpolated with step {1/%d}\n", old_cmt, sep, stpn);
 
     /* Pack the filtered datum vector as a {dnae_seq_t}: */
     dnae_seq_t new = dnae_seq_from_datum_vec

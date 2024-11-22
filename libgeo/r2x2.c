@@ -1,7 +1,6 @@
 /* See r2x2.h. */
-/* Last edited on 2024-08-30 04:23:16 by stolfi */
+/* Last edited on 2024-11-20 12:52:03 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
@@ -39,27 +38,27 @@ void r2x2_transp(r2x2_t *A, r2x2_t *M)
     a = A->c[0][1]; b = A->c[1][0]; M->c[0][1] = b; M->c[1][0] = a;
   }
 
-void r2x2_get_row(r2x2_t *A, int32_t i, r2_t *x)
+void r2x2_get_row(r2x2_t *A, uint32_t i, r2_t *x)
   { assert((i >= 0) && (i < N));
     double *v = &(A->c[i][0]);
     x->c[0] = v[0];
     x->c[1] = v[1];
   }
   
-void r2x2_set_row(r2x2_t *A, int32_t i, r2_t *x)
+void r2x2_set_row(r2x2_t *A, uint32_t i, r2_t *x)
   { assert((i >= 0) && (i < N));
     double *v = &(A->c[i][0]);
     v[0] = x->c[0];
     v[1] = x->c[1];
   }
 
-void r2x2_get_col(r2x2_t *A, int32_t j, r2_t *x)
+void r2x2_get_col(r2x2_t *A, uint32_t j, r2_t *x)
   { assert((j >= 0) && (j < N));
     x->c[0] = A->c[0][j];
     x->c[1] = A->c[1][j];
   }
   
-void r2x2_set_col(r2x2_t *A, int32_t j, r2_t *x)
+void r2x2_set_col(r2x2_t *A, uint32_t j, r2_t *x)
   { assert((j >= 0) && (j < N));
     A->c[0][j] = x->c[0];
     A->c[1][j] = x->c[1];
@@ -385,7 +384,7 @@ void r2x2_rot_and_scale(r2_t *p, r2x2_t *M)
 
 void r2x2_from_point_pairs(r2_vec_t *p1, r2_t *bar1, r2_vec_t *p2, r2_t *bar2, r2x2_t *M)
   {
-    int32_t np = p1->ne;
+    uint32_t np = p1->ne;
     assert(np == p2->ne);
     double debug = FALSE;
     

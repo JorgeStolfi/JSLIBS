@@ -50,7 +50,7 @@ char *allgraphs_format_parms(
     int nsub
   )
   { char *s = NULL;
-    asprintf(&s, 
+    char *s = jsprintf(
       "x in [%f _ %f]  y in [%f _ %f]\n%d intervals",
       xmin, xmax, ymin, ymax, nsub
     );
@@ -176,8 +176,7 @@ epswr_figure_t *allgraphs_new_plot
     double vsize = scale*wy; /* Figure V size (pt). */
     double fontsize = 10.0;
 
-    char *fname = NULL;
-    asprintf(&fname, "%s%s.eps", fileprefix, filetag);
+    char *fname = jsprintf("%s%s.eps", fileprefix, filetag);
     FILE *wr = open_write(fname, TRUE);
     
     double smrg = 5;

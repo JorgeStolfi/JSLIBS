@@ -1,7 +1,6 @@
 /* See jsrandom.h */
-/* Last edited on 2020-12-06 18:28:43 by jstolfi */
+/* Last edited on 2024-11-22 02:21:18 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <limits.h>
 #include <float.h>
@@ -244,7 +243,7 @@ double dloggaussrand(double avg, double dev)
 /* RANDOM CHARS: */
 
 void randchars(char s[], uint32_t ns, char a[], uint32_t na)
-  { for (uint32_t i = 0; i < ns; i++)
+  { for (int32_t i = 0; i < ns; i++)
       { uint32_t k = uint32_abrandom(0, na-1);
         s[i] = a[k];
       } 
@@ -257,9 +256,9 @@ uint64_t *uint64_choose(uint64_t n, size_t k, uint64_t *perm)
     demand(k <= n, "invalid arguments");
     if ((k > 0) && (perm == NULL)) 
       { perm = notnull(malloc(k*sizeof(uint64_t)), "no mem"); }
-    for (uint64_t i = 0; i < k; i++)
-      { uint64_t pi = uint64_abrandom(i, n-1);
-        uint64_t j = i;
+    for (int64_t i = 0; i < k; i++)
+      { int64_t pi = int64_abrandom(i, (int64_t)n-1);
+        int64_t j = i;
         while ((j > 0) && (perm[j-1] >= pi))
           { perm[j] = perm[j-1];
             assert(pi > 0);

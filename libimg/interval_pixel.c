@@ -1,7 +1,6 @@
 /* See {interval_pixel.h}. */
 /* Last edited on 2013-10-21 02:44:04 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <assert.h>
 #include <limits.h>
 #include <string.h>

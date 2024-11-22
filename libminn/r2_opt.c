@@ -1,5 +1,5 @@
 /* See {r2_opt.h}. */
-/* Last edited on 2024-11-08 09:53:51 by stolfi */
+/* Last edited on 2024-11-08 20:26:40 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -173,13 +173,16 @@ void r2_opt_single_scale_quadopt
         double rMin = fmin(tol, 0.25);     /* Minimum probe simplex radius. */
         double rMax = 0.70;                /* Maximum probe simplex radius. */
         double minStep = 0.25*tol;         /* Stop when {x} moves less than this. */
+        bool_t sve_debug = debug;
+        bool_t sve_debug_probes = FALSE; 
+        
         sve_minn_iterate
           ( nv, 
             &f2_for_sve, NULL, NULL, 
             z, &Fz,
             dir, ctr, dMax, dBox, rIni, rMin, rMax, minStep,
             maxIters,
-            debug
+            sve_debug, sve_debug_probes
           );
 
         /* Return the optimal vector: */

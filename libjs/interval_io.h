@@ -2,9 +2,8 @@
 #define interval_io_H
 
 /* Input/output for {interval_t} values. */
-/* Last edited on 2012-01-04 00:31:46 by stolfi */ 
+/* Last edited on 2024-11-15 19:13:15 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdio.h>
 
 #include <jsmath.h>

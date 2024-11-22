@@ -1,7 +1,6 @@
 /* See {frame_name_pattern_arg_parse.h} */
 /* Last edited on 2017-06-21 22:58:58 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>

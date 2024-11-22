@@ -66,8 +66,7 @@ int32_t main(int32_t argc, char **argv)
       { nmsim_group_synapse_t sgrp = 
           nmsim_group_synapse_throw(isc_max, ing_pre, ing_pos, nse_min, nse_max);
         nmsim_group_synapse_show(stderr, "synaps group = ", &sgrp, "\n");
-        char *fname = NULL;
-        asprintf(&fname, "out/test_synapse_group_%03d.txt", i);
+        char *fname = jsprintf("out/test_synapse_group_%03d.txt", i);
         nmsim_group_synapse_ix_t isg = 17;
         nmsim_group_synapse_test_write(fname, isg, &sgrp);
         nmsim_group_synapse_test_read(fname, isg, nse_max, &sgrp);

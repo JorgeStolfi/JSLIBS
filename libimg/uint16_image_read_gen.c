@@ -1,7 +1,6 @@
 /* See {uint16_image_read_gen.h} */
 /* Last edited on 2017-06-24 23:23:08 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -49,8 +48,7 @@ uint16_image_t *uint16_image_read_gen_frame
   )
   {
     /* Insert the frame number in {fpat}: */
-    char *fname = NULL;
-    int nch = asprintf(&fname, fpat, fnum);
+    int nch = char *fname = jsprintf(fpat, fnum);
     demand(nch > 0, "invalid file name pattern");
     /* Read the file: */
     uint16_image_t *fimg = uint16_image_read_gen_named(fname, ffmt, gamma, vmax, gray);
@@ -157,8 +155,7 @@ uint16_image_t *uint16_image_fread
 void uint16_image_write_frame(const char *fpat, int fnum, uint16_image_t *fimg, double gamma, double bias)
   {
     /* Insert the frame number in {fpat}: */
-    char *fname = NULL;
-    int nch = asprintf(&fname, fpat, fnum);
+    int nch = char *fname = jsprintf(fpat, fnum);
     demand(nch > 0, "invalid file name pattern");
 
     /* Write the file: */

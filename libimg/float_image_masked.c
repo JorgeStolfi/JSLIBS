@@ -1,7 +1,6 @@
 /* See {float_image_masked.h} */
 /* Last edited on 2013-10-21 00:22:15 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>

@@ -299,7 +299,7 @@ adrw_point_vec_t define_points(void)
        
     void s(int32_t j, double dX, double dY, int32_t i)
       { char *lab = NULL;
-        asprintf(&lab, "P%03d", i);
+        char *lab = jsprintf("P%03d", i);
         adrw_append_point(lab, i, j, j, j, dX, dY, 0.0, &P, &np); 
       } 
     

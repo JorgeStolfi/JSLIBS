@@ -1,9 +1,9 @@
 /* See gauss_table.h */
-/* Last edited on 2024-11-06 01:25:55 by stolfi */
+/* Last edited on 2024-11-19 06:08:08 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <limits.h>
 #include <values.h>
 #include <assert.h>
@@ -13,9 +13,8 @@
 #include <gauss_table.h>
 #include <gauss_bell.h>
 
-double *gauss_table_make(int n, double avg, double dev, bool_t normSum, bool_t folded)
+double *gauss_table_make(uint32_t n, double avg, double dev, bool_t normSum, bool_t folded)
   {
-    demand(n >= 0, "invalid table size");
     demand(dev >= 0, "invalid standard deviation");
 
     /* Allocate table: */
@@ -47,7 +46,7 @@ double *gauss_table_make(int n, double avg, double dev, bool_t normSum, bool_t f
     return w;
   }
   
-double gauss_table_folded_bell(double z, double dev, int n)
+double gauss_table_folded_bell(double z, double dev, uint32_t n)
   {
     assert(dev >= 0);
     if ((n > 0) && (dev > gauss_table_BIG_DEV*n))
@@ -57,8 +56,9 @@ double gauss_table_folded_bell(double z, double dev, int n)
     else
       { if ((n > 0) && ((z < 0) || (z >= n)))
           { /* Reduce {z} to the range {[0_n)}: */
-            z = z - n*(int)floor(z/n);
+            z = z - n*floor(z/n);
             while (z >= n) { z -= n; }
+            while (z < 0) { z += n; }
             assert(z >= 0);
             assert(z < n);
           }
@@ -69,15 +69,15 @@ double gauss_table_folded_bell(double z, double dev, int n)
         /* !!! Find a faster formula !!! */
 
         /* Add all fold-over terms that are {10^{-16}} or more: */
-        int kmax = (n == 0 ? 0 : (int)ceil((gauss_bell_BIG_ARG*dev + z)/n));
+        int32_t kmax = (n == 0 ? 0 : (int32_t)ceil((gauss_bell_BIG_ARG*dev + z)/n));
         assert(kmax >= 0);
         double sum = 0;
         
         /* Add all terms {z ± kmax*n} to {z ± n}, from small to large: */
-        int k = kmax;
+        int32_t k = kmax;
         while (k > 0)
-          { double um = (z - k*n)/dev; 
-            double up = (z + k*n)/dev; 
+          { double um = (z - k*(int32_t)n)/dev; 
+            double up = (z + k*(int32_t)n)/dev; 
             sum += exp(-um*um/2) + exp(-up*up/2);
             k--;
           }

@@ -1,5 +1,5 @@
 /* test_sve_near_quadratic --- test of {sve_minn.h} for a nearly quadratic func */
-/* Last edited on 2024-11-08 09:53:20 by stolfi */
+/* Last edited on 2024-11-08 20:26:17 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -69,7 +69,7 @@ void test_minimizer(int32_t id, int32_t n)
     
     /* Output file names: */
     char *prefix = NULL; /* Prefix for output file names. */
-    asprintf(&prefix, "out/%03d-%02d", id, n);
+    char *prefix = jsprintf("out/%03d-%02d", id, n);
     
     /* Shake the dice: */
     srand(4615 + id);  srandom(4615 + id);
@@ -90,10 +90,54 @@ void test_minimizer(int32_t id, int32_t n)
       }
     rmxn_mul_tr(n, n, n, A, A, M);
     
-    auto double F(int32_t n, double x[]); 
+    bool_t sve_debug = FALSE;
+    bool_t sve_debug_probes = FALSE;
+
+    auto double sve_goal(int32_t n, double x[]); 
       /* The goal function for optimization. */
       
-    double F(int32_t n, double x[])
+    int32_t nok = 0;      /* Counts iterations (actually, calls to {sve_OK}). */
+    
+    auto bool_t sve_OK(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius); 
+      /* Acceptance criterion function. */
+
+    /* Output the true solution: */
+    fprintf(stderr, "true minimum:\n");
+    double Fx_tru = sve_goal(n, x_tru);
+    write_solution(prefix, "tru", n, &sve_goal, x_tru, Fx_tru);
+
+    double x[n];     /* Initial guess and final solution. */
+    for (int32_t k = 0; k < n; k++) { x[k] = 2*drandom() - 1; }
+    
+    /* Evaluate and write the initial solution: */
+    fprintf(stderr, "initial guess:\n");
+    double Fx = sve_goal(n, x);
+    write_solution(prefix, "ini", n, &sve_goal, x, Fx);
+    
+    /* Optimize iteratively: */
+    double dMax = +INFINITY;
+    double *ctr = NULL;
+    bool_t dBox = FALSE;
+    double rMin = 0.0000001;
+    double rMax = 10.0;
+    double rIni = 0.5;
+    double minStep = 0.01*rMin;
+    sign_t dir = -1;
+    int32_t maxIters = 200;
+    
+    sve_minn_iterate
+      ( n, &sve_goal, &sve_OK, NULL,
+        x, &Fx, dir, 
+        ctr, dMax, dBox, rIni, rMin, rMax, 
+        minStep, maxIters, sve_debug, sve_debug_probes
+      );
+    
+    /* Evaluate and write the final solution: */
+    fprintf(stderr, "final solution:\n");
+    write_solution(prefix, "fin", n, &sve_goal, x, Fx);
+    return;
+      
+    double sve_goal(int32_t n, double x[])
       { assert(n == n);
         /* Subtract the true minimum: */
         rn_sub(n, x, x_tru, dx);
@@ -110,63 +154,22 @@ void test_minimizer(int32_t id, int32_t n)
         return S;
       }
       
-    int32_t nok = 0;      /* Counts iterations (actually, calls to {OK}). */
-    
-    auto bool_t OK(int32_t n, double x[], double Fx); 
-      /* Acceptance criterion function. */
-      
-    bool_t OK(int32_t n, double x[], double Fx)
+    bool_t sve_OK(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius)
       { assert(n == n);
         fprintf(stderr, "iteration %d:\n", nok);
-        write_solution(NULL, "tmp", n, &F, x, Fx);
+        write_solution(NULL, "tmp", n, &sve_goal, x, Fx);
         nok++;
         fprintf(stderr, "\n");
         return 0;
       }
-
-    /* Output the true solution: */
-    fprintf(stderr, "true minimum:\n");
-    double Fx_tru = F(n, x_tru);
-    write_solution(prefix, "tru", n, &F, x_tru, Fx_tru);
-
-    double x[n];     /* Initial guess and final solution. */
-    for (int32_t k = 0; k < n; k++) { x[k] = 2*drandom() - 1; }
-    
-    /* Evaluate and write the initial solution: */
-    fprintf(stderr, "initial guess:\n");
-    double Fx = F(n, x);
-    write_solution(prefix, "ini", n, &F, x, Fx);
-    
-    /* Optimize iteratively: */
-    double dMax = +INFINITY;
-    double *ctr = NULL;
-    bool_t dBox = FALSE;
-    double rMin = 0.0000001;
-    double rMax = 10.0;
-    double rIni = 0.5;
-    double minStep = 0.01*rMin;
-    sign_t dir = -1;
-    int32_t maxIters = 200;
-    bool_t debug = FALSE;
-    
-    sve_minn_iterate
-      ( n, &F, &OK, NULL,
-        x, &Fx, dir, 
-        ctr, dMax, dBox, rIni, rMin, rMax, 
-        minStep, maxIters, debug
-      );
-    
-    /* Evaluate and write the final solution: */
-    fprintf(stderr, "final solution:\n");
-    write_solution(prefix, "fin", n, &F, x, Fx);
   }
 
-void write_solution(char *prefix, char *tag, int32_t n, sve_goal_t *F, double x[], double Fx)
+void write_solution(char *prefix, char *tag, int32_t n, sve_goal_t *sve_goal, double x[], double Fx)
   { /* Print and write the pulse: */
     fprintf(stderr, "  point =\n");
     write_vector(NULL, tag, n, x); 
 
-    double FxN = F(n, x);
+    double FxN = sve_goal(n, x);
     fprintf(stderr, "  function value = %+24.16e %+24.16e\n", Fx, FxN);
     demand(Fx == FxN, "inconsistent function value");
     /* if (prefix != NULL) { write_vector(prefix, tag, n, x); }a */
@@ -176,7 +179,7 @@ void write_vector(char *prefix, char *tag, int32_t n, double x[])
   { char *fname = NULL;
     FILE *wr;
     if (prefix != NULL) 
-      { asprintf(&fname, "%s-%s-a.dat", prefix, tag);
+      { char *fname = jsprintf("%s-%s-a.dat", prefix, tag);
         wr = open_write(fname, TRUE);
       }
     else

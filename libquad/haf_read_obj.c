@@ -1,5 +1,5 @@
 /* See {haf_read_obj.h}. */
-/* Last edited on 2024-06-28 06:20:56 by stolfi */
+/* Last edited on 2024-11-20 06:02:25 by stolfi */
  
 #define haf_read_obj_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -261,15 +261,18 @@ void haf_read_obj_file
       { 
         if (debug) { fprintf(stderr, "    adding arc V[%d] -> V[%d] on border of F[%d]\n", kv_org, kv_dst, kf); }
         if ((kv_org < 0) || (kv_org >= nv))
-          { char *msg = NULL; asprintf(&msg, "corner of F[%d] is an invalid vertex V[%d]", kf, kv_org);
+          { 
+            char *msg = jsprintf("corner of F[%d] is an invalid vertex V[%d]", kf, kv_org);
             haf_read_obj_err(func, msg);
           }
         if ((kv_dst < 0) || (kv_dst >= nv))
-          { char *msg = NULL; asprintf(&msg, "corner of F[%d] is an invalid vertex V[%d]", kf, kv_dst);
+          { 
+            char *msg = jsprintf("corner of F[%d] is an invalid vertex V[%d]", kf, kv_dst);
             haf_read_obj_err(func, msg);
           }
         if (kv_org == kv_dst)
-          { char *msg = NULL; asprintf(&msg, "arc on face F[%d] is a loop V[%d]--V[%d]", kf, kv_org, kv_dst);
+          { 
+            char *msg = jsprintf("arc on face F[%d] is a loop V[%d]--V[%d]", kf, kv_org, kv_dst);
             haf_read_obj_err(func, msg);
           }
         /* Checks {aout[kv_org]} if  this arc {kv_out->kv_dst} occurred before: */
@@ -386,9 +389,8 @@ void haf_read_obj_file
             assert(kf_old != -1);
             assert(vorg[ka] == kv0);
             assert(vorg[kb] == kv1);
-            char *msg = NULL;
             prtarc("arc ", a, "\n");
-            asprintf( &msg, "arc of face F[%d] above also used in face F[%d]", kf, kf_old);
+            char *msg = jsprintf("arc of face F[%d] above also used in face F[%d]", kf, kf_old);
             haf_read_obj_err(func, msg);
           }
         return;

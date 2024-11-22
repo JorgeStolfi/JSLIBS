@@ -1,6 +1,6 @@
-# Last edited on 2024-11-04 06:56:53 by stolfi
+# Last edited on 2024-11-08 16:52:30 by stolfi
 
-PROG = minu_do_tests
+PROG = test_minu_basic
 
 TEST_LIB := libminu.a
 TEST_LIB_DIR := ../..

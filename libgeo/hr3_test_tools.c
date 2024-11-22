@@ -1,7 +1,6 @@
 /* See {hr3_test_tools.h}. */
-/* Last edited on 2024-11-04 06:37:10 by stolfi */
+/* Last edited on 2024-11-20 12:05:59 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -20,14 +19,29 @@
 #include <hr3.h>
 #include <hr3_test_tools.h>
 
-void hr3_test_do_check_eq(double x, double y, char *msg, char *file, int32_t lnum, const char *func)
+void hr3_test_do_check_eq
+  ( double x,
+    double y,
+    char *msg,
+    char *file,
+    int32_t lnum,
+    const char *func
+  )
   { if (x != y)
       { fprintf(stderr, " ** %+20.16e %+20.16e differ\n", x, y);
         programerror(msg, file, lnum, func);
       }
   }
 
-void hr3_test_do_check_eps(double x, double y, double eps, char *msg, char *file, int32_t lnum, const char *func)
+void hr3_test_do_check_eps
+  ( double x,
+    double y,
+    double eps,
+    char *msg,
+    char *file,
+    int32_t lnum,
+    const char *func
+  )
   { double diff = fabs(x - y);
     if (diff > eps)
       { fprintf(stderr, " ** %+20.16e %+20.16e", x, y);

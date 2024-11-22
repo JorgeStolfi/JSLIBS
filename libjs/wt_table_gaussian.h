@@ -2,12 +2,11 @@
 #define wt_table_gaussian_H
 
 /* Weight tables with Gaussain profile */
-/* Last edited on 2023-11-25 12:09:15 by stolfi */
+/* Last edited on 2024-11-16 10:26:20 by stolfi */
 
 #define wt_table_gaussian_H_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 
@@ -15,7 +14,7 @@
 #include <bool.h>
 #include <argparser.h>
 
-void wt_table_gaussian_fill(int32_t n, double sigma, double wt[], int32_t *stride_P);
+void wt_table_gaussian_fill(uint32_t n, double sigma, double wt[], uint32_t *stride_P);
   /* Stores into {wt[0..n-1]} a window weight table derived from a
     Gaussian distribution {G(z)} with mean {n/2} and standard deviation
     {sigma}.  The length {n} must be positive.
@@ -37,7 +36,7 @@ void wt_table_gaussian_fill(int32_t n, double sigma, double wt[], int32_t *strid
     In any case, if {stride_P} not {NULL}, the max stride (0, 1, or 2)
     will be returned in {*stride_P}. */
 
-double_vec_t wt_table_gaussian_make(int32_t n, double sigma, double maxLoss);
+double_vec_t wt_table_gaussian_make(uint32_t n, double sigma, double maxLoss);
   /* Builds a weight table {wt} with odd length derived from a Gaussian
     distribution {G(z)} with standard deviation {sigma}.
     
@@ -54,12 +53,12 @@ double_vec_t wt_table_gaussian_make(int32_t n, double sigma, double maxLoss);
 
 /* AUXILIARY FUNCTIONS */
 
-double wt_table_gaussian_loss(int32_t n, double sigma);
+double wt_table_gaussian_loss(uint32_t n, double sigma);
   /* Returns the weight that is lost if a table with {n} entries is
     used to represent a Gaussian weight distribution with standard
     deviation {sigma}. */
 
-double wt_table_gaussian_entry(int32_t n, int32_t k, double sigma);
+double wt_table_gaussian_entry(uint32_t n, uint32_t k, double sigma);
   /* Computes the entry with position {k} in a table with {n}
     elements, where each element is the integral of a truncated
     Gaussian weight distribution with standard deviation {sigma}

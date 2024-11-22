@@ -1,11 +1,11 @@
 /* See hermite3.h */
-/* Last edited on 2014-07-27 16:58:14 by stolfilocal */
+/* Last edited on 2024-11-16 00:46:05 by stolfi */
 
 #define hermite3_C_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
   
-#define _GNU_SOURCE
 #include <stdlib.h>
+#include <stdint.h>
 #include <math.h>
 
 #include <affirm.h>
@@ -26,7 +26,7 @@ double hermite3_interp(double v0, double d0, double v1, double d1, double a, dou
     return v0*P0 + (d0*s - d1*r)*r*s + v1*P1;
   }
 
-void hermite3_subsample(int nx, double x[], double dx[], int ns, int ny, double y[])
+void hermite3_subsample(int32_t nx, double x[], double dx[], int32_t ns, int32_t ny, double y[])
   {
     demand(nx > 0, "invalid {ns}");
     demand(ns > 0, "invalid {ns}");
@@ -35,24 +35,22 @@ void hermite3_subsample(int nx, double x[], double dx[], int ns, int ny, double 
     bool_t self = smooth && (dx == NULL); /* {dx} is self-allocated. */
     if (self)
       { /* Allocate and estimate the derivatives: */
-        dx = notnull(malloc(nx*sizeof(double)), "no mem");
+        dx = talloc(nx, double);
         hermite3_estimate_derivs(nx, x, dx);
       }
     /* Copy the first sample: */
     y[0] = x[0];
     if (ns == 1)
       { /* Just copy the rest: */
-        int ix;
-        for (ix = 1; ix < nx; ix++) { y[ix] = x[ix]; }
+        for (int32_t ix = 1; ix < nx; ix++) { y[ix] = x[ix]; }
       }
     else 
       { /* Actual interpolation: */
         /* Initialize values {u2,u1,v,v1} and (if smooth) derivatives {d0,d1}: */
         double v1 = x[0]; /* Value at end of previous interval. */
         double d1 = (smooth ? dx[0] : NAN); /* Derivative at end of previous interval. */
-        int iy = 0; /* Last new sample set. */
-        int ix;
-        for (ix = 1; ix < nx; ix++)
+        int32_t iy = 0; /* Last new sample set. */
+        for (int32_t ix = 1; ix < nx; ix++)
           { /* Get the values {v0,v1} at {ix-1,ix}: */
             double v0 = v1;
             v1 = x[ix];
@@ -60,8 +58,7 @@ void hermite3_subsample(int nx, double x[], double dx[], int ns, int ny, double 
             double d0 = d1;  
             d1 = (smooth ? dx[ix] : NAN);
             /* Interpolate new samples: */ 
-            int jn;
-            for (jn = 1; jn < ns; jn++)
+            for (int32_t jn = 1; jn < ns; jn++)
               { /* Interpolation at fraction {jn/ns}: */
                 double r0 = ((double)jn)/((double)ns);
                 double r1 = 1 - r0;
@@ -77,7 +74,7 @@ void hermite3_subsample(int nx, double x[], double dx[], int ns, int ny, double 
     if (self) { free(dx); }
   }
   
-void hermite3_estimate_derivs(int nx, double x[], double dx[])
+void hermite3_estimate_derivs(int32_t nx, double x[], double dx[])
   {
     demand(nx >= 0, "invalid {nx}");
     if (nx == 0)
@@ -101,8 +98,7 @@ void hermite3_estimate_derivs(int nx, double x[], double dx[])
       { /* Cubics ({nx >= 4}): */
         dx[0] = hermite3_estimate_deriv_0_1_3(x[0], x[1], x[2], x[3]);
         dx[1] = hermite3_estimate_deriv_1_1_2(x[0], x[1], x[2], x[3]);
-        int i;
-        for (i = 2; i < nx-2; i++) { dx[i] = hermite3_estimate_deriv_2_0_2(x[i-2], x[i-1], x[i+1], x[i+2]); }
+        for (int32_t i = 2; i < nx-2; i++) { dx[i] = hermite3_estimate_deriv_2_0_2(x[i-2], x[i-1], x[i+1], x[i+2]); }
         dx[nx-2] = - hermite3_estimate_deriv_1_1_2(x[nx-1], x[nx-2], x[nx-3], x[nx-4]);
         dx[nx-1] = - hermite3_estimate_deriv_0_1_3(x[nx-1], x[nx-2], x[nx-3], x[nx-4]);
       }

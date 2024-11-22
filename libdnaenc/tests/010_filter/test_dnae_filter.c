@@ -631,7 +631,7 @@ void dnae_plot_spectra
 
     /* Create plotter object {dp} and get its Postscript stream {eps}: */
     char *levTag = NULL;
-    asprintf(&levTag, "-%02d%s", level, tag);
+    char *levTag = jsprintf("-%02d%s", level, tag);
     msm_ps_tools_t *dp = 
       msm_ps_tools_new
         ( NULL, outName, levTag, hTotSize, vTotSize, 

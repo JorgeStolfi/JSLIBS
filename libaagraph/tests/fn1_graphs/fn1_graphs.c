@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 
     /* Construct the output filename prefix: */
     char *fileprefix = NULL;
-    asprintf(&fileprefix, "pf-%s-", ftag);
+    char *fileprefix = jsprintf("pf-%s-", ftag);
     
     bool_t epsformat;
     for (epsformat = FALSE; epsformat <= TRUE; epsformat++)

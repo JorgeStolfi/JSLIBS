@@ -2,9 +2,8 @@
 #define indexing_io_H
 
 /* Printout and debugging tools for {indexing_h} */
-/* Last edited on 2023-03-18 11:21:09 by stolfi */
+/* Last edited on 2024-11-15 19:13:53 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 

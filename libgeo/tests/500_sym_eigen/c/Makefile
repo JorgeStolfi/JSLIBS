@@ -1,6 +1,6 @@
-# Last edited on 2024-11-06 04:39:32 by stolfi
+# Last edited on 2024-11-21 21:22:35 by stolfi
 
-PROG = testc
+PROG = test_sym_eigen
  
 TEST_LIB := libgeo.a
 TEST_LIB_DIR := ../../..

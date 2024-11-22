@@ -1,7 +1,6 @@
 /* See {float_image_mmorph.h}. */
 /* Last edited on 2013-10-21 02:41:41 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <assert.h>
 #include <values.h>

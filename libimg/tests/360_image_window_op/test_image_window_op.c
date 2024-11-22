@@ -8,7 +8,6 @@
 #define test_image_window_op_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -571,8 +570,7 @@ void tiwo_write_image(const char *name, float_image_t *img)
   {
     int32_t NC = (int32_t)img->sz[0];
     assert(NC == 3);
-    char *fname = NULL;
-    asprintf(&fname, "out/t-%s.ppm", name);
+    char *fname = jsprintf("out/t-%s.ppm", name);
     FILE *wr = open_write(fname, TRUE);
     bool_t yup = TRUE;
     bool_t verbose = TRUE;

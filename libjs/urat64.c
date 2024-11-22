@@ -1,10 +1,12 @@
 /* See urat64.h */
-/* Last edited on 2011-12-23 05:59:07 by stolfilocal */
+/* Last edited on 2024-11-15 19:08:39 by stolfi */
 
-#include <urat64.h>
 #include <stdint.h>
+
 #include <jsmath.h>
 #include <affirm.h>
+
+#include <urat64.h>
 
 #define LO32(x) = (((uint64_t)(x)) & ((1LLU << 32) - 1LLU));
   /* The lowest 32 bits of an integer, as the lowest 32 bits of a 64-bit uint. */
@@ -61,7 +63,7 @@ void urat64_add(urat64_t *x, urat64_t *y, urat64_t *z)
       }
   }
   
-int urat64_compare(urat64_t *x, urat64_t *y)
+int32_t urat64_compare(urat64_t *x, urat64_t *y)
   {
     demand((x->den != 0) || (x->num != 0), "cannot compare NAN");
     demand((y->den != 0) || (y->num != 0), "cannot compare NAN");

@@ -2,13 +2,12 @@
 #define PROG_DESC "test of {jsmath.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-12-06 18:30:20 by jstolfi */ 
+/* Last edited on 2024-11-20 06:53:25 by stolfi */ 
 /* Created on 2011-09-20 by J. Stolfi, UNICAMP */
 
 #define test_jsrandom_COPYRIGHT \
   "Copyright © 2011  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -18,6 +17,7 @@
 
 #include <jsmath.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <affirm.h>
 #include <bool.h>
 
@@ -36,31 +36,31 @@ double zrandom(void); /* A random double with random magnitude. */
 #define MAX_HIST_BINS 1024
   /* Max number of bins in histograms. */
   
-void test_int32_random(int32_t nb, int32_t ntpb, char *xtest);
-void test_uint32_random(int32_t nb, int32_t ntpb, char *xtest);
-void test_int64_random(int32_t nb, int32_t ntpb, char *xtest);
-void test_uint64_random(int32_t nb, int32_t ntpb, char *xtest);
+void test_int32_random(uint32_t nb, uint32_t ntpb, char *xtest);
+void test_uint32_random(uint32_t nb, uint32_t ntpb, char *xtest);
+void test_int64_random(uint32_t nb, uint32_t ntpb, char *xtest);
+void test_uint64_random(uint32_t nb, uint32_t ntpb, char *xtest);
   /* Tests {function = {int,uint}{32,64}_random}. Writes to disk
     histograms of the high and low {nb} bits, with {ntpd}
     samples per bin on average.  File names are 
     "out/{function}_{"lo","hi"}_{xtest}.his". */
 
-void test_stdint_random(int32_t size, bool_t sgn, int32_t nb, int32_t ntpb, char *xtest);
+void test_stdint_random(uint32_t size, bool_t sgn, uint32_t nb, uint32_t ntpb, char *xtest);
   /* Tests {function = {xtype}{size}_random} where {size} is 32 or 64
     and {xtype} is {int} if {sgn} is true, {uint} if {sgn} is false. 
     Writes to disk histograms of the high and low {nb} bits, with {ntpd}
     samples per bin on average.  File names are "out/{function}_{"lo","hi"}_{xtest}.his". */
 
-void test_int32_abrandom(int32_t a, int32_t b, uint32_t q, int32_t ntpb, char *xtest);
-void test_uint32_abrandom(uint32_t a, uint32_t b, uint32_t q, int32_t ntpb, char *xtest);
-void test_int64_abrandom(int64_t a, int64_t b, uint64_t q, int32_t ntpb, char *xtest);
-void test_uint64_abrandom(uint64_t a, uint64_t b, uint64_t q, int32_t ntpb, char *xtest);
+void test_int32_abrandom(int32_t a, int32_t b, uint32_t q, uint32_t ntpb, char *xtest);
+void test_uint32_abrandom(uint32_t a, uint32_t b, uint32_t q, uint32_t ntpb, char *xtest);
+void test_int64_abrandom(int64_t a, int64_t b, uint64_t q, uint32_t ntpb, char *xtest);
+void test_uint64_abrandom(uint64_t a, uint64_t b, uint64_t q, uint32_t ntpb, char *xtest);
   /* Tests {function(a,b) = {int,uint}{32,64}_abrandom(a,b)}. Writes to disk
     a histogram of values with {q} bins and
     {ntpd} samples per bin on average.  The parameter {q} must divide {b-a}.
     File names are "out/{function}_qt_{xtest}.his". */
 
-void test_stdint_abrandom(int32_t size, bool_t sgn, uint64_t a, uint64_t b, uint64_t q, int32_t ntpb, char *xtest);
+void test_stdint_abrandom(uint32_t size, bool_t sgn, uint64_t a, uint64_t b, uint64_t q, uint32_t ntpb, char *xtest);
   /* Tests {function(a,b) = {xtype}{size}_abrandom(a,b)} where {size} is 32 or 64
     and {xtype} is {int} if {sgn} is true, {uint} if {sgn} is false.
     Assumes that {a,b} are the original arguments cast to the 
@@ -70,9 +70,9 @@ void test_stdint_abrandom(int32_t size, bool_t sgn, uint64_t a, uint64_t b, uint
     {ntpd} samples per bin on average.  The parameter {q} must divide {b-a}.
     File name is "out/{function}_qt_{xtest}.his". */
 
-void test_drandom(int32_t ntpb, char *xtest);
-void test_dgaussrand(int32_t ntpb, char *xtest);
-void test_dloggaussrand(double avg, double dev, int32_t ntpb, char *xtest);
+void test_drandom(uint32_t ntpb, char *xtest);
+void test_dgaussrand(uint32_t ntpb, char *xtest);
+void test_dloggaussrand(double avg, double dev, uint32_t ntpb, char *xtest);
   /* Test {function = drandom,dgaussrand,dloggaussrand}. Writes to disk a histogram
     of values with {ntpd} samples per bin on average.
     File names are "out/{function}_qt_{xtest}.his". */
@@ -80,16 +80,18 @@ void test_dloggaussrand(double avg, double dev, int32_t ntpb, char *xtest);
 void test_uint64_choose(uint64_t n, size_t k, uint64_t nt, char *xtest);
   /* Tests {uint64_choose} with parameters {n} and {k}, {nt} times. */
 
-FILE *open_test_file(char *xtype, int32_t size, char *func, char *xend, char *xtest);
+FILE *open_test_file(char *xtype, uint32_t size, char *func, char *xend, char *xtest);
   /* Opens "out/{xtype}{size}_{func}_hist_{xend}_{xtest}.his" for writing.
     If {xtype} is {NULL}, omits the "{xtype}{size}_" part. */
 
-#define P03 1000LU
-#define P06 1000000LU
-#define P09 (1000000000LU)
-#define P12 (1000000000000LU)
-#define P15 (1000000000000000LU)
-#define P18 (1000000000000000000LU)
+#define P03 (1000)
+#define P06 (1000000)
+#define P07 (10000000)
+#define P08 (100000000)
+#define P09 (1000000000)
+#define P12 (1000000000000L)
+#define P15 (1000000000000000L)
+#define P18 (1000000000000000000L)
   /* Powers of 10. */
 
 #define T08 (1<<8)
@@ -107,7 +109,7 @@ int32_t main (int32_t argn, char **argv)
     
     test_int32_abrandom(-200, +99, 1, 10000, "A");
     test_uint32_abrandom(20000, 50000-1, 100, 10000, "A");
-    test_int64_abrandom(-200*P09, +100*P09-1, P09, 10000, "A");
+    test_int64_abrandom(-200*P07, +100*P07-1, P09, 10000, "A");
     test_uint64_abrandom(200*P12, 500*P12-1, P12, 10000, "A");
 
     test_int32_abrandom(0-30, +T08-1-30, T08/256, 10000, "B");
@@ -128,27 +130,27 @@ int32_t main (int32_t argn, char **argv)
     return 0;
   }
 
-void test_int32_random(int32_t nb, int32_t ntpb, char *xtest)
+void test_int32_random(uint32_t nb, uint32_t ntpb, char *xtest)
   {
     test_stdint_random(32, TRUE, nb, ntpb, xtest);
   }
 
-void test_uint32_random(int32_t nb, int32_t ntpb, char *xtest)
+void test_uint32_random(uint32_t nb, uint32_t ntpb, char *xtest)
   {
     test_stdint_random(32, FALSE, nb, ntpb, xtest);
   }
 
-void test_int64_random(int32_t nb, int32_t ntpb, char *xtest)
+void test_int64_random(uint32_t nb, uint32_t ntpb, char *xtest)
   {
     test_stdint_random(64, TRUE, nb, ntpb, xtest);
   }
 
-void test_uint64_random(int32_t nb, int32_t ntpb, char *xtest)
+void test_uint64_random(uint32_t nb, uint32_t ntpb, char *xtest)
   {
     test_stdint_random(64, FALSE, nb, ntpb, xtest);
   }
 
-void test_stdint_random(int32_t size, bool_t sgn, int32_t nb, int32_t ntpb, char *xtest)
+void test_stdint_random(uint32_t size, bool_t sgn, uint32_t nb, uint32_t ntpb, char *xtest)
   { char *xtype = (sgn ? "int" : "uint");
     fprintf(stderr, "Checking {%s%d_random}...\n", xtype, size);
     srandom(19501129);
@@ -156,11 +158,11 @@ void test_stdint_random(int32_t size, bool_t sgn, int32_t nb, int32_t ntpb, char
     /* Allocate and initialize histogram: */
     uint32_t nh = (uint32_t)ipow(2, nb);  /* Number of histogram bins, a power of 2. */
     uint64_t hi[nh], lo[nh]; /* Histograms of high and low bits. */
-    for (uint32_t j = 0; j < nh; j++) { lo[j] = hi[j] = 0; }
+    for (int32_t j = 0; j < nh; j++) { lo[j] = hi[j] = 0; }
 
     /* Collect histogram data: */
     uint64_t nt = ntpb*nh;      /* Total number of samples. */
-    for (uint64_t i = 0; i < nt; i++)
+    for (int64_t i = 0; i < nt; i++)
       { uint32_t jlo, jhi; /* Lower and higher {nb} bits. */
         if (size == 32)
           { uint32_t x = (sgn ? (uint32_t)int32_random() : uint32_random());
@@ -195,27 +197,27 @@ void test_stdint_random(int32_t size, bool_t sgn, int32_t nb, int32_t ntpb, char
     fclose(wrlo);
   }
 
-void test_int32_abrandom(int32_t a, int32_t b, uint32_t q, int32_t ntpb, char *xtest)
+void test_int32_abrandom(int32_t a, int32_t b, uint32_t q, uint32_t ntpb, char *xtest)
   {
     test_stdint_abrandom(32, TRUE, (uint64_t)a, (uint64_t)b, (uint64_t)q, ntpb, xtest);
   }
 
-void test_uint32_abrandom(uint32_t a, uint32_t b, uint32_t q, int32_t ntpb, char *xtest)
+void test_uint32_abrandom(uint32_t a, uint32_t b, uint32_t q, uint32_t ntpb, char *xtest)
   {
     test_stdint_abrandom(32, FALSE, (uint64_t)a, (uint64_t)b, (uint64_t)q, ntpb, xtest);
   }
 
-void test_int64_abrandom(int64_t a, int64_t b, uint64_t q, int32_t ntpb, char *xtest)
+void test_int64_abrandom(int64_t a, int64_t b, uint64_t q, uint32_t ntpb, char *xtest)
   {
     test_stdint_abrandom(64, TRUE, (uint64_t)a, (uint64_t)b, (uint64_t)q, ntpb, xtest);
   }
 
-void test_uint64_abrandom(uint64_t a, uint64_t b, uint64_t q, int32_t ntpb, char *xtest)
+void test_uint64_abrandom(uint64_t a, uint64_t b, uint64_t q, uint32_t ntpb, char *xtest)
   {
     test_stdint_abrandom(64, FALSE, (uint64_t)a, (uint64_t)b, (uint64_t)q, ntpb, xtest);
   }
 
-void test_stdint_abrandom(int32_t size, bool_t sgn, uint64_t a, uint64_t b, uint64_t q, int32_t ntpb, char *xtest)
+void test_stdint_abrandom(uint32_t size, bool_t sgn, uint64_t a, uint64_t b, uint64_t q, uint32_t ntpb, char *xtest)
   { char *xtype = (sgn ? "int" : "uint");
     fprintf(stderr, "Checking {%s%d_abrandom}...\n", xtype, size);
     srandom(19501129);
@@ -252,11 +254,11 @@ void test_stdint_abrandom(int32_t size, bool_t sgn, uint64_t a, uint64_t b, uint
     uint64_t nh = nvq/q + 1;  /* Number of histogram bins. */
     demand(nh <= MAX_HIST_BINS, "too many histogram bins");
     uint64_t hs[nh];  /* Histogram of values. */
-    for (uint32_t j = 0; j < nh; j++) { hs[j] = 0; }
+    for (int32_t j = 0; j < nh; j++) { hs[j] = 0; }
     
     /* Collect histogram data: */
     uint64_t nt = (uint32_t)(ntpb*nh);  /* Total number of samples. */
-    for (uint64_t i = 0; i < nt; i++)
+    for (int64_t i = 0; i < nt; i++)
       { uint64_t d; /* Random number minus {a}. */
         if (size == 32)
           { if (sgn)
@@ -307,16 +309,16 @@ void test_stdint_abrandom(int32_t size, bool_t sgn, uint64_t a, uint64_t b, uint
     fclose(wrhs);
   }
 
-void test_drandom(int32_t ntpb, char *xtest)
+void test_drandom(uint32_t ntpb, char *xtest)
   { fprintf(stderr, "Checking {drandom}...\n");
     srandom(19501129);
     uint32_t nh = 300;  /* Number of histogram bins. */
     uint64_t hs[nh];         /* Histogram of values. */
-    for (uint32_t j = 0; j < nh; j++) { hs[j] = 0; }
+    for (int32_t j = 0; j < nh; j++) { hs[j] = 0; }
     
     uint64_t nt = (uint64_t)(ntpb*nh);  /* Total number of samples. */
     uint64_t nzero = 0; /* Number of times that zero appeared. */
-    for (uint64_t i = 0; i < nt; i++)
+    for (int64_t i = 0; i < nt; i++)
       { double x = drandom();
         assert(x >= 0.0);
         assert(x < 1.0);
@@ -331,7 +333,7 @@ void test_drandom(int32_t ntpb, char *xtest)
       }
 
     FILE *wrhs = open_test_file(NULL, 0, "drandom", "qt", xtest); 
-    for (uint32_t j = 0; j < nh; j++) 
+    for (int32_t j = 0; j < nh; j++) 
       { double xlo = ((double)j)/((double)nh);
         double xhi = ((double)j+1)/((double)nh);
         double r = ((double)hs[j])/((double)ntpb);
@@ -340,12 +342,12 @@ void test_drandom(int32_t ntpb, char *xtest)
     fclose(wrhs);
   }
 
-void test_dgaussrand(int32_t ntpb, char *xtest)
+void test_dgaussrand(uint32_t ntpb, char *xtest)
   { fprintf(stderr, "Checking {dgaussrand}...\n");
     srandom(19501129);
     uint32_t nh = 300;  /* Number of histogram bins. */
     uint64_t hs[nh];    /* Histogram of values. */
-    for (uint32_t j = 0; j < nh; j++) { hs[j] = 0; }
+    for (int32_t j = 0; j < nh; j++) { hs[j] = 0; }
     
     double xmin = -6.0; /* Low end of histogram range. */
     double xmax = +6.0; /* High end of histogram range. */
@@ -356,7 +358,7 @@ void test_dgaussrand(int32_t ntpb, char *xtest)
     double dev_exp = 1.0; /* Expected deviation. */
     double sum_x = 0;  /* Sum of values. */
     double sum_dx2 = 0; /* Sum of squared deviations. */
-    for (uint64_t i = 0; i < nt; i++)
+    for (int64_t i = 0; i < nt; i++)
       { double x = dgaussrand();
         sum_x += x;
         double dx = x - avg_exp;
@@ -381,7 +383,7 @@ void test_dgaussrand(int32_t ntpb, char *xtest)
     fprintf(stderr, "  should be avg = %.3f dev = %.3f\n", avg_exp, dev_exp);
     
     FILE *wrhs = open_test_file(NULL, 0, "dgaussrand", "qt", xtest); 
-    for (uint32_t j = 0; j < nh; j++) 
+    for (int32_t j = 0; j < nh; j++) 
       { double xlo = xmin + ((double)j)/((double)nh)*(xmax - xmin);
         double xhi = xmin + ((double)j+1)/((double)nh)*(xmax - xmin);
         double r = ((double)hs[j])/((double)nt)/(xhi-xlo);
@@ -390,12 +392,12 @@ void test_dgaussrand(int32_t ntpb, char *xtest)
     fclose(wrhs);
   }
 
-void test_dloggaussrand(double avg, double dev, int32_t ntpb, char *xtest)
+void test_dloggaussrand(double avg, double dev, uint32_t ntpb, char *xtest)
   { fprintf(stderr, "Checking {dloggaussrand(%.8f,%8f)}...\n", avg, dev);
     srandom(19501129);
     uint32_t nh = 300;  /* Number of histogram bins. */
     uint64_t hs[nh];    /* Histogram of values. */
-    for (uint32_t j = 0; j < nh; j++) { hs[j] = 0; }
+    for (int32_t j = 0; j < nh; j++) { hs[j] = 0; }
     
     /* Convert {avg,dev} of {x} to the avg and dev of {z=log(x)}: */
     double rdv = dev/avg;   /* Deviation relative to the mean. */
@@ -410,7 +412,7 @@ void test_dloggaussrand(double avg, double dev, int32_t ntpb, char *xtest)
     uint64_t ntiny = 0; /* Number of times that tiny values appeared. */
     double sum_x = 0;  /* Sum of values. */
     double sum_dx2 = 0; /* Sum of squared deviations. */
-    for (uint64_t i = 0; i < nt; i++)
+    for (int64_t i = 0; i < nt; i++)
       { double x = dloggaussrand(avg, dev);
         assert(x > 0.0);
         sum_x += x;
@@ -437,7 +439,7 @@ void test_dloggaussrand(double avg, double dev, int32_t ntpb, char *xtest)
     fprintf(stderr, "  should be avg = %.3f dev = %.3f\n", avg, dev);
 
     FILE *wrhs = open_test_file(NULL, 0, "dloggaussrand", "qt", xtest); 
-    for (uint32_t j = 0; j < nh; j++) 
+    for (int32_t j = 0; j < nh; j++) 
       { double xlo = xmin + ((double)j)/((double)nh)*(xmax - xmin);
         double xhi = xmin + ((double)j+1)/((double)nh)*(xmax - xmin);
         double r = ((double)hs[j])/((double)nt)/(xhi-xlo);
@@ -453,13 +455,13 @@ void test_uint64_choose(uint64_t n, size_t k, uint64_t nt, char *xtest)
     /* Histogram to count choices: */
     uint32_t nh = ((n < 1000000) && (n <= nt/10) ? (uint32_t)n : 0);
     uint32_t *hist = (nh == 0 ? NULL : notnull(malloc(nh*sizeof(uint32_t)), "no mem"));
-    for (uint32_t k = 0; k < nh; k++) { hist[k] = 0; }
+    for (int32_t k = 0; k < nh; k++) { hist[k] = 0; }
     
     uint64_t *perm = NULL;
-    for (uint64_t i = 0; i < nt; i++)
+    for (int64_t i = 0; i < nt; i++)
       { perm = uint64_choose(n, k, perm);
         /* Check order and range: */
-        for (uint32_t i = 0; i < k; i++)
+        for (int32_t i = 0; i < k; i++)
           { assert(perm[i] < n);
             if (i > 0) { assert(perm[i] > perm[i-1]); }
             if ((i < nh) && (hist != NULL)) { hist[perm[i]]++; }
@@ -468,11 +470,11 @@ void test_uint64_choose(uint64_t n, size_t k, uint64_t nt, char *xtest)
     if ((nh > 0) && (hist != NULL))
       { /* Check average and deviation of histogram entries: */
         double sum_hk = 0.0;
-        for (uint32_t k = 0; k < nh; k++) 
+        for (int32_t k = 0; k < nh; k++) 
           { double hk = (double)hist[k]; sum_hk += hk; }
         double avg_h = sum_hk/nh;
         double sum_dk2 = 0.0;
-        for (uint32_t k = 0; k < nh; k++) 
+        for (int32_t k = 0; k < nh; k++) 
           { double dk = (double)hist[k] - avg_h; sum_dk2 += dk*dk; }
         double dev_h = sqrt(sum_dk2/nh);
         fprintf(stderr, "avg = %.3f dev = %.3f", avg_h, dev_h);
@@ -488,12 +490,12 @@ void test_uint64_choose(uint64_t n, size_t k, uint64_t nt, char *xtest)
     if (hist != NULL) { free(hist); }
   }
 
-FILE *open_test_file(char *xtype, int32_t size, char *func, char *xend, char *xtest)
+FILE *open_test_file(char *xtype, uint32_t size, char *func, char *xend, char *xtest)
   { char *fname = NULL;
     if (xtype != NULL)
-      { asprintf(&fname, "out/%s%d_%s_%s_%s.his", xtype, size, func, xend, xtest); }
+      { fname = jsprintf("out/%s%d_%s_%s_%s.his", xtype, size, func, xend, xtest); }
     else
-      { asprintf(&fname, "out/%s_%s_%s.his", func, xend, xtest); }
+      { fname = jsprintf("out/%s_%s_%s.his", func, xend, xtest); }
     FILE *wr = open_write(fname, TRUE);
     free(fname);
     return wr;

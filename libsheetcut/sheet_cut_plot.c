@@ -1,5 +1,5 @@
 /* See {sheet_cut_plot.h} */
-/* Last edited on 2024-06-22 17:40:11 by stolfi */
+/* Last edited on 2024-11-20 05:24:08 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -55,8 +55,7 @@ epswr_figure_t *sheet_cut_plot_new_figure
 
     /* Write the sheet info text at top: */
     char *label = NULL;
-    asprintf
-      ( &label, 
+    char *label = jsprintf(
         "sheet %s: %s %.1f x %.1f x %.1f mm (usable %.1f x %.1f mm)", 
         sheet_tag, sheet_mat, sheet_thk, 
         sheet_dim.c[0], sheet_dim.c[1], 
@@ -179,8 +178,7 @@ void sheet_cut_plot_labels(epswr_figure_t *eps, r2_t pos, r2_t size, char *tag)
             else
               { xAlign = (double)px; yAlign = (double)py; }
             /* Generate the label text: */
-            char *txt = NULL;
-            asprintf(&txt, "(%.1f, %.1f)", cpos.c[0], cpos.c[1]);
+            char *txt = jsprintf("(%.1f, %.1f)", cpos.c[0], cpos.c[1]);
             epswr_label(eps, txt, "0", tpos.c[0], tpos.c[1], rot, FALSE, xAlign, yAlign, TRUE, FALSE);
             free(txt);
           }
@@ -199,8 +197,7 @@ void sheet_cut_plot_labels(epswr_figure_t *eps, r2_t pos, r2_t size, char *tag)
     epswr_label(eps, tag, "X", tpos.c[0], tpos.c[1], rot, FALSE, 0.5, 0.5, TRUE, FALSE);
 
     /* Plate dimensions on second line: */
-    char *txt = NULL;
-    asprintf(&txt, "%.1f x %.1f", size.c[0], size.c[1]);
+    char *txt = jsprintf("%.1f x %.1f", size.c[0], size.c[1]);
     r2_add(&tpos, &vst, &tpos);
     epswr_label(eps, txt, "0", tpos.c[0], tpos.c[1], rot, FALSE, 0.5, 0.5, TRUE, FALSE);
     free(txt);

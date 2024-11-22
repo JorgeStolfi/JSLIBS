@@ -86,7 +86,7 @@ oct_arc_t mk_edge(uint grid_order)
     
 oct_arc_t read_map(char *prefix)
   { char *filename = NULL;
-    asprintf(&filename, "%s.qe", prefix);
+    char *filename = jsprintf("%s.qe", prefix);
     FILE *rd = open_read(filename, TRUE);
     oct_read(rd, m);
     fclose(rd);
@@ -95,7 +95,7 @@ oct_arc_t read_map(char *prefix)
     
 void write_map(char *prefix, oct_arc_t a)
   { char *filename = NULL;
-    asprintf(&filename, "%s.qe", prefix);
+    char *filename = jsprintf("%s.qe", prefix);
     FILE *wr = open_write(filename, TRUE);
     oct_write_map(wr, m, NULL);
     fclose(wr);

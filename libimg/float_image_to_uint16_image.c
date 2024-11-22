@@ -1,7 +1,6 @@
 /* See {float_image_to_uint16_image.h} */
 /* Last edited on 2017-06-22 17:43:35 by stolfilocal */ 
 
-#define _GNU_SOURCE
 #include <limits.h>
 #include <assert.h>
 #include <math.h>

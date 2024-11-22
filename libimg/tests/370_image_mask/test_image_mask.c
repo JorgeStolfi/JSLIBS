@@ -48,7 +48,6 @@
 #define PROG_INFO_OPTS \
   "  None."
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -163,8 +162,7 @@ int main(int argc, char **argv)
                 for (igamma = 0; igamma <= 1; igamma++)
                   { if (igamma != 0)
                       { float_image_apply_gamma(msk, ic, BT_GAMMA, BT_BIAS); }
-                    char *msk_name = NULL;
-                    asprintf(&msk_name, "%s-%04dx%04d-o%01d-r%01d-m%01d-%c",
+                    char *msk_name = jsprintf("%s-%04dx%04d-o%01d-r%01d-m%01d-%c",
                              prefix, NX, NY, ord, iround, imodf, "LG"[igamma]
                     );
                     tim_write_image(msk_name, msk);
@@ -193,8 +191,7 @@ void tim_show_mask_statistics(float_image_t *msk, int ic)
 
 void tim_write_image(char *img_name, float_image_t *img)
   { char *suff = (img->sz[0] == 1 ? ".pgm" : ".ppm"); 
-    char *fname = NULL;
-    asprintf(&fname, "%s%s", img_name, suff);
+    char *fname = jsprintf("%s%s", img_name, suff);
     FILE *wr = open_write(fname, TRUE);
     int chns = (int)img->sz[0];
     bool_t yup = TRUE, verbose = TRUE;

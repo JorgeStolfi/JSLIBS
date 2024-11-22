@@ -1,5 +1,5 @@
 /* Oriented projective maps in two dimensions. */
-/* Last edited on 2024-11-07 23:44:58 by stolfi */ 
+/* Last edited on 2024-11-21 21:17:19 by stolfi */ 
    
 #ifndef hr2_pmap_H
 #define hr2_pmap_H
@@ -17,6 +17,12 @@
 
 typedef struct hr2_pmap_t { r3x3_t dir; r3x3_t inv; } hr2_pmap_t;
   /* A projective map. Field {dir} is the map's matrix, {inv} is its inverse. */
+ 
+bool_t hr2_pmap_is_valid(hr2_pmap_t *M, double tol);
+  /* Returns true iff {M} is a projective map. Namely, if the product of
+    {M.inv} and {M.dir} is the identity, apart from roundoff errror and
+    homogeneous scaling of the whole matrices, and the absolute values of 
+    the determinants of both {M.dir} and {M.inv} are at least {tol}. */
 
 hr2_point_t hr2_pmap_point(hr2_point_t *p, hr2_pmap_t *M);
 hr2_point_t hr2_pmap_inv_point(hr2_point_t *p, hr2_pmap_t *M);
@@ -46,7 +52,7 @@ double hr2_pmap_diff_sqr(hr2_pmap_t *M, hr2_pmap_t *N);
     elements of {M.dir} and {N.dir} and of {M.inv} and {N.inv},
     after implicitly scaling both so that the sum of squared elements is 1. */
 
-double hr2_pmap_mismatch_sqr(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[], double w[]);
+double hr2_pmap_mismatch_sqr(hr2_pmap_t *M, uint32_t np, r2_t p1[], r2_t p2[], double w[]);
   /* Computes the weighted mean squared distance between the
      points {p1[0..np-1]} and the points {p2[0..np-1]} under the map {M}.
      Specifically, it is half of the weighted average of {|M.dir(p1[i])-p2[i]|^2} and
@@ -55,11 +61,11 @@ double hr2_pmap_mismatch_sqr(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[], do
      all equal weights.  If {np} is zero or the weights are all zero,
      returns 0.0. */
 
-double hr2_pmap_max_mismatch(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[]);
+double hr2_pmap_max_mismatch(hr2_pmap_t *M, uint32_t np, r2_t p1[], r2_t p2[]);
   /* Compute max distance between {p1[k]} mapped by {M} and {p2[k]}
     and between {p1[k]} and {p2[k]} mapped by {M^{-1}}, for {k} in {0..np-1}. */
 
-void hr2_pmap_show_point_mismatch(hr2_pmap_t *M, int32_t np, r2_t p1[], r2_t p2[], double w[]);
+void hr2_pmap_show_point_mismatch(hr2_pmap_t *M, uint32_t np, r2_t p1[], r2_t p2[], double w[]);
   /* Prints to {stderr} the mismatch between {M.dir(p1[k])} and {p2[k]}, and
     between {p1[k]} and {M.inv(p2[k])}, for {k} in {0..np-1}. */
 
@@ -81,14 +87,6 @@ double hr2_pmap_deform_sqr(r2_t ph[], hr2_pmap_t *M);
     -- a translation combined with a rotation or mirroring and a uniform
     change of scale (by the common factor {s}). */
 
-double hr2_pmap_aff_discr_sqr(hr2_pmap_t *M, hr2_pmap_t *N);
-  /* Assumes that {M} and {N} are affine maps.  Returns the total
-    squared mismatch between them, defined as 
-    
-      { INTEGRAL { |(A - B)(u)|^2 du: u \in \RS^1 } }
-    
-    */
-
 /* SPECIAL PROJECTIVE MAPS */
 
 hr2_pmap_t hr2_pmap_identity(void);
@@ -101,10 +99,6 @@ hr2_pmap_t hr2_pmap_mirror(sign_t sgnx, sign_t sgny);
 
 hr2_pmap_t hr2_pmap_xy_swap(void);
   /* Returns a projective map that swaps the {x} and {y} Cartesian coordinates. */
-
-hr2_pmap_t hr2_pmap_translation(r2_t *vec);
-  /* Returns a projective map that performs a translation by the Cartesian vector {vec}.
-    The map is actually affine (has {[1 0 0]} as the first column). */
 
 hr2_pmap_t hr2_pmap_rotation(double ang);
   /* Returns a projective map that performs a rotaton by {ang} radians
@@ -122,54 +116,6 @@ hr2_pmap_t hr2_pmap_rotation_and_scaling(double ang, double scale);
     combined with uniform scaling by {scale}, both about the origin.
     The map is actually linear map of {\RR^2} (has {[1 0 0]} as the
     first column and the first row). */
-
-hr2_pmap_t hr2_pmap_congruence_from_point_and_dir(r2_t *p, r2_t *u, sign_t sgn);
-  /* Returns a projective map that is actually a Cartesian congruence
-    taking the origin {[1,0,0]} to the Cartesian point {p}
-    the direction of the {X}-axis to the direction vector {u}.
-    The length of {u} is ignored, but must not be zero.
-    
-    A Cartesian congruence (or isometry) is a map of {\RR^2} to {\RR^2}
-    that preserves all distances, and therefore also all angles. It is a
-    special case of similarity and of an affine map. It preserves the sign
-    of homogeneous coordinate 0 (weight). 
-    
-    The {sgn} parameter should be nonzero. If {sgn} is {+1}, the map
-    will preserve handedness, i. e. will be a combination of a rotation
-    plus a translation. If {sgn} is {-1}, the map will reverse
-    handedness; it will be a combination of rotation, translation, and
-    mirroring about a line. */
-
-hr2_pmap_t hr2_pmap_similarity_from_two_points(r2_t *p, r2_t *q, sign_t sgn);
-  /* Returns a projective map that is a Cartesian similarity taking the points {[1,0,0]},
-    and {[1,1,0]} to {p} and {q}, respectively.  The points must be distinct.
-    
-    A similarity (or Euclidean transformation) is a map from {\RR^2} to
-    {\RR^2} that preserves ratios between distances, and therefore
-    preserves all angles. It is a special case of affine map. It
-    preserves the sign of homogeneous coordinate 0 (weight).   Note that a
-    uniform scaling by a negative factor is equivalent to a rotation by
-    180 degrees.
-    
-    The {sgn} parameter should be nonzero. If {sgn} is {+1}, the map
-    will preserve handedness, i. e. will be a combination of a rotation
-    plus a translation. If {sgn} is {-1}, the map will reverse
-    handedness; it will be a combination of rotation, translation, and
-    mirroring about a line.  */
-
-hr2_pmap_t hr2_pmap_aff_from_mat_and_disp(r2x2_t *E, r2_t *d);
-  /* Returns an affine map {M} that performs the linear map 
-    described by the matrix {E} followed by translation by {d}.
-    That is, maps the point with Cartesian coordinates {p \in \RR^2} 
-    to {p*E + d}. The map will have unit weight (that is, 
-    {M.dir.c[0][0] == 1}). */
-     
-hr2_pmap_t hr2_pmap_aff_from_three_points(r2_t *o, r2_t *p, r2_t *q);
-  /* Returns a projective map that takes the points {(0,0)},
-    {(0,1)}, and {(1,0)} to {o}, {p}, and {q}, respectively.
-    
-    The procedure returns a degenerate (non-invertble) map
-    if {o,p,q} are collinear.  */
 
 hr2_pmap_t hr2_pmap_from_four_points(hr2_point_t *p, hr2_point_t *q, hr2_point_t *r, hr2_point_t *u);
   /* Returns a projective map that takes the cardinal points {[1,0,0]},
@@ -194,7 +140,50 @@ hr2_pmap_t hr2_pmap_from_four_r2_points(r2_t *p, r2_t *q, r2_t *r, r2_t *u);
     The procedure fails if the set {p,q,r,u} contains three collinear
     points. */
 
-hr2_pmap_t hr2_pmap_r2_from_class(int32_t class);
+hr2_pmap_t hr2_pmap_from_parms
+  ( r2_t *persp,
+    double shear,
+    double skew,
+    double scale,
+    double ang,
+    r2_t *disp
+  );
+  /* Returns a projective map with the given parameters.  
+  
+    The map is a composition of a perspective map {P(persp)} and three
+    affine maps: a shear and non-uniform scaling map {S(shear,skew)}, a
+    rotation and uniform scaling map {R(scale,ang)}, and a translation
+    map {T(disp)}.
+    
+    The map {P(persp)} will map each Cartesian point {(X,Y)} to
+    {(X,Y)/(1 + a*X +b*Y)} where {(a,b)} is the vector {persp}. The is
+    map keeps fixed the origin and all points on the line through the
+    origin perpendicular to {(a,b)}. Its Jacobian at the origin is the
+    {2×2} identity - that is, infinitesimally small figures at the
+    origin are not changed.  If {persp} is {NULL}, assumes {P((0,0))} 
+    (the identity).
+    
+    The map {S(shear,skew)} keeps the origin fixed, maps the {\RR^2}
+    points {(1,0)} and {(0,1)} respectively to {(1,shear)*rsk} and
+    {(shear,1)/rsk}, where {rsk = sqrt(skew)}. In particular,
+    {S(0,skew)} scales {X} by {rsk} and {Y} by {1/rsk}. It requires
+    {|shear| < 1} and {skew > 0}.
+    
+    The map {R(scale,ang)} keeps the origin fixed, scales everything by
+    {scale}, and rotates the plane by {ang} about the origin. It
+    requires {scale > 0}.
+    
+    The map {T(disp)} displaces evry point by the vector {disp}.
+    If {disp} is {NULL}, assumes {T((0,0))} (the identity).
+    
+    The affine map will have {M.dir[0,0] = M.inv[0,0] = 1.0}. */
+
+
+void hr2_pmap_throw(hr2_pmap_t *M);
+  /* Fills {M} with a random projective map with definitely nonzero 
+    determinant. */
+
+hr2_pmap_t hr2_pmap_r2_from_sign_class(uint32_t class);
   /* Returns a projective map that takes the hither points with Cartesian 
     coordinates {(0,0)}, {(1,0)}, and {(0,1)} to points with the same
     Cartesian coordinates.  
@@ -216,10 +205,6 @@ hr2_pmap_t hr2_pmap_r2_from_class(int32_t class);
       
     In fact, if {class = 0}, the map is the identity.  In the other cases,
     the map takes some hither points to the yonder side, and vice-versa. */
-
-bool_t hr2_pmap_is_valid(hr2_pmap_t *M, double tol);
-  /* TRUE iff the product of {M.inv} and {M.dir} is the identity,
-    apart from homogeneous scaling, within tolerance {tol}. */
   
 sign_t hr2_pmap_sign(hr2_pmap_t *M);
   /* Returns {+1}, 0, or {-1} depending on whether the determinant of {M}
@@ -235,31 +220,8 @@ sign_t hr2_pmap_sign(hr2_pmap_t *M);
   specified by {type} and sign parameters.  All these procedures
   allow from homogeneous scaling of the matrices, and noise of
   magnitude {M[0][0]*tol} in all elements. */
-
-bool_t hr2_pmap_is_identity(hr2_pmap_t *M, double tol);
-  /* TRUE iff {M} is the identity map. */
-
-bool_t hr2_pmap_is_translation(hr2_pmap_t *M, double tol);
-  /* TRUE iff {M} is a translation. */
-
-bool_t hr2_pmap_is_congruence(hr2_pmap_t *M, double tol);
-  /* TRUE iff {M} is a congruence (apart from homogeneous scaling
-    and noise of magnitude {tol}). */
-
-bool_t hr2_pmap_is_similarity(hr2_pmap_t *M, double scale, double tol);
-  /* TRUE iff {M} is a similarity (apart from homogeneous scaling and
-    noise of magnitude {tol}).  If {scale} is not {NAN}, requires the
-    scaling factor to be {scale} (which must be positive). */
     
-bool_t hr2_pmap_is_affine(hr2_pmap_t *M, double tol);
-  /* Returns true iff {M} is an affine map (apart from homogeneous
-    scaling and noise of magnitude {tol}). In particular, returns
-    {FALSE} if the relative magnitude of the determinant of either
-    {M.dir} or {M.inv} is less than {tol}. */
-    
-bool_t hr2_pmap_is_generic(hr2_pmap_t *M, double tol);
-  /* Returns true iff {M} is a projective map, with and both {M.dir} and
-    {M.inv} have determinants with relative magnitude at least {tol}. */
+/* SPECIAL MAP TYPES */
 
 typedef enum 
   { hr2_pmap_type_IDENTITY,
@@ -286,6 +248,29 @@ typedef enum
 
 #define hr2_pmap_type_LAST hr2_pmap_type_GENERIC
   /* The last value in the enum {hr2_pmap_type_t} other than {hr2_pmap_type_NONE}. */
+
+bool_t hr2_pmap_is_identity(hr2_pmap_t *M, double tol);
+  /* TRUE iff {M} is the identity map, apart from noise of 
+    relative magnitude {tol}. */
+
+bool_t hr2_pmap_is_translation(hr2_pmap_t *M, double tol);
+  /* TRUE iff {M} is a translation, apart from noise of 
+    relative magnitude {tol}. */
+   
+bool_t hr2_pmap_is_congruence(hr2_pmap_t *M, double tol);
+  /* TRUE iff {M} is a congruence, apart from noise of 
+    relative magnitude {tol}). */
+
+bool_t hr2_pmap_is_similarity(hr2_pmap_t *M, double scale, double tol);
+  /* TRUE iff {M} is a similarity (apart from homogeneous scaling and
+    noise of magnitude {tol}).  If {scale} is not {NAN}, requires the
+    scaling factor to be {scale} (which must be positive). */
+
+bool_t hr2_pmap_is_affine(hr2_pmap_t *M, double tol);
+  /* Returns true iff {M} is a POSITIVE affine map (apart from homogeneous
+    scaling and noise of magnitude {tol}). In particular, returns
+    {FALSE} if the determinant of {M.dir} or {M.inv} is negative
+    or less than {tol}.  */
 
 bool_t hr2_pmap_type_from_string(char *tname, hr2_pmap_type_t *type_P);
   /* Converts the string {tname} to a {hr2_pmap_type_t} value.  If it succeeds,
@@ -319,8 +304,8 @@ bool_t hr2_pmap_is_type(hr2_pmap_t *M, hr2_pmap_type_t type, sign_t sgn, double 
     relative tolerance {tol}.
     
     If {sgn} is {-1}, {M} should have negative determinant. In that
-    case, returns true iff {M} is the negative version of a
-    map of the given type.
+    case, returns true iff {M} is the negative version of a map of the
+    given type.
     
     If {sgn} is zero, returns true if either of the above conditions is true.
     
@@ -337,18 +322,19 @@ void hr2_pmap_gen_print
   ( FILE *wr, hr2_pmap_t *M,
     char *fmt,                            /* Format for elements. */
     char *pref,                           /* Overall prefix. */
-    char *rpref, char *rsep, char *rsuff, /* Row prefix, matrix separator, and suffix. */
-    char *elp, char *esep, char *erp,     /* Delimiters for each row. */
-    char *suff                            /* Overall sufffix. */
+    char *rpref, char *rsep, char *rsuff, /* Row prefix, matrix separator, and row suffix. */
+    char *elp, char *esep, char *erp,     /* Delimiters for matrix in each row. */
+    char *suff                            /* Overall suffix. */
   );
   /* Prints the projective map {M} to file {wr}, using {fmt} for each
-    matrix element.  The printout consists of the string {pref},
-    followed by one section for each row of the matrices {M.dir} and {M.inv}, 
-    followed by the string {suff}.
-    Each section has the string {rpref}, a row of the matrix {M.dir},
-    the string {rsep}, a row of matrix {M.inv}, and the string {rsuff}.
-    Each row of each matrix is bounded by {elp} and {erp}, and elements are
-    separated by {esep}. Defaults are provided for any of these strings which are
-    NULL. */
+    matrix element.  
+    
+    The printout consists of the string {pref}, followed by three rows
+    with the matrices {M.dir} and {M.inv}, followed by the string
+    {suff}. Each row of the matrices has the string {rpref}, a row of
+    the matrix {M.dir}, the string {rsep}, a row of matrix {M.inv}, and
+    the string {rsuff}. Each row of each matrix is bounded by {elp} and
+    {erp}, and elements are separated by {esep}. Defaults are provided
+    for any of these strings which are NULL. */
 
 #endif

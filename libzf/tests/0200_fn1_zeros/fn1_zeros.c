@@ -37,8 +37,7 @@ int32_t main(int32_t argc, char **argv)
     fn1_data_t f = fn1_from_tag(ftag);
 
     /* Construct the output filename prefix: */
-    char *prefix = NULL;
-    asprintf(&prefix, "zf1_%s", ftag);
+    char *prefix = jsprintf("zf1_%s", ftag);
     
     fn1_zf_find_and_plot_zeros
       ( prefix,

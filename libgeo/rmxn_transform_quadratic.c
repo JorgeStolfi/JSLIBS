@@ -1,7 +1,6 @@
 /* See {rmxn_transform_quadratic.h}. */
-/* Last edited on 2022-01-03 17:10:20 by stolfi */
+/* Last edited on 2024-11-20 15:11:07 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdint.h>
@@ -15,9 +14,9 @@
 
 #include <rmxn_transform_quadratic.h>
 
-void rmxn_transform_quadratic(int32_t n, double E[], double e[], int32_t m, double U[], double F[], double f[])
+void rmxn_transform_quadratic(uint32_t n, double E[], double e[], uint32_t m, double U[], double F[], double f[])
   { 
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
     
     demand(n >= 0, "invalid {n}");
     demand(m >= 0, "invalid {m}");
@@ -49,11 +48,11 @@ void rmxn_transform_quadratic(int32_t n, double E[], double e[], int32_t m, doub
     /* Convert {M} to tridiag with diagonal {d[0..m-1]} and subdiagonal {t[1..m-1]}: */
     double d[m]; /* Diagonal elements of tridiagonal matrix. */
     double t[m]; /* Sub-diagonal elements of temporary tridiagonal matrix. */
-    syei_tridiagonalize(m, M, d, t, F);
+    sym_eigen_tridiagonalize(m, M, d, t, F);
     /* Compute eigenvalues and eigenvectors from {F} and tridiag matrix: */
-    int32_t p; /* Number of eigenvalues computed. */
-    int32_t absrt = 0; /* Sort eigenvalues by signed value. */
-    syei_trid_eigen(m, d, t, F, &p, absrt);
+    uint32_t p; /* Number of eigenvalues computed. */
+    uint32_t absrt = 0; /* Sort eigenvalues by signed value. */
+    sym_eigen_trid_eigen(m, d, t, F, &p, absrt);
     /* Check that all eigenvalues were computed: */
     demand(p == m, "failed to determine eigenvalues of {M}");
     /* Copy the eigenvalues {d[0..m-1]} to {f[0..m-1]}: */

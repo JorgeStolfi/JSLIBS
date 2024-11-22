@@ -1,4 +1,4 @@
-# Last edited on 2023-11-02 22:43:15 by stolfi
+# Last edited on 2024-11-19 06:46:24 by stolfi
 
 PROG = test_wt_median
 
@@ -6,7 +6,6 @@ TEST_LIB := libjs.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS := \
-  libgeo.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

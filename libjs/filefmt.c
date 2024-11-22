@@ -1,13 +1,14 @@
 /* See filefmt.h */
-/* Last edited on 2023-10-15 00:35:57 by stolfi */
+/* Last edited on 2024-11-20 06:47:44 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <filefmt.h>
 #include <fget.h>
 #include <jsstring.h>
+#include <jsprintf.h>
 #include <affirm.h>
 #include <vec.h>
 
@@ -24,15 +25,14 @@ void filefmt_write_footer(FILE *wr, char *type)
 char *filefmt_make_header(char *type, char *version) 
   { char *h = NULL;
     if (version != NULL)
-      { asprintf(&h, "begin %s (format of %s)\n", type, version); }
+      { h = jsprintf("begin %s (format of %s)\n", type, version); }
     else
-      { asprintf(&h, "begin %s\n", type); }
+      { h = jsprintf("begin %s\n", type); }
     return h;
   }
 
 char *filefmt_make_footer(char *type)
-  { char *h = NULL;
-    asprintf(&h, "end %s\n", type);
+  { char *h = jsprintf("end %s\n", type);
     return h;
   }
 
@@ -108,12 +108,12 @@ void filefmt_read_footer(FILE *rd, char *type)
     free(rd_type);
   }
 
-void filefmt_write_comment(FILE *wr, char *cmt, int ind, char prefix)
+void filefmt_write_comment(FILE *wr, char *cmt, int32_t ind, char prefix)
   { if (cmt == NULL) { return; }
     while(*cmt != 0)
       { /* Write a new line, advance {cmt} to start of next one or to '\0' */
         char c = (*cmt);
-        for (int k = 0; k < ind; k++) { fputc(' ', wr); }
+        for (int32_t k = 0; k < ind; k++) { fputc(' ', wr); }
         fputc(prefix, wr);
         fputc(' ', wr);
         fputc(c, wr);
@@ -128,11 +128,11 @@ void filefmt_write_comment(FILE *wr, char *cmt, int ind, char prefix)
 
 char *filefmt_read_comment(FILE *rd, char prefix)
   { char_vec_t cmt = char_vec_new(200);
-    int ncmt = 0; /* Number of characters read */
+    uint32_t ncmt = 0; /* Number of characters read */
     while (TRUE)
       { fget_skip_spaces(rd);
         /* Try to get the prefix char: */
-        int c = fgetc(rd); 
+        int32_t c = fgetc(rd); 
         if (c == EOF) { break; }
         if (c != prefix) { ungetc(c, rd); break; }
         /* Skip optional blank after prefix char: */

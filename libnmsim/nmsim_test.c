@@ -31,8 +31,7 @@ void nmsim_test_firing_func
     fprintf(stderr, "relative plot radius = %.2f plotting steps = %d\n", r, ns);
     
     /* Filename: */
-    char *fname = NULL;
-    asprintf(&fname, "out/Phi_%c_M%+06.2f_D%06.2f.txt", class, V_M, V_D);
+    char *fname = jsprintf("out/Phi_%c_M%+06.2f_D%06.2f.txt", class, V_M, V_D);
     FILE *wr = open_write(fname, TRUE);
 
     /* Run simulation: */

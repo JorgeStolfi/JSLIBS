@@ -1,28 +1,30 @@
 /* See intmerge_extra.h */
-/* Last edited on 2019-04-09 15:18:50 by jstolfi */
+/* Last edited on 2024-11-16 00:58:35 by stolfi */
 
+#include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
+
+#include <affirm.h>
 #include <intmerge_extra.h>
 #include <jsmath.h>
 
-#include <stdlib.h>
-#include <affirm.h>
-#include <stdio.h>
-
-void imrg_merge_pivot(int *a, int *b, int *c, int cmp(int x, int y), int sgn)
+void imrg_merge_pivot(int32_t *a, int32_t *b, int32_t *c, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
   {
     /* Inspired on a Java implementation by Thomas Baudel, 1998, which was
       in turn inspired on the STL C++ library. This C version fixes a
       perfomance bug, and makes different use of pointers versus integers. */
     
-    auto int *locate_lower_pivot (int val, int *x, int *y);
+    auto int32_t *locate_lower_pivot (int32_t val, int32_t *x, int32_t *y);
     /* Given two pointers {x,y} into a sorted sub-array of {h}, with
       {x<y}, returns {z} such that {*x..*(z-1)} strictly precede {val}
       in the order {sgn*cmp}, while {*z..*(y-1)} are equivalent to {val}
       or follow it in the order. */
 
-    int *locate_lower_pivot (int val, int *x, int *y)
+    int32_t *locate_lower_pivot (int32_t val, int32_t *x, int32_t *y)
       { while (x != y)
-          { int *mid = x + (y - x)/2;
+          { int32_t *mid = x + (y - x)/2;
             if (cmp(val, *mid)*sgn > 0)
               { x = mid + 1; }
             else
@@ -31,15 +33,15 @@ void imrg_merge_pivot(int *a, int *b, int *c, int cmp(int x, int y), int sgn)
         return x;
       }
 
-    auto int *locate_upper_pivot (int val, int *x, int *y);
+    auto int32_t *locate_upper_pivot (int32_t val, int32_t *x, int32_t *y);
     /* Given two pointers {x,y} into a sorted sub-array of {h}, with
       {x<y}, returns {z} such that {*z..*(y-1)} strictly follow {val}
       in the order {sgn*cmp}, while {*x..*(z-1)} are equivalent to {val} or
       preced it in the order. */
 
-    int *locate_upper_pivot (int val, int *x, int *y)
+    int32_t *locate_upper_pivot (int32_t val, int32_t *x, int32_t *y)
       { while (x != y)
-          { int *mid = x + (y - x)/2;
+          { int32_t *mid = x + (y - x)/2;
             if (cmp(*mid, val)*sgn > 0)
               { y = mid; }
             else
@@ -48,41 +50,42 @@ void imrg_merge_pivot(int *a, int *b, int *c, int cmp(int x, int y), int sgn)
         return x;
       }
 
-//      auto void flip_block (int *ar, int *br);
+//      auto void flip_block (int32_t *ar, int32_t *br);
 //      /* Reverses the element block from {ar} (inclusive) to {br} (exclusive). */
 //  
-//      void flip_block (int *ar, int *br)
+//      void flip_block (int32_t *ar, int32_t *br)
 //        { while (ar <= br)
-//            { int t = *ar; br--; *ar = *br; *br = t; ar++; }
+//            { int32_t t = *ar; br--; *ar = *br; *br = t; ar++; }
 //        }
 //  
-//      auto void swap_blocks_by_flips (int *as, int *bs, int *cs); 
+//      auto void swap_blocks_by_flips (int32_t *as, int32_t *bs, int32_t *cs); 
 //      /* Swaps the consecutive blocks starting at {as} and {bs} and
 //        ending at {cs}, with three flips. */
 //  
-//      void swap_blocks_by_flips (int *as, int *bs, int *cs)
+//      void swap_blocks_by_flips (int32_t *as, int32_t *bs, int32_t *cs)
 //        { flip_block(as, bs);
 //          flip_block(bs, cs);
 //          flip_block(as, cs);
 //        }
       
-    auto void swap_blocks_by_cycles (int *as, int *bs, int *cs); 
+    auto void swap_blocks_by_cycles (int32_t *as, int32_t *bs, int32_t *cs); 
     /* Swaps the consecutive blocks starting at {as} and {bs} and
       ending at {cs}, by decomposition into cycles. */
 
-    void swap_blocks_by_cycles (int *as, int *bs, int *cs)
+    void swap_blocks_by_cycles (int32_t *as, int32_t *bs, int32_t *cs)
       { if (as == bs || bs == cs) return;
+        assert((uint64_t)as < (uint64_t)bs);
         /* fprintf(stderr, "+ swap [%d..%d] [%d..%d]\n", as-a, bs-1-a, bs-a, cs-1-a); */
-        int shift = (int)(bs - as);
-        int len = (int)(cs - as);
+        uint32_t shift = (uint32_t)(bs - as);
+        uint32_t len = (uint32_t)(cs - as);
         /* fprintf(stderr, "  shift = %d\n", shift); */
-        int *fold = as + (len - shift);
-        int *start = as + gcd(shift, len - shift);
+        int32_t *fold = as + (len - shift);
+        int32_t *start = as + gcd(shift, len - shift);
         do {
           start--;
-          int *p = start; 
-          int *q = p + shift;
-          int val = *p;
+          int32_t *p = start; 
+          int32_t *q = p + shift;
+          int32_t val = *p;
           /* fprintf(stderr, "  val = h[%d]\n", p-a); */
           while (q != start)
             { *p = *q; 
@@ -96,33 +99,33 @@ void imrg_merge_pivot(int *a, int *b, int *c, int cmp(int x, int y), int sgn)
         /* fprintf(stderr, "- swap [%d..%d] [%d..%d]\n", as-a, bs-1-a, bs-a, cs-1-a); */
       }
 
-    auto void merge(int *am, int *bm, int *cm);
+    auto void merge(int32_t *am, int32_t *bm, int32_t *cm);
     /* Merges two consecutive sorted blocks {*am..*(bm-1)} and {*bm..*(cm-1)}. */
 
-    void merge(int *am, int *bm, int *cm)
+    void merge(int32_t *am, int32_t *bm, int32_t *cm)
       { 
         if ((am < bm) && (bm < cm))
           { 
             /* fprintf(stderr, "+ merge [%d..%d] [%d..%d]\n", am-a, bm-1-a, bm-a, cm-1-a); */
-            int na = (int)(bm - am);
-            int nb = (int)(cm - bm);
+            int32_t na = (int32_t)(bm - am);
+            int32_t nb = (int32_t)(cm - bm);
             if ((na == 1) && (nb == 1))
               { /* Either swap or do nothing: */
                 if (cmp(am[0],bm[0])*sgn > 0) 
-                  { int t = am[0]; am[0] = bm[0]; bm[0] = t; }
+                  { int32_t t = am[0]; am[0] = bm[0]; bm[0] = t; }
               }
             else
-              { int *as, *bs; /* Splits in the {am} and {bm} blocks. */
-                int *d;  /* Address of pivot after block swap. */
+              { int32_t *as, *bs; /* Splits in the {am} and {bm} blocks. */
+                int32_t *d;  /* Address of pivot after block swap. */
                 if (na >= nb)
-                  { int ka = na/2; as = am + ka;
+                  { int32_t ka = na/2; as = am + ka;
                     d = as;
                     /* fprintf(stderr, "  pivot h[%d] = %d\n", d-a, *d); */
                     bs = locate_lower_pivot(*d, bm, cm);
                     d = d + (bs - bm); /* After block swap */
                   }
                 else
-                  { int kb = nb/2; bs = cm - kb;
+                  { int32_t kb = nb/2; bs = cm - kb;
                     d = bs - 1;
                     /* fprintf(stderr, "  pivot h[%d] = %d\n", d-a, *d); */
                     as = locate_upper_pivot(*d, am, bm);
@@ -146,26 +149,26 @@ void imrg_merge_pivot(int *a, int *b, int *c, int cmp(int x, int y), int sgn)
     merge(a, b, c);
   }
   
-void imrg_merge_symsplit(int *a, int *b, int *c, int cmp(int x, int y), int sgn)
+void imrg_merge_symsplit(int32_t *a, int32_t *b, int32_t *c, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
   {
-    auto void merge(int *am, int *bm, int *cm);
+    auto void merge(int32_t *am, int32_t *bm, int32_t *cm);
     /* Merges two consecutive non-empty sorted blocks {A,B}, respectively from
       {*am} through {*(bm-1)} and {*bm} through {*(cm-1)}, all inclusive. */
 
-    auto void flip_block (int *ar, int *br);
+    auto void flip_block (int32_t *ar, int32_t *br);
     /* Reverses the element block from {*ar} to {*br} (note: both inclusive). */
 
-    auto int *swap_blocks_by_flips(int *as, int *bs, int *cs); 
+    auto int32_t *swap_blocks_by_flips(int32_t *as, int32_t *bs, int32_t *cs); 
     /* Swaps the consecutive blocks {A = *as..*(bs-1)} and {B = *bs..*(cs-1)}.
       Uses the three-flip algorithm.  Returns the boundary between the two 
       blocks after the swap, i.e. the address where {*as} was moved to. */
 
-    void flip_block (int *ar, int *br)
+    void flip_block (int32_t *ar, int32_t *br)
       { while (ar < br)
-          { int t = *ar; *ar = *br; *br = t; ar++; br--; }
+          { int32_t t = *ar; *ar = *br; *br = t; ar++; br--; }
       }
 
-    int *swap_blocks_by_flips (int *as, int *bs, int *cs)
+    int32_t *swap_blocks_by_flips (int32_t *as, int32_t *bs, int32_t *cs)
       { /* fprintf(stderr, "  swap [%d..%d] [%d..%d]\n", as-a, bs-1-a, bs-a, cs-1-a); */
         if ((as < bs) && (bs < cs))
           { flip_block(as, bs-1);
@@ -176,15 +179,15 @@ void imrg_merge_symsplit(int *a, int *b, int *c, int cmp(int x, int y), int sgn)
         return as + (cs - bs);
       }
 
-   auto void merge(int *am, int *bm, int *cm)
+   auto void merge(int32_t *am, int32_t *bm, int32_t *cm)
       { 
         /* fprintf(stderr, "+ merge [%d..%d] [%d..%d]\n", am-a, bm-1-a, bm-a, cm-1-a); */
-        int na = (int)(bm - am);
-        int nb = (int)(cm - bm);
+        int32_t na = (int32_t)(bm - am);
+        int32_t nb = (int32_t)(cm - bm);
         if ((na == 1) && (nb == 1))
           { /* Only one element in each list, just compare and swap as needed: */
             if (sgn*cmp(*am,*bm) > 0) 
-              { int t = *am; *am = *bm; *bm = t;
+              { int32_t t = *am; *am = *bm; *bm = t;
                 /* fprintf(stderr, "  exch %d %d\n", am-a, bm-a); */
               }
           }
@@ -204,7 +207,7 @@ void imrg_merge_symsplit(int *a, int *b, int *c, int cmp(int x, int y), int sgn)
               and is empty if {bs == cm}.
             */
 
-            int *as, *bs; int n;
+            int32_t *as, *bs; int32_t n;
             if (na < nb)
               { n = na; as = am; bs = cm - (nb - na + 1)/2; }
             else
@@ -230,8 +233,8 @@ void imrg_merge_symsplit(int *a, int *b, int *c, int cmp(int x, int y), int sgn)
                 affirm((as == am) || (bs == cm) || (sgn*cmp(*(as-1),*bs) <= 0), "bug");
                 affirm((as+n == bm) || (bs-n == bm) || (sgn*cmp(*(as+n),*(bs-n-1)) > 0), "bug");
 
-                int half = n/2;
-                int *ap = as + half, *bp = bs - half;
+                int32_t half = n/2;
+                int32_t *ap = as + half, *bp = bs - half;
                 affirm((am <= ap) && (ap < bm), "bug");
                 affirm((bm < bp) && (bp <= cm), "bug");
                 if (sgn*cmp(*ap,*(bp-1)) <= 0)

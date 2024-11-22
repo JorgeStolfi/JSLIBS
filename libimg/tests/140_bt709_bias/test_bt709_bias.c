@@ -89,7 +89,6 @@
   " squared error term in the mismatch should be {1/v} (\"lows\")" \
   " 1 (\"uniform\"), or {1-(1-v)^4} (\"highs\".  The default is \"-weight uniform\".\n"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -509,8 +508,7 @@ void tb_write_table
     demand(! isnan(bias), "{bias} is undefined");
     demand(bias >= 0, "invalid {bias}");
 
-    char *fname = NULL;
-    asprintf(&fname, "%s%s", name, suff);
+    char *fname = jsprintf("%s%s", name, suff);
     FILE *wr = open_write(fname, TRUE);
     double dv = 0.5/((double)nv); /* Step for finite differencing. */
     int iv;

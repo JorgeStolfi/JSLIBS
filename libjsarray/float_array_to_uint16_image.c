@@ -1,7 +1,6 @@
 /* See float_array_to_uint16_image.h */
-/* Last edited on 2023-03-19 15:26:34 by stolfi */ 
+/* Last edited on 2024-11-20 07:49:47 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <limits.h>
 #include <assert.h>

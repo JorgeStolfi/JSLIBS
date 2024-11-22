@@ -1,9 +1,8 @@
 /* See indexing.h */
-/* Last edited on 2023-03-18 11:22:19 by stolfi */
+/* Last edited on 2024-11-16 17:34:59 by stolfi */
 /* Copyright © 2003 by Jorge Stolfi, from University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
-#define _GNU_SOURCE_
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
@@ -13,6 +12,16 @@
 #include <ix.h>
 
 /* INTERNAL PROTOTYPES */
+
+#define ix_do_shift_pos(pos, incr) \
+  do \
+    { int64_t sum = (int64_t)(pos) + (int64_t)(incr); \
+      demand(sum >= 0, "invalid incremented position"); \
+      (pos) = (ix_pos_t)sum; \
+    } while (FALSE)
+  /* Same as {ix_shift_pos(&pos,incr)} as macro.
+    (The {do..while} is a hack to encapsulate it into 
+    a single C command.) */
 
 bool_t ix_sort_steps
   ( ix_dim_t d, 
@@ -29,14 +38,15 @@ bool_t ix_sort_steps
     over any trivial axes.  Returns the number {dw} of non-trivial axes 
     in {*dwP}, and the sorted parameters in {szw[0..dw-1]} and {stw[0..dw-1]}.
     
-    If {axw} is not {NULL}, returns into {axw[0..dw-1]} the sorting permutation;
-    that is, {axw[iw]} is the original (non-trivial) axis number {i} 
-    where {szw[iw],stw[iw]} came from. 
+    If {axw} is not {NULL}, returns into {axw[0..dw-1]} the sorting
+    permutation; that is, {axw[iw]} is the original (non-trivial) axis
+    number {i} where {szw[iw],stw[iw]} came from.
     
-    Also, if {bpwP} is not {NULL}, assumes that {*bpwP} on input is the base position (the
-    positon of the element with indices {[0,.. 0]}).  The procedure adjusts {*bpwP}
-    whenever the sign of one of the steps is reversed, so that the
-    sorted parameters {szw[],stw[]} still refer to the same elements.
+    Also, if {bpwP} is not {NULL}, assumes that {*bpwP} on input is the
+    base position (the positon of the element with indices {[0,.. 0]}).
+    The procedure adjusts {*bpwP} whenever the sign of one of the steps
+    is reversed, so that the sorted parameters {szw[],stw[]} still refer
+    to the same elements.
     
     If the array is empty, returns {*dwP = 0}. The outputs {szw,stw,axw} and {*bpwP}
     are meaningless. */
@@ -59,6 +69,9 @@ ix_pos_t ix_position_safe ( ix_dim_t d, const ix_index_t ix[], const ix_size_t s
     else
       { return ix_pos_NONE; }
   }
+  
+void ix_shift_pos(ix_pos_t *pos_P, int64_t incr)
+  { ix_do_shift_pos(*pos_P, incr); }
 
 void ix_indices 
   ( ix_pos_t p, 
@@ -87,7 +100,7 @@ void ix_indices
     ix_pos_t dpmw[dw]; 
     ix_pos_t tdisp = 0;
     for (ix_axis_t iw = 0; iw < dw; iw++)
-      { tdisp += stw[iw]*(szw[iw]-1);
+      { ix_do_shift_pos(tdisp, stw[iw]*(int64_t)(szw[iw])-1);
         dpmw[iw] = tdisp;
       }
     /* Estimate indices from largest to smallest step: */
@@ -100,13 +113,13 @@ void ix_indices
         ix_size_t szi = sz[i]; assert(szi >= 2); assert(szi == szw[iw]);
         ix_step_t stwi = stw[iw]; assert(stwi >= 1); /* Absolute step. */
         if (iw > 0) { demand(dpmw[i-1] < stwi, "unimplemented case"); }
-        ix_index_t ixwi = dpw / stwi;
+        ix_index_t ixwi = ((int64_t)dpw) / stwi;
         demand(ixwi < szi, "no solution");
-        dpw = dpw % stwi;
+        dpw = dpw % (uint64_t)stwi;
         if (stwi != st[i])
           { /* Must have been flipped. */
             assert(stwi == -st[i]);
-            ixwi = szi - 1 - ixwi;
+            ixwi = ((int64_t)szi) - 1 - ixwi;
           }
         ix[i] = ixwi;
       }
@@ -143,7 +156,9 @@ bool_t ix_assign_max ( ix_dim_t d, ix_index_t ix[], const ix_size_t sz[] )
   { 
     bool_t valid = TRUE;
     for (ix_axis_t i = 0; i < d; i++) 
-      { ix[i] = sz[i]-1; if (sz[i] == 0) { valid = FALSE; } }
+      { ix[i] = (int64_t)(sz[i]) - 1; 
+        if (sz[i] == 0) { valid = FALSE; }
+      }
     return valid;
   }
 
@@ -233,7 +248,7 @@ ix_pos_t ix_min_pos ( ix_dim_t d, const ix_size_t sz[], ix_pos_t bp, const ix_st
         if (sti < 0)
           { ix_size_t szi = sz[i]; 
             if (szi <= 0) { return ix_pos_NONE; }
-            p += (szi-1)*sti;
+            ix_do_shift_pos(p, (((int64_t)szi) - 1)*sti);
           }
       }
     return p;
@@ -246,7 +261,7 @@ ix_pos_t ix_max_pos ( ix_dim_t d, const ix_size_t sz[], ix_pos_t bp, const ix_st
         if (sti > 0)
           { ix_size_t szi = sz[i]; 
             if (szi <= 0) { return ix_pos_NONE; }
-            p += (szi-1)*sti;
+            ix_do_shift_pos(p, (((int64_t)szi)-1)*sti);
           }
       }
     return p;
@@ -290,7 +305,7 @@ void ix_crop
         if (st[i] != 0)
           { if (skip > 0)
               { /* Update {*bp} (can't overflow because element exists): */
-                (*bp) += skip * st[i];
+                ix_do_shift_pos((*bp), (int64_t)skip * st[i]);
               }
             /* If index is now trivial, clear step: */
             if (keep == 1) { st[i] = 0; }
@@ -328,7 +343,7 @@ void ix_subsample
           }
         else
           { /* Index {i} now is {stride} times as powerful: */
-            st[i] *= stride;
+            st[i] *= (int64_t)stride;
           }
       }
   }
@@ -342,12 +357,12 @@ void ix_flip
   )
   { /* Check axis: */
     demand(i < d, "bad axis");
-    /* If there is no motion along that axis, we have nothing to d: */
+    /* If there is no motion along that axis, we have nothing to do: */
     ix_step_t sti = st[i];
     if (sti == 0) { return; }
     /* Now {sz[i]} must be positive. */
     /* Adjust {*bp} to the last valid index value: */
-    (*bp) += (sz[i]-1)*sti; 
+    ix_do_shift_pos((*bp), ((int64_t)(sz[i]) - 1)*sti); 
     /* Negate the step {st[i]}: */
     st[i] = -sti;
   }
@@ -370,7 +385,7 @@ void ix_swap_indices
     /* Exchange parameters of axes {i,j}: */
     while(n > 0)
       { { ix_size_t tmp = sz[i]; sz[i] = sz[j]; sz[j] = tmp; }
-        { ix_pos_t  tmp = st[i]; st[i] = st[j]; st[j] = tmp; }
+        { ix_step_t  tmp = st[i]; st[i] = st[j]; st[j] = tmp; }
         i++; j++; n--;
       }
   }
@@ -390,7 +405,7 @@ void ix_flip_indices
     while (i < j)
       { /* Exchange parameters of axes {i,j}: */
         { ix_size_t tmp = sz[i]; sz[i] = sz[j]; sz[j] = tmp; }
-        { ix_pos_t tmp = st[i]; st[i] = st[j]; st[j] = tmp; } 
+        { ix_step_t tmp = st[i]; st[i] = st[j]; st[j] = tmp; } 
         i++; j--;
       }
   }
@@ -407,13 +422,14 @@ void ix_slice
   { if (n == 0) { return; }
     /* Crop the selected indices to the specified values: */
     { for (ix_axis_t k = 0; k < n; k++) 
-        { ix_axis_t i = (ix_axis_t)k;
+        { ix_axis_t axi = k;
           if (ax != NULL)
-            { i = ax[k];
-              demand((i+0 >= 0) && (i < d), "invalid axis");
-              if (k > 0) { demand(i > ax[k-1], "axes out of order"); }
+            { axi = ax[k];
+              demand((axi+0 >= 0) && (axi < d), "invalid axis");
+              if (k > 0) { demand(axi > ax[k-1], "axes out of order"); }
             }
-          ix_crop(d, sz, bp, st, i, ix[k], 1);
+          demand((ix[k] >= 0) && (ix[k] < sz[axi]), "invalid index");
+          ix_crop(d, sz, bp, st, axi, (ix_size_t)(ix[k]), 1);
         }
     }
     { /* Pull the remaining indices to the front: */ 
@@ -507,7 +523,7 @@ void ix_chop
       }
     else
       { /* This computation cannot overflow.: */
-        st[j] = stride * st[i];
+        st[j] = (int64_t)stride * st[i];
       }
     /* Check whether axis {i} became trivial: */
     if (stride == 1) { st[i] = 0; } 
@@ -540,15 +556,15 @@ bool_t ix_next
         if ((*ixi) < sz[i]-1) 
           { /* Increment index {ix[i]} */
             (*ixi)++; 
-            if (pA != NULL) { (*pA) += stA[i]; }
-            if (pB != NULL) { (*pB) += stB[i]; }
-            if (pC != NULL) { (*pC) += stC[i]; }
+            if (pA != NULL) { ix_do_shift_pos((*pA), stA[i]); }
+            if (pB != NULL) { ix_do_shift_pos((*pB), stB[i]); }
+            if (pC != NULL) { ix_do_shift_pos((*pC), stC[i]); }
             return FALSE;
           }
         /* Index {ix[i]} is at its limit, reset to 0: */
-        if (pA != NULL) { (*pA) -= (*ixi)*stA[i]; }
-        if (pB != NULL) { (*pB) -= (*ixi)*stB[i]; }
-        if (pC != NULL) { (*pC) -= (*ixi)*stC[i]; }
+        if (pA != NULL) { ix_do_shift_pos((*pA), -(*ixi)*stA[i]); }
+        if (pB != NULL) { ix_do_shift_pos((*pB), -(*ixi)*stB[i]); }
+        if (pC != NULL) { ix_do_shift_pos((*pC), -(*ixi)*stC[i]); }
         (*ixi) = 0;
       }
     return TRUE;
@@ -579,16 +595,16 @@ bool_t ix_prev
         if ((*ixi) > 0)
           { /* Decrement index {ix[i]} */
             (*ixi)--;
-            if (pA != NULL) { (*pA) -= stA[i]; }
-            if (pB != NULL) { (*pB) -= stB[i]; }
-            if (pC != NULL) { (*pC) -= stC[i]; }
+            if (pA != NULL) { ix_do_shift_pos((*pA), - (int64_t)(stA[i])); }
+            if (pB != NULL) { ix_do_shift_pos((*pB), - (int64_t)(stB[i])); }
+            if (pC != NULL) { ix_do_shift_pos((*pC), - (int64_t)(stC[i])); }
             return FALSE;
           }
         /* Index {ix[i]} is at its limit, reset to {sz[i]-1}: */
-        (*ixi) = sz[i]-1;
-        if (pA != NULL) { (*pA) += (*ixi)*stA[i]; }
-        if (pB != NULL) { (*pB) += (*ixi)*stB[i]; }
-        if (pC != NULL) { (*pC) += (*ixi)*stC[i]; }
+        (*ixi) = (int64_t)(sz[i])-1;
+        if (pA != NULL) { ix_do_shift_pos((*pA), (*ixi)*stA[i]); }
+        if (pB != NULL) { ix_do_shift_pos((*pB), (*ixi)*stB[i]); }
+        if (pC != NULL) { ix_do_shift_pos((*pC), (*ixi)*stC[i]); }
       }
     return TRUE; 
   }
@@ -731,7 +747,7 @@ bool_t ix_parms_are_valid
             if (sti > ix_MAX_ABS_STEP) { fail_test(die,"step too big"); }
             /* Check that the maximum position is within range: */
             if ((ix_MAX_POS - phi)/(szi - 1) < sti) { fail_test(die,"position too big"); }
-            phi += (szi - 1)*sti;
+            ix_do_shift_pos(phi, (((int64_t)szi) - 1)*sti);
           }
         else if (sti < 0)
           { /* Beware that we can't make {sti} positive before checking: */
@@ -740,7 +756,7 @@ bool_t ix_parms_are_valid
             sti = -sti;
             /* Check that minimum position is non-negative: */
             if (lop/(szi - 1) < sti) { fail_test(die,"negative position"); }
-            lop -= (szi - 1)*sti;
+            ix_do_shift_pos(lop, - (((int64_t)szi) - 1)*sti);
           }
         else
           { /* Step is zero; axis is replicated, ignore: */ }
@@ -773,7 +789,7 @@ bool_t ix_sort_steps
               { /* Flip index values: */
                 sti = -sti; 
                 /* Adjust position to account for flipping: */
-                if (bpwP != NULL) { (*bpwP) = (*bpwP) - sti*(szi-1); }
+                if (bpwP != NULL) { ix_do_shift_pos((*bpwP), - sti*(((int64_t)szi)-1)); }
               }
             /* Save {szi,sti} in increasing order: */
             int32_t jw = dw;
@@ -825,7 +841,7 @@ bool_t ix_positions_are_distinct
         ix_pos_t dpmw[dw]; 
         ix_pos_t tdisp = 0;
         for (ix_axis_t iw = 0; iw < dw; iw++)
-          { tdisp += stw[iw]*(szw[iw]-1);
+          { ix_do_shift_pos(tdisp, stw[iw]*(((int64_t)szw[iw])-1));
             dpmw[iw] = tdisp;
           }
         /* Exclude trailing indices which are strictly monotonic: */
@@ -880,7 +896,7 @@ ix_pos_t ix_packed_position
         /* Check validity of index {ix[i]}: */
         if ((ix[i] < 0) || (ix[i] >= sz[i])) { return ix_pos_NONE; }
         /* Update position {p} to include index {ix[i]}: */
-        p += ix[i]*sti;
+        ix_do_shift_pos(p, ix[i]*sti);
         /* !!! Should check range {0..ix_MAX_POS} !!! */
         k++;
         if (k >= d) { break; }
@@ -924,7 +940,7 @@ void ix_packed_steps
               }
             else
               { /* Non-trivial axis -- increment is current total size: */
-                st[i] = sti;
+                st[i] = (ix_step_t)sti;
                 /* Check overflow BEFORE multiplication: */
                 if (sti > 0) { demand (szi <= ix_MAX_POSITIONS/sti, "too many samples"); }
                 sti *= szi;
@@ -950,7 +966,7 @@ void ix_packed_indices
         /* Grab the size along axis {i}: */
         ix_size_t szi = sz[i]; 
         assert(szi > 0);
-        ix[i] = dp % szi; 
+        ix[i] = (ix_index_t)(dp % szi); 
         /* Should check {ix[i] < ix_MAX_INDEX} */
         dp /= szi;
       }
@@ -960,7 +976,7 @@ void ix_packed_indices
 ix_index_t ix_reduce ( ix_index_t i, ix_size_t N, ix_reduction_t red )
   {
     /* Beware that {s % u} with {s} signed and {u} unsigned is {((unsiged)s) % u}. */
-    ix_index_t NN = N;
+    ix_index_t NN = (ix_index_t)N; /* Just to allow signed arithmetic. */
     switch(red)
       {
         case ix_reduction_SINGLE:  /* ... *,*,*,0,1,2,3,4,5,*,*,*,*,*,*,*,*,*,* ... */
@@ -989,7 +1005,7 @@ ix_index_t ix_reduce ( ix_index_t i, ix_size_t N, ix_reduction_t red )
           else
             { i %= (2*NN - 2);
               if (i < 0) { i += 2*NN - 2; }
-              if (i >= N) { i = N - 2 - (i - NN); }
+              if (i >= NN) { i = NN - 2 - (i - NN); }
             }
           break;
 

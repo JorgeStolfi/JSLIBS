@@ -1,7 +1,6 @@
 /* See pcode.h */
-/* Last edited on 2023-02-22 20:43:18 by stolfi */
+/* Last edited on 2024-11-20 08:06:28 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -49,7 +48,7 @@ pcode_op_info_t pcode_op_info[MAXOPCODE+1] =
 
 /*** INTERNAL PROTOTYPES ***/
   
-char *pcode_parse_title(FILE *f, char **next_line);
+char *pcode_parse_title(FILE *f, char **next_line_P);
 
 void pcode_parse_instr(char *s, pcode_op_info_t **opinfo, int32_t *arg);
 
@@ -92,7 +91,7 @@ pcode_proc_t pcode_parse (FILE *f)
 
       /* should check whether any reg is used before defined. */
 
-      pi = (pcode_instr_t *) malloc(mi * sizeof(pcode_instr_t));
+      pi = talloc(mi, pcode_instr_t);
       do
 	{
 	  affirm(s != NULL, "pcode_parse: missing RETURN");
@@ -133,7 +132,7 @@ pcode_proc_t pcode_parse (FILE *f)
 	      /* store in array */
 	      if (ni >= mi)
 		{ mi *= 2; 
-		  pi = (pcode_instr_t *) realloc ((void*) pi, mi*sizeof(pcode_instr_t)); 
+		  pi = talloc(pi, pcode_instr_t); 
 		}
 	      affirm(pi != NULL, "pcode_parse: alloc failed");
 	      pi[ni].op = opinfo->op;
@@ -148,87 +147,77 @@ pcode_proc_t pcode_parse (FILE *f)
       proc.nregs = max_reg_arg+1;
       proc.nstack = max_top+1;
       proc.nops = ni;
-      proc.code = (pcode_instr_t *) realloc ((void *) pi, ni*sizeof(pcode_instr_t));
+      proc.code = retalloc (pi, ni, pcode_instr_t);
       affirm(proc.code != NULL, "pcode_parse: alloc failed");
     }
     return (proc);
   }
 
-char *pcode_parse_title(FILE *f, char **next_line)
+char *pcode_parse_title(FILE *f, char **next_line_P)
   /* 
     Parses the title, returns it as a single null-terminated string,
-    with lines separated by '\n'.  Also stores in *next_line the first input line
+    with lines separated by '\n'.  Also stores in {*next_line_P} the first input line
     after the title. */
   { 
-    char **t;      /* The title lines */
-    int32_t nt = 0;    /* Number of title lines read */
-    int32_t nc = 0;    /* Number of title characters read */
-    int32_t maxt = 10; /* current allocated size of $t$ */
-    int32_t i;
-    char *p, *q, *s, *title;
+    uint32_t nt = 0;    /* Number of title lines read */
+    uint32_t nc = 0;    /* Number of title characters read */
+    uint32_t maxt = 10; /* Current allocated size of {t} */
 
-    t = (char **)malloc(sizeof(char*)*maxt);
+    char **t = talloc(maxt, char*);  /* The title lines */
 
-    s = read_line(f);
+    char *s = read_line(f);
     while ((s != NULL) && (s[0] == '#'))
-      { if (nt >= maxt)
-	  { maxt *= 2; t = (char**) realloc((void*)t, sizeof(char*)*maxt); }
-	affirm(t != NULL, "pcode_parse_title: alloc failed");
+      { if (nt >= maxt) { maxt *= 2; t = retalloc(t, maxt, char*); }
 	t[nt++] = s;
-	nc += (int32_t)strlen(s);
+        nc += (uint32_t)strlen(s);
 	s = read_line(f);
       }
-    *next_line = s;
+    *next_line_P = s;
 
-    title = (char *) malloc(sizeof(char) * (nc + (nt - 1) + 1));
-    affirm(title != NULL, "pcode_parse_title: alloc failed");
-    p = title; 
-    for (i=0; i<nt; i++)
-      { q = t[i];
+    char *title = talloc(nc + (nt - 1) + 1, char);
+    char *p = title; 
+    for (int32_t i = 0; i < nt; i++)
+      { char *q = t[i];
         if (i>0) *(p++) = '\n';
 	while (*q != '\000') *(p++) = *(q++); 
 	*p = '\000';
-	free((void*) t[i]);
+	free(t[i]);
       }
-    free ((void*) t);
+    free (t);
     return(title);
   }
   
 void pcode_parse_instr(char *s, pcode_op_info_t **opinfo, int32_t *arg)
   {
-    pcode_op_info_t *info;
-    int32_t iarg;
-    char *tok;
+    pcode_op_info_t *info = NULL;
+    int32_t iarg = 0;
     
-    /* get and decode the opcode: */
-    tok = strtok(s, " \n\t");
-    if (tok == NULL)
-      { *opinfo = NULL; *arg = 0; return; }
-    
-    /* decode the opcode */
-    { int32_t j;
-      for (j=0; (j <= MAXOPCODE) && (strcmp(tok, pcode_op_info[j].name) != 0); j++) { }
-      affirm(j <= MAXOPCODE, "pcode_parse_instr: invalid op code");
-      info = &(pcode_op_info[j]);
-    }
+    /* Get the opcode: */
+    char *tok = strtok(s, " \n\t");
+    if (tok != NULL) 
+      { /* Decode the opcode */
+        { int32_t j = 0;
+          while ((j <= MAXOPCODE) && (strcmp(tok, pcode_op_info[j].name) != 0)) { j++; }
+          affirm(j <= MAXOPCODE, "pcode_parse_instr: invalid op code");
+          info = &(pcode_op_info[j]);
+        }
 
-    if (info->has_arg)
-      { /* Get and decode the argument */
-	char *a = strtok(NULL, " \n\t");
-	affirm(a != NULL, "pcode_parse_instr: missing argument");
-	iarg = atoi(a);
+        if (info->has_arg)
+          { /* Get and decode the argument */
+            char *a = strtok(NULL, " \n\t");
+            affirm(a != NULL, "pcode_parse_instr: missing argument");
+            iarg = atoi(a);
+          }
+
+        /* Check for bogus data: */
+        { char *a = strtok(NULL, " \n\t");
+          affirm (a == NULL, "pcode_parse_instr: extra characters in line");
+        }
       }
-    else
-      { iarg = 0; }
-    
-    /* Check for bogus data: */
-    { char *a = strtok(NULL, " \n\t");
-      affirm (a == NULL, "pcode_parse_instr: extra characters in line");
-    }
     
     /* Return results */
-    *opinfo = info;
-    *arg = iarg;
+    (*opinfo) = info;
+    (*arg) = iarg;
   }
 
 void pcode_print (FILE *f, pcode_proc_t proc)

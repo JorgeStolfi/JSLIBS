@@ -1,7 +1,6 @@
 /* See {float_image_aff_compare.h}. */
 /* Last edited on 2024-10-12 18:24:04 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdint.h>
 #include <limits.h>

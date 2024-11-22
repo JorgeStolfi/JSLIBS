@@ -1,10 +1,9 @@
 /* pqueue - internal representation of a pqueue_t. */
-/* Last edited on 2023-03-18 11:15:25 by stolfi */
+/* Last edited on 2024-11-16 12:09:35 by stolfi */
 
 #ifndef pqueue_rep_H
 #define pqueue_rep_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <pqueue.h>

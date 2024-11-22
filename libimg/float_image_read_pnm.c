@@ -1,7 +1,6 @@
 /* See {float_image_read_pnm.h}. */
 /* Last edited on 2017-06-22 18:07:50 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>

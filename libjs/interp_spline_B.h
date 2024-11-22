@@ -2,7 +2,9 @@
 #define bspline_interp_H
 
 /* B-spline smoothing of equally-spaced numerical series. */
-/* Last edited on 2013-10-25 23:21:13 by stolfilocal */ 
+/* Last edited on 2024-11-18 09:19:26 by stolfi */ 
+
+#include <stdint.h>
 
 #include <bool.h>
 
@@ -28,12 +30,12 @@
   any case, the spline value is a convex combination of the {nw} samples
   used in the interpolation. */
 
-int interp_spline_B_compute_num_samples(int ord);
+uint32_t interp_spline_B_compute_num_samples(int32_t ord);
   /* Computes the number of samples {nw} needed for B-spline
     interpolation with continuity {ord} (namely, {ord+2}).
     Assumes {ord >= -1}. */
 
-void interp_spline_B_get_weights(double z, int ord, int nw, double wt[]);
+void interp_spline_B_get_weights(double z, int32_t ord, uint32_t nw, double wt[]);
   /* Computes the sample weights {wt[0..nw-1]} for evaluation of {f(z)}.
     Assumes that {ord >= -1} and {nw} is 
     {interp_spline_B_compute_num_samples(ord)}. */

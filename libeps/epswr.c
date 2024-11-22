@@ -116,14 +116,13 @@ epswr_figure_t *epswr_new_named_figure
     else
       { char *dir_s = (dir[0] == 0 ? "" : "/");
         char *prefix_u = ((prefix[0] == 0) || (name[0] == 0) ? "" : "_");
-        char *fname = NULL;
         if (seq >= 0) 
           { char *name_u = ((prefix[0] == 0) && (name[0] == 0) ? "" : "_");
             char *seq_u = (suffix[0] == 0 ? "" : "_");
-            asprintf(&fname, "%s%s%s%s%s%s%05d%s%s.eps", dir, dir_s, prefix, prefix_u, name, name_u, seq, seq_u, suffix); }
+            char *fname = jsprintf("%s%s%s%s%s%s%05d%s%s.eps", dir, dir_s, prefix, prefix_u, name, name_u, seq, seq_u, suffix); }
         else
           { char *name_u = (((prefix[0] == 0) && (name[0] == 0)) || (suffix[0] == 0) ? "" : "_");
-            asprintf(&fname, "%s%s%s%s%s%s%s.eps", dir, dir_s, prefix, prefix_u, name, name_u, suffix);
+            char *fname = jsprintf("%s%s%s%s%s%s%s.eps", dir, dir_s, prefix, prefix_u, name, name_u, suffix);
           }
         if (verbose) { Pr(Er "writing EPS figure to \"%s\"\n", fname); }
         wr = open_write(fname, TRUE);

@@ -2,13 +2,12 @@
 #define PROG_DESC "tests the {bvtable.h} procedures"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2023-03-18 11:08:32 by stolfi */
+/* Last edited on 2024-11-18 09:14:11 by stolfi */
 /* Created on 2007-01-31 by J. Stolfi, UNICAMP */
 
 #define PROG_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,7 +37,7 @@ void test_bvtable_suite(uint32_t nItems);
     from minimum size. The test is repeated for several 
     item sizes. */
 
-void test_bvtable_static(uint32_t nItems, size_t szRel, size_t sz, int32_t nTimes, bool_t preAlloc);
+void test_bvtable_static(uint32_t nItems, size_t szRel, size_t sz, uint32_t nTimes, bool_t preAlloc);
   /* Tests the {bvtable.h} operations with {nItems}, each {sz} bytes 
     long, with only the first {szRel} being relevant for 
     item equivalence. If {preAlloc} is true, pre-allocates the table
@@ -116,15 +115,14 @@ int32_t main (int32_t argc, char **argv)
 void test_bvtable_suite(uint32_t nItems)
   {
     uint32_t nTimes = 100000; /* Number of timing calls per function. */
-    int32_t pa;
-    for (pa = 0; pa < 2; pa++)
+    for (int32_t pa = 0; pa < 2; pa++)
       { test_bvtable_static(nItems, 1,   2,   nTimes, (pa == 0));
         test_bvtable_static(nItems, 10,  20,  nTimes, (pa == 0));
         test_bvtable_static(nItems, 150, 200, nTimes, (pa == 0));
       }
   }
 
-void test_bvtable_static(uint32_t nItems, size_t szRel, size_t sz, int32_t nTimes, bool_t preAlloc)
+void test_bvtable_static(uint32_t nItems, size_t szRel, size_t sz, uint32_t nTimes, bool_t preAlloc)
   { 
     fprintf(stderr, "============================================================\n");
     fprintf(stderr, "testing with %u items of %lu bytes (first %lu relevant)\n", nItems, sz, szRel);
@@ -172,18 +170,16 @@ void create_items
 
     /* Table of first item index in each equivalence class, or {UINT32_MAX}: */
     uint32_t *first = notnull(malloc(nClasses*sizeof(uint32_t)), "no mem");
-    uint32_t ic; 
-    for(ic = 0; ic < nClasses; ic++) { first[ic] = UINT32_MAX; }
+    for (int32_t ic = 0; ic < nClasses; ic++) { first[ic] = UINT32_MAX; }
     
     /* Carve the items out of {zone}: */
-    uint32_t ii; 
     ubyte *next = zone;
-    for (ii = 0; ii < nItems; ii++)
+    for (int32_t ii = 0; ii < nItems; ii++)
       { item[ii] = next;
         next += sz;
         assert(next <= zone + MAX_ITEM_BYTES); 
         /* Pick an equivalence class {ic} for this item: */
-        ic = int32_abrandom(0, nClasses-1);
+        uint32_t ic = uint32_abrandom(0, (uint32_t)(nClasses-1));
         /* Fill the item with contents belonging to class {ic}: */
         fill_item(item[ii], szRel, ic, sz, ii);
         if (first[ic] == UINT32_MAX)
@@ -198,7 +194,7 @@ void create_items
       }
       
     /* Dump some items and check the equivalence: */
-    for (ii = 0; ii < nItems; ii++)
+    for (int32_t ii = 0; ii < nItems; ii++)
       { uint32_t ie = eqix[ii];
         bool_t debug = (ii < 10);
         if (debug) 
@@ -215,14 +211,13 @@ void create_items
 void fill_item(ubyte *p, size_t szRel, uint32_t ic, size_t sz, uint32_t ii)
   {
     uint32_t xc = ic;
-    size_t k;
-    for (k = 0; k < szRel; k++)
+    for (size_t k = 0; k < szRel; k++)
       { (*p) = (ubyte)((xc & 255u) ^ 417u ^ (uint32_t)k);
         p++; xc = xc >> 8;
         if (xc == 0) { xc = (ic ^ (uint32_t)(k << 2)); } 
       }
     /* Complete the string with random bits: */
-    for (k = szRel; k < sz; k++)
+    for (size_t k = szRel; k < sz; k++)
       { (*p) = (ubyte)(int32_abrandom(0, 255));
         p++; 
       }
@@ -231,7 +226,6 @@ void fill_item(ubyte *p, size_t szRel, uint32_t ic, size_t sz, uint32_t ii)
 void test_bvtable_correctness(uint32_t nItems, uint32_t nGuess, size_t szRel, size_t sz, ubyte *item[], uint32_t eqix[])
   {
     fprintf(stderr, "TESTING CORRECTNESS\n");
-    uint32_t ii;
     uint32_t n_new = 0; /* Number of non-equivalent items added to {S}. */
 
     bvtable_t *S = bvtable_new(sz, nGuess);
@@ -241,7 +235,7 @@ void test_bvtable_correctness(uint32_t nItems, uint32_t nGuess, size_t szRel, si
     
     /* Add the items to the set: */
     fprintf(stderr, "testing {bvtable_get_index}, {bvtable_add} ...\n");
-    for (ii = 0; ii < nItems; ii++)
+    for (int32_t ii = 0; ii < nItems; ii++)
       { ubyte *pi = item[ii];
         assert(pi != NULL);
         /* Get the earliest item {pe} that is equiv to {pi} and is in {S}, or 0 if nonesuch. */
@@ -285,7 +279,7 @@ void test_bvtable_correctness(uint32_t nItems, uint32_t nGuess, size_t szRel, si
     /* Check that the items are the first items of each class: */
     ubyte *p_fin = item_fin;
     uint32_t i_fin = 0;
-    for (ii = 0; ii < nItems; ii++)
+    for (int32_t ii = 0; ii < nItems; ii++)
       { uint32_t ie = eqix[ii]; /* Index of item equivalent to {pi}, or {-1}. */
         if (ie == ii)
           { /* First of its class. */
@@ -338,7 +332,7 @@ void test_bvtable_correctness(uint32_t nItems, uint32_t nGuess, size_t szRel, si
 //       { /* Clear the list and insert all items: */
 //         bvtable_clear(S);
 //         start = user_cpu_time_usec();
-//         for (i = 0; i < nItems; i++)
+//         for (int32_t i = 0; i < nItems; i++)
 //           { bvtable_item_t pi = UITEM(item[kAdd]);
 //             (void)bvtable_insert_last(S, pi);
 //             nAdd++;
@@ -358,14 +352,14 @@ void test_bvtable_correctness(uint32_t nItems, uint32_t nGuess, size_t szRel, si
 //     while(nInd < nTimes)
 //       { /* Clear the list and insert all items: */
 //         bvtable_clear(S);
-//         for (i = 0; i < nItems; i++)
+//         for (int32_t i = 0; i < nItems; i++)
 //           { bvtable_item_t pi = UITEM(item[kAdd]);
 //             (void)bvtable_insert_last(S, pi);
 //             kAdd = (kAdd + step) % nItems;
 //           }
 //         /* Look up all items: */
 //         start = user_cpu_time_usec();
-//         for (i = 0; i < nItems; i++)
+//         for (int32_t i = 0; i < nItems; i++)
 //           { bvtable_item_t pi = UITEM(item[kInd]);
 //             (void)bvtable_get_index(S, pi);
 //             nInd++;

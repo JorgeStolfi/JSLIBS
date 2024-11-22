@@ -83,9 +83,9 @@ void fn2_zf_plot_stat_caption
   )
   { char *str = NULL;
     if (arith != NULL)
-      { asprintf(&str, fmt, count, arith); }
+      { char *str = jsprintf(fmt, count, arith); }
     else
-      { asprintf(&str, fmt, count); }
+      { char *str = jsprintf(fmt, count); }
     fprintf(stderr, "%s\n", str);
     epswr_set_fill_color(eps, 0.0,0.0,0.0);
     epswr_text(eps, str, FALSE, 0.0, TRUE, FALSE);

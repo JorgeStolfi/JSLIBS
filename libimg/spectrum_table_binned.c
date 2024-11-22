@@ -1,7 +1,6 @@
 /* See spectrum_table_binned.h */
 /* Last edited on 2024-11-06 10:11:03 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <limits.h>
 #include <float.h>
 #include <assert.h>

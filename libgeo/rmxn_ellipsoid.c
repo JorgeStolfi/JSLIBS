@@ -1,7 +1,6 @@
 /* See {minn_constr.h}. */
-/* Last edited on 2024-09-03 17:45:56 by stolfi */
+/* Last edited on 2024-11-20 15:09:59 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdint.h>
@@ -19,15 +18,15 @@
 #include <rmxn_ellipsoid.h>
 
 void rmxn_ellipsoid_pierce
-  ( int32_t n,
+  ( uint32_t n,
     double arad[],
-    int32_t d, 
+    uint32_t d, 
     double S[],
     double U[], 
     double urad[]
   )
   {
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
 
     if (debug) { fprintf(stderr, "piercing the ellipsoid...\n"); }
 
@@ -61,11 +60,11 @@ void rmxn_ellipsoid_pierce
         double e[d]; /* Eigenvalues. */
         { /* Convert {M} to tridiag with diagonal {e[0..d-1]} and subdiagonal {s[1..d-1]}: */
           double s[d]; /* Sub-diagonal elements of temporary tridiagonal matrix. */
-          syei_tridiagonalize(d, M, e, s, Q);
+          sym_eigen_tridiagonalize(d, M, e, s, Q);
           /* Compute eigenvalues and eigenvectors from {Q} and tridiag matrix: */
-          int32_t a; /* Number of eigenvalues computed. */
-          int32_t absrt = 0; /* Sort eigenvalues by signed value. */
-          syei_trid_eigen(d, e, s, Q, &a, absrt);
+          uint32_t a; /* Number of eigenvalues computed. */
+          uint32_t absrt = 0; /* Sort eigenvalues by signed value. */
+          sym_eigen_trid_eigen(d, e, s, Q, &a, absrt);
           /* Check that all eigenvalues are positive: */
           demand(a == d, "failed to determine eigenvalues of {M}");
         }
@@ -100,16 +99,16 @@ void rmxn_ellipsoid_pierce
   }
 
 void rmxn_ellipsoid_cut
-  ( int32_t n,
+  ( uint32_t n,
     double arad[],
-    int32_t m, 
+    uint32_t m, 
     double C[],
-    int32_t d,
+    uint32_t d,
     double U[], 
     double urad[]
   )
   { 
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
     
     if (debug) { fprintf(stderr, "cutting the ellipsoid...\n"); }
     demand(m >= 0, "invalid {m}");
@@ -126,21 +125,21 @@ void rmxn_ellipsoid_cut
   }
 
 void rmxn_ellipsoid_normalize_constraints
-  ( int32_t n,
+  ( uint32_t n,
     double arad[],
-    int32_t q,
+    uint32_t q,
     double A[],
     bool_t verbose, 
-    int32_t *m_P,
+    uint32_t *m_P,
     double **C_P
   )
   { 
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
     
     if (debug) { fprintf(stderr, "  normalizing the constraints...\n"); }
     
     double *C = rmxn_alloc(n,n); /* The orthonormalized constraints. */
-    int32_t m = 0; /* Number of independent constraints found. */
+    uint32_t m = 0; /* Number of independent constraints found. */
     
     double v[n]; /* Work vector. */
 

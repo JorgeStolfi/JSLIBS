@@ -1,5 +1,5 @@
 /* See hr2_pmap_aff_from_point_pairs.h */
-/* Last edited on 2024-08-31 22:20:22 by stolfi */ 
+/* Last edited on 2024-11-15 13:00:54 by stolfi */ 
 
 /* Based on HR2.m3 created 1994-05-04 by J. Stolfi. */
 

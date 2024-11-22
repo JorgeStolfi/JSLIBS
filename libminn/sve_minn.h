@@ -2,7 +2,7 @@
 #define sve_minn_H
 
 /* Quadratic minimzation by the simplex vertex-edge method. */
-/* Last edited on 2024-11-08 09:49:28 by stolfi */
+/* Last edited on 2024-11-08 19:53:33 by stolfi */
 
 /* SIMPLICES
 
@@ -40,7 +40,7 @@
 #include <bool.h>
 #include <sign.h>
 
-void sve_minn_step(int32_t n, double Fv[], double cm[], bool_t debug);
+void sve_minn_step(int32_t n, double Fv[], double cm[], bool_t debug, bool_t debug_system);
   /* Given the values {Fv[0..K(n)-1]} of a quadratic function {F} at the 
     nodes of some {n}-simplex {V}, returns in {cm[0..n]} 
     the barycentric coordinates of the stationary point of {F} in the 
@@ -66,11 +66,16 @@ void sve_sample_function(int32_t n, sve_goal_t *F, double v[], double Fv[]);
     More precisely, sets {Fv[i*(i+1)/2+j]} to {F(V(i,j))} for all
     {i,j} such that {0 <= j <= i <= n}. */
 
-typedef bool_t sve_pred_t(int32_t n, double x[], double Fx);
+typedef bool_t sve_pred_t(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius);
   /* The type of a procedure that can be provided as the {OK} parameter to
     {sve_minn_iterate} below. It should check the current solution
     {x[0..n-1]} and the corresponding goal function value {Fx}, and
-    return {TRUE} to stop the iteration, {FALSE} to continue it. */
+    return {TRUE} to stop the iteration, {FALSE} to continue it. 
+    
+    The parameter {iter} is number of complete iterations peformed; {dist}
+    is the distance (Euclidean or L-infinity) from the domain center {ctr} to {x[0..n-1]};
+    {step} is the distance from the previous iteration point, or {dMax} if {iter}
+    is zero; and {radius} is the tentative radius of the probe simplex for the next iteration. */
  
 typedef double sve_proj_t(int32_t n, double x[], double Fx);
   /* The type of a procedure that can be provided as the {project} parameter to
@@ -93,7 +98,8 @@ void sve_minn_iterate
     double rMax,
     double minStep,
     int32_t maxIters,
-    bool_t debug
+    bool_t debug,
+    bool_t debug_probes
   );
   /*  Tries to find a stationary point {x[0..n-1]} of the {n}-argument
     function {F}, by repeated calls to {sve_minn_step}.
@@ -144,7 +150,10 @@ void sve_minn_iterate
     successive guesses is less than {minStep}; or (C) the quadratic
     minimization loop has been performed {maxIters} times.
     
-    If {debug} is TRUE, the procedure prints various diagnostic messages. */
+    If {debug} is true, the procedure prints basic information at each iteration.
+    If {debug_probes} is true, also prints the 
+    argument {x[0..nx-1]} and {F} value at each probe point (simplex center, 
+    vertices, and edge midpoints). */
 
 /* LIMITS */
 

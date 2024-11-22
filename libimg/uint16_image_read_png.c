@@ -4,7 +4,6 @@
 /* Created by R. Minetto (IC-UNICAMP) as {ipng.c} sometime in 2008--2009. */
 /* Adapted by J. Stolfi (IC-UNICMP) on 2011-05-14. */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
@@ -244,7 +243,7 @@ uint16_image_t *uint16_image_read_png_file(FILE *rd, double *gammaP, uint32_t im
 
     /* Allocate buffer for the PNG image data: */
     png_bytep *png_dataP = notnull(malloc(rows*sizeof(png_bytep)), "no mem");
-    for (uint32_t row = 0; row < rows; row++)
+    for (int32_t row = 0; row < rows; row++)
       { png_dataP[row] = notnull(malloc(bytes_per_png_row), "no mem"); }
 
     /* Read the image samples: */
@@ -295,7 +294,7 @@ uint16_image_t *uint16_image_read_png_file(FILE *rd, double *gammaP, uint32_t im
     /* Read any post-image chunks: */
     png_read_end(pr, pe);
 
-    for (uint32_t row = 0; row < rows; row++) { free(png_dataP[row]); }
+    for (int32_t row = 0; row < rows; row++) { free(png_dataP[row]); }
     free(png_dataP);
     png_destroy_read_struct(&pr, &pi, &pe);
     /* png_free_data(pr, pi, PNG_FREE_ALL, -1); */

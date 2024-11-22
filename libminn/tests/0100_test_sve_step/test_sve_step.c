@@ -1,5 +1,5 @@
 /* test_sve_step --- test program for {sve_minn_step} in sve_minn.h */
-/* Last edited on 2023-03-27 10:00:48 by stolfi */
+/* Last edited on 2024-11-08 19:31:20 by stolfi */
 
 #define _GNU_SOURCE
 #include <values.h>
@@ -150,7 +150,9 @@ void test_sve_minn_step(int32_t m, int32_t n, int32_t trial, bool_t nice, bool_t
     
     if (verbose) { fprintf(stderr, "  computing the stationary point...\n"); }
     double cm[m+1];
-    sve_minn_step(m, fv, cm, verbose);
+    bool_t sve_debug = verbose;
+    bool_t sve_debug_system = verbose;
+    sve_minn_step(m, fv, cm, sve_debug, sve_debug_system);
     if (verbose) 
       { rn_gen_print(stderr, m+1, cm, "%12.8f", "  barycentric coords:\n  [ ", "\n    ", " ]\n"); }
     

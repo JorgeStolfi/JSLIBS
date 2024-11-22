@@ -3,7 +3,7 @@
 #define PROG_VERS "1.0"
 
 #define curvefit_C_COPYRIGHT "Copyright © 2004 by the State University of Campinas (UNICAMP)"
-/* Last edited on 2023-03-18 11:38:07 by stolfi */
+/* Last edited on 2024-11-20 06:10:27 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -221,8 +221,7 @@ epswr_figure_t *cf_new_figure
         capLines, fontHeight, eps_verbose
       );
       
-    char *fnum = NULL;
-    asprintf(&fnum, "%06d evaluations", nevals);
+    char *fnum = jsprintf("%06d evaluations", nevals);
     epswr_text(eps, fnum, FALSE, 0.5, TRUE, FALSE);
     free(fnum);
     return eps;

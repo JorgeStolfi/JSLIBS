@@ -2,7 +2,9 @@
 #define hermite3_H
 
 /* Cubic Hermite interpolation */
-/* Last edited on 2017-06-25 02:44:05 by stolfilocal */
+/* Last edited on 2024-11-15 19:12:51 by stolfi */
+
+#include <stdint.h>
 
 #define hermite3_H_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
@@ -12,7 +14,7 @@ double hermite3_interp(double v0, double d0, double v1, double d1, double a, dou
     given the values {v0,v1} and the derivatives {d0,d1}
     at the two ends of that interval. */
 
-void hermite3_subsample(int nx, double x[], double dx[], int ns, int ny, double y[]);
+void hermite3_subsample(int32_t nx, double x[], double dx[], int32_t ns, int32_t ny, double y[]);
   /* Upsamples the sample sequence {x[0..nx-1]} with {ns} steps in each unit interval,
     and stores the result in {y[0..ny-1]}.  Requires {nx>0}, {ns>0}, and 
     {ny == ns*(nx-1)+1}.
@@ -27,7 +29,7 @@ void hermite3_subsample(int nx, double x[], double dx[], int ns, int ny, double 
     by {hermite3_estimate_deriv}, that are accurate if the sampled 
     function is any cubic polynomial.  */
 
-void hermite3_estimate_derivs(int nx, double x[], double dx[]);
+void hermite3_estimate_derivs(int32_t nx, double x[], double dx[]);
   /* Estimates derivatives {dx[0..nx-1]} for a function whose
     samples, at equal unit steps, are {x[0..nx-1]}. The 
     estimatives are accurate if the sampled function is any cubic polynomial.

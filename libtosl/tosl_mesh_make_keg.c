@@ -1,5 +1,5 @@
 /* See {tosl_mesh_make_keg.h} */
-/* Last edited on 2024-10-09 10:07:39 by stolfi */
+/* Last edited on 2024-11-20 05:21:37 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -39,7 +39,9 @@ tosl_mesh_t *tosl_mesh_make_keg
     fprintf(stderr, "  creating %d rings of %d vertices and edges...\n", NR+1, NS);
     tosl_arc_id_t iaring[NR+1];
     for (int32_t r = 0; r <= NR; r++)
-      { char *pref = NULL; asprintf(&pref, "h.r%d.s", r);
+      { 
+        char *pref = NULL; 
+        char *pref = jsprintf("h.r%d.s", r);
         iaring[r] = tosl_mesh_add_ring(NS, pref, mesh);
         /* Set the vertex coordinates: */
         tosl_arc_id_t ia = iaring[r];
@@ -64,7 +66,8 @@ tosl_mesh_t *tosl_mesh_make_keg
         tosl_arc_id_t ja1 = mesh->Arc[ia1].skip;
         for (int32_t s = 0; s < NS; s++)
           { tosl_arc_id_t ka1 = tosl_sym(ja1);
-            char *pref = NULL; asprintf(&pref, "v.r%d.s%d.b", r, s);
+            char *pref = NULL; 
+            char *pref = jsprintf("v.r%d.s%d.b", r, s);
             tosl_mesh_add_path(NB, ia0, ka1, pref, mesh);
             
             /* Set the interpolated vertex coordinates: */

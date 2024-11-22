@@ -200,8 +200,7 @@ void do_test_times(int32_t type)
   { 
     fprintf(stderr, "> --- %s --------------------\n", __FUNCTION__);
 
-    char *fname = NULL;
-    asprintf(&fname, "out/test_t%d.txt", type);
+    char *fname = jsprintf("out/test_t%d.txt", type);
     FILE *wr = fopen(fname, "w");
 
     /* Generate a large mesh: */

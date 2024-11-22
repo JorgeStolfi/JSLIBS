@@ -1,7 +1,6 @@
 /* Test program for hr3.h  */
-/* Last edited on 2024-11-04 06:37:51 by stolfi */
+/* Last edited on 2024-11-20 18:17:41 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -15,7 +14,6 @@
 #include <rn.h>
 #include <r3x3.h>
 #include <r3.h>
-#include <r4_extra.h>
 #include <r2x2.h>
 #include <r2.h>
 
@@ -39,11 +37,10 @@ void test_hr3_plane_normal(bool_t verbose);
 
 int32_t main (int32_t argc, char **argv)
   {
-    int32_t i;
     srand(1993);
     srandom(1933);
 
-    for (i = 0; i < 100; i++) test_hr3(i < 3);
+    for (int32_t i = 0; i < 100; i++) test_hr3(i < 3);
     fclose(stderr);
     fclose(stdout);
     return (0);
@@ -125,7 +122,7 @@ void test_hr3_pt_pt_diff(bool_t verbose)
       hr3_test_check_eps(dob, dex, 1.0e-8, "hr3_pt_pt_diff error(3)");
       /* Check invariance under rotations: */
       for (int32_t i = 0; i < NH; i++)
-        { int32_t j = (i + 1) % NH; /* Another axis. */
+        { uint32_t j = (i + 1) % NH; /* Another axis. */
           /* Rotate {p,q} by a random angle in {R^3} parallel to plane {i,j}: */
           double ang = 2*M_PI*drandom();
           double ca = cos(ang), sa = sin(ang);

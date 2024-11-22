@@ -1,21 +1,25 @@
 /* See intsort.h */
-/* Last edited on 2023-03-18 11:22:44 by stolfi */
+/* Last edited on 2024-11-17 15:50:53 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include <affirm.h>
 #include <intmerge.h>
 
 #include <intsort.h>
 
-void isrt_mergesort (int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
+void isrt_mergesort (int32_t *h, uint32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
   {
     auto void sort(int32_t *a, int32_t *b);
-
+    
+    if (n >= 2) { sort(h, h+n); }
+    return;
+    
     void sort(int32_t *a, int32_t *b)
-    { int32_t nab = (int32_t)(b - a);
+      { assert(a < b);
+        uint32_t nab = (uint32_t)(b - a);
         if (nab <= 1) 
           { /* Nothing to do. */ }
         else
@@ -25,7 +29,6 @@ void isrt_mergesort (int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t y), i
             imrg_merge(a, m, b, cmp, sgn);
           }
       }
-    sort(h, h+n);
   }
 
 /* Created by J. Stolfi, Unicamp, Oct/2004. */

@@ -1,9 +1,8 @@
 /* See indexing_io.h */
-/* Last edited on 2023-03-18 11:21:46 by stolfi */
+/* Last edited on 2024-11-15 19:13:51 by stolfi */
 /* Copyright © 2007 by Jorge Stolfi, from University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 #include <assert.h>

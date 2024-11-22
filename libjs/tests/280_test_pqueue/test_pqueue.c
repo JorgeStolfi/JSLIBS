@@ -1,6 +1,5 @@
-/* Last edited on 2023-03-18 11:08:50 by stolfi */
+/* Last edited on 2024-11-16 12:56:30 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 #include <math.h>
@@ -16,18 +15,21 @@
 
 #define ER(...) fprintf(stderr, __VA_ARGS__)
 
-int32_t throw_index(int32_t N);
+#define NMAX_MAX (1024*1024*1024)
+  /* Max num of elements that can be requested. */
+
+uint32_t throw_index(uint32_t N);
   /* Generates a random index in the range {0..N-1}}. */
 
-pqueue_value_t throw_distinct_value(int32_t N, pqueue_value_t ival[]);
+pqueue_value_t throw_distinct_value(uint32_t N, pqueue_value_t ival[]);
   /* Generates a random value in the range [0 _ 1], distinct from {ival[0..N-1]}. */
 
-pqueue_item_t throw_new_item(int32_t N, pqueue_item_t zlim, pqueue_item_t item[]);
+pqueue_item_t throw_new_item(uint32_t N, pqueue_item_t zlim, pqueue_item_t item[]);
   /* Generates a random item in the range [0 _ zlim-1], distinct from {item[0..N-1]}. */
 
 void check_queue
   ( pqueue_t *Q, 
-    int32_t N, 
+    uint32_t N, 
     pqueue_item_t zlim,
     pqueue_item_t item[], 
     pqueue_value_t ival[], 
@@ -39,10 +41,10 @@ void check_queue
     for items in {0..zlim-1}. */
 
 void perform_operation
-  ( int32_t iop,
+  ( uint32_t iop,
     pqueue_t *Q, 
-    int32_t *NP, 
-    int32_t NMAX,
+    uint32_t *NP, 
+    uint32_t NMAX,
     pqueue_item_t zlim,
     pqueue_item_t item[], 
     pqueue_value_t ival[], 
@@ -64,7 +66,9 @@ void perform_operation
 int32_t main(int32_t argc, char **argv);
 
 int32_t main(int32_t argc, char **argv)
-  { int32_t NMAX = atoi(argv[1]);
+  { int64_t arg1 = atol(argv[1]);
+    demand((arg1 > 0) && (arg1 < NMAX_MAX), "invalid {NMAX}");
+    uint32_t NMAX = (uint32_t)arg1;
   
     pqueue_item_t zlim = 2*NMAX + 15;
     bool_t verbose = (NMAX <= 200);
@@ -72,9 +76,9 @@ int32_t main(int32_t argc, char **argv)
     srandom(4615 + 32*NMAX);
   
     /* The brute-force queue, sorted by increasing value: */
-    int32_t N = 0; /* Number of items in queue. */
-    pqueue_item_t *item = notnull(malloc(NMAX*sizeof(pqueue_item_t)), "no mem"); /* Items. */
-    pqueue_value_t *ival = notnull(malloc(NMAX*sizeof(pqueue_value_t)), "no mem"); /* Item values. */
+    uint32_t N = 0; /* Number of items in queue. */
+    pqueue_item_t *item = talloc(NMAX, pqueue_item_t); /* Items. */
+    pqueue_value_t *ival = talloc(NMAX, pqueue_value_t); /* Item values. */
     int32_t order = +1;  /* The nominal queue order. */
     
     /* The library queue: */
@@ -84,8 +88,8 @@ int32_t main(int32_t argc, char **argv)
     pqueue_realloc(Q, NMAX/3, zlim);
     check_queue(Q, N, zlim, item, ival, order, verbose);
     
-    int32_t NTEST = 3*NMAX;
-    int32_t iop;
+    uint32_t NTEST = 3*NMAX;
+    uint32_t iop;
     for (iop = 0; iop < NTEST; iop++)
       { perform_operation(iop, Q, &N, NMAX, zlim, item, ival, &order, verbose);
         check_queue(Q, N, zlim, item, ival, order, verbose);
@@ -103,10 +107,10 @@ int32_t main(int32_t argc, char **argv)
   }
 
 void perform_operation
-  ( int32_t iop,
+  ( uint32_t iop,
     pqueue_t *Q, 
-    int32_t *NP, 
-    int32_t NMAX,
+    uint32_t *NP, 
+    uint32_t NMAX,
     pqueue_item_t zlim,
     pqueue_item_t item[], 
     pqueue_value_t ival[], 
@@ -114,7 +118,7 @@ void perform_operation
     bool_t verbose
   )
   {
-    int32_t N = (*NP);
+    uint32_t N = (*NP);
     int32_t order = (*orderP);
     
     double coin;
@@ -136,7 +140,7 @@ void perform_operation
         pqueue_value_t v = throw_distinct_value(N, ival);
         if (verbose) { ER("%06d inserting item %08u with value %18.16f\n", iop, z, v); }
         pqueue_insert(Q, z, v);
-        int32_t i = N;
+        uint32_t i = N;
         while ((i > 0) && (ival[i-1] > v)) { item[i] = item[i-1]; ival[i] = ival[i-1]; i--; }
         N++;
         item[i] = z;
@@ -150,7 +154,7 @@ void perform_operation
 
     /* Test {pqueue_delete}: */
     if ((N > 0) && (coin < P_delete))
-      { int32_t i = throw_index(N);
+      { uint32_t i = throw_index(N);
         pqueue_item_t z = item[i];
         if (verbose) { ER("%06d deleting item %08u\n", iop, z); }
         pqueue_delete(Q, z);
@@ -163,7 +167,7 @@ void perform_operation
 
     /* Test {pqueue_set_value}: */
     if ((N > 0) && (coin < P_set_value))
-      { int32_t i = throw_index(N);
+      { uint32_t i = throw_index(N);
         pqueue_item_t z = item[i];
         pqueue_value_t old_v = ival[i];
         pqueue_value_t new_v = (coin < 0.1*P_set_value ? ival[i] : throw_distinct_value(N, ival));
@@ -187,13 +191,12 @@ void perform_operation
     if (coin < P_set_all_values)
       { if (verbose) { ER("%06d modifying all values through {rbump}\n", iop); }
         pqueue_set_all_values(Q, rbump);
-        int32_t i;
-        for (i = 0; i < N; i++) { ival[i] = rbump(item[i], ival[i]); }
+        for (int32_t i = 0; i < N; i++) { ival[i] = rbump(item[i], ival[i]); }
         /* Insertion re-sort: */
-        for (i = 0; i < N; i++) 
+        for (int32_t i = 0; i < N; i++) 
           { pqueue_item_t z = item[i];
             pqueue_value_t v = ival[i];
-            int32_t j = i;
+            uint32_t j = i;
             while ((j > 0) && (ival[j-1] > v))
               { item[j] = item[j-1]; ival[j] = ival[j-1]; j--; }
             item[j] = z;
@@ -240,7 +243,7 @@ void perform_operation
 
 void check_queue
   ( pqueue_t *Q, 
-    int32_t N, 
+    uint32_t N, 
     pqueue_item_t zlim,
     pqueue_item_t item[], 
     pqueue_value_t ival[], 
@@ -264,8 +267,7 @@ void check_queue
       }
      
     /* Check items in queue: */
-    int32_t i;
-    for (i = 0; i < N; i++)
+    for (int32_t i = 0; i < N; i++)
       { pqueue_item_t z = item[i];
         pqueue_value_t v = ival[i];
         bool_t has = TRUE;
@@ -300,17 +302,17 @@ void check_queue
     if (Q_p_o != N) { ER("  ** should be %d\n", N); assert(FALSE); }
   }
   
-pqueue_item_t throw_new_item(int32_t N, pqueue_item_t zlim, pqueue_item_t item[])
+pqueue_item_t throw_new_item(uint32_t N, pqueue_item_t zlim, pqueue_item_t item[])
   {
     while(TRUE)
-      { pqueue_item_t z = int32_abrandom(0, zlim-1);
+      { pqueue_item_t z = uint32_abrandom(0, zlim-1);
         pqueue_position_t i = 0;
         while((i < N) && (item[i] != z)) { i++; }
         if (i >= N) { return z; }
       }
   }
   
-pqueue_value_t throw_distinct_value(int32_t N, pqueue_value_t ival[])
+pqueue_value_t throw_distinct_value(uint32_t N, pqueue_value_t ival[])
   {
     while(TRUE)
       { pqueue_value_t v = drandom();
@@ -320,8 +322,8 @@ pqueue_value_t throw_distinct_value(int32_t N, pqueue_value_t ival[])
       }
   }
   
-int32_t throw_index(int32_t N)
+uint32_t throw_index(uint32_t N)
   {
-    return int32_abrandom(0, N-1);
+    return uint32_abrandom(0, N-1);
   }
   

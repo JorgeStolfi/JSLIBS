@@ -1,7 +1,6 @@
 /* See {imq.h}  */
 /* Last edited on 2023-02-07 23:18:47 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>

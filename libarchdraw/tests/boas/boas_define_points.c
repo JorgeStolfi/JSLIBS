@@ -27,7 +27,7 @@ adrw_point_vec_t boas_define_points(void)
        
     void s(int i, int jx, int jy, double dX, double dY)
       { char *lab = NULL;
-        asprintf(&lab, "P%03d", i);
+        char *lab = jsprintf("P%03d", i);
         adrw_append_point(lab, i, jx, jy, -1, dX, dY, 0.0, &P, &np); 
       } 
     

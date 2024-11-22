@@ -157,8 +157,7 @@ void DoErrorTest(char *outDir, Grater *g, intg_prob_vec_t *p)
         int i;
         for (i = 0; i < p->ne; i++)
           { intg_prob_t *pi = &(p->e[i]);
-            char *fName = NULL;
-            asprintf(&fName, "%s/%s-%s-%s.plot", outDir, pi->tag, g->tag, msTag);
+            char *fName = jsprintf("%s/%s-%s-%s.plot", outDir, pi->tag, g->tag, msTag);
             FILE *wr = open_write(fName, TRUE);
             double ek;
             WriteErrorTestPlotHeader(wr, g->i->descr, p, ms);
@@ -192,7 +191,7 @@ void AllStandardTests
 
 void DoAdaptiveTest(char *outDir, Grater *g, intg_prob_t *p, char *tag, Dist tol)
   { char *fName = NULL;
-    asprintf(&fName, "%s/%s-%s-%s.plot", outDir, p->tag, g->tag, tag);
+    char *fName = jsprintf("%s/%s-%s-%s.plot", outDir, p->tag, g->tag, tag);
     FILE *wr = open_write(fName, TRUE);
     TestResults trFree =  AdaptiveTest(outDir, g, p, wr,   tol, FALSE, 1.0);
     TestResults trBound = AdaptiveTest(outDir, g, p, NULL, tol, TRUE,  1.0);
@@ -207,8 +206,7 @@ void DoStepTest(char *outDir, Grater *g, intg_prob_vec_t *p, Dist tol)
   { int NScales = 11;
     double MinScale = 0.75;
     double MaxScale = 1.50;
-    char *fName = NULL;
-    asprintf(&fName, "%s/%s-step.plot", outDir, g->tag);
+    char *fName = jsprintf("%s/%s-step.plot", outDir, g->tag);
     FILE *wr = open_write(fName, TRUE);
     TestResults *tr = (TestResults *)malloc(p->ne * sizeof(TestResults));
     TestResults *trRef = (TestResults *)malloc(p->ne * sizeof(TestResults));
@@ -230,8 +228,7 @@ void DoStepTest(char *outDir, Grater *g, intg_prob_vec_t *p, Dist tol)
   
 void PlotTrueSolution(char *outDir, intg_prob_t *p, int nSteps)
   { 
-    char *fName = NULL;
-    asprintf(&fName, "%s/%s-true.plot", outDir, p->tag);
+    char *fName = jsprintf("%s/%s-true.plot", outDir, p->tag);
     FILE *wr = open_write(fName, TRUE);
     double dt = (p->t1 - p->t0)/((double)nSteps);
     WriteAdaptiveTestPlotHeader(wr, "true solution", p->dt, p->dt, p->dt, 0.0);

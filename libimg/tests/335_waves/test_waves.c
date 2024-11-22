@@ -15,7 +15,6 @@
   " frequencies {KF0..KF1}.  The \".ppm\" images are colorized versions of" \
   " the \".pgm\" ones, with asimple linear interpolation color scale."
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -204,8 +203,7 @@ void wt_write_image(int32_t NX, int32_t NY, int32_t kf0, int32_t kf1, bool_t squ
     demand((kf0 < 36) && (kf1 < 36), "invalid freq numbers");
     char cf0 = (char)(kf0 < 10 ? '0' + kf0 : 'a' + kf0 - 10);
     char cf1 = (char)(kf1 < 10 ? '0' + kf1 : 'a' + kf1 - 10);
-    char *fname = NULL;
-    asprintf(&fname, "out/%s-%03dx%03d/wavy%c-%c%c.%s", ext, NX, NY, csq, cf0, cf1, ext);
+    char *fname = jsprintf("out/%s-%03dx%03d/wavy%c-%c%c.%s", ext, NX, NY, csq, cf0, cf1, ext);
     
     if (! squashed)
       { /* Adjust range to {[0_1]}: */

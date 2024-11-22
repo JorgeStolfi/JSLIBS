@@ -2,9 +2,8 @@
 #define jsfile_H
 
 /* File open with auto bomb-out; read line as new string. */
-/* Last edited on 2016-04-01 00:45:56 by stolfilocal */
+/* Last edited on 2024-11-15 19:14:13 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 
 #include <bool.h>

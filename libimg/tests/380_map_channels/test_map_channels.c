@@ -8,7 +8,6 @@
 #define test_map_channels_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -66,8 +65,7 @@ void tm_do_test( float_image_t *imgA, int32_t NCB)
     /* Test RGB to YUV conversion: */
     float_image_map_channels_RGB_to_YUV(imgA, imgB);
     
-    char *outPrefix = NULL;
-    asprintf(&outPrefix, "out/test-YUV-%02d", NCB);
+    char *outPrefix = jsprintf("out/test-YUV-%02d", NCB);
     
     tm_write_fni(outPrefix, imgB);
     if ((NCB == 1) || (NCB == 3)) { tm_write_pnm(outPrefix, imgB); }
@@ -90,7 +88,7 @@ float_image_t *tm_read_pnm(char *fname)
   
 void tm_write_fni(char *outPrefix, float_image_t *img)
   { char *fname = NULL;
-    asprintf(&fname, "%s.fni", outPrefix);
+    char *fname = jsprintf("%s.fni", outPrefix);
     FILE *wr = open_write(fname, TRUE);
     float_image_write(wr, img);
     fclose(wr);
@@ -101,9 +99,8 @@ void tm_write_pnm(char *outPrefix, float_image_t *img)
   { int32_t NCB;
     float_image_get_size(img, &NCB, NULL, NULL);
     demand((NCB == 1) || (NCB == 3), "invalid channel count");
-    char *fname = NULL;
     char *ext = (NCB == 1 ? "pgm" : "ppm");
-    asprintf(&fname, "%s.%s", outPrefix, ext);
+    char *fname = jsprintf("%s.%s", outPrefix, ext);
     bool_t isMask = FALSE;
     double gamma = 1.000;
     double bias = 0.000;

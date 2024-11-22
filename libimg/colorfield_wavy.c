@@ -5,7 +5,6 @@
 ** See the rights and conditions notice at the end of this file.
 */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <string.h>

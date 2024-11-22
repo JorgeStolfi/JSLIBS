@@ -1,7 +1,6 @@
 /* See pqueue.h */
-/* Last edited on 2023-03-18 11:15:49 by stolfi */
+/* Last edited on 2024-11-16 09:26:26 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
@@ -65,9 +64,8 @@ void pqueue_set_order(pqueue_t *Q, int32_t order)
     Q->order = (order < 0 ? -1 : +1);
     if (old != Q->order)
      { /* Negate all values and re-bubble all elements: */
-       int32_t n = Q->n;
-       int32_t p;
-       for (p = 0; p < n; p++)
+       pqueue_count_t n = Q->n;
+       for (pqueue_position_t p = 0; p < n; p++)
          { Q->val[p] = - Q->val[p];
            pqueue_bubble_up(Q->itm, Q->val, Q->pos, p);
          }
@@ -93,14 +91,14 @@ void pqueue_realloc(pqueue_t *Q, pqueue_count_t nmax, pqueue_item_t zlim)
     if (Q->nmax < nmax)
       { demand(nmax <= pqueue_NMAX, "to many items");
         assert(Q->nmax == 0);
-        Q->itm = (pqueue_item_t *)notnull(malloc(nmax*sizeof(pqueue_item_t)), "no mem"); 
-        Q->val = (pqueue_value_t *)notnull(malloc(nmax*sizeof(pqueue_value_t)), "no mem"); 
+        Q->itm = talloc(nmax, pqueue_item_t);
+        Q->val = talloc(nmax, pqueue_value_t);
         Q->nmax = nmax;
       }
     if (Q->zlim < zlim)
       { demand(zlim <= pqueue_ITEM_MAX+1, "item too big");
         assert(Q->zlim == 0);
-        Q->pos = (pqueue_position_t *)notnull(malloc(zlim*sizeof(pqueue_position_t)), "no mem");
+        Q->pos = talloc(zlim, pqueue_position_t);
         Q->zlim = zlim;
       }
   }
@@ -289,8 +287,7 @@ void pqueue_check(pqueue_t *Q)
     /* Validate {Q->n}: */
     /* assert(Q->n >= 0); */
     assert(Q->n <= Q->nmax); 
-    pqueue_position_t p;
-    for (p = 0; p < Q->n; p++)
+    for (pqueue_position_t p = 0; p < Q->n; p++)
       { /* Get item {z} in slot {p}: */
         pqueue_item_t z = Q->itm[p];
         /* Items must be in range {0..Q->zlim-1}: */
@@ -302,7 +299,7 @@ void pqueue_check(pqueue_t *Q)
         assert(k == p);
         /* Check heap invatiant: */
         if (p > 0)
-          { int32_t p = (k-1)/2; /* Parent of slot {k}. */
+          { pqueue_position_t p = (pqueue_position_t)((k-1)/2); /* Parent of slot {k}. */
             assert(Q->order*pqueue_dblcmp(Q->val[p], Q->val[p]) >= 0);
           }
       }

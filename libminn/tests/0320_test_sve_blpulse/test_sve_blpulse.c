@@ -1,5 +1,5 @@
 /* test_sve_blpulse --- test of {sve_minn.h} for bandlimited pulse design */
-/* Last edited on 2024-11-08 09:53:07 by stolfi */
+/* Last edited on 2024-11-08 20:25:42 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -131,12 +131,9 @@ int32_t main (int32_t argc, char **argv)
   
 void find_compact_pulse(int32_t ns)
   { 
-    /* Debugging printout: */
-    bool_t debug = FALSE;
-
     /* Output file names: */
     char *prefix = NULL; /* Prefix for output file names. */
-    asprintf(&prefix, "out/%03d", ns);
+    char *prefix = jsprintf("out/%03d", ns);
     
     /* Working storage for the goal function: */
     int32_t nf = 2*ns;   /* Number of terms in FFT of expanded pulse. */
@@ -157,39 +154,16 @@ void find_compact_pulse(int32_t ns)
         W[f] = (f <= fMaxOk ? 0 : 1);
       }
     
-    auto double F(int32_t n, double x[]); 
+    auto double sve_goal(int32_t n, double x[]); 
       /* The goal function for uptimization. */
       
-    double F(int32_t n, double x[])
-      { assert(n == ns);
-        /* Compute the pulse's power spectrum after padding to {2*n} samples: */
-        pulse_spectrum(ns, nf, x, in, ot, plan, P);
-        double Fx = pulse_badness(fMax, P, W);
-        return Fx;
-      }
-      
-    double Xprev[ns]; /* Guess in previous call of {OK} function. */
-    int32_t nok = 0;      /* Counts iterations (actually, calls to {OK}). */
+    double Xprev[ns]; /* Guess in previous call of {sve_OK} function. */
+    int32_t nok = 0;      /* Counts iterations (actually, calls to {sve_OK}). */
+    bool_t sve_debug = FALSE;
+    bool_t sve_debug_probes = FALSE;
     
-    auto bool_t OK(int32_t n, double x[], double Fx); 
+    auto bool_t sve_OK(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius); 
       /* Acceptance criterion function. */
-      
-    bool_t OK(int32_t n, double x[], double Fx)
-      { assert(n == ns);
-        fprintf(stderr, "iteration %d\n", nok);
-        if (nok > 0)
-          { double d = rn_dist(n, Xprev, x);
-            fprintf(stderr, "displacement = %16.10f\n", d);
-          }
-        if (debug)
-          { pulse_spectrum(ns, nf, x, in, ot, plan, P);
-            write_solution(NULL, "tmp", &F, ns, x, Fx, nf, fMax, P, W);
-          }
-        /* Save guess in {Xprev} for next call: */
-        rn_copy(ns, x, Xprev); 
-        nok++;
-        return FALSE;
-      }
 
     double x[ns];     /* Initial guess and final solution. */
     
@@ -204,8 +178,8 @@ void find_compact_pulse(int32_t ns)
     /* Print and write the initial guess: */
     fprintf(stderr, "initial guess:\n");
     pulse_spectrum(ns, nf, x, in, ot, plan, P);
-    double Fx = F(ns, x);
-    write_solution(prefix, "ini", &F, ns, x, Fx, nf, fMax, P, W);
+    double Fx = sve_goal(ns, x);
+    write_solution(prefix, "ini", &sve_goal, ns, x, Fx, nf, fMax, P, W);
     
     /* Optimize iteratively: */
     double *ctr = NULL;
@@ -219,22 +193,48 @@ void find_compact_pulse(int32_t ns)
     int32_t maxIters = 300;
     
     sve_minn_iterate
-      ( ns, &F, &OK, NULL, 
+      ( ns, &sve_goal, &sve_OK, NULL, 
         x, &Fx, dir, 
         ctr, dMax, dBox, rIni, rMin, rMax, 
-        minStep, maxIters, debug
+        minStep, maxIters, sve_debug, sve_debug_probes
       );
     
     /* Print and write final solution: */
     fprintf(stderr, "final solution:\n");
     pulse_spectrum(ns, nf, x, in, ot, plan, P);
-    write_solution(prefix, "fin", &F, ns, x, Fx, nf, fMax, P, W);
+    write_solution(prefix, "fin", &sve_goal, ns, x, Fx, nf, fMax, P, W);
+    return;
+      
+    double sve_goal(int32_t n, double x[])
+      { assert(n == ns);
+        /* Compute the pulse's power spectrum after padding to {2*n} samples: */
+        pulse_spectrum(ns, nf, x, in, ot, plan, P);
+        double Fx = pulse_badness(fMax, P, W);
+        return Fx;
+      }
+      
+    bool_t sve_OK(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius)
+      { assert(n == ns);
+        fprintf(stderr, "iteration %d\n", nok);
+        if (nok > 0)
+          { double d = rn_dist(n, Xprev, x);
+            fprintf(stderr, "displacement = %16.10f\n", d);
+          }
+        if (sve_debug)
+          { pulse_spectrum(ns, nf, x, in, ot, plan, P);
+            write_solution(NULL, "tmp", &sve_goal, ns, x, Fx, nf, fMax, P, W);
+          }
+        /* Save guess in {Xprev} for next call: */
+        rn_copy(ns, x, Xprev); 
+        nok++;
+        return FALSE;
+      }
   }
 
 void write_solution
   ( char *prefix,
     char *tag,
-    sve_goal_t *F,
+    sve_goal_t *sve_goal,
     int32_t ns,
     double x[],
     double Fx,
@@ -257,14 +257,14 @@ void write_solution
     fprintf(stderr, "  spillover = %+24.16e\n", S);
     fprintf(stderr, "\n");
     
-    double FxN = F(ns, x);
+    double FxN = sve_goal(ns, x);
     fprintf(stderr, "goal function = %+24.16e %+24.16e\n", Fx, FxN);
     demand(Fx == FxN, "inconsistent function value");
 
     if (prefix != NULL)
       { write_pulse(prefix, tag, ns, nf, x);
         write_spectrum(prefix, tag, fMax, P, W);
-        plot_spillover(prefix, tag, F, ns, x);
+        plot_spillover(prefix, tag, sve_goal, ns, x);
       }
   }
 
@@ -272,7 +272,7 @@ void write_pulse(char *prefix, char *tag, int32_t ns, int32_t nf, double x[])
   { char *fname = NULL;
     FILE *wr;
     if (prefix != NULL) 
-      { asprintf(&fname, "%s-%s-a.dat", prefix, tag);
+      { char *fname = jsprintf("%s-%s-a.dat", prefix, tag);
         wr = open_write(fname, TRUE);
       }
     else
@@ -290,7 +290,7 @@ void write_spectrum(char *prefix, char *tag, int32_t fMax, double P[], double W[
   { char *fname = NULL;
     FILE *wr;
     if (prefix != NULL) 
-      { asprintf(&fname, "%s-%s-p.dat", prefix, tag);
+      { char *fname = jsprintf("%s-%s-p.dat", prefix, tag);
         wr = open_write(fname, TRUE);
       }
     else
@@ -304,7 +304,7 @@ void write_spectrum(char *prefix, char *tag, int32_t fMax, double P[], double W[
 void plot_spillover
   ( char *prefix,
     char *tag,
-    sve_goal_t *F,
+    sve_goal_t *sve_goal,
     int32_t ns,
     double x[]
   )
@@ -319,9 +319,8 @@ void plot_spillover
     double rb = rn_dir(ns, vb, ub);
     /* Plot the energy as image: */
     double step = fmax(ra, rb)/30;
-    float_image_t *img = minn_plot_2D_float_image(ns, x, ua, ra, ub, rb, TRUE, step, F);
-    char *fname = NULL;
-    asprintf(&fname, "%s-%s-plt.fni", prefix, tag);
+    float_image_t *img = minn_plot_2D_float_image(ns, x, ua, ra, ub, rb, TRUE, step, sve_goal);
+    char *fname = jsprintf("%s-%s-plt.fni", prefix, tag);
     FILE *wr = open_write(fname, TRUE);
     float_image_write(wr, img);
     fclose(wr);

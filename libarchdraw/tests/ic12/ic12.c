@@ -163,7 +163,7 @@ adrw_point_vec_t adrw_ic12_define_points(void)
        
     void s(int32_t j, double dX, double dY, int32_t i)
       { char *lab = NULL;
-        asprintf(&lab, "P%03d", i);
+        char *lab = jsprintf("P%03d", i);
         adrw_append_point(lab, i, j, j, j, dX, dY, 0.0, &P, &np); 
       } 
     
@@ -501,10 +501,8 @@ void adrw_ic12_append_pillars(adrw_building_t *B, adrw_point_vec_t *P, adrw_unit
               { 
                 int32_t ctr = 160 + 100*wing + 20*side + pill;
                 int32_t npil = 26*wing + 13*side + pill;
-                char *lpil = NULL;
-                asprintf(&lpil, "P%02d", npil);
-                char *dpil = NULL;
-                asprintf(&dpil, "Pilar %02d", npil);
+                char *lpil = jsprintf("P%02d", npil);
+                char *dpil = jsprintf("Pilar %02d", npil);
                 ADDBOX
                   ( P, 0, lpil, dpil, adrw_ic_space_type_PIL,
                     ctr, 16, 20
@@ -568,8 +566,7 @@ void adrw_ic12_append_normal_office
   )
   {              
     int32_t noff = adrw_ic12_get_office_number(wing, side, slot); /* Office number. */
-    char *loff = NULL;
-    asprintf(&loff, "%02d", noff);
+    char *loff = jsprintf("%02d", noff);
     char *doff = descr[noff];
     /*  Decide office type {toff} and span {xspan,yspan}: */
     adrw_ic_space_type_t toff; /* Office type. */

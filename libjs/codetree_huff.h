@@ -1,10 +1,9 @@
 /* Huffman tree and Huffman decoding. */
-/* Last edited on 2023-02-19 00:37:36 by stolfi */
+/* Last edited on 2024-11-16 16:58:45 by stolfi */
 
 #ifndef codetree_huff_H
 #define codetree_huff_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 
@@ -16,7 +15,7 @@ typedef uint64_t codetree_huff_freq_t;
 #define codetree_huff_MAX_FREQ UINT64_MAX
   /* Maximum value of of a frequency count. */
 
-codetree_t *codetree_huff_build(codetree_value_t maxval, codetree_huff_freq_t freq[]);
+codetree_t *codetree_huff_build(codetree_data_value_t maxval, codetree_huff_freq_t freq[]);
   /* Builds the Huffman tree {T} for a set of values {V},
     based on the frequency counts {freq[0..maxval]}. Returns a pointer 
     to the root node.  

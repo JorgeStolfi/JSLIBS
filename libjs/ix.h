@@ -2,7 +2,7 @@
 #define indexing_H
 
 /* Multidimensional array indexing tools */
-/* Last edited on 2023-03-18 11:22:12 by stolfi */
+/* Last edited on 2024-11-16 12:11:20 by stolfi */
 
 #include <bool.h>
 #include <sign.h>
@@ -92,7 +92,8 @@ typedef int64_t ix_step_t;
     to allow for array flipping. */
 
 typedef uint64_t ix_pos_t; 
-  /* Type for element positions. */
+  /* Type for element positions.  It must be always in the range {0..N-1}
+    where {N} is the number of elements spanned by the original array. */
 
 #define ix_pos_NONE (UINT64_MAX)
   /* An {ix_pos_t} value that means "no such element". */
@@ -125,6 +126,11 @@ ix_pos_t ix_position_safe
     element {M[ix[0],..ix[d-1]}, computed with
     {ix_position(d,ix,bp,st)}. If it is invalid, returns
     {ix_pos_NONE}. */
+
+void ix_shift_pos(ix_pos_t *pos_P, int64_t incr);
+  /* Increments the position {*pos_P} by {incr}.
+    The {incr} may be positive or negative, but 
+    the result must be non-negative. */
 
 void ix_indices 
   ( ix_pos_t p, 
@@ -245,7 +251,7 @@ void ix_crop
     ix_size_t skip, 
     ix_size_t keep
   );
-  /* Crops the array along axis {i} to the index range {ini..fin}. 
+  /* Crops the array along axis {i} to the index range {skip..skip+keep-1}. 
   
     More precisely, sets {sz[i]} to {keep}, and modifies {*bp,st}
     so that {ixB[i] = ixA[i]+skip} and {ixB[k] = ixA[k]} for all {k\neq i}.

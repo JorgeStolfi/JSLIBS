@@ -1,7 +1,6 @@
 /* See ellipse_crs_args_parse.h */
-/* Last edited on 2021-06-09 19:48:45 by jstolfi */
+/* Last edited on 2024-11-20 08:53:26 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -11,6 +10,7 @@
 
 #include <r2.h>
 #include <affirm.h>
+#include <jsprintf.h>
 #include <argparser.h>
 #include <argparser_geo.h>
 
@@ -84,9 +84,8 @@ void ellipse_crs_args_adjust_print
     char *fmt
   )
   { /* Try to determine the natural width of {fmt}-printed values: */
-    char *tmp = NULL;
-    asprintf(&tmp, fmt, 0);
-    int32_t wd = (int32_t)strlen(tmp);
+    char *tmp = jsprintf(fmt, 0);
+    uint32_t wd = (uint32_t)strlen(tmp);
     free(tmp);
     
     fprintf(wr, "  center ");

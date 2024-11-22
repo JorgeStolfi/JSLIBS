@@ -1,10 +1,9 @@
 /* See wt_table_gaussian.h */
-/* Last edited on 2023-11-25 12:11:18 by stolfi */
+/* Last edited on 2024-11-16 10:26:43 by stolfi */
 
 #define wt_table_gaussian_C_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -19,10 +18,10 @@
 
 /* IMPLEMENTATIONS */
 
-double_vec_t wt_table_gaussian_make(int32_t n, double sigma, double maxLoss)
+double_vec_t wt_table_gaussian_make(uint32_t n, double sigma, double maxLoss)
   { if (n == 0)
       { /* Find {r} so that the omitted weight is at most {maxLoss}: */
-        int32_t r = 0;
+        uint32_t r = 0;
         while (wt_table_gaussian_loss(2*r + 1, sigma) > maxLoss) { r++; }
         assert(r > 0);
         n = 2*r + 1; 
@@ -33,17 +32,17 @@ double_vec_t wt_table_gaussian_make(int32_t n, double sigma, double maxLoss)
     return wt;
   }
   
-double wt_table_gaussian_loss(int32_t n, double sigma)
+double wt_table_gaussian_loss(uint32_t n, double sigma)
   { double r1 = 0.5*n, t1 = r1/sigma; 
     double ws = erfc(t1/M_SQRT2); 
     return ws;
   }
   
-void wt_table_gaussian_fill(int32_t n, double sigma, double wt[], int32_t *stride_P)
+void wt_table_gaussian_fill(uint32_t n, double sigma, double wt[], uint32_t *stride_P)
   { demand(n > 0, "invalid table length");
     demand(sigma >= 0, "invalid {sigma}");
-    int32_t stride;
-    int32_t r = n/2;
+    uint32_t stride;
+    uint32_t r = n/2;
     if ((sigma == 0) || (n <= 2))
       { for (int32_t k = 0; k < n; k++) { wt[k] = 0; }
         if ((n & 1) == 1)
@@ -67,7 +66,7 @@ void wt_table_gaussian_fill(int32_t n, double sigma, double wt[], int32_t *strid
     if (stride_P != NULL) { (*stride_P) = stride; }
   }
   
-double wt_table_gaussian_entry(int32_t n, int32_t k, double sigma)
+double wt_table_gaussian_entry(uint32_t n, uint32_t k, double sigma)
   { /* Integral of Gaussian within interval {k} of {n} intervals centered at origin: */
     double r0 = ((double)k) - 0.5*n;
     double r1 = r0 + 1.0; 

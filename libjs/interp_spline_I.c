@@ -1,10 +1,10 @@
-/* Last edited on 2013-10-26 00:09:20 by stolfilocal */
+/* Last edited on 2024-11-18 09:22:25 by stolfi */
 /* See {interp_spline_I.h}. */
 
 /* !!! Implement the other cases !!! */
 
-#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 
@@ -13,8 +13,9 @@
 
 #include <interp_spline_I.h>
 
-int interp_spline_I_compute_num_samples(int ord)
+uint32_t interp_spline_I_compute_num_samples(int32_t ord)
   {
+    demand(ord >= -1, "invalid {ord}");
     switch(ord)
       { 
         case -1:
@@ -32,8 +33,9 @@ int interp_spline_I_compute_num_samples(int ord)
       }
   }
  
-void interp_spline_I_get_weights(double z, int ord, int nw, double wt[])
+void interp_spline_I_get_weights(double z, int32_t ord, uint32_t nw, double wt[])
   {
+    demand(ord >= -1, "invalid {ord}");
     bool_t debug = FALSE;
     if (ord == -1)
       { /* Just replicate the nearest sample: */
@@ -46,7 +48,7 @@ void interp_spline_I_get_weights(double z, int ord, int nw, double wt[])
         z = z - 0.5*(nw - 1);
 
         /* Get the raw index of the nearest lower tap: */
-        int iz = (int)floor(z);
+        int32_t iz = (int32_t)floor(z);
 
         /* Get the fraction {fz} and its complement {gz}: */
         double fz = z - iz;
@@ -86,7 +88,7 @@ void interp_spline_I_get_weights(double z, int ord, int nw, double wt[])
           }
 
         if (debug)
-          { int k;
+          { int32_t k;
             for (k = 0; k < nw; k++) { fprintf(stderr, "  wt[%d] = %10.7f\n", k, wt[k]); }
             fprintf(stderr, "\n");
           }

@@ -1,4 +1,4 @@
-# Last edited on 2009-03-12 00:06:54 by stolfi
+# Last edited on 2024-11-18 06:08:10 by stolfi
 
 PROG := test_sort_speed
 
@@ -14,17 +14,12 @@ include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
  
 .PHONY:: do-test
 
-all: check
+all: clean check
 
 check:  do-test
 
 do-test: ${PROG}
 	time ${PROG}
 
-OUT_NAME := ${PROG}
-
-CMPS_FILE := ${OUT_NAME}-ncmp.tex
-TIME_FILE := ${OUT_NAME}-time.tex
-
 clean::
-	-/bin/rm -f ${OUT_NAME}-ncmp.tex ${OUT_NAME}-time.tex
+	-/bin/rm -f out/*.tex

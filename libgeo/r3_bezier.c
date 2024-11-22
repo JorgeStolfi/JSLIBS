@@ -1,7 +1,6 @@
 /* See r3_bezier.h */
 /* Last edited on 2023-10-01 19:22:30 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

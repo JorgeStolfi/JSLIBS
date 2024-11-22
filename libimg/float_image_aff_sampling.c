@@ -1,7 +1,6 @@
 /* See {float_image_aff_sampling.h}. */
 /* Last edited on 2023-11-25 18:19:23 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdint.h>
 #include <limits.h>

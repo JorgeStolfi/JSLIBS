@@ -1,4 +1,4 @@
-# Last edited on 2024-11-07 21:22:07 by stolfi
+# Last edited on 2024-11-21 02:18:18 by stolfi
 # Library tests to run, in priority order
 
 # + = OK.
@@ -32,8 +32,6 @@
 + libjs/tests/330_test_gauss_table
 + libjs/tests/340_test_wt_median
 + libjs/tests/410_test_enum_orbits
-+ libjs/tests/510_test_mst
-+ libjs/tests/520_test_opf
 + libjs/tests/530_test_codetree
 + libjs/tests/540_test_codetree_huff
 
@@ -41,31 +39,33 @@
 
 # libsexp ?
 
-+ libflt/tests/flttests
-+ libflt/tests/flttimes
-+ libflt/tests/ieeetests
-+ libflt/tests/testfptest
++ libflt/tests/0050_fp_ieee
++ libflt/tests/0100_fp
++ libflt/tests/0200_flt
++ libflt/tests/0300_flt_times
 
 + libgeo/tests/100_ellipse
++ libgeo/tests/110_rn
 + libgeo/tests/120_r2
 + libgeo/tests/130_r3
 + libgeo/tests/140_r4
 + libgeo/tests/160_r6
-+ libgeo/tests/190_rn
 + libgeo/tests/220_hr2
-+ libgeo/tests/223_hr2_pmap
-+ libgeo/tests/225_hr2_pmap_enc_dec
-+ libgeo/tests/230_hr3
-+ libgeo/tests/233_hr3_pmap
-+ libgeo/tests/320_i2
-+ libgeo/tests/330_i3
-+ libgeo/tests/420_hi2
-+ libgeo/tests/500_sym_eigen
-+ libgeo/tests/510_gauss_elim
-+ libgeo/tests/620_rf2
-+ libgeo/tests/630_rf3
-+ libgeo/tests/640_rf4
-+ libgeo/tests/690_rfn
+? libgeo/tests/223_hr2_pmap
+? libgeo/tests/225_hr2_pmap_enc_dec
+? libgeo/tests/230_hr3
+? libgeo/tests/233_hr3_pmap
+? libgeo/tests/320_i2
+? libgeo/tests/330_i3
+? libgeo/tests/420_hi2
+? libgeo/tests/500_sym_eigen
+? libgeo/tests/510_gauss_elim
+? libgeo/tests/610_rfn
+? libgeo/tests/620_rf2
+? libgeo/tests/630_rf3
+? libgeo/tests/640_rf4
+? libgeo/tests/710_test_mst
+? libgeo/tests/720_test_opf
 
 + libimg/tests/090_image_coords
 + libimg/tests/110_frgb_ops
@@ -142,13 +142,13 @@
 + libaa/tests/210_aatests
 + libaa/tests/310_aatimes
 
-+ libaacmp/tests/aa-compile_test
++ libaacmp/tests/0100_aa_compile
 
 # libaafuncs ?
 
 ! libaagraph/tests/fn1_graphs
 
-+ libzf/tests/0100_zftest
++ libzf/tests/0100_zf
 + libzf/tests/0200_fn1_zeros
 + libzf/tests/0300_fn2_zeros
 

@@ -56,8 +56,7 @@ void do_test(int32_t NS, int32_t NR, int32_t NB, int8_t debug)
     tosl_mesh_check(mesh);
     
     fprintf(stderr, "writing as OBJ file...\n");
-    char *fname_obj= NULL;
-    asprintf(&fname_obj, "out/test_ns%05d_nr%05d_nb%05d.obj", NS, NR, NB);
+    char *fname_obj = jsprintf("out/test_ns%05d_nr%05d_nb%05d.obj", NS, NR, NB);
     FILE *wr_obj = fopen(fname_obj, "w");
     assert(wr_obj != NULL);
     tosl_mesh_obj_write(wr_obj, mesh);

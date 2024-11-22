@@ -1,7 +1,6 @@
 /* See {hr2_test_tools.h}. */
-/* Last edited on 2024-11-04 06:36:53 by stolfi */
+/* Last edited on 2024-11-20 08:25:49 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -27,14 +26,14 @@
 #define NC 2
   /* Number of Cartesian coordinates in a point. */
 
-void hr2_test_do_check_eq(double x, double y, char *msg, char *file, int32_t lnum, const char *func)
+void hr2_test_tools_do_check_eq(double x, double y, char *msg, char *file, int32_t lnum, const char *func)
   { if (x != y)
       { fprintf(stderr, " ** %+20.16e %+20.16e differ\n", x, y);
         programerror(msg, file, lnum, func);
       }
   }
 
-void hr2_test_do_check_eps(double x, double y, double eps, char *msg, char *file, int32_t lnum, const char *func)
+void hr2_test_tools_do_check_eps(double x, double y, double eps, char *msg, char *file, int32_t lnum, const char *func)
   { double diff = fabs(x - y);
     if (diff > eps)
       { fprintf(stderr, " ** %+20.16e %+20.16e", x, y);
@@ -43,7 +42,7 @@ void hr2_test_do_check_eps(double x, double y, double eps, char *msg, char *file
       }
   }
 
-void hr2_test_do_check_hr2_point_eps
+void hr2_test_tools_do_check_hr2_point_eps
   ( char *name,
     hr2_point_t *q_cmp, 
     hr2_point_t *q_exp, 
@@ -60,15 +59,15 @@ void hr2_test_do_check_hr2_point_eps
         if (name != NULL) { fprintf(stderr, "(%s) ", name); }
         fprintf(stderr, "\n");
 
-        hr2_test_show_hr2_point("was", q_cmp);
-        hr2_test_show_hr2_point("should be", q_exp);
+        hr2_test_tools_show_hr2_point("was", q_cmp);
+        hr2_test_tools_show_hr2_point("should be", q_exp);
         fprintf(stderr, " diff = %20.16e  max = %20.16e\n", diff, eps);
 
         programerror(msg, file, lnum, func);
       }
   }
         
-void hr2_test_show_hr2_point(char *tag, hr2_point_t *p)
+void hr2_test_tools_show_hr2_point(char *tag, hr2_point_t *p)
   { 
     if (p != NULL)
       { /* Normalize the {hr2_point_t} to unit {\RR^3} norm: */
@@ -84,7 +83,7 @@ void hr2_test_show_hr2_point(char *tag, hr2_point_t *p)
       }
   }    
 
-void hr2_test_show_hr2_line(char *tag, hr2_line_t *A)
+void hr2_test_tools_show_hr2_line(char *tag, hr2_line_t *A)
   { 
     if (A != NULL)
       { /* Normalize the {hr2_point_t} to unit {\RR^3} norm: */
@@ -96,7 +95,7 @@ void hr2_test_show_hr2_line(char *tag, hr2_line_t *A)
       }
   }    
 
-void hr2_test_do_check_num_eps
+void hr2_test_tools_do_check_num_eps
   ( char *name,
     double x,
     double y,
@@ -114,7 +113,7 @@ void hr2_test_do_check_num_eps
       }
   }
 
-void hr2_test_do_check_r2_eps
+void hr2_test_tools_do_check_r2_eps
   ( char *name, 
     r2_t *b_cmp, 
     r2_t *b_exp, 
@@ -136,7 +135,7 @@ void hr2_test_do_check_r2_eps
       }
   }
 
-void hr2_test_do_check_r3_norm_eps
+void hr2_test_tools_do_check_r3_norm_eps
   ( char *name, 
     r3_t *b_cmp, 
     r3_t *b_exp,
@@ -160,4 +159,3 @@ void hr2_test_do_check_r3_norm_eps
         programerror(msg, file, lnum, func);
       }
   }
-

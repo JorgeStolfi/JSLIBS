@@ -1,5 +1,5 @@
 /* See {minn_quad.h}. */
-/* Last edited on 2024-11-08 09:54:05 by stolfi */
+/* Last edited on 2024-11-08 20:26:48 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -49,12 +49,15 @@ void minn_quad
         double rMin = tol;         /* Minimum probe simplex radius. */
         double rMax = 0.70*dMax;   /* Maximum probe simplex radius. */
         double minStep = 0.25*tol; /* Stop when {x} moves less than this. */
+        bool_t sve_debug = debug;
+        bool_t sve_debug_probes = FALSE; 
+        
         sve_minn_iterate
           ( n, F, NULL, NULL,
             v, &Fv, dir,
             ctr, dMax, box, rIni, rMin, rMax, minStep,
             maxIters,
-            debug
+            sve_debug, sve_debug_probes
           );
 
         (*Fval_P) = Fv;

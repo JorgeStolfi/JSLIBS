@@ -1,5 +1,5 @@
 /* See {hr2_pmap_special_opt.h}. */
-/* Last edited on 2024-11-08 10:07:12 by stolfi */
+/* Last edited on 2024-11-08 20:43:28 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -85,13 +85,16 @@ void hr2_pmap_special_opt_quadratic
         /* Get the center of the search region: */
         double yctr[n];
         hr2_pmap_encode(M, type, n, yctr);
+        
+        bool_t sve_debug = debug;
+        bool_t sve_debug_probes = FALSE; 
             
         auto double sve_goal(int32_t n1, double z1[]);
           /* Converts the optimization variables {z1[0..n-1]} into a
             projective map, using {yctr} and {yrad}, and stores it into
             {*M}. Then computes {f2(M)}. Expects {n1 == n}. */
         
-        auto bool_t sve_ok(int32_t n1, double z1[], double f2z);
+        auto bool_t sve_ok(int32_t iter, int32_t n1, double z1[], double f2z, double dist, double step, double radius);
           /* Returns {TRUE} iff the matrix defined by the optimization
             variables {z1[0..n-1]} is good enough. Specifically, converts
             the optimization variables {z1[0..n-1]} into a projective
@@ -99,21 +102,20 @@ void hr2_pmap_special_opt_quadratic
             predicate. Expects {OK != NULL} and {n1 == n}. */
         
         auto double sve_proj(int32_t n1, double z1[], double f2z);
-          /* Normalizes the optimization variables {z1[0..n-1]},
-            in case there are multiple vectors {z} that produce
-            equivalent maps {M}.  Expects {n1 == n}.
+          /* Normalizes the optimization variables {z1[0..n-1]}, in case
+            there are multiple vectors {z} that produce equivalent maps
+            {M}. Expects {n1 == n}.
             
-            Specifically, converting them to an encoding vector 
-            {y[0..n-1]}, using {yctr} and {yrad},
-            performing an decode and encode on {y},
-            and converting the resulting {y} back to {z1[0..n-1]}.
-            For encodings that include angles, for example,
-            this process reduces those angles to the 
-            range {(-\pi _ +\pi]}.  
+            Specifically, converting them to an encoding vector
+            {y[0..n-1]}, using {yctr} and {yrad}, performing an decode
+            and encode on {y}, and converting the resulting {y} back to
+            {z1[0..n-1]}. For encodings that include angles, for
+            example, this process reduces those angles to the range
+            {(-\pi _ +\pi]}.
             
-            The procedure then recomputes and returns
-            {sve_goal(z1)}, just in case that normalization
-            changed it (e.g. because of roundoff errors). */
+            The procedure then recomputes and returns {sve_goal(z1)},
+            just in case that normalization changed it (e.g. because of
+            roundoff errors). */
         
         /* The optimization variables {(0...0)} mean the initial map {M}: */
         double z[n];
@@ -121,16 +123,17 @@ void hr2_pmap_special_opt_quadratic
 
         sign_t dir = -1; /* Look for minimum. */
         double *ctr = NULL; /* Domain of {z} is centered at origin. */
-        double dMax = maxMod * sqrt(n);
+        double dMax = 1.0;
         bool_t dBox = FALSE;
         double rIni = 0.5*dMax;
         double rMin = 0.0001;
         double rMax = 2.0*dMax;
         double minStep = 0.01*rMin;  /* Min {z} change between iterations. */
-
+        
         if (verbose) 
-          { fprintf(stderr, "  max matrix element change = %13.6f\n", maxMod);
-            fprintf(stderr, "  estimated distance from optimum = %13.6f\n", dMax);
+          { fprintf(stderr, "  encoding center and radius:\n");
+            for (int32_t k = 0; k < n; k++) { fprintf(stderr, "    %d %13.6f %13.6f\n", k, yctr[k], yrad[k]); }
+            fprintf(stderr, "  estimated {z} distance from optimum = %13.6f\n", dMax);
             fprintf(stderr, "  probe radius = %13.6f [ %13.6f _ %13.6f ]\n", rIni, rMin, rMax);
           }
 
@@ -138,7 +141,7 @@ void hr2_pmap_special_opt_quadratic
           ( n, &sve_goal, (OK == NULL ? NULL : &sve_ok), &sve_proj,
             z, &f2z, dir, 
             ctr, dMax, dBox, rIni, rMin, rMax, 
-            minStep, maxIter, debug
+            minStep, maxIter, sve_debug, sve_debug_probes
           );
 
         /* Ensure that the optimum {z} is reflected in {M,f2M): */
@@ -149,11 +152,11 @@ void hr2_pmap_special_opt_quadratic
 
         double sve_goal(int32_t n1, double z1[])
           { assert(n1 == n);
-            double Q2 = hr2_pmap_special_opt_eval_encoded(n, z1, type, sgn, M, f2);
+            double Q2 = hr2_pmap_special_opt_eval_encoded(n, z1, yctr, yrad, type, sgn, M, f2);
             return Q2;
           }
           
-        bool_t sve_ok(int32_t n1, double z1[], double f2z)
+        bool_t sve_ok(int32_t iter, int32_t n1, double z1[], double f2z, double dist, double step, double radius)
           { assert(OK != NULL);
             assert(n1 == n);
             double y[n];
@@ -188,6 +191,8 @@ void hr2_pmap_special_opt_quadratic
 double hr2_pmap_special_opt_eval_encoded
   ( int32_t n,
     double z[],
+    double yctr[],
+    double yrad[],
     hr2_pmap_type_t type,
     sign_t sgn, 
     hr2_pmap_t *M,
@@ -211,11 +216,16 @@ void hr2_pmap_special_opt_1D_plot
     sign_t sgn,
     hr2_pmap_opt_func_t *f2,
     double yrad[],
+    double urad,
     int32_t nu,
     int32_t ns
   )
   {
     demand(type != hr2_pmap_type_IDENTITY, "cannot vary maps of {type} indentity");
+    
+    /* Get the number of optimization variables {n} */
+    int32_t n = hr2_pmap_encode_num_parameters(type);
+    assert (n <= 9);
     
     double yctr[n];
     hr2_pmap_encode(M, type, n, yctr);
@@ -226,19 +236,16 @@ void hr2_pmap_special_opt_1D_plot
       /* Converts the optimization variables {z[0..n-1]} to the map
         {*N}, then computes {f2(N)}. Expects {n1 == n}. */
 
-    /* Get the number of optimization variables {n} */
-    int32_t n = hr2_pmap_encode_num_parameters(type);
-    assert (n <= 9);
+    
     double z[n];
-    hr2_pmap_encode(M, type, n, z);
+    rn_zero(n, z);
     
     /* Choose the plot directions: */
     double U[nu*n]; /* The rows are the directions. */
     rmxn_throw_directions(nu, n, U);
 
     /* Plot the goal function along the directions: */
-    char *fname = NULL;
-    asprintf(&fname, "%s-%s-%s-1D-plot.txt", outPrefix, tag, stage);
+    char *fname = jsprintf("%s-%s-%s-1D-plot.txt", outPrefix, tag, stage);
     FILE *wr = open_write(fname, TRUE);
     double step = urad/ns;
     for (int32_t ku = 0; ku < nu; ku++)
@@ -248,9 +255,9 @@ void hr2_pmap_special_opt_1D_plot
     fclose(wr);
     free(fname);
 
-    double sve_goal(int32_t n1, double z[])
+    double sve_goal(int32_t n1, double z1[])
       { assert(n1 == n);
-        double Q2 = hr2_pmap_special_opt_eval_encoded(n, z, type, sgn, &N, f2);
+        double Q2 = hr2_pmap_special_opt_eval_encoded(n1, z1, yctr, yrad, type, sgn, &N, f2);
         return Q2;
       }
   }

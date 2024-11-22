@@ -1,5 +1,5 @@
 /* r4x4.h --- 4x4 matrices and operations on them */
-/* Last edited on 2024-08-30 17:56:32 by stolfi */
+/* Last edited on 2024-11-20 13:00:10 by stolfi */
 
 #ifndef r4x4_H
 #define r4x4_H
@@ -7,7 +7,9 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
+
 #include <r4.h>
+#include <sign.h>
 
 typedef struct r4x4_t { double c[4][4]; } r4x4_t;
 
@@ -19,15 +21,22 @@ void r4x4_zero(r4x4_t *M);
 void r4x4_ident(r4x4_t *M);
   /* Stores in {M} the identity matrix. */
 
+void r4x4_throw(r4x4_t *M, sign_t sgn);
+  /* Fills {M} with random elements in the range {[-1 _ +1]}.
+    The {sgn} must be {-1}, 0, or {+1}. If it is not zero,
+    the matrix will have a nonzero determinant of that sign.
+    If {sgn} is zero, the determinant may have any sign,
+    including zero. */
+
 void r4x4_transp(r4x4_t *A, r4x4_t *M);
   /* Sets {M} to the transpose {A^t} of matrix {A} */
 
-void r4x4_get_row(r4x4_t *A, int32_t i, r4_t *x);
-void r4x4_set_row(r4x4_t *A, int32_t i, r4_t *x);
+void r4x4_get_row(r4x4_t *A, uint32_t i, r4_t *x);
+void r4x4_set_row(r4x4_t *A, uint32_t i, r4_t *x);
   /* These two procedures copy row {i} of matrix {A} to and from vector {x}, respectively. */
 
-void r4x4_get_col(r4x4_t *A, int32_t j, r4_t *x);
-void r4x4_set_col(r4x4_t *A, int32_t j, r4_t *x);
+void r4x4_get_col(r4x4_t *A, uint32_t j, r4_t *x);
+void r4x4_set_col(r4x4_t *A, uint32_t j, r4_t *x);
   /* These two procedures copy column {j} of matrix {A} to and from vector {x}, respectively. */
 
 void r4x4_add(r4x4_t *A, r4x4_t *B, r4x4_t *M);

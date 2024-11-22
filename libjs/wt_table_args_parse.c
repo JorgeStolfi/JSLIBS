@@ -1,10 +1,9 @@
 /* See wt_table_args_parse.h */
-/* Last edited on 2023-11-25 18:59:22 by stolfi */
+/* Last edited on 2024-11-16 10:24:40 by stolfi */
 
 #define wt_table_args_parse_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -33,7 +32,7 @@ double_vec_t wt_table_args_parse_weights(argparser_t *pp, bool_t unitNorm)
   { /* Allocate the weight vector, with size unknown: */
     double_vec_t w = double_vec_new(50);
     /* Parse the follwoing numeric arguments, save them in {w[0..nw-1]}: */
-    int32_t nw = 0;
+    uint32_t nw = 0;
     while (argparser_next_is_number(pp))
       { double wt = argparser_get_next_double(pp, -DBL_MAX, +DBL_MAX);
         double_vec_expand(&w, nw);

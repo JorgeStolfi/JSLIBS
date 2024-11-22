@@ -1,7 +1,6 @@
 /* See float_image_average.h */
 /* Last edited on 2023-02-08 00:16:07 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <limits.h>
 #include <float.h>
 #include <assert.h>

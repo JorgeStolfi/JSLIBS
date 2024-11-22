@@ -1,4 +1,4 @@
-/* Last edited on 2023-11-25 17:20:52 by stolfi */
+/* Last edited on 2024-11-19 22:19:34 by stolfi */
 
 void test_basic(int32_t nx, int32_t nw_max);
   /* Tests the correctness with {nx} elements and up to {nw_max}
@@ -86,13 +86,13 @@ void twtm_text_running_median()
         /* Update the index set: */
         if (verbose) { fprintf(stderr, "  wt_median_index_set_update ...\n"); }
         int32_t np = wt_median_index_set_update(nx, ix, nw, nk, kx);
-        if (verbose  && (nw <= 15)) { twtm_prkx(nw, kx, np); }
+        if (verbose  && (nw <= 15)) { twtm_prkx("updated", nw, kx, np); }
         nk = nw;
         
         /* Sort the index set: */
         if (verbose) { fprintf(stderr, "  wt_median_index_set_sort ...\n"); }
         wt_median_index_set_sort(nx, x, nw, kx, np);
-        if (verbose  && (nw <= 15)) { twtm_prkx(nw, kx, nw); }
+        if (verbose  && (nw <= 15)) { twtm_prkx("sorted", nw, kx, UINT32_MAX); }
         
         /* Extract and condense the samples and weights: */
         if (verbose) { fprintf(stderr, "  wt_median_gather_samples ...\n"); }

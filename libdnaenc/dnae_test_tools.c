@@ -123,9 +123,8 @@ void dnae_test_tools_seq_multi_write_and_plot_named
     int32_t level;
     for (level = 0; level <= maxLevel; level++)
       { char *titlei = NULL; 
-        asprintf(&titlei, "%s level %02d", title, level);
-        char *tagi = NULL; 
-        asprintf(&tagi, "%s-%02d", tag, level);
+        char *titlei = jsprintf("%s level %02d", title, level);
+        char *tagi = jsprintf("%s-%02d", tag, level);
         dnae_test_tools_seq_write_and_plot_named
           ( &(seq[level]), titlei, name, tagi, 
             plot, hSize, vSize, fontSize, maxXLabChars
@@ -181,8 +180,7 @@ void dnae_test_tools_make_seq_pair
     /* Generate pairing from rungs: */
     msm_pairing_t *pr = msm_pairing_from_rung_vec(&gv);
     /* Generate comment: */
-    char *cmt = NULL;
-    asprintf(&cmt, "mutated mp = %8.6f dp = %8.6f\n", mutProb, delProb);
+    char *cmt = jsprintf("mutated mp = %8.6f dp = %8.6f\n", mutProb, delProb);
     (*xP) = dnae_seq_from_nucleic_string(xid, xtag, FALSE, cmt, xdna);
     (*yP) = dnae_seq_from_nucleic_string(yid, ytag, FALSE, cmt, ydna);
     (*prP) = pr;
@@ -195,8 +193,7 @@ void dnae_test_tools_make_seq_pair
 
 void dnae_test_tools_write_generated_sequence(char *outName, char *b, dnae_seq_t *s)
   { /* Write sequence to disk: */
-    char *fileTag = NULL;
-    asprintf(&fileTag, "-%s", s->sd.name);
+    char *fileTag = jsprintf("-%s", s->sd.name);
     dnae_nucleic_string_write_named(outName, fileTag, ".bas", b, s->cmt);
     dnae_seq_write_named(outName, fileTag, ".egs", s);
     free(fileTag);

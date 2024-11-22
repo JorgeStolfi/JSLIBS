@@ -1,7 +1,6 @@
 /* See r3x3.h. */
-/* Last edited on 2024-11-07 23:50:05 by stolfi */
+/* Last edited on 2024-11-20 12:58:26 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -12,6 +11,7 @@
 #include <affirm.h>
 #include <rmxn.h>
 #include <sign.h>
+#include <jsrandom.h>
 
 #include <r3x3.h>
 
@@ -29,22 +29,34 @@ void r3x3_ident(r3x3_t *M)
         { M->c[i][j] = (i == j ? 1.0 : 0.0); }
   }
 
-void r3x3_throw(r3x3_t *A, sign_t sgn)
+void r3x3_throw(r3x3_t *M, sign_t sgn)
   { demand((sgn >= -1) && (sgn <= +1), "invalid {sgn}");
     while (TRUE)
       { for (int32_t i = 0; i < N; i++)
           { for (int32_t j = 0; j < N; j++) 
-              { A->c[i][j] += 2*drand48() - 1; }
+             { M->c[i][j] = 2*drandom() - 1; }
           }
         if (sgn == 0) { break; }
-        double det = r3x3_det(A);
+        double det = r3x3_det(M);
         if (det == 0) { continue; }
         if (det*sgn < 0) 
           { /* Negate first row: */
-            for (int32_t j = 0; j < N; j++) { A->c[0][j] = - A->c[0][j]; }
+            for (int32_t j = 0; j < N; j++) { M->c[0][j] = - M->c[0][j]; }
           }
         /* At this point, {sgn*det} must be positive: */
         break;
+      }
+  }
+
+void r3x3_throw_rotation(r3x3_t *M)
+  { r3_t u; r3_throw_dir(&u); 
+    r3_t v, w; r3_throw_ortho_pair(&u, &v, &w);
+    double wmag = r3_dir(&w, &w);
+    assert(fabs(wmag - 1) < 1.0e-14);
+    for (int32_t j = 0; j < N; j++)
+      { M->c[0][j] = u.c[j];
+        M->c[1][j] = v.c[j];
+        M->c[2][j] = w.c[j];
       }
   }
 
@@ -61,7 +73,7 @@ void r3x3_transp(r3x3_t *A, r3x3_t *M)
     a = A->c[1][2]; b = A->c[2][1]; M->c[1][2] = b; M->c[2][1] = a;
   }
 
-void r3x3_get_row(r3x3_t *A, int32_t i, r3_t *x)
+void r3x3_get_row(r3x3_t *A, uint32_t i, r3_t *x)
   { assert((i >= 0) && (i < N));
     double *v = &(A->c[i][0]);
     x->c[0] = v[0];
@@ -69,7 +81,7 @@ void r3x3_get_row(r3x3_t *A, int32_t i, r3_t *x)
     x->c[2] = v[2];
   }
   
-void r3x3_set_row(r3x3_t *A, int32_t i, r3_t *x)
+void r3x3_set_row(r3x3_t *A, uint32_t i, r3_t *x)
   { assert((i >= 0) && (i < N));
     double *v = &(A->c[i][0]);
     v[0] = x->c[0];
@@ -77,14 +89,14 @@ void r3x3_set_row(r3x3_t *A, int32_t i, r3_t *x)
     v[2] = x->c[2];
   }
 
-void r3x3_get_col(r3x3_t *A, int32_t j, r3_t *x)
+void r3x3_get_col(r3x3_t *A, uint32_t j, r3_t *x)
   { assert((j >= 0) && (j < N));
     x->c[0] = A->c[0][j];
     x->c[1] = A->c[1][j];
     x->c[2] = A->c[2][j];
   }
   
-void r3x3_set_col(r3x3_t *A, int32_t j, r3_t *x)
+void r3x3_set_col(r3x3_t *A, uint32_t j, r3_t *x)
   { assert((j >= 0) && (j < N));
     A->c[0][j] = x->c[0];
     A->c[1][j] = x->c[1];
@@ -363,10 +375,12 @@ void r3x3_diff_sqr(r3x3_t *A, r3x3_t *B, r3x3_t *R, double *dabs2P, double *drel
     if (drel2P != NULL) { (*drel2P) = drel2; }
   }
 
-bool_t r3x3_is_unif_scaling(r3x3_t *M, double s)
+bool_t r3x3_is_unif_scaling(r3x3_t *M, double s, double tol)
   { for (int32_t i = 0; i < N; i++)
       for (int32_t j = 0; j < N; j++)
-        { if (M->c[i][j] != (i == j ? s : 0.0)) { return FALSE; } }
+        { double Sij = (i == j ? s : 0.0);
+          if (fabs(M->c[i][j] - Sij) > tol) { return FALSE; }
+        }
     return TRUE;
   }
 

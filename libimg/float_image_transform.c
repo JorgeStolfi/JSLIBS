@@ -1,7 +1,6 @@
 /* See {float_image_transform.h}. */
 /* Last edited on 2024-08-31 06:50:46 by stolfi */
 
-#define _GNU_SOURCE
 #include <assert.h>
 #include <limits.h>
 #include <string.h>

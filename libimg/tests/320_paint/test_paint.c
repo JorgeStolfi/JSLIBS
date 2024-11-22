@@ -47,7 +47,6 @@
 #define PROG_INFO_OPTS \
   "  None."
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -169,8 +168,7 @@ int32_t main(int32_t argc, char **argv)
     for (m = 0; m <= 3; m++)
       { /* Generate the test image {A} with antialiasing {m}: */
         float_image_t *A = fitp_make_test_image(nx, ny, m, o);
-        char *filename = NULL;
-        asprintf(&filename, "%s-%02d", outPrefix, m);
+        char *filename = jsprintf("%s-%02d", outPrefix, m);
         int32_t c;
         for (c = 0; c < 3; c++) 
           { float_image_apply_gamma(A, c, BT_GAMMA, BT_BIAS); }
@@ -434,8 +432,7 @@ void test_paint_rectangle
 
 void fitp_write_image(char *name, float_image_t *A)
   { char *suff = (A->sz[0] == 1 ? ".pgm" : ".ppm"); 
-    char *fname = NULL;
-    asprintf(&fname, "%s%s", name, suff);
+    char *fname = jsprintf("%s%s", name, suff);
     FILE *wr = open_write(fname, TRUE);
     int32_t chns = (int32_t)A->sz[0];
     bool_t yup = TRUE, verbose = TRUE;

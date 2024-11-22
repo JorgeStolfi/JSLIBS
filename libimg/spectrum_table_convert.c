@@ -1,7 +1,6 @@
 /* See {spectrum_table_convert.h} */
 /* Last edited on 2013-10-21 00:23:52 by stolfilocal */ 
 
-#define _GNU_SOURCE
 #include <limits.h>
 #include <float.h>
 #include <assert.h>

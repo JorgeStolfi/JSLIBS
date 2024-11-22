@@ -1,7 +1,6 @@
 /* See {frgb_path.h}. */
 /* Last edited on 2023-03-07 17:19:01 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <assert.h>
 #include <math.h>

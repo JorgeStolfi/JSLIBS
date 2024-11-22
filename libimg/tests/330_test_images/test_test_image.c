@@ -8,7 +8,6 @@
 #define test_test_image_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -75,8 +74,7 @@ void do_test_gen(int32_t NC, int32_t NX, int32_t NY, float_image_test_generator_
 
 void write_color_image(float_image_t *img, char *outPrefix, int32_t NC, int32_t NX, int32_t NY, char *funcName)
   {
-    char *fname = NULL;
-    asprintf(&fname, "%s-%04dx%04d-%d-%s.png", outPrefix, NX, NY, NC, funcName);
+    char *fname = jsprintf("%s-%04dx%04d-%d-%s.png", outPrefix, NX, NY, NC, funcName);
     double gammaEnc = 1.000;
     double bias = 0.000;
     bool_t verbose = TRUE;

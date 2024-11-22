@@ -1,5 +1,5 @@
 /* fget_geo.h -- extends fget.h for geometric args. */
-/* Last edited on 2021-06-09 20:28:18 by jstolfi */
+/* Last edited on 2024-11-20 08:51:41 by stolfi */
 
 #ifndef fget_geo_H
 #define fget_geo_H
@@ -27,7 +27,7 @@ r6_t fget_r6(FILE *rd);
     skip over line breaks, so all numbers must be on the current line
     of {rd}. */
 
-void fget_rn(FILE *rd, double p[], int32_t n);
+void fget_rn(FILE *rd, double p[], uint32_t n);
   /* Reads from {rd} (with {fget_double}) the next {n} real numbers,
     and stores them in {p[0.n-1]}. Does not skip over line breaks, so
     all numbers must be on the current line {rd}. */

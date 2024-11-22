@@ -43,8 +43,7 @@
 
 FILE* multifok_test_open_text_file(char *outPrefix, char *tag)
   { 
-    char *fname = NULL;
-    asprintf(&fname, "%s%s.txt", outPrefix, tag);
+    char *fname = jsprintf("%s%s.txt", outPrefix, tag);
     FILE *wr = open_write(fname, TRUE);
     free(fname);
     return wr;

@@ -1,5 +1,5 @@
 /* r3x3.h --- 3x3 matrices and operations on them */
-/* Last edited on 2024-11-07 23:49:32 by stolfi */
+/* Last edited on 2024-11-20 12:58:38 by stolfi */
 
 #ifndef r3x3_H
 #define r3x3_H
@@ -21,22 +21,32 @@ void r3x3_zero(r3x3_t *M);
 void r3x3_ident(r3x3_t *M);
   /* Stores in {M} the identity matrix. */
 
-void r3x3_throw(r3x3_t *A, sign_t sgn);
-  /* Fills {A} with random elements in the range {[-1 _ +1]}.
+void r3x3_throw(r3x3_t *M, sign_t sgn);
+  /* Fills {M} with random elements in the range {[-1 _ +1]}.
     The {sgn} must be {-1}, 0, or {+1}. If it is not zero,
     the matrix will have a nonzero determinant of that sign.
     If {sgn} is zero, the determinant may have any sign,
     including zero. */
 
+void r3x3_throw_rotation(r3x3_t *M);
+  /* Fills {M} with a random orthonormal matrix with 
+    positive determinant ({+1} apart from roundoff errors).
+
+    Either pre- or post- multiplication of a 3-vector by the matrix will
+    perform a rotation of {\RR^3} by a random angle about some random
+    axis through the origin. The identity matrix is a (highly unlikely)
+    special case, where the angle is zero and the axis is
+    indeterminate. */
+
 void r3x3_transp(r3x3_t *A, r3x3_t *M);
   /* Sets {M} to the transpose {A^t} of matrix {A}. */
 
-void r3x3_get_row(r3x3_t *A, int32_t i, r3_t *x);
-void r3x3_set_row(r3x3_t *A, int32_t i, r3_t *x);
+void r3x3_get_row(r3x3_t *A, uint32_t i, r3_t *x);
+void r3x3_set_row(r3x3_t *A, uint32_t i, r3_t *x);
   /* These two procedures copy row {i} of matrix {A} to and from vector {x}, respectively. */
 
-void r3x3_get_col(r3x3_t *A, int32_t j, r3_t *x);
-void r3x3_set_col(r3x3_t *A, int32_t j, r3_t *x);
+void r3x3_get_col(r3x3_t *A, uint32_t j, r3_t *x);
+void r3x3_set_col(r3x3_t *A, uint32_t j, r3_t *x);
   /* These two procedures copy column {j} of matrix {A} to and from vector {x}, respectively. */
 
 void r3x3_map_row(r3_t *x, r3x3_t *A, r3_t *r);
@@ -115,9 +125,9 @@ void r3x3_diff_sqr(r3x3_t *A, r3x3_t *B, r3x3_t *R, double *dabs2P, double *drel
     where {Ae[s],Be[s],Re[s]} are all corresponding elements of
     {*A,*B,*C}. excluding those where {Re[s]} is zero. */
 
-bool_t r3x3_is_unif_scaling(r3x3_t *M, double s);
+bool_t r3x3_is_unif_scaling(r3x3_t *M, double s, double tol);
   /* TRUE iff {M} is a diagonal matrix with all diagonal
-    elements equal to {s}. */
+    elements equal to {s}, apart from absolute errors of at most tol. */
 
 void r3x3_from_rows(r3_t *a, r3_t *b, r3_t *c, r3x3_t *M);
   /* Sets {M} to the matrix whose rows are the vectors {a,b,c}. */

@@ -1,7 +1,6 @@
 /* See ellipse_aligned.h */
-/* Last edited on 2021-06-09 19:48:23 by jstolfi */
+/* Last edited on 2024-11-20 08:49:43 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
@@ -291,36 +290,36 @@ double ellipse_aligned_compute_t(double A, double B)
     double t = 1.0;
     double Bp = B + 1;
     double Bm = B - 1;
-    int32_t nIts = 0;  /* Counts iterations. */
-    if (debug) { Pr(Er, "  t[%d] = %13.8f\n", nIts, t); }
+    uint32_t iter = 0;  /* Counts iterations. */
+    if (debug) { Pr(Er, "  t[%d] = %13.8f\n", iter, t); }
     while (TRUE)
       { /* Compute {P(t)}: */
         double t2 = t*t;
         double Pt = A*(1+t2)*(1-t2) - 2*t*(Bp*t2 - Bm);
-        if (debug) { Pr(Er, "  P[%d] = %13.8f\n", nIts, Pt); }
+        if (debug) { Pr(Er, "  P[%d] = %13.8f\n", iter, Pt); }
         if (Pt >= 0) { /* We must have reached or passed the root: */ break; }
         
         /* Compute {P'(t)}: */
         double Dt = -2*((2*A*t + 3*Bp)*t2 - Bm);
-        if (debug) { Pr(Er, "  D[%d] = %13.8f\n", nIts, Dt); }
+        if (debug) { Pr(Er, "  D[%d] = %13.8f\n", iter, Dt); }
         if (Dt >= 0) { /* We must have reached or passed the root: */ break; }
         
         /* Compute the new {t}: */
         double dt = -Pt/Dt;
-        if (debug) { Pr(Er, "  d[%d] = %13.8f\n", nIts, dt); }
+        if (debug) { Pr(Er, "  d[%d] = %13.8f\n", iter, dt); }
         
         assert(dt <= 0);
         double ot = t;
         t += dt;
-        nIts++;
-        if (debug) { Pr(Er, "  t[%d] = %13.8f\n", nIts, t); }
+        iter++;
+        if (debug) { Pr(Er, "  t[%d] = %13.8f\n", iter, t); }
         if (t < 0) { /* Must be a very small positive root: */ t = 0; break; }
         if (t >= ot) { /* We cannot progress any further: */ break; }
-        demand(nIts <= 1000, "did not converge in 1000 iterations");
+        demand(iter <= 1000, "did not converge in 1000 iterations");
         if (debug) { Pr(Er, "\n"); }
       }
     if (debug) { Pr(Er, "  t fin = %13.8f\n", t); }
-    if (nIts > 25) { Pr(Er, "%s required %d iterations\n", __FUNCTION__, nIts); }
+    if (iter > 25) { Pr(Er, "%s required %d iterations\n", __FUNCTION__, iter); }
     if (debug) { Pr(Er, "\n"); }
     return t;    
   }

@@ -31,7 +31,6 @@
   " file \"out/{sizeTag}/pwr-{filterTag}\" shoing the power" \
   " spectrum of the image."
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -169,8 +168,7 @@ void tnoi_create_images_from_size_and_filter
     double fxFilter = rfxF*NX;
     double fyFilter = rfyF*NY;
 
-    char *sizeTag = NULL;
-    asprintf(&sizeTag, "%04dx%04d", NX, NY);
+    char *sizeTag = jsprintf("%04dx%04d", NX, NY);
   
     for (int32_t kcm = 0; kcm <= 1; kcm++)
       { bool_t complement = (kcm == 1);
@@ -183,7 +181,7 @@ void tnoi_create_images_from_size_and_filter
               { bool_t squash = (ksq == 1);
 
                 char *filterTag = NULL;
-                asprintf(&filterTag, "%08.6f-%08.6f-cm%c-sq%c", rfxF, rfyF, "FT"[complement], "FT"[squash]);
+                char *filterTag = jsprintf("%08.6f-%08.6f-cm%c-sq%c", rfxF, rfyF, "FT"[complement], "FT"[squash]);
 
                 float_image_t *sqz = tnoi_remap_image(img, squash, verbose);
                 tnoi_write_image(sizeTag, "img", filterTag, sqz, -1.0, +1.0);
@@ -344,9 +342,9 @@ void tnoi_write_image(char *sizeTag, char *prefix, char *filterTag, float_image_
     char *ext = "png";
     
     mkdir("out", 0755);
-    char *sizeDir = NULL; asprintf(&sizeDir, "out/%s-%s", ext, sizeTag);
+    char *sizeDir = NULL; char *sizeDir = jsprintf("out/%s-%s", ext, sizeTag);
     mkdir(sizeDir, 0755);
-    char *imgName = NULL; asprintf(&imgName, "%s/%s-%s.%s", sizeDir, prefix, filterTag, ext);
+    char *imgName = NULL; char *imgName = jsprintf("%s/%s-%s.%s", sizeDir, prefix, filterTag, ext);
     image_file_format_t ffmt = image_file_format_PNG;
     double gammaEnd = 1.000;
     double bias = 0.000;

@@ -1,7 +1,6 @@
 /* See jsqroots.h */
-/* Last edited on 2023-03-18 11:19:52 by stolfi */
+/* Last edited on 2024-11-15 19:14:25 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 #include <math.h>

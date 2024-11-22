@@ -1,10 +1,9 @@
 /* Binary tree based encoding and decoding. */
-/* Last edited on 2023-02-07 17:11:26 by stolfi */
+/* Last edited on 2024-11-20 01:49:12 by stolfi */
 
 #ifndef codetree_H
 #define codetree_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 
@@ -13,15 +12,23 @@
 /* CODE TREES
 
   A /code tree/ is a data structure that can be used to parse and decode
-  a stream of bits into a sequence of integer values from some set {V},
-  with possibly different number of bits used for different values. See
-  {codetree_encode} and {codetree_decode} below. */
+  a stream of bits into a sequence of non-negative integer values from
+  some set {V}, with possibly different number of bits used for
+  different values. See {codetree_encode} and {codetree_decode}
+  below. */
 
-typedef int32_t codetree_value_t;
-  /* Type of the {value} field of a code tree node. */
+typedef uint32_t codetree_data_value_t;
+  /* Type of an element from the domain set {V}.
+    Actually in the range {0..codetree_data_MAX_VALUE}. */
+
+typedef int32_t codetree_node_value_t;
+  /* Type of the {value} field of a code tree node, which may be a
+  {codetree_data_value_t} or a negative value indicating an internal
+  node. Actually in
+  {codetree_node_MIN_VALUE..codetree_node_MAX_VALUE} */
 
 typedef struct codetree_node_t
-  { codetree_value_t value; 
+  { codetree_node_value_t value; 
     /* These fields may not exist: */
     struct codetree_node_t *child[2];
   } codetree_node_t;
@@ -44,17 +51,21 @@ typedef codetree_node_t codetree_t;
 typedef uint32_t codetree_node_count_t;
   /* A type large enough to store the number of nodes in a code tree. */
 
-codetree_node_t *codetree_new_internal(codetree_node_count_t seq, codetree_node_t *child0, codetree_node_t *child1);
+codetree_node_t *codetree_new_internal
+  ( codetree_node_count_t seq,
+    codetree_node_t *child0,
+    codetree_node_t *child1
+  );
   /* Allocates a new non-leaf node, with the given children. Returns its address. 
     
     The given {child0} and/or {child1} may be {NULL}. Note however that 
     those links must be non-null in a finished valid tree.
     
     The parameter {seq} is the order of creation of the node, starting
-    from 0. The {value} field will be set to {codetree_MIN_VALUE + seq}. It
+    from 0. The {value} field will be set to {codetree_node_MIN_VALUE + seq}. It
     should be at most {codetree_MAX_INTERNALS-1}. */
 
-codetree_node_t *codetree_new_leaf(codetree_value_t val);
+codetree_node_t *codetree_new_leaf(codetree_data_value_t val);
   /* Allocates a new leaf node with {val} as the {value} field. Returns
     its address. Fails if {val} is {NO_VALUE}. The {child} fields of the
     node should not be accessed as they may not exist. */
@@ -88,9 +99,9 @@ codetree_bit_count_t codetree_decode
   ( codetree_byte_count_t nb, 
     byte_t buf[], 
     codetree_t *tree, 
-    codetree_value_t maxval, 
+    codetree_data_value_t maxval, 
     codetree_sample_count_t ns, 
-    codetree_value_t smp[]
+    codetree_data_value_t smp[]
   );
   /* Decodes the bit sequence stored in the byte array {buf[0..nb-1]}
     into a sequence of {ns} values {smp[0..ns-1]}, using the 
@@ -134,7 +145,7 @@ codetree_bit_count_t codetree_decode
     The procedure fails if all the bytes {buf[0.nb-1]} are scanned
     before extracting {ns} complete value codes; or if any of the values
     stored in the tree exceeds {maxval} (which itself must be in
-    {0..codetree_MAX_VALUE}), or if the tree is malformed in some way. */
+    {0..codetree_data_MAX_VALUE}), or if the tree is malformed in some way. */
 
 typedef uint32_t codetree_delta_t;
   /* A type large enought to contain any element in the {delta}
@@ -142,8 +153,8 @@ typedef uint32_t codetree_delta_t;
 
 codetree_bit_count_t codetree_encode
   ( codetree_sample_count_t ns,
-    codetree_value_t smp[], 
-    codetree_value_t maxval, 
+    codetree_data_value_t smp[], 
+    codetree_data_value_t maxval, 
     codetree_node_count_t nd,
     codetree_delta_t delta[], 
     codetree_byte_count_t nb, 
@@ -182,7 +193,7 @@ codetree_bit_count_t codetree_encode
     
     The procedure fails if the bytes {buf[0..nb-1]} are not enough to
     encode all the values {smp[0..ne-1]}, or any of those values exceeds
-    {maxval} (which in turn must not exceed {codetree_MAX_VALUE}), or
+    {maxval} (which in turn must not exceed {codetree_data_MAX_VALUE}), or
     any value {smp[k]} is not representable (that is, if delta[smp[k]]
     is zero).
     
@@ -200,7 +211,7 @@ codetree_bit_count_t codetree_encode
 
 codetree_node_count_t codetree_get_encoding_table
   ( codetree_t *tree, 
-    codetree_value_t maxval, 
+    codetree_data_value_t maxval, 
     codetree_node_count_t nd,
     codetree_delta_t delta[]
   );
@@ -221,7 +232,7 @@ codetree_node_count_t codetree_get_encoding_table
 codetree_t *codetree_get_decoding_tree
   ( codetree_node_count_t nd,
     codetree_delta_t delta[], 
-    codetree_value_t maxval 
+    codetree_data_value_t maxval 
   );
   /* Builds the decoding tree that corresponds to the encoding 
     table {delta[0..nd-1]}, and returns its root.
@@ -234,11 +245,11 @@ codetree_t *codetree_get_decoding_tree
  
 /* VALIDATION */
 
-void codetree_check_tree(codetree_t *tree, codetree_value_t maxval);
+void codetree_check_tree(codetree_t *tree, codetree_data_value_t maxval);
   /* Verifies the consistency of the given decoding {tree}, which should
     have leaf values in {0..maxval} only. */
 
-void codetree_check_table(codetree_node_count_t nd, codetree_delta_t delta[], codetree_value_t maxval);
+void codetree_check_table(codetree_node_count_t nd, codetree_delta_t delta[], codetree_data_value_t maxval);
   /* Verifies the consistency of the encoding table {delta[0..nd-1]},
     which should allow encoding of some values in {0..maxval} only. */
 
@@ -247,12 +258,14 @@ void codetree_check_iso(codetree_t *p, codetree_t *q);
     isomorphic, meaning that they assign the same codes to the same
     set of values.  The procedure fails with error if they are not. */
 
-codetree_node_count_t codetree_check_codes(codetree_t *tree, codetree_value_t maxval, char *code[]);
-  /* Every element of {code[0..maxval]} must be either {NULL} or a string with characters '0' or '1'. 
-    Checks whether {code[val]} is not {NULL} if and only if {val} is a member of the set {tree.V},
-    and then checks whether that string is the bit code implied by {tree} for the value {val}.
-    If it succeeds, returns the number of non-{NULL} codes, that is, the number {|tree.V|} of 
-    leaf nodes in {tree}. Otherwise it fails with an error message. */
+codetree_node_count_t codetree_check_codes(codetree_t *tree, codetree_data_value_t maxval, char *code[]);
+  /* Every element of {code[0..maxval]} must be either {NULL} or a
+    string with characters '0' or '1'. Checks whether {code[val]} is not
+    {NULL} if and only if {val} is a member of the set {tree.V}, and
+    then checks whether that string is the bit code implied by {tree}
+    for the value {val}. If it succeeds, returns the number of
+    non-{NULL} codes, that is, the number {|tree.V|} of leaf nodes in
+    {tree}. Otherwise it fails with an error message. */
 
 codetree_node_count_t codetree_print_codes(FILE *wr, codetree_t *tree);
   /* Prints to {wr} the set of values {V} stored in the leaves of 

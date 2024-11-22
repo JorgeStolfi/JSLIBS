@@ -1,12 +1,12 @@
-#define PROG_NAME "test_hr2_pmap_aff_from_point_pairs"
-#define PROG_DESC "test of {hr2_pmap_aff_from_point_pairs.h}"
+#define PROG_NAME "test_hr2_pmap_affine_from_point_pairs"
+#define PROG_DESC "test of {hr2_pmap_affine_from_point_pairs.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-08 11:19:45 by stolfi */ 
+/* Last edited on 2024-11-21 21:15:56 by stolfi */ 
 /* Created on 2020-07-11 by J. Stolfi, UNICAMP */
 /* Based on {test_align.c} by J. Stolfi, UNICAMP */
 
-#define test_hr2_pmap_aff_from_point_pairs_COPYRIGHT \
+#define test_hr2_pmap_affine_from_point_pairs_COPYRIGHT \
   "Copyright © 2020  by the State University of Campinas (UNICAMP)"
 
 #define _GNU_SOURCE
@@ -27,8 +27,8 @@
 #include <affirm.h>
 #include <assert.h>
 
-#include <hr2_pmap_aff_from_point_pairs.h>
-    test_hr2_pmap_aff_from_point_pairs(TRUE); // verbose
+#include <hr2_pmap_affine_from_point_pairs.h>
+    test_hr2_pmap_affine_from_point_pairs(TRUE); // verbose
 
 typedef struct hpmat_options_t 
   { char *prefix;         /* Prefix for output files. */
@@ -49,9 +49,9 @@ typedef struct hpmat_options_t
 void hpmat_one(hpmat_options_t *o, char *method, bool_t verbose);
   /* Tests affine map adjustment algorithm {method} ("quad" etc). */
 
-void test_hr2_pmap_aff_from_point_pairs(bool_t verbose);
+void test_hr2_pmap_affine_from_point_pairs(bool_t verbose);
 
-void test_hr2_pmap_aff_from_point_pairs(bool_t verbose)
+void test_hr2_pmap_affine_from_point_pairs(bool_t verbose)
   {
     /* Decide how many data point pairs to use: */
     
@@ -61,7 +61,7 @@ void test_hr2_pmap_aff_from_point_pairs(bool_t verbose)
     else
       { np = int32_abrandom(4,20); }
      
-    if (verbose) { fprintf(stderr, "--- hr2_pmap_aff_from_point_pairs  np = %d ---\n", np); }
+    if (verbose) { fprintf(stderr, "--- hr2_pmap_affine_from_point_pairs  np = %d ---\n", np); }
      
     double eps = (np <= 3 ? 0.0 : 0.01); /* Typical perturbation size. */
     verbose = verbose | (eps == 0.0);
@@ -93,7 +93,7 @@ void test_hr2_pmap_aff_from_point_pairs(bool_t verbose)
     else if (np == 1)
       { /* M translation: */
         r2_t v; r2_throw_cube(&v);
-        M = hr2_pmap_translation(&v, +1, +1);
+        M = hr2_pmap_translation_from_disp(&v, +1, +1);
       }
     else if (np == 2)
       { /* M rotation, scaling, and translation: */
@@ -101,7 +101,7 @@ void test_hr2_pmap_aff_from_point_pairs(bool_t verbose)
         double scale = dabrandom(0.5, 2.0);
         hr2_pmap_t R = hr2_pmap_rotation_and_scaling(ang, scale);
         r2_t v; r2_throw_cube(&v);
-        hr2_pmap_t T = hr2_pmap_translation(&v, +1, +1);
+        hr2_pmap_t T = hr2_pmap_translation_from_disp(&v, +1, +1);
         M = hr2_pmap_compose(&R, &T);
       }
     else
@@ -118,17 +118,17 @@ void test_hr2_pmap_aff_from_point_pairs(bool_t verbose)
       }
     
     /* Compute the map: */
-    hr2_pmap_t N = hr2_pmap_aff_from_point_pairs(np, p, q, w);
+    hr2_pmap_t N = hr2_pmap_affine_from_point_pairs(np, p, q, w);
     
     if (debug)
       { print_pmap("M", &M);
         print_pmap("N", &N);
       }
-    /* Compare the maps with {hr2_pmap_aff_discr_sqr}: */
-    double mis2 = hr2_pmap_aff_discr_sqr(&M, &N);
+    /* Compare the maps with {hr2_pmap_affine_discr_sqr}: */
+    double mis2 = hr2_pmap_affine_discr_sqr(&M, &N);
     double mis = sqrt(mis2); 
     if (eps == 0.0)
-      { check_num_eps("mis", mis, 0.0, 0.0000001, "hr2_pmap_aff_from_point_pairs failed"); }
+      { check_num_eps("mis", mis, 0.0, 0.0000001, "hr2_pmap_affine_from_point_pairs failed"); }
     else 
       { /* Compare the maps by testing with given points: */
         assert (np > 0);
@@ -148,7 +148,7 @@ void test_hr2_pmap_aff_from_point_pairs(bool_t verbose)
         double dB = sqrt(sum_d2B/np); /* RMS error of original data points rel to {N}. */
         if (verbose) { fprintf(stderr, "rms error M = %12.7f N = %12.7f\n", dA, dB); }
         double bad = fmax(0.0, dB - dA); /* Positive if {N} is worse than {M}, 0 if better. */
-        check_num_eps("bad", bad, 0.0, np*eps*eps, "hr2_pmap_aff_from_point_pairs failed");
+        check_num_eps("bad", bad, 0.0, np*eps*eps, "hr2_pmap_affine_from_point_pairs failed");
       }
   }
 
@@ -168,7 +168,7 @@ void hpmat_show_disp
     The arrays are compared with {hr2_pmap_diff_sqr(A,B)} and with
     {hpmat_diff_rel_sqr(D,R)} where {D=A.dir-B.dir}. If {print} is true
     also prints {D}. If the maps {A} and {B} are affine, they are also
-    compared with {hr2_pmap_aff_discr_sqr(A,B)}. */
+    compared with {hr2_pmap_affine_discr_sqr(A,B)}. */
 
 void hpmat_debug_map
   ( char *label,
@@ -187,7 +187,7 @@ void hpmat_debug_map
 void hpmat_plot_goal
   ( char *prefix,
     char *method,
-    hr2_pmap_aff_from_point_pairs_func_t *F2, 
+    hr2_pmap_affine_from_point_pairs_func_t *F2, 
     hr2_pmap_t *A,
     r3x3_t *U,
     r3x3_t *V,
@@ -294,7 +294,7 @@ void hpmat_one(hpmat_options_t *o, char *method, bool_t verbose)
     double F2sol;   /* Goal function at {Asol}. */
     if (strcmp(method, "quad") == 0)
       { double tol = 0.02;
-        hr2_pmap_aff_from_point_pairs_quad(F2_mismatch, R, tol, &Asol, &F2sol);
+        hr2_pmap_affine_from_point_pairs_quad(F2_mismatch, R, tol, &Asol, &F2sol);
       }
     else
       { demand(FALSE, "invalid method"); }
@@ -341,13 +341,13 @@ void hpmat_choose_initial_guess(hr2_pmap_t *Aopt, r3x3_t *R, hr2_pmap_t *Aini)
             Aini->dir.c[i][j] = Aopt->dir.c[i][j] + frac*R->c[i][j];
           }
       }
-      r3x3_inv(&(Aini->dir), &(Aini->inv));
+    r3x3_inv(&(Aini->dir), &(Aini->inv));
   }
     
 void hpmat_plot_goal
   ( char *prefix,
     char *method,
-    hr2_pmap_aff_from_point_pairs_func_t *F2, 
+    hr2_pmap_affine_from_point_pairs_func_t *F2, 
     hr2_pmap_t *A,
     r3x3_t *U,
     r3x3_t *V,
@@ -360,8 +360,7 @@ void hpmat_plot_goal
     r3x3_gen_print(stderr, V,         "%12.7f", "V = [ ","\n      "," ]\n", "[ "," "," ]");
     
     /* Sweep the {A,U,V} plane and Plot: */
-    char *fname = NULL;
-    asprintf(&fname, "%s_%s.dat", prefix, method);
+    char *fname = jsprintf("%s_%s.dat", prefix, method);
     FILE *wr = open_write(fname, TRUE);
     
     hr2_pmap_t B; /* Probe map. */
@@ -395,8 +394,8 @@ void hpmat_choose_plot_directions(r3x3_t *R, r3x3_t *U, r3x3_t *V)
     double Re[9]; /* Nonzero elements of {R} are  {Re[0..ne-1]}. */
     double *Up[9], *Vp[9]; /* Pointers of elements of {U} and {V} where {R} is nonzero. */
     
-    hr2_pmap_aff_from_point_pairs_get_var_elems(U, R, Up, Re, &ne);
-    hr2_pmap_aff_from_point_pairs_get_var_elems(V, R, Vp, Re, &ne);
+    hr2_pmap_affine_from_point_pairs_get_var_elems(U, R, Up, Re, &ne);
+    hr2_pmap_affine_from_point_pairs_get_var_elems(V, R, Vp, Re, &ne);
       
     /* Throw a random unit vector {ue[0..ne-1]}:*/
     double ue[ne];
@@ -481,9 +480,9 @@ void hpmat_show_disp
     double drel2 = hpmat_diff_rel_sqr(&D, R);
     fprintf(stderr, "  diff = %12.7f drel = %12.7f", sqrt(diff2), sqrt(drel2));
     
-    if (hr2_pmap_is_affine(A) && hr2_pmap_is_affine(B))
+    if (hr2_pmap_is_affine(A, tol) && hr2_pmap_is_affine(B, tol))
       { /* Difference between {A} and {B} over the unit circle: */
-        double mism2 = hr2_pmap_aff_discr_sqr(A, B);
+        double mism2 = hr2_pmap_affine_discr_sqr(A, B);
         fprintf(stderr, " aff mism = %12.7f", sqrt(mism2));
       }
     fprintf(stderr, "\n");

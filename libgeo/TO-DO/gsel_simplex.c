@@ -1,4 +1,4 @@
-/* Last edited on 2024-11-07 15:25:31 by stolfi */
+/* Last edited on 2024-11-20 15:39:05 by stolfi */
 /* TO FINISH !!! */
 
 #include <stdint.h>
@@ -33,7 +33,7 @@ void qms_project_simplex(int32_t m, int32_t n, double M[], double p[], double x[
        { n2.R n2.G n2.B  0 }
        { n3.R n3.G n3.B  0 }
   
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
 
     /* Estimate roundoff error in residual computation: */
     double bmax =  rmxn_max_abs_elem(n, 1, b);
@@ -83,12 +83,11 @@ void qms_project_simplex(int32_t m, int32_t n, double M[], double p[], double x[
       /* Writes to {wr} the current active and inactive lists. */
     
     /* Start with all variables inactive, turn them on one at a time. */
-    int32_t i;
-    for (i = 0; i < n; i++) { sit[i] = i; pos[i] = i; x[i] = 0.0; }
+    for (int32_t i = 0; i < n; i++) { sit[i] = i; pos[i] = i; x[i] = 0.0; }
     na = 0;
 
     /* Iterate until conditions (1)-(3) are satisfied for column {k}: */
-    i = 0; /* Next variable to check for condition (3). */
+    uint32_t inext = 0; /* Next variable to check for condition (3). */
     int32_t nok = 0; /* Number of variables that checked OK for (3) since last change. */
     while (nok < n)
       { /* Loop invariant: Conditions (1) and (2) are satisfied. */
@@ -100,47 +99,47 @@ void qms_project_simplex(int32_t m, int32_t n, double M[], double p[], double x[
         if (debug) { gsel_print_array(stderr, 4, "%9.5f", "current solution:",  n, 1,"x",x, ""); }
         if (debug) { print_sets(stderr); }
 
-        /* Check variable {i} for  (3), if not satisfied do something about it: */
-        if (debug) { fprintf(stderr, "  checking constraints on x[%d]\n", i); }
-        /* Compute residual {(A x - b)[i]}: */
-        double res = compute_residual(i, x);
+        /* Check variable {inext} for  (3), if not satisfied do something about it: */
+        if (debug) { fprintf(stderr, "  checking constraints on x[%d]\n", inext); }
+        /* Compute residual {(A x - b)[inext]}: */
+        double res = compute_residual(inext, x);
         if (debug) { fprintf(stderr, "    residual = %22.14f\n", res); }
-        if (sit[i] < na)
+        if (sit[inext] < na)
           { /* Active, it is OK for (3): */
-            if (debug) { fprintf(stderr, "    variable %d is active.\n", i); }
+            if (debug) { fprintf(stderr, "    variable %d is active.\n", inext); }
             assert(fabs(res) <= tiny);
-            if (debug) { fprintf(stderr, "    variable %d is OK.\n", i); }
+            if (debug) { fprintf(stderr, "    variable %d is OK.\n", inext); }
             nok++;
           }
         else
-          { if (debug) { fprintf(stderr, "    variable %d is inactive.\n", i); }
-            assert(x[i] == 0.0);
+          { if (debug) { fprintf(stderr, "    variable %d is inactive.\n", inext); }
+            assert(x[inext] == 0.0);
             if (res >= -tiny)
-              { /* Residual for inactive variable {i} is OK, passed (3): */
+              { /* Residual for inactive variable {inext} is OK, passed (3): */
                 if (debug) { fprintf(stderr, "    residual is essentially positive.\n"); }
-                if (debug) { fprintf(stderr, "    variable %d is OK.\n", i); }
+                if (debug) { fprintf(stderr, "    variable %d is OK.\n", inext); }
                 nok++;
               }
             else
-              { /* Residual for inactive variable {i} has wrong sign, fails (3): */
+              { /* Residual for inactive variable {inext} has wrong sign, fails (3): */
                 if (debug) { fprintf(stderr, "    residual is negative, possibly not OK.\n"); }
                 /* Activate it: */
-                activate(i);
+                activate(inext);
                 /* Make condition (2) true again: */
                 /* Solve system with new set of variables: */
                 if (debug) { print_sets(stderr); }
                 solve_active(y);
-                if (y[i] <= tiny)
+                if (y[inext] <= tiny)
                   { /* Should be positive. Roundoff error, perhaps? Anyway: */
                     if (debug) { fprintf(stderr, "    residual seems to be roundoff.\n"); }
-                    inactivate(i);
+                    inactivate(inext);
                     /* Consider it OK, keep searching... */
-                    if (debug) { fprintf(stderr, "    let's pretend that variable %d is OK.\n", i); }
+                    if (debug) { fprintf(stderr, "    let's pretend that variable %d is OK.\n", inext); }
                     nok++;
                   }
                 else
-                  { /* Variable {x[i]} definitely fails (3). */
-                    if (debug) { fprintf(stderr, "    variable %d is NOT OK.\n", i); }
+                  { /* Variable {x[inext]} definitely fails (3). */
+                    if (debug) { fprintf(stderr, "    variable %d is NOT OK.\n", inext); }
                     bool_t ok2 = FALSE; /* TRUE when condition (2) is OK. */
                     while (! ok2) 
                       { /* Find first variable in path {x} to {y} to become inactive, if any: */
@@ -153,7 +152,7 @@ void qms_project_simplex(int32_t m, int32_t n, double M[], double p[], double x[
 
                         /* Inactivate variables that have become zero: */
                         for (j = 0; j < n; j++)
-                          { if (j == i)
+                          { if (j == inext)
                               { /* Forced active, so let's make that quite clear: */ 
                                 assert(sit[j] < na);
                                 if (x[j] < tiny) { x[j] = tiny; }
@@ -189,7 +188,7 @@ void qms_project_simplex(int32_t m, int32_t n, double M[], double p[], double x[
               }
           }
         /* Go to next variable: */
-        i = (i + 1) % n;
+        inext = (inext + 1) % n;
       }
 
     void activate(int32_t i) 

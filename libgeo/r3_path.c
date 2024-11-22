@@ -1,7 +1,6 @@
 /* See r3_path.h */
-/* Last edited on 2023-10-01 19:05:15 by stolfi */
+/* Last edited on 2024-11-20 15:50:56 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -10,9 +9,9 @@
 
 #include <bool.h>
 #include <r3.h>
-#include <r3_extra.h>
 #include <r3_motion.h>
 #include <affirm.h>
+#include <jsprintf.h>
 
 #include <r3_path.h>
 #include <r3_bezier.h>
@@ -37,15 +36,9 @@ r3_motion_state_t r3_path_state_to_r3_motion_state(r3_path_state_t *S)
     double vm = r3_dir(&(S->v), &u);
     if (vm == 0) { u = (r3_t){{ 1.0, 0.0, 0.0 }}; }
 
-    /* Transverse direction {v} - any vector orthogonal to {w}: */
-    r3_t v;
-    (void)r3_pick_ortho(&u, &v);
-    (void)r3_dir(&v, &v);
-
-    /* Third direction {w}: */
-    r3_t w;
-    r3_cross(&u, &v, &w);
-    (void)r3_dir(&w, &w);
+    /* Transverse directions {v,w} orthonormal to {u}: */
+    r3_t v, w;
+    (void)r3_throw_ortho_pair(&u, &v, &w);
 
     /* Assemble the matrix: */
     r3x3_from_rows(&u, &v, &w,  &(T.M));
@@ -53,7 +46,7 @@ r3_motion_state_t r3_path_state_to_r3_motion_state(r3_path_state_t *S)
     return T;
   }
 
-void r3_path_interpolate_some(r3_path_state_t S[], int32_t N)
+void r3_path_interpolate_some(r3_path_state_t S[], uint32_t N)
   { 
     if (N >= 3)
       { double t0 = S[0].t;
@@ -62,8 +55,7 @@ void r3_path_interpolate_some(r3_path_state_t S[], int32_t N)
         double t3 = S[N-1].t;
         r3_t *p3 = &(S[N-1].p);
         r3_path_bezier_from_states(&(S[0]), &(S[N-1]), &p1, &p2);
-        int32_t im;
-        for (im = 1; im <= N-2; im++)
+        for (int32_t im = 1; im <= N-2; im++)
           { r3_path_state_t *Sm = &(S[im]);
             double fm = ((double)im)/((double)N-1); /* Fractional position of {S[im]}. */
             double tm = (1-fm)*t0 + fm*t3; /* Time for {im}. */
@@ -145,8 +137,8 @@ void r3_path_state_gen_print
   }
 
 void r3_path_state_debug(FILE *wr, r3_path_state_t *S, char *indent, char *title)
-  { char *olp; asprintf(&olp, "%s%s state:\n%s  ", indent, title, indent); 
-    char *osep; asprintf(&osep, "\n%s  ", indent); 
+  { char *olp = jsprintf("%s%s state:\n%s  ", indent, title, indent); 
+    char *osep = jsprintf("\n%s  ", indent); 
     r3_path_state_gen_print
       ( wr, S, 
         "%.4f", "%.2f", "%+.3f", 

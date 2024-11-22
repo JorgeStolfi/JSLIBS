@@ -1,7 +1,6 @@
 /* See qmin_simplex.h */
-/* Last edited on 2024-11-07 15:23:25 by stolfi */
+/* Last edited on 2024-11-22 02:13:45 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <math.h>
 #include <limits.h>
@@ -14,7 +13,7 @@
 
 #include <qmin_simplex.h>
 
-void qms_quadratic_min(int32_t n, double A[], double b[], double x[])
+void qms_quadratic_min(uint32_t n, double A[], double b[], double x[])
   { bool_t debug = FALSE;
 
     /* Estimate roundoff error in residual computation: */
@@ -29,49 +28,56 @@ void qms_quadratic_min(int32_t n, double A[], double b[], double x[])
     double y[n]; /* Candidate solution to replace {x}. */
 
     /* Subset of active (nonzero) variables: */
-    int32_t na; /* Number of active variables. */
-    int32_t sit[n]; /* Situation of variable {i}: {x[i]} is active iff {sit[i] < na}. */ 
-    int32_t pos[n]; /* Invariant: {pos[sit[k]] = k = sit[pos[k]]} for all {k} in {0..n-1}. */ 
+    uint32_t sit[n]; /* Situation of variable {i}: {x[i]} is active iff {sit[i] < na}. */ 
+    uint32_t pos[n]; /* Invariant: {pos[sit[k]] = k = sit[pos[k]]} for all {k} in {0..n-1}. */ 
     /* The active variables are {x[pos[ia]]} for {ia} in {0..na-1}. */
     /* The inactive variables are {x[pos[ii]]} for {ii} in {na..n-1}. */
 
-    auto void activate(int32_t i); 
+    auto void activate(uint32_t i); 
       /* Add inactive variable {i} to the active set. Expects {x[i]}
         to be zero, and sets it to a tiny positive value. */  
 
-    auto void inactivate(int32_t i); 
+    auto void inactivate(uint32_t i); 
       /* Deletes active variable {i} from the active set. Expects {x[i]}
         to be essentially zero, and sets it to zero. */  
 
-    auto double compute_residual(int32_t i, double *u);
-      /* Computes the resudual {(A u - b)[i]}.  Assumes that inactive
-        variables are all zero. */
+    auto double compute_residual(uint32_t ieq, double *u);
+      /* Computes the resudual {(A u - b)[ieq]} of equation {ieq}.
+        Assumes that inactive variables are all zero. */
     
     auto void solve_active(double *u);
       /* Solves the eqsystem {A u = b}, keeping the equations that
         correspond to active variables, and assuming that inactive
         variables are zero. */
     
-    auto void find_first_obstacle(double *x, double *y, int32_t *job, double *sob);
-      /* Assumes that {x[j]} is non-negative for all {j}. Returns in
-        {*job} the index of the first coordinate that becomes zero
-        when one moves along the segment from {x} to {y}. Also returns
-        in {*sob} the relative distance from {x} up to that point
-        (scaled so that {dist(x,y) == 1}). If no coordinate becomes
-        zero along that segment (that is, if {y} is positive), returns
-        {*job = -1} and {*sob = 1.0}. */
+    auto void find_first_obstacle(double u[], double v[], int32_t *job_P, double *sob_P);
+      /* Finds the first coordinate, if any, that becomes negative as
+        one moves from {u} to {v}.
+        
+        Specifically, let {X[ia]} be {u[pos[ia]]} and {Y[ia]} be
+        {v[pos[ia]]} for {ia} in {0..na-1}.  The coordinates
+        {X[j]} must be strictly positive for all {j}.  Let {P(s)[0..na-1]} be the
+        point that is {s} of the way between {X} and {Y}; that
+        is, {P(s)[ia] = (1-s)*X[ia] + s*Y[ia]}.
+        
+        The procedure finds the first index {iob} in {0..na-1} such that
+        {P(s)[pos[iob]]} becomes zero when {s} varies from 0 to 1. It
+        then returns {*sob_P} the value of {s} when {P(s)[iob]} becomes
+        zero, and in {*job_P} the index {pos[iob]}. If no coordinate
+        becomes zero along that segment (that is, if {Y[ia]} is positive
+        for all {ia}), returns {*job_P = INT32_MAX} and {*sob_P =
+        1.0}. */
     
     auto void print_sets(FILE *wr);
       /* Writes to {wr} the current active and inactive lists. */
     
     /* Start with all variables inactive, turn them on one at a time. */
-    int32_t i;
-    for (i = 0; i < n; i++) { sit[i] = i; pos[i] = i; x[i] = 0.0; }
-    na = 0;
+    for (int32_t i = 0; i < n; i++) { sit[i] = (uint32_t)i; pos[i] = (uint32_t)i; x[i] = 0.0; }
+    int32_t na = 0; /* Number of active variables. */
 
     /* Iterate until conditions (1)-(3) are satisfied for column {k}: */
-    i = 0; /* Next variable to check for condition (3). */
-    int32_t nok = 0; /* Number of variables that checked OK for (3) since last change. */
+    int32_t jcur = 0; /* Next variable to check for condition (3). */
+    int32_t nok = 0; /* Count of variables that checked OK for (3) since last change. */
     while (nok < n)
       { /* Loop invariant: Conditions (1) and (2) are satisfied. */
         /* Also, a variable is active iff it is nonzero. */
@@ -82,60 +88,60 @@ void qms_quadratic_min(int32_t n, double A[], double b[], double x[])
         if (debug) { gsel_print_array(stderr, 4, "%9.5f", "current solution:",  n, 1,"x",x, ""); }
         if (debug) { print_sets(stderr); }
 
-        /* Check variable {i} for  (3), if not satisfied do something about it: */
-        if (debug) { fprintf(stderr, "  checking constraints on x[%d]\n", i); }
-        /* Compute residual {(A x - b)[i]}: */
-        double res = compute_residual(i, x);
+        /* Check variable {jcur} for  (3), if not satisfied do something about it: */
+        if (debug) { fprintf(stderr, "  checking constraints on x[%d]\n", jcur); }
+        /* Compute residual {(A x - b)[jcur]}: */
+        double res = compute_residual(jcur, x);
         if (debug) { fprintf(stderr, "    residual = %22.14f\n", res); }
-        if (sit[i] < na)
+        if (sit[jcur] < na)
           { /* Active, it is OK for (3): */
-            if (debug) { fprintf(stderr, "    variable %d is active.\n", i); }
+            if (debug) { fprintf(stderr, "    variable %d is active.\n", jcur); }
             assert(fabs(res) <= tiny);
-            if (debug) { fprintf(stderr, "    variable %d is OK.\n", i); }
+            if (debug) { fprintf(stderr, "    variable %d is OK.\n", jcur); }
             nok++;
           }
         else
-          { if (debug) { fprintf(stderr, "    variable %d is inactive.\n", i); }
-            assert(x[i] == 0.0);
+          { if (debug) { fprintf(stderr, "    variable %d is inactive.\n", jcur); }
+            assert(x[jcur] == 0.0);
             if (res >= -tiny)
-              { /* Residual for inactive variable {i} is OK, passed (3): */
+              { /* Residual for inactive variable {jcur} is OK, passed (3): */
                 if (debug) { fprintf(stderr, "    residual is essentially positive.\n"); }
-                if (debug) { fprintf(stderr, "    variable %d is OK.\n", i); }
+                if (debug) { fprintf(stderr, "    variable %d is OK.\n", jcur); }
                 nok++;
               }
             else
-              { /* Residual for inactive variable {i} has wrong sign, fails (3): */
+              { /* Residual for inactive variable {jcur} has wrong sign, fails (3): */
                 if (debug) { fprintf(stderr, "    residual is negative, possibly not OK.\n"); }
                 /* Activate it: */
-                activate(i);
+                activate(jcur);
                 /* Make condition (2) true again: */
                 /* Solve system with new set of variables: */
                 if (debug) { print_sets(stderr); }
                 solve_active(y);
-                if (y[i] <= tiny)
+                if (y[jcur] <= tiny)
                   { /* Should be positive. Roundoff error, perhaps? Anyway: */
                     if (debug) { fprintf(stderr, "    residual seems to be roundoff.\n"); }
-                    inactivate(i);
+                    inactivate(jcur);
                     /* Consider it OK, keep searching... */
-                    if (debug) { fprintf(stderr, "    let's pretend that variable %d is OK.\n", i); }
+                    if (debug) { fprintf(stderr, "    let's pretend that variable %d is OK.\n", jcur); }
                     nok++;
                   }
                 else
-                  { /* Variable {x[i]} definitely fails (3). */
-                    if (debug) { fprintf(stderr, "    variable %d is NOT OK.\n", i); }
+                  { /* Variable {x[jcur]} definitely fails (3). */
+                    if (debug) { fprintf(stderr, "    variable %d is NOT OK.\n", jcur); }
                     bool_t ok2 = FALSE; /* TRUE when condition (2) is OK. */
                     while (! ok2) 
                       { /* Find first variable in path {x} to {y} to become inactive, if any: */
                         int32_t jmin; double sjmin; 
                         find_first_obstacle(x, y, &jmin, &sjmin);
+                        assert((sjmin > 0.0) && (sjmin <= 1.0));
                         /* Advance from {x} towards {y} by the ratio {sjmin}: */
-                        int32_t j;
-                        for (j = 0; j < n; j++)
+                        for (int32_t j = 0; j < n; j++)
                           { if (sit[j] < na) { x[j] = (1-sjmin)*x[j] + sjmin*y[j]; } }
 
                         /* Inactivate variables that have become zero: */
-                        for (j = 0; j < n; j++)
-                          { if (j == i)
+                        for (int32_t j = 0; j < n; j++)
+                          { if (j == jcur)
                               { /* Forced active, so let's make that quite clear: */ 
                                 assert(sit[j] < na);
                                 if (x[j] < tiny) { x[j] = tiny; }
@@ -171,60 +177,55 @@ void qms_quadratic_min(int32_t n, double A[], double b[], double x[])
               }
           }
         /* Go to next variable: */
-        i = (i + 1) % n;
+        jcur = (jcur + 1) % n;
       }
 
-    void activate(int32_t i) 
-      { if (debug) { fprintf(stderr, "  activating %d\n", i); }
-        assert(x[i] == 0);
-        int32_t ia = sit[i];  /* Index of active list slot that contains {i}. */
-        assert(ia >= na);
-        /* Make sure that {i} is in the *first* inactive list slot: */
-        int32_t ia1 = na; /* Index of first inactive list slot. */
-        if (ia != ia1)
-          { /* Swap {pos[ia]} with {pos[ia1]}: */
-            int32_t i1 = pos[ia1];
-            pos[ia1] = i;
-            pos[ia] = i1;
-            /* Fix {iax[i]}, {iax[j]}: */
-            sit[i1] = ia;
-            sit[i] = ia1;
+    void activate(uint32_t jina) 
+      { if (debug) { fprintf(stderr, "  activating %d\n", jina); }
+        assert(x[jina] == 0);
+        int32_t ii = (int32_t)sit[jina];  /* Index such that {pos[ii] = jina}. */
+        assert(pos[ii] == jina);
+        assert(ii >= na);
+        /* Make sure that {jina} is in the *first* inactive list slot: */
+        int32_t ii1 = (int32_t)na; /* Index of first inactive list slot. */
+        if (ii != ii1)
+          { /* Swap {pos[ii]} with {pos[ii1]}: */
+            uint32_t jina1 = pos[ii1];
+            pos[ii1] = jina; sit[jina] = ii1;
+            pos[ii] = jina1; sit[jina1] = ii;
           }
         /* Drop the first slot from the inactive list: */
         na++;
-        /* Since {x[i]} is now active, why not make that quite clear: */
-        x[i] = tiny;
+        /* Since {x[jina]} is now active, why not make that quite clear: */
+        x[jina] = tiny;
       }
 
-    void inactivate(int32_t i)
-      { if (debug) { fprintf(stderr, "  deactivating %d\n", i); }
-        assert(x[i] >= -tiny);     /* Condition (1) (modulo roundoff). */
-        assert(x[i] <= tiny);  /* We can inactivate only if {x} is on constraint. */
-        int32_t ia = sit[i];  /* Index of active list slot that contains {i}. */
+    void inactivate(uint32_t jact)
+      { if (debug) { fprintf(stderr, "  deactivating %d\n", jact); }
+        assert(x[jact] >= -tiny);  /* Condition (1) (modulo roundoff). */
+        assert(x[jact] <= tiny);   /* We can inactivate only if {x} is on constraint. */
+        int32_t ia = (int32_t)sit[jact];    /* Index such that {pos[ia] = jact}. */
         assert(ia < na);
-        /* Make sure that {i} is in the *last* active list slot: */
-        int32_t ia1 = na-1; /* Index of last active list slot. */
+        /* Make sure that {jact} is in the *last* active list slot: */
+        int32_t ia1 = (int32_t)na-1; /* Index of last active list slot. */
         if (ia != ia1)
           { /* Swap {pos[ia]} with {pos[ia1]}: */
-            int32_t i1 = pos[ia1];
-            pos[ia1] = i;
-            pos[ia] = i1;
-            /* Fix {iax[i]}, {iax[j]}: */
-            sit[i1] = ia;
-            sit[i] = ia1;
+            uint32_t jact1 = pos[ia1];
+            pos[ia1] = jact; sit[jact] = ia1;
+            pos[ia] = jact1; sit[jact1] = ia;
           }
         /* Drop the last slot from active list: */
+        assert(na > 0);
         na--;
-        /* Since {x[i]} is now inactive: */
-        x[i] = 0.0;
+        /* Since {x[jact]} is now inactive: */
+        x[jact] = 0.0;
       }
 
     void print_sets(FILE *wr)
-      { int32_t ia;
-        char *sep; 
+      { char *sep; 
         fprintf(wr, "  active = (");
         sep = ""; 
-        for (ia = 0; ia < na; ia++) 
+        for (int32_t ia = 0; ia < na; ia++) 
           { fprintf(wr, "%s%d", sep, pos[ia]); sep = ","; 
             assert(pos[ia] >= 0); 
             assert(pos[ia] < n); 
@@ -233,7 +234,7 @@ void qms_quadratic_min(int32_t n, double A[], double b[], double x[])
         fprintf(wr, ")");
         fprintf(wr, "  inactive = (");
         sep = ""; 
-        for (ia = na; ia < n; ia++) 
+        for (int32_t ia = na; ia < n; ia++) 
           { fprintf(wr, "%s%d", sep, pos[ia]); sep = ","; 
             assert(pos[ia] >= 0); 
             assert(pos[ia] < n); 
@@ -243,23 +244,21 @@ void qms_quadratic_min(int32_t n, double A[], double b[], double x[])
         fprintf(wr, "\n");
       }
     
-    double compute_residual(int32_t i, double *u)
+    double compute_residual(uint32_t ieq, double *u)
       { double sum = 0.0;
-        int32_t ja;
         /* We need to add only the nonzero variables: */
-        for (ja = 0; ja < na; ja++) 
-          { int32_t j = pos[ja]; sum += A[i*n + j]*u[j]; } 
-        return sum - b[i];
+        for (int32_t ia = 0; ia < na; ia++) 
+          { uint32_t j = pos[ia]; sum += A[ieq*n + j]*u[j]; } 
+        return sum - b[ieq];
       }
           
     void solve_active(double *u)
       {
         /* Extract active subsystem of {A u = b}, store in {Ab}: */
-        int32_t ia, ja;
-        for (ia = 0; ia < na; ia++)
-          { int32_t i = pos[ia];
-            for (ja = 0; ja < na; ja++)
-              { int32_t j = pos[ja]; Ab[ia*(na+1) + ja] = A[i*n + j]; }
+        for (int32_t ia = 0; ia < na; ia++)
+          { int32_t i = (int32_t)pos[ia];
+            for (int32_t ja = 0; ja < na; ja++)
+              { int32_t j = (int32_t)pos[ja]; Ab[ia*(na+1) + ja] = A[i*n + j]; }
             Ab[ia*(na+1) + na] = b[i];
           }
         /* Solve subsystem: */
@@ -268,31 +267,29 @@ void qms_quadratic_min(int32_t n, double A[], double b[], double x[])
         gsel_triangularize(na, na+1, Ab, TRUE, 0.0);
         gsel_diagonalize(na, na+1, Ab);
         gsel_normalize(na, na+1, Ab);
-        int32_t rank_ext = gsel_extract_solution(na, na+1, Ab, 1, ua);
+        uint32_t rank_ext = gsel_extract_solution(na, na+1, Ab, 1, ua);
         assert(rank_ext <= na);
         if (debug) { gsel_print_array(stderr, 4, "%9.5f", "subsystem's solution:",  na, 1,"ua",ua, ""); }
         /* Unpack {ua} into {u}: */
-        int32_t i;
-        for (i = 0; i < n; i++)
-          { int32_t ia = sit[i]; u[i] = (ia < na ? ua[ia] : 0.0); }
+        for (int32_t i = 0; i < n; i++)
+          { int32_t ia =(int32_t) sit[i]; u[i] = (ia < na ? ua[ia] : 0.0); }
         if (debug) { gsel_print_array(stderr, 4, "%9.5f", "new solution:",  n, 1,"u",u, ""); }
       }
     
-    void find_first_obstacle(double *u, double *v, int32_t *job, double *sob)
-      { (*sob) = +INFINITY; 
-        (*job) = -1;
-        int32_t ja;
-        for (ja = 0; ja < na; ja++)
-          { int32_t j = pos[ja]; 
+    void find_first_obstacle(double u[], double v[], int32_t *job_P, double *sob_P)
+      { double sob = 1.0; 
+        int32_t job = INT32_MAX;
+        for (int32_t ia = 0; ia < na; ia++)
+          { int32_t j = (int32_t)pos[ia]; 
             assert(u[j] > 0.0);
             if (v[j] <= 0.0)
               { double sj = u[j]/(u[j]-v[j]);
                 if (sj > 1.0) { sj = 1.0; }
-                if (sj < (*sob)) { (*sob) = sj; (*job) = j; }
+                if (sj < sob) { sob = sj; job = j; }
               }
           }
-        if ((*job) < 0) { (*sob) = 1.0; }
-        if (debug) { fprintf(stderr, "  pivoting to %d at s = %10.7f\n", (*job), (*sob)); }
+        if (debug) { fprintf(stderr, "  pivoting to %d at s = %10.7f\n", job, sob); }
+        (*job_P) = job; (*sob_P) = sob;
       }
   }
 

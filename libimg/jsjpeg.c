@@ -1,7 +1,6 @@
 /* See {jsjpeg.h} */
 /* Last edited on 2017-06-23 01:45:17 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 

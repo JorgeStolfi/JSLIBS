@@ -400,8 +400,7 @@ multifok_stack_t *mfdo_read_stack(mfdo_options_t *o)
     int32_t NI = o->NI;
     int32_t NX = o->imageSize_NX;
     int32_t NY = o->imageSize_NY;
-    char *stackDir = NULL;
-    asprintf(&stackDir, "%s/st%s-%04dx%04d-%s", o->inDir, o->sceneType, NX, NY, o->pattern);
+    char *stackDir = jsprintf("%s/st%s-%04dx%04d-%s", o->inDir, o->sceneType, NX, NY, o->pattern);
     
     bool_t gray = TRUE;
     multifok_stack_t *istack = multifok_stack_read(stackDir, gray, NI, o->zFoc, o->zDep, o->zMax);
@@ -737,8 +736,7 @@ void mfdo_write_result_stack(char *outDir, mfdo_result_stack_t *ostack)
     fprintf(stderr, "writing the output stack to %s...\n", outDir);
     for (int32_t ki = 0; ki < NI; ki++)
       { mfdo_result_frame_t *ofr = ostack->frame[ki];
-        char *frameDir = NULL;
-        asprintf(&frameDir, "%s/frame-zf%08.4f-fd-%08.4f", outDir, ofr->zFoc, ofr->zDep);
+        char *frameDir = jsprintf("%s/frame-zf%08.4f-fd-%08.4f", outDir, ofr->zFoc, ofr->zDep);
         mfdo_write_result_frame(frameSir, ofr);
         free(frameDir);
       }

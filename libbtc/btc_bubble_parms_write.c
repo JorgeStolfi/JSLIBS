@@ -15,7 +15,7 @@
 void btc_bubble_parms_write(char* outPrefix, char* tag, int nd, char* dt[], int nb, btc_bubble_t bp[])
   { 
     char* fName = NULL;
-    asprintf(&fName, "%s%s.parms", outPrefix, tag);
+    char *fName = jsprintf("%s%s.parms", outPrefix, tag);
     FILE *wr = open_write(fName, TRUE);
     
     fprintf(wr, "# Last edited on DATE TIME by USER\n");

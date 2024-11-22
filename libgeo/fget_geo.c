@@ -1,9 +1,8 @@
 /* See fget_geo.h. */
-/* Last edited on 2021-06-09 19:48:33 by jstolfi */
+/* Last edited on 2024-11-20 08:51:21 by stolfi */
 
 /* Copyright © 2008 Jorge Stolfi, Unicamp. See note at end of file. */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -19,9 +18,8 @@
 
 #include <fget_geo.h>
 
-void fget_rn(FILE *rd, double p[], int32_t n)
-  { int32_t i;
-    for (i = 0; i < n; i++)
+void fget_rn(FILE *rd, double p[], uint32_t n)
+  { for (int32_t i = 0; i < n; i++)
       { p[i] = fget_double(rd); }
   }
 

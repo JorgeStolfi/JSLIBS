@@ -1,7 +1,6 @@
 /* See {indexing_box.h}. */
-/* Last edited on 2021-07-17 08:27:06 by jstolfi */
+/* Last edited on 2024-11-16 06:28:24 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -55,12 +54,12 @@ void ixbox_intersect
       { /* Compute the new core domain {ixlo_R,size_R} and {empty_R}: */
         for (ix_axis_t k = 0; k < d;  k++)
           { /* Get the index range  {ixlok_A..ixhik_A} of box{A} on axis {k}: */
-            ix_index_t ixlok_A = (ix_index_t)(ixlo_A == NULL? 0 : ixlo_A[k]);
-            ix_index_t ixhik_A = (ix_index_t)(ixlok_A + (size_A == NULL ? 0 : size_A[k]) - 1);
+            ix_index_t ixlok_A = (ix_index_t)(ixlo_A == NULL ? 0 : ixlo_A[k]);
+            ix_index_t ixhik_A = (ix_index_t)(ixlok_A + (size_A == NULL ? 0 : (int64_t)(size_A[k])) - 1);
 
             /* Get the index range {ixlok_B..ixhik_B} of  box {B} on axis {k}: */
-            ix_index_t ixlok_B = (ix_index_t)(ixlo_B == NULL? 0 : ixlo_B[k]);
-            ix_index_t ixhik_B = (ix_index_t)(ixlok_B + (size_B == NULL ? 0 : size_B[k]) - 1);
+            ix_index_t ixlok_B = (ix_index_t)(ixlo_B == NULL ? 0 : ixlo_B[k]);
+            ix_index_t ixhik_B = (ix_index_t)(ixlok_B + (size_B == NULL ? 0 : (int64_t)(size_B[k])) - 1);
 
             /* Get the expected clipped core box {ixlo_R[k],size_R[k]}: */
             ix_index_t ixlok_R = (ix_index_t)imax(ixlok_A, ixlok_B);
@@ -90,13 +89,13 @@ bool_t ixbox_is_contained
     
     for (ix_axis_t k = 0; k < d;  k++)
       { /* Get the index range  {ixlok_A..ixhik_A} of box{A} on axis {k}: */
-        ix_index_t ixlok_A = (ix_index_t)(ixlo_A == NULL? 0 : ixlo_A[k]);
-        ix_index_t ixhik_A = (ix_index_t)(ixlok_A + (size_A == NULL ? 0 : size_A[k]) - 1);
+        ix_index_t ixlok_A = (ix_index_t)(ixlo_A == NULL ? 0 : ixlo_A[k]);
+        ix_index_t ixhik_A = (ix_index_t)(ixlok_A + (size_A == NULL ? 0 : (int64_t)(size_A[k])) - 1);
         assert(ixlok_A <= ixhik_A);
 
         /* Get the index range {ixlok_B..ixhik_B} of  box {B} on axis {k}: */
-        ix_index_t ixlok_B = (ix_index_t)(ixlo_B == NULL? 0 : ixlo_B[k]);
-        ix_index_t ixhik_B = (ix_index_t)(ixlok_B + (size_B == NULL ? 0 : size_B[k]) - 1);
+        ix_index_t ixlok_B = (ix_index_t)(ixlo_B == NULL ? 0 : ixlo_B[k]);
+        ix_index_t ixhik_B = (ix_index_t)(ixlok_B + (size_B == NULL ? 0 : (int64_t)(size_B[k])) - 1);
         assert(ixlok_A <= ixhik_A);
         
         if ((ixlok_A < ixlok_B) || (ixhik_A > ixhik_B)) { return FALSE; }
@@ -120,8 +119,8 @@ bool_t ixbox_equal
     assert((size_A != NULL) && (size_B != NULL));
     for (ix_axis_t k = 0; k < d;  k++)
       { if (size_A[k] != size_B[k]) { return FALSE; }
-        ix_index_t ixlok_A = (ix_index_t)(ixlo_A == NULL? 0 : ixlo_A[k]);
-        ix_index_t ixlok_B = (ix_index_t)(ixlo_B == NULL? 0 : ixlo_B[k]);
+        ix_index_t ixlok_A = (ix_index_t)(ixlo_A == NULL ? 0 : ixlo_A[k]);
+        ix_index_t ixlok_B = (ix_index_t)(ixlo_B == NULL ? 0 : ixlo_B[k]);
         if (ixlok_A != ixlok_B) { return FALSE; }
       }
     return TRUE;

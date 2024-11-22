@@ -98,8 +98,7 @@ void nmsim_group_net_test
         nmsim_elem_synapse_count_t nse = (nmsim_elem_synapse_count_t)int64_abrandom(nse_min, nse_max);
         nmsim_group_net_t *gnet = nmsim_group_net_throw(cnet, nng, nsg, nne, nse);
         /* Test write and read: */
-        char *fname = NULL;
-        asprintf(&fname, "out/test_group_net_%03d_%04dnc_%04dsc_%06dng_%06dsg.txt", i, nnc, nsc, nng, nsg);
+        char *fname = jsprintf("out/test_group_net_%03d_%04dnc_%04dsc_%06dng_%06dsg.txt", i, nnc, nsc, nng, nsg);
         double timeStep = 1.0;
         nmsim_group_net_test_write(fname, gnet, timeStep);
         nmsim_group_net_test_read(fname, gnet, nne_max, nse_max, timeStep);

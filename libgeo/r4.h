@@ -1,5 +1,5 @@
 /* r4.h --- operations on points and vectors of R^4 */
-/* Last edited on 2024-08-30 03:00:50 by stolfi */
+/* Last edited on 2024-11-20 12:59:30 by stolfi */
 
 #ifndef r4_H
 #define r4_H
@@ -22,7 +22,7 @@ void r4_zero (r4_t *r);
 void r4_all (double x, r4_t *r);
   /* Sets all coordinates of {r} to the value {x}. */
   
-void r4_axis (int32_t i, r4_t *r);
+void r4_axis (uint32_t i, r4_t *r);
   /* Sets {r} to the {i}th vector of the canonical basis. */
 
 void r4_add (r4_t *a, r4_t *b, r4_t *r);
@@ -49,7 +49,7 @@ void r4_weigh (r4_t *a, r4_t *w, r4_t *r);
 void r4_unweigh (r4_t *a, r4_t *w, r4_t *r);
   /* Sets {r[i] := a[i] / w[i]}. */
 
-void r4_rot_axis (r4_t *a, int32_t i, int32_t j, double ang, r4_t *r);
+void r4_rot_axis (r4_t *a, uint32_t i, uint32_t j, double ang, r4_t *r);
   /* Sets {r} to {a} after a rotation that moves axis {i} towards 
     axis {j} by {ang} radians, leaving all other coordinates unchanged. */
 
@@ -111,12 +111,12 @@ bool_t r4_is_finite(r4_t *p);
 bool_t r4_eq(r4_t *p, r4_t *q);
   /* True iff points {p} and {q} are identical. */
   
-void r4_barycenter(int32_t np, r4_t p[], double w[], r4_t *bar);
+void r4_barycenter(uint32_t np, r4_t p[], double w[], r4_t *bar);
   /* Sets {*bar} to the barycenter of all points {p[0..np-1]}
     with weights {w[0..np-1]}.  The weights must have positive sum.
     Assumes equal weights if {w = NULL}. */
 
-void r4_bbox(int32_t np, r4_t p[], interval_t B[], bool_t finite);
+void r4_bbox(uint32_t np, r4_t p[], interval_t B[], bool_t finite);
   /* Computes the coordinate ranges {B[0..3]} of the points 
     {p.e[0..np-1]}. If {finite} is true, ignores points 
     that have infinite or NAN coordinate(s). */
@@ -134,6 +134,12 @@ void r4_throw_ball (r4_t *r);
 void r4_throw_normal (r4_t *r);
   /* Sets each coordinate {r[i]} to an independent Gaussian random
     number with zero mean and unit standard deviation. */
+
+double r4_throw_ortho (r4_t *u, r4_t *r);
+  /* Sets {r} to an arbitrary vector orthogonal to {u}, with the same
+    Euclidean norm (which is returned as result).
+    In particular, if the length of {u} is zero or close to underflow,
+    sets {r} to {(0,0,0,0)}. */
 
 void r4_print (FILE *f, r4_t *a);
   /* Prints {a} on file {f}, with some default format. */

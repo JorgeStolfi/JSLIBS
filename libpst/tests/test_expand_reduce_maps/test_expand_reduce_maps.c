@@ -262,8 +262,7 @@ void compare_and_write_slope_maps
   
 void write_map(float_image_t *M, int nfunc, int NX,int NY, char *tag)
   { 
-    char *fname = NULL;
-    asprintf(&fname, "out/%02d-%04d-%04d-%s.fni", nfunc, NX, NY, tag);
+    char *fname = jsprintf("out/%02d-%04d-%04d-%s.fni", nfunc, NX, NY, tag);
     FILE *wr = open_write(fname, TRUE);
     float_image_write(wr, M);
     fclose(wr);

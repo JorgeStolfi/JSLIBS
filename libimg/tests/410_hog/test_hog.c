@@ -8,7 +8,6 @@
 #define test_hog_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -130,7 +129,7 @@ void do_test
 
 float_image_t *read_image(char *prefix, char *suffix, char *ext)
   { char *fname = NULL;
-    asprintf(&fname, "in/%s-%s.%s", prefix, suffix, ext);
+    char *fname = jsprintf("in/%s-%s.%s", prefix, suffix, ext);
     FILE *rd = open_read(fname, TRUE);
     uint16_image_t *pim = uint16_image_read_pnm_file(rd);
     fclose(rd);
@@ -146,7 +145,7 @@ float_image_t *read_image(char *prefix, char *suffix, char *ext)
 
 void write_image(char *prefix, float_image_t *A)
   { char *fname = NULL;
-    asprintf(&fname, "out/%s-G.fni", prefix);
+    char *fname = jsprintf("out/%s-G.fni", prefix);
     FILE *wr = open_write(fname, TRUE);
     float_image_write(wr, A);
     fclose(wr);
@@ -156,8 +155,7 @@ void write_image(char *prefix, float_image_t *A)
 void write_hog(char *prefix, int nh, double h[], bool_t masked, bool_t oriented, double noise)
   {
     /* Write to PPM file: */
-    char *fname = NULL;
-    asprintf(&fname, "out/%s-%04d-%d-%d-%04d.txt", prefix, nh, masked, oriented, (int)floor(noise*1000+0.5));
+    char *fname = jsprintf("out/%s-%04d-%d-%d-%04d.txt", prefix, nh, masked, oriented, (int)floor(noise*1000+0.5));
     FILE *wr = open_write(fname, TRUE);
     double span = (oriented ? 2*M_PI : M_PI);
     double step = span/nh;

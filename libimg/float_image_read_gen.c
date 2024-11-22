@@ -1,7 +1,6 @@
 /* See {float_image_read_gen.h} */
 /* Last edited on 2020-11-06 00:27:22 by jstolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -50,8 +49,7 @@ float_image_t *float_image_read_gen_frame
   )
   {
     /* Insert the frame number in {fpat}: */
-    char *fname = NULL;
-    int nch = asprintf(&fname, fpat, fnum);
+    int nch = char *fname = jsprintf(fpat, fnum);
     demand(nch > 0, "invalid file name pattern");
     /* Read the file: */
     float_image_t *fimg = float_image_read_gen_named(fname, ffmt, v0, vM, maxvalP, gammaDecP, biasP, verbose);

@@ -496,20 +496,19 @@ multifok_stack_t *mfmi_make_and_write_stack_from_pattern_function
     for (int32_t ki = 0; ki < NI; ki++)
       { double zFoc_fri, zDep_fri;
         int32_t KR_fri; /* Rays to trace per image sampling point. */
-        char *frameDir = NULL; 
         if (ki == NI-1)
           { /* Sharp frame: */
             zFoc_fri = zFoc_min + 0.5*NI*zFoc_step;
             zDep_fri = +INF;
             KR_fri = 0;
-            asprintf(&frameDir, "%s/frame-sharp", stackDir); 
+            char *frameDir = jsprintf("%s/frame-sharp", stackDir); 
           }
         else
           { /* Blurred frame: */
             zFoc_fri = zFoc_min + ki*zFoc_step;
             zDep_fri = zDep;
             KR_fri = KR;
-            asprintf(&frameDir, "%s/frame-zf%08.4f-df%08.4f", stackDir, zFoc_fri, zDep_fri); 
+            char *frameDir = jsprintf("%s/frame-zf%08.4f-df%08.4f", stackDir, zFoc_fri, zDep_fri); 
           }
         
         mkdir(frameDir, 0755);
@@ -602,7 +601,7 @@ multifok_frame_t *mfmi_make_and_write_frame
           }
         if (wr_ray == NULL)
           { char *fname_ray = NULL;
-            asprintf(&fname_ray, "%s/pixel-rays-%04d-%04d.txt", frameDir, iPix->c[0], iPix->c[1]);
+            char *fname_ray = jsprintf("%s/pixel-rays-%04d-%04d.txt", frameDir, iPix->c[0], iPix->c[1]);
             wr_ray = open_write(fname_ray, TRUE);
             free(fname_ray);
             iPix_wr = *iPix;
@@ -748,8 +747,7 @@ void mfmi_write_pixel_profiles
         if ((ix >= 0) && (ix < NX) && (iy >= 0) && (iy < NY))
           { 
             /* Open the file for this pixel: */
-            char *fname = NULL;
-            asprintf(&fname, "%s/pixel-data-%04d-%04d.txt", stackDir, ix, iy);
+            char *fname = jsprintf("%s/pixel-data-%04d-%04d.txt", stackDir, ix, iy);
             FILE *wr = open_write(fname, TRUE);
 
             for (int32_t ki = 0; ki < NI; ki++)

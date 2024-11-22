@@ -2,9 +2,8 @@
 #define ulist_impl_H
 
 /* Internal definitions for an implementation of {ulist.h}. */
-/* Last edited on 2009-03-06 20:40:14 by stolfi */
+/* Last edited on 2024-11-15 19:16:46 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <vec.h>

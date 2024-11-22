@@ -1,5 +1,5 @@
 /* test_sve_charges --- test of {sve_minn.h} with Rutherford's atom potential.  */
-/* Last edited on 2024-11-08 09:52:49 by stolfi */
+/* Last edited on 2024-11-11 07:48:24 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -16,7 +16,7 @@
 #include <argparser.h>
 #include <affirm.h>
 #include <r3.h>
-#include <r3_extra.h>
+#include <r3_hedron.h>
 #include <rmxn.h>
 #include <rmxn_extra.h>
 #include <rn.h>
@@ -153,7 +153,7 @@ void find_electron_positions(int32_t nq, int32_t dim, int32_t sym)
   { 
     /* Output file names: */
     char *prefix = NULL; /* Prefix for output file names. */
-    asprintf(&prefix, "out/test-%03d-%1d-%d", nq, dim, sym);
+    char *prefix = jsprintf("out/test-%03d-%1d-%d", nq, dim, sym);
     char *solfname = txtcat(prefix, "-sol.dat"); /* Name of final solution file. */
     char *potfname = txtcat(prefix, "-pot.dat"); /* Name of potential field file. */
     
@@ -165,42 +165,16 @@ void find_electron_positions(int32_t nq, int32_t dim, int32_t sym)
     
     int32_t neval = 0; /* Number of function evaluations: */
 
-    auto double F(int32_t n, double x[]); 
+    auto double sve_goal(int32_t n, double x[]); 
       /* The goal function for uptimization. */
-      
-    double F(int32_t n, double x[])
-      { assert(n == nx);
-        params_to_coords(n, x, nq, dim, sym, p);
-        double Fx = electric_potential(nq, Q, C, p);
-        neval++;
-        return Fx;
-      }
-      
+     
     double Xprev[nx]; /* Guess in previous call of {OK} function. */
     int32_t nok = 0;      /* Counts iterations (actually, calls to {OK}). */
+    bool_t debug = FALSE;
+    bool_t debug_probes = FALSE;
     
-    auto bool_t OK(int32_t n, double x[], double Fx); 
+    auto bool_t sve_OK(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius); 
       /* Acceptance criterion function. */
-      
-    bool_t OK(int32_t n, double x[], double Fx)
-      { assert(n == nx);
-        params_to_coords(n, x, nq, dim, sym, p);
-        fprintf(stderr, "iteration %d\n", nok);
-        if (nok > 0)
-          { double d = rn_dist(n, Xprev, x);
-            fprintf(stderr, "displacement = %16.10f\n", d);
-          }
-        if ((nok < 5) || ((nok % 20) == 0))
-          { fprintf(stderr, "electron positions =\n");
-            write_electron_positions(NULL, nq, p);
-          }
-        /* Save guess in {Xprev} for next call: */
-        rn_copy(n, x, Xprev); 
-        nok++;
-        fprintf(stderr, "potential = %16.10f\n", Fx);
-        fprintf(stderr, "\n");
-        return FALSE;
-      }
       
     /* Define the electron charges {Q[0..nq-1]} and the total cloud charge {C}: */
     C = 0;
@@ -223,26 +197,25 @@ void find_electron_positions(int32_t nq, int32_t dim, int32_t sym)
     double *ctr = NULL;
     double dMax = 2.000; /* If all electrons are on the surface. */
     bool_t dBox = TRUE; /* Let charges roam in box. */
-    double rMin = 0.050;
-    double rMax = 0.500;
-    double rIni = 0.125;
+    double rMin = 0.001;
+    double rMax = 1.000;
+    double rIni = 0.250;
     double minStep = 0.01*rMin;
     int32_t maxIters = 300;
     sign_t dir = -1;
-    bool_t debug = FALSE;
     
-    double Fx = F(nx, x);
+    double Fx = sve_goal(nx, x);
     sve_minn_iterate
-      ( nx, &F, &OK, NULL, 
+      ( nx, &sve_goal, &sve_OK, NULL, 
         x, &Fx, dir, 
         ctr, dMax, dBox, rIni, rMin, rMax, 
-        minStep, maxIters, debug
+        minStep, maxIters, debug, debug_probes
       );
     fprintf(stderr, "iterations = %d\n", nok);
     fprintf(stderr, "function evaluations = %d\n", neval);
     
     /* Ealuate (and print) the final potential: */
-    double FxN = F(nx, x);
+    double FxN = sve_goal(nx, x);
     fprintf(stderr, "final potential = %16.10f %16.10f\n", Fx, FxN);
     demand(Fx == FxN, "inconsistent function value on return");
     
@@ -260,6 +233,37 @@ void find_electron_positions(int32_t nq, int32_t dim, int32_t sym)
     free(potfname);
     free(solfname);
     free(prefix);
+
+    return;
+      
+    double sve_goal(int32_t n, double x[])
+      { assert(n == nx);
+        params_to_coords(n, x, nq, dim, sym, p);
+        double Fx = electric_potential(nq, Q, C, p);
+        neval++;
+        return Fx;
+      }
+       
+    bool_t sve_OK(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius)
+      { assert(n == nx);
+        params_to_coords(n, x, nq, dim, sym, p);
+        fprintf(stderr, "iteration %d", nok);
+        if (nok > 0)
+          { double d = rn_dist(n, Xprev, x);
+            fprintf(stderr, " step = %16.10f", d);
+          }
+        fprintf(stderr, " potential = %16.10f\n", Fx);
+        if ((n <= 3) && ((nok < 5) || ((nok % 20) == 0)))
+          { fprintf(stderr, "electron positions =\n");
+            write_electron_positions(NULL, nq, p);
+            fprintf(stderr, "\n");
+          }
+        /* Save guess in {Xprev} for next call: */
+        rn_copy(n, x, Xprev); 
+        nok++;
+        return FALSE;
+      }
+    
   }
 
 void plot_potential
@@ -279,10 +283,10 @@ void plot_potential
 
     r3_t p[nq];  /* Work area: Electron positions. */
 
-    auto double F(int32_t n, double x[]); 
+    auto double sve_goal(int32_t n, double x[]); 
       /* The goal function for uptimization. */
       
-    double F(int32_t n, double x[])
+    double sve_goal(int32_t n, double x[])
       { assert(n == nx);
         params_to_coords(n, x, nq, dim, sym, p);
         double Fx = electric_potential(nq, Q, C, p);
@@ -292,7 +296,7 @@ void plot_potential
     FILE *wr = open_write(fname, TRUE);
     if (nx == 1)
       { double u0[nx]; rn_axis(nx, 0, u0);
-        minn_plot_1D_gnuplot(wr, nx, x0, u0, R, R/N, F);
+        minn_plot_1D_gnuplot(wr, nx, x0, u0, R, R/N, sve_goal);
       }
     else
       { double u0[nx], u1[nx];
@@ -310,7 +314,7 @@ void plot_potential
           }
           
         bool_t box = FALSE;
-        minn_plot_2D_gnuplot(wr, nx, x0, u0, R, u1, R, box, R/N, F);
+        minn_plot_2D_gnuplot(wr, nx, x0, u0, R, u1, R, box, R/N, sve_goal);
       }
     if ((wr != stderr) && (wr != stdout)) { fclose(wr); }
   }
@@ -540,19 +544,19 @@ void params_to_coords_regular(int32_t nx, double x[], int32_t nq, int32_t dim, r
     double R = x[0];
     if ((dim == 2) || (nq < 4))
       { /* Regular {nq}-gon on the {Z=0} plane: */
-        r3_cylindrical_grid(0.0, R, 1, nq, 0.0, p);
+        r3_hedron_cylinder(0.0, R, 1, nq, 0.0, p);
       }
     else
       { if (nq == 4)
-          { r3_tetrahedron_vertices(R, nq, p); }
+          { r3_hedron_tetra_vertices(R, nq, p); }
         else if (nq == 6)
-          { r3_octahedron_vertices(R, nq, p); }
+          { r3_hedron_octa_vertices(R, nq, p); }
         else if (nq == 8)
-          { r3_hexahedron_vertices(R, nq, p); }
+          { r3_hedron_hexa_vertices(R, nq, p); }
         else if (nq == 12)
-          { r3_icosahedron_vertices(R, nq, p); }
+          { r3_hedron_icosa_vertices(R, nq, p); }
         else if (nq == 20)
-          { r3_dodecahedron_vertices(R, nq, p); }
+          { r3_hedron_dodeca_vertices(R, nq, p); }
         else
           { demand(FALSE, "bad nq/dim/sym combination"); }
       }

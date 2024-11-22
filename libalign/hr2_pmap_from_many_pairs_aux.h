@@ -2,7 +2,7 @@
 #define hr2_pmap_from_many_pairs_aux_H
 
 /* Headers of some internal procedures of {hr2_pmap_from_many_pairs.c} for testing. */
-/* Last edited on 2024-09-05 10:42:38 by stolfi */ 
+/* Last edited on 2024-11-21 21:17:30 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -104,7 +104,7 @@ hr2_pmap_t hr2_pmap_from_many_pairs_initial
     bits {class&1} and {class&2} specify whether the hither points with
     Cartesian coordinates {b1} and {c1} are to be mapped to hither or
     yonder points with Cartesian coordinates {b2} and {c2}. See
-    {hr2_pmap_r2_from_class}.
+    {hr2_pmap_r2_from_sign_class}.
     
     If {type} is general projective and {class} is not 0, the resulting map
     will take some hither points to yonder points, some finite points to

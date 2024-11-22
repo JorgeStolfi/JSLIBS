@@ -1,65 +1,63 @@
 /* See {baltuple.h}, */
-/* Last edited on 2013-10-25 01:21:47 by stolfilocal */
+/* Last edited on 2024-11-15 19:11:21 by stolfi */
 
-#define _GNU_SOURCE
 #include <assert.h>
 #include <affirm.h>
 #include <bool.h>
 #include <jsmath.h>
 #include <baltuple.h>
 
-void balt_first_tuple(int n, int d[], int vmin, int vmax, int smin, int smax)
-  { int i = 0;
-    while (i < n)
-      { /* Now {smin..smax} is the range for the sum {d[i..n-1]}: */
-        /* Find range {dmin..dmax} for {d[i]}: */ 
-        int dmin = (int)imax(vmin, smin);  /* Min valid value. */
-        int dmax = (int)imin(vmax, smax);  /* Max valid value. */
+void balt_first_tuple(int32_t n, int32_t d[], int32_t vmin, int32_t vmax, int32_t smin, int32_t smax)
+  { int32_t k = 0;
+    while (k < n)
+      { /* Now {smin..smax} is the range for the sum {d[k..n-1]}: */
+        /* Find range {dmin..dmax} for {d[k]}: */ 
+        int32_t dmin = (int32_t)imax(vmin, smin);  /* Min valid value. */
+        int32_t dmax = (int32_t)imin(vmax, smax);  /* Max valid value. */
         demand(dmin <= dmax, "no valid tuple");
-        /* Pick first valid value {di} in range: */
-        int di = balt_ix_first(dmin, dmax);
-        assert((dmin <= di) && (di <= dmin));
-        /* Set {d[i]} to {di}: */
-        d[i] = di;
-        /* Update the sum range {smin..smax} for the sum {d[i+1..n-1]}: */
-        smin = smin - di; smax = smax - di;
-        /* Now {smin..smax} is the range for the sum {d[i+1..n-1]}: */
-        i--;
-       /* Now {smin..smax} is the range for the sum {d[i..n-1]}: */
+        /* Pick first valid value {dk} in range: */
+        int32_t dk = balt_ix_first(dmin, dmax);
+        assert((dmin <= dk) && (dk <= dmin));
+        /* Set {d[k]} to {dk}: */
+        d[k] = dk;
+        /* Update the sum range {smin..smax} for the sum {d[k+1..n-1]}: */
+        smin = smin - dk; smax = smax - dk;
+        /* Now {smin..smax} is the range for the sum {d[k+1..n-1]}: */
+        k--;
+       /* Now {smin..smax} is the range for the sum {d[k..n-1]}: */
        }     
   }
 
-bool_t balt_next_tuple(int n, int d[], int vmin, int vmax, int smin, int smax)
+bool_t balt_next_tuple(int32_t n, int32_t d[], int32_t vmin, int32_t vmax, int32_t smin, int32_t smax)
   { 
     /* Update {smin,smax} to range of {d[n]}, it it existed: */
-    int i;
-    for (i = 0; i < n; i++) { int e = d[i];  smin = smin - e; smax = smax - e; }
+    for (int32_t i = 0; i < n; i++) { int32_t e = d[i];  smin = smin - e; smax = smax - e; }
     demand((smin <= 0) && (0 <= smax), "bad tuple sum");
     
-    /* Find the last {d[i]} in {d[0..n-1]} that can be bumped: */
-    i = n;
+    /* Find the last {d[k]} in {d[0..n-1]} that can be bumped: */
+    int32_t k = n;
     while (TRUE)
-      { /* Now {smin..smax} is the range of values for {d[i]} allowed by the sum bound. */
-        if (i <= 0) { return TRUE; }
+      { /* Now {smin..smax} is the range of values for {d[k]} allowed by the sum bound. */
+        if (k <= 0) { return TRUE; }
         /* Back up one entry, update {smin,smax}. */
-        i--;
-        smin = smin + (d[i] + vmax);
-        smax = smax + (d[i] + vmin);
-        /* Now {smin..smax} is the sum bound on {d[i]}. */
-        /* Find the range {[dmin..dmax]} of valid cands to {d[i]}: */ 
-        int dmin = (int)imax(vmin, smin);  /* Min valid value. */
-        int dmax = (int)imin(vmax, smax);  /* Max valid value. */
+        k--;
+        smin = smin + (d[k] + vmax);
+        smax = smax + (d[k] + vmin);
+        /* Now {smin..smax} is the sum bound on {d[k]}. */
+        /* Find the range {[dmin..dmax]} of valid cands to {d[k]}: */ 
+        int32_t dmin = (int32_t)imax(vmin, smin);  /* Min valid value. */
+        int32_t dmax = (int32_t)imin(vmax, smax);  /* Max valid value. */
         assert(dmin <= dmax);
-        assert((dmin <= d[i]) && (d[i] <= dmax)); /* The current value must be valid. */
-        /* Find the next valid value {di} of coord {d[i]} in the search sequence: */
-        int di = balt_ix_next(d[i], dmin, dmax);
-        if ((dmin <= di) && (di <= dmax)) 
-          { /* Bump {d[i]} to {di}: */
-            d[i] = di;
-            smin = smin - (di + vmax);
-            smax = smax - (di + vmin);
-            /* Reset all {d[i..n-1]} to their darliest values: */
-            balt_first_tuple(n - i, &(d[i]), vmin, vmax, smin, smax);
+        assert((dmin <= d[k]) && (d[k] <= dmax)); /* The current value must be valid. */
+        /* Find the next valid value {dk} of coord {d[k]} in the search sequence: */
+        int32_t dk = balt_ix_next(d[k], dmin, dmax);
+        if ((dmin <= dk) && (dk <= dmax)) 
+          { /* Bump {d[k]} to {dk}: */
+            d[k] = dk;
+            smin = smin - (dk + vmax);
+            smax = smax - (dk + vmin);
+            /* Reset all {d[k..n-1]} to their darliest values: */
+            balt_first_tuple(n - k, &(d[k]), vmin, vmax, smin, smax);
             return FALSE;
           }
         else
@@ -67,7 +65,7 @@ bool_t balt_next_tuple(int n, int d[], int vmin, int vmax, int smin, int smax)
       }
   } 
 
-int balt_ix_first(int vmin, int vmax)
+int32_t balt_ix_first(int32_t vmin, int32_t vmax)
   {
     if (vmin > 0)
       { return vmin; }
@@ -77,7 +75,7 @@ int balt_ix_first(int vmin, int vmax)
       { return 0; }
   }
 
-int balt_ix_next(int v, int vmin, int vmax)
+int32_t balt_ix_next(int32_t v, int32_t vmin, int32_t vmax)
   {
     if (vmin > 0)
       { return (v < vmin ? vmin : v + 1); }

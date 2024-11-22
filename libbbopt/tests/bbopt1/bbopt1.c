@@ -82,8 +82,7 @@ int32_t main(int32_t argc, char **argv)
     if (fr.hi < 0.0) { fr.hi = 0.0; }
     
     /* Postscript file: */
-    char *outname = NULL;
-    asprintf(&outname, "bb1_%s", f.tag);
+    char *outname = jsprintf("bb1_%s", f.tag);
     double yscale;
     epswr_figure_t *eps = bb1_new_figure(outname, f.descr, xr, fr, &yscale);
 

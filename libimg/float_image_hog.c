@@ -1,7 +1,6 @@
 /* See {float_image_hog.h} */
 /* Last edited on 2013-10-21 00:05:39 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>

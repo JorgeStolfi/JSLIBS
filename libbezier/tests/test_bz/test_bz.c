@@ -232,9 +232,9 @@ void check_val(double va, double vb, double tol, char *msg, int32_t kk)
     if (fabs(va - vb) > tol)
       { char *fmsg = NULL;
         if (kk >= 0)
-          { asprintf(&fmsg, msg, kk); }
+          { char *fmsg = jsprintf(msg, kk); }
         else
-          { asprintf(&fmsg, msg); }
+          { char *fmsg = jsprintf(msg); }
         fprintf(stderr, "** %24.16e != %24.16e %s\n", va, vb, fmsg);
         assert(FALSE);
         free(fmsg);

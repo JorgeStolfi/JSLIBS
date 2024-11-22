@@ -1,7 +1,6 @@
 /* See {hr2_pmap_encode.h}. */
-/* Last edited on 2024-11-07 23:33:38 by stolfi */
+/* Last edited on 2024-11-20 12:02:38 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>
@@ -26,11 +25,11 @@ hr2_pmap_t hr2_pmap_throw_by_type(hr2_pmap_type_t type, sign_t sgn)
       }
     hr2_pmap_t M;
     if (type == hr2_pmap_type_GENERIC)
-      { hr2_test_throw_pmap(&M);
+      { hr2_pmap_throw(&M);
         hr2_pmap_set_sign(&M, sgn);
       }
     else
-      { int32_t ny = hr2_pmap_encode_num_parameters(type);
+      { uint32_t ny = hr2_pmap_encode_num_parameters(type);
         assert (ny <= 9);
         double y[ny];
         for (int32_t ky = 0; ky < ny; ky++) { y[ky] = 10*(drandom() - 0.5); }

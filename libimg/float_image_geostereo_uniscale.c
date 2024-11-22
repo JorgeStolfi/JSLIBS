@@ -1,7 +1,6 @@
 /* See {float_image_geostereo.h}. */
 /* Last edited on 2023-11-26 06:43:05 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <assert.h>
 #include <limits.h>

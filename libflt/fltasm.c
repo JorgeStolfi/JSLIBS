@@ -1,7 +1,6 @@
 /* Setting rounding-mode direction */
-/* Last edited on 2017-01-02 11:45:29 by jstolfi */
+/* Last edited on 2024-11-20 07:50:49 by stolfi */
 
-#define _GNU_SOURCE
 #include <fpu_control.h>
 #include <fenv.h>
 

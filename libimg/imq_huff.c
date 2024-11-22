@@ -1,7 +1,6 @@
 /* See {imq_huff.h}. */
 /* Last edited on 2023-10-14 11:10:35 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <limits.h>
@@ -110,7 +109,7 @@ void imq_huff_print_codes(FILE *stderr, codetree_t *tree)
       { if (p->value < 0)
           { for (int8_t ich = 0; ich < 2; ich++)
               { char *pref_ch = NULL;
-                asprintf(&pref_ch, "%s%d", pref, 1-ich);
+                char *pref_ch = jsprintf("%s%d", pref, 1-ich);
                 enum_leaves(pref_ch, p->child[ich]);
                 free(pref_ch);
               }

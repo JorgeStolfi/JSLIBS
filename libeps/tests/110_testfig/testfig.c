@@ -95,8 +95,7 @@ void DoTests(void)
       { epswr_figure_t *epsf = NULL;
         if ((iFig % 3) == 0)
           { /* Test {epswr_new_figure}, with given open file: */
-            char *fileName = NULL;
-            asprintf(&fileName, "out/test_fig_%05d_A.eps", iFig);
+            char *fileName = jsprintf("out/test_fig_%05d_A.eps", iFig);
             FILE *wr = open_write(fileName, TRUE);
             free(fileName);
 
@@ -335,8 +334,7 @@ void DrawPicture(epswr_figure_t *epsf, double lightDir, double cubeRot)
     double vTopText = vMin - 4.0;
     double vBotText = vTopText - 2*capFontSize;
     epswr_dev_set_text_geometry(epsf, hMin, hMax, vBotText, vTopText, 0.0);
-    char *xRot = NULL;
-    asprintf(&xRot, "# %5.3f #", cubeRot);
+    char *xRot = jsprintf("# %5.3f #", cubeRot);
     epswr_set_fill_color(epsf, 0.000,0.000,1.000);
     epswr_text(epsf, xRot, FALSE, 0.5, TRUE, FALSE);
     free(xRot);

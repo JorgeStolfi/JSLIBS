@@ -1,8 +1,8 @@
-/* Last edited on 2013-10-28 20:21:51 by stolfilocal */
+/* Last edited on 2024-11-18 09:20:58 by stolfi */
 /* See {interp_spline_B.h}. */
 
-#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <assert.h>
 #include <math.h>
 
@@ -11,15 +11,16 @@
 
 #include <interp_spline_B.h>
  
-int interp_spline_B_compute_num_samples(int ord)
+uint32_t interp_spline_B_compute_num_samples(int32_t ord)
   {
-    return ord+2;
+    demand(ord >= -1, "invalid {ord}");
+    return (uint32_t)(ord+2);
   }
  
-void interp_spline_B_get_weights(double z, int ord, int nw, double wt[])
+void interp_spline_B_get_weights(double z, int32_t ord, uint32_t nw, double wt[])
   {
-    assert(ord >= -1);
-    assert(nw == ord+2);
+    demand(ord >= -1, "invalid {ord}");
+    demand(nw == ord+2, "bad window width {nw}");
     wt[0] = 1.0;
     if (ord >= 0)
       { /* Shift {z} by {1/2} depending on parity of {ord}: */
@@ -32,11 +33,10 @@ void interp_spline_B_get_weights(double z, int ord, int nw, double wt[])
         double v = 1.0 - u;
         
         /* Compute the interpolation weights {wt[0..nw-1]} recursively: */
-        int deg = ord+1;
-        int r, k;
-        for (k = 1; k <= deg; k++)
+        int32_t deg = ord+1;
+        for (int32_t k = 1; k <= deg; k++)
           { wt[k] = (u/k)*wt[k-1];
-            for (r = k-1; r > 0; r--)
+            for (int32_t r = k-1; r > 0; r--)
               { wt[r] = ((k-r+u)/k)*wt[r-1] + ((r+v)/k)*wt[r]; }
             wt[0] = (v/k)*wt[0];
           }

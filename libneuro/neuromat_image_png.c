@@ -46,8 +46,7 @@ void neuromat_image_png_write(char *dir, char *name, float_image_t *fim, float v
     uint16_image_t *pim = float_image_to_uint16_image(wim, FALSE, chns, NULL, NULL, NULL, maxval, yup, verbose_cvt);
     
     /* Write {pim} to disk: */
-    char *fname = NULL;
-    asprintf(&fname, "%s/%s.png", dir, name);
+    char *fname = jsprintf("%s/%s.png", dir, name);
     bool_t verbose_write = TRUE;
     uint16_image_write_png_named(fname, pim, gamma, verbose_write);
     

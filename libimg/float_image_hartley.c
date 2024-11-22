@@ -1,7 +1,6 @@
 /* See {float_image_hartley.h}. */
 /* Last edited on 2017-01-02 21:31:45 by jstolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <string.h>
 #include <limits.h>

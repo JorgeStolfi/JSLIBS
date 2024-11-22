@@ -1,7 +1,6 @@
 /* See uint16_image_read.h */
 /* Last edited on 2017-06-22 02:36:01 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

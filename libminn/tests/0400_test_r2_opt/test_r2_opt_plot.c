@@ -42,8 +42,7 @@ void tr2o_plot_goal
     tr2o_choose_plot_directions(NI, rad, u, v);
 
     /* Sweep the {ctr,u,v} plane and plot: */
-    char *fname = NULL;
-    asprintf(&fname, "out/f2-%02d-%02d-%s.dat", iscale.c[0], iscale.c[1], ctrtag);
+    char *fname = jsprintf("out/f2-%02d-%02d-%s.dat", iscale.c[0], iscale.c[1], ctrtag);
     FILE *fpl = open_write(fname, TRUE);
     
     int32_t NS = 20; /* Number of steps in each direction, in each sense. */
@@ -174,8 +173,7 @@ void tr2o_write_test_image
 
     r2_t scale = (r2_t){{ pow(2.0, iscale.c[0]), pow(2.0, iscale.c[1]) }};
     
-    char *fname = NULL;
-    asprintf(&fname, "out/image-%02d-%02d-%03d-%s.pgm", iscale.c[0], iscale.c[1], i, ctrtag);
+    char *fname = jsprintf("out/image-%02d-%02d-%03d-%s.pgm", iscale.c[0], iscale.c[1], i, ctrtag);
     /* Image size: */
     int32_t HX = 2*((int32_t)ceil(rad.c[0])+hwx)+1; int32_t NX = 2*HX + 1;
     int32_t HY = 2*((int32_t)ceil(rad.c[1])+hwy)+1; int32_t NY = 2*HY + 1;

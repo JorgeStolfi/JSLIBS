@@ -1,24 +1,28 @@
 /* See intsort_extra.h */
-/* Last edited on 2023-03-18 11:24:58 by stolfi */
+/* Last edited on 2024-11-17 15:56:59 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include <affirm.h>
 #include <jsmath.h>
 #include <intsort.h>
 #include <intmerge_extra.h>
+
 #include <intsort_extra.h>
 
-void isrt_heapsort_classic(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
-  { /* Arrange elements into a sorted heap, in reverse order: */
-    int32_t m = 0;
+void isrt_heapsort_classic(int32_t *h, uint32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
+  { 
+    if (n <= 1) { return; }
+    
+    /* Arrange elements into a sorted heap, in reverse order: */
+    uint32_t m = 0;
     while (m < n) 
       { /* Grab next element {v}: */
         int32_t v = h[m];
         /* Create a vacancy {h[i]} at the end of the heap: */
-        int32_t i = m, j;
+        uint32_t i = m, j;
         m++;
         /* Bubble it rootwards to its proper place {h[i]}: */
         while ((i > 0) && (sgn*cmp(v,h[j=(i-1)/2]) > 0)) { h[i] = h[j]; i = j; }
@@ -29,12 +33,12 @@ void isrt_heapsort_classic(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t
       { /* Swap root with last element, decrement heap: */
         m--; int32_t w = h[m]; h[m] = h[0]; h[0] = w;
         /* Bubble the new root down to its proper place: */
-        int32_t j = 0;
-        int32_t ia = 1; /* {h[ia]} is the first child of {h[j]}. */
+        uint32_t j = 0;
+        uint32_t ia = 1; /* {h[ia]} is the first child of {h[j]}. */
         while (ia < m)
           { /* Find largest child {h[i]} of {h[j]}: */
-            int32_t ib = ia + 1; /*  {h[ib]} is the SECOND child of {h[j]}. */
-            int32_t i = ((ib < m) && (sgn*cmp(h[ia],h[ib]) < 0) ? ib : ia);
+            uint32_t ib = ia + 1; /*  {h[ib]} is the SECOND child of {h[j]}. */
+            uint32_t i = ((ib < m) && (sgn*cmp(h[ia],h[ib]) < 0) ? ib : ia);
             /* Ensure that {w=h[j]} precedes the smallest child: */
             if (sgn*cmp(w,h[i]) < 0)
               { /* Swap {h[j]} with child {h[i]}: */
@@ -50,15 +54,19 @@ void isrt_heapsort_classic(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t
       }
   }
 
-void isrt_heapsort_vacsink(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
-  { /* Arrange elements into a sorted heap, in reverse order: */
-    int32_t m = 0;
+void isrt_heapsort_vacsink(int32_t *h, uint32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
+  { 
+    if (n <= 1) { return; }
+    
+    /* Arrange elements into a sorted heap, in reverse order: */
+    uint32_t m = 0;
     while (m < n) 
       { /* Insert at bottom of heap: */
-        int32_t i = m;
+        uint32_t i = m;
         m++;
         /* Grab dubious element {v}: */
-        int32_t v = h[i], j;
+        int32_t v = h[i];
+        uint32_t j;
         /* Bubble it rootwards to its proper place {h[i]}: */
         while ((i > 0) && (sgn*cmp(v,h[j=(i-1)/2]) > 0)) { h[i] = h[j]; i = j; }
         h[i] = v;
@@ -67,22 +75,27 @@ void isrt_heapsort_vacsink(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t
     while (m > 1) 
       { /* Remove the root: */
         int32_t w = h[0]; 
-        int32_t i = 0;  /* {h[i]} is a vacant slot. */
+        uint32_t i = 0;  /* {h[i]} is a vacant slot. */
         /* Promote children into vacancy {h[i]} until it reaches the fringe: */
-        int32_t ja = 1; /* {h[ja]} is the first child of {h[i]}. */
+        uint32_t ja = 1; /* {h[ja]} is the first child of {h[i]}. */
         while (ja < m)
           { /* Find largest child {h[j]} of {h[i]}: */
-            int32_t jb = ja + 1; /*  {h[jb]} is the SECOND child of {h[i]}. */
-            int32_t j = ((jb < m) && (sgn*cmp(h[ja],h[jb]) < 0) ? jb : ja);
+            uint32_t jb = ja + 1; /*  {h[jb]} is the SECOND child of {h[i]}. */
+            uint32_t j = ((jb < m) && (sgn*cmp(h[ja],h[jb]) < 0) ? jb : ja);
             /* Promote largest child into hole: */
             h[i] = h[j]; i = j; ja = 2*i + 1;
           }
         m--;
         if (i < m)
           { /* The vacancy did not end up at {h[m]}, so fill it with {h[m]}: */        
-            int32_t v = h[m], j; 
+            int32_t v = h[m]; 
             /* Bubble it up to the proper place: */
-            while ((i > 0) && (sgn*cmp(v,h[j=(i-1)/2]) > 0)) { h[i] = h[j]; i = j; }
+            while (i > 0)
+              { uint32_t j = (i-1)/2;
+                if (sgn*cmp(v,h[j]) <= 0) { break; }
+                h[i] = h[j];
+                i = j; 
+              }
             h[i] = v;
           }
         /* Add the removed element to the sorted region: */
@@ -90,21 +103,24 @@ void isrt_heapsort_vacsink(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t
       }
   }
 
-void isrt_quicksort_middle(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
+void isrt_quicksort_middle(int32_t *h, uint32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
   {
-    auto void sort(int32_t i, int32_t j); 
+    auto void sort(uint32_t i, uint32_t j); 
       /* Sorts segment {h[i..j-1]} */
 
-    void sort(int32_t i, int32_t j)
+    if (n >= 2) { sort(0, n); }
+    return;
+
+    void sort(uint32_t i, uint32_t j)
       {
         while (j-i > isrt_quicksort_middle_SMALL)
           { /* Separator element is middle one: */
-            int32_t m = (i+j-1)/2;
+            uint32_t m = (i+j-1)/2;
             int32_t v = h[m];
             /* Put the first element h[i] in its place: */
             h[m] = h[i];
             /* Sift {h[i+1..j-1]} into leqs {h[i+1..r-1]} and geqs {h[s+1..j-1]}: */
-            int32_t r = i+1; int32_t s = j-1;
+            uint32_t r = i+1; uint32_t s = j-1;
             do
               { while ((r <= s) && (sgn*cmp(h[r],v) <= 0)) { r++; }
                 while ((s >= r) && (sgn*cmp(v,h[s]) <= 0)) { s--; }
@@ -130,28 +146,30 @@ void isrt_quicksort_middle(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t
             isrt_quicksort_middle_SMALLSORT(h+i, j-i, cmp, sgn);
           }
       }
-    sort(0, n);
   }
 
-void isrt_quicksort_median3(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
+void isrt_quicksort_median3(int32_t *h, uint32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
   {
-    auto void sort(int32_t i, int32_t j); 
+    auto void sort(uint32_t i, uint32_t j); 
       /* Sorts segment {h[i..j]} */
 
-    void sort(int32_t i, int32_t j)
+    if (n >= 2) { sort(0, n-1); }
+    return;
+
+    void sort(uint32_t i, uint32_t j)
       {
         while (j-i+1 > isrt_quicksort_median3_SMALL)
           { /* Separator element is median of {h[i],h[m],h[j-1]}: */
             if (sgn*cmp(h[i],h[j]) > 0)
               { int32_t t = h[i]; h[i] = h[j]; h[j] = t; }
-            int32_t m = (i+j)/2;
+            uint32_t m = (i+j)/2;
             int32_t v = h[m];
             if (sgn*cmp(h[i],v) > 0)
               { h[m] = h[i]; h[i] = v; v = h[m]; }
             else if (sgn*cmp(v,h[j]) > 0)
               { h[m] = h[j]; h[j] = v; v = h[m]; }
             /* Sift {h[i+1..j-1]} into leqs {h[i+1..r-1]} and geqs {h[s+1..j-1]}: */
-            int32_t r = i+1; int32_t s = j-1;
+            uint32_t r = i+1; uint32_t s = j-1;
             do
               { /* Now {r <= s}, {h[i..r-1] <= v}, {h[s+1..j] >= v}. */
                 while ((r <= s) && (sgn*cmp(h[r],v) <= 0)) { r++; }
@@ -176,10 +194,9 @@ void isrt_quicksort_median3(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_
             isrt_quicksort_median3_SMALLSORT(h+i, j-i+1, cmp, sgn);
           }
       }
-    sort(0, n-1);
   }
   
-void isrt_mergesort_pivot(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
+void isrt_mergesort_pivot(int32_t *h, uint32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
   {
     auto void sort(int32_t *a, int32_t *b);
     /* Sorts elements of {h} from {*a} to {*(b-1)} (inclusive).
@@ -222,8 +239,12 @@ void isrt_mergesort_pivot(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t 
     auto void merge_blocks(int32_t *am, int32_t *bm, int32_t *cm);
     /* Merges two consecutive sorted blocks {*am..*(bm-1)} and {*bm..*(cm-1)}. */
 
+    if (n >= 2) { sort(h, h+n); }
+    return;
+
     void sort(int32_t *as, int32_t *bs)
-      { int32_t nab = (int32_t)(bs - as);
+      { assert(as < bs);
+        uint32_t nab = (uint32_t)(bs - as);
         if (nab <= 1) 
           { /* Do nothing. */ }
         else if (nab <= isrt_mergesort_pivot_SMALL) 
@@ -237,9 +258,10 @@ void isrt_mergesort_pivot(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t 
       }
 
     void split (int32_t *af, int32_t *bf, int32_t *cf, int32_t **as, int32_t **bs, int32_t **piv)
-      {  
-        int32_t na = (int32_t)(bf - af);
-        int32_t nb = (int32_t)(cf - bf);
+      { assert(bf > af);
+        uint32_t na = (uint32_t)(bf - af);
+        assert(cf > bf);
+        uint32_t nb = (uint32_t)(cf - bf);
         if (na >= nb)
           { int32_t *tpiv = af + na/2;  /* Address of pivot before block swap. */
             /* fprintf(stderr, "  pivot h[%d] = %d\n", tpiv-a, *tpiv); */
@@ -353,17 +375,19 @@ void isrt_mergesort_pivot(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t 
             /* fprintf(stderr, "- merge [%d..%d] [%d..%d]\n", am-a, bm-1-a, bm-a, cm-1-a); */
           }
       }
-
-    sort(h, h+n);
   }
 
-void isrt_mergesort_symsplit(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
+void isrt_mergesort_symsplit(int32_t *h, uint32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
   {
     auto void sort(int32_t *a, int32_t *b);
     /* Sorts elements of {h} from {*a} to {*(b-1)} (inclusive). */
-  
+    
+    if (n >= 2) { sort(h, h+n); }
+    return;
+
     void sort(int32_t *as, int32_t *bs)
-    { int32_t nab = (int32_t)(bs - as);
+      { assert(bs > as);
+        uint32_t nab = (uint32_t)(bs - as);
         if (nab <= 1) 
           { /* Do nothing. */ }
         else if (nab <= isrt_mergesort_symsplit_SMALL) 
@@ -375,8 +399,6 @@ void isrt_mergesort_symsplit(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32
             imrg_merge_symsplit(as, ms, bs, cmp, sgn);
           }
       }
-
-    (void) sort(h, h+n);
   }
 
 /* Created by J. Stolfi, Unicamp, Nov/2004. */

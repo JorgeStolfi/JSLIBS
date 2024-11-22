@@ -1,7 +1,6 @@
 /* See hr3_pmap.h */
-/* Last edited on 2024-11-01 05:00:25 by stolfi */ 
+/* Last edited on 2024-11-20 12:04:14 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <math.h>
 #include <assert.h>
@@ -350,7 +349,7 @@ double hr3_pmap_diff_sqr(hr3_pmap_t *M, hr3_pmap_t *N)
     return sum_d2;
   }
 
-double hr3_pmap_mismatch_sqr(hr3_pmap_t *M, int32_t np, r3_t p1[], r3_t p2[])
+double hr3_pmap_mismatch_sqr(hr3_pmap_t *M, uint32_t np, r3_t p1[], r3_t p2[])
   {
     bool_t debug = FALSE;
     
@@ -375,18 +374,18 @@ double hr3_pmap_mismatch_sqr(hr3_pmap_t *M, int32_t np, r3_t p1[], r3_t p2[])
 
 double hr3_pmap_deform_sqr(r3_t ph[], hr3_pmap_t *M)
   {
-    int32_t nk = (1 << NC); /* Number of corners of the cuboid. */
+    uint32_t nk = (1 << NC); /* Number of corners of the cuboid. */
     r3_t qh[nk];
     for (int32_t k = 0; k < nk; k++)
       { qh[k] = hr3_pmap_r3_point(&(ph[k]), M); }
     
-    int32_t nd = 12 + 4; /* Number of distances to probe. */
+    uint32_t nd = 12 + 4; /* Number of distances to probe. */
     double logr[nd];
-    int32_t kd = 0;
+    uint32_t kd = 0;
     for (int32_t ik = 1; ik < nk; ik++)
       { for (int32_t jk = 0; jk < ik; jk++)
-          { int32_t eij = (ik ^ jk); /* Exclusive OR of indices. */
-            int32_t hij = (eij & 1) + (eij & 2) + (eij & 4); /* Hamming dist. */
+          { uint32_t eij = (ik ^ jk); /* Exclusive OR of indices. */
+            uint32_t hij = (eij & 1) + (eij & 2) + (eij & 4); /* Hamming dist. */
             if ((hij == 1) || (hij == 3))
               { /* Side or main diagonal: */
                 double dp2 = r3_dist_sqr(&(ph[ik]), &(ph[jk]));

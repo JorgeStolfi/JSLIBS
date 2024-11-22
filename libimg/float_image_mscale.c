@@ -1,7 +1,6 @@
 /* See {float_image_mscale.h}. */
 /* Last edited on 2023-11-26 06:43:52 by stolfi */
 
-#define _GNU_SOURCE
 #include <assert.h>
 #include <limits.h>
 #include <string.h>
@@ -151,19 +150,16 @@ int float_image_mscale_rounding_bias(int n)
   
 char *float_image_mscale_file_name(char *filePrefix, int level, int iter, char *tag, char *ext)
   { 
-    char *fileName = NULL; 
     if (strcmp(filePrefix,"-") == 0)
-      { asprintf(&fileName, "-"); }
+      { char *fileName = jsprintf("-"); }
     else
       { /* Typeset {level} and {iter}; leave "" to omit. */
-        char *xlevel = NULL;
-        if (level >= 0) { asprintf(&xlevel, "-%02d", level); } else { xlevel = ""; }
-        char *xiter = NULL;
-        if (iter >= 0) { asprintf(&xiter, "-%09d", iter); } else { xiter = ""; }
+        if (level >= 0) { char *xlevel = jsprintf("-%02d", level); } else { xlevel = ""; }
+        if (iter >= 0) { char *xiter = jsprintf("-%09d", iter); } else { xiter = ""; }
         /* Typeset the filename: */
         if (tag == NULL) { tag = ""; }
         char *tagsep = (tag[0] == 0 ? "" : "-");
-        asprintf(&fileName, "%s%s%s%s%s.%s", filePrefix, xlevel, xiter, tagsep, tag, ext);
+        char *fileName = jsprintf("%s%s%s%s%s.%s", filePrefix, xlevel, xiter, tagsep, tag, ext);
         if (level >= 0) { free(xlevel); }
         if (iter >= 0) { free(xiter); }
       }

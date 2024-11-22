@@ -2,7 +2,7 @@
 #define hr2_pmap_encode_H
 
 /* Tools for minimal encoding of projective maps. */
-/* Last edited on 2024-11-07 23:40:07 by stolfi */ 
+/* Last edited on 2024-11-20 12:00:35 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -60,13 +60,13 @@
   The {decode} procedure implements {dec(v)} if the {sgn} argument is {+1},
   and {sym(enc(v))} if {sgn} is {-1}. */
  
-int32_t hr2_pmap_encode_num_parameters(hr2_pmap_type_t type);
+uint32_t hr2_pmap_encode_num_parameters(hr2_pmap_type_t type);
   /* Returns the dimension {d(type)} of the space
     number of parameters used to encode a projective map of the specified
     {type}. Namely, 0 for {IDENTITY} 2 for {TRANSLATION}, 3 for {CONGRUENCE},
     4 for {SIMILARITY}, and 6 for general {AFFINE} map. */
 
-void hr2_pmap_encode(hr2_pmap_t *M, hr2_pmap_type_t type, int32_t ny, double y[]);
+void hr2_pmap_encode(hr2_pmap_t *M, hr2_pmap_type_t type, uint32_t ny, double y[]);
   /* Converts a positive map {M} into the parameters {enc(M) =
     y[0..ny-1]} where {ny} is
     {d(type)=hr2_pmap_encode_num_parameters(type)}. Assumes that {M} is
@@ -74,7 +74,7 @@ void hr2_pmap_encode(hr2_pmap_t *M, hr2_pmap_type_t type, int32_t ny, double y[]
     negative map, produces (enc(sym(M))} instead. Thus the handedness of
     {M} is lost. */
 
-void hr2_pmap_decode(int32_t ny, double y[], hr2_pmap_type_t type, sign_t sgn, hr2_pmap_t *M);
+void hr2_pmap_decode(uint32_t ny, double y[], hr2_pmap_type_t type, sign_t sgn, hr2_pmap_t *M);
   /* The {sgn} must be {-1} or {+1}. If {sgn} is {+1}, converts the
     encoded parameters {y[0..ny-1]} into the positive projective map
     {M=dec(y)} of the given {type}. The number {ny} must be

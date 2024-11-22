@@ -2,13 +2,12 @@
 #define PROG_DESC "test of {jsmath.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-31 03:46:21 by stolfi */ 
+/* Last edited on 2024-11-16 17:39:25 by stolfi */ 
 /* Created on 2007-01-02 by J. Stolfi, UNICAMP */
 
 #define test_jsmath_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -214,7 +213,7 @@ void test_lcm(int32_t nt)
             if ((a == 0) || (b == 0))
               { affirm(lcm(a,b) == 0, "lcm of zero is not zero"); }
             else if (a/g <= UINT64_MAX/b)
-              { int64_t c = lcm(a, b);
+              { uint64_t c = lcm(a, b);
                 affirm(c != 0, "zero lcm");
                 affirm(c % a == 0, "lcm does not divide a");
                 affirm(c % b == 0, "lcm does not divide b");
@@ -605,7 +604,7 @@ void test_ball_vol(int32_t nt)
               else if (i == 0)
                 { affirm (f == 0, "{ball_zone_vol_frac_ang} error for {w = 0}"); }
             }
-          fprintf(stderr, "\n");
+          if (verbose) { fprintf(stderr, "\n"); }
         }
 
         if (verbose) { fprintf(stderr, "Checking {ball_cap_vol_frac_pos} d = %d\n", d); }
@@ -634,7 +633,7 @@ void test_ball_vol(int32_t nt)
                 }
               affirm(fabs(ff - f) <= 1.0e-6, "{ball_cap_vol_frac_pos} error");
             }
-          fprintf(stderr, "\n");
+          if (verbose) { fprintf(stderr, "\n"); }
         }
     }
   }

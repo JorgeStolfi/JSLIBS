@@ -1,7 +1,6 @@
 /* See jstime.h */
-/* Last edited on 2023-03-18 11:18:14 by stolfi */
+/* Last edited on 2024-11-16 09:16:14 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -32,7 +31,7 @@ char *today(void)
     );
     affirm (rcode >= 0, "snprintf failed");
     { int32_t n = (int32_t)strlen(buf);
-      char *res = (char *)malloc(n+1);
+      char *res = talloc(n+1, char);
       strcpy(res, buf);
       return res;
     }

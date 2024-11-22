@@ -1,5 +1,5 @@
 /* argparser.h -- facilities for parsing command line arguments. */
-/* Last edited on 2024-08-31 11:37:48 by stolfi */
+/* Last edited on 2024-11-22 02:18:03 by stolfi */
 
 #ifndef argparser_H
 #define argparser_H
@@ -19,14 +19,14 @@
 #include <affirm.h>
 
 typedef struct argparser_t /* A parser for command line arguments. */
-  { string_vec_t arg;   /* Command line arguments; {arg[0]} is prog name. */
-    bool_vec_t parsed;  /* parsed[i] is {TRUE} if {arg[i]} has been parsed. */
-    unsigned next;      /* The next argument to parse is {arg[next]} */
-    FILE *wr;           /* File for errors */
-    unsigned nhelp;     /* Number of used lines of error help text. */
-    string_vec_t help;  /* {help.e[0..nhelp-1]}  is the help text for errors. */
-    unsigned ninfo;     /* Number of used lines of program info text. */
-    string_vec_t info;  /* {info.e[0..ninfo-1]}  is the program info text. */
+  { string_vec_t arg;      /* Command line arguments; {arg[0]} is prog name. */
+    bool_vec_t parsed;     /* parsed[i] is {TRUE} if {arg[i]} has been parsed. */
+    int32_t next;          /* The next argument to parse is {arg[next]} */
+    FILE *wr;              /* File for errors */
+    uint32_t nhelp;        /* Number of used lines of error help text. */
+    string_vec_t help;     /* {help.e[0..nhelp-1]}  is the help text for errors. */
+    uint32_t ninfo;        /* Number of used lines of program info text. */
+    string_vec_t info;     /* {info.e[0..ninfo-1]}  is the program info text. */
   } argparser_t;
   
 argparser_t *argparser_new(FILE *wr, int32_t argc, char **argv);

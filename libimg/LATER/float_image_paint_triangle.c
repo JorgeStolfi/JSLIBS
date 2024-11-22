@@ -1,7 +1,6 @@
 /* See {float_image_paint.h}. */
 /* Last edited on 2021-08-28 23:26:19 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <limits.h>
 #include <assert.h>

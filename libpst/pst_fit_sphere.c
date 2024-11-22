@@ -1,10 +1,11 @@
 /* See pst_fit_sphere.h */
-/* Last edited on 2024-11-08 09:51:57 by stolfi */ 
+/* Last edited on 2024-11-08 19:52:38 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <math.h>
 #include <values.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <bool.h>
@@ -33,7 +34,7 @@
 
 /* INTERNAL PROTOTYPES */
 
-int pst_fit_sphere_num_params(double ctrAdj, double radAdj, double resAdj);
+int32_t pst_fit_sphere_num_params(double ctrAdj, double radAdj, double resAdj);
   /* Number of adjustable parameters, depending on which adjustment
     amounts are nonzero: {ctrAdj} (2 params), {radAdj} (1), {resAdj} (1). */
 
@@ -41,7 +42,7 @@ double pst_fit_sphere_good_spr_adjustment(r2_t *Q, double G, r2_t K, double R);
   /* Computes an increment for the spread of camera {C} that would
     cause a shift of 1 pixel in the outline {E} of a sphere. */
 
-void pst_fit_sphere_debug(int k, char *tag, double G, r2_t K, double R, double H);
+void pst_fit_sphere_debug(int32_t k, char *tag, double G, r2_t K, double R, double H);
   /* Prints to stderr the index {k}, or {tag} if {k<0}, or blank if {tag} is NULL.
     Then prints the camera spread {G}, the sphere center {K}, the 
     sphere radius {R}, and the goal function value {H} (if not NAN). */
@@ -68,13 +69,14 @@ double pst_fit_sphere
     double GAdj,  /* Maximum adjustment allowed in camera spread {G}. */
     double KAdj,  /* Maximum adjustment allowed in {K} coordinates. */
     double RAdj,  /* Maximum adjustment allowed in {R}. */
-    int maxIts    /* Max iterations of the optimizer. */
+    int32_t maxIts    /* Max iterations of the optimizer. */
   )
-  { bool_t debug_pst = TRUE;
-    bool_t debug_sve = FALSE;
+  { bool_t pst_debug = TRUE;
+    bool_t sve_debug = FALSE;
+    bool_t sve_debug_probes = FALSE;
   
     /* Get the image dimensions: */
-    int NC, NX, NY;
+    int32_t NC, NX, NY;
     float_image_get_size(IGR, &NC, &NX, &NY);
     demand(NC == 1, "bad image depth");
     
@@ -93,7 +95,7 @@ double pst_fit_sphere
     demand(isfinite(GAdj) && GAdj >= 0, "invalid spread adjustment");
     
     /* Compute the number of parameters {NP} in optimization: */
-    int NP = pst_fit_sphere_num_params(KAdj, RAdj, GAdj);
+    int32_t NP = pst_fit_sphere_num_params(KAdj, RAdj, GAdj);
     
     auto void scatter_params(double x[], double *GT, r2_t *KT, double *RT);
       /* Maps the minimizer's argument vector {x[0..NP-1]} to the
@@ -162,13 +164,13 @@ double pst_fit_sphere
       }
     
     /* Count iterations for debugging and budget control: */
-    int nIts = 0;
+    int32_t nIts = 0;
     
-    auto double sve_goal(int m, double x[]);
+    auto double sve_goal(int32_t n, double x[]);
       /* Evaluates the goal function for {sve_minn_iterate} for the 
-        parameters {x[0..m-1]}.   Increments {nEvals}. 
+        parameters {x[0..n-1]}.   Increments {nEvals}. 
         
-        Requires {m == NP}. Calls {pst_fit_sphere_eval(IGR,ET)} with a
+        Requires {n == NP}. Calls {pst_fit_sphere_eval(IGR,ET)} with a
         geometry {ET} derived from the fixed fields of
         {GIni,KIni,RIni} with the variable parameters taken from
         {x[0..NP-1]} as per {scatter_params}. To that value, the
@@ -177,7 +179,7 @@ double pst_fit_sphere
         is to avoid a degenerate minimum (goal value independent of
         {G}) when the sphere is on the optical axis. */
     
-    auto bool_t sve_check(int m, double x[], double Fx);
+    auto bool_t sve_check(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius);
       /* To be called by the minimizer before each major optimization.
         Currently stops when the number of iterations is exceeded. */
     
@@ -185,7 +187,7 @@ double pst_fit_sphere
     double x[NP];  /* Packed parameters: */
     gather_params(GIni, KIni, RIni, x);
     double H = sve_goal(NP, x);
-    if (debug_pst)
+    if (pst_debug)
       { fprintf(stderr, "%s: initial goal function = %+24.16e\n", __FUNCTION__, H); }
         
     if (NP > 0)
@@ -211,15 +213,16 @@ double pst_fit_sphere
             /*rMax:*/     dMax,
             /*minStep:*/  minStep,
             /*maxEvals:*/ maxIts,
-            /*debug:*/    debug_sve
+            /*debug:*/    sve_debug,
+            /*debug_probes:*/    sve_debug_probes
           );
       }
-    if (debug_pst)
+    if (pst_debug)
       { Pr(Er, "%s: %d iterations\n", __FUNCTION__, nIts); }
      
     /* Check the mismatch for the  final parameter vector: */
     double HN = sve_goal(NP, x);
-    if (debug_pst)
+    if (pst_debug)
       { fprintf(stderr, "%s: final goal function = %+24.16e %+24.16e\n", __FUNCTION__, H, HN); }
     demand(H == HN, "inconsistent function value");
 
@@ -238,7 +241,7 @@ double pst_fit_sphere
     /* IMPLEMENTATIONS OF INTERNAL PROCS */
 
     void scatter_params(double x[], double *GT, r2_t *KT, double *RT)
-      { int k = 0;
+      { int32_t k = 0;
         
         /* Get center {*KT}, from {x} or from the saved guess: */
         if (KAdj > 0) 
@@ -265,7 +268,7 @@ double pst_fit_sphere
         
     void gather_params(double GT, r2_t KT, double RT, double x[])
       { /* Store the variable fields of {GT,KT,RT} into {x[0..NP-1]}: */
-        int k = 0;
+        int32_t k = 0;
         
         if (KAdj > 0) 
           { /* Store the center coords: */
@@ -294,7 +297,7 @@ double pst_fit_sphere
     double diomgis(double v)
        { return tan(HPI*v)/HPI; }
     
-    double sve_goal(int m, double x[])
+    double sve_goal(int32_t n, double x[])
       { /* Unpack {x} into local variables {GT,KT,RT}: */
         double GT;
         r2_t KT;
@@ -309,7 +312,7 @@ double pst_fit_sphere
         /* Add a tiny penalty factor for cameras at finite distance: */
         double HT_bias = 1.0e-7 * GT*GT;
         double HT = HT_base + HT_bias;
-        if (debug_sve) 
+        if (sve_debug) 
           { pst_fit_sphere_debug(-1, NULL, GT, KT, RT, HT);
             Pr(Er, "      E = "); 
             ellipse_crs_print(Er, &ET, "%7.2f");
@@ -318,9 +321,9 @@ double pst_fit_sphere
         return HT;
       }
 
-    bool_t sve_check(int m, double x[], double Fx)
+    bool_t sve_check(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius)
       { nIts++;
-        if (debug_sve) 
+        if (sve_debug) 
           { /* Unpack {x} into local variables {GT,KT,RT}: */
             double GT;
             r2_t KT;
@@ -332,9 +335,9 @@ double pst_fit_sphere
       }
   }
   
-int pst_fit_sphere_num_params(double KAdj, double RAdj, double GAdj)
+int32_t pst_fit_sphere_num_params(double KAdj, double RAdj, double GAdj)
   {
-    int NP = (KAdj > 0 ? 2 : 0) + (RAdj > 0 ? 1 : 0) + (GAdj > 0 ? 1 : 0);
+    int32_t NP = (KAdj > 0 ? 2 : 0) + (RAdj > 0 ? 1 : 0) + (GAdj > 0 ? 1 : 0);
     return NP;
   }
 
@@ -349,13 +352,13 @@ double pst_fit_sphere_multiscale
     double KAdj,        /* Maximum adjustment allowed in {K} coordinates. */
     double RAdj,        /* Maximum adjustment allowed in {R}. */
     double RMin,        /* Min acceptable radius for multiscale. */
-    int maxIts          /* Max iterations of optimizer at initial scale. */
+    int32_t maxIts          /* Max iterations of optimizer at initial scale. */
   )
   {
     bool_t debug = TRUE;
     
     /* Get the image dimensions: */
-    int NC, NX, NY;
+    int32_t NC, NX, NY;
     float_image_get_size(IMG, &NC, &NX, &NY);
     
     if (debug) { Pr(Er, "channels = %d  image size = %d × %d\n", NC, NX, NY); }
@@ -367,11 +370,11 @@ double pst_fit_sphere_multiscale
     double Rt = (*R);
     
     /* Decide whether to recurse: */
-    int NP = pst_fit_sphere_num_params(KAdj, RAdj, GAdj);
+    int32_t NP = pst_fit_sphere_num_params(KAdj, RAdj, GAdj);
     if ((NP > 0) && (Rt + RAdj > 2*RMin))
       { /* Reduce problem to half-scale: */
         float_image_t *IMG_r = pst_fit_ellipse_image_shrink(IMG);
-        int dxy = (pst_fit_ellipse_nw-1)/2;
+        int32_t dxy = (pst_fit_ellipse_nw-1)/2;
         r2_t QCr = float_image_mscale_point_shrink(Q, dxy, dxy, pst_fit_ellipse_nw);
         double Gr;
         r2_t Kr;
@@ -410,7 +413,7 @@ double pst_fit_sphere_multiscale
     return H;
   }
   
-void pst_fit_sphere_debug(int k, char *tag, double G, r2_t K, double R, double H)
+void pst_fit_sphere_debug(int32_t k, char *tag, double G, r2_t K, double R, double H)
   {
     if (k >= 0)
       { Pr(Er, "[%03d]", k); }
@@ -434,7 +437,7 @@ void pst_fit_sphere_data_shrink
     double *Rr
   )
   {
-    int dxy = (pst_fit_ellipse_nw-1)/2;
+    int32_t dxy = (pst_fit_ellipse_nw-1)/2;
     (*Gr) = G / 2;
     (*Kr) = float_image_mscale_point_shrink(&K, dxy, dxy, pst_fit_ellipse_nw);
     (*Rr) = R / 2;
@@ -450,7 +453,7 @@ void pst_fit_sphere_data_expand
   )
   {
     (*Gx) = G * 2;
-    int dxy = (pst_fit_ellipse_nw-1)/2;
+    int32_t dxy = (pst_fit_ellipse_nw-1)/2;
     (*Kx) = float_image_mscale_point_expand(&K, dxy, dxy, pst_fit_ellipse_nw);
     (*Rx) = R * 2;
   }

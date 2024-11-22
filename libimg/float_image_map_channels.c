@@ -1,7 +1,6 @@
 /* See float_image_map_channels.h */
 /* Last edited on 2023-01-07 14:12:35 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <limits.h>
 #include <float.h>
 #include <assert.h>

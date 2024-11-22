@@ -2,12 +2,11 @@
 #define wt_table_generic_H
 
 /* Generic weight tables with variable kind */
-/* Last edited on 2023-11-26 13:21:08 by stolfi */
+/* Last edited on 2024-11-16 10:27:13 by stolfi */
 
 #define wt_table_generic_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 
@@ -44,7 +43,7 @@ char *wt_table_kind_to_string(wt_table_kind_t kind);
   /* Returns a constant (non-heap) string with the name corresponding to the 
     given {kind}. Returns "invalid" for {wt_table_kind_INVALID}.*/ 
 
-void wt_table_fill(wt_table_kind_t kind, int32_t n, double parm, double wt[], bool_t norm, int32_t *stride_P);
+void wt_table_fill(wt_table_kind_t kind, uint32_t n, double parm, double wt[], bool_t norm, uint32_t *stride_P);
   /* Stores into {wt[0..n-1]} a window weight table of the given {kind}
     (which must not be {wt_table_kind_INVALID}.
     If the table has a parameter (such as the deviation for Gaussian,
@@ -62,7 +61,7 @@ void wt_table_fill(wt_table_kind_t kind, int32_t n, double parm, double wt[], bo
     returned in {*stride_P}. Otherwise {*stride_P} is set to 0. If
     {*stride_P} is {NULL}, it is ignored. */
 
-double_vec_t wt_table_make(wt_table_kind_t kind, int32_t n, double parm, bool_t norm, int32_t *stride_P);
+double_vec_t wt_table_make(wt_table_kind_t kind, uint32_t n, double parm, bool_t norm, uint32_t *stride_P);
   /* Allocates a new {double_vec_t} {wt} with {wt.ne = n} elements and fills {wt.e[0..n-1]} 
     with {wt_table_fill(kind, n, parm, wt.e,norm,stride_P)}. */
 

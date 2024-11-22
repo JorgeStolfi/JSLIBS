@@ -1,7 +1,6 @@
 /* See {frgb_inksep.h}. */
 /* Last edited on 2023-03-04 18:10:08 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <math.h>
 

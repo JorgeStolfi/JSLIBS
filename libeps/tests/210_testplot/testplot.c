@@ -50,8 +50,7 @@ void DoTests(void)
     bool_t verbose = TRUE;
 
     /* Create the figure file: */
-    char *fileName = NULL;
-    asprintf(&fileName, "out/fig.eps");
+    char *fileName = jsprintf("out/fig.eps");
     FILE *wr = open_write(fileName, TRUE);
     free(fileName);
 

@@ -2,9 +2,8 @@
 #define sign_get_H
 
 /* Extract sign of a value as a {sign_t} data type. */
-/* Last edited on 2023-03-18 11:14:08 by stolfi */
+/* Last edited on 2024-11-15 19:15:21 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <sign.h>

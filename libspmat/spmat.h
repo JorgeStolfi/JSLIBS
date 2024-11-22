@@ -4,7 +4,7 @@
 
 #define spmat_H_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2023-03-18 10:46:14 by stolfi */
+/* Last edited on 2024-11-22 01:57:25 by stolfi */
 
 /* 
   !!! change sort_entries so that (+1,+2) means row-by-row ? !!!
@@ -247,14 +247,16 @@
 typedef uint32_t spmat_size_t;
   /* Type of a count of columns or rows in a sparse matrix. */
   
-typedef uint32_t spmat_index_t;
-  /* Type of column or row index into a sparse matrix. */
-
 typedef uint32_t spmat_count_t;
   /* Type of a count of non-trivial entries in a sparse matrix. */
 
-typedef uint32_t spmat_pos_t;
-  /* Type of an index of an entry in a sparse matrix. */
+typedef int32_t spmat_index_t;
+  /* Type of column or row index into a sparse matrix. 
+    Signed to allow reverse for loops. */
+
+typedef int32_t spmat_pos_t;
+  /* Type of an index of an entry in a sparse matrix.
+    Signed to allow reverse for loops. */
 
 /* ------------------------------------------------------------
   typedef spmat_size_t PREFIX##_size_t;
@@ -798,7 +800,7 @@ void spmat_trim
 
 /* MAXIMUM SAFE VALUES */
 
-#define spmat_MAX_SIZE (UINT32_MAX/2)
+#define spmat_MAX_SIZE (INT32_MAX/2)
 #define spmat_MAX_ROWS (spmat_MAX_SIZE)
 #define spmat_MAX_COLS (spmat_MAX_SIZE)
   /* Max safe value for a row or column count ({spmat_size_t}). */
@@ -809,7 +811,7 @@ void spmat_trim
 #define spmat_NO_INDEX (spmat_MAX_SIZE)
   /* A {spmat_index_t} value used to mean `no such column' or `no such row'. */
 
-#define spmat_MAX_COUNT (UINT32_MAX/2)
+#define spmat_MAX_COUNT (INT32_MAX/2)
 #define spmat_MAX_ENTS (spmat_MAX_COUNT)
   /* Max safe value for a valid stored entry count ({spmat_count_t}). */
 

@@ -2,7 +2,7 @@
 #define i2_H
 
 /* Operations on points and vectors of Z^2 */
-/* Last edited on 2023-01-12 06:48:45 by stolfi */
+/* Last edited on 2024-11-20 13:34:19 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -35,7 +35,7 @@ void i2_zero (i2_t *r);
 void i2_all (int32_t x, i2_t *r);
   /* Sets all coordinates of {r} to the value {x}. */
   
-void i2_axis (int32_t i, i2_t *r);
+void i2_axis (uint32_t i, i2_t *r);
   /* Sets {r} to the {i}th vector of the canonical basis. */
 
 void i2_add (i2_t *a, i2_t *b, i2_t *r);
@@ -47,20 +47,20 @@ void i2_sub (i2_t *a, i2_t *b, i2_t *r);
 void i2_neg (i2_t *a, i2_t *r);
   /* Sets {r} to {-a}. Input MMax: {2^31-1}. Output range: {-M..+M}. */
 
-int32_t i2_L_inf_norm (i2_t *a);
+uint32_t i2_L_inf_norm (i2_t *a);
   /* Returns the L-infinity norm of {a} (max absolute coordinate).
     Input MMax: {2^31-1}. Output range: {0..+M}. */
 
-int32_t i2_L_inf_dist (i2_t *a, i2_t *b);
+uint64_t i2_L_inf_dist (i2_t *a, i2_t *b);
   /* Returns the L-infinity distance between {a} and {b} (max absolute diff).
-    Input MMax: {2^30-1}. Output range: {0..+2*M}. */
+    Input MMax: {2^31-1}. Output range: {0..+2*M}. */
 
-int64_t i2_norm_sqr (i2_t *a);
+uint64_t i2_norm_sqr (i2_t *a);
   /* Returns the square of the Euclidean norm of {a}. 
     Input MMax: {2^31-1}. Output range: {0..+2*M^2}.
     !!! Perhaps should be {uint64_t}? !!! */
 
-int64_t i2_dist_sqr (i2_t *a, i2_t *b);
+uint64_t i2_dist_sqr (i2_t *a, i2_t *b);
   /* Returns the square of the Euclidean distance between {a} and {b}.
     Input MMax: {2^30-1}. Output range: {0..+8*M^2}.
     !!! Perhaps should be {uint64_t}? !!! */
@@ -81,8 +81,9 @@ bool_t i2_eq(i2_t *p, i2_t *q);
   /* True iff points {p} and {q} are identical. */
 
 void i2_throw_cube (int32_t m, i2_t *r);
-  /* Sets {r} to a uniformly random integer point of the 2-cube (square) {[-m .. +m]^2}.
-     Input MMax: {2^31-1}. Output range: {-m .. +m}. */
+  /* Sets {r} to a uniformly random integer point of the 2-cube (square)
+    {[-|m| .. +|m|]^2}.  The sign of {m} is ignored. 
+    Input MMax: {2^31-1}. Output range: {-|m| .. +|m|}. */
 
 void i2_print (FILE *f, i2_t *a);
   /* Prints {a} on file {f}, with some default format. */

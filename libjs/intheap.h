@@ -1,10 +1,9 @@
 /* intheap - sorted heap of integers. */
-/* Last edited on 2023-03-18 11:27:12 by stolfi */
+/* Last edited on 2024-11-16 12:16:26 by stolfi */
 
 #ifndef intheap_H
 #define intheap_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 /* 
@@ -23,12 +22,12 @@
   {sgn} should be changed while the heap contains more than one
   item. */
 
-void ihp_heap_insert(int32_t *h, int32_t *n, int32_t v, int32_t cmp(int32_t x, int32_t y), int32_t sgn);
+void ihp_heap_insert(int32_t *h, uint32_t *n, int32_t v, int32_t cmp(int32_t x, int32_t y), int32_t sgn);
   /* Inserts the integer {v} in the heap {h[0..n-1]}, rearranging 
    its contents as needed.  Also increments {n}. 
    Takes {O(log(n))} time in the worst case. */
 
-int32_t ihp_heap_pop(int32_t *h, int32_t *n, int32_t cmp(int32_t x, int32_t y), int32_t sgn);
+int32_t ihp_heap_pop(int32_t *h, uint32_t *n, int32_t cmp(int32_t x, int32_t y), int32_t sgn);
   /* Removes the root item {h[0]} from {h}, rearranging its contents
     as needed. Returns the removed item. Also decrements {n}.  
     Takes {O(log(n))} time in the worst case.  */

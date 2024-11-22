@@ -146,11 +146,9 @@ void plot_cpars
 
 tf_calib_data_t *read_calibration_data(char *in_dir, char *tag)
   {  char *world_coords_fname = NULL;
-    asprintf(&world_coords_fname, "%s/%s_w.txt", in_dir, tag);
-    char *image_coords_fname = NULL;
-    asprintf(&image_coords_fname, "%s/%s_i.txt", in_dir, tag);
-    char *point_weights_fname = NULL;
-    asprintf(&point_weights_fname, "%s/%s_wgt.txt", in_dir, tag);
+    char *world_coords_fname = jsprintf("%s/%s_w.txt", in_dir, tag);
+    char *image_coords_fname = jsprintf("%s/%s_i.txt", in_dir, tag);
+    char *point_weights_fname = jsprintf("%s/%s_wgt.txt", in_dir, tag);
     tf_calib_data_t * cdat = tf_calib_data_read
       ( world_coords_fname, image_coords_fname, point_weights_fname );
     free(image_coords_fname);
@@ -161,7 +159,7 @@ tf_calib_data_t *read_calibration_data(char *in_dir, char *tag)
  
 tf_camera_params_t *read_camera_parameters(tf_camera_specs_t *cspec, char *in_dir, char *name)
   { char *cpar_fname = NULL;
-    asprintf(&cpar_fname, "%s/%s.cpar", in_dir, name);
+    char *cpar_fname = jsprintf("%s/%s.cpar", in_dir, name);
     FILE *cpar_file = open_read(cpar_fname, TRUE);
     tf_camera_params_t *cpar = tf_camera_specs_get_new_mean_params(cspec);
     tf_camera_params_read(cpar_file, cpar);

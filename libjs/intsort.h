@@ -1,10 +1,9 @@
 /* intsort - various algorithms for sorting integer vectors. */
-/* Last edited on 2023-03-18 11:25:50 by stolfi */
+/* Last edited on 2024-11-16 12:11:31 by stolfi */
 
 #ifndef intsort_H
 #define intsort_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 /* 
@@ -27,21 +26,21 @@
   already ordered, {K = n(n-1)/2} for a list in the reverse order, and
   {K = n(n-1)/4} (expected) for a randomly ordered list. */
   
-void isrt_mergesort(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn);
+void isrt_mergesort(int32_t *h, uint32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn);
   /* Sorts {h[0..n-1]} by in-place merge-sort. Takes {O(n log(n))} 
     time in the worst case. */
 
-void isrt_heapsort(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn);
+void isrt_heapsort(int32_t *h, uint32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn);
   /* Sorts {h[0..n-1]} by heap-sort.  Takes {O(n log(n))} time
     in the worst case. */
 
-void isrt_binssort(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn);
+void isrt_binssort(int32_t *h, uint32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn);
   /* Sorts {h[0..n-1]} by insertion sort with binary search. Makes
     {O(n*log(n))} comparisons but {O(K)} moves, where {K} is the number
     of inversions in the input order; which can be {O(n^2)} in the
     worst case. */
 
-void isrt_inssort(int32_t *h, int32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn);
+void isrt_inssort(int32_t *h, uint32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn);
   /* Sorts {h[0..n-1]} by classic insertion sort. Makes
     {O(n+K)} comparisons and {O(K)} moves, where {K} is the number
     of inversions in the input order; which can be {O(n^2)} in the

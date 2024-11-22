@@ -1,10 +1,9 @@
 /* See argparser_extra.h. */
-/* Last edited on 2023-10-10 12:27:42 by stolfi */
+/* Last edited on 2024-11-16 00:38:31 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 /* Based on Params.m3 by J.Stolfi, DEC-SRC, 1988.  */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -44,7 +43,7 @@ bool_t argparser_key_matches(char *a, char *b)
     return FALSE;
   }
     
-int64_t argparser_parse_int_string(argparser_t *pp, int32_t index, char *arg, int64_t min, int64_t max, char **rest_P)
+int64_t argparser_parse_int_string(argparser_t *pp, uint32_t index, char *arg, int64_t min, int64_t max, char **rest_P)
   { char *rest = NULL;
     errno = 0;
     int64_t v = (int64_t)strtoll(arg, &rest, 10);
@@ -77,16 +76,16 @@ int64_t argparser_parse_int_string(argparser_t *pp, int32_t index, char *arg, in
     return v;
   }
  
-void argparser_arg_msg(argparser_t *pp, char *msg1, int32_t index, char *msg2, char *val)
+void argparser_arg_msg(argparser_t *pp, char *msg1, uint32_t index, char *msg2, char *val)
   { fprintf(pp->wr, "%s: %s", pp->arg.e[0], msg1); 
-    if ((index > 0) && (index < pp->arg.ne))
+    if ((index >= 1) && (index < pp->arg.ne))
       { fprintf(pp->wr, "parameter %d = \"%s\"", index, pp->arg.e[index]); }
     fprintf(pp->wr, msg2, val);
   }
 
-void argparser_error_at(argparser_t *pp, char *msg, char* pos, int32_t index)
+void argparser_error_at(argparser_t *pp, char *msg, char* pos, uint32_t index)
   { fprintf(pp->wr, "%s: ** %s\n", pp->arg.e[0], msg);
-    if ((index > 0) && (index < pp->arg.ne))
+    if ((index >= 1) && (index < pp->arg.ne))
       { fprintf(pp->wr, " %s argument %d = \"%s\"", pos, index, pp->arg.e[index]);
         fprintf(pp->wr, " (%s)", (pp->parsed.e[index] ? "parsed" : "unparsed"));
         fprintf(pp->wr, "\n");
@@ -95,8 +94,7 @@ void argparser_error_at(argparser_t *pp, char *msg, char* pos, int32_t index)
   }
 
 void argparser_print_info(argparser_t *pp, int32_t wd)
-  { int32_t i;
-    for (i = 0; i < pp->nhelp; i++)
+  { for (int32_t i = 0; i < pp->nhelp; i++)
       { argparser_print_text(pp->wr, pp->info.e[i], wd); }
     fprintf(pp->wr, "\n");
   }

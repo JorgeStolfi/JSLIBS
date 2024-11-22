@@ -1,7 +1,6 @@
 /* Test of jsjpeg.h, uint16_image_io_jpeg.h */
 /* Last edited on 2017-07-01 00:55:12 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -68,8 +67,7 @@ void do_uint16_image_read_write_jpeg_test(char *prefix, int ik, int iq)
     fprintf(stderr, "testing prefix = %s kind = %s quality = %d\n", prefix, xkind, quality);
     fprintf(stderr, "\n");
 
-    char *fname = NULL;
-    asprintf(&fname, "%s-rd-%s.jpg", prefix, xkind);
+    char *fname = jsprintf("%s-rd-%s.jpg", prefix, xkind);
     int kind;
     uint16_image_t *img = uint16_image_read_jpeg_named(fname, TRUE, &kind);
     uint16_image_describe(stderr, fname, img);
@@ -81,7 +79,7 @@ void do_uint16_image_read_write_jpeg_test(char *prefix, int ik, int iq)
     fprintf(stderr, "\n");
 
     fname = NULL;
-    asprintf(&fname, "%s-wr-%03d-%s.jpg", prefix, quality, xkind);
+    char *fname = jsprintf("%s-wr-%03d-%s.jpg", prefix, quality, xkind);
     uint16_image_describe(stderr, fname, omg);
     uint16_image_write_jpeg_named(fname, omg, quality, TRUE);
     free(fname);

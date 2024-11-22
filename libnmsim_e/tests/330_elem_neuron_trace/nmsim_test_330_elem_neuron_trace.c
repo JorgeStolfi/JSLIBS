@@ -95,8 +95,7 @@ void nmsim_test_elem_neuron_trace
     nmsim_elem_neuron_count_t nne = 10*nng; /* Arbitrary num of neuron elems in network. */
       
     /* Create the filename: */
-    char *fname = NULL;
-    asprintf(&fname, "out/trace_%s.txt", tag);
+    char *fname = jsprintf("out/trace_%s.txt", tag);
       
     /* Allocate neuron element trace structure: */
     nmsim_elem_neuron_count_t nne_tr_MAX = 4; /* Max number of neurons in monitored set. */

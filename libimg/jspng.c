@@ -1,7 +1,6 @@
 /* See {jspng.h} */
 /* Last edited on 2017-06-23 00:24:16 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <string.h>

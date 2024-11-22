@@ -59,8 +59,7 @@ int32_t main(int32_t argc, char **argv)
         nmsim_elem_synapse_t syn = nmsim_elem_synapse_throw
           ( isg_min, isg_max, ine_min, ine_max, ine_min, ine_max, W_avg, W_dev );
         nmsim_elem_synapse_show(stderr, "synapse = ", &syn, "\n");
-        char *fname = NULL;
-        asprintf(&fname, "out/test_synapse_elem_%03d.txt", i);
+        char *fname = jsprintf("out/test_synapse_elem_%03d.txt", i);
         nmsim_elem_synapse_ix_t ise = 17;
         nmsim_elem_synapse_test_write(fname, ise, &syn);
         nmsim_elem_synapse_test_read(fname, ise, &syn);

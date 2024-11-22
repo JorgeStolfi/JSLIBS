@@ -1,5 +1,5 @@
 /* Test tools for {hr3.h} test programs */
-/* Last edited on 2024-11-04 06:37:21 by stolfi */
+/* Last edited on 2024-11-20 12:07:02 by stolfi */
 
 #ifndef hr3_test_tools_H
 #define hr3_test_tools_H
@@ -31,13 +31,28 @@
 #define NC 3
   /* Number of Cartesian coordinates in a point. */
 
-void hr3_test_do_check_eq(double x, double y, char *msg, char *file, int32_t lnum, const char *func);
+void hr3_test_do_check_eq
+  ( double x,
+    double y,
+    char *msg,
+    char *file,
+    int32_t lnum,
+    const char *func
+  );
   /* If {x} and {y} differ, prints them, prints {msg}, and stops. */
 
 #define check_eq(x,y,msg) \
   hr3_test_do_check_eq((x), (y), (msg), __FILE__, __LINE__, __FUNCTION__)
   
-void hr3_test_do_check_eps(double x, double y, double eps, char *msg, char *file, int32_t lnum, const char *func);
+void hr3_test_do_check_eps
+  ( double x,
+    double y,
+    double eps,
+    char *msg,
+    char *file,
+    int32_t lnum,
+    const char *func
+  );
   /* If {x} and {y} differ by more than {eps}, prints them, prints {msg}, and stops. */
 
 #define hr3_test_check_eps(x, y, eps, msg) \
@@ -53,7 +68,8 @@ void hr3_test_do_check_num_eps
     int32_t lnum,
     const char *func
   );
-  /* If {x} and {y} differ by more than {eps}, prints {name}, {x}, {y}, and {msg}, and stops. */
+  /* If {x} and {y} differ by more than {eps}, prints {name}, {x}, {y},
+    and {msg}, and stops. */
 
 #define hr3_test_check_num_eps(name, x, y, eps, msg) \
   hr3_test_do_check_num_eps((name), (x), (y), (eps), (msg), __FILE__, __LINE__, __FUNCTION__)
@@ -110,16 +126,17 @@ void hr3_test_do_check_hr3_point_eps
   hr3_test_do_check_hr3_point_eps((name), (b_cmp), (b_exp), (eps), (msg), __FILE__, __LINE__, __FUNCTION__)
 
 void hr3_test_show_hr3_point(char *tag, hr3_point_t *p);
-  /* If {p} is not {NULL}, prints the homogeneous coordinates of point {p} on a single line,
-    prefixed by {tag}. If finite, also prints the Cartesian
-    coordinates. If {p} is {NULL}, does nothing. */
+  /* If {p} is not {NULL}, prints the homogeneous coordinates of point
+    {p} on a single line, prefixed by {tag}. If finite, also prints the
+    Cartesian coordinates. If {p} is {NULL}, does nothing. */
 
 void hr3_test_show_hr3_line(char *tag, hr3_line_t *L);
-  /* If {A} is not {NULL}, prints the Grassmann coefficients line {L} on a single line,
-    prefixed by {tag}.  If {L} is {NULL}, does nothing. */
+  /* If {A} is not {NULL}, prints the Grassmann coefficients line {L} on
+    a single line, prefixed by {tag}. If {L} is {NULL}, does nothing. */
 
 void hr3_test_show_hr3_plane(char *tag, hr3_plane_t *A);
-  /* If {A} is not {NULL}, prints the homogeneous coefficients of plane {A} on a single line,
-    prefixed by {tag}.  If {A} is {NULL}, does nothing. */
+  /* If {A} is not {NULL}, prints the homogeneous coefficients of plane
+    {A} on a single line, prefixed by {tag}. If {A} is {NULL}, does
+    nothing. */
 
 #endif

@@ -1,5 +1,5 @@
 /* r3.h --- operations on points and vectors of R^3 */
-/* Last edited on 2024-08-30 03:49:20 by stolfi */
+/* Last edited on 2024-11-20 13:55:05 by stolfi */
 
 #ifndef r3_H
 #define r3_H
@@ -24,7 +24,7 @@ void r3_zero(r3_t *r);
 void r3_all(double x, r3_t *r);
   /* Sets all coordinates of {r} to the value {x}. */
 
-void r3_axis(int32_t i, r3_t *r);
+void r3_axis(uint32_t i, r3_t *r);
   /* Sets {r} to the {i}th vector of the canonical basis. */
 
 void r3_add(r3_t *a, r3_t *b, r3_t *r);
@@ -51,7 +51,7 @@ void r3_weigh(r3_t *a, r3_t *w, r3_t *r);
 void r3_unweigh(r3_t *a, r3_t *w, r3_t *r);
   /* Sets {r[i] := a[i] / w[i]}. */
 
-void r3_rot_axis(r3_t *a, int32_t i, int32_t j, double ang, r3_t *r);
+void r3_rot_axis(r3_t *a, uint32_t i, uint32_t j, double ang, r3_t *r);
   /* Sets {r} to {a} after a rotation that moves axis {i} towards 
     axis {j} by {ang} radians, leaving all other coordinates unchanged. */
 
@@ -113,12 +113,12 @@ bool_t r3_is_finite(r3_t *p);
 bool_t r3_eq(r3_t *p, r3_t *q);
   /* True iff points {p} and {q} are identical. */
   
-void r3_barycenter(int32_t np, r3_t p[], double w[], r3_t *bar);
+void r3_barycenter(uint32_t np, r3_t p[], double w[], r3_t *bar);
   /* Sets {*bar} to the barycenter of all points {p[0..np-1]}
     with weights {w[0..np-1]}.  The weights must have positive sum.
     Assumes equal weights if {w = NULL}. */
 
-void r3_bbox(int32_t np, r3_t p[], interval_t B[], bool_t finite);
+void r3_bbox(uint32_t np, r3_t p[], interval_t B[], bool_t finite);
   /* Computes the coordinate ranges {B[0..2]} of the points 
     {p.e[0..np-1]}. If {finite} is true, ignores points 
     that have infinite or NAN coordinate(s). */
@@ -147,6 +147,18 @@ void r3_throw_ball(r3_t *r);
 void r3_throw_normal(r3_t *r);
   /* Sets each coordinate {r[i]} to an independent Gaussian random
     number with zero mean and unit standard deviation. */
+
+double r3_throw_ortho(r3_t *u, r3_t *r);
+  /* Sets {r} to a random vector orthogonal to {u} and with the same
+    length (which is returned as result). If the length of {u} is zero
+    or close to underflow, sets {r} to zeros. */
+
+double r3_throw_ortho_pair(r3_t *u, r3_t *r, r3_t *s);
+  /* Returns two unit-length vectors {r,s} orthogonal to {u} and to each
+    other, all with the same length as {u} (which is returned as
+    result). If the length of {u} is zero or close to underflow, sets
+    both {r} and {s} to zeros. */
+
 
 void r3_print(FILE *f, r3_t *a);
   /* Prints {a} on file {f}, with some default format. */

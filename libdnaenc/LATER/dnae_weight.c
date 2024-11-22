@@ -1,5 +1,5 @@
 /* See dnae_weight.h */
-/* Last edited on 2014-06-10 12:32:13 by stolfilocal */
+/* Last edited on 2024-11-20 06:00:11 by stolfi */
 
 #define dnae_weight_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -186,14 +186,12 @@ void dnae_weight_table_pair_make_gaussian
   { double maxLoss = 1.0e-3;
     double sigma0 = sqrt(var0);
     (*wtb0) = dnae_weight_table_make_gaussian(sigma0, maxLoss);
-    (*wname0) = NULL;
-    asprintf(wname0, "gaussian(sigma = %8.6f)", sigma0);
+    (*wname0) = jsprintf("gaussian(sigma = %8.6f)", sigma0);
     if (verbose) { dnae_weight_table_print(stderr, (*wname0), wtb0); }
     
     double sigma1 = sqrt(var1);
     (*wtb1) = dnae_weight_table_make_gaussian(sigma1, maxLoss);
-    (*wname1) = NULL;
-    asprintf(wname1, "gaussian(sigma = %8.6f)", sigma1);
+    (*wname1) = jsprintf("gaussian(sigma = %8.6f)", sigma1);
     if (verbose) { dnae_weight_table_print(stderr, (*wname1), wtb1); }
   }
    
@@ -209,14 +207,12 @@ void dnae_weight_table_pair_make_binomial
   { /* Variance of the distribution {w[k] = choose(n,k)} is {n/4 = r/2}, so: */
     int r0 = (int)msm_round(2*var0);
     (*wtb0) = dnae_weight_table_make_binomial(r0);
-    (*wname0) = NULL;
-    asprintf(wname0, "binomial(n = %d, sigma = %8.6f)", 2*r0, sqrt(0.5*r0));
+    (*wname0) = jsprintf("binomial(n = %d, sigma = %8.6f)", 2*r0, sqrt(0.5*r0));
     if (verbose) { dnae_weight_table_print(stderr, (*wname0), wtb0); }
     
     int r1 = (int)msm_round(2*var1);
     (*wtb1) = dnae_weight_table_make_binomial(r1);
-    (*wname1) = NULL;
-    asprintf(wname1, "binomial(n = %d, sigma = %8.6f)", 2*r1, sqrt(0.5*r1));
+    (*wname1) = jsprintf("binomial(n = %d, sigma = %8.6f)", 2*r1, sqrt(0.5*r1));
     if (verbose) { dnae_weight_table_print(stderr, (*wname1), wtb1); }
   }
    
@@ -232,14 +228,12 @@ void dnae_weight_table_pair_make_triangular
   { /* Variance of the distribution {w[k] = r + 1 - |r-k|} is {~r^2/4}, so: */
     int r0 = (int)msm_round(sqrt(4*var0));
     (*wtb0) = dnae_weight_table_make_triangular(r0);
-    (*wname0) = NULL;
-    asprintf(wname0, "triangular(r = %d)", r0);
+    (*wname0) = jsprintf("triangular(r = %d)", r0);
     if (verbose) { dnae_weight_table_print(stderr, (*wname0), wtb0); }
     
     int r1 = (int)msm_round(sqrt(4*var1));
     (*wtb1) = dnae_weight_table_make_triangular(r1);
-    (*wname1) = NULL;
-    asprintf(wname1, "triangular(r = %d)", r1);
+    (*wname1) = jsprintf("triangular(r = %d)", r1);
     if (verbose) { dnae_weight_table_print(stderr, (*wname1), wtb1); }
   }
 
@@ -286,8 +280,7 @@ char *dnae_weight_make_descr(double_vec_t *wt, char *fmt)
       { /* Append a space to {d}: */
         char_vec_expand(&d, nc); d.e[nc] = ' '; nc++;
         /* Convert the element {wt[i]} to string: */
-        char *wi = NULL;
-        asprintf(&wi, fmt, wt->e[i]);
+        char *wi = jsprintf(fmt, wt->e[i]);
         /* Append it to {d}: */
         char *p = wi;
         while ((*p) != 0) { char_vec_expand(&d, nc); d.e[nc] = (*p); p++; nc++; }

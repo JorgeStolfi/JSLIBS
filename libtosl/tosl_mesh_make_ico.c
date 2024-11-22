@@ -1,5 +1,5 @@
 /* See {tosl_mesh_make_ico.h} */
-/* Last edited on 2024-10-07 13:45:07 by stolfi */
+/* Last edited on 2024-11-20 05:21:47 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -34,7 +34,7 @@ tosl_mesh_t *tosl_mesh_make_ico(double R)
             { tosl_point_t v = (tosl_point_t){{ 0, 0, 0 }};
               v.c[i] = di*Rq;
               v.c[j] = dj*Sq;
-              char *lab = NULL; asprintf(&lab, "v%d.%d%d", i, (di+1)/2, (dj+1)/2); 
+              char *lab = jsprintf("v%d.%d%d", i, (di+1)/2, (dj+1)/2); 
               tosl_mesh_add_vert(&v, lab, mesh);
             }
       }

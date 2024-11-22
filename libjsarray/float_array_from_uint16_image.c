@@ -1,7 +1,6 @@
 /* See float_array_from_uint16_image.h */
-/* Last edited on 2023-03-19 15:25:53 by stolfi */ 
+/* Last edited on 2024-11-20 07:49:44 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <limits.h>
 #include <assert.h>
@@ -33,11 +32,11 @@ float_array_t *float_array_from_uint16_image
   )
   { 
     /* Get image dimensions: */
-    int32_t NX = img->cols;
-    int32_t NY = img->rows;
+    uint32_t NX = (uint32_t)img->cols;
+    uint32_t NY = (uint32_t)img->rows;
     
     /* Channel counts: */
-    int32_t NC = img->chns; /* Num of channels. */
+    uint32_t NC = (uint32_t)img->chns; /* Num of channels. */
     
     /* Allocate float image: */
     ix_dim_t na = 3;
@@ -63,7 +62,7 @@ float_array_t *float_array_from_uint16_image
     ix_index_t ix[na];
     for(int32_t fy = 0; fy < NY; fy++)
       { /* Fill array plane {ix[2]==fy}: */
-        int32_t iy = (yrev ? NY - 1 - fy : fy); /* Row index in image array. */
+        int32_t iy = (yrev ? (int32_t)NY - 1 - fy : fy); /* Row index in image array. */
         uint16_t *prow = img->smp[iy];
         for(int32_t x = 0; x < NX; x++)
           { for (int32_t c = 0; c < NC; c++)

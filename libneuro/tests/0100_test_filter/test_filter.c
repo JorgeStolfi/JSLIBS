@@ -371,7 +371,7 @@ void tfi_plot_function_pair(char *tag, int32_t npmax, tfi_function_t *lopa, tfi_
         fprintf(stderr, "    --- %s tag = %s npmax = %d func = %s pass ---\n", __FUNCTION__, tag, npmax, xwhich);
         if (gain != NULL)
           { char *fname = NULL;
-            asprintf(&fname, "out/%s_%s.txt", tag, (which == 0 ? "lopa" : "band"));
+            char *fname = jsprintf("out/%s_%s.txt", tag, (which == 0 ? "lopa" : "band"));
             FILE *wr = open_write(fname, TRUE);
             free(fname);
             tfi_plot_function(wr, npmax, gain);
@@ -657,8 +657,7 @@ void tfi_test_tabulate_hartley_gains(int32_t nf, char *ftype, double fsmp)
 
     if (nf >= 100)
       { /* Write file for plot: */
-        char *fname = NULL;
-        asprintf(&fname, "out/%s_tab_%04d.txt", ftype, nf);
+        char *fname = jsprintf("out/%s_tab_%04d.txt", ftype, nf);
         FILE *wr = open_write(fname, TRUE);
         free(fname);
         fprintf(wr, "# fmin = %16.12f\n", ((double)kf_min)*fsmp/nf);

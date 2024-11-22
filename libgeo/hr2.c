@@ -1,9 +1,8 @@
 /* See hr2.h */
-/* Last edited on 2024-11-03 07:39:14 by stolfi */ 
+/* Last edited on 2024-11-20 11:52:34 by stolfi */ 
 
 /* Based on HR2.m3 created 1994-05-04 by J. Stolfi. */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <math.h>
 #include <assert.h>

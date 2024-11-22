@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {hr2_pmap_generic_opt.h} and related modules"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-08 11:17:15 by stolfi */ 
+/* Last edited on 2024-11-20 05:58:51 by stolfi */ 
 /* Created on 2020-07-11 by J. Stolfi, UNICAMP */
 
 #define test_hr2_pmap_generic_opt_COPYRIGHT \
@@ -135,8 +135,7 @@ int32_t main(int32_t argc, char **argv)
     for (sign_t sgn = +1; sgn >= -1; sgn -= 2)
       { for (int32_t trial = 0; trial < 10; trial++)
           { bool_t verbose = (trial < 2);
-            char *outPrefix = NULL;
-            if (trial < 2) { asprintf(&outPrefix, "out/test-%03d", trial); }
+            if (trial < 2) { char *outPrefix = jsprintf("out/test-%03d", trial); }
             hgot_test_hr2_pmap_generic_opt_quadratic__hr2_pmap_generic_opt_1D_plot(sgn, verbose, outPrefix);
             free(outPrefix);
           }
@@ -183,9 +182,8 @@ void hgot_do_test_opt_and_plot
       }
     
     char *xsgn = (sgn == 0 ? "o" : (sgn < 0 ? "m" : "p"));
-    char *tag = NULL;
-    asprintf
-      ( &tag, "%s-tight%c-ident%c-close%c", 
+    char *tag = jsprintf
+      ( "%s-tight%c-ident%c-close%c", 
         xsgn, "FT"[tight], "FT"[ident], "FT"[close]
       );
     

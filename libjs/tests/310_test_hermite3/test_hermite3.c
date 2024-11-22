@@ -2,13 +2,12 @@
 #define PROG_DESC "test of {hermite3.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-18 11:08:01 by stolfi */ 
+/* Last edited on 2024-11-20 06:55:05 by stolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_hermite3_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +18,7 @@
 
 #include <bool.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <affirm.h>
 
 int32_t main(int32_t argn, char **argv);
@@ -117,8 +117,7 @@ void do_plot_test(char *prefix)
     /* bool_t debug = FALSE; */ /* If TRUE, {interp} will print the weights. */
     
     /* Open the plot file {wr}: */
-    char *fname = NULL;
-    asprintf(&fname, "out/%s.txt", prefix);
+    char *fname = jsprintf("out/%s.txt", prefix);
     FILE *wr = open_write(fname, TRUE);
 
     /* Choose subsampling factor {ns} and total number of subsamples {ny}: */
@@ -127,7 +126,7 @@ void do_plot_test(char *prefix)
     int32_t ny = ns*(nx-1) + 1; /* Total samples in subsampled sequnce. */
     
     /* Subsample: */
-    double *y = notnull(malloc(ny*sizeof(double)), "no mem");
+    double *y = talloc(ny, double);
     hermite3_subsample(nx, x, NULL, ns, ny, y);
     
     /* Plot {x} interpolated on {ny} subsampling points: */
@@ -169,7 +168,7 @@ void generate_test_samples(int32_t *nxP, double **xP, double *tkerP)
     /* Compute the number of data samples {nx}. */
     int32_t deg_max = 4;
     int32_t nx = DX + W_ker + (deg_max+1)*(DX + W_out) + DX;
-    double *x = notnull(malloc(nx*sizeof(double)), "no mem");
+    double *x = talloc(nx, double);
     
     auto void test_segm(int32_t *kP, int32_t g);
       /* Appends another broad test segment {x[kini..kfin]} with degree {g} 

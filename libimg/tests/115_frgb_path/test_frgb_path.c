@@ -46,7 +46,6 @@
 #define PROG_INFO_OPTS \
   "  None."
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -129,15 +128,14 @@ void test_frgb_path(char *tag, path_proc_t path, int32_t cycles, int32_t style)
   {
     int32_t N = 1000; /* Number of sample points along path. */
     
-    char *prefix = NULL;
-    asprintf(&prefix, "out/path_%s%d_c%+03d", tag, style, cycles);
+    char *prefix = jsprintf("out/path_%s%d_c%+03d", tag, style, cycles);
     
     char *txname = NULL;
-    asprintf(&txname, "%s.txt", prefix);
+    char *txname = jsprintf("%s.txt", prefix);
     FILE *txwr = open_write(txname, TRUE);
     
     char *imname = NULL;
-    asprintf(&imname, "%s.ppm", prefix);
+    char *imname = jsprintf("%s.ppm", prefix);
     FILE *imwr = open_write(imname, TRUE);
     int32_t NX = 20;
     int32_t NY = N;

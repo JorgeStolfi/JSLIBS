@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {hr2_pmap_from_many_pairs.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-08 11:22:21 by stolfi */ 
+/* Last edited on 2024-11-21 21:15:45 by stolfi */ 
 /* Created on 2020-07-11 by J. Stolfi, UNICAMP */
 /* Based on {test_align.c} by J. Stolfi, UNICAMP */
 
@@ -67,7 +67,7 @@ void hpmat_show_disp
     The arrays are compared with {hr2_pmap_diff_sqr(A,B)} and with
     {hpmat_diff_rel_sqr(D,R)} where {D=A.dir-B.dir}. If {print} is true
     also prints {D}. If the maps {A} and {B} are affine, they are also
-    compared with {hr2_pmap_aff_discr_sqr(A,B)}. */
+    compared with {hr2_pmap_affine_discr_sqr(A,B)}. */
 
 void hpmat_debug_map
   ( char *label,
@@ -266,8 +266,7 @@ void hpmat_plot_goal
     r3x3_gen_print(stderr, V,         "%12.7f", "V = [ ","\n      "," ]\n", "[ "," "," ]");
     
     /* Sweep the {A,U,V} plane and Plot: */
-    char *fname = NULL;
-    asprintf(&fname, "%s_%s.dat", prefix, method);
+    char *fname = jsprintf("%s_%s.dat", prefix, method);
     FILE *wr = open_write(fname, TRUE);
     
     hr2_pmap_t B; /* Probe map. */
@@ -387,9 +386,9 @@ void hpmat_show_disp
     double drel2 = hpmat_diff_rel_sqr(&D, R);
     fprintf(stderr, "  diff = %12.7f drel = %12.7f", sqrt(diff2), sqrt(drel2));
     
-    if (hr2_pmap_is_affine(A) && hr2_pmap_is_affine(B))
+    if (hr2_pmap_is_affine(A, tol) && hr2_pmap_is_affine(B, tol))
       { /* Difference between {A} and {B} over the unit circle: */
-        double mism2 = hr2_pmap_aff_discr_sqr(A, B);
+        double mism2 = hr2_pmap_affine_discr_sqr(A, B);
         fprintf(stderr, " aff mism = %12.7f", sqrt(mism2));
       }
     fprintf(stderr, "\n");

@@ -2,7 +2,7 @@
 #define i3_H
 
 /* i3.h --- operations on points and vectors of Z^3 */
-/* Last edited on 2023-01-12 06:48:57 by stolfi */
+/* Last edited on 2024-11-20 13:49:14 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -37,7 +37,7 @@ void i3_zero (i3_t *r);
 void i3_all (int32_t x, i3_t *r);
   /* Sets all coordinates of {r} to the value {x}. */
 
-void i3_axis (int32_t i, i3_t *r);
+void i3_axis (uint32_t i, i3_t *r);
   /* Sets {r} to the {i}th vector of the canonical basis. */
 
 void i3_add (i3_t *a, i3_t *b, i3_t *r);
@@ -49,27 +49,25 @@ void i3_sub (i3_t *a, i3_t *b, i3_t *r);
 void i3_neg (i3_t *a, i3_t *r);
   /* Sets {r} to {-a}. Input MMax: {2^31-1}. Output range: {-M..+M}. */
 
-int32_t i3_L_inf_norm (i3_t *a);
+uint32_t i3_L_inf_norm (i3_t *a);
   /* Returns the L-infinity norm of {a} (max absolute coordinate).
     Input MMax: {2^31-1}. Output range: {0..+M}. */
 
-int32_t i3_L_inf_dist (i3_t *a, i3_t *b);
+uint64_t i3_L_inf_dist (i3_t *a, i3_t *b);
   /* Returns the L-infinity distance between {a} and {b} (max absolute diff).
-    Input MMax: {2^30-1}. Output range: {0..+2*M} */
+    Input MMax: {2^31-1}. Output range: {0..+2*M} */
   
-int64_t i3_norm_sqr (i3_t *a);
+uint64_t i3_norm_sqr (i3_t *a);
   /* Returns the square of the Euclidean norm of {a}.  
-    Input MMax: {1753413056 > 1672*2^20}. Output range: {0..+3*M^2}.
-    !!! Perhaps should be {uint64_t}? !!! */
+    Input MMax: {2^31-1}. Output range: {0..+3*M^2}. */
 
-int64_t i3_dist_sqr (i3_t *a, i3_t *b);
+uint64_t i3_dist_sqr (i3_t *a, i3_t *b);
   /* Returns the square of the Euclidean distance between {a} and {b}.
-    Input MMax: {876706528 > 836*2^20}. Output range: {0..+12*M^2}.
-    !!! Perhaps should be {uint64_t}? !!! */
+    Input MMax: {2^31-1}. Output range: {0..+12*M^2}. */
 
 int64_t i3_dot (i3_t *a, i3_t *b);
   /* Dot product of vectors {a} and {b}. 
-    Input MMax: {1753413056 > 1672*2^20}. Output range: {-3*M^2 .. +3*M^2}. */
+    Input MMax: {2^31-1}. Output range: {-3*M^2 .. +3*M^2}. */
 
 void i3_cross (i3_t *a, i3_t *b, i3_t *r);
   /* Sets {r} to the cross product of {a} and {b}. 
@@ -77,14 +75,14 @@ void i3_cross (i3_t *a, i3_t *b, i3_t *r);
 
 int64_t i3_det (i3_t *a, i3_t *b, i3_t *c);
   /* Returns the determinant of the 3 x 3 matrix whose rows are {a,b,c}.
-    Input MMax: {1518500249 > 1448*2^20}. Output range: {-4*M^3 .. +4*M^3}. */
+    Input MMax: {2^31-1}. Output range: {-4*M^3 .. +4*M^3}. */
 
 bool_t i3_eq(i3_t *p, i3_t *q);
   /* True iff points {p} and {q} are identical. */
 
 void i3_throw_cube (int32_t m, i3_t *r);
-  /* Sets {r} to a uniformly random point of the 3-cube {[-M .. +M]^3}.
-    Input MMax: {2^31-1}. Output range: {-m .. +m}. */
+  /* Sets {r} to a uniformly random point of the 3-cube {[-|m| .. +|m|]^3}.
+    Input MMax: {2^31-1}. Output range: {-|m| .. +|m|}. */
 
 void i3_print (FILE *f, i3_t *a);
   /* Prints {a} on file {f}, with some default format. */

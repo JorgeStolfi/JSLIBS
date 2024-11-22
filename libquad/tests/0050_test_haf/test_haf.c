@@ -199,8 +199,7 @@ void test_enum_write_read(char *name, haf_arc_t a, haf_arc_t b, haf_arc_t c)
       }
 
     fprintf(stderr, "running {haf_write_map}...\n");
-    char *filename = NULL;
-    asprintf(&filename, "out/%s.haf", name);
+    char *filename = jsprintf("out/%s.haf", name);
     FILE *wr = open_write(filename, TRUE);
     haf_write_map(wr, ne_wr, A_wr.e, eid0_wr, nr_wr, root_wr);
     fclose(wr);

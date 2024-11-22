@@ -1,5 +1,5 @@
 /* See voxm_splat_tube.h */
-/* Last edited on 2023-10-01 19:04:43 by stolfi */
+/* Last edited on 2024-11-11 07:37:51 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -11,7 +11,6 @@
 #include <bool.h>
 #include <r3.h>
 #include <r3_motion.h>
-#include <r3_extra.h>
 #include <r3x3.h>
 #include <affirm.h>
 #include <ppv_array.h>

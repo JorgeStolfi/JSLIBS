@@ -8,7 +8,6 @@
 #define test_geostereo_COPYRIGHT \
   "Copyright © 2017  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -100,8 +99,7 @@ void do_geostereo_tests(char *name0, char *name1, int32_t NC, int32_t ncands)
 float_image_t *get_test_image(char *name, int32_t NC)
   {
     demand((NC == 1) || (NC == 3), "bad num of channels");
-    char *fname = NULL;
-    asprintf(&fname, "in/%s.%s", name, (NC == 3 ? "ppm" : "pgm"));
+    char *fname = jsprintf("in/%s.%s", name, (NC == 3 ? "ppm" : "pgm"));
     bool_t isMask = FALSE; /* Assume pixels have a smooth distribution. */
     bool_t yup = FALSE;
     bool_t warn = TRUE;
@@ -139,8 +137,7 @@ void write_image(float_image_t *img, char *name, double vmin, double vmax)
 
 char *makefname(char *name, int32_t NC, char *ext)
   { 
-    char *fname = NULL;
-    asprintf(&fname, "out/%s-%02d.%s", name, NC, ext);
+    char *fname = jsprintf("out/%s-%02d.%s", name, NC, ext);
     return fname;
   }
 

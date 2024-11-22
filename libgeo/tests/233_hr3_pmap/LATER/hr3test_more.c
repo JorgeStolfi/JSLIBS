@@ -1,4 +1,4 @@
-/* Last edited on 2023-10-09 20:40:59 by stolfi */
+/* Last edited on 2024-11-20 13:24:07 by stolfi */
 /* Extra tests when these functions are implemented. */
 
 void test_hr3_pmap_congruence_from_point_and_dir(bool_t verbose, bool_t flip);
@@ -68,7 +68,7 @@ void test_hr3_pmap_mismatch_sqr(bool_t verbose)
     bool_t debug = FALSE;
 
     /* Choose a bunch of points: */
-    int32_t np = 7;
+    uint32_t np = 7;
     r3_t p1[np], p2[np];
     for (int32_t ip = 0; ip < np; ip++)
       { r3_throw_cube(&(p1[np]));
@@ -120,7 +120,7 @@ void test_hr3_pmap_aff_discr_sqr(bool_t verbose)
     double mis2 = hr3_pmap_aff_discr_sqr(&M, &N);
     /* The integrand |(M - N)(u(t))|^2 is a sinusoidal function with freqs 0,1,2. */
     /* Can be integrated numerically with 5 or more samples. */
-    int32_t nang = 7;
+    uint32_t nang = 7;
     double sum_d2 = 0; 
     for (int32_t i = 0; i < nang; i++)
       { double ang = 2*M_PI*((double)i)/((double)nang);

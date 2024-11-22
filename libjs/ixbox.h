@@ -2,9 +2,7 @@
 #define indexing_box_H
 
 /* Index boxes -- domains of multi-dimensional arrays. */
-/* Last edited on 2021-07-17 08:19:49 by jstolfi */
-
-#define _GNU_SOURCE
+/* Last edited on 2024-11-15 19:13:59 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>

@@ -683,7 +683,7 @@ void pst_graph_integration_recursive
     int level
   )
   { char *filename_grph = NULL;
-    asprintf(&filename_grph, "graph-%02d.txt", level);
+    char *filename_grph = jsprintf("graph-%02d.txt", level);
     FILE *wr_grph = open_write(filename_grph, FALSE);
     pst_graph_write(wr_grph, g);
     fclose(wr_grph);
@@ -694,8 +694,7 @@ void pst_graph_integration_recursive
         pst_graph_integration_recursive(jg, OZ, (int)ceil(((double)maxIter)*M_SQRT2), convTol/M_SQRT2, para, szero, verbose, level+1);
         pst_graph_estimate_from_shrunk(g, jg, OZ);
 
-        char *filename = NULL;
-        asprintf(&filename, "guess-%02d.fni", level);
+        char *filename = jsprintf("guess-%02d.fni", level);
         FILE *wr_dump = open_write(filename, FALSE);
         float_image_write(wr_dump, OZ);
         fclose(wr_dump);
@@ -708,14 +707,13 @@ void pst_graph_integration_recursive
     fprintf(stderr, "solving Graph level[%d] with [%ld] vertices\n", level, g->num_vertex);
     pst_imgsys_t *S = pst_graph_build_integration_system(g, (int)OZ->sz[1], (int)OZ->sz[2]);
 
-    char *filename = NULL;
-    asprintf(&filename, "system-%02d.txt", level);
+    char *filename = jsprintf("system-%02d.txt", level);
     FILE *wr_dump = open_write(filename,  FALSE);
     pst_imgsys_write(wr_dump, S);
     fclose(wr_dump);
 
     filename = NULL;
-    asprintf(&filename, "height-%02d.fni", level);
+    char *filename = jsprintf("height-%02d.fni", level);
     wr_dump = open_write(filename, FALSE);
     float_image_write(wr_dump, OZ);
     fclose(wr_dump);

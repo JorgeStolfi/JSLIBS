@@ -4,7 +4,6 @@
 /* Created by R. Minetto (IC-UNICAMP) as {ipng.c} sometime in 2008--2009. */
 /* Adapted by J. Stolfi (IC-UNICMP) on 2011-05-14. */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
@@ -61,7 +60,7 @@ void uint16_image_write_png_file(FILE *wr, uint16_image_t *img, double gamma, bo
     /* Pick for the smallest {k} such that {imaxval} divides {2^k-1}; or 16 if none: */
     uint8_t img_smp_bits = 16;  /* . */
     uint16_t omaxval = 65535; 
-    for (uint32_t k = 1; k < 16; k++) 
+    for (int32_t k = 1; k < 16; k++) 
       { uint32_t kval = (1u << k) - 1u;
         if ((kval % imaxval) == 0)
           { img_smp_bits = (uint8_t)k; 

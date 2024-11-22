@@ -1,7 +1,6 @@
 /* Quick test of rounding mode setting (from flt.h) */
-/* Last edited on 2019-12-07 12:38:33 by jstolfi */
+/* Last edited on 2024-11-20 07:51:03 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

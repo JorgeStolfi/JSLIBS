@@ -288,8 +288,7 @@ int32_t main (int32_t argc, char **argv)
     for (int32_t ki = 0; ki < NI; ki++)
       { zFoc[ki] = fmin(zMax, zMin + ki*zStep);
         assert((zFoc[ki] >= zMin) && (zFoc[ki] <= zMax));
-        char *zTag = NULL;
-        asprintf(&zTag, "-zf%08.4f-df%08.4f", zFoc[ki], zDep);
+        char *zTag = jsprintf("-zf%08.4f-df%08.4f", zFoc[ki], zDep);
         sVal[ki] = multifok_test_read_scene_color_image(o->inPrefix, zTag); 
         if (ki == 0)
           { float_image_get_size(sVal[ki], &NC, &NX, &NY); }
@@ -712,15 +711,14 @@ void mfss_choose_basis_and_terms
     (*belName_P) = belName;
     
     fprintf(stderr, "reading the score terms and weights file...\n");
-    char *twfname = NULL;
-    asprintf(&twfname, "term-weights/ptBEST-bt%s-trm%d-qsh0-ns%05.2f.txt", bType, termSet, noise);
+    char *twfname = jsprintf("term-weights/ptBEST-bt%s-trm%d-qsh0-ns%05.2f.txt", bType, termSet, noise);
     multifok_test_read_term_names_and_weights(twfname, NB, belName, NT_P, termName_P, wt_P, prix_P, TRUE);
     multifok_test_write_term_names_and_weights(outPrefix, *NT_P, *termName_P, *wt_P);
   }
 
 FILE *mfss_open_text_file(char *outPrefix, char *tag)
   { char *fname = NULL;
-    asprintf(&fname, "%s%s.txt", outPrefix, tag);
+    char *fname = jsprintf("%s%s.txt", outPrefix, tag);
     FILE *wr = open_write(fname, TRUE);
     return wr;
     free(fname);

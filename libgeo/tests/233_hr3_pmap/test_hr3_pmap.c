@@ -1,7 +1,6 @@
 /* Test program for {hr3_pmap.h}  */
-/* Last edited on 2024-11-04 06:37:55 by stolfi */
+/* Last edited on 2024-11-20 18:17:45 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -15,7 +14,6 @@
 #include <rn.h>
 #include <r3x3.h>
 #include <r3.h>
-#include <r4_extra.h>
 #include <r2x2.h>
 #include <r2.h>
 #include <hr3.h>
@@ -51,12 +49,11 @@ void test_hr3_pmap_from_five_points(bool_t verbose);
 
 int32_t main (int32_t argc, char **argv)
   {
-    int32_t i;
     srand(1993);
     srandom(1933);
 
-    for (i = 0; i < 100; i++) test_hr3_pmap(i < 3);
-    for (i = 0; i < 100; i++) test_hr3_pmap_aff(i < 3);
+    for (int32_t i = 0; i < 100; i++) test_hr3_pmap(i < 3);
+    for (int32_t i = 0; i < 100; i++) test_hr3_pmap_aff(i < 3);
     fclose(stderr);
     fclose(stdout);
     return (0);
@@ -380,7 +377,7 @@ void test_hr3_pmap_plane(bool_t inv, bool_t verbose)
     
     /* Pick a point on the line: */
     hr3_point_t p;
-    (void)r4_pick_ortho (&(A.f), &(p.c));
+    (void)r4_throw_ortho(&(A.f), &(p.c));
     hr3_point_t q = (inv ? hr3_pmap_inv_point(&p, &M) : hr3_pmap_point(&p, &M));
     double dot = r4_dot(&(B_exp.f), &(q.c));
     affirm(fabs(dot) < 1.0e-11, txtcat3(txtcat3("hr3_pmap", tag, "_plane"), " incompat with ", txtcat3("hr3_pmap", tag, "_point")));

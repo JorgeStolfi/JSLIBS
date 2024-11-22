@@ -61,8 +61,7 @@ void DoEPSTests(int32_t mx, int32_t my)
     double hsize = FIG_SIZE*mx;
     double vsize = FIG_SIZE*my;
     double hvMarg = 4.0;
-    char *fname = NULL;
-    asprintf(&fname, "out/fig_%03d_%03d.eps", mx, my);
+    char *fname = jsprintf("out/fig_%03d_%03d.eps", mx, my);
     FILE *wr = open_write(fname, TRUE);
     bool_t verbose = TRUE;
     epswr_figure_t *epsf = epswr_new_figure(wr, hsize, vsize, hvMarg, hvMarg, hvMarg, hvMarg, verbose);

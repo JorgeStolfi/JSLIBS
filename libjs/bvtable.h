@@ -1,11 +1,12 @@
 /* An append_only list of distinct arbitrary data with fast lookup. */
-/* Last edited on 2016-04-01 00:43:13 by stolfilocal */
+/* Last edited on 2024-11-15 19:11:48 by stolfi */
 
 #ifndef bvtable_H
 #define bvtable_H
 
-#define _GNU_SOURCE
+
 #include <stdio.h>
+#include <stdint.h>
 
 #include <vec.h>
 #include <bool.h>
@@ -24,7 +25,7 @@ bvtable_t *bvtable_new(size_t sz, uint32_t ne_guess);
 uint32_t bvtable_item_count(bvtable_t *tb);
   /* Returns the current count of distinct items stored in {tb}. */
    
-typedef int bvtable_cmp_proc_t(void *x, void *y, size_t sz);
+typedef int32_t bvtable_cmp_proc_t(void *x, void *y, size_t sz);
   /* Type of a procedure that compares two items, each {sz} bytes long,
     that start at {*x} and {*y}, respectively. */
     

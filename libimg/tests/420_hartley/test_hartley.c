@@ -8,7 +8,6 @@
 #define test_hartley_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -251,8 +250,7 @@ void do_test_basis_element
 
 void write_image(int kx, int ky, bool_t wave, char *prefix, char *suffix, float_image_t *img)
   {
-    char *fname = NULL;
-    asprintf(&fname, "%s-%+04d-%+04d-%c-%s.ppm", prefix, kx, ky, "FT"[wave], suffix);
+    char *fname = jsprintf("%s-%+04d-%+04d-%c-%s.ppm", prefix, kx, ky, "FT"[wave], suffix);
     FILE *wr = open_write(fname, TRUE);
     int chns = (int)img->sz[0];
     /* Map true min to 0, true max to {fim->maxval}: */

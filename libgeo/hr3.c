@@ -1,7 +1,6 @@
 /* See hr3.h */
-/* Last edited on 2024-11-03 07:34:52 by stolfi */ 
+/* Last edited on 2024-11-20 12:03:09 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <math.h>
 #include <assert.h>

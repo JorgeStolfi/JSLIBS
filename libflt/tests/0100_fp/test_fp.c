@@ -1,7 +1,6 @@
 /* Quick test of rounding mode setting (fptest.s prototype) - Intel/Linux */
-/* Last edited on 2024-11-08 12:30:58 by stolfi */
+/* Last edited on 2024-11-20 07:50:59 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <fenv.h>
 #include <fpu_control.h>

@@ -1,5 +1,5 @@
 /* test_lsq --- test program for constrained {lsq_solve_system}  */
-/* Last edited on 2024-11-07 22:33:26 by stolfi */
+/* Last edited on 2024-11-08 16:42:48 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -35,8 +35,8 @@
 #define MAX_FUNS 3
   /* Max number of dependent variables (function samples per data point). */
    
-#define MAP_ABS_PERT 1.0e-12
-#define MAP_REL_PERT 1.0e-6
+#define MAT_ABS_PERT 1.0e-12
+#define MAT_REL_PERT 1.0e-6
   /* Absolute and relative perturbation on orthogonal matrix elems
     for scrambling variables and equations. */
 

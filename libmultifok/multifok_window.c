@@ -233,7 +233,7 @@ double multifok_window_dist_sqr(int32_t NW, double a[], double b[])
 char *multifok_window_mop_code(int32_t i)
   { char *u = NULL;
     char s = (i < 0 ? 'm' : (i > 0 ? 'p' : 'o'));
-    if (abs(i) <= 1) { asprintf(&u, "%c", s); } else { asprintf(&u, "%c%d", s, abs(i)); }
+    if (abs(i) <= 1) { char *u = jsprintf("%c", s); } else { char *u = jsprintf("%c%d", s, abs(i)); }
     return u;
   }
   
@@ -241,8 +241,7 @@ char *multifok_window_sample_name(char *tag, int32_t ix, int32_t iy)
   {
     char *ux = multifok_window_mop_code(ix);
     char *uy = multifok_window_mop_code(iy);
-    char *uxy = NULL;
-    asprintf(&uxy, "%s%s%s", tag, ux, uy);
+    char *uxy = jsprintf("%s%s%s", tag, ux, uy);
     free(ux); 
     free(uy);
     return uxy;
@@ -264,7 +263,7 @@ void multifok_window_sample_names(int32_t NW, char *tag, char *sname[])
     for (int32_t iy = -HW; iy <= +HW; iy++)
       { for (int32_t ix = -HW; ix <= +HW; ix++)
           { char *uxy = NULL;
-            asprintf(&uxy, "%s%s%s", tag, u[ix+HW], u[iy+HW]);
+            char *uxy = jsprintf("%s%s%s", tag, u[ix+HW], u[iy+HW]);
             sname[ks] = uxy;
             ks++;
          }

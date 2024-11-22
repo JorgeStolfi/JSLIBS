@@ -108,8 +108,7 @@ void DoEPSTests(int32_t nx, int32_t ny)
     /* EPS figure size proportional to total image size. */
     double eps_hsz = ceil(nx*scale*FIG_XSZ + 2*MIN_EPS_HMG);
     double eps_vsz = ceil(ny*scale*FIG_YSZ + 2*MIN_EPS_VMG);
-    char *fname = NULL;
-    asprintf(&fname, "out/fig_%03d_%03d.eps", nx,  ny);
+    char *fname = jsprintf("out/fig_%03d_%03d.eps", nx,  ny);
     FILE *wr = open_write(fname, TRUE);
     bool_t verbose = TRUE;
     epswr_figure_t *epsf = epswr_new_figure
@@ -168,8 +167,7 @@ void PlotShadedPoly
     
     epswr_set_pen(epsf, 0.000, 0.000, 0.333,  0.10,  0.0, 0.0);
     
-    char *cmt = NULL;
-    asprintf(&cmt, "Shading %s (ns = %d)", (char *[2]){ "triangle", "quadrilateral"}[quad], ns);
+    char *cmt = jsprintf("Shading %s (ns = %d)", (char *[2]){ "triangle", "quadrilateral"}[quad], ns);
     epswr_comment(epsf, cmt);
     free(cmt);
         

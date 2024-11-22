@@ -2,9 +2,11 @@
 #define gauss_table_H
 
 /* Tools for Gaussian kernel tables */
-/* Last edited on 2024-11-06 00:52:59 by stolfi */
+/* Last edited on 2024-11-19 05:59:17 by stolfi */
 
 /* !!! Merge into {wt_table_gaussian} !!! */
+
+#include <stdint.h>
 
 #include <bool.h>
 #include <gauss_bell.h>
@@ -21,7 +23,7 @@
   /* A value such that {|z| <= gauss_table_TINY_ARG} implies
     that the standard PDF at {z} is greater than {1 - 10^{-16}}. */
 
-double *gauss_table_make(int n, double avg, double dev, bool_t normSum, bool_t folded);
+double *gauss_table_make(uint32_t n, double avg, double dev, bool_t normSum, bool_t folded);
   /* Allocates a vector {w} with {n} elements and sets element {w[i]}
     to {g((i-avg)/dev)}, where {g(z)} is the Gaussian bell {exp(-z*z/2)}.
     
@@ -47,7 +49,7 @@ double *gauss_table_make(int n, double avg, double dev, bool_t normSum, bool_t f
   /* A value such that {dev >= h*gauss_table_BIG_DEV} implies
     that the Gaussian bell folded over {[0_h]} is practically constant. */
 
-double gauss_table_folded_bell(double z, double dev, int n);
+double gauss_table_folded_bell(double z, double dev, uint32_t n);
   /* Returns the sum of the Gaussian bell {exp(-(x/dev)^2/2)}
     evaluated at all arguments {x} that are congruent to {z} modulo {n}.
     

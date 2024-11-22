@@ -2,9 +2,8 @@
 #define set32_H
 
 /* Subsets of the set {0..31}. */
-/* Last edited on 2023-03-18 11:15:12 by stolfi */
+/* Last edited on 2024-11-15 19:15:16 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 typedef uint32_t set32_t;

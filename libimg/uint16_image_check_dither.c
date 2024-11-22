@@ -1,7 +1,6 @@
 /* See uint16_image_check_dither.h */
 /* Last edited on 2023-03-17 21:14:51 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

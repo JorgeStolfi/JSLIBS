@@ -1,5 +1,5 @@
 /* r2.h --- operations on points and vectors of R^2 */
-/* Last edited on 2024-09-01 21:10:47 by stolfi */
+/* Last edited on 2024-11-20 12:49:40 by stolfi */
 
 #ifndef r2_H
 #define r2_H
@@ -23,7 +23,7 @@ void r2_zero(r2_t *r);
 void r2_all(double x, r2_t *r);
   /* Sets all coordinates of {r} to the value {x}. */
   
-void r2_axis(int32_t i, r2_t *r);
+void r2_axis(uint32_t i, r2_t *r);
   /* Sets {r} to the {i}th vector of the canonical basis. */
 
 void r2_add(r2_t *a, r2_t *b, r2_t *r);
@@ -112,13 +112,20 @@ bool_t r2_is_finite(r2_t *p);
 bool_t r2_eq(r2_t *p, r2_t *q);
   /* True iff points {p} and {q} are identical. */
   
-void r2_barycenter(int32_t np, r2_t p[], double w[], r2_t *bar);
+void r2_barycenter(uint32_t np, r2_t p[], double w[], r2_t *bar);
   /* Sets {*bar} to the barycenter of all points {p[0..np-1]}
     with weights {w[0..np-1]}. The weights must have positive sum,
     otherwise the result will be {(NAN,NAN)}.
     Assumes equal weights if {w = NULL}. */
 
-void r2_bbox(int32_t np, r2_t p[], interval_t B[], bool_t finite);
+double r2_mean_dist_sqr(uint32_t np, r2_t p[], double w[], r2_t *ctr);
+  /*  Returns the weighted average of the squared distances
+    from {ctr} to the points {p[0..np-1]}, using weights
+    {w[0..np-1]}. The weights must have positive sum,
+    otherwise the result will be {NAN}.
+    Assumes equal weights if {w = NULL}. */
+
+void r2_bbox(uint32_t np, r2_t p[], interval_t B[], bool_t finite);
   /* Computes the coordinate ranges {B[0..1]} of the points 
     {p.e[0..np-1]}. If {finite} is true, ignores points 
     that have infinite or NAN coordinate(s). */

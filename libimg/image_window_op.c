@@ -1,7 +1,6 @@
 /* See {image_window_op.h}. */
 /* Last edited on 2023-09-24 00:30:16 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <string.h>
 #include <stdint.h>

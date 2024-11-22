@@ -92,8 +92,7 @@ void DoErrorTest(Grater *g, intg_prob_vec_t *p)
         int32_t i;
         for (i = 0; i < p->ne; i++)
           { intg_prob_t *pi = &(p->e[i]);
-            char *fname = NULL;
-            asprintf(&fname, "out/%s-%s-%s.plot", pi->tag, g->tag, msTag);
+            char *fname = jsprintf("out/%s-%s-%s.plot", pi->tag, g->tag, msTag);
             FILE *wr = open_write(fname, TRUE);
             free(fname);
             double ek;

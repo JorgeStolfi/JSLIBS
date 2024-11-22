@@ -2,13 +2,12 @@
 #define PROG_DESC "test of {float_image_aff_compare.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-10-12 18:25:47 by stolfi */ 
+/* Last edited on 2024-11-09 12:42:58 by stolfi */ 
 /* Created on 2020-09-26 by J. Stolfi, UNICAMP */
 
 #define taffc_COPYRIGHT \
   "Copyright © 2020  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -162,7 +161,7 @@ hr2_pmap_t taffc_make_xy_translation_map(double u, double v)
   {
     double D = taffc_translation_REF;
     r2_t disp = (r2_t){{ D*u, D*v }};
-    hr2_pmap_t M = hr2_pmap_translation(&disp);
+    hr2_pmap_t M = hr2_pmap_translation_from_disp(&disp);
     return M;
   }
   
@@ -206,8 +205,7 @@ void taffc_scale_pmap_aff(hr2_pmap_t *A, double scale)
 
 float_image_t *taffc_read_image(char *imgname)
   {
-    char *fname = NULL; 
-    asprintf(&fname, "in/%s.png", imgname);
+    char *fname = jsprintf("in/%s.png", imgname);
     image_file_format_t ffmt = image_file_format_PNG;
     uint16_t *maxval; /* Max file sample value per channel. */
     double gammaDec, bias; /* Sample decoding parameters. */
@@ -230,8 +228,7 @@ void taffc_plot_square_mismatch
   )
   {
     bool_t debug_maps = FALSE;
-    char *fname = NULL;
-    asprintf(&fname, "out/%s_%s_plot.dat", prefix, deform);
+    char *fname = jsprintf("out/%s_%s_plot.dat", prefix, deform);
     FILE *wr = open_write(fname, TRUE);
     
     taffc_show_map_pair("initial", A1, A2);

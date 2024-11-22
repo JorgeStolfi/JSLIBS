@@ -1,4 +1,4 @@
-# Last edited on 2023-02-04 07:06:00 by stolfi
+# Last edited on 2024-11-18 09:07:41 by stolfi
 
 PROG := test_pqueue
 
@@ -6,8 +6,6 @@ TEST_LIB := libjs.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS = \
-  libeps.a \
-  libgeo.a \
   libjs.a
   
 TESTS := \

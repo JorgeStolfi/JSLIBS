@@ -2,7 +2,9 @@
 #define interp_spline_H
 
 /* Spline smoothing/interpolation of equally-spaced numerical series. */
-/* Last edited on 2013-10-25 23:25:39 by stolfilocal */ 
+/* Last edited on 2024-11-18 11:50:56 by stolfi */ 
+
+#include <stdint.h>
 
 #include <bool.h>
 #include <ix.h>
@@ -50,15 +52,14 @@
 typedef enum 
   { interp_spline_kind_B,    /* B-splines (convex, broad window, not interpolating). */
     interp_spline_kind_I,    /* I-splines (interpolating, min window, not convex). */
-    interp_spline_kind_O,    /* O-splines (interpolating, min degree, not convex). */
     interp_spline_kind_NUM   /* Number of spline kinds. */
   } interp_spline_kind_t;
 
-int interp_spline_compute_num_samples(int ord, interp_spline_kind_t knd);
+uint32_t interp_spline_compute_num_samples(int32_t ord, interp_spline_kind_t knd);
   /* Computes the number of consecutive data samples {nw} needed for
     interpolation at a generic real argument specified by {ord} and {knd}. */
 
-void interp_spline_get_indices(double z, int ns, ix_reduction_t red, int nw, int ix[]);
+void interp_spline_get_indices(double z, uint32_t ns, ix_reduction_t red, uint32_t nw, int32_t ix[]);
   /* Computes the indices {ix[0..nw-1]} of the {nw} samples needed to perform
     interpolation in a sequence of samples at the position {z},
     assuming that the nominal position of a sample with index {k} is {z = k+0.5}.
@@ -67,7 +68,7 @@ void interp_spline_get_indices(double z, int ns, ix_reduction_t red, int nw, int
     according to {ix_reduce(ix, ns, red)}. Some reduced indices {ix[k]} may
     be {-1} to denote `no such sample'. */
 
-void interp_spline_get_weights(double z, int ord, interp_spline_kind_t knd, int nw, double w[]);
+void interp_spline_get_weights(double z, int32_t ord, interp_spline_kind_t knd, uint32_t nw, double w[]);
   /* Computes the sample weights {w[0..nw-1]} for evaluation of {f(z)}.
     Assumes that {ord>=-1} and {nw=interp_spline_compute_num_samples(ord, kind)}. */
 

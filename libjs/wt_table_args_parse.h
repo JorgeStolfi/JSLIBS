@@ -2,12 +2,11 @@
 #define wt_table_args_parse_H
 
 /* Weight tables for filtering digital signals */
-/* Last edited on 2023-11-25 18:57:30 by stolfi */
+/* Last edited on 2024-11-15 19:17:09 by stolfi */
 
 #define wt_table_args_parse_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

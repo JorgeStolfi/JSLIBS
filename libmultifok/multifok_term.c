@@ -291,11 +291,10 @@ void multifok_term_parse_product
         if (jb1 > jb2) { int32_t tmp = jb1; jb1 = jb2; jb2 = tmp; }
       }
     /* Create a fresh copy {pr} of product name, with factors sorted: */
-    char *pr = NULL;
     if (jb1 == -1)
-      { asprintf(&pr, "1"); }
+      { char *pr = jsprintf("1"); }
     else
-      { asprintf(&pr, "%s*%s", belName[jb1], belName[jb2]); }
+      { char *pr = jsprintf("%s*%s", belName[jb1], belName[jb2]); }
     
     (*jb1_P) = jb1;
     (*jb2_P) = jb2;
@@ -334,7 +333,7 @@ void multifok_term_set_names_write_named
     char *termName[]
   )
   { char *fname = NULL;
-    asprintf(&fname, "%s-tnames.txt", outPrefix);
+    char *fname = jsprintf("%s-tnames.txt", outPrefix);
     FILE *wr = open_write(fname, TRUE);
     multifok_term_set_names_write(wr, NT, termName);
     fclose(wr);
@@ -365,7 +364,7 @@ void multifok_term_set_write_named
     double wt[]
   )
   { char *fname = NULL;
-    asprintf(&fname, "%s-twts.txt", outPrefix);
+    char *fname = jsprintf("%s-twts.txt", outPrefix);
     FILE *wr = open_write(fname, TRUE);
     multifok_term_set_write(wr, tset, weights, wt);
     fclose(wr);
@@ -394,8 +393,7 @@ void multifok_term_set_product_table_write_named
     bool_t verbose
   )
   {
-    char *fname = NULL;
-    asprintf(&fname, "%s-prix.txt", outPrefix);
+    char *fname = jsprintf("%s-prix.txt", outPrefix);
     FILE *wr = open_write(fname, TRUE);
     multifok_term_set_product_table_write(wr, NP, prix, verbose);
     fclose(wr);

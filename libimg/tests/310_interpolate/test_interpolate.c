@@ -2,13 +2,12 @@
 #define PROG_DESC "test of {float_image_interpolate.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2017-06-26 16:59:22 by stolfilocal */ 
+/* Last edited on 2024-11-20 06:00:46 by stolfi */ 
 /* Created on 2009-06-02 by J. Stolfi, UNICAMP */
 
 #define test_interpolate_COPYRIGHT \
   "Copyright © 2009  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -204,8 +203,7 @@ float_image_t *get_test_image(char *name, int NC)
   {
     demand((NC == 1) || (NC == 3), "bad num of channels");
     
-    char *fname = NULL;
-    asprintf(&fname, "in/%s-orig.%s", name, (NC == 3 ? "ppm" : "pgm"));
+    char *fname = jsprintf("in/%s-orig.%s", name, (NC == 3 ? "ppm" : "pgm"));
     bool_t isMask = FALSE; /* Assume pixels have a smooth distribution. */
     float_image_t *base = float_image_read_pnm_named(fname, isMask, 1/0.4500, 0.0327, TRUE, TRUE, FALSE);
 
@@ -273,13 +271,12 @@ void write_image(char *name, char *ttag, r2_t *ish, r2_t *dsh, r2_t *osh, int or
     
     char *makename(char *ext)
       { 
-        char *fname = NULL;
+        char *fname;
         if (ish == NULL)
-          { asprintf(&fname, "out/%s-orig.%s", name, ext); }
+          { fname = jsprintf("out/%s-orig.%s", name, ext); }
         else
-          { asprintf
-              ( &fname,
-                "out/%s-%s-C%c-R%c--%05d-%05d--%05d-%05d--%05d-%05d.%s", 
+          { fname = jsprintf
+              ( "out/%s-%s-C%c-R%c--%05d-%05d--%05d-%05d--%05d-%05d.%s", 
                 name,
                 ttag,
                 "n01"[order+1],
@@ -347,8 +344,7 @@ void do_plot_test
     float_image_set_sample(img, 0, kx, ky, 1.0);
     
     /* Generate 2D plot: */
-    char *fname = NULL;
-    asprintf(&fname, "out/%s-R%c-%04d-%04d.txt", name, "SERMP"[red], kx, ky);
+    char *fname = jsprintf("out/%s-R%c-%04d-%04d.txt", name, "SERMP"[red], kx, ky);
     FILE *plot = open_write(fname, TRUE);
     int m = 8; /* Subsampling rate */
     int G = 3; /* Extra plot margin in pixels. */

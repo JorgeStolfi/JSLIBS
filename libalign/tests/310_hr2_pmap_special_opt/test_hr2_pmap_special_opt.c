@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {hr2_pmap_special_opt.h} and related modules"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-08 11:18:06 by stolfi */ 
+/* Last edited on 2024-11-20 05:58:38 by stolfi */ 
 /* Created on 2020-07-11 by J. Stolfi, UNICAMP */
 
 #define test_hr2_pmap_special_opt_COPYRIGHT \
@@ -153,10 +153,9 @@ int32_t main(int32_t argc, char **argv)
     for (sign_t sgn = +1; sgn >= -1; sgn -= 2)
       { for (int32_t i = 0; i < 10; i++)
           { bool_t verbose = (i < 3);
-            char *outPrefix = NULL;
             if (i < 2) 
               { char *xsgn = (sgn == 0 ? "o" : (sgn < 0 ? "m" : "p"));
-                asprintf(&outPrefix, "out/test-%s-%s-%03d", xtype, xsgn, i);
+                char *outPrefix = jsprintf("out/test-%s-%s-%03d", xtype, xsgn, i);
               }
             hsot_test_hr2_pmap_special_opt_quadratic__hr2_pmap_special_opt_1D_plot(type, sgn, verbose, outPrefix);
             free(outPrefix);
@@ -218,9 +217,8 @@ void hsot_do_test_opt_and_plot
       }
     
     char *xsgn = (sgn == 0 ? "o" : (sgn < 0 ? "m" : "p"));
-    char *tag = NULL;
-    asprintf
-      ( &tag, "%s-%s-tight%c-ident%c-close%c", 
+    char *tag = jsprintf
+      ( "%s-%s-tight%c-ident%c-close%c", 
         xtype, xsgn, "FT"[tight], "FT"[ident], "FT"[close]
       );
     

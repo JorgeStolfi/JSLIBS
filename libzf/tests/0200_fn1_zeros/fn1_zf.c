@@ -331,7 +331,7 @@ void fn1_zf_finish_figure
     fn1_zf_problem_t *p
   )
   { char *sevals = NULL;
-    asprintf(&sevals, 
+    char *sevals = jsprintf(
       "%d function evaluations, %d roots found", 
       nevals, nroots
     );

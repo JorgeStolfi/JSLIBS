@@ -257,7 +257,7 @@ void multifok_basis_add_elem_and_name_3x3
     int32_t ib = basis->NB;
     assert(ib < NB_max); /* Too many elemets. */
     /* Make sure {belName[ib]} is a heap-allocated copy of {na}: */
-    basis->belName[ib] = NULL; asprintf(&(basis->belName[ib]), "%s", na); 
+    basis->belName[ib] = NULL; char *(basis->belName[ib]) = jsprintf("%s", na); 
     double *pib = basis->bas[ib];
     pib[0] = x00;
     pib[1] = x01;
@@ -420,7 +420,7 @@ void multifok_basis_elem_names_write(FILE *wr, int32_t NB, char *belName[])
 
 void multifok_basis_elem_names_write_named(char *outPrefix, multifok_basis_t *basis)  
   { char *fname = NULL;
-    asprintf(&fname, "%s-bnames.txt", outPrefix);
+    char *fname = jsprintf("%s-bnames.txt", outPrefix);
     FILE *wr = open_write(fname, TRUE);
     multifok_basis_elem_names_write(wr, basis->NB, basis->belName);
     fclose(wr);

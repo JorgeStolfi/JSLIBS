@@ -1,12 +1,13 @@
 /* See jsfile.h */
-/* Last edited on 2014-06-09 17:31:31 by stolfilocal */
+/* Last edited on 2024-11-20 06:49:34 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <affirm.h>
 
 FILE *open_write(const char *name, bool_t verbose)
@@ -45,8 +46,7 @@ FILE *open_read(const char *name, bool_t verbose)
 
 FILE *open_read_tag_ext(char *name, char *tag, char *ext, bool_t verbose)
   { 
-    char *fileName = NULL;
-    asprintf(&fileName, "%s%s%s", name, tag, ext);
+    char *fileName = jsprintf("%s%s%s", name, tag, ext);
     FILE *rd = open_read(fileName, verbose);
     free(fileName);
     return rd;
@@ -54,8 +54,7 @@ FILE *open_read_tag_ext(char *name, char *tag, char *ext, bool_t verbose)
 
 FILE *open_write_tag_ext(char *name, char *tag, char *ext, bool_t verbose)
   { 
-    char *fileName = NULL;
-    asprintf(&fileName, "%s%s%s", name, tag, ext);
+    char *fileName = jsprintf("%s%s%s", name, tag, ext);
     FILE *wr = open_write(fileName, verbose);
     free(fileName);
     return wr;
@@ -63,10 +62,10 @@ FILE *open_write_tag_ext(char *name, char *tag, char *ext, bool_t verbose)
 
 char *read_line(FILE *f)
   {
-    int mc = 0;
-    int nc = 0;
+    int32_t mc = 0;
+    int32_t nc = 0;
+    int32_t c;
     char *s = NULL;
-    int c;
     do
       { c = getc(f); 
         if ((c == EOF) && (nc == 0)) return(NULL);
@@ -74,9 +73,9 @@ char *read_line(FILE *f)
         if (c == '\t') c = ' ';
 	if (nc >= mc)
           { if (mc == 0)
-	      { mc = 40; s = (char *) malloc(mc*sizeof(char)); }
+	      { mc = 40; s = talloc(mc, char); }
 	    else 
-	      { mc *= 2; s = (char *) realloc ((void *) s, mc*sizeof(char)); }
+	      { mc *= 2; s = retalloc(s, mc, char); }
           }
 	affirm (s != NULL, "alloc failed");
 	s[nc] = (char)c;

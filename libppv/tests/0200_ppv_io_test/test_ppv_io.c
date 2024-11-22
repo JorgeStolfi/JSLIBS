@@ -58,8 +58,7 @@ int32_t main (int32_t argn, char **argv)
         
         for (ppv_nbits_t bps = bps_lo; bps <= bps_hi; bps++)
           { ppv_array_t *A = make_test_array(d, bps);
-            char *fname = NULL;
-            asprintf(&fname, "out/test_d%d_bps%02d.ppv", d, bps);
+            char *fname = jsprintf("out/test_d%d_bps%02d.ppv", d, bps);
             
             /* Write a file in the current format: */
             do_test_write(A, fname);

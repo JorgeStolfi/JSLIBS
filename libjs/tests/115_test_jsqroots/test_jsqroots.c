@@ -2,13 +2,12 @@
 #define PROG_DESC "test of {jsqroots.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-18 11:29:22 by stolfi */ 
+/* Last edited on 2024-11-15 19:15:34 by stolfi */ 
 /* Created on 2018-06-30 by J. Stolfi, UNICAMP */
 
 #define testjsqroots_COPYRIGHT \
   "Copyright © 2018  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

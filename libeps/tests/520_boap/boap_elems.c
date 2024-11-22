@@ -27,11 +27,10 @@ epswr_figure_t *boap_new_figure
     bool_t landscape
   )
   { 
-    char *fname = NULL;
     if (subname != NULL)
-      { asprintf(&fname, "out/porch_%s_%s.eps", pname, subname); }
+      { char *fname = jsprintf("out/porch_%s_%s.eps", pname, subname); }
     else
-      { asprintf(&fname, "out/porch_%s.eps", pname); }
+      { char *fname = jsprintf("out/porch_%s.eps", pname); }
     FILE *wr = open_write(fname, TRUE);
     free(fname);
    

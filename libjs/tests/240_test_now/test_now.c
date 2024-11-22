@@ -1,14 +1,13 @@
 #define PROG_NAME "test_now"
-#define PROG_DESC "test of {jstime.h}"
+#define PROG_DESC "test of {gettime_*} and {getres_*} from {jstime.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-26 11:05:21 by stolfi */
+/* Last edited on 2024-11-18 05:33:32 by stolfi */
 /* Created on 2007-01-14 by J. Stolfi, UNICAMP */
 
 #define test_now_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdint.h>
 /* #include <sys/types.h> */
 /* #include <sys/resource.h> */
@@ -96,7 +95,7 @@ void compute(double *q, double *r, double *s);
     to {q} and twaddles the pair {r,s}. It's safe to call it several
     billion times. */
 
-void debug_timer_proc(int32_t it, int64_t nmax);
+void test_timer_proc(int32_t it, int64_t nmax);
   /* Debugs the timing function selected by {it}, which should be a
     number in {0..MAXTIMER}. Executes the {compute} operation multiple
     times between clock readings, from a small number up to {nmax}
@@ -136,7 +135,7 @@ int32_t main(int32_t argc, char **argv)
     
     if (debug_timers) 
       { fprintf(stderr, "\n=== testing the various Linux clocks ===\n");
-        for (it = 0; it <= MAXTIMER; it++)  { debug_timer_proc(it, 20*MILLION); }
+        for (it = 0; it <= MAXTIMER; it++)  { test_timer_proc(it, 20*MILLION); }
       }
 
     if (compare_timers) 
@@ -433,7 +432,7 @@ void compare_timer_procs(FILE *wr, int32_t nsteps, int64_t nops)
     fflush(wr);
   }
        
-void debug_timer_proc(int32_t it, int64_t nmax)
+void test_timer_proc(int32_t it, int64_t nmax)
   { char *name = get_timer_name(it);
     double res = get_timer_resolution(it);
     fprintf(stderr, "timer[%02d] res = %28.10f  %s\n", it, res, name);

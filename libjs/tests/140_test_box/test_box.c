@@ -2,7 +2,7 @@
 #define PROG_DESC "tests the ordered table search procedure"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2023-02-18 23:34:34 by stolfi */
+/* Last edited on 2024-11-16 11:15:39 by stolfi */
 /* Created on 2021-09-25 or earler by J. Stolfi, UNICAMP */
 
 #define test_box_COPYRIGHT \
@@ -107,7 +107,7 @@ void test_print(box_dim_t d, interval_t B[], bool_t verbose)
     
     if (d <= 4)
       { fprintf(stderr, "testing {box_face_print}:\n");
-        int32_t nf = (int32_t)ipow(3,d);
+        uint32_t nf = (uint32_t)ipow(3,d);
         for (int32_t fi = 0; fi < nf; fi++)
           { fprintf(stderr, "face %3d = ", fi); 
             box_face_print(stderr, d, fi);

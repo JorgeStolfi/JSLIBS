@@ -1,7 +1,6 @@
 /* See {float_image_hdyn.h}. */
 /* Last edited on 2023-02-26 03:59:09 by stolfi */
 
-#define _GNU_SOURCE
 #include <assert.h>
 #include <limits.h>
 #include <string.h>

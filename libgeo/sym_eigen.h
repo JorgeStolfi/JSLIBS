@@ -1,13 +1,18 @@
 /* sym_eigen.h -- eigenvalues and eigenvectors of a symmetric matrix */
-/* Last edited on 2021-06-09 20:17:45 by jstolfi */
+/* Last edited on 2024-11-20 15:03:30 by stolfi */
 
 #ifndef sym_eigen_H
 #define sym_eigen_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
-void syei_tridiagonalize(int32_t n, double *A, double *d, double *e, double *R);
+void sym_eigen_tridiagonalize
+  ( uint32_t n,
+    double A[],
+    double d[],
+    double e[],
+    double R[]
+  );
   /* Reduces the real symmetric matrix {A} to a symmetric tridiagonal
     matrix {T}, using an orthogonal similarity transformation {R}.
 
@@ -15,9 +20,9 @@ void syei_tridiagonalize(int32_t n, double *A, double *d, double *e, double *R);
 
        {n} is the size (rows and columns) of the matrices {A} and {R}.
 
-       {A} is the input symmetric matrix, stored by rows.  
-         (The procedure will only use, and possibly modify,
-         the lower triangular part of {A}, including the diagonal.)
+       {A[0..n*n-1]} is the input symmetric matrix, stored by rows.  
+         (The procedure will only use the lower triangular
+         part of {A}, including the diagonal.)
 
     On output,
 
@@ -25,31 +30,30 @@ void syei_tridiagonalize(int32_t n, double *A, double *d, double *e, double *R);
          matrix {T}.  (I.e. {d[i] == T[i,i]}, for {i=0..n-1}.) 
 
        {e[1..n-1]} are the subdiagonal elements of {T}.
-         (I.e. {e[i] == T[i,i-1]}, for {i=1..n-1}.) 
+         (I.e. {e[i] == T[i,i-1]=T[i-1,i]}, for {i=1..n-1}.) 
          Element {e[0]} is set to zero.
 
-       if {R} is NULL:
+       {R[0..n*n-1} contains the
+         orthogonal transformation matrix used for the reduction, i.e.
+         the matrix such that {R*A*(R^t) == T}.
 
-         {A} contains, in its strict lower triangular part, information
-           about the orthogonal transformations used in the reduction.
-           The full upper triangle of {A} (including the diagonal) 
-           is unaltered.
-
-       if {R} is not NULL:
-
-         {R} (which may be the same as {A}) contains the orthogonal
-           transformation matrix used for the reduction, i.e. the
-           matrix such that {R*A*(R^t) == T}.
-
-         {A} (if distinct from {R}) is unaltered.
+    The matrix {R} may be the same as {A}, which is then overwritten
+    with the trabsformation matrix. Otherwise, {A} is unaltered.
   */
 
-void syei_trid_eigen(int32_t n, double *d, double *e, double *R, int32_t *p, int32_t absrt);
+void sym_eigen_trid_eigen
+  ( uint32_t n,
+    double *d,
+    double *e,
+    double *R,
+    uint32_t *p,
+    uint32_t absrt
+  );
   /* Finds the right eigenvalues and eigenvectors of a symmetric
     tridiagonal matrix {T} by the QL method. 
     
     If the matrix {T} vas derived from a full symmetric matrix {A} by
-    an orthogonal similarity map {R} (see {syei_tridiagonalize}), this
+    an orthogonal similarity map {R} (see {sym_eigen_tridiagonalize}), this
     procedure will find the eigenvectors of {A}.
 
     On input,

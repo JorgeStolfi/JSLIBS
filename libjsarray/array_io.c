@@ -2,9 +2,8 @@
 
 #define array_io_C_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2023-03-18 11:03:26 by stolfi */
+/* Last edited on 2024-11-20 07:49:41 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -29,7 +28,7 @@ void array_write_header
     char *type, 
     char *cmt, 
     ix_descr_t *D,
-    int32_t dix[]
+    uint32_t dix[]
   )
   {
     ix_dim_t na = D->na;

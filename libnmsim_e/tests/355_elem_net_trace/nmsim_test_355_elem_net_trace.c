@@ -81,8 +81,7 @@ void nmsim_test_elem_net_trace
     nmsim_time_t tHi = tLo + nSteps;  /* Last time to save in traces. */
     
     /* Create the filename prefix: */
-    char *prefix = NULL;
-    asprintf(&prefix, "out/trace_%s", tag);
+    char *prefix = jsprintf("out/trace_%s", tag);
       
     /* Allocate element-level trace structure, choose neurons to trace: */
     fprintf(stderr, "creating elem net trace structure...\n");
@@ -178,8 +177,7 @@ void nmsim_test_elem_net_trace_read(char *prefix, nmsim_elem_net_trace_t *etrace
         nmsim_elem_neuron_ix_t ineLo = trnek->ineLo;
         nmsim_elem_neuron_ix_t ineHi = trnek->ineHi;
         fprintf(stderr, "reading and checking trace trne[%d] of neurons %d..%d\n", k, ineLo, ineHi);
-        char *fname = NULL;
-        asprintf(&fname, "%s_ne%010d--%010d_trace.txt", prefix, ineLo, ineHi);
+        char *fname = jsprintf("%s_ne%010d--%010d_trace.txt", prefix, ineLo, ineHi);
         FILE *rd = open_read(fname, TRUE);
         nmsim_elem_neuron_trace_t *trnek_read = nmsim_elem_neuron_trace_read(rd);
         fclose(rd);

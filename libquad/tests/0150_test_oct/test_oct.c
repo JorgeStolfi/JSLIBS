@@ -190,7 +190,7 @@ oct_arc_t make_map_pyramid(int32_t n)
  
 void write_map(char *name, oct_arc_t a)
   { char *filename = NULL;
-    asprintf(&filename, "out/%s.oct", name);
+    char *filename = jsprintf("out/%s.oct", name);
     FILE *wr = open_write(filename, TRUE);
     oct_arc_vec_t root = oct_arc_vec_new(1); /* Root list. */
     root.e[0] = a;

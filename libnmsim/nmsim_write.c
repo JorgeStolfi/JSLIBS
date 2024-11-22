@@ -72,7 +72,7 @@ void nmsim_write_double_value(FILE *wr, double v, double prec, bool_t sgn, bool_
         if ((N == 0) && (fudge_0 || fudge_1)){ N = 1; }
         /* Format the value: */
         char *vx = NULL; /* Full formatted parameter. */
-        asprintf(&vx, " %.*f", N, v); 
+        char *vx = jsprintf(" %.*f", N, v); 
         if (debug) { fprintf(stderr, "  original = [%s]", vx); }
         assert(vx != NULL);
         /* Find first non-blank char {*vbeg}: */

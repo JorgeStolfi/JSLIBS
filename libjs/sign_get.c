@@ -1,9 +1,10 @@
 /* See {sign_get.h}. */
-/* Last edited on 2007-10-28 19:36:20 by stolfi */
+/* Last edited on 2024-11-15 19:15:18 by stolfi */
+
+#include <stdint.h>
 
 #include <sign_get.h>
 #include <sign.h>
-#include <stdint.h>
 
 sign_t sign_int(int x)
   { if (x < 0)

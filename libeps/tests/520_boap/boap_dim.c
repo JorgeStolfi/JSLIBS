@@ -68,7 +68,7 @@ void boap_dim_draw (epswr_figure_t *epsf,  boap_dim_t *dim, int8_t uax)
         hoff, voff, &xr, &yr, &rot
       );
     char *label = NULL;
-    asprintf(&label, "%.*f", dim->decimals, dab);
+    char *label = jsprintf("%.*f", dim->decimals, dab);
     epswr_label(epsf, label, "0", xr, yr, rot, FALSE, 0.5, 0.5, TRUE, FALSE);
     free(label);
   }

@@ -1,5 +1,5 @@
 /* argparser_geo.h -- extends argparser.h for geometric args. */
-/* Last edited on 2024-10-31 09:25:01 by stolfi */
+/* Last edited on 2024-11-20 08:47:52 by stolfi */
 
 #ifndef argparser_geo_H
 #define argparser_geo_H
@@ -27,7 +27,7 @@ r6_t argparser_get_next_r6(argparser_t *pp, double min, double max);
     must be in the range {[min.. max]}, as the coordinates of a point;
     where {N} is 2,3,4, or 6. */
 
-void argparser_get_next_rn(argparser_t *pp, double p[], int32_t n, double min, double max);
+void argparser_get_next_rn(argparser_t *pp, double p[], uint32_t n, double min, double max);
   /* Parses with {argparser_get_next_double} the next {n} arguments, 
     which must be in the range {[min .. max]}, and stores them in 
     {p[0.n-1]}. */

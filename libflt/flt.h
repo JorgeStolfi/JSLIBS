@@ -1,11 +1,11 @@
 /* Operations on floating-point values */
-/* Last edited on 2016-04-01 02:08:49 by stolfilocal */
+/* Last edited on 2024-11-20 07:48:37 by stolfi */
 
 #ifndef flt_H
 #define flt_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 /* #include <sys/ieeefp.h> */
 
 /* The floating-point type used by the operations below.: */
@@ -112,12 +112,12 @@ Float flt_random(void);
   /* A random Float value in [0 __ 1).
      The client must have called {srandom(<seed>)}. */
 
-Float flt_random_mag(int avg, int dev);
+Float flt_random_mag(int32_t avg, int32_t dev);
   /* Two raised to a random exponent, uniform between 
     {avg-dev} and {avg+dev}.  (The result may be infinity). 
     The client must have called {srandom(<seed>)}. */
 
-Float flt_from_int(int i);
+Float flt_from_int(int32_t i);
   /* Converts the integer {i} to a {Float} value, according to 
     the current rounding mode. */
 
@@ -135,7 +135,7 @@ void flt_round_zero (void);
   /* These routines set the IEEE FP rounding direction. */
   /* They should be a lot faster than "ieee_flags". */
 
-int flt_get_fsr(void);
+int32_t flt_get_fsr(void);
   /* Returns the FP status register. (For debugging) */
   
 void flt_single_prec (void);

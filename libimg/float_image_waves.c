@@ -6,7 +6,6 @@
 #define float_image_test_C_COPYRIGHT \
   "Copyright © 2009  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdint.h>
 #include <assert.h>

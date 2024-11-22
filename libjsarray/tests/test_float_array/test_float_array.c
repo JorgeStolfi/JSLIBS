@@ -4,9 +4,8 @@
 
 #define test_float_array_C_COPYRIGHT "Copyright © 2009  by the State University of Campinas (UNICAMP)"
 /* Created on 2009-08-31 by J. Stolfi, UNICAMP */
-/* Last edited on 2023-03-18 11:00:21 by stolfi */ 
+/* Last edited on 2024-11-20 07:49:50 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -17,6 +16,7 @@
 
 #include <jsrandom.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <jsmath.h>
 #include <affirm.h>
 #include <bool.h>
@@ -37,23 +37,23 @@
 
 /* PROTOTYPES */
 
-void test_float_array(int32_t nt); 
+void test_float_array(uint32_t nt); 
 
-float_array_t *float_array_new_random(int32_t it, bool_t verbose);
+float_array_t *float_array_new_random(uint32_t it, bool_t verbose);
   /* Creates an array with random number of axes, random size vector, 
     and random element order, using {float_array_new}. Also does 
     some consistency checks on the result. */
 
-void test_float_array_new(int32_t it, bool_t verbose);
-void test_float_array_get_elem_set_elem(int32_t it, bool_t verbose);
-void test_float_array_copy( int32_t it, bool_t verbose);
-void test_float_array_new_descr(int32_t it, bool_t verbose);
-void test_float_array_copy_descr(int32_t it, bool_t verbose);
-void test_float_array_free_elems(int32_t it, bool_t verbose);
-void test_float_array_free_descr(int32_t it, bool_t verbose);
-void test_float_array_get_size(int32_t it, bool_t verbose);
-void test_float_array_check_size(int32_t it, bool_t verbose);
-void test_float_array_write_float_array_read(int32_t it, bool_t verbose);
+void test_float_array_new(uint32_t it, bool_t verbose);
+void test_float_array_get_elem_set_elem(uint32_t it, bool_t verbose);
+void test_float_array_copy( uint32_t it, bool_t verbose);
+void test_float_array_new_descr(uint32_t it, bool_t verbose);
+void test_float_array_copy_descr(uint32_t it, bool_t verbose);
+void test_float_array_free_elems(uint32_t it, bool_t verbose);
+void test_float_array_free_descr(uint32_t it, bool_t verbose);
+void test_float_array_get_size(uint32_t it, bool_t verbose);
+void test_float_array_check_size(uint32_t it, bool_t verbose);
+void test_float_array_write_float_array_read(uint32_t it, bool_t verbose);
 
 void show_float_array(FILE *wr, char *Mname, float_array_t *A, float_array_count_t nPrint);
 void show_indices(FILE *wr, char *pf, ix_dim_t d, ix_index_t ix[], char *sf);
@@ -80,10 +80,9 @@ int32_t main (int32_t argn, char **argv)
     return 0;
   }
 
-void test_float_array(int32_t nt)
+void test_float_array(uint32_t nt)
   { fprintf(stderr, "Checking {float_array_t} and its operations...\n");
-    int32_t it;
-    for (it = 0; it < nt; it++)
+    for (int32_t it = 0; it < nt; it++)
       { 
         fprintf(stderr, "=== pass %d ===\n", it);
         bool_t verbose = (it < 4);
@@ -103,14 +102,16 @@ void test_float_array(int32_t nt)
       }
   }
    
-float_array_t *float_array_new_random(int32_t it, bool_t verbose)
+float_array_t *float_array_new_random(uint32_t it, bool_t verbose)
   {
     float_array_dim_t na = (float_array_dim_t)(it % array_MAX_AXES);
     float_array_size_t sz[na];
     int32_t ia;
     ix_count_t ne = 1;
     for (ia = 0; ia < na; ia++) 
-      { sz[ia] = int32_abrandom(0, 3)+int32_abrandom(0, 4); ne *= (ix_count_t)(sz[ia]); }
+      { sz[ia] = uint32_abrandom(0, 3)+uint32_abrandom(0, 4); 
+        ne *= (ix_count_t)(sz[ia]);
+      }
     ix_order_t ixor = (ix_order_t)int32_abrandom(0, 1);
     if (verbose)
       { fprintf(stderr, "%s(%d, %c)\n", __FUNCTION__, it, "FT"[verbose]);
@@ -133,7 +134,7 @@ float_array_t *float_array_new_random(int32_t it, bool_t verbose)
     return A;
   }
 
-void test_float_array_new(int32_t it, bool_t verbose)  
+void test_float_array_new(uint32_t it, bool_t verbose)  
   {
     if (verbose) fprintf(stderr, "Checking {float_array_new} ...\n");
     srandom(4634 + 17*(2*it + 1));
@@ -148,7 +149,7 @@ void test_float_array_new(int32_t it, bool_t verbose)
     float_array_free_elems(A); float_array_free_descr(A);
   }
 
-void test_float_array_get_elem_set_elem(int32_t it, bool_t verbose)
+void test_float_array_get_elem_set_elem(uint32_t it, bool_t verbose)
   { if (verbose) fprintf(stderr, "Checking {float_array_{get_elem,get_elem_pos,set_elem}} ...\n");
     srandom(4634 + 19*(2*it + 1));
     
@@ -202,11 +203,10 @@ void test_float_array_get_elem_set_elem(int32_t it, bool_t verbose)
     
   }
 
-void test_float_array_write_float_array_read(int32_t it, bool_t verbose)
+void test_float_array_write_float_array_read(uint32_t it, bool_t verbose)
   {
     if (verbose) fprintf(stderr, "Checking {float_array_write} ...\n");
-    char *fname = NULL;
-    asprintf(&fname, "out/float_array-%04d.txt", it);
+    char *fname = jsprintf("out/float_array-%04d.txt", it);
 
     srandom(4634 + 23*(2*it + 1));
     float_array_t *A = float_array_new_random(it, verbose);
@@ -350,7 +350,7 @@ void float_array_throw(float_array_t *A, double frac)
 //       }
 //   }
 // 
-// void test_float_array_add_elem(int32_t it, bool_t verbose)
+// void test_float_array_add_elem(uint32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_add_elem} ...\n");
 //     
@@ -395,7 +395,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(R.e);
 //   }
 //   
-// void test_float_array_trim(int32_t it, bool_t verbose)
+// void test_float_array_trim(uint32_t it, bool_t verbose)
 //   {
 //    if (verbose) fprintf(stderr, "Checking {float_array_trim} ...\n");
 //     
@@ -418,7 +418,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(A.e);
 //   }
 // 
-// void test_float_array_sort_entries(int32_t it, bool_t verbose)
+// void test_float_array_sort_entries(uint32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_sort_entries} ...\n");
 //     
@@ -443,7 +443,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(A.e);
 //   }
 //   
-// void test_float_array_copy(int32_t it, bool_t verbose)
+// void test_float_array_copy(uint32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_copy} ...\n");
 //     
@@ -459,7 +459,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(R.e);
 //   }
 //   
-// void test_float_array_sort_entries_ins(int32_t it, bool_t verbose)
+// void test_float_array_sort_entries_ins(uint32_t it, bool_t verbose)
 //   {
 //     float_array_t A = float_array_new(11,17,0); 
 //     float_array_throw(&A, 0.25); 
@@ -479,7 +479,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     check_float_array(&A, "A", &R, "R", verbose);
 //   }
 //   
-// void test_float_array_condense(int32_t it, bool_t verbose)
+// void test_float_array_condense(uint32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_condense} ...\n");
 //     
@@ -520,7 +520,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(R.e);
 //   }
 // 
-// void test_float_array_mix(int32_t it, bool_t verbose)
+// void test_float_array_mix(uint32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_mix} ...\n");
 //     
@@ -554,7 +554,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(R.e);
 //   }
 //   
-// void test_float_array_transpose(int32_t it, bool_t verbose)
+// void test_float_array_transpose(uint32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_transpose} ...\n");
 //     
@@ -566,7 +566,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(A.e);
 //   }
 //   
-// void test_float_array_extract_row_float_array_extract_col_float_array_mul(int32_t it, bool_t verbose)
+// void test_float_array_extract_row_float_array_extract_col_float_array_mul(uint32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array,float_array_extract_col,float_array_mul} ...\n");
 //     
@@ -613,7 +613,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(R.e);
 //   }
 //   
-// void test_float_array_map_row(int32_t it, bool_t verbose)
+// void test_float_array_map_row(uint32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_map_row} ...\n");
 //     
@@ -647,7 +647,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(A.e);
 //   }
 //   
-// void test_float_array_map_col(int32_t it, bool_t verbose)
+// void test_float_array_map_col(uint32_t it, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_map_col} ...\n");
 //     
@@ -680,7 +680,7 @@ void float_array_throw(float_array_t *A, double frac)
 //     free(A.e);    
 //   }
 //   
-// void test_float_array_add_diagonal_float_array_fill_diagonal(int32_t it, bool_t fill, bool_t verbose)
+// void test_float_array_add_diagonal_float_array_fill_diagonal(uint32_t it, bool_t fill, bool_t verbose)
 //   {
 //     if (verbose) fprintf(stderr, "Checking {float_array_add_diagonal,float_array_fill_diagonal} ...\n");
 //     

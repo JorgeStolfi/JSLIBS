@@ -8,7 +8,6 @@
 #define test_spectrum_table_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -381,7 +380,7 @@ void check_power_totals(char *tname, int32_t zent, double zntrm, double zterg, d
 float_image_t *read_image(char *dir, int32_t kx, int32_t ky, int32_t chns, char *suffix)
   { char *fname = NULL;
     char *ext = (chns == 1 ? "pgm" : "ppm");
-    asprintf(&fname, "%s/real-%04d-%04d-%s.%s", dir, kx, ky, suffix, ext);
+    char *fname = jsprintf("%s/real-%04d-%04d-%s.%s", dir, kx, ky, suffix, ext);
     FILE *rd = open_read(fname, TRUE);
     uint16_image_t *pim = uint16_image_read_pnm_file(rd);
     fclose(rd);
@@ -451,9 +450,8 @@ void write_image(char *dir, kind_t kind, int32_t kx, int32_t ky, char *suffix, f
     uint16_image_t *pim = float_image_to_uint16_image(fim, isMask, chns, NULL, NULL, NULL, 255, yup, verbose);
     
     /* Write to PPM file: */
-    char *fname = NULL;
     char *ext = (chns == 1 ? "pgm" : "ppm");
-    asprintf(&fname, "%s/%s-%04dx%04d-%04d-%04d-%s.%s", dir, kind_name[kind], cols, rows, kx, ky, suffix, ext);
+    char *fname = jsprintf("%s/%s-%04dx%04d-%04d-%04d-%s.%s", dir, kind_name[kind], cols, rows, kx, ky, suffix, ext);
     FILE *wr = open_write(fname, TRUE);
     bool_t forceplain = FALSE;
     uint16_image_write_pnm_file(wr, pim, forceplain, verbose);
@@ -476,8 +474,7 @@ void write_spectrum_exact
     spectrum_table_exact_t *tx
   )
   {
-    char *fname = NULL;
-    asprintf(&fname, "%s/%s-%04dx%04d-%04d-%04d-%s.txt", dir, kind_name[kind], cols, rows, kx, ky, suffix);
+    char *fname = jsprintf("%s/%s-%04dx%04d-%04d-%04d-%s.txt", dir, kind_name[kind], cols, rows, kx, ky, suffix);
     FILE *wr = open_write(fname, TRUE);
     for (int32_t k = 0; k < tx->ne; k++)
       { spectrum_table_exact_entry_t *txk = &(tx->e[k]);
@@ -502,8 +499,7 @@ void write_spectrum_binned
     spectrum_table_binned_t *tb
   )
   {
-    char *fname = NULL;
-    asprintf(&fname, "%s/%s-%04dx%04d-%04d-%04d-%s.txt", dir, kind_name[kind], cols, rows, kx, ky, suffix);
+    char *fname = jsprintf("%s/%s-%04dx%04d-%04d-%04d-%s.txt", dir, kind_name[kind], cols, rows, kx, ky, suffix);
     FILE *wr = open_write(fname, TRUE);
     for (int32_t k = 0; k < tb->ne; k++)
       { spectrum_table_binned_entry_t *tbk = &(tb->e[k]);

@@ -1,10 +1,9 @@
 /* See wt_median_window.h */
-/* Last edited on 2023-11-23 16:02:10 by stolfi */
+/* Last edited on 2024-11-19 22:25:26 by stolfi */
 
 #define wt_median_window_C_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -19,24 +18,24 @@
 #include <wt_median_window.h>
 
 double wt_median_window
-  ( int32_t nx,
+  ( uint32_t nx,
     double x[],
-    int32_t ix,
-    int32_t nw,
-    int32_t w[],
+    uint32_t ix,
+    uint32_t nw,
+    uint64_t w[],
     bool_t interp,
-    int32_t nk,
-    int32_t kx[],
-    int32_t *ns_P,
+    uint32_t nk,
+    uint32_t kx[],
+    uint32_t *ns_P,
     double xs[],
-    int32_t ws[]
+    uint64_t ws[]
   )
   {
     bool_t debug = FALSE;
     
-    int32_t np = wt_median_window_index_set_update(nx, ix, nw, nk, kx);
-    wt_median_index_set_sort(nx, x, nw, kx, np);
-    int32_t ns = wt_median_gather_samples(nx, x, ix, nw, w, kx, xs, ws);
+    uint32_t nkept = wt_median_window_index_set_update(nx, nk, kx, ix, nw);
+    wt_median_index_set_sort(nx, x, nw, kx, nkept);
+    uint32_t ns = wt_median_gather_samples(nx, x, ix, nw, w, kx, xs, ws);
     if (debug)
       { fprintf(stderr, "    xs[0..%d] = ", ns-1);
         for (int32_t js = 0; js < ns; js++)
@@ -52,57 +51,67 @@ double wt_median_window
     return xm;
   }
 
-int32_t wt_median_window_index_set_update
-  ( int32_t nx,     /* Count of samples. */
-    int32_t ix,     /* Index of first sample in window. */
-    int32_t nw,     /* Window width. */
-    int32_t nk,     /* (IN) Count of indices in {kx}. */
-    int32_t kx[]    /* (IN/OUT) Sorted indices are {kx[0..nk-1]}. */
+uint32_t wt_median_window_index_set_update
+  ( uint32_t nx,     /* Total count of samples. */
+    uint32_t nk,     /* (IN/OUT) Count of indices in {kx}. */
+    uint32_t kx[],   /* (IN/OUT) Sorted indices are {kx[0..nk-1]}. */
+    uint32_t ix,     /* Index of first sample in new window. */
+    uint32_t nw      /* Count of samples in new window. */
   )
   { bool_t debug = FALSE;
   
-    demand(nw >= 0, "invalid window width {nw}");
-    int32_t jx = ix + nw - 1; /* Last sample index in window. */
-    demand((ix >= 0) && (jx < nx), "window spills outside of {0..nx-1}");
-    
-    demand((nk >= 0) && (nk <= nx), "invalid index set size {nk}");
-    int32_t kx_min = INT32_MAX, kx_max = INT32_MIN;  /* Min and max valid indices in {kx[0..nk-1]}. */
-    if (nk == 0)
-      { if (debug) { fprintf(stderr, "  index set was empty\n"); } }
+    uint32_t nkept; /* Count of indices that were preserved. */
+    if (nw == 0)
+      { if (debug) { fprintf(stderr, "  new index set is empty\n"); }
+        nkept = 0;
+      }
     else
-      { /* Remove from {kx[0..nk-1]} the indices that are outside the window: */
-        /* Also find min and max indices {kx_min,kx_max} in remaining set: */
-        int32_t nk_new = 0;
-        for (int32_t j = 0; j < nk; j++)
-          { int32_t kxj = kx[j];
-            demand((kxj >= 0) && (kxj < nx), "invalid index in {kx[..]}");
-            if ((kxj >= ix) && (kxj <= jx))
-              { kx[nk_new] = kxj; nk_new++;
-                if (kxj < kx_min) { kx_min = kxj; }
-                if (kxj > kx_max) { kx_max = kxj; }
+      { demand((nk >= 0) && (nk <= nx), "invalid input index set size {nk}");
+        uint32_t jx = (uint32_t)(ix + nw - 1);
+        demand((ix >= 0) && (jx < nx), "new window spills outside of {0..nx-1}");
+        uint32_t kx_min = UINT32_MAX, kx_max = 0;  /* Min and max retained elems of {kx[0..nk-1]}. */
+        uint32_t nk_new = 0;  /* Number of input indices that were kept. */
+        if (nk == 0)
+          { if (debug) { fprintf(stderr, "  input index set was empty\n"); } }
+        else
+          { /* Remove from {kx[0..nk-1]} the indices that are outside the new window: */
+            /* Also find min and max indices {kx_min,kx_max} in remaining set: */
+            for (int32_t j = 0; j < nk; j++)
+              { uint32_t kxj = kx[j];
+                demand(kxj < nx, "invalid index in {kx[..]}");
+                if ((kxj >= ix) && (kxj <= jx))
+                  { /* Keep this element: */
+                    kx[nk_new] = kxj; nk_new++;
+                    if (kxj < kx_min) { kx_min = kxj; }
+                    if (kxj > kx_max) { kx_max = kxj; }
+                  }
               }
+            if (debug) 
+              { fprintf(stderr, "  removed %d indices, left %d", nk - nk_new, nk_new);
+                if (nk_new != 0) { fprintf(stderr, "  = {%d..%d}", kx_min, kx_max); }
+                fprintf(stderr, "\n");
+              }
+            if (nk_new != 0) 
+              { demand(nk_new == kx_max - kx_min + 1, "input indices were not consecutive"); }
           }
-        if (debug) { fprintf(stderr, "  removed %d indices, left %d", nk - nk_new, nk_new); }
-        if (nk_new != 0)
-          { if (debug) { fprintf(stderr, "  = {%d..%d}", kx_min, kx_max); }
-            demand(nk_new == kx_max - kx_min + 1, "indices {kx[..]} are not consecutive");
+        demand(nk_new <= nw, "there were repeated indices in the input");
+        nkept = nk_new; /* Count of new indices preserved. */
+        if (debug) { fprintf(stderr, "  nkept = %u indices kept\n", nkept); }
+        
+        /* Add the new indices: */
+        if (nk_new == 0)
+          { /* Just store {ix..jx} into {kx[0..nw-1]}: */
+            for (int32_t i = 0; i < nw; i++) { kx[i] = ix + i; }
+            nk_new = nw;
           }
-        if (debug) { fprintf(stderr, "\n"); }
-        demand(nk_new <= nw, "there are repeated indices in {kx[..]}");
-        nk = nk_new;
+        else
+          { /* The kept indices must be a subrange {kx_min..kx_max} of {ix..jx}: */
+            if (debug && (kx_min > ix)) { fprintf(stderr, "  adding {%d..%d}\n", ix, kx_min-1); }
+            while(kx_min > ix) { kx_min--; kx[nk_new] = kx_min; nk_new++; }
+            if (debug && (kx_max < jx)) { fprintf(stderr, "  adding {%d..%d}\n", kx_max+1, jx); }
+            while(kx_max < jx) { kx_max++; kx[nk_new] = kx_max; nk_new++; }
+          }
+        assert(nk_new == nw);
       }
-    assert(nk <= nw);
-    int32_t np = nw - nk;
-    if (nk == 0)
-      { for (int32_t i = 0; i < nw; i++) { kx[i] = ix + i; } }
-    else
-      { /* Append window indices  less than {kx_min} or greater than {kx_max}: */
-        assert(kx_min >= 0);
-        if (debug && (kx_min > ix)) { fprintf(stderr, "  adding {%d..%d}\n", ix, kx_min-1); }
-        while(kx_min > ix) { kx_min--; kx[nk] = kx_min; nk++; }
-        if (debug && (kx_max < jx)) { fprintf(stderr, "  adding {%d..%d}\n", kx_max+1, jx); }
-        while(kx_max < jx) { kx_max++; kx[nk] = kx_max; nk++; }
-        assert(nk == nw);
-      }
-    return np;
+    return nkept;
   }

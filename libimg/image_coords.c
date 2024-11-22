@@ -1,7 +1,6 @@
 /* See {image_coords.h}. */
 /* Last edited on 2024-10-31 13:44:15 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <assert.h>
 

@@ -2,7 +2,7 @@
 #define btc_bubble_nl_opt_adjust_continuous_parameters_H
 
 /* Non-linear optimization of the continuous parameters of a BTC price bubble. */
-/* Last edited on 2015-04-22 20:48:28 by stolfilocal */
+/* Last edited on 2024-11-08 18:18:52 by stolfi */
 
 #include <btc_bubble_t.h>
 
@@ -42,16 +42,16 @@ void btc_bubble_nl_opt_adjust_continuous_parameters
     For any parameter that gets adjusted, the corresponding value
     {bp[jb].{XX}} in {bp} is used as an initial guess, and as the
     favored solution if there is no clear optimum. The best setting of
-    the adjusted parameters, including the coefficients, are stroed back
+    the adjusted parameters, including the coefficients, are stored back
     into {bp[0..nb-1]}.
     
     Parameters that are never adjusted, such as {.id_ini_sg} and
-    {.id_fin_sg}, must be equal in all three parameter sets
-    {bp_lo,bp,bp_hi}. For adjstable integer parameters, like
-    {.id_fin_up} or {.id_ini_dn}, their values in {bp} must be bracketed
-    by the correspoding values in {bp_lo,bp_hi}, and are not changed by
-    the procedure. The fields {.coef}, {.tag}, and {.color} of
-    {bp_lo[jb]} and {bp_hi[jb]}, for all bubbles {jb}, are ignored.
+    {.id_fin_sg}, must have {bp_lo,bp,bp_hi} all equal. For adjstable
+    integer parameters, like {.id_fin_up} or {.id_ini_dn}, their values
+    in {bp} must be bracketed by the correspoding values in
+    {bp_lo,bp_hi}, and are not changed by the procedure. The fields
+    {.coef}, {.tag}, and {.color} of {bp_lo[jb]} and {bp_hi[jb]}, for
+    all bubbles {jb}, are ignored.
    
     If {maxNLIters} is zero, the parameters in {bp} (other than {.coef})
     are not changed. The parameters {bp_lo,bp_hi} can be NULL in that case. 

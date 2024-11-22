@@ -2,12 +2,11 @@
 #define wt_table_hann_H
 
 /* Weight table with Hann (shifted cosine) profile and optional flat center. */
-/* Last edited on 2023-11-25 12:04:35 by stolfi */
+/* Last edited on 2024-11-16 10:27:56 by stolfi */
 
 #define wt_table_hann_H_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 
@@ -15,7 +14,7 @@
 #include <bool.h>
 #include <argparser.h>
 
-void wt_table_hann_fill(int32_t n, double flat, double wt[], int32_t *stride_P);
+void wt_table_hann_fill(uint32_t n, double flat, double wt[], uint32_t *stride_P);
   /* Stores into {wt[0..n-1]} a window weight table with a 
     Hann-like sinusoidal rise to 1.0, a flat (constant 1.0) section,
     and sinusoidal drop to 0.  The length {n} must be positive.
@@ -34,7 +33,7 @@ void wt_table_hann_fill(int32_t n, double flat, double wt[], int32_t *stride_P);
     max PoC stride is 0 by convention. If {stride_P} is not {NULL},
     {*stride_P} is set to the max PoC stride. */
 
-double_vec_t wt_table_hann_make(int32_t n, double flat);
+double_vec_t wt_table_hann_make(uint32_t n, double flat);
   /* Allocates a new {double_vec_t} {wt} with {wt.ne = n} elements and fills {wt.e[0..n-1]} 
     with {wt_table_hann_fill(n,flat,wt.e,NULL)}. */
 

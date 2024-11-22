@@ -59,8 +59,7 @@ int32_t main(int32_t argc, char **argv)
     for (int32_t i = 0; i < 10;i++)
       { nmsim_group_neuron_t ngrp = nmsim_group_neuron_throw
           ( inc_max, nne_g_min, nne_g_max, nsg_out_min, nsg_out_max);
-        char *fname = NULL;
-        asprintf(&fname, "out/test_neuron_group_%03d.txt", i);
+        char *fname = jsprintf("out/test_neuron_group_%03d.txt", i);
         nmsim_group_neuron_show(stderr, "neuron group = ", &ngrp, "\n");
         nmsim_group_neuron_ix_t ing = 17;
         nmsim_group_neuron_test_write(fname, ing, &ngrp);

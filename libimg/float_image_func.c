@@ -1,7 +1,6 @@
 /* See {float_image_func.h}. */
 /* Last edited on 2018-03-04 22:42:49 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <limits.h>
 #include <stdint.h>

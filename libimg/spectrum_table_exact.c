@@ -1,7 +1,6 @@
 /* See spectrum_table_exact.h */
 /* Last edited on 2024-11-06 10:04:37 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <limits.h>
 #include <float.h>

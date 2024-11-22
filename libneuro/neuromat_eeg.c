@@ -143,7 +143,7 @@ void neuromat_eeg_get_R128_channel_names(int32_t ne, char *chname[])
     /* Electrode channels: */
     for (int32_t ie = 0; ie < 128; ie++) 
       { char *name = NULL;
-        asprintf(&name, "C%03d", ie+1);
+        char *name = jsprintf("C%03d", ie+1);
         chname[ie] = name;
       }
     if (ne == 129)
@@ -164,7 +164,7 @@ void neuromat_eeg_get_FN128_channel_names(int32_t ne, char *chname[])
   { demand(ne == 128, "invalid {ne}");
     for (int32_t ke = 0; ke < ne; ke++)
       { char *name = NULL;
-        asprintf(&name, "C%03d", ke+1);
+        char *name = jsprintf("C%03d", ke+1);
         chname[ke] = name;
       }
   }

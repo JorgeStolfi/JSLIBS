@@ -1,5 +1,5 @@
 /* r6.h --- operations on points and vectors of R^6 */
-/* Last edited on 2023-01-12 06:50:20 by stolfi */
+/* Last edited on 2024-11-20 13:00:55 by stolfi */
 
 #ifndef r6_H
 #define r6_H
@@ -21,7 +21,7 @@ void r6_zero (r6_t *r);
 void r6_all (double x, r6_t *r);
   /* Sets all coordinates of {r} to the value {x}. */
   
-void r6_axis (int32_t i, r6_t *r);
+void r6_axis (uint32_t i, r6_t *r);
   /* Sets {r} to the {i}th vector of the canonical basis. */
 
 void r6_add (r6_t *a, r6_t *b, r6_t *r);
@@ -48,7 +48,7 @@ void r6_weigh (r6_t *a, r6_t *w, r6_t *r);
 void r6_unweigh (r6_t *a, r6_t *w, r6_t *r);
   /* Sets {r[i] := a[i] / w[i]}. */
 
-void r6_rot_axis (r6_t *a, int32_t i, int32_t j, double ang, r6_t *r);
+void r6_rot_axis (r6_t *a, uint32_t i, uint32_t j, double ang, r6_t *r);
   /* Sets {r} to {a} after a rotation that moves axis {i} towards 
     axis {j} by {ang} radians, leaving all other coordinates unchanged. */
 
@@ -123,6 +123,12 @@ void r6_throw_ball (r6_t *r);
 void r6_throw_normal (r6_t *r);
   /* Sets each coordinate {r[i]} to an independent Gaussian random
     number with zero mean and unit standard deviation. */
+
+double r6_throw_ortho (r6_t *u, r6_t *r);
+  /* Sets {r} to an arbitrary vector orthogonal to {u}, with the same
+    Euclidean norm (which is returned as result).
+    In particular, if the length of {u} is zero or close to underflow,
+    sets {r} to {(0,0,0,0,0,0)}. */
 
 void r6_print (FILE *f, r6_t *a);
   /* Prints {a} on file {f}, with some default format. */

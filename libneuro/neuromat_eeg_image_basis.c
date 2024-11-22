@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_image_basis.h}. */
-/* Last edited on 2021-08-31 16:55:25 by stolfi */
+/* Last edited on 2024-11-11 07:38:33 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -9,7 +9,6 @@
 
 #include <r2.h>
 #include <r3.h>
-#include <r3_extra.h>
 #include <rn.h>
 #include <rmxn.h>
 #include <lsq.h>

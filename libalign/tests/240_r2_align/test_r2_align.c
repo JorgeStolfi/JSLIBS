@@ -163,8 +163,7 @@ void ralt_test_compute_search_ellipsoid(int32_t ni, bool_t bal)
     
 void ralt_plot_rel_disp_sqr(int32_t ni, r2_t ctr[], r2_t arad[], bool_t bal)
   {
-    char *fname = NULL;
-    asprintf(&fname, "out/f%03d-bal%c.dat", ni, "FT"[bal]);
+    char *fname = jsprintf("out/f%03d-bal%c.dat", ni, "FT"[bal]);
     FILE *wr = open_write(fname, TRUE);
     free(fname);
 

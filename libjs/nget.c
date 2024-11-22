@@ -1,5 +1,5 @@
 /* See nget.h */
-/* Last edited on 2023-03-18 11:16:23 by stolfi */
+/* Last edited on 2024-11-16 09:17:45 by stolfi */
 
 #include <nget.h>
 #include <stdint.h>
@@ -35,12 +35,12 @@ int64_t nget_int64(FILE *f, char *name)
     return fget_int64(f);
   }
 
-uint32_t nget_uint32(FILE *f, char *name, int32_t base)
+uint32_t nget_uint32(FILE *f, char *name, uint32_t base)
   { nget_name_eq(f, name);
     return fget_uint32(f, base);
   }
 
-uint64_t nget_uint64(FILE *f, char *name, int32_t base)
+uint64_t nget_uint64(FILE *f, char *name, uint32_t base)
   { nget_name_eq(f, name);
     return fget_uint64(f, base);
   }

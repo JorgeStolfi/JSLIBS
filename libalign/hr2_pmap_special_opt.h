@@ -2,7 +2,7 @@
 #define hr2_pmap_special_opt_H
 
 /* Tools for optimizing projective maps. */
-/* Last edited on 2024-11-08 09:18:21 by stolfi */ 
+/* Last edited on 2024-11-08 20:46:26 by stolfi */ 
 
 #define _GNU_SOURCE
 
@@ -64,6 +64,7 @@ void hr2_pmap_special_opt_1D_plot
     sign_t sgn,
     hr2_pmap_opt_func_t *f2,
     double yrad[],
+    double urad,
     int32_t nu,
     int32_t ns
   );
@@ -73,11 +74,11 @@ void hr2_pmap_special_opt_1D_plot
     
     The modifications depend on the {type}, and happen in the space
     {\RR^ny} of dimension {ny=hr2_pmap_encode_num_parameters(hr2_pmap_type_t
-    type)} which is an encoding of all matrices of type {type}.
+    type)} which is a scaled and shifted encoding of all matrices of type {type}.
     
     The procedure chooses {nu} unit directions {u[0..nu-1][0..ny-1]} in that space,
     and lets {N(ks,ku)} be the decoding of {yn(ks,ky)}, where
-    {{yn(ks,ku)[ky] = ym[ky] + (ks/nd)*u[ky]*yrad[ky]} for each {ky} in {0..ny-1},
+    {{yn(ks,ku)[ky] = ym[ky] + (ks/nd)*urad*u[ky]*yrad[ky]} for each {ky} in {0..ny-1},
     and {ym[0..ny-1]} is the encoding of {M}.
     
     The matrix {M} should have handedness {sgn}, and the matrices {N(ks,ku)} 
@@ -89,7 +90,7 @@ void hr2_pmap_special_opt_1D_plot
     The file will have {2*ns+1} data lines. Each line of the file will
     have the format "{ks} {ds} {f2(N(ks,0))} ... {f2(N(ks,np-1))}" where
     {ks} is a sample index from {-ns} to {+ns} and {ds} is the
-    displacement distance {ks*yrad/ns}.
+    displacement distance {(ks/nd)*urad}.
     
     The type must not be {hr2_pmap_type_IDENTITY}, {hr2_pmap_type_GENERIC},
     or {hr2_pmap_type_NONE}. */

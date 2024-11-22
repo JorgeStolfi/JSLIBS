@@ -600,8 +600,7 @@ void msm_show_tableau
   {
     msm_seq_desc_t *seq0 = &(cd->seq[0]);
     msm_seq_desc_t *seq1 = &(cd->seq[1]);
-    char *tag = NULL;
-    asprintf(&tag, "-%05d-%d", ic, ir);
+    char *tag = jsprintf("-%05d-%d", ic, ir);
     int32_t ng = msm_pairing_num_rungs(cd->pr);
     msm_rung_t gopt = msm_pairing_get_rung(cd->pr, ng-1);
     bool_t scale = FALSE;

@@ -1,10 +1,10 @@
 /* See r6.h. */
-/* Last edited on 2021-08-20 16:10:13 by stolfi */
+/* Last edited on 2024-11-20 16:22:48 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
+#include <assert.h>
 
 #include <r6.h>
 
@@ -33,8 +33,8 @@ void r6_all (double x, r6_t *r)
     r->c[5] = x;
   }
 
-void r6_axis (int32_t i, r6_t *r)
-  { affirm((i >= 0) && (i < N), "r6_axis: bad index");
+void r6_axis (uint32_t i, r6_t *r)
+  { demand((i >= 0) && (i < N), "r6_axis: bad index");
     r->c[0] = 0.0;
     r->c[1] = 0.0;
     r->c[2] = 0.0;
@@ -117,11 +117,11 @@ void r6_unweigh (r6_t *a, r6_t *w, r6_t *r)
     r->c[5] = a->c[5] / w->c[5];
   }
 
-void r6_rot_axis (r6_t *a, int32_t i, int32_t j, double ang, r6_t *r)
+void r6_rot_axis (r6_t *a, uint32_t i, uint32_t j, double ang, r6_t *r)
   {
-    affirm((i >= 0) && (i < N), "r6_rot_axis: bad index {i}");
-    affirm((j >= 0) && (j < N), "r6_rot_axis: bad index {j}");
-    affirm(i != j, "r6_rot_axis: axes not distinct");
+    demand((i >= 0) && (i < N), "r6_rot_axis: bad index {i}");
+    demand((j >= 0) && (j < N), "r6_rot_axis: bad index {j}");
+    demand(i != j, "r6_rot_axis: axes not distinct");
     (*r) = (*a);
     double c = cos(ang);
     double s = sin(ang);
@@ -284,34 +284,61 @@ bool_t r6_eq(r6_t *p, r6_t *q)
   }
 
 void r6_throw_cube (r6_t *r)
-  { int32_t i;
-    for (i = 0; i < N; i++)
+  { for (int32_t i = 0; i < N; i++)
       { r->c[i] = 2.0 * drandom() - 1.0; }
   }
 
 void r6_throw_dir (r6_t *r)
   { /* Generate a nonzero Gaussian random vector: */
-    int32_t i;
     double r2;
     do
       { r6_throw_normal(r);
         /* Discard if too close to origin: */
         r2 = 0.0;
-        for (i = 0; i < N; i++) { double ci = r->c[i]; r2 += ci*ci; }
+        for (int32_t i = 0; i < N; i++) { double ci = r->c[i]; r2 += ci*ci; }
       }
     while (r2 < 1.0e-20);
     /* Normalize to unit length: */
     double m = sqrt(r2);
-    for (i = 0; i < N; i++) { r->c[i] /= m; }
+    for (int32_t i = 0; i < N; i++) { r->c[i] /= m; }
   }
 
 void r6_throw_ball (r6_t *r)
   { rn_throw_ball(N, &(r->c[0])); }
 
 void r6_throw_normal (r6_t *r)
-  { int32_t i;
-    for (i = 0; i < N; i++)
+  { for (int32_t i = 0; i < N; i++)
       { r->c[i] = dgaussrand(); }
+  }
+  
+double r6_throw_ortho(r6_t *u, r6_t *r)
+  { r6_t d = (*u);
+    double umag = r6_dir(&d, &d);
+    if (umag < 1.0e-320)
+      { r6_zero(r); }
+    else
+      { /* Get an {r} that is not zero nor too close to {±d}: */
+        double dvdot; 
+        do 
+          { r6_throw_ball(r);
+            double vnorm = r6_dir(r, r);
+            if (vnorm < 0.05) { continue; }
+            dvdot = r6_dot(&d, r);
+          }
+        while (fabs(dvdot) > 0.8);
+        /* Make {r} orthogonal to {d} and unit-norm: */
+        r6_mix_in(-dvdot, &d, r);
+        double vnorm = r6_dir(r, r);
+        assert(vnorm > 0.1); /* Paranoia. */
+        /* Once more, just to be sure: */
+        dvdot = r6_dot(&d, r);
+        r6_mix_in(-dvdot, &d, r);
+        vnorm = r6_dir(r, r);
+        assert(vnorm > 0.999); /* Paranoia. */
+        /* Rescale {r} with original length of {u}: */
+        if (fabs(umag - 1) > 1.0e-14) { r6_scale(umag, r, r); }
+      }
+    return umag;
   }
 
 void r6_print (FILE *f, r6_t *a)

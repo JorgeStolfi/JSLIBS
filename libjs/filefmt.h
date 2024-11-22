@@ -1,11 +1,11 @@
 /* filefmt.h -- version-checked file headers, footers, and comments. */
-/* Last edited on 2023-10-15 00:57:12 by stolfi */
+/* Last edited on 2024-11-15 19:12:32 by stolfi */
 
 #ifndef filefmt_H
 #define filefmt_H
 
 #include <stdio.h>
-#include <affirm.h>
+#include <stdint.h>
 
 /* FILE HEADERS AND FOOTERS */
 
@@ -70,7 +70,7 @@ char *filefmt_make_footer(char *type);
   The {prefix} must be the first non-blank character of the line, and is
   normally followed by a blank. */
 
-void filefmt_write_comment(FILE *wr, char *cmt, int ind, char prefix);
+void filefmt_write_comment(FILE *wr, char *cmt, int32_t ind, char prefix);
   /* Writes the given {cmt} text to {wr}, with {ind} blanks, a {prefix} character
     and a blank in front of every line.  If {cmt} is {NULL}
     or an empty string, writes nothing. Supplies a final '\n' if 

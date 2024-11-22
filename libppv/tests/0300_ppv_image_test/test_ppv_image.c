@@ -65,8 +65,7 @@ void pit_do_test(ppv_dim_t d, int32_t chns, uint16_t maxsmp)
     
     /* Convert to image and write it out: */
     uint16_image_t *J = ppv_image_from_array(A);
-    char *fname = NULL;
-    asprintf(&fname, "out/J_d%d_chns%d_maxsmp%05d.png", d, chns, maxsmp);
+    char *fname = jsprintf("out/J_d%d_chns%d_maxsmp%05d.png", d, chns, maxsmp);
     uint16_image_write_png_named(fname, J, 1.0, TRUE);
     free(fname);
 

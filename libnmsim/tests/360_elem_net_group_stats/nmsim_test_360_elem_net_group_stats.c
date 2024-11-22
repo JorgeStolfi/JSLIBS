@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} synapse group statistics tols"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-20 06:49:43 by stolfi */ 
+/* Last edited on 2024-11-20 05:28:43 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2020  State University of Campinas (UNICAMP)"
@@ -89,16 +89,13 @@ void nmsim_elem_net_test
     nmsim_elem_net_t *enet = nmsim_elem_net_throw(gnet);
     
     /* Assemble the file name {fname}: */
-    char *prefix = NULL;
-    asprintf
-      ( &prefix, 
+    char *prefix = jsprintf(
         "out/test_stats_%04dnc_%04dsc_%04dng_%04dsg_%04dne_%04dse", 
         nnc, nsc, nng, nsg, nne, nse
       );
 
     /* Write out the network for reference: */
-    char *fname_net = NULL;
-    asprintf(&fname_net, "%s_net.txt", prefix);
+    char *fname_net = jsprintf("%s_net.txt", prefix);
     FILE *wr_net = open_write(fname_net, TRUE);
     double timeStep = 1.0;
     nmsim_elem_net_write(wr_net, enet, timeStep);
@@ -106,8 +103,7 @@ void nmsim_elem_net_test
     free(fname_net);
     
     /* Print the synapse group statistics: */
-    char *fname_stats = NULL;
-    asprintf(&fname_stats, "%s_stats.txt", prefix);
+    char *fname_stats = jsprintf("%s_stats.txt", prefix);
     FILE *wr_stats = open_write(fname_stats, TRUE);
     nmsim_elem_net_group_stats_print_all(wr_stats, enet, "  | ", " |\n");
     fclose(wr_stats);

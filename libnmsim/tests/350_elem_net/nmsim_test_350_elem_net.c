@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of {limnmism} element-level network procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-20 06:33:44 by stolfi */ 
+/* Last edited on 2024-11-20 05:29:30 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -99,9 +99,7 @@ void nmsim_elem_net_test
   )
   {
     /* Assemble the file name {fname}: */
-    char *fname = NULL;
-    asprintf
-      ( &fname, 
+    char *fname = jsprintf(
         "out/test_elem_net_%04dnc_%04dsc_%04dng_%04dsg_%04dne_%04dse.txt", 
         nnc, nsc, nng, nsg, nne, nse
       );

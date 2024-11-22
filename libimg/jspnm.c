@@ -1,7 +1,6 @@
 /* See jspnm.h */
 /* Last edited on 2023-11-26 07:10:18 by stolfi */
 
-#define _GNU_SOURCE
 #include <limits.h>
 #include <stdlib.h>
 #include <stdint.h>

@@ -2,7 +2,7 @@
 #define PROG_DESC "tests of {limnmism} neuron-level network simulation"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-20 06:48:55 by stolfi */ 
+/* Last edited on 2024-11-20 05:28:30 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2019  State University of Campinas (UNICAMP)"
@@ -125,9 +125,7 @@ void nmsim_test_elem_net_sim
     double timeStep = 1.0; /* Nominal time step (ms). */
     
     /* Create the filename prefix: */
-    char *prefix = NULL;
-    asprintf
-      ( &prefix, 
+    char *prefix = jsprintf(
         "out/sim_%04dnc_%04dsc_%06dng_%06dsg_%06dne_%06dse", 
         nnc, nsc, nng, nsg, nne, nse
       );
@@ -186,7 +184,7 @@ void nmsim_test_elem_net_sim
   
 void nmsim_test_elem_net_write(char *prefix, nmsim_elem_net_t *enet, double timeStep)
   { char *fname = NULL;
-    asprintf(&fname, "%s_elem_net.txt", prefix);
+    char *fname = jsprintf("%s_elem_net.txt", prefix);
     FILE *wr = open_write(fname, TRUE);
     nmsim_elem_net_write(wr, enet, timeStep);
     free(fname);
@@ -194,7 +192,7 @@ void nmsim_test_elem_net_write(char *prefix, nmsim_elem_net_t *enet, double time
 
 void nmsim_test_elem_net_trace_write(char *prefix, nmsim_elem_net_trace_t *etrace)
   { char *epref = NULL;
-    asprintf(&epref, "%s_elem", prefix);
+    char *epref = jsprintf("%s_elem", prefix);
     nmsim_elem_net_trace_write(epref, etrace);
     free(epref);
   }

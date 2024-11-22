@@ -143,7 +143,7 @@ void inet_define_points_in_diagram(adrw_point_vec_t *P, int32_t *np)
         int32_t i = di + (PTBASE);
         int32_t j = (dj < 0 ? dj : dj + (PTBASE));
         double dZ = Zor;
-        asprintf(&lab, "P%04d", i);
+        char *lab = jsprintf("P%04d", i);
         adrw_append_point(lab, i, j, j, j, dX, dY, dZ, P, np); 
       } 
     

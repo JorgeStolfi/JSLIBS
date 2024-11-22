@@ -3,8 +3,6 @@
 #ifndef paper_size_H
 #define paper_size_H
 
-#define _GNU_SOURCE
-
 #include <bool.h>
 
 void paper_size_get_dimensions

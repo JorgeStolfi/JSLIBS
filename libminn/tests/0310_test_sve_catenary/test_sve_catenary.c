@@ -1,5 +1,5 @@
 /* test_sve_catenary --- test of {sve_minn.h} for hanging-chain energy minimization. */
-/* Last edited on 2024-11-08 09:53:14 by stolfi */
+/* Last edited on 2024-11-08 20:25:54 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -110,12 +110,9 @@ int32_t main (int32_t argc, char **argv)
   
 void find_chain_shape(int32_t nk, double wd)
   { 
-    /* Debugging printout: */
-    bool_t debug = FALSE;
-
     /* Output file names: */
     char *prefix = NULL; /* Prefix for output file names. */
-    asprintf(&prefix, "out/%03d", nk);
+    char *prefix = jsprintf("out/%03d", nk);
     
     /* Number of minimization variables: */
     int32_t nc = nk - 1;
@@ -123,39 +120,16 @@ void find_chain_shape(int32_t nk, double wd)
     /* Working storage for the goal function: */
     double x[nk+1], y[nk+1];  /* Node positions. */
     
-    auto double F(int32_t n, double c[]); 
+    auto double sve_goal(int32_t n, double c[]); 
       /* The goal function for optimization. */
       
-    double F(int32_t n, double c[])
-      { assert(n == nc);
-        /* Compute the potential energy of the chain: */
-        compute_node_positions(nk, c, x, y);
-        double Fc = chain_energy(nk, x, y, wd);
-        return Fc;
-      }
-      
-    double cprev[nc]; /* Guess in previous call of {OK} function. */
-    int32_t nok = 0;      /* Counts iterations (actually, calls to {OK}). */
+    double cprev[nc]; /* Guess in previous call of {sve_OK} function. */
+    int32_t nok = 0;      /* Counts iterations (actually, calls to {sve_OK}). */
+    bool_t sve_debug = FALSE;
+    bool_t sve_debug_probes = FALSE;
     
-    auto bool_t OK(int32_t n, double c[], double Fc); 
+    auto bool_t sve_OK(int32_t iter, int32_t n, double c[], double Fc, double dist, double step, double radius); 
       /* Acceptance criterion function. */
-      
-    bool_t OK(int32_t n, double c[], double Fc)
-      { assert(n == nc);
-        fprintf(stderr, "iteration %d\n", nok);
-        if (nok > 0)
-          { double d = rn_dist(n, cprev, c);
-            fprintf(stderr, "change = %16.10f\n", d);
-          }
-        if (debug) 
-          { compute_node_positions(nk, c, x, y);
-            write_solution(NULL, "tmp", F, nc, c, Fc, nk, x, y, wd);
-          }
-        /* Save guess in {xprev} for next call: */
-        rn_copy(n, c, cprev); 
-        nok++;
-        return FALSE;
-      }
 
     double c[nc];     /* Initial guess and final solution. */
     
@@ -165,8 +139,8 @@ void find_chain_shape(int32_t nk, double wd)
     /* Print and write the initial guess: */
     fprintf(stderr, "initial guess:\n");
     compute_node_positions(nk, c, x, y);
-    double Fc = F(nc, c);
-    write_solution(prefix, "ini", F, nc, c, Fc, nk, x, y, wd);
+    double Fc = sve_goal(nc, c);
+    write_solution(prefix, "ini", sve_goal, nc, c, Fc, nk, x, y, wd);
     
     /* Optimize iteratively: */
     double *ctr = NULL;
@@ -180,22 +154,49 @@ void find_chain_shape(int32_t nk, double wd)
     sign_t dir = -1;
     
     sve_minn_iterate
-      ( nc, &F, &OK, NULL,
+      ( nc, &sve_goal, &sve_OK, NULL,
         c, &Fc, dir, 
         ctr, dMax, dBox, rIni, rMin, rMax, 
-        minStep, maxIters, debug
+        minStep, maxIters, sve_debug, sve_debug_probes
       );
     
     /* Print and write final solution: */
     fprintf(stderr, "final solution:\n");
     compute_node_positions(nk, c, x, y);
-    write_solution(prefix, "fin", F, nc, c, Fc, nk, x, y, wd);
+    write_solution(prefix, "fin", sve_goal, nc, c, Fc, nk, x, y, wd);
+    return;
+      
+    double sve_goal(int32_t n, double c[])
+      { assert(n == nc);
+        /* Compute the potential energy of the chain: */
+        compute_node_positions(nk, c, x, y);
+        double Fc = chain_energy(nk, x, y, wd);
+        return Fc;
+      }
+      
+    bool_t sve_OK(int32_t iter, int32_t n, double c[], double Fc, double dist, double step, double radius)
+      { assert(n == nc);
+        fprintf(stderr, "iteration %d\n", nok);
+        if (nok > 0)
+          { double d = rn_dist(n, cprev, c);
+            fprintf(stderr, "change = %16.10f\n", d);
+          }
+        if (sve_debug) 
+          { compute_node_positions(nk, c, x, y);
+            write_solution(NULL, "tmp", sve_goal, nc, c, Fc, nk, x, y, wd);
+          }
+        /* Save guess in {xprev} for next call: */
+        rn_copy(n, c, cprev); 
+        nok++;
+        return FALSE;
+      }
+    
   }
   
 void write_solution
   ( char *prefix, 
     char *tag, 
-    sve_goal_t *F, 
+    sve_goal_t *sve_goal, 
     int32_t nc,
     double c[],
     double Fc,
@@ -212,13 +213,13 @@ void write_solution
     fprintf(stderr, "  potential = %+24.16e\n", E);
     fprintf(stderr, "\n");
     
-    double FcN = F(nc, c);
+    double FcN = sve_goal(nc, c);
     fprintf(stderr, "goal function = %+24.16e %+24.16e\n", Fc, FcN);
     demand(Fc == FcN, "inconsistent function value on return");
 
     if (prefix != NULL) 
       { write_node_positions(prefix, tag, nk, x, y);
-        plot_energy(prefix, tag, F, nc, c);
+        plot_energy(prefix, tag, sve_goal, nc, c);
       }
   }
 
@@ -228,7 +229,7 @@ void write_node_positions(char *prefix, char *tag, int32_t nk, double x[], doubl
     if (prefix == NULL)
       { wr = stderr; }
     else
-      { asprintf(&fname, "%s-%s.dat", prefix, tag);
+      { char *fname = jsprintf("%s-%s.dat", prefix, tag);
         wr = open_write(fname, TRUE);
       }
     for (int32_t i = 0; i <= nk ; i++)
@@ -239,7 +240,7 @@ void write_node_positions(char *prefix, char *tag, int32_t nk, double x[], doubl
 void plot_energy
   ( char *prefix,
     char *tag,
-    sve_goal_t *F,
+    sve_goal_t *sve_goal,
     int32_t nc,
     double c[]
   )
@@ -254,9 +255,8 @@ void plot_energy
     double rb = rn_dir(nc, vb, ub);
     /* Plot the energy as image: */
     double step = fmax(ra, rb)/30;
-    float_image_t *img = minn_plot_2D_float_image(nc, c, ua, ra, ub, rb, TRUE, step, F);
-    char *fname = NULL;
-    asprintf(&fname, "%s-%s-plt.fni", prefix, tag);
+    float_image_t *img = minn_plot_2D_float_image(nc, c, ua, ra, ub, rb, TRUE, step, sve_goal);
+    char *fname = jsprintf("%s-%s-plt.fni", prefix, tag);
     FILE *wr = open_write(fname, TRUE);
     float_image_write(wr, img);
     fclose(wr);

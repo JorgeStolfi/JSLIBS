@@ -1,10 +1,9 @@
 /* See wt_table_generic.h */
-/* Last edited on 2023-11-25 18:55:09 by stolfi */
+/* Last edited on 2024-11-16 10:27:27 by stolfi */
 
 #define wt_table_generic_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -56,7 +55,7 @@ char *wt_table_kind_to_string(wt_table_kind_t kind)
       }
   }
 
-void wt_table_fill(wt_table_kind_t kind, int32_t n, double parm, double wt[], bool_t norm, int32_t *stride_P)
+void wt_table_fill(wt_table_kind_t kind, uint32_t n, double parm, double wt[], bool_t norm, uint32_t *stride_P)
   {
     switch(kind)
       { case wt_table_kind_GAUSSIAN:   wt_table_gaussian_fill(n, parm, wt, stride_P); break;
@@ -69,7 +68,7 @@ void wt_table_fill(wt_table_kind_t kind, int32_t n, double parm, double wt[], bo
     if (norm) { wt_table_normalize_sum(n, wt); }
   }
   
-double_vec_t wt_table_make(wt_table_kind_t kind, int32_t n, double parm, bool_t norm, int32_t *stride_P)
+double_vec_t wt_table_make(wt_table_kind_t kind, uint32_t n, double parm, bool_t norm, uint32_t *stride_P)
   { double_vec_t wt = double_vec_new(n);
     wt_table_fill(kind, n, parm, wt.e, norm, stride_P);
     return wt;

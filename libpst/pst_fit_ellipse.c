@@ -1,10 +1,11 @@
 /* See pst_fit_ellipse.h */
-/* Last edited on 2024-11-08 09:52:27 by stolfi */ 
+/* Last edited on 2024-11-08 19:52:50 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <math.h>
 #include <values.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <bool.h>
@@ -31,7 +32,7 @@
 
 /* INTERNAL PROTOTYPES */
 
-int pst_fit_ellipse_num_params(double ctrAdj, double radAdj, double strAdj);
+int32_t pst_fit_ellipse_num_params(double ctrAdj, double radAdj, double strAdj);
   /* Number of adjustable parameters, depending on which adjustment ranges
     are nonzero: {ctrAdj} (2 params), {radAdj} (1 param), {strAdj}
     (2 params). */
@@ -47,13 +48,14 @@ double pst_fit_ellipse
     double ctrAdj,      /* Maximum adjustment allowed in {EP.ctr} coordinates. */
     double radAdj,      /* Maximum adjustment allowed in {EP.rad}. */
     double strAdj,      /* Maximum adjustment allowed in {EP.str} coordinates. */
-    int maxIts          /* Max iterations of the optimizer. */
+    int32_t maxIts          /* Max iterations of the optimizer. */
   )
-  { bool_t debug_pst = TRUE;
-    bool_t debug_sve = FALSE;
+  { bool_t pst_debug = TRUE;
+    bool_t sve_debug = FALSE;
+    bool_t sve_debug_probes = FALSE;
   
     /* Get the image dimensions: */
-    int NC, NX, NY;
+    int32_t NC, NX, NY;
     float_image_get_size(IGR, &NC, &NX, &NY);
     demand(NC == 1, "bad image depth");
     
@@ -67,7 +69,7 @@ double pst_fit_ellipse
     demand(strAdj >= 0, "invalid stretch adjustment");
     
     /* Compute the number of parameters {NP} in optimization: */
-    int NP = pst_fit_ellipse_num_params(ctrAdj, radAdj, strAdj);
+    int32_t NP = pst_fit_ellipse_num_params(ctrAdj, radAdj, strAdj);
     
     auto void gather_params(ellipse_crs_t *ET, double x[]);
       /* Packs the adjustable parameters of the ellipse into
@@ -98,18 +100,18 @@ double pst_fit_ellipse
     double radNrm = log((E_ini.rad + radAdj)/E_ini.rad);
     
     /* Count iterations for debugging and budget control: */
-    int nIts = 0;
+    int32_t nIts = 0;
     
-    auto double sve_goal(int m, double x[]);
+    auto double sve_goal(int32_t n, double x[]);
       /* Evaluates the goal function for {sve_minn_iterate} for the 
-        parameters {x[0..m-1]}.   Increments {nEvals}. 
+        parameters {x[0..n-1]}.   Increments {nEvals}. 
         
-        Requires {m == NP}. Calls {pst_fit_ellipse_eval(IGR,ET)} with a
+        Requires {n == NP}. Calls {pst_fit_ellipse_eval(IGR,ET)} with a
         geometry {ET} that derives from the fixed fields of
         {E_ini} with the variable parameters taken from
         {x[0..NP-1]} as per {scatter_params}. */
     
-    auto bool_t sve_check(int m, double x[], double Fx);
+    auto bool_t sve_check(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius);
       /* To be called by the minimizer before each major optimization.
         Currently stops when the number of iterations is exceeded. */
     
@@ -117,7 +119,7 @@ double pst_fit_ellipse
     double x[NP];  /* Packed parameters: */
     gather_params(&E_ini, x);
     double Q = sve_goal(NP, x);
-    if (debug_pst)
+    if (pst_debug)
       { fprintf(stderr, "%s: initial goal function = %+24.16e\n", __FUNCTION__, Q); }
 
     if (NP > 0)
@@ -142,15 +144,16 @@ double pst_fit_ellipse
             /*rMax:*/     dMax,
             /*minStep:*/  0.001*dMax,
             /*maxEvals:*/ maxIts,
-            /*debug:*/    debug_sve
+            /*debug:*/    sve_debug,
+            /*debug_probes:*/    sve_debug_probes
           );
       }
-    if (debug_pst)
+    if (pst_debug)
       { Pr(Er, "%s: %d iterations\n", __FUNCTION__, nIts); }
       
     /* Check the mismatch for the  final parameter vector: */
     double QN = sve_goal(NP, x);
-    if (debug_pst)
+    if (pst_debug)
       { fprintf(stderr, "%s: final goal function = %+24.16e %+24.16e\n", __FUNCTION__, Q, QN); }
     demand(Q == QN, "inconsistent function value");
 
@@ -166,7 +169,7 @@ double pst_fit_ellipse
 
     void gather_params(ellipse_crs_t *ET, double x[])
       { /* Store the variable fields of {ET} into {x[0..NP-1]}: */
-        int k = 0;
+        int32_t k = 0;
         if (ctrAdj > 0) 
           { /* Store the center coords: */
             x[k] = (ET->ctr.c[0] - E_ini.ctr.c[0])/ctrAdj; k++;
@@ -186,7 +189,7 @@ double pst_fit_ellipse
     
     void scatter_params(double x[], ellipse_crs_t *ET)
       { /* Get the variable fields of {ET} from {x[0..NP-1]}: */
-        int k = 0;
+        int32_t k = 0;
         /* Get the center coords from {x} or the saved guess: */
         if (ctrAdj > 0) 
           { ET->ctr.c[0] = E_ini.ctr.c[0] + x[k] * ctrAdj; k++;
@@ -212,11 +215,11 @@ double pst_fit_ellipse
         assert(k == NP);     
       }
         
-    double sve_goal(int m, double x[])
+    double sve_goal(int32_t n, double x[])
       { ellipse_crs_t ET;
         scatter_params(x, &ET);
         double Fx = pst_fit_ellipse_eval(IGR, &ET);
-        if (debug_sve) 
+        if (sve_debug) 
           { Pr(Er, "      E = "); 
             ellipse_crs_print(stderr, &ET, "%7.2f");
             Pr(Er, " Q = %14.8f\n", Fx);
@@ -225,10 +228,10 @@ double pst_fit_ellipse
         return Fx;
       }
 
-    bool_t sve_check(int m, double x[], double Fx)
+    bool_t sve_check(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius)
       { 
         nIts++;
-        if (debug_sve) 
+        if (sve_debug) 
           { ellipse_crs_t ET;
             scatter_params(x, &ET);
             Pr(Er, "[%03d] E = ", nIts);
@@ -240,9 +243,9 @@ double pst_fit_ellipse
       }
   }
   
-int pst_fit_ellipse_num_params(double ctrAdj, double radAdj, double strAdj)
+int32_t pst_fit_ellipse_num_params(double ctrAdj, double radAdj, double strAdj)
   {
-    int NP = (ctrAdj > 0 ? 2 : 0) + (radAdj > 0 ? 1 : 0) + (strAdj > 0 ? 2 : 0);
+    int32_t NP = (ctrAdj > 0 ? 2 : 0) + (radAdj > 0 ? 1 : 0) + (strAdj > 0 ? 2 : 0);
     return NP;
   }
 
@@ -254,13 +257,13 @@ double pst_fit_ellipse_multiscale
     double radAdj,      /* Maximum adjustment allowed in {EP.rad}. */
     double strAdj,      /* Maximum adjustment allowed in {EP.str} coordinates. */
     double minRadius,   /* Min acceptable radius for multiscale. */
-    int maxIts          /* Max iterations of optimizer at initial scale. */
+    int32_t maxIts          /* Max iterations of optimizer at initial scale. */
   )
   {
     bool_t debug = TRUE;
     
     /* Get the image dimensions: */
-    int NC, NX, NY;
+    int32_t NC, NX, NY;
     float_image_get_size(IMG, &NC, &NX, &NY);
     
     if (debug) { Pr(Er, "channels = %d  image size = %d × %d\n", NC, NX, NY); }
@@ -270,7 +273,7 @@ double pst_fit_ellipse_multiscale
     ellipse_crs_t E = (*EP);
     
     /* Decide whether to recurse: */
-    int NP = pst_fit_ellipse_num_params(ctrAdj, radAdj, strAdj);
+    int32_t NP = pst_fit_ellipse_num_params(ctrAdj, radAdj, strAdj);
     if ((NP > 0) && (E.rad + radAdj > 2*minRadius))
       { /* Reduce problem to half-scale: */
         float_image_t *IMG_r = pst_fit_ellipse_image_shrink(IMG);
@@ -287,7 +290,7 @@ double pst_fit_ellipse_multiscale
         radAdj = (radAdj == 0 ? 0 : 0.75);
         strAdj = (strAdj == 0 ? 0 : 0.75);
         /* We don't need many iterations to finish off: */
-        maxIts = (int)imin(maxIts, 5); 
+        maxIts = (int32_t)imin(maxIts, 5); 
       }
 
     /* Compute the relative gradient image {IGR} of original image {IMG}: */
@@ -309,16 +312,16 @@ double pst_fit_ellipse_multiscale
   
 float_image_t *pst_fit_ellipse_image_shrink(float_image_t *IMG)
   {
-    int NXR = (int)((IMG->sz[1]+1)/2);
-    int NYR = (int)((IMG->sz[2]+1)/2);
-    int dxy = (int)((pst_fit_ellipse_nw-1)/2);
+    int32_t NXR = (int32_t)((IMG->sz[1]+1)/2);
+    int32_t NYR = (int32_t)((IMG->sz[2]+1)/2);
+    int32_t dxy = (int32_t)((pst_fit_ellipse_nw-1)/2);
     return float_image_mscale_shrink(IMG, NULL, NXR, NYR, dxy, dxy, pst_fit_ellipse_nw);
   }
 
 ellipse_crs_t pst_fit_ellipse_geom_shrink(ellipse_crs_t *EP)
   {
     ellipse_crs_t E_r;
-    int dxy = (pst_fit_ellipse_nw-1)/2;
+    int32_t dxy = (pst_fit_ellipse_nw-1)/2;
     E_r.ctr = float_image_mscale_point_shrink(&(EP->ctr), dxy, dxy, pst_fit_ellipse_nw);
     E_r.rad      = 0.5 * EP->rad;
     E_r.str.c[0] = 0.5 * EP->str.c[0];
@@ -329,7 +332,7 @@ ellipse_crs_t pst_fit_ellipse_geom_shrink(ellipse_crs_t *EP)
 ellipse_crs_t pst_fit_ellipse_geom_expand(ellipse_crs_t *EP)
   {
     ellipse_crs_t E_x;
-    int dxy = (pst_fit_ellipse_nw-1)/2;
+    int32_t dxy = (pst_fit_ellipse_nw-1)/2;
     E_x.ctr = float_image_mscale_point_expand(&(EP->ctr), dxy, dxy, pst_fit_ellipse_nw);
     E_x.rad      = 2.0 * EP->rad;
     E_x.str.c[0] = 2.0 * EP->str.c[0];
@@ -343,8 +346,8 @@ double pst_fit_ellipse_eval(float_image_t *IGR, ellipse_crs_t *EP)
     
     /* Get the dimensions of the gradient image: */
     demand(IGR->sz[0] == 1, "image must be monochromatic");
-    int NX = (int)IGR->sz[1];
-    int NY = (int)IGR->sz[2];
+    int32_t NX = (int32_t)IGR->sz[1];
+    int32_t NY = (int32_t)IGR->sz[2];
     
     /* Choose the half-thickness {he} of the ideal ellipse outline: */
     double he = 1.5;
@@ -353,14 +356,14 @@ double pst_fit_ellipse_eval(float_image_t *IGR, ellipse_crs_t *EP)
     double hm = 2*he;
     
     /* Find a box around the ellipse, with at least {hm} pixels extra: */
-    int xLo, xHi, yLo, yHi;
+    int32_t xLo, xHi, yLo, yHi;
     ellipse_crs_int_bbox(EP, hm, &xLo, &xHi, &yLo, &yHi);
     
     /* Clip the box to the image's boundary: */
-    xLo = (int)imax(0,    xLo);
-    xHi = (int)imin(NX-1, xHi);
-    yLo = (int)imax(0,    yLo);
-    yHi = (int)imin(NY-1, yHi);
+    xLo = (int32_t)imax(0,    xLo);
+    xHi = (int32_t)imin(NX-1, xHi);
+    yLo = (int32_t)imax(0,    yLo);
+    yHi = (int32_t)imin(NY-1, yHi);
     
     if (debug) { Pr(Er, "bbox = [%d _ %d] × [%d _ %d]\n", xLo, xHi, yLo, yHi); }
 
@@ -372,7 +375,7 @@ double pst_fit_ellipse_eval(float_image_t *IGR, ellipse_crs_t *EP)
     double sum_W_I2 = 0;
     double sum_W_E2 = 0;
     double sum_W_I_E = 0;
-    int x, y;
+    int32_t x, y;
     for (x = xLo; x < xHi; x++)
       { for (y = yLo; y < yHi; y++)
           { /* Compute the coords of the pixel center {p}: */

@@ -3,9 +3,8 @@
      - whether (-oo) + (+oo) = NaN in all rounding modes.
      - how negative zero behaves with operations.
 */
-/* Last edited on 2016-12-26 18:43:59 by stolfilocal */
+/* Last edited on 2024-11-20 07:50:56 by stolfi */
 
-#define _GNU_SOURCE
 #include <limits.h>
 #include <float.h>
 #include <stdlib.h>

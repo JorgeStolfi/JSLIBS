@@ -1,7 +1,6 @@
 /* See {bvhash.h}. */
-/* Last edited on 2015-10-09 15:31:35 by stolfilocal */
+/* Last edited on 2024-11-15 19:11:36 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdlib.h>
 

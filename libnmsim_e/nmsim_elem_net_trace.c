@@ -147,16 +147,14 @@ void nmsim_elem_net_trace_write(char *prefix, nmsim_elem_net_trace_t *etrace)
             nmsim_time_t tLo = trnek->tLo;
             nmsim_time_t tHi = trnek->tHi;
             { /* Trace data by time step: */
-              char *fname = NULL;
-              asprintf(&fname, "%s_ne%010d--%010d_trace.txt", prefix, ineLo, ineHi);
+              char *fname = jsprintf("%s_ne%010d--%010d_trace.txt", prefix, ineLo, ineHi);
               FILE *wr = open_write(fname, TRUE);
               nmsim_elem_neuron_trace_write(wr, trnek);
               fclose(wr);
               free(fname);
             }
             { /* Statistical summary: */
-              char *fname = NULL;
-              asprintf(&fname, "%s_ne%010d--%010d_stats.txt", prefix, ineLo, ineHi);
+              char *fname = jsprintf("%s_ne%010d--%010d_stats.txt", prefix, ineLo, ineHi);
               FILE *wr = open_write(fname, TRUE);
               nmsim_elem_net_sim_stats_t *trS = nmsim_elem_net_sim_stats_new(ineLo, ineHi, tLo, tHi);
               nmsim_elem_neuron_trace_stats_compute(trnek, trS);

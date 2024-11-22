@@ -1,5 +1,5 @@
 /* rmxn_regular_simplex.h --- additional operation on MxN matrices */
-/* Last edited on 2023-03-26 16:45:26 by stolfi */
+/* Last edited on 2024-11-20 13:05:21 by stolfi */
 
 #ifndef rmxn_regular_simplex_H
 #define rmxn_regular_simplex_H
@@ -13,7 +13,7 @@
 
 /* REGULAR {n}-SIMPLICES IN {n}-SPACE */
 
-void rmxn_regular_simplex(int32_t n, double V[]);
+void rmxn_regular_simplex(uint32_t n, double V[]);
   /* Stores into {V[0..(n+1)*n-1]} the coordinates of a regular
     {n}-dimensional simplex in {R^n}/.
 
@@ -43,10 +43,10 @@ void rmxn_regular_simplex(int32_t n, double V[]);
     this simplex can be computed as {((1,1,..1) + V*x)/(n+1)}. Note
     that these barycentric coordinates add to {+1}. */
 
-double rmxn_regular_simplex_radius(int32_t n);
+double rmxn_regular_simplex_radius(uint32_t n);
   /* Circum-radius {RD(n) = sqrt(n)} of the regular {n}-simplex above. */
 
-double rmxn_regular_simplex_subradius(int32_t n, int32_t k);
+double rmxn_regular_simplex_subradius(uint32_t n, uint32_t k);
   /* Radius {SR(n,k) = sqrt((n-k)/(k+1))} of the {(n-1)}-dimensional
     sphere in {R^n} that is concentric with the canonical {n}-simplex
     above and contains the center of all its {k}-dimensional faces.
@@ -55,14 +55,14 @@ double rmxn_regular_simplex_subradius(int32_t n, int32_t k);
     is the distance from the simplex center to the midpoint of each
     edge; {SR(n,n-1)} is the in-radius; and {SR(n,n)} is zero. */
 
-double rmxn_regular_simplex_edge(int32_t n);
+double rmxn_regular_simplex_edge(uint32_t n);
   /* Edge length {ED(n) = sqrt(2*(d+1))} of the regular {n}-simplex above.
     Arbitrarily set to {sqrt(2)} if {d == 0}. */
 
-double rmxn_regular_simplex_height(int32_t n);
+double rmxn_regular_simplex_height(uint32_t n);
   /* Height {HT(n) = (d+1)/sqrt(d)} of the regular {n}-simplex above. */
   
-double rmxn_regular_simplex_measure(int32_t n);
+double rmxn_regular_simplex_measure(uint32_t n);
   /* The {n}-dimensional measure {MS(n) = (d+1)^{(d+1)/2}/(d!)} of the
     regular {n}-simplex above. */
 

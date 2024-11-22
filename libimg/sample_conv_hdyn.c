@@ -1,7 +1,6 @@
 /* See {sample_conv_hdyn.h}. */
 /* Last edited on 2017-06-24 23:22:37 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>

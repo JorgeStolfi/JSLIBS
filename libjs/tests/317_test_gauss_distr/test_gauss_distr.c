@@ -2,13 +2,12 @@
 #define PROG_DESC "test of {gauss_distr.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-05 21:05:56 by stolfi */ 
+/* Last edited on 2024-11-15 19:16:19 by stolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_hermite3_COPYRIGHT \
   "Copyright © 2017  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>

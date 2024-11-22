@@ -1,7 +1,6 @@
 /* See {interval_io.h} */
-/* Last edited on 2012-01-04 00:33:05 by stolfi */
+/* Last edited on 2024-11-15 19:13:13 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 

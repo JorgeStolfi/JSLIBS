@@ -1,10 +1,9 @@
 /* Binary search on a vector of {int32_t} elements */
-/* Last edited on 2016-04-17 09:46:43 by stolfilocal */
+/* Last edited on 2024-11-15 19:11:32 by stolfi */
 
 #ifndef binsearch_int32_H
 #define binsearch_int32_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdlib.h>
 

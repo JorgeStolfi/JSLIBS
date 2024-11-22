@@ -1,7 +1,6 @@
 /* See {sample_conv.h}. */
 /* Last edited on 2024-11-04 07:20:07 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>

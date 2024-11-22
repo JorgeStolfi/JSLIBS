@@ -1,7 +1,6 @@
 /* See fget.h */
-/* Last edited on 2024-10-31 03:43:50 by stolfi */
+/* Last edited on 2024-11-15 20:31:57 by stolfi */
 
-#define _GNU_SOURCE_
 #include <stdio.h>
 #include <stdint.h>
 #include <limits.h>
@@ -173,7 +172,7 @@ char *fget_to_delims(FILE *rd, char delim, char *delims)
         /* Save char, expanding as needed, and leaving space for final '\0': */
         if (nb >= bufsz-1)
           { bufsz = 2*bufsz;
-            buf = (char *)notnull(realloc(buf, bufsz), "out of mem for buf");
+            buf = retalloc(buf, bufsz, char);
           }
         buf[nb] = ch; nb++;
         r = fgetc(rd);
@@ -181,7 +180,7 @@ char *fget_to_delims(FILE *rd, char delim, char *delims)
     assert(r != EOF);
     ungetc(r, rd);
     buf[nb] = '\000'; nb++; 
-    if (nb < bufsz) { buf = (char *)notnull(realloc(buf, nb), "out of mem for result"); }
+    if (nb < bufsz) { buf = retalloc(buf, nb, char); }
     return buf;
   }
 
@@ -259,15 +258,15 @@ uint64_t fget_uint64(FILE *rd, uint32_t base)
     int32_t d = fget_digit(rd, base); 
     demand(d >= 0, "invalid number");
     /* Parse digits, append to number: */
-    uint64_t x = d;
+    uint64_t x = (uint64_t)d;
     while (TRUE)
       { /* Grab the next digit's value {d}, or {-1} if none: */
         d = fget_digit(rd, base);
         if (d < 0) { break; }
         demand (x <= xpmax, "number does not fit in 64 bits");
         x = base*x;
-        demand(x <= UINT64_MAX - d, "number does not fit in 64 bits");
-        x = x + d;
+        demand(x <= UINT64_MAX - (uint64_t)d, "number does not fit in 64 bits");
+        x = x + (uint64_t)d;
       }
     return x;
   }

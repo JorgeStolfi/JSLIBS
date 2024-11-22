@@ -93,8 +93,7 @@ void DoTests(int32_t nx, int32_t ny, bool_t quad)
     /* EPS figure size proportional to total image size. */
     double eps_hsz = nx*(scale*XSZ + HMG) - HMG;
     double eps_vsz = ny*(scale*YSZ + VMG) - VMG;
-    char *fname = NULL;
-    asprintf(&fname, "out/plot2D_%s.eps", (quad ? "qua" : "tri"));
+    char *fname = jsprintf("out/plot2D_%s.eps", (quad ? "qua" : "tri"));
     FILE *wr = open_write(fname, TRUE);
     eps = epswr_new_figure(wr, eps_hsz, eps_vsz, HMG, HMG, VMG, VMG, FALSE);
     DoPaintings(eps, scale, nx, ny, quad);
@@ -177,8 +176,7 @@ void PlotFunc2D
     /* epswr_tics(eps, VER, ticlo, tichi, tichi - ticlo, NULL, 1.0, 0.0); */
     epswr_rectangle(eps, -0.25, +0.25+wx, -0.25, +0.25+wy, FALSE, TRUE);
     
-    char *cmt = NULL;
-    asprintf(&cmt, "Testing with nf = %d, isolines = %c, ns = %d", nf, "FT"[isolines], ns);
+    char *cmt = jsprintf("Testing with nf = %d, isolines = %c, ns = %d", nf, "FT"[isolines], ns);
     epswr_comment(eps, cmt);
     free(cmt);
         

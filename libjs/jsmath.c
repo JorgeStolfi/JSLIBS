@@ -1,7 +1,6 @@
 /* See jsmath.h */
-/* Last edited on 2023-03-31 03:37:52 by stolfi */
+/* Last edited on 2024-11-16 06:38:28 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -159,11 +158,11 @@ uint64_t lcm(uint64_t a, uint64_t b)
 
 uint64_t comb(int64_t n, int64_t k)
   { 
-    uint64_t p = 1;
     if (k < 0) { return 0; }
     if (k > n) { return 0; }
     if (k > n-k) { k = n-k; }
-    uint64_t a = n, b = 0;
+    uint64_t p = 1;
+    uint64_t a = (uint64_t)n, b = 0;
     while(b < k)
       { b++;
         uint64_t q = p*a;

@@ -1,7 +1,6 @@
 /* See flt.h */
-/* Last edited on 2016-04-01 02:44:16 by stolfilocal */
+/* Last edited on 2024-11-20 07:51:38 by stolfi */
 
-#define _GNU_SOURCE
 #include <float.h>
 #include <limits.h>
 #include <stdio.h>
@@ -182,28 +181,19 @@ Float flt_random(void)
     return flt_RANDOM();
   }
 
-Float flt_random_mag(int avg, int dev)
+Float flt_random_mag(int32_t avg, int32_t dev)
   {
 #   define TwoToSixteen (65536.0f)
     Float t = One;
-    int exp;
+    int32_t exp;
 
     if (dev == 0)
       { exp = avg; }
     else
-      { /* Compute exponent "exp": */
-	int w = dev + dev + 1;
-        unsigned mask = 1;
-	/* find smallest all-ones mask that is no less than 2*dev + 1: */
-	while ((mask & w) != w) mask = ((mask << 1) | 1);
-	/* Generate random integer in range [0..2*dev]: */
-	do { exp = (rand() & mask); } while (exp >= w);
-	/* Compute exponent: */
-	exp = avg + (exp - dev);
-      }
+      { exp = int32_abrandom(avg-dev, avg+dev); }
     
     /* Compute power: */
-    { int j = 0;
+    { int32_t j = 0;
       while (j + 16 <= exp) { t *= TwoToSixteen; j += 16; }
       while (j < exp) { t *= Two; j++; }
       while (j - 16 >= exp) { t /= TwoToSixteen; j -= 16; }
@@ -214,10 +204,10 @@ Float flt_random_mag(int avg, int dev)
 #   undef TwoToSixteen
   }
   
-Float flt_from_int(int i)
+Float flt_from_int(int32_t i)
   {
     double di = (double)i; /* Should be exact! */
-    affirm((int)di == i, "bug in double/int conversion");
+    affirm((int32_t)di == i, "bug in double/int conversion");
     Float res = (Float) di;
     return res;
   }

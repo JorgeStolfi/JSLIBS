@@ -57,8 +57,7 @@ int main(int argc, char **argv)
     affirm(strcmp(f.tag, ftag) == 0, "Goal function has wrong tag");
     
     /* File name: */
-    char *outname = NULL;
-    asprintf(&outname, "bb2_%s", f.tag);
+    char *outname = jsprintf("bb2_%s", f.tag);
 
     /* These variables will be set later: */
     epswr_figure_t *eps = NULL;

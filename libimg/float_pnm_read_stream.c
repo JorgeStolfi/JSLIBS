@@ -1,7 +1,6 @@
 /* See {float_pnm_read_stream.h}. */
 /* Last edited on 2017-06-22 02:37:24 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>

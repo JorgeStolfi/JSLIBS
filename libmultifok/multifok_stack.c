@@ -44,7 +44,7 @@ multifok_stack_t *multifok_stack_read
     int32_t NC, NX, NY; /* Image dimensions. */
      for (int32_t ki = 0; ki < NI; ki++)
       { char *frameDir = NULL;
-        asprintf(&frameDir, "%s/frame-zf%08.4f-df%08.4f", stackDir, zFoc[ki], zDep[ki]);
+        char *frameDir = jsprintf("%s/frame-zf%08.4f-df%08.4f", stackDir, zFoc[ki], zDep[ki]);
         multifok_frame_t *fri = multifok_frame_read 
           ( frameDir, gray, zFoc[ki], zDep[ki], hMin, hMax );
         if (ki == 0)
@@ -77,11 +77,10 @@ void multifok_stack_write
     mkdir(stackDir, 0755); /* "-rwxr-xr-x" */
     for (int32_t ki = 0; ki < NI; ki++)
       { multifok_frame_t *fri = stack->frame[ki];
-        char *frameDir = NULL;
         if (fri->zDep == +INF)
-          { asprintf(&frameDir, "%s/frame-sharp", stackDir); }
+          { char *frameDir = jsprintf("%s/frame-sharp", stackDir); }
         else
-          { asprintf(&frameDir, "%s/frame-zf%08.4f-df%08.4f", stackDir, fri->zFoc, fri->zDep); }
+          { char *frameDir = jsprintf("%s/frame-zf%08.4f-df%08.4f", stackDir, fri->zFoc, fri->zDep); }
         multifok_frame_write(fri, frameDir, hMin, hMax); 
         free(frameDir);
       }

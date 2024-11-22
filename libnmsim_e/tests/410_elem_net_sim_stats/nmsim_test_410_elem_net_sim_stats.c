@@ -117,8 +117,7 @@ void nmsim_test_elem_net_sim_stats(int32_t nne)
     nmsim_elem_net_sim_stats_finalize(S);
 
     /* Write the statistics: */
-    char *prefix = NULL;
-    asprintf(&prefix, "out/sim_%06dne", nne);
+    char *prefix = jsprintf("out/sim_%06dne", nne);
     nmsim_test_elem_net_sim_stats_write(prefix, S);
     
     free(V);
@@ -132,7 +131,7 @@ void nmsim_test_elem_net_sim_stats(int32_t nne)
   
 void nmsim_test_elem_net_sim_stats_write(char *prefix, nmsim_elem_net_sim_stats_t *S)
   { char *fname = NULL;
-    asprintf(&fname, "%s_ne%010d--%010d_stats.txt", prefix, S->ineLo, S->ineHi);
+    char *fname = jsprintf("%s_ne%010d--%010d_stats.txt", prefix, S->ineLo, S->ineHi);
     FILE *wr = open_write(fname, TRUE);
     nmsim_elem_net_sim_stats_write(wr, S);
     fclose(wr);

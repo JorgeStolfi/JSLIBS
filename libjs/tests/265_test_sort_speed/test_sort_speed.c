@@ -2,10 +2,10 @@
 #define PROG_DESC "tests speed of quick-sort, heap-sort, binsertion-sort and merge-sort"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2023-03-26 11:06:24 by stolfi */
+/* Last edited on 2024-11-20 06:54:50 by stolfi */
 
 #define test_sort_speed_COPYRIGHT \
-  "Copyright © 2004  by the State University of Campinas (UNICAMP)"
+  "Copyright Â© 2004  by the State University of Campinas (UNICAMP)"
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -19,9 +19,6 @@
   "AUTHORS\n" \
   "  Created aug/2004 by Jorge Stolfi, IC-UNICAMP"
 
-/* We must set _GNU_SOURCE to get {asprintf}. */
-/* Why can't we just include "gnuio.h"??? */
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,128 +30,245 @@
 #include <intsort_extra.h>
 #include <affirm.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <jstime.h>
-
-static int32_t ncmp;
-static int64_t *data; /* Random values to be compared. */
-static int32_t ndata; /* Size of {data} vector. */
+#include <jsmath.h>
+#include <jsrandom.h>
+  
+/* One second in the units used by {now}: */
+#define SECOND (1.0e6)
+#define MILLISECOND (1.0e3)
+#define MICROSECOND (1.0)
 
 /* Max number of runs for each algorithm and each array size: */
 #define MAXRUNS 50
 
-/* Maximum array size to try: */
-/* #define MAXSIZE (4*256*256) */
-/* #define MAXSIZE (128*256) */
-#define MAXSIZE (4*256)
+/* Number of different sizes to test with: */
+#define NUMSIZES 11
+
+/* Maximum total time allowed for all test runs of each algoritm (usec): */
+#define MAXALGTIME (300*SECOND)
 
 typedef int32_t int32_t_cmp_t(int32_t a, int32_t b); 
   /* A signed comparison predicate for integers (indices, etc.). */
 
-typedef void tss_sorter_t(int32_t *h, int32_t n, int32_t_cmp_t cmp, int32_t sgn);
-  /* A procedure that sorts {h} so that  {sgn*cmp(h[i-1],h[i]) <= 0}
+typedef void tss_sorter_t(int32_t ix[], uint32_t n, int32_t_cmp_t cmp, int32_t sgn);
+  /* A procedure that sorts {ix} so that  {sgn*cmp(ix[i-1],ix[i]) <= 0}
     for all {i} */
   
-typedef double tss_timer_t(int32_t n);
-  /* A procedure that estimates how many comparisons (or equivalent
-    ops) an algorithm will take for an {n}-element array. 
+typedef double tss_cost_pred_t(uint32_t n);
+  /* A procedure that predicts the relative number of operations an
+    algorithm will perform when sorting an {n}-element array.
+    This may be the number of comparisons, or, for some
+    algorithms, the number of element swaps or shifts.
     
-    The actual value returned is not important; the test procs use
-    only the ratios of the estimated times among various algorithms,
-    for each given {n}. */
+    The actual value returned is not important, only the ratio between
+    values for different {n}. In any case, the result must be 1.0 for
+    {n=0}, and must be increasing with {n}. */
   
-typedef struct tss_alg_t 
-  { tss_sorter_t *srt;  /* The sorting procedure. */
-    char *name;         /* The procedure's name. */
-    char *descr;        /* A short description. */
-    int32_t thr;            /* Max {n} included in the base case. */
-    tss_timer_t *tmr;   /* Estimates the number of operations. */
-  } tss_alg_t;
+typedef enum {TP_NOPS = 0, TP_TIME = 1} stype_t;
+  /* Type of performance metric for an algorithm. Metric {TP_TIME} is
+    CPU time in usec, and metric {TP_NOPS} is number of operations
+    performed. */
 
-typedef enum {TP_NCMP = 0, TP_TIME = 1} stype_t;
-  /* Type of statistics to print (comparisons or running times). */
+typedef struct tss_alg_t 
+  { tss_sorter_t *srt;        /* The sorting procedure. */
+    char *name;               /* The procedure's name. */
+    char *descr;              /* A short description. */
+    uint32_t n_base;          /* Max {n} included in the base case. */
+    tss_cost_pred_t *asymp;   /* Estimator for relative cost as function of {n}. */
+    double cfactor[2];        /* Constant factor to multiply into {asymp}. */
+    bool_t shifter;           /* Count estimated shifts as operations. */
+  } tss_alg_t;
+  /* The array {cfactor} is indexed with {stype_t}:
+    {cfactor[tp]*asymp(n)} is the theoretical predicted average of the
+    {tp} metric (CPU time in usec if {tp=TP_TIME}, operation count if
+    {tp=TP_NOPS}) for a run of the algorithm on {n} random inputs.
+    
+    If the {shifter} flag is false, the {TP_NOPS} metric for a run of
+    the arlgorithm will be the number of comparisons actually made in
+    the run.
+    
+    The {shifter} flag is true for those algorithms, like insertion sort
+    with binary search, that performs relatively few ({\O(n \log n)}
+    comparisons but many ({\O(n^2)}) element moves. It says that the
+    {TP_NOPS} metric should be set to {n*(n-1)/4} instead of the actual
+    number of comparisons. */
   
-typedef struct tss_stats_t 
-  { int32_t ncmp;    /* Number of comparisons */
-    double time; /* Time in microseconds. */
-  } tss_stats_t;
+typedef struct tss_run_stats_t 
+  { double data[2]; 
+   } tss_run_stats_t;
+  /* performance metrics for a single test run of a specific algorithm. The {data}
+    array is indexed by {stype_t}: {data[TP_NOPS]} is the numer of
+    operations done, and {data[TP_TIME]} is the CPU time in usec. */
+  
+typedef struct tss_alg_stats_t 
+  { uint32_t nruns;
+    double asymp;     /* Asymptotic formula. */
+    double min[2];    /* Minimum. */
+    double max[2];    /* Maximum. */
+    double avg[2];    /* Average. */
+    double dev[2];    /* Standard deviation. */
+    double exp[2];    /* Expected value. */
+  } tss_alg_stats_t;
+  /* Condensed performance metrics for zero or more runs of 
+    an algorithm for a specific value of {n}.
+    
+    The {nruns} field is the number of runs that were actually performed.
+    
+    The arrays {min,max,avg,dev,exp} are indexed by {stype_t} as in {tss_run_stats_t}.
+    They summarize the metric {tp} over all those runs:
+      
+      * {min[tp]} and {max[tp]} are the min and max the metric,
+        or {NAN} if {nruns} is zero.  
+      
+      * {avg[tp]} is the average of the metrics,
+        or {NAN} if {nruns} is zero.  
+    
+      * {dev[tp]} is the standard deviation of that metric,
+        or {NAN} if {nruns<2}.  
+        
+      * {exp[tp]} is the value of that metric predicted by the 
+        theoretical formula.
+        
+    The CPU time data are in usec. */
 
 /* PROTOS */
 
-void tss_all_tests(char *outname);
+void tss_do_all_tests(char *outname);
   /* Tests all algorithms for various array sizes, prints
-    statistics to the file "{outname}-{tpname}.tex" where 
-    {tpname} is "ncmp" or "time". */
-
-tss_stats_t tss_test_sorter(int32_t *h, int32_t n, tss_sorter_t srt, int32_t_cmp_t cmp, int32_t sgn);
-  /* Tests sorter {srt} on {h} with comparator {sgn*cmp}; checks
-    order of result, returns statistics. */
+    statistics to stderr and to files "out/{outname}-{N}-{tpname}.tex" where 
+    {tpname} is "nops" or "time" and {N} is the number of items 
+    in the test array, formatted as "%010d". */
     
-void tss_print_stats(FILE *wr, char *sname, int32_t n, tss_stats_t *st, int32_t ntests, stype_t tp);
-  /* Writes to {wr} the summarized statistics of type {tp} for sorter {sname}
-    acting on arrays of {n} elements, given the statitistics {st[0..ntests-1]} 
-    obtained in {ntests} test runs. */
+int64_t *tss_random_data(uint32_t n);
+  /* Returns a vector of {n} random 64-bit integers, many negative,
+    all distinct. */
+
+tss_run_stats_t tss_test_sorter
+  ( uint32_t n,
+    tss_sorter_t srt,
+    int32_t sgn
+  );
+  /* Runs sorter {srt} on an array of {ix[0..n-1]} integers, then checks
+    whether the output is ordered and is a permutation of 
+    the input.  Returns statistics.
+    
+    The integers {ix[0..n-1]} to be sorted are the integers {0..n-1},
+    interpreted as indices into an array {data[0..n-1]} of distinct
+    random 64-bit integers, generated internally. That is, the array
+    {ix} is considered properly sorted if {ix[0..n-1]} is a permutation
+    of {0..n-1}, and {data[ix[i]] < data[ix[j]]} for all {i,j} in
+    {0..n-1} with {i<j}.
+    
+    The caller should initialize the random generator calling
+    {srandom(seed)}, where the {seed} is reproducible but distinct for
+    each call of {tss_test_sorter} with same {n} and {srt}. */
+     
+tss_alg_stats_t tss_summarize_run_stats
+  ( uint32_t nruns,
+    double asymp,
+    tss_run_stats_t st[],
+    double nops_pred,
+    double time_pred
+  );
+  /* Returns a single {tss_alg_stats_t} record {ast} that summarizes the
+    performance records {st[0..nruns-1]} for {nruns} runs of some
+    algorithm with random input arrays of some fixed size {n}.
+    The {asymp} should be the asymptotic relative prediction of the 
+    cost (without the constant factor). */
+    
+void tss_print_stats_line
+  ( char *sname,
+    uint32_t n,
+    tss_alg_stats_t *ast,
+    stype_t tp
+  );
+  /* Assumes that {ast} is the summarized statistics for sorter {sname}
+    acting on arrays of {n} elements. Writes to stderr a line with the 
+    statistics of type {tp}. */
+     
+void tss_write_tex_table_line
+  ( FILE *wr,
+    char *sname,
+    uint32_t n,
+    tss_alg_stats_t *ast,
+    stype_t tp
+  );
+  /*  Assumes that {ast} is the summarized statistics for sorter {sname}
+    acting on arrays of {n} elements.  Writes to {wr} a TeX table line with the 
+    statistics of type {tp}. */
+   
+void tss_print_stderr_col_headers(void);
+  /* Prints to {stderr} the column headers for the {stderr} output of {tss_print_stats}. */
 
 char *tss_protect(char *name);
   /* Returns a copy of {name} wrapped in '{}'s
     with every '_' changed into '\_'. */
 
-void tss_fill_algorithms_table(int32_t *nalgsP, tss_alg_t *alg[]);
+void tss_fill_algorithms_table(uint32_t *nalgsP, tss_alg_t *alg[]);
   /* Stores into {alg[0..nalgs-1]} a set of algorithms to test.
     Also sets {*nalgsP} the number {nalgs} of algorithms 
     defined.  Assumes that {alg} has at least {MAXALGS} entries. */
 
-void tss_write_tex_algorithms_table(char *outname, int32_t nalgs, tss_alg_t *alg[]);
+void tss_write_tex_algorithms_table(char *outname, uint32_t nalgs, tss_alg_t *alg[]);
   /* Writes to "{outname}-algs.tex" a TeX table with procedure name,
-    algorithm description, and recursion threshold {SMALL}. */
+    algorithm description, and recursion threshold (when applicable). */
 
-void tss_begin_tex_performance_table(FILE *wr, char *outname, char *tpname, int32_t n);
+void tss_start_tex_performance_table(FILE *wr, char *tpname, char *tptitle, uint32_t n);
   /* Writes into {wr} the preamble of a TeX table with performance data for various
-    algorithms on tables with {n} entries. */
+    algorithms on tables with {n} entries.  The {tpname} is "time" or "nops", and title 
+    is a longer readable version thereof. */
     
-void tss_finish_tex_performance_table(FILE *wr, char *tpname, int32_t n);
+void tss_finish_tex_performance_table(FILE *wr, char *tpname, char *tptitle, uint32_t n);
   /* The file {wr} must have been opened with
-    {tss_begin_tex_performance_table}. Writes into {wr} the
-    postamble of the table */
+    {tss_start_tex_performance_table(wr,tpname,tptitle,n)}. Writes into
+    {wr} the postamble of the table. */
 
-int32_t tss_cmp(int32_t a, int32_t b);
-  /* Compares {data[a]} with {data[b]}. */
-
-tss_alg_t *tss_new_alg(tss_sorter_t *srt, char *name, char *descr, int32_t thr, tss_timer_t *tmr);
-  /* Creates a new algorithm data record. */
+tss_alg_t *tss_new_alg
+  ( tss_sorter_t *srt,
+    char *name,
+    char *descr,
+    uint32_t n_base,
+    tss_cost_pred_t *asymp,
+    double nops_factor,
+    double time_factor,
+    bool_t shifter
+  );
+  /* Creates a new algorithm data record.
+    The {time_factor} should be in usec. */
   
-double tss_n_logn(int32_t n);
-double tss_n2_2(int32_t n);
-double tss_n2_4(int32_t n);
-  /* Useful time estimators. */
+double tss_n_logn(uint32_t n);
+  /* Returns approximately {n log2(n)}, more precisely {(n+1)log2(n+2)}
+    so that it is 1 for {n=0}. */
+  
+double tss_n2(uint32_t n);
+  /* Returns approximately {n^2}, more precisely {(n+1)^2} so that it is
+    1 for {n=0}. */
+  
+int32_t main (int32_t argc, char **argv);
 
 /* IMPLEMENTATIONS */
 
 int32_t main (int32_t argc, char **argv)
-  { tss_all_tests(PROG_NAME);
+  { tss_do_all_tests(PROG_NAME);
     return 0;
-  }
-
-tss_alg_t *tss_new_alg(tss_sorter_t *srt, char *name, char *descr, int32_t thr, tss_timer_t *tmr)
-  { tss_alg_t *pa = (tss_alg_t *)notnull(malloc(sizeof(tss_alg_t)), "no mem");
-    pa->srt = srt; 
-    pa->name = name;
-    pa->descr = descr;
-    pa->thr = thr; 
-    pa->tmr = tmr;
-    return pa;
   }
 
 /* Max number of algorithms to test: */
 #define MAXALGS 10
 
-void tss_all_tests(char *outname)
+void tss_do_all_tests(char *outname)
   {
     char *tpname[2];
-    tpname[TP_NCMP] = "ncmp"; 
+    tpname[TP_NOPS] = "nops"; 
     tpname[TP_TIME] = "time";
-    stype_t tp;
     
-    int32_t nalgs = 0;
+    char *tptitle[2];
+    tptitle[TP_NOPS] = "operation counts"; 
+    tptitle[TP_TIME] = "running time (msec)";
+    
+    uint32_t nalgs = 0;
     tss_alg_t *alg[MAXALGS];
     
     /* Assemble a table of algorithms and parameters: */
@@ -162,84 +276,194 @@ void tss_all_tests(char *outname)
 
     /* Write table describing algorithms: */
     tss_write_tex_algorithms_table(outname, nalgs, alg);
+    
+    /* The values of {n} to use in the tests: */
+    uint32_t size[NUMSIZES] = { 0, 1, 2, 4, 64, 96, 128, 192, 256, 64*64, 64*64*64 }; 
 
-    /* Open separate files for comparison counts and times: */
-    fprintf(stderr, "  %-45s %6s  %8s .. %8s  %10s ± %10s (%4s)\n\n",
-      "Algorithm", "n", "min", "max", "avg", "std", "runs"); 
-
-    /* Open performance data files: */
-    FILE *wr[2];
-    for (tp = TP_NCMP; tp <= TP_TIME; tp++)
-      { char *fname = NULL;
-        asprintf(&fname, "%s-%s.tex", outname, tpname[tp]);
-        wr[tp] = open_write(fname, TRUE);
-        free(fname);
-      }
-
-    int32_t n = 0;
-    while (n <= MAXSIZE) 
-      { /* Allocate data array */
-        int64_t dt[n]; data = dt; ndata = n;
-        int32_t h[n];
-
-        /* Performance statistics for the various runs of each algorithm: */
-        tss_stats_t st[nalgs*MAXRUNS];
+    for (int32_t kn = 0; kn < NUMSIZES; kn++) 
+      { /* Pick the number {n} of items to sort in each run: */
+        uint32_t n = size[kn];
+      
+        /* Theoretical predictions for each alg with random {n} inputs: */
+        double nops_pred[nalgs]; /* Average num operations. */
+        double time_pred[nalgs]; /* Average running time (usec). */
+        double *pred[2] = { [TP_NOPS] = nops_pred, [TP_TIME] = time_pred };
         
-        /* Define the max number of runs for each algorithm: */
-        int32_t max_runs[nalgs];
-        int32_t ialg;
-        for (ialg = 0; ialg < nalgs; ialg++)
-          { double relcost = alg[ialg]->tmr(n)/tss_n_logn(n);
-            max_runs[ialg] = (int32_t)(MAXRUNS/relcost);
-          }
-
-        int32_t sgn = +1;
+        tss_alg_stats_t ast[nalgs]; /* Summary stats for all runs of each algorithm. */
 
         fprintf(stderr, "\n");
-        int32_t it;
-        for (it = 0; it < MAXRUNS; it++)
-          { fprintf(stderr, "=");
-            /* Generate "random" numbers and test the two sorters on them: */
-            int32_t i;
-            srandom(it+1);
-            for (i = 0; i < n; i++) { dt[i] = random(); }
+        for (int32_t ialg = 0; ialg < nalgs; ialg++)
+          { /* Compute theoretical performance: */
+            double asymp = alg[ialg]->asymp(n);
+            asymp = fmax(1.0, asymp); /* Paranoia. */
+            for (stype_t tp = TP_NOPS; tp <= TP_TIME; tp++)
+              { pred[tp][ialg] = asymp*alg[ialg]->cfactor[tp]; }
             
-            for (ialg = 0; ialg < nalgs; ialg++)
-              { if (it < max_runs[ialg]) 
-                  { tss_alg_t *pa = alg[ialg];
-                    tss_stats_t *pst = &(st[ialg*MAXRUNS + it]);
-                   (*pst) = tss_test_sorter(h, n, pa->srt, tss_cmp, sgn);
+            /* Define the max number of runs for this algorithm: */
+            uint32_t nruns = (uint32_t)(MAXALGTIME/time_pred[ialg]);
+            if (nruns > MAXRUNS) { nruns = MAXRUNS; }
+            
+            /* Performance statistics for the various runs of this algorithm: */
+            tss_run_stats_t rst[nruns]; /* Run {r} of alg {ialg} is {st[ialg*MAXRUNS + r]} */
+        
+            int32_t sgn = +1;
+            for (int32_t it = 0; it < nruns; it++)
+              { tss_alg_t *pa = alg[ialg];
+                srandom(666*418+2*it+1);
+                rst[it] = tss_test_sorter(n, pa->srt, sgn);
+                if (pa->shifter) 
+                  { /* Use the estimated number of shifts for insertion sorters. */
+                    double dn = (double)n;
+                    rst[it].data[TP_NOPS] = (dn*(dn-1))/4.0;
                   }
               }
+            ast[ialg] = tss_summarize_run_stats(nruns, asymp, rst, nops_pred[ialg], time_pred[ialg]);
+          }
+
+        /* Write the tables for this {n}: */
+        for (stype_t tp = TP_NOPS; tp <= TP_TIME; tp++)
+          { 
+            /* Open performance data file for {n} and {tp}: */
+            FILE *wr;
+            char *fname = jsprintf("out/%s-%010d-%s.tex", outname, n, tpname[tp]);
+            wr = open_write(fname, TRUE);
+            free(fname);
+
+            tss_start_tex_performance_table(wr, tpname[tp], tptitle[tp], n);
+            fprintf(stderr, "  -- %s --\n", tptitle[tp]);
+            tss_print_stderr_col_headers();
+            
+            for (int32_t ialg = 0; ialg < nalgs; ialg++)
+              { tss_alg_t *pa = alg[ialg];
+                tss_print_stats_line(pa->descr, n, &(ast[ialg]), tp);
+                tss_write_tex_table_line(wr, pa->descr, n, &(ast[ialg]), tp);
+              }
+              
+            fprintf(stderr, "\n");
+            tss_finish_tex_performance_table(wr, tpname[tp], tptitle[tp], n);
+            fclose(wr);
           }
         fprintf(stderr, "\n");
-          
-        for (tp = TP_NCMP; tp <= TP_TIME; tp++)
-          { tss_begin_tex_performance_table(wr[tp], outname, tpname[tp], n);
-            for (ialg = 0; ialg < nalgs; ialg++)
-              { tss_alg_t *pa = alg[ialg];
-                tss_stats_t *pst = &(st[ialg*MAXRUNS]);
-                tss_print_stats(wr[tp], pa->descr, n, pst, MAXRUNS, tp);
-              }
-            tss_finish_tex_performance_table(wr[tp], tpname[tp], n);
-          }
-
-
-        n = (n == 0 ? 1 : 2*n); 
       }
     
-    for (tp = TP_NCMP; tp <= TP_TIME; tp++) { fclose(wr[tp]); }
+    return;
+  }
 
+tss_run_stats_t tss_test_sorter
+  ( uint32_t n,
+    tss_sorter_t srt,
+    int32_t sgn
+  )
+  { 
+    /* Allocate and fill the data array: */
+    int64_t *data = tss_random_data(n);
+
+    /* Comparison counter: */
+    uint64_t ncmp;
+
+    auto int32_t compare_data(int32_t a, int32_t b);
+      /* Compares {data[a]} with {data[b]}, and increments {ncmp}. */
+    
+    /* Allocate index array */
+    int32_t *ix = talloc(n, int32_t);
+
+    /* Start {ix} with trivial perm of indices {0..n-1}. */
+    for (int32_t i = 0; i < n; i++) { ix[i] = i; }
+
+    /* Sort {ix} according to {data}: */
+    tss_run_stats_t st;
+    double start = user_cpu_time_usec();
+    ncmp = 0;
+    srt(ix, n, compare_data, sgn);
+    st.data[TP_TIME] = user_cpu_time_usec() - start;
+    st.data[TP_NOPS] = (double)ncmp;
+    
+    if (n > 0)
+      { /* Check that output array is a permutation of {0..n-1}: */
+        bool_t seen[n]; 
+        for (int32_t i = 0; i < n; i++) { seen[i] = FALSE; }
+        for (int32_t i = 0; i < n; i++)
+          { int32_t hi = ix[i]; 
+            affirm((hi >= 0) && (hi < n), "sorted array elemnet is not in {0..n-1}");
+            affirm (! seen[hi], "sorted array is not a permutation");
+            seen[hi] = TRUE;
+          }
+
+        /* Check ordering of output array: */
+        ncmp = 0;
+        for (int32_t i = 1; i < n; i++)
+          { if (sgn*compare_data(ix[i-1],ix[i]) > 0) { affirm(FALSE, "out of order"); } }
+        assert(ncmp == (n == 0 ? 0 : n-1)); /* Check on {compare}. */
+     }
+
+    /* Return performance data: */
+    return st;
+
+    int32_t compare_data(int32_t a, int32_t b)
+      {
+        affirm((a >= 0) && (a < n), "tss_cmp: bad a");
+        affirm((b >= 0) && (b < n), "tss_cmp: bad b");
+        ncmp++;
+        int64_t da = data[a], db = data[b];
+        if (da < db) 
+          { return -1; }
+        else if (da > db)
+          { return +1; }
+        else
+          { return 0; }
+      }
+  }
+  
+void tss_print_stderr_col_headers(void)
+  { char *fmt = "  %-45s %6s  %14s %14s  %14s %14s  %14s %12s %14s  %4s\n";
+    fprintf
+      ( stderr, fmt, 
+        "Algorithm", "n", 
+        "min", "max", 
+        "avg", "std", 
+        "pred", "avg/pred", "avg/asymp", 
+        "runs"
+      ); 
+    fprintf
+      ( stderr, fmt, 
+        "---------------------------------------------", "------", 
+        "--------------", "--------------", 
+        "--------------", "--------------", 
+        "--------------", "------------", "--------------", 
+        "----"
+      ); 
+  }
+
+tss_alg_t *tss_new_alg
+  ( tss_sorter_t *srt,
+    char *name,
+    char *descr,
+    uint32_t n_base,
+    tss_cost_pred_t *asymp,
+    double nops_factor,
+    double time_factor,
+    bool_t shifter
+  )
+  { tss_alg_t *pa = (tss_alg_t *)notnull(malloc(sizeof(tss_alg_t)), "no mem");
+    pa->srt = srt; 
+    pa->name = name;
+    pa->descr = descr;
+    pa->n_base = n_base; 
+    pa->asymp = asymp;
+    pa->cfactor[TP_NOPS] = nops_factor;
+    pa->cfactor[TP_TIME] = time_factor;
+    pa->shifter = shifter;
+    return pa;
   }
     
-void tss_fill_algorithms_table(int32_t *nalgsP, tss_alg_t *alg[])
+void tss_fill_algorithms_table(uint32_t *nalgsP, tss_alg_t *alg[])
   {
-    int32_t nalgs = 0;
+    uint32_t nalgs = 0;
     
-    #define defalg(DESCR,SRT,THR,TMR) \
+    #define defalg(DESCR,SRT,N_BASE,ASYMP,NOPSF,TIMEF,SHIFTER) \
       do { \
         assert(nalgs < MAXALGS); \
-        alg[nalgs] = tss_new_alg(&SRT, #SRT, DESCR, THR, &TMR); \
+        alg[nalgs] = tss_new_alg(&SRT, #SRT, DESCR, N_BASE, &ASYMP, NOPSF, TIMEF, SHIFTER); \
         nalgs++; \
       } while (0)
     
@@ -247,97 +471,296 @@ void tss_fill_algorithms_table(int32_t *nalgsP, tss_alg_t *alg[])
       "Heapsort (classic)",
       isrt_heapsort_classic, 
       0,
-      tss_n_logn   
+      tss_n_logn, 1.8507, 0.19556094, FALSE   
     );
     defalg(
       "Heapsort (vacsink)",
       isrt_heapsort_vacsink,     
       0,
-      tss_n_logn   
+      tss_n_logn, 1.0547, 0.14718884, FALSE   
     );
     defalg(
       "Heapsort (libjs)",
       isrt_heapsort,       
       0,
-      tss_n_logn   
+      tss_n_logn, 1.0547, 0.16295728, FALSE 
     );
     defalg(
-      "Quick-sort (middle elem)",
+      "Quicksort (middle elem)",
       isrt_quicksort_middle,
       isrt_quicksort_middle_SMALL,
-      tss_n_logn   
+      tss_n_logn, 1.2355, 0.17148143, FALSE  
     );
     defalg(
-      "Quick-sort (median-of-three)",
+      "Quicksort (median-of-three)",
       isrt_quicksort_median3,    
       isrt_quicksort_median3_SMALL,
-      tss_n_logn   
+      tss_n_logn, 1.1393, 0.15575583, FALSE  
     );
     defalg(
       "Mergesort (in-place, piv)",
       isrt_mergesort_pivot,    
       isrt_mergesort_pivot_SMALL,
-      tss_n_logn   
+      tss_n_logn, 1.0038, 0.17781383, FALSE   
     );
     defalg(
       "Mergesort (in-place, sym)",
       isrt_mergesort_symsplit,  
       isrt_mergesort_symsplit_SMALL,
-      tss_n_logn   
+      tss_n_logn, 2.4507, 0.38175505, FALSE   
     );
     defalg(
       "Mergesort (libjs)",
       isrt_mergesort,      
       0,
-      tss_n_logn   
+      tss_n_logn, 1.0038, 0.18447458, FALSE 
     );
     defalg(
-      "Insertion sort (libjs)",
+      "InsertSort (libjs)",
       isrt_binssort,
       0,
-      tss_n2_4   
+      tss_n2, 0.2500, 0.00051229, TRUE   
     );
     defalg(
-      "Binary insertion sort (libjs)",
+      "BinaryInsertsort (libjs)",
       isrt_binssort,
       0,
-      tss_n2_2   
+      tss_n2, 0.2500, 0.00054182, TRUE
     );
 
     (*nalgsP) = nalgs;
   }
 
-void tss_begin_tex_performance_table(FILE *wr, char *outname, char *tpname, int32_t n)
+tss_alg_stats_t tss_summarize_run_stats
+  ( uint32_t nruns,
+    double asymp,
+    tss_run_stats_t st[],
+    double nops_pred,
+    double time_pred
+  )
+  {
+    tss_alg_stats_t ast;
+    ast.nruns = nruns;
+    ast.asymp = asymp;
+    
+    ast.exp[TP_NOPS] = nops_pred;
+    ast.exp[TP_TIME] = time_pred;
+    
+    for (stype_t tp = TP_NOPS; tp <= TP_TIME; tp++)
+      { ast.min[tp] = NAN;
+        ast.max[tp] = NAN;
+        ast.avg[tp] = NAN;
+        ast.dev[tp] = NAN;
+        
+        if (nruns >= 1)
+          { /* Compute {min}, {max}, {avg}: */
+            double dmin = +INF, dmax = -INF;
+            double sum_d = 0;
+            for (int32_t i = 0; i < nruns; i++)
+              { double di = st[i].data[tp];
+                assert(isfinite(di) && (di >= 0));
+                if (di < dmin) { dmin = di; }
+                if (di > dmax) { dmax = di; }
+                sum_d += di;
+              }
+            ast.min[tp] = dmin;
+            ast.max[tp] = dmax;
+            ast.avg[tp] = sum_d/nruns;
+            
+            if (nruns >= 2)
+              { /* Compute {dev}: */
+                double sum_d2 = 0;
+                for (int32_t i = 0; i < nruns; i++)
+                  { double di = st[i].data[tp] - ast.avg[tp];
+                    sum_d2 += di*di;
+                  }
+                ast.dev[tp] = sqrt(sum_d2/(nruns-1));
+              }
+          }
+      }
+    return ast;
+  }
+
+void tss_start_tex_performance_table(FILE *wr, char *tpname, char *tptitle, uint32_t n)
   {
     fprintf(wr, "\\advance\\endlinechar by -256\n");
     fprintf(wr, "\\jstab\n");
     fprintf(wr, "  {t.%s.%010d}\n", tpname, n);
     fprintf(wr, "  {\n");
-    fprintf(wr, "     %% max runs for each n = %d\n", MAXRUNS);
-    fprintf(wr, "    \\begin{tabular}{|l|r|r|r|r|r|r|}\n");
+    fprintf(wr, "    \\begin{tabular}{|l|r|r|r|r|r|r|r|r|r|}\n");
     fprintf(wr, "      \\hline\n"); 
-    fprintf(wr, "      %-45s & %6s & %8s & %8s & %10s & %10s & %4s\\\\\n",
-      "Algorithm", "n", "min", "max", "avg", "std", "runs"); 
+    fprintf(wr, "      %-45s & %6s & %14s & %14s & %14s & %14s & %14s & %12s & %14s & %4s\\\\\n",
+      "Algorithm", "n", "min", "max", "avg", "std", "pred", "avg/pred", "avg/asymp", "runs"); 
     fprintf(wr, "      \\hline\n"); 
     fprintf(wr, "      \\hline\n"); 
   }
 
-void tss_finish_tex_performance_table(FILE *wr, char *tpname, int32_t n)
+void tss_print_stats_line
+  ( char *sname,
+    uint32_t n,
+    tss_alg_stats_t *ast,
+    stype_t tp
+  )
+  {
+    fprintf(stderr, "      %-45s %6d", sname, n);
+    double min = ast->min[tp];
+    double max = ast->max[tp];
+    double avg = ast->avg[tp];
+    double dev = ast->dev[tp];
+    double exp = ast->exp[tp];
+    switch(tp)
+      { case TP_NOPS:
+          { if (! isnan(min))
+              { uint64_t nmin = (uint64_t)(min+0.5), nmax = (uint64_t)(max+0.5);
+                fprintf(stderr, "  %14lu %14lu", nmin, nmax);
+              }
+            else
+              { fprintf(stderr, "  %14s %14s", "", ""); }
+
+            if (! isnan(avg))
+              { fprintf(stderr, "  %14.1f", avg); }
+            else
+              { fprintf(stderr, "  %14s", ""); }
+
+            if (! isnan(dev))
+              { fprintf(stderr, " %14.1f", dev); }
+            else
+              { fprintf(stderr, " %14s", ""); }
+              
+            assert(! isnan(exp));
+            fprintf(stderr, "  %14.1f", exp);
+            
+            if (! isnan(avg))
+              { fprintf(stderr, " %12.4f %14.4f", avg/exp, avg/ast->asymp); }
+            else
+              { fprintf(stderr, " %12s %14s", "", ""); }
+          }
+          break;
+        case TP_TIME:
+          { if (! isnan(min))
+              { fprintf(stderr, "  %14.3f %14.3f", min/MILLISECOND, max/MILLISECOND); }
+            else
+              { fprintf(stderr, "  %14s %14s", "", ""); }
+
+            if (! isnan(avg))
+              { fprintf(stderr, "  %14.4f", avg/MILLISECOND); }
+            else
+              { fprintf(stderr, "  %14s", ""); }
+
+            if (! isnan(dev))
+              { fprintf(stderr, " %14.4f", dev/MILLISECOND); }
+            else
+              { fprintf(stderr, " %14s", ""); }
+              
+            assert(! isnan(exp));
+            fprintf(stderr, "  %14.4f", exp/MILLISECOND);
+            
+            if (! isnan(avg))
+              { fprintf(stderr, " %12.6f %14.8f", avg/exp, avg/ast->asymp/MICROSECOND); }
+            else
+              { fprintf(stderr, " %12s %14s", "", ""); }
+          }
+          break;
+        default:
+          affirm(FALSE, "bad tp");
+      }
+    fprintf(stderr, "  %4d", ast->nruns);
+    fprintf(stderr, "\n");
+  }
+
+void tss_write_tex_table_line
+  ( FILE *wr,
+    char *sname,
+    uint32_t n,
+    tss_alg_stats_t *ast,
+    stype_t tp
+  )
+  {
+    fprintf(wr, "      \\pn%-35s & %6d", tss_protect(sname), n);
+    double min = ast->min[tp];
+    double max = ast->max[tp];
+    double avg = ast->avg[tp];
+    double dev = ast->dev[tp];
+    double exp = ast->exp[tp];
+    switch(tp)
+      { case TP_NOPS:
+          { if (! isnan(min))
+              { uint64_t nmin = (uint64_t)(min+0.5), nmax = (uint64_t)(max+0.5);
+                fprintf(wr, " & %14lu & %14lu", nmin, nmax);
+              }
+            else
+              { fprintf(wr, " & %14s & %14s", "\\none", "\\none"); }
+
+            if (! isnan(avg))
+              { fprintf(wr, " & %14.1f", avg); }
+            else
+              { fprintf(wr, " & %14s", "\\none"); }
+
+
+            if (! isnan(dev))
+              { fprintf(wr, " & %14.1f", dev); }
+            else
+              { fprintf(wr, " & %14s", "\\none"); }
+              
+            assert(! isnan(exp));
+            fprintf(wr, " & %14.1f", exp);
+            
+            if (! isnan(avg))
+              { fprintf(wr, " & %12.4f & %14.8f", avg/exp, avg/ast->asymp); }
+            else
+              { fprintf(wr, " & %12s & %14s", "\\none", "\\none"); }
+          }
+          break;
+        case TP_TIME:
+          { if (! isnan(min))
+              { fprintf(wr, " & %14.3f & %14.3f", min/MILLISECOND, max/MILLISECOND);
+              }
+            else
+              { fprintf(wr, " & %14s & %14s", "\\none", "\\none"); }
+
+            if (! isnan(avg))
+              { fprintf(wr, " & %14.4f", avg/MILLISECOND); }
+            else
+              { fprintf(wr, " & %14s", "\\none"); }
+
+
+            if (! isnan(dev))
+              { fprintf(wr, " & %14.4f", dev/MILLISECOND); }
+            else
+              { fprintf(wr, " & %14s", "\\none"); }
+              
+            assert(! isnan(exp));
+            fprintf(wr, " & %14.4f", exp/MILLISECOND);
+            
+            if (! isnan(avg))
+              { fprintf(wr, " & %12.4f & %14.8f", avg/exp, avg/ast->asymp/MICROSECOND); }
+            else
+              { fprintf(wr, " & %12s & %14s", "\\none", "\\none"); }
+          }
+          break;
+        default:
+          affirm(FALSE, "bad tp");
+      }
+    fprintf(wr, " & %4d ", ast->nruns);
+    fprintf(wr, " \\\\\n");
+    fflush(wr);
+  }
+
+void tss_finish_tex_performance_table(FILE *wr, char *tpname, char *tptitle, uint32_t n)
   {
     fprintf(wr, "      \\hline\n"); 
     fprintf(wr, "    \\end{tabular}\n"); 
     fprintf(wr, "  }\n");
     fprintf(wr, "  {\n");
-    fprintf(wr, "    Performance data (\\texttt{%s})", tpname);
-    fprintf(wr, " for $n = %d$ entries.\n", n);
+    fprintf(wr, "    Average %s (\\texttt{%s})", tptitle, tpname);
+    fprintf(wr, " for sorting $n = %d$ items.\n", n);
     fprintf(wr, "  }\n");
     fprintf(wr, "\\advance\\endlinechar by 256\n");
   }
   
-void tss_write_tex_algorithms_table(char *outname, int32_t nalgs, tss_alg_t *alg[])
+void tss_write_tex_algorithms_table(char *outname, uint32_t nalgs, tss_alg_t *alg[])
   {
-    char *fname = NULL;
-    asprintf(&fname, "%s-algs.tex", outname);
+    char *fname = jsprintf("%s-algs.tex", outname);
     FILE *wr = open_write(fname, TRUE);
     free(fname);
 
@@ -350,11 +773,11 @@ void tss_write_tex_algorithms_table(char *outname, int32_t nalgs, tss_alg_t *alg
     fprintf(wr, "      %-35s & %-40s & %5s\\\\\n", "Procedure", "Algorithm", "SMALL");
     fprintf(wr, "      \\hline\n"); 
     fprintf(wr, "      \\hline\n"); 
-    int32_t ialg;
-    for (ialg = 0; ialg < nalgs; ialg++)
+
+    for (int32_t ialg = 0; ialg < nalgs; ialg++)
       { tss_alg_t *pa = alg[ialg]; 
         fprintf(wr, "      \\pn%-35s & %-40s & %5d \\\\\n", 
-          tss_protect(pa->name), pa->descr, pa->thr
+          tss_protect(pa->name), pa->descr, pa->n_base
         );
         fprintf(wr, "      \\hline\n"); 
       }
@@ -364,33 +787,25 @@ void tss_write_tex_algorithms_table(char *outname, int32_t nalgs, tss_alg_t *alg
     fprintf(wr, "    Algorithms and their parameters.\n");
     fprintf(wr, "  }\n");
     fprintf(wr, "\\advance\\endlinechar by 256\n");
-  } 
+  }
 
-double tss_n_logn(int32_t n)
+double tss_n_logn(uint32_t n)
   { double x = (double)(n + 1);
-    return x*log(x)/log(2.0);
+    return x*log(x + 1)/log(2.0);
   }
   
-double tss_n2_2(int32_t n)
+double tss_n2(uint32_t n)
   { double x = (double)(n + 1);
-    return x*x/2.0;
+    return x*x;
   }
-  
-double tss_n2_4(int32_t n)
-  { double x = (double)(n + 1);
-    return x*x/4.0;
-  }
-  
-/* One second in the units used by {now}: */
-#define SECOND 1.0e6
 
 char *tss_protect(char *name)
   {
     /* Compute length of new string: */
-    int32_t nnew = 0; /* Length of protected string. */
+    uint32_t nnew = 0; /* Length of protected string. */
     char *p = name;
     while ((*p) != 0) { if ((*p) == '_') { nnew++; } p++; nnew++; }
-    char *new = notnull(malloc((nnew+3)*sizeof(char)), "no mem");
+    char *new = talloc(nnew+3, char);
     /* Copy {name} into {new}, wrapping and protecting all '_'s: */
     p = name;
     char *q = new;
@@ -405,151 +820,39 @@ char *tss_protect(char *name)
     (*q) = 0;
     return new;      
   }
+    
+int64_t *tss_random_data(uint32_t n)
+  { demand(n >= 0, "invalid {n}");
+    int64_t *data = talloc(n, int64_t);
+    if (n > 0) 
+      { /* Fill data with a null value, for paranois: */
+        for (int32_t i = 0; i < n; i++) { data[i] = INT64_MIN; }
 
-void tss_print_stats(FILE *wr, char *sname, int32_t n, tss_stats_t *st, int32_t ntests, stype_t tp)
-  {
-    /* Extract the relevant statistics: */
-    double x[ntests];
-    int32_t nok = 0;
-    int32_t it;
-    for (it = 0; it < ntests; it++)
-      { tss_stats_t *sti = &(st[it]);
-        double stx;
-        switch(tp)
-          { case TP_NCMP:
-              stx = (double)sti->ncmp;
-              break;
-            case TP_TIME:
-              stx = sti->time;
-              break;
-            default:
-              affirm(FALSE, "bad tp");
-          }
-        if (stx >= 0.0) { x[nok] = stx; nok++; }
-      }
-    
-    fprintf(wr, "      \\pn%-35s & %6d", tss_protect(sname), n);
-    fprintf(stderr, "  %-45s n = %6d", sname, n);
-    
-    /* Compute min and max: */
-    double xmin, xmax;
-    xmin = xmax = x[0];
-    for (it = 1; it < nok; it++)
-      { double xi = x[it]; 
-        if (xi < xmin) 
-          { xmin = xi; }
-        else if
-          (xi > xmax)
-        { xmax = xi; }
-      }
-    
-    /* Print min and max: */
-    switch(tp)
-      { case TP_NCMP:
-          { int32_t nmin = (int32_t)(xmin+0.5), nmax = (int32_t)(xmax+0.5);
-            fprintf(wr, " & %8d & %8d", nmin, nmax); 
-            fprintf(stderr, "  %8d .. %8d", nmin, nmax);
-          }
-          break;
-        case TP_TIME:
-          { fprintf(wr, " & %8.3f & %8.3f", xmin/SECOND, xmax/SECOND);
-            fprintf(stderr, " %8.3f .. %8.3f", xmin/SECOND, xmax/SECOND);
-          }
-          break;
-        default:
-          affirm(FALSE, "bad tp");
-      }
-    
-    /* Compute average: */
-    double avg;
-    if (nok >= 1)
-      { double tc = 0;
-        for (it = 0; it < nok; it++)
-          { double xi = x[it]; 
-            tc += xi;
-          }
-        avg = tc/nok;
-      }
-    else
-      { avg = 0.0; }
-    
-    /* Compute standard deviation: */
-    double var, std;
-    if (nok >= 2)
-      { double tcc = 0;
-        for (it = 0; it < nok; it++)
-          { double dc = x[it] - avg; 
-            tcc += dc*dc;
-          }
-        var = tcc/((double)nok-1);
-        std = (var < 0.0 ? 0.0 : sqrt(var));
-      }
-    else
-      { var = std = 0.0; }
-    
-    /* Print average and deviation out: */
-    switch(tp)
-      { case TP_NCMP:
-          fprintf(wr, " & %10.1f & %10.1f ", avg, std);
-          fprintf(stderr, "  %10.1f ± %10.1f", avg, std);
-          break;
-        case TP_TIME:
-          fprintf(wr, " & %10.3f & %10.3f", avg/SECOND, std/SECOND);
-          fprintf(stderr, "  %10.3f ± %10.3f", avg/SECOND, std/SECOND);
-          break;
-        default:
-          affirm(FALSE, "bad tp");
-      }
-    fprintf(wr, " & %4d ", nok);
-    fprintf(stderr, " (%4d)", nok);
-    fprintf(wr, " \\\\\n");
-    fprintf(stderr, "\n");
-    fflush(wr);
-  }
+        /* Now set {data[i]} to {Â±q*n + p(i)} where {q} is random and
+          {p} is some permutation of {0..n-1}. This way the elements
+          {data[0..n-1]} will be in random order but all distinct. */
 
-tss_stats_t tss_test_sorter(int32_t *h, int32_t n, tss_sorter_t srt, int32_t_cmp_t cmp, int32_t sgn)
-  { 
-    tss_stats_t st;
-    /* Start with trivial perm */
-    int32_t i;
-    for (i = 0; i < n; i++) { h[i] = i; }
-    /* Sort the data: */
-    ncmp = 0;
-    double start = user_cpu_time_usec();
-    srt(h, n, cmp, sgn);
-    st.time = user_cpu_time_usec() - start;
-    st.ncmp = ncmp;
-    /* Check range: */
-    for (i = 0; i < n; i++)
-      { int32_t hi = h[i]; 
-        if ((hi < 0) || (hi >= n)) {  affirm(FALSE, "not 0..n-1"); }
-      }
-    /* Check ordering: */
-    for (i = 1; i < n; i++)
-      { if (sgn*cmp(h[i-1],h[i]) > 0) 
-          { affirm(FALSE, "out of order"); }
-      }
-    /* Check permutation: */
-    int32_t seen[n]; 
-    for (i = 0; i < n; i++) { seen[i] = 0; }
-    for (i = 0; i < n; i++)
-      { int32_t hi = h[i]; 
-        if (seen[hi]) {  affirm(FALSE, "not perm"); }
-        seen[hi] = 1;
-      }
-    return st;
-  }
+        /* Find range of {q}: */
+        int64_t dmax = (1L << 60) - 1;     /* Max value of {data[i]}. */
+        int64_t qmax = dmax/((int64_t)n);  /* Max value of {q}, */
+        assert(qmax > 0); /* Paranoia. */
 
-int32_t tss_cmp(int32_t a, int32_t b)
-  {
-    affirm((a >= 0) && (a < ndata), "tss_cmp: bad a");
-    affirm((b >= 0) && (b < ndata), "tss_cmp: bad b");
-    ncmp++;
-    int64_t da = data[a], db = data[b];
-    if (da < db) 
-      { return -1; }
-    else if (da > db)
-      { return +1; }
-    else
-      { return 0; }
+        /* Find a {stride} close to {sqrt(n)} relatively prime to it: */
+        uint32_t stride = (uint32_t)floor(sqrt(n));
+        while ((stride > 1) && (gcd(stride, n) != 1)) { stride--; }
+        assert(gcd(stride, n) == 1);
+
+        /* Fill {q} in steps of {stride} to improve randomness: */
+        uint32_t k = 0;
+        int64_t sgn = +1;
+        for (int32_t i = 0; i < n; i++)
+          { int64_t q = int64_abrandom(0,qmax);
+            int64_t dk = q*((int64_t)n) + (int64_t)i;
+            assert(dk > INT64_MIN);
+            data[k] = dk;
+            k = (k + stride) % n;
+            sgn = -sgn;
+          }
+      }
+    return data;
   }

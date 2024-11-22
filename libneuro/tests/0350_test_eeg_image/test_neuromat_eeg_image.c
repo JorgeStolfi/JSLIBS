@@ -125,7 +125,7 @@ int32_t main(int32_t argc, char **argv)
     
 void tnei_write_fni(char *tag, float_image_t *img)
   { char *fname = NULL;
-    asprintf(&fname, "out/%s.fni", tag);
+    char *fname = jsprintf("out/%s.fni", tag);
     FILE *wr = open_write(fname, TRUE);
     float_image_write(wr, img);
     fclose(wr);
@@ -138,7 +138,7 @@ float_image_t **tnei_read_basis_images(char *prefix, int32_t ne, char *chname[],
     int32_t ie;
     for (ie = 0; ie < ne; ie++)
       { char *fname = NULL;
-        asprintf(&fname, "%s_%s.fni", prefix, chname[ie]);
+        char *fname = jsprintf("%s_%s.fni", prefix, chname[ie]);
         FILE *rd = open_read(fname, TRUE);
         float_image_t *bsi = float_image_read(rd);
         fclose(rd);

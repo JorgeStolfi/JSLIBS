@@ -2,13 +2,12 @@
 #define PROG_DESC "test of {float_image_aff_extract.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-10-12 18:24:51 by stolfi */ 
+/* Last edited on 2024-11-09 09:35:04 by stolfi */ 
 /* Created on 2020-11-05 by J. Stolfi, UNICAMP */
 
 #define taffe_COPYRIGHT \
   "Copyright © 2020  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -85,8 +84,7 @@ int main(int argc, char **argv)
   
 float_image_t *taffe_read_image(char *imageName)
   {
-    char *fname = NULL; 
-    asprintf(&fname, "in/%s.png", imageName);
+    char *fname = jsprintf("in/%s.png", imageName);
     image_file_format_t ffmt = image_file_format_PNG;
     uint16_t *maxval; /* Max file sample value per channel. */
     double gammaDec, bias; /* Sample decoding parameters. */
@@ -98,8 +96,7 @@ float_image_t *taffe_read_image(char *imageName)
   
 void taffe_write_image(float_image_t *img, char *prefix, char *imageName)
   {
-    char *fname = NULL; 
-    asprintf(&fname, "out/%s_%s.png", prefix, imageName);
+    char *fname = jsprintf("out/%s_%s.png", prefix, imageName);
     image_file_format_t ffmt = image_file_format_PNG;
     float_image_write_gen_named(fname, img, ffmt, 0.0, 1.0, NAN, NAN, FALSE);
     free(fname);

@@ -58,8 +58,7 @@ void nmsim_elem_net_sim_group_stats_write(char *outPrefix, nmsim_elem_net_sim_gr
     nmsim_group_neuron_count_t nng = gstats->nng;
     for (nmsim_group_neuron_ix_t ing = 0; ing < nng; ing++)
       { nmsim_elem_net_sim_stats_t *S_g = gstats->S[ing];
-        char *fname = NULL;
-        asprintf(&fname, "%s_ng%010d_stats.txt", outPrefix, ing);
+        char *fname = jsprintf("%s_ng%010d_stats.txt", outPrefix, ing);
         FILE *wr = open_write(fname, TRUE);
         nmsim_elem_net_sim_stats_write(wr, S_g);
         fclose(wr);

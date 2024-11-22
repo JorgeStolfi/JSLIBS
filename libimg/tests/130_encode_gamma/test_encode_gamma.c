@@ -141,7 +141,6 @@
   "    This optional argument specifies that hatched textures" \
   " should use vertical lines, rather than horizontal lines."
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -307,7 +306,7 @@ int main(int argc, char **argv)
 
 void fitg_dump_gamma_table(char *name, char *suff, int nv, options_t *o)
   { char *fname = NULL;
-    asprintf(&fname, "%s%s", name, suff);
+    char *fname = jsprintf("%s%s", name, suff);
     FILE *wr = open_write(fname, TRUE);
     float eRaw = (float)(((double)1)/((double)nv));  /* Min positive value of {vRaw} */
     float eCor;  /* Min positive value of {vCor} */
@@ -484,7 +483,7 @@ void fitg_paint_gamma_test_block
 
 void fitg_write_image(char *name, char *suff, float_image_t *A)
   { char *fname = NULL;
-    asprintf(&fname, "%s%s", name, suff);
+    char *fname = jsprintf("%s%s", name, suff);
     FILE *wr = open_write(fname, TRUE);
     int chns = (int)A->sz[0];
     bool_t yup = TRUE, verbose = TRUE;

@@ -1,5 +1,5 @@
 /* See {tosl_mesh.h} */
-/* Last edited on 2024-10-08 22:06:02 by stolfi */
+/* Last edited on 2024-11-20 05:22:06 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -408,7 +408,8 @@ tosl_arc_id_t tosl_mesh_add_ring(int32_t n, char *pref, tosl_mesh_t *mesh)
     tosl_vert_id_t kv[n]; /* Indices of vertices. */
     tosl_point_t v = (tosl_point_t){{ 0, 0, 0 }}; /* Undefined coordinates. */
     for (int32_t i = 0; i < n; i++)
-      { char *lab = NULL; asprintf(&lab, "%s%d", pref, i);
+      { 
+        char *lab = jsprintf("%s%d", pref, i);
         kv[i] = tosl_mesh_add_vert(&v, lab, mesh);
       }
     
@@ -442,7 +443,8 @@ void tosl_mesh_add_path(int32_t n, tosl_arc_id_t ia0, tosl_arc_id_t ia1, char *p
     tosl_vert_id_t kv[n]; /* Indices of vertices. */
     tosl_point_t v = (tosl_point_t){{ 0, 0, 0 }}; /* Undefined coordinates. */
     for (int32_t b = 0; b < n; b++)
-      { char *lab = NULL; asprintf(&lab, "%s%d", pref, b);
+      { 
+        char *lab = jsprintf("%s%d", pref, b);
         kv[b] = tosl_mesh_add_vert(&v, lab, mesh);
       }
       

@@ -2,7 +2,7 @@
 #define rmxn_ellipsoid_H
 
 /* General tools and concepts for geometry of ellipsoids. */
-/* Last edited on 2023-03-26 21:15:59 by stolfi */ 
+/* Last edited on 2024-11-20 13:04:51 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -42,9 +42,9 @@
   {\RF(U,urad)==\RE(urad)}. */
 
 void rmxn_ellipsoid_pierce
-  ( int32_t n,
+  ( uint32_t n,
     double arad[],
-    int32_t d, 
+    uint32_t d, 
     double S[],
     double U[], 
     double urad[]
@@ -66,11 +66,11 @@ void rmxn_ellipsoid_pierce
     that is the subspace {<S>} must be perpendicular to coordinate axis {i}. */
     
 void rmxn_ellipsoid_cut
-  ( int32_t n,
+  ( uint32_t n,
     double arad[],
-    int32_t m, 
+    uint32_t m, 
     double C[],
-    int32_t d,
+    uint32_t d,
     double U[], 
     double urad[]
   );
@@ -92,12 +92,12 @@ void rmxn_ellipsoid_cut
     the supspace {<C>}. */
 
 void rmxn_ellipsoid_normalize_constraints
-  ( int32_t n,
+  ( uint32_t n,
     double arad[],
-    int32_t q,
+    uint32_t q,
     double A[],
     bool_t verbose, 
-    int32_t *m_P,
+    uint32_t *m_P,
     double **C_P
   );
   /* Converts a set of possibly redundant and/or incomplete linear constraints

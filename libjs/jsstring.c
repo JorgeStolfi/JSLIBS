@@ -1,7 +1,6 @@
 /* See jsstring.h */
-/* Last edited on 2024-06-28 02:20:17 by stolfi */
+/* Last edited on 2024-11-20 06:52:44 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -9,6 +8,7 @@
 #include <assert.h>
 
 #include <affirm.h>
+#include <jsprintf.h>
 #include <bool.h>
 
 #include <jsstring.h>
@@ -23,27 +23,23 @@ int32_t isprefix(const string_t s, const string_t t)
 
 string_t prefix(const string_t s, int32_t len)
   { demand((len >= 0) && (len <= strlen(s)), "invalid {len}");
-    string_t r = NULL;
-    asprintf(&r, "%.*s", len, s);
+    string_t r = jsprintf("%.*s", len, s);
     assert((r != NULL) && strlen(r) == len);
     return r;
   }
 
 string_t txtcat (const string_t a, const string_t b)
-  { string_t r = NULL;
-    asprintf(&r, "%s%s", a, b);
+  { string_t r = jsprintf("%s%s", a, b);
     return (string_t)notnull(r, "no mem");
   }
 
 string_t txtcat3 (const string_t a, const string_t b, const string_t c)
-  { string_t r = NULL;
-    asprintf(&r, "%s%s%s", a, b, c);
+  { string_t r = jsprintf("%s%s%s", a, b, c);
     return (string_t)notnull(r, "no mem");
   }
 
 string_t txtcat4 (const string_t a, const string_t b, const string_t c, const string_t d)
-  { string_t r = NULL;
-    asprintf(&r, "%s%s%s%s", a, b, c, d);
+  { string_t r = jsprintf("%s%s%s%s", a, b, c, d);
     return (string_t)notnull(r, "no mem");
   }
   
@@ -81,8 +77,7 @@ string_t trim_spaces(string_t x, bool_t at_beg, bool_t at_end)
   }
 
 string_t fmt_int(int64_t x, uint32_t wid)
-  { string_t r = NULL;
-    asprintf(&r, "%0*ld", wid, x);
+  { string_t r = jsprintf("%0*ld", wid, x);
     return r;
   }
 
@@ -116,7 +111,7 @@ string_t escapify(string_t x)
         px++;
       }
     (*pr) = 0; pr++;
-    r = realloc(r, pr - r);
+    r = realloc(r, (size_t)(pr - r));
     return r;
   }
 

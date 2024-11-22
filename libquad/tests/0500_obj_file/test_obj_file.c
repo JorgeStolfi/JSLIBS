@@ -84,7 +84,7 @@ int32_t main(int32_t argc, char **argv)
     options_t *o = get_options(argc, argv);
     
     /* Read the input file: */
-    char *rd_fname = NULL; asprintf(&rd_fname, "in/%s.obj", o->name);
+    char *rd_fname = NULL; char *rd_fname = jsprintf("in/%s.obj", o->name);
     fprintf(stderr, "reading from file %s...\n", rd_fname);
     FILE *rd = open_read(rd_fname, TRUE);
     bool_t verbose = TRUE;
@@ -121,7 +121,7 @@ int32_t main(int32_t argc, char **argv)
       }
 
     /* Write it out: */
-    char *wr_fname = NULL; asprintf(&wr_fname, "out/%s-wr.obj", o->name);
+    char *wr_fname = NULL; char *wr_fname = jsprintf("out/%s-wr.obj", o->name);
     fprintf(stderr, "writing out to file %s...\n", wr_fname);
     FILE *wr = open_write(wr_fname, TRUE);
     int32_t prec = 4;

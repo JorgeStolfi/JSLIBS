@@ -2,14 +2,14 @@
 #define conv_filter_H
 
 /* Convolution and downsampling of a sequence with a filter kernel. */
-/* Last edited on 2014-07-26 23:04:31 by stolfilocal */
+/* Last edited on 2024-11-15 19:12:13 by stolfi */
 
 #define conv_filter_H_COPYRIGHT \
   "Copyright © 2005  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
+#include <stdint.h>
 
-void conv_filter(int nx, double x[], int skip, int step, int nw, double w[], int ny, double y[]);
+void conv_filter(int32_t nx, double x[], int32_t skip, int32_t step, int32_t nw, double w[], int32_t ny, double y[]);
   /* Computes the convolution of the sample sequence {x[0..nx-1]} with the weight
     sequence {w[0..nw-1]}, and stores the result in {y[0..ny-1]}, downsampled with skip
     {skip} and step {step}.  The weight table must have odd length.

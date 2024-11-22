@@ -61,7 +61,7 @@ void multifok_image_basis_kernels_write(int32_t NB, float_image_t *bKer[], char 
     vMax = (float)+vR;
 
     for (int32_t kb = 0; kb < NB; kb++)
-      { char *imgName = NULL; asprintf(&imgName, "basis-%03d", kb);
+      { char *imgName = NULL; char *imgName = jsprintf("basis-%03d", kb);
         multifok_image_write(bKer[kb], outDir, imgName, vMin, vMax);
         free(imgName);
       }
@@ -227,7 +227,7 @@ void multifok_image_basis_coeffs_write(int32_t NB, float_image_t *bVal[], char *
   {
     float vMax = (float)bMax;
     for (int32_t kb = 0; kb < NB; kb++)
-      { char *imgName = NULL; asprintf(&imgName, "bVal-%03d", kb);
+      { char *imgName = NULL; char *imgName = jsprintf("bVal-%03d", kb);
         multifok_image_write(bVal[kb], frameDir, imgName, -vMax, +vMax);
         free(imgName);
       }
@@ -239,7 +239,7 @@ void multifok_image_basis_coeffs_squared_write(int32_t NB, float_image_t *bSqr[]
     float vMax = (float)(bMax*bMax);
     
     for (int32_t kb = 0; kb < NB; kb++)
-      { char *imgName = NULL; asprintf(&imgName, "bSqr-%03d", kb);
+      { char *imgName = NULL; char *imgName = jsprintf("bSqr-%03d", kb);
         multifok_image_write(bSqr[kb], frameDir, imgName, vMin, vMax);
         free(imgName);
       }
@@ -250,7 +250,7 @@ void multifok_image_quadratic_terms_write(int32_t NT, float_image_t *tVal[], cha
     float vMin = 0.0; /* Assumes we only work with positive quadratic terms. */
     float vMax = (float)tMax;
     for (int32_t kt = 0; kt < NT; kt++)
-      { char *imgName = NULL; asprintf(&imgName, "tVal-%03d", kt);
+      { char *imgName = NULL; char *imgName = jsprintf("tVal-%03d", kt);
         multifok_image_write(tVal[kt], frameDir, imgName, vMin, vMax);
         free(imgName);
       }
@@ -260,8 +260,7 @@ void multifok_image_quadratic_terms_write(int32_t NT, float_image_t *tVal[], cha
 
 float_image_t *multifok_image_read(char *dir, char *name, float vMin, float vMax)
   {
-    char *fname = NULL;
-    asprintf(&fname, "%s/%s.png", dir, name);
+    char *fname = jsprintf("%s/%s.png", dir, name);
     image_file_format_t ffmt = image_file_format_PNG;
     double gammaDec, bias;
     uint16_t *maxval = NULL;
@@ -275,8 +274,7 @@ float_image_t *multifok_image_read(char *dir, char *name, float vMin, float vMax
 
 void multifok_image_write(float_image_t *img, char *dir, char *name, float vMin, float vMax)
   {
-    char *fname = NULL;
-    asprintf(&fname, "%s/%s.png", dir, name);
+    char *fname = jsprintf("%s/%s.png", dir, name);
     image_file_format_t ffmt = image_file_format_PNG;
     double gammaEnc = multifok_image_gamma;
     double bias = multifok_image_bias;

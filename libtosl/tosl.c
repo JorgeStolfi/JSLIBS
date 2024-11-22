@@ -1,5 +1,5 @@
 /* See {tosl.h} */
-/* Last edited on 2024-10-06 16:46:09 by stolfi */
+/* Last edited on 2024-11-20 05:22:26 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -34,10 +34,12 @@ void tosl_compute_avg_dev(int32_t NT, double time[], double *avg_P, double *dev_
 char *tosl_arc_id_to_string(tosl_arc_id_t ka)
   { char *res = NULL;
     if (ka == -1)
-      { asprintf(&res, "**:*"); }
+      { 
+        char *res = jsprintf("**:*");
+      }
     else
       { assert(ka >= 0);
-        asprintf(&res, "a%d:%d", ka/2, ka%2);
+        char *res = jsprintf("a%d:%d", ka/2, ka%2);
       }
     return res;
   }

@@ -1,7 +1,6 @@
 /* See fget_data.h */
-/* Last edited on 2023-10-15 02:56:50 by stolfi */
+/* Last edited on 2024-11-15 19:12:24 by stolfi */
 
-#define _GNU_SOURCE_
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>
@@ -97,7 +96,7 @@ bool_t fget_data_fields(FILE *rd, char cmtc, int32_t nf, int8_t type[], char* al
       }
   }
 
-void fget_data_set_field_type(int kf, int8_t tkf, bool_t rep_ok, int32_t nf, int8_t type[])
+void fget_data_set_field_type(int32_t kf, int8_t tkf, bool_t rep_ok, int32_t nf, int8_t type[])
   { if (kf < 0) { return; }
     demand (kf < nf, "invalid data field index");
     demand((tkf >= 0) && (tkf <= 2), "invalid field type");

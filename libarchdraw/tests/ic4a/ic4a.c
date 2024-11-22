@@ -197,7 +197,7 @@ void adrw_ic4a_define_points_in_floor(adrw_point_vec_t *P, int32_t kfl, int32_t 
         int32_t i = 1000*(kfl+1) + di;
         int32_t j = (dj < 0 ? dj : 1000*(kfl+1) + dj);
         double dZ = (dj < 0 ? Zor : 00);
-        asprintf(&lab, "P%04d", i);
+        char *lab = jsprintf("P%04d", i);
         adrw_append_point(lab, i, j, j, j, dX, dY, dZ, P, np); 
       } 
     
@@ -534,10 +534,8 @@ void adrw_ic4a_append_pillar(adrw_building_t *B, adrw_point_vec_t *P, int32_t kf
   {
     int32_t fpi = 260; /* Index of first pillar center point in floor. */
     int32_t ctr = fpi + npil;
-    char *lpil = NULL;
-    asprintf(&lpil, "P%02d", npil);
-    char *dpil = NULL;
-    asprintf(&dpil, "Pilar %02d", npil);
+    char *lpil = jsprintf("P%02d", npil);
+    char *dpil = jsprintf("Pilar %02d", npil);
     ADDBOX
       ( P, kfl, lpil, dpil, adrw_ic_space_type_PIL,
         ctr, wdx, wdy
@@ -639,8 +637,7 @@ void adrw_ic4a_append_normal_office
   {
     int32_t noff = adrw_ic4a_get_office_number_in_floor(wing, side, slot); /* Office number in floor. */
     int32_t boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
-    char *loff = NULL;
-    asprintf(&loff, "%03d", boff+noff);
+    char *loff = jsprintf("%03d", boff+noff);
     char *doff = descr[boff+noff];
     int32_t bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
     /*  Decide office type {toff} and span {xspan,yspan}: */
@@ -732,8 +729,7 @@ void adrw_ic4a_append_stairblock_storage(adrw_building_t *B, adrw_point_vec_t *P
       { fprintf(stderr, "--- storage cabinet next to elevator - floor %d ---\n", kfl);
         int32_t noff = 32; /* Office number in floor. */
         int32_t boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
-        char *loff = NULL;
-        asprintf(&loff, "%03d", boff+noff);
+        char *loff = jsprintf("%03d", boff+noff);
         char *doff = descr[boff+noff];
         int32_t bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
         double modules = 0.1;     /* Only {1.7 m^2} */
@@ -756,8 +752,7 @@ void adrw_ic4a_append_stairblock_storage(adrw_building_t *B, adrw_point_vec_t *P
       { fprintf(stderr, "--- outer storage cabinet under stairs - floor %d ---\n", kfl);
         int32_t noff = 37; /* Office number in floor. */
         int32_t boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
-        char *loff = NULL;
-        asprintf(&loff, "%03d", boff+noff);
+        char *loff = jsprintf("%03d", boff+noff);
         char *doff = descr[boff+noff];
         int32_t bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
         double modules = 0.4;     /* Only {5.3 m^2} */
@@ -780,8 +775,7 @@ void adrw_ic4a_append_stairblock_storage(adrw_building_t *B, adrw_point_vec_t *P
       { fprintf(stderr, "--- inner storage cabinet under stairs - floor %d ---\n", kfl);
         int32_t noff = 36; /* Office number in floor. */
         int32_t boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
-        char *loff = NULL;
-        asprintf(&loff, "%03d", boff+noff);
+        char *loff = jsprintf("%03d", boff+noff);
         char *doff = descr[boff+noff];
         int32_t bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
         double modules = 0.4;     /* Only {5.5 m^2} */
@@ -805,8 +799,7 @@ void adrw_ic4a_append_power_cabinet(adrw_building_t *B, adrw_point_vec_t *P, int
   { fprintf(stderr, "--- power cabinet - floor %d ", kfl);
     int32_t noff = 33; /* Office number in floor. */
     int32_t boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
-    char *loff = NULL;
-    asprintf(&loff, "%03d", boff+noff);
+    char *loff = jsprintf("%03d", boff+noff);
     char *doff = descr[boff+noff];
     int32_t bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
     double modules = 0.0;     /* Only {0.6 m^2} */
@@ -829,8 +822,7 @@ void adrw_ic4a_append_bathroom(adrw_building_t *B, adrw_point_vec_t *P, int32_t 
   { fprintf(stderr, "--- bathroom - floor %d - wing %d ---\n", kfl, wing);
     int32_t noff = 34 + wing; /* Office number in floor. */
     int32_t boff = 100*(kfl + 1); /* Start of office numbering in this floor. */
-    char *loff = NULL;
-    asprintf(&loff, "%03d", boff+noff);
+    char *loff = jsprintf("%03d", boff+noff);
     char *doff = descr[boff+noff];
     int32_t bc = 1000*(kfl + 1);  /* Start of corner numbering in this floor. */
     double modules = 1.0;     /* Only {1.7 m^2} */

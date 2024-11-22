@@ -1,7 +1,6 @@
 /* See {float_image_geostereo_multiscale.h}. */
 /* Last edited on 2017-06-25 04:55:23 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <assert.h>
 #include <limits.h>
 #include <string.h>

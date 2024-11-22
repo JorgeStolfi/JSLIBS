@@ -2,11 +2,11 @@
 #define PROG_DESC "test of {indexing.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2021-06-13 12:29:01 by jstolfi */ 
+/* Last edited on 2024-11-16 17:31:00 by stolfi */ 
 /* Created on 2005-02-14 (or earlier) by J. Stolfi, UNICAMP */
 
 #define test_indexing_COPYRIGHT \
-  "Copyright © 2005  by the State University of Campinas (UNICAMP)"
+  "Copyright Â© 2005  by the State University of Campinas (UNICAMP)"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,11 +37,11 @@
 
 typedef struct desc_t
   { ix_dim_t d;
-    ix_size_t z[MAXDIM];
-    ix_pos_t b;
-    ix_step_t s[MAXDIM];
-    int32_t nel;     /* Number of elements allocated for  {el}. */
-    uint8_t *el; /* Element storage area. */
+    ix_size_t sz[MAXDIM];
+    ix_pos_t bp;
+    ix_step_t st[MAXDIM];
+    uint32_t nel;   /* Number of elements allocated for  {el}. */
+    uint8_t *el;    /* Element storage area. */
   } desc_t;
 
 desc_t *make_desc(ix_dim_t d, ix_size_t sz[]);
@@ -105,12 +105,12 @@ void do_test_suite(int32_t nt)
         test_size_ops(d);
 
         /* An array for testing: */
-        sz[0] = int32_abrandom(0, 2) + int32_abrandom(0, 2); 
-        sz[1] = int32_abrandom(0, 5) + int32_abrandom(0, 5); 
+        sz[0] = uint32_abrandom(0, 2) + uint32_abrandom(0, 2); 
+        sz[1] = uint32_abrandom(0, 5) + uint32_abrandom(0, 5); 
         sz[2] = 1; 
-        sz[3] = int32_abrandom(0, 9) + int32_abrandom(0, 9); 
-        sz[4] = int32_abrandom(0, 7) + int32_abrandom(0, 7);
-        sz[5] = int32_abrandom(0, 3) + int32_abrandom(0, 3);
+        sz[3] = uint32_abrandom(0, 9) + uint32_abrandom(0, 9); 
+        sz[4] = uint32_abrandom(0, 7) + uint32_abrandom(0, 7);
+        sz[5] = uint32_abrandom(0, 3) + uint32_abrandom(0, 3);
         assert(MAXDIM == 6);
 
         desc_t *A = make_desc(d, sz);
@@ -135,36 +135,36 @@ void do_test_suite(int32_t nt)
 desc_t *make_desc(ix_dim_t d, ix_size_t sz[])
   {
     fprintf(stderr, "Creating a descriptor (d = %d)...\n", d);
-    desc_t *A = notnull(malloc(sizeof(desc_t)), "no mem");
+    desc_t *A = talloc(1, desc_t);
     ix_axis_t iz = (ix_axis_t)int32_abrandom(0,2*d+1);     /* The index that will get zero step. */
     A->d = d;
-    int64_t npos = 1;
+    uint64_t npos = 1;  /* Number of elements already allocated. */
     for (ix_axis_t i = 0; i < d; i++)
-      { A->z[i] = sz[i];
+      { A->sz[i] = sz[i];
         if ((i == iz) || (sz[i] <= 1))
           { /* Use virtual replication on this index: */
-            A->s[i] = 0;
+            A->st[i] = 0;
           }
         else
           { /* Use distinct elements on this index: */
-            A->s[i] = (sz[i] == 1 ? 0 : npos);
+            A->st[i] = (sz[i] == 1 ? 0 : (ix_step_t)npos);
           }
         /* Update {npos} if axis is neither trivial nor replicated: */
-        if (A->z[i] == 0)
+        if (A->sz[i] == 0)
           { npos = 0; }
-        else if ((A->z[i] > 1) && (A->s[i] != 0))
+        else if ((A->sz[i] > 1) && (A->st[i] != 0))
           { npos *= sz[i]; }
       }
     /* If the array is empty, all steps and the base must be zero: */
     if (npos == 0)
-      { for (ix_axis_t i = 0; i < d; i++) { A->s[i] = 0; } 
-        A->b = 0;
+      { for (ix_axis_t i = 0; i < d; i++) { A->st[i] = 0; } 
+        A->bp = 0;
       }
     else
-      { /* A random base: */
-        A->b = 1000*int32_abrandom(1,9);
+      { /* A random base position: */
+        A->bp = 1000*uint32_abrandom(1,9);
       }
-    if (! ix_parms_are_valid(A->d, A->z, A->b, A->s, FALSE))
+    if (! ix_parms_are_valid(A->d, A->sz, A->bp, A->st, FALSE))
       { print_desc(stderr, "A = { ", A, " }\n");
         bug("make_desc creates an invalid desc");
         assert(FALSE);
@@ -174,13 +174,13 @@ desc_t *make_desc(ix_dim_t d, ix_size_t sz[])
 
 desc_t *make_packed_desc(ix_dim_t d, ix_pos_t b, ix_size_t sz[], ix_order_t ixor)
   {
-    desc_t *A = notnull(malloc(sizeof(desc_t)), "no mem");
+    desc_t *A = talloc(1, desc_t);
     A->d = d;
-    ix_sizes_assign(d, A->z, sz);
-    ix_packed_steps(d, sz, ixor, A->s);
+    ix_sizes_assign(d, A->sz, sz);
+    ix_packed_steps(d, sz, ixor, A->st);
     ix_count_t npos = ix_num_tuples(d, sz);
-    A->b = (npos == 0 ? 0 : b);
-    if (! ix_parms_are_valid(A->d, A->z, A->b, A->s, FALSE))
+    A->bp = (npos == 0 ? 0 : b);
+    if (! ix_parms_are_valid(A->d, A->sz, A->bp, A->st, FALSE))
       { print_desc(stderr, "A = { ", A, " }\n");
         bug("make_desc creates an invalid desc");
         assert(FALSE);
@@ -200,10 +200,10 @@ void test_size_ops(ix_dim_t d)
     ix_size_t szd[MAXDIM];
 
     /* Initialize {sza,szb,szc} with random values: */
-    auto ix_size_t rnd_sz(int32_t a, int32_t b, int32_t c, int32_t i); 
+    auto ix_size_t rnd_sz(uint32_t a, uint32_t b, uint32_t c, uint32_t i); 
       /* A funct of {a,b,c}, and {i}. */
 
-    ix_size_t rnd_sz(int32_t a, int32_t b, int32_t c, int32_t i) 
+    ix_size_t rnd_sz(uint32_t a, uint32_t b, uint32_t c, uint32_t i) 
       { return a + ((b*i*i) % c); }
 
     /* Test {ix_size_assign}: */
@@ -250,7 +250,7 @@ void test_size_ops(ix_dim_t d)
 
 void test_addressing(desc_t *A)
   {
-    ix_count_t nt = ix_num_tuples(A->d, A->z);
+    ix_count_t nt = ix_num_tuples(A->d, A->sz);
     fprintf(stderr, ("Checking ix_position, ix_position_safe, setting and checking all elems (d = %d nt = %" uint64_u_fmt ")...\n"), A->d, nt);
     /* Clear elements: */
     for (ix_axis_t i = 0; i < A->nel; i++) { A->el[i] = 0; }
@@ -259,18 +259,18 @@ void test_addressing(desc_t *A)
     ix_index_t ixA[MAXDIM];
 
     /* Allocate a large enough boolean array: */
-    int64_t npos = 1;
-    for (ix_axis_t i = 0; i < A->d; i++) { npos *= A->z[i]; }
-    int64_t nel = A->b + npos + 1000;
-    uint8_t *el = (uint8_t *)notnull(malloc(nel*sizeof(uint8_t)), "no mem");
+    uint64_t npos = 1;
+    for (ix_axis_t i = 0; i < A->d; i++) { npos *= A->sz[i]; }
+    uint64_t nel = A->bp + npos + 1000;
+    uint8_t *el = talloc(nel, uint8_t);
 
     /* Get the size vector, extend with 1's: */
     ix_size_t sz[MAXDIM];
-    extend_size_vector(A->d, A->z, MAXDIM, sz);
+    extend_size_vector(A->d, A->sz, MAXDIM, sz);
 
     /* Reduce the size to 1 whenever the step is 0: */
     for (ix_axis_t i = 0; i < A->d; i++) 
-      { if ((A->z[i] > 1) && (A->s[i] == 0)) { sz[i] = 1; } }
+      { if ((A->sz[i] > 1) && (A->st[i] == 0)) { sz[i] = 1; } }
 
     assert(MAXDIM == 6);
     for (ixA[5] = 0; ixA[5] < sz[5]; ixA[5]++)
@@ -281,18 +281,18 @@ void test_addressing(desc_t *A)
               for (ixA[0] = 0; ixA[0] < sz[0]; ixA[0]++)
                 { 
                   /* Compute the expected address: */
-                  ix_pos_t pos_exp = A->b;
-                  for (ix_axis_t i = 0; i < A->d; i++) { pos_exp += A->s[i]*ixA[i]; }
+                  ix_pos_t posExp = A->bp;
+                  for (ix_axis_t i = 0; i < A->d; i++) { ix_shift_pos(&posExp, A->st[i]*ixA[i]); }
 
                   /* Compare with library procs: */
-                  if (! ix_is_valid(A->d, ixA, A->z)) { bug("not ix_is_valid"); } 
-                  ix_pos_t pos = ix_position(A->d, ixA, A->b, A->s);
-                  if (pos != pos_exp) 
+                  if (! ix_is_valid(A->d, ixA, A->sz)) { bug("not ix_is_valid"); } 
+                  ix_pos_t pos = ix_position(A->d, ixA, A->bp, A->st);
+                  if (pos != posExp) 
                     { print_desc(stderr, "A = { ", A, " }\n");
                       print_indices(stderr, "ixA = [ ", A->d, ixA, " ]\n");
-                      bug_sz_sz("ix_position mismatch", "pos =", pos, "pos_exp =", pos_exp);
+                      bug_sz_sz("ix_position mismatch", "pos =", pos, "posExp =", posExp);
                     } 
-                  ix_pos_t pos_safe = ix_position_safe(A->d, ixA, A->z, A->b, A->s);
+                  ix_pos_t pos_safe = ix_position_safe(A->d, ixA, A->sz, A->bp, A->st);
                   if (pos != pos_safe) 
                     { print_desc(stderr, "A = { ", A, " }\n");
                       print_indices(stderr, "ixA = [ ", A->d, ixA, " ]\n");
@@ -311,7 +311,7 @@ void test_addressing(desc_t *A)
             for (ixA[1] = 0; ixA[1] < sz[1]; ixA[1]++)
               for (ixA[0] = 0; ixA[0] < sz[0]; ixA[0]++)
                 { 
-                  ix_pos_t pos = ix_position(A->d, ixA, A->b, A->s);
+                  ix_pos_t pos = ix_position(A->d, ixA, A->bp, A->st);
                   uint8_t smp_exp = (uint8_t)(1 + (pos % 253));
                   uint8_t smp = el[pos];
                   if (smp != smp_exp) 
@@ -323,14 +323,14 @@ void test_enum(desc_t *A)
   {
     /* !!! Test {ix_enum} with early abort when {op} returns {TRUE}. !!! */
     
-    ix_count_t nt = ix_num_tuples(A->d, A->z);
+    ix_count_t nt = ix_num_tuples(A->d, A->sz);
     fprintf(stderr, ("Checking ix_enum (d = %d nt = %" uint64_u_fmt ")...\n"), A->d, nt);
 
     ix_dim_t d = A->d;
 
     /* Get the size vector, extend with 1's: */
     ix_size_t sz[MAXDIM];
-    extend_size_vector(A->d, A->z, MAXDIM, sz);
+    extend_size_vector(A->d, A->sz, MAXDIM, sz);
 
     /* Fabricate the other two arrays: */
     desc_t *B = make_desc(d, sz);
@@ -346,10 +346,11 @@ void test_enum(desc_t *A)
 
     /* Allocate a vector to store all positions of {A}: */
     ix_count_t npos = ix_num_tuples(d, sz);
-    ix_pos_t *posA = notnull(malloc(npos*sizeof(ix_pos_t)), "no mem");
-    ix_pos_t *posB = notnull(malloc(npos*sizeof(ix_pos_t)), "no mem");
-    ix_pos_t *posC = notnull(malloc(npos*sizeof(ix_pos_t)), "no mem");
-    int64_t kpos;     /* Current index into {posA}. */
+    ix_pos_t *posA = talloc(npos, ix_pos_t);
+    ix_pos_t *posB = talloc(npos, ix_pos_t);
+    ix_pos_t *posC = talloc(npos, ix_pos_t);
+
+    uint64_t kpos = 0;
 
     auto bool_t check_fw( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC );
     auto bool_t check_bw( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC );
@@ -361,7 +362,6 @@ void test_enum(desc_t *A)
         They always return {FALSE}. */
 
     /* Enumerate all positions by hand in "F" order: */
-    kpos = 0;
     assert(MAXDIM == 6);
     for (ix[5] = 0; ix[5] < sz[5]; ix[5]++)
       for (ix[4] = 0; ix[4] < sz[4]; ix[4]++)
@@ -369,9 +369,9 @@ void test_enum(desc_t *A)
           for (ix[2] = 0; ix[2] < sz[2]; ix[2]++)
             for (ix[1] = 0; ix[1] < sz[1]; ix[1]++)
               for (ix[0] = 0; ix[0] < sz[0]; ix[0]++)
-                { posA[kpos] = ix_position(A->d, ix, A->b, A->s);
-                  posB[kpos] = ix_position(B->d, ix, B->b, B->s);
-                  posC[kpos] = ix_position(C->d, ix, C->b, C->s);
+                { posA[kpos] = ix_position(A->d, ix, A->bp, A->st);
+                  posB[kpos] = ix_position(B->d, ix, B->bp, B->st);
+                  posC[kpos] = ix_position(C->d, ix, C->bp, C->st);
                   kpos++;
                 }
     assert(kpos == npos);
@@ -380,13 +380,13 @@ void test_enum(desc_t *A)
     /* Check forward enumeration, Fortran order: */
     kpos = 0;
     bool_t stop;
-    stop = ix_enum(check_fw, d, sz, ix_order_F, FALSE, A->b, A->s, B->b, B->s, C->b, C->s);
+    stop = ix_enum(check_fw, d, sz, ix_order_F, FALSE, A->bp, A->st, B->bp, B->st, C->bp, C->st);
     assert(! stop);
     assert(kpos == npos);
 
     /* Check backward enumeration, Fortran order: */
     kpos = npos;
-    stop = ix_enum(check_bw, d, sz, ix_order_F, TRUE,  A->b, A->s, B->b, B->s, C->b, C->s);
+    stop = ix_enum(check_bw, d, sz, ix_order_F, TRUE,  A->bp, A->st, B->bp, B->st, C->bp, C->st);
     assert(! stop);
     assert(kpos == 0);
 
@@ -399,30 +399,29 @@ void test_enum(desc_t *A)
           for (ix[3] = 0; ix[3] < sz[3]; ix[3]++)
             for (ix[4] = 0; ix[4] < sz[4]; ix[4]++)
               for (ix[5] = 0; ix[5] < sz[5]; ix[5]++)
-                { posA[kpos] = ix_position(A->d, ix, A->b, A->s);
-                  posB[kpos] = ix_position(B->d, ix, B->b, B->s);
-                  posC[kpos] = ix_position(C->d, ix, C->b, C->s);
+                { posA[kpos] = ix_position(A->d, ix, A->bp, A->st);
+                  posB[kpos] = ix_position(B->d, ix, B->bp, B->st);
+                  posC[kpos] = ix_position(C->d, ix, C->bp, C->st);
                   kpos++;
                 }
     assert(kpos == npos);
 
     /* Check forward enumeration, C/Pascal order: */
     kpos = 0;
-    stop = ix_enum(check_fw, d, sz, ix_order_L, FALSE, A->b, A->s, B->b, B->s, C->b, C->s);
+    stop = ix_enum(check_fw, d, sz, ix_order_L, FALSE, A->bp, A->st, B->bp, B->st, C->bp, C->st);
     assert(! stop);
     assert(kpos == npos);
 
     /* Check backward enumeration, C/Pascal order: */
     kpos = npos;
-    stop = ix_enum(check_bw, d, sz, ix_order_L, TRUE,  A->b, A->s, B->b, B->s, C->b, C->s);
+    stop = ix_enum(check_bw, d, sz, ix_order_L, TRUE,  A->bp, A->st, B->bp, B->st, C->bp, C->st);
     assert(! stop);
     assert(kpos == 0);
 
     /* IMPLEMENTATION OF LOCAL PROCS */
 
     bool_t check_fw( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC )
-      {
-        assert(kpos >= 0);
+      { assert(kpos >= 0);
         assert(kpos < npos);
         assert(pA == posA[kpos]);
         assert(pB == posB[kpos]);
@@ -432,8 +431,7 @@ void test_enum(desc_t *A)
       }
 
     bool_t check_bw( const ix_index_t ix[], ix_pos_t pA, ix_pos_t pB, ix_pos_t pC )
-      {
-        kpos--;
+      { kpos--;
         assert(kpos >= 0);
         assert(kpos < npos);
         assert(pA == posA[kpos]);
@@ -445,7 +443,7 @@ void test_enum(desc_t *A)
 
 void test_packed(desc_t *A)
   {
-    ix_count_t nt = ix_num_tuples(A->d, A->z);
+    ix_count_t nt = ix_num_tuples(A->d, A->sz);
     fprintf(stderr, ("Checking ix_packed_XXX ops (d = %d nt = %" uint64_u_fmt ")...\n"), A->d, nt);
 
     /* Get number of indices of {A}: */
@@ -453,12 +451,12 @@ void test_packed(desc_t *A)
 
     /* Get the size vector, extend with 1's: */
     ix_size_t sz[MAXDIM];
-    extend_size_vector(A->d, A->z, MAXDIM, sz);
+    extend_size_vector(A->d, A->sz, MAXDIM, sz);
 
     /* Fabricate a *packed* array (can't use {A}, but use its size): */
     ix_pos_t b = 417; /* Arbitrary base postion. */
-    desc_t *F = make_packed_desc(d, b, A->z, ix_order_F);
-    desc_t *L = make_packed_desc(d, b, A->z, ix_order_L);
+    desc_t *F = make_packed_desc(d, b, A->sz, ix_order_F);
+    desc_t *L = make_packed_desc(d, b, A->sz, ix_order_L);
     bool_t verbose = FALSE;
     if (verbose) 
       { print_desc(stderr, "A = { ", A, " }\n");
@@ -469,9 +467,8 @@ void test_packed(desc_t *A)
     ix_index_t ix[MAXDIM], jx[MAXDIM];
 
     ix_count_t npos = ix_num_tuples(d, sz); /* Total positions of descriptors. */
-    int64_t kpos;     /* Current index into {posA}. */
     /* Enumerate all tuples by hand in "F" order, check {F} positions: */
-    kpos = 0;
+    ix_pos_t posExp = b;
     assert(MAXDIM == 6);
     for (ix[5] = 0; ix[5] < sz[5]; ix[5]++)
       for (ix[4] = 0; ix[4] < sz[4]; ix[4]++)
@@ -479,23 +476,23 @@ void test_packed(desc_t *A)
           for (ix[2] = 0; ix[2] < sz[2]; ix[2]++)
             for (ix[1] = 0; ix[1] < sz[1]; ix[1]++)
               for (ix[0] = 0; ix[0] < sz[0]; ix[0]++)
-                { ix_pos_t posF1 = ix_packed_position(d, ix, F->b, sz, ix_order_F);
-                  ix_pos_t posF2 = ix_position(d, ix, F->b, F->s);
+                { ix_pos_t posF1 = ix_packed_position(d, ix, F->bp, sz, ix_order_F);
+                  ix_pos_t posF2 = ix_position(d, ix, F->bp, F->st);
                   if (verbose)
-                    { fprintf(stderr, ("  kpos = %" uint64_u_fmt "\n"), kpos);  
-                      fprintf(stderr, ("  posF1 = %" uint64_u_fmt "\n"), posF1); 
-                      fprintf(stderr, ("  posF2 = %" uint64_u_fmt "\n"), posF2);
+                    { fprintf(stderr, ("  posExp = %" uint64_u_fmt "\n"), posExp);  
+                      fprintf(stderr, ("  posF1 =  %" uint64_u_fmt "\n"), posF1); 
+                      fprintf(stderr, ("  posF2 =  %" uint64_u_fmt "\n"), posF2);
                     }
-                  assert(posF1 == kpos + b);
+                  assert(posF1 == posExp);
                   assert(posF2 == posF1);
-                  ix_packed_indices(d, kpos + b, F->b, sz, ix_order_F, jx);
+                  ix_packed_indices(d, posExp, F->bp, sz, ix_order_F, jx);
                   for (ix_axis_t i = 0; i < d; i++) { assert(ix[i] == jx[i]); }
-                  kpos++;
+                  posExp++;
                 }
-    assert(kpos == npos);
+    assert(posExp == b + npos);
 
     /* Enumerate all tuples by hand in "L" order, check {L} positions: */
-    kpos = 0;
+    posExp = b;
     assert(MAXDIM == 6);
     for (ix[0] = 0; ix[0] < sz[0]; ix[0]++)
       for (ix[1] = 0; ix[1] < sz[1]; ix[1]++)
@@ -503,32 +500,32 @@ void test_packed(desc_t *A)
           for (ix[3] = 0; ix[3] < sz[3]; ix[3]++)
             for (ix[4] = 0; ix[4] < sz[4]; ix[4]++)
               for (ix[5] = 0; ix[5] < sz[5]; ix[5]++)
-                { ix_pos_t posL1 = ix_packed_position(d, ix, L->b, sz, ix_order_L);
-                  ix_pos_t posL2 = ix_position(d, ix, L->b, L->s);
-                  assert(posL1 == kpos + b);
+                { ix_pos_t posL1 = ix_packed_position(d, ix, L->bp, sz, ix_order_L);
+                  ix_pos_t posL2 = ix_position(d, ix, L->bp, L->st);
+                  assert(posL1 == posExp);
                   assert(posL2 == posL1);
-                  ix_packed_indices(d, kpos + b, L->b, sz, ix_order_L, jx);
+                  ix_packed_indices(d, posExp, L->bp, sz, ix_order_L, jx);
                   for (ix_axis_t i = 0; i < d; i++) { assert(ix[i] == jx[i]); }
-                  kpos++;
+                  posExp++;
                 }
-    assert(kpos == npos);
+    assert(posExp == b + npos);
 
   }
 
 void test_crop(desc_t *A)
   {
     if (A->d == 0) { return; }
-    ix_count_t nt = ix_num_tuples(A->d, A->z);
+    ix_count_t nt = ix_num_tuples(A->d, A->sz);
     fprintf(stderr, ("Checking ix_crop (d = %d nt = %" uint64_u_fmt ")...\n"), A->d, nt);
     bool_t verbose = FALSE;
     if (verbose) { print_desc(stderr, "A = { ", A, " }\n"); } 
-    int32_t ntrials = 8*A->d + 1;
+    uint32_t ntrials = (uint32_t)(8*A->d + 1);
     ix_index_t sh[MAXDIM]; /* Shift of cropped array along each axis. */
     ix_size_t sz[MAXDIM]; /* Size of cropped array along each axis. */
     for (int32_t trial = 0; trial < ntrials; trial++)
       { /* Initialze {sh} and {sz} for full array: */
         for (ix_axis_t i = 0; i < MAXDIM; i++) { sh[i] = 0; }
-        extend_size_vector(A->d, A->z, MAXDIM, sz);
+        extend_size_vector(A->d, A->sz, MAXDIM, sz);
 
         /* Start with the standard array: */
         desc_t B = (*A);
@@ -536,17 +533,17 @@ void test_crop(desc_t *A)
 
         /* Perform first cropping: */
         ix_axis_t ax1 = (ix_axis_t)(trial % A->d);
-        ix_size_t skip1 = (trial & 3)*sz[ax1]/8;
-        ix_size_t keep1 = (trial/4 & 3)*(sz[ax1] - skip1)/8;
+        ix_size_t skip1 = (ix_size_t)((trial & 3)*sz[ax1]/8);
+        ix_size_t keep1 = (ix_size_t)((trial/4 & 3)*(sz[ax1] - skip1)/8);
         if (keep1 < 0) { keep1 = 0; }
-        sh[ax1] += skip1; sz[ax1] = keep1;
-        ix_crop(B.d, B.z, &B.b, B.s, ax1, skip1, keep1);
+        sh[ax1] += (int32_t)skip1; sz[ax1] = keep1;
+        ix_crop(B.d, B.sz, &B.bp, B.st, ax1, skip1, keep1);
         if (verbose) 
           { fprintf(stderr, ("crop(%d, %" uint64_u_fmt ", %" uint64_u_fmt ")"), ax1, skip1, keep1);
             print_desc(stderr, " = { ", &B, " }\n");
           } 
         /* Check validity of descriptor: */
-        if (! ix_parms_are_valid(B.d, B.z, B.b, B.s, FALSE))
+        if (! ix_parms_are_valid(B.d, B.sz, B.bp, B.st, FALSE))
           { print_desc(stderr, "A = { ", A, " }\n");
             fprintf(stderr, ("crop(%d, %" uint64_u_fmt ", %" uint64_u_fmt ")"), ax1, skip1, keep1);
             print_desc(stderr, "B = { ", &B, " }\n");
@@ -554,25 +551,25 @@ void test_crop(desc_t *A)
             bug("ix_crop returns an invalid desc");
           }
         /* Check whether the size of {B} is correct: */
-        check_sizes(B.d, B.z, sz);
+        check_sizes(B.d, B.sz, sz);
 
         /* Perform second cropping (possibly on same axis): */ 
         ix_axis_t ax2 = (ix_axis_t)((trial / A->d) % A->d);
-        ix_size_t skip2 = (trial/2 & 3)*sz[ax2]/8;
-        ix_size_t keep2 = (trial/5 & 3)*(sz[ax2] - skip2)/8;
+        ix_size_t skip2 = (ix_size_t)((trial/2 & 3)*sz[ax2]/8);
+        ix_size_t keep2 = (ix_size_t)((trial/5 & 3)*(sz[ax2] - skip2)/8);
         if (keep2 < 0) { keep2 = 0; }
-        sh[ax2] += skip2; sz[ax2] = keep2;
-        ix_crop(B.d, B.z, &B.b, B.s, ax2, skip2, keep2);
+        sh[ax2] += (int32_t)skip2; sz[ax2] = keep2;
+        ix_crop(B.d, B.sz, &B.bp, B.st, ax2, skip2, keep2);
         if (verbose) 
           { fprintf(stderr, ("crop(%d, %" uint64_u_fmt ", %" uint64_u_fmt ")"), ax2, skip2, keep2);
             print_desc(stderr, " = { ", &B, " }\n");
           } 
         /* Check validity of descriptor: */
-        if (! ix_parms_are_valid(B.d, B.z, B.b, B.s, FALSE))
+        if (! ix_parms_are_valid(B.d, B.sz, B.bp, B.st, FALSE))
           { bug("ix_crop returns an invalid desc"); }
 
         /* Check whether the size of {B} is correct: */
-        check_sizes(B.d, B.z, sz);
+        check_sizes(B.d, B.sz, sz);
 
         /* Now check coincidence of the two arrays: */
 
@@ -587,8 +584,8 @@ void test_crop(desc_t *A)
                     { 
                       ix_assign(A->d, ixA, ixB);
                       ix_shift(A->d, ixA, sh);
-                      ix_pos_t posB = ix_position(B.d, ixB, B.b, B.s);
-                      ix_pos_t posA = ix_position(A->d, ixA, A->b, A->s);
+                      ix_pos_t posB = ix_position(B.d, ixB, B.bp, B.st);
+                      ix_pos_t posA = ix_position(A->d, ixA, A->bp, A->st);
                       if (posB != posA)
                         { bug_sz_sz("crop position error", "posB = ", posB, "posA =", posA); } 
                     }
@@ -598,17 +595,17 @@ void test_crop(desc_t *A)
 void test_subsample(desc_t *A) 
   {
     if (A->d == 0) { return; }
-    ix_count_t nt = ix_num_tuples(A->d, A->z);
+    ix_count_t nt = ix_num_tuples(A->d, A->sz);
     fprintf(stderr, ("Checking ix_subsample (d = %d nt = %" uint64_u_fmt ")...\n"), A->d, nt);
     bool_t verbose = FALSE;
     if (verbose) { print_desc(stderr, "A = { ", A, " }\n"); } 
-    int32_t ntrials = 8*A->d + 1;
-    ix_size_t st[MAXDIM]; /* Subsampling step along each axis. */
+    uint32_t ntrials = (uint32_t)(8*A->d + 1);
+    ix_step_t st[MAXDIM]; /* Subsampling step along each axis. */
     ix_size_t sz[MAXDIM]; /* Size of subsampled array along each axis. */
     for (int32_t trial = 0; trial < ntrials; trial++)
       { /* Initialze {st} and {sz} for full array: */
         for (ix_axis_t i = 0; i < MAXDIM; i++) { st[i] = 1; }
-        extend_size_vector(A->d, A->z, MAXDIM, sz);
+        extend_size_vector(A->d, A->sz, MAXDIM, sz);
         /* Start with the standard array: */
         desc_t B = (*A);
 
@@ -616,31 +613,33 @@ void test_subsample(desc_t *A)
         ix_axis_t ax1 = (ix_axis_t)(trial % A->d);
         ix_size_t step1 = 1 + (trial & 3)*(sz[ax1] - 1)/8;
         ix_size_t keep1 = (sz[ax1] + step1 - 1)/step1;
-        st[ax1] *= step1; sz[ax1] = keep1;
-        ix_subsample(B.d, B.z, &(B.b), B.s, ax1, step1);
+        st[ax1] = (ix_step_t)(st[ax1] * (int64_t)step1); 
+        sz[ax1] = keep1;
+        ix_subsample(B.d, B.sz, &(B.bp), B.st, ax1, step1);
         if (verbose) 
           { fprintf(stderr, ("subsample(%d, %" uint64_u_fmt ")"), ax1, step1);
             print_desc(stderr, " = { ", &B, " }\n");
           } 
         /* Check validity of descriptor: */
-        if (! ix_parms_are_valid(B.d, B.z, B.b, B.s, FALSE)) 
+        if (! ix_parms_are_valid(B.d, B.sz, B.bp, B.st, FALSE)) 
           { bug("ix_flip returns an invalid desc"); }
 
         /* Perform second subsampling (possibly on same axis): */ 
         ix_axis_t ax2 = (ix_axis_t)((trial / A->d) % A->d);
-        ix_size_t step2 = 1 + (trial/2 & 3)*(sz[ax2] - 1)/8;
-        ix_size_t keep2 = (sz[ax2] + step2 - 1)/step2;
-        st[ax2] *= step2; sz[ax2] = keep2;
-        ix_subsample(B.d, B.z, &(B.b), B.s, ax2, step2);
+        ix_size_t step2 = (ix_size_t)(1 + (trial/2 & 3)*(sz[ax2] - 1)/8);
+        ix_size_t keep2 = (ix_size_t)((sz[ax2] + step2 - 1)/step2);
+        st[ax2] = (ix_step_t)(st[ax2] * (int64_t)step2); 
+        sz[ax2] = keep2;
+        ix_subsample(B.d, B.sz, &(B.bp), B.st, ax2, step2);
         if (verbose) 
           { fprintf(stderr, ("subsample(%d, %" uint64_u_fmt ")"), ax2, step2);
             print_desc(stderr, " = { ", &B, " }\n");
           } 
         /* Check validity of descriptor: */
-        if (! ix_parms_are_valid(B.d, B.z, B.b, B.s, FALSE)) 
+        if (! ix_parms_are_valid(B.d, B.sz, B.bp, B.st, FALSE)) 
           { bug("ix_subsample returns an invalid desc"); }
 
-        check_sizes(B.d, B.z, sz); 
+        check_sizes(B.d, B.sz, sz); 
         /* Now check coincidence of the two arrays: */
         ix_index_t ixA[MAXDIM], ixB[MAXDIM];
         assert(MAXDIM == 6);
@@ -652,8 +651,8 @@ void test_subsample(desc_t *A)
                   for (ixB[0] = 0; ixB[0] < sz[0]; ixB[0]++)
                     { 
                       for (ix_axis_t ax = 0; ax < A->d; ax++) { ixA[ax] = ixB[ax]*st[ax]; }
-                      ix_pos_t posB = ix_position(B.d, ixB, B.b, B.s);
-                      ix_pos_t posA = ix_position(A->d, ixA, A->b, A->s);
+                      ix_pos_t posB = ix_position(B.d, ixB, B.bp, B.st);
+                      ix_pos_t posA = ix_position(A->d, ixA, A->bp, A->st);
                       if (posB != posA)
                         { bug_sz_sz("subsample position error", "posB =", posB, "posA =", posA); } 
                     }
@@ -663,11 +662,11 @@ void test_subsample(desc_t *A)
 void test_slice(desc_t *A)
   {
     if (A->d == 0) { return; }
-    ix_count_t nt = ix_num_tuples(A->d, A->z);
+    ix_count_t nt = ix_num_tuples(A->d, A->sz);
     if (nt == 0) { return; }
     fprintf(stderr, ("Checking ix_slice (d = %d nt = %" uint64_u_fmt ")...\n"), A->d, nt);
-    bool_t verbose = FALSE;
-    int32_t ntrials = 8*A->d + 1;
+    bool_t verbose = TRUE;
+    uint32_t ntrials = (uint32_t)(8*A->d + 1);
     /* Expected slice attributes and mapping between slice and original: */
     uint64_t toss = 417*A->d;
     for (int32_t trial = 0; trial < ntrials; trial++)
@@ -690,7 +689,7 @@ void test_slice(desc_t *A)
             ix_axis_t ax1[MAXDIM];  /* Which axes to fix. */
             ix_index_t ix1[MAXDIM]; /* Index values of those axes. */
             ix_axis_t *axp = (((toss/9) % 3) == 0 ? NULL : ax1);
-            int32_t nxp = (int32_t)((toss/11) % (B.d + 1)); /* Number of axes to fix if {axp = NULL}. */
+            uint32_t nxp = (uint32_t)((toss/11) % (B.d + 1)); /* Number of axes to fix if {axp = NULL}. */
             { ix_axis_t j = 0;      /* Axis of next slice. */
               for (ix_axis_t i = 0; i < B.d; i++)
                 { /* Decide whether to fix axis {i}: */
@@ -700,9 +699,9 @@ void test_slice(desc_t *A)
                       ax1[nx1] = i; 
                       if (axO[i] < A->d)
                         { /* Axis was not set before. */
-                          ix_size_t szi = A->z[axO[i]];
+                          ix_size_t szi = A->sz[axO[i]];
                           assert(szi > 0);
-                          ix1[nx1] = ((toss/5) % szi);
+                          ix1[nx1] = (ix_index_t)((toss/5) % szi);
                           /* Remember that this index was set: */
                           ixO[axO[i]] = ix1[nx1];
                         }
@@ -720,13 +719,20 @@ void test_slice(desc_t *A)
                   toss = 27*toss + 3*pass + 7*i;
                 }
               assert(j == B.d - nx1);
-              /* Mark axes {j..B.d} as trivialized:*/
+              /* Mark axes {j..bp.d} as trivialized:*/
               while(j < B.d) { axO[j] = A->d; j++; }
             }
             if (axp == NULL) { assert(nx1 == nxp); }
+            
+            if (verbose)
+              { fprintf(stderr, "  axis:index =");
+                for (int32_t i = 0; i < nx1; i++)
+                  { fprintf(stderr, " %d:%ld", (axp == NULL ? i : axp[i]), ix1[i]); }
+                fprintf(stderr, "\n");
+              }
 
             /* Perform the slice op on {B}: */
-            ix_slice(B.d, B.z, &(B.b), B.s, nx1, axp, ix1);
+            ix_slice(B.d, B.sz, &(B.bp), B.st, nx1, axp, ix1);
             if (verbose) 
               { fprintf(stderr, "pass %d slice(%d, %s{", pass, nx1, (axp == NULL ? "[NULL]" : ""));
                 for (ix_index_t k = 0; k < nx1; k++) 
@@ -754,16 +760,19 @@ void test_slice(desc_t *A)
                 fprintf(stderr, "]\n");
               } 
             /* Check validity of descriptor: */
-            if (! ix_parms_are_valid(B.d, B.z, B.b, B.s, FALSE))
+            if (! ix_parms_are_valid(B.d, B.sz, B.bp, B.st, FALSE))
               { bug("ix_slice returns an invalid desc"); }
           }
 
         /* Compute expected {sz,st} of slice, extended with trivial to {MAXDIM}: */
-        ix_size_t st[MAXDIM]; /* Step of slice along each axis. */
+        ix_step_t st[MAXDIM]; /* Step of slice along each axis. */
         ix_size_t sz[MAXDIM]; /* Size of slice along each axis. */
         for (ix_axis_t j = 0; j < MAXDIM; j++) 
           { if ((j < B.d) && (axO[j] < A->d))
-              { ix_axis_t i = axO[j]; sz[j] = A->z[i]; st[j] = A->s[i]; }
+              { ix_axis_t i = axO[j]; 
+                sz[j] = A->sz[i]; 
+                st[j] = A->st[i];
+              }
             else
               { sz[j] = 1; st[j] = 0; }
           }
@@ -771,10 +780,10 @@ void test_slice(desc_t *A)
         /* Check whether the size and increments of {B} is correct: */
         { if (B.d != A->d) { bug("B.d = %d  A->d = %d", B.d, A->d); }
           for (ix_axis_t i = 0; i < A->d; i++)
-            { if (B.z[i] != sz[i])
-                { bug(("B.z[%d] = %" uint64_u_fmt "  sz[%d] = %" uint64_u_fmt ""), i, B.z[i], i, sz[i]); }
-              if (B.s[i] != st[i])
-                { bug(("B.s[%d] = %" uint64_u_fmt "  A.s[%d] = %" uint64_u_fmt ""), i, B.s[i], i, st[i]); }
+            { if (B.sz[i] != sz[i])
+                { bug(("B.sz[%d] = %" uint64_u_fmt "  sz[%d] = %" uint64_u_fmt ""), i, B.sz[i], i, sz[i]); }
+              if (B.st[i] != st[i])
+                { bug(("B.st[%d] = %" uint64_u_fmt "  A.st[%d] = %" uint64_u_fmt ""), i, B.st[i], i, st[i]); }
             }
         }
 
@@ -795,8 +804,8 @@ void test_slice(desc_t *A)
                         { ix_index_t i = axO[j];
                           if (i < A->d) { assert(ixO[i] < 0); ixA[i] = ixB[j]; }
                         }
-                      ix_pos_t posB = ix_position(B.d, ixB, B.b, B.s);
-                      ix_pos_t posA = ix_position(A->d, ixA, A->b, A->s);
+                      ix_pos_t posB = ix_position(B.d, ixB, B.bp, B.st);
+                      ix_pos_t posA = ix_position(A->d, ixA, A->bp, A->st);
                       if (posB != posA)
                         { bug_sz_sz("slice position error", "posB =", posB, "posA =", posA); } 
                     }
@@ -808,11 +817,11 @@ void test_slice(desc_t *A)
 void test_swap_indices(desc_t *A)
   {
     if (A->d == 0) { return; }
-    ix_count_t nt = ix_num_tuples(A->d, A->z);
+    ix_count_t nt = ix_num_tuples(A->d, A->sz);
     fprintf(stderr, ("Checking ix_swap_indices (d = %d nt = %" uint64_u_fmt ")...\n"), A->d, nt);
     bool_t verbose = FALSE;
     if (verbose) { print_desc(stderr, "A = { ", A, " }\n"); } 
-    int32_t ntrials = 8*A->d + 1;
+    uint32_t ntrials = (uint32_t)(8*A->d + 1);
     ix_axis_t tr[MAXDIM]; /* Axis {i} of {B} is axis {tr[i]} of {A}. */
     for (int32_t trial = 0; trial < ntrials; trial++)
       { /* Initialze {tr} for full array: */
@@ -836,26 +845,26 @@ void test_swap_indices(desc_t *A)
                   { ix_axis_t tmp = tr[ax1+k]; tr[ax1+k] = tr[bx1+k]; tr[bx1+k] = tmp; }
               }
             /* Perform swap on {B}: */
-            ix_swap_indices(B.d, B.z, &(B.b), B.s, ax1, bx1, nx1);
+            ix_swap_indices(B.d, B.sz, &(B.bp), B.st, ax1, bx1, nx1);
             if (verbose) 
               { fprintf(stderr, "swap_indices(%d, %d, %d)", ax1, bx1, nx1);
                 print_desc(stderr, " = { ", &B, " }\n");
               } 
             /* Check validity of descriptor: */
-            if (! ix_parms_are_valid(B.d, B.z, B.b, B.s, FALSE))
+            if (! ix_parms_are_valid(B.d, B.sz, B.bp, B.st, FALSE))
               { bug("ix_swap_indices returns an invalid desc"); }
           }
 
         /* Check whether the size and increments of {B} is correct: */
         for (ix_axis_t i = 0; i < A->d; i++)
-          { if (B.z[i] != A->z[tr[i]])
-              { bug(("B.z[%d] = %" uint64_u_fmt "  A.z[%d] = %" uint64_u_fmt ""), i, B.z[i], tr[i], A->z[tr[i]]); }
-            if (B.s[0] != A->s[tr[0]])
-              { bug(("B.s[%d] = %" uint64_u_fmt "  A.s[%d] = %" uint64_u_fmt ""), i, B.s[i], tr[i], A->s[tr[i]]); }
+          { if (B.sz[i] != A->sz[tr[i]])
+              { bug(("B.sz[%d] = %" uint64_u_fmt "  A.sz[%d] = %" uint64_u_fmt ""), i, B.sz[i], tr[i], A->sz[tr[i]]); }
+            if (B.st[0] != A->st[tr[0]])
+              { bug(("B.st[%d] = %" uint64_u_fmt "  A.st[%d] = %" uint64_u_fmt ""), i, B.st[i], tr[i], A->st[tr[i]]); }
           }
         /* Get {A}'s size vector, extend with 1's: */
         ix_size_t sz[MAXDIM];
-        extend_size_vector(A->d, A->z, MAXDIM, sz);
+        extend_size_vector(A->d, A->sz, MAXDIM, sz);
 
         /* Now check coincidence of the two arrays: */
         ix_index_t ixA[MAXDIM], ixB[MAXDIM];
@@ -869,8 +878,8 @@ void test_swap_indices(desc_t *A)
                   for (ixA[0] = 0; ixA[0] < sz[0]; ixA[0]++)
                     { 
                       for (ix_axis_t ax = 0; ax < A->d; ax++) { ixB[ax] = ixA[tr[ax]]; }
-                      ix_pos_t posB = ix_position(B.d, ixB, B.b, B.s);
-                      ix_pos_t posA = ix_position(A->d, ixA, A->b, A->s);
+                      ix_pos_t posB = ix_position(B.d, ixB, B.bp, B.st);
+                      ix_pos_t posA = ix_position(A->d, ixA, A->bp, A->st);
                       if (posB != posA)
                         { bug_sz_sz("swap_indices position error", "posB =", posB, "posA =", posA); } 
                     }
@@ -879,18 +888,18 @@ void test_swap_indices(desc_t *A)
 
 void test_flip_indices(desc_t *A)
   {
-    ix_count_t nt = ix_num_tuples(A->d, A->z);
+    ix_count_t nt = ix_num_tuples(A->d, A->sz);
     fprintf(stderr, ("NOT Checking ix_flip_indices (d = %d nt = %" uint64_u_fmt ")...\n"), A->d, nt);
   }
 
 void test_flip(desc_t *A)
   {
     if (A->d == 0) { return; }
-    ix_count_t nt = ix_num_tuples(A->d, A->z);
+    ix_count_t nt = ix_num_tuples(A->d, A->sz);
     fprintf(stderr, ("Checking ix_flip (d = %d nt = %" uint64_u_fmt ")...\n"), A->d, nt);
     bool_t verbose = FALSE;
     if (verbose) { print_desc(stderr, "A = { ", A, " }\n"); } 
-    int32_t ntrials = 8*A->d + 1;
+    uint32_t ntrials = (uint32_t)(8*A->d + 1);
     bool_t fp[MAXDIM]; /* Tells whether each axis was flipped or not. */
     for (int32_t trial = 0; trial < ntrials; trial++)
       { /* Initialze {fp} for unflipped array: */
@@ -901,39 +910,39 @@ void test_flip(desc_t *A)
         /* Perform first flip: */
         ix_axis_t ax1 = (ix_axis_t)(trial % A->d);
         fp[ax1] = ! fp[ax1];
-        ix_flip(B.d, B.z, &(B.b), B.s, ax1);
+        ix_flip(B.d, B.sz, &(B.bp), B.st, ax1);
         if (verbose) 
           { fprintf(stderr, "flip(%d)", ax1);
             print_desc(stderr, " = { ", &B, " }\n");
           } 
         /* Check validity of descriptor: */
-        if (! ix_parms_are_valid(B.d, B.z, B.b, B.s, FALSE))
+        if (! ix_parms_are_valid(B.d, B.sz, B.bp, B.st, FALSE))
           { bug("ix_flip returns an invalid desc"); }
 
         /* Perform second flip (possibly on same axis): */ 
         ix_axis_t ax2 = (ix_axis_t)((trial / A->d) % A->d);
         fp[ax2] = ! fp[ax2];
-        ix_flip(B.d, B.z, &(B.b), B.s, ax2);
+        ix_flip(B.d, B.sz, &(B.bp), B.st, ax2);
         if (verbose) 
           { fprintf(stderr, "flip(%d)", ax2);
             print_desc(stderr, " = { ", &B, " }\n");
           } 
         /* Check validity of descriptor: */
-        if (! ix_parms_are_valid(B.d, B.z, B.b, B.s, FALSE))
+        if (! ix_parms_are_valid(B.d, B.sz, B.bp, B.st, FALSE))
           { bug("ix_flip returns an invalid desc"); }
 
         /* Check whether the size of {B} is correct: */
-        check_sizes(B.d, B.z, A->z);
+        check_sizes(B.d, B.sz, A->sz);
 
         /* Check whether the increments of {B} are correct: */
         for (ix_axis_t i = 0; i < A->d; i++)
-          { if (B.s[i] != A->s[i]*(fp[i]?-1:+1))
-              { bug(("step[%d] = %" uint64_u_fmt ""), i, B.s[i]); }
+          { if (B.st[i] != A->st[i]*(fp[i]?-1:+1))
+              { bug(("step[%d] = %" uint64_u_fmt ""), i, B.st[i]); }
           }
 
         /* Get {B}'s size vector, extend with 1's: */
         ix_size_t sz[MAXDIM];
-        extend_size_vector(B.d, B.z, MAXDIM, sz);
+        extend_size_vector(B.d, B.sz, MAXDIM, sz);
 
         /* Now check coincidence of the two arrays: */
         ix_index_t ixA[MAXDIM], ixB[MAXDIM];
@@ -946,9 +955,9 @@ void test_flip(desc_t *A)
                   for (ixB[0] = 0; ixB[0] < sz[0]; ixB[0]++)
                     { 
                       for (ix_axis_t ax = 0; ax < A->d; ax++) 
-                        { ixA[ax] = (fp[ax] ? A->z[ax] - 1 - ixB[ax] : ixB[ax]); }
-                      ix_pos_t posB = ix_position(B.d, ixB, B.b, B.s);
-                      ix_pos_t posA = ix_position(A->d, ixA, A->b, A->s);
+                        { ixA[ax] = (fp[ax] ? (ix_index_t)(A->sz[ax]) - 1 - ixB[ax] : ixB[ax]); }
+                      ix_pos_t posB = ix_position(B.d, ixB, B.bp, B.st);
+                      ix_pos_t posA = ix_position(A->d, ixA, A->bp, A->st);
                       if (posB != posA)
                         { bug_sz_sz("flip position error", "posB =", posB, "posA =", posA); } 
                     }
@@ -958,15 +967,15 @@ void test_flip(desc_t *A)
 void test_diagonal(desc_t *A)
   {
     if (A->d < 2) { return; }
-    ix_count_t nt = ix_num_tuples(A->d, A->z);
+    ix_count_t nt = ix_num_tuples(A->d, A->sz);
     fprintf(stderr, ("Checking ix_diagonal (d = %d nt = %" uint64_u_fmt ")...\n"), A->d, nt);
     bool_t verbose = FALSE;
     if (verbose) { print_desc(stderr, "A = { ", A, " }\n"); } 
-    int32_t ntrials = 8*A->d + 1;
+    uint32_t ntrials = (uint32_t)(8*A->d + 1);
     ix_size_t sz[MAXDIM]; /* Size of diagonalized array along each axis. */
     for (int32_t trial = 0; trial < ntrials; trial++)
       { /* Initialze {sz} for full array: */
-        extend_size_vector(A->d, A->z, MAXDIM, sz);
+        extend_size_vector(A->d, A->sz, MAXDIM, sz);
         /* Start with the standard array: */
         desc_t B = (*A);
 
@@ -976,10 +985,10 @@ void test_diagonal(desc_t *A)
         if (bx1 == ax1) { bx1 = (ix_axis_t)((ax1 + 1) % A->d); }
         /* Make it square: */
         ix_size_t szmin = (sz[ax1] < sz[bx1] ? sz[ax1] : sz[bx1]);
-        ix_crop(B.d, B.z, &(B.b), B.s, ax1, 0, szmin); sz[ax1] = szmin;
-        ix_crop(B.d, B.z, &(B.b), B.s, bx1, 0, szmin); sz[bx1] = szmin;
+        ix_crop(B.d, B.sz, &(B.bp), B.st, ax1, 0, szmin); sz[ax1] = szmin;
+        ix_crop(B.d, B.sz, &(B.bp), B.st, bx1, 0, szmin); sz[bx1] = szmin;
         /* Diagonalize array: */
-        ix_diagonal(B.d, B.z, &(B.b), B.s, ax1, bx1);
+        ix_diagonal(B.d, B.sz, &(B.bp), B.st, ax1, bx1);
         /* Compute expected sizes of {B}: */
         if (sz[bx1] < sz[ax1]) { sz[ax1] = sz[bx1]; }
         if (bx1 != ax1) { sz[bx1] = 1; }
@@ -988,11 +997,11 @@ void test_diagonal(desc_t *A)
             print_desc(stderr, " = { ", &B, " }\n");
           } 
         /* Check validity of descriptor: */
-        if (! ix_parms_are_valid(B.d, B.z, B.b, B.s, FALSE))
+        if (! ix_parms_are_valid(B.d, B.sz, B.bp, B.st, FALSE))
           { bug("ix_diagonal returns an invalid desc"); }
 
         /* Check whether the size of {B} is correct: */
-        check_sizes(B.d, B.z, sz);
+        check_sizes(B.d, B.sz, sz);
         /* Now check coincidence of the two arrays: */
         ix_index_t ixA[MAXDIM], ixB[MAXDIM];
         assert(MAXDIM == 6);
@@ -1005,8 +1014,8 @@ void test_diagonal(desc_t *A)
                     { 
                       ix_assign(A->d, ixA, ixB);
                       ixA[bx1] = ixA[ax1];
-                      ix_pos_t posB = ix_position(B.d, ixB, B.b, B.s);
-                      ix_pos_t posA = ix_position(A->d, ixA, A->b, A->s);
+                      ix_pos_t posB = ix_position(B.d, ixB, B.bp, B.st);
+                      ix_pos_t posA = ix_position(A->d, ixA, A->bp, A->st);
                       if (posB != posA)
                         { bug_sz_sz("diagonal position error", "posB =", posB, "posA =", posA); } 
                     }
@@ -1016,15 +1025,15 @@ void test_diagonal(desc_t *A)
 void test_chop(desc_t *A)
   {
     if (A->d < 2) { return; }
-    ix_count_t nt = ix_num_tuples(A->d, A->z);
+    ix_count_t nt = ix_num_tuples(A->d, A->sz);
     fprintf(stderr, ("Checking ix_chop (d = %d nt = %" uint64_u_fmt ")...\n"), A->d, nt);
     bool_t verbose = FALSE;
     if (verbose) { print_desc(stderr, "A = { ", A, " }\n"); } 
-    int32_t ntrials = 8*A->d + 1;
+    uint32_t ntrials = (uint32_t)(8*A->d + 1);
     ix_size_t sz[MAXDIM]; /* Size of chopped array along each axis. */
     for (int32_t trial = 0; trial < ntrials; trial++)
       { /* Initialze {sz} for full array: */
-        extend_size_vector(A->d, A->z, MAXDIM, sz);
+        extend_size_vector(A->d, A->sz, MAXDIM, sz);
         /* Start with the standard array: */
         desc_t B = (*A);
 
@@ -1033,15 +1042,15 @@ void test_chop(desc_t *A)
         ix_axis_t bx1 = (ix_axis_t)((trial/A->d) % (A->d - 1));
         if (bx1 >= ax1) { bx1++; }
         /* Choose a nonzero chunk size: */
-        ix_size_t chunksz1 = 1 + (trial/3 & 3)*((A->z[ax1] <= 1 ? 1 : A->z[ax1]) + 7)/8;
+        ix_size_t chunksz1 = 1 + (trial/3 & 3)*((A->sz[ax1] <= 1 ? 1 : A->sz[ax1]) + 7)/8;
         /* Ensure integral number of chunks: */
         ix_size_t szround = (sz[ax1]/chunksz1)*chunksz1;
-        ix_crop(B.d, B.z, &(B.b), B.s, ax1, 0, szround); sz[ax1] = szround;
+        ix_crop(B.d, B.sz, &(B.bp), B.st, ax1, 0, szround); sz[ax1] = szround;
         /* Ensure that the argument of {chop} is trivial along axis {bx1}: */
         if (sz[bx1] == 0) { /* Skip this trial: */ continue; }
-        ix_crop(B.d, B.z, &(B.b), B.s, bx1, 0, 1); sz[bx1] = 1;
+        ix_crop(B.d, B.sz, &(B.bp), B.st, bx1, 0, 1); sz[bx1] = 1;
         /* Chop array: */
-        ix_chop(B.d, B.z, &(B.b), B.s, ax1, chunksz1, bx1);
+        ix_chop(B.d, B.sz, &(B.bp), B.st, ax1, chunksz1, bx1);
         /* Compute expected sizes of {B}: */
         sz[bx1] = sz[ax1]/chunksz1; sz[ax1] = chunksz1;
         if (verbose) 
@@ -1049,11 +1058,11 @@ void test_chop(desc_t *A)
             print_desc(stderr, " = { ", &B, " }\n");
           } 
         /* Check validity of descriptor: */
-        if (! ix_parms_are_valid(B.d, B.z, B.b, B.s, FALSE))
+        if (! ix_parms_are_valid(B.d, B.sz, B.bp, B.st, FALSE))
           { bug("ix_chop returns an invalid desc"); }
 
         /* Check whether the size of {B} is correct: */
-        check_sizes(B.d, B.z, sz);
+        check_sizes(B.d, B.sz, sz);
         /* Now check coincidence of the two arrays: */
         ix_index_t ixA[MAXDIM], ixB[MAXDIM];
         assert(MAXDIM == 6);
@@ -1065,10 +1074,10 @@ void test_chop(desc_t *A)
                   for (ixB[0] = 0; ixB[0] < sz[0]; ixB[0]++)
                     { 
                       ix_assign(A->d, ixA, ixB);
-                      ixA[ax1] = ixA[ax1] + chunksz1 * ixB[bx1];
+                      ixA[ax1] = ixA[ax1] + (ix_index_t)chunksz1 * ixB[bx1];
                       ixA[bx1] = 0;
-                      ix_pos_t posB = ix_position(B.d, ixB, B.b, B.s);
-                      ix_pos_t posA = ix_position(A->d, ixA, A->b, A->s);
+                      ix_pos_t posB = ix_position(B.d, ixB, B.bp, B.st);
+                      ix_pos_t posA = ix_position(A->d, ixA, A->bp, A->st);
                       if (posB != posA)
                         { bug_sz_sz("chop position error", "posB =", posB, "posA =", posA); } 
                     }
@@ -1078,15 +1087,15 @@ void test_chop(desc_t *A)
 void test_replicate(desc_t *A)
   {
     if (A->d == 0) { return; }
-    ix_count_t nt = ix_num_tuples(A->d, A->z);
+    ix_count_t nt = ix_num_tuples(A->d, A->sz);
     fprintf(stderr, ("Checking ix_replicate (d = %d nt = %" uint64_u_fmt ")...\n"), A->d, nt);
     bool_t verbose = FALSE;
     if (verbose) { print_desc(stderr, "A = { ", A, " }\n"); } 
-    int32_t ntrials = 8*A->d + 1;
+    uint32_t ntrials = (uint32_t)(8*A->d + 1);
     ix_size_t sz[MAXDIM]; /* Size of replicated array along each axis. */
     for (int32_t trial = 0; trial < ntrials; trial++)
       { /* Initialze {sz} for full array: */
-        extend_size_vector(A->d, A->z, MAXDIM, sz);
+        extend_size_vector(A->d, A->sz, MAXDIM, sz);
         /* Start with the standard array: */
         desc_t B = (*A);
 
@@ -1096,17 +1105,17 @@ void test_replicate(desc_t *A)
         /* Choose a positive replication factor: */
         ix_size_t rep1 = 1 + (trial/3 & 3)*A->d;
         /* Make trivial along axis {ax1}: */
-        ix_size_t skip1 = (B.z[ax1]-1)/2;
-        ix_crop(B.d, B.z, &(B.b), B.s, ax1, skip1, 1); sz[ax1] = 1;
+        ix_size_t skip1 = (B.sz[ax1]-1)/2;
+        ix_crop(B.d, B.sz, &(B.bp), B.st, ax1, skip1, 1); sz[ax1] = 1;
         /* Replicate along axis {ax1}: */
-        ix_replicate(B.d, B.z, &(B.b), B.s, ax1, rep1);
+        ix_replicate(B.d, B.sz, &(B.bp), B.st, ax1, rep1);
         sz[ax1] = rep1;
         if (verbose) 
           { fprintf(stderr, ("chop(%d,%" uint64_u_fmt ",1)+replicate(%d,%" int64_d_fmt ")"), ax1, skip1, ax1, rep1);
             print_desc(stderr, " = { ", &B, " }\n");
           } 
         /* Check validity of descriptor: */
-        if (! ix_parms_are_valid(B.d, B.z, B.b, B.s, FALSE))
+        if (! ix_parms_are_valid(B.d, B.sz, B.bp, B.st, FALSE))
           { bug("ix_replicate returns an invalid desc"); }
 
         /* Choose axis for second replication (may be {ax1}): */
@@ -1115,21 +1124,21 @@ void test_replicate(desc_t *A)
         /* Choose a replication factor: */
         ix_size_t rep2 = 1 + (trial/8 & 3)*A->d;
         /* Make trivial along axis {ax2}: */
-        ix_size_t skip2 = (B.z[ax2]-1)/2;
-        ix_crop(B.d, B.z, &(B.b), B.s, ax2, skip2, 1); sz[ax2] = 1;
+        ix_size_t skip2 = (B.sz[ax2]-1)/2;
+        ix_crop(B.d, B.sz, &(B.bp), B.st, ax2, skip2, 1); sz[ax2] = 1;
         /* Replicate along axis {ax2}: */
-        ix_replicate(B.d, B.z, &(B.b), B.s, ax2, rep2);
+        ix_replicate(B.d, B.sz, &(B.bp), B.st, ax2, rep2);
         sz[ax2] = rep2;
         if (verbose) 
           { fprintf(stderr, ("chop(%d,%" uint64_u_fmt ",1)+replicate(%d,%" int64_d_fmt ")"), ax2, skip2, ax2, rep2);
             print_desc(stderr, " = { ", &B, " }\n");
           } 
         /* Check validity of descriptor: */
-        if (! ix_parms_are_valid(B.d, B.z, B.b, B.s, FALSE))
+        if (! ix_parms_are_valid(B.d, B.sz, B.bp, B.st, FALSE))
           { bug("ix_replicate returns an invalid desc"); }
 
         /* Check whether the size of {B} is correct: */
-        check_sizes(B.d, B.z, sz);
+        check_sizes(B.d, B.sz, sz);
         /* Now check coincidence of the two arrays: */
         ix_index_t ixA[MAXDIM], ixB[MAXDIM];
         assert(MAXDIM == 6);
@@ -1141,11 +1150,11 @@ void test_replicate(desc_t *A)
                   for (ixB[0] = 0; ixB[0] < sz[0]; ixB[0]++)
                     { 
                       ix_assign(A->d, ixA, ixB);
-                      ixA[ax1] = skip1;
+                      ixA[ax1] = (ix_index_t)skip1;
                       /* The second crop changes {b} only if {ax1 != ax2}: */
-                      if (ax2 != ax1) { ixA[ax2] = skip2; }
-                      ix_pos_t posB = ix_position(B.d, ixB, B.b, B.s);
-                      ix_pos_t posA = ix_position(A->d, ixA, A->b, A->s);
+                      if (ax2 != ax1) { ixA[ax2] = (ix_index_t)skip2; }
+                      ix_pos_t posB = ix_position(B.d, ixB, B.bp, B.st);
+                      ix_pos_t posA = ix_position(A->d, ixA, A->bp, A->st);
                       if (posB != posA)
                         { bug_sz_sz("replicate position error", "posB =", posB, "posA =", posA); } 
                     }
@@ -1215,12 +1224,12 @@ void check_sizes(ix_dim_t d, ix_size_t sza[], ix_size_t szb[])
 void print_desc(FILE *wr, char *pf, desc_t *A, char *sf)
   { fprintf(wr, "%s", pf); 
     for (ix_axis_t i = 0; i < A->d; i++) 
-      { fprintf(wr, ("%s%" uint64_u_fmt "(×%" int64_d_fmt ")"), " "+(i==0), A->z[i], A->s[i]); }
+      { fprintf(wr, ("%s%" uint64_u_fmt "(Ã—%" int64_d_fmt ")"), " "+(i==0), A->sz[i], A->st[i]); }
     fprintf(wr, 
       ("  b = %" uint64_u_fmt "  tuples = %" uint64_u_fmt "  positions = %" uint64_u_fmt ""), 
-      A->b, 
-      ix_num_tuples(A->d,A->z), 
-      ix_num_positions(A->d,A->z,A->s)
+      A->bp, 
+      ix_num_tuples(A->d,A->sz), 
+      ix_num_positions(A->d,A->sz,A->st)
     );
     fprintf(wr, "%s", sf);
   }

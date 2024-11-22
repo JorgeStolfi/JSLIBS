@@ -2,13 +2,12 @@
 #define PROG_DESC "test of {hr2_pmap*_encode.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-08 11:27:18 by stolfi */ 
+/* Last edited on 2024-11-20 15:35:17 by stolfi */ 
 /* Created on 2024-09-07 by J. Stolfi, UNICAMP */
 
 #define test_hr2_pmap_enc_dec_COPYRIGHT \
   "Copyright © 2024  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -28,11 +27,17 @@
 #include <hr2_test_tools.h>
 #include <hr2_pmap_test_tools.h>
 
+#include <hr2_pmap_translation.h>
+#include <hr2_pmap_congruence.h>
+#include <hr2_pmap_similarity.h>
+#include <hr2_pmap_affine.h>
+
 #include <hr2_pmap_translation_encode.h>
 #include <hr2_pmap_congruence_encode.h>
 #include <hr2_pmap_similarity_encode.h>
 #include <hr2_pmap_affine_encode.h>
 #include <hr2_pmap_encode.h>
+
 #include <hr2_pmap_throw_by_type.h>
 
 void test_hr2_pmap_encode_num_parameters(bool_t verbose);
@@ -53,7 +58,7 @@ void hpedt_print_map(char *name, hr2_pmap_t *M);
 r3x3_t hpedt_throw_r3x3(double mag);
   /* Returns a random 3x3 matrix with entries in {[-mag _ +mag]}. */
 
-void hpedt_print_encoding(int32_t ny, double y[]);
+void hpedt_print_encoding(uint32_t ny, double y[]);
   /* Prints {y[0..ny-1]} on one line, preceded by "encoding". */
 
 void hpedt_check_same_map(hr2_pmap_t *M, hr2_pmap_t *N);
@@ -101,16 +106,16 @@ void test_hr2_pmap_translation_encode__hr2_pmap_translation_decode(bool_t verbos
     /* Create a translation {M}: */
     double xmax = 10.0, ymax = 20.0;
     r2_t disp = (r2_t){{ dabrandom(-xmax,+xmax), dabrandom(-ymax,+ymax) }};
-    hr2_pmap_t M = hr2_pmap_translation(&disp);
+    hr2_pmap_t M = hr2_pmap_translation_from_disp(&disp);
     if (verbose) { hpedt_print_map("original", &M); }
     double fptol = 1.0e-12; /* Tolerance for inverse etc. */
-    hr2_test_check_pmap("M", &M, fptol, "{hr2_pmap_translation} produced invalid map");
+    hr2_pmap_test_tools_check("M", &M, fptol, "{hr2_pmap_translation_from_disp} produced invalid map");
 
     double eqtol = 0.0; /* Tolerance for type matching. */
     demand(hr2_pmap_is_type(&M, hr2_pmap_type_TRANSLATION, +1, eqtol), "wrong map type or sign");
 
     /* Test encoding: */
-    int32_t ny = 2;
+    uint32_t ny = 2;
     double y[ny];
     hr2_pmap_translation_encode(&M, y);
     if (verbose) { hpedt_print_encoding(ny, y); }
@@ -145,12 +150,12 @@ void test_hr2_pmap_congruence_encode__hr2_pmap_congruence_decode(bool_t verbose)
     hr2_pmap_t M = hr2_pmap_congruence_from_point_and_dir(&disp, &u, +1);
     if (verbose) { hpedt_print_map("reference", &M); }
     double fptol = 1.0e-12; /* Tolerance for inverse etc. */
-    hr2_test_check_pmap("M", &M, fptol, "{hr2_pmap_congruence_from_point_and_dir} produced an invalid map");
+    hr2_pmap_test_tools_check("M", &M, fptol, "{hr2_pmap_congruence_from_point_and_dir} produced an invalid map");
     demand(hr2_pmap_is_type(&M, hr2_pmap_type_CONGRUENCE, +1, eqtol), "wrong map type or sign");
     demand(r3x3_det(&(M.dir)) > 0, "{hr2_pmap_congruence_from_point_and_dir} wrong handedness (1)");
     
     /* Get the encoding {y[0..2]} of {M}: */
-    int32_t ny = 3;
+    uint32_t ny = 3;
     double y[ny];
     hr2_pmap_congruence_encode(&M, y);
     if (verbose) { hpedt_print_encoding(ny, y); }
@@ -191,11 +196,11 @@ void test_hr2_pmap_similarity_encode__hr2_pmap_similarity_decode(bool_t verbose)
     hr2_pmap_t M = hr2_pmap_similarity_from_two_points(&p, &q, +1);
     if (verbose) { hpedt_print_map("reference", &M); }
     double fptol = 1.0e-12; /* Tolerance for inverse etc. */
-    hr2_test_check_pmap("M", &M, fptol, "{hr2_pmap_similarity_from_two_points} produced an invalid map");
+    hr2_pmap_test_tools_check("M", &M, fptol, "{hr2_pmap_similarity_from_two_points} produced an invalid map");
     demand(hr2_pmap_is_type(&M, hr2_pmap_type_SIMILARITY, +1, eqtol), "wrong map type or sign");
 
     /* Get the encoding {y[0..3]} of {M}: */
-    int32_t ny = 4;
+    uint32_t ny = 4;
     double y[ny];
     hr2_pmap_similarity_encode(&M, y);
     if (verbose) { hpedt_print_encoding(ny, y); }
@@ -243,14 +248,14 @@ void test_hr2_pmap_affine_encode__hr2_pmap_affine_decode(bool_t verbose)
     /* Generate an affine map {M} with positive handedness: */
     r2_t p; r2_add(&o, &u, &p);
     r2_t q; r2_add(&o, &v, &q);
-    hr2_pmap_t M = hr2_pmap_aff_from_three_points(&o, &p, &q);
+    hr2_pmap_t M = hr2_pmap_affine_from_three_points(&o, &p, &q);
     if (verbose) { hpedt_print_map("reference", &M); }
-    hr2_test_check_pmap("M", &M, eqtol, "{hr2_pmap_aff_from_three_points} produced an invalid map");
+    hr2_pmap_test_tools_check("M", &M, eqtol, "{hr2_pmap_affine_from_three_points} produced an invalid map");
     demand(hr2_pmap_is_type(&M, hr2_pmap_type_AFFINE, +1, eqtol), "wrong map type or sign");
-    demand(r3x3_det(&(M.dir)) > 0, "{hr2_pmap_aff_from_three_points} wrong handedness (1)");
+    demand(r3x3_det(&(M.dir)) > 0, "{hr2_pmap_affine_from_three_points} wrong handedness (1)");
 
     /* Get the encoding {y[0..3]} of {M}: */
-    int32_t ny = 6;
+    uint32_t ny = 6;
     double y[ny];
     hr2_pmap_affine_encode(&M, y);
     if (verbose) { hpedt_print_encoding(ny, y); }
@@ -290,10 +295,10 @@ void test_hr2_pmap_encode__hr2_pmap_decode(bool_t verbose)
         hr2_pmap_t M0 = hr2_pmap_throw_by_type(type, +1);
         if (verbose) { hpedt_print_map("reference", &M0); }
         double fptol = 1.0e-12; /* Tolerance for inverse etc. */
-        hr2_test_check_pmap("M0", &M0, fptol, "{hr2_pmap_throw_by_type} yielded an invalid map");
+        hr2_pmap_test_tools_check("M0", &M0, fptol, "{hr2_pmap_throw_by_type} yielded an invalid map");
     
         /* Get the encoding {y[0..ny-1]} of {M0}: */
-        int32_t ny = hr2_pmap_encode_num_parameters(type);
+        uint32_t ny = hr2_pmap_encode_num_parameters(type);
         double y0[ny]; /* Encoded elements. */
         hr2_pmap_encode(&M0, type, ny, y0);
         if (verbose) { hpedt_print_encoding(ny, y0); }
@@ -353,7 +358,7 @@ void hpedt_print_map(char *name, hr2_pmap_t *M)
     hr2_pmap_gen_print(stderr, M, "%12.7f", "    ", "[ ","  "," ]\n    ", "[ "," "," ]", "\n");
   }
 
-void hpedt_print_encoding(int32_t ny, double y[])
+void hpedt_print_encoding(uint32_t ny, double y[])
   { 
     fprintf(stderr, "  encoding parameters:\n");
     fprintf(stderr, "    ");
@@ -421,7 +426,7 @@ void test_hr2_pmap_throw_by_type__hr2_pmap_is_type(bool_t verbose)
                 default:
                   demand(FALSE, "unimplemented map type");
               }
-            hr2_test_perturbed_pmap(&M, &ok, &P, "hr2_pmap_is_type");
+            hr2_pmap_test_tools_check_perturbed(&M, &ok, &P, FALSE, "hr2_pmap_is_type");
             return;
 
             bool_t ok(hr2_pmap_t *A)

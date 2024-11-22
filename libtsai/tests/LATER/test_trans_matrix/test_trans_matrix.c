@@ -1,4 +1,4 @@
-/* Last edited on 2023-04-23 11:09:42 by stolfi */
+/* Last edited on 2024-11-20 06:10:01 by stolfi */
 
 #define PROG_NAME "test_povray_camera"
 #define PROG_DESC "tests the conversion from Tsai camera matrix to POV-Ray camera spec"
@@ -42,8 +42,7 @@ int32_t main (int32_t argc, char *argv[])
     int32_t frame_fin = atoi(argv[5]); /* Number of final frame. */
 
     /* Get the fixed camera parameters: */
-    char *cspec_fname = NULL;
-    asprintf(&cspec_fname, "%s/cspec.txt", data_dir);
+    char *cspec_fname = jsprintf("%s/cspec.txt", data_dir);
     FILE *cspec_file = open_read(cspec_fname, TRUE);
     char *cname = fget_string(cspec_file);
     fclose(cspec_file);
@@ -74,10 +73,8 @@ int32_t main (int32_t argc, char *argv[])
       fprintf(stderr, "--- begin frame %05d --------------------------------------------------\n", frame_num);
       
       /* Get frame-specific input and output directories: */
-      char *frame_data_dir = NULL;
-      asprintf(&frame_data_dir, "%s/%05d", data_dir, frame_num);
-      char *frame_out_dir = NULL;
-      asprintf(&frame_out_dir, "%s/%05d", out_dir, frame_num);
+      char *frame_data_dir = jsprintf("%s/%05d", data_dir, frame_num);
+      char *frame_out_dir = jsprintf("%s/%05d", out_dir, frame_num);
       assert(mkdir(frame_out_dir, 0777) == 0);
       
       /* Read the input frame image: */
@@ -89,22 +86,16 @@ int32_t main (int32_t argc, char *argv[])
       if (strcmp(ref_tag,"NONE") != 0)
         { read_camera_parameters("reference",  frame_data_dir, ref_tag, ref_cpar); }
 
-      FILE *f_pi;
-      char *out_f_pi_name;
-      asprintf(&out_f_pi_name, "%s/p_i.txt", frame_out_dir);
-      f_pi = fopen(out_f_pi_name, "w");
+      char *out_f_pi_name = jsprintf("%s/p_i.txt", frame_out_dir);
+      FILE *f_pi = fopen(out_f_pi_name, "w");
       free(out_f_pi_name); 
 
-      FILE *f_pw;
-      char *out_f_pw_name;
-      asprintf(&out_f_pw_name, "%s/p_w.txt", frame_out_dir);
-      f_pw = fopen(out_f_pw_name, "w");
+      char *out_f_pw_name = jsprintf("%s/p_w.txt", frame_out_dir);
+      FILE *f_pw = fopen(out_f_pw_name, "w");
       free(out_f_pw_name); 
 
-      FILE *f_p_wgt;
-      char *out_f_p_wgt_name;
-      asprintf(&out_f_p_wgt_name, "%s/p_wgt.txt", frame_out_dir);
-      f_p_wgt = fopen(out_f_p_wgt_name, "w");
+      char *out_f_p_wgt_name = jsprintf("%s/p_wgt.txt", frame_out_dir);
+      FILE *f_p_wgt = fopen(out_f_p_wgt_name, "w");
       free(out_f_p_wgt_name); 
 
       fprintf(f_pi, "%d\n", n_p_w);
@@ -135,8 +126,7 @@ int32_t main (int32_t argc, char *argv[])
 
       fprintf(stdout, "loop finished\n"); 
 
-      char *cross_fname = NULL; 
-      asprintf(&cross_fname, "out/cross_%05d.pgm", frame_frame_num);
+      char *cross_fname = jsprintf("out/cross_%05d.pgm", frame_frame_num);
       float_image_write_pnm_named(cross_fname, img, FALSE, ttm_PNM_GAMMA, ttm_PNM_BIAS, FALSE, TRUE, FALSE);
       free(cross_fname);
 
@@ -153,8 +143,7 @@ int32_t main (int32_t argc, char *argv[])
   }
 
         
-      char *f_cpar_fname = NULL;
-      asprintf(&f_cpar_in_fname, "%s/calib-%s.cpar", frame_data_dir, calib_tag);
+      char *f_cpar_fname = jsprintf("%s/calib-%s.cpar", frame_data_dir, calib_tag);
       FILE *f_cpar_in = open_read(f_cpar_fname, TRUE);
       tf_camera_params_read(f_cpar_in, cpar);
 
@@ -168,14 +157,12 @@ int32_t main (int32_t argc, char *argv[])
       tf_camera_params_print (cpar, stderr);
 
 
-      char *frame_in_fname = NULL; 
-      asprintf(&frame_in_fname, "%s/frame.pgm", frame_data_dir);
+      char *frame_in_fname = jsprintf("%s/frame.pgm", frame_data_dir);
       float_image_t *img = float_image_read_pnm_named
         ( frame_in_fname, FALSE, ttm_PNM_GAMMA, ttm_PNM_BIAS, FALSE, TRUE, FALSE );
       free(frame_in_fname);
 
-    char *wpos_fname = NULL;
-    asprintf(&wpos_fname, "%s/world-coords.txt", data_dir);
+    char *wpos_fname = jsprintf("%s/world-coords.txt", data_dir);
     int32_t n_p_w;
     tf_calib_data_t * cdat = calibration_data_new();
     tf_calib_data_read_world_points (wpos_fname, &n_p_w, &(cdat->world));

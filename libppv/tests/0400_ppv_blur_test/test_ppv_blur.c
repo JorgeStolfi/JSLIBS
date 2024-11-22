@@ -89,8 +89,7 @@ void pbt_do_test(ppv_dim_t d, int32_t radius, int32_t stride)
     ppv_array_t *G = ppv_array_blur(A, NULL, maxsmpG, radius, wt, stride, NULL);
 
     /* Write out as image if possible: */
-    char *fpref = NULL;
-    asprintf(&fpref, "out/J_d%d_r%02d_s%02d", d, radius, stride); 
+    char *fpref = jsprintf("out/J_d%d_r%02d_s%02d", d, radius, stride); 
     if ((G->d == 2) && (bpsG <= 16))
       { /* Write {G} as a greyscale image: */
         uint16_image_t *J = ppv_image_from_array(G);
@@ -104,8 +103,7 @@ void pbt_do_test(ppv_dim_t d, int32_t radius, int32_t stride)
         for (int32_t ic = 0; ic < nc; ic++)
           { ppv_array_t *F = ppv_slice(G, 2, ic);
             uint16_image_t *J = ppv_image_from_array(F);
-            char *fname = NULL;
-            asprintf(&fname, "%s_%05d.png", fpref, ic);
+            char *fname = jsprintf("%s_%05d.png", fpref, ic);
             uint16_image_write_png_named(fname, J, 1.0, TRUE);
             free(fname);
           }

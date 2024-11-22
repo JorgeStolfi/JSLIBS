@@ -1,7 +1,6 @@
 /* See ellipse_ouv.h */
 /* Last edited on 2021-06-09 19:38:42 by jstolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>

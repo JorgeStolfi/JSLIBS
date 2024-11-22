@@ -1,7 +1,6 @@
 /* See uint16_image.h */
 /* Last edited on 2023-03-17 20:46:42 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

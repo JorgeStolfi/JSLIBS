@@ -1,10 +1,9 @@
 /* Find item in a sorted table by linear interpolation + binary search. */
-/* Last edited on 2023-03-18 11:12:56 by stolfi */ 
+/* Last edited on 2024-11-15 19:15:25 by stolfi */ 
 
 #ifndef tbfind_H
 #define tbfind_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 int32_t tb_find(double f(int32_t i), int32_t iMin, int32_t iMax);

@@ -1,10 +1,9 @@
 /* See argparser_get_int_list.h. */
-/* Last edited on 2023-02-11 11:15:00 by stolfi */
+/* Last edited on 2024-11-16 00:44:47 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 /* Based on Params.m3 by J.Stolfi, DEC-SRC, 1988.  */
 
-#define _GNU_SOURCE
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,8 +35,8 @@
 
 void argparser_get_next_int_groups
   ( argparser_t *pp, 
-    int32_t n_max, 
-    int32_t *n_P, 
+    uint32_t n_max, 
+    uint32_t *n_P, 
     int64_vec_t *num, 
     int64_t min, 
     int64_t max
@@ -49,10 +48,10 @@ void argparser_get_next_int_groups
 
 void argparser_parse_int_group_string
   ( argparser_t *pp, 
-    int32_t index,
+    uint32_t index,
     char *arg, 
-    int32_t n_max, 
-    int32_t *n_P, 
+    uint32_t n_max, 
+    uint32_t *n_P, 
     int64_vec_t *num, 
     int64_t min, 
     int64_t max
@@ -63,10 +62,10 @@ void argparser_parse_int_group_string
     
 void argparser_parse_int_range_string
   ( argparser_t *pp, 
-    int32_t index,
+    uint32_t index,
     char *arg, 
-    int32_t n_max, 
-    int32_t *n_P, 
+    uint32_t n_max, 
+    uint32_t *n_P, 
     int64_vec_t *num, 
     int64_t min, 
     int64_t max
@@ -78,19 +77,25 @@ void argparser_parse_int_range_string
     
 /* IMPLEMENTATIONS */    
 
-int64_vec_t argparser_get_int_list(argparser_t *pp, int32_t n_max, char *key, int64_t min, int64_t max)
+int64_vec_t argparser_get_int_list
+  ( argparser_t *pp,
+    uint32_t n_max,
+    char *key,
+    int64_t min,
+    int64_t max
+  )
   { int64_vec_t num = int64_vec_new(10);
-    int32_t n = 0;
+    uint32_t n = 0;
     while (argparser_keyword_present(pp, key))
       { argparser_get_next_int_groups(pp, n_max, &n, &num, min, max); }
-    int64_vec_trim(&num, n);
+    int64_vec_trim(&num, (uint32_t)n);
     return num;
   }
 
 void argparser_get_next_int_groups
   ( argparser_t *pp, 
-    int32_t n_max, 
-    int32_t *n_P, 
+    uint32_t n_max, 
+    uint32_t *n_P, 
     int64_vec_t *num, 
     int64_t min, 
     int64_t max
@@ -126,10 +131,10 @@ void argparser_get_next_int_groups
   
 void argparser_parse_int_group_string
   ( argparser_t *pp,
-    int32_t index,
+    uint32_t index,
     char *arg, 
-    int32_t n_max, 
-    int32_t *n_P, 
+    uint32_t n_max, 
+    uint32_t *n_P, 
     int64_vec_t *num, 
     int64_t min, 
     int64_t max
@@ -162,10 +167,10 @@ void argparser_parse_int_group_string
   
 void argparser_parse_int_range_string
   ( argparser_t *pp, 
-    int32_t index,
+    uint32_t index,
     char *arg, 
-    int32_t n_max, 
-    int32_t *n_P, 
+    uint32_t n_max, 
+    uint32_t *n_P, 
     int64_vec_t *num, 
     int64_t min, 
     int64_t max
@@ -201,7 +206,7 @@ void argparser_parse_int_range_string
         b = argparser_parse_int_string(pp, index, pbeg, min, max, &pend);
         assert((pend != NULL) && (pend > pbeg));
       }
-    int32_t n = (*n_P);
+    uint32_t n = (*n_P);
     for (int64_t v = a; v <= b; v++) 
       { if (n >= n_max) { argparser_error_at(pp, "too many integers", "at", index); }
         int64_vec_expand(num, n);

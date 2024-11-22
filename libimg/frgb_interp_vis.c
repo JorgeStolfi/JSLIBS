@@ -4,7 +4,6 @@
 /* Copyright (C) 2023 by Jorge Stolfi, the University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

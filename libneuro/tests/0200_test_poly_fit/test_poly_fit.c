@@ -1,5 +1,5 @@
 /* test program for {neuromat_poly_fit} */
-/* Last edited on 2021-08-21 13:07:36 by stolfi */
+/* Last edited on 2024-11-20 05:57:36 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -276,11 +276,11 @@ void gen_weights(int32_t n, double x[], double w[])
   }
   
 void print_data(char *name, int32_t trial, int32_t iter, int32_t n, double x[], double s[], double y[], char *fmt)
-  { char *fname = NULL;
+  { char *fname;
     if (iter >=0)
-      { asprintf(&fname, "out/%s_t%03d_i%03d.txt", name, trial, iter); }
+      { fname = jsprintf("out/%s_t%03d_i%03d.txt", name, trial, iter); }
     else
-      { asprintf(&fname, "out/%s_t%03d.txt", name, trial); }
+      { fname = jsprintf("out/%s_t%03d.txt", name, trial); }
     FILE *wr = open_write(fname, TRUE);
     for(int32_t k = 0; k < n; k++)
       { fprintf(wr, "%5d ", k);

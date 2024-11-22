@@ -1,4 +1,4 @@
-// Last edited on 2012-01-27 21:45:37 by stolfilocal
+// Last edited on 2024-11-08 17:22:54 by stolfi
 
 #include "lamp_array.inc"
 #include "camlight.inc"
@@ -22,11 +22,11 @@ background{ color rgb < 0.900, 0.970, 0.990 > }
 #declare tx_branco = make_texture(< 1.000, 1.000, 1.000 >)
   
 #macro electron(P)
-  sphere{ P, 0.25 texture{ tx_amarelo } } 
+  sphere{ P, 0.08 texture{ tx_amarelo } } 
 #end
     
 #macro proton(P)
-  sphere{ P, 0.5 texture{ tx_vermelho } } 
+  sphere{ P, 0.10 texture{ tx_vermelho } } 
 #end
 
 #macro platter()

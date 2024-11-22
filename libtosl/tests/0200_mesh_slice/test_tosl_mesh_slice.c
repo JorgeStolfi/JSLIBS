@@ -117,7 +117,7 @@ int32_t main(int32_t argc, char **argv)
   
 void do_test_batch(char *tag, int32_t M_kegs, keg_spec_t keg_specs[], int32_t M_psets, int32_t NPs[], int32_t NT, int8_t debug)
   {
-    char *fname = NULL; asprintf(&fname, "out/times-%s.txt", tag);
+    char *fname = NULL; char *fname = jsprintf("out/times-%s.txt", tag);
     FILE *wr = fopen(fname, "w");
     free(fname); 
 

@@ -1,5 +1,5 @@
 /* See {neuromat_median_filter.h}. */
-/* Last edited on 2023-12-05 23:44:32 by stolfi */
+/* Last edited on 2024-11-18 12:36:26 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -14,7 +14,6 @@
 #include <jsmath.h>
 #include <wt_table.h>
 #include <wt_table_generic.h>
-#include <wt_table_quantize.h>
 #include <wt_median.h>
 #include <wt_median_window.h>
 

@@ -1,7 +1,6 @@
 /* See {hr2_pmap_translation_encode.h}. */
-/* Last edited on 2024-11-03 06:41:15 by stolfi */
+/* Last edited on 2024-11-15 12:58:26 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <assert.h>
 #include <math.h>

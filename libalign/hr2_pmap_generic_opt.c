@@ -1,5 +1,5 @@
 /* See {hr2_pmap_generic_opt.h}. */
-/* Last edited on 2024-11-08 09:55:20 by stolfi */
+/* Last edited on 2024-11-15 13:00:46 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -77,13 +77,16 @@ void hr2_pmap_generic_opt_quadratic
     if (! ok)
       { 
         /* Apply nonlinear optimization. */
+        
+        bool_t sve_debug = debug;
+        bool_t sve_debug_probes = FALSE; 
             
         auto double sve_goal(int32_t ny, double y[]);
           /* Sets the elements of {M.dir} to {y[0..ny-1]},
             computes {M.inv}, then computes {f2(M)}. 
             Expects {ny == nz}. */
         
-        auto bool_t sve_ok(int32_t ny, double y[], double f2y);
+        auto bool_t sve_ok(int32_t iter, int32_t ny, double y[], double f2y, double dist, double step, double radius);
           /* Assumes that {y[0..ny-1]} are 
             the elements of {M.dir}, {M.inv} is the 
             inverse of {M.dir}, and {f2y} is {f2(M}}. Returns {TRUE} iff 
@@ -102,8 +105,7 @@ void hr2_pmap_generic_opt_quadratic
         double rMin = 0.0001;
         double rMax = 2.0*dMax;
         double minStep = 0.01*rMin;  /* Min {z} change between iterations. */
-        bool_t sve_debug = TRUE;
-
+        
         if (verbose) 
           { fprintf(stderr, "  max matrix element change = %13.6f\n", maxMod);
             fprintf(stderr, "  estimated distance from optimum = %13.6f\n", dMax);
@@ -114,7 +116,7 @@ void hr2_pmap_generic_opt_quadratic
           ( nz, &sve_goal, (OK == NULL ? NULL : &sve_ok), &sve_proj,
             z, &f2z, dir, 
             ctr, dMax, dBox, rIni, rMin, rMax, 
-            minStep, maxIter, sve_debug
+            minStep, maxIter, sve_debug, sve_debug_probes
           );
 
         /* Ensure that the optimum {z} is reflected in {M,f2z): */
@@ -129,7 +131,7 @@ void hr2_pmap_generic_opt_quadratic
             return Q2;
           }
           
-        bool_t sve_ok(int32_t ny, double y[], double f2y)
+        bool_t sve_ok(int32_t iter, int32_t ny, double y[], double f2y, double dist, double step, double radius)
           { assert(OK != NULL);
             assert(ny == nz);
             /* Assumes {M.inv} is the inverse of {M.dir} and {f2y} is {f2(M)}: */
@@ -220,8 +222,7 @@ void hr2_pmap_generic_opt_1D_plot
       }
 
     /* Plot the goal function along the directions: */
-    char *fname = NULL;
-    asprintf(&fname, "%s-%s-%s-1D-plot.txt", outPrefix, tag, stage);
+    char *fname = jsprintf("%s-%s-%s-1D-plot.txt", outPrefix, tag, stage);
     FILE *wr = open_write(fname, TRUE);
     double step = urad/ns;
     for (int32_t ku = 0; ku < nu; ku++)

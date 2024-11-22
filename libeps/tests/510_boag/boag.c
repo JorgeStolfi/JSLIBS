@@ -779,7 +779,7 @@ void boag_show_dim
         hoff, voff, &xr, &yr, &rot
       );
     char *label = NULL;
-    asprintf(&label, "%.*f", nfrac, dab);
+    char *label = jsprintf("%.*f", nfrac, dab);
     epswr_label(epsf, label, "0", xr, yr, rot, FALSE, 0.5, 0.5, TRUE, FALSE);
     epswr_set_verbose(epsf, FALSE);
     free(label);

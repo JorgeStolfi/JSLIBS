@@ -1,7 +1,6 @@
 /* See {image_file_format.h} */
 /* Last edited on 2020-10-31 21:18:47 by jstolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>

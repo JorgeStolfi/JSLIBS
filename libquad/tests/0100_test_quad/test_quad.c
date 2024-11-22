@@ -155,7 +155,7 @@ quad_arc_t make_map_pyramid(int32_t n)
  
 void write_map(char *name, quad_arc_t a)
   { char *filename = NULL;
-    asprintf(&filename, "out/%s.quad", name);
+    char *filename = jsprintf("out/%s.quad", name);
     FILE *wr = open_write(filename, TRUE);
     quad_arc_vec_t root = quad_arc_vec_new(1); /* Root list. */
     root.e[0] = a;

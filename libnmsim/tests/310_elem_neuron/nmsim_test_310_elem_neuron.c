@@ -49,8 +49,7 @@ int32_t main(int32_t argc, char **argv)
     for(int32_t i = 0; i < 10; i++)
       { nmsim_elem_neuron_t neu = nmsim_elem_neuron_throw(nng - 1);
         nmsim_elem_neuron_show(stderr, "neuron = ", &neu, "\n");
-        char *fname = NULL;
-        asprintf(&fname, "out/test_neuron_elem_%03d.txt", i);
+        char *fname = jsprintf("out/test_neuron_elem_%03d.txt", i);
         nmsim_elem_neuron_ix_t ine = 17;
         nmsim_elem_neuron_test_write(fname, ine, &neu);
         nmsim_elem_neuron_test_read(fname, ine, &neu);

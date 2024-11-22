@@ -2,7 +2,7 @@
 #define PROG_DESC "tests {sve_minn.h} on an image matching problem"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-08 09:53:00 by stolfi */
+/* Last edited on 2024-11-08 20:25:29 by stolfi */
 
 #define test_sve_img_match_C_COPYRIGHT "Copyright © 2009 by the State University of Campinas (UNICAMP)"
 
@@ -452,26 +452,90 @@ void find_best_matrix
     
     bool_t plot_goal = TRUE;
     
-    auto double F(int32_t n, double x[]); 
+    auto double sve_goal(int32_t n, double x[]); 
       /* The goal function for uptimization.  Also sets {M} to the corresp. matrix. */
       
-    double F(int32_t n, double x[])
+    double xPrev[nx]; /* Parameter vector in previous call of {sve_OK} function. */
+    r3x3_t MPrev;     /* Matrix in previous call of  {sve_OK} function. */
+    int32_t nok = 0;      /* Counts iterations (actually, calls to {sve_OK}). */
+    bool_t sve_debug = TRUE;
+    bool_t sve_debug_probes = FALSE;
+    
+    auto bool_t sve_OK(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius); 
+      /* Acceptance criterion function. */
+      
+    double xx[nx];     /* Initial guess and final solution. */
+
+    /* Start with the null paramenter vector, which should be the identity matrix: */
+    { int32_t ix; for (ix = 0; ix < nx; ix++) { xx[ix] = 0.0; } }
+
+    fprintf(stderr, "initial matrix:\n");
+    param_to_matrix(P, adop, nx, xx, Q, M, TRUE);
+    
+    double Fx = sve_goal(nx, xx);
+    fprintf(stderr, "\n");
+    fprintf(stderr, "initial goal function = %16.10f\n", Fx);
+
+    if (nx > 0)
+      { /* Optimize iteratively: */
+        double *ctr = NULL;
+        double dMax = 0.250;
+        bool_t dBox = FALSE;
+        double rMin = 1.0/hypot(0.5*NXO,0.5*NYO);
+        double rMax = 0.5*dMax;
+        double rIni = 0.25*dMax;
+        double minStep = 0.0001*rMin;
+        sign_t dir = -1;
+        int32_t maxIters = 100;
+        
+        if (plot_goal)
+          { /* Choose the plot directions: */
+            int32_t nu = (nx < 6 ? nx : 6); /* Number of directions. */
+            double U[nu*nx]; /* The rows are the directions. */
+            rmxn_throw_directions(nu, nx, U);
+            /* Plot goal function along those directions: */
+            double Rad = rIni;
+            double Step = Rad/30;
+            char *fname = jsprintf("%s-f2-plot.txt", outPrefix);
+            FILE *wr = open_write(fname, TRUE);
+            for (int32_t ku = 0; ku < nu; ku++)
+              { double *u = &(U[ku*nx]);
+                minn_plot_1D_gnuplot(wr, nx, xx, u, Rad, Step, sve_goal);
+              }
+            fclose(wr);
+            free(fname);
+          }
+
+        sve_minn_iterate
+          ( nx, &sve_goal, &sve_OK, NULL,
+            xx, &Fx, dir, 
+            ctr, dMax, dBox, rIni, rMin, rMax, 
+            minStep, maxIters, sve_debug, sve_debug_probes
+          );
+        fprintf(stderr, "\n");
+      }
+
+    /* Print final matrix: */
+    fprintf(stderr, "final matrix:\n");
+    param_to_matrix(P, adop, nx, xx, Q, M, TRUE);
+
+    /* Ealuate (and print) the final mismatch: */
+    double FxN = sve_goal(nx, xx); 
+    fprintf(stderr, "\n");
+    fprintf(stderr, "final goal function = %16.10f %16.10f\n", Fx, FxN);
+    demand(Fx == FxN, "inconsistent function value on return");
+    return;
+    
+    double sve_goal(int32_t n, double x[])
       { assert(n == nx);
         r3x3_t MM;
         param_to_matrix(P, adop, n, x, Q, &MM, FALSE);
         double Fx = mismatch(img, obj, msk, &MM);
-        fprintf(stderr, "F");
+        fprintf(stderr, "sve_goal");
         return Fx;
       }
       
-    double xPrev[nx]; /* Parameter vector in previous call of {OK} function. */
-    r3x3_t MPrev;     /* Matrix in previous call of  {OK} function. */
-    int32_t nok = 0;      /* Counts iterations (actually, calls to {OK}). */
-    
-    auto bool_t OK(int32_t n, double x[], double Fx); 
-      /* Acceptance criterion function. */
-      
-    bool_t OK(int32_t n, double x[], double Fx)
+    bool_t sve_OK(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius)
       { assert(n == nx);
         fprintf(stderr, "\n");
         fprintf(stderr, "iteration %d matrix:\n", nok);
@@ -490,69 +554,7 @@ void find_best_matrix
         nok++;
         return FALSE;
       }
-      
-    double xx[nx];     /* Initial guess and final solution. */
-
-    /* Start with the null paramenter vector, which should be the identity matrix: */
-    { int32_t ix; for (ix = 0; ix < nx; ix++) { xx[ix] = 0.0; } }
-
-    fprintf(stderr, "initial matrix:\n");
-    param_to_matrix(P, adop, nx, xx, Q, M, TRUE);
     
-    double Fx = F(nx, xx);
-    fprintf(stderr, "\n");
-    fprintf(stderr, "initial goal function = %16.10f\n", Fx);
-
-    if (nx > 0)
-      { /* Optimize iteratively: */
-        double *ctr = NULL;
-        double dMax = 0.250;
-        bool_t dBox = FALSE;
-        double rMin = 1.0/hypot(0.5*NXO,0.5*NYO);
-        double rMax = 0.5*dMax;
-        double rIni = 0.25*dMax;
-        double minStep = 0.0001*rMin;
-        sign_t dir = -1;
-        int32_t maxIters = 100;
-        bool_t debugMinn = TRUE;
-        
-        if (plot_goal)
-          { /* Choose the plot directions: */
-            int32_t nu = (nx < 6 ? nx : 6); /* Number of directions. */
-            double U[nu*nx]; /* The rows are the directions. */
-            rmxn_throw_directions(nu, nx, U);
-            /* Plot goal function along those directions: */
-            double Rad = rIni;
-            double Step = Rad/30;
-            char *fname = NULL;
-            asprintf(&fname, "%s-f2-plot.txt", outPrefix);
-            FILE *wr = open_write(fname, TRUE);
-            for (int32_t ku = 0; ku < nu; ku++)
-              { double *u = &(U[ku*nx]);
-                minn_plot_1D_gnuplot(wr, nx, xx, u, Rad, Step, F);
-              }
-            fclose(wr);
-            free(fname);
-          }
-
-        sve_minn_iterate
-          ( nx, &F, &OK, NULL,
-            xx, &Fx, dir, 
-            ctr, dMax, dBox, rIni, rMin, rMax, 
-            minStep, maxIters, debugMinn
-          );
-        fprintf(stderr, "\n");
-      }
-
-    /* Print final matrix: */
-    fprintf(stderr, "final matrix:\n");
-    param_to_matrix(P, adop, nx, xx, Q, M, TRUE);
-
-    /* Ealuate (and print) the final mismatch: */
-    double FxN = F(nx, xx); 
-    fprintf(stderr, "\n");
-    fprintf(stderr, "final goal function = %16.10f %16.10f\n", Fx, FxN);
-    demand(Fx == FxN, "inconsistent function value on return");
   }
  
 void write_matched_object_images
@@ -633,8 +635,7 @@ void write_matched_object_images
         char *tag = ((char*[]){ "img", "obj", "msk" })[it];
         float_image_t *out = ((float_image_t *[]){ img_out, obj_out, msk_out })[it];
         
-        char *fname = NULL;
-        asprintf(&fname, "%s-%s-%s.fni", outPrefix, version, tag);
+        char *fname = jsprintf("%s-%s-%s.fni", outPrefix, version, tag);
         FILE *wr = open_write(fname, TRUE);
         float_image_write(wr, out);
         fclose(wr);

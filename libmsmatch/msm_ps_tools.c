@@ -381,7 +381,7 @@ void msm_ps_tools_draw_scale
             assert(fmt != NULL);
             /* Format the text: */
             char *label = NULL;
-            asprintf(&label, fmt, zt);
+            char *label = jsprintf(fmt, zt);
             /* Draw a labeled tic: */
             msm_ps_tools_draw_tic(mps, axis, xt, yt, 1.5*ticSize, ticAlign, R,G,B, label, labAlign);
             free(label);

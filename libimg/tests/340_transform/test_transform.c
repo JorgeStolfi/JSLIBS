@@ -8,7 +8,6 @@
 #define test_transform_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -397,9 +396,8 @@ void do_test
 
 void write_image(char *gen_name, char *map_name, bool_t avg, int order, char *io, float_image_t *img)
   {
-    char *fname = NULL;
     if (map_name == NULL) { map_name = "0-nomap"; }
-    asprintf(&fname, "out/test-%s-%s-%s-%c-%d.ppm", map_name, gen_name, io, "FT"[avg], order);
+    char *fname = jsprintf("out/test-%s-%s-%s-%c-%d.ppm", map_name, gen_name, io, "FT"[avg], order);
     FILE *wr = open_write(fname, TRUE);
     int chns = (int)img->sz[0];
     bool_t yup = TRUE, verbose = TRUE;

@@ -2,13 +2,12 @@
 #define PROG_DESC "tests the {codetree.h} procedures"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2023-02-07 17:11:19 by stolfi */
+/* Last edited on 2024-11-20 03:25:49 by stolfi */
 /* Created on 2007-01-31 by J. Stolfi, UNICAMP */
 
 #define PROG_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -32,6 +31,9 @@
 #define MAX_NODES codetree_MAX_NODES
 #define MAX_SAMPLES codetree_MAX_SAMPLES
 
+typedef codetree_data_value_t dval_t;
+  /* Shorter name. */
+
 void tcot_check_types(void);
   /* Checks if data types have sufficient size. */
 
@@ -50,9 +52,9 @@ void tcot_check_tree(codetree_t *tree, uint32_t nv, uint64_t freq[]);
 
 void tcot_check_generic
   ( codetree_t *tree, 
-    codetree_value_t maxval, 
+    dval_t maxval, 
     codetree_node_count_t nv, 
-    codetree_value_t vals[], 
+    dval_t vals[], 
     char *code[]
   );
   /* Test {codetree.h} functions for the given {tree},
@@ -80,25 +82,27 @@ void tcot_check_types(void)
   { 
     fprintf(stderr, "MAX_DELTA = %lu UINT32_MAX = %lu\n", (uint64_t)codetree_MAX_DELTA, (uint64_t)UINT32_MAX);
     
-    check_type(codetree_value_t,        x1, int64_t,  codetree_MAX_VALUE);     
-    check_type(codetree_value_t,        x2, int64_t,  codetree_MIN_VALUE);     
-    check_type(codetree_node_count_t,   x3, uint64_t, codetree_MAX_NODES);     
-    check_type(codetree_sample_count_t, x4, uint64_t, codetree_MAX_SAMPLES);   
-    check_type(codetree_bit_count_t,    x5, uint64_t, codetree_MAX_BYTES * 8); 
-    check_type(codetree_byte_count_t,   x6, uint64_t, codetree_MAX_BYTES);     
-    check_type(byte_t,                  x7, uint64_t, 255);                    
-    check_type(codetree_delta_t,        x8, uint64_t, codetree_MAX_DELTA);     
+    check_type(codetree_data_value_t,   x01, uint64_t, codetree_data_MAX_VALUE);     
+    check_type(codetree_data_value_t,   x02, uint64_t, 0);     
+    check_type(codetree_node_value_t,   x03, int64_t,  codetree_node_MAX_VALUE);     
+    check_type(codetree_node_value_t,   x04, int64_t,  codetree_node_MIN_VALUE);     
+    check_type(codetree_node_count_t,   x05, uint64_t, codetree_MAX_NODES);     
+    check_type(codetree_sample_count_t, x06, uint64_t, codetree_MAX_SAMPLES);   
+    check_type(codetree_bit_count_t,    x07, uint64_t, codetree_MAX_BYTES * 8); 
+    check_type(codetree_byte_count_t,   x08, uint64_t, codetree_MAX_BYTES);     
+    check_type(byte_t,                  x09, uint64_t, 255);                    
+    check_type(codetree_delta_t,        x10, uint64_t, codetree_MAX_DELTA);     
   }
    
 void tcot_check_empty(void)
   { 
-    codetree_value_t maxval = 40; /* Some upper bound on valid values ({V}). */
-    char *code[maxval+1];         /* Expected bit code of each value. */
-    for (codetree_value_t val = 0; val <= maxval; val++) { code[val] = NULL; }
+    dval_t maxval = 40;     /* Some upper bound on valid values ({V}). */
+    char *code[maxval+1];   /* Expected bit code of each value. */
+    for (dval_t val = 0; val <= maxval; val++) { code[val] = NULL; }
     
     /* Expected tree and encoding: */
     codetree_node_count_t nv = 0; /* Number of valid values. */
-    codetree_value_t vals[nv];
+    dval_t vals[nv+1]; /* The "+1" is to keep the compiler happy. */
 
     codetree_t *tree = NULL;
 
@@ -107,13 +111,13 @@ void tcot_check_empty(void)
    
 void tcot_check_single(void)
   { 
-    codetree_value_t maxval = 40; /* Some upper bound on valid values ({V}). */
+    dval_t maxval = 40; /* Some upper bound on valid values ({V}). */
     char *code[maxval+1];
-    for (codetree_value_t val = 0; val <= maxval; val++) { code[val] = NULL; }
+    for (dval_t val = 0; val <= maxval; val++) { code[val] = NULL; }
 
     /* Expected tree and encoding: */
     codetree_node_count_t nv = 1; /* Number of valid values. */
-    codetree_value_t vals[nv];
+    dval_t vals[nv];
 
     vals[0] = 27; code[vals[0]] = "";
     
@@ -125,13 +129,13 @@ void tcot_check_single(void)
     
 void tcot_check_small(void)
   { 
-    codetree_value_t maxval = 40; /* Some upper bound on valid values ({V}). */
+    dval_t maxval = 40; /* Some upper bound on valid values ({V}). */
     char *code[maxval+1];
-    for (codetree_value_t val = 0; val <= maxval; val++) { code[val] = NULL; }
+    for (dval_t val = 0; val <= maxval; val++) { code[val] = NULL; }
 
     /* Expected tree and encodings: */
     codetree_node_count_t nv = 5; /* Number of valid values. */
-    codetree_value_t vals[nv];
+    dval_t vals[nv];
 
     vals[0] =  7; code[vals[0]] = "000";
     vals[1] = 14; code[vals[1]] = "001";
@@ -158,16 +162,16 @@ void tcot_check_small(void)
  
 void tcot_check_generic
   ( codetree_t *tree, 
-    codetree_value_t maxval, 
+    dval_t maxval, 
     codetree_node_count_t nv, 
-    codetree_value_t vals[], 
+    dval_t vals[], 
     char *code[]
   )
   { 
     bool_t prtables = (nv < 100); /* True to print the tables. */
     fprintf(stderr, "######################################################################\n");
     fprintf(stderr, "### begin {tcot_check_generic} - {maxval} = %u {nv} = %u\n", maxval, nv);
-    demand((maxval >= 0) && (maxval <= MAX_VALUE), "bad {maxval} given");
+    demand((maxval >= 0) && (maxval <= codetree_data_MAX_VALUE), "bad {maxval} given");
     
     if (prtables)
       { fprintf(stderr, "given values and codes:\n");
@@ -185,10 +189,10 @@ void tcot_check_generic
     demand(nv2 == nv, "inconsistent {nv2}");
 
     /* Get max code length: */
-    int32_t maxlen = 0;
-    for (codetree_value_t val = 0; val <= maxval; val++)
+    uint32_t maxlen = 0;
+    for (dval_t val = 0; val <= maxval; val++)
       { if (code[val] != NULL)
-          { int32_t len = (int32_t)strlen(code[val]);
+          { uint32_t len = (uint32_t)strlen(code[val]);
             if (len > maxlen) { maxlen = len; }
           }
       }
@@ -198,10 +202,10 @@ void tcot_check_generic
         fprintf(stderr, "generating a sample sequence to encode...\n");
         codetree_sample_count_t ns = 20; /* Number of samples to encode. */
         bool_t prsamples = (ns < 100);   /* True to print the sample sequence. */
-        codetree_value_t smp[ns];        /* Sample values to encode. */
+        dval_t smp[ns];        /* Sample values to encode. */
         char *smpcode[ns];               /* Their codes, as given. */
-        for(int32_t ks = 0; ks < ns; ks++) 
-          { int32_t iv = int32_abrandom(0, nv-1);
+        for (int32_t ks = 0; ks < ns; ks++) 
+          { uint32_t iv = uint32_abrandom(0, (uint32_t)(nv-1));
             smp[ks] = vals[iv];
             smpcode[ks] = code[vals[iv]];
             if (prsamples) { fprintf(stderr, " %d", smp[ks]); }
@@ -213,8 +217,8 @@ void tcot_check_generic
         byte_t buf[nb];
         codetree_byte_count_t ib = 0; /* Next unused byte is {buf[ib]}. */
         byte_t mask = 0; /* Next bit in {buf[ib-1]} or 0. */
-        int64_t nu = 0; /* Number of bits used. */
-        for(int32_t ks = 0; ks < ns; ks++) 
+        uint64_t nu = 0; /* Number of bits used. */
+        for (int32_t ks = 0; ks < ns; ks++) 
           { char *ck = smpcode[ks];
             while ((*ck) != 0)
               { int8_t bit = ((*ck) - '0');
@@ -230,7 +234,7 @@ void tcot_check_generic
                 ck++;
               }
           }
-        int64_t mb = (nu + 7)/8; /* Actual number of bytes used. */
+        uint64_t mb = (nu + 7)/8; /* Actual number of bytes used. */
         fprintf(stderr, "used %lu bits in %lu bytes ({ib} = %lu)\n", nu, mb, ib);
         assert(mb == ib);
         demand(mb < nb, "impossible used bit count {nu}");
@@ -241,16 +245,16 @@ void tcot_check_generic
         fprintf(stderr, "\n"); 
         
         fprintf(stderr, "testing {codetree_decode} on the encoded string...\n");
-        codetree_value_t smp2[ns];
-        int64_t nu2 = codetree_decode(nb, buf, tree, maxval, ns, smp2);
+        dval_t smp2[ns];
+        uint64_t nu2 = codetree_decode(nb, buf, tree, maxval, ns, smp2);
         demand(nu2 == nu, "decoded bit counts do not match");
         for (int32_t ks = 0; ks < ns; ks++) 
           { demand(smp2[ks] == smp[ks], "decoded samples do not match"); }
         
         fprintf(stderr, "testing {codetree_get_encoding_table}...\n");
-        int32_t nd = maxval + nv; /* Size of encoding table, {(maxval+1)+(|V|-1)}. */
+        uint32_t nd = maxval + nv; /* Size of encoding table, {(maxval+1)+(|V|-1)}. */
         codetree_delta_t delta[nd];
-        int64_t md = codetree_get_encoding_table(tree, maxval, nd, delta);
+        uint64_t md = codetree_get_encoding_table(tree, maxval, nd, delta);
         demand(md == nd, "unexpected encoding table size");
         if (prtables)
           { for (int32_t id = 0; id < nd; id++)
@@ -269,7 +273,7 @@ void tcot_check_generic
         fprintf(stderr, "encoding the samples with {codetree_encode} and the encoding table...\n");
         byte_t buf3[nb];
         for (int32_t ib = 0; ib < nb; ib++) { buf3[ib] = 17; /* Arbitrary nonzero value: */ }
-        int64_t nu3 = codetree_encode(ns, smp, maxval, nd, delta, nb, buf3);
+        uint64_t nu3 = codetree_encode(ns, smp, maxval, nd, delta, nb, buf3);
         demand(nu3 == nu, "num bits encoded with {delta} does not match"); 
         
         fprintf(stderr, "comparing the two bit strings...\n");

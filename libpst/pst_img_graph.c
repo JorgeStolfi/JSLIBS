@@ -1733,9 +1733,8 @@ void pst_img_graph_integration_recursive(
   
   if(debug)
 {
-    char *filename = NULL;
     pst_img_graph_put_curl_into_image(g,OZ);
-    asprintf(&filename,"%s-%02d-CL.fni",out_prefix,level);
+    char *filename = jsprintf("%s-%02d-CL.fni",out_prefix,level);
     FILE *wr_curl = open_write(filename,FALSE);
      float_image_write(wr_curl,OZ);
     fclose(wr_curl);
@@ -1745,14 +1744,13 @@ void pst_img_graph_integration_recursive(
   if(debug)
 {
     pst_img_graph_mark_vertex_removal(g,NULL);
-    char *filename = NULL;
-    asprintf(&filename,"%s-%02d-GR.txt",out_prefix,level);
+    char *filename = jsprintf("%s-%02d-GR.txt",out_prefix,level);
     FILE *wr_grph = open_write(filename,FALSE);
      pst_img_graph_print(wr_grph,g);
     fclose(wr_grph);
     free(filename);
     filename = NULL;
-    asprintf(&filename,"%s-%02d-GR.grf",out_prefix,level);
+    char *filename = jsprintf("%s-%02d-GR.grf",out_prefix,level);
     wr_grph = open_write(filename,FALSE);
      pst_img_graph_write(wr_grph,g);
     fclose(wr_grph);
@@ -1799,8 +1797,7 @@ void pst_img_graph_integration_recursive(
   if(debug)
 {
   
-    char *filename = NULL;
-    asprintf(&filename,"%s-%02d-S.txt",out_prefix,level);
+    char *filename = jsprintf("%s-%02d-S.txt",out_prefix,level);
     FILE *wr_dump = open_write(filename,FALSE);
     pst_imgsys_write(wr_dump,S);
     fclose(wr_dump);
@@ -1808,7 +1805,7 @@ void pst_img_graph_integration_recursive(
     
     pst_img_graph_put_solution_into_image(g,iZ,OZ);
     filename = NULL;
-    asprintf(&filename,"%s-%02d-iZ.fni",out_prefix,level);
+    char *filename = jsprintf("%s-%02d-iZ.fni",out_prefix,level);
     wr_dump = open_write(filename,FALSE);
     float_image_write(wr_dump,OZ);
     fclose(wr_dump);
@@ -1816,7 +1813,7 @@ void pst_img_graph_integration_recursive(
     
     pst_img_graph_put_solution_into_image(g,iW,OZ);
     filename = NULL;
-    asprintf(&filename,"%s-%02d-iW.fni",out_prefix,level);
+    char *filename = jsprintf("%s-%02d-iW.fni",out_prefix,level);
     wr_dump = open_write(filename,FALSE);
     float_image_write(wr_dump,OZ);
     fclose(wr_dump);
@@ -1826,7 +1823,7 @@ void pst_img_graph_integration_recursive(
 {
       pst_img_graph_put_error_into_image(g,iZ,iW,RZ,OZ);
       filename = NULL;
-      asprintf(&filename,"%s-%02d-iE.fni",out_prefix,level);
+      char *filename = jsprintf("%s-%02d-iE.fni",out_prefix,level);
       wr_dump = open_write(filename,FALSE);
       float_image_write(wr_dump,OZ);
       fclose(wr_dump);
@@ -1842,8 +1839,7 @@ void pst_img_graph_integration_recursive(
     if(RZ != NULL)
 {
       pst_img_graph_put_error_into_image(g,iZ,iW,RZ,OZ);
-      char *filename = NULL;
-      asprintf(&filename,"%s-%02d-oE.fni",out_prefix,level);
+      char *filename = jsprintf("%s-%02d-oE.fni",out_prefix,level);
       FILE *wr_dump = open_write(filename,FALSE);
       float_image_write(wr_dump,OZ);
       fclose(wr_dump);
@@ -1854,8 +1850,7 @@ void pst_img_graph_integration_recursive(
   pst_img_graph_put_solution_into_image(g,iZ,OZ);
   if(debug)
 {
-    char *filename = NULL;
-    asprintf(&filename,"%s-%02d-oZ.fni",out_prefix,level);
+    char *filename = jsprintf("%s-%02d-oZ.fni",out_prefix,level);
     FILE *wr_dump = open_write(filename,FALSE);
     float_image_write(wr_dump,OZ);
     fclose(wr_dump);
@@ -1884,7 +1879,7 @@ void pst_img_graph_integration(
 {
   
   char *filename_grph = NULL;
-  asprintf(&filename_grph,"%s-Graph-%02d.txt",out_prefix,level);
+  char *filename_grph = jsprintf("%s-Graph-%02d.txt",out_prefix,level);
   FILE *wr_grph = open_write(filename_grph,FALSE);
    pst_img_graph_print(wr_grph,g);
   fclose(wr_grph);
@@ -1897,15 +1892,14 @@ void pst_img_graph_integration(
   imgsys_t *S = pst_img_graph_build_integration_system(g,iW,OZ->sz[1],OZ->sz[2],&ref_tab);
   
   
-  char *filename = NULL;
-  asprintf(&filename,"%s-%02d-S.txt",out_prefix,level);
+  char *filename = jsprintf("%s-%02d-S.txt",out_prefix,level);
   FILE *wr_dump = open_write(filename,FALSE);
   pst_imgsys_write(wr_dump,S);
   fclose(wr_dump);
   
   pst_img_graph_put_solution_into_image(g,iZ,OZ);
   filename = NULL;
-  asprintf(&filename,"%s-%02d-iZ.fni",out_prefix,level);
+  char *filename = jsprintf("%s-%02d-iZ.fni",out_prefix,level);
   wr_dump = open_write(filename,FALSE);
   float_image_write(wr_dump,OZ);
   fclose(wr_dump);
@@ -1914,7 +1908,7 @@ void pst_img_graph_integration(
 {
     pst_img_graph_put_error_into_image(g,iZ,iW,RZ,OZ);
     filename = NULL;
-    asprintf(&filename,"%s-%02d-iE.fni",out_prefix,level);
+    char *filename = jsprintf("%s-%02d-iE.fni",out_prefix,level);
     wr_dump = open_write(filename,FALSE);
     float_image_write(wr_dump,OZ);
     fclose(wr_dump);
@@ -1928,7 +1922,7 @@ void pst_img_graph_integration(
 {
     pst_img_graph_put_error_into_image(g,iZ,iW,RZ,OZ);
     filename = NULL;
-    asprintf(&filename,"%s-%02d-oE.fni",out_prefix,level);
+    char *filename = jsprintf("%s-%02d-oE.fni",out_prefix,level);
     wr_dump = open_write(filename,FALSE);
     float_image_write(wr_dump,OZ);
     fclose(wr_dump);
@@ -1936,7 +1930,7 @@ void pst_img_graph_integration(
 
   pst_img_graph_put_solution_into_image(g,iZ,OZ);
   filename = NULL;
-  asprintf(&filename,"%s-%02d-oZ.fni",out_prefix,level);
+  char *filename = jsprintf("%s-%02d-oZ.fni",out_prefix,level);
   wr_dump = open_write(filename,FALSE);
   float_image_write(wr_dump,OZ);
   fclose(wr_dump);

@@ -1,7 +1,6 @@
 /* test_ellipse --- test program for ellipse_crs.h, ellipse_ouv.h  */
-/* Last edited on 2024-11-08 11:26:42 by stolfi */
+/* Last edited on 2024-11-20 16:49:32 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -29,7 +28,7 @@
 
 int32_t main (int32_t argc, char **argv);
 
-void test_ellipse_tools(int32_t trial, bool_t verbose);
+void test_ellipse_tools(uint32_t trial, bool_t verbose);
   /* Tests the function {ellipse_ouv_nearest_point}. */
 
 ellipse_crs_t throw_ellipse_crs(double R);
@@ -53,15 +52,15 @@ void check_ellipse_border_position(ellipse_crs_t *E, r2_t *p, double hwd, double
 /* IMPLEMENTATIONS */
 
 int32_t main (int32_t argc, char **argv)
-  { int32_t i;
-    for (i = 0; i < N_RUNS; i++) 
+  { 
+    for (int32_t i = 0; i < N_RUNS; i++) 
       { test_ellipse_tools(i, i < 5); }
     fclose(Er);
     fclose(stdout);
     return (0);
   }
 
-void test_ellipse_tools(int32_t trial, bool_t verbose)
+void test_ellipse_tools(uint32_t trial, bool_t verbose)
   { 
     srand(1665 + 2*trial);
     srandom(1665 + 2*trial);

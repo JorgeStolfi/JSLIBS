@@ -38,8 +38,7 @@ int32_t main(int32_t argc, char **argv)
     fn2_data_t f = fn2_from_tag(ftag);
 
     /* Construct the output filename prefix: */
-    char *prefix = NULL;
-    asprintf(&prefix, "zf2_%s_%s_%03d", ftag, meth, order);
+    char *prefix = jsprintf("zf2_%s_%s_%03d", ftag, meth, order);
     
     if (strcmp(meth, "quad") == 0)
       { fn2_zf_quad_plots(

@@ -1,9 +1,9 @@
 /* See r3.h */
-/* Last edited on 2024-08-30 17:57:59 by stolfi */
+/* Last edited on 2024-11-20 15:49:06 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
+#include <assert.h>
 #include <math.h>
 
 #include <r3.h>
@@ -28,8 +28,8 @@ void r3_all(double x, r3_t *r)
     r->c[2] = x;
   }
 
-void r3_axis(int32_t i, r3_t *r)
-  { affirm((i >= 0) && (i < N), "r3_axis: bad index");
+void r3_axis(uint32_t i, r3_t *r)
+  { affirm(i < N, "r3_axis: bad index");
     r->c[0] = 0.0;
     r->c[1] = 0.0;
     r->c[2] = 0.0;
@@ -85,7 +85,7 @@ void r3_unweigh(r3_t *a, r3_t *w, r3_t *r)
     r->c[2] = a->c[2] / w->c[2];
   }
 
-void r3_rot_axis(r3_t *a, int32_t i, int32_t j, double ang, r3_t *r)
+void r3_rot_axis(r3_t *a, uint32_t i, uint32_t j, double ang, r3_t *r)
   {
     affirm((i >= 0) && (i < N), "r3_rot_axis: bad index {i}");
     affirm((j >= 0) && (j < N), "r3_rot_axis: bad index {j}");
@@ -272,7 +272,7 @@ bool_t r3_eq(r3_t *p, r3_t *q)
     return TRUE;
   }
   
-void r3_barycenter(int32_t np, r3_t p[], double w[], r3_t *bar)
+void r3_barycenter(uint32_t np, r3_t p[], double w[], r3_t *bar)
   { r3_t sum_wp = (r3_t){{ 0, 0, 0 }};
     double sum_w = 0.0;
     for (int32_t k = 0; k < np; k++) 
@@ -284,11 +284,10 @@ void r3_barycenter(int32_t np, r3_t p[], double w[], r3_t *bar)
     r3_scale(1.0/sum_w, &sum_wp, bar);
   }
 
-void r3_bbox(int32_t np, r3_t p[], interval_t B[], bool_t finite)
+void r3_bbox(uint32_t np, r3_t p[], interval_t B[], bool_t finite)
   { double cmin[N], cmax[N];
     for (int32_t j = 0; j < N; j++) { cmin[j] = +INF; cmax[j] = -INF; }
-    int32_t ip;
-    for (ip = 0; ip < np; ip++)
+    for (int32_t ip = 0; ip < np; ip++)
       { r3_t *pi = &(p[ip]);
         if ((! finite) || r3_is_finite(pi))
           { for (int32_t j = 0; j < N; j++) 
@@ -355,6 +354,46 @@ void r3_throw_normal(r3_t *r)
   { r->c[0] = dgaussrand();
     r->c[1] = dgaussrand();
     r->c[2] = dgaussrand();
+  }
+
+double r3_throw_ortho(r3_t *u, r3_t *r)
+  { r3_t d = (*u);
+    double umag = r3_dir(&d, &d);
+    if (umag < 1.0e-320)
+      { r3_zero(r); }
+    else
+      { /* Get a unit vector {v} orthogonal to {u}: */
+        r3_t v; double dvnorm; 
+        do 
+          { /* Set {r} to a vector orthogonal to {d}: */
+            r3_throw_ball(&v);
+            r3_cross(&d, &v, r);
+            /* Normalize it to unit length: */
+            dvnorm = r3_dir(r, r);
+          }
+        while (dvnorm < 0.1);
+        if (fabs(umag - 1) > 1.0e-14) { r3_scale(umag, r, r); }
+      }
+    return umag;
+  }
+
+double r3_throw_ortho_pair(r3_t *u, r3_t *r, r3_t *s)
+  { 
+    r3_t d = (*u);
+    double umag = r3_dir(&d, &d);
+    if (umag < 1.0e-320)
+      { r3_zero(r); r3_zero(s); }
+    else
+      { r3_throw_ortho(&d, r); 
+        r3_cross(&d, r, s);
+        double smag = r3_dir(s, s);
+        assert(fabs(smag - 1) < 1.0e-14);
+        if (fabs(umag - 1) > 1.0e-14) 
+          { r3_scale(umag, r, r);
+            r3_scale(umag, s, s);
+          }
+      }
+    return umag;
   }
 
 void r3_print(FILE *f, r3_t *a)

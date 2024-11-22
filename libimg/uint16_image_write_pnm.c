@@ -1,7 +1,6 @@
 /* See uint16_image_write.h */
 /* Last edited on 2017-07-01 00:05:22 by stolfilocal */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

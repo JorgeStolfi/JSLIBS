@@ -162,8 +162,7 @@ int32_t main(int32_t argc, char**argv)
         msm_seq_desc_t *seq1 = &(sv1[level]);
 
         /* Make filename prefix for current level: */
-        char *levName = NULL;
-        asprintf(&levName, "%s-%02d", o->outName, level);
+        char *levName = jsprintf("%s-%02d", o->outName, level);
         
         if (level == M)
           { /* Set {cdv} to an arbitrary set of initial candidates: */

@@ -1,7 +1,6 @@
 /* See {hr3_pmap_test_tools.h}. */
-/* Last edited on 2024-11-04 06:37:01 by stolfi */
+/* Last edited on 2024-11-20 12:04:52 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>

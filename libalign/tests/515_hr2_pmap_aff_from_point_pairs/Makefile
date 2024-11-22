@@ -1,6 +1,6 @@
-# Last edited on 2024-11-08 11:19:53 by stolfi
+# Last edited on 2024-11-09 09:43:07 by stolfi
 
-PROG = test_hr2_pmap_aff_from_point_pairs
+PROG = test_hr2_pmap_affine_from_point_pairs
 
 TEST_LIB := libalign.a
 TEST_LIB_DIR := ../..

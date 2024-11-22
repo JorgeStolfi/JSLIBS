@@ -1,7 +1,6 @@
 /* See {float_image_overlay.h}. */
 /* Last edited on 2023-02-07 22:03:01 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <limits.h>
 #include <stdint.h>

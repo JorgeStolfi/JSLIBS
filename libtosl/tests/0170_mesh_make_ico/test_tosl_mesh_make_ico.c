@@ -44,8 +44,7 @@ void do_test(int8_t debug)
     tosl_mesh_check(mesh);
     
     fprintf(stderr, "writing as OBJ file...\n");
-    char *fname_obj= NULL;
-    asprintf(&fname_obj, "out/test.obj");
+    char *fname_obj = jsprintf("out/test.obj");
     FILE *wr_obj = fopen(fname_obj, "w");
     assert(wr_obj != NULL);
     tosl_mesh_obj_write(wr_obj, mesh);

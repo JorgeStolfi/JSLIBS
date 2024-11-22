@@ -1,10 +1,9 @@
 /* Group sorting of {uint32_t} integers */
-/* Last edited on 2016-04-17 10:00:59 by stolfilocal */
+/* Last edited on 2024-11-15 19:12:47 by stolfi */
 
 #ifndef group_sort_uint32_H
 #define group_sort_uint32_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 void group_sort_uint32

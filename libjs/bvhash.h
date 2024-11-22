@@ -1,10 +1,9 @@
 /* Mapping arbitrary byte strings into 64-bit hashes */
-/* Last edited on 2015-10-09 15:31:43 by stolfilocal */
+/* Last edited on 2024-11-15 19:11:39 by stolfi */
 
 #ifndef bvhash_H
 #define bvhash_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdlib.h>
 

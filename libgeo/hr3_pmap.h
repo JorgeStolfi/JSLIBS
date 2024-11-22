@@ -1,5 +1,5 @@
 /* Oriented projective maps in three dimensions. */
-/* Last edited on 2024-11-03 07:39:39 by stolfi */ 
+/* Last edited on 2024-11-20 12:04:27 by stolfi */ 
 
 #ifndef hr3_pmap_H
 #define hr3_pmap_H
@@ -57,7 +57,7 @@ double hr3_pmap_diff_sqr(hr3_pmap_t *M, hr3_pmap_t *N);
     elements of {M.dir} and {N.dir} and of {M.inv} and {N.inv},
     after implicitly scaling both so that the sum of squared elements is 1. */
 
-double hr3_pmap_mismatch_sqr(hr3_pmap_t *M, int32_t np, r3_t p1[], r3_t p2[]);
+double hr3_pmap_mismatch_sqr(hr3_pmap_t *M, uint32_t np, r3_t p1[], r3_t p2[]);
   /* Computes the mean squared distance between the
      mapped points {p1[0..np-1]} mapped by {M.dir} and the 
      points {p2[0..np-1]} mapped by {M.inv}. */

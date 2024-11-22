@@ -1,9 +1,7 @@
 #ifndef jslibs_copyright_H
 #define jslibs_copyright_H
 
-/* Last edited on 2023-10-05 20:14:06 by stolfi */
-
-#define _GNU_SOURCE
+/* Last edited on 2024-11-15 19:14:17 by stolfi */
 
 #define jslibs_copyright \
   "The copyright notice by the State University of Campinas (UNICAMP) and" \

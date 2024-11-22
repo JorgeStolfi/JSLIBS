@@ -1,7 +1,6 @@
 /* See r3_motion.h */
-/* Last edited on 2021-06-09 19:54:46 by jstolfi */
+/* Last edited on 2024-11-20 15:50:48 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -10,6 +9,7 @@
 #include <bool.h>
 #include <r3x3.h>
 #include <affirm.h>
+#include <jsprintf.h>
 
 #include <r3_motion.h>
 
@@ -30,7 +30,7 @@ void r3_motion_sample_uniform
   ( r3_motion_proc_t path,
     double t0,
     double t1,
-    int32_t n,
+    uint32_t n,
     bool_t mids,
     double t[],
     r3_motion_state_t S[]
@@ -70,8 +70,7 @@ void r3_motion_sample_uniform
     if (n <= 2) { return; }
 
     /* Get the other samples: */
-    int32_t k;
-    for (k = 1; k <= n-2; k++)
+    for (int32_t k = 1; k <= n-2; k++)
       { double rk = ((double) k)/((double) n - 1);
         double tk = (1 - rk)*ts0 + rk*ts1;
         if (t != NULL) { t[k] = tk; }
@@ -117,8 +116,7 @@ void r3_motion_helix(double t, double L, double A, double H, r3_motion_state_t *
         double a = atan2(H,L); /* Tilt angle of spiral. */
         double ca = cos(a);
         double sa = sin(a);
-        int32_t j;
-        for (j = 0; j < 3; j++)
+        for (int32_t j = 0; j < 3; j++)
           { double oldU = S->M.c[0][j];
             double oldW = S->M.c[2][j];
             double newU = + ca*oldU + sa*oldW;
@@ -152,8 +150,7 @@ void r3_motion_state_gen_print
     fputs(olp, f);
     fputs("p", f);
     r3_gen_print(f, &(S->p), pfmt, ilp, isep, irp);
-    int32_t i;
-    for (i = 0; i < 3; i++)
+    for (int32_t i = 0; i < 3; i++)
       { fputs(osep, f);
         r3_t vi; r3x3_get_row(&(S->M), i, &vi);
         fputc("uvw"[i], f);
@@ -164,8 +161,8 @@ void r3_motion_state_gen_print
   }
 
 void r3_motion_state_debug(FILE *wr, r3_motion_state_t *S, char *indent, char *title)
-  { char *olp; asprintf(&olp, "%s%s state:\n%s  ", indent, title, indent);
-    char *osep; asprintf(&osep, "\n%s  ", indent);
+  { char *olp = jsprintf("%s%s state:\n%s  ", indent, title, indent);
+    char *osep = jsprintf("\n%s  ", indent);
     r3_motion_state_gen_print
       ( wr, S,
         "%.2f", "%+9.6f",

@@ -1,7 +1,6 @@
 /* See {codetree.h}. */
-/* Last edited on 2023-02-07 20:16:47 by stolfi */
+/* Last edited on 2024-11-20 06:51:50 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <limits.h>
@@ -10,13 +9,13 @@
 #include <stdlib.h>
 
 #include <jsstring.h>
+#include <jsprintf.h>
 #include <fget.h>
 #include <affirm.h>
 
 #include <codetree.h>
 
-#define MAX_VALUE codetree_MAX_VALUE
-#define MIN_VALUE codetree_MIN_VALUE
+#define MAX_VALUE codetree_data_MAX_VALUE
 #define MAX_LEAVES codetree_MAX_LEAVES
 #define MAX_INTERNALS codetree_MAX_INTERNALS
 #define MAX_NODES codetree_MAX_NODES
@@ -56,22 +55,26 @@ codetree_node_count_t codetree_num_leaves(codetree_t *tree)
       }
   }
   
-codetree_node_t *codetree_new_leaf(codetree_value_t val)
+codetree_node_t *codetree_new_leaf(codetree_data_value_t val)
   {
     demand(val >= 0, "invalid value {val}");
     demand(val <= MAX_VALUE, "invalid value {val}");
     size_t sz = (size_t)(sizeof(codetree_node_t) - 2*sizeof(codetree_node_t*));
     assert(sz >= sizeof(uint32_t));
     codetree_node_t *p = (codetree_node_t *)notnull(malloc(sz), "no mem");
-    p->value = val;
+    p->value = (codetree_node_value_t)val;
     return p;
   }
 
-codetree_node_t *codetree_new_internal(codetree_node_count_t seq, codetree_node_t *child0, codetree_node_t *child1)
+codetree_node_t *codetree_new_internal
+  ( codetree_node_count_t seq,
+    codetree_node_t *child0,
+    codetree_node_t *child1
+  )
   { demand((seq >= 0) && (seq < MAX_INTERNALS), "invalid internal node sequence num");
     size_t sz = sizeof(codetree_node_t);
     codetree_node_t *p = (codetree_node_t *)notnull(malloc(sz), "no mem");
-    p->value = MIN_VALUE + seq;
+    p->value = (codetree_node_value_t)(codetree_node_MIN_VALUE + (int32_t)seq);
     p->child[0] = child0;
     p->child[1] = child1;
     return p;
@@ -81,9 +84,9 @@ codetree_bit_count_t codetree_decode
   ( codetree_byte_count_t nb, 
     byte_t buf[], 
     codetree_t *tree, 
-    codetree_value_t maxval, 
+    codetree_data_value_t maxval, 
     codetree_sample_count_t ns, 
-    codetree_value_t smp[]
+    codetree_data_value_t smp[]
   )
   {
     bool_t debug = FALSE;
@@ -113,7 +116,7 @@ codetree_bit_count_t codetree_decode
             demand(nu < MAX_BITS, "too many bits in encoded string");
             nu++;
           }
-        codetree_value_t val = p->value;
+        codetree_data_value_t val = (codetree_data_value_t)p->value;
         if (debug) 
           { fprintf(stderr, " smp[%3lu] = %d", ks, val);
             fprintf(stderr, "\n");
@@ -127,8 +130,8 @@ codetree_bit_count_t codetree_decode
 
 codetree_bit_count_t codetree_encode
   ( codetree_sample_count_t ns,
-    codetree_value_t smp[], 
-    codetree_value_t maxval, 
+    codetree_data_value_t smp[], 
+    codetree_data_value_t maxval, 
     codetree_node_count_t nd,
     codetree_delta_t delta[], 
     codetree_byte_count_t nb, 
@@ -151,9 +154,9 @@ codetree_bit_count_t codetree_encode
     
     for (codetree_sample_count_t ks = 0; ks < ns; ks++)
       { /* Encode {smp[ks]}. */
-        codetree_value_t val = smp[ks];
+        codetree_data_value_t val = smp[ks];
         demand((val >= 0) && (val <= maxval), "invalid sample value");
-        codetree_node_count_t id = val; /* Index into {delta} */
+        codetree_node_count_t id = (uint32_t)val; /* Index into {delta} */
         enc(id);
       }
     assert(nb_used == (nu + 7)/8);
@@ -185,7 +188,7 @@ codetree_bit_count_t codetree_encode
   
 codetree_node_count_t codetree_get_encoding_table
   ( codetree_t *tree, 
-    codetree_value_t maxval, 
+    codetree_data_value_t maxval, 
     codetree_node_count_t nd,
     codetree_delta_t delta[]
   )
@@ -211,7 +214,7 @@ codetree_node_count_t codetree_get_encoding_table
     
     assert((nvalid > 0) && (nvalid <= maxval+1));
     assert(nint == nvalid - 1);
-    codetree_node_count_t md = (maxval + 1) + nint; /* {delta} entries actually used. */
+    codetree_node_count_t md = maxval + 1 + nint; /* {delta} entries actually used. */
     assert(md <= nd);
     assert((ir <= maxval) || (ir == md-1));
     return md;
@@ -219,18 +222,20 @@ codetree_node_count_t codetree_get_encoding_table
     /* -------------------------------------------------- */
     
     codetree_node_count_t trans(codetree_node_t *q, int32_t level)
-      { codetree_value_t val = q->value;
+      { codetree_node_value_t nval = q->value;
         codetree_node_count_t id; /* Index in {delta} assigned to {q}. */
-        if (val >= 0)
-          { if (debug) { fprintf(stderr, "    | %*sval = %d\n", 2*level, "", val); }
+        if (nval >= 0)
+          { codetree_data_value_t  val = (codetree_data_value_t)nval;
+            if (debug) { fprintf(stderr, "    | %*sval = %d\n", 2*level, "", val); }
             demand(val <= maxval, "invalid value in tree leaf");
             demand(nvalid < MAX_LEAVES, "too many leaves in tree");
             nvalid++;
             /* The {delta} entry index for a leaf is its value: */
-            id = val;
+            id = (codetree_node_count_t)val;
           }
         else
-          { if (debug) { fprintf(stderr, "    | %*sseq = %d\n", 2*level, "", val - MIN_VALUE); }
+          { codetree_node_count_t seq = (codetree_node_count_t)(nval - codetree_node_MIN_VALUE); /* Sequence number in tree.*/
+            if (debug) { fprintf(stderr, "    | %*sseq = %d\n", 2*level, "", seq); }
             /* Setup table for subtrees: */
             codetree_node_count_t id_ch[2];
             for (int8_t ich = 0; ich < 2; ich++) 
@@ -238,12 +243,12 @@ codetree_node_count_t codetree_get_encoding_table
 
             /* Assign index {id} for this node: */
             id = (codetree_node_count_t)(maxval + 1 + nint);
-            if (debug) { fprintf(stderr, "    | %*sseq = %d  id = %u\n", 2*level, "", val - MIN_VALUE, id); }
+            if (debug) { fprintf(stderr, "    | %*sseq = %d  id = %u\n", 2*level, "", seq, id); }
             nint++;
 
             /* Set parent pointers of children: */
             demand(id_ch[0] != id_ch[1], "repeated value in table");
-            for (int8_t ich = 0; ich < 2; ich++) 
+            for (uint8_t ich = 0; ich < 2; ich++) 
               { assert(id_ch[ich] < id);
                 assert(delta[id_ch[ich]] == 0);
                 delta[id_ch[ich]] = 2*(id - id_ch[ich]) + ich;
@@ -259,7 +264,7 @@ codetree_node_count_t codetree_get_encoding_table
 codetree_t *codetree_get_decoding_tree
   ( codetree_node_count_t nd,
     codetree_delta_t delta[],
-    codetree_value_t maxval
+    codetree_data_value_t maxval
   )
   {
     if (nd == 0) { return NULL; }
@@ -268,9 +273,9 @@ codetree_t *codetree_get_decoding_tree
     
     /* Count valid values: */
     codetree_node_count_t nvalid = 0; /* Number of valid values. */
-    codetree_value_t aval; /* Some valid value. */ 
+    codetree_data_value_t aval; /* Some valid value. */ 
     for (codetree_node_count_t id = 0; id <= maxval; id++) 
-      { if (delta[id] != 0) { aval = (codetree_value_t)id; nvalid++; } }
+      { if (delta[id] != 0) { aval = (codetree_data_value_t)id; nvalid++; } }
     
     /* If there are no leaf nodes, the tree is {NULL} and no samples can be encoded. */
     if (nvalid == 0) { return NULL; }
@@ -289,7 +294,7 @@ codetree_t *codetree_get_decoding_tree
     /* Create the leaf nodes: */
     for (codetree_node_count_t id = 0; id <= maxval; id++)
       { if (delta[id] != 0)
-          { nodes[id] = codetree_new_leaf((codetree_value_t)id); }
+          { nodes[id] = codetree_new_leaf((codetree_data_value_t)id); }
         else
           { nodes[id] = NULL; }
       }
@@ -338,7 +343,7 @@ void codetree_check_iso(codetree_t *p, codetree_t *q)
       }
   }
 
-void codetree_check_tree(codetree_t *tree, codetree_value_t maxval)
+void codetree_check_tree(codetree_t *tree, codetree_data_value_t maxval)
   { 
     fprintf(stderr, "\n");
     fprintf(stderr, "----------------------------------------------------------------------\n");
@@ -354,7 +359,8 @@ void codetree_check_tree(codetree_t *tree, codetree_value_t maxval)
       { demand(tree == NULL, "non-empty tree with empty set {V}"); }
     else if (nvalid == 1)
       { demand((tree != NULL) && (tree->value >= 0), "tree for single {V} must be a leaf");
-        demand(tree->value <= maxval, "invalid value in leaf node");
+        codetree_data_value_t val = (codetree_data_value_t)tree->value;
+        demand(val <= maxval, "invalid value in leaf node");
       }
     else
       { fprintf(stderr, "  building the encoding table from the tree...\n");
@@ -377,13 +383,13 @@ void codetree_check_tree(codetree_t *tree, codetree_value_t maxval)
     fprintf(stderr, "\n");
   }
           
-void codetree_check_table(codetree_node_count_t nd, codetree_delta_t delta[], codetree_value_t maxval)
+void codetree_check_table(codetree_node_count_t nd, codetree_delta_t delta[], codetree_data_value_t maxval)
   {
     fprintf(stderr, "\n");
     fprintf(stderr, "----------------------------------------------------------------------\n");
     fprintf(stderr, "--- begin {codetree_check_table} - {nd} = %u {maxval} = %u\n", nd, maxval);
 
-    demand((maxval >= 0) && (maxval <= MAX_VALUE), "bad {mxval}");
+    demand(maxval <= MAX_VALUE, "bad {mxval}");
     demand((nd >= maxval) && (nd <= MAX_NODES), "invalid table size {nd}");
     
     fprintf(stderr, "  obtaining the decoding tree from the table...\n");
@@ -395,11 +401,11 @@ void codetree_check_table(codetree_node_count_t nd, codetree_delta_t delta[], co
     assert(md <= nd);
     
     fprintf(stderr, "  comparing the two tables...\n");
-    for(codetree_value_t val = 0; val <= maxval; val++)
+    for(codetree_data_value_t val = 0; val <= maxval; val++)
       { demand((delta[val] == 0) == (delta2[val] == 0), "only one of {delta,delta2} is zero");
         if (delta[val] != 0)
-          { codetree_node_count_t id1 = val;
-            codetree_node_count_t id2 = val;
+          { codetree_node_count_t id1 = (uint32_t)val;
+            codetree_node_count_t id2 = (uint32_t)val;
             while ((id1 < md-1) || (id2 < md-1))
               { demand((id1 < md-1) == (id2 < md-1), "only one reached the root");
                 int8_t ich1 = delta[id1] % 2;
@@ -429,7 +435,7 @@ codetree_node_count_t codetree_print_codes(FILE *wr, codetree_t *tree)
   { 
     if (tree == NULL) { fprintf(wr, "empty tree\n"); return 0; }
 
-    int32_t nv = 0;
+    uint32_t nv = 0;
     
     auto void enum_leaves(char *pref, codetree_node_t *p);
       /* Prints the values and codes of the subtree rooted at {p},
@@ -443,8 +449,7 @@ codetree_node_count_t codetree_print_codes(FILE *wr, codetree_t *tree)
     void enum_leaves(char *pref, codetree_node_t *p)
       { if (p->value < 0)
           { for (int8_t ich = 0; ich < 2; ich++)
-              { char *pref_ch = NULL;
-                asprintf(&pref_ch, "%s%d", pref, ich);
+              { char *pref_ch = jsprintf("%s%d", pref, ich);
                 enum_leaves(pref_ch, p->child[ich]);
                 free(pref_ch);
               }
@@ -456,10 +461,10 @@ codetree_node_count_t codetree_print_codes(FILE *wr, codetree_t *tree)
       }
   }
 
-codetree_node_count_t codetree_check_codes(codetree_t *tree, codetree_value_t maxval, char *code[])
+codetree_node_count_t codetree_check_codes(codetree_t *tree, codetree_data_value_t maxval, char *code[])
   { /* Check if the codes lead to the desired values, note max code length {maxlen}: */
-    int32_t ncode = 0; /* Number of non-null codes. */
-    for (codetree_value_t val = 0; val <= maxval; val++)
+    uint32_t ncode = 0; /* Number of non-null codes. */
+    for (codetree_data_value_t val = 0; val <= maxval; val++)
       { char *ck = code[val];
         if (ck != NULL)
           { ncode++;

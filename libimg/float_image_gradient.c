@@ -1,7 +1,6 @@
 /* See {float_image_gradient.h}. */
 /* Last edited on 2023-11-26 06:45:28 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <assert.h>
 #include <values.h>

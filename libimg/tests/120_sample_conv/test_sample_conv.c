@@ -57,7 +57,6 @@
   " {sample_conv_floatize}.  The {MAXVAL} must be a positive" \
   " integer, {(!ISMASK)} is a boolean, and {LO,HI} are float values, defaulting to 0 and 1."
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <float.h>
 #include <stdio.h>

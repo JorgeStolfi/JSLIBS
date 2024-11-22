@@ -1,5 +1,5 @@
 /* r6x6.h --- 4x4 matrices and operations on them */
-/* Last edited on 2023-10-09 09:02:35 by stolfi */
+/* Last edited on 2024-11-20 13:01:29 by stolfi */
 
 #ifndef r6x6_H
 #define r6x6_H
@@ -7,6 +7,8 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
+
+#include <sign.h>
 #include <r6.h>
 
 typedef struct r6x6_t { double c[6][6]; } r6x6_t;
@@ -19,15 +21,22 @@ void r6x6_zero(r6x6_t *M);
 void r6x6_ident(r6x6_t *M);
   /* Stores in {M} the identity matrix. */
 
+void r6x6_throw(r6x6_t *M, sign_t sgn);
+  /* Fills {M} with random elements in the range {[-1 _ +1]}.
+    The {sgn} must be {-1}, 0, or {+1}. If it is not zero,
+    the matrix will have a nonzero determinant of that sign.
+    If {sgn} is zero, the determinant may have any sign,
+    including zero. */
+
 void r6x6_transp (r6x6_t *A, r6x6_t *M);
   /* Sets {M} to the transpose {A^t} of matrix {A} */
 
-void r6x6_get_row(r6x6_t *A, int32_t i, r6_t *x);
-void r6x6_set_row(r6x6_t *A, int32_t i, r6_t *x);
+void r6x6_get_row(r6x6_t *A, uint32_t i, r6_t *x);
+void r6x6_set_row(r6x6_t *A, uint32_t i, r6_t *x);
   /* These two procedures copy row {i} of matrix {A} to and from vector {x}, respectively. */
 
-void r6x6_get_col(r6x6_t *A, int32_t j, r6_t *x);
-void r6x6_set_col(r6x6_t *A, int32_t j, r6_t *x);
+void r6x6_get_col(r6x6_t *A, uint32_t j, r6_t *x);
+void r6x6_set_col(r6x6_t *A, uint32_t j, r6_t *x);
   /* These two procedures copy column {j} of matrix {A} to and from vector {x}, respectively. */
 
 void r6x6_map_row (r6_t *x, r6x6_t *A, r6_t *r);

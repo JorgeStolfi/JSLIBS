@@ -1,5 +1,5 @@
 /* rmxn_transform_quadratic.h --- restricts a quadratic form to a linear subspace */
-/* Last edited on 2021-12-24 20:31:50 by stolfi */
+/* Last edited on 2024-11-20 13:08:49 by stolfi */
 
 #ifndef rmxn_transform_quadratic_H
 #define rmxn_transform_quadratic_H
@@ -11,7 +11,15 @@
 #include <rn.h>
 #include <rmxn.h>
 
-void rmxn_transform_quadratic(int32_t n, double E[], double e[], int32_t m, double U[], double F[], double f[]);
+void rmxn_transform_quadratic
+  ( uint32_t n,
+    double E[],
+    double e[],
+    uint32_t m,
+    double U[],
+    double F[],
+    double f[]
+  );
   /* The parameters {E}, {U}, and {F} must be matrices of size {n×n}, {m×n}, and {m×m},
     respectively, linearized by rows. 
     

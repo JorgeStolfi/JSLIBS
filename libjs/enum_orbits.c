@@ -1,5 +1,5 @@
 /* See enum_orbits.h. */
-/* Last edited on 2016-12-07 07:21:17 by jstolfi */
+/* Last edited on 2024-11-22 02:18:51 by stolfi */
 
 #define enum_orbits_C_copyright \
   "Copyright © 1996, 2006 Institute of Computing, Unicamp."
@@ -11,19 +11,20 @@
   latter was converted to C by J. Stolfi in 1996 and was substantially
   revised by him in January 2007. */
 
+#include <stdint.h>
+#include <malloc.h>
+#include <assert.h>
+
+#include <jswsize.h>
+#include <ulist.h>
+#include <ref.h>
+#include <bool.h>
+#include <vec.h>
+
 #include <enum_orbits.h>
 
-#include <vec.h>
-#include <bool.h>
-#include <ref.h>
-#include <ulist.h>
-#include <jswsize.h>
-
-#include <malloc.h>
-#include <stdint.h>
-
 bool_t enum_cycle(ref_t p, enum_step_t step, enum_visit_t visit, ref_vec_t *vP)
-  { int nP = 0; /* Visited places are {vP->e[0..nP-1]}, if {vP != NULL}. */ 
+  { uint32_t nP = 0; /* Visited places are {vP->e[0..nP-1]}, if {vP != NULL}. */ 
     ref_t q = p;
     bool_t stop = FALSE;
     do 
@@ -47,7 +48,7 @@ bool_t enum_items
   )
   {
     ref_vec_t Q = (vP != NULL ? *vP : ref_vec_new(INIT_QUEUE_SIZE));
-    int nQ = (vP != NULL ? vP->ne : 0);
+    uint32_t nQ = (vP != NULL ? vP->ne : 0);
       /* The places visited so far (including pre-existing entries
         in {vP}, f any) are {Q[0..nQ-1]}, in stratified order. */
 
@@ -64,7 +65,7 @@ bool_t enum_items
     
     bool_t stop = FALSE; /* Set to TRUE if any {visit[k]} returns TRUE. */
 
-    auto void enum_one(ref_t p, int n);
+    auto void enum_one(ref_t p, uint32_t n);
       /* If {p} is already marked, do nothing. If {p} is unmarked, the
         procedure assumes that {p} was reached through {step[n]} (or,
         if {n==nst}, that {p} is a root). The procedure then marks and
@@ -74,7 +75,7 @@ bool_t enum_items
         is the index of the last step used to reach {q}. Stops as soon
         as a {visit[k]} procedure returns TRUE. */
     
-    auto void close_orbit(int n);
+    auto void close_orbit(uint32_t n);
       /* Finds all unmarked items that can be reached from item
         {Q[nQ-1]} by chains of steps in {step[0..n-1]}; marks every
         such item {q}, appends {q} to {Q[0..nQ-1]}, and visits {q}
@@ -86,8 +87,7 @@ bool_t enum_items
     init_marking();
     
     /* Enumerate all roots: */
-    int i;
-    for (i = 0; (i < root.ne) && (! stop); i++)
+    for (int32_t i = 0; (i < root.ne) && (! stop); i++)
       { enum_one(root.e[i], ns); }
 
     /* Release the marking table storage: */
@@ -104,7 +104,7 @@ bool_t enum_items
 
     /* MAIN PROCEDURE */
     
-    void enum_one(ref_t p, int n)
+    void enum_one(ref_t p, uint32_t n)
       { if (! check_and_set_mark(p))
           { /* New item, stack it: */
             ref_vec_expand(&Q, nQ); 
@@ -117,9 +117,10 @@ bool_t enum_items
           }
       }
     
-    void close_orbit(int n)
+    void close_orbit(uint32_t n)
       { if (n > 0)
-          { int nX = nQ - 1;
+          { assert(nQ > 0);
+            uint32_t nX = nQ - 1;
             close_orbit(n-1);
             while((nX < nQ) && (! stop))
               { ref_t q = Q.e[nX]; nX++;
@@ -143,8 +144,8 @@ bool_t enum_items
           { return TRUE; }
         else
           { (void)ulist_insert_last(M, up);
-            unsigned int ctM = ulist_count(M);
-            unsigned int szM = ulist_capacity(M);
+            uint32_t ctM = ulist_count(M);
+            uint32_t szM = ulist_capacity(M);
             if (2*ctM > szM) { ulist_resize(M, 2*szM+1, NULL); }
             return FALSE;
           }
@@ -164,7 +165,7 @@ bool_t enum_orbits
     ref_vec_t *vP
   )
   {
-    int nvis; /* Counts arcs added to {vP}. */
+    uint32_t nvis; /* Counts arcs added to {vP}. */
     
     auto bool_t do_visit(ref_t p);
     /* A visit-func to be called when starting a new root or 
@@ -173,12 +174,11 @@ bool_t enum_orbits
        {nvis}. */
     
     /* Create the step-funcs and visit-funcs for enumeration: */
-    int ns = ni + no;
+    uint32_t ns = ni + no;
     enum_step_t *stp[ns];
     enum_visit_t *vis[ns+1];
-    int i;
-    for (i = 0; i < ns; i++)
-      { stp[i] = (i < ni ? istep[i] : ostep[i - ni]);
+    for (int32_t i = 0; i < ns; i++)
+      { stp[i] = (i < ni ? istep[i] : ostep[i - (int32_t)ni]);
         vis[i] = (i < ni ? NULL : &do_visit);
       }
     vis[ns] = &do_visit;

@@ -1,5 +1,5 @@
 /* in_test_tools.h --- tools for testing the {libgeo} functions. */
-/* Last edited on 2021-06-09 20:32:07 by jstolfi */
+/* Last edited on 2024-11-20 12:37:10 by stolfi */
 /* Created 2005-07-20 by J. Stolfi. */
 
 #ifndef in_test_tools_H
@@ -26,6 +26,6 @@
 #define in_check_eq(x, y, i, j, msg)  in_do_check_eq(x, y, i, j, msg, in_LOCARGS)
   /* Checks that the {double}s {x} and {y} are exactly equal. */
 
-void in_do_check_eq(int64_t x, int64_t y, int32_t *i, int32_t *j, char *msg, in_LOCPARMS);
+void in_do_check_eq(int64_t x, int64_t y, uint32_t *i, uint32_t *j, char *msg, in_LOCPARMS);
 
 #endif

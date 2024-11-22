@@ -1,12 +1,11 @@
 #ifndef jsstring_H
 #define jsstring_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <bool.h>
 
 /* J. Stolfi's miscellaneous string utilities. */
-/* Last edited on 2024-06-28 02:05:40 by stolfi */
+/* Last edited on 2024-11-15 19:14:38 by stolfi */
 
 typedef char* string_t;
   /* A more logical name for strings. */

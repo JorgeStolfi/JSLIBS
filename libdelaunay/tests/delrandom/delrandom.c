@@ -45,8 +45,7 @@ int32_t main(int32_t argc, char **argv)
     epswr_figure_t *eps = delaunay_plot_new_figure(prefix, tag, capLines, st, nsites); 
     
     epswr_text(eps, "Delaunay and Voronoi", FALSE, 0.5, TRUE, FALSE);
-    char *capt2 = NULL;
-    asprintf(&capt2, "%s random sites", distr);
+    char *capt2 = jsprintf("%s random sites", distr);
     epswr_text(eps, capt2, FALSE, 0.5, TRUE, FALSE);
     free(capt2);
 

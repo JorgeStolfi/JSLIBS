@@ -2,9 +2,8 @@
 #define js_H
 
 /* J. Stolfi's miscellaneous general-purpose definitions */
-/* Last edited on 2017-08-02 09:13:58 by jstolfi */
+/* Last edited on 2024-11-15 19:14:02 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 /* #include <sys/time.h> */
 #include <time.h>

@@ -1,10 +1,9 @@
 /* See argparser.h. */
-/* Last edited on 2023-10-14 10:26:28 by stolfi */
+/* Last edited on 2024-11-22 02:17:45 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 /* Based on Params.m3 by J.Stolfi, DEC-SRC, 1988.  */
 
-#define _GNU_SOURCE
 #include <limits.h>
 #include <float.h>
 #include <math.h>
@@ -20,7 +19,7 @@
 #include <argparser.h>
 #include <argparser_extra.h>
 
-void argparser_check_all_parsed(argparser_t *pp, int32_t num);
+void argparser_check_all_parsed(argparser_t *pp, uint32_t num);
   /* Checks whether all arguments between {argv[1]} and {argv[num-1]}
     have been parsed.  Fails with a message if any wasn't. */
 
@@ -28,10 +27,10 @@ void argparser_check_all_parsed(argparser_t *pp, int32_t num);
 
 argparser_t *argparser_new(FILE *wr, int32_t argc, char **argv)
   { argparser_t *pp = (argparser_t *)notnull(malloc(sizeof(argparser_t)), "no mem");
-    pp->arg.ne = argc;
+    pp->arg.ne = (uint32_t)argc;
     pp->arg.e = argv;
     pp->wr = wr;
-    pp->parsed = bool_vec_new(argc);
+    pp->parsed = bool_vec_new((uint32_t)argc);
     pp->parsed.e[0] = TRUE;
     for (int32_t i = 1; i < argc; i++) { pp->parsed.e[i] = FALSE; }
     pp->next = 1;
@@ -88,7 +87,7 @@ bool_t argparser_keyword_present(argparser_t *pp, char *key)
 
 void argparser_get_keyword(argparser_t *pp, char *key)
   { if (! argparser_keyword_present(pp, key))
-      { argparser_arg_msg(pp, "", -1, "keyword \"%s\" not found.\n", key);
+      { argparser_arg_msg(pp, "", 0, "keyword \"%s\" not found.\n", key);
         argparser_print_help_and_halt(pp, 1);
       }
   }
@@ -270,10 +269,10 @@ bool_t argparser_keyword_present_next(argparser_t *pp, char *key)
 #define argparser_show_bogus_max 5
   /* Max leftover args to print. */
 
-void argparser_check_all_parsed(argparser_t *pp, int32_t num)
+void argparser_check_all_parsed(argparser_t *pp, uint32_t num)
   { int32_t bogus = 0;
     bool_t *p = pp->parsed.e;
-    for (int32_t i = 0; i < num; i++)
+    for (int32_t i = 1; i < num; i++)
       { if (! p[i])
           { bogus++;
             if (bogus <= argparser_show_bogus_max)

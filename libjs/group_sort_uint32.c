@@ -1,7 +1,6 @@
 /* See {group_sort_uint32.h}. */
-/* Last edited on 2016-04-17 10:02:23 by stolfilocal */
+/* Last edited on 2024-11-22 02:19:56 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -13,9 +12,9 @@
 void group_sort_uint32
   ( uint32_t ni,        /* Number of integers to sort. */
     uint32_t ng,        /* Number of groups. */
-    uint32_t group[],   /* Group assigned to each integer. */
+    int32_t group[],    /* Group assigned to each integer. */
     uint32_t isort[],   /* (OUT) Integers {0..ni-1} sorted by group. */
-    uint32_t gstart[]   /* (OUT) Beg and end of each group in {isort}. */
+    int32_t gstart[]    /* (OUT) Beg and end of each group in {isort}. */
   )
   {
     /* Determine the number of integers {gsize[ig]} in each group {ig}: */
@@ -51,7 +50,7 @@ void group_sort_uint32
     /* Paranoia check (should be in tests directory): */
     for (ig = 0; ig < ng; ig++) 
       { assert(gsize[ig] == 0);
-        for (uint32_t k = gstart[ig]; k < gstart[ig+1]; k++) 
+        for (int32_t k = gstart[ig]; k < gstart[ig+1]; k++) 
           { assert(group[isort[k]] == ig); }
       }
     assert(gstart[ng] == ni);

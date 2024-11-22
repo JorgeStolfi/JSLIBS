@@ -1,7 +1,6 @@
 /* See jsroot.h */
-/* Last edited on 2008-10-05 18:31:21 by stolfi */
+/* Last edited on 2024-11-15 19:14:34 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <limits.h>

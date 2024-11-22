@@ -1,5 +1,5 @@
 /* See {hr2_pmap_from_many_pairs_aux.h}. */
-/* Last edited on 2024-11-03 16:48:37 by stolfi */
+/* Last edited on 2024-11-21 21:17:35 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -20,6 +20,21 @@
 
 #include <hr2_pmap_from_many_pairs.h>
 #include <hr2_pmap_from_many_pairs_aux.h>
+
+void hr2_pmap_from_many_pairs_choose_yrad
+  ( hr2_pmap_type_t type,
+    sign_t sgn,
+    int32_t np,
+    r2_t p1[],
+    r2_t p2[],
+    int32_t n,
+    double yctr[],
+    double yrad[]
+  );
+  /* Chooses a suitable parameter {yrad[0..n-1]} so that 
+    the optimum is in the box {yctr ± yrad},
+    and changing each encoding element {yctr[k]} by {eps*yrad[k]} 
+    will have about the same effect on the mismatch squared. */
 
 void hr2_pmap_from_many_pairs_try_find_frame_pair
   ( hr2_pmap_type_t type,
@@ -212,7 +227,7 @@ hr2_pmap_t hr2_pmap_from_many_pairs_initial
         /* If the barycenter is NAN or infinite, there must be bad points: */
         demand((r2_is_finite(&bar1) && r2_is_finite(&bar1)), "invalid points");
         r2_t disp; r2_sub(&bar2, &bar1, &disp);
-        M = hr2_pmap_translation(&disp);
+        M = hr2_pmap_translation_from_disp(&disp);
       }
     else 
       { assert(nr >= 2);
@@ -248,8 +263,8 @@ hr2_pmap_t hr2_pmap_from_many_pairs_initial
               }
             if (type == hr2_pmap_type_AFFINE)
               { assert(nr == 3);
-                M1 = hr2_pmap_aff_from_three_points(a1, b1, c1);
-                M2 = hr2_pmap_aff_from_three_points(a2, b2, c2);
+                M1 = hr2_pmap_affine_from_three_points(a1, b1, c1);
+                M2 = hr2_pmap_affine_from_three_points(a2, b2, c2);
               }
             else if (type == hr2_pmap_type_GENERIC)
               { assert(nr == 4);
@@ -260,7 +275,7 @@ hr2_pmap_t hr2_pmap_from_many_pairs_initial
                 assert((class >= 0) && (class < 4));
                 if (class != 0)
                   { /* Apply the hither/yonder options from {class}: */
-                    hr2_pmap_t K = hr2_pmap_r2_from_class(class);
+                    hr2_pmap_t K = hr2_pmap_r2_from_sign_class(class);
                     M1 = hr2_pmap_compose(&K, &M1);
                   }
               }
@@ -278,6 +293,16 @@ hr2_pmap_t hr2_pmap_from_many_pairs_initial
       }
     return M;
   }
+
+void hr2_pmap_from_many_pairs_choose_yrad
+  ( hr2_pmap_type_t type,
+    sign_t sgn,
+    int32_t np,
+    r2_t p1[],
+    r2_t p2[],
+    int32_t n,
+    double yrad[]
+  );
 
 void hr2_pmap_from_many_pairs_optimize
   ( hr2_pmap_type_t type,
@@ -305,9 +330,13 @@ void hr2_pmap_from_many_pairs_optimize
 
     if (verbose) { fprintf(stderr, "initial rms error = %13.6f\n", sqrt(f2M)); }
 
-    double maxMod = 1.0e6; /* !!! FIX THIS !!! */
+    double yrad[n];
+    hr2_pmap_from_many_pairs_choose_yrad(type, sgn, np, p1, p2, n, yrad);
     
-    hr2_pmap_special_opt_quadratic(type, sgn, &goalf, ok_pred, maxIter, maxMod, M, &f2M, verbose);
+    hr2_pmap_special_opt_quadratic
+      ( type, sgn, &goalf, &ok_pred, 
+        yrad, maxIter, M, &f2M, verbose
+      );
 
     if (verbose) { fprintf(stderr, "final rms error = %13.6f\n", sqrt(f2M)); }
 
@@ -321,4 +350,98 @@ void hr2_pmap_from_many_pairs_optimize
     bool_t ok_pred(hr2_pmap_t *A, double fA)
       { return fA < maxErr; }
       
+  }
+
+void hr2_pmap_from_many_pairs_choose_yrad
+  ( hr2_pmap_type_t type,
+    sign_t sgn,
+    int32_t np,
+    r2_t p1[],
+    r2_t p2[],
+    double w[],
+    int32_t n,
+    double yctr[],
+    double yrad[]
+  )
+  {
+    /* !!! Improve !!! */
+    
+    /* Compute the barycenters of the point clouds: */
+    r2_t pBar1; r2_barycenter(np, p1, w, &bar1);
+    r2_t pBar2; r2_barycenter(np, p2, w, &bar2);
+    double dBar = r2_dist(&pBar1, &pBar2);
+    
+    /* Compute the RMS radii of the clouds: */
+    double pRad1 = sqrt(r2_mean_dist_sqr(np, p1, w, &pBar1));
+    double pRad2 = sqrt(r2_mean_dist_sqr(np, p2, w, &pBar2));
+    double pRad = fmax(pRad1, pRad2);
+    
+    /* Compute the overall magnification either way: */
+    double pMag = fmax(pRad1/pRad2, pRad2/pRad2);
+    
+    /* Let {D} be the typical distance between {M(p1[kp])} and {p2[kp]}
+      or {p1[kp]} and {M^{-1}(p2[kp])}.  The following numbers
+      are the approximate derivative of {D} with respect to 
+      each map encoding coordinate {y[0..n-1]} for each type of
+      encoding coordinate: */
+      
+    double fTrn = 1.0;       /* Translation. */
+    double fRot = pRad;      /* Rotation. */
+    double fMag = pMag;      /* Primary {u} vector length. */
+    double fShr = pMag*PMag; /* Relative {v} vector coords. */
+    
+    /* Let {z[0..n-1]} be the optimization coordinates. The encoding
+      coordinates will be {yctr[k] + z[k]*yrad[k]} where {yctr[k]} is
+      the encoding of the initial guess, hopefully close to the optimum
+      map. To make sure that the optimum map {M} is reached when the
+      optimization variables {z[0..n-1]} vary over {[-1 _ +1]}, the
+      radii {yrad[0..n-1]} must be at least the following, depending on
+      the type of encoding coordinate: */
+      
+    double mTrn = 2*dBar;      /* Translation. */
+    double mRot = 3*M_PI;      /* Rotation. */
+    double mMag = 2*pMag;      /* Primary {u} vector length. */
+    double mShr = 50.0;        /* Relative {v} vector coords. */
+    
+    /* !!! The {mShr} value is a hack. !!! */
+    /* !!! Should use the eigenvectors of point clouds !!! */
+    
+    /* The values of {yrad[0..n-1]} must be proportional to 
+      {fTrn}, {fRot}, etc, by some factor {srad},
+      but at least {mTrn}, {mRot}, etc. */
+    
+    double srad;
+    switch (type)
+      { case ht_IDENTITY:
+          /* Nothing to do: */
+          break;
+        case ht_TRANSLATION:
+          srad = mTrn/fTrn;
+          yrad[0] = srad*fTrn; yrad[1] = srad*fTrn;
+          break;
+        case ht_CONGRUENCE:
+          srad = fmax(mTrn/fTrn, mRot/fRot);
+          yrad[0] = srad*fRot;
+          yrad[1] = srad*fTrn; yrad[2] = srad*fTrn;
+          break;
+        case ht_SIMILARITY:
+          srad = fmax(fmax(mTrn/fTrn, mRot/fRot), mMag/fMag);
+          yrad[0] = sRad*fMag;
+          yrad[1] = sRad*fRot;
+          yrad[2] = srad*fTrn; yrad[3] = srad*fTrn;
+          break;
+        case ht_AFFINE:
+          srad = fmax(fmax(mTrn/fTrn, mRot/fRot), fmax(mMag/fMag, mShr/fShr));
+          yrad[0] = sRad*fMag;
+          yrad[1] = sRad*fRot;
+          yrad[2] = sRad*fShr; yrad[3] = sRad*fShr;
+          yrad[4] = sRad*fTrn; yrad[5] = sRad*fTrn;
+          break;
+        case ht_GENERIC:
+          break;
+        case ht_NONE:
+        default:
+          demand(FALSE, "invalid type");
+      }
+          
   }

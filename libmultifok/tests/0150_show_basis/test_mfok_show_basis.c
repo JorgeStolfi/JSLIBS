@@ -118,8 +118,7 @@ int32_t main (int32_t argc, char **argv)
           { if ((NW == 3) || (bt != DIFF))
               { for (int32_t io = 0; io <= 1; io++)
                   { bool_t ortho = (io == 1);
-                    char *basDir = NULL;
-                    asprintf(&basDir, "%s/basis-nw%03d-bt%s-wt%s-or%c", o->outDir, NW, bTypeX, wTypeX, "FT"[ortho]);
+                    char *basDir = jsprintf("%s/basis-nw%03d-bt%s-wt%s-or%c", o->outDir, NW, bTypeX, wTypeX, "FT"[ortho]);
                     mfsb_show_single_basis(NW, ws, bt, wt, ortho, basDir);
                     free(basDir);
                   }
@@ -155,8 +154,7 @@ void mfsb_show_sample_weights
           }
       }
       
-    char *fileName = NULL;
-    asprintf(&fileName, "%s/weights-wt%s-nw%03d", outDir, wTypeX, NW);
+    char *fileName = jsprintf("%s/weights-wt%s-nw%03d", outDir, wTypeX, NW);
     multifok_image_sample_weights_write(wsimg, fileName);
     free(fileName);
   

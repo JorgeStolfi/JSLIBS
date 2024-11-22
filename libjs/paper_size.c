@@ -1,7 +1,6 @@
 /* See paper_size.h */
-/* Last edited on 2023-10-01 19:46:52 by stolfi */
+/* Last edited on 2024-11-15 19:14:58 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 

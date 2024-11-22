@@ -85,8 +85,7 @@ void do_tests(double prec)
   {
     /* Write a bunch of data to "out/file0_{prec}.txt": */
     
-    char *fname0 = NULL;
-    asprintf(&fname0, "out/file0_%.12f.txt", prec);
+    char *fname0 = jsprintf("out/file0_%.12f.txt", prec);
     
     FILE *wr0 = open_write(fname0, TRUE);
     test_write_read_compare(NULL, wr0, prec, 0);
@@ -94,8 +93,7 @@ void do_tests(double prec)
     
     /* Read it back, compare, and write it again to "out/file1_{prec}.txt": */
     
-    char *fname1 = NULL;
-    asprintf(&fname1, "out/file1_%.12f.txt", prec);
+    char *fname1 = jsprintf("out/file1_%.12f.txt", prec);
     
     FILE *rd0 = open_read(fname0, TRUE);
     FILE *wr1 = open_write(fname1, TRUE);
@@ -150,7 +148,7 @@ void test_write_read_compare(FILE *rd, FILE *wr, double prec, int32_t phase)
 void test_int64(FILE *rd, FILE *wr, int32_t phase, int64_t v)
   {
     char *lab = NULL; /* Label for compare (the value as in {printf}). */
-    asprintf(&lab, "%ld", v);
+    char *lab = jsprintf("%ld", v);
     if (phase == 0)
       { fprintf(wr, "   ");
         fprintf(wr, "%ld", v);
@@ -196,7 +194,7 @@ void test_double_case
   )
   {
     char *lab = NULL; /* Label for compare (the value in "E" format). */
-    asprintf(&lab, "%.17e(%d,%.12f,%c,%c,%c)", v, phase, prec, "FT"[sgn], "FT"[fudge_0], "FT"[fudge_1]);
+    char *lab = jsprintf("%.17e(%d,%.12f,%c,%c,%c)", v, phase, prec, "FT"[sgn], "FT"[fudge_0], "FT"[fudge_1]);
 
     if (phase == 0)
       { fprintf(wr, "   ");

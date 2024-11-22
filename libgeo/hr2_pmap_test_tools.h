@@ -1,5 +1,5 @@
 /* Test tools for {hr2_pmap.h} test program  */
-/* Last edited on 2024-11-07 23:43:08 by stolfi */
+/* Last edited on 2024-11-21 21:33:48 by stolfi */
 
 #ifndef hr2_pmap_test_tools_H
 #define hr2_pmap_test_tools_H
@@ -29,22 +29,36 @@
 #define NC 2
   /* Number of Cartesian coordinates in a point. */
 
-void hr2_test_print_pmap(char *name, hr2_pmap_t *M);
-  /* Prints {M} to stderr. */
+void hr2_pmap_test_tools_print(uint32_t indent, char *name, hr2_pmap_t *M);
+  /* Prints to {stderr} the {name} on separate line (if not {NULL}), and then the matrices
+    {M.dir} and {M.inv} side by side, indenting everything by {indent}
+    columns. */
 
-void hr2_test_throw_pmap(hr2_pmap_t *M);
-  /* Fills {M} with a random projective map. */
+void hr2_pmap_test_tools_print_matrix(uint32_t indent, char *name, r3x3_t *A);
+  /* Prints to {stderr} the {name} on separate line (if not {NULL}), and
+    then the matrix {A}, indenting everything by {indent} columns. */
+    
+hr2_pmap_t hr2_pmap_test_tools_throw_almost_singular(double detMax);
+  /* Returns a random projective map {M} such that both {M.dir} and
+    {M.inv} are non-singular and normalized with unit RMS element size,
+    both have determinant less than {detMax}, and at least one of 
+    them has a determinant greater than {detMax/10}. */
 
-void hr2_test_throw_aff_map(hr2_pmap_t *M);
+hr2_pmap_t hr2_pmap_test_tools_throw_non_singular(double detMin);
+  /* Returns a random projective map {M} such that both {M.dir} and {M.inv}
+    are normalized with unit RMS element size and their determinants are
+    at least {detMin} away from zero (but not much more than that). */
+
+void hr2_pmap_test_tools_throw_aff_map(hr2_pmap_t *M);
   /* Fills {M} with a random affine map. */
 
-void hr2_test_choose_r2_point_pairs
+void hr2_pmap_test_tools_choose_r2_point_pairs
   ( hr2_pmap_type_t type,
     sign_t sgn,
     bool_t tight,
     bool_t ident,
     bool_t verbose,
-    int32_t *np_P,
+    uint32_t *np_P,
     r2_t **p1_P,
     r2_t **p2_P,
     double **w_P,
@@ -74,7 +88,7 @@ void hr2_test_choose_r2_point_pairs
     
     Also returns in {*M_P} the nominal projective map {M=M1^{-1} M2}. */
 
-void hr2_test_do_check_pmap
+void hr2_pmap_test_tools_do_check
   ( char *name,
     hr2_pmap_t *M, 
     double eps, 
@@ -86,10 +100,10 @@ void hr2_test_do_check_pmap
   /* Checks the validity of the map {M}, namely if {M.dir} and {M.inv} are 
     close inverses of each other, within tolerance {eps}. */
 
-#define hr2_test_check_pmap(name, M, eps, msg) \
-  hr2_test_do_check_pmap((name), (M), (eps), (msg), __FILE__, __LINE__, __FUNCTION__)
+#define hr2_pmap_test_tools_check(name, M, eps, msg) \
+  hr2_pmap_test_tools_do_check((name), (M), (eps), (msg), __FILE__, __LINE__, __FUNCTION__)
 
-void hr2_test_do_check_map_r3
+void hr2_pmap_test_tools_do_check_map_r3
   ( char *name, 
     r3_t *p, 
     bool_t anti, 
@@ -122,15 +136,15 @@ void hr2_test_do_check_map_r3
     (modulo positive homogeneous scaling and a rounding error
     tolerance), and aborts with error {msg} if not. */ 
 
-#define hr2_test_check_map_r3(name, p, anti, twirl, row, M, q, msg) \
-  hr2_test_do_check_map_r3((name), (p), (anti), (twirl), (row), (M), (q), (msg), __FILE__, __LINE__, __FUNCTION__)
+#define hr2_pmap_test_tools_check_map_r3(name, p, anti, twirl, row, M, q, msg) \
+  hr2_pmap_test_tools_do_check_map_r3((name),(p),(anti),(twirl),(row),(M),(q),(msg), __FILE__, __LINE__, __FUNCTION__)
 
-void hr2_test_do_check_pmap_point
+void hr2_pmap_test_tools_do_check_map_point
   ( char *name, 
     hr2_point_t *p, 
     bool_t anti,
     bool_t twirl,
-    hr2_pmap_t *M, 
+    hr2_pmap_t *M,
     bool_t inv,
     hr2_point_t *q, 
     char *msg, 
@@ -157,10 +171,10 @@ void hr2_test_do_check_pmap_point
     failed. The projective map used is {M} if {inv} is false, or its
     inverse if {inv} is true. */
 
-#define hr2_test_check_pmap_point(name, p, anti, twirl, M, inv, q, msg) \
-  hr2_test_do_check_pmap_point((name), (p), (anti), (twirl), (M), (inv), (q), (msg), __FILE__, __LINE__, __FUNCTION__)
+#define hr2_pmap_test_tools_check_map_point(name, p, anti, twirl, M, inv, q, msg) \
+  hr2_pmap_test_tools_do_check_map_point((name), (p), (anti), (twirl), (M), (inv), (q), (msg), __FILE__, __LINE__, __FUNCTION__)
 
-void hr2_test_do_check_pmap_line
+void hr2_pmap_test_tools_do_check_map_line
   ( char *name, 
     hr2_line_t *A, 
     bool_t anti,
@@ -187,10 +201,10 @@ void hr2_test_do_check_pmap_line
     failed. The projective map used is {M} if {inv} is false, or its
     inverse if {inv} is true. */
 
-#define hr2_test_check_pmap_line(name, A, anti, twirl, M, inv, B, msg) \
-  hr2_test_do_check_pmap_line((name), (A), (anti), (twirl), (M), (inv), (B), (msg), __FILE__, __LINE__, __FUNCTION__)
+#define hr2_pmap_test_tools_check_map_line(name, A, anti, twirl, M, inv, B, msg) \
+  hr2_pmap_test_tools_do_check_map_line((name), (A), (anti), (twirl), (M), (inv), (B), (msg), __FILE__, __LINE__, __FUNCTION__)
 
-void hr2_test_do_check_pmap_r2_point
+void hr2_pmap_test_tools_do_check_map_r2_point
   ( char *name, 
     r2_t *p, 
     hr2_pmap_t *M, 
@@ -201,20 +215,48 @@ void hr2_test_do_check_pmap_r2_point
     int32_t lnum,
     const char *func
   );
-  /* Same as {hr2_test_do_check_pmap_point}, but {p} and {q} are
+  /* Same as {hr2_pmap_test_tools_do_check_map_point}, but {p} and {q} are
     Cartesian points that are converted to homogeneous in order to
     apply the projective map, and back to Cartesian in order to
     compare them. */
 
-#define hr2_test_check_pmap_r2_point(name, p, M, inv, q, msg) \
-  hr2_test_do_check_pmap_r2_point((name), (p), (M), (inv), (q), (msg), __FILE__, __LINE__, __FUNCTION__)
+#define hr2_pmap_test_tools_check_map_r2_point(name, p, M, inv, q, msg) \
+  hr2_pmap_test_tools_do_check_map_r2_point((name), (p), (M), (inv), (q), (msg), __FILE__, __LINE__, __FUNCTION__)
 
-typedef bool_t hr2_test_pmap_check_proc_t(hr2_pmap_t *M);
+typedef bool_t hr2_pmap_test_tools_check_proc_t(hr2_pmap_t *M);
   /* Tipe of a procedure that checks whether a map {M} is OK. */
 
-void hr2_test_perturbed_pmap(hr2_pmap_t *M, hr2_test_pmap_check_proc_t *ok, r3x3_t *P, char *fname);
-  /* Makes perturbations of size {P[i,j]} in turn to every element {[i,j]} of {M.dir}
-    and {M.inv}, and requires that {ok} returns {FALSE} in all cases.
-    If {ok} returns {TRUE} for any case, prints "{fname} failed". */
+void  hr2_pmap_test_tools_check_matrix
+  ( hr2_pmap_t *Q,
+    char *Q_name,
+    hr2_pmap_test_tools_check_proc_t *OK,
+    char *OK_name,
+    bool_t OK_exp
+  );
+  /* Evaluates the {OK(Q)}, and compares the result with {OK_exp}. If they
+    don't match, fails with error message. Otherwise returns normally
+    with {Q} unchanged.  The {Q_name} and {OK_name} strings are used
+    in the error messages, if any, and should identify the matrix {Q} and the 
+    specific predicate {OK}. */
+
+void hr2_pmap_test_tools_check_perturbed
+  ( hr2_pmap_t *M,
+    hr2_pmap_test_tools_check_proc_t *OK,
+    r3x3_t *P,
+    bool_t OK_exp,
+    char *OK_name,
+    bool_t verbose
+  );
+  /* Calls {hr2_pmap_test_tools_check_matrix(Q,Q_name,...)} where {Q} is first
+    {M} then several perturbed versions thereof.
+    
+    To create a perturbed version {Q}, the procedure takes one of the
+    matrices {A} of {M} (either {M.dir} or {M.inv}), adds
+    {P[i,j]*drandom(-1,+1)*(r3x3_norm(A)/3)} to {A}, recomputes the
+    other matrix as the inverse of {A}, and stores the two maps into
+    {Q.dir} and {Q.inv}, after random scaling.
+    
+    The matrix name {Q_name} is either "unperturbed map" or "map with {prt}" 
+    where {prt} is a summary description of the perturbation. */
 
 #endif

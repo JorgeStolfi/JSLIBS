@@ -1,7 +1,6 @@
 /* See {bvtable.h} */
-/* Last edited on 2015-10-07 00:38:10 by stolfilocal */
+/* Last edited on 2024-11-15 19:49:36 by stolfi */
   
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -296,10 +295,9 @@ void bvtable_expand
     if (verbose) { fprintf(stderr, "hash table now has %u hash slots\n", tb->nh); }
     
     /* Insert all entries again: */
-    uint32_t ie = 0;
     ubyte *pi = po;
-    for (ie = 0; ie < no; ie++)
-      { int32_t iadd = bvtable_add(tb, (void *)pi, hash, cmp);
+    for (int32_t ie = 0; ie < no; ie++)
+      { uint32_t iadd = bvtable_add(tb, (void *)pi, hash, cmp);
         if (iadd != ie) { fprintf(stderr, "** BUG: inconsistent rehash %u %u\n", ie, iadd); }
         assert(iadd == ie);
         pi += tb->sz;

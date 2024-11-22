@@ -164,8 +164,7 @@ void tdl_plot_named
     int32_t tRef
   )
   {
-    char *name = NULL;
-    asprintf(&name, "%s-%s", outPrefix, tag);
+    char *name = jsprintf("%s-%s", outPrefix, tag);
     
     double Xstep = 1.0; /* Cell width (mm). */
     double Ystep = 1.0; /* Cell height (mm). */

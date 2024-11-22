@@ -351,9 +351,9 @@ void test_lsq_robust_print_data
   )
   { char *fname = NULL;
     if (iter >=0)
-      { asprintf(&fname, "out/%s_g%02d_ix%03d_i%03d.txt", name, g, ixpoly, iter); }
+      { char *fname = jsprintf("out/%s_g%02d_ix%03d_i%03d.txt", name, g, ixpoly, iter); }
     else
-      { asprintf(&fname, "out/%s_g%02d_ix%03d.txt", name, g, ixpoly); }
+      { char *fname = jsprintf("out/%s_g%02d_ix%03d.txt", name, g, ixpoly); }
     FILE *wr = open_write(fname, TRUE);
     for (int32_t iwr = 0; iwr <= 1; iwr++)
       { FILE *wri = (iwr == 0 ? wr : stderr);

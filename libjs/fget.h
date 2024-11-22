@@ -1,5 +1,5 @@
 /* fget.h -- reading items from text files. */
-/* Last edited on 2024-10-31 03:39:41 by stolfi */
+/* Last edited on 2024-11-15 19:12:22 by stolfi */
 
 #ifndef fget_H
 #define fget_H
@@ -24,7 +24,6 @@
   Created on Dec/2002 by J. Stolfi, from Modula-3 version ca. 1995,
   inspired on Lex.m3 by L. Cardelli. */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

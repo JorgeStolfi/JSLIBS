@@ -1,12 +1,11 @@
 #ifndef jsqroots_H
 #define jsqroots_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <jsmath.h>
 
 /* A quadratic equation solver. */
-/* Last edited on 2023-03-18 11:19:36 by stolfi */
+/* Last edited on 2024-11-15 19:14:27 by stolfi */
     
 int32_t roots_quadratic(double A, double B, double C, double *r1, double *r2, double *im);
   /* Finds the roots of a quadratic equation {A*x*x + B*x + C == 0}.

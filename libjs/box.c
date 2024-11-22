@@ -1,5 +1,5 @@
 /* See box.h */
-/* Last edited on 2023-02-18 23:44:58 by stolfi */ 
+/* Last edited on 2024-11-15 19:49:02 by stolfi */ 
 
 /* We need to set these in order to get {asinh}. What a crock... */
 #undef __STRICT_ANSI__
@@ -503,7 +503,7 @@ void box_gen_print
 void box_face_print(FILE *wr, box_dim_t m, box_face_index_t fi)
   { box_axis_index_t j;
     for (j = 0; j < m; j++)
-      { int32_t dj = (fi % 3); 
+      { uint32_t dj = (fi % 3); 
         fprintf(stderr, "%c", ("0+-")[dj]);  
         fi /= 3;
       }

@@ -1,5 +1,5 @@
 #! /bin/bash
-# Last edited on 2024-09-16 11:05:25 by stolfi
+# Last edited on 2024-11-08 15:02:33 by stolfi
 
 dfile="$1"; shift
 
@@ -15,8 +15,9 @@ if [[ ! ( -s ${dfile} ) ]]; then echo "** file ${dfile} not found" 1>&2 ; exit 1
 gnuplot <<EOF
   set term png medium size 1200,1200 font "arial,24"
   set output "${tfile}"
+  set title "${title}"
   set hidden3d
-  splot "${dfile}" using 1:2:3 title "${title}" with lines 
+  splot "${dfile}" using 1:2:3 title "mismatch" with lines lw 3
 EOF
 
 if [[ ! ( -s ${tfile} ) ]]; then echo "** file ${tfile} not creatd" 1>&2 ; exit 1 ; fi

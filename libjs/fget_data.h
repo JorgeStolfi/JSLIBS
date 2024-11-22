@@ -1,5 +1,5 @@
 /* fget_data.h -- flexible parsing of multicolum data files. */
-/* Last edited on 2023-10-15 02:31:39 by stolfi */
+/* Last edited on 2024-11-15 19:12:27 by stolfi */
 
 #ifndef fget_data_H
 #define fget_data_H
@@ -7,7 +7,6 @@
 /* This module lets parse selected columns of data files with multiple 
   space-separated columns, some numeric, some non-numeric, in flexible order. */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 
@@ -56,7 +55,7 @@ bool_t fget_data_fields(FILE *rd, char cmtc, int32_t nf, int8_t type[], char* al
     digit '0'..'9'). If {cmtc} is '\n', comments will not be allowed,
     whether in blank lines or at the end of data lines. */
 
-void fget_data_set_field_type(int kf, int8_t tkf, bool_t rep_ok, int32_t nf, int8_t type[]);
+void fget_data_set_field_type(int32_t kf, int8_t tkf, bool_t rep_ok, int32_t nf, int8_t type[]);
   /* Sets {type[kf]} to {tkf}, thus frining the type of field {kf}
     in subsequent calls of {fget_data_fields}. The field
     will be skipped if {tkf} is zero, parsed as a string if {tkf} is 1,

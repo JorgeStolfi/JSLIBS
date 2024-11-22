@@ -1,5 +1,5 @@
 /* See vec.h */
-/* Last edited on 2023-03-18 11:05:22 by stolfi */
+/* Last edited on 2024-11-15 20:31:00 by stolfi */
 
 #include <vec.h>
 #include <stdlib.h>
@@ -14,7 +14,7 @@ void *vec_alloc(vec_size_t ne, size_t esz)
     return e;
   }
 
-void vec_expand(vec_size_t *nep, void **ep, vec_index_t index, size_t esz)
+void vec_expand(vec_size_t *nep, void **ep, vec_size_t index, size_t esz)
   { demand(index <= vec_MAX_INDEX, "index too large");
     if (index >= (*nep))
       { vec_size_t ne = (*nep);
@@ -31,7 +31,8 @@ void vec_expand(vec_size_t *nep, void **ep, vec_index_t index, size_t esz)
   }
 
 void vec_trim(vec_size_t *nep, void **ep, vec_size_t ne, size_t esz)
-  { if (ne != (*nep))
+  { demand(ne <= vec_MAX_INDEX, "new size too large");
+    if (ne != (*nep))
       { if (ne == 0) 
           { free((*ep)); (*ep) = NULL; }
         else

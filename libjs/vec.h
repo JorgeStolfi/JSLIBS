@@ -1,5 +1,5 @@
 /* Self-bounded vectors (one-dimensional arrays) of things */
-/* Last edited on 2024-06-28 02:03:21 by stolfi */
+/* Last edited on 2024-11-15 20:33:13 by stolfi */
 
 #ifndef vec_H
 #define vec_H
@@ -125,7 +125,7 @@ typedef int32_t vec_index_t;
 /* STORAGE EXPANSION */
   
 #define vec_DECLARE_EXPAND(VEC_TYPE,PREFIX,ELEM_TYPE) \
-  void PREFIX##_expand(VEC_TYPE *vp, vec_index_t index)
+  void PREFIX##_expand(VEC_TYPE *vp, vec_size_t index)
 /*
   This macro declares the function {{PREFIX}_expand}. The call
   {{PREFIX}_expand(&v,index)} makes sure that the element {v.e[index]}
@@ -163,23 +163,23 @@ typedef int32_t vec_index_t;
   
 #define vec_IMPLEMENT_NEW(VEC_TYPE,PREFIX,ELEM_TYPE) \
   VEC_TYPE PREFIX##_new(vec_size_t ne) \
-    { void *e = vec_alloc(ne, sizeof(ELEM_TYPE)); \
-      return (VEC_TYPE){ne, (ELEM_TYPE *)e}; \
+    { void *e = vec_alloc((uint32_t)(ne), sizeof(ELEM_TYPE)); \
+      return (VEC_TYPE){(ne), (ELEM_TYPE *)e}; \
     }
 
 #define vec_IMPLEMENT_EXPAND(VEC_TYPE,PREFIX,ELEM_TYPE) \
-void PREFIX##_expand(VEC_TYPE *vp, vec_index_t index) \
+void PREFIX##_expand(VEC_TYPE *vp, vec_size_t index) \
   { if (index >= vp->ne) \
-      { vec_expand(&(vp->ne), (void**)&(vp->e), index, sizeof(ELEM_TYPE)); } \
+      { vec_expand(&(vp->ne), (void**)&(vp->e), (index), sizeof(ELEM_TYPE)); } \
   }
 
 #define vec_IMPLEMENT_TRIM(VEC_TYPE,PREFIX,ELEM_TYPE)\
   void PREFIX##_trim(VEC_TYPE *vp, vec_size_t ne) \
-    { vec_trim(&(vp->ne), (void**)&(vp->e), ne, sizeof(ELEM_TYPE)); }
+    { vec_trim(&(vp->ne), (void**)&(vp->e), (ne), sizeof(ELEM_TYPE)); }
 
 #define vec_IMPLEMENT_MAKE_DESC(VEC_TYPE,PREFIX,ELEM_TYPE)\
   VEC_TYPE PREFIX##_make_desc(ELEM_TYPE *e, vec_size_t ne) \
-    { return (VEC_TYPE){ne, e}; }
+    { return (VEC_TYPE){(ne), e}; }
   
 /* SOME USEFUL TYPED VECTORS */
 
@@ -236,12 +236,12 @@ void *vec_alloc(vec_size_t ne, size_t esz);
     size {esz}. Bombs out if there is no space for the request. If
     {ne == 0}, the result is {NULL}. */
 
-void vec_expand(vec_size_t *nep, void **ep, vec_index_t index, size_t esz);
+void vec_expand(vec_size_t *nep, void **ep, vec_size_t index, size_t esz);
   /* Makes sure that element {(*ep)[index]} exists, reallocating and
-    copying the array {**ep} if {index >= (*nep)}. If that happens,
-    sets {(*nep) to the new element count; which will be strictly
-    greater than {index}, and about twice as big as the old
-    {(*nep)}. */
+    copying the array {**ep} if {index >= (*nep)}. If that happens, sets
+    {(*nep) to the new element count; which will be strictly greater
+    than {index}, and about twice as big as the old {(*nep)}. Note that
+    the {index} must be non-negative. */
 
 void vec_trim(vec_size_t *nep, void **ep, vec_size_t ne, size_t esz);
   /* Makes sure that {(*nep) == ne}, reallocating and copying 

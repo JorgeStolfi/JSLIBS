@@ -1,7 +1,6 @@
 /* test_hr2 --- test program for hr2.h  */
-/* Last edited on 2024-11-08 11:25:17 by stolfi */
+/* Last edited on 2024-11-20 18:16:38 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -15,7 +14,6 @@
 #include <rn.h>
 #include <r3x3.h>
 #include <r3.h>
-#include <r3_extra.h>
 #include <r2x2.h>
 #include <r2.h>
 #include <hr2.h>
@@ -47,11 +45,10 @@ void test_hr2_dist__hr2_dist_sqr(bool_t verbose);
 
 int32_t main (int32_t argc, char **argv)
   {
-    int32_t i;
     srand(1993);
     srandom(1933);
 
-    for (i = 0; i < 100; i++) test_hr2(i < 3);
+    for (int32_t i = 0; i < 100; i++) test_hr2(i < 3);
     fclose(stderr);
     fclose(stdout);
     return (0);
@@ -106,14 +103,14 @@ void test_hr2_pt_pt_diff(bool_t verbose)
     { /* Check zero distance: */
       hr2_point_t p; r3_throw_cube(&(p.c));
       double dpp = hr2_pt_pt_diff(&p, &p);
-      check_eq(dpp, 0.0, "hr2_pt_pt_diff(p,p) error(1)");
+      hr2_test_tools_check_eq(dpp, 0.0, "hr2_pt_pt_diff(p,p) error(1)");
 
       /* Check symmetry: */
       r3_throw_cube(&(p.c));
       hr2_point_t q; r3_throw_cube(&(q.c));
       double dpq = hr2_pt_pt_diff(&p, &q);
       double dqp = hr2_pt_pt_diff(&q, &p);
-      check_eq(dpq, dqp, "hr2_pt_pt_diff error(2)");
+      hr2_test_tools_check_eq(dpq, dqp, "hr2_pt_pt_diff error(2)");
 
       /* Check range {[0 _ PI]}: */
       affirm(dpq >= 0.0, "hr2_pt_pt_diff error(sign)");
@@ -133,7 +130,7 @@ void test_hr2_pt_pt_diff(bool_t verbose)
       double dex = 2*alfa; /* Expected. */
       if (dex > M_PI) { dex = 2*M_PI - dex; }
       double dob = hr2_pt_pt_diff(&p, &q); /* Actual. */
-      hr2_test_check_eps(dob, dex, 1.0e-8, "hr2_pt_pt_diff error(3)");
+      hr2_test_tools_check_eps(dob, dex, 1.0e-8, "hr2_pt_pt_diff error(3)");
       /* Check invariance under rotations: */
       for (int32_t i = 0; i < NH; i++)
         { int32_t j = (i + 1) % NH; /* Another axis. */
@@ -150,7 +147,7 @@ void test_hr2_pt_pt_diff(bool_t verbose)
 
           /* Check whether distance is preserved: */
           double drt = hr2_pt_pt_diff(&pp, &qq);
-          hr2_test_check_eps(drt, dex, 1.0e-8, "hr2_pt_pt_diff error(4)");
+          hr2_test_tools_check_eps(drt, dex, 1.0e-8, "hr2_pt_pt_diff error(4)");
         }
     }
   }
@@ -213,7 +210,7 @@ void test_hr2_meet(bool_t verbose)
     hr2_point_t q; q.c = M.f;
     hr2_line_t N = hr2_join(&p, &q);
     for (int32_t i = 0; i < NH; i++)
-      { check_eq(r.c.c[i], N.f.c[i], "hr2_meet error(1)"); }
+      { hr2_test_tools_check_eq(r.c.c[i], N.f.c[i], "hr2_meet error(1)"); }
   }
 
 void test_hr2_point_point_dir(bool_t verbose)
@@ -228,7 +225,7 @@ void test_hr2_point_point_dir(bool_t verbose)
       r2_sub(&qc, &pc, &vpq);
       r2_dir(&vpq, &vpq);
       for (int32_t i = 0; i < NC; i++)
-        { hr2_test_check_eps(upq.c[i], vpq.c[i], 1.0e-12, "hr2_point_point_dir error"); }
+        { hr2_test_tools_check_eps(upq.c[i], vpq.c[i], 1.0e-12, "hr2_point_point_dir error"); }
     }
   }
 
@@ -242,7 +239,7 @@ void test_hr2_line_dir(bool_t verbose)
       r2_t eL = hr2_point_point_dir(&p, &q);;
       double tol = 1.0e-12;
       for (int32_t i = 0; i < NC; i++)
-        { hr2_test_check_eps(dL.c[i], eL.c[i], tol, "hr2_line_dir error"); }
+        { hr2_test_tools_check_eps(dL.c[i], eL.c[i], tol, "hr2_line_dir error"); }
     }
   }
 
@@ -256,7 +253,7 @@ void test_hr2_line_normal(bool_t verbose)
       assert(mLmag != 0);
       double tol = 1.0e-12;
       for (int32_t i = 0; i < NC; i++)
-        { hr2_test_check_eps(nL.c[i], mL.c[i], tol, "hr2_line_normal error"); }
+        { hr2_test_tools_check_eps(nL.c[i], mL.c[i], tol, "hr2_line_normal error"); }
     }
   }
 

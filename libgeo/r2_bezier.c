@@ -1,7 +1,6 @@
 /* See r2_bezier.h */
 /* Last edited on 2023-10-02 08:43:45 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

@@ -1,5 +1,5 @@
 /* r3_path.h --- Paths defined by points, velocities, times */
-/* Last edited on 2023-10-01 19:02:21 by stolfi */
+/* Last edited on 2024-11-20 12:57:51 by stolfi */
 
 #ifndef r3_path_H
 #define r3_path_H
@@ -41,7 +41,7 @@ double r3_path_length_estimate(r3_path_state_t *S, r3_path_state_t *T, int32_t o
      by converting it to a Bezier arc with {r3_path_bezier_from_states}
      and calling {r3_bezier_length_estimate}. */
 
-void r3_path_interpolate_some(r3_path_state_t S[], int32_t N);
+void r3_path_interpolate_some(r3_path_state_t S[], uint32_t N);
   /* Computes the times, positions and velocities of {S[1..N-2]} to
     smoothly interpolate between {S[0]} and {S[N-1]},
     which are not changed. Currently uses the {r3_path_bezier_from_states}

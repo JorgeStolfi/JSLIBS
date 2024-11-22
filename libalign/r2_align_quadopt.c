@@ -1,5 +1,5 @@
 /* See {r2_align_quadopt.h}. */
-/* Last edited on 2024-11-08 09:54:57 by stolfi */
+/* Last edited on 2024-11-08 20:26:59 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -79,6 +79,9 @@ void r2_align_quadopt
         sign_t dir = -1; /* Look for minimum. */
         double rMax = 0.5;                /* Max simplex radius. */
         double rMin = fmin(0.05, 3*xtol); /* Min simplex radius. */
+        bool_t sve_debug = debug;
+        bool_t sve_debug_probes = FALSE; 
+        
         sve_minn_iterate
           ( /*n:*/       nd, 
             /*F:*/       &sve_goal,
@@ -95,7 +98,7 @@ void r2_align_quadopt
             /*rMax:*/    rMax, 
             /*minStep:*/ xtol,
             maxIters,
-            debug
+            sve_debug, sve_debug_probes
           );
 
         /* Return the optimal vector and its mismatch value: */
