@@ -1,5 +1,5 @@
 /* See wt_table.h */
-/* Last edited on 2024-11-20 06:51:05 by stolfi */
+/* Last edited on 2024-11-22 03:18:50 by stolfi */
 
 #define wt_table_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -54,10 +54,10 @@ void wt_table_shifted_sum(uint32_t n, double wt[], uint32_t stride, double ws[])
   {
     demand(stride >= 1, "invalid {stride}");
     for (int32_t ka = 0; ka < n; ka++)
-      { uint32_t kbmin = (uint32_t)(ka % stride);
-        uint32_t kbmax = (uint32_t)(n - 1);
+      { int32_t kbmin = (ka % (int32_t)stride);
+        int32_t kbmax = ((int32_t)n - 1);
         double sum = 0.0; /* Sum of all weights in a {stride} train. */
-        for (int32_t kb = kbmin; kb <= kbmax; kb += stride)
+        for (int32_t kb = kbmin; kb <= kbmax; kb += (int32_t)stride)
           { assert(kb < n);
             sum += wt[kb];
           }
@@ -77,14 +77,14 @@ double_vec_t wt_table_convolution
     uint32_t ns = (uint32_t)(n1 + (n2-1)*stride);
     double_vec_t ws = double_vec_new(ns);
     for (int32_t i = 0; i < ns; i++)
-      { uint32_t k2min = (uint32_t)(i < n1-1 ? 0 : (i+stride-n1)/stride);
-        uint32_t k2max = (uint32_t)(i >= n2*stride ? n2 - 1 : i/stride);
+      { int32_t k2min = (i < n1-1 ? 0 : (i+(int32_t)stride-(int32_t)n1)/(int32_t)stride);
+        int32_t k2max = (i >= (int32_t)(n2*stride) ? (int32_t)n2 - 1 : i/(int32_t)stride);
         
         assert(k2max < n2);
         double sum = 0;
         for (int32_t k2 = k2min; k2 <= k2max; k2++)
-          { assert(k2*stride <= i);
-            uint32_t k1 = (uint32_t)(i - k2*stride);
+          { assert(k2*(int32_t)stride <= i);
+            int32_t k1 = i - k2*(int32_t)stride;
             assert(k1 < n1);
             sum += wt1[k1]*wt2[k2];
           }

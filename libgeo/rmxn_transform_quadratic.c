@@ -1,5 +1,5 @@
 /* See {rmxn_transform_quadratic.h}. */
-/* Last edited on 2024-11-20 15:11:07 by stolfi */
+/* Last edited on 2024-11-22 05:41:43 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -29,9 +29,9 @@ void rmxn_transform_quadratic(uint32_t n, double E[], double e[], uint32_t m, do
     if (debug) { fprintf(stderr, "... computing the metric matrix {M} for {\\EF} ...\n"); }
     double M[m*m];
     for (int32_t r = 0; r < m; r++)
-      { double *hr = &(H[r*n]);
+      { double *hr = &(H[r*(int32_t)n]);
         for (int32_t s = 0; s <= r; s++)
-          { double *hs = &(H[s*n]);
+          { double *hs = &(H[s*(int32_t)n]);
             double sum = 0.0;
             for (int32_t i = 0; i < n; i++)
               { double hrij = hr[i];
@@ -39,8 +39,8 @@ void rmxn_transform_quadratic(uint32_t n, double E[], double e[], uint32_t m, do
                 double ei = e[i];
                 sum += hrij*hsij*ei; 
               }
-            M[r*m + s] = sum;
-            M[s*m + r] = sum; /* Diag is assigned twice, but OK. */
+            M[r*(int32_t)m + s] = sum;
+            M[s*(int32_t)m + r] = sum; /* Diag is assigned twice, but OK. */
           }
       }
     

@@ -1,5 +1,5 @@
 /* See sym_eigen.h */
-/* Last edited on 2024-11-20 22:49:44 by stolfi */
+/* Last edited on 2024-11-22 05:48:26 by stolfi */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -36,15 +36,15 @@ void sym_eigen_tridiagonalize
 
     double f, g, h, hh, scale;
     for (int32_t i = 0; i < n; i++)
-     { uint32_t rowi = n*i;
-       uint32_t rown1 = n*(n-1);
+     { int32_t rowi = (int32_t)n*i;
+       int32_t rown1 = (int32_t)(n*(n-1));
        d[i] = A[rown1+i]; 
        for (int32_t j = i; j < n; j++) 
-         { uint32_t rowj = n*j; R[rowi+j] = A[rowj+i]; }
+         { int32_t rowj = (int32_t)n*j; R[rowi+j] = A[rowj+i]; }
      }
     for (int32_t ii = (int32_t)n-1; ii >= 2; ii--)
       { assert(ii >= 1);
-        uint32_t i = (uint32_t)ii;
+        int32_t i = ii;
         h = 0.0;
         /* Scale row: */
         scale = 0.0;
@@ -52,10 +52,10 @@ void sym_eigen_tridiagonalize
         if (scale == 0.0)
           { e[i] = d[i-1];
             for (int32_t j = 0; j < i; j++)
-              { double *Rji = &(R[n*j+i]);
-                double *Rji1 = &(R[n*j+(i-1)]);
+              { double *Rji = &(R[(int32_t)n*j+i]);
+                double *Rji1 = &(R[(int32_t)n*j+(i-1)]);
                 d[j] = *Rji1; 
-                R[n*i+j] = 0.0;
+                R[(int32_t)n*i+j] = 0.0;
                 *Rji = 0.0;
               }
           }
@@ -69,12 +69,12 @@ void sym_eigen_tridiagonalize
             /* form A*u: */
             for (int32_t j = 0; j < i; j++) { e[j] = 0.0; }
             for (int32_t j = 0; j < i; j++)
-              { uint32_t rowj = n*j;
+              { int32_t rowj = (int32_t)n*j;
                 double *Rjj = &(R[rowj+j]);
                 f = d[j];
                 g = e[j] + (*Rjj) * f;
                 for (int32_t k = j+1; k < i; k++)
-                  { double Rjk = R[n*j+k];
+                  { double Rjk = R[(int32_t)n*j+k];
                     g += Rjk*d[k]; e[k] += Rjk*f;
                   }
                 e[j] = g;
@@ -87,7 +87,7 @@ void sym_eigen_tridiagonalize
             for (int32_t j = 0; j < i; j++) { e[j] -= hh*d[j]; }
             /* Compute the reduced {A}: */
             for (int32_t j = 0; j < i; j++)
-              { uint32_t rowj = n*j;
+              { int32_t rowj = (int32_t)n*j;
                 f = d[j]; g = e[j];
                 for (int32_t k = j; k < i; k++)
                   { double *Rjk = &(R[rowj+k]);
@@ -96,22 +96,23 @@ void sym_eigen_tridiagonalize
               }
           }
       }
-      { uint32_t rown1 = n*(n-1);
-        uint32_t row0 = n*0;
-        uint32_t row1 = n*1;
+      { int32_t rown1 = (int32_t)(n*(n-1));
+        int32_t row0 = (int32_t)n*0;
+        int32_t row1 = (int32_t)n*1;
         e[1] = d[0];
         /* Accumulate of transformation matrices: */
         d[0] = R[row0+0]; R[row0+1] = 0.0; R[row1+0] = 0.0;
         d[1] = 0.0;
         for (int32_t i = 1; i < n; i++)
-          { uint32_t rowi = n*i;
-            uint32_t rowi1 = n*(i-1);
-            R[rowi1+n-1] = R[rowi1+i-1]; R[rowi1+i-1] = 1.0;
+          { int32_t rowi = (int32_t)n*i;
+            int32_t rowi1 = (int32_t)n*(i-1);
+            R[rowi1+(int32_t)n-1] = R[rowi1+i-1];
+            R[rowi1+i-1] = 1.0;
             h = d[i];
             if (h != 0.0)
               { for (int32_t k = 0; k < i; k++) { d[k] = R[rowi+k] / h; }
                 for (int32_t j = 0; j < i; j++)
-                  { uint32_t rowj = n*j;
+                  { int32_t rowj = (int32_t)n*j;
                     g = 0.0;
                     for (int32_t k = 0; k < i; k++) { g += R[rowi+k]*R[rowj+k]; }
                     for (int32_t k = 0; k < i; k++) { R[rowj+k] -= g*d[k]; }
@@ -120,10 +121,10 @@ void sym_eigen_tridiagonalize
             for (int32_t k = 0; k < i; k++) { R[rowi+k] = 0.0; }
           }
         for (int32_t i = 0; i < n; i++) 
-          { uint32_t rowi = n*i;
-            d[i] = R[rowi+n-1]; R[rowi+n-1] = 0.0;
+          { int32_t rowi = (int32_t)n*i;
+            d[i] = R[rowi+(int32_t)n-1]; R[rowi+(int32_t)n-1] = 0.0;
           }
-        R[rown1+(n-1)] = 1.0;
+        R[rown1+((int32_t)n-1)] = 1.0;
       }
     e[0] = 0.0;
   }
@@ -237,7 +238,7 @@ void sym_eigen_trid_eigen(uint32_t n, double *d, double *e, double *R, uint32_t 
     /* Sort the eigenvalues {d[0..L-1]}, carrying along their eigenvectors: */
     for (int32_t i = 0; i < L; i++)
       { /* Find {(i+1)}th smallest eigenvalue {dk = d[k]} */
-        uint32_t k = i; 
+        int32_t k = i; 
         double dk = d[i];
         if (absrt) { dk = fabs(dk); }
         for (int32_t j = i+1; j < L; j++) 
@@ -248,8 +249,8 @@ void sym_eigen_trid_eigen(uint32_t n, double *d, double *e, double *R, uint32_t 
         /* Swap with {d[i], R[i,*]} if necessary: */
         if (k != i)
           { d[k] = d[i]; d[i] = dk;
-            uint32_t rowi = n*i;
-            uint32_t rowk = n*k;
+            int32_t rowi = (int32_t)n*i;
+            int32_t rowk = (int32_t)n*k;
             for (int32_t j = 0; j < n; j++)
               { double Rij = R[rowi+j]; R[rowi+j] = R[rowk+j]; R[rowk+j] = Rij; }
           }

@@ -2,7 +2,7 @@
 #define wt_median_window_H
 
 /* Running median filter tools */
-/* Last edited on 2024-11-19 22:24:59 by stolfi */
+/* Last edited on 2024-11-22 03:24:11 by stolfi */
 
 #define wt_median_window_H_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
@@ -20,7 +20,7 @@
 double wt_median_window
   ( uint32_t nx,    /* Total number of samples. */ 
     double x[],     /* Samples are {x[0..nx-1]}. */
-    uint32_t ix,    /* First sample in window. */
+    int32_t ix,     /* First sample in window. */
     uint32_t nw,    /* Count of samples in window. */
     uint64_t w[],   /* Weights of samples in window are {w[0..nw-1]}. */
     bool_t interp,  /* True interpolates median, false returns nearest sample. */
@@ -64,7 +64,7 @@ uint32_t wt_median_window_index_set_update
   ( uint32_t nx,     /* Total count of samples. */
     uint32_t nk,     /* (IN/OUT) Count of indices in {kx}. */
     uint32_t kx[],   /* (IN/OUT) Sorted indices are {kx[0..nk-1]}. */
-    uint32_t ix,     /* Index of first sample in new window. */
+    int32_t ix,      /* Index of first sample in new window. */
     uint32_t nw      /* Count of samples in new window. */
   );
   /* This procedure can be used to speed up the computation of medians

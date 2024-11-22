@@ -1,5 +1,5 @@
 /* See wt_table_triangular.h */
-/* Last edited on 2024-11-16 10:31:27 by stolfi */
+/* Last edited on 2024-11-22 03:07:24 by stolfi */
 
 #define wt_table_triangular_C_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
@@ -27,6 +27,6 @@ void wt_table_triangular_fill(uint32_t n, double wt[], uint32_t *stride_P)
   { /* Build triangular table and compute its sum: */
     uint32_t m = (n-1)/2;
     for (int32_t k = 0; k < n; k++)
-      { wt[k] = (k <= m ? k + 1.0 : wt[n-1-k]); }
+      { wt[k] = (k <= m ? k + 1.0 : wt[(int32_t)n-1-k]); }
     if (stride_P != NULL) { (*stride_P) = (n+1)/2; }
   }

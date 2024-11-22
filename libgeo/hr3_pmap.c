@@ -1,5 +1,5 @@
 /* See hr3_pmap.h */
-/* Last edited on 2024-11-20 12:04:14 by stolfi */ 
+/* Last edited on 2024-11-22 03:43:17 by stolfi */ 
 
 #include <stdint.h>
 #include <math.h>
@@ -384,7 +384,7 @@ double hr3_pmap_deform_sqr(r3_t ph[], hr3_pmap_t *M)
     uint32_t kd = 0;
     for (int32_t ik = 1; ik < nk; ik++)
       { for (int32_t jk = 0; jk < ik; jk++)
-          { uint32_t eij = (ik ^ jk); /* Exclusive OR of indices. */
+          { uint32_t eij = (uint32_t)(ik ^ jk); /* Exclusive OR of indices. */
             uint32_t hij = (eij & 1) + (eij & 2) + (eij & 4); /* Hamming dist. */
             if ((hij == 1) || (hij == 3))
               { /* Side or main diagonal: */

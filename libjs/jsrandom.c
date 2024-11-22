@@ -1,5 +1,5 @@
 /* See jsrandom.h */
-/* Last edited on 2024-11-22 02:21:18 by stolfi */
+/* Last edited on 2024-11-22 03:17:18 by stolfi */
 
 #include <stdio.h>
 #include <limits.h>
@@ -265,7 +265,7 @@ uint64_t *uint64_choose(uint64_t n, size_t k, uint64_t *perm)
             pi = pi - 1;
             j = j - 1;
           }
-        perm[j] = pi;
+        perm[j] = (uint64_t)pi;
       }
     return perm;
   }

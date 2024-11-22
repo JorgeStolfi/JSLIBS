@@ -1,5 +1,5 @@
 /* See gauss_elim.h */
-/* Last edited on 2024-11-22 02:16:21 by stolfi */
+/* Last edited on 2024-11-22 03:42:17 by stolfi */
 
 #include <stdint.h>
 #include <math.h>
@@ -27,8 +27,8 @@ uint32_t gsel_solve(uint32_t m, uint32_t n, double A[], uint32_t p, double B[], 
     /* Copy system matrices into work array: */
     
     for (int32_t i = 0; i < m; i ++)
-      { for (int32_t j = 0; j < n; j++) { AB[i*np + j] = A[i*n + j]; }
-        for (int32_t k = 0; k < p; k++) { AB[i*np + n + k] = B[i*p + k]; }
+      { for (int32_t j = 0; j < n; j++) { AB[i*(int32_t)np + j] = A[i*(int32_t)n + j]; }
+        for (int32_t k = 0; k < p; k++) { AB[i*(int32_t)np + (int32_t)n + k] = B[i*(int32_t)p + k]; }
       }
     
     /* Solve system: */
@@ -59,7 +59,7 @@ double gsel_determinant(uint32_t m, uint32_t n, double A[], uint32_t q)
     double M[q*q];
     
     for (int32_t i = 0; i < q; i ++)
-      { for (int32_t j = 0; j < q; j++) { M[i*q + j] = A[i*n + j]; } }
+      { for (int32_t j = 0; j < q; j++) { M[i*(int32_t)q + j] = A[i*(int32_t)n + j]; } }
     
     /* Triangularize and get determinant: */
     gsel_triangularize(q, q, M, FALSE, 0.0);
@@ -87,7 +87,7 @@ void gsel_triangularize(uint32_t m, uint32_t n, double M[], bool_t total, double
               }
             if (kmax != i)
               { /* Swap rows {i} and {kmax} negating one of them: */
-                Mkj = &(M[kmax*n + j]);
+                Mkj = &(M[kmax*(int32_t)n + j]);
                 double *Mkr = Mkj; 
                 double *Mir = Mij;
                 for (int32_t r = j; r < n; r++)
@@ -180,12 +180,12 @@ uint32_t gsel_extract_solution(uint32_t m, uint32_t n, double M[], uint32_t p, d
     uint32_t neq = 0; /* Number of equations actually used. */
     while (j < q)
       { /* Set unknowns {X[j,0..p-1]}: */
-        double *Xjk = &(X[j*p]);
+        double *Xjk = &(X[j*(int32_t)p]);
         double piv = (i < m ? (*Aij) : 0.0); /* Pivot value. */
         demand(isfinite(piv), "invalid element in matrix");
         if (piv != 0.0)
           { /* Equation {i} defines {X[j,0..p-1]}: */
-            double *Bik = &(M[i*n + q]);
+            double *Bik = &(M[i*(int32_t)n + (int32_t)q]);
             for (int32_t k = 0; k < p; k++, Xjk++, Bik++) { (*Xjk) = (*Bik)/piv; }
             neq++;
             if (i < m) { i++; Aij += n; }
@@ -203,7 +203,7 @@ double gsel_triangular_det(uint32_t m, uint32_t n, double M[], uint32_t q)
   { if ((q > m) || (q > n)) { return 0.0; }
     double det = 1.0;
     
-    for (int32_t i = 0; i < q; i++) { det *= M[i*n + i];}
+    for (int32_t i = 0; i < q; i++) { det *= M[i*(int32_t)n + i];}
     return det;
   }
 
@@ -223,11 +223,11 @@ void gsel_residual(uint32_t m, uint32_t n, double A[], uint32_t p, double B[], d
                 double newSum = sum + tcorr;
                 corr = (newSum - sum) - tcorr;
                 sum = newSum;
-                kpj += p;
+                kpj += (int32_t)p;
               }
             R[ipj] = sum; ipj++;
           }
-        in0 += n;
+        in0 += (int32_t)n;
       }
   }
 
@@ -272,8 +272,9 @@ void gsel_print_system
     if (Cname == NULL) { Cname = ""; }
     char *Ceq = (strlen(Cname) > 0 ? " = " : "");
     
-    auto void print_row(uint32_t i, char *name, char *eq, uint32_t r, double M[]);
-      /* Prints a row of {M} on the current line, without newline. */
+    auto void print_row(int32_t i, char *name, char *eq, uint32_t r, double M[]);
+      /* Prints a row of the matrix {M}, assumed to have {r} columns, 
+        on the current line, without newline. */
     
     if (head != NULL) { fprintf(wr, "%*s%s\n", indent, "", head); }
     for (int32_t i = 0; i < m; i++)
@@ -286,14 +287,14 @@ void gsel_print_system
     if (foot != NULL) { fprintf(wr, "%*s%s\n", indent, "", foot); }
     return;
     
-    void print_row(uint32_t i, char *name, char *eq, uint32_t r, double M[])
+    void print_row(int32_t i, char *name, char *eq, uint32_t r, double M[])
       { int32_t skip = (int32_t)(strlen(name) + strlen(eq));
         if (i == (m-1)/2)
           { fprintf(wr, "  %s%s[ ", name, eq); }
         else
           { fprintf(wr, "  %*s[ ", skip, ""); }
         for (int32_t k = 0; k < r; k++)
-          { fprintf(wr, " "); fprintf(wr, fmt, M[i*r + k]); }
+          { fprintf(wr, " "); fprintf(wr, fmt, M[i*(int32_t)r + k]); }
         fprintf(wr, " ]");
       }
   }

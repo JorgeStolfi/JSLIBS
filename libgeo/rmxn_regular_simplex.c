@@ -1,5 +1,5 @@
 /* See rmxn_regular_simplex.h. */
-/* Last edited on 2024-11-20 16:41:14 by stolfi */
+/* Last edited on 2024-11-22 05:36:00 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -22,7 +22,7 @@ void rmxn_regular_simplex(uint32_t n, double V[])
     double d = 1 + (N-1)*c;
     /* Set the matrix {p}: */
     for (int32_t i = 0; i <= n; i++) 
-      { uint32_t ni = i*n;
+      { int32_t ni = i*(int32_t)n;
         if (i == 0)
           { /* Set the first row to {(-1,-1,..-1)}: */
             for (int32_t j = 0; j < n; j++) { V[ni + j] = -1; }

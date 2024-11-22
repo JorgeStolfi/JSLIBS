@@ -1,5 +1,5 @@
 /* See argparser_get_int_list.h. */
-/* Last edited on 2024-11-16 00:44:47 by stolfi */
+/* Last edited on 2024-11-22 03:15:34 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 /* Based on Params.m3 by J.Stolfi, DEC-SRC, 1988.  */
@@ -48,7 +48,7 @@ void argparser_get_next_int_groups
 
 void argparser_parse_int_group_string
   ( argparser_t *pp, 
-    uint32_t index,
+    int32_t index,
     char *arg, 
     uint32_t n_max, 
     uint32_t *n_P, 
@@ -62,7 +62,7 @@ void argparser_parse_int_group_string
     
 void argparser_parse_int_range_string
   ( argparser_t *pp, 
-    uint32_t index,
+    int32_t index,
     char *arg, 
     uint32_t n_max, 
     uint32_t *n_P, 
@@ -131,7 +131,7 @@ void argparser_get_next_int_groups
   
 void argparser_parse_int_group_string
   ( argparser_t *pp,
-    uint32_t index,
+    int32_t index,
     char *arg, 
     uint32_t n_max, 
     uint32_t *n_P, 
@@ -167,7 +167,7 @@ void argparser_parse_int_group_string
   
 void argparser_parse_int_range_string
   ( argparser_t *pp, 
-    uint32_t index,
+    int32_t index,
     char *arg, 
     uint32_t n_max, 
     uint32_t *n_P, 

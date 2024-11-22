@@ -1,5 +1,5 @@
 /* See r3_hedron.h */
-/* Last edited on 2024-11-20 15:50:12 by stolfi */
+/* Last edited on 2024-11-22 03:58:26 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -92,13 +92,13 @@ void r3_hedron_dodeca_vertices(double R, uint32_t n, r3_t r[])
 
 void r3_hedron_icosa_vertices_generic(double B, double C, uint32_t n, r3_t r[])
   {
-    uint32_t k = 0;
+    int32_t k = 0;
     for (int32_t i = 0; i < N; i++) 
       { for (int32_t sb = -1; sb <= +1; sb += 2) 
           { for (int32_t sc = -1; sc <= +1; sc += 2) 
-              { uint32_t ja = i;
-                uint32_t jb = (i + 1) % N;
-                uint32_t jc = (i + 2) % N;
+              { int32_t ja = i;
+                int32_t jb = (i + 1) % (int32_t)N;
+                int32_t jc = (i + 2) % (int32_t)N;
                 r[k].c[ja] = 0.0;
                 r[k].c[jb] = sb*B;
                 r[k].c[jc] = sc*C;

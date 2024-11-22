@@ -1,5 +1,5 @@
 /* See rn_classif_mst.h. */
-/* Last edited on 2024-11-20 18:12:25 by stolfi */
+/* Last edited on 2024-11-22 03:49:16 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,7 +19,7 @@ void mst_build_complete(uint32_t n, mst_arc_cost_t *acost, uint32_t P[], double 
         
     /* Allocate a queue and put all vertices in it with null predecessors: */
     uint32_t *Q = talloc(n, uint32_t); /* Sample index queue. */
-    for (int32_t i = 0; i < n; i++) { Q[i] = i; P[i] = i; C[i] = +INF; }
+    for (int32_t i = 0; i < n; i++) { Q[i] = (uint32_t)i; P[i] = (uint32_t)i; C[i] = +INF; }
 
     auto void resortQ(uint32_t k0, uint32_t k1);
       /* Rearranges {Q[k0..k1-1]} so that {C[Q[k0]]} is minimum. */
@@ -39,7 +39,7 @@ void mst_build_complete(uint32_t n, mst_arc_cost_t *acost, uint32_t P[], double 
         if (verbose) { fprintf(stderr, "  selecting %5d cost = %8.6f\n", u, Cu); }
         m++;
         /* Update the cost of all remaining items in {Q}: */
-        for (int32_t k = m; k < n; k++)
+        for (int32_t k = (int32_t)m; k < n; k++)
           { uint32_t v = Q[k]; 
             if (verbose) { fprintf(stderr, "    checking  %5d cost = %8.6f", v, C[v]); }
             double Cvu = acost(v, u); /* Cost of arc {(v,u)}. */
@@ -60,7 +60,7 @@ void mst_build_complete(uint32_t n, mst_arc_cost_t *acost, uint32_t P[], double 
         uint32_t t = k0;
         uint32_t u = Q[t];
         double Cup = C[u];
-        for (int32_t k = k0 + 1; k < k1; k++) 
+        for (uint32_t k = k0 + 1; k < k1; k++) 
           { if (C[Q[k]] < Cup) { t = k; u = Q[t]; Cup = C[u]; } }
         if (t != k0) { Q[t] = Q[k0]; Q[k0] = u; } 
       }

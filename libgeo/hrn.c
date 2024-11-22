@@ -1,5 +1,5 @@
 /* See {hrn.h}. */
-/* Last edited on 2024-11-20 12:09:28 by stolfi */
+/* Last edited on 2024-11-22 03:44:07 by stolfi */
 
 #include <stdint.h>
 #include <hrn.h>
@@ -71,7 +71,7 @@ hrn_pmap_t hrn_pmap_inv(hrn_pmap_t *M)
 void hrn_canonical_simplex(uint32_t d, uint32_t n, double p[])
   { uint32_t n1 = n+1;
     for (int32_t i = 0; i <= d; i++) 
-      { uint32_t n1i = n1*i;
+      { int32_t n1i = (int32_t)n1*i;
         for (int32_t j = 0; j <= n; j++)
           { p[n1i + j] = (i == j ? 1 : 0); }
       }
@@ -85,7 +85,7 @@ void hrn_regular_simplex(uint32_t n, double p[])
     uint32_t n1 = n+1;
     /* Set the matrix {p}: */
     for (int32_t i = 0; i <= n; i++) 
-      { uint32_t n1i = i*n1;
+      { int32_t n1i = i*(int32_t)n1;
         p[n1i] = 1; /* Weight. */
         if (i == 0)
           { /* Set the first row to {(-1,-1,..-1)}: */

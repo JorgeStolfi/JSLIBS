@@ -1,5 +1,5 @@
 /* See rmxn_canonical_simplex.h. */
-/* Last edited on 2024-11-20 18:13:15 by stolfi */
+/* Last edited on 2024-11-22 05:33:58 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -23,7 +23,7 @@ void rmxn_canonical_simplex(uint32_t d, uint32_t n, double V[])
     demand(d < n, "space dimension {n} is too small for {d}");
     for (int32_t i = 0; i <= d; i++) 
       { for (int32_t j = 0; j < n; j++)
-          { V[i*n + j] = (i == j ? 1 : 0); }
+          { V[i*(int32_t)n + j] = (i == j ? 1 : 0); }
       }
   }
 
@@ -60,7 +60,7 @@ void rmxn_canonical_simplex_throw(uint32_t d, double x[])
     qsort(x, d, sizeof(double), &cmp);
     /* Now map the ordered {d}-simplex to the canonical {d}-simplex: */
     x[d] = 1;
-    for (int32_t i = d; i > 0; i--) { x[i] = x[i] - x[i-1]; }
+    for (int32_t i = (int32_t)d; i > 0; i--) { x[i] = x[i] - x[i-1]; }
   }
   
 void rmxn_canonical_simplex_ball_throw(uint32_t d, double x[]) 

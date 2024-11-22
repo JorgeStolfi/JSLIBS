@@ -1,5 +1,5 @@
 /* See rmxn_throw.h. */
-/* Last edited on 2024-11-20 13:07:04 by stolfi */
+/* Last edited on 2024-11-22 05:40:54 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -33,7 +33,7 @@ void rmxn_throw_near_singular_pair
 void rmxn_throw_matrix(uint32_t m, uint32_t n, double *A)
   { for (int32_t i = 0; i < m; i++)
       { for (int32_t j = 0; j < n; j++) 
-          { A[i*n + j] += dabrandom(-1.0, +1.0); }
+          { A[i*(int32_t)n + j] += dabrandom(-1.0, +1.0); }
       }
   }
 
@@ -47,7 +47,7 @@ void rmxn_throw_ortho(uint32_t n, double *A)
     /* Now apply mirroring ops to it: */
     double s[n];
     uint32_t flip = 0;
-    for (int32_t k = 0; k < n; k++)
+    for (uint32_t k = 0; k < n; k++)
       { /* Now the first {k} rows and cols of {A} are a random orthonormal {k×k} matrix. */
         double *Ak = &(A[n*k]); /* Row {k} of {A} */
         /* Pick a random direction {v} in {R^{k+1}}, store it in row {k} of {A}: */
@@ -55,7 +55,7 @@ void rmxn_throw_ortho(uint32_t n, double *A)
         /* We now apply to rows {0..k-1} a reflection that takes {u_k} to {v}. */
         /* Compute the unit vector {s[0..k]} normal to the bisector of {u_k} and {v}: */
         double s2 = 0;
-        for (int32_t j = 0; j <= k; j++)
+        for (uint32_t j = 0; j <= k; j++)
           { double sj = Ak[j] - (j == k ? 1 : 0); 
             s[j] = sj; 
             s2 += sj*sj;
@@ -66,7 +66,7 @@ void rmxn_throw_ortho(uint32_t n, double *A)
             for (int32_t j = 0; j <= k; j++) { s[j] /= sm; }
             /* Apply reflection along {s} to each row: */
             for (int32_t i = 0; i < k; i++)
-              { double *Ai = &(A[i*n]);
+              { double *Ai = &(A[i*(int32_t)n]);
                 (void)rn_mirror(k+1, Ai, s, Ai);
                 flip = 1 - flip;
               }
@@ -81,18 +81,18 @@ void rmxn_throw_ortho_complement(uint32_t n, uint32_t ma, double *A, uint32_t mb
     demand(ma + mb <= n, "invalid {ma+mb}");
     if (mb == 0) { return; }
     for (int32_t k = 0; k < mb; k++)
-      { double *Bk = &(B[k*n]); /* Row {k} o f{B}. */
+      { double *Bk = &(B[k*(int32_t)n]); /* Row {k} o f{B}. */
         while (TRUE)
           { /* Pick a random unit vector in {\RR^n}: */
             rn_throw_dir (n, Bk);
             /* Project it onto the space orthogonal to {A} and {B}: */
             for (int32_t r = 0; r < ma; r++)
-              { double *Ar = &(A[r*n]);
+              { double *Ar = &(A[r*(int32_t)n]);
                 double s = rn_dot(n, Ar, Bk);
                 rn_mix_in(n, -s, Ar, Bk);
               }
             for (int32_t r = 0; r < k; r++)
-              { double *Br = &(B[r*n]);
+              { double *Br = &(B[r*(int32_t)n]);
                 double s = rn_dot(n, Br, Bk);
                 rn_mix_in(n, -s, Br, Bk);
               }
@@ -106,7 +106,7 @@ void rmxn_throw_ortho_complement(uint32_t n, uint32_t ma, double *A, uint32_t mb
 void rmxn_throw_directions(uint32_t m, uint32_t n, double U[])
   {
     demand((n >= 2) || (m == n), "invalid {m,n} combination");
-    for (int32_t i = 0; i < m; i++)
+    for (uint32_t i = 0; i < m; i++)
       { double *Ui = &(U[i*n]); 
         if (i < n)
           { rn_axis(n, i, Ui); }
@@ -121,7 +121,7 @@ void rmxn_throw_directions(uint32_t m, uint32_t n, double U[])
                 rn_throw_dir (n, u);
                 /* Check whether {u} is far enough from previous directions: */
                 double maxCos = 0.0; /* Max {fabs(cos(u,Uk))} for previous rows {Uk}. */
-                for (int32_t k = 0; k < i; k++)
+                for (uint32_t k = 0; k < i; k++)
                   { double *Uk = &(U[k*n]); 
                     double cos = fabs(rn_dot(n, u, Uk));
                     if (cos > maxCos) { maxCos = cos; }
@@ -273,7 +273,7 @@ void rmxn_throw_near_singular_pair(uint32_t n, double *A, double *B, double detR
 void rmxn_throw_LT_matrix(uint32_t m, double *Lmm)
   { for (int32_t i = 0; i < m; i++)
       { for (int32_t j = 0; j < m; j++) 
-          { Lmm[m*i + j] = (j <= i ? 2.0 * drandom() - 1.0 : 0.0); }
+          { Lmm[(int32_t)m*i + j] = (j <= i ? 2.0 * drandom() - 1.0 : 0.0); }
       }
   }
   
@@ -289,8 +289,8 @@ void rmxn_throw_singular(uint32_t n, double *A)
     for (int32_t i = 0; i < n-1; i++) 
       { double ri = 2*drandom() - 1;
         for (int32_t j = 0; j < n; j++)
-          { A[i*n + j] = (2*drandom() - 1); 
-            Alast[j] += ri * A[i*n + j];
+          { A[i*(int32_t)n + j] = (2*drandom() - 1); 
+            Alast[j] += ri * A[i*(int32_t)n + j];
           }
       }
      double Aenorm = rmxn_norm(n, n, A)/n; /* RMS of each element. */

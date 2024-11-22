@@ -1,5 +1,5 @@
 /* See qmin_simplex.h */
-/* Last edited on 2024-11-22 02:13:45 by stolfi */
+/* Last edited on 2024-11-22 03:57:43 by stolfi */
 
 #include <stdint.h>
 #include <math.h>
@@ -21,7 +21,7 @@ void qms_quadratic_min(uint32_t n, double A[], double b[], double x[])
     double tiny = 1.0e-14 * bmax * sqrt(n);  /* Est. roundoff error in residuals. */
 
     /* Work array: */
-    int32_t n1 = n+1; /* Total columns in {A} and {b}. */
+    uint32_t n1 = n+1; /* Total columns in {A} and {b}. */
     double Ab[n*n1]; /* Active sub-matrices of {A} and {b}, side by side. */
     
     /* Work vector: */
@@ -73,10 +73,10 @@ void qms_quadratic_min(uint32_t n, double A[], double b[], double x[])
     
     /* Start with all variables inactive, turn them on one at a time. */
     for (int32_t i = 0; i < n; i++) { sit[i] = (uint32_t)i; pos[i] = (uint32_t)i; x[i] = 0.0; }
-    int32_t na = 0; /* Number of active variables. */
+    uint32_t na = 0; /* Number of active variables. */
 
     /* Iterate until conditions (1)-(3) are satisfied for column {k}: */
-    int32_t jcur = 0; /* Next variable to check for condition (3). */
+    uint32_t jcur = 0; /* Next variable to check for condition (3). */
     int32_t nok = 0; /* Count of variables that checked OK for (3) since last change. */
     while (nok < n)
       { /* Loop invariant: Conditions (1) and (2) are satisfied. */
@@ -140,7 +140,7 @@ void qms_quadratic_min(uint32_t n, double A[], double b[], double x[])
                           { if (sit[j] < na) { x[j] = (1-sjmin)*x[j] + sjmin*y[j]; } }
 
                         /* Inactivate variables that have become zero: */
-                        for (int32_t j = 0; j < n; j++)
+                        for (uint32_t j = 0; j < n; j++)
                           { if (j == jcur)
                               { /* Forced active, so let's make that quite clear: */ 
                                 assert(sit[j] < na);
@@ -183,11 +183,11 @@ void qms_quadratic_min(uint32_t n, double A[], double b[], double x[])
     void activate(uint32_t jina) 
       { if (debug) { fprintf(stderr, "  activating %d\n", jina); }
         assert(x[jina] == 0);
-        int32_t ii = (int32_t)sit[jina];  /* Index such that {pos[ii] = jina}. */
+        uint32_t ii = sit[jina];  /* Index such that {pos[ii] = jina}. */
         assert(pos[ii] == jina);
         assert(ii >= na);
         /* Make sure that {jina} is in the *first* inactive list slot: */
-        int32_t ii1 = (int32_t)na; /* Index of first inactive list slot. */
+        uint32_t ii1 = na; /* Index of first inactive list slot. */
         if (ii != ii1)
           { /* Swap {pos[ii]} with {pos[ii1]}: */
             uint32_t jina1 = pos[ii1];
@@ -204,10 +204,10 @@ void qms_quadratic_min(uint32_t n, double A[], double b[], double x[])
       { if (debug) { fprintf(stderr, "  deactivating %d\n", jact); }
         assert(x[jact] >= -tiny);  /* Condition (1) (modulo roundoff). */
         assert(x[jact] <= tiny);   /* We can inactivate only if {x} is on constraint. */
-        int32_t ia = (int32_t)sit[jact];    /* Index such that {pos[ia] = jact}. */
+        uint32_t ia = sit[jact];    /* Index such that {pos[ia] = jact}. */
         assert(ia < na);
         /* Make sure that {jact} is in the *last* active list slot: */
-        int32_t ia1 = (int32_t)na-1; /* Index of last active list slot. */
+        uint32_t ia1 = (uint32_t)na-1; /* Index of last active list slot. */
         if (ia != ia1)
           { /* Swap {pos[ia]} with {pos[ia1]}: */
             uint32_t jact1 = pos[ia1];
@@ -234,9 +234,8 @@ void qms_quadratic_min(uint32_t n, double A[], double b[], double x[])
         fprintf(wr, ")");
         fprintf(wr, "  inactive = (");
         sep = ""; 
-        for (int32_t ia = na; ia < n; ia++) 
+        for (int32_t ia = (int32_t)na; ia < n; ia++) 
           { fprintf(wr, "%s%d", sep, pos[ia]); sep = ","; 
-            assert(pos[ia] >= 0); 
             assert(pos[ia] < n); 
             assert(sit[pos[ia]] == ia); 
           }
@@ -258,8 +257,8 @@ void qms_quadratic_min(uint32_t n, double A[], double b[], double x[])
         for (int32_t ia = 0; ia < na; ia++)
           { int32_t i = (int32_t)pos[ia];
             for (int32_t ja = 0; ja < na; ja++)
-              { int32_t j = (int32_t)pos[ja]; Ab[ia*(na+1) + ja] = A[i*n + j]; }
-            Ab[ia*(na+1) + na] = b[i];
+              { int32_t j = (int32_t)pos[ja]; Ab[ia*(int32_t)(na+1) + ja] = A[i*(int32_t)n + j]; }
+            Ab[ia*(int32_t)(na+1) + (int32_t)na] = b[i];
           }
         /* Solve subsystem: */
         double ua[na];

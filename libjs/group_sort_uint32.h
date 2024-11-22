@@ -1,5 +1,5 @@
 /* Group sorting of {uint32_t} integers */
-/* Last edited on 2024-11-15 19:12:47 by stolfi */
+/* Last edited on 2024-11-22 03:16:14 by stolfi */
 
 #ifndef group_sort_uint32_H
 #define group_sort_uint32_H
@@ -9,9 +9,9 @@
 void group_sort_uint32
   ( uint32_t ni,        /* Number of integers to sort. */
     uint32_t ng,        /* Number of groups. */
-    uint32_t group[],   /* Group assigned to each integer. */
+    int32_t group[],    /* Group assigned to each integer. */
     uint32_t isort[],   /* (OUT) Integers {0..ni-1} sorted by group. */
-    uint32_t gstart[]   /* (OUT) Beg and end of each group in {isort}. */
+    int32_t gstart[]    /* (OUT) Beg and end of each group in {isort}. */
   );
   /* Sorts the integers {0..ni-1} into {ng} groups assigned to 
     them by the client. 

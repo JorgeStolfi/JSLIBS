@@ -2,7 +2,7 @@
 #define wt_median_H
 
 /* Weight tables for filtering digital signals */
-/* Last edited on 2024-11-19 22:14:34 by stolfi */
+/* Last edited on 2024-11-22 03:33:18 by stolfi */
 
 #define wt_median_H_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
@@ -78,7 +78,7 @@ double wt_median_unsorted
 uint32_t wt_median_gather_samples
   ( uint32_t nx,    /* Count of samples. */
     double x[],     /* The samples are {x[0..nx-1]}. */
-    uint32_t ix,    /* Lowest sample index in window. */
+    int32_t ix,     /* Lowest sample index in window. */
     uint32_t nw,    /* Window width. */
     uint64_t w[],   /* The window weights are {w[0..nw-1]}. */
     uint32_t kx[],  /* (IN) The sorted window indices are {kx[0..nw-1]}. */

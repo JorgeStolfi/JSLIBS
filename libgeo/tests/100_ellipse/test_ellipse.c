@@ -1,5 +1,5 @@
 /* test_ellipse --- test program for ellipse_crs.h, ellipse_ouv.h  */
-/* Last edited on 2024-11-20 16:49:32 by stolfi */
+/* Last edited on 2024-11-22 05:48:55 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -53,7 +53,7 @@ void check_ellipse_border_position(ellipse_crs_t *E, r2_t *p, double hwd, double
 
 int32_t main (int32_t argc, char **argv)
   { 
-    for (int32_t i = 0; i < N_RUNS; i++) 
+    for (uint32_t i = 0; i < N_RUNS; i++) 
       { test_ellipse_tools(i, i < 5); }
     fclose(Er);
     fclose(stdout);

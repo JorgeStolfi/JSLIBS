@@ -1,4 +1,4 @@
-/*Last edited on 2024-11-22 02:01:10 by stolfi */
+/*Last edited on 2024-11-22 05:42:01 by stolfi */
 /*
   Based on VectorN.mg, created  95-02-27 by J. Stolfi.
   Last edited by stolfi 
@@ -290,7 +290,7 @@ double rn_det (uint32_t n, double *a[])
       }
     gsel_triangularize(n, n, C, FALSE, 0.0);
     d = 1.0;
-    for (int32_t k = 0; k < n2; k += n+1) { d *= C[k]; }
+    for (int32_t k = 0; k < n2; k += (int32_t)n+1) { d *= C[k]; }
     free(C);
     return d;
   }

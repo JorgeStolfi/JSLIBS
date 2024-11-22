@@ -1,5 +1,5 @@
 /* See rmxn_spin.h. */
-/* Last edited on 2024-11-20 13:06:00 by stolfi */
+/* Last edited on 2024-11-22 05:37:13 by stolfi */
 
 #include <stdint.h>
 #include <math.h>
@@ -19,8 +19,8 @@ void rmxn_spin_rows(uint32_t m, uint32_t n, double A[], double M[])
     /* Map each row of {A} by {N} (beware of aliasing between {A} and {M}): */
     double v[n];
     for (int32_t i = 0; i < m; i++)
-      { rmxn_map_row(n, n, &(A[i*n]), N, v);
-        rn_copy(n, v, &(M[i*n]));
+      { rmxn_map_row(n, n, &(A[i*(int32_t)n]), N, v);
+        rn_copy(n, v, &(M[i*(int32_t)n]));
       }
   }
 
@@ -30,7 +30,7 @@ void rmxn_spin_cols(uint32_t m, uint32_t n, double A[], double M[])
     rmxn_throw_ortho(m, N);
     /* Map each col of {A} by {N} (beware of aliasing between {A} and {M}): */
     double a[m], v[m];
-    for (int32_t j = 0; j < n; j++)
+    for (uint32_t j = 0; j < n; j++)
       { rmxn_get_col(m, n, A, j, a);
         rmxn_map_col(m, m, a, N, v);
         rmxn_set_col(m, n, M, j, v);

@@ -1,5 +1,5 @@
 /* See wt_table_gaussian.h */
-/* Last edited on 2024-11-16 10:26:43 by stolfi */
+/* Last edited on 2024-11-22 03:07:01 by stolfi */
 
 #define wt_table_gaussian_C_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
@@ -59,8 +59,8 @@ void wt_table_gaussian_fill(uint32_t n, double sigma, double wt[], uint32_t *str
     else
       { assert ((sigma > 0) && (n > 2));
         /* Compute entries {wt[k]} and their sum {sumw}: */
-        for (int32_t k = 0, j = n-1; k < n; k++, j--) 
-          { wt[k] = (k <= j ? wt_table_gaussian_entry(n, k, sigma) : wt[j]); }
+        for (int32_t k = 0, j = (int32_t)n-1; k < n; k++, j--) 
+          { wt[k] = (k <= j ? wt_table_gaussian_entry(n, (uint32_t)k, sigma) : wt[j]); }
         stride = ((n == 3) && (wt[1] == 2*wt[0]) ? 1 : 0);
       }
     if (stride_P != NULL) { (*stride_P) = stride; }

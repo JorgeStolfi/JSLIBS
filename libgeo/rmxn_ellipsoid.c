@@ -1,5 +1,5 @@
 /* See {minn_constr.h}. */
-/* Last edited on 2024-11-20 15:09:59 by stolfi */
+/* Last edited on 2024-11-22 05:35:42 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -37,9 +37,9 @@ void rmxn_ellipsoid_pierce
         if (debug) { fprintf(stderr, "  computing the metric matrix {M} for {\\RF} ...\n"); }
         double M[d*d];
         for (int32_t r = 0; r < d; r++)
-          { double *Sr = &(S[r*n]);
+          { double *Sr = &(S[r*(int32_t)n]);
             for (int32_t s = 0; s <= r; s++)
-              { double *Ss = &(S[s*n]);
+              { double *Ss = &(S[s*(int32_t)n]);
                 double sum = 0.0;
                 for (int32_t i = 0; i < n; i++)
                   { double Sri = Sr[i];
@@ -50,8 +50,8 @@ void rmxn_ellipsoid_pierce
                     else
                       { demand (fabs(Sri) + fabs(Ssi) < 1.0e-12, "bad constraints"); }
                   }
-                M[r*d + s] = sum;
-                M[s*d + r] = sum; /* Diag i
+                M[r*(int32_t)d + s] = sum;
+                M[s*(int32_t)d + r] = sum; /* Diag i
                 s assigned twice, but OK. */
               }
           }
@@ -76,12 +76,12 @@ void rmxn_ellipsoid_pierce
 
         if (debug) { fprintf(stderr, "  computing the basis {U = Q S} aligned with axes of {\\RF} ...\n"); }
         for (int32_t k = 0; k < d; k++)
-          { double *Qk = &(Q[k*d]);
-            double *Uk = &(U[k*n]);
+          { double *Qk = &(Q[k*(int32_t)d]);
+            double *Uk = &(U[k*(int32_t)n]);
             for (int32_t i = 0; i < n; i++)
               { double sum = 0.0;
                 for (int32_t s = 0; s < d; s++)
-                  { double *Ss = &(S[s*n]);
+                  { double *Ss = &(S[s*(int32_t)n]);
                     double Qrs = Qk[s];
                     double Ssi = Ss[i];
                     sum += Qrs*Ssi;
@@ -151,7 +151,7 @@ void rmxn_ellipsoid_normalize_constraints
     /* Add the given constraints: */    
     for (int32_t i = 0; i < q; i++)
       { if (verbose) { fprintf(stderr, "    adding given constraint {v*A[%d,*]' == 0} ...", i); }
-        double *Ai = &(A[i*n]);
+        double *Ai = &(A[i*(int32_t)n]);
         add_constraint(Ai);
       }
 
@@ -181,7 +181,7 @@ void rmxn_ellipsoid_normalize_constraints
          if (am > 1.0e-100)
            { rn_copy(n, a, v);
              for (int32_t k = 0; k < m; k++)
-               { double *Ck = &(C[k*n]);
+               { double *Ck = &(C[k*(int32_t)n]);
                  double d = rn_dot(n, v, Ck);
                  if (fabs(d) > 1.0e-200)
                    { rn_mix_in(n, -d, Ck, v); }

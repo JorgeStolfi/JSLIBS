@@ -1,5 +1,5 @@
 /* See wt_median.h */
-/* Last edited on 2024-11-22 02:22:26 by stolfi */
+/* Last edited on 2024-11-22 03:36:12 by stolfi */
 
 #define wt_median_C_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
@@ -131,8 +131,8 @@ double wt_median_unsorted
   )
   {
     bool_t debug = FALSE;
-    
     demand (n >= 0, "invalid sample count {n}");
+
     uint32_t ns = 0;
     double xm = NAN;
     if (n > 0)
@@ -165,7 +165,7 @@ double wt_median_unsorted
 uint32_t wt_median_gather_samples
   ( uint32_t nx,     /* Count of samples. */
     double x[],      /* The samples are {x[0..nx-1]}. */
-    uint32_t ix,     /* Lowest sample index in window. */
+    int32_t ix,      /* Lowest sample index in window. */
     uint32_t nw,     /* Window width. */
     uint64_t w[],    /* The window weights are {w[0..nw-1]}. */
     uint32_t kx[],   /* The previously sorted window indices are {kx[0..nw-1]}. */
@@ -174,16 +174,18 @@ uint32_t wt_median_gather_samples
   )
   {
     bool_t debug = FALSE;
+    demand((ix >= 0) && (ix + (int32_t)nw <= nx), "window {ix..ix+nw-1} overflows {0..nx-1}");
+    demand(nw <= nx, "window too wide");
     
     double x_prev = -INF;
     uint32_t ns = 0;
     for (int32_t ik = 0; ik < nw; ik++)
-      { uint32_t jx = kx[ik];
+      { int32_t jx = (int32_t)kx[ik];
         demand((jx >= 0) && (jx < nx), "invalid index in {kx}");
         double xj = x[jx];
         demand(isfinite(xj), "sample value is not finite");
         demand(xj >= x_prev, "list {kx} is not sorted by sample value");
-        uint32_t iw = jx - ix;
+        int32_t iw = jx - ix;
         demand((iw >= 0) && (iw < nw), "index in {kx} lies outside the window");
         uint64_t wi = w[iw];
         demand(wi <= wt_median_WEIGHT_SUM_MAX, "invalid weight");

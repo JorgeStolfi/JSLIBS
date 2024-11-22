@@ -1,5 +1,5 @@
 /* See argparser.h. */
-/* Last edited on 2024-11-22 02:17:45 by stolfi */
+/* Last edited on 2024-11-22 03:13:51 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 /* Based on Params.m3 by J.Stolfi, DEC-SRC, 1988.  */
@@ -19,7 +19,7 @@
 #include <argparser.h>
 #include <argparser_extra.h>
 
-void argparser_check_all_parsed(argparser_t *pp, uint32_t num);
+void argparser_check_all_parsed(argparser_t *pp, int32_t num);
   /* Checks whether all arguments between {argv[1]} and {argv[num-1]}
     have been parsed.  Fails with a message if any wasn't. */
 
@@ -269,7 +269,7 @@ bool_t argparser_keyword_present_next(argparser_t *pp, char *key)
 #define argparser_show_bogus_max 5
   /* Max leftover args to print. */
 
-void argparser_check_all_parsed(argparser_t *pp, uint32_t num)
+void argparser_check_all_parsed(argparser_t *pp, int32_t num)
   { int32_t bogus = 0;
     bool_t *p = pp->parsed.e;
     for (int32_t i = 1; i < num; i++)
@@ -286,14 +286,14 @@ void argparser_check_all_parsed(argparser_t *pp, uint32_t num)
 
 void argparser_skip_parsed(argparser_t *pp)
   { bool_t *p = pp->parsed.e;
-    pp->next = pp->arg.ne;
+    pp->next = (int32_t)pp->arg.ne;
     while ((pp->next > 0) && (! p[pp->next-1])) { pp->next--; }
     /* Check for unparsed arguments: */
     argparser_check_all_parsed(pp, pp->next);
   }
 
 void argparser_finish(argparser_t *pp)
-  { argparser_check_all_parsed(pp, pp->arg.ne);
+  { argparser_check_all_parsed(pp, (int32_t)pp->arg.ne);
     free(pp->parsed.e);
     free(pp->help.e);
     free(pp);
