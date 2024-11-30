@@ -62,7 +62,7 @@ int32_t main(int32_t argc, char **argv)
     nmsim_elem_synapse_count_t nse_min = 1;
     nmsim_elem_synapse_count_t nse_max = 20;
     nmsim_class_synapse_ix_t isc_max = nsc - 1; /* Max class index. */
-    for (int32_t i = 0; i < 10; i++)
+    for (uint32_t i = 0;  i < 10; i++)
       { nmsim_group_synapse_t sgrp = 
           nmsim_group_synapse_throw(isc_max, ing_pre, ing_pos, nse_min, nse_max);
         nmsim_group_synapse_show(stderr, "synaps group = ", &sgrp, "\n");

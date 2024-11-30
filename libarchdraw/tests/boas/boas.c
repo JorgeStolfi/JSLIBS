@@ -47,7 +47,7 @@ void plot_all(char *prefix, adrw_point_vec_t *P, int32_t nx, int32_t ny, bool_t 
     
     epswr_figure_t *epsf = NULL; /* Defined later. */
 
-    for (int32_t ox = 0; ox < nx; ox++)
+    for (uint32_t ox = 0;  ox < nx; ox++)
       { for (int32_t oy = ny-1; oy >= 0; oy--)
           { epsf = adrw_new_figure
               ( "out", prefix, "1R", xmin, xmax, ymin, ymax,

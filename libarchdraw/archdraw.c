@@ -87,7 +87,7 @@ void adrw_append_point
     fprintf(stderr, "%-8s P[%04d]", lab, ip); 
     fprintf(stderr, " = P[ ");
     r3_t r;
-    for (int32_t i = 0; i < 3; i++) 
+    for (uint32_t i = 0;  i < 3; i++) 
       { int32_t jp = (int32_t[]){ jpx, jpy, jpz }[i];
         adrw_point_t apj = adrw_get_point(P, jp);
         if (i > 0) { fprintf(stderr, ", "); }

@@ -182,7 +182,7 @@ Performance test_minu_tools_multiple
     fprintf(stderr, "===== test_minu_tools_multiple (%s,%s)\n\n", opt->name, prb->name);
     affirm(nTests >= 2, "");
  
-    for (int32_t it = 1; it <= nTests; it++)
+    for (uint32_t it = 1;  it <= nTests; it++)
       { double x = prb->xStart + prb->dist * (2*drandom() - 1);
         double fx, dfx;
         prb->eval(prb, x, &fx, &dfx);
@@ -329,7 +329,7 @@ epswr_figure_t *test_minu_tools_new_figure
     double yb, dfxb;
     prb->eval(prb, xb, &yb, &dfxb);
     epswr_set_pen(eps, 1.0,0.0,0.5, 0.10, 0.0, 0.0);
-    for (int32_t i = 1; i <= NSteps; i++)
+    for (uint32_t i = 1;  i <= NSteps; i++)
       { double xa = xb; 
         double ya = yb;
         xb = xb + dx; 

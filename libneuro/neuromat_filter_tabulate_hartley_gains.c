@@ -41,7 +41,7 @@ void neuromat_filter_tabulate_hartley_gains
     demand(fsmp > 0, "invalid {fsmp}");
     
     double Wmax = -INF;
-    for (int32_t kf0 = 0; kf0 <= nf/2; kf0++)
+    for (uint32_t kf0 = 0;  kf0 <= nf/2; kf0++)
       { complex w0 = neuromat_filter_tabulate_hartley_gains_folded(kf0, nf, fsmp, gain, fsup, verbose);
         Wmax = fmax(Wmax, cabs(w0));
         int32_t kf1 = (nf - kf0) % nf;  /* Index of the Hartley coeff with the same frequency. */
@@ -74,7 +74,7 @@ void neuromat_filter_tabulate_hartley_gains
     if (normalize && (Wmax > 0) && (Wmax != 1.0))
       { /* Normalize to unit maximum gain: */
         if (verbose) { fprintf(stderr, "rescaling by 1 / %16.12f\n", Wmax); }
-        for (int32_t kf = 0; kf < nf; kf++) { H[kf] /= Wmax; }
+        for (uint32_t kf = 0;  kf < nf; kf++) { H[kf] /= Wmax; }
         Wmax = 1.0;
       }
     if (verbose) { fprintf(stderr, "max absolute gain is %16.12f\n", Wmax); }

@@ -104,7 +104,7 @@ r2_t *makesites(uint32_t N, bool_t normal, bool_t print)
     
     srandom(4615);
 
-    for (int32_t i = 0; i < N; i++) 
+    for (uint32_t i = 0;  i < N; i++) 
       { if (normal) 
           { /* Gaussian distribution with total variance 2: */
             st[i].c[0] = dgaussrand();
@@ -159,7 +159,7 @@ void plot_mst (uint32_t N, r2_t st[], uint32_t P[], double C[], bool_t axes, cha
 
 void draw_mst_edges(epswr_figure_t *eps, uint32_t N, r2_t st[], uint32_t P[], double C[])
   {
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { uint32_t j = P[i];
         assert((j >= 0) && (j < N));
         if (i != j)
@@ -182,7 +182,7 @@ void draw_sites(epswr_figure_t *eps, uint32_t N, r2_t st[], uint32_t P[], double
       { rvile = 0.50; rroot = 1.00; labels = FALSE; }
     if (labels)
       { epswr_set_label_font(eps, "CourierBold", 7.0); }
-    for (int32_t i = 0; i < N; i++) 
+    for (uint32_t i = 0;  i < N; i++) 
       { double x = st[i].c[0];
         double y = st[i].c[1];
         double r;
@@ -202,7 +202,7 @@ void draw_sites(epswr_figure_t *eps, uint32_t N, r2_t st[], uint32_t P[], double
   
 double max_site_radius(uint32_t N, r2_t st[])
   { double r2max = 0.0;
-    for (int32_t i = 0; i < N; i++) 
+    for (uint32_t i = 0;  i < N; i++) 
       { double x = st[i].c[0];
         double y = st[i].c[1];
         double r2i = x*x + y*y;

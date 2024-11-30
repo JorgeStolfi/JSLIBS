@@ -134,7 +134,7 @@ void find_chain_shape(int32_t nk, double wd)
     double c[nc];     /* Initial guess and final solution. */
     
     /* Initialize {c} with a semicircle: */
-    for (int32_t i = 0; i < nc; i++) { c[i] = (175.0/180.0)/nc; }
+    for (uint32_t i = 0;  i < nc; i++) { c[i] = (175.0/180.0)/nc; }
     
     /* Print and write the initial guess: */
     fprintf(stderr, "initial guess:\n");
@@ -232,7 +232,7 @@ void write_node_positions(char *prefix, char *tag, int32_t nk, double x[], doubl
       { char *fname = jsprintf("%s-%s.dat", prefix, tag);
         wr = open_write(fname, TRUE);
       }
-    for (int32_t i = 0; i <= nk ; i++)
+    for (uint32_t i = 0;  i <= nk ; i++)
       { fprintf(wr, "%5d %12.8f %12.8f\n", i, x[i], y[i]); }
     if ((wr != stderr) && (wr != stdout)) { fclose(wr); }
   }
@@ -246,10 +246,10 @@ void plot_energy
   )
   { /* Choose two orthogonal deformation modes {ua,ub} with mags {ra,rb}: */
     double va[nc], ua[nc];
-    for (int32_t i = 0; i < nc; i++) { va[i] = 0.05; }
+    for (uint32_t i = 0;  i < nc; i++) { va[i] = 0.05; }
     double ra = rn_dir(nc, va, ua);
     double vb[nc], ub[nc];
-    for (int32_t i = 0; i < nc; i++) { vb[i] = i*0.05/nc; }
+    for (uint32_t i = 0;  i < nc; i++) { vb[i] = i*0.05/nc; }
     double dba = rn_dot(nc, vb, ua);
     rn_mix_in(nc, -dba, ua, vb);
     double rb = rn_dir(nc, vb, ub);
@@ -271,7 +271,7 @@ void compute_node_positions(int32_t nk, double c[], double x[], double y[])
     double aabs = 0;        /* Angle of next link, relative to X axis. */
     x[1] = 1; y[1] = 0; 
     /* Compute {(x[i],y[i]) for {i} in {2..nk}: */
-    for (int32_t i = 0; i < nc; i++)
+    for (uint32_t i = 0;  i < nc; i++)
       { double arel = c[i]*175.0/180.0*M_PI; /* Angle of link relative to previous link. */
         aabs = aabs + arel;
         double dx = cos(aabs), dy = sin(aabs);
@@ -282,7 +282,7 @@ void compute_node_positions(int32_t nk, double c[], double x[], double y[])
     double r = - atan2(y[nk], x[nk]);
     /* Apply the rotation to all joints: */
     double cr = cos(r), sr = sin(r);
-    for (int32_t i = 1; i <= nk; i++)
+    for (uint32_t i = 1;  i <= nk; i++)
       { double xr = cr*x[i] - sr*y[i];
         double yr = sr*x[i] + cr*y[i];
         x[i] = xr; y[i] = yr;
@@ -292,7 +292,7 @@ void compute_node_positions(int32_t nk, double c[], double x[], double y[])
 double chain_energy(int32_t nk, double x[], double y[], double wd)
   { /* Compute the gravitational energy {G}: */
     double G = 0;
-    for (int32_t i = 0; i < nk; i++) 
+    for (uint32_t i = 0;  i < nk; i++) 
       { double yb = (y[i] + y[i+1])/2;
         G += yb;
       }

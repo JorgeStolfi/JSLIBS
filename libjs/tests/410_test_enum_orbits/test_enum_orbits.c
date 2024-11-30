@@ -2,7 +2,7 @@
 #define PROG_DESC "tests the {enum_orbits.h} procedures"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2024-11-20 01:28:53 by stolfi */
+/* Last edited on 2024-11-22 21:03:18 by stolfi */
 /* Created on 2007-01-31 by J. Stolfi, UNICAMP */
 
 #define PROG_COPYRIGHT \
@@ -131,12 +131,12 @@ void test_enum_items_cycle(void)
     auto void print_visit_list(ref_vec_t *vP);
     /* Prints the visit list {vP} to stderr. */
 
-    for (int32_t trunc = 0; trunc < 2; trunc++)
+    for (uint32_t trunc = 0;  trunc < 2; trunc++)
       { /* {trunc = 0} full enum, {= 1} truncated enum. */
         maxv = (trunc == 0 ? nobj+1 : 5);
         
         /* Test {enum_cycle}. */
-        for (int32_t i = 0; i < nt; i++)
+        for (uint32_t i = 0;  i < nt; i++)
           { uint32_t *r = &(obj[7]);
             fprintf(stderr, "testing enum_cycle with");
             fprintf(stderr, "  step = stp[%d]  visit = vis[%d]", i, i);
@@ -234,7 +234,7 @@ void test_enum_items_cycle(void)
 
     void print_visit_list(ref_vec_t *vP)
       { fprintf(stderr, "v = [");
-        for (int32_t j = 0; j < v.ne; j++) { fputc(' ', stderr); print_obj(v.e[j]); }
+        for (uint32_t j = 0;  j < v.ne; j++) { fputc(' ', stderr); print_obj(v.e[j]); }
         fprintf(stderr, " ]\n");
       }
 
@@ -259,7 +259,7 @@ void test_enum_items_cycle(void)
         do 
           { /* Pack the indices {ix[0..d-1]} as digits of a decimal integer: */
             id = 0;
-            for (int32_t i = 0; i < d; i++) { assert(ix[i] < 9); id = (uint32_t)(10*id + ix[i]); }
+            for (uint32_t i = 0;  i < d; i++) { assert(ix[i] < 9); id = (uint32_t)(10*id + ix[i]); }
             obj[p] = id;
             /* fprintf(stderr, "p = %llu  m = %d\n", p, m); */
             assert(p == m);
@@ -269,7 +269,7 @@ void test_enum_items_cycle(void)
         assert(m == na);
         /* Append the special object {obj[ps]}: */
         ps = m; m++;
-        id = 0; for (int32_t i = 0; i < d; i++) { id = 10*id + 9; }
+        id = 0; for (uint32_t i = 0;  i < d; i++) { id = 10*id + 9; }
         obj[ps] = id;
         assert(m == nobj);
       }
@@ -356,7 +356,7 @@ void test_enum_orbits(void)
     auto void print_visit_list(ref_vec_t *vP);
     /* Prints the visit list {vP} to stderr. */
 
-    for (int32_t trunc = 0; trunc < 2; trunc++)
+    for (uint32_t trunc = 0;  trunc < 2; trunc++)
       { /* {trunc = 0} full enum, {= 1} truncated enum. */
         maxv = (trunc == 0 ? nobj+1 : 5);
         fprintf(stderr, "testing enum_orbits");        
@@ -446,7 +446,7 @@ void test_enum_orbits(void)
         nobj = nc + 1;  /* Total number of objects. */
         obj = talloc(nobj, uint32_t);
         /* Fill the regular array elements: */
-        for (int32_t i = 0; i < nc; i++) { obj[i] = i; }
+        for (uint32_t i = 0; i < nc; i++) { obj[i] = i; }
         /* Append the special object {obj[ps]}: */
         ps = nc;
         obj[ps] = 99;

@@ -1,5 +1,5 @@
 /* See rmxn_spin.h. */
-/* Last edited on 2024-11-22 05:37:13 by stolfi */
+/* Last edited on 2024-11-23 18:55:07 by stolfi */
 
 #include <stdint.h>
 #include <math.h>
@@ -18,9 +18,9 @@ void rmxn_spin_rows(uint32_t m, uint32_t n, double A[], double M[])
     rmxn_throw_ortho(n, N);
     /* Map each row of {A} by {N} (beware of aliasing between {A} and {M}): */
     double v[n];
-    for (int32_t i = 0; i < m; i++)
-      { rmxn_map_row(n, n, &(A[i*(int32_t)n]), N, v);
-        rn_copy(n, v, &(M[i*(int32_t)n]));
+    for (uint32_t i = 0;  i < m; i++)
+      { rmxn_map_row(n, n, &(A[i*n]), N, v);
+        rn_copy(n, v, &(M[i*n]));
       }
   }
 

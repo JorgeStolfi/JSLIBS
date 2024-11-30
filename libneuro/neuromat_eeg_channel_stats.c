@@ -41,7 +41,7 @@ void neuromat_eeg_channel_stats_extreme_print
 neuromat_eeg_channel_stats_t *neuromat_eeg_channel_stats_new(int32_t nc)
   { neuromat_eeg_channel_stats_t *st;
     st = notnull(malloc(nc*sizeof(neuromat_eeg_channel_stats_t)), "no mem");
-    for (int32_t ic = 0; ic < nc; ic++) 
+    for (uint32_t ic = 0;  ic < nc; ic++) 
       { neuromat_eeg_channel_stats_clear(&(st[ic])); }
     return st;
   }
@@ -68,7 +68,7 @@ double neuromat_eeg_channel_stats_avg
   { demand ((ic >= 0) && (ic < nc), "invalid channel index {ic}");
     double sumw = 0.0;
     double sumwv = 0;
-    for (int32_t it = 0; it < nt; it++) 
+    for (uint32_t it = 0;  it < nt; it++) 
       { double v = val[it][ic];
         double w = (wt == NULL ? 1.0 : wt[it]);
         demand((! isnan(w)) && (w >= 0.0) && (w < +INF), "invalid weight");
@@ -101,7 +101,7 @@ void neuromat_eeg_channel_stats_gather
     double sumw = 0.0;
     double sumwv = 0;
     double sumwv2 = 0;
-    for (int32_t it = 0; it < nt; it++) 
+    for (uint32_t it = 0;  it < nt; it++) 
       { double v = val[it][ic];
         double w = (wt == NULL ? 1.0 : wt[it]);
         demand((! isnan(w)) && (w >= 0.0) && (w < +INF), "invalid weight");
@@ -126,7 +126,7 @@ void neuromat_eeg_channel_stats_gather
         st->rms = sqrt(st->msq);
         /* Compute {var,dev} of channel: */
         double sumwd2 = 0.0;
-        for (int32_t it = 0; it < nt; it++) 
+        for (uint32_t it = 0;  it < nt; it++) 
           { double v = val[it][ic];
             double w = (wt == NULL ? 1.0 : wt[it]);
             if (w > 0.0) 
@@ -150,7 +150,7 @@ void neuromat_eeg_channel_stats_gather_all
     neuromat_eeg_channel_stats_t *stg
   )
   {
-    for (int32_t ic = 0; ic < nc; ic++)
+    for (uint32_t ic = 0;  ic < nc; ic++)
       { neuromat_eeg_channel_stats_gather(nt, nc, val, wt, eps, ic, &(st[ic])); }
     if (stg != NULL)
       { neuromat_eeg_channel_stats_extreme(ne, st, stg); }
@@ -170,7 +170,7 @@ void neuromat_eeg_channel_stats_extreme
     double max_dev = 0.0;
     double max_msq = 0.0;
     double max_rms = 0.0;
-    for (int32_t ie = 0; ie < ne; ie++)
+    for (uint32_t ie = 0;  ie < ne; ie++)
       { neuromat_eeg_channel_stats_t *sti = &(st[ie]);
         if (sti->num < min_num) { min_num = sti->num; }
         if (sti->twt < min_twt) { min_twt = sti->twt; }
@@ -241,7 +241,7 @@ void neuromat_eeg_channel_stats_print_all
     int32_t ne,
     neuromat_eeg_channel_stats_t *stg
   )
-  { for (int32_t ic = 0; ic < nc; ic++) 
+  { for (uint32_t ic = 0;  ic < nc; ic++) 
       { neuromat_eeg_channel_stats_print(wr, indent, ic, name[ic], pnum, &(st[ic]));  }
     if ((stg != NULL) && (ne > 0))
       { fprintf(wr, "\n");
@@ -258,7 +258,7 @@ double *neuromat_eeg_channel_stats_covariance_matrix
   )
   {
     double *Cv = notnull(malloc(ne*ne*sizeof(double)), "no mem");
-    for (int32_t ije = 0; ije < ne*ne; ije++) { Cv[ije] = 0.0; }
+    for (uint32_t ije = 0;  ije < ne*ne; ije++) { Cv[ije] = 0.0; }
     neuromat_eeg_channel_stats_accum_covariance_matrix(nt, ne, val, vshift, wt, 1.0, 0.0, Cv);
     return Cv;
   }
@@ -274,11 +274,11 @@ void neuromat_eeg_channel_stats_accum_covariance_matrix
     double *Cv       /* (IN/OUT) Covariance matrix. */
   )
   {
-    for (int32_t ie = 0; ie < ne; ie++)
-      { for (int32_t je = 0; je <= ie; je++)
+    for (uint32_t ie = 0;  ie < ne; ie++)
+      { for (uint32_t je = 0;  je <= ie; je++)
           { double sumwvivj = 0;
             double sumw = 0.0;
-            for (int32_t it = 0; it < nt; it++)
+            for (uint32_t it = 0;  it < nt; it++)
               { double vi = val[it][ie] - vshift[ie];
                 double vj = val[it][je] - vshift[je];
                 double w = (wt == NULL ? 1.0 : wt[it]);

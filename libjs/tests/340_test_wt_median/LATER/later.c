@@ -27,7 +27,7 @@ void test_basic(int32_t nx, int32_t nw_max)
     double *x = rn_alloc(nx);
     rn_throw_cube(nx, x);
     double ema = x[0];
-    for (int32_t ix = 1; ix < nx; ix++)
+    for (uint32_t ix = 1;  ix < nx; ix++)
       { ema = 0.8*ema + 0.2*x[ix];
         x[ix] = ema;
       }
@@ -108,8 +108,8 @@ void twtm_text_running_median()
         twtm_check_median(nx, x, ix, nw, w, interp, xm, verbose);
 
         /* Check {kx[0..nw-1]}: */
-        for (int32_t k = 0; k < nw; k++) { seen[k] = FALSE; }
-        for (int32_t k = 0; k < nw; k++)
+        for (uint32_t k = 0;  k < nw; k++) { seen[k] = FALSE; }
+        for (uint32_t k = 0;  k < nw; k++)
           { int32_t rx = kx[k];
             demand((rx >= ix) && (rx <= jx), "{kx[i]} outside window index range");
             demand(! seen[rx - ix], "repated index in {kx}");
@@ -128,17 +128,17 @@ void test_median_in_gap(int32_t nw, bool_t interp)
     int32_t nx = nw + 30;
     double x[nx];
     double xmin = 0.0, xmax = 300.0;
-    for (int32_t ix = 0; ix < nx; ix++) { x[ix] = dabrandom(xmin, xmax); }
+    for (uint32_t ix = 0;  ix < nx; ix++) { x[ix] = dabrandom(xmin, xmax); }
     int32_t w[nw];
     double xlo = 100.0,    xhi = 200.0;  /* Median will range from {xlo} to {xhi}. */
         
     int32_t nt = 10; /* Will try {nt+1} median positions. */
-    for (int32_t t = 0; t <= nt; t++)
+    for (uint32_t t = 0;  t <= nt; t++)
       { 
         /* Specify {w[0..nw]} symmetric about center: */
         int32_t Slo = 0; /* Sum of weights of window samples {<= xlo}. */
         int32_t Shi = 0; /* Sum of weights of window samples {>= xhi}. */
-        for (int32_t k0 = 0; k0 < hw; k0++)
+        for (uint32_t k0 = 0;  k0 < hw; k0++)
           { int32_t k1 = nw-1-k0;
             int32_t wk = abrandom(10,99);
             w[k0] = wk; Slo += wk;
@@ -151,7 +151,7 @@ void test_median_in_gap(int32_t nw, bool_t interp)
         int32_t jx = ix+nw-1;        /* Index of end of window. */
 
         /* Specify {x[ix..jx]} so that half are in {[xmin_xlo-1]}  and half in {[xhi+1_xmax]}: */
-        for (int32_t k0 = 0; k0 < hw; k0++)
+        for (uint32_t k0 = 0;  k0 < hw; k0++)
           { int32_t k1 = nw-1-k0;
             x[ix + k0] = dabrandom(xmin, xlo-1);
             x[ix + k1] = dabrandom(xhi+1, xmax);
@@ -216,7 +216,7 @@ void test_median_in_gap(int32_t nw, bool_t interp)
         fprintf(stderr, "  F(xlo) = %+12d  F(xhi) = %+12d\n", Flo, Fhi);
 
         /* Randomly permute samples and their weights: */
-        for (int32_t ki = 0; ki < nw; ki++)
+        for (uint32_t ki = 0;  ki < nw; ki++)
           { int32_t kj = abrandom(ki, nw-1);
             if (ki != kj) 
               { int32_t tw = w[ki]; w[ki] = w[kj]; w[kj] = tw; 
@@ -249,7 +249,7 @@ void twtm_check_median(int32_t nx, double x[], int32_t ix, int32_t nw, int32_t w
     /* Closest sample values to {xm} with nonzero weight, and their total weights: */
     double xlo = -INF; int32_t wlo = 0; /* Largest {x} value less than {xm}. */
     double xhi = +INF; int32_t whi = 0; /* Smallest {x} value greater than {xm}. */
-    for (int32_t k = 0; k < nw; k++)
+    for (uint32_t k = 0;  k < nw; k++)
       { double xk = x[ix + k];
         int32_t wk = w[k];
         Stot += wk;

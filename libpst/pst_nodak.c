@@ -1,5 +1,5 @@
 /* See pst_nodak.h */
-/* Last edited on 2024-11-04 07:32:09 by stolfi */
+/* Last edited on 2024-11-23 05:29:44 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -21,6 +21,7 @@
 #include <qmin_simplex.h> 
 #include <affirm.h>
 #include <argparser.h>
+#include <ix_reduce.h>
 
 #include <pst_basic.h>
 #include <pst_nodak.h>
@@ -144,7 +145,7 @@ float_image_t *pst_nodak_extract_chart
     /* Create and fill the chart image: */
     float_image_t *omg = float_image_new(NC, ONX, ONY);
 
-    ix_reduction_t red = ix_reduction_SINGLE;
+    ix_reduce_mode_t red = ix_reduce_mode_SINGLE;
     float undef = 0.5;
     bool_t avg = TRUE;
     int order = 1;
@@ -181,7 +182,7 @@ float_image_t *pst_nodak_extract_gray_scale
         double rad = geo_rad->e[i];
         /* Compute spot average color: */
         float avg[NC];
-        ix_reduction_t red = ix_reduction_SINGLE;
+        ix_reduce_mode_t red = ix_reduce_mode_SINGLE;
         float_image_average_persp_disk(img, red, ctr, rad, C2I, mrg, avg);
         /* Fill patch in output image: */
         int x, y;

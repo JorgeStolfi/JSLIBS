@@ -106,7 +106,7 @@ bool_t multifok_scene_object_XY_is_inside
     interval_t dom[],
     double margin
   )
-  { for (int32_t j = 0; j < 2; j++)
+  { for (uint32_t j = 0;  j < 2; j++)
       { /* Determine bounds {cmin,cmax} of object along axis {j}: */
         double omin, omax;
         /* Determine allowed extent of object along axis {j}:: */
@@ -150,7 +150,7 @@ bool_t multifok_scene_object_XY_overlap
       }
     
     /* Neither {FLAT} nor {RAMP}. Check if boxes overlap in {X} and {Y}: */
-    for (int32_t j = 0; j < 2; j++) 
+    for (uint32_t j = 0;  j < 2; j++) 
       { /* Check if boxes have at least {minSep} separation along axis {j}: */
         if (obja->bbox[j].end[0] - objb->bbox[j].end[1] >= minSep) { return FALSE; } 
         if (objb->bbox[j].end[0] - obja->bbox[j].end[1] >= minSep) { return FALSE; } 
@@ -185,7 +185,7 @@ multifok_scene_object_t multifok_scene_object_background_make(interval_t dom[], 
     multifok_scene_object_t obj;
     obj.ID = -1;
     /* The bounding box is 3x the {dom} width in {X} and {Y}: */
-    for (int32_t j = 0; j < 2; j++)
+    for (uint32_t j = 0;  j < 2; j++)
       { double rd = interval_rad(&(dom[j]));
         obj.bbox[j] = dom[j];
         interval_widen(&(obj.bbox[j]), rd);
@@ -217,7 +217,7 @@ multifok_scene_object_t multifok_scene_object_foreground_throw
   {
     if (verbose)
       { fprintf(stderr, "  throwing foreground object in");
-        for (int32_t j = 0; j < 3; j++) 
+        for (uint32_t j = 0;  j < 3; j++) 
           { if (j > 0) { fprintf(stderr, " ×"); }
             interval_gen_print(stderr, &(dom[j]), "%+8.3f", " [ ", " _ ", " ]");
           }
@@ -235,7 +235,7 @@ multifok_scene_object_t multifok_scene_object_foreground_throw
     
     /* Get the preliminary range of positions {sdom[0..2]} for the object: */
     interval_t sdom[3];
-    for (int32_t j = 0; j < 3; j++) 
+    for (uint32_t j = 0;  j < 3; j++) 
       { sdom[j] = dom[j]; 
         /* Shrink the range {sdom[j]} by a small amount: */
         double eps = 0.0001*interval_rad(&(sdom[j])) + FUDGE;
@@ -272,7 +272,7 @@ multifok_scene_object_t multifok_scene_object_foreground_throw
       }
       
     /* Define the object's center: */
-    for (int32_t j = 0; j < 3; j++) 
+    for (uint32_t j = 0;  j < 3; j++) 
       { if ((j == 2) || strict)
           { /* Reduce the the center range so that the object is all inside: */
             sdom[j].end[0] += (rad[j] + FUDGE);
@@ -344,7 +344,7 @@ void   multifok_scene_object_throw_radius_round
     rMax = fmin(rMax, 2*srad[2]/hRel);
     
     /* Reduce {rMax} according to {srad[0..1],strict}: */
-    for (int32_t j = 0; j < 2; j++) 
+    for (uint32_t j = 0;  j < 2; j++) 
       { if (strict)
           { /* Radius of {XY} projection must be at most {srad[j]}: */
             rMax = fmin(rMax, srad[j]);

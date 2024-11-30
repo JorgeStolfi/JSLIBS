@@ -42,7 +42,7 @@ void float_image_overlay(float_image_t *A, float_image_t *B, int32_t icop, int32
             double oC = rB + rA;
             if (oC != 0)
               { double sB = rB/oC, sA = rA/oC; 
-                for (int32_t ic = 0; ic < NCA; ic++)
+                for (uint32_t ic = 0;  ic < NCA; ic++)
                   { if (ic != icop)
                       { float *vAP = float_image_get_sample_address(A, ic, ix, iy);
                         double vA = (*vAP);

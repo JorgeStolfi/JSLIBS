@@ -52,7 +52,7 @@ void write_vector(char *prefix, char *tag, int32_t n, double x[]);
 
 int32_t main (int32_t argc, char **argv)
   { /* options_t *o = get_options(argc, argv); */
-    for (int32_t id = 0; id < 10; id++) 
+    for (uint32_t id = 0;  id < 10; id++) 
       { int32_t n = (id % 3) + 1;
         test_minimizer(id, n);
       }
@@ -81,11 +81,11 @@ void test_minimizer(int32_t id, int32_t n)
     
     /* Choose the true minimum: */
     double x_tru[n];
-    for (int32_t k = 0; k < n; k++) { x_tru[k] = 2*drandom() - 1; }
+    for (uint32_t k = 0;  k < n; k++) { x_tru[k] = 2*drandom() - 1; }
     
     /* Fill the matrices: */
-    for (int32_t i = 0; i < n; i++)
-      { for (int32_t j = 0; j < n; j++)
+    for (uint32_t i = 0;  i < n; i++)
+      { for (uint32_t j = 0;  j < n; j++)
           { A[i*n + j] = 2*drandom() - 1; }
       }
     rmxn_mul_tr(n, n, n, A, A, M);
@@ -107,7 +107,7 @@ void test_minimizer(int32_t id, int32_t n)
     write_solution(prefix, "tru", n, &sve_goal, x_tru, Fx_tru);
 
     double x[n];     /* Initial guess and final solution. */
-    for (int32_t k = 0; k < n; k++) { x[k] = 2*drandom() - 1; }
+    for (uint32_t k = 0;  k < n; k++) { x[k] = 2*drandom() - 1; }
     
     /* Evaluate and write the initial solution: */
     fprintf(stderr, "initial guess:\n");
@@ -147,8 +147,8 @@ void test_minimizer(int32_t id, int32_t n)
         rn_scale(n, scale, dx, dx);
         /* Evaluate the quadric at {dx}: */
         double S = 0;
-        for (int32_t i0 = 0; i0 < n; i0++)
-          { for (int32_t i1 = 0; i1 < n; i1++)
+        for (uint32_t i0 = 0;  i0 < n; i0++)
+          { for (uint32_t i1 = 0;  i1 < n; i1++)
               { S += dx[i0]*dx[i1]*M[i0*n + i1]; }
           }
         return S;
@@ -184,7 +184,7 @@ void write_vector(char *prefix, char *tag, int32_t n, double x[])
       }
     else
       { wr = stderr; }
-    for (int32_t k = 0; k < n; k++)
+    for (uint32_t k = 0;  k < n; k++)
       { fprintf(wr, "%5d %12.8f\n", k, x[k]); }
     if ((wr != stderr) && (wr != stdout)) { fclose(wr); }
     if (fname != NULL) { free(fname); }

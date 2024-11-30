@@ -44,7 +44,7 @@ void wt_table_gaussian_fill(uint32_t n, double sigma, double wt[], uint32_t *str
     uint32_t stride;
     uint32_t r = n/2;
     if ((sigma == 0) || (n <= 2))
-      { for (int32_t k = 0; k < n; k++) { wt[k] = 0; }
+      { for (uint32_t k = 0;  k < n; k++) { wt[k] = 0; }
         if ((n & 1) == 1)
           { wt[r] = 1.0; 
             stride = 1;

@@ -31,15 +31,15 @@ double **neuromat_eeg_spectrum_compute(int32_t nt, int32_t ne, double **val, int
     
     /* Apodizing window: */
     double *W = notnull(malloc(nt*sizeof(double)), "no mem");
-    for (int32_t it = 0; it < nt; it++) { W[it] = 0.5*(1 - cos(2*M_PI*(it+0.5)/nt)); }
+    for (uint32_t it = 0;  it < nt; it++) { W[it] = 0.5*(1 - cos(2*M_PI*(it+0.5)/nt)); }
     
     /* Do the row transforms: */
     fftw_plan px = fftw_plan_r2r_1d(nt, in, out, FFTW_DHT, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
-    for (int32_t ie = 0; ie < ne; ie++)
+    for (uint32_t ie = 0;  ie < ne; ie++)
       { /* Allocate and compute the spectrum of electrode {ie}: */
         pwr[ie] = notnull(malloc((kfmax+1)*sizeof(double)), "no mem"); 
         double sum2_in = 0;
-        for (int32_t it = 0; it < nt; it++) 
+        for (uint32_t it = 0;  it < nt; it++) 
           { double vt = val[it][ie] * W[it];
             sum2_in += vt*vt;
             in[it] =  vt;
@@ -48,7 +48,7 @@ double **neuromat_eeg_spectrum_compute(int32_t nt, int32_t ne, double **val, int
         fftw_execute(px);
         if (verbose) { fprintf(stderr, "  electrode %d\n", ie); }
         double sum2_out = 0;
-        for (int32_t kf0 = 0; kf0 <= kfmax; kf0++) 
+        for (uint32_t kf0 = 0;  kf0 <= kfmax; kf0++) 
           { /* Get the index {kf1} of the coefficient with same actual frequency {kf0}: */
             int32_t kf1 = (nt - kf0) % nt;
             /* Compute the total power in that frequency: */

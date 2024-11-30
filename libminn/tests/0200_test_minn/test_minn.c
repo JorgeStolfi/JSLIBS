@@ -172,7 +172,7 @@ int32_t main(int32_t argc, char **argv)
     int32_t n = atoi(argv[2]);
     
     int32_t nt = 100; /* Number of tests, */
-    for (int32_t it = 0; it < nt; it++)
+    for (uint32_t it = 0;  it < nt; it++)
       { bool_t verbose = (it < 10);
         tmnn_do_one_test(it, fname, n, verbose);
       }
@@ -222,9 +222,9 @@ void tmnn_do_one_test (int32_t it, char *fname, int32_t n, bool_t verbose)
     else 
       { demand(FALSE, "invalid goal function name"); }
     
-    for (int32_t ibox = 0; ibox < 2; ibox++)
+    for (uint32_t ibox = 0;  ibox < 2; ibox++)
       { bool_t box = (ibox != 0);
-        for (int32_t imeth = 0; imeth < 2; imeth++)
+        for (uint32_t imeth = 0;  imeth < 2; imeth++)
           { minn_method_t meth = (imeth == 0 ? minn_method_ENUM : minn_method_QUAD);
             tmnn_test_minn_uniform(n, F, B, box, meth, it, verbose);
             tmnn_test_minn_subspace(n, F, B, box, meth, it, verbose);
@@ -259,7 +259,7 @@ void tmnn_do_one_test (int32_t it, char *fname, int32_t n, bool_t verbose)
         /* Compute sum of relative square distances from actual optimum {opt}: */
         double Fv = 0.0;
         if (n > 0)
-          { for (int32_t i = 0; i < n; i++)
+          { for (uint32_t i = 0;  i < n; i++)
               { double di = v[i] - vOpt[i];
                 int32_t j = (i + 1) % n;
                 double dj = v[j] - vOpt[j];
@@ -274,7 +274,7 @@ void tmnn_do_one_test (int32_t it, char *fname, int32_t n, bool_t verbose)
       { assert(n1 == n);
         double Fv = 0;
         if (n > 0)
-          { for (int32_t i = 0; i < n; i++)
+          { for (uint32_t i = 0;  i < n; i++)
               { double di = v[i] - vOpt[i];
                 int32_t j = (i + 1) % n;
                 double dj = v[j] - vOpt[j];
@@ -307,7 +307,7 @@ void tmnn_test_minn_uniform
       
     /* Create an {arad} vector for convenience: */
     double arad[n];
-    for (int32_t i = 0; i < n; i++) { arad[i] = 1.0; }
+    for (uint32_t i = 0;  i < n; i++) { arad[i] = 1.0; }
     
     /* Choose the tolerance on each axis: */
     double atol[n]; /* Tolerance on each axis. */
@@ -484,7 +484,7 @@ void tmnn_test_minn_ellipsoid_constrained
     
     /* Create a vector {utol[0..d-1]} for convenience: */
     double utol[d];
-    for (int32_t k = 0; k < d; k++) { utol[k] = tol; }
+    for (uint32_t k = 0;  k < d; k++) { utol[k] = tol; }
 
     /* Choose the optimum: */
     double uOpt[d]; /* Expected optimum point in the {U} basis. */
@@ -535,7 +535,7 @@ void tmnn_test_minn_ellipsoid_constrained
 void tmnn_choose_radii(int32_t n, double zeros, double arad[])
   {
     double radMin = 0.50, radMax = 2.50; /* Range for {urad[i]}. */ 
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0;  i < n; i++)
       { if (zeros && (i == 0 || (drandom() < 0.20)))
           { arad[i] = 0.0; }
         else
@@ -551,7 +551,7 @@ void tmnn_choose_tolerances
     double atol[]
   )
   { double tolMin = +INF; /* Min {atol[i]} for axes with non-zero radius. */
-    for (int32_t i = 0; i < n; i++) 
+    for (uint32_t i = 0;  i < n; i++) 
       { double radi = arad[i];
         if (radi == 0)
           { atol[i] = 0.0; }
@@ -570,7 +570,7 @@ void tmnn_choose_tolerances
     if (uniform) 
       { assert(tolMin > 0);
         if (tolMin == +INF) { tolMin = 0.1; }
-        for (int32_t i = 0; i < n; i++) { atol[i] = tolMin; } 
+        for (uint32_t i = 0;  i < n; i++) { atol[i] = tolMin; } 
       }
   }
 
@@ -583,7 +583,7 @@ void tmnn_choose_optimum
   )
   { if (box)
       { /* Try to put near a corner: */
-        for (int32_t i = 0; i < n; i++)
+        for (uint32_t i = 0;  i < n; i++)
           { double radi = arad[i];
             double toli = atol[i];
             vOpt[i] = radi - 2*toli;
@@ -602,7 +602,7 @@ void tmnn_choose_optimum
 
 bool_t tmnn_too_many_points(int32_t n, double arad[], double atol[])
   { double np = 1;
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0;  i < n; i++)
       { double radi = (arad == NULL ? +INF : arad[i]);
         assert(radi >= 0);
         double toli = (atol == NULL ? 0.0 : atol[i]);
@@ -651,7 +651,7 @@ void tmnn_debug_points
     if (arad != NULL)
       { /* Check belonging to search domain: */
         double vr[n];
-        for (int32_t i = 0; i < n; i++)
+        for (uint32_t i = 0;  i < n; i++)
           { double radi = arad[i];
             if (radi == +INF)
               { vr[i] = 0.0; }
@@ -700,8 +700,8 @@ void tmnn_check_solution
 
 void tmnn_choose_constraints(int32_t n, int32_t q, double A[])
   { 
-    for (int32_t i = 0; i < q; i++)
-      { for (int32_t j = 0; j < n; j++)
+    for (uint32_t i = 0;  i < q; i++)
+      { for (uint32_t j = 0;  j < n; j++)
           { A[i*n + j] = dabrandom(-2.0, +2.0); }
       }
   }

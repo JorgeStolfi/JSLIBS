@@ -232,7 +232,7 @@ void nmsim_elem_net_group_stats_print_all
     fprintf(wr, "\n\n");
 
     /* Print table header: */
-    for (int32_t hdr = 1; hdr <= 4; hdr++)
+    for (uint32_t hdr = 1;  hdr <= 4; hdr++)
       { nmsim_elem_net_group_stats_print_one(wr, NULL, -1, pref, hdr, suff); }
 
     /* Print table body: */

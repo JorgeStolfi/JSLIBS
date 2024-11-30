@@ -67,7 +67,7 @@ void hr2_pmap_opt_test_choose_r2_point_pairs
     hr2_pmap_t M2 = hr2_pmap_throw_by_type((ident ? ht_IDENTITY : type), sgn);
     
     /* Generate points {p1[0..np-1]} and weights {w[0..np-1]}: */
-    for (int32_t kp = 0; kp < np; kp++)
+    for (uint32_t kp = 0;  kp < np; kp++)
       { /* Fill {p1} with {nr} well-spaced points and some random points: */
         r2_t q;
         if (kp < nr)
@@ -102,9 +102,9 @@ void hr2_pmap_opt_test_choose_r2_point_pairs
     if ((type != ht_AFFINE) || (type == ht_GENERIC))
       { /* Print table of distance ratios: */
         fprintf(stderr, "      rel point distances\n");
-        for (int32_t kp = 0; kp < np; kp++)
+        for (uint32_t kp = 0;  kp < np; kp++)
           { fprintf(stderr, "      %3d", kp);
-            for (int32_t jp = 0; jp < kp; jp++)
+            for (uint32_t jp = 0;  jp < kp; jp++)
               { double D1kj = r2_dist(&(p1[kp]), &(p1[jp]));
                 double D2kj = r2_dist(&(p2[kp]), &(p2[jp]));
                 double rat = D1kj/(D2kj + 1.0e-200);

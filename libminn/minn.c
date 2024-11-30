@@ -40,7 +40,7 @@ void minn_uniform
         case minn_method_QUAD:
           /* Compute the general tolerance {tol}: */
           double tol = +INF;
-          for (int32_t i = 0; i < n; i++) { tol = fmin(tol, atol[i]); }
+          for (uint32_t i = 0;  i < n; i++) { tol = fmin(tol, atol[i]); }
           minn_quad(n, F, box, tol, v, Fval_P);
           break;
           
@@ -67,7 +67,7 @@ void minn_subspace
     /* Map the domain to the unit {d}-ball or {d}-cube. */
     /* Compute the tolerances {xtol[0..d-1]} in each mapped axis: */
     double xtol[d];
-    for (int32_t k = 0; k < d; k++)
+    for (uint32_t k = 0;  k < d; k++)
       { double urk = urad[k];
         demand(isfinite(urk) && (urk > 0), "invalid {urad[k]}");
         xtol[k] = utol[k]/urk;
@@ -139,7 +139,7 @@ void minn_ellipsoid_constrained
     /* Minimize over the ellipsoid {\RF(U,urad)}: */
     bool_t box = FALSE; /* Cutting a box is messy. */
     double utol[d];
-    for (int32_t k = 0; k < d; k++) { utol[k] = tol; }
+    for (uint32_t k = 0;  k < d; k++) { utol[k] = tol; }
     minn_subspace(n, F, d, U, urad, box, utol, meth, v, Fval_P);
     free(C);
   }

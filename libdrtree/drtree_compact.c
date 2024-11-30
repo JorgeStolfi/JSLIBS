@@ -55,7 +55,7 @@ void drtree_compact_arrange
     /* Table of displacements used by {find_free_row}: */
     int32_t nd = 3*nrows; /* Num of row displacements in table. */
     int32_t drow[nd];
-    for (int32_t kc = 0; kc < nrows; kc++) 
+    for (uint32_t kc = 0;  kc < nrows; kc++) 
      { /* Two attempts below, then one above: */
        assert(3*kc+2 < nd);
        drow[3*kc+0] = -2*kc-1; 
@@ -110,13 +110,13 @@ void drtree_compact_arrange
     /* Assign a row {rdr[iq]} to every individual {iq}: */
     int32_t niters = 10; /* Iterations of the placement loop. */
     /* Pretend the initial placement was row 0: */
-    for (int32_t iq = 0; iq < ni; iq++) { rdr[iq] = 0; }
-    for (int32_t it = 0; it < niters; it++)
+    for (uint32_t iq = 0;  iq < ni; iq++) { rdr[iq] = 0; }
+    for (uint32_t it = 0;  it < niters; it++)
       { if (debug) { fprintf(stderr, "      --- iteration %d ---\n", it); }
         /* Assign rows in reverse chrono order (children before parent): */
         /* Clear {occ,rChSum}: */
-        for (int32_t k = 0; k < ncells; k++) { occ[k] = FALSE; }
-        for (int32_t iq = 0; iq < ni; iq++) { rChSum[iq] = 0.0; }
+        for (uint32_t k = 0;  k < ncells; k++) { occ[k] = FALSE; }
+        for (uint32_t iq = 0;  iq < ni; iq++) { rChSum[iq] = 0.0; }
         for (int32_t iq = ni-1; iq >= 0; iq--) 
           { int32_t row = assign_row(iq);
             if (debug) { fprintf(stderr, "        iq = %d row = %d\n", iq, row); }
@@ -146,7 +146,7 @@ void drtree_compact_arrange
       }
     /* Find highest used row: */
     int32_t rowMax = -1; /* Max row assigned. */
-    for (int32_t iq = 0; iq < ni; iq++)
+    for (uint32_t iq = 0;  iq < ni; iq++)
       { if ((rdr[iq] != -1) && (rdr[iq] > rowMax)) { rowMax = rdr[iq]; } }
     /* Reduce plot grid: */
     nrows = rowMax+1;
@@ -246,7 +246,7 @@ void drtree_compact_arrange
         if (jhi >= ncols) { jhi = ncols-1; }
         int32_t row = rowIdeal;
         int32_t kd = 0; /* Index into next row increment in {drow}. */
-        for (int32_t kr = 0; kr < nrows; kr++)
+        for (uint32_t kr = 0;  kr < nrows; kr++)
           { /* Try on {row}: */
             bool_t *occr = &(occ[row*ncols]);
             bool_t ok = TRUE;

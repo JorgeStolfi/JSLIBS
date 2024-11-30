@@ -49,8 +49,8 @@ void r2_align_plot_mismatch_lines
 i2_t r2_align_count_variable_coords(int32_t ni, r2_t arad[])
   { 
     i2_t nv = (i2_t){{ 0, 0 }};
-    for (int32_t i = 0; i < ni; i++) 
-      { for (int32_t j = 0; j < 2; j++)
+    for (uint32_t i = 0;  i < ni; i++) 
+      { for (uint32_t j = 0;  j < 2; j++)
           { double arij = arad[i].c[j];
             demand (isfinite(arij) && (arij >= 0), "invalid {arad}");
             if (arij != 0) { nv.c[j]++; }
@@ -100,8 +100,8 @@ void r2_align_compute_search_ellipsoid
     if (bal && (nd < nh))
       { if (debug) { fprintf(stderr, "  ... lienarizing {arad}\n"); } 
         double hrad[2*ni]; /* The radii {arad[0..ni-1].c[0..1]}, linearized. */
-        for (int32_t i = 0; i < ni; i++)
-          { for (int32_t j = 0; j < 2; j++)
+        for (uint32_t i = 0;  i < ni; i++)
+          { for (uint32_t j = 0;  j < 2; j++)
               { hrad[2*i + j] = arad[i].c[j]; }
           }
 
@@ -109,12 +109,12 @@ void r2_align_compute_search_ellipsoid
         int32_t nc_bal = nh - nd;   /* Number of balancing constraints. */
         double A[nc_bal*2*ni];  /* Constraint equation coefficients on linearized {\RC} coords. */
         int32_t kc = 0;   /* Next free row of {A}. */
-        for (int32_t j = 0; j < 2; j++)
+        for (uint32_t j = 0;  j < 2; j++)
           { if (nv.c[j] >= 2)
               { /* Append the the balancing constraint on coordinate {j} of {\RR^2}: */
                 assert(kc < nc_bal);
                 double *Ak = &(A[kc*2*ni]);
-                for (int32_t i = 0; i < ni; i++)
+                for (uint32_t i = 0;  i < ni; i++)
                   { double arij = arad[i].c[j];
                     if (arij != 0) { Ak[2*i + j] = 1.0; }
                   }
@@ -135,11 +135,11 @@ void r2_align_compute_search_ellipsoid
         rmxn_ellipsoid_cut(2*ni, hrad, nc, C, nd, V, urad);
         
         /* Repack basis {V} as alignment vectors in {\RC}: */
-        for (int32_t kd = 0; kd < nd; kd++)
+        for (uint32_t kd = 0;  kd < nd; kd++)
           { r2_t *Uk = &(U[kd*ni]);
             double *Vk = &(V[kd*2*ni]);
-            for (int32_t i = 0; i < ni; i++)
-              { for (int32_t j = 0; j < 2; j++)
+            for (uint32_t i = 0;  i < ni; i++)
+              { for (uint32_t j = 0;  j < 2; j++)
                   { double Vkij = Vk[2*i + j];
                     /* All {U} vectors must be conformal: */
                     if (arad[i].c[j] == 0) { assert(Vkij == 0); }
@@ -151,15 +151,15 @@ void r2_align_compute_search_ellipsoid
     else
       { /* Simple optimization, each variable coord is an indep minimization variable: */
         int32_t kd = 0; /* Count nonzero elements of {arad}. */
-        for (int32_t i = 0; i < ni; i++)
-          { for (int32_t j = 0; j < 2; j++)
+        for (uint32_t i = 0;  i < ni; i++)
+          { for (uint32_t j = 0;  j < 2; j++)
               { double arij = arad[i].c[j];
                 if (arij != 0) 
                   { assert(kd < nd);
                     /* Store into row {kd} the {i,j} canonical vector of {\RC}: */
                     r2_t *Uk = &(U[kd*ni]);
-                    for (int32_t i1 = 0; i1 < ni; i1++)
-                      { for (int32_t j1 = 0; j1 < 2; j1++)
+                    for (uint32_t i1 = 0;  i1 < ni; i1++)
+                      { for (uint32_t j1 = 0;  j1 < 2; j1++)
                          { Uk[i1].c[j1] = 0.0; }
                       }
                     Uk[i].c[j] = 1.0;
@@ -181,11 +181,11 @@ bool_t r2_align_coord_is_variable(r2_t arad[], int32_t i, int32_t j)
 void r2_align_print_vector(FILE *wr, int32_t ni, char *name, int32_t ix, r2_t p[])
   { 
     int32_t nz = 0;
-    for (int32_t i = 0; i < ni; i++)
+    for (uint32_t i = 0;  i < ni; i++)
       { fprintf(wr, "  %s", name);
         if (ix >= 0) { fprintf(wr, "[%d]", ix); }
         fprintf(wr, "[%d] = (", i);
-        for (int32_t j = 0; j < 2; j++)
+        for (uint32_t j = 0;  j < 2; j++)
           { double pij = p[i].c[j];
             fprintf(wr, " %12.8f", pij); 
             if (pij == 0) { nz++; }
@@ -258,7 +258,7 @@ void r2_align_plot_mismatch_lines
             double du0 = d0/urad0, du1 = d1/urad1;
             if (du0*du0 + du1*du1 <= 1.0)
               { /* Compute the probe vector {psmp[0..ni-1]}. */
-                for (int32_t i = 0; i < ni; i++)
+                for (uint32_t i = 0;  i < ni; i++)
                   { r2_mix(d0, &(u0[i]), d1, &(u1[i]), &(psmp[i])); 
                     r2_add(&(ctr[i]), &(psmp[i]), &(psmp[i])); 
                   }
@@ -289,8 +289,8 @@ void r2_align_throw_vector (int32_t ni, double rmin, double rmax, r2_t p[])
     while (TRUE) 
       { /* Throw a random alignment vector in the cube of side {2*rmax} centered at the origin, compute its squared norm: */
         double sum2 = 0.0; /* Sum of squares of all coordinates. */
-        for (int32_t i = 0; i < ni; i++) 
-          { for (int32_t j = 0; j < 2; j++) 
+        for (uint32_t i = 0;  i < ni; i++) 
+          { for (uint32_t j = 0;  j < 2; j++) 
               { double pij = rmax*(2*drandom() - 1.0);
                 p[i].c[j] = pij;
                 sum2 += pij*pij;
@@ -316,7 +316,7 @@ void r2_align_throw_arad (int32_t ni, double rmax, int32_t nvmin, r2_t arad[], b
     double rmin = 0.5*rmax;
     /* Choose the ideal fraction {zfrac.c[j]} of non-zeros in each coordinate {j}: */
     r2_t vfrac = (ni <= 2 ? (r2_t){{ 1.00, 1.00 }} : (r2_t){{ 0.25, 0.75 }} );
-    for (int32_t j = 0; j < 2; j++)
+    for (uint32_t j = 0;  j < 2; j++)
       { /* Decide how many coordinates {arad[0..ni-1].c[j]} will be non-zero. */
         int32_t nvgoal = (int32_t)floor(vfrac.c[j]*ni + 0.5); 
         if ((nvgoal == ni) && (vfrac.c[j] < 1.0) && (ni >= 2)) { nvgoal = ni-1; }
@@ -324,7 +324,7 @@ void r2_align_throw_arad (int32_t ni, double rmax, int32_t nvmin, r2_t arad[], b
         if (nvgoal > ni) { nvgoal = ni; }
         int32_t nc = ni;      /* Number of coordinates remaining. */
         int32_t nv = nvgoal;  /* Number of coordinates still to be set to non-zero. */
-        for (int32_t i = 0; i < ni; i++)
+        for (uint32_t i = 0;  i < ni; i++)
           { assert(nv <= nc);
             double rij;
             if ((nv == nc) || (nc*drandom() < nv))
@@ -344,8 +344,8 @@ void r2_align_throw_arad (int32_t ni, double rmax, int32_t nvmin, r2_t arad[], b
 double r2_align_dot(int32_t ni, r2_t p[], r2_t q[])
   { 
     double sdot = 0.0;
-    for (int32_t i = 0; i < ni; i++) 
-      { for (int32_t j = 0; j < 2; j++) 
+    for (uint32_t i = 0;  i < ni; i++) 
+      { for (uint32_t j = 0;  j < 2; j++) 
           { sdot += p[i].c[j]*q[i].c[j]; }
       }
     return sdot;
@@ -354,8 +354,8 @@ double r2_align_dot(int32_t ni, r2_t p[], r2_t q[])
 double r2_align_dist_sqr(int32_t ni, r2_t p[], r2_t q[])
   { 
     double sum2 = 0.0; /* Sum of squares of all coordinates. */
-    for (int32_t i = 0; i < ni; i++) 
-      { for (int32_t j = 0; j < 2; j++) 
+    for (uint32_t i = 0;  i < ni; i++) 
+      { for (uint32_t j = 0;  j < 2; j++) 
           { double dij = p[i].c[j] - q[i].c[j];
             sum2 += dij*dij;
           }
@@ -365,8 +365,8 @@ double r2_align_dist_sqr(int32_t ni, r2_t p[], r2_t q[])
   
 double r2_align_rel_disp_sqr(int32_t ni, r2_t p[], r2_t q[], r2_t arad[])
   { double d2 = 0.0;
-    for (int32_t i = 0; i < ni; i++)
-      { for (int32_t j = 0; j < 2; j++)
+    for (uint32_t i = 0;  i < ni; i++)
+      { for (uint32_t j = 0;  j < 2; j++)
           { double rij = arad[i].c[j];
             double pij = p[i].c[j];
             double qij = (q == NULL ? 0.0 : q[i].c[j]);

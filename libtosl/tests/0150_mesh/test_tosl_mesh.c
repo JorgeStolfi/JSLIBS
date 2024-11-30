@@ -119,7 +119,7 @@ void do_test_path(int32_t NB, int8_t debug)
         tosl_vert_id_t iv = NS + b;
         assert(iv < mesh->NV);
         tosl_point_t *v = &(mesh->Vpos[iv]);
-        for (int32_t j = 0; j < 3; j++)
+        for (uint32_t j = 0;  j < 3; j++)
           { tosl_coord_t Cv = (tosl_coord_t)floor((1-f)*v0->c[j] + f*v1->c[j] + 0.5); Cv = 2*(Cv/2);
             v->c[j] = Cv;
           }

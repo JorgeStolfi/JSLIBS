@@ -1,5 +1,5 @@
 /* See {hr2_pmap_test_tools.h}. */
-/* Last edited on 2024-11-21 16:47:23 by stolfi */
+/* Last edited on 2024-11-24 08:50:22 by stolfi */
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -37,7 +37,7 @@
 
 void hr2_pmap_test_tools_throw_aff_map(hr2_pmap_t *M)
   {
-    for (int32_t i = 0; i < NH; i++)
+    for (uint32_t i = 0;  i < NH; i++)
       { r2_t p;
         r2_throw_cube(&p);
         M->dir.c[i][0] = (i == 0 ? 1.0 : 0.0);
@@ -96,8 +96,8 @@ void hr2_pmap_test_tools_do_check
       { Pr(Er, " ** %s: {dir} x {inv} is the zero matrix\n", name);
         programerror(msg, file, lnum, func);
       }
-    for (int32_t i = 0; i < NH; i++)
-      for (int32_t j = 0; j < NH; j++)
+    for (uint32_t i = 0;  i < NH; i++)
+      for (uint32_t j = 0;  j < NH; j++)
         { double vexp = (i == j ? 1.0 : 0.0);
           double err = P.c[i][j] - vexp;
           if (fabs(err) > eps)
@@ -228,35 +228,40 @@ void hr2_pmap_test_tools_do_check_map_r2_point
   }
 
 void hr2_pmap_test_tools_check_perturbed
-  ( hr2_pmap_t *M,
+  ( char *Mname,
+    hr2_pmap_t *M,
     hr2_pmap_test_tools_check_proc_t *OK,
     r3x3_t *P,
     bool_t OK_exp,
     char *OK_name,
     bool_t verbose
   )
-  { if (verbose) { Pr(Er, "        checking unperturbed map"); }
+  { if (verbose) { Pr(Er, "        checking unperturbed map {%s} ...\n", Mname); }
     hr2_pmap_test_tools_check_matrix(M, "unperturbed map", OK, OK_name, OK_exp);
-    if (verbose) { hr2_pmap_test_tools_print_matrix(8, "perturbation matrix {P}:", P); }
+    if (verbose) { Pr(Er, "        result of OK was '%c' as expected\n", "FT"[OK_exp]); }
+    if (verbose) { Pr(Er, "        checking perturbed versions of {%s}...\n", Mname); }
+    if (verbose) { hr2_pmap_test_tools_print_matrix(8, "perturbation matrix:", P); }
     double Pmax = r3x3_L_inf_norm(P);
     if (verbose) { Pr(Er, "        max perturbation = %24.16e\n", Pmax); }
     uint32_t NT = 5; /* Perturbation trials. */
-    for (int32_t trial = 0; trial < NT; trial++)
-      { for (int32_t dir = 0; dir <= 1; dir++)
+    for (uint32_t trial = 0;  trial < NT; trial++)
+      { for (uint32_t dir = 0;  dir <= 1; dir++)
           { hr2_pmap_t Q = (*M);
             r3x3_t *A = (dir == 0 ? &(Q.dir) : &(Q.inv));
             char *dtag = (dir == 0 ? "dir" : "inv");
             double Aenorm = r3x3_norm(A)/3; /* RMS elem value. */
-            char *Q_name = jsprintf("map {Q} that is {M} with {M.%s} perturbed by {%23.16e * random * P}", dtag, Aenorm);
+            char *Q_name = jsprintf("map {Q} that is {%s} with {%s.%s} perturbed by {%23.16e * random * P}", Mname, Mname, dtag, Aenorm);
             if (verbose) { Pr(Er, "        checking %s\n", Q_name); }
-            for (int32_t i = 0; i < NH; i++)
-              { for (int32_t j = 0; j < NH; j++)
-                 { A->c[i][j] += Aenorm*dabrandom(-1,+1)*P->c[i][j]; }
+            for (uint32_t i = 0;  i < NH; i++)
+              { for (uint32_t j = 0;  j < NH; j++)
+                 { double rij = (drandom() < 0.5 ? -1 : +1)*dabrandom(0.5, 1.0);
+                   A->c[i][j] += Aenorm*rij*P->c[i][j]; }
               }
             r3x3_t *B = (dir == 0 ? &(Q.inv) : &(Q.dir));
             r3x3_inv(A, B);
             if (verbose) { hr2_pmap_test_tools_print(8, NULL, &Q); }
             hr2_pmap_test_tools_check_matrix(&Q, Q_name, OK, OK_name, OK_exp);
+            if (verbose) { Pr(Er, "        result of OK was '%c' as expected.\n", "FT"[OK_exp]); }
             free(Q_name);
           }
       }

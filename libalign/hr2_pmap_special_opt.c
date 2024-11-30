@@ -119,7 +119,7 @@ void hr2_pmap_special_opt_quadratic
         
         /* The optimization variables {(0...0)} mean the initial map {M}: */
         double z[n];
-        for (int32_t k = 0; k < n; k++) { z[k] = 0.0; }
+        for (uint32_t k = 0;  k < n; k++) { z[k] = 0.0; }
 
         sign_t dir = -1; /* Look for minimum. */
         double *ctr = NULL; /* Domain of {z} is centered at origin. */
@@ -132,7 +132,7 @@ void hr2_pmap_special_opt_quadratic
         
         if (verbose) 
           { fprintf(stderr, "  encoding center and radius:\n");
-            for (int32_t k = 0; k < n; k++) { fprintf(stderr, "    %d %13.6f %13.6f\n", k, yctr[k], yrad[k]); }
+            for (uint32_t k = 0;  k < n; k++) { fprintf(stderr, "    %d %13.6f %13.6f\n", k, yctr[k], yrad[k]); }
             fprintf(stderr, "  estimated {z} distance from optimum = %13.6f\n", dMax);
             fprintf(stderr, "  probe radius = %13.6f [ %13.6f _ %13.6f ]\n", rIni, rMin, rMax);
           }
@@ -160,7 +160,7 @@ void hr2_pmap_special_opt_quadratic
           { assert(OK != NULL);
             assert(n1 == n);
             double y[n];
-            for (int32_t k = 0; k < n; k++) { y[k] = yctr[k] + z1[k]*yrad[k]; }
+            for (uint32_t k = 0;  k < n; k++) { y[k] = yctr[k] + z1[k]*yrad[k]; }
             hr2_pmap_t MM;
             hr2_pmap_decode(n, y, type, sgn, &MM);
             return OK(&MM, f2z);
@@ -170,10 +170,10 @@ void hr2_pmap_special_opt_quadratic
           { assert(n1 == n);
             hr2_pmap_t MM;
             double y[n];
-            for (int32_t k = 0; k < n; k++) { y[k] = yctr[k] + z1[k]*yrad[k]; }
+            for (uint32_t k = 0;  k < n; k++) { y[k] = yctr[k] + z1[k]*yrad[k]; }
             hr2_pmap_decode(n, y, type, sgn, &MM);
             hr2_pmap_encode(&MM, type, n, y);
-            for (int32_t k = 0; k < n; k++) { z1[k] = (y[k] - yctr[k])/yrad[k]; }
+            for (uint32_t k = 0;  k < n; k++) { z1[k] = (y[k] - yctr[k])/yrad[k]; }
             double f2z_new = sve_goal(n, z1);
             if (fabs(f2z_new - f2z) > 1.0e-6*(fabs(f2z_new) + fabs(f2z)) + 1.0e-12) 
               { fprintf(stderr, "      !! F(M) changed by projection\n"); }
@@ -200,7 +200,7 @@ double hr2_pmap_special_opt_eval_encoded
   )
   {
     double y[n];
-    for (int32_t k = 0; k < n; k++) { y[k] = yctr[k] + z[k]*yrad[k]; }
+    for (uint32_t k = 0;  k < n; k++) { y[k] = yctr[k] + z[k]*yrad[k]; }
     hr2_pmap_decode(n, y, type, sgn, M);
     /* Evaluate the client function: */
     double Q2 = f2(M);
@@ -248,7 +248,7 @@ void hr2_pmap_special_opt_1D_plot
     char *fname = jsprintf("%s-%s-%s-1D-plot.txt", outPrefix, tag, stage);
     FILE *wr = open_write(fname, TRUE);
     double step = urad/ns;
-    for (int32_t ku = 0; ku < nu; ku++)
+    for (uint32_t ku = 0;  ku < nu; ku++)
       { double *uk = &(U[ku*n]);
         minn_plot_1D_gnuplot(wr, n, z, uk, urad, step, sve_goal);
       }

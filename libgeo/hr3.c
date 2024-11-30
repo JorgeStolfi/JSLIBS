@@ -322,7 +322,7 @@ void hr3_point_print(FILE *wr, char *pre, hr3_point_t *p, char *fmt, char *suf)
   { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, wr); }
     fputs("[ ", wr);
     if (fmt == NULL) { fmt = "24.26e"; }
-    for (int32_t i = 0; i < NH; i++)
+    for (uint32_t i = 0;  i < NH; i++)
       { if (i != 0) { fputc(' ', wr); }
         fprintf(wr, fmt, p->c.c[i]);
       }
@@ -334,7 +334,7 @@ void hr3_plane_print(FILE *wr, char *pre, hr3_plane_t *P, char *fmt, char *suf)
   { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, wr); }
     fputs("< ", wr);
     if (fmt == NULL) { fmt = "24.26e"; }
-    for (int32_t i = 0; i < NH; i++)
+    for (uint32_t i = 0;  i < NH; i++)
       { if (i != 0) { fputc(' ', wr); }
         fprintf(wr, fmt, P->f.c[i]);
       }
@@ -346,7 +346,7 @@ void hr3_line_print(FILE *wr, char *pre, hr3_line_t *L, char *fmt, char *suf)
   { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, wr); }
     fputs("[[ ", wr);
     if (fmt == NULL) { fmt = "24.26e"; }
-    for (int32_t i = 0; i < NG; i++)
+    for (uint32_t i = 0;  i < NG; i++)
       { if (i != 0) { fputc(' ', wr); }
         fprintf(wr, fmt, L->k.c[i]);
       }

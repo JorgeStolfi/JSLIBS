@@ -46,7 +46,7 @@ int32_t main(int32_t argc, char **argv);
 int32_t main(int32_t argc, char **argv)
   { 
     nmsim_group_neuron_count_t nng = 418;
-    for(int32_t i = 0; i < 10; i++)
+    for (uint32_t i = 0;  i < 10; i++)
       { nmsim_elem_neuron_t neu = nmsim_elem_neuron_throw(nng - 1);
         nmsim_elem_neuron_show(stderr, "neuron = ", &neu, "\n");
         char *fname = jsprintf("out/test_neuron_elem_%03d.txt", i);

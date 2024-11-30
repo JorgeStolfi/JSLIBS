@@ -42,7 +42,7 @@ void hermite3_subsample(int32_t nx, double x[], double dx[], int32_t ns, int32_t
     y[0] = x[0];
     if (ns == 1)
       { /* Just copy the rest: */
-        for (int32_t ix = 1; ix < nx; ix++) { y[ix] = x[ix]; }
+        for (uint32_t ix = 1;  ix < nx; ix++) { y[ix] = x[ix]; }
       }
     else 
       { /* Actual interpolation: */
@@ -50,7 +50,7 @@ void hermite3_subsample(int32_t nx, double x[], double dx[], int32_t ns, int32_t
         double v1 = x[0]; /* Value at end of previous interval. */
         double d1 = (smooth ? dx[0] : NAN); /* Derivative at end of previous interval. */
         int32_t iy = 0; /* Last new sample set. */
-        for (int32_t ix = 1; ix < nx; ix++)
+        for (uint32_t ix = 1;  ix < nx; ix++)
           { /* Get the values {v0,v1} at {ix-1,ix}: */
             double v0 = v1;
             v1 = x[ix];
@@ -58,7 +58,7 @@ void hermite3_subsample(int32_t nx, double x[], double dx[], int32_t ns, int32_t
             double d0 = d1;  
             d1 = (smooth ? dx[ix] : NAN);
             /* Interpolate new samples: */ 
-            for (int32_t jn = 1; jn < ns; jn++)
+            for (uint32_t jn = 1;  jn < ns; jn++)
               { /* Interpolation at fraction {jn/ns}: */
                 double r0 = ((double)jn)/((double)ns);
                 double r1 = 1 - r0;

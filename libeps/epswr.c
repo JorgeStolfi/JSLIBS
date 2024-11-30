@@ -527,7 +527,7 @@ void epswr_polygon
     double *psx = talloc(n, double);
     double *psy = talloc(n, double);
     /* Map points to Device coordinates: */
-    for (int32_t i=0; i<n; i++)
+    for (uint32_t i = 0;  i<n; i++)
       { epswr_x_to_h_coord(eps, x[i], &(psx[i]));
         epswr_y_to_v_coord(eps, y[i], &(psy[i]));
       }
@@ -551,7 +551,7 @@ void epswr_rounded_polygon
     double *psx = talloc(n, double);
     double *psy = talloc(n, double);
     /* Map points and radius to Device coordinates: */
-    for (int32_t i=0; i<n; i++)
+    for (uint32_t i = 0;  i<n; i++)
       { epswr_x_to_h_coord(eps, x[i], &(psx[i]));
         epswr_y_to_v_coord(eps, y[i], &(psy[i]));
       }
@@ -575,7 +575,7 @@ void epswr_bezier_polygon
     double *psx = talloc(np, double);
     double *psy = talloc(np, double);
     /* Map points to Device coordinates: */
-    for (int32_t i = 0; i < np; i++)
+    for (uint32_t i = 0;  i < np; i++)
       { epswr_x_to_h_coord(eps, x[i], &(psx[i]));
         epswr_y_to_v_coord(eps, y[i], &(psy[i]));
       }

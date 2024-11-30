@@ -22,11 +22,11 @@ void float_image_hartley_spectrum(float_image_t *H, float_image_t *P, bool_t cen
     int32_t HX = NX/2;
     int32_t HY = NY/2;
     
-    for (int32_t ic = 0; ic < NC; ic++)
-      { for (int32_t fy = 0; fy < NY; fy++)
+    for (uint32_t ic = 0;  ic < NC; ic++)
+      { for (uint32_t fy = 0;  fy < NY; fy++)
           { int32_t gy = (NY - fy) % NY;
             /* Need to scan only half of Fourier transform: */
-            for (int32_t fx = 0; fx <= HX; fx++)
+            for (uint32_t fx = 0;  fx <= HX; fx++)
               { int32_t gx = (NX - fx) % NX;
                 /* Compute power at frequency {fx,xy} and {gx,gy}: */
                 double cfxy = float_image_get_sample(H, ic, fx, fy);

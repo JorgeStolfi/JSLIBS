@@ -272,8 +272,8 @@ void r2x2_diff_sqr(r2x2_t *A, r2x2_t *B, r2x2_t *R, double *dabs2P, double *drel
   {
     double dabs2 = 0.0;
     double drel2 = 0.0;
-    for (int32_t i = 0; i < N; i++) 
-      { for (int32_t j = 0; j < N; j++) 
+    for (uint32_t i = 0;  i < N; i++) 
+      { for (uint32_t j = 0;  j < N; j++) 
           { double *Rp = &(R->c[i][j]);
             if ((*Rp) != 0.0)
               { double Re = (*Rp);
@@ -307,8 +307,8 @@ void r2x2_from_cols(r2_t *a, r2_t *b, r2x2_t *M)
 
 bool_t r2x2_is_unif_scaling(r2x2_t *M, double s)
   {
-    for (int32_t i = 0; i < N; i++)
-      for (int32_t j = 0; j < N; j++)
+    for (uint32_t i = 0;  i < N; i++)
+      for (uint32_t j = 0;  j < N; j++)
         { if (M->c[i][j] != (i == j ? s : 0.0)) { return FALSE; } }
     return TRUE;
   }
@@ -394,7 +394,7 @@ void r2x2_from_point_pairs(r2_vec_t *p1, r2_t *bar1, r2_vec_t *p2, r2_t *bar2, r
     /* Compute mean 2×2 linear transformation {S} from {p1-bar1} to {p2-bar2} by least squares: */
     r2x2_t A; r2x2_zero(&A); /* Moment matrix. */
     r2x2_t B; r2x2_zero(&B); /* Projection matrix. */
-    for (int32_t k = 0; k < np; k++)
+    for (uint32_t k = 0;  k < np; k++)
       { 
         /* Reduce points {p1.e[k],p2.e[k]} relative to barycenter: */
         r2_t q1k = p1->e[k];
@@ -403,7 +403,7 @@ void r2x2_from_point_pairs(r2_vec_t *p1, r2_t *bar1, r2_vec_t *p2, r2_t *bar2, r
         if (bar2 != NULL) { r2_sub(&q2k, bar2, &q2k); }
         /* Accumulate moments and projections: */
         for (int32_t i = 0; i < 2; i ++)
-          { for (int32_t j = 0; j < 2; j++)
+          { for (uint32_t j = 0;  j < 2; j++)
               { A.c[i][j] += q1k.c[i]*q1k.c[j];
                 B.c[i][j] += q1k.c[i]*q2k.c[j];
               }

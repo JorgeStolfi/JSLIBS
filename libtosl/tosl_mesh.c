@@ -43,14 +43,14 @@ void tosl_mesh_vert_print(FILE *wr, char *pref, tosl_vert_id_t kv, char *suff, t
           }
         tosl_point_t *v = &(mesh->Vpos[kv]);
         fprintf(wr, " = (");
-        for (int32_t j = 0; j < 3; j++) { fprintf(wr, " %8d", v->c[j]); }
+        for (uint32_t j = 0;  j < 3; j++) { fprintf(wr, " %8d", v->c[j]); }
         fprintf(wr, " )");
       }
     else
       { fprintf(wr, "    v%-7s", "???");
         fprintf(wr, "   %-8s", "");
         fprintf(wr, "   ");
-        for (int32_t j = 0; j < 3; j++) { fprintf(wr, " %8s", ""); }
+        for (uint32_t j = 0;  j < 3; j++) { fprintf(wr, " %8s", ""); }
         fprintf(wr, "  ");
       }
     if (suff != NULL) { fputs(suff, wr); }
@@ -66,11 +66,11 @@ void tosl_mesh_check(tosl_mesh_t *mesh)
 
     /* {nd[deg]} is count of faces with degree {deg}. */
     int32_t *nd = malloc((NA+1)*sizeof(int32_t)); 
-    for (int32_t deg = 0; deg <= NA; deg++) { nd[deg] = 0; }
+    for (uint32_t deg = 0;  deg <= NA; deg++) { nd[deg] = 0; }
     
     /* {seen[ia]} is true if arc {ia} was checked. */
     int8_t *seen = malloc(NA*sizeof(int8_t));
-    for (int32_t ia = 0; ia < NA; ia++) { seen[ia] = 0; }
+    for (uint32_t ia = 0;  ia < NA; ia++) { seen[ia] = 0; }
 
     int32_t kf = 0; /* Num of faces seen. */
     for (tosl_arc_id_t ia = 0; ia < NA; ia++)
@@ -116,7 +116,7 @@ void tosl_mesh_check(tosl_mesh_t *mesh)
           }
       }
     fprintf(stderr, "found %d faces\n", kf);
-    for (int32_t deg = 0; deg <= NA; deg++)
+    for (uint32_t deg = 0;  deg <= NA; deg++)
       { if (nd[deg] != 0)
           { fprintf(stderr, "  %6d faces of degree %d\n", nd[deg], deg); }
       }
@@ -192,9 +192,9 @@ void tosl_mesh_print(FILE *wr, tosl_mesh_t *mesh)
               { double area, nrm[3], ctr[3];
                 tosl_mesh_face_normal_area_center(ia, mesh, &area, nrm, ctr);
                 fprintf(wr, " area = %.2f normal = (", area);
-                for (int32_t j = 0; j < 3; j++) { fprintf(wr, " %+6.4f", nrm[j]); }
+                for (uint32_t j = 0;  j < 3; j++) { fprintf(wr, " %+6.4f", nrm[j]); }
                 fprintf(wr, " ) center = (");
-                for (int32_t j = 0; j < 3; j++) { fprintf(wr, " %+11.3f", ctr[j]); }
+                for (uint32_t j = 0;  j < 3; j++) { fprintf(wr, " %+11.3f", ctr[j]); }
                 fprintf(wr, " )");
               }
             fprintf(wr, "\n");
@@ -266,13 +266,13 @@ void tosl_mesh_face_normal_area_center(tosl_arc_id_t ka, tosl_mesh_t *mesh, doub
     if (face_ok != 0)
       { assert(ia == ka); /* Must have ended after a full round. */
         double sum_area2 = 0;
-        for (int32_t j = 0; j < 3; j++) { sum_area2 += sum_nrm[j]*sum_nrm[j]; }
+        for (uint32_t j = 0;  j < 3; j++) { sum_area2 += sum_nrm[j]*sum_nrm[j]; }
         double area = sqrt(sum_area2);
-        for (int32_t j = 0; j < 3; j++) { nrm[j] = sum_nrm[j]/area; ctr[j] = sum_ctr[j]/area; }
+        for (uint32_t j = 0;  j < 3; j++) { nrm[j] = sum_nrm[j]/area; ctr[j] = sum_ctr[j]/area; }
         (*area_P) = area;
       }
     else
-      { for (int32_t j = 0; j < 3; j++) { nrm[j] = NAN; ctr[j] = NAN; }
+      { for (uint32_t j = 0;  j < 3; j++) { nrm[j] = NAN; ctr[j] = NAN; }
         (*area_P) = NAN;
       }
     return;
@@ -282,7 +282,7 @@ void tosl_mesh_face_normal_area_center(tosl_arc_id_t ka, tosl_mesh_t *mesh, doub
         tosl_point_t *vb = &(mesh->Vpos[ivb]);
         tosl_point_t *vc = &(mesh->Vpos[ivc]);
         double u[3], v[3];
-        for (int32_t j = 0; j < 3; j++)
+        for (uint32_t j = 0;  j < 3; j++)
           { u[j] = ((double)vb->c[j] - va->c[j]);
             v[j] = ((double)vc->c[j] - va->c[j]);
           }
@@ -291,7 +291,7 @@ void tosl_mesh_face_normal_area_center(tosl_arc_id_t ka, tosl_mesh_t *mesh, doub
         cr[1] = 0.5*(u[2]*v[0] - u[0]*v[2]);
         cr[2] = 0.5*(u[0]*v[1] - u[1]*v[0]);
         double area = sqrt(cr[0]*cr[0] + cr[1]*cr[1] + cr[2]*cr[2]); /* Area of triangle. */
-        for (int32_t j = 0; j < 3; j++)
+        for (uint32_t j = 0;  j < 3; j++)
           { sum_nrm[j] += cr[j];
             sum_ctr[j] += area*(va->c[j] + vb->c[j] + vc->c[j])/3;
           }
@@ -303,7 +303,7 @@ void tosl_mesh_coord_range_get(tosl_mesh_t *mesh, tosl_point_t *vmin_P, tosl_poi
     tosl_point_t vmin = (tosl_point_t){{ INT32_MAX, INT32_MAX, INT32_MAX }};
     tosl_point_t vmax = (tosl_point_t){{ INT32_MIN, INT32_MIN, INT32_MIN }};
     for (tosl_vert_id_t iv = 0; iv < mesh->NV; iv++)
-      { for (int32_t j = 0; j < 3; j++)
+      { for (uint32_t j = 0;  j < 3; j++)
           { tosl_coord_t Cv = mesh->Vpos[iv].c[j];
             if (Cv > vmax.c[j]) { vmax.c[j] = Cv; }
             if (Cv < vmin.c[j]) { vmin.c[j] = Cv; }
@@ -316,7 +316,7 @@ void tosl_mesh_coord_range_get(tosl_mesh_t *mesh, tosl_point_t *vmin_P, tosl_poi
 void tosl_mesh_coord_range_print(FILE *wr, char *pref, tosl_point_t *vmin, tosl_point_t *vmax, char *suff)
   {
     if (pref != NULL) { fputs(pref, wr); }
-    for (int32_t j = 0; j < 3; j++)
+    for (uint32_t j = 0;  j < 3; j++)
       { fprintf(wr, "%s{%+d ..%+d}", (j == 0 ? "" : "×"), vmin->c[j], vmax->c[j]); }
     if (suff != NULL) { fputs(suff, wr); }
   }
@@ -407,7 +407,7 @@ tosl_arc_id_t tosl_mesh_add_ring(int32_t n, char *pref, tosl_mesh_t *mesh)
     /* Create the vertices: */
     tosl_vert_id_t kv[n]; /* Indices of vertices. */
     tosl_point_t v = (tosl_point_t){{ 0, 0, 0 }}; /* Undefined coordinates. */
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0;  i < n; i++)
       { 
         char *lab = jsprintf("%s%d", pref, i);
         kv[i] = tosl_mesh_add_vert(&v, lab, mesh);
@@ -415,14 +415,14 @@ tosl_arc_id_t tosl_mesh_add_ring(int32_t n, char *pref, tosl_mesh_t *mesh)
     
     /* Create the edges: */
     tosl_arc_id_t ka[n]; /* Indices of arcs in one sense. */
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0;  i < n; i++)
       { tosl_vert_id_t kv0 = kv[i];
         tosl_vert_id_t kv1 = kv[(i+1) % n];
         ka[i] = tosl_mesh_add_edge(kv0, kv1, 0, mesh);
       }
       
     /* Connect the edges through the {.skip} links: */
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0;  i < n; i++)
       { tosl_arc_id_t ka0 = ka[i];
         tosl_arc_id_t ka1 = ka[(i+1) % n];
         mesh->Arc[ka0].skip = ka1;
@@ -442,7 +442,7 @@ void tosl_mesh_add_path(int32_t n, tosl_arc_id_t ia0, tosl_arc_id_t ia1, char *p
     /* Create the intermediate vertices: */
     tosl_vert_id_t kv[n]; /* Indices of vertices. */
     tosl_point_t v = (tosl_point_t){{ 0, 0, 0 }}; /* Undefined coordinates. */
-    for (int32_t b = 0; b < n; b++)
+    for (uint32_t b = 0;  b < n; b++)
       { 
         char *lab = jsprintf("%s%d", pref, b);
         kv[b] = tosl_mesh_add_vert(&v, lab, mesh);
@@ -455,7 +455,7 @@ void tosl_mesh_add_path(int32_t n, tosl_arc_id_t ia0, tosl_arc_id_t ia1, char *p
     /* Create the edges: */
     tosl_arc_id_t ka[n+1]; /* Indices of arcs in one sense. */
     tosl_vert_id_t kvp = iv0; /* Previous (origin) vertex. */
-    for (int32_t b = 0; b <= n; b++)
+    for (uint32_t b = 0;  b <= n; b++)
       { tosl_vert_id_t kvb = (b == n ? iv1 : kv[b]); /* Next (dest) vertex. */
         ka[b] = tosl_mesh_add_edge(kvp, kvb, 0, mesh);
         kvp = kvb;
@@ -464,7 +464,7 @@ void tosl_mesh_add_path(int32_t n, tosl_arc_id_t ia0, tosl_arc_id_t ia1, char *p
     /* Connect the edges through the {.skip} links: */
     tosl_arc_id_t kap = ia0;
     tosl_arc_id_t rap = ja0;
-    for (int32_t b = 0; b <= n; b++)
+    for (uint32_t b = 0;  b <= n; b++)
       { tosl_arc_id_t iab = ka[b];
         mesh->Arc[kap].skip = iab;
         mesh->Arc[tosl_sym(iab)].skip = rap;

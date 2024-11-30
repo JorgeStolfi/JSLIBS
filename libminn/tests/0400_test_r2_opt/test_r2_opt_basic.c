@@ -36,7 +36,7 @@ void tr2o_debug_points
         named {rtag}. */
        
     fprintf(stderr, "%*s%s\n", ind, "", title);
-    for (int32_t i = 0; i < NI; i++)
+    for (uint32_t i = 0;  i < NI; i++)
       { fprintf(stderr, "%*s  %s[%02d] =       ( %9.4f %9.4f )\n", ind, "", pname, i, p[i].c[0], p[i].c[1]);
         r2_t *r = (arad != NULL ? &(arad[i]) : NULL);
         r2_t *s = (astp != NULL ? &(astp[i]) : NULL);
@@ -89,7 +89,7 @@ void tr2o_debug_params
     int32_t NI, 
     r2_t p[]
   )
-  { for (int32_t i = 0; i < NI; i++) { tr2o_debug_r2(ind, pname, i, &(p[i])); }
+  { for (uint32_t i = 0;  i < NI; i++) { tr2o_debug_r2(ind, pname, i, &(p[i])); }
     fprintf(stderr, "\n");
     return;
   }

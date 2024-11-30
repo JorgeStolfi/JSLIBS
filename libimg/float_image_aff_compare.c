@@ -101,7 +101,7 @@ double float_image_aff_compare
             
             double w = wxk*wyk;
             double d2 = 0.0;
-            for (int32_t kc = 0; kc < NC; kc++) { double d = v1[kc]-v2[kc]; d2 += d*d; }
+            for (uint32_t kc = 0;  kc < NC; kc++) { double d = v1[kc]-v2[kc]; d2 += d*d; }
             
             if (debug_sampling)
               { float_image_aff_compare_show_sample("C1(img1)", &p1, NC, v1);
@@ -127,6 +127,6 @@ void float_image_aff_compare_show_sample(char *label, r2_t *p, int32_t NC, doubl
   { fprintf(stderr, "    %s", label);
     fprintf(stderr, " ( %10.8f %10.8f )", p->c[0], p->c[1]);
     fprintf(stderr, " =");
-    for (int32_t kc = 0; kc < NC; kc++) { fprintf(stderr, " %+8.5f", v[kc]); }
+    for (uint32_t kc = 0;  kc < NC; kc++) { fprintf(stderr, " %+8.5f", v[kc]); }
     fprintf(stderr, "\n");
   }

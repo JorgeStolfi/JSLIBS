@@ -1,5 +1,5 @@
 /* See argparser.h. */
-/* Last edited on 2024-11-22 03:13:51 by stolfi */
+/* Last edited on 2024-11-22 21:41:58 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 /* Based on Params.m3 by J.Stolfi, DEC-SRC, 1988.  */
@@ -8,6 +8,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -19,7 +20,7 @@
 #include <argparser.h>
 #include <argparser_extra.h>
 
-void argparser_check_all_parsed(argparser_t *pp, int32_t num);
+void argparser_check_all_parsed(argparser_t *pp, uint32_t num);
   /* Checks whether all arguments between {argv[1]} and {argv[num-1]}
     have been parsed.  Fails with a message if any wasn't. */
 
@@ -32,7 +33,7 @@ argparser_t *argparser_new(FILE *wr, int32_t argc, char **argv)
     pp->wr = wr;
     pp->parsed = bool_vec_new((uint32_t)argc);
     pp->parsed.e[0] = TRUE;
-    for (int32_t i = 1; i < argc; i++) { pp->parsed.e[i] = FALSE; }
+    for (uint32_t i = 1;  i < argc; i++) { pp->parsed.e[i] = FALSE; }
     pp->next = 1;
     pp->nhelp = 0;
     pp->help = string_vec_new(10);
@@ -54,7 +55,7 @@ void argparser_set_info(argparser_t *pp, char *info)
   }
     
 void argparser_process_help_info_options(argparser_t *pp)
-  { int32_t info_wd = 90; /* Line width for the INFO part. */
+  { uint32_t info_wd = 90; /* Line width for the INFO part. */
     if (argparser_keyword_present(pp, "-info"))
       { argparser_print_info(pp, info_wd); exit(0); }
     if (argparser_keyword_present(pp, "-help"))
@@ -65,7 +66,7 @@ void argparser_error(argparser_t *pp, char *msg)
   { argparser_error_at(pp, msg, "after", pp->next-1); }
 
 void argparser_print_help_and_halt(argparser_t *pp, int32_t status)
-  { for (int32_t i = 0; i < pp->nhelp; i++)
+  { for (uint32_t i = 0;  i < pp->nhelp; i++)
       { fprintf(pp->wr, "%s", pp->help.e[i]); }
     fprintf(pp->wr, "\n");
     exit(status);
@@ -75,7 +76,7 @@ bool_t argparser_keyword_present(argparser_t *pp, char *key)
   { demand((key != NULL) && ((*key) != 0), "invalid null/empty key");
     char **a = pp->arg.e;
     bool_t *p = pp->parsed.e;
-    for (int32_t i = 0; i < pp->arg.ne; i++)
+    for (uint32_t i = 0;  i < pp->arg.ne; i++)
       { if ((! p[i]) && argparser_key_matches(key, a[i]))
           { pp->next = i + 1;
             p[i] = TRUE;
@@ -96,7 +97,8 @@ char *argparser_get_next(argparser_t *pp)
   { char **a = pp->arg.e;
     bool_t *p = pp->parsed.e;
     if ((pp->next >= pp->arg.ne) || (p[pp->next]))
-      { argparser_arg_msg(pp, "missing argument after ", pp->next-1, "%s.\n", ""); 
+      { assert(pp->next >= 1);
+        argparser_arg_msg(pp, "missing argument after ", (uint32_t)(pp->next-1), "%s.\n", ""); 
         argparser_print_help_and_halt(pp, 1); 
       }
     p[pp->next] = TRUE;
@@ -106,7 +108,8 @@ char *argparser_get_next(argparser_t *pp)
 
 char *argparser_get_next_keyword(argparser_t *pp)
   { if (! argparser_next_is_keyword(pp))
-      { argparser_arg_msg(pp, "missing keyword after ", pp->next-1, "%s.\n", ""); 
+      { assert(pp->next >= 1);
+        argparser_arg_msg(pp, "missing keyword after ", (uint32_t)(pp->next-1), "%s.\n", ""); 
         argparser_print_help_and_halt(pp, 1);
         return NULL;
       }
@@ -116,7 +119,8 @@ char *argparser_get_next_keyword(argparser_t *pp)
 
 char *argparser_get_next_non_keyword(argparser_t *pp)
   { if (! argparser_next_is_non_keyword(pp))
-      { argparser_arg_msg(pp, "missing argument after ", pp->next-1, "%s.\n", ""); 
+      { assert(pp->next >= 1);
+        argparser_arg_msg(pp, "missing argument after ", (uint32_t)(pp->next-1), "%s.\n", ""); 
         argparser_print_help_and_halt(pp, 1);
         return NULL;
       }
@@ -266,34 +270,34 @@ bool_t argparser_keyword_present_next(argparser_t *pp, char *key)
       { return FALSE; }
   }
   
-#define argparser_show_bogus_max 5
+#define argparser_show_bogus_MAX 5
   /* Max leftover args to print. */
 
-void argparser_check_all_parsed(argparser_t *pp, int32_t num)
-  { int32_t bogus = 0;
+void argparser_check_all_parsed(argparser_t *pp, uint32_t num)
+  { uint32_t bogus = 0;
     bool_t *p = pp->parsed.e;
-    for (int32_t i = 1; i < num; i++)
+    for (uint32_t i = 1;  i < num; i++)
       { if (! p[i])
           { bogus++;
-            if (bogus <= argparser_show_bogus_max)
+            if (bogus <= argparser_show_bogus_MAX)
               { argparser_arg_msg(pp, "", i, " extraneous or misplaced.%s\n", ""); }
           }
       }
-    if (bogus > argparser_show_bogus_max) 
-      { fprintf(pp->wr, "(and %d more).\n", bogus - argparser_show_bogus_max); }
+    if (bogus > argparser_show_bogus_MAX) 
+      { fprintf(pp->wr, "(and %d more).\n", bogus - argparser_show_bogus_MAX); }
     if (bogus > 0) { argparser_print_help_and_halt(pp, 1); }
   }
 
 void argparser_skip_parsed(argparser_t *pp)
   { bool_t *p = pp->parsed.e;
-    pp->next = (int32_t)pp->arg.ne;
+    pp->next = pp->arg.ne;
     while ((pp->next > 0) && (! p[pp->next-1])) { pp->next--; }
     /* Check for unparsed arguments: */
     argparser_check_all_parsed(pp, pp->next);
   }
 
 void argparser_finish(argparser_t *pp)
-  { argparser_check_all_parsed(pp, (int32_t)pp->arg.ne);
+  { argparser_check_all_parsed(pp, pp->arg.ne);
     free(pp->parsed.e);
     free(pp->help.e);
     free(pp);

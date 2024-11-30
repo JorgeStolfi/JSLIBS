@@ -266,8 +266,8 @@ void inet_plot_all(char *prefix, adrw_building_t *B, int32_t nx, int32_t ny, boo
     double xmin = 00 - xmrg, xmax = xwid + xmrg;
     double ymin = 00 - ymrg, ymax = ywid + ymrg;
     
-    for (int32_t ox = 0; ox < nx; ox++)
-      { for (int32_t oy = 0; oy < ny; oy++)
+    for (uint32_t ox = 0;  ox < nx; ox++)
+      { for (uint32_t oy = 0;  oy < ny; oy++)
           { fprintf(stderr, "=== PLOTTING PAGE [%d,%d] OF [%d,%d] ===\n", ox,oy,nx,ny);
             epswr_figure_t *epsf = adrw_new_figure
               ( "out", prefix, "P", xmin, xmax, ymin, ymax,

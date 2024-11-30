@@ -17,13 +17,13 @@
     Work with eigenvalues & eigenvectors.
 
 //      if (debug) { fprintf(stderr, "... computing the basis {U = Q H} aligned with axes of {\\EU} ...\n"); }
-//      for (int32_t r = 0; r < m; r++)
+//      for (uint32_t r = 0;  r < m; r++)
 //        { double *qr = &(Q[r*m]);
 //          r2_t *ur = &(U[r*(n/2)]);
-//          for (int32_t i = 0; i < (n/2); i++)
-//            { for (int32_t j = 0; j < 2; j++)
+//          for (uint32_t i = 0;  i < (n/2); i++)
+//            { for (uint32_t j = 0;  j < 2; j++)
 //                { double sum = 0.0;
-//                  for (int32_t s = 0; s < m; s++)
+//                  for (uint32_t s = 0;  s < m; s++)
 //                    { r2_t *hs = &(H[s*(n/2)]);
 //                      double qrs = qr[s];
 //                      double hsij = hs[i].c[j];
@@ -52,8 +52,8 @@ void r2_align_throw_ortho_disp_vector(int32_t n, r2_t e[], int32_t k, double H[]
         r2_align_throw_ball_vector((n/2), rmin, 1.0, hk);
     
         /* Project {hk} perpendicular to coordinates where {e} is zero: */
-        for (int32_t i = 0; i < (n/2); i++) 
-          { for (int32_t j = 0; j < 2; j++) 
+        for (uint32_t i = 0;  i < (n/2); i++) 
+          { for (uint32_t j = 0;  j < 2; j++) 
               { double rij = e[i].c[j];
                 demand (rij >= 0, "invalid {e}");
                 if (rij == 0.0) { hk[i].c[j] = 0.0; }
@@ -61,16 +61,16 @@ void r2_align_throw_ortho_disp_vector(int32_t n, r2_t e[], int32_t k, double H[]
           }
         
         /* Project {hk} perpendicular to the all-ones vectors, preserving conformity: */
-        for (int32_t j = 0; j < 2; j++) 
+        for (uint32_t j = 0;  j < 2; j++) 
           { double sum = 0.0;
             int32_t nv = 0;
-            for (int32_t i = 0; i < (n/2); i++) 
+            for (uint32_t i = 0;  i < (n/2); i++) 
               { double rij = e[i].c[j];
                 if (rij != 0.0) { sum += hk[i].c[j]; nv++; }
               }
             if (nv > 0)
               { double avg = sum/nv;
-                for (int32_t i = 0; i < (n/2); i++) 
+                for (uint32_t i = 0;  i < (n/2); i++) 
                   { double rij = e[i].c[j];
                     if (rij != 0.0) { hk[i].c[j] -= avg; }
                   }
@@ -80,11 +80,11 @@ void r2_align_throw_ortho_disp_vector(int32_t n, r2_t e[], int32_t k, double H[]
         /* Project {hk} perpendicular to the previous adjustment vectors. */
         /* Since the previous vectors are conformal to {e} and balanced, 
           the projection preserves these properties: */
-        for (int32_t r = 0; r < k; r++)
+        for (uint32_t r = 0;  r < k; r++)
           { r2_t *hr = &(H[(n/2)*r]);
             double sdot = r2_align_dot((n/2), hk, hr);
-            for (int32_t i = 0; i < (n/2); i++) 
-              { for (int32_t j = 0; j < 2; j++) 
+            for (uint32_t i = 0;  i < (n/2); i++) 
+              { for (uint32_t j = 0;  j < 2; j++) 
                   { hk[i].c[j] -= sdot*hr[i].c[j]; }
               }
           }
@@ -94,8 +94,8 @@ void r2_align_throw_ortho_disp_vector(int32_t n, r2_t e[], int32_t k, double H[]
         if (sum2 >= rmin*rmin)
           { /* Normalize and return this vector: */
             double norm = sqrt(sum2);
-            for (int32_t i = 0; i < (n/2); i++) 
-              { for (int32_t j = 0; j < 2; j++) 
+            for (uint32_t i = 0;  i < (n/2); i++) 
+              { for (uint32_t j = 0;  j < 2; j++) 
                   { hk[i].c[j] /= norm; }
               }
             return;

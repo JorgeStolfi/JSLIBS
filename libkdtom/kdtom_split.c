@@ -278,7 +278,7 @@ size_t kdtom_split_bytesize(kdtom_split_t *T, bool_t total)
     size_t tot_bytes = node_bytes;
     if (total)
       { /* Add size of subtrees: */
-        for (int32_t i = 0; i < 2; i++)
+        for (uint32_t i = 0;  i < 2; i++)
           { size_t subt_bytes = kdtom_bytesize(T->sub[i], TRUE);
             tot_bytes += subt_bytes;
           }

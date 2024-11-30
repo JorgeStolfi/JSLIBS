@@ -65,18 +65,18 @@ int32_t jspca_compute_components
     
 void jspca_compute_barycenter(int32_t nd, int32_t nv, double D[], double w[], double d[], bool_t verbose)
   { if (verbose) { fprintf(stderr, "computing the data vector barycenter {b}...\n"); }
-    for (int32_t jv = 0; jv < nv; jv++) { d[jv] = 0; }
+    for (uint32_t jv = 0;  jv < nv; jv++) { d[jv] = 0; }
     double sumW = 0;
-    for (int32_t id = 0; id < nd; id++)
+    for (uint32_t id = 0;  id < nd; id++)
       { double *Di = &(D[id*nv]);
         double wi = w[id];
         demand(wi >= 0, "invalid weight {w[id]}");
-        for (int32_t jv = 0; jv < nv; jv++) 
+        for (uint32_t jv = 0;  jv < nv; jv++) 
           { d[jv] += wi*Di[jv]; }
         sumW += wi;
       }
     demand(sumW > 0, "total weight is zero");
-    for (int32_t jv = 0; jv < nv; jv++) { d[jv] /= sumW; }
+    for (uint32_t jv = 0;  jv < nv; jv++) { d[jv] /= sumW; }
     if (verbose) { rn_gen_print(stderr, nv, d, "%+14.8f", "  d = [ ", " ", " ]\n"); }
   }
     
@@ -84,27 +84,27 @@ double *jspca_compute_covariance_matrix(int32_t nd, int32_t nv, double D[], doub
   {
     if (verbose) { fprintf(stderr, "computing the covariance matrix {A}...\n"); }
     double *A = rmxn_alloc(nv,nv); /* The array {(D-u*d)'*W*(D-u*d)}. */
-    for (int32_t jv1 = 0; jv1 < nv; jv1++)
-      { for (int32_t jv2 = 0; jv2 <= jv1; jv2++)
+    for (uint32_t jv1 = 0;  jv1 < nv; jv1++)
+      { for (uint32_t jv2 = 0;  jv2 <= jv1; jv2++)
           { A[jv1*nv + jv2] = 0; }
       }
     double sumW = 0;
-    for (int32_t id = 0; id < nd; id++)
+    for (uint32_t id = 0;  id < nd; id++)
       { double *Di = &(D[id*nv]);
         double vi[nv];
         rn_sub(nv, Di, d, vi);
         double wi = w[id];
         assert(wi >= 0);
-        for (int32_t jv1 = 0; jv1 < nv; jv1++) 
-          { for (int32_t jv2 = 0; jv2 <= jv1; jv2++)
+        for (uint32_t jv1 = 0;  jv1 < nv; jv1++) 
+          { for (uint32_t jv2 = 0;  jv2 <= jv1; jv2++)
               { A[jv1*nv + jv2] += vi[jv1]*wi*vi[jv2]; }
           }
         sumW += wi;
       }
     /* Scale the array {A} by {1/sumW} to get the covariances, and fill teh upper half: */
     assert(sumW > 0);
-    for (int32_t jv1 = 0; jv1 < nv; jv1++)
-      { for (int32_t jv2 = 0; jv2 <= jv1; jv2++)
+    for (uint32_t jv1 = 0;  jv1 < nv; jv1++)
+      { for (uint32_t jv2 = 0;  jv2 <= jv1; jv2++)
           { double Ajj = A[jv1*nv + jv2] / sumW;
             A[jv1*nv + jv2] = Ajj;
             if (jv2 < jv1) { A[jv2*nv + jv1] = Ajj; }
@@ -145,7 +145,7 @@ int32_t jspca_eigen_decomp(int32_t nv, double A[], double E[], double e[], bool_
         e[ie] = ek;
         double *Rk = &(R[ke*nv]); /* Row {ke} of {R}. */
         double *Ei = &(E[ie*nv]); /* Row {ie} of {E}. */
-        for (int32_t jv = 0; jv < nv; jv++) { Ei[jv] = Rk[jv]; }
+        for (uint32_t jv = 0;  jv < nv; jv++) { Ei[jv] = Rk[jv]; }
         ie++;
         /* A covariance matrix should not have negative eigenvalues: */
         if (e2k < 0) { fprintf(stderr, " ** negative eigenvalue - should not happen"); }
@@ -163,11 +163,11 @@ int32_t jspca_eigen_decomp(int32_t nv, double A[], double E[], double e[], bool_
   
 void jspca_check_ortho(int32_t ne, int32_t nv, double E[])
   {
-    for (int32_t ie1 = 0; ie1 < ne; ie1++)
+    for (uint32_t ie1 = 0;  ie1 < ne; ie1++)
       { double *e1 = &(E[ie1*nv]);
         double dot11 = rn_dot(nv, e1, e1);
         assert(fabs(dot11 - 1) < 1.0e-8);
-        for (int32_t ie2 = 0; ie2 < ie1; ie2++)
+        for (uint32_t ie2 = 0;  ie2 < ie1; ie2++)
           { double *e2 = &(E[ie2*nv]);
             double dot12 = rn_dot(nv, e1, e2);
             assert(fabs(dot12) < 1.0e-8); 
@@ -202,7 +202,7 @@ void jspca_decompose_data
     double vi[nv]; /* Vector from barycenter to point. */
     double ci[ne]; /* Coefficients of data vector projected on basis {E}. */
     double pi[nv]; /* Linear combination of data vectors. */
-    for (int32_t id = 0; id < nd; id++)
+    for (uint32_t id = 0;  id < nd; id++)
       { double *Di = &(D[id*nv]); /* Data point {id}. */
         /* Subtract barycenter: */
         rn_sub(nv, Di, d, vi);

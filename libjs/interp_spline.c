@@ -1,4 +1,4 @@
-/* Last edited on 2024-11-18 11:51:33 by stolfi */
+/* Last edited on 2024-11-23 06:06:26 by stolfi */
 /* See {interp_spline.h}. */
 
 #include <stdio.h>
@@ -7,7 +7,7 @@
 #include <assert.h>
 
 #include <bool.h>
-#include <ix.h>
+#include <ix_reduce.h>
 #include <affirm.h>
 
 #include <interp_spline.h>
@@ -27,7 +27,7 @@ uint32_t interp_spline_compute_num_samples(int32_t ord, interp_spline_kind_t knd
       }
   }
   
-void interp_spline_get_indices(double z, uint32_t ns, ix_reduction_t red, uint32_t nw, int32_t ix[])
+void interp_spline_get_indices(double z, uint32_t ns, ix_reduce_mode_t red, uint32_t nw, int32_t ix[])
   {
     bool_t debug = FALSE;
 
@@ -35,11 +35,11 @@ void interp_spline_get_indices(double z, uint32_t ns, ix_reduction_t red, uint32
     int32_t k = (int32_t)floor(z - 0.5*(nw - 1));
     
     /* Compute the reduced indices {ix[0..nw-1]}: */
-    for (int32_t i = 0; i < nw; i++) { ix[i] = (int32_t)ix_reduce(k + i, ns, red); }
+    for (int32_t i = 0;  i < nw; i++) { ix[i] = (int32_t)ix_reduce(k + i, ns, red); }
 
     if (debug)
       { fprintf(stderr, "z = %7.4f", z);
-        for (int32_t i = 0; i < nw; i++) { fprintf(stderr, "  ix[%d] = %d\n", i, ix[i]); }
+        for (uint32_t i = 0;  i < nw; i++) { fprintf(stderr, "  ix[%d] = %d\n", i, ix[i]); }
         fprintf(stderr, "\n");
       }
   }

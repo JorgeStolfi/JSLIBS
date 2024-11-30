@@ -1,5 +1,5 @@
 # Libraries in compile order
-# Last edited on 2024-11-05 11:14:00 by stolfi
+# Last edited on 2024-11-29 21:55:51 by stolfi
 
 # + = OK.
 # ? = Status uncertain.
@@ -10,14 +10,15 @@
 # Core libraries - used by many projects
 
 + libjs
-+ libjsarray
 + libsexp
 
 + libflt
++ libgausol
 
 + libgeo
 
 + libimg
++ libjsarray
 
 + libeps
 

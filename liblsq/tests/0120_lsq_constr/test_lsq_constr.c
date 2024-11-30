@@ -249,12 +249,12 @@ void tlsq_make_trivial_problem
     double *L = NULL;
       
     /* Define {A,B,U} with a trivial system and distinctive solution: */
-    for (int32_t ix = 0; ix < nx; ix++)
-      { for (int32_t jx = 0; jx < nx; jx++)
+    for (uint32_t ix = 0;  ix < nx; ix++)
+      { for (uint32_t jx = 0;  jx < nx; jx++)
           { /* Fill {A} with identity except first {nc} rows and columns: */
             A[ix*nx + jx] = ((ix >= nc ) && (ix == jx) ? 1.0 : 0.0);
           }
-        for (int32_t jf = 0; jf < nf; jf++)
+        for (uint32_t jf = 0;  jf < nf; jf++)
           { /* Each element of {U} is a distinct nonzero integer: */
             U[ix*nf + jf] = ((double)(jf*nx + ix + 1));
             /* The first {nc} rows of {B} are more distinct integers, the rest are the same as {U}: */
@@ -267,12 +267,12 @@ void tlsq_make_trivial_problem
       { R = rmxn_alloc(nc, nx);
         L = rmxn_alloc(nc, nf);
         S = rmxn_alloc(nc, nf);
-        for (int32_t ic = 0; ic < nc; ic++)
-          { for (int32_t jx = 0; jx < nx; jx++)
+        for (uint32_t ic = 0;  ic < nc; ic++)
+          { for (uint32_t jx = 0;  jx < nx; jx++)
               { /* The first {nc} columns of {R} are the identity, rest zeros: */
                 R[ic*nx + jx] = (ic == jx ? 1.0 : 0.0);
               }
-            for (int32_t jf = 0; jf < nf; jf++)
+            for (uint32_t jf = 0;  jf < nf; jf++)
               { /* The constraint RHS {L} is the same as the first {nc} rows of {U}: */
                 S[ic*nf + jf] = U[ic*nf + jf];
                 /* The Lagrangian {L} is the first {nc} rows of {B}: */
@@ -459,8 +459,8 @@ void tlsq_check_system
   }
 
 void tlsq_compare_with_expected_soln(int32_t nx, int32_t nf, double tol, double Uexp[], double Ucmp[])
-  { for (int32_t ix = 0; ix < nx; ix++)
-      { for (int32_t jf = 0; jf < nf; jf++) 
+  { for (uint32_t ix = 0;  ix < nx; ix++)
+      { for (uint32_t jf = 0;  jf < nf; jf++) 
           { double Uexpij = Uexp[ix*nf + jf];
             double Ucmpij = Ucmp[ix*nf + jf];
             double s = Ucmpij - Uexpij;
@@ -487,7 +487,7 @@ void tlsq_check_main_system(int32_t nx, int32_t nc, int32_t nf, double tol, doub
     rmxn_add(nx, nf, Y, Z, BE);
     rmxn_sub(nx, nf, B, BE, BE);
     if (verbose)
-      { gsel_print_array(stderr, 4, "%12.6f", "residual of main system:", nx, nf, "BE", BE, ""); }
+      { gauss_elim_print_array(stderr, 4, "%12.6f", "residual of main system:", nx, nf, "BE", BE, ""); }
     double maxE = rmxn_max_abs_elem(nx, nf, BE);
     fprintf(stderr, "  max main system residual %23.16e\n", maxE);
     demand(maxE <= tol, "main system residual is too large");
@@ -499,7 +499,7 @@ void tlsq_check_constraints(int32_t nx, int32_t nc, int32_t nf, double tol, doub
     double *SE = rmxn_alloc(nc, nf);
     rmxn_sub(nc, nf, Y, S, SE);
     if (verbose)
-      { gsel_print_array(stderr, 4, "%12.6f", "residual of constraints:", nc, nf, "SE", SE, ""); }
+      { gauss_elim_print_array(stderr, 4, "%12.6f", "residual of constraints:", nc, nf, "SE", SE, ""); }
     double maxE = rmxn_max_abs_elem(nc, nf, SE);
     fprintf(stderr, "  max constraint residual %23.16e\n", maxE);
     demand(maxE <= tol, "constraint residual is too large");

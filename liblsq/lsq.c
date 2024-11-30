@@ -95,7 +95,7 @@ void lsq_compute_matrix_and_rhs
     /* Generate all test data points, accumulate statistics: */
     rmxn_zero(nx, nx, A);
     rmxn_zero(nx, nf, B);
-    for (int32_t kt = 0; kt < nt; kt++)
+    for (uint32_t kt = 0;  kt < nt; kt++)
       { /* Obtain data point number {kt} in {Xk,Fk,Wk}: */
         double Wk = NAN;
         gen_data_point(kt, nx, Xk, nf, Fk, &Wk);
@@ -112,10 +112,10 @@ void lsq_compute_matrix_and_rhs
         demand(Wk < +INF, "infinte reliability weights not implemented yet");
         
         /* Accumulate scalar products on matrix: */
-        for (int32_t ix = 0; ix < nx; ix++)
-          { for (int32_t jx = 0; jx < nx; jx++)
+        for (uint32_t ix = 0;  ix < nx; ix++)
+          { for (uint32_t jx = 0;  jx < nx; jx++)
               { A[ix*nx+jx] += Xk[ix]*Wk*Xk[jx]; }
-            for (int32_t jf = 0; jf < nf; jf++)
+            for (uint32_t jf = 0;  jf < nf; jf++)
               { B[ix*nf+jf] += Xk[ix]*Wk*Fk[jf]; }
           }
       }
@@ -143,9 +143,9 @@ int32_t lsq_solve_system
       
     if (verbose)
       { /* Print the least squares system: */
-        gsel_print_system(stderr, 4, "%12.5f", "main least squares system (minus term {R1*L})", nx,nx, "A",A, nf,"B",B, 0,NULL,NULL, "");
+        gauss_elim_print_system(stderr, 4, "%12.5f", "main least squares system (minus term {R1*L})", nx,nx, "A",A, nf,"B",B, 0,NULL,NULL, "");
         if (nc > 0)
-          { gsel_print_system(stderr, 4, "%12.5f", "constraints system", nc,nx, "R",R, nf,"S",S, 0,NULL,NULL, ""); }
+          { gauss_elim_print_system(stderr, 4, "%12.5f", "constraints system", nc,nx, "R",R, nf,"S",S, 0,NULL,NULL, ""); }
         fprintf(stderr, "\n");
       }
           
@@ -153,7 +153,7 @@ int32_t lsq_solve_system
     int32_t rank;
     if (nc == 0)
       { /* Just solve {A * U = B}: */
-        rank = gsel_solve(nx, nx, A, nf, B, U, 0.0);
+        rank = gauss_elim_solve(nx, nx, A, nf, B, U, 0.0);
         if (verbose) { fprintf(stderr, "  rank = %d, should be %d\n", rank, nx); }
         demand(rank == nx, "indeterminate system");
       }
@@ -165,11 +165,11 @@ int32_t lsq_solve_system
         double *UL = talloc(nxc*nf, double);
         lsq_assemble_constrained_system(nx, nf, A, B, nc, R, S, AR, BS);
         if (verbose)
-          { gsel_print_system(stderr, 4, "%12.6f", "combined system matrix {AR}:", nxc, nxc,"AR",AR, nf,"BS",BS, -1,NULL,NULL, ""); }
-        rank = gsel_solve(nxc, nxc, AR, nf, BS, UL, 0.0);
+          { gauss_elim_print_system(stderr, 4, "%12.6f", "combined system matrix {AR}:", nxc, nxc,"AR",AR, nf,"BS",BS, -1,NULL,NULL, ""); }
+        rank = gauss_elim_solve(nxc, nxc, AR, nf, BS, UL, 0.0);
         if (verbose) { fprintf(stderr, "  rank = %d, should be %d\n", rank, nxc); }
         if (verbose)
-          { gsel_print_array(stderr, 4, "%12.6f", "combined system solution {UL}:", nxc, nf,"UL",UL, "");
+          { gauss_elim_print_array(stderr, 4, "%12.6f", "combined system solution {UL}:", nxc, nf,"UL",UL, "");
             fprintf(stderr, "\n"); 
           }
         demand(rank == nxc, "indeterminate system");
@@ -177,9 +177,9 @@ int32_t lsq_solve_system
         free(UL); free(BS); free(AR);
       } 
     if (verbose)
-      { gsel_print_array(stderr, 4, "%12.6f", "main system's solution:", nx, nf,"U",U, "");
+      { gauss_elim_print_array(stderr, 4, "%12.6f", "main system's solution:", nx, nf,"U",U, "");
         if (nc > 0) 
-          { gsel_print_array(stderr, 4, "%12.6f", "Lagrange multipliers:", nc, nf,"L",L, ""); }
+          { gauss_elim_print_array(stderr, 4, "%12.6f", "Lagrange multipliers:", nc, nf,"L",L, ""); }
         fprintf(stderr, "\n");
       }
     return rank;
@@ -197,8 +197,8 @@ void lsq_assemble_constrained_system
     double BS[]
   )
   { int32_t nxc = nx + nc;
-    for (int32_t ixc = 0; ixc < nxc; ixc++)
-      { for (int32_t jxc = 0; jxc < nxc; jxc++)
+    for (uint32_t ixc = 0;  ixc < nxc; ixc++)
+      { for (uint32_t jxc = 0;  jxc < nxc; jxc++)
           { double *ARij = &(AR[ixc*nxc +jxc]);
             if (ixc < nx)
               { if (jxc < nx) 
@@ -213,7 +213,7 @@ void lsq_assemble_constrained_system
                   { /* Zero: */ (*ARij) = 0.0; }
               }
           }
-        for (int32_t jf = 0; jf < nf; jf++)
+        for (uint32_t jf = 0;  jf < nf; jf++)
           { double *BSij = &(BS[ixc*nf + jf]);
             if (ixc < nx)
               { /* Copy {B}: */ (*BSij) = B[ixc*nf + jf]; }
@@ -232,8 +232,8 @@ void lsq_split_constrained_solution
     double L[]
   )
   { int32_t nxc = nx + nc;
-    for (int32_t ixc = 0; ixc < nxc; ixc++)
-      { for (int32_t jf = 0; jf < nf; jf++)
+    for (uint32_t ixc = 0;  ixc < nxc; ixc++)
+      { for (uint32_t jf = 0;  jf < nf; jf++)
           { double *ULij = &(UL[ixc*nf + jf]);
             if (ixc < nx)
               { /* Copy {U}: */ U[ixc*nf + jf] = (*ULij); }
@@ -278,12 +278,12 @@ void lsq_print_problem
   )
   { if (title != NULL) { fprintf(wr, "%*s%s\n", indent, "", title); }
     char *mhead = (nc > 0 ? "main system (minus the {R1*L} term):" : "main system:");
-    gsel_print_system
+    gauss_elim_print_system
       ( wr, indent+2, fmt, mhead, nx,
         nx,"A",A, nf,Uname,U, nf,"B",B, ""
       );
     if ((nc > 0) && ((R != NULL) || (L != NULL) || (S != NULL)))
-      { gsel_print_system
+      { gauss_elim_print_system
           ( wr, indent+2, fmt, "constraints system:", nc,
             nx,"R",R, nf,Lname,L, nf,"S",S, ""
           );

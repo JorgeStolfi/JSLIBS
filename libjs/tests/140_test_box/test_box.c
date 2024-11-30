@@ -2,7 +2,7 @@
 #define PROG_DESC "tests the ordered table search procedure"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2024-11-16 11:15:39 by stolfi */
+/* Last edited on 2024-11-22 20:40:58 by stolfi */
 /* Created on 2021-09-25 or earler by J. Stolfi, UNICAMP */
 
 #define test_box_COPYRIGHT \
@@ -50,7 +50,7 @@ int32_t main (int32_t argc, char **argv)
     
     int32_t nt = 10000;
     
-    for (int32_t it = 0; it < nt; it++)
+    for (uint32_t it = 0;  it < nt; it++)
       { /* Choose the dimension {d}: */
         box_dim_t d = (box_dim_t)int32_abrandom(0, box_MAX_DIM);
         bool_t verbose = (it < 10);
@@ -108,7 +108,7 @@ void test_print(box_dim_t d, interval_t B[], bool_t verbose)
     if (d <= 4)
       { fprintf(stderr, "testing {box_face_print}:\n");
         uint32_t nf = (uint32_t)ipow(3,d);
-        for (int32_t fi = 0; fi < nf; fi++)
+        for (uint32_t fi = 0; fi < nf; fi++)
           { fprintf(stderr, "face %3d = ", fi); 
             box_face_print(stderr, d, fi);
             fprintf(stderr, "\n"); 
@@ -124,7 +124,7 @@ void test_attribs(box_dim_t d, interval_t B[], bool_t verbose)
     double er, mw;
 
     interval_side_t dir[d];
-    for (int32_t i = 0; i < d; i++) { dir[i] = (interval_side_t)int32_abrandom(0, 1); }
+    for (uint32_t i = 0;  i < d; i++) { dir[i] = (interval_side_t)int32_abrandom(0, 1); }
     
     /* TESTING: void box_lo_corner(box_dim_t d, interval_t B[], double p[]); */
     /* TESTING: void box_hi_corner(box_dim_t d, interval_t B[], double p[]); */
@@ -148,7 +148,7 @@ void test_attribs(box_dim_t d, interval_t B[], bool_t verbose)
     
     double mw_cmp = 0;
     double sum2 = 0;
-    for (int32_t i = 0; i < d; i++)
+    for (uint32_t i = 0;  i < d; i++)
       { interval_t Bi = B[i];
         if (box_is_empty(d, B))
           { assert(w[i] == 0);
@@ -182,7 +182,7 @@ void test_equal(box_dim_t d, interval_t B[], bool_t verbose)
       { assert(! box_equal(d, A, B)); }
     else
       { bool_t eq = TRUE;
-        for (int32_t i = 0; i < d; i++)
+        for (uint32_t i = 0;  i < d; i++)
           { interval_t Ai = A[i];
             interval_t Bi = B[i];
             if (LO(Ai) != LO(Bi)) { eq = FALSE; }
@@ -200,11 +200,11 @@ void test_include_point(box_dim_t d, interval_t B[], bool_t verbose)
 
     interval_t C[d];
     double p[d];
-    for (int32_t i = 0; i < d; i++) { p[i] = dabrandom(GLOB_LO, GLOB_HI); }
+    for (uint32_t i = 0;  i < d; i++) { p[i] = dabrandom(GLOB_LO, GLOB_HI); }
 
     box_include_point(d, B, p, C);
     
-    for (int32_t i = 0; i < d; i++)
+    for (uint32_t i = 0;  i < d; i++)
       { interval_t Bi = B[i];
         interval_t Ci = C[i];
         if (box_is_empty(d, B))
@@ -242,7 +242,7 @@ void test_join_meet(box_dim_t d, interval_t B[], bool_t verbose)
     else
       { /* Check join: */
         assert(! box_is_empty(d, CJ));
-        for (int32_t i = 0; i < d; i++)
+        for (uint32_t i = 0;  i < d; i++)
           { interval_t Ai = A[i];
             interval_t Bi = B[i];
             interval_t CJi = CJ[i];
@@ -251,7 +251,7 @@ void test_join_meet(box_dim_t d, interval_t B[], bool_t verbose)
           }
         /* Check whether meet should be empty: */
         double mety = FALSE;
-        for (int32_t i = 0; i < d; i++)
+        for (uint32_t i = 0;  i < d; i++)
           { interval_t Ai = A[i];
             interval_t Bi = B[i];
             double cmlo = fmax(LO(Ai), LO(Bi));
@@ -261,7 +261,7 @@ void test_join_meet(box_dim_t d, interval_t B[], bool_t verbose)
         if (mety)
           { assert(box_is_empty(d, CM)); }
         else
-          { for (int32_t i = 0; i < d; i++)
+          { for (uint32_t i = 0;  i < d; i++)
               { interval_t Ai = A[i];
                 interval_t Bi = B[i];
                 interval_t CMi = CM[i];
@@ -337,7 +337,7 @@ void test_split(box_dim_t d, interval_t B[], bool_t verbose)
         if (debug) 
           { fprintf(stderr, "  ety BLO = %d BMD = %d BHI = %d\n", ety_BLO, ety_BMD, ety_BHI); }
       
-        for (int32_t i = 0; i < d; i++)
+        for (uint32_t i = 0;  i < d; i++)
           { interval_t Bi = B[i];
             interval_t BLOi = BLO[i];
             interval_t BMDi = BMD[i];

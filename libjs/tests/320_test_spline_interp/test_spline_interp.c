@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {interp_spline.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-20 06:55:48 by stolfi */ 
+/* Last edited on 2024-11-23 05:32:33 by stolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_interp_spline_COPYRIGHT \
@@ -14,12 +14,11 @@
 #include <math.h>
 #include <assert.h>
 
-
 #include <bool.h>
 #include <jsfile.h>
 #include <jsprintf.h>
 #include <affirm.h>
-#include <ix.h>
+#include <ix_reduce.h>
 
 #include <interp_spline.h>
 
@@ -79,7 +78,7 @@ void do_plot_test(char *prefix, int32_t order, interp_spline_kind_t kind)
     int32_t ix[nw];   /* Tap positions in sample array. */
     
     /* Choose the boundary conditions: */
-    ix_reduction_t red = ix_reduction_SINGLE; /* Samples outside {0..ns-1} are "not there". */
+    ix_reduce_mode_t red = ix_reduce_mode_SINGLE; /* Samples outside {0..ns-1} are "not there". */
     
     bool_t debug = FALSE; /* If TRUE, {interp} will print the weights. */
 
@@ -99,7 +98,7 @@ void do_plot_test(char *prefix, int32_t order, interp_spline_kind_t kind)
     uint32_t NP = NU*ns; /* Total subsamples. */
     
     /* Plot {s} interpolated on {NP} subsampling points: */
-    for (int32_t k = 0; k <= NP; k++)
+    for (uint32_t k = 0; k <= NP; k++)
       { double z = ((double)k)/((double)NU);
         /* debug = (fabs(z - zker) <= 0.5*(double)nw); */
         double Fz = interp(z);
@@ -122,12 +121,12 @@ void do_plot_test(char *prefix, int32_t order, interp_spline_kind_t kind)
         interp_spline_get_weights(z, order, kind, nw, wt);
         /* Interpolate: */
         double sum_ws, sum_wt = 0;
-        for (int32_t j = 0; j < nw; j++) 
+        for (uint32_t j = 0;  j < nw; j++) 
           { if (ix[j] >= 0) { sum_ws += wt[j]*s[ix[j]]; sum_wt += wt[j]; } }
         double f = sum_ws/sum_wt;
         if (debug)
           { fprintf(stderr, "z = %10.7f  f(z) = %+10.7f\n", z, f);
-            for (int32_t k = 0; k < nw; k++) { fprintf(stderr, "  wt[%d] = %10.7f\n", k, wt[k]); }
+            for (uint32_t k = 0;  k < nw; k++) { fprintf(stderr, "  wt[%d] = %10.7f\n", k, wt[k]); }
             fprintf(stderr, "\n");
           }
         return f;
@@ -163,7 +162,7 @@ void generate_test_samples(uint32_t *nsP, double **sP, double *zkerP)
         Also updates {*kP} with {kfin+1}. */
     
     /* Clear all samples: */
-    for (int32_t i = 0; i < ns; i++) { s[i]= 0; }
+    for (uint32_t i = 0;  i < ns; i++) { s[i]= 0; }
     
     uint32_t ks = 0; /* Next sample to be defined is {s[ks]}. */
 
@@ -177,7 +176,7 @@ void generate_test_samples(uint32_t *nsP, double **sP, double *zkerP)
     ks += H_ker;
     
     /* Lay down the broad polynomial pulses: */
-    for (int32_t gg = 0; gg <= deg_MAX; gg++)
+    for (uint32_t gg = 0; gg <= deg_MAX; gg++)
       { ks += DX;
         ks += H_ker;
         test_segm(&ks, gg);

@@ -92,7 +92,7 @@ void nmsim_group_net_test
     nmsim_elem_neuron_count_t nne_max = 4*nng;
     nmsim_elem_synapse_count_t nse_min = 0;
     nmsim_elem_synapse_count_t nse_max = 10*nsg;
-    for (int32_t i = 0; i < 10; i++) 
+    for (uint32_t i = 0;  i < 10; i++) 
       { nmsim_class_net_t *cnet = nmsim_class_net_throw(nnc, nsc);
         nmsim_elem_neuron_count_t nne = (nmsim_elem_neuron_count_t)int64_abrandom(nne_min, nne_max);
         nmsim_elem_synapse_count_t nse = (nmsim_elem_synapse_count_t)int64_abrandom(nse_min, nse_max);

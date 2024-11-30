@@ -122,7 +122,7 @@ void do_test_batch(char *tag, int32_t M_kegs, keg_spec_t keg_specs[], int32_t M_
     free(fname); 
 
     write_column_headers(wr);
-    for (int32_t ikeg = 0; ikeg < M_kegs; ikeg++)
+    for (uint32_t ikeg = 0;  ikeg < M_kegs; ikeg++)
       { /* Get the keg parameters: */
         keg_spec_t *spkeg = &(keg_specs[ikeg]);
         int32_t NS = spkeg->NS;
@@ -144,7 +144,7 @@ void do_test_batch(char *tag, int32_t M_kegs, keg_spec_t keg_specs[], int32_t M_
         tosl_mesh_check(mesh); 
 
         /* Slice it with various plane set sizes: */
-        for (int32_t ipset = 0; ipset < M_psets; ipset++)
+        for (uint32_t ipset = 0;  ipset < M_psets; ipset++)
           { int32_t NP = NPs[ipset];
             assert(NP < NP_MAX);
 
@@ -176,7 +176,7 @@ void do_test
   {
     /* Timing tests: */
     double time[NT]; /* CPU times of runs. */
-    for (int32_t it = 0; it < NT; it++)
+    for (uint32_t it = 0;  it < NT; it++)
       { fprintf(stderr, "choosing slicing planes...\n");
         int32_t type = 3; /* Inter-plane spacing distribution. */
         tosl_coord_t *Zplane = pick_planes(NP, -ZH, +ZH, type, debug);

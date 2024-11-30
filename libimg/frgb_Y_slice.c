@@ -94,7 +94,7 @@ void frgb_Y_slice_corners(double z, int32_t *nf_P, frgb_t f[])
       { /* Eliminate consecutive corners that are repeated by roundoff: */
         int32_t nf_new = 0; /* Number of distinct corners. */
         f[nf_new] = f[0]; nf_new++;
-        for (int32_t k = 1; k < nf; k++)
+        for (uint32_t k = 1;  k < nf; k++)
           { if (! frgb_eq(&(f[k]), &(f[nf_new-1])))
               { f[nf_new] = f[k]; nf_new++; }
           }

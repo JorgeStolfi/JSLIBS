@@ -92,7 +92,7 @@ double neuromat_filter_bandpass_log_gauss_eval(double f, double fm, int32_t np, 
     if (f == 0) { return 0.0; }
     if (f == 0) { return 0; }
     double gtot = 0;
-    for (int32_t kp = 0; kp < np; kp++)
+    for (uint32_t kp = 0;  kp < np; kp++)
       { double zf = fabs((log(f) - log(fm))/sigma - 2.0*kp);
         if (zf < 9.0) { double g = exp(-0.5*zf*zf); gtot += g; }
       }

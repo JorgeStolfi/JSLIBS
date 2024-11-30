@@ -88,7 +88,7 @@ int32_t main(int32_t argc, char** argv)
     ppv_sample_t *ms = kdtom_test_pick_max_samples(nms);
     
     for (ppv_dim_t d = 1; d <= 6; d++)
-      { for (int32_t k = 0; k < nms; k++)
+      { for (uint32_t k = 0;  k < nms; k++)
           { tkds_do_tests(d, ms[k]); }
       }
       

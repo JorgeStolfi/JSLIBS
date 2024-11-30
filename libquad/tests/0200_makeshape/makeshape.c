@@ -196,7 +196,7 @@ options_t *get_options (int32_t argc, char **argv, string_vec_t *shape_name)
 
 int32_t get_shape_num(char *shp, string_vec_t *shape_name)
   {
-    for (int32_t i = 0; i < shape_name->ne; i++)
+    for (uint32_t i = 0;  i < shape_name->ne; i++)
       { if (0 == strcmp(shp, shape_name->e[i])) { return i; } }
     return shape_name->ne;
   }

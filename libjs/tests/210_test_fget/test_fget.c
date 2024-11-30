@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {fget.h}, {fget_data.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-20 06:54:02 by stolfi */ 
+/* Last edited on 2024-11-23 07:48:56 by stolfi */ 
 /* Created on 2007-01-02 by J. Stolfi, UNICAMP */
 
 #define test_fget_COPYRIGHT \
@@ -59,7 +59,7 @@ int32_t main (int32_t argn, char **argv)
     int32_t nt = 3; /* Number of test passes. */
     test_fget_skip_spaces(TRUE);
     test_fget_chars(TRUE);
-    for (int32_t it = 0; it < nt; it++)
+    for (uint32_t it = 0;  it < nt; it++)
       { bool_t verbose = (it == 0); 
         test_fget_int(verbose);
         test_fget_double(verbose);
@@ -111,7 +111,7 @@ void test_fget_skip_spaces(bool_t verbose)
     assert(nlines == 8);
     char* fname = "out/test_skip.txt";
     FILE* wr = open_write(fname, verbose);
-    for (int32_t i = 0; i < nlines; i++) { Pr(wr, "%s\n", x[i]); }                  
+    for (uint32_t i = 0;  i < nlines; i++) { Pr(wr, "%s\n", x[i]); }                  
     fclose(wr);
     
     ifv { Pr(Er, "reading back with {fget_skip_spaces} etc ...\n"); }
@@ -221,7 +221,7 @@ void test_fget_skip_spaces(bool_t verbose)
     ifv { Pr(Er, "\n-- line 7 = \"%s\":\n", escapify(x[7])); }
     /* Should be "%$@": */
     char *text7 = "UNCHANGED";
-    for (int32_t ik = 0; ik < 3; ik++)
+    for (uint32_t ik = 0;  ik < 3; ik++)
       { ifv { Pr(Er, "calling {fget_test_comment_or_eol} (a)...\n"); }
         bool_t ok7a = fget_test_comment_or_eol(rd, cmtc, &text7); /* Should not find it. */
         check_cmt(ok7a, FALSE, text7, "UNCHANGED");
@@ -466,12 +466,12 @@ void test_fget_int(bool_t verbose)
 void test_fget_data(bool_t verbose)
   { ifv { Pr(Er, "=== Checking {fget_data_fields}... ===\n"); }
   
-    int32_t nt = 20; /* Number of data fields of each type. */
+    uint32_t nt = 20; /* Number of data fields of each type. */
 
     ifv { Pr(Er, "generating %d numeric field values ...\n", nt); }
     double   xd[nt]; /* Float numbers to write and read back. */
     char*    xa[nt]; /* Strings to write and read back. */
-    int32_t i = 0;
+    uint32_t i = 0;
     xd[i] = 0.0;         i++;
     xd[i] = +17.0;       i++;
     xd[i] = -15.0;       i++;
@@ -484,15 +484,15 @@ void test_fget_data(bool_t verbose)
     while (i < nt) { xd[i] = zrandom(); i++; }
 
     ifv { Pr(Er, "generating %d alpha field values ...\n", nt); }
-    for (int32_t j = 0; j < nt; j++)
+    for (uint32_t j = 0;  j < nt; j++)
       { char *lab = jsprintf("[%03d]", j);
         xa[j] = lab;
       }
     
     ifv { Pr(Er, "choosing the format for numeric fields ...\n"); }
-    int32_t nfmt = 5; /* Number of copies of each value. */
+    uint32_t nfmt = 5; /* Number of copies of each value. */
     char* fmt[nfmt];
-    int32_t k = 0;
+    uint32_t k = 0;
     fmt[k] = "%0.16g"; k++;
     fmt[k] = "%26.16e"; k++;
     fmt[k] = "%+38.16e"; k++;
@@ -501,17 +501,16 @@ void test_fget_data(bool_t verbose)
     assert(k == nfmt);
     
     ifv { Pr(Er, "setting up the data type vector ...\n"); }
-    int32_t nf = 3*nt; /* Number of fields per line: */
-    int8_t type[nf]; /* Defines type of each field. */
-    for (int32_t kf = 0; kf < nf; kf++) { type[kf] = 0; }
-    fget_data_set_field_type(-1, 2, FALSE, nf, type); /* Should be ignored. */
-    for (int32_t kt = 0; kt < nt; kt++)
-      { fget_data_set_field_type(3*kt + 1, 1, FALSE, nf, type);
-        fget_data_set_field_type(3*kt + 2, 2, FALSE, nf, type);
-        fget_data_set_field_type(3*kt + 2, 2, TRUE, nf, type); /* Should be OK. */
+    uint32_t nf = 3*nt; /* Number of fields per line: */
+    fget_data_type_t type[nf]; /* Defines type of each field. */
+    for (uint32_t kf = 0;  kf < nf; kf++) { type[kf] = fget_data_type_NOT; }
+    for (uint32_t kt = 0;  kt < nt; kt++)
+      { fget_data_set_field_type(3*kt + 1, fget_data_type_ALF, FALSE, nf, type);
+        fget_data_set_field_type(3*kt + 2, fget_data_type_NUM, FALSE, nf, type);
+        fget_data_set_field_type(3*kt + 2, fget_data_type_NUM, TRUE,  nf, type); /* Should be OK. */
       }
     
-    int32_t nd = nfmt; /* Number of data records. */
+    uint32_t nd = nfmt; /* Number of data records. */
 
     ifv { Pr(Er, "writing %d data records with those fields in various formats...\n", nd); }
     char* fname = "out/test_data.txt";
@@ -519,7 +518,7 @@ void test_fget_data(bool_t verbose)
     char cmtc = '#'; /* Allowed comment chars. */
     int32_t kd_to_kl[nd+1]; /* The file lines which have data records. */
     int32_t nl = 0; /* Number of lines (including blanks): */
-    for (int32_t kd = 0; kd < nd; kd++)
+    for (uint32_t kd = 0;  kd < nd; kd++)
       { /* Maybe write some blank or comment lines: */
         if (drandom() < 0.25) { fprintf(wr, " \240 # chances of rain are 25%%\n"); nl++; }
         if (drandom() < 0.25) { fprintf(wr, " \t \n"); nl++; }
@@ -527,7 +526,7 @@ void test_fget_data(bool_t verbose)
         kd_to_kl[kd] = nl;
         if (drandom() < 0.25) { fprintf(wr, "      "); }
         char *fmtk = fmt[kd % nfmt]; 
-        for (int32_t kf = 0; kf < nf; kf++)
+        for (uint32_t kf = 0;  kf < nf; kf++)
           { /* Print a space or tab: */
             fprintf(wr, (drandom() < 0.25 ? "\t" : " "));
             if (type[kf] == 0)
@@ -551,7 +550,7 @@ void test_fget_data(bool_t verbose)
     ifv { Pr(Er, "reading back each line as a string ...\n"); }
     FILE* rd = open_read(fname, verbose);
     char *x[nl];
-    for (int32_t kl = 0; kl < nl; kl++)
+    for (uint32_t kl = 0;  kl < nl; kl++)
       { x[kl] = fget_line(rd);
         ifv { Pr(Er, "-- file line %d = \"%s\"\n", kl, escapify(x[kl])); }
       }
@@ -568,7 +567,7 @@ void test_fget_data(bool_t verbose)
     double num[nf];
     char *alf[nf];
     int32_t kl = 0;
-    for (int32_t kd = 0; kd <= nd; kd++)
+    for (uint32_t kd = 0;  kd <= nd; kd++)
       { while ((kl < nl) && (kl < kd_to_kl[kd]))
           { ifv { Pr(Er, "-- file line %d = \"%s\"\n", kl, escapify(x[kl])); }
             kl++;
@@ -580,7 +579,7 @@ void test_fget_data(bool_t verbose)
         bool_t ok = fget_data_fields(rd, cmtc, nf, type, alf, num);
         demand(ok, "unexpected EOF");
         char *fmtk = fmt[kd % nfmt]; 
-        for (int32_t kf = 0; kf < nf; kf++)
+        for (uint32_t kf = 0;  kf < nf; kf++)
           { /* Check data fields that should NOT be read: */
             if (type[kf] != 1)
               { demand(alf[kf] == NULL, "read as alpha a field that should have been skipped"); } 

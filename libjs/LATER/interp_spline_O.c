@@ -53,7 +53,7 @@ void interp_spline_O_get_weights(double z, int32_t ord, uint32_t nw, double w[])
     
     if (debug)
       { fprintf(stderr, "z = %9.6f  fz = %9.6f  gz = %9.6f", z, fz, gz);
-        for (int32_t k = 0; k < nw; k++) { fprintf(stderr, "  w[%d] = %10.7f\n", k, w[k]); }
+        for (uint32_t k = 0;  k < nw; k++) { fprintf(stderr, "  w[%d] = %10.7f\n", k, w[k]); }
         fprintf(stderr, "\n");
       }
   }

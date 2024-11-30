@@ -21,7 +21,7 @@ int32_t neuromat_filter_clear_tiny_gains(int32_t nf, double H[], double eps, dou
         /* Clear all small gains: */
         double beta = 0.9; /* 0.5; */
         double logA = -beta/(1-eps);
-        for (int32_t kfa = 0; kfa <= nf/2; kfa++) 
+        for (uint32_t kfa = 0;  kfa <= nf/2; kfa++) 
           { int32_t kfb = (nf - kfa) % nf;
             if ((H[kfa] != 0) || (H[kfb] != 0))
               { double Ha, Hb;  /* Adjusted {H[kfa],H[kfb]}. */

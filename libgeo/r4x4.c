@@ -15,22 +15,22 @@
 #define N 4
 
 void r4x4_zero(r4x4_t *M)
-  { for (int32_t i = 0; i < N; i++)
-      for (int32_t j = 0; j < N; j++)
+  { for (uint32_t i = 0;  i < N; i++)
+      for (uint32_t j = 0;  j < N; j++)
         { M->c[i][j] = 0.0; }
   }
 
 void r4x4_ident(r4x4_t *M)
-  { for (int32_t i = 0; i < N; i++)
-      for (int32_t j = 0; j < N; j++)
+  { for (uint32_t i = 0;  i < N; i++)
+      for (uint32_t j = 0;  j < N; j++)
         { M->c[i][j] = (i == j ? 1.0 : 0.0); }
   }
 
 void r4x4_throw(r4x4_t *M, sign_t sgn)
   { assert((sgn >= -1) && (sgn <= +1));
     while (TRUE)
-      { for (int32_t i = 0; i < N; i++)
-          { for (int32_t j = 0; j < N; j++) 
+      { for (uint32_t i = 0;  i < N; i++)
+          { for (uint32_t j = 0;  j < N; j++) 
               { M->c[i][j] = 2*drandom() - 1; }
           }
         if (sgn == 0) { break; }
@@ -38,7 +38,7 @@ void r4x4_throw(r4x4_t *M, sign_t sgn)
         if (det == 0) { continue; }
         if (det*sgn < 0) 
           { /* Negate first row: */
-            for (int32_t j = 0; j < N; j++) { M->c[0][j] = - M->c[0][j]; }
+            for (uint32_t j = 0;  j < N; j++) { M->c[0][j] = - M->c[0][j]; }
           }
         /* At this point, {sgn*det} must be positive: */
         break;
@@ -98,9 +98,9 @@ void r4x4_set_col(r4x4_t *A, uint32_t j, r4_t *x)
 
 void r4x4_map_row(r4_t *x, r4x4_t *A, r4_t *r)
   { r4_t rr;
-    for (int32_t j = 0; j < N; j++)
+    for (uint32_t j = 0;  j < N; j++)
       { double s = 0.0;
-        for (int32_t k = 0; k < N; k++) s += x->c[k] * A->c[k][j];
+        for (uint32_t k = 0;  k < N; k++) s += x->c[k] * A->c[k][j];
         rr.c[j] = s;
       }
     (*r) = rr;
@@ -108,44 +108,44 @@ void r4x4_map_row(r4_t *x, r4x4_t *A, r4_t *r)
 
 void r4x4_map_col(r4x4_t *A, r4_t *x, r4_t *r)
   { r4_t rr;
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { double s = 0.0;
-        for (int32_t k = 0; k < N; k++) s += A->c[i][k] * x->c[k];
+        for (uint32_t k = 0;  k < N; k++) s += A->c[i][k] * x->c[k];
         rr.c[i] = s;
       }
     (*r) = rr;
   }
 
 void r4x4_add(r4x4_t *A, r4x4_t *B, r4x4_t *M)
-  { for (int32_t i = 0; i < N; i++)
-      for (int32_t j = 0; j < N; j++)
+  { for (uint32_t i = 0;  i < N; i++)
+      for (uint32_t j = 0;  j < N; j++)
         { M->c[i][j] = A->c[i][j] + B->c[i][j]; }
   }
 
 void r4x4_sub(r4x4_t *A, r4x4_t *B, r4x4_t *M)
-  { for (int32_t i = 0; i < N; i++)
-      for (int32_t j = 0; j < N; j++)
+  { for (uint32_t i = 0;  i < N; i++)
+      for (uint32_t j = 0;  j < N; j++)
         { M->c[i][j] = A->c[i][j] - B->c[i][j]; }
   }
 
 void r4x4_neg(r4x4_t *A, r4x4_t *M)
-  { for (int32_t i = 0; i < N; i++)
-      for (int32_t j = 0; j < N; j++)
+  { for (uint32_t i = 0;  i < N; i++)
+      for (uint32_t j = 0;  j < N; j++)
         { M->c[i][j] = - A->c[i][j]; }
   }
 
 void r4x4_scale(double s, r4x4_t *A, r4x4_t *M)  
-  { for (int32_t i = 0; i < N; i++)
-      for (int32_t j = 0; j < N; j++)
+  { for (uint32_t i = 0;  i < N; i++)
+      for (uint32_t j = 0;  j < N; j++)
         { M->c[i][j] = s * A->c[i][j]; }
   }
 
 void r4x4_mul(r4x4_t *A, r4x4_t *B, r4x4_t *M)
   { r4x4_t RR;
-    for (int32_t i = 0; i < N; i++)
-      for (int32_t j = 0; j < N; j++)
+    for (uint32_t i = 0;  i < N; i++)
+      for (uint32_t j = 0;  j < N; j++)
         { double s = 0.0;
-          for (int32_t k = 0; k < N; k++)  s += A->c[i][k]*B->c[k][j];
+          for (uint32_t k = 0;  k < N; k++)  s += A->c[i][k]*B->c[k][j];
           RR.c[i][j] = s;
         }
     (*M) = RR;
@@ -154,10 +154,10 @@ void r4x4_mul(r4x4_t *A, r4x4_t *B, r4x4_t *M)
 void r4x4_mul_tr(r4x4_t *A, r4x4_t *B, r4x4_t *M)
   {
     r4x4_t RR;
-    for (int32_t i = 0; i < N; i++)
-      for (int32_t j = 0; j < N; j++)
+    for (uint32_t i = 0;  i < N; i++)
+      for (uint32_t j = 0;  j < N; j++)
         { double s = 0.0;
-          for (int32_t k = 0; k < N; k++)  s += A->c[i][k]*B->c[j][k];
+          for (uint32_t k = 0;  k < N; k++)  s += A->c[i][k]*B->c[j][k];
           RR.c[i][j] = s;
         }
     (*M) = RR;
@@ -289,8 +289,8 @@ void r4x4_inv(r4x4_t *A, r4x4_t *M)
       + A->c[0][1]*RR.c[1][0] 
       + A->c[0][2]*RR.c[2][0] 
       + A->c[0][3]*RR.c[3][0];
-    for (int32_t i = 0; i < N; i++)
-      for (int32_t j = 0; j < N; j++)
+    for (uint32_t i = 0;  i < N; i++)
+      for (uint32_t j = 0;  j < N; j++)
         { M->c[i][j] = RR.c[i][j]/d; }
   }
 
@@ -357,14 +357,14 @@ double r4x4_normalize(r4x4_t *A)
   { 
     double w = r4x4_norm(A);
     if (w != 0)
-      { for (int32_t i = 0; i < N; i++)
-          { for (int32_t j = 0; j < N; j++)
+      { for (uint32_t i = 0;  i < N; i++)
+          { for (uint32_t j = 0;  j < N; j++)
              { A->c[i][j] /= w; }
           }
       }
     else
-      { for (int32_t i = 0; i < N; i++)
-          { for (int32_t j = 0; j < N; j++)
+      { for (uint32_t i = 0;  i < N; i++)
+          { for (uint32_t j = 0;  j < N; j++)
              { A->c[i][j] = NAN; }
           }
       }
@@ -402,14 +402,14 @@ double r4x4_mod_norm_sqr(r4x4_t *A)
 
 bool_t r4x4_is_unif_scaling(r4x4_t *M, double s)
   {
-    for (int32_t i = 0; i < N; i++)
-      for (int32_t j = 0; j < N; j++)
+    for (uint32_t i = 0;  i < N; i++)
+      for (uint32_t j = 0;  j < N; j++)
         { if (M->c[i][j] != (i == j ? s : 0.0)) { return FALSE; } }
     return TRUE;
   }
 
 void r4x4_from_rows(r4_t *a, r4_t *b, r4_t *c, r4_t *d, r4x4_t *M)
-  { for (int32_t j = 0; j < N; j++)
+  { for (uint32_t j = 0;  j < N; j++)
       { M->c[0][j] = a->c[j];
         M->c[1][j] = b->c[j];
         M->c[2][j] = c->c[j];
@@ -418,7 +418,7 @@ void r4x4_from_rows(r4_t *a, r4_t *b, r4_t *c, r4_t *d, r4x4_t *M)
   }
 
 void r4x4_from_cols(r4_t *a, r4_t *b, r4_t *c, r4_t *d, r4x4_t *M)
-  { for (int32_t j = 0; j < N; j++)
+  { for (uint32_t j = 0;  j < N; j++)
       { M->c[j][0] = a->c[j];
         M->c[j][1] = b->c[j];
         M->c[j][2] = c->c[j];

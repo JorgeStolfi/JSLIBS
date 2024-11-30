@@ -19,7 +19,7 @@ rf2_t rf2_scale (double s, rf2_t* const a)
 
 rf2_t rf2_throw_cube (void)
   { rf2_t r;
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { r.c[i] = (float)(2.0*drandom() - 1.0); }
     return r;
   }

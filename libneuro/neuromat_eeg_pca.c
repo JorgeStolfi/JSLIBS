@@ -49,7 +49,7 @@ int32_t neuromat_eeg_pca_eigen_decomp(int32_t ne, double *A, double minMag, doub
             emag[iv] = emagk;
             double *Rk = &(R[kv*ne]);   /* Row {kv} of {R}. */
             double *Evi = &(Ev[iv*ne]); /* Row {iv} of {Ev}. */
-            for (int32_t je = 0; je < ne; je++) { Evi[je] = Rk[je]; }
+            for (uint32_t je = 0;  je < ne; je++) { Evi[je] = Rk[je]; }
             nv++;
           }
         else
@@ -73,8 +73,8 @@ void neuromat_eeg_pca_compute_fitting_matrix(int32_t np, int32_t ne, double *P, 
     /* Check the inverse: */
     double *S = rmxn_alloc(np,np); /* Should be the identity. */
     rmxn_mul(np,np,np,R,Q,S);
-    for (int32_t i = 0; i < np; i++)
-      { for (int32_t j = 0; j < np; j++)
+    for (uint32_t i = 0;  i < np; i++)
+      { for (uint32_t j = 0;  j < np; j++)
           { double Sij = S[i*np + j];
             double Iij = (i == j ? 1.0 : 0.0);
             if (fabs(Sij - Iij) > 1.0e-6)
@@ -112,7 +112,7 @@ void neuromat_eeg_pca_fit_patterns
     double bi[np]; /* Independent vector of linear system. */
     double ci[np]; /* Coefficients of patterns. */
     double wi[ne]; /* Linear combination of patterns. */
-    for (int32_t it = 0; it < nt; it++)
+    for (uint32_t it = 0;  it < nt; it++)
       { double *vi = val[it]; /* Original electrode values {vi[0..ne-1]}. */
         /* Compute fitting coefficients {ci[0..np-1]}: */
         rmxn_map_col(np, ne, P, vi, bi);

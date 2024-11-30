@@ -55,9 +55,9 @@ hr2_pmap_t hr2_pmap_from_many_pairs
     double Fx_best = +INF; /* Its discrepancy: */
     int32_t nsgn = ((type_eff == hr2_pmap_type_IDENTITY) || (type_eff == hr2_pmap_type_TRANSLATION) ? 1 : 2);
     int32_t nclass = ((type_eff == hr2_pmap_type_GENERIC) ? 4 : 1);
-    for (int32_t isgn = 0; isgn < nsgn; isgn++)
+    for (uint32_t isgn = 0;  isgn < nsgn; isgn++)
       { sign_t sgn = (isgn == 1 ? -1 : +1);
-        for (int32_t class = 0; class < nclass; class++)
+        for (uint32_t class = 0;  class < nclass; class++)
           { hr2_pmap_t M = hr2_pmap_from_many_pairs_initial(type_eff, np, p1, p2, w, nr, ixr, sgn, class);
             double Fx = hr2_pmap_mismatch_sqr(&M, np, p1, p2, w);
             if ((type_eff != hr2_pmap_type_IDENTITY) && (type_eff != hr2_pmap_type_TRANSLATION))

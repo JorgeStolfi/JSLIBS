@@ -69,7 +69,7 @@ void haf_write_map
     /* Write the root arcs: */
     fprintf(wr, "roots = %lu\n", nr);
     /* Write the roots, one per line: */
-    for (int32_t kr = 0; kr < nr; kr++)
+    for (uint32_t kr = 0;  kr < nr; kr++)
       { /* Write {kr} and the root arc number {kr}: */
         fprintf(wr, "%*u ", dr, kr);
         haf_write_arc(wr, root[kr], dE);

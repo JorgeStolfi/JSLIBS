@@ -132,7 +132,7 @@ void tdl_do_test
     /* Determine full time range: */
     int32_t tMin = INT32_MAX;
     int32_t tMax = INT32_MIN;
-    for (int32_t iq = 0; iq < ni; iq++)
+    for (uint32_t iq = 0;  iq < ni; iq++)
       { assert(dt[iq].tbr <= dt[iq].tdt);
         if (dt[iq].tbr < tMin) { tMin = dt[iq].tbr; }
         if (dt[iq].tdt > tMax) { tMax = dt[iq].tdt; }
@@ -177,7 +177,7 @@ void tdl_plot_named
     
     /* Founders birth dots are filled: */
     bool_t fill[ni];
-    for (int32_t iq = 0; iq < ni; iq++) { fill[iq] = (fnd[iq] == iq); }
+    for (uint32_t iq = 0;  iq < ni; iq++) { fill[iq] = (fnd[iq] == iq); }
 
     frgb_t rgbStart = (frgb_t){{ 1.000f, 0.200f, 0.000f }};
     drtree_plot_time_line(eps, tMin, ncols, nrows, Xstep, Ystep, &(rgbStart), tStart);

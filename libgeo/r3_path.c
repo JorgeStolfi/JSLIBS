@@ -55,7 +55,7 @@ void r3_path_interpolate_some(r3_path_state_t S[], uint32_t N)
         double t3 = S[N-1].t;
         r3_t *p3 = &(S[N-1].p);
         r3_path_bezier_from_states(&(S[0]), &(S[N-1]), &p1, &p2);
-        for (int32_t im = 1; im <= N-2; im++)
+        for (uint32_t im = 1;  im <= N-2; im++)
           { r3_path_state_t *Sm = &(S[im]);
             double fm = ((double)im)/((double)N-1); /* Fractional position of {S[im]}. */
             double tm = (1-fm)*t0 + fm*t3; /* Time for {im}. */

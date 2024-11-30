@@ -25,7 +25,7 @@ void tosl_mesh_obj_write(FILE *wr, tosl_mesh_t *mesh)
       { if ((mesh->Vlab != NULL) && (mesh->Vlab[iv] != NULL)) { fprintf(wr, "# %s :\n", mesh->Vlab[iv]); }
         tosl_point_t *v = &(mesh->Vpos[iv]);
         fprintf(wr, "v");
-        for (int32_t j = 0; j < 3; j++) 
+        for (uint32_t j = 0;  j < 3; j++) 
           { double cj = 2*((double)v->c[j] - vmin.c[j])/((double)vmax.c[j] - vmin.c[j] + 1) - 1.0;
             fprintf(wr, " %8.6f", cj);
           }
@@ -45,7 +45,7 @@ void tosl_mesh_obj_write(FILE *wr, tosl_mesh_t *mesh)
             tosl_mesh_face_normal_area_center(ia, mesh, &area, nrm, ctr);
             /* Define face normal: */
             fprintf(wr, "vn");
-            for (int32_t j = 0; j < 3; j++) { fprintf(wr, " %8.6f", nrm[j]); }
+            for (uint32_t j = 0;  j < 3; j++) { fprintf(wr, " %8.6f", nrm[j]); }
             fprintf(wr, "\n");
             /* Mark rest of face as seen: */
             tosl_arc_id_t ka = ia;

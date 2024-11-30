@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {jsmath.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-20 06:53:25 by stolfi */ 
+/* Last edited on 2024-11-26 22:54:37 by stolfi */ 
 /* Created on 2011-09-20 by J. Stolfi, UNICAMP */
 
 #define test_jsrandom_COPYRIGHT \
@@ -80,6 +80,9 @@ void test_dloggaussrand(double avg, double dev, uint32_t ntpb, char *xtest);
 void test_uint64_choose(uint64_t n, size_t k, uint64_t nt, char *xtest);
   /* Tests {uint64_choose} with parameters {n} and {k}, {nt} times. */
 
+void test_random_perm(uint32_t n, uint64_t nt, char *xtest);
+  /* Tests {random_perm} with parameter {n}, {nt} times. */
+
 FILE *open_test_file(char *xtype, uint32_t size, char *func, char *xend, char *xtest);
   /* Opens "out/{xtype}{size}_{func}_hist_{xend}_{xtest}.his" for writing.
     If {xtype} is {NULL}, omits the "{xtype}{size}_" part. */
@@ -126,6 +129,9 @@ int32_t main (int32_t argn, char **argv)
     test_uint64_choose(100,10,160000,"C");
     test_uint64_choose(100,100,160000,"C");
     test_uint64_choose(1000,10,160000,"C");
+    
+    test_random_perm(10,500,"D");
+    test_random_perm(10000,500,"D");
 
     return 0;
   }
@@ -158,7 +164,7 @@ void test_stdint_random(uint32_t size, bool_t sgn, uint32_t nb, uint32_t ntpb, c
     /* Allocate and initialize histogram: */
     uint32_t nh = (uint32_t)ipow(2, nb);  /* Number of histogram bins, a power of 2. */
     uint64_t hi[nh], lo[nh]; /* Histograms of high and low bits. */
-    for (int32_t j = 0; j < nh; j++) { lo[j] = hi[j] = 0; }
+    for (uint32_t j = 0;  j < nh; j++) { lo[j] = hi[j] = 0; }
 
     /* Collect histogram data: */
     uint64_t nt = ntpb*nh;      /* Total number of samples. */
@@ -183,14 +189,14 @@ void test_stdint_random(uint32_t size, bool_t sgn, uint32_t nb, uint32_t ntpb, c
 
     /* Write histograms: */
     FILE *wrhi = open_test_file(xtype, size, "random", "hi", xtest); 
-    for (int32_t j = 0; j < nh; j++) 
+    for (uint32_t j = 0;  j < nh; j++) 
       { double r = ((double)hi[j])/((double)ntpb);
         fprintf(wrhi, "%03d %12ld %12.8f\n", j, hi[j], r);
       }
     fclose(wrhi);
 
     FILE *wrlo = open_test_file(xtype, size, "random", "lo", xtest); 
-    for (int32_t j = 0; j < nh; j++) 
+    for (uint32_t j = 0;  j < nh; j++) 
       { double r = ((double)lo[j])/((double)ntpb);
         fprintf(wrlo, "%03d %12ld %12.8f\n", j, lo[j], r);
       }
@@ -254,7 +260,7 @@ void test_stdint_abrandom(uint32_t size, bool_t sgn, uint64_t a, uint64_t b, uin
     uint64_t nh = nvq/q + 1;  /* Number of histogram bins. */
     demand(nh <= MAX_HIST_BINS, "too many histogram bins");
     uint64_t hs[nh];  /* Histogram of values. */
-    for (int32_t j = 0; j < nh; j++) { hs[j] = 0; }
+    for (uint32_t j = 0;  j < nh; j++) { hs[j] = 0; }
     
     /* Collect histogram data: */
     uint64_t nt = (uint32_t)(ntpb*nh);  /* Total number of samples. */
@@ -302,7 +308,7 @@ void test_stdint_abrandom(uint32_t size, bool_t sgn, uint64_t a, uint64_t b, uin
 
     /* Write histogram: */
     FILE *wrhs = open_test_file(xtype, size, "abrandom", "qt", xtest); 
-    for (int32_t j = 0; j < nh; j++) 
+    for (uint32_t j = 0;  j < nh; j++) 
       { double r = ((double)hs[j])/((double)ntpb);
         fprintf(wrhs, "%03d %12ld %12.8f\n", j, hs[j], r);
       }
@@ -314,7 +320,7 @@ void test_drandom(uint32_t ntpb, char *xtest)
     srandom(19501129);
     uint32_t nh = 300;  /* Number of histogram bins. */
     uint64_t hs[nh];         /* Histogram of values. */
-    for (int32_t j = 0; j < nh; j++) { hs[j] = 0; }
+    for (uint32_t j = 0;  j < nh; j++) { hs[j] = 0; }
     
     uint64_t nt = (uint64_t)(ntpb*nh);  /* Total number of samples. */
     uint64_t nzero = 0; /* Number of times that zero appeared. */
@@ -333,7 +339,7 @@ void test_drandom(uint32_t ntpb, char *xtest)
       }
 
     FILE *wrhs = open_test_file(NULL, 0, "drandom", "qt", xtest); 
-    for (int32_t j = 0; j < nh; j++) 
+    for (uint32_t j = 0;  j < nh; j++) 
       { double xlo = ((double)j)/((double)nh);
         double xhi = ((double)j+1)/((double)nh);
         double r = ((double)hs[j])/((double)ntpb);
@@ -347,7 +353,7 @@ void test_dgaussrand(uint32_t ntpb, char *xtest)
     srandom(19501129);
     uint32_t nh = 300;  /* Number of histogram bins. */
     uint64_t hs[nh];    /* Histogram of values. */
-    for (int32_t j = 0; j < nh; j++) { hs[j] = 0; }
+    for (uint32_t j = 0;  j < nh; j++) { hs[j] = 0; }
     
     double xmin = -6.0; /* Low end of histogram range. */
     double xmax = +6.0; /* High end of histogram range. */
@@ -383,7 +389,7 @@ void test_dgaussrand(uint32_t ntpb, char *xtest)
     fprintf(stderr, "  should be avg = %.3f dev = %.3f\n", avg_exp, dev_exp);
     
     FILE *wrhs = open_test_file(NULL, 0, "dgaussrand", "qt", xtest); 
-    for (int32_t j = 0; j < nh; j++) 
+    for (uint32_t j = 0;  j < nh; j++) 
       { double xlo = xmin + ((double)j)/((double)nh)*(xmax - xmin);
         double xhi = xmin + ((double)j+1)/((double)nh)*(xmax - xmin);
         double r = ((double)hs[j])/((double)nt)/(xhi-xlo);
@@ -397,7 +403,7 @@ void test_dloggaussrand(double avg, double dev, uint32_t ntpb, char *xtest)
     srandom(19501129);
     uint32_t nh = 300;  /* Number of histogram bins. */
     uint64_t hs[nh];    /* Histogram of values. */
-    for (int32_t j = 0; j < nh; j++) { hs[j] = 0; }
+    for (uint32_t j = 0;  j < nh; j++) { hs[j] = 0; }
     
     /* Convert {avg,dev} of {x} to the avg and dev of {z=log(x)}: */
     double rdv = dev/avg;   /* Deviation relative to the mean. */
@@ -439,7 +445,7 @@ void test_dloggaussrand(double avg, double dev, uint32_t ntpb, char *xtest)
     fprintf(stderr, "  should be avg = %.3f dev = %.3f\n", avg, dev);
 
     FILE *wrhs = open_test_file(NULL, 0, "dloggaussrand", "qt", xtest); 
-    for (int32_t j = 0; j < nh; j++) 
+    for (uint32_t j = 0;  j < nh; j++) 
       { double xlo = xmin + ((double)j)/((double)nh)*(xmax - xmin);
         double xhi = xmin + ((double)j+1)/((double)nh)*(xmax - xmin);
         double r = ((double)hs[j])/((double)nt)/(xhi-xlo);
@@ -455,13 +461,13 @@ void test_uint64_choose(uint64_t n, size_t k, uint64_t nt, char *xtest)
     /* Histogram to count choices: */
     uint32_t nh = ((n < 1000000) && (n <= nt/10) ? (uint32_t)n : 0);
     uint32_t *hist = (nh == 0 ? NULL : notnull(malloc(nh*sizeof(uint32_t)), "no mem"));
-    for (int32_t k = 0; k < nh; k++) { hist[k] = 0; }
+    for (uint32_t k = 0;  k < nh; k++) { hist[k] = 0; }
     
     uint64_t *perm = NULL;
     for (int64_t i = 0; i < nt; i++)
       { perm = uint64_choose(n, k, perm);
         /* Check order and range: */
-        for (int32_t i = 0; i < k; i++)
+        for (uint32_t i = 0;  i < k; i++)
           { assert(perm[i] < n);
             if (i > 0) { assert(perm[i] > perm[i-1]); }
             if ((i < nh) && (hist != NULL)) { hist[perm[i]]++; }
@@ -470,11 +476,11 @@ void test_uint64_choose(uint64_t n, size_t k, uint64_t nt, char *xtest)
     if ((nh > 0) && (hist != NULL))
       { /* Check average and deviation of histogram entries: */
         double sum_hk = 0.0;
-        for (int32_t k = 0; k < nh; k++) 
+        for (uint32_t k = 0;  k < nh; k++) 
           { double hk = (double)hist[k]; sum_hk += hk; }
         double avg_h = sum_hk/nh;
         double sum_dk2 = 0.0;
-        for (int32_t k = 0; k < nh; k++) 
+        for (uint32_t k = 0;  k < nh; k++) 
           { double dk = (double)hist[k] - avg_h; sum_dk2 += dk*dk; }
         double dev_h = sqrt(sum_dk2/nh);
         fprintf(stderr, "avg = %.3f dev = %.3f", avg_h, dev_h);
@@ -482,6 +488,49 @@ void test_uint64_choose(uint64_t n, size_t k, uint64_t nt, char *xtest)
         double p1 = ((double)k)/((double)n); /* Avg of bin value after 1 try. */
         double v1 = p1*(1-p1);               /* Var of bin value after 1 try. */
         double avg_h_exp = ((double)nt)*p1;
+        double dev_h_exp = sqrt(((double)nt)*v1);
+        fprintf(stderr, "  should be avg = %.3f dev = %.3f\n", avg_h_exp, dev_h_exp);
+      }
+        
+    if (perm != NULL) { free(perm); }
+    if (hist != NULL) { free(hist); }
+  }
+
+void test_random_perm(uint32_t n, uint64_t nt, char *xtest)
+  { 
+    fprintf(stderr, "Checking {random_perm}...\n");
+    srandom(19501129);
+    
+    /* Histogram {hist[i]} is the sum of {perm[i]} for each {i}: */
+    uint32_t nh = ((n < 1000000) && (n <= nt/10) ? n : 0);
+    uint64_t *hist = (nh == 0 ? NULL : talloc(nh, uint64_t));
+    for (uint32_t k = 0;  k < nh; k++) { hist[k] = 0; }
+    
+    uint32_t *perm = NULL;
+    for (uint64_t i = 0; i < nt; i++)
+      { perm = random_perm(n, perm);
+        /* Check order and range: */
+        for (uint32_t i = 0;  i < n; i++)
+          { assert(perm[i] < n);
+            if ((i < nh) && (hist != NULL)) { hist[i] += perm[i]; }
+          }
+      }
+    if ((nh > 0) && (hist != NULL))
+      { /* Check average and deviation of histogram entries: */
+        double sum_hk = 0.0;
+        for (uint32_t k = 0;  k < nh; k++) 
+          { double hk = (double)hist[k]; sum_hk += hk; }
+        double avg_h = sum_hk/nh;
+        double sum_dk2 = 0.0;
+        for (uint32_t k = 0;  k < nh; k++) 
+          { double dk = (double)hist[k] - avg_h; sum_dk2 += dk*dk; }
+        double dev_h = sqrt(sum_dk2/nh);
+        fprintf(stderr, "avg = %.3f dev = %.3f", avg_h, dev_h);
+        /* Compute expected average and deviation of histogram entries: */
+        double a1 = ((double)n-1)/2;  /* Avg of bin value after 1 try. */
+        double v1 = ((double)n-1)*((double)n+1)/12; /* Var of bin value after 1 try. */
+        /* !!! NOT RIGHT !!! */
+        double avg_h_exp = ((double)nt)*a1;
         double dev_h_exp = sqrt(((double)nt)*v1);
         fprintf(stderr, "  should be avg = %.3f dev = %.3f\n", avg_h_exp, dev_h_exp);
       }

@@ -104,8 +104,8 @@ void fn2_zf_grid_plot_aa_zeros(
 
     epswr_comment(eps, "Plot of AA-arithmetic zeros");
 
-    for (int32_t yi=0; yi<n; yi++)
-      { for (int32_t xi=0; xi<n; xi++)
+    for (uint32_t yi = 0;  yi<n; yi++)
+      { for (uint32_t xi = 0;  xi<n; xi++)
           { MemP frame = aa_top();
 
             ROUND_DOWN;
@@ -156,8 +156,8 @@ void fn2_zf_grid_plot_ia_zeros(
 
     epswr_comment(eps, "Plot of interval-arithmetic zeros");
 
-    for (int32_t yi=0; yi<n; yi++)
-      { for (int32_t xi=0; xi<n; xi++)
+    for (uint32_t yi = 0;  yi<n; yi++)
+      { for (uint32_t xi = 0;  xi<n; xi++)
           { ROUND_DOWN;
             xv.lo = xd.lo + ((xd.hi - xd.lo)*(Float)xi)/(Float)n;
             yv.lo = yd.lo + ((yd.hi - yd.lo)*(Float)yi)/(Float)n;

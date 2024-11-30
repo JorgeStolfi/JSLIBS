@@ -75,7 +75,7 @@ double rf3_norm (rf3_t* const a)
 
 rf3_t rf3_throw_cube (void)
   { rf3_t r;
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { r.c[i] = (float)(2.0 * frandom() - 1.0); }
     return r;
   }

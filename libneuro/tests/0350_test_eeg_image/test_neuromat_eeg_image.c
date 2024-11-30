@@ -79,7 +79,7 @@ int32_t main(int32_t argc, char **argv)
     fprintf(stderr, "--- testing {neuromat_eeg_image_paint_timeline_bars} ---\n");
     int32_t hwd_tb = 2;
     neuromat_eeg_marker_spec_t marker[nm];
-    for (int32_t im = 0; im < nm; im++) 
+    for (uint32_t im = 0;  im < nm; im++) 
       { marker[im].ic = ne + im;
         double ang = M_PI*((double)im)/(nm-1);
         marker[im].vref = 1.00;
@@ -108,15 +108,15 @@ int32_t main(int32_t argc, char **argv)
 
     fprintf(stderr, "--- testing {neuromat_eeg_image_paint_marker_dots} ---\n");
     r2_t ctr_mark[nm];
-    for (int32_t im = 0; im < nm; im++) 
+    for (uint32_t im = 0;  im < nm; im++) 
       { ctr_mark[im] = (r2_t){{ (double)mkdots_xctr, (double)track_y[im] }}; }
     neuromat_eeg_image_paint_marker_dots(trk, nc, val[it_x], nm, marker, ctr_mark, mkdots_rad);
     tnei_write_fni("trk", trk);
 
     float_image_free(msk);
-    for (int32_t ie = 0; ie < ne; ie++) { float_image_free(bas[ie]); }
+    for (uint32_t ie = 0;  ie < ne; ie++) { float_image_free(bas[ie]); }
     free(bas);
-    for (int32_t it = 0; it < nt; it++) { free(val[it]); }
+    for (uint32_t it = 0;  it < nt; it++) { free(val[it]); }
     free(val);
     float_image_free(cim);
     

@@ -21,7 +21,7 @@ int32_t neuromat_eeg_raw_frame_read(FILE *rd, int32_t version, double unit, int3
     if (c == EOF) { return 0; }
     ungetc(c, rd);
     
-    for (int32_t i = 0; i < nc; i++)
+    for (uint32_t i = 0;  i < nc; i++)
       { val[i] = neuromat_eeg_raw_read_raw_sample(rd, version, unit, chname[i]); }
     return 1;
   }
@@ -92,7 +92,7 @@ char *neuromat_eeg_raw_read_event_code(FILE *rd, char *name)
     res[4] = '\000';
     /* Remove all blanks: */
     int32_t k = 0;
-    for (int32_t i = 0; i <= nb; i++) 
+    for (uint32_t i = 0;  i <= nb; i++) 
       { if (res[i] != ' ') 
           { res[k] = res[i]; k++; } 
       }

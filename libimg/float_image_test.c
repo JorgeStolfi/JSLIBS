@@ -31,10 +31,10 @@ void float_image_test_gen_ripples(r2_t *p, int32_t NC, int32_t NX, int32_t NY, f
     double R = 0.5*hypot(NX, NY); /* Image circumradius. */
     double sigma = 0.30;
     int32_t NW = 5; /* Number of waves. */
-    for (int32_t ic = 0; ic < NC; ic++) 
+    for (uint32_t ic = 0;  ic < NC; ic++) 
       { /* Compute value {fs[ic]} of channel {ic}: */
         double sum_val = 0.0;       /* Sum of values of all component waves. */
-        for (int32_t t = 0; t < NW; t++)
+        for (uint32_t t = 0;  t < NW; t++)
           { 
             double cx = NX*(0.1 + 0.8*frand()); /* {X} of wave's center. */
             double cy = NY*(0.1 + 0.8*frand()); /* {Y} of wave's center. */
@@ -82,14 +82,14 @@ void float_image_test_gen_grittie(r2_t *p, int32_t NC, int32_t NX, int32_t NY, f
     double fy[NF]; 
     double phase[NF];
     bool_t verbose = FALSE;
-    for (int32_t ic = 0; ic < NC; ic++) 
+    for (uint32_t ic = 0;  ic < NC; ic++) 
       { 
         float_image_waves_pick(NF, amp, fx, fy, phase, verbose);
 
         double squash_amp; /* Squash amplitude. */
         /* Choosing a middling squash amplitude: */
         double sum_a2 = 0;
-        for (int32_t kf = 0; kf < NF; kf++) { sum_a2 += amp[kf]*amp[kf]; }
+        for (uint32_t kf = 0;  kf < NF; kf++) { sum_a2 += amp[kf]*amp[kf]; }
         double amp_rms = sqrt(sum_a2); /* Root-mean-sum amplitude. */
         squash_amp = 0.5*amp_rms;
 
@@ -105,7 +105,7 @@ void float_image_test_gen_grittie(r2_t *p, int32_t NC, int32_t NX, int32_t NY, f
 void float_image_test_gen_stripes(r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[])
   {
     double P = 4.0;  /* Wavelength. */
-    for (int32_t ic = 0; ic < NC; ic++)
+    for (uint32_t ic = 0;  ic < NC; ic++)
       { int32_t ax = ic % 2; /* Coordinate axis perpendicular to stripes. */
         double wd = (double)(ax == 0 ? NX : NY); /* Image size laong axis {ax}. */
         /* Get coordinate relative to image center: */
@@ -123,12 +123,12 @@ void float_image_test_gen_checker(r2_t *p, int32_t NC, int32_t NX, int32_t NY, f
     double fr3 = 3.0;            /* Relative frequency of harmonic. */
     double am3 = 0.5/(fr3*fr3);  /* Amplitude of harmonic. */
     
-    for (int32_t ic = 0; ic < NC; ic++)
+    for (uint32_t ic = 0;  ic < NC; ic++)
       { /* Select the period of the checker depending on the channel: */
         double P = P0*pow(2.0, ic);
         /* Compute the wave's value in the range {[-1 _ +1]}: */
         double v = 1.0;  /* Value of wave. */
-        for (int32_t ax = 0; ax < 2; ax++)
+        for (uint32_t ax = 0;  ax < 2; ax++)
           { /* Get image size along this axis: */
             double wd = (double)(ax == 0 ? NX : NY);
             /* Get coordinate relative to image center: */
@@ -157,11 +157,11 @@ void float_image_test_gen_chopsea(r2_t *p, int32_t NC, int32_t NX, int32_t NY, f
     int32_t NW = 45; /* Number of waves. */
     double fCut = 0.25;       /* Cutoff frequency (cycles per pixel). */
     double fBase = 1.173985;  /* Ratio between successive frequencies. */
-    for (int32_t ic = 0; ic < NC; ic++) 
+    for (uint32_t ic = 0;  ic < NC; ic++) 
       { /* Compute value {fs[ic]} of channel {ic}: */
         double sum_val = 0.0;       /* Sum of values of all component waves. */
         double sum_amp = 0.0;       /* Sum of amplitude of all component waves. */
-        for (int32_t t = 0; t < NW; t++)
+        for (uint32_t t = 0;  t < NW; t++)
           { /* Choose the parameters of wave {t}: */
             double P = 3.0*pow(fBase,t);     /* Wavelength (pixels). */
             int32_t ict = t*NC + ic;         /* A unique integer for channel and component. */
@@ -207,7 +207,7 @@ void float_image_test_gen_bullsex(r2_t *p, int32_t NC, int32_t NX, int32_t NY, f
     
     double r = hypot(x, y);
     double arg = A*(cosh(B*r) - 1);
-    for (int32_t ic = 0; ic < NC; ic++)
+    for (uint32_t ic = 0;  ic < NC; ic++)
       { /* Vary the phase of the wave according to the channel: */
         double phase = (0.25 + 0.50*ic)*M_PI;
         fs[ic] = (float)(0.5*(cos(arg + phase) + 1)); 
@@ -227,7 +227,7 @@ void float_image_test_gen_bullsqr(r2_t *p, int32_t NC, int32_t NX, int32_t NY, f
     
     double r = hypot(x, y);
     double arg = A*r*r;
-    for (int32_t ic = 0; ic < NC; ic++)
+    for (uint32_t ic = 0;  ic < NC; ic++)
       { /* Vary the phase of the wave according to the channel: */
         double phase = (0.25 + 0.50*ic)*M_PI;
         fs[ic] = (float)(0.5*(cos(arg + phase) + 1)); 
@@ -250,23 +250,23 @@ void float_image_test_paint
 
     /* Scan pixels: */
     double ns2 = ns*ns; /* Total subsamples in each pixel. */
-    for (int32_t iy = 0; iy < NY; iy++)
-      { for (int32_t ix = 0; ix < NX; ix++)
+    for (uint32_t iy = 0;  iy < NY; iy++)
+      { for (uint32_t ix = 0;  ix < NX; ix++)
           { /* Accumulated pixel value: */
-            for (int32_t ic = 0; ic < NC; ic++) { vd[ic] = 0.0; }
+            for (uint32_t ic = 0;  ic < NC; ic++) { vd[ic] = 0.0; }
             /* Evaluate procedure at subsampling points and accumulate: */
-            for (int32_t iys = 0; iys < ns; iys++)
-              { for (int32_t ixs = 0; ixs < ns; ixs++)
+            for (uint32_t iys = 0;  iys < ns; iys++)
+              { for (uint32_t ixs = 0;  ixs < ns; ixs++)
                   { /* Get coordinates of sampling point in pixel, relative to image center: */
                     r2_t p = (r2_t){{ ix + (ixs + 0.5)/ns, iy + (iys + 0.5)/ns }};
                     /* Evaluate procedural image: */
                     proc(&p, NC, NX, NY, v);
                     /* Accumulate sample values: */
-                    for (int32_t ic = 0; ic < NC; ic++) { vd[ic] += (double)v[ic]; }
+                    for (uint32_t ic = 0;  ic < NC; ic++) { vd[ic] += (double)v[ic]; }
                   }
               }
             /* Reduce sum to average and store in pixel: */
-            for (int32_t ic = 0; ic < NC; ic++) { v[ic] = (float)(vd[ic]/ns2); }
+            for (uint32_t ic = 0;  ic < NC; ic++) { v[ic] = (float)(vd[ic]/ns2); }
             float_image_set_pixel(img, ix, iy, v);
           }
       }

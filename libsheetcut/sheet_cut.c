@@ -43,7 +43,7 @@ void sheet_cut_print_node(FILE *wr, int32_t ind, sheet_cut_node_t *pc, bool_t su
     if (pc->nsub > 0)
       { fprintf(wr, " %d children%s\n", pc->nsub, (pc->sub_flip ? " (flipped)" : ""));
         if (sub)
-          { for (int32_t ich = 0; ich < pc->nsub; ich++)
+          { for (uint32_t ich = 0;  ich < pc->nsub; ich++)
               { sheet_cut_node_t *chi = pc->sub.e[ich];
                 sheet_cut_print_node(wr, ind+2, chi, sub);
               }
@@ -151,7 +151,7 @@ void sheet_cut_enum(sheet_cut_node_t *pc, r2_t org_pc, sheet_cut_visit_proc_t *v
         
         if (pc->sub_flip)
           { /* Hard-flip all children and reset {pc->sub_flip}: */
-            for (int32_t i = 0; i < pc->nsub; i++)
+            for (uint32_t i = 0;  i < pc->nsub; i++)
               { sheet_cut_flip_node(pc->sub.e[i]); }
             pc->sub_flip = FALSE;
           }
@@ -161,7 +161,7 @@ void sheet_cut_enum(sheet_cut_node_t *pc, r2_t org_pc, sheet_cut_visit_proc_t *v
         
         /* Enumerate the children  nodes: */
         r2_t pos_pc; r2_add(&org_pc, &(pc->pos), &pos_pc); /* Coords of corner of {pc}. */
-        for (int32_t i = 0; i < pc->nsub; i++) 
+        for (uint32_t i = 0;  i < pc->nsub; i++) 
           { sheet_cut_enum(pc->sub.e[i], pos_pc, visit); }
         
         /* Visit the block again (post-order): */

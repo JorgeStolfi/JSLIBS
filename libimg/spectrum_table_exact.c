@@ -47,7 +47,7 @@ void spectrum_table_exact_append_all
           { int32_t fn[2] = { fx, fy };
             /* Compute negated freq vector {fn}: */
             int32_t fc[2];  /* Denominators of int32_t freq vectors. */
-            for (int32_t j = 0; j <= 1; j++) 
+            for (uint32_t j = 0;  j <= 1; j++) 
               { fc[j] = -fn[j];  if (fc[j] < fMin[j]) { fc[j] += fd[j]; } }
             /* We must consider {fn} only if it is leq {fc} in lex order: */
             if ((fn[0] < fc[0]) || ((fn[0] == fc[0]) && (fn[1] <= fc[1])))

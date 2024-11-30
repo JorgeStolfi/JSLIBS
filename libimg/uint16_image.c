@@ -53,7 +53,7 @@ uint16_t** uint16_image_alloc_pixel_array(int32_t cols, int32_t rows, int32_t ch
   
 void uint16_image_free_pixel_array(uint16_t **smp, int32_t cols, int32_t rows, int32_t chns)
   { if (smp == NULL) { return; }
-    for (int32_t row = 0; row < rows; row++) 
+    for (uint32_t row = 0;  row < rows; row++) 
       { uint16_image_free_pixel_row(smp[row], cols, chns); }
     free(smp);
   }
@@ -113,10 +113,10 @@ void uint16_image_describe(FILE *wr, char *name, uint16_image_t *img)
     /* Determine min and max pixel value: */
     uint16_t minsmp = img->maxval;
     uint16_t maxsmp = 0;
-    for (int32_t y = 0; y < img->rows; y++)
+    for (uint32_t y = 0;  y < img->rows; y++)
       { uint16_t *ip = img->smp[y];
-        for (int32_t x = 0; x < img->cols; x++)
-          { for (int32_t c = 0; c < img->chns; c++)
+        for (uint32_t x = 0;  x < img->cols; x++)
+          { for (uint32_t c = 0;  c < img->chns; c++)
               { uint16_t smp = (*ip);
                 assert(smp <= img->maxval);
                 if (smp < minsmp) { minsmp = smp; }

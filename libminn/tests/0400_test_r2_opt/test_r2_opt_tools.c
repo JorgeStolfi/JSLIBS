@@ -79,14 +79,14 @@ void tr2o_tools_initialize_mother_image
     double Pmin =  2.5;       /* Min wavelength (pixels). */
     double Pmax = 1024*Pmin;  /* Max wavelength (pixels). */
     double Pstep = exp(log(Pmax/Pmin)/(mom_NF-1));
-    for (int32_t t = 0; t < mom_NF; t++)
+    for (uint32_t t = 0;  t < mom_NF; t++)
       { /* Choose the frequency vector of term {t}: */
         double P = Pmin*pow(Pstep,t);     /* Wavelength at scale 0 (pixels). */
         double azm = gold*2*M_PI*t;       /* Azimuth of wave direction (radians). */ 
         double fx = cos(azm)/P;           /* X frequency at scale 0 (cycles per pixel). */
         double fy = sin(azm)/P;           /* Y frequency at scale 0 (cycles per pixel). */
         mom_frq[t] = (r2_t){{ fx, fy }};  /* Frequency vector at scale 0 (cycles per pixel). */
-        for (int32_t r = 0; r < 2; r++)
+        for (uint32_t r = 0;  r < 2; r++)
           { double phi = gold*(2*t+7+r);          /* Wave initial phase (as fraction of cycle). */
             mom_phi[t].c[r] = phi - floor(phi);   /* Reduce to {[0 _ 1]}. */
           }

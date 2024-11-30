@@ -56,7 +56,7 @@ int32_t main(int32_t argc, char **argv)
     nmsim_elem_neuron_count_t nne_g_max = 20;
     nmsim_group_synapse_count_t nsg_out_min = 0;
     nmsim_group_synapse_count_t nsg_out_max = 30;
-    for (int32_t i = 0; i < 10;i++)
+    for (uint32_t i = 0;  i < 10; i++)
       { nmsim_group_neuron_t ngrp = nmsim_group_neuron_throw
           ( inc_max, nne_g_min, nne_g_max, nsg_out_min, nsg_out_max);
         char *fname = jsprintf("out/test_neuron_group_%03d.txt", i);

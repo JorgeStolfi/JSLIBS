@@ -34,7 +34,7 @@ multifok_scene_t *multifok_scene_new(interval_t dom[], bool_t verbose)
     multifok_scene_t *scene = talloc(1, multifok_scene_t);
     
     /* Store data in scene: */
-    for (int32_t j = 0; j < 3; j++) { scene->dom[j] = dom[j]; }
+    for (uint32_t j = 0;  j < 3; j++) { scene->dom[j] = dom[j]; }
     if (verbose) { fprintf(stderr, "creating empty scene,\n"); }
     scene->NO = 0;
     scene->objs = NULL;
@@ -68,7 +68,7 @@ void multifok_scene_throw_objects
     /* If overlapping, every try is valid, otherwise we need many more tries: */
     int32_t NT = (minSep >= 0 ? 50 : 1)*NO_max; /* Number of tries. */
     
-    for (int32_t kt = 0; (kt < NT) && (NO < NO_max); kt++)
+    for (uint32_t kt = 0;  (kt < NT) && (NO < NO_max); kt++)
       { multifok_scene_object_t obj;
         if (NO == 0)
           { /* First object is a background flat or ramp floor: */
@@ -92,7 +92,7 @@ void multifok_scene_throw_objects
           { demand(flatFloor, "inconsistent parameters");
             /* Reject {obj} if it overlaps previous foreground objects in {X} and {Y}: */
             /* Check for {XY} overlaps: */
-            for (int32_t ko = 0; (ko < NO) && (ko_overlap < 0); ko++)
+            for (uint32_t ko = 0;  (ko < NO) && (ko_overlap < 0); ko++)
               { multifok_scene_object_t *objk = &(objs[ko]);
                 bool_t overlap = multifok_scene_object_XY_overlap(objk, &obj, minSep);
                 if (overlap) { ko_overlap = ko; }
@@ -142,7 +142,7 @@ int32_t multifok_scene_choose_object_count
     
     /* Compute the {XY} area {aBox} available for those disks: */
     double wd[2];
-    for (int32_t j = 0; j < 2; j++)
+    for (uint32_t j = 0;  j < 2; j++)
       { wd[j] = dom[j].end[1] - dom[j].end[0]; 
         if (minSep >= 0)
           { wd[j] -= 2*minSep; }
@@ -163,19 +163,19 @@ int32_t multifok_scene_choose_object_count
       
 r3_t multifok_scene_box_center(interval_t box[])
   { r3_t ctr;
-    for (int32_t j = 0; j < 3; j++) { ctr.c[j] = interval_mid(&(box[j])); }
+    for (uint32_t j = 0;  j < 3; j++) { ctr.c[j] = interval_mid(&(box[j])); }
     return ctr;
   }
   
 r3_t multifok_scene_box_radius(interval_t box[])
   { r3_t rad;
-    for (int32_t j = 0; j < 3; j++) { rad.c[j] = interval_rad(&(box[j])); }
+    for (uint32_t j = 0;  j < 3; j++) { rad.c[j] = interval_rad(&(box[j])); }
     return rad;
   }
 
 void multifok_scene_print_box(FILE *wr, char *pref, interval_t box[], char *suff)
   { if (pref != NULL) { fputs(pref, wr); }
-    for (int32_t j = 0; j < 3; j++)
+    for (uint32_t j = 0;  j < 3; j++)
       { if (j > 0) { fputs(" × ", wr); }
         interval_gen_print(wr, &(box[j]), "%12.6f", "[ ", " _ ", " ]");
       }
@@ -186,8 +186,8 @@ void multifok_scene_print_box(FILE *wr, char *pref, interval_t box[], char *suff
 void multifok_scene_check_object_IDs(int32_t NO, multifok_scene_object_t objs[])
   { fprintf(stderr, "checking object IDs...\n");
     bool_t seen[NO];
-    for (int32_t ko = 0; ko < NO; ko++) { seen[ko] = FALSE; }
-    for (int32_t ko = 0; ko < NO; ko++) 
+    for (uint32_t ko = 0;  ko < NO; ko++) { seen[ko] = FALSE; }
+    for (uint32_t ko = 0;  ko < NO; ko++) 
       { int32_t ID = objs[ko].ID; 
         assert((0 <= ID) && (ID < NO));
         assert(! seen[ID]);

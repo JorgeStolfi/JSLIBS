@@ -54,7 +54,7 @@ void tr2o_plot_goal
         for (int32_t kv = -NS; kv <= +NS; kv++)
           { double dv = ((double)kv)/((double)NS);
             /* Compute the probe points {q[0..NI-1]}. */
-            for(int32_t i = 0; i < NI; i++)
+            for (uint32_t i = 0;  i < NI; i++)
               { r2_mix(du,&(u[i]), dv, &(v[i]), &(q[i])); 
                 r2_add(&(ctr[i]), &(q[i]), &(q[i])); 
               }
@@ -79,11 +79,11 @@ void tr2o_choose_plot_directions(int32_t NI, r2_t rad[], r2_t u[], r2_t v[])
       are zero.  If {p[i]} has only one variable coord, then 
       {u[i]} is nonzero along that coord, and {v[i]} is zero.
     */
-    for (int32_t i = 0; i < NI; i++) 
+    for (uint32_t i = 0;  i < NI; i++) 
       { /* Count variable coords {nv} of {p[i]}, find last nonzero var {jf}: */
         int32_t nv = 0;
         int32_t jf = -1;
-        for (int32_t j = 0; j < 2; j++)
+        for (uint32_t j = 0;  j < 2; j++)
           { double rij = rad[i].c[j];
             if (rij > 0.0) { nv++; jf = j; }
           }
@@ -103,7 +103,7 @@ void tr2o_choose_plot_directions(int32_t NI, r2_t rad[], r2_t u[], r2_t v[])
           }
         else if (nv == 2)
           { /* Generate a random vector {ui} in {[-1 _ +1]^2}, nonzero along variable coords: */
-            for (int32_t j = 0; j < 2; j++)
+            for (uint32_t j = 0;  j < 2; j++)
               { double rij = rad[i].c[j];
                 u[i].c[j] = rij*tr2o_throw_nonzero_U();
               }
@@ -135,12 +135,12 @@ void tr2o_plot_grid_normalize_to_span(int32_t NI, r2_t u[], r2_t rad[])
   {
     double tmax = tr2o_compute_rel_span(NI, u, rad); 
     double sf = 1.0/tmax; /* Scaling factor. */
-    for (int32_t i = 0; i < NI; i++) { r2_scale(sf, &(u[i]), &(u[i])); }
+    for (uint32_t i = 0;  i < NI; i++) { r2_scale(sf, &(u[i]), &(u[i])); }
   }
   
 double tr2o_compute_rel_span(int32_t NI, r2_t u[], r2_t rad[]) 
   { double tmax = 0.0;
-    for (int32_t i = 0; i < NI; i++) 
+    for (uint32_t i = 0;  i < NI; i++) 
       { /* Get the direction {dui} of {u[i]}: */
         r2_t dui; 
         double mu = r2_dir(&(u[i]), &dui);

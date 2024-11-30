@@ -88,8 +88,8 @@ void sve_minn_step(int32_t n, double Fv[], double cm[], bool_t debug, bool_t deb
     double M[rows*cols];
     /* Fill in the main submatrix: */
     int32_t jb = cols - 1; /* Column of independent term. */
-    for (int32_t i = 0; i < nv; i++)
-      { for (int32_t j = 0; j < nv; j++)
+    for (uint32_t i = 0;  i < nv; i++)
+      { for (uint32_t j = 0;  j < nv; j++)
           { int32_t ij = (j <= i ? i*(i+1)/2 + j : j*(j+1)/2 + i);
             double Fij = Fv[ij];
             M[i*cols + j] = Fij;
@@ -98,7 +98,7 @@ void sve_minn_step(int32_t n, double Fv[], double cm[], bool_t debug, bool_t deb
       }
     /* Fill in the row {nv} and column {nv} with the unit-sum constraint: */
     int32_t ije = n+1; /* Index of constraint row & column. */
-    for (int32_t i = 0; i <= n; i++) { M[i*cols + ije] = 1; M[ije*cols + i] = 1; }
+    for (uint32_t i = 0;  i <= n; i++) { M[i*cols + ije] = 1; M[ije*cols + i] = 1; }
     M[ije*cols + ije] = 0;
     M[ije*cols + jb] = 1;
     if (debug_system)
@@ -106,31 +106,31 @@ void sve_minn_step(int32_t n, double Fv[], double cm[], bool_t debug, bool_t deb
         rmxn_gen_print(Er, rows, cols, M, "%12.7f", "    [ ", "\n    ", " ]\n      ", "[ ", " ", " ]");
       }
     /* Solve the system: */
-    gsel_triangularize(rows, cols, M, TRUE, 0.0);
-    gsel_diagonalize(rows, cols, M);
-    gsel_normalize(rows, cols, M);
+    gauss_elim_triangularize(rows, cols, M, TRUE, 0.0);
+    gauss_elim_diagonalize(rows, cols, M);
+    gauss_elim_normalize(rows, cols, M);
     double x[n+2];
-    int32_t rank_ext = gsel_extract_solution(rows, cols, M, 1, x);
+    int32_t rank_ext = gauss_elim_extract_solution(rows, cols, M, 1, x);
     if (rank_ext < rows) 
       { Pr(Er, "%s: warning - solution with %d degrees of indeterminacy\n", __FUNCTION__, rows - rank_ext); }
     /* Extract the solution: */
     double sum = 0.0;
-    for (int32_t i = 0; i <= n; i++) { cm[i] = x[i]; sum += cm[i]; }
+    for (uint32_t i = 0;  i <= n; i++) { cm[i] = x[i]; sum += cm[i]; }
     if (fabs(sum - 1.0) > 0.5e-7) 
       { Pr(Er, "%s: warning - normalization failed, sum = %24.16e\n", __FUNCTION__, sum); }
     /* Just to be sure: */
-    if ((sum != 0) && (sum != 1)) { for (int32_t i = 0; i <= n; i++) { cm[i] /= sum; } }
+    if ((sum != 0) && (sum != 1)) { for (uint32_t i = 0;  i <= n; i++) { cm[i] /= sum; } }
   }
 
 void sve_sample_function(int32_t n, sve_goal_t *F, double v[], double Fv[])
   { double x[n];
     int32_t nv = n + 1;
-    for (int32_t i = 0; i < nv; i++)
-      { for (int32_t j = 0; j <= i; j++)
+    for (uint32_t i = 0;  i < nv; i++)
+      { for (uint32_t j = 0;  j <= i; j++)
           { /* Set {x[0..n-1]} to the midpoint of simplex corners {i,j}: */
             double *vi = &(v[i*n]);
             double *vj = &(v[j*n]);
-            for (int32_t k = 0; k < n; k++) { x[k] = (vi[k] + vj[k])/2; }
+            for (uint32_t k = 0;  k < n; k++) { x[k] = (vi[k] + vj[k])/2; }
             /* Get the function's value {F(x)} at {x}, store {F(x)} into {Fv}: */
             int32_t ij = i*(i+1)/2 + j;
             Fv[ij] = F(n, x);
@@ -258,7 +258,7 @@ void sve_minn_iterate
             Pr(Er, "    simplex vertices:\n");
             rmxn_gen_print(Er, nv, n, v, "%20.16f", "", "\n", "", "    [ ", " ", " ]");
             Pr(Er, "\n");
-            for (int32_t iv = 0; iv < nv; iv++)
+            for (uint32_t iv = 0;  iv < nv; iv++)
               { double *vi = &(v[iv*n]);
                 Pr(Er, "    dist(v[%3d], y) = %16.12f\n", iv, rn_dist(n, vi, y));
               }
@@ -390,7 +390,7 @@ void sve_clip_candidate
         if (debug) 
           { Pr(Er, "  moved too far - contracting by s = %20.16f\n", s);
           }
-        for (int32_t k = 0; k < n; k++) { y[k] = (1-s)*(ctr == NULL ? 0.0 : ctr[k]) + s*y[k]; }
+        for (uint32_t k = 0;  k < n; k++) { y[k] = (1-s)*(ctr == NULL ? 0.0 : ctr[k]) + s*y[k]; }
         if(debug_probes)
           { Pr(Er, "    clipped y = \n");
             rn_gen_print(Er, n, y, "%20.16f", "    [ ", "\n      ", " ]\n");
@@ -422,8 +422,8 @@ int32_t sve_take_step
     /* Find the optimum value among {Fv[0..nf-1]}: */
     double FOpt = -INF*(double)dir; /* {FOpt} is the optimum sample value. */
     int32_t iOpt = -1, jOpt = -1; /* {V(iOpt,jOpt)} is the optimum sample point. */
-    for (int32_t i = 0; i < nv; i++)
-      { for (int32_t j = 0; j <= i; j++)
+    for (uint32_t i = 0;  i < nv; i++)
+      { for (uint32_t j = 0;  j <= i; j++)
           { int32_t ij = i*(i+1)/2 + j;
             if (dir*Fv[ij] >= dir*FOpt) { iOpt = i; jOpt = j; FOpt = Fv[ij]; }
           }
@@ -446,7 +446,7 @@ int32_t sve_take_step
             if (debug) { Pr(Er, "    the optimum is V(%d,%d)\n", iOpt, jOpt); }
             double *vi = &(v[iOpt*n]);
             double *vj = &(v[jOpt*n]);
-            for (int32_t k = 0; k < n; k++) { y[k] = (vi[k] + vj[k])/2; }
+            for (uint32_t k = 0;  k < n; k++) { y[k] = (vi[k] + vj[k])/2; }
             (*FyP) = FOpt;
             return 1;
           }
@@ -460,14 +460,14 @@ int32_t sve_take_step
 
 void sve_print_probes(FILE *wr, int32_t nv, int32_t n, double v[], int32_t nf, double Fv[])
   {
-    for (int32_t i = 0; i < nv; i++)
-      { for (int32_t j = 0; j <= i; j++)
+    for (uint32_t i = 0;  i < nv; i++)
+      { for (uint32_t j = 0;  j <= i; j++)
           { int32_t ij = i*(i+1)/2 + j;
             fprintf(wr, "    %24.16e", Fv[ij]);
             fprintf(wr, "  ");
             double *vi = &(v[i*n]);
             double *vj = &(v[j*n]);
-            for (int32_t k = 0; k < n; k++) { fprintf(wr, " %20.16f", (vi[k] + vj[k])/2); }
+            for (uint32_t k = 0;  k < n; k++) { fprintf(wr, " %20.16f", (vi[k] + vj[k])/2); }
             fprintf(wr, "\n");
           }
       }

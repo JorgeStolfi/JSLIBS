@@ -2,12 +2,12 @@
 #define interp_spline_H
 
 /* Spline smoothing/interpolation of equally-spaced numerical series. */
-/* Last edited on 2024-11-18 11:50:56 by stolfi */ 
+/* Last edited on 2024-11-23 05:35:31 by stolfi */ 
 
 #include <stdint.h>
 
 #include <bool.h>
-#include <ix.h>
+#include <ix_reduce.h>
 
 /* The procedures in this interface convert a sequence of real samples
   {s[0..ns-1]} into a real-valued function {f} of a real argument {z},
@@ -39,7 +39,7 @@
   where both sums are taken over the values {i} in {0..nw-1} such that
   {ix[i]} is non-negative.  Note that the value is {NAN} if
   all indices {ix[0..nw-1]} are {-1}, for example when
-  {red = ix_reduction_SINGLE} and {z} is sufficiently far from
+  {red = ix_reduce_mode_SINGLE} and {z} is sufficiently far from
   the interval {[0 _ ns]}.
     
   Note that, for any integer {d}, the computation of{f(z+d)} uses the
@@ -59,7 +59,7 @@ uint32_t interp_spline_compute_num_samples(int32_t ord, interp_spline_kind_t knd
   /* Computes the number of consecutive data samples {nw} needed for
     interpolation at a generic real argument specified by {ord} and {knd}. */
 
-void interp_spline_get_indices(double z, uint32_t ns, ix_reduction_t red, uint32_t nw, int32_t ix[]);
+void interp_spline_get_indices(double z, uint32_t ns, ix_reduce_mode_t red, uint32_t nw, int32_t ix[]);
   /* Computes the indices {ix[0..nw-1]} of the {nw} samples needed to perform
     interpolation in a sequence of samples at the position {z},
     assuming that the nominal position of a sample with index {k} is {z = k+0.5}.

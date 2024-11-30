@@ -49,7 +49,7 @@ int32_t main(int32_t argc, char **argv)
     nmsim_group_synapse_count_t nsg = 50;  /* Assumed number of synapse classes. */
     nmsim_elem_neuron_count_t nne = 500; /* Assumed number of neurons. */
     
-    for (int32_t i = 0; i < 10; i++)
+    for (uint32_t i = 0;  i < 10; i++)
       { nmsim_group_synapse_ix_t isg_max = (nmsim_group_synapse_ix_t)imin(3*i, nsg-1); 
         nmsim_group_synapse_ix_t isg_min = (nmsim_group_synapse_ix_t)(i < 3 ? 0 : isg_max); 
         nmsim_elem_neuron_ix_t ine_max = nne-1;

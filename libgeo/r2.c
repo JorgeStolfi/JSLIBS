@@ -217,7 +217,7 @@ bool_t r2_eq(r2_t *p, r2_t *q)
 void r2_barycenter(uint32_t np, r2_t p[], double w[], r2_t *bar)
   { r2_t sum_wp = (r2_t){{ 0, 0 }};
     double sum_w = 0.0;
-    for (int32_t k = 0; k < np; k++) 
+    for (uint32_t k = 0;  k < np; k++) 
       { double wk = (w != NULL ? w[k] : 1.0);
         demand(isfinite(wk) && wk >= 0, "bad weight");
         if (wk != 0.0) 
@@ -232,7 +232,7 @@ void r2_barycenter(uint32_t np, r2_t p[], double w[], r2_t *bar)
 double r2_mean_dist_sqr(uint32_t np, r2_t p[], double w[], r2_t *ctr)
   { double sum_wd2 = 0.0;
     double sum_w = 0.0;
-    for (int32_t k = 0; k < np; k++) 
+    for (uint32_t k = 0;  k < np; k++) 
       { double wk = (w != NULL ? w[k] : 1.0);
         demand(isfinite(wk) && wk >= 0, "bad weight");
         if (wk != 0.0) 
@@ -248,7 +248,7 @@ double r2_mean_dist_sqr(uint32_t np, r2_t p[], double w[], r2_t *ctr)
 void r2_bbox(uint32_t np, r2_t p[], interval_t B[], bool_t finite)
   { double xmin = INF, xmax = -INF;
     double ymin = INF, ymax = -INF;
-    for (int32_t ip = 0; ip < np; ip++)
+    for (uint32_t ip = 0;  ip < np; ip++)
       { r2_t *pi = &(p[ip]);
         if ((! finite) || r2_is_finite(pi))
           { double xi = pi->c[0];

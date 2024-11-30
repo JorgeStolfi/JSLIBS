@@ -1,5 +1,5 @@
 /* See float_image_interpolate.h */
-/* Last edited on 2017-06-26 18:16:29 by stolfilocal */ 
+/* Last edited on 2024-11-23 05:53:50 by stolfi */ 
 
 #include <limits.h>
 #include <float.h>
@@ -8,7 +8,8 @@
 
 #include <affirm.h>
 #include <bool.h>
-#include <ix.h>
+#include <ix_types.h>
+#include <ix_reduce.h>
 #include <float_image.h>
 
 #include <float_image_interpolate.h>
@@ -23,7 +24,7 @@ void float_image_interpolate_get_indices_and_weights
   ( double t, 
     int N, 
     int m, 
-    ix_reduction_t red,
+    ix_reduce_mode_t red,
     int i[], 
     double w[]
   );
@@ -41,7 +42,7 @@ void float_image_interpolate_get_samples_and_weights
     double x, 
     double y,
     int m,
-    ix_reduction_t red, 
+    ix_reduce_mode_t red, 
     float *p[],
     double wx[],
     double wy[]
@@ -60,7 +61,7 @@ double float_image_interpolate_sample
     double x, 
     double y, 
     int order, 
-    ix_reduction_t red
+    ix_reduce_mode_t red
   )
   { 
     int m = float_image_interpolate_compute_num_samples(order);
@@ -91,7 +92,7 @@ void float_image_interpolate_pixel
     double x, 
     double y, 
     int order, 
-    ix_reduction_t red, 
+    ix_reduce_mode_t red, 
     double z[]
   )
   { int m = float_image_interpolate_compute_num_samples(order);
@@ -104,7 +105,7 @@ void float_image_interpolate_pixel
     
     /* Apply interpolation formula to all channels. */
     int NC = (int)A->sz[0];         /* Number of channels. */
-    ix_step_t cst = A->st[0];  /* Position increment between channels. */
+    ix_size_t cst = A->st[0];  /* Position increment between channels. */
     int c;
     for (c = 0; c < NC; c++)
       { /* Apply interpolation formula to channel {c}, advance pointers to next channel: */
@@ -139,7 +140,7 @@ void float_image_interpolate_grid_samples
     double rx, int hx, double dx,
     double ry, int hy, double dy,
     int order, 
-    ix_reduction_t red,
+    ix_reduce_mode_t red,
     double z[]
   )
   {
@@ -163,7 +164,7 @@ void float_image_interpolate_grid_pixels
     double rx, int hx, double dx,
     double ry, int hy, double dy,
     int order, 
-    ix_reduction_t red, 
+    ix_reduce_mode_t red, 
     double z[]
   )  
   {
@@ -202,7 +203,7 @@ void float_image_interpolate_get_indices_and_weights
   ( double t, 
     int N, 
     int m, 
-    ix_reduction_t red,
+    ix_reduce_mode_t red,
     int i[], 
     double w[]
   )
@@ -226,9 +227,8 @@ void float_image_interpolate_get_indices_and_weights
     double gz = 1.0 - fz;
     
     /* Compute the reduced indices {i[0..m-1]}: */
-    int k;
-    for (k = 0; k < m; k++)
-      { i[k] = (int)ix_reduce(iz, N, red);
+    for (int32_t k = 0; k < m; k++)
+      { i[k] = (int32_t)ix_reduce(iz, N, red);
         iz++;
       }
 
@@ -267,7 +267,7 @@ void float_image_interpolate_get_samples_and_weights
     double x, 
     double y,
     int m, 
-    ix_reduction_t red, 
+    ix_reduce_mode_t red, 
     float *p[],
     double wx[],
     double wy[]

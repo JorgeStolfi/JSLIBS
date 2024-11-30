@@ -1,5 +1,5 @@
 /* Test program for hr2_pmap.h  */
-/* Last edited on 2024-11-21 21:16:52 by stolfi */
+/* Last edited on 2024-11-24 08:58:10 by stolfi */
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -75,14 +75,14 @@ void test_hr2_pmap_r2_from_sign_class(bool_t verbose);
 void test_hr2_pmap_is_valid(bool_t verbose);
 void test_hr2_pmap_is_identity(bool_t verbose);
 void test_hr2_pmap_is_translation(bool_t verbose);
-void test_hr2_pmap_is_congruence__hr2_pmap_is_similarity(uint32_t which, bool_t verbose);
-  /* Tests congruence if {which=0},similarity if {which=1}. */
+void test_hr2_pmap_is_congruence(bool_t verbose);
+void test_hr2_pmap_is_similarity(bool_t verbose);
 void test_hr2_pmap_is_affine(bool_t verbose);
 
 void test_hr2_pmap_print(bool_t verbose);
 void test_hr2_pmap_gen_print(bool_t verbose);
 
-void thr2_random_scale_and_print(hr2_pmap_t *R, uint32_t indent, char *name, bool_t verbose)
+void thr2_random_scale_and_print(char *Rname, hr2_pmap_t *R, uint32_t indent, bool_t verbose);
   /* Scales the matrices {R.dir} and {R.inv} by random homogeneous factors.
     if {verbose} is true, also prints {R} befoe and after scaling, with the given {name},
     indented by {indent} spaces. */
@@ -92,8 +92,8 @@ int32_t main (int32_t argc, char **argv)
     srand(1993);
     srandom(1933);
 
-    for (int32_t i = 0; i < 100; i++) test_hr2_pmap(i < 3);
-    for (int32_t i = 0; i < 100; i++) test_hr2_pmap_affine(i < 3);
+    for (uint32_t i = 0;  i < 100; i++) test_hr2_pmap(i < 3);
+    for (uint32_t i = 0;  i < 100; i++) test_hr2_pmap_affine(i < 3);
     fclose(Er);
     fclose(stdout);
     return (0);
@@ -115,8 +115,8 @@ void test_hr2_pmap(bool_t verbose)
     /* Testing in order of increasing strictness: */
     test_hr2_pmap_is_valid(verbose);
     test_hr2_pmap_is_affine(verbose);
-    test_hr2_pmap_is_congruence__hr2_pmap_is_similarity(1, verbose);
-    test_hr2_pmap_is_congruence__hr2_pmap_is_similarity(0, verbose);
+    test_hr2_pmap_is_similarity(verbose);
+    test_hr2_pmap_is_congruence(verbose);
     test_hr2_pmap_is_translation(verbose);
     test_hr2_pmap_is_identity(verbose);
 
@@ -177,7 +177,7 @@ void test_hr2_pmap_diff_sqr(bool_t verbose)
   { if (verbose) { Pr(Er, "=== testing hr2_pmap_diff_sqr ==============================\n"); }
     hr2_pmap_t M, N;
     /* Throw two maps and normalize their matrices: */
-    for (int32_t k = 0; k < 2; k++)
+    for (uint32_t k = 0;  k < 2; k++)
       { N = M;
         hr2_pmap_throw(&M);
         r3x3_normalize(&(M.dir));
@@ -186,8 +186,8 @@ void test_hr2_pmap_diff_sqr(bool_t verbose)
       }
     /* Compute exepected diff sqr {d2_exp}: */
     double d2_exp = 0;
-    for (int32_t i = 0; i < NH; i++)
-      { for (int32_t j = 0; j < NH; j++)
+    for (uint32_t i = 0;  i < NH; i++)
+      { for (uint32_t j = 0;  j < NH; j++)
           { double d = M.dir.c[i][j] - N.dir.c[i][j];
             d2_exp += d*d;
             d = M.inv.c[i][j] - N.inv.c[i][j];
@@ -195,8 +195,8 @@ void test_hr2_pmap_diff_sqr(bool_t verbose)
           }
       }
     /* Scale the matrices by arbitrary amounts: */
-    for (int32_t i = 0; i < NH; i++)
-      { for (int32_t j = 0; j < NH; j++)
+    for (uint32_t i = 0;  i < NH; i++)
+      { for (uint32_t j = 0;  j < NH; j++)
           { M.dir.c[i][j] *= 2;
             M.inv.c[i][j] *= 4;
             N.inv.c[i][j] *= 0.25;
@@ -218,7 +218,7 @@ void test_hr2_pmap_mismatch_sqr(bool_t verbose)
     uint32_t np = 7;
     r2_t p1[np], p2[np];
     double w[np];
-    for (int32_t ip = 0; ip < np; ip++)
+    for (uint32_t ip = 0;  ip < np; ip++)
       { r2_throw_cube(&(p1[np]));
         r2_throw_cube(&(p2[np]));
         w[ip] = 0.000001 + 0.999999*drandom();
@@ -233,7 +233,7 @@ void test_hr2_pmap_mismatch_sqr(bool_t verbose)
     double sum_w = 0.0;
     hr2_pmap_t N = hr2_pmap_inv(&M);
     hr2_pmap_test_tools_check("N", &N, 1.0e-8, "{hr2_pmap_inv} failed (1)");
-    for (int32_t ip = 0; ip < np; ip++)
+    for (uint32_t ip = 0;  ip < np; ip++)
       { r2_t *p1k = &(p1[ip]);
         r2_t *p2k = &(p2[ip]);
         r2_t q1k = hr2_pmap_r2_point(p1k, &M);
@@ -277,7 +277,7 @@ void test_hr2_pmap_affine_discr_sqr(bool_t verbose)
     /* Can be integrated numerically with 5 or more samples. */
     uint32_t nang = 7;
     double sum_d2 = 0;
-    for (int32_t i = 0; i < nang; i++)
+    for (uint32_t i = 0;  i < nang; i++)
       { double ang = 2*M_PI*((double)i)/((double)nang);
         r2_t p = (r2_t){{ cos(ang), sin(ang) }};
         r2_t q = hr2_pmap_r2_point(&p, &M);
@@ -298,7 +298,7 @@ void test_hr2_pmap_affine_from_mat_and_disp(bool_t verbose)
 
     r2_t disp; r2_throw_cube(&disp);
     r2x2_t mat;
-    for (int32_t i = 0; i < 2; i++)
+    for (uint32_t i = 0;  i < 2; i++)
       { r2_t s; r2_throw_cube(&s);
         mat.c[i][0] = s.c[0];
         mat.c[i][1] = s.c[1];
@@ -306,12 +306,12 @@ void test_hr2_pmap_affine_from_mat_and_disp(bool_t verbose)
     hr2_pmap_t A = hr2_pmap_affine_from_mat_and_disp(&mat, &disp);
     hr2_pmap_test_tools_check("A", &A, 1.0e-8, "{hr2_pmap_affine_from_mat_and_disp} failed (1)"); 
     
-    for (int32_t k = 0; k < 5; k++)
+    for (uint32_t k = 0;  k < 5; k++)
       { /* Should take the origin to {disp}* */
         r2_t o = (r2_t){{ 0.0, 0.0 }};
         hr2_pmap_test_tools_check_map_r2_point("o", &o, &A, FALSE, &disp, "{hr2_pmap_affine_from_mat_disp} failed (1)");
         /* Test with a few other points: */
-        for (int32_t kp = 0; kp < 3; kp++)
+        for (uint32_t kp = 0;  kp < 3; kp++)
           { r2_t p; r2_throw_cube(&p);
             r2_t q; r2x2_map_row(&p, &mat, &q);
             r2_add(&disp, &q, &q);
@@ -450,7 +450,7 @@ void test_hr2_pmap_from_four_points(bool_t verbose)
     p[2] = (hr2_point_t){{{ 0.0, 0.0, 1.0 }}};
     /* Will set {p[3]} later. */
 
-    for (int32_t kt = 0; kt < 2*(1 << NH); kt++)
+    for (uint32_t kt = 0;  kt < 2*(1 << NH); kt++)
       { if (verbose) { Pr(Er, "  --- trial %d ---\n", kt); }
         bool_t ident = (kt < (1 << NH));  /* Try to get the identity map: */
         hr2_point_t pM_exp[4];
@@ -462,12 +462,12 @@ void test_hr2_pmap_from_four_points(bool_t verbose)
             if (kt & 2) { u.c.c[1] = -u.c.c[1]; }
             if (kt & 4) { u.c.c[2] = -u.c.c[2]; }
             p[3] = u;
-            for (int32_t kp = 0; kp < 4; kp++) { pM_exp[kp] = p[kp]; }
+            for (uint32_t kp = 0;  kp < 4; kp++) { pM_exp[kp] = p[kp]; }
           }
         else
           { /* Fix {p[3] = [1,1,1]} and throw {pM_exp} random: */
             p[3] = (hr2_point_t){{{ 1.0, 1.0, 1.0 }}};
-            for (int32_t kp = 0; kp < 4; kp++) { r3_throw_cube(&(pM_exp[kp].c)); }
+            for (uint32_t kp = 0;  kp < 4; kp++) { r3_throw_cube(&(pM_exp[kp].c)); }
           }
 
         hr2_pmap_t M = hr2_pmap_from_four_points(&(pM_exp[0]), &(pM_exp[1]), &(pM_exp[2]), &(pM_exp[3]));
@@ -479,7 +479,7 @@ void test_hr2_pmap_from_four_points(bool_t verbose)
         if (! ident)
           { /* Set {p[3] = [±1,±1,±1]} based on inverse map of {pM_exp[3]}: */
             hr2_point_t u = hr2_pmap_inv_point(&(pM_exp[3]), &M);
-            for (int32_t i = 0; i < NH; i++)
+            for (uint32_t i = 0;  i < NH; i++)
               { if (fabs(fabs(u.c.c[i]) - 1) < 1.0e-8)
                   { u.c.c[i] = (u.c.c[i] > 0 ? +1 : -1); }
                 else
@@ -490,10 +490,10 @@ void test_hr2_pmap_from_four_points(bool_t verbose)
 
         if (verbose)
           { Pr(Er, "  trial kt = %d goal:\n", kt);
-            for (int32_t kp = 0; kp < 4; kp++) 
+            for (uint32_t kp = 0;  kp < 4; kp++) 
               { print_pair(&(p[kp]), &(pM_exp[kp])); }
             Pr(Er, "  actual:\n");
-            for (int32_t kp = 0; kp < 4; kp++) 
+            for (uint32_t kp = 0;  kp < 4; kp++) 
               { hr2_point_t pM_cmp = hr2_pmap_point(&(p[kp]), &M); 
                 print_pair(&(p[kp]), &pM_cmp);
               }
@@ -501,7 +501,7 @@ void test_hr2_pmap_from_four_points(bool_t verbose)
           }
 
         /* Check whether the map works: */
-        for (int32_t kp = 0; kp < 4; kp++) 
+        for (uint32_t kp = 0;  kp < 4; kp++) 
           { char *lab = (char*[4]){ "p[0]", "p[1]", "p[2]", "p[3]" }[kp];
             hr2_pmap_test_tools_check_map_point(lab, &(p[kp]), FALSE, FALSE, &M, FALSE, &(pM_exp[kp]), "{hr2_pmap_from_four_points} failed (2)");
           }
@@ -528,7 +528,7 @@ void test_hr2_pmap_from_four_r2_points(bool_t verbose)
     p[2] = (r2_t){{ 0.0, 1.0 }};
     /* Will set {p[3]} later. */
 
-    for (int32_t kt = 0; kt < 8; kt++)
+    for (uint32_t kt = 0;  kt < 8; kt++)
       { if (verbose) { Pr(Er, "  --- trial %d ---\n", kt); }
             
         bool_t ident = (kt < 4);  /* Try to get the identity map: */
@@ -544,12 +544,12 @@ void test_hr2_pmap_from_four_r2_points(bool_t verbose)
               { p[3] = (r2_t){{ +1.0, -1.0 }}; }
             else if (kt == 3)
               { p[3] = (r2_t){{ +1/3.0, +1/3.0 }}; }
-            for (int32_t kp = 0; kp < 4; kp++) { pM_exp[kp] = p[kp]; }
+            for (uint32_t kp = 0;  kp < 4; kp++) { pM_exp[kp] = p[kp]; }
           }
         else
           { /* Fix {p[3] = (1,1)} and throw {pM_exp} random: */
             p[3] = (r2_t){{ 1.0, 1.0 }};
-            for (int32_t kp = 0; kp < 4; kp++) { r2_throw_cube(&(pM_exp[kp])); }
+            for (uint32_t kp = 0;  kp < 4; kp++) { r2_throw_cube(&(pM_exp[kp])); }
           }
 
         hr2_pmap_t M = hr2_pmap_from_four_r2_points(&(pM_exp[0]), &(pM_exp[1]), &(pM_exp[2]), &(pM_exp[3]));
@@ -583,10 +583,10 @@ void test_hr2_pmap_from_four_r2_points(bool_t verbose)
 
         if (verbose)
           { Pr(Er, "  goal:\n");
-            for (int32_t kp = 0; kp < 4; kp++) 
+            for (uint32_t kp = 0;  kp < 4; kp++) 
               { print_pair(&(p[kp]), &(pM_exp[kp])); }
             Pr(Er, "  actual:\n");
-            for (int32_t kp = 0; kp < 4; kp++) 
+            for (uint32_t kp = 0;  kp < 4; kp++) 
               { r2_t pM_cmp = hr2_pmap_r2_point(&(p[kp]), &M);
                 print_pair(&(p[kp]), &(pM_cmp));
               }
@@ -594,7 +594,7 @@ void test_hr2_pmap_from_four_r2_points(bool_t verbose)
           }
 
         /* Check whether the map works: */
-        for (int32_t kp = 0; kp < 4; kp++) 
+        for (uint32_t kp = 0;  kp < 4; kp++) 
           { char *lab = (char*[4]){ "p[0]", "p[1]", "p[2]", "p[3]" }[kp];
             hr2_pmap_test_tools_check_map_r2_point(lab, &(p[kp]), &M, FALSE, &(pM_exp[kp]), "{hr2_pmap_from_four_r2_points} failed (2)");
           }
@@ -626,9 +626,9 @@ void test_hr2_pmap_r2_from_sign_class(bool_t verbose)
     u[2] = (r2_t){{ -1, +1 }};
     u[3] = (r2_t){{ +1, +1 }};
     
-    for (int32_t class = 0; class <= 3; class++)
+    for (uint32_t class = 0;  class <= 3; class++)
       { hr2_pmap_t M = hr2_pmap_r2_from_sign_class(class);
-        for (int32_t kp = 0; kp < 4; kp++)
+        for (uint32_t kp = 0;  kp < 4; kp++)
           { r2_t q;
             if (kp != 3)
               { q = p[kp]; }
@@ -658,7 +658,7 @@ void test_hr2_pmap_inv(bool_t verbose)
     hr2_pmap_t M;  hr2_pmap_test_tools_throw_aff_map(&M);
     hr2_pmap_t N = hr2_pmap_inv(&M); 
     hr2_pmap_test_tools_check("N", &N, 1.0e-8, "{hr2_pmap_inv} failed (1)");
-    for (int32_t k = 0; k < 5; k++)
+    for (uint32_t k = 0;  k < 5; k++)
       { hr2_point_t p = hr2_point_throw();
         hr2_point_t q = hr2_pmap_point(&p, &M);
         hr2_pmap_test_tools_check_map_point("q", &q, FALSE, FALSE, &N, FALSE, &p, "{hr2_pmap_inv} failed (2)");
@@ -671,7 +671,7 @@ void test_hr2_pmap_compose(bool_t verbose)
     hr2_pmap_t M;  hr2_pmap_test_tools_throw_aff_map(&M);
     hr2_pmap_t N;  hr2_pmap_test_tools_throw_aff_map(&N);
     hr2_pmap_t P = hr2_pmap_compose(&M, &N);
-    for (int32_t k = 0; k < 5; k++)
+    for (uint32_t k = 0;  k < 5; k++)
       { hr2_point_t p = hr2_point_throw();
         hr2_point_t q = hr2_pmap_point(&p, &M);
         hr2_point_t r = hr2_pmap_point(&q, &N);
@@ -703,7 +703,7 @@ void test_hr2_pmap_inv_compose(bool_t verbose)
     hr2_pmap_test_tools_check("P", &P, 1.0e-8, "{hr2_pmap_inv_compose} failed");
     
     if (verbose) { Pr(Er, "  testing {P} with some random points ...\n"); }
-    for (int32_t k = 0; k < 5; k++)
+    for (uint32_t k = 0;  k < 5; k++)
       { hr2_point_t p = hr2_point_throw();
         hr2_point_t q = hr2_pmap_point(&p, &Minv);
         hr2_point_t r = hr2_pmap_point(&q, &N);
@@ -717,7 +717,7 @@ void test_hr2_pmap_translation_from_disp(bool_t verbose)
     r2_t disp; r2_throw_cube(&disp);
     hr2_pmap_t M = hr2_pmap_translation_from_disp(&disp); 
     hr2_pmap_test_tools_check("M", &M, 1.0e-8, "{hr2_pmap_translation_from_disp} failed (1)");
-    for (int32_t k = 0; k < 5; k++)
+    for (uint32_t k = 0;  k < 5; k++)
       { r2_t p; r2_throw_cube(&p);
         r2_t q; r2_add(&p, &disp, &q);
         hr2_pmap_test_tools_check_map_r2_point("p", &p, &M, FALSE, &q, "{hr2_pmap_translation_from_disp} failed (2)");
@@ -732,7 +732,7 @@ void test_hr2_pmap_rotation(bool_t verbose)
     hr2_pmap_test_tools_check("M", &M, 1.0e-8, "{hr2_pmap_rotation} failed (1)");
     double ca = cos(ang);
     double sa = sin(ang);
-    for (int32_t k = 0; k < 5; k++)
+    for (uint32_t k = 0;  k < 5; k++)
       { r2_t p; r2_throw_cube(&p);
         r2_t q;
         q.c[0] = + ca*p.c[0] - sa*p.c[1];
@@ -750,7 +750,7 @@ void test_hr2_pmap_rotation_and_scaling(bool_t verbose)
     hr2_pmap_test_tools_check("M", &M, 1.0e-8, "{hr2_pmap_rotation_and_scaling} failed (1)");
     double ca = cos(ang);
     double sa = sin(ang);
-    for (int32_t k = 0; k < 5; k++)
+    for (uint32_t k = 0;  k < 5; k++)
       { r2_t p; r2_throw_cube(&p);
         r2_t q;
         q.c[0] = + ca*scale*p.c[0] - sa*scale*p.c[1];
@@ -870,8 +870,8 @@ void test_hr2_pmap_sign__hr2_pmap_invert_sign__hr2_pmap_set_sign(bool_t verbose)
         sign_t sgnP = hr2_pmap_sign(&P);
         demand(sgnP == -sgn, "{hr2_pmap_invert_sign} failed");
         hr2_pmap_invert_sign(&P);
-        for (int32_t i = 0; i < 3; i++)
-          { for (int32_t j = 0; j < 3; j++)
+        for (uint32_t i = 0;  i < 3; i++)
+          { for (uint32_t j = 0;  j < 3; j++)
              { demand(P.dir.c[i][j] == N.dir.c[i][j], "{hr2_invert_sign^2} failed (1)");
                demand(P.inv.c[i][j] == N.inv.c[i][j], "{hr2_invert_sign^2} failed (2)");
              }
@@ -898,20 +898,20 @@ void test_hr2_pmap_is_identity(bool_t verbose)
     hr2_pmap_t M; 
     r3x3_ident(&(M.dir));
     r3x3_ident(&(M.inv));
-    thr2_random_scale_and_print(&M, "M", 2, verbose);
+    thr2_random_scale_and_print("M", &M, 2, verbose);
 
     if (verbose) { Pr(Er, "  testing {M} and perturbed versions, should be ok ...\n"); }
-    hr2_pmap_test_tools_check_perturbed(&M, &ok, &P, TRUE, "hr2_pmap_is_identity", debug);
+    hr2_pmap_test_tools_check_perturbed("M", &M, &ok, &P, TRUE, "hr2_pmap_is_identity", debug);
     
     if (verbose) { Pr(Er, "  creating a map {N} that is a translation by a non-trivial vector\n"); }
     hr2_pmap_t N; 
     r3x3_ident(&(N.dir));
     N.dir.c[0][1] = 10*tol; N.dir.c[0][2] = 20*tol;
     r3x3_inv(&(N.dir), &(N.inv)); 
-    thr2_random_scale_and_print(&N, "N", 2, verbose);
+    thr2_random_scale_and_print("N", &N, 2, verbose);
  
     if (verbose) { Pr(Er, "  testing {N} and perturbed versions, should not be ok ...\n"); }
-    hr2_pmap_test_tools_check_perturbed(&N, &ok, &P, FALSE, "hr2_pmap_is_identity", debug);
+    hr2_pmap_test_tools_check_perturbed("N", &N, &ok, &P, FALSE, "hr2_pmap_is_identity", debug);
     
     return;
     
@@ -944,23 +944,25 @@ void test_hr2_pmap_is_translation(bool_t verbose)
     hr2_pmap_t M = throw_congruence("M", ang_M);
 
     if (verbose) { Pr(Er, "  testing {M} and perturbed versions, should be ok ...\n"); }
-    hr2_pmap_test_tools_check_perturbed(&M, &ok, &P, TRUE, "hr2_pmap_is_translation", debug);
+    hr2_pmap_test_tools_check_perturbed("M", &M, &ok, &P, TRUE, "hr2_pmap_is_translation", debug);
     
     if (verbose) { Pr(Er, "  creating {N}, a translation after a small but signif rotation\n"); }
-    double ang_M = 3.0*tol;
+    double ang_N = 3.0*tol;
     hr2_pmap_t N = throw_congruence("N", ang_N);
  
     if (verbose) { Pr(Er, "  testing {N} and perturbed versions, should not be ok ...\n"); }
-    hr2_pmap_test_tools_check_perturbed(&N, &ok, &P, FALSE, "hr2_pmap_is_identity", debug);
+    hr2_pmap_test_tools_check_perturbed("N", &N, &ok, &P, FALSE, "hr2_pmap_is_identity", debug);
 
     return;
 
     hr2_pmap_t throw_congruence(char *name, double ang)
       { double tmag = dabrandom(5.0,10.0);
-        r2_t tvec; r2_throw_dir(tvec); r2_scale(tmag, &tvec, &tvec);
+        r2_t tvec; r2_throw_dir(&tvec); r2_scale(tmag, &tvec, &tvec);
         hr2_pmap_t R = hr2_pmap_from_parms
-          ( persp = NULL, shear = 0, skew = 0, scale = 1.0, ang = ang, disp = &tvec );
-        thr2_random_scale_and_print(&R, name, 2, verbose);
+          ( /*persp*/ NULL, /*shear */ 0, /*skew */ 0, 
+            /*scale*/ 1.0, /*ang*/ ang, /*disp*/ &tvec
+          );
+        thr2_random_scale_and_print(name, &R, 2, verbose);
         return R;
       }
    
@@ -992,46 +994,45 @@ void test_hr2_pmap_is_congruence(bool_t verbose)
     
     if (verbose)  { Pr(Er, "  creating {M}, definitely congruence not translation\n"); }
     double sgn_sc_M = (drandom() < 0.5 ? -1 : +1);
-    double scale_M = 1.0 + sign_sc*dabrandom(0.03, 0.05)*tol;
+    double scale_M = 1.0 + sgn_sc_M*dabrandom(0.03, 0.05)*tol;
     hr2_pmap_t M = throw_similarity("M", scale_M);
 
     if (verbose) { Pr(Er, "  testing {M} and perturbed versions, should be ok ...\n"); }
-    hr2_pmap_test_tools_check_perturbed(&M, &ok, &P, TRUE, "hr2_pmap_is_congruence", debug);
+    hr2_pmap_test_tools_check_perturbed("M", &M, &ok, &P, TRUE, "hr2_pmap_is_congruence", debug);
 
     if (verbose) { Pr(Er, "  creating {N}, that is almost but definitely not a congruence\n"); }
     double sgn_sc_N = (drandom() < 0.5 ? -1 : +1);
-    double scale_N = 1.0 + sign_sc*dabrandom(3.0, 5.0)*tol);
+    double scale_N = 1.0 + sgn_sc_N*dabrandom(3.0, 5.0)*tol;
     hr2_pmap_t N = throw_similarity("N", scale_N);
  
     if (verbose) { Pr(Er, "  testing {N} and perturbed versions, should not be ok ...\n"); }
-    hr2_pmap_test_tools_check_perturbed(&N, &ok, &P, FALSE, "hr2_pmap_is_congruence", debug);
+    hr2_pmap_test_tools_check_perturbed("N", &N, &ok, &P, FALSE, "hr2_pmap_is_congruence", debug);
 
     return;
     
     hr2_pmap_t throw_similarity(char *name, double scale)
       { 
         double tmag = dabrandom(5.0, 10.0);
-        r2_t tvec; r2_throw_dir(tvec); r2_scale(tmag, &tvec, &tvec);
+        r2_t tvec; r2_throw_dir(&tvec); r2_scale(tmag, &tvec, &tvec);
         double ang = 2*M_PI*(0.1 + 0.8*drandom()); /* Rotation angle. */
         hr2_pmap_t R = hr2_pmap_from_parms
-          ( persp = NULL, shear = 0, skew = 0, scale = scale, ang = ang, disp = &tvec );
-        thr2_random_scale_and_print(&R, name, 2, verbose);
+          ( /*persp*/ NULL, /*shear */ 0, /*skew */ 0, 
+            /*scale*/ scale, /*ang*/ ang, /*disp*/ &tvec
+          );
+        thr2_random_scale_and_print(name, &R, 2, verbose);
         return R;
       }
       
     bool_t ok(hr2_pmap_t *R)
-      { if (which == 0)
-          { return hr2_pmap_is_congruence(R, tol); }
-        else
-          { return hr2_pmap_is_similarity(R, scale, tol); }
-      }
+      { return hr2_pmap_is_congruence(R, tol); }
+
   }
 
-void test_hr2_pmap_is_similarity(uint32_t which, bool_t verbose)
+void test_hr2_pmap_is_similarity(bool_t verbose)
   { bool_t debug = TRUE;
     if (debug) { verbose = TRUE; }
     
-    if (verbose) { Pr(Er, "=== testing hr2_pmap_is_similarity ===\n", xfunc); }
+    if (verbose) { Pr(Er, "=== testing hr2_pmap_is_similarity ===\n"); }
     
     double tol = 2.0e-13;
     if (verbose) { Pr(Er, "  tol = %24.16e\n", tol); }
@@ -1048,7 +1049,7 @@ void test_hr2_pmap_is_similarity(uint32_t which, bool_t verbose)
         {M.inv} are scaled random homogeneous factors. */
 
     double sgn_sc = (drandom() < 0.5 ? -1 : +1);
-    double scale_gen = 1.0 + sign_sc*dabrandom(3.0, 5.0)*tol;  /* Used to create the maps.  */
+    double scale_gen = 1.0 + sgn_sc*dabrandom(3.0, 5.0)*tol;  /* Used to create the maps.  */
     double scale_check = (drandom() < 0.5 ? scale_gen : NAN);  /* Used when checking.  */
 
     auto bool_t ok(hr2_pmap_t *R);
@@ -1057,38 +1058,37 @@ void test_hr2_pmap_is_similarity(uint32_t which, bool_t verbose)
     if (verbose)  { Pr(Er, "  creating {M}, definitely similarity not congruence\n"); }
     double shear_M = (drandom() < 0.5 ? -1 : +1)*dabrandom(0.03, 0.05)*tol;
     double skew_M = exp((drandom() < 0.5 ? -1 : +1)*log(1 + dabrandom(0.03, 0.05)*tol));
-    hr2_pmap_t M = throw_affine(shear_M, skew_M, scale_gen);
+    hr2_pmap_t M = throw_affine("M", shear_M, skew_M, scale_gen);
 
     if (verbose) { Pr(Er, "  testing {M} and perturbed versions, should be ok ...\n"); }
-    hr2_pmap_test_tools_check_perturbed(&M, &ok, &P, TRUE, "hr2_pmap_is_similarity", debug);
+    hr2_pmap_test_tools_check_perturbed("M", &M, &ok, &P, TRUE, "hr2_pmap_is_similarity", debug);
 
     if (verbose) { Pr(Er, "  creating {N}, affinity that is almost but definitely not a similarity\n"); }
     double shear_N = (drandom() < 0.5 ? -1 : +1)*dabrandom(3.0, 5.0)*tol;
     double skew_N = exp((drandom() < 0.5 ? -1 : +1)*log(1 + dabrandom(3.0, 5.0)*tol));
-    hr2_pmap_t N = throw_affine(shear_N, skew_N, scale_gen);
+    hr2_pmap_t N = throw_affine("N", shear_N, skew_N, scale_gen);
  
     if (verbose) { Pr(Er, "  testing {N} and perturbed versions, should not be ok ...\n"); }
-    hr2_pmap_test_tools_check_perturbed(&N, &ok, &P, FALSE, "hr2_pmap_is_similarity", debug);
+    hr2_pmap_test_tools_check_perturbed("N", &N, &ok, &P, FALSE, "hr2_pmap_is_similarity", debug);
 
     return;
 
     hr2_pmap_t throw_affine(char *name, double shear, double skew, double scale)
       { 
         double tmag = dabrandom(5.0, 10.0);
-        r2_t tvec; r2_throw_dir(tvec); r2_scale(tmag, &tvec, &tvec);
+        r2_t tvec; r2_throw_dir(&tvec); r2_scale(tmag, &tvec, &tvec);
         double ang = 2*M_PI*(0.1 + 0.8*drandom()); /* Rotation angle. */
         hr2_pmap_t R = hr2_pmap_from_parms
-          ( persp = NULL, shear = shear, skew = skew, scale = scale, ang = ang, disp = &tvec );
-        thr2_random_scale_and_print(&R, name, 2, verbose);
-        retun R;
+          ( /*persp*/ NULL, /*shear */ shear, /*skew */ skew, 
+            /*scale*/ scale, /*ang*/ ang, /*disp*/ &tvec
+          );
+        thr2_random_scale_and_print(name, &R, 2, verbose);
+
+        return R;
       }
 
     bool_t ok(hr2_pmap_t *R)
-      { if (which == 0)
-          { return hr2_pmap_is_congruence(R, tol); }
-        else
-          { return hr2_pmap_is_similarity(R, scale, tol); }
-      }
+      { return hr2_pmap_is_similarity(R, scale_check, tol); }
   }
 
 void test_hr2_pmap_is_affine(bool_t verbose)
@@ -1116,48 +1116,51 @@ void test_hr2_pmap_is_affine(bool_t verbose)
       /* Returns {hr2_pmap_is_affine(R,tol)}. */
     
     if (verbose) { Pr(Er, "  creating {M}, essentially affine not similarity\n"); }
-    double pmag_M = dabrandom(0.03, 0.05)*tol
-    hr2_pmap_t M = throw_perspective(pmag_M);
+    double pmag_M = dabrandom(0.03, 0.05)*tol;
+    hr2_pmap_t M = throw_persp("M", pmag_M);
  
     if (verbose) { Pr(Er, "  testing {N} and perturbed versions, should not be ok ...\n"); }
-    hr2_pmap_test_tools_check_perturbed(&N, &ok, &P, FALSE, "hr2_pmap_is_affine", debug);
+    hr2_pmap_test_tools_check_perturbed("M", &M, &ok, &P, TRUE, "hr2_pmap_is_affine", debug);
 
-    if (verbose) { Pr(Er, "  creating {N}, almost but definitely nor affine\n", xdir_B);  }
-    double pmag_N = dabrandom(3.0, 5.0)*tol
-    hr2_pmap_t N = throw_perspective(pmag_N);t(6, "N (raw)", &N); }
+    if (verbose) { Pr(Er, "  creating {N}, almost but definitely nor affine\n");  }
+    double pmag_N = dabrandom(30.0, 50.0)*tol;
+    hr2_pmap_t N = throw_persp("N", pmag_N);
  
     if (verbose) { Pr(Er, "  testing {N} and perturbed versions, should not be ok ...\n"); }
-    hr2_pmap_test_tools_check_perturbed(&N, &ok, &P, FALSE, "hr2_pmap_is_affine", debug);
+    hr2_pmap_test_tools_check_perturbed("N", &N, &ok, &P, FALSE, "hr2_pmap_is_affine", debug);
 
     return;
     
     hr2_pmap_t throw_persp(char *name, double pmag)
       { double tmag = dabrandom(5.0, 10.0);
-        r2_t tvec; r2_throw_dir(tvec); r2_scale(tmag, &tvec, &tvec);
+        r2_t tvec; r2_throw_dir(&tvec); r2_scale(tmag, &tvec, &tvec);
+        double scale = (drandom() < 0.5 ? dabrandom(0.1, 0.4) :  dabrandom(3.0, 5.0));
         double ang = 2*M_PI*(0.1 + 0.8*drandom()); /* Rotation angle. */
         double shear = (drandom() < 0.5 ? -1 : +1)*dabrandom(0.2, 0.9);
         double skew = exp((drandom() < 0.5 ? -1 : +1)*log(1 + dabrandom(0.2, 2.9)));
-        r2_t pvec; r2_throw_dir(pvec); r2_scale(pmag, &pvec, &pvec);
+        r2_t pvec; r2_throw_dir(&pvec); r2_scale(pmag, &pvec, &pvec);
         hr2_pmap_t R = hr2_pmap_from_parms
-          ( persp = &pvec, shear = shear, skew = skew, scale = scale, ang = ang, disp = &tvec );
-        thr2_random_scale_and_print(&R, name, 2, verbose);
+          ( /*persp*/ &pvec, /*shear */ shear, /*skew */ skew, 
+            /*scale*/ scale, /*ang*/ ang, /*disp*/ &tvec
+          );
+        thr2_random_scale_and_print(name, &R, 2, verbose);
         return R;
       }
     bool_t ok(hr2_pmap_t *R)
       { return hr2_pmap_is_affine(R, tol); }
   }
   
-void thr2_random_scale_and_print(hr2_pmap_t R, uint32_t indent, char *name, bool_t verbose)
+void thr2_random_scale_and_print(char *Rname, hr2_pmap_t *R, uint32_t indent, bool_t verbose)
   { if (verbose)
-      { char *rname = jsprintf("%s (raw)", name);
-        hr2_pmap_test_tools_print(indent, rname, R);
-        free(rname);
+      { char *Rname_raw = jsprintf("%s (raw)", Rname);
+        hr2_pmap_test_tools_print(indent, Rname_raw, R);
+        free(Rname_raw);
       }
     r3x3_scale(0.1+5*drandom(), &(R->dir), &(R->dir));
     r3x3_scale(0.1+5*drandom(), &(R->inv), &(R->inv));
     if (verbose)
-      { char *sname = jsprintf("%s (scaled)", name);
-        hr2_pmap_test_tools_print(indent, sname, R);
-        free(sname);
+      { char *Rname_scaled = jsprintf("%s (scaled)", Rname);
+        hr2_pmap_test_tools_print(indent, Rname_scaled, R);
+        free(Rname_scaled);
       }
   }

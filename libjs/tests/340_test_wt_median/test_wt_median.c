@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {wt_median.h} and {wt_median_window.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-19 22:34:59 by stolfi */ 
+/* Last edited on 2024-11-22 21:19:23 by stolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_wt_median_COPYRIGHT \
@@ -149,9 +149,9 @@ int32_t main (int32_t argc, char **argv)
     uint32_t nx_max = 1000; /* Max number of original samples. */
     uint32_t nw_max = 100;  /* Max window size. */
     uint32_t nprocs = 4;
-    for (int32_t iproc = 0; iproc < nprocs; iproc++) 
+    for (uint32_t iproc = 0; iproc < nprocs; iproc++) 
       { uint32_t ntries = 200;
-        for (int32_t ktry = 0; ktry < 200; ktry++)
+        for (uint32_t ktry = 0; ktry < 200; ktry++)
           { bool_t verbose = ((ktry < 10) && (ktry <= ntries - 5));
             
             uint32_t nx = twtm_choose_num_samples(ktry, nx_max);
@@ -199,7 +199,7 @@ void twtm_test_median_sorted(uint32_t ns, bool_t verbose)
     if (verbose && (ns <= 10)) { twtm_prxsws(ns, "xs", xs, "ws", ws); }
 
     /* Compute median with and without interpolation: */
-    for (int32_t ki = 0; ki < 2; ki++)
+    for (uint32_t ki = 0;  ki < 2; ki++)
       { bool_t interp = (ki != 0);
         if (verbose) { fprintf(stderr, "  ...... interp = %c ......\n", "FT"[interp]); }
         double xm = wt_median_sorted(ns, xs, ws, interp);
@@ -237,7 +237,7 @@ void twtm_test_gather_samples(uint32_t nx, uint32_t nw, bool_t verbose)
     double *xs = talloc(ns_max, double);
     uint64_t *ws = talloc(ns_max, uint64_t);
     
-    for (int32_t which_sort = 0; which_sort < 3; which_sort++)
+    for (uint32_t which_sort = 0; which_sort < 3; which_sort++)
       { 
         if (debug) { fprintf(stderr, "  ...... which_sort = %d ......\n",  which_sort); }
         
@@ -303,7 +303,7 @@ void twtm_test_median_unsorted(uint32_t n, bool_t verbose)
     uint32_t *kx = talloc(ns_max, uint32_t);
 
     /* Compute median with and without interpolation: */
-    for (int32_t ki = 0; ki < 2; ki++)
+    for (uint32_t ki = 0;  ki < 2; ki++)
       { bool_t interp = (ki != 0);
         if (verbose) { fprintf(stderr, "  interp = %c\n", "FT"[interp]); }
 
@@ -344,13 +344,13 @@ void test_wt_median_window_index_set_update(uint32_t nx, uint32_t nw, bool_t ver
     if (verbose && (nw <= 15)) { twtm_prkx("initial", nw0, kx, UINT32_MAX); }
 
     uint32_t nupd = 10; /* Number of updates to try. */
-    for (int32_t kupd = 0; kupd < nupd; kupd++)
+    for (uint32_t kupd = 0; kupd < nupd; kupd++)
       { if (verbose) { fprintf(stderr, "  ...... update %d ......\n", kupd); }
         /* Paranoia: */
         demand(nw0 <= nx, "window size {nw0} too big for sample vector");
 
         /* Save a copy {kx0[1..nws-1]} of initial {kx[0..nw0-1]}: */
-        for (int32_t ik = 0; ik < nw0; ik++) { kx0[ik] = kx[ik]; }
+        for (uint32_t ik = 0;  ik < nw0; ik++) { kx0[ik] = kx[ik]; }
         
         /* Pick a new sub-window {ix1..ix1+nw1-1} that possibly overlaps with {ix0..ix0+nw0-1}: */
         uint32_t nw1 = (uint32_t)((2*nw0*kupd)/(nupd-1));
@@ -386,8 +386,8 @@ void twtm_check_index_set_update
     
     /* Set {given[jx]} to true iff {jx} appears in {kx0[0..nw0-1]}: */
     bool_t given[nx];
-    for (int32_t jx = 0; jx < nx; jx++) { given[jx] = FALSE; }
-    for (int32_t ik = 0; ik < nw0; ik++) 
+    for (uint32_t jx = 0;  jx < nx; jx++) { given[jx] = FALSE; }
+    for (uint32_t ik = 0;  ik < nw0; ik++) 
       { uint32_t jxi = kx0[ik];
         demand((jxi >= 0) && (jxi < nx), "invalid index in {kx0}");
         demand(! given[jxi], "repeated indices in {kx0}");
@@ -396,8 +396,8 @@ void twtm_check_index_set_update
 
     /* Check {kx1[0..kn1-1]}: */
     bool_t seen[nx]; /* To check that {kx1[0..nw1-1]} are all distinct. */
-    for (int32_t jx = 0; jx < nx; jx++) { seen[jx] = FALSE; }
-    for (int32_t ik = 0; ik < nw1; ik++)
+    for (uint32_t jx = 0;  jx < nx; jx++) { seen[jx] = FALSE; }
+    for (uint32_t ik = 0;  ik < nw1; ik++)
       { uint32_t jxi = kx1[ik];
         demand((jxi >= ix1) && (jxi <= ix1 + nw1 - 1), "{kx1[ik]} outside window index range");
         demand(! seen[jxi], "repated index in {kx1}");
@@ -427,7 +427,7 @@ uint32_t twtm_choose_num_samples(uint32_t ktry, uint32_t nx_max)
 
 void twtm_choose_samples(uint32_t nx, double xmax, double x[])
   { 
-    for (int32_t i = 0; i < nx; i++) 
+    for (uint32_t i = 0;  i < nx; i++) 
       { x[i] = dabrandom(-xmax,+xmax);
         assert(fabs(x[i]) <= xmax);
       }
@@ -436,7 +436,7 @@ void twtm_choose_samples(uint32_t nx, double xmax, double x[])
 void twtm_choose_sorted_samples(uint32_t nx, double xmax, double x[])
   { 
     double xr = 0.999*xmax*(nx == 1 ? 1.0 : 1.0/(nx+1)); /* Max perturbation to each sample. */
-    for (int32_t i = 0; i < nx; i++) 
+    for (uint32_t i = 0;  i < nx; i++) 
       { double xc = (2*((double)i+1)/(nx+1) - 1.0)*xmax;
         x[i] = xc + dabrandom(-xr, +xr);
         assert(fabs(x[i]) <= xmax);
@@ -450,7 +450,7 @@ void twtm_choose_distinct_samples(uint32_t nx, double xmax, double x[])
     twtm_choose_sorted_samples(nx,xmax, x);
     if (nx >= 2)
       { /* Randomly permute them: */
-        for (int32_t i = 0; i < nx; i++)
+        for (uint32_t i = 0; i < nx; i++)
           { uint32_t k = uint32_abrandom(i, (uint32_t)(nx-1));
             if (k != i) { double t = x[k]; x[k] = x[i]; x[i] = t; }
           }
@@ -474,7 +474,7 @@ void twtm_choose_weights(uint32_t nw, uint64_t wmin, uint64_t wmax, uint64_t w[]
   { demand(wmin < wmax, "bad or trivial range {wmin_wmax}");
     uint64_t dw = (wmax - wmin)/100;
     if ((wmax-wmin >= 2) && (dw == 0)) { dw = 1; }
-    for (int32_t kw = 0; kw < nw; kw++)
+    for (uint32_t kw = 0; kw < nw; kw++)
       { uint32_t p = (kw % 5);
         if (p == 1)
           { w[kw] = wmin; }
@@ -497,7 +497,7 @@ uint32_t twtm_choose_indices(uint32_t nx, uint32_t nk, uint32_t kx[])
     if (nk == 1)
       { kx[0] = jx0; }
     else
-      { for (int32_t ik = 0; ik < nk; ik++)
+      { for (uint32_t ik = 0; ik < nk; ik++)
           { /* Generate {kx[ik] By interpolation: */
             kx[ik] = jx0 + ik; 
             /* Shuffle it: */
@@ -523,7 +523,7 @@ void twtm_check_median
     if (verbose) { fprintf(stderr, "    ns = %d sorted = %c interp = %c\n", ns, "FT"[sorted], "FT"[interp]); }
     if (sorted)
       { /* Check strict order of {xs[0..ns-1]} and positive weights: */
-        for (int32_t ks = 0; ks < ns; ks++)
+        for (uint32_t ks = 0;  ks < ns; ks++)
           { demand(ws[ks] > 0, "invalid weights");
             if (ks > 0) { demand(xs[ks] > xs[ks-1], "samples not sorted"); }
           }
@@ -540,7 +540,7 @@ void twtm_check_median
     /* Upper bound value {shi}, its condensed weight {whi}. and its above-sum {Shi}. */
     double xhi = +INF; uint64_t whi = 0; int64_t Shi = 0;
     
-    for (int32_t ks = 0; ks < ns; ks++)
+    for (uint32_t ks = 0;  ks < ns; ks++)
       { int64_t Sall = Slo + Seq + Shi;
         if (debug) 
           { fprintf(stderr, "    ...... iteration %d ......\n", ks);
@@ -640,15 +640,15 @@ void twtm_check_gather_samples
   )
   { 
     int64_t wsum_org = 0; /* Sum of all given weights. */
-    for (int32_t kw = 0; kw < nw; kw++) { wsum_org += (int64_t)(w[kw]); }
+    for (uint32_t kw = 0;  kw < nw; kw++) { wsum_org += (int64_t)(w[kw]); }
     int64_t wsum_chk = 0; /* Sum of the condensed weights. */
     double xs_prev = -INF;
-    for (int32_t ks = 0; ks < ns; ks++)
+    for (uint32_t ks = 0;  ks < ns; ks++)
       { double xsk = xs[ks];
         demand(isfinite(xsk), "condensed sample is infinite or {NAN}");
         demand(xsk > xs_prev, "condensed samples out of order");
         uint64_t wsk_chk = 0;
-        for (int32_t ik = 0; ik < nw; ik++)
+        for (uint32_t ik = 0;  ik < nw; ik++)
           { uint32_t jx = kx[ik];
             demand((jx >= 0) && (jx < nx), "invalid index in {kx}");
             uint32_t iw = kx[ik] - ix;
@@ -664,7 +664,7 @@ void twtm_check_gather_samples
 
 void twtm_prxsws(uint32_t ns, char *xname, double xs[], char *wname, uint64_t ws[])      
   { fprintf(stderr, "\n");
-    for (int32_t k = 0; k < ns; k++)
+    for (uint32_t k = 0;  k < ns; k++)
       { fprintf(stderr, "  %s[%4d] = %+22.14f = %+23.16e", xname, k, xs[k], xs[k]);
         fprintf(stderr, "  %s[%4d] = %22lu", wname, k, ws[k]);
         fprintf(stderr, "\n");
@@ -675,13 +675,13 @@ void twtm_prxsws(uint32_t ns, char *xname, double xs[], char *wname, uint64_t ws
 void twtm_prkxw(char *xname, uint32_t nx, double x[], char *wname, uint32_t nw, uint64_t w[], char *kname, uint32_t k[])      
   { fprintf(stderr, "  nx = %d  nw = %d\n", nx, nw);
     fprintf(stderr, "  %s[0..%d] =     ", kname, nw-1);
-    for (int32_t j = 0; j < nw; j++) { fprintf(stderr, " %22u", k[j]); }
+    for (uint32_t j = 0;  j < nw; j++) { fprintf(stderr, " %22u", k[j]); }
     fprintf(stderr, "\n");
     fprintf(stderr, "  %s[%s[0..%d]] =  ", xname, kname, nw-1);
-    for (int32_t j = 0; j < nw; j++) { fprintf(stderr, " %+22.14f = %+24.16e", x[k[j]], x[k[j]]); }
+    for (uint32_t j = 0;  j < nw; j++) { fprintf(stderr, " %+22.14f = %+24.16e", x[k[j]], x[k[j]]); }
     fprintf(stderr, "\n");
     fprintf(stderr, "  %s[0..%d] =     ", wname, nw-1);
-    for (int32_t j = 0; j < nw; j++) { fprintf(stderr, " %22lu", w[j]); }
+    for (uint32_t j = 0;  j < nw; j++) { fprintf(stderr, " %22lu", w[j]); }
     fprintf(stderr, "\n");
   }
      
@@ -689,16 +689,16 @@ void twtm_prxw(char *xname, uint32_t nx, double x[], uint32_t ix, char *wname, u
   { uint32_t jx = ix+nw-1;
     fprintf(stderr, "  n = %d\n", nw);
     fprintf(stderr, "  %s[%d..%d] = ", xname, ix, jx);
-    for (int32_t k = 0; k < nw; k++) { fprintf(stderr, " %+22.14f", x[ix + k]); }
+    for (uint32_t k = 0; k < nw; k++) { fprintf(stderr, " %+22.14f", x[ix + k]); }
     fprintf(stderr, "\n");
     fprintf(stderr, "  %s[0..%d] = ", wname, nw-1);
-    for (int32_t k = 0; k < nw; k++) { fprintf(stderr, " %22lu", w[k]); }
+    for (uint32_t k = 0;  k < nw; k++) { fprintf(stderr, " %22lu", w[k]); }
     fprintf(stderr, "\n");
   }
         
 void twtm_prkx(char *xname, uint32_t nk, uint32_t kx[], uint32_t nkept)
   { fprintf(stderr, "  %s kx[0..%d] =", xname, nk-1); 
-    for (int32_t k = 0; k < nk; k++) 
+    for (uint32_t k = 0;  k < nk; k++) 
       { if (k == nkept) { fprintf(stderr, " |"); }
         fprintf(stderr, " %d", kx[k]);
       }

@@ -1,5 +1,5 @@
-# Geometry and linear algebra routines
-# Last edited on 2010-06-02 23:06:05 by stolfi
+# Image Foresting Transform (IFT) algorithms
+# Last edited on 2024-11-30 06:28:40 by stolfi
 
 LIBNAME = libift
 

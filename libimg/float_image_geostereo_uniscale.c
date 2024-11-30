@@ -52,8 +52,8 @@ void float_image_geostereo_uniscale
     wt_table_normalize_sum(nwx, wtx);
     double wty[nwy]; wt_table_binomial_fill(nwy, wty, NULL);
     wt_table_normalize_sum(nwy, wty);
-    for (int32_t iy = 0; iy < nwy; iy++)
-      { for (int32_t ix = 0; ix < nwx; ix++)
+    for (uint32_t iy = 0;  iy < nwy; iy++)
+      { for (uint32_t ix = 0;  ix < nwx; ix++)
           { wt[ix + nwx*iy] = wtx[ix]*wty[iy]; }
       }
     
@@ -66,8 +66,8 @@ void float_image_geostereo_uniscale
     (*fs) = float_image_new(ncands, NX, NY);
 
     /* Compute dispmap/scoremap: */
-    for (int32_t y = 0; y < NY; y++)
-      { for (int32_t x = 0; x < NX; x++)
+    for (uint32_t y = 0;  y < NY; y++)
+      { for (uint32_t x = 0;  x < NX; x++)
          { bool_t debug = ((x == HDEBUG) && (y == VDEBUG));
            float_image_geostereo_single_pixel_best
              ( f1, f2, 
@@ -80,7 +80,7 @@ void float_image_geostereo_uniscale
              );
 
            /* Store best candidates in heigh map and score map: */
-           for (int32_t rk = 0; rk < ncands; rk++)
+           for (uint32_t rk = 0;  rk < ncands; rk++)
              { float_image_set_sample((*fd), rk, x, y, (float)dbest[rk]);
                float_image_set_sample((*fs), rk, x, y, (float)sbest[rk]);
              }

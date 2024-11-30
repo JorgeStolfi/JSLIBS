@@ -30,7 +30,7 @@ int32_t *drtree_count_children(int32_t ni, drtree_node_t dt[])
     demand((ni >= 0) && (ni < drtree_indivs_MAX), "invalid {ni}");
     
     int32_t *nch = (int32_t *)notnull(malloc(ni*sizeof(int32_t)), "no mem");
-    for (int32_t iq = 0; iq < ni; iq++) { nch[iq] = 0; }
+    for (uint32_t iq = 0;  iq < ni; iq++) { nch[iq] = 0; }
     
     /* Scan in reverse chrono order, defining the {nch} fields: */
     for (int32_t iq = ni-1; iq >= 0; iq--)
@@ -64,7 +64,7 @@ drtree_node_t *drtree_clip_time_range
     demand(tMin < tMax, "invalid {tMin..tMax}");
 
     drtree_node_t *dc = (drtree_node_t*)notnull(malloc(ni*sizeof(drtree_node_t)), "no mem");
-    for (int32_t iq = 0; iq < ni; iq++)
+    for (uint32_t iq = 0;  iq < ni; iq++)
       { drtree_node_t *q_in = &(dt[iq]);
         drtree_node_t *q_ot = &(dc[iq]);
         if (drtree_node_is_null(q_in))
@@ -106,7 +106,7 @@ void drtree_check_nodes
   {
     demand((ni >= 0) && (ni < drtree_indivs_MAX), "invalid {ni}");
     demand(tMin < tMax, "invalid {tMin..tMax}");
-    for (int32_t iq = 0; iq < ni; iq++)
+    for (uint32_t iq = 0;  iq < ni; iq++)
       { drtree_node_t *q = &(dt[iq]);
         if (drtree_node_is_null(q))
           { /*Life span must be empty: */

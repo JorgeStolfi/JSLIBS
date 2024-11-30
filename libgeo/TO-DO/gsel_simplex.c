@@ -83,7 +83,7 @@ void qms_project_simplex(int32_t m, int32_t n, double M[], double p[], double x[
       /* Writes to {wr} the current active and inactive lists. */
     
     /* Start with all variables inactive, turn them on one at a time. */
-    for (int32_t i = 0; i < n; i++) { sit[i] = i; pos[i] = i; x[i] = 0.0; }
+    for (uint32_t i = 0;  i < n; i++) { sit[i] = i; pos[i] = i; x[i] = 0.0; }
     na = 0;
 
     /* Iterate until conditions (1)-(3) are satisfied for column {k}: */
@@ -96,7 +96,7 @@ void qms_project_simplex(int32_t m, int32_t n, double M[], double p[], double x[
 
         if (debug) { fprintf(stderr, "  - - - - - - - - - - - - - - - - - - - - - - - - - - -\n"); }
         if (debug) { fprintf(stderr, "  nok = %d\n", nok); }
-        if (debug) { gsel_print_array(stderr, 4, "%9.5f", "current solution:",  n, 1,"x",x, ""); }
+        if (debug) { gauss_elim_print_array(stderr, 4, "%9.5f", "current solution:",  n, 1,"x",x, ""); }
         if (debug) { print_sets(stderr); }
 
         /* Check variable {inext} for  (3), if not satisfied do something about it: */
@@ -281,18 +281,18 @@ void qms_project_simplex(int32_t m, int32_t n, double M[], double p[], double x[
           }
         /* Solve subsystem: */
         double ua[na];
-        if (debug) { gsel_print_array(stderr, 4, "%9.5f", "subsystem:",  na, na+1,"Ab",Ab, ""); }
-        gsel_triangularize(na, na+1, Ab, TRUE, 0.0);
-        gsel_diagonalize(na, na+1, Ab);
-        gsel_normalize(na, na+1, Ab);
-        int32_t rank_ext = gsel_extract_solution(na, na+1, Ab, 1, ua);
-        if (debug) { gsel_print_array(stderr, 4, "%9.5f", "subsystem's solution:",  na, 1,"ua",ua, ""); }
+        if (debug) { gauss_elim_print_array(stderr, 4, "%9.5f", "subsystem:",  na, na+1,"Ab",Ab, ""); }
+        gauss_elim_triangularize(na, na+1, Ab, TRUE, 0.0);
+        gauss_elim_diagonalize(na, na+1, Ab);
+        gauss_elim_normalize(na, na+1, Ab);
+        int32_t rank_ext = gauss_elim_extract_solution(na, na+1, Ab, 1, ua);
+        if (debug) { gauss_elim_print_array(stderr, 4, "%9.5f", "subsystem's solution:",  na, 1,"ua",ua, ""); }
         arrsert(rank_ext <= na);
         /* Unpack {ua} into {u}: */
         int32_t i;
         for (i = 0; i < n; i++)
           { int32_t ia = sit[i]; u[i] = (ia < na ? ua[ia] : 0.0); }
-        if (debug) { gsel_print_array(stderr, 4, "%9.5f", "new solution:",  n, 1,"u",u, ""); }
+        if (debug) { gauss_elim_print_array(stderr, 4, "%9.5f", "new solution:",  n, 1,"u",u, ""); }
       }
     
     void find_first_obstacle(double *u, double *v, int32_t *job, double *sob)

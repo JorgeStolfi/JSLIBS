@@ -58,7 +58,7 @@ void neuromat_eeg_header_free(neuromat_eeg_header_t *h)
   {
     if (h->chname != NULL)
       { demand(h->nc > 0, "cannot have {chname} without {nc}");
-        for (int32_t ic = 0; ic < h->nc; ic++) { free(h->chname[ic]); }
+        for (uint32_t ic = 0;  ic < h->nc; ic++) { free(h->chname[ic]); }
         free(h->chname);
       }
     if (h->rebase_wt != NULL) { free(h->rebase_wt); }
@@ -72,7 +72,7 @@ void neuromat_eeg_header_write(FILE *wr, neuromat_eeg_header_t *h)
     if (h->chname != NULL) 
       { demand(h->nc > 0, "cannot have {channels} without {nc}");
         fprintf(wr, "channels =");
-        for (int32_t ic = 0; ic < h->nc; ic++) { fprintf(wr, " %s", h->chname[ic]); }
+        for (uint32_t ic = 0;  ic < h->nc; ic++) { fprintf(wr, " %s", h->chname[ic]); }
         fprintf(wr, "\n");
       }   
     if (h->kfmax != INT32_MIN) { neuromat_eeg_header_write_field_int(wr, "", "kfmax", h->kfmax, 0, INT32_MAX-1); }   
@@ -100,7 +100,7 @@ void neuromat_eeg_header_write(FILE *wr, neuromat_eeg_header_t *h)
     if (h->rebase_wt != NULL)
       { fprintf(wr, "rebase_wt =");
         double *wt = h->rebase_wt;
-        for (int32_t ie = 0; ie < h->ne; ie++) { fprintf(wr, " %9.7f", wt[ie]); }
+        for (uint32_t ie = 0;  ie < h->ne; ie++) { fprintf(wr, " %9.7f", wt[ie]); }
         fprintf(wr, "\n");
       }
     neuromat_eeg_source_write(wr, "orig.", h->orig);
@@ -179,7 +179,7 @@ neuromat_eeg_header_t *neuromat_eeg_header_read(FILE *rd, int32_t neDef, double 
         assert(h->ne == ne_full);
         if (verbose)
           { fprintf(stderr, "channel names = ");
-            for (int32_t ie = 0; ie < h->ne; ie++) 
+            for (uint32_t ie = 0;  ie < h->ne; ie++) 
               { fprintf(stderr, " %d=%s", ie, h->chname[ie]); }
             fprintf(stderr, "\n");
           }
@@ -240,12 +240,12 @@ void neuromat_eeg_header_merge_double_vec(int32_t ne, double **dst, double *src,
     if (src == NULL) { return; }
     if ((*dst) == NULL)
       { double *wt = rn_alloc(ne);
-        for (int32_t ie = 0; ie < ne; ie++) { wt[ie] = src[ie]; }
+        for (uint32_t ie = 0;  ie < ne; ie++) { wt[ie] = src[ie]; }
         (*dst) = wt;
       }
     else
       { double *wt = (*dst);
-        for (int32_t ie = 0; ie < ne; ie++) 
+        for (uint32_t ie = 0;  ie < ne; ie++) 
           { if (wt[ie] != src[ie]) 
               { fprintf(stderr, "** mismatch in field %s: dst = %24.16e  src = %24.16e\n", name, wt[ie], src[ie]);
                 assert(FALSE);
@@ -299,7 +299,7 @@ void neuromat_eeg_header_merge_strings(int32_t n, char ***dst, char **src, char 
     assert(n != INT32_MIN);
     if ((*dst) == NULL)
       { char **cop = notnull(malloc(n*sizeof(char *)), "no mem");
-        for (int32_t i = 0; i < n; i++) 
+        for (uint32_t i = 0;  i < n; i++) 
           { assert(src[i] != NULL);
             cop[i] = txtcat(src[i], "");
           }
@@ -307,7 +307,7 @@ void neuromat_eeg_header_merge_strings(int32_t n, char ***dst, char **src, char 
       }
     else
       { char **old = (*dst);
-        for (int32_t i = 0; i < n; i++) 
+        for (uint32_t i = 0;  i < n; i++) 
         if (strcmp(old[i], src[i]) != 0) 
           { fprintf(stderr, "** mismatch in field %s[%d]: dst = %s  src = %s\n", name, i, old[i], src[i]);
             assert(FALSE);
@@ -419,7 +419,7 @@ void neuromat_eeg_header_read_field_value(FILE *rd, char *name, neuromat_eeg_hea
     else if (strcmp(name, "rebase_wt") == 0) 
       { demand(h->ne != INT32_MIN, "{rebase_wt} in file header before {ne}");
         double *wt = rn_alloc(h->ne);
-        for (int32_t ie = 0; ie < h->ne; ie++) 
+        for (uint32_t ie = 0;  ie < h->ne; ie++) 
           { wt[ie] = fget_double(rd);
             demand(wt[ie] >= 0 && wt[ie] <= 1.0, "invalid rebase weight");
           }

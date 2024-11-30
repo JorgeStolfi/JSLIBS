@@ -1,12 +1,15 @@
-#ifndef indexing_H
-#define indexing_H
+#ifndef ix_H
+#define ix_H
 
 /* Multidimensional array indexing tools */
-/* Last edited on 2024-11-16 12:11:20 by stolfi */
+/* Last edited on 2024-11-23 05:49:05 by stolfi */
+
+#include <stdint.h>
 
 #include <bool.h>
 #include <sign.h>
-#include <stdint.h>
+#include <ix_types.h>
+#include <ix_reduce.h>
 
 /* !!! Eliminate {reverse} since one can use {ix_flip}. !!! */
 
@@ -71,35 +74,6 @@
   client. In particular, the `position' may be a memory (byte)
   address, a a bit address, an index into some vector, or something
   else entirely. */
-
-/* DATA TYPES */
-
-typedef uint8_t ix_dim_t;
-  /* Type for the number of indices {d}. */
-
-typedef uint8_t ix_axis_t;
-  /* Type for axis number, or index of an index, usually from 0 to {d-1}. */
-
-typedef uint64_t ix_size_t;
-  /* Type for the size {sz[i]} of an array along some axis. */
-
-typedef int64_t ix_index_t;
-  /* Type for individual array element indices {ix[i]}.
-    They may be negative on occasion (e.g. in reverse 'for' loops).  */
-
-typedef int64_t ix_step_t; 
-  /* Type for position steps {st[i]} along any axis. It is signed
-    to allow for array flipping. */
-
-typedef uint64_t ix_pos_t; 
-  /* Type for element positions.  It must be always in the range {0..N-1}
-    where {N} is the number of elements spanned by the original array. */
-
-#define ix_pos_NONE (UINT64_MAX)
-  /* An {ix_pos_t} value that means "no such element". */
-
-typedef uint64_t ix_count_t;
-  /* A count of the number of elements in an array. */
 
 /* ELEMENT INDEXING */
 
@@ -717,25 +691,7 @@ bool_t ix_positions_are_distinct
     with an error message (if {die=TRUE}) or returns FALSE (if
     {die=FALSE}). */
 
-/* INDEX RANGE REDUCTION */
-
-typedef enum
-  { ix_reduction_SINGLE,  /* ... *,*,*,0,1,2,3,4,5,*,*,*,*,*,*,*,*,*,* ... */
-    ix_reduction_EXTEND,  /* ... 0,0,0,0,1,2,3,4,5,5,5,5,5,5,5,5,5,5,5 ... */
-    ix_reduction_REPEAT,  /* ... 3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3 ... */
-    ix_reduction_MIRROR,  /* ... 2,1,0,0,1,2,3,4,5,5,4,3,2,1,0,0,1,2,3 ... */
-    ix_reduction_PXMIRR   /* ... 3,2,1,0,1,2,3,4,5,4,3,2,1,0,1,2,3,4,5 ... */
-  } ix_reduction_t;
-#define ix_reduction_FIRST ix_reduction_SINGLE
-#define ix_reduction_LAST  ix_reduction_PXMIRR
-  /* A mapping from unrestricted {ix_index_t} values (positive or negative) to 
-    integers in some range {0..N-1}.  The comments above illustrate each mapping
-    for {N=6} and various indices from {-3} to {+15}.  The code '*' denotes {-1}. */
-
-ix_index_t ix_reduce ( ix_index_t i, ix_size_t N, ix_reduction_t red );
-  /* Returns the index {i} reduced to {0..N-1} as specified by {red} */
-
-void ix_reduce_range ( ix_index_t i0, ix_size_t m, ix_size_t N, ix_reduction_t red, ix_index_t i[] );
+void ix_reduce_range ( ix_index_t i0, ix_size_t m, ix_size_t N, ix_reduce_mode_t red, ix_index_t i[] );
   /* Stores into {i[0..m-1]} the indices {i0..i0+m-1} reduced to {0..N-1} as specified by {red}. */
 
 /* LIMITS */

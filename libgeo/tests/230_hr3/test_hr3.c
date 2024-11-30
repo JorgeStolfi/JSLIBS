@@ -40,7 +40,7 @@ int32_t main (int32_t argc, char **argv)
     srand(1993);
     srandom(1933);
 
-    for (int32_t i = 0; i < 100; i++) test_hr3(i < 3);
+    for (uint32_t i = 0;  i < 100; i++) test_hr3(i < 3);
     fclose(stderr);
     fclose(stdout);
     return (0);
@@ -77,7 +77,7 @@ void test_hr4_to_from_r3(bool_t verbose)
     pc = r3_from_hr3(&p);
     hr3_point_t q = hr3_from_r3(&pc);
     { double tol = fabs(p.c.c[0])*1.0e-12;
-      for (int32_t i = 1; i <= NC; i++)
+      for (uint32_t i = 1;  i <= NC; i++)
         { double di = q.c.c[i]*p.c.c[0] - p.c.c[i];
           affirm(fabs(di) < tol, "r3_from_hr3 error(1)");
         }
@@ -121,7 +121,7 @@ void test_hr3_pt_pt_diff(bool_t verbose)
       double dob = hr3_pt_pt_diff(&p, &q); /* Actual. */
       hr3_test_check_eps(dob, dex, 1.0e-8, "hr3_pt_pt_diff error(3)");
       /* Check invariance under rotations: */
-      for (int32_t i = 0; i < NH; i++)
+      for (uint32_t i = 0;  i < NH; i++)
         { uint32_t j = (i + 1) % NH; /* Another axis. */
           /* Rotate {p,q} by a random angle in {R^3} parallel to plane {i,j}: */
           double ang = 2*M_PI*drandom();
@@ -202,7 +202,7 @@ void test_hr3_point_from_three_planes(bool_t verbose)
     hr3_point_t q; q.c = K.f;
     hr3_point_t r; r.c = J.f;
     hr3_plane_t Lj = hr3_plane_from_three_points(&p, &q, &r);
-    for (int32_t i = 0; i < NH; i++)
+    for (uint32_t i = 0;  i < NH; i++)
       { check_eq(pm.c.c[i], Lj.f.c[i], "hr3_point_from_three_planes error(1)"); }
   }
     
@@ -217,7 +217,7 @@ void test_hr3_point_point_dir(bool_t verbose)
       r3_t vpq;
       r3_sub(&qc, &pc, &vpq);
       r3_dir(&vpq, &vpq);
-      for (int32_t i = 0; i < NC; i++)
+      for (uint32_t i = 0;  i < NC; i++)
         { hr3_test_check_eps(upq.c[i], vpq.c[i], 1.0e-12, "hr3_point_point_dir error"); }
     }
   }
@@ -231,7 +231,7 @@ void test_hr3_plane_normal(bool_t verbose)
       double mLmag = r3_dir(&mL, &mL);
       assert(mLmag != 0);
       double tol = 1.0e-12;
-      for (int32_t i = 0; i < NC; i++)
+      for (uint32_t i = 0;  i < NC; i++)
         { hr3_test_check_eps(nL.c[i], mL.c[i], tol, "hr3_plane_normal error"); }
     }
   }

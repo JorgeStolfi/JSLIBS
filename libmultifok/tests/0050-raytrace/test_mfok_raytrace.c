@@ -235,7 +235,7 @@ void mfrs_make_and_write_image
         double zscale = -pR->c[2]/dR->c[2];
         r2_t q = (r2_t){{ pR->c[0] + dR->c[0]*zscale, pR->c[1] + dR->c[1]*zscale }};
         if ((q.c[0] < 0) || (q.c[0] > NX) || (q.c[1] < 0) || (q.c[1] > NY))
-          { for (int32_t ic = 0; ic < NC; ic++) { colr[ic] = 0.0; } }
+          { for (uint32_t ic = 0;  ic < NC; ic++) { colr[ic] = 0.0; } }
         else
           { fimg(&q, NC, NX, NY, colr); }
         r3_t pHit = (r3_t){{ q.c[0], q.c[1], 0.0 }};

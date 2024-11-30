@@ -46,7 +46,7 @@ int32_t neuromat_eeg_frame_read(FILE *rd, int32_t nc, double frm[], int32_t *nlP
             else
               { /* Parse the data values, store in {frm}: */
                 ungetc(r, rd);
-                for (int32_t ic = 0; ic < nc; ic++) { frm[ic] = fget_double(rd); }
+                for (uint32_t ic = 0;  ic < nc; ic++) { frm[ic] = fget_double(rd); }
                 (void)fget_skip_and_test_char(rd, '\015');
                 fget_comment_or_eol(rd, '#', NULL);
               }
@@ -142,7 +142,7 @@ void neuromat_eeg_data_write
 
 void neuromat_eeg_frame_write(FILE *wr, int32_t nc, double val[], char *fmt)
   { if ((fmt == NULL) || (strchr(fmt,'%') == NULL)) { fmt = "%14.8e"; }
-    for (int32_t ic = 0; ic < nc; ic++) 
+    for (uint32_t ic = 0;  ic < nc; ic++) 
       { fputc(' ', wr); fprintf(wr, fmt, val[ic]); }
     fprintf(wr, "\n");
   }
@@ -159,7 +159,7 @@ void neuromat_eeg_frame_print
   )
   { if (pre != NULL) { fprintf(wr, "%s", pre); }
     if ((fmt == NULL) || (strchr(fmt,'%') == NULL)) { fmt = "%14.8e"; }
-    for (int32_t i = 0; i < nc; i++)
+    for (uint32_t i = 0;  i < nc; i++)
       { if ((i > 0) && (sep != NULL)) { fprintf(wr, "%s", sep); } 
         if (chname != NULL) { fprintf(wr, "%s = ", chname[i]); }
         fprintf(wr, fmt, val[i]);

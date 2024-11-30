@@ -57,7 +57,7 @@ void do_check_i2_coll(i2_t *u, i2_t *v, char *msg, char *file, int32_t lnum, con
     int32_t ug = (int32_t)gcd((uint64_t)abs(u->c[0]), (uint64_t)abs(u->c[1])); 
     int32_t vg = (int32_t)gcd((uint64_t)abs(v->c[0]), (uint64_t)abs(v->c[1])); 
     demand((ug == 0) == (vg == 0), msg);
-    for (int32_t i =  0; i < NC; i++) { do_check_eq(u->c[i]/ug, v->c[i]/vg, msg, file, lnum, func); }
+    for (uint32_t i = 0;  i < NC; i++) { do_check_eq(u->c[i]/ug, v->c[i]/vg, msg, file, lnum, func); }
   }
 
 void do_check_i3_coll(i3_t *u, i3_t *v, char *msg, char *file, int32_t lnum, const char *func)
@@ -65,7 +65,7 @@ void do_check_i3_coll(i3_t *u, i3_t *v, char *msg, char *file, int32_t lnum, con
     int32_t ug = (int32_t)gcd(gcd((uint64_t)abs(u->c[0]), (uint64_t)abs(u->c[1])), (uint64_t)abs(u->c[2])); 
     int32_t vg = (int32_t)gcd(gcd((uint64_t)abs(v->c[0]), (uint64_t)abs(v->c[1])), (uint64_t)abs(u->c[2]));  
     demand((ug == 0) == (vg == 0), msg);
-    for (int32_t i =  0; i < NH; i++) { do_check_eq(u->c[i]/ug, v->c[i]/vg, msg, file, lnum, func); }
+    for (uint32_t i = 0;  i < NH; i++) { do_check_eq(u->c[i]/ug, v->c[i]/vg, msg, file, lnum, func); }
   }
 
 /* Internal prototypes */
@@ -96,8 +96,8 @@ int32_t main (int32_t argc, char **argv)
     srand(1993);
     srandom(1993);
 
-    for (int32_t i =  0; i < 100; i++) test_hi2(i < 3);
-    /* for (int32_t i =  0; i < 100; i++) test_hi2_pmap(i < 3); */
+    for (uint32_t i = 0;  i < 100; i++) test_hi2(i < 3);
+    /* for (uint32_t i = 0;  i < 100; i++) test_hi2_pmap(i < 3); */
     fclose(stderr);
     fclose(stdout);
     return (0);
@@ -150,13 +150,13 @@ void test_hi2(bool_t verbose)
       
       /* Move {p,q} to the hither or infinity, count flips in {spq}: */
       sign_t spq = +1;
-      if (p.c.c[0] < 0) { spq = -spq; for (int32_t i = 0; i < NH; i++) { p.c.c[i] = -p.c.c[i]; }}
-      if (q.c.c[0] < 0) { spq = -spq; for (int32_t i = 0; i < NH; i++) { q.c.c[i] = -q.c.c[i]; }}
+      if (p.c.c[0] < 0) { spq = -spq; for (uint32_t i = 0;  i < NH; i++) { p.c.c[i] = -p.c.c[i]; }}
+      if (q.c.c[0] < 0) { spq = -spq; for (uint32_t i = 0;  i < NH; i++) { q.c.c[i] = -q.c.c[i]; }}
 
       /* Adjust {p,q} to the same weight: */
       int32_t pw = p.c.c[0]; assert(pw >= 0);
       int32_t qw = q.c.c[0]; assert(qw >= 0);
-      for (int32_t i = 0; i < NH; i++) { p.c.c[i] *= qw; q.c.c[i] *= pw; }
+      for (uint32_t i = 0;  i < NH; i++) { p.c.c[i] *= qw; q.c.c[i] *= pw; }
       
       /* Now get the direction vector: */
       i2_t vpq = (i2_t){{ spq*(q.c.c[1] - p.c.c[1]), spq*(q.c.c[2] - p.c.c[2]) }};
@@ -210,7 +210,7 @@ void test_hi2(bool_t verbose)
       /* Adjust {p,q} to the same weight: */
       int32_t pw = p.c.c[0]; assert(pw >= 0);
       int32_t qw = q.c.c[0]; assert(qw >= 0);
-      for (int32_t i = 0; i < NH; i++) { p.c.c[i] *= qw; q.c.c[i] *= pw; }
+      for (uint32_t i = 0;  i < NH; i++) { p.c.c[i] *= qw; q.c.c[i] *= pw; }
       assert(p.c.c[0] >= 0);
       assert(q.c.c[0] >= 0);
       assert(p.c.c[0] == q.c.c[0]);
@@ -335,8 +335,8 @@ void test_hi2(bool_t verbose)
 //     // i2x2_map_col(&A, &a, &c);
 //     // i2_zero(&bb);
 //     // i2_zero(&cc);
-//     // for (int32_t i =  0; i < N; i++)
-//     //   { for (int32_t j =  0; j < N; j++)
+//     // for (uint32_t i = 0;  i < N; i++)
+//     //   { for (uint32_t j = 0;  j < N; j++)
 //     //       { bb.c[j] += a.c[i] * A.c[i][j];
 //     //         cc.c[i] += A.c[i][j] * a.c[j];
 //     //       }
@@ -350,10 +350,10 @@ void test_hi2(bool_t verbose)
 //     // throw_matrix(&A);
 //     // throw_matrix(&B);
 //     // i2x2_mul(&A, &B, &C);
-//     // for (int32_t i =  0; i < N; i++)
-//     //   { for (int32_t j =  0; j < N; j++)
+//     // for (uint32_t i = 0;  i < N; i++)
+//     //   { for (uint32_t j = 0;  j < N; j++)
 //     //       { double sum = 0.0;
-//     //         for (int32_t k =  0; k < N; k++) { sum += A.c[i][k]*B.c[k][j]; }
+//     //         for (uint32_t k = 0;  k < N; k++) { sum += A.c[i][k]*B.c[k][j]; }
 //     //         check_eps(C.c[i][j], sum, 0.000000001 * fabs(sum),
 //     //           "i2x2_mul error"
 //     //         );
@@ -362,9 +362,9 @@ void test_hi2(bool_t verbose)
 //     // 
 //     // if (verbose) { fprintf(stderr, "--- i2x2_det ---\n"); }
 //     // throw_matrix(&A);
-//     // for (int32_t i =  0; i < N; i++)
+//     // for (uint32_t i = 0;  i < N; i++)
 //     //   { uint32_t k = (i + 1) % N;
-//     //     for (int32_t j =  0; j < N; j++)
+//     //     for (uint32_t j = 0;  j < N; j++)
 //     //       { /* Check for linearity */
 //     //         r = drandom();
 //     //         A.c[i][j] = r;
@@ -385,7 +385,7 @@ void test_hi2(bool_t verbose)
 //     // 
 //     //     /* Row swap test: */
 //     //     r = i2x2_det(&A);
-//     //     for (int32_t j =  0; j < N; j++)
+//     //     for (uint32_t j = 0;  j < N; j++)
 //     //       { double t = A.c[i][j]; A.c[i][j] = A.c[k][j]; A.c[k][j] = t; }
 //     //     rr = i2x2_det(&A);
 //     //     mag = fabs(r) + fabs(rr);
@@ -393,7 +393,7 @@ void test_hi2(bool_t verbose)
 //     // 
 //     //     /* Col swap test: */
 //     //     r = i2x2_det(&A);
-//     //     for (int32_t j =  0; j < N; j++)
+//     //     for (uint32_t j = 0;  j < N; j++)
 //     //       { double t = A.c[j][i]; A.c[j][i] = A.c[j][k]; A.c[j][k] = t; }
 //     //     rr = i2x2_det(&A);
 //     //     mag = fabs(r) + fabs(rr);
@@ -404,8 +404,8 @@ void test_hi2(bool_t verbose)
 //     // throw_matrix(&A);
 //     // i2x2_inv(&A, &B);
 //     // i2x2_mul(&A, &B, &C);
-//     // for (int32_t i =  0; i < N; i++)
-//     //   { for (int32_t j =  0; j < N; j++)
+//     // for (uint32_t i = 0;  i < N; i++)
+//     //   { for (uint32_t j = 0;  j < N; j++)
 //     //       { double val = (i == j ? 1.0 : 0.0);
 //     //         affirm((C.c[i][j] - val) < 000000001, "i2x2_inv error");
 //     //       }
@@ -424,9 +424,9 @@ void test_hi2(bool_t verbose)
 //   {
 //     uint32_t i, j;
 //     i3_t a;
-//     for (int32_t i =  0; i < NH; i++)
+//     for (uint32_t i = 0;  i < NH; i++)
 //       { i3_throw_cube(trad, &a);
-//         for (int32_t j =  0; j < NH; j++) { m->dir.c[i][j] = a.c[j]; }
+//         for (uint32_t j = 0;  j < NH; j++) { m->dir.c[i][j] = a.c[j]; }
 //       }
 //     i3x3_inv(&(m->dir), &(m->inv));
 //   }

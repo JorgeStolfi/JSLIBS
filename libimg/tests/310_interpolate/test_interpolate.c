@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_interpolate.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-20 06:00:46 by stolfi */ 
+/* Last edited on 2024-11-23 05:38:41 by stolfi */ 
 /* Created on 2009-06-02 by J. Stolfi, UNICAMP */
 
 #define test_interpolate_COPYRIGHT \
@@ -21,7 +21,7 @@
 #include <bool.h>
 #include <jsfile.h>
 #include <affirm.h>
-#include <ix.h>
+#include <ix_reduce.h>
 
 int main(int argn, char **argv);
 
@@ -36,7 +36,7 @@ void do_shift_test
     r2_t ish,            /* Amount already shifted. */
     r2_t dsh,            /* Amount to shift */
     int order,           /* Continuity order. */
-    ix_reduction_t red   /* Index reduction policy. */
+    ix_reduce_mode_t red   /* Index reduction policy. */
   );
   /* Shifts image {iimg} by {dsh}, writes it
    to disk and puts it back into {iimg}. 
@@ -47,7 +47,7 @@ void do_plot_test
     float_image_t *img,  /* Test image. */
     int kx,              /* Column of pulse. */
     int ky,              /* Row of pulse. */
-    ix_reduction_t red   /* Index reduction policy. */
+    ix_reduce_mode_t red   /* Index reduction policy. */
   );
   /* Fills {img} with a blip at column {ix}, row {iy}; then writes a 
     {gnuplot/splot} file with the result of interpolating  that image 
@@ -58,7 +58,7 @@ float_image_t *get_test_image(char *name, int NC);
     "ppm" for {NC==3}.  Then paints over it four angle brackets at the corners
     and a cross at the center. */ 
 
-void write_image(char *name, char *ttag, r2_t *ish, r2_t *dsh, r2_t *osh, int order, ix_reduction_t red, float_image_t *img);
+void write_image(char *name, char *ttag, r2_t *ish, r2_t *dsh, r2_t *osh, int order, ix_reduce_mode_t red, float_image_t *img);
   /* Writes an image {img} that was shifted from {ish} by {dsh} to {osh}. 
     If {ish} is NULL assumes that it is the original image. */
 
@@ -102,7 +102,7 @@ void do_incremental_shift_tests(float_image_t *img0, char *name)
     
     float_image_t *imgA = float_image_new(NC, NX, NY);
             
-    ix_reduction_t red = ix_reduction_REPEAT;
+    ix_reduce_mode_t red = ix_reduce_mode_REPEAT;
     int order;
     for (order = -1; order <= 1; order++)
       { /* Shift little by little: */
@@ -136,8 +136,8 @@ void do_boundary_condition_tests(float_image_t *img0, char *name)
             
     float_image_t *imgA = float_image_new(NC, NX, NY);
             
-    ix_reduction_t red;
-    for (red = ix_reduction_FIRST; red <= ix_reduction_LAST; red++)
+    ix_reduce_mode_t red;
+    for (red = ix_reduce_mode_FIRST; red <= ix_reduce_mode_LAST; red++)
       { int order;
         for (order = -1; order <= 1; order++)
           { float_image_assign(imgA, img0);
@@ -154,7 +154,7 @@ void do_shift_test
     r2_t ish,            /* Amount already shifted. */
     r2_t dsh,            /* Amount to shift */
     int order,           /* Continuity order. */
-    ix_reduction_t red   /* Index reduction policy. */
+    ix_reduce_mode_t red   /* Index reduction policy. */
   )
   {
     r2_t osh;
@@ -244,7 +244,7 @@ float_image_t *get_test_image(char *name, int NC)
     return img;
   }
   
-void write_image(char *name, char *ttag, r2_t *ish, r2_t *dsh, r2_t *osh, int order, ix_reduction_t red, float_image_t *img)
+void write_image(char *name, char *ttag, r2_t *ish, r2_t *dsh, r2_t *osh, int order, ix_reduce_mode_t red, float_image_t *img)
   {
     int NC = (int)img->sz[0];
     
@@ -295,8 +295,8 @@ void do_plot_tests(char *name)
     int NC = 1, NX = 6, NY = 7;
     int CX = NX/2, CY = NY/2;
     float_image_t *img = float_image_new(NC, NX, NY);
-    ix_reduction_t red;
-    for (red = ix_reduction_FIRST; red <= ix_reduction_LAST; red++)
+    ix_reduce_mode_t red;
+    for (red = ix_reduce_mode_FIRST; red <= ix_reduce_mode_LAST; red++)
       { do_plot_test(name, img, CX, CY, red);
 
         int k;
@@ -329,7 +329,7 @@ void do_plot_test
     float_image_t *img,  /* Test image. */
     int kx,              /* Column of pulse. */
     int ky,              /* Row of pulse. */
-    ix_reduction_t red   /* inedx reduction policy. */
+    ix_reduce_mode_t red   /* inedx reduction policy. */
   )
   {
     fprintf(stderr, "plotting blip at element [%3d,%3d]\n", kx, ky);

@@ -15,12 +15,12 @@
 
 double **neuromat_eeg_new(int32_t nt, int32_t nc)
   { double **val = talloc(nt, double*);
-    for (int32_t it = 0; it < nt; it++) { val[it] = talloc(nc, double); }
+    for (uint32_t it = 0;  it < nt; it++) { val[it] = talloc(nc, double); }
     return val;
   }
   
 void neuromat_eeg_free(double **val, int32_t nt, int32_t nc)
-  { for (int32_t it = 0; it < nt; it++) { free(val[it]); }
+  { for (uint32_t it = 0;  it < nt; it++) { free(val[it]); }
     free(val);
   }
 
@@ -83,7 +83,7 @@ void neuromat_eeg_get_FN128_channel_names(int32_t ne, char *chname[]);
 void neuromat_eeg_get_channel_names(char *capType, int32_t nv, char *evname[], int32_t *ne_P, char ***chname_P)
   { int32_t ne = 0;
     char **chname = NULL;
-    for (int32_t pass = 0; pass < 2; pass++)
+    for (uint32_t pass = 0;  pass < 2; pass++)
       { if (strcmp(capType, "R20") == 0)
           { if (pass == 0) { ne = 20; }  else { neuromat_eeg_get_R20_channel_names(ne, chname); } }
         else if (strcmp(capType, "R128") == 0)
@@ -103,7 +103,7 @@ void neuromat_eeg_get_channel_names(char *capType, int32_t nv, char *evname[], i
       }
     if (nv > 0)
       { /* Append the trigger channel names: */
-        for (int32_t iv = 0; iv < nv; iv++) { chname[ne+iv] = txtcat(evname[iv], ""); }
+        for (uint32_t iv = 0;  iv < nv; iv++) { chname[ne+iv] = txtcat(evname[iv], ""); }
       }
     /* Return results: */
     (*ne_P) = ne;
@@ -134,14 +134,14 @@ void neuromat_eeg_get_R20_channel_names(int32_t ne, char *chname[])
     chname[18] = "Pz";
     chname[19] = "Oz"; 
     /* Make all strings be newly allocated: */
-    for (int32_t ie = 0; ie < ne; ie++) { chname[ie] = txtcat(chname[ie], ""); }
+    for (uint32_t ie = 0;  ie < ne; ie++) { chname[ie] = txtcat(chname[ie], ""); }
   }
   
 void neuromat_eeg_get_R128_channel_names(int32_t ne, char *chname[])  
   {
     demand((ne == 128) || (ne == 129), "invalid {ne}");
     /* Electrode channels: */
-    for (int32_t ie = 0; ie < 128; ie++) 
+    for (uint32_t ie = 0;  ie < 128; ie++) 
       { char *name = NULL;
         char *name = jsprintf("C%03d", ie+1);
         chname[ie] = name;
@@ -162,7 +162,7 @@ void neuromat_eeg_get_FN3_channel_names(int32_t ne, char *chname[])
 
 void neuromat_eeg_get_FN128_channel_names(int32_t ne, char *chname[])
   { demand(ne == 128, "invalid {ne}");
-    for (int32_t ke = 0; ke < ne; ke++)
+    for (uint32_t ke = 0;  ke < ne; ke++)
       { char *name = NULL;
         char *name = jsprintf("C%03d", ke+1);
         chname[ke] = name;
@@ -201,7 +201,7 @@ int32_t neuromat_eeg_locate_pulses
     demand((ict) && (ict < nc), "invalid trigger channel index");
     double vtr_prev = 0; /* Trigger channel value in previous frame. */
     int32_t np = 0; /* Number of pulses found. */
-    for (int32_t it = 0; it <= nt; it++)
+    for (uint32_t it = 0;  it <= nt; it++)
       { double vtr = (it < nt ? val[it][ict] : 0.0);
         demand((vtr == vmin) || (vtr == vmax), "invalid trigger value");
         if ((vtr_prev == vmin) && (vtr == vmax))

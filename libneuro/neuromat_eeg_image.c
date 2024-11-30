@@ -87,15 +87,15 @@ void neuromat_eeg_image_compute_pot_field
     assert(msk->sz[1] == NX);
     assert(msk->sz[2] == NY);
 
-    for (int32_t iy = 0; iy < NY; iy++)
-      { for (int32_t ix = 0; ix < NX; ix++)
+    for (uint32_t iy = 0;  iy < NY; iy++)
+      { for (uint32_t ix = 0;  ix < NX; ix++)
           { double wxy = float_image_get_sample(msk, 0, ix, iy);
             double smp;
             if (wxy == 0)
               { smp = 0.0; }
             else
               { smp = 0.0;
-                for (int32_t ie = 0; ie < ne; ie++) 
+                for (uint32_t ie = 0;  ie < ne; ie++) 
                   { double basi = float_image_get_sample(bas[ie], 0, ix, iy);
                     smp += val[ie] * basi;
                   }
@@ -126,13 +126,13 @@ float_image_t *neuromat_eeg_image_electrodes_overlay
     bool_t diagonal = FALSE; /* Diagonal crosses? (Not used.) */
     int32_t msub = 3; /* Subsampling order. */
     int32_t cop = 3; /* Index of opacity channel. */
-    for (int32_t ie = 0; ie < ne; ie++) 
+    for (uint32_t ie = 0;  ie < ne; ie++) 
       { r2_t *posi = &(pos[ie]);
         double cx = posi->c[0];
         double cy = posi->c[1];
         frgb_t *cfill = (ie == ie_spec ? fcdraw : fcfill); /* Fill color, or NULL. */
         frgb_t *cdraw = (ie == ie_spec ? fcfill : fcdraw); /* Draw color, or NULL. */
-        for (int32_t c = 0; c < NC; c++)
+        for (uint32_t c = 0;  c < NC; c++)
           { if (c == cop) 
               { /* Draw the opacity mask: */
                 float vfill = (cfill == NULL ? NAN : 1.000f);
@@ -217,7 +217,7 @@ float_image_t *neuromat_eeg_image_make_time_tracks
     /* Paint the tracks and marker channel ranges: */
     frgb_t ftrack = (frgb_t){{ 0.500f, 0.500f, 0.500f }}; /* Color or track line. */
     int32_t y0 = ymrg + yspc + ythw;      /* Y coordinate of lowest timeline. */
-    for (int32_t im = 0; im < nm; im++)
+    for (uint32_t im = 0;  im < nm; im++)
       { int32_t yk = y0 + im*ytstep;
         track_y[im] = yk; 
         neuromat_image_paint_time_track(img, hw, xlo, xsz, yk, ftrack);
@@ -251,7 +251,7 @@ void neuromat_image_paint_marker_ranges
     /* Pretend that marker channel is zero before and after all frames. */
     int32_t it_ini = -1;  /* Index of start frame of run, or -1 if not started yet. */
     int32_t it_fin = -1;  /* Index of end frame of run, or -1 if not started yet. */
-    for (int32_t it = 0; it <= nt; it++)
+    for (uint32_t it = 0;  it <= nt; it++)
       { double smp = (it >= nt ? 0.0 : val[it][ic_mark]);
         assert(! isnan(smp));
         if (smp != 0.0)
@@ -289,7 +289,7 @@ void neuromat_eeg_image_paint_marker_dots
     bool_t round = TRUE; /* Round dots? */
     bool_t diagonal = FALSE; /* Diagonal crosses? (Not used.) */
     int32_t msub = 4; /* Subsampling order. */
-    for (int32_t im = 0; im < nm; im++)
+    for (uint32_t im = 0;  im < nm; im++)
       { /* Get the marker's value {vr} scaled and clipped to {[-1..+1]} */
         int32_t ic = marker[im].ic; /* Index of channel in data frames: */
         double vm = ((ic >= 0) && (ic < nc) ? valt[ic] : 0.0);
@@ -305,15 +305,15 @@ void neuromat_eeg_image_paint_marker_dots
               { /* Complement {fc} relative to its saturation range: */
                 double clo = fmin(fc.c[0], fmin(fc.c[1], fc.c[2]));
                 double chi = fmax(fc.c[0], fmax(fc.c[1], fc.c[2]));
-                for (int32_t ia = 0; ia < 3; ia++)  { fc.c[ia] = (float)(clo + (chi - fc.c[ia])/(chi - clo + 1.0e-100)); }
+                for (uint32_t ia = 0;  ia < 3; ia++)  { fc.c[ia] = (float)(clo + (chi - fc.c[ia])/(chi - clo + 1.0e-100)); }
               }
             /* Scale {fc} (non-linearly) by {fabs(vr)}: */
             double vs = sqrt(fabs(vr));
-            for (int32_t ia = 0; ia < 3; ia++)  { fc.c[ia] = (float)(vs*fc.c[ia]); }
+            for (uint32_t ia = 0;  ia < 3; ia++)  { fc.c[ia] = (float)(vs*fc.c[ia]); }
           }
          /* Now paint the dot: */
          r2_t *ctrk = &(mkdot_ctr[im]);
-         for (int32_t c = 0; c < NC; c++)
+         for (uint32_t c = 0;  c < NC; c++)
           { double rkc = (c < 3 ? mkdot_rad + 1.5 : mkdot_rad);
             float vfill = (float)(c < 3 ? fc.c[c] : 1.000);
             (void)float_image_paint_dot

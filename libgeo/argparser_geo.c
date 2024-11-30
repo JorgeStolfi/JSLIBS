@@ -19,7 +19,7 @@
 #include <argparser_geo.h>
 
 void argparser_get_next_rn(argparser_t *pp, double p[], uint32_t n, double min, double max)
-  { for (int32_t i = 0; i < n; i++) { p[i] = argparser_get_next_double(pp, min, max); }
+  { for (uint32_t i = 0;  i < n; i++) { p[i] = argparser_get_next_double(pp, min, max); }
   }
 
 r2_t argparser_get_next_r2(argparser_t *pp, double min, double max)
@@ -80,8 +80,8 @@ hr2_pmap_type_t argparser_get_next_hr2_pmap_type(argparser_t *pp)
 hr2_pmap_t argparser_get_next_proj_map_matrix(argparser_t *pp)
   { /* Parse the nine entries of the projective matrix, row order: */
     r3x3_t A;
-    for (int32_t i = 0; i < 3; i++)
-      { for (int32_t j = 0; j < 3; j++)
+    for (uint32_t i = 0;  i < 3; i++)
+      { for (uint32_t j = 0;  j < 3; j++)
           { A.c[i][j] = argparser_get_next_double(pp, -BIG_ELEM, +BIG_ELEM); }
       }
     /* Assemble the projective map: */
@@ -97,7 +97,7 @@ hr2_pmap_t argparser_get_next_proj_map_matrix(argparser_t *pp)
 hr2_pmap_t argparser_get_next_proj_map_from_points(argparser_t *pp)
   { /* Parse the four input points {ip[0..3]}: */
     hr2_point_t ip[4];
-    for (int32_t i = 0; i < 4; i++)
+    for (uint32_t i = 0;  i < 4; i++)
       { ip[i].c.c[0] = 1.0;
         ip[i].c.c[1] = argparser_get_next_double(pp, -BIG_COORD, +BIG_COORD);
         ip[i].c.c[2] = argparser_get_next_double(pp, -BIG_COORD, +BIG_COORD);
@@ -107,7 +107,7 @@ hr2_pmap_t argparser_get_next_proj_map_from_points(argparser_t *pp)
     hr2_pmap_t IM = hr2_pmap_from_four_points(&(ip[0]), &(ip[1]), &(ip[2]), &(ip[3]));
     /* Parse the four output points {op[0..3]}: */
     hr2_point_t op[4];
-    for (int32_t i = 0; i < 4; i++)
+    for (uint32_t i = 0;  i < 4; i++)
       { op[i].c.c[0] = 1.0;
         op[i].c.c[1] = argparser_get_next_double(pp, -BIG_COORD, +BIG_COORD);
         op[i].c.c[2] = argparser_get_next_double(pp, -BIG_COORD, +BIG_COORD);
@@ -139,18 +139,18 @@ hr2_pmap_t argparser_get_next_feature_map(argparser_t *pp)
     r3x3_t M;
     r3x3_ident(&M);
 
-    for (int32_t j = 1; j < 3; j++)
+    for (uint32_t j = 1;  j < 3; j++)
       { M.c[0][j] = argparser_get_next_double(pp, -1000.0, +1000.0); }
     
-    for (int32_t i = 1; i < 3; i++)
-      { for (int32_t j = 1; j < 3; j++)
+    for (uint32_t i = 1;  i < 3; i++)
+      { for (uint32_t j = 1;  j < 3; j++)
           { M.c[i][j] = argparser_get_next_double(pp, -1000.0, +1000.0); }
       }
       
     double mag = argparser_get_next_double(pp, 0.001, 1000.0);
     
-    for (int32_t i = 1; i < 3; i++)
-      { for (int32_t j = 1; j < 3; j++)
+    for (uint32_t i = 1;  i < 3; i++)
+      { for (uint32_t j = 1;  j < 3; j++)
           { M.c[i][j] /= mag; }
       }
 

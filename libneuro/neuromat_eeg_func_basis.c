@@ -37,7 +37,7 @@ void neuromat_eeg_func_basis_eval
       { double sum = rn_sum(ne, bval);
         if (fabs(sum) < 1.0e-8)
           { /* Set all basis values to zero: */
-            for (int32_t ie = 0; ie < ne; ie++) { bval[ie] = 0.0;  }
+            for (uint32_t ie = 0;  ie < ne; ie++) { bval[ie] = 0.0;  }
           }
         else
           { rn_scale(ne, 1/sum, bval, bval); }
@@ -48,11 +48,11 @@ void neuromat_eeg_func_basis_eval
 double *neuromat_eeg_func_basis_nearest_dists(int32_t ne, r3_t pos3D[])
   {
     double *erad = rn_alloc(ne);
-    for (int32_t ie = 0; ie < ne; ie++)
+    for (uint32_t ie = 0;  ie < ne; ie++)
       { /* Find the distance squared {d2min} from {pos[ie]} to its nearest neighbor: */
         r3_t *pi = &(pos3D[ie]);
         double d2min = +INF;
-        for (int32_t je = 0; je < ne; je++)
+        for (uint32_t je = 0;  je < ne; je++)
           { if (ie != je) 
               { r3_t *pj = &(pos3D[je]);
                 double d2j = r3_dist_sqr(pi, pj);
@@ -101,7 +101,7 @@ double neuromat_eeg_func_basis_voronoi_ind(r3_t *p, int32_t ie, int32_t ne, r3_t
   { /* Find the nearest electrode to {p3D}: */
     double d2min = +INF;
     int32_t jemin = -1;
-    for (int32_t je = 0; je < ne; je++) 
+    for (uint32_t je = 0;  je < ne; je++) 
        { double d2 = r3_dist_sqr(p, &(pos3D[je]));
          if (d2 < d2min) { d2min = d2; jemin = je; }
        }
@@ -116,11 +116,11 @@ double *neuromat_eeg_func_basis_lagrangian_matrix(int32_t ne, neuromat_eeg_func_
     /* Build colocation matrix {A} such that {A[ie,je]} is the value of element {ie} on point {pos3d[je]}: */
     double bval[ne];
     double *A = rmxn_alloc(ne, ne);
-    for (int32_t je = 0; je < ne; je++)
+    for (uint32_t je = 0;  je < ne; je++)
       { r3_t *pj = &(pos3D[je]);
         mother(ne, bval, pj);
         /* Fill column {je} of matrix {A}:  */
-        for (int32_t ie = 0; ie < ne; ie++)
+        for (uint32_t ie = 0;  ie < ne; ie++)
           { double Aij = bval[ie];
             if (verbose && (Aij != 0)) { fprintf(stderr, "  A[%3d,%3d] = %+12.7f\n", ie, je, Aij); }
             A[ie*ne + je] = Aij;
@@ -135,8 +135,8 @@ double *neuromat_eeg_func_basis_lagrangian_matrix(int32_t ne, neuromat_eeg_func_
     { double *R = rmxn_alloc(ne, ne);
       rmxn_mul(ne, ne, ne, L, A, R);
       int32_t nerr = 0;
-      for (int32_t ie = 0; ie < ne; ie++)
-        { for (int32_t je = 0; je < ne; je++)
+      for (uint32_t ie = 0;  ie < ne; ie++)
+        { for (uint32_t je = 0;  je < ne; je++)
             { double Rij = R[ie*ne + je];
               double Iij = (ie == je ? 1.0 : 0.0);
               double err = fabs(Rij - Iij);

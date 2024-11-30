@@ -296,7 +296,7 @@ void bvtable_expand
     
     /* Insert all entries again: */
     ubyte *pi = po;
-    for (int32_t ie = 0; ie < no; ie++)
+    for (uint32_t ie = 0;  ie < no; ie++)
       { uint32_t iadd = bvtable_add(tb, (void *)pi, hash, cmp);
         if (iadd != ie) { fprintf(stderr, "** BUG: inconsistent rehash %u %u\n", ie, iadd); }
         assert(iadd == ie);

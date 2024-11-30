@@ -39,9 +39,9 @@ void neuromat_eeg_filter_apply
     double *P = (tdeg < 0 ? NULL : notnull(malloc(sizeof(double)*(tdeg+1)), "no mem"));
     double *s = (tdeg < 0 ? NULL : notnull(malloc(sizeof(double)*nt), "no mem"));
        
-    for (int32_t ie = 0; ie < ne; ie++) 
+    for (uint32_t ie = 0;  ie < ne; ie++) 
       { /* Copy the signal {ie} into the FFT buffer, with mirrored apodized ends and zero padding: */
-        for (int32_t it = 0; it < nt; it++) { in[it] = val[it][ie]; }
+        for (uint32_t it = 0;  it < nt; it++) { in[it] = val[it][ie]; }
         
         if (tdeg >= 0)
           { /* Fit the polynomial {P}: */
@@ -49,20 +49,20 @@ void neuromat_eeg_filter_apply
             neuromat_poly_fit_robust(nt, NULL, in, NULL, maxiter, tdeg, P, NULL);
             if (verbose) 
               { fprintf(stderr, "  trend = ");
-                for (int32_t r = 0; r <= tdeg; r++) { fprintf(stderr, " %+12.6f", P[r]); }
+                for (uint32_t r = 0;  r <= tdeg; r++) { fprintf(stderr, " %+12.6f", P[r]); }
                 fprintf(stderr, "\n");
               }
             /* Evaluate it: */
             neuromat_poly_eval_multi(tdeg, P, nt, NULL, s);
             /* Subtract it from the data: */
-            for (int32_t it = 0; it < nt; it++) { in[it] -= s[it]; }
+            for (uint32_t it = 0;  it < nt; it++) { in[it] -= s[it]; }
           }
 
         /* Transform to frequency domain: */
         fftw_execute(pd);
 
         /* Apply frequency filter: */
-        for (int32_t kf0 = 0; kf0 <= nt-kf0; kf0++) 
+        for (uint32_t kf0 = 0;  kf0 <= nt-kf0; kf0++) 
           { int32_t kf1 = (nt - kf0) % nt; /* The other Hartley element with same absolute freq. */
             double h0 = out[kf0];
             double G0 = G[kf0];
@@ -86,7 +86,7 @@ void neuromat_eeg_filter_apply
         fftw_execute(pi);
         
         /* Return filtered signal & trend to {val}: */
-        for (int32_t it = 0; it < nt; it++) 
+        for (uint32_t it = 0;  it < nt; it++) 
           { /* Scale to preserve total power: */
             in[it] /= nt;
             /* Restore trend if any: */

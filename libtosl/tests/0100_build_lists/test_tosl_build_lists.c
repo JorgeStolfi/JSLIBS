@@ -114,7 +114,7 @@ int32_t main(int32_t argc, char **argv)
 
     for (int32_t debug = 1; debug >= 0; debug--)
       { for (int32_t method = N_METHODS-1; method >= 0; method--)
-          { for (int32_t type = 0; type < N_TYPES; type++)
+          { for (uint32_t type = 0;  type < N_TYPES; type++)
              { fprintf(stderr, "\n");
                do_test_consistency(type, method, debug);
                fprintf(stderr, "\n");
@@ -122,7 +122,7 @@ int32_t main(int32_t argc, char **argv)
           }
       }
     
-    for (int32_t type = 0; type < N_TYPES; type++) 
+    for (uint32_t type = 0;  type < N_TYPES; type++) 
       { fprintf(stderr, "\n");
         do_test_times(type);
         fprintf(stderr, "\n");
@@ -229,14 +229,14 @@ void do_test_times(int32_t type)
     char *dash10 = "----------";
     char *dash22 = "----------------------";
     fprintf(wr, "%10s %10s  %22s  %22s  %22s  %22s  %22s\n", dash10, dash10, dash22, dash22, dash22, dash22, dash22);
-    for (int32_t kp = 0; kp < NNP; kp++)
+    for (uint32_t kp = 0;  kp < NNP; kp++)
       { int32_t NP = NP_set[kp]; /* Num edges to use in this test: */
         tosl_coord_t *Zplane = Zplane_set[kp];
         int32_t NE = NE_full; /* Num edges to use in this test: */
-        for (int32_t ke = 0; ke < 4; ke++)
+        for (uint32_t ke = 0;  ke < 4; ke++)
           { mesh->NE = NE; /* Truncate the mesh to the first {NE} edges only. */
             fprintf(wr, "%10d %10d", NE, NP);
-            for (int32_t method = 0; method < N_METHODS; method++)
+            for (uint32_t method = 0;  method < N_METHODS; method++)
               { if ((method == 0) && (type != 0) && (NP > 200))
                   { fprintf(wr, "  %22s", "(skipped)"); }
                 else
@@ -251,7 +251,7 @@ void do_test_times(int32_t type)
         fprintf(wr, "\n");
       } 
     fclose(wr); free(fname);
-    for (int32_t kp = 0; kp < NNP; kp++) { free(Zplane_set[kp]); }
+    for (uint32_t kp = 0;  kp < NNP; kp++) { free(Zplane_set[kp]); }
     tosl_mesh_free(mesh);
     fprintf(stderr, "< --- %s --------------------\n", __FUNCTION__);
   }
@@ -268,7 +268,7 @@ void get_build_time_per_edge
     /* Truncate the edge list: */
     int32_t NT = 10;
     double time[NT];
-    for (int32_t kt = 0; kt < NT; kt++)
+    for (uint32_t kt = 0;  kt < NT; kt++)
       { double tstart = tosl_user_cpu_time_usec();
         tosl_arc_id_t *L = do_build_lists(NP, Zplane, mesh, method, 0);
         double tstop = tosl_user_cpu_time_usec();
@@ -294,7 +294,7 @@ void pick_plane_sets
   )
   {
     int32_t NP = NP_full; /* Num edges to use in this test: */
-    for (int32_t kp = 0; kp < NNP; kp++)
+    for (uint32_t kp = 0;  kp < NNP; kp++)
       { fprintf(wr, "  ----------------------------------------------------------------------\n");
         fprintf(wr, "  plane set %d\n", kp);
         /* Choose the {Z} range {ZPmin .. ZPmax} of the slicing planes: */
@@ -325,7 +325,7 @@ void pick_vertices(tosl_mesh_t *mesh, tosl_coord_t ZVmin, tosl_coord_t ZVmax)
     int32_t NV = mesh->NV_max;
     for (tosl_vert_id_t iv = 0; iv < NV; iv++)
       { tosl_point_t p;
-        for (int32_t j = 0; j < 3; j++)
+        for (uint32_t j = 0;  j < 3; j++)
           { double r = ((double)random())/((double)INT32_MAX);
             tosl_coord_t cj = ZVmin + (int32_t)(r*(ZVmax - ZVmin));
             /* Ensure coord is even: */
@@ -341,7 +341,7 @@ void pick_vertices(tosl_mesh_t *mesh, tosl_coord_t ZVmin, tosl_coord_t ZVmax)
 void pick_arcs(tosl_mesh_t *mesh)
   { int32_t NE = mesh->NE_max;
     int32_t NV = mesh->NV;
-    for (int32_t ke = 0; ke < NE; ke++)
+    for (uint32_t ke = 0;  ke < NE; ke++)
       { tosl_arc_id_t ia = 2*ke;
         tosl_arc_id_t ja = ia + 1;
         /* Choose a pair of distinct random vertices as origins of {ia} and {ja}: */

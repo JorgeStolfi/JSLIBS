@@ -1,0 +1,1 @@
+../compare_h_with_test_c.sh

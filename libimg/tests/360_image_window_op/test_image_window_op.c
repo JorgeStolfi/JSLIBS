@@ -171,7 +171,7 @@ int32_t main (int32_t argn, char **argv)
     /* Size of individual test images: */
     int32_t NX = 11, NY = 11;
     
-    for (int32_t ik = 0; ik < image_window_op_NUM; ik++)
+    for (uint32_t ik = 0;  ik < image_window_op_NUM; ik++)
       { image_window_op_t op = (image_window_op_t)ik;
         tiwo_test_operator(op, NX, NY); 
       }
@@ -203,7 +203,7 @@ void tiwo_test_operator(image_window_op_t op, int32_t NX, int32_t NY)
     float_image_t *timg = float_image_new(NC, NX, NY);
     float_image_t *rimg = float_image_new(NC, NX, NY);
     
-    for (int32_t it = 0; it < nt; it++)
+    for (uint32_t it = 0;  it < nt; it++)
       { fprintf(stderr, "--- testing with test image t%02d ---\n", it);
         int32_t xs = it*(NX+1);  /* Column in {oimg} where sub-images should go: */
         int32_t ys = NYO;  /* Row in {oimg} where sub-images should go: */
@@ -213,9 +213,9 @@ void tiwo_test_operator(image_window_op_t op, int32_t NX, int32_t NY)
         lo = 0; hi = 1;
         ys = ys - NY;
         tiwo_paste_image(timg, lo, hi, xs, ys, FALSE, oimg);
-        for (int32_t im = 0; im < 2; im++)
+        for (uint32_t im = 0;  im < 2; im++)
           { bool_t smoothed = (bool_t)im;
-            for (int32_t iq = 0; iq < 2; iq++)
+            for (uint32_t iq = 0;  iq < 2; iq++)
               { bool_t squared = (bool_t)iq;
                 tiwo_do_single_test(timg, op, smoothed, squared, rimg);
                 image_window_op_get_range(op, smoothed, squared, &lo, &hi);
@@ -237,9 +237,9 @@ void tiwo_test_operator(image_window_op_t op, int32_t NX, int32_t NY)
 
 void tiwo_check_op_range(image_window_op_t op)
   { 
-    for (int32_t im = 0; im < 2; im++)
+    for (uint32_t im = 0;  im < 2; im++)
       { bool_t smoothed = (bool_t)im;
-        for (int32_t iq = 0; iq < 2; iq++)
+        for (uint32_t iq = 0;  iq < 2; iq++)
           { bool_t squared = (bool_t)iq;
           
             fprintf(stderr, "checking range for smoothed = %c squared = %c\n", "FT"[smoothed], "FT"[squared]);
@@ -315,10 +315,10 @@ void tiwo_do_single_test
     float fsmp[nsmp];
     double wsmp[nsmp];
         
-    for (int32_t ix = 0; ix < NX; ix++)
-      { for (int32_t iy = 0; iy < NY; iy++) 
+    for (uint32_t ix = 0;  ix < NX; ix++)
+      { for (uint32_t iy = 0;  iy < NY; iy++) 
           { float_image_get_window_samples(timg, 0,ix,iy, nwx, nwy, FALSE, fsmp);
-            for (int32_t k = 0; k < nsmp; k++) { wsmp[k] = fsmp[k]; }
+            for (uint32_t k = 0;  k < nsmp; k++) { wsmp[k] = fsmp[k]; }
             double res = image_window_op_apply(op, smoothed, squared, iwctr, nwx, wsmp);
             float_image_set_sample(rimg, 0,ix,iy, (float)res);
           }

@@ -19,7 +19,7 @@ void mst_build_complete(uint32_t n, mst_arc_cost_t *acost, uint32_t P[], double 
         
     /* Allocate a queue and put all vertices in it with null predecessors: */
     uint32_t *Q = talloc(n, uint32_t); /* Sample index queue. */
-    for (int32_t i = 0; i < n; i++) { Q[i] = (uint32_t)i; P[i] = (uint32_t)i; C[i] = +INF; }
+    for (uint32_t i = 0;  i < n; i++) { Q[i] = (uint32_t)i; P[i] = (uint32_t)i; C[i] = +INF; }
 
     auto void resortQ(uint32_t k0, uint32_t k1);
       /* Rearranges {Q[k0..k1-1]} so that {C[Q[k0]]} is minimum. */

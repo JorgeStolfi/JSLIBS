@@ -1,5 +1,5 @@
 /* See wt_median_window.h */
-/* Last edited on 2024-11-22 03:37:43 by stolfi */
+/* Last edited on 2024-11-22 21:19:08 by stolfi */
 
 #define wt_median_window_C_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
@@ -20,7 +20,7 @@
 double wt_median_window
   ( uint32_t nx,
     double x[],
-    int32_t ix,
+    uint32_t ix,
     uint32_t nw,
     uint64_t w[],
     bool_t interp,
@@ -32,14 +32,14 @@ double wt_median_window
   )
   {
     bool_t debug = FALSE;
-    demand((ix >= 0) && (ix + (int32_t)nw <= nx), "window {ix..ix+nw-1} not contained in {0..nx-1}");
+    demand(ix + nw <= nx, "window {ix..ix+nw-1} not contained in {0..nx-1}");
     demand(nk <= nx, "too many indices in current set");
     uint32_t nkept = wt_median_window_index_set_update(nx, nk, kx, ix, nw);
     wt_median_index_set_sort(nx, x, nw, kx, nkept);
     uint32_t ns = wt_median_gather_samples(nx, x, ix, nw, w, kx, xs, ws);
     if (debug)
       { fprintf(stderr, "    xs[0..%d] = ", ns-1);
-        for (int32_t js = 0; js < ns; js++)
+        for (uint32_t js = 0;  js < ns; js++)
           { fprintf(stderr, " %24.16e", xs[js]);
             if (js > 0) { assert(xs[js] > xs[js-1]); }
           }
@@ -56,11 +56,11 @@ uint32_t wt_median_window_index_set_update
   ( uint32_t nx,     /* Total count of samples. */
     uint32_t nk,     /* (IN/OUT) Count of indices in {kx}. */
     uint32_t kx[],   /* (IN/OUT) Sorted indices are {kx[0..nk-1]}. */
-    int32_t ix,      /* Index of first sample in new window. */
+    uint32_t ix,     /* Index of first sample in new window. */
     uint32_t nw      /* Count of samples in new window. */
   )
   { bool_t debug = FALSE;
-    demand((ix >= 0) && (ix + (int32_t)nw <= nx), "window {ix..ix+nw-1} overflows {0..nx-1}");
+    demand(ix + nw <= nx, "window {ix..ix+nw-1} overflows {0..nx-1}");
     demand(nk <= nx, "too many indices in current set");
     uint32_t nkept; /* Count of indices that were preserved. */
     if (nw == 0)
@@ -69,17 +69,18 @@ uint32_t wt_median_window_index_set_update
       }
     else
       { demand((nk >= 0) && (nk <= nx), "invalid input index set size {nk}");
-        int32_t jx = (int32_t)(ix + (int32_t)nw - 1);
-        demand((ix >= 0) && (jx < nx), "new window spills outside of {0..nx-1}");
-        int32_t kx_min = INT32_MAX, kx_max = 0;  /* Min and max retained elems of {kx[0..nk-1]}. */
-        uint32_t nk_new = 0;  /* Number of input indices that were kept. */
+        uint32_t jx = (uint32_t)(ix + nw - 1); /* Last index in new window. */
+        assert(jx < nx); /* Tested on entry. */
+        uint32_t kx_min = (uint32_t)INT32_MAX;  /* Min retained elem of {kx[0..nk-1]}. */
+        uint32_t kx_max = 0;  /* Max retained elem of {kx[0..nk-1]}. */
+        uint32_t nk_new = 0;  /* Number of output indices defined so far. */
         if (nk == 0)
           { if (debug) { fprintf(stderr, "  input index set was empty\n"); } }
         else
           { /* Remove from {kx[0..nk-1]} the indices that are outside the new window: */
             /* Also find min and max indices {kx_min,kx_max} in remaining set: */
-            for (int32_t j = 0; j < nk; j++)
-              { int32_t kxj = (int32_t)kx[j];
+            for (uint32_t j = 0; j < nk; j++)
+              { uint32_t kxj = kx[j];
                 demand(kxj < nx, "invalid index in {kx[..]}");
                 if ((kxj >= ix) && (kxj <= jx))
                   { /* Keep this element: */
@@ -103,7 +104,7 @@ uint32_t wt_median_window_index_set_update
         /* Add the new indices: */
         if (nk_new == 0)
           { /* Just store {ix..jx} into {kx[0..nw-1]}: */
-            for (int32_t i = 0; i < nw; i++) { kx[i] = (uint32_t)(ix + i); }
+            for (uint32_t i = 0; i < nw; i++) { kx[i] = ix + i; }
             nk_new = nw;
           }
         else

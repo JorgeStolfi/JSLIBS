@@ -39,7 +39,7 @@ void rfn_test_tools_check_rot_axis(uint32_t n, float *a, uint32_t i, uint32_t j,
     assert((i >= 0) && (i < n));
     assert((j >= 0) && (j < n) && (i != j));
     double ca = cos(ang), sa = sin(ang);
-    for (int32_t k = 0; k < n; k++)
+    for (uint32_t k = 0;  k < n; k++)
       { float rrk;
         if (k == i) 
           { rrk = (float)(+ ca*a[k] - sa*a[j]); }

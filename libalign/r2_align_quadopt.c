@@ -41,7 +41,7 @@ void r2_align_quadopt
 
     /* Save the initial guess: */
     r2_t pctr[ni]; /* Center of {\RD} ellipsoid (saved initial guess). */
-    for (int32_t i = 0; i < ni; i++) { pctr[i] = p[i]; }
+    for (uint32_t i = 0;  i < ni; i++) { pctr[i] = p[i]; }
 
     if (nd > 0)
       { 
@@ -59,7 +59,7 @@ void r2_align_quadopt
 
         /* Compute the tolerance {xtol} in the {x} variables space: */
         double xtol = +INF;
-        for (int32_t k = 0; k < nd; k++) 
+        for (uint32_t k = 0;  k < nd; k++) 
           { double xtolk = tol/urad[k]; if (xtolk < xtol) { xtolk = xtol; } }
 
         auto void compute_sample_alignment(int32_t nxt, double xt[]);
@@ -73,7 +73,7 @@ void r2_align_quadopt
             guess was saved in {pctr[0..ni-1]}. */
 
         /* Compute the initial goal function value: */
-        double x[nd]; for (int32_t k = 0; k < nd; k++) { x[k] = 0.0; }
+        double x[nd]; for (uint32_t k = 0;  k < nd; k++) { x[k] = 0.0; }
         double Fx = sve_goal(nd, x);
         
         sign_t dir = -1; /* Look for minimum. */
@@ -109,13 +109,13 @@ void r2_align_quadopt
 
         void compute_sample_alignment(int32_t nxt, double xt[])
           { assert(nxt == nd);
-            for (int32_t i = 0; i < ni; i++)
-              { for (int32_t j = 0; j < 2; j++)
+            for (uint32_t i = 0;  i < ni; i++)
+              { for (uint32_t j = 0;  j < 2; j++)
                   { p[i].c[j] = pctr[i].c[j];
                     double rij = arad[i].c[j];
                     if (rij != 0)
                       { double dij = 0;
-                        for (int32_t k = 0; k < nd; k++) 
+                        for (uint32_t k = 0;  k < nd; k++) 
                           { r2_t *uk = &(U[k*ni]);
                             dij += xt[k]*urad[k]*uk[i].c[j];
                           }

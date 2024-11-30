@@ -34,9 +34,9 @@ void rn_test_tools_do_check_eps(double x, double y, double eps, uint32_t *i, uin
   }
   
 void rn_test_tools_check_all_different(uint32_t n, double *a, char *msg)
-  { for (int32_t i = 0; i < n; i++)
+  { for (uint32_t i = 0;  i < n; i++)
       { /* Check that {a[i]} is different from all previous elements: */
-        for (int32_t i1 = 0; i1 < i; i1++)
+        for (uint32_t i1 = 0;  i1 < i; i1++)
           { demand(a[i1] != a[i], msg); }
       }
   }
@@ -46,7 +46,7 @@ void rn_test_tools_check_rot_axis(uint32_t n, double *a, uint32_t i, uint32_t j,
     assert((i >= 0) && (i < n));
     assert((j >= 0) && (j < n) && (i != j));
     double ca = cos(ang), sa = sin(ang);
-    for (int32_t k = 0; k < n; k++)
+    for (uint32_t k = 0;  k < n; k++)
       { double rrk;
         if (k == i) 
           { rrk = + ca*a[k] - sa*a[j]; }

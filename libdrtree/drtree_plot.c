@@ -75,7 +75,7 @@ void drtree_plot_individuals
       { defColor = (frgb_t){{ 0.750f, 0.720f, 0.700f }};
         color = (frgb_t*)notnull(malloc(ni*sizeof(frgb_t)), "no mem");
         double nextHue = 0.000; /* Next hue to assign. */
-        for (int32_t iq = 0; iq < ni; iq++)
+        for (uint32_t iq = 0;  iq < ni; iq++)
           { int32_t ic = chf[iq]; /* Chief of {q}'s family. */
             if (ic == -1)
               { /* Default color: */
@@ -126,9 +126,9 @@ void drtree_plot_individuals
         the birth of an individual. */
    
     /* Plot the individuals: */
-    for (int32_t pass = 0; pass < 4; pass++) 
+    for (uint32_t pass = 0;  pass < 4; pass++) 
       { /* Pass 0 draws lives, pass 1 draws arrows. */
-        for (int32_t iq = 0; iq < ni; iq++)
+        for (uint32_t iq = 0;  iq < ni; iq++)
           { if (rdr[iq] != -1)
               { if (pass == 0)
                   { draw_indiv_pass_0(iq); }

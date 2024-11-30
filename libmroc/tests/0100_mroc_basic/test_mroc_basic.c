@@ -137,7 +137,7 @@ void do_tests
       /* Processes the tetrahedron  with corners {p[0..3]} and occupancy 
         values {f[0..3]}. */
 
-    for (int32_t iz = 0; iz < NCZ; iz++)
+    for (uint32_t iz = 0;  iz < NCZ; iz++)
       { 
         /* Processing horizontal layer {iz} of voxels.
         
@@ -186,13 +186,13 @@ void do_tests
         if (debug) { fprintf(stderr, "."); }
         bool_t newz = FALSE;
 
-        for (int32_t k = 0; k < 4; k++)
+        for (uint32_t k = 0;  k < 4; k++)
           { int32_t thisz = (int32_t)floor(p[k]->c[2] - 0.499999);
             if (thisz > lastz) { newz = TRUE; lastz = thisz; }
           }
         if (newz && verbose) { fprintf(stderr, " %d", lastz); }
         r3_t u[4];
-        for (int32_t k = 0; k < 4; k++) { u[k] = *(p[k]); }
+        for (uint32_t k = 0;  k < 4; k++) { u[k] = *(p[k]); }
         if (showTetras)
           { mroc_stl_write_tetra_faces(wr, u, f, &nt); }
         else
@@ -205,10 +205,10 @@ void tmb_eval_voxel_centers(tmb_func_t func, int32_t iz, int32_t NEX, int32_t NE
     double *fcR = fcL; /* Start of next row in slice. */
     r3_t p; p.c[2] = iz + 0.5;
         
-    for (int32_t ky = 0; ky < NEY; ky++)
+    for (uint32_t ky = 0;  ky < NEY; ky++)
       { /* Evaluate on layer : */
         p.c[1] = ky - 0.5;
-        for (int32_t kx = 0; kx < NEX; kx++)
+        for (uint32_t kx = 0;  kx < NEX; kx++)
           { p.c[0] = kx - 0.5;
             fcR[kx] = tmb_fudge(func(&p));
           }
@@ -220,9 +220,9 @@ void tmb_eval_voxel_corners(tmb_func_t func, int32_t iz, int32_t NVX, int32_t NV
   { 
     r3_t p; p.c[2] = iz;
     double *fvR = fvL; /* Start of next row in slice. */
-    for (int32_t iy = 0; iy < NVY; iy++)
+    for (uint32_t iy = 0;  iy < NVY; iy++)
       { p.c[1] = iy;
-        for (int32_t ix = 0; ix < NVX; ix++)
+        for (uint32_t ix = 0;  ix < NVX; ix++)
           { p.c[0] = ix;
             fvR[ix] = tmb_fudge(func(&p));
           }

@@ -68,7 +68,7 @@ hr2_pmap_t hr2_pmap_aff_from_point_pairs(int32_t np, r2_t p1[], r2_t p2[], doubl
                 ???
                 r2x2_t E; r2x2_zero(&E); /* Moment matrix. */
                 r2x2_t P; r2x2_zero(&P); /* Projection matrix. */
-                for (int32_t k = 0; k < np; k++)
+                for (uint32_t k = 0;  k < np; k++)
                   { double wk = (w == NULL ? 1.0 : w[k]);
                     /* Reduce points relative to barycenter: */
                     r2_t q1k, q2k;
@@ -76,7 +76,7 @@ hr2_pmap_t hr2_pmap_aff_from_point_pairs(int32_t np, r2_t p1[], r2_t p2[], doubl
                     r2_sub(&(p2[k]), &bar2, &q2k);
                     /* Accumulate moments and projections: */
                     for (int32_t i = 0; i < 2; i ++)
-                      { for (int32_t j = 0; j < 2; j++)
+                      { for (uint32_t j = 0;  j < 2; j++)
                           { E.c[i][j] += wk*q1k.c[i]*q1k.c[j];
                             P.c[i][j] += wk*q1k.c[i]*q2k.c[j];
                           }
@@ -89,7 +89,7 @@ hr2_pmap_t hr2_pmap_aff_from_point_pairs(int32_t np, r2_t p1[], r2_t p2[], doubl
 
                 r2x2_t E; r2x2_zero(&E); /* Moment matrix. */
                 r2x2_t P; r2x2_zero(&P); /* Projection matrix. */
-                for (int32_t k = 0; k < np; k++)
+                for (uint32_t k = 0;  k < np; k++)
                   { double wk = (w == NULL ? 1.0 : w[k]);
                     /* Reduce points relative to barycenter: */
                     r2_t q1k, q2k;
@@ -97,7 +97,7 @@ hr2_pmap_t hr2_pmap_aff_from_point_pairs(int32_t np, r2_t p1[], r2_t p2[], doubl
                     r2_sub(&(p2[k]), &bar2, &q2k);
                     /* Accumulate moments and projections: */
                     for (int32_t i = 0; i < 2; i ++)
-                      { for (int32_t j = 0; j < 2; j++)
+                      { for (uint32_t j = 0;  j < 2; j++)
                           { E.c[i][j] += wk*q1k.c[i]*q1k.c[j];
                             P.c[i][j] += wk*q1k.c[i]*q2k.c[j];
                           }

@@ -116,7 +116,7 @@ nmsim_elem_net_t *nmsim_elem_net_band_make
     nmsim_group_synapse_ix_t isgNext = 0;
     nmsim_elem_neuron_ix_t ineNext = 0;
     nmsim_elem_synapse_ix_t iseNext = 0;
-    for (int32_t iBand = 0; iBand < numBands; iBand++)
+    for (uint32_t iBand = 0;  iBand < numBands; iBand++)
       { double W; /* Total input synapse weight for each neuron. */
         if (numBands == 1)
           { W = (WMin + WMax)/2; }

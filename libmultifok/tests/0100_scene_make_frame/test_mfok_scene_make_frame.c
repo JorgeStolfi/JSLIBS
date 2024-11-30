@@ -2,13 +2,12 @@
 #define PROG_DESC "test of {multifok_test_image_make.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-10-29 23:39:40 by stolfi */ 
+/* Last edited on 2024-11-23 05:31:24 by stolfi */ 
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
 #define test_mfok_scene_make_frame_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -23,8 +22,8 @@
 #include <bool.h>
 #include <jsmath.h>
 #include <jsrandom.h>
+#include <ix_reduce.h>
 #include <r3.h>
-#include <ix.h>
 #include <i2.h>
 #include <frgb.h>
 #include <float_image.h>
@@ -327,7 +326,7 @@ multifok_scene_t *mfmi_make_scene
 
     fprintf(stderr, "creating scene of type %s", sceneType); 
     /* Define the scene's domain: */
-    for (int32_t j = 0; j < 3; j++)
+    for (uint32_t j = 0;  j < 3; j++)
       { fprintf(stderr, "%s[%.3f _ %.3f]", (j == 0 ? " size = " : " × "), dom[j].end[0], dom[j].end[1]); }
     fprintf(stderr, "\n");
 
@@ -409,7 +408,7 @@ multifok_stack_t *mfmi_make_and_write_stack
 
     /* Scene size and center in user units:  */
     r3_t size_scene, ctr_scene;
-    for (int32_t j = 0; j < 3; j++) 
+    for (uint32_t j = 0;  j < 3; j++) 
       { interval_t *domj = &(scene->dom[j]);
         size_scene.c[j] = 2*interval_rad(domj);
         ctr_scene.c[j] = interval_mid(domj);
@@ -461,7 +460,7 @@ multifok_stack_t *mfmi_make_and_write_stack
         
         /* Eval the pattern image, mirroring as needed: */
         int32_t order = 1;  /* Bicubic C1 interpolation. */
-        ix_reduction_t red = ix_reduction_PXMIRR;
+        ix_reduce_mode_t red = ix_reduce_mode_PXMIRR;
         double r = float_image_interpolate_sample(pimg, 0, xr_pat, yr_pat, order, red);
         return r;
       }
@@ -493,7 +492,7 @@ multifok_stack_t *mfmi_make_and_write_stack_from_pattern_function
     
     /* Generate the blurred image stack: */
     multifok_stack_t *stack = multifok_stack_new(NI, 3,NX,NY);
-    for (int32_t ki = 0; ki < NI; ki++)
+    for (uint32_t ki = 0;  ki < NI; ki++)
       { double zFoc_fri, zDep_fri;
         int32_t KR_fri; /* Rays to trace per image sampling point. */
         if (ki == NI-1)
@@ -581,7 +580,7 @@ multifok_frame_t *mfmi_make_and_write_frame
        
     bool_t debug_pix(i2_t *iPix)
       { bool_t deb = FALSE;
-        for (int32_t kq = 0; (kq < NQ) && (! deb); kq++)
+        for (uint32_t kq = 0;  (kq < NQ) && (! deb); kq++)
           { bool_t debug_col = (iPix->c[0] == iDeb[kq].c[0]);
             bool_t debug_row = (iPix->c[1] == iDeb[kq].c[1]);
             deb = deb || (debug_col && debug_row);
@@ -667,7 +666,7 @@ void mfmi_select_debug_pixels
         /* Pick {NQ_exp} object centers, preferably disks. */
         /* Count the number of disks {NO_disk}: */
         int32_t NO_disk = 0;
-        for (int32_t ko = 0; ko < NO; ko++)
+        for (uint32_t ko = 0;  ko < NO; ko++)
           { multifok_scene_object_t *objk = &(scene->objs[ko]);
             if (objk->type == ot_DISK) { NO_disk++; }
           }
@@ -675,7 +674,7 @@ void mfmi_select_debug_pixels
 
         /* The number of candidate objects remaining is {NO_rem}: */
         int32_t NO_rem = (disk_only ? NO_disk : NO-1); 
-        for (int32_t ko = 0; ko < NO; ko++)
+        for (uint32_t ko = 0;  ko < NO; ko++)
           { if ((NQ >= NQ_exp) || (NO_rem == 0)) { break; }
             multifok_scene_object_t *objk = &(scene->objs[ko]);
             if ((objk->type == ot_FLAT) || (objk->type == ot_RAMP)) { continue; }
@@ -698,7 +697,7 @@ void mfmi_select_debug_pixels
         int32_t NQ_exp = (obj0->type == ot_FLAT ? 1 : 5); /* Redefine the goal... */
         interval_t *xr = &(scene->dom[0]);
         interval_t *yr = &(scene->dom[1]);
-        for (int32_t kq = 0; kq < NQ_exp; kq++)
+        for (uint32_t kq = 0;  kq < NQ_exp; kq++)
           { double fr = (NQ_exp == 0 ? 0.0 : 0.95*((2.0*kq)/(NQ_exp-1) - 1.0));
             double x_scene = interval_mid(xr) + fr*interval_rad(xr);
             double y_scene = interval_mid(yr) + fr*interval_rad(yr);
@@ -740,7 +739,7 @@ void mfmi_write_pixel_profiles
     /* Get the sharp frame's scene view for background: */
     int32_t NI = stack->NI;
     
-    for (int32_t kq = 0; kq < NQ; kq++)
+    for (uint32_t kq = 0;  kq < NQ; kq++)
       { int32_t ix = iDeb[kq].c[0];
         int32_t iy = iDeb[kq].c[1];
         
@@ -750,7 +749,7 @@ void mfmi_write_pixel_profiles
             char *fname = jsprintf("%s/pixel-data-%04d-%04d.txt", stackDir, ix, iy);
             FILE *wr = open_write(fname, TRUE);
 
-            for (int32_t ki = 0; ki < NI; ki++)
+            for (uint32_t ki = 0;  ki < NI; ki++)
               { multifok_frame_t *fri = stack->frame[ki];
                 if (isfinite(fri->zDep))
                   { fprintf(wr, "%5d %10.6f %10.6f", ki, fri->zFoc, fri->zDep);
@@ -758,7 +757,7 @@ void mfmi_write_pixel_profiles
                     float hDev = float_image_get_sample(fri->hDev, 0, ix, iy);
                     float shrp = float_image_get_sample(fri->shrp, 0, ix, iy);
                     fprintf(wr, "  %10.6f %10.6f %12.8f ", hAvg, hDev, shrp);
-                    for (int32_t ic = 0; ic < 3; ic++)
+                    for (uint32_t ic = 0;  ic < 3; ic++)
                       { int32_t icr = (ic < NC ? ic : 0);
                         float sVal = float_image_get_sample(fri->sVal, icr, ix, iy);
                         fprintf(wr, " %7.5f", sVal);
@@ -786,7 +785,7 @@ mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv)
     o->imageSize_Y = (int32_t)argparser_get_next_int(pp, 30, 4096);
 
     argparser_get_keyword(pp, "-sceneSize");
-    for (int32_t j = 0; j < 3; j++)
+    for (uint32_t j = 0;  j < 3; j++)
       { double lo = argparser_get_next_double(pp, -4096.0, +4096.0);
         double hi = argparser_get_next_double(pp, lo + 1.0, +4096.0);
         o->sceneSize[j] = (interval_t){{ lo, hi }};

@@ -32,7 +32,7 @@ uint64_t wt_table_quantize
     double wfa_sum = 0;
     double wfa_corr = 0; /* For Kahan summation. */
     double wfa_max = 0;
-    for (int32_t k = 0; k < n; k++)
+    for (uint32_t k = 0;  k < n; k++)
       { double wfak = fabs(wf[k]);
         demand(isfinite(wfak), "weights cannot be infinite or NAN");
         /* Kahan's summation: */
@@ -46,7 +46,7 @@ uint64_t wt_table_quantize
       
     if (wfa_sum == 0)
       { /* All weights are zero: */
-        for (int32_t k = 0; k < n; k++) { wi[k] = 0; }
+        for (uint32_t k = 0;  k < n; k++) { wi[k] = 0; }
         return 0;
       }
       
@@ -138,7 +138,7 @@ uint64_t wt_table_quantize
     uint64_t quantize(double sc)
       { /* Round entries, compute actual sum of abs values: */
         uint64_t F = 0;
-        for (int32_t k = 0; k < n; k++) 
+        for (uint32_t k = 0;  k < n; k++) 
           { double wfk = wf[k];
             if (wfk == 0) 
               { wi[k] = 0; }

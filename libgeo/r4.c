@@ -269,7 +269,7 @@ bool_t r4_eq(r4_t *p, r4_t *q)
 void r4_barycenter(uint32_t np, r4_t p[], double w[], r4_t *bar)
   { r4_t sum_wp = (r4_t){{ 0, 0, 0, 0 }};
     double sum_w = 0.0;
-    for (int32_t k = 0; k < np; k++) 
+    for (uint32_t k = 0;  k < np; k++) 
       { r4_t *pk = &(p[k]);
         double wk = (w != NULL ? w[k] : 1.0);
         r4_mix(1.0, &sum_wp, wk, pk, &sum_wp);
@@ -280,23 +280,23 @@ void r4_barycenter(uint32_t np, r4_t p[], double w[], r4_t *bar)
 
 void r4_bbox(uint32_t np, r4_t p[], interval_t B[], bool_t finite)
   { double cmin[N], cmax[N];
-    for (int32_t j = 0; j < N; j++) { cmin[j] = +INF; cmax[j] = -INF; }
-    for (int32_t ip = 0; ip < np; ip++)
+    for (uint32_t j = 0;  j < N; j++) { cmin[j] = +INF; cmax[j] = -INF; }
+    for (uint32_t ip = 0;  ip < np; ip++)
       { r4_t *pi = &(p[ip]);
         if ((! finite) || r4_is_finite(pi))
-          { for (int32_t j = 0; j < N; j++) 
+          { for (uint32_t j = 0;  j < N; j++) 
               { double cij = pi->c[j];
                 if (cij < cmin[j]) { cmin[j] = cij; }
                 if (cij > cmax[j]) { cmax[j] = cij; }
               }
           }
       }
-    for (int32_t j = 0; j < N; j++)
+    for (uint32_t j = 0;  j < N; j++)
       { B[j] = (interval_t){{ cmin[j], cmax[j] }}; }
   }
 
 void r4_throw_cube (r4_t *r)
-  { for (int32_t i = 0; i < N; i++)
+  { for (uint32_t i = 0;  i < N; i++)
       { r->c[i] = 2.0 * drandom() - 1.0; }
   }
 
@@ -307,19 +307,19 @@ void r4_throw_dir (r4_t *r)
       { r4_throw_normal(r);
         /* Discard if too close to origin: */
         r2 = 0.0;
-        for (int32_t i = 0; i < N; i++) { double ci = r->c[i]; r2 += ci*ci; }
+        for (uint32_t i = 0;  i < N; i++) { double ci = r->c[i]; r2 += ci*ci; }
       }
     while (r2 < 1.0e-20);
     /* Normalize to unit length: */
     double m = sqrt(r2);
-    for (int32_t i = 0; i < N; i++) { r->c[i] /= m; }
+    for (uint32_t i = 0;  i < N; i++) { r->c[i] /= m; }
   }
 
 void r4_throw_ball (r4_t *r)
   { rn_throw_ball(N, &(r->c[0])); }
 
 void r4_throw_normal (r4_t *r)
-  { for (int32_t i = 0; i < N; i++)
+  { for (uint32_t i = 0;  i < N; i++)
       { r->c[i] = dgaussrand(); }
   }
   

@@ -96,8 +96,8 @@ void ralt_test_compute_search_ellipsoid(int32_t ni, bool_t bal)
     /* Validate {U,urad}: */
     fprintf(stderr, "... validating the search ellipsoid basis ...\n");
     r2_t t[ni]; /* A corner of the enclosing box of {\CF} */
-    for (int32_t i = 0; i < ni; i++) { t[i] = (r2_t){{0.0, 0.0 }}; }
-    for (int32_t k = 0; k < nd; k++)
+    for (uint32_t i = 0;  i < ni; i++) { t[i] = (r2_t){{0.0, 0.0 }}; }
+    for (uint32_t k = 0;  k < nd; k++)
       { fprintf(stderr, "  checking vector {U[%d]} and radius {urad[%d]} ...\n", k, k);
         
         r2_t *uk = &(U[k*ni]);
@@ -110,17 +110,17 @@ void ralt_test_compute_search_ellipsoid(int32_t ni, bool_t bal)
           }
         
         fprintf(stderr, "    checking if {U[%d]} is conformal with {arad}...\n", k);
-        for (int32_t i = 0; i < ni; i++)
-          { for (int32_t j = 0; j < 2; j++)
+        for (uint32_t i = 0;  i < ni; i++)
+          { for (uint32_t j = 0;  j < 2; j++)
               { double rij = arad[i].c[j];
                 if (rij == 0) { demand(uk[i].c[j] == 0, "{uk} is not conformal"); }
               }
           }
 
         fprintf(stderr, "    checking if {U[%d]} is balanced...\n", k);
-        for (int32_t j = 0; j < 2; j++)
+        for (uint32_t j = 0;  j < 2; j++)
           { double sum = 0.0;
-            for (int32_t i = 0; i < ni; i++) { sum += uk[i].c[j]; }
+            for (uint32_t i = 0;  i < ni; i++) { sum += uk[i].c[j]; }
             if (debug) { fprintf(stderr, "      sum U[%d][*].c[%d] = %24.16e\n", k, j, sum); }
             demand(fabs(sum) < 1.0e-8, "not balanced");
           }
@@ -132,7 +132,7 @@ void ralt_test_compute_search_ellipsoid(int32_t ni, bool_t bal)
        
         if (k > 0) 
           { fprintf(stderr, "    checking if {U[%d]} is orthogonal to {U[0..%d]}...\n", k, k-1);
-            for (int32_t r = 0; r < k; r++) 
+            for (uint32_t r = 0;  r < k; r++) 
               { r2_t *ur = &(U[r*ni]);
                 double sdot = r2_align_dot(ni, uk, ur);
                 if (debug) { fprintf(stderr, "      dot(U[%d],U[%d]) = %.8f\n", r, k, sdot); }
@@ -142,8 +142,8 @@ void ralt_test_compute_search_ellipsoid(int32_t ni, bool_t bal)
           
         fprintf(stderr, "    checking whether poles of {\\RF} are on boundary of {\\RE} ...\n");
         double sum2 = 0; 
-        for (int32_t i = 0; i < ni; i++)
-          { for (int32_t j = 0; j < 2; j++)
+        for (uint32_t i = 0;  i < ni; i++)
+          { for (uint32_t j = 0;  j < 2; j++)
               { double skij = urad[k]*uk[i].c[j];
                 double rij = arad[i].c[j];
                 if (rij != 0) { double ekij = skij/rij; sum2 += ekij*ekij; }

@@ -41,8 +41,8 @@ void r2_align_multiscale
   {
     /* Find the maximum search radius: */
     double rmax = 0;
-    for (int32_t i = 0; i < ni; i++)
-      { for (int32_t j = 0; j < 2; j++)
+    for (uint32_t i = 0;  i < ni; i++)
+      { for (uint32_t j = 0;  j < 2; j++)
           { double rij = arad[i].c[j];
             demand(rij >= 0, "invalid search radius");
             if (rij > rmax) { rmax = rij; }
@@ -62,8 +62,8 @@ void r2_align_multiscale
         while (rmax > 0.5) { smax = smax+1; rmax = rmax/2; fscale = fscale/2; }
         /* Reduce the problem to scale {smax}: */
         r2_t srad[ni];  /* Search radius at current scale. */
-        for (int32_t i = 0; i < ni; i++)
-          { for (int32_t j = 0; j < 2; j++) 
+        for (uint32_t i = 0;  i < ni; i++)
+          { for (uint32_t j = 0;  j < 2; j++) 
               { srad[i].c[j] = arad[i].c[j]*fscale;
                 p[i].c[j] = p[i].c[j]*fscale;
               }
@@ -80,8 +80,8 @@ void r2_align_multiscale
             /* Are we done? */
             if (scale == 0) { break; }
             /* Expand to the next finer scale: */
-            for (int32_t i = 0; i < ni; i++)
-              { for (int32_t j = 0; j < 2; j++) 
+            for (uint32_t i = 0;  i < ni; i++)
+              { for (uint32_t j = 0;  j < 2; j++) 
                   { srad[i].c[j] = fmin(0.5, 2 * srad[i].c[j]);
                     p[i].c[j] = 2 * p[i].c[j];
                   }

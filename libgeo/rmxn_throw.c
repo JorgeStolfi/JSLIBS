@@ -1,5 +1,5 @@
 /* See rmxn_throw.h. */
-/* Last edited on 2024-11-22 05:40:54 by stolfi */
+/* Last edited on 2024-11-23 18:56:12 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -31,9 +31,9 @@ void rmxn_throw_near_singular_pair
     with {detMIn=detRef} if {isMax} is false. */
 
 void rmxn_throw_matrix(uint32_t m, uint32_t n, double *A)
-  { for (int32_t i = 0; i < m; i++)
-      { for (int32_t j = 0; j < n; j++) 
-          { A[i*(int32_t)n + j] += dabrandom(-1.0, +1.0); }
+  { for (uint32_t i = 0;  i < m; i++)
+      { for (uint32_t j = 0;  j < n; j++) 
+          { A[i*n + j] += dabrandom(-1.0, +1.0); }
       }
   }
 
@@ -63,36 +63,36 @@ void rmxn_throw_ortho(uint32_t n, double *A)
         if (s2 != 0)
           { /* Reflection is not trivial. */
             double sm = sqrt(s2);
-            for (int32_t j = 0; j <= k; j++) { s[j] /= sm; }
+            for (uint32_t j = 0;  j <= k; j++) { s[j] /= sm; }
             /* Apply reflection along {s} to each row: */
-            for (int32_t i = 0; i < k; i++)
-              { double *Ai = &(A[i*(int32_t)n]);
+            for (uint32_t i = 0;  i < k; i++)
+              { double *Ai = &(A[i*n]);
                 (void)rn_mirror(k+1, Ai, s, Ai);
                 flip = 1 - flip;
               }
           }
       }
     /* Now flip the first row if needed to keep the determinant positive: */
-    if (flip != 0) { for (int32_t j = 0; j < n; j++) { A[j] = -A[j]; } }
+    if (flip != 0) { for (uint32_t j = 0;  j < n; j++) { A[j] = -A[j]; } }
   }
 
 void rmxn_throw_ortho_complement(uint32_t n, uint32_t ma, double *A, uint32_t mb, double *B)
   {
     demand(ma + mb <= n, "invalid {ma+mb}");
     if (mb == 0) { return; }
-    for (int32_t k = 0; k < mb; k++)
-      { double *Bk = &(B[k*(int32_t)n]); /* Row {k} o f{B}. */
+    for (uint32_t k = 0;  k < mb; k++)
+      { double *Bk = &(B[k*n]); /* Row {k} o f{B}. */
         while (TRUE)
           { /* Pick a random unit vector in {\RR^n}: */
             rn_throw_dir (n, Bk);
             /* Project it onto the space orthogonal to {A} and {B}: */
-            for (int32_t r = 0; r < ma; r++)
-              { double *Ar = &(A[r*(int32_t)n]);
+            for (uint32_t r = 0;  r < ma; r++)
+              { double *Ar = &(A[r*n]);
                 double s = rn_dot(n, Ar, Bk);
                 rn_mix_in(n, -s, Ar, Bk);
               }
-            for (int32_t r = 0; r < k; r++)
-              { double *Br = &(B[r*(int32_t)n]);
+            for (uint32_t r = 0;  r < k; r++)
+              { double *Br = &(B[r*n]);
                 double s = rn_dot(n, Br, Bk);
                 rn_mix_in(n, -s, Br, Bk);
               }
@@ -271,9 +271,9 @@ void rmxn_throw_near_singular_pair(uint32_t n, double *A, double *B, double detR
   }
 
 void rmxn_throw_LT_matrix(uint32_t m, double *Lmm)
-  { for (int32_t i = 0; i < m; i++)
-      { for (int32_t j = 0; j < m; j++) 
-          { Lmm[(int32_t)m*i + j] = (j <= i ? 2.0 * drandom() - 1.0 : 0.0); }
+  { for (uint32_t i = 0;  i < m; i++)
+      { for (uint32_t j = 0;  j < m; j++) 
+          { Lmm[m*i + j] = (j <= i ? 2.0 * drandom() - 1.0 : 0.0); }
       }
   }
   
@@ -283,14 +283,14 @@ void rmxn_throw_singular(uint32_t n, double *A)
 
     /* Clear out row {n-1}: */
     double *Alast = &(A[(n-1)*n]);
-    for (int32_t j = 0; j < n; j++) { Alast[j] = 0.0; }
+    for (uint32_t j = 0;  j < n; j++) { Alast[j] = 0.0; }
 
     /* Fill rows {0..n-2} with random elems, mix into row {n-1}: */
-    for (int32_t i = 0; i < n-1; i++) 
+    for (uint32_t i = 0;  i < n-1; i++) 
       { double ri = 2*drandom() - 1;
-        for (int32_t j = 0; j < n; j++)
-          { A[i*(int32_t)n + j] = (2*drandom() - 1); 
-            Alast[j] += ri * A[i*(int32_t)n + j];
+        for (uint32_t j = 0;  j < n; j++)
+          { A[i*n + j] = (2*drandom() - 1); 
+            Alast[j] += ri * A[i*n + j];
           }
       }
      double Aenorm = rmxn_norm(n, n, A)/n; /* RMS of each element. */

@@ -22,10 +22,10 @@ double tosl_user_cpu_time_usec(void)
 void tosl_compute_avg_dev(int32_t NT, double time[], double *avg_P, double *dev_P)
   { 
     double sum = 0;
-    for (int32_t it = 0; it < NT; it++) { sum += time[it]; }
+    for (uint32_t it = 0;  it < NT; it++) { sum += time[it]; }
     double avg = sum/NT;
     double sum_dt2 = 0;
-    for (int32_t it = 0; it < NT; it++) { double dt = time[it] - avg; sum_dt2 += dt*dt; }
+    for (uint32_t it = 0;  it < NT; it++) { double dt = time[it] - avg; sum_dt2 += dt*dt; }
     double dev = sqrt(sum_dt2/(NT-1));
     (*avg_P) = avg;
     (*dev_P) = dev;

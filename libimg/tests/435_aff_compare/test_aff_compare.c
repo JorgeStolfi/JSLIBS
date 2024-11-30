@@ -197,8 +197,8 @@ hr2_pmap_t taffc_make_xy_shear_map(double u, double v)
   
 void taffc_scale_pmap_aff(hr2_pmap_t *A, double scale)
   {
-    for (int32_t i = 0; i < 3; i++)
-      { for (int32_t j = 1; j < 3; j++) 
+    for (uint32_t i = 0;  i < 3; i++)
+      { for (uint32_t j = 1;  j < 3; j++) 
          { A->dir.c[i][j] *= scale; A->inv.c[j][i] /= scale; }
       }
   }

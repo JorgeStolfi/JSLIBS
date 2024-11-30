@@ -105,7 +105,7 @@ int32_t main(int32_t argc, char **argv)
     tfi_test_filters(fsmp, flo0, flo1, fhi1, fhi0);
     
     for (int32_t bnf = 9; bnf <= 10; bnf++)
-      { for (int32_t mnf = 0; mnf < 2; mnf++)
+      { for (uint32_t mnf = 0;  mnf < 2; mnf++)
         { int32_t nf = (mnf == 0 ? bnf : 50*bnf + (bnf % 2));
           tfi_test_tabulate_hartley_gains(nf, "UG", fsmp);
           tfi_test_tabulate_hartley_gains(nf, "ER", fsmp);
@@ -124,14 +124,14 @@ void tfi_test_hartley_basis(void)
       { fprintf(stderr, "--- %s nf = %d ---\n", __FUNCTION__, nf);
         double *etai = talloc(nf, double);
         double *etaj = talloc(nf, double);
-        for (int32_t jf = 0; jf < nf; jf++)
-          { for (int32_t t = 0; t < nf; t++)
+        for (uint32_t jf = 0;  jf < nf; jf++)
+          { for (uint32_t t = 0;  t < nf; t++)
               { etai[t] = neuromat_filter_hartley_basis_eval(nf, jf, t); }
             for (int32_t kf = jf; kf < nf; kf++)
-              { for (int32_t t = 0; t < nf; t++)
+              { for (uint32_t t = 0;  t < nf; t++)
                   { etaj[t] = neuromat_filter_hartley_basis_eval(nf, kf, t); }
                 double dot = 0.0;
-                for (int32_t t = 0; t < nf; t++)
+                for (uint32_t t = 0;  t < nf; t++)
                   { dot += etai[t]*etaj[t]; }
                 double dot_exp = (jf == kf ? 1.0 : 0.0);
                 if (fabs(dot - dot_exp) > tol)
@@ -151,14 +151,14 @@ void tfi_test_fourier_basis(void)
       { fprintf(stderr, "--- %s nf = %d ---\n", __FUNCTION__, nf);
         complex *phii = talloc(nf, complex);
         complex *phij = talloc(nf, complex);
-        for (int32_t jf = 0; jf < nf; jf++)
-          { for (int32_t t = 0; t < nf; t++)
+        for (uint32_t jf = 0;  jf < nf; jf++)
+          { for (uint32_t t = 0;  t < nf; t++)
               { phii[t] = neuromat_filter_fourier_basis_eval(nf, jf, t); }
             for (int32_t kf = jf; kf < nf; kf++)
-              { for (int32_t t = 0; t < nf; t++)
+              { for (uint32_t t = 0;  t < nf; t++)
                   { phij[t] = neuromat_filter_fourier_basis_eval(nf, kf, t); }
                 complex dot = 0.0;
-                for (int32_t t = 0; t < nf; t++)
+                for (uint32_t t = 0;  t < nf; t++)
                   { dot += phii[t]*conj(phij[t]); }
                 double dot_exp = (jf == kf ? 1.0 : 0.0);
                 if (cabs(dot - dot_exp) > tol)
@@ -182,18 +182,18 @@ void tfi_test_hartley_fourier_conversion(void)
         double *H = talloc(nf, double);      /* The Hartley transform of {x}. */
         complex *phi = talloc(nf, complex);  /* A Fourier basis element. */     
         complex *F = talloc(nf, complex);    /* The Fourier transform of {x}. */
-        for (int32_t k = 0; k < 10; k++)
+        for (uint32_t k = 0;  k < 10; k++)
           { /* Generate a random real signal vector: */
-            for (int32_t t = 0; t < nf; t++) { x[t] = 2*drandom() - 1; }
+            for (uint32_t t = 0;  t < nf; t++) { x[t] = 2*drandom() - 1; }
             /* Compute the Hartley and Fourier transforms of {x} by brute force: */
-            for (int32_t f = 0; f < nf; f++)
-              { for (int32_t t = 0; t < nf; t++)
+            for (uint32_t f = 0;  f < nf; f++)
+              { for (uint32_t t = 0;  t < nf; t++)
                   { eta[t] = neuromat_filter_hartley_basis_eval(nf, f, t);
                     phi[t] = neuromat_filter_fourier_basis_eval(nf, f, t);
                   }
                 double dotH = 0;
                 complex dotF = 0;
-                for (int32_t t = 0; t < nf; t++)
+                for (uint32_t t = 0;  t < nf; t++)
                   { dotH += x[t]*eta[t];
                     dotF += x[t]*conj(phi[t]);
                   }
@@ -202,7 +202,7 @@ void tfi_test_hartley_fourier_conversion(void)
               }
             /* Check the conversion between coefficients: */
             int32_t nerr_HtoF = 0, nerr_FtoH = 0;
-            for (int32_t fa = 0; fa < nf; fa++)
+            for (uint32_t fa = 0;  fa < nf; fa++)
               { int32_t fb = (nf - fa) % nf;
                 /* Hartley to Fourier: */
                 complex Fa, Fb;
@@ -365,7 +365,7 @@ void tfi_test_filters(double fsmp, double flo0, double flo1, double fhi1, double
   
 void tfi_plot_function_pair(char *tag, int32_t npmax, tfi_function_t *lopa, tfi_function_t *band)
   { 
-    for (int32_t which = 0; which < 2; which++)
+    for (uint32_t which = 0;  which < 2; which++)
       { tfi_function_t *gain = (which == 0 ? lopa : band); /* version to plot: low-pass or bandpass. */
         char *xwhich = (which == 0 ? "low" : "band"); 
         fprintf(stderr, "    --- %s tag = %s npmax = %d func = %s pass ---\n", __FUNCTION__, tag, npmax, xwhich);
@@ -395,16 +395,16 @@ void tfi_plot_function(FILE *wr, int32_t npmax, tfi_function_t *gain)
     double G_prev[kpmax+1]; /* Prev gain for order {np[kp]}. */
     
     int32_t kfmax = nf/2;
-    for (int32_t kp = 0; kp <= kpmax; kp++) 
+    for (uint32_t kp = 0;  kp <= kpmax; kp++) 
       { fg_lo_half[kp] = fg_lo_tiny[kp] = NAN;
         fg_hi_half[kp] = fg_hi_tiny[kp] = NAN;
         G_prev[kp] = -INF;
       }
     fprintf(wr, "# npmax = %d\n", npmax); /* For the plot script. */
-    for (int32_t kf = 1; kf < kfmax; kf++)
+    for (uint32_t kf = 1;  kf < kfmax; kf++)
       { double f = ((double)kf)/nf;
         fprintf(wr, "%15.12f", f);
-        for (int32_t kp = 1; kp <= kpmax; kp++)
+        for (uint32_t kp = 1;  kp <= kpmax; kp++)
           { np[kp] = ((kp == kpmax) && (npmax > kpmax) ? npmax : kp);
             double G = gain(f, np[kp]);
             fprintf(wr, " %15.12f", G);
@@ -423,14 +423,14 @@ void tfi_plot_function(FILE *wr, int32_t npmax, tfi_function_t *gain)
         fprintf(wr, "\n");
       }
 
-    for (int32_t kp = 1; kp <= kpmax; kp++)
+    for (uint32_t kp = 1;  kp <= kpmax; kp++)
       { fprintf(stderr, " LO ramp order = %3d:", np[kp]);
         if (! isnan(fg_lo_half[kp])) { fprintf(stderr, " gain is 0.5 at f = %10.6f", fg_lo_half[kp]); }
         if (! isnan(fg_lo_tiny[kp])) { fprintf(stderr, " gain is %12.4e at f = %10.6f", g_tiny, fg_lo_tiny[kp]); }
         fprintf(stderr, "\n");
       }
     fprintf(stderr, "\n");
-    for (int32_t kp = 1; kp <= kpmax; kp++)
+    for (uint32_t kp = 1;  kp <= kpmax; kp++)
       { fprintf(stderr, " HI ramp order = %3d:", np[kp]);
         if (! isnan(fg_hi_half[kp])) { fprintf(stderr, " gain is 0.5 at f = %10.6f", fg_hi_half[kp]); }
         if (! isnan(fg_hi_tiny[kp])) { fprintf(stderr, " gain is %12.4e at f = %10.6f", g_tiny, fg_hi_tiny[kp]); }
@@ -447,10 +447,10 @@ void tfi_test_clear_tiny_gains(int32_t nf, double eps)
     
     /* Create a vector of conjugate Fourier coeffs of all sizes with random phases, with some zeros: */
     complex Fraw[nf];
-    for (int32_t kf = 0; kf < nf; kf++) { Fraw[kf] = 0; }
+    for (uint32_t kf = 0;  kf < nf; kf++) { Fraw[kf] = 0; }
     double Gmax = 2.0, Gmin = 1.0e-20;
     int32_t nftest = nf/2 - 3;
-    for (int32_t kfa = 0; kfa <= nftest; kfa++)
+    for (uint32_t kfa = 0;  kfa <= nftest; kfa++)
       { int32_t kfb = (nf - kfa) % nf;
         double phk = (kfa == kfb ? 0 : dabrandom(0, M_2_PI));
         complex Fk = Gmax*exp(kfa*(log(Gmin) - log(Gmax))/nftest)*cexp(I*phk);
@@ -459,14 +459,14 @@ void tfi_test_clear_tiny_gains(int32_t nf, double eps)
    
     /* Convert the Fourier coeffs to Hartley form: */
     double Hraw[nf];
-    for (int32_t kfa = 0; kfa <= nf/2; kfa++) 
+    for (uint32_t kfa = 0;  kfa <= nf/2; kfa++) 
       { int32_t kfb = (nf - kfa) % nf;
         neuromat_filter_fourier_to_hartley(Fraw[kfa], Fraw[kfb], &(Hraw[kfa]), &(Hraw[kfb]));
       }
       
     /* Cleanup the Hartley coeffs: */
     double Hkuk[nf];
-    for (int32_t kf = 0; kf < nf; kf++) { Hkuk[kf] = Hraw[kf]; }
+    for (uint32_t kf = 0;  kf < nf; kf++) { Hkuk[kf] = Hraw[kf]; }
     double fsmp = 1.0;
     bool_t verbose = TRUE;
     neuromat_filter_clear_tiny_gains(nf, Hkuk, eps, fsmp, verbose);
@@ -475,7 +475,7 @@ void tfi_test_clear_tiny_gains(int32_t nf, double eps)
     complex Fkuk[nf];
     double Emax = -INF;
     double Gtop = NAN;
-    for (int32_t kfa = 0; kfa <= nf/2; kfa++) 
+    for (uint32_t kfa = 0;  kfa <= nf/2; kfa++) 
       { int32_t kfb = (nf - kfa) % nf;
         neuromat_filter_hartley_to_fourier(Hkuk[kfa], Hkuk[kfb], &(Fkuk[kfa]), &(Fkuk[kfb]));
         assert(fabs(creal(Fkuk[kfa]) - creal(Fkuk[kfb])) < 1.0e-15);
@@ -611,7 +611,7 @@ void tfi_test_tabulate_hartley_gains(int32_t nf, char *ftype, double fsmp)
 
     /* Compare with the original gains: */
     int32_t nerr = 0;
-    for (int32_t kfa = 0; kfa <= nf/2; kfa++)
+    for (uint32_t kfa = 0;  kfa <= nf/2; kfa++)
       { int32_t kfb = (nf - kfa) % nf;
       
         double fa = ((double)kfa)*fsmp/nf;

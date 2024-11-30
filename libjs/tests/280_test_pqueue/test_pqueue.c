@@ -1,4 +1,4 @@
-/* Last edited on 2024-11-16 12:56:30 by stolfi */
+/* Last edited on 2024-11-22 20:46:47 by stolfi */
 
 #include <stdint.h>
 #include <stdio.h>
@@ -191,9 +191,9 @@ void perform_operation
     if (coin < P_set_all_values)
       { if (verbose) { ER("%06d modifying all values through {rbump}\n", iop); }
         pqueue_set_all_values(Q, rbump);
-        for (int32_t i = 0; i < N; i++) { ival[i] = rbump(item[i], ival[i]); }
+        for (uint32_t i = 0;  i < N; i++) { ival[i] = rbump(item[i], ival[i]); }
         /* Insertion re-sort: */
-        for (int32_t i = 0; i < N; i++) 
+        for (uint32_t i = 0; i < N; i++) 
           { pqueue_item_t z = item[i];
             pqueue_value_t v = ival[i];
             uint32_t j = i;
@@ -267,7 +267,7 @@ void check_queue
       }
      
     /* Check items in queue: */
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { pqueue_item_t z = item[i];
         pqueue_value_t v = ival[i];
         bool_t has = TRUE;

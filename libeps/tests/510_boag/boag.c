@@ -473,7 +473,7 @@ void boag_draw_leaf_beams
     
     assert(YN %2 == 0);  /* For best looks. */
 
-    for (int32_t kY = 0; kY <= YN; kY++)
+    for (uint32_t kY = 0;  kY <= YN; kY++)
       { 
         if (kY > 0)
           { /* Draw ver beam {kY}: */
@@ -495,7 +495,7 @@ void boag_draw_leaf_beams
         double H_Ysize = Ygap; /* {Y} extent of horz beams. */
         int32_t H_phase = ((kY + 1) % 2); /* 0 if first vert gap is whole, 1 if half-height. */
              
-        for (int32_t kZ = 0; kZ < ZN; kZ++)
+        for (uint32_t kZ = 0;  kZ < ZN; kZ++)
            { if ((H_phase == 1) || (kZ > 0))
                { /* Draw beam {kZ}: */
                  double H_Zctr = Zmin - Zex - tube_Zsize/2 + (kZ + 0.5*H_phase)*(Zgap + tube_Zsize);

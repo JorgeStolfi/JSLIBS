@@ -233,13 +233,13 @@ void test_lsq_robust_throw_poly(int32_t g, int32_t ixpoly, double R[])
       { test_lsq_robust_gen_poly_bezier(g, ixpoly, a, b, R); }
     else
       { double B[g+1];
-        for (int32_t j = 0; j <= g; j++) { R[j] = 0; }
-        for (int32_t i = 0; i <= g; i++)
+        for (uint32_t j = 0;  j <= g; j++) { R[j] = 0; }
+        for (uint32_t i = 0;  i <= g; i++)
           { /* Choose a Bézier coeff {C} in {[-1_+1]}: */
             double C = 2*drandom() - 1;
             /* Add to {R} the Bernstein polynomial with index {i}, times {C}: */
             test_lsq_robust_gen_poly_bezier(g, i, a, b, B);
-            for (int32_t j = 0; j <= g; j++) { R[j] = R[j] + C*B[j]; }
+            for (uint32_t j = 0;  j <= g; j++) { R[j] = R[j] + C*B[j]; }
           }
       }
   }
@@ -251,7 +251,7 @@ void test_lsq_robust_gen_poly_bezier(int32_t g, int32_t ix, double a, double b, 
     double ah = a/h, bh = b/h;
     R[0] = (double)comb(g,ix); /* Hopefully there is no overflow or rounding. */
     /* Multiply {R[0..0]} by {((x-a)/h)^ix} yielding {R[0..ix]}: */
-    for (int32_t k = 0; k < ix; k++)
+    for (uint32_t k = 0;  k < ix; k++)
       { /* Multiply {R[0..k]} by {(x-a)/h} yielding {R[0..k+1]}: */
         R[k+1] = R[k]/h;
         for (int32_t r = k; r > 0; r--) { R[r] = R[r-1]/h - R[r]*ah; }
@@ -277,7 +277,7 @@ double test_lsq_robust_poly_eval(int32_t g, double R[], double x)
 void test_lsq_robust_poly_eval_multi(int32_t g, double R[], int32_t nt, double x[], double yt[])
   {
     demand(g >= 0, "invalid power");
-    for (int32_t k = 0; k < nt; k++) 
+    for (uint32_t k = 0;  k < nt; k++) 
       { yt[k] = test_lsq_robust_poly_eval(g, R, x[k]); }
   }
 
@@ -290,7 +290,7 @@ void test_lsq_robust_throw_data
     double yn[]
   )
   {
-    for (int32_t k = 0; k < nt; k++)
+    for (uint32_t k = 0;  k < nt; k++)
       { double toss = drandom();
         if (toss >= pri_bad)
           { /* Inlier: */
@@ -316,7 +316,7 @@ void test_lsq_robust_gen_args(int32_t nt, double x[])
   }
   
 void test_lsq_robust_gen_weights(int32_t nt, double x[], double w[])
-  { for(int32_t k = 0; k < nt; k++)
+  { for (uint32_t k = 0;  k < nt; k++)
       { double xk = x[k];
         assert((xk > -1.0) && (xk < +1.0));
         w[k] = 1.0 - 0.9*xk*xk;
@@ -327,12 +327,12 @@ void test_lsq_robust_fill_basis_matrix(int32_t nt, double x[], int32_t g, double
   {
     demand(g >= 0, "invalid power");
     int32_t nv = g + 1;
-    for (int32_t  k = 0; k < nt; k++)
+    for (uint32_t k = 0;  k < nt; k++)
       { double *Xk = &(X[k*nv]);
         double p = 1;
         Xk[0] = 1;
         double xk = x[k];
-        for (int32_t i = 1; i <= g; i++) { p *= xk; Xk[i] = p; }
+        for (uint32_t i = 1;  i <= g; i++) { p *= xk; Xk[i] = p; }
       }
   }
 
@@ -355,9 +355,9 @@ void test_lsq_robust_print_data
     else
       { char *fname = jsprintf("out/%s_g%02d_ix%03d.txt", name, g, ixpoly); }
     FILE *wr = open_write(fname, TRUE);
-    for (int32_t iwr = 0; iwr <= 1; iwr++)
+    for (uint32_t iwr = 0;  iwr <= 1; iwr++)
       { FILE *wri = (iwr == 0 ? wr : stderr);
-        for(int32_t k = 0; k < nt; k++)
+        for (uint32_t k = 0;  k < nt; k++)
           { fprintf(wri, "%5d ", k);
             fprintf(wri, fmt, x[k]);
             fprintf(wri, " ");

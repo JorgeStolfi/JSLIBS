@@ -217,14 +217,14 @@ void do_uint16_image_io_png_own_test(char *iDir, char *oDir, int32_t csp, int32_
     int32_t icA = ( (NC == 2) || (NC == 4) ? NC-1 : -1 ); /* Index of red channel, or -1 if none. */
     
     uint32_t iMaxval[MAX_CHNS]; /* Maxvals expected from {BY,BR,BG,BB,BA}. */
-    for (int32_t ic = 0; ic < MAX_CHNS; ic++) { iMaxval[ic] = UINT32_MAX; }
+    for (uint32_t ic = 0;  ic < MAX_CHNS; ic++) { iMaxval[ic] = UINT32_MAX; }
     if (icY >= 0) { iMaxval[icY] = (csp == 2 ? 255 : mxv); }
     if (icR >= 0) { iMaxval[icR] = (csp == 2 ? 255 : mxv); }
     if (icG >= 0) { iMaxval[icG] = (csp == 2 ? 255 : mxv); }
     if (icB >= 0) { iMaxval[icB] = (csp == 2 ? 255 : mxv); }
     if (icA >= 0) { iMaxval[icA] = (csp == 2 ? 255 : mxv); }
     
-    for (int32_t ic = 0; ic < MAX_CHNS; ic++)
+    for (uint32_t ic = 0;  ic < MAX_CHNS; ic++)
       { if ((iMaxval[ic] != UINT32_MAX) && (iMaxval[ic] != fMaxval[ic]))
           { fprintf(stderr, "** %s: channel %d - maxval %u should be %u\n", iName, ic, fMaxval[ic], iMaxval[ic]); }
       }
@@ -378,7 +378,7 @@ void do_uint16_image_io_png_official_test
     if (icB >= 0) { iMaxval[icB] = (1u << BB) - 1; }
     if (icA >= 0) { iMaxval[icA] = (1u << BA) - 1; }
     
-    for (int32_t ic = 0; ic < NC; ic++)
+    for (uint32_t ic = 0;  ic < NC; ic++)
       { if (fMaxval[ic] != iMaxval[ic]) 
           { fprintf(stderr, "** %s: channel %d - maxval %u should be %u\n", iName, ic, fMaxval[ic], iMaxval[ic]); }
       }
@@ -438,12 +438,12 @@ void compare_images(uint16_image_t *img, uint16_image_t *omg)
     int32_t chns = img->chns; demand(img->chns == omg->chns, "wrong chns");
     demand(omg->maxval == img->maxval, "wrong maxval");
         
-    for (int32_t y = 0; y < rows; y++)
+    for (uint32_t y = 0;  y < rows; y++)
       { uint16_t *ip = img->smp[y];
         uint16_t *op = omg->smp[y];
         int32_t k = 0;
-        for (int32_t x = 0; x < cols; x++)
-          { for (int32_t c = 0; c < chns; c++)
+        for (uint32_t x = 0;  x < cols; x++)
+          { for (uint32_t c = 0;  c < chns; c++)
               { if (ip[k] != op[k])
                   { fprintf(stderr, "img[%d][%d] = %d  omg[%d][%d] = %d\n", y, x, ip[k], y, x, op[k]); 
                     demand(FALSE, "samples differ!");

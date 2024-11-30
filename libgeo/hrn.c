@@ -1,5 +1,5 @@
 /* See {hrn.h}. */
-/* Last edited on 2024-11-22 03:44:07 by stolfi */
+/* Last edited on 2024-11-23 07:58:40 by stolfi */
 
 #include <stdint.h>
 #include <hrn.h>
@@ -21,13 +21,13 @@
 
 void rn_to_hrn(uint32_t n, double P[], double w, double p[])
   { p[0] = w;
-    for (int32_t i = 0; i < n; i++) { p[i+1] = w*P[i]; }
+    for (uint32_t i = 0;  i < n; i++) { p[i+1] = w*P[i]; }
   }
 
 void hrn_to_rn(uint32_t n, double p[], double P[])
   { double w = p[0];
     demand(w != 0, "point is at infinity");
-    for (int32_t i = 0; i < n; i++) { P[i] = p[i+1]/w; }
+    for (uint32_t i = 0;  i < n; i++) { P[i] = p[i+1]/w; }
   }
 
 sign_t hrn_side(uint32_t n, double p[], double h[])
@@ -70,9 +70,9 @@ hrn_pmap_t hrn_pmap_inv(hrn_pmap_t *M)
 
 void hrn_canonical_simplex(uint32_t d, uint32_t n, double p[])
   { uint32_t n1 = n+1;
-    for (int32_t i = 0; i <= d; i++) 
-      { int32_t n1i = (int32_t)n1*i;
-        for (int32_t j = 0; j <= n; j++)
+    for (uint32_t i = 0;  i <= d; i++) 
+      { uint32_t n1i = n1*i;
+        for (uint32_t j = 0;  j <= n; j++)
           { p[n1i + j] = (i == j ? 1 : 0); }
       }
   }
@@ -84,16 +84,16 @@ void hrn_regular_simplex(uint32_t n, double p[])
     double d = 1 + (N-1)*c;
     uint32_t n1 = n+1;
     /* Set the matrix {p}: */
-    for (int32_t i = 0; i <= n; i++) 
-      { int32_t n1i = i*(int32_t)n1;
+    for (uint32_t i = 0;  i <= n; i++) 
+      { uint32_t n1i = i*n1;
         p[n1i] = 1; /* Weight. */
         if (i == 0)
           { /* Set the first row to {(-1,-1,..-1)}: */
-            for (int32_t j = 1; j <= n; j++) { p[n1i + j] = -1; }
+            for (uint32_t j = 1;  j <= n; j++) { p[n1i + j] = -1; }
           }
         else
           { /* Set row {i} to {(1+d+c)*u_{i-1} - (c,c,..c)}: */
-            for (int32_t j = 1; j <= n; j++) { p[n1i + j] = (i == j ? d : -c); }
+            for (uint32_t j = 1;  j <= n; j++) { p[n1i + j] = (i == j ? d : -c); }
           }
       }
     }

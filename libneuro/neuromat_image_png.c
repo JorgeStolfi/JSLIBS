@@ -37,7 +37,7 @@ void neuromat_image_png_write(char *dir, char *name, float_image_t *fim, float v
     bool_t verbose_cvt = FALSE;
     int32_t cop = ((NC == 1) || (NC == 3) ? -1 : NC-1); /* Index of opacity channel. */
     /* Map the image to {[0_1]} and apply gamma correction: */
-    for (int32_t c = 0; c < NC; c++)  
+    for (uint32_t c = 0;  c < NC; c++)  
        { if (c != cop) 
            { float_image_rescale_samples(wim, c, vlo, vhi, 0.0, 1.0);
              float_image_apply_gamma(wim, c, gamma, bias);

@@ -124,7 +124,7 @@ multifok_frame_t *multifok_scene_make_frame
         multifok_scene_raytrace(scene, tree, pR, dR, debug_loc, &oHit_ray, &pHit_ray);
         if (oHit_ray == NULL)
           { /* Ray missed scene entirely, provide a gray plane at {zMin}: */
-            for (int32_t ic = 0; ic < NC; ic++) { colr[ic] = 0.500; }
+            for (uint32_t ic = 0;  ic < NC; ic++) { colr[ic] = 0.500; }
             double tHit = (zMin - pR->c[2])/dR->c[2];
             r3_mix(1.0, pR, tHit, dR, &pHit_ray);
           }
@@ -142,7 +142,7 @@ multifok_frame_t *multifok_scene_make_frame
             r3_t light_dir = (r3_t){{ 2.0, 3.0, 4.0 }};
             (void)r3_dir(&light_dir, &light_dir);
             frgb_t colr_ray = multifok_scene_raytrace_compute_hit_color(oHit_ray, &(pHit_ray), pattern, &light_dir);
-            for (int32_t ic = 0; ic < NC; ic++) { colr[ic] = colr_ray.c[ic]; }
+            for (uint32_t ic = 0;  ic < NC; ic++) { colr[ic] = colr_ray.c[ic]; }
           }
         (*pHit_P) = pHit_ray;
         if (debug_loc) { fprintf(stderr, "        %s\n", DASHES); }

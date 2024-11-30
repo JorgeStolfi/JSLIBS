@@ -74,7 +74,7 @@ int32_t main(int32_t argc, char **argv)
     
     test_hr2_pmap_encode_num_parameters(TRUE);
   
-    for (int32_t i = 0; i < 20; i++)
+    for (uint32_t i = 0;  i < 20; i++)
       { bool_t verbose = TRUE;
         test_hr2_pmap_translation_encode__hr2_pmap_translation_decode(verbose);
         test_hr2_pmap_congruence_encode__hr2_pmap_congruence_decode(verbose);
@@ -325,7 +325,7 @@ void test_hr2_pmap_encode__hr2_pmap_decode(bool_t verbose)
             double y[ny]; /* Encoded elements. */
             hr2_pmap_encode(&M, type, ny, y);
             if (verbose) { hpedt_print_encoding(ny, y); }
-            for (int32_t ky = 0; ky < ny; ky++)
+            for (uint32_t ky = 0;  ky < ny; ky++)
               { demand(fabs(y[ky] - y0[ky]) <= eqtol, "{hr2_pmap_encode} failed"); }
 
             /* Test decoding: */
@@ -345,8 +345,8 @@ void test_hr2_pmap_encode__hr2_pmap_decode(bool_t verbose)
 
 r3x3_t hpedt_throw_r3x3(double mag)
   { r3x3_t A;
-    for (int32_t i = 0; i < 3; i++)
-      { for (int32_t j = 0; j < 3; j++)
+    for (uint32_t i = 0;  i < 3; i++)
+      { for (uint32_t j = 0;  j < 3; j++)
           { A.c[i][j] = mag*(2*drandom() - 1.0); }
       }
     return A;
@@ -362,13 +362,13 @@ void hpedt_print_encoding(uint32_t ny, double y[])
   { 
     fprintf(stderr, "  encoding parameters:\n");
     fprintf(stderr, "    ");
-    for (int32_t kv = 0; kv < ny; kv++)
+    for (uint32_t kv = 0;  kv < ny; kv++)
       { fprintf(stderr, " %+12.8f", y[kv]); }
     fprintf(stderr, "\n");
   }
 
 void hpedt_check_same_map(hr2_pmap_t *M, hr2_pmap_t *N)
-  { for (int32_t dir = 0; dir <= 1; dir++)
+  { for (uint32_t dir = 0;  dir <= 1; dir++)
       { r3x3_t *A = (dir == 0 ? &(M->dir) : &(M->inv));
         double Am = r3x3_norm(A);
         demand(Am > 1.0e-100, "Bad {M}");
@@ -378,8 +378,8 @@ void hpedt_check_same_map(hr2_pmap_t *M, hr2_pmap_t *N)
         demand(Am > 1.0e-100, "Bad {N}");
         
         double tol = 1.0e-12;
-        for (int32_t i = 0; i < 3; i++)
-          for (int32_t j = 0; j < 3; j++) 
+        for (uint32_t i = 0;  i < 3; i++)
+          for (uint32_t j = 0;  j < 3; j++) 
             { double Aij = A->c[i][j]/Am;
               double Bij = B->c[i][j]/Bm;
               double err = fabs(Aij - Bij);

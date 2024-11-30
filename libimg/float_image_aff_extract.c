@@ -1,5 +1,5 @@
 /* See {float_image_aff_extract.h}. */
-/* Last edited on 2024-10-12 18:24:15 by stolfi */
+/* Last edited on 2024-11-23 05:56:31 by stolfi */
 
 #include <math.h>
 #include <stdint.h>
@@ -17,7 +17,7 @@
 #include <i2.h>
 #include <jsmath.h>
 #include <affirm.h>
-#include <ix.h>
+#include <ix_reduce.h>
 #include <gauss_table.h>
 #include <float_image.h>
 #include <float_image_interpolate.h>
@@ -69,7 +69,7 @@ float_image_t *float_image_aff_extract(float_image_t *img, hr2_pmap_t *A, r2_t d
     double vd[NC]; /* Interpolated pixel value, as double. */
     float vf[NC]; /* Interpolated pixel value, as float. */
     int32_t order = 1; /* C1 interpolation. */
-    ix_reduction_t red = ix_reduction_EXTEND; /* Replicate border pixels. */
+    ix_reduce_mode_t red = ix_reduce_mode_EXTEND; /* Replicate border pixels. */
     for (int32_t ix = -hx;  ix <= hx; ix++)
       { double wxi = (ix >= 0 ? wx[ix] : wx[-ix]);
         for (int32_t iy = -hy;  iy <= hy; iy++)
@@ -80,7 +80,7 @@ float_image_t *float_image_aff_extract(float_image_t *img, hr2_pmap_t *A, r2_t d
             float_image_interpolate_pixel(img, q.c[0], q.c[1], order, red, vd);
             /* Apply the mask weight: */
             double wxy = wxi*wyi;
-            for (int32_t ic = 0; ic < NC; ic++) { vf[ic] = (float)(wxy*vd[ic]); }
+            for (uint32_t ic = 0;  ic < NC; ic++) { vf[ic] = (float)(wxy*vd[ic]); }
             if (debug_sampling) { float_image_aff_extract_show_sample(ix, iy, p, q, wxy, NC, vf); }
             float_image_set_pixel(res, ix + hx, iy + hy, vf);
         }
@@ -95,7 +95,7 @@ void float_image_aff_extract_show_sample(int32_t ix, int32_t iy, r2_t p, r2_t q,
     fprintf(stderr, " --> ( %10.8f %10.8f )", q.c[0], q.c[1]);
     fprintf(stderr, " * %10.8f\n", w);
     fprintf(stderr, " =");
-    for (int32_t kc = 0; kc < NC; kc++) { fprintf(stderr, " %+8.5f", vf[kc]); }
+    for (uint32_t kc = 0;  kc < NC; kc++) { fprintf(stderr, " %+8.5f", vf[kc]); }
     fprintf(stderr, "\n");
   }
 

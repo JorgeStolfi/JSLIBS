@@ -72,7 +72,7 @@ void deldebug_destroy_edge(quad_arc_t e)
         deldebug_set_all_left_faces(e, EXT);
         /* Remove {e} from the list of created edges: */
         int32_t m = 0;
-        for (int32_t i = 0; i < nec; i++) 
+        for (uint32_t i = 0;  i < nec; i++) 
           { if (quad_edge(e) == quad_edge(ec.e[i])) 
               { ec.e[i] = quad_arc_NULL; m++; }
           }
@@ -182,7 +182,7 @@ void deldebug_print_edge (char *msg, quad_arc_t e)
 
 void deldebug_check_quad_edge(quad_arc_t e)
   {
-    for (int32_t k = 0; k < 4; k++)
+    for (uint32_t k = 0;  k < 4; k++)
       { assert(! quad_arc_is_null(quad_onext(e))); 
         e = quad_rot(e);
       }
@@ -190,7 +190,7 @@ void deldebug_check_quad_edge(quad_arc_t e)
 
 void deldebug_check_quad_all_edges(void)
   {
-    for (int32_t i = 0; i < nec; i++)
+    for (uint32_t i = 0;  i < nec; i++)
       { quad_arc_t e = ec.e[i];
         if (! quad_arc_is_null(e)) { deldebug_check_quad_edge(e); }
       }

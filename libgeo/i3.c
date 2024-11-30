@@ -158,7 +158,7 @@ void i3_gen_print (FILE *f, i3_t *a, char *fmt, char *lp, char *sep, char *rp)
     if (sep == NULL) { sep = " "; }
     if (rp == NULL) { rp = ")"; }
     fputs(lp, f);
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { if (i > 0) { fputs(sep, f); }
         fprintf(f, fmt, a->c[i]);
       }

@@ -1,5 +1,5 @@
 /* See jsrandom.h */
-/* Last edited on 2024-11-22 03:17:18 by stolfi */
+/* Last edited on 2024-11-27 01:48:30 by stolfi */
 
 #include <stdio.h>
 #include <limits.h>
@@ -243,7 +243,7 @@ double dloggaussrand(double avg, double dev)
 /* RANDOM CHARS: */
 
 void randchars(char s[], uint32_t ns, char a[], uint32_t na)
-  { for (int32_t i = 0; i < ns; i++)
+  { for (uint32_t i = 0;  i < ns; i++)
       { uint32_t k = uint32_abrandom(0, na-1);
         s[i] = a[k];
       } 
@@ -254,19 +254,32 @@ void randchars(char s[], uint32_t ns, char a[], uint32_t na)
 uint64_t *uint64_choose(uint64_t n, size_t k, uint64_t *perm)
   {
     demand(k <= n, "invalid arguments");
-    if ((k > 0) && (perm == NULL)) 
-      { perm = notnull(malloc(k*sizeof(uint64_t)), "no mem"); }
-    for (int64_t i = 0; i < k; i++)
-      { int64_t pi = int64_abrandom(i, (int64_t)n-1);
-        int64_t j = i;
-        while ((j > 0) && (perm[j-1] >= pi))
-          { perm[j] = perm[j-1];
-            assert(pi > 0);
-            pi = pi - 1;
-            j = j - 1;
+    if (k > 0) 
+      { if (perm == NULL) { perm = talloc(k, uint64_t); }
+        for (int64_t i = 0; i < k; i++)
+          { int64_t pi = int64_abrandom(i, (int64_t)n-1);
+            int64_t j = i;
+            while ((j > 0) && (perm[j-1] >= pi))
+              { perm[j] = perm[j-1];
+                assert(pi > 0);
+                pi = pi - 1;
+                j = j - 1;
+              }
+            perm[j] = (uint64_t)pi;
           }
-        perm[j] = (uint64_t)pi;
       }
     return perm;
   }
     
+uint32_t *random_perm(uint32_t n, uint32_t *perm)
+  { if (n > 0)
+      { if (perm == NULL) { perm = talloc(n, uint32_t); }
+        for (uint32_t i = 0; i < n; i++) { perm[i] = i; }
+        for (uint32_t i = 0; i+1 < n; i++) 
+          { uint32_t j = uint32_abrandom(i, n-1);
+            if (i != j) 
+              { uint32_t t = perm[i]; perm[i] = perm[j]; perm[j] = t; }
+          }
+      }
+    return perm;
+  }

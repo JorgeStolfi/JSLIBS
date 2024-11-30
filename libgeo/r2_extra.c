@@ -120,12 +120,12 @@ void r2_get_persp_rectangle_bbox
   )
   {
     /* Initialize bounds: */
-    for (int32_t ax = 0; ax < 2; ax++) { ibox[ax].end[0] = +INF; ibox[ax].end[1] = -INF; }
+    for (uint32_t ax = 0;  ax < 2; ax++) { ibox[ax].end[0] = +INF; ibox[ax].end[1] = -INF; }
     /* Hack: map the corners of a slightly wider rectangle and get its bbox */
     double wx = HI(tbox[0]) - LO(tbox[0]);
     double wy = HI(tbox[1]) - LO(tbox[1]);
-    for (int32_t dx = 0; dx <= 1; dx++)
-      { for (int32_t dy = 0; dy <= 1; dy++)
+    for (uint32_t dx = 0;  dx <= 1; dx++)
+      { for (uint32_t dy = 0;  dy <= 1; dy++)
           { /* Get a true corner {p} of the enlarged rectangle: */
             double txp = tbox[0].end[dx] + (2*dx - 1)*0.00001*wx;
             double typ = tbox[1].end[dy] + (2*dy - 1)*0.00001*wy;
@@ -133,7 +133,7 @@ void r2_get_persp_rectangle_bbox
             /* Map {p} to the image coord system: */
             r2_map_projective(&p, T2I, &p, NULL);
             /* Expand box: */
-            for (int32_t ax = 0; ax < 2; ax++)
+            for (uint32_t ax = 0;  ax < 2; ax++)
               { if (p.c[ax] < ibox[ax].end[0]) { ibox[ax].end[0] = p.c[ax]; }
                 if (p.c[ax] > ibox[ax].end[1]) { ibox[ax].end[1] = p.c[ax]; }
               }
@@ -149,7 +149,7 @@ void r2_get_persp_disk_bbox
   )
   {
     /* Initialize bounds: */
-    for (int32_t ax = 0; ax < 2; ax++) { ibox[ax].end[0] = +INF; ibox[ax].end[1] = -INF; }
+    for (uint32_t ax = 0;  ax < 2; ax++) { ibox[ax].end[0] = +INF; ibox[ax].end[1] = -INF; }
     /* Hack: map the corners of an enclosing 8-gon and get its bbox */
     double a = 1.00001*rad;             /* Max abs coord of an octagon corner. */
     double b = 1.00001*rad*tan(M_PI/8); /* Min abs coord of an octagon corner. */
@@ -159,12 +159,12 @@ void r2_get_persp_disk_bbox
             double txp = ctr->c[0] + dx*a;
             double typ = ctr->c[1] + dy*b;
             /* Try the two transposed copies of the point: */
-            for (int32_t swap = 0; swap < 2; swap++)
+            for (uint32_t swap = 0;  swap < 2; swap++)
 	      { /* Map it to the image coord system: */
                 r2_t p = (r2_t){{ txp, typ }};
                 r2_map_projective(&p, T2I, &p, NULL);
                 /* Expand box: */
-                for (int32_t ax = 0; ax < 2; ax++)
+                for (uint32_t ax = 0;  ax < 2; ax++)
                   { if (p.c[ax] < ibox[ax].end[0]) { ibox[ax].end[0] = p.c[ax]; }
 		    if (p.c[ax] > ibox[ax].end[1]) { ibox[ax].end[1] = p.c[ax]; }
 		  }
@@ -365,10 +365,10 @@ void r2_debug_point_jacobian(char *label, r2_t *p, r2x2_t *J, char *tail)
 void r2_map_compute_numeric_jacobian(r2_t *p, r2_map_jacobian_t *map, double step, r2x2_t *K, bool_t debug)
   {
     /* Check the partial derivatives numerically: */
-    for (int32_t i = 0; i < 2; i++)
+    for (uint32_t i = 0;  i < 2; i++)
       { /* Evaluate {map} at points {q[0..1]} , displaced from {p} along axis {i}: */
         r2_t q[2];
-        for (int32_t k = 0; k < 2; k++)
+        for (uint32_t k = 0;  k < 2; k++)
           { r2_t pk = (*p); 
             pk.c[i] += (2*k - 1)*step;
             r2_t *qk = &(q[k]);
@@ -382,7 +382,7 @@ void r2_map_compute_numeric_jacobian(r2_t *p, r2_map_jacobian_t *map, double ste
               }
           }
         /* Compute the derivatives of : */
-        for (int32_t j = 0; j < 2; j++)
+        for (uint32_t j = 0;  j < 2; j++)
           { /* Compute the derivative of coordinate {j} w.r.t coordinate {i}: */
             K->c[i][j] = (q[1].c[j] - q[0].c[j])/(2*step);
           }
@@ -417,9 +417,9 @@ void r2_map_check_jacobian(r2_t *p, r2_map_jacobian_t *map, char *mapname, doubl
     /* Establish a limit for the relative error: */
     double tol = 1.0e-4;
     /* Check the partial derivatives numerically: */
-    for (int32_t i = 0; i < 2; i++)
+    for (uint32_t i = 0;  i < 2; i++)
       { /* Check the derivatives of {ip} w.r.t. coordinate {i} of {op}: */
-        for (int32_t j = 0; j < 2; j++)
+        for (uint32_t j = 0;  j < 2; j++)
           { /* Compute the derivative of coordinate {j} w.r.t coordinate {i}: */
             double dnum = K.c[i][j];
             /* Compare with the Jacobian returned by {map}: */

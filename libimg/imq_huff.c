@@ -26,7 +26,7 @@ codetree_t *imq_huff_build_tree(codetree_huff_freq_t freq[])
     codetree_huff_freq_t hist[nh];
     
     /* Complement the diffs to get proper tie-breaking in Huffman tree: */
-    for (int32_t ih = 0; ih < nh; ih++) { hist[ih] = freq[nh-1-ih]; }
+    for (uint32_t ih = 0;  ih < nh; ih++) { hist[ih] = freq[nh-1-ih]; }
     
     /* Build the Huffman tree for the set {V} = {0..510}: */
     codetree_value_t maxval = nh-1;
@@ -62,7 +62,7 @@ codetree_bit_count_t imq_huff_decode
       }
       
     /* We must complement the Huffman bytes due way IMQ interprets them: */
-    for (int32_t ib = 0; ib < nb1; ib++) { buf1[ib] ^= (byte_t)255; }
+    for (uint32_t ib = 0;  ib < nb1; ib++) { buf1[ib] ^= (byte_t)255; }
     codetree_bit_count_t nbits_decoded = codetree_decode(nb1, buf1, tree, maxval, nd, diff);
     codetree_byte_count_t nbytes_decoded = (nbits_decoded + 7)/8;
     assert(nbytes_decoded <= nb);
@@ -73,7 +73,7 @@ codetree_bit_count_t imq_huff_decode
     
     if (verbose) { fprintf(stderr, "integrating the differences...\n"); }
     pix[0] = buf[0];
-    for (int32_t i = 0; i < nd; i++)
+    for (uint32_t i = 0;  i < nd; i++)
       { /* Note that we reversed signs when building the tree. */
         /* So each {diff[i]} is {255 - (pix[i+1]-pix[i])}. */
         int32_t di = diff[i] - 255; 

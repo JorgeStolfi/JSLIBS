@@ -96,7 +96,7 @@ void dnae_seq_multi_get_2017_paper_weights
     wt0.e[r0+4] =  183;
     wt0.e[r0+5] =   19;
     wt0.e[r0+6] =    1;
-    for (int32_t i = 1; i <= r0; i++) { wt0.e[r0-i] = wt0.e[r0+i]; }
+    for (uint32_t i = 1;  i <= r0; i++) { wt0.e[r0-i] = wt0.e[r0+i]; }
     char *wname0 = wt_table_make_descr(n0, wt0.e, "%d");
     wt_table_normalize_sum(n0, wt0.e); /* Must be after {wt_table_make_descr}. */
     
@@ -113,7 +113,7 @@ void dnae_seq_multi_get_2017_paper_weights
     wt1.e[r1+ 8] =   48;
     wt1.e[r1+ 9] =   12;
     wt1.e[r1+10] =    2;
-    for (int32_t i = 1; i <= r1; i++) { wt1.e[r1-i] = wt1.e[r1+i]; }
+    for (uint32_t i = 1;  i <= r1; i++) { wt1.e[r1-i] = wt1.e[r1+i]; }
     char *wname1 = wt_table_make_descr(n1, wt1.e, "%d");
     wt_table_normalize_sum(n1, wt1.e); /* Must be after {wt_table_make_descr}. */
     

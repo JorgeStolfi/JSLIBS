@@ -2,19 +2,19 @@
 #define float_image_transform_H
 
 /* Tools for projective and barrel/pincushion image correction. */
-/* Last edited on 2023-08-27 17:58:21 by stolfi */ 
+/* Last edited on 2024-11-23 05:39:24 by stolfi */ 
 
 #include <r2.h>
 #include <r2_extra.h>
 #include <r2x2.h>
 #include <r3x3.h>
 #include <bool.h>
-#include <ix.h>
+#include <ix_reduce.h>
 #include <float_image.h>
 
 void float_image_transform_all
   ( float_image_t *iimg,     /* Input image. */
-    ix_reduction_t red,      /* Index reduction method. */ 
+    ix_reduce_mode_t red,      /* Index reduction method. */ 
     r2_map_jacobian_t *map,  /* Output-to-input coordinate transformation. */
     float undef,             /* Sample value for undefined output pixels. */
     bool_t avg,              /* TRUE to average pixels, FALSE to add them. */
@@ -76,7 +76,7 @@ void float_image_transform_all
     
 void float_image_transform_sub
   ( float_image_t *iimg,     /* Input image. */
-    ix_reduction_t red,      /* Index reduction method. */ 
+    ix_reduce_mode_t red,      /* Index reduction method. */ 
     r2_map_jacobian_t *map,  /* Output-to-input coordinate transformation. */
     float undef,             /* Sample value for undefined output pixels. */
     bool_t avg,              /* TRUE to average pixels, FALSE to add them. */
@@ -94,7 +94,7 @@ void float_image_transform_sub
   
 void float_image_transform_get_pixel
   ( float_image_t *img,     /* Input image. */
-    ix_reduction_t red,     /* Index reduction method. */ 
+    ix_reduce_mode_t red,     /* Index reduction method. */ 
     int col,                /* Column index of output pixel. */
     int row,                /* Row index of output pixel. */
     r2_map_jacobian_t *map, /* Output-to-input coordinate transformation. */
@@ -132,7 +132,7 @@ void float_image_transform_get_pixel
   
 void float_image_transform_copy_persp_rectangle
   ( float_image_t *iimg,
-    ix_reduction_t red, /* Index reduction method. */ 
+    ix_reduce_mode_t red, /* Index reduction method. */ 
     double xlo,         /* Min X in true coords. */
     double xhi,         /* Max X in true coords. */
     double ylo,         /* Min Y in true coords. */

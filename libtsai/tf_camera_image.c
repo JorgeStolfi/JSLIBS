@@ -1,12 +1,12 @@
 /* See {tf_camera_image.h}.  */
-/* Last edited on 2022-10-20 05:52:58 by stolfi */
+/* Last edited on 2024-11-23 05:29:16 by stolfi */
 
-#define _GNU_SOURCE
+#include <stdint.h>
 
 #include <float_image.h>
-#include <stdint.h>
 #include <float_image_interpolate.h>
 #include <affirm.h>
+#include <ix_reduce.h>
 
 #include <tf_camera.h>
 #include <tf_camera_image.h>
@@ -32,7 +32,7 @@ float_image_t *image_apply_pincushion (tf_camera_params_t *cpar, float_image_t *
         r2_t pu = tf_dis_sensor_coords_to_und_sensor_coords (cpar, pd);
         r2_t npi = tf_sensor_coords_to_image_coords (cpar, pu);
  
-        float_image_interpolate_pixel(img, npi.c[0], npi.c[1], 1, ix_reduction_EXTEND, vv);
+        float_image_interpolate_pixel(img, npi.c[0], npi.c[1], 1, ix_reduce_mode_EXTEND, vv);
         for (ic = 0; ic < NC; ic++) { v[ic] = (float)vv[ic]; }
         float_image_set_pixel(omg, ix, iy, v); 
       }

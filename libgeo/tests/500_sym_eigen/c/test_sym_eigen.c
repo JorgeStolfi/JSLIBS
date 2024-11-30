@@ -26,7 +26,7 @@ int32_t main(int32_t argn, char **argc)
     uint32_t absrt = 0;
 
     uint32_t nt = 3; /* Number of test matrices. */
-    for (int32_t it =  0; it < nt; it++)
+    for (uint32_t it = 0;  it < nt; it++)
       { 
         fprintf(stderr, "\n");
         fprintf(stderr, "C - WITH R\n");
@@ -67,8 +67,8 @@ int32_t main(int32_t argn, char **argc)
 void filla(uint32_t n, double *A, uint32_t it)
   /* Generate a symmetric matrix A(n,n) */
   { 
-    for (int32_t i =  0; i < n; i++) 
-      { for (int32_t j =  0; j <= i; j++) 
+    for (uint32_t i = 0;  i < n; i++) 
+      { for (uint32_t j = 0;  j <= i; j++) 
           { double Aij;
             if (it == 0)
               { /* Randomish: */
@@ -100,8 +100,8 @@ void prta(uint32_t n, double *A)
   /* prints matrix A(n,n) */
   { 
     fprintf(stderr, "\n");
-    for (int32_t i =  0; i < n; i++) 
-      { for (int32_t j =  0; j < n; j++) 
+    for (uint32_t i = 0;  i < n; i++) 
+      { for (uint32_t j = 0;  j < n; j++) 
           { fprintf(stderr, "%14.10f", A[n*i+j]); }
         fprintf(stderr, "\n");
       }
@@ -112,8 +112,8 @@ void prtri(uint32_t n, double *d, double *e)
   /* prints symmetric tridiagonal matrix */
   /* d[0..n-1] is diagonal, e[1..n-1] is sub-diagonal */
   { fprintf(stderr, "\n");
-    for (int32_t i =  0; i < n; i++) 
-      { for (int32_t j =  0; j < i-1; j++)  { fprintf(stderr, "%14s", ""); }
+    for (uint32_t i = 0;  i < n; i++) 
+      { for (uint32_t j = 0;  j < i-1; j++)  { fprintf(stderr, "%14s", ""); }
         if (i > 0) fprintf(stderr, "%14.10f", e[i]);
         fprintf(stderr, "%14.10f", d[i]);
         if (i < n-1) fprintf(stderr, "%14.10f", e[i+1]);
@@ -125,7 +125,7 @@ void prtri(uint32_t n, double *d, double *e)
 void preval(uint32_t n, double *d, uint32_t p)
   /* prints eigenvalue list d[1..n-1] */
   { fprintf(stderr, "\n");
-    for (int32_t i =  0; i < p; i++) 
+    for (uint32_t i = 0;  i < p; i++) 
       { fprintf(stderr, "%14.10f\n", d[i]); }
     fprintf(stderr, "\n");
   }
@@ -133,8 +133,8 @@ void preval(uint32_t n, double *d, uint32_t p)
 void prevec(uint32_t n, double *R, uint32_t p)
   /* prints eigenvectors R[0..p-1,*] */
   { fprintf(stderr, "\n");
-    for (int32_t i =  0; i < p; i++)  
-      { for (int32_t j =  0; j < n; j++)
+    for (uint32_t i = 0;  i < p; i++)  
+      { for (uint32_t j = 0;  j < n; j++)
           { fprintf(stderr, "%14.10f", R[n*i+j]); }
         fprintf(stderr, "\n");
       }
@@ -146,27 +146,27 @@ void appsim(uint32_t n, double *R, double *A, double *v)
   /* i.e. computes "R*A*(R^t)", using "v[0..n-1]" as temp storage */
   {
     /*set "A" to "R" times "A": */
-    for (int32_t j =  0; j < n; j++)
+    for (uint32_t j = 0;  j < n; j++)
       { /*  set "v" to "R" times the column "j" of "A": */
-        for (int32_t i =  0; i < n; i++)
+        for (uint32_t i = 0;  i < n; i++)
           { double s = 0.0;
-            for (int32_t k =  0; k < n; k++) { s += R[n*i+k]*A[n*k+j]; }
+            for (uint32_t k = 0;  k < n; k++) { s += R[n*i+k]*A[n*k+j]; }
             v[i] = s;
           }
         /*  now store "v" into colum "j" of "A": */
-        for (int32_t i =  0; i < n; i++) { A[n*i+j] = v[i]; }
+        for (uint32_t i = 0;  i < n; i++) { A[n*i+j] = v[i]; }
       }
 
     /*set "A" to "A" times "R" transposed: */
-    for (int32_t i =  0; i < n; i++) /* do 500 */
+    for (uint32_t i = 0;  i < n; i++) /* do 500 */
       { /*  set "v" to row "i" of "A" times "R" transposed: */
-        for (int32_t j =  0; j < n; j++)
+        for (uint32_t j = 0;  j < n; j++)
           { double s = 0.0;
-            for (int32_t k =  0; k < n; k++) { s += A[n*i+k]*R[n*j+k]; }
+            for (uint32_t k = 0;  k < n; k++) { s += A[n*i+k]*R[n*j+k]; }
             v[j] = s;
           }
         /*  now store "v" into row "i" of "A": */
-        for (int32_t j = 0; j < n; j++) { A[n*i+j] = v[j]; }
+        for (uint32_t j = 0;  j < n; j++) { A[n*i+j] = v[j]; }
       }
   }
 

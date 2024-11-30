@@ -53,7 +53,7 @@ void haf_read_obj_file
     
     /* Determine the total number {ns_max} of sides in the faces: */
     int32_t ns_max = 0;
-    for (int32_t kf = 0; kf < nf; kf++)
+    for (uint32_t kf = 0;  kf < nf; kf++)
       { int32_vec_t *FVk = &(D->FV.e[kf]);
         int32_t nck = FVk->ne;
         demand(nck >= 3, "face has fewer than 3 corners");
@@ -65,7 +65,7 @@ void haf_read_obj_file
     int32_t ne_max = ns_max; /* In case there is free border. */
     if (verbose) { fprintf(stderr, "allocating the edge table {A} for up to %d edges...\n", ne_max); }
     haf_arc_vec_t A = haf_arc_vec_new(ne_max);
-    for (int32_t ke = 0; ke < ne_max; ke++) { A.e[ke] = NULL;  }
+    for (uint32_t ke = 0;  ke < ne_max; ke++) { A.e[ke] = NULL;  }
       
     /* Alocate the arc tables: */
     int32_t na_max = 2*ne_max; 
@@ -73,7 +73,7 @@ void haf_read_obj_file
     int32_t *fleft = talloc(na_max, int32_t);  /* In case there is free border. */
     int32_t *vorg = talloc(na_max, int32_t);   /* In case there is free border. */
 
-    for (int32_t ka = 0; ka < na_max; ka++) { fleft[ka] = -1; vorg[ka] = -1; }
+    for (uint32_t ka = 0;  ka < na_max; ka++) { fleft[ka] = -1; vorg[ka] = -1; }
         
     /* Vertex tables: */
     /* {V,VL} are copies of {D->V,D->VL}: */
@@ -85,7 +85,7 @@ void haf_read_obj_file
     /* {aout[kv].e[0..vdeg[kv]-1]} are the arcs out of {D->V.e[kv]}: */
     haf_arc_vec_t *aout = talloc(nv, haf_arc_vec_t);
 
-    for (int32_t kv = 0; kv < nv; kv++)
+    for (uint32_t kv = 0;  kv < nv; kv++)
       { V.e[kv] = D->V.e[kv];
         /* Make a copy of the label: */
         char *lab = D->VL.e[kv];
@@ -138,13 +138,13 @@ void haf_read_obj_file
         the direction bit, and the origin and destination vertices. */
 
     if (verbose) { fprintf(stderr, "scanning the faces and creating the edge records...\n"); }
-    for (int32_t kf = 0; kf < nf; kf++)
+    for (uint32_t kf = 0;  kf < nf; kf++)
       { int32_vec_t *FVk = &(D->FV.e[kf]);
         int32_t nck = FVk->ne; /* Number of arcs in face border. */
         if (debug) { fprintf(stderr, "  processing face F[%d] (%d corners)\n", kf, nck); }
         /* Scan the border to create the edge records and set arc tables: */
         int32_t kv_prev = FVk->e[nck-1];
-        for (int32_t kc = 0; kc < nck; kc++)
+        for (uint32_t kc = 0;  kc < nck; kc++)
           { int32_t kv_this = FVk->e[kc];
             add_side(kv_prev, kv_this, kf);
             kv_prev = kv_this;
@@ -152,7 +152,7 @@ void haf_read_obj_file
         /* Scan the border again to set the {next} links: */
         haf_arc_t a_prev = find_in_aout(FVk->e[nck-1], FVk->e[0], kf);
         assert(a_prev != NULL);
-        for (int32_t kc = 0; kc < nck; kc++)
+        for (uint32_t kc = 0;  kc < nck; kc++)
           { int32_t kv0 = FVk->e[kc];
             int32_t kv1 = FVk->e[(kc+1)%nck];
             haf_arc_t a_this = find_in_aout(kv0, kv1, kf);
@@ -174,7 +174,7 @@ void haf_read_obj_file
     /* Check for free borders: */
     if (verbose) { fprintf(stderr, "checking for free borders...\n"); }
     int32_t na_free = 0;  /* Number of unused arc (free border edges). */
-    for (int32_t ka = 0; ka < 2*ne; ka++)
+    for (uint32_t ka = 0;  ka < 2*ne; ka++)
       { if (fleft[ka] == -1)
           { haf_arc_t a = A.e[ka];
             assert(a != NULL);
@@ -193,7 +193,7 @@ void haf_read_obj_file
          
     /* We no longer need {aout}: */
     if (verbose) { fprintf(stderr, "discarding the {aout} table...\n"); }
-    for (int32_t kv = 0; kv < nv; kv++) { free(aout[kv].e); }
+    for (uint32_t kv = 0;  kv < nv; kv++) { free(aout[kv].e); }
     free(aout); aout = NULL;
     
     /* Check for unused vertices and squeeze them out: */
@@ -201,7 +201,7 @@ void haf_read_obj_file
     int32_t *kv_map = talloc(nv, int32_t); /* Maps original vert indices to squeezed ones. */
     int32_t nv_old = nv; /* Number of vertices in OBJ file. */
     int32_t nv_new = 0;  /* Number of vertices retained. */
-    for (int32_t kv = 0; kv < nv; kv++)
+    for (uint32_t kv = 0;  kv < nv; kv++)
       { if (vdeg[kv] == 0)
           { if (verbose) { fprintf(stderr, "  vertex V[%d] of file is not used, discarded\n", kv); }
             free(VL.e[kv]); 
@@ -227,7 +227,7 @@ void haf_read_obj_file
     /* Map {vorg} to account for vertex squeezing: */
     if (nv_new < nv)
       { if (verbose) { fprintf(stderr, "renumbering used vertices\n"); }
-        for (int32_t ka = 0; ka < na; ka++)
+        for (uint32_t ka = 0;  ka < na; ka++)
           { int32_t kv_old = vorg[ka];
             if (debug) { fprintf(stderr, "    vorg[%d] = V[%d] fleft[%d] = F[%d]", ka, kv_old, ka, fleft[ka]); } 
             assert((kv_old >= 0) && (kv_old < nv_old));
@@ -364,7 +364,7 @@ void haf_read_obj_file
     haf_arc_t find_in_aout(int32_t kv0, int32_t kv1, int32_t kf)
       { /* Checks {aout[kv0]} if arc {kv0->kv1} occurred before: */
         haf_arc_vec_t *aout0 = &(aout[kv0]);
-        for (int32_t ja = 0; ja < vdeg[kv0]; ja++)
+        for (uint32_t ja = 0;  ja < vdeg[kv0]; ja++)
           { haf_arc_t a = aout0->e[ja];
             assert (a != NULL);  /* We should never store a {NULL} there. */
             int32_t ka = (int32_t)(haf_arc_id(a) - 2*eid0);

@@ -25,12 +25,12 @@ void neuromat_eeg_spectrum_write
   {
     demand(2*kfmax <= nt, "{kfmax} too high");
     
-    for (int32_t kf = 0; kf <= kfmax; kf++) 
+    for (uint32_t kf = 0;  kf <= kfmax; kf++) 
       { double f = kf*fsmp/nt;
         double flo = (kf == 0 ? 0.0 : kf - 0.5)*fsmp/nt;
         double fhi = (2*kf == nt ? (double)kf : kf + 0.5)*fsmp/nt;
         fprintf(wr, "%8d  %12.7f  %12.7f %12.7f ", kf, f, flo, fhi);
-        for (int32_t ie = 0; ie < ne; ie++) { fprintf(wr, " %12.5e", pwr[ie][kf]); }
+        for (uint32_t ie = 0;  ie < ne; ie++) { fprintf(wr, " %12.5e", pwr[ie][kf]); }
         fprintf(wr, "\n");
       }
     fflush(wr);

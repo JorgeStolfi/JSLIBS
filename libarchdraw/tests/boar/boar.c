@@ -89,8 +89,8 @@ void plot_all(char *prefix, adrw_point_vec_t *P, int32_t nx, int32_t ny, bool_t 
     double xmin = -100, xmax = +1700;
     double ymin = -100, ymax = +3300;
     
-    for (int32_t ox = 0; ox < nx; ox++)
-      { for (int32_t oy = 0; oy < ny; oy++)
+    for (uint32_t ox = 0;  ox < nx; ox++)
+      { for (uint32_t oy = 0;  oy < ny; oy++)
           { epswr_figure_t *epsf = adrw_new_figure
               ( "out", prefix, "1S", xmin, xmax, ymin, ymax,
                 ox, nx, oy, ny, "Situacao atual"

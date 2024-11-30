@@ -94,7 +94,7 @@ void do_test_read(ppv_array_t *A, char *fname, int64_t *nerrP)
     fprintf(stderr, "Checking {ppv_array_read_file} (same array)...\n");
     ppv_array_t *B;
     FILE *rd = open_read(fname, TRUE);
-    for (int32_t i = 0; i < 2; i++)
+    for (uint32_t i = 0;  i < 2; i++)
       { B = ppv_array_read_file(rd);
         if (! ppv_descriptor_is_valid(B, TRUE)) 
           { bug(nerrP,"{ppv_array_read_file} returns an invalid desc"); }

@@ -295,7 +295,7 @@ void tr2o_do_one_test
     if (strcmp(fname, "indiff") == 0)
       { f2_raw = &f2_indiff;
         /* For this function, the optimum {popt} is the initial point {pini}: */
-        for (int32_t i = 0; i < NI; i++) { popt[i] = pini[i]; }
+        for (uint32_t i = 0;  i < NI; i++) { popt[i] = pini[i]; }
         compare_to_popt = bias; /* If {bias} is true, the solution should be {popt}. */
       }
     else if (strcmp(fname, "optdst") == 0)
@@ -315,7 +315,7 @@ void tr2o_do_one_test
         /* Write the images out for debuging: */
         for (int32_t isc = -1; isc < 3; isc++)
           { i2_t ipscale = ( isc < 0 ? iscale : (i2_t){{ isc, isc }} ); /* Plotting scale. */
-            for (int32_t i = 0; i < NI; i++)
+            for (uint32_t i = 0;  i < NI; i++)
               { tr2o_write_test_image(image_eval, i, ipscale, cmp_rad, pini[i], "ini", arad[i]);
                 tr2o_write_test_image(image_eval, i, ipscale, cmp_rad, popt[i], "opt", arad[i]);
               }
@@ -359,7 +359,7 @@ void tr2o_do_one_test
     r2_t psol[NI];  /* Computed alignment vector. */
     double f2sol;   /* Goal function at {psol} including bias. */
     nf2 = 0;
-    for (int32_t i = 0; i < NI; i++) { psol[i] = pini[i]; }
+    for (uint32_t i = 0;  i < NI; i++) { psol[i] = pini[i]; }
     if (monoscale)
       { if (quadopt)
           { fprintf(stderr, " (single_scale_quadopt)...\n");
@@ -468,11 +468,11 @@ void tr2o_choose_pini_arad_astp
     int32_t mfix = 7;
     /* Define the parameters: */
     int32_t k = 0; /* Counts coordinates. */
-    for (int32_t i = 0; i < NI; i++) 
+    for (uint32_t i = 0;  i < NI; i++) 
       { /* Choose the initial guess {pini}: */
         pini[i] = (r2_t){{ 50.0, 50.0 }};
         
-        for (int32_t j = 0; j < 2; j++)
+        for (uint32_t j = 0;  j < 2; j++)
           { if (((k - kfix) % mfix == 0) || (adj_rad.c[j] == 0))
               { /* Do not optimize this coordinate: */
                 arad[i].c[j] = 0.0;
@@ -499,12 +499,12 @@ void tr2o_choose_pini_arad_astp
 void tr2o_choose_optimum(int32_t NI, r2_t pini[], r2_t arad[], r2_t popt[])
   {
     /* Set {popt[0..NI-1]} to {pini[0..NI-1]}, balanced. */ 
-    for (int32_t j = 0; j < 2; j++)
+    for (uint32_t j = 0;  j < 2; j++)
       { double da[NI];   /* Displacements {popt[i]-pini[i]} along axis {j}. */
         /* Set {da[0..NI-1]} to random displcements; compute their sum: */
         double sumdvar = 0; /* Sum of all {da[0..NI-1]} excluding fixed ones. */
         int32_t nvar = 0; /* Number of variable coordinates. */
-        for (int32_t i = 0; i < NI; i++)
+        for (uint32_t i = 0;  i < NI; i++)
           { double ra = arad[i].c[j]; /* Search radius for {p[i]} along axis {j}. */
             if (ra == 0.0)
               { /* Coordinate is fixed: */
@@ -520,7 +520,7 @@ void tr2o_choose_optimum(int32_t NI, r2_t pini[], r2_t arad[], r2_t popt[])
           } 
         /* Rebalance {da} to zero sum, add to {pini} to get {popt}: */
         double avg = sumdvar/nvar;
-        for (int32_t i = 0; i < NI; i++)
+        for (uint32_t i = 0;  i < NI; i++)
           { double ra = arad[i].c[j];
             if (ra > 0.0) { da[i] = da[i] - avg; }
             popt[i].c[j] = pini[i].c[j] + da[i];
@@ -553,7 +553,7 @@ double tr2o_compute_image_mismatch_sqr
       { for (int32_t jx = -hwx; jx <= +hwx; jx++)
           { /* Sample the images at this grid sampling point: */
             double val[NI];
-            for (int32_t i = 0; i < NI; i++)
+            for (uint32_t i = 0;  i < NI; i++)
               { /* Get samples of image {i}: */
                 r2_t *pi = &(p[i]);
                 double xsc = pi->c[0]/scale.c[0] + jx;
@@ -603,13 +603,13 @@ bool_t tr2o_ckeck_result
         double sum_d2 = 0; /* Total abs squared disp between {psol} and {pref}. */
         double sum_e2 = 0; /* Total rel squared disp between {psol} and {pref}. */
 
-        for (int32_t i = 0; i < NI; i++)
+        for (uint32_t i = 0;  i < NI; i++)
           { r2_t *q = &(psol[i]);
             r2_t *o = &(pref[i]);
             r2_t *r = &(arad[i]);
             r2_t d, e;
             r2_sub(q, o, &d);
-            for (int32_t j = 0; j < 2; j++)
+            for (uint32_t j = 0;  j < 2; j++)
               { if (r->c[j] == 0) 
                   { d.c[j] = 0; e.c[j] = 0; }
                 else
@@ -629,11 +629,11 @@ void tr2o_compute_avg_var(int32_t nz, double z[], double *avgP, double *varP)
   {
     /* Compute the average {avg}: */
     double sum_z = 0; /* Sum of {z[ki]} */
-    for (int32_t i = 0; i < nz; i++) { sum_z += z[i]; }
+    for (uint32_t i = 0;  i < nz; i++) { sum_z += z[i]; }
     double avg = sum_z/nz; 
     /* Compute the sample variance: */
     double sum_du2 = 0;
-    for (int32_t i = 0; i < nz; i++) { double dui = z[i] - avg; sum_du2 += dui*dui; }
+    for (uint32_t i = 0;  i < nz; i++) { double dui = z[i] - avg; sum_du2 += dui*dui; }
     double var = sum_du2/nz;
     (*avgP) = avg;
     (*varP) = var;

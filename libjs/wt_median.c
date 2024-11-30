@@ -1,5 +1,5 @@
 /* See wt_median.h */
-/* Last edited on 2024-11-22 03:36:12 by stolfi */
+/* Last edited on 2024-11-23 06:10:09 by stolfi */
 
 #define wt_median_C_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
@@ -31,7 +31,7 @@ double wt_median_sorted
     
     double xprev = -INF;
     int64_t wsum = 0;
-    for (int32_t i = 0; i < ns; i++) 
+    for (uint32_t i = 0;  i < ns; i++) 
       { uint64_t wsi = ws[i];
         demand(wsi <= wt_median_WEIGHT_SUM_MAX, "invalid weight");
         wsum += (int64_t)wsi; /* Should not overflow. */
@@ -137,7 +137,7 @@ double wt_median_unsorted
     double xm = NAN;
     if (n > 0)
       { /* Create a trivial index set {kx[0..n-1]}: */
-        for (int32_t j = 0; j < n; j++) { kx[j] = (uint32_t)j; }
+        for (uint32_t j = 0;  j < n; j++) { kx[j] = (uint32_t)j; }
         
         /* Sort the index set: */
         wt_median_index_set_sort(n, x, n, kx, 0);
@@ -147,10 +147,10 @@ double wt_median_unsorted
         if (debug) { fprintf(stderr, "    ns = %d\n", ns); }
         if (debug)
           { fprintf(stderr, "    xs = \n"); 
-            for (int32_t ks = 0; ks < ns; ks++) { fprintf(stderr, " %+14.8f", xs[ks]); }
+            for (uint32_t ks = 0;  ks < ns; ks++) { fprintf(stderr, " %+14.8f", xs[ks]); }
             fprintf(stderr, "\n"); 
             fprintf(stderr, "    ws = \n"); 
-            for (int32_t ks = 0; ks < ns; ks++) { fprintf(stderr, " %22lu", ws[ks]); }
+            for (uint32_t ks = 0;  ks < ns; ks++) { fprintf(stderr, " %22lu", ws[ks]); }
             fprintf(stderr, "\n"); 
           }
     
@@ -165,7 +165,7 @@ double wt_median_unsorted
 uint32_t wt_median_gather_samples
   ( uint32_t nx,     /* Count of samples. */
     double x[],      /* The samples are {x[0..nx-1]}. */
-    int32_t ix,      /* Lowest sample index in window. */
+    uint32_t ix,     /* Lowest sample index in window. */
     uint32_t nw,     /* Window width. */
     uint64_t w[],    /* The window weights are {w[0..nw-1]}. */
     uint32_t kx[],   /* The previously sorted window indices are {kx[0..nw-1]}. */
@@ -174,19 +174,19 @@ uint32_t wt_median_gather_samples
   )
   {
     bool_t debug = FALSE;
-    demand((ix >= 0) && (ix + (int32_t)nw <= nx), "window {ix..ix+nw-1} overflows {0..nx-1}");
+    demand(ix + nw <= nx, "window {ix..ix+nw-1} overflows {0..nx-1}");
     demand(nw <= nx, "window too wide");
     
     double x_prev = -INF;
     uint32_t ns = 0;
-    for (int32_t ik = 0; ik < nw; ik++)
-      { int32_t jx = (int32_t)kx[ik];
-        demand((jx >= 0) && (jx < nx), "invalid index in {kx}");
+    for (uint32_t ik = 0; ik < nw; ik++)
+      { uint32_t jx = kx[ik];
+        demand(jx < nx, "invalid index in {kx}");
         double xj = x[jx];
         demand(isfinite(xj), "sample value is not finite");
         demand(xj >= x_prev, "list {kx} is not sorted by sample value");
-        int32_t iw = jx - ix;
-        demand((iw >= 0) && (iw < nw), "index in {kx} lies outside the window");
+        demand((jx >= ix) && (jx < ix+nw), "index in {kx} lies outside the window");
+        uint32_t iw = (uint32_t)(jx - ix);
         uint64_t wi = w[iw];
         demand(wi <= wt_median_WEIGHT_SUM_MAX, "invalid weight");
         if (wi > 0)
@@ -215,7 +215,7 @@ void wt_median_index_set_sort(uint32_t nx, double x[], uint32_t nw, uint32_t kx[
   }
   
 void wt_median_index_set_insertion_sort(uint32_t nx, double x[], uint32_t nw, uint32_t kx[])
-  { for (int32_t i = 1; i < nw; i++)
+  { for (int32_t i = 1;  i < nw; i++)
       { uint32_t txi = kx[i];
         int32_t j = i;
         while ((j > 0) && (x[kx[j-1]] > x[txi])) { kx[j] = kx[j-1]; j--; }

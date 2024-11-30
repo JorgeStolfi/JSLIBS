@@ -53,7 +53,7 @@ void voxb_splat_object
     
     /* Compute the bounding box {kmin..kmax} of the affected voxels: */
     i3_t kmin, kmax; /* Elements are {X,Y,Z}. */
-    for (int32_t j = 0; j < 3; j++)
+    for (uint32_t j = 0;  j < 3; j++)
       { if (op == voxb_op_AND)
           { /* Can affect anywhere: */
             fprintf(stderr, "<--> op = %d\n", op);
@@ -70,7 +70,7 @@ void voxb_splat_object
       
     if (debug)
        { fprintf(stderr, "splatting object with op = %d maxR = %.3f coord ranges = ", op, maxR);
-         for (int32_t j = 0; j < 3; j++)
+         for (uint32_t j = 0;  j < 3; j++)
            { fprintf(stderr, " %d..%d (%d)", kmin.c[j], kmax.c[j], kmax.c[j] - kmin.c[j] + 1); }
          fprintf(stderr, "\n");
        }

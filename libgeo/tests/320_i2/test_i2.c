@@ -31,8 +31,8 @@ int32_t main (int32_t argc, char **argv)
     srand(1993);
     srandom(1993);
 
-    for (int32_t i = 0; i < 100; i++) test_i2(i < 3);
-    /* for (int32_t i = 0; i < 100; i++) test_i2x2(i < 3); */
+    for (uint32_t i = 0;  i < 100; i++) test_i2(i < 3);
+    /* for (uint32_t i = 0;  i < 100; i++) test_i2x2(i < 3); */
     fclose(stderr);
     fclose(stdout);
     return (0);
@@ -54,21 +54,21 @@ void test_i2(bool_t verbose)
 
     if (verbose) { fprintf(stderr, "--- i2_zero ---\n"); }
     i2_zero(&a);
-    for (int32_t i = 0; i < N; i++) { in_check_eq(a.c[i], 0, NO, NO, "i2_zero error"); }
+    for (uint32_t i = 0;  i < N; i++) { in_check_eq(a.c[i], 0, NO, NO, "i2_zero error"); }
 
     if (verbose) { fprintf(stderr, "--- i2_all ---\n"); }
     i2_all(4615, &a);
-    for (int32_t i = 0; i < N; i++) { in_check_eq(a.c[i], 4615, NO, NO, "i2_all error"); }
+    for (uint32_t i = 0;  i < N; i++) { in_check_eq(a.c[i], 4615, NO, NO, "i2_all error"); }
 
     if (verbose) { fprintf(stderr, "--- i2_axis ---\n"); }
-    for (int32_t k = 0; k < N; k++)
+    for (uint32_t k = 0;  k < N; k++)
       { i2_axis(k, &a);
-        for (int32_t i = 0; i < N; i++) { in_check_eq(a.c[i], (i == k), NO, NO, "i2_axis error"); }
+        for (uint32_t i = 0;  i < N; i++) { in_check_eq(a.c[i], (i == k), NO, NO, "i2_axis error"); }
       }
 
     if (verbose) { fprintf(stderr, "--- i2_throw_cube ---\n"); }
     i2_throw_cube(trad, &a);
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { /* There is a small chance that this test will fail by chance: */
         affirm(a.c[i] != a.c[(i+1)%N], "i2_throw probable error(1)"); 
         affirm((a.c[i] >= -trad) && (a.c[i] <= +trad), "i2_throw error(2)"); 
@@ -78,20 +78,20 @@ void test_i2(bool_t verbose)
     i2_throw_cube(trad, &a);
     i2_throw_cube(trad, &b);
     i2_add(&a, &b, &d);
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { in_check_eq(d.c[i] ,a.c[i] + b.c[i], NO, NO, "i2_add error"); }
 
     if (verbose) { fprintf(stderr, "--- i2_sub ---\n"); }
     i2_throw_cube(trad, &a);
     i2_throw_cube(trad, &b);
     i2_sub(&a, &b, &d);
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { in_check_eq(d.c[i], a.c[i] - b.c[i], NO, NO, "i2_sub error"); }
 
     if (verbose) { fprintf(stderr, "--- i2_neg ---\n"); }
     i2_throw_cube(trad, &a);
     i2_neg(&a, &d);
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { in_check_eq(d.c[i], -a.c[i], NO, NO, "i2_neg error"); }
 
     if (verbose) { fprintf(stderr, "--- i2_norm_sqr, i2_L_inf_norm ---\n"); }
@@ -100,7 +100,7 @@ void test_i2(bool_t verbose)
     uc64 = i2_L_inf_norm(&a);
     ub64 = 0;
     ud64 = 0;
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { uint64_t ai = (uint64_t)llabs((int64_t)a.c[i]);
         ub64 += ai*ai; 
         if (ai > ud64) { ud64 = ai; }
@@ -115,7 +115,7 @@ void test_i2(bool_t verbose)
     uc64 = i2_L_inf_dist(&a, &b);
     ub64 = 0;
     ud64 = 0;
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { uint64_t di = (uint64_t)labs((int64_t)a.c[i] - (int64_t)b.c[i]);
         ub64 += di*di; 
         if (di > ud64) { ud64 = di; }
@@ -128,12 +128,12 @@ void test_i2(bool_t verbose)
     i2_throw_cube(trad, &b);
     ia64 = i2_dot(&a, &b);
     ib64 = 0;
-    for (int32_t i = 0; i < N; i++) { ib64 += a.c[i]*(int64_t)b.c[i]; }
+    for (uint32_t i = 0;  i < N; i++) { ib64 += a.c[i]*(int64_t)b.c[i]; }
     in_check_eq(ia64, ib64, NO, NO, "i2_dot error(1)");
     /* Test on basis vectors: */
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { i2_axis(i, &a);
-        for (int32_t j = 0; j < N; j++)
+        for (uint32_t j = 0;  j < N; j++)
           { i2_axis(j, &b);
             ia64 = i2_dot(&a, &b);
             ib64 = (i == j);
@@ -143,14 +143,14 @@ void test_i2(bool_t verbose)
 
     if (verbose) { fprintf(stderr, "--- i2_cross ---\n"); }
     /* Test on basis vectors: */
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { uint32_t i0 = (i + 0) % N;
         uint32_t i1 = (i + 1) % N;
         sign_t sgn = ((i % 2) == 0 ? +1 : -1);
         i2_axis(i0, &a);
         i2_cross(&a, &d);
         i2_axis(i1, &e);
-        for (int32_t p = 0; p < N; p++)
+        for (uint32_t p = 0;  p < N; p++)
           { int64_t ep = sgn*e.c[p];
             in_check_eq(d.c[p], ep, NO, NO, "i2_cross error(x)");
           }
@@ -163,7 +163,7 @@ void test_i2(bool_t verbose)
 
     if (verbose) { fprintf(stderr, "--- i2_det ---\n"); }
     /* Test on basis vectors: */
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { uint32_t i0 = (i + 0) % N;
         uint32_t i1 = (i + 1) % N;
         sign_t sgn = ((i % 2) == 0 ? +1 : -1);
@@ -220,8 +220,8 @@ void test_i2(bool_t verbose)
 //        }
 //  
 //      if (verbose) { fprintf(stderr, "--- Indexing and addressing ---\n"); }
-//      for (int32_t i = 0; i < N; i++)
-//        for (int32_t j = 0; j < N; j++)
+//      for (uint32_t i = 0;  i < N; i++)
+//        for (uint32_t j = 0;  j < N; j++)
 //          { double *Aij = &(A.c[i][j]); 
 //            affirm(Aij == ((double *)&A)+(N*i)+j, "i2x2_t indexing error");
 //          }
@@ -229,8 +229,8 @@ void test_i2(bool_t verbose)
 //      if (verbose) { fprintf(stderr, "--- i2x2_zero, i2x2_ident ---\n"); }
 //      i2x2_zero(&A);
 //      i2x2_ident(&B);
-//      for (int32_t i = 0; i < N; i++)
-//        { for (int32_t j = 0; j < N; j++)
+//      for (uint32_t i = 0;  i < N; i++)
+//        { for (uint32_t j = 0;  j < N; j++)
 //            { in_check_eq(A.c[i][j],0.0, NO, NO, "i2x2_zero error"); 
 //              in_check_eq(B.c[i][j],(i == j ? 1.0 : 0.0), NO, NO, "i2x2_ident error");
 //            }
@@ -243,8 +243,8 @@ void test_i2(bool_t verbose)
 //      i2x2_map_col(&A, &a, &c);
 //      i2_zero(&bb);
 //      i2_zero(&cc);
-//      for (int32_t i = 0; i < N; i++)
-//        { for (int32_t j = 0; j < N; j++)
+//      for (uint32_t i = 0;  i < N; i++)
+//        { for (uint32_t j = 0;  j < N; j++)
 //            { bb.c[j] += a.c[i] * A.c[i][j];
 //              cc.c[i] += A.c[i][j] * a.c[j];
 //            }
@@ -258,8 +258,8 @@ void test_i2(bool_t verbose)
 //      throw_matrix(&A);
 //      r = drandom();
 //      i2x2_scale(r, &A, &C);
-//      for (int32_t i = 0; i < N; i++)
-//        { for (int32_t j = 0; j < N; j++)
+//      for (uint32_t i = 0;  i < N; i++)
+//        { for (uint32_t j = 0;  j < N; j++)
 //            { double sel = r * A.c[i][j];
 //              in_check_eps(C.c[i][j],sel,0.000000001 * fabs(sel), NO, NO,
 //                "i2x2_scale error"
@@ -271,10 +271,10 @@ void test_i2(bool_t verbose)
 //      throw_matrix(&A);
 //      throw_matrix(&B);
 //      i2x2_mul(&A, &B, &C);
-//      for (int32_t i = 0; i < N; i++)
-//        { for (int32_t j = 0; j < N; j++)
+//      for (uint32_t i = 0;  i < N; i++)
+//        { for (uint32_t j = 0;  j < N; j++)
 //            { double sum = 0.0;
-//              for (int32_t k =  0; k < N; k++) { sum += A.c[i][k]*B.c[k][j]; }
+//              for (uint32_t k = 0;  k < N; k++) { sum += A.c[i][k]*B.c[k][j]; }
 //              in_check_eps(C.c[i][j],sum,0.000000001 * fabs(sum), NO, NO,
 //                "i2x2_mul error"
 //              );
@@ -285,10 +285,10 @@ void test_i2(bool_t verbose)
 //      throw_matrix(&A);
 //      throw_matrix(&B);
 //      i2x2_mul_tr(&A, &B, &C);
-//      for (int32_t i =  0; i < N; i++)
-//        { for (int32_t j =  0; j < N; j++)
+//      for (uint32_t i = 0;  i < N; i++)
+//        { for (uint32_t j = 0;  j < N; j++)
 //            { double sum = 0.0;
-//              for (int32_t k =  0; k < N; k++) { sum += A.c[i][k]*B.c[j][k]; }
+//              for (uint32_t k = 0;  k < N; k++) { sum += A.c[i][k]*B.c[j][k]; }
 //              in_check_eps(C.c[i][j],sum,0.000000001 * fabs(sum), NO, NO,
 //                "i2x2_mul error"
 //              );
@@ -298,23 +298,23 @@ void test_i2(bool_t verbose)
 //       if (verbose) { fprintf(stderr, "--- i2x2_transp ---\n"); }
 //      throw_matrix(&A);
 //      i2x2_transp(&A, &B);
-//      for (int32_t i =  0; i < N; i++)
-//        { for (int32_t j =  0; j < N; j++)
+//      for (uint32_t i = 0;  i < N; i++)
+//        { for (uint32_t j = 0;  j < N; j++)
 //            { in_check_eq(B.c[i][j],A.c[j][i], NO, NO, "i2x2_transp error (1)"); }
 //        }
 //      /* In-place transpose: */
 //      B = A;
 //      i2x2_transp(&B, &B);
-//      for (int32_t i =  0; i < N; i++)
-//        { for (int32_t j =  0; j < N; j++)
+//      for (uint32_t i = 0;  i < N; i++)
+//        { for (uint32_t j = 0;  j < N; j++)
 //            { in_check_eq(B.c[i][j],A.c[j][i], NO, NO, "i2x2_transp error (2)"); }
 //        }
 //  
 //      if (verbose) { fprintf(stderr, "--- i2x2_det ---\n"); }
 //      throw_matrix(&A);
-//      for (int32_t i =  0; i < N; i++)
+//      for (uint32_t i = 0;  i < N; i++)
 //        { uint32_t k = (i + 1) % N;
-//          for (int32_t j =  0; j < N; j++)
+//          for (uint32_t j = 0;  j < N; j++)
 //            { /* Check for linearity */
 //              r = drandom();
 //              A.c[i][j] = r;
@@ -335,7 +335,7 @@ void test_i2(bool_t verbose)
 //  
 //          /* Row swap test: */
 //          r = i2x2_det(&A);
-//          for (int32_t j =  0; j < N; j++)
+//          for (uint32_t j = 0;  j < N; j++)
 //            { double t = A.c[i][j]; A.c[i][j] = A.c[k][j]; A.c[k][j] = t; }
 //          rr = i2x2_det(&A);
 //          mag = fabs(r) + fabs(rr);
@@ -343,7 +343,7 @@ void test_i2(bool_t verbose)
 //  
 //          /* Col swap test: */
 //          r = i2x2_det(&A);
-//          for (int32_t j =  0; j < N; j++)
+//          for (uint32_t j = 0;  j < N; j++)
 //            { double t = A.c[j][i]; A.c[j][i] = A.c[j][k]; A.c[j][k] = t; }
 //          rr = i2x2_det(&A);
 //          mag = fabs(r) + fabs(rr);
@@ -354,8 +354,8 @@ void test_i2(bool_t verbose)
 //      throw_matrix(&A);
 //      i2x2_inv(&A, &B);
 //      i2x2_mul(&A, &B, &C);
-//      for (int32_t i =  0; i < N; i++)
-//        { for (int32_t j =  0; j < N; j++)
+//      for (uint32_t i = 0;  i < N; i++)
+//        { for (uint32_t j = 0;  j < N; j++)
 //            { double val = (i == j ? 1.0 : 0.0);
 //              affirm(fabs(C.c[i][j] - val) < 000000001, "i2x2_inv error");
 //            }
@@ -367,8 +367,8 @@ void test_i2(bool_t verbose)
 //      while ((i2x2_det(&A) < 0) || (A.c[0][0] + A.c[1][1] + 2*sqrt(i2x2_det(&A)) <= 1.0e-10));
 //      i2x2_sqrt(&A, &B);
 //      i2x2_mul(&B, &B, &C);
-//      for (int32_t i =  0; i < N; i++)
-//        { for (int32_t j =  0; j < N; j++)
+//      for (uint32_t i = 0;  i < N; i++)
+//        { for (uint32_t j = 0;  j < N; j++)
 //            { affirm(fabs(C.c[i][j] - A.c[i][j]) < 000000001, "i2x2_sqrt error"); }
 //        }
 //  
@@ -378,8 +378,8 @@ void test_i2(bool_t verbose)
 //      r = i2x2_norm(&A);
 //      t = i2x2_mod_norm_sqr(&A);
 //      ss = 0; tt = 0;
-//      for (int32_t i =  0; i < N; i++)
-//        { for (int32_t j =  0; j < N; j++)
+//      for (uint32_t i = 0;  i < N; i++)
+//        { for (uint32_t j = 0;  j < N; j++)
 //            { double Aij = A.c[i][j];
 //              double Dij = (i == j ? Aij - 1 : Aij);
 //              ss += Aij*Aij;
@@ -416,13 +416,13 @@ void test_i2(bool_t verbose)
 //      //     fputc('\n', stderr);
 //      //   }
 //      /* Check order of eigenvalues: */
-//      for (int32_t i =  1; i < N; i++)
+//      for (uint32_t i = 1;  i < N; i++)
 //        { affirm(a.c[i-1] >= a.c[i], "i2x2_sym_eigen error: order"); }
 //      /* Check whether {B} is orthonormal: */
-//      for (int32_t i =  0; i < N; i++)
-//        { for (int32_t j =  0; j < N; j++)
+//      for (uint32_t i = 0;  i < N; i++)
+//        { for (uint32_t j = 0;  j < N; j++)
 //            { double sum = 0.0;
-//              for (int32_t k =  0; k < N; k++) 
+//              for (uint32_t k = 0;  k < N; k++) 
 //                { sum += B.c[k][i]*B.c[k][j]; }
 //              double val = (i == j ? 1.0 : 0.0);
 //              in_check_eps(val,sum,0.000000001 * fabs(sum), NO, NO, 
@@ -434,10 +434,10 @@ void test_i2(bool_t verbose)
 //      rr = i2x2_det(&B);
 //      affirm(fabs(rr - 1.0) < 000000001, "i2x2_sym_eigen error: not right-handed");
 //      /* Check whether {A = B'*DIAG(e)*B}: */
-//      for (int32_t i =  0; i < N; i++)
-//        { for (int32_t j =  0; j < N; j++)
+//      for (uint32_t i = 0;  i < N; i++)
+//        { for (uint32_t j = 0;  j < N; j++)
 //            { double sum = 0.0;
-//              for (int32_t k =  0; k < N; k++) 
+//              for (uint32_t k = 0;  k < N; k++) 
 //                { sum += B.c[k][i]*a.c[k]*B.c[k][j]; }
 //              in_check_eps(A.c[i][j],sum,0.000000001 * fabs(sum), NO, NO, 
 //                "i2x2_sym_eigen error: decomp"
@@ -458,17 +458,17 @@ void test_i2(bool_t verbose)
 //    {
 //      uint32_t i, j;
 //      i2_t a;
-//      for (int32_t i =  0; i < N; i++)
+//      for (uint32_t i = 0;  i < N; i++)
 //        { i2_throw_cube(trad, &a);
-//          for (int32_t j =  0; j < N; j++) { m->c[i][j] = a.c[j]; }
+//          for (uint32_t j = 0;  j < N; j++) { m->c[i][j] = a.c[j]; }
 //        }
 //    }
 //  
 //  void throw_diag_matrix(i2x2_t *m)
 //    {
 //      uint32_t i, j;
-//      for (int32_t i =  0; i < N; i++)
-//        { for (int32_t j =  0; j < N; j++)
+//      for (uint32_t i = 0;  i < N; i++)
+//        { for (uint32_t j = 0;  j < N; j++)
 //            { m->c[i][j] = (i == j ? 2*drandom() - 1.0 : 0.0); }
 //        }
 //    }
@@ -476,9 +476,9 @@ void test_i2(bool_t verbose)
 //  void throw_symmetric_matrix(i2x2_t *m)
 //    {
 //      uint32_t i, j;
-//      for (int32_t i =  0; i < N; i++)
+//      for (uint32_t i = 0;  i < N; i++)
 //        { /* Note: {j} runs to {i} not {N-1}! */
-//          for (int32_t j = 0; j <= i; j++)
+//          for (uint32_t j = 0;  j <= i; j++)
 //            { m->c[i][j] = 2*drandom() - 1.0;
 //              if (j != i) { m->c[j][i] = m->c[i][j]; }
 //            }

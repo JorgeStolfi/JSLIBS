@@ -38,24 +38,24 @@ float_image_t **neuromat_eeg_image_basis_make
     
     /* Allocate the basis images: */
     float_image_t **bas = notnull(malloc(ne*sizeof(float_image_t*)), "no mem");
-    for (int32_t ie = 0; ie < ne; ie++) { bas[ie] = float_image_new (1, NX, NY); }
+    for (uint32_t ie = 0;  ie < ne; ie++) { bas[ie] = float_image_new (1, NX, NY); }
     
     /* Now loop on pixels, paint every image: */
     double *bval = rn_alloc(ne); /* Element values at a certain subsampling point. */
    double *bsum = rn_alloc(ne); /* Summed/averaged values in a pixel. */
-    for (int32_t iy = 0; iy < NY; iy++)
-      { for (int32_t ix = 0; ix < NX; ix++)
+    for (uint32_t iy = 0;  iy < NY; iy++)
+      { for (uint32_t ix = 0;  ix < NX; ix++)
           { bool_t debugpx = (ix == NX/2) & (iy == NY/2);
             /* Get mask weight of pixel: */
             double mxy = float_image_get_sample(msk, 0, ix, iy);
             demand((mxy >= 0) && (mxy <= 1.0), "invalid mask value");
             /* Set {bval[ie]} to value of element {ie} at center of pixel {ix,iy}: */
-            for (int32_t ie = 0; ie < ne; ie++) { bval[ie] = 0; }
+            for (uint32_t ie = 0;  ie < ne; ie++) { bval[ie] = 0; }
             if (mxy > 0)
               { /* Sample {msub} by {msub} points {p} in pixel {ix,iy}:  */
-                for (int32_t ie = 0; ie < ne; ie++) { bsum[ie] = 0; }
-                for (int32_t dy = 0; dy < msub; dy++) 
-                  { for (int32_t dx = 0; dx < msub; dx++) 
+                for (uint32_t ie = 0;  ie < ne; ie++) { bsum[ie] = 0; }
+                for (uint32_t dy = 0;  dy < msub; dy++) 
+                  { for (uint32_t dx = 0;  dx < msub; dx++) 
                       { /* Compute the subsampling point {p3D} on the unit sphere: */
                         r2_t qxy = (r2_t) {{ ix + (dx + 0.5)/msub,  iy + (dy + 0.5)/msub }}; /* Pt in image domain. */
                         r2_t pxy = neuromat_eeg_geom_disk_from_ellipse(&qxy, ictr, irad); /* Corresp point in unit-disk schematic. */
@@ -65,14 +65,14 @@ float_image_t **neuromat_eeg_image_basis_make
                         eval(ne, bval, &p3D);
 
                         /* Accumulate: */
-                        for (int32_t ie = 0; ie < ne; ie++) { bsum[ie] += bval[ie]; }
+                        for (uint32_t ie = 0;  ie < ne; ie++) { bsum[ie] += bval[ie]; }
                       }
                   }
                 /* Compute pixel average:: */
-                for (int32_t ie = 0; ie < ne; ie++) { bval[ie] = bsum[ie]/(msub*msub); }
+                for (uint32_t ie = 0;  ie < ne; ie++) { bval[ie] = bsum[ie]/(msub*msub); }
               }
             /* Now set pixels to {bval[0..ne-1]}: */ 
-            for (int32_t ie = 0; ie < ne; ie++) 
+            for (uint32_t ie = 0;  ie < ne; ie++) 
               { float fval = (float)(bval[ie]);
                 if (verbose && debugpx){ fprintf(stderr, "    bval[%3d] = %+8.5f fval = %+8.5f\n", ie, bval[ie], fval); }
                 float_image_set_sample(bas[ie], 0, ix, iy, fval);

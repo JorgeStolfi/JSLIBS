@@ -26,7 +26,7 @@ void test_hr3_pmap_diff_sqr(bool_t verbose)
   { if (verbose) { fprintf(stderr, "--- hr3_pmap_diff_sqr ---\n"); }
     hr3_pmap_t M, N;
     /* Throw two maps and normalizes their matrices: */
-    for (int32_t k = 0; k < 2; k++)
+    for (uint32_t k = 0;  k < 2; k++)
       { N = M;
         h2tt_throw_pmap(&M); 
         r4x4_normalize(&(M.dir));
@@ -34,8 +34,8 @@ void test_hr3_pmap_diff_sqr(bool_t verbose)
       }
     /* Compute exepected diff sqr {d2_exp}: */
     double d2_exp = 0;
-    for (int32_t i = 0; i < NH; i++)
-      { for (int32_t j = 0; j < NH; j++)
+    for (uint32_t i = 0;  i < NH; i++)
+      { for (uint32_t j = 0;  j < NH; j++)
           { double d = M.dir.c[i][j] - N.dir.c[i][j];
             d2_exp += d*d;
             d = M.inv.c[i][j] - N.inv.c[i][j];
@@ -43,8 +43,8 @@ void test_hr3_pmap_diff_sqr(bool_t verbose)
           }
       }
     /* Scale the matrices by arbitrary amounts: */
-    for (int32_t i = 0; i < NH; i++)
-      { for (int32_t j = 0; j < NH; j++)
+    for (uint32_t i = 0;  i < NH; i++)
+      { for (uint32_t j = 0;  j < NH; j++)
           { M.dir.c[i][j] *= 2;
             M.inv.c[i][j] *= 4;
             N.inv.c[i][j] *= 0.25;
@@ -70,7 +70,7 @@ void test_hr3_pmap_mismatch_sqr(bool_t verbose)
     /* Choose a bunch of points: */
     uint32_t np = 7;
     r3_t p1[np], p2[np];
-    for (int32_t ip = 0; ip < np; ip++)
+    for (uint32_t ip = 0;  ip < np; ip++)
       { r3_throw_cube(&(p1[np]));
         r3_throw_cube(&(p2[np]));
       }
@@ -82,7 +82,7 @@ void test_hr3_pmap_mismatch_sqr(bool_t verbose)
     /* Compute the expected mismatch {m2_exp}: */
     double sum2 = 0.0;
     hr3_pmap_t N = hr3_pmap_inv(&M);
-    for (int32_t ip = 0; ip < np; ip++)
+    for (uint32_t ip = 0;  ip < np; ip++)
       { r3_t *p1k = &(p1[ip]);
         r3_t *p2k = &(p2[ip]);
         r3_t q1k = hr3_pmap_r3_point(p1k, &M);
@@ -122,7 +122,7 @@ void test_hr3_pmap_aff_discr_sqr(bool_t verbose)
     /* Can be integrated numerically with 5 or more samples. */
     uint32_t nang = 7;
     double sum_d2 = 0; 
-    for (int32_t i = 0; i < nang; i++)
+    for (uint32_t i = 0;  i < nang; i++)
       { double ang = 2*M_PI*((double)i)/((double)nang);
         r3_t p = (r3_t){{ cos(ang), sin(ang) }};
         r3_t q = hr3_pmap_r3_point(&p, &M);
@@ -222,7 +222,7 @@ void test_hr3_pmap_rotation_and_scaling(bool_t verbose)
     hr3_pmap_t M = hr3_pmap_rotation_and_scaling(ang, scale);
     double ca = cos(ang);
     double sa = sin(ang);
-    for (int32_t k = 0; k < 5; k++)
+    for (uint32_t k = 0;  k < 5; k++)
       { r3_t p; r3_throw_cube(&p);
         r3_t q; 
         q.c[0] = + ca*scale*p.c[0] - sa*scale*p.c[1];

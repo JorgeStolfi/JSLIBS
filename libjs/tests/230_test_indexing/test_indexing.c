@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {indexing.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-16 17:31:00 by stolfi */ 
+/* Last edited on 2024-11-23 05:32:59 by stolfi */ 
 /* Created on 2005-02-14 (or earlier) by J. Stolfi, UNICAMP */
 
 #define test_indexing_COPYRIGHT \
@@ -15,6 +15,7 @@
 #include <assert.h>
 
 #include <ix.h>
+#include <ix_reduce.h>
 #include <affirm.h>
 #include <jsrandom.h>
 #include <jswsize.h>
@@ -99,7 +100,7 @@ int32_t main (int32_t argn, char **argv)
 void do_test_suite(int32_t nt)
   {
     ix_size_t sz[MAXDIM];
-    for (int32_t it = 0; it < nt; it++)
+    for (uint32_t it = 0;  it < nt; it++)
       { 
         ix_dim_t d = (ix_dim_t)(it % MAXDIM);
         test_size_ops(d);
@@ -522,7 +523,7 @@ void test_crop(desc_t *A)
     uint32_t ntrials = (uint32_t)(8*A->d + 1);
     ix_index_t sh[MAXDIM]; /* Shift of cropped array along each axis. */
     ix_size_t sz[MAXDIM]; /* Size of cropped array along each axis. */
-    for (int32_t trial = 0; trial < ntrials; trial++)
+    for (uint32_t trial = 0;  trial < ntrials; trial++)
       { /* Initialze {sh} and {sz} for full array: */
         for (ix_axis_t i = 0; i < MAXDIM; i++) { sh[i] = 0; }
         extend_size_vector(A->d, A->sz, MAXDIM, sz);
@@ -602,7 +603,7 @@ void test_subsample(desc_t *A)
     uint32_t ntrials = (uint32_t)(8*A->d + 1);
     ix_step_t st[MAXDIM]; /* Subsampling step along each axis. */
     ix_size_t sz[MAXDIM]; /* Size of subsampled array along each axis. */
-    for (int32_t trial = 0; trial < ntrials; trial++)
+    for (uint32_t trial = 0;  trial < ntrials; trial++)
       { /* Initialze {st} and {sz} for full array: */
         for (ix_axis_t i = 0; i < MAXDIM; i++) { st[i] = 1; }
         extend_size_vector(A->d, A->sz, MAXDIM, sz);
@@ -669,7 +670,7 @@ void test_slice(desc_t *A)
     uint32_t ntrials = (uint32_t)(8*A->d + 1);
     /* Expected slice attributes and mapping between slice and original: */
     uint64_t toss = 417*A->d;
-    for (int32_t trial = 0; trial < ntrials; trial++)
+    for (uint32_t trial = 0; trial < ntrials; trial++)
       { /* Start current slice with the given array: */
         desc_t B = (*A);
         if (verbose) { print_desc(stderr, "\nnew trial B = A = { ", A, " }\n"); } 
@@ -679,7 +680,7 @@ void test_slice(desc_t *A)
         ix_index_t ixO[MAXDIM]; /* Index value for each axis of original that was set, or {-1}. */
         for (ix_axis_t i = 0; i < MAXDIM; i++) { axO[i] = i; ixO[i] = -1; }
 
-        for (int32_t pass = 0; pass < 2; pass++)
+        for (uint32_t pass = 0; pass < 2; pass++)
           { 
             /* Here axis {k} of current slice is axis {axO[k]} of original, or trivial if {axO[k]==A->d}. */
             /* Here if {ixO[k]} is non-negative, then axis {k} of original was set to {ixO[k]}. */
@@ -716,7 +717,7 @@ void test_slice(desc_t *A)
                       axO[j] = axO[i];
                       j++;
                     }
-                  toss = 27*toss + 3*pass + 7*i;
+                  toss = 27*toss + 3*pass + 7*(uint64_t)i;
                 }
               assert(j == B.d - nx1);
               /* Mark axes {j..bp.d} as trivialized:*/
@@ -726,7 +727,7 @@ void test_slice(desc_t *A)
             
             if (verbose)
               { fprintf(stderr, "  axis:index =");
-                for (int32_t i = 0; i < nx1; i++)
+                for (uint32_t i = 0;  i < nx1; i++)
                   { fprintf(stderr, " %d:%ld", (axp == NULL ? i : axp[i]), ix1[i]); }
                 fprintf(stderr, "\n");
               }
@@ -823,13 +824,13 @@ void test_swap_indices(desc_t *A)
     if (verbose) { print_desc(stderr, "A = { ", A, " }\n"); } 
     uint32_t ntrials = (uint32_t)(8*A->d + 1);
     ix_axis_t tr[MAXDIM]; /* Axis {i} of {B} is axis {tr[i]} of {A}. */
-    for (int32_t trial = 0; trial < ntrials; trial++)
+    for (uint32_t trial = 0;  trial < ntrials; trial++)
       { /* Initialze {tr} for full array: */
         for (ix_axis_t i = 0; i < MAXDIM; i++) { tr[i] = i; }
         /* Start with the standard array: */
         desc_t B = (*A);
 
-        for (int32_t pass = 0; pass < 2; pass++)
+        for (uint32_t pass = 0;  pass < 2; pass++)
           { /* Choose two axes {ax1,bx1} and the axis count {nx1}: */
             ix_axis_t ax1 = (ix_axis_t)(trial % A->d);
             ix_axis_t bx1 = (ix_axis_t)((trial/2) % A->d);
@@ -901,7 +902,7 @@ void test_flip(desc_t *A)
     if (verbose) { print_desc(stderr, "A = { ", A, " }\n"); } 
     uint32_t ntrials = (uint32_t)(8*A->d + 1);
     bool_t fp[MAXDIM]; /* Tells whether each axis was flipped or not. */
-    for (int32_t trial = 0; trial < ntrials; trial++)
+    for (uint32_t trial = 0;  trial < ntrials; trial++)
       { /* Initialze {fp} for unflipped array: */
         for (ix_axis_t i = 0; i < MAXDIM; i++) { fp[i] = FALSE; }
         /* Start with the standard array: */
@@ -973,7 +974,7 @@ void test_diagonal(desc_t *A)
     if (verbose) { print_desc(stderr, "A = { ", A, " }\n"); } 
     uint32_t ntrials = (uint32_t)(8*A->d + 1);
     ix_size_t sz[MAXDIM]; /* Size of diagonalized array along each axis. */
-    for (int32_t trial = 0; trial < ntrials; trial++)
+    for (uint32_t trial = 0;  trial < ntrials; trial++)
       { /* Initialze {sz} for full array: */
         extend_size_vector(A->d, A->sz, MAXDIM, sz);
         /* Start with the standard array: */
@@ -1031,7 +1032,7 @@ void test_chop(desc_t *A)
     if (verbose) { print_desc(stderr, "A = { ", A, " }\n"); } 
     uint32_t ntrials = (uint32_t)(8*A->d + 1);
     ix_size_t sz[MAXDIM]; /* Size of chopped array along each axis. */
-    for (int32_t trial = 0; trial < ntrials; trial++)
+    for (uint32_t trial = 0;  trial < ntrials; trial++)
       { /* Initialze {sz} for full array: */
         extend_size_vector(A->d, A->sz, MAXDIM, sz);
         /* Start with the standard array: */
@@ -1093,7 +1094,7 @@ void test_replicate(desc_t *A)
     if (verbose) { print_desc(stderr, "A = { ", A, " }\n"); } 
     uint32_t ntrials = (uint32_t)(8*A->d + 1);
     ix_size_t sz[MAXDIM]; /* Size of replicated array along each axis. */
-    for (int32_t trial = 0; trial < ntrials; trial++)
+    for (uint32_t trial = 0; trial < ntrials; trial++)
       { /* Initialze {sz} for full array: */
         extend_size_vector(A->d, A->sz, MAXDIM, sz);
         /* Start with the standard array: */
@@ -1169,22 +1170,22 @@ void test_reduce(void)
     ix_size_t N = 6;
     ix_index_t iMin = -3;
     ix_index_t iMax = 15;
-    char *tseq[ix_reduction_LAST + 1];
-    tseq[ix_reduction_SINGLE] = "*,*,*,0,1,2,3,4,5,*,*,*,*,*,*,*,*,*,*,";
-    tseq[ix_reduction_EXTEND] = "0,0,0,0,1,2,3,4,5,5,5,5,5,5,5,5,5,5,5,";
-    tseq[ix_reduction_REPEAT] = "3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,";
-    tseq[ix_reduction_MIRROR] = "2,1,0,0,1,2,3,4,5,5,4,3,2,1,0,0,1,2,3,";
-    tseq[ix_reduction_PXMIRR] = "3,2,1,0,1,2,3,4,5,4,3,2,1,0,1,2,3,4,5,";
+    char *tseq[ix_reduce_mode_LAST + 1];
+    tseq[ix_reduce_mode_SINGLE] = "*,*,*,0,1,2,3,4,5,*,*,*,*,*,*,*,*,*,*,";
+    tseq[ix_reduce_mode_EXTEND] = "0,0,0,0,1,2,3,4,5,5,5,5,5,5,5,5,5,5,5,";
+    tseq[ix_reduce_mode_REPEAT] = "3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,";
+    tseq[ix_reduce_mode_MIRROR] = "2,1,0,0,1,2,3,4,5,5,4,3,2,1,0,0,1,2,3,";
+    tseq[ix_reduce_mode_PXMIRR] = "3,2,1,0,1,2,3,4,5,4,3,2,1,0,1,2,3,4,5,";
 
     if (verbose) { fprintf(stderr, ("N = %" int64_d_fmt "\n"), N); } 
-    for (ix_reduction_t red = ix_reduction_FIRST; red <= ix_reduction_LAST; red++)
+    for (ix_reduce_mode_t red = ix_reduce_mode_FIRST; red <= ix_reduce_mode_LAST; red++)
       { if (verbose) { fprintf(stderr, "red = %d (%c)\n", red, "SERMP"[red]); } 
         for (ix_index_t i = iMin; i <= iMax; i++)
           { char cr = tseq[red][2*(i-iMin)];
             ix_index_t jExp = (cr == '*' ? -1 : cr - '0');
             ix_index_t j = ix_reduce(i, N, red);
             if (verbose) { fprintf(stderr, ("%3" int64_d_fmt " --> %3" int64_d_fmt "  (should be %3" int64_d_fmt ")\n"), i, j, jExp); } 
-            demand(((red == ix_reduction_SINGLE) && (j == -1)) || ((j >= 0) && (j < N)), "invalid {ix_reduce} result");
+            demand(((red == ix_reduce_mode_SINGLE) && (j == -1)) || ((j >= 0) && (j < N)), "invalid {ix_reduce} result");
             demand(j == jExp, "error in {ix_reduce}");
           }
       }

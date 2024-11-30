@@ -107,7 +107,7 @@ int32_t main(int32_t argc, char **argv)
     /* Determine full time range {tMax..tMin}: */
     int32_t tMin = INT32_MAX;
     int32_t tMax = INT32_MIN;
-    for (int32_t iq = 0; iq < ni; iq++)
+    for (uint32_t iq = 0;  iq < ni; iq++)
       { drtree_node_t *q = &(dt[iq]);
         assert(! drtree_node_is_null(q));
         if (q->tbr < tMin) { tMin = q->tbr; }
@@ -171,7 +171,7 @@ void tdp_plot_named
     
     /* Decide which birth dots should be filled: */
     bool_t fill[ni];
-    for (int32_t iq = 0; iq < ni; iq++) { fill[iq] = ((iq % 3) != 0); }
+    for (uint32_t iq = 0;  iq < ni; iq++) { fill[iq] = ((iq % 3) != 0); }
 
     drtree_plot_individuals(eps, tMin, ncols, nrows, Xstep, Ystep, ni, dt, rdr, fill, NULL);
 

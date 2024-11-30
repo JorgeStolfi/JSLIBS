@@ -31,7 +31,7 @@ void balt_first_tuple(int32_t n, int32_t d[], int32_t vmin, int32_t vmax, int32_
 bool_t balt_next_tuple(int32_t n, int32_t d[], int32_t vmin, int32_t vmax, int32_t smin, int32_t smax)
   { 
     /* Update {smin,smax} to range of {d[n]}, it it existed: */
-    for (int32_t i = 0; i < n; i++) { int32_t e = d[i];  smin = smin - e; smax = smax - e; }
+    for (uint32_t i = 0;  i < n; i++) { int32_t e = d[i];  smin = smin - e; smax = smax - e; }
     demand((smin <= 0) && (0 <= smax), "bad tuple sum");
     
     /* Find the last {d[k]} in {d[0..n-1]} that can be bumped: */

@@ -29,7 +29,7 @@ double float_image_waves_eval
   {
     /* Accumulate waves: */
     double res = 0.000;
-    for (int32_t kf = 0; kf < NF; kf++)
+    for (uint32_t kf = 0;  kf < NF; kf++)
       { /* Compute a longitudinal perturbation for the point: */
         double df = 1.0/(fx[kf]*fx[kf] + fy[kf]*fy[kf]);
         double dx = df*fx[kf];
@@ -75,7 +75,7 @@ void float_image_waves_pick
     double fxk = f0*cos(tt0); 
     double fyk = f0*sin(tt0);
     double ampk = 1.0;
-    for (int32_t kf = 0; kf < NF; kf++)
+    for (uint32_t kf = 0;  kf < NF; kf++)
       { /* Compute parameters of  and  {b = 1-a}, both in {(0 _ 1)}: */
         amp[kf] = ampk;
         fx[kf] = fxk;
@@ -90,7 +90,7 @@ void float_image_waves_pick
       }
     if (verbose)
       { fprintf(stderr, "wave parameters:\n");
-        for (int32_t kf = 0; kf < NF; kf++) 
+        for (uint32_t kf = 0;  kf < NF; kf++) 
           { fprintf(stderr, "  %3d amp = %+15.12f", kf, amp[kf]);
             fprintf(stderr, "  fx = %+15.12f fy = %+15.12f", fx[kf], fy[kf]);
             fprintf(stderr, "  phase = %+15.12f\n", phase[kf]);

@@ -47,11 +47,11 @@ double_vec_t wt_table_args_parse_weights(argparser_t *pp, bool_t unitNorm)
     if (unitNorm)
       { /* Set [denom} to the sum of all weights: */
         denom = 0;
-        for (int32_t k = 0; k < nw; k++) { denom += w.e[k]; }
+        for (uint32_t k = 0;  k < nw; k++) { denom += w.e[k]; }
       }
     if (denom != 1)
       { /* Divide all weights by {denom}: */
-        for (int32_t k = 0; k < nw; k++) { w.e[k] /= denom; }
+        for (uint32_t k = 0;  k < nw; k++) { w.e[k] /= denom; }
       }
     double_vec_trim(&w, nw);
     return w;

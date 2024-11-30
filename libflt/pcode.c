@@ -176,7 +176,7 @@ char *pcode_parse_title(FILE *f, char **next_line_P)
 
     char *title = talloc(nc + (nt - 1) + 1, char);
     char *p = title; 
-    for (int32_t i = 0; i < nt; i++)
+    for (uint32_t i = 0;  i < nt; i++)
       { char *q = t[i];
         if (i>0) *(p++) = '\n';
 	while (*q != '\000') *(p++) = *(q++); 

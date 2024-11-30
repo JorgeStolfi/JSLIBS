@@ -51,7 +51,7 @@ float_array_t *float_array_from_uint16_image
     /* Input and output range registers: */
     sample_uint32_t imin[NC], imax[NC]; /* Input range registers. */ 
     float vmin[NC], vmax[NC];    /* Output range registers. */ 
-    for (int32_t c = 0; c < NC; c++) 
+    for (uint32_t c = 0;  c < NC; c++) 
       { imin[c] = maxval;
         imax[c] = 0;
         vmin[c] = +INFINITY;
@@ -60,12 +60,12 @@ float_array_t *float_array_from_uint16_image
     
     /* Convert pixels, keep statistics: */
     ix_index_t ix[na];
-    for(int32_t fy = 0; fy < NY; fy++)
+    for (uint32_t fy = 0;  fy < NY; fy++)
       { /* Fill array plane {ix[2]==fy}: */
         int32_t iy = (yrev ? (int32_t)NY - 1 - fy : fy); /* Row index in image array. */
         uint16_t *prow = img->smp[iy];
-        for(int32_t x = 0; x < NX; x++)
-          { for (int32_t c = 0; c < NC; c++)
+        for (uint32_t x = 0;  x < NX; x++)
+          { for (uint32_t c = 0;  c < NC; c++)
               { /* Convert int32_t sample {*prow} to float {v}, store, keep stats: */
                 sample_uint32_t ismp = (*prow);
                 double loc = (lo == NULL ? 0.0 : lo[c]);
@@ -84,7 +84,7 @@ float_array_t *float_array_from_uint16_image
         int64_t NPIX = ((int64_t)NX)*((int64_t)NY);
         fprintf(stderr, "  %ld pixels in PNM image\n", NPIX);
         if (NPIX > 0)
-          { for (int32_t c = 0; c < NC; c++)
+          { for (uint32_t c = 0;  c < NC; c++)
               { double loc = (lo == NULL ? 0.0 : lo[c]);
                 double hic = (hi == NULL ? 1.0 : hi[c]);
                 sample_conv_print_floatize_stats

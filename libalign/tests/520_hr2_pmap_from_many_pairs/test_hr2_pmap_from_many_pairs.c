@@ -230,8 +230,8 @@ double hpmat_mismatch_sqr_2(hr2_pmap_t *A, hr2_pmap_t *B)
     hr2_pmap_t ABdif = hr2_pmap_inv_compose(A, B); /* The map {A^{-1} B}. */
     /* Compare the matrix of {ABdif} with the identity map, using a non-trivial metric: */
     double d2 = 0;
-    for (int32_t i = 0; i < 3; i++)
-      { for (int32_t j = 0; j < 3; j++)
+    for (uint32_t i = 0;  i < 3; i++)
+      { for (uint32_t j = 0;  j < 3; j++)
           { double d = ABdif.dir.c[i][j] - (i == j ? 1.0 : 0.0);
             d2 += (1 + 0.1*i + 0.3*j)*d*d;
           }
@@ -241,8 +241,8 @@ double hpmat_mismatch_sqr_2(hr2_pmap_t *A, hr2_pmap_t *B)
   
 void hpmat_choose_initial_guess(hr2_pmap_t *Aopt, r3x3_t *R, hr2_pmap_t *Aini)
   {
-    for (int32_t i = 0; i < 3; i++)
-      { for (int32_t j = 0; j < 3; j++)
+    for (uint32_t i = 0;  i < 3; i++)
+      { for (uint32_t j = 0;  j < 3; j++)
           { double frac = dabrandom(-0.50, +0.50);
             Aini->dir.c[i][j] = Aopt->dir.c[i][j] + frac*R->c[i][j];
           }
@@ -324,7 +324,7 @@ void hpmat_choose_plot_directions(r3x3_t *R, r3x3_t *U, r3x3_t *V)
     for (int32_t du = -1; du <= +1; du += 2)
       { for (int32_t dv = -1; dv <= +1; dv += 2)
           { rn_mix(ne, (double)du, ue, (double)dv, ve, te);
-            for (int32_t ie = 0; ie < ne; ie++)
+            for (uint32_t ie = 0;  ie < ne; ie++)
               { double tei = fabs(te[ie]);
                 double Rei = fabs(Re[ie]);
                 assert (Rei > 0);
@@ -341,7 +341,7 @@ void hpmat_choose_plot_directions(r3x3_t *R, r3x3_t *U, r3x3_t *V)
     /* Insert {ue,ve} scaled by {s} into {U,V}: */
     r3x3_zero(U);
     r3x3_zero(V);
-    for (int32_t ie = 0; ie < ne; ie++)
+    for (uint32_t ie = 0;  ie < ne; ie++)
       { (*(Up[ie])) = s*ue[ie];
         (*(Vp[ie])) = s*ve[ie];
       }
@@ -350,8 +350,8 @@ void hpmat_choose_plot_directions(r3x3_t *R, r3x3_t *U, r3x3_t *V)
 double hpmat_diff_rel_sqr(r3x3_t *D, r3x3_t *R)
   {
     double sum_r2 = 0;
-    for (int32_t i = 0; i < 3; i++)
-      { for (int32_t j = 0; j < 3; j++)
+    for (uint32_t i = 0;  i < 3; i++)
+      { for (uint32_t j = 0;  j < 3; j++)
           { double Dij = D->c[i][j];
             double Rij = R->c[i][j];
             if (Rij == 0)
@@ -452,8 +452,8 @@ hpmat_options_t *hpmat_parse_options(int32_t argc, char **argv)
 
 void hpmat_parse_next_r3x3(argparser_t *pp, r3x3_t *R)
   {
-    for (int32_t i = 0; i < 3; i++)
-      { for (int32_t j = 0; j < 3; j++)
+    for (uint32_t i = 0;  i < 3; i++)
+      { for (uint32_t j = 0;  j < 3; j++)
           { R->c[i][j] = argparser_get_next_double(pp, -100.0, +100.0); }
       }
   }

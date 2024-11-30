@@ -54,7 +54,7 @@ int32_t main(int32_t argc, char **argv)
   {
     srandom(4615*417);
 
-    for (int32_t bal = 0; bal < 2; bal++)
+    for (uint32_t bal = 0;  bal < 2; bal++)
       { ralent_do_test(2, (bool_t)bal);
         ralent_do_test(5, (bool_t)bal);
       }
@@ -90,7 +90,7 @@ void ralent_do_test(int32_t ni, bool_t bal)
 
     fprintf(stderr, "... Finding the largest dimension of {\\RF} ...\n");
     double ursup = 0.0;
-    for (int32_t k = 0; k < nd; k++)  { if (urad[k] > ursup) { ursup = urad[k]; } }
+    for (uint32_t k = 0;  k < nd; k++)  { if (urad[k] > ursup) { ursup = urad[k]; } }
     fprintf(stderr, "largest radius of {\\RF} = %.8f\n", ursup);
 
     fprintf(stderr, "... Choosing the optimum point {popt} in {\\RF} ...\n");
@@ -108,10 +108,10 @@ void ralent_do_test(int32_t ni, bool_t bal)
           { assert(ntry < 1000); /* Should not happen... */
             double b[nd]; /* A random vector in the unit ball. */
             rn_throw_ball(nd, b);
-            for (int32_t i = 0; i < ni; i++) 
-              { for (int32_t j = 0; j < 2; j++) 
+            for (uint32_t i = 0;  i < ni; i++) 
+              { for (uint32_t j = 0;  j < 2; j++) 
                   { double dij = 0.0;
-                    for (int32_t k = 0; k < nd; k++) 
+                    for (uint32_t k = 0;  k < nd; k++) 
                       { r2_t *uk = &(U[k*ni]);
                         dij += b[k]*urad[k]*uk[i].c[j];
                       }
@@ -131,7 +131,7 @@ void ralent_do_test(int32_t ni, bool_t bal)
       }
     else
       { /* Use the center: */
-        for (int32_t i = 0; i < ni; i++) { popt[i] = ctr[i]; }
+        for (uint32_t i = 0;  i < ni; i++) { popt[i] = ctr[i]; }
       }
 
     /* If {nd} is 2, define the axis vectors of the indep plot variables: */
@@ -155,7 +155,7 @@ void ralent_choose_ctr(int32_t ni, r2_t ctr[])
     double cmax = 1.995;
     fprintf(stderr, "... choosing the center {ctr} ...\n");
     r2_align_throw_ctr(ni, cmax, ctr, TRUE);
-    for (int32_t i = 0; i < ni; i++) { ctr[i] = (r2_t){{ 1.0, 2.0 }}; }
+    for (uint32_t i = 0;  i < ni; i++) { ctr[i] = (r2_t){{ 1.0, 2.0 }}; }
     r2_align_print_vector(stderr, ni, "ctr", -1, ctr);
     return;
   }
@@ -181,7 +181,7 @@ void ralent_test_align_enum(int32_t ni, r2_t ctr[], r2_t arad[], bool_t bal, dou
         also writes the data points to {wr}. */
       
     r2_t psol[ni];
-    for (int32_t i = 0; i < ni; i++) { psol[i] = ctr[i]; }
+    for (uint32_t i = 0;  i < ni; i++) { psol[i] = ctr[i]; }
     double F2ini = FD2(ni, psol);
     fprintf(stderr, "  F2 (ini) = %12.6f\n", F2ini);
 
@@ -193,15 +193,15 @@ void ralent_test_align_enum(int32_t ni, r2_t ctr[], r2_t arad[], bool_t bal, dou
     r2_align_enum(ni, &FD2, arad, bal, tol, psol, &F2sol);
     
     fprintf(stderr, "  F2 (sol) = %12.6f\n", F2sol);
-    for (int32_t i = 0; i < ni; i++) 
+    for (uint32_t i = 0;  i < ni; i++) 
       { fprintf(stderr, "  psol[%d] = (", i);
-        for (int32_t j = 0; j < 2; j++) 
+        for (uint32_t j = 0;  j < 2; j++) 
           { fprintf(stderr, " %12.6f", psol[i].c[j]); }
         fprintf(stderr, " ) popt = (");
-        for (int32_t j = 0; j < 2; j++) 
+        for (uint32_t j = 0;  j < 2; j++) 
           { fprintf(stderr, " %12.6f", popt[i].c[j]); }
         fprintf(stderr, " ) diff = (");
-        for (int32_t j = 0; j < 2; j++) 
+        for (uint32_t j = 0;  j < 2; j++) 
           { fprintf(stderr, " %12.6f", psol[i].c[j] - popt[i].c[j]); }
         fprintf(stderr, " )\n");
       }
@@ -223,8 +223,8 @@ void ralent_test_align_enum(int32_t ni, r2_t ctr[], r2_t arad[], bool_t bal, dou
         double F2val = r2_align_dist_sqr(ni, q, popt);
         if (plot && (wr != NULL))
           { r2_t dsmp[ni];
-            for (int32_t i = 0; i < ni; i++) 
-              { for (int32_t j = 0; j < 2; j++) 
+            for (uint32_t i = 0;  i < ni; i++) 
+              { for (uint32_t j = 0;  j < 2; j++) 
                   { dsmp[i].c[j] = q[i].c[j] - ctr[i].c[j]; }
               }
             double s0 = r2_align_dot(ni, dsmp, u0);

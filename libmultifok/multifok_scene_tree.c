@@ -50,9 +50,9 @@ multifok_scene_tree_t *multifok_scene_tree_build
             /* Find the largest bounding dimension, {X} or {Y}, and split perp to that axis: */
             interval_t bboxXY[2]; /* Bounding box of all objects in {X} and {Y} only. */
             double wd[2]; /* Width of {bboxXY[j]}. */
-            for (int32_t jxy = 0; jxy < 2; jxy++)
+            for (uint32_t jxy = 0;  jxy < 2; jxy++)
               { bboxXY[jxy] = (interval_t){{ +INF, -INF }}; /* Empty interval. */
-                for (int32_t ko = 0; ko < NO; ko++)
+                for (uint32_t ko = 0;  ko < NO; ko++)
                   { bboxXY[jxy] = interval_join(&(bboxXY[jxy]), &(objs[ko].bbox[jxy])); }
                 wd[jxy] = interval_width(&(bboxXY[jxy]));
                 assert(wd[jxy] > 0);
@@ -67,10 +67,10 @@ multifok_scene_tree_t *multifok_scene_tree_build
         tr->obj = &(objs[mo]);
         
         /* Set {tr->bbox[0..2]} to the bounding box of the root object: */
-        for (int32_t j = 0; j < 3; j++) { tr->bbox[j] = tr->obj->bbox[j]; }
+        for (uint32_t j = 0;  j < 3; j++) { tr->bbox[j] = tr->obj->bbox[j]; }
             
         /* Recurse on the two halves: */
-        for (int32_t ic = 0; ic < 2; ic++)
+        for (uint32_t ic = 0;  ic < 2; ic++)
           { /* Define the objects {objs[ko_min..ko_max]} that go into {sub[ic]}: */
             int32_t ko_min = (ic == 0 ? 0 : mo + 1);
             int32_t ko_max = (ic == 0 ? mo-1 : NO-1);
@@ -84,7 +84,7 @@ multifok_scene_tree_t *multifok_scene_tree_build
                 multifok_scene_tree_t *sub = multifok_scene_tree_build(NO_sub, &(objs[ko_min]), debug_sub);
                 assert(sub != NULL);
                 /* Merge {sub[ic].bbox} into {bbox}: */
-                for (int32_t j = 0; j < 3; j++) { tr->bbox[j] = interval_join(&(tr->bbox[j]), &(sub->bbox[j])); }
+                for (uint32_t j = 0;  j < 3; j++) { tr->bbox[j] = interval_join(&(tr->bbox[j]), &(sub->bbox[j])); }
                 tr->sub[ic] = sub;
               }
           }
@@ -127,7 +127,7 @@ void multifok_scene_tree_sort_objects
 void multifok_scene_tree_check_object_order(int32_t NO, multifok_scene_object_t objs[], int8_t axis)
   { fprintf(stderr, "checking center ordering by axis %d...\n", axis);
     double ctr_prev = -INF;
-    for (int32_t ko = 0; ko < NO; ko++) 
+    for (uint32_t ko = 0;  ko < NO; ko++) 
       { double ctr = interval_mid(&(objs[ko].bbox[axis]));
         assert(ctr >= ctr_prev);
         ctr_prev = ctr;

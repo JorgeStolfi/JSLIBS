@@ -103,7 +103,7 @@ int32_t main (int32_t argc, char *argv[])
       fprintf(f_p_wgt, "%d\n", n_p_w);
 
       /* Process marks: */
-      for (int32_t i = 0; i < n_p_w; i++) {
+      for (uint32_t i = 0;  i < n_p_w; i++) {
           fprintf(stdout, "before tf_world_coords_to_image_coords\n"); 
           r2_t p_i = tf_world_coords_to_image_coords (cal_cpar, cdat->world[i]);
           fprintf(stdout, "after tf_world_coords_to_image_coords\n"); 

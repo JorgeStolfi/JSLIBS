@@ -123,8 +123,8 @@ void spectrum_table_binned_add_all
     int32_t fnMax[2] = { cols/2, rows/2 }; /* Max numerators of natural freq vector. */
     
     /* Splat the spectrum terms over the table {tb}, with smoothing. */
-    for (int32_t ry = 0; ry < rows; ry++)
-      for (int32_t rx = 0; rx < cols; rx++)
+    for (uint32_t ry = 0;  ry < rows; ry++)
+      for (uint32_t rx = 0;  rx < cols; rx++)
         { /* Adjust for centering: */
           int32_t fx = (center ? (rx + cols - cols/2) % cols : rx);
           int32_t fy = (center ? (ry + rows - rows/2) % rows : ry);

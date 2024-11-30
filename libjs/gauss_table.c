@@ -22,26 +22,26 @@ double *gauss_table_make(uint32_t n, double avg, double dev, bool_t normSum, boo
 
     /* Fill the table: */
     if (folded)
-      { for (int32_t i = 0; i < n; i++) 
+      { for (uint32_t i = 0;  i < n; i++) 
           { w[i] = gauss_table_folded_bell((double)i - avg, dev, n); }
       }
     else
-      { for (int32_t i = 0; i < n; i++) 
+      { for (uint32_t i = 0;  i < n; i++) 
           { w[i] = gauss_bell_eval((double)i, avg, dev); }
       }
       
     if (normSum)
       { /* Normalize to unit sum: */
         double sum = 0.0; 
-        for (int32_t i = 0; i < n; i++) { sum += w[i]; }
+        for (uint32_t i = 0;  i < n; i++) { sum += w[i]; }
         demand(sum > 0, "cannot normalize a zero-sum table");
-        for (int32_t i = 0; i < n; i++) { w[i] /= sum; }
+        for (uint32_t i = 0;  i < n; i++) { w[i] /= sum; }
       }
     else if (folded)
       { /* Normalize to unity at {avg}: */
         double wmax = gauss_table_folded_bell(0.0, dev, n);
         assert(wmax > 0.0);
-        for (int32_t i = 0; i < n; i++) { w[i] /= wmax; }
+        for (uint32_t i = 0;  i < n; i++) { w[i] /= wmax; }
       }
     return w;
   }

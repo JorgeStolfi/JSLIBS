@@ -275,7 +275,7 @@ bool_t r3_eq(r3_t *p, r3_t *q)
 void r3_barycenter(uint32_t np, r3_t p[], double w[], r3_t *bar)
   { r3_t sum_wp = (r3_t){{ 0, 0, 0 }};
     double sum_w = 0.0;
-    for (int32_t k = 0; k < np; k++) 
+    for (uint32_t k = 0;  k < np; k++) 
       { r3_t *pk = &(p[k]);
         double wk = (w != NULL ? w[k] : 1.0);
         r3_mix(1.0, &sum_wp, wk, pk, &sum_wp);
@@ -286,18 +286,18 @@ void r3_barycenter(uint32_t np, r3_t p[], double w[], r3_t *bar)
 
 void r3_bbox(uint32_t np, r3_t p[], interval_t B[], bool_t finite)
   { double cmin[N], cmax[N];
-    for (int32_t j = 0; j < N; j++) { cmin[j] = +INF; cmax[j] = -INF; }
-    for (int32_t ip = 0; ip < np; ip++)
+    for (uint32_t j = 0;  j < N; j++) { cmin[j] = +INF; cmax[j] = -INF; }
+    for (uint32_t ip = 0;  ip < np; ip++)
       { r3_t *pi = &(p[ip]);
         if ((! finite) || r3_is_finite(pi))
-          { for (int32_t j = 0; j < N; j++) 
+          { for (uint32_t j = 0;  j < N; j++) 
               { double cij = pi->c[j];
                 if (cij < cmin[j]) { cmin[j] = cij; }
                 if (cij > cmax[j]) { cmax[j] = cij; }
               }
           }
       }
-    for (int32_t j = 0; j < N; j++)
+    for (uint32_t j = 0;  j < N; j++)
       { B[j] = (interval_t){{ cmin[j], cmax[j] }}; }
   }
 

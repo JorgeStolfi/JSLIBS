@@ -46,7 +46,7 @@ double multifok_scene_object_raytrace
     
     /* Check bbox intersection: */
     bool_t ok = TRUE;
-    for (int32_t j = 0; (j < 3) && ok; j++)
+    for (uint32_t j = 0;  (j < 3) && ok; j++)
       { if (ray_bbox[j].end[1] < obj->bbox[j].end[0]) { ok = FALSE; }
         if (ray_bbox[j].end[0] > obj->bbox[j].end[1]) { ok = FALSE; }
       }

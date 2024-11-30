@@ -55,9 +55,9 @@ void r2_opt_single_scale_enum
     int32_t nv = 0;    /* Number of variable coordinates. */
 
     /* Save {p0}, compute the integer radii {r[k]} and initialize {v[k]}: */
-    for (int32_t i = 0; i < ni; i++)
+    for (uint32_t i = 0;  i < ni; i++)
       { p0[i] = p[i];
-        for (int32_t j = 0; j < 2; j++)
+        for (uint32_t j = 0;  j < 2; j++)
           { int32_t k = 2*i + j;
             double arij = arad[i].c[j];
             double asij = astp[i].c[j];
@@ -78,8 +78,8 @@ void r2_opt_single_scale_enum
     r2_t pv[nc];     /* Trial alignment vector. */
     while (TRUE) 
       { /* Compute {pv} from {v}: */
-        for (int32_t i = 0; i < ni; i++)
-          { for (int32_t j = 0; j < 2; j++)
+        for (uint32_t i = 0;  i < ni; i++)
+          { for (uint32_t j = 0;  j < 2; j++)
               { int32_t k = 2*i + j;
                 pv[i].c[j] = p0[i].c[j] + v[k]*astp[i].c[j];
               }
@@ -89,7 +89,7 @@ void r2_opt_single_scale_enum
         if (f2v < (*f2p))
           { /* Update the current optimum: */
             if (debug) { fprintf(stderr, "found better solution f2 = %24.15e\n", f2v); }
-            for (int32_t i = 0; i < ni; i++) { p[i] = pv[i]; }
+            for (uint32_t i = 0;  i < ni; i++) { p[i] = pv[i]; }
             (*f2p) = f2v;
           }
         /* Increment the next {v[k]} that can be incremented, reset previous ones to min: */
@@ -119,8 +119,8 @@ void r2_opt_single_scale_quadopt
     /* Find the number {nv} of variables to optimize and the relative precision {tol}: */
     int32_t nv = 0;
     double tol = +INF;
-    for (int32_t i = 0; i < ni; i++) 
-      { for (int32_t j = 0; j < 2; j++)
+    for (uint32_t i = 0;  i < ni; i++) 
+      { for (uint32_t j = 0;  j < 2; j++)
           { double arij = arad[i].c[j];
             double asij = astp[i].c[j];
             if (r2_opt_coord_is_variable(arij, asij))
@@ -144,7 +144,7 @@ void r2_opt_single_scale_quadopt
 
         /* Save initial guess {p} in {p0}: */
         r2_t p0[ni]; /* Saved initial guess. */
-        for (int32_t i = 0; i < ni; i++) { p0[i] = p[i]; }
+        for (uint32_t i = 0;  i < ni; i++) { p0[i] = p[i]; }
         
         /* These functions assume that the initial guess was saved in {p0[0..ni-1]}: */ 
 
@@ -193,8 +193,8 @@ void r2_opt_single_scale_quadopt
 
         void points_to_vars(r2_t q[], double y[])
           { int32_t k = 0;
-            for (int32_t i = 0; i < ni; i++)
-              { for (int32_t j = 0; j < 2; j++)
+            for (uint32_t i = 0;  i < ni; i++)
+              { for (uint32_t j = 0;  j < 2; j++)
                   { double asij = astp[i].c[j];
                     double arij = arad[i].c[j];
                     if (r2_opt_coord_is_variable(arij, asij)) 
@@ -209,8 +209,8 @@ void r2_opt_single_scale_quadopt
 
         void vars_to_points(double y[], r2_t q[])
           { int32_t k = 0;
-            for (int32_t i = 0; i < ni; i++)
-              { for (int32_t j = 0; j < 2; j++)
+            for (uint32_t i = 0;  i < ni; i++)
+              { for (uint32_t j = 0;  j < 2; j++)
                   { double asij = astp[i].c[j];
                     double arij = arad[i].c[j];
                     if (r2_opt_coord_is_variable(arij, asij))
@@ -256,8 +256,8 @@ void r2_opt_multi_scale
     /* Find the num of variables {nv} and max relative search radius {umax.c[j]} on each axis: */
     r2_t umax = (r2_t){{ -INF, -INF }};
     int32_t nv = 0;
-    for (int32_t i = 0; i < ni; i++)
-      { for (int32_t j = 0; j < 2; j++)
+    for (uint32_t i = 0;  i < ni; i++)
+      { for (uint32_t j = 0;  j < 2; j++)
           { double arij = arad[i].c[j];
             double asij = astp[i].c[j];
             if (r2_opt_coord_is_variable(arij, asij))
@@ -277,12 +277,12 @@ void r2_opt_multi_scale
     else
       { /* Save the initial guess as it defines the center of the domain: */
         r2_t p0[ni];
-        for (int32_t i = 0; i < ni; i++) { p0[i] = p[i]; }
+        for (uint32_t i = 0;  i < ni; i++) { p0[i] = p[i]; }
       
         /* Compute the initial scale {mscale}: */
         i2_t mscale = (i2_t){{ 0, 0 }};
         while ((umax.c[0] >= 0.5) || (umax.c[1] >= 0.5)) 
-          { for (int32_t j = 0; j < 2; j++) 
+          { for (uint32_t j = 0;  j < 2; j++) 
               { if (umax.c[j] >= 0.5) 
                   { mscale.c[j]++;
                     umax.c[j] = umax.c[j]/2;
@@ -328,7 +328,7 @@ void r2_opt_multi_scale
 
             /* Reduce the lasgest elements of {iscale}: */
             int32_t xscale = (int32_t)imax(iscale.c[0], iscale.c[1]);
-            for (int32_t j = 0; j < 2; j++) 
+            for (uint32_t j = 0;  j < 2; j++) 
               { if (iscale.c[j] == xscale) 
                   { iscale.c[j]--; }
               }
@@ -338,8 +338,8 @@ void r2_opt_multi_scale
 
         void initialize_stp(void)
           { int32_t nv1 = 0;
-            for (int32_t i = 0; i < ni; i++)
-              { for (int32_t j = 0; j < 2; j++) 
+            for (uint32_t i = 0;  i < ni; i++)
+              { for (uint32_t j = 0;  j < 2; j++) 
                   { /* Get original search radius and step: */
                     double arij = arad[i].c[j];
                     double asij = astp[i].c[j];
@@ -354,8 +354,8 @@ void r2_opt_multi_scale
 
         void update_rad_stp(i2_t cscale)
           { int32_t nv1 = 0;
-            for (int32_t i = 0; i < ni; i++)
-              { for (int32_t j = 0; j < 2; j++) 
+            for (uint32_t i = 0;  i < ni; i++)
+              { for (uint32_t j = 0;  j < 2; j++) 
                   { /* Get original search radius and step: */
                     double arij = arad[i].c[j];
                     double asij = astp[i].c[j];
@@ -403,8 +403,8 @@ bool_t r2_opt_coord_is_variable(double arij, double asij)
 double r2_opt_rel_disp_sqr(int32_t ni, r2_t p[], r2_t q[], r2_t arad[], r2_t astp[])
   {
     double d2 = 0.0;
-    for (int32_t j = 0; j < 2; j++)
-      { for (int32_t i = 0; i < ni; i++)
+    for (uint32_t j = 0;  j < 2; j++)
+      { for (uint32_t i = 0;  i < ni; i++)
           { double arij = arad[i].c[j];
             double asij = astp[i].c[j];
             if (r2_opt_coord_is_variable(arij, asij))

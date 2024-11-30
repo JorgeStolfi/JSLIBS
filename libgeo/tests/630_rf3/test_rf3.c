@@ -24,7 +24,7 @@ int32_t main (int32_t argc, char **argv)
   { srand(1993);
     srandom(1993);
 
-    for (int32_t i = 0; i < 100; i++) { test_rf3(i < 3); }
+    for (uint32_t i = 0;  i < 100; i++) { test_rf3(i < 3); }
     fclose(stderr);
     fclose(stdout);
     return (0);
@@ -45,8 +45,8 @@ void test_rf3(bool_t verbose)
     /* ---------------------------------------------------------------------- */
     if (verbose) { fprintf(stderr, "--- rf3_throw_cube ---\n"); }
     a = rf3_throw_cube();
-    for (int32_t i = 0; i < N; i++)
-      { for (int32_t j = 0; j < i; j++)
+    for (uint32_t i = 0;  i < N; i++)
+      { for (uint32_t j = 0;  j < i; j++)
           { affirm(a.c[i] != a.c[j], "rf3_throw_cube probable error(1)"); } 
         /* Check whether there are more than 8 nonzero bits: */
         double vv = a.c[i]*256.0;
@@ -59,7 +59,7 @@ void test_rf3(bool_t verbose)
     a = rf3_throw_cube();
     b = rf3_throw_cube();
     d = rf3_add(&a, &b);
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { rfn_test_tools_check_eq(d.c[i],a.c[i] + b.c[i], NO, NO, "rf3_add error"); }
 
     /* ---------------------------------------------------------------------- */
@@ -67,7 +67,7 @@ void test_rf3(bool_t verbose)
     a = rf3_throw_cube();
     b = rf3_throw_cube();
     d = rf3_sub(&a, &b);
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { rfn_test_tools_check_eq(d.c[i],a.c[i] - b.c[i], NO, NO, "rf3_sub error"); }
 
     /* ---------------------------------------------------------------------- */
@@ -75,7 +75,7 @@ void test_rf3(bool_t verbose)
     s = drandom();
     a = rf3_throw_cube();
     d = rf3_scale(s, &a);
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { float zi = (float)(s*a.c[i]);
         rfn_test_tools_check_eq(d.c[i],zi, NO, NO, "rf3_scale error(1)");
       }
@@ -87,7 +87,7 @@ void test_rf3(bool_t verbose)
     a = rf3_throw_cube();
     b = rf3_throw_cube();
     d = rf3_mix(s, &a, t, &b);
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { float ddi = (float)(s * a.c[i] + t * b.c[i]);
         rfn_test_tools_check_eq(d.c[i],ddi, NO, NO, "rf3_mix error");
       }
@@ -107,7 +107,7 @@ void test_rf3(bool_t verbose)
     a = rf3_throw_cube();
     r = rf3_norm(&a);
     ss = 0.0;
-    for (int32_t i = 0; i < N; i++)
+    for (uint32_t i = 0;  i < N; i++)
       { double ai = fabs(a.c[i]);
         ss += ai*ai; 
       }

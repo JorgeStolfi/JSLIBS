@@ -804,7 +804,7 @@ void pst_flt_solve_lsq_system(int n, double A[], double b[], double u[], bool_t 
     if (nonNegative) 
       { qms_quadratic_min(n, A, b, u); }
     else
-      { int32_t r = gsel_solve(n, n, A, n, b, u, 0.0);
+      { int32_t r = gauss_elim_solve(n, n, A, n, b, u, 0.0);
         demand(r == n, "indeterminate system");
       }
   }

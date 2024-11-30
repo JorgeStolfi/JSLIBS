@@ -455,12 +455,12 @@ mfdo_result_frame_t *mfdo_result_frame_new
     
     fprintf(stderr, "allocating images for basis coefs squared...\n");
     ofr->bVal = talloc(NB, float_image_t*);
-    for (int32_t kb = 0; kb < NB; kb++) 
+    for (uint32_t kb = 0;  kb < NB; kb++) 
       { ofr->bVal[kb] = float_image_new(1, NX, NY); }
 
     fprintf(stderr, "allocating images for quadratic term values...\n");
     ofr->tVal = talloc(NT, float_image_t*);
-    for (int32_t kt = 0; kt < NT; kt++) 
+    for (uint32_t kt = 0;  kt < NT; kt++) 
       { ofr->tVal[kt] = float_image_new(1, NX, NY); }
 
     fprintf(stderr, "allocating window average, gradient, and deviation images...\n");
@@ -487,7 +487,7 @@ mfdo_result_stack_t *mfdo_result_stack_new(int32_t NI)
     ostack->NT = -1;
     
     ostack->frame = talloc(NI, mfdo_result_frame_t*);
-    for (int32_t ki = 0; ki < NI; ki++) { ostack->frame[ki] = NULL; }
+    for (uint32_t ki = 0;  ki < NI; ki++) { ostack->frame[ki] = NULL; }
 
     fprintf(stderr, "allocating the pixel selection mask...\n");
     ostack->pSel = float_image_new(1, NX, NY);
@@ -527,7 +527,7 @@ mfdo_result_stack_t *mfdo_process_stack
     ostack->NB = NB;
     ostack->NT = NT;
  
-    for (int32_t ki = 0; ki < NI; ki++)
+    for (uint32_t ki = 0;  ki < NI; ki++)
       { multifok_frame_t *ifr = istack->frame[ki];
         assert(ifr->NX == NX);
         assert(ifr->NY == NY);
@@ -584,16 +584,16 @@ mfdo_result_frame_t *mfdo_process_frame
       { for (int32_t iy = HW; iy < NY-HW; iy++) 
           { /* Get the samples in the window and remove mean and deviation: */
             float_image_get_window_samples(ifr->sVal, 0,ix,iy, NW, NW, FALSE, fsmp);
-            for (int32_t ks = 0; ks < NS; ks++) { dsmp[ks] = fsmp[ks]; }
+            for (uint32_t ks = 0;  ks < NS; ks++) { dsmp[ks] = fsmp[ks]; }
             
             /* Compute basis coefficients of raw window samples and save them in the {bVal} images: */
             multifok_basis_compute_coeffs(dsmp, basis, bVal);
-            for (int32_t kb = 0; kb < NB; kb++)
+            for (uint32_t kb = 0;  kb < NB; kb++)
               { float_image_set_sample(ofr->bVal[kb], 0, ix, iy, (float)bVal[kb]); }
               
             /* Compute the quadratic terms and save in the {tVal} images: */
             multifok_term_values_from_basis_coeffs(bVal, tset, tVal);
-            for (int32_t kt = 0; kt < NT; kt++)
+            for (uint32_t kt = 0;  kt < NT; kt++)
               { float_image_set_sample(ofr->tVal[kt], 0, ix, iy, (float)(tVal[kt])); }
 
             /* Compute the average and deviation of scene view image: */
@@ -636,7 +636,7 @@ void mfdo_write_correl_data
     
     double zFoc[NI];  /* Nominal focus plane {Z} for each frame. */
     double zDep[NI];  /* Nominal depth of focus for each frame. */
-    for (int32_t ki = 0; ki < NI; ki++) 
+    for (uint32_t ki = 0;  ki < NI; ki++) 
       { multifok_frame_t *ifr = istack->frame[ki];
         zFoc[ki] = ifr->zFoc; zDep[ki] = ifr->zDep;
       }
@@ -655,7 +655,7 @@ void mfdo_write_correl_data
             double hAvg_min = +INF; /* Min simulated {Z} average at this pixel. */
             double hAvg_max = -INF; /* Max simulated {Z} average at this pixel. */
             double sVar[NI];  /* Value of {sDev^2} for all frames at this pixel. */
-            for (int32_t ki = 0; ki < NI; ki++)
+            for (uint32_t ki = 0;  ki < NI; ki++)
               { multifok_frame_t *ifr = istack->frame[ki];
                 mfdo_result_frame_t *ofr = ostack->frame[ki];
                 double sDev = float_image_get_sample(ofr->sDev, 0,ix,iy);
@@ -681,7 +681,7 @@ void mfdo_write_correl_data
               { pSel = 0.0; }
             else
               { /* Write the data for analysis: */
-                for (int32_t ki = 0; ki < NI; ki++)
+                for (uint32_t ki = 0;  ki < NI; ki++)
                   { multifok_frame_t *ifr = istack->frame[ki];
                     mfdo_result_frame_t *ofr = ostack->frame[ki];
 
@@ -702,12 +702,12 @@ void mfdo_write_correl_data
                     double shrp = float_image_get_sample(ifr->shrp, 0,ix,iy);
                     fprintf(wr_dat, " %14.10f ", shrp); /* "Actual" sharpness indicator. */
                     fprintf(wr_dat, "   ");
-                    for (int32_t kb = 0; kb < NB; kb++) 
+                    for (uint32_t kb = 0;  kb < NB; kb++) 
                       { double bVal = float_image_get_sample(ofr->bVal[kb], 0,ix,iy);
                         fprintf(wr_dat, " %+16.12f", bVal);
                       }
                     fprintf(wr_dat, "   ");
-                    for (int32_t kt = 0; kt < NT; kt++) 
+                    for (uint32_t kt = 0;  kt < NT; kt++) 
                       { double tVal = float_image_get_sample(ofr->tVal[kt], 0,ix,iy);
                         fprintf(wr_dat, " %16.12f", tVal);
                       }
@@ -734,7 +734,7 @@ void mfdo_write_correl_data
 void mfdo_write_result_stack(char *outDir, mfdo_result_stack_t *ostack)
   {
     fprintf(stderr, "writing the output stack to %s...\n", outDir);
-    for (int32_t ki = 0; ki < NI; ki++)
+    for (uint32_t ki = 0;  ki < NI; ki++)
       { mfdo_result_frame_t *ofr = ostack->frame[ki];
         char *frameDir = jsprintf("%s/frame-zf%08.4f-fd-%08.4f", outDir, ofr->zFoc, ofr->zDep);
         mfdo_write_result_frame(frameSir, ofr);
@@ -756,11 +756,11 @@ void mfdo_write_result_frame(int32_t ki, char *frameDir, mfdo_result_frame_t *of
     multifok_test_write_normalized_image(ofr->sNrm, frameDir);
 
     /* Write out the squared basis coefficient images: */
-    for (int32_t kb = 0; kb < NB; kb++)
+    for (uint32_t kb = 0;  kb < NB; kb++)
       { multifok_test_write_basis_coeff_squared_image(bVal[kb], kb, frameDir); }
 
     /* Write out the quadratic term images: */
-    for (int32_t kt = 0; kt < NT; kt++)
+    for (uint32_t kt = 0;  kt < NT; kt++)
       { multifok_test_write_quadratic_term_image(tVal[kt], kt, frameDir); }
 
   }

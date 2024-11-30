@@ -299,7 +299,7 @@ void quad_enum(quad_arc_vec_t *root, void visit_proc(quad_arc_t e))
     uint64_t mark = next_mark;
     assert(mark != 0);
     next_mark++;
-    for (int32_t i = 0; i < root->ne; i++) 
+    for (uint32_t i = 0;  i < root->ne; i++) 
       { quad_do_enum(root->e[i], visit_proc, mark); }
   }
 
@@ -386,7 +386,7 @@ void quad_write_map(FILE *wr, quad_arc_vec_t *root, quad_arc_vec_t *A)
     fprintf(wr, "roots = %d\n", nr);
     fprintf(wr, "edges = %lu\n", ne);
     /* Write the roots, one per line: */
-    for (int32_t i = 0; i < nr; i++)
+    for (uint32_t i = 0;  i < nr; i++)
       { /* Write {i} and the root arc number {i}: */
         fprintf(wr, "%*u ", dr, i);
         quad_write_arc(wr, root->e[i], dE);
@@ -400,7 +400,7 @@ void quad_write_map(FILE *wr, quad_arc_vec_t *root, quad_arc_vec_t *A)
         assert(ed->eid == eid);
         /* Write the edge's number and its {onext} links: */
         fprintf(wr, ("%*" uint64_u_fmt), dE, ed->eid);
-        for (int32_t r = 0; r < 4; r++)
+        for (uint32_t r = 0;  r < 4; r++)
           { fputc(' ', wr); quad_write_arc(wr, ed->next[r], dE); }
         fputc('\n', wr);
       }
@@ -447,7 +447,7 @@ void quad_read_map(FILE *rd, quad_arc_vec_t *root, quad_arc_vec_t *A)
         /* Get the edge {ed} from the edge table {A}: */
         quad_edge_t ed = quad_edge(A->e[eid]);
         /* Read its links {ed->next[0..3]}: */
-        for (int32_t r = 0; r < 4; r++) { ed->next[r] = quad_read_arc(rd, A); } 
+        for (uint32_t r = 0;  r < 4; r++) { ed->next[r] = quad_read_arc(rd, A); } 
         /* Skip to the next line: */
         fget_eol(rd);
       }

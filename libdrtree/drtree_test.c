@@ -104,7 +104,7 @@ void drtree_test_create_individuals
     
     int32_t choose_parent(int32_t iq)
       { 
-        for (int32_t it = 0; it < 1000; it++)
+        for (uint32_t it = 0;  it < 1000; it++)
           { /* Choose node {s} earlier than {iq}, favoring close to {iq}: */
             int32_t sMin = (nr < nRoots ? nr - nRoots : 0);
             int32_t sMax = iq - 1;

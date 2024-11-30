@@ -88,14 +88,14 @@ frgb_t frgb_path_map_signed_0(double z, int32_t cycles)
     frgb_t clr;
     if (fabs(z) <= 1.0e-5)
       { /* Map to center gray: */
-        for (int32_t kc = 0; kc < 3; kc++) { clr.c[kc] = 0.500; }
+        for (uint32_t kc = 0;  kc < 3; kc++) { clr.c[kc] = 0.500; }
       }
     else
       { /* Stretch argument away from 0: */
         double t = sqrt(fabs(z));
         /* Interpolate between {cmin} and {cmax} with {t} as ratio: */
         double s = 1 - t;
-        for (int32_t kc = 0; kc < 3; kc++) 
+        for (uint32_t kc = 0;  kc < 3; kc++) 
           { /* DeCasteljau's quadratic interpolation algorithm: */
             float v0t = (float)(s*cmin[kc] + t*cmed[kc]);
             float vt1 = (float)(s*cmed[kc] + t*cmax[kc]);
@@ -115,7 +115,7 @@ frgb_t frgb_path_map_signed_1(double z, int32_t cycles)
     frgb_t clr;
     if (fabs(z) == 0.0)
       { /* Map to center gray: */
-        for (int32_t kc = 0; kc < 3; kc++) { clr.c[kc] = 0.500; }
+        for (uint32_t kc = 0;  kc < 3; kc++) { clr.c[kc] = 0.500; }
       }
     else
       { /* Luminance of min and max colors: */
@@ -158,7 +158,7 @@ frgb_t frgb_path_map_signed_1(double z, int32_t cycles)
         double klin = k/(1 + k), kspr = 1/(1 + k);
         /* C = kspr*A + klin*B; */
 
-        for (int32_t kc = 0; kc < 3; kc++) 
+        for (uint32_t kc = 0;  kc < 3; kc++) 
           { double Ac = qwht*1.0 + qell*(m[kc] + au*u[kc] + av*v[kc]);
             double Bc = pm*m[kc] + puv*u[kc] + puv*v[kc];
             double Cc = kspr*Ac + klin*Bc;
@@ -178,7 +178,7 @@ frgb_t frgb_path_map_signed_2(double z, int32_t cycles)
     frgb_t clr;
     if (fabs(z) == 0.0)
       { /* Map to center gray: */
-        for (int32_t kc = 0; kc < 3; kc++) { clr.c[kc] = 0.500; }
+        for (uint32_t kc = 0;  kc < 3; kc++) { clr.c[kc] = 0.500; }
       }
     else
       { /* Luminance of min and max colors: */
@@ -216,7 +216,7 @@ frgb_t frgb_path_map_signed_2(double z, int32_t cycles)
         double kmid = k/(1 + k), kspr = 1/(1 + k);
         /* C = kspr*A + kmid*B; */
 
-        for (int32_t kc = 0; kc < 3; kc++) 
+        for (uint32_t kc = 0;  kc < 3; kc++) 
           { double Ac = qwht*1.0 + qell*(m[kc] + au*u[kc] + av*v[kc]);
             double Cc = kspr*Ac + kmid*m[kc];
             /* If {z} is negative, complement with respect to center  gray: */

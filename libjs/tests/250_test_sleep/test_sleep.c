@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {jstime.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-17 11:26:39 by stolfi */
+/* Last edited on 2024-11-22 20:43:23 by stolfi */
 /* Created on 2007-01-14 by J. Stolfi, UNICAMP */
 
 #define test_sleep_COPYRIGHT \
@@ -84,7 +84,7 @@ int32_t main(int32_t argc, char **argv)
       { fprintf(stderr, "\n");
         fprintf(stderr, "--- tsleep = %14.12f sec ----------------\n", tsleep); 
         fprintf(stderr, "\n");
-        for (int32_t which = 0; which <= WHICH_MAX; which++) 
+        for (uint32_t which = 0; which <= WHICH_MAX; which++) 
           { test_sleeper_proc(which, tsleep); }
         tsleep = tsleep/10;
         fprintf(stderr, "\n");

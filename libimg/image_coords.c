@@ -60,7 +60,7 @@ hr2_pmap_t imgc_coord_sys_map
     r3x3_t A; r3x3_ident(&A);
     assert(A.c[0][0] == 1.0);
       
-    for (int32_t ax = 1; ax <= 2; ax++)
+    for (uint32_t ax = 1;  ax <= 2; ax++)
       { bool_t rev = (ax == 1 ? xRev : yRev);
         double sz = (ax == 1 ? cols : rows); /* Image size in pixels. */
         double d = (rev ? -1/unit : +1/unit);

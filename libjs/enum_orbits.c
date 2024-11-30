@@ -1,5 +1,5 @@
 /* See enum_orbits.h. */
-/* Last edited on 2024-11-22 02:18:51 by stolfi */
+/* Last edited on 2024-11-23 06:05:38 by stolfi */
 
 #define enum_orbits_C_copyright \
   "Copyright © 1996, 2006 Institute of Computing, Unicamp."
@@ -87,7 +87,7 @@ bool_t enum_items
     init_marking();
     
     /* Enumerate all roots: */
-    for (int32_t i = 0; (i < root.ne) && (! stop); i++)
+    for (uint32_t i = 0;  (i < root.ne) && (! stop); i++)
       { enum_one(root.e[i], ns); }
 
     /* Release the marking table storage: */
@@ -177,8 +177,8 @@ bool_t enum_orbits
     uint32_t ns = ni + no;
     enum_step_t *stp[ns];
     enum_visit_t *vis[ns+1];
-    for (int32_t i = 0; i < ns; i++)
-      { stp[i] = (i < ni ? istep[i] : ostep[i - (int32_t)ni]);
+    for (uint32_t i = 0;  i < ns; i++)
+      { stp[i] = (i < ni ? istep[i] : ostep[i - ni]);
         vis[i] = (i < ni ? NULL : &do_visit);
       }
     vis[ns] = &do_visit;

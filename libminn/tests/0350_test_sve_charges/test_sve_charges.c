@@ -178,13 +178,13 @@ void find_electron_positions(int32_t nq, int32_t dim, int32_t sym)
       
     /* Define the electron charges {Q[0..nq-1]} and the total cloud charge {C}: */
     C = 0;
-    for (int32_t i = 0; i < nq; i++) { Q[i] = -1; C += (-Q[i]); }
+    for (uint32_t i = 0;  i < nq; i++) { Q[i] = -1; C += (-Q[i]); }
     
     double x[nx];     /* Initial guess and final solution. */
 
     /* Initial electron coordinates: */
     srand(4615);  srandom(4615);
-    for (int32_t i = 0; i < nq; i++) 
+    for (uint32_t i = 0;  i < nq; i++) 
       { p[i] = (r3_t){{ 0,0,0 }};
         rn_throw_ball(dim, p[i].c);
         r3_scale(0.80, &(p[i]), &(p[i]));
@@ -327,10 +327,10 @@ void write_electron_positions(char *fname, int32_t nq, r3_t p[])
       { wr = open_write(fname, TRUE);
         fprintf(wr, "# fields: index X Y Z dorg\n");
       }
-    for (int32_t i = 0; i < nq; i++)
+    for (uint32_t i = 0;  i < nq; i++)
       { fprintf(wr, "%5d", i);
         double d2 = 0;
-        for (int32_t k = 0; k < 3; k++)
+        for (uint32_t k = 0;  k < 3; k++)
           { double Xik = p[i].c[k];
             fprintf(wr, " %12.8f", Xik);
             d2 += Xik*Xik;
@@ -341,8 +341,8 @@ void write_electron_positions(char *fname, int32_t nq, r3_t p[])
 
     /* Write electron-electron distances as comments: */
     fprintf(wr, "# fields: i j dij\n");
-    for (int32_t i = 0; i < nq; i++)
-      { for (int32_t j = 0; j < i; j++)
+    for (uint32_t i = 0;  i < nq; i++)
+      { for (uint32_t j = 0;  j < i; j++)
           { fprintf(wr, "# %5d %5d", i, j);
             double dij = r3_dist(&(p[i]), &(p[j]));
             fprintf(wr, " %12.8f", dij);
@@ -360,7 +360,7 @@ double electric_potential(int32_t nq, double Q[], double C, r3_t p[])
     /* Fudge factors to avoid infinities and nans: */
     double relfudge = 1.0e-6;  /* Relative fudge factor. */
     double absfudge = 1.0e-12; /* Absolute fudge term. */
-    for (int32_t i = 0; i < nq; i++)
+    for (uint32_t i = 0;  i < nq; i++)
       { /* Compute the potential {Pi} due to the cloud on electron {i}: */
         /* {Pi} is 0 at center, {-C*Q[i]} at surface (ri = 1): */
         double Pi = 0.0;
@@ -377,7 +377,7 @@ double electric_potential(int32_t nq, double Q[], double C, r3_t p[])
         /* fprintf(stderr, "  ri =  %8.4f Pi =  %8.4f\n", r, Pi); */
         Pcloud += Pi;
         /* Add the potential of electrons {0..i-1} on electron {i}: */
-        for (int32_t j = 0; j < i; j++) 
+        for (uint32_t j = 0;  j < i; j++) 
           { double dij2 = r3_dist_sqr(&(p[i]), &(p[j]));
             double rj2 = r3_norm_sqr(&(p[j]));
             double dij = sqrt(dij2 + relfudge*(ri2+rj2) + absfudge*absfudge);
@@ -503,9 +503,9 @@ void coords_to_params(int32_t nq, int32_t dim, int32_t sym, r3_t p[], int32_t nx
 void params_to_coords_plain(int32_t nx, double x[], int32_t nq, int32_t dim, r3_t p[])
   { assert(nx == nq*dim);
     int32_t k = 0;
-    for (int32_t i = 0; i < nq; i++)
+    for (uint32_t i = 0;  i < nq; i++)
       { p[i] = (r3_t){{ 0,0,0 }};
-        for (int32_t j = 0; j < dim; j++)
+        for (uint32_t j = 0;  j < dim; j++)
           { p[i].c[j] = x[k]; k++; }
       }
   }
@@ -513,8 +513,8 @@ void params_to_coords_plain(int32_t nx, double x[], int32_t nq, int32_t dim, r3_
 void coords_to_params_plain(int32_t nq, int32_t dim, r3_t p[], int32_t nx, double x[])
   { assert(nx == nq*dim);
     int32_t k = 0;
-    for (int32_t i = 0; i < nq; i++)
-      { for (int32_t j = 0; j < dim; j++) 
+    for (uint32_t i = 0;  i < nq; i++)
+      { for (uint32_t j = 0;  j < dim; j++) 
           { x[k] = p[i].c[j]; k++; }
       }
   }
@@ -522,9 +522,9 @@ void coords_to_params_plain(int32_t nq, int32_t dim, r3_t p[], int32_t nx, doubl
 void params_to_coords_centersym(int32_t nx, double x[], int32_t nq, int32_t dim, r3_t p[])        
   { assert(nx == dim*(nq/2));
     int32_t k = 0;
-    for (int32_t i = 0; i < nq/2; i++)
+    for (uint32_t i = 0;  i < nq/2; i++)
       { p[i] = (r3_t){{ 0,0,0 }};
-        for (int32_t j = 0; j < dim; j++) { p[i].c[j] = x[k]; k++; }
+        for (uint32_t j = 0;  j < dim; j++) { p[i].c[j] = x[k]; k++; }
         r3_scale(-1, &(p[i]), &(p[nq-1-i]));
       }
     if ((nq % 2) > 0) { p[nq/2] = (r3_t){{ 0,0,0 }}; }
@@ -533,8 +533,8 @@ void params_to_coords_centersym(int32_t nx, double x[], int32_t nq, int32_t dim,
 void coords_to_params_centersym(int32_t nq, int32_t dim, r3_t p[], int32_t nx, double x[])        
   { assert(nx == dim*(nq/2));
     int32_t k = 0;
-    for (int32_t i = 0; i < nq/2; i++)
-      { for (int32_t j = 0; j < dim; j++) 
+    for (uint32_t i = 0;  i < nq/2; i++)
+      { for (uint32_t j = 0;  j < dim; j++) 
           { x[k] = p[i].c[j] ; k++; }
       }
   }

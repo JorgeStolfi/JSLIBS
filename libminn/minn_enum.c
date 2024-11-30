@@ -32,24 +32,24 @@ void minn_enum
     /* Compute the number of samples {ns[i]} along each half-axis {i}: */
     double fudge = 1.0e-10; /* Fudge domain expansion to ensure grid edge is in. */
     int32_t ns[n];
-    for (int32_t i = 0; i < n; i++) { ns[i] = (int32_t)floor(1.0/tol[i] + fudge); }
+    for (uint32_t i = 0;  i < n; i++) { ns[i] = (int32_t)floor(1.0/tol[i] + fudge); }
     
     /* Enumerate all integer tuples {t[0..n-1]} where {t[k]} ranges in {-ns..+ns}: */
     (*Fval_P) = +INF;  /* Minimum goal found so far. */
     int32_t t[n];      /* Enumeration variables. */
-    for (int32_t i = 0; i < n; i++) { t[i] = -ns[i]; }
+    for (uint32_t i = 0;  i < n; i++) { t[i] = -ns[i]; }
     double u[n];       /* Sampling vector. */
     int32_t knext = -1; /* Next tuple elem to be incremented is {t[knext]}. */
     while (knext < n)
       { if (debug)
           { fprintf(stderr, "  t = ( ");
-            for (int32_t k = 0; k < n; k++) { fprintf(stderr, " %d", t[k]); }
+            for (uint32_t k = 0;  k < n; k++) { fprintf(stderr, " %d", t[k]); }
             fprintf(stderr, " )\n");
           }
         /* !!! Should avoid generating tuples outside {\RF} !!! */
 
         /* Build the sample vector {u}: */
-        for (int32_t i = 0; i < n; i++) 
+        for (uint32_t i = 0;  i < n; i++) 
           { u[i] = ((double)t[i])*tol[i];
             assert(fabs(u[i]) <= 1.0 + 2*fudge*tol[i]);
           }

@@ -2,7 +2,7 @@
 #define PROG_DESC "tests speed of quick-sort, heap-sort, binsertion-sort and merge-sort"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2024-11-20 06:54:50 by stolfi */
+/* Last edited on 2024-11-23 07:49:59 by stolfi */
 
 #define test_sort_speed_COPYRIGHT \
   "Copyright © 2004  by the State University of Campinas (UNICAMP)"
@@ -280,7 +280,7 @@ void tss_do_all_tests(char *outname)
     /* The values of {n} to use in the tests: */
     uint32_t size[NUMSIZES] = { 0, 1, 2, 4, 64, 96, 128, 192, 256, 64*64, 64*64*64 }; 
 
-    for (int32_t kn = 0; kn < NUMSIZES; kn++) 
+    for (uint32_t kn = 0; kn < NUMSIZES; kn++) 
       { /* Pick the number {n} of items to sort in each run: */
         uint32_t n = size[kn];
       
@@ -292,7 +292,7 @@ void tss_do_all_tests(char *outname)
         tss_alg_stats_t ast[nalgs]; /* Summary stats for all runs of each algorithm. */
 
         fprintf(stderr, "\n");
-        for (int32_t ialg = 0; ialg < nalgs; ialg++)
+        for (uint32_t ialg = 0; ialg < nalgs; ialg++)
           { /* Compute theoretical performance: */
             double asymp = alg[ialg]->asymp(n);
             asymp = fmax(1.0, asymp); /* Paranoia. */
@@ -307,7 +307,7 @@ void tss_do_all_tests(char *outname)
             tss_run_stats_t rst[nruns]; /* Run {r} of alg {ialg} is {st[ialg*MAXRUNS + r]} */
         
             int32_t sgn = +1;
-            for (int32_t it = 0; it < nruns; it++)
+            for (uint32_t it = 0; it < nruns; it++)
               { tss_alg_t *pa = alg[ialg];
                 srandom(666*418+2*it+1);
                 rst[it] = tss_test_sorter(n, pa->srt, sgn);
@@ -333,7 +333,7 @@ void tss_do_all_tests(char *outname)
             fprintf(stderr, "  -- %s --\n", tptitle[tp]);
             tss_print_stderr_col_headers();
             
-            for (int32_t ialg = 0; ialg < nalgs; ialg++)
+            for (uint32_t ialg = 0;  ialg < nalgs; ialg++)
               { tss_alg_t *pa = alg[ialg];
                 tss_print_stats_line(pa->descr, n, &(ast[ialg]), tp);
                 tss_write_tex_table_line(wr, pa->descr, n, &(ast[ialg]), tp);
@@ -368,7 +368,7 @@ tss_run_stats_t tss_test_sorter
     int32_t *ix = talloc(n, int32_t);
 
     /* Start {ix} with trivial perm of indices {0..n-1}. */
-    for (int32_t i = 0; i < n; i++) { ix[i] = i; }
+    for (int32_t i = 0;  i < n; i++) { ix[i] = i; }
 
     /* Sort {ix} according to {data}: */
     tss_run_stats_t st;
@@ -381,8 +381,8 @@ tss_run_stats_t tss_test_sorter
     if (n > 0)
       { /* Check that output array is a permutation of {0..n-1}: */
         bool_t seen[n]; 
-        for (int32_t i = 0; i < n; i++) { seen[i] = FALSE; }
-        for (int32_t i = 0; i < n; i++)
+        for (uint32_t i = 0;  i < n; i++) { seen[i] = FALSE; }
+        for (uint32_t i = 0;  i < n; i++)
           { int32_t hi = ix[i]; 
             affirm((hi >= 0) && (hi < n), "sorted array elemnet is not in {0..n-1}");
             affirm (! seen[hi], "sorted array is not a permutation");
@@ -391,7 +391,7 @@ tss_run_stats_t tss_test_sorter
 
         /* Check ordering of output array: */
         ncmp = 0;
-        for (int32_t i = 1; i < n; i++)
+        for (uint32_t i = 1;  i < n; i++)
           { if (sgn*compare_data(ix[i-1],ix[i]) > 0) { affirm(FALSE, "out of order"); } }
         assert(ncmp == (n == 0 ? 0 : n-1)); /* Check on {compare}. */
      }
@@ -556,7 +556,7 @@ tss_alg_stats_t tss_summarize_run_stats
           { /* Compute {min}, {max}, {avg}: */
             double dmin = +INF, dmax = -INF;
             double sum_d = 0;
-            for (int32_t i = 0; i < nruns; i++)
+            for (uint32_t i = 0;  i < nruns; i++)
               { double di = st[i].data[tp];
                 assert(isfinite(di) && (di >= 0));
                 if (di < dmin) { dmin = di; }
@@ -570,7 +570,7 @@ tss_alg_stats_t tss_summarize_run_stats
             if (nruns >= 2)
               { /* Compute {dev}: */
                 double sum_d2 = 0;
-                for (int32_t i = 0; i < nruns; i++)
+                for (uint32_t i = 0;  i < nruns; i++)
                   { double di = st[i].data[tp] - ast.avg[tp];
                     sum_d2 += di*di;
                   }
@@ -774,7 +774,7 @@ void tss_write_tex_algorithms_table(char *outname, uint32_t nalgs, tss_alg_t *al
     fprintf(wr, "      \\hline\n"); 
     fprintf(wr, "      \\hline\n"); 
 
-    for (int32_t ialg = 0; ialg < nalgs; ialg++)
+    for (uint32_t ialg = 0;  ialg < nalgs; ialg++)
       { tss_alg_t *pa = alg[ialg]; 
         fprintf(wr, "      \\pn%-35s & %-40s & %5d \\\\\n", 
           tss_protect(pa->name), pa->descr, pa->n_base
@@ -826,7 +826,7 @@ int64_t *tss_random_data(uint32_t n)
     int64_t *data = talloc(n, int64_t);
     if (n > 0) 
       { /* Fill data with a null value, for paranois: */
-        for (int32_t i = 0; i < n; i++) { data[i] = INT64_MIN; }
+        for (uint32_t i = 0;  i < n; i++) { data[i] = INT64_MIN; }
 
         /* Now set {data[i]} to {±q*n + p(i)} where {q} is random and
           {p} is some permutation of {0..n-1}. This way the elements
@@ -845,7 +845,7 @@ int64_t *tss_random_data(uint32_t n)
         /* Fill {q} in steps of {stride} to improve randomness: */
         uint32_t k = 0;
         int64_t sgn = +1;
-        for (int32_t i = 0; i < n; i++)
+        for (uint32_t i = 0;  i < n; i++)
           { int64_t q = int64_abrandom(0,qmax);
             int64_t dk = q*((int64_t)n) + (int64_t)i;
             assert(dk > INT64_MIN);

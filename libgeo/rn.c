@@ -1,4 +1,4 @@
-/*Last edited on 2024-11-22 05:42:01 by stolfi */
+/*Last edited on 2024-11-30 06:06:46 by stolfi */
 /*
   Based on VectorN.mg, created  95-02-27 by J. Stolfi.
   Last edited by stolfi 
@@ -18,73 +18,73 @@
 #include <jsrandom.h>
 #include <jsmath.h>
 #include <affirm.h>
-#include <gauss_elim.h>
+#include <gausol_triang.h>
 
 void rn_zero (uint32_t n, double r[])
   { 
-    for (int32_t i = 0; i < n; i++) { r[i] = 0.0; }
+    for (uint32_t i = 0;  i < n; i++) { r[i] = 0.0; }
   }
 
 void rn_all (uint32_t n, double x, double r[])
   { 
-    for (int32_t i = 0; i < n; i++) { r[i] = x; }
+    for (uint32_t i = 0;  i < n; i++) { r[i] = x; }
   }
 
 void rn_axis (uint32_t n, uint32_t i, double r[])
   { 
     affirm(i < n, "rn_axis: bad index");
-    for (int32_t j = 0; j < n; j++) { r[j] = 0.0; }
+    for (uint32_t j = 0;  j < n; j++) { r[j] = 0.0; }
     r[i] = 1.0;
   }
 
 void rn_copy (uint32_t n, double a[], double r[])
   { 
-    for (int32_t i = 0; i < n; i++) { r[i] = a[i]; }
+    for (uint32_t i = 0;  i < n; i++) { r[i] = a[i]; }
   }
 
 void rn_add (uint32_t n, double a[], double b[], double r[])
   { 
-    for (int32_t i = 0; i < n; i++) { r[i] = a[i] + b[i]; }
+    for (uint32_t i = 0;  i < n; i++) { r[i] = a[i] + b[i]; }
   }
 
 void rn_sub (uint32_t n, double a[], double b[], double r[])
   { 
-    for (int32_t i = 0; i < n; i++) { r[i] = a[i] - b[i]; }
+    for (uint32_t i = 0;  i < n; i++) { r[i] = a[i] - b[i]; }
   }
 
 void rn_neg (uint32_t n, double a[], double r[])
   { 
-    for (int32_t i = 0; i < n; i++) { r[i] = - a[i]; }
+    for (uint32_t i = 0;  i < n; i++) { r[i] = - a[i]; }
   }
 
 void rn_scale (uint32_t n, double s, double a[], double r[])
   { 
-    for (int32_t i = 0; i < n; i++) { r[i] = s * a[i]; }
+    for (uint32_t i = 0;  i < n; i++) { r[i] = s * a[i]; }
   }
 
 void rn_shift (uint32_t n, double s, double a[], double r[])
   { 
-    for (int32_t i = 0; i < n; i++) { r[i] = s + a[i]; }
+    for (uint32_t i = 0;  i < n; i++) { r[i] = s + a[i]; }
   }
 
 void rn_mix (uint32_t n, double s, double a[], double t, double b[], double r[])
   { 
-    for (int32_t i = 0; i < n; i++) { r[i] = s * a[i] + t * b[i]; }
+    for (uint32_t i = 0;  i < n; i++) { r[i] = s * a[i] + t * b[i]; }
   }
 
 void rn_mix_in (uint32_t n, double s, double a[], double r[])
   { 
-    for (int32_t i = 0; i < n; i++) { r[i] += s * a[i]; }
+    for (uint32_t i = 0;  i < n; i++) { r[i] += s * a[i]; }
   }
 
 void rn_weigh (uint32_t n, double a[], double w[], double r[])
   { 
-    for (int32_t i = 0; i < n; i++) { r[i] = a[i] * w[i]; }
+    for (uint32_t i = 0;  i < n; i++) { r[i] = a[i] * w[i]; }
   }
 
 void rn_unweigh (uint32_t n, double a[], double w[], double r[])
   { 
-    for (int32_t i = 0; i < n; i++) { r[i] = a[i] / w[i]; }
+    for (uint32_t i = 0;  i < n; i++) { r[i] = a[i] / w[i]; }
   }
 
 void rn_rot_axis (uint32_t n, double a[], uint32_t i, uint32_t j, double ang, double r[])
@@ -96,13 +96,13 @@ void rn_rot_axis (uint32_t n, double a[], uint32_t i, uint32_t j, double ang, do
     double s = sin(ang);
     double x = + c*a[i] - s*a[j];
     double y = + s*a[i] + c*a[j];
-    for (int32_t k = 0; k < n; k++) { r[k] = (k == i ? x : (k == j ? y : a[k])); }
+    for (uint32_t k = 0;  k < n; k++) { r[k] = (k == i ? x : (k == j ? y : a[k])); }
   }
 
 double rn_sum (uint32_t n, double a[])
   {
     double sum = 0;
-    for (int32_t i = 0; i < n; i++) { sum += a[i]; }
+    for (uint32_t i = 0;  i < n; i++) { sum += a[i]; }
     return sum;
   }
 
@@ -110,19 +110,19 @@ double rn_norm (uint32_t n, double a[])
   { /* Don't worry about overflow. */
     /* Client should use {rn_L_inf_dir} first if that is a problem. */
     double sum = 0.0;
-    for (int32_t i = 0; i < n; i++) { double ai = a[i]; sum += ai*ai; }
+    for (uint32_t i = 0;  i < n; i++) { double ai = a[i]; sum += ai*ai; }
     return sqrt(sum);
   }
 
 double rn_norm_sqr (uint32_t n, double a[])
   { double sum = 0.0;
-    for (int32_t i = 0; i < n; i++) { double ai = a[i]; sum += ai*ai; }
+    for (uint32_t i = 0;  i < n; i++) { double ai = a[i]; sum += ai*ai; }
     return sum;
   }
 
 double rn_L_inf_norm (uint32_t n, double a[])
   { double mag = 0.0;
-    for (int32_t i = 0; i < n; i++) 
+    for (uint32_t i = 0;  i < n; i++) 
       { double mi = fabs(a[i]); if (mi > mag) { mag = mi; } }
     return mag;
   }
@@ -131,19 +131,19 @@ double rn_dist (uint32_t n, double a[], double b[])
   { /* Don't worry about overflow. */
     /* Client should use {rn_L_inf_dir} first if that is a problem. */
     double sum = 0.0;
-    for (int32_t i = 0; i < n; i++) { double di = a[i] - b[i]; sum += di*di; }
+    for (uint32_t i = 0;  i < n; i++) { double di = a[i] - b[i]; sum += di*di; }
     return sqrt(sum);
   }
 
 double rn_dist_sqr (uint32_t n, double a[], double b[])
   { double sum = 0.0;
-    for (int32_t i = 0; i < n; i++) { double di = (a[i] - b[i]); sum += di*di; }
+    for (uint32_t i = 0;  i < n; i++) { double di = (a[i] - b[i]); sum += di*di; }
     return sum;
   }
 
 double rn_L_inf_dist (uint32_t n, double a[], double b[])
   { double mag = 0.0;
-    for (int32_t i = 0; i < n; i++) 
+    for (uint32_t i = 0;  i < n; i++) 
       { double mi = fabs(a[i] - b[i]); if (mi > mag) { mag = mi; } }
     return mag;
   }
@@ -152,19 +152,19 @@ double rn_dir (uint32_t n, double a[], double r[])
   { /* Don't worry about overflow. */
     /* Client should use {rn_L_inf_dir} first if that is a problem. */
     double d = rn_norm(n, a);
-    for (int32_t i = 0; i < n; i++) { r[i] = a[i]/d; }
+    for (uint32_t i = 0;  i < n; i++) { r[i] = a[i]/d; }
     return d;
   }
 
 double rn_L_inf_dir (uint32_t n, double a[], double r[])
   { double mag = rn_L_inf_norm(n, a);
-    for (int32_t i = 0; i < n; i++) { r[i] = a[i]/mag; }
+    for (uint32_t i = 0;  i < n; i++) { r[i] = a[i]/mag; }
     return mag;
   }
 
 double rn_dot (uint32_t n, double a[], double b[])
   { double sum = 0.0;
-    for (int32_t i = 0; i < n; i++) { sum += a[i]*b[i]; }
+    for (uint32_t i = 0;  i < n; i++) { sum += a[i]*b[i]; }
     return sum;
   }
 
@@ -172,7 +172,7 @@ double rn_cos (uint32_t n, double a[], double b[])
   { double aa = 0.0;
     double bb = 0.0;
     double ab = 0.0;
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0;  i < n; i++)
       { double ai = a[i]; 
         double bi = b[i]; 
         aa += ai*ai; bb += bi*bi; ab += ai*bi;
@@ -185,7 +185,7 @@ double rn_sin (uint32_t n, double a[], double b[])
     /* Compute {aa = a*a, bb = b*b}: */ 
     double aa = 0.0;
     double bb = 0.0;
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0;  i < n; i++)
       { double ai = a[i]; 
         double bi = b[i]; 
         aa += ai*ai; bb += bi*bi;
@@ -196,7 +196,7 @@ double rn_sin (uint32_t n, double a[], double b[])
       double dd = 0.0;
       double ss = 0.0;
 
-      for (int32_t i = 0; i < n; i++)
+      for (uint32_t i = 0;  i < n; i++)
         { double ai = na * a[i]; 
           double bi = nb * b[i]; 
           double di = ai - bi;
@@ -215,7 +215,7 @@ double rn_angle (uint32_t n, double a[], double b[])
   { /* Compute {aa = a*a, bb = b*b}: */ 
     double aa = 0.0;
     double bb = 0.0;
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0;  i < n; i++)
       { double ai = a[i]; 
         double bi = b[i]; 
         aa += ai*ai; bb += bi*bi;
@@ -226,7 +226,7 @@ double rn_angle (uint32_t n, double a[], double b[])
       double dd = 0.0;
       double ss = 0.0;
 
-      for (int32_t i = 0; i < n; i++)
+      for (uint32_t i = 0;  i < n; i++)
         { double ai = na * a[i]; 
           double bi = nb * b[i]; 
           double di = ai - bi;
@@ -242,20 +242,25 @@ void rn_cross (uint32_t n, double *a[], double r[])
   { uint32_t nn1 = (n-1)*n;
     double *C = rmxn_alloc(n-1,n);
     { uint32_t t = 0;
-      for (int32_t i = 0; i < n-1; i++) 
+      for (uint32_t i = 0;  i < n-1; i++) 
         { double *ai = a[i]; 
-          for (int32_t j = 0; j < n; j++) { C[t] = ai[j]; t++; }
+          for (uint32_t j = 0;  j < n; j++) { C[t] = ai[j]; t++; }
         }
     }
-    gsel_triangularize(n-1, n, C, TRUE, 0.0);
-    gsel_diagonalize(n-1, n, C);
+    /* !!! Using full pivoting. Would partial pivoting be better? !!! */
+    uint32_t prow[n-1], pcol[n]; /* Permutation matrices for Gaussian eleimination. */
+    double det;
+    uint32_t rank;
+    double tiny = 1.0e-180;
+    gausol_triang_reduce(n-1, prow, n, pcol, C, 0, NULL, tiny, &rank, &det);
+    gausol_triang_diagonalize(n-1, prow, n, pcol, C, 0, NULL, rank, tiny);
     /* If {det(C)} is not zero, set {d = det(C)}, {izer = -1}.
       Else set {izer} to the first row {i} such that {C[i,i]} is zero, 
       and  {d} to the determinant of {C} excluding column {izer}. */
     double d = 1.0; 
     int32_t izer = -1; 
     { uint32_t t = 0;
-      for (int32_t i = 0; i < n-1; i++)
+      for (uint32_t i = 0;  i < n-1; i++)
         { if (C[t] == 0.0)
             { if (izer < 0) { izer = (int32_t)i; t++; } else { d = 0.0; break; } }
           d *= C[t]; t += n+1;
@@ -273,7 +278,7 @@ void rn_cross (uint32_t n, double *a[], double r[])
     else
       { /* Set {r[izer] = (-1)^(n-1-izer)*d}, all other elems to 0; */
         assert((izer >= 0) && (izer < n-1)); 
-        for (int32_t i = 0; i < n; i++) { r[i] = 0.0; }
+        for (uint32_t i = 0;  i < n; i++) { r[i] = 0.0; }
         r[izer] = ((n - 1 - (uint32_t)izer) % 2 == 0 ? d : -d);
       }
     free(C);
@@ -282,29 +287,29 @@ void rn_cross (uint32_t n, double *a[], double r[])
 double rn_det (uint32_t n, double *a[])
   { uint32_t n2 = n*n;
     double *C = rmxn_alloc(n,n);
-    double d;
-    uint32_t t = 0;
-    for (int32_t i = 0; i < n; i++) 
+    for (uint32_t i = 0;  i < n; i++) 
       { double *ai = a[i]; 
-        for (int32_t j =  0; j < n; j++) { C[t] = ai[j]; t++; }
+        double *Ci = &(C[i*n]); 
+        for (uint32_t j = 0;  j < n; j++) { Ci[j] = ai[j]; }
       }
-    gsel_triangularize(n, n, C, FALSE, 0.0);
-    d = 1.0;
-    for (int32_t k = 0; k < n2; k += (int32_t)n+1) { d *= C[k]; }
+    double det;
+    gausol_triang_reduce(n, prow, n, pcol, C, 0, NULL, tiny, &rank, &det);
+    assert(! isnan(det));
+    gausol_triangularize(n, n, C, FALSE, 0.0);
     free(C);
-    return d;
+    return det;
   }
 
 double rn_decomp (uint32_t n, double a[], double u[], double para[], double perp[])
   { double sau = 0.0;
     double suu = 0.0;
-    for (int32_t i = 0; i < n; i++) 
+    for (uint32_t i = 0;  i < n; i++) 
       { double ai = a[i]; double ui = u[i];
         suu += ui*ui;
         sau += ai*ui;
       }
     if (sau == 0.0) 
-      { for (int32_t i = 0; i < n; i++) 
+      { for (uint32_t i = 0;  i < n; i++) 
           { if (para != NULL) { para[i] = 0.0; }
             if (perp != NULL) { perp[i] = a[i]; } 
           } 
@@ -312,7 +317,7 @@ double rn_decomp (uint32_t n, double a[], double u[], double para[], double perp
       }
     else
       { double c = sau / suu;
-        for (int32_t i = 0; i < n; i++) 
+        for (uint32_t i = 0;  i < n; i++) 
           { double pi = c * u[i]; 
             if (para != NULL) { para[i] = pi; }
             if (perp != NULL) { perp[i] = a[i] - pi; }
@@ -323,27 +328,27 @@ double rn_decomp (uint32_t n, double a[], double u[], double para[], double perp
 
 double rn_mirror (uint32_t n, double a[], double u[], double r[])
   { double sau = 0.0;
-    for (int32_t i = 0; i < n; i++) 
+    for (uint32_t i = 0;  i < n; i++) 
       { double ai = a[i]; double ui = u[i];
         sau += ai*ui;
       }
     if (sau != 0.0) 
       { double c = 2*sau;
-        for (int32_t i = 0; i < n; i++) { r[i] = a[i] - c*u[i]; }
+        for (uint32_t i = 0;  i < n; i++) { r[i] = a[i] - c*u[i]; }
       }
     return sau;
   }
 
 uint32_t rn_remove_zeros(uint32_t n, double a[], double r[])
   { uint32_t m = 0;
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0;  i < n; i++)
       { if (a[i] != 0) { r[m] = a[i]; m++; } }
     return m;
   }
     
 uint32_t rn_insert_zeros(uint32_t n, double a[], double b[], double r[])
   { uint32_t m = 0;
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0;  i < n; i++)
       { if (a[i] != 0) { r[i] = b[i]; m++; } else { r[i] = 0; } }
     return m;
   }
@@ -351,7 +356,7 @@ uint32_t rn_insert_zeros(uint32_t n, double a[], double b[], double r[])
 double rn_rad_rel_max_diff (uint32_t n, double a[], double b[], double rad[])
   {
     double dmax = 0.0;
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0;  i < n; i++)
       { double di = fabs(a[i] - b[i]);
         if (rad != NULL)
           { double ri = rad[i];
@@ -369,7 +374,7 @@ double rn_rad_rel_max_diff (uint32_t n, double a[], double b[], double rad[])
 double rn_rad_rel_dist_sqr (uint32_t n, double a[], double b[], double rad[])
   {
     double d2 = 0.0;
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0;  i < n; i++)
       { double di = a[i] - b[i];
         if (rad != NULL)
           { double ri = rad[i];
@@ -387,13 +392,13 @@ double rn_rad_rel_dist_sqr (uint32_t n, double a[], double b[], double rad[])
 
 void rn_throw_cube (uint32_t n, double r[])
   { 
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0;  i < n; i++)
       { r[i] = 2.0 * drandom() - 1.0; }
   }
 
 void rn_throw_normal (uint32_t n, double r[])
   { 
-    for (int32_t i = 0; i < n; i++) 
+    for (uint32_t i = 0;  i < n; i++) 
       { r[i] = dgaussrand(); }
   }
 
@@ -409,12 +414,12 @@ void rn_throw_dir (uint32_t n, double r[])
           { rn_throw_normal(n, r);
             /* Discard if too close to origin: */
             r2 = 0.0;
-            for (int32_t i = 0; i < n; i++) { double ci = r[i]; r2 += ci*ci; }
+            for (uint32_t i = 0;  i < n; i++) { double ci = r[i]; r2 += ci*ci; }
           }
         while (r2 < 1.0e-5);
         /* Normalize to unit length: */
         double m = sqrt(r2);
-        for (int32_t i = 0; i < n; i++) { r[i] /= m; }
+        for (uint32_t i = 0;  i < n; i++) { r[i] /= m; }
       }
   }
 
@@ -430,13 +435,13 @@ void rn_throw_ball (uint32_t n, double r[])
         double z = drandom();
         if (z > 0) { z = exp(log(z)/n); }
         /* Scale {r[0..n-1]} by {z}: */
-        for (int32_t i = 0; i < n; i++) { r[i] *= z; }
+        for (uint32_t i = 0;  i < n; i++) { r[i] *= z; }
       }
   }
 
 double rn_abs_rel_diff(uint32_t n, double a[], double b[], double abs_tol, double rel_tol)
   { double max_error = 0.0;
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0;  i < n; i++)
       { double error = abs_rel_diff(a[i], b[i], abs_tol, rel_tol);
         if (fabs(error) > max_error) { max_error = fabs(error); }
       }
@@ -456,7 +461,7 @@ void rn_gen_print
     if (sep == NULL) { sep = " "; }
     if (rp == NULL) { rp = ")"; }
     fputs(lp, wr);
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0;  i < n; i++)
       { if (i > 0) { fputs(sep, wr); }
         fprintf(wr, fmt, a[i]);
       }

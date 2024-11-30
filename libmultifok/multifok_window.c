@@ -48,13 +48,13 @@ double *multifok_window_weights_binomial(int32_t NW)
 
     /* Normalize so that the central element is 1: */
     double umax = u[HW];
-    for (int32_t ku = 0; ku < NW; ku++) { u[ku] /= umax; }
+    for (uint32_t ku = 0;  ku < NW; ku++) { u[ku] /= umax; }
     
     /* Now fill the bidimensional table: */
     int32_t NS = multifok_window_num_samples(NW);
     double *ws = notnull(malloc(NS*sizeof(double)), "no mem");
-    for (int32_t iy = 0; iy < NW; iy++)
-      { for (int32_t ix = 0; ix < NW; ix++)
+    for (uint32_t iy = 0;  iy < NW; iy++)
+      { for (uint32_t ix = 0;  ix < NW; ix++)
           { double wxy = u[iy]*u[ix];
             int32_t ks = iy*NW + ix;
             ws[ks] = wxy;
@@ -113,7 +113,7 @@ void multifok_window_compute_average_gradient_and_deviation
     /* Compute weighted sample average {sAvg}: */
     double sum_ws = 0;
     double sum_w = 0;
-    for (int32_t ks = 0; ks < NS; ks++) 
+    for (uint32_t ks = 0;  ks < NS; ks++) 
       { sum_ws += ws[ks]*s[ks]; 
         sum_w += ws[ks];
       }
@@ -126,7 +126,7 @@ void multifok_window_compute_average_gradient_and_deviation
     double sum_wsy = 0;
     double sum_wxx = 0;
     double sum_wyy = 0;
-    for (int32_t ks = 0; ks < NS; ks++) 
+    for (uint32_t ks = 0;  ks < NS; ks++) 
       { double xk = (ks % NW) - HW;
         double yk = (ks / NW) - HW;
         double wk = ws[ks];
@@ -143,7 +143,7 @@ void multifok_window_compute_average_gradient_and_deviation
     
     /* Compute deviation {sDev} of residual: */
     double sum_wd2 = 0;
-    for (int32_t ks = 0; ks < NS; ks++) 
+    for (uint32_t ks = 0;  ks < NS; ks++) 
       { double xk = (ks % NW) - HW;
         double yk = (ks / NW) - HW;
         double wk = ws[ks];
@@ -169,7 +169,7 @@ void multifok_window_remove_average_and_gradient
   {
     int32_t NS = NW*NW;
     int32_t HW = (NW-1)/2;
-    for (int32_t ks = 0; ks < NS; ks++) 
+    for (uint32_t ks = 0;  ks < NS; ks++) 
       { double xk = (ks % NW) - HW;
         double yk = (ks / NW) - HW;
         s[ks] = s[ks] - sAvg - sGrx*xk - sGry*yk;
@@ -181,7 +181,7 @@ double multifok_window_deviation(int32_t NW, double s[], double ws[])
     int32_t NS = NW*NW;
     double sum_w_d2 = 0;
     double sum_w = 0;
-    for (int32_t ks = 0; ks < NS; ks++) 
+    for (uint32_t ks = 0;  ks < NS; ks++) 
       { double d = s[ks];
         sum_w_d2 += ws[ks]*d*d;
       }
@@ -206,13 +206,13 @@ void multifok_window_normalize_samples
     multifok_window_remove_average_and_gradient(NW, s, ws, *sAvg_P, *sGrx_P, *sGry_P);
     noise = fmax(1.0e-200, noise); /* To avoid division of zero by zero. */
     double mag = hypot((*sDev_P), noise);
-    for (int32_t ks = 0; ks < NS; ks++) { s[ks] /= mag; }
+    for (uint32_t ks = 0;  ks < NS; ks++) { s[ks] /= mag; }
   }
 
 double multifok_window_prod(int32_t NW, double a[], double b[])
   { int32_t NS = NW*NW;
     double prod = 0.0;
-    for (int32_t ks = 0; ks < NS; ks++) 
+    for (uint32_t ks = 0;  ks < NS; ks++) 
       { double ak = a[ks];
         double bk = b[ks];
         prod += ak*bk;
@@ -223,7 +223,7 @@ double multifok_window_prod(int32_t NW, double a[], double b[])
 double multifok_window_dist_sqr(int32_t NW, double a[], double b[])
   { int32_t NS = NW*NW;
     double d2 = 0.0;
-    for (int32_t ks = 0; ks < NS; ks++) 
+    for (uint32_t ks = 0;  ks < NS; ks++) 
       { double dk = a[ks] - b[ks];
         d2 += dk*dk;
       }

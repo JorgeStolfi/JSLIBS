@@ -40,7 +40,7 @@ haf_arc_t haf_shapes_ring(int32_t n)
   { haf_arc_t fst, a, b;
     a = haf_make_stick(0); 
     fst = a;
-    for (int32_t k = 1; k < n; k++)
+    for (uint32_t k = 1;  k < n; k++)
       { b = haf_make_stick(k); 
         haf_splice(b, haf_sym(a));
         a = b;
@@ -52,7 +52,7 @@ haf_arc_t haf_shapes_ring(int32_t n)
 haf_arc_t haf_shapes_orange(int32_t n)
   { haf_arc_t a, b;
     a = haf_make_stick(0); 
-    for (int32_t k = 1; k < n; k++)
+    for (uint32_t k = 1;  k < n; k++)
       { b = haf_make_stick(k); 
         haf_splice(b, a);
         haf_splice(haf_sym(b), haf_sym(a));
@@ -96,7 +96,7 @@ haf_arc_t haf_shapes_cube (void)
     b = haf_shapes_ring(4);
     t = haf_shapes_ring(4); 
     t = haf_oprev(t);
-    for (int32_t k = 0; k < 4; k++)
+    for (uint32_t k = 0;  k < 4; k++)
       { e = haf_make_stick(8+k);
         haf_splice(b, e); 
         haf_splice(haf_sym(e), t);

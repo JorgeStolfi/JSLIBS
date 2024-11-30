@@ -103,8 +103,8 @@ hr3_pmap_t hr3_pmap_translation(r3_t *v)
 hr3_pmap_t hr3_pmap_scaling(r3_t *scale)
   {
     hr3_pmap_t M;
-    for (int32_t i = 0; i < NH; i++)
-      { for (int32_t j = 0; j < NH; j++)
+    for (uint32_t i = 0;  i < NH; i++)
+      { for (uint32_t j = 0;  j < NH; j++)
           { if ((i == 0) && (j == 0))
               { M.dir.c[i][j] = M.inv.c[i][j] = 1.0; }
             else if (i == j)
@@ -126,8 +126,8 @@ hr3_pmap_t hr3_pmap_u_v_rotation(r3_t *u, r3_t *v)
     
     /* Convert to a projective map (note that inverse is just transpose): */
     hr3_pmap_t M;
-    for (int32_t i = 0; i < NH; i++)
-      { for (int32_t j = 0; j < NH; j++)
+    for (uint32_t i = 0;  i < NH; i++)
+      { for (uint32_t j = 0;  j < NH; j++)
           { if ((i == 0) && (j == 0))
               { M.dir.c[i][j] = M.inv.c[i][j] = 1.0; }
             else if ((i == 0) || (j == 0))
@@ -171,8 +171,8 @@ hr3_pmap_t hr3_pmap_aff_from_mat_and_disp(r3x3_t *E, r3_t *d)
     r3_t p;
     r3x3_map_row(d, &(F), &p);
 
-    for (int32_t i = 0; i < NH; i++)
-      { for (int32_t j = 0; j < NH; j++)
+    for (uint32_t i = 0;  i < NH; i++)
+      { for (uint32_t j = 0;  j < NH; j++)
           { double Pij, Qij; /* Elements of {M.dir} and {M.inv}. */
             if (i == 0)
               { if (j == 0)
@@ -198,7 +198,7 @@ hr3_pmap_t hr3_pmap_aff_from_four_points(r3_t *o, r3_t *p, r3_t *q, r3_t *r)
   {
     hr3_pmap_t M; 
 
-    for (int32_t j = 0; j < NH; j++)
+    for (uint32_t j = 0;  j < NH; j++)
       { M.dir.c[0][j] = (j == 0 ? 1.0 : o->c[j-1]);
         M.dir.c[1][j] = (j == 0 ? 0.0 : p->c[j-1] - o->c[j-1]);
         M.dir.c[2][j] = (j == 0 ? 0.0 : q->c[j-1] - o->c[j-1]);
@@ -218,7 +218,7 @@ hr3_pmap_t hr3_pmap_from_five_points(hr3_point_t *p, hr3_point_t *q, hr3_point_t
     r4_t w;
     { /* Compute a matrix {Q} that maps the cardinal points to {p,q,r,s} as given: */
       r4x4_t Q;
-      for (int32_t j = 0; j < NH; j++)
+      for (uint32_t j = 0;  j < NH; j++)
         { M.dir.c[0][j] = p->c.c[j];
           M.dir.c[1][j] = q->c.c[j];
           M.dir.c[2][j] = r->c.c[j];
@@ -231,11 +231,11 @@ hr3_pmap_t hr3_pmap_from_five_points(hr3_point_t *p, hr3_point_t *q, hr3_point_t
     }
     
     /* Make the weights positive, so that {p,q,r,s} are strictly honored: */
-    for (int32_t i = 0; i < NH; i++) { w.c[i] = fabs(w.c[i]); }
+    for (uint32_t i = 0;  i < NH; i++) { w.c[i] = fabs(w.c[i]); }
 
     /* Ensure that {M.dir} maps the cardinal points to {p,q,r,s} and some unit point to {u}: */
-    for (int32_t i = 0; i < NH; i++)
-      { for (int32_t j = 0; j < NH; j++)
+    for (uint32_t i = 0;  i < NH; i++)
+      { for (uint32_t j = 0;  j < NH; j++)
           { M.dir.c[i][j] *= w.c[i];  }
       }
 
@@ -254,8 +254,8 @@ hr3_pmap_t hr3_pmap_persp(hr3_point_t *obs, hr3_point_t *foc, double rad, hr3_po
     demand(upp->c.c[0] >= 0.0, "zenith must be hither or infinite"); 
 
     /* Start with a translation from {foc} to the origin: */
-    for (int32_t i = 0; i < NH; i++){
-      for (int32_t j = 0; j < NH; j++){
+    for (uint32_t i = 0;  i < NH; i++){
+      for (uint32_t j = 0;  j < NH; j++){
         if (i == j)
           { Mt.c[i][j] = foc->c.c[0]; }
         else if (i == 0)
@@ -279,7 +279,7 @@ hr3_pmap_t hr3_pmap_persp(hr3_point_t *obs, hr3_point_t *foc, double rad, hr3_po
 
     /* Append the rotation matrix that moves {r,s,t} to X,Y,Z: */
     Mr.c[0][0] = 1.0;
-    for (int32_t i = 1; i < NH; i++)
+    for (uint32_t i = 1;  i < NH; i++)
       { Mr.c[0][i] = 0.0;
         Mr.c[i][0] = 0.0;
         Mr.c[i][1] = r.c[i-1];
@@ -298,8 +298,8 @@ hr3_pmap_t hr3_pmap_persp(hr3_point_t *obs, hr3_point_t *foc, double rad, hr3_po
         double d = hr3_dist(foc, obs);
         double uno = -1.0;
         if (fabs(d) > 1.0) { uno = -1.0/d; d = 1.0; }
-        for (int32_t i = 0; i < NH; i++)
-          for (int32_t j = 0; j < NH; j++)
+        for (uint32_t i = 0;  i < NH; i++)
+          for (uint32_t j = 0;  j < NH; j++)
             { if (i == j)
                 { Mc.c[i][j] = d; }
               else
@@ -312,8 +312,8 @@ hr3_pmap_t hr3_pmap_persp(hr3_point_t *obs, hr3_point_t *foc, double rad, hr3_po
     /* Asked for scaling? */
     if (rad > 0.0)
       { /* Combine {M} with a uniform scale of {1/rad}: */
-        for (int32_t i = 0; i < NH; i++)
-          for (int32_t j = 1; j < NH; j++)
+        for (uint32_t i = 0;  i < NH; i++)
+          for (uint32_t j = 1;  j < NH; j++)
             { M.dir.c[i][j] /= rad; }
       }
 
@@ -332,13 +332,13 @@ bool_t hr3_pmap_is_affine(hr3_pmap_t *M)
   
 double hr3_pmap_diff_sqr(hr3_pmap_t *M, hr3_pmap_t *N)
   { double sum_d2 = 0;
-    for (int32_t sense = 0; sense < 2; sense++)
+    for (uint32_t sense = 0;  sense < 2; sense++)
       { r4x4_t *A = (sense == 0 ? &(M->dir) : &(M->inv));
         double Am = r4x4_norm(A) + 1.0e-200;
         r4x4_t *B = (sense == 0 ? &(N->dir) : &(N->inv));
         double Bm = r4x4_norm(B) + 1.0e-200;
-        for (int32_t i = 0; i < NH; i++)
-          { for (int32_t j = 0; j < NH; j++)
+        for (uint32_t i = 0;  i < NH; i++)
+          { for (uint32_t j = 0;  j < NH; j++)
              { double Aij = A->c[i][j]/Am;
                double Bij = B->c[i][j]/Bm;
                double dij = Aij - Bij;
@@ -354,7 +354,7 @@ double hr3_pmap_mismatch_sqr(hr3_pmap_t *M, uint32_t np, r3_t p1[], r3_t p2[])
     bool_t debug = FALSE;
     
     double sum2 = 0.0;
-    for (int32_t k = 0; k < np; k++)
+    for (uint32_t k = 0;  k < np; k++)
       { r3_t *p1k = &(p1[k]);
         r3_t *p2k = &(p2[k]);
         r3_t q1k = hr3_pmap_r3_point(p1k, M);
@@ -376,14 +376,14 @@ double hr3_pmap_deform_sqr(r3_t ph[], hr3_pmap_t *M)
   {
     uint32_t nk = (1 << NC); /* Number of corners of the cuboid. */
     r3_t qh[nk];
-    for (int32_t k = 0; k < nk; k++)
+    for (uint32_t k = 0;  k < nk; k++)
       { qh[k] = hr3_pmap_r3_point(&(ph[k]), M); }
     
     uint32_t nd = 12 + 4; /* Number of distances to probe. */
     double logr[nd];
     uint32_t kd = 0;
-    for (int32_t ik = 1; ik < nk; ik++)
-      { for (int32_t jk = 0; jk < ik; jk++)
+    for (uint32_t ik = 1;  ik < nk; ik++)
+      { for (uint32_t jk = 0;  jk < ik; jk++)
           { uint32_t eij = (uint32_t)(ik ^ jk); /* Exclusive OR of indices. */
             uint32_t hij = (eij & 1) + (eij & 2) + (eij & 4); /* Hamming dist. */
             if ((hij == 1) || (hij == 3))
@@ -400,10 +400,10 @@ double hr3_pmap_deform_sqr(r3_t ph[], hr3_pmap_t *M)
     
     /* Compute the variance of the logs: */
     double sum = 0;
-    for (int32_t kd = 0; kd < nd; kd++) { sum += logr[kd]; }
+    for (uint32_t kd = 0;  kd < nd; kd++) { sum += logr[kd]; }
     double avg = sum/nd;
     double sum2 = 0;
-    for (int32_t kd = 0; kd < nd; kd++) { double dk = logr[kd] - avg; sum2 += dk*dk; }
+    for (uint32_t kd = 0;  kd < nd; kd++) { double dk = logr[kd] - avg; sum2 += dk*dk; }
     double var = sum2/(nd-1);
     return var;
   }
@@ -451,12 +451,12 @@ void hr3_pmap_gen_print
     if (rsuff == NULL) { rsuff = "\n"; }
     
     if (pref != NULL) { fputs(pref, wr); }
-    for (int32_t i = 0; i < NH; i++)
+    for (uint32_t i = 0;  i < NH; i++)
       { fputs(rpref, wr);
-        for (int32_t k = 0; k < 2; k++)
+        for (uint32_t k = 0;  k < 2; k++)
           { if (k != 0) { fputs(rsep, wr); }
             fputs(elp, wr);
-            for (int32_t j = 0; j < NH; j++)
+            for (uint32_t j = 0;  j < NH; j++)
               { if (j != 0) { fputs(esep, wr); }
                 fprintf(wr, fmt, (k == 0 ? M->dir : M->inv).c[i][j]);
               }

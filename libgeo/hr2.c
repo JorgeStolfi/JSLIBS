@@ -197,7 +197,7 @@ void hr2_point_print(FILE *wr, char *pre, hr2_point_t *p, char *fmt, char *suf)
   { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, wr); }
     fputs("[ ", wr);
     if (fmt == NULL) { fmt = "24.26e"; }
-    for (int32_t i = 0; i < NH; i++)
+    for (uint32_t i = 0;  i < NH; i++)
       { if (i != 0) { fputc(' ', wr); }
         fprintf(wr, fmt, p->c.c[i]);
       }
@@ -209,7 +209,7 @@ void hr2_line_print(FILE *wr, char *pre, hr2_line_t *L, char *fmt, char *suf)
   { if ((pre != NULL) && ((*pre) != 0)) { fputs(pre, wr); }
     fputs("< ", wr);
     if (fmt == NULL) { fmt = "24.26e"; }
-    for (int32_t i = 0; i < NH; i++)
+    for (uint32_t i = 0;  i < NH; i++)
       { if (i != 0) { fputc(' ', wr); }
         fprintf(wr, fmt, L->f.c[i]);
       }

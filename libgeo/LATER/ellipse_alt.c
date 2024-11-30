@@ -67,7 +67,7 @@ double DistancePointEllipseSpecial
   { // initial guess
     double dT = dB*(dV - dB);
     // Newton's method
-    for (int32_t i = 0; i < iMax; i++)
+    for (uint32_t i = 0;  i < iMax; i++)
       {
         double dTpASqr = dT + dA*dA;
         double dTpBSqr = dT + dB*dB;

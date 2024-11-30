@@ -104,7 +104,7 @@ double multifok_scene_raytrace_tree
 
         /* Check if it it intersects the tree's bbox: */
         bool_t ok = TRUE; /* Set to false if ray's bbox is disjoint from tree's bbox. */
-        for (int32_t j = 0; (j < 3) & ok; j++) 
+        for (uint32_t j = 0;  (j < 3) & ok; j++) 
           { if (ray_bbox[j].end[1] < tr->bbox[j].end[0]) { ok = FALSE; }
             if (ray_bbox[j].end[0] > tr->bbox[j].end[1]) { ok = FALSE; }
           }
@@ -142,7 +142,7 @@ double multifok_scene_raytrace_tree
             if ((tr->sub[0] != NULL) && (tr->sub[1] != NULL))
               { double obc = interval_mid(&(tr->obj->bbox[axis]));
                 double chd[2]; /* Distance to coord {axis} of child box centers. */
-                for (int32_t jc = 0; jc < 2; jc++) 
+                for (uint32_t jc = 0;  jc < 2; jc++) 
                   { chd[jc] = fabs(obc - interval_mid(&(tr->sub[jc]->bbox[axis]))); }
                 ic = (chd[0] < chd[1] ? 0 : 1);
               }
@@ -151,7 +151,7 @@ double multifok_scene_raytrace_tree
                 ic = 0;
               }
 
-            for (int32_t kc = 0; kc < 2; kc++) 
+            for (uint32_t kc = 0;  kc < 2; kc++) 
               { /* Ray-trace {sub[ic]} */
                 if (tr->sub[ic] != NULL)
                   { if (verbose) { fprintf(stderr, "        %*strying subtree %d\n", 2*level, "", ic); }
@@ -196,7 +196,7 @@ void multifok_scene_raytrace_get_ray_bbox
     interval_t bbox[]
   )
   { 
-    for (int32_t j = 0; j < 3; j++) 
+    for (uint32_t j = 0;  j < 3; j++) 
       { double cLo = p->c[j] + d->c[j]*tMin; /* Coordinate at bottom of ray. */
         double cHi = p->c[j] + d->c[j]*tMax; /* Coordinate at top of ray. */
         bbox[j] = (interval_t){{ fmin(cLo, cHi) - 0.5*FUDGE, fmax(cLo, cHi) + 0.5*FUDGE }};
@@ -271,7 +271,7 @@ frgb_t multifok_scene_raytrace_compute_hit_color
       { interval_t *bbox = obj->bbox; 
         /* Express {q} relative to object: */
         r3_t u; 
-        for (int32_t j = 0; j < 3; j++) 
+        for (uint32_t j = 0;  j < 3; j++) 
           { u.c[j] = q->c[j] - interval_mid(&(bbox[j])); }
         int32_t ID = obj->ID;
         if (ID != -1)
@@ -292,7 +292,7 @@ frgb_t multifok_scene_raytrace_compute_hit_color
             double ambient = 0.40;
             double diffuse  = (dot <= 0 ? 0.0 : (1-ambient)*dot);
             double shade = ambient + diffuse;
-            for (int32_t j = 0; j < 3; j++){ clr.c[j] = (float)(shade*clr.c[j]); }
+            for (uint32_t j = 0;  j < 3; j++){ clr.c[j] = (float)(shade*clr.c[j]); }
           }
         return clr;
       }

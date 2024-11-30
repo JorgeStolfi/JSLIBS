@@ -76,9 +76,9 @@ void makesites(int32_t ni, int32_t nj, bool_t polar, int32_t *nsitesp, delaunay_
         /* Relative twist between layers (fraction of a {j}-step): */
         double dtwist = 1.0/ni;
         double r = rmax; /* Radius of current layer. */
-        for (int32_t i = 0; i < ni; i++) 
+        for (uint32_t i = 0;  i < ni; i++) 
           { /* Add layer {i} at radius {r} counting from outside in: */
-            for (int32_t j = 0; j < nj; j++) 
+            for (uint32_t j = 0;  j < nj; j++) 
               { double t = (j + i*dtwist)*dt;
                 delaunay_site_t *stk = &(st[k]);
                 stk->index = k;
@@ -108,17 +108,17 @@ void makesites(int32_t ni, int32_t nj, bool_t polar, int32_t *nsitesp, delaunay_
         else
           { wy = 1; ymin = 0; dy = 0; dsx = 0; }
         int64_t c[3];
-        for (int32_t i = 0; i < ni; i++) 
+        for (uint32_t i = 0;  i < ni; i++) 
           { /* Add horizontal layer {i}: */
             int64_t y = ymin + i*dy; /* Divided by {wy} */
-            for (int32_t j = 0; j < nj; j++) 
+            for (uint32_t j = 0;  j < nj; j++) 
               { int64_t x = xmin + j*dx + i*dsx; /* Divided by {wx} */
                 delaunay_site_t *stk = &(st[k]);
                 stk->index = k;
                 c[0] = wx*wy;
                 c[1] = wy*x;
                 c[2] = wx*y;
-                for (int32_t ic = 0; ic < 3; ic++)
+                for (uint32_t ic = 0;  ic < 3; ic++)
                   { affirm(c[ic] < +(int64_t)MC, "overflow in coordinate");
                     affirm(c[ic] > -(int64_t)MC, "underflow in coordinate");
                     stk->pt.c.c[ic] = (int32_t)c[ic];

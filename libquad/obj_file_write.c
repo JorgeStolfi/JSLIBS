@@ -66,10 +66,10 @@ void obj_file_write(FILE *wr, obj_file_data_t *D, int prec)
 void obj_file_write_coords_table(FILE *wr, char *elname, char *cmd, r3_vec_t *P, string_vec_t *PL, int32_t prc)
   { int32_t np = P->ne;  /* Number of entries */
     fprintf(wr, "# %s coordinates\n", elname);
-    for (int32_t kp = 0; kp < np; kp++)
+    for (uint32_t kp = 0;  kp < np; kp++)
       { fprintf(wr, "%s", cmd);
         r3_t *Pk = &(P->e[kp]);
-        for (int32_t j = 0; j < 3; j++)
+        for (uint32_t j = 0;  j < 3; j++)
           { fprintf(wr, " %.*f", prc, Pk->c[j]); }
         if (PL != NULL)
           { char *PLk = PL->e[kp];
@@ -93,7 +93,7 @@ void obj_file_write_face_tables
     demand(FT->ne == nf, "inconsistent face count (FT)");
     demand(FN->ne == nf, "inconsistent face count (FN)");
     fprintf(wr, "# face corners\n");
-    for (int32_t kf = 0; kf < nf; kf++)
+    for (uint32_t kf = 0;  kf < nf; kf++)
       { if (debug) { fprintf(stderr, "  writing face %d\n", kf); }
         fprintf(wr, "f");
         int32_vec_t *FVk = &(FV->e[kf]);
@@ -102,7 +102,7 @@ void obj_file_write_face_tables
         int32_t nc = FVk->ne;
         demand(nc == FTk->ne, "inconsistent corner count (FT.e[kf])");
         demand(nc == FNk->ne, "inconsistent corner count (FN.e[kf])");
-        for (int32_t kc = 0; kc < nc; kc++)
+        for (uint32_t kc = 0;  kc < nc; kc++)
           { int32_t ixv = FVk->e[kc]; if (ixv != -1) { ixv += 1; }
             int32_t ixt = FTk->e[kc]; if (ixt != -1) { ixt += 1; }
             int32_t ixn = FNk->e[kc]; if (ixn != -1) { ixn += 1; }

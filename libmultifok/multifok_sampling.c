@@ -66,11 +66,11 @@ void multifok_sampling_generate_2D_hann_samples
       { /* Generate a 1D Hann window weight table {wHan[0..W-1]}: */
         double wHan[W];
         wt_table_hann_fill(W, 0.0, wHan, NULL);
-        for (int32_t j = 0; j < W; j++)
+        for (uint32_t j = 0;  j < W; j++)
           { fprintf(stderr, "  wHan[%d] = %10.8f\n", j, wHan[j]); }
         /* Paranoia check of partition-of-unity property: */
         assert(wHan[H] == 1.0);
-        for (int32_t j = 0; j < H; j++)
+        for (uint32_t j = 0;  j < H; j++)
           { assert(fabs(wHan[j] + wHan[j+H+1] - 1.0) < 1.0e-13); }
 
         /* Generate the 2D samples and weights for the first quadrant: */
@@ -79,9 +79,9 @@ void multifok_sampling_generate_2D_hann_samples
         r2_t *vq = talloc(Q, r2_t);
         double *wq = talloc(Q, double);
         int32_t kq = 0; /* Sample index in {0..NS-1}. */
-        for (int32_t ix = 1; ix <= +H; ix++)
+        for (uint32_t ix = 1;  ix <= +H; ix++)
           { double vx = R*((double)ix)/(H+1);
-            for (int32_t iy = 0; iy <= +H; iy++)
+            for (uint32_t iy = 0;  iy <= +H; iy++)
               { assert(kq < Q);
                 double vy = R*((double)iy)/(H+1);
                 vq[kq] = (r2_t){{ vx, vy }};
@@ -94,7 +94,7 @@ void multifok_sampling_generate_2D_hann_samples
 
         /* Sort 1st quadrant items by increasing distance: */
         int32_t it[Q]; /* A permutation of the indices {0..Q-1}. */
-        for (int32_t j = 0; j < Q; j++) { it[j] = j; }
+        for (uint32_t j = 0;  j < Q; j++) { it[j] = j; }
         auto int comp_weight(const void *a, const void *b);
         qsort(it, Q, sizeof(int32_t), &comp_weight);
 
@@ -110,7 +110,7 @@ void multifok_sampling_generate_2D_hann_samples
           }
           
         /* Paranoia: */
-        for (int32_t j = 1; j < Q; j++) 
+        for (uint32_t j = 1;  j < Q; j++) 
           { if (debug) 
               { double rj = r2_norm(&(vq[it[j]]));
                 fprintf(stderr, "    it[%4d] = %4d vq[%4d] = ", j, it[j], it[j]);
@@ -122,7 +122,7 @@ void multifok_sampling_generate_2D_hann_samples
           
         /* Replicate the quadrant items into {v[1..N-1],w[1..N-1]: */
 
-        for (int32_t j = 0; j < Q; j++)
+        for (uint32_t j = 0;  j < Q; j++)
           { double wj = wq[it[j]]; 
             double xj = vq[it[j]].c[0];
             double yj = vq[it[j]].c[1]; 
@@ -162,7 +162,7 @@ void multifok_sampling_choose_pixel_sampling_points_and_weights
 
     if (verbose)
       { fprintf(stderr, "      generated %d sampling points and weights:\n", NS);
-        for (int32_t ks = 0; ks < NS; ks++)
+        for (uint32_t ks = 0;  ks < NS; ks++)
           { fprintf(stderr, "       %4d uSmp = ", ks);
             r2_gen_print(stderr, &(uSmp[ks]), "%+9.6f", "( ", " ", " )");
             fprintf(stderr, " wSmp = %12.10f\n", wSmp[ks]);
@@ -242,7 +242,7 @@ void multifok_sampling_choose_ray_tilts_and_weights
       { /* Normalize the tilts to unit RMS radius: */
         double sum_w = 0;
         double sum_w_r2 = 0;
-        for (int32_t ir = 0; ir < NR; ir++)
+        for (uint32_t ir = 0;  ir < NR; ir++)
           { sum_w += wRay[ir];
             double r2 = r2_norm_sqr(&(tRay[ir])); 
             sum_w_r2 += wRay[ir]*r2;
@@ -250,7 +250,7 @@ void multifok_sampling_choose_ray_tilts_and_weights
         assert(sum_w >= 1.0);
         double r_avg = sqrt(sum_w_r2/sum_w);
         assert(r_avg > 0.0);
-        for (int32_t ir = 0; ir < NR; ir++) 
+        for (uint32_t ir = 0;  ir < NR; ir++) 
           { tRay[ir].c[0] /= r_avg;
             tRay[ir].c[1] /= r_avg;
           }
@@ -258,7 +258,7 @@ void multifok_sampling_choose_ray_tilts_and_weights
 
     if (verbose)
       { fprintf(stderr, "      generated %d ray tilts and weights:\n", NR);
-        for (int32_t ir = 0; ir < NR; ir++)
+        for (uint32_t ir = 0;  ir < NR; ir++)
           { fprintf(stderr, "      ray %4d tRay = ", ir);
             r2_gen_print(stderr, &(tRay[ir]), "%+9.6f", "( ", " ", " )");
             fprintf(stderr, " wRay = %12.10f\n", wRay[ir]);

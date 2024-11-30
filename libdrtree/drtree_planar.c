@@ -353,7 +353,7 @@ void drtree_planar_arrange
     /* Now collect all roots rut[0..nr-1]: */
     int32_t rut[nr];
     { int32_t kr = 0; /* Roos found so far. */
-      for (int32_t iq = 0; iq < ni; iq++)
+      for (uint32_t iq = 0;  iq < ni; iq++)
         { drtree_node_t *q = &(dt[iq]);
           if ((! drtree_node_is_null(q)) && (q->par == -1))
             { rut[kr] = iq; kr++;
@@ -396,7 +396,7 @@ drtree_planar_info_t *drtree_planar_info_collect
     
     /* Scan in chrono order, setting {q.nch}, allocating {q.chi}, and 
       initializing {q.jhi} and {q.jlo} to the life span of the node only: */
-    for (int32_t iq = 0; iq < ni; iq++) 
+    for (uint32_t iq = 0;  iq < ni; iq++) 
       { if (debug) { fprintf(stderr, "        iq = %d", iq); }
         drtree_node_t *q = &(dt[iq]);
         drtree_planar_info_t *afq = &(af[iq]);
@@ -469,7 +469,7 @@ drtree_planar_info_t *drtree_planar_info_collect
       }
       
     /* Now scan in chrono order sorting the children, just in case: */
-    for (int32_t iq = 0; iq < ni; iq++)
+    for (uint32_t iq = 0;  iq < ni; iq++)
       { drtree_node_t *q = &(dt[iq]);
         if (! drtree_node_is_null(q))
           { assert ((q->tbr >= tMin) && (q->tbr <= tMax));
@@ -491,7 +491,7 @@ void drtree_planar_sort_children(int32_t ni, drtree_node_t dt[], int32_t nch, in
     
     assert((ni >= 0) && (ni < drtree_indivs_MAX));
 
-    for (int32_t r = 1; r < nch; r++)
+    for (uint32_t r = 1;  r < nch; r++)
       { int32_t ir = chi[r];
         int32_t tbrr = dt[ir].tbr;
         int32_t s = r; 
@@ -501,7 +501,7 @@ void drtree_planar_sort_children(int32_t ni, drtree_node_t dt[], int32_t nch, in
       }
     if (debug) 
       { fprintf(stderr, "        chi.tbr = ("); 
-        for (int32_t r = 0; r < nch; r++) { fprintf(stderr, " %d", dt[chi[r]].tbr); }
+        for (uint32_t r = 0;  r < nch; r++) { fprintf(stderr, " %d", dt[chi[r]].tbr); }
         fprintf(stderr, " )\n"); 
       }
     if (debug) { fprintf(stderr, "      < %s\n", __FUNCTION__); }
@@ -588,7 +588,7 @@ void drtree_planar_place_subtrees_relative
       { assign_relative_child_rows(abo, flp);
         int32_t radius = compute_envelope_radius();
         if (radius < radius_best)
-          { for (int32_t r = 0; r < nch; r++)
+          { for (uint32_t r = 0;  r < nch; r++)
               { abo_best[r] = abo[r];
                 flp_best[r] = flp[r];
                 radius_best = radius; 
@@ -602,13 +602,13 @@ void drtree_planar_place_subtrees_relative
         if (debug) { fprintf(stderr, "            iq = %d\n", iq); }
 
         int32_t jqm = q->tdt - q->tbr; /* Max relative col of {j}'s trace. */
-        for (int32_t j = 0; j < ncoq; j++) 
+        for (uint32_t j = 0;  j < ncoq; j++) 
           { afq->uph[j] = (j <= jqm ? 0 : drtree_planar_NO_ROW); /* Measures down. */
             afq->loh[j] = (j <= jqm ? 0 : drtree_planar_NO_ROW); /* Measured up. */
           }
 
         /* Now place subtrees as specified by {abo,flp}: */
-        for (int32_t r = 0; r < nch; r++)
+        for (uint32_t r = 0;  r < nch; r++)
           { int32_t ic = afq->chi[r];
             drtree_node_t *c = &(dt[ic]);
             drtree_planar_info_t *afc = &(af[ic]);
@@ -617,7 +617,7 @@ void drtree_planar_place_subtrees_relative
             /* Stack subtree {c} above or below current tree of {q}: */
             int32_t rowr = 1; /* Min relative disp of {q}, unsigned. */ 
             int32_t ncoc = afc->jhi - afc->jlo + 1;
-            for (int32_t jc = 0; jc < ncoc; jc++) 
+            for (uint32_t jc = 0;  jc < ncoc; jc++) 
               { /* Get proximal horizon of {c}'s tree: */
                 int32_t ahcj = (abo[r] == flp[r] ? afc->uph[jc] : afc->loh[jc]);
                 /* Get horizon of {q}'s tree towards {c}: */
@@ -633,7 +633,7 @@ void drtree_planar_place_subtrees_relative
             afc->row = ( abo[r] ? +rowr : -rowr );
             if (debug) { fprintf(stderr, "            child row = %d\n", afc->row); }
             /* Update {q}'s horizons: */
-            for (int32_t jc = 0; jc < ncoc; jc++) 
+            for (uint32_t jc = 0;  jc < ncoc; jc++) 
               { /* Get upper and lower horizons {uphcj,lohcj} of child's tree, WITH SIGNS: */
                 int32_t uphcj = afc->row + (flp[r] ? afc->loh[jc] : afc->uph[jc]);
                 int32_t lohcj = afc->row - (flp[r] ? afc->uph[jc] : afc->loh[jc]);
@@ -665,7 +665,7 @@ void drtree_planar_place_subtrees_relative
          if (debug) { fprintf(stderr, "          > %s\n", __FUNCTION__); }
          if (debug) { fprintf(stderr, "            iq = %d\n", iq); }
          int32_t radius = 0;
-         for (int32_t jq = 0; jq < ncoq; jq++)
+         for (uint32_t jq = 0;  jq < ncoq; jq++)
            { assert((+ afq->uph[jq]) >= (- afq->loh[jq]));
              int32_t rhj = (int32_t)imax(abs(afq->uph[jq]), abs(afq->loh[jq]));
              if (rhj > radius) { radius = rhj; }
@@ -675,7 +675,7 @@ void drtree_planar_place_subtrees_relative
        }
 
     void free_child_horizons(void)
-      { for (int32_t kc = 0; kc < nch; kc++)
+      { for (uint32_t kc = 0;  kc < nch; kc++)
           { int32_t ic = afq->chi[kc];
             assert((ic > iq) && (ic < ni));
             drtree_node_t *c = &(dt[ic]);
@@ -746,7 +746,7 @@ int32_t drtree_planar_place_top_trees
       { assign_absolute_root_rows(ord, flp);
         int32_t height = compute_diagram_height();
         if (height < height_best)
-          { for (int32_t r = 0; r < nr; r++)
+          { for (uint32_t r = 0;  r < nr; r++)
               { ord_best[r] = ord[r];
                 flp_best[r] = flp[r];
                 height_best = height; 
@@ -757,10 +757,10 @@ int32_t drtree_planar_place_top_trees
     void assign_absolute_root_rows(int32_t ord[], bool_t flp[])
       { 
         /* Initialize global horizon with {-1}: */
-        for (int32_t j = 0; j < ncols; j++) { uph[j] = -1; }
+        for (uint32_t j = 0;  j < ncols; j++) { uph[j] = -1; }
         
         /* Now place top trees as specified by {ord,flp}: */
-        for (int32_t r = 0; r < nr; r++)
+        for (uint32_t r = 0;  r < nr; r++)
           { int32_t iq = rut[ord[r]];
             drtree_node_t *q = &(dt[iq]);
             assert(! drtree_node_is_null(q));
@@ -769,7 +769,7 @@ int32_t drtree_planar_place_top_trees
             afq->flp = flp[r];
             /* Stack subtree {q} above previousy placed trees: */
             int32_t rowr = 0; /* Min absolute row of {q}. */ 
-            for (int32_t jq = 0; jq < ncoq; jq++) 
+            for (uint32_t jq = 0;  jq < ncoq; jq++) 
               { /* Get lower horizon of {q}'s tree: */
                 int32_t ahj = (flp[r] ? afq->uph[jq] : afq->loh[jq]);
                 /* Get global upper horizon: */
@@ -783,7 +783,7 @@ int32_t drtree_planar_place_top_trees
             /* Assign {q.row}: */
             afq->row = rowr;
             /* Update the gobal horizon: */
-            for (int32_t jq = 0; jq < ncoq; jq++) 
+            for (uint32_t jq = 0;  jq < ncoq; jq++) 
               { /* Get upper horizon of {q}'s tree: */
                 int32_t ahj = afq->row + (flp[r] ? afq->loh[jq] : afq->uph[jq]);
                 int32_t bhj = afq->row - (flp[r] ? afq->uph[jq] : afq->loh[jq]);
@@ -798,7 +798,7 @@ int32_t drtree_planar_place_top_trees
       
     int32_t compute_diagram_height(void)
       { int32_t row_max = -1;
-        for (int32_t j = 0; j < ncols; j++) 
+        for (uint32_t j = 0;  j < ncols; j++) 
           { if (uph[j] > row_max) { row_max = uph[j]; } }
         return row_max + 1;
       }
@@ -814,7 +814,7 @@ void drtree_planar_set_absolute_rows
     assert((ni >= 0) && (ni < drtree_indivs_MAX));
   
     /* Scan in chrono order (parent before children): */
-    for (int32_t iq = 0; iq < ni; iq++)
+    for (uint32_t iq = 0;  iq < ni; iq++)
       { drtree_node_t *q = &(dt[iq]);
         drtree_planar_info_t *afq = &(af[iq]);
         if (drtree_node_is_null(q))
@@ -847,7 +847,7 @@ void drtree_planar_set_absolute_rows
 void drtree_planar_info_free(int32_t ni, drtree_planar_info_t *af)
   { 
     assert((ni >= 0) && (ni < drtree_indivs_MAX));
-    for (int32_t iq = 0; iq < ni; iq++)
+    for (uint32_t iq = 0;  iq < ni; iq++)
       { drtree_planar_info_t *afq = &(af[iq]);
         if (afq->chi != NULL) { free(afq->chi); }
         if (afq->uph != NULL) { free(afq->uph); }
@@ -882,9 +882,9 @@ void drtree_planar_enum_subtree_placements
     if (nass > try_max)
       { /* Try only some arrangements: */
         /* Initialize with even children below, odd ones above: */
-        for (int32_t r = 0; r < nch; r++) { abo[r] = ((r % 2) == 1); flp[r] = FALSE; }
+        for (uint32_t r = 0;  r < nch; r++) { abo[r] = ((r % 2) == 1); flp[r] = FALSE; }
         /* Iterate with random changes: */
-        for (int32_t try = 0; try < try_max; try++)
+        for (uint32_t try = 0;  try < try_max; try++)
           { try_abo_flp(abo, flp);
             /* Change a random {abo[ra]} or {flp[ra]}: */
             int32_t r = int32_abrandom(0,nch-1);
@@ -896,11 +896,11 @@ void drtree_planar_enum_subtree_placements
       } 
     else
       { /* Enumerate all combinations of {abo,flp} except for a global flip: */
-        for (int32_t ass = 0; ass < nass; ass++)
+        for (uint32_t ass = 0;  ass < nass; ass++)
           { /* Take {nch} bits of {ass} as {abo}, {nch-1} as {flp}: */
             if (debug) { fprintf(stderr, "            ass = %x\n", ass); }
             int32_t xx = ass;
-            for (int32_t r = 0; r < nch; r++)
+            for (uint32_t r = 0;  r < nch; r++)
               { abo[r] = ((xx & 1) != 0);
                 xx >>= 1;
                 flp[r] = ((xx & 1) != 0);
@@ -937,23 +937,23 @@ void drtree_planar_enum_top_tree_placements
       { nord = 1; nflp = 1; nass = 1; }
     else
       { nord = 1;
-        for (int32_t k = 1; k <= nr; k++) { nord *= k; }
+        for (uint32_t k = 1;  k <= nr; k++) { nord *= k; }
         nflp = (1 << (nr - 1));
         nass = nord*nflp;
       }
     if (debug) { fprintf(stderr, "          nr = %d nord = %d nflp = %d\n", nr, nord, nflp); }
       
     /* Initialize with identity perm, no flip: */
-    for (int32_t r = 0; r < nr; r++) { ord[r] = r; flp[r] = FALSE; }
+    for (uint32_t r = 0;  r < nr; r++) { ord[r] = r; flp[r] = FALSE; }
     
     int32_t try_max = drtree_planar_enum_top_try_MAX;
     if (nass > try_max)
       { /* Try only some arrangements, with random changes: */
         assert(nr >= 2);
-        for (int32_t try = 0; try < try_max; try++)
+        for (uint32_t try = 0;  try < try_max; try++)
           { if (debug)
               { fprintf(stderr, "            try = %d ord+flp = (", try);
-                for (int32_t r = 0; r < nr; r++) { fprintf(stderr, " %d:%c", ord[r], "FT"[flp[r]]); }
+                for (uint32_t r = 0;  r < nr; r++) { fprintf(stderr, " %d:%c", ord[r], "FT"[flp[r]]); }
                 fprintf(stderr, " )\n");
               }
             try_ord_flp(ord, flp);
@@ -972,17 +972,17 @@ void drtree_planar_enum_top_tree_placements
       } 
     else
       { /* Enumerate all combinations of {ord,flp} except for a global flip: */
-        for (int32_t ko = 0; ko < nord; ko++)
-          { for (int32_t kf = 0; kf < nflp; kf++)
+        for (uint32_t ko = 0;  ko < nord; ko++)
+          { for (uint32_t kf = 0;  kf < nflp; kf++)
               { /* Take {nr-1} bits of {kf} as {flp}: */
                 int32_t xx = kf;
-                for (int32_t r = 0; r < nr-1; r++)
+                for (uint32_t r = 0;  r < nr-1; r++)
                   { flp[r] = ((xx & 1) != 0);
                     xx >>= 1;
                   }
                 if (debug)
                   { fprintf(stderr, "            ko = %d kf = %d ord+flp = (", ko, kf);
-                    for (int32_t r = 0; r < nr; r++) { fprintf(stderr, " %d:%c", ord[r], "FT"[flp[r]]); }
+                    for (uint32_t r = 0;  r < nr; r++) { fprintf(stderr, " %d:%c", ord[r], "FT"[flp[r]]); }
                     fprintf(stderr, " )\n");
                   }
                 assert(! flp[nr-1]);
@@ -1021,7 +1021,7 @@ void drtree_planar_check_info
     int32_t ncols = tMax - tMin + 1;
     
     /* Forward scan: check {jlo,jhi}: */
-    for (int32_t iq = 0; iq < ni; iq++)
+    for (uint32_t iq = 0;  iq < ni; iq++)
       { drtree_node_t *q = &(dt[iq]);
         drtree_planar_info_t *afq = &(af[iq]);
         if (drtree_node_is_null(q))
@@ -1041,7 +1041,7 @@ void drtree_planar_check_info
       
     /* Reverse scan: check {nch,chi}: */
     int32_t nch[ni];
-    for (int32_t iq = 0; iq < ni; iq++) { nch[iq] = 0; }
+    for (uint32_t iq = 0;  iq < ni; iq++) { nch[iq] = 0; }
     for (int32_t iq = ni-1; iq >= 0; iq--)
       { drtree_node_t *q = &(dt[iq]);
         drtree_planar_info_t *afq = &(af[iq]);
@@ -1053,7 +1053,7 @@ void drtree_planar_check_info
           { assert(afq->nch == nch[iq]);
             assert((afq->nch == 0) == (afq->chi == NULL));
             /* Check children: */
-            for (int32_t kc = 0; kc < afq->nch; kc++)
+            for (uint32_t kc = 0;  kc < afq->nch; kc++)
               { int32_t ic = afq->chi[kc];
                 /* Chidlren must come after parent: */
                 assert((ic > iq) && (ic < ni));

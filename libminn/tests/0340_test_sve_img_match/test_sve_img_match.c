@@ -2,7 +2,7 @@
 #define PROG_DESC "tests {sve_minn.h} on an image matching problem"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-08 20:25:29 by stolfi */
+/* Last edited on 2024-11-23 05:31:59 by stolfi */
 
 #define test_sve_img_match_C_COPYRIGHT "Copyright © 2009 by the State University of Campinas (UNICAMP)"
 
@@ -28,7 +28,7 @@
 #include <rmxn.h>
 #include <rmxn_extra.h>
 #include <affirm.h>
-#include <ix.h>
+#include <ix_reduce.h>
 #include <wt_table.h>
 #include <wt_table_hann.h>
 #include <jsfile.h>
@@ -283,7 +283,7 @@ int32_t main (int32_t argc, char **argv)
     if (o->shrink != 1) { r2_scale(1/((double)o->shrink), &(o->center), &(o->center)); }
     
     float bgrf[NC]; /* Background pixel value for output images. */
-    for (int32_t c = 0; c < NC; c++) { bgrf[c] = 0.5; }
+    for (uint32_t c = 0;  c < NC; c++) { bgrf[c] = 0.5; }
     
     /* Compute the left and right matrices {Q,P}: */
     r3x3_t P, Q;
@@ -349,23 +349,23 @@ float_image_t *shrink_image(float_image_t *A, int32_t shrink)
     float_image_t *R = float_image_new(NC, NXR, NYR);
     
     /* Fill the pixels of {R}: */
-    for (int32_t yR = 0; yR < NYR; yR++)
-      { for (int32_t xR = 0; xR < NXR; xR++)
+    for (uint32_t yR = 0;  yR < NYR; yR++)
+      { for (uint32_t xR = 0;  xR < NXR; xR++)
           { /* Accumulate the weighted pixel sum over the window: */
             double sum_w = 0;    /* Sum of weights. */
             double sum_w_v[NC];  /* Sum of weighted pixels. */
-            for (int32_t c = 0; c < NC; c++) { sum_w_v[c] = 0; }
-            for (int32_t yD = 0; yD < nw; yD++)
+            for (uint32_t c = 0;  c < NC; c++) { sum_w_v[c] = 0; }
+            for (uint32_t yD = 0;  yD < nw; yD++)
               { int32_t yA = shrink*yR - shrink + yD;
                 double wty = ((yA < 0) || (yA >= NYA) ? 0.0 : wt[yD]);
-                for (int32_t xD = 0; xD < nw; xD++)
+                for (uint32_t xD = 0;  xD < nw; xD++)
                   { int32_t xA = shrink*xR - shrink + xD;
                     double wtx = ((xA < 0) || (xA >= NXA) ? 0.0 : wt[xD]);
                     double w = wtx*wty;
                     if (w > 0)
                       { /* Multiply by the mask weight, if any: */
                         sum_w += w; 
-                        for (int32_t c = 0; c < NC; c++)
+                        for (uint32_t c = 0;  c < NC; c++)
                           { double v = float_image_get_sample(A, c, xA, yA);
                             sum_w_v[c] += w*v;
                           }
@@ -374,7 +374,7 @@ float_image_t *shrink_image(float_image_t *A, int32_t shrink)
               }
             /* Store the weighted average (maybe NAN) in the {R} pixel: */
             if (sum_w == 0) { sum_w = 1; }
-            for (int32_t c = 0; c < NC; c++)
+            for (uint32_t c = 0;  c < NC; c++)
               { double v = sum_w_v[c]/sum_w; 
                 float_image_set_sample(R, c, xR, yR, (float)v);
               }
@@ -498,7 +498,7 @@ void find_best_matrix
             double Step = Rad/30;
             char *fname = jsprintf("%s-f2-plot.txt", outPrefix);
             FILE *wr = open_write(fname, TRUE);
-            for (int32_t ku = 0; ku < nu; ku++)
+            for (uint32_t ku = 0;  ku < nu; ku++)
               { double *u = &(U[ku*nx]);
                 minn_plot_1D_gnuplot(wr, nx, xx, u, Rad, Step, sve_goal);
               }
@@ -591,7 +591,7 @@ void write_matched_object_images
     float_image_t *msk_out = float_image_new(1,  NXI, NYI);
     
     int32_t order = 1;                             /* C1 bicubic interpolation. */
-    ix_reduction_t red = ix_reduction_SINGLE;  /* Index reduction method. */
+    ix_reduce_mode_t red = ix_reduce_mode_SINGLE;  /* Index reduction method. */
     float imgf[NC];                            /* Pixel from {img}, unmapped. */
     float objf[NC];                            /* Pixel from {obj} mapped by {M}. */
     float mskf;                                /* Sample from {msk} mapped by {M}. */
@@ -613,7 +613,7 @@ void write_matched_object_images
                   mskf = (float)fmin(1.0, fmax(0.0, mskf));
                 }
                /* Get the source pixel value {valf}: */
-              ix_reduction_t red = ix_reduction_SINGLE;
+              ix_reduce_mode_t red = ix_reduce_mode_SINGLE;
               float_image_transform_get_pixel
                 ( obj, red, ix, iy, &map_img_to_obj, NAN, TRUE, order, objf, debug_pix );
               float_image_get_pixel(img, ix, iy, imgf);
@@ -630,7 +630,7 @@ void write_matched_object_images
         }
         
     /* Write the images: */
-    for (int32_t it = 0; it < 3; it++)
+    for (uint32_t it = 0;  it < 3; it++)
       { /* Write image number {it}: */
         char *tag = ((char*[]){ "img", "obj", "msk" })[it];
         float_image_t *out = ((float_image_t *[]){ img_out, obj_out, msk_out })[it];
@@ -780,7 +780,7 @@ double mismatch
       /* Maps a point {p} of {obj} and {msk} domain to the corresponding point in {img} domain. */ 
       
     int32_t order = 1; /* C1 bicubic interpolation. */
-    ix_reduction_t red = ix_reduction_SINGLE;
+    ix_reduce_mode_t red = ix_reduce_mode_SINGLE;
     float undef = 0.5;
     bool_t avg = TRUE;
 
@@ -788,8 +788,8 @@ double mismatch
     float imgf[NC];
     double sumw = 0;
     double sumwd2 = 0;
-    for (int32_t iy = 0; iy < NYO; iy++)
-      for (int32_t ix = 0; ix < NXO; ix++)
+    for (uint32_t iy = 0;  iy < NYO; iy++)
+      for (uint32_t ix = 0;  ix < NXO; ix++)
         { /* Get pixel {ix,iy} of {obj} in {objf[0..NC-1]} and of {msk} in {mskf[0]}: */
           float_image_get_pixel(obj, ix, iy, objf);
           float mskf = float_image_get_sample(msk, 0, ix, iy);
@@ -799,7 +799,7 @@ double mismatch
               float_image_transform_get_pixel
                 ( img, red, ix, iy, &map_obj_to_img, undef, avg, order, imgf, debug_pix );
               /* Accumulate square diff: */
-              for (int32_t ic = 0; ic < NC; ic++)
+              for (uint32_t ic = 0;  ic < NC; ic++)
                 { if (! isnan(imgf[ic]))
                     { double d = ((double)imgf[ic]) - ((double)objf[ic]);
                       sumw += mskf;

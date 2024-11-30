@@ -27,7 +27,7 @@ tosl_mesh_t *tosl_mesh_make_ico(double R)
     tosl_mesh_t *mesh = tosl_mesh_new(NE, NV);
 
     fprintf(stderr, "  creating the %d vertices...\n", NV);
-    for (int32_t i = 0; i < 3; i++)
+    for (uint32_t i = 0;  i < 3; i++)
       { int32_t j = (i + 1) % 3;
         for (int32_t dj = -1; dj <= +1; dj += 2)
           for (int32_t di = -1; di <= +1; di += 2)
@@ -41,8 +41,8 @@ tosl_mesh_t *tosl_mesh_make_ico(double R)
     assert(mesh->NV == NV);
         
     fprintf(stderr, "  adding the 30 edges and linking the 12 axial triangles...\n");
-    for (int32_t i = 0; i < 3; i++)
-      { for (int32_t r = 0; r <= 1; r++)
+    for (uint32_t i = 0;  i < 3; i++)
+      { for (uint32_t r = 0;  r <= 1; r++)
           { /* Axial edge: */
             tosl_vert_id_t kv0 = 4*i + r;
             tosl_vert_id_t kv1 = kv0 + 2;

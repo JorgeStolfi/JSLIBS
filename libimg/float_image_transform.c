@@ -1,5 +1,5 @@
 /* See {float_image_transform.h}. */
-/* Last edited on 2024-08-31 06:50:46 by stolfi */
+/* Last edited on 2024-11-23 05:39:51 by stolfi */
 
 #include <assert.h>
 #include <limits.h>
@@ -13,7 +13,7 @@
 #include <r3.h>
 #include <r3x3.h>
 #include <affirm.h>
-#include <ix.h>
+#include <ix_reduce.h>
 #include <float_image.h>
 #include <float_image_transform.h>
 #include <float_image_average.h>
@@ -26,7 +26,7 @@
 
 void float_image_transform_all
   ( float_image_t *iimg,    /* Input image. */
-    ix_reduction_t red,     /* Index reduction method. */ 
+    ix_reduce_mode_t red,     /* Index reduction method. */ 
     r2_map_jacobian_t *map, /* Output-to-input coordinate transformation. */
     float undef,            /* Sample value for undefined output pixels. */
     bool_t avg,             /* TRUE to average pixels, FALSE to add them. */
@@ -42,7 +42,7 @@ void float_image_transform_all
 
 void float_image_transform_sub
   ( float_image_t *iimg,    /* Input image. */
-    ix_reduction_t red,     /* Index reduction method. */ 
+    ix_reduce_mode_t red,     /* Index reduction method. */ 
     r2_map_jacobian_t *map, /* Output-to-input coordinate transformation. */
     float undef,            /* Sample value for undefined output pixels. */
     bool_t avg,             /* TRUE to average pixels, FALSE to add them. */
@@ -80,7 +80,7 @@ void float_image_transform_sub
 
 void float_image_transform_get_pixel
   ( float_image_t *img, 
-    ix_reduction_t red, /* Index reduction method. */ 
+    ix_reduce_mode_t red, /* Index reduction method. */ 
     int col, 
     int row, 
     r2_map_jacobian_t *map, 
@@ -136,7 +136,7 @@ void float_image_transform_get_pixel
 
 void float_image_transform_copy_persp_rectangle
   ( float_image_t *iimg,
-    ix_reduction_t red, /* Index reduction method. */ 
+    ix_reduce_mode_t red, /* Index reduction method. */ 
     double xlo,         /* Min X in true coords. */
     double xhi,         /* Max X in true coords. */
     double ylo,         /* Min Y in true coords. */

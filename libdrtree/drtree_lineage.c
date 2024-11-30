@@ -38,7 +38,7 @@ int32_t *drtree_lineage_collect_surviving
     
     /* Set {fnd[iq]} to -2 iff {iq} died on or after {t0} and */
     /* has surviving descendants through chidlren born after {t0}, else {-1}: */
-    for (int32_t iq = 0; iq < ni; iq++) { fnd[iq] = -1; }
+    for (uint32_t iq = 0;  iq < ni; iq++) { fnd[iq] = -1; }
     if (debug) { fprintf(stderr, "    finding surviving lineage members\n"); }
     for (int32_t iq = ni-1; iq >= 0; iq--)
       { if ((dt[iq].tbr <= t1) && (t1 <= dt[iq].tdt))
@@ -61,7 +61,7 @@ int32_t *drtree_lineage_collect_surviving
       
     /* Now scan forward assigning founder indices: */
     if (debug) { fprintf(stderr, "    finding lineage founders\n"); }
-    for (int32_t iq = 0; iq < ni; iq++) 
+    for (uint32_t iq = 0;  iq < ni; iq++) 
       { if (fnd[iq] == -2)
           { if (debug) { fprintf(stderr, "      %d did not die too early and has surviving descs\n", iq); }
             assert(dt[iq].tdt >= t0);

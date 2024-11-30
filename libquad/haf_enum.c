@@ -180,7 +180,7 @@ void haf_enum_cycles(haf_edge_count_t ne, haf_arc_t a[], haf_edge_id_t eid0, uin
         haf_arc_t b = a[2*pe];
         demand(b != NULL, "given arc is {NULL}");
         /* Check {b} and its opposite: */
-        for (int32_t kd = 0; kd < 2; kd++)
+        for (uint32_t kd = 0;  kd < 2; kd++)
           { haf_edge_id_t beid = haf_edge_id(b);
             demand(beid < haf_edge_id_MAX, "invalid edge id");
             demand((beid >= eid0) && (beid < eid0 + ne), "edge id out of range");

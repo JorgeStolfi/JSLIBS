@@ -19,7 +19,7 @@
 #include <fget_geo.h>
 
 void fget_rn(FILE *rd, double p[], uint32_t n)
-  { for (int32_t i = 0; i < n; i++)
+  { for (uint32_t i = 0;  i < n; i++)
       { p[i] = fget_double(rd); }
   }
 

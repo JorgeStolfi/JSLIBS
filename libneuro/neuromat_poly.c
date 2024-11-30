@@ -81,7 +81,7 @@ double neuromat_poly_eval(int32_t g, double P[], double x)
 void neuromat_poly_eval_multi(int32_t g, double P[], int32_t n, double x[], double s[])
   {
     demand(g >= 0, "invalid power");
-    for (int32_t k = 0; k < n; k++) 
+    for (uint32_t k = 0;  k < n; k++) 
       { double xk = (x != NULL ? x[k] : 2*(k + 0.5)/n - 1);
         s[k] = neuromat_poly_eval(g, P, xk);
       }
@@ -95,12 +95,12 @@ void neuromat_poly_compute_lsq_matrix(int32_t n, double x[], double w[], int32_t
 
     /* Fill the lower triangular half of {A}: */
     double *p = notnull(malloc(g1*sizeof(double)), "no mem"); /* Powers of each {x}. */
-    for (int32_t k = 0; k < n; k++)
+    for (uint32_t k = 0;  k < n; k++)
       { double xk = (x != NULL ? x[k] : 2*(k + 0.5)/n - 1);
         double wk = (w != NULL ? w[k] : 1);
-        for (int32_t i = 0; i <= g; i++)
+        for (uint32_t i = 0;  i <= g; i++)
           { p[i] = (i == 0 ? 1.0 : p[i-1]*xk);
-            for (int32_t j = 0; j <= i; j++)
+            for (uint32_t j = 0;  j <= i; j++)
               { double pipj = p[i]*p[j];
                 A[i*g1 + j] += wk*pipj;
               }
@@ -109,7 +109,7 @@ void neuromat_poly_compute_lsq_matrix(int32_t n, double x[], double w[], int32_t
     free(p);
 
     /* Replicate the lower half of {A} into the upper half: */
-    for (int32_t i = 1; i <= g; i++) { for (int32_t j = 0; j < i; j++) { A[j*g1 + i] = A[i*g1 + j]; } }
+    for (uint32_t i = 1;  i <= g; i++) { for (uint32_t j = 0;  j < i; j++) { A[j*g1 + i] = A[i*g1 + j]; } }
   }
 
 void neuromat_poly_compute_lsq_vector(int32_t n, double x[], double y[], double w[], int32_t g, double b[])
@@ -117,12 +117,12 @@ void neuromat_poly_compute_lsq_vector(int32_t n, double x[], double y[], double 
     demand(g >= 0, "invalid power");
     int32_t g1 = g + 1;
     rn_zero(g1, b);
-    for (int32_t k = 0; k < n; k++)
+    for (uint32_t k = 0;  k < n; k++)
       { double xk = (x != NULL ? x[k] : 2*(k + 0.5)/n - 1);
         double yk = y[k];
         double wk = (w != NULL ? w[k] : 1);
         double pi = 1.0; /* Power {xk^i}. */
-        for (int32_t i = 0; i <= g; i++)
+        for (uint32_t i = 0;  i <= g; i++)
           { b[i] += wk*pi*yk;
             pi = pi*xk;
           }
@@ -147,7 +147,7 @@ void neuromat_poly_stretch(int32_t g, double P[], double h, double Q[])
   {
     demand(g >= 0, "invalid power");
     double hk = 1.0;
-    for (int32_t k = 1; k <= g; k++)
+    for (uint32_t k = 1;  k <= g; k++)
       { hk *= h;  /* Value is {h^k}. */
         Q[k] = P[k]/hk;
       }
@@ -160,7 +160,7 @@ void neuromat_poly_bezier(int32_t g, int32_t i, double a, double b, double P[])
     double ah = a/h, bh = b/h;
     P[0] = (double)comb(g,i); /* Hopefully there is no overflow or rounding. */
     /* Multiply {P[0..0]} by {((x-a)/h)^i} yielding {P[0..i]}: */
-    for (int32_t k = 0; k < i; k++)
+    for (uint32_t k = 0;  k < i; k++)
       { /* Multiply {P[0..k]} by {(x-a)/h} yielding {P[0..k+1]}: */
         P[k+1] = P[k]/h;
         for (int32_t r = k; r > 0; r--) { P[r] = P[r-1]/h - P[r]*ah; }
@@ -235,7 +235,7 @@ void neuromat_poly_fit_robust
         double pri_gud, pri_bad;   /* A priori probability of being inlier or outlier. */
         
         rn_all(n, 0.5, p); /* A priori, inliers and outliers are equally likely: */
-        for (int32_t iter = 1; iter <= maxiter; iter++)
+        for (uint32_t iter = 1;  iter <= maxiter; iter++)
           { 
             if (debug) { fprintf(stderr, "    iteration %d\n", iter); }
 
@@ -264,7 +264,7 @@ void neuromat_poly_fit_robust
             if (debug) { fprintf(stderr, "      bad:  avg = %+9.4f  dev = %9.4f  pri = %9.4f\n", avg_bad, dev_bad, pri_bad); }
 
             /* Recompute data point inlier/outlier probabilities and adjusted data {yc[0..n-1]}: */
-            for (int32_t k = 0; k < n; k++) 
+            for (uint32_t k = 0;  k < n; k++) 
               { /* Decide the probability {p[k]} of each sample {y[k]} being an inlier: */
                 double pk = neuromat_poly_bayes(y[k], pri_gud, ya[k] + avg_gud, dev_gud, avg_bad, dev_bad);
                 p[k] = pk;
@@ -299,7 +299,7 @@ void neuromat_poly_compute_stats
     double sum_wpv = 0;
     double sum_wp = 0;
     double sum_w = 0;
-    for (int32_t k = 0; k < n; k++) 
+    for (uint32_t k = 0;  k < n; k++) 
       { double vk = v[k];
         double wk = (w == NULL ? 1.0 : w[k]);
         double pk = (p == NULL ? 0.5 : (good ? p[k] : 1.0 - p[k]));
@@ -312,7 +312,7 @@ void neuromat_poly_compute_stats
     assert(! isnan(avg));
     /* Compute the standard deviation: */
     double sum_wpd2 = 0;
-    for (int32_t k = 0; k < n; k++) 
+    for (uint32_t k = 0;  k < n; k++) 
       { double dk = v[k] - avg;
         double wk = (w == NULL ? 1.0 : w[k]);
         double pk = (p == NULL ? 0.5 : (good ? p[k] : 1.0 - p[k]));

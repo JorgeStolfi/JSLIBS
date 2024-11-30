@@ -36,7 +36,7 @@ void epswr_font_list_add(const char *font, int32_t *nFontsP, char ***fontsP)
     char **fonts = (*fontsP);
     demand(fonts != NULL, "font list not initialized");
     /* Check whether font already is in the table: */
-    for (int32_t i = 0; i < nFonts; i++)
+    for (uint32_t i = 0;  i < nFonts; i++)
       { if (strcmp(fonts[i], font) == 0) { return; } }
     /* Ensure that there is space for a new entry: */
     if ((nFonts >= epswr_font_list_MINSZ) && (((nFonts - 1) & nFonts) == 0))
@@ -57,7 +57,7 @@ void epswr_font_list_free(int32_t *nFontsP, char ***fontsP)
     int32_t nFonts = (*nFontsP);
     char **fonts = (*fontsP);
     demand(fonts != NULL, "font list not initialized");
-    for (int32_t i = 0; i < nFonts; i++) { free(fonts[i]); }
+    for (uint32_t i = 0;  i < nFonts; i++) { free(fonts[i]); }
     free(fonts);
     (*fontsP) = NULL;
     (*nFontsP) = 0;

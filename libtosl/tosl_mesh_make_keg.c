@@ -38,14 +38,14 @@ tosl_mesh_t *tosl_mesh_make_keg
     
     fprintf(stderr, "  creating %d rings of %d vertices and edges...\n", NR+1, NS);
     tosl_arc_id_t iaring[NR+1];
-    for (int32_t r = 0; r <= NR; r++)
+    for (uint32_t r = 0;  r <= NR; r++)
       { 
         char *pref = NULL; 
         char *pref = jsprintf("h.r%d.s", r);
         iaring[r] = tosl_mesh_add_ring(NS, pref, mesh);
         /* Set the vertex coordinates: */
         tosl_arc_id_t ia = iaring[r];
-        for (int32_t s = 0; s < NS; s++)
+        for (uint32_t s = 0;  s < NS; s++)
           { tosl_point_t vsr = main_vert_pos(s, r);
             mesh->Vpos[mesh->Arc[ia].ivorg] = vsr;
             ia = mesh->Arc[ia].skip;
@@ -58,13 +58,13 @@ tosl_mesh_t *tosl_mesh_make_keg
         vertices {kv0} and {kv1}.  */
     
     fprintf(stderr, "  Connecting the rings with paths of %d edges...\n", NB+1);
-    for (int32_t r = 0; r < NR; r++)
+    for (uint32_t r = 0;  r < NR; r++)
       { tosl_arc_id_t ia0 = iaring[r];
         tosl_arc_id_t ia1 = iaring[r+1];
         
         tosl_arc_id_t ja0 = mesh->Arc[ia0].skip;
         tosl_arc_id_t ja1 = mesh->Arc[ia1].skip;
-        for (int32_t s = 0; s < NS; s++)
+        for (uint32_t s = 0;  s < NS; s++)
           { tosl_arc_id_t ka1 = tosl_sym(ja1);
             char *pref = NULL; 
             char *pref = jsprintf("v.r%d.s%d.b", r, s);
@@ -74,7 +74,7 @@ tosl_mesh_t *tosl_mesh_make_keg
             tosl_vert_id_t kv0 = mesh->Arc[ja0].ivorg;
             tosl_vert_id_t kv1 = mesh->Arc[ja1].ivorg;
             tosl_arc_id_t iab = mesh->Arc[ia0].skip;
-            for (int32_t b = 0; b < NB; b++)
+            for (uint32_t b = 0;  b < NB; b++)
               { tosl_point_t vsrb = interp_vert_pos(kv0, kv1, b);
                 tosl_arc_id_t kab = tosl_sym(iab);
                 tosl_vert_id_t kv = mesh->Arc[kab].ivorg;

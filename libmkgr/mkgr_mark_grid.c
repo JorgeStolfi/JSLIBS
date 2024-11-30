@@ -43,7 +43,7 @@ void mkgr_mark_grid_append_mark(mkgr_mark_grid_t *gr, mkgr_mark_t *mk)
         mkgr_mark_vec_expand(&(gr->mark), km);
         gr->mark.e[km] = (*mk);
         /* Update the bounding box: */
-        for (int32_t j = 0; j < 2; j++)
+        for (uint32_t j = 0;  j < 2; j++)
           { /* Interval of mark's nominal bounding box projected on axis {j}: */
             double ctrj = mk->ctr.c[j];
             double ploj = ctrj - trad;
@@ -79,7 +79,7 @@ void mkgr_mark_grid_write(FILE *wr, mkgr_mark_grid_t *gr)
     fprintf(wr,"NM = %d\n", gr->NM);
     fprintf(wr,"pMin = %9.6f %9.6f\n", gr->pMin.c[0], gr->pMin.c[1]);
     fprintf(wr,"pMax = %9.6f %9.6f\n", gr->pMax.c[0], gr->pMax.c[1]);
-    for (int32_t km = 0; km < NM; km++)
+    for (uint32_t km = 0;  km < NM; km++)
       { mkgr_mark_t *mk = &(gr->mark.e[km]);
         bool_t cross = mk->cross;
         double xc = mk->ctr.c[0];

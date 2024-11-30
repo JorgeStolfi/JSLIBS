@@ -36,7 +36,7 @@ void test_voxb_erolate(ppv_array_t *A, r3_t *ctr, r3_t *rad, double smr)
     /* Assume that {NX} is the largest, and split the tomogram in {X}. */
     int32_t nsec = 4;            /* Number of sections. */
     ppv_size_t szsec = NX/nsec;  /* Size of each section. */
-    for (int32_t isec = 0; isec < nsec; isec++)
+    for (uint32_t isec = 0;  isec < nsec; isec++)
       { ppv_size_t xskip = isec*szsec;
         ppv_size_t yskip = (NY - szsec)/2;
         ppv_size_t zskip = (NZ - szsec)/2;

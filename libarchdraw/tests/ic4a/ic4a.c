@@ -142,8 +142,8 @@ void adrw_ic4a_plot_all(adrw_building_t *B, int32_t nx, int32_t ny, bool_t show_
     double xmin = -xmrg, xmax =   xwid+xmrg;
     double ymin =  -300, ymax = 3*(ywid+300);
 
-    for (int32_t ox = 0; ox < nx; ox++)
-      { for (int32_t oy = 0; oy < ny; oy++)
+    for (uint32_t ox = 0;  ox < nx; ox++)
+      { for (uint32_t oy = 0;  oy < ny; oy++)
           { fprintf(stderr, "=== PLOTTING PAGE [%d,%d] OF [%d,%d] ===\n", ox,oy,nx,ny);
             epswr_figure_t *epsf = adrw_new_figure
               ( "out", OUT_PREFIX "_A", "P", xmin, xmax, ymin, ymax,

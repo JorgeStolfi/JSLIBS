@@ -1,5 +1,5 @@
 /* See {minn_constr.h}. */
-/* Last edited on 2024-11-22 05:35:42 by stolfi */
+/* Last edited on 2024-11-23 18:45:41 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -36,12 +36,12 @@ void rmxn_ellipsoid_pierce
       { 
         if (debug) { fprintf(stderr, "  computing the metric matrix {M} for {\\RF} ...\n"); }
         double M[d*d];
-        for (int32_t r = 0; r < d; r++)
-          { double *Sr = &(S[r*(int32_t)n]);
-            for (int32_t s = 0; s <= r; s++)
-              { double *Ss = &(S[s*(int32_t)n]);
+        for (uint32_t r = 0; r < d; r++)
+          { double *Sr = &(S[r*n]);
+            for (uint32_t s = 0;  s <= r; s++)
+              { double *Ss = &(S[s*n]);
                 double sum = 0.0;
-                for (int32_t i = 0; i < n; i++)
+                for (uint32_t i = 0;  i < n; i++)
                   { double Sri = Sr[i];
                     double Ssi = Ss[i];
                     double ri = arad[i];
@@ -50,8 +50,8 @@ void rmxn_ellipsoid_pierce
                     else
                       { demand (fabs(Sri) + fabs(Ssi) < 1.0e-12, "bad constraints"); }
                   }
-                M[r*(int32_t)d + s] = sum;
-                M[s*(int32_t)d + r] = sum; /* Diag i
+                M[r*d + s] = sum;
+                M[s*d + r] = sum; /* Diag i
                 s assigned twice, but OK. */
               }
           }
@@ -69,19 +69,19 @@ void rmxn_ellipsoid_pierce
           demand(a == d, "failed to determine eigenvalues of {M}");
         }
         /* Compute the search radii {urad[0..d-1]} of {\RF}: */
-        for (int32_t k = 0; k < d; k++)
+        for (uint32_t k = 0;  k < d; k++)
           { demand(e[k] > 0.0, "non-positive eigenvalue");
             urad[k] = 1.0/sqrt(e[k]);
           }
 
         if (debug) { fprintf(stderr, "  computing the basis {U = Q S} aligned with axes of {\\RF} ...\n"); }
-        for (int32_t k = 0; k < d; k++)
-          { double *Qk = &(Q[k*(int32_t)d]);
-            double *Uk = &(U[k*(int32_t)n]);
-            for (int32_t i = 0; i < n; i++)
+        for (uint32_t k = 0;  k < d; k++)
+          { double *Qk = &(Q[k*d]);
+            double *Uk = &(U[k*n]);
+            for (uint32_t i = 0;  i < n; i++)
               { double sum = 0.0;
-                for (int32_t s = 0; s < d; s++)
-                  { double *Ss = &(S[s*(int32_t)n]);
+                for (uint32_t s = 0;  s < d; s++)
+                  { double *Ss = &(S[s*n]);
                     double Qrs = Qk[s];
                     double Ssi = Ss[i];
                     sum += Qrs*Ssi;
@@ -149,16 +149,16 @@ void rmxn_ellipsoid_normalize_constraints
         appends it as row {m} of {C}, and increments {C}. */
     
     /* Add the given constraints: */    
-    for (int32_t i = 0; i < q; i++)
+    for (uint32_t i = 0;  i < q; i++)
       { if (verbose) { fprintf(stderr, "    adding given constraint {v*A[%d,*]' == 0} ...", i); }
-        double *Ai = &(A[i*(int32_t)n]);
+        double *Ai = &(A[i*n]);
         add_constraint(Ai);
       }
 
     /* Add the constraints from zero base radii: */
     double e[n]; /* Canonical basis vector. */
-    for (int32_t j = 0; j < n; j++) { e[j] = 0.0; }
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t j = 0;  j < n; j++) { e[j] = 0.0; }
+    for (uint32_t i = 0;  i < n; i++)
       { demand(arad[i] >= 0, "invalid {arad}");
         if (arad[i] < 1.0e-100)
           { if (verbose) { fprintf(stderr, "    adding axial constraint {v[%d] == 0} ...", i); }
@@ -180,8 +180,8 @@ void rmxn_ellipsoid_normalize_constraints
        { double am = rn_norm(n, a);
          if (am > 1.0e-100)
            { rn_copy(n, a, v);
-             for (int32_t k = 0; k < m; k++)
-               { double *Ck = &(C[k*(int32_t)n]);
+             for (uint32_t k = 0;  k < m; k++)
+               { double *Ck = &(C[k*n]);
                  double d = rn_dot(n, v, Ck);
                  if (fabs(d) > 1.0e-200)
                    { rn_mix_in(n, -d, Ck, v); }

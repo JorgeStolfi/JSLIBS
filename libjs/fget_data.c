@@ -1,5 +1,5 @@
 /* See fget_data.h */
-/* Last edited on 2024-11-15 19:12:24 by stolfi */
+/* Last edited on 2024-11-23 06:41:58 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -14,7 +14,14 @@
 
 #include <fget_data.h>
 
-bool_t fget_data_fields(FILE *rd, char cmtc, int32_t nf, int8_t type[], char* alf[], double num[])
+bool_t fget_data_fields
+  ( FILE *rd,
+    char cmtc,
+    uint32_t nf,
+    fget_data_type_t type[],
+    char* alf[],
+    double num[]
+  )
   {
     bool_t debug = FALSE;
     
@@ -42,10 +49,10 @@ bool_t fget_data_fields(FILE *rd, char cmtc, int32_t nf, int8_t type[], char* al
         break;
       }
     /* Parse or skip the next {nf} data fields: */
-    for (int32_t kf = 0; kf < nf; kf++)
+    for (uint32_t kf = 0;  kf < nf; kf++)
       { alf[kf] = NULL; num[kf] = NAN;
         if (debug) { debug_next(); }
-        if (type[kf] == 2)
+        if (type[kf] == fget_data_type_NUM)
           { /* Get a numeric field: */
             if (debug) { fprintf(stderr, "parsing field %d as numeric ...", kf); }
             /* This will skip spaces before the next field, gobble one */
@@ -70,11 +77,11 @@ bool_t fget_data_fields(FILE *rd, char cmtc, int32_t nf, int8_t type[], char* al
             if (debug) { fprintf(stderr, " got \"%s\"", fk); }
             demand ((*fk) != '\000', "data field not found");
             /* Store or ignore field: */
-            if (type[kf] == 1)
+            if (type[kf] ==fget_data_type_ALF )
               { if (debug) { fprintf(stderr, " (saved)\n"); }
                 alf[kf] = fk;
               }
-            else if (type[kf] == 0)
+            else if (type[kf] == fget_data_type_NOT)
               { if (debug) { fprintf(stderr, " (discarded)\n"); }
                 free(fk);
               }
@@ -96,11 +103,16 @@ bool_t fget_data_fields(FILE *rd, char cmtc, int32_t nf, int8_t type[], char* al
       }
   }
 
-void fget_data_set_field_type(int32_t kf, int8_t tkf, bool_t rep_ok, int32_t nf, int8_t type[])
-  { if (kf < 0) { return; }
-    demand (kf < nf, "invalid data field index");
-    demand((tkf >= 0) && (tkf <= 2), "invalid field type");
-    if (type[kf] != 0)
+void fget_data_set_field_type
+  ( uint32_t kf,
+    fget_data_type_t tkf,
+    bool_t rep_ok,
+    uint32_t nf,
+    fget_data_type_t type[]
+  )
+  { demand (kf < nf, "invalid data field index");
+    demand((tkf >= fget_data_type_FIRST) && (tkf <= fget_data_type_LAST), "invalid field type");
+    if (type[kf] != fget_data_type_NOT)
       { if (tkf == type[kf])
           { demand(rep_ok, "data field cannot be used twice"); }
         else

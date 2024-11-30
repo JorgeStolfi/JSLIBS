@@ -56,12 +56,12 @@ r2_t *neuromat_eeg_geom_get_schematic_2D_points_by_name(char *capType, int32_t n
   { int32_t ne_full; char **chname_full; r2_t *pos2D_full; 
     neuromat_eeg_geom_get_schematic_2D_points(capType, &ne_full, &chname_full, &pos2D_full);
     r2_t *pos2D = talloc(ne,r2_t);
-    for (int32_t ie = 0; ie < ne; ie++)
+    for (uint32_t ie = 0;  ie < ne; ie++)
       { char *name = chname[ie];
         int32_t ie_full = neuromat_eeg_find_channel_by_name(name, 0, ne_full-1, chname_full, TRUE);
         pos2D[ie] = pos2D_full[ie_full];
       }
-    for (int32_t ie_full = 0; ie_full < ne_full; ie_full++) { free(chname_full[ie_full]); }
+    for (uint32_t ie_full = 0;  ie_full < ne_full; ie_full++) { free(chname_full[ie_full]); }
     free(chname_full);
     free(pos2D_full);
     return pos2D;
@@ -96,8 +96,8 @@ void neuromat_eeg_geom_get_R20_schematic_2D_points(int32_t ne, r2_t pos2D[])
     pos2D[19] = (r2_t){{ 334, 509 }}; /* Oz */ 
     
     /* Rescale to unit disk: */
-    for (int32_t ie = 0; ie < ne; ie++) 
-      { for (int32_t j = 0; j < 2; j++) 
+    for (uint32_t ie = 0;  ie < ne; ie++) 
+      { for (uint32_t j = 0;  j < 2; j++) 
           { double z_raw = pos2D[ie].c[j];
             double z_rel = (z_raw - ctr_ref.c[j])/rad_ref.c[j];
             if (j == 1) { z_rel = -z_rel; }
@@ -258,8 +258,8 @@ void neuromat_eeg_geom_get_R128_schematic_2D_points(int32_t ne, r2_t pos2D[])
       }
     
     /* Rescale to unit disk: */
-    for (int32_t ie = 0; ie < ne; ie++) 
-      { for (int32_t j = 0; j < 2; j++) 
+    for (uint32_t ie = 0;  ie < ne; ie++) 
+      { for (uint32_t j = 0;  j < 2; j++) 
           { double z_raw = pos2D[ie].c[j];
             double z_rel = (z_raw - ctr_ref.c[j])/rad_ref.c[j];
             if (j == 1) { z_rel = -z_rel; }
@@ -316,12 +316,12 @@ r2_t neuromat_eeg_geom_ellipse_from_disk(r2_t *p, r2_t *ctr, r2_t *rad)
 
 void neuromat_eeg_geom_map_many_disk_to_ellipse(int32_t np, r2_t p[], r2_t *ctr, r2_t *rad, r2_t q[])
   {
-    for (int32_t ip = 0; ip < np; ip++) 
+    for (uint32_t ip = 0;  ip < np; ip++) 
       { q[ip] = neuromat_eeg_geom_ellipse_from_disk(&(p[ip]), ctr, rad); }
   }
 
 void neuromat_eeg_geom_map_many_ellipse_to_disk(int32_t np, r2_t p[], r2_t *ctr, r2_t *rad, r2_t q[])
   {
-    for (int32_t ip = 0; ip < np; ip++) 
+    for (uint32_t ip = 0;  ip < np; ip++) 
       { q[ip] = neuromat_eeg_geom_disk_from_ellipse(&(p[ip]), ctr, rad); }
   }

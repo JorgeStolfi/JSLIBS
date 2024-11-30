@@ -48,10 +48,10 @@ void neuromat_median_filter_apply
     int32_t ws[nw]; /* Consolidated weights of those values. */
     
     if (verbose) { fprintf(stderr, "    filtering electrodes \n"); }
-    for (int32_t ie = 0; ie < ne; ie++)
+    for (uint32_t ie = 0;  ie < ne; ie++)
       { if (verbose) { fprintf(stderr, "."); }
         /* Extract signal of electrode {ie} to {x[0..nt-1]}: */
-        for (int32_t ix = 0; ix < nx; ix++)
+        for (uint32_t ix = 0;  ix < nx; ix++)
           { int32_t it = ix - hw; /* Index of sample {x[jx]} in {val}. */
             /* Mirror about ends: */
             if (it < 0) { it = -it; }
@@ -64,7 +64,7 @@ void neuromat_median_filter_apply
             
         /* Apply running median filter: */
         nk = 0;
-        for (int32_t it = 0; it < nt; it++)
+        for (uint32_t it = 0;  it < nt; it++)
           { /* Now {x[it+hw]} is the central sample of the window. */
             /* Check that the window fits in the sample vector: */
             assert(it+nw-1 < nx);
@@ -75,7 +75,7 @@ void neuromat_median_filter_apply
             nk = nw;
           }
         /* Store the median signal into {med}: */
-        for (int32_t it = 0; it < nt; it++) { med[it][ie] = s[it]; }
+        for (uint32_t it = 0;  it < nt; it++) { med[it][ie] = s[it]; }
       }
     if (verbose) { fprintf(stderr, "\n"); }
     free(x);

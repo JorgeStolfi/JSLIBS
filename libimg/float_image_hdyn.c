@@ -513,7 +513,7 @@ void float_image_hdyn_solve_diff_eqs
     
     /* Solve the system: */
     if (verbose) { fprintf(stderr, "solving the linear system...\n"); }
-    int32_t rank = gsel_solve(N, N, A, 1, B, X, 0.0);
+    int32_t rank = gauss_elim_solve(N, N, A, 1, B, X, 0.0);
     demand(rank == N, "indeterminate system");
         
     free(B);

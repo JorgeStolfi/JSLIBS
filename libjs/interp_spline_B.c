@@ -1,4 +1,4 @@
-/* Last edited on 2024-11-18 09:20:58 by stolfi */
+/* Last edited on 2024-11-23 06:07:05 by stolfi */
 /* See {interp_spline_B.h}. */
 
 #include <stdio.h>
@@ -34,7 +34,7 @@ void interp_spline_B_get_weights(double z, int32_t ord, uint32_t nw, double wt[]
         
         /* Compute the interpolation weights {wt[0..nw-1]} recursively: */
         int32_t deg = ord+1;
-        for (int32_t k = 1; k <= deg; k++)
+        for (int32_t k = 1;  k <= deg; k++)
           { wt[k] = (u/k)*wt[k-1];
             for (int32_t r = k-1; r > 0; r--)
               { wt[r] = ((k-r+u)/k)*wt[r-1] + ((r+v)/k)*wt[r]; }

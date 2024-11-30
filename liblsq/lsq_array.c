@@ -45,19 +45,19 @@ void lsq_array_compute_matrix(int32_t nt, int32_t nx, double X[], double W[], do
   {
     rmxn_zero(nx, nx, A);
     /* Fill the lower triangular half of {A}: */ 
-    for (int32_t k = 0; k < nt; k++)
+    for (uint32_t k = 0;  k < nt; k++)
       { double* Xk = &(X[k*nx]);
         double Wk = (W != NULL ? W[k] : 1);
-        for (int32_t i = 0; i < nx; i++)
-          { for (int32_t j = 0; j <= i; j++)
+        for (uint32_t i = 0;  i < nx; i++)
+          { for (uint32_t j = 0;  j <= i; j++)
               { double Xkij = Xk[i]*Xk[j];
                 A[i*nx + j] += Wk*Xkij;
               }
           }
       }
     /* Replicate the lower half of {A} into the upper half: */
-    for (int32_t i = 1; i < nx; i++) 
-      { for (int32_t j = 0; j < i; j++) 
+    for (uint32_t i = 1;  i < nx; i++) 
+      { for (uint32_t j = 0;  j < i; j++) 
          { A[j*nx + i] = A[i*nx + j]; } 
       }
   }
@@ -65,12 +65,12 @@ void lsq_array_compute_matrix(int32_t nt, int32_t nx, double X[], double W[], do
 void lsq_array_compute_rhs(int32_t nt, int32_t nx, int32_t nf, double X[], double F[], double W[], double B[])
   {
     rmxn_zero(nx, nf, B);
-    for (int32_t k = 0; k < nt; k++)
+    for (uint32_t k = 0;  k < nt; k++)
       { double* Xk = &(X[k*nx]);
         double* Fk = &(F[k*nf]);
         double Wk = (W != NULL ? W[k] : 1);
-        for (int32_t i = 0; i < nx; i++)
-          { for (int32_t j = 0; j < nf; j++) 
+        for (uint32_t i = 0;  i < nx; i++)
+          { for (uint32_t j = 0;  j < nf; j++) 
               { B[i*nf + j] += Wk*Xk[i]*Fk[j]; }
           }
       }

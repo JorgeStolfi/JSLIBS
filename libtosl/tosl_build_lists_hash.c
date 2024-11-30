@@ -115,7 +115,7 @@ tosl_plane_id_t *tosl_build_lists_hash_make_table(int32_t NH, int32_t NP, tosl_c
   { 
     tosl_plane_id_t *iphash = malloc(NH*sizeof(tosl_plane_id_t));
     assert(iphash != NULL);
-    for (int32_t ih = 0; ih < NH; ih++) { iphash[ih] = -1; }
+    for (uint32_t ih = 0;  ih < NH; ih++) { iphash[ih] = -1; }
     
     tosl_coord_t Zmin = Zplane[0];
     tosl_coord_t Zmax = Zplane[NP-1];

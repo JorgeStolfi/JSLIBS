@@ -129,7 +129,7 @@ void ppv_array_read_samples_plain ( FILE *rd, ppv_array_t *A )
             uint64_t usmp = fget_uint64(rd, 10);
             if (debug) 
               { fprintf(stderr, "    ix =");
-                for (int32_t j = 0; j < d; j++) { fprintf(stderr, " " ppv_index_t_FMT, ix[j]); }
+                for (uint32_t j = 0;  j < d; j++) { fprintf(stderr, " " ppv_index_t_FMT, ix[j]); }
                 fprintf(stderr, "  usmp = %lu\n", (uint64_t)usmp);
               }
             demand(usmp <= maxsmp, "sample too big");
@@ -181,7 +181,7 @@ void ppv_array_read_samples_raw_big ( FILE *rd, ppv_array_t *A )
         do
           { ppv_word_t w = 0;
             /* bool_t debug = ((A->bps == 10) && (pos == 0)); */
-            for (int32_t i = 0; i < cps; i++)
+            for (uint32_t i = 0;  i < cps; i++)
               { int32_t ch = fgetc(rd);
                 demand(ch != EOF, "unexpected end-of-file");
                 /* if (debug) { fprintf(stderr,  "  ch = %u\n", (unsigned char)ch); } */

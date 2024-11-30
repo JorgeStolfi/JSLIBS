@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {wt_table.h}, {wt_table_*}.h"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-20 06:56:01 by stolfi */ 
+/* Last edited on 2024-11-22 20:48:14 by stolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_hermite3_COPYRIGHT \
@@ -72,7 +72,7 @@ void test_wt_table_quantize(uint32_t n, bool_t verbose);
 int32_t main (int32_t argc, char **argv)
   {
     test_basics(TRUE);
-    for (int32_t n = 1; n <= 100; n = 3*n/2+1)
+    for (uint32_t n = 1; n <= 100; n = 3*n/2+1)
       { bool_t verbose = (n < 10);
         test_wt_table_print(n, verbose);
         test_wt_table_avg__wt_table_var(n, verbose);
@@ -84,7 +84,7 @@ int32_t main (int32_t argc, char **argv)
         test_wt_wt_table_gaussian_make__table_gaussian_fill(sigma, 0.0001, verbose);
         test_wt_wt_table_gaussian_make__table_gaussian_fill(sigma, 0.01, verbose);
         
-        for (int32_t inorm = 0; inorm < 2; inorm++)
+        for (uint32_t inorm = 0;  inorm < 2; inorm++)
           { bool_t norm = (inorm > 0);
 
             test_wt_table_kind_to_string__wt_table_make__wt_table_make_fill(n, wt_table_kind_GAUSSIAN, 0.25*n, norm, verbose);
@@ -135,7 +135,7 @@ void test_wt_table_avg__wt_table_var(uint32_t n, bool_t verbose)
     double wf[n];
     double vLo = 3.14;
     double vHi = 2.18;
-    for (int32_t k = 0; k < n; k++) { wf[k] = (k < nLo ? vLo : vHi); }
+    for (uint32_t k = 0;  k < n; k++) { wf[k] = (k < nLo ? vLo : vHi); }
     double totLo = vLo*nLo;
     double totHi = vHi*nHi; 
     
@@ -173,9 +173,9 @@ void test_wt_table_convolution(uint32_t n, bool_t verbose)
     demand(ns == (n2-1)*stride + n1, "wrong size of {wt_table_convolution}");
     
     double tol = ((n1 <= 40) && (n2 <= 40) ? 0 : 1.0e-12);
-    for (int32_t i = 0; i < ns; i++)
+    for (uint32_t i = 0; i < ns; i++)
       { double sum = 0;
-        for (int32_t k2 = 0; k2 < n2; k2++)
+        for (uint32_t k2 = 0; k2 < n2; k2++)
           { uint32_t k1 = i - k2*stride;
             if ((k1 >= 0) && (k1 < n1)) { sum += wt1.e[k1]*wt2.e[k2]; }
           }
@@ -192,12 +192,12 @@ void test_wt_table_normalize_sum__wt_table_check_normalization(uint32_t n, bool_
     double wf[n];
     double vLo = 3.14;
     double vHi = 2.18;
-    for (int32_t k = 0; k < n; k++) { wf[k] = (k < nLo ? vLo : vHi); }
+    for (uint32_t k = 0;  k < n; k++) { wf[k] = (k < nLo ? vLo : vHi); }
     
     /* Check {wt_table_normalize_sum}: */
     wt_table_normalize_sum(n, wf);
     double sum = 0;
-    for (int32_t k = 0; k < n; k++) { sum += wf[k]; }
+    for (uint32_t k = 0;  k < n; k++) { sum += wf[k]; }
     demand(! isnan(sum), "{wt_table_normalize_sum} created {NAN}");
     double tol = 1.0e-12;
     demand(fabs(sum - 1.0) <= tol, "{wt_table_normalize_sum} failed");
@@ -211,7 +211,7 @@ void test_wt_table_gaussian_entry__wt_table_gaussian_loss(uint32_t n, double sig
     
     /* Compute sum of all entries in table: */
     double win = 0.0;
-    for (int32_t k = 0; k < n; k++) { win += wt_table_gaussian_entry(n, k, sigma); }
+    for (uint32_t k = 0; k < n; k++) { win += wt_table_gaussian_entry(n, k, sigma); }
     /* Compute total mass outside the table: */
     double wot = wt_table_gaussian_loss(n, sigma);
     if (verbose){ fprintf(stderr, "  inside = %20.18f  outside =  %20.18f  sum = %20.18f\n", win, wot, win+wot); }
@@ -232,7 +232,7 @@ void test_wt_wt_table_gaussian_make__table_gaussian_fill(double sigma, double ma
     wt_table_gaussian_fill(n, sigma, wf, &stride);
     if (verbose){ fprintf(stderr, "  stride returned by {wt_table_gaussian_fill} = %d\n", stride); }
     demand(stride == ((sigma == 0) || (n == 1) ? 1 : 0), "fill returned wrong {stride}");
-    for (int32_t k = 0; k < n; k++) { demand(wf[k] == wm.e[k], "fill inconsistent with make"); }
+    for (uint32_t k = 0;  k < n; k++) { demand(wf[k] == wm.e[k], "fill inconsistent with make"); }
     free(wm.e);
   }
      
@@ -263,7 +263,7 @@ void test_wt_table_kind_to_string__wt_table_make__wt_table_make_fill
       { fprintf(stderr, "** {wt_make_%s} returned wrong size = %d\n", tname, wm.ne); 
         assert(FALSE);
       } 
-    for (int32_t k = 0; k < n; k++)
+    for (uint32_t k = 0;  k < n; k++)
       { if (wf[k] != wm.e[k])
           { fprintf(stderr, "** discrepancy between {wt_make_%s} and {wt_fill_%s}\n", tname, tname);
             double err = wf[k] - wm.e[k];
@@ -318,7 +318,7 @@ void test_wt_table_quantize(uint32_t n, bool_t verbose)
     if (verbose){ fprintf(stderr, "--- testing {wt_table_quantize} n = %d ---\n", n); }
     double wf[n];
     int32_t wi[n];
-    for (int32_t pass = 0; pass < 64; pass++)
+    for (uint32_t pass = 0;  pass < 64; pass++)
       { 
         bool_t zero_wf =     ((pass &  1) == 0); /* Normalize input weight sum to 1. */
         bool_t norm_wf =     ((pass &  2) == 0); /* Normalize input weight sum to 1. */
@@ -341,7 +341,7 @@ void test_wt_table_quantize(uint32_t n, bool_t verbose)
         if (verbose){ fprintf(stderr, "  creating the input weight table ...\n"); }
     
         if (zero_wf) 
-          { for (int32_t k = 0; k < n; k++) { wf[k] = 0.0; } }
+          { for (uint32_t k = 0;  k < n; k++) { wf[k] = 0.0; } }
         else if (n > 1) 
           { double sigma = 0.25*n; 
             wt_table_gaussian_fill(n, sigma, wf, NULL);
@@ -351,14 +351,14 @@ void test_wt_table_quantize(uint32_t n, bool_t verbose)
         if (norm_wf) { wt_table_normalize_sum(n, wf); }
         if (flip_wf && (n > 1))
           { /* Flip half of the table: */
-            for (int32_t k = 0; k < n; k++) 
+            for (uint32_t k = 0;  k < n; k++) 
               { double x = n*(((double)k)/((double)n-1) - 0.5);
                 wf[k] *= x;
               }
           }
         if (verbose) 
           { fprintf(stderr, "  input weights:\n");
-            for (int32_t k = 0; k < n; k++) 
+            for (uint32_t k = 0;  k < n; k++) 
               { fprintf(stderr, "   wf[%2u] = %+20.16f\n", k, wf[k]); }
           }
         
@@ -368,7 +368,7 @@ void test_wt_table_quantize(uint32_t n, bool_t verbose)
         if (verbose){ fprintf(stderr, "  returned sum of abs weight = %lu ...\n", wia_sum_res); }
         if (verbose) 
           { fprintf(stderr, "  output weights:\n");
-            for (int32_t k = 0; k < n; k++) 
+            for (uint32_t k = 0;  k < n; k++) 
               { fprintf(stderr, "   wi[%2u] = %+20d\n", k, wi[k]); }
           }
         
@@ -376,7 +376,7 @@ void test_wt_table_quantize(uint32_t n, bool_t verbose)
         double wfa_sum = 0, wfa_min = +INF, wfa_max = 0;
         uint64_t wia_sum_cmp = 0;
         uint32_t wia_max = 0;
-        for (int32_t k = 0; k < n; k++)
+        for (uint32_t k = 0;  k < n; k++)
           { double wfk = wf[k];
             int32_t wik = wi[k];
             if (wfk == 0)
@@ -429,7 +429,7 @@ void test_wt_table_quantize(uint32_t n, bool_t verbose)
             assert(wia_sum_cmp > 0);
             assert(wia_max > 0);
             double scale = ((double)wia_sum_cmp)/wfa_sum; /* Approx scale effectively used. */
-            for (int32_t k = 0; k < n; k++)
+            for (uint32_t k = 0;  k < n; k++)
               { double wfk = wf[k];
                 int32_t wik_cmp = wi[k];
                 int32_t wiak_cmp = abs(wik_cmp);

@@ -1,8 +1,8 @@
 #define PROG_NAME "test_jsmath"
-#define PROG_DESC "test of {jsmath.h}"
+#define PROG_DESC "test of {jsmath.h}, {ball.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-16 17:39:25 by stolfi */ 
+/* Last edited on 2024-11-23 06:21:11 by stolfi */ 
 /* Created on 2007-01-02 by J. Stolfi, UNICAMP */
 
 #define test_jsmath_COPYRIGHT \
@@ -17,6 +17,7 @@
 #include <assert.h>
 
 #include <jsmath.h>
+#include <ball.h>
 #include <jsrandom.h>
 #include <jswsize.h>
 #include <jsfile.h>
@@ -33,32 +34,32 @@
 
 double zrandom(void); /* A random double with random magnitude. */
 
-void test_iroundup(int32_t nt);
+void test_iroundup(uint32_t nt);
 
-void test_gcd(int32_t nt);
+void test_gcd(uint32_t nt);
 
-void test_lcm(int32_t nt);
+void test_lcm(uint32_t nt);
 
-void test_imod(int32_t nt);
+void test_imod(uint32_t nt);
 
 /* !!! should test ifloor, iceil, iroundfrac */
 
-void test_ipow(int32_t nt);
+void test_ipow(uint32_t nt);
 
-void test_upow(int32_t nt);
+void test_upow(uint32_t nt);
 
-void test_comb(int32_t nt);
+void test_comb(uint32_t nt);
 
-void test_64bit_mul(int32_t nt);
+void test_64bit_mul(uint32_t nt);
   /* Tests {uint64_mul} and {int64_mul}. */
   
-void test_minbits(int32_t nt);
+void test_minbits(uint32_t nt);
 
-void test_expand_contract(int32_t nt);
+void test_expand_contract(uint32_t nt);
 
-void test_erf_inv(int32_t nt);
+void test_erf_inv(uint32_t nt);
 
-void test_ball_vol(int32_t nt);
+void test_ball_vol(uint32_t nt);
 
 typedef void range_map_t(double *zP, double zlo, double zhi, double *dzP);
 
@@ -160,7 +161,7 @@ int32_t main (int32_t argn, char **argv)
     return 0;
   }
 
-void test_iroundup(int32_t nt)
+void test_iroundup(uint32_t nt)
   { fprintf(stderr, "Checking {iroundup,addrsync}...\n");
     int32_t i, j;
     for (i = 0; i < N_uint64_nice + nt; i++)
@@ -182,7 +183,7 @@ void test_iroundup(int32_t nt)
   }
 
 
-void test_gcd(int32_t nt)
+void test_gcd(uint32_t nt)
   { fprintf(stderr, "Checking {gcd}...\n");
     int32_t i,j;
     for (i = 0; i < N_uint64_nice + nt; i++)
@@ -202,7 +203,7 @@ void test_gcd(int32_t nt)
       }
   }
 
-void test_lcm(int32_t nt)
+void test_lcm(uint32_t nt)
   { fprintf(stderr, "Checking {lcm}...\n");
     int32_t i,j;
     for (i = 0; i < N_uint64_nice + nt; i++)
@@ -223,7 +224,7 @@ void test_lcm(int32_t nt)
       }
   }
 
-void test_imod(int32_t nt)
+void test_imod(uint32_t nt)
   { fprintf(stderr, "Checking {imod}...\n");
     int32_t i,j;
     for (i = 0; i < N_int64_nice + nt; i++)
@@ -246,7 +247,7 @@ void test_imod(int32_t nt)
       }
   }
 
-void test_ipow(int32_t nt)
+void test_ipow(uint32_t nt)
   { fprintf(stderr, "Checking {ipow}...\n");
     int32_t iy,ix;
     for (iy = 0; iy < N_uint32_nice + nt; iy++)
@@ -293,7 +294,7 @@ void test_ipow(int32_t nt)
       }
   }
   
-void test_upow(int32_t nt)
+void test_upow(uint32_t nt)
   { fprintf(stderr, "Checking {upow}...\n");
     int32_t iy,ix;
     for (iy = 0; iy < N_uint32_nice + nt; iy++)
@@ -332,7 +333,7 @@ void test_upow(int32_t nt)
       }
   }
   
-void test_comb(int32_t nt)
+void test_comb(uint32_t nt)
   { fprintf(stderr, "Checking {comb}...\n");
     int32_t t;
     for (t = 0; t < nt; t++)
@@ -367,12 +368,12 @@ void test_comb(int32_t nt)
       }
   }
  
-void test_minbits(int32_t nt)
+void test_minbits(uint32_t nt)
   { fprintf(stderr, "Checking {minbits}...\n");
     uint64_t x = 0; /* Test arg. */
     uint32_t d = 0; /* Expected {minbits(x)}. */
     uint64_t p = 0; /* {2^d-1}. */
-    for (int32_t k = 0; k < nt; k++)
+    for (uint32_t k = 0;  k < nt; k++)
       { /* Check {minbits(x) == d}: */
         uint32_t m = minbits(x);
         if (m != d)  { fprintf(stderr, "x = %lu  m = %u  d = %u\n", x, m, d); }
@@ -389,7 +390,7 @@ void test_minbits(int32_t nt)
       }
    }        
   
-void test_64bit_mul(int32_t nt)
+void test_64bit_mul(uint32_t nt)
   { fprintf(stderr, "Checking {uint64_mul,int64_mul}...\n");
     bool_t verbose = FALSE;
     int32_t i,j;
@@ -442,7 +443,7 @@ void test_64bit_mul(int32_t nt)
       }
   }
 
-void test_expand_contract(int32_t nt)
+void test_expand_contract(uint32_t nt)
   { 
     fprintf(stderr, "Checking {expand_range,contract_range}...\n");
     int32_t i;
@@ -510,14 +511,14 @@ void test_expand_contract(int32_t nt)
       }
   }
 
-void test_erf_inv(int32_t nt)
+void test_erf_inv(uint32_t nt)
   {
    fprintf(stderr, "Checking {erf_inv}...\n");
    double emax = 0.0; /* Max error {p - erf(erf_inv(p))}. */
    double p1emax = 0.0; /* {p1} for which the erroris maximum. */
    double z1emax = 0.0; /* {z1} for which the erroris maximum. */
    double p2emax = 0.0; /* {p2} for which the erroris maximum. */
-   for (int32_t k = 0; k <= nt; k++)
+   for (uint32_t k = 0;  k <= nt; k++)
      {
        double z0 = 2*((double)k)/((double)nt) - 1.0;
        double p1 = erf(10*z0);
@@ -536,9 +537,9 @@ void test_erf_inv(int32_t nt)
     fprintf(stderr, "  err = %25.16e\n", emax); 
   }
 
-void test_ball_vol(int32_t nt)
+void test_ball_vol(uint32_t nt)
   {
-    for (int32_t d = 0; d <= nt; d++)
+    for (uint32_t d = 0;  d <= nt; d++)
       { bool_t verbose = (d <= 5);
         /* TEST: double ball_vol(int32_t d); */
         /* TEST: double ball_cap_vol_frac_pos(int32_t d, double u); */

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_transform.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2021-06-09 20:57:42 by jstolfi */ 
+/* Last edited on 2024-11-23 05:37:46 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_transform_COPYRIGHT \
@@ -15,7 +15,7 @@
 #include <math.h>
 
 #include <affirm.h>
-#include <ix.h>
+#include <ix_reduce.h>
 #include <jsfile.h>
 #include <bool.h>
 #include <r2x2.h>
@@ -31,7 +31,7 @@ int main(int argn, char **argv);
 
 void do_test
   ( float_image_t *iimg,
-    ix_reduction_t red, 
+    ix_reduce_mode_t red, 
     float_image_test_generator_t *gen_proc,
     char *gen_name,
     float_image_t *oimg,
@@ -105,8 +105,8 @@ int main (int argn, char **argv)
         return (r2_dist(p, &cp) <= 0.5000001);
       }
 
-    ix_reduction_t red1 = ix_reduction_SINGLE; /* !!! Should test other options. !!! */
-    ix_reduction_t redM = ix_reduction_REPEAT; /* !!! Should test other options. !!! */
+    ix_reduce_mode_t red1 = ix_reduce_mode_SINGLE; /* !!! Should test other options. !!! */
+    ix_reduce_mode_t redM = ix_reduce_mode_REPEAT; /* !!! Should test other options. !!! */
 
     int order;
     for (order = 0; order <= 1; order++)
@@ -368,7 +368,7 @@ int main (int argn, char **argv)
 
 void do_test
   ( float_image_t *iimg,
-    ix_reduction_t red, 
+    ix_reduce_mode_t red, 
     float_image_test_generator_t *gen_proc,
     char *gen_name,
     float_image_t *oimg,

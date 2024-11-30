@@ -81,7 +81,7 @@ int main (int argn, char **argv)
     bool_t verbose = TRUE;
     float_image_waves_pick(NF, amp, fx, fy, phase, verbose);
     
-    for(int32_t kf = 0; kf < 12; kf++)
+    for (uint32_t kf = 0;  kf < 12; kf++)
       { wt_create_images_from_wave_range(NF, amp, fx, fy, phase, kf, kf, TRUE); }
     wt_create_images_from_wave_range(NF, amp, fx, fy, phase, 0, 3, TRUE);
     wt_create_images_from_wave_range(NF, amp, fx, fy, phase, 0, 9, TRUE);
@@ -163,10 +163,10 @@ void wt_create_image_from_wave_range_chans_and_size
         fprintf(stderr, "Generating the color image ...\n");
         frgb_t bg = (frgb_t){{ 1.0f, 0.9f, 0.0f }};
         frgb_t fg = (frgb_t){{ 0.0f, 0.1f, 0.8f }};
-        for (int32_t ix = 0; ix < NX; ix++)
-          { for (int32_t iy = 0; iy < NY; iy++)
+        for (uint32_t ix = 0;  ix < NX; ix++)
+          { for (uint32_t iy = 0;  iy < NY; iy++)
               { double r = float_image_get_sample(gimg, 0, ix, iy);
-                for (int32_t ic = 0; ic < NC_color; ic++)
+                for (uint32_t ic = 0;  ic < NC_color; ic++)
                   { float ci = (float)(r*fg.c[ic] + (1-r)*bg.c[ic]);
                     float_image_set_sample(cimg, ic, ix, iy, ci);
                   }
@@ -207,7 +207,7 @@ void wt_write_image(int32_t NX, int32_t NY, int32_t kf0, int32_t kf1, bool_t squ
     
     if (! squashed)
       { /* Adjust range to {[0_1]}: */
-        for (int32_t kc = 0; kc < NC; kc++)
+        for (uint32_t kc = 0;  kc < NC; kc++)
           { float vMin = +INF;
             float vMax = -INF;
             float_image_update_sample_range(img, kc, &vMin, &vMax);

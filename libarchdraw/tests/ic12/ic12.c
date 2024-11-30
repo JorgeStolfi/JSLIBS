@@ -132,8 +132,8 @@ void adrw_ic12_plot_all(adrw_building_t *B, int32_t nx, int32_t ny, bool_t show_
     double xmin = 00 - xmrg, xmax = xwid + xmrg;
     double ymin = 00 - ymrg, ymax = ywid + ymrg;
 
-    for (int32_t ox = 0; ox < nx; ox++)
-      { for (int32_t oy = 0; oy < ny; oy++)
+    for (uint32_t ox = 0;  ox < nx; ox++)
+      { for (uint32_t oy = 0;  oy < ny; oy++)
           {
             fprintf(stderr, "=== PLOTTING PAGE [%d,%d] OF [%d,%d] ===\n", ox,oy,nx,ny);
             epswr_figure_t *epsf = adrw_new_figure
@@ -861,7 +861,7 @@ char **adrw_ic12_get_office_descriptions(void)
     int32_t max_noff = 103;
     int32_t no = max_noff + 1;
     char **descr = (char **)notnull(malloc(no*sizeof(char *)), "no mem");
-    for (int32_t i = 0; i < no; i++) { descr[i] = "Inexistente"; }
+    for (uint32_t i = 0;  i < no; i++) { descr[i] = "Inexistente"; }
     
     descr[  1] = "Escr.Rtorres";
     descr[  2] = "Escr.Helio";

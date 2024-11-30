@@ -34,7 +34,7 @@ void mkgr_mark_grid_paint_image
     if (chns == 0) { return; }
     
     int32_t NM = gr->NM;
-    for (int32_t km = 0; km < NM; km++)
+    for (uint32_t km = 0;  km < NM; km++)
       { mkgr_mark_t *mk = &(gr->mark.e[km]);
         if (mk->rad > 0.0)
           { double rad = mk->rad * scale;
@@ -46,7 +46,7 @@ void mkgr_mark_grid_paint_image
             frgb_t color = mk->color;
             double lwd = mk->lwd * scale;
             double ang = mk->ang;
-            for (int32_t ic = 0; ic < chns; ic++)
+            for (uint32_t ic = 0;  ic < chns; ic++)
               { /* Get the channel index {c} and the respective mark color {val}: */
                 int32_t c = (ch == NULL ? ic : ch[ic]);
                 demand((c >= 0) && (c < NC), "invalid channel index");

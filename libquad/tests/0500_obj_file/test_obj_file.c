@@ -97,7 +97,7 @@ int32_t main(int32_t argc, char **argv)
     fprintf(stderr, "found %6d faces\n", D->FV.ne);
     assert(D->VL.ne == D->V.ne);
     
-    for (int32_t kf = 0; kf < D->FV.ne; kf++)
+    for (uint32_t kf = 0;  kf < D->FV.ne; kf++)
       { int32_vec_t *FVk = &(D->FV.e[kf]);
         int32_vec_t *FTk = &(D->FT.e[kf]);
         int32_vec_t *FNk = &(D->FN.e[kf]);
@@ -105,7 +105,7 @@ int32_t main(int32_t argc, char **argv)
         fprintf(stderr, "  face %6d has %6d corners:", kf, nc);
         assert(FTk->ne == nc);
         assert(FNk->ne == nc);
-        for (int32_t kc = 0; kc < nc; kc++)
+        for (uint32_t kc = 0;  kc < nc; kc++)
           { assert(FVk->e[kc] >= 0);
             fprintf(stderr, " %d", FVk->e[kc] + 1);
             if ((FTk->e[kc] >= 0) || (FNk->e[kc] >= 0))

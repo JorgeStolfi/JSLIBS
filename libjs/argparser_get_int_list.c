@@ -1,5 +1,5 @@
 /* See argparser_get_int_list.h. */
-/* Last edited on 2024-11-22 03:15:34 by stolfi */
+/* Last edited on 2024-11-23 03:18:07 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 /* Based on Params.m3 by J.Stolfi, DEC-SRC, 1988.  */
@@ -48,7 +48,7 @@ void argparser_get_next_int_groups
 
 void argparser_parse_int_group_string
   ( argparser_t *pp, 
-    int32_t index,
+    uint32_t index,
     char *arg, 
     uint32_t n_max, 
     uint32_t *n_P, 
@@ -62,7 +62,7 @@ void argparser_parse_int_group_string
     
 void argparser_parse_int_range_string
   ( argparser_t *pp, 
-    int32_t index,
+    uint32_t index,
     char *arg, 
     uint32_t n_max, 
     uint32_t *n_P, 
@@ -119,7 +119,8 @@ void argparser_get_next_int_groups
             /* Isolate the next integer or range: */
             char c2 = (*pend);
             (*pend) = '\000';
-            argparser_parse_int_range_string(pp, pp->next-1, pbeg, n_max, n_P, num, min, max);
+            assert(pp->next >= 1);
+            argparser_parse_int_range_string(pp, (uint32_t)(pp->next-1), pbeg, n_max, n_P, num, min, max);
             /* Are we done parsing this argument? */
             if (c2 == '\000') { break; }
             /* Get the next int or range: */
@@ -131,7 +132,7 @@ void argparser_get_next_int_groups
   
 void argparser_parse_int_group_string
   ( argparser_t *pp,
-    int32_t index,
+    uint32_t index,
     char *arg, 
     uint32_t n_max, 
     uint32_t *n_P, 
@@ -167,7 +168,7 @@ void argparser_parse_int_group_string
   
 void argparser_parse_int_range_string
   ( argparser_t *pp, 
-    int32_t index,
+    uint32_t index,
     char *arg, 
     uint32_t n_max, 
     uint32_t *n_P, 

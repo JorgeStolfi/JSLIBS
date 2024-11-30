@@ -115,7 +115,7 @@ void jsa_skip_au_file_samples(FILE *rd, au_file_header_t *h, int32_t ns)
   {
     int32_t bps = jsa_au_file_bytes_per_sample(h->encoding); /* Bytes per sample. */
     int32_t bskip = ns * bps; /* Bytes to skip. */
-    for (int32_t i = 0; i < bskip; i++)
+    for (uint32_t i = 0;  i < bskip; i++)
       { int32_t chr = fgetc(rd); assert(chr != EOF); }
   }
 
@@ -131,8 +131,8 @@ void jsa_read_au_file_samples(FILE *rd, au_file_header_t *h, sound_t *s, int32_t
 
     /* Loop on samples and channels: */
     int32_t enc = h->encoding; /* A shorter name for the encoding tag. */
-    for (int32_t i = 0; i < ns; i++) 
-      { for (int32_t ic = 0; ic < nc; ic++)
+    for (uint32_t i = 0;  i < ns; i++) 
+      { for (uint32_t ic = 0;  ic < nc; ic++)
           { double dv;
             switch(enc)
               {
@@ -205,8 +205,8 @@ void jsa_write_au_file_samples(FILE *wr, au_file_header_t *h, sound_t *s, int32_
     assert(skip + ns <= s->ns);
     assert(h->encoding == 6); /* For now. */
     
-    for (int32_t i = 0; i < ns; i++) 
-      { for (int32_t ic = 0; ic < s->nc; ic++)
+    for (uint32_t i = 0;  i < ns; i++) 
+      { for (uint32_t ic = 0;  ic < s->nc; ic++)
           { float fv = (float)(s->sv[ic][skip + i]);
             jsa_write_float_be(wr, &fv);
           }

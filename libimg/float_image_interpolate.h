@@ -2,10 +2,10 @@
 #define float_image_interpolate_H
 
 /* Bilinear (C0) and Bicubic (C1) interpolation of floating-point images. */
-/* Last edited on 2017-06-26 17:06:54 by stolfilocal */ 
+/* Last edited on 2024-11-23 05:40:25 by stolfi */ 
 
 #include <bool.h>
-#include <ix.h>
+#include <ix_reduce.h>
 #include <float_image.h>
 
 /* 
@@ -55,7 +55,7 @@ double float_image_interpolate_sample
     double x, 
     double y, 
     int order, 
-    ix_reduction_t red
+    ix_reduce_mode_t red
   );
   /* Returns the value of channel {c} of image {A} at the point
     {(x,y)}, computed by interpolation from nearby samples. */
@@ -65,7 +65,7 @@ void float_image_interpolate_pixel
     double x, 
     double y, 
     int order, 
-    ix_reduction_t red, 
+    ix_reduce_mode_t red, 
     double z[]
   );
   /* For {c=0..NC-1}, stores into {z[c]} the value of chanel {c} of
@@ -90,7 +90,7 @@ void float_image_interpolate_grid_samples
     double ctrx, int hx, double dx,
     double ctry, int hy, double dy,
     int order, 
-    ix_reduction_t red,
+    ix_reduce_mode_t red,
     double z[]
   );
   /* 
@@ -106,7 +106,7 @@ void float_image_interpolate_grid_pixels
     double ctrx, int hx, double dx,
     double ctry, int hy, double dy,
     int order, 
-    ix_reduction_t red, 
+    ix_reduce_mode_t red, 
     double z[]
   );
   /* 

@@ -168,10 +168,10 @@ void hr2_pmap_from_many_pairs_try_find_frame_pair
       { 
         double wQ_max = -INF;
         int32_t kp_best = -1;
-        for (int32_t kp = 0; kp < np; kp++)
+        for (uint32_t kp = 0;  kp < np; kp++)
           { /* Skip pairs already selected: */
             bool_t chosen = FALSE;
-            for (int32_t ir = 0; ir < nr; ir++) { if (kp == ixr[ir]) { chosen = TRUE; } }
+            for (uint32_t ir = 0;  ir < nr; ir++) { if (kp == ixr[ir]) { chosen = TRUE; } }
             if (! chosen)
               { double wk = (w == NULL ? 1.0 : w[kp]);
                 if (wk != 0) 

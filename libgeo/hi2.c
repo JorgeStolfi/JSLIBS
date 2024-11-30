@@ -212,7 +212,7 @@ sign_t hi2_in_circle(hi2_point_t *a, hi2_point_t *b, hi2_point_t *c, hi2_point_t
 //     }
 //     
 //     /* Make the weights positive, so that {p,q,r} are strictly honored: */
-//     for (int32_t i = 0; i < NH; i++) { w.c[i] = fabs(w.c[i]); }
+//     for (uint32_t i = 0;  i < NH; i++) { w.c[i] = fabs(w.c[i]); }
 // 
 //     /* Ensure that {m.dir} maps the cardinal points to {p,q,r} and some unit point to {u}: */
 //     i3x3_t *P = &(m.dir);

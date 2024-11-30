@@ -1,5 +1,5 @@
 /* See hr2_pmap.h */
-/* Last edited on 2024-11-21 21:33:06 by stolfi */ 
+/* Last edited on 2024-11-24 08:44:21 by stolfi */ 
 
 #include <stdint.h>
 #include <math.h>
@@ -125,7 +125,7 @@ hr2_pmap_t hr2_pmap_rotation(double ang)
 
 hr2_pmap_t hr2_pmap_scaling(r2_t *scale)
   {
-    for (int32_t j = 0; j < 2; j++)
+    for (uint32_t j = 0;  j < 2; j++)
       { demand(scale->c[j] != 0.0, "cannot scale by zero"); }
     
     hr2_pmap_t M;
@@ -199,7 +199,7 @@ hr2_pmap_t hr2_pmap_from_four_points(hr2_point_t *p, hr2_point_t *q, hr2_point_t
     }
     
     /* Make the weights positive, so that {p,q,r} are strictly honored: */
-    for (int32_t i = 0; i < NH; i++) { w.c[i] = fabs(w.c[i]); }
+    for (uint32_t i = 0;  i < NH; i++) { w.c[i] = fabs(w.c[i]); }
 
     /* Ensure that {M.dir} maps the cardinal points to {p,q,r} and some unit point to {u}: */
     r3x3_t *P = &(M.dir);
@@ -220,7 +220,7 @@ hr2_pmap_t hr2_pmap_from_four_r2_points(r2_t *p, r2_t *q, r2_t *r, r2_t *u)
     hr2_point_t hr = hr2_from_r2(r);
     hr2_point_t hu = hr2_from_r2(u);
     hr2_pmap_t M = hr2_pmap_from_four_points(&hp, &hq, &hr, &hu);
-    for (int32_t j = 0; j < NH; j++)
+    for (uint32_t j = 0;  j < NH; j++)
       { M.dir.c[1][j] -= M.dir.c[0][j];  
         M.dir.c[2][j] -= M.dir.c[0][j];
         M.inv.c[j][0] += M.inv.c[j][1] + M.inv.c[j][2];
@@ -280,9 +280,9 @@ hr2_pmap_t hr2_pmap_from_parms
         demand(isfinite(skew) && (skew >= 1.0e-100) && (skew <= 1.0e+100), "invalid {skew}");
         double rsk = sqrt(skew);
         r3x3_t S;
-        for (int32_t i = 1; i < NH; i++)
+        for (uint32_t i = 1;  i < NH; i++)
           { double mag = (i == 1 ? rsk : 1/rsk);
-            for (int32_t j = 1; j < NH; j++)
+            for (uint32_t j = 1;  j < NH; j++)
               { S.c[i][j] = (i == j ? mag : shear); }
           }
         /* Compose it after {A}: */
@@ -291,7 +291,7 @@ hr2_pmap_t hr2_pmap_from_parms
     
     if ((ang != 0) || (scale != 1.0))
       { /* Generate matrix of rotation linear map with given angle and scale: */
-        demand(isfinite(scale) && (scale >= 1.0e-100) && (scale <= 1.0e-100), "invalid {scale}");
+        demand(isfinite(scale) && (scale >= 1.0e-100) && (scale <= 1.0e+100), "invalid {scale}");
         r3x3_t R;
         double c = cos(ang), s = sin(ang);
         hr2_pmap_fill_rot_scale_matrix(&R, c*scale, s*scale);
@@ -315,8 +315,8 @@ hr2_pmap_t hr2_pmap_from_parms
     if (B00 != 1.0)
       { /* Scale matrix homogeneously by {1/B00}: */
         assert(isfinite(B00) && (B00 > 1.0e-200) && (B00 < 2.0e200));
-        for (int32_t i = 0; i < NH; i++)
-          { for (int32_t j = 1; j < NH; j++)
+        for (uint32_t i = 0;  i < NH; i++)
+          { for (uint32_t j = 1;  j < NH; j++)
               { M.inv.c[i][j] /= B00; }
           }
         M.inv.c[0][0] = 1.0;
@@ -328,10 +328,10 @@ void hr2_pmap_throw(hr2_pmap_t *M)
   {
     double det;
     do
-      { for (int32_t i = 0; i < NH; i++)
+      { for (uint32_t i = 0;  i < NH; i++)
           { r3_t a;
             r3_throw_cube(&a);
-            for (int32_t j = 0; j < NH; j++) 
+            for (uint32_t j = 0;  j < NH; j++) 
               { M->dir.c[i][j] = a.c[j]; }
           }
         det = r3x3_det(&(M->dir));
@@ -342,13 +342,13 @@ void hr2_pmap_throw(hr2_pmap_t *M)
 
 double hr2_pmap_diff_sqr(hr2_pmap_t *M, hr2_pmap_t *N)
   { double sum_d2 = 0;
-    for (int32_t sense = 0; sense < 2; sense++)
+    for (uint32_t sense = 0;  sense < 2; sense++)
       { r3x3_t *A = (sense == 0 ? &(M->dir) : &(M->inv));
         double Am = r3x3_norm(A) + 1.0e-200;
         r3x3_t *B = (sense == 0 ? &(N->dir) : &(N->inv));
         double Bm = r3x3_norm(B) + 1.0e-200;
-        for (int32_t i = 0; i < NH; i++)
-          { for (int32_t j = 0; j < NH; j++)
+        for (uint32_t i = 0;  i < NH; i++)
+          { for (uint32_t j = 0;  j < NH; j++)
              { double Aij = A->c[i][j]/Am;
                double Bij = B->c[i][j]/Bm;
                double dij = Aij - Bij;
@@ -363,7 +363,7 @@ double hr2_pmap_mismatch_sqr(hr2_pmap_t *M, uint32_t np, r2_t p1[], r2_t p2[], d
   {
     double sum_wD2 = 0.0;
     double sum_w = 1.0e-200; /* In case there are no points with positive weight. */
-    for (int32_t k = 0; k < np; k++)
+    for (uint32_t k = 0;  k < np; k++)
       { r2_t *p1k = &(p1[k]);
         r2_t *p2k = &(p2[k]);
         double wk = (w == NULL ? 1.0 : w[k]);
@@ -382,7 +382,7 @@ double hr2_pmap_max_mismatch(hr2_pmap_t *M, uint32_t np, r2_t p1[], r2_t p2[])
   {
     /* Compute max distance between paired points mapped  by the initial guess: */
     double maxDist = 0.0;
-    for (int32_t kp = 0; kp < np; kp++)
+    for (uint32_t kp = 0;  kp < np; kp++)
       { r2_t *p1k = &(p1[kp]);
         r2_t *p2k = &(p2[kp]);
         r2_t q1 = hr2_pmap_r2_point(p1k, M);
@@ -397,7 +397,7 @@ double hr2_pmap_max_mismatch(hr2_pmap_t *M, uint32_t np, r2_t p1[], r2_t p2[])
 
 void hr2_pmap_show_point_mismatch(hr2_pmap_t *M, uint32_t np, r2_t p1[], r2_t p2[], double w[])
   { 
-    for (int32_t k = 0; k < np; k++)
+    for (uint32_t k = 0;  k < np; k++)
       { r2_t *p1k = &(p1[k]);
         r2_t *p2k = &(p2[k]);
         r2_t q1k = hr2_pmap_r2_point(p1k, M);
@@ -420,14 +420,14 @@ double hr2_pmap_deform_sqr(r2_t ph[], hr2_pmap_t *M)
   {
     uint32_t nk = (1 << NC); /* Number of corners of the quadrilateral. */
     r2_t qh[nk];
-    for (int32_t k = 0; k < nk; k++)
+    for (uint32_t k = 0;  k < nk; k++)
       { qh[k] = hr2_pmap_r2_point(&(ph[k]), M); }
     
     uint32_t nd = 4 + 2; /* Number of distances to probe. */
     double logr[nd];
     uint32_t kd = 0;
-    for (int32_t ik = 1; ik < nk; ik++)
-      { for (int32_t jk = 0; jk < ik; jk++)
+    for (uint32_t ik = 1;  ik < nk; ik++)
+      { for (uint32_t jk = 0;  jk < ik; jk++)
           { double dp2 = r2_dist_sqr(&(ph[ik]), &(ph[jk]));
             double dq2 = r2_dist_sqr(&(qh[ik]), &(qh[jk]));
             assert(kd < nd);
@@ -439,10 +439,10 @@ double hr2_pmap_deform_sqr(r2_t ph[], hr2_pmap_t *M)
     
     /* Compute the variance of the logs: */
     double sum = 0;
-    for (int32_t kd = 0; kd < nd; kd++) { sum += logr[kd]; }
+    for (uint32_t kd = 0;  kd < nd; kd++) { sum += logr[kd]; }
     double avg = sum/nd;
     double sum2 = 0;
-    for (int32_t kd = 0; kd < nd; kd++) { double dk = logr[kd] - avg; sum2 += dk*dk; }
+    for (uint32_t kd = 0;  kd < nd; kd++) { double dk = logr[kd] - avg; sum2 += dk*dk; }
     double var = sum2/(nd-1);
     return var;
   }
@@ -456,7 +456,7 @@ bool_t hr2_pmap_is_valid(hr2_pmap_t *M, double tol)
     r3x3_t A[2]; /* Matrices of {M}, eventually normalized. */
     double det[2]; /* Their determinants. */
     char *which[2] = { "dir", "inv" };
-    for (int32_t dir = 0; dir <= 1; dir++)
+    for (uint32_t dir = 0;  dir <= 1; dir++)
       { A[dir] = (dir == 0 ? M->dir : M->inv);
         double enorm = r3x3_norm(&(A[dir]))/3; /* RMS elem value of {A[dir]}. */
         if ((! isfinite(enorm)) || (enorm < 1.0e-100)) 
@@ -479,7 +479,7 @@ bool_t hr2_pmap_is_valid(hr2_pmap_t *M, double tol)
           {~2*eps}. Thus if {det(A)} is on the order of
           {2*tol}, there is a significant chance that {A} is 
           a singular matrix with each element perturbed by {~tol}. */
-        for (int32_t dir = 0; dir <= 1; dir++)
+        for (uint32_t dir = 0;  dir <= 1; dir++)
           { det[dir] = r3x3_det(&(A[dir]));
             if ((! isfinite(det[dir])) || (fabs(det[dir]) < 6*tol)) 
               { if (debug)
@@ -498,8 +498,8 @@ bool_t hr2_pmap_is_valid(hr2_pmap_t *M, double tol)
         r3x3_t P; r3x3_adj(&(A[0]), &P); 
         double pnorm = r3x3_norm(&P)/3; /* RMS value of P elements. */
         assert(isfinite(pnorm) && (pnorm >= 1.0e-200));
-        for (int32_t i = 0; (i < NH) && ok; i++)
-          { for (int32_t j = 0; (j < NH) && ok; j++)
+        for (uint32_t i = 0;  (i < NH) && ok; i++)
+          { for (uint32_t j = 0;  (j < NH) && ok; j++)
              { double Pij = P.c[i][j]/pnorm * (det[0] < 0 ? -1 : +1);
                double Bij = A[1].c[i][j];
                if ((! isfinite(Pij)) || (fabs(Pij-Bij) > 10*tol))
@@ -572,12 +572,12 @@ void hr2_pmap_gen_print
     if (rsuff == NULL) { rsuff = "\n"; }
     
     if (pref != NULL) { fputs(pref, wr); }
-    for (int32_t i = 0; i < NH; i++)
+    for (uint32_t i = 0;  i < NH; i++)
       { fputs(rpref, wr);
-        for (int32_t k = 0; k < 2; k++)
+        for (uint32_t k = 0;  k < 2; k++)
           { if (k != 0) { fputs(rsep, wr); }
             fputs(elp, wr);
-            for (int32_t j = 0; j < NH; j++)
+            for (uint32_t j = 0;  j < NH; j++)
               { if (j != 0) { fputs(esep, wr); }
                 fprintf(wr, fmt, (k == 0 ? M->dir : M->inv).c[i][j]);
               }
@@ -634,7 +634,7 @@ char *hr2_pmap_type_to_string(hr2_pmap_type_t type)
 void hr2_pmap_invert_sign(hr2_pmap_t *M)
   {
     r3x3_t *Md = &(M->dir), *Mi = &(M->inv);
-    for (int32_t j = 0; j < NH; j++)
+    for (uint32_t j = 0;  j < NH; j++)
       { double td = Md->c[1][j]; Md->c[1][j] = Md->c[2][j]; Md->c[2][j] = td;
         double ti = Mi->c[j][1]; Mi->c[j][1] = Mi->c[j][2]; Mi->c[j][2] = ti;
       }
@@ -653,7 +653,7 @@ bool_t hr2_pmap_is_identity(hr2_pmap_t *M, double tol)
     if (debug) { fprintf(stderr, "      > --- %s ---\n", __FUNCTION__); }
 
     bool_t ok = TRUE;
-    for (int32_t dir = 0; (dir <= 1) && ok; dir++)
+    for (uint32_t dir = 0;  (dir <= 1) && ok; dir++)
       { r3x3_t *A = (dir == 0 ? &(M->dir) : &(M->inv));
         bool_t Aok = TRUE;
         double A00 = A->c[0][0];
@@ -683,7 +683,7 @@ bool_t hr2_pmap_is_identity(hr2_pmap_t *M, double tol)
             NULL,NULL,NULL,
             "\n"
           );
-        fprintf(stderr, "      map is%s the identity\n", (ok ? "" : " NOT")); 
+        fprintf(stderr, "        result: map is%s the identity\n", (ok ? "" : " NOT")); 
       }
     if (debug) { fprintf(stderr, "      < --- %s ---\n", __FUNCTION__); }
     return ok;
@@ -703,12 +703,12 @@ bool_t hr2_pmap_is_translation(hr2_pmap_t *M, double tol)
         the {3x3} matrix of a translation {hr2_pmap_t},
         within the specified tolerance. */
     
-    for (int32_t dir = 0; (dir <= 1) && ok; dir++)
+    for (uint32_t dir = 0;  (dir <= 1) && ok; dir++)
       { r3x3_t *A = (dir == 0 ? &(M->dir) : &(M->inv));
         if (debug) { fprintf(stderr, "          checking {M.%s}\n", (dir == 0 ? "dir" : "inv")); }
         ok = check_matrix(A);
       }
-    if (debug) { fprintf(stderr, "        map is%s a translation\n", (ok ? "" : " NOT")); }
+    if (debug) { fprintf(stderr, "        result: map is%s a translation\n", (ok ? "" : " NOT")); }
     if (debug) { fprintf(stderr, "      < --- %s ---\n", __FUNCTION__); }
     return ok;
 
@@ -718,8 +718,8 @@ bool_t hr2_pmap_is_translation(hr2_pmap_t *M, double tol)
         double Atol = A00*tol;
         if (debug) { fprintf(stderr, "        Atol = %24.26e\n", Atol); }
 
-        for (int32_t i = 1; i < NH; i++)
-          { for (int32_t j = 1; j < NH; j++)
+        for (uint32_t i = 1;  i < NH; i++)
+          { for (uint32_t j = 1;  j < NH; j++)
               { double Aij = A->c[i][j];
                 double Eij = (i == j ? A00 : 0.0);
                 if (fabs(Aij - Eij) > Atol) 
@@ -761,7 +761,7 @@ bool_t hr2_pmap_is_similarity(hr2_pmap_t *M, double scale, double tol)
         tolerance. If {sc} is not {NAN}, requires the scaling factor to
         be {sc}. */
     
-    for (int32_t dir = 0; (dir <= 1) && ok; dir++)
+    for (uint32_t dir = 0;  (dir <= 1) && ok; dir++)
       { if (debug) { fprintf(stderr, "          checking {M.%s}\n", (dir == 0 ? "dir" : "inv")); }
         r3x3_t *A = (dir == 0 ? &(M->dir) : &(M->inv));
         double sc = (isnan(scale) ? NAN : (dir == 0 ? scale : 1.0/scale));
@@ -770,7 +770,7 @@ bool_t hr2_pmap_is_similarity(hr2_pmap_t *M, double scale, double tol)
       }
 
     if (debug) 
-      { fprintf(stderr, "        map is%s a similarity", (ok ? "" : " NOT"));
+      { fprintf(stderr, "        result: map is%s a similarity", (ok ? "" : " NOT"));
         if (! isnan(scale)) { fprintf(stderr, " with scale %24.16e", scale); }
         fprintf(stderr, "\n");
       }
@@ -818,7 +818,7 @@ bool_t hr2_pmap_is_similarity(hr2_pmap_t *M, double scale, double tol)
 
 bool_t hr2_pmap_is_affine(hr2_pmap_t *M, double tol)
   {
-    bool_t debug = FALSE; /* Prints diagnostics anyway. */
+    bool_t debug = TRUE; /* Prints diagnostics anyway. */
     if (debug) { fprintf(stderr, "      > --- %s ---\n", __FUNCTION__); }
     if (debug) { fprintf(stderr, "        tol = %24.16e\n", tol); }
     
@@ -833,26 +833,28 @@ bool_t hr2_pmap_is_affine(hr2_pmap_t *M, double tol)
         {3x3} matrix of an affine {hr2_pmap_t} of definitely nonzero 
         determinant with sign {sgn}, within the specified tolerance. */
 
-    for (int32_t dir = 0; (dir <= 1) && ok; dir++)
-      { if (debug) { fprintf(stderr, "          checking {M.%s}\n", (dir == 0 ? "dir" : "inv")); }
+    for (uint32_t dir = 0;  (dir <= 1) && ok; dir++)
+      { if (debug) { fprintf(stderr, "          checking {A = M.%s}\n", (dir == 0 ? "dir" : "inv")); }
         r3x3_t *A = (dir == 0 ? &(M->dir) : &(M->inv));
         ok = check_matrix(A);
+        if (debug) { fprintf(stderr, "          %s.\n", (ok ? "passed" : "failed")); }
+        if (debug) { fprintf(stderr, "\n"); }
       }
-    if (debug) { fprintf(stderr, "        map is%s affine\n", (ok ? "" : " NOT")); }
+    if (debug) { fprintf(stderr, "        result: map is%s affine\n", (ok ? "" : " NOT")); }
     if (debug) { fprintf(stderr, "      < --- %s ---\n", __FUNCTION__); }
     return ok;
 
     bool_t check_matrix(r3x3_t *A)
       { double A00 = A->c[0][0];
         double Atol = A00*tol;
-        if (debug) { fprintf(stderr, "          A00 = %24.16e  Atol = %24.16e\n", A00, Atol); }
+        if (debug) { fprintf(stderr, "          A00 =    %24.16e        Atol = A00 * tol = %24.16e\n", A00, Atol); }
         /* A00 must be definitely positive: */
         if (A00 < 1.0e-200) { return FALSE; }
         
         /* Other column 0 elements should be essentially zero: */
-        for (int32_t i = 1; i < NH; i++)
-          { double Ai0 = A->c[i][0];
-            if (debug) { fprintf(stderr, "          A%d0 = %24.16e = Atol * %24.16e\n", i, Ai0, Ai0/Atol); }
+        for (uint32_t i = 1;  i < NH; i++)
+          { double Ai0 = A->c[i][0]/A00;
+            if (debug) { fprintf(stderr, "          A%d0 =    %24.16e * A00 = %24.16e * Atol\n", i, Ai0, Ai0/tol); }
             if (fabs(Ai0) > Atol) { return FALSE; }
           }
           
@@ -869,8 +871,13 @@ bool_t hr2_pmap_is_affine(hr2_pmap_t *M, double tol)
         double A12 = A->c[1][2]/A00;
         double A21 = A->c[2][1]/A00;
         double A22 = A->c[2][2]/A00;
-        if (debug) { fprintf(stderr, "          A11 = %24.16e  A12 = %24.16e\n", A11, A12); }
-        if (debug) { fprintf(stderr, "          A21 = %24.16e  A22 = %24.16e\n", A21, A22); }
+        if (debug) 
+          { fprintf(stderr, "          A[1,1] = %24.16e * A00\n", A11); 
+            fprintf(stderr, "          A[1,2] = %24.16e * A00\n", A12); 
+            fprintf(stderr, "          A[2,1] = %24.16e * A00\n", A21);
+            fprintf(stderr, "          A[2,2] = %24.16e * A00\n", A22);
+          }
+        if (debug) { }
         if (! (isfinite(A11) && isfinite(A12) && isfinite(A21) && isfinite(A22))) { return FALSE; }
         
         /* Compute the RMS elem value of the {2×2} linear submatrix: */
@@ -878,7 +885,7 @@ bool_t hr2_pmap_is_affine(hr2_pmap_t *M, double tol)
         
         /* Compute the determinant of the {2×2} linear submatrix (which is that of the map): */ 
         double det = A11*A22 - A12*A21;
-        if (debug) { fprintf(stderr, "          det = %24.16e = An  *tol * %24.16e\n", det, det/An/tol); }
+        if (debug) { fprintf(stderr, "          det = %24.16e = %24.16e * An * tol\n", det, det/An/tol); }
 
         if (det < 2*An*tol) { return FALSE; }
         return TRUE;

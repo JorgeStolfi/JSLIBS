@@ -310,10 +310,10 @@ void plot_spillover
   )
   { /* Choose two orthogonal deformation modes {ua,ub} with mags {ra,rb}: */
     double va[ns], ua[ns];
-    for (int32_t i = 0; i < ns; i++) { va[i] = 0.05; }
+    for (uint32_t i = 0;  i < ns; i++) { va[i] = 0.05; }
     double ra = rn_dir(ns, va, ua);
     double vb[ns], ub[ns];
-    for (int32_t i = 0; i < ns; i++) { vb[i] = i*0.05/ns; }
+    for (uint32_t i = 0;  i < ns; i++) { vb[i] = i*0.05/ns; }
     double dba = rn_dot(ns, vb, ua);
     rn_mix_in(ns, -dba, ua, vb);
     double rb = rn_dir(ns, vb, ub);

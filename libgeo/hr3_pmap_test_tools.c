@@ -23,16 +23,16 @@
 void hr3_test_throw_pmap(hr3_pmap_t *M)
   {
     r4_t a;
-    for (int32_t i = 0; i < NH; i++)
+    for (uint32_t i = 0;  i < NH; i++)
       { r4_throw_cube(&a);
-        for (int32_t j = 0; j < NH; j++) { M->dir.c[i][j] = a.c[j]; }
+        for (uint32_t j = 0;  j < NH; j++) { M->dir.c[i][j] = a.c[j]; }
       }
     r4x4_inv(&(M->dir), &(M->inv));
   }
 
 void hr3_test_throw_aff_map(hr3_pmap_t *M)
   {
-    for (int32_t i = 0; i < NH; i++)
+    for (uint32_t i = 0;  i < NH; i++)
       { r3_t p;
         r3_throw_cube(&p);
         M->dir.c[i][0] = (i == 0 ? 1.0 : 0.0);

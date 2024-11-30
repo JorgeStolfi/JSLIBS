@@ -52,8 +52,8 @@ int32_t main (int32_t argc, char **argv)
     srand(1993);
     srandom(1933);
 
-    for (int32_t i = 0; i < 100; i++) test_hr3_pmap(i < 3);
-    for (int32_t i = 0; i < 100; i++) test_hr3_pmap_aff(i < 3);
+    for (uint32_t i = 0;  i < 100; i++) test_hr3_pmap(i < 3);
+    for (uint32_t i = 0;  i < 100; i++) test_hr3_pmap_aff(i < 3);
     fclose(stderr);
     fclose(stdout);
     return (0);
@@ -121,7 +121,7 @@ void test_hr3_pmap_from_five_points(bool_t verbose)
     hr3_point_t s = (hr3_point_t){{{ 0.0, 0.0, 0.0, 1.0 }}};
     hr3_point_t u;
 
-    for (int32_t kt = 0; kt < 2*(1<<NH); kt++)
+    for (uint32_t kt = 0;  kt < 2*(1<<NH); kt++)
       { hr3_point_t pM_exp, qM_exp, rM_exp, sM_exp, uM_exp;
         u = (hr3_point_t){{{ 1.0, 1.0, 1.0 }}};
         if (kt < (1 << NH))
@@ -144,7 +144,7 @@ void test_hr3_pmap_from_five_points(bool_t verbose)
         if (kt >= (1 << NH))
           { /* Choose {u = [±1,±1,±1]} based on inverse map of {uM_exp}: */
             u = hr3_pmap_inv_point(&uM_exp, &M);
-            for (int32_t i = 0; i < NH; i++)
+            for (uint32_t i = 0;  i < NH; i++)
               { if (fabs(u.c.c[i]) < 1.0e-8)
                   { u.c.c[i] = 0.0; }
                 else if (fabs(fabs(u.c.c[i]) - 1) < 1.0e-8)
@@ -202,7 +202,7 @@ void test_hr3_pmap_inv(bool_t verbose)
     if (verbose) { fprintf(stderr, "--- hr3_pmap_inv ---\n"); }
     hr3_pmap_t M;  hr3_test_throw_aff_map(&M);
     hr3_pmap_t N = hr3_pmap_inv(&M);
-    for (int32_t k = 0; k < 5; k++)
+    for (uint32_t k = 0;  k < 5; k++)
       { hr3_point_t p = hr3_point_throw();
         hr3_point_t q = hr3_pmap_point(&p, &M);
         hr3_test_check_pmap_point("q", &q, FALSE, &N, FALSE, &p, "hr3_pmap_inv failed");
@@ -215,7 +215,7 @@ void test_hr3_pmap_compose(bool_t verbose)
     hr3_pmap_t M;  hr3_test_throw_aff_map(&M);
     hr3_pmap_t N;  hr3_test_throw_aff_map(&N);
     hr3_pmap_t P = hr3_pmap_compose(&M, &N);
-    for (int32_t k = 0; k < 5; k++)
+    for (uint32_t k = 0;  k < 5; k++)
       { hr3_point_t p = hr3_point_throw();
         hr3_point_t q = hr3_pmap_point(&p, &M);
         hr3_point_t r = hr3_pmap_point(&q, &N);
@@ -230,7 +230,7 @@ void test_hr3_pmap_inv_comp(bool_t verbose)
     hr3_pmap_t Minv = hr3_pmap_inv(&M);
     hr3_pmap_t N;  hr3_test_throw_aff_map(&N);
     hr3_pmap_t P = hr3_pmap_inv_compose(&M, &N);
-    for (int32_t k = 0; k < 5; k++)
+    for (uint32_t k = 0;  k < 5; k++)
       { hr3_point_t p = hr3_point_throw();
         hr3_point_t q = hr3_pmap_point(&p, &Minv);
         hr3_point_t r = hr3_pmap_point(&q, &N);
@@ -243,7 +243,7 @@ void test_hr3_pmap_translation(bool_t verbose)
     if (verbose) { fprintf(stderr, "--- hr3_pmap_translation ---\n"); }
     r3_t r; r3_throw_cube(&r);
     hr3_pmap_t M = hr3_pmap_translation(&r);
-    for (int32_t k = 0; k < 5; k++)
+    for (uint32_t k = 0;  k < 5; k++)
       { r3_t p; r3_throw_cube(&p);
         r3_t q; r3_add(&r, &p, &q);
         hr3_test_check_pmap_r3_point("p", &p, &M, FALSE, &q, "hr3_pmap_translation failed");
@@ -258,13 +258,13 @@ void test_hr3_pmap_u_v_rotation(bool_t verbose)
     hr3_pmap_t M = hr3_pmap_u_v_rotation(&u, &v);
     
     /* Check that it is a rotation: */
-    for (int32_t d = 0; d < 2; d++)
+    for (uint32_t d = 0;  d < 2; d++)
       { r4x4_t *Q = (d == 0 ? &(M.dir) : &(M.inv));
         affirm(Q->c[0][0] > 0, "hr3_pmap_u_v_rotation failed - not affine (1)");
-        for (int32_t i = 1; i < NH; i++)
+        for (uint32_t i = 1;  i < NH; i++)
           { affirm(Q->c[i][0] == 0, "hr3_pmap_u_v_rotation failed - not affine (2)");
             affirm(Q->c[0][i] == 0, "hr3_pmap_u_v_rotation failed - not linear");
-            for (int32_t k = 1; k <= i; k++)
+            for (uint32_t k = 1;  k <= i; k++)
               { double dot = Q->c[i][0]*Q->c[k][0] + Q->c[i][1]*Q->c[k][1] + Q->c[i][2]*Q->c[k][2];
                 affirm(fabs(dot - (i == k ? 1 : 0)) > 1.0e-11, "hr3_pmap_u_v_rotation failed - not orthonormal");
               }
@@ -283,18 +283,18 @@ void test_hr3_pmap_aff_from_mat_and_disp(bool_t verbose)
     
     r3_t disp; r3_throw_cube(&disp);
     r3x3_t mat;
-    for (int32_t i = 0; i < 2; i++)
+    for (uint32_t i = 0;  i < 2; i++)
       { r3_t s; r3_throw_cube(&s);
         mat.c[i][0] = s.c[0];
         mat.c[i][1] = s.c[1];
       }
     hr3_pmap_t A = hr3_pmap_aff_from_mat_and_disp(&mat, &disp);
-    for (int32_t k = 0; k < 5; k++)
+    for (uint32_t k = 0;  k < 5; k++)
       { /* Should take the origin to {disp}* */
         r3_t o = (r3_t){{ 0.0, 0.0 }};
         hr3_test_check_pmap_r3_point("o", &o, &A, FALSE, &disp, "hr3_pmap_aff_from_mat_disp failed");
         /* Test with a few other points: */
-        for (int32_t kp = 0; kp < 3; kp++)
+        for (uint32_t kp = 0;  kp < 3; kp++)
           { r3_t p; r3_throw_cube(&p);
             r3_t q; r3x3_map_row(&p, &mat, &q);
             r3_add(&disp, &q, &q);

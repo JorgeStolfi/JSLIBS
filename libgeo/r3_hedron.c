@@ -1,5 +1,5 @@
 /* See r3_hedron.h */
-/* Last edited on 2024-11-22 03:58:26 by stolfi */
+/* Last edited on 2024-11-23 18:21:12 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -24,10 +24,10 @@ void r3_hedron_icosa_vertices_generic(double B, double C, uint32_t n, r3_t r[]);
 void r3_hedron_cylinder(double H, double R, uint32_t m, uint32_t n, double skew, r3_t r[])
   { demand((n >= 0) && (m >= 0), "invalid parameters");
     uint32_t k = 0;
-    for (int32_t i = 0; i < m; i++)
+    for (uint32_t i = 0;  i < m; i++)
       { double hi = (m == 1 ? 0.0 : H*(2*((double)i)/(m-1) - 1));
         double fi = (m == 1 ? 0.0 : skew*(((double)i)/(m-1) - 0.5));
-        for (int32_t j = 0; j < n; j++) 
+        for (uint32_t j = 0;  j < n; j++) 
           { double t = 2*M_PI*(j + fi)/n;
             r[k] = (r3_t){{ R*cos(t), R*sin(t), hi }};
             k++;
@@ -48,7 +48,7 @@ void r3_hedron_tetra_vertices(double R, uint32_t n, r3_t r[])
 void r3_hedron_octa_vertices(double R, uint32_t n, r3_t r[])
   { demand(n == 6, "bad num vertices"); 
     uint32_t k = 0;
-    for (int32_t i = 0; i < N; i++) 
+    for (uint32_t i = 0;  i < N; i++) 
       { r[k] = (r3_t){{ 0,0,0 }}; r[k].c[i] = +R; k++;
         r[k] = (r3_t){{ 0,0,0 }}; r[k].c[i] = -R; k++;
       }

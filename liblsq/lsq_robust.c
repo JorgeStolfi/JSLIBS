@@ -72,7 +72,7 @@ void lsq_robust_fit
         double dev_bad = NAN;  /* Deviation of outliers. */
 
         rn_all(nt, 0.5, Pc); /* A priori, inliers and outliers are equally likely: */
-        for (int32_t iter = 1; iter <= maxiter; iter++)
+        for (uint32_t iter = 1;  iter <= maxiter; iter++)
           {
             if (debug) { fprintf(stderr, "    iteration %d\n", iter); }
 
@@ -83,7 +83,7 @@ void lsq_robust_fit
             rn_sub(nt, F, Fa, Fc);
             if (debug)
               { fprintf(stderr, "      %3s   %24s  %24s %24s  %24s %24s\n", "it", "F", "Fa", "Fc", "W", "Pc");
-                for (int32_t it = 0; it < nt; it++)
+                for (uint32_t it = 0;  it < nt; it++)
                   { fprintf(stderr, "      %3d  %24.16e  %24.16e %24.16e  %24.16e %24.16e\n", it, F[it], Fa[it], Fc[it], W[it], Pc[it]); }
                 fprintf(stderr, "\n");
               }
@@ -97,7 +97,7 @@ void lsq_robust_fit
             assert(fabs(pri_bad + pri_gud - 1.0) < 0.0001);
 
             /* Recompute inlier/outlier probabilities {Pc[0..nt-1]} and adjusted data {Fc[0..nt-1]}: */
-            for (int32_t k = 0; k < nt; k++)
+            for (uint32_t k = 0;  k < nt; k++)
               { /* Decide the probability {Pc[k]} of each data point {X[k,*},F[k,*]} being an inlier: */
                 /* Grab the function sample {Fk} and current approximation {Fak}: */
                 double Fk = F[k];
@@ -142,7 +142,7 @@ void lsq_robust_compute_stats
     double sum_wpy = 0;
     double sum_wp = 0;
     double sum_w = 0;
-    for (int32_t k = 0; k < nt; k++)
+    for (uint32_t k = 0;  k < nt; k++)
       { double Yk = Y[k];
         double Wk = (W == NULL ? 1.0 : W[k]);
         double Pk = (P == NULL ? 0.5 : (inlier ? P[k] : 1.0 - P[k]));
@@ -159,7 +159,7 @@ void lsq_robust_compute_stats
 
     /* Compute the variance and deviation: */
     double sum_wpd2 = 0;
-    for (int32_t k = 0; k < nt; k++)
+    for (uint32_t k = 0;  k < nt; k++)
       { double Dk = Y[k] - (inlier ? 0.0 : avg);
         double Wk = (W == NULL ? 1.0 : W[k]);
         double Pk = (P == NULL ? 0.5 : (inlier ? P[k] : 1.0 - P[k]));

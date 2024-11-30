@@ -20,10 +20,10 @@ sound_t jsa_allocate_sound(int32_t nc, int32_t ns)
     s.ns = ns;
     s.sv = malloc(nc*sizeof(float *));
     assert(s.sv != NULL);
-    for (int32_t ic = 0; ic < nc; ic++)
+    for (uint32_t ic = 0;  ic < nc; ic++)
       { s.sv[ic] = malloc(ns*sizeof(double));
         assert(s.sv[ic] != NULL);
-        for (int32_t i = 0; i < ns; i++) { s.sv[ic][i] = 0.0; }
+        for (uint32_t i = 0;  i < ns; i++) { s.sv[ic][i] = 0.0; }
       }
     return s;
   }
@@ -35,8 +35,8 @@ sound_t jsa_copy_sound(sound_t *s, int32_t ini, int32_t ns)
     r.fsmp = s->fsmp;
     r.nc = s->nc;
     r.ns = ns;
-    for (int32_t ic = 0; ic < s->nc; ic++)
-      { for (int32_t i = 0; i < ns; i++) 
+    for (uint32_t ic = 0;  ic < s->nc; ic++)
+      { for (uint32_t i = 0;  i < ns; i++) 
          { r.sv[ic][i] = s->sv[ic][i + ini]; }
       }
     return r;
@@ -44,8 +44,8 @@ sound_t jsa_copy_sound(sound_t *s, int32_t ini, int32_t ns)
 
 void jsa_add_sound(sound_t *s, int32_t sskip, sound_t *r, int32_t rskip, int32_t ns)
   { int32_t nc = (s->nc < r->nc ? s->nc : r->nc); 
-    for (int32_t ic = 0; ic < nc; ic++)
-      { for (int32_t i = 0; i < ns; i++) 
+    for (uint32_t ic = 0;  ic < nc; ic++)
+      { for (uint32_t i = 0;  i < ns; i++) 
           { int32_t si = i + sskip;
             int32_t ri = i + rskip;
             if ((si >= 0) && (si < s->ns) && (ri >= 0) && (ri < r->ns))
@@ -56,7 +56,7 @@ void jsa_add_sound(sound_t *s, int32_t sskip, sound_t *r, int32_t rskip, int32_t
 
 void jsa_free_sound(sound_t *s)
   { if (s->sv != NULL) 
-      { for (int32_t ic = 0; ic < s->nc; ic++)
+      { for (uint32_t ic = 0;  ic < s->nc; ic++)
           { if (s->sv[ic] != NULL) { free(s->sv[ic]); s->sv[ic] = NULL; } }
         free(s->sv); s->sv = NULL; 
       }

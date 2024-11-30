@@ -200,7 +200,7 @@ double tpg_eval_train(double x, int32_t np, bool_t serial, double avg[], double 
 
 double tpg_eval_train_simple(double x, int32_t np, double avg[], double dev[], double mag[])
   { double F = 0;
-    for (int32_t ip = 0; ip < np; ip++)
+    for (uint32_t ip = 0;  ip < np; ip++)
       { double G = tpg_eval_hump(x, avg[ip], dev[ip], mag[ip]);
         F += G;
       }
@@ -238,7 +238,7 @@ double tpg_train_badness(int32_t np, bool_t serial, double avg[], double dev[], 
     double Wv[nx+1];
     
     double sum_WF = 0, sum_W = 0;
-    for (int32_t ix = 0; ix <= nx; ix++)
+    for (uint32_t ix = 0;  ix <= nx; ix++)
       { xv[ix] = ((double)ix)/nx;
         Fv[ix] = tpg_eval_train(xv[ix], np, serial, avg, dev, mag);
         Wv[ix] = tpg_weight(xv[ix], np);
@@ -250,7 +250,7 @@ double tpg_train_badness(int32_t np, bool_t serial, double avg[], double dev[], 
       
     /* Compute weighted average square curvature {msc_F} of {F[ix_min..ix_max]}: */
     double sum_WK2 = 0;
-    for (int32_t ix = 1; ix < nx; ix++)
+    for (uint32_t ix = 1;  ix < nx; ix++)
       { double W = Wv[ix];
         double K = ((Fv[ix+1] - Fv[ix]) - (Fv[ix] - Fv[ix-1]))/(step*step);
         double WK2 = W*K*K;
@@ -358,7 +358,7 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
         if (nok > 0)
           { double d = rn_dist(n, vprev, v);
             fprintf(stderr, "  sve_goal = %16.12f displacement = %16.10f ( ", Fv, d);
-            for (int32_t iv = 0; iv < nv; iv++) { fprintf(stderr, " %16.10f", v[iv] - vprev[iv]); }
+            for (uint32_t iv = 0;  iv < nv; iv++) { fprintf(stderr, " %16.10f", v[iv] - vprev[iv]); }
             fprintf(stderr, " )");
           }
         fprintf(stderr, "\n");
@@ -375,9 +375,9 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
 
 void tpg_initialize(int32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym)
   {
-    for (int32_t ia = 0; ia < np; ia++) { avg[ia] = ((double)ia)/(np-1); }
-    for (int32_t id = 0; id < np; id++) { dev[id] = 0.5/(np-1); }
-    for (int32_t im = 0; im < np; im++) { mag[im] = 1.0 ; }
+    for (uint32_t ia = 0;  ia < np; ia++) { avg[ia] = ((double)ia)/(np-1); }
+    for (uint32_t id = 0;  id < np; id++) { dev[id] = 0.5/(np-1); }
+    for (uint32_t im = 0;  im < np; im++) { mag[im] = 1.0 ; }
   }
 
 void tpg_num_variables(int32_t np, tpg_sym_t *sym, int32_t *nv_avg_P, int32_t *nv_dev_P, int32_t *nv_mag_P)
@@ -404,7 +404,7 @@ void tpg_pack(int32_t np, bool_t serial, double avg[], double dev[], double mag[
     double mag_MIN = (sym->fixmag ? 1.0 : tpg_mag_MIN);
     double mag_MAX = (sym->fixmag ? 1.0 : tpg_mag_MAX);
     
-    for (int32_t ip = 0; ip < np; ip++)  
+    for (uint32_t ip = 0;  ip < np; ip++)  
       { assert((dev_MIN - 1.0e-6 <= dev[ip]) && (dev[ip] <= dev_MAX + 1.0e-6));
         assert((mag_MIN - 1.0e-6 <= mag[ip]) && (mag[ip] <= mag_MAX + 1.0e-6));
       }
@@ -413,7 +413,7 @@ void tpg_pack(int32_t np, bool_t serial, double avg[], double dev[], double mag[
     if (sym->fixavg)
       { /* Means should be fixed and equally spaced: */
         assert(nv_avg == 0);
-        for (int32_t ia = 0; ia < np; ia++)
+        for (uint32_t ia = 0;  ia < np; ia++)
           { assert(fabs(avg[ia] - ((double)ia)/(np-1)) < 1.0e-12); }
      }
     else
@@ -421,45 +421,45 @@ void tpg_pack(int32_t np, bool_t serial, double avg[], double dev[], double mag[
         assert(nv_avg == np/2 - 1);
         assert(avg[0] == 0.0);
         assert(avg[np-1] == 1.0);
-        for (int32_t ia = 1; ia <= nv_avg; ia++)
+        for (uint32_t ia = 1;  ia <= nv_avg; ia++)
           { assert(fabs(avg[ia] + avg[np-1-ia] - 1) < 1.0e-12); }
      }
 
     if (sym->samedev)
       { /* All deviations should be equal: */ 
         assert(nv_dev == 1);
-        for (int32_t id = 1; id < np; id++) { assert(dev[id] == dev[0]); }
+        for (uint32_t id = 1;  id < np; id++) { assert(dev[id] == dev[0]); }
       }
     else
       { /* Deviations should be symmetrical, otherwise independent. */
         assert(nv_dev == (np+1)/2);
-        for (int32_t id = 0; id < nv_dev; id++) { assert(dev[id] == dev[np-1-id]); }
+        for (uint32_t id = 0;  id < nv_dev; id++) { assert(dev[id] == dev[np-1-id]); }
       }
 
     if (sym->fixmag)
       { /* All magnitudes should be 1: */ 
         assert(nv_mag == 0);
-        for (int32_t im = 0; im < np; im++) { assert(mag[im] == 1.0); }
+        for (uint32_t im = 0;  im < np; im++) { assert(mag[im] == 1.0); }
       }
     else
       { /* Magnitudes should be symmetrical, else independent except {mag[0],mag[np-1]}. */
         assert(nv_mag == (np-1)/2);
         assert(mag[0] == 1.0);
         assert(mag[np-1] == 1.0);
-        for (int32_t im = 1; im <= nv_mag ; im++) { assert(mag[im] == mag[np-1-im]); } 
+        for (uint32_t im = 1;  im <= nv_mag ; im++) { assert(mag[im] == mag[np-1-im]); } 
       }
 
     /* Copy the independent variables: */
     int32_t iv = 0;  /* Counts optimization variables. */
     double amid = 0.5*(avg_d_MIN + avg_d_MAX);
     double arad = 0.5*(avg_d_MAX - avg_d_MIN);
-    for (int32_t ia = 1; ia <= nv_avg; ia++) { assert(iv < nv); v[iv] = (avg[ia] - ia*s - amid)/arad; iv++; }
+    for (uint32_t ia = 1;  ia <= nv_avg; ia++) { assert(iv < nv); v[iv] = (avg[ia] - ia*s - amid)/arad; iv++; }
     double dmid = 0.5*(dev_MIN + dev_MAX);
     double drad = 0.5*(dev_MAX - dev_MIN);
-    for (int32_t id = 0; id < nv_dev; id++) { assert(iv < nv); v[iv] = (dev[id] - dmid)/drad; iv++; }
+    for (uint32_t id = 0;  id < nv_dev; id++) { assert(iv < nv); v[iv] = (dev[id] - dmid)/drad; iv++; }
     double mmid = 0.5*(tpg_mag_MIN + tpg_mag_MAX);
     double mrad = 0.5*(tpg_mag_MAX - tpg_mag_MIN);
-    for (int32_t im = 1; im <= nv_mag; im++) { assert(iv < nv); v[iv] = (mag[im] - mmid)/mrad; iv++; }
+    for (uint32_t im = 1;  im <= nv_mag; im++) { assert(iv < nv); v[iv] = (mag[im] - mmid)/mrad; iv++; }
     assert(iv == nv);
   }
 
@@ -471,7 +471,7 @@ void tpg_unpack(int32_t nv, double v[], int32_t np, bool_t serial, double avg[],
     tpg_num_variables(np, sym, &nv_avg, &nv_dev, &nv_mag);
     assert(nv == nv_avg + nv_dev + nv_mag);
 
-    if (debug) { for (int32_t iv = 0; iv < nv; iv++) { fprintf(stderr, "    v[%3d] = %16.12f\n", iv, v[iv]); } }
+    if (debug) { for (uint32_t iv = 0;  iv < nv; iv++) { fprintf(stderr, "    v[%3d] = %16.12f\n", iv, v[iv]); } }
 
     double s = 1.0/(np-1);
 
@@ -489,19 +489,19 @@ void tpg_unpack(int32_t nv, double v[], int32_t np, bool_t serial, double avg[],
     int32_t iv = 0;  /* Counts optimization variables. */
     double amid = 0.5*(avg_d_MIN + avg_d_MAX);
     double arad = 0.5*(avg_d_MAX - avg_d_MIN);
-    for (int32_t ia = 1; ia <= nv_avg; ia++) { assert(iv < nv); avg[ia] = ia*s + v[iv]*arad + amid; iv++; }
+    for (uint32_t ia = 1;  ia <= nv_avg; ia++) { assert(iv < nv); avg[ia] = ia*s + v[iv]*arad + amid; iv++; }
     double dmid = 0.5*(dev_MIN + dev_MAX);
     double drad = 0.5*(dev_MAX - dev_MIN);
-    for (int32_t id = 0; id <  nv_dev; id++) { assert(iv < nv); dev[id] = v[iv]*drad + dmid; iv++; }
+    for (uint32_t id = 0;  id <  nv_dev; id++) { assert(iv < nv); dev[id] = v[iv]*drad + dmid; iv++; }
     double mmid = 0.5*(mag_MIN + mag_MAX);
     double mrad = 0.5*(mag_MAX - mag_MIN);
-    for (int32_t im = 1; im <= nv_mag; im++) { assert(iv < nv); mag[im] = v[iv]*mrad + mmid; iv++; }
+    for (uint32_t im = 1;  im <= nv_mag; im++) { assert(iv < nv); mag[im] = v[iv]*mrad + mmid; iv++; }
     assert(iv == nv);
  
     if (sym->fixavg)
       { /* Means should be fixed and equally spaced. */
         assert(nv_avg == 0);
-        for (int32_t ia = 0; ia < np; ia++) { avg[ia] = ((double)ia)/(np-1); }
+        for (uint32_t ia = 0;  ia < np; ia++) { avg[ia] = ((double)ia)/(np-1); }
       }
     else
       { /* Means should be symmetrical about {0.5}, otherwise independent except {avg[0],avg[np-1]}. */
@@ -509,34 +509,34 @@ void tpg_unpack(int32_t nv, double v[], int32_t np, bool_t serial, double avg[],
         avg[0] = 0.0;
         avg[np-1] = 1.0;
         if ((np%2) == 1) { avg[np/2] = 0.5; }
-        for (int32_t ia = 1; ia <= nv_avg; ia++) { avg[np-1-ia] = 1.0 - avg[ia]; }
+        for (uint32_t ia = 1;  ia <= nv_avg; ia++) { avg[np-1-ia] = 1.0 - avg[ia]; }
       }
 
     if (sym->samedev)
       { /* All deviations should be equal. */
         assert(nv_dev == 1);
-        for (int32_t id = 1; id < np; id++) { dev[id] = dev[0]; }
+        for (uint32_t id = 1;  id < np; id++) { dev[id] = dev[0]; }
       }
     else
       { /* Deviations should be symmetrical, otherwise independent: */
         assert(nv_dev == (np+1)/2);
-        for (int32_t id = 0; id < nv_dev; id++) { dev[np-1-id] = dev[id]; }
+        for (uint32_t id = 0;  id < nv_dev; id++) { dev[np-1-id] = dev[id]; }
       }
 
     if (sym->fixmag) 
       { /* All magnitudes should be 1: */
         assert(nv_mag == 0);
-        for (int32_t im = 0; im < np; im++) { mag[im] = 1.0; }
+        for (uint32_t im = 0;  im < np; im++) { mag[im] = 1.0; }
       }
     else
       { /* Magnitudes should be symmetrical, else independent except {mag[0]}. */
         assert(nv_mag == (np-1)/2);
         mag[0] = 1.0;
         mag[np-1] = 1.0;
-        for (int32_t im = 1; im <= nv_mag; im++) { mag[np-1-im] = mag[im]; } 
+        for (uint32_t im = 1;  im <= nv_mag; im++) { mag[np-1-im] = mag[im]; } 
       }
     
-    for (int32_t ip = 0; ip < np; ip++)  
+    for (uint32_t ip = 0;  ip < np; ip++)  
       { if (debug) { fprintf(stderr, "  ip = %3d dev = %16.12f\n", ip, dev[ip]); }
         assert((dev_MIN - 1.0e-6 <= dev[ip]) && (dev[ip] <= dev_MAX + 1.0e-6));
         assert((mag_MIN - 1.0e-6 <= mag[ip]) && (mag[ip] <= mag_MAX + 1.0e-6));
@@ -546,7 +546,7 @@ void tpg_unpack(int32_t nv, double v[], int32_t np, bool_t serial, double avg[],
 void tpg_print_parms(char *tag, int32_t np, bool_t serial, double avg[], double dev[], double mag[])
   { fprintf(stderr, "  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n");
     fprintf(stderr, "  (%s) %d parameters, {serial} = %c\n", tag, np, "FT"[serial]);
-    for (int32_t ip = 0; ip < np; ip++)
+    for (uint32_t ip = 0;  ip < np; ip++)
       { fprintf(stderr,  "    %2d %16.12f %16.12f %16.12f\n", ip, avg[ip], dev[ip], mag[ip]); }
     double bad = tpg_train_badness(np, serial, avg, dev, mag, TRUE);
     fprintf(stderr, "  badness = %18.15f\n", bad);
@@ -556,7 +556,7 @@ void tpg_print_parms(char *tag, int32_t np, bool_t serial, double avg[], double 
 void tpg_print_packed_parms(char *tag, int32_t nv, double v[])
   { fprintf(stderr, "  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n");
     fprintf(stderr, "  (%s) %d packed parameters parameters\n", tag, nv);
-    for (int32_t iv = 0; iv < nv; iv++)
+    for (uint32_t iv = 0;  iv < nv; iv++)
       { fprintf(stderr,  "    %2d %16.12f\n", iv, v[iv]); }
      fprintf(stderr, "  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n");
   }
@@ -570,7 +570,7 @@ void tpg_write_plot(char *tag, int32_t iter, int32_t np, bool_t serial, double a
     double xv[nx+1];
     double Fv[nx+1];
     double F_max = -INF;
-    for (int32_t ix = 0; ix <= nx; ix++)
+    for (uint32_t ix = 0;  ix <= nx; ix++)
       { double r = ((double)ix)/nx;
         xv[ix] = (1-r)*x_min + r*x_max;
         Fv[ix] = tpg_eval_train(xv[ix], np, serial, avg, dev, mag);
@@ -595,9 +595,9 @@ void tpg_write_plot(char *tag, int32_t iter, int32_t np, bool_t serial, double a
     
     /* Write train and component values: */
     double scale = 1/F_max;
-    for (int32_t ix = 0; ix <= nx; ix++)
+    for (uint32_t ix = 0;  ix <= nx; ix++)
       { fprintf(wr, "%3d %16.12f %16.12f", ix, xv[ix], scale*Fv[ix]);
-        for (int32_t ip = 0; ip < np; ip++)
+        for (uint32_t ip = 0;  ip < np; ip++)
           { double g = tpg_eval_hump(xv[ix], avg[ip], dev[ip], mag[ip]);
             fprintf(wr, " %16.12f", scale*g);
           }
@@ -624,15 +624,15 @@ void tpg_test_pack_unpack(int32_t np)
                     int32_t nv = nv_avg + nv_dev + nv_mag; /* Number of optimization variables. */
                     fprintf(stderr, " %d indep variables avg = %d dev = %d mag = %d\n", nv, nv_avg, nv_dev, nv_mag);
                     double v0[nv], v1[nv];
-                    for (int32_t iv = 0; iv < nv; iv++) { v0[iv] = v1[iv] = dabrandom(-1.0, +1.0); }
+                    for (uint32_t iv = 0;  iv < nv; iv++) { v0[iv] = v1[iv] = dabrandom(-1.0, +1.0); }
                     tpg_unpack(nv, v0, np, serial, avg0, dev0, mag0, &sym);
                     tpg_pack(np, serial, avg0, dev0, mag0, &sym, nv, v1);
-                    for (int32_t iv = 0; iv < nv; iv++) 
+                    for (uint32_t iv = 0;  iv < nv; iv++) 
                       { demand(fabs(v0[iv] - v1[iv]) < 1.0e-12, "pack/unpack failed"); }
-                    for (int32_t ip = 0; ip < np; ip++)
+                    for (uint32_t ip = 0;  ip < np; ip++)
                       { avg1[ip] = drandom(); dev1[ip] = drandom(); mag1[ip] = drandom(); }
                     tpg_unpack(nv, v1, np, serial, avg1, dev1, mag1, &sym);
-                    for (int32_t ip = 0; ip < np; ip++)
+                    for (uint32_t ip = 0;  ip < np; ip++)
                       { assert(fabs(avg0[ip] - avg1[ip]) < 1.0e-12);
                         assert(fabs(dev0[ip] - dev1[ip]) < 1.0e-12);
                         assert(fabs(mag0[ip] - mag1[ip]) < 1.0e-12);

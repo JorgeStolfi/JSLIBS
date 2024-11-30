@@ -167,9 +167,9 @@ void test_int64(FILE *rd, FILE *wr, int32_t phase, int64_t v)
 
 void test_double(FILE *rd, FILE *wr, int32_t phase, double v, double prec)
   {
-    for (int32_t sgn = 0; sgn <= 1; sgn++)
-      { for (int32_t fudge_0 = 0; fudge_0 <= 1; fudge_0++)
-          { for (int32_t fudge_1 = 0; fudge_1 <= 1; fudge_1++)
+    for (uint32_t sgn = 0;  sgn <= 1; sgn++)
+      { for (uint32_t fudge_0 = 0;  fudge_0 <= 1; fudge_0++)
+          { for (uint32_t fudge_1 = 0;  fudge_1 <= 1; fudge_1++)
               { test_double_case(rd, wr, phase, v, prec, (sgn != 0), (fudge_0 != 0), (fudge_1 != 0)); }
           }
       }

@@ -97,11 +97,11 @@ void tpca_do_one_test(int32_t trial, bool_t verbose)
     if (verbose) { fprintf(stderr, "generating the data array {D} and weight vector {w}...\n"); }
     double *D = rmxn_alloc(nd,nv);
     double *w = rn_alloc(nd);
-    for (int32_t id = 0; id < nd; id++)
+    for (uint32_t id = 0;  id < nd; id++)
       { double *Di = &(D[id*nv]);
         rn_copy(nv, d_exp, Di);
         /* Mix into {Di} all vectors of {E_exp}, even those to be discarded later: */
-        for (int32_t ke = 0; ke < nv; ke++)
+        for (uint32_t ke = 0;  ke < nv; ke++)
           { double *Ek = &(E_exp[ke*nv]);
             double rk = dgaussrand()*e_exp[ke];
             rn_mix_in(nv, rk, Ek, Di);
@@ -164,7 +164,7 @@ void tpca_throw_components(int32_t nv, double E[], double maxMag, double e[])
   { rmxn_throw_ortho(nv, E);
     double mag = maxMag;
     double att = (nv == 1 ? 1.0 : exp(log(0.1)/(nv-1)));
-    for (int32_t ke = 0; ke < nv; ke++) 
+    for (uint32_t ke = 0;  ke < nv; ke++) 
       { e[ke] = mag;
         mag = att*mag;
       }

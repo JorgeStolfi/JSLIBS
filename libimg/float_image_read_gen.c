@@ -110,7 +110,7 @@ float_image_t *float_image_read_gen_file
             /* Revise the next line if {uint16_image_read_jpeg_named} is expanded to support other kinds. */
             assert((space == JCS_GRAYSCALE) || (space == JCS_RGB));
             /* Use the client-given gamma for decoding: */
-            for (int32_t c = 0; c < pimg->chns; c++) { maxval_file[c] = 255; }
+            for (uint32_t c = 0;  c < pimg->chns; c++) { maxval_file[c] = 255; }
             gammaEnc_file = NAN;
             bias_file = NAN;
           }
@@ -126,7 +126,7 @@ float_image_t *float_image_read_gen_file
         case image_file_format_PNM:
           { pimg = uint16_image_read_pnm_file(rd);
             /* Parameters that approximate the standard PNM ITU-R BT.709 decoding: */
-            for (int32_t c = 0; c < pimg->chns; c++) { maxval_file[c] = pimg->maxval; }
+            for (uint32_t c = 0;  c < pimg->chns; c++) { maxval_file[c] = pimg->maxval; }
             gammaEnc_file = sample_conv_BT709_ENC_GAMMA; 
             bias_file = sample_conv_BT709_BIAS;
           }

@@ -186,15 +186,15 @@ void FBas_Fit
       }
     /* Solve system: */   
     if (FBas_Debug) { FBas_PrintSystem(ne, nc, A, nb); }
-    gsel_triangularize(ne, nc, A, TRUE, 0.0);
-    gsel_diagonalize(ne, nc, A);
-    gsel_normalize(ne, nc, A);
+    gauss_elim_triangularize(ne, nc, A, TRUE, 0.0);
+    gauss_elim_diagonalize(ne, nc, A);
+    gauss_elim_normalize(ne, nc, A);
     if (FBas_Debug) { FBas_PrintSystem(ne, nc, A, nb); }
 
     /* Extract solution: */
     int32_t nx = nc - dv;
     double X[nx*dv];
-    int32_t rank_ext = gsel_extract_solution(ne, nc, A, dv, X);
+    int32_t rank_ext = gauss_elim_extract_solution(ne, nc, A, dv, X);
     assert(rank_ext <= ne);
     free(A);
 

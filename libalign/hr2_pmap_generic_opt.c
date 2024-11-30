@@ -159,8 +159,8 @@ void hr2_pmap_generic_opt_quadratic
 void hr2_pmap_generic_opt_map_to_vars(hr2_pmap_t *M, int32_t ny, double y[])
   { assert(ny == 9);
     int32_t ky = 0;
-    for (int32_t i= 0; i < 3; i++)
-      { for (int32_t j = 0; j < 3; j++)
+    for (uint32_t i = 0;  i < 3; i++)
+      { for (uint32_t j = 0;  j < 3; j++)
           { y[ky] = M->dir.c[i][j]; ky++; }
       }
     assert(ky == ny);
@@ -170,8 +170,8 @@ void hr2_pmap_generic_opt_map_to_vars(hr2_pmap_t *M, int32_t ny, double y[])
 void hr2_pmap_generic_opt_vars_to_mat(int32_t ny, double y[], sign_t sgn, hr2_pmap_t *M)
   { assert(ny == 9);
     int32_t ky = 0;
-    for (int32_t i= 0; i < 3; i++)
-      { for (int32_t j = 0; j < 3; j++)
+    for (uint32_t i = 0;  i < 3; i++)
+      { for (uint32_t j = 0;  j < 3; j++)
           { M->dir.c[i][j] = y[ky]; ky++; }
       }
     assert(ky == ny);
@@ -209,7 +209,7 @@ void hr2_pmap_generic_opt_1D_plot
     /* Choose the plot directions and make them orthogonal to {z}: */
     double U[nu*nz]; /* The rows are the directions. */
     rmxn_throw_directions(nu, nz, U);
-    for (int32_t ku = 0; ku < nu; ku++)
+    for (uint32_t ku = 0;  ku < nu; ku++)
       { double *uk = &(U[ku*nz]);
         /* Project {uk} perpendicular to {z}: */
         while (fabs(rn_dot(nz, uk, z)) > 0.90)
@@ -225,7 +225,7 @@ void hr2_pmap_generic_opt_1D_plot
     char *fname = jsprintf("%s-%s-%s-1D-plot.txt", outPrefix, tag, stage);
     FILE *wr = open_write(fname, TRUE);
     double step = urad/ns;
-    for (int32_t ku = 0; ku < nu; ku++)
+    for (uint32_t ku = 0;  ku < nu; ku++)
       { double *uk = &(U[ku*nz]);
         minn_plot_1D_gnuplot(wr, nz, z, uk, urad, step, sve_goal);
       }

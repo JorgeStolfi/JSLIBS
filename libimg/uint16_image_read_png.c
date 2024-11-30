@@ -243,7 +243,7 @@ uint16_image_t *uint16_image_read_png_file(FILE *rd, double *gammaP, uint32_t im
 
     /* Allocate buffer for the PNG image data: */
     png_bytep *png_dataP = notnull(malloc(rows*sizeof(png_bytep)), "no mem");
-    for (int32_t row = 0; row < rows; row++)
+    for (uint32_t row = 0;  row < rows; row++)
       { png_dataP[row] = notnull(malloc(bytes_per_png_row), "no mem"); }
 
     /* Read the image samples: */
@@ -253,13 +253,13 @@ uint16_image_t *uint16_image_read_png_file(FILE *rd, double *gammaP, uint32_t im
 
     /* Read and convert the pixels, row by row: */
     assert((png_smp_bits == 8) || (png_smp_bits == 16));
-    for (int32_t row = 0; row < rows; row++)
+    for (uint32_t row = 0;  row < rows; row++)
       { 
         /* Process one row of the image: */
         png_bytep png_P = png_dataP[row];
         uint16_t *img_P = img->smp[row];
-        for (int32_t col = 0; col < cols; col++)
-          { for (int32_t chn = 0; chn < chns; chn++)
+        for (uint32_t col = 0;  col < cols; col++)
+          { for (uint32_t chn = 0;  chn < chns; chn++)
               {
                 /* Get sample {smp} from PNG row buffer: */
                 uint32_t smp = (*png_P); png_P++;
@@ -294,7 +294,7 @@ uint16_image_t *uint16_image_read_png_file(FILE *rd, double *gammaP, uint32_t im
     /* Read any post-image chunks: */
     png_read_end(pr, pe);
 
-    for (int32_t row = 0; row < rows; row++) { free(png_dataP[row]); }
+    for (uint32_t row = 0;  row < rows; row++) { free(png_dataP[row]); }
     free(png_dataP);
     png_destroy_read_struct(&pr, &pi, &pe);
     /* png_free_data(pr, pi, PNG_FREE_ALL, -1); */

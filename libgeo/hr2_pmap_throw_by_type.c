@@ -32,7 +32,7 @@ hr2_pmap_t hr2_pmap_throw_by_type(hr2_pmap_type_t type, sign_t sgn)
       { uint32_t ny = hr2_pmap_encode_num_parameters(type);
         assert (ny <= 9);
         double y[ny];
-        for (int32_t ky = 0; ky < ny; ky++) { y[ky] = 10*(drandom() - 0.5); }
+        for (uint32_t ky = 0;  ky < ny; ky++) { y[ky] = 10*(drandom() - 0.5); }
 
         hr2_pmap_decode(ny, y, type, sgn, &M);
         if (debug)

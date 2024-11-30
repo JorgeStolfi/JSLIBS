@@ -35,8 +35,8 @@ int32_t main (int32_t argn, char **argv)
     int32_t rmax  = 3;
 
     for (ppv_dim_t d = 0; d <= dmax; d++)
-      { for (int32_t radius = 1; radius < rmax; radius++)
-          { for (int32_t i = 0; i < 3; i++)
+      { for (uint32_t radius = 1;  radius < rmax; radius++)
+          { for (uint32_t i = 0;  i < 3; i++)
               { int32_t stride;
                 if (i == 0)
                   { stride = 1; }
@@ -100,7 +100,7 @@ void pbt_do_test(ppv_dim_t d, int32_t radius, int32_t stride)
     else if ((G->d == 3) && (bpsG <= 16))
       { /* Write {G} as a stack of greyscale images: */
         int32_t nc = (int32_t)G->size[2]; /* Number of slices. */
-        for (int32_t ic = 0; ic < nc; ic++)
+        for (uint32_t ic = 0;  ic < nc; ic++)
           { ppv_array_t *F = ppv_slice(G, 2, ic);
             uint16_image_t *J = ppv_image_from_array(F);
             char *fname = jsprintf("%s_%05d.png", fpref, ic);

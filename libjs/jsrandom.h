@@ -2,7 +2,7 @@
 #define jsrandom_H
 
 /* Alternative random generator functions */
-/* Last edited on 2024-11-15 19:14:32 by stolfi */
+/* Last edited on 2024-11-26 22:26:10 by stolfi */
 
 #include <stdint.h>
 #include <stdlib.h> 
@@ -77,5 +77,11 @@ uint64_t *uint64_choose(uint64_t n, size_t k, uint64_t *perm);
     The current implementation takes time proportional to {k^2} in the
     worst and average case. */
 
+uint32_t *random_perm(uint32_t n, uint32_t *perm);
+  /* If {perm} is not null, it must be the address of an array with at
+    least {n} elements. If {perm} is null, the procedure allocate an
+    array of {n} elements from the heap.  Either way, procedure will
+    store the integers {0..n-1} into that array, in a random order,
+    and return its address. */
 
 #endif

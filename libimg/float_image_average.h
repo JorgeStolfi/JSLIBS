@@ -2,10 +2,10 @@
 #define float_image_average_H
 
 /* Averaging float images inside extended regions. */
-/* Last edited on 2017-06-26 16:51:48 by stolfilocal */ 
+/* Last edited on 2024-11-23 05:55:28 by stolfi */ 
 
 #include <bool.h>
-#include <ix.h>
+#include <ix_reduce.h>
 #include <r2.h>
 #include <r2x2.h>
 #include <r3x3.h>
@@ -14,7 +14,7 @@
    
 void float_image_average_parallelogram
   ( float_image_t *img, 
-    ix_reduction_t red,
+    ix_reduce_mode_t red,
     r2_t *p, 
     r2x2_t *J,
     bool_t avg,
@@ -51,7 +51,7 @@ void float_image_average_parallelogram
  
 void float_image_average_persp_rectangle
   ( float_image_t *img, /* Image to sample. */
-    ix_reduction_t red, /* Index reduction method. */ 
+    ix_reduce_mode_t red, /* Index reduction method. */ 
     interval_t tbox[],  /* Rectangle in true coordinates. */
     r3x3_t *T2I,        /* Projective map from true coords to image coords. */
     double mrg,         /* Safety border width (pixels). */
@@ -73,7 +73,7 @@ void float_image_average_persp_rectangle
 
 void float_image_average_persp_disk
   ( float_image_t *img, /* Input image. */
-    ix_reduction_t red, /* Index reduction method. */ 
+    ix_reduce_mode_t red, /* Index reduction method. */ 
     r2_t *ctr,          /* Disk center in true coordinates. */
     double rad,         /* Disk radius in true coordinates. */
     r3x3_t *T2I,        /* True-to-image projective map matrix. */

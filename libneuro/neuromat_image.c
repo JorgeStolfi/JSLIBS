@@ -46,8 +46,8 @@ void neuromat_image_colorize_field
     
     demand(vmax > 0, "invalid {vmax}");
 
-    for (int32_t iy = 0; iy < NY; iy++)
-      { for (int32_t ix = 0; ix < NX; ix++)
+    for (uint32_t iy = 0;  iy < NY; iy++)
+      { for (uint32_t ix = 0;  ix < NX; ix++)
           { /* Get mask and image value: */
             double fxy = (double)float_image_get_sample(fld, 0, ix, iy); 
             float mxy = (msk == NULL ? 1.000f : float_image_get_sample(msk, 0, ix, iy)); 
@@ -63,7 +63,7 @@ void neuromat_image_colorize_field
                 if (z > +1) { z = +1; }
                 frgb_t rgb = frgb_path_map_signed(z, 1, style);
                 /* Set pixel to {rgb} with opacity {mxy}: */
-                float ccolor[NC];  for (int32_t c = 0; c < NC; c++) { ccolor[c] = (c < 3 ? rgb.c[c] : mxy); }
+                float ccolor[NC];  for (uint32_t c = 0;  c < NC; c++) { ccolor[c] = (c < 3 ? rgb.c[c] : mxy); }
                 /* Save colorized pixel: */
                 float_image_set_pixel(cim, ix, iy, ccolor);
               }
@@ -88,10 +88,10 @@ void neuromat_image_colorize_signed_overlay
     demand(ovr->sz[2] == NY, "overlay with wrong {NY}");
 
     /* Add opacity to {fc}: */
-    float color[NC]; for (int32_t c = 0; c < NC; c++) { color[c] = (c < 3 ? fc.c[c] : 1.000f); }
+    float color[NC]; for (uint32_t c = 0;  c < NC; c++) { color[c] = (c < 3 ? fc.c[c] : 1.000f); }
     
-    for (int32_t iy = 0; iy < NY; iy++)
-      { for (int32_t ix = 0; ix < NX; ix++)
+    for (uint32_t iy = 0;  iy < NY; iy++)
+      { for (uint32_t ix = 0;  ix < NX; ix++)
           { /* Get overlay value {oxy}: */
             float oxy = float_image_get_sample(ovr, 0, ix, iy); 
             if (isnan(oxy) || (oxy*((float)sgn) <= 0))
@@ -128,7 +128,7 @@ void neuromat_image_paint_time_track
     int32_t ymin = y - hw;
     int32_t ymax = y + hw - 1;
     /* Add opacity to {fc}: */
-    float color[NC]; for (int32_t c = 0; c < NC; c++) { color[c] = (c < 3 ? fc.c[c] : 1.000f); }
+    float color[NC]; for (uint32_t c = 0;  c < NC; c++) { color[c] = (c < 3 ? fc.c[c] : 1.000f); }
     float_image_fill_rectangle_pixels(img, xmin, xmax, ymin, ymax, color);
   }
 
@@ -179,7 +179,7 @@ void neuromat_image_paint_time_range
     int32_t NC = (int32_t)img->sz[0];
     demand(NC == 4, "result image should be RGBA");
     /* Provide opacity channel 3 for {fc} if needed: */
-    float vfill[NC]; for (int32_t c = 0; c < NC; c++) { vfill[c] = (c < 3 ? fc.c[c] : 1.000f); }
+    float vfill[NC]; for (uint32_t c = 0;  c < NC; c++) { vfill[c] = (c < 3 ? fc.c[c] : 1.000f); }
     
     demand(thi - tlo >= 1.0e-10, "global interval {tlo_thi} too small");
 
@@ -210,7 +210,7 @@ void neuromat_image_paint_tic
     int32_t NC = (int32_t)img->sz[0];
     demand(NC == 4, "result image should be RGBA");
     /* Provide opacity channel 3 for {fc} if needed: */
-    float vfill[NC]; for (int32_t c = 0; c < NC; c++) { vfill[c] = (c < 3 ? fc.c[c] : 1.000f); }
+    float vfill[NC]; for (uint32_t c = 0;  c < NC; c++) { vfill[c] = (c < 3 ? fc.c[c] : 1.000f); }
     
     demand(thi - tlo >= 1.0e-10, "global interval {tlo_thi} too small");
 
@@ -242,7 +242,7 @@ void neuromat_image_paint_slider
     int32_t NC = (int32_t)img->sz[0];
     demand(NC == 4, "result image should be RGBA");
     /* Provide opacity channel 3 for {fc} if needed: */
-    float vfill[NC]; for (int32_t c = 0; c < NC; c++) { vfill[c] = (c < 3 ? fc.c[c] : 1.000f); }
+    float vfill[NC]; for (uint32_t c = 0;  c < NC; c++) { vfill[c] = (c < 3 ? fc.c[c] : 1.000f); }
     
     demand(thi - tlo >= 1.0e-10, "global interval {tlo_thi} too small");
 

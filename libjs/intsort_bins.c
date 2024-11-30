@@ -1,5 +1,5 @@
 /* See intsort.h */
-/* Last edited on 2024-11-22 02:20:16 by stolfi */
+/* Last edited on 2024-11-23 06:07:31 by stolfi */
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -16,7 +16,7 @@
 void isrt_binssort(int32_t *h, uint32_t n, int32_t cmp(int32_t x, int32_t y), int32_t sgn)
   { bool_t debug = FALSE;
     if (debug) { fprintf(stderr, "  > %s n = %u ---\n", __FUNCTION__, n); }
-    for (int32_t i = 1; i < n; i++)
+    for (int32_t i = 1;  i < n; i++)
       { /* Binary search to locate position {h[j]} of {h[i]} in {h[0..i-1]}: */
         if (debug) { fprintf(stderr, "   i = %u\n", i); }
         int32_t v = h[i];

@@ -1,5 +1,6 @@
-/* See indexing.h */
-/* Last edited on 2024-11-16 17:34:59 by stolfi */
+/* See {ix.h} */
+/* Last edited on 2024-11-23 06:08:06 by stolfi */
+
 /* Copyright © 2003 by Jorge Stolfi, from University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
@@ -8,6 +9,8 @@
 #include <assert.h>
 
 #include <affirm.h>
+#include <ix_types.h>
+#include <ix_reduce.h>
 
 #include <ix.h>
 
@@ -973,50 +976,8 @@ void ix_packed_indices
     assert(dp == 0);
   }
 
-ix_index_t ix_reduce ( ix_index_t i, ix_size_t N, ix_reduction_t red )
-  {
-    /* Beware that {s % u} with {s} signed and {u} unsigned is {((unsiged)s) % u}. */
-    ix_index_t NN = (ix_index_t)N; /* Just to allow signed arithmetic. */
-    switch(red)
-      {
-        case ix_reduction_SINGLE:  /* ... *,*,*,0,1,2,3,4,5,*,*,*,*,*,*,*,*,*,* ... */
-          if ((i < 0) || (i >= NN)) { i = -1; }
-          break;
-
-        case ix_reduction_EXTEND:  /* ... 0,0,0,0,1,2,3,4,5,5,5,5,5,5,5,5,5,5,5 ... */
-          if (i < 0) { i = 0; }
-          if (i >= NN) { i = NN-1; }
-          break;
-        
-        case ix_reduction_REPEAT:  /* ... 3,4,5,0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3 ... */
-          i %= NN;
-          if (i < 0) { i += NN; }
-          break;
-
-        case ix_reduction_MIRROR:  /* ... 2,1,0,0,1,2,3,4,5,5,4,3,2,1,0,0,1,2,3 ... */
-          i %= (2*NN);
-          if (i < 0) { i += 2*NN; }
-          if (i >= NN) { i = NN - 1 - (i - NN); }
-          break;
-          
-        case ix_reduction_PXMIRR:  /* ... 3,2,1,0,1,2,3,4,5,4,3,2,1,0,1,2,3,4,5 ... */
-          if (NN == 1) 
-            { i = 0; }
-          else
-            { i %= (2*NN - 2);
-              if (i < 0) { i += 2*NN - 2; }
-              if (i >= NN) { i = NN - 2 - (i - NN); }
-            }
-          break;
-
-        default:
-          demand(FALSE, "invalid reduction code");
-      }
-    return i;
-  }
-
-void ix_reduce_range ( ix_index_t i0, ix_size_t m, ix_size_t N, ix_reduction_t red, ix_index_t i[] )
+void ix_reduce_range ( ix_index_t i0, ix_size_t m, ix_size_t N, ix_reduce_mode_t red, ix_index_t i[] )
   { 
-    for (int32_t k = 0; k < m; k++) { i[k] = ix_reduce(i0+k, N, red); }
+    for (uint32_t k = 0;  k < m; k++) { i[k] = ix_reduce(i0+k, N, red); }
   }
 

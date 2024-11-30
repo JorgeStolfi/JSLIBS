@@ -1,5 +1,5 @@
 /* fget_data.h -- flexible parsing of multicolum data files. */
-/* Last edited on 2024-11-15 19:12:27 by stolfi */
+/* Last edited on 2024-11-23 07:08:34 by stolfi */
 
 #ifndef fget_data_H
 #define fget_data_H
@@ -12,14 +12,30 @@
 
 #include <bool.h>
 
-bool_t fget_data_fields(FILE *rd, char cmtc, int32_t nf, int8_t type[], char* alf[], double num[]);
+typedef enum 
+  { fget_data_type_NOT,  /* Skip this data field. */
+    fget_data_type_ALF,  /* Parse this field as a string. */
+    fget_data_type_NUM   /* Parse this field as a number. */
+  } fget_data_type_t;
+  /* Data type for {fget_data_fields} (quod videt). */
+#define fget_data_type_FIRST fget_data_type_NOT
+#define fget_data_type_LAST fget_data_type_NUM
+
+bool_t fget_data_fields
+  ( FILE *rd,
+    char cmtc,
+    uint32_t nf,
+    fget_data_type_t type[],
+    char* alf[],
+    double num[]
+  );
   /* Parses or skips the next {nf} numeric or string data fields 
     on the same line.
      
     Those fields are implicitly indexed {0.nf-1}, and their parsing and
-    handling is determined by the table {type[0..nf-1]}. Each {type[kf]}
-    may be 0 to skip field {kf}, 1 to parse it as a string {alf[kf]}, or
-    2 to parse it as a number {num[kf]}.
+    handling is determined by the table {type[0..nf-1]}. Accordin to {type[kf]},
+    field {kf} may be skipped, parsed as a string and stored into {alf[kf]}, or
+    parsed as a {double} floating-point number and stored in {num[kf]}.
  
     Specifically, this procedure skips any formatting chars (spaces,
     line breaks, page breaks) and comments. If it hits end-of-file at
@@ -29,16 +45,20 @@ bool_t fget_data_fields(FILE *rd, char cmtc, int32_t nf, int8_t type[], char* al
     Comments are assumed to start with the character {cmtc} (e.g. '#') 
     and extend to the end of the same line.
     
-    The procedure skips spaces, but not line breaks or comments, before parsing each
-    field after the first one. If {type[kf]} is 2, field {kf} is parsed
-    with {fget_double} and stored in {num[kf]}. Otherwise
-    field {kf} is parsed as a sequence of one or more arbitrary
-    characters up to the next formatting character, end-of-file, or
-    comment -- like {fget_string}, but excluding the {cmtc} character.
-    Then, if {type[kf]} is 1, these character are turned into a
+    The procedure skips spaces, but not line breaks or comments, before
+    parsing each field after the first one. If {type[kf]} is
+    {fget_data_type_NUM}, field {kf} is parsed with {fget_double} and
+    stored in {num[kf]}. Otherwise field {kf} is parsed as a sequence of
+    one or more arbitrary characters up to the next formatting
+    character, end-of-file, or comment -- like {fget_string}, but
+    excluding the {cmtc} character. Then, if {type[kf]} is
+    {fget_data_type_ALF}, these character are turned into a
     newly-allocated {char*} string and stored in {alf[kf]}. If
-    {type[kf]} is zero, they are discarded.  Any other value of {type[kf]} 
-    is a fatal error.
+    {type[kf]} is {fget_data_type_NOT}, those characters are discarded.
+    Any other value of {type[kf]} is a fatal error.
+    
+    If {alf[kf]} is not set as described above, it is set to {NULL}. If
+    {num[kf]} is not set as described above, it is set to {NAN}.
     
     The procedure fails with error if the data line is incomplete;
     namely, if it hits end-of-line, end-of-file, or one of the {cmtc}
@@ -55,14 +75,17 @@ bool_t fget_data_fields(FILE *rd, char cmtc, int32_t nf, int8_t type[], char* al
     digit '0'..'9'). If {cmtc} is '\n', comments will not be allowed,
     whether in blank lines or at the end of data lines. */
 
-void fget_data_set_field_type(int32_t kf, int8_t tkf, bool_t rep_ok, int32_t nf, int8_t type[]);
-  /* Sets {type[kf]} to {tkf}, thus frining the type of field {kf}
-    in subsequent calls of {fget_data_fields}. The field
-    will be skipped if {tkf} is zero, parsed as a string if {tkf} is 1,
-    and parsed as {double} if {tkf} is 2.
+void fget_data_set_field_type
+  ( uint32_t kf,
+    fget_data_type_t tkf,
+    bool_t rep_ok,
+    uint32_t nf,
+    fget_data_type_t type[]
+  );
+  /* Sets {type[kf]} to {tkf}, thus detemining the type of field {kf}
+    in subsequent calls of {fget_data_fields}.
     
-    If {kf} is negative, the procedure has no effect. Otherwise index
-    {kf} should be in {0..nf-1}.
+    The  index {kf} should be in {0..nf-1}.
     
     If {rep_ok} is false, the procedure fails with error if {type[kf]}
     has already been set to a non-zero value. If {rep_ok} is true, such

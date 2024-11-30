@@ -1,5 +1,5 @@
 /* See wt_table.h */
-/* Last edited on 2024-11-22 03:18:50 by stolfi */
+/* Last edited on 2024-11-23 06:11:45 by stolfi */
 
 #define wt_table_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -21,7 +21,7 @@
 double wt_table_avg(uint32_t n, double wt[])
   { double sum_w = 0;   /* Sum of {wt[k]}. */
     double sum_iw = 0;  /* Sum of {k*wt[k]}. */
-    for (int32_t k = 0; k < n; k++)
+    for (uint32_t k = 0;  k < n; k++)
       { double w = wt[k];
         sum_w += w;
         sum_iw += k*w;
@@ -33,7 +33,7 @@ double wt_table_avg(uint32_t n, double wt[])
 double wt_table_var(uint32_t n, double wt[], double avg)
   { double sum_w = 0;   /* Sum of {wt[k]}. */
     double sum_d2w = 0; /* Sum of {(k-avg)^2*wt[k]}. */
-    for (int32_t k = 0; k < n; k++)
+    for (uint32_t k = 0;  k < n; k++)
       { double w = wt[k];
         double d = k - avg;
         sum_w += w;
@@ -45,15 +45,15 @@ double wt_table_var(uint32_t n, double wt[], double avg)
 
 void wt_table_normalize_sum(uint32_t n, double wt[])
   { double sum = 0.0;
-    for (int32_t k = 0; k < n; k++) { sum += wt[k]; }
+    for (uint32_t k = 0;  k < n; k++) { sum += wt[k]; }
     if (sum != 0.0)
-      { for (int32_t k = 0; k < n; k++) { wt[k] /= sum; } }
+      { for (uint32_t k = 0;  k < n; k++) { wt[k] /= sum; } }
   }
 
 void wt_table_shifted_sum(uint32_t n, double wt[], uint32_t stride, double ws[])
   {
     demand(stride >= 1, "invalid {stride}");
-    for (int32_t ka = 0; ka < n; ka++)
+    for (int32_t ka = 0;  ka < n; ka++)
       { int32_t kbmin = (ka % (int32_t)stride);
         int32_t kbmax = ((int32_t)n - 1);
         double sum = 0.0; /* Sum of all weights in a {stride} train. */
@@ -76,7 +76,7 @@ double_vec_t wt_table_convolution
     demand(n2 >= 1, "invalid {n2}");
     uint32_t ns = (uint32_t)(n1 + (n2-1)*stride);
     double_vec_t ws = double_vec_new(ns);
-    for (int32_t i = 0; i < ns; i++)
+    for (int32_t i = 0;  i < ns; i++)
       { int32_t k2min = (i < n1-1 ? 0 : (i+(int32_t)stride-(int32_t)n1)/(int32_t)stride);
         int32_t k2max = (i >= (int32_t)(n2*stride) ? (int32_t)n2 - 1 : i/(int32_t)stride);
         
@@ -108,7 +108,7 @@ void wt_table_print(FILE *wr, char *wtname, uint32_t n, double wt[], uint32_t st
     double sum_w = 0;   /* Sum of {wt[k]}. */
     double sum_bw[2] = { 0, 0 }; /* Sum of even and odd elements. */
     double wsExp = 1.0/stride; /* Expected value of overlapped windows. */
-    for (int32_t k = 0; k < n; k++)
+    for (uint32_t k = 0;  k < n; k++)
       { double wa = wt[k];
         fprintf(wr, "    w[%03d] (%+6.1f) = %24.16e", k, k - ctr, wa);
         sum_w += wa;
@@ -130,7 +130,7 @@ void wt_table_print(FILE *wr, char *wtname, uint32_t n, double wt[], uint32_t st
     double avg = wt_table_avg(n, wt);
     fprintf(wr, "  mean =      %21.16f\n", avg);
     double sum_d2w = 0;
-    for (int32_t k = 0; k < n; k++)
+    for (uint32_t k = 0;  k < n; k++)
       { double w = wt[k];
         double d = k - avg;
         sum_d2w += d*d*w; 
@@ -144,7 +144,7 @@ void wt_table_print(FILE *wr, char *wtname, uint32_t n, double wt[], uint32_t st
 bool_t wt_table_check_normalization(uint32_t n, double wt[], double tol,bool_t die)
   { /* Check unit sum property: */
     double sumw = 0;
-    for (int32_t k = 0; k < n; k++) { sumw += wt[k]; }
+    for (uint32_t k = 0;  k < n; k++) { sumw += wt[k]; }
     double err = sumw - 1;
     if (isnan(sumw) || (fabs(err) > tol))
       { if (die)
@@ -171,7 +171,7 @@ bool_t wt_table_check_partition_of_constant
     double ws[n];
     wt_table_shifted_sum(n, wt, stride, ws);
     double wsExp = ws[0]; /* Expected value of overlapped windows. */
-    for (int32_t k = 1; k < n; k++) 
+    for (uint32_t k = 1;  k < n; k++) 
       { if (fabs(ws[k] - wsExp) > tol)
           { if (die)
               { fprintf(stderr, "table is not  partition of constant");
@@ -193,7 +193,7 @@ char *wt_table_make_descr(uint32_t n, double wt[], char *fmt)
     /* Start with open bracket: */
     char_vec_expand(&d, nc); d.e[nc] = '['; nc++;
     /* Append the elements: */
-    for (int32_t k = 0; k < n; k++) 
+    for (uint32_t k = 0;  k < n; k++) 
       { /* Append a space to {d}: */
         char_vec_expand(&d, nc); d.e[nc] = ' '; nc++;
         /* Convert the element {wt[k]} to string: */

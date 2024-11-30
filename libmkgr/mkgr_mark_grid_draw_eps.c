@@ -26,7 +26,7 @@ void mkgr_mark_grid_draw_eps
   )
   {
     int32_t NM = gr->NM;
-    for (int32_t km = 0; km < NM; km++)
+    for (uint32_t km = 0;  km < NM; km++)
       { mkgr_mark_t *mk = &(gr->mark.e[km]);
         double rad = mk->rad;
         if (rad > 0.0)

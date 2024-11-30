@@ -170,14 +170,14 @@ void tnoi_create_images_from_size_and_filter
 
     char *sizeTag = jsprintf("%04dx%04d", NX, NY);
   
-    for (int32_t kcm = 0; kcm <= 1; kcm++)
+    for (uint32_t kcm = 0;  kcm <= 1; kcm++)
       { bool_t complement = (kcm == 1);
       
         if ((fxFilter != 0) || (fyFilter != 0) || (! complement))
           { 
             float_image_t *img = tnoi_create_noise_image(NC, NX, NY, fxFilter, fyFilter, complement, verbose);
 
-            for (int32_t ksq = 0; ksq <= 1; ksq++)
+            for (uint32_t ksq = 0;  ksq <= 1; ksq++)
               { bool_t squash = (ksq == 1);
 
                 char *filterTag = NULL;
@@ -236,9 +236,9 @@ float_image_t *tnoi_remap_image(float_image_t *img, bool_t squash,bool_t verbose
       { /* Nonlinear squashing to {[0_1]}: */
         double vSquash = 3.0*rms;
         fprintf(stderr, "squashing samples to [-1 _ +1], vSquash = %.6f\n", vSquash);
-        for (int32_t ic = 0; ic < NC; ic++)
-          { for (int32_t ix = 0; ix < NX; ix++)
-              { for (int32_t iy = 0; iy < NY; iy++)
+        for (uint32_t ic = 0;  ic < NC; ic++)
+          { for (uint32_t ix = 0;  ix < NX; ix++)
+              { for (uint32_t iy = 0;  iy < NY; iy++)
                   { double smp = float_image_get_sample(img, ic, ix, iy);
                     smp = smp/vSquash;
                     smp = smp/hypot(1, smp);
@@ -252,7 +252,7 @@ float_image_t *tnoi_remap_image(float_image_t *img, bool_t squash,bool_t verbose
         float vMax = (float)(3.0*rms);
         float vMin = -vMax;
         fprintf(stderr, "rescaling samples from [%8.6f _ %8.6f] to [-1 _ +1]\n", vMin, vMax);
-        for (int32_t kc = 0; kc < NC; kc++)
+        for (uint32_t kc = 0;  kc < NC; kc++)
           { float_image_rescale_samples(sqz, kc, vMin, vMax, -1.0f, +1.0f); }
       }
 
@@ -277,7 +277,7 @@ float_image_t *tnoi_compute_spectrum_image(float_image_t *img, bool_t verbose)
     float_image_hartley_spectrum(har, pwr, centered);
     
     /* Clear out the zero frequency term: */
-    for (int32_t ic = 0; ic < NC; ic++)
+    for (uint32_t ic = 0;  ic < NC; ic++)
       { float_image_set_sample(pwr, ic, NX/2, NY/2, 0.0); }
   
     /* Compute the RMS value {dev} of the image samples: */
@@ -287,7 +287,7 @@ float_image_t *tnoi_compute_spectrum_image(float_image_t *img, bool_t verbose)
     
     /* Get maximum power in original spectrum: */
     float vMax = 1.0e-38f;
-    for (int32_t ic = 0; ic < NC; ic++) 
+    for (uint32_t ic = 0;  ic < NC; ic++) 
       { float vmc = float_image_spectrum_max_sample(pwr, ic, centered);
         vMax = fmaxf(vMax, vmc);
       }
@@ -297,14 +297,14 @@ float_image_t *tnoi_compute_spectrum_image(float_image_t *img, bool_t verbose)
     double vRef = 1.0e-8*avg;
     if (verbose) { fprintf(stderr, "converting to log scale, bias = %13.5e vRef = %13.5e\n", bias, vRef); }
     double base = M_E;
-    for (int32_t ic = 0; ic < NC; ic++) 
+    for (uint32_t ic = 0;  ic < NC; ic++) 
       { float_image_log_scale(pwr, ic, bias, vRef, base); }
     
     /* Map original values below {vRef} to zero: */
     float vMin = sample_conv_log((float)vRef, bias, vRef, log(base));
     vMax = sample_conv_log(vMax, bias, vRef, log(base));
     if (verbose) { fprintf(stderr, "scaling log spectrum from [%+10.6f _ %+10.6f] to [0 _ 1]\n", vMin, vMax); }
-    for (int32_t ic = 0; ic < NC; ic++) 
+    for (uint32_t ic = 0;  ic < NC; ic++) 
       { float_image_rescale_samples(pwr, ic, vMin, vMax, 0.0, 1.0); }
       
     float_image_free(har);
@@ -320,7 +320,7 @@ void tnoi_compute_avg_rms(float_image_t *img, double *avg_P, double *rms_P)
     double sum_s = 0; /* Sum of samples. */
     double sum_s2 = 0; /* Sum of samples squared. */
     int32_t NS = 0; /* Number of finite samples found. */
-    for (int32_t ic = 0; ic < NC; ic++)
+    for (uint32_t ic = 0;  ic < NC; ic++)
       { int32_t NS_ch;
         double sum_s_ch = float_image_compute_sample_sum(img, ic, &NS_ch);
         double sum_s2_ch = float_image_compute_squared_sample_sum(img, ic, 0.0, NULL);

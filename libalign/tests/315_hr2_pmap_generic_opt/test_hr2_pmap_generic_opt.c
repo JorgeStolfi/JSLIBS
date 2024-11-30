@@ -133,7 +133,7 @@ int32_t main(int32_t argc, char **argv)
     srand(4615*417);
     
     for (sign_t sgn = +1; sgn >= -1; sgn -= 2)
-      { for (int32_t trial = 0; trial < 10; trial++)
+      { for (uint32_t trial = 0;  trial < 10; trial++)
           { bool_t verbose = (trial < 2);
             if (trial < 2) { char *outPrefix = jsprintf("out/test-%03d", trial); }
             hgot_test_hr2_pmap_generic_opt_quadratic__hr2_pmap_generic_opt_1D_plot(sgn, verbose, outPrefix);
@@ -329,7 +329,7 @@ void hgot_check_opt_pmap
         int32_t nd = 30;
         double pabs = epsy;
         double prel = 0.001;
-        for (int32_t kd = 0; kd < nd; kd++)
+        for (uint32_t kd = 0;  kd < nd; kd++)
           { hr2_pmap_t N = hgot_perturb_map(M, pabs, prel, sgn);
             double f2N = f2(&N);
             if (f2M - f2N > f2DropLim)

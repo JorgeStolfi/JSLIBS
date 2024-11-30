@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {gauss_table.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-19 06:14:51 by stolfi */ 
+/* Last edited on 2024-11-22 21:01:45 by stolfi */ 
 /* Created on 2012-03-04 by J. Stolfi, UNICAMP */
 
 #define test_gauss_table_COPYRIGHT \
@@ -39,7 +39,7 @@ void tgat_compute_unfolded(uint32_t nw, double avg, double dev, double wc[]);
 
 int32_t main (int32_t argc, char **argv)
   {
-    for (int32_t nw = 1; nw <= 13; nw = 3*nw/2+1)
+    for (uint32_t nw = 1; nw <= 13; nw = 3*nw/2+1)
       { test_gauss_table_make__gauss_table_folded_bell(nw, FALSE, FALSE);
         test_gauss_table_make__gauss_table_folded_bell(nw, TRUE,  FALSE);
         test_gauss_table_make__gauss_table_folded_bell(nw, FALSE, TRUE);
@@ -70,19 +70,19 @@ void test_gauss_table_make__gauss_table_folded_bell(uint32_t nw, bool_t norm, bo
     /* Normalize {wc} if so requested: */
     if (norm) 
       { double sum = 1.0e-100;
-        for (int32_t i = 0; i < nw; i++) { sum += wc[i]; }
-        for (int32_t i = 0; i < nw; i++) { wc[i] /= sum; }
+        for (uint32_t i = 0;  i < nw; i++) { sum += wc[i]; }
+        for (uint32_t i = 0;  i < nw; i++) { wc[i] /= sum; }
       }
     else if (fold)
       { /* Normalize to unity at {avg}: */
         double wmax = gauss_table_folded_bell(0.0, dev, nw);
         assert(wmax > 0.0);
-        for (int32_t i = 0; i < nw; i++) { wc[i] /= wmax; }
+        for (uint32_t i = 0;  i < nw; i++) { wc[i] /= wmax; }
       }
       
     /* Compare {wc} with library table  {wt}: */
     bool_t ok = TRUE;
-    for (int32_t i = 0; i < nw; i++) 
+    for (uint32_t i = 0;  i < nw; i++) 
       { if (fabs(wt[i] - wc[i]) > 1.0e-12)
           { fprintf(stderr, "** {gauss_table_make} error:");
             fprintf(stderr, " i = %d wt[i] = %.15f  wc[i] = %.15f", i, wt[i], wc[i]);
@@ -110,17 +110,18 @@ void tgat_compute_folded(uint32_t nw, double avg, double dev, double wc[])
     assert (wf[nf-1] < 1.0e-16);
     /* Accumulate the entries congruent modulo {nw} into central segment, smallest first: */
     assert((mw % nw) == 0); 
-    for (int32_t i = 0; i < mw; i++)
+    for (uint32_t i = 0; i < mw; i++)
       { uint32_t ki = (i % nw);
         wc[ki] += wf[i];
-        uint32_t j = nf - 1 - i;
+        assert(i < nf);
+        uint32_t j = (uint32_t)(nf - 1 - i);
         uint32_t kj = (j % nw);
         wc[kj] += wf[j];
       }
-    for (int32_t i = 0; i < nw; i++) { wc[i] += wf[mw + i]; }
+    for (uint32_t i = 0; i < nw; i++) { wc[i] += wf[mw + i]; }
     /* Consistency with {gauss_table_folded_bell}: */
     bool_t ok = TRUE;
-    for (int32_t i = 0; i < nw; i++) 
+    for (uint32_t i = 0;  i < nw; i++) 
       { double z = ((double)i) - avg;
         double wgi = gauss_table_folded_bell(z, dev, nw);
         if (fabs(wgi - wc[i]) > 1.0e-12)
@@ -135,7 +136,7 @@ void tgat_compute_folded(uint32_t nw, double avg, double dev, double wc[])
   }
     
 void tgat_compute_unfolded(uint32_t nw, double avg, double dev, double wc[])
-  { for (int32_t i = 0; i < nw; i++)
+  { for (uint32_t i = 0;  i < nw; i++)
       { double z = (((double)i) - avg)/dev;
         wc[i] = exp(-z*z/2);
       }

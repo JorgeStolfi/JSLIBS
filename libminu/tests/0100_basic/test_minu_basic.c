@@ -114,8 +114,8 @@ int32_t main(int32_t argc, char **argv)
       }
     };
   Performance perf[NOpt*NPrb];
-  for (int32_t i_opt = 0; i_opt < NOpt; i_opt++)
-    { for (int32_t i_prb = 0; i_prb < NPrb; i_prb++) 
+  for (uint32_t i_opt = 0;  i_opt < NOpt; i_opt++)
+    { for (uint32_t i_prb = 0;  i_prb < NPrb; i_prb++) 
         { int32_t ij = NPrb*i_opt+i_prb;
           test_minu_tools_single(i_opt, &(opt[i_opt]), i_prb, &(prb[i_prb]), TRUE);
           srandom(2567898753u);
@@ -129,26 +129,26 @@ int32_t main(int32_t argc, char **argv)
   fprintf(stderr, "* SUMMARY - avgCalls/avgError/nFailures\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "%30s ", "");
-  for (int32_t i_prb = 0; i_prb < NPrb; i_prb++)
+  for (uint32_t i_prb = 0;  i_prb < NPrb; i_prb++)
     { fprintf(stderr, "%8s ", prb[i_prb].name); }
   fprintf(stderr, "\n");
   fprintf(stderr, "\n");
         
-  for (int32_t i_opt = 0; i_opt < NOpt; i_opt++)
+  for (uint32_t i_opt = 0;  i_opt < NOpt; i_opt++)
     { fprintf(stderr, "%30s ", opt[i_opt].name);
-      for (int32_t i_prb = 0; i_prb < NPrb; i_prb++)
+      for (uint32_t i_prb = 0;  i_prb < NPrb; i_prb++)
         { int32_t ij = NPrb*i_opt+i_prb;
           fprintf(stderr, "%8.1f ", perf[ij].avgCalls);
         }
       fprintf(stderr, "\n");
       fprintf(stderr, "%30s ", "");
-      for (int32_t i_prb = 0; i_prb < NPrb; i_prb++)
+      for (uint32_t i_prb = 0;  i_prb < NPrb; i_prb++)
         { int32_t ij = NPrb*i_opt+i_prb;
           fprintf(stderr,  "%8.1f ", perf[ij].avgError);
         }
       fprintf(stderr, "\n");
       fprintf(stderr, "%30s ", "");
-      for (int32_t i_prb = 0; i_prb < NPrb; i_prb++)
+      for (uint32_t i_prb = 0;  i_prb < NPrb; i_prb++)
         { int32_t ij = NPrb*i_opt+i_prb;
           fprintf(stderr, "%8d ", perf[ij].nFailures);
         }

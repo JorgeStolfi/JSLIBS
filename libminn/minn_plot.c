@@ -92,7 +92,7 @@ void minn_plot_1D_gnuplot
         rn_mix_in(nx, e, u, y);
         double Fy = F(nx, y);
         Pr(wr, "  %14.6e ", Fy); 
-        for (int32_t j = 0; j < nx; j++)
+        for (uint32_t j = 0;  j < nx; j++)
           { Pr(wr, " %14.6e", y[j]); }
         Pr(wr, "\n");
       }
@@ -192,7 +192,7 @@ void minn_plot_2D_gnuplot
         double e1 = i1*step;
         Pr(wr, "%+4d%+4d  %14.6e %14.6e ", i0, i1, e0, e1); 
         Pr(wr, "  %14.6e ", Fy); 
-        for (int32_t j = 0; j < nx; j++)
+        for (uint32_t j = 0;  j < nx; j++)
           { Pr(wr, " %14.6e", y[j]); }
         Pr(wr, "\n"); 
         i1_last = i1;

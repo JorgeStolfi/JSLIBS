@@ -1,5 +1,5 @@
 # Geometry and linear algebra routines
-# Last edited on 2022-02-27 23:42:38 by stolfi
+# Last edited on 2024-11-28 15:27:05 by stolfi
 
 LIBNAME := libgeo
 

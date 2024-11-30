@@ -284,7 +284,7 @@ bool_t r6_eq(r6_t *p, r6_t *q)
   }
 
 void r6_throw_cube (r6_t *r)
-  { for (int32_t i = 0; i < N; i++)
+  { for (uint32_t i = 0;  i < N; i++)
       { r->c[i] = 2.0 * drandom() - 1.0; }
   }
 
@@ -295,19 +295,19 @@ void r6_throw_dir (r6_t *r)
       { r6_throw_normal(r);
         /* Discard if too close to origin: */
         r2 = 0.0;
-        for (int32_t i = 0; i < N; i++) { double ci = r->c[i]; r2 += ci*ci; }
+        for (uint32_t i = 0;  i < N; i++) { double ci = r->c[i]; r2 += ci*ci; }
       }
     while (r2 < 1.0e-20);
     /* Normalize to unit length: */
     double m = sqrt(r2);
-    for (int32_t i = 0; i < N; i++) { r->c[i] /= m; }
+    for (uint32_t i = 0;  i < N; i++) { r->c[i] /= m; }
   }
 
 void r6_throw_ball (r6_t *r)
   { rn_throw_ball(N, &(r->c[0])); }
 
 void r6_throw_normal (r6_t *r)
-  { for (int32_t i = 0; i < N; i++)
+  { for (uint32_t i = 0;  i < N; i++)
       { r->c[i] = dgaussrand(); }
   }
   

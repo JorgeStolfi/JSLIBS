@@ -44,7 +44,7 @@ neuromat_eeg_raw_header_t *neuromat_eeg_raw_header_read(FILE *rd)
     
     /* Parse the event channel names: */
     hr->evnames = notnull(malloc(hr->nv*sizeof(char *)), "no mem");
-    for(int32_t ie = 0; ie < hr->nv; ie++)
+    for (uint32_t ie = 0;  ie < hr->nv; ie++)
       { hr->evnames[ie] = neuromat_eeg_raw_read_event_code(rd, "event"); }
     
     return hr;
@@ -64,7 +64,7 @@ void neuromat_eeg_raw_header_print(FILE *wr, neuromat_eeg_raw_header_t *hr)
     fprintf(wr, "number of event channels = %d\n", hr->nv);
     
     fprintf(wr, "event channel names =");
-    for(int32_t ie = 0; ie < hr->nv; ie++) 
+    for (uint32_t ie = 0;  ie < hr->nv; ie++) 
       { if ((ie > 0) && ((ie % 10) == 0)) { fprintf(wr, "\n "); }
         fprintf(wr, " %s", hr->evnames[ie]);
       }

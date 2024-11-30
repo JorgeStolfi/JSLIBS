@@ -1,4 +1,4 @@
-# Last edited on 2024-11-21 02:18:18 by stolfi
+# Last edited on 2024-11-29 22:29:41 by stolfi
 # Library tests to run, in priority order
 
 # + = OK.
@@ -43,6 +43,10 @@
 + libflt/tests/0100_fp
 + libflt/tests/0200_flt
 + libflt/tests/0300_flt_times
+
++ libgausol/550_gausol_print
++ libgausol/560_gausol_triang
++ libgausol/570_gausol_solve
 
 + libgeo/tests/100_ellipse
 + libgeo/tests/110_rn
@@ -120,6 +124,7 @@
 + libminn/tests/0350_test_sve_charges
 + libminn/tests/0360_test_sve_polygauss
 + libminn/tests/0400_test_r2_opt
++ libminn/tests/1100_test_qmin_simplex
 
 # ----------------------------------------------------------------------
 # Special projects

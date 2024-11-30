@@ -42,12 +42,12 @@ uint16_image_t *ppv_image_from_array(ppv_array_t *A)
     if ((cols > 0) && (rows > 0) && (chns > 0)) 
       { /* Copy samples: */
         ppv_index_t ix[d];
-        for (int32_t y = 0; y < rows; y++)
+        for (uint32_t y = 0;  y < rows; y++)
           { uint16_t *row = J->smp[y];
             ix[1] = y;
-            for (int32_t x = 0; x < cols; x++)
+            for (uint32_t x = 0;  x < cols; x++)
               { ix[0] = x;
-                for (int32_t c = 0; c < chns; c++)
+                for (uint32_t c = 0;  c < chns; c++)
                   { if (d == 3) { ix[2] = c; }
                     ppv_sample_t smp = ppv_get_sample(A, ix);
                     row[x*chns + c] = (uint16_t)smp;
@@ -78,12 +78,12 @@ ppv_array_t *ppv_image_to_array(uint16_image_t *J)
     if ((cols > 0) && (rows > 0) && (chns > 0)) 
       { /* Copy samples: */
         ppv_index_t ix[d];
-        for (int32_t y = 0; y < rows; y++)
+        for (uint32_t y = 0;  y < rows; y++)
           { uint16_t *row = J->smp[y];
             ix[1] = y;
-            for (int32_t x = 0; x < cols; x++)
+            for (uint32_t x = 0;  x < cols; x++)
               { ix[0] = x;
-                for (int32_t c = 0; c < chns; c++)
+                for (uint32_t c = 0;  c < chns; c++)
                   { if (d == 3) { ix[2] = c; }
                     uint16_t smp = row[x*chns + c];
                     demand(smp <= maxsmp, "invalid sample in image");

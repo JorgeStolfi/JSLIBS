@@ -73,13 +73,13 @@ void multifok_rayset_choose_tilts_and_weights
         assert(w_layer != NULL);
         /* Generate the rays by layers: */
         int32_t kr = 1; /* Number of rays generated. */
-        for (int32_t kl = 1; kl < NL; kl++)
+        for (uint32_t kl = 1;  kl < NL; kl++)
           { double rk = r_layer[kl];
             double wk = w_layer[kl];
             int32_t nk = n_layer[kl];
             double dang = 2*M_PI/nk; /* Angular step in each layer. */
             double ang = dang/2;
-            for (int32_t ks = 0; ks < nk; ks++)
+            for (uint32_t ks = 0;  ks < nk; ks++)
               { dtilt[kr].c[0] = rad*cos(ang);
                 dtilt[kr].c[1] = rad*sin(ang);
                 wtilt[kr] = wk;
@@ -92,7 +92,7 @@ void multifok_rayset_choose_tilts_and_weights
       
     if (verbose)
       { fprintf(stderr, "using %d aperture rays (central plus %d layers)\n", NR, NL-1); 
-        for (int32_t kr = 0; kr < NR; kr++)
+        for (uint32_t kr = 0;  kr < NR; kr++)
           { fprintf(stderr, "  dtilt[%3d] = ( %+12.6f %+12.6f )", kr, dtilt[kr].c[0], dtilt[kr].c[1]); 
             fprintf(stderr, "  wtilt = %12.8f\n", wtilt[kr]);
           }
@@ -153,7 +153,7 @@ void multifok_rayset_choose_tilt_layers
     /* Now normalize {S[0..NU]} so that {S[0] = 1}: */
     double Snorm = S[0];
     S[0] = 1;
-    for (int32_t ku = 1; ku <= NU; ku++) { S[ku] /= Snorm; }
+    for (uint32_t ku = 1;  ku <= NU; ku++) { S[ku] /= Snorm; }
     /* We must have captured most of the integral: */
     assert(S[NU-1] < 1.0e-10);
     
@@ -195,7 +195,7 @@ void multifok_rayset_choose_tilt_layers
         
       /* Now compute the layer radii {r_layer[0..NL-1]} from {b[0..NL]}: */
       r_layer[0] = 0.0;
-      for (int32_t kl = 0; kl < NL; kl++)
+      for (uint32_t kl = 0;  kl < NL; kl++)
         { r_layer[kl] = 
         
   }

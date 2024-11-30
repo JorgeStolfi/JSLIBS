@@ -251,7 +251,7 @@ void DrawTexts(epswr_figure_t *epsf, double xc, double yc)
         
         /* Draw rotated frame: */
         double tmrg = 0.2;
-        for (int32_t km = 0; km < 2; km++)
+        for (uint32_t km = 0;  km < 2; km++)
           { 
             double dm = km*tmrg;
             double ang = rot*M_PI/180; /* Rotation angle in radians. */

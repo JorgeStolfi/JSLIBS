@@ -2,7 +2,7 @@
 #define PROG_DESC "test of sorting routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-17 11:37:20 by stolfi */
+/* Last edited on 2024-11-22 20:43:47 by stolfi */
 /* Created on 2004-11-02 (or earlier) by J. Stolfi, UNICAMP */
 
 #define test_sort_COPYRIGHT \
@@ -102,14 +102,14 @@ int32_t main(int32_t argc, char **argv)
 
     /* Prepare table of actual values to be sorted: */
     c = double_vec_new(n);
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0; i < n; i++)
       { /* Insert about 10% equal values, if n >= 10: */
         c.e[i] = (i < (9*n + 9)/10 ? (1.0 + sin(22.2*i*i))/2 : c.e[n-i-1]);
       }
 
     fprintf(stderr, "Original order:\n");
-    for (int32_t i = 0; i < n; i++) { h[i] = (int32_t)i; }
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0;  i < n; i++) { h[i] = (int32_t)i; }
+    for (uint32_t i = 0;  i < n; i++)
       { fprintf(stderr, "%5d %5d %6.3f\n", i, h[i], c.e[h[i]]); }
 
     /* Tests insertion sort routines first (used by other tests): */
@@ -131,14 +131,14 @@ int32_t main(int32_t argc, char **argv)
       { fprintf(stderr, "Heapified:\n");
         uint32_t k = 0;
         while (k < n) { ihp_heap_insert(h, &k, h[k], tsr_cmp, +1); }
-        for (int32_t i = 0; i < n; i++)
+        for (uint32_t i = 0;  i < n; i++)
           { fprintf(stderr, "%5d %5d %6.3f\n", i, h[i], c.e[h[i]]); }
 
         fprintf(stderr, "De-heapified:\n");
         /* Pop them out in reverse order and store them at the end: */
         k = n;
         while (k > 0) { h[k-1] = ihp_heap_pop(h, &k, tsr_cmp, +1); }
-        for (int32_t i = 0; i < n; i++)
+        for (uint32_t i = 0;  i < n; i++)
           { fprintf(stderr, "%5d %5d %6.3f\n", i, h[i], c.e[h[i]]); }
       }
 
@@ -197,10 +197,10 @@ void tsr_test_sort(int32_t *h, uint32_t n, tsr_sort_t sort, char *name, int32_t_
         fprintf(stderr, "Order = %d (%s):\n", sgn, (sgn > 0 ? "increasing" : "decreasing"));
 
         /* Restore {h[0..n-1]} to the original increasing order (random by {cmp}): */
-        for (int32_t i = 0; i < n; i++) { h[i] = (int32_t)i; }
+        for (uint32_t i = 0;  i < n; i++) { h[i] = (int32_t)i; }
 
         /* Sort them by {sgn*cmp}: */
-        for (int32_t i = 0; i < n; i++) { h[i] = (int32_t)i; }
+        for (uint32_t i = 0;  i < n; i++) { h[i] = (int32_t)i; }
         sort(h, n, cmp, sgn);
         
         /* Check and print: */
@@ -225,7 +225,7 @@ void tsr_test_merge(int32_t *h, uint32_t n, tsr_merge_t merge, char *name, int32
         fprintf(stderr, "Order = %d (%s):\n", sgn, (sgn > 0 ? "increasing" : "decreasing"));
         
         /* Restore {h[0..n-1]} to the original increasing order (random by {cmp}): */
-        for (int32_t i = 0; i < n; i++) { h[i] = (int32_t)i; }
+        for (uint32_t i = 0;  i < n; i++) { h[i] = (int32_t)i; }
         
         /* Sort the two blocks: */
         fprintf(stderr, "Sorting blocks [0..%d], [%d..%d]:\n", m-1, m, n-1);
@@ -258,7 +258,7 @@ void tsr_check_order(int32_t *h, uint32_t n, int32_t_cmp_t cmp, int32_t sgn, boo
     bool_t unstable = FALSE;
     bool_t buggy = FALSE;
     
-    for (int32_t i = 0; i < n; i++)
+    for (uint32_t i = 0; i < n; i++)
       { printed = FALSE;
         if (print) { prt(i); }
         if (i > 0)

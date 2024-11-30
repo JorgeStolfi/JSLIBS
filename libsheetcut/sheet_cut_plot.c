@@ -165,8 +165,8 @@ void sheet_cut_plot_labels(epswr_figure_t *eps, r2_t pos, r2_t size, char *tag)
     epswr_set_pen(eps,  0.000,0.000,0.000,  0.25, 0,0);
 
     /* Plot coordinates at each corner: */
-    for (int32_t px = 0; px < 2; px++)
-      { for (int32_t py = 0; py < 2; py++)
+    for (uint32_t px = 0;  px < 2; px++)
+      { for (uint32_t py = 0;  py < 2; py++)
           { /* Coordinates of corner: */
             r2_t cpos = (r2_t){{ pos.c[0] + px*size.c[0], pos.c[1] + py*size.c[1] }}; 
             /* Coordinates or label ref point and text rotation angle: */

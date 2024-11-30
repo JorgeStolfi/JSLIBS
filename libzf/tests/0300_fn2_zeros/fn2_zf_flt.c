@@ -43,8 +43,8 @@ void fn2_zf_flt_plot(
 
     epswr_set_pen(eps, 0.5, 0.0, 0.0, 0.30, 0.0, 0.0);
 
-    for (int32_t yi=0; yi<m; yi++)
-      { for (int32_t xi=0; xi<m; xi++)
+    for (uint32_t yi = 0;  yi<m; yi++)
+      { for (uint32_t xi = 0;  xi<m; xi++)
           { ROUND_DOWN;
             xv.lo = xd.lo + ((xd.hi - xd.lo)*(Float)xi)/(Float)m;
             yv.lo = yd.lo + ((yd.hi - yd.lo)*(Float)yi)/(Float)m;

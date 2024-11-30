@@ -2,7 +2,7 @@
 #define PROG_DESC "tests the {codetree.h} procedures"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2024-11-20 03:25:49 by stolfi */
+/* Last edited on 2024-11-22 21:03:27 by stolfi */
 /* Created on 2007-01-31 by J. Stolfi, UNICAMP */
 
 #define PROG_COPYRIGHT \
@@ -175,7 +175,7 @@ void tcot_check_generic
     
     if (prtables)
       { fprintf(stderr, "given values and codes:\n");
-        for (int32_t iv = 0; iv < nv; iv++)
+        for (uint32_t iv = 0;  iv < nv; iv++)
           { fprintf(stderr, "%12d (%s)\n", vals[iv], code[vals[iv]]); }
         fprintf(stderr, "testing {codetree_print_codes}:\n");
         codetree_print_codes(stderr, tree);
@@ -204,7 +204,7 @@ void tcot_check_generic
         bool_t prsamples = (ns < 100);   /* True to print the sample sequence. */
         dval_t smp[ns];        /* Sample values to encode. */
         char *smpcode[ns];               /* Their codes, as given. */
-        for (int32_t ks = 0; ks < ns; ks++) 
+        for (uint32_t ks = 0;  ks < ns; ks++) 
           { uint32_t iv = uint32_abrandom(0, (uint32_t)(nv-1));
             smp[ks] = vals[iv];
             smpcode[ks] = code[vals[iv]];
@@ -218,7 +218,7 @@ void tcot_check_generic
         codetree_byte_count_t ib = 0; /* Next unused byte is {buf[ib]}. */
         byte_t mask = 0; /* Next bit in {buf[ib-1]} or 0. */
         uint64_t nu = 0; /* Number of bits used. */
-        for (int32_t ks = 0; ks < ns; ks++) 
+        for (uint32_t ks = 0;  ks < ns; ks++) 
           { char *ck = smpcode[ks];
             while ((*ck) != 0)
               { int8_t bit = ((*ck) - '0');
@@ -248,7 +248,7 @@ void tcot_check_generic
         dval_t smp2[ns];
         uint64_t nu2 = codetree_decode(nb, buf, tree, maxval, ns, smp2);
         demand(nu2 == nu, "decoded bit counts do not match");
-        for (int32_t ks = 0; ks < ns; ks++) 
+        for (uint32_t ks = 0;  ks < ns; ks++) 
           { demand(smp2[ks] == smp[ks], "decoded samples do not match"); }
         
         fprintf(stderr, "testing {codetree_get_encoding_table}...\n");
@@ -257,7 +257,7 @@ void tcot_check_generic
         uint64_t md = codetree_get_encoding_table(tree, maxval, nd, delta);
         demand(md == nd, "unexpected encoding table size");
         if (prtables)
-          { for (int32_t id = 0; id < nd; id++)
+          { for (uint32_t id = 0; id < nd; id++)
               { fprintf(stderr, "%3d", id);
                 codetree_delta_t del = delta[id];
                 if (del == 0)
@@ -272,12 +272,12 @@ void tcot_check_generic
         
         fprintf(stderr, "encoding the samples with {codetree_encode} and the encoding table...\n");
         byte_t buf3[nb];
-        for (int32_t ib = 0; ib < nb; ib++) { buf3[ib] = 17; /* Arbitrary nonzero value: */ }
+        for (uint32_t ib = 0;  ib < nb; ib++) { buf3[ib] = 17; /* Arbitrary nonzero value: */ }
         uint64_t nu3 = codetree_encode(ns, smp, maxval, nd, delta, nb, buf3);
         demand(nu3 == nu, "num bits encoded with {delta} does not match"); 
         
         fprintf(stderr, "comparing the two bit strings...\n");
-        for (int32_t ib = 0; ib < nb; ib++)
+        for (uint32_t ib = 0;  ib < nb; ib++)
           { if (ib < mb) 
               { demand(buf3[ib] == buf[ib], "encoded bit strings differ"); }
             else

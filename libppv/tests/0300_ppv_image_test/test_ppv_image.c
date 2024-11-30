@@ -31,7 +31,7 @@ int32_t main (int32_t argn, char **argv)
       { int32_t chmin = (d == 2 ? 1 : 2);  /* Max count of color channels. */
         int32_t chmax = (d == 2 ? 1 : 4);  /* Max count of color channels. */
         for (int32_t chns = chmin; chns <= chmax; chns++)
-          { for (int32_t kb = 0; kb < 4; kb++) 
+          { for (uint32_t kb = 0;  kb < 4; kb++) 
               { uint16_t maxsmp = (uint16_t)(ipow(5,kb+1)-4);
                  pit_do_test(d, chns, maxsmp);
               }

@@ -151,7 +151,7 @@ int32_t main(int32_t argc, char **argv)
     hr2_pmap_type_t type;
     demand(hr2_pmap_type_from_string(xtype, &type), "invalid map type option");
     for (sign_t sgn = +1; sgn >= -1; sgn -= 2)
-      { for (int32_t i = 0; i < 10; i++)
+      { for (uint32_t i = 0;  i < 10; i++)
           { bool_t verbose = (i < 3);
             if (i < 2) 
               { char *xsgn = (sgn == 0 ? "o" : (sgn < 0 ? "m" : "p"));
@@ -305,7 +305,7 @@ hr2_pmap_t hsot_perturb_map(hr2_pmap_t *M, hr2_pmap_type_t type, sign_t sgn)
     int32_t ny = hr2_pmap_encode_num_parameters(type);
     double y[ny];
     hr2_pmap_encode(&N, type, ny, y);
-    for (int32_t k = 0; k < ny; k++)
+    for (uint32_t k = 0;  k < ny; k++)
       { double eps = (MAP_ABS_PERT + MAP_REL_PERT*y[k])*dabrandom(-1.0,+1.0);
         y[k] += eps;
       }
@@ -375,9 +375,9 @@ void hsot_check_opt_pmap
             bool_t ok = TRUE;
             hr2_pmap_t N_best;
             double f2N_best = f2M;
-            for (int32_t ku = 0; ku < nu; ku++)
+            for (uint32_t ku = 0;  ku < nu; ku++)
               { rn_throw_dir(ny, u);
-                for (int32_t ky = 0; ky < ny; ky++)
+                for (uint32_t ky = 0;  ky < ny; ky++)
                   { yt[ky] = y[ky] + epsy*u[ky]; }
                 hr2_pmap_decode(ny, yt, type, sgn, &N);
                 double f2N = f2(&N);
@@ -405,7 +405,7 @@ void hsot_print_encoding(int32_t ny, double y[])
   { 
     fprintf(stderr, "  encoding factors:\n");
     fprintf(stderr, "    ");
-    for (int32_t kv = 0; kv < ny; kv++)
+    for (uint32_t kv = 0;  kv < ny; kv++)
       { fprintf(stderr, " %+12.8f", y[kv]); }
     fprintf(stderr, "\n");
   }

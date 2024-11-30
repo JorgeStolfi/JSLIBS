@@ -285,7 +285,7 @@ ppv_sample_t ppv_get_sample_at_pos
           { ppv_word_08_t *q8 = ((ppv_word_08_t *)el) + pos*wps;
             /* fprintf(stderr, "get: pos = " ppv_pos_t_FMT " el = %016lx", pos, (uint64_t)el); */
             /* fprintf(stderr, " q8 ="); */
-            for (int32_t k = 0; k < wps; k++) 
+            for (uint32_t k = 0;  k < wps; k++) 
               { /* fprintf(stderr, " %02x", (*q8)); */
                 qw = (qw << bpw) | (*q8);
                 /* fprintf(stderr, " -> %08x", qw); */
@@ -294,11 +294,11 @@ ppv_sample_t ppv_get_sample_at_pos
           }
         else if (bpw == 16) 
           { ppv_word_16_t *q16 = ((ppv_word_16_t *)el) + pos*wps;
-            for (int32_t k = 0; k < wps; k++) { qw = (qw << bpw) | (*q16); q16++; }
+            for (uint32_t k = 0;  k < wps; k++) { qw = (qw << bpw) | (*q16); q16++; }
           }
         else 
           { ppv_word_32_t *q32 = ((ppv_word_32_t *)el) + pos*wps;
-            for (int32_t k = 0; k < wps; k++) { qw = (qw << bpw) | (*q32); q32++; }
+            for (uint32_t k = 0;  k < wps; k++) { qw = (qw << bpw) | (*q32); q32++; }
           }
         ppv_sample_t smp = qw & mask;
         /* fprintf(stderr, " smp = %08x", smp); */
@@ -359,7 +359,7 @@ void ppv_set_sample_at_pos
           { ppv_word_08_t *q8 = ((ppv_word_08_t *)el) + pos*wps + wps - 1;
             /* fprintf(stderr, "set: pos = " ppv_pos_t_FMT " el = %016lx", pos, (uint64_t)el); */
             /* fprintf(stderr, " smp = %08x\n", smp); */
-            for (int32_t k = 1; k < wps; k++) 
+            for (uint32_t k = 1;  k < wps; k++) 
               { /* fprintf(stderr, " q8 = %02x", (*q8)); */
                 (*q8) = (ppv_word_08_t)(smp & maskw);
                 /* fprintf(stderr, " -> %02x\n", (*q8)); */
@@ -371,13 +371,13 @@ void ppv_set_sample_at_pos
           }
         else if (bpw == 16) 
           { ppv_word_16_t *q16 = ((ppv_word_16_t *)el) + pos*wps + wps -1;
-            for (int32_t k = 1; k < wps; k++) 
+            for (uint32_t k = 1;  k < wps; k++) 
               { (*q16) = (ppv_word_16_t)(smp & maskw); smp >>= bpw; q16--; }
             (*q16) =  (ppv_word_16_t)(((*q16) & (~masks)) | (smp & masks)); 
           }
         else 
           { ppv_word_32_t *q32 = ((ppv_word_32_t *)el) + pos*wps + wps -1;
-            for (int32_t k = 1; k < wps; k++) 
+            for (uint32_t k = 1;  k < wps; k++) 
               { (*q32) =  (ppv_word_32_t)(smp & maskw); smp >>= bpw; q32--; }
             (*q32) =  (ppv_word_32_t)(((*q32) & (~masks)) | (smp & masks)); 
           }
@@ -775,7 +775,7 @@ void ppv_throw_balls(ppv_array_t *A)
     double rad[nb];
     ppv_sample_t bsmp[nb];
     if (debug) { fprintf(stderr, "throwing %d balls...\n", nb); }
-    for (int32_t ib = 0; ib < nb; ib++)
+    for (uint32_t ib = 0;  ib < nb; ib++)
       { if (debug) { fprintf(stderr, "  ball %3d center = (", ib); }
         ctr[ib] = notnull(malloc(d*sizeof(double)), "no mem");
         for (ppv_axis_t ax = 0; ax < A->d; ax++) 
@@ -794,7 +794,7 @@ void ppv_throw_balls(ppv_array_t *A)
     bool_t set_voxel(const ppv_index_t ix[], ppv_pos_t pA, ppv_pos_t pB, ppv_pos_t pC)
       { ppv_sample_t smp = 0; /* Value to store. */
         /* Check if voxel center is inside some ball: */
-        for(int32_t ib = 0; ib < nb; ib++)
+        for (uint32_t ib = 0;  ib < nb; ib++)
           { double d2 = 0.0; /* Squared dist from center of ball {b} */
             for (ppv_axis_t ax = 0; ax < A->d; ax++) 
               { double da = ((double)ix[ax] + 0.5) - ctr[ib][ax]; 

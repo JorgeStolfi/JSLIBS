@@ -1,5 +1,5 @@
 /* See wt_table_hann.h */
-/* Last edited on 2024-11-22 03:07:19 by stolfi */
+/* Last edited on 2024-11-23 06:12:55 by stolfi */
 
 #define wt_table_hann_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -21,7 +21,7 @@ void wt_table_hann_fill(uint32_t n, double flat, double wt[], uint32_t *stride_P
     /* Compute parameters: */
     double c = 0.5*(1-flat)*(n-1);  /* index (fractional) where the weight becomes 1. */
     assert((c >= 0) && (c <= n-1));
-    for (int32_t k = 0; k < n; k++)
+    for (int32_t k = 0;  k < n; k++)
       { if (k > (int32_t)n-1-k)
           { wt[k] = wt[(int32_t)n-1-k]; }
         else if (k < c)

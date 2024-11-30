@@ -313,7 +313,7 @@ codetree_node_count_t thuf_check_tree
           { /* Internal node: */
             uint64_t wt_ch[2]; /* Total leaf weight of each subtree. */
             uint64_t ct_ch[2]; /* Creation "time" for tie-breaking. */
-            for (int32_t ich = 0; ich < 2; ich++)
+            for (uint32_t ich = 0;  ich < 2; ich++)
               { codetree_node_t *ch = nd->child[ich];
                 wt_ch[ich] = checkit(ch);
                 ct_ch[ich] = (uint64_t)ch->value;

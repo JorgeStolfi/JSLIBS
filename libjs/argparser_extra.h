@@ -1,5 +1,5 @@
 /* argparser_extra.h -- internal functions for {argparser.h}. */
-/* Last edited on 2024-11-22 03:10:24 by stolfi */
+/* Last edited on 2024-11-22 21:43:27 by stolfi */
 
 #ifndef argparser_extra_H
 #define argparser_extra_H
@@ -23,7 +23,7 @@ bool_t argparser_key_matches(char *a, char *b);
   /* Returns {TRUE} if the strings {a} and {b} are equal,
     or differ only by replacement of an initial "--" by "-". */ 
 
-int64_t argparser_parse_int_string(argparser_t *pp, int32_t index, char *arg, int64_t min, int64_t max, char **rest_P);
+int64_t argparser_parse_int_string(argparser_t *pp, uint32_t index, char *arg, int64_t min, int64_t max, char **rest_P);
   /* Parses the beginning of the given string {arg}
     as a 64-bit signed integer, which must be in the range {min..max}.
     The string must be an optional '+' or '-' followed by at least one
@@ -36,24 +36,24 @@ int64_t argparser_parse_int_string(argparser_t *pp, int32_t index, char *arg, in
     first character of {arg} that was not parsed as part of the integer;
     which may be a pointer to the final '\000' character of {arg}. */
 
-void argparser_arg_msg(argparser_t *pp, char *msg1, int32_t index, char *msg2, char *val);
+void argparser_arg_msg(argparser_t *pp, char *msg1, uint32_t index, char *msg2, char *val);
   /* Writes to {pp->wr} the program name as "{name}: {msg1}".
     Then, if argument {index} is between 1 and {pp.arg.ne}, writes "argument {index} = "{argv[index]}".
     Then writes {val} using {msg2} as the format. */
 
-void argparser_error_at(argparser_t *pp, char *msg, char* pos, int32_t index);
+void argparser_error_at(argparser_t *pp, char *msg, char* pos, uint32_t index);
   /* Prints the error message {msg} with a "**" prefix.
     Then, if {index} is between 1 and {pp.arg.ne} (i.e. main's {argc})
     prints also the string {pos}, which should be "at" or "after",
     and the argument {pp.arg.e[index]}. Then aborts the program 
     with status 1. */
 
-void argparser_print_text(FILE *wr, char *info, int32_t wd);
+void argparser_print_text(FILE *wr, char *info, uint32_t wd);
   /* Prints a string {info} (terminated by '\000') to {wr}. The text
     may have multiple lines, separated by '\n'. Each line is
     formatted {argparser_print_info_line} to the requested width {wd}. */
 
-void argparser_print_info(argparser_t *pp, int32_t wd);
+void argparser_print_info(argparser_t *pp, uint32_t wd);
   /* Prints the info texts stored in {pp->help}. Each text is
     formatted with {argparser_print_info_text} to the requested
     width {wd}, and terminated by a newline. */

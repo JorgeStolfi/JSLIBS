@@ -1,6 +1,6 @@
-# Last edited on 2024-11-06 04:39:01 by stolfi
+# Last edited on 2024-11-22 20:53:33 by stolfi
 
-PROG = testf
+PROG = test_sum_eigen_fortran
 
 .PHONY:: all clean show
 

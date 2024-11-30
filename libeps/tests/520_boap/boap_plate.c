@@ -39,7 +39,7 @@ void boap_plate_ref_vec_draw
       { /* Render as 3D view with visibility. */
         /* Sort plates by increasing max {uax} coordinate: */
         /* !!! Should use a faster algo. !!! */
-        for (int32_t i = 0; i < np-1; i++)
+        for (uint32_t i = 0;  i < np-1; i++)
           { for (int32_t j = i+1; j < np; j++)
               { boap_plate_t *pti = pltv->e[i];
                 boap_plate_t *ptj = pltv->e[j];
@@ -51,14 +51,14 @@ void boap_plate_ref_vec_draw
               }
           }
        /* Just draw plates: */
-       for (int32_t i = 0; i < np; i++)  { boap_plate_draw(epsf, pltv->e[i], 0.25, fill, draw, uax, pos); }
+       for (uint32_t i = 0;  i < np; i++)  { boap_plate_draw(epsf, pltv->e[i], 0.25, fill, draw, uax, pos); }
       }
     else
       { /* Render as cross-sections: */
         if (draw)
-          { for (int32_t i = 0; i < np; i++) { boap_plate_draw(epsf, pltv->e[i], 0.50, FALSE, TRUE, uax, pos); } }
+          { for (uint32_t i = 0;  i < np; i++) { boap_plate_draw(epsf, pltv->e[i], 0.50, FALSE, TRUE, uax, pos); } }
         if (fill)
-          { for (int32_t i = 0; i < np; i++) { boap_plate_draw(epsf, pltv->e[i], 0.00, TRUE, FALSE, uax, pos); } }
+          { for (uint32_t i = 0;  i < np; i++) { boap_plate_draw(epsf, pltv->e[i], 0.00, TRUE, FALSE, uax, pos); } }
       }
   }
   

@@ -1,5 +1,5 @@
 /* rmxn.h --- m by n matrices and operations on them */
-/* Last edited on 2024-11-20 11:50:59 by stolfi */
+/* Last edited on 2024-11-27 11:04:58 by stolfi */
 
 #ifndef rmxn_H
 #define rmxn_H
@@ -93,6 +93,15 @@ void rmxn_tr_mul (uint32_t p, uint32_t m, uint32_t n, double *A, double *B, doub
 double rmxn_det (uint32_t n, double *A);
   /* Returns the determinant of the {n x n} matrix {A} */
 
+#define rmxn_det_by_enum_SIZE_MAX 9
+  /* Max value of {q} for {rmxn_det_by_enum}. Note that {9! = 362'880}. */
+
+double rmxn_det_by_enum(uint32_t m, uint32_t n, double A[], uint32_t q);
+  /* Determinant of the first {q} rows and columns of {A}, computed by
+    the elementary definition (sum of {q!} products of elements of {A})
+    Returns zero if {q > m} or {q > n}.  Otherwise {q}
+    must not exceed {rmxn_det_by_enum_SIZE_MAX}. */
+
 double rmxn_inv (uint32_t n, double *A, double *M);
 double rmxn_inv_full (uint32_t n, double *A, double *M);
   /* Sets {M} to the inverse of the {n x n} matrix {A}. The matrix {M}
@@ -125,6 +134,14 @@ double rmxn_mod_norm_sqr (uint32_t n, double *A);
 double rmxn_max_abs_elem(uint32_t m, uint32_t n, double *A);
   /* Returns the maximum absolute value of any element in the 
     {m × n} matrix {A}. */
+
+double rmxn_max_abs_elem_in_row(uint32_t m, uint32_t n, double M[], uint32_t i);
+  /* Returns the maximum absolute value of the elements in row {i}
+    of the {m × n} matrix {M}. */
+
+double rmxn_max_abs_elem_in_col(uint32_t m, uint32_t n, double M[], uint32_t j);
+  /* Returns the maximum absolute value of the elements in column {j} of
+     the {m × n} matrix {M}. */
     
 /* MATRIX FACTORIZATION */
 
@@ -174,6 +191,10 @@ void rmxn_perturb_unif(uint32_t m, uint32_t n, double pabs, double prel, double 
     where {mag} is {pabs + prel*fabs(M[i][j])}. The matrix {A} is
     assumed to have {m*n} elements. */ 
     
+void rmxn_cleanup(uint32_t m, uint32_t n, double *A, double tiny);
+  /* Sets to zero any elements of {A} that is less than {tiny} in 
+    absolute value.  A no-op if {tiny} is zero or negative. */
+
 /* SIMPLE MATRIX PRINTOUT */
 
 void rmxn_print (FILE *f, uint32_t m, uint32_t n, double *A);

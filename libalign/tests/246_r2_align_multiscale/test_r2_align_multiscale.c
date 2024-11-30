@@ -263,7 +263,7 @@ void test_align_one
     /* Also set auxiliary parameters {pini[],popt[]}: */
     /* Choose the initial guess {pini}, radii {rad}, tolerance {tol}: */
     tol = 0.25;
-    for (int32_t i = 0; i < NI; i++) 
+    for (uint32_t i = 0;  i < NI; i++) 
       { pini[i] = (r2_t){{ 0.5*NX, 0.5*NY }};
         rad[i].c[0] = (i == 1 ? 0.0 : 0.5*(1 + sin(i))*adj_rad.c[0]);
         rad[i].c[1] = 0.5*(1 + cos(i))*adj_rad.c[1];
@@ -272,7 +272,7 @@ void test_align_one
     if (strcmp(fname, "indiff") == 0)
       { f2_raw = &f2_indiff;
         /* For this function, the optimum {popt} is the initial point {pini}: */
-        for (int32_t i = 0; i < NI; i++) { popt[i] = pini[i]; }
+        for (uint32_t i = 0;  i < NI; i++) { popt[i] = pini[i]; }
         cmp_opt = bias; /* If {bias} is true, the solution should be {popt}. */
       }
     else if (strcmp(fname, "points") == 0)
@@ -310,7 +310,7 @@ void test_align_one
     debug_points = TRUE;
     r2_t psol[NI];  /* Computed alignment vector. */
     double Q2sol;   /* Goal function at {psol} including bias. */
-    for (int32_t i = 0; i < NI; i++) { psol[i] = pini[i]; }
+    for (uint32_t i = 0;  i < NI; i++) { psol[i] = pini[i]; }
     if (monoscale)
       { if (quadopt)
           { fprintf(stderr, " (single_scale_quadopt)...\n");
@@ -432,12 +432,12 @@ void test_align_choose_optimum(int32_t NI, r2_t pini[], r2_t adj_rad, r2_t popt[
         double da[NI];                 /* Adjustments along axis {a}. */
         /* Set {da[0..NI-1]} to random displcements: */
         double sumd = 0; /* Sum of all {da[0..NI-1]}. */
-        for (int32_t i = 0; i < NI; i++) { da[i] = (2*drandom()-1)*ra; sumd += da[i]; }
+        for (uint32_t i = 0;  i < NI; i++) { da[i] = (2*drandom()-1)*ra; sumd += da[i]; }
         /* Adjust {da} so that it is balanced: */
         double corr = -sumd/NI;
-        for (int32_t i = 0; i < NI; i++) { da[i] += corr; }
+        for (uint32_t i = 0;  i < NI; i++) { da[i] += corr; }
         /* Convert delta vector {da[0..NI-1]} to alignment vector {popt[0..NI-1].c[a]}: */
-        for (int32_t i = 0; i < NI; i++) { popt[i].c[a] = pini[i].c[a] + da[i]; }
+        for (uint32_t i = 0;  i < NI; i++) { popt[i].c[a] = pini[i].c[a] + da[i]; }
       }
   }
     
@@ -457,13 +457,13 @@ void test_image_plot_goal
     r2_t u[NI];
     /* Throw a bunch of random unit vectors: */
     r2_t usum = (r2_t){{ 0, 0 }};
-    for (int32_t i = 0; i < NI; i++) { r2_throw_dir(&(u[i])); r2_add(&(u[i]), &usum, &usum); }
+    for (uint32_t i = 0;  i < NI; i++) { r2_throw_dir(&(u[i])); r2_add(&(u[i]), &usum, &usum); }
     while (r2_norm(&usum) > 1.0e-5)
       { /* Shift {u[0..NI-1]} so that it has zero sum, and normalize: */
         r2_t uavg;
         r2_scale(1.0/NI, &usum, &uavg);
         usum = (r2_t){{ 0, 0 }};
-        for (int32_t i = 0; i < NI; i++)
+        for (uint32_t i = 0;  i < NI; i++)
           { r2_sub(&(u[i]), &uavg, &(u[i]));
             double u2 = r2_dir(&(u[i]), &(u[i]));
             if (u2 < 1.0e-4) { r2_throw_dir(&(u[i])); }
@@ -473,7 +473,7 @@ void test_image_plot_goal
       
     /* Choose unit vectors {v[i]} in {R^2}, with sum {(0,0)}, perp to {u[i]}: */
     r2_t v[NI];
-    for (int32_t i = 0; i < NI; i++) { r2_cross(&(u[i]), &(v[i])); }
+    for (uint32_t i = 0;  i < NI; i++) { r2_cross(&(u[i]), &(v[i])); }
     
     /* Sweep the {p,u,v} plane and plot: */
     char *fname = "out/f2.dat";
@@ -488,7 +488,7 @@ void test_image_plot_goal
         for (int32_t iv = -ns; iv <= +ns; iv++)
           { double dv = ((double)iv)/((double)ns);
             /* Compute the probe points {q[0..NI-1]}. */
-            for (int32_t i = 0; i < NI; i++)
+            for (uint32_t i = 0;  i < NI; i++)
               { r2_mix(du,&(u[i]), dv, &(v[i]), &(q[i])); 
                 r2_add(&(p[i]), &(q[i]), &(q[i])); 
               }
@@ -537,7 +537,7 @@ bool_t test_align_check_result
         double sum_d2 = 0; /* Total abs squared disp between {psol} and {pref}. */
         double sum_e2 = 0; /* Total rel squared disp between {psol} and {pref}. */
 
-        for (int32_t i = 0; i < NI; i++)
+        for (uint32_t i = 0;  i < NI; i++)
           { r2_t *q = &(psol[i]);
             r2_t *o = &(pref[i]);
             r2_t *r = &(rad[i]);
@@ -578,7 +578,7 @@ void test_image_debug_points
     int32_t ind = 2*scale; /* Indentation */
     double fscale = pow(2.0, scale);
     fprintf(stderr, "%*s%s\n", ind, "", label);
-    for (int32_t i = 0; i < NI; i++)
+    for (uint32_t i = 0;  i < NI; i++)
       { fprintf(stderr, "%*s  p[%02d] = ( %9.4f %9.4f )*2^%d", ind, "", i, p[i].c[0], p[i].c[1], scale);
         r2_t q; r2_scale(fscale, &(p[i]), &q);
         fprintf(stderr, " = ( %9.4f %9.4f )", q.c[0], q.c[1]);
@@ -622,7 +622,7 @@ double test_align_compute_image_mismatch_sqr
           { double vx = jx*dx;    /* Horiz offset of sample point. */
             /* Sample the images at this grid sampling point: */
             double u[ni];
-            for (int32_t i = 0; i < ni; i++)
+            for (uint32_t i = 0;  i < ni; i++)
               { /* Get samples of image {i}: */
                 u[i] = eval(i, scale, p[i].c[0]+vx, p[i].c[1]+vy);
               }
@@ -642,11 +642,11 @@ void test_align_compute_avg_var(int32_t ni, double u[], double *avgP, double *va
   {
     /* Compute the average {avg}: */
     double sum_u = 0; /* Sum of {u[ki]} */
-    for (int32_t i = 0; i < ni; i++) { sum_u += u[i]; }
+    for (uint32_t i = 0;  i < ni; i++) { sum_u += u[i]; }
     double avg = sum_u/ni; 
     /* Compute the sample variance: */
     double sum_du2 = 0;
-    for (int32_t i = 0; i < ni; i++) { double dui = u[i] - avg; sum_du2 += dui*dui; }
+    for (uint32_t i = 0;  i < ni; i++) { double dui = u[i] - avg; sum_du2 += dui*dui; }
     double var = sum_du2/ni;
     (*avgP) = avg;
     (*varP) = var;

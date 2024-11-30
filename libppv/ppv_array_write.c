@@ -167,7 +167,7 @@ void ppv_array_write_samples_raw_big ( FILE *wr, ppv_array_t *A )
             /* bool_t debug = ((A->bps == 10) && (pos == 0)); */
             /* if (debug) { fprintf(stderr,  "smp = " smpFMT "\n", smp); } */
             ppv_nbits_t shift = shift_ini; /* Shift to get next byte. */
-            for (int32_t k = 0; k < cps; k++) 
+            for (uint32_t k = 0;  k < cps; k++) 
               { ppv_word_08_t ch = (ppv_word_08_t)((smp >> shift) & maskw); 
                 /* if (debug) { fprintf(stderr,  "  ch = %u\n", ch); } */
                 fputc((char)ch, wr); 

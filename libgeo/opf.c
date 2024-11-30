@@ -25,7 +25,7 @@ void opf_build_complete
         
     /* Allocate a queue and put all vertices in it with null predecessors: */
     uint32_t *Q = talloc(n, uint32_t); /* Sample index queue. */
-    for (int32_t u = 0; u < n; u++) { Q[u] = (uint32_t)u; P[u] = (uint32_t)u; }
+    for (uint32_t u = 0;  u < n; u++) { Q[u] = (uint32_t)u; P[u] = (uint32_t)u; }
 
     auto void resortQ(uint32_t k0, uint32_t k1);
       /* Rearranges {Q[k0..k1-1]} so that {C[Q[k0]]} is minimum. */

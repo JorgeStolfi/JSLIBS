@@ -164,8 +164,8 @@ multifok_frame_t *multifok_raytrace_make_frame
     float_image_t *hAvg = float_image_new(1, NX, NY);
     float_image_t *hDev = float_image_new(1, NX, NY);
 
-    for (int32_t yPix = 0; yPix < NY; yPix++)
-      { for (int32_t xPix = 0; xPix < NX; xPix++)
+    for (uint32_t yPix = 0;  yPix < NY; yPix++)
+      { for (uint32_t xPix = 0;  xPix < NX; xPix++)
           { /* fprintf(stderr, "(%d,%d)", xPix, yPix); */
             i2_t iPix = (i2_t){{ xPix, yPix }};
             bool_t deb_pix = (debug_pix == NULL ? FALSE : debug_pix(&iPix));
@@ -185,7 +185,7 @@ multifok_frame_t *multifok_raytrace_make_frame
             assert(vBlr_pix >= 1.0);
             double shrp_pix = 1/vBlr_pix;
               
-            for (int32_t ic = 0; ic < NC; ic++)
+            for (uint32_t ic = 0;  ic < NC; ic++)
               { float_image_set_sample(sVal, ic, xPix, yPix, colr_pix[ic]); }
             float_image_set_sample(hAvg, 0, xPix, yPix, (float)hAvg_pix);         
             float_image_set_sample(hDev, 0, xPix, yPix, (float)sqrt(hVar_pix)); 
@@ -245,14 +245,14 @@ void multifok_raytrace_compute_pixel_properties
       
     /* Scan sampling points, accumulate: */
     double sum_w_colr[NC]; /* Sum of {w(p)*colr(p)}. */
-    for (int32_t ic = 0; ic < NC; ic++) { sum_w_colr[ic] = 0.0; }
+    for (uint32_t ic = 0;  ic < NC; ic++) { sum_w_colr[ic] = 0.0; }
     double sum_w_vBlr = 0.0; /* Sum of {w(p)*vBlr(R)}. */
     double sum_w_hAvg = 0.0; /* Sum of {w(p)*hAvg(p)}. */
     double sum_w_r2u = 0.0; /* Sum of {w(p)*|p-ctr|^2}. */
     double sum_w = 0.0; /* Sum of {w(p)}. */
     double hAvg_pt[NS]; /* Saved {zAve(p)} for all sampling points. */
     double hVar_pt[NS]; /* Saved {hVar(p)} for all sampling points. */
-    for (int32_t ks = 0; ks < NS; ks++)
+    for (uint32_t ks = 0;  ks < NS; ks++)
       { double x_img = iPix->c[0] + 0.5 + uSmp[ks].c[0];
         double y_img = iPix->c[1] + 0.5 + uSmp[ks].c[1];
         double wk = wSmp[ks];
@@ -275,7 +275,7 @@ void multifok_raytrace_compute_pixel_properties
           );
         if (debug) { fprintf(stderr, "    sample point vBlr = %12.8f hAvg = %12.6f hVar = %16.12f\n", vBlr_pt, hAvg_pt[ks], hVar_pt[ks]); }
         /* Accumulate: */
-        for (int32_t ic = 0; ic < NC; ic++) 
+        for (uint32_t ic = 0;  ic < NC; ic++) 
           { sum_w_colr[ic] += wk*(double)colr_pt[ic]; }
         assert(vBlr_pt >= 0.0);
         sum_w_vBlr += wk*vBlr_pt;
@@ -285,7 +285,7 @@ void multifok_raytrace_compute_pixel_properties
       }
     
     /* Compute average pixel color {colr_pix[0..NC-1]}: */
-    for (int32_t ic = 0; ic < NC; ic++) 
+    for (uint32_t ic = 0;  ic < NC; ic++) 
       { colr_pix[ic] = (float)(sum_w_colr[ic]/sum_w); }
     
     /* Compute average blurring indicator {vBlr_pix}: */
@@ -300,7 +300,7 @@ void multifok_raytrace_compute_pixel_properties
     
     /* Compute pixel height variance {hVar_pix}: */
     double sum_w_dz2 = 0.0;
-    for (int32_t ks = 0; ks < NS; ks++)
+    for (uint32_t ks = 0;  ks < NS; ks++)
       { double dz = hAvg_pt[ks] - hAvg_pix; 
         sum_w_dz2 += wSmp[ks]*(dz*dz + hVar_pt[ks]);
       }
@@ -362,13 +362,13 @@ void multifok_raytrace_compute_sample_point_properties
     demand(iniRay < NR, "invalid {iniRay}");
     
     double sum_w_colr[NC]; /* Sum of {wRay(R)*colr(R)}. */
-    for (int32_t ic = 0; ic < NC; ic++) { sum_w_colr[ic] = 0.0; }
+    for (uint32_t ic = 0;  ic < NC; ic++) { sum_w_colr[ic] = 0.0; }
     double sum_w_vBlr = 0.0; /* Sum of {wRay(R)*vBlr(R)}. */
     double sum_w_hHit = 0.0; /* Sum of {wRay(R)*hHit(R)}. */
     double sum_w = 0.0; /* Sum of {wRay(R)}. */
     double hHit_ray[KR]; /* Stores heights of rays used. */
     double w_ray[KR];    /* Stores weights of rays used. */
-    for (int32_t jr = 0; jr < KR; jr++)
+    for (uint32_t jr = 0;  jr < KR; jr++)
       { /* INdex of ray in {tRay,wRay}: */
         int32_t ir = iniRay + jr*stpRay;
         assert((ir >= 0) && (ir < NR));
@@ -411,7 +411,7 @@ void multifok_raytrace_compute_sample_point_properties
           }
 
         /* Accumulate the ray properties onto the point properties: */
-        for (int32_t ic = 0; ic < NC; ic++)
+        for (uint32_t ic = 0;  ic < NC; ic++)
           { double colri = fmax(0.0, fmin(1.0, colr_ray[ic]));
             sum_w_colr[ic] += wRay[ir]*(double)colri;
           }
@@ -423,14 +423,14 @@ void multifok_raytrace_compute_sample_point_properties
     /* Compute average color, blurring indicator, and height at point {p}: */
     assert(sum_w > 0);
     if (debug) {fprintf(stderr, "      sum_w_vBlr = %12.8f sum_w_hHit = %12.6f sum_w = %16.12f\n", sum_w_vBlr, sum_w_hHit, sum_w); }
-    for (int32_t ic = 0; ic < NC; ic++) { colr_pt[ic] = (float)(sum_w_colr[ic]/sum_w); }
+    for (uint32_t ic = 0;  ic < NC; ic++) { colr_pt[ic] = (float)(sum_w_colr[ic]/sum_w); }
     double vBlr_pt = sum_w_vBlr/sum_w;
     assert((! isnan(vBlr_pt)) && (vBlr_pt >= 0.0));
     double hAvg_pt = sum_w_hHit/sum_w;
     
     /* Compute Z height variance: */
     double sum_w_dz2 = 0;
-    for (int32_t jr = 0; jr < KR; jr++)
+    for (uint32_t jr = 0;  jr < KR; jr++)
       { double dz = hHit_ray[jr] - hAvg_pt;
         sum_w_dz2 += wRay[jr]*dz*dz;
       }

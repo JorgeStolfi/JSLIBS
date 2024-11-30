@@ -69,7 +69,7 @@ bool_t obj_file_data_compare(obj_file_data_t *D1, obj_file_data_t *D2, double to
     assert(D1->FN.ne == D1->FV.ne); assert(D2->FN.ne == D2->FV.ne);
     if (D1->FV.ne == D2->FV.ne)
       { int32_t nf = D1->FV.ne; /* Number of faces. */
-        for (int32_t kf = 0; kf < nf; kf++)
+        for (uint32_t kf = 0;  kf < nf; kf++)
           { int32_vec_t *FV1k = &(D1->FV.e[kf]); int32_vec_t *FV2k = &(D2->FV.e[kf]);
             int32_vec_t *FT1k = &(D1->FT.e[kf]); int32_vec_t *FT2k = &(D2->FT.e[kf]);
             int32_vec_t *FN1k = &(D1->FN.e[kf]); int32_vec_t *FN2k = &(D2->FN.e[kf]);
@@ -78,7 +78,7 @@ bool_t obj_file_data_compare(obj_file_data_t *D1, obj_file_data_t *D2, double to
             assert(FN1k->ne == FV1k->ne); assert(FN2k->ne == FV2k->ne); 
             if (FV1k->ne == FV2k->ne)
               { int32_t nc = FV1k->ne; /* Number of corners. */
-                for (int32_t kc = 0; kc < nc; kc++)
+                for (uint32_t kc = 0;  kc < nc; kc++)
                   { numcmp("vertex indices",   FV1k->e[kc], FV2k->e[kc], kf, kc);
                     numcmp("texpoint indices", FT1k->e[kc], FT2k->e[kc], kf, kc);
                     numcmp("normal indices",   FN1k->e[kc], FN2k->e[kc], kf, kc);
@@ -104,10 +104,10 @@ bool_t obj_file_data_compare(obj_file_data_t *D1, obj_file_data_t *D2, double to
    void ptscmp(char *name, r3_vec_t *P1, r3_vec_t *P2, double tol)
      { assert(P1->ne == P2->ne);
        int32_t np = P1->ne;
-       for (int32_t kp = 0; kp < np; kp++)
+       for (uint32_t kp = 0;  kp < np; kp++)
          { r3_t *P1k = &(P1->e[kp]);
            r3_t *P2k = &(P2->e[kp]);
-           for (int32_t ka = 0; ka < 3; ka++)
+           for (uint32_t ka = 0;  ka < 3; ka++)
              { double P1c = P1k->c[ka];
                double P2c = P2k->c[ka];
                if (fabs(P1c - P2c) >tol)
@@ -124,7 +124,7 @@ bool_t obj_file_data_compare(obj_file_data_t *D1, obj_file_data_t *D2, double to
    void labcmp(char *name, string_vec_t *L1, string_vec_t *L2)
      { assert(L1->ne == L2->ne);
        int32_t ns = L1->ne;
-       for (int32_t ks = 0; ks < ns; ks++)
+       for (uint32_t ks = 0;  ks < ns; ks++)
          { char *L1k = L1->e[ks];
            char *L2k = L2->e[ks];
            if (strcmp(L1k, L2k) != 0)
@@ -147,7 +147,7 @@ void obj_file_data_free(obj_file_data_t *D)
     int32_t nf = D->FV.ne;
     assert(D->FT.ne == nf);
     assert(D->FN.ne == nf);
-    for(int32_t kf =0; kf < nf; kf++)
+    for (uint32_t kf = 0;  kf < nf; kf++)
       { free(D->FV.e[kf].e); 
         free(D->FT.e[kf].e); 
         free(D->FN.e[kf].e); 

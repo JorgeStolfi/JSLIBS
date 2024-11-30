@@ -65,35 +65,35 @@ void msm_double_vec_smooth(double_vec_t *smp)
   { int32_t ns = smp->ne;
     /* Replace the samples by their sum: */
     double s = 0;
-    for (int32_t i = 0; i < ns; i++) { s += smp->e[i]; smp->e[i] = s; }
+    for (uint32_t i = 0;  i < ns; i++) { s += smp->e[i]; smp->e[i] = s; }
     /* Add a linear ramp to make the sequence periodic: */
     double ds = s/ns;
-    for (int32_t i = 0; i < ns; i++) { smp->e[i] -= ds*i; }
+    for (uint32_t i = 0;  i < ns; i++) { smp->e[i] -= ds*i; }
   }
   
 void msm_double_vec_normalize_sum(double_vec_t *smp)
   { int32_t ns = smp->ne;
     /* Compute average {avg}: */
     double sum = 0;
-    for (int32_t i = 0; i < ns; i++) { sum += smp->e[i]; }
-    if (sum != 0) { for (int32_t i = 0; i < ns; i++) { smp->e[i] /= sum; } }
+    for (uint32_t i = 0;  i < ns; i++) { sum += smp->e[i]; }
+    if (sum != 0) { for (uint32_t i = 0;  i < ns; i++) { smp->e[i] /= sum; } }
   }
   
 void msm_double_vec_normalize_avg_dev(double_vec_t *smp)
   { int32_t ns = smp->ne;
     /* Compute average {avg}: */
     double sum = 0;
-    for (int32_t i = 0; i < ns; i++) { sum += smp->e[i]; }
+    for (uint32_t i = 0;  i < ns; i++) { sum += smp->e[i]; }
     double avg = sum/ns;
     /* Shift to zero mean: */
-    for (int32_t i = 0; i < ns; i++) { smp->e[i] -= avg; }
+    for (uint32_t i = 0;  i < ns; i++) { smp->e[i] -= avg; }
     /* Compute deviation {dev}: */
     double sum2 = 0;
-    for (int32_t i = 0; i < ns; i++) { double si = smp->e[i]; sum2 += si*si; }
+    for (uint32_t i = 0;  i < ns; i++) { double si = smp->e[i]; sum2 += si*si; }
     double dev = sqrt(sum2/ns);
     if (dev > 0)
       { /* Scale to unit variance: */
-        for (int32_t i = 0; i < ns; i++) { smp->e[i] /= dev; }
+        for (uint32_t i = 0;  i < ns; i++) { smp->e[i] /= dev; }
       }
   }
 
@@ -178,7 +178,7 @@ sign_t msm_double_vec_mutate_step(double delProb)
   }
 
 void msm_double_vec_write(FILE *wr, double_vec_t *smp)
-  { for (int32_t i = 0; i < smp->ne; i++)
+  { for (uint32_t i = 0;  i < smp->ne; i++)
       { fprintf(wr, "%+8.5f\n", smp->e[i]); }
     fflush(wr);
   }

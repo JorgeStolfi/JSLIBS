@@ -23,14 +23,14 @@
 
 bool_t box_is_empty(box_dim_t d, interval_t B[])
   {
-    for (int32_t i = 0; i < d; i++) 
+    for (uint32_t i = 0;  i < d; i++) 
       { if (interval_is_empty(&(B[i]))) { return TRUE; } }
     return FALSE;
   }
 
 void box_lo_corner(box_dim_t d, interval_t B[], double p[])
   { 
-    for (int32_t i = 0; i < d; i++) 
+    for (uint32_t i = 0;  i < d; i++) 
       { interval_t *Bi = &(B[i]);
         demand(! interval_is_empty(Bi), "empty box");
         p[i] = LO(*Bi);
@@ -39,7 +39,7 @@ void box_lo_corner(box_dim_t d, interval_t B[], double p[])
 
 void box_hi_corner(box_dim_t d, interval_t B[], double p[])
   { 
-    for (int32_t i = 0; i < d; i++) 
+    for (uint32_t i = 0;  i < d; i++) 
       { interval_t *Bi = &(B[i]);
         demand(! interval_is_empty(Bi), "empty box");
         p[i] = HI(*Bi); 
@@ -48,7 +48,7 @@ void box_hi_corner(box_dim_t d, interval_t B[], double p[])
 
 void box_corner(box_dim_t d, interval_t B[], interval_side_t dir[], double p[])
   { 
-    for (int32_t i = 0; i < d; i++) 
+    for (uint32_t i = 0;  i < d; i++) 
       { interval_t *Bi = &(B[i]);
         demand(! interval_is_empty(Bi), "empty box");
         p[i] = B[i].end[dir[i]];
@@ -57,7 +57,7 @@ void box_corner(box_dim_t d, interval_t B[], interval_side_t dir[], double p[])
 
 void box_center(box_dim_t d, interval_t B[], double p[])
   { 
-    for (int32_t i = 0; i < d; i++) 
+    for (uint32_t i = 0;  i < d; i++) 
       { interval_t *Bi = &(B[i]);
         demand(! interval_is_empty(Bi), "empty box");
         p[i] = interval_mid(Bi);
@@ -67,9 +67,9 @@ void box_center(box_dim_t d, interval_t B[], double p[])
 void box_half_widths(box_dim_t d, interval_t B[], double h[])
   { 
     if (box_is_empty(d, B))
-      { for (int32_t i = 0; i < d; i++) { h[i] = 0.0; } }
+      { for (uint32_t i = 0;  i < d; i++) { h[i] = 0.0; } }
     else
-      { for (int32_t i = 0; i < d; i++) 
+      { for (uint32_t i = 0;  i < d; i++) 
           { interval_t *Bi = &(B[i]);
             h[i] = interval_rad(Bi);
           }
@@ -78,11 +78,11 @@ void box_half_widths(box_dim_t d, interval_t B[], double h[])
 
 void box_widths(box_dim_t d, interval_t B[], double w[])
   { if (box_is_empty(d, B))
-      { for (int32_t i = 0; i < d; i++) { w[i] = 0.0; } }
+      { for (uint32_t i = 0;  i < d; i++) { w[i] = 0.0; } }
     else
       { int32_t oround = fegetround();
         fesetround(FE_UPWARD);
-        for (int32_t i = 0; i < d; i++) { w[i] = HI(B[i]) - LO(B[i]); }
+        for (uint32_t i = 0;  i < d; i++) { w[i] = HI(B[i]) - LO(B[i]); }
         fesetround(oround);
       }
   }
@@ -94,7 +94,7 @@ double box_max_width(box_dim_t d, interval_t B[])
       { int32_t oround = fegetround();
         fesetround(FE_UPWARD);
         double sz = 0;
-        for (int32_t i = 0; i < d; i++) 
+        for (uint32_t i = 0;  i < d; i++) 
           { double szi = HI(B[i]) - LO(B[i]);
             if (szi > sz) { sz = szi; }
           }
@@ -110,7 +110,7 @@ double box_radius(box_dim_t d, interval_t B[])
       { int32_t oround = fegetround();
         fesetround(FE_UPWARD);
         double sum2 = 0;
-        for (int32_t i = 0; i < d; i++) 
+        for (uint32_t i = 0;  i < d; i++) 
           { double rdi = (HI(B[i]) * 0.5) - (LO(B[i]) * 0.5);
             sum2 += rdi*rdi;
           }
@@ -126,7 +126,7 @@ bool_t box_equal(box_dim_t d, interval_t A[], interval_t B[])
     else if (box_is_empty(d, B))
       { return box_is_empty(d, A); }
     else 
-      { for (int32_t i = 0; i < d; i++) 
+      { for (uint32_t i = 0;  i < d; i++) 
           { interval_t *Ai = &(A[i]);
             interval_t *Bi = &(B[i]);
             if ((LO(*Ai) != LO(*Bi)) || (HI(*Ai) != HI(*Bi)))
@@ -140,16 +140,16 @@ bool_t box_equal(box_dim_t d, interval_t A[], interval_t B[])
 
 void box_empty(box_dim_t d,  interval_t C[])
   { 
-    for (int32_t i = 0; i < d; i++) 
+    for (uint32_t i = 0;  i < d; i++) 
       { C[i] = (interval_t){{ +INF, -INF }}; }
   }
 
 void box_include_point(box_dim_t d, interval_t B[], double p[], interval_t C[])
   { 
      if (box_is_empty(d, B))
-      { for (int32_t i = 0; i < d; i++) { C[i] = (interval_t){{ p[i], p[i] }}; } }
+      { for (uint32_t i = 0;  i < d; i++) { C[i] = (interval_t){{ p[i], p[i] }}; } }
     else
-      { for (int32_t i = 0; i < d; i++) 
+      { for (uint32_t i = 0;  i < d; i++) 
           { interval_t *Bi = &(B[i]);
             interval_t *Ci = &(C[i]);
             double z = p[i];
@@ -162,11 +162,11 @@ void box_include_point(box_dim_t d, interval_t B[], double p[], interval_t C[])
   
 void box_join(box_dim_t d, interval_t A[], interval_t B[], interval_t C[])
   { 
-    for (int32_t i = 0; i < d; i++) 
+    for (uint32_t i = 0;  i < d; i++) 
       { interval_t *Ai = &(A[i]);
-        if (LO(*Ai) > HI(*Ai)) { for (int32_t i = 0; i < d; i++) { C[i] = B[i]; } return ;}
+        if (LO(*Ai) > HI(*Ai)) { for (uint32_t i = 0;  i < d; i++) { C[i] = B[i]; } return ;}
         interval_t *Bi = &(B[i]);
-        if (LO(*Bi) > HI(*Bi)) { for (int32_t i = 0; i < d; i++) { C[i] = A[i]; } return ;}
+        if (LO(*Bi) > HI(*Bi)) { for (uint32_t i = 0;  i < d; i++) { C[i] = A[i]; } return ;}
         interval_t *Ci = &(C[i]);
         LO(*Ci) = fmin(LO(*Ai), LO(*Bi));
         HI(*Ci) = fmax(HI(*Ai), HI(*Bi));
@@ -176,7 +176,7 @@ void box_join(box_dim_t d, interval_t A[], interval_t B[], interval_t C[])
 
 void box_meet(box_dim_t d, interval_t A[], interval_t B[], interval_t C[])
   { 
-    for (int32_t i = 0; i < d; i++) 
+    for (uint32_t i = 0;  i < d; i++) 
       { interval_t *Ai = &(A[i]);
         if (LO(*Ai) > HI(*Ai)) { box_empty(d, C); return ;}
         interval_t *Bi = &(B[i]);
@@ -196,7 +196,7 @@ void box_widen(box_dim_t d, interval_t B[], double margin, interval_t C[])
     else
       { int32_t oround = fegetround();
         fesetround(FE_UPWARD);
-        for (int32_t i = 0; i < d; i++) 
+        for (uint32_t i = 0;  i < d; i++) 
           { interval_t *Bi = &(B[i]);
             interval_t *Ci = &(C[i]);
             double t = -LO(*Bi) + margin; /* To round down. */
@@ -215,7 +215,7 @@ void box_widen_var(box_dim_t d, interval_t B[], double mrglo[], double mrghi[], 
     else
       { int32_t oround = fegetround();
         fesetround(FE_UPWARD);
-        for (int32_t i = 0; i < d; i++) 
+        for (uint32_t i = 0;  i < d; i++) 
           { interval_t *Bi = &(B[i]);
             interval_t *Ci = &(C[i]);
             double t = -LO(*Bi) + mrglo[i]; /* To round down. */
@@ -235,7 +235,7 @@ void box_round(box_dim_t d, interval_t B[], double unit, bool_t out, interval_t 
     else
       { int32_t oround = fegetround();
         fesetround(FE_UPWARD);
-        for (int32_t i = 0; i < d; i++) 
+        for (uint32_t i = 0;  i < d; i++) 
           { interval_t *Bi = &(B[i]);
             interval_t *Ci = &(C[i]);
             if (out)
@@ -278,7 +278,7 @@ void box_split
         assert(LO(*Ba) <= HI(*Ba));
         if ((LO(*Ba) < x) && (x < HI(*Ba)))
           { /* All three parts are non-empty: */
-            for (int32_t i = 0; i < d; i++) 
+            for (uint32_t i = 0;  i < d; i++) 
               { if (i == a)
                   { if (BLO != NULL) { LO(BLO[i]) = LO(B[i]); HI(BLO[i]) = x; assert(LO(BLO[i]) < HI(BLO[i])); }
                     if (BMD != NULL) { LO(BMD[i]) = x; HI(BMD[i]) = x; }
@@ -294,18 +294,18 @@ void box_split
         else if ((LO(*Ba) == x) && (HI(*Ba) == x))
           { /* {BLO} and {BHI} are empty, {BMD} is {B}: */
             if (BLO != NULL) { box_empty(d, BLO); }
-            if (BMD != NULL) { for (int32_t i = 0; i < d; i++) { BMD[i] = B[i]; } }
+            if (BMD != NULL) { for (uint32_t i = 0;  i < d; i++) { BMD[i] = B[i]; } }
             if (BHI != NULL) { box_empty(d, BHI); }
           }
         else if (x <= LO(*Ba))
           { /* {BLO} and {BMD} are empty, {BHI} is {B}: */
             if (BLO != NULL) { box_empty(d, BLO); }
             if (BMD != NULL) { box_empty(d, BMD); }
-            if (BHI != NULL) { for (int32_t i = 0; i < d; i++) { BHI[i] = B[i]; } }
+            if (BHI != NULL) { for (uint32_t i = 0;  i < d; i++) { BHI[i] = B[i]; } }
           }
         else if (x >= HI(*Ba))
           { /* {BMD} {BHI} are empty, {BLO} is {B}: */
-            if (BLO != NULL) { for (int32_t i = 0; i < d; i++) { BLO[i] = B[i]; } }
+            if (BLO != NULL) { for (uint32_t i = 0;  i < d; i++) { BLO[i] = B[i]; } }
             if (BMD != NULL) { box_empty(d, BMD); }
             if (BHI != NULL) { box_empty(d, BHI); }
           }
@@ -329,7 +329,7 @@ void box_throw(box_dim_t d, double elo, double ehi, double p_empty, double p_sin
         assert(box_is_empty(d, B));
       }
     else
-      { for (int32_t i = 0; i < d; i++)
+      { for (uint32_t i = 0;  i < d; i++)
           { if (drandom() < p_single)
               { /* Generate a singleton interval: */
                 double x = NAN;
@@ -358,7 +358,7 @@ void box_throw(box_dim_t d, double elo, double ehi, double p_empty, double p_sin
 void box_point_map(box_dim_t d, double z[], interval_t B[], double x[])
   { 
     int32_t j = 0;
-    for (int32_t i = 0; i < d; i++)
+    for (uint32_t i = 0;  i < d; i++)
       { double lo = LO(B[i]);
         double hi = HI(B[i]);
         if (lo < hi)
@@ -375,7 +375,7 @@ void box_point_map(box_dim_t d, double z[], interval_t B[], double x[])
 
 void box_point_unmap(box_dim_t d, double x[], interval_t B[], double z[])
   { int32_t j = 0;
-    for (int32_t i = 0; i < d; i++)
+    for (uint32_t i = 0;  i < d; i++)
       { double lo = LO(B[i]);
         double hi = HI(B[i]);
         if (lo < hi)
@@ -479,7 +479,7 @@ void box_gen_print
 
     if (pref != NULL) { fputs(pref, wr); }
     bool_t ety = box_is_empty(d, B);
-    for (int32_t i = 0; i < d; i++) 
+    for (uint32_t i = 0;  i < d; i++) 
       { if (i > 0) { fputs(sep, wr); }
         if (ety) 
           { fputs("[]", wr); }

@@ -92,7 +92,7 @@ void test_lsq_fit(int32_t trial, double eps, bool_t verbose)
     
     if (verbose) { fprintf(stderr, "  generating true solution...\n\n"); }
     test_lsq_throw_linear_fn(nx, nf, M);
-    if (verbose) { gsel_print_array(stderr, 4, "%12.6f", "true solution matrix:", nx, nf, "M", M, ""); }
+    if (verbose) { gauss_elim_print_array(stderr, 4, "%12.6f", "true solution matrix:", nx, nf, "M", M, ""); }
     
     /* Data arrays for {lsq_array_fit}: */
     double *X = rmxn_alloc(nt, nx);

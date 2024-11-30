@@ -116,7 +116,7 @@ int32_t main (int32_t argc, char **argv)
         mfsb_show_sample_weights(wt, NW, ws, o->outDir);
         for (multifok_basis_type_t bt = BT_FIRST; bt <= BT_LAST; bt++)
           { if ((NW == 3) || (bt != DIFF))
-              { for (int32_t io = 0; io <= 1; io++)
+              { for (uint32_t io = 0;  io <= 1; io++)
                   { bool_t ortho = (io == 1);
                     char *basDir = jsprintf("%s/basis-nw%03d-bt%s-wt%s-or%c", o->outDir, NW, bTypeX, wTypeX, "FT"[ortho]);
                     mfsb_show_single_basis(NW, ws, bt, wt, ortho, basDir);
@@ -145,8 +145,8 @@ void mfsb_show_sample_weights
     float_image_t *wsimg = float_image_new(NC, NX, NY);
     
     /* Write weights as an image: */
-    for (int32_t ix = 0; ix < NW; ix++)
-      { for (int32_t iy = 0; iy < NW; iy++) 
+    for (uint32_t ix = 0;  ix < NW; ix++)
+      { for (uint32_t iy = 0;  iy < NW; iy++) 
           { int32_t ks = iy*NW + ix;
             float_image_set_sample(wsimg, 0, ix, iy, (float)ws[ks]);
             double ws_check = (double)float_image_get_sample(wsimg, 0, ix, iy);
@@ -188,10 +188,10 @@ void mfsb_show_single_basis
     multifok_basis_ortho_check(stderr, basis);
 
     /* Write each basis element as an image: */
-    for (int32_t kb = 0; kb < basis->NB; kb++)
+    for (uint32_t kb = 0;  kb < basis->NB; kb++)
       { bcimg[kb] = float_image_new(NC, NX, NY);
-        for (int32_t ix = 0; ix < NX; ix++)
-          { for (int32_t iy = 0; iy < NY; iy++) 
+        for (uint32_t ix = 0;  ix < NX; ix++)
+          { for (uint32_t iy = 0;  iy < NY; iy++) 
               { int32_t ks = iy*NW + ix;
                 double phk = basis->bas[kb][ks];
                 float_image_set_sample(bcimg[kb], 0, ix, iy, (float)phk);

@@ -43,7 +43,7 @@ void multifok_score_read_term_weights_names_get_indices
 
 double multifok_score_from_terms(int32_t NT, double wt[], double term[])
   { double score = 0.0;
-    for (int32_t kt = 0; kt < NT; kt++)
+    for (uint32_t kt = 0;  kt < NT; kt++)
       { /* Compute and combine term values: */
         score += wt[kt]*term[kt];
       }

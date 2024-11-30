@@ -1,5 +1,5 @@
 /* See {rmxn_transform_quadratic.h}. */
-/* Last edited on 2024-11-22 05:41:43 by stolfi */
+/* Last edited on 2024-11-23 18:56:47 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -28,19 +28,19 @@ void rmxn_transform_quadratic(uint32_t n, double E[], double e[], uint32_t m, do
 
     if (debug) { fprintf(stderr, "... computing the metric matrix {M} for {\\EF} ...\n"); }
     double M[m*m];
-    for (int32_t r = 0; r < m; r++)
-      { double *hr = &(H[r*(int32_t)n]);
-        for (int32_t s = 0; s <= r; s++)
-          { double *hs = &(H[s*(int32_t)n]);
+    for (uint32_t r = 0;  r < m; r++)
+      { double *hr = &(H[r*n]);
+        for (uint32_t s = 0;  s <= r; s++)
+          { double *hs = &(H[s*n]);
             double sum = 0.0;
-            for (int32_t i = 0; i < n; i++)
+            for (uint32_t i = 0;  i < n; i++)
               { double hrij = hr[i];
                 double hsij = hs[i];
                 double ei = e[i];
                 sum += hrij*hsij*ei; 
               }
-            M[r*(int32_t)m + s] = sum;
-            M[s*(int32_t)m + r] = sum; /* Diag is assigned twice, but OK. */
+            M[r*m + s] = sum;
+            M[s*m + r] = sum; /* Diag is assigned twice, but OK. */
           }
       }
     
@@ -56,7 +56,7 @@ void rmxn_transform_quadratic(uint32_t n, double E[], double e[], uint32_t m, do
     /* Check that all eigenvalues were computed: */
     demand(p == m, "failed to determine eigenvalues of {M}");
     /* Copy the eigenvalues {d[0..m-1]} to {f[0..m-1]}: */
-    for (int32_t k = 0; k < m; k++) { f[k] = d[k]; } 
+    for (uint32_t k = 0;  k < m; k++) { f[k] = d[k]; } 
     
   }
 

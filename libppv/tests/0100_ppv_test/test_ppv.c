@@ -388,7 +388,7 @@ void test_sample_distr(ppv_array_t *A)
       }
 
     uint64_t hist[nvals]; 
-    for (int32_t v = 0; v < nvals; v++) { hist[v] = 0; }
+    for (uint32_t v = 0;  v < nvals; v++) { hist[v] = 0; }
 
     auto bool_t gather_hist(const ppv_index_t ix[]);
     enum_by_hand(gather_hist, A);
@@ -401,7 +401,7 @@ void test_sample_distr(ppv_array_t *A)
     uint64_t hmin = ppv_MAX_SAMPLES;
     uint64_t hmax = 0;
     double sum_h = 0.0;
-    for (int32_t v = 0; v < nvals; v++)
+    for (uint32_t v = 0;  v < nvals; v++)
       { uint64_t hv = hist[v];
         if (prhist) { fprintf(stderr, "%5u %12lu\n", (uint32_t)(v + smp_min), hv); }
         if (hv > hmax) { hmax = hv;  }
@@ -411,7 +411,7 @@ void test_sample_distr(ppv_array_t *A)
     if (prhist) { fprintf(stderr, "\n"); }
     double havg = sum_h/(double)nvals;   /* Actual average bin count. */
     double sum_d2 = 0;
-    for (int32_t v = 0; v < nvals; v++)
+    for (uint32_t v = 0;  v < nvals; v++)
       { uint64_t hv = hist[v];
         double dv = ((double)hv) - havg;
         sum_d2 += dv*dv;
@@ -513,7 +513,7 @@ void test_crop(ppv_array_t *A)
     int32_t ntrials = 2*d*d;
     ppv_step_t sh[d]; /* Shift of cropped array along each axis. */
     ppv_size_t sz[d]; /* Size of cropped array along each axis. */
-    for (int32_t trial = 0; trial < ntrials; trial++)
+    for (uint32_t trial = 0;  trial < ntrials; trial++)
       { /* Initialze {sh} and {sz} for full array: */
         for (ppv_axis_t ax = 0; ax < d; ax++) { sh[ax] = 0; } 
         memcpy(sz, A->size, d*sizeof(ppv_size_t)); 
@@ -587,7 +587,7 @@ void test_subsample(ppv_array_t *A)
     int32_t ntrials = 2*d*d;
     ppv_size_t st[d]; /* Subsampling step along each axis. */
     ppv_size_t sz[d]; /* Size of subsampled array along each axis. */
-    for (int32_t trial = 0; trial < ntrials; trial++)
+    for (uint32_t trial = 0;  trial < ntrials; trial++)
       { /* Initialze {st} and {sz} for full array: */
         for (ppv_axis_t ax = 0; ax < d; ax++) { st[ax] = 1; } 
         memcpy(sz, A->size, d*sizeof(ppv_size_t)); 
@@ -655,13 +655,13 @@ void test_swap_indices(ppv_array_t *A)
     if (verbose) { ppv_print_descriptor(stderr, "A = { ", A, " }\n"); } 
     int32_t ntrials = 2*d*d;
     ppv_size_t tr[d]; /* Axis {ax} of {B} is axis {tr[ax]} of {A}. */
-    for (int32_t trial = 0; trial < ntrials; trial++)
+    for (uint32_t trial = 0;  trial < ntrials; trial++)
       { /* Initialze {tr} with identity permutation: */
         for (ppv_axis_t ax = 0; ax < d; ax++) { tr[ax] = ax; }
         /* Start with the standard array: */
         ppv_array_t *B = ppv_array_clone(A);
 
-        for (int32_t pass = 0; pass < 2; pass++)
+        for (uint32_t pass = 0;  pass < 2; pass++)
           { /* Perform a transposition: */
             ppv_axis_t axa1 = (ppv_axis_t)((trial/(1+pass)) % d);
             ppv_axis_t axb1 = (ppv_axis_t)((trial/(2+pass)) % d);
@@ -671,7 +671,7 @@ void test_swap_indices(ppv_array_t *A)
             assert(axa1 + n1 <= d);
             assert(axb1 + n1 <= d);
             assert((axa1 == axb1) || (axa1 + n1 <= axb1) || (axb1 + n1 <= axa1));
-            for (int32_t k = 0; k < n1; k++)
+            for (uint32_t k = 0;  k < n1; k++)
               { ppv_size_t tmp = tr[axa1+k]; tr[axa1+k] = tr[axb1+k]; tr[axb1+k] = tmp; } 
             ppv_swap_indices(B, axa1, axb1, n1);
             if (verbose) 
@@ -718,7 +718,7 @@ void test_flip_indices(ppv_array_t *A)
     if (verbose) { ppv_print_descriptor(stderr, "A = { ", A, " }\n"); } 
     int32_t ntrials = 2*d*d;
     ppv_size_t tr[d]; /* Axis {ax} of {B} is axis {tr[ax]} of {A}. */
-    for (int32_t trial = 0; trial < ntrials; trial++)
+    for (uint32_t trial = 0;  trial < ntrials; trial++)
       { /* Initialze {tr} with identity permutation: */
         for (ppv_axis_t ax = 0; ax < d; ax++) { tr[ax] = ax; }
         /* Start with the standard array: */
@@ -792,7 +792,7 @@ void test_reverse(ppv_array_t *A)
     if (verbose) { ppv_print_descriptor(stderr, "A = { ", A, " }\n"); } 
     int32_t ntrials = 2*d*d;
     bool_t fp[d]; /* Tells whether each axis was flipped or not. */
-    for (int32_t trial = 0; trial < ntrials; trial++)
+    for (uint32_t trial = 0;  trial < ntrials; trial++)
       { /* Initialze {fp} for unflipped array: */
         for (ppv_axis_t ax = 0; ax < d; ax++) { { fp[ax] = FALSE; } }
         /* Start with the standard array: */
@@ -866,7 +866,7 @@ void test_diagonal(ppv_array_t *A)
     if (verbose) { ppv_print_descriptor(stderr, "A = { ", A, " }\n"); } 
     int32_t ntrials = 2*d*d;
     ppv_size_t sz[d]; /* Size of diagonalized array along each axis. */
-    for (int32_t trial = 0; trial < ntrials; trial++)
+    for (uint32_t trial = 0;  trial < ntrials; trial++)
       { /* Initialze {sz} for full array: */
         memcpy(sz, A->size, d*sizeof(ppv_size_t)); 
         /* Start with the standard array: */
@@ -923,7 +923,7 @@ void test_chop(ppv_array_t *A)
     if (verbose) { ppv_print_descriptor(stderr, "A = { ", A, " }\n"); } 
     int32_t ntrials = 2*d*d;
     ppv_size_t sz[d]; /* Size of chopped array along each axis. */
-    for (int32_t trial = 0; trial < ntrials; trial++)
+    for (uint32_t trial = 0;  trial < ntrials; trial++)
       { /* Initialze {sz} for full array: */
         memcpy(sz, A->size, d*sizeof(ppv_size_t)); 
         /* Start with the standard array: */
@@ -984,7 +984,7 @@ void test_replicate(ppv_array_t *A)
     if (verbose) { ppv_print_descriptor(stderr, "A = { ", A, " }\n"); } 
     int32_t ntrials = 2*d*d;
     ppv_size_t sz[d]; /* Size of replicated array along each axis. */
-    for (int32_t trial = 0; trial < ntrials; trial++)
+    for (uint32_t trial = 0;  trial < ntrials; trial++)
       { /* Initialze {sz} for full array: */
         memcpy(sz, A->size, d*sizeof(ppv_size_t)); 
         /* Start with the standard array: */

@@ -1,5 +1,5 @@
 /* Test tools for {hr2_pmap.h} test program  */
-/* Last edited on 2024-11-21 21:33:48 by stolfi */
+/* Last edited on 2024-11-24 07:04:00 by stolfi */
 
 #ifndef hr2_pmap_test_tools_H
 #define hr2_pmap_test_tools_H
@@ -240,7 +240,8 @@ void  hr2_pmap_test_tools_check_matrix
     specific predicate {OK}. */
 
 void hr2_pmap_test_tools_check_perturbed
-  ( hr2_pmap_t *M,
+  ( char *Mname,
+    hr2_pmap_t *M,
     hr2_pmap_test_tools_check_proc_t *OK,
     r3x3_t *P,
     bool_t OK_exp,

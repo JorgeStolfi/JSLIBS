@@ -128,7 +128,7 @@ void write_image(float_image_t *img, char *name, double vmin, double vmax)
     if ((NC == 1) || (NC == 3))
       { /* Write as PGM/PPM: */
         char *fname = makefname(name, NC, (NC == 3 ? "ppm" : "pgm"));
-        for (int32_t c = 0; c < NC; c++)
+        for (uint32_t c = 0;  c < NC; c++)
           { float_image_rescale_samples(img, c, (float)vmin, (float)vmax, 0.0, 1.0); }
         float_image_write_pnm_named(fname, img, isMask, 1.0000, 0.0327, yup, warn, verbose);
         free(fname);

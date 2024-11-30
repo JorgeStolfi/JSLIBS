@@ -222,12 +222,12 @@ void throw_poly(int32_t g, int32_t bezix, double P[])
       { neuromat_poly_bezier(g, bezix, a, b, P); }
     else
       { double B[g+1];
-        for (int32_t i = 0; i <= g; i++)
+        for (uint32_t i = 0;  i <= g; i++)
           { /* Choose a Bézier coeff {C} in {[-1_+1]}: */
             double C = 2*drandom() - 1;
             /* Add to {P} the Bernstein polynomial with index {i}, times {C}: */
             neuromat_poly_bezier(g, i, a, b, B);
-            for (int32_t j = 0; j <= g; j++) { P[j] = P[j] + C*B[j]; }
+            for (uint32_t j = 0;  j <= g; j++) { P[j] = P[j] + C*B[j]; }
           }
       }
   }
@@ -241,7 +241,7 @@ void throw_data
     double y[]
   )
   {
-    for (int32_t k = 0; k < n; k++)
+    for (uint32_t k = 0;  k < n; k++)
       { double toss = drandom();
         if (toss >= pri_bad)
           { /* Inlier: */
@@ -263,12 +263,12 @@ void check_fit(int32_t n, double t[], double s[], double dev_gud, double pri_bad
   
 void gen_args(int32_t n, double x[])
   { 
-    for(int32_t k = 0; k < n; k++) { x[k] = 2*(k + 0.5)/n - 1.0; }
+    for (uint32_t k = 0;  k < n; k++) { x[k] = 2*(k + 0.5)/n - 1.0; }
   }
   
 void gen_weights(int32_t n, double x[], double w[])
   { 
-    for(int32_t k = 0; k < n; k++)
+    for (uint32_t k = 0;  k < n; k++)
       { double xk = x[k];
         assert((xk > -1.0) && (xk < +1.0));
         w[k] = 1.0 - 0.9*xk*xk;
@@ -282,7 +282,7 @@ void print_data(char *name, int32_t trial, int32_t iter, int32_t n, double x[], 
     else
       { fname = jsprintf("out/%s_t%03d.txt", name, trial); }
     FILE *wr = open_write(fname, TRUE);
-    for(int32_t k = 0; k < n; k++)
+    for (uint32_t k = 0;  k < n; k++)
       { fprintf(wr, "%5d ", k);
         fprintf(wr, fmt, x[k]);
         fprintf(wr, " ");

@@ -60,7 +60,7 @@ void r2_align_enum
 
     /* Save the initial guess: */
     r2_t ctr[ni]; /* Center of ellipsoid (aved initial guess). */
-    for (int32_t i = 0; i < ni; i++) { ctr[i] = p[i]; }
+    for (uint32_t i = 0;  i < ni; i++) { ctr[i] = p[i]; }
 
     /* Compute the axes and radii of the search ellipsoid {\RF}: */
     r2_t U[nd*ni]; /* Basis of conformal balanced delta vectors. */
@@ -89,7 +89,7 @@ void r2_align_enum_grid
     
     /* Compute the number of samples along each main axis of {\RF}: */
     int32_t n[nd];     /* Number of sample points on each side of 0 along each axis of {\RF}. */
-    for (int32_t k = 0; k < nd; k++) 
+    for (uint32_t k = 0;  k < nd; k++) 
       { n[k] = (int32_t)floor(urad[k]/step);
         if (debug)
           { fprintf(stderr, "plot axis %d length = %.8f steps = %d\n", k, urad[k], n[k]);
@@ -101,13 +101,13 @@ void r2_align_enum_grid
     /* Enumerate all integer tuples {t[0..nd-1]} where {t[k]} ranges in {-n[k]..+n[k]}: */
     (*F2val_P) = +INF;  /* Minimum mismatch found so far. */
     int32_t t[nd];     /* Enumeration variables. */
-    for (int32_t k = 0; k < nd; k++) { t[k] = -n[k]; }
+    for (uint32_t k = 0;  k < nd; k++) { t[k] = -n[k]; }
     r2_t psmp[ni];     /* Sampling point. */
     int32_t knext = -1; /* Next tuple elem to be incremented is {t[knext]}. */
     while (knext < nd)
       { if (debug)
           { fprintf(stderr, "  t = ( ");
-            for (int32_t k = 0; k < nd; k++) { fprintf(stderr, " %d", t[k]); }
+            for (uint32_t k = 0;  k < nd; k++) { fprintf(stderr, " %d", t[k]); }
             fprintf(stderr, " )\n");
           }
         
@@ -115,19 +115,19 @@ void r2_align_enum_grid
         
         /* Compute the {urad}-relative squared norm {sum2} of the displacement: */
         double sum2 = 0; /* Squared norm of {(p-ctr)/arad}. */
-        for (int32_t k = 0; k < nd; k++)  { double ek = t[k]*step/urad[k]; sum2 += ek*ek; }
+        for (uint32_t k = 0;  k < nd; k++)  { double ek = t[k]*step/urad[k]; sum2 += ek*ek; }
         
         if (sum2 <= 1.0 + 1.0e-8)
           { /* Sample point will be inside {\RF}. */
         
             /* Build the sample point {psmp}: */
-            for (int32_t i = 0; i < ni; i++)
-              { for (int32_t j = 0; j < 2; j++)
+            for (uint32_t i = 0;  i < ni; i++)
+              { for (uint32_t j = 0;  j < 2; j++)
                   { psmp[i].c[j] = ctr[i].c[j];
                     double rij = arad[i].c[j];
                     if (rij != 0)
                       { double dij = 0;
-                        for (int32_t k = 0; k < nd; k++) 
+                        for (uint32_t k = 0;  k < nd; k++) 
                           { r2_t *uk = &(U[k*ni]);
                             dij += t[k]*step*uk[i].c[j];
                           }
@@ -141,7 +141,7 @@ void r2_align_enum_grid
             
             if (F2val < (*F2val_P))
               { /* Update the current optimum: */
-                for (int32_t i = 0; i < ni; i++) { p[i] = psmp[i]; }
+                for (uint32_t i = 0;  i < ni; i++) { p[i] = psmp[i]; }
                 (*F2val_P) = F2val;
               }
           }

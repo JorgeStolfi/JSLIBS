@@ -82,7 +82,7 @@ void kdtom_test_get_sample(kdtom_t *T, kdtom_test_get_sample_proc_t *getsmp)
 
 int32_t ktdom_test_remove_dup_indices(int32_t n, ppv_index_t ix[])
   { int32_t nu = 0;
-    for (int32_t k = 0; k < n; k++)
+    for (uint32_t k = 0;  k < n; k++)
       { ppv_index_t ixk = ix[k];
         /* Search for the proper place of {ixk}: */
         int32_t i = nu; while ((i > 0) && (ix[i-1] > ixk)) { i--; }
@@ -147,16 +147,16 @@ void kdtom_test_enum_ranges
   )
   {
     fprintf(stderr, "ixlo_hot =");
-    for (int32_t lohot = 0; lohot < nlo; lohot++) { fprintf(stderr, " " ixFMT, ixlo_hot[lohot]); }
+    for (uint32_t lohot = 0;  lohot < nlo; lohot++) { fprintf(stderr, " " ixFMT, ixlo_hot[lohot]); }
     fprintf(stderr, "\n");
     fprintf(stderr, "ixhi_hot =");
-    for (int32_t hihot = 0; hihot < nhi; hihot++) { fprintf(stderr, " " ixFMT, ixhi_hot[hihot]); }
+    for (uint32_t hihot = 0;  hihot < nhi; hihot++) { fprintf(stderr, " " ixFMT, ixhi_hot[hihot]); }
     fprintf(stderr, "\n");
     
     bool_t tried_empty = FALSE; /* Have we tried an empty clipbox? */
     
-    for (int32_t lohot = 0; lohot < nlo; lohot++)
-      { for (int32_t hihot = 0; hihot < nhi; hihot++)
+    for (uint32_t lohot = 0;  lohot < nlo; lohot++)
+      { for (uint32_t hihot = 0;  hihot < nhi; hihot++)
           { ppv_index_t ixlo_r = ixlo_hot[lohot];
             ppv_index_t ixhi_r = ixhi_hot[hihot];
             if ((! tried_empty) || (ixlo_r <= ixhi_r))
@@ -291,7 +291,7 @@ ppv_sample_t *kdtom_test_pick_max_samples(int32_t nms)
     #define dbtag "{kdtom_test_pick_max_samples}: "
     
     ppv_sample_t *ms = notnull(malloc(nms*sizeof(ppv_sample_t)), "no mem");
-    for (int32_t k = 0; k < nms; k++)
+    for (uint32_t k = 0;  k < nms; k++)
       { ppv_nbits_t bps = (ppv_nbits_t)floor(32*((double)k)/(nms-1) + 0.5);
         if (bps == 0)
           { ms[k] = 0; }

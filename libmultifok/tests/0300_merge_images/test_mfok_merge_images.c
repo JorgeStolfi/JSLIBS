@@ -311,7 +311,7 @@ void mfmi_process_image_stack
     float_image_t *erimg = float_image_new(NC, NX, NY);
     for (int32_t ix = HW; ix < NX-HW; ix++)
       { for (int32_t iy = HW; iy < NY-HW; iy++) 
-          { for (int32_t ic = 0; ic < NC; ic++)
+          { for (uint32_t ic = 0;  ic < NC; ic++)
               { float rv = float_image_get_sample(crimg, ic, ix, iy);
                 float tv = float_image_get_sample(sVal, ic, ix, iy);
                 float_image_set_sample(erimg, ic, ix, iy, (float)(rv - tv));
@@ -319,7 +319,7 @@ void mfmi_process_image_stack
           }
       }
     double sum_var = 0;
-    for (int32_t ic = 0; ic < NC; ic++)
+    for (uint32_t ic = 0;  ic < NC; ic++)
       { double avg, dev;
         float_image_compute_sample_avg_dev(erimg, ic, &avg, &dev);
         sum_var += dev*dev;
@@ -358,7 +358,7 @@ void mfmi_estimate_Z_and_color_from_scores
     
     /* Find the largest score: */
     int32_t ki_max = 0;       /* Index of max in {score[0..NI-1]}. */
-    for (int32_t ki = 1; ki < NI; ki++)
+    for (uint32_t ki = 1;  ki < NI; ki++)
       { if (score[ki] > score[ki_max]) { ki_max = ki; } }
     
     double zEst;
@@ -382,7 +382,7 @@ void mfmi_estimate_Z_and_color_from_scores
              NQ = 5;
            }
          float csmp[NQ*NC]; /* Channel {ic} of pixel from {cimh[ki0+kp]} is {csmp[NC*kp + ic]} */
-         for (int32_t kp = 0; kp < NQ; kp++)
+         for (uint32_t kp = 0;  kp < NQ; kp++)
            { float_image_get_pixel(sVal[ki0+kp], ix, iy, &(csmp[NC*kp])); }
          double Asc, Bsc, Csc; /* Coefficients of {score} as function of {zFoc}. */
          double Aclr[NC], Bclr[NC], Cclr[NC]; /* Coefficients of color as function of {zFoc}. */
@@ -409,7 +409,7 @@ void mfmi_estimate_Z_and_color_from_scores
                }
              else
                { /* Compute color from quadratic fit: */
-                 for (int32_t ic = 0; ic < NC; ic++) 
+                 for (uint32_t ic = 0;  ic < NC; ic++) 
                    { clrEst.c[ic] = (float)(Aclr[ic]*zEst*zEst + Bclr[ic]*zEst + Cclr[ic]); } 
                }
            }
@@ -462,7 +462,7 @@ void mfmi_fit_quadratics
     (*Bsc_P) = Bsc;
     (*Csc_P) = Csc;
     
-    for (int32_t ic = 0; ic < NC; ic++)
+    for (uint32_t ic = 0;  ic < NC; ic++)
       { int32_t jf = ic + 1;
         Aclr[ic] = U[0*NF + jf];
         Bclr[ic] = U[1*NF + jf];
@@ -473,21 +473,21 @@ void mfmi_fit_quadratics
       { fprintf(stderr, "  --------------------------------------------------\n");
         fprintf(stderr, "  fitted quadratic formulas:\n");
         fprintf(stderr, "    score(Z)      = %+.6f * Z^2 %+.6f * Z %+.6f\n", Asc, Bsc, Csc);
-        for (int32_t ic = 0; ic < NC; ic++)
+        for (uint32_t ic = 0;  ic < NC; ic++)
           { fprintf(stderr, "    color.c[%d](Z) = %+.6f * Z^2 %+.6f * Z %+.6f\n", ic, Aclr[ic], Bclr[ic], Cclr[ic]); }
         fprintf(stderr, "  --------------------------------------------------\n");
         fprintf(stderr, "  data and results:\n");
         fprintf(stderr, "  scores:\n");
-        for (int32_t kp = 0; kp < NQ; kp++)
+        for (uint32_t kp = 0;  kp < NQ; kp++)
           { double Z = zFoc[kp];
             double scD = score[kp];
             double scF = Asc*Z*Z + Bsc*Z + Csc;
             fprintf(stderr, "    Z = %+12.6f given = %+12.6f fitted = %+12.6f error =  %+12.6f\n", Z, scD, scF, scF-scD);
           }
-        for (int32_t ic = 0; ic < NC; ic++)
+        for (uint32_t ic = 0;  ic < NC; ic++)
           { fprintf(stderr, "\n");
             fprintf(stderr, "  color.c[%d]:\n", ic);
-            for (int32_t kp = 0; kp < NQ; kp++)
+            for (uint32_t kp = 0;  kp < NQ; kp++)
               { double Z = zFoc[kp];
                 double clrD = csmp[kp*NC + ic];
                 double clrF = Aclr[ic]*Z*Z + Bclr[ic]*Z + Cclr[ic];
@@ -528,7 +528,7 @@ void mfmi_get_pixel_actual_sharpness
     int32_t ix, int32_t iy,
     double score[]
   )
-  { for (int32_t ki = 0; ki < NI; ki++)
+  { for (uint32_t ki = 0;  ki < NI; ki++)
       { /* Get the "true" sharpness {sharp} at this pixel. */
         double sharp = float_image_get_sample(shrp[ki], 0, ix, iy);
         assert((sharp >= 0.0) && (sharp <= 1.0));
@@ -560,10 +560,10 @@ void mfmi_compute_pixel_scores
     bool_t squared = FALSE;
 
 
-    for (int32_t ki = 0; ki < NI; ki++)
+    for (uint32_t ki = 0;  ki < NI; ki++)
       { /* Get the samples in the window and normalize them for brightness and contrast: */
         float_image_get_window_samples(grimg[ki], 0,ix,iy, NW, NW, FALSE, fsmp);
-        for (int32_t ks = 0; ks < NS; ks++) { dsmp[ks] = fsmp[ks]; }
+        for (uint32_t ks = 0;  ks < NS; ks++) { dsmp[ks] = fsmp[ks]; }
         double sAvg, dev;
         ??multifok_window_normalize_samples(NW, dsmp, ws, noise, &sAvg, &dev); 
 

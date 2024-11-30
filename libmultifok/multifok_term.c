@@ -91,8 +91,8 @@ void multifok_term_values_from_basis_coeffs
     int32_t NP = tset->NP;
     int32_t NB = tset->basis->NB;
     
-    for (int32_t kt = 0; kt < NT; kt++) { term[kt] = 0; }
-    for (int32_t ip = 0; ip < NP; ip++) 
+    for (uint32_t kt = 0;  kt < NT; kt++) { term[kt] = 0; }
+    for (uint32_t ip = 0;  ip < NP; ip++) 
       { int32_t jb1 = tset->prix[ip].jb1; 
         demand((jb1 >= 0) && (jb1 < NB), "bad basis index {jb1}");
         int32_t jb2 = tset->prix[ip].jb2; 
@@ -205,7 +205,7 @@ void multifok_term_indices_from_names
     
     int32_t NP = 0; /* Total number of products in all terms. */
     
-    for (int32_t kt = 0; kt < NT; kt++)
+    for (uint32_t kt = 0;  kt < NT; kt++)
       { char *tnk = termName[kt];
         if (verbose) { fprintf(stderr, "  parsing term %d = \"%s\"\n", kt, tnk); }
         char *pbeg = tnk; /* Netx char to parse in {tnk}. */
@@ -238,7 +238,7 @@ void multifok_term_indices_from_names
             multifok_term_parse_product(pbeg, nc, NB, basis->belName, &jb1, &jb2, &pr);
 
             /* Check for repeated products: */
-            for (int32_t rp = 0; rp < NP; rp++)
+            for (uint32_t rp = 0;  rp < NP; rp++)
               { demand(strcmp(pr, prix[rp].pname) != 0, "repeated product in term names"); }
 
             /* Store product in tables: */
@@ -305,7 +305,7 @@ void multifok_term_parse_product
     int32_t find_belName(char *beg, char *end)
       { int32_t n = (int32_t)(end - beg);
         int32_t ib = -1;
-        for (int32_t kb = 0; kb < NB; kb++)
+        for (uint32_t kb = 0;  kb < NB; kb++)
           { char *bk = belName[kb];
             int32_t m = (int32_t)strlen(bk);
             if (n != m) { continue; }
@@ -322,7 +322,7 @@ void multifok_term_set_names_write
     int32_t NT,
     char *termName[]
   )
-  { for (int32_t kt = 0; kt < NT; kt++)
+  { for (uint32_t kt = 0;  kt < NT; kt++)
       { fprintf(wr, "%s\n", termName[kt]); }
     fflush(wr);
   }
@@ -346,7 +346,7 @@ void multifok_term_set_write
     double wt[]
   )
   { int32_t NT = tset->NT;
-    for (int32_t kt = 0; kt < NT; kt++)
+    for (uint32_t kt = 0;  kt < NT; kt++)
       { if (weights)
           { double wtk = (wt == NULL ? 1.0 : wt[kt]);
             fprintf(wr, "%4d %12.8f %s\n", kt, wtk, tset->termName[kt]); 
@@ -378,7 +378,7 @@ void multifok_term_set_product_table_write
   )
   {
     demand(NP >= 1, "invalid {NP}");
-    for (int32_t ip = 0; ip < NP; ip++)
+    for (uint32_t ip = 0;  ip < NP; ip++)
       { multifok_term_prod_t *pri = &(prix[ip]);
         fprintf(wr, "%4d %4d %4d", ip, pri->jb1, pri->jb2);
         fprintf(wr, "  %4d %s\n", pri->kt, pri->pname);

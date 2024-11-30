@@ -27,13 +27,13 @@ neuromat_eeg_frame_buffer_t *neuromat_eeg_frame_buffer_new(int32_t size, int32_t
         .it_ini = 0, /* Index of first frame in buffer. */
         .it_fin = -1 /* Index of last frame in buffer. */
       };
-    for (int32_t itb = 0; itb < size; itb++) { buf->val[itb] = NULL; }
+    for (uint32_t itb = 0;  itb < size; itb++) { buf->val[itb] = NULL; }
     return buf;
   }
 
 void neuromat_eeg_frame_buffer_free(neuromat_eeg_frame_buffer_t *buf)
   {
-    for (int32_t itb = 0; itb < buf->size; itb++) { free(buf->val[itb]); }
+    for (uint32_t itb = 0;  itb < buf->size; itb++) { free(buf->val[itb]); }
     free(buf->val);
     free(buf);
   }
@@ -191,7 +191,7 @@ void neuromat_eeg_frame_buffer_find_next_pulse_start
         double *vt = buf->val[itb];
         /* Check if any of the channels are up, save in {*sP}: */
         int32_t nup = 0; /* Number of marker channels that are up. */ 
-        for (int32_t r = 0; r < ns; r++)
+        for (uint32_t r = 0;  r < ns; r++)
           { /* Check channel {ichs[r]}: */
             int32_t ic = ichs[r];
             demand(vt[ic] >= 0, "stimulus phase marker channel is negative");

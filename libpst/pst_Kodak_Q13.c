@@ -1,5 +1,5 @@
 /* See pst_Kodak_Q13.h */
-/* Last edited on 2023-10-01 19:50:48 by stolfi */
+/* Last edited on 2024-11-23 05:30:47 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -19,6 +19,7 @@
 #include <qmin_simplex.h> 
 #include <affirm.h>
 #include <argparser.h>
+#include <ix_reduce.h>
 
 #include <pst_basic.h>
 #include <pst_Kodak_Q13.h>
@@ -167,7 +168,7 @@ float_image_t *pst_Kodak_Q13_extract_chart
     /* Create and fill the chart image: */
     float_image_t *omg = float_image_new(NC, ONX, ONY);
 
-    ix_reduction_t red = ix_reduction_SINGLE;
+    ix_reduce_mode_t red = ix_reduce_mode_SINGLE;
     float undef = 0.5;
     bool_t avg = TRUE;
     int order = 1;
@@ -251,7 +252,7 @@ float_image_t *pst_Kodak_Q13_extract_patches
         double xlo = xCenter - mmX_patch/2;
         double xhi = xCenter + mmX_patch/2;
         /* Extract patch: */
-        ix_reduction_t red = ix_reduction_SINGLE;
+        ix_reduce_mode_t red = ix_reduce_mode_SINGLE;
         float undef = 0.5;
         bool_t avg = TRUE;
         int order = 1;

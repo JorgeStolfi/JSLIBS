@@ -113,7 +113,7 @@ void filefmt_write_comment(FILE *wr, char *cmt, int32_t ind, char prefix)
     while(*cmt != 0)
       { /* Write a new line, advance {cmt} to start of next one or to '\0' */
         char c = (*cmt);
-        for (int32_t k = 0; k < ind; k++) { fputc(' ', wr); }
+        for (uint32_t k = 0;  k < ind; k++) { fputc(' ', wr); }
         fputc(prefix, wr);
         fputc(' ', wr);
         fputc(c, wr);

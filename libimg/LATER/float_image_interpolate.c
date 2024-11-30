@@ -1,5 +1,5 @@
 /* See float_image_interpolate.h */
-/* Last edited on 2012-02-06 21:30:18 by stolfilocal */ 
+/* Last edited on 2024-11-23 05:57:33 by stolfi */ 
 
 #include <limits.h>
 #include <float.h>
@@ -8,7 +8,8 @@
 
 #include <affirm.h>
 #include <bool.h>
-#include <ix.h>
+#include <ix_types.h>
+#include <ix_reduce.h>
 #include <float_image.h>
 #include <spline_interp.h>
 
@@ -22,7 +23,7 @@ void float_image_interpolate_get_samples_and_weights
     double x, 
     double y,
     int m,
-    ix_reduction_t red, 
+    ix_reduce_mode_t red, 
     float *p[],
     double wx[],
     double wy[]
@@ -41,7 +42,7 @@ double float_image_interpolate_sample
     double x, 
     double y, 
     int order, 
-    ix_reduction_t red
+    ix_reduce_mode_t red
   )
   { 
     int m = float_image_interpolate_compute_num_samples(order);
@@ -72,7 +73,7 @@ void float_image_interpolate_pixel
     double x, 
     double y, 
     int order, 
-    ix_reduction_t red, 
+    ix_reduce_mode_t red, 
     double z[]
   )
   { int m = float_image_interpolate_compute_num_samples(order);
@@ -111,7 +112,7 @@ void float_image_interpolate_grid_samples
     double rx, int hx, double dx,
     double ry, int hy, double dy,
     int order, 
-    ix_reduction_t red,
+    ix_reduce_mode_t red,
     double z[]
   )
   {
@@ -135,7 +136,7 @@ void float_image_interpolate_grid_pixels
     double rx, int hx, double dx,
     double ry, int hy, double dy,
     int order, 
-    ix_reduction_t red, 
+    ix_reduce_mode_t red, 
     double z[]
   )  
   {
@@ -163,7 +164,7 @@ void float_image_interpolate_get_samples_and_weights
     double x, 
     double y,
     int m, 
-    ix_reduction_t red, 
+    ix_reduce_mode_t red, 
     float *p[],
     double wx[],
     double wy[]

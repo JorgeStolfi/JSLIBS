@@ -940,7 +940,7 @@ void pgsf_solve_lsq_system(int n, double A[], double b[], bool_t nonneg, double 
     if (nonneg) 
       { qms_quadratic_min(n, A, b, z); }
     else
-      { int32_t r = gsel_solve(n, n, A, 1, b, z, 0.0);
+      { int32_t r = gauss_elim_solve(n, n, A, 1, b, z, 0.0);
         demand(r == n, "indeterminate system");
       }
 

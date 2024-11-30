@@ -45,7 +45,7 @@ void stmesh_STM_write(FILE *wr, stmesh_t mesh)
         { fprintf(wr, "%ud", uxv);
           stmesh_vert_t v = stmesh_get_vert(mesh, uxv);
           i3_t pos = stmesh_vert_get_pos(v);
-          for (int32_t j = 0; j < 3; j++) { fprintf(wr, " %d", pos.c[j]); }
+          for (uint32_t j = 0;  j < 3; j++) { fprintf(wr, " %d", pos.c[j]); }
           fprintf(wr, "\n");
         }
     }
@@ -60,12 +60,12 @@ void stmesh_STM_write(FILE *wr, stmesh_t mesh)
           stmesh_vert_t v[2];
           stmesh_edge_get_endpoints(e, v);
           stmesh_vert_unx_t uxv[2];
-          for (int32_t j = 0; j < 2; j++) { uxv[j] = stmesh_vert_get_unx(mesh, v[j]); } 
+          for (uint32_t j = 0;  j < 2; j++) { uxv[j] = stmesh_vert_get_unx(mesh, v[j]); } 
           /* Ensure their order: */
           if (uxv[0] > uxv[1]) { stmesh_vert_unx_t t = uxv[0]; uxv[0] = uxv[1]; uxv[1] = t; }
           assert(uxv[0] < uxv[1]);
           /* Write the vertx numbers: */
-          for (int32_t j = 0; j < 2; j++) { fprintf(wr, " %ud", uxv[j]); }
+          for (uint32_t j = 0;  j < 2; j++) { fprintf(wr, " %ud", uxv[j]); }
           fprintf(wr, "\n");
         }
     }
@@ -80,13 +80,13 @@ void stmesh_STM_write(FILE *wr, stmesh_t mesh)
           stmesh_edge_t e[3];
           stmesh_face_get_sides(f, e);
           stmesh_edge_unx_t uxe[3];
-          for (int32_t j = 0; j < 3; j++) { uxe[j] = stmesh_edge_get_unx(mesh, e[j]); } 
+          for (uint32_t j = 0;  j < 3; j++) { uxe[j] = stmesh_edge_get_unx(mesh, e[j]); } 
           /* Ensure their order: */
           if (uxe[0] > uxe[1]) { stmesh_edge_unx_t t = uxe[0]; uxe[0] = uxe[1]; uxe[1] = t; }
           if (uxe[0] > uxe[2]) { stmesh_edge_unx_t t = uxe[0]; uxe[0] = uxe[2]; uxe[2] = t; }
           if (uxe[1] > uxe[2]) { stmesh_edge_unx_t t = uxe[1]; uxe[1] = uxe[2]; uxe[2] = t; }
           assert((uxe[0] < uxe[1]) && (uxe[1] < uxe[2]));
-          for (int32_t j = 0; j < 3; j++)  { fprintf(wr, " %ud", uxe[j]); }
+          for (uint32_t j = 0;  j < 3; j++)  { fprintf(wr, " %ud", uxe[j]); }
           fprintf(wr, "\n");
         }
     }
@@ -143,7 +143,7 @@ stmesh_t stmesh_STM_read(FILE *rd)
           demand(uxv == uxv_rd, "vertex index mismatch");
           /* Parse the vertex coordinates: */
           i3_t pos;
-          for (int32_t j = 0; j < 3; j++) 
+          for (uint32_t j = 0;  j < 3; j++) 
             { int64_t cj = fget_int64(rd);
               demand((cj < 0 ? -cj : +cj) <= stmesh_STM_read_COORD_MAX, "vertex coord too large");
               pos.c[j] = (int32_t)cj;
@@ -158,7 +158,7 @@ stmesh_t stmesh_STM_read(FILE *rd)
               stmesh_vert_unx_t uxv_ck = stmesh_vert_get_unx(mesh, v);
               assert(uxv_ck == uxv);
               i3_t pos_ck = stmesh_vert_get_pos(v);
-              for (int32_t j = 0; j < 3; j++) { assert(pos.c[j] == pos_ck.c[j]); }
+              for (uint32_t j = 0;  j < 3; j++) { assert(pos.c[j] == pos_ck.c[j]); }
             }
         }
     }
@@ -172,7 +172,7 @@ stmesh_t stmesh_STM_read(FILE *rd)
           demand(uxe == uxe_rd, "edge index mismatch");
           /* Parse the edge endpoints: */
           stmesh_vert_unx_t uxv[2];
-          for (int32_t j = 0; j < 2; j++) 
+          for (uint32_t j = 0;  j < 2; j++) 
             { int64_t vj = fget_int64(rd);
               demand((vj >= 0) && (vj < nv), "invalid edge endpoint");
               uxv[j] = (stmesh_edge_unx_t)vj;
@@ -190,7 +190,7 @@ stmesh_t stmesh_STM_read(FILE *rd)
               stmesh_vert_t v_ck[2];
               stmesh_edge_get_endpoints(e, v_ck);
               stmesh_vert_unx_t uxv_ck[2];
-              for (int32_t j = 0; j < 2; j++) { uxv_ck[j] = stmesh_vert_get_unx(mesh, v_ck[j]); }
+              for (uint32_t j = 0;  j < 2; j++) { uxv_ck[j] = stmesh_vert_get_unx(mesh, v_ck[j]); }
               assert
                 ( ((uxv[0] == uxv_ck[0]) && (uxv[1] == uxv_ck[1])) ||
                   ((uxv[0] == uxv_ck[1]) && (uxv[1] == uxv_ck[0])) );
@@ -207,7 +207,7 @@ stmesh_t stmesh_STM_read(FILE *rd)
           demand(uxf == uxf_rd, "face index mismatch");
           /* Parse the face sides: */
           stmesh_edge_unx_t uxe[2];
-          for (int32_t j = 0; j < 3; j++) 
+          for (uint32_t j = 0;  j < 3; j++) 
             { int64_t ej = fget_int64(rd); /* Unoriented edge number. */
               demand((ej >= 0) && (ej < ne), "invalid face side");
               uxe[j] = (stmesh_edge_unx_t)ej;
@@ -225,11 +225,11 @@ stmesh_t stmesh_STM_read(FILE *rd)
               stmesh_edge_t e_ck[3];
               stmesh_face_get_sides(f, e_ck);
               stmesh_edge_unx_t uxe_ck[3];
-              for (int32_t j = 0; j < 3; j++) { uxe_ck[j] = stmesh_edge_get_unx(mesh, e_ck[j]); }
+              for (uint32_t j = 0;  j < 3; j++) { uxe_ck[j] = stmesh_edge_get_unx(mesh, e_ck[j]); }
               if (uxe_ck[0] > uxe_ck[1]) { stmesh_edge_unx_t t = uxe_ck[0]; uxe_ck[0] = uxe_ck[1]; uxe_ck[1] = t; }
               if (uxe_ck[0] > uxe_ck[2]) { stmesh_edge_unx_t t = uxe_ck[0]; uxe_ck[0] = uxe_ck[2]; uxe_ck[2] = t; }
               if (uxe_ck[1] > uxe_ck[2]) { stmesh_edge_unx_t t = uxe_ck[1]; uxe_ck[1] = uxe_ck[2]; uxe_ck[2] = t; }
-              for (int32_t j = 0; j < 3; j++) { assert(uxe[j] == uxe_ck[j]); }
+              for (uint32_t j = 0;  j < 3; j++) { assert(uxe[j] == uxe_ck[j]); }
             }
         }
     }

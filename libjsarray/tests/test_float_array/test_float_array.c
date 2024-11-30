@@ -82,7 +82,7 @@ int32_t main (int32_t argn, char **argv)
 
 void test_float_array(uint32_t nt)
   { fprintf(stderr, "Checking {float_array_t} and its operations...\n");
-    for (int32_t it = 0; it < nt; it++)
+    for (uint32_t it = 0;  it < nt; it++)
       { 
         fprintf(stderr, "=== pass %d ===\n", it);
         bool_t verbose = (it < 4);

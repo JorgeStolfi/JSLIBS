@@ -2,7 +2,7 @@
 #define PROG_DESC "tests the {ulist.h} procedures"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2024-11-16 12:57:27 by stolfi */
+/* Last edited on 2024-11-22 20:41:30 by stolfi */
 /* Created on 2007-01-31 by J. Stolfi, UNICAMP */
 
 #define PROG_COPYRIGHT \
@@ -205,7 +205,7 @@ void create_items
     
     /* Carve the items out of {zone}: */
     char *next = zone;
-    for (int32_t i = 0; i < nItems; i++)
+    for (uint32_t i = 0; i < nItems; i++)
       { size_t sz = uint32_abrandom(szMin, szMax);
         item[i] = next;
         next += sz;
@@ -216,7 +216,7 @@ void create_items
             uint32_t vi = string_eq_class_index(i);
             char *p = item[i];
             /* Set {*(item[i])} to be {vi} in reverse base 26 with digits [a-z]: */
-            for (int32_t k = 0; k < sz-1; k++)
+            for (uint32_t k = 0;  k < sz-1; k++)
               { (*p) = (char)('a' + (vi % 26));
                 p++; vi /= 26;
               }
@@ -233,7 +233,7 @@ void create_items
       }
 
     /* Apply a random permutation to the items: */
-    for (int32_t i = 1; i < nItems; i++)
+    for (uint32_t i = 1; i < nItems; i++)
       { uint32_t j = uint32_abrandom(0,i);
         if (j < i) 
           { /* Grab their eq indices {eqi,eqj}: */
@@ -257,7 +257,7 @@ void create_items
       }
       
     /* Dump some items and check the equivalence: */
-    for (int32_t i = 0; i < nItems; i++)
+    for (uint32_t i = 0;  i < nItems; i++)
       { bool_t debug = (i < 10);
         if (debug) 
           { fprintf(stderr, "  item[%d] = %16p", i, item[i]);
@@ -308,7 +308,7 @@ void test_ulist_hash_eq(uint32_t nItems, ref_t item[], int32_t eqix[], ulist_t *
     uint32_t hct[nh]; /* {hct[h]} is how many non-equivalent items are hashed to {h}. */
     for (ulist_hash_val_t h = 0; h < nh; h++) { hct[h] = 0; }
     /* Check all items: */
-    for (int32_t i = 0; i < nItems; i++) 
+    for (uint32_t i = 0;  i < nItems; i++) 
       { ulist_hash_val_t h = hash(UITEM(item[i]), nh);
         affirm(h < nh, "{S.hash} returns out-of-bounds result");
         int32_t eqj = eqix[i];
@@ -330,7 +330,7 @@ void test_ulist_hash_eq(uint32_t nItems, ref_t item[], int32_t eqix[], ulist_t *
     /* This estimate ignores the merging of buckets that occurs in linear hashing. */
     uint64_t tm2 = 0; /* Sum of {hct[i]*(hct[i]+1)} for {i} in {0..nh-1}. */
     uint32_t szct[nItems+1]; /* {szct[m]} is the number of keys that are shared by {m} items. */
-    for (int32_t m = 0; m <= nItems; m++) { szct[m] = 0; }
+    for (uint32_t m = 0;  m <= nItems; m++) { szct[m] = 0; }
     for (ulist_hash_val_t h = 0; h < nh; h++)
       { uint32_t m = hct[h];
         assert(m <= nItems);
@@ -342,7 +342,7 @@ void test_ulist_hash_eq(uint32_t nItems, ref_t item[], int32_t eqix[], ulist_t *
     double eppo = 0.5*((double)tm2)/((double)nItems);
     fprintf(stderr, "estimated probes per operation = %8.2f\n", eppo);
     /* Print the histogram of the histogram: */
-    for (int32_t m = 0; m <= nItems; m++)
+    for (uint32_t m = 0;  m <= nItems; m++)
       { if ((m < 4) || (szct[m] > 0))
           { fprintf(stderr, "there are %7d buckets with %7d entries\n", szct[m], m); }
       }
@@ -357,7 +357,7 @@ void test_ulist_correctness(uint32_t nItems, ref_t item[], int32_t eqix[], ulist
 
     /* Add the items to the set: */
     fprintf(stderr, "testing {ulist_add}, {ulist_has} ...\n");
-    for (int32_t i = 0; i < nItems; i++)
+    for (uint32_t i = 0;  i < nItems; i++)
       { /* Conver the pointer {item[i]} to an {ulist_item_t}: */
         ulist_item_t a = UITEM(item[i]);
         assert(a != 0);
@@ -400,7 +400,7 @@ void test_ulist_correctness(uint32_t nItems, ref_t item[], int32_t eqix[], ulist
     fprintf(stderr, "extracting the items from the set ...\n");
     ulist_item_vec_t E = ulist_items(S);
     affirm(E.ne == nne, "{ulist_items} error 1 (count does not match insertions)");
-    for (int32_t i = 0; i < E.ne; i++)
+    for (uint32_t i = 0;  i < E.ne; i++)
       { ulist_item_t a = E.e[i];
         ulist_index_t i = ulist_index_of(S, a);
         ulist_item_t b = ulist_item_at(S, i);
@@ -431,7 +431,7 @@ void test_ulist_speed(uint32_t nItems, ref_t item[], int32_t eqix[], ulist_t *S,
       { /* Clear the list and insert all items: */
         ulist_clear(S);
         start = user_cpu_time_usec();
-        for (int32_t i = 0; i < nItems; i++)
+        for (uint32_t i = 0;  i < nItems; i++)
           { ulist_item_t a = UITEM(item[kAdd]);
             (void)ulist_insert_last(S, a);
             nAdd++;
@@ -451,14 +451,14 @@ void test_ulist_speed(uint32_t nItems, ref_t item[], int32_t eqix[], ulist_t *S,
     while(nInd < nTimes)
       { /* Clear the list and insert all items: */
         ulist_clear(S);
-        for (int32_t i = 0; i < nItems; i++)
+        for (uint32_t i = 0;  i < nItems; i++)
           { ulist_item_t a = UITEM(item[kAdd]);
             (void)ulist_insert_last(S, a);
             kAdd = (kAdd + step) % nItems;
           }
         /* Look up all items: */
         start = user_cpu_time_usec();
-        for (int32_t i = 0; i < nItems; i++)
+        for (uint32_t i = 0;  i < nItems; i++)
           { ulist_item_t a = UITEM(item[kInd]);
             (void)ulist_index_of(S, a);
             nInd++;

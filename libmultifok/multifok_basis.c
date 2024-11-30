@@ -88,7 +88,7 @@ multifok_basis_t *multifok_basis_make
     int32_t NB_max = NS;  /* May be reduced later. */
     basis->bas = talloc(NB_max, double*);
     basis->belName = talloc(NB_max, char*); 
-    for (int32_t i = 0; i < NB_max; i++) 
+    for (uint32_t i = 0;  i < NB_max; i++) 
       { basis->bas[i] = talloc(NS, double);
         basis->belName [i] = NULL;
       }
@@ -197,7 +197,7 @@ void multifok_basis_fill_HART(multifok_basis_t *basis)
     assert(kb == NB);
     
     /* Sort the table by increasing freq modulus: */
-    for (int32_t ib = 0; ib < NB; ib++)
+    for (uint32_t ib = 0;  ib < NB; ib++)
       { /* The {kb} smallest freqs are {freq[0..kb-1]} */
         int32_t jbMin = ib;
         for (int32_t jb = ib+1; jb < NB; jb++)
@@ -209,7 +209,7 @@ void multifok_basis_fill_HART(multifok_basis_t *basis)
       }
     
     /* Now fill the basis: */
-    for (int32_t kb = 0; kb < NB; kb++)
+    for (uint32_t kb = 0;  kb < NB; kb++)
       { 
         int32_t fx = freq[kb].c[0];
         int32_t fy = freq[kb].c[1];
@@ -229,7 +229,7 @@ void multifok_basis_fill_HART(multifok_basis_t *basis)
 
 void multifok_basis_free(multifok_basis_t *basis)
   {
-    for (int32_t kb = 0; kb < basis->NB; kb++) 
+    for (uint32_t kb = 0;  kb < basis->NB; kb++) 
       { free(basis->bas[kb]); 
         if (basis->belName[kb] != NULL) { free(basis->belName[kb]); }
       }
@@ -239,7 +239,7 @@ void multifok_basis_free(multifok_basis_t *basis)
   }
 
 void multifok_basis_compute_coeffs(double x[], multifok_basis_t *basis, double coeff[])
-  { for (int32_t kb = 0; kb  < basis->NB; kb++) 
+  { for (uint32_t kb = 0;  kb  < basis->NB; kb++) 
       { coeff[kb] = multifok_window_prod(basis->NW, x, basis->bas[kb]); }
   }
 
@@ -277,17 +277,17 @@ void multifok_basis_orthize(multifok_basis_t *basis, bool_t verbose)
     int32_t NS = multifok_window_num_samples(NW);
     double tiny = 1.0e-8; /* Insignificant relative length. */
     int32_t NK = 0; /* Number of basis elements that were kept. */
-    for (int32_t kb = 0; kb < basis->NB; kb++)
+    for (uint32_t kb = 0;  kb < basis->NB; kb++)
       { 
         /* Original norm of element {basis->bas[kb]}: */
         double d_old = sqrt(multifok_window_prod(NW, basis->bas[kb], basis->bas[kb]));
         
         /* Make element {basis->bas[kb]} orthogonal to the previous elements:*/
-        for (int32_t rb = 0; rb < NK; rb++)
+        for (uint32_t rb = 0;  rb < NK; rb++)
           { double ci = multifok_window_prod(NW, basis->bas[kb], basis->bas[rb]);
             if (verbose && (ci > tiny*d_old))
               { fprintf(stderr, "  subtracting {%+12.8f*bas[%d]} from {bas[%d]}\n", ci, rb, kb); }
-            for (int32_t js = 0; js < NS; js++)
+            for (uint32_t js = 0;  js < NS; js++)
               { basis->bas[kb][js] = basis->bas[kb][js] - ci*basis->bas[rb][js]; }
           }
 
@@ -296,7 +296,7 @@ void multifok_basis_orthize(multifok_basis_t *basis, bool_t verbose)
         if (verbose) { fprintf(stderr, "d old = %16.12f new = %16.12f\n", d_old, d_new); }
         if (d_new > tiny*d_old)
           { /* Residual seems significant: */
-            for (int32_t js = 0; js < NS; js++)
+            for (uint32_t js = 0;  js < NS; js++)
               { basis->bas[NK][js] = basis->bas[kb][js]/d_new; }
             basis->belName[NK] = basis->belName[kb];
             NK++;
@@ -319,12 +319,12 @@ void multifok_basis_print(FILE *wr, multifok_basis_t *basis)
     
     /* Column numbers (sample indices): */
     fprintf(wr, "%3s %-12s   ", "", "");
-    for (int32_t j = 0; j < NS; j++) { fprintf(wr, " %10d", j); }
+    for (uint32_t j = 0;  j < NS; j++) { fprintf(wr, " %10d", j); }
     fprintf(wr, "\n");
     
     /* Column names (sample names): */
     fprintf(wr, "%3s %-12s   ", "", "");
-    for (int32_t j = 0; j < NS; j++)
+    for (uint32_t j = 0;  j < NS; j++)
       { int32_t ix = (j % NW) - HW;
         int32_t iy = (j / NW) - HW;
         char *sname = multifok_window_sample_name("S", ix, iy);
@@ -332,16 +332,16 @@ void multifok_basis_print(FILE *wr, multifok_basis_t *basis)
       }
     fprintf(wr, "\n");
     
-    for (int32_t ib = 0; ib < basis->NB; ib++)
+    for (uint32_t ib = 0;  ib < basis->NB; ib++)
       { /* Find the smallest significant abs value in the row: */
         double bi_min = +INF;
-        for (int32_t js = 0; js < NS; js++) 
+        for (uint32_t js = 0;  js < NS; js++) 
           { double bij = fabs(basis->bas[ib][js]);
             if ((bij > 0.002) && (bij < bi_min)) { bi_min = bij; }
           }
         /* Row (element) index and name: */
         fprintf(wr, "%3d %-12s [ ", ib, basis->belName[ib]);
-        for (int32_t js = 0; js < NS; js++)
+        for (uint32_t js = 0;  js < NS; js++)
           { fprintf(wr, " %+10.6f", basis->bas[ib][js]/bi_min); }
         /* Scale factor for row: */
         fprintf(wr, " ] * %12.8f", bi_min);
@@ -353,15 +353,15 @@ void multifok_basis_print(FILE *wr, multifok_basis_t *basis)
 void multifok_basis_ortho_check(FILE *wr, multifok_basis_t *basis)
   { fprintf(wr, "--- moment matrix -----------------------------------\n");
     fprintf(wr, "%4s", "");
-    for (int32_t jb = 0; jb < basis->NB; jb++) { fprintf(wr, " %10d", jb); }
+    for (uint32_t jb = 0;  jb < basis->NB; jb++) { fprintf(wr, " %10d", jb); }
     fprintf(wr, "\n");
     double orth_tol = 1.0e-7;  /* Tolerance for deviation from orthogonality. */
     double norm_tol = 1.0e-7;  /* Tolerance for deviation from normality. */
     double max_orth_err = 0.0; /* Max deviation from orthogonality. */
     double max_norm_err = 0.0; /* Max deviation from normality. */
-    for (int32_t ib = 0; ib < basis->NB; ib++)
+    for (uint32_t ib = 0;  ib < basis->NB; ib++)
       { fprintf(wr, "%4d", ib);
-        for (int32_t jb = 0; jb <= ib; jb++)
+        for (uint32_t jb = 0;  jb <= ib; jb++)
           { double pij = multifok_window_prod(basis->NW, basis->bas[ib], basis->bas[jb]);
             fprintf(wr, " %+10.6f", pij);
             if (ib == jb)
@@ -413,7 +413,7 @@ multifok_basis_type_t multifok_basis_type_from_text(char *name, bool_t fail)
   }
 
 void multifok_basis_elem_names_write(FILE *wr, int32_t NB, char *belName[])  
-  { for (int32_t kb = 0; kb < NB; kb++)
+  { for (uint32_t kb = 0;  kb < NB; kb++)
       { fprintf(wr, "%s\n", belName[kb]); }
     fflush(wr);
   }
