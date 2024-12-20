@@ -1,7 +1,6 @@
 /* See epswr_def.h */
-/* Last edited on 2021-06-16 16:06:04 by jstolfi */
+/* Last edited on 2024-12-05 10:13:35 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

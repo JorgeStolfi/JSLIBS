@@ -1,4 +1,4 @@
-# Last edited on 2019-04-09 22:01:44 by jstolfi
+# Last edited on 2024-12-20 09:59:48 by stolfi
 
 PROG = test_encode_gamma
 
@@ -22,18 +22,34 @@ TEXTURE_OPTS :=
 
 OUT_DIR := out
 
-OUTNAME := ${OUT_DIR}/test-enc
+all:
+	rm -rfv ${OUT_DIR}/test-*
+	for kind in BT709 sRGB generic interp ; do \
+          ${MAKE} KIND=$${kind} do-test ; \
+        done
 
-# KIND := BT709
-KIND := interp
-# KIND := generic
+clean::
+	/bin/rm -fv ${OUT_DIR}/test-*.ppm
+
+${OUT_DIR}:
+	mkdir -p ${OUT_DIR}
+        
+MAXVAL := 65535
+
+######################################################################
+ifneq "/${KIND}" "/"
 
 ifeq "/${KIND}" "/BT709"
-  GAMMA_OPTS := -BT709
+  GAMMA_OPTS := -kind BT709
+endif
+
+ifeq "/${KIND}" "/sRGB"
+  GAMMA_OPTS := -kind sRGB
 endif
 
 ifeq "/${KIND}" "/interp"
-  GAMMA_OPTS := -interp \
+  GAMMA_OPTS := -kind interp \
+    -points \
     0.125 0.330 \
     0.250 0.500 \
     0.500 0.650 \
@@ -45,21 +61,17 @@ endif
 ifeq "/${KIND}" "/generic"
   # Gamma and bias values must be in the format "N.NNN"
   # For Sun monitors:
-  GAMMA := 0.555
-  BIAS  := 0.200
-
-  STEP := 1.200
-
-  GAMMA_OPTS := -generic ${GAMMA} ${BIAS} -step ${STEP}
+  EXPO := 0.555
+  BIAS := 0.200
+  GAMMA_OPTS := -kind generic -expo ${EXPO} -bias ${BIAS}
 endif
 
+OUTNAME := test-${KIND}
+OUTFILE := ${OUT_DIR}/${OUTNAME}.txt
+
 do-test: ${PROG} ${OUT_DIR}
-	${PROG} ${GAMMA_OPTS} ${TEXTURE_OPTS}
-	display -title '%f' -gamma 1.000 ${OUTNAME}.pgm
-	show_sample_map.sh ${OUTNAME}
+	${PROG} -maxval ${MAXVAL} ${GAMMA_OPTS} 
+	show_sample_map.sh ${OUTFILE} ${KIND}
 
-clean::
-	/bin/rm -fv ${OUT_DIR}/test-*.ppm
-
-${OUT_DIR}:
-	mkdir -p ${OUT_DIR}
+endif
+######################################################################

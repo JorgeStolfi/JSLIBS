@@ -1,9 +1,9 @@
 /* An internal k-d-tree node is basically a {ppv_array_t}. */
-/* Last edited on 2021-07-16 12:18:19 by jstolfi */
+/* Last edited on 2024-12-05 10:32:39 by stolfi */
 
 #ifndef kdtom_array_H
 #define kdtom_array_H
-#define _GNU_SOURCE
+
 #include <stdio.h>
 
 #include <kdtom.h>

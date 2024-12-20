@@ -1,6 +1,6 @@
 /* See {boap_model.h} */
+/* Last edited on 2024-12-05 10:17:18 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -70,7 +70,7 @@ void boap_model_draw
   )
   {
     /* Convert all bars to plates: */
-    for (uint32_t ib = 0;  ib < mod->nb; ib++)
+    for (int32_t ib = 0;  ib < mod->nb; ib++)
       { boap_bar_t *bar = mod->barv.e[ib];
         boap_bar_smash(bar, &(mod->pltv), &(mod->np));
       }
@@ -80,7 +80,7 @@ void boap_model_draw
     boap_plate_ref_vec_draw(epsf, mod->np, &(mod->pltv), TRUE, TRUE, uax, pos);
     
     /* Draw the dimension lines: */
-    for (uint32_t id = 0;  id < mod->nd; id++)
+    for (int32_t id = 0;  id < mod->nd; id++)
       { boap_dim_t *dim = mod->dimv.e[id];
         boap_dim_draw(epsf, dim, uax);
       }

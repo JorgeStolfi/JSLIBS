@@ -1,7 +1,6 @@
 /* See {btc_is_in_int_range.h} */
-/* Last edited on 2015-04-20 01:11:13 by stolfilocal */
+/* Last edited on 2024-12-05 10:23:35 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 
 #include <bool.h>

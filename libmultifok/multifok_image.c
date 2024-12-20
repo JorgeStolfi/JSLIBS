@@ -1,7 +1,6 @@
 /* See {multifok_image.h}. */
-/* Last edited on 2024-10-22 09:19:55 by stolfi */
+/* Last edited on 2024-12-20 18:14:41 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -22,6 +21,7 @@
 #include <frgb_ops.h>
 #include <jsrandom.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <jsqroots.h>
 #include <rn.h>
 
@@ -49,7 +49,7 @@ void multifok_image_sample_weights_write(float_image_t *wsimg, char *outDir)
     multifok_image_write(wsimg, outDir, "weights", vMin, vMax);
   }
        
-void multifok_image_basis_kernels_write(int32_t NB, float_image_t *bKer[], char *outDir)
+void multifok_image_basis_kernels_write(uint32_t NB, float_image_t *bKer[], char *outDir)
   {
     float vMin = -1.0e-38f;  /* To void {NAN} values if {img} is all zeros. */
     float vMax = +1.0e-38f;  /* To void {NAN} values if {img} is all zeros. */
@@ -61,7 +61,7 @@ void multifok_image_basis_kernels_write(int32_t NB, float_image_t *bKer[], char 
     vMax = (float)+vR;
 
     for (uint32_t kb = 0;  kb < NB; kb++)
-      { char *imgName = NULL; char *imgName = jsprintf("basis-%03d", kb);
+      { char *imgName = jsprintf("basis-%03d", kb);
         multifok_image_write(bKer[kb], outDir, imgName, vMin, vMax);
         free(imgName);
       }
@@ -76,13 +76,13 @@ void multifok_image_pixel_mask_write(float_image_t *pSel, float_image_t *bgrd, c
         float_image_get_size(bgrd, &NC, &NX, &NY);
         float_image_check_size(pSel, 1, NX, NY);
         float_image_t *comp = float_image_new(NC, NX, NY);
-        for (uint32_t c = 0;  c < NC; c++)
+        for (int32_t c = 0;  c < NC; c++)
           { float_image_mix_channels(0.75, pSel, 0, 0.25, bgrd, c, comp, c); }
         multifok_image_write(comp, outDir, "pSel", 0.0, 1.0);
       }
   }
 
-void multifok_image_selected_pixels_write(int32_t NQ, i2_t pix[], float_image_t *sVal, char *outDir)
+void multifok_image_selected_pixels_write(uint32_t NQ, i2_t pix[], float_image_t *sVal, char *outDir)
   { int32_t NC = (int32_t)sVal->sz[0];
     demand((NC == 3) || (NC == 1), "background must be a color image");
     float_image_t *fimg = float_image_copy(sVal);
@@ -223,34 +223,34 @@ void multifok_image_merged_scene_view_error_write(float_image_t *sErr, char *fra
   }
 
 
-void multifok_image_basis_coeffs_write(int32_t NB, float_image_t *bVal[], char *frameDir, double bMax)
+void multifok_image_basis_coeffs_write(uint32_t NB, float_image_t *bVal[], char *frameDir, double bMax)
   {
     float vMax = (float)bMax;
     for (uint32_t kb = 0;  kb < NB; kb++)
-      { char *imgName = NULL; char *imgName = jsprintf("bVal-%03d", kb);
+      { char *imgName = jsprintf("bVal-%03d", kb);
         multifok_image_write(bVal[kb], frameDir, imgName, -vMax, +vMax);
         free(imgName);
       }
   }
 
-void multifok_image_basis_coeffs_squared_write(int32_t NB, float_image_t *bSqr[], char *frameDir, double bMax)
+void multifok_image_basis_coeffs_squared_write(uint32_t NB, float_image_t *bSqr[], char *frameDir, double bMax)
   {
     float vMin = 0.0; 
     float vMax = (float)(bMax*bMax);
     
     for (uint32_t kb = 0;  kb < NB; kb++)
-      { char *imgName = NULL; char *imgName = jsprintf("bSqr-%03d", kb);
+      { char *imgName = jsprintf("bSqr-%03d", kb);
         multifok_image_write(bSqr[kb], frameDir, imgName, vMin, vMax);
         free(imgName);
       }
   }
 
-void multifok_image_quadratic_terms_write(int32_t NT, float_image_t *tVal[], char *frameDir, double tMax)
+void multifok_image_quadratic_terms_write(uint32_t NT, float_image_t *tVal[], char *frameDir, double tMax)
   {
     float vMin = 0.0; /* Assumes we only work with positive quadratic terms. */
     float vMax = (float)tMax;
     for (uint32_t kt = 0;  kt < NT; kt++)
-      { char *imgName = NULL; char *imgName = jsprintf("tVal-%03d", kt);
+      { char *imgName = jsprintf("tVal-%03d", kt);
         multifok_image_write(tVal[kt], frameDir, imgName, vMin, vMax);
         free(imgName);
       }
@@ -262,10 +262,10 @@ float_image_t *multifok_image_read(char *dir, char *name, float vMin, float vMax
   {
     char *fname = jsprintf("%s/%s.png", dir, name);
     image_file_format_t ffmt = image_file_format_PNG;
-    double gammaDec, bias;
+    double expo_dec, bias;
     uint16_t *maxval = NULL;
     bool_t verbose = FALSE;
-    float_image_t *img = float_image_read_gen_named(fname, ffmt, vMin, vMax, &maxval, &gammaDec, &bias, verbose);
+    float_image_t *img = float_image_read_gen_named(fname, ffmt, vMin, vMax, &maxval, &expo_dec, &bias, verbose);
     
     free(fname);
     if (maxval != NULL) { free(maxval); }
@@ -278,12 +278,13 @@ void multifok_image_write(float_image_t *img, char *dir, char *name, float vMin,
     image_file_format_t ffmt = image_file_format_PNG;
     double gammaEnc = multifok_image_gamma;
     double bias = multifok_image_bias;
-    bool_t verbose = TRUE;
+    bool_t verbose = FALSE;
+    if (! verbose) { fprintf(stderr, "writing %s ...\n", fname); }
     float_image_write_gen_named(fname, img, ffmt, vMin, vMax, gammaEnc, bias, verbose);
     free(fname);
   }
 
-void multifok_image_draw_crosses(float_image_t *img, int32_t ch, int32_t NQ, i2_t pix[], float val)
+void multifok_image_draw_crosses(float_image_t *img, int32_t ch, uint32_t NQ, i2_t pix[], float val)
   { 
     int32_t NC = (int32_t)img->sz[0];
     
@@ -295,7 +296,7 @@ void multifok_image_draw_crosses(float_image_t *img, int32_t ch, int32_t NQ, i2_
     for (uint32_t kq = 0;  kq < NQ; kq++)
       { double xctr = pix[kq].c[0] + 0.5;
         double yctr = pix[kq].c[1] + 0.5;
-        for (uint32_t ic = 0;  ic < NC; ic++)
+        for (int32_t ic = 0;  ic < NC; ic++)
           { float_image_paint_cross(img, ic, xctr, yctr, rad, empty, 2.0*hwd, diagonal, 0.0f, 3);
             float valk = (ic == ch ? val : 0.0f);
             float_image_paint_cross(img, ic, xctr, yctr, rad, empty, hwd, diagonal, valk, 3);

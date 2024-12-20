@@ -1,7 +1,5 @@
 /* See intg_RKF2.h. */
-/* Last edited on 2005-10-01 10:43:47 by stolfi */
-
-#define _GNU_SOURCE
+/* Last edited on 2024-12-05 10:31:28 by stolfi */
 
 #include <intg_RKF2.h>
 #include <intg_gen.h>

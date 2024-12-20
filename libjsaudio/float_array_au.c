@@ -1,7 +1,6 @@
 /* See float_array_au.h */
-/* Last edited on 2023-03-19 15:25:32 by stolfi */
+/* Last edited on 2024-12-05 10:32:00 by stolfi */
 
-#define _GNU_SOURCE
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>

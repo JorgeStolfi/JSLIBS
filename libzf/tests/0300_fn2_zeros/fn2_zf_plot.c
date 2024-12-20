@@ -1,7 +1,6 @@
 /* See fn2_zf_plot.h */
-/* Last edited on 2023-02-18 09:57:32 by stolfi */
+/* Last edited on 2024-12-05 10:41:22 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdio.h>
 #include <stdint.h>

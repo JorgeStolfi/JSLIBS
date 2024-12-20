@@ -2,9 +2,8 @@
 #define float_image_func_H
 
 /* Procedurally definied float images. */
-/* Last edited on 2018-03-04 22:43:30 by stolfilocal */ 
+/* Last edited on 2024-12-05 10:29:32 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>

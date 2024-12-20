@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_aff_extract.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-09 09:35:04 by stolfi */ 
+/* Last edited on 2024-12-20 18:24:09 by stolfi */ 
 /* Created on 2020-11-05 by J. Stolfi, UNICAMP */
 
 #define taffe_COPYRIGHT \
@@ -29,6 +29,7 @@
 #include <argparser_geo.h>
 #include <bool.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <jsrandom.h>
 #include <affirm.h>
 

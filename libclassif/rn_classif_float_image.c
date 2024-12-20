@@ -1,7 +1,6 @@
 /* See rn_classif_float_image.h. */
-/* Last edited on 2023-03-07 17:15:53 by stolfi */
+/* Last edited on 2024-12-05 10:24:20 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>

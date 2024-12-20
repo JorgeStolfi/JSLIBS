@@ -5,7 +5,7 @@
 #define make_test_classif_data_C_COPYRIGHT \
   "Copyright © 2010 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2023-03-31 03:48:54 by stolfi */
+/* Last edited on 2024-12-05 10:24:46 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -228,7 +228,6 @@
   " inside each pixel, and average their colors to obtain the pixel" \
   " color."
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>

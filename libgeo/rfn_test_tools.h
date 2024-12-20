@@ -1,11 +1,10 @@
 /* rfn_test_tools.h --- tools for testing the {libgeo} functions (single-precision). */
-/* Last edited on 2024-11-20 13:02:37 by stolfi */
+/* Last edited on 2024-12-05 10:28:24 by stolfi */
 /* Created 2005-07-20 by J. Stolfi. */
 
 #ifndef rfn_test_tools_H
 #define rfn_test_tools_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

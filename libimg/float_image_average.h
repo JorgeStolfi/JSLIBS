@@ -2,7 +2,9 @@
 #define float_image_average_H
 
 /* Averaging float images inside extended regions. */
-/* Last edited on 2024-11-23 05:55:28 by stolfi */ 
+/* Last edited on 2024-12-04 22:57:11 by stolfi */ 
+
+#include <stdint.h>
 
 #include <bool.h>
 #include <ix_reduce.h>
@@ -18,7 +20,7 @@ void float_image_average_parallelogram
     r2_t *p, 
     r2x2_t *J,
     bool_t avg,
-    int order,
+    int32_t order,
     float f[],
     bool_t debug
   );

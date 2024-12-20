@@ -2,9 +2,8 @@
 #define r2_align_enum_H
 
 /* Tools for optimizing translational alignment of 2D objects by enumeration. */
-/* Last edited on 2023-09-07 18:05:53 by stolfi */ 
+/* Last edited on 2024-12-05 10:20:03 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>

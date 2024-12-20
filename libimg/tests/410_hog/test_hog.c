@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_hog.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2017-06-24 23:22:48 by stolfilocal */ 
+/* Last edited on 2024-12-20 18:39:29 by stolfi */ 
 /* Created on 2008-10-05 by J. Stolfi, UNICAMP */
 
 #define test_hog_COPYRIGHT \
@@ -22,14 +22,16 @@
 #include <float_image_hog.h>
 #include <float_image_from_uint16_image.h>
 #include <sample_conv.h>
+#include <sample_conv_gamma.h>
 #include <bool.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <affirm.h>
 
-#define BT_GAMMA (0.450) 
-#define BT_BIAS (sample_conv_BT709_BIAS) 
-/* Values of {gamma} and {bias} parameter that approximate
-  the BT.709 encoding.  */
+#define BT_ENC_EXPO sample_conv_gamma_BT709_ENC_EXPO
+#define BT_ENC_BIAS sample_conv_gamma_BT709_BIAS 
+  /* Values of {expo} and {bias} parameters for {sample_conv_gamma}
+    that approximate the BT.709 encoding.  */
 
 typedef enum { kind_PEAK, kind_WAVE, kind_BUMP, kind_REAL } kind_t;
 #define kind_LAST (kind_REAL)
@@ -128,8 +130,7 @@ void do_test
   }  
 
 float_image_t *read_image(char *prefix, char *suffix, char *ext)
-  { char *fname = NULL;
-    char *fname = jsprintf("in/%s-%s.%s", prefix, suffix, ext);
+  { char *fname = jsprintf("in/%s-%s.%s", prefix, suffix, ext);
     FILE *rd = open_read(fname, TRUE);
     uint16_image_t *pim = uint16_image_read_pnm_file(rd);
     fclose(rd);
@@ -139,13 +140,12 @@ float_image_t *read_image(char *prefix, char *suffix, char *ext)
     float_image_t *fim = float_image_from_uint16_image(pim, isMask, NULL, NULL, yup, verbose);
     uint16_image_free(pim);
     int c;
-    for (c = 0; c < fim->sz[0]; c++) { float_image_apply_gamma(fim, c, 1/BT_GAMMA, BT_BIAS); }
+    for (c = 0; c < fim->sz[0]; c++) { float_image_apply_gamma(fim, c, 1/BT_ENC_EXPO, BT_ENC_BIAS); }
     return fim;
   }
 
 void write_image(char *prefix, float_image_t *A)
-  { char *fname = NULL;
-    char *fname = jsprintf("out/%s-G.fni", prefix);
+  { char *fname = jsprintf("out/%s-G.fni", prefix);
     FILE *wr = open_write(fname, TRUE);
     float_image_write(wr, A);
     fclose(wr);

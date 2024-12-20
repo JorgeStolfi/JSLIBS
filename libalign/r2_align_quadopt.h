@@ -2,9 +2,8 @@
 #define r2_align_QUadopt_H
 
 /* Tools for optimizing translational alignment of 2D objects by iterated quadratic optimization. */
-/* Last edited on 2023-09-07 18:02:36 by stolfi */ 
+/* Last edited on 2024-12-05 10:20:14 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>

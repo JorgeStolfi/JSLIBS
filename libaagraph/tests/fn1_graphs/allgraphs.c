@@ -1,7 +1,5 @@
 /* See {allgraphs.h} */
-/* Last edited on 2021-06-26 21:49:55 by jstolfi */
-
-#define _GNU_SOURCE
+/* Last edited on 2024-12-05 10:19:18 by stolfi */
 
 #include <allgraphs.h>
 

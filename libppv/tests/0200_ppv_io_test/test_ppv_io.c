@@ -1,8 +1,6 @@
-/* Last edited on 2023-03-18 10:57:50 by stolfi */ 
+/* Last edited on 2024-12-05 10:42:03 by stolfi */ 
 /* Test of the I/O functions from the PPV library. */
 
-/* Must define _GNU_SOURCE in order to get {asprintf} */
-#define _GNU_SOURCE
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>

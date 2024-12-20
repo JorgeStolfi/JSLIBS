@@ -2,7 +2,7 @@
 #define PROG_DESC "Analyzes relation between image sharpness and local quadratic operators."
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-10-26 09:23:46 by stolfi */ 
+/* Last edited on 2024-12-20 18:13:52 by stolfi */ 
 /* Created on 2023-01-24 by J. Stolfi, UNICAMP */
 
 #define test_mfok_diff_ops_COPYRIGHT \
@@ -57,7 +57,7 @@
   " height {zFoc[ki]} and depth of focus {zDep[ki]}, both, formatted as \"%08.4f\"." \
   "\n" \
   "  The samples are assumed to be encoded" \
-  " in the file with linear scale (gamma = 1).  The {hAvg} and {hDev} values are" \
+  " in the file with linear scale (gamma exponent = 1).  The {hAvg} and {hDev} values are" \
   " assumed to have been scaled from {[0 _ zMax]} to {[0 _ 1]} before being" \
   " writen and are unscaled to {[0 _ zMax]} as" \
   " they are read.\n" \
@@ -143,7 +143,6 @@
   "OPTIONS\n" \
   "  ???\n" \
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

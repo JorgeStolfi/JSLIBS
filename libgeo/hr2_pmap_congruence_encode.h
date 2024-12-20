@@ -1,9 +1,8 @@
 #ifndef hr2_pmap_congruence_encode_H
 #define hr2_pmap_congruence_encode_H
 
-/* Last edited on 2024-11-02 10:38:23 by stolfi */
+/* Last edited on 2024-12-05 10:26:59 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <hr2.h>

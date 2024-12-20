@@ -1,7 +1,6 @@
 /* Tracing zeros of a function with various grids and validated models. */
-/* Last edited on 2023-02-18 09:45:07 by stolfi */
+/* Last edited on 2024-12-05 10:41:12 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>

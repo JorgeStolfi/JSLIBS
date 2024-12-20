@@ -1,7 +1,5 @@
 /* See {btc_bubble_nl_opt_map_continuous_parameters.h} */
-/* Last edited on 2015-04-20 17:21:01 by stolfilocal */
-
-#define _GNU_SOURCE
+/* Last edited on 2024-12-05 10:22:58 by stolfi */
 
 #include <bool.h>
 #include <affirm.h>

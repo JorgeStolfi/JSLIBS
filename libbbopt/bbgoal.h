@@ -1,10 +1,9 @@
 /* A generic goal function for branch-and-bound optimization programs. */
-/* Last edited on 2023-02-20 06:49:07 by stolfi */
+/* Last edited on 2024-12-05 10:21:26 by stolfi */
 
 #ifndef bbgoal_H
 #define bbgoal_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <flt.h>

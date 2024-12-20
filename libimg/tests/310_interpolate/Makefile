@@ -1,4 +1,4 @@
-# Last edited on 2012-11-17 13:02:25 by stolfilocal
+# Last edited on 2024-12-20 18:26:15 by stolfi
 
 PROG = test_interpolate
 
@@ -7,6 +7,7 @@ TEST_LIB_DIR := ../..
 
 JS_LIBS := \
   libgeo.a \
+  libgausol.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

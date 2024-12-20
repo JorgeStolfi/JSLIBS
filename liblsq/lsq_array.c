@@ -1,10 +1,9 @@
 /* See {lsq_array.h} */
-/* Last edited on 2019-12-18 17:12:11 by jstolfi */
+/* Last edited on 2024-12-05 12:55:29 by stolfi */
 
 #define lsq_array_C_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -15,15 +14,14 @@
 #include <affirm.h>
 #include <rmxn.h>
 #include <jsmath.h>
-#include <gauss_elim.h>
 
 #include <lsq.h>
 #include <lsq_array.h>
 
-int32_t lsq_array_fit
-  ( int32_t nt,     /* Number of data points to generate. */
-    int32_t nx,     /* Number of independent variables (argument coordinates per data point). */
-    int32_t nf,     /* Number of dependent variables (function samples per data point). */
+uint32_t lsq_array_fit
+  ( uint32_t nt,     /* Number of data points to generate. */
+    uint32_t nx,     /* Number of independent variables (argument coordinates per data point). */
+    uint32_t nf,     /* Number of dependent variables (function samples per data point). */
     double X[], /* Argument coordinates of data points ({nt} by {nx}). */
     double F[], /* Corresponding function samples ({nt} by {nf}. */
     double W[], /* Corresponding weights ({nt} elements). */
@@ -31,17 +29,17 @@ int32_t lsq_array_fit
     bool_t verbose
   )
   {
-    double *A = rmxn_alloc(nx,nx);
+    double *A = rmxn_alloc(nx, nx);
     lsq_array_compute_matrix(nt, nx, X, W, A);
     double *B = rmxn_alloc(nx,nf);
     lsq_array_compute_rhs(nt, nx, nf, X, F, W, B);
-    int32_t rank = lsq_solve_system(nx, nf, A, B, 0,NULL,NULL, U,NULL, verbose);
+    uint32_t rank = lsq_solve_system(nx, nf, A, B, 0,NULL,NULL, U,NULL, verbose);
     free(B);
     free(A);
     return rank;
   }
 
-void lsq_array_compute_matrix(int32_t nt, int32_t nx, double X[], double W[], double A[])
+void lsq_array_compute_matrix(uint32_t nt, uint32_t nx, double X[], double W[], double A[])
   {
     rmxn_zero(nx, nx, A);
     /* Fill the lower triangular half of {A}: */ 
@@ -62,7 +60,7 @@ void lsq_array_compute_matrix(int32_t nt, int32_t nx, double X[], double W[], do
       }
   }
 
-void lsq_array_compute_rhs(int32_t nt, int32_t nx, int32_t nf, double X[], double F[], double W[], double B[])
+void lsq_array_compute_rhs(uint32_t nt, uint32_t nx, uint32_t nf, double X[], double F[], double W[], double B[])
   {
     rmxn_zero(nx, nf, B);
     for (uint32_t k = 0;  k < nt; k++)

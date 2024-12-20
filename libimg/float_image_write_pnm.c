@@ -1,5 +1,5 @@
 /* See {float_image_write_pnm.h}. */
-/* Last edited on 2017-06-22 18:08:20 by stolfilocal */
+/* Last edited on 2024-12-04 23:32:49 by stolfi */
 
 #include <stdlib.h>
 #include <math.h>
@@ -24,10 +24,10 @@ void float_image_write_pnm_named
     bool_t warn,        /* If TRUE, prints "writing {fname}..." to {stderr}. */
     bool_t verbose      /* If TRUE, prints conversion diagnostics to {stderr}. */
   )
-  { int nc = (int)fim->sz[0];
+  { int32_t nc = (int32_t)fim->sz[0];
     assert((nc == 1) || (nc == 3));
     float_image_t * gim = float_image_copy(fim);
-    int c;
+    int32_t c;
     for (c = 0; c < fim->sz[0]; c++)
       { float_image_apply_gamma(gim, c, 1.0/gamma, bias); }
     uint16_t maxval = uint16_image_MAX_SAMPLE;
@@ -39,7 +39,7 @@ void float_image_write_pnm_named
   }
 
 void float_image_write_pnm_named_list
-  ( int n,                /* Number of images to write. */
+  ( int32_t n,                /* Number of images to write. */
     char *fname[],        /* PPM/PGM/PBM file names (with extensions). */            
     float_image_t *fim[], /* Images to write. */
     bool_t isMask,        /* TRUE for masks, FALSE for images. */
@@ -49,7 +49,7 @@ void float_image_write_pnm_named_list
     bool_t warn,          /* If TRUE, prints "writing {fname}..." to {stderr}. */
     bool_t verbose        /* If TRUE, prints conversion diagnostics to {stderr}. */
   )
-  { int i;
+  { int32_t i;
     for(i = 0; i < n; i++)
       { float_image_write_pnm_named(fname[i], fim[i], isMask, gamma, bias, yup, warn, verbose); }
   }

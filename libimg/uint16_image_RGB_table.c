@@ -1,7 +1,7 @@
-/* See uint16_image_RGB_table.h
-** Last edited on 2009-01-07 03:13:15 by stolfi
-**
-** Copied from Jef Poskanzer's libppm3.c - ppm utility library part 3
+/* See uint16_image_RGB_table.h */
+/* Last edited on 2024-12-05 07:35:48 by stolfi */
+
+/* Copied from Jef Poskanzer's libppm3.c - ppm utility library part 3
 **
 ** Copyright (C) 1989, 1991 by Jef Poskanzer.
 **
@@ -35,15 +35,16 @@ uint32_t uint16_image_RGB_table_hash_pixel(ppm_pixel_t *p)
 
 uint16_image_RGB_table uint16_image_RGB_table_build
   ( uint16_t **samples,
-    int chns, 
-    int cols, 
-    int rows, 
-    int maxcolors, 
-    int *colorsP )
+    int32_t chns, 
+    int32_t cols, 
+    int32_t rows, 
+    int32_t maxcolors, 
+    int32_t *colorsP )
   {
     uint16_image_RGB_table cht;
     uint16_image_RGB_bucket chl;
-    int col, row, hash;
+    int32_t col, row;
+    uint32_t hash;
 
     cht = uint16_image_RGB_table_alloc( );
     *colorsP = 0;
@@ -82,7 +83,7 @@ uint16_image_RGB_table uint16_image_RGB_table_build
 uint16_image_RGB_table uint16_image_RGB_table_alloc(void)
   {
     uint16_image_RGB_table cht;
-    int i;
+    int32_t i;
 
     cht = (uint16_image_RGB_table)pnm_malloc(HASH_SIZE * sizeof(uint16_image_RGB_bucket));
 
@@ -91,10 +92,10 @@ uint16_image_RGB_table uint16_image_RGB_table_alloc(void)
     return cht;
   }
 
-int uint16_image_RGB_table_add(uint16_image_RGB_table cht, ppm_pixel_t* colorP, int value)
+int32_t uint16_image_RGB_table_add(uint16_image_RGB_table cht, ppm_pixel_t* colorP, int32_t value)
   {
-    register int hash;
-    register uint16_image_RGB_bucket chl;
+    uint32_t hash;
+    uint16_image_RGB_bucket chl;
 
     chl = (uint16_image_RGB_bucket)pnm_malloc(sizeof(struct uint16_image_RGB_bucket_item));
     hash = uint16_image_RGB_table_hash_pixel(colorP);
@@ -105,14 +106,14 @@ int uint16_image_RGB_table_add(uint16_image_RGB_table cht, ppm_pixel_t* colorP, 
     return 0;
   }
 
-uint16_image_RGB_hist_vector uint16_image_RGB_table_to_hist(uint16_image_RGB_table cht, int maxcolors)
+uint16_image_RGB_hist_vector uint16_image_RGB_table_to_hist(uint16_image_RGB_table cht, int32_t maxcolors)
   {
     uint16_image_RGB_hist_vector chv;
     uint16_image_RGB_bucket chl;
-    int i, j;
+    int32_t i, j;
 
     /* Now collate the hash table into a simple colorhist array. */
-    chv = (uint16_image_RGB_hist_vector)pnm_malloc(maxcolors * sizeof(struct uint16_image_RGB_hist_item));
+    chv = talloc(maxcolors, uint16_image_RGB_hist_item);
 
     /* Loop through the hash table. */
     j = 0;
@@ -127,16 +128,16 @@ uint16_image_RGB_hist_vector uint16_image_RGB_table_to_hist(uint16_image_RGB_tab
     return chv;
   }
 
-uint16_image_RGB_table uint16_image_RGB_hist_to_table(uint16_image_RGB_hist_vector chv, int colors)
+uint16_image_RGB_table uint16_image_RGB_hist_to_table(uint16_image_RGB_hist_vector chv, int32_t colors)
   {
     uint16_image_RGB_table cht;
-    int i, hash;
+    uint32_t hash;
     ppm_pixel_t color;
     uint16_image_RGB_bucket chl;
 
     cht = uint16_image_RGB_table_alloc();
 
-    for (i = 0; i < colors; ++i)
+    for (int32_t i = 0; i < colors; ++i)
       { color = chv[i].color;
         hash = uint16_image_RGB_table_hash_pixel(&color);
         for (chl = cht[hash]; chl != (uint16_image_RGB_bucket)NULL; chl = chl->next)
@@ -157,9 +158,9 @@ uint16_image_RGB_table uint16_image_RGB_hist_to_table(uint16_image_RGB_hist_vect
     return cht;
   }
 
-int uint16_image_RGB_table_lookup(uint16_image_RGB_table cht, ppm_pixel_t* colorP)
+int32_t uint16_image_RGB_table_lookup(uint16_image_RGB_table cht, ppm_pixel_t* colorP)
   {
-    int hash;
+    uint32_t hash;
     uint16_image_RGB_bucket chl;
     hash = uint16_image_RGB_table_hash_pixel(colorP);
     for (chl = cht[hash]; chl != (uint16_image_RGB_bucket)NULL; chl = chl->next)
@@ -171,7 +172,7 @@ int uint16_image_RGB_table_lookup(uint16_image_RGB_table cht, ppm_pixel_t* color
 
 void uint16_image_RGB_table_free(uint16_image_RGB_table cht)
   {
-    int i;
+    int32_t i;
     uint16_image_RGB_bucket chl, chlnext;
     for (i = 0; i < HASH_SIZE; ++i)
       { for (chl = cht[i]; chl != (uint16_image_RGB_bucket)NULL; chl = chlnext)

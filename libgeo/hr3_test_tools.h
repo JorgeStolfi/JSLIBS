@@ -1,10 +1,9 @@
 /* Test tools for {hr3.h} test programs */
-/* Last edited on 2024-11-20 12:07:02 by stolfi */
+/* Last edited on 2024-12-05 10:27:27 by stolfi */
 
 #ifndef hr3_test_tools_H
 #define hr3_test_tools_H
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>

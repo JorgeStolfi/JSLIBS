@@ -3,12 +3,11 @@
 #define PROG_VERS "1.0"
 
 /* Created by J. Stolfi, UNICAMP sometime before 2003-10-11. */
-/* Last edited on 2023-02-19 22:28:56 by stolfi */
+/* Last edited on 2024-12-05 10:15:08 by stolfi */
 
 #define testfig_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
@@ -17,6 +16,7 @@
 
 #include <affirm.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 
 #include <epswr.h>
 #include <epswr_dev.h>
@@ -91,7 +91,7 @@ void DoTests(void)
 
     int32_t nFig = 3;
     bool_t verbose = TRUE;
-    for (uint32_t iFig = 0;  iFig < nFig; iFig++)
+    for (int32_t iFig = 0;  iFig < nFig; iFig++)
       { epswr_figure_t *epsf = NULL;
         if ((iFig % 3) == 0)
           { /* Test {epswr_new_figure}, with given open file: */
@@ -141,7 +141,7 @@ void DrawPictures(epswr_figure_t *epsf, double lightDir, int32_t nh, int32_t nv)
     int32_t nSub = nh * nv;
     int32_t iSub = 0;
     for (int32_t iv = nv-1; iv >= 0; iv--)
-      { for (uint32_t ih = 0;  ih < nh; ih++)
+      { for (int32_t ih = 0;  ih < nh; ih++)
           { /* Leave the bottom row incomplete: */
             if ((iv == 0) && (ih == (nh + 1)/2)) { return; }
             /* Set the plot window to the desired subfigure: */
@@ -322,7 +322,7 @@ void DrawPicture(epswr_figure_t *epsf, double lightDir, double cubeRot)
     epswr_set_client_window(epsf, -R, +R, -R, +R);
     
     /* Enumerate the eight faces of the cube: */
-    for (uint32_t ax = 0;  ax < 3; ax++)
+    for (int32_t ax = 0;  ax < 3; ax++)
       { int32_t bx = (ax + 1) % 3, cx = (ax + 2) % 3;
         for (int32_t fc = -1; fc <= +1; fc += 2)
           { DrawCubeFace(epsf, ax, bx, cx, fc, ct, st, cs, ss); }
@@ -353,14 +353,14 @@ void DrawCubeFace
     
     void norm(double u[])
       { double s2 = 0.0;
-        for (uint32_t k = 0;  k < 3; k++) { s2 += u[k]*u[k]; }
+        for (int32_t k = 0;  k < 3; k++) { s2 += u[k]*u[k]; }
         double m = sqrt(s2);
-        for (uint32_t k = 0;  k < 3; k++) { u[k] /= m; }
+        for (int32_t k = 0;  k < 3; k++) { u[k] /= m; }
       }
   
     double dot(double u[], double v[])
       { double s = 0.0;
-        for (uint32_t k = 0;  k < 3; k++) { s += u[k]*v[k]; }
+        for (int32_t k = 0;  k < 3; k++) { s += u[k]*v[k]; }
         return s;
       }
   
@@ -375,7 +375,7 @@ void DrawCubeFace
     double xp[4], yp[4];  /* Plot coordinates of vertices. */
     
     /* Clear face normal: */
-    for (uint32_t ar = 0;  ar < 3; ar++) { fn[ar] = 0.0; }
+    for (int32_t ar = 0;  ar < 3; ar++) { fn[ar] = 0.0; }
     
     /* Enumerate vertices of face {v[ax] == fc} in cyclic order, compute face normal: */
     double v[3];
@@ -387,7 +387,7 @@ void DrawCubeFace
             v[cx] = k*j; /* Hack to get the right order. */
             
             /* Rotate point {v} by angle {arg(ct,st)} around all axes: */
-            for (uint32_t ar = 0;  ar < 3; ar++)
+            for (int32_t ar = 0;  ar < 3; ar++)
               { int32_t br = (ar + 1) % 3, cr = (ar + 2) % 3;
                 double xt =  ct*v[br] + st*v[cr];
                 double yt = -st*v[br] + ct*v[cr];
@@ -395,7 +395,7 @@ void DrawCubeFace
               }
             
             /* Accumulate into face normal: */
-            for (uint32_t ar = 0;  ar < 3; ar++) { fn[ar] += v[ar]; }
+            for (int32_t ar = 0;  ar < 3; ar++) { fn[ar] += v[ar]; }
             
             /* Project and store in {xp[r],yp[r]}: */
             

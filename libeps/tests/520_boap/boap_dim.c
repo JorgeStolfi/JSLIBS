@@ -1,6 +1,6 @@
 /* See {boap_dim.h} */
+/* Last edited on 2024-12-05 10:16:13 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

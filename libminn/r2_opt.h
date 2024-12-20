@@ -2,16 +2,15 @@
 #define r2_opt_H
 
 /* Tools for optimizing a vector of points on the plane. */
-/* Last edited on 2023-02-27 10:34:08 by stolfi */ 
+/* Last edited on 2024-12-05 13:17:59 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>
 #include <r2.h>
 #include <i2.h>
 
-typedef double r2_opt_goal_func_t(int32_t ni, r2_t p[], i2_t iscale); 
+typedef double r2_opt_goal_func_t(uint32_t ni, r2_t p[], i2_t iscale); 
   /* Type of a function that evaluates the goal function {F} to optimize.
     for points {p[0..ni-1]}, at a specified scale of resolution {iscale}.
     
@@ -55,7 +54,7 @@ typedef double r2_opt_goal_func_t(int32_t ni, r2_t p[], i2_t iscale);
 
     
 void r2_opt_single_scale_enum
-  ( int32_t ni,                   /* Number of points to optimize. */
+  ( uint32_t ni,                   /* Number of points to optimize. */
     i2_t iscale,              /* Object scaling exponent along each axis. */  
     r2_opt_goal_func_t *f2,   /* Function that evaluates the goal function. */
     r2_t arad[],              /* Max coordinate adjustment for each point. */
@@ -69,7 +68,7 @@ void r2_opt_single_scale_enum
     all valid point vectors. */
 
 void r2_opt_single_scale_quadopt
-  ( int32_t ni,                   /* Number of points to optimize. */
+  ( uint32_t ni,                   /* Number of points to optimize. */
     i2_t iscale,              /* Object scaling exponent along each axis. */  
     r2_opt_goal_func_t *f2,   /* Function that evaluates the goal function. */
     r2_t arad[],              /* Max coordinate adjustment for each point. */
@@ -87,7 +86,7 @@ void r2_opt_single_scale_quadopt
     within that region. */
 
 void r2_opt_multi_scale
-  ( int32_t ni,                  /* Number of points to optimize. */
+  ( uint32_t ni,                  /* Number of points to optimize. */
     r2_opt_goal_func_t *f2,  /* Function that evaluates the goal function. */
     bool_t quadopt,          /* Use quadratic optimization? */
     r2_t arad[],             /* Max coordinate adjustment for each point. */
@@ -120,7 +119,7 @@ void r2_opt_multi_scale
     {astp[i].c[j]*2^iscale.c[j] > arad[i].c[j]}, for all {i} such that
     {arad[i].c[j] > 0}. */
 
-double r2_opt_rel_disp_sqr(int32_t ni, r2_t p[], r2_t q[], r2_t arad[], r2_t astp[]);
+double r2_opt_rel_disp_sqr(uint32_t ni, r2_t p[], r2_t q[], r2_t arad[], r2_t astp[]);
   /* Computes the total squared displacement between {p[0..ni-1]} and 
     {q[0..ni-1]} relative to the radius {arad[i]}, that is,
     

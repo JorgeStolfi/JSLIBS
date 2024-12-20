@@ -1,7 +1,6 @@
 /* See {hr2_pmap_from_many_pairs.h}. */
-/* Last edited on 2024-11-11 10:41:36 by stolfi */
+/* Last edited on 2024-12-05 10:19:28 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdint.h>
 #include <limits.h>

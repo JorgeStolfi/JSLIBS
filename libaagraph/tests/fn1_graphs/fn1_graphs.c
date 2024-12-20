@@ -1,7 +1,5 @@
 /* Plots functions using AA and IA. */
-/* Last edited on 2021-06-26 03:42:58 by jstolfi */
-
-#define _GNU_SOURCE
+/* Last edited on 2024-12-05 10:19:20 by stolfi */
 
 #include <allgraphs.h>
 #include <fn1_functions.h>

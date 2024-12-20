@@ -2,13 +2,12 @@
 #define PROG_DESC "test of {r2_align_enum.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-08 11:22:41 by stolfi */ 
+/* Last edited on 2024-12-05 10:20:18 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_align_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

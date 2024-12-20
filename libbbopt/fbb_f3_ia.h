@@ -1,10 +1,9 @@
 /* Defines a target function F for bbopt1.c */
-/* Last edited on 2023-02-20 06:40:51 by stolfi */
+/* Last edited on 2024-12-05 10:21:43 by stolfi */
   
 #ifndef fbb_f3_ia_H
 #define fbb_f3_ia_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bbgoal.h>

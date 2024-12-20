@@ -1,7 +1,6 @@
 /* text_cases - test ODE integrators. */
-/* Last edited on 2009-02-10 22:59:45 by stolfi */
+/* Last edited on 2024-12-05 10:31:33 by stolfi */
 
-#define _GNU_SOURCE
 #include <intg_Euler.h>
 #include <intg_RKF2.h>
 #include <intg_RKF4.h>

@@ -2,7 +2,7 @@
 #define PROG_DESC "creates some 2D maps using the quad-edge structure"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-10-05 20:21:48 by stolfi */ 
+/* Last edited on 2024-12-05 10:39:54 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2007  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
@@ -62,7 +62,6 @@
   "\n" \
   argparser_help_info_STANDARD_RIGHTS
   
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

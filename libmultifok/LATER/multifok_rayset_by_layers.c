@@ -1,7 +1,6 @@
 /* See {multifok_rayset.h}. */
-/* Last edited on 2024-10-15 10:45:36 by stolfi */
+/* Last edited on 2024-12-06 07:12:32 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

@@ -1,6 +1,6 @@
 /* See {boas_draw.h} */
+/* Last edited on 2024-12-05 10:21:09 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

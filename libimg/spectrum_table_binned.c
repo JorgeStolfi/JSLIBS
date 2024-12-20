@@ -1,5 +1,5 @@
 /* See spectrum_table_binned.h */
-/* Last edited on 2024-11-06 10:11:03 by stolfi */ 
+/* Last edited on 2024-12-05 07:13:14 by stolfi */ 
 
 #include <limits.h>
 #include <float.h>
@@ -61,14 +61,13 @@ double spectrum_table_binned_splat_weight(double frLo, double frHi, double fmin,
 
 vec_typeimpl(spectrum_table_binned_t,spectrum_table_binned,spectrum_table_binned_entry_t); 
   
-spectrum_table_binned_t spectrum_table_binned_make(int32_t nRanges)
+spectrum_table_binned_t spectrum_table_binned_make(uint32_t nRanges)
   {
     demand(nRanges > 0, "invalid nRanges");
-    int32_t i;
-   /* Allocate binned table and define its fmid ranges: */
+    /* Allocate binned table and define its fmid ranges: */
     spectrum_table_binned_t tb = spectrum_table_binned_new(nRanges);
     double fmin = 0; /* Lower limit of next band. */
-    for (i = 0; i < nRanges; i++) 
+    for (int32_t i = 0; i < nRanges; i++) 
       { spectrum_table_binned_entry_t *tbi = &(tb.e[i]);
         tbi->fmin = fmin;
         if (i == nRanges-1)
@@ -105,10 +104,11 @@ void spectrum_table_binned_add_all
     bool_t verbose
   )
   {
-    int32_t cols = (int32_t)P->sz[1];
-    int32_t rows = (int32_t)P->sz[2];
+    int32_t chns, cols, rows;
+    float_image_get_size(P, &chns, &cols, &rows);
+    demand((c >= 0) && (c < chns), "invalid channel index");
 
-    int32_t nRanges = tb->ne;
+    uint32_t nRanges = tb->ne;
     demand(nRanges > 0, "invalid nRanges");
     
     if (verbose)
@@ -123,8 +123,8 @@ void spectrum_table_binned_add_all
     int32_t fnMax[2] = { cols/2, rows/2 }; /* Max numerators of natural freq vector. */
     
     /* Splat the spectrum terms over the table {tb}, with smoothing. */
-    for (uint32_t ry = 0;  ry < rows; ry++)
-      for (uint32_t rx = 0;  rx < cols; rx++)
+    for (int32_t ry = 0;  ry < rows; ry++)
+      for (int32_t rx = 0;  rx < cols; rx++)
         { /* Adjust for centering: */
           int32_t fx = (center ? (rx + cols - cols/2) % cols : rx);
           int32_t fy = (center ? (ry + rows - rows/2) % rows : ry);
@@ -257,7 +257,7 @@ void spectrum_table_binned_freq_range(int32_t fr[], int32_t sz[], double *frLo, 
 
 int32_t spectrum_table_binned_locate_entry(spectrum_table_binned_t *tb, double f)
   {
-    int32_t ntb = tb->ne;
+    int32_t ntb = (int32_t)tb->ne;
     if (f <= tb->e[0].fmin) 
       { return 0; }
     else if (f >= tb->e[ntb-1].fmax)

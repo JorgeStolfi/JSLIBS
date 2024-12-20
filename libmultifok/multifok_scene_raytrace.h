@@ -1,10 +1,9 @@
 /* Ray-tracing test scenes for multi-focus stereo. */
-/* Last edited on 2024-10-29 19:03:14 by stolfi */
+/* Last edited on 2024-12-06 05:56:07 by stolfi */
 
 #ifndef multifok_scene_raytrace_H
 #define multifok_scene_raytrace_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <r3.h>
@@ -57,22 +56,29 @@ frgb_t multifok_scene_raytrace_compute_hit_color
   ( multifok_scene_object_t *obj,
     r3_t *q,
     multifok_scene_raytrace_pattern_t *pattern,
-    r3_t *light_dir
+    r3_t *light_dir,
+    double ambient
   );
   /* Computes the color {clr} of the surface of object 
-    {obj} at the point {pHit}.
+    {obj} at the point {q}, assumed to be on the object's surface.
     
-    If {obj} is not {NULL}, the procedure evaluates
-    {r=pattern(x,y,z,obj.ID)}, where {(x,y,z) = q - obj.ctr}, and
-    obtains {clr} by interpolating between {obj.bg} and {obj.fg} with
-    the ratio {r}. If {obj} is NULL, computes instead {r =
-    pattern(x,y,z,-1)} where {(x,y,z) = q}, and maps {r} lineary to a
-    grayscale value from back to white.
+    If {obj} is not {NULL}, the procedure evaluates the surface albedo
+    (intrinsic color) {clr} at the hit point by evaluating
+    {r=pattern(x,y,z)}, where {(x,y,z)} is the vector {q - obj.ctr}
+    rotated and/or translated by an angle that depends on the object's
+    ID, and obtains {clr} by interpolating between {obj.bg} and {obj.fg}
+    with the ratio {r}. If {obj} is NULL, returns uniform {50%} gray.
     
     If {light_dir} is not NULL, it should be a unit vector pointing
-    towards the simulated light source.  The object will be rendered 
-    using a mix of uniform ambient light and unidirectional light with
-    a Lambertain surface finish model. */
+    towards the simulated light source, and {ambient} should be a number
+    between 0 and 1. The surface at the hit point will be rendered
+    assuming a Lambertain surface finish model and a mix of uniform
+    pan-directional light and unidirectional light, with weights
+    {ambient} and {1-ambient}, respectively. The surface normal at the
+    point {q} will be computed by {multifok_scene_object_normal}. If
+    {light-dir} is {NULL} or {ambient} is 1, the rendered color will be
+    just the surface's albedo, independent of the surface's normal
+    direction. */
 
 /* SCENE TO IMAGE COORDINATE MAPPING */
 

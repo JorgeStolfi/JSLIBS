@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_transform.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-10-12 17:38:17 by stolfi */ 
+/* Last edited on 2024-12-20 18:21:40 by stolfi */ 
 /* Created on 2008-09-21 by J. Stolfi, UNICAMP */
 
 #define test_hartley_COPYRIGHT \
@@ -17,6 +17,7 @@
 
 #include <affirm.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <bool.h>
 #include <uint16_image.h>
 #include <uint16_image_write_pnm.h>

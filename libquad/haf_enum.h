@@ -2,12 +2,11 @@
 #define haf_enum_H
 
 /* Enumerating and renumbering elements of a half-edge structure. */
-/* Last edited on 2024-06-20 10:21:13 by stolfi */
+/* Last edited on 2024-12-05 10:38:53 by stolfi */
 
 #define half_enum_H_copyright \
   "Copyright (C) 2023 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <jslibs_copyright.h>

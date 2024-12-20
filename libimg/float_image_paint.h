@@ -2,7 +2,7 @@
 #define float_image_paint_H
 
 /* Tools for drawing into float images. */
-/* Last edited on 2023-11-26 06:42:18 by stolfi */ 
+/* Last edited on 2024-12-05 22:23:09 by stolfi */ 
 
 #include <bool.h>
 #include <ellipse_crs.h>
@@ -28,12 +28,12 @@
    
 double float_image_paint_sample
   ( float_image_t *A, 
-    int c, 
-    int ix, 
-    int iy, 
+    int32_t c, 
+    int32_t ix, 
+    int32_t iy, 
     float_image_func_t *func, 
     float_image_func_t *mask, 
-    int m
+    uint32_t m
   );
   /* Overlays pixel {ix,iy} of channel {c} of image {A} with the
     procedural image {func}, whose opacity is defined
@@ -59,14 +59,14 @@ double float_image_paint_sample
 
 double float_image_paint_samples
   ( float_image_t *A, 
-    int c, 
-    int xLo, 
-    int xHi,
-    int yLo,
-    int yHi, 
+    int32_t c, 
+    int32_t xLo, 
+    int32_t xHi,
+    int32_t yLo,
+    int32_t yHi, 
     float_image_func_t *func,
     float_image_func_t *mask,
-    int m
+    uint32_t m
   );
   /* Applies {float_image_paint_sample} to all pixels {ix,iy}
     with {ix} in {xLo..xHi} and {iy} in {yLo..yHi}. */
@@ -93,7 +93,7 @@ double float_image_paint_samples
 
 double float_image_paint_rectangle
   ( float_image_t *A, 
-    int c,           /* Channel. */                                
+    int32_t c,       /* Channel. */                                
     double xmin,     /* Min X coordinate. */                  
     double xmax,     /* Max X coordinate. */                  
     double ymin,     /* Min Y coordinate. */                  
@@ -101,7 +101,7 @@ double float_image_paint_rectangle
     double hwd,      /* Radius of pen tip. */  
     float vfill,     /* Ink value for filling. */                              
     float vdraw,     /* Ink value for stroking. */  
-    int m            /* Subsampling parameter. */
+    uint32_t m       /* Subsampling parameter. */
   );
   /* Paints into channel {c} of image {A} the rectangle {[xmin_xmax]×[ymin_ymax]}.  
     The outline has sharp corners as if drawn with a square pen with 
@@ -109,7 +109,7 @@ double float_image_paint_rectangle
 
 double float_image_paint_dot
   ( float_image_t *A, 
-    int c,           /* Channel. */                                
+    int32_t c,       /* Channel. */                                
     double xctr,     /* Center's X coordinate. */                  
     double yctr,     /* Center's Y coordinate. */                  
     double rad,      /* Radius of cross (not counting {hwd}). */   
@@ -118,7 +118,7 @@ double float_image_paint_dot
     bool_t diagonal, /* If {TRUE}, rotate 45 degrees. */           
     float vfill,     /* Ink value for filling. */                              
     float vdraw,     /* Ink value for stroking. */  
-    int m            /* Subsampling parameter. */
+    uint32_t m       /* Subsampling parameter. */
   );
   /* Paints into channel {c} of image {A} a dot centered at {xctr,yctr}.
     
@@ -129,13 +129,13 @@ double float_image_paint_dot
 
 double float_image_paint_smudge
   ( float_image_t *A, 
-    int c,         /* Channel. */                                
+    int32_t c,     /* Channel. */                                
     double xctr,   /* Center's X coordinate. */                  
     double yctr,   /* Center's Y coordinate. */                  
     double xdev,   /* Standard deviation in X direction. */   
     double ydev,   /* Standard deviation in Y direction. */                      
-    float vfill,    /* Ink value at center. */  
-    int m          /* Subsampling parameter. */
+    float vfill,   /* Ink value at center. */  
+    uint32_t m     /* Subsampling parameter. */
   );
   /* Paints onto channel {c} of image {A} a fuzzy dot centered at {xctr,yctr}.
     
@@ -145,7 +145,7 @@ double float_image_paint_smudge
 
 double float_image_paint_cross
   ( float_image_t *A, 
-    int c,           /* Channel. */
+    int32_t c,       /* Channel. */
     double xctr,     /* Center's X coordinate. */
     double yctr,     /* Center's Y coordinate. */
     double rad,      /* Radius of cross (not counting {hwd}). */ 
@@ -153,7 +153,7 @@ double float_image_paint_cross
     double hwd,      /* Radius of pen tip. */
     bool_t diagonal, /* If {TRUE}, rotate 45 degrees. */
     float vdraw,     /* Ink value for stroking. */  
-    int m            /* Subsampling parameter. */
+    uint32_t m       /* Subsampling parameter. */
   );
   /* Draws into channel {c} of image {A} a cross centered
     at {xctr,yctr}, with arms of length {rad}. 
@@ -171,36 +171,36 @@ double float_image_paint_cross
 
 double float_image_paint_ellipse_crs
   ( float_image_t *A,
-    int c,            /* Channel. */
+    int32_t c,        /* Channel. */
     ellipse_crs_t *E, /* Ellipse parameters. */
     double hwd,       /* Radius of pen tip. */
     float vfill,      /* Ink value for the interior, or {NAN}. */  
     float vdraw,      /* Ink value for stroking the outline, of {NAN}. */  
-    int m             /* Subsampling parameter. */
+    uint32_t m        /* Subsampling parameter. */
   );
   /* Paints into channel {c} of {A} the image of ellipse {E}. */ 
 
 double float_image_paint_ellipse_ouv
   ( float_image_t *A,
-    int c,            /* Channel. */
+    int32_t c,        /* Channel. */
     r2_t *ctr,        /* Center coords. */
     ellipse_ouv_t *F, /* Ellipse parameters, relative to center. */
     double hwd,       /* Radius of pen tip. */
     float vfill,      /* Ink value for the interior, or {NAN}. */  
     float vdraw,      /* Ink value for stroking the outline, of {NAN}. */  
-    int m             /* Subsampling parameter. */
+    uint32_t m        /* Subsampling parameter. */
   );
   /* Paints into channel {c} of {A} the image of ellipse with center {ctr} and shape {F}. */ 
 
 double float_image_paint_ellipse_aligned
   ( float_image_t *A,
-    int c,            /* Channel. */
+    int32_t c,        /* Channel. */
     r2_t *ctr,        /* Center coords. */
     r2_t *rad,        /* Radii in X and Y. */
     double hwd,       /* Radius of pen tip. */
     float vfill,      /* Ink value for the interior, or {NAN}. */  
     float vdraw,      /* Ink value for stroking the outline, of {NAN}. */  
-    int m             /* Subsampling parameter. */
+    uint32_t m        /* Subsampling parameter. */
   );
   /* Paints into channel {c} of {A} the image of axis-aligned 
     ellipse with center {ctr} and semi-radii {rad.c[0],rad.c[1]}

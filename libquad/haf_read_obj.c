@@ -1,12 +1,11 @@
 /* See {haf_read_obj.h}. */
-/* Last edited on 2024-11-20 06:02:25 by stolfi */
+/* Last edited on 2024-12-05 10:38:59 by stolfi */
  
 #define haf_read_obj_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
  
 /* Written by J. Stolfi in June 2024. */ 
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

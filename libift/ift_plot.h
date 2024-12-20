@@ -1,10 +1,9 @@
 /* ift_plot.h - Postscript plotting of IFT path forests. */
-/* Last edited on 2023-02-03 22:20:56 by stolfi */
+/* Last edited on 2024-12-05 10:29:07 by stolfi */
 
 #ifndef ift_plot_H
 #define ift_plot_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 
 #include <bool.h>

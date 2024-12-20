@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {image_window_op.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-09-24 00:12:13 by stolfi */ 
+/* Last edited on 2024-12-20 18:27:23 by stolfi */ 
 /* Created on 2012-01-25 by J. Stolfi, UNICAMP */
 
 #define test_image_window_op_COPYRIGHT \
@@ -17,6 +17,7 @@
 
 #include <affirm.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <jsrandom.h>
 #include <bool.h>
 #include <r2.h>
@@ -171,7 +172,7 @@ int32_t main (int32_t argn, char **argv)
     /* Size of individual test images: */
     int32_t NX = 11, NY = 11;
     
-    for (uint32_t ik = 0;  ik < image_window_op_NUM; ik++)
+    for (int32_t ik = 0;  ik < image_window_op_NUM; ik++)
       { image_window_op_t op = (image_window_op_t)ik;
         tiwo_test_operator(op, NX, NY); 
       }
@@ -203,7 +204,7 @@ void tiwo_test_operator(image_window_op_t op, int32_t NX, int32_t NY)
     float_image_t *timg = float_image_new(NC, NX, NY);
     float_image_t *rimg = float_image_new(NC, NX, NY);
     
-    for (uint32_t it = 0;  it < nt; it++)
+    for (int32_t it = 0;  it < nt; it++)
       { fprintf(stderr, "--- testing with test image t%02d ---\n", it);
         int32_t xs = it*(NX+1);  /* Column in {oimg} where sub-images should go: */
         int32_t ys = NYO;  /* Row in {oimg} where sub-images should go: */
@@ -213,9 +214,9 @@ void tiwo_test_operator(image_window_op_t op, int32_t NX, int32_t NY)
         lo = 0; hi = 1;
         ys = ys - NY;
         tiwo_paste_image(timg, lo, hi, xs, ys, FALSE, oimg);
-        for (uint32_t im = 0;  im < 2; im++)
+        for (int32_t im = 0;  im < 2; im++)
           { bool_t smoothed = (bool_t)im;
-            for (uint32_t iq = 0;  iq < 2; iq++)
+            for (int32_t iq = 0;  iq < 2; iq++)
               { bool_t squared = (bool_t)iq;
                 tiwo_do_single_test(timg, op, smoothed, squared, rimg);
                 image_window_op_get_range(op, smoothed, squared, &lo, &hi);
@@ -237,9 +238,9 @@ void tiwo_test_operator(image_window_op_t op, int32_t NX, int32_t NY)
 
 void tiwo_check_op_range(image_window_op_t op)
   { 
-    for (uint32_t im = 0;  im < 2; im++)
+    for (int32_t im = 0;  im < 2; im++)
       { bool_t smoothed = (bool_t)im;
-        for (uint32_t iq = 0;  iq < 2; iq++)
+        for (int32_t iq = 0;  iq < 2; iq++)
           { bool_t squared = (bool_t)iq;
           
             fprintf(stderr, "checking range for smoothed = %c squared = %c\n", "FT"[smoothed], "FT"[squared]);
@@ -258,7 +259,7 @@ void tiwo_check_op_range(image_window_op_t op)
             int32_t q = 3; /* Number of levels per sample. */
 
             /* Generate all possible 3x3 windows with {q} values per sample. */
-            int64_t nw = ipow(q, nsmp); /* Number of test windows to generate. */
+            int64_t nw = ipow(q, (uint32_t)nsmp); /* Number of test windows to generate. */
             for (int64_t iw = 0; iw < nw; iw++)
               { /* Split {iw} into {nsmp} base-{q} digits, map each to {0_1]: */
                 int64_t b = iw;
@@ -315,10 +316,10 @@ void tiwo_do_single_test
     float fsmp[nsmp];
     double wsmp[nsmp];
         
-    for (uint32_t ix = 0;  ix < NX; ix++)
-      { for (uint32_t iy = 0;  iy < NY; iy++) 
+    for (int32_t ix = 0;  ix < NX; ix++)
+      { for (int32_t iy = 0;  iy < NY; iy++) 
           { float_image_get_window_samples(timg, 0,ix,iy, nwx, nwy, FALSE, fsmp);
-            for (uint32_t k = 0;  k < nsmp; k++) { wsmp[k] = fsmp[k]; }
+            for (int32_t k = 0;  k < nsmp; k++) { wsmp[k] = fsmp[k]; }
             double res = image_window_op_apply(op, smoothed, squared, iwctr, nwx, wsmp);
             float_image_set_sample(rimg, 0,ix,iy, (float)res);
           }

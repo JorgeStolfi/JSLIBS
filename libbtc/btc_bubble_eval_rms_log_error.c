@@ -1,7 +1,6 @@
 /* See {btc_bubble_eval_rms_log_error.h} */
-/* Last edited on 2015-04-22 20:46:49 by stolfilocal */
+/* Last edited on 2024-12-05 10:22:17 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>

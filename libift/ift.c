@@ -1,7 +1,6 @@
 /* Image Foresting Transform (IFT) - Implementation */
-/* Last edited on 2017-01-04 17:53:03 by stolfilocal */
+/* Last edited on 2024-12-05 10:29:01 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

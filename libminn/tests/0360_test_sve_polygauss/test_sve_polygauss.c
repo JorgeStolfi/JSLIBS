@@ -1,7 +1,6 @@
 /* test_polygauss --- test of {sve_minn.h} for flat-topped sum of gaussians */
-/* Last edited on 2024-11-20 06:01:38 by stolfi */
+/* Last edited on 2024-12-05 10:34:42 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

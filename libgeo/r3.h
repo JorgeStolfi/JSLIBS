@@ -1,10 +1,9 @@
 /* r3.h --- operations on points and vectors of R^3 */
-/* Last edited on 2024-11-20 13:55:05 by stolfi */
+/* Last edited on 2024-12-05 10:27:53 by stolfi */
 
 #ifndef r3_H
 #define r3_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>

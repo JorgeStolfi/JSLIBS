@@ -2,7 +2,7 @@
 #define PROG_DESC "test an analysis of basis functions from {multifok_focus_op.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-10-22 13:08:38 by stolfi */ 
+/* Last edited on 2024-12-05 10:37:26 by stolfi */ 
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
 #define test_mfok_show_basis_COPYRIGHT \
@@ -36,7 +36,6 @@
   "    Also writes to \"{outDir}/bas-nw{NNN}-bt{bType}-belnames.txt\" the names of " \
   " the basis elements, like \"FXY\", one per line."
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

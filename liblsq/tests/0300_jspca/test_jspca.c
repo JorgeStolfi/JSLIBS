@@ -1,7 +1,6 @@
 /* test_jspca --- test program for {jspca.h}  */
-/* Last edited on 2023-02-12 07:12:46 by stolfi */
+/* Last edited on 2024-12-05 10:33:49 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

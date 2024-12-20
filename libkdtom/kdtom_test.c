@@ -1,7 +1,6 @@
 /* See {kdtom_test.h}. */
-/* Last edited on 2021-07-18 01:10:06 by jstolfi */
+/* Last edited on 2024-12-05 10:33:00 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

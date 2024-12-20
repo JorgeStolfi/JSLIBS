@@ -2,7 +2,7 @@
 #define PROG_DESC "finds the {bias} that best fits the BT709 encoding"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2020-10-11 14:30:46 by jstolfi */
+/* Last edited on 2024-12-20 14:39:43 by stolfi */
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_bt709_bias_C_COPYRIGHT \
@@ -10,7 +10,7 @@
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
-  "    [ -gamma {GAMMA} ] \\\n" \
+  "    [ -expo {EXPO} ] \\\n" \
   "    [ -bias {BIAS} ] \\\n" \
   "    [ -mean | -max ] \\\n" \
   "    [ -weight { lows | uniform | highs } ] \\\n" \
@@ -51,11 +51,11 @@
 #define PROG_INFO_DESC \
   "  The program writes a table comparing the" \
   " functions {sample_conv_encode_BT709} and {sample_conv_decode_BT709} with" \
-  " {sample_conv_gamma} with bias {BIAS} and gammas" \
-  " {GAMMA} and {1/GAMMA}, respectively.\n" \
+  " {sample_conv_gamma} with bias {BIAS} and exponents" \
+  " {EXPO} and {1/EXPO}, respectively.\n" \
   "\n" \
   "  The program may be asked" \
-  " to find the value of {BIAS} or {GAMMA} that" \
+  " to find the value of {BIAS} or {EXPO} that" \
   " minimizes the discrepancy between the two models.  The" \
   " criterion is the discrepancy" \
   " (absolute or relative, root-mean-squared or" \
@@ -63,19 +63,19 @@
   "\n" \
   "  The program also writes a file \"out/optim.txt\" with the" \
   " result(s) of parameter optimization.  The file has one line" \
-  " with \"{PARAM} = {OPT_VALUE}\" where {PARAM} is either \"bias\" or \"gamma\".  The" \
+  " with \"{PARAM} = {OPT_VALUE}\" where {PARAM} is either \"bias\" or \"expo\".  The" \
   " line is blank if there was no optimization."
 
 #define PROG_INFO_OPTS \
-  "  -gamma {GAMMA}\n" \
-  "    Value of {gamma} to use.  If not specified, the program" \
-  " tries to find the optimum gamma.  At least one of \"-bias\"" \
-  " and \"-gamma\" must be specified.\n" \
+  "  -expo {EXPO}\n" \
+  "    Value of {expo} to use.  If not specified, the program" \
+  " tries to find the optimum exponent.  At least one of \"-bias\"" \
+  " and \"-expo\" must be specified.\n" \
   "\n" \
   "  -bias {BIAS}\n" \
   "    Value of {bias} to use.  If not specified, the program" \
   " tries to find the optimum bias.  At least one of \"-bias\"" \
-  " and \"-gamma\" must be specified.\n" \
+  " and \"-expo\" must be specified.\n" \
   "\n" \
   "  -mean\n" \
   "  -max\n" \
@@ -99,15 +99,17 @@
 
 #include <float_image.h>
 #include <sample_conv.h>
+#include <sample_conv_gamma.h>
 #include <bool.h>
 #include <minu_brent.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <affirm.h>
 #include <vec.h>
 #include <argparser.h>
 
 typedef struct options_t
-  { double gamma;    /* User-given {gamma}, or NAN if not given. */
+  { double expo;    /* User-given {expo}, or NAN if not given. */
     double bias;     /* User-given {bias}, or NAN if not given. */
     bool_t mean;     /* RMS or maximum mismatch? */
     int weight;      /* Weighting option: 0 = lows, 1 = uniform, 2 = highs. */
@@ -121,23 +123,23 @@ int main(int argc, char **argv);
 
 void tb_apply_both
   ( float v, 
-    double gamma, 
+    double expo, 
     double bias, 
     bool_t encode, 
     float *y_bt, 
     float *y_sg
   );
   /* If {encode} is true, evaluates {sample_conv_encode_BT709(v)} and
-    {sample_conv_gamma(v, gamma, bias)}. If {encode} is false, evaluates
+    {sample_conv_gamma(v, expo, bias)}. If {encode} is false, evaluates
     the inverse functions {sample_conv_decode_BT709(v)} and
-    {sample_conv_gamma(v, 1/gamma, bias)}. In either case, stores the
+    {sample_conv_gamma(v, 1/expo, bias)}. In either case, stores the
     results in {y_bt} and {y_sg}, respectively. */
 
-double tb_mismatch(int nv, double gamma, double bias, bool_t mean, int weight);
+double tb_mismatch(int nv, double expo, double bias, bool_t mean, int weight);
   /* Computes a quadratic discrepancy function between the BT709 
     gamma encoding and decoding and the generic
     {sample_conv_gamma} with the given {bias} and
-    gammas {gamma} and {1/gamma}, respectively.
+    exponents {expo} and {1/expo}, respectively.
     
     The discrepancy is computed at {nv} equally spaced values of the
     argument {v} in {[0 _ 1]}, avoiding and 1.
@@ -153,7 +155,7 @@ double tb_mismatch(int nv, double gamma, double bias, bool_t mean, int weight);
     squared error term.  Note that {mean=FALSE} and {weight!=1}
     mean minimizing the maximum value of {fabs(e)*sqrt(wt)}. */
 
-void tb_print_comparison(FILE *wr, int nv, double gamma, double bias, bool_t encode);
+void tb_print_comparison(FILE *wr, int nv, double expo, double bias, bool_t encode);
   /* Analyzes the difference between the two models in the {encode}
     direction, and the round-trip error incurred when by applying one
     model in the encode direction followed by the other model in the
@@ -163,7 +165,7 @@ void tb_write_table
   ( char *name, 
     char *suff, 
     int nv, 
-    double gamma,
+    double expo,
     double bias,
     bool_t encode, 
     options_t *o
@@ -182,13 +184,13 @@ void tb_write_table
     
     Also prints to {stderr} some error statistics. */
 
-double tb_find_bias(int nv, double gamma, bool_t mean, int weight);
+double tb_find_bias(int nv, double expo, bool_t mean, int weight);
   /* Computes a {bias} value that minimizes the mismatch
     {tb_mismatch(nv, bias, mean, weight)}. */
 
-double tb_find_gamma(int nv, double bias, bool_t mean, int weight);
-  /* Computes a {gamma} value that minimizes the mismatch
-    {tb_mismatch(nv, gamma, bias, mean, weight)}. */
+double tb_find_expo(int nv, double bias, bool_t mean, int weight);
+  /* Computes a {expo} value that minimizes the mismatch
+    {tb_mismatch(nv, expo, bias, mean, weight)}. */
 
 void tb_write_opt(char *pname, double val);
   /* Writes the file with result {val} of optimizing parameter {pname}. */
@@ -202,11 +204,11 @@ int main(int argc, char **argv)
     int nv_plot = 500;
     
     double bias = o->bias;
-    double gamma = o->gamma;
+    double expo = o->expo;
     if (isnan(bias))  
-      { bias  = tb_find_bias (nv_eval, gamma, o->mean, o->weight); tb_write_opt("bias", bias); }
-    else if (isnan(gamma)) 
-      { gamma = tb_find_gamma(nv_eval, bias,  o->mean, o->weight); tb_write_opt("gamma", gamma); }
+      { bias = tb_find_bias (nv_eval, expo, o->mean, o->weight); tb_write_opt("bias", bias); }
+    else if (isnan(expo)) 
+      { expo = tb_find_expo(nv_eval, bias,  o->mean, o->weight); tb_write_opt("expo", expo); }
     else
       { tb_write_opt(NULL, NAN); }
     
@@ -215,25 +217,21 @@ int main(int argc, char **argv)
       { bool_t encode = (idir > 0);
       
         /* Print a sumamry of the differences: */
-        tb_print_comparison(stderr, nv_eval, gamma, bias, encode);
+        tb_print_comparison(stderr, nv_eval, expo, bias, encode);
         fprintf(stderr, "\n");
         
         /* Write a comparison table for plotting: */
         char *oname = (encode ? "out/enc" : "out/dec"); /* Table filename. */
-        tb_write_table(oname, ".txt", nv_plot, gamma, bias, encode, o);
+        tb_write_table(oname, ".txt", nv_plot, expo, bias, encode, o);
       }
     /* Cleanup: */
     free(o); o = NULL;
     return 0;
   }
   
-double tb_find_bias(int nv, double gamma, bool_t mean, int weight)
+double tb_find_bias(int nv, double expo, bool_t mean, int weight)
   {
-    demand(! isnan(gamma), "{gamma} is undefined");
-    
-    /* Search parameters: */
-    double tol = 0.0000001;
-    double dist = 0.1;
+    demand(! isnan(expo), "{expo} is undefined");
     
     auto bool_t eval(void *parms, double x, double *fx, double *dfx);
       /* Evaluates the goal function at {x}, result in {fx}. Sets {dfx} to NAN. */
@@ -244,7 +242,7 @@ double tb_find_bias(int nv, double gamma, bool_t mean, int weight)
     bool_t eval(void *parms, double x, double *fx, double *dfx)
       { if (nEvals >= maxEvals) { return TRUE; }
         double x_bias = x;
-        (*fx) = tb_mismatch(nv, gamma, x_bias, mean, weight);
+        (*fx) = tb_mismatch(nv, expo, x_bias, mean, weight);
         (*dfx) = NAN;
         nEvals++;
         return FALSE;
@@ -256,10 +254,14 @@ double tb_find_bias(int nv, double gamma, bool_t mean, int weight)
     double bias, fbias, dfbias;
     double a, b;
     
+    /* Search parameters: */
+    double tol = 0.0000001;
+    double dist = 0.5;
+    
     /* Initial range and guess: */
-    a = 0.020; b = 0.050;
+    a = 0.001; b = 0.200;
     bias = (a+b)/2; 
-    fbias = tb_mismatch(nv, gamma, bias, mean, weight); 
+    fbias = tb_mismatch(nv, expo, bias, mean, weight); 
     dfbias = NAN;
 
     minu_brent_minimize
@@ -282,13 +284,9 @@ double tb_find_bias(int nv, double gamma, bool_t mean, int weight)
     return bias;
   }
 
-double tb_find_gamma(int nv, double bias, bool_t mean, int weight)
+double tb_find_expo(int nv, double bias, bool_t mean, int weight)
   {
     demand(! isnan(bias), "{bias} is undefined");
-    
-    /* Search parameters: */
-    double tol = 0.000001;
-    double dist = 0.1;
     
     auto bool_t eval(void *parms, double x, double *fx, double *dfx);
       /* Evaluates the goal function at {x}, result in {fx}. Sets {dfx} to NAN. */
@@ -298,8 +296,8 @@ double tb_find_gamma(int nv, double bias, bool_t mean, int weight)
     
     bool_t eval(void *parms, double x, double *fx, double *dfx)
       { if (nEvals >= maxEvals) { return TRUE; }
-        double x_gamma = x;
-        (*fx) = tb_mismatch(nv, x_gamma, bias, mean, weight);
+        double x_expo = x;
+        (*fx) = tb_mismatch(nv, x_expo, bias, mean, weight);
         (*dfx) = NAN;
         nEvals++;
         return FALSE;
@@ -308,21 +306,25 @@ double tb_find_gamma(int nv, double bias, bool_t mean, int weight)
     bool_t debug = FALSE;
     
     /* Input/output variables: */
-    double gamma, fgamma, dfgamma;
+    double expo, fexpo, dfexpo;
     double a, b;
     
+    /* Search parameters: */
+    double tol = 0.000001;
+    double dist = 0.5;
+    
     /* Initial range and guess: */
-    a = 0.400; b = 0.500;
-    gamma = (a+b)/2; 
-    fgamma = tb_mismatch(nv, gamma, bias, mean, weight); 
-    dfgamma = NAN;
+    a = 0.200; b = 0.700;
+    expo = (a+b)/2; 
+    fexpo = tb_mismatch(nv, expo, bias, mean, weight); 
+    dfexpo = NAN;
 
     minu_brent_minimize
       ( /*parms*/ NULL,
         /*eval*/  &eval,    
-        /*x*/     &gamma,        
-        /*fx*/    &fgamma,       
-        /*dfx*/   &dfgamma,      
+        /*x*/     &expo,        
+        /*fx*/    &fexpo,       
+        /*dfx*/   &dfexpo,      
         /*tol*/   tol,       
         /*dist*/  dist,      
         /*a*/     &a,        
@@ -332,16 +334,16 @@ double tb_find_gamma(int nv, double bias, bool_t mean, int weight)
       );
 
     fprintf(stderr, "evaluations =  %12d\n", nEvals);
-    fprintf(stderr, "fitted gamma = %12.7f\n", gamma);
-    fprintf(stderr, "mismatch =     %12.7f\n", sqrt(fgamma));
-    return gamma;
+    fprintf(stderr, "fitted expo = %12.7f\n", expo);
+    fprintf(stderr, "mismatch =     %12.7f\n", sqrt(fexpo));
+    return expo;
   }
 
 
-double tb_mismatch(int nv, double gamma, double bias, bool_t mean, int weight)
+double tb_mismatch(int nv, double expo, double bias, bool_t mean, int weight)
   {
-    demand(! isnan(gamma), "{gamma} is undefined");
-    demand(gamma > 0, "invalid {gamma}");
+    demand(! isnan(expo), "{expo} is undefined");
+    demand(expo > 0, "invalid {expo}");
     demand(! isnan(bias), "{bias} is undefined");
     demand(bias >= 0, "invalid {bias}");
 
@@ -356,7 +358,7 @@ double tb_mismatch(int nv, double gamma, double bias, bool_t mean, int weight)
           { bool_t encode = (idir > 0);
         
             float y_bt, y_sg;
-            tb_apply_both(v, gamma, bias, encode, &y_bt, &y_sg);
+            tb_apply_both(v, expo, bias, encode, &y_bt, &y_sg);
             assert(y_bt > 0);
             assert(y_sg > 0);
         
@@ -381,10 +383,10 @@ double tb_mismatch(int nv, double gamma, double bias, bool_t mean, int weight)
     return (mean ? sum_wt_dy2/sum_wt : max_wt_dy2);
   }
   
-void tb_print_comparison(FILE *wr, int nv, double gamma, double bias, bool_t encode)
+void tb_print_comparison(FILE *wr, int nv, double expo, double bias, bool_t encode)
   {
-    demand(! isnan(gamma), "{gamma} is undefined");
-    demand(gamma > 0, "invalid {gamma}");
+    demand(! isnan(expo), "{expo} is undefined");
+    demand(expo > 0, "invalid {expo}");
     demand(! isnan(bias), "{bias} is undefined");
     demand(bias >= 0, "invalid {bias}");
     
@@ -411,7 +413,7 @@ void tb_print_comparison(FILE *wr, int nv, double gamma, double bias, bool_t enc
         
         /* Apply both models to {v} in the {encode} direction: */
         float y_bt, y_sg;
-        tb_apply_both(v, gamma, bias, encode, &y_bt, &y_sg);
+        tb_apply_both(v, expo, bias, encode, &y_bt, &y_sg);
         assert(y_bt > 0);
         assert(y_sg > 0);
 
@@ -427,9 +429,9 @@ void tb_print_comparison(FILE *wr, int nv, double gamma, double bias, bool_t enc
         
         /* Compute the absolute and relative round-trip error in {v}: */
         float v_bt_bt, v_bt_sg, v_sg_bt, v_sg_sg;
-        tb_apply_both(y_bt, gamma, bias, !encode, &v_bt_bt, &v_bt_sg);
+        tb_apply_both(y_bt, expo, bias, !encode, &v_bt_bt, &v_bt_sg);
         assert(fabs(v_bt_bt - v) < 1.0e-6*v);
-        tb_apply_both(y_sg, gamma, bias, !encode, &v_sg_bt, &v_sg_sg);
+        tb_apply_both(y_sg, expo, bias, !encode, &v_sg_bt, &v_sg_sg);
         assert(fabs(v_sg_sg - v) < 1.0e-6*v);
         double dv_bt_sg = ((double)v_bt_sg) - ((double)v);
         double dv_sg_bt = ((double)v_sg_bt) - ((double)v);
@@ -453,7 +455,7 @@ void tb_print_comparison(FILE *wr, int nv, double gamma, double bias, bool_t enc
     /* Compute and print the statistics: */
     double rms_wt_dy = sqrt(sum_wt_dy2/sum_wt);
     double rms_dy = sqrt(sum_dy2/sum_);
-    fprintf(wr, "Assuming gamma = %9.7f bias = %9.7f\n", gamma, bias);
+    fprintf(wr, "Assuming expo = %9.7f bias = %9.7f\n", expo, bias);
     fprintf(wr, "Differences in the %s direction:\n", xdir);
     fprintf(wr, "  rms weight =     %12.7f\n", rms_wt_dy);
     fprintf(wr, "  rms unweight =   %12.7f\n", rms_dy);
@@ -477,19 +479,19 @@ void tb_write_opt(char *pname, double val)
 
 void tb_apply_both
   ( float v, 
-    double gamma, 
+    double expo, 
     double bias, 
     bool_t encode, 
     float *y_bt, 
     float *y_sg
   )
   { if (encode)
-      { (*y_bt) = sample_conv_encode_BT709(v);
-        (*y_sg) = sample_conv_gamma(v, gamma, bias);
+      { (*y_bt) = sample_conv_BT709_encode(v);
+        (*y_sg) = sample_conv_gamma(v, expo, bias);
       }
     else
-      { (*y_bt) = sample_conv_decode_BT709(v);
-        (*y_sg) = sample_conv_gamma(v, 1/gamma, bias);
+      { (*y_bt) = sample_conv_BT709_decode(v);
+        (*y_sg) = sample_conv_gamma(v, 1/expo, bias);
       }
   }
 
@@ -497,14 +499,14 @@ void tb_write_table
   ( char *name, 
     char *suff, 
     int nv, 
-    double gamma,
+    double expo,
     double bias,
     bool_t encode, 
     options_t *o
   )
   { 
-    demand(! isnan(gamma), "{gamma} is undefined");
-    demand(gamma > 0, "invalid {gamma}");
+    demand(! isnan(expo), "{expo} is undefined");
+    demand(expo > 0, "invalid {expo}");
     demand(! isnan(bias), "{bias} is undefined");
     demand(bias >= 0, "invalid {bias}");
 
@@ -516,12 +518,12 @@ void tb_write_table
       { float v = (float)(((double)iv)/((double)nv));
         /* Evaluate the functions: */
         float y_bt, y_sg;
-        tb_apply_both(v, gamma, bias, encode, &y_bt, &y_sg);
+        tb_apply_both(v, expo, bias, encode, &y_bt, &y_sg);
         /* Evaluate the numerical derivatives: */
         float v0 = (float)(v - dv), y_bt0, y_sg0;
-        tb_apply_both(v0, gamma, bias, encode, &y_bt0, &y_sg0);
+        tb_apply_both(v0, expo, bias, encode, &y_bt0, &y_sg0);
         float v1 = (float)(v + dv), y_bt1, y_sg1;
-        tb_apply_both(v1, gamma, bias, encode, &y_bt1, &y_sg1);
+        tb_apply_both(v1, expo, bias, encode, &y_bt1, &y_sg1);
         double dy_bt = ((double)(y_bt1 - y_bt0))/dv/2;
         double dy_sg = ((double)(y_sg1 - y_sg0))/dv/2;
         fprintf(wr, "  %9.7f", v);
@@ -551,18 +553,18 @@ options_t *tb_parse_options(int argc, char **argv)
 
     /* PARSE KEYWORD ARGUMENTS: */
     
-    if (argparser_keyword_present(pp, "-gamma"))
-      { o->gamma = argparser_get_next_double(pp, 1.0e-6, 1.0e+6); }
+    if (argparser_keyword_present(pp, "-expo"))
+      { o->expo = argparser_get_next_double(pp, 1.0e-6, 1.0e+6); }
     else
-      { o->gamma = NAN; }
+      { o->expo = NAN; }
     
     if (argparser_keyword_present(pp, "-bias"))
       { o->bias = argparser_get_next_double(pp, 0.0, 0.999999); }
     else
       { o->bias = NAN; }
       
-    if (isnan(o->gamma) && isnan(o->bias))
-      { argparser_error(pp, "must specify at least one of \"-gamma\" or \"-bias\""); }
+    if (isnan(o->expo) && isnan(o->bias))
+      { argparser_error(pp, "must specify at least one of \"-expo\" or \"-bias\""); }
     
     if (argparser_keyword_present(pp, "-weight"))
       { char *wt = argparser_get_next(pp);

@@ -1,7 +1,6 @@
 /* See {multifok_score.h}. */
-/* Last edited on 2024-10-10 15:41:33 by stolfi */
+/* Last edited on 2024-12-05 10:36:55 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

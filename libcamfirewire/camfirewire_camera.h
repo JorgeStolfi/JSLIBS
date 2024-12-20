@@ -1,9 +1,8 @@
-/* Last edited on 2021-07-24 16:29:25 by jstolfi */
+/* Last edited on 2024-12-05 10:24:04 by stolfi */
 
 #ifndef camfirewire_camera_H
 #define camfirewire_camera_H
 
-#define _GNU_SOURCE_
 #include <stdio.h>
 
 #include <camfirewire_session.h> 

@@ -1,7 +1,6 @@
 /* See {archdraw.h}. */
-/* Last edited on 2023-02-21 04:43:04 by stolfi */
+/* Last edited on 2024-12-05 10:20:40 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <values.h>
 #include <string.h>

@@ -1,5 +1,5 @@
 /* See {jspng.h} */
-/* Last edited on 2017-06-23 00:24:16 by stolfilocal */
+/* Last edited on 2024-12-05 07:00:06 by stolfi */
 
 #include <stdio.h>
 #include <math.h>
@@ -34,7 +34,7 @@ void jspng_dump_info(FILE *wr, const char *func, char *label, png_structp pr, pn
     else
       { fprintf(wr, "sBIT not specified\n"); }
     
-    int has_tRNS = png_get_valid(pr, pi, PNG_INFO_tRNS);
+    int32_t has_tRNS = (int32_t)png_get_valid(pr, pi, PNG_INFO_tRNS);
     fprintf(wr, "has tRNS = %d\n", has_tRNS);
     
     double gamma;

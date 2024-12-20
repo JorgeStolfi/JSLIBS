@@ -1,7 +1,6 @@
 /* See bbgoal.h */
-/* Last edited on 2023-02-20 06:50:40 by stolfi */
+/* Last edited on 2024-12-05 10:21:23 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <string.h>
 

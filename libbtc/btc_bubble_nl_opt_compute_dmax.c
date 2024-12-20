@@ -1,7 +1,6 @@
 /* See {btc_bubble_nl_opt_compute_dmax.h} */
-/* Last edited on 2015-04-20 17:15:59 by stolfilocal */
+/* Last edited on 2024-12-05 10:22:48 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 
 #include <bool.h>

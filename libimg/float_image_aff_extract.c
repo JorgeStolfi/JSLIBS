@@ -1,5 +1,5 @@
 /* See {float_image_aff_extract.h}. */
-/* Last edited on 2024-11-23 05:56:31 by stolfi */
+/* Last edited on 2024-12-05 07:47:19 by stolfi */
 
 #include <math.h>
 #include <stdint.h>
@@ -61,8 +61,8 @@ float_image_t *float_image_aff_extract(float_image_t *img, hr2_pmap_t *A, r2_t d
     /* Create the weight tables: */
     bool_t normSum = FALSE;
     bool_t folded = FALSE;
-    double *wx = gauss_table_make(hx+1, 0.0, 1.0/dx, normSum, folded);
-    double *wy = gauss_table_make(hy+1, 0.0, 1.0/dy, normSum, folded);
+    double *wx = gauss_table_make((uint32_t)hx+1, 0.0, 1.0/dx, normSum, folded);
+    double *wy = gauss_table_make((uint32_t)hy+1, 0.0, 1.0/dy, normSum, folded);
     
     /* Extract the feature: */
     float_image_t *res = float_image_new(NC, NX, NY);
@@ -80,7 +80,7 @@ float_image_t *float_image_aff_extract(float_image_t *img, hr2_pmap_t *A, r2_t d
             float_image_interpolate_pixel(img, q.c[0], q.c[1], order, red, vd);
             /* Apply the mask weight: */
             double wxy = wxi*wyi;
-            for (uint32_t ic = 0;  ic < NC; ic++) { vf[ic] = (float)(wxy*vd[ic]); }
+            for (int32_t ic = 0;  ic < NC; ic++) { vf[ic] = (float)(wxy*vd[ic]); }
             if (debug_sampling) { float_image_aff_extract_show_sample(ix, iy, p, q, wxy, NC, vf); }
             float_image_set_pixel(res, ix + hx, iy + hy, vf);
         }
@@ -95,7 +95,7 @@ void float_image_aff_extract_show_sample(int32_t ix, int32_t iy, r2_t p, r2_t q,
     fprintf(stderr, " --> ( %10.8f %10.8f )", q.c[0], q.c[1]);
     fprintf(stderr, " * %10.8f\n", w);
     fprintf(stderr, " =");
-    for (uint32_t kc = 0;  kc < NC; kc++) { fprintf(stderr, " %+8.5f", vf[kc]); }
+    for (int32_t kc = 0;  kc < NC; kc++) { fprintf(stderr, " %+8.5f", vf[kc]); }
     fprintf(stderr, "\n");
   }
 

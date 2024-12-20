@@ -45,7 +45,7 @@ set_yuv_matrix(void)
   }
 
 extern void
-rgb_to_yuv(long R, long G, long B, int maxval, float *yp, float *up, float *vp)
+rgb_to_yuv(long R, long G, long B, int32_t maxval, float *yp, float *up, float *vp)
   { 
     /* These quantities are scaled by {maxval}: */
     register double Y, U, V, Y0, YOFF;
@@ -63,7 +63,7 @@ rgb_to_yuv(long R, long G, long B, int maxval, float *yp, float *up, float *vp)
   }
 
 extern float
-rgb_to_y(long R, long G, long B, int maxval)
+rgb_to_y(long R, long G, long B, int32_t maxval)
   { register double Y;
     Y = YUVM.RY * (double)R + YUVM.GY * (double)G + YUVM.BY * (double)B;
     return (float)(Y/((double)maxval));

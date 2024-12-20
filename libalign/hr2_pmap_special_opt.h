@@ -2,9 +2,7 @@
 #define hr2_pmap_special_opt_H
 
 /* Tools for optimizing projective maps. */
-/* Last edited on 2024-11-08 20:46:26 by stolfi */ 
-
-#define _GNU_SOURCE
+/* Last edited on 2024-12-05 10:19:54 by stolfi */ 
 
 #include <bool.h>
 #include <stdint.h>

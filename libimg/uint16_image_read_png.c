@@ -1,5 +1,5 @@
 /* See {uint16_image_read_png.h} */
-/* Last edited on 2019-02-06 18:21:14 by jstolfi */
+/* Last edited on 2024-12-05 07:52:42 by stolfi */
 
 /* Created by R. Minetto (IC-UNICAMP) as {ipng.c} sometime in 2008--2009. */
 /* Adapted by J. Stolfi (IC-UNICMP) on 2011-05-14. */
@@ -203,13 +203,13 @@ uint16_image_t *uint16_image_read_png_file(FILE *rd, double *gammaP, uint32_t im
     if (verbose) 
       { fprintf(stderr, "PNG file: color type = %s  chns = %u", ctype, chns);
         fprintf(stderr, "  bits per channel =");
-        for (int chn = 0; chn < chns; chn++) { fprintf(stderr, " %u", buse[chn]); }
+        for (int32_t chn = 0; chn < chns; chn++) { fprintf(stderr, " %u", buse[chn]); }
         fprintf(stderr, "  size = %u x %u\n", cols, rows);
       }
     
     /* Validate used bit counts, compute {imaxval[0..chns]} and choose output {omaxval}: */
     sample_uint32_t omaxval = 0;   /* Output maxval. */
-    for (int chn = 0; chn < chns; chn++)
+    for (int32_t chn = 0; chn < chns; chn++)
       { demand ((buse[chn] > 0) && (buse[chn] <= png_smp_bits), "invalid bit count in sBIT chunk"); 
         imaxval[chn] = (1u << buse[chn]) - 1u;
         demand(imaxval[chn] <= PNM_MAX_SAMPLE, "file sample size too big");
@@ -243,7 +243,7 @@ uint16_image_t *uint16_image_read_png_file(FILE *rd, double *gammaP, uint32_t im
 
     /* Allocate buffer for the PNG image data: */
     png_bytep *png_dataP = notnull(malloc(rows*sizeof(png_bytep)), "no mem");
-    for (uint32_t row = 0;  row < rows; row++)
+    for (int32_t row = 0;  row < rows; row++)
       { png_dataP[row] = notnull(malloc(bytes_per_png_row), "no mem"); }
 
     /* Read the image samples: */
@@ -253,13 +253,13 @@ uint16_image_t *uint16_image_read_png_file(FILE *rd, double *gammaP, uint32_t im
 
     /* Read and convert the pixels, row by row: */
     assert((png_smp_bits == 8) || (png_smp_bits == 16));
-    for (uint32_t row = 0;  row < rows; row++)
+    for (int32_t row = 0;  row < rows; row++)
       { 
         /* Process one row of the image: */
         png_bytep png_P = png_dataP[row];
         uint16_t *img_P = img->smp[row];
-        for (uint32_t col = 0;  col < cols; col++)
-          { for (uint32_t chn = 0;  chn < chns; chn++)
+        for (int32_t col = 0;  col < cols; col++)
+          { for (int32_t chn = 0;  chn < chns; chn++)
               {
                 /* Get sample {smp} from PNG row buffer: */
                 uint32_t smp = (*png_P); png_P++;
@@ -294,7 +294,7 @@ uint16_image_t *uint16_image_read_png_file(FILE *rd, double *gammaP, uint32_t im
     /* Read any post-image chunks: */
     png_read_end(pr, pe);
 
-    for (uint32_t row = 0;  row < rows; row++) { free(png_dataP[row]); }
+    for (int32_t row = 0;  row < rows; row++) { free(png_dataP[row]); }
     free(png_dataP);
     png_destroy_read_struct(&pr, &pi, &pe);
     /* png_free_data(pr, pi, PNG_FREE_ALL, -1); */

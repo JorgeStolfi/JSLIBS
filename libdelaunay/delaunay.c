@@ -1,12 +1,11 @@
 /* Delaunay triangulation by straightline divide-and-conquer. */
-/* Last edited on 2023-02-20 06:10:44 by stolfi */ 
+/* Last edited on 2024-12-05 10:24:55 by stolfi */ 
 
 /* Written by J. Stolfi in april 1993, based on an original
 implementation by Jim Roth (DEC CADM Advanced Group, May 1986). */
 
 /* See the copyright notice at the end of this file. */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>

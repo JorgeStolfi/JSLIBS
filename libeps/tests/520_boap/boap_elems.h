@@ -1,9 +1,9 @@
+/* Primitives for the Boareto 113 side porch drawings */
+/* Last edited on 2024-12-05 10:17:06 by stolfi */
+
 #ifndef boap_elems_H
 #define boap_elems_H
 
-/* Primitives for the Boareto 113 side porch drawings */
-
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

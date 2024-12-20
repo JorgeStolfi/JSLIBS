@@ -2,7 +2,7 @@
 #define PROG_DESC "tests the routines from {obj_file_read.h} and {obj_file_write.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-06-27 18:08:54 by stolfi */ 
+/* Last edited on 2024-12-05 10:39:59 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2024  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
@@ -51,7 +51,6 @@
   "\n" \
   argparser_help_info_STANDARD_RIGHTS
   
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

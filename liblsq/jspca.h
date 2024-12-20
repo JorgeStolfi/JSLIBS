@@ -2,9 +2,8 @@
 #define jspca_H
 
 /* JS tools for principal component analysis (PCA). */
-/* Last edited on 2023-02-12 05:19:27 by stolfi */
+/* Last edited on 2024-12-05 11:55:22 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 
@@ -20,9 +19,9 @@
   {A[i,j]} is actually stored in {A[i*n+j]} for {i} in {0..m} and {j} in
   {0..n}.*/
 
-int32_t jspca_compute_components
-  ( int32_t nd, 
-    int32_t nv, 
+uint32_t jspca_compute_components
+  ( uint32_t nd, 
+    uint32_t nv, 
     double D[], 
     double w[], 
     double d[], 
@@ -78,15 +77,15 @@ int32_t jspca_compute_components
     along direction {ie}. */
 
 void jspca_decompose_data
-  ( int32_t nd,  /* Number of data points. */
-    int32_t nv,  /* Number of variables per data point. */
-    double D[],  /* The data points. */
-    double d[],  /* Barycenter of points. */
-    int32_t ne,  /* Number of principal components. */
-    double E[],  /* Principal component vectors. */
-    double C[],  /* (OUT) Eigenvector coeff matrix. */
-    double P[],  /* (OUT) Projections of data points in row space of {E}. */
-    double R[],  /* (OUT) Residuals of data points, orthogonal to {E}. */
+  ( uint32_t nd,  /* Number of data points. */
+    uint32_t nv,  /* Number of variables per data point. */
+    double D[],   /* The data points. */
+    double d[],   /* Barycenter of points. */
+    uint32_t ne,  /* Number of principal components. */
+    double E[],   /* Principal component vectors. */
+    double C[],   /* (OUT) Eigenvector coeff matrix. */
+    double P[],   /* (OUT) Projections of data points in row space of {E}. */
+    double R[],   /* (OUT) Residuals of data points, orthogonal to {E}. */
     bool_t verbose
   );
   /* Computes the coefficients of a set of principal components
@@ -125,18 +124,18 @@ void jspca_decompose_data
 
 /* DEBUGGING */
 
-void jspca_prv(char *name, int32_t n, double v[], char *fmt);
+void jspca_prv(char *name, uint32_t n, double v[], char *fmt);
   /* Prints to [stderr} the row vector {v[0..n-1]}. */
   
-void jspca_prm(char *name, int32_t m, int32_t n, double A[], char *fmt);
+void jspca_prm(char *name, uint32_t m, uint32_t n, double A[], char *fmt);
   /* Prints to [stderr} the array {A}, assumed {m} by {n}.  Each element is printed with the format {fmt}. */
 
-void jspca_prm2(char *names, int32_t m, int32_t n1, double A1[], int32_t n2, double A2[], char *fmt);
+void jspca_prm2(char *names, uint32_t m, uint32_t n1, double A1[], uint32_t n2, double A2[], char *fmt);
   /* Prints to [stderr} the arrays {A1}, assumed {m} by {n1}, and {A2},
     assumed {m} by {n2}, side by side. Each element is printed with the
     format {fmt}. */
 
-void jspca_prm3(char *names, int32_t m, int32_t n1, double A1[], int32_t n2, double A2[], int32_t n3, double A3[], char *fmt);
+void jspca_prm3(char *names, uint32_t m, uint32_t n1, double A1[], uint32_t n2, double A2[], uint32_t n3, double A3[], char *fmt);
   /* Prints to [stderr} the arrays {A1}, assumed {m} by {n1}, {A2},
     assumed {m} by {n2}, and {A3}, assumed {m} by {n3}, side by side.
     Each element is printed with the format {fmt}. */

@@ -1,10 +1,9 @@
 /* fbox.h -- function boxes for branch and bound optimization */ 
-/* Last edited on 2023-02-20 06:40:00 by stolfi */
+/* Last edited on 2024-12-05 10:21:48 by stolfi */
 
 #ifndef fbox_h
 #define fbox_h
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <ia.h>

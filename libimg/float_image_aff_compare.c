@@ -1,5 +1,5 @@
 /* See {float_image_aff_compare.h}. */
-/* Last edited on 2024-10-12 18:24:04 by stolfi */
+/* Last edited on 2024-12-04 22:55:18 by stolfi */
 
 #include <math.h>
 #include <stdint.h>
@@ -69,8 +69,8 @@ double float_image_aff_compare
     /* Create the weight tables: */
     bool_t normSum = FALSE;
     bool_t folded = FALSE;
-    double *wx = gauss_table_make(hx+1, 0.0, 1.0/dx, normSum, folded);
-    double *wy = gauss_table_make(hy+1, 0.0, 1.0/dy, normSum, folded);
+    double *wx = gauss_table_make((uint32_t)hx+1, 0.0, 1.0/dx, normSum, folded);
+    double *wy = gauss_table_make((uint32_t)hy+1, 0.0, 1.0/dy, normSum, folded);
     if (debug_table)
       { int32_t k = 0;
         while((k <= hx) || (k <= hy))
@@ -86,7 +86,7 @@ double float_image_aff_compare
     double sum_w = 0.0;
     double v1[NC], v2[NC]; /* Interpolated pixel values. */
     int32_t order = 1; /* C1 interpolation. */
-    ix_reduction_t red = ix_reduction_EXTEND; /* Replicate border pixels. */
+    ix_reduce_mode_t red = ix_reduce_mode_EXTEND; /* Replicate border pixels. */
     for (int32_t kx = -hx;  kx <= hx; kx++)
       { double wxk = (kx >= 0 ? wx[kx] : wx[-kx]);
         for (int32_t ky = -hy;  ky <= hy; ky++)
@@ -101,7 +101,7 @@ double float_image_aff_compare
             
             double w = wxk*wyk;
             double d2 = 0.0;
-            for (uint32_t kc = 0;  kc < NC; kc++) { double d = v1[kc]-v2[kc]; d2 += d*d; }
+            for (int32_t kc = 0;  kc < NC; kc++) { double d = v1[kc]-v2[kc]; d2 += d*d; }
             
             if (debug_sampling)
               { float_image_aff_compare_show_sample("C1(img1)", &p1, NC, v1);
@@ -127,6 +127,6 @@ void float_image_aff_compare_show_sample(char *label, r2_t *p, int32_t NC, doubl
   { fprintf(stderr, "    %s", label);
     fprintf(stderr, " ( %10.8f %10.8f )", p->c[0], p->c[1]);
     fprintf(stderr, " =");
-    for (uint32_t kc = 0;  kc < NC; kc++) { fprintf(stderr, " %+8.5f", v[kc]); }
+    for (int32_t kc = 0;  kc < NC; kc++) { fprintf(stderr, " %+8.5f", v[kc]); }
     fprintf(stderr, "\n");
   }

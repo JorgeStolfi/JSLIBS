@@ -1,7 +1,6 @@
 /* See {multifok_test.h}. */
-/* Last edited on 2024-10-10 22:37:27 by stolfi */
+/* Last edited on 2024-12-05 15:12:33 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -22,6 +21,7 @@
 #include <frgb_ops.h>
 #include <jsrandom.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <jsqroots.h>
 #include <rn.h>
 

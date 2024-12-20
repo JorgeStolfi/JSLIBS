@@ -2,9 +2,8 @@
 #define float_image_H
 
 /* Multichannel images with floating-point samples. */
-/* Last edited on 2024-10-25 22:44:39 by stolfi */ 
+/* Last edited on 2024-12-20 17:49:36 by stolfi */ 
 
-#define _GNU_SOURCE_
 #include <stdio.h>
 #include <stdint.h>
 
@@ -426,8 +425,8 @@ void float_image_make_grayscale(float_image_t *A);
     computed with {frgb_get_Y}. If the number of channels is not 1 or 3,
     the procedure fails. */ 
 
-void float_image_apply_gamma(float_image_t *A, int32_t c, double gamma, double bias);
-  /* Applies to channel {c} of image {A} the power correction with exponent {gamma}
+void float_image_apply_gamma(float_image_t *A, int32_t c, double expo, double bias);
+  /* Applies to channel {c} of image {A} the power correction with exponent {expo}
     and offset {bias}. See {sample_conv_gamma} for details. */ 
 
 void float_image_log_scale(float_image_t *A, int32_t c, double bias, double vRef, double base);

@@ -1,7 +1,6 @@
 /* text_intg - test ODE integrators. */
-/* Last edited on 2023-03-29 19:32:02 by stolfi */
+/* Last edited on 2024-12-05 10:31:36 by stolfi */
 
-#define _GNU_SOURCE
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,7 +1,6 @@
 /* See {kdtom_ixmap.h}. */
-/* Last edited on 2021-07-08 15:50:06 by jstolfi */
+/* Last edited on 2024-12-05 10:32:26 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

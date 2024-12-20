@@ -1,10 +1,9 @@
 #ifndef gem_H
 #define gem_H
-/* Last edited on 2015-12-01 15:10:51 by stolfilocal */
+/* Last edited on 2024-12-05 10:25:54 by stolfi */
 
 #define gem_H_copyright "Copyright © 2014 State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <vec.h>
 
 /*

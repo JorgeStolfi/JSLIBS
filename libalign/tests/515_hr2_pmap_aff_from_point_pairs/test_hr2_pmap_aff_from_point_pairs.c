@@ -2,14 +2,13 @@
 #define PROG_DESC "test of {hr2_pmap_affine_from_point_pairs.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-21 21:15:56 by stolfi */ 
+/* Last edited on 2024-12-05 10:20:31 by stolfi */ 
 /* Created on 2020-07-11 by J. Stolfi, UNICAMP */
 /* Based on {test_align.c} by J. Stolfi, UNICAMP */
 
 #define test_hr2_pmap_affine_from_point_pairs_COPYRIGHT \
   "Copyright © 2020  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

@@ -2,16 +2,15 @@
 #define float_pnm_read_stream_H
 
 /* Row-by-row reading of PBM/PGM/PPB image file with conversion to float samples. */
-/* Last edited on 2017-06-22 02:38:02 by stolfilocal */
+/* Last edited on 2024-12-05 10:30:10 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 
 #include <float_pnm_stream.h>
 #include <bool.h>
 
-float_pnm_stream_t *float_pnm_read_stream_new(FILE *rd, bool_t isMask, uint32_t badval, int bufrows);
+float_pnm_stream_t *float_pnm_read_stream_new(FILE *rd, bool_t isMask, uint32_t badval, int32_t bufrows);
   /* Creates a new stream structure {str} primed for reading from the
     open PBM/PGM/PPM image file {rd}.
     
@@ -27,7 +26,7 @@ float_pnm_stream_t *float_pnm_read_stream_new(FILE *rd, bool_t isMask, uint32_t 
     {0..maxval}, any input samples equal to {badval} will be read as
     {NAN}. Use {badval==PNM_NO_BADVAL} to avoid this. */
     
-double *float_pnm_read_stream_get_row(FILE *rd, float_pnm_stream_t *str, int y);
+double *float_pnm_read_stream_get_row(FILE *rd, float_pnm_stream_t *str, int32_t y);
   /* Makes sure that row {y} of pixels from file {rd} is loaded in the
     buffer {str->buf}, and returns its address there.
    

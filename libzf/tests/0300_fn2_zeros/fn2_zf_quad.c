@@ -1,7 +1,6 @@
 /* See fn2_zf_quad.h */
-/* Last edited on 2024-06-22 17:39:54 by stolfi */
+/* Last edited on 2024-12-05 10:41:28 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdio.h>
 #include <stdint.h>

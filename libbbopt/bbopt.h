@@ -1,10 +1,9 @@
 /* Interval branch-and-bound optimizer for non-linear funcrions */
-/* Last edited on 2023-02-20 06:43:27 by stolfi */
+/* Last edited on 2024-12-05 10:21:30 by stolfi */
 
 #ifndef bbopt_h
 #define bbopt_h
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>

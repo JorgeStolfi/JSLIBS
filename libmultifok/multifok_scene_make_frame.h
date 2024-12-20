@@ -1,10 +1,9 @@
 /* Creates focus-blurred images of a scene. */
-/* Last edited on 2024-10-26 09:26:43 by stolfi */
+/* Last edited on 2024-12-15 06:52:50 by stolfi */
 
 #ifndef multifok_scene_make_frame_H
 #define multifok_scene_make_frame_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <r3.h>
@@ -25,13 +24,16 @@ multifok_frame_t *multifok_scene_make_frame
     multifok_scene_t *scene,
     multifok_scene_tree_t *tree,
     multifok_scene_raytrace_pattern_t *pattern,
+    r3_t *light_dir,
+    double ambient,
     double zFoc, 
     double zDep, 
-    int32_t HS,
-    int32_t KR,
+    uint32_t HS,
+    uint32_t KR,
     bool_t verbose,
-    multifok_raytrace_debug_pred_t *debug_pix,
-    multifok_raytrace_report_ray_proc_t *report_ray
+    multifok_raytrace_debug_pred_t *debug_pixel,
+    multifok_raytrace_report_ray_proc_t *report_ray,
+    multifok_raytrace_report_pixel_proc_t report_pixel
   );
   /* Creates a frame record {fr} with images {fr.sVal}, {fr.shrp}, {fr.hAvg},
     and {fr.hDev} of the given {scene}, with simulated depth-of-focus
@@ -65,26 +67,26 @@ multifok_frame_t *multifok_scene_make_frame
     points for each pixel, and some number {NR} of rays for each sampling
     point {p}.
     
-    If {KR} is zero (which must be the case if {zDep=+INF}), the same
-    vertical ray direction will be used for all sampling points.
-    Otherwise a distinct set of {KR} rays will be used for each sampling
-    point. In this case, if there is more than one sampling point
-    ({HS>0}) the weighted average RMS deviation of the rays from the
-    vertical, over a vertical travel of {zDep} away from the focus
-    plane, will be about 1.
+    If {zDep=+INF}), then {KR} must be 1, and the same vertical ray
+    direction will be used for all sampling points. Otherwise a distinct
+    set of {KR} rays will be used for each sampling point. In this case,
+    if there is more than one sampling point ({HS>0}) the average RMS
+    deviation of the rays from the vertical, over a vertical travel of
+    {zDep} away from the focus plane, will be about 1.
     
-    The color of the scene at a ray hit point {x,y,z} is obtained by
-    computing {r = pattern(x,y,z,kd,3,fs)} where and {kd} is the index
-    of the object hit by the ray, or {-1} if the ray hit the background
-    surface.
+    The color of the scene at the ray's hit point is obtained as
+    described under {multifok_scene_raytrace_compute_hit_color}, with
+    the given {light_dir} and {ambient}.
     
     if {verbose} is true, will print to {stderr} some general debugging
-    information about the frame building.
+    information about the frame computation.
     
-    The predicate {debug_pix}, if not {NULL}, is called for each pixel
+    The predicate {debug_pixel}, if not {NULL}, is called for each pixel
     of the frame. It should return true if detailed debugging
     information is to be printed to {stderr} about that pixel. In that
     case, is {report_ray} is not {NULL} the procedure will also call
-    {report_ray} for each ray traced on behalf of that pixel. */
+    {report_ray} for each ray traced on behalf of that pixel. Also in
+    that case, if {report_pixel} is not {NULL}, calls it once with the
+    computed pixel properties. */
 
 #endif

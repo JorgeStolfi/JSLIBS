@@ -1,5 +1,5 @@
 /* See {float_image_mask.h}. */
-/* Last edited on 2013-10-21 00:05:41 by stolfilocal */
+/* Last edited on 2024-12-04 23:29:28 by stolfi */
 
 #include <math.h>
 #include <limits.h>
@@ -12,16 +12,16 @@
 #include <float_image.h>
 #include <float_image_mask.h>
 
-double float_image_mask_profile(double iu2, double ou2, int ord);
+double float_image_mask_profile(double iu2, double ou2, int32_t ord);
   /* Evaluates a uni-dimensional windowing function {F(u2)}
     with inner parameter {iu2}, outer paramter {ou2}, and
     order {ord}, at argument {u2 = 1.0}. */
 
-void float_image_mask_window(float_image_t *msk, int ic, int ord, bool_t round)
+void float_image_mask_window(float_image_t *msk, int32_t ic, int32_t ord, bool_t round)
   { /* Get the window dims: */
-    int NC = (int)msk->sz[1]; if (NC == 0) { return; }
-    int NX = (int)msk->sz[1]; if (NX == 0) { return; }
-    int NY = (int)msk->sz[2]; if (NY == 0) { return; }
+    int32_t NC = (int32_t)msk->sz[1]; if (NC == 0) { return; }
+    int32_t NX = (int32_t)msk->sz[1]; if (NX == 0) { return; }
+    int32_t NY = (int32_t)msk->sz[2]; if (NY == 0) { return; }
     
     /* Argument checking: */
     demand((ic >= 0) && (ic < NC), "invalid channel");
@@ -41,7 +41,7 @@ void float_image_mask_window(float_image_t *msk, int ic, int ord, bool_t round)
     double ory = yc;
     
     /* Enumerate all pixels. */
-    int ix, iy;
+    int32_t ix, iy;
     for (iy = 0; iy < NY; iy++)
       { for (ix = 0; ix < NX; ix++)
           { /* Pixel center coords relative to window center: */
@@ -71,7 +71,7 @@ void float_image_mask_window(float_image_t *msk, int ic, int ord, bool_t round)
       }
   }
   
-double float_image_mask_profile(double iu2, double ou2, int ord)
+double float_image_mask_profile(double iu2, double ou2, int32_t ord)
   {
     demand(iu2 >= ou2, "bad {iu2,ou2}");
     if (ou2 >= 1.0) { /* Fully outside: */ return 0; }
@@ -115,14 +115,14 @@ double float_image_mask_profile(double iu2, double ou2, int ord)
 
 void float_image_mask_mul_gauss
   ( float_image_t *msk, 
-    int ic, 
+    int32_t ic, 
     double sx, 
     double sy
   )
   { /* Get the window dims: */
-    int NC = (int)msk->sz[1];
-    int NX = (int)msk->sz[1];
-    int NY = (int)msk->sz[2];
+    int32_t NC = (int32_t)msk->sz[1];
+    int32_t NX = (int32_t)msk->sz[1];
+    int32_t NY = (int32_t)msk->sz[2];
     
     /* Argument checking: */
     demand((ic >= 0) && (ic < NC), "invalid channel");
@@ -134,7 +134,7 @@ void float_image_mask_mul_gauss
     double yc = ((double)NY)/2;
      
     /* Multiply all pixels by {F(x,y)}. */
-    int ix, iy;
+    int32_t ix, iy;
     for (iy = 0; iy < NY; iy++)
       { for (ix = 0; ix < NX; ix++)
           { float *p = float_image_get_sample_address(msk, ic, ix, iy);
@@ -152,15 +152,15 @@ void float_image_mask_mul_gauss
 
 void float_image_mask_mul_power
   ( float_image_t *msk, 
-    int ic, 
+    int32_t ic, 
     double sx, 
     double sy, 
     double pwr
   )
   { /* Get the window dims: */
-    int NC = (int)msk->sz[1];
-    int NX = (int)msk->sz[1];
-    int NY = (int)msk->sz[2];
+    int32_t NC = (int32_t)msk->sz[1];
+    int32_t NX = (int32_t)msk->sz[1];
+    int32_t NY = (int32_t)msk->sz[2];
     
     /* Argument checking: */
     demand((ic >= 0) && (ic < NC), "invalid channel");
@@ -173,7 +173,7 @@ void float_image_mask_mul_power
      
     double e = -0.5*pwr;
     
-    int ix, iy;
+    int32_t ix, iy;
     for (iy = 0; iy < NY; iy++)
       { for (ix = 0; ix < NX; ix++)
           { float *p = float_image_get_sample_address(msk, ic, ix, iy);
@@ -190,11 +190,11 @@ void float_image_mask_mul_power
   }
 
 
-float_image_mask_stats_t float_image_mask_stats_get(float_image_t *msk, int ic)
+float_image_mask_stats_t float_image_mask_stats_get(float_image_t *msk, int32_t ic)
   {
-    int NC = (int)msk->sz[0];
-    int NX = (int)msk->sz[1];
-    int NY = (int)msk->sz[2];
+    int32_t NC = (int32_t)msk->sz[0];
+    int32_t NX = (int32_t)msk->sz[1];
+    int32_t NY = (int32_t)msk->sz[2];
     
     demand((ic >= 0) && (ic < NC), "invalid channel"); 
 
@@ -215,7 +215,7 @@ float_image_mask_stats_t float_image_mask_stats_get(float_image_t *msk, int ic)
     S.ext[0] = S.ext[1] = 0.0;
     S.rad = 0;
     
-    int nOK = 0;            /* Count of samples that are neither NAN nor {±INF}. */
+    int32_t nOK = 0;            /* Count of samples that are neither NAN nor {±INF}. */
     double sum_v = 0;       /* Sum of image values {v}. */
     double sum_v2 = 0;      /* Sum of squared image values {v^2}. */
     double sum_av = 0;      /* Sum of {|v|}. */
@@ -224,7 +224,7 @@ float_image_mask_stats_t float_image_mask_stats_get(float_image_t *msk, int ic)
     double sum_av_dx2 = 0;  /* Sum of {|v|*(x - xc)^2}. */
     double sum_av_dy2 = 0;  /* Sum of {|v|*(y - yc)^2}. */
     
-    int ix, iy;
+    int32_t ix, iy;
     for (iy = 0; iy < NY; iy++)
       { for (ix = 0; ix < NX; ix++)
           { double v = float_image_get_sample(msk, ic, ix, iy);
@@ -284,8 +284,8 @@ float_image_mask_stats_t float_image_mask_stats_get(float_image_t *msk, int ic)
 
 void float_image_mask_stats_print(FILE *wr, float_image_mask_stats_t *S)
   {
-    int NX = S->NX;
-    int NY = S->NY;
+    int32_t NX = S->NX;
+    int32_t NY = S->NY;
     
     /* Compute the domain's center {xc,yc}: */
     double xc = ((double)NX)/2;

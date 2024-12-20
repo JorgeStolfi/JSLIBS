@@ -1,4 +1,4 @@
-# Last edited on 2024-11-06 10:27:01 by stolfi
+# Last edited on 2024-12-20 18:36:31 by stolfi
 
 PROG = test_aff_extract
 
@@ -39,6 +39,7 @@ JS_LIBS := \
   libminn.a \
   libminu.a \
   libgeo.a \
+  libgausol.a \
   libjs.a 
   
 OTHER_LIBS := \

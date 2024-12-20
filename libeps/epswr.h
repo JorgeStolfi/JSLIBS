@@ -1,5 +1,5 @@
 /* Tools for generating Encapsulated Postscript graphics files. */
-/* Last edited on 2024-06-22 18:52:12 by stolfi */
+/* Last edited on 2024-12-05 10:13:29 by stolfi */
 
 #ifndef epswr_H
 #define epswr_H
@@ -26,7 +26,6 @@
     { epswr_end_figure(eps);                             }
  */
   
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

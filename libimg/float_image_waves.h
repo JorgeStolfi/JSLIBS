@@ -2,9 +2,8 @@
 #define float_image_waves_H
 
 /* Tools for generating images that are combinations of waves. */
-/* Last edited on 2023-01-14 20:17:23 by stolfi */ 
+/* Last edited on 2024-12-05 10:29:58 by stolfi */ 
 
-#define _GNU_SOURCE_
 #include <stdint.h>
 
 #include <float_image.h>

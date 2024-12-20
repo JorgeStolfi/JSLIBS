@@ -1,7 +1,6 @@
 /* See jsaudio.h */
-/* Last edited on 2023-03-02 12:30:34 by stolfi */
+/* Last edited on 2024-12-05 10:32:06 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

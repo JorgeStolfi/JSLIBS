@@ -3,9 +3,8 @@
 
 /* {image_window_op.h} - local neighborhood image operators. */
 /* Created on 2012-10-25 by J. Stolfi, UNICAMP */
-/* Last edited on 2023-09-24 11:26:58 by stolfi */
+/* Last edited on 2024-12-05 10:30:38 by stolfi */
 
-#define _GNU_SOURCE_
 #include <stdint.h>
 
 #include <bool.h>

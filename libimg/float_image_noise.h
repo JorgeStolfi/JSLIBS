@@ -2,9 +2,8 @@
 #define float_image_noise_H
 
 /* Tools for generating images that are white, pink, or blue noise. */
-/* Last edited on 2024-10-26 04:26:56 by stolfi */ 
+/* Last edited on 2024-12-05 10:29:44 by stolfi */ 
 
-#define _GNU_SOURCE_
 #include <stdint.h>
 
 #include <float_image.h>

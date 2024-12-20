@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_map_channels.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-01-07 14:19:13 by stolfi */ 
+/* Last edited on 2024-12-20 18:27:41 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_map_channels_COPYRIGHT \
@@ -17,6 +17,7 @@
 
 #include <affirm.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <bool.h>
 #include <float_image_read_pnm.h>
 #include <float_image_write_pnm.h>
@@ -87,8 +88,7 @@ float_image_t *tm_read_pnm(char *fname)
   }
   
 void tm_write_fni(char *outPrefix, float_image_t *img)
-  { char *fname = NULL;
-    char *fname = jsprintf("%s.fni", outPrefix);
+  { char *fname = jsprintf("%s.fni", outPrefix);
     FILE *wr = open_write(fname, TRUE);
     float_image_write(wr, img);
     fclose(wr);

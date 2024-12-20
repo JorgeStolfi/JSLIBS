@@ -1,7 +1,6 @@
 // See minu_herm.h
-// Last edited on 2013-10-02 02:26:21 by stolfilocal
+// Last edited on 2024-12-05 10:35:16 by stolfi
 
-#define _GNU_SOURCE
 #include <minu_gen.h>
 #include <minu_herm.h>
 

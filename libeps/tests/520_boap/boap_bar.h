@@ -1,9 +1,9 @@
+/* Bar elements for the Boaretto 113 side gate drawings. */
+/* Last edited on 2024-12-05 10:16:02 by stolfi */
+
 #ifndef boap_bar_H
 #define boap_bar_H
 
-/* Bar elements for the Boaretto 113 side gate drawings. */
-
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

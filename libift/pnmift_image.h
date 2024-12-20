@@ -1,10 +1,9 @@
 /* pnmift_image.h - image handling for the IFT routines. */
-/* Last edited on 2017-06-20 20:46:20 by stolfilocal */
+/* Last edited on 2024-12-05 10:29:15 by stolfi */
 
 #ifndef pnmift_image_H
 #define pnmift_image_H
 
-#define _GNU_SOURCE
 #include <jspnm.h>
 #include <uint16_image.h>
 #include <frgb.h>

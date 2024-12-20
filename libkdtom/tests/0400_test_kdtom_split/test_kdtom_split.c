@@ -5,9 +5,8 @@
 #define tkds_C_COPYRIGHT \
   "Copyright © 2021 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2021-07-16 21:46:06 by jstolfi */
+/* Last edited on 2024-12-05 10:33:14 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>

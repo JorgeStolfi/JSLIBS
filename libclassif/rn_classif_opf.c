@@ -1,7 +1,6 @@
 /* See rn_classif_opf.h. */
-/* Last edited on 2010-05-24 02:58:38 by stolfi */
+/* Last edited on 2024-12-05 10:24:24 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>

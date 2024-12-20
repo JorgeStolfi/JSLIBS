@@ -1,7 +1,5 @@
 /* See {btc_bubble_parms_copy.h} */
-/* Last edited on 2015-04-20 00:30:00 by stolfilocal */
-
-#define _GNU_SOURCE
+/* Last edited on 2024-12-05 10:23:09 by stolfi */
 
 #include <btc_bubble_t.h>
 #include <btc_bubble_parms_copy.h>

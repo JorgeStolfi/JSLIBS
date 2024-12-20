@@ -40,7 +40,7 @@ typedef struct cfld_ramp_params_t  /* Preprocessed params for ramp field */
 cfld_ramp_params_t *cfld_ramp_compute_params
   ( cfld_ramp_args_t *rfa, 
     frgb_adjuster_t *adjust,
-    int logarithmic
+    int32_t logarithmic
   );
   /* Computes the gamma-corrected color ramp parameters from the 
     user arguments {rfa}, by applying the color adjustments 
@@ -50,11 +50,11 @@ cfld_ramp_params_t *cfld_ramp_compute_params
 
 void cfld_ramp_eval
   ( cfld_ramp_params_t *rfp,
-    int logarithmic, 
-    int col, 
-    int row,
+    int32_t logarithmic, 
+    int32_t col, 
+    int32_t row,
     frgb_t *fv,
-    int chns
+    int32_t chns
   );
   /* Evaluates the ramp field described by {rfp} at the pixel 
     in column {col} and row {row}. */

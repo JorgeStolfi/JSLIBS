@@ -1,10 +1,9 @@
 /* rmxn_transform_quadratic.h --- restricts a quadratic form to a linear subspace */
-/* Last edited on 2024-11-20 13:08:49 by stolfi */
+/* Last edited on 2024-12-05 15:34:08 by stolfi */
 
 #ifndef rmxn_transform_quadratic_H
 #define rmxn_transform_quadratic_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 
@@ -34,7 +33,7 @@ void rmxn_transform_quadratic
     {m}-vector {z}, where {\QF} is the quadratic form defined on {\RR^m}
     such that {\QF(z) = \QE(\LU(z))}. That is, {F} and {f} will be the
     eigenvectors and eigenvalues of {U*E*diag(e)*E'*U'}. The vector {f}
-    will be sorted in ascending order.
+    will be sorted in ascending signed order.
     
     Said another way, let {\EE} ne the ellipsoid of {\RR^n} with radius
     {\rE[i]} along axis {E[i]}, and {e[i]} be {1/\rE[i]^2} for all {i}.

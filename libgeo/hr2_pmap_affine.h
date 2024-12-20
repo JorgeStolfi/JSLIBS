@@ -1,10 +1,9 @@
 /* Affine maps in 2D oriented projective plane {\RT^2}. */
-/* Last edited on 2024-11-21 20:20:27 by stolfi */ 
+/* Last edited on 2024-12-05 10:26:51 by stolfi */ 
    
 #ifndef hr2_pmap_affine_H
 #define hr2_pmap_affine_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <sign.h>

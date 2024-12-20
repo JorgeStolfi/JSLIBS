@@ -1,10 +1,9 @@
 /* Plots of zeros of a 2-ary function with adaptive k-d-tree. */
-/* Last edited on 2023-02-18 09:24:26 by stolfi */ 
+/* Last edited on 2024-12-05 10:41:30 by stolfi */ 
 
 #ifndef fn2_zf_quad_H
 #define fn2_zf_quad_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

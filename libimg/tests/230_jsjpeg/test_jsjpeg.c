@@ -1,5 +1,5 @@
 /* Test of jsjpeg.h, uint16_image_io_jpeg.h */
-/* Last edited on 2017-07-01 00:55:12 by stolfilocal */
+/* Last edited on 2024-12-05 22:15:55 by stolfi */
 
 #include <stdio.h>
 #include <math.h>
@@ -8,6 +8,7 @@
 
 #include <bool.h>
 #include <jspnm.h>
+#include <jsprintf.h>
 #include <uint16_image.h>
 #include <uint16_image_read_jpeg.h>
 #include <uint16_image_write_jpeg.h>
@@ -78,8 +79,7 @@ void do_uint16_image_read_write_jpeg_test(char *prefix, int ik, int iq)
     frobnicate_image(img, omg);
     fprintf(stderr, "\n");
 
-    fname = NULL;
-    char *fname = jsprintf("%s-wr-%03d-%s.jpg", prefix, quality, xkind);
+    fname = jsprintf("%s-wr-%03d-%s.jpg", prefix, quality, xkind);
     uint16_image_describe(stderr, fname, omg);
     uint16_image_write_jpeg_named(fname, omg, quality, TRUE);
     free(fname);

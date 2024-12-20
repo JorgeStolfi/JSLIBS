@@ -2,9 +2,8 @@
 #define float_image_geostereo_H
 
 /* Tools for geometric stereo reconstruction from image pairs. */
-/* Last edited on 2017-06-26 00:08:32 by stolfilocal */ 
+/* Last edited on 2024-12-05 10:29:34 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>
@@ -50,11 +49,11 @@ void float_image_geostereo_single_pixel_best
 double float_image_geostereo_single_disp_score
   ( float_image_t *f1,  /* Image 1. */
     float_image_t *f2,  /* Image 2. */
-    uint32_t x,         /* Column index in the map domain. */
-    uint32_t y,         /* Row index in the map domain. */
+    int32_t x,         /* Column index in the map domain. */
+    int32_t y,         /* Row index in the map domain. */
     double d,           /* Parallax displacement (pixels). */
-    uint32_t nwx,       /* Window width. */
-    uint32_t nwy,       /* Window height. */
+    int32_t nwx,       /* Window width. */
+    int32_t nwy,       /* Window height. */
     double wt[],        /* Window weights. */
     bool_t debug,       /* TRUE to debug the computations. */
     double smp1[],      /* (WORK) Buffer for window samples of image 1. */
@@ -90,10 +89,10 @@ double float_image_geostereo_single_disp_score
 double float_image_geostereo_compute_score
   ( double smp1[], 
     double smp2[], 
-    uint32_t nwx, 
-    uint32_t nwy, 
+    int32_t nwx, 
+    int32_t nwy, 
     double wt[],
-    uint32_t NC
+    int32_t NC
   );
   /* Compute the discrepancy score from the sample arrays {smp1,smp2}.
     
@@ -113,11 +112,11 @@ double float_image_geostereo_compute_score
 
 void float_image_geostereo_get_samples
   ( float_image_t *f,   /* Pixel row buffer for image 1. */
-    uint32_t x,         /* Reference column index. */
-    uint32_t y,         /* Reference row index. */
+    int32_t x,         /* Reference column index. */
+    int32_t y,         /* Reference row index. */
     double d,           /* Horizontal displacement (pixels, fractional). */
-    uint32_t nwx,       /* Window width. */
-    uint32_t nwy,       /* Window height. */
+    int32_t nwx,       /* Window width. */
+    int32_t nwy,       /* Window height. */
     double smp[]         /* (OUT) Window sample buffer. */
   );
   /* Extracts samples from image {f} contained in a window centered on
@@ -140,9 +139,9 @@ void float_image_geostereo_get_samples
 
 void float_image_geostereo_debug_window
   ( double smp[],
-    uint32_t nwx,       /* Window width. */
-    uint32_t nwy,       /* Window height. */
-    uint32_t NC         /* Channel count. */
+    int32_t nwx,       /* Window width. */
+    int32_t nwy,       /* Window height. */
+    int32_t NC         /* Channel count. */
   );
   /* Prints to {stderr} the window samples {smp[0..NC*nwx*nwy-1]}. See
     {float_image_geostereo_get_samples} for the meaning of parameters

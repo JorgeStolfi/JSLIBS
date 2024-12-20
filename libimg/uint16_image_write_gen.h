@@ -1,10 +1,9 @@
 /* I/O of {uint16_image_t} images in generic file formats. */
-/* Last edited on 2017-06-20 20:53:55 by stolfilocal */
+/* Last edited on 2024-12-05 10:31:17 by stolfi */
 
 #ifndef uint16_image_gen_io_H
 #define uint16_image_gen_io_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 
 #include <bool.h>
@@ -122,7 +121,7 @@ uint16_image_t *uint16_image_gen_fread
 
 uint16_image_t *uint16_image_gen_read_frame
   ( const char *fpat,
-    int fnum,
+    int32_t fnum,
     image_file_format_t ffmt,
     uint32_t *imaxval[], /* (OUT) Max sample value in each chanel. */
     double *gammaP,      /* (OUT) Gamma specified or implied in the input file. */

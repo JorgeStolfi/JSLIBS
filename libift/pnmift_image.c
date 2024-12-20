@@ -1,7 +1,6 @@
 /* See pnmift_image.h */
-/* Last edited on 2017-06-20 20:45:26 by stolfilocal */
+/* Last edited on 2024-12-05 10:29:12 by stolfi */
 
-#define _GNU_SOURCE
 #include <uint16_image.h>
 #include <math.h>
 #include <assert.h>

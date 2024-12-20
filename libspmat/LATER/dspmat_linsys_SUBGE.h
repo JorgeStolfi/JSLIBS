@@ -4,9 +4,8 @@
 
 #define dspmat_linsys_SUBGE_H_COPYRIGHT "Copyright © 2009 by J. Stolfi, UNICAMP"
 /* Created on 2009-01-17 by J.Stolfi, UNICAMP */
-/* Last edited on 2023-03-18 11:29:52 by stolfi */
+/* Last edited on 2024-12-05 10:40:24 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>

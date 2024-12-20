@@ -2,9 +2,8 @@
 #define weird_H
 
 /* A data structure inspired on Weiler's radial edge for 2D pseudomanifolds. */
-/* Last edited on 2024-07-01 18:55:32 by stolfi */
+/* Last edited on 2024-12-05 10:38:42 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #define weird_H_copyright \

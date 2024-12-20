@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_paint.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-04-23 11:29:29 by stolfi */
+/* Last edited on 2024-12-20 18:18:42 by stolfi */
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_paint_C_COPYRIGHT \
@@ -60,21 +60,22 @@
 #include <bool.h>
 #include <jsfile.h>
 #include <jsmath.h>
+#include <jsprintf.h>
 #include <jsrandom.h>
 #include <ellipse_ouv.h>
 #include <ellipse_crs.h>
 #include <sample_conv.h>
+#include <sample_conv_gamma.h>
 #include <uint16_image.h>
 #include <uint16_image_write_pnm.h>
 #include <float_image_to_uint16_image.h>
 #include <float_image_paint.h>
 #include <float_image.h>
 
-#define BT_GAMMA (0.450)
-#define BT_BIAS (0.0327)
-  /* Values of {gamma} and {bias} for {sample_conv_gamma} 
-    that approximate the BT.709 encoding.  For decoding, use
-    {1/BT_GAMMA}. */
+#define BT_ENC_EXPO sample_conv_gamma_BT709_ENC_EXPO
+#define BT_ENC_BIAS sample_conv_gamma_BT709_BIAS
+  /* Values of {expo} and {bias} for {sample_conv_gamma} 
+    that approximate the BT.709 encoding. */
 
 typedef struct options_t
   { 
@@ -86,7 +87,7 @@ options_t *fitp_parse_options(int32_t argc, char **argv);
 
 int32_t main(int32_t argc, char **argv);
 
-float_image_t *fitp_make_test_image(int32_t nx, int32_t ny, int32_t m, options_t *o);
+float_image_t *fitp_make_test_image(int32_t nx, int32_t ny, uint32_t m, options_t *o);
   /* Creates a test image using various
     {float_image_paint.h} tools. */
 
@@ -103,7 +104,7 @@ void test_paint_dot
     double hwd, 
     float vfill,
     float vdraw,
-    int32_t m
+    uint32_t m
   );
 
 void test_paint_ellipse
@@ -115,7 +116,7 @@ void test_paint_ellipse
     double hwd, 
     float vfill,
     float vdraw,
-    int32_t m
+    uint32_t m
   );
 
 void test_paint_cross
@@ -127,7 +128,7 @@ void test_paint_cross
     double hwd, 
     float vfill,
     float vdraw,
-    int32_t m
+    uint32_t m
   );
 
 void test_paint_smudge
@@ -137,7 +138,7 @@ void test_paint_smudge
     double yctr, 
     double rad,
     float vfill,
-    int32_t m
+    uint32_t m
   );
 
 void test_paint_rectangle
@@ -149,7 +150,7 @@ void test_paint_rectangle
     double hwd,
     float vfill,
     float vdraw,
-    int32_t m
+    uint32_t m
   );
 
 /* IMPLEMENTATIONS */
@@ -164,14 +165,14 @@ int32_t main(int32_t argc, char **argv)
     int32_t nx = 640;
     int32_t ny = 480;
     
-    int32_t m; /* Subsampling order. */
+    uint32_t m; /* Subsampling order. */
     for (m = 0; m <= 3; m++)
       { /* Generate the test image {A} with antialiasing {m}: */
         float_image_t *A = fitp_make_test_image(nx, ny, m, o);
         char *filename = jsprintf("%s-%02d", outPrefix, m);
         int32_t c;
         for (c = 0; c < 3; c++) 
-          { float_image_apply_gamma(A, c, BT_GAMMA, BT_BIAS); }
+          { float_image_apply_gamma(A, c, BT_ENC_EXPO, BT_ENC_BIAS); }
         fitp_write_image(filename, A);
         free(filename);
         float_image_free(A); A = NULL;
@@ -182,7 +183,7 @@ int32_t main(int32_t argc, char **argv)
     return 0;
   }
 
-float_image_t *fitp_make_test_image(int32_t nx, int32_t ny, int32_t m, options_t *o)
+float_image_t *fitp_make_test_image(int32_t nx, int32_t ny, uint32_t m, options_t *o)
   {
     /* Create image, fill it with  black: */
     float_image_t *A = float_image_new(3, nx, ny);
@@ -195,9 +196,9 @@ float_image_t *fitp_make_test_image(int32_t nx, int32_t ny, int32_t m, options_t
     double rad_max = 15;
     int32_t step = (int32_t)ceil(2.5*rad_max);
     
-    int32_t ntypes = 5; /* See below. */
+    uint32_t ntypes = 5; /* See below. */
     
-    int32_t trial = 0;
+    uint32_t trial = 0;
     for (int32_t tx = step/2; tx < nx; tx += step)
       { for (int32_t ty = step/2; ty < ny; ty += step)
           { bool_t sync = (trial < 3*ntypes); /* If TRUE, uses only integer or half-integer centers. */
@@ -228,7 +229,7 @@ float_image_t *fitp_make_test_image(int32_t nx, int32_t ny, int32_t m, options_t
             float vdraw = (float)(drandom() < 0.250 ? NAN : 0.600 + 0.400*drandom());
             float vfill = (float)(drandom() < 0.250 ? NAN : 0.400 + 0.600*drandom());
 
-            int32_t mtype = trial % ntypes;
+            uint32_t mtype = trial % ntypes;
 
             fprintf(stderr, " channel = %d", channel);
             fprintf(stderr, " type = %d", mtype);
@@ -268,7 +269,7 @@ void test_paint_dot
     double hwd, 
     float vfill,
     float vdraw,
-    int32_t m
+    uint32_t m
   )
   { /* Paint a dot: */
     fprintf(stderr, " [dot]\n");
@@ -302,7 +303,7 @@ void test_paint_ellipse
     double hwd, 
     float vfill,
     float vdraw,
-    int32_t m
+    uint32_t m
   )
   { /* Paint an ellipse: */
     fprintf(stderr, " [ellipse]\n");
@@ -338,7 +339,7 @@ void test_paint_cross
     double hwd, 
     float vfill,
     float vdraw,
-    int32_t m
+    uint32_t m
   )
   { /* Paint a cross: */
     fprintf(stderr, " [cross]\n");
@@ -368,7 +369,7 @@ void test_paint_smudge
     double yctr, 
     double rad, 
     float vfill,
-    int32_t m
+    uint32_t m
   )
   { /* Paint a smudge: */
     fprintf(stderr, " [smudge]\n");
@@ -399,7 +400,7 @@ void test_paint_rectangle
     double hwd, 
     float vfill,
     float vdraw,
-    int32_t m
+    uint32_t m
   )
   { /* Paint a dot: */
     fprintf(stderr, " [rectangle]\n");

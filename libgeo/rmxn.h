@@ -1,10 +1,9 @@
 /* rmxn.h --- m by n matrices and operations on them */
-/* Last edited on 2024-11-27 11:04:58 by stolfi */
+/* Last edited on 2024-12-05 10:28:27 by stolfi */
 
 #ifndef rmxn_H
 #define rmxn_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <rn.h>
@@ -103,16 +102,16 @@ double rmxn_det_by_enum(uint32_t m, uint32_t n, double A[], uint32_t q);
     must not exceed {rmxn_det_by_enum_SIZE_MAX}. */
 
 double rmxn_inv (uint32_t n, double *A, double *M);
-double rmxn_inv_full (uint32_t n, double *A, double *M);
   /* Sets {M} to the inverse of the {n x n} matrix {A}. The matrix {M}
     may be the same as {A}. Returns the determinant of {A}.
     
     If the returned determinant is zero, the contents of {M} should be
     considered garbage. Note that if {A} is singular or nearly so the
     procedure may still return a nonzero value, but the contents of
-    {M} will probably be garbage all the same. The version
-    {rmxn_inf_full} uses full pivoting and therefore may be more
-    robust and/or accurate in these cases. */
+    {M} will probably be garbage all the same. 
+    
+    The current implementation uses Gaussian elimination with full
+    pivoting. */
 
 double rmxn_norm_sqr(uint32_t m, uint32_t n, double *A);
   /* Squared Frobenius norm of the {m × n} matrix {A}, 

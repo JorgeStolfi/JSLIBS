@@ -1,11 +1,10 @@
 /* in_test_tools.h --- tools for testing the {libgeo} functions. */
-/* Last edited on 2024-11-20 12:37:10 by stolfi */
+/* Last edited on 2024-12-05 10:27:42 by stolfi */
 /* Created 2005-07-20 by J. Stolfi. */
 
 #ifndef in_test_tools_H
 #define in_test_tools_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

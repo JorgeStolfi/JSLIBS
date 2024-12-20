@@ -1,10 +1,9 @@
 /* Focus detector for multi-focus stereo. */
-/* Last edited on 2024-10-18 09:38:56 by stolfi */
+/* Last edited on 2024-12-05 14:14:08 by stolfi */
 
 #ifndef multifok_basis_H
 #define multifok_basis_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 
@@ -42,10 +41,10 @@ typedef enum {
 typedef struct multifok_basis_t 
   { /* Basis of linear window operators: */
     multifok_basis_type_t type;  /* Basis type. */
-    int32_t NW;                  /* Width and height of window. Must be odd. */
+    uint32_t NW;                 /* Width and height of window. Must be odd. */
     double *ws;                  /* The window sample weights are {ws[0..NS-1]} where {NS=NW*NW}. */
     bool_t ortho;                /* True iff basis has been orthonormalized. */
-    int32_t NB;                  /* Number of basis elements. */
+    uint32_t NB;                 /* Number of basis elements. */
     double **bas;                /* The pixel values of the basis elements are {bas[0..NB-1][0..NS-1]}. */
     char **belName;              /* The names of basis elements are {belName[0..NB-1]}. */
   } multifok_basis_t ;
@@ -60,7 +59,7 @@ typedef struct multifok_basis_t
 
 multifok_basis_t *multifok_basis_make
   ( multifok_basis_type_t type,
-    int32_t NW, 
+    uint32_t NW, 
     double ws[],
     bool_t ortho,
     bool_t verbose
@@ -139,7 +138,7 @@ void multifok_basis_free(multifok_basis_t *basis);
 
 /* BASIS DATA I/O */
 
-void multifok_basis_elem_names_write(FILE *wr, int32_t NB, char *belName[]);
+void multifok_basis_elem_names_write(FILE *wr, uint32_t NB, char *belName[]);
   /* Writes to {wr} the basis element names {belName[0..NB-1]}, one per line. */
 
 void multifok_basis_elem_names_write_named(char *outPrefix, multifok_basis_t *basis);
@@ -153,7 +152,7 @@ void multifok_basis_ortho_check(FILE *wr, multifok_basis_t *basis);
   /* Checks whether the given {basis} is orthonormal.  Prints 
     to {wr} the moment matrix (pairwise element dot products). */
 
-void multifok_basis_module_check(int32_t NW, multifok_basis_type_t type, bool_t ortho, bool_t verbose);
+void multifok_basis_module_check(uint32_t NW, multifok_basis_type_t type, bool_t ortho, bool_t verbose);
   /* Runs various diagnostics on this module. */
 
 #endif

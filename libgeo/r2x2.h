@@ -1,10 +1,9 @@
 /* r2x2.h --- 2x2 matrices and operations on them */
-/* Last edited on 2024-11-20 12:52:17 by stolfi */
+/* Last edited on 2024-12-05 10:27:51 by stolfi */
 
 #ifndef r2x2_H
 #define r2x2_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <r2.h>

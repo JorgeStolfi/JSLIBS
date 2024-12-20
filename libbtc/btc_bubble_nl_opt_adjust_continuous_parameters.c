@@ -1,7 +1,6 @@
 /* See {btc_bubble_nl_opt_adjust_continuous_parameters.h} */
-/* Last edited on 2024-11-08 18:19:44 by stolfi */
+/* Last edited on 2024-12-05 10:22:43 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

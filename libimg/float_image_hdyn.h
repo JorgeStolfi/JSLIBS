@@ -2,7 +2,7 @@
 #define float_image_hdyn_H
 
 /* Tools for high-dynamic-range mixing of PGM/PBM images. */
-/* Last edited on 2017-06-20 20:47:08 by stolfilocal */ 
+/* Last edited on 2024-12-04 23:28:48 by stolfi */ 
 
 #include <r2.h>
 #include <r2x2.h>
@@ -40,8 +40,8 @@
 
   
 void float_image_hdyn_estimate_gains_offsets_sigmas_values
-  ( int c,                /* Channel. */
-    int NI,               /* Number of input images. */
+  ( int32_t c,                /* Channel. */
+    int32_t NI,               /* Number of input images. */
     float_image_t *img[], /* Input images. */
     double vmin[],        /* Value of underexposed pixels. */
     double vmax[],        /* Value of overexposed pixels. */
@@ -60,8 +60,8 @@ void float_image_hdyn_estimate_gains_offsets_sigmas_values
      information about the pixel. */
   
 void float_image_hdyn_estimate_gains_offsets
-  ( int c,                /* Channel. */
-    int NI,               /* Number of input images. */
+  ( int32_t c,                /* Channel. */
+    int32_t NI,               /* Number of input images. */
     float_image_t *img[], /* Input images. */
     double vmin[],        /* Value of underexposed pixels. */
     double vmax[],        /* Value of overexposed pixels. */
@@ -76,8 +76,8 @@ void float_image_hdyn_estimate_gains_offsets
     exposed in some image span the interval {[0_1]}. */
 
 void float_image_hdyn_estimate_values
-  ( int c,                /* Channel. */
-    int NI,               /* Number of input images. */
+  ( int32_t c,                /* Channel. */
+    int32_t NI,               /* Number of input images. */
     float_image_t *img[], /* Input images. */
     double vmin[],        /* Value of underexposed pixels. */
     double vmax[],        /* Value of overexposed pixels. */
@@ -97,8 +97,8 @@ void float_image_hdyn_estimate_values
     strictly between 0 and 1. */
 
 void float_image_hdyn_estimate_sigmas
-  ( int c,                /* Channel. */
-    int NI,               /* Number of input images. */
+  ( int32_t c,                /* Channel. */
+    int32_t NI,               /* Number of input images. */
     float_image_t *img[], /* Input images. */
     double vmin[],        /* Value of underexposed pixels. */
     double vmax[],        /* Value of overexposed pixels. */

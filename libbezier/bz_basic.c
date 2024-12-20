@@ -1,7 +1,6 @@
 /* See bz_basic.h */
-/* Last edited on 2022-10-20 06:27:35 by stolfi */
+/* Last edited on 2024-12-05 10:22:11 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdint.h>
 #include <assert.h>

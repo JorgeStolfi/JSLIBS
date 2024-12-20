@@ -1,10 +1,9 @@
 /* r3_bezier.h --- Bezier arcs in {\RR^3} */
-/* Last edited on 2023-10-01 19:22:14 by stolfi */
+/* Last edited on 2024-12-05 10:27:55 by stolfi */
 
 #ifndef r3_bezier_H
 #define r3_bezier_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>

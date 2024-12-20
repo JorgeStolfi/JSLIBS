@@ -2,10 +2,9 @@
 #define frgb_path_H
 
 /* frgb_path.h - mapping real numbers to paths in the RGB cube */
-/* Last edited on 2023-03-07 16:22:57 by stolfi */
+/* Last edited on 2024-12-05 10:30:31 by stolfi */
 /* See the rights and conditions notice at the end of this file. */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <frgb.h>

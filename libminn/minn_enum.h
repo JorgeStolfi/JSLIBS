@@ -2,16 +2,15 @@
 #define minn_enum_H
 
 /* Tools for optimizing {d}-dimensional function by enumeration. */
-/* Last edited on 2024-01-10 13:41:58 by stolfi */ 
+/* Last edited on 2024-12-05 13:14:21 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>
 #include <minn.h>
 
 void minn_enum
-  ( int32_t n,        /* Dimension of search space. */
+  ( uint32_t n,        /* Dimension of search space. */
     minn_goal_t *F,   /* Function to be minimized. */
     bool_t box,       /* True to search in the cube, false in the ball. */
     double tol[],     /* Desired precision along each axis. */

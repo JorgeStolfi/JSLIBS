@@ -1,10 +1,9 @@
 /* r6.h --- operations on points and vectors of R^6 */
-/* Last edited on 2024-11-20 13:00:55 by stolfi */
+/* Last edited on 2024-12-05 10:28:11 by stolfi */
 
 #ifndef r6_H
 #define r6_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>

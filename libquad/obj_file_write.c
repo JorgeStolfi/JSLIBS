@@ -1,10 +1,9 @@
 /* See {obj_file_write.h}. */
-/* Last edited on 2024-06-27 18:49:21 by stolfi */
+/* Last edited on 2024-12-05 10:39:21 by stolfi */
  
 #define obj_file_write_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

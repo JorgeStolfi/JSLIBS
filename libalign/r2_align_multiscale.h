@@ -2,9 +2,8 @@
 #define r2_align_multiscale_H
 
 /* Tools for optimizing a vector of points on the plane. */
-/* Last edited on 2023-09-07 18:10:40 by stolfi */ 
+/* Last edited on 2024-12-05 10:20:09 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>

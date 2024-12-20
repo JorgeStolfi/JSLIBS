@@ -1,5 +1,5 @@
 /* See oct.h. */
-/* Last edited on 2023-10-05 20:49:45 by stolfi */
+/* Last edited on 2024-12-05 10:39:27 by stolfi */
 
 /* This implementation was originally created by J. Stolfi in Apr/1993.
   It was based on the orientable-map version {quad.c} implemented by
@@ -15,7 +15,6 @@
   " that may apply to the original DEC implementation of the quad-edge" \
   " data structure."
 
-#define _GNU_SOURCE
 #include <assert.h>
 #include <malloc.h>
 #include <stdint.h>

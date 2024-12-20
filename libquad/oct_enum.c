@@ -1,5 +1,5 @@
 /* See oct_enum.h. */
-/* Last edited on 2023-11-04 02:43:44 by stolfi */
+/* Last edited on 2024-12-05 10:39:32 by stolfi */
 
 #define oct_enum_C_copyright \
   "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright ""
@@ -9,7 +9,6 @@
   latter was converted to C by J. Stolfi in 1996 and was substantially
   revised by him in January 2007. */
 
-#define _GNU_SOURCE
 #include <malloc.h>
 #include <stdint.h>
 #include <assert.h>

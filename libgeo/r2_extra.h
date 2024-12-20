@@ -1,10 +1,9 @@
 /* r2_extra.h --- additional operations on points and vectors of {R^2} */
-/* Last edited on 2024-08-30 18:43:46 by stolfi */
+/* Last edited on 2024-12-05 10:27:49 by stolfi */
 
 #ifndef r2_extra_H
 #define r2_extra_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>

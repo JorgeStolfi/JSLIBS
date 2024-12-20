@@ -1,10 +1,9 @@
 /* Window operations for multi-focus stereo. */
-/* Last edited on 2024-10-12 03:10:07 by stolfi */
+/* Last edited on 2024-12-05 14:26:07 by stolfi */
 
 #ifndef multifok_window_H
 #define multifok_window_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 
@@ -23,7 +22,7 @@
   {s[jy*NW+jx]} is taken from image pixel in column {ix+(jx-HW)} and row
   {iy+(jy-HW)}, where {HW = (NW-1)/2}. */ 
 
-int32_t multifok_window_num_samples(int32_t NW);
+uint32_t multifok_window_num_samples(uint32_t NW);
   /* Returns the number of pixels in a window of {NW} by {NW} pixels, 
     that is, {NW*NW}.  Also checks whether {NW} is odd and at least 3. */
 
@@ -42,18 +41,18 @@ typedef enum {
 #define multifok_window_type_FIRST multifok_window_type_BIN
 #define multifok_window_type_LAST  multifok_window_type_GLD
   
-double *multifok_window_weights(int32_t NW, multifok_window_type_t type);
+double *multifok_window_weights(uint32_t NW, multifok_window_type_t type);
   /* Returns a newly allocated array {ws[0..NS-1}} with the weights of
     each sample in the window, for averaging and apodizing purposes.
     The {type} parameter selects the type of weight distribution. */
   
-double *multifok_window_weights_binomial(int32_t NW);
+double *multifok_window_weights_binomial(uint32_t NW);
   /* Same as {multifok_window_weights}, but specifically binomial
     weights {ws[ks] = choose(NW-1,ix)*choose(NW-1,iy)/A} where {ix,iy}
     vary in {0..NW-1}, {ks} is {iy*NW + ix}, and {A} is such that the
     central weight is 1. */
 
-double *multifok_window_weights_golden(int32_t NW);
+double *multifok_window_weights_golden(uint32_t NW);
   /* Same as {multifok_window_weights}, but specifically "golden"
     weights {ws[ks] = C/(C + ix^2 + iy^2)} where {ix,iy} vary in
     {-HW..+Hw}, {ks} is {(iy+HW)*NW + (ix+HW)}, {HW} is {(NW-1)/2}, and
@@ -70,16 +69,16 @@ multifok_window_type_t multifok_window_type_from_text(char *name, bool_t fail);
 
 /* WINDOW WEIGHTING OPS */
 
-double multifok_window_prod(int32_t NW, double a[], double b[]);
+double multifok_window_prod(uint32_t NW, double a[], double b[]);
   /* Computes the inner product of sample vectors {a[0..NS-1]} and {b[0..NS-1]}. 
     That is, {SUM{i \in 0..NS-1 : a[i]*b[i]}}. */
 
-double multifok_window_dist_sqr(int32_t NW, double a[], double b[]);
+double multifok_window_dist_sqr(uint32_t NW, double a[], double b[]);
   /* Computes the squared distance of sample vectors {a[0..NS-1]} and {b[0..NS-1]}. 
     That is, {SUM{i \in 0..NS-1 : (a[i] - b[i])^2}}. */
 
 void multifok_window_compute_average_gradient_and_deviation
-  ( int32_t NW, 
+  ( uint32_t NW, 
     double s[], 
     double ws[], 
     double *sAvg_P,
@@ -99,7 +98,7 @@ void multifok_window_compute_average_gradient_and_deviation
     in {*sGrx_P,sGry_P}, and the deviation {sDev} in {*sDev_P}. */
 
 void multifok_window_remove_average_and_gradient
-  ( int32_t NW, 
+  ( uint32_t NW, 
     double s[], 
     double ws[], 
     double sAvg,
@@ -112,12 +111,12 @@ void multifok_window_remove_average_and_gradient
     This correction can be used before focus estimation to eliminate
     the influence of gradient and brightness variations in the window. */
 
-double multifok_window_deviation(int32_t NW, double s[], double ws[]);
+double multifok_window_deviation(uint32_t NW, double s[], double ws[]);
   /* Computes the weighted RMS value {sDev} of the samples {s[0..NS-1]} with weights
     {ws[0..NS-1]}, where {NS = NW*NW}. */
 
 void multifok_window_normalize_samples
-  ( int32_t NW, 
+  ( uint32_t NW, 
     double s[], 
     double ws[], 
     double noise, 
@@ -165,7 +164,7 @@ char *multifok_window_sample_name(char *tag, int32_t ix, int32_t iy);
     encoded as "{tag}{X}{Y}", where {X} and {Y} are the indices {ix}
     and {iy} encoded with {multifok_window_mop_code}. */
 
-void multifok_window_sample_names(int32_t NW, char *tag, char *sname[]);
+void multifok_window_sample_names(uint32_t NW, char *tag, char *sname[]);
   /* Sets {sname[0..NS-1]} to {NS = NW*NW} newly allocated strings that are scrutable names of
     the samples in the window. The names have the form "{tag}{X}{Y}" where  {X} and {Y} are the indices {ix}
     and {iy} of the sample relative to the center sample, encoded with {multifok_window_mop_code}. */

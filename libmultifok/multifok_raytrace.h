@@ -1,10 +1,9 @@
 /* Generic raytracing for the {multifok} library. */
-/* Last edited on 2024-10-22 12:15:16 by stolfi */
+/* Last edited on 2024-12-15 20:34:35 by stolfi */
 
 #ifndef multifok_raytrace_H
 #define multifok_raytrace_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>
@@ -14,6 +13,7 @@
 #include <frgb.h>
 
 #include <multifok_frame.h>
+#include <multifok_sampling.h>
 
 #define ix_DEBUG 10
 #define iy_DEBUG 17
@@ -42,9 +42,9 @@ typedef void multifok_raytrace_proc_t
     The ray is assumed to start at infinte distance from {pRay}
     in the direction opposite to {dRay}. The hit point may be anywhere
     along that ray, before or after {pRay}.
-
-    If the ray fails to hit anything, it should return {(NAN,NAN,NAN)}
-    in {*pHit_P} and all {NAN} in {colr[0..NC-1]}.
+    
+    If the procedure must always return a finite, non-{NAN} point in {*pHit_P} and
+    finite, non-{NAN} colors in {clr[0..NC-1]}.
 
     The {debug} parameter asks the procedure to print information
     about the ray tracing process. */
@@ -56,14 +56,15 @@ typedef void multifok_raytrace_img_to_scene_map_t(r2_t *p2_img, r3_t *p3_scene);
     3D scene coordinates {p3_scene}. */
 
 typedef bool_t multifok_raytrace_debug_pred_t(i2_t *iPix);
-  /* Type of a procedure suitable for the {debug_pix} argument of
+  /* Type of a procedure suitable for the {debug_pixel} argument of
     {multifok_raytrace_make_frame}. It is given the row and colum
     indices of a pixel, and should return {TRUE} iff that
     procedure should print detailed information about that pixel. */
 
 typedef void multifok_raytrace_report_ray_proc_t
   ( i2_t *iPix,
-    r2_t *pSmp,
+    i2_t *iSmp,
+    double step,
     double wSmp,
     r3_t *pRay,
     r3_t *dRay,
@@ -73,12 +74,12 @@ typedef void multifok_raytrace_report_ray_proc_t
     double vBlr
   );
   /* Type of a procedure suitable for the {report_ray} argument of
-    {multifok_raytrace_make_frame}. It is called for every ray that
-    contributes to selected pixels.
+    {multifok_raytrace_make_frame}. It is called for every ray cast for 
+    the selected pixels.
 
     This procedure is given the row and column indices {iPix} of the
-    pixel, the 2D image system coordinates {pSmp} of a subsampling point
-    that contributed to that pixel, the weight {wSmp} of that point's
+    pixel, the indices {iSmp} of the sampoint relative to the pixel's center,
+    the sampoint spacing {step} (in pixels), the weight {wSmp} of that sampoint's
     contribution to the pixel, its 3D scene system coordinates {pRay},
     the unit direction vector {dRay} of a ray that contributed to that
     sub-sampling point's values, the weight {wRay} of that contribution,
@@ -86,10 +87,36 @@ typedef void multifok_raytrace_report_ray_proc_t
     hit the scene or object, the nominal height {hHit} of the surface at
     that point, and the squared deviation {vBlr} of the ray from the
     reference direction {dRef}.
+    
+    The 2D coordinates of the sampoint will be {iPix.c[j] + 0.5 + step*iSmp.c[j]}
+    for {j} in {0,1}.
 
     The parameters {pRay,dRay,pHit} will be in the scene's coordinate
     system. The image coordinates of the sub-sampling point {pSmp} may
     lie a bit outside the image domain {[0 _ NX] × [0 _ NY]}. */
+
+typedef void multifok_raytrace_report_pixel_proc_t
+  ( i2_t *iPix,
+    r3_t *pCtr,
+    double zFoc,
+    double zDep,
+    double shrp,
+    double hAvg,
+    double hDev,
+    int32_t NC,
+    float colr[]
+  ); 
+  /* Type of a procedure suitable for the {report_pixel} argument of
+    {multifok_raytrace_make_frame}. It is called once for every pixel
+    selected by {debug_pixel}.
+
+    This procedure is given the row and column indices {iPix} of the
+    pixel, its center {pCtr} in the 3D scene's coordinate 
+    system, the current {zFoc} and {zDep} parameters,
+    the number of color channels {NC}, the pixel color {clor[0..NC-1]},
+    the average inferred sharpness parameter {shrp}, the average {hAvg} and
+    deviation {hDev} of the scene height seen over all rays cast for that
+    pixel. */
 
 multifok_frame_t *multifok_raytrace_make_frame
   ( int32_t NC,
@@ -100,60 +127,30 @@ multifok_frame_t *multifok_raytrace_make_frame
     r3_t *dRef,
     double zFoc,
     double zDep,
-    int32_t NS,
-    r2_t uSmp[],
-    double wSmp[],
-    int32_t NR,
-    r2_t tRay[],
-    double wRay[],
+    multifok_sampling_t *samp,
     bool_t verbose,
-    multifok_raytrace_debug_pred_t *debug_pix,
-    multifok_raytrace_report_ray_proc_t *report_ray
+    multifok_raytrace_debug_pred_t *debug_pixel,
+    multifok_raytrace_report_ray_proc_t *report_ray,
+    multifok_raytrace_report_pixel_proc_t report_pixel
   );
-  /* Creates a frame record {fr} with images {fr.sVal}, {fr.shrp}, {fr.hAvg},
-    and {fr.hDev} by ray-tracing some generic scene or object with
-    depth-of-focus blur. All four images will have {NX} columns of {NY} pixels.
-    The {sVal} image will have {NC} channels.
-
-    The value of each pixel {pix} of the four images is computed by
-    taking a set of {NS} sample points on the image plane, displaced by
-    {uSmp[0..NS-1]} from the center of {pix}. The procedure then traces
-    a total of {NR} rays through these sample points with directions
-    defined by the relative ray tilts {tRay[0..NR-1]} and the nominal
-    depth-of-focus {zDep}. The number of rays {NR} must be an integer
-    multiple of the number of sampling points {NS}; for each sampling
-    point, the procedure will cast a disjoint subset of the rays with size 
-    {KR=NR/NS}.  However, if {NR} is 1, it will use that single ray,
-    assumed to be straight down ({tRay[0]=(0,0)}) for all sampling points,
-    so {KR} will be 1.
-
-    The result of tracing each ray {R} is an {NC}-channel color value
-    {colr(R)[0..NC-1]} and the scene coordinates of the hit point
-    {pHit(R)}. The ray tracing is performed with
-    {trace_ray(pRay,dRay,debug,&pHit,NC,colr)} where {pRay =
-    map_point(pSmp)} is the sampling point, {dRay} is the unit-length
-    ray direction vector (both in scene coordinates), and {debug} is the
-    result returned by {debug_pix(pix)}.
-
-    Let {uRay} be the vector {pHit(R)-pSmp}. The height {zVal(R)} will
-    be {zFoc} minus the projection of {uRay} along the direction {dRef},
-    assumed to point perpendicular to the image plane and away from the
-    camera. The tracing also produces a blurring indicator {vBlr(R)}
-    which is the square of length of the projection of {uRay}
-    perpendicular to {dRef}.
-
-    The values {colr(pSmp)}, {vBlr(pSmp)} and {hAvg(pSmp)} are the
-    averages of {colr(R)}, {vBlr(r)}, and {zVal(R)} over all the {KR}
-    rays assigned to that sampling point, with the corresponding weights
-    from {wRay[0..NR-1]}. The value of {Zdev(p)} is the weighted deviation
-    of {zVal(R)} over those rays.
-
-    Finally, the procedure combines these values of all {NS} sample points
-    {pSmp} of the pixel with weights {wSmp[0..NS-1]} to obtain
-    the values of {colr(pix)}, {vBlr(pix)}, {hAvg(pix)}, and {hDev(pix)}
-    at that pixel. The value of {vBlr(pix)} is augmented with 1.0 to
-    account for the fact that antialiasing (subsampling and averaging)
-    causes some blurring.
+  /* Creates a frame record {fr} with images {fr.sVal}, {fr.shrp},
+    {fr.hAvg}, and {fr.hDev} by ray-tracing some generic scene or object
+    with depth-of-focus blur. All four images will have {NX} columns of
+    {NY} pixels. The {sVal} image will have {NC} channels.
+    
+    The value of each pixel {pix} of the four images computed by taking
+    a set of /sampoints/ (pixel sub-sampling points) on the image plane
+    around the pixel's center, and tracing a number of rays through each
+    sampoint {pSmp}, as determined by the {samp} parameter record. 
+    
+    The results of tracing these rays are combined as described under
+    {multifok_raytrace_compute_point_properties} (q.v.) to produce the
+    sampoint attributes {colr(pSmp)}, {vBlr(pSmp)} and {hAvg(pSmp)}. The
+    procedure combines these values of all {NS} sample points {pSmp} of
+    the pixel with weights {wSmp[0..NS-1]} to obtain the values of
+    {colr(pix)}, {vBlr(pix)}, {hAvg(pix)}, and {hDev(pix)} at that
+    pixel. The value of {vBlr(pix)} is augmented to account for
+    the spread of the sampoints relative to the pixel's center.
 
     The values of {colr(pix)}, {hAvg(pix)}, and {hDev(pix)} are stored
     as the pixel values of the image {fr.sVal}. The value {vBlr(pix)} is
@@ -161,53 +158,96 @@ multifok_frame_t *multifok_raytrace_make_frame
     is stored in the image {fr.shrp}.
 
     The fields {fr.zFoc} and {fr.zDep} are set to {zFoc} and {zDep}. The
-    latter should be {+INF} if {NR} is 1, otherwise it should be inversely
-    proportional to the mean spread of the ray directions {dRay}.
+    latter should be {+INF} for a sharp image (in which case {KR} should
+    be 1). Otherwise the RMS spread of the ray directions will be one
+    scene unit for each {zDep} of vertical distance from the sampling
+    point.
 
-    For best results, both the ray tilts {tRay[0..NR-1]} and the
-    sampling point displacements {uSmp[0..NS-1]} should be sorted
-    by increasing distance from the origin {(0,0)}.
+    If {debug_pixel} is not null, it is called for every pixel in the
+    image with the pixel indices {iPix}. If it returns true, the
+    procedure prints detailed debugging information for the pixel with
+    those indices. In that case, if {report_ray} is not {NULL}, the
+    procedure also calls {report_ray} for every traced ray that
+    contributed to that pixel's values. Also in that case, if
+    {report_pixel} is not {NULL}, calls it once with the computed pixel
+    properties. */
 
-    If {debug_pixel} is not null, it is called for every pixel in the image
-    with the pixel indices {iPix}. If it returns true, the procedure prints
-    detailed debugging information for the pixel with those indices. In
-    that case, if {report_ray} is not {NULL}, the procedure also calls
-    {report_ray} for every traced ray that contributed to that pixel's
-    values. */
-
-r3_t multifok_raytrace_compute_ray_direction(r2_t *tRay, double aRay, double zDep);
-  /* Returns a unit ray direction vectors {dRay} to
-    ray-trace a scene from some image sampling point, given the
-    relative ray tilt {tRay} and a ray pattern rotation angle {aray}.
-
-    The ray will be pointing down ({dRay.c[2] < 0}).
-
-    The ray will hit a horizontal plane located {zDep/2} below its
-    starting point {p} at a point displaced from the vertical
-    through {p} by the 2-vector {tRay} rotated by {aRay} radians
-    about that vertical. */
-
-void multifok_raytrace_show_ray_data
-  ( FILE *wr,
+void multifok_raytrace_compute_point_properties
+  ( multifok_raytrace_proc_t *trace_ray,
+    r3_t *pObs, 
+    uint32_t KR,
+    r3_t *dRef,
+    double zFoc,
+    double zDep,
+    bool_t debug,
     i2_t *iPix,
-    double pixSize,
-    r2_t *pSmp,
+    i2_t *iSmp,
+    double step,
     double wSmp,
-    r3_t *pRay,
-    r3_t *dRay,
-    double wRay,
-    r3_t *pHit,
-    double hHit,
-    double vBlr
+    multifok_raytrace_report_ray_proc_t report_ray,
+    int32_t NC,
+    float colr_pt[],
+    double *vBlr_pt_P,
+    double *hAvg_pt_P,
+    double *hVar_pt_P
   );
-  /* Prints the data of a ray to file {wr}, in a legible format. The
-    parameters (other than {wr}) are those of {report_ray} (q.v.). */
+  /* Computes the color {colr(pObs)}, blurring indicator {vBlr(pObs)},
+    height average {hAvg(pObs)}, and height variance {hVar(pObs)} seen
+    from the point with scene coordinates {pObs}, by ray-tracing the
+    scene or object with a set of {KR} rays {R[0..KR-1]} through {pObs}
+    and averaging the results. Returns these values in
+    {colr_pt[0..NC-1]}, {*vBlr_pt_P}, {*hAvg_pt_P}, and {*hVar_pt_P}.
+    
+    The direction {dir(R[r])} of each ray {R[r]} will be chosen
+    internally with a Gaussian distribution of deviations from the mean
+    direction {dRef}. As explained under {multifok_raytrace_proc_t}, the
+    rays will start an infinite distance away from {pObs} in the
+    direction opposite to {dir(R)}; therefore, hits that occur
+    ``behind'' {pObs} will be considered as well as those that occur
+    ``ahead'' of it.
+    
+    As a special case, if {zDep} is {+oo}, then {KR} must be 1, and the
+    procedure will shoot a single ray {R[0]} from the point {pObs}, with
+    direction {dir(R[0])=dRef}. This will result in "sharp" image, with
+    no focus blur.
+    
+    The ray tracing is performed with
+    {trace_ray(pRay,dRay,debug,&pHit,NC,colr)} where {pRay=pObs} is the
+    starting point, and {dRay=dir(R)} is the unit-length ray direction
+    vector (both in scene coordinates). The result is an {NC}-channel
+    color value {colr(R)[0..NC-1]} and the scene coordinates of the hit
+    point {pHit(R)}.
+
+    The computed point color {colr(pObs)}, its blurring indicator
+    {vBlr(pObs)}, and average height {hAvg(pObs)} will be be the average
+    of the ray colors {colr(R[r]}}, blurring indicator {vBlr(R[r])}, and
+    {hHit(R[r])} for {r} in {0..KR-1} The variance {hVar(pObs)} is the
+    variance of the values {hHit(R[r])}. The value of {hDev(p)} is the
+    deviation of {hVal(R)} over those rays.
+
+    Let {vHit} be the vector {pHit(R)-pObs}. The height {hHit(R)} will
+    be {zFoc} minus the projection of {vHit} along the direction {dRef},
+    assumed to point perpendicular to the image plane and away from the
+    camera. The tracing also produces a blurring indicator {vBlr(R)}
+    which is the square of length of the projection of {vHit}
+    perpendicular to {dRef}.
+    
+    The burring indicator {vBlr(pObs)} of the point will be zero if
+    {zDep} is {+INF} or the sampoint {pObs} lies on the scene's surface.
+    In this latter case, {hAvg} will be {zFoc} and {hVar} will be zero.
+    
+    If {debug} is true, also prints debugging infrormation, and, if
+    {report_ray} is not {NULL}, also calls it with the ray data.
+    The parameters {iPix,iSmp,step,wSmp} are used only for this purpose. */
+
+/* RAY-LEVEL LOGGING AND DEBUGGING */
 
 void multifok_raytrace_write_ray_data
   ( FILE *wr,
     i2_t *iPix,
     double pixSize,
-    r2_t *pSmp,
+    i2_t *iSmp,
+    double step,
     double wSmp,
     r3_t *pRay,
     r3_t *dRay,
@@ -216,9 +256,9 @@ void multifok_raytrace_write_ray_data
     double hHit,
     double vBlr
   );
-  /* Writes the data of a ray to file {wr}, in a format suitable for plotting
-    and similar analyses.  The parameters (other than {wr})
-    are those of {report_ray} (q.v.).  The line format is
+  /* Writes the data of a ray to file {wr}, in a format suitable for
+    plotting and similar analyses. The parameters (other than {wr} and
+    {pixSize}) are those of {report_ray} (q.v.). The line format is
     described in {multifok_raytrace_write_ray_data_INFO}. */
 
 #define multifok_raytrace_write_ray_data_INFO \
@@ -229,8 +269,10 @@ void multifok_raytrace_write_ray_data
   "\n" \
   "       {pixSize} width and height of a pixel in scene coordinates.\n" \
   "\n" \
-  "       {pSmp.x} {pSmp.y} the image coordinates of the pixel" \
-  " sub-sampling point {pSmp}.\n" \
+  "       {iSmp.x} {iSmp.y} the indices of the sampoint (sub-sampling point)" \
+  " relative to the pixel's center, in some range {-HS..+HS}.\n" \
+  "\n" \
+  "       {step} the spacing between sampoints, in pixels.\n" \
   "\n" \
   "       {wSmp} the relative weight of that sub-sampling point" \
   " among those in the pixel.\n" \
@@ -251,5 +293,92 @@ void multifok_raytrace_write_ray_data
   "\n" \
   "       {vBlr} the blurring indicator of that ray (square of" \
   " distance from {pRay} to {pHit} measured parallel to the image plane)."
+
+void multifok_raytrace_show_ray_data
+  ( FILE *wr,
+    int32_t indent,
+    i2_t *iPix,
+    double pixSize,
+    i2_t *iSmp, 
+    double step,
+    double wSmp,
+    r3_t *pRay,
+    r3_t *dRay,
+    double wRay,
+    r3_t *pHit,
+    double hHit,
+    double vBlr
+  );
+  /* Prints the data of a ray to file {wr}, in a legible format. The
+    parameters (other than {wr} and {pixSize}) are those of {report_ray}
+    (q.v.). */
+
+/* PIXEL-LEVEL LOGGING AND DEBUGGING */
+
+void multifok_raytrace_write_pixel_data
+  ( FILE *wr,
+    i2_t *iPix,
+    double pixSize,
+    r3_t *pCtr,
+    double zFoc,
+    double zDep,
+    double shrp,
+    double hAvg,
+    double hDev,
+    int32_t NC,
+    float colr[]
+  );
+  /* Writes the computed data for pixel {oPix} to file {wr}, in a format suitable for plotting
+    and similar analyses.  The parameters (other than {wr})
+    are those of {report_pixel} (q.v.).  The line format is
+    described in {multifok_raytrace_write_pixel_data_INFO}. */
+
+#define multifok_raytrace_write_pixel_data_INFO \
+  "The fields on each line are separated by blank space, with no" \
+  " parentheses or other  delimiters.  They are:\n" \
+  "\n" \
+  "       {iPix.x} {iPix.y} the column and row indices of the pixel.\n" \
+  "\n" \
+  "       {pixSize} width and height of a pixel in scene coordinates.\n" \
+  "\n" \
+  "       {pCtr.x} {pCtr.y} {pCtr.z} the scene coordinates of the pixel's" \
+  " center {pCtr}.\n" \
+  "\n" \
+  "       {zFoc} the scene {Z} corrdinate of the simulated in-focus plane.\n" \
+  "\n" \
+  "       {zDep} the nominal depth of focus.\n" \
+  "\n" \
+  "       {shrp} the mena sharpness indicator, which is the reciprocal of square of" \
+  " distance from the pixel sub-sampling point to the ray's" \
+  " hit point, measured parallel to the image plane.\n" \
+  "\n" \
+  "       {hAvg} {hDev} the average and deviation of the {Z} coordinate" \
+  " of the scene's hit points.\n" \
+  "\n" \
+  "       {NC} The number of color channels used, in {1..3}.\n" \
+  "\n" \
+  "       {colr[0]} {colr[1]} {colr[2]} The computed color of the pixel.\n" \
+  "\n" \
+  "    The averages {shrp,hAvg,colr[0..NC-1]} and the deviation {hDev} are" \
+  " computed over all the rays cast for the pixel, using the appropriate" \
+  " weights.  The unused color channels {colr[NC..2]} are set to zeros."
+
+void multifok_raytrace_show_pixel_data
+  ( FILE *wr,
+    int32_t indent,
+    i2_t *iPix,
+    double pixSize,
+    r3_t *pCtr,
+    double zFoc,
+    double zDep,
+    double shrp,
+    double hAvg,
+    double hDev,
+    int32_t NC,
+    float colr[]
+  );
+  /* Prints the data of a pixel to file {wr}, in a legible format. The
+    parameters (other than {wr} and {pixSize}) are those of {report_pixel}
+    (q.v.). */
 
 #endif

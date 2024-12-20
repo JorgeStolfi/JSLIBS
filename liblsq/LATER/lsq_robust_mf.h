@@ -2,12 +2,11 @@
 #define lsq_robust_mf_H
 
 /* Fits a linear map of {R^nx} to {R^nf} by least squares, given sample arrays. */
-/* Last edited on 2022-10-20 06:31:27 by stolfi */
+/* Last edited on 2024-12-05 10:33:21 by stolfi */
 
 #define lsq_robust_mf_H_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <bool.h>

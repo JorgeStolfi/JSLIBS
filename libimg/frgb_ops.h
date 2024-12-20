@@ -1,10 +1,9 @@
 /* frgb_ops.h - basic operations on colors. */
-/* Last edited on 2023-03-07 17:13:45 by stolfi */
+/* Last edited on 2024-12-20 17:34:57 by stolfi */
 
 #ifndef frgb_ops_H
 #define frgb_ops_H
 
-#define _GNU_SOURCE
 #include <limits.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -40,22 +39,22 @@ bool_t frgb_is_all_ones(frgb_t *a);
 bool_t frgb_eq(frgb_t *a, frgb_t *b);
   /* TRUE iff colors {a} and {b} are identical. */
 
-double frgb_gamma_encoding_gray(double y, double gamma, double bias);
+double frgb_gamma_encoding_gray(double y, double expo_dec, double bias);
   /* Applies gamma encoding to the intensity {y}, roughly
-    {sgn(y)*|y|^(1/gamma)}. Equivalent to
-    {sample_conv_gamma(y,1/gamma,bias)}.
+    {sgn(y)*|y|^(1/expo_dec)}. Equivalent to
+    {sample_conv_gamma(y,1/expo_dec,bias)}.
     
-    Assumes that {y} is in {[-1 _ +1]} and that {gamma}
+    Assumes that {y} is in {[-1 _ +1]} and that {expo_dec}
     is positive.  Typically used when {y} is a computed 
     physical intensity that is about to be converted to 
     an integer for output to an image file. */
 		
-double frgb_gamma_decoding_gray(double y, double gamma, double bias);
+double frgb_gamma_decoding_gray(double y, double expo_dec, double bias);
   /* Undoes the gamma encoding of the intensity {y}, roughly
-    {sgn(y)*|y|^(gamma)}. Equivalent to
-    {sample_conv_gamma(y,gamma,bias)}.
+    {sgn(y)*|y|^(expo_dec)}. Equivalent to
+    {sample_conv_gamma(y,expo_dec,bias)}.
     
-    Assumes that {gamma} is positive and {y} is in
+    Assumes that {expo_dec} is positive and {y} is in
     {[-1 _ +1]}. Typically used when {y} is an integer sample read
     from an image file that was linearly scaled to {[0-1]}. */
 

@@ -1,5 +1,5 @@
 /* test_r2 --- test program for r2.h, r2x2.h  */
-/* Last edited on 2024-11-21 02:14:45 by stolfi */
+/* Last edited on 2024-12-01 10:21:21 by stolfi */
 
 #include <math.h>
 #include <stdio.h>

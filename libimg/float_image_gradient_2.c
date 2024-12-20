@@ -1,5 +1,5 @@
 /* See {float_image_gradient_2.h}. */
-/* Last edited on 2023-11-26 06:43:23 by stolfi */
+/* Last edited on 2024-12-05 00:49:03 by stolfi */
 
 #include <math.h>
 #include <assert.h>
@@ -20,14 +20,14 @@
 
 void float_image_gradient_sqr_relative_2
   ( float_image_t *A,
-    int cA,
+    int32_t cA,
     double noise, 
     float_image_t *G,
-    int cG    
+    int32_t cG    
   )
   {
     /* Get the image dimensions: */
-    int NC, NX, NY;
+    int32_t NC, NX, NY;
     float_image_get_size(A, &NC, &NX, &NY);
     demand(cA < NC, "invalid A channel");
     
@@ -41,23 +41,23 @@ void float_image_gradient_sqr_relative_2
     float_image_t *V2 = float_image_new(1, NX, NY);
     
     /* Weight table: */
-    int hw = 2, nw = 2*hw+1;
+    int32_t hw = 2, nw = 2*hw+1;
     double wt[nw];
-    wt_table_binomial_fill(nw, wt, NULL);
-    wt_table_normalize_sum(nw, wt);
+    wt_table_binomial_fill((uint32_t)nw, wt, NULL);
+    wt_table_normalize_sum((uint32_t)nw, wt);
  
     /* Process channel by channel: */
-    int cMin = (cA >= 0 ? cA : 0);
-    int cMax = (cA >= 0 ? cA : NC-1);
+    int32_t cMin = (cA >= 0 ? cA : 0);
+    int32_t cMax = (cA >= 0 ? cA : NC-1);
     double scale = 1.0/(cMax - cMin + 1.0);
     double noise2 = noise*noise;
-    int c;
+    int32_t c;
     for (c = cMin; c <= cMax; c++)
       { /* Compute the gradient squared and variance for channel {c} of image {A}: */
         float_image_gradient_sqr_sobel(A, c, G2, 0);
         float_image_local_avg_var(A, c, hw, wt, NULL, 0, V2, 0);
         /* Divide one by the other, store/add in {G}: */
-        int x, y;
+        int32_t x, y;
         for (x = 0; x < NX; x++)
           { for (y = 0; y < NY; y++)
               { double g2 = float_image_get_sample(G2, 0, x, y);

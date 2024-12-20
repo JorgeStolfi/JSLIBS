@@ -2,7 +2,7 @@
 #define float_image_color_H
 
 /* Tools specific for color images. */
-/* Last edited on 2008-07-29 20:35:32 by stolfi */ 
+/* Last edited on 2024-12-04 23:27:02 by stolfi */ 
 
 #include <bool.h>
 #include <r2.h>
@@ -10,7 +10,7 @@
 #include <float_image.h>
 #include <frgb.h>
 
-frgb_t fic_get_frgb_pixel(float_image_t *A, int cR, int cG, int cB, int x, int y);
+frgb_t fic_get_frgb_pixel(float_image_t *A, int32_t cR, int32_t cG, int32_t cB, int32_t x, int32_t y);
 /* Extracts the samples of channels {cR}, {cB} and {cG} of the pixel
   at column {x} and row {y} of {A} as an RGB color triple.
   
@@ -21,14 +21,14 @@ frgb_t fic_get_frgb_pixel(float_image_t *A, int cR, int cG, int cB, int x, int y
   {x,y} is interpreted as a gray value and converted to an RGB
   triple. */
 
-void fic_set_frgb_pixel(float_image_t *A, int cR, int cG, int cB, int x, int y, frgb_t *p);
+void fic_set_frgb_pixel(float_image_t *A, int32_t cR, int32_t cG, int32_t cB, int32_t x, int32_t y, frgb_t *p);
 /* Sets the samples of channels {cR}, {cB} and {cG} of the pixel at
   column {x} and row {y} of {A} to the components of the RGB triple {p}.
 
   Fails if {x} or {y} are outside their valid ranges, or if any of {cR},
   {cG}, or {cB} is outside the range {0..A->NC-1}. */
 
-void fic_normalize_colors(float_image_t *A, int cR, int cG, int cB);
+void fic_normalize_colors(float_image_t *A, int32_t cR, int32_t cG, int32_t cB);
   /* Maps the colors of all pixels to fit in the [0..1] cube, by scaling 
     uniformly the three components and and adding or subtracting a constant
     amount of white.  This transformation preserves hue, and

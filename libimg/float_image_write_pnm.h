@@ -2,9 +2,8 @@
 #define float_image_write_pnm_H
 
 /* Writing float images to PNM (PPM/PGM/PBM) image files. */
-/* Last edited on 2017-06-25 00:14:15 by stolfilocal */
+/* Last edited on 2024-12-05 10:30:03 by stolfi */
 
-#define _GNU_SOURCE
 #include <bool.h>
 #include <float_image.h>
 
@@ -35,7 +34,7 @@ void float_image_write_pnm_named
     NOTE: These parameters were added on 2009-02-24. */
 
 void float_image_write_pnm_named_list
-  ( int n,                /* Number of images to write. */
+  ( int32_t n,                /* Number of images to write. */
     char *fname[],        /* PPM/PGM/PBM file names (with extensions). */            
     float_image_t *fim[], /* Images to write. */
     bool_t isMask,        /* TRUE for masks, FALSE for images. */

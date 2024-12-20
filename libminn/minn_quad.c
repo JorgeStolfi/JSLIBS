@@ -1,7 +1,6 @@
 /* See {minn_quad.h}. */
-/* Last edited on 2024-11-08 20:26:48 by stolfi */
+/* Last edited on 2024-12-05 13:14:39 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdint.h>
@@ -21,7 +20,7 @@
 /* !!! Add {OK} and {Proj} parameters. !!! */
 
 void minn_quad
-  ( int32_t n,        /* Dimension of search space. */
+  ( uint32_t n,        /* Dimension of search space. */
     minn_goal_t *F,   /* Function to be minimized. */
     bool_t box,       /* True to search in the unit cube, false in the unit ball. */
     double tol,       /* Desired precision. */
@@ -42,7 +41,7 @@ void minn_quad
       { 
         /* Optimize: */
         sign_t dir = -1; /* Look for minimum. */
-        int32_t maxIters = 10;
+        uint32_t maxIters = 10;
         double *ctr = NULL;        /* Search domain center is the origin. */
         double dMax = 1.0;         /* Search domain radius. */
         double rIni = 0.5;         /* Initial probe simplex radius. */

@@ -1,7 +1,6 @@
 /* See stmap.h */
-/* Last edited on 2023-02-21 21:34:10 by stolfi */
+/* Last edited on 2024-12-05 10:43:14 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>

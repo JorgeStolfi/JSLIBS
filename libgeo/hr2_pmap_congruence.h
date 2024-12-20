@@ -1,10 +1,9 @@
 /* Congruence maps in 2D oriented projective plane {\RT^2}. */
-/* Last edited on 2024-11-09 14:04:47 by stolfi */ 
+/* Last edited on 2024-12-05 10:26:56 by stolfi */ 
    
 #ifndef hr2_pmap_congruence_H
 #define hr2_pmap_congruence_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <sign.h>

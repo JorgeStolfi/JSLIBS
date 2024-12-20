@@ -1,10 +1,9 @@
 /* rn_classif_float_image.h --- paints float images of vector classifiers. */
-/* Last edited on 2020-10-11 02:05:31 by jstolfi */
+/* Last edited on 2024-12-05 10:24:22 by stolfi */
 
 #ifndef rn_classif_float_image_H
 #define rn_classif_float_image_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 

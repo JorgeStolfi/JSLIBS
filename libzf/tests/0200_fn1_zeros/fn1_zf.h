@@ -1,10 +1,9 @@
 /* AA test: finding the zeros of a 1-argument function. */
-/* Last edited on 2023-03-18 10:41:58 by stolfi */
+/* Last edited on 2024-12-05 10:41:10 by stolfi */
 
 #ifndef fn1_zf_H
 #define fn1_zf_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 

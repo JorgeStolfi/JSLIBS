@@ -1,7 +1,6 @@
 /* See {camfirewire_camera.h}. */
-/* Last edited on 2020-12-08 13:57:44 by jstolfi */
+/* Last edited on 2024-12-05 10:24:00 by stolfi */
 
-#define _GNU_SOURCE_
 #include <stdio.h>
 #include <stdlib.h>
 

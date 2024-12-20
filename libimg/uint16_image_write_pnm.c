@@ -1,5 +1,5 @@
 /* See uint16_image_write.h */
-/* Last edited on 2017-07-01 00:05:22 by stolfilocal */
+/* Last edited on 2024-12-04 23:38:04 by stolfi */
 
 #include <stdlib.h>
 #include <string.h>
@@ -28,7 +28,7 @@ void uint16_image_write_pnm_file(FILE *wr, uint16_image_t *img, bool_t forceplai
     bool_t bits; 
     pnm_choose_output_format(img->maxval, img->chns, forceplain, &format, &raw, &bits);
     pnm_write_header(wr, img->cols, img->rows, img->maxval, format);
-    int row;
+    int32_t row;
     for (row = 0; row < img->rows; row++)
       { pnm_write_pixels(wr, img->smp[row], img->cols, img->chns, img->maxval, raw, bits); }
     fflush(wr);

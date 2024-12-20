@@ -1,7 +1,6 @@
 /* See {btc_bubble_parms_read.h} */
-/* Last edited on 2023-10-14 23:05:42 by stolfi */
+/* Last edited on 2024-12-05 10:23:11 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

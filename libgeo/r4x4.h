@@ -1,10 +1,9 @@
 /* r4x4.h --- 4x4 matrices and operations on them */
-/* Last edited on 2024-11-20 13:00:10 by stolfi */
+/* Last edited on 2024-12-05 10:28:09 by stolfi */
 
 #ifndef r4x4_H
 #define r4x4_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

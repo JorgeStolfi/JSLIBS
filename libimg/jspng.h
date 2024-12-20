@@ -1,10 +1,9 @@
 /* {jspng.h} - definitions and tools for PNG image files.  */
-/* Last edited on 2017-06-23 00:28:44 by stolfilocal */
+/* Last edited on 2024-12-05 10:30:51 by stolfi */
 
 #ifndef jspng_H
 #define jspng_H
 
-#define _GNU_SOURCE
 #include <png.h>
 
 #define jspng_MAX_CHANS 4

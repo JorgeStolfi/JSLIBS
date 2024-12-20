@@ -1,5 +1,5 @@
 /* See float_image_interpolate.h */
-/* Last edited on 2024-11-23 05:57:33 by stolfi */ 
+/* Last edited on 2024-12-04 23:21:14 by stolfi */ 
 
 #include <limits.h>
 #include <float.h>
@@ -19,10 +19,10 @@
 
 void float_image_interpolate_get_samples_and_weights
   ( float_image_t *A, 
-    int c, 
+    int32_t c, 
     double x, 
     double y,
-    int m,
+    int32_t m,
     ix_reduce_mode_t red, 
     float *p[],
     double wx[],
@@ -38,14 +38,14 @@ void float_image_interpolate_get_samples_and_weights
 
 double float_image_interpolate_sample
   ( float_image_t *A, 
-    int c, 
+    int32_t c, 
     double x, 
     double y, 
-    int order, 
+    int32_t order, 
     ix_reduce_mode_t red
   )
   { 
-    int m = float_image_interpolate_compute_num_samples(order);
+    int32_t m = float_image_interpolate_compute_num_samples(order);
     
     /* Get pixel values and weights: */
     float *p[m*m];
@@ -55,7 +55,7 @@ double float_image_interpolate_sample
     
     /* Apply interpolation formula: */
     double sum = 0;
-    int kx, ky;
+    int32_t kx, ky;
     for (ky = 0; ky < m; ky++)
       { float **py = &(p[m*ky]);
         double sumy = 0;
@@ -72,11 +72,11 @@ void float_image_interpolate_pixel
   ( float_image_t *A, 
     double x, 
     double y, 
-    int order, 
+    int32_t order, 
     ix_reduce_mode_t red, 
     double z[]
   )
-  { int m = float_image_interpolate_compute_num_samples(order);
+  { int32_t m = float_image_interpolate_compute_num_samples(order);
     
     /* Get pixel values and weights: */
     float *p[m*m];
@@ -85,12 +85,12 @@ void float_image_interpolate_pixel
     float_image_interpolate_get_samples_and_weights(A, 0, x, y, m, red, p, wx, wy);
     
     /* Apply interpolation formula to all channels: */
-    int NC = A->sz[0];         /* Number of channels. */
+    int32_t NC = A->sz[0];         /* Number of channels. */
     ix_step_t cst = A->st[0];  /* Position increment between channels. */
-    int c;
+    int32_t c;
     for (c = 0; c < NC; c++)
       { double sum = 0;
-        int kx, ky;
+        int32_t kx, ky;
         for (ky = 0; ky < m; ky++)
           { float **py = &(p[m*ky]);
             double sumy = 0;
@@ -108,10 +108,10 @@ void float_image_interpolate_pixel
 
 void float_image_interpolate_grid_samples
   ( float_image_t *A, 
-    int c, 
-    double rx, int hx, double dx,
-    double ry, int hy, double dy,
-    int order, 
+    int32_t c, 
+    double rx, int32_t hx, double dx,
+    double ry, int32_t hy, double dy,
+    int32_t order, 
     ix_reduce_mode_t red,
     double z[]
   )
@@ -119,8 +119,8 @@ void float_image_interpolate_grid_samples
     /* Slow but safe interpolation: */
     demand(hx >= 0, "invalid X grid size");
     demand(hy >= 0, "invalid Y grid size");
-    int jx, jy;
-    int jxy = 0;
+    int32_t jx, jy;
+    int32_t jxy = 0;
     for (jy = -hy; jy <= +hy; jy++)
       { double y = ry + jy * dy;
         for (jx = -hx; jx <= +hx; jx++)
@@ -133,9 +133,9 @@ void float_image_interpolate_grid_samples
   
 void float_image_interpolate_grid_pixels
   ( float_image_t *A, 
-    double rx, int hx, double dx,
-    double ry, int hy, double dy,
-    int order, 
+    double rx, int32_t hx, double dx,
+    double ry, int32_t hy, double dy,
+    int32_t order, 
     ix_reduce_mode_t red, 
     double z[]
   )  
@@ -143,9 +143,9 @@ void float_image_interpolate_grid_pixels
     /* Slow but safe interpolation: */
     demand(hx >= 0, "invalid X grid size");
     demand(hy >= 0, "invalid Y grid size");
-    int NC = A->sz[0];         /* Number of channels. */
-    int jx, jy;
-    int jxy = 0;
+    int32_t NC = A->sz[0];         /* Number of channels. */
+    int32_t jx, jy;
+    int32_t jxy = 0;
     for (jy = -hy; jy <= +hy; jy++)
       { double y = ry + jy * dy;
         for (jx = -hx; jx <= +hx; jx++)
@@ -160,28 +160,28 @@ void float_image_interpolate_grid_pixels
   
 void float_image_interpolate_get_samples_and_weights
   ( float_image_t *A, 
-    int c, 
+    int32_t c, 
     double x, 
     double y,
-    int m, 
+    int32_t m, 
     ix_reduce_mode_t red, 
     float *p[],
     double wx[],
     double wy[]
   )
   {
-    int ix[m];
+    int32_t ix[m];
     float_image_interpolate_get_indices_and_weights(x, A->sz[1], m, red, ix, wx);
     
-    int iy[m];
+    int32_t iy[m];
     float_image_interpolate_get_indices_and_weights(y, A->sz[2], m, red, iy, wy);
       
-    int k = 0;
-    int dx, dy;
+    int32_t k = 0;
+    int32_t dx, dy;
     for (dy = 0; dy < m; dy++)
-      { int iyk = iy[dy];
+      { int32_t iyk = iy[dy];
         for (dx = 0; dx < m; dx++)
-          { int ixk = ix[dx];
+          { int32_t ixk = ix[dx];
             p[k] = ((ixk < 0) || (iyk < 0) ? NULL : float_image_get_sample_address(A, c, ixk, iyk));
             k++;
           }

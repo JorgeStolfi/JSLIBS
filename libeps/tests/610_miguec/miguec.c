@@ -1,7 +1,6 @@
 /* Control schematic of the Mazoni-Zabini IG-UNICAMP multifocus microscope */
-/* Last edited on 2024-06-22 17:41:33 by stolfi */
+/* Last edited on 2024-12-05 10:18:03 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -137,7 +136,7 @@ void miguec_draw_diagram(char *fname)
     miguec_draw_arrow(epsf, 4, xv, yv, xText, yText, "light ctl", 0,0,NULL);
 
     int32_t aN = 6; /* Number of light arrows. */
-    for (uint32_t k = 0;  k < aN; k++) 
+    for (int32_t k = 0;  k < aN; k++) 
       { if ((k < 3) || (k == aN-1))
           { double dy = 2*yADisp*(1 - 2*((double)k)/((double)aN-1));
             xv[0] = xBMin + 2*xBStep + 0.5*xBSize, yv[0] = yBMin + 2*yBStep + dy;

@@ -1,10 +1,9 @@
 /* rmxn_spin.h --- applying random rotations to matrices */
-/* Last edited on 2024-11-20 13:06:06 by stolfi */
+/* Last edited on 2024-12-05 10:28:39 by stolfi */
 
 #ifndef rmxn_spin_H
 #define rmxn_spin_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 void rmxn_spin_rows(uint32_t m, uint32_t n, double A[], double M[]);

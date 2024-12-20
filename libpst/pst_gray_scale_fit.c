@@ -1,5 +1,5 @@
 /* See pst_gray_scale_fit.h */
-/* Last edited on 2023-02-26 03:52:07 by stolfi */
+/* Last edited on 2024-12-01 00:26:31 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -13,7 +13,7 @@
 #include <r3.h> 
 #include <r3x3.h> 
 #include <rn.h> 
-#include <gauss_elim.h> 
+#include <gausol_solve.h> 
 #include <qmin_simplex.h> 
 #include <affirm.h>
 #include <argparser.h>
@@ -940,7 +940,7 @@ void pgsf_solve_lsq_system(int n, double A[], double b[], bool_t nonneg, double 
     if (nonneg) 
       { qms_quadratic_min(n, A, b, z); }
     else
-      { int32_t r = gauss_elim_solve(n, n, A, 1, b, z, 0.0);
+      { int32_t r = gausol_solve(n, n, A, 1, b, z, TRUE,TRUE, 0.0, NULL,NULL);
         demand(r == n, "indeterminate system");
       }
 

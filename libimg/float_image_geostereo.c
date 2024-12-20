@@ -1,5 +1,5 @@
 /* See {float_image_geostereo.h}. */
-/* Last edited on 2024-11-23 05:54:48 by stolfi */
+/* Last edited on 2024-12-05 00:46:05 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -37,7 +37,7 @@ void float_image_geostereo_single_pixel_best
     if (debug) { fprintf(stderr, "  === pixel_best x = %d  y = %d ===\n", x, y); }
             
     /* Initialize the queue: */
-    for (uint32_t k = 0;  k < ncands; k++) { dbest[k] = -INF; sbest[k] = +INF; }
+    for (int32_t k = 0;  k < ncands; k++) { dbest[k] = -INF; sbest[k] = +INF; }
     /* Enumerate displacements multiple of 1/3: */
     int32_t idmin = (int32_t)ceil(3.0*dmin*0.99999999);
     int32_t idmax = (int32_t)floor(3.0*dmax*1.00000001);
@@ -74,11 +74,11 @@ void float_image_geostereo_single_pixel_best
 double float_image_geostereo_single_disp_score
   ( float_image_t *f1,  /* Image 1. */
     float_image_t *f2,  /* Image 2. */
-    uint32_t x,         /* Column index in the map domain. */
-    uint32_t y,         /* Row index in the map domain. */
+    int32_t x,         /* Column index in the map domain. */
+    int32_t y,         /* Row index in the map domain. */
     double d,           /* Parallax displacement (pixels). */
-    uint32_t nwx,       /* Window width. */
-    uint32_t nwy,       /* Window height. */
+    int32_t nwx,       /* Window width. */
+    int32_t nwy,       /* Window height. */
     double wt[],        /* Window weights. */
     bool_t debug,       /* TRUE to debug the computations. */
     double smp1[],      /* (WORK) Buffer for window samples of image 1. */
@@ -114,10 +114,10 @@ double float_image_geostereo_single_disp_score
 double float_image_geostereo_compute_score
   ( double smp1[], 
     double smp2[], 
-    uint32_t nwx, 
-    uint32_t nwy, 
+    int32_t nwx, 
+    int32_t nwy, 
     double wt[],
-    uint32_t NC
+    int32_t NC
   )
   { 
     /* Compute discrepancy, ignoring missing samples: */
@@ -125,10 +125,10 @@ double float_image_geostereo_compute_score
     double sum_w = 1.0e-200; /* To prevent divide by zero if all are {NAN}. */
     int32_t icxy = 0;  /* Sequential sample index. */
     int32_t kw = 0; /* Index of next elem of weight table. */
-    for (uint32_t iy = 0;  iy < nwy; iy++) 
-      { for (uint32_t ix = 0;  ix < nwx; ix++) 
+    for (int32_t iy = 0;  iy < nwy; iy++) 
+      { for (int32_t ix = 0;  ix < nwx; ix++) 
           { double w = wt[kw];
-            for (uint32_t ic = 0;  ic < NC; ic++) 
+            for (int32_t ic = 0;  ic < NC; ic++) 
               { /* Get the two samples: */
                 double s1 = smp1[icxy];
                 bool_t ok1 = (!isnan(s1)) && (fabs(s1) != INF);
@@ -152,11 +152,11 @@ double float_image_geostereo_compute_score
 
 void float_image_geostereo_get_samples
   ( float_image_t *f,   /* Pixel row buffer for image 1. */
-    uint32_t x,         /* Reference column index. */
-    uint32_t y,         /* Reference row index. */
+    int32_t x,         /* Reference column index. */
+    int32_t y,         /* Reference row index. */
     double d,           /* Horizontal displacement (pixels, fractional). */
-    uint32_t nwx,       /* Window width. */
-    uint32_t nwy,       /* Window height. */
+    int32_t nwx,       /* Window width. */
+    int32_t nwy,       /* Window height. */
     double smp[]         /* (OUT) Window sample buffer. */
   )
   { 
@@ -174,18 +174,18 @@ void float_image_geostereo_get_samples
 
 void float_image_geostereo_debug_window
   ( double smp[],
-    uint32_t nwx,       /* Window width. */
-    uint32_t nwy,       /* Window height. */
-    uint32_t NC         /* Channel count. */
+    int32_t nwx,       /* Window width. */
+    int32_t nwy,       /* Window height. */
+    int32_t NC         /* Channel count. */
   )
   {
     int32_t k = 0; /* Next element in {smp} array. */
     fprintf(stderr, "\n");
-    for (uint32_t y = 0;  y < nwy; y++)
+    for (int32_t y = 0;  y < nwy; y++)
       { fprintf(stderr, "    ");
-        for (uint32_t x = 0;  x < nwx; x++)
+        for (int32_t x = 0;  x < nwx; x++)
           { fprintf(stderr, " ");
-            for (uint32_t c = 0;  c < NC; c++) 
+            for (int32_t c = 0;  c < NC; c++) 
               { fprintf(stderr, " %7.3f", smp[k]); k++; }
           }
         fprintf(stderr, "\n");
@@ -209,7 +209,7 @@ int32_t float_image_geostereo_queue_insert(double d, double s, int32_t nq, doubl
 
 void float_image_geostereo_queue_dump(int32_t nq, double dq[], double sq[])
   { fprintf(stderr, "  best candidates:\n");
-    for (uint32_t rk = 0;  rk < nq; rk++)
+    for (int32_t rk = 0;  rk < nq; rk++)
       { double d = dq[rk];
         double s = sq[rk];
         if (! isnan(d))

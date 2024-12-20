@@ -1,10 +1,9 @@
 /* An inrernal k-d-tree node that divides the domain betwee two nodes. */
-/* Last edited on 2021-07-16 12:41:05 by jstolfi */
+/* Last edited on 2024-12-05 10:32:58 by stolfi */
 
 #ifndef kdtom_split_H
 #define kdtom_split_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

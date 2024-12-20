@@ -1,5 +1,5 @@
 /* see r2_extra.h */
-/* Last edited on 2024-11-21 02:12:50 by stolfi */
+/* Last edited on 2024-12-01 10:20:44 by stolfi */
 
 #include <stdint.h>
 #include <math.h>
@@ -16,18 +16,26 @@
 
 void r2_map_projective(r2_t *p, r3x3_t *M, r2_t *q, r2x2_t *J)
   { 
+    bool_t debug = FALSE;
+    if (debug) { fprintf(stderr, "!! > %s\n", __FUNCTION__); }
+    if (debug) { fprintf(stderr, "!! M ="); r3x3_print(stderr, M); fputc('\n',stderr); }
+    if (debug) { fprintf(stderr, "!! p = "); r2_print(stderr, p); fputc('\n',stderr); }
+    
     /* If {p} is already invalid, return it: */
     if (isnan(p->c[0]) || isnan(p->c[1])) { (*q) = (*p); return; }
     
     /* Convert {p} to homogeneous coordinates {hp}: */
     r3_t hp = (r3_t) {{ 1.0, p->c[0], p->c[1] }}; 
+    if (debug) { fprintf(stderr, "!! hp = "); r3_print(stderr, &hp); fputc('\n',stderr); }
 
     /* Map {hp} to {hq}, get the homogeneous coordinates {qw,qx,qy}: */
     r3_t hq;
     r3x3_map_row(&hp, M, &hq);
+    if (debug) { fprintf(stderr, "!! hq = "); r3_print(stderr, &hq); fputc('\n',stderr); }
     double qw = hq.c[0]; 
     double qx = hq.c[1]; 
     double qy = hq.c[2]; 
+    if (debug) { fprintf(stderr, "!! hq = [ %24.16e  %24.16e  %24.16e ]\n", qw,qx,qy); }
     
     /* Check for validity of result: */
     if (qw <= 0.0)
@@ -39,6 +47,7 @@ void r2_map_projective(r2_t *p, r3x3_t *M, r2_t *q, r2x2_t *J)
       { /* Compute the Cartesian coordinates {qX,qY} of {q}: */
         double qX = qx/qw; 
         double qY = qy/qw;
+        if (debug) { fprintf(stderr, "!! q = ( %24.16e  %24.16e )\n", qX, qY); }
         
         /* Update the given point {p}: */
         q->c[0] = qX; q->c[1] = qY;
@@ -48,6 +57,8 @@ void r2_map_projective(r2_t *p, r3x3_t *M, r2_t *q, r2x2_t *J)
             double dqw_dpX = M->c[1][0], dqw_dpY = M->c[2][0];
             double dqx_dpX = M->c[1][1], dqx_dpY = M->c[2][1];
             double dqy_dpX = M->c[1][2], dqy_dpY = M->c[2][2];
+            if (debug) { fprintf(stderr, "!! dhq/dpX = [ %24.16e  %24.16e  %24.16e ]\n", dqw_dpX, dqx_dpX, dqy_dpX); }
+            if (debug) { fprintf(stderr, "!! dhq/dpY = [ %24.16e  %24.16e  %24.16e ]\n", dqw_dpY, dqx_dpY, dqy_dpY); }
 
             /* Compute the Jacobian {K} of {q} (Cartesian) w.r.t {p} (Cartesian): */
             r2x2_t K;
@@ -60,6 +71,7 @@ void r2_map_projective(r2_t *p, r3x3_t *M, r2_t *q, r2x2_t *J)
             r2x2_mul(J, &K, J);
           }
       }
+    if (debug) { fprintf(stderr, "!! < %s\n", __FUNCTION__); }
   }
 
 void r2_map_radial(r2_t *p, r2_t *h, double kappa, r2x2_t *J)
@@ -365,16 +377,15 @@ void r2_debug_point_jacobian(char *label, r2_t *p, r2x2_t *J, char *tail)
 void r2_map_compute_numeric_jacobian(r2_t *p, r2_map_jacobian_t *map, double step, r2x2_t *K, bool_t debug)
   {
     /* Check the partial derivatives numerically: */
-    for (uint32_t i = 0;  i < 2; i++)
+    for (uint32_t i = 0; i < 2; i++)
       { /* Evaluate {map} at points {q[0..1]} , displaced from {p} along axis {i}: */
         r2_t q[2];
-        for (uint32_t k = 0;  k < 2; k++)
-          { r2_t pk = (*p); 
-            pk.c[i] += (2*k - 1)*step;
+        for (uint32_t k = 0; k < 2; k++)
+          { r2_t pk = (*p);
+            pk.c[i] += (2*(int32_t)k - 1)*step;
+            if (debug) { r2_debug_point_jacobian("    pk(1)", &pk, NULL, ""); }
             r2_t *qk = &(q[k]);
-            (*qk) = pk;
-            map(qk, NULL);
-            if (debug) { r2_debug_point_jacobian("    pk", &pk, NULL, ""); }
+            (*qk) = pk; map(qk, NULL);
             if (debug) { r2_debug_point_jacobian("  qk", qk, NULL, "\n"); }
             if (isnan(qk->c[0]) || isnan(qk->c[1])) 
               { (*K) = (r2x2_t){{{ NAN, NAN}, {NAN, NAN}}};
@@ -391,29 +402,35 @@ void r2_map_compute_numeric_jacobian(r2_t *p, r2_map_jacobian_t *map, double ste
 
 void r2_map_check_jacobian(r2_t *p, r2_map_jacobian_t *map, char *mapname, double eps, bool_t debug)
   {
-    if (debug) { fprintf(stderr, "    checking the Jacobian ...\n"); }
+    if (debug) { fprintf(stderr, "    checking the Jacobian of %s ...\n", mapname); }
+    if (debug) { fprintf(stderr, "!! p =  "); r2_print(stderr, p); fputc('\n', stderr); }
     /* Generate a `random' invertible matrix {M} to be the prior Jacobian: */
     r2x2_t M = (r2x2_t){{{ 3.14, 2.17 }, { -7.0, 1.41 }}};
+    /* r2x2_t M = (r2x2_t){{{ 1, 0 }, { 0, 1 }}}; */
     /* Append to {M} the analytic Jacobian of {map}: */
     r2x2_t J = M;
     r2_t pt = (*p);
+    if (debug) { fprintf(stderr, "!! J before "); r2x2_print(stderr, &J); fputc('\n', stderr); }
     map(&pt, &J);
+    if (debug) { fprintf(stderr, "!! J after  "); r2x2_print(stderr, &J); fputc('\n', stderr); }
     /* Remove the prior Jacobian from {J}: */
+    if (debug) { fprintf(stderr, "!! M dir    "); r2x2_print(stderr, &M); fputc('\n', stderr); }
     r2x2_inv(&M, &M);
+    if (debug) { fprintf(stderr, "!! M inv    "); r2x2_print(stderr, &M); fputc('\n', stderr); }
     r2x2_mul(&M, &J, &J);
+    if (debug) { fprintf(stderr, "!! J pure   "); r2x2_print(stderr, &J); fputc('\n', stderr); }
     /* Get the magnitude {mag_J} of the Jacobian: */
     double mag_J = fabs(J.c[0][0]) + fabs(J.c[0][1]) + fabs(J.c[1][0]) + fabs(J.c[1][1]); 
-    if (mag_J < 1.0e-100) { return; }
+    if (mag_J < 1.0e-180) { return; }
     /* Get the magnitude {mag_p} of {p}: */
     double mag_p = fabs(p->c[0]) + fabs(p->c[1]);
     /* Choose a small enough step ... */
-    double step = eps*mag_p/(mag_J < 1 ? 1 : mag_J);
-    /* ... but not too small: */
-    if (step <  1.0e-6*mag_p) { step = 1.0e-6*mag_p; }
+    double mag = mag_p/hypot(1.0, mag_J);
+    double step = hypot(eps*mag, 1.0e-7);
+    if (debug) { fprintf(stderr, "    step = %14.6e\n", step); }
     /* Compute the numeric Jacobian: */
     r2x2_t K;
     r2_map_compute_numeric_jacobian(p, map, step, &K, debug);
-    if (debug) { fprintf(stderr, "    step = %14.6e\n", step); }
     /* Establish a limit for the relative error: */
     double tol = 1.0e-4;
     /* Check the partial derivatives numerically: */

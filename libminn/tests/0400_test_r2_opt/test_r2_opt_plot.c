@@ -1,7 +1,6 @@
 /* See {test_r2_opt_plot.h}. */
-/* Last edited on 2023-02-27 10:39:11 by stolfi */
+/* Last edited on 2024-12-05 10:35:01 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

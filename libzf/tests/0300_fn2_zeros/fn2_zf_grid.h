@@ -1,10 +1,9 @@
 /* Plots of zeros of a 2-ary function with uniform grid. */
-/* Last edited on 2023-02-18 09:24:21 by stolfi */ 
+/* Last edited on 2024-12-05 10:41:20 by stolfi */ 
 
 #ifndef fn2_zf_grid_H
 #define fn2_zf_grid_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

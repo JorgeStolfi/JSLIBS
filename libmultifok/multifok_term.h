@@ -1,10 +1,9 @@
 /* Quadratic operator terms for multi-focus stereo. */
-/* Last edited on 2024-10-15 17:03:56 by stolfi */
+/* Last edited on 2024-12-05 15:00:30 by stolfi */
 
 #ifndef multifok_term_H
 #define multifok_term_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 
@@ -49,8 +48,8 @@
 
 typedef struct multifok_term_prod_t
   { int32_t jb1; /* Index of first basis elem coeff. */
-    int32_t jb2; /* Index of first basis elem coeff. */
-    int32_t kt;  /* Index of term which this product belongs to. */
+    int32_t jb2; /* Index of second basis elem coeff. */
+    uint32_t kt;  /* Index of term which this product belongs to. */
     char *pname; /* Name (formula) of product, e.g. "FX*FX" of "Smm*Spp". */
   } multifok_term_prod_t;
   /* Record describing a product of two coeffs {coeff[jb1]*coeff[jb2]}
@@ -67,9 +66,9 @@ typedef struct multifok_term_prod_t
 typedef struct multifok_term_set_t 
   { /* Basis of linear window operators: */
     multifok_basis_t *basis;     /* Basis of linear window ops. */
-    int32_t NT;                  /* Number of quadratic terms to analyze. */
+    uint32_t NT;                  /* Number of quadratic terms to analyze. */
     char **termName;             /* Term names. */
-    int32_t NP;                  /* Number of basis coeff products in the quadratic terms. */
+    uint32_t NP;                  /* Number of basis coeff products in the quadratic terms. */
     multifok_term_prod_t *prix;  /* Mapping of basis element index pairs to terms. */
   } multifok_term_set_t;
   /* Tables describing a set of quadratic window operator terms that may be
@@ -96,12 +95,12 @@ void multifok_term_values_from_basis_coeffs
     {term[kt]}. As a sepcial case, if {jb1=jb2=-1}, adds 1.0 to
     {term[kt]}. */ 
 
-void multifok_term_set_names_write(FILE *wr, int32_t NT, char *termName[]);
+void multifok_term_set_names_write(FILE *wr, uint32_t NT, char *termName[]);
   /* Writes to {wr} the the term names (formulas) {termName[0..NT-1]}, one per line. */
  
 void multifok_term_set_names_write_named
   ( char *outPrefix, 
-    int32_t NT, 
+    uint32_t NT, 
     char *termName[]
   ); 
   /* Same as {multifok_term_set_write_names}, but 
@@ -161,7 +160,7 @@ void multifok_term_set_write_named(char *outPrefix, multifok_term_set_t *tset, b
 
 void multifok_term_set_product_table_write
   ( FILE *wr, 
-    int32_t NP,
+    uint32_t NP,
     multifok_term_prod_t *prix,
     bool_t verbose
   );
@@ -170,7 +169,7 @@ void multifok_term_set_product_table_write
 
 void multifok_term_set_product_table_write_named
   ( char *outPrefix, 
-    int32_t NP, 
+    uint32_t NP, 
     multifok_term_prod_t prix[],
     bool_t verbose
   );

@@ -1,5 +1,5 @@
 /* See {frgb_Y_slice.h}. */
-/* Last edited on 2023-03-07 01:35:28 by stolfi */ 
+/* Last edited on 2024-12-05 07:47:46 by stolfi */ 
 
 #include <stdint.h>
 #include <assert.h>
@@ -94,7 +94,7 @@ void frgb_Y_slice_corners(double z, int32_t *nf_P, frgb_t f[])
       { /* Eliminate consecutive corners that are repeated by roundoff: */
         int32_t nf_new = 0; /* Number of distinct corners. */
         f[nf_new] = f[0]; nf_new++;
-        for (uint32_t k = 1;  k < nf; k++)
+        for (int32_t k = 1;  k < nf; k++)
           { if (! frgb_eq(&(f[k]), &(f[nf_new-1])))
               { f[nf_new] = f[k]; nf_new++; }
           }

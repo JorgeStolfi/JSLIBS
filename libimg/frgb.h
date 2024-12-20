@@ -2,9 +2,8 @@
 #define frgb_H
 
 /* frgb.h - floating-point RGB color data type */
-/* Last edited on 2023-03-07 01:41:46 by stolfi */
+/* Last edited on 2024-12-05 10:30:18 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <limits.h>
 

@@ -1,5 +1,5 @@
 /* See {float_image_read_gen.h} */
-/* Last edited on 2020-11-06 00:27:22 by jstolfi */
+/* Last edited on 2024-12-20 17:48:38 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -9,6 +9,7 @@
 #include <math.h>
 
 #include <bool.h>
+#include <jsprintf.h>
 #include <affirm.h>
 #include <jsfile.h>
 #include <argparser.h>
@@ -20,6 +21,7 @@
 
 #include <ix.h>
 #include <sample_conv.h>
+#include <sample_conv_gamma.h>
 #include <float_image.h>
 #include <float_image_from_uint16_image.h>
 #include <frgb.h>
@@ -38,21 +40,20 @@ double float_image_read_gen_pick_parameter(const char *p_name, double p_given, d
 
 float_image_t *float_image_read_gen_frame
   ( const char *fpat,
-    int fnum,
+    int32_t fnum,
     image_file_format_t ffmt,
     float v0,           /* Output sample value corresponding to file sample value 0. */
     float vM,           /* Output sample value corresponding to max file sample value. */
     uint16_t **maxvalP, /* (OUT) Discrete nominal max value in file for each channel. */
-    double *gammaDecP,  /* (OUT) Gamma specified or implied in the input file. */
-    double *biasP,      /* (OUT) Bias parameter for gamma conversion, idem. */
+    double *expoDecP,   /* (OUT) Gamma decoding exponent specified/implied by input file. */
+    double *biasP,      /* (OUT) Gamma decoding bias, idem. */
     bool_t verbose      /* If true, prints some information about the file and conversion. */ 
   )
   {
     /* Insert the frame number in {fpat}: */
-    int nch = char *fname = jsprintf(fpat, fnum);
-    demand(nch > 0, "invalid file name pattern");
+    char *fname = jsprintf(fpat, fnum);
     /* Read the file: */
-    float_image_t *fimg = float_image_read_gen_named(fname, ffmt, v0, vM, maxvalP, gammaDecP, biasP, verbose);
+    float_image_t *fimg = float_image_read_gen_named(fname, ffmt, v0, vM, maxvalP, expoDecP, biasP, verbose);
     free(fname);
     return fimg;
   }
@@ -63,13 +64,13 @@ float_image_t *float_image_read_gen_named
     float v0,           /* Output sample value corresponding to file sample value 0. */
     float vM,           /* Output sample value corresponding to max file sample value. */
     uint16_t **maxvalP, /* (OUT) Discrete nominal max value in file for each channel. */
-    double *gammaDecP,  /* (OUT) Exponent of gamma-decoding specified or implied in the input file. */
-    double *biasP,      /* (OUT) Bias parameter for gamma conversion, idem. */
+    double *expoDecP,   /* (OUT) Gamma decoding exponent specified/implied by input file. */
+    double *biasP,      /* (OUT) Gamma decoding bias, idem. */
     bool_t verbose      /* If true, prints some information about the file and conversion. */ 
   )
   {
     FILE *rd = open_read(fname, verbose);
-    float_image_t *fimg = float_image_read_gen_file(rd, ffmt, v0, vM, maxvalP, gammaDecP, biasP, verbose);
+    float_image_t *fimg = float_image_read_gen_file(rd, ffmt, v0, vM, maxvalP, expoDecP, biasP, verbose);
     fclose(rd);
     return fimg;
   }
@@ -80,8 +81,8 @@ float_image_t *float_image_read_gen_file
     float v0,           /* Output sample value corresponding to file sample value 0. */
     float vM,           /* Output sample value corresponding to max file sample value. */
     uint16_t **maxvalP, /* (OUT) Discrete nominal max value in file for each channel. */
-    double *gammaDecP,  /* (OUT) Gamma specified or implied in the input file. */
-    double *biasP,      /* (OUT) Bias parameter for gamma conversion, idem. */
+    double *expoDecP,   /* (OUT) Gamma decoding exponent specified/implied by input file. */
+    double *biasP,      /* (OUT) Gamma decoding bias, idem. */
     bool_t verbose      /* If true, prints some information about the file and conversion. */ 
   )
   {   
@@ -89,7 +90,7 @@ float_image_t *float_image_read_gen_file
       { /* Read the image without any conversion: */
         float_image_t *fim = float_image_read(rd); 
         /* Check parameter ranges: */
-        if (gammaDecP != NULL) { (*gammaDecP) = NAN; }
+        if (expoDecP != NULL) { (*expoDecP) = NAN; }
         if (biasP != NULL) { (*biasP) = NAN; }
         if (maxvalP != NULL) { (*maxvalP) = NULL; }
         return fim;
@@ -97,7 +98,7 @@ float_image_t *float_image_read_gen_file
     
     /* Read the input file as a {uint16_image_t}, without any sample conversion: */
     uint16_image_t *pimg = NULL; /* The quantized image, read below. */
-    double gammaEnc_file = NAN; /* Encoding gamma specified by the file itself. */
+    double expoEnc_file = NAN; /* Encoding gamma specified by the file itself. */
     double bias_file = NAN; /* Encoding bias specified by the file itself. */    
     int32_t NC_MAX = 4; /* Max number of channels expected in image file, except FNI. */
     uint32_t maxval_file[NC_MAX]; 
@@ -109,16 +110,16 @@ float_image_t *float_image_read_gen_file
             /* At present, {uint16_image_read_jpeg_named} can suport only two kinds. */
             /* Revise the next line if {uint16_image_read_jpeg_named} is expanded to support other kinds. */
             assert((space == JCS_GRAYSCALE) || (space == JCS_RGB));
-            /* Use the client-given gamma for decoding: */
-            for (uint32_t c = 0;  c < pimg->chns; c++) { maxval_file[c] = 255; }
-            gammaEnc_file = NAN;
+            /* Use the client-given expo for decoding: */
+            for (int32_t c = 0;  c < pimg->chns; c++) { maxval_file[c] = 255; }
+            expoEnc_file = NAN;
             bias_file = NAN;
           }
           break;
 
         case image_file_format_PNG:
           { bool_t verbose_png = TRUE;
-            pimg = uint16_image_read_png_file (rd, &gammaEnc_file, maxval_file, verbose_png);
+            pimg = uint16_image_read_png_file (rd, &expoEnc_file, maxval_file, verbose_png);
             bias_file = NAN;
           } 
           break;
@@ -126,9 +127,9 @@ float_image_t *float_image_read_gen_file
         case image_file_format_PNM:
           { pimg = uint16_image_read_pnm_file(rd);
             /* Parameters that approximate the standard PNM ITU-R BT.709 decoding: */
-            for (uint32_t c = 0;  c < pimg->chns; c++) { maxval_file[c] = pimg->maxval; }
-            gammaEnc_file = sample_conv_BT709_ENC_GAMMA; 
-            bias_file = sample_conv_BT709_BIAS;
+            for (int32_t c = 0;  c < pimg->chns; c++) { maxval_file[c] = pimg->maxval; }
+            expoEnc_file = sample_conv_gamma_BT709_ENC_EXPO; 
+            bias_file = sample_conv_gamma_BT709_BIAS;
           }
           break;
 
@@ -142,16 +143,16 @@ float_image_t *float_image_read_gen_file
     demand((NC >= 1) && (NC <= 4), "invalid channel count in frame");
 
     /* Decide which exponent and bias should be used for gamma decoding: */
-    double gammaEnc = float_image_read_gen_pick_parameter("gamma", NAN, gammaEnc_file, sample_conv_BT709_ENC_GAMMA, verbose);
-    double bias =  float_image_read_gen_pick_parameter("bias",  NAN, bias_file,  sample_conv_BT709_BIAS, verbose);
+    double expoEnc = float_image_read_gen_pick_parameter("expo", NAN, expoEnc_file, sample_conv_gamma_BT709_ENC_EXPO, verbose);
+    double bias =  float_image_read_gen_pick_parameter("bias",  NAN, bias_file,  sample_conv_gamma_BT709_BIAS, verbose);
 
     /* Determine the range for the first decoding step, from {0..maxval} to {[eslo_eshi]}: */
     double vd = fmax(fabs(v0), fabs(vM));
-    double eslo = sample_conv_gamma((float)(v0/vd), gammaEnc, bias);
-    double eshi = sample_conv_gamma((float)(vM/vd), gammaEnc, bias);
+    double eslo = sample_conv_gamma((float)(v0/vd), expoEnc, bias);
+    double eshi = sample_conv_gamma((float)(vM/vd), expoEnc, bias);
     double slo[NC];      /* Low end of first mapping. */
     double shi[NC];      /* High end of first mapping. */
-    for (int c = 0; c < NC; c++) { slo[c] = eslo; shi[c] = eshi; }
+    for (int32_t c = 0; c < NC; c++) { slo[c] = eslo; shi[c] = eshi; }
     
     /* Convert to float image in the range {[eslo_eshi]}: */
     bool_t isMask = FALSE;          /* TRUE for masks, FALSE for images. */
@@ -163,14 +164,14 @@ float_image_t *float_image_read_gen_file
     uint16_image_free(pimg);
 
     /* Aplly gamma correction: */
-    for (int c = 0; c < NC; c++) 
+    for (int32_t c = 0; c < NC; c++) 
        { /* Apply gamma decoding: */
-         if (gammaEnc != 1.0) { float_image_apply_gamma(fimg, c, 1/gammaEnc, bias); }
+         if (expoEnc != 1.0) { float_image_apply_gamma(fimg, c, 1/expoEnc, bias); }
          /* Rescale samples from {[v0/vd _ vM/vd]} to {[v0 _ vM]}: */
          float_image_rescale_samples(fimg, c, 0.0f, 1.0f, 0.0f, (float)vd);
        }
 
-    if (gammaDecP != NULL) { (*gammaDecP) = 1/gammaEnc; }
+    if (expoDecP != NULL) { (*expoDecP) = 1/expoEnc; }
     if (biasP != NULL) { (*biasP) = bias; }
 
     return fimg;

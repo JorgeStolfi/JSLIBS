@@ -1,5 +1,5 @@
 /* See {float_image_align.h}. */
-/* Last edited on 2023-11-25 18:20:25 by stolfi */
+/* Last edited on 2024-12-04 23:20:57 by stolfi */
 
 #include <math.h>
 #include <limits.h>
@@ -25,7 +25,7 @@
 /* IMPLEMENTATIONS */
 
 ??void float_image_align_single_scale_enum
-  ( int ni,                   /* Number of objects to align. */
+  ( int32_t ni,                   /* Number of objects to align. */
     i2_t iscale,              /* Object scaling exponent along each axis. */  
     float_image_align_mismatch_t *f2,  /* Function that evaluates the mismatch between the objects. */
     r2_t arad[],              /* Max alignment adjustment for each object. */
@@ -35,8 +35,8 @@
   )
 
 void float_image_align_single_scale_enum
-  ( int ni,                            /* Number fo images to align. */
-    int scale,                         /* Image scale. */  
+  ( int32_t ni,                            /* Number fo images to align. */
+    int32_t scale,                         /* Image scale. */  
     float_image_align_mismatch_t *f2,  /* Function that evaluates the mismatch between the images. */
     r2_t rad[],                        /* Max alignment adjustment for each image. */
     r2_t step[],                       /* Granularity of alignment in each coordinate. */
@@ -49,9 +49,9 @@ void float_image_align_single_scale_enum
     
     r2_t p0[ni]; /* Saved initial guess. */
 
-    int nv = 2*ni; /* Number of variables in enumeration. */
-    int v[nv];     /* Enumeration variables. */
-    int r[nv];     /* Limits for the enumeration variables. */
+    int32_t nv = 2*ni; /* Number of variables in enumeration. */
+    int32_t v[nv];     /* Enumeration variables. */
+    int32_t r[nv];     /* Limits for the enumeration variables. */
     
      /* The enumeration variables {v[0..nv-1]} are the coordinates
       of the displacements from {p0[0..ni-1]} to {p[0..ni-1]},
@@ -59,11 +59,11 @@ void float_image_align_single_scale_enum
       is at most {r[k]} in absolute value. */
 
     /* Save {p0} and initialize {r,v}: */
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < ni; i++)
       { p0[i] = p[i];
         for (j = 0; j < 2; j++)
-          { int k = 2*i + j;
+          { int32_t k = 2*i + j;
             double rij = rad[i].c[j];
             demand(rij >= 0, "invalid search radius");
             if (rij == 0)
@@ -71,7 +71,7 @@ void float_image_align_single_scale_enum
             else
               { double sij = step[i].c[j];
                 demand(sij > 0, "invalid search step");
-                r[k] = (int)floor(rij/sij);
+                r[k] = (int32_t)floor(rij/sij);
               }
             v[k] = -r[k];
           }
@@ -82,7 +82,7 @@ void float_image_align_single_scale_enum
     r2_t pv[nv];     /* Trial alignment vector. */
     while (TRUE) 
       { /* Increment the next {v[k]} that can be incremented, reset previous ones to min: */
-        { int k = 0;
+        { int32_t k = 0;
           while ((k < nv) && (v[k] >= r[k])) { v[k] = -r[k]; k++; }
           if (k >= nv){ /* Done: */ return; }
           v[k]++;
@@ -90,7 +90,7 @@ void float_image_align_single_scale_enum
         /* Compute {pv} from {v} and evaluate the function: */
         for (i = 0; i < ni; i++)
           { for (j = 0; j < 2; j++)
-              { int k = 2*i + j;
+              { int32_t k = 2*i + j;
                 pv[i].c[j] = p0[i].c[j] + v[k]*step[i].c[j];
               }
           }
@@ -104,23 +104,23 @@ void float_image_align_single_scale_enum
   }
 
 void float_image_align_single_scale_quadopt
-  ( int ni,                            /* Number fo images to align. */
-    int scale,                         /* Image scale. */  
+  ( int32_t ni,                            /* Number fo images to align. */
+    int32_t scale,                         /* Image scale. */  
     float_image_align_mismatch_t *f2,  /* Function that evaluates the mismatch between the images. */
     r2_t rad[],                        /* Max alignment adjustment for each image. */
     r2_t p[],                          /* (IN/OUT) Corresponding points in each image. */
     double *f2p                        /* (OUT) Mismatch for the computed alignment vector. */
   )
   {
-    int maxIters = 10;
+    int32_t maxIters = 10;
     bool_t debug = TRUE;
     
     /* Trivial case: */
     if (ni <= 1) { return; }
     
     /* Find the number {nv} of variables to optimize: */
-    int nv = 0;
-    { int i, j; 
+    int32_t nv = 0;
+    { int32_t i, j; 
       for (i = 0; i < ni; i++) 
         { for (j = 0; j < 2; j++)
             { double rij = rad[i].c[j];
@@ -140,7 +140,7 @@ void float_image_align_single_scale_quadopt
 
         /* Save initial guess {p} in {p0}: */
         r2_t p0[ni]; /* Saved initial guess. */
-        { int i; for (i = 0; i < ni; i++) { p0[i] = p[i]; } }
+        { int32_t i; for (i = 0; i < ni; i++) { p0[i] = p[i]; } }
 
         /* These functions assume that the initial guess was saved in {p0[0..ni-1]}: */ 
 
@@ -150,7 +150,7 @@ void float_image_align_single_scale_quadopt
         auto void vars_to_points(double y[], r2_t q[]);
           /* Stores {y[0..nv-1]} into the active {q[0..ni-1]}, adding {p0[0..ni-1]}. */
 
-        auto double sve_goal(int nx, double x[]);
+        auto double sve_goal(int32_t nx, double x[]);
           /* Computes the minimization goal function from the given argument {x[0..nv-1]}.
             Expects {nx == nv}. Also sets {p[0..ni-1]}. */
 
@@ -179,8 +179,8 @@ void float_image_align_single_scale_quadopt
         /* Local implementations: */
 
         void points_to_vars(r2_t q[], double y[])
-          { int i, j;
-            int k = 0;
+          { int32_t i, j;
+            int32_t k = 0;
             for (i = 0; i < ni; i++)
               { for (j = 0; j < 2; j++)
                   { double rij = rad[i].c[j];
@@ -191,8 +191,8 @@ void float_image_align_single_scale_quadopt
           }
 
         void vars_to_points(double y[], r2_t q[])
-          { int i, j;
-            int k = 0;
+          { int32_t i, j;
+            int32_t k = 0;
             for (i = 0; i < ni; i++)
               { for (j = 0; j < 2; j++)
                   { double rij = rad[i].c[j];
@@ -202,7 +202,7 @@ void float_image_align_single_scale_quadopt
             assert(k == nv);
           }
 
-        double sve_goal(int nx, double x[])
+        double sve_goal(int32_t nx, double x[])
           { assert(nx == nv);
             /* Convert variables {x[0..nx-1]} to displacements {p[0..ni-1]}: */
             vars_to_points(x, p);
@@ -220,7 +220,7 @@ void float_image_align_single_scale_quadopt
   }
 
 void float_image_align_multi_scale
-  ( int ni,                            /* Number of images to align. */
+  ( int32_t ni,                            /* Number of images to align. */
     float_image_align_mismatch_t *f2,  /* Function that evaluates the mismatch between the images. */
     bool_t quadopt,                    /* Use quadratic optimization? */
     r2_t rad[],                        /* Max alignment adjustment along each axis. */
@@ -229,7 +229,7 @@ void float_image_align_multi_scale
   )
   {
     /* Find the maximum search radius: */
-    int i, j;
+    int32_t i, j;
     double rmax = 0;
     for (i = 0; i < ni; i++)
       { for (j = 0; j < 2; j++)
@@ -244,7 +244,7 @@ void float_image_align_multi_scale
     else
       { 
         /* Compute the initial scale {m} and its reduction factor {fscale}: */
-        int m = 0;
+        int32_t m = 0;
         double fscale = 1.0;
         while (rmax > 0.5) { m = m+1; rmax = rmax/2; fscale = fscale/2; }
         /* Reduce the problem to scale {m}: */
@@ -258,7 +258,7 @@ void float_image_align_multi_scale
               }
           }
         /* Now solve the problem at increasing scales: */
-        int s = m;
+        int32_t s = m;
         while(TRUE)
           { /* Solve the problem at scale {s}: */
             if (quadopt)
@@ -280,11 +280,11 @@ void float_image_align_multi_scale
       
   }
 
-double float_image_align_rel_disp_sqr(int ni, r2_t p[], int scale, r2_t q[], r2_t rad[])
+double float_image_align_rel_disp_sqr(int32_t ni, r2_t p[], int32_t scale, r2_t q[], r2_t rad[])
   {
     double d2 = 0.0;
     double fscale = pow(2.0, scale);
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < ni; i++)
       { for (j = 0; j < 2; j++)
           { double rij = rad[i].c[j];

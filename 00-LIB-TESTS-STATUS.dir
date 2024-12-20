@@ -1,4 +1,4 @@
-# Last edited on 2024-11-29 22:29:41 by stolfi
+# Last edited on 2024-12-05 22:27:54 by stolfi
 # Library tests to run, in priority order
 
 # + = OK.
@@ -6,55 +6,59 @@
 # ! = Buggy or needs to be written.
 # J = Junk or obsolete
 
-# ----------------------------------------------------------------------
+# --------------------------------------
 # Core libraries - used by many projects
 
-+ libjs/tests/105_test_jsdebug
-+ libjs/tests/110_test_jsmath
-+ libjs/tests/115_test_jsqroots
-+ libjs/tests/120_test_jsrandom
-+ libjs/tests/140_test_box
-+ libjs/tests/210_test_fget
-+ libjs/tests/220_test_ulist
-+ libjs/tests/230_test_indexing
-+ libjs/tests/240_test_now
-+ libjs/tests/250_test_sleep
-+ libjs/tests/260_test_sort
-+ libjs/tests/265_test_sort_speed
-+ libjs/tests/270_test_tbfind
-+ libjs/tests/280_test_pqueue
-+ libjs/tests/290_test_bvtable
-+ libjs/tests/310_test_hermite3
-+ libjs/tests/315_test_gauss_bell
-+ libjs/tests/317_test_gauss_distr
-+ libjs/tests/320_test_spline_interp
-+ libjs/tests/325_test_wt_table
-+ libjs/tests/330_test_gauss_table
-+ libjs/tests/340_test_wt_median
-+ libjs/tests/410_test_enum_orbits
-+ libjs/tests/530_test_codetree
-+ libjs/tests/540_test_codetree_huff
+? libjs/tests/105_test_jsdebug
+? libjs/tests/110_test_jsmath
+? libjs/tests/115_test_jsqroots
+? libjs/tests/120_test_jsrandom
+? libjs/tests/140_test_box
+? libjs/tests/210_test_fget
+? libjs/tests/220_test_ulist
+? libjs/tests/230_test_indexing
+? libjs/tests/240_test_now
+? libjs/tests/250_test_sleep
+? libjs/tests/260_test_sort
+? libjs/tests/265_test_sort_speed
+? libjs/tests/270_test_tbfind
+? libjs/tests/280_test_pqueue
+? libjs/tests/290_test_bvtable
+? libjs/tests/310_test_hermite3
+? libjs/tests/315_test_gauss_bell
+? libjs/tests/317_test_gauss_distr
+? libjs/tests/320_test_spline_interp
+? libjs/tests/325_test_wt_table
+? libjs/tests/330_test_gauss_table
+? libjs/tests/340_test_wt_median
+? libjs/tests/410_test_enum_orbits
+? libjs/tests/530_test_codetree
+? libjs/tests/540_test_codetree_huff
 
-+ libjsarray/tests/test_float_array
+? libjsarray/tests/test_float_array
 
 # libsexp ?
 
-+ libflt/tests/0050_fp_ieee
-+ libflt/tests/0100_fp
-+ libflt/tests/0200_flt
-+ libflt/tests/0300_flt_times
+? libflt/tests/0050_fp_ieee
+? libflt/tests/0100_fp
+? libflt/tests/0200_flt
+? libflt/tests/0300_flt_times
 
-+ libgausol/550_gausol_print
-+ libgausol/560_gausol_triang
-+ libgausol/570_gausol_solve
+? libgausol/550_gausol_print
+? libgausol/560_gausol_triang
+? libgausol/570_gausol_solve
 
-+ libgeo/tests/100_ellipse
++ libeigen/tests/100_sym_eigen_tred_tql
++ libeigen/tests/200_sym_eigen_tridiag
++ libeigen/tests/300_sym_eigen
+
+? libgeo/tests/100_ellipse
 + libgeo/tests/110_rn
-+ libgeo/tests/120_r2
-+ libgeo/tests/130_r3
-+ libgeo/tests/140_r4
-+ libgeo/tests/160_r6
-+ libgeo/tests/220_hr2
+? libgeo/tests/120_r2
+? libgeo/tests/130_r3
+? libgeo/tests/140_r4
+? libgeo/tests/160_r6
+? libgeo/tests/220_hr2
 ? libgeo/tests/223_hr2_pmap
 ? libgeo/tests/225_hr2_pmap_enc_dec
 ? libgeo/tests/230_hr3
@@ -62,8 +66,6 @@
 ? libgeo/tests/320_i2
 ? libgeo/tests/330_i3
 ? libgeo/tests/420_hi2
-? libgeo/tests/500_sym_eigen
-? libgeo/tests/510_gauss_elim
 ? libgeo/tests/610_rfn
 ? libgeo/tests/620_rf2
 ? libgeo/tests/630_rf3
@@ -80,22 +82,22 @@
 + libimg/tests/210_jspnm
 + libimg/tests/220_jspng
 + libimg/tests/230_jsjpeg
-+ libimg/tests/310_interpolate
+? libimg/tests/310_interpolate
 + libimg/tests/320_paint
-+ libimg/tests/330_test_images
-+ libimg/tests/335_waves
-+ libimg/tests/340_transform
-+ libimg/tests/350_misc_ops
-+ libimg/tests/360_image_window_op
-+ libimg/tests/370_image_mask
-+ libimg/tests/380_map_channels
-+ libimg/tests/410_hog
-+ libimg/tests/420_hartley
-+ libimg/tests/425_noise
-+ libimg/tests/430_spectrum_table
-+ libimg/tests/433_aff_extract
-+ libimg/tests/435_aff_compare
-+ libimg/tests/450_geostereo
+? libimg/tests/330_test_images
+? libimg/tests/335_waves
+? libimg/tests/340_transform
+? libimg/tests/350_misc_ops
+? libimg/tests/360_image_window_op
+? libimg/tests/370_image_mask
+? libimg/tests/380_map_channels
+? libimg/tests/410_hog
+? libimg/tests/420_hartley
+? libimg/tests/425_noise
+? libimg/tests/430_spectrum_table
+? libimg/tests/433_aff_extract
+? libimg/tests/435_aff_compare
+? libimg/tests/450_geostereo
 
 + libeps/tests/110_testfig
 + libeps/tests/210_testplot
@@ -106,119 +108,119 @@
 + libeps/tests/520_boap
 + libeps/tests/610_miguec
 
-+ liblsq/tests/0100_lsq
-+ liblsq/tests/0120_lsq_constr
-+ liblsq/tests/0130_lsq_robust
-+ liblsq/tests/0300_jspca
+? liblsq/tests/0100_lsq
+? liblsq/tests/0120_lsq_constr
+? liblsq/tests/0130_lsq_robust
+? liblsq/tests/0300_jspca
 
 # libapprox ?
 
-+ libminu/tests/0100_basic
+? libminu/tests/0100_basic
 
-+ libminn/tests/0100_test_sve_step
-+ libminn/tests/0150_test_sve_near_quadratic
-+ libminn/tests/0200_test_minn
-+ libminn/tests/0310_test_sve_catenary
-+ libminn/tests/0320_test_sve_blpulse
-+ libminn/tests/0340_test_sve_img_match
-+ libminn/tests/0350_test_sve_charges
-+ libminn/tests/0360_test_sve_polygauss
-+ libminn/tests/0400_test_r2_opt
-+ libminn/tests/1100_test_qmin_simplex
+? libminn/tests/0100_test_sve_step
+? libminn/tests/0150_test_sve_near_quadratic
+? libminn/tests/0200_test_minn
+? libminn/tests/0310_test_sve_catenary
+? libminn/tests/0320_test_sve_blpulse
+? libminn/tests/0340_test_sve_img_match
+? libminn/tests/0350_test_sve_charges
+? libminn/tests/0360_test_sve_polygauss
+? libminn/tests/0400_test_r2_opt
+? libminn/tests/1100_test_qmin_simplex
 
-# ----------------------------------------------------------------------
+# ----------------------------------------
 # Special projects
 
 ! libalign/tests/240_r2_align
 ! libalign/tests/242_r2_align_enum
 ! libalign/tests/244_r2_align_quadopt
 ! libalign/tests/246_r2_align_multiscale
-+ libalign/tests/310_hr2_pmap_special_opt
+? libalign/tests/310_hr2_pmap_special_opt
 ! libalign/tests/315_hr2_pmap_generic_opt
 ! libalign/tests/515_hr2_pmap_aff_from_point_pairs
 ! libalign/tests/520_hr2_pmap_from_many_pairs
 
 # libift ?
 
-+ libia/tests/110_iavalid
-+ libia/tests/310_iatimes
+? libia/tests/110_iavalid
+? libia/tests/310_iatimes
 
-+ libaa/tests/110_aavalid
-+ libaa/tests/210_aatests
-+ libaa/tests/310_aatimes
+? libaa/tests/110_aavalid
+? libaa/tests/210_aatests
+? libaa/tests/310_aatimes
 
-+ libaacmp/tests/0100_aa_compile
+? libaacmp/tests/0100_aa_compile
 
 # libaafuncs ?
 
 ! libaagraph/tests/fn1_graphs
 
-+ libzf/tests/0100_zf
-+ libzf/tests/0200_fn1_zeros
-+ libzf/tests/0300_fn2_zeros
+? libzf/tests/0100_zf
+? libzf/tests/0200_fn1_zeros
+? libzf/tests/0300_fn2_zeros
 
-+ libbbopt/tests/bbopt1
-+ libbbopt/tests/bbopt2
+? libbbopt/tests/bbopt1
+? libbbopt/tests/bbopt2
 
 # libmkgr ?
 
 # libjsaudio ?
 
-+ libquad/tests/0050_test_haf
-+ libquad/tests/0100_test_quad
-+ libquad/tests/0150_test_oct
-+ libquad/tests/0200_makeshape
+? libquad/tests/0050_test_haf
+? libquad/tests/0100_test_quad
+? libquad/tests/0150_test_oct
+? libquad/tests/0200_makeshape
 ! libquad/tests/0400_refine
-+ libquad/tests/0500_obj_file
+? libquad/tests/0500_obj_file
 ! libquad/tests/0550_haf_read_obj
 
-+ libdelaunay/tests/delgrid
-+ libdelaunay/tests/delrandom
+? libdelaunay/tests/delgrid
+? libdelaunay/tests/delrandom
 
-+ libpst/tests/test_expand_reduce_maps
+? libpst/tests/test_expand_reduce_maps
 
-+ libmultifok/tests/0050-raytrace
-+ libmultifok/tests/0100_scene_make_frame
+? libmultifok/tests/0050-raytrace
+? libmultifok/tests/0100_scene_make_frame
 ! libmultifok/tests/0150_show_basis
 ! libmultifok/tests/0180_diff_ops
-+ libmultifok/tests/0190_make_terms
-+ libmultifok/tests/0190_make_terms
-+ libmultifok/tests/0200_op_correl
-+ libmultifok/tests/0200_op_correl
+? libmultifok/tests/0190_make_terms
+? libmultifok/tests/0190_make_terms
+? libmultifok/tests/0200_op_correl
+? libmultifok/tests/0200_op_correl
 ! libmultifok/tests/0300_merge_images
 ! libmultifok/tests/0400_sort_stack
 
-+ libtosl/tests/0100_build_lists
-+ libtosl/tests/0150_mesh
-+ libtosl/tests/0170_mesh_make_ico
-+ libtosl/tests/0180_mesh_make_keg
-+ libtosl/tests/0200_mesh_slice
+? libtosl/tests/0100_build_lists
+? libtosl/tests/0150_mesh
+? libtosl/tests/0170_mesh_make_ico
+? libtosl/tests/0180_mesh_make_keg
+? libtosl/tests/0200_mesh_slice
 
-+ libspmat/tests/test_dspmat
+? libspmat/tests/test_dspmat
 ! libspmat/tests/test_dspmat_solve
 
 ! libdgraph/tests/test_dgraph_basic
 
-+ libgem/tests/00_basic
+? libgem/tests/00_basic
 
 ! libgmap/tests/00_basic
 
-+ libppv/tests/0100_ppv_test
+? libppv/tests/0100_ppv_test
 ! libppv/tests/0200_ppv_io_test
 ! libppv/tests/0300_ppv_image_test
 ! libppv/tests/0400_ppv_blur_test
-+ libppv/tests/0500_ppv_brush_test
+? libppv/tests/0500_ppv_brush_test
 
-+ libkdtom/tests/0100_test_kdtom
-+ libkdtom/tests/0200_test_kdtom_const
-+ libkdtom/tests/0300_test_kdtom_array
+? libkdtom/tests/0100_test_kdtom
+? libkdtom/tests/0200_test_kdtom_const
+? libkdtom/tests/0300_test_kdtom_array
 ! libkdtom/tests/0400_test_kdtom_split
 
-+ libarchdraw/tests/boar
+? libarchdraw/tests/boar
 ! libarchdraw/tests/boas
-+ libarchdraw/tests/ic12
-+ libarchdraw/tests/ic4a
-+ libarchdraw/tests/inet
+? libarchdraw/tests/ic12
+? libarchdraw/tests/ic4a
+? libarchdraw/tests/inet
 
 # libstreetmap ?
 
@@ -226,8 +228,8 @@
 
 ! libdicio/tests/rdag_test_basic
 
-+ libdrtree/tests/0100_plot
-+ libdrtree/tests/0200_lineage
+? libdrtree/tests/0100_plot
+? libdrtree/tests/0200_lineage
 
 # libstpoly ?
 
@@ -237,61 +239,61 @@
 
 ! libvoxb/tests/0100_test_voxb
 
-+ libmroc/tests/0100_mroc_basic
+? libmroc/tests/0100_mroc_basic
 
 # libcamfirewire ?
 
-+ libclassif/tests/test_nnclassif
+? libclassif/tests/test_nnclassif
 
-+ libmsmatch/tests/110_cands
-+ libmsmatch/tests/120_mapping
-+ libmsmatch/tests/220_refining
+? libmsmatch/tests/110_cands
+? libmsmatch/tests/120_mapping
+? libmsmatch/tests/220_refining
 
-+ libdnaenc/tests/005_coding
-+ libdnaenc/tests/007_seqio
+? libdnaenc/tests/005_coding
+? libdnaenc/tests/007_seqio
 ! libdnaenc/tests/010_filter
-+ libdnaenc/tests/011_interpolate
-+ libdnaenc/tests/012_fourier
+? libdnaenc/tests/011_interpolate
+? libdnaenc/tests/012_fourier
 
 # libdnaview ?
 
 # bibtc ?
 
 ! libintg/tests/cases
-+ libintg/tests/order
+? libintg/tests/order
 
 ! libtsai/tests/test_calib
-+ libtsai/tests/test_calib_guess
+? libtsai/tests/test_calib_guess
 ! libtsai/tests/test_calib_opt
-+ libtsai/tests/test_camera_plot
-+ libtsai/tests/test_povray_camera
+? libtsai/tests/test_camera_plot
+? libtsai/tests/test_povray_camera
 
 ! libbezier/tests/test_bz
 
 ! libpspulse/tests/test_pulse
 
 ! libneuro/tests/0200_test_poly_fit
-+ libneuro/tests/0250_test_shepard_1
-+ libneuro/tests/0300_test_image
-+ libneuro/tests/0350_test_eeg_image
+? libneuro/tests/0250_test_shepard_1
+? libneuro/tests/0300_test_image
+? libneuro/tests/0350_test_eeg_image
 
-+ libnmsim/tests/003_write_read
-+ libnmsim/tests/005_firing_func
-+ libnmsim/tests/110_class_neuron
-+ libnmsim/tests/120_class_synapse
-+ libnmsim/tests/150_class_net
-+ libnmsim/tests/210_group_neuron
-+ libnmsim/tests/220_group_synapse
-+ libnmsim/tests/250_group_net
-+ libnmsim/tests/310_elem_neuron
-+ libnmsim/tests/320_elem_synapse
-+ libnmsim/tests/350_elem_net
-+ libnmsim/tests/360_elem_net_group_stats
-+ libnmsim_e/tests/330_elem_neuron_trace
+? libnmsim/tests/003_write_read
+? libnmsim/tests/005_firing_func
+? libnmsim/tests/110_class_neuron
+? libnmsim/tests/120_class_synapse
+? libnmsim/tests/150_class_net
+? libnmsim/tests/210_group_neuron
+? libnmsim/tests/220_group_synapse
+? libnmsim/tests/250_group_net
+? libnmsim/tests/310_elem_neuron
+? libnmsim/tests/320_elem_synapse
+? libnmsim/tests/350_elem_net
+? libnmsim/tests/360_elem_net_group_stats
+? libnmsim_e/tests/330_elem_neuron_trace
 ! libnmsim_e/tests/355_elem_net_trace
 ! libnmsim_e/tests/360_elem_net_sim
-+ libnmsim_e/tests/410_elem_net_sim_stats
-+ libnmsim_e/tests/420_elem_neuron_trace_stats
+? libnmsim_e/tests/410_elem_net_sim_stats
+? libnmsim_e/tests/420_elem_neuron_trace_stats
 
 # ----------------------------------------------------------------------
 # For later:

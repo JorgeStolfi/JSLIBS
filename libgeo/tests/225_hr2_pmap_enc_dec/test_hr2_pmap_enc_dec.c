@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {hr2_pmap*_encode.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-20 15:35:17 by stolfi */ 
+/* Last edited on 2024-12-01 10:25:54 by stolfi */ 
 /* Created on 2024-09-07 by J. Stolfi, UNICAMP */
 
 #define test_hr2_pmap_enc_dec_COPYRIGHT \
@@ -426,7 +426,7 @@ void test_hr2_pmap_throw_by_type__hr2_pmap_is_type(bool_t verbose)
                 default:
                   demand(FALSE, "unimplemented map type");
               }
-            hr2_pmap_test_tools_check_perturbed(&M, &ok, &P, FALSE, "hr2_pmap_is_type");
+            hr2_pmap_test_tools_check_perturbed("M", &M, &ok, &P, FALSE, "hr2_pmap_is_type", verbose);
             return;
 
             bool_t ok(hr2_pmap_t *A)

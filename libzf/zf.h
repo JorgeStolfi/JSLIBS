@@ -2,9 +2,8 @@
 #define zf_H
 
 /* General interval-based zero finder for a 1-argument function. */
-/* Last edited on 2023-03-18 10:42:34 by stolfi */
+/* Last edited on 2024-12-05 10:41:34 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 

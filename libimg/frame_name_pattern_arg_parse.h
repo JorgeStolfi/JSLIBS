@@ -1,10 +1,9 @@
 /* Parsing a frame name pattern from command line args. */
-/* Last edited on 2017-06-21 22:59:09 by stolfilocal */
+/* Last edited on 2024-12-05 10:30:16 by stolfi */
 
 #ifndef frame_name_pattern_arg_parse_H
 #define frame_name_pattern_arg_parse_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 
 #include <argparser.h>

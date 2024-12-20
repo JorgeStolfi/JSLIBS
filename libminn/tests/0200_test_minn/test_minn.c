@@ -2,13 +2,12 @@
 #define PROG_DESC "test of {minn.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-01-10 17:57:17 by stolfi */ 
+/* Last edited on 2024-12-05 10:34:31 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define tmnn_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

@@ -2,9 +2,8 @@
 #define sheet_cut_write_H
  
 /* Writing out layouts of rectangular plates on sheet stock. */
-/* Last edited on 2019-12-08 13:26:34 by jstolfi */
+/* Last edited on 2024-12-05 10:40:15 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 

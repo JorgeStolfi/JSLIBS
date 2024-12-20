@@ -1,7 +1,6 @@
 /* See {multifok_result.h}. */
-/* Last edited on 2024-08-02 15:45:32 by stolfi */
+/* Last edited on 2024-12-05 10:36:12 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

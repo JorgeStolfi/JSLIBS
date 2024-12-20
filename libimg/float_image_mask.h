@@ -2,14 +2,14 @@
 #define float_image_mask_H
 
 /* Procedures to create mask images for convolution, filtering, etc.. */
-/* Last edited on 2010-06-19 16:20:33 by stolfi */ 
+/* Last edited on 2024-12-04 23:29:35 by stolfi */ 
 
 #include <bool.h>
 #include <float_image.h>
 
 /* BASIC CLIPPING MASKS */
 
-void float_image_mask_window(float_image_t *msk, int ic, int ord, bool_t round);
+void float_image_mask_window(float_image_t *msk, int32_t ic, int32_t ord, bool_t round);
   /* Fills channel {ic} of image {msk} with a basic rectangular or
     circular window mask, with specified continuity order at
     the boundary.
@@ -56,7 +56,7 @@ void float_image_mask_window(float_image_t *msk, int ic, int ord, bool_t round);
   
 void float_image_mask_mul_gauss
   ( float_image_t *msk, 
-    int ic, 
+    int32_t ic, 
     double sx, 
     double sy
   );
@@ -66,7 +66,7 @@ void float_image_mask_mul_gauss
     
 void float_image_mask_mul_power
   ( float_image_t *msk, 
-    int ic, 
+    int32_t ic, 
     double sx, 
     double sy, 
     double pwr
@@ -81,10 +81,10 @@ void float_image_mask_mul_power
 /* MASK PROPERTIES */
 
 typedef struct float_image_mask_stats_t
-  { int NX;            /* Number of pixel columns. */
-    int NY;            /* Number of pixel rows. */
-    int nINF;          /* Number of infinite samples. */
-    int nNAN;          /* Number of NAN samples. */
+  { int32_t NX;            /* Number of pixel columns. */
+    int32_t NY;            /* Number of pixel rows. */
+    int32_t nINF;          /* Number of infinite samples. */
+    int32_t nNAN;          /* Number of NAN samples. */
     double min;        /* Minimum sample value. */
     double max;        /* Max sample value. */               
     double avg;        /* Average of sample values. */       
@@ -130,7 +130,7 @@ typedef struct float_image_mask_stats_t
   {ctr[0..1]}. The sample with indices {ix,iy} is assumed to be a
   unit-side square centered at coordinates {(ix+0.5,iy+0.5)}. */
 
-float_image_mask_stats_t float_image_mask_stats_get(float_image_t *msk, int ic);
+float_image_mask_stats_t float_image_mask_stats_get(float_image_t *msk, int32_t ic);
   /* Computes some general properties of channel {ic} of image {msk},
     viewed as a weight mask. */
     

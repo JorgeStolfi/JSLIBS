@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {multifok_test_image_make.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-23 05:31:24 by stolfi */ 
+/* Last edited on 2024-12-16 12:49:29 by stolfi */ 
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
 #define test_mfok_scene_make_frame_COPYRIGHT \
@@ -18,7 +18,9 @@
 
 #include <affirm.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <argparser.h>
+#include <argparser_geo.h>
 #include <bool.h>
 #include <jsmath.h>
 #include <jsrandom.h>
@@ -55,10 +57,12 @@ typedef struct mfmi_options_t
   { int32_t imageSize_X;       /* Image width. */
     int32_t imageSize_Y;       /* Image height. */
     char *sceneType;           /* Scene type: "R", "F", "T", etc. */
-    int32_t pixSampling;       /* Number of sampling points per axis and pixel. */
-    int32_t dirSampling;       /* Min number of aperture rays per point. */
+    uint32_t pixSampling;      /* Number of sampling points per axis and pixel. */
+    uint32_t dirSampling;      /* Min number of aperture rays per point. */
     char *patternFile;         /* File name of pattern to use to paint objects. */
-    char *outDir;              /* Prefix for output filenames. */
+    r3_t *lightDir;            /* Light source direction, or {NULL}. */
+    double ambient;            /* Ambient light fraction. */
+    char *stackDir;            /* Parent folder for frames of the stack. */
     /* These parameters are specified in user units: */
     interval_t sceneSize[3];   /* Nominal coordinate ranges of scene. */
     double dephOfFocus;        /* Depth of focus. */
@@ -70,10 +74,7 @@ typedef struct mfmi_options_t
   
 #define PROG_OUTPUT_INFO \
   "  RUN DIRECTORY\n" \
-  "    The program writes all its output files to a folder \"{outDir}/{stackDir}\" where" \
-  " {stackDir} is \"st{sceneType}-{patternName}-{HHHH}x{VVVV}-hs{SS}-kr{RR}\", {HHHH} and" \
-  " {VVVV} are the image dimensions {NX} and {NY} formatted as \"%04d\", and {SS} and" \
-  " {RR} are the pixel and ray sampling orders {HS} and {KR} formatted as \"%02d\".\n" \
+  "    The program writes all its output files to a specified folder \"{stackDir}\".\n" \
   "\n" \
   "  FRAME DIRECTORIES\n" \
   "    " multifok_FRAME_DIR_INFO "\n" \
@@ -84,8 +85,8 @@ typedef struct mfmi_options_t
   "\n" \
   "  PIXEL V FOCUS PLOT FILES\n" \
   "\n" \
-  "    The program also writes to the run directory \"{outDir}/{stackDir}\" zero or more" \
-  " files \"pixel-values-{XXXX}-{YYYY}.txt\" where {XXXX} and {YYYY} are the column and" \
+  "    The program also writes to the run directory \"{stackDir}\" zero or more" \
+  " files \"pixel-data-{XXXX}-{YYYY}.txt\" where {XXXX} and {YYYY} are the column and" \
   " row indices {ix,iy} of a pixel that was selected for detailed debugging.  Each of" \
   " these files contain one line for each frame, excluding the sharp one.  Each line has" \
   " fields\n" \
@@ -100,7 +101,7 @@ typedef struct mfmi_options_t
   "\n" \
   "  RAY DATA FILES\n" \
   "\n" \
-  "    The program will also write in each frame directory \"{outDir}/{stackDir}/{framedir}\" zero" \
+  "    The program will also write in each frame directory \"{stackDir}/{framedir}\" zero" \
   " or more files \"pixel-rays-{XXXX}-{YYYY}.txt\" where {XXXX} and {YYYY} are the column" \
   " and row indices {ix,iy} of a selected debigging pixel, as above.  This file contains on" \
   "e line for each ray that was cast in order to compute the values of the frame images" \
@@ -128,7 +129,8 @@ multifok_scene_t *mfmi_make_scene
     interval_t dom[],
     int32_t NX,
     int32_t NY,
-    double zDep
+    double zDep,
+    bool_t verbose
   );
   /* Generates a test scene with disks, balls, and a back plane, roughly
     spanning the box {dom[0]×dom[1]×dom[2]} in scene coordinates.
@@ -147,19 +149,21 @@ multifok_scene_t *mfmi_make_scene
     projections of the disks and balls will often overlap. */
 
 multifok_stack_t *mfmi_make_and_write_stack
-  ( int32_t NX,
+  ( char *stackDir,
+    int32_t NX,
     int32_t NY, 
     multifok_scene_t *scene,
     char *patternFile,
+    r3_t *light_dir,
+    double ambient,
     double zFoc_min,
     double zFoc_max,
     double zFoc_step,
     double zDep,
-    int32_t HS,
-    int32_t KR,
-    int32_t NQ,
-    i2_t iDeb[],
-    char *stackDir
+    uint32_t HS,
+    uint32_t KR,
+    uint32_t NQ,
+    i2_t iDeb[]
   );
   /* Makes a stack of {NI} frames {fr[0..NI-1]} with simulated views of the {scene},
     where {NI} is {o->NI + 1}.  
@@ -179,44 +183,46 @@ multifok_stack_t *mfmi_make_and_write_stack
     
     Also writes debuging information about the rays used to compute the
     pixels {iDeb[0..NQ-1]}, to files called
-    "{outDir}/{stackDir}/{frameDir}/pixel-rays-{XXXX}-{YYYY}.txt", where
+    "{stackDir}/{frameDir}/pixel-rays-{XXXX}-{YYYY}.txt", where
     {XXXX,YYYY} are the pixel indices formatted as "%04d". Here
-    {stackDir} is
-    "st{sceneType}-{patternName}-{HHHH}x{VVVV}-hs{SS}-kr{RR}",
-    {frameDir} is as in {}, and. */
+    {stackDir} is as explained in {PROG_INFO}. */
 
 multifok_stack_t *mfmi_make_and_write_stack_from_pattern_function
-  ( int32_t NX,
+  ( char *stackDir,
+    int32_t NX,
     int32_t NY,
     multifok_scene_t *scene, 
     multifok_scene_raytrace_pattern_t *pattern,
+    r3_t *light_dir,
+    double ambient,
     double zFoc_min,
     double zFoc_max,
     double zFoc_step,
     double zDep,
-    int32_t HS,
-    int32_t KR,
-    int32_t NQ,
-    i2_t iDeb[],
-    char *stackDir
+    uint32_t HS,
+    uint32_t KR,
+    uint32_t NQ,
+    i2_t iDeb[] 
   );
   /* Same as {mfmi_make_stack}, execpt that the scene is colorized
     with the given pattern function. */
 
 multifok_frame_t *mfmi_make_and_write_frame
-  ( int32_t NX, 
+  ( char *frameDir,
+    int32_t NX, 
     int32_t NY, 
     multifok_scene_t *scene,
     multifok_scene_tree_t *tree,
     multifok_scene_raytrace_pattern_t *pattern,
+    r3_t *light_dir,
+    double ambient,
     double zFoc,
     double zDep, 
-    int32_t HS,
-    int32_t KR, 
+    uint32_t HS,
+    uint32_t KR, 
     bool_t verbose,
-    int32_t NQ,
-    i2_t iDeb[],
-    char *frameDir
+    uint32_t NQ,
+    i2_t iDeb[]
   );
   /* Creates test images with size {NX,NY} showing the color, nominal
     blurring indicator, scene {Z} average, and scene {Z} deviation at each pixel
@@ -231,8 +237,9 @@ multifok_frame_t *mfmi_make_and_write_frame
 
 void mfmi_write_pixel_profiles
   ( multifok_stack_t *stack,
-    int32_t NQ,
+    uint32_t NQ,
     i2_t iDeb[],
+    multifok_scene_t *scene,
     char *stackDir
   );
   /* Given a list of {NQ} of pixels {iDeb[0..NQ-1]} in the 
@@ -252,8 +259,8 @@ void mfmi_select_debug_pixels
   ( int32_t NX,
     int32_t NY,
     multifok_scene_t *scene,
-    int32_t NQ_max,
-    int32_t *NQ_P,
+    uint32_t NQ_max,
+    uint32_t *NQ_P,
     i2_t **iDeb_P
   );
   /* Selects a certain number {NQ <= NQ_max} of pixel index pairs {iDeb[0..NQ-1]}.
@@ -266,8 +273,8 @@ float_image_t *mfmi_read_pattern_image(char *fname);
   /* Reads an image from file {fname}, to be used as pattern to paint the scene.
     If the image is in color, converts it to grayscale. */
     
-FILE *mfmi_open_pixel_plot_data_file(char *outDir);
-  /* Opens the file {outDir-pixplot.txt} for writing. */
+FILE *mfmi_open_pixel_plot_data_file(char *stackDir);
+  /* Opens the file "{stackDir}/pixplot.txt" for writing. */
 
 /* IMPLEMENTATIONS */
 
@@ -277,40 +284,37 @@ int32_t main (int32_t argc, char **argv)
     
     int32_t NX = o->imageSize_X;
     int32_t NY = o->imageSize_Y;
-    
-    mkdir(o->outDir, 0755); /* "-rwxr-xr-x" */
 
     /* Create the test scene: */
+    bool_t verbose_scene = FALSE;
     multifok_scene_t *scene = mfmi_make_scene
       ( o->sceneType, o->sceneSize,
         NX, NY, 
-        o->dephOfFocus
+        o->dephOfFocus, verbose_scene
       );
-    
-    /* Folder for this run: */
-    char *stackDir = o->outDir;
       
     /* Select the debugging pixels: */
-    int32_t NQ_max = 10;
-    int32_t NQ;
+    uint32_t NQ_max = 10;
+    uint32_t NQ;
     i2_t *iDeb;
     mfmi_select_debug_pixels(NX, NY, scene, NQ_max, &NQ, &iDeb);
 
     multifok_stack_t *stack = mfmi_make_and_write_stack
-      ( NX, NY, scene, o->patternFile, 
+      ( o->stackDir,
+        NX, NY, scene, o->patternFile, o->lightDir, o->ambient, 
         o->focusHeight_lo, o->focusHeight_hi, o-> focusHeight_step,
         o->dephOfFocus, o->pixSampling, o->dirSampling,
-        NQ, iDeb, stackDir
+        NQ, iDeb
       );
-    int32_t NI = stack->NI;
+    uint32_t NI = stack->NI;
  
     /* Write image showing selected pixels: */
     multifok_frame_t *fr_sharp = stack->frame[NI-1];
     assert(fr_sharp->zDep == +INF);
     float_image_t *bgrd = fr_sharp->sVal;
-    multifok_image_selected_pixels_write(NQ, iDeb, bgrd, stackDir);
-
-    mfmi_write_pixel_profiles(stack, NQ, iDeb, stackDir);
+    multifok_image_selected_pixels_write(NQ, iDeb, bgrd, o->stackDir);
+    
+    mfmi_write_pixel_profiles(stack, NQ, iDeb, scene, o->stackDir);
     
     return 0;
   }
@@ -320,10 +324,10 @@ multifok_scene_t *mfmi_make_scene
     interval_t dom[],
     int32_t NX,
     int32_t NY,
-    double zDep
+    double zDep,
+    bool_t verbose
   )
   {
-
     fprintf(stderr, "creating scene of type %s", sceneType); 
     /* Define the scene's domain: */
     for (uint32_t j = 0;  j < 3; j++)
@@ -356,11 +360,10 @@ multifok_scene_t *mfmi_make_scene
             minSep = -1.0;
           }
         else
-          { demand(FALSE, "invalid \"-sceneType\""); }
+          { demand(FALSE, "invalid scene type"); }
       }
 
     assert(floorOnly | flatFloor);
-    bool_t verbose = TRUE;
     multifok_scene_t *scene = multifok_scene_new(dom, verbose);
     /* Define the object radius range {rMin,rMax} (in scene units): */
     double WX = 2*interval_rad(&(dom[0]));
@@ -389,22 +392,27 @@ multifok_scene_t *mfmi_make_scene
   }
   
 multifok_stack_t *mfmi_make_and_write_stack
-  ( int32_t NX,
+  ( char *stackDir,
+    int32_t NX,
     int32_t NY, 
     multifok_scene_t *scene,
     char *patternFile,
+    r3_t *light_dir,
+    double ambient,
     double zFoc_min,
     double zFoc_max,
     double zFoc_step, 
     double zDep,
-    int32_t HS,
-    int32_t KR,
-    int32_t NQ,
-    i2_t iDeb[],
-    char *stackDir
+    uint32_t HS,
+    uint32_t KR,
+    uint32_t NQ,
+    i2_t iDeb[]
   )
   { 
     fprintf(stderr, "creating stack with zDep = %8.4f HS = %d KR = %d\n", zDep, HS, KR); 
+    fprintf(stderr, "zFoc varying from %8.4f to %8.4f step %8.4f\n", zFoc_min, zFoc_max, zFoc_step); 
+    r3_gen_print(stderr, light_dir, "%+8.5f", "light direction = ( ", " ", " )");
+    fprintf(stderr, " ambient = %6.4f\n", ambient); 
 
     /* Scene size and center in user units:  */
     r3_t size_scene, ctr_scene;
@@ -441,9 +449,10 @@ multifok_stack_t *mfmi_make_and_write_stack
         The image {pimg} is replicated to cover the whole plane. */
     
     multifok_stack_t *stack = mfmi_make_and_write_stack_from_pattern_function
-      ( NX, NY, scene, eval_pattern, 
+      ( stackDir,
+        NX, NY, scene, eval_pattern, light_dir, ambient,
         zFoc_min, zFoc_max, zFoc_step,
-        zDep, HS, KR, NQ, iDeb, stackDir
+        zDep, HS, KR, NQ, iDeb
       );
     
     return stack;
@@ -467,19 +476,21 @@ multifok_stack_t *mfmi_make_and_write_stack
   }
 
 multifok_stack_t *mfmi_make_and_write_stack_from_pattern_function
-  ( int32_t NX,
+  ( char *stackDir,
+    int32_t NX,
     int32_t NY, 
     multifok_scene_t *scene, 
     multifok_scene_raytrace_pattern_t *pattern,
+    r3_t *light_dir,
+    double ambient,
     double zFoc_min,
     double zFoc_max,
     double zFoc_step,
     double zDep,
-    int32_t HS,
-    int32_t KR,
-    int32_t NQ,
-    i2_t iDeb[],
-    char *stackDir
+    uint32_t HS,
+    uint32_t KR,
+    uint32_t NQ,
+    i2_t iDeb[] 
   ) 
   {
     int32_t debug_level = -1;
@@ -488,34 +499,39 @@ multifok_stack_t *mfmi_make_and_write_stack_from_pattern_function
     multifok_scene_check_object_IDs(scene->NO, scene->objs);
 
     /* Define the number of frames {NI} (including the sharp one): */
-    int32_t NI = (int32_t)floor((zFoc_max - zFoc_min)/zFoc_step + 0.0001) + 2;
+    uint32_t NI = (uint32_t)floor((zFoc_max - zFoc_min)/zFoc_step + 0.0001) + 2;
     
-    /* Generate the blurred image stack: */
+   /* Generate the blurred image stack: */
     multifok_stack_t *stack = multifok_stack_new(NI, 3,NX,NY);
+    char *frameDir = NULL;
     for (uint32_t ki = 0;  ki < NI; ki++)
       { double zFoc_fri, zDep_fri;
-        int32_t KR_fri; /* Rays to trace per image sampling point. */
+        uint32_t KR_fri; /* Rays to trace per image sampling point. */
         if (ki == NI-1)
           { /* Sharp frame: */
             zFoc_fri = zFoc_min + 0.5*NI*zFoc_step;
             zDep_fri = +INF;
-            KR_fri = 0;
-            char *frameDir = jsprintf("%s/frame-sharp", stackDir); 
+            KR_fri = 1;
+            frameDir = jsprintf("%s/sharp", stackDir); 
           }
         else
           { /* Blurred frame: */
             zFoc_fri = zFoc_min + ki*zFoc_step;
             zDep_fri = zDep;
             KR_fri = KR;
-            char *frameDir = jsprintf("%s/frame-zf%08.4f-df%08.4f", stackDir, zFoc_fri, zDep_fri); 
+            frameDir = jsprintf("%s/zf%08.4f-df%08.4f", stackDir, zFoc_fri, zDep_fri); 
           }
-        
-        mkdir(frameDir, 0755);
+
+        /* Create the frame's directory: */
+        char *mkdirCmd = jsprintf("mkdir -pv %s", frameDir);
+        system(mkdirCmd);
+        free(mkdirCmd);
+
         bool_t verbose = FALSE;
         multifok_frame_t *fri = mfmi_make_and_write_frame
-          ( NX, NY, scene, tree, pattern, 
+          ( frameDir, NX, NY, scene, tree, pattern, light_dir, ambient,
             zFoc_fri, zDep_fri, HS, KR_fri, verbose,
-            NQ, iDeb, frameDir
+            NQ, iDeb
           );
         free(frameDir);
           
@@ -525,36 +541,40 @@ multifok_stack_t *mfmi_make_and_write_stack_from_pattern_function
   }
 
 multifok_frame_t *mfmi_make_and_write_frame
-  ( int32_t NX, 
+  ( char *frameDir,
+    int32_t NX, 
     int32_t NY, 
     multifok_scene_t *scene,
     multifok_scene_tree_t *tree,
     multifok_scene_raytrace_pattern_t *pattern,
+    r3_t *light_dir,
+    double ambient,
     double zFoc,
     double zDep, 
-    int32_t HS,
-    int32_t KR, 
+    uint32_t HS,
+    uint32_t KR, 
     bool_t verbose,
-    int32_t NQ,
-    i2_t iDeb[],
-    char *frameDir
+    uint32_t NQ,
+    i2_t iDeb[]
   )
   {
     double pixSize = multifok_scene_pixel_size(NX, NY, scene->dom); 
     fprintf(stderr, "generating frame images for zFoc = %12.6f  zDep = %12.6f\n", zFoc, zDep);
     fprintf(stderr, "HS = %d KR = %d pixSize = %.6f\n", HS, KR, pixSize);
+    r3_gen_print(stderr, light_dir, "%+8.5f", "light direction = ( ", " ", " )");
+    fprintf(stderr, " ambient = %6.4f\n", ambient); 
 
-    auto bool_t debug_pix(i2_t *iPix);
+    auto bool_t debug_pixel(i2_t *iPix);
       /* A pixel debugging predicate suitable for 
-       the {debug_pix} argument of {multifok_raytrace_make_frame}.
-       It returns {TRUE} if {iPix} is equal or adjacent to
+       the {debug_pixel} argument of {multifok_raytrace_make_frame}.
+       It returns {TRUE} if {iPix} is equal to
        one of the pixels selected for debugging. */
 
     FILE *wr_ray = NULL;
     i2_t iPix_wr = (i2_t){{ -1, -1 }}; /* Pixel for which {wr_ray} was opened. */
         
     auto void report_ray
-      ( i2_t *iPix, r2_t *pSmp, double wSmp,
+      ( i2_t *iPix, i2_t *iSmp, double step, double wSmp,
         r3_t *pRay, r3_t *dRay, double wRay, 
         r3_t *pHit, double hHit, double vBlr
       );
@@ -567,8 +587,9 @@ multifok_frame_t *mfmi_make_and_write_frame
         {iPix} differs from {iPix_wr}. */
 
     multifok_frame_t *frame = multifok_scene_make_frame
-      ( NX, NY, scene, tree, pattern, zFoc, zDep, HS, KR, verbose, 
-        &debug_pix, &report_ray
+      ( NX, NY, scene, tree, pattern, light_dir, ambient,
+        zFoc, zDep, HS, KR, verbose, 
+        &debug_pixel, &report_ray, NULL
       );
       
     /* Write the frame out: */
@@ -578,8 +599,9 @@ multifok_frame_t *mfmi_make_and_write_frame
     
     return frame;
        
-    bool_t debug_pix(i2_t *iPix)
-      { bool_t deb = FALSE;
+    bool_t debug_pixel(i2_t *iPix)
+      { if (! verbose) { return FALSE; }
+        bool_t deb = FALSE;
         for (uint32_t kq = 0;  (kq < NQ) && (! deb); kq++)
           { bool_t debug_col = (iPix->c[0] == iDeb[kq].c[0]);
             bool_t debug_row = (iPix->c[1] == iDeb[kq].c[1]);
@@ -589,7 +611,7 @@ multifok_frame_t *mfmi_make_and_write_frame
       }
     
     void report_ray
-      ( i2_t *iPix, r2_t *pSmp, double wSmp,
+      ( i2_t *iPix, i2_t *iSmp, double step, double wSmp,
         r3_t *pRay, r3_t *dRay, double wRay, 
         r3_t *pHit, double hHit, double vBlr
       )
@@ -599,15 +621,13 @@ multifok_frame_t *mfmi_make_and_write_frame
             wr_ray = NULL;
           }
         if (wr_ray == NULL)
-          { char *fname_ray = NULL;
-            char *fname_ray = jsprintf("%s/pixel-rays-%04d-%04d.txt", frameDir, iPix->c[0], iPix->c[1]);
+          { char *fname_ray = jsprintf("%s/pixel-rays-%04d-%04d.txt", frameDir, iPix->c[0], iPix->c[1]);
             wr_ray = open_write(fname_ray, TRUE);
             free(fname_ray);
             iPix_wr = *iPix;
           }
-        fprintf(stderr, "        ");
-        multifok_raytrace_show_ray_data(stderr, iPix, pixSize, pSmp, wSmp, pRay, dRay, wRay, pHit, hHit, vBlr);
-        multifok_raytrace_write_ray_data(wr_ray, iPix, pixSize, pSmp, wSmp, pRay, dRay, wRay, pHit, hHit, vBlr);
+        multifok_raytrace_show_ray_data(stderr, 8, iPix, pixSize, iSmp, step, wSmp, pRay, dRay, wRay, pHit, hHit, vBlr);
+        multifok_raytrace_write_ray_data(wr_ray, iPix, pixSize, iSmp, step, wSmp, pRay, dRay, wRay, pHit, hHit, vBlr);
       }
   }
 
@@ -642,30 +662,30 @@ void mfmi_select_debug_pixels
   ( int32_t NX,
     int32_t NY,
     multifok_scene_t *scene,
-    int32_t NQ_max,
-    int32_t *NQ_P,
+    uint32_t NQ_max,
+    uint32_t *NQ_P,
     i2_t **iDeb_P
   )
   {
     bool_t verbose = TRUE;
     
     fprintf(stderr, "selecting plot pixels...\n");
-    int32_t NO = scene->NO; /* Number of objects inscene. */
+    uint32_t NO = scene->NO; /* Number of objects inscene. */
     
     /* Select the pixels: */
     i2_vec_t iDeb = i2_vec_new(NQ_max);
-    int32_t NQ = 0; /* Pixels actually selected. */
+    uint32_t NQ = 0; /* Pixels actually selected. */
     
     auto void selpix(double x_scene, double y_scene);
       /* Converts the point {(x_scene,y_scene)} from scene coordinates to
         a pair of pixel indices, and appends that pair to the list of sample pixels. */
     
     if (NO >= 2)
-      { int32_t NQ_exp = (NQ_max < NO-1 ? NQ_max : NO-1);
+      { uint32_t NQ_exp = (NQ_max < NO-1 ? NQ_max : NO-1);
         /* There is at least one foreground object. */
         /* Pick {NQ_exp} object centers, preferably disks. */
         /* Count the number of disks {NO_disk}: */
-        int32_t NO_disk = 0;
+        uint32_t NO_disk = 0;
         for (uint32_t ko = 0;  ko < NO; ko++)
           { multifok_scene_object_t *objk = &(scene->objs[ko]);
             if (objk->type == ot_DISK) { NO_disk++; }
@@ -673,13 +693,13 @@ void mfmi_select_debug_pixels
         bool_t disk_only = (NO_disk >= NQ_exp); /* TRUE if we can choose only disks. */
 
         /* The number of candidate objects remaining is {NO_rem}: */
-        int32_t NO_rem = (disk_only ? NO_disk : NO-1); 
+        uint32_t NO_rem = (disk_only ? NO_disk : NO-1); 
         for (uint32_t ko = 0;  ko < NO; ko++)
           { if ((NQ >= NQ_exp) || (NO_rem == 0)) { break; }
             multifok_scene_object_t *objk = &(scene->objs[ko]);
             if ((objk->type == ot_FLAT) || (objk->type == ot_RAMP)) { continue; }
             if ((! disk_only) || (objk->type == ot_DISK))
-              { int32_t NQ_rem = NQ_exp - NQ;  /* Number of pixels still to be selected. */
+              { uint32_t NQ_rem = NQ_exp - NQ;  /* Number of pixels still to be selected. */
                 double prpick = (NO_rem <= NQ_rem ? 1.0 : ((double)NQ_rem)/NO_rem);
                 if (drandom() < prpick) 
                   { r3_t ctr = multifok_scene_box_center(objk->bbox);
@@ -694,7 +714,7 @@ void mfmi_select_debug_pixels
         assert(NO == 1);
         multifok_scene_object_t *obj0 = &(scene->objs[0]);
         assert((obj0->type == ot_FLAT) || (obj0->type == ot_RAMP));
-        int32_t NQ_exp = (obj0->type == ot_FLAT ? 1 : 5); /* Redefine the goal... */
+        uint32_t NQ_exp = (obj0->type == ot_FLAT ? 1 : 5); /* Redefine the goal... */
         interval_t *xr = &(scene->dom[0]);
         interval_t *yr = &(scene->dom[1]);
         for (uint32_t kq = 0;  kq < NQ_exp; kq++)
@@ -727,8 +747,9 @@ void mfmi_select_debug_pixels
 
 void mfmi_write_pixel_profiles
   ( multifok_stack_t *stack,
-    int32_t NQ,
+    uint32_t NQ,
     i2_t iDeb[],
+    multifok_scene_t *scene,
     char *stackDir
   )
   { 
@@ -736,12 +757,15 @@ void mfmi_write_pixel_profiles
     int32_t NX = stack->NX;
     int32_t NY = stack->NY;
     
+    double pixSize = multifok_scene_pixel_size(NX, NY, scene->dom); 
+
     /* Get the sharp frame's scene view for background: */
-    int32_t NI = stack->NI;
+    uint32_t NI = stack->NI;
     
     for (uint32_t kq = 0;  kq < NQ; kq++)
-      { int32_t ix = iDeb[kq].c[0];
-        int32_t iy = iDeb[kq].c[1];
+      { i2_t *iPix = &(iDeb[kq]);
+        int32_t ix = iPix->c[0];
+        int32_t iy = iPix->c[1];
         
         if ((ix >= 0) && (ix < NX) && (iy >= 0) && (iy < NY))
           { 
@@ -752,16 +776,18 @@ void mfmi_write_pixel_profiles
             for (uint32_t ki = 0;  ki < NI; ki++)
               { multifok_frame_t *fri = stack->frame[ki];
                 if (isfinite(fri->zDep))
-                  { fprintf(wr, "%5d %10.6f %10.6f", ki, fri->zFoc, fri->zDep);
-                    float hAvg = float_image_get_sample(fri->hAvg, 0, ix, iy);
+                  { float hAvg = float_image_get_sample(fri->hAvg, 0, ix, iy);
                     float hDev = float_image_get_sample(fri->hDev, 0, ix, iy);
                     float shrp = float_image_get_sample(fri->shrp, 0, ix, iy);
-                    fprintf(wr, "  %10.6f %10.6f %12.8f ", hAvg, hDev, shrp);
-                    for (uint32_t ic = 0;  ic < 3; ic++)
-                      { int32_t icr = (ic < NC ? ic : 0);
-                        float sVal = float_image_get_sample(fri->sVal, icr, ix, iy);
-                        fprintf(wr, " %7.5f", sVal);
-                      }
+                    float colr[3];
+                    for (int32_t ic = 0;  ic < 3; ic++)
+                      { colr[ic] = (float)(ic < NC ? float_image_get_sample(fri->sVal, ic, ix, iy) : 0.0); }
+                    r3_t ctr = (r3_t){{ ix+0.5, iy+0.5, 0.0 }};
+                    r3_t pCtr = multifok_scene_coords_from_image_coords(&ctr, NX, NY, scene->dom, fri->zFoc);
+                    multifok_raytrace_write_pixel_data
+                      ( wr, iPix, pixSize, &pCtr, fri->zFoc, fri->zDep,
+                        shrp, hAvg, hDev, NC, colr
+                      );
                     fprintf(wr, "\n");
                   }
               }
@@ -795,10 +821,10 @@ mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv)
     o->sceneType = argparser_get_next_non_keyword(pp);  
     
     argparser_get_keyword(pp, "-pixSampling");
-    o->pixSampling = (int32_t)argparser_get_next_int(pp, 0, 9999);  
+    o->pixSampling = (uint32_t)argparser_get_next_int(pp, 0, 9999);  
 
     argparser_get_keyword(pp, "-dirSampling");
-    o->dirSampling = (int32_t)argparser_get_next_int(pp, 1, 9999);  
+    o->dirSampling = (uint32_t)argparser_get_next_int(pp, 1, 9999);  
 
     argparser_get_keyword(pp, "-dephOfFocus");
     o->dephOfFocus = argparser_get_next_double(pp, 0.1, 1.0e200);  
@@ -812,9 +838,21 @@ mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv)
 
     argparser_get_keyword(pp, "-patternFile");
     o->patternFile = argparser_get_next(pp);
+    
+    argparser_get_keyword(pp, "-lightDir");
+    r3_t ldir = argparser_get_next_r3_dir(pp);
+    if (isnan(ldir.c[0]) || isnan(ldir.c[1]) || isnan(ldir.c[2]))
+      { o->lightDir = NULL; }
+    else
+      { o->lightDir = talloc(1, r3_t);
+        (*(o->lightDir)) = ldir;
+      }
 
-    argparser_get_keyword(pp, "-outDir");
-    o->outDir = argparser_get_next(pp);
+    argparser_get_keyword(pp, "-ambient");
+    o->ambient = argparser_get_next_double(pp, 0.0, 1.0);  
+
+    argparser_get_keyword(pp, "-stackDir");
+    o->stackDir = argparser_get_next(pp);
 
     argparser_skip_parsed(pp);
     argparser_finish(pp);

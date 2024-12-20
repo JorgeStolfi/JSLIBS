@@ -68,12 +68,12 @@ void tf_write_camera_parameters (FILE *wr, int index, camera_parameters_t cpar);
       {f} {kappa} {sx}
       {Npx} {Npy} {dpx} {dpy} {Cx} {Cy}". */
 
-int tf_read_camera_parameters (FILE *rd, camera_parameters_t cpar);
+int32_t tf_read_camera_parameters (FILE *rd, camera_parameters_t cpar);
 /* Reads frame {index} and all camera parameters from file {rd},
    in the format used by {tf_write_camera_parameters},
    and stores them into the {cpar} structure. Returns the frame index. */
 
-void tf_write_mutable_camera_parameters (FILE *wr, int index, camera_parameters_t cpar);
+void tf_write_mutable_camera_parameters (FILE *wr, int32_t index, camera_parameters_t cpar);
 /* Writes the frame {index} and the mutable camera parameters from {cpar}
   ({S,f,kappa, sx}) to file {wr}, in a single line.
 
@@ -86,7 +86,7 @@ void tf_write_mutable_camera_parameters (FILE *wr, int index, camera_parameters_
       {f} {kappa} {sx}".
    Ignores the fields {Npx} {Npy} {dpx} {dpy} {Cx} {Cy} of {cpar}. */
 
-int tf_read_mutable_camera_parameters (FILE *rd, camera_parameters_t cpar);
+int32_t tf_read_mutable_camera_parameters (FILE *rd, camera_parameters_t cpar);
 /* Reads the frame {index} and the mutable camera parameters from file {rd},
    in the format used by {tf_write_mutable_camera_parameters},
    and stores the latter in the {cpar} structure. Returns the frame index.
@@ -173,7 +173,7 @@ r2_t tf_camera_compute_image_error(camera_parameters_t cpar, r3_t p_w, r2_t p_i)
 
 void tf_camera_compute_all_image_errors
   ( camera_parameters_t cpar,
-    int nmarks,
+    int32_t nmarks,
     r3_t p_w[],
     r2_t p_i[],
     r2_t e_i[] );
@@ -230,13 +230,13 @@ void tf_show_camera_specs (camera_specs_t cspec, FILE *ferr);
 /* This routine prints all camera specs in {cspec} to file {ferr},
   in human-readable format, with "//" in front of every line. */
 
-interval_t tf_camera_get_param_range (camera_specs_t cspec, int iparam, double vref);
+interval_t tf_camera_get_param_range (camera_specs_t cspec, int32_t iparam, double vref);
 /* Obtains the range of parameter {iparam} from {cspec}.  The parameter
   numbering and conventions are the same as those of {tf_camera_get_param}.
   For the {R} parameters, the resulting interval is adjusted to contain {vref}
   (if it is not NAN). */
 
-void tf_camera_set_param_range (camera_specs_t cspec, int iparam, interval_t *range);
+void tf_camera_set_param_range (camera_specs_t cspec, int32_t iparam, interval_t *range);
 /* Sets the range of parameter {iparam} into {cspec} as {range}.  The parameter
   numbering and conventions are the same as those of {tf_camera_get_param}. */
 
@@ -312,7 +312,7 @@ void tf_read_camera_specs_param (FILE *f, char *param, double *v1, double *v2);
 
 #define tf_camera_num_parameters (15)
 
-double tf_camera_get_param (camera_parameters_t cpar, int iparam, double vref);
+double tf_camera_get_param (camera_parameters_t cpar, int32_t iparam, double vref);
 /* Returns the parameter number {iparam} from {cpar}.
   If the parameter is an angle, return {tf_camera_adjust_angle(v,vref)}
   instead of the stored value {v}. */
@@ -321,7 +321,7 @@ void tf_camera_set_params_from_vector (camera_parameters_t cpar, double params[]
 /* Sets all fields of {cpar} from {params[0..n-1]} where 
   {n == tf_camera_num_parameters}. */
 
-char *tf_camera_param_name (int iparam);
+char *tf_camera_param_name (int32_t iparam);
 /* The name of parameter number {iparam} in a {camera_parameters_t}. */
 
 

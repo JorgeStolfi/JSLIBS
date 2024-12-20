@@ -2,14 +2,14 @@
 #define float_image_gradient_H
 
 /* Tools for image gradients. */
-/* Last edited on 2012-01-10 04:12:23 by stolfilocal */ 
+/* Last edited on 2024-12-04 23:28:06 by stolfi */ 
 
 #include <bool.h>
 #include <r2.h>
 #include <gauss_table.h>
 #include <float_image.h>
 
-void float_image_gradient_sobel(float_image_t *A, int cA, float_image_t *DX, int cX, float_image_t *DY, int cY);
+void float_image_gradient_sobel(float_image_t *A, int32_t cA, float_image_t *DX, int32_t cX, float_image_t *DY, int32_t cY);
   /* Computes the gradient image of channel {cA} image {A}. If {DX} is
     not null and {cX} is non-negative, stores the X derivative into
     channel {cX} of image {DX} If {DY} is not null and {cY} is
@@ -17,7 +17,7 @@ void float_image_gradient_sobel(float_image_t *A, int cA, float_image_t *DX, int
     {DY}. The derivatives are computed using the {3×3} Sobel
     operator. */
 
-void float_image_gradient_sqr_sobel(float_image_t *A, int cA, float_image_t *G, int cG);
+void float_image_gradient_sqr_sobel(float_image_t *A, int32_t cA, float_image_t *G, int32_t cG);
   /* Computes the squared gradient image of channel {cA} image {A},
     stores it into channel {cG} of image {G}.
   

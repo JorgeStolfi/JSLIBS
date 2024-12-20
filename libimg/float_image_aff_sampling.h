@@ -2,9 +2,7 @@
 #define float_image_aff_sampling_H
 
 /* Tools for sampling an image with affine deformation. */
-/* Last edited on 2022-10-19 08:45:11 by stolfi */ 
-
-#define _GNU_SOURCE_
+/* Last edited on 2024-12-05 10:29:27 by stolfi */ 
 
 #include <bool.h>
 #include <r2.h>

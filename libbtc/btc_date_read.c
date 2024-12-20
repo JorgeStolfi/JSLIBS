@@ -1,7 +1,6 @@
 /* See {btc_date_read.h} */
-/* Last edited on 2015-04-20 01:11:53 by stolfilocal */
+/* Last edited on 2024-12-05 10:23:28 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 

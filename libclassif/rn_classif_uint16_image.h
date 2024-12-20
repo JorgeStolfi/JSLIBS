@@ -1,10 +1,9 @@
 /* rn_classif_uint16_image.h --- builds an image from a vector classifier. */
-/* Last edited on 2017-06-22 18:06:28 by stolfilocal */
+/* Last edited on 2024-12-05 10:24:38 by stolfi */
 
 #ifndef rn_classif_uint16_image_H
 #define rn_classif_uint16_image_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 

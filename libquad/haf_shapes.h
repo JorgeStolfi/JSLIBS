@@ -2,12 +2,11 @@
 #define haf_shapes_H
 
 /* Procedures that build half-edge structures for various simple maps. */
-/* Last edited on 2023-10-05 17:00:26 by stolfi */
+/* Last edited on 2024-12-05 10:39:06 by stolfi */
 
 #define haf_shapes_H_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP)\n\n" jslibs_copyright
   
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <jslibs_copyright.h>

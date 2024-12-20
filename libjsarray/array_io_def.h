@@ -4,10 +4,8 @@
 
 #define array_io_def_H_COPYRIGHT "Copyright © 2009 by J. Stolfi, UNICAMP"
 /* Created on 2009-08-31 by J.Stolfi, UNICAMP */
-/* Last edited on 2024-11-20 07:00:57 by stolfi */
+/* Last edited on 2024-12-05 10:31:46 by stolfi */
 
-/* These inclusions are necessary if this file is included or compiled on its own: */
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

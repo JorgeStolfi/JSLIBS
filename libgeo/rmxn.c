@@ -1,5 +1,5 @@
 /* See rmxn.h. */
-/* Last edited on 2024-11-30 06:08:52 by stolfi */
+/* Last edited on 2024-12-01 00:18:14 by stolfi */
 
 #include <math.h>
 #include <stdio.h>
@@ -164,13 +164,14 @@ double rmxn_det (uint32_t n, double *A)
     for (uint32_t t = 0;  t < n2; t++) { C[t] = A[t]; }
     /* !!! Using full pivoting. Would partial pivoting be better? !!! */
     uint32_t prow[n], pcol[n]; /* Permutation matrices for Gaussian eleimination. */
-    double det;
+    double det_tri;
     uint32_t rank;
     double tiny = 1.0e-180;
-    gausol_triang_reduce(n, prow, n, pcol, C, 0, NULL, tiny, &rank, &det);
-    assert(! isnan(det));
+    gausol_triang_reduce(n, prow, n, pcol, C, 0, NULL, tiny, &det_tri, &rank);
+    assert(! isnan(det_tri));
+    double det_A = (rank < n ? 0.0 : det_tri); 
     free(C);
-    return det;
+    return det_A;
   }
 
 double rmxn_det_by_enum(uint32_t m, uint32_t n, double A[], uint32_t q)
@@ -216,137 +217,22 @@ double rmxn_det_by_enum(uint32_t m, uint32_t n, double A[], uint32_t q)
 
 double rmxn_inv (uint32_t n, double *A, double *M)
   { bool_t debug = FALSE;
-    double *C = rmxn_alloc(n,n);
     double *D = rmxn_alloc(n,n);
     /* Copy {A} into {C}, fill {D} with the identity: */
     for (uint32_t i = 0;  i < n; i++) 
-      { double *Cij = &(C[n*i]); 
-        double *Dij = &(D[n*i]); 
-        double *Aij = &(A[n*i]);
-        for (uint32_t j = 0;  j < n; j++) { (*Cij) = (*Aij); Cij++; Aij++; }
+      { double *Dij = &(D[n*i]); 
         for (uint32_t j = 0;  j < n; j++) { (*Dij) = (j == i ? 1.0 : 0.0); Dij++; }
       }
     uint32_t rank;
-    double det;
+    double det_A;
     double pivot_rows = TRUE;
     double pivot_cols = TRUE;
-    gausol_solve(n, n, C, n, D, M, pivot_rows, pivot_cols, 0.0, &rank, &det);
-    if (debug) { fprintf(stderr, "n = %d  rank = %d  det = %24.16e\n", n, rank, det); }
-    assert(isfinite(den));
-    assert((det != 0.0) == (rank == n));
-    free(C);
-    return det;
-  }
-  
-double rmxn_inv_full (uint32_t n, double *A, double *M)
-  { 
-    /* Copy {A} into {M}: */
-    int32_t t = 0;
-    for (uint32_t i = 0;  i < n; i++) 
-      { for (uint32_t j = 0;  j < n; j++) 
-          { M[t] = A[t]; t++; }
-      }
- 
-    double det = 1.0; /* Accumulates the determinant. */
- 
-    uint32_t prow[n], pcol[n]; 
-    uint32_t k = 0;
-    while (k < n)
-      { /* Process the remaining {n-k}x{n-k} submatrix starting at {A[k][k]}. */
-
-        /* Find the element with largest abs value in the submatrix. */
-        /* Store its value in {biga}, its indices in {prow[k],pcol[k]}: */
-        prow[k] = k;
-        pcol[k] = k;
-        double biga = M[k*n+k];
-        for (uint32_t i = k; i < n; i++)
-          { for (uint32_t j = k; j < n; j++)
-              { if (fabs (M[i*n+j]) > fabs (biga))
-                  { biga = M[i*n+j]; prow[k] = i; pcol[k] = j; }
-              }
-          }
- 
-        /* Accumulate the determinant: */
-        det *= biga; /* Product of pivots */
-
-        /* If the matrix is all zeros, we break here: */
-        if (biga == 0.0) { break; }
-        
-        /* Swap rows {k} and {prow[k]}: */
-        { uint32_t i = prow[k];
-          if (i > k)
-            { for (uint32_t j = 0;  j < n; j++)
-                { double hold = -M[k*n+j];
-                  M[k*n+j] = M[i*n+j];
-                  M[i*n+j] = hold;
-                }
-            }
-        }
- 
-        /* Swap columns {k} and {pcol[k]}: */
-        { uint32_t j = pcol[k];
-          if (j > k)
-            { for (uint32_t i = 0;  i < n; i++)
-                { double hold = -M[i*n+k];
-                  M[i*n+k] = M[i*n+j];
-                  M[i*n+j] = hold;
-                }
-            }
-        }
- 
-        /* Negate column {k} and divide by minus the pivot {biga}. */
-        for (uint32_t i = 0;  i < n; i++) { if (i != k) { M[i*n+k] /= -biga; } }
- 
-        /* Reduce the matrix: */
-        for (uint32_t i = 0;  i < n; i++)
-          { if (i != k)
-              { double hold = M[i*n+k];
-                for (uint32_t j = 0;  j < n; j++)
-                  { if (j != k) { M[i*n+j] += hold * M[k*n+j]; } }
-              }
-          }
- 
-        /* Divide row {k} by pivot {biga}: */
-        for (uint32_t j = 0;  j < n; j++) { if (j != k) { M[k*n+j] /= biga; } }
- 
-        /* Set the diagonal element to its reciprocal: */
-        M[k*n+k] = 1.0 / biga;
-         
-        /* Shrink: */
-        k++;
-      }
- 
-    /* Undo the row and column interchanges, transposed: */
-    while(k > 0)
-      { /* Back up in {k}: */
-
-        k--; /* Safe here since {k > 0}. */
-      
-        /* Swap column {k} with column {prow[k]}: */
-        { uint32_t i = prow[k];
-          if (i > k)
-            { for (uint32_t j = 0;  j < n; j++) 
-                { double hold = M[j*n+k];
-                  M[j*n+k] = -M[j*n+i];
-                  M[j*n+i] = hold;
-                }
-            }
-        }
- 
-        /* Swap row {k} with row {pcol[k]}: */
-        { uint32_t j = pcol[k];
-          if (j > k)
-            { for (uint32_t i = 0;  i < n; i++)
-                { double hold = M[k*n+i];
-                  M[k*n+i] = -M[j*n+i];
-                  M[j*n+i] = hold;
-                }
-            }
-        }
-      }
-
-    /* Return the determinant: */
-    return det;
+    gausol_solve(n, n, A, n, D, M, pivot_rows, pivot_cols, 0.0, &det_A, &rank);
+    if (debug) { fprintf(stderr, "n = %d  rank = %d  det = %24.16e\n", n, rank, det_A); }
+    assert(isfinite(det_A));
+    assert((det_A != 0.0) == (rank == n));
+    free(D);
+    return det_A;
   }
 
 void rmxn_scale(uint32_t m, uint32_t n, double s, double *A, double *M) 

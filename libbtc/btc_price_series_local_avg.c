@@ -1,7 +1,6 @@
 /* See {btc_price_series_local_avg.h} */
-/* Last edited on 2015-04-20 22:15:12 by stolfilocal */
+/* Last edited on 2024-12-05 10:23:41 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 

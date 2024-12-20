@@ -1,5 +1,5 @@
 /* test_rn --- test program for rn.h, rmxn.h  */
-/* Last edited on 2024-11-27 11:17:26 by stolfi */
+/* Last edited on 2024-12-01 04:50:21 by stolfi */
 
 #include <math.h>
 #include <stdio.h>
@@ -72,7 +72,6 @@ void test_rmxn_tr_mul(uint32_t m, uint32_t p, uint32_t n, bool_t verbose);
 void test_rmxn_det(uint32_t m, bool_t verbose);
 void test_rmxn_det_by_enum(uint32_t m, uint32_t n, bool_t verbose);
 void test_rmxn_inv(uint32_t m, bool_t verbose);
-void test_rmxn_inv_full(uint32_t m, bool_t verbose);
 void test_rmxn_cholesky(uint32_t m, bool_t verbose);
 void test_rmxn_LT_inv_map_col(uint32_t m, bool_t verbose);
 void test_rmxn_LT_inv_map_row(uint32_t m, bool_t verbose);
@@ -548,42 +547,76 @@ void test_rn_cross(uint32_t n, bool_t verbose)
     /* TEST: void rn_cross (uint32_t n, double **a, double *r); */
 
     if (verbose) { fprintf(stderr, "--- rn_cross ---\n"); }
-    double **z = (double **)malloc((n-1)*sizeof(double *));
-    double *magz = rn_alloc(n);
-    /* Test on basis vectors: */
-    for (uint32_t i = 0;  i < n; i++)
-      { double sign = ((n-1)*i % 2 == 0 ? +1.0 : -1.0);
+    
+    if ((n >= 1) && (n < 200))
+      { if (verbose) { fprintf(stderr, "  ... testing on basis vectors ...\n"); } 
+        double **z = talloc(n-1, double*); /* Vectors to cross: */
+        for (uint32_t i = 0;  i < n; i++)
+          { double sign = ((n-1)*i % 2 == 0 ? +1.0 : -1.0);
+            double mag = 1.0;
+            for (uint32_t k = 0;  k < n-1; k++)
+              { uint32_t ik = (i + k) % n; 
+                z[k] = rn_alloc(n);
+                rn_axis(n, ik, z[k]);
+                double magk = (drandom() < 0.5 ? -1 : +1)*dabrandom(0.25,4.00);
+                rn_scale(n, magk, z[k], z[k]);
+                mag *= magk;
+              }
+            rn_cross(n, z, c);
+            /* Expected result: */
+            uint32_t in1 = (i + n-1) % n;
+            rn_axis(n, in1, b); 
+            rn_scale(n, mag, b, b);
+            for (uint32_t j = 0;  j < n; j++)
+              { double cxj = sign*b[j];
+                rn_test_tools_check_eps(c[j],cxj,1.0e-13*fabs(mag), &i, &j, "rn_cross error(x)");
+              }
+          }
+        for (uint32_t k = 0;  k < n-1; k++) { free(z[k]); }
+        free(z);
+      }
+      
+    if ((n >= 1) && (n < 100))
+      { if (verbose) { fprintf(stderr, "  ... testing on random vectors, check orthogonality ...\n"); }
+        double **z = talloc(n-1, double*); /* Vectors to cross: */
         for (uint32_t k = 0;  k < n-1; k++)
-          { uint32_t ik = (i + k) % n; 
-            z[k] = rn_alloc(n);
-            rn_axis(n, ik, z[k]);
+          { z[k] = rn_alloc(n);
+            rn_throw_cube(n, z[k]);
           }
-        { uint32_t in1 = (i + n-1) % n; rn_axis(n, in1, b); }
         rn_cross(n, z, c);
-        for (uint32_t j = 0;  j < n; j++)
-          { double cxj = sign*b[j];
-            rn_test_tools_check_eq(c[j],cxj, &i, &j, "rn_cross error(x)");
+        double norm_c = rn_norm(n, c);
+        for (uint32_t k = 0;  k < n-1; k++)
+          { double r = rn_dot(n, z[k], c);
+            double norm_zk = rn_norm(n, z[k]);
+            double mag = norm_c*norm_zk;
+            rn_test_tools_check_eps(r, 0.0, 0.00000001*mag, NO, NO, "rn_cross error(1)");
           }
+        for (uint32_t k = 0;  k < n-1; k++) { free(z[k]); }
+        free(z);
       }
-    /* Test on random vectors: */
-    double mag = 1.0;
-    for (uint32_t k = 0;  k < n-1; k++)
-      { z[k] = rn_alloc(n);
-        rn_throw_cube(n, z[k]);
-        { magz[k] = rn_norm(n, z[k]); mag *= magz[k]; }
+
+    if ((n >= 1) && (n < 50))
+      { if (verbose) { fprintf(stderr, "  ... testing on random vectors, consistency with {rn_det} ...\n"); }
+        double **y = talloc(n, double*); /* Vectors to cross, plus one: */
+        double mag = 1.0;
+        for (uint32_t k = 0;  k < n; k++)
+          { y[k] = rn_alloc(n);
+            rn_throw_cube(n, y[k]);
+            double norm_yk = rn_norm(n, y[k]);
+            mag *= norm_yk;
+          }
+        
+        rn_cross(n, y, c); /* Cross product of first {n-1} vectors only. */
+        double rr = rn_det(n, y); /* Determinant of all {n} vectors. */
+        double ss = rn_dot(n, c, y[n-1]);
+        rn_test_tools_check_eps(rr, ss, 0.00000001*mag, NO, NO, "rn_det error(1)");
+        for (uint32_t k = 0;  k < n; k++) { free(y[k]); }
+        free(y);
       }
-    rn_cross(n, z, c);
-    for (uint32_t k = 0;  k < n-1; k++)
-      { double r = rn_dot(n, z[k], c);
-        rn_test_tools_check_eps(r,0.0,0.00000001 * mag*magz[k], NO, NO, "rn_cross error(1)");
-      }
-    for (uint32_t k = 0;  k < n-1; k++) { free(z[k]); }
-    free(z); free(magz);
    
     free(c);
     free(b); 
-    
- }
+  }
     
 void test_rn_det(uint32_t n, bool_t verbose)
   { 
@@ -604,22 +637,9 @@ void test_rn_det(uint32_t n, bool_t verbose)
         double r = rn_det(n, z);
         rn_test_tools_check_eq(r,sign, &i, NO, "rn_det error(2)");
       }
-    
-    /* Test on random vectors (consistency with {rn_cross}): */
-    double mag = 1.0;
-    for (uint32_t k = 0;  k < n; k++)
-      { z[k] = rn_alloc(n);
-        rn_throw_cube(n, z[k]);
-        { magz[k] = rn_norm(n, z[k]); mag *= magz[k]; }
-      }
-    double r = rn_det(n, z);
-    rn_cross(n, z, c);
-    double rr = rn_dot(n, c, z[n-1]);
-    rn_test_tools_check_eps(r,rr,0.00000001 * mag, NO, NO, "rn_det error(1)");
 
     for (uint32_t k = 0;  k < n; k++) { free(z[k]); }
     free(z); free(magz); free(c);
-    
  }
 
 void test_rn_decomp(uint32_t n, bool_t verbose)
@@ -703,7 +723,6 @@ void test_rmxn(bool_t verbose)
     test_rmxn_det(m, verbose);
     test_rnxm_throw_singular(m, verbose);
     test_rmxn_inv(m, verbose);
-    test_rmxn_inv_full(m, verbose);
     test_rmxn_cholesky(m, verbose);
     test_rmxn_LT_inv_map_col(m, verbose);
     test_rmxn_LT_inv_map_row(m, verbose);
@@ -1145,6 +1164,21 @@ void test_rmxn_det(uint32_t m, bool_t verbose)
     /* TEST: double rmxn_det (uint32_t n, double *A); */
 
     if (verbose) { fprintf(stderr, "--- rmxn_det ---\n"); }
+    
+    if (m < 100)
+      { /* Upper triangular matrix: */
+        rmxn_throw_matrix(m, m, Qmm);
+        double rr = 1.0;
+        for (uint32_t i = 0; i < m; i++)
+          { for (uint32_t j = 0; j < i; j++) { Qmm[i*m + j] = 0; }
+            double Qii = Qmm[i*m + i];
+            rr *= Qii;
+          }
+        double ss = rmxn_det(m, Qmm);
+        double mag = fabs(rr) + fabs(ss);
+        rn_test_tools_check_eps(rr, ss, 000000001*mag, NO, NO, "rmxn_det error(T)");
+      }
+    
     rmxn_throw_matrix(m, m, Qmm);
     for (uint32_t i = 0;  i < m; i++)
       { uint32_t k = (i + 1) % m;
@@ -1204,70 +1238,91 @@ void test_rmxn_det(uint32_t m, bool_t verbose)
     
 void test_rmxn_det_by_enum(uint32_t m, uint32_t n, bool_t verbose)
   { 
-    double *Amn = rmxn_alloc(m, n);
-
+    bool_t debug = FALSE;
+    if (debug) { verbose = TRUE; }
     /* TEST: double rmxn_det_by_enum (uint32_t m, uint32_t n, double *A, uint32_t q); */
 
     if (verbose) { fprintf(stderr, "--- rmxn_det_by_enum ---\n"); }
+
+    double *Amn = rmxn_alloc(m, n);
+    rmxn_throw_matrix(m, n, Amn);
+
     uint32_t qmax = rmxn_det_by_enum_SIZE_MAX;
     uint32_t q = (m < n ? m : n);
-    if (drandom() < 0.25)
+    if (drandom() < 0.125)
       { /* Increase {q} beyond the size of {A} so {det} will be zero: */
         q = q + 1;
       }
-    else
-      { /* Make sure the {q} limit is not exceeded: */
-        if (q > qmax) { q = qmax; }
-      }
-    rmxn_throw_matrix(m, n, Amn);
+    /* Make sure the {q} limit is not exceeded: */
+    if (q > qmax) { q = qmax; }
+    if (debug) { fprintf(stderr, "m = %d  n = %d  q = %d\n", m, n, q); }
     
-    for (uint32_t i = 0;  i < q; i++)
-      { for (uint32_t j = 0;  j < q; j++)
-          { /* Check for linearity */
-            double r = drandom();
-            Amn[i*n + j] = r;
-            double rr = rmxn_det_by_enum(m, n, Amn, q);
+    /* Rows/cols that are relevant and exist: */
+    uint32_t ilim = (q < m ? q : m);
+    uint32_t jlim = (q < n ? q : n);
 
-            double s = drandom();
-            Amn[i*n + j] = s;
-            double ss = rmxn_det_by_enum(m, n, Amn, q);
+    if ((ilim >= 1) && (jlim >= 1))
+      { /* Check for linearity */
+        for (uint32_t i = 0; i < ilim; i++)
+          { for (uint32_t j = 0; j < jlim; j++)
+              { double r = drandom();
+                Amn[i*n + j] = r;
+                double rr = rmxn_det_by_enum(m, n, Amn, q);
 
-            double t = drandom();
-            Amn[i*n + j] = r*(1-t) + s*t;
-            double tt = rmxn_det_by_enum(m, n, Amn, q);
+                double s = drandom();
+                Amn[i*n + j] = s;
+                double ss = rmxn_det_by_enum(m, n, Amn, q);
 
-            double Lmag = fabs(rr) + fabs(ss) + fabs(tt);
-            rn_test_tools_check_eps(tt,(rr*(1-t) + ss*t),000000001 * Lmag, NO, NO, 
-              "rmxn_det_by_enum error(1)"
-            );
+                double t = drandom();
+                Amn[i*n + j] = r*(1-t) + s*t;
+                double tt = rmxn_det_by_enum(m, n, Amn, q);
+
+                double Lmag = fabs(rr) + fabs(ss) + fabs(tt);
+                rn_test_tools_check_eps(tt,(rr*(1-t) + ss*t),000000001 * Lmag, NO, NO, 
+                  "rmxn_det_by_enum error(1)"
+                );
+              }
           }
       }
 
-    /* Row/col swap test: */
-    double r = rmxn_det_by_enum(m, n, Amn, q);
-    double Smag = fabs(r);
-    for (uint32_t i0 = 0; i0 < q; i0++)
-      { uint32_t i1 = (i0 + 1) % q;
-      
-        /* Swap rows {i0,i1}: */
-        for (uint32_t j = 0;  j < m; j++)
-          { double *Ai0j = &(Amn[i0*n + j]);
-            double *Ai1j = &(Amn[i1*n + j]);
-            double t = *Ai0j; *Ai0j = *Ai1j; *Ai1j = t;
-          }
-        double rr = rmxn_det_by_enum(m, n, Amn, q);
-        rn_test_tools_check_eps(r,(-rr),000000001*Smag, NO, NO, "rmxn_det_by_enum error(2)");
-        r = rr;
+    if (ilim >= 2)
+      { /* Row swap test: */
+        double det_last = rmxn_det_by_enum(m, n, Amn, q);
+        double Smag = fabs(det_last);
+        for (uint32_t i0 = 0; i0 < ilim; i0++)
+          { uint32_t i1 = (i0 + 1) % ilim;
 
-        /* Swap cols {i0,i1}: */
-        for (uint32_t j = 0;  j < m; j++)
-          { double *Aji0 = &(Amn[j*n + i0]);
-            double *Aji1 = &(Amn[j*n + i1]);
-            double t = *Aji0; *Aji0 = *Aji1; *Aji1 = t;
+            /* Swap rows {i0,i1}: */
+            if (debug) { fprintf(stderr, "swapping rows  i0 = %d  i1 = %d\n", i0, i1); }
+            for (uint32_t j = 0; j < n; j++)
+              { double *Ai0j = &(Amn[i0*n + j]);
+                double *Ai1j = &(Amn[i1*n + j]);
+                double t = *Ai0j; *Ai0j = *Ai1j; *Ai1j = t;
+              }
+            double rr = rmxn_det_by_enum(m, n, Amn, q);
+            rn_test_tools_check_eps(rr, -det_last, 000000001*Smag, NO, NO, "rmxn_det_by_enum error(2)");
+            det_last = rr;
           }
-        rr = rmxn_det_by_enum(m, n, Amn, q);
-        rn_test_tools_check_eps(r,(-rr),000000001*Smag, NO, NO, "rmxn_det_by_enum error(3)");
-        r = rr;
+      }
+      
+    if (jlim >= 2)
+      { /* Column swap test: */
+        double det_last = rmxn_det_by_enum(m, n, Amn, q);
+        double Smag = fabs(det_last);
+        for (uint32_t j0 = 0; j0 < jlim; j0++)
+          { uint32_t j1 = (j0 + 1) % jlim;
+
+            /* Swap cols {j0,j1}: */
+            if (debug) { fprintf(stderr, "swapping rows  j0 = %d  j1 = %d\n", j0, j1); }
+            for (uint32_t i = 0; i < m; i++)
+              { double *Aij0 = &(Amn[i*n + j0]);
+                double *Aij1 = &(Amn[i*n + j1]);
+                double t = *Aij0; *Aij0 = *Aij1; *Aij1 = t;
+              }
+            double rr = rmxn_det_by_enum(m, n, Amn, q);
+            rn_test_tools_check_eps(rr, -det_last, 000000001*Smag, NO, NO, "rmxn_det_by_enum error(3)");
+            det_last = rr;
+          }
       }
     free(Amn);
   }
@@ -1292,33 +1347,6 @@ void test_rmxn_inv(uint32_t m, bool_t verbose)
           }
       }
     rn_test_tools_check_eps(r,s,0.000000001, NO, NO, "rmxn_inv/rmxn_det error");
- 
-    free(Qmm);
-    free(Rmm);
-    free(Smm);
-  }
-
-void test_rmxn_inv_full(uint32_t m, bool_t verbose)
-  { 
-    verbose = TRUE;
-    
-    double *Qmm = rmxn_alloc(m, m);
-    double *Rmm = rmxn_alloc(m, m);
-    double *Smm = rmxn_alloc(m, m);
-
-    /* TEST: double rmxn_inv_full (uint32_t n, double *A, double *M); */
-   
-    if (verbose) { fprintf(stderr, "--- rmxn_inv_full ---\n"); }
-    double s = rmxn_inv_full(m, Qmm, Rmm);
-    rmxn_mul(m, m, m, Qmm, Rmm, Smm);
-    for (uint32_t i = 0;  i < m; i++)
-      { for (uint32_t j = 0;  j < m; j++)
-          { double val = (i == j ? 1.0 : 0.0);
-            rn_test_tools_check_eps(Smm[m*i + j],val,0.000000001, NO, NO, "rmxn_inv_full error");
-          }
-      }
-    double r = rmxn_det(m, Qmm);
-    rn_test_tools_check_eps(r,s,0.000000001, NO, NO, "rmxn_inv-full/rmxn_det error");
  
     free(Qmm);
     free(Rmm);

@@ -1,7 +1,6 @@
 /* Basic tests univariate minimizers. */
-/* Last edited on 2024-11-08 17:00:12 by stolfi  */
+/* Last edited on 2024-12-05 10:35:22 by stolfi  */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <values.h>
 #include <stdint.h>

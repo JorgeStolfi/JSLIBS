@@ -1,5 +1,5 @@
 /* See {float_pnm_read_stream.h}. */
-/* Last edited on 2017-06-22 02:37:24 by stolfilocal */
+/* Last edited on 2024-12-04 23:33:03 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -16,7 +16,7 @@
 
 /* Internal prototypes: */
 
-float_pnm_stream_t *float_pnm_read_stream_new(FILE *rd, bool_t isMask, uint32_t badval, int bufrows)
+float_pnm_stream_t *float_pnm_read_stream_new(FILE *rd, bool_t isMask, uint32_t badval, int32_t bufrows)
   { /* Allocate top record: */
     float_pnm_stream_t *str = float_pnm_stream_new(isMask, badval);
     /* Read the input file header: */
@@ -30,7 +30,7 @@ float_pnm_stream_t *float_pnm_read_stream_new(FILE *rd, bool_t isMask, uint32_t 
     return str;
   }
 
-double *float_pnm_read_stream_get_row(FILE *rd, float_pnm_stream_t *str, int y) 
+double *float_pnm_read_stream_get_row(FILE *rd, float_pnm_stream_t *str, int32_t y) 
   { /* Row index must be valid: */
     if ((y < 0) || (y >= str->rows)) { return NULL; }
     /* Roll buffer forward until row {y} is in buffer: */
@@ -43,19 +43,19 @@ double *float_pnm_read_stream_get_row(FILE *rd, float_pnm_stream_t *str, int y)
 
 void float_pnm_read_stream_load_next_row(FILE *rd, float_pnm_stream_t *str) 
   { /* Get row in {ibuf} for converted row {str->ynext}: */
-    int y = str->buf->ylim;
+    int32_t y = str->buf->ylim;
     demand(y < str->rows, "no more rows to read");
     assert(float_image_buffer_row_pos(str->buf, y) == +1);
     float_image_buffer_advance(str->buf);
     assert(float_image_buffer_row_pos(str->buf, y) == 00);
     /* Read one row of sample values from input image into {str->smp}: */
     pnm_read_pixels(rd, str->smp, str->cols, str->chns, str->maxval, str->raw, str->bits);
-    int nspr = str->chns * str->cols; /* Number of samples per row. */
+    int32_t nspr = str->chns * str->cols; /* Number of samples per row. */
     /* Convert samples {str->smp[0..nspr-1]} to [0_1] scale, save in {str->buf}: */
     uint16_t *sP = str->smp; /* Scans raw samples. */
     double *dP = float_image_buffer_get_row(str->buf, y); /* Start of row {yb} in {ibuf}. */
     assert(dP != NULL);
-    int k;
+    int32_t k;
     for (k = 0; k < nspr; k++, dP++, sP++)
       { demand((*sP) <= str->maxval, "invalid pixel value");
         (*dP) = str->ftb[(*sP)];

@@ -1,5 +1,5 @@
 /* See {float_image_overlay.h}. */
-/* Last edited on 2023-02-07 22:03:01 by stolfi */
+/* Last edited on 2024-12-05 00:59:09 by stolfi */
 
 #include <math.h>
 #include <limits.h>
@@ -42,7 +42,7 @@ void float_image_overlay(float_image_t *A, float_image_t *B, int32_t icop, int32
             double oC = rB + rA;
             if (oC != 0)
               { double sB = rB/oC, sA = rA/oC; 
-                for (uint32_t ic = 0;  ic < NCA; ic++)
+                for (int32_t ic = 0;  ic < NCA; ic++)
                   { if (ic != icop)
                       { float *vAP = float_image_get_sample_address(A, ic, ix, iy);
                         double vA = (*vAP);

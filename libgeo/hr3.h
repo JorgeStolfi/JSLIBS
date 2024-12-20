@@ -1,5 +1,5 @@
 /* Oriented projective geometry in three dimensions. */
-/* Last edited on 2024-11-03 07:36:54 by stolfi */ 
+/* Last edited on 2024-12-05 10:27:20 by stolfi */ 
 
 #ifndef hr3_H
 #define hr3_H
@@ -7,8 +7,6 @@
 /* Based on HR3.i3, created 1993-04-18 by Marcos C. Carrard. */
 /* Also based on H3.pas by J. Stolfi. */
    
-#define _GNU_SOURCE
-
 #include <stdint.h>
 
 #include <r3.h>

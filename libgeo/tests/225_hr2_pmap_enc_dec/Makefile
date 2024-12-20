@@ -1,4 +1,4 @@
-# Last edited on 2024-11-08 11:27:07 by stolfi
+# Last edited on 2024-12-01 10:26:59 by stolfi
 
 PROG = test_hr2_pmap_enc_dec
 
@@ -6,7 +6,7 @@ TEST_LIB := libgeo.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS :=  \
-  libimg.a \
+  libgausol.a \
   libjs.a
  
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

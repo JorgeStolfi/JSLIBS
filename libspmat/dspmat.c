@@ -2,9 +2,8 @@
 
 #define dspmat_C_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2009-01-17 18:59:41 by stolfi */
+/* Last edited on 2024-12-05 10:40:31 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

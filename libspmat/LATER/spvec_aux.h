@@ -1,10 +1,9 @@
 /* Auxiliary definitions for sparse vectors */
-/* Last edited on 2023-03-18 10:50:04 by stolfi */
+/* Last edited on 2024-12-05 10:40:29 by stolfi */
 
 #ifndef spvec_aux_H
 #define spvec_aux_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdlib.h>
 

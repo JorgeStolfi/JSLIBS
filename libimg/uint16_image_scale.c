@@ -10,8 +10,8 @@
     for (uint32_t row = 0;  row < rows; row++)
       { 
         uint16_t *pnm_P = img->smp[row];
-        for (uint32_t col = 0;  col < cols; col++)
-          { for (uint32_t chn = 0;  chn < chns; chn++)
+        for (int32_t col = 0;  col < cols; col++)
+          { for (int32_t chn = 0;  chn < chns; chn++)
               {
 
                 /* Convert to PNM sample {osmp}: */

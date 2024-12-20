@@ -1,5 +1,5 @@
 /* See {uint16_image_write_jpeg.h} */
-/* Last edited on 2017-06-23 01:42:55 by stolfilocal */
+/* Last edited on 2024-12-05 07:45:56 by stolfi */
 
 /* Created by R. Minetto (IC-UNICAMP) sometime in 2008--2009. */
 /* Adapted by J. Stolfi (IC-UNICMP) on 2011-05-14. */
@@ -40,9 +40,9 @@ void uint16_image_write_jpeg_file (FILE *wr, uint16_image_t *img, int32_t qualit
     demand((quality > 0) && (quality <= 100), "invalid {quality}");
     
     /* Channel count checking: */
-    int32_t chns = img->chns;
-    int32_t cols = img->cols;
-    int32_t rows = img->rows;
+    uint32_t chns = (uint32_t)img->chns;
+    uint32_t cols = (uint32_t)img->cols;
+    uint32_t rows = (uint32_t)img->rows;
     demand((chns == 1) || (chns == 3), "invalid channel count");
     
     uint16_t imaxval = img->maxval;  /* Image's {maxval}. */
@@ -75,7 +75,7 @@ void uint16_image_write_jpeg_file (FILE *wr, uint16_image_t *img, int32_t qualit
     J_COLOR_SPACE space = (chns == 1 ? JCS_GRAYSCALE : JCS_RGB);
     jcmp.image_width = cols;
     jcmp.image_height = rows;
-    jcmp.input_components = chns;
+    jcmp.input_components = (int32_t)chns;
     jcmp.in_color_space = space;
     jpeg_set_defaults(&jcmp);
     /* jpeg_set_colorspace(&jcmp, space); */
@@ -86,12 +86,12 @@ void uint16_image_write_jpeg_file (FILE *wr, uint16_image_t *img, int32_t qualit
       if (! (cond)) { jpeg_abort_compress(&jcmp); demand(FALSE, (msg)); }
 
     /* Alocate the JPEG compression sample buffer: */
-    int32_t spr = chns * cols; /* Samples per scanline. */
+    uint32_t spr = chns * cols; /* Samples per scanline. */
     JSAMPARRAY buffer = (*jcmp.mem->alloc_sarray)((j_common_ptr) &jcmp, JPOOL_IMAGE, spr, 1);
 
     /* Write scanline by scanline: */
     while (jcmp.next_scanline < rows) {
-      int32_t r = jcmp.next_scanline;
+      uint32_t r = jcmp.next_scanline;
       uint16_t *img_row = img->smp[r];
       JSAMPLE *bu_row = buffer[0];
       int32_t k;

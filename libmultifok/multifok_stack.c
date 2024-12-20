@@ -1,7 +1,6 @@
 /* See {multifok_stack.h}. */
-/* Last edited on 2024-10-22 09:21:48 by stolfi */
+/* Last edited on 2024-12-05 23:54:21 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -12,12 +11,13 @@
 
 #include <bool.h>
 #include <affirm.h>
+#include <jsprintf.h>
 
 #include <multifok_stack.h>
   
 #define DASHES "------------------------------------------------------------"
      
-multifok_stack_t *multifok_stack_new(int32_t NI, int32_t NC, int32_t NX, int32_t NY)
+multifok_stack_t *multifok_stack_new(uint32_t NI, int32_t NC, int32_t NX, int32_t NY)
   {
      multifok_stack_t *stack = talloc(1, multifok_stack_t);
      stack->NC = NC;
@@ -31,7 +31,7 @@ multifok_stack_t *multifok_stack_new(int32_t NI, int32_t NC, int32_t NX, int32_t
 multifok_stack_t *multifok_stack_read
   ( char *stackDir,
     bool_t gray,
-    int32_t NI,
+    uint32_t NI,
     double zFoc[],
     double zDep[],
     double hMin,
@@ -43,8 +43,7 @@ multifok_stack_t *multifok_stack_read
     
     int32_t NC, NX, NY; /* Image dimensions. */
      for (uint32_t ki = 0;  ki < NI; ki++)
-      { char *frameDir = NULL;
-        char *frameDir = jsprintf("%s/frame-zf%08.4f-df%08.4f", stackDir, zFoc[ki], zDep[ki]);
+      { char *frameDir = jsprintf("%s/frame-zf%08.4f-df%08.4f", stackDir, zFoc[ki], zDep[ki]);
         multifok_frame_t *fri = multifok_frame_read 
           ( frameDir, gray, zFoc[ki], zDep[ki], hMin, hMax );
         if (ki == 0)
@@ -73,14 +72,15 @@ void multifok_stack_write
     double hMax
   )
   {
-    int32_t NI = stack->NI;
+    uint32_t NI = stack->NI;
     mkdir(stackDir, 0755); /* "-rwxr-xr-x" */
     for (uint32_t ki = 0;  ki < NI; ki++)
       { multifok_frame_t *fri = stack->frame[ki];
+        char *frameDir = NULL;
         if (fri->zDep == +INF)
-          { char *frameDir = jsprintf("%s/frame-sharp", stackDir); }
+          { frameDir = jsprintf("%s/frame-sharp", stackDir); }
         else
-          { char *frameDir = jsprintf("%s/frame-zf%08.4f-df%08.4f", stackDir, fri->zFoc, fri->zDep); }
+          { frameDir = jsprintf("%s/frame-zf%08.4f-df%08.4f", stackDir, fri->zFoc, fri->zDep); }
         multifok_frame_write(fri, frameDir, hMin, hMax); 
         free(frameDir);
       }

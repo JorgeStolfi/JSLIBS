@@ -2,7 +2,7 @@
 #define PROG_DESC "test of various ops from {frgb_ops.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-07 14:00:31 by stolfi */
+/* Last edited on 2024-12-04 23:35:19 by stolfi */
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_frgb_ops_C_COPYRIGHT \
@@ -68,9 +68,9 @@ typedef struct options_t
 typedef void tfop_tr_t(frgb_t *p);
 typedef double tfop_fn_t(frgb_t *p);
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
-options_t *tfop_parse_options(int argc, char **argv);
+options_t *tfop_parse_options(int32_t argc, char **argv);
   /* Parses the command line arguments and returns them as
     an {options_t} record. */
 
@@ -90,7 +90,7 @@ void tfop_test_transform(tfop_tr_t *fpre, char *sdom, char *simg, tfop_tr_t *fdi
     space {sdom}, and {fpre} transforms valid RGB values to valid {sdom}
     values. */
 
-void tfop_test_float_fn(char *simg, tfop_tr_t *fdir, int k, char *fn_name, tfop_fn_t *fval);
+void tfop_test_float_fn(char *simg, tfop_tr_t *fdir, int32_t k, char *fn_name, tfop_fn_t *fval);
   /* Tests if a colorspace transformation {fdir} from RGB to some colorspace {simg}
     is consistent with a single-value projection function {fval}; namely, whether {fval(p) = fdir(p).c[k]} for 
     a bunch of non-gray RGB triples {p}. */
@@ -101,13 +101,13 @@ bool_t tfop_check_tr(frgb_t *rgb, char *sdom, frgb_t *fp, char *simg, frgb_t *fq
     and {fr} is the result of mapping {fq} back to space {sdom}.  The color's RGB coordinates
     are assumed to be {rgb}. */
   
-bool_t tfop_check_fn(frgb_t *rgb, char *sdom, frgb_t *fq, int k, char *fn_name, double fvalu);
+bool_t tfop_check_fn(frgb_t *rgb, char *sdom, frgb_t *fq, int32_t k, char *fn_name, double fvalu);
   /* Compares {fq.c[k]} with {fvalu}. Complains and returns true if not close enough.
     assumes that {fq} is the result of transforming the triple {rgb} from RGB space
     to {simg} space. Also assumes that {fvalu} is the result of applying {fn_name}
     to {rgb}. */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   {
     /* Parse the command line options: */
     options_t *o = tfop_parse_options(argc, argv);
@@ -133,20 +133,20 @@ void tfop_do_tests(options_t *o)
     double frgb_gamma_encoding_gray(double y, double gamma, double bias);
     double frgb_gamma_decoding_gray(double y, double gamma, double bias);
     
-    typedef frgb_t frgb_adjuster_t(frgb_t *p, int col, int row);
-    frgb_t frgb_correct_arg(frgb_t *p, frgb_t *inGamma, int gray);
+    typedef frgb_t frgb_adjuster_t(frgb_t *p, int32_t col, int32_t row);
+    frgb_t frgb_correct_arg(frgb_t *p, frgb_t *inGamma, int32_t gray);
     double frgb_log_scale_gray(double x);
-    void frgb_log_scale(frgb_t *p, int chns);
+    void frgb_log_scale(frgb_t *p, int32_t chns);
     double frgb_clip_gray(double p);
     void frgb_clip_rgb(frgb_t *p);
     void frgb_clip_rgb_towards(frgb_t *p, frgb_t *q);
     void frgb_clip_rgb_towards_grey(frgb_t *p);
     double frgb_apply_kappa_gray(double y, double kappa);
     void frgb_apply_glob_kappa_sat_clip(frgb_t *p, double kap, double satf);
-    int frgb_dequal(double *a, double *b, int chns);
-    int frgb_fequal(float *a, float *b, int chns);
-    double frgb_floatize(int ival, int maxval, double zero, double scale);
-    int frgb_quantize(double fval, double zero, double scale, int maxval);
+    int32_t frgb_dequal(double *a, double *b, int32_t chns);
+    int32_t frgb_fequal(float *a, float *b, int32_t chns);
+    double frgb_floatize(int32_t ival, int32_t maxval, double zero, double scale);
+    int32_t frgb_quantize(double fval, double zero, double scale, int32_t maxval);
     frgb_t frgb_parse(argparser_t *pp, double lo, double hi);
     frgb_t frgb_read(FILE *rd, double lo, double hi);
     frgb_t frgb_parse_color(argparser_t *pp);
@@ -160,10 +160,10 @@ void tfop_do_tests(options_t *o)
     void frgb_YUV_to_Yuv(frgb_t *p, double ybias);
     void frgb_YUV_from_Yuv(frgb_t *p, double ybias);
 
-    void frgb_print(FILE *f, char *pref, frgb_t *p, int chns, char *fmt, char *suff);
-    void frgb_print_int_pixel(FILE *f, char *pref, int *p, int chns, char *suff);
-    void frgb_debug(char *label, int col, int row, frgb_t *p, int chns, char *tail);
-    void frgb_debug_int_pixel(char *label, int col, int row, int *p, int chns, char *tail);
+    void frgb_print(FILE *f, char *pref, frgb_t *p, int32_t chns, char *fmt, char *suff);
+    void frgb_print_int32_t_pixel(FILE *f, char *pref, int32_t *p, int32_t chns, char *suff);
+    void frgb_debug(char *label, int32_t col, int32_t row, frgb_t *p, int32_t chns, char *tail);
+    void frgb_debug_int32_t_pixel(char *label, int32_t col, int32_t row, int32_t *p, int32_t chns, char *tail);
     */
     
     
@@ -205,10 +205,10 @@ void tfop_test_transform(tfop_tr_t *fpre, char *sdom, char *simg, tfop_tr_t *fdi
     if (fpre != NULL) { fprintf(stderr, "_%s", sdom); }
     fprintf(stderr, "_{to,from}_%s ---\n", simg); 
     
-    int N = 11; /* Better be odd? */
-    int bugs = 0;
-    int tics = 0;
-    int ir, ig, ib;
+    int32_t N = 11; /* Better be odd? */
+    int32_t bugs = 0;
+    int32_t tics = 0;
+    int32_t ir, ig, ib;
     frgb_t rgb, fp, fq, fr;
     for (ir = 0; ir < N; ir++)
       { for (ig = 0; ig < N; ig++) 
@@ -231,7 +231,7 @@ void tfop_test_transform(tfop_tr_t *fpre, char *sdom, char *simg, tfop_tr_t *fdi
   
 bool_t tfop_check_tr(frgb_t *rgb, char *sdom, frgb_t *fp, char *simg, frgb_t *fq, frgb_t *fr)
   {
-    for (int c = 0; c < 3; c++)
+    for (int32_t c = 0; c < 3; c++)
       {if (fabs(fp->c[c] - fr->c[c]) > 0.0001) 
           { char *sa = (strcmp(sdom, "RGB") == 0  ? "" : "_");
             char *sb = (strcmp(sdom, "RGB") == 0  ? "" : sdom);
@@ -246,14 +246,14 @@ bool_t tfop_check_tr(frgb_t *rgb, char *sdom, frgb_t *fp, char *simg, frgb_t *fq
     return TRUE;
   }
 
-void tfop_test_float_fn(char *simg, tfop_tr_t *fdir, int k, char *fn_name, tfop_fn_t *fval)
+void tfop_test_float_fn(char *simg, tfop_tr_t *fdir, int32_t k, char *fn_name, tfop_fn_t *fval)
   {
     fprintf(stderr, "--- tfop_test_float_fn: frgb_to_%s.c[%d] and frgb_%s ---\n", simg, k, fn_name);
 
-    int N = 11; /* Better be odd? */
-    int bugs = 0;
-    int tics = 0;
-    int ir, ig, ib;
+    int32_t N = 11; /* Better be odd? */
+    int32_t bugs = 0;
+    int32_t tics = 0;
+    int32_t ir, ig, ib;
     frgb_t rgb, fq;
     for (ir = 0; ir < N; ir++)
       { for (ig = 0; ig < N; ig++) 
@@ -276,7 +276,7 @@ void tfop_test_float_fn(char *simg, tfop_tr_t *fdir, int k, char *fn_name, tfop_
     fprintf(stderr, "tested %d points in the RGB cube, %d errors\n", tics, bugs); 
   }
 
-bool_t tfop_check_fn(frgb_t *rgb, char *simg, frgb_t *fq, int k, char *fn_name, double fvalu)
+bool_t tfop_check_fn(frgb_t *rgb, char *simg, frgb_t *fq, int32_t k, char *fn_name, double fvalu)
   {
     if (fabs(fq->c[k] - fvalu) > 0.0001) 
       { fprintf(stderr, "** inconsistency between frgb_to_%s.c[%d] and frgb_%s:\n", simg, k, fn_name);
@@ -290,7 +290,7 @@ bool_t tfop_check_fn(frgb_t *rgb, char *simg, frgb_t *fq, int k, char *fn_name, 
       { return TRUE; }
   }
 
-options_t *tfop_parse_options(int argc, char **argv)
+options_t *tfop_parse_options(int32_t argc, char **argv)
   {
     /* INITIALIZATION: */
 

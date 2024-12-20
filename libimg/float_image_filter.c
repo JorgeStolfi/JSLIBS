@@ -1,5 +1,5 @@
 /* See {float_image_filter.h}. */
-/* Last edited on 2020-10-11 19:40:43 by jstolfi */
+/* Last edited on 2024-12-04 23:27:10 by stolfi */
 
 #include <math.h>
 #include <assert.h>
@@ -13,7 +13,7 @@
 
 /* INTERNAL PROTOTYPES */
 
-void float_image_filter_dump_tables(FILE *wr, double s_lo[], double s_hi[], int n);
+void float_image_filter_dump_tables(FILE *wr, double s_lo[], double s_hi[], int32_t n);
   /* Writes the {s_lo[0..n-1]} and {s_hi[0..n-1]},
     assumed to be the weights of the low-freq and high-freq 
     low-pass filters for Filter frequencies {0..n-1}, 
@@ -28,9 +28,9 @@ void float_image_filter_gaussian_band
     bool_t complement,
     bool_t verbose
   )
-  { int chns = (int)F->sz[0];
-    int cols = (int)F->sz[1];
-    int rows = (int)F->sz[2];
+  { int32_t chns = (int32_t)F->sz[0];
+    int32_t cols = (int32_t)F->sz[1];
+    int32_t rows = (int32_t)F->sz[2];
     
     /* Make the X and Y gaussian weight tables. */
     assert((0 <= wMin->c[0]) && (wMin->c[0] <= wMax->c[0]));
@@ -53,7 +53,7 @@ void float_image_filter_gaussian_band
         fprintf(stderr, "# --- end yweights.txt --------------------------------\n");
       }
 
-    int y, x, c;
+    int32_t y, x, c;
     for (y = 0; y < rows; y++)
       { for (x = 0; x < cols; x++)
           { double s_fMin = sx_fMin[x]*sy_fMin[y];
@@ -74,23 +74,23 @@ void float_image_filter_gaussian_band
     free(sx_fMin);
   }
 
-double *float_image_filter_gaussian_freq_weights(int n, double wRef)
+double *float_image_filter_gaussian_freq_weights(int32_t n, double wRef)
   {
     double fRef = n/wRef;
     bool_t normSum = FALSE;
     bool_t folded = TRUE;
-    double *w = gauss_table_make(n, 0.0, fRef, normSum, folded);
+    double *w = gauss_table_make((uint32_t)n, 0.0, fRef, normSum, folded);
     /* If {wRef} is big but finite, returns the Dirac mask at freq {0,0}; */
     /* if {wRef} is {+INF}, returns a zero filter: */
     if (wRef == +INFINITY) { w[0] = 0.0; }
     return w;
   }
   
-void float_image_filter_dump_tables(FILE *wr, double s_lo[], double s_hi[], int n)
+void float_image_filter_dump_tables(FILE *wr, double s_lo[], double s_hi[], int32_t n)
   {
     fprintf(wr, "#\n");
     fprintf(wr, "# %5s  %14s %14s  %14s\n", "F", "S_LO", "S_HI", "S"); 
-    int i;
+    int32_t i;
     for (i = 0; i < n; i++)
       { double si = s_hi[i] - s_lo[i];
         fprintf(wr, "  %5d %14.11f %14.11f %14.11f\n", i, s_lo[i], s_hi[i], si);

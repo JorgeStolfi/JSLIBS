@@ -2,14 +2,13 @@
 #define PROG_DESC "test of {epswr.h} and {epswr_shade.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-06-22 17:47:19 by stolfi */
+/* Last edited on 2024-12-05 10:15:14 by stolfi */
 
 #define testshade_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
 
 /* Created by J. Stolfi, UNICAMP sometime before 2003-09-30. */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -19,6 +18,7 @@
 #include <bool.h>
 #include <affirm.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 
 #include <epswr.h>
 #include <epswr_dev.h>

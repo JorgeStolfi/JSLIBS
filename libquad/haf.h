@@ -2,9 +2,8 @@
 #define haf_H
 
 /* The half-edge data structure to encode the topology of 2D meshes. */
-/* Last edited on 2024-10-01 09:20:38 by stolfi */
+/* Last edited on 2024-12-05 10:38:47 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #define haf_H_copyright \

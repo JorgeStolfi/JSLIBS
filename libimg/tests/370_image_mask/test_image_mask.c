@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_mask.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2017-06-30 01:09:31 by stolfilocal */
+/* Last edited on 2024-12-20 18:20:36 by stolfi */
 
 #define test_image_mask_C_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
@@ -60,17 +60,19 @@
 #include <affirm.h>
 #include <bool.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <jsrandom.h>
 #include <sample_conv.h>
+#include <sample_conv_gamma.h>
 #include <uint16_image.h>
 #include <uint16_image_write_pnm.h>
 #include <float_image_to_uint16_image.h>
 #include <float_image_mask.h>
 #include <float_image.h>
 
-#define BT_GAMMA (0.450)
-#define BT_BIAS (0.0327)
-  /* Values of {gamma} and {bias} for {sample_conv_gamma} 
+#define BT_ENC_EXPO sample_conv_gamma_BT709_ENC_EXPO
+#define BT_ENC_BIAS sample_conv_gamma_BT709_BIAS
+  /* Values of {expo} and {bias} for {sample_conv_gamma} 
     that approximate the BT.709 encoding. */
 
 typedef struct options_t
@@ -161,7 +163,7 @@ int main(int argc, char **argv)
                 int igamma; /* 0 = linear encoding, 1 = BT.709 */
                 for (igamma = 0; igamma <= 1; igamma++)
                   { if (igamma != 0)
-                      { float_image_apply_gamma(msk, ic, BT_GAMMA, BT_BIAS); }
+                      { float_image_apply_gamma(msk, ic, BT_ENC_EXPO, BT_ENC_BIAS); }
                     char *msk_name = jsprintf("%s-%04dx%04d-o%01d-r%01d-m%01d-%c",
                              prefix, NX, NY, ord, iround, imodf, "LG"[igamma]
                     );

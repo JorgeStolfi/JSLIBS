@@ -1,7 +1,6 @@
 // See test_minu_tools.h
-// Last edited on 2024-11-08 16:54:59 by stolfi
+// Last edited on 2024-12-05 10:35:32 by stolfi
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

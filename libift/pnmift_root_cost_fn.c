@@ -1,7 +1,6 @@
 /* pnmift_root_cost_fn.c - implementation of pnmift_root_cost_fn.h */
-/* Last edited on 2023-03-07 17:14:01 by stolfi */
+/* Last edited on 2024-12-05 10:29:19 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>

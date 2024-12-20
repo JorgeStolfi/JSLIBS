@@ -1,7 +1,6 @@
 /* See epswr_dim.h */
-/* Last edited on 2023-02-19 22:29:03 by stolfi */
+/* Last edited on 2024-12-05 10:13:49 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 
 #include <affirm.h>

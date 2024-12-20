@@ -1,9 +1,8 @@
 /* See {gem.h} */
-/* Last edited on 2014-07-23 19:48:50 by stolfilocal */
+/* Last edited on 2024-12-05 10:25:50 by stolfi */
 
 #define gem_C_copyright "Copyright © 2014 State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <assert.h>
 

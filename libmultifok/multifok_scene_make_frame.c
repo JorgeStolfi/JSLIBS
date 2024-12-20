@@ -1,7 +1,6 @@
 /* See {multifok_scene.h}. */
-/* Last edited on 2024-10-28 15:14:10 by stolfi */
+/* Last edited on 2024-12-15 10:46:09 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -37,39 +36,29 @@ multifok_frame_t *multifok_scene_make_frame
     multifok_scene_t *scene, 
     multifok_scene_tree_t *tree,
     multifok_scene_raytrace_pattern_t *pattern,
+    r3_t *light_dir,
+    double ambient,
     double zFoc, 
     double zDep, 
-    int32_t HS,
-    int32_t KR,
+    uint32_t HS,
+    uint32_t KR,
     bool_t verbose,
-    multifok_raytrace_debug_pred_t *debug_pix,
-    multifok_raytrace_report_ray_proc_t *report_ray
+    multifok_raytrace_debug_pred_t *debug_pixel,
+    multifok_raytrace_report_ray_proc_t *report_ray,
+    multifok_raytrace_report_pixel_proc_t *report_pixel
   )
   {
     demand((NX >= 10) && (NY >= 10), "image is too small");
     demand(zDep > 0.0, "invalid {zDep}");
     
     double zMin = scene->dom[2].end[0]; /* Lower bound for {Z} in scene. */
-    
-    /* Pixel sub-sampling points: */
-    int32_t NW = 2*HS+1; /* Pixel subsampling window width and height. */
-    int32_t NS = NW*NW;  /* Number of pixel sub-sampling points. */
-    r2_t *uSmp;
-    double *wSmp;
-    multifok_sampling_choose_pixel_sampling_points_and_weights(HS, &NS, &uSmp, &wSmp, verbose);
-    
-    /* Choose the relative ray tilts and weights: */
-    int32_t NR; /* Actual number of aperture rays. */
-    r2_t *tRay;
-    double *wRay;
-    multifok_sampling_choose_ray_tilts_and_weights(KR, NS, &NR, &tRay, &wRay, verbose);
-    if (KR == 0)
-      { assert(NR == 1); }
-    else
-      { assert(NR >= NS);
-        assert((NR % NS) == 0);
-        assert(NR/NS >= KR);
-      }
+        
+    multifok_sampling_t *samp = multifok_sampling_choose(HS, KR, verbose);
+
+    uint32_t NS = samp->NS;  /* Number of sampoints (sub-sampling points) per pixel. */
+    /* Paranoia: */
+    assert(NS >= 1);
+    assert(KR >= 1);
      
     auto void trace_scene(r3_t *pR, r3_t *dR, bool_t debug_loc, r3_t *pHit_P, int32_t NC_loc, float colr[]);
       /* A ray-tracing function suitable for the {trace_ray} argument of
@@ -103,12 +92,11 @@ multifok_frame_t *multifok_scene_make_frame
     
     multifok_frame_t *frame = multifok_raytrace_make_frame
       ( NC, NX, NY, &trace_scene, &map_point, 
-        &dRef, zFoc, zDep, NS, uSmp, wSmp, NR, tRay, wRay, 
-        verbose, debug_pix, report_ray
+        &dRef, zFoc, zDep, samp, 
+        verbose, debug_pixel, report_ray, report_pixel
       );
     
-    free(tRay);
-    free(wRay);
+    multifok_sampling_free(samp);
 
     return frame;
     
@@ -138,10 +126,7 @@ multifok_frame_t *multifok_scene_make_frame
               { fprintf(stderr, "        ray hit at Z = %16.12f, outside range {%16.12f _ %16.12f]\n", hHit_ray, zRange.end[0], zRange.end[1]);
                 assert(FALSE);
               }
-            /* Compute the hit point's color: */
-            r3_t light_dir = (r3_t){{ 2.0, 3.0, 4.0 }};
-            (void)r3_dir(&light_dir, &light_dir);
-            frgb_t colr_ray = multifok_scene_raytrace_compute_hit_color(oHit_ray, &(pHit_ray), pattern, &light_dir);
+            frgb_t colr_ray = multifok_scene_raytrace_compute_hit_color(oHit_ray, &(pHit_ray), pattern, light_dir, ambient);
             for (uint32_t ic = 0;  ic < NC; ic++) { colr[ic] = colr_ray.c[ic]; }
           }
         (*pHit_P) = pHit_ray;

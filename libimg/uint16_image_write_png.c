@@ -1,5 +1,5 @@
 /* See {uint16_image_write_png.h} */
-/* Last edited on 2017-09-14 16:48:40 by jstolfi */
+/* Last edited on 2024-12-05 07:53:19 by stolfi */
 
 /* Created by R. Minetto (IC-UNICAMP) as {ipng.c} sometime in 2008--2009. */
 /* Adapted by J. Stolfi (IC-UNICMP) on 2011-05-14. */
@@ -37,9 +37,9 @@ void uint16_image_write_png_file(FILE *wr, uint16_image_t *img, double gamma, bo
     bool_t debug = FALSE;
     bool_t debug_conv = FALSE;
     
-    png_uint_32 chns = img->chns;
-    png_uint_32 cols = img->cols;
-    png_uint_32 rows = img->rows;
+    png_uint_32 chns = (uint32_t)img->chns;
+    png_uint_32 cols = (uint32_t)img->cols;
+    png_uint_32 rows = (uint32_t)img->rows;
     
     uint16_t imaxval = img->maxval;  /* Image's {maxval}. */
     demand(imaxval + 0 <= 65535, "maxval is too big"); /* Paranoia, since {uint16_t} is 16 bits. */
@@ -60,7 +60,7 @@ void uint16_image_write_png_file(FILE *wr, uint16_image_t *img, double gamma, bo
     /* Pick for the smallest {k} such that {imaxval} divides {2^k-1}; or 16 if none: */
     uint8_t img_smp_bits = 16;  /* . */
     uint16_t omaxval = 65535; 
-    for (uint32_t k = 1;  k < 16; k++) 
+    for (int32_t k = 1;  k < 16; k++) 
       { uint32_t kval = (1u << k) - 1u;
         if ((kval % imaxval) == 0)
           { img_smp_bits = (uint8_t)k; 

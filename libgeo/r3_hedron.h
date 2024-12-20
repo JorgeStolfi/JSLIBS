@@ -1,10 +1,9 @@
 /* r3_hedron.h --- building special polyhedra */
-/* Last edited on 2024-11-20 12:55:48 by stolfi */
+/* Last edited on 2024-12-05 10:27:57 by stolfi */
 
 #ifndef r3_hedron_H
 #define r3_hedron_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <r3.h>

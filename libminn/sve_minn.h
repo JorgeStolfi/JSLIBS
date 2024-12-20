@@ -2,7 +2,7 @@
 #define sve_minn_H
 
 /* Quadratic minimzation by the simplex vertex-edge method. */
-/* Last edited on 2024-11-08 19:53:33 by stolfi */
+/* Last edited on 2024-12-05 13:18:14 by stolfi */
 
 /* SIMPLICES
 
@@ -34,13 +34,12 @@
   
   The number of such /nodes/ is {K(n) = (n+1)*(n+2)/2}. */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>
 #include <sign.h>
 
-void sve_minn_step(int32_t n, double Fv[], double cm[], bool_t debug, bool_t debug_system);
+void sve_minn_step(uint32_t n, double Fv[], double cm[], bool_t debug, bool_t debug_system);
   /* Given the values {Fv[0..K(n)-1]} of a quadratic function {F} at the 
     nodes of some {n}-simplex {V}, returns in {cm[0..n]} 
     the barycentric coordinates of the stationary point of {F} in the 
@@ -50,13 +49,13 @@ void sve_minn_step(int32_t n, double Fv[], double cm[], bool_t debug, bool_t deb
     that {Fv[i*(i+1)/2+j] == F(V(i,j))} for all {i,j} such that 
     {0 <= j <= i <= n}. */
 
-typedef double sve_goal_t(int32_t n, double x[]);
+typedef double sve_goal_t(uint32_t n, double x[]);
   /* The type of a procedure that can be provided as the {F} parameter to
     {sve_sample_function} and {sve_optimize} below. It should compute
     some function of the vector {x[0..n-1]}. The function had better be
     C2 near the optimum for fast convergence. */
     
-void sve_sample_function(int32_t n, sve_goal_t *F, double v[], double Fv[]);
+void sve_sample_function(uint32_t n, sve_goal_t *F, double v[], double Fv[]);
   /* Evaluates the {n}-variate goal function {F} at the nodes of an
     {n}-simplex {V} in {R^n}, ad stores the values into
     {Fv[0..K(n)-1]}, in the order expected by {sve_minn_step}.
@@ -66,7 +65,7 @@ void sve_sample_function(int32_t n, sve_goal_t *F, double v[], double Fv[]);
     More precisely, sets {Fv[i*(i+1)/2+j]} to {F(V(i,j))} for all
     {i,j} such that {0 <= j <= i <= n}. */
 
-typedef bool_t sve_pred_t(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius);
+typedef bool_t sve_pred_t(uint32_t iter, uint32_t n, double x[], double Fx, double dist, double step, double radius);
   /* The type of a procedure that can be provided as the {OK} parameter to
     {sve_minn_iterate} below. It should check the current solution
     {x[0..n-1]} and the corresponding goal function value {Fx}, and
@@ -77,13 +76,13 @@ typedef bool_t sve_pred_t(int32_t iter, int32_t n, double x[], double Fx, double
     {step} is the distance from the previous iteration point, or {dMax} if {iter}
     is zero; and {radius} is the tentative radius of the probe simplex for the next iteration. */
  
-typedef double sve_proj_t(int32_t n, double x[], double Fx);
+typedef double sve_proj_t(uint32_t n, double x[], double Fx);
   /* The type of a procedure that can be provided as the {project} parameter to
     {sve_minn_iterate} below.  It can modify the current guess {x[0..n-1]}
     and return a paossibly changed value of the goal function at that point. */
    
 void sve_minn_iterate
-  ( int32_t n, 
+  ( uint32_t n, 
     sve_goal_t *F, 
     sve_pred_t *OK,
     sve_proj_t *Proj,
@@ -97,7 +96,7 @@ void sve_minn_iterate
     double rMin, 
     double rMax,
     double minStep,
-    int32_t maxIters,
+    uint32_t maxIters,
     bool_t debug,
     bool_t debug_probes
   );

@@ -1,7 +1,5 @@
 /* See {btc_bubble_nl_opt_add_integer_parameter_bias.h} */
-/* Last edited on 2015-04-20 00:47:50 by stolfilocal */
-
-#define _GNU_SOURCE
+/* Last edited on 2024-12-05 10:41:53 by stolfi */
 
 #include <btc_bubble_nl_opt_add_integer_parameter_bias.h>
 

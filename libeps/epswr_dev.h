@@ -1,5 +1,5 @@
 /* epswr_dev.h - draw EPS files in Device coordinates. */
-/* Last edited on 2024-06-22 18:46:57 by stolfi */
+/* Last edited on 2024-12-05 10:13:42 by stolfi */
 
 #ifndef epswr_dev_H
 #define epswr_dev_H
@@ -25,7 +25,6 @@
     { epswr_dev_end_figure(eps);                             }
  */
   
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

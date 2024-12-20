@@ -2,9 +2,8 @@
 #define minn_plot_H
 
 /* Plots a minimizer's goal function in a 1D or 2D subspace of its domain. */
-/* Last edited on 2024-11-03 21:33:13 by stolfi */
+/* Last edited on 2024-12-05 13:14:30 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 
@@ -15,7 +14,7 @@
    
 void minn_plot_1D_gnuplot
   ( FILE *wr, 
-    int32_t nx, 
+    uint32_t nx, 
     double org[], 
     double u[],
     double rad,
@@ -32,7 +31,7 @@ void minn_plot_1D_gnuplot
 
 void minn_plot_2D_gnuplot
   ( FILE *wr, 
-    int32_t nx, 
+    uint32_t nx, 
     double org[], 
     double u0[],
     double rad0,
@@ -68,7 +67,7 @@ void minn_plot_2D_gnuplot
     {F(nx,v)}.*/
  
 float_image_t *minn_plot_2D_float_image
-  ( int32_t nx, 
+  ( uint32_t nx, 
     double org[], 
     double u0[],
     double rad0,

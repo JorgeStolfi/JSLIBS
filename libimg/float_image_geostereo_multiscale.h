@@ -2,9 +2,8 @@
 #define float_image_geostereo_multiscale_H
 
 /* Tools for multiscale geometric stereo reconstruction from image pairs. */
-/* Last edited on 2017-06-25 03:11:17 by stolfilocal */ 
+/* Last edited on 2024-12-05 10:29:37 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdio.h>
 
 #include <bool.h>
@@ -13,10 +12,10 @@
 void float_image_geostereo_multiscale
   ( float_image_t *f1,  /* Image 1. */
     float_image_t *f2,  /* Image 2. */
-    int nscales,        /* Number of scales to consider (0 = uniscale). */
-    int ncands,         /* Number of candidates to keep. */
-    int rx,             /* Window half-width. */
-    int ry,             /* Window half-height. */
+    int32_t nscales,        /* Number of scales to consider (0 = uniscale). */
+    int32_t ncands,         /* Number of candidates to keep. */
+    int32_t rx,             /* Window half-width. */
+    int32_t ry,             /* Window half-height. */
     double dmin,        /* Minimum signed displacement (pixels). */
     double dmax,        /* Maximum signed displacement (pixels). */
     float_image_t **fd, /* (OUT) Dispmap image. */
@@ -35,8 +34,8 @@ void float_image_geostereo_refine_and_prune_displacement_map
     float_image_t *gs,  /* Score map for halfsize images. */
     float_image_t *f1,  /* Full-size image 1. */
     float_image_t *f2,  /* Full-size image 2. */
-    int rx,             /* Window half-width. */
-    int ry,             /* Window half-height. */
+    int32_t rx,             /* Window half-width. */
+    int32_t ry,             /* Window half-height. */
     double dmin,        /* Minimum signed displacement (pixels). */
     double dmax,        /* Maximum signed displacement (pixels). */
     float_image_t *fd,  /* (OUT) Dispmap for full-size images. */

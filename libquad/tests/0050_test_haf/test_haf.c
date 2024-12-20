@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of the {haf.h} procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-06-20 11:33:10 by stolfi */ 
+/* Last edited on 2024-12-05 10:39:47 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2023  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
@@ -15,7 +15,6 @@
 #define PROG_HELP \
   "  " PROG_NAME ""
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>

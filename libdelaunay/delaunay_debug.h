@@ -2,9 +2,8 @@
 #define delaunay_debug_H
 
 /* Debugging tools for {delaunay.c}. */
-/* Last edited on 2023-02-20 06:10:02 by stolfi */
+/* Last edited on 2024-12-05 10:25:03 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
  
 #include <quad.h>

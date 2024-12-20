@@ -1,7 +1,6 @@
 /* See {r2_align_multiscale.h}. */
-/* Last edited on 2023-11-25 18:26:15 by stolfi */
+/* Last edited on 2024-12-05 10:20:06 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdint.h>
 #include <limits.h>

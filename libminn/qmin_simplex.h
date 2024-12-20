@@ -1,10 +1,11 @@
 /* qmin_simplex.h - quadratic minimization in a simplex. */
-/* Last edited on 2024-11-29 22:24:53 by stolfi */
+/* Last edited on 2024-12-05 13:09:48 by stolfi */
 
 #ifndef qmin_simplex_H
 #define qmin_simplex_H
 
 #include <stdio.h>
+#include <stdint.h>
 
 /* In all the procedures below, two-dimensional matrices are stored
   into one-dimensional vectors, in row-by-row order. That is, an {m×n}

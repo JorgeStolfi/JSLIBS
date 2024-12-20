@@ -1,10 +1,9 @@
 /* fboxlist.h -- Linked list of f-boxes */
-/* Last edited on 2023-02-20 06:37:19 by stolfi */
+/* Last edited on 2024-12-05 10:21:59 by stolfi */
 
 #ifndef fboxlist_h
 #define fboxlist_h
 
-#define _GNU_SOURCE
 #include <fbox.h>
 
 typedef struct FBoxListNode /* Node of a list of f-boxes. */

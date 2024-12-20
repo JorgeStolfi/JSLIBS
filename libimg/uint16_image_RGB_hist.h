@@ -1,5 +1,5 @@
 /* uint16_image_RGB_hist.h - color histogram tools */
-/* Last edited on 2009-01-07 01:38:23 by stolfi */ 
+/* Last edited on 2024-12-05 07:33:00 by stolfi */ 
 
 /* Sub-clone of Jef Poskanzer's ppmcmap.h */
 
@@ -11,10 +11,13 @@
 typedef struct ppm_pixel_t { uint16_t c[3]; } ppm_pixel_t;
   /* An RGB pixel. */
 
-typedef struct uint16_image_RGB_hist_item { ppm_pixel_t color; int value; } uint16_image_RGB_hist_item;
+typedef struct uint16_image_RGB_hist_item 
+  { ppm_pixel_t color; 
+    int value; 
+  } uint16_image_RGB_hist_item;
   /* An entry of an RGB histogram. */
 
-typedef struct uint16_image_RGB_hist_item* uint16_image_RGB_hist_vector;
+typedef uint16_image_RGB_hist_item* uint16_image_RGB_hist_vector;
 
 uint16_image_RGB_hist_vector uint16_image_RGB_hist_build 
   ( uint16_t** samples, 

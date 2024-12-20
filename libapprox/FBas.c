@@ -1,10 +1,9 @@
 /* See FBas.h */
-/* Last edited on 2023-02-27 08:15:38 by stolfi */
+/* Last edited on 2024-12-05 13:07:17 by stolfi */
 /* Copyright © 2003 by Jorge Stolfi and Anamaria Gomide, the
   University of Campinas, Brazil. See the rights and conditions
   notice at the end of this file. */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -16,7 +15,7 @@
 #include <fget.h>
 #include <nget.h>
 #include <filefmt.h>
-#include <gauss_elim.h>
+#include <gausol_solve.h>
 #include <rmxn.h>
 #include <rn.h>
 #include <bool.h> 
@@ -34,7 +33,7 @@ void FBas_WriteAsSubclass(FBas *bas, FILE *wr);
     calls the corresponding {write} method (which must shadow,
     but must not override, the {write} method of {bas}. */
 
-void FBas_PrintSystem(int32_t ne, int32_t nc, double *A, int32_t nb);
+void FBas_PrintSystem(uint32_t ne, uint32_t nc, double *A, uint32_t nb);
   /* Prints the system matrix {A} which is assumed to have 
     {ne} rows and {nc} columns. Prints dividing lines after the 
     first {nb} equations and unknowns. */
@@ -63,15 +62,15 @@ void FBas_PrintSystem(int32_t ne, int32_t nc, double *A, int32_t nb);
 
 void FBas_BuildLeastSquaresSystem
   ( FBas *bas,      /* Basis to use. */  
-    int32_t nb,         /* Number of basis elements to use. */
-    int32_t np,         /* Number of samples. */
-    int32_t dp,         /* Coordinates per sample. */
+    uint32_t nb,         /* Number of basis elements to use. */
+    uint32_t np,         /* Number of samples. */
+    uint32_t dp,         /* Coordinates per sample. */
     double *P,      /* Sample positions. */ 
-    int32_t dv,         /* Data values per sample. */
+    uint32_t dv,         /* Data values per sample. */
     double *V,      /* Sample values. */ 
     double bias,    /* Bias for the internal energy. */
-    int32_t *neP,       /* OUT: Number of equations (rows of system matrix). */
-    int32_t *ncP,       /* OUT: Number of variables and indep terms (cols). */
+    uint32_t *neP,       /* OUT: Number of equations (rows of system matrix). */
+    uint32_t *ncP,       /* OUT: Number of variables and indep terms (cols). */
     double **AP     /* OUT: Matrix of linear system, stored by rows. */
   );
   /* Sets up a linear system {M X + U = 0} for data fitting by least
@@ -81,14 +80,14 @@ void FBas_BuildLeastSquaresSystem
 
 void FBas_BuildInterpolationSystem
   ( FBas *bas,      /* Basis to use. */  
-    int32_t nb,         /* Number of basis elements to use. */
-    int32_t np,         /* Number of samples. */
-    int32_t dp,         /* Coordinates per sample. */
+    uint32_t nb,         /* Number of basis elements to use. */
+    uint32_t np,         /* Number of samples. */
+    uint32_t dp,         /* Coordinates per sample. */
     double *P,      /* Sample positions. */ 
-    int32_t dv,         /* Data values per sample. */
+    uint32_t dv,         /* Data values per sample. */
     double *V,      /* Sample values. */ 
-    int32_t *neP,       /* OUT: Number of equations (rows of system matrix). */
-    int32_t *ncP,       /* OUT: Number of variables and indep terms (cols). */
+    uint32_t *neP,       /* OUT: Number of equations (rows of system matrix). */
+    uint32_t *ncP,       /* OUT: Number of variables and indep terms (cols). */
     double **AP     /* OUT: Matrix of linear system, stored by rows. */
   );
   /* Sets up a linear system {M X + U = 0} for data fitting by
@@ -147,19 +146,18 @@ FBas *FBas_Read(FILE *rd)
 bool_t FBas_Debug = TRUE;
 
 void FBas_Fit
-  ( int32_t np,         /* Number of samples. */
-    int32_t dp,         /* Number of coordinates per sample. */
+  ( uint32_t np,         /* Number of samples. */
+    uint32_t dp,         /* Number of coordinates per sample. */
     double *P,      /* Sample positions. */ 
-    int32_t dv,         /* Number of data values per sample. */
+    uint32_t dv,         /* Number of data values per sample. */
     double *V,      /* Sample values. */  
     FBas *bas,      /* Basis to use. */  
-    int32_t nb,         /* How many elements of {bas} to use. */
+    uint32_t nb,         /* How many elements of {bas} to use. */
     double *W       /* OUT: coefficients of fit. */
   )
   { if(FBas_Debug)
       { fprintf(stderr, "-- samples --\n");
-        int32_t k;
-        for (k = 0; k < np; k++)
+        for (int32_t k = 0; k < np; k++)
           { double *Pk = &(P[dp*k]);
             double *Vk = &(V[dv*k]);
             fprintf(stderr, "P[%02d] =", k); 
@@ -186,15 +184,16 @@ void FBas_Fit
       }
     /* Solve system: */   
     if (FBas_Debug) { FBas_PrintSystem(ne, nc, A, nb); }
-    gauss_elim_triangularize(ne, nc, A, TRUE, 0.0);
-    gauss_elim_diagonalize(ne, nc, A);
-    gauss_elim_normalize(ne, nc, A);
+    
+    gausol_triangularize(ne, nc, A, TRUE, 0.0);
+    gausol_diagonalize(ne, nc, A);
+    gausol_normalize(ne, nc, A);
     if (FBas_Debug) { FBas_PrintSystem(ne, nc, A, nb); }
 
     /* Extract solution: */
     int32_t nx = nc - dv;
     double X[nx*dv];
-    int32_t rank_ext = gauss_elim_extract_solution(ne, nc, A, dv, X);
+    int32_t rank_ext = gausol_extract_solution(ne, nc, A, dv, X);
     assert(rank_ext <= ne);
     free(A);
 

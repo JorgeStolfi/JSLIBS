@@ -2,9 +2,8 @@
 #define float_image_read_pnm_H
 
 /* Reading float images from PNM (PPM/PGM/PBM) image files. */
-/* Last edited on 2017-06-22 02:06:34 by stolfilocal */
+/* Last edited on 2024-12-05 10:29:54 by stolfi */
 
-#define _GNU_SOURCE
 #include <bool.h>
 #include <float_image.h>
 
@@ -33,7 +32,7 @@ float_image_t *float_image_read_pnm_named
     NOTE: These parameters were added on 2009-02-24. */
 
 float_image_t **float_image_read_pnm_named_list
-  ( int n,          /* Number of images to read. */
+  ( int32_t n,          /* Number of images to read. */
     char *fname[],  /* PPM/PGM/PBM file names (with extensions). */
     bool_t isMask,  /* TRUE for masks, FALSE for images. */
     double gamma,   /* Gamma to use in decoding (1 = linear decoding). */

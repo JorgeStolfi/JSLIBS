@@ -1,7 +1,6 @@
 /* See {btc_date_lookup.h} */
-/* Last edited on 2015-04-20 01:32:52 by stolfilocal */
+/* Last edited on 2024-12-05 10:23:26 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

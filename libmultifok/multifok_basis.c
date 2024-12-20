@@ -1,7 +1,6 @@
 /* See {multifok_basis.h}. */
-/* Last edited on 2024-10-20 11:00:35 by stolfi */
+/* Last edited on 2024-12-05 14:28:15 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -12,6 +11,7 @@
 #include <vec.h>
 #include <jsmath.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <affirm.h>
 #include <bool.h>
 #include <i2.h>
@@ -75,17 +75,17 @@ void multifok_basis_normalize_prod_range(multifok_basis_t *basis);
 
 multifok_basis_t *multifok_basis_make
   ( multifok_basis_type_t type,
-    int32_t NW, 
+    uint32_t NW, 
     double ws[],
     bool_t ortho,
     bool_t verbose
   )
   { demand((NW > 0) && ((NW % 2) == 1), "window size {NW} must be odd");
     
-    int32_t NS = multifok_window_num_samples(NW);
+    uint32_t NS = multifok_window_num_samples(NW);
   
     multifok_basis_t *basis = talloc(1, multifok_basis_t);
-    int32_t NB_max = NS;  /* May be reduced later. */
+    uint32_t NB_max = NS;  /* May be reduced later. */
     basis->bas = talloc(NB_max, double*);
     basis->belName = talloc(NB_max, char*); 
     for (uint32_t i = 0;  i < NB_max; i++) 
@@ -116,12 +116,12 @@ multifok_basis_t *multifok_basis_make
     /* Free unused space: */
     if (basis->NB < NB_max)
       { /* Free unused elements: */
-        for (int32_t kb = basis->NB; kb < NB_max; kb++)
+        for (uint32_t kb = basis->NB; kb < NB_max; kb++)
           { free(basis->bas[kb]); 
             if (basis->belName[kb] != NULL) { free(basis->belName[kb]); }            
           }
-        basis->bas = realloc(basis->bas, basis->NB*sizeof(double*));
-        basis->belName = realloc(basis->belName, basis->NB*sizeof(char*));
+        basis->bas = retalloc(basis->bas, basis->NB, double*);
+        basis->belName = retalloc(basis->belName, basis->NB, char*);
       }
 
     return basis;
@@ -132,7 +132,7 @@ multifok_basis_t *multifok_basis_make
 void multifok_basis_fill_CANC(multifok_basis_t *basis)
   {
     demand(basis->NW == 3, "{CANC} basis requires {NW=3}");
-    int32_t NS = multifok_window_num_samples(basis->NW);
+    uint32_t NS = multifok_window_num_samples(basis->NW);
     basis->NB = 0;
 
     addbas(basis, "Soo", 00.0, 00.0, 00.0,  00.0, +1.0, 00.0,  00.0, 00.0, 00.0 ); 
@@ -152,7 +152,7 @@ void multifok_basis_fill_CANC(multifok_basis_t *basis)
 
 void multifok_basis_fill_LAPL_CUBE_DIFF(multifok_basis_type_t type, multifok_basis_t *basis)
   {
-    int32_t NW = basis->NW;
+    uint32_t NW = basis->NW;
     demand(NW == 3, "{LAPL}, {DIFF}, and {CUBE} bases requires {NW=3}");
     basis->NB = 0;
     
@@ -180,18 +180,18 @@ void multifok_basis_fill_LAPL_CUBE_DIFF(multifok_basis_type_t type, multifok_bas
 
 void multifok_basis_fill_HART(multifok_basis_t *basis)
   {
-    int32_t NW = basis->NW;
+    uint32_t NW = basis->NW;
     demand((NW % 2) == 1, "window size {NW} must be odd");
-    int32_t HW = (NW-1)/2;
-    int32_t NS = multifok_window_num_samples(NW);
+    uint32_t HW = (NW-1)/2;
+    uint32_t NS = multifok_window_num_samples(NW);
 
-    int32_t NB = NS;
+    uint32_t NB = NS;
     
     /* Generate tables {fre[0..NB-1]} of frequency vectors: */
     i2_t freq[NB];
-    int32_t kb = 0; /* Basis element index. */
-    for (int32_t fy = -HW; fy <= +HW; fy++)
-      { for (int32_t fx = -HW; fx <= +HW; fx++)
+    uint32_t kb = 0; /* Basis element index. */
+    for (int32_t fy = -(int32_t)HW; fy <= +(int32_t)HW; fy++)
+      { for (int32_t fx = -(int32_t)HW; fx <= +(int32_t)HW; fx++)
           { freq[kb] = (i2_t){{ fx, fy}}; kb++; }
       }
     assert(kb == NB);
@@ -199,8 +199,8 @@ void multifok_basis_fill_HART(multifok_basis_t *basis)
     /* Sort the table by increasing freq modulus: */
     for (uint32_t ib = 0;  ib < NB; ib++)
       { /* The {kb} smallest freqs are {freq[0..kb-1]} */
-        int32_t jbMin = ib;
-        for (int32_t jb = ib+1; jb < NB; jb++)
+        uint32_t jbMin = ib;
+        for (uint32_t jb = ib+1; jb < NB; jb++)
           { if (i2_norm_sqr(&(freq[jb])) < i2_norm_sqr(&(freq[jbMin])))
               { jbMin = jb; }
           }
@@ -213,9 +213,9 @@ void multifok_basis_fill_HART(multifok_basis_t *basis)
       { 
         int32_t fx = freq[kb].c[0];
         int32_t fy = freq[kb].c[1];
-        for (int32_t iy = -HW; iy <= +HW; iy++)
-          { for (int32_t ix = -HW; ix <= +HW; ix++)
-              { int32_t ks = (iy+HW)*NW + (ix+HW);
+        for (int32_t iy = -(int32_t)HW; iy <= +(int32_t)HW; iy++)
+          { for (int32_t ix = -(int32_t)HW; ix <= +(int32_t)HW; ix++)
+              { int32_t ks = (iy+(int32_t)(HW*NW)) + (ix+(int32_t)HW);
                 double z = 0.125 + ((double)(fx*ix + fy*iy))/((double)NW); /* Hartley phase */
                 double f = sin(2*M_PI*z);
                 basis->bas[kb][ks] = f;
@@ -251,13 +251,13 @@ void multifok_basis_add_elem_and_name_3x3
     double x20, double x21, double x22
   )
   {
-    int32_t NW = basis->NW;
+    uint32_t NW = basis->NW;
     demand(NW == 3, "window size should be 3x3");
-    int32_t NB_max = multifok_window_num_samples(NW);
-    int32_t ib = basis->NB;
+    uint32_t NB_max = multifok_window_num_samples(NW);
+    uint32_t ib = basis->NB;
     assert(ib < NB_max); /* Too many elemets. */
     /* Make sure {belName[ib]} is a heap-allocated copy of {na}: */
-    basis->belName[ib] = NULL; char *(basis->belName[ib]) = jsprintf("%s", na); 
+    basis->belName[ib] = jsprintf("%s", na); 
     double *pib = basis->bas[ib];
     pib[0] = x00;
     pib[1] = x01;
@@ -273,10 +273,10 @@ void multifok_basis_add_elem_and_name_3x3
 
 void multifok_basis_orthize(multifok_basis_t *basis, bool_t verbose)
   { 
-    int32_t NW = basis->NW;
-    int32_t NS = multifok_window_num_samples(NW);
+    uint32_t NW = basis->NW;
+    uint32_t NS = multifok_window_num_samples(NW);
     double tiny = 1.0e-8; /* Insignificant relative length. */
-    int32_t NK = 0; /* Number of basis elements that were kept. */
+    uint32_t NK = 0; /* Number of basis elements that were kept. */
     for (uint32_t kb = 0;  kb < basis->NB; kb++)
       { 
         /* Original norm of element {basis->bas[kb]}: */
@@ -311,9 +311,9 @@ void multifok_basis_orthize(multifok_basis_t *basis, bool_t verbose)
   }
 
 void multifok_basis_print(FILE *wr, multifok_basis_t *basis)
-  { int32_t NW = basis->NW;
-    int32_t NS = multifok_window_num_samples(NW);
-    int32_t HW = (NW-1)/2;
+  { uint32_t NW = basis->NW;
+    uint32_t NS = multifok_window_num_samples(NW);
+    uint32_t HW = (NW-1)/2;
     
     fprintf(wr, "--- basis ---------------------------------------------\n");
     
@@ -324,9 +324,9 @@ void multifok_basis_print(FILE *wr, multifok_basis_t *basis)
     
     /* Column names (sample names): */
     fprintf(wr, "%3s %-12s   ", "", "");
-    for (uint32_t j = 0;  j < NS; j++)
-      { int32_t ix = (j % NW) - HW;
-        int32_t iy = (j / NW) - HW;
+    for (int32_t j = 0;  j < NS; j++)
+      { int32_t ix = (j % (int32_t)NW) - (int32_t)HW;
+        int32_t iy = (j / (int32_t)NW) - (int32_t)HW;
         char *sname = multifok_window_sample_name("S", ix, iy);
         fprintf(wr, " %10s", sname);
       }
@@ -382,7 +382,7 @@ void multifok_basis_ortho_check(FILE *wr, multifok_basis_t *basis)
     fprintf(wr, "-------------------------------------------------------\n");
   }
     
-void multifok_basis_module_check(int32_t NW, multifok_basis_type_t type, bool_t ortho, bool_t verbose)
+void multifok_basis_module_check(uint32_t NW, multifok_basis_type_t type, bool_t ortho, bool_t verbose)
   { double *ws = multifok_window_weights_binomial(NW);
     
     multifok_basis_t *basis = multifok_basis_make(type, NW, ws, ortho, verbose);
@@ -412,15 +412,14 @@ multifok_basis_type_t multifok_basis_type_from_text(char *name, bool_t fail)
     if (fail) { demand(FALSE, "invalid basis name"); } else { return -1; }
   }
 
-void multifok_basis_elem_names_write(FILE *wr, int32_t NB, char *belName[])  
+void multifok_basis_elem_names_write(FILE *wr, uint32_t NB, char *belName[])  
   { for (uint32_t kb = 0;  kb < NB; kb++)
       { fprintf(wr, "%s\n", belName[kb]); }
     fflush(wr);
   }
 
 void multifok_basis_elem_names_write_named(char *outPrefix, multifok_basis_t *basis)  
-  { char *fname = NULL;
-    char *fname = jsprintf("%s-bnames.txt", outPrefix);
+  { char *fname = jsprintf("%s-bnames.txt", outPrefix);
     FILE *wr = open_write(fname, TRUE);
     multifok_basis_elem_names_write(wr, basis->NB, basis->belName);
     fclose(wr);

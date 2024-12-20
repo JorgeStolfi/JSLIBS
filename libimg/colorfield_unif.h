@@ -36,7 +36,7 @@ typedef struct cfld_unif_params_t  /* Preprocessed params for unif field */
 cfld_unif_params_t *cfld_unif_compute_params
   ( cfld_unif_args_t *rfa, 
     frgb_adjuster_t *adjust,
-    int logarithmic
+    bool_t logarithmic
   );
   /* Computes the gamma-corrected reference color {wp->color} from the
     user-specified one {rfa->color}, by applying the color adjustments embodied
@@ -44,11 +44,11 @@ cfld_unif_params_t *cfld_unif_compute_params
 
 void cfld_unif_eval
   ( cfld_unif_params_t *rfp,
-    int logarithmic, 
-    int col, 
-    int row,
+    bool_t logarithmic, 
+    int32_t col, 
+    int32_t row,
     frgb_t *fv,
-    int chns
+    int32_t chns
   );
   /* Evaluates the uniform field described by {rfp} at the pixel 
     in column {col} and row {row}. I.e., just returns {rfp->color}.

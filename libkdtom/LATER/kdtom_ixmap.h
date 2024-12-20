@@ -1,10 +1,9 @@
 /* An inrernal k-d-tree node that permutes, reverses, and shifts indices. */
-/* Last edited on 2021-07-08 15:50:41 by jstolfi */
+/* Last edited on 2024-12-05 10:32:28 by stolfi */
 
 #ifndef kdtom_ixmap_H
 #define kdtom_ixmap_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 
 #include <kdtom.h>

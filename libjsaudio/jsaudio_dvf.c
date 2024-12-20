@@ -1,7 +1,6 @@
 /* See jsaudio_dvf.h */
-/* Last edited on 2023-03-02 12:31:47 by stolfi */
+/* Last edited on 2024-12-05 10:32:17 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

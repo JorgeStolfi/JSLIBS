@@ -1,5 +1,5 @@
 /* Test of jspnm.h, uint16_image.h */
-/* Last edited on 2017-06-22 02:56:52 by stolfilocal */
+/* Last edited on 2024-12-05 22:05:42 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -9,6 +9,7 @@
 
 #include <bool.h>
 #include <affirm.h>
+#include <jsprintf.h>
 #include <jspnm.h>
 #include <uint16_image.h>
 #include <uint16_image_read_pnm.h>
@@ -74,9 +75,6 @@ void do_uint16_image_io_test(char *name, bool_t raw, bool_t big, int kind)
     fprintf(stderr, "testing name = %s parms = %s %s %s\n", name, VAR, MXV, EXT);
     fprintf(stderr, "\n");
 
-    char *fname;
-    
-    fname = NULL;
     char *fname = jsprintf("%s-rd-%s-%s.%s", name, VAR, MXV, EXT);
     uint16_image_t *img = uint16_image_read_pnm_named(fname, TRUE);
     uint16_image_describe(stderr, fname, img);
@@ -86,8 +84,7 @@ void do_uint16_image_io_test(char *name, bool_t raw, bool_t big, int kind)
     ressublime_image(img, omg);
     fprintf(stderr, "\n");
 
-    fname = NULL;
-    char *fname = jsprintf("%s-wr-%s-%s.%s", name, VAR, MXV, EXT);
+    fname = jsprintf("%s-wr-%s-%s.%s", name, VAR, MXV, EXT);
     uint16_image_describe(stderr, fname, omg);
     uint16_image_write_pnm_named(fname, omg, (!raw), TRUE);
     free(fname);

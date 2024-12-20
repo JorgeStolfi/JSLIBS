@@ -1,9 +1,8 @@
 /* See {epswr_plot_2D.h}. */
-/* Last edited on 2022-10-20 06:50:26 by stolfi */
+/* Last edited on 2024-12-05 10:14:01 by stolfi */
 
 #define epswr_plot_2D_C_COPYRIGHT "Copyright © 2007 by the State University of Campinas (UNICAMP)."
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>

@@ -1,10 +1,9 @@
 /* Objects for a {multifok_scene_t}. */
-/* Last edited on 2024-10-29 18:59:18 by stolfi */
+/* Last edited on 2024-12-06 05:45:00 by stolfi */
 
 #ifndef multifok_scene_object_H
 #define multifok_scene_object_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <r3.h>
@@ -24,8 +23,14 @@ typedef enum
 #define WD_RAMP 0.70
   /* With of {ot_RAMP} inclined part relative to scene width. */ 
 
+typedef int32_t multifok_scene_object_ID_t;
+  /* Type of an object ID. */
+  
+#define multifok_scene_object_ID_NONE (-1)
+  /* An invalid or undefined ID value. */
+
 typedef struct multifok_scene_object_t
-  { int32_t ID;                        /* Object ID, used e.g. for patterning. */
+  { multifok_scene_object_ID_t ID;     /* Object ID, used e.g. for patterning. */
     multifok_scene_object_type_t type; /* Type of object. */
     interval_t bbox[3];                /* Bounding box for the object. */
     frgb_t bg;                         /* "Background" color of object texture. */
@@ -127,8 +132,8 @@ multifok_scene_object_t multifok_scene_object_foreground_throw
     {j}) will be randomly chosen in {[rMin _ rMax]}, subject to it
     fitting in {dom} as specified above. 
     
-    The procedure fails if {dom} is
-    too small for the chosen object type, given {rMin} and {margin}.
+    The procedure fails if {dom} is too small for the chosen object
+    type, given {rMin} and {margin}.
     
     The object will have random contrasting {bg} and {fg} colors.  The {ID}
     will be set to {-1}.  */

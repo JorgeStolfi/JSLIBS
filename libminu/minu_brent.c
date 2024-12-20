@@ -1,7 +1,6 @@
 // See minu_brent.h
-// Last edited on 2009-02-09 11:54:53 by stolfi
+// Last edited on 2024-12-05 10:35:13 by stolfi
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <limits.h>
 #include <math.h>

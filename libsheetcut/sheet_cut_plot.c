@@ -1,7 +1,6 @@
 /* See {sheet_cut_plot.h} */
-/* Last edited on 2024-11-20 05:24:08 by stolfi */
+/* Last edited on 2024-12-05 10:40:08 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

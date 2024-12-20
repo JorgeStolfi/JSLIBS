@@ -1,7 +1,6 @@
 /* See {hr2test_tools.h}. */
-/* Last edited on 2024-11-07 23:40:35 by stolfi */
+/* Last edited on 2024-12-05 10:19:47 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>

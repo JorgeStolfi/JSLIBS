@@ -1,11 +1,10 @@
 /* in.h --- operations on points and vectors of Z^n */
-/* Last edited on 2024-11-20 13:49:53 by stolfi */
+/* Last edited on 2024-12-05 10:27:40 by stolfi */
 /* Based on VectorN.mg, created  95-02-27 by J. Stolfi. */
 
 #ifndef in_H
 #define in_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

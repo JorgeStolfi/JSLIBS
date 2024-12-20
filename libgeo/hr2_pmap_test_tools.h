@@ -1,10 +1,9 @@
 /* Test tools for {hr2_pmap.h} test program  */
-/* Last edited on 2024-11-24 07:04:00 by stolfi */
+/* Last edited on 2024-12-05 10:27:08 by stolfi */
 
 #ifndef hr2_pmap_test_tools_H
 #define hr2_pmap_test_tools_H
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>

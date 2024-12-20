@@ -1,10 +1,8 @@
 /* Key points on floorplan of house at Boaretto da Silva 113 */
-/* Last edited on 2023-02-20 17:25:29 by stolfi */
+/* Last edited on 2024-12-05 10:20:56 by stolfi */
 
 #ifndef boas_define_points_H
 #define boas_define_points_H
-
-#define _GNU_SOURCE
 
 #include <bool.h>
 #include <archdraw.h>

@@ -1,10 +1,9 @@
 /* An internal k-d-tree node that has a constant value over the whole domain. */
-/* Last edited on 2021-07-16 12:18:39 by jstolfi */
+/* Last edited on 2024-12-05 10:32:48 by stolfi */
 
 #ifndef kdtom_const_H
 #define kdtom_const_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 
 #include <kdtom.h>

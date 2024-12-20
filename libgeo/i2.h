@@ -2,9 +2,8 @@
 #define i2_H
 
 /* Operations on points and vectors of Z^2 */
-/* Last edited on 2024-11-20 13:34:19 by stolfi */
+/* Last edited on 2024-12-05 10:27:34 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

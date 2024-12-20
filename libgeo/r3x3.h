@@ -1,10 +1,9 @@
 /* r3x3.h --- 3x3 matrices and operations on them */
-/* Last edited on 2024-11-20 12:58:38 by stolfi */
+/* Last edited on 2024-12-05 10:28:04 by stolfi */
 
 #ifndef r3x3_H
 #define r3x3_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

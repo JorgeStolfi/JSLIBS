@@ -1,5 +1,5 @@
 /* See uint16_image.h */
-/* Last edited on 2023-03-17 20:46:42 by stolfi */
+/* Last edited on 2024-12-05 07:52:18 by stolfi */
 
 #include <stdlib.h>
 #include <string.h>
@@ -45,7 +45,7 @@ uint16_image_t *uint16_image_new_header(int32_t cols, int32_t rows, int32_t chns
   
 uint16_t** uint16_image_alloc_pixel_array(int32_t cols, int32_t rows, int32_t chns)
   { int32_t row;
-    uint16_t **smp = (uint16_t **)pnm_malloc(rows*sizeof(uint16_t *));
+    uint16_t **smp = talloc(rows, uint16_t*);
     for (row = 0; row < rows; row++)
       { smp[row] = uint16_image_alloc_pixel_row(cols, chns); }
     return smp;
@@ -53,7 +53,7 @@ uint16_t** uint16_image_alloc_pixel_array(int32_t cols, int32_t rows, int32_t ch
   
 void uint16_image_free_pixel_array(uint16_t **smp, int32_t cols, int32_t rows, int32_t chns)
   { if (smp == NULL) { return; }
-    for (uint32_t row = 0;  row < rows; row++) 
+    for (int32_t row = 0;  row < rows; row++) 
       { uint16_image_free_pixel_row(smp[row], cols, chns); }
     free(smp);
   }
@@ -62,7 +62,7 @@ uint16_t* uint16_image_alloc_pixel_row(int32_t cols, int32_t chns)
   { if (cols == 0)
       { return (uint16_t *)NULL; }
     else
-      { return (uint16_t *)pnm_malloc(cols*chns*sizeof(uint16_t)); }
+      { return talloc(cols*chns, uint16_t); }
   }
   
 void uint16_image_free_pixel_row(uint16_t *row, int32_t cols, int32_t chns)
@@ -113,10 +113,10 @@ void uint16_image_describe(FILE *wr, char *name, uint16_image_t *img)
     /* Determine min and max pixel value: */
     uint16_t minsmp = img->maxval;
     uint16_t maxsmp = 0;
-    for (uint32_t y = 0;  y < img->rows; y++)
+    for (int32_t y = 0;  y < img->rows; y++)
       { uint16_t *ip = img->smp[y];
-        for (uint32_t x = 0;  x < img->cols; x++)
-          { for (uint32_t c = 0;  c < img->chns; c++)
+        for (int32_t x = 0;  x < img->cols; x++)
+          { for (int32_t c = 0;  c < img->chns; c++)
               { uint16_t smp = (*ip);
                 assert(smp <= img->maxval);
                 if (smp < minsmp) { minsmp = smp; }

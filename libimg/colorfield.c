@@ -9,10 +9,13 @@
 
 #include <limits.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
+
 #include <argparser.h>
+#include <bool.h>
 
 #include <frgb_ops.h>
 #include <colorfield_unif.h>
@@ -22,7 +25,7 @@
 cfld_params_t *cfld_compute_params
   ( cfld_args_t *fargs, 
     frgb_adjuster_t *adjust,
-    int logarithmic
+    bool_t logarithmic
   )
   { cfld_params_t *fp = malloc(sizeof(cfld_params_t));
     fp->kind = fargs->kind;
@@ -54,7 +57,7 @@ cfld_params_t *cfld_compute_params
     return fp;
   }
 
-void cfld_eval(cfld_params_t *fp, int col, int row, frgb_t *fv, int chns)
+void cfld_eval(cfld_params_t *fp, int32_t col, int32_t row, frgb_t *fv, int32_t chns)
   { switch(fp->kind)
       { case cfld_UNIF:
           { cfld_unif_params_t *params = (cfld_unif_params_t *)(fp->params);

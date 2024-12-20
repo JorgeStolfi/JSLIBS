@@ -1,9 +1,8 @@
 #ifndef hr2_pmap_similarity_encode_H
 #define hr2_pmap_similarity_encode_H
 
-/* Last edited on 2024-11-03 06:14:59 by stolfi */
+/* Last edited on 2024-12-05 10:27:05 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <hr2.h>

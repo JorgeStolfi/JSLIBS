@@ -2,11 +2,10 @@
 #define PROG_DESC "tests {sve_minn.h} on an image matching problem"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-23 05:31:59 by stolfi */
+/* Last edited on 2024-12-05 10:34:38 by stolfi */
 
 #define test_sve_img_match_C_COPYRIGHT "Copyright © 2009 by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>

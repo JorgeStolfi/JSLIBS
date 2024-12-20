@@ -1,7 +1,6 @@
 /* See fboxheap.h */
-/* Last edited on 2023-02-20 06:39:18 by stolfi */
+/* Last edited on 2024-12-05 10:21:51 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdint.h>
 

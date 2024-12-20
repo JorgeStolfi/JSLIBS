@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of the {g3map.h} procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2022-10-20 06:28:46 by stolfi */ 
+/* Last edited on 2024-12-05 10:28:58 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2015  State University of Campinas (UNICAMP)"
@@ -15,7 +15,6 @@
 #define PROG_HELP \
   "  " PROG_NAME ""
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>

@@ -1,5 +1,5 @@
 /* uint16_image_write_jpeg.h - routines to write images of {uint16_t} samples to JPEG files. */
-/* Last edited on 2017-06-23 01:44:11 by stolfilocal */
+/* Last edited on 2024-12-05 10:31:19 by stolfi */
 
 /* Created by R. Minetto (IC-UNICAMP) sometime in 2008--2009. */
 /* Adapted by J. Stolfi (IC-UNICMP) on 2011-05-14. */
@@ -7,7 +7,6 @@
 #ifndef uint16_image_write_jpeg_H
 #define uint16_image_write_jpeg_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

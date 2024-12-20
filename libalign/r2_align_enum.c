@@ -1,7 +1,6 @@
 /* See {r2_align_enum.h}. */
-/* Last edited on 2023-09-07 18:11:05 by stolfi */
+/* Last edited on 2024-12-05 10:20:01 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdint.h>

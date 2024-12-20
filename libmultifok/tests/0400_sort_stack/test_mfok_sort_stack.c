@@ -2,7 +2,7 @@
 #define PROG_DESC "Merges several registered images with focus blur at different heights"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-10-26 09:25:37 by stolfi */ 
+/* Last edited on 2024-12-05 10:37:34 by stolfi */ 
 /* Created on 2023-01-24 by J. Stolfi, UNICAMP */
 
 #define test_mfok_sort_stack_COPYRIGHT \
@@ -54,7 +54,6 @@
   "    Also writes an image \"{outPrefix}-zest.pgm\" with the estimated {Z} depth of the scene, based" \
   " on the sharpness scores and the focus plane positions {zFoc[ki]}."
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

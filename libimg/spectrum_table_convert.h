@@ -2,9 +2,8 @@
 #define spectrum_table_convert_H
 
 /* Tools for converting between exact and binned power spectra of images. */
-/* Last edited on 2009-01-06 23:57:19 by stolfi */ 
+/* Last edited on 2024-12-05 10:30:56 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <bool.h>
 #include <vec.h>
@@ -13,8 +12,8 @@
 
 spectrum_table_binned_t spectrum_table_convert_exact_to_binned
   ( spectrum_table_exact_t *tx,
-    int cols, 
-    int rows );
+    uint32_t cols, 
+    uint32_t rows );
   /* Converts an exact spectrum table to a binned table, 
      without blurring the entries.
      

@@ -1,8 +1,7 @@
 #ifndef gem_print_face_H
 #define gem_print_face_H
-/* Last edited on 2014-07-06 20:59:21 by stolfilocal */
+/* Last edited on 2024-12-05 10:26:03 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <gem.h>
 

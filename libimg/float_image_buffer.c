@@ -1,7 +1,8 @@
 /* See {float_image_buffer.h}. */
-/* Last edited on 2023-02-25 16:01:57 by stolfi */
+/* Last edited on 2024-12-05 00:44:12 by stolfi */
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 #include <affirm.h>
 #include <bool.h>
@@ -11,12 +12,12 @@
 
 /* Internal prototypes: */
 
-double **float_image_buffer_alloc_rows(int NC, int NX, int NB, bool_t clear);
+double **float_image_buffer_alloc_rows(int32_t NC, int32_t NX, int32_t NB, bool_t clear);
   /* Allocates NB rows of {double} samples, each  with {NC*NX} samples. */
 
 /* Implementations: */
 
-float_image_buffer_t *float_image_buffer_new(int NC, int NX, int NY, int NB)
+float_image_buffer_t *float_image_buffer_new(int32_t NC, int32_t NX, int32_t NY, int32_t NB)
   {
     demand(NC >= 0, "invalid channel count");
     demand(NX >= 0, "invalid column count"); 
@@ -38,7 +39,7 @@ float_image_buffer_t *float_image_buffer_new(int NC, int NX, int NY, int NB)
 void float_image_buffer_free(float_image_buffer_t *buf)
   { if (buf != NULL)
       { if (buf->rowptr != NULL)
-          { int k;
+          { int32_t k;
             for (k = 0; k < buf->NB; k++)
               { double **p = &(buf->rowptr[k]);
                 if (*p != NULL) { free(*p); *p = NULL; }
@@ -49,19 +50,19 @@ void float_image_buffer_free(float_image_buffer_t *buf)
       }
   }
 
-double **float_image_buffer_alloc_rows(int NC, int NX, int NB, bool_t clear)
-  { double **rowptr = (double **)notnull(malloc(NB*sizeof(double *)), "no mem");
-    int NCX = NC*NX; /* Samples per row. */
-    int yb;
+double **float_image_buffer_alloc_rows(int32_t NC, int32_t NX, int32_t NB, bool_t clear)
+  { double **rowptr = talloc(NB, double*);
+    int32_t NCX = NC*NX; /* Samples per row. */
+    int32_t yb;
     for (yb = 0; yb < NB; yb++) 
-      { double *p = rmxn_alloc(NC,NX);
+      { double *p = rmxn_alloc((uint32_t)NC, (uint32_t)NX);
         rowptr[yb] = p;
-        if (clear) { int k; for (k = 0; k < NCX; k++, p++) { (*p) = 0.0; } }
+        if (clear) { int32_t k; for (k = 0; k < NCX; k++, p++) { (*p) = 0.0; } }
       }
     return rowptr;
   }
 
-int float_image_buffer_row_pos(float_image_buffer_t *buf, int y)
+int32_t float_image_buffer_row_pos(float_image_buffer_t *buf, int32_t y)
   { 
     if (y < buf->yini) 
       { return -1; }
@@ -71,7 +72,7 @@ int float_image_buffer_row_pos(float_image_buffer_t *buf, int y)
       { return 00; }
   }
 
-double *float_image_buffer_get_row(float_image_buffer_t *buf, int y)
+double *float_image_buffer_get_row(float_image_buffer_t *buf, int32_t y)
   { 
     if(float_image_buffer_row_pos(buf,y) == 00)
       { return buf->rowptr[y % (buf->NB)]; }
@@ -79,17 +80,17 @@ double *float_image_buffer_get_row(float_image_buffer_t *buf, int y)
       { return NULL; }
   }
   
-void float_image_buffer_fill_row(float_image_buffer_t *buf, int y, double val)
+void float_image_buffer_fill_row(float_image_buffer_t *buf, int32_t y, double val)
   { 
     double *row = float_image_buffer_get_row(buf, y);
-    int NCX = buf->sz[0]*buf->sz[1];
-    int k;
+    int32_t NCX = buf->sz[0]*buf->sz[1];
+    int32_t k;
     for (k = 0; k < NCX; k++) { row[k] = val; }
   }
 
 void float_image_buffer_advance(float_image_buffer_t *buf)
   { 
-    int y = buf->ylim;
+    int32_t y = buf->ylim;
     demand(y < buf->sz[2], "no next row");
     buf->ylim++;
     if (buf->ylim - buf->yini > buf->NB) { buf->yini++; }

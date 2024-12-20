@@ -1,5 +1,5 @@
 /* See {uint16_image_read_gen.h} */
-/* Last edited on 2017-06-24 23:23:08 by stolfilocal */
+/* Last edited on 2024-12-20 17:18:51 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -11,6 +11,7 @@
 #include <bool.h>
 #include <affirm.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <argparser.h>
 
 #include <uint16_image.h>
@@ -19,6 +20,7 @@
 #include <uint16_image_read_png.h>
 
 #include <sample_conv.h>
+#include <sample_conv_gamma.h>
 #include <image_file_format.h>
 
 #include <uint16_image_read_gen.h>
@@ -26,197 +28,103 @@
 uint16_image_t *uint16_image_read_gen_named
   ( const char *fname, 
     image_file_format_t ffmt,
-    double gamma,
-    double vmax,
-    bool_t gray
+    uint32_t imaxval[], /* (OUT) Max sample value in each channel. */
+    double *expoP,      /* (OUT) Gamma correction exponent specified/implied by input file. */
+    double *biasP,      /* (OUT) Gamma correction bias parameter, idem. */
+    bool_t verbose
   )
   {
-    bool_t verbose = TRUE;
     FILE *rd = open_read(fname, verbose);
-    uint16_image_t *fimg = uint16_image_fread(rd, ffmt, gamma, vmax, gray);
+    uint16_image_t *fimg = uint16_image_read_gen_file(rd, ffmt, imaxval, expoP, biasP, verbose);
     fclose(rd);
     return fimg;
   }
   
 uint16_image_t *uint16_image_read_gen_frame
   ( const char *fpat, 
-    int fnum, 
+    int32_t fnum, 
     image_file_format_t ffmt,
-    double gamma,
-    double vmax,
-    bool_t gray
+    uint32_t imaxval[],  /* (OUT) Max sample value in each chanel. */
+    double *expoP,       /* (OUT) Gamma conversion exponent specified/implied by input file. */
+    double *biasP,       /* (OUT) Gamma conversion bias, idem. */
+    bool_t verbose
   )
   {
     /* Insert the frame number in {fpat}: */
-    int nch = char *fname = jsprintf(fpat, fnum);
-    demand(nch > 0, "invalid file name pattern");
+    char *fname = jsprintf(fpat, fnum);
+    demand(strlen(fname) != 0, "duh? empty file name");
     /* Read the file: */
-    uint16_image_t *fimg = uint16_image_read_gen_named(fname, ffmt, gamma, vmax, gray);
-
+    uint16_image_t *fimg = uint16_image_read_gen_named(fname, ffmt, imaxval, expoP, biasP, verbose);
     free(fname);
     return fimg;
   }
   
-uint16_image_t *uint16_image_fread
+uint16_image_t *uint16_image_read_gen_file
   ( FILE *rd,
     image_file_format_t ffmt,
-    double gamma,
-    double vmax,
-    bool_t gray
+    uint32_t imaxval[],  /* (OUT) Max sample value in each chanel. */
+    double *expoP,       /* (OUT) Gamma conversion exponent specified/implied by input file. */
+    double *biasP,       /* (OUT) Gamma conversion bias parameter, idem. */
+    bool_t verbose
   )
   {   
-    bool_t verbose = TRUE;
-    
     /* Read the input file as a {uint16_image_t}, without any sample conversion: */
     uint16_image_t *pimg; /* The quantized image. */
-    double gamma_file = NAN; /* Encoding gamma specified by the file itself. */
+    double expo_file = NAN; /* Encoding expo specified by the file itself. */
     double bias_file = NAN; /* Encoding bias specified by the file itself. */    
     switch (ffmt)
       {
         case image_file_format_JPG:
-          { int kind;
-            pimg = uint16_image_read_jpeg_file(rd, &kind);
+          { int32_t space;
+            pimg = uint16_image_read_jpeg_file(rd, verbose, &space);
             /* At present, {uint16_image_read_jpeg_named} can suport only two kinds. */
             /* Revise the next line if {uint16_image_read_jpeg_named} is expanded to support other kinds. */
-            assert((kind == JCS_GRAYSCALE) || (kind == JCS_RGB));
-            /* Use the client-given gamma for decoding: */
-            gamma_file = NAN;
+            /* assert((space == JCS_GRAYSCALE) || (space == JCS_RGB)); */
+            /* Use the client-given gamma correction parms for decoding: */
+            expo_file = NAN;
             bias_file = NAN;
+            /* The nominal {maxval} should be 255 for any {space}: */
+            assert(pimg->maxval == 255);
+            if (space == JCS_RGB565)
+              { /* Packed RGB with 5,6,5 bits per sample: */
+                assert(pimg->chns == 3);
+                imaxval[0] = 31;
+                imaxval[1] = 63;
+                imaxval[2] = 31;
+              }
+            else
+              { for (int32_t ic = 0; ic < pimg->chns; ic++)  { imaxval[ic] = 255; } }
           }
           break;
 
         case image_file_format_PNG:
           { bool_t verbose_png = TRUE;
-            pimg = uint16_image_read_png_file (rd, &gamma_file, verbose_png);
-            gamma_file = 1/gamma_file; /* PNG "gAMA" gives the encoding gamma, not decoding. */
-            bias_file = NAN;
+            pimg = uint16_image_read_png_file (rd, &expo_file, imaxval, verbose_png);
+            if (isnan(expo_file)) 
+              { expo_file = sample_conv_gamma_sRGB_DEC_EXPO;
+                bias_file = sample_conv_gamma_sRGB_BIAS;
+              }
+            else
+              { expo_file = 1/expo_file; /* PNG "gAMA" gives the encoding gamma, not decoding. */
+                bias_file = sample_conv_gamma_sRGB_BIAS; /* Guess, better than nothing. */
+              }
           } 
           break;
 
         case image_file_format_PNM:
           { pimg = uint16_image_read_pnm_file(rd);
             /* Parameters that approximate the standard PNM ITU-R BT.709 decoding: */
-            gamma_file = 1.0/0.450; 
-            bias_file = 0.0327;
+            expo_file = sample_conv_gamma_BT709_DEC_EXPO; 
+            bias_file = sample_conv_gamma_BT709_BIAS;
+            for (int32_t ic = 0; ic < pimg->chns; ic++)  { imaxval[ic] = pimg->maxval; }
           }
           break;
 
         default:
           assert(FALSE);
       }
-
-    /* Get and check image channel count: */
-    int32_t NC = (int32_t)pimg->chns; /* Num channels. */
-    if (verbose) { fprintf(stderr, "width = %d height  = %d  channels = %d\n", pimg->cols, pimg->rows, NC); }
-    demand((NC == 1) || (NC == 3), "invalid channel count in frame");
-
-    /* Determine the range for the first decoding step, from {0..maxval} to {[eslo_eshi]}: */
-    double eslo = (vmax < 0 ? -1.0 : 0.0);
-    double eshi = 1.0;
-    double slo[NC];      /* Low end of first mapping, (0 or {-1}). */
-    double shi[NC];      /* High end of first mapping ({+1}). */
-    for (int c = 0; c < NC; c++) { slo[c] = eslo; shi[c] = eshi; }
-    
-    /* Convert to float image in the range {[-1 _ +1]} or {[0 _ 1]}: */
-    bool_t isMask = FALSE;        /* TRUE for masks, FALSE for images. */
-    bool_t yup = FALSE;           /* TRUE to reverse the indexing of rows. */
-    bool_t verbose_float = FALSE; /* TRUE to debug the conversion. */
-    uint16_image_t *fimg = uint16_image_from_uint16_image(pimg, isMask, slo, shi, yup, verbose_float);
-    
-    /* Discards the pixel array and header of the PNM image. */
-    uint16_image_free(pimg);
-
-    /* Decide which gamma and bias should be used for decoding: */
-    double bias = NAN;
-    gamma = dsm_gamma_pick_parameter("gamma", gamma, gamma_file, 1.0, verbose);
-    bias =  dsm_gamma_pick_parameter("bias",  bias,  bias_file,  sample_conv_BT709_BIAS, verbose);
-
-    /* Aplly gamma correction: */
-    for (int c = 0; c < NC; c++) 
-       { /* Apply gamma correction: */
-         if (gamma != 1.0) { uint16_image_apply_gamma(fimg, c, gamma, bias); }
-         /* Rescale samples from {[-1 _ +1]} to {[vmax _ -vmax]} or from {[0 _ 1]} to {[0 _ vmax]}: */
-         uint16_image_rescale_samples(fimg, c, 0, 1, 0, (float)fabs(vmax));
-       }
-
-    /* This step must be done after gamma correction: */
-    if ((NC > 1) && gray)
-      { /* Convert to grayscale: */
-        assert(NC == 3);
-        uint16_image_make_grayscale(fimg);
-        /* Reduce to single channel: */
-        fimg->sz[0] = 1; 
-        if (verbose) { fprintf(stderr, "converted to grayscale: channels = %d\n", (int32_t)fimg->sz[0]); }
-      }
-      
-    return fimg;
+    (*expoP) = expo_file;
+    (*biasP) = bias_file;
+    return pimg;
   }
 
-void uint16_image_write_frame(const char *fpat, int fnum, uint16_image_t *fimg, double gamma, double bias)
-  {
-    /* Insert the frame number in {fpat}: */
-    int nch = char *fname = jsprintf(fpat, fnum);
-    demand(nch > 0, "invalid file name pattern");
-
-    /* Write the file: */
-    uint16_image_write(fname, fimg, gamma, bias);
-
-    free(fname);
-  }
-
-void uint16_image_write
-  ( const char *fname, 
-    uint16_image_t *fimg,
-    double gamma,
-    double vmax
-  )
-  { bool_t verbose = TRUE;
-    FILE *wr = open_write(fname, verbose);
-    uint16_image_fwrite(wr, fimg, gamma, vmax);
-    fclose(wr);
-  }
-
-void uint16_image_fwrite
-  ( FILE *wr, 
-    uint16_image_t *fimg,
-    double gamma,
-    double vmax
-  )
-  { 
-    bool_t debug = FALSE;
-    
-    int32_t NC = (int32_t)fimg->sz[0]; /* Num channels. */
-    
-    /* Copy {fimg} and scale so that the range fits snugly in {[-1_+1]}, then apply gamma: */
-    uint16_image_t *gimg = uint16_image_copy(fimg);
-    if (isnan(gamma)) { gamma = 1.0; }
-    double bias = sample_conv_BT709_BIAS;;
-    for (int c = 0; c < NC; c++) 
-      { /* Rescale samples from {[-|vmax| _ +|vmax|]} to {[-1 _ +1]} or from {[0 _ vmax]} to {[0 _ 1]}: */
-        uint16_image_rescale_samples(gimg, c, 0, (float)fabs(vmax), 0.0, 1.0);
-        /* apply inverse gamma correction: */
-        if (gamma != 1.0) { uint16_image_apply_gamma(gimg, c, 1/gamma, bias); }
-      }
-
-    /* Determine the last scaling step, from {[0 _ 1]} or {[-1 _ +1]} to {0..maxval}: */
-    double eslo = (vmax < 0 ? -1.0 : 0.0);
-    double eshi = 1.0;
-    double slo[NC];      /* Low end of first mapping, (0 or {-1}). */
-    double shi[NC];      /* High end of first mapping ({+1}). */
-    for (int c = 0; c < NC; c++) { slo[c] = eslo; shi[c] = eshi; }
-
-    /* Quantize {gimg} to the PNM image {pimg}, with the specified gamma: */
-    bool_t isMask  = FALSE;
-    bool_t yup = FALSE;
-    bool_t verbose_pnm = FALSE;
-    bool_t maxval = 65535; /* For a 16-bit-per-sample PNM image. */
-    if (debug) { fprintf(stderr, "  quantizing image...\n"); }
-    uint16_image_t *pimg = uint16_image_to_uint16_image(gimg, isMask, NC, slo, shi, NULL, maxval, yup, verbose_pnm);
-    uint16_image_free(gimg);
-    
-    /* Write {pimg} as a PNG file with gamma 1.0 (since we did gamma ourselves): */
-    if (debug) { fprintf(stderr, "  writing PNG file...\n"); }
-    bool_t verbose_png = FALSE;
-    uint16_image_write_png_file (wr, pimg, 1.0, verbose_png);
-    uint16_image_free(pimg);
-  }

@@ -1,7 +1,6 @@
 /* See {archdraw_ic.h} */
-/* Last edited on 2023-02-20 18:20:30 by stolfi */
+/* Last edited on 2024-12-05 10:20:44 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdint.h>
 

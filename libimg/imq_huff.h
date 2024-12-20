@@ -1,5 +1,5 @@
 /* Huffman tree and Huffman decoding for the NASA/JPL/PDS IMQ image format. */
-/* Last edited on 2023-10-14 11:09:53 by stolfi */
+/* Last edited on 2024-12-05 10:30:46 by stolfi */
 
 #ifndef imq_huff_H
 #define imq_huff_H
@@ -24,7 +24,6 @@
   that comprise the file.  See the separate program {imqtopgm.c}
   for that. */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 

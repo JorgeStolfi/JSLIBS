@@ -2,9 +2,8 @@
 #define hr2_pmap_from_many_pairs_H
 
 /* Tools for optimizing projective maps. */
-/* Last edited on 2024-09-04 20:35:01 by stolfi */ 
+/* Last edited on 2024-12-05 10:19:30 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>

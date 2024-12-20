@@ -1,5 +1,5 @@
 /* See float_image_map_channels.h */
-/* Last edited on 2023-01-07 14:12:35 by stolfi */ 
+/* Last edited on 2024-12-05 00:54:03 by stolfi */ 
 
 #include <limits.h>
 #include <float.h>
@@ -28,8 +28,8 @@ void float_image_map_channels
     float_image_check_size(imgB, -1, NX, NY);
     float vA[NCA];
     float vB[NCB];
-    for (uint32_t iy = 0;  iy < NY; iy++) 
-      { for (uint32_t ix = 0;  ix < NX; ix++) 
+    for (int32_t iy = 0;  iy < NY; iy++) 
+      { for (int32_t ix = 0;  ix < NX; ix++) 
           { float_image_get_pixel(imgA, ix, iy, vA);
             map(NCA, vA, NCB, vB);
             float_image_set_pixel(imgB, ix, iy, vB);
@@ -59,7 +59,7 @@ void float_image_map_channels_RGB_to_YUV
     void map_RGB_to_YUV(int32_t NCA, float vA[], int32_t NCB, float vB[])
       { frgb_t p = (frgb_t){{ vA[0], vA[1], vA[2] }};
         frgb_to_YUV(&p);
-        for (uint32_t ic = 0;  ic < NCB; ic++)
+        for (int32_t ic = 0;  ic < NCB; ic++)
           { vB[ic] = (ic < 3 ? p.c[ic] : (ic < NCA ? vA[ic] : 0.0f)); }
       }
   }

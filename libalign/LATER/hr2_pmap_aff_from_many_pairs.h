@@ -1,10 +1,8 @@
 /* Best affine projective map from many point pairs. */
-/* Last edited on 2024-08-31 22:35:15 by stolfi */ 
+/* Last edited on 2024-12-05 10:19:25 by stolfi */ 
    
 #ifndef hr2_pmap_aff_from_point_pairs_H
 #define hr2_pmap_aff_from_point_pairs_H
-
-#define _GNU_SOURCE
 
 #include <r2.h>
 #include <stdint.h>

@@ -2,7 +2,7 @@
 #define float_image_filter_H
 
 /* Tools for image filtering. */
-/* Last edited on 2009-02-15 22:58:23 by stolfi */ 
+/* Last edited on 2024-12-04 23:27:19 by stolfi */ 
 
 #include <bool.h>
 #include <r2.h>
@@ -44,7 +44,7 @@ void float_image_filter_gaussian_band
     fold over the edges of the transform image, as explained under
     {gauss_table_make}. */
 
-double *float_image_filter_gaussian_freq_weights(int n, double wRef);
+double *float_image_filter_gaussian_freq_weights(int32_t n, double wRef);
   /* Creates a table of attenuation weights {w[0..n-1]} for the 
     Hartley transform terms with frequencies {0..n-1}
     in a signal with {n} samples.

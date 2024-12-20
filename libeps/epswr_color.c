@@ -1,7 +1,6 @@
 /* See pscolor.h */
-/* Last edited on 2023-02-25 16:06:52 by stolfi */
+/* Last edited on 2024-12-05 10:13:32 by stolfi */
 
-#define _GNU_SOURCE
 #include <limits.h>
 #include <stdlib.h>
 #include <math.h>
@@ -31,15 +30,15 @@ void epswr_make_color_table
   )
   {
     /* Create gradual color table: */
+    demand(kMax >= kMin, "invalid isoline range {kMin..kMax}");
     int32_t N = kMax - kMin + 2;     /* Number of color bands: */
-    double *R = rn_alloc(N);
-    double *G = rn_alloc(N);
-    double *B = rn_alloc(N);
+    double *R = rn_alloc((uint32_t)N);
+    double *G = rn_alloc((uint32_t)N);
+    double *B = rn_alloc((uint32_t)N);
     double vMin = vStart + (kMin - 0.5)*vStep;
     double vMax = vStart + (kMax + 0.5)*vStep;
     
-    int32_t i;
-    for (i = 0; i < N; i++)
+    for (int32_t i = 0; i < N; i++)
       { int32_t k = kMin + i;  /* Index of upper isoline of band {i}. */
         
         /* Compute relative function value {r} at mid-band, in [-1 _ +1]: */

@@ -1,12 +1,12 @@
 # Libraries in compile order
-# Last edited on 2024-11-29 21:55:51 by stolfi
+# Last edited on 2024-12-05 14:10:05 by stolfi
 
 # + = OK.
 # ? = Status uncertain.
 # ! = Buggy, needs finishing/fixing.
 # J = Junk or obsolete.
 
-# ----------------------------------------------------------------------
+# --------------------------------
 # Core libraries - used by many projects
 
 + libjs
@@ -14,6 +14,7 @@
 
 + libflt
 + libgausol
++ libeigen
 
 + libgeo
 
@@ -23,80 +24,81 @@
 + libeps
 
 + liblsq
-+ libapprox
 
 + libminu
 + libminn
 
-# ----------------------------------------------------------------------
+# ----------------------------
 # Special projects
 
-+ libalign
+? libapprox
 
-+ libift
+? libalign
 
-+ libia
-+ libaa
-+ libaacmp
+? libift
 
-+ libaafuncs
-+ libaagraph
+? libia
+? libaa
+? libaacmp
 
-+ libzf
-+ libbbopt
+? libaafuncs
+? libaagraph
 
-+ libmkgr
+? libzf
+? libbbopt
 
-+ libjsaudio
+? libmkgr
 
-+ libquad
-+ libdelaunay
+? libjsaudio
 
-+ libpst
-+ libmultifok
-+ libtosl
+? libquad
+? libdelaunay
 
-+ libcryptoy
+? libpst
+? libmultifok
+? libtosl
 
-+ libspmat
-+ libdgraph
+? libcryptoy
 
-+ libgem
-+ libgmap
+? libspmat
+? libdgraph
 
-+ libppv
-+ libkdtom
+? libgem
+? libgmap
 
-+ libarchdraw
-+ libstreetmap
-+ libsheetcut
-+ libdicio
-+ libdrtree
+? libppv
+? libkdtom
 
-+ libstpoly
-+ libstmesh
-+ libvoxm
-+ libvoxb
-+ libmroc
+? libarchdraw
+? libstreetmap
+? libsheetcut
+? libdicio
+? libdrtree
 
-+ libcamfirewire
+? libstpoly
+? libstmesh
+? libvoxm
+? libvoxb
+? libmroc
 
-+ libclassif
+? libcamfirewire
 
-+ libmsmatch
-+ libdnaenc
-+ libdnaview
+? libclassif
 
-+ libbtc
+? libmsmatch
+? libdnaenc
+? libdnaview
 
-+ libintg
-+ libtsai
+? libbtc
 
-+ libbezier
-+ libpspulse
+? libintg
+? libtsai
 
-+ libneuro
-+ libnmsim
-+ libnmsim_e
+? libbezier
+? libpspulse
+
+? libneuro
+? libnmsim
+? libnmsim_e
 
 

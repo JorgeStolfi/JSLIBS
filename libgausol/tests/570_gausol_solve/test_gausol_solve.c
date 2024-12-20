@@ -1,5 +1,5 @@
 /* test_gausol_solve.c --- test program for gausol_solve.h  */
-/* Last edited on 2024-11-30 05:26:21 by stolfi */
+/* Last edited on 2024-11-30 23:59:28 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -36,61 +36,29 @@
 
 int32_t main (int32_t argc, char **argv);
 
-void test_gausol_solve(uint32_t trial, bool_t verbose);
-  /* Tests {gausol_solve}. */
-
-void test_gausol_solve_packed(uint32_t trial, bool_t verbose);
-  /* Tests {gausol_solve_packed}. */
-
-void check_solve
-  ( uint32_t m, uint32_t n, double A[],
-    uint32_t p, double B[],
-    double X[], uint32_t rank,
-    double Bmax[]
-  );
-  /* Checks the outcome of {gausol_solve}. The parameter {X} should be
-    the solution computed by {gausol_solve}, and {rank} should be its
-    return value. */
-
-void check_residual
-  ( uint32_t m, uint32_t n, double A[],
-    uint32_t p, double B[],
-    double X[],
-    double R[],
-    double Bmax[]
-  );
-  /* Checks the outcome of {gausol_residual}. The parameter {R} should be
-    the residual computed by {gausol_residual} for the given {A}, {B},
-    and {X}. */
-
-void check_solution_with_reference
-  ( uint32_t m, uint32_t n, uint32_t p,
-    double X[], double X_ref[],
-    double Bmax[]
-  );
-  /* Checks a putative solution {X} of a system {A X = B} against the
-    `true' solution {X_ref}; where {A} is {m × n}, {X} and {X_ref} are
-    {n × p}, and {B} is {m × p}. */
+void test_gausol_solve__gausol_solve_in_place(uint32_t trial, bool_t in_place, bool_t verbose);
 
 /* IMPLEMENTATIONS */
 
 int32_t main (int32_t argc, char **argv)
   {
     for (uint32_t i = 0;  i < MAX_RUNS; i++) 
-      { test_gausol_solve(i, i < 5); }
+      { test_gausol_solve__gausol_solve_in_place(i, TRUE, i < 5); }
+    for (uint32_t i = 0;  i < 100; i++) 
+      { test_gausol_solve__gausol_solve_in_place(i, FALSE, ((i >= 10) &&(i <= 12))); }
     fclose(stderr);
     fclose(stdout);
     return (0);
   }
 
-void test_gausol_solve (uint32_t trial, bool_t verbose)
+void test_gausol_solve__gausol_solve_in_place (uint32_t trial, bool_t in_place, bool_t verbose)
   {
     fprintf(stderr, "\n");
     fprintf(stderr, "======================================================================\n");
     fprintf(stderr, "%s (%d)\n", __FUNCTION__, trial);
 
     uint32_t m, n, p;
-    double *A, *B, *X_ref;
+    double *A0, *B0, *X_ref;
     uint32_t m_max = MAX_ROWS;
     uint32_t n_max = MAX_COLS;
     uint32_t p_max = MAX_PRBS;
@@ -99,24 +67,15 @@ void test_gausol_solve (uint32_t trial, bool_t verbose)
      
     gausol_test_tools_choose_system
       ( trial, m_max, n_max, p_max,
-        &m, &n, &A, &p, &B, &X_ref, 
+        &m, &n, &A0, &p, &B0, &X_ref, 
         tiny, verbose
       );
    
     fprintf(stderr, "testing with m = %d  n = %d  p = %d  tiny = %24.16e\n", m, n, p, tiny);
 
-    /* For determinant checking: */
-    double det_ref = NAN;
-    if ((m == n) && (m <= gausol_test_tools_det_by_enum_SIZE_MAX))
-      { det_ref = gausol_test_tools_det_by_enum(m, n, A, m);
-        if (verbose) { fprintf(stderr, "det(A) by enum = %24.16e\n", det_ref); }
-      }
-    double rms_A = gausol_test_tools_elem_RMS(m, n, A);
-    if (verbose) { fprintf(stderr, "rms_A = %24.16e\n", rms_A); }
-
     /* Save copies of {A,B}: */
-    double *AT = talloc(m*n, double);     /* Scratch copy of {A}. */
-    double *BT = talloc(m*p, double);     /* Scratch copy of {B}. */
+    double *A = talloc(m*n, double);      /* Scratch copy of {A}. */
+    double *B = talloc(m*p, double);      /* Scratch copy of {B}. */
     double *X_cmp = talloc(n*p, double);  /* Computed solution. */
     double err_X_best = +INF;
     bool_t pvrows_best, pvcols_best;
@@ -124,16 +83,24 @@ void test_gausol_solve (uint32_t trial, bool_t verbose)
       { for (bool_t pvcols = FALSE; pvcols <= TRUE; pvcols++)
           {
             fprintf(stderr, "----------------------------------------------------------------------\n");
-            fprintf(stderr, "pivot_rows = %c  pivot_cols = %c\n", "FT"[pvrows], "FT"[pvcols]);
+            fprintf(stderr, "in_place = %c", "FT"[in_place]);
+            fprintf(stderr, "  pivot_rows = %c  pivot_cols = %c\n", "FT"[pvrows], "FT"[pvcols]);
 
-            /* Make scratch copies {AT,BT} of original {A,B}: */
-            for (uint32_t ij = 0; ij < m*n; ij++) { AT[ij] = A[ij]; }
-            for (uint32_t ik = 0; ik < m*p; ik++) { BT[ik] = B[ik]; }
+            /* Make scratch copies {A,B} of original {A,B}: */
+            for (uint32_t ij = 0; ij < m*n; ij++) { A[ij] = A0[ij]; }
+            for (uint32_t ik = 0; ik < m*p; ik++) { B[ik] = B0[ik]; }
 
             /* Call procedure: */
             uint32_t rank;
             double det_cmp;
-            gausol_solve(m, n, AT, p, BT, X_cmp, pvrows, pvcols, tiny, &rank, &det_cmp);
+            if (in_place)
+              { gausol_solve_in_place(m, n, A, p, B, X_cmp, pvrows, pvcols, tiny, &det_cmp, &rank); }
+            else
+              { gausol_solve(m, n, A, p, B, X_cmp, pvrows, pvcols, tiny, &det_cmp, &rank);
+                for (uint32_t ij = 0; ij < m*n; ij++) { demand(A[ij] == A0[ij], "array {A} changed"); }
+                for (uint32_t ik = 0; ik < m*p; ik++) { demand(B[ik] == B0[ik], "array {B} changed"); }
+              }
+
             if (verbose) 
               { fprintf(stderr, "  obtained rank = %d\n", rank);
                 if (rank < m) { fprintf(stderr, "  rows deficit = %d\n", m - rank); }
@@ -144,7 +111,8 @@ void test_gausol_solve (uint32_t trial, bool_t verbose)
               }
 
             /* Check result: */
-            double err_X = gausol_test_tools_check_solve(m, n, A, p, B, X_ref, X_cmp, rank, verbose);
+            bool_t pivoted = (pvrows || pvcols);
+            double err_X = gausol_test_tools_check_solve(m, pivoted, n, A0, p, B0, X_ref, X_cmp, rank, det_cmp, verbose);
             if (! isnan(err_X))
               { if (verbose) 
                   { fprintf(stderr, "    pivot %c %c", "FT"[pvrows], "FT"[pvcols]);
@@ -153,9 +121,6 @@ void test_gausol_solve (uint32_t trial, bool_t verbose)
                 if (err_X < err_X_best)
                   { err_X_best = err_X; pvrows_best = pvrows; pvcols_best = pvcols; }
               }
-
-            if (! isnan(det_ref))
-              { gausol_test_tools_compare_determinants(m, n, rank, rms_A, det_ref, det_cmp, verbose); }
 
             fprintf(stderr, "----------------------------------------------------------------------\n");
           }
@@ -166,8 +131,8 @@ void test_gausol_solve (uint32_t trial, bool_t verbose)
       }
     else
       { fprintf(stderr, "no unique solutions found with any pivoting\n"); }
-    
-    free(A); free(B); free(AT); free(BT);
+      
+    free(A0); free(B0); free(A); free(B);
     free(X_ref); free(X_cmp);
     fprintf(stderr, "done.\n");
     fprintf(stderr, "======================================================================\n");

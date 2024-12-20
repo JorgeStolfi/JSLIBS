@@ -1,9 +1,8 @@
-/* Last edited on 2023-02-18 09:18:43 by stolfi */ 
+/* Last edited on 2024-12-05 10:41:25 by stolfi */ 
 
 #ifndef fn2_zf_plot_H
 #define fn2_zf_plot_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

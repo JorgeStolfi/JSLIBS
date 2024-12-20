@@ -1,8 +1,7 @@
 #ifndef gem_print_graph_H
 #define gem_print_graph_H
-/* Last edited on 2014-07-06 20:57:08 by stolfilocal */
+/* Last edited on 2024-12-05 10:26:08 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <gem.h>
 

@@ -1,5 +1,5 @@
 /* See {interval_pixel.h}. */
-/* Last edited on 2013-10-21 02:44:04 by stolfilocal */
+/* Last edited on 2024-12-04 23:33:37 by stolfi */
 
 #include <assert.h>
 #include <limits.h>
@@ -17,10 +17,10 @@
 
 /* IMPLEMENTATIONS */
 
-void ivpix_accum_pixel(int chns, interval_t vs[], double wt, interval_t v[], double *wtotP)
+void ivpix_accum_pixel(int32_t chns, interval_t vs[], double wt, interval_t v[], double *wtotP)
   {
     if (wt != 0.0)
-      { int ich;
+      { int32_t ich;
         for (ich = 0; ich < chns; ich++)
           { interval_t *ek = &(vs[ich]); 
             interval_t *vk = &(v[ich]);
@@ -33,9 +33,9 @@ void ivpix_accum_pixel(int chns, interval_t vs[], double wt, interval_t v[], dou
       }
   }
 
-void ivpix_make_pixel_undef(int chns, interval_t v[])
+void ivpix_make_pixel_undef(int32_t chns, interval_t v[])
   {
-    int ich;
+    int32_t ich;
     for (ich = 0; ich < chns; ich++) 
       { v[ich] = (interval_t){{ -INF, +INF }}; }
   }
@@ -55,9 +55,9 @@ float ivpix_floatize_interval(interval_t *v)
       }
   }
 
-void ivpix_scale_pixel(int chns, double s, interval_t v[])
+void ivpix_scale_pixel(int32_t chns, double s, interval_t v[])
   {
-    int ich;
+    int32_t ich;
     for (ich = 0; ich < chns; ich++) 
       { interval_t *vk = &(v[ich]);
         if (s >= 0) 
@@ -67,9 +67,9 @@ void ivpix_scale_pixel(int chns, double s, interval_t v[])
       }
   }
 
-void ivpix_debug_itv_pixel(char *label, double x, double y, int chns, interval_t v[], char *tail)
+void ivpix_debug_itv_pixel(char *label, double x, double y, int32_t chns, interval_t v[], char *tail)
   { 
-    int ich;
+    int32_t ich;
     fprintf(stderr, "    %s(%9.4f,%9.4f) = (", label, x, y);
     for (ich = 0; ich < chns; ich++) 
       { fprintf(stderr, " ");
@@ -78,7 +78,7 @@ void ivpix_debug_itv_pixel(char *label, double x, double y, int chns, interval_t
     fprintf(stderr, " )%s", tail);
   }
   
-void ivpix_print_interval(FILE *wr, interval_t *v, int width, int prec)
+void ivpix_print_interval(FILE *wr, interval_t *v, int32_t width, int32_t prec)
   { fprintf(stderr, "[");
     ivpix_print_bound(stderr, LO(*v), width, prec);
     fprintf(stderr, " _ ");
@@ -86,7 +86,7 @@ void ivpix_print_interval(FILE *wr, interval_t *v, int width, int prec)
     fprintf(stderr, "]");
   }
   
-void ivpix_print_bound(FILE *wr, double v, int width, int prec)
+void ivpix_print_bound(FILE *wr, double v, int32_t width, int32_t prec)
   { if (v == +INF) 
       { fprintf(stderr, "%*s", width, "+oo"); }
     else if (v == -INF) 

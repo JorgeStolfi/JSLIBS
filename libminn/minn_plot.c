@@ -1,7 +1,6 @@
 /* See {minn_plot.h} */
-/* Last edited on 2024-11-08 00:06:28 by stolfi */
+/* Last edited on 2024-12-05 13:26:11 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
@@ -11,7 +10,6 @@
 #include <vec.h>
 #include <rn.h>
 #include <rmxn.h>
-#include <rmxn_extra.h>
 #include <jsfile.h>
 #include <affirm.h>
 #include <float_image.h>
@@ -29,16 +27,16 @@ typedef void minn_plot_2D_proc_t(int32_t i0, int32_t i1, double Fy, double y[]);
     The sample indices are {i0,i1}, and {y[0..nx-1]}. Note that 
     not all combinations of {i0,i1} are generated. */
     
-int32_t minn_plot_num_samples(double rad, double step);
+uint32_t minn_plot_num_samples(double rad, double step);
   /* Number of samples that span the range {[-rad _ +rad]} with
     increment {step}. */
 
-void minn_plot_print_vector(FILE *wr, char *name, int32_t nx, double u[], double rad);
+void minn_plot_print_vector(FILE *wr, char *name, uint32_t nx, double u[], double rad);
   /* Prints the plot direction {u[0..nx-1]} and the associated radius {rad} to {wr},
     with label {name}. */
 
 void minn_plot_2D_gen
-  ( int32_t nx, 
+  ( uint32_t nx, 
     double org[], 
     double u0[],
     double rad0,
@@ -53,14 +51,14 @@ void minn_plot_2D_gen
     calls {use(i0,i1,Fy,y)}. */
 /* IMPLEMENTATIONS */
 
-int32_t minn_plot_num_samples(double rad, double step)
-  { int32_t NS = (int32_t)floor(rad/step + minn_plot_RAD_FUDGE);
+uint32_t minn_plot_num_samples(double rad, double step)
+  { uint32_t NS = (uint32_t)floor(rad/step + minn_plot_RAD_FUDGE);
     return NS;
   }
 
 void minn_plot_1D_gnuplot
   ( FILE *wr, 
-    int32_t nx, 
+    uint32_t nx, 
     double org[], 
     double u[],
     double rad,
@@ -81,8 +79,8 @@ void minn_plot_1D_gnuplot
     Pr(wr, "# nx = %d\n", nx);
     Pr(wr, "# fields: k e F(x) x[0] x[1] ...x[%d]\n", nx-1);
     /* Compute number of samples on each side of 0 along each direction: */
-    int32_t NS = minn_plot_num_samples(rad, step);
-    for (int32_t k = -NS; k <= NS; k++)
+    uint32_t NS = minn_plot_num_samples(rad, step);
+    for (int32_t k = -(int32_t)NS; k <= (int32_t)NS; k++)
       { double e = k * step;
         Pr(wr, "%+4d %14.6e ", k, e); 
         if (org == NULL)
@@ -102,7 +100,7 @@ void minn_plot_1D_gnuplot
   }
 
 void minn_plot_2D_gen
-  ( int32_t nx, 
+  ( uint32_t nx, 
     double org[], 
     double u0[],
     double rad0,
@@ -124,14 +122,14 @@ void minn_plot_2D_gen
       }
     
     /* Compute number of samples on each side of 0 along each direction: */
-    int32_t NS0 = minn_plot_num_samples(rad0, step);
-    int32_t NS1 = minn_plot_num_samples(rad1, step);
+    uint32_t NS0 = minn_plot_num_samples(rad0, step);
+    uint32_t NS1 = minn_plot_num_samples(rad1, step);
 
     double y[nx];  /* Working parameter vector. */
 
-    for (int32_t i1 = -NS1; i1 <= NS1; i1++)
+    for (int32_t i1 = -(int32_t)NS1; i1 <= (int32_t)NS1; i1++)
       { double e1 = i1*step;
-        for (int32_t i0 = -NS0; i0 <= +NS0; i0++)
+        for (int32_t i0 = -(int32_t)NS0; i0 <= +(int32_t)NS0; i0++)
           { double e0 = i0*step;
             /* Check if sample point is to be plotted: */
             double ok = TRUE;
@@ -158,7 +156,7 @@ void minn_plot_2D_gen
 
 void minn_plot_2D_gnuplot
   ( FILE *wr, 
-    int32_t nx, 
+    uint32_t nx, 
     double org[], 
     double u0[],
     double rad0,
@@ -201,7 +199,7 @@ void minn_plot_2D_gnuplot
   }
 
 float_image_t *minn_plot_2D_float_image
-  ( int32_t nx, 
+  ( uint32_t nx, 
     double org[], 
     double u0[],
     double rad0,
@@ -213,12 +211,12 @@ float_image_t *minn_plot_2D_float_image
   )
   {
     /* Compute number of samples on each side of 0 along each direction: */
-    int32_t NS0 = minn_plot_num_samples(rad0, step);
-    int32_t NS1 = minn_plot_num_samples(rad1, step);
+    uint32_t NS0 = minn_plot_num_samples(rad0, step);
+    uint32_t NS1 = minn_plot_num_samples(rad1, step);
 
     int32_t NC = 1;
-    int32_t NX = 2*NS0+1;
-    int32_t NY = 2*NS1+1;
+    int32_t NX = 2*(int32_t)NS0+1;
+    int32_t NY = 2*(int32_t)NS1+1;
     float_image_t *img = float_image_new(NC, NX, NY);
     float_image_fill_channel(img, 0, NAN);
     
@@ -231,13 +229,13 @@ float_image_t *minn_plot_2D_float_image
     /* INTERNAL IMPLS */
     
     void use(int32_t i0, int32_t i1, double Fy, double y[])
-      { int32_t ix = NS0 + i0; assert((ix >= 0) && (ix < NX));
-        int32_t iy = NS1 + i1; assert((iy >= 0) && (iy < NY));
+      { int32_t ix = (int32_t)NS0 + i0; assert((ix >= 0) && (ix < NX));
+        int32_t iy = (int32_t)NS1 + i1; assert((iy >= 0) && (iy < NY));
         float_image_set_sample(img, 0, ix, iy, (float)Fy);
       }
   }
 
-void minn_plot_print_vector(FILE *wr, char *name, int32_t nx, double u[], double rad)
+void minn_plot_print_vector(FILE *wr, char *name, uint32_t nx, double u[], double rad)
   { fprintf(wr, "  %s = ", name);
     rn_print(wr, nx, u);
     if (! isnan(rad)) { fprintf(wr, "  rad = %12.7f", rad);}

@@ -2,12 +2,11 @@
 #define obj_file_H
 
 /* Common definitions for OBJ file reading and writing. */ 
-/* Last edited on 2024-06-27 18:08:04 by stolfi */
+/* Last edited on 2024-12-05 10:39:15 by stolfi */
 
 #define obj_file_H_copyright \
   "Copyright (C) 2024 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

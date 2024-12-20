@@ -2,12 +2,11 @@
 #define haf_write_H
 
 /* Writing the half-edge representation of 2D meshes. */
-/* Last edited on 2023-10-05 19:55:11 by stolfi */
+/* Last edited on 2024-12-05 10:39:10 by stolfi */
 
 #define half_write_H_copyright \
   "Copyright (C) 2023 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 

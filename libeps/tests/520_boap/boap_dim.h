@@ -1,9 +1,9 @@
+/* Dimension display elements for the Boaretto 113 side gate drawings. */
+/* Last edited on 2024-12-05 10:16:37 by stolfi */
+
 #ifndef boap_dim_H
 #define boap_dim_H
 
-/* Dimension display elements for the Boaretto 113 side gate drawings. */
-
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

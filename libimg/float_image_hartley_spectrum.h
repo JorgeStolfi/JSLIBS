@@ -2,9 +2,8 @@
 #define float_image_hartley_spectrum_H
 
 /* Tools for Hartley transform (real-valued Fourier-like transform). */
-/* Last edited on 2023-03-19 02:04:42 by stolfi */ 
+/* Last edited on 2024-12-05 10:29:42 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>

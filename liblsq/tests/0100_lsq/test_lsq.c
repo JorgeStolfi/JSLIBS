@@ -1,7 +1,6 @@
 /* test_lsq --- test program for {lsq.h}  */
-/* Last edited on 2024-11-07 16:23:28 by stolfi */
+/* Last edited on 2024-12-05 10:33:41 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -15,7 +14,7 @@
 #include <jsmath.h>
 #include <rn.h>
 #include <rmxn.h>
-#include <gauss_elim.h>
+#include <gausol_solve.h>
 
 #include <lsq.h>
 #include <lsq_array.h>
@@ -92,7 +91,7 @@ void test_lsq_fit(int32_t trial, double eps, bool_t verbose)
     
     if (verbose) { fprintf(stderr, "  generating true solution...\n\n"); }
     test_lsq_throw_linear_fn(nx, nf, M);
-    if (verbose) { gauss_elim_print_array(stderr, 4, "%12.6f", "true solution matrix:", nx, nf, "M", M, ""); }
+    if (verbose) { gausol_print_array(stderr, 4, "%12.6f", "true solution matrix:", nx, nf, "M", M, ""); }
     
     /* Data arrays for {lsq_array_fit}: */
     double *X = rmxn_alloc(nt, nx);

@@ -2,12 +2,11 @@
 #define obj_file_read_H
 
 /* Basic parsing of Wavefront OBJ mesh files. */ 
-/* Last edited on 2024-06-27 18:08:11 by stolfi */
+/* Last edited on 2024-12-05 10:39:19 by stolfi */
 
 #define obj_file_read_H_copyright \
   "Copyright (C) 2024 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

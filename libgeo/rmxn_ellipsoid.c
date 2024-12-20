@@ -1,5 +1,5 @@
 /* See {minn_constr.h}. */
-/* Last edited on 2024-11-23 18:45:41 by stolfi */
+/* Last edited on 2024-12-05 11:48:30 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -13,7 +13,7 @@
 #include <affirm.h>
 #include <rn.h>
 #include <rmxn.h>
-#include <rmxn_extra.h>
+#include <rmxn_throw.h>
 
 #include <rmxn_ellipsoid.h>
 
@@ -58,17 +58,11 @@ void rmxn_ellipsoid_pierce
         if (debug) { fprintf(stderr, "  computing the eigen decomp {S,d} of {M} ...\n"); }
         double Q[d*d]; /* Eigenvector matrix. */
         double e[d]; /* Eigenvalues. */
-        { /* Convert {M} to tridiag with diagonal {e[0..d-1]} and subdiagonal {s[1..d-1]}: */
-          double s[d]; /* Sub-diagonal elements of temporary tridiagonal matrix. */
-          sym_eigen_tridiagonalize(d, M, e, s, Q);
-          /* Compute eigenvalues and eigenvectors from {Q} and tridiag matrix: */
-          uint32_t a; /* Number of eigenvalues computed. */
-          uint32_t absrt = 0; /* Sort eigenvalues by signed value. */
-          sym_eigen_trid_eigen(d, e, s, Q, &a, absrt);
-          /* Check that all eigenvalues are positive: */
-          demand(a == d, "failed to determine eigenvalues of {M}");
-        }
-        /* Compute the search radii {urad[0..d-1]} of {\RF}: */
+        uint32_t nev;
+        sym_eigen(d, M, e, Q, &nev);
+        demand(nev == d, "failed to determine eigenvalues of {M}");
+        /* Check that all eigenvalues are positive and
+          compute the search radii {urad[0..d-1]} of {\RF}: */
         for (uint32_t k = 0;  k < d; k++)
           { demand(e[k] > 0.0, "non-positive eigenvalue");
             urad[k] = 1.0/sqrt(e[k]);
@@ -157,8 +151,8 @@ void rmxn_ellipsoid_normalize_constraints
 
     /* Add the constraints from zero base radii: */
     double e[n]; /* Canonical basis vector. */
-    for (uint32_t j = 0;  j < n; j++) { e[j] = 0.0; }
-    for (uint32_t i = 0;  i < n; i++)
+    for (int32_t j = 0;  j < n; j++) { e[j] = 0.0; }
+    for (int32_t i = 0;  i < n; i++)
       { demand(arad[i] >= 0, "invalid {arad}");
         if (arad[i] < 1.0e-100)
           { if (verbose) { fprintf(stderr, "    adding axial constraint {v[%d] == 0} ...", i); }

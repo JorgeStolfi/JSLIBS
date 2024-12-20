@@ -2,9 +2,8 @@
 #define ellipse_crs_args_H
 
 /* ellipse_crs_args.h -- tools to parse ellipse parameters from the command line */
-/* Last edited on 2021-06-09 20:27:34 by jstolfi */
+/* Last edited on 2024-12-05 10:26:32 by stolfi */
 
-#define _GNU_SOURCE
 #include <r2.h>
 #include <ellipse_crs.h>
 #include <argparser.h>

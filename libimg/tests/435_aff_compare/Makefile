@@ -1,4 +1,4 @@
-# Last edited on 2024-11-06 10:28:30 by stolfi
+# Last edited on 2024-12-20 18:43:40 by stolfi
 
 PROG = test_aff_compare
 
@@ -59,6 +59,7 @@ JS_LIBS := \
   libminn.a \
   libminu.a \
   libgeo.a \
+  libgausol.a \
   libjs.a 
   
 OTHER_LIBS := \

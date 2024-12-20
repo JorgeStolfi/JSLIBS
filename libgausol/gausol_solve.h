@@ -1,5 +1,5 @@
 /* gausol_solve.h - Solving linear eqs by Gaussian elimination. */
-/* Last edited on 2024-11-29 16:32:38 by stolfi */
+/* Last edited on 2024-11-30 23:34:04 by stolfi */
 
 #ifndef gausol_solve_H
 #define gausol_solve_H
@@ -63,29 +63,14 @@ void gausol_solve
     uint32_t p, double B[], double X[],
     bool_t pivot_rows, bool_t pivot_cols,
     double tiny,
-    uint32_t *rank_P,
-    double *det_P
+    double *det_P,
+    uint32_t *rank_P
   );
   /* Uses the Gaussian elimination method to solve the system of
     "linear" (affine) equations {A X = B}, where {A} is a known matrix
     of size {m × n}, {B} is a known matrix of size {m × p}, and {X} is
     an unknown matrix of size {n × p}. The contents of the arrays {A}
-    and {B} are destroyed in the process.
-    
-    If {rank_P} is not {NULL}, the procedure returns in {*rank_P} the
-    number {rank} of equations used in the computation of {X}, in the
-    range {0..min(m,n)}. If at least one of {pivot_rows} and
-    {pivot_cols} is true, this will be the rank of {A}. If {rank < m},
-    the matrix {A} has linearly dependent rows, and only {rank} of those
-    rows (or combinations thereof) were used to compute {X}; so {X}
-    probably does not satisfy the original system. If {rank < n} then
-    the procedure did not find enough independent equations to determine
-    {X} uniquely, so {n-rank} rows of {X} have been set arbitrarily to
-    zero.
-      
-    If {rank=m=n} and {*det_P} is not {NULL}, the procedure returns in
-    {*det_P} the determinant of the original matrix {A}. Otherwise
-    {*det_P} will be set to zero.
+    and {B} are not modified.
     
     If {pivot_rows} and {pvot_cols} are both true, uses full pivoting at
     each step. If only one of them is true, uses simple pivoting of rows
@@ -98,9 +83,44 @@ void gausol_solve
     will be the current disgonal element, if nonzero. This may fail
     unless the matrix {A} is strongly dominated by its diagonal.
     
+    If {rank_P} is not {NULL}, the procedure returns in {*rank_P} the
+    number {rank} of equations used in the computation of {X}, in the
+    range {0..min(m,n)}. 
+    
+    If at least one of {pivot_rows} and {pivot_cols} is true, or {rank =
+    min(m,n)}, or {rank = m-1 = n-1}, this will be the rank of the
+    matrix {A}, apart from roundoff accidents. Otherwise the
+    actual rank of {A} may anything in {rank..min(m,n)}.
+    
+    In any case, if {rank < m}, only {rank} of the equations (or
+    combinations thereof) were used to compute {X}, and {m-rank}
+    redundant or incompatible ones were ignored; so {X} probably does
+    not satisfy the system. If {rank < n} then the procedure
+    did not find enough independent equations to determine {X} uniquely,
+    so {n-rank} rows of {X} have been set arbitrarily to zero.
+      
+    If {*det_P} is not {NULL}, the procedure will set {*detA} to its
+    estimate of the determinant of the matrix {A}.  However, if the 
+    matrix is not square, or {rank} may not be the actual rank of 
+    {A}, as noted above, the returned value will be {NAN}.
+
     During the Gauss elimination method, the procedure will set to zero
-    any matrix entry in {A} or {B} whose absolute value gets reduced to
+    any entry in the internal matrices whose absolute value gets reduced to
     {tiny} or less. If {tiny} is zero or negative, this cleanup is
     supressed. */
+   
+void gausol_solve_in_place
+  ( uint32_t m,
+    uint32_t n, double A[],
+    uint32_t p, double B[], double X[],
+    bool_t pivot_rows, bool_t pivot_cols,
+    double tiny,
+    double *det_P,
+    uint32_t *rank_P
+  ); 
+  /* Like {gausol_solve}, but the contents of the arrays 
+    {A} and {B} are destroyed in the process. It 
+    avoids allocating internal copies of the same. */
+    
 
 #endif

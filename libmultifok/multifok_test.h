@@ -1,10 +1,9 @@
 /* Test tools for {multifok_focus_op} and related funcs. */
-/* Last edited on 2024-10-10 22:33:13 by stolfi */
+/* Last edited on 2024-12-05 10:37:16 by stolfi */
 
 #ifndef multifok_test_H
 #define multifok_test_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <interval.h>

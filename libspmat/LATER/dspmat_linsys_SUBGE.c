@@ -2,9 +2,8 @@
 
 #define dspmat_linsys_SUBGE_C_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2023-03-18 10:51:04 by stolfi */
+/* Last edited on 2024-12-05 10:40:22 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

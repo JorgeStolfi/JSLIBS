@@ -1,10 +1,9 @@
 /* Reading images with {uint16_t} samples from image files in variable formats. */
-/* Last edited on 2017-06-29 18:29:06 by stolfilocal */
+/* Last edited on 2024-12-18 23:12:13 by stolfi */
 
 #ifndef uint16_image_read_gen_H
 #define uint16_image_read_gen_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 
 #include <bool.h>
@@ -45,7 +44,7 @@ uint16_image_t *uint16_image_read_gen_named
     are not scaled to match this max value; the samples of channel {i}
     remains in the ranges {0..imaxval[i]}.
 
-    If gamma and bias decoding parameters are specified (explicitly or
+    If gamma and bias DECODING parameters are specified (explicitly or
     implicitly) in the input file, they are stored in {*gammaP} and
     {*biasP}; otherwise those variables are set to {NAN}. The pixels
     themselves are NOT gamma-decoded. 
@@ -56,7 +55,7 @@ uint16_image_t *uint16_image_read_gen_named
 uint16_image_t *uint16_image_read_gen_file
   ( FILE *rd,
     image_file_format_t ffmt,
-    uint32_t *imaxval[], /* (OUT) Max sample value in each chanel. */
+    uint32_t imaxval[],  /* (OUT) Max sample value in each chanel. */
     double *gammaP,      /* (OUT) Gamma specified or implied in the input file. */
     double *biasP,       /* (OUT) Bias parameter for gamma conversion, idem. */
     bool_t verbose
@@ -67,9 +66,9 @@ uint16_image_t *uint16_image_read_gen_file
 
 uint16_image_t *uint16_image_read_gen_frame
   ( const char *fpat,
-    int fnum,
+    int32_t fnum,
     image_file_format_t ffmt,
-    uint32_t *imaxval[], /* (OUT) Max sample value in each chanel. */
+    uint32_t imaxval[],  /* (OUT) Max sample value in each chanel. */
     double *gammaP,      /* (OUT) Gamma specified or implied in the input file. */
     double *biasP,       /* (OUT) Bias parameter for gamma conversion, idem. */
     bool_t verbose

@@ -1,7 +1,6 @@
 /* See {r2_align_quadopt.h}. */
-/* Last edited on 2024-11-08 20:26:59 by stolfi */
+/* Last edited on 2024-12-05 10:20:11 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdint.h>

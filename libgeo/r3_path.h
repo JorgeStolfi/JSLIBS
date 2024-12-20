@@ -1,10 +1,9 @@
 /* r3_path.h --- Paths defined by points, velocities, times */
-/* Last edited on 2024-11-20 12:57:51 by stolfi */
+/* Last edited on 2024-12-05 10:28:02 by stolfi */
 
 #ifndef r3_path_H
 #define r3_path_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>

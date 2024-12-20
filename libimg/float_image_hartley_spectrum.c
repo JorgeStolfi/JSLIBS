@@ -1,5 +1,5 @@
 /* See {float_image_hartley_spectrum.h}. */
-/* Last edited on 2023-03-18 17:06:18 by stolfi */
+/* Last edited on 2024-12-05 00:50:36 by stolfi */
 
 #include <math.h>
 #include <string.h>
@@ -22,11 +22,11 @@ void float_image_hartley_spectrum(float_image_t *H, float_image_t *P, bool_t cen
     int32_t HX = NX/2;
     int32_t HY = NY/2;
     
-    for (uint32_t ic = 0;  ic < NC; ic++)
-      { for (uint32_t fy = 0;  fy < NY; fy++)
+    for (int32_t ic = 0;  ic < NC; ic++)
+      { for (int32_t fy = 0;  fy < NY; fy++)
           { int32_t gy = (NY - fy) % NY;
             /* Need to scan only half of Fourier transform: */
-            for (uint32_t fx = 0;  fx <= HX; fx++)
+            for (int32_t fx = 0;  fx <= HX; fx++)
               { int32_t gx = (NX - fx) % NX;
                 /* Compute power at frequency {fx,xy} and {gx,gy}: */
                 double cfxy = float_image_get_sample(H, ic, fx, fy);

@@ -1,10 +1,9 @@
 /* See haf_shapes.h. */
-/* Last edited on 2023-10-05 17:01:55 by stolfi */
+/* Last edited on 2024-12-05 10:39:04 by stolfi */
 
 #define haf_shapes_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdlib.h>
 

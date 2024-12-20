@@ -1,7 +1,6 @@
 /* See {gem_print_face.h} */
-/* Last edited on 2014-07-23 19:57:02 by stolfilocal */
+/* Last edited on 2024-12-05 10:26:01 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 

@@ -1,7 +1,6 @@
 /* See {kdtom_array.h}. */
-/* Last edited on 2021-07-21 02:01:31 by jstolfi */
+/* Last edited on 2024-12-05 10:32:35 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

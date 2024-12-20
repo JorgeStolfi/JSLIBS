@@ -1,7 +1,6 @@
 /* Diagram of the internet */
-/* Last edited on 2023-02-21 05:30:02 by stolfi */
+/* Last edited on 2024-12-05 10:21:21 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

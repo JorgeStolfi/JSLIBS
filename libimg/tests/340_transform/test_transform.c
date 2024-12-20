@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_transform.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-23 05:37:46 by stolfi */ 
+/* Last edited on 2024-12-20 18:19:32 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_transform_COPYRIGHT \
@@ -17,6 +17,7 @@
 #include <affirm.h>
 #include <ix_reduce.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <bool.h>
 #include <r2x2.h>
 #include <r2.h>

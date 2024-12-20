@@ -1,7 +1,6 @@
 /* See epswr_iso.h */
-/* Last edited on 2022-10-20 06:50:40 by stolfi */
+/* Last edited on 2024-12-05 10:13:57 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdint.h>
 /* #include <stdio.h> */

@@ -1,5 +1,5 @@
 /* fget_geo.h -- extends fget.h for geometric args. */
-/* Last edited on 2024-11-20 08:51:41 by stolfi */
+/* Last edited on 2024-12-05 10:26:37 by stolfi */
 
 #ifndef fget_geo_H
 #define fget_geo_H
@@ -9,7 +9,6 @@
 /* This interface provides convenient tools for parsing command
   line arguments whose values are real vectors. */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

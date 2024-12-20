@@ -1,10 +1,9 @@
 /* rn_classif_opf.h --- tools for the optimum path forest classifier. */
-/* Last edited on 2010-05-25 03:07:34 by stolfi */
+/* Last edited on 2024-12-05 10:24:27 by stolfi */
 
 #ifndef rn_classif_opf_H
 #define rn_classif_opf_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 

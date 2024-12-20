@@ -1,10 +1,9 @@
 /* Oriented projective maps in two dimensions. */
-/* Last edited on 2024-11-21 21:17:19 by stolfi */ 
+/* Last edited on 2024-12-05 10:26:49 by stolfi */ 
    
 #ifndef hr2_pmap_H
 #define hr2_pmap_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <sign.h>

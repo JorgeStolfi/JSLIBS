@@ -2,7 +2,7 @@
 #define float_image_mismatch_H
 
 /* Tools for local or global comparison of two or more images. */
-/* Last edited on 2009-07-10 01:08:11 by stolfi */ 
+/* Last edited on 2024-12-04 23:21:37 by stolfi */ 
 
 #include <r2.h>
 #include <i2.h>
@@ -50,7 +50,7 @@
   fractional numbers, the sampling points {p[k]} may be fractional
   too. */
 
-typedef void float_image_eval_t(int i, r2_t *r, int hx, int hy, double z[], double v[]); 
+typedef void float_image_eval_t(int32_t i, r2_t *r, int32_t hx, int32_t hy, double z[], double v[]); 
   /* Type of a procedure that evaluates image number {i} at the 
     points of the sampling grid defined by the center {r} and
     the integers {hx,hy}. 
@@ -107,11 +107,11 @@ typedef void float_image_eval_t(int i, r2_t *r, int hx, int hy, double z[], doub
   client-specified /sampling function/ {eval} of type {fimm_eval_t}. */
 
 double float_image_mismatch_var
-  ( int ni,                   /* Number of images being compared. */
+  ( int32_t ni,                   /* Number of images being compared. */
     float_image_eval_t *eval, /* Single-channel image evaluator. */
-    int hx,                  /* Half-width of comparison window. */
+    int32_t hx,                  /* Half-width of comparison window. */
     double wx[],              /* Horizontal weight table. */
-    int hy,                  /* Half-height of comparison window. */
+    int32_t hy,                  /* Half-height of comparison window. */
     double wy[],              /* Vertical weight table. */
     r2_t r[]                  /* Sampling grid center for each image. */
   );

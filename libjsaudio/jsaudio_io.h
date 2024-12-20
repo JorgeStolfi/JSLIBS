@@ -1,12 +1,11 @@
 /* jsaudio_io.h - basic I/O tools for audio files */
-/* Last edited on 2023-03-19 15:34:34 by stolfi */
+/* Last edited on 2024-12-05 10:32:24 by stolfi */
 
 /* Created by Jorge Stolfi on sep/2006. */
 
 #ifndef jsaudio_io_H
 #define jsaudio_io_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

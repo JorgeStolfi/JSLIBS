@@ -2,9 +2,8 @@
 #define sheet_cut_H
  
 /* Basic types for packing rectangular plates on sheet stock. */
-/* Last edited on 2019-12-08 13:30:20 by jstolfi */
+/* Last edited on 2024-12-05 10:40:06 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 

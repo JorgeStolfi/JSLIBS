@@ -2,9 +2,8 @@
 #define float_image_align_local_H
 
 /* Tools for finding the optimum alignment of two or more images at given points. */
-/* Last edited on 2021-12-31 12:47:24 by stolfi */ 
+/* Last edited on 2024-12-05 10:29:21 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>

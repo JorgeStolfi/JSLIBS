@@ -1,10 +1,9 @@
 /* Plotting the "true" zeros of a 2-argument function. */
-/* Last edited on 2023-02-18 04:25:52 by stolfi */ 
+/* Last edited on 2024-12-05 10:41:16 by stolfi */ 
 
 #ifndef fn2_zf_flt_H
 #define fn2_zf_flt_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

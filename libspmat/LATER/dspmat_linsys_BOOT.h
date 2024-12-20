@@ -4,9 +4,8 @@
 
 #define dspmat_linsys_BOOT_H_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-08-17 by J.Stolfi, UNICAMP */
-/* Last edited on 2023-03-18 10:51:12 by stolfi */
+/* Last edited on 2024-12-05 10:40:20 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>

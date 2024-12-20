@@ -1,7 +1,6 @@
 /* See {gem_bary.h}  */
-/* Last edited on 2015-12-01 15:50:00 by stolfilocal */
+/* Last edited on 2024-12-05 10:25:56 by stolfi */
 
-#define _GNU_SOURCE
 #include <affirm.h>
 
 #include <gem.h>

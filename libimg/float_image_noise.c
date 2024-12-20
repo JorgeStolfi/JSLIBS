@@ -1,6 +1,6 @@
 /* See {float_image_noise.h}. */
 
-/* Last edited on 2024-10-26 04:27:24 by stolfi */ 
+/* Last edited on 2024-12-05 00:58:56 by stolfi */ 
 /* Created on 2009-06-02 by J. Stolfi, UNICAMP */
 
 #define float_image_test_C_COPYRIGHT \
@@ -37,7 +37,7 @@ float_image_t *float_image_noise
     float_image_t *img = float_image_new(NC, NX,NY);
     
     /* Set all componenents to unit aplitude and random phase: */
-    for (uint32_t ic = 0;  ic < NC; ic++)
+    for (int32_t ic = 0;  ic < NC; ic++)
       { for (int32_t ix = 0; ix < NX; ix ++)
           { int32_t jx = (NX - ix) % NX;
             for (int32_t iy = 0; iy < NY; iy++ )
@@ -71,7 +71,7 @@ float_image_t *float_image_noise
           { for (int32_t iy = 0; iy < NY; iy++ )
               { double wxy = wtx[ix]*wty[iy];
                 if (complement) { wxy = 1 - wxy; }
-                for (uint32_t ic = 0;  ic < NC; ic++)
+                for (int32_t ic = 0;  ic < NC; ic++)
                   { double smp = float_image_get_sample(img, ic, ix, iy);
                     float_image_set_sample(img, ic, ix, iy, (float)(wxy*smp));
                   }
@@ -90,15 +90,15 @@ void float_image_noise_fill_filter_table(double ff, int32_t NW, double wt[])
     
     demand(isfinite(ff) && (ff >= 0), "invalid filter freq parameter");
     if (ff == 0)
-      { for (uint32_t iw = 0;  iw < NW; iw++) { wt[iw] = 1.0; } }
+      { for (int32_t iw = 0;  iw < NW; iw++) { wt[iw] = 1.0; } }
     else
       { double mag = -INF;
-        for (uint32_t iw = 0;  iw < NW; iw++)
-          { wt[iw] = gauss_table_folded_bell((double)iw, ff, NW);
+        for (int32_t iw = 0;  iw < NW; iw++)
+          { wt[iw] = gauss_table_folded_bell((double)iw, ff, (uint32_t)NW);
             assert(wt[iw] >= 0);
             mag = fmax(mag, wt[iw]);
           }
-        for (uint32_t iw = 0;  iw < NW; iw++) 
+        for (int32_t iw = 0;  iw < NW; iw++) 
           { wt[iw] /= mag;
             if (debug) { fprintf(stderr, "  wt[%4d] = %10.8f\n", iw, wt[iw]); }
           }

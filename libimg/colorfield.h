@@ -8,10 +8,13 @@
 #ifndef colorfield_H
 #define colorfield_H
 
+#include <stdint.h>
 #include <limits.h>
 #include <math.h>
 
+#include <bool.h>
 #include <i2.h>
+
 #include <frgb.h>
 #include <frgb_ops.h>
 #include <argparser.h>
@@ -23,10 +26,10 @@ typedef enum { cfld_UNIF, cfld_RAMP, cfld_WAVY } cfld_kind_t;
 typedef struct cfld_params_t /* Preprocessed data for the color field */
   { cfld_kind_t kind;   /* Which kind of field? */
     void *params;       /* Specific field parameters; type depends on {kind}. */
-    int logarithmic;    /* TRUE to compute the field in log scale. */
+    bool_t logarithmic;    /* TRUE to compute the field in log scale. */
   } cfld_params_t;
      
-void cfld_eval(cfld_params_t *fld, int col, int row, frgb_t *fv, int chns);
+void cfld_eval(cfld_params_t *fld, int32_t col, int32_t row, frgb_t *fv, int32_t chns);
   /* Evaluates the first {chns} components of 
     the color field {fld} at the given pixel. */
 
@@ -51,7 +54,7 @@ cfld_args_t *cfld_make_args_uniform(frgb_t *color);
 cfld_params_t *cfld_compute_params
   ( cfld_args_t *fargs,
     frgb_adjuster_t *adjust,
-    int logarithmic
+    bool_t logarithmic
   );
   /* Computes the field parameters from the user specs {fargs}. 
     Any color parameter {v} specified by {fargs} as applying to a

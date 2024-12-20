@@ -2,7 +2,7 @@
 #define PROG_DESC "tests the definitions and functions of {image_coords.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-10-31 13:48:09 by stolfi */
+/* Last edited on 2024-12-05 07:49:38 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -208,15 +208,15 @@ void timc_prdef(char *name, char *text)
 void timc_test_coord_sys_map(void)
   { fprintf(stderr, "======================================================================\n");
     fprintf(stderr, "testing {imgc_coord_sys_map}\n");
-    for (uint32_t kxRev = 0;  kxRev <= 1; kxRev++)
+    for (int32_t kxRev = 0;  kxRev <= 1; kxRev++)
       { bool_t xRev = (kxRev != 0);
-        for (uint32_t kyRev = 0;  kyRev <= 1; kyRev++)
+        for (int32_t kyRev = 0;  kyRev <= 1; kyRev++)
           { bool_t yRev = (kyRev != 0);
-            for (uint32_t kunit = 0;  kunit <= 2; kunit++)
+            for (int32_t kunit = 0;  kunit <= 2; kunit++)
               { double unit = (kunit == 0 ? 1.0 : (kunit == 1 ? 2.0 : 0.5));
-                for (uint32_t kcenter = 0;  kcenter <= 1; kcenter++)
+                for (int32_t kcenter = 0;  kcenter <= 1; kcenter++)
                   { bool_t center = (kcenter != 0);
-                    for (uint32_t korg = 0;  korg <= (center ? 0 : 1); korg++)
+                    for (int32_t korg = 0;  korg <= (center ? 0 : 1); korg++)
                       { r2_t org;
                         org.c[0] = (korg == 0 ? 0.0 : 100);
                         org.c[2] = (korg == 0 ? 0.0 : 150);
@@ -242,8 +242,8 @@ void timc_test_coord_sys_map(void)
                         timc_check_map_pix_to_usr("op", &op_pix, &op_usr, &op_exp);
                         /* Check mapping of the four corners of the image: */
                         r2_t ap_pix; /* A corner of the image in pixel coordinates. */
-                        for (uint32_t kxcor = 0;  kxcor <= 1; kxcor++)
-                          { for (uint32_t kycor = 0;  kycor <= 1; kycor++)
+                        for (int32_t kxcor = 0;  kxcor <= 1; kxcor++)
+                          { for (int32_t kycor = 0;  kycor <= 1; kycor++)
                               { ap_pix.c[0] = (kxcor == 0 ? 0.0 : (double)cols);
                                 ap_pix.c[1] = (kycor == 0 ? 0.0 : (double)rows);
                                 r2_t ap_usr = hr2_pmap_r2_point(&ap_pix, &map);

@@ -1,6 +1,6 @@
 #ifndef gem_bary_H
 #define gem_bary_H
-/* Last edited on 2015-12-01 15:47:35 by stolfilocal */
+/* Last edited on 2024-12-05 10:25:58 by stolfi */
 
 /* 
   BARYCENTRIC GEMS
@@ -13,7 +13,6 @@
   
 */
 
-#define _GNU_SOURCE
 #include <gem.h>
 
 void gem_bary_splice(gem_ref_t a, gem_ref_t b, int k);

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_test.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-08 11:28:37 by stolfi */ 
+/* Last edited on 2024-12-20 18:26:42 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_test_image_COPYRIGHT \
@@ -18,6 +18,7 @@
 #include <affirm.h>
 #include <ix.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <bool.h>
 #include <r2x2.h>
 #include <r2.h>

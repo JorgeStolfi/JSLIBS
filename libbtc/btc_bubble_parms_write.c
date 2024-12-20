@@ -1,7 +1,6 @@
 /* See {btc_bubble_parms_write.h} */
-/* Last edited on 2015-05-01 23:24:58 by stolfilocal */
+/* Last edited on 2024-12-05 10:23:17 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 

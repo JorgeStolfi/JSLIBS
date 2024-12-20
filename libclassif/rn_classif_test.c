@@ -1,7 +1,6 @@
 /* See rn_classif_test.h */
-/* Last edited on 2023-03-31 03:48:03 by stolfi */
+/* Last edited on 2024-12-05 10:24:29 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdio.h>
 #include <assert.h>

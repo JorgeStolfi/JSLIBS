@@ -2,9 +2,8 @@
 #define ellipse_ouv_H
 
 /* ellipse_ouv.h -- tools for ellipses in the dir-radius form. */
-/* Last edited on 2021-06-09 20:14:44 by jstolfi */
+/* Last edited on 2024-12-05 10:26:35 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <r2.h>

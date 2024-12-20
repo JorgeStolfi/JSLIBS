@@ -2,12 +2,14 @@
 
 PROG := test_opf
 
-TEST_LIB := libjs.a
+TEST_LIB := libgausol.a \
+  libjs.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS = \
   libeps.a \
   libgeo.a \
+  libgausol.a \
   libjs.a
   
 TESTS := \

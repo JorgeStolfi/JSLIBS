@@ -1,7 +1,6 @@
 /* test_lsq --- test program for constrained {lsq_solve_system}  */
-/* Last edited on 2024-11-08 16:42:48 by stolfi */
+/* Last edited on 2024-12-05 10:33:43 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -16,7 +15,7 @@
 #include <rn.h>
 #include <rmxn.h>
 #include <rmxn_extra.h>
-#include <gauss_elim.h>
+#include <gausol_solve.h>
 
 #include <lsq.h>
 #include <lsq_array.h>
@@ -487,7 +486,7 @@ void tlsq_check_main_system(int32_t nx, int32_t nc, int32_t nf, double tol, doub
     rmxn_add(nx, nf, Y, Z, BE);
     rmxn_sub(nx, nf, B, BE, BE);
     if (verbose)
-      { gauss_elim_print_array(stderr, 4, "%12.6f", "residual of main system:", nx, nf, "BE", BE, ""); }
+      { gausol_print_array(stderr, 4, "%12.6f", "residual of main system:", nx, nf, "BE", BE, ""); }
     double maxE = rmxn_max_abs_elem(nx, nf, BE);
     fprintf(stderr, "  max main system residual %23.16e\n", maxE);
     demand(maxE <= tol, "main system residual is too large");
@@ -499,7 +498,7 @@ void tlsq_check_constraints(int32_t nx, int32_t nc, int32_t nf, double tol, doub
     double *SE = rmxn_alloc(nc, nf);
     rmxn_sub(nc, nf, Y, S, SE);
     if (verbose)
-      { gauss_elim_print_array(stderr, 4, "%12.6f", "residual of constraints:", nc, nf, "SE", SE, ""); }
+      { gausol_print_array(stderr, 4, "%12.6f", "residual of constraints:", nc, nf, "SE", SE, ""); }
     double maxE = rmxn_max_abs_elem(nc, nf, SE);
     fprintf(stderr, "  max constraint residual %23.16e\n", maxE);
     demand(maxE <= tol, "constraint residual is too large");

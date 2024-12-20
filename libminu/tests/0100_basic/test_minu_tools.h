@@ -1,10 +1,9 @@
 /* Tools for testing univariate minimizers */
-/* Last edited on 2024-11-08 16:52:58 by stolfi */
+/* Last edited on 2024-12-05 10:35:34 by stolfi */
 
 #ifndef test_minu_tools_H
 #define test_minu_tools_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <epswr.h>

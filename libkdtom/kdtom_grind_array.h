@@ -1,10 +1,9 @@
 /* Converting a {ppv_array_t} into a parsimonious k-d-tree. */
-/* Last edited on 2021-07-11 03:03:50 by jstolfi */
+/* Last edited on 2024-12-05 10:32:53 by stolfi */
 
 #ifndef kdtom_grind_array_H
 #define kdtom_grind_array_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 
 #include <ppv_array.h>

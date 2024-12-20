@@ -2,7 +2,7 @@
 #define float_image_interpolate_H
 
 /* Bilinear (C0) and Bicubic (C1) interpolation of floating-point images. */
-/* Last edited on 2024-11-23 05:40:25 by stolfi */ 
+/* Last edited on 2024-12-04 23:38:42 by stolfi */ 
 
 #include <bool.h>
 #include <ix_reduce.h>
@@ -51,10 +51,10 @@
 
 double float_image_interpolate_sample
   ( float_image_t *A, 
-    int c, 
+    int32_t c, 
     double x, 
     double y, 
-    int order, 
+    int32_t order, 
     ix_reduce_mode_t red
   );
   /* Returns the value of channel {c} of image {A} at the point
@@ -64,7 +64,7 @@ void float_image_interpolate_pixel
   ( float_image_t *A, 
     double x, 
     double y, 
-    int order, 
+    int32_t order, 
     ix_reduce_mode_t red, 
     double z[]
   );
@@ -86,10 +86,10 @@ void float_image_interpolate_pixel
 
 void float_image_interpolate_grid_samples
   ( float_image_t *A, 
-    int c, 
-    double ctrx, int hx, double dx,
-    double ctry, int hy, double dy,
-    int order, 
+    int32_t c, 
+    double ctrx, int32_t hx, double dx,
+    double ctry, int32_t hy, double dy,
+    int32_t order, 
     ix_reduce_mode_t red,
     double z[]
   );
@@ -103,9 +103,9 @@ void float_image_interpolate_grid_samples
 
 void float_image_interpolate_grid_pixels
   ( float_image_t *A, 
-    double ctrx, int hx, double dx,
-    double ctry, int hy, double dy,
-    int order, 
+    double ctrx, int32_t hx, double dx,
+    double ctry, int32_t hy, double dy,
+    int32_t order, 
     ix_reduce_mode_t red, 
     double z[]
   );

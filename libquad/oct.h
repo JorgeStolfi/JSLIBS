@@ -2,7 +2,7 @@
 #define oct_H
 
 /* The quad-edge data structure for orientable and non-orientable maps. */
-/* Last edited on 2023-10-05 20:51:28 by stolfi */
+/* Last edited on 2024-12-05 10:39:29 by stolfi */
 
 #define oct_H_copyright \
   "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -35,7 +35,6 @@
   latter was converted to C by J. Stolfi in 1996 and was substantially
   revised by him in January 2007. */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

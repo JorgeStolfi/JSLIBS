@@ -1,7 +1,6 @@
 /* See {multifok_window.h}. */
-/* Last edited on 2024-10-12 03:08:18 by stolfi */
+/* Last edited on 2024-12-05 15:15:11 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -10,6 +9,7 @@
 #include <assert.h>
 
 #include <vec.h>
+#include <jsprintf.h>
 #include <wt_table.h>
 #include <wt_table_binomial.h>
 #include <affirm.h>
@@ -17,12 +17,12 @@
 
 #include <multifok_window.h>
   
-int32_t multifok_window_num_samples(int32_t NW)
+uint32_t multifok_window_num_samples(uint32_t NW)
   { demand(((NW % 2) == 1) && (NW >= 3), "window size must be odd");
     return NW*NW;
   }
  
-double *multifok_window_weights(int32_t NW, multifok_window_type_t type)
+double *multifok_window_weights(uint32_t NW, multifok_window_type_t type)
   { double *ws;
     switch (type)
       { case multifok_window_type_BIN:
@@ -39,9 +39,9 @@ double *multifok_window_weights(int32_t NW, multifok_window_type_t type)
     return ws;
   }
 
-double *multifok_window_weights_binomial(int32_t NW)
+double *multifok_window_weights_binomial(uint32_t NW)
   { demand(NW % 2 == 1, "{NW} must be odd");
-    int32_t HW = (NW-1)/2;
+    uint32_t HW = (uint32_t)(NW-1)/2;
     /* Create a unidimensional weight table: */
     double u[NW]; /* Unidimensional weights. */
     wt_table_binomial_fill(NW, u, NULL);
@@ -51,12 +51,12 @@ double *multifok_window_weights_binomial(int32_t NW)
     for (uint32_t ku = 0;  ku < NW; ku++) { u[ku] /= umax; }
     
     /* Now fill the bidimensional table: */
-    int32_t NS = multifok_window_num_samples(NW);
+    uint32_t NS = multifok_window_num_samples(NW);
     double *ws = notnull(malloc(NS*sizeof(double)), "no mem");
     for (uint32_t iy = 0;  iy < NW; iy++)
       { for (uint32_t ix = 0;  ix < NW; ix++)
           { double wxy = u[iy]*u[ix];
-            int32_t ks = iy*NW + ix;
+            uint32_t ks = iy*NW + ix;
             ws[ks] = wxy;
           }
       }
@@ -64,19 +64,19 @@ double *multifok_window_weights_binomial(int32_t NW)
     return ws;
   }
  
-double *multifok_window_weights_golden(int32_t NW)
+double *multifok_window_weights_golden(uint32_t NW)
   { demand(NW % 2 == 1, "{NW} must be odd");
-    int32_t HW = (NW-1)/2;
+    uint32_t HW = (uint32_t)(NW-1)/2;
 
     /* Normalize so that the central element is 1: */
     double C = (sqrt(5) - 1)/2;
     
     /* Now fill the bidimensional table: */
-    int32_t NS = multifok_window_num_samples(NW);
+    uint32_t NS = multifok_window_num_samples(NW);
     double *ws = notnull(malloc(NS*sizeof(double)), "no mem");
-    int32_t ks = 0;
-    for (int32_t iy = -HW; iy <= HW; iy++)
-      { for (int32_t ix = -HW; ix <= HW; ix++)
+    uint32_t ks = 0;
+    for (int32_t iy = -(int32_t)HW; iy <= +(int32_t)HW; iy++)
+      { for (int32_t ix = -(int32_t)HW; ix <= +(int32_t)HW; ix++)
           { ws[ks] = C/(C + ix*ix + iy*iy);
             ks++;
           }
@@ -99,7 +99,7 @@ multifok_window_type_t multifok_window_type_from_text(char *name, bool_t fail)
   }
 
 void multifok_window_compute_average_gradient_and_deviation
-  ( int32_t NW, 
+  ( uint32_t NW, 
     double s[], 
     double ws[], 
     double *sAvg_P,
@@ -108,7 +108,7 @@ void multifok_window_compute_average_gradient_and_deviation
     double *sDev_P
   )
   {
-    int32_t NS = NW*NW;
+    uint32_t NS = NW*NW;
 
     /* Compute weighted sample average {sAvg}: */
     double sum_ws = 0;
@@ -121,7 +121,7 @@ void multifok_window_compute_average_gradient_and_deviation
     double sAvg = sum_ws/sum_w;
     
     /* Compute gradient {(sGrx,sGry)} by weighted dot product with basis {X,Y}: */
-    int32_t HW = (NW-1)/2;
+    uint32_t HW = (uint32_t)(NW-1)/2;
     double sum_wsx = 0;
     double sum_wsy = 0;
     double sum_wxx = 0;
@@ -159,7 +159,7 @@ void multifok_window_compute_average_gradient_and_deviation
   }
 
 void multifok_window_remove_average_and_gradient
-  ( int32_t NW, 
+  ( uint32_t NW, 
     double s[], 
     double ws[], 
     double sAvg,
@@ -167,8 +167,8 @@ void multifok_window_remove_average_and_gradient
     double sGry
   )
   {
-    int32_t NS = NW*NW;
-    int32_t HW = (NW-1)/2;
+    uint32_t NS = NW*NW;
+    uint32_t HW = (uint32_t)(NW-1)/2;
     for (uint32_t ks = 0;  ks < NS; ks++) 
       { double xk = (ks % NW) - HW;
         double yk = (ks / NW) - HW;
@@ -176,9 +176,9 @@ void multifok_window_remove_average_and_gradient
       }
   }
   
-double multifok_window_deviation(int32_t NW, double s[], double ws[])
+double multifok_window_deviation(uint32_t NW, double s[], double ws[])
   {
-    int32_t NS = NW*NW;
+    uint32_t NS = NW*NW;
     double sum_w_d2 = 0;
     double sum_w = 0;
     for (uint32_t ks = 0;  ks < NS; ks++) 
@@ -191,7 +191,7 @@ double multifok_window_deviation(int32_t NW, double s[], double ws[])
   }
  
 void multifok_window_normalize_samples
-  ( int32_t NW, 
+  ( uint32_t NW, 
     double s[], 
     double ws[], 
     double noise, 
@@ -201,7 +201,7 @@ void multifok_window_normalize_samples
     double *sDev_P
   )
   {
-    int32_t NS = NW*NW;
+    uint32_t NS = NW*NW;
     multifok_window_compute_average_gradient_and_deviation(NW, s, ws, sAvg_P, sGrx_P, sGry_P, sDev_P);
     multifok_window_remove_average_and_gradient(NW, s, ws, *sAvg_P, *sGrx_P, *sGry_P);
     noise = fmax(1.0e-200, noise); /* To avoid division of zero by zero. */
@@ -209,8 +209,8 @@ void multifok_window_normalize_samples
     for (uint32_t ks = 0;  ks < NS; ks++) { s[ks] /= mag; }
   }
 
-double multifok_window_prod(int32_t NW, double a[], double b[])
-  { int32_t NS = NW*NW;
+double multifok_window_prod(uint32_t NW, double a[], double b[])
+  { uint32_t NS = NW*NW;
     double prod = 0.0;
     for (uint32_t ks = 0;  ks < NS; ks++) 
       { double ak = a[ks];
@@ -220,8 +220,8 @@ double multifok_window_prod(int32_t NW, double a[], double b[])
     return prod;
   }
 
-double multifok_window_dist_sqr(int32_t NW, double a[], double b[])
-  { int32_t NS = NW*NW;
+double multifok_window_dist_sqr(uint32_t NW, double a[], double b[])
+  { uint32_t NS = NW*NW;
     double d2 = 0.0;
     for (uint32_t ks = 0;  ks < NS; ks++) 
       { double dk = a[ks] - b[ks];
@@ -233,7 +233,10 @@ double multifok_window_dist_sqr(int32_t NW, double a[], double b[])
 char *multifok_window_mop_code(int32_t i)
   { char *u = NULL;
     char s = (i < 0 ? 'm' : (i > 0 ? 'p' : 'o'));
-    if (abs(i) <= 1) { char *u = jsprintf("%c", s); } else { char *u = jsprintf("%c%d", s, abs(i)); }
+    if (abs(i) <= 1) 
+      { u = jsprintf("%c", s); } 
+    else 
+      { u = jsprintf("%c%d", s, abs(i)); }
     return u;
   }
   
@@ -247,23 +250,22 @@ char *multifok_window_sample_name(char *tag, int32_t ix, int32_t iy)
     return uxy;
   }    
 
-void multifok_window_sample_names(int32_t NW, char *tag, char *sname[])
+void multifok_window_sample_names(uint32_t NW, char *tag, char *sname[])
   {
     assert((NW % 2 ) == 1);
-    int32_t HW = NW/2;
-    int32_t NS = NW*NW;
+    uint32_t HW = NW/2;
+    uint32_t NS = NW*NW;
     
     /* Set {u[i+HW]} to text versions of coordinate {i}, for {i} in {-HW..+HW}: */
     char *u[NW];
-    for (int32_t i = -HW; i <= +HW; i++)
-      { u[i + HW] = multifok_window_mop_code(i); }
+    for (int32_t i = -(int32_t)HW; i <= +(int32_t)HW; i++)
+      { u[i + (int32_t)HW] = multifok_window_mop_code(i); }
     
     /* Assemble sample names: */
-    int32_t ks = 0; /* Windos sample index. */
-    for (int32_t iy = -HW; iy <= +HW; iy++)
-      { for (int32_t ix = -HW; ix <= +HW; ix++)
-          { char *uxy = NULL;
-            char *uxy = jsprintf("%s%s%s", tag, u[ix+HW], u[iy+HW]);
+    uint32_t ks = 0; /* Windos sample index. */
+    for (int32_t iy = -(int32_t)HW; iy <= +(int32_t)HW; iy++)
+      { for (int32_t ix = -(int32_t)HW; ix <= +(int32_t)HW; ix++)
+          { char *uxy = jsprintf("%s%s%s", tag, u[ix+(int32_t)HW], u[iy+(int32_t)HW]);
             sname[ks] = uxy;
             ks++;
          }
@@ -271,7 +273,8 @@ void multifok_window_sample_names(int32_t NW, char *tag, char *sname[])
     assert(ks == NS);
     
     /* Release the auxiliary coordinate names: */
-    for (int32_t i = -HW; i <= +HW; i++){ free(u[i + HW]); }
+    for (int32_t i = -(int32_t)HW; i <= +(int32_t)HW; i++)
+      { free(u[i + (int32_t)HW]); }
   }
 
 void multifok_window_set_samples_3x3

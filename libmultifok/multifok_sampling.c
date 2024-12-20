@@ -1,7 +1,6 @@
 /* See {multifok_sampling.h}. */
-/* Last edited on 2024-10-29 23:41:06 by stolfi */
+/* Last edited on 2024-12-15 22:34:44 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -10,265 +9,288 @@
 #include <assert.h>
 
 #include <affirm.h>
+#include <i2.h>
 #include <r2.h>
 #include <wt_table.h>
 #include <wt_table_hann.h>
 
 #include <multifok_sampling.h>
 
-void multifok_sampling_generate_2D_hann_samples
-  ( int32_t H,
-    double R,
-    int32_t *N_P,
-    r2_t **v_P,
-    double **w_P
+void multifok_sampling_choose_pixel_sampoints_and_weights
+  ( uint32_t HS, 
+    uint32_t *NS_P,
+    i2_t **iSmp_P, 
+    double **wSmp_P,
+    bool_t verbose
   );
-  /* Generates an array {v[0..N-1]} of 2D vectors and an array {w[0..N-1]} of
-    weights, where {N = (2*H+1)^2}.  
+  /* Generates an array {iSmp[0..NS-1]} of 2D integer vectors and an array {wSmp[0..NS-1]} of
+    weights, where {NS = (2*HS+1)^2}.  
     
-    The vectors {v[0..N-1]} are a regular orthogonal grid of size {2*H+1}
-    by {2*H+1}, symmetric about {(0,0)}, with spacing {1/(H+1)} along each 
-    coordinate. Thus the max abs value of each coordinate is {H/(H+1)}.
+    The vectors {iSmp[0..NS-1]} are a subset of the regular orthogonal
+    grid of size {2*HS+1} by {2*HS+1}, symmetric about {(0,0)}. Thus
+    each coordinate will be in {-HS..+HS}.
     
     The weights are a 2D windowing function that is the product of a 1D
     Hann (raised cosine) window function on each coordinate. The vectors
     and weights form a partition or unit if replicated over the plane
     with stride 1.0 along each coordinate.
     
-    The vectors and weights are sorted do that {|v[k]|} is increasing
-    with {k}. Thus {v[0]} is always {(0,0)} and {w[0]} is 1. */
-
-void multifok_sampling_generate_2D_hann_samples
-  ( int32_t H,
-    double R,
-    int32_t *N_P,
-    r2_t **v_P,
-    double **w_P
-  )
-  {   
-    demand(H >= 0, "invalid {H}");
-    bool_t debug = FALSE;
+    The vectors and weights are sorted so that {|iSmp[k]|} is increasing
+    with {k}. Thus {iSmp[0]} is always {(0,0)} and {wSmp[0]} is 1.
     
-    /* Allocate and fill the final arrays: */
-    int32_t W = 2*H + 1;
-    int32_t N = W*W;
-    if (debug) { fprintf(stderr, "generating %d vectors total (H = %d)\n", N, H); }
-    r2_t *v = talloc(N, r2_t);
-    double *w = talloc(N, double);
+    Returns {NS,uSMP,wSmp} in {*NS_P,*iSmp_P,*wSmp_P}. */
+
+void multifok_sampling_get_grid_points_in_quadrant
+  ( uint32_t HP,
+    i2_t **pq_P,
+    uint32_t *NPQ_P,
+    bool_t verbose
+  );
+  /* Allocates and fills a list {pq[0..NPQ-1]} of the {NPQ=HP*(HP+1)}
+    integer grid points in the first quadrant with coordinates up to
+    {HP}; specifically, {(ix,iy)} with {ix} in {1..HP} and {iy} in
+    {0..HP}, sorted by distance from the origin. */
+
+void multifok_sampling_sort_points_by_norm(uint32_t NP, i2_t p[]);
+  /* Sorts the list of points {p[0..NP-1]} by increasing distance from origin.
+    Specifically, according to {multifok_sampling_compare_points}. */ 
+      
+void multifok_sampling_check_point_order(uint32_t NP, i2_t p[]);    
+  /* Checks whether the points {p[0..NP-1]} are sorted in incrasing order
+    of distance from the origin. */
+  
+int32_t multifok_sampling_compare_points(const void *a, const void *b);
+  /* Suitable for sorting routines like {qsort}. Assumes
+    {a} and {b} point to integer pair ({i2_t}) records {pa} and {pb},
+    and returns {-1} or {+1} if {pa} should come before
+    or after {pb}, respectively; or 0 if they are the same pair.
+    Compares {pa} with {pb} by distance from origin.
+    Breaks ties by {min(|x|,|y|)}, then by {|x|+|y|}, 
+    then by lex order. */
+
+double *multifok_sampling_hann_weight_table(uint32_t HW, bool_t verbose);
+  /* Allocates and fills a 1-dim table {w[0..NW-1]} of Hann (raised cosine)
+    weights, where {NW = 2*HW + 1}. 
     
-    /* Define element 0: */
-    int32_t ko = 0; /* Elements already filled: */
-    v[ko] = (r2_t){{ 0,0 }};
-    w[ko] = 1.0;
-    ko++;
+    Element {w[HW]} will be 1.0, and {w[HW-i]} will be equal to {w[HW+i]}.
+    The table will have the partition-of-unit property with stride {HW+1};
+    that is, {w[HW+1+i]+w[i]=1.0} for {i} in {0..HW-1}. */
 
-    if (H > 0)
-      { /* Generate a 1D Hann window weight table {wHan[0..W-1]}: */
-        double wHan[W];
-        wt_table_hann_fill(W, 0.0, wHan, NULL);
-        for (uint32_t j = 0;  j < W; j++)
-          { fprintf(stderr, "  wHan[%d] = %10.8f\n", j, wHan[j]); }
-        /* Paranoia check of partition-of-unity property: */
-        assert(wHan[H] == 1.0);
-        for (uint32_t j = 0;  j < H; j++)
-          { assert(fabs(wHan[j] + wHan[j+H+1] - 1.0) < 1.0e-13); }
+void multifok_sampling_print_points_and_weights
+  ( uint32_t NP,
+    i2_t p[],
+    char *pName,
+    double step,
+    double w[],
+    char *wName
+  );
+  /* Prints {p0..NP-1]} and {w[0..NP-1]} to {stderr}. */
 
-        /* Generate the 2D samples and weights for the first quadrant: */
-        int32_t Q = (N - 1)/4;
-        if (debug) { fprintf(stderr, "generating %d vectors in first quadrant\n", Q); }
-        r2_t *vq = talloc(Q, r2_t);
-        double *wq = talloc(Q, double);
-        int32_t kq = 0; /* Sample index in {0..NS-1}. */
-        for (uint32_t ix = 1;  ix <= +H; ix++)
-          { double vx = R*((double)ix)/(H+1);
-            for (uint32_t iy = 0;  iy <= +H; iy++)
-              { assert(kq < Q);
-                double vy = R*((double)iy)/(H+1);
-                vq[kq] = (r2_t){{ vx, vy }};
-                double wk = wHan[ix+H]*wHan[iy+H];
-                wq[kq] = wk;
-                kq++;
-              }
-          }
-        assert(kq == Q);
+/* IMPLEMENTATIONS */
 
-        /* Sort 1st quadrant items by increasing distance: */
-        int32_t it[Q]; /* A permutation of the indices {0..Q-1}. */
-        for (uint32_t j = 0;  j < Q; j++) { it[j] = j; }
-        auto int comp_weight(const void *a, const void *b);
-        qsort(it, Q, sizeof(int32_t), &comp_weight);
-
-        int comp_weight(const void *a, const void *b)
-          { int32_t ia = *((int32_t *)a); double da = r2_norm(&(vq[ia]));
-            int32_t ib = *((int32_t *)b); double db = r2_norm(&(vq[ib]));
-            if (da < db)
-              { return -1; }
-            else if (da > db)
-              { return +1; }
-            else
-              { return 0; }
-          }
-          
-        /* Paranoia: */
-        for (uint32_t j = 1;  j < Q; j++) 
-          { if (debug) 
-              { double rj = r2_norm(&(vq[it[j]]));
-                fprintf(stderr, "    it[%4d] = %4d vq[%4d] = ", j, it[j], it[j]);
-                r2_gen_print(stderr, &(vq[it[j]]), "%+14.8f", " ( ", " ", " )");
-                fprintf(stderr, "  norm = %15.9f wq[%4d] = %10.8f\n", rj, it[j], wq[it[j]]);
-              }
-            assert(r2_norm(&(vq[it[j]])) >= r2_norm(&(vq[it[j-1]])));
-          }
-          
-        /* Replicate the quadrant items into {v[1..N-1],w[1..N-1]: */
-
-        for (uint32_t j = 0;  j < Q; j++)
-          { double wj = wq[it[j]]; 
-            double xj = vq[it[j]].c[0];
-            double yj = vq[it[j]].c[1]; 
-            assert (ko + 4 <= N);
-            w[ko] = wj; v[ko] = (r2_t){{ +xj, +yj }}; ko++;
-            w[ko] = wj; v[ko] = (r2_t){{ -yj, +xj }}; ko++;
-            w[ko] = wj; v[ko] = (r2_t){{ -xj, -yj }}; ko++;
-            w[ko] = wj; v[ko] = (r2_t){{ +yj, -xj }}; ko++;
-          }
-
-        free(wq);
-        free(vq);
+multifok_sampling_t *multifok_sampling_choose(uint32_t HS, uint32_t KR, bool_t verbose)
+  { 
+    multifok_sampling_t *samp = talloc(1, multifok_sampling_t);
+    multifok_sampling_choose_pixel_sampoints_and_weights
+      (HS, &(samp->NS), &(samp->iSmp), &(samp->wSmp), verbose);
+    samp->step = 1.0/(double)(HS+1); /* So sampoints almost reach the center of next pixel. */
+    if (verbose) 
+      { fprintf(stderr, "      generated %d sampling points and weights:\n", samp->NS);
+        multifok_sampling_print_points_and_weights(samp->NS, samp->iSmp, "iSmp", samp->step, samp->wSmp, "wSmp");
       }
-    assert(ko == N);
-
-    /* Return results: */
-    (*N_P) = N;
-    (*v_P) = v;
-    (*w_P) = w;
+    samp->KR = KR;
+    return samp;
+  }
+  
+void multifok_sampling_free(multifok_sampling_t *samp)
+  { free(samp->iSmp);
+    free(samp->wSmp);
+    free(samp);
   }
 
-void multifok_sampling_choose_pixel_sampling_points_and_weights
-  ( int32_t HS,
-    int32_t *NS_P,
-    r2_t **uSmp_P,
+void multifok_sampling_choose_pixel_sampoints_and_weights
+  ( uint32_t HS,
+    uint32_t *NS_P,
+    i2_t **iSmp_P,
     double **wSmp_P,
     bool_t verbose
   )
-  { /* This implementation chooses the subsampling points 
-      in a regular orthogonal grid of {2*HS+1} by {2*HS+1},]
-      and 2D Hann (raised cosine) weights. */
+  { /* This implementation chooses the subsampling points as a 
+     regular orthogonal grid of {2*HS+1} by {2*HS+1}, 
+     and 2D Hann (raised cosine) weights.  This ensures the
+     partition of unity property for the sampling points. */
 
-    int32_t NS;
-    r2_t *uSmp;
-    double *wSmp;
-    multifok_sampling_generate_2D_hann_samples(HS, 1.0, &NS, &uSmp, &wSmp);
+    demand(HS >= 0, "invalid {HS}");
+    bool_t debug = TRUE; if (debug) { verbose = TRUE; }
+    
+    /* Allocate and fill the temporary arrays: */
+    uint32_t NW = 2*HS + 1;
+    uint32_t NS = NW*NW;
+    if (debug) { fprintf(stderr, "generating %d × %d = %d sampling vectors total (HS = %d)\n", NW, NW, NS, HS); }
 
-    if (verbose)
-      { fprintf(stderr, "      generated %d sampling points and weights:\n", NS);
-        for (uint32_t ks = 0;  ks < NS; ks++)
-          { fprintf(stderr, "       %4d uSmp = ", ks);
-            r2_gen_print(stderr, &(uSmp[ks]), "%+9.6f", "( ", " ", " )");
-            fprintf(stderr, " wSmp = %12.10f\n", wSmp[ks]);
+    i2_t *iSmp = talloc(NS, i2_t);
+    double *wSmp = talloc(NS, double);
+
+    /* Define element 0: */
+    uint32_t ko = 0; /* Elements already filled: */
+    iSmp[ko] = (i2_t){{ 0,0 }};
+    wSmp[ko] = 1.0;
+    ko++;
+    
+    if (HS > 0)
+      { double *wHan = multifok_sampling_hann_weight_table(HS, verbose);
+        uint32_t NSQ;
+        i2_t *pq;
+        multifok_sampling_get_grid_points_in_quadrant(HS, &pq, &NSQ, verbose);
+        assert(NSQ > 0);
+        assert(pq != NULL);
+        assert(NS == 1 + 4*NSQ);
+
+        /* Replicate the quadrant points into {iSmp[1..NS_max-1],wSmp[1..NS_max-1]: */
+        for (uint32_t j = 0;  j < NSQ; j++)
+          { int32_t xj = pq[j].c[0]; assert(abs(xj) <= HS);
+            int32_t yj = pq[j].c[1]; assert(abs(yj) <= HS);
+            double wj = wHan[xj+(int32_t)HS]*wHan[yj+(int32_t)HS]; 
+            assert (ko + 4 <= NS);
+            wSmp[ko] = wj; iSmp[ko] = (i2_t){{ +xj, +yj }}; ko++;
+            wSmp[ko] = wj; iSmp[ko] = (i2_t){{ -yj, +xj }}; ko++;
+            wSmp[ko] = wj; iSmp[ko] = (i2_t){{ -xj, -yj }}; ko++;
+            wSmp[ko] = wj; iSmp[ko] = (i2_t){{ +yj, -xj }}; ko++;
           }
+        free(pq);
+        free(wHan);
       }
+    assert(ko == NS);
 
     (*NS_P) = NS;
-    (*uSmp_P) = uSmp;
+    (*iSmp_P) = iSmp;
     (*wSmp_P) = wSmp;
   }
-   
-void multifok_sampling_choose_ray_tilts_and_weights
-  ( int32_t KR, 
-    int32_t NS,
-    int32_t *NR_P,
-    r2_t **tRay_P, 
-    double **wRay_P,
+     
+void multifok_sampling_get_grid_points_in_quadrant
+  ( uint32_t HP,
+    i2_t **pq_P,
+    uint32_t *NPQ_P,
     bool_t verbose
   )
-  {
-    /* This implementation chooses the ray tilts in a regular
-      orthogonal grid of {2*HR+1} by {2*HR+1}, and 2D Hann 
-      (raised cosine) weights; where {HR} is determined
-      so that {NR} is 1 if {KR==0}, or at least {KR*NS}
-      if {KR>0}. */
+  { 
+    demand(HP >= 0, "invalid {HP}");
+    bool_t debug = TRUE;
     
-    int32_t HR;
-    if (KR == 0)
-      { if (verbose) { fprintf(stderr, "using one vertical ray for all sampling points\n"); }
-        HR = 0; 
+    /* Allocate and fill the temporary arrays: */
+    uint32_t NW = 2*HP + 1;
+
+    /* Generate the 2D samples and weights for the first quadrant: */
+    uint32_t NPQ = (NW*NW - 1)/4;
+    if (debug) { fprintf(stderr, "  generating %d grid points in first quadrant\n", NPQ); }
+    i2_t *pq = talloc(NPQ, i2_t);
+
+    uint32_t kq = 0; /* First-quadrant points generated so far. */
+    for (int32_t ix = 1;  ix <= +HP; ix++)
+      { for (int32_t iy = 0;  iy <= +HP; iy++)
+          { assert(kq < NPQ);
+            pq[kq] = (i2_t){{ ix, iy }};
+            kq++;
+          }
       }
+    assert(kq == NPQ);
+    
+    multifok_sampling_sort_points_by_norm(NPQ, pq);
+    
+    (*pq_P) = pq;
+    (*NPQ_P) = NPQ;
+  } 
+
+void multifok_sampling_sort_points_by_norm(uint32_t NP, i2_t p[])
+  { qsort(p, NP, sizeof(i2_t), &multifok_sampling_compare_points); }
+    
+void multifok_sampling_check_point_order(uint32_t NP, i2_t p[])
+  { bool_t debug = FALSE;
+    for (uint32_t j = 0;  j < NP; j++) 
+      { if (debug)
+          { double rj = sqrt((double)i2_norm_sqr(&(p[j])));
+            fprintf(stderr, "        p[%4d] = ", j);
+            i2_gen_print(stderr, &(p[j]), "%+8d", " ( ", " ", " )");
+            fprintf(stderr, "  norm = %15.9f\n", rj);
+          }
+        if (j > 0) { assert(multifok_sampling_compare_points(&(p[j-1]), &(p[j])) == -1); }
+      }
+  } 
+
+int32_t multifok_sampling_compare_points(const void *a, const void *b)
+  { i2_t *pa = ((i2_t *)a); uint64_t r2a = i2_norm_sqr(pa);
+    i2_t *pb = ((i2_t *)b); uint64_t r2b = i2_norm_sqr(pb);
+    if (r2a < r2b)
+      { return -1; }
+    else if (r2a > r2b)
+      { return +1; }
     else
-      { demand(KR >= 0, "invalid {KR}");
-        demand(NS >= 1, "invalid {NS}");
-        demand((NS % 2) == 1, "invalid {NS}");
-
-        /* Factor {NS} into {SS^2*MS} where {MS} is squarefree: */
-        int32_t SS = 1, MS = NS;
-        int32_t d = 3;
-        while (TRUE)
-          { int32_t d2 = d*d;
-            if (MS < d2) 
-              { break; }
-            else if ((MS % d2) == 0)
-              { MS /= d2; SS *= d; }
+      { int32_t xa = pa->c[0], ya =  pa->c[1];
+        int32_t xb = pb->c[0], yb =  pb->c[1];
+        /* Try to break the tie by {min(|x|,|y|)} */
+        int32_t ma = (int32_t)imin(abs(xa),abs(ya));
+        int32_t mb = (int32_t)imin(abs(xb),abs(yb));
+        if (ma < mb) 
+          { return -1; }
+        else if (ma > mb) 
+          { return +1; }
+        else
+          { /* Try to break the tie by {|x|+|y|} */
+            int32_t sa = abs(xa) + abs(ya);
+            int32_t sb = abs(xb) + abs(yb);
+            if (sa < sb) 
+              { return -1; }
+            else if (sa > sb) 
+              { return +1; }
             else
-              { d += 2; }
-          }
-        if (verbose) { fprintf(stderr, "factored NS = %d into *%d^2*%d\n", NS, SS, MS); }
-        assert(SS*SS*MS == NS);
-        assert((SS*MS % 2) == 1);
-        /* Now choose {KR_new} so that {KR_new*MS} is an odd square and {KR_new >= KR}: */
-        int32_t TR = (int32_t)ceil((sqrt(((double)KR)/((double)MS)) - 1.0)/2);
-        int32_t LR_loc = (2*TR+1)*MS*SS;
-        int32_t NR_loc = LR_loc*LR_loc;
-        int32_t KR_new = NR_loc/NS;
-        HR = (LR_loc - 1)/2;
-        if (verbose) 
-          { if (KR_new != KR)
-              { fprintf(stderr, "rays per sampling point {KR} rounded up from %d to %d\n", KR, KR_new); }
-          }
-        KR = KR_new;
-        assert(KR >= 1);
-      }
-    int32_t LR = 2*HR + 1;
-    int32_t NR = LR*LR;
-    fprintf(stderr, "generating %d × %d = %d total rays (HR = %d)\n", LR, LR, NR, HR);
-    if (NR != 1) { assert((NR % NS) == 0); }
-        
-    int32_t NR_gen;
-    r2_t *tRay;
-    double *wRay;
-    multifok_sampling_generate_2D_hann_samples(HR, 1.0, &NR_gen, &tRay, &wRay);
-    assert(NR_gen == NR);
-    
-    if (NR > 1)
-      { /* Normalize the tilts to unit RMS radius: */
-        double sum_w = 0;
-        double sum_w_r2 = 0;
-        for (uint32_t ir = 0;  ir < NR; ir++)
-          { sum_w += wRay[ir];
-            double r2 = r2_norm_sqr(&(tRay[ir])); 
-            sum_w_r2 += wRay[ir]*r2;
-          }
-        assert(sum_w >= 1.0);
-        double r_avg = sqrt(sum_w_r2/sum_w);
-        assert(r_avg > 0.0);
-        for (uint32_t ir = 0;  ir < NR; ir++) 
-          { tRay[ir].c[0] /= r_avg;
-            tRay[ir].c[1] /= r_avg;
+              { /* Try to break the tie by lex order: */
+                if (xa < xb)
+                  { return -1; }
+                else if (xa > xb)
+                  { return +1; }
+                else if (ya < yb)
+                  { return -1; }
+                else if (ya > yb)
+                  { return +1; }
+                else
+                  { /* The pairs are equal: */
+                    return 0;
+                  }
+              }
           }
       }
+  }
 
+void multifok_sampling_print_points_and_weights
+  ( uint32_t NP,
+    i2_t p[],
+    char *pName,
+    double step,
+    double w[],
+    char *wName
+  )
+  { for (uint32_t k = 0;  k < NP; k++)
+      { fprintf(stderr, "       %4d %s = ", k, pName);
+        i2_gen_print(stderr, &(p[k]), "%+3d", "( ", " ", " )");
+        r2_t rp = (r2_t){{ p[k].c[0]*step,  p[k].c[1]*step }};
+        r2_gen_print(stderr, &rp, "%+8.5f", " = ( ", " ", " )");
+        if (w != NULL) { fprintf(stderr, " %s = %12.10f", wName, w[k]); }
+        fprintf(stderr, "\n");
+      }
+  }
+  
+double* multifok_sampling_hann_weight_table(uint32_t HW, bool_t verbose)
+  {
+    uint32_t NW = 2*HW + 1;
+    double *wHan = talloc(NW, double);
+    wt_table_hann_fill(NW, 0.0, wHan, NULL);
     if (verbose)
-      { fprintf(stderr, "      generated %d ray tilts and weights:\n", NR);
-        for (uint32_t ir = 0;  ir < NR; ir++)
-          { fprintf(stderr, "      ray %4d tRay = ", ir);
-            r2_gen_print(stderr, &(tRay[ir]), "%+9.6f", "( ", " ", " )");
-            fprintf(stderr, " wRay = %12.10f\n", wRay[ir]);
-          }
+      { for (uint32_t j = 0;  j < NW; j++)
+          { fprintf(stderr, "  wHan[%d] = %10.8f\n", j, wHan[j]); }
       }
-
-    /* Return results: */
-    (*NR_P) = NR;
-    (*tRay_P) = tRay;
-    (*wRay_P) = wRay;
-    
-    return;
+    assert(wHan[HW] == 1.0);
+    /* Paranoia check of partition-of-unity property: */
+    for (uint32_t j = 0;  j < HW; j++)
+      { assert(fabs(wHan[j] + wHan[j+HW+1] - 1.0) < 1.0e-13); }
+    return wHan;
   }

@@ -1,5 +1,5 @@
 /* rn.h --- operations on points and vectors of R^n */
-/* Last edited on 2024-11-20 13:10:56 by stolfi */
+/* Last edited on 2024-12-05 10:28:49 by stolfi */
 /* 
   Based on VectorN.mg, created  95-02-27 by J. Stolfi.
 */
@@ -7,7 +7,6 @@
 #ifndef rn_H
 #define rn_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

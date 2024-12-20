@@ -1,7 +1,6 @@
 /* See {g3map.h}  */
-/* Last edited on 2022-10-20 06:29:17 by stolfi */
+/* Last edited on 2024-12-05 10:28:53 by stolfi */
 
-#define _GNU_SOURCE
 #include <assert.h>
 #include <stdint.h>
 #include <affirm.h>

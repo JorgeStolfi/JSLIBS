@@ -1,5 +1,5 @@
 /* See {spectrum_table_convert.h} */
-/* Last edited on 2013-10-21 00:23:52 by stolfilocal */ 
+/* Last edited on 2024-12-05 07:14:16 by stolfi */ 
 
 #include <limits.h>
 #include <float.h>
@@ -22,15 +22,15 @@
 
 spectrum_table_binned_t spectrum_table_convert_exact_to_binned
   ( spectrum_table_exact_t *tx,
-    int cols, 
-    int rows )
+    uint32_t cols, 
+    uint32_t rows )
   {
     /* Create a binned table with roughly correct size: */
-    int size_guess = cols*rows/2;
+    uint32_t size_guess = cols*rows/2;
     spectrum_table_binned_t tb = spectrum_table_binned_new(size_guess);
     
     /* Scan the exact table and join/fill entries: */
-    int nb = 0; /* Valid entries of {tb} are {tb.e[0..ib-1]}. */
+    uint32_t nb = 0; /* Valid entries of {tb} are {tb.e[0..ib-1]}. */
     
     auto void append_proper_entry(float freq, double nTerms, double power);
       /* Appends to {tb} a proper entry {(freq,nTerms,power)},
@@ -73,7 +73,7 @@ spectrum_table_binned_t spectrum_table_convert_exact_to_binned
     double pprev = 0.0;  /* Total {power} of incomplete entry. */
     float flimit = (float)M_SQRT1_2; /* Max float frequency, {sqrt(1/2)}. */
     /* Scan entries of {tx} (including a dummy one at the end): */
-    int ix; 
+    int32_t ix; 
     for (ix = 0; ix <= tx->ne; ix++)
       { /* Get the data {fthis,nthis,pthis} of the next entry of {tx}: */
         float fthis; 

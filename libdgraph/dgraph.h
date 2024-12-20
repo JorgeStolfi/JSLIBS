@@ -2,9 +2,8 @@
 #define dgraph_H
 
 /* Directed or undirected graphs represented as sparse matrices of booleans. */
-/* Last edited on 2022-10-20 06:14:19 by stolfi */
+/* Last edited on 2024-12-05 10:25:30 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <bool.h>

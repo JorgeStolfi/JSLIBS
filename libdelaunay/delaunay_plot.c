@@ -1,7 +1,6 @@
 /* See {delaunay_plot.h}. */
-/* Last edited on 2023-02-20 06:08:42 by stolfi */
+/* Last edited on 2024-12-05 10:25:06 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <string.h>

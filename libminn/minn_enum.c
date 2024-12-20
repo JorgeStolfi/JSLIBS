@@ -1,7 +1,6 @@
 /* See {minn_enum.h}. */
-/* Last edited on 2024-01-10 13:47:11 by stolfi */
+/* Last edited on 2024-12-05 13:22:08 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdint.h>
@@ -18,7 +17,7 @@
 #include <minn_enum.h>
 
 void minn_enum
-  ( int32_t n,        /* Dimension of search space. */
+  ( uint32_t n,        /* Dimension of search space. */
     minn_goal_t *F,   /* Function to be minimized. */
     bool_t box,       /* True to search in the unit cube, false in the unit ball. */
     double tol[],     /* Desired precision. */

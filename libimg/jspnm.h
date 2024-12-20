@@ -1,5 +1,5 @@
 /* jspnm.h - basic definitions for reading/writing PBM/PGM/PBM files. */
-/* Last edited on 2023-03-07 19:45:59 by stolfi */ 
+/* Last edited on 2024-12-04 23:34:28 by stolfi */ 
 
 #ifndef jspnm_H
 #define jspnm_H
@@ -50,7 +50,7 @@ uint16_t pnm_file_max_maxval(pnm_format_t format);
 
 void pnm_choose_output_format
   ( uint16_t maxval, 
-    int chns, 
+    int32_t chns, 
     bool_t forceplain,
     pnm_format_t *formatP,
     bool_t *rawP,
@@ -70,9 +70,9 @@ void pnm_choose_output_format
 
 void pnm_read_header
   ( FILE *rd, 
-    int *colsP, 
-    int *rowsP, 
-    int *chnsP, 
+    int32_t *colsP, 
+    int32_t *rowsP, 
+    int32_t *chnsP, 
     uint16_t *maxvalP, 
     bool_t *rawP, 
     bool_t *bitsP,
@@ -84,7 +84,7 @@ void pnm_read_header
     variant (with binary samples).  Also sets {*bitsP} iff the format is 
     a PBM format (raw or plain). */
 
-void pnm_write_header(FILE *wr, int cols, int rows, uint16_t maxval, pnm_format_t format);
+void pnm_write_header(FILE *wr, int32_t cols, int32_t rows, uint16_t maxval, pnm_format_t format);
   /* Writes the header of a PBM/PGM/PPM file to {wr}, with the given dimensions,
     {maxval}, and {format}. */
 
@@ -111,12 +111,12 @@ void pnm_skip_whitespace_and_comments(FILE *rd, bool_t verbose);
 /* ********************************************************************** */
 /* READING AND WRITING IMAGE SIZES */
 
-int pnm_read_plain_int(FILE *rd);
+int32_t pnm_read_plain_int32_t(FILE *rd);
   /* Reads a decimal integer in ASCII from {rd}.  Skips whitespace
     and stops reading at the first non-numeric char.  Bombs out
     if the number is missing (e.g. at EOF) or malformed. */
 
-void pnm_write_plain_int(FILE *wr, int ival);
+void pnm_write_plain_int32_t(FILE *wr, int32_t ival);
   /* Writes the integer {ival} in decimal ASCII to {wr}. */
 
 /* ********************************************************************** */
@@ -135,7 +135,7 @@ uint16_t pnm_read_plain_sample(FILE *rd, uint16_t maxval);
     char. Bombs out if the number is negative, missing (e.g. at EOF) or
     malformed. */
 
-int pnm_write_plain_sample(FILE *wr, uint16_t ival, uint16_t maxval);
+int32_t pnm_write_plain_sample(FILE *wr, uint16_t ival, uint16_t maxval);
   /* Writes the pixel sample {ival} as an signed decimal integer in ASCII to
     {rd}. Returns the number of digits written. */
 
@@ -149,18 +149,18 @@ void pnm_write_plain_bit(FILE *wr, uint16_t ival);
     as a single ASCII digit '0' or '1' to {rd}. */
 
 uint16_t pnm_read_raw_byte(FILE *rd, uint16_t maxval);
-  /* Reads a single byte from {rd}, interprets it as an 8-bit unsigned int.  
+  /* Reads a single byte from {rd}, interprets it as an 8-bit unsigned int32_t.  
     Bombs out at EOF. */
 
 void pnm_write_raw_byte(FILE *wr, uint16_t ival, uint16_t maxval);
-  /* Writes the 8-bit unsigned int {ival} as single byte to {wr}. */
+  /* Writes the 8-bit unsigned int32_t {ival} as single byte to {wr}. */
 
 uint16_t pnm_read_raw_short(FILE *rd, uint16_t maxval);
-  /* Reads two bytes from {rd}, interprets them as a 16-bit unsigned int.  
+  /* Reads two bytes from {rd}, interprets them as a 16-bit unsigned int32_t.  
     Bombs out at EOF. */
 
 void pnm_write_raw_short(FILE *wr, uint16_t ival, uint16_t maxval);
-  /* Writes the 16-bit unsigned int {ival} to {wr}, as two bytes,
+  /* Writes the 16-bit unsigned int32_t {ival} to {wr}, as two bytes,
     big-endian way. */
 
 bool_t pnm_uint_leq(uint32_t x, uint32_t xmax);
@@ -173,8 +173,8 @@ bool_t pnm_uint_leq(uint32_t x, uint32_t xmax);
 void pnm_read_pixels
   ( FILE *rd, 
     uint16_t *smp, 
-    int cols, 
-    int chns,
+    int32_t cols, 
+    int32_t chns,
     uint16_t maxval, 
     bool_t raw,
     bool_t bits
@@ -210,8 +210,8 @@ void pnm_read_pixels
 void pnm_write_pixels
   ( FILE* wr, 
     uint16_t *smp, 
-    int cols, 
-    int chns,
+    int32_t cols, 
+    int32_t chns,
     uint16_t maxval, 
     bool_t raw,
     bool_t bits

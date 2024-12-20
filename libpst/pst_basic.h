@@ -2,11 +2,8 @@
 #define pst_basic_H
 
 /* pst_basic.h -- basic data types for gauge-based photostereo. */
-/* Last edited on 2023-03-19 15:27:08 by stolfi */
+/* Last edited on 2024-12-05 10:42:13 by stolfi */
 
-/* We need to set these in order to get {asprintf,isnan}. */
-#undef __STRICT_ANSI__
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <values.h>

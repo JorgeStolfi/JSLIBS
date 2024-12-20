@@ -1,10 +1,9 @@
 /* Oriented projective geometry in {N} dimensions.  */
-/* Last edited on 2024-11-20 12:10:19 by stolfi */
+/* Last edited on 2024-12-05 10:27:30 by stolfi */
 
 #ifndef hrn_H
 #define hrn_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <rn.h>

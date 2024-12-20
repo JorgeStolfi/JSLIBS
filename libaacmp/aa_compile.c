@@ -1,7 +1,6 @@
 /* See aa_compile.h */
-/* Last edited on 2023-03-20 00:57:44 by stolfi */
+/* Last edited on 2024-12-05 10:19:08 by stolfi */
 
-#define _GNU_SOURCE_
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>

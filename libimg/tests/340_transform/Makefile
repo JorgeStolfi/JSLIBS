@@ -1,4 +1,4 @@
-# Last edited on 2012-02-20 05:58:41 by stolfilocal
+# Last edited on 2024-12-20 18:27:06 by stolfi
 
 PROG = test_transform
 
@@ -6,7 +6,8 @@ TEST_LIB := libimg.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS := \
-  libgeo.a \
+  libgeo.a  \
+  libgausol.a\
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

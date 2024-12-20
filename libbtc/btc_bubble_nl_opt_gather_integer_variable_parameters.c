@@ -1,7 +1,6 @@
 /* See {btc_bubble_nl_opt_gather_integer_variable_parameters.h} */
-/* Last edited on 2015-04-30 00:00:05 by stolfilocal */
+/* Last edited on 2024-12-05 10:22:55 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <assert.h>
 

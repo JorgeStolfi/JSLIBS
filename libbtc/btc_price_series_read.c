@@ -1,7 +1,6 @@
 /* See {btc_price_series_read.h} */
-/* Last edited on 2023-02-12 07:53:13 by stolfi */
+/* Last edited on 2024-12-05 10:23:46 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 

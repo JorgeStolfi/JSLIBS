@@ -2,9 +2,8 @@
 #define ellipse_aligned_H
 
 /* ellipse_aligned.h -- tools for axis-aligned, origin-centered ellipses. */
-/* Last edited on 2021-06-09 19:55:19 by jstolfi */
+/* Last edited on 2024-12-05 10:26:22 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <sign.h>

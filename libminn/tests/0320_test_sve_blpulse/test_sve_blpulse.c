@@ -1,7 +1,6 @@
 /* test_sve_blpulse --- test of {sve_minn.h} for bandlimited pulse design */
-/* Last edited on 2024-11-08 20:25:42 by stolfi */
+/* Last edited on 2024-12-05 10:34:35 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

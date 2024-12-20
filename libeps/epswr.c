@@ -1,7 +1,6 @@
 /* See epswr.h */
-/* Last edited on 2024-11-04 06:50:35 by stolfi */
+/* Last edited on 2024-12-05 10:13:24 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -13,7 +12,9 @@
 #include <bool.h>
 #include <affirm.h>
 #include <jsstring.h>
+#include <jsprintf.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <jstime.h>
 
 #include <epswr.h>
@@ -116,13 +117,14 @@ epswr_figure_t *epswr_new_named_figure
     else
       { char *dir_s = (dir[0] == 0 ? "" : "/");
         char *prefix_u = ((prefix[0] == 0) || (name[0] == 0) ? "" : "_");
+        char *fname = NULL;
         if (seq >= 0) 
           { char *name_u = ((prefix[0] == 0) && (name[0] == 0) ? "" : "_");
             char *seq_u = (suffix[0] == 0 ? "" : "_");
-            char *fname = jsprintf("%s%s%s%s%s%s%05d%s%s.eps", dir, dir_s, prefix, prefix_u, name, name_u, seq, seq_u, suffix); }
+            fname = jsprintf("%s%s%s%s%s%s%05d%s%s.eps", dir, dir_s, prefix, prefix_u, name, name_u, seq, seq_u, suffix); }
         else
           { char *name_u = (((prefix[0] == 0) && (name[0] == 0)) || (suffix[0] == 0) ? "" : "_");
-            char *fname = jsprintf("%s%s%s%s%s%s%s.eps", dir, dir_s, prefix, prefix_u, name, name_u, suffix);
+            fname = jsprintf("%s%s%s%s%s%s%s.eps", dir, dir_s, prefix, prefix_u, name, name_u, suffix);
           }
         if (verbose) { Pr(Er "writing EPS figure to \"%s\"\n", fname); }
         wr = open_write(fname, TRUE);
@@ -527,7 +529,7 @@ void epswr_polygon
     double *psx = talloc(n, double);
     double *psy = talloc(n, double);
     /* Map points to Device coordinates: */
-    for (uint32_t i = 0;  i<n; i++)
+    for (int32_t i = 0;  i<n; i++)
       { epswr_x_to_h_coord(eps, x[i], &(psx[i]));
         epswr_y_to_v_coord(eps, y[i], &(psy[i]));
       }
@@ -551,7 +553,7 @@ void epswr_rounded_polygon
     double *psx = talloc(n, double);
     double *psy = talloc(n, double);
     /* Map points and radius to Device coordinates: */
-    for (uint32_t i = 0;  i<n; i++)
+    for (int32_t i = 0;  i<n; i++)
       { epswr_x_to_h_coord(eps, x[i], &(psx[i]));
         epswr_y_to_v_coord(eps, y[i], &(psy[i]));
       }
@@ -575,7 +577,7 @@ void epswr_bezier_polygon
     double *psx = talloc(np, double);
     double *psy = talloc(np, double);
     /* Map points to Device coordinates: */
-    for (uint32_t i = 0;  i < np; i++)
+    for (int32_t i = 0;  i < np; i++)
       { epswr_x_to_h_coord(eps, x[i], &(psx[i]));
         epswr_y_to_v_coord(eps, y[i], &(psy[i]));
       }

@@ -1,7 +1,6 @@
 /* See stimage.h */
-/* Last edited on 2023-02-25 16:10:54 by stolfi */
+/* Last edited on 2024-12-05 10:43:11 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>

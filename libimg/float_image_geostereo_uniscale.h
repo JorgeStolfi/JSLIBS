@@ -2,9 +2,8 @@
 #define float_image_geostereo_uniscale_H
 
 /* Tools for geometric stereo reconstruction from image pairs. */
-/* Last edited on 2017-06-26 01:53:48 by stolfilocal */ 
+/* Last edited on 2024-12-05 10:29:40 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

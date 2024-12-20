@@ -1,7 +1,6 @@
 /* See {hr2_pmap_special_opt.h}. */
-/* Last edited on 2024-11-08 20:43:28 by stolfi */
+/* Last edited on 2024-12-05 10:19:51 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdint.h>
 #include <limits.h>

@@ -1,10 +1,9 @@
 /* spvec.h -- sparse vectors (one-dimensional arrays) of things */
-/* Last edited on 2023-03-18 10:50:31 by stolfi */
+/* Last edited on 2024-12-05 10:40:26 by stolfi */
 
 #ifndef spvec_H
 #define spvec_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdlib.h>
 

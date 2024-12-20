@@ -1,10 +1,9 @@
 /* Oriented projective geometry in two dimensions with integer homogeneous coordinates. */
-/* Last edited on 2024-09-04 20:40:12 by stolfi */ 
+/* Last edited on 2024-12-05 10:26:40 by stolfi */ 
    
 #ifndef hi2_H
 #define hi2_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <i2.h>

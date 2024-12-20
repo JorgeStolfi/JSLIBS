@@ -1,10 +1,9 @@
 /* Stack of images with limited depth of focus. */
-/* Last edited on 2024-10-22 08:25:43 by stolfi */
+/* Last edited on 2024-12-05 23:54:06 by stolfi */
 
 #ifndef multifok_stack_H
 #define multifok_stack_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <float_image.h>
@@ -12,7 +11,7 @@
 #include <multifok_frame.h>
   
 typedef struct multifok_stack_t 
-  { int32_t NI;                /* Number of images in stack. */
+  { uint32_t NI;                /* Number of images in stack. */
     int32_t NC;                /* Number of channels in the scene images. */
     int32_t NX, NY;            /* Image dimensions of all images. */
     multifok_frame_t **frame;  /* Frames of the stack. */
@@ -21,14 +20,14 @@ typedef struct multifok_stack_t
     same number of columns {NX} and of rows {NY}.  All scene images {frame[ki].sVal}
     must have the same number of channels {NC}. */
      
-multifok_stack_t* multifok_stack_new(int32_t NI, int32_t NC, int32_t NX, int32_t NY);
+multifok_stack_t* multifok_stack_new(uint32_t NI, int32_t NC, int32_t NX, int32_t NY);
   /* Creates a new stack record with the given paramenters.  The vector 
     {stack.frame} is allocated with space for {NI} frames, but is filled with {NULL}. */
 
 multifok_stack_t* multifok_stack_read
   ( char *stackDir,
     bool_t gray,
-    int32_t NI,
+    uint32_t NI,
     double zFoc[],
     double zDep[],
     double hMin,

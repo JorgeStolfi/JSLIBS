@@ -1,7 +1,6 @@
 /* Planta basica da casa na Boaretto da Silva 113 */
-/* Last edited on 2023-02-21 05:25:43 by stolfi */
+/* Last edited on 2024-12-05 10:20:48 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

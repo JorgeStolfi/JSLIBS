@@ -2,17 +2,16 @@
 #define lsq_robust_H
 
 /* Fits a linear map of {R^nx} to {R} to samples by least squares, ignoring outliers. */
-/* Last edited on 2023-02-23 16:49:54 by stolfi */
+/* Last edited on 2024-12-05 12:55:58 by stolfi */
 
 #define lsq_robust_H_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <bool.h>
 
-typedef void lsq_robust_report_t(int32_t iter, int32_t nt, int32_t nx, double Pc[], double Fc[], double Uc[]);
+typedef void lsq_robust_report_t(uint32_t iter, uint32_t nt, uint32_t nx, double Pc[], double Fc[], double Uc[]);
   /* Type of a procedure that is used by {lsq_robust_fit} to report the progress of the
     iteration.
 
@@ -27,12 +26,12 @@ typedef void lsq_robust_report_t(int32_t iter, int32_t nt, int32_t nx, double Pc
     approximation, computed from {Fc}, as in {lin_fit}. */
 
 void lsq_robust_fit
-  ( int32_t nt,      /* Number of data points. */
-    int32_t nx,      /* Number of independent variables (argument coordinates per data point). */
+  ( uint32_t nt,      /* Number of data points. */
+    uint32_t nx,      /* Number of independent variables (argument coordinates per data point). */
     double X[],      /* Argument coordinates of data points ({nt} by {nx}). */
     double F[],      /* Function samples of data points ({nt} elements). */
     double W[],      /* Reliability weights ({nt} elements) o {NULL}. */
-    int32_t maxiter, /* Max iteration count. */
+    uint32_t maxiter, /* Max iteration count. */
     double U[],      /* (OUT) Fitted linear function coeffs ({nx} elements). */
     double P[],      /* (OUT) Assumed inlier probabilities, or {NULL}. */
     lsq_robust_report_t *report,
@@ -90,7 +89,7 @@ void lsq_robust_fit
 /* AUXILIARY PROCEDURES */
 
 void lsq_robust_compute_stats
-  ( int32_t nt,
+  ( uint32_t nt,
     double Y[],   /* Values to analyze (residuals or function samples, {nt} elements). */
     double W[],
     double P[],

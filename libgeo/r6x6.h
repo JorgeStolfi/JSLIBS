@@ -1,10 +1,9 @@
 /* r6x6.h --- 4x4 matrices and operations on them */
-/* Last edited on 2024-11-20 13:01:29 by stolfi */
+/* Last edited on 2024-12-05 10:28:14 by stolfi */
 
 #ifndef r6x6_H
 #define r6x6_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

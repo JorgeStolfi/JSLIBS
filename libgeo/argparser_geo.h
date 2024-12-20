@@ -1,5 +1,5 @@
 /* argparser_geo.h -- extends argparser.h for geometric args. */
-/* Last edited on 2024-11-20 08:47:52 by stolfi */
+/* Last edited on 2024-12-06 06:42:25 by stolfi */
 
 #ifndef argparser_geo_H
 #define argparser_geo_H
@@ -9,7 +9,6 @@
 /* This interface provides convenient tools for parsing command
   line arguments whose values are real vectors. */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <r2.h>
 #include <r3.h>
@@ -33,7 +32,9 @@ void argparser_get_next_rn(argparser_t *pp, double p[], uint32_t n, double min, 
     {p[0.n-1]}. */
 
 r3_t argparser_get_next_r3_dir(argparser_t *pp);
-  /* Same as {argparser_get_next_r3} but normalizes result to unit length. */
+  /* Same as {argparser_get_next_r3} but normalizes result to unit length.
+    If the length of the given vector is zero (or way too small),
+    returns {(NAN,NAN,NAN)}. */
 
 void argparser_get_next_adjust(argparser_t *pp, double *adjP, double min, double max);
   /* Parses the optional modifier "adjust {AMOUNT}" to the 

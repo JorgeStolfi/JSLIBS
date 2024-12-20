@@ -1,9 +1,9 @@
+/* A box-like plate with edges parallel to the axes. */
+/* Last edited on 2024-12-05 10:18:21 by stolfi */
+
 #ifndef boap_plate_H
 #define boap_plate_H
 
-/* A box-like plate with edges parallel to the axes. */
-
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

@@ -1,5 +1,5 @@
 /* {float_array_au.h} - read/write Sun AU audio files as {float_array_t}s */
-/* Last edited on 2023-03-18 11:02:46 by stolfi */
+/* Last edited on 2024-12-05 10:32:03 by stolfi */
 
 /* Derived from {rusound.h}, created by Rumiko Oishi Stolfi
   and Jorge Stolfi on sep/2006.
@@ -8,7 +8,6 @@
 #ifndef float_array_au_H
 #define float_array_au_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 

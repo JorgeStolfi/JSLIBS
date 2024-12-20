@@ -1,10 +1,9 @@
 /* fboxheap.h -- Heap of function boxes sorted by some criterion */
-/* Last edited on 2023-02-20 06:38:37 by stolfi */
+/* Last edited on 2024-12-05 10:21:54 by stolfi */
 
 #ifndef fboxheap_h
 #define fboxheap_h
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <fbox.h>

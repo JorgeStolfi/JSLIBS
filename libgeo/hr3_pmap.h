@@ -1,11 +1,9 @@
 /* Oriented projective maps in three dimensions. */
-/* Last edited on 2024-11-20 12:04:27 by stolfi */ 
+/* Last edited on 2024-12-05 10:27:23 by stolfi */ 
 
 #ifndef hr3_pmap_H
 #define hr3_pmap_H
    
-#define _GNU_SOURCE
-
 #include <stdint.h>
 
 #include <sign.h>

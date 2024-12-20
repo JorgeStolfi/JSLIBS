@@ -1,10 +1,9 @@
 /* uint16_image_read.h - reading {uint16_image_t} from a PNM (PBM/PGM/PPM) image file. */
-/* Last edited on 2017-06-22 02:29:37 by stolfilocal */
+/* Last edited on 2024-12-05 10:31:13 by stolfi */
 
 #ifndef uint16_image_read_pnm_H
 #define uint16_image_read_pnm_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 
 #include <bool.h>

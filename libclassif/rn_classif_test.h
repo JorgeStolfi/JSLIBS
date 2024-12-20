@@ -1,10 +1,9 @@
 /* rn_classif_test.h --- generate random points for testing classifiers. */
-/* Last edited on 2017-01-04 19:01:33 by stolfilocal */
+/* Last edited on 2024-12-05 10:24:32 by stolfi */
 
 #ifndef rn_classif_test_H
 #define rn_classif_test_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 

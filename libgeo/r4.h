@@ -1,10 +1,9 @@
 /* r4.h --- operations on points and vectors of R^4 */
-/* Last edited on 2024-11-20 12:59:30 by stolfi */
+/* Last edited on 2024-12-05 10:28:06 by stolfi */
 
 #ifndef r4_H
 #define r4_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>

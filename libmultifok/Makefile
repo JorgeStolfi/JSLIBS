@@ -1,7 +1,9 @@
 # Geometry and linear algebra routines
-# Last edited on 2024-10-14 13:53:40 by stolfi
+# Last edited on 2024-12-17 09:32:47 by stolfi
 
 LIBNAME := libmultifok
+
+OTHER_C_FLAGS := -pg
 
 IGNORE :=
 

@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of the {oct.h} procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2015-01-01 23:54:43 by stolfilocal */ 
+/* Last edited on 2024-12-05 10:26:14 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2014  State University of Campinas (UNICAMP)"
@@ -15,7 +15,6 @@
 #define PROG_HELP \
   "  " PROG_NAME ""
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

@@ -1,7 +1,6 @@
 /* Floorlans of IC-4a building */
-/* Last edited on 2023-02-21 05:05:35 by stolfi */
+/* Last edited on 2024-12-05 10:21:18 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

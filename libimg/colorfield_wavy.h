@@ -56,7 +56,7 @@ cfld_wavy_args_t *cfld_wavy_parse_uniform(argparser_t *pp);
     Increments {*argn}.  Returns the resultpackaged as a
     {cfld_wavy_args_t} with no waves. */ 
 
-cfld_wavy_args_t *cfld_wavy_parse_simple(argparser_t *pp, int uX, int uY);
+cfld_wavy_args_t *cfld_wavy_parse_simple(argparser_t *pp, int32_t uX, int32_t uY);
   /* Parses the next few command line arguments, starting at
     {argv[*argn]}, as an horizontal or vertical color-wave
     specification. Assumes that the "-field hWave" or 
@@ -75,7 +75,7 @@ cfld_wavy_args_t *cfld_wavy_parse_simple(argparser_t *pp, int uX, int uY);
     and a single {cfld_wave_args_t} in {wa->waves}, containing
     the minimum value {COLOR1} and the wave's period. */ 
     
-cfld_wavy_args_t *cfld_wavy_parse_general(argparser_t *pp, int n);
+cfld_wavy_args_t *cfld_wavy_parse_general(argparser_t *pp, int32_t n);
   /* Parses the next few command line arguments, starting at
     {argv[*argn]}, as the specifications of a variable color field.
     Assumes that the "-field wave" or "-field wavePair" arguments have
@@ -99,7 +99,7 @@ cfld_wavy_args_t *cfld_wavy_parse_general(argparser_t *pp, int n);
 
 typedef struct cfld_wave_params_t
   { cfld_int_pair_t freqNum;         /* Numerator of frequency vector {fr}. */
-    int freqDen;             /* Denominator of frequency vector {fr}. */
+    int32_t freqDen;             /* Denominator of frequency vector {fr}. */
     frgb_t *tb;             /* Wave adjutment for each {iphase}. */
     struct cfld_wave_params_t *next;  /* Next wave table. */
   } cfld_wave_params_t;
@@ -116,7 +116,7 @@ cfld_wave_params_t *cfld_wavy_compute_wave_params
     cfld_int_pair_t *org,
     frgb_t *orgColor, 
     frgb_t *botColor,
-    int logarithmic
+    bool_t logarithmic
   );
   /* Precomputes a wave adjustment table {wp} for the wave specs {*wa},
     given the properly corrected values {orgColor} and {botColor}
@@ -133,7 +133,7 @@ typedef struct cfld_wavy_params_t  /* Precomputed data for a wavy field */
 cfld_wavy_params_t *cfld_wavy_compute_params
   ( cfld_wavy_args_t *wfa, 
     frgb_adjuster_t *adjust,
-    int logarithmic
+    bool_t logarithmic
   );
   /* Computes the reference color {wfp->orgColor} 
     and its wave adjustment tables {wfp->tables}. */
@@ -142,22 +142,22 @@ cfld_wavy_params_t *cfld_wavy_compute_params
 
 void cfld_wavy_eval
   ( cfld_wavy_params_t *wfp,
-    int logarithmic, 
-    int col, 
-    int row,
+    bool_t logarithmic, 
+    int32_t col, 
+    int32_t row,
     frgb_t *fv,
-    int chns
+    int32_t chns
   );
   /* Evaluates the wavy field described by {wfp} at the pixel 
     in column {col} and row {row}. */
 
 void cfld_wavy_apply_waves
   ( frgb_t *locColor,
-    int chns,
-    int dCol, 
-    int dRow,
+    int32_t chns,
+    int32_t dCol, 
+    int32_t dRow,
     cfld_wave_params_list_t wp,
-    int logarithmic
+    bool_t logarithmic
   );
   /* Applies the wave corrections {wp} to the color
     {locColor[0..chns-1]}, evaluated at the pixel in column {dCol} and

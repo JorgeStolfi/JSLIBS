@@ -2,7 +2,7 @@
 #define sample_conv_H
 
 /* {sample_conv.h} - conversion between floating-point and integer samples. */
-/* Last edited on 2024-10-25 22:17:06 by stolfi */
+/* Last edited on 2024-12-18 22:49:54 by stolfi */
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -12,22 +12,22 @@
 typedef uint32_t sample_uint32_t;
   /* A quantized sample value. */
 
-float sample_conv_encode_BT709(float Y);
+/* THE "BTU709" ENCODING/DECODING */
+
+float sample_conv_BT709_encode(float X);
   /* Applies the luminance encoding (a.k.a. `gamma correction')
     according to ITU-R Recommendation BT.709. Namely, returns the
     sample value {V} that must be stored in an image in order to
-    produce intensity {Y} on the idealized monitor assumed by BT.709.
-    If {Y} is {NAN} or {±INF}, returns {Y} itself.
+    produce intensity {X} on the idealized monitor assumed by BT.709.
+    If {X} is {NAN} or {±INF}, returns {X} itself.
     See {sample_conv_BT709_INFO} above for details. */
 
-float sample_conv_decode_BT709(float V);
+float sample_conv_BT709_decode(float V);
   /* The inverse of {sample_conv_encode_BT709}. Namely, returns the 
-    intensity {Y} produced on the idealized monitor assumed by BT.709
+    intensity {X} produced on the idealized monitor assumed by BT.709
     when displaying a sample value {V} taken from an image.
     If {V} is {NAN} or {±INF}, returns {V} itself.
     See {sample_conv_BT709_INFO} above for details. */
-
-/* !!! Should change my gamma+bias encoding so that BT709 is a special case. !!! */
 
 #define sample_conv_BT709_INFO \
   "The ITU-R BT709 encoding and decoding functions are" \
@@ -35,73 +35,64 @@ float sample_conv_decode_BT709(float V);
   " negative, and map the values {-1}, 0, and {+1} to" \
   " themselves.\n" \
   "\n" \
-  "  The encoding map is approximately {V = Y^0.45} for" \
-  " positive {Y}, and {V = -((-Y)^0.45)} for negative {Y}; but" \
-  " is replaced by a linear function {V = 4.5*Y} near" \
-  " zero (for {|Y| < 0.01805}).\n" \
+  "  The encoding map {V = E(X)} is defined as the linear" \
+  " function {V = 4.5*X} for {X} between 0 and {X0}, and" \
+  " {V = (1+CD)*X^0.45 - CD} for {X > X0}; where {X0 = 0.018} and" \
+  " {CD = 0.099}.\n" \
   "\n" \
-  "  The decoding map is" \
-  " approximately {Y = V^(1/0.45) = V^(2.222...)} for" \
-  " positive {V},  and {V = -((-V)^(1/0.45))} for" \
-  " negative {V}; but is replaced by a linear" \
-  " function {V = 0.2222*z} near" \
-  " zero (for {|V| < 0.08124})."
-
-float sample_conv_gamma(float z, double gamma, double bias);
-  /* Applies a modified power-law correction, with exponent
-    {gamma} and offset {bias}, to sample value {z}.
+  "  The decoding map {X=D(V)} is  defined as the linear" \
+  " function {X = V/4.5} for {V} between 0 and {V0}, and" \
+  " {X = ((V + CE)/(1 + CE))V^(1/0.45)} for {V > V0}; where {V0 = 0.081} and" \
+  " {CE = 0.0992965876298}.\n" \
+  "\n" \
+  "  These functions are extended to" \
+  " negative arguments by the equations" \
+  " {E(-X) = -E(X)} and {D(-V) = -D(V)}.\n" \
+  "\n" \
+  "  There are slight" \
+  " discontinuities in {D} and {E} at the transition points, and they" \
+  " are not exactly the inverses of each other."
     
-    If {z} is {NAN} or {±INF}, returns {z} itself.
-    See {sample_conv_gamma_INFO} for details. See
-    {sample_conv_gamma_BT709_equiv_INFO} for the relationship between
-    {sample_conv_gamma}, {sample_conv_encode_BT709}, and
-    {sample_conv_decode_BT709}.
-    
-    !!! Should take and return a {double} rather than {float}. !!!
-  */
+/* THE "sRGB" ENCODING/DECODING */
 
-#define sample_conv_gamma_INFO \
-  "The sample encoding function {sample_conv_gamma} depends" \
-  " on two parameters, {gamma} (which must be positive) and" \
-  " {bias} (which must be between 0 and 1). The function" \
-  " is strictly monotonic for any {gamma} and {bias} and for" \
-  " all arguments, positive or negative; and takes the" \
-  " values {-1}, {0}, and {+1} to themselves.\n" \
+float sample_conv_sRGB_encode(float X);
+  /* Applies the luminance encoding (a.k.a. `gamma correction')
+    according to the sRGB standard (IEC 61966-2-1:1999) Namely, returns the
+    sample value {V} that must be stored in an image in order to
+    produce intensity {X} on the idealized monitor assumed by the sRGB standard.
+    If {X} is {NAN} or {±INF}, returns {X} itself.
+    See {sample_conv_sRGB_INFO} above for details. */
+
+float sample_conv_sRGB_decode(float V);
+  /* The inverse of {sample_conv_encode_sRGB}. Namely, returns the 
+    intensity {X} produced on the idealized monitor assumed by the sRGB standard
+    when displaying a sample value {V} taken from an image.
+    If {V} is {NAN} or {±INF}, returns {V} itself.
+    See {sample_conv_sRGB_INFO} above for details. */
+
+#define sample_conv_sRGB_INFO \
+  "The sRGB encoding and decoding functions are" \
+  " strictly monotonic for all arguments, positive or" \
+  " negative, and map the values {-1}, 0, and {+1} to" \
+  " themselves.\n" \
   "\n" \
-  "  If {gamma} is 1, the function is the identity, for" \
-  " any {bias}.  If the parameter {bias} is zero, the function is a" \
-  " simple power-law encoding that maps {V} to {V^gamma} for" \
-  " positive {V}, and to {-((-V)^gamma)} for negative {V}.  If {bias}" \
-  " is positive, affine  corrections are applied before" \
-  " and after the power-law map so that the slope at" \
-  " the origin is neither zero or infinity.  To get the" \
-  " inverse mapping, use {1/gamma} instead of {gamma}, with" \
-  " the same offset {bias}." 
-  
-#define sample_conv_gamma_BT709_equiv_INFO \
-  "The combination {gamma=0.450} and {bias=0.0327} provides" \
-  " a good approximation to the ITU-R BT.709 encoding" \
-  " function, with maxmum discrepancy {-0.0165} in the" \
-  " low-intensity range and about {+0.002} in the" \
-  " mid-to-high range.\n" \
+  "  The encoding map {V = E(X)} is\n" \
+  " the linear function {V = 12.92*X} for\n" \
+  " {X} beteen 0 and {X0}, and {(1 + CE)*X^(1/2.4)} for\n" \
+  " {X > X0}; where {X0 = 0.0031308} and {CE = 0.055}.\n" \
   "\n" \
-  "  The combination {gamma=1/0.450} and {bias=0.0327} provides" \
-  " a good approximation to the ITU-R BT.709 decoding function, with" \
-  " maxmum discrepancy {+0.00365} overall."
-
-#define sample_conv_BT709_ENC_GAMMA (0.450)
-#define sample_conv_BT709_DEC_GAMMA (1/0.450)
-  /* The values of {gamma} that make {sample_conv_gamma}
-    approximate the ITU-R BT.709 sample encoding and decoding
-    functions, when used with {sample_conv_BT709_BIAS}. 
-    See {sample_conv_gamma_BT709_equiv_INFO} for details. */
-
-#define sample_conv_BT709_BIAS (0.0327)
-  /* The value of {bias} that makes {sample_conv_gamma}
-    approximate the ITU-R BT.709 sample encoding and decoding
-    functions, when used with {sample_conv_BT709_ENC_GAMMA} and
-    {sample_conv_BT709_DEC_GAMMA} respectively. 
-    See {sample_conv_gamma_BT709_equiv_INFO} for details. */
+  "  The decoding map  {X = D(V)} is the linear\n" \
+  " function {X = V/12.92} for {V} between 0 and {V0}, and\n" \
+  " ((V + CD)/(1 + CD))^2.4} for {V > V0}; where\n" \
+  " {V0 = 0.04045} and {CD = 0.055}.\n" \
+  "\n" \
+  "  These functions are extended to" \
+  " negative arguments by the equations" \
+  " {E(-X) = -E(X)} and {D(-V) = -D(V)}.\n" \
+  "\n" \
+  "  There are slight" \
+  " discontinuities in {D} and {E} at the transition points, and they" \
+  " are not exactly the inverses of each other."
 
 float sample_conv_log(float u, double bias, double uref, double logBase);
   /* Converts {u} from linear to logarithmic scale, relative to the
@@ -125,7 +116,7 @@ float sample_conv_undo_log(float u, double bias, double uref, double logBase);
     May return {NAN} if {u} is not a valid result of {sample_conv_log} for those
     parameters. */
     
-float sample_conv_interp(float u, int np, double U[], double V[]);
+float sample_conv_interp(float u, int32_t np, double U[], double V[]);
   /* Computes a piecewise affine function of {u} defined by the 
     nodal points {(0,0)}, {(U[i],V[i])} for {i = 0..np-1}, and {(1,1)}. 
     
@@ -202,8 +193,8 @@ float sample_conv_floatize
     NULL) to enclose the output value {fv}. */
     
 void sample_conv_print_floatize_stats
-  ( int iChan,           /* Channel index in input image. */
-    int oChan,           /* Channel index in output image. */
+  ( int32_t iChan,           /* Channel index in input image. */
+    int32_t oChan,           /* Channel index in output image. */
     sample_uint32_t imin,       /* Minimum integer sample seen. */
     sample_uint32_t imax,       /* Maximum integer sample seen. */
     sample_uint32_t maxval,     /* Maximum possible integer sample. */
@@ -223,8 +214,8 @@ sample_uint32_t sample_conv_quantize
     double hi,            /* Input value to map to {maxval}. */
     float *vmin,          /* (IN/OUT) Min float input value seen, or NULL. */
     float *vmax,          /* (IN/OUT) Max float input value seen, or NULL. */
-    int *clo,             /* (IN/OUT) Count of input values below {lo}, or NULL. */
-    int *chi,             /* (IN/OUT) Count of input values above {hi}, or NULL. */
+    int32_t *clo,             /* (IN/OUT) Count of input values below {lo}, or NULL. */
+    int32_t *chi,             /* (IN/OUT) Count of input values above {hi}, or NULL. */
     sample_uint32_t *imin,  /* (IN/OUT) Min output integer value seen, or NULL. */
     sample_uint32_t *imax   /* (IN/OUT) Max output integer value seen, or NULL. */
   );
@@ -274,14 +265,14 @@ sample_uint32_t sample_conv_quantize
     NULL) to enclose the output value {iv}. */
 
 void sample_conv_print_quantize_stats
-  ( int iChan,           /* Channel index in input image. */
-    int oChan,           /* Channel index in output image. */
+  ( int32_t iChan,           /* Channel index in input image. */
+    int32_t oChan,           /* Channel index in output image. */
     float vmin,          /* Minimum float sample seen. */
     float vmax,          /* Maximum float sample seen. */
     double lo,           /* Low end of float scaling range. */
     double hi,           /* High end of float scaling range. */
-    int clo,             /* Number of samples seen below {lo}. */
-    int chi,             /* Number of samples seen above {hi}. */
+    int32_t clo,             /* Number of samples seen below {lo}. */
+    int32_t chi,             /* Number of samples seen above {hi}. */
     sample_uint32_t maxval,     /* Maximum possible integer sample. */
     sample_uint32_t imin,       /* Minimum integer sample seen. */
     sample_uint32_t imax        /* Maximum integer sample seen. */

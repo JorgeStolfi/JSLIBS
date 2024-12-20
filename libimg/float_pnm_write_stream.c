@@ -1,5 +1,5 @@
 /* See {float_pnm_write_stream.h}. */
-/* Last edited on 2017-06-22 02:39:06 by stolfilocal */
+/* Last edited on 2024-12-04 23:33:19 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -17,13 +17,13 @@
 float_pnm_stream_t *float_pnm_write_stream_new 
   ( FILE *wr, 
     uint16_t maxval, 
-    int rows, 
-    int cols, 
-    int chns, 
+    int32_t rows, 
+    int32_t cols, 
+    int32_t chns, 
     bool_t isMask,
     uint32_t badval, 
     bool_t forceplain,
-    int bufrows
+    int32_t bufrows
   )
   { /* Allocate top record: */
     float_pnm_stream_t *str = float_pnm_stream_new(isMask, badval);
@@ -44,7 +44,7 @@ float_pnm_stream_t *float_pnm_write_stream_new
     return str;
   }
 
-double *float_pnm_write_stream_get_row(FILE *wr, float_pnm_stream_t *str, int y)
+double *float_pnm_write_stream_get_row(FILE *wr, float_pnm_stream_t *str, int32_t y)
   { /* Row index must be valid: */
     if ((y < 0) || (y >= str->rows)) { return NULL; }
     /* Roll buffer forward until row {y} is in buffer: */
@@ -57,14 +57,14 @@ double *float_pnm_write_stream_get_row(FILE *wr, float_pnm_stream_t *str, int y)
   }
 
 void float_pnm_write_stream_dump_first_row(FILE *wr, float_pnm_stream_t *str) 
-  { int y = str->buf->yini;
+  { int32_t y = str->buf->yini;
     demand(y < str->rows, "no more rows to write out");
     assert(float_image_buffer_row_pos(str->buf, y) == 00);
     /* Convert first row, write it, clear it: */
     double *dP = float_image_buffer_get_row(str->buf, y); /* Start of row {yb} in {ibuf}. */
     uint16_t *sP = str->smp; /* Scans raw samples. */
-    int k;
-    int nspr = str->chns * str->cols;
+    int32_t k;
+    int32_t nspr = str->chns * str->cols;
     for (k = 0; k < nspr; k++, dP++, sP++)
       { (*sP) = pnm_quantize((*dP), str->maxval, str->isMask, str->badval); (*dP) = 0.0; }
     pnm_write_pixels(wr, str->smp, str->cols, str->chns, str->maxval, str->raw, str->bits);

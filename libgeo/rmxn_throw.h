@@ -1,10 +1,9 @@
 /* rmxn_throw.h --- random MxN matrices */
-/* Last edited on 2024-11-20 13:08:04 by stolfi */
+/* Last edited on 2024-12-05 10:28:44 by stolfi */
 
 #ifndef rmxn_throw_H
 #define rmxn_throw_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 void rmxn_throw_matrix(uint32_t m, uint32_t n, double *A);

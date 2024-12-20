@@ -1,10 +1,9 @@
 /* frgb_interp_vis.h - interpolation of colors. */
-/* Last edited on 2023-03-07 13:57:48 by stolfi */
+/* Last edited on 2024-12-05 10:30:27 by stolfi */
 
 #ifndef frgb_interp_vis_H
 #define frgb_interp_vis_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>

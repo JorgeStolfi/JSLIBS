@@ -1,6 +1,5 @@
-/* Last edited on 2024-11-08 11:15:59 by stolfi */
+/* Last edited on 2024-12-05 10:19:15 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

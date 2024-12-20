@@ -1,8 +1,8 @@
-# Last edited on 2023-02-06 11:34:29 by stolfi
+# Last edited on 2024-12-17 16:33:22 by stolfi
 
 LIBNAME = libjs
 
-# OTHER_C_FLAGS := -pg
+OTHER_C_FLAGS := -pg
 
 IGNORE :=
 

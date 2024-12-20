@@ -1,10 +1,9 @@
 /* Stack of images with limited depth of focus. */
-/* Last edited on 2024-10-22 08:26:30 by stolfi */
+/* Last edited on 2024-12-05 14:20:58 by stolfi */
 
 #ifndef multifok_frame_H
 #define multifok_frame_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <float_image.h>

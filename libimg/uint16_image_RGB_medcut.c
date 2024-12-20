@@ -30,18 +30,18 @@
 /* Internal types */
 
 typedef struct 
-  { int lo, hi;       /* Index range in color histogram */
+  { int32_t lo, hi;       /* Index range in color histogram */
     float spread;     /* Box size */
-    int longaxis;     /* Axis of maximum spread (0,1,2) for (R,G,B) */
+    int32_t longaxis;     /* Axis of maximum spread (0,1,2) for (R,G,B) */
     float cR, cG, cB; /* Box centroid */
     ppm_pixel_t rep;  /* Pixel representative */
   } ppm_box;
   
 typedef ppm_box* ppm_box_vector;
 
-typedef int (*qcomparefn)(const void *, const void *) ;
+typedef int32_t (*qcomparefn)(const void *, const void *) ;
 
-typedef int (*matchfn)(long R, long G, long B, uint16_image_RGB_hist_vector cm, int ncolors);
+typedef int32_t (*matchfn)(long R, long G, long B, uint16_image_RGB_hist_vector cm, int32_t ncolors);
   /* A function that finds the best match to {(R,G,B)} in the colormap {cm}.
     Note that {(R,G,B)} may be somewhat outside of the color cube. */
 
@@ -50,7 +50,7 @@ typedef int (*matchfn)(long R, long G, long B, uint16_image_RGB_hist_vector cm, 
 void ppm_set_box(
     ppm_box_vector b,
     uint16_image_RGB_hist_vector ch,
-    int lo, int hi,
+    int32_t lo, int32_t hi,
     uint16_t maxval
   );
   /* Sets {lo} and {hi}, and computes {center}, {rep}, {longaxis}, 
@@ -58,7 +58,7 @@ void ppm_set_box(
 
 void ppm_box_center(
     uint16_image_RGB_hist_vector ch,
-    int lo, int hi,
+    int32_t lo, int32_t hi,
     uint16_t maxval,
     float *cRp, float *cGp, float *cBp,
     ppm_pixel_t *repp
@@ -70,43 +70,43 @@ void ppm_box_center(
 
 void ppm_box_spread(
     uint16_image_RGB_hist_vector ch,
-    int lo,
-    int hi,
+    int32_t lo,
+    int32_t hi,
     ppm_pixel_t rep,
     uint16_t maxval,
-    int *laxp,
+    int32_t *laxp,
     float *spreadp
   );
   /* Compute the box spread {*spreadp} and largest 
     dimension {*laxp}, relative to the appointed representative {rep}. */
 
-int uint16_image_RGB_red_compare(const uint16_image_RGB_hist_vector ch1, const uint16_image_RGB_hist_vector ch2);
+int32_t uint16_image_RGB_red_compare(const uint16_image_RGB_hist_vector ch1, const uint16_image_RGB_hist_vector ch2);
 
-int uint16_image_RGB_green_compare(const uint16_image_RGB_hist_vector ch1, const uint16_image_RGB_hist_vector ch2);
+int32_t uint16_image_RGB_green_compare(const uint16_image_RGB_hist_vector ch1, const uint16_image_RGB_hist_vector ch2);
 
-int uint16_image_RGB_blue_compare(const uint16_image_RGB_hist_vector ch1, const uint16_image_RGB_hist_vector ch2);
+int32_t uint16_image_RGB_blue_compare(const uint16_image_RGB_hist_vector ch1, const uint16_image_RGB_hist_vector ch2);
 
-int ppm_spread_compare(const ppm_box *b1, const ppm_box *b2);
+int32_t ppm_spread_compare(const ppm_box *b1, const ppm_box *b2);
 
-ppm_box_vector new_ppm_box_vector(int n);
+ppm_box_vector new_ppm_box_vector(int32_t n);
 
-uint16_image_RGB_hist_vector uint16_image_RGB_hist_vector_new(int n);
+uint16_image_RGB_hist_vector uint16_image_RGB_hist_vector_new(int32_t n);
 
 /* Implementation */
 
 uint16_image_RGB_hist_vector uint16_image_RGB_median_cut
   ( uint16_image_RGB_hist_vector ch,
-    int colors, 
+    int32_t colors, 
     uint16_t maxval,
-    int *newcolorsp
+    uint32_t *newcolorsp
   )
   {
     uint16_image_RGB_hist_vector cm; /* The colormap */
     ppm_box_vector bv;   /* The box tree */
-    register int i;
-    int boxes;
+    register int32_t i;
+    uint32_t boxes;
 
-    bv = new_ppm_box_vector(*newcolorsp);
+    bv = new_ppm_box_vector((int32_t)*newcolorsp);
 
     /* Set up the initial box. */
     
@@ -116,8 +116,8 @@ uint16_image_RGB_hist_vector uint16_image_RGB_median_cut
     /* Main loop: split boxes until we have enough. */
     while (boxes < (*newcolorsp))
       { 
-        register int lo, hi;
-        int lax;
+        register int32_t lo, hi;
+        int32_t lax;
         float ctrv;
         qcomparefn cmp;
         
@@ -136,7 +136,7 @@ uint16_image_RGB_hist_vector uint16_image_RGB_median_cut
             case 2: cmp = (qcomparefn) uint16_image_RGB_blue_compare;  ctrv = bv[0].cB; break;
             default: pnm_error("huh?"); cmp = NULL; ctrv = 0;
           }
-        qsort((void*)&(ch[lo]), hi-lo+1, sizeof(struct uint16_image_RGB_hist_item), cmp); 
+        qsort((void*)&(ch[lo]), (size_t)(hi-lo+1), sizeof(uint16_image_RGB_hist_item), cmp); 
         
         /* Split colors in two groups at centroid: */
         for (i = lo; i <= hi; ++i)
@@ -153,7 +153,7 @@ uint16_image_RGB_hist_vector uint16_image_RGB_median_cut
       }
 
     /* Ok, we've got enough boxes.  Collect their centroids: */
-    cm = uint16_image_RGB_hist_vector_new(boxes);
+    cm = uint16_image_RGB_hist_vector_new((int32_t)boxes);
     for (i = 0; i < boxes; ++i) 
       { cm[i].color = bv[i].rep; }
     (*newcolorsp) = boxes;
@@ -164,7 +164,7 @@ uint16_image_RGB_hist_vector uint16_image_RGB_median_cut
 void ppm_set_box
   ( ppm_box_vector b,
     uint16_image_RGB_hist_vector ch,
-    int lo, int hi,
+    int32_t lo, int32_t hi,
     uint16_t maxval
   )
   {
@@ -176,7 +176,7 @@ void ppm_set_box
 
 void ppm_box_center
   ( uint16_image_RGB_hist_vector ch,
-    int lo, int hi,
+    int32_t lo, int32_t hi,
     uint16_t maxval,
     float *cRp, float *cGp, float *cBp,
     ppm_pixel_t *repp
@@ -187,7 +187,7 @@ void ppm_box_center
     uint16_t minv[3];
     double sumw = 0;
     ppm_pixel_t rep;
-    int i, c;
+    int32_t i, c;
     
     for (c = 0; c < 3; c++)
       { maxv[c] = 0; minv[c] = maxval; sumv[c] = 0; }
@@ -234,11 +234,11 @@ void ppm_box_center
 
 void ppm_box_spread
   ( uint16_image_RGB_hist_vector ch,
-    int lo,
-    int hi,
+    int32_t lo,
+    int32_t hi,
     ppm_pixel_t rep,
     uint16_t maxval,
-    int *laxp,
+    int32_t *laxp,
     float *spreadp
   )
   {
@@ -246,7 +246,7 @@ void ppm_box_spread
     float sumRR = 0.0, sumGG = 0.0, sumBB = 0.0;
     uint16_t v;
     long w;
-    register int i;
+    register int32_t i;
     float frepR = (float)rep.c[0];
     float frepG = (float)rep.c[1];
     float frepB = (float)rep.c[2];
@@ -281,37 +281,37 @@ void ppm_box_spread
       }
   }
 
-int uint16_image_RGB_red_compare(uint16_image_RGB_hist_vector ch1, uint16_image_RGB_hist_vector ch2)
+int32_t uint16_image_RGB_red_compare(uint16_image_RGB_hist_vector ch1, uint16_image_RGB_hist_vector ch2)
   {
-    return (int) ch1->color.c[0] - (int) ch2->color.c[0];
+    return (int32_t) ch1->color.c[0] - (int32_t) ch2->color.c[0];
   }
 
-int uint16_image_RGB_green_compare(uint16_image_RGB_hist_vector ch1, uint16_image_RGB_hist_vector ch2)
+int32_t uint16_image_RGB_green_compare(uint16_image_RGB_hist_vector ch1, uint16_image_RGB_hist_vector ch2)
   {
-    return (int) ch1->color.c[1] - (int) ch2->color.c[1];
+    return (int32_t) ch1->color.c[1] - (int32_t) ch2->color.c[1];
   }
 
-int uint16_image_RGB_blue_compare(uint16_image_RGB_hist_vector ch1, uint16_image_RGB_hist_vector ch2)
+int32_t uint16_image_RGB_blue_compare(uint16_image_RGB_hist_vector ch1, uint16_image_RGB_hist_vector ch2)
   {
-    return (int) ch1->color.c[2] - (int) ch2->color.c[2];
+    return (int32_t) ch1->color.c[2] - (int32_t) ch2->color.c[2];
   }
 
-int ppm_spread_compare(const ppm_box *b1, const ppm_box *b2)
+int32_t ppm_spread_compare(const ppm_box *b1, const ppm_box *b2)
   {
-    return ((int)
+    return ((int32_t)
       (b1->spread > b2->spread ? -1 : 
       (b1->spread < b2->spread ?  1 :
       0))
     );
   }
 
-ppm_box_vector new_ppm_box_vector(int n)
-  { ppm_box_vector bv = (ppm_box_vector)pnm_malloc(n*sizeof(ppm_box));
+ppm_box_vector new_ppm_box_vector(int32_t n)
+  { ppm_box_vector bv = talloc(n, ppm_box);
     return(bv);
   }
 
-uint16_image_RGB_hist_vector uint16_image_RGB_hist_vector_new(int n)
-  { uint16_image_RGB_hist_vector ch = (uint16_image_RGB_hist_vector)pnm_malloc(n*sizeof(struct uint16_image_RGB_hist_item));
+uint16_image_RGB_hist_vector uint16_image_RGB_hist_vector_new(int32_t n)
+  { uint16_image_RGB_hist_vector ch = talloc(n, struct uint16_image_RGB_hist_item);
     return(ch);
   }
 

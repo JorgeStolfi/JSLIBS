@@ -1,9 +1,9 @@
+/* Geometric models for one item of the Boaretto 113 side porch. */
+/* Last edited on 2024-12-05 10:17:33 by stolfi */
+
 #ifndef boap_model_H
 #define boap_model_H
 
-/* Geometric models for one item of the Boaretto 113 side porch. */
-
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

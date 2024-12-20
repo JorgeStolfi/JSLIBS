@@ -2,9 +2,8 @@
 #define hr2_pmap_from_many_pairs_aux_H
 
 /* Headers of some internal procedures of {hr2_pmap_from_many_pairs.c} for testing. */
-/* Last edited on 2024-11-21 21:17:30 by stolfi */ 
+/* Last edited on 2024-12-05 10:19:35 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>

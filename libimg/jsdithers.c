@@ -1,5 +1,5 @@
 /* See {jsdithers.h} */ 
-/* Last edited on 2017-09-14 16:33:20 by jstolfi */
+/* Last edited on 2024-12-04 23:34:03 by stolfi */
 
 #include <stdint.h>
 
@@ -90,7 +90,7 @@ static uint8_t cluster_16x16[256] =
      62, 55, 47, 37, 36, 46, 54, 61, 65, 72, 80, 90, 91, 81, 73, 66 
   };
 
-uint8_t *get_dither_matrix(int n, bool_t cluster)
+uint8_t *get_dither_matrix(int32_t n, bool_t cluster)
   {
     if (cluster)
       { if (n == 6)

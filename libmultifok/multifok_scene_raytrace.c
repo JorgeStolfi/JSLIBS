@@ -1,7 +1,6 @@
 /* See {multifok_scene_raytrace.h}. */
-/* Last edited on 2024-10-29 19:03:04 by stolfi */
+/* Last edited on 2024-12-17 16:21:54 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -34,6 +33,7 @@ double multifok_scene_raytrace_tree
     r3_t *d, 
     double tMin,
     double tMax,
+    interval_t ray_bbox[],
     bool_t verbose, 
     int32_t level,
     multifok_scene_object_t **oHit_P
@@ -68,7 +68,9 @@ void multifok_scene_raytrace
     double tMax = (zMin + 2*FUDGE - p->c[2])/d->c[2];  /* Note: {tMax} is at {zMin}. */
     assert(tMin < tMax);
     int32_t level = 0;
-    double tHit = multifok_scene_raytrace_tree(tree, p, d, tMin, tMax, verbose, level, oHit_P);
+    interval_t ray_bbox[3];
+    multifok_scene_raytrace_get_ray_bbox(p, d, tMin, tMax, ray_bbox);
+    double tHit = multifok_scene_raytrace_tree(tree, p, d, tMin, tMax, ray_bbox, verbose, level, oHit_P);
     if (tHit != +INF)
       { assert((tHit >= tMin) && (tHit <= tMax));
         assert((*oHit_P) != NULL);
@@ -87,6 +89,7 @@ double multifok_scene_raytrace_tree
     r3_t *d, 
     double tMin,
     double tMax,
+    interval_t ray_bbox[],
     bool_t verbose, 
     int32_t level,
     multifok_scene_object_t **oHit_P
@@ -98,9 +101,6 @@ double multifok_scene_raytrace_tree
     if (tr != NULL)
       { if (verbose) { fprintf(stderr, "      %*stracing tree with ray tMin = %12.8f tMax = %12.8f\n", 2*level, "", tMin, tMax); }
         assert(tMin <= tMax);
-        /* Get the ray's bounding box {ray_bbox[0..2]}: */
-        interval_t ray_bbox[3];
-        multifok_scene_raytrace_get_ray_bbox(p, d, tMin, tMax, ray_bbox);
 
         /* Check if it it intersects the tree's bbox: */
         bool_t ok = TRUE; /* Set to false if ray's bbox is disjoint from tree's bbox. */
@@ -127,6 +127,8 @@ double multifok_scene_raytrace_tree
                 oHit = oRoot;
                 tHit = tHit_root;
                 tMax = tHit_root;
+                /* Update the ray's bounding box {ray_bbox[0..2]}: */
+                multifok_scene_raytrace_get_ray_bbox(p, d, tMin, tMax, ray_bbox);                
               }
             else
               { if (verbose) { fprintf(stderr, "        %*smissed/rejected root obj %d\n", 2*level, "", oRoot->ID); } 
@@ -137,7 +139,7 @@ double multifok_scene_raytrace_tree
               {axis}. Then we ray-trace {sub[ic]} and {sub[1-ic]},
               in that order, remembering the highest hit as we
               go. */
-            int8_t axis = tr->axis;
+            uint8_t axis = tr->axis;
             int32_t ic; /* First subtree to try. */
             if ((tr->sub[0] != NULL) && (tr->sub[1] != NULL))
               { double obc = interval_mid(&(tr->obj->bbox[axis]));
@@ -156,7 +158,7 @@ double multifok_scene_raytrace_tree
                 if (tr->sub[ic] != NULL)
                   { if (verbose) { fprintf(stderr, "        %*strying subtree %d\n", 2*level, "", ic); }
                     multifok_scene_object_t *oHit_sub;
-                    double tHit_sub = multifok_scene_raytrace_tree(tr->sub[ic], p, d, tMin, tMax, verbose, level+1, &oHit_sub);
+                    double tHit_sub = multifok_scene_raytrace_tree(tr->sub[ic], p, d, tMin, tMax, ray_bbox, verbose, level+1, &oHit_sub);
                     if (tHit_sub != +INF)
                       { /* We got a hit: */
                         assert((tHit_sub >= tMin) && (tHit_sub <= tMax));
@@ -166,6 +168,8 @@ double multifok_scene_raytrace_tree
                         oHit = oHit_sub;
                         tHit = tHit_sub;
                         tMax = tHit_sub;
+                        /* Update the ray's bounding box {ray_bbox[0..2]}: */
+                        multifok_scene_raytrace_get_ray_bbox(p, d, tMin, tMax, ray_bbox);
                       }
                     else
                       { if (verbose) { fprintf(stderr, "        %*smissed hit with subtree %d\n", 2*level, "", ic); } 
@@ -260,11 +264,12 @@ frgb_t multifok_scene_raytrace_compute_hit_color
   ( multifok_scene_object_t *obj,
     r3_t *q,
     multifok_scene_raytrace_pattern_t *pattern,
-    r3_t *light_dir
+    r3_t *light_dir,
+    double ambient
   )
   { 
     bool_t debug = FALSE;
-    
+    demand((ambient >= 0.0) && (ambient <= 1.0), "invalid {ambient} fraction");
     if (obj == NULL)
       { return (frgb_t){{ 0.500, 0.500, 0.500 }}; }
     else
@@ -274,22 +279,22 @@ frgb_t multifok_scene_raytrace_compute_hit_color
         for (uint32_t j = 0;  j < 3; j++) 
           { u.c[j] = q->c[j] - interval_mid(&(bbox[j])); }
         int32_t ID = obj->ID;
-        if (ID != -1)
-          { /* Rotate {u} about the {Z} axis as a function of {ID}: */
-            double ang = 3*ID + 1, ca = cos(ang), sa = sin(ang);
-            double ux = + ca*u.c[0] + sa*u.c[1];
-            double uy = - sa*u.c[0] + ca*u.c[1];
-            u = (r3_t){{ ux, uy, u.c[2] }};
-          }
+        assert(ID != multifok_scene_object_ID_NONE);
+        /* Rotate {u} about {Z} by an angle that is a function of {ID}: */
+        r3_rot_axis(&u, 0, 1, 3.0*ID + 1.0, &u);
         /* Evaluate the 3D pattern at {u}: */
         double r = pattern(u.c[0],u.c[1],u.c[1]);
-        /* Use it to mix the object's {fg} and {bg} colors: */
+        /* Get the albedo {clr} as an {r}-mix of the object's {fg} and {bg}: */
         frgb_t clr = frgb_mix((1-r), &(obj->bg), r, &(obj->fg));
-        if (light_dir != NULL)
+        if ((light_dir != NULL) || (ambient < 1.0))
           { /* Apply shading: */
             r3_t onorm = multifok_scene_object_normal(obj, q, debug);
+            if (debug && (ID != 0)) 
+               { fprintf(stderr, "    :: ID = %d\n", ID);
+                 r3_gen_print(stderr, q,         "%+8.5f", "      :: hit point =       ( ", " ", " )\n");
+                 r3_gen_print(stderr, &onorm,    "%+8.5f", "      :: object normal =   ( ", " ", " )\n");
+               }
             double dot = r3_dot(&onorm, light_dir);
-            double ambient = 0.40;
             double diffuse  = (dot <= 0 ? 0.0 : (1-ambient)*dot);
             double shade = ambient + diffuse;
             for (uint32_t j = 0;  j < 3; j++){ clr.c[j] = (float)(shade*clr.c[j]); }

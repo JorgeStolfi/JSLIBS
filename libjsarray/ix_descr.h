@@ -2,9 +2,8 @@
 #define indexing_descr_H
 
 /* Multidimensional array descriptors. */
-/* Last edited on 2023-03-18 11:00:50 by stolfi */ 
+/* Last edited on 2024-12-05 10:31:57 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 

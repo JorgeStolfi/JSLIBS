@@ -31,7 +31,7 @@ cfld_unif_args_t *cfld_unif_parse(argparser_t *pp)
 cfld_unif_params_t *cfld_unif_compute_params
   ( cfld_unif_args_t *rfa, 
     frgb_adjuster_t *adjust,
-    int logarithmic
+    bool_t logarithmic
   )
   { cfld_unif_params_t *rfp = (cfld_unif_params_t *)malloc(sizeof(cfld_unif_params_t));
     /* Note: user-input colors are all RGB, even when {o->gray} is true. */
@@ -43,11 +43,11 @@ cfld_unif_params_t *cfld_unif_compute_params
 
 void cfld_unif_eval
   ( cfld_unif_params_t *rfp,
-    int logarithmic, 
-    int col, 
-    int row,
+    bool_t logarithmic, 
+    int32_t col, 
+    int32_t row,
     frgb_t *fv,
-    int chns
+    int32_t chns
   )
   { (*fv) = rfp->color; }
   

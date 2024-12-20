@@ -2,7 +2,7 @@
 #define lsq_H
 
 /* Fits a linear map of {R^nx} to {R^nf} by least squares, given sampling proc. */
-/* Last edited on 2024-11-07 16:19:44 by stolfi */
+/* Last edited on 2024-12-05 12:13:00 by stolfi */
 
 #define lsq_H_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -12,10 +12,10 @@
 #include <bool.h>
 
 typedef void lsq_gen_data_point_t
-  ( int32_t k, 
-    int32_t nx, 
+  ( uint32_t k, 
+    uint32_t nx, 
     double Xk[], 
-    int32_t nf, 
+    uint32_t nf, 
     double Fk[], 
     double *WkP
   );
@@ -31,10 +31,10 @@ typedef void lsq_gen_data_point_t
     corresponding function samples. The procedure should also store into
     {*WkP} the (non-negative) weight {Wk} of the data point. */
 
-int32_t lsq_fit
-  ( int32_t nt,     /* Number of data points to generate. */
-    int32_t nx,     /* Number of argument coordinates per point. */
-    int32_t nf,     /* Number of function samples per data point. */
+uint32_t lsq_fit
+  ( uint32_t nt,     /* Number of data points to generate. */
+    uint32_t nx,     /* Number of argument coordinates per point. */
+    uint32_t nf,     /* Number of function samples per data point. */
     lsq_gen_data_point_t *gen_data_point,
     double U[], /* (OUT) Fitted linear transformation matrix. */
     bool_t verbose
@@ -91,9 +91,9 @@ int32_t lsq_fit
 /* AUXILIARY PROCEDURES */
 
 void lsq_compute_matrix_and_rhs
-  ( int32_t nt, 
-    int32_t nx, 
-    int32_t nf, 
+  ( uint32_t nt, 
+    uint32_t nx, 
+    uint32_t nf, 
     lsq_gen_data_point_t *gen_data_point, 
     double A[], 
     double B[], 
@@ -104,12 +104,12 @@ void lsq_compute_matrix_and_rhs
     the moment matrix {A} ({nx × nx}) and the right-hand side matrix
     {B} ({nx × nf}). */
 
-int32_t lsq_solve_system
-  ( int32_t nx, 
-    int32_t nf, 
+uint32_t lsq_solve_system
+  ( uint32_t nx, 
+    uint32_t nf, 
     double A[], 
     double B[], 
-    int32_t nc, 
+    uint32_t nc, 
     double R[], 
     double S[], 
     double U[], 
@@ -134,19 +134,19 @@ int32_t lsq_solve_system
     The procedure returns the apparent rank of the systems, that is, the
     number of linearly independent rows in {A} and {R}. */
  
-void lsq_debug_double_vec(int32_t nx, double x[], char *fmt);
-void lsq_debug_int32_vec(int32_t nx, int32_t x[], char *fmt);
+void lsq_debug_double_vec(uint32_t nx, double x[], char *fmt);
+void lsq_debug_int32_vec(uint32_t nx, int32_t x[], char *fmt);
   /* These procedures print {x[0..nx-1]} to {stderr}, each with format {fmt},
     separated by spaces and bracketed by '[' and ']'. */
 
 void lsq_print_problem
   ( FILE *wr,
-    int32_t indent,
+    uint32_t indent,
     char *fmt,
     char *title, 
-    int32_t nx,
-    int32_t nc,
-    int32_t nf,
+    uint32_t nx,
+    uint32_t nc,
+    uint32_t nf,
     double A[],
     double B[],
     double R[],

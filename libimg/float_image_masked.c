@@ -1,5 +1,5 @@
 /* See {float_image_masked.h} */
-/* Last edited on 2013-10-21 00:22:15 by stolfilocal */
+/* Last edited on 2024-12-04 23:29:40 by stolfi */
 
 #include <stdlib.h>
 #include <math.h>
@@ -10,37 +10,37 @@
 
 void float_image_masked_interpolate
   ( float_image_masked_t *im, 
-    int c,
+    int32_t c,
     double x,
     double y,
-    int degInter,
+    int32_t degInter,
     float *val,
     float *wht
   )
   {
     assert(im->msk->sz[0] == 1);
-    int nx = (int)im->img->sz[1];
-    int ny = (int)im->img->sz[2];
+    int32_t nx = (int32_t)im->img->sz[1];
+    int32_t ny = (int32_t)im->img->sz[2];
 
-    int m = degInter+1; /* Number of data points needed along each axis. */
+    int32_t m = degInter+1; /* Number of data points needed along each axis. */
 
     /* The inpterpolation acts on a window of size {m} by {m} approximately centered at {x,y}: */
     double delta = ((double)degInter)/2;
     x -= delta;
     y -= delta;
-    int ix = (int)(floor(x)); /* First column of window. */
-    int iy = (int)(floor(y)); /* First row of window. */
+    int32_t ix = (int32_t)(floor(x)); /* First column of window. */
+    int32_t iy = (int32_t)(floor(y)); /* First row of window. */
     double fx = x - ix; /* Interpolation argument in X. */
     double fy = y - iy; /* Interpolation argument in Y. */
     float vc[m]; /* Interpolated values for each window column. */
     float wc[m]; /* Weights of those values. */
-    int dx, dy;
+    int32_t dx, dy;
     for (dx = 0; dx < m; dx++) {
       float v[m]; /* Image values along window column {dx}. */
       float w[m]; /* Weights of those values. */
       for (dy = 0; dy < m; dy++) {
-        int jx = ix + dx;
-        int jy = iy + dy;
+        int32_t jx = ix + dx;
+        int32_t jy = iy + dy;
         if ((jx >= 0) && (jx < nx) && (jy >= 0) && (jy < ny)) {
           v[dy] = float_image_get_sample(im->img, c, jx, jy);
           w[dy] = float_image_get_sample(im->msk, 0, jx, jy);
@@ -55,7 +55,7 @@ void float_image_masked_interpolate
     interpolate_weighted_values(vc, wc, degInter, fx, val, wht);
   }
 
-void interpolate_weighted_values(float v[], float w[], int degInter, double t, float *val, float *wht)
+void interpolate_weighted_values(float v[], float w[], int32_t degInter, double t, float *val, float *wht)
   {
     switch(degInter) {
     case 0:
@@ -126,7 +126,7 @@ void interpolate_weighted_values_quadratic_B(float v[], float w[], double t, flo
     (*wht) = (float)(4.0/(1.0/w0 + 2.0/w1 + 1.0/w2));
   }
 
-float_image_masked_t *float_image_masked_new(int nc, int nx, int ny)
+float_image_masked_t *float_image_masked_new(int32_t nc, int32_t nx, int32_t ny)
   {
     float_image_masked_t *im = malloc(sizeof(float_image_masked_t));
     (*im) = (float_image_masked_t) { 

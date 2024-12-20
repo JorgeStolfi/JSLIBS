@@ -1,7 +1,6 @@
 /* See {zf.h} */
-/* Last edited on 2023-03-18 10:41:00 by stolfi */
+/* Last edited on 2024-12-05 10:41:32 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 #include <assert.h>

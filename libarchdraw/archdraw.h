@@ -2,9 +2,8 @@
 #define archdraw_H
 
 /* Primitives for architectural drawings */
-/* Last edited on 2023-02-20 18:15:24 by stolfi */
+/* Last edited on 2024-12-05 10:20:42 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <values.h>
 #include <stdint.h>

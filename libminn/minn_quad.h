@@ -2,16 +2,15 @@
 #define minn_quad_H
 
 /* Tools for quadratic optimization of a {d}-dimensional function by . */
-/* Last edited on 2024-11-08 00:07:30 by stolfi */ 
+/* Last edited on 2024-12-05 13:14:53 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>
 #include <minn.h>
 
 void minn_quad
-  ( int32_t n,        /* Dimension of search space. */
+  ( uint32_t n,        /* Dimension of search space. */
     minn_goal_t *F,   /* Function to be minimized. */
     bool_t box,       /* True to search in the cube, false in the ball. */
     double tol,       /* Desired precision. */

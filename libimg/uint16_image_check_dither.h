@@ -1,10 +1,9 @@
 /* uint16_image_check_dither.h - Checks whether a digital image is a dither matrix. */
-/* Last edited on 2023-03-17 21:06:25 by stolfi */
+/* Last edited on 2024-12-05 10:31:04 by stolfi */
 
 #ifndef uint16_image_check_dither_H
 #define uint16_image_check_dither_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

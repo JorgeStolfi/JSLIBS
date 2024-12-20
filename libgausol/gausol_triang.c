@@ -1,5 +1,5 @@
 /* See gausol_triang_reduce.h */
-/* Last edited on 2024-11-30 04:36:18 by stolfi */
+/* Last edited on 2024-11-30 15:03:59 by stolfi */
 
 #include <stdint.h>
 #include <stdio.h>
@@ -16,8 +16,8 @@ void gausol_triang_reduce
     uint32_t n, uint32_t pcol[], double A[],
     uint32_t p, double B[],
     double tiny,
-    uint32_t *rank_P,
-    double *det_P
+    double *det_P,
+    uint32_t *rank_P
   )
   { 
     bool_t debug = FALSE;
@@ -66,13 +66,9 @@ void gausol_triang_reduce
         sets that element to zero. */
         
     auto double determinant(void);
-      /* If the matrix {A} is square, and {rank} is {m}, the procedure returns
-        the product of the diagonal elements of the
-        triangulated and permuted matrix {P = P00}, times {sgn}. If the
-        matrix is square, {rank} is less than {m}, and at least one of
-        {prow} or {pcol} is not {NULL} (meaning that at least partial
-        pivoting was used), returns zero. In all other cases, returns 
-        {NAN}. */
+      /* Returns the product of the diagonal elements of the permuted
+        submatrix {P00}, times {sgn}. If the matrix is square, {rank} is
+        {m}, this will be the determinant of {A}. */
 
     if ((m == 0) && (n == 0)) 
       { /* Nothing to do. */ }
@@ -176,24 +172,15 @@ void gausol_triang_reduce
        }
        
     double determinant(void)
-      { double det = NAN;
-        if (m == n) 
-          { if (rank == m)
-              { /* Determinant of {A} isproduct of diagonal of {P=P00}: */
-                det = sgn;
-                for (uint32_t t = 0; t < rank; t++)
-                  { uint32_t prow_t = (prow == NULL ? t : prow[t]); assert(prow_t < m);
-                    uint32_t pcol_t = (pcol == NULL ? t : pcol[t]); assert(pcol_t < n);
-                    double Ptt = A[prow_t*n + pcol_t];
-                    demand(isfinite(Ptt), "triangulation produced invalid diag elem");
-                    det *= Ptt;
-                  }
-              }
-            else if ((pcol != NULL) || (prow != NULL))
-              { /* Determinant is zero: */
-                det = 0.0;
-              }
+      { double det = sgn;
+        for (uint32_t t = 0; t < rank; t++)
+          { uint32_t prow_t = (prow == NULL ? t : prow[t]); assert(prow_t < m);
+            uint32_t pcol_t = (pcol == NULL ? t : pcol[t]); assert(pcol_t < n);
+            double Ptt = A[prow_t*n + pcol_t];
+            demand(isfinite(Ptt), "triangulation produced invalid diag elem");
+            det *= Ptt;
           }
+        demand(isfinite(det), "overflow in determinant computation");
         return det;
       }
   }

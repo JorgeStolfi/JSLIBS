@@ -2,7 +2,7 @@
 #define float_image_gradient_2_H
 
 /* Extra tools for image gradients. */
-/* Last edited on 2009-07-03 17:02:24 by stolfi */ 
+/* Last edited on 2024-12-04 23:28:13 by stolfi */ 
 
 #include <bool.h>
 #include <r2.h>
@@ -11,10 +11,10 @@
 
 void float_image_gradient_sqr_relative_2
   ( float_image_t *A,
-    int cA,
+    int32_t cA,
     double noise, 
     float_image_t *G,
-    int cG    
+    int32_t cG    
   );
   /* Computes the relativized gradient squared of image {A}, stores it into channel {cG}
     of image {G} (which must have the same dimensions as {A}).

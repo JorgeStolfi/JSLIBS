@@ -2,9 +2,8 @@
 #define hr2_pmap_throw_by_type_H
 
 /* Generate random projective maps of a given type and handedness. */
-/* Last edited on 2024-11-07 23:32:56 by stolfi */ 
+/* Last edited on 2024-12-05 10:27:10 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <bool.h>

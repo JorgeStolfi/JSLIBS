@@ -1,10 +1,9 @@
 /* r3_motion.h --- paths in R^3 with local frames */
-/* Last edited on 2024-11-20 12:57:10 by stolfi */
+/* Last edited on 2024-12-05 10:27:59 by stolfi */
 
 #ifndef r3_motion_H
 #define r3_motion_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

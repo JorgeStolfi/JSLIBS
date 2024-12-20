@@ -2,12 +2,11 @@
 #define haf_read_obj_H
 
 /* Reading the half-edge representation of 2D meshes. */ 
-/* Last edited on 2024-10-01 09:41:55 by stolfi */
+/* Last edited on 2024-12-05 10:39:01 by stolfi */
 
 #define half_read_obj_H_copyright \
   "Copyright (C) 2023 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

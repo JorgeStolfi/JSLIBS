@@ -1,10 +1,9 @@
 /* uint16_image.h - simple in-memory format for image-like arrays of {uint16_t}. */
-/* Last edited on 2023-03-17 20:45:23 by stolfi */
+/* Last edited on 2024-12-05 10:31:01 by stolfi */
 
 #ifndef uint16_image_H
 #define uint16_image_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

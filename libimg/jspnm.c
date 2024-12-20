@@ -1,5 +1,5 @@
 /* See jspnm.h */
-/* Last edited on 2023-11-26 07:10:18 by stolfi */
+/* Last edited on 2024-12-05 07:05:59 by stolfi */
 
 #include <limits.h>
 #include <stdlib.h>
@@ -17,7 +17,7 @@
 
 void pnm_choose_output_format
   ( uint16_t maxval, 
-    int chns, 
+    int32_t chns, 
     bool_t forceplain,
     pnm_format_t *formatP,
     bool_t *rawP,
@@ -45,9 +45,9 @@ void pnm_choose_output_format
 
 void pnm_read_header
   ( FILE *rd, 
-    int *colsP, 
-    int *rowsP, 
-    int *chnsP, 
+    int32_t *colsP, 
+    int32_t *rowsP, 
+    int32_t *chnsP, 
     uint16_t *maxvalP, 
     bool_t *rawP, 
     bool_t *bitsP, 
@@ -58,7 +58,7 @@ void pnm_read_header
     *formatP = format;
     
     /* Deduce number of channels {chns} and raw/plain flag from {format}: */
-    int chns = 0;
+    int32_t chns = 0;
     bool_t raw = FALSE;
     bool_t bits = FALSE;
     switch(format)
@@ -76,11 +76,11 @@ void pnm_read_header
     
     /* Skip comments and read width: */
     pnm_skip_whitespace_and_comments(rd, FALSE);
-    *colsP = pnm_read_plain_int(rd);
+    *colsP = pnm_read_plain_int32_t(rd);
 
     /* Skip comments and read height: */
     pnm_skip_whitespace_and_comments(rd, FALSE);
-    *rowsP = pnm_read_plain_int(rd);
+    *rowsP = pnm_read_plain_int32_t(rd);
     
     uint16_t maxval;
     if ((format == PBM_FORMAT) || (format == RPBM_FORMAT))
@@ -96,12 +96,12 @@ void pnm_read_header
     *maxvalP = maxval;
     
     /* Skip ONE char that must be blank, newline, etc.: */
-    int sp = fgetc(rd);
+    int32_t sp = fgetc(rd);
     if ((sp != '\000') && (sp != ' ') && ((sp < '\011') || (sp > '\015')))
       { pnm_error("EOF or bad character after maxval"); }
   }
 
-void pnm_write_header(FILE *wr, int cols, int rows, uint16_t maxval, pnm_format_t format)
+void pnm_write_header(FILE *wr, int32_t cols, int32_t rows, uint16_t maxval, pnm_format_t format)
   { /* Write file's magic number: */
     pnm_write_format(wr, format);
     /* Write dimensions: */
@@ -114,8 +114,8 @@ void pnm_write_header(FILE *wr, int cols, int rows, uint16_t maxval, pnm_format_
   }
 
 pnm_format_t pnm_read_format(FILE *rd)
-  { int c1 = getc(rd); if (c1 == EOF) { pnm_error("empty image file"); }
-    int c2 = getc(rd); if (c2 == EOF) { pnm_error("unexpected EOF in magic numbr"); }
+  { int32_t c1 = getc(rd); if (c1 == EOF) { pnm_error("empty image file"); }
+    int32_t c2 = getc(rd); if (c2 == EOF) { pnm_error("unexpected EOF in magic numbr"); }
     return (pnm_format_t)((c1 << 8) | c2);
   }
 
@@ -125,7 +125,7 @@ void pnm_write_format(FILE *wr, pnm_format_t format)
   }
 
 void pnm_skip_whitespace_and_comments(FILE *rd, bool_t verbose)
-  { int c = fgetc(rd);
+  { int32_t c = fgetc(rd);
     while ((c == '#') || (c == ' ') || (c == '\011') || (c == '\012') || (c == '\015')) 
       { if (c == '#')
           { do
@@ -157,33 +157,33 @@ uint16_t pnm_file_max_maxval(pnm_format_t format)
     return maxmax;
   }
 
-int pnm_read_plain_int(FILE *rd)
+int32_t pnm_read_plain_int32_t(FILE *rd)
   { return fget_int32(rd); }
 
-void pnm_write_plain_int(FILE *wr, int ival)
+void pnm_write_plain_int32_t(FILE *wr, int32_t ival)
   { fprintf(wr, "%d", ival); }
 
 uint16_t pnm_read_plain_sample(FILE *rd, uint16_t maxval)
   { /* Skip any blanks or newlines: */
     fget_skip_formatting_chars(rd);
     /* Read and check the sample value {ival}: */
-    unsigned int x = fget_uint32(rd, 10);
+    uint32_t x = fget_uint32(rd, 10);
     assert(x <= PNM_MAX_SAMPLE);
     uint16_t ival = (uint16_t)x;
     pnm_check_sample_range(&ival, maxval);
     return ival;
   }
 
-int pnm_write_plain_sample(FILE *wr, uint16_t ival, uint16_t maxval)
+int32_t pnm_write_plain_sample(FILE *wr, uint16_t ival, uint16_t maxval)
   { pnm_check_sample_range(&ival, maxval);
     /* Extract digits of {ival} in {buf[0..n-1]}: */
     char buf[30];
-    int n = 0;
+    int32_t n = 0;
     do { buf[n] = (char)('0' + (ival % 10)); ival /= 10; maxval /= 10; n++; } while (ival > 0); 
     /* Complete with blanks to same size as {maxval}: */
     while (maxval > 0) { buf[n] = ' '; maxval /= 10; n++; }; 
     /* Print digits in correct order: */
-    int i = n;
+    int32_t i = n;
     while (i > 0) { i--; putc(buf[i], wr); } 
     return n;
   }
@@ -192,7 +192,7 @@ uint16_t pnm_read_plain_bit(FILE *rd)
   { /* Skip any blanks or newlines: */
     fget_skip_formatting_chars(rd);
     /* Read and check the sample value: */
-    int c1 = getc(rd); if (c1 == EOF) { pnm_error("unexpected EOF in sample"); }
+    int32_t c1 = getc(rd); if (c1 == EOF) { pnm_error("unexpected EOF in sample"); }
     if (c1 == '0') 
       { return 0; }
     else if (c1 == '1')
@@ -213,7 +213,7 @@ void pnm_write_plain_bit(FILE *wr, uint16_t ival)
   }
 
 uint16_t pnm_read_raw_byte(FILE *rd, uint16_t maxval)
-  { int c1 = getc(rd); if (c1 == EOF) { pnm_error("unexpected EOF in sample"); }
+  { int32_t c1 = getc(rd); if (c1 == EOF) { pnm_error("unexpected EOF in sample"); }
     uint16_t ival = (uint16_t)(c1 & 255);
     pnm_check_sample_range(&ival, maxval);
     return ival;
@@ -225,8 +225,8 @@ void pnm_write_raw_byte(FILE *wr, uint16_t ival, uint16_t maxval)
   }
 
 uint16_t pnm_read_raw_short(FILE *rd, uint16_t maxval)
-  { int c1 = getc(rd); if (c1 == EOF) { pnm_error("unexpected EOF in sample"); }
-    int c2 = getc(rd); if (c2 == EOF) { pnm_error("unexpected EOF in sample"); }
+  { int32_t c1 = getc(rd); if (c1 == EOF) { pnm_error("unexpected EOF in sample"); }
+    int32_t c2 = getc(rd); if (c2 == EOF) { pnm_error("unexpected EOF in sample"); }
     uint16_t ival =  (uint16_t)((c1 & 255) * 256 + (c2 & 255));
     pnm_check_sample_range(&ival, maxval);
     return ival;
@@ -240,8 +240,8 @@ void pnm_write_raw_short(FILE *wr, uint16_t ival, uint16_t maxval)
 
 uint16_t pnm_quantize(double fval, uint16_t maxval, bool_t isMask, uint32_t badval)
   { /* Maxval with more bits: */
-    int N = (uint32_t)maxval;
-    int intval; /* Output value with more bits: */
+    uint32_t N = maxval;
+    uint32_t intval; /* Output value with more bits: */
     if (isnan(fval))
       { /* Return {badval} if valid, else {maxval/2}: */
         intval = (badval <= N ? badval : maxval/2);
@@ -257,13 +257,13 @@ uint16_t pnm_quantize(double fval, uint16_t maxval, bool_t isMask, uint32_t badv
         else if (isMask)
           { /* Map 0 to 0, 1 to {2*maxval}, linearly, with directed rounding: */ 
             double sval = 2*fval*N;
-            intval = (fval < 0.5 ? (int)ceil(sval) : (int)floor(sval) + 1); 
+            intval = (fval < 0.5 ? (uint32_t)ceil(sval) : (uint32_t)floor(sval) + 1); 
             /* Now round the fraction bit up: */
             intval = intval >> 1;
           }
         else
           { /* Round every interval {[iv/(N+1),(iv+1)/(N+1))} down to {iv}: */
-            intval = (int)floor(fval*((double)N + 1));
+            intval = (uint32_t)floor(fval*((double)N + 1));
             /* Should not happen, except perhaps for very large or very small {fdelta}: */
             if (intval > N) { intval = N; }
           }
@@ -299,13 +299,13 @@ double pnm_floatize(uint16_t ival, uint16_t maxval, bool_t isMask, uint32_t badv
 double *pnm_make_floatize_table(uint16_t maxval, bool_t isMask, uint32_t badval)
   { uint32_t size = ((uint32_t)maxval) + 1;
     double *cvt = talloc(size, double);
-    int intval;
+    int32_t intval;
     for (intval = 0; intval <= maxval; intval++)
       { cvt[intval] = pnm_floatize((uint16_t)intval, maxval, isMask, badval); }
     return cvt;
   }
 
-static int pnm_message_count = 0;
+static int32_t pnm_message_count = 0;
   /* Counts calls to {pnm_message}. */
 
 #define PNM_MAX_MESSAGES 100
@@ -346,8 +346,8 @@ void pnm_check_sample_range(uint16_t *ival, uint16_t maxval)
 void pnm_read_pixels
   ( FILE *rd, 
     uint16_t *smp, 
-    int cols, 
-    int chns,
+    int32_t cols, 
+    int32_t chns,
     uint16_t maxval, 
     bool_t raw,
     bool_t bits
@@ -355,8 +355,8 @@ void pnm_read_pixels
   { assert(pnm_uint_leq(maxval, PNM_FILE_MAX_MAXVAL));
     uint16_t max_byte = 255u;
     uint16_t max_short = 65535u;
-    int samples_per_row = cols*chns; /* Samples per row. */
-    int k;
+    int32_t samples_per_row = cols*chns; /* Samples per row. */
+    int32_t k;
     uint16_t *sP;
     if (bits)
       { /* PBM format. */
@@ -413,8 +413,8 @@ void pnm_read_pixels
 void pnm_write_pixels
   ( FILE* wr, 
     uint16_t *smp, 
-    int cols, 
-    int chns,
+    int32_t cols, 
+    int32_t chns,
     uint16_t maxval, 
     bool_t raw,
     bool_t bits
@@ -422,8 +422,8 @@ void pnm_write_pixels
   { assert(pnm_uint_leq(maxval, PNM_FILE_MAX_MAXVAL));
     uint16_t max_byte = 255u;
     uint16_t max_short = 65535u;
-    int samples_per_row = cols*chns; /* Samples per row. */
-    int k;
+    int32_t samples_per_row = cols*chns; /* Samples per row. */
+    int32_t k;
     uint16_t *sP;
     if (bits)
       { /* PBM format. */
@@ -444,8 +444,8 @@ void pnm_write_pixels
           }
         else
           { /* Plain PBM format - sample is ASCII '0' or '1', complemented, no whitespace: */
-            int maxchars = 70 - 1; /* Max chars in line minus one pixel. */
-            int chars = 0; /* Counts characters in current line. */
+            int32_t maxchars = 70 - 1; /* Max chars in line minus one pixel. */
+            int32_t chars = 0; /* Counts characters in current line. */
             for (k = 0, sP = smp; k < samples_per_row; k++)
               { if (chars > maxchars) 
                   { putc('\n', wr); chars = 0; }
@@ -481,8 +481,8 @@ void pnm_write_pixels
           }
         else
           { /* Plain PBM/PGM/PPM format - samples are ASCII decimal with whitespace sep: */
-            int maxchars = 70 - 6*chns; /* Max chars in line minus one pixel. */
-            int chars = 0; /* Counts characters in current line. */
+            int32_t maxchars = 70 - 6*chns; /* Max chars in line minus one pixel. */
+            int32_t chars = 0; /* Counts characters in current line. */
             for (k = 0, sP = smp; k < samples_per_row; k++)
               { uint16_t ival = *sP; ++sP;
                 chars += pnm_write_plain_sample(wr, ival, maxval);

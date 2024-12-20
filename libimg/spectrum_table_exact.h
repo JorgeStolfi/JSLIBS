@@ -2,9 +2,8 @@
 #define spectrum_table_exact_H
 
 /* Tools for computing unsmoothed radial power spectra of images. */
-/* Last edited on 2024-11-06 10:04:51 by stolfi */ 
+/* Last edited on 2024-12-05 10:30:59 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 
@@ -53,7 +52,7 @@ void spectrum_table_exact_append_all
 
 void spectrum_table_exact_append_term
   ( spectrum_table_exact_t *tx, 
-    int32_t *ntxp,
+    uint32_t *ntxp,
     int32_t fn[], 
     int32_t fd[],
     double nTerms,

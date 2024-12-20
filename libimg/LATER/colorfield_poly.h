@@ -8,6 +8,8 @@
 #ifndef colorfield_poly_H
 #define colorfield_poly_H
 
+#include <stdint.h>
+
 #include <frgb.h>
 #include <frgb_ops.h>
 #include <colorfield.h>
@@ -20,7 +22,7 @@
 typedef struct cfld_poly_args_t  /* Color field specifications from command line. */
   { cfld_int_pair_t deg;      /* Degree of spline along each axis. */
     cfld_int_pair_t nknots;   /* Number of knots along each axis. */
-    int npt;                  /* Number of sample points. */
+    int32_t npt;                  /* Number of sample points. */
     cfld_int_pair_t *pt;      /* Sample points. */
     frgb_t *color;            /* Corresponding colors. */
   } cfld_poly_args_t;
@@ -34,9 +36,9 @@ typedef struct cfld_poly_args_t  /* Color field specifications from command line
 /* PREPROCESSED DATA */
 
 typedef struct cfld_poly_params_t
-  { int deg[2];    /* Degree along each axis. */
+  { int32_t deg[2];    /* Degree along each axis. */
     frgb_t *w;     /* Bézier coefficients. */
-    int additive;  /* TRUE to add, FALSE to multiply. */
+    int32_t additive;  /* TRUE to add, FALSE to multiply. */
   } cfld_poly_params_t;
   /* A {cfld_poly_params_t} record describes a variable color field {f}.
     Each component of {f(p)} at a pixel {p} at column {col}

@@ -1,5 +1,5 @@
 /* See argparser_geo.h. */
-/* Last edited on 2024-11-20 08:47:26 by stolfi */
+/* Last edited on 2024-12-17 16:36:41 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 
@@ -49,7 +49,8 @@ r6_t argparser_get_next_r6(argparser_t *pp, double min, double max)
 r3_t argparser_get_next_r3_dir(argparser_t *pp)
   { r3_t d;
     argparser_get_next_rn(pp, d.c, 3, -DBL_MAX, +DBL_MAX);
-    r3_dir(&d, &d);
+    double mag = r3_dir(&d, &d);
+    if (mag < 1.0e-180) { d = (r3_t){{ NAN, NAN, NAN }}; }
     return d;
   } 
  

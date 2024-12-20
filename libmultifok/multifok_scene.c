@@ -1,7 +1,6 @@
 /* See {multifok_scene.h}. */
-/* Last edited on 2024-10-29 13:25:48 by stolfi */
+/* Last edited on 2024-12-06 05:56:27 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -21,7 +20,7 @@
 #include <multifok_scene.h>
 #include <multifok_scene_object.h>
 
-int32_t multifok_scene_choose_object_count(bool_t floorOnly, interval_t dom[], double rMin, double rMax, double minSep);
+uint32_t multifok_scene_choose_object_count(bool_t floorOnly, interval_t dom[], double rMin, double rMax, double minSep);
   /* Chooses the ideal number of objects (disks or balls) that {multifok_scene_throw_busy} 
     should try to put in a scene.  The parameter {minSep} has the meaning described 
     under {multifok_scene_throw_busy}. */
@@ -56,17 +55,17 @@ void multifok_scene_throw_objects
     demand((scene->NO == 0) && (scene->objs == NULL), "scene already has objects");
     
     /* Determine the max number of objects: */
-    int32_t NO_max = multifok_scene_choose_object_count(floorOnly, scene->dom, rMin, rMax, minSep);
+    uint32_t NO_max = multifok_scene_choose_object_count(floorOnly, scene->dom, rMin, rMax, minSep);
     if (verbose) { fprintf(stderr, "trying to generate %d objects\n", NO_max); }
 
-    int32_t NO = 0; /* Number of objects already generated. */
+    uint32_t NO = 0; /* Number of objects already generated. */
     multifok_scene_object_t *objs = talloc(NO_max, multifok_scene_object_t);
 
     interval_t *dom = scene->dom;
 
     /* Generate the objects {objs[0..NO-1]}. */
     /* If overlapping, every try is valid, otherwise we need many more tries: */
-    int32_t NT = (minSep >= 0 ? 50 : 1)*NO_max; /* Number of tries. */
+    uint32_t NT = (minSep >= 0 ? 50 : 1)*NO_max; /* Number of tries. */
     
     for (uint32_t kt = 0;  (kt < NT) && (NO < NO_max); kt++)
       { multifok_scene_object_t obj;
@@ -92,7 +91,7 @@ void multifok_scene_throw_objects
           { demand(flatFloor, "inconsistent parameters");
             /* Reject {obj} if it overlaps previous foreground objects in {X} and {Y}: */
             /* Check for {XY} overlaps: */
-            for (uint32_t ko = 0;  (ko < NO) && (ko_overlap < 0); ko++)
+            for (int32_t ko = 0;  (ko < NO) && (ko_overlap < 0); ko++)
               { multifok_scene_object_t *objk = &(objs[ko]);
                 bool_t overlap = multifok_scene_object_XY_overlap(objk, &obj, minSep);
                 if (overlap) { ko_overlap = ko; }
@@ -101,7 +100,7 @@ void multifok_scene_throw_objects
           }
         if (ko_overlap < 0)
           { if (debug) { fprintf(stderr, " (accepted, ID = %d)\n", NO); }
-            obj.ID = NO;
+            obj.ID = (multifok_scene_object_ID_t)NO;
             if (verbose && (! debug)) {  multifok_scene_object_print(stderr, "  ", &obj, "\n"); }
             objs[NO] = obj;
             NO++;
@@ -123,7 +122,7 @@ void multifok_scene_throw_objects
     return;
   }
 
-int32_t multifok_scene_choose_object_count
+uint32_t multifok_scene_choose_object_count
   ( bool_t floorOnly,
     interval_t dom[],
     double rMin,
@@ -154,7 +153,7 @@ int32_t multifok_scene_choose_object_count
 
     /* Decide max number of foreground objects {NO_max}. */
     /* If non-overlapping, limited by area ratio, else more than that: */
-    int32_t NO_max = (minSep >= 0 ? 1 : 2)*(int32_t)ceil(aBox/aObj);
+    uint32_t NO_max = (minSep >= 0 ? 1 : 2)*(uint32_t)ceil(aBox/aObj);
     /* Ensure at least one foregreound object: */
     if (NO_max <= 0) { NO_max = 1; }
     
@@ -183,12 +182,12 @@ void multifok_scene_print_box(FILE *wr, char *pref, interval_t box[], char *suff
   }
     
 
-void multifok_scene_check_object_IDs(int32_t NO, multifok_scene_object_t objs[])
+void multifok_scene_check_object_IDs(uint32_t NO, multifok_scene_object_t objs[])
   { fprintf(stderr, "checking object IDs...\n");
     bool_t seen[NO];
     for (uint32_t ko = 0;  ko < NO; ko++) { seen[ko] = FALSE; }
     for (uint32_t ko = 0;  ko < NO; ko++) 
-      { int32_t ID = objs[ko].ID; 
+      { multifok_scene_object_ID_t ID = objs[ko].ID; 
         assert((0 <= ID) && (ID < NO));
         assert(! seen[ID]);
         seen[ID] = TRUE;

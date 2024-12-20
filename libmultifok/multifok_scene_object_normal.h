@@ -1,10 +1,9 @@
 /* Computing normals of objects. */
-/* Last edited on 2024-10-29 18:56:42 by stolfi */
+/* Last edited on 2024-12-05 10:36:38 by stolfi */
 
 #ifndef multifok_scene_object_normal_H
 #define multifok_scene_object_normal_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <r3.h>

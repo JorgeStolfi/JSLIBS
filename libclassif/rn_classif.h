@@ -1,10 +1,9 @@
 /* rn_classif.h --- tools for vector classifiers. */
-/* Last edited on 2010-05-25 04:18:09 by stolfi */
+/* Last edited on 2024-12-05 10:24:17 by stolfi */
 
 #ifndef rn_classif_H
 #define rn_classif_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 

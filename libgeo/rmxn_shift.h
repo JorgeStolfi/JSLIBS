@@ -1,10 +1,9 @@
 /* rmxn_shift.h --- adding scalars to rows or cols of MxN matrices */
-/* Last edited on 2024-11-20 14:08:33 by stolfi */
+/* Last edited on 2024-12-05 10:28:36 by stolfi */
 
 #ifndef rmxn_shift_H
 #define rmxn_shift_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 /* OTHER */

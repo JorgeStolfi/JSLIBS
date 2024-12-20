@@ -2,9 +2,8 @@
 #define archdraw_ic_H
 
 /* Common defs for IC architectural drawings */
-/* Last edited on 2023-02-20 18:18:05 by stolfi */
+/* Last edited on 2024-12-05 10:20:46 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <frgb.h>

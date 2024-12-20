@@ -1,9 +1,8 @@
 #ifndef hr2_pmap_translation_encode_H
 #define hr2_pmap_translation_encode_H
 
-/* Last edited on 2024-09-17 16:30:02 by stolfi */
+/* Last edited on 2024-12-05 10:27:15 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <hr2.h>

@@ -2,7 +2,7 @@
 #define lsq_array_H
 
 /* Fits a linear map of {R^nx} to {R^nf} by least squares, given sample arrays. */
-/* Last edited on 2023-02-23 16:51:10 by stolfi */
+/* Last edited on 2024-12-05 12:55:00 by stolfi */
 
 #define lsq_array_H_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
@@ -10,10 +10,10 @@
 #include <stdint.h>
 #include <bool.h>
 
-int32_t lsq_array_fit
-  ( int32_t nt,     /* Number of data points. */
-    int32_t nx,     /* Number of independent variables (argument coordinates per data point). */
-    int32_t nf,     /* Number of dependent variables (function samples per data point). */
+uint32_t lsq_array_fit
+  ( uint32_t nt,     /* Number of data points. */
+    uint32_t nx,     /* Number of independent variables (argument coordinates per data point). */
+    uint32_t nf,     /* Number of dependent variables (function samples per data point). */
     double X[],     /* Argument coordinates for all data points ({nt} by {nx}). */
     double F[],     /* Corresponding function samples ({nt} by {nf}). */
     double W[],     /* Corresponding reliability weights ({nt} elements). */
@@ -60,7 +60,7 @@ int32_t lsq_array_fit
 
 /* AUXILIARY PROCEDURES */
 
-void lsq_array_compute_matrix(int32_t nt, int32_t nx, double X[], double W[], double A[]);
+void lsq_array_compute_matrix(uint32_t nt, uint32_t nx, double X[], double W[], double A[]);
   /* Assumes that {A} is an {nx} by {nx} matrix linearized by rows.
     Fills it with the linear system's matrix for the weighted least squares 
     problem with {nx} argument coordinates, {nt} data points, argument
@@ -71,7 +71,7 @@ void lsq_array_compute_matrix(int32_t nt, int32_t nx, double X[], double W[], do
     sets {A[i*nx+j]} to {SUM{ W[k]*X[k*nx+i]*X[k*nx+j] : k \in 0..nt-1 }}
     for all {i,j} in {0..nx-1}. */
 
-void lsq_array_compute_rhs(int32_t nt, int32_t nx, int32_t nf, double X[], double F[], double W[], double B[]);
+void lsq_array_compute_rhs(uint32_t nt, uint32_t nx, uint32_t nf, double X[], double F[], double W[], double B[]);
   /* Assumes that {B} is an array with {nx} rows and {nf} columns.
     Fills it with the right-hand-side of the linear system for the weighted least squares 
     problem with {nx} argument coordinates, {nt} data points, argument

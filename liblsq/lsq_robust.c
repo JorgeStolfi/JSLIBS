@@ -1,10 +1,9 @@
 /* See {lsq_robust.h} */
-/* Last edited on 2024-11-07 00:49:48 by stolfi */
+/* Last edited on 2024-12-05 12:56:11 by stolfi */
 
 #define lsq_robust_C_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -16,7 +15,6 @@
 #include <affirm.h>
 #include <rmxn.h>
 #include <jsmath.h>
-#include <gauss_elim.h>
 #include <rn.h>
 
 #include <lsq.h>
@@ -24,12 +22,12 @@
 #include <lsq_robust.h>
 
 void lsq_robust_fit
-  ( int32_t nt,
-    int32_t nx,
+  ( uint32_t nt,
+    uint32_t nx,
     double X[],
     double F[],
     double W[],
-    int32_t maxiter,
+    uint32_t maxiter,
     double U[],
     double P[],
     lsq_robust_report_t *report,
@@ -39,7 +37,7 @@ void lsq_robust_fit
     /* bool_t debug = (report != NULL); */
     bool_t debug = FALSE;
 
-    int32_t nf = 1; /* Number of dependent variables (function samples). */
+    uint32_t nf = 1; /* Number of dependent variables (function samples). */
 
     double *A = rmxn_alloc(nx,nx); /* Moment matrix. */
     double *B = rn_alloc(nx); /* Right-hand side. */
@@ -48,7 +46,7 @@ void lsq_robust_fit
     lsq_array_compute_matrix(nt, nx, X, W, A);
 
     /* The matrix does not change: */
-    rmxn_inv_full(nx, A, A);
+    rmxn_inv(nx, A, A);
 
     /* Solve first without correction: */
     lsq_array_compute_rhs(nt, nx, nf, X, F, W, B);
@@ -126,7 +124,7 @@ void lsq_robust_fit
   }
 
 void lsq_robust_compute_stats
-  ( int32_t nt,
+  ( uint32_t nt,
     double Y[],   /* Values to analyze (residuals or function samples, {nt} elements). */
     double W[],
     double P[],

@@ -1,5 +1,5 @@
 /* See quad.h. */
-/* Last edited on 2023-10-05 20:53:09 by stolfi */
+/* Last edited on 2024-12-05 10:39:43 by stolfi */
   
 /* Written by J. Stolfi in Apr/1993, based on an original
   implementation by Jim Roth (DEC CADM Advanced Group, May/1986).
@@ -12,7 +12,6 @@
   " that may apply to the original DEC implementation of the quad-edge" \
   " data structure."
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <malloc.h>
 #include <assert.h>

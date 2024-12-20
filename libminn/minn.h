@@ -2,9 +2,8 @@
 #define minn_H
 
 /* Basic defs for n-dimensional minimization. */
-/* Last edited on 2024-01-10 13:40:21 by stolfi */ 
+/* Last edited on 2024-12-05 13:11:09 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 
@@ -18,7 +17,7 @@
   {n}-dimensional signed unit cube {\RB = [-1 _ +1]^n} or the 
   {n}-dimensional unit ball {\RE} = {{v \in \RR^n : |v| <= 1}}. */
 
-typedef double minn_goal_t (int32_t n, double c[]); 
+typedef double minn_goal_t (uint32_t n, double c[]); 
   /* Type of a function of {\RR^n} to {\RR} that is to be minimized. */
 
 typedef enum
@@ -28,7 +27,7 @@ typedef enum
   /* Minimization method to use. */
 
 void minn_uniform
-  ( int32_t n,          /* Dimension of search space. */
+  ( uint32_t n,          /* Dimension of search space. */
     minn_goal_t *F,     /* Function to be minimized. */
     bool_t box,         /* True to search in the unit cube, false in the unit ball. */
     double atol[],      /* Desired precision along each coordinate. */
@@ -58,9 +57,9 @@ void minn_uniform
     {atol[k]} for {k} over {0..n-1}. */
 
 void minn_subspace
-  ( int32_t n,          /* Dimension of search space. */
+  ( uint32_t n,          /* Dimension of search space. */
     minn_goal_t *F,     /* Function to be minimized. */
-    int32_t d,          /* Dimension of search domain. */
+    uint32_t d,          /* Dimension of search domain. */
     double U[],         /* Main axis directions of the search domain. */
     double urad[],      /* Radii of the search domain. */
     bool_t box,         /* True the search domain is a box, false it is an ellipsoid. */
@@ -107,10 +106,10 @@ void minn_subspace
     the corresponding vector {v} of {\RR^n}. */
 
 void minn_ellipsoid_constrained
-  ( int32_t n,          /* Dimension of search space. */
+  ( uint32_t n,          /* Dimension of search space. */
     minn_goal_t *F,     /* Function to be minimized. */
     double arad[],      /* Readii of the base ellipsoid. */
-    int32_t q,          /* Number of explicit constraints. */
+    uint32_t q,          /* Number of explicit constraints. */
     double A[],         /* Constraint matrix. */
     double tol,         /* Desired precision. */
     minn_method_t meth, /* Minimizaton method do use.*/

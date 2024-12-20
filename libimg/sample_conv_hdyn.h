@@ -2,7 +2,7 @@
 #define sample_conv_hdyn_H
 
 /* {sample_conv_hdyn.h} - conversion between floating-point and integer samples. */
-/* Last edited on 2017-06-16 01:55:17 by stolfilocal */
+/* Last edited on 2024-12-20 18:17:36 by stolfi */
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -29,14 +29,15 @@ interval_t sample_conv_hdyn_floatize
     double brght,          /* Brightness setting ({b}). */
     double ctrst,          /* Contrast setting ({c}). */ 
     double sigma,          /* Noise level ({s}). */
-    double gamma,          /* Power law exponent ({g}). */ 
+    double expo_dec,          /* Power law exponent ({g}). */ 
+    double bias,              /* Gamma decoding bias ({gb}). */ 
     sample_uint32_t black,   /* Black offset ({k}). */ 
     sample_uint32_t white,   /* White limit ({w}). */ 
     /* Statistical accumulators: */
     sample_uint32_t *imin,   /* Minimum {iv} seen. */
     sample_uint32_t *imax,   /* maximum {iv} seen. */
-    int *clo,              /* Count of underexposed pixels. */
-    int *chi,              /* Count of overexposed pixels. */
+    int32_t *clo,              /* Count of underexposed pixels. */
+    int32_t *chi,              /* Count of overexposed pixels. */
     float *vmin,           /* Minimum finite {LO(fv)} seen. */
     float *vmax            /* Maximum finite {HI(fv)} seen. */
   );
@@ -57,23 +58,23 @@ interval_t sample_conv_hdyn_floatize
     {fv}, if finite. */
     
 void sample_conv_hdyn_print_floatize_stats
-  ( int iChan,           /* Channel index in input image. */
-    int oChan,           /* Channel index in output image. */
-    double brght,        /* Brightness setting ({b}). */
-    double ctrst,        /* Contrast setting ({c}). */ 
-    sample_uint32_t black, /* Black offset ({k}). */ 
-    sample_uint32_t white, /* White limit ({w}). */ 
-    sample_uint32_t imin,  /* Minimum integer sample seen. */
-    sample_uint32_t imax,  /* Maximum integer sample seen. */
-    int clo,             /* Count of underexposed pixels. */
-    int chi,             /* Count of overexposed pixels. */
-    float vmin,          /* Minimum finite float sample seen. */
-    float vmax           /* Maximum finite float sample seen. */
+  ( int32_t iChan,           /* Channel index in input image. */
+    int32_t oChan,           /* Channel index in output image. */
+    double brght,            /* Brightness setting ({b}). */
+    double ctrst,            /* Contrast setting ({c}). */ 
+    sample_uint32_t black,   /* Black offset ({k}). */ 
+    sample_uint32_t white,   /* White limit ({w}). */ 
+    sample_uint32_t imin,    /* Minimum integer sample seen. */
+    sample_uint32_t imax,    /* Maximum integer sample seen. */
+    int32_t clo,             /* Count of underexposed pixels. */
+    int32_t chi,             /* Count of overexposed pixels. */
+    float vmin,              /* Minimum finite float sample seen. */
+    float vmax               /* Maximum finite float sample seen. */
   );
   /* Prints statistics for floatizing channel {iChan} of a PGM/PPM image
     into channel {oChan} of a float image. */
 
-interval_t sample_conv_hdyn_merge_intervals(int n, interval_t fv[]);
+interval_t sample_conv_hdyn_merge_intervals(int32_t n, interval_t fv[]);
   /* Combines a list of interval estimates {fv[0..n-1]} for the brightness
     of a pixel into a single interval {rv}. 
     
@@ -84,17 +85,18 @@ interval_t sample_conv_hdyn_merge_intervals(int n, interval_t fv[]);
 
 sample_uint32_t sample_conv_hdyn_quantize
   ( float fv, 
-    double brght,          /* Brightness setting ({b}). */
-    double ctrst,          /* Contrast setting ({c}). */ 
-    double sigma,          /* Noise level ({s}). */
-    double gamma,          /* Power law exponent ({g}). */ 
-    sample_uint32_t black,   /* Black offset ({k}). */ 
-    sample_uint32_t white,   /* White limit ({w}). */ 
+    double brght,             /* Brightness setting ({b}). */
+    double ctrst,             /* Contrast setting ({c}). */ 
+    double sigma,             /* Noise level ({s}). */
+    double expo_dec,          /* Power law exponent ({g}). */ 
+    double bias,              /* Gamma decoding bias ({gb}). */ 
+    sample_uint32_t black,    /* Black offset ({k}). */ 
+    sample_uint32_t white,    /* White limit ({w}). */ 
     /* Statistical accumulators: */
     float *vmin,
     float *vmax, 
-    int *clo,
-    int *chi,
+    int32_t *clo,
+    int32_t *chi,
     sample_uint32_t *imin, 
     sample_uint32_t *imax
   );
@@ -106,16 +108,16 @@ sample_uint32_t sample_conv_hdyn_quantize
     respectively. */
 
 void sample_conv_hdyn_print_quantize_stats
-  ( int iChan,           /* Channel index in input image. */
-    int oChan,           /* Channel index in output image. */
+  ( int32_t iChan,           /* Channel index in input image. */
+    int32_t oChan,           /* Channel index in output image. */
     double brght,        /* Brightness setting ({b}). */
     double ctrst,        /* Contrast setting ({c}). */ 
     sample_uint32_t black, /* Black offset ({k}). */ 
     sample_uint32_t white, /* White limit ({w}). */ 
     float vmin,          /* Minimum float sample seen. */
     float vmax,          /* Maximum float sample seen. */
-    int clo,             /* Number of samples seen below {lo}. */
-    int chi,             /* Number of samples seen above {hi}. */
+    int32_t clo,             /* Number of samples seen below {lo}. */
+    int32_t chi,             /* Number of samples seen above {hi}. */
     sample_uint32_t imin,  /* Minimum integer sample seen. */
     sample_uint32_t imax   /* Maximum integer sample seen. */
   );

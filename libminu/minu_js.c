@@ -1,7 +1,6 @@
 // See minu_js.h
-// Last edited on 2008-05-25 02:04:40 by stolfi
+// Last edited on 2024-12-05 10:35:19 by stolfi
 
-#define _GNU_SOURCE
 #include <minu_gen.h>
 #include <minu_js.h>
 

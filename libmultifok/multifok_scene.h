@@ -1,10 +1,9 @@
 /* Test scenes and ray-tracing for {multifok_test}. */
-/* Last edited on 2024-10-29 13:18:45 by stolfi */
+/* Last edited on 2024-12-05 23:56:02 by stolfi */
 
 #ifndef multifok_scene_H
 #define multifok_scene_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <r3.h>
@@ -19,7 +18,7 @@
 
 typedef struct multifok_scene_t
   { interval_t dom[3];  /* Clips and contains the scene. */ 
-    int32_t NO;         /* Number of objects (including floor or ramp). */
+    uint32_t NO;         /* Number of objects (including floor or ramp). */
     multifok_scene_object_t *objs;
   } multifok_scene_t;
   /* An object {scene} of this type specifies a set of solid objects
@@ -77,7 +76,7 @@ r3_t multifok_scene_box_radius(interval_t box[]);
 void multifok_scene_print_box(FILE *wr, char *pref, interval_t box[], char *suff);
   /* Prints {box[0..2]} to {wr}, preceded by {pref} and followed by {suff}. */
     
-void multifok_scene_check_object_IDs(int32_t NO, multifok_scene_object_t objs[]);
+void multifok_scene_check_object_IDs(uint32_t NO, multifok_scene_object_t objs[]);
   /* Checks whether the {ID} fields of {objs[0..NO-1]} are a permutation
     of {0..NO-1}. */
 

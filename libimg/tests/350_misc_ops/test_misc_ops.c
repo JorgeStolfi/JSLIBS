@@ -2,7 +2,7 @@
 #define PROG_DESC "test of various unary ops on {float_image_t} images"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-01-14 00:58:22 by stolfi */
+/* Last edited on 2024-12-20 17:22:17 by stolfi */
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_misc_ops_C_COPYRIGHT \
@@ -63,17 +63,18 @@
 #include <jsfile.h>
 #include <jsrandom.h>
 #include <sample_conv.h>
+#include <sample_conv_gamma.h>
 #include <float_image_write_pnm.h>
 #include <float_image_read_pnm.h>
 #include <float_image_mmorph.h>
 #include <float_image_gradient.h>
 #include <float_image.h>
 
-#define BT_GAMMA (0.450)
-#define BT_BIAS (0.0327)
-  /* Values of {gamma} and {bias} for {sample_conv_gamma} 
+#define BT_ENC_EXPO sample_conv_gamma_BT709_ENC_EXPO
+#define BT_ENC_BIAS sample_conv_gamma_BT709_BIAS
+  /* Values of {expo} and {bias} for {sample_conv_gamma} 
     that approximate the BT.709 encoding. */
-    
+   
 typedef enum 
   { tgr_op_dilate, 
     tgr_op_gradSqr, 

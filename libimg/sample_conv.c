@@ -1,5 +1,5 @@
 /* See {sample_conv.h}. */
-/* Last edited on 2024-11-04 07:20:07 by stolfi */
+/* Last edited on 2024-12-19 17:46:43 by stolfi */
 
 #include <math.h>
 #include <stdint.h>
@@ -14,59 +14,75 @@
 
 #include <sample_conv.h>
 
-#define BT709_ENCODE_GAMMA 0.450
-#define BT709_ENCODE_A     4.500
-#define BT709_ENCODE_R     0.018053968511
-#define BT709_ENCODE_B     0.099296826809
+#define BT709_ENC_EXPO  (0.45)
+#define BT709_ENC_A     (4.5)
+#define BT709_ENC_R     (0.018)
+#define BT709_ENC_C     (0.099)
   /* Parameters for luminance encoding according to ITU-R Recommendation BT.709. */
 
-float sample_conv_encode_BT709(float Y)
-  { if(isnan(Y) || isinf(Y)) { return Y; }
-    float a = fabsf(Y);
-    if ((a == 0) || (a == 1)) { return Y; }
-    if (a <= BT709_ENCODE_R)
-      { a = (float)(a * BT709_ENCODE_A); }
+float sample_conv_BT709_encode(float X)
+  { if(isnan(X) || isinf(X)) { return X; }
+    double a = fabsf(X);
+    if ((a == 0) || (a == 1)) { return X; }
+    if (a <= BT709_ENC_R)
+      { a = (a * BT709_ENC_A); }
     else
-      { a = (float)((1 + BT709_ENCODE_B)*pow(a, BT709_ENCODE_GAMMA) - BT709_ENCODE_B); }
-    return (Y < 0 ? -a : a);
+      { a = ((1 + BT709_ENC_C)*pow(a, BT709_ENC_EXPO) - BT709_ENC_C); }
+    return (float)(X < 0 ? -a : a);
   }
 
-#define BT709_DECODE_GAMMA 2.222222222222
-#define BT709_DECODE_A     0.222222222222
-#define BT709_DECODE_R     0.081242858299
-#define BT709_DECODE_B     0.099296826809
+#define BT709_DEC_EXPO  (1/0.45)
+#define BT709_DEC_A     (1/4.5)
+#define BT709_DEC_R     (0.081)
+#define BT709_DEC_C     (0.099) 
   /* Parameters for luminance decoding according to ITU-R Recommendation BT.709. */
+  /* BT709_DEC_C (0.0992965876298) */
 
-float sample_conv_decode_BT709(float V)
+float sample_conv_BT709_decode(float V)
   { if(isnan(V) || isinf(V)) { return V; }
-    float a = fabsf(V);
+    double a = fabsf(V);
     if ((a == 0) || (a == 1)) { return V; }
-    if (a <= BT709_DECODE_R)
-      { a = (float)(a * BT709_DECODE_A); }
+    if (a <= BT709_DEC_R)
+      { a = (a * BT709_DEC_A); }
     else
-      { a = (float)pow((a + BT709_DECODE_B)/(1 + BT709_DECODE_B), BT709_DECODE_GAMMA); }
-    return (V < 0 ? -a : a);
+      { a = pow((a + BT709_DEC_C)/(1 + BT709_DEC_C), BT709_DEC_EXPO); }
+    return (float)(V < 0 ? -a : a);
+  }
+  
+/* SRGB */
+
+#define sRGB_ENC_EXPO (1/2.4)
+#define sRGB_ENC_A     (12.92)
+#define sRGB_ENC_R     (0.0031308)
+#define sRGB_ENC_C     (0.055)
+  /* Parameters for linear component encoding according to IEC sRGB 1999 Amend 1. */
+
+float sample_conv_sRGB_encode(float X)
+  { if(isnan(X) || isinf(X)) { return X; }
+    double a = fabsf(X);
+    if ((a == 0) || (a == 1)) { return X; }
+    if (a <= sRGB_ENC_R)
+      { a = (a * sRGB_ENC_A); }
+    else
+      { a = ((1 + sRGB_ENC_C)*pow(a, sRGB_ENC_EXPO) - sRGB_ENC_C); }
+    return (float)(X < 0 ? -a : a);
   }
 
-float sample_conv_gamma(float z, double gamma, double bias)
-  { demand(bias >= 0, "negative bias not implemented yet");
-    if(isnan(z) || isinf(z)) { return z; }
-    if (gamma == 1) { return z; }
-    float a = fabsf(z);
-    if ((a == 0) || (a == 1)) { return z; }
-    if (bias == 0)
-      { a = (float)pow(a, gamma); }
+#define sRGB_DEC_EXPO (2.4)
+#define sRGB_DEC_A     (1/12.92)
+#define sRGB_DEC_R     (0.04045)
+#define sRGB_DEC_C     (0.055)
+  /* Parameters for linear component decoding according to IEC sRGB 1999 Amend 1. */
+
+float sample_conv_sRGB_decode(float V)
+  { if(isnan(V) || isinf(V)) { return V; }
+    double a = fabsf(V);
+    if ((a == 0) || (a == 1)) { return V; }
+    if (a <= sRGB_DEC_R)
+      { a = (a * sRGB_DEC_A); }
     else
-      { double sg = sqrt(gamma);
-        double c = pow(bias, 1/sg);
-        double d = pow(bias, sg);
-        double u = a*(1 - c) + c;
-        double v = pow(u, gamma);
-        double w = (v - d)/(1 - d);
-        a = (float)w;
-        if (a < 0) { a = 0; }
-      }
-    return (z < 0 ? -a : a);
+      { a = pow((a + sRGB_DEC_C)/(1 + sRGB_DEC_C), sRGB_DEC_EXPO); }
+    return (float)(V < 0 ? -a : a);
   }
 
 float sample_conv_log(float u, double bias, double uref, double logBase)
@@ -98,20 +114,20 @@ float sample_conv_undo_log(float u, double bias, double uref, double logBase)
     return (float)u;
   }
 
-float sample_conv_interp(float z, int np, double U[], double V[])
+float sample_conv_interp(float z, int32_t np, double U[], double V[])
   { if(isnan(z) || isinf(z)) { return z; }
     if (np == 0) { return z; }
     float a = fabsf(z);
     /* Binary search consecutive indices {ilo,ihi} such that {U[ilo] <= a <= U[ihi]}. */
     /* Assume that {U[-1]==V[-1]==0} and {U[np]==V[np]==1}. */
-    int ilo = -1, ihi = np;
+    int32_t ilo = -1, ihi = np;
     if (a <= 0) 
       { ihi = 0; }
     else if (a >= 1)
       { ilo = np-1; }
     else
       { while (ihi - ilo >= 2)
-          { int imd = (ilo + ihi)/2; 
+          { int32_t imd = (ilo + ihi)/2; 
             /* assert((ilo < imd) && (imd < ihi)); */
             /* assert((0 <= imd) && (imd < np)); */
             if (a < U[imd])
@@ -158,8 +174,8 @@ float sample_conv_floatize
   }
 
 void sample_conv_print_floatize_stats
-  ( int iChan,           /* Channel index in input image. */
-    int oChan,           /* Channel index in output image. */
+  ( int32_t iChan,           /* Channel index in input image. */
+    int32_t oChan,           /* Channel index in output image. */
     sample_uint32_t imin,   /* Minimum integer sample seen. */
     sample_uint32_t imax,   /* Maximum integer sample seen. */
     sample_uint32_t maxval, /* Maximum possible integer sample. */
@@ -168,7 +184,7 @@ void sample_conv_print_floatize_stats
     float vmin,          /* Minimum float sample seen. */
     float vmax           /* Maximum float sample seen. */
   )
-  { fprintf(stderr, "  converted int channel %d to float channel %d:\n", iChan, oChan);
+  { fprintf(stderr, "  converted int32_t channel %d to float channel %d:\n", iChan, oChan);
     fprintf(stderr, "    mapped [ 0 .. %u ] to [ %12.5e _ %12.5e ]\n", maxval, lo, hi);
     fprintf(stderr, "    actual input range  = [ %5u .. %5u ]\n", imin, imax);
     fprintf(stderr, "    actual output range = [ %12.5e _ %12.5e]\n", vmin, vmax);
@@ -182,8 +198,8 @@ sample_uint32_t sample_conv_quantize
     double hi, 
     float *vmin,
     float *vmax, 
-    int *clo,
-    int *chi,
+    int32_t *clo,
+    int32_t *chi,
     sample_uint32_t *imin, 
     sample_uint32_t *imax
   )
@@ -221,19 +237,19 @@ sample_uint32_t sample_conv_quantize
   }
   
 void sample_conv_print_quantize_stats
-  ( int iChan,           /* Channel index in input image. */
-    int oChan,           /* Channel index in output image. */
+  ( int32_t iChan,           /* Channel index in input image. */
+    int32_t oChan,           /* Channel index in output image. */
     float vmin,          /* Minimum float sample seen. */
     float vmax,          /* Maximum float sample seen. */
     double lo,           /* Low end of float scaling range. */
     double hi,           /* High end of float scaling range. */
-    int clo,             /* Number of samples seen below {lo}. */
-    int chi,             /* Number of samples seen above {hi}. */
+    int32_t clo,             /* Number of samples seen below {lo}. */
+    int32_t chi,             /* Number of samples seen above {hi}. */
     sample_uint32_t maxval, /* Maximum possible integer sample. */
     sample_uint32_t imin,   /* Minimum integer sample seen. */
     sample_uint32_t imax    /* Maximum integer sample seen. */
   )
-  { fprintf(stderr, "  converted float channel %d to int channel %d:\n", iChan, oChan);
+  { fprintf(stderr, "  converted float channel %d to int32_t channel %d:\n", iChan, oChan);
     fprintf(stderr, "    mapped [ %12.5e _ %12.5e ] to [ 0 .. %u ]\n", lo, hi, maxval);
     fprintf(stderr, "    actual input range  = [ %12.5e _ %12.5e ]\n", vmin, vmax);
     fprintf(stderr, "    actual output range = [ %5u .. %5u ]\n", imin, imax);
@@ -245,7 +261,7 @@ void sample_conv_choose_maxval(uint32_t chns, sample_uint32_t imaxval[], sample_
   {
     sample_uint32_t imvmax = 0;
     sample_uint32_t imvmin = maxmaxval;
-    for (int k = 0; k < chns; k++)
+    for (int32_t k = 0; k < chns; k++)
       { sample_uint32_t imvk = imaxval[k];
         demand((imvk >= 1) && (imvk <= maxmaxval), "invalid channel maxval");
         if (imvmin > imaxval[k]) { imvmin = imaxval[k]; }
@@ -263,7 +279,7 @@ void sample_conv_choose_maxval(uint32_t chns, sample_uint32_t imaxval[], sample_
     else 
       { /* Pick the least common multiple, if it does not exceed {maxmaxval}: */
         omaxval = 1;
-        for (int k = 0; k < chns; k++)
+        for (int32_t k = 0; k < chns; k++)
           { sample_uint32_t imvk = imaxval[k];
             sample_uint32_t g = (sample_uint32_t)gcd(imvk, omaxval);
             sample_uint32_t d = imvk/g;

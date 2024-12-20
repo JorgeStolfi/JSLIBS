@@ -1,5 +1,5 @@
 /* uint16_image_RGB_medcut.h - choose a representative set of N colors, from color histogram */
-/* Last edited on 2006-11-13 22:54:19 by stolfi */ 
+/* Last edited on 2024-12-05 07:29:27 by stolfi */ 
 
 #ifndef uint16_image_RGB_medcut_H
 #define uint16_image_RGB_medcut_H
@@ -11,9 +11,9 @@
 
 uint16_image_RGB_hist_vector uint16_image_RGB_median_cut
   ( uint16_image_RGB_hist_vector ch,  /* Color histogram of image. */
-    int colors,           /* Size of {ch}. */
+    int32_t colors,           /* Size of {ch}. */
     uint16_t maxval,  /* Max valid sample value. */
-    int *newcolorsp       /* In: desired number of colors, out: number chosen */
+    uint32_t *newcolorsp       /* In: desired number of colors, out: number chosen */
   );
   /* Chooses a good set of pixel values for color image quantization,
     given the image's histogram.

@@ -2,12 +2,11 @@
 #define obj_file_write_H
 
 /* Basic writing of OBJ format files. */ 
-/* Last edited on 2024-06-24 23:08:06 by stolfi */
+/* Last edited on 2024-12-05 10:39:24 by stolfi */
 
 #define half_read_obj_H_copyright \
   "Copyright (C) 2024 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

@@ -1,10 +1,9 @@
 /* rmxn_extra.h --- additional operation on MxN matrices */
-/* Last edited on 2024-11-20 13:04:04 by stolfi */
+/* Last edited on 2024-12-05 10:28:29 by stolfi */
 
 #ifndef rmxn_canonical_simplex_H
 #define rmxn_canonical_simplex_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

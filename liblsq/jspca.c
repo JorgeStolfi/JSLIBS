@@ -1,7 +1,6 @@
 /* See {jspca.h}.  */
-/* Last edited on 2023-02-14 03:50:22 by stolfi */
+/* Last edited on 2024-12-05 11:56:31 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -17,14 +16,14 @@
 
 #include <jspca.h>
 
-void jspca_compute_barycenter(int32_t nd, int32_t nv, double D[], double w[], double d[], bool_t verbose);
+void jspca_compute_barycenter(uint32_t nd, uint32_t nv, double D[], double w[], double d[], bool_t verbose);
   /* For each {jv} in {0..nv-1}, stores into {d[jv]} the weighted average of {D[id,jv]} 
     over all {id} in {0..nd-1} */
 
-double *jspca_compute_covariance_matrix(int32_t nd, int32_t nv, double D[], double w[], double d[], bool_t verbose);
+double *jspca_compute_covariance_matrix(uint32_t nd, uint32_t nv, double D[], double w[], double d[], bool_t verbose);
   /* Returns the covariance matrix {(D - u*d)'*W*(D - u*d)/det(W)} */
 
-int32_t jspca_eigen_decomp(int32_t nv, double A[], double E[], double e[], bool_t verbose);
+uint32_t jspca_eigen_decomp(uint32_t nv, double A[], double E[], double e[], bool_t verbose);
   /* Computes the eigendecompostion of the matrix {A}, assumed
     to be square of size {nv × nv}, symmetric, non-negative definite,
     and stored by rows.
@@ -42,12 +41,12 @@ int32_t jspca_eigen_decomp(int32_t nv, double A[], double E[], double e[], bool_
     corresponding to eigenvector {ie}.  The eigenvalues are expected 
     to be all non-negative. */
 
-void jspca_check_ortho(int32_t ne, int32_t nv, double E[]);
+void jspca_check_ortho(uint32_t ne, uint32_t nv, double E[]);
   /* Sanity check that the rows of the {ne} by {nv} matrix {E} are orthonormal. */ 
 
-int32_t jspca_compute_components
-  ( int32_t nd, 
-    int32_t nv, 
+uint32_t jspca_compute_components
+  ( uint32_t nd, 
+    uint32_t nv, 
     double D[], 
     double w[], 
     double d[], 
@@ -58,110 +57,101 @@ int32_t jspca_compute_components
   { 
     jspca_compute_barycenter(nd, nv, D, w, d, verbose);
     double *A = jspca_compute_covariance_matrix(nd, nv, D, w, d, verbose);
-    int32_t ne = jspca_eigen_decomp(nv, A, E, e, verbose);
+    uint32_t ne = jspca_eigen_decomp(nv, A, E, e, verbose);
     free(A);
     return ne;
   }
     
-void jspca_compute_barycenter(int32_t nd, int32_t nv, double D[], double w[], double d[], bool_t verbose)
+void jspca_compute_barycenter(uint32_t nd, uint32_t nv, double D[], double w[], double d[], bool_t verbose)
   { if (verbose) { fprintf(stderr, "computing the data vector barycenter {b}...\n"); }
-    for (uint32_t jv = 0;  jv < nv; jv++) { d[jv] = 0; }
+    for (int32_t jv = 0;  jv < nv; jv++) { d[jv] = 0; }
     double sumW = 0;
-    for (uint32_t id = 0;  id < nd; id++)
-      { double *Di = &(D[id*nv]);
+    for (int32_t id = 0;  id < nd; id++)
+      { double *Di = &(D[id*(int32_t)nv]);
         double wi = w[id];
         demand(wi >= 0, "invalid weight {w[id]}");
-        for (uint32_t jv = 0;  jv < nv; jv++) 
+        for (int32_t jv = 0;  jv < nv; jv++) 
           { d[jv] += wi*Di[jv]; }
         sumW += wi;
       }
     demand(sumW > 0, "total weight is zero");
-    for (uint32_t jv = 0;  jv < nv; jv++) { d[jv] /= sumW; }
+    for (int32_t jv = 0;  jv < nv; jv++) { d[jv] /= sumW; }
     if (verbose) { rn_gen_print(stderr, nv, d, "%+14.8f", "  d = [ ", " ", " ]\n"); }
   }
     
-double *jspca_compute_covariance_matrix(int32_t nd, int32_t nv, double D[], double w[], double d[], bool_t verbose)
+double *jspca_compute_covariance_matrix(uint32_t nd, uint32_t nv, double D[], double w[], double d[], bool_t verbose)
   {
     if (verbose) { fprintf(stderr, "computing the covariance matrix {A}...\n"); }
     double *A = rmxn_alloc(nv,nv); /* The array {(D-u*d)'*W*(D-u*d)}. */
-    for (uint32_t jv1 = 0;  jv1 < nv; jv1++)
-      { for (uint32_t jv2 = 0;  jv2 <= jv1; jv2++)
-          { A[jv1*nv + jv2] = 0; }
+    for (int32_t jv1 = 0;  jv1 < nv; jv1++)
+      { for (int32_t jv2 = 0;  jv2 <= jv1; jv2++)
+          { A[jv1*(int32_t)nv + jv2] = 0; }
       }
     double sumW = 0;
-    for (uint32_t id = 0;  id < nd; id++)
-      { double *Di = &(D[id*nv]);
+    for (int32_t id = 0;  id < nd; id++)
+      { double *Di = &(D[id*(int32_t)nv]);
         double vi[nv];
         rn_sub(nv, Di, d, vi);
         double wi = w[id];
         assert(wi >= 0);
-        for (uint32_t jv1 = 0;  jv1 < nv; jv1++) 
-          { for (uint32_t jv2 = 0;  jv2 <= jv1; jv2++)
-              { A[jv1*nv + jv2] += vi[jv1]*wi*vi[jv2]; }
+        for (int32_t jv1 = 0;  jv1 < nv; jv1++) 
+          { for (int32_t jv2 = 0;  jv2 <= jv1; jv2++)
+              { A[jv1*(int32_t)nv + jv2] += vi[jv1]*wi*vi[jv2]; }
           }
         sumW += wi;
       }
     /* Scale the array {A} by {1/sumW} to get the covariances, and fill teh upper half: */
     assert(sumW > 0);
-    for (uint32_t jv1 = 0;  jv1 < nv; jv1++)
-      { for (uint32_t jv2 = 0;  jv2 <= jv1; jv2++)
-          { double Ajj = A[jv1*nv + jv2] / sumW;
-            A[jv1*nv + jv2] = Ajj;
-            if (jv2 < jv1) { A[jv2*nv + jv1] = Ajj; }
+    for (int32_t jv1 = 0;  jv1 < nv; jv1++)
+      { for (int32_t jv2 = 0;  jv2 <= jv1; jv2++)
+          { double Ajj = A[jv1*(int32_t)nv + jv2] / sumW;
+            A[jv1*(int32_t)nv + jv2] = Ajj;
+            if (jv2 < jv1) { A[jv2*(int32_t)nv + jv1] = Ajj; }
           }
       }
     if (verbose) { rmxn_gen_print(stderr, nv, nv, A, "%+14.8f", "  A = [\n", "", "  ]\n", "    [ ", " ", " ]\n"); }
     return A;
   }
 
-int32_t jspca_eigen_decomp(int32_t nv, double A[], double E[], double e[], bool_t verbose)
+uint32_t jspca_eigen_decomp(uint32_t nv, double A[], double E[], double e[], bool_t verbose)
   { 
     if (verbose) { fprintf(stderr, "computing the eigenvectors of {A}...\n"); }
-    
-    /* Convert {A} to symmetric tridiagnonal form {T}: */
-    if (verbose) { fprintf(stderr, "  tridiagonalizing {A}...\n"); }
-    double *dT = rn_alloc(nv); /* Diagonal of {T}, then eigenvalues. */
-    double *sT = rn_alloc(nv); /* Subdiagonal of {T}. */
-    double *R = rmxn_alloc(nv,nv); /* Rotation matrix, then eigenvectors. */
-    syei_tridiagonalize(nv, A, dT, sT, R);
-
-    /* Compute the eigensystem for {T}: */
-    if (verbose) { fprintf(stderr, "  computing the eigenvalues of the tridiagonal matrix...\n"); }
-    int32_t ne; /* Number of eugenvalues actually computed: */
-    int32_t absrt = 0; /* Sort eigenvalues by *signed* value. */
-    syei_trid_eigen(nv, dT, sT, R, &ne, absrt);
+    double *ET = rmxn_alloc(nv,nv); /* Unsorted eigenvectors. */
+    double *eT = rn_alloc(nv); /* Unsorted eigenvalues. */
+    uint32_t ne; /* Number of eugenvalues actually computed: */
+    sym_eigen(nv, A, eT, ET, &ne);
     if ((ne < nv) || verbose) { fprintf(stderr, "  eigendecomposition found %d eigenvectors out of %d\n", ne, nv); }
-    if (verbose) { rmxn_gen_print2(stderr, ne, nv, R, 1, dT,  "%+14.8f", "  E,e2 = [\n", "\n", "  ]\n", "    [ ", " ", " ]", "  "); }
+    if (verbose) { rmxn_gen_print2(stderr, ne, nv, ET, 1, eT,  "%+14.8f", "  E,e2 = [\n", "\n", "  ]\n", "    [ ", " ", " ]", "  "); }
 
-    /* Copy those {me} eigenpairs in *decreasing* magnitude order discarding small ones: */
-    int32_t ie = 0;
-    for (int32_t ke = ne-1; ke >= 0; ke--)
-      { double e2k = dT[ke];         /* Eigenvalue of eigenvector {ke}. */
+    /* Copy those {ne} eigenpairs in *decreasing* magnitude order discarding small ones: */
+    uint32_t ie = 0;
+    for (uint32_t ke = 0; ke < ne; ke++)
+      { double e2k = eT[ke];         /* Eigenvalue of eigenvector {ke}. */
         assert(e2k > -1.0e-300); /* Damn minus zero! */
         double ek = sqrt(fmax(e2k, 0.0));
         if (verbose) { fprintf(stderr, "eigenvector %3d eigenvalue = %18.10f magnitude = %18.10f", ke, e2k, ek); }
         /* copy eigenpair to row {ie} of {e,E}: */
         if (verbose) { fprintf(stderr, " renumbered %3d\n", ie); }
         e[ie] = ek;
-        double *Rk = &(R[ke*nv]); /* Row {ke} of {R}. */
+        double *Rk = &(ET[ke*nv]); /* Row {ke} of {ET}. */
         double *Ei = &(E[ie*nv]); /* Row {ie} of {E}. */
-        for (uint32_t jv = 0;  jv < nv; jv++) { Ei[jv] = Rk[jv]; }
+        for (int32_t jv = 0;  jv < nv; jv++) { Ei[jv] = Rk[jv]; }
         ie++;
         /* A covariance matrix should not have negative eigenvalues: */
         if (e2k < 0) { fprintf(stderr, " ** negative eigenvalue - should not happen"); }
       }
     if (verbose) { rmxn_gen_print2(stderr, ne, nv, E, 1, e,  "%+14.8f", "  E,e = [\n", "\n", "  ]\n", "    [ ", " ", " ]", "  "); }
     
+    /* !!! Move to test programs !!! */
     jspca_check_ortho(ne, nv, E);
 
     /* Free the temporary storage: */
-    free(sT);
-    free(dT);
-    free(R);
+    free(eT);
+    free(ET);
     return ne;
   }
   
-void jspca_check_ortho(int32_t ne, int32_t nv, double E[])
+void jspca_check_ortho(uint32_t ne, uint32_t nv, double E[])
   {
     for (uint32_t ie1 = 0;  ie1 < ne; ie1++)
       { double *e1 = &(E[ie1*nv]);
@@ -176,11 +166,11 @@ void jspca_check_ortho(int32_t ne, int32_t nv, double E[])
   }
     
 void jspca_decompose_data
-  ( int32_t nd,  /* Number of data points. */
-    int32_t nv,  /* Number of variables per data point. */
+  ( uint32_t nd,  /* Number of data points. */
+    uint32_t nv,  /* Number of variables per data point. */
     double D[],  /* The data points. */
     double d[],  /* Barycenter of points. */
-    int32_t ne,  /* Number of principal components. */
+    uint32_t ne,  /* Number of principal components. */
     double E[],  /* Principal component vectors. */
     double C[],  /* (OUT) Eigenvector coeff matrix. */
     double P[],  /* (OUT) Projections of data points in row space of {E}. */
@@ -218,13 +208,13 @@ void jspca_decompose_data
       }
   }
    
-void jspca_prv(char *name, int32_t n, double v[], char *fmt)
+void jspca_prv(char *name, uint32_t n, double v[], char *fmt)
   { 
     fprintf(stderr, "  %s (%d) = ", name, n);
     rn_gen_print(stderr, n, v, fmt, "[ ", " ", " ]\n");
   }
    
-void jspca_prm(char *name, int32_t m, int32_t n, double A[], char *fmt)
+void jspca_prm(char *name, uint32_t m, uint32_t n, double A[], char *fmt)
   { 
     fprintf(stderr, "  %s (%dx%d) =\n", name, m, n);
     rmxn_gen_print
@@ -235,7 +225,7 @@ void jspca_prm(char *name, int32_t m, int32_t n, double A[], char *fmt)
       );
   }
  
-void jspca_prm2(char *names, int32_t m, int32_t n1, double A1[], int32_t n2, double A2[], char *fmt)
+void jspca_prm2(char *names, uint32_t m, uint32_t n1, double A1[], uint32_t n2, double A2[], char *fmt)
   { 
     fprintf(stderr, "  %s (%dx%d, %dx%d) =\n", names, m, n1, m, n2);
     rmxn_gen_print2
@@ -247,7 +237,7 @@ void jspca_prm2(char *names, int32_t m, int32_t n1, double A1[], int32_t n2, dou
       );
   }
  
-void jspca_prm3(char *names, int32_t m, int32_t n1, double A1[], int32_t n2, double A2[], int32_t n3, double A3[], char *fmt)
+void jspca_prm3(char *names, uint32_t m, uint32_t n1, double A1[], uint32_t n2, double A2[], uint32_t n3, double A3[], char *fmt)
   { 
     fprintf(stderr, "  %s (%dx%d, %dx%d, %dx%d) =\n", names, m, n1, m, n2, m, n3);
     rmxn_gen_print3

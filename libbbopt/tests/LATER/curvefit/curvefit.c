@@ -3,7 +3,7 @@
 #define PROG_VERS "1.0"
 
 #define curvefit_C_COPYRIGHT "Copyright © 2004 by the State University of Campinas (UNICAMP)"
-/* Last edited on 2024-11-20 06:10:27 by stolfi */
+/* Last edited on 2024-12-05 10:22:01 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -54,7 +54,6 @@
   "\n" \
   argparser_help_info_STANDARD_RIGHTS
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

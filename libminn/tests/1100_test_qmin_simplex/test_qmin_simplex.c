@@ -1,5 +1,5 @@
 /* test_qmin_simplex.c --- test program for qmin_simplex.h  */
-/* Last edited on 2024-11-29 22:28:01 by stolfi */
+/* Last edited on 2024-11-30 22:56:52 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -24,7 +24,7 @@
 int32_t main (int32_t argc, char **argv);
 
 void test_qmin_simplex(uint32_t trial, bool_t verbose);
-  /* Tests {gauss_elim_quadratic_min}. */
+  /* Tests {gausol_quadratic_min}. */???
 
 void throw_quadratic_fn(uint32_t n, double A[], double b[], bool_t verbose);
   /* Generates a random {n × n} coefficient matrix {A}, positive semidefinite,
@@ -47,7 +47,7 @@ double max_abs_col_elem(uint32_t m, uint32_t n, double M[], uint32_t j);
 int32_t main (int32_t argc, char **argv)
   {
     for (uint32_t i = 0;  i < MAX_RUNS; i++) { test_triangularize(i, i < 10); }
-    for (uint32_t i = 0;  i < MAX_RUNS; i++) { test_gauss_elim(i, i < 10); }
+    for (uint32_t i = 0;  i < MAX_RUNS; i++) { test_gausol(i, i < 10); }
     for (uint32_t i = 0;  i < MAX_RUNS; i++) { test_solve(i, i < 5); }
     for (uint32_t i = 0;  i < MAX_RUNS; i++) { test_qmin_simplex(i, i < 30); }
     fclose(stderr);
@@ -80,7 +80,7 @@ void test_qmin_simplex (uint32_t trial, bool_t verbose)
     double x[n];      /* Computed solution. */
 
     qms_quadratic_min(n, A, b, x);
-    if (verbose) { gauss_elim_print_array(stderr, 4, "%12.6f", "gauss_elim_quadratic_min:", n, 1,"x",x, ""); }
+    if (verbose) { gausol_print_array(stderr, 4, "%12.6f", "gausol_quadratic_min:", n, 1,"x",x, ""); }
     check_quadratic_min(n, A, b, x, bmax);
 
     fprintf(stderr, "done.\n");
@@ -130,7 +130,7 @@ void throw_matrix(uint32_t m, uint32_t n, double A[], bool_t verbose)
          { A[i*n + j] = Ascale * dabrandom(-0.5*m*n, +0.5*m*n); }
       }
 
-   if (verbose) { gauss_elim_print_array(stderr, 4, "%12.6f", "  original matrix:", m, n,"A",A, ""); }
+   if (verbose) { gausol_print_array(stderr, 4, "%12.6f", "  original matrix:", m, n,"A",A, ""); }
   }
 
 #define MAX_PHIS MAX_COLS
@@ -148,7 +148,7 @@ void throw_quadratic_fn(uint32_t n, double A[], double b[], bool_t verbose)
     double x[n];
     for (uint32_t j = 0;  j < n; j++)
       { x[j] = xscale * dabrandom(-0.5*n, +0.5*n); }
-    if (verbose) { gauss_elim_print_array(stderr, 4, "%12.6f", "original solution:", n, 1,"x",x, ""); }
+    if (verbose) { gausol_print_array(stderr, 4, "%12.6f", "original solution:", n, 1,"x",x, ""); }
 
     /* Generate a random {q × n} basis matrix {F}: */
     uint32_t q = (n >= MAX_PHIS ? n : n + uint32_abrandom(0, MAX_PHIS - n));
@@ -159,7 +159,7 @@ void throw_quadratic_fn(uint32_t n, double A[], double b[], bool_t verbose)
       { for (uint32_t i = 0;  i < n; i++)
           { F[k*n + i] = Fscale * dabrandom(-Fmax, +Fmax); }
       }
-    if (verbose) { gauss_elim_print_array(stderr, 4, "%12.6f", "basis matrix:", q, n, "F",F, ""); }
+    if (verbose) { gausol_print_array(stderr, 4, "%12.6f", "basis matrix:", q, n, "F",F, ""); }
 
     /* Compute {A = F' F: */
     for (uint32_t i = 0;  i < n; i++)
@@ -176,7 +176,7 @@ void throw_quadratic_fn(uint32_t n, double A[], double b[], bool_t verbose)
         for (uint32_t j = 0;  j < n; j++) { s += A[i*n + j]*x[j]; }
         b[i] = s;
       }
-    if (verbose) { gauss_elim_print_system(stderr, 4, "%12.6f", "original system:", n, n,"A",A, 1,"b",b, 0,NULL,NULL, ""); }
+    if (verbose) { gausol_print_system(stderr, 4, "%12.6f", "original system:", n, n,"A",A, 1,"b",b, 0,NULL,NULL, ""); }
   }
 
 double max_abs_elem(uint32_t m, uint32_t n, double M[])

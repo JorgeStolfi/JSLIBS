@@ -1,5 +1,5 @@
 /* gausol_test_tools.h - basic tools for testing {gausol_XXX}.h. */
-/* Last edited on 2024-11-30 04:53:17 by stolfi */
+/* Last edited on 2024-11-30 18:56:02 by stolfi */
 
 #ifndef gausol_test_tools_H
 #define gausol_test_tools_H
@@ -24,15 +24,15 @@ void gausol_test_tools_choose_system
     fills {A} and {X} with random numbers, then computes {B = A*X}. If
     {verbose}, also prints the system to {stderr}. Computed {B}
     entries whose absolute value is less than {tiny} are set to zero. */
-
+ 
 void gausol_test_tools_check_triang_reduce
   ( uint32_t m, uint32_t prow[], 
     uint32_t n, uint32_t pcol[], double A[],
     uint32_t p, double B[],
     double tiny,
+    double rms_A, 
     uint32_t rank, 
     double det_ref, double det_cmp,
-    double rms_A, 
     bool_t verbose
   );
   /* Checks whether {A} and {B} have the shape expected after
@@ -48,7 +48,8 @@ void gausol_test_tools_check_triang_reduce
     Also checks whether the determinant {det_ref} of {A} computed by some 
     other means matches the determinant {det_cmp} returned by {gausol_triang_reduce}.
     This test takes place only if {det_ref} is not {NAN}, which should happen
-    only if {A} is square.
+    only if {A} is square and the returned {rank} is the rank of {A},
+    which may not be the case
     
     The procedure assumes that the RMS value of the entries of {A}, before
     triangulation, was {rms_A}, 
@@ -93,10 +94,12 @@ void gausol_test_tools_check_satisfaction
     solution of the system {A X = B}. */
 
 double gausol_test_tools_check_solve
-  ( uint32_t m, uint32_t n, double A[],
+  ( uint32_t m, bool_t pivoted,
+    uint32_t n, double A[],
     uint32_t p, double B[],
     double X_ref[], double X_cmp[],
     uint32_t rank,
+    double det_cmp,
     bool_t verbose
   );
   /* Assumes that {A}, {B} are the original {m×n} and {m×p} matrices of
@@ -108,9 +111,14 @@ double gausol_test_tools_check_solve
     
     The rank {rank} must be in {0..min(m,n)}. If {m=n=rank}, assumes that the
     system {A X + B} has a unique solution, so it compare the solutions
-    {Xref} and {X_cmp}.  IN this case, the RMS difference between the elements 
+    {Xref} and {X_cmp}.  In this case, the RMS difference between the elements 
     of these arrays is returned as result.  If {rank != m} or {rank != n},
     returns {NAN}.
+    
+    Also checks whether the determinant {det_ref} of {A} computed by
+    some other means matches the determinant {det_cmp} returned by
+    {gausol_triang_reduce}. This test takes place only if {det_ref} is
+    not {NAN}, which should happen only if {A} is square.
     
     If {rank=n} (for any {m}) assumes that the system {A X = B} has at
     least one solition, so it also compares the product {A X_cmp} with the
@@ -138,28 +146,6 @@ void gausol_test_tools_check_residual
   /* Assumes that {A}, {B}, and {X} are matrices with sizes
     {m×n}, {m×p}, and {n×p}, respectively. Compares the product
     {A X} with {B}. */
-
-void gausol_test_tools_compare_determinants
-  ( uint32_t m, uint32_t n,
-    uint32_t rank,
-    double rms_A,
-    double det_ref, double det_cmp,
-    bool_t verbose
-  ); 
-  /* Assumes {det-ref} is the determinant of the original
-    matrix {A} computed by some other means, and {det_cmp} 
-    is the determinant returned by {gausol_triang_reduce}.
-    Compares the two, and bombs out if they differ by too
-    much. 
-    
-    Assumes that the RMS value of the entries of {A}, before
-    triangulation, was {rms_A}, and that entries less than {tiny} in
-    absolute value were replaced by zeros. 
-    
-    The check is skipped if {det_ref} and/or {det_cmp} are
-    {NAN}.  This is the case when the matrix {A} is not square,
-    or pivoting was suppressed and the apparent {rank} was less
-    than {m}. */
 
 void gausol_test_tools_make_row_dependent(uint32_t i, uint32_t m, uint32_t n, double A[]);
   /* The matrix {A} must have {m} rows and {n} columns, and {i} must be in {0..m-1}.

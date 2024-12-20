@@ -1,7 +1,6 @@
 /* pnmift_arc_cost_fn.c - implementation of pnmift_arc_cost_fn.h */
-/* Last edited on 2023-03-07 17:15:18 by stolfi */
+/* Last edited on 2024-12-05 10:29:10 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>

@@ -1,7 +1,6 @@
 /* See {btc_bubble_compute_basis.h} */
-/* Last edited on 2015-04-30 00:00:38 by stolfilocal */
+/* Last edited on 2024-12-05 10:22:15 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

@@ -1,7 +1,6 @@
 /* See fboxlist.h */
-/* Last edited on 2023-02-20 06:38:08 by stolfi */
+/* Last edited on 2024-12-05 10:21:57 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdint.h>
 

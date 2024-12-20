@@ -2,14 +2,14 @@
 #define float_image_mmorph_H
 
 /* Tools for mathematical morphology operations. */
-/* Last edited on 2009-02-16 00:59:07 by stolfi */ 
+/* Last edited on 2024-12-04 23:30:07 by stolfi */ 
 
 #include <bool.h>
 #include <r2.h>
 #include <gauss_table.h>
 #include <float_image.h>
 
-float_image_t *float_image_mmorph_dilate(float_image_t *A, int hw, double wt[]);
+float_image_t *float_image_mmorph_dilate(float_image_t *A, int32_t hw, double wt[]);
   /* Computes the dilation of image {A} by the tensor mask {wt'*wt} derived from
     the unidimensional weights {wt[0..2*hw]}.
   

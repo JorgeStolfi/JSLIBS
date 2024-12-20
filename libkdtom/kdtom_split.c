@@ -1,7 +1,6 @@
 /* See {kdtom_split.h}. */
-/* Last edited on 2021-07-19 05:06:55 by jstolfi */
+/* Last edited on 2024-12-05 10:32:56 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

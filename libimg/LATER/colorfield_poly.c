@@ -11,6 +11,7 @@
 
 #include <limits.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
@@ -29,15 +30,15 @@ cfld_poly_params_t *cfld_poly_compute_bezier_coeffs
   )
   {
     cfld_poly_params_t *wtb_el = (cfld_poly_params_t *)malloc(sizeof(cfld_poly_params_t));
-    int g = gcd(abs(w->period.c[0]), abs(w->period.c[1]));
+    int32_t g = gcd(abs(w->period.c[0]), abs(w->period.c[1]));
     cfld_int_pair_t frN = (cfld_int_pair_t){{w->period.c[0]/g, w->period.c[1]/g}};
-    int frD = w->period.c[0]*frN.c[0] + w->period.c[1]*frN.c[1];
+    int32_t frD = w->period.c[0]*frN.c[0] + w->period.c[1]*frN.c[1];
     wtb_el->freqNum = frN;
     wtb_el->freqDen = frD;
     wtb_el->additive = w->additive;
     
     { frgb_t *tb = (frgb_t *)malloc(frD * sizeof(frgb_t));
-      int iphase, i;
+      int32_t iphase, i;
       frgb_t ampl;
       fprintf(stderr, "\n");
       print_triplet(stderr, "orgColor = ( ", 3, orgColor, " )\n");
@@ -78,15 +79,15 @@ cfld_poly_params_t *cfld_poly_compute_bezier_coeffs
 void cfld_poly_eval_bezier
   ( frgb_t *locColor,
     cfld_poly_params_t wtb,
-    int dCol, 
-    int dRow
+    int32_t dCol, 
+    int32_t dRow
   )
   {
-    int i;
+    int32_t i;
     while (wtb != NULL)
       { frgb_t *tb = wtb->tb;
         cfld_int_pair_t frN = wtb->freqNum;
-        int iphase = imod((dCol*frN.c[0] + dRow*frN.c[1]), wtb->freqDen);
+        int32_t iphase = imod((dCol*frN.c[0] + dRow*frN.c[1]), wtb->freqDen);
         frgb_t tbxy = tb[iphase];
         for (i = 0; i < 3; i++)
           { if (wtb->additive) 

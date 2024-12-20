@@ -1,7 +1,6 @@
 /* See {multifok_scene_object_normal.h}. */
-/* Last edited on 2024-10-29 19:09:04 by stolfi */
+/* Last edited on 2024-12-05 10:36:35 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

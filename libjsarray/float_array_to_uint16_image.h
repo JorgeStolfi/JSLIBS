@@ -2,9 +2,8 @@
 #define float_array_to_uint16_image_H
 
 /* Conversion between {uint16_image_t} images and multi-dimensional float arrays. */
-/* Last edited on 2023-03-18 11:01:19 by stolfi */ 
+/* Last edited on 2024-12-05 10:31:55 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 

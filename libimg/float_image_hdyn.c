@@ -1,5 +1,5 @@
 /* See {float_image_hdyn.h}. */
-/* Last edited on 2023-02-26 03:59:09 by stolfi */
+/* Last edited on 2024-12-05 00:53:01 by stolfi */
 
 #include <assert.h>
 #include <limits.h>
@@ -8,7 +8,7 @@
  
 #include <bool.h>
 #include <jsmath.h>
-#include <gauss_elim.h>
+#include <gausol_solve.h>
 #include <affirm.h>
 #include <sample_conv.h>
 #include <sample_conv_hdyn.h>
@@ -17,13 +17,13 @@
 
 /* INTERNAL PROTOTYPES */
 
-int float_image_hdyn_sample_class(double V, double Vmin, double Vmax);
+int32_t float_image_hdyn_sample_class(double V, double Vmin, double Vmax);
   /* The classification of a sample with value {V}. Returns {-1} when
     {V <= Vmin} (underexposed pixel), {+1} when {V >= Vmax}
     (overexposed pixel), an 0 otherwise (valid pixel). */
 
 bool_t float_image_hdyn_check_convergence
-  ( int NI,
+  ( int32_t NI,
     double new[],
     double old[],
     double tol,
@@ -38,7 +38,7 @@ bool_t float_image_hdyn_check_convergence
     out the {name} and the largest change seen. */
 
 void float_image_hdyn_compute_avg_corr_and_weight
-  ( int c,               /* Channel. */
+  ( int32_t c,               /* Channel. */
     float_image_t *imgA, /* First image. */
     double vminA,        /* Underexposed value of {imgA} */
     double vmaxA,        /* Overexposed value of {imgA} */
@@ -63,16 +63,16 @@ void float_image_hdyn_compute_avg_corr_and_weight
     coefficient {C} for the model {(imgA-MA) = C*(imgB-MB)}, which 
     may be 0, {INF}, or {NAN}. */
 
-void float_image_hdyn_print_system(FILE *wr, int m, int n, double A[], int p, double B[]);
+void float_image_hdyn_print_system(FILE *wr, int32_t m, int32_t n, double A[], int32_t p, double B[]);
   /* Prints to {wr} the matrix {A} with {m} rows and {n} columns, side 
     by side with the matrix {B} with {m} rows and {p} columns, both linarized by rows. */ 
   
-typedef double float_image_hdyn_diff_func_t(int i, int j);
+typedef double float_image_hdyn_diff_func_t(int32_t i, int32_t j);
 /* Type of function that defines the difference between two variables {X[i]} and {X[j]}.
    See {float_image_hdyn_solve_diff_eqs}. */
     
 void float_image_hdyn_solve_diff_eqs
-  ( int N, 
+  ( int32_t N, 
     double W[], 
     float_image_hdyn_diff_func_t *diff, 
     bool_t verbose,
@@ -100,8 +100,8 @@ void float_image_hdyn_solve_diff_eqs
 /* IMPLEMENTATIONS */
 
 void float_image_hdyn_estimate_gains_offsets_sigmas_values
-  ( int c,                /* Channel. */
-    int NI,               /* Number of input images. */
+  ( int32_t c,                /* Channel. */
+    int32_t NI,               /* Number of input images. */
     float_image_t *img[], /* Input images. */
     double vmin[],        /* Value of underexposed pixels. */
     double vmax[],        /* Value of overexposed pixels. */
@@ -113,9 +113,9 @@ void float_image_hdyn_estimate_gains_offsets_sigmas_values
   )
   {
     /* Initial guess for {sigmas}: */
-    int i;
+    int32_t i;
     for (i = 0; i < NI; i++) { sigma[i] = 0.003; /* About right for 8-bit quantization */ }
-    int max_iterations = 1;
+    int32_t max_iterations = 1;
     double tol_gain = 0.0001;
     double tol_offset = 0.0001;
     double tol_sigma = 0.0001;
@@ -123,7 +123,7 @@ void float_image_hdyn_estimate_gains_offsets_sigmas_values
     double gain_old[NI];
     double offset_old[NI];
     double sigma_old[NI];
-    int iter = 0;
+    int32_t iter = 0;
     while (TRUE)
       { if (verbose)
           { /* Print current state: */
@@ -168,7 +168,7 @@ void float_image_hdyn_estimate_gains_offsets_sigmas_values
   }
 
 bool_t float_image_hdyn_check_convergence
-  ( int NI,
+  ( int32_t NI,
     double new[],
     double old[],
     double tol,
@@ -178,7 +178,7 @@ bool_t float_image_hdyn_check_convergence
   )
   {
     double max_d = 0.0;
-    int i;
+    int32_t i;
     for (i = 0; i < NI; i++)
       { double di;
         if (log_scale)
@@ -197,7 +197,7 @@ bool_t float_image_hdyn_check_convergence
     return fabs(max_d) <= tol;
   }
 
-int float_image_hdyn_sample_class(double V, double Vmin, double Vmax)
+int32_t float_image_hdyn_sample_class(double V, double Vmin, double Vmax)
   { 
     if (V <= Vmin)
       { return -1; }
@@ -208,8 +208,8 @@ int float_image_hdyn_sample_class(double V, double Vmin, double Vmax)
   }
 
 void float_image_hdyn_estimate_gains_offsets
-  ( int c,                /* Channel. */
-    int NI,               /* Number of input images. */
+  ( int32_t c,                /* Channel. */
+    int32_t NI,               /* Number of input images. */
     float_image_t *img[], /* Input images. */
     double vmin[],        /* Value of underexposed pixels. */
     double vmax[],        /* Value of overexposed pixels. */
@@ -231,11 +231,11 @@ void float_image_hdyn_estimate_gains_offsets
     
     /* Matrices for image pair statistics: */
     if (verbose) { fprintf(stderr, "collecting image statistics...\n"); }
-    int NI2 = NI*NI;
-    double *M = notnull(malloc(NI2*sizeof(double)), "no mem"); /* Average values. */
-    double *C = notnull(malloc(NI2*sizeof(double)), "no mem"); /* Correlation coefficients. */
-    double *W = notnull(malloc(NI2*sizeof(double)), "no mem"); /* Weights. */
-    int i, j;
+    int32_t NI2 = NI*NI;
+    double *M = talloc(NI2, double); /* Average values. */
+    double *C = talloc(NI2, double); /* Correlation coefficients. */
+    double *W = talloc(NI2, double); /* Weights. */
+    int32_t i, j;
     for (i = 0; i < NI; i++) 
       { for (j = 0; j <= i; j++) 
           { double Wij, Cij, Cji, Mij, Mji;
@@ -258,18 +258,18 @@ void float_image_hdyn_estimate_gains_offsets
             else
               { Cji = NAN; }
             if (j != i)
-              { int kij = i*NI + j;
+              { int32_t kij = i*NI + j;
                 C[kij] = Cij;
                 M[kij] = Mij;
                 W[kij] = Wij;
                 /* Fill the upper half of the matrices {C,W}: */
-                int kji = j*NI + i;
+                int32_t kji = j*NI + i;
                 C[kji] = Cji;
                 M[kji] = Mji; 
                 W[kji] = W[kij];
               }
             else
-              { int kii = i*NI + i;
+              { int32_t kii = i*NI + i;
                 /* Consistency checks: */
                 if (fabs(log(Cij)) > log(1.00001))
                   { fprintf(stderr, "self-correlation = %24.15e for image %d\n", Cij, i); }
@@ -318,9 +318,9 @@ void float_image_hdyn_estimate_gains_offsets
       We add the linear constraint {sum{X[i]} = 0} to remove that
       indeterminacy. */
       
-    auto double diff_gains(int i, int j);
+    auto double diff_gains(int32_t i, int32_t j);
     
-    double diff_gains(int i, int j)
+    double diff_gains(int32_t i, int32_t j)
       { assert(i != j);
         double Cij = C[i*NI + j];
         if (isfinite(Cij) && (Cij != 0))
@@ -329,7 +329,7 @@ void float_image_hdyn_estimate_gains_offsets
           { return NAN; }
       }
     
-    double *X = notnull(malloc(NI*sizeof(double)), "no mem");
+    double *X = talloc(NI, double);
     if (verbose) { fprintf(stderr, "solving the gain equations...\n"); }
     float_image_hdyn_solve_diff_eqs(NI, W, &diff_gains, verbose, X);
 
@@ -371,9 +371,9 @@ void float_image_hdyn_estimate_gains_offsets
       We add the linear constraint {sum{K[i]} = 0} to remove that
       indeterminacy. */
     
-    auto double diff_offsets(int i, int j);
+    auto double diff_offsets(int32_t i, int32_t j);
     
-    double diff_offsets(int i, int j)
+    double diff_offsets(int32_t i, int32_t j)
       { assert(i != j);
         double gi = gain[i];
         double gj = gain[j];
@@ -455,7 +455,7 @@ void float_image_hdyn_estimate_gains_offsets
   }
     
 void float_image_hdyn_solve_diff_eqs
-  ( int N, 
+  ( int32_t N, 
     double W[], 
     float_image_hdyn_diff_func_t *diff, 
     bool_t verbose,
@@ -464,10 +464,10 @@ void float_image_hdyn_solve_diff_eqs
   {  
     /* Assemble the least squares system: */
     if (verbose) { fprintf(stderr, "assembling the least squares system...\n"); }
-    double *A = notnull(malloc(N*N*sizeof(double)), "no mem");
-    double *B = notnull(malloc(N*sizeof(double)), "no mem");
+    double *A = talloc(N*N, double);
+    double *B = talloc(N, double);
     /* Clear the arrays: */
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < N; i++)
       { B[i] = 0;
         for (j = 0; j < N; j++) { A[i*N + j] = 0; }
@@ -476,10 +476,10 @@ void float_image_hdyn_solve_diff_eqs
     for (i = 0; i < N; i++)
       { for (j = 0; j < N; j++)
           { if (i != j) 
-            { int kii = i*N + i;
-              int kjj = j*N + j;
-              int kij = i*N + j;
-              int kji = j*N + i;
+            { int32_t kii = i*N + i;
+              int32_t kjj = j*N + j;
+              int32_t kij = i*N + j;
+              int32_t kji = j*N + i;
               double Wij = W[kij];
               demand(isfinite(Wij), "invalid weight");
               demand(Wij >= 0, "negative weight");
@@ -500,12 +500,12 @@ void float_image_hdyn_solve_diff_eqs
       }
     /* Normalize each equation so that the diagonal elements are 1, and add the zero-sum force: */
     for (i = 0; i < N; i++)
-      { int kii = i*N + i;
+      { int32_t kii = i*N + i;
         double S = A[kii];
         /* If {A[i,i]} is zero, the whole row must be zero. */
         if (S == 0) { S = 1.0; }
         for (j = 0; j < N; j++) 
-          { int kij = i*N + j;
+          { int32_t kij = i*N + j;
             A[kij] = (i == j ? 1.0 : A[kij]/S) + 1.0;
           }
         B[i] = B[i] / S;
@@ -513,16 +513,17 @@ void float_image_hdyn_solve_diff_eqs
     
     /* Solve the system: */
     if (verbose) { fprintf(stderr, "solving the linear system...\n"); }
-    int32_t rank = gauss_elim_solve(N, N, A, 1, B, X, 0.0);
+    uint32_t rank;
+    gausol_solve((uint32_t)N, (uint32_t)N, A, 1, B, X, TRUE,TRUE, 0.0, NULL, &rank);
     demand(rank == N, "indeterminate system");
         
     free(B);
     free(A);
   }
 
-void float_image_hdyn_print_system(FILE *wr, int m, int n, double A[], int p, double B[])
+void float_image_hdyn_print_system(FILE *wr, int32_t m, int32_t n, double A[], int32_t p, double B[])
   {
-    int i, j, k;
+    int32_t i, j, k;
     fprintf(wr, "\n");
 
     fprintf(wr, "%3s", "");
@@ -543,8 +544,8 @@ void float_image_hdyn_print_system(FILE *wr, int m, int n, double A[], int p, do
   }
 
 void float_image_hdyn_estimate_values
-  ( int c,                /* Channel. */
-    int NI,               /* Number of input images. */
+  ( int32_t c,                /* Channel. */
+    int32_t NI,               /* Number of input images. */
     float_image_t *img[], /* Input images. */
     double vmin[],        /* Value of underexposed pixels. */
     double vmax[],        /* Value of overexposed pixels. */
@@ -557,26 +558,26 @@ void float_image_hdyn_estimate_values
   {
     if (verbose) { fprintf(stderr, "estimating the true image values...\n"); }
     /* Get image dimensions: */
-    int NX = (int)img[0]->sz[1];
-    int NY = (int)img[0]->sz[2];
+    int32_t NX = (int32_t)img[0]->sz[1];
+    int32_t NY = (int32_t)img[0]->sz[2];
     
     /* Scan pixels: */
-    int x, y;
+    int32_t x, y;
     for (y = 0; y < NY; y++)
       { for (x = 0; x < NX; x++)
-          { int nlo = 0; /* Number of images where this pixel is underexposed. */
-            int nhi = 0; /* Number of images where this pixel is overexposed. */
-            int nin = 0; /* Number of images where this pixel is well-exposed. */
-            int nun = 0; /* Number of bad images. */
+          { int32_t nlo = 0; /* Number of images where this pixel is underexposed. */
+            int32_t nhi = 0; /* Number of images where this pixel is overexposed. */
+            int32_t nin = 0; /* Number of images where this pixel is well-exposed. */
+            int32_t nun = 0; /* Number of bad images. */
             double sum_W = 0.0;
             double sum_WY = 0.0;
-            int i;
+            int32_t i;
             for (i = 0; i < NI; i++) 
               { if (isfinite(gain[i]) && (gain[i] != 0))
                   { double Vi = float_image_get_sample(img[i], c, x, y);
                     double Yi = (Vi - offset[i])/gain[i];
                     double sigYi = sigma[i]/gain[i];
-                    int class = float_image_hdyn_sample_class(Vi, vmin[i], vmax[i]);
+                    int32_t class = float_image_hdyn_sample_class(Vi, vmin[i], vmax[i]);
                     if (class < 0) 
                       { nlo++; }
                     else if (class > 0)
@@ -619,8 +620,8 @@ void float_image_hdyn_estimate_values
   }
   
 void float_image_hdyn_estimate_sigmas
-  ( int c,                /* Channel. */
-    int NI,               /* Number of input images. */
+  ( int32_t c,                /* Channel. */
+    int32_t NI,               /* Number of input images. */
     float_image_t *img[], /* Input images. */
     double vmin[],        /* Value of underexposed pixels. */
     double vmax[],        /* Value of overexposed pixels. */
@@ -632,20 +633,20 @@ void float_image_hdyn_estimate_sigmas
   )
   {
     /* Get image dimensions: */
-    int NX = (int)img[0]->sz[1];
-    int NY = (int)img[0]->sz[2];
-    int i;
+    int32_t NX = (int32_t)img[0]->sz[1];
+    int32_t NY = (int32_t)img[0]->sz[2];
+    int32_t i;
     if (verbose) { fprintf(stderr, "estimating the noise deviations...\n"); }
     for (i = 0; i < NI; i++) 
       { if (verbose) { fprintf(stderr, "  sigma[%2d] =", i); }
         double Nvalid = NAN;
         double sum_W = 1.0e-200;
         double sum_WD2 = 0;
-        int x, y;
+        int32_t x, y;
         for (y = 0; y < NY; y++)
           { for (x = 0; x < NX; x++)
               { double V_obs = float_image_get_sample(img[i], c, x, y);
-                int class = float_image_hdyn_sample_class(V_obs, vmin[i], vmax[i]);
+                int32_t class = float_image_hdyn_sample_class(V_obs, vmin[i], vmax[i]);
                 if (class == 0)
                   { double W = 1.0;
                     double Y = float_image_get_sample(omg, c, x, y);
@@ -665,7 +666,7 @@ void float_image_hdyn_estimate_sigmas
   }
 
 void float_image_hdyn_compute_avg_corr_and_weight
-  ( int c,               /* Channel. */
+  ( int32_t c,               /* Channel. */
     float_image_t *imgA, /* First image. */
     double vminA,        /* Underexposed value of {imgA} */
     double vmaxA,        /* Overexposed value of {imgA} */
@@ -682,23 +683,23 @@ void float_image_hdyn_compute_avg_corr_and_weight
   )
   {
     /* Get image dimensions: */
-    int NX = (int)imgA->sz[1]; demand(((int)imgB->sz[1]) == NX, "incompat cols");
-    int NY = (int)imgA->sz[2]; demand(((int)imgB->sz[2]) == NY, "incompat rows");
+    int32_t NX = (int32_t)imgA->sz[1]; demand(((int32_t)imgB->sz[1]) == NX, "incompat cols");
+    int32_t NY = (int32_t)imgA->sz[2]; demand(((int32_t)imgB->sz[2]) == NY, "incompat rows");
 
     /* Compute weight and means: */
     double sum_W = 1.0e-200;
     double sum_WVA = 0;
     double sum_WVB = 0;
-    int x, y;
+    int32_t x, y;
     for (y = 0; y < NY; y++)
       { for (x = 0; x < NX; x++)
           { double VA = float_image_get_sample(imgA, c, x, y);
             assert(VA >= 0);
-            int classA = float_image_hdyn_sample_class(VA, vminA, vmaxA);
+            int32_t classA = float_image_hdyn_sample_class(VA, vminA, vmaxA);
 
             double VB = float_image_get_sample(imgB, c, x, y);
             assert(VB >= 0);
-            int classB = float_image_hdyn_sample_class(VB, vminB, vmaxB);
+            int32_t classB = float_image_hdyn_sample_class(VB, vminB, vmaxB);
             
             if ((classA == 0) && (classB == 0))
               { double WAB = 1.0;
@@ -718,10 +719,10 @@ void float_image_hdyn_compute_avg_corr_and_weight
     for (y = 0; y < NY; y++)
       { for (x = 0; x < NX; x++)
           { double VA = float_image_get_sample(imgA, c, x, y);
-            int classA = float_image_hdyn_sample_class(VA, vminA, vmaxA);
+            int32_t classA = float_image_hdyn_sample_class(VA, vminA, vmaxA);
 
             double VB = float_image_get_sample(imgB, c, x, y);
-            int classB = float_image_hdyn_sample_class(VB, vminB, vmaxB);
+            int32_t classB = float_image_hdyn_sample_class(VB, vminB, vmaxB);
             
             if ((classA == 0) && (classB == 0))
               { double WAB = 1.0;

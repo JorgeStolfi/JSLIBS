@@ -1,7 +1,6 @@
 /* See {multifok_scene_object.h}. */
-/* Last edited on 2024-10-29 13:25:27 by stolfi */
+/* Last edited on 2024-12-06 05:57:14 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -183,7 +182,7 @@ bool_t multifok_scene_object_XY_overlap
 multifok_scene_object_t multifok_scene_object_background_make(interval_t dom[], bool_t flatFloor)
   {
     multifok_scene_object_t obj;
-    obj.ID = -1;
+    obj.ID = multifok_scene_object_ID_NONE;
     /* The bounding box is 3x the {dom} width in {X} and {Y}: */
     for (uint32_t j = 0;  j < 2; j++)
       { double rd = interval_rad(&(dom[j]));
@@ -226,7 +225,7 @@ multifok_scene_object_t multifok_scene_object_foreground_throw
     demand(rMin <= rMax, "invalid radius interval");
 
     multifok_scene_object_t obj;
-    obj.ID = -1;
+    obj.ID = multifok_scene_object_ID_NONE;
    
     /* Choose disk or ball: */
     

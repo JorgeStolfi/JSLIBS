@@ -2,9 +2,8 @@
 #define btc_price_series_read_H
 
 /* Reading a BTC price series. */
-/* Last edited on 2015-04-20 00:43:56 by stolfilocal */
+/* Last edited on 2024-12-05 10:23:51 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 
 void btc_price_series_read(FILE* rd, int* ndP, char*** dtP, double **apP);

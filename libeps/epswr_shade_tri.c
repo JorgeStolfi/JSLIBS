@@ -1,7 +1,6 @@
 /* See epswr_shade_tri.h */
-/* Last edited on 2024-06-22 18:53:13 by stolfi */
+/* Last edited on 2024-12-05 10:14:06 by stolfi */
 
-#define _GNU_SOURCE
 #include <assert.h>
 #include <stdint.h>
 

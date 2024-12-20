@@ -1,14 +1,13 @@
 #define PROG_NAME "testplot"
 #define PROG_DESC "test of {epswr.h} plotting ops"
 #define PROG_VERS "1.0"
-/* Last edited on 2024-06-22 20:37:48 by stolfi */
+/* Last edited on 2024-12-05 10:15:11 by stolfi */
 
 #define testplot_COPYRIGHT \
   "Copyright © 2003  by the State University of Campinas (UNICAMP)"
 
 /* Created by J. Stolfi, UNICAMP sometime before 2003-09-30. */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
@@ -16,6 +15,7 @@
 
 #include <bool.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <affirm.h>
 #include <jsstring.h>
 
@@ -251,7 +251,7 @@ void DrawTexts(epswr_figure_t *epsf, double xc, double yc)
         
         /* Draw rotated frame: */
         double tmrg = 0.2;
-        for (uint32_t km = 0;  km < 2; km++)
+        for (int32_t km = 0;  km < 2; km++)
           { 
             double dm = km*tmrg;
             double ang = rot*M_PI/180; /* Rotation angle in radians. */

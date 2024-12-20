@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_interpolate.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-23 05:38:41 by stolfi */ 
+/* Last edited on 2024-12-20 18:18:10 by stolfi */ 
 /* Created on 2009-06-02 by J. Stolfi, UNICAMP */
 
 #define test_interpolate_COPYRIGHT \
@@ -20,6 +20,7 @@
 #include <r2.h>
 #include <bool.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <affirm.h>
 #include <ix_reduce.h>
 

@@ -1,4 +1,4 @@
-# Last edited on 2023-10-10 13:45:31 by stolfi
+# Last edited on 2024-12-05 07:58:20 by stolfi
 
 PROG = test_image_coords
 
@@ -6,8 +6,9 @@ TEST_LIB := libimg.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS := \
-  libgeo.a \
   libimg.a \
+  libgeo.a \
+  libgausol.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

@@ -1,5 +1,5 @@
 /* uint16_image_read_png.h - routines to read PNG image files as images with {uint16_t} samples. */
-/* Last edited on 2017-07-01 00:12:43 by stolfilocal */
+/* Last edited on 2024-12-17 17:05:14 by stolfi */
 
 /* Created by R. Minetto (IC-UNICAMP) as {ipng.h} sometime in 2008--2009. */
 /* Adapted by J. Stolfi (IC-UNICMP) on 2011-05-14. */
@@ -7,7 +7,6 @@
 #ifndef uint16_image_read_png_H
 #define uint16_image_read_png_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <uint16_image.h>
@@ -22,7 +21,7 @@ uint16_image_t *uint16_image_read_png_named(char *name, double *gammaP, uint32_t
     Also stores in {*gammaP} the {gamma} exponent to be used when
     interpreting the samples. If the file has an "sRGB" chunk, the
     {*gammaP} is set set to {NAN}, to indicate the standard sRGB
-    intensity encodin/decoding. Otherwise, if the the file includes a
+    intensity encoding/decoding. Otherwise, if the the file includes a
     "gAMA" chunk, it sets {*gammaP} to the value stored in that chunk.
     Otherwise sets {*gammaP} to {NAN}.
     

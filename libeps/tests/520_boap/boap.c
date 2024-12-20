@@ -1,7 +1,6 @@
 /* Tech drawing for the front gate of the storage area of Boaretto da Silva 113 */
-/* Last edited on 2021-04-13 23:41:45 by jstolfi */
+/* Last edited on 2024-12-05 10:15:26 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

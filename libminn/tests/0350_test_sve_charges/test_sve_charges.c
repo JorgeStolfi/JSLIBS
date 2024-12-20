@@ -1,7 +1,6 @@
 /* test_sve_charges --- test of {sve_minn.h} with Rutherford's atom potential.  */
-/* Last edited on 2024-11-11 07:48:24 by stolfi */
+/* Last edited on 2024-12-05 10:34:40 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>

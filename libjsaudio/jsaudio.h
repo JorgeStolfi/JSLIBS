@@ -1,5 +1,5 @@
 /* jsaudio.h - audio data representation, I/O, and manipulation */
-/* Last edited on 2023-03-02 12:33:09 by stolfi */
+/* Last edited on 2024-12-05 10:32:08 by stolfi */
 
 /* 
   Derived from {rusound.h}, created by Rumiko Oishi Stolfi
@@ -9,7 +9,6 @@
 #ifndef jsaudio_H
 #define jsaudio_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

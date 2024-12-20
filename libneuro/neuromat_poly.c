@@ -1,5 +1,5 @@
 /* See {neuromat_poly.h}. */
-/* Last edited on 2021-08-31 00:08:46 by stolfi */
+/* Last edited on 2024-11-30 22:56:03 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -13,7 +13,6 @@
 #include <bool.h>
 #include <jsmath.h>
 #include <rmxn.h>
-#include <gauss_elim.h>
 
 #include <neuromat_eeg.h>
 #include <neuromat_poly.h>
@@ -184,7 +183,7 @@ void neuromat_poly_fit(int32_t n, double x[], double y[], double w[], int32_t g,
     double *b = notnull(malloc(g1*sizeof(double)), "no mem"); /* Right-hand side. */
     
     neuromat_poly_compute_lsq_matrix(n, x, w, g, A);
-    rmxn_inv_full(g1, A, A);
+    rmxn_inv(g1, A, A);
     neuromat_poly_compute_lsq_vector(n, x, y, w, g, b);
     rmxn_map_col(g1, g1, A, b, P);
     free(A);
@@ -214,7 +213,7 @@ void neuromat_poly_fit_robust
 
     /* The matrix does not change: */
     neuromat_poly_compute_lsq_matrix(n, x, w, g, A);
-    rmxn_inv_full(g1, A, A);
+    rmxn_inv(g1, A, A);
 
     /* Solve first without correction: */
     neuromat_poly_compute_lsq_vector(n, x, y, w, g, b);

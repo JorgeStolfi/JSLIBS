@@ -2,7 +2,7 @@
 #define PROG_DESC "test of various functions from {frgb_path.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-03-17 21:15:02 by stolfi */
+/* Last edited on 2024-12-05 07:59:42 by stolfi */
 /* Created on 2023-03-03 by J. Stolfi, UNICAMP */
 
 #define test_frgb_ops_C_COPYRIGHT \
@@ -57,6 +57,7 @@
 #include <frgb_ops.h>
 #include <frgb_path.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <jspnm.h>
 #include <bool.h>
 #include <affirm.h>
@@ -130,11 +131,9 @@ void test_frgb_path(char *tag, path_proc_t path, int32_t cycles, int32_t style)
     
     char *prefix = jsprintf("out/path_%s%d_c%+03d", tag, style, cycles);
     
-    char *txname = NULL;
     char *txname = jsprintf("%s.txt", prefix);
     FILE *txwr = open_write(txname, TRUE);
     
-    char *imname = NULL;
     char *imname = jsprintf("%s.ppm", prefix);
     FILE *imwr = open_write(imname, TRUE);
     int32_t NX = 20;
@@ -144,7 +143,7 @@ void test_frgb_path(char *tag, path_proc_t path, int32_t cycles, int32_t style)
     fprintf(imwr, "%d %d\n", NX, NY);
     fprintf(imwr, "%u\n", maxval);
     
-    for (uint32_t iy = 0;  iy <= N; iy++)
+    for (int32_t iy = 0;  iy <= N; iy++)
       { double s = ((double)iy)/((double)N);
         if (tag[0] == 's') { s = 2*s - 1; }
         frgb_t f = path(s, cycles, style);
@@ -153,7 +152,7 @@ void test_frgb_path(char *tag, path_proc_t path, int32_t cycles, int32_t style)
         fprintf(txwr, " %7.4f %7.4f %7.4f", f.c[0], f.c[1], f.c[2]);
         fprintf(txwr, " %7.4f %7.4f %7.4f\n", g.c[0], g.c[1], g.c[2]);
         uint16_t dv[3];
-        for (uint32_t ic = 0;  ic < 3; ic++) 
+        for (int32_t ic = 0;  ic < 3; ic++) 
           { if ((f.c[ic] < 0.0) || (f.c[ic] > 1.0)) 
               { fprintf(stderr, "!! f[%d] = %+14.8f for s = %+14.8f\n", ic, f.c[ic], s); }
             int32_t dval = 1 + (int32_t)floor(f.c[ic] * (maxval-2) + 0.5);
@@ -162,8 +161,8 @@ void test_frgb_path(char *tag, path_proc_t path, int32_t cycles, int32_t style)
             dv[ic] = (uint16_t)dval;
           }
         
-        for (uint32_t ix = 0;  ix < NX; ix++) 
-          { for (uint32_t ic = 0;  ic < 3; ic++) 
+        for (int32_t ix = 0;  ix < NX; ix++) 
+          { for (int32_t ic = 0;  ic < 3; ic++) 
               { fprintf(imwr, " %u", dv[ic]); }
           }
         fprintf(imwr, "\n");

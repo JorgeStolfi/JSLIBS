@@ -1,7 +1,6 @@
 /* See {multifok_scene_tree.h}. */
-/* Last edited on 2024-10-29 13:25:58 by stolfi */
+/* Last edited on 2024-12-06 07:09:46 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -22,15 +21,15 @@
 #include <multifok_scene_object.h>
 #include <multifok_scene_tree.h>
 
-void multifok_scene_tree_sort_objects(int32_t NO, multifok_scene_object_t objs[], int8_t axis);
+void multifok_scene_tree_sort_objects(uint32_t NO, multifok_scene_object_t objs[], uint8_t axis);
   /* Rearranges {objs[0..NO-1]} in increasing order of coordinate {axis} (0 or 1). */
     
-void multifok_scene_tree_check_object_order(int32_t NO, multifok_scene_object_t objs[], int8_t axis);
+void multifok_scene_tree_check_object_order(uint32_t NO, multifok_scene_object_t objs[], uint8_t axis);
   /* Checks whether the centers of objects {objs[0..NO-1]} are sorted by increasing {axis}
     coordinate. */
 
 multifok_scene_tree_t *multifok_scene_tree_build
-  ( int32_t NO,
+  ( uint32_t NO,
     multifok_scene_object_t objs[],
     int32_t debug_level
   )
@@ -43,7 +42,7 @@ multifok_scene_tree_t *multifok_scene_tree_build
         tr->sub[1] = NULL;
         /* Choose {axis}, sort objects: */
         if (NO == 1)
-          { tr->axis = -1; }
+          { tr->axis = UINT8_MAX; }
         else
           { /* We must choose {axis}, sort the objects, build {sub[0],sub[1]}. */
          
@@ -63,7 +62,7 @@ multifok_scene_tree_t *multifok_scene_tree_build
             multifok_scene_tree_sort_objects(NO, objs, tr->axis);
           }
         /* Pick root object {objs[mo]}: */
-        int32_t mo = NO/2; /* Index of middle object */
+        uint32_t mo = NO/2; /* Index of middle object */
         tr->obj = &(objs[mo]);
         
         /* Set {tr->bbox[0..2]} to the bounding box of the root object: */
@@ -72,10 +71,10 @@ multifok_scene_tree_t *multifok_scene_tree_build
         /* Recurse on the two halves: */
         for (uint32_t ic = 0;  ic < 2; ic++)
           { /* Define the objects {objs[ko_min..ko_max]} that go into {sub[ic]}: */
-            int32_t ko_min = (ic == 0 ? 0 : mo + 1);
-            int32_t ko_max = (ic == 0 ? mo-1 : NO-1);
-            int32_t NO_sub = ko_max - ko_min + 1;
-            assert(NO_sub >= 0);
+            uint32_t ko_min = (ic == 0 ? 0 : mo + 1);
+            uint32_t ko_max = (uint32_t)(ic == 0 ? mo-1 : NO-1);
+            uint32_t NO_sub = (uint32_t)(ko_max + 1 - ko_min);
+            assert((NO_sub >= 0) && (NO_sub <= NO));
             if (NO_sub == 0)
               { tr->sub[ic] = NULL; }
             else
@@ -96,11 +95,12 @@ multifok_scene_tree_t *multifok_scene_tree_build
   }
             
 void multifok_scene_tree_sort_objects
-  ( int32_t NO,
+  ( uint32_t NO,
     multifok_scene_object_t objs[],
-    int8_t axis
+    uint8_t axis
   )  
-  { auto int32_t objcomp(const void*a, const void*b);
+  { demand((axis == 0) || (axis == 1), "invalid {axis}");
+    auto int32_t objcomp(const void*a, const void*b);
       /* Assumes {*a,*b} are {}. Compares their centers along {axis}, returns {-1,0,+1}. */
             
     /* multifok_scene_check_object_IDs(NO, objs); */
@@ -124,8 +124,9 @@ void multifok_scene_tree_sort_objects
       }
   }
 
-void multifok_scene_tree_check_object_order(int32_t NO, multifok_scene_object_t objs[], int8_t axis)
-  { fprintf(stderr, "checking center ordering by axis %d...\n", axis);
+void multifok_scene_tree_check_object_order(uint32_t NO, multifok_scene_object_t objs[], uint8_t axis)
+  { demand((axis == 0) || (axis == 1), "invalid {axis}");
+    fprintf(stderr, "checking center ordering by axis %d...\n", axis);
     double ctr_prev = -INF;
     for (uint32_t ko = 0;  ko < NO; ko++) 
       { double ctr = interval_mid(&(objs[ko].bbox[axis]));

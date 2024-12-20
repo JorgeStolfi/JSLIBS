@@ -1,5 +1,5 @@
 /* See gausol_solve.h */
-/* Last edited on 2024-11-30 05:30:44 by stolfi */
+/* Last edited on 2024-12-01 00:01:30 by stolfi */
 
 #include <stdint.h>
 #include <assert.h>
@@ -15,35 +15,63 @@
 /* INTERNAL PROTOPYPES */
 
 /* IMPLEMENTTAIONS */
-
+   
 void gausol_solve
   ( uint32_t m,
-    uint32_t n,
-    double A[],
-    uint32_t p,
-    double B[],
-    double X[],
-    bool_t pivot_rows,
-    bool_t pivot_cols,
+    uint32_t n, double A[],
+    uint32_t p, double B[], double X[],
+    bool_t pivot_rows, bool_t pivot_cols,
     double tiny,
-    uint32_t *rank_P,
-    double *det_P
+    double *det_P,
+    uint32_t *rank_P
+  )
+  {
+    double *AT = talloc(m*n, double);
+    double *BT = talloc(m*p, double);
+    for (uint32_t ij = 0; ij < m*n; ij++) { AT[ij] = A[ij]; }
+    for (uint32_t ik = 0; ik < m*p; ik++) { BT[ik] = B[ik]; }
+    gausol_solve_in_place
+      ( m, n,AT, p,BT, X, 
+        pivot_rows, pivot_cols, 
+        tiny, det_P, rank_P
+      );
+    free(AT); free(BT);
+  }
+
+void gausol_solve_in_place
+  ( uint32_t m,
+    uint32_t n, double A[],
+    uint32_t p, double B[],  double X[],
+    bool_t pivot_rows, bool_t pivot_cols,
+    double tiny,
+    double *det_P,
+    uint32_t *rank_P
   )
   { 
-    bool_t debug = TRUE;
+    bool_t debug = FALSE;
   
     if (debug) { gausol_print_system(stderr, 4, "%10.4f", "original:",  m,NULL,0, n,NULL,0,"A",A, p,"B",B, 0,NULL,NULL, ""); }
     
     uint32_t *prow = (pivot_rows ? talloc(m, uint32_t) : NULL);
     uint32_t *pcol = (pivot_cols ? talloc(n, uint32_t) : NULL);
-    double det;
+    double det_tri;
     uint32_t rank;
-    gausol_triang_reduce(m, prow, n, pcol, A, p, B, tiny, &rank, &det);
+    gausol_triang_reduce(m, prow, n, pcol, A, p, B, tiny, &det_tri, &rank);
+    if (debug) { fprintf(stderr, "rank = %d det_A = %24.16e\n", rank, det_tri); }
     if (debug) { gausol_print_system(stderr, 4, "%10.4f", "triangularized:",  m,prow,rank, n,pcol,rank,"A",A, p,"B",B, 0,NULL,NULL, ""); }
+    assert((rank <= m) && (rank <= n));
 
     if (det_P != NULL)
-      { if (debug) { fprintf(stderr, "determinant = %24.16e\n", det); }
-        (*det_P) = det;
+      { /* Determine {detA = det(A)} from {det_tri = det(P00)} and {rank}: */
+        double det_A = NAN; /* Default is undefined or not known. */
+        if (m == n)
+          { if (rank == m)
+              { /* {P00} spans {A}: */ det_A = det_tri; }
+            else if ((rank+1 == m) || pivot_rows || pivot_cols)
+              { /* {P11} has a row or col of zeros: */ det_A = 0.0; }
+          }
+        if (debug) { fprintf(stderr, "det_tri = %24.16e det_A = %24.16e\n", det_tri, det_A); }
+        (*det_P) = det_A;
       }
     
     gausol_triang_diagonalize(m, prow, n, pcol, A, p, B, rank, tiny);
@@ -75,7 +103,7 @@ void gausol_solve
         gausol_print_array(stderr, 4, "%10.4f", "solution:", n,pcol,rank, p,NULL,0, "X",X, "");
       }
       
-    (*rank_P) = rank;
+    if (rank_P != NULL) { (*rank_P) = rank; }
     
     if (prow != NULL) { free(prow); }
     if (pcol != NULL) { free(pcol); }

@@ -2,7 +2,7 @@
 #define PROG_DESC "Merges several registered images with focus blur at different heights"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-10-26 09:24:49 by stolfi */ 
+/* Last edited on 2024-12-20 18:13:28 by stolfi */ 
 /* Created on 2023-01-19 by J. Stolfi, UNICAMP */
 
 #define test_mfok_merge_images_COPYRIGHT \
@@ -44,7 +44,7 @@
   "\n" \
   "  All images must be of same scene and must have the same size, lighting, and viewing" \
   " parameters. The {sVal} images are in color, the other images are greyscale" \
-  " with linear encoding (gamma = 1).  The images {sVal[ki]} and {shrp[ki]}" \
+  " with linear encoding (gamma exponent = 1).  The images {sVal[ki]} and {shrp[ki]}" \
   " must have the same depth of focus {zDep}, with the focus plane at" \
   " the {Z} coordinate {zFoc[ki]}.  The samples of the image {hAvg} are assumed" \
   " to be {Z} coordinates relative to {sharpImage_zFoc}. " \
@@ -80,7 +80,6 @@
   "    Also writes to \"{outPrefix}-terms.txt\" the term names and" \
   " weights used, for documentation."
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

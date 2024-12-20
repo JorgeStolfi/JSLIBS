@@ -2,9 +2,8 @@
 #define spectrum_table_binned_H
 
 /* Tools for gathering binned (histogram-like) power spectra of images. */
-/* Last edited on 2024-11-06 10:11:15 by stolfi */ 
+/* Last edited on 2024-12-05 10:30:54 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 
@@ -38,7 +37,7 @@ int32_t spectrum_table_binned_locate_entry(spectrum_table_binned_t *tb, double f
     less than the {fmin} of entry 0, returns 0; if {f} is greater than
     the {fmax} of entry {n-1}, returns {n-1}. */
 
-spectrum_table_binned_t spectrum_table_binned_make(int32_t nRanges);
+spectrum_table_binned_t spectrum_table_binned_make(uint32_t nRanges);
   /* Builds a `binned' power spectrum table {tb} with exactly {nRanges}
     consecutive frequency ranges, spanning the interval from frequency 0
     to frequency {sqrt(0.5)} (waves per pixel).

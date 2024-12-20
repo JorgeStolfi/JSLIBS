@@ -2,12 +2,11 @@
 #define oct_shapes_H
 
 /* Procedures that build oct-edge structures for various simple maps. */
-/* Last edited on 2023-10-05 12:24:55 by stolfi */
+/* Last edited on 2024-12-05 10:39:40 by stolfi */
 
 #define oct_shapes_H_copyright \
   "Copyright © 1996, 2006 State University of Campinas (UNICAMP)\n\n" jslibs_copyright
   
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <jslibs_copyright.h>

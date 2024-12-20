@@ -1,7 +1,6 @@
 /* Univariate nonlinear branch-and-bound optimization with interval estimators. */
-/* Last edited on 2023-02-20 10:03:36 by stolfi */
+/* Last edited on 2024-12-05 10:22:07 by stolfi */
 
-#define _GNU_SOURCE
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>

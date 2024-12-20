@@ -1,5 +1,5 @@
 /* gausol_triang_reduce.h - Gaussian triangulation with full pivoting. */
-/* Last edited on 2024-11-29 22:55:24 by stolfi */
+/* Last edited on 2024-11-30 12:32:08 by stolfi */
 
 #ifndef gausol_triang_reduce_H
 #define gausol_triang_reduce_H
@@ -13,8 +13,8 @@ void gausol_triang_reduce
     uint32_t n, uint32_t pcol[], double A[],
     uint32_t p, double B[],
     double tiny,
-    uint32_t *rank_P,
-    double *det_P
+    double *det_P,
+    uint32_t *rank_P
   );
   /* Modifies the {m×n} matrix {A} and the {m×p} matrix {B} of a linear
     system {A X = B} according the Gaussian elimination method, leaving
@@ -41,16 +41,6 @@ void gausol_triang_reduce
     The procedure also fills tables {prow[0..m-1]} and {pcol[0..n-1]}
     with permutations of the indices {0..m-1} and {0..n-1},
     respectively.
-    
-    Also, if {*det_P} is not {NULL}, the matrix {A} is square, and
-    {rank} is {m}, the procedure stores into {*det_P} the determinant of
-    {A}, computed as the product of the diagonal elements of the
-    triangulated and permuted matrix {P = P00}, with sign reversed if
-    the two permutations imply an odd total number of pair swaps. If the
-    matrix is square, {rank} is less than {m}, and at least one of
-    {prow} or {pcol} is not {NULL} (meaning that at least partial
-    pivoting was used), sets {*det_P} to zero. In all other cases, sets
-    {*detP} to {NAN}.
     
     The tables {prow} and {pcol} define permuted versions {P} of {A}
     and {Q} of {B}, as explained in {gausol_solve.h}.    
@@ -81,6 +71,19 @@ void gausol_triang_reduce
     {rank} (apart from roundoff errors). If only (3.00) holds (that is,
     {prow} and {pcol} were both {NULL}), the rank of {A} was at least
     {rank}.
+    
+    Also, if {*det_P} is not {NULL}, the procedure stores into {*det_P}
+    the determinant of the submatrix {P00} after triangulation; that is,
+    the product of its diagonal elements, with sign reversed if the two
+    permutations imply an odd total number of pair swaps. 
+    
+    This {det} will always be a nonzero number. If the {A} matrix is
+    square and {rank} is equal to {m}, that is the determinant of the
+    original {A}, apart from roundoff. If {A} is square but the returned
+    {rank} is less than {m}, then the determinant of the original {A} is
+    apparently zero; if the matrix is not square, its determinant is
+    undefined. IN both of tehse cases {det} will not be the determinant
+    of the original {A}.
     
     Uses for {prow=pcol=NULL}:
     

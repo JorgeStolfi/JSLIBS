@@ -1,5 +1,5 @@
 /* See {float_image_geostereo.h}. */
-/* Last edited on 2023-11-26 06:43:05 by stolfi */
+/* Last edited on 2024-12-05 00:48:30 by stolfi */
 
 #include <stdint.h>
 #include <assert.h>
@@ -47,27 +47,27 @@ void float_image_geostereo_uniscale
     double sbest[ncands];
     
     /* Window pixel weight table: */
-    double *wt = notnull(malloc(npix*sizeof(double)), "no mem");
-    double wtx[nwx]; wt_table_binomial_fill(nwx, wtx, NULL);
-    wt_table_normalize_sum(nwx, wtx);
-    double wty[nwy]; wt_table_binomial_fill(nwy, wty, NULL);
-    wt_table_normalize_sum(nwy, wty);
-    for (uint32_t iy = 0;  iy < nwy; iy++)
-      { for (uint32_t ix = 0;  ix < nwx; ix++)
+    double *wt = talloc(npix, double);
+    double wtx[nwx]; wt_table_binomial_fill((uint32_t)nwx, wtx, NULL);
+    wt_table_normalize_sum((uint32_t)nwx, wtx);
+    double wty[nwy]; wt_table_binomial_fill((uint32_t)nwy, wty, NULL);
+    wt_table_normalize_sum((uint32_t)nwy, wty);
+    for (int32_t iy = 0;  iy < nwy; iy++)
+      { for (int32_t ix = 0;  ix < nwx; ix++)
           { wt[ix + nwx*iy] = wtx[ix]*wty[iy]; }
       }
     
     /* Work areas for window samples: */
-    double *smp1 = notnull(malloc(nsmp*sizeof(double)), "no mem");
-    double *smp2 = notnull(malloc(nsmp*sizeof(double)), "no mem");
+    double *smp1 = talloc(nsmp, double);
+    double *smp2 = talloc(nsmp, double);
 
     /* Allocate dispmap and scoremap: */
     (*fd) = float_image_new(ncands, NX, NY);
     (*fs) = float_image_new(ncands, NX, NY);
 
     /* Compute dispmap/scoremap: */
-    for (uint32_t y = 0;  y < NY; y++)
-      { for (uint32_t x = 0;  x < NX; x++)
+    for (int32_t y = 0;  y < NY; y++)
+      { for (int32_t x = 0;  x < NX; x++)
          { bool_t debug = ((x == HDEBUG) && (y == VDEBUG));
            float_image_geostereo_single_pixel_best
              ( f1, f2, 
@@ -80,7 +80,7 @@ void float_image_geostereo_uniscale
              );
 
            /* Store best candidates in heigh map and score map: */
-           for (uint32_t rk = 0;  rk < ncands; rk++)
+           for (int32_t rk = 0;  rk < ncands; rk++)
              { float_image_set_sample((*fd), rk, x, y, (float)dbest[rk]);
                float_image_set_sample((*fs), rk, x, y, (float)sbest[rk]);
              }

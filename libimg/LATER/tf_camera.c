@@ -35,7 +35,7 @@ void tf_show_camera_parameters (camera_parameters_t cpar, FILE *ferr)
     fprintf(ferr, "// Cx = %.3f  Cy = %.3f\n", cpar->Cx, cpar->Cy);
     fprintf(ferr, "// sx = %.6f\n", cpar->sx);
     fprintf(ferr, "// Transformatiom Matrix =\n");
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < 4; i++) {
       fprintf(ferr, "//   ");
       for (j = 0; j < 4; j++) {
@@ -50,7 +50,7 @@ void tf_show_camera_parameters (camera_parameters_t cpar, FILE *ferr)
 
 void tf_show_rotation_matrix (r4x4_t *S, FILE *ferr)
 {
-    int i, j;
+    int32_t i, j;
     for (i = 1; i < 4; i++) {
       fprintf(ferr, "//   ");
       for (j = 1; j < 4; j++) {
@@ -59,7 +59,7 @@ void tf_show_rotation_matrix (r4x4_t *S, FILE *ferr)
       fprintf(ferr, "\n");
    }  
 }
-void tf_write_camera_parameters (FILE *wr, int index, camera_parameters_t cpar)
+void tf_write_camera_parameters (FILE *wr, int32_t index, camera_parameters_t cpar)
 {
   fprintf(wr, "%d", index);
     
@@ -91,9 +91,9 @@ void tf_write_camera_parameters (FILE *wr, int index, camera_parameters_t cpar)
 
 }
 
-int tf_read_camera_parameters (FILE *rd, camera_parameters_t cpar)
+int32_t tf_read_camera_parameters (FILE *rd, camera_parameters_t cpar)
 { 
-    int frame;
+    int32_t frame;
     /*Basic cpar initializations*/ 
     cpar->S.c[0][0] = 1.0; cpar->S.c[0][1] = 0.0;  
     cpar->S.c[0][2] = 0.0; cpar->S.c[0][3] = 0.0; 
@@ -134,7 +134,7 @@ int tf_read_camera_parameters (FILE *rd, camera_parameters_t cpar)
     return frame;
 }
 
-void tf_write_mutable_camera_parameters (FILE *wr, int index, camera_parameters_t cpar)
+void tf_write_mutable_camera_parameters (FILE *wr, int32_t index, camera_parameters_t cpar)
 {
   fprintf(wr, "%d", index);
     
@@ -158,9 +158,9 @@ void tf_write_mutable_camera_parameters (FILE *wr, int index, camera_parameters_
 
 }
 
-int tf_read_mutable_camera_parameters (FILE *rd, camera_parameters_t cpar)
+int32_t tf_read_mutable_camera_parameters (FILE *rd, camera_parameters_t cpar)
 { 
-    int frame;
+    int32_t frame;
     /*Basic cpar initializations*/ 
     cpar->S.c[0][0] = 1.0; cpar->S.c[0][1] = 0.0;  
     cpar->S.c[0][2] = 0.0; cpar->S.c[0][3] = 0.0; 
@@ -195,7 +195,7 @@ int tf_read_mutable_camera_parameters (FILE *rd, camera_parameters_t cpar)
 
 void tf_print_changes_in_camera_parameters (r3_t *Do, r3x3_t *DR, double Df, double Dkappa, FILE *ferr)
 {
-    int i, j;
+    int32_t i, j;
     fprintf(ferr, "%s\n", "Camera displacement:");
     for (i = 0; i < 3; i++) { fprintf(ferr, "%+10.15f \t", Do->c[i]); }
     fprintf(ferr, "\n");
@@ -467,7 +467,7 @@ void tf_show_camera_specs (camera_specs_t cspec, FILE *ferr)
     fprintf(ferr, "// sx =     [ %.6f _ %.6f ]\n", LO(cspec->sx), HI(cspec->sx));
     fprintf(ferr, "// f =      [ %17.15f _ %17.15f ]\n", LO(cspec->f), HI(cspec->f));
     fprintf(ferr, "// kappa =  [ %+17.15f _ %+17.15f ]\n", LO(cspec->kappa), HI(cspec->kappa));
-    int i;
+    int32_t i;
     for (i = 0; i < 3; i++) {
       fprintf(ferr, "// v_w[%d] = [ %+10.3f _ %+10.3f ]\n", i, LO(cspec->v_w[i]), HI(cspec->v_w[i]));
     }
@@ -764,7 +764,7 @@ void tf_extrapolate_camera_parameters
     fprintf(stderr, "// ---------------------------\n");
     fprintf(stderr, "// %s\n", title);
     fprintf(stderr, "// S =\n");
-    int i, j;
+    int32_t i, j;
     for (i = 0; i < 4; i++) {
       fprintf(stderr, "//   ");
       for (j = 0; j < 4; j++) {
@@ -883,7 +883,7 @@ void tf_set_S_matrix_from_euler_angles ( r3_t *R, r4x4_t *S )
 double tf_camera_adjust_angle (double ang, double aref)
 {
   if (isnan(aref)) { return ang; }
-  int i = (int)floor((ang-aref)/(2*M_PI) + 0.5);
+  int32_t i = (int32_t)floor((ang-aref)/(2*M_PI) + 0.5);
   ang = ang - i*2*M_PI;
   if (ang < (aref - M_PI)) { ang += 2*M_PI; }
   if (ang > (aref + M_PI)) { ang -= 2*M_PI; }
@@ -897,7 +897,7 @@ interval_t tf_camera_adjust_angle_range (interval_t ang, double aref)
   /* Convert {ang} to {amid +/- arad} format: */
   double amid = interval_mid(&ang);
   double arad = interval_rad(&ang);
-  int i = (int)floor((amid-aref)/(2*M_PI) + 0.5);
+  int32_t i = (int32_t)floor((amid-aref)/(2*M_PI) + 0.5);
   /* Adjust {amid} so that it lies as close as possible to {aref}: */
   amid = amid - i*2*M_PI;
   if (amid < (aref - M_PI)) { amid += 2*M_PI; }
@@ -950,7 +950,7 @@ double tf_squeeze (double e, interval_t *er)
   return (z * HI(*er) + LO(*er))/(1 + z);
 }
 
-double tf_camera_get_param (camera_parameters_t cpar, int iparam, double vref)
+double tf_camera_get_param (camera_parameters_t cpar, int32_t iparam, double vref)
 {
   r3_t R;
   if ((iparam == 0) || (iparam == 1) || (iparam == 2))
@@ -995,7 +995,7 @@ double tf_camera_get_param (camera_parameters_t cpar, int iparam, double vref)
   }
 }
 
-interval_t tf_camera_get_param_range (camera_specs_t cspec, int iparam, double vref)
+interval_t tf_camera_get_param_range (camera_specs_t cspec, int32_t iparam, double vref)
 {
   switch (iparam) {
   case 0:
@@ -1034,7 +1034,7 @@ interval_t tf_camera_get_param_range (camera_specs_t cspec, int iparam, double v
   }
 }
 
-void tf_camera_set_param_range (camera_specs_t cspec, int iparam, interval_t *range)
+void tf_camera_set_param_range (camera_specs_t cspec, int32_t iparam, interval_t *range)
 {
   switch (iparam) {
   case 0:
@@ -1073,7 +1073,7 @@ void tf_camera_set_param_range (camera_specs_t cspec, int iparam, interval_t *ra
   }
 }
 
-char * tf_camera_param_name (int iparam)
+char * tf_camera_param_name (int32_t iparam)
 {
   switch (iparam) {
   case 0:
@@ -1145,12 +1145,12 @@ r2_t tf_camera_compute_image_error(camera_parameters_t cpar, r3_t p_w, r2_t p_i)
 
 void tf_camera_compute_all_image_errors
   ( camera_parameters_t cpar,
-    int nmarks,
+    int32_t nmarks,
     r3_t p_w[],
     r2_t p_i[],
     r2_t e_i[] )
 {
-  int i;
+  int32_t i;
   for (i = 0; i < nmarks; i++) {
     e_i[i] = tf_camera_compute_image_error(cpar, p_w[i], p_i[i]);
   }

@@ -1,10 +1,9 @@
 /* Generic mathematical pseudocode */
-/* Last edited on 2023-02-22 20:42:03 by stolfi */ 
+/* Last edited on 2024-12-05 10:25:42 by stolfi */ 
 
 #ifndef pcode_H
 #define pcode_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

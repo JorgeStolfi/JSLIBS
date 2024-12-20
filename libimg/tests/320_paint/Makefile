@@ -1,4 +1,4 @@
-# Last edited on 2023-04-23 11:29:39 by stolfi
+# Last edited on 2024-12-05 22:26:18 by stolfi
 
 PROG = test_paint
 
@@ -7,6 +7,7 @@ TEST_LIB_DIR := ../..
 
 JS_LIBS := \
   libgeo.a \
+  libgausol.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

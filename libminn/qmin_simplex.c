@@ -1,5 +1,5 @@
 /* See qmin_simplex.h */
-/* Last edited on 2024-11-29 22:25:11 by stolfi */
+/* Last edited on 2024-12-05 13:38:55 by stolfi */
 
 #include <stdint.h>
 #include <math.h>
@@ -11,8 +11,8 @@
 #include <bool.h>
 #include <sign.h>
 
-#include <gauss_elim.h>
-#include <gauss_elim_solve.h>
+#include <gausol_print.h>
+#include <gausol_solve.h>
 
 #include <qmin_simplex.h>
 
@@ -26,8 +26,8 @@ void qmin_simplex(uint32_t n, double A[], double b[], double x[])
     double tiny = 1.0e-14 * bmax * sqrt(n);  /* Est. roundoff error in residuals. */
 
     /* Work array: */
-    uint32_t n1 = n+1; /* Total columns in {A} and {b}. */
-    double Ab[n*n1]; /* Active sub-matrices of {A} and {b}, side by side. */
+    double AT[n*n]; /* Active sub-matrix of {A}. */
+    double bT[n]; /* Active sub-vector of {b}. */
     
     /* Work vector: */
     double y[n]; /* Candidate solution to replace {x}. */
@@ -146,7 +146,7 @@ void qmin_simplex(uint32_t n, double A[], double b[], double x[])
 
         if (debug) { ER("  - - - - - - - - - - - - - - - - - - - - - - - - - - -\n"); }
         if (debug) { ER("  nok = %d\n", nok); }
-        if (debug) { gauss_elim_print_array(stderr, 4, "%9.5f", "current solution:",  nx, 1,"x",x, ""); }
+        if (debug) { gausol_print_array(stderr, 4, "%9.5f", "current solution:",  nx,NULL,0, 1,NULL,0, "x",x, ""); }
         if (debug) { ER("  current active set:\n"); }
         if (debug) { print_sets(); }
         if (debug) { ER("  checking variable %d.\n", ix_cur); }
@@ -334,7 +334,7 @@ void qmin_simplex(uint32_t n, double A[], double b[], double x[])
           }
         ER(" ) inactive = (");
         sep = ""; 
-        for (int32_t ia = (int32_t)na; ia < n; ia++) 
+        for (uint32_t ia = na; ia < n; ia++) 
           { ER("%s%d", sep, ix_from_ia[ia]); sep = ","; 
             assert(ix_from_ia[ia] < n); 
             assert(ia_from_ix[ix_from_ia[ia]] == ia); 
@@ -352,28 +352,28 @@ void qmin_simplex(uint32_t n, double A[], double b[], double x[])
           
     void solve_active(double y[])
       {
-        /* Extract active subsystem of {A u = b}, store in {Ab}: */
+        /* Extract active subsystem of {A u = b}, store in {AT,bT}: */
         for (uint32_t ia = 0;  ia < na; ia++)
           { uint32_t ix = (uint32_t)ix_from_ia[ia];
             for (uint32_t ja = 0;  ja < na; ja++)
               { uint32_t j = ix_from_ia[ja]; 
-                Ab[ia*(na+1) + ja] = A[ix*n + j];
+                AT[ia*na + ja] = A[ix*n + j];
               }
-            Ab[ia*(na+1) + na] = b[ix];
+            bT[ia] = b[ix];
           }
         /* Solve subsystem: */
         double ua[na];
-        if (debug) { gauss_elim_print_array(stderr, 4, "%9.5f", "subsystem:",  na, na+1,"Ab",Ab, ""); }
+        if (debug) { gausol_print_system(stderr, 4, "%9.5f", "subsystem:",  na,NULL,0, na,NULL,0, "A",AT, 1,"b",bT, 0,NULL,NULL, ""); }
         uint32_t rank_ext;
-        gauss_elim_solve_packed(na, na, 1, Ab, ua, 0.0, &rank_ext, NULL);
+        gausol_solve(na, na, AT, 1, bT, ua, TRUE,TRUE, 0.0, NULL, &rank_ext);
         assert(rank_ext <= na);
-        if (debug) { gauss_elim_print_array(stderr, 4, "%9.5f", "subsystem's solution:",  na, 1,"ua",ua, ""); }
+        if (debug) { gausol_print_array(stderr, 4, "%9.5f", "subsystem's solution:",  na,NULL,0, 1,NULL,0,"ua",ua, ""); }
         /* Unpack {ua[0..na-1]} into {y[0..nx-1]}: */
         for (uint32_t ix = 0;  ix < nx; ix++)
           { uint32_t ia = ia_from_ix[ix]; 
             y[ix] = (ia < na ? ua[ia] : 0.0);
           }
-        if (debug) { gauss_elim_print_array(stderr, 4, "%9.5f", "new solution:",  nx, 1,"y",y, ""); }
+        if (debug) { gausol_print_array(stderr, 4, "%9.5f", "new solution:",  nx,NULL,0, 1,NULL,0,"y",y, ""); }
       }
        
     bool_t detect_loop(void)

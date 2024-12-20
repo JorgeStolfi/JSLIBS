@@ -1,4 +1,4 @@
-/* Last edited on 2009-01-24 02:54:39 by stolfi */
+/* Last edited on 2024-12-04 23:22:19 by stolfi */
 
 r2_t tf_undistorted_sensor_coords_to_distorted_sensor_coords (camera_parameters_t cpar, r2_t pu)
 {
@@ -39,8 +39,8 @@ r2_t tf_apply_kappa(r2_t *p, double kappa)
 }
 
 double tf_compute_maximum_safe_kappa
-  ( int Npx, 
-    int Npy, 
+  ( int32_t Npx, 
+    int32_t Npy, 
     double dpx,
     double dpy,
     double Cx,
@@ -50,8 +50,8 @@ double tf_compute_maximum_safe_kappa
      the sensor size data. */
   
 double tf_compute_maximum_safe_kappa
-  ( int Npx, 
-    int Npy, 
+  ( int32_t Npx, 
+    int32_t Npy, 
     double dpx,
     double dpy,
     double Cx,
@@ -60,7 +60,7 @@ double tf_compute_maximum_safe_kappa
   {
     /* Find the max distance squared {R2} from any corner to optical axis: */
     double R2 = 0.0;
-    int sx,sy;
+    int32_t sx,sy;
     for (sx = 0; sx <= 1; sx++) {
       for (sy = 0; sy <= 1; sy ++) {
         double duX = sx*Npx*dpx - Cx;

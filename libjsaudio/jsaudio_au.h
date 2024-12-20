@@ -1,5 +1,5 @@
 /* jsaudio_au.h - Sun AU audio file I/O */
-/* Last edited on 2023-03-02 08:02:29 by stolfi */
+/* Last edited on 2024-12-05 10:32:15 by stolfi */
 
 /* 
   Derived from {rusound.h}, created by Rumiko Oishi Stolfi
@@ -9,7 +9,6 @@
 #ifndef jsaudio_au_H
 #define jsaudio_au_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

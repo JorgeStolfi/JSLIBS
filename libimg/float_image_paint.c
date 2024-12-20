@@ -1,5 +1,5 @@
 /* See {float_image_paint.h}. */
-/* Last edited on 2023-04-23 11:28:58 by stolfi */
+/* Last edited on 2024-12-05 22:23:53 by stolfi */
 
 #include <math.h>
 #include <limits.h>
@@ -23,16 +23,16 @@
 
 double float_image_paint_sample
   ( float_image_t *A, 
-    int c, 
-    int ix, 
-    int iy, 
+    int32_t c, 
+    int32_t ix, 
+    int32_t iy, 
     float_image_func_t *func, 
     float_image_func_t *mask, 
-    int m 
+    uint32_t m 
   )
   {
-    int nx = (int)A->sz[1];
-    int ny = (int)A->sz[2];
+    int32_t nx = (int32_t)A->sz[1];
+    int32_t ny = (int32_t)A->sz[2];
     
     /* Clip the arguments to the valid range: */
     if ((ix < 0) || (ix >= nx)) { return 0.0; }
@@ -47,12 +47,11 @@ double float_image_paint_sample
     double sum_w = 0.0;   /* Sum of antialias weights of all subsamples. */
     double sum_wp = 0.0;  /* Sum of antialias weights times mask values. */
     double sum_wpv = 0.0; /* Sum of antialias weights times mask values times paint value. */
-    int dx, dy;
-    for (dx = -m; dx <= +m; dx++)
+    for (int32_t dx = -(int32_t)m; dx <= +(int32_t)m; dx++)
       { double xs = ((double)dx)/(m+1); /* X displacement of subpixel sample. */
         double xa = fabs(xs);
         double wx = (xa < 0.5 ? 1 - 2*xa*xa : 2*(1 - xa)*(1 - xa)); /* X weight factor. */
-        for (dy = -m; dy <= m; dy++)
+        for (int32_t dy = -(int32_t)m; dy <= +(int32_t)m; dy++)
           { double ys = ((double)dy)/(m+1); /* Y displacement of subpixel sample. */
             double ya = fabs(ys);
             double wy = (ya < 0.5 ? 1 - 2*ya*ya : 2*(1 - ya)*(1 - ya)); /* Y weight factor. */
@@ -88,18 +87,18 @@ double float_image_paint_sample
 
 double float_image_paint_samples
   ( float_image_t *A, 
-    int c, 
-    int xLo, 
-    int xHi,
-    int yLo,
-    int yHi, 
+    int32_t c, 
+    int32_t xLo, 
+    int32_t xHi,
+    int32_t yLo,
+    int32_t yHi, 
     float_image_func_t *func, 
     float_image_func_t *mask,
-    int m 
+    uint32_t m 
   )
   {
-    int nx = (int)A->sz[1];
-    int ny = (int)A->sz[2];
+    int32_t nx = (int32_t)A->sz[1];
+    int32_t ny = (int32_t)A->sz[2];
     /* Clip the arguments to the valid range: */
     if (xLo < 0) { xLo = 0; }
     if (xHi >= nx ) { xHi = nx-1; }
@@ -108,7 +107,7 @@ double float_image_paint_samples
     if (m < 0) { m = 0; }
     /* Paint each pixel: */
     double w_tot = 0.0; /* Total overlaid opacity. */
-    int ix, iy;
+    int32_t ix, iy;
     for (ix = xLo; ix <= xHi; ix++)
       { for (iy = yLo; iy <=yHi; iy++)
           { double w = float_image_paint_sample(A, c, ix, iy, func, mask, m);
@@ -120,7 +119,7 @@ double float_image_paint_samples
 
 double float_image_paint_dot
   ( float_image_t *A, 
-    int c, 
+    int32_t c, 
     double xctr, 
     double yctr, 
     double rad,
@@ -129,7 +128,7 @@ double float_image_paint_dot
     bool_t diagonal, 
     float vfill,
     float vdraw,
-    int m
+    uint32_t m
   )
   {
     /* If the drawing ink is invisible, ignore the line width: */
@@ -138,8 +137,8 @@ double float_image_paint_dot
     /* If no fill and no draw, there is nothing to do: */
     if (isnan(vfill) && (hwd <= 0)) { /* Nothing to do: */ return 0.0; }
     
-    int nx = (int)A->sz[1];
-    int ny = (int)A->sz[2];
+    int32_t nx = (int32_t)A->sz[1];
+    int32_t ny = (int32_t)A->sz[2];
     
     /* The signs of {rad} and {hwd} are irrelevant: */
     rad = fabs(rad);
@@ -153,8 +152,8 @@ double float_image_paint_dot
       { rMax = rad*M_SQRT2 + hwd; }
     
     /* Determine the indices of affected columns and rows: */
-    int xLo, xHi; float_image_func_get_index_range(xctr, rMax, nx, &xLo, &xHi);
-    int yLo, yHi; float_image_func_get_index_range(yctr, rMax, ny, &yLo, &yHi);
+    int32_t xLo, xHi; float_image_func_get_index_range(xctr, rMax, nx, &xLo, &xHi);
+    int32_t yLo, yHi; float_image_func_get_index_range(yctr, rMax, ny, &yLo, &yHi);
     double w_tot; /* Total opacity of dot. */
     
     if (round)
@@ -224,25 +223,25 @@ double float_image_paint_dot
   
 double float_image_paint_smudge
   ( float_image_t *A, 
-    int c,          /* Channel. */                                
+    int32_t c,          /* Channel. */                                
     double xctr,    /* Center's X coordinate. */                  
     double yctr,    /* Center's Y coordinate. */                  
     double xdev,    /* Standard deviation in X direction. */   
     double ydev,    /* Standard deviation in Y direction. */                      
     float vfill,     /* Ink value at center. */ 
-    int m           /* Subsampling parameter. */
+    uint32_t m           /* Subsampling parameter. */
   )
   {
     /* If the center ink is invisible, there is nothing to do: */
     if (isnan(vfill)) { return 0.0; }
     
-    int nx = (int)A->sz[1];
-    int ny = (int)A->sz[2];
+    int32_t nx = (int32_t)A->sz[1];
+    int32_t ny = (int32_t)A->sz[2];
     
     /* Determine the affected ranges : */
     double max_devs = gauss_bell_BIG_ARG; /* Max devs that is worth considering. */
-    int xLo, xHi; float_image_func_get_index_range(xctr, max_devs*xdev, nx, &xLo, &xHi);
-    int yLo, yHi; float_image_func_get_index_range(yctr, max_devs*ydev, ny, &yLo, &yHi);
+    int32_t xLo, xHi; float_image_func_get_index_range(xctr, max_devs*xdev, nx, &xLo, &xHi);
+    int32_t yLo, yHi; float_image_func_get_index_range(yctr, max_devs*ydev, ny, &yLo, &yHi);
     
     auto float func_unif(double x, double y);
       /* Procedural image with uniform color {vfill}. */
@@ -265,7 +264,7 @@ double float_image_paint_smudge
 
 double float_image_paint_cross
   ( float_image_t *A, 
-    int c, 
+    int32_t c, 
     double xctr, 
     double yctr, 
     double rad,
@@ -273,14 +272,14 @@ double float_image_paint_cross
     double hwd, 
     bool_t diagonal, 
     float vdraw,
-    int m
+    uint32_t m
   )
   {
     /* If the drawing ink is invisible, there is nothing to do: */
     if (isnan(vdraw)) { return 0.0; }
     
-    int nx = (int)A->sz[1];
-    int ny = (int)A->sz[2];
+    int32_t nx = (int32_t)A->sz[1];
+    int32_t ny = (int32_t)A->sz[2];
     
     /* The signs of {rad} and {hwd} are irrelevant: */
     rad = fabs(rad);
@@ -294,8 +293,8 @@ double float_image_paint_cross
       { rMax = rad*M_SQRT1_2 + hwd; }
     
     /* Determine the indices of affected columns and rows: */
-    int xLo, xHi; float_image_func_get_index_range(xctr, rMax, nx, &xLo, &xHi);
-    int yLo, yHi; float_image_func_get_index_range(yctr, rMax, ny, &yLo, &yHi);
+    int32_t xLo, xHi; float_image_func_get_index_range(xctr, rMax, nx, &xLo, &xHi);
+    int32_t yLo, yHi; float_image_func_get_index_range(yctr, rMax, ny, &yLo, &yHi);
     
     double orad = rad + hwd;  /* Outer radius of cross (incuding {hwd}). */
     double hwd2 = hwd*hwd;    /* Tip radius, squared. */
@@ -342,7 +341,7 @@ double float_image_paint_cross
 
 double float_image_paint_rectangle
   ( float_image_t *A, 
-    int c,           /* Channel. */                                
+    int32_t c,           /* Channel. */                                
     double xmin,     /* Min X coordinate. */                  
     double xmax,     /* Max X coordinate. */                  
     double ymin,     /* Min Y coordinate. */                  
@@ -350,7 +349,7 @@ double float_image_paint_rectangle
     double hwd,      /* Radius of pen tip. */  
     float vfill,     /* Ink value for filling. */                              
     float vdraw,     /* Ink value for stroking. */  
-    int m            /* Subsampling parameter. */
+    uint32_t m            /* Subsampling parameter. */
   )
   {
     /* If the drawing ink is invisible, ignore the line width: */
@@ -359,17 +358,17 @@ double float_image_paint_rectangle
     /* If no fill and no draw, there is nothing to do: */
     if (isnan(vfill) && (hwd <= 0)) { /* Nothing to do: */ return 0.0; }
     
-    int nx = (int)A->sz[1];
-    int ny = (int)A->sz[2];
+    int32_t nx = (int32_t)A->sz[1];
+    int32_t ny = (int32_t)A->sz[2];
     
     /* The signs of {rad} and {hwd} are irrelevant: */
     hwd = fabs(hwd);
     
     /* Determine the indices of affected columns and rows: */
-    int xLo = (int)imax((int)floor(xmin - hwd), 0);
-    int xHi = (int)imin((int)floor(xmax + hwd), nx-1);
-    int yLo = (int)imax((int)floor(ymin - hwd), 0);
-    int yHi = (int)imin((int)floor(ymax + hwd), ny-1);
+    int32_t xLo = (int32_t)imax((int32_t)floor(xmin - hwd), 0);
+    int32_t xHi = (int32_t)imin((int32_t)floor(xmax + hwd), nx-1);
+    int32_t yLo = (int32_t)imax((int32_t)floor(ymin - hwd), 0);
+    int32_t yHi = (int32_t)imin((int32_t)floor(ymax + hwd), ny-1);
     if ((xLo > xHi) || (yLo > yHi)) { return 0.0; }
 
     auto float func_rect(double x, double y);
@@ -389,12 +388,12 @@ double float_image_paint_rectangle
 
 double float_image_paint_ellipse_crs
   ( float_image_t *A,
-    int c,            /* Channel. */
+    int32_t c,            /* Channel. */
     ellipse_crs_t *E, /* Ellipse parameters. */
     double hwd,       /* Radius of pen tip. */
     float vfill,      /* Ink value for the interior, or {NAN}. */  
     float vdraw,      /* Ink value for stroking the outline, of {NAN}. */  
-    int m             /* Subsampling parameter. */
+    uint32_t m             /* Subsampling parameter. */
   )
   {
     assert(E->rad >= 0); /* Paranoia: */
@@ -406,13 +405,13 @@ double float_image_paint_ellipse_crs
 
 double float_image_paint_ellipse_ouv
   ( float_image_t *A,
-    int c,            /* Channel. */
+    int32_t c,            /* Channel. */
     r2_t *ctr,        /* Center coords. */
     ellipse_ouv_t *F, /* Ellipse parameters, relative to center. */
     double hwd,       /* Radius of pen tip. */
     float vfill,      /* Ink value for the interior, or {NAN}. */  
     float vdraw,      /* Ink value for stroking the outline, of {NAN}. */  
-    int m             /* Subsampling parameter. */
+    uint32_t m             /* Subsampling parameter. */
   )
   {
     /* If the drawing ink is invisible, ignore the line width: */
@@ -425,7 +424,7 @@ double float_image_paint_ellipse_ouv
     assert((F->a >= 0) && (F->b >= 0));
     
     /* Get bounding box with some skosh: */
-    int xLo, xHi, yLo, yHi;
+    int32_t xLo, xHi, yLo, yHi;
     ellipse_ouv_int_bbox(ctr, F, hwd + 1.0, &xLo, &xHi, &yLo, &yHi);
     
     auto float func_ellip(double x, double y);
@@ -463,13 +462,13 @@ double float_image_paint_ellipse_ouv
 
 double float_image_paint_ellipse_aligned
   ( float_image_t *A,
-    int c,            /* Channel. */
+    int32_t c,            /* Channel. */
     r2_t *ctr,        /* Center coords. */
     r2_t *rad,        /* Radii in X and Y. */
     double hwd,       /* Radius of pen tip. */
     float vfill,      /* Ink value for the interior, or {NAN}. */  
     float vdraw,      /* Ink value for stroking the outline, of {NAN}. */  
-    int m             /* Subsampling parameter. */
+    uint32_t m             /* Subsampling parameter. */
   )
   {
     bool_t debug = FALSE;
@@ -491,9 +490,9 @@ double float_image_paint_ellipse_aligned
     assert((rx >= 0) && (ry >= 0));
     
     /* Get bounding box with some skosh: */
-    int xLo, xHi, yLo, yHi;
+    int32_t xLo, xHi, yLo, yHi;
     ellipse_aligned_int_bbox(cx, cy, rx, ry, hwd + 1.0, &xLo, &xHi, &yLo, &yHi);
-    if (debug) { Pr(Er, "  int bbox = {%d..%d}×{%d..%d}\n", xLo, xHi, yLo, yHi); }
+    if (debug) { Pr(Er, "  int32_t bbox = {%d..%d}×{%d..%d}\n", xLo, xHi, yLo, yHi); }
     
     auto float func_ellip(double x, double y);
       /* Returns {vdraw} if point {x,y} of {A} is 

@@ -1,5 +1,5 @@
 /* See {image_coords.h}. */
-/* Last edited on 2024-10-31 13:44:15 by stolfi */
+/* Last edited on 2024-12-05 07:48:43 by stolfi */
 
 #include <stdint.h>
 #include <assert.h>
@@ -52,15 +52,15 @@ hr2_pmap_t imgc_coord_sys_map
     double unit,
     bool_t center, 
     r2_t *org, 
-    int cols, 
-    int rows
+    int32_t cols, 
+    int32_t rows
   )
   {
     /* Start with the identity matrix {A}, get its weight {w}: */
     r3x3_t A; r3x3_ident(&A);
     assert(A.c[0][0] == 1.0);
       
-    for (uint32_t ax = 1;  ax <= 2; ax++)
+    for (int32_t ax = 1;  ax <= 2; ax++)
       { bool_t rev = (ax == 1 ? xRev : yRev);
         double sz = (ax == 1 ? cols : rows); /* Image size in pixels. */
         double d = (rev ? -1/unit : +1/unit);

@@ -2,7 +2,7 @@ double frgb_smcube_eval(frgb_t *p)
   { double R = p->c[0], G = p->c[1], B = p->c[2];
     
     double sum = 0;
-    for (uint32_t kc = 0;  kc < 3; kc++)
+    for (int32_t kc = 0;  kc < 3; kc++)
       { double x = p->c[kc];
         double qx = x*(1-x);
         sum += 1.0/(qx*qx);

@@ -1,5 +1,5 @@
 /* See {float_image_hartley.h}. */
-/* Last edited on 2017-01-02 21:31:45 by jstolfi */
+/* Last edited on 2024-12-05 00:50:10 by stolfi */
 
 #include <math.h>
 #include <string.h>
@@ -18,19 +18,19 @@
 /* IMPLEMENTATIONS */
 
 void float_image_hartley_transform(float_image_t *A, float_image_t *T)
-  { int chns = (int)A->sz[0];
-    int cols = (int)A->sz[1];
-    int rows = (int)A->sz[2];
+  { int32_t chns = (int32_t)A->sz[0];
+    int32_t cols = (int32_t)A->sz[1];
+    int32_t rows = (int32_t)A->sz[2];
     
     assert(chns == T->sz[0]);
     assert(cols == T->sz[1]);
     assert(rows == T->sz[2]);
     
     /* Allocate the work areas: */
-    int N = (rows > cols ? rows : cols);
-    double *in = (double*) fftw_malloc(sizeof(double) * N);
-    double *out = (double*) fftw_malloc(sizeof(double) * N);
-    int y, x, c;
+    int32_t N = (rows > cols ? rows : cols);
+    double *in = (double*) fftw_malloc(sizeof(double) * (size_t)N);
+    double *out = (double*) fftw_malloc(sizeof(double) * (size_t)N);
+    int32_t y, x, c;
     
     /* Do the row transforms: */
     fftw_plan px = fftw_plan_r2r_1d(cols, in, out, FFTW_DHT, FFTW_ESTIMATE | FFTW_DESTROY_INPUT);
@@ -55,11 +55,11 @@ void float_image_hartley_transform(float_image_t *A, float_image_t *T)
     fftw_destroy_plan(py);
     
     /* Combine elements to obtain pure sine-wave components: */
-    int y0, x0;
+    int32_t y0, x0;
     for (y0 = 1; y0 < (rows+1)/2; y0++)
-      { int y1 = (rows - y0) % rows;
+      { int32_t y1 = (rows - y0) % rows;
         for (x0 = 1; x0 < (cols+1)/2; x0++)
-          { int x1 = (cols - x0) % cols;
+          { int32_t x1 = (cols - x0) % cols;
             if ((x0 != x1) && (y0 != y1)) 
               { for (c = 0; c < chns; c++)
                   { float *smp00 = float_image_get_sample_address(T, c, x0, y0);
@@ -91,11 +91,11 @@ void float_image_hartley_transform(float_image_t *A, float_image_t *T)
     fftw_free(in);
   }
 
-void float_image_hartley_wave(float_image_t *A, int fx, int fy, double amp)
+void float_image_hartley_wave(float_image_t *A, int32_t fx, int32_t fy, double amp)
   {
-    int chns = (int)A->sz[0];
-    int cols = (int)A->sz[1];
-    int rows = (int)A->sz[2];
+    int32_t chns = (int32_t)A->sz[0];
+    int32_t cols = (int32_t)A->sz[1];
+    int32_t rows = (int32_t)A->sz[2];
     
     /* Reduce the frequencies to the image domain: */
     fx = fx % cols; if (fx < 0) { fx += cols; }
@@ -103,7 +103,7 @@ void float_image_hartley_wave(float_image_t *A, int fx, int fy, double amp)
     assert((0 <= fx) && (fx < cols));
     assert((0 <= fy) && (fy < rows));
     
-    int y, x, c; 
+    int32_t y, x, c; 
     for (y = 0; y < rows; y++)
       { for (x = 0; x < cols; x++)
           { for (c = 0; c < chns; c++)

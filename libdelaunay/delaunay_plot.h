@@ -1,10 +1,9 @@
 /* Tools for plotting Delaunay and Voronoi diagrams */
-/* Last edited on 2023-02-20 05:23:36 by stolfi */
+/* Last edited on 2024-12-05 10:25:10 by stolfi */
 
 #ifndef delaunay_plot_H
 #define delaunay_plot_H
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>

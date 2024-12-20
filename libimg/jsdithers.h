@@ -2,12 +2,12 @@
 #define jsdithers_H
 
 /* dithers.h - ordered dither matrices. */
-/* Last edited on 2017-06-21 00:58:27 by stolfilocal */
+/* Last edited on 2024-12-04 23:34:08 by stolfi */
 
 #include <stdint.h>
 #include <bool.h>
 
-uint8_t *get_dither_matrix(int n, bool_t cluster);
+uint8_t *get_dither_matrix(int32_t n, bool_t cluster);
   /* Returns a pointer to a dither matrix with {n} rows and {n} columns,
      stored linearized by rows.
      

@@ -1,5 +1,5 @@
 /* See {float_image_hog.h} */
-/* Last edited on 2013-10-21 00:05:39 by stolfilocal */
+/* Last edited on 2024-12-04 23:29:02 by stolfi */
 
 #include <stdio.h>
 #include <math.h>
@@ -16,33 +16,33 @@
 
 void float_image_hog_collect
   ( float_image_t *DX, 
-    int cX,
+    int32_t cX,
     float_image_t *DY, 
-    int cY,
+    int32_t cY,
     float_image_t *M, 
     double noise, 
     bool_t oriented,
-    int nh,
+    int32_t nh,
     double h[]
   )
   {
     bool_t debug = FALSE;
     
     /* Get the image dimensions: */
-    int NX = (int)DX->sz[1]; 
-    int NY = (int)DX->sz[2];
+    int32_t NX = (int32_t)DX->sz[1]; 
+    int32_t NY = (int32_t)DX->sz[2];
     float_image_check_size(DY, -1, NX, NY);
     demand((cX >= 0) && (cX < DX->sz[0]), "invalid {DX} channel");
     demand((cY >= 0) && (cY < DY->sz[0]), "invalid {DY} channel");
     if (M != NULL) { float_image_check_size(M, -1, NX, NY); }
     
     /* Clear histogram: */
-    int ih;
+    int32_t ih;
     for (ih = 0; ih < nh; ih++) { h[ih] = 0; }
     
     /* Collect histogram: */
     double totw = 0.0; /* Total weight in histogram so far. */
-    int x, y;
+    int32_t x, y;
     for (x = 0; x < NX; x++)
       { for (y = 0; y < NY; y++)
           { /* Compute the horizontal and vertical derivatives in channel {c}: */
@@ -67,14 +67,14 @@ void float_image_hog_collect
                     if (rh >= nh) { rh = rh - nh; }
                     assert((0 <= rh) && (rh < nh));
                     /* Get the bin index and position {sh} in bin: */
-                    int ih = (int)floor(rh);
+                    int32_t ih = (int32_t)floor(rh);
                     assert((0 <= ih) && (ih < nh));
                     double sh = rh - ih;
                     /* Accumulate in adjacent pixels with quadratic interpolation: */
                     double wi = 1 - 2*(sh - 0.5)*(sh - 0.5);
                     h[ih] += w*wi;
                     double wj = 1 - wi;
-                    int jh = (sh < 0.5 ? (nh + ih - 1) : ih + 1) % nh;
+                    int32_t jh = (sh < 0.5 ? (nh + ih - 1) : ih + 1) % nh;
                     h[jh] += w*wj;
                     if (debug) 
                       { fprintf

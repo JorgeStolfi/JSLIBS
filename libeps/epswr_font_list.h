@@ -1,10 +1,9 @@
 /* Tools for handling an expandable font list. */
-/* Last edited on 2022-10-20 06:51:44 by stolfi */
+/* Last edited on 2024-12-05 10:13:55 by stolfi */
 
 #ifndef epswr_font_list_H
 #define epswr_font_list_H
   
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

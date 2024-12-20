@@ -1,10 +1,9 @@
 /* rf2.h --- operations on points and vectors of R^2 (single-precision version) */
-/* Last edited on 2024-11-15 00:34:20 by stolfi */
+/* Last edited on 2024-12-05 10:28:17 by stolfi */
 
 #ifndef rf2_H
 #define rf2_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 typedef struct rf2_t { float c[2]; } rf2_t;

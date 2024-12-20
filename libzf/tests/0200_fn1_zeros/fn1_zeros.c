@@ -1,7 +1,6 @@
 /* Tests univariate zero-finders with AA and IA test. */
-/* Last edited on 2023-03-18 10:43:43 by stolfi */
+/* Last edited on 2024-12-05 10:41:07 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,10 +1,9 @@
 /* Ray-tracing scene objects for multi-focus stereo. */
-/* Last edited on 2024-10-29 18:54:22 by stolfi */
+/* Last edited on 2024-12-05 10:36:43 by stolfi */
 
 #ifndef multifok_scene_object_raytrace_H
 #define multifok_scene_object_raytrace_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <r3.h>

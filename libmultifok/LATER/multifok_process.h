@@ -1,10 +1,9 @@
 /* Process a stack of images estimating the sharp image and scene depth. */
-/* Last edited on 2024-10-10 19:29:44 by stolfi */
+/* Last edited on 2024-12-05 10:35:51 by stolfi */
 
 #ifndef multifok_process_H
 #define multifok_process_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <float_image.h>

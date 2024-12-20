@@ -1,7 +1,6 @@
 /* See {minn.h}. */
-/* Last edited on 2024-11-08 00:06:13 by stolfi */
+/* Last edited on 2024-12-05 13:10:49 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdint.h>
@@ -21,7 +20,7 @@
 #include <minn_quad.h>
     
 void minn_uniform
-  ( int32_t n,          /* Dimension of search space. */
+  ( uint32_t n,          /* Dimension of search space. */
     minn_goal_t *F,     /* Function to be minimized. */
     bool_t box,         /* True to search in the unit cube, false in the unit ball. */
     double atol[],      /* Desired precision along each coordinate. */
@@ -50,9 +49,9 @@ void minn_uniform
   }
 
 void minn_subspace
-  ( int32_t n,          /* Dimension of search space. */
+  ( uint32_t n,          /* Dimension of search space. */
     minn_goal_t *F,     /* Function to be minimized. */
-    int32_t d,          /* Dimension of search domain. */
+    uint32_t d,          /* Dimension of search domain. */
     double U[],         /* Main axis directions of the search domain. */
     double urad[],      /* Radii of the search domain. */
     bool_t box,         /* True the search domain is a box, false it is an ellipsoid. */
@@ -79,7 +78,7 @@ void minn_subspace
       /* Unmaps {x[0..d-1]} from the unit cube/ball to a vector {v[0..n-1]}
         in the original domain {D}. */
         
-    auto double F_unit(int32_t nx, double x[]);
+    auto double F_unit(uint32_t nx, double x[]);
       /* Unmaps {x[0..d-1]} to vector {v[0..n-1]} and evaluates
         the given goal function {F} on it. Expects {nx} to be {d}. */
         
@@ -101,7 +100,7 @@ void minn_subspace
           }
       }
       
-    double F_unit(int32_t nx, double xt[])
+    double F_unit(uint32_t nx, double xt[])
       { assert(nx == d);
         unmap_vec(xt, vt);
         return F(n, vt);
@@ -109,10 +108,10 @@ void minn_subspace
   }
 
 void minn_ellipsoid_constrained
-  ( int32_t n,          /* Dimension of search space. */
+  ( uint32_t n,          /* Dimension of search space. */
     minn_goal_t *F,     /* Function to be minimized. */
     double arad[],      /* Readii of the ellipsoid. */
-    int32_t q,          /* Number of explicit constraints. */
+    uint32_t q,          /* Number of explicit constraints. */
     double A[],         /* Constraint matrix. */
     double tol,         /* Desired precision. */
     minn_method_t meth, /* Minimizaton method do use.*/
@@ -125,13 +124,13 @@ void minn_ellipsoid_constrained
     demand(q >= 0, "invalid {q}");
 
     /* Normalize the constraints and add the implicit ones: */
-    int32_t m;        /* Number of normalized constraints. */
+    uint32_t m;        /* Number of normalized constraints. */
     double *C = NULL; /* Normalized constraint matrix. */
     rmxn_ellipsoid_normalize_constraints(n, arad, q, A, debug, &m, &C);
     assert((m >= 0) && (m <= n));
 
     /* Compute the search ellipsoid {\RF(U,urad)}: */
-    int32_t d = n - m;
+    uint32_t d = (uint32_t)(n - m);
     double U[d*n];
     double urad[d];
     rmxn_ellipsoid_cut(n, arad, m, C, d, U, urad);

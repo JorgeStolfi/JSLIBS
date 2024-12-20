@@ -1,10 +1,9 @@
 /* Test tools for {multifok_focus_op} and related funcs. */
-/* Last edited on 2024-10-22 09:19:30 by stolfi */
+/* Last edited on 2024-12-05 14:20:30 by stolfi */
 
 #ifndef multifok_image_H
 #define multifok_image_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <interval.h>
@@ -36,7 +35,7 @@ void multifok_image_sample_weights_write(float_image_t *wsimg, char *outDir);
     "{outDir}/weights.png" The samples are rescaled from {0 _ vMax]} to
     {{0 _ 1]}, where {vMax} is the max sample value. */
 
-void multifok_image_basis_kernels_write(int32_t NB, float_image_t *bKer[], char *outDir);
+void multifok_image_basis_kernels_write(uint32_t NB, float_image_t *bKer[], char *outDir);
   /* For {kb} in {0..NB-1}, writes the square {NW} by {NW} grayscale image {bKer[kb]},
     presumed to be the kernel of a basis element, as a file "{outDir}/basis-{BBB}.png"
     where {BBB} is {kb} formatted as "%03d". The samples
@@ -53,7 +52,7 @@ void multifok_image_pixel_mask_write(float_image_t *pSel, float_image_t *bgrd, c
     with the same size as {pSel}, and the samples of {pSel} must 
     be either 0 or 1.  The image written will be {0.75*pSel + 0.25*bgrd}. */
 
-void multifok_image_selected_pixels_write(int32_t NQ, i2_t pix[], float_image_t *bgrd, char *outDir);
+void multifok_image_selected_pixels_write(uint32_t NQ, i2_t pix[], float_image_t *bgrd, char *outDir);
   /* Writes to file "{outDir}/selected-pixels.png" the image {bgrd} with a cross
     centered at each of the pixels whose indices are listed in {pix[0..NQ-1]}.
     The {bgrd} image may be color or grayscale. */
@@ -154,17 +153,17 @@ void multifok_image_merged_scene_view_error_write(float_image_t *sErr, char *fra
     from {[-1 _ +1]} to {[0_1]}. */
 
     
-void multifok_image_basis_coeffs_write(int32_t NB, float_image_t *bVal[], char *frameDir, double bMax);
+void multifok_image_basis_coeffs_write(uint32_t NB, float_image_t *bVal[], char *frameDir, double bMax);
   /* For each {kb} in {0..NB-1}, writes the basis coeff image {bVal[kb]} 
     to file "{frameDir}/bVal-{BBB}.png" where {BBB} is {kb} formatted as "%03d".
     The sample values are rescaled from {[-bMax _ +bMax]} to {[0_1]}. */
 
-void multifok_image_basis_coeffs_squared_write(int32_t NB, float_image_t *bSqr[], char *frameDir, double bMax);
+void multifok_image_basis_coeffs_squared_write(uint32_t NB, float_image_t *bSqr[], char *frameDir, double bMax);
   /* For each {kb} in {0..NB-1}, writes the squared basis coeff image {bSqr[kb]}
     to file "{frameDir}/bSqr-{BBB}.png" where {BBB} is {kb} formatted as "%03d".
     The sample values are rescaled from {[0 _ bMax^2]} to {[0_1]}. */
 
-void multifok_image_quadratic_terms_write(int32_t NT, float_image_t *tVal[], char *frameDir, double tMax);
+void multifok_image_quadratic_terms_write(uint32_t NT, float_image_t *tVal[], char *frameDir, double tMax);
   /* For each {kt} in {0..NT-1}, wWrites the quadratic term values image {tVal[kt]} 
     to file "{frameDir}/tVal-{TTT}.png" where {TTT} is {kt} formatted as "%03d".
     The sample values are rescaled from {[-tMax _ +tMax]} to {[0_1]}. */
@@ -192,7 +191,7 @@ float_image_t *multifok_image_read(char *dir, char *name, float vMin, float vMax
 
 /* OTHER TOOLS */
 
-void multifok_image_draw_crosses(float_image_t *img, int32_t ch, int32_t NQ, i2_t pix[], float val);
+void multifok_image_draw_crosses(float_image_t *img, int32_t ch, uint32_t NQ, i2_t pix[], float val);
   /* Draws open crosses into image {img} at the positions listed in {pix[0..NQ-1]}
     The crosses are drawn with value {val} into channel {ch}, and with value 0 in every other
     channels. */

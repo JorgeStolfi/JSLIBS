@@ -1,10 +1,9 @@
 /* See {haf_write.h}. */
-/* Last edited on 2023-10-05 20:26:01 by stolfi */
+/* Last edited on 2024-12-05 10:39:08 by stolfi */
  
 #define haf_write_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

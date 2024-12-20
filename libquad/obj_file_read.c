@@ -1,12 +1,11 @@
 /* See {obj_file_read.h}. */
-/* Last edited on 2024-11-20 05:25:21 by stolfi */
+/* Last edited on 2024-12-05 10:39:17 by stolfi */
  
 #define obj_file_read_C_copyright \
   "Copyright © 2024 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
  
 /* Written by J. Stolfi in June 2024. */ 
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

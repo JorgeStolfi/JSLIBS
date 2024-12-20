@@ -1,10 +1,8 @@
 /* Panpage for {test_r2_opt.c}. */
-/* Last edited on 2023-11-25 17:14:28 by stolfi */
+/* Last edited on 2024-12-05 10:34:56 by stolfi */
 
 #ifndef test_r2_opt_info_H
 #define test_r2_opt_info_H
-
-#define _GNU_SOURCE
 
 #define PROG_HELP \
   PROG_NAME " \\\n" \

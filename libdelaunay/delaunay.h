@@ -2,7 +2,7 @@
 #define delaunay_H
 
 /* Delaunay triangulation. */
-/* Last edited on 2023-02-20 06:11:02 by stolfi */
+/* Last edited on 2024-12-05 10:24:57 by stolfi */
 
 /* The divide-and-conquer algorithm for computing the Delaunay
   triangulation of a set of points (sites) on the plane. 
@@ -17,7 +17,6 @@
   See the copyright notice at the end of this file.
 */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <quad.h>

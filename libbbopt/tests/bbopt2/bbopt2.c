@@ -1,7 +1,6 @@
 /* Bivariate nonlinear branch-and-bound optimization with interval estimators. */
-/* Last edited on 2023-02-20 10:13:22 by stolfi */
+/* Last edited on 2024-12-05 10:22:09 by stolfi */
 
-#define _GNU_SOURCE
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>

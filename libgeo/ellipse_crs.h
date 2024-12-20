@@ -2,9 +2,8 @@
 #define ellipse_crs_H
 
 /* ellipse_crs.h -- tools for ellipses in the center-radius-stretch form. */
-/* Last edited on 2021-06-09 20:14:34 by jstolfi */
+/* Last edited on 2024-12-05 10:26:24 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <r2.h>

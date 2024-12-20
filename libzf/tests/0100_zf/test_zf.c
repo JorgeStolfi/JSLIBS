@@ -1,7 +1,6 @@
 /* Quick test of {zf.h} */
-/* Last edited on 2024-11-08 12:46:49 by stolfi */
+/* Last edited on 2024-12-05 10:41:03 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

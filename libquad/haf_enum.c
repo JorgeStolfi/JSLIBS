@@ -1,10 +1,9 @@
 /* See {haf_enum.h}. */
-/* Last edited on 2024-06-20 11:31:43 by stolfi */
+/* Last edited on 2024-12-05 10:38:51 by stolfi */
  
 #define haf_enum_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

@@ -5,8 +5,7 @@
 ** See the rights and conditions notice at the end of this file.
 */
 
-#include <colorfield_ramp.h>
-
+#include <stdint.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -20,13 +19,15 @@
 #include <frgb_ops.h>
 #include <colorfield.h>
  
+#include <colorfield_ramp.h>
+
 cfld_ramp_args_t *cfld_ramp_parse_general(argparser_t *pp)
   {
     cfld_ramp_args_t *rfa = (cfld_ramp_args_t *)malloc(sizeof(cfld_ramp_args_t));
-    int k;
+    int32_t k;
     for (k = 0; k < 3; k++)
-      { int Hk = (int)argparser_get_next_int(pp, -INT_MAX, INT_MAX);
-        int Vk = (int)argparser_get_next_int(pp, -INT_MAX, INT_MAX);
+      { int32_t Hk = (int32_t)argparser_get_next_int(pp, -INT32_MAX, INT32_MAX);
+        int32_t Vk = (int32_t)argparser_get_next_int(pp, -INT32_MAX, INT32_MAX);
         frgb_t colork = frgb_parse_color(pp);
         rfa->p[k] =  (cfld_int_pair_t){{Hk, Vk}};
         rfa->color[k] = colork;
@@ -38,12 +39,12 @@ cfld_ramp_args_t *cfld_ramp_parse_general(argparser_t *pp)
 cfld_ramp_params_t *cfld_ramp_compute_params
   ( cfld_ramp_args_t *rfa, 
     frgb_adjuster_t *adjust,
-    int logarithmic
+    int32_t logarithmic
   )
   { cfld_ramp_params_t *rfp = (cfld_ramp_params_t *)malloc(sizeof(cfld_ramp_params_t));
     frgb_t fv[3];
     cfld_int_pair_t *p = &(rfa->p[0]);
-    int k;
+    int32_t k;
     /* Note: user-input colors are all RGB, even when {o->gray} is true. */
     for (k = 0; k < 3; k++)
       { fv[k] = adjust(&(rfa->color[k]), p[k].c[0], p[k].c[1]);
@@ -131,17 +132,17 @@ cfld_ramp_params_t *cfld_ramp_compute_params
 
 void cfld_ramp_eval
   ( cfld_ramp_params_t *rfp,
-    int logarithmic, 
-    int col, 
-    int row,
+    int32_t logarithmic, 
+    int32_t col, 
+    int32_t row,
     frgb_t *fv,
-    int chns
+    int32_t chns
   )
   {
     float *forg = rfp->forg.c;
     float *fcol = rfp->fcol.c;
     float *frow = rfp->frow.c;
-    int i;
+    int32_t i;
     for (i = 0; i < chns; i++)
       { fv->c[i] = (float)(forg[i] + fcol[i]*(double)col + frow[i]*(double)row); 
         if (logarithmic) { fv->c[i] = (float)exp(fv->c[i]); }

@@ -1,10 +1,8 @@
 /* Draws various units of the house on Boaretto da Silva 113. */
-/* Last edited on 2023-02-20 17:25:16 by stolfi */
+/* Last edited on 2024-12-05 10:21:12 by stolfi */
 
 #ifndef boas_draw_H
 #define boas_draw_H
-
-#define _GNU_SOURCE
 
 #include <bool.h>
 #include <archdraw.h>

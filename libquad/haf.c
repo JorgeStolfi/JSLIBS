@@ -1,5 +1,5 @@
 /* See {haf.h}. */
-/* Last edited on 2024-06-27 07:54:27 by stolfi */
+/* Last edited on 2024-12-05 10:38:44 by stolfi */
  
 #define haf_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -7,7 +7,6 @@
 /* Written by J. Stolfi in October 2023, loosely parallel to {quad.c}
   but without the {rot} (dual) operators. */ 
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

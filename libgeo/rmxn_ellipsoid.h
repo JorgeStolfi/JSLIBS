@@ -2,9 +2,8 @@
 #define rmxn_ellipsoid_H
 
 /* General tools and concepts for geometry of ellipsoids. */
-/* Last edited on 2024-11-20 13:04:51 by stolfi */ 
+/* Last edited on 2024-12-05 10:28:31 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

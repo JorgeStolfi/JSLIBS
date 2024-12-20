@@ -1,5 +1,5 @@
 /* See {float_image_mscale.h}. */
-/* Last edited on 2023-11-26 06:43:52 by stolfi */
+/* Last edited on 2024-12-05 00:58:08 by stolfi */
 
 #include <assert.h>
 #include <limits.h>
@@ -8,6 +8,7 @@
  
 #include <bool.h>
 #include <affirm.h>
+#include <jsprintf.h>
 #include <r2.h>
 #include <jsfile.h>
 #include <wt_table.h>
@@ -20,43 +21,43 @@
 
 /* IMPLEMENTATIONS */
 
-float_image_t *float_image_mscale_shrink(float_image_t *A, float_image_t *M, int NXR, int NYR, int dx, int dy, int nw)
+float_image_t *float_image_mscale_shrink(float_image_t *A, float_image_t *M, int32_t NXR, int32_t NYR, int32_t dx, int32_t dy, int32_t nw)
   { 
     /* Generate the 1D weight mask: */
     demand(nw > 0, "invalid filter width");
     double wt[nw];
-    wt_table_binomial_fill(nw, wt, NULL);
-    wt_table_normalize_sum(nw, wt);
+    wt_table_binomial_fill((uint32_t)nw, wt, NULL);
+    wt_table_normalize_sum((uint32_t)nw, wt);
     
     /* Get the image dimensions: */
-    int NC = (int)A->sz[0];
-    int NXA = (int)A->sz[1];
-    int NYA = (int)A->sz[2];
+    int32_t NC = (int32_t)A->sz[0];
+    int32_t NXA = (int32_t)A->sz[1];
+    int32_t NYA = (int32_t)A->sz[2];
 
     /* Check the mask dimensions: */
     if (M != NULL)
-      { demand((int)M->sz[0] == 1, "weight mask should be monochromatic");
-        demand((int)M->sz[1] == NXA, "mask width mismatch");
-        demand((int)M->sz[2] == NYA, "mask height mismatch");
+      { demand((int32_t)M->sz[0] == 1, "weight mask should be monochromatic");
+        demand((int32_t)M->sz[1] == NXA, "mask width mismatch");
+        demand((int32_t)M->sz[2] == NYA, "mask height mismatch");
       }
     
     /* Create the output image {R}: */
     float_image_t *R = float_image_new(NC, NXR, NYR);
     
     /* Fill the pixels of {R}: */
-    int xR, yR, c;
+    int32_t xR, yR, c;
     for(yR = 0; yR < NYR; yR++)
       { for(xR = 0; xR < NXR; xR++)
           { /* Accumulate the weighted pixel sum over the window: */
             double sum_w = 0;    /* Sum of weights. */
             double sum_w_v[NC];  /* Sum of weighted pixels. */
             for (c = 0; c < NC; c++) { sum_w_v[c] = 0; }
-            int xD, yD;
+            int32_t xD, yD;
             for(yD = 0; yD < nw; yD++)
-              { int yA = 2*yR+yD-dy;
+              { int32_t yA = 2*yR+yD-dy;
                 double wty = ((yA < 0) || (yA >= NYA) ? 0.0 : wt[yD]);
                 for(xD = 0; xD < nw; xD++)
-                  { int xA = 2*xR+xD-dx;
+                  { int32_t xA = 2*xR+xD-dx;
                     double wtx = ((xA < 0) || (xA >= NXA) ? 0.0 : wt[xD]);
                     double w = wtx*wty;
                     if (w > 0)
@@ -81,35 +82,35 @@ float_image_t *float_image_mscale_shrink(float_image_t *A, float_image_t *M, int
     return R;
   }
   
-float_image_t *float_image_mscale_mask_shrink(float_image_t *M, int NXR, int NYR, int dx, int dy, int nw, bool_t harm)
+float_image_t *float_image_mscale_mask_shrink(float_image_t *M, int32_t NXR, int32_t NYR, int32_t dx, int32_t dy, int32_t nw, bool_t harm)
   { /* Generate the 1D weight mask: */
     demand(nw > 0, "invalid filter width");
     double wt[nw];
-    wt_table_binomial_fill(nw, wt, NULL);
-    wt_table_normalize_sum(nw, wt);
+    wt_table_binomial_fill((uint32_t)nw, wt, NULL);
+    wt_table_normalize_sum((uint32_t)nw, wt);
     
     /* Get the image dimensions: */
-    int NC = (int)M->sz[0];
-    int NXM = (int)M->sz[1];
-    int NYM = (int)M->sz[2];
+    int32_t NC = (int32_t)M->sz[0];
+    int32_t NXM = (int32_t)M->sz[1];
+    int32_t NYM = (int32_t)M->sz[2];
         
     /* Create the output image {R}: */
     float_image_t *R = float_image_new(NC, NXR, NYR);
     
     /* Fill the pixels of {R}: */
-    int xR, yR, c;
+    int32_t xR, yR, c;
     for(yR = 0; yR < NYR; yR++)
       { for(xR = 0; xR < NXR; xR++)
           { for (c = 0; c < NC; c++)
               { /* Accumulate the sample sums over the window: */
                 double sum_w = 0;    /* Sum of weights. */
                 double sum_w_m = 0;  /* Sum of weighted pixels. */
-                int xD, yD;
+                int32_t xD, yD;
                 for(yD = 0; yD < nw; yD++)
-                  { int yM = 2*yR+yD-dy;
+                  { int32_t yM = 2*yR+yD-dy;
                     double wty = ((yM < 0) || (yM >= NYM) ? 0.0 : wt[yD]);
                     for(xD = 0; xD < nw; xD++)
-                      { int xM = 2*xR+xD-dx;
+                      { int32_t xM = 2*xR+xD-dx;
                         double wtx = ((xM < 0) || (xM >= NXM) ? 0.0 : wt[xD]);
                         double w = wtx*wty;
                         if (w > 0)
@@ -129,44 +130,45 @@ float_image_t *float_image_mscale_mask_shrink(float_image_t *M, int NXR, int NYR
     return R;
   }
 
-r2_t float_image_mscale_point_shrink(r2_t *pA, int dx, int dy, int nw)
+r2_t float_image_mscale_point_shrink(r2_t *pA, int32_t dx, int32_t dy, int32_t nw)
   {
     double hw = 0.5*(nw - 1);
     return (r2_t){{ 0.5*(pA->c[0] + dx - hw), 0.5*(pA->c[1] + dy - hw) }};
   }
 
-r2_t float_image_mscale_point_expand(r2_t *pR, int dx, int dy, int nw)
+r2_t float_image_mscale_point_expand(r2_t *pR, int32_t dx, int32_t dy, int32_t nw)
   {
     double hw = 0.5*(nw - 1);
     return (r2_t){{ 2.0*pR->c[0] + hw - dx , 2.0*pR->c[1] + hw - dy }};
   }
 
-int float_image_mscale_rounding_bias(int n)
+int32_t float_image_mscale_rounding_bias(int32_t n)
   {
-    int b = 0;
+    int32_t b = 0;
     while (n & 1) { b = 1-b; n /= 2; }
     return b;
   }
   
-char *float_image_mscale_file_name(char *filePrefix, int level, int iter, char *tag, char *ext)
+char *float_image_mscale_file_name(char *filePrefix, int32_t level, int32_t iter, char *tag, char *ext)
   { 
+    char *fileName = NULL;
     if (strcmp(filePrefix,"-") == 0)
-      { char *fileName = jsprintf("-"); }
+      { fileName = jsprintf("-"); }
     else
       { /* Typeset {level} and {iter}; leave "" to omit. */
-        if (level >= 0) { char *xlevel = jsprintf("-%02d", level); } else { xlevel = ""; }
-        if (iter >= 0) { char *xiter = jsprintf("-%09d", iter); } else { xiter = ""; }
+        char *xlevel = (level >= 0 ? jsprintf("-%02d", level) : "");
+        char *xiter = (iter >= 0 ? jsprintf("-%09d", iter) : "");
         /* Typeset the filename: */
         if (tag == NULL) { tag = ""; }
         char *tagsep = (tag[0] == 0 ? "" : "-");
-        char *fileName = jsprintf("%s%s%s%s%s.%s", filePrefix, xlevel, xiter, tagsep, tag, ext);
+        fileName = jsprintf("%s%s%s%s%s.%s", filePrefix, xlevel, xiter, tagsep, tag, ext);
         if (level >= 0) { free(xlevel); }
         if (iter >= 0) { free(xiter); }
       }
     return fileName;
   }
 
-void float_image_mscale_write_file(float_image_t *M, char *filePrefix, int level, int iter, char *tag, int indent)
+void float_image_mscale_write_file(float_image_t *M, char *filePrefix, int32_t level, int32_t iter, char *tag, int32_t indent)
   { char *fileName = float_image_mscale_file_name(filePrefix, level, iter, tag, "fni");
     fprintf(stderr, "%*sWriting %s ...", indent, "", fileName);
     FILE* wr = open_write(fileName, FALSE);

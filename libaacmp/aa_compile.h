@@ -2,9 +2,8 @@
 #define aa_compile_H
 
 /* aa_compile.h -- Compile pcode functions to C routine that calls AA ops */
-/* Last edited on 2023-03-20 01:11:06 by stolfi */
+/* Last edited on 2024-12-05 10:19:12 by stolfi */
 
-#define _GNU_SOURCE_
 #include <stdio.h>
 #include <stdint.h>
 

@@ -2,9 +2,8 @@
 #define r2_align_H
 
 /* General tools and concepts for translational alignment of 2D objects. */
-/* Last edited on 2023-10-05 21:17:07 by stolfi */ 
+/* Last edited on 2024-12-05 10:19:59 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

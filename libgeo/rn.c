@@ -1,4 +1,4 @@
-/*Last edited on 2024-11-30 06:06:46 by stolfi */
+/*Last edited on 2024-11-30 22:34:09 by stolfi */
 /*
   Based on VectorN.mg, created  95-02-27 by J. Stolfi.
   Last edited by stolfi 
@@ -19,6 +19,7 @@
 #include <jsmath.h>
 #include <affirm.h>
 #include <gausol_triang.h>
+#include <gausol_solve.h>
 
 void rn_zero (uint32_t n, double r[])
   { 
@@ -239,65 +240,62 @@ double rn_angle (uint32_t n, double a[], double b[])
   }
 
 void rn_cross (uint32_t n, double *a[], double r[])
-  { uint32_t nn1 = (n-1)*n;
-    double *C = rmxn_alloc(n-1,n);
-    { uint32_t t = 0;
-      for (uint32_t i = 0;  i < n-1; i++) 
-        { double *ai = a[i]; 
-          for (uint32_t j = 0;  j < n; j++) { C[t] = ai[j]; t++; }
-        }
-    }
+  { demand(n >= 1, "invalid {n}");
+    uint32_t m = n-1;
+    double *C = rmxn_alloc(m, n);
+    double *Cij = C;
+    for (uint32_t i = 0; i < m; i++) 
+      { double *ai = a[i];
+        for (uint32_t j = 0; j < n; j++) { (*Cij) = ai[j]; Cij++; }
+      }
     /* !!! Using full pivoting. Would partial pivoting be better? !!! */
-    uint32_t prow[n-1], pcol[n]; /* Permutation matrices for Gaussian eleimination. */
-    double det;
-    uint32_t rank;
+    uint32_t prow[m], pcol[n]; 
     double tiny = 1.0e-180;
-    gausol_triang_reduce(n-1, prow, n, pcol, C, 0, NULL, tiny, &rank, &det);
-    gausol_triang_diagonalize(n-1, prow, n, pcol, C, 0, NULL, rank, tiny);
-    /* If {det(C)} is not zero, set {d = det(C)}, {izer = -1}.
-      Else set {izer} to the first row {i} such that {C[i,i]} is zero, 
-      and  {d} to the determinant of {C} excluding column {izer}. */
-    double d = 1.0; 
-    int32_t izer = -1; 
-    { uint32_t t = 0;
-      for (uint32_t i = 0;  i < n-1; i++)
-        { if (C[t] == 0.0)
-            { if (izer < 0) { izer = (int32_t)i; t++; } else { d = 0.0; break; } }
-          d *= C[t]; t += n+1;
-        }
-    }
-    if (izer < 0)
-      { /* The main diagonal of {C} is non-zero, and possibly column {n-1}. */
-        r[n-1] = d;
-        /* For {i=0..n-2}, set {r[i] = -d*(C[i,n-1]/C[i,i])}: */  
-        uint32_t s = nn1-1; 
-        uint32_t t = nn1-2;
-        for (int32_t i = (int32_t)n-2; i >= 0; i--) 
-          { r[i] = -d*C[s]/C[t]; s -= n; t -= n+1; }
+    double det; /* Det of {P00}. */
+    uint32_t rank;
+    gausol_triang_reduce(m,prow, n,pcol,C, 0,NULL, tiny, &det, &rank);
+    gausol_triang_diagonalize(m,prow, n,pcol,C, 0,NULL, rank, tiny);
+    if (rank == m)
+      { /* Rows are linearly independent, good. */
+        demand(isfinite(det), "invalid {det} from triangulation");
+        demand(det != 0, "triangulation {det} should not be zero");
+        /* Make {r[0..n-1]} orthogonal to {C[t,*]} for each {t}: */
+        uint32_t pcol_m = pcol[m]; assert(pcol_m < n);
+        r[pcol_m] = det;
+        for (uint32_t t = 0; t < m; t++)
+          { uint32_t prow_t = prow[t]; assert(prow_t < m);
+            uint32_t pcol_t = pcol[t]; assert(pcol_t < n);
+            double Ctt = C[prow_t*n + pcol_t];
+            assert(isfinite(Ctt) && Ctt != 0);
+            double Ctm = C[prow_t*n + pcol_m];
+            double Rt = -det*Ctm/Ctt;
+            demand(isfinite(Rt), "overflow");
+            r[pcol_t] = Rt;
+          }
       }
     else
-      { /* Set {r[izer] = (-1)^(n-1-izer)*d}, all other elems to 0; */
-        assert((izer >= 0) && (izer < n-1)); 
-        for (uint32_t i = 0;  i < n; i++) { r[i] = 0.0; }
-        r[izer] = ((n - 1 - (uint32_t)izer) % 2 == 0 ? d : -d);
+      { /* Rows are linearly DEpendent. */
+        for (uint32_t j = 0; j < n; j++) { r[j] = 0.0; }
       }
     free(C);
   }
 
 double rn_det (uint32_t n, double *a[])
-  { uint32_t n2 = n*n;
-    double *C = rmxn_alloc(n,n);
+  { double *C = rmxn_alloc(n,n);
     for (uint32_t i = 0;  i < n; i++) 
       { double *ai = a[i]; 
         double *Ci = &(C[i*n]); 
         for (uint32_t j = 0;  j < n; j++) { Ci[j] = ai[j]; }
       }
+    /* !!! Using full pivoting. Would partial pivoting be better? !!! */
+    uint32_t prow[n], pcol[n]; /* Permutation matrices for Gaussian eleimination. */
     double det;
-    gausol_triang_reduce(n, prow, n, pcol, C, 0, NULL, tiny, &rank, &det);
+    uint32_t rank;
+    double tiny = 1.0e-180;
+    gausol_triang_reduce(n, prow, n, pcol, C, 0, NULL, tiny, &det, &rank);
     assert(! isnan(det));
-    gausol_triangularize(n, n, C, FALSE, 0.0);
     free(C);
-    return det;
+    return (rank == n ? det : 0);
   }
 
 double rn_decomp (uint32_t n, double a[], double u[], double para[], double perp[])

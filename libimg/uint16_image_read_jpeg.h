@@ -1,5 +1,5 @@
 /* uint16_image_read_jpeg.h - routines to read images of {uint16_t} samples from JPEG files. */
-/* Last edited on 2017-06-23 01:44:24 by stolfilocal */
+/* Last edited on 2024-12-17 16:54:57 by stolfi */
 
 /* Created by R. Minetto (IC-UNICAMP) sometime in 2008--2009. */
 /* Adapted by J. Stolfi (IC-UNICMP) on 2011-05-14. */
@@ -7,7 +7,6 @@
 #ifndef uint16_image_read_jpeg_H
 #define uint16_image_read_jpeg_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -36,7 +35,7 @@ uint16_image_t *uint16_image_read_jpeg_named(char *name, bool_t verbose, int32_t
     The parameters of the output image are described in
     {uint16_image_read_jpeg_INFO}. Note that For the color space
     {JCS_RGB565}, even though {img.maxval} is 255, the actual maximum
-    samples in each channel are 31, 63, and 51. See
+    samples in each channel are 31, 63, and 31. See
     {uint16_image_scale_channel} and {sample_conv_choose_maxval}.
     
     If the {name} is "-", reads from {stdin}. If {verbose} is TRUE,

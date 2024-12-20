@@ -1,7 +1,6 @@
 /* See {delaunay_debug.h} */
-/* Last edited on 2023-02-20 06:10:22 by stolfi */
+/* Last edited on 2024-12-05 10:25:01 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

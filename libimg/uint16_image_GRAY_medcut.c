@@ -23,7 +23,7 @@ typedef uint16_image_GRAY_box* uint16_image_GRAY_box_vector;
 
 /* Internal prototypes */
 
-typedef int (*qcomparefn)(const void *, const void *);
+typedef int32_t (*qcomparefn)(const void *, const void *);
 
 extern void 
 qsort (void *items, size_t nitems, size_t itemsize, qcomparefn cmp);
@@ -54,17 +54,17 @@ uint16_image_GRAY_box_spread(
     uint16_t maxval
   );
 
-static int
+static int32_t
 uint16_image_GRAY_spread_compare(const uint16_image_GRAY_box *b1, const uint16_image_GRAY_box *b2);
 
-static int
+static int32_t
 uint16_image_GRAY_sample_compare(const uint16_t *g1, const uint16_t *g2);
 
 static uint16_image_GRAY_box_vector
-uint16_image_GRAY_box_vector_new(int n);
+uint16_image_GRAY_box_vector_new(int32_t n);
 
 static uint16_t*
-uint16_image_GRAY_pixel_vector_new(int n);
+uint16_image_GRAY_pixel_vector_new(int32_t n);
 
 /* Implementation */
 
@@ -72,7 +72,7 @@ extern pgm_pixel_vector
 uint16_image_GRAY_median_cut(
     long *gh,      /* Pixel count indexed by gray level */
     uint16_t maxval,   /* maxval of pixel values, also size of "gh" */
-    int *newgraysp /* In: desired number of grays, out: number chosen */
+    uint32_t *newgraysp /* In: desired number of grays, out: number chosen */
   )
   /*
     Here is the fun part, the median-cut graymap generator.  This is
@@ -82,12 +82,12 @@ uint16_image_GRAY_median_cut(
   {
     pgm_pixel_vector gm;     /* The graymap */
     uint16_image_GRAY_box_vector bv;  /* The box list */
-    register int bi;
+    register int32_t bi;
     register uint16_t g, lo, hi;
     float ctr;
-    int boxes;
+    uint32_t boxes;
     
-    bv = uint16_image_GRAY_box_vector_new(*newgraysp);
+    bv = uint16_image_GRAY_box_vector_new((int32_t)*newgraysp);
 
     /* Set up the initial box. */
     
@@ -118,7 +118,7 @@ uint16_image_GRAY_median_cut(
       }
 
     /* Ok, we've got enough boxes.  Collect their centroids: */
-    gm = uint16_image_GRAY_pixel_vector_new(boxes);
+    gm = uint16_image_GRAY_pixel_vector_new((int32_t)boxes);
     for (bi = 0; bi < boxes; ++bi)
       { gm[bi] = bv[bi].rep; }
     qsort((void*)gm, boxes, sizeof(uint16_t), (qcomparefn) uint16_image_GRAY_sample_compare);
@@ -230,31 +230,31 @@ uint16_image_GRAY_box_spread(
     return(sumgg);
   }
 
-static int
+static int32_t
 uint16_image_GRAY_spread_compare(const uint16_image_GRAY_box *b1, const uint16_image_GRAY_box *b2)
   {
-    return ((int)
+    return ((int32_t)
       (b1->spread > b2->spread ? -1 : 
       (b1->spread < b2->spread ?  1 :
       0))
     );
   }
 
-static int
+static int32_t
 uint16_image_GRAY_sample_compare(const uint16_t *g1, const uint16_t *g2)
   {
-    return ((int) (*g1) - (*g2));
+    return ((int32_t) (*g1) - (*g2));
   }
 
 static uint16_image_GRAY_box_vector
-uint16_image_GRAY_box_vector_new(int n)
-  { uint16_image_GRAY_box_vector bv = (uint16_image_GRAY_box_vector)pnm_malloc(n*sizeof(uint16_image_GRAY_box));
+uint16_image_GRAY_box_vector_new(int32_t n)
+  { uint16_image_GRAY_box_vector bv = talloc(n, uint16_image_GRAY_box);
     return(bv);
   }
 
 static uint16_t*
-uint16_image_GRAY_pixel_vector_new(int n)
-  { uint16_t *gv = (uint16_t*)pnm_malloc(n*sizeof(uint16_t));
+uint16_image_GRAY_pixel_vector_new(int32_t n)
+  { uint16_t *gv = talloc(n, uint16_t);
     return(gv);
   }
 

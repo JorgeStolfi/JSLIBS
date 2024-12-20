@@ -1,10 +1,9 @@
 /* Test tools for {r2_opt.h}. */
-/* Last edited on 2023-02-27 10:36:12 by stolfi */
+/* Last edited on 2024-12-05 10:35:10 by stolfi */
 
 #ifndef test_r2_opt_tools_H
 #define test_r2_opt_tools_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <r2.h>
 #include <bool.h>

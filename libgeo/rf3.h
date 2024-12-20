@@ -1,10 +1,9 @@
 /* rf3.h --- operations on points and vectors of R^3 (single-precision version) */
-/* Last edited on 2024-11-20 13:01:52 by stolfi */
+/* Last edited on 2024-12-05 10:28:19 by stolfi */
 
 #ifndef rf3_H
 #define rf3_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 typedef struct rf3_t { float c[3]; } rf3_t;

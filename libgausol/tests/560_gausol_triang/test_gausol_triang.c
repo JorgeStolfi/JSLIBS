@@ -1,5 +1,5 @@
 /* test_gausol_tri-diag_.c --- test program for gausol_triang.h  */
-/* Last edited on 2024-11-30 04:31:43 by stolfi */
+/* Last edited on 2024-11-30 15:51:39 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -125,11 +125,11 @@ void test_gausol_triang (uint32_t trial, bool_t verbose)
     uint32_t *pcol = (pivot_cols ? talloc(n, uint32_t) : NULL);
     double det_cmp;
     uint32_t rank;
-    gausol_triang_reduce(m, prow, n, pcol, A, p, B, tiny, &rank, &det_cmp);
+    gausol_triang_reduce(m, prow, n, pcol, A, p, B, tiny, &det_cmp, &rank);
     
     if (verbose) { fprintf(stderr, "  returned rank rank = %d  det = %24.16e\n", rank, det_cmp); }
     gausol_test_tools_check_triang_reduce
-      ( m,prow,  n,pcol,A,  p,B, tiny, rank, det_ref,det_cmp, rms_A, verbose);
+      ( m,prow,  n,pcol,A,  p,B, tiny, rms_A, rank, det_ref,det_cmp, verbose);
       
     if (verbose) { fprintf(stderr, "  calling {gausol_triang_diagonalize} ...\n"); }
     gausol_triang_diagonalize(m,prow, n,pcol,A, p,B, rank, tiny);

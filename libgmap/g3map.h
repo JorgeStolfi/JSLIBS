@@ -1,6 +1,6 @@
 #ifndef g3map_H
 #define g3map_H
-/* Last edited on 2022-10-20 06:29:08 by stolfi */
+/* Last edited on 2024-12-05 10:28:56 by stolfi */
 
 /* 
   3-DIMENSIONAL MAPS
@@ -23,7 +23,6 @@
   
 */
 
-#define _GNU_SOURCE
 #include <gem.h>
 #include <stdint.h>
 

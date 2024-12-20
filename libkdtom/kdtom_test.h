@@ -1,10 +1,9 @@
 /* Multidimensional sample arrays stored as k-d-trees. */
-/* Last edited on 2021-07-16 09:48:40 by jstolfi */
+/* Last edited on 2024-12-05 10:33:03 by stolfi */
 
 #ifndef kdtom_test_H
 #define kdtom_test_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

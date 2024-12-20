@@ -1,5 +1,5 @@
 /* See {float_image_from_uint16_image.h} */
-/* Last edited on 2017-06-22 17:43:19 by stolfilocal */ 
+/* Last edited on 2024-12-05 00:46:36 by stolfi */ 
 
 #include <limits.h>
 #include <assert.h>
@@ -27,11 +27,11 @@ float_image_t *float_image_from_uint16_image
   )
   { 
     /* Get image dimensions: */
-    int NX = pim->cols;
-    int NY = pim->rows;
+    int32_t NX = pim->cols;
+    int32_t NY = pim->rows;
     
     /* Channel counts: */
-    int chns = pim->chns; /* Num of channels. */
+    int32_t chns = pim->chns; /* Num of channels. */
     
     /* Allocate float image: */
     float_image_t *fim = float_image_new(chns, NX, NY);
@@ -42,7 +42,7 @@ float_image_t *float_image_from_uint16_image
     /* Input and output range registers: */
     sample_uint32_t imin[chns], imax[chns]; /* Input range registers. */ 
     float vmin[chns], vmax[chns];         /* Output range registers. */ 
-    int c; /* Channel index. */
+    int32_t c; /* Channel index. */
     for (c = 0; c < chns; c++) 
       { imin[c] = maxval;
         imax[c] = 0;
@@ -51,13 +51,13 @@ float_image_t *float_image_from_uint16_image
       }
     
     /* Convert pixels, keep statistics: */
-    int x, y;
+    int32_t x, y;
     for(y = 0; y < NY; y++)
-      { int pgmy = (yup ? NY - 1 - y : y);
+      { int32_t pgmy = (yup ? NY - 1 - y : y);
         uint16_t *prow = pim->smp[pgmy];
         for(x = 0; x < NX; x++)
           { for (c = 0; c < chns; c++)
-              { /* Convert int sample {*prow} to float {v}, store, keep stats: */
+              { /* Convert int32_t sample {*prow} to float {v}, store, keep stats: */
                 uint16_t ismp = (*prow);
                 double loc = (lo == NULL ? 0.0 : lo[c]);
                 double hic = (hi == NULL ? 1.0 : hi[c]);
@@ -71,8 +71,8 @@ float_image_t *float_image_from_uint16_image
     
     if (verbose) 
       { /* Print statistics: */
-        long int NPIX = ((long int)NX)*((long int)NY);
-        fprintf(stderr, "  %ld pixels in PNM image\n", NPIX);
+        int32_t NPIX = ((int32_t)NX)*((int32_t)NY);
+        fprintf(stderr, "  %d pixels in PNM image\n", NPIX);
         if (NPIX > 0)
           { for (c = 0; c < chns; c++)
               { double loc = (lo == NULL ? 0.0 : lo[c]);

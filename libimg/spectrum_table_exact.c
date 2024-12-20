@@ -1,5 +1,5 @@
 /* See spectrum_table_exact.h */
-/* Last edited on 2024-11-06 10:04:37 by stolfi */ 
+/* Last edited on 2024-12-05 07:49:23 by stolfi */ 
 
 #include <stdint.h>
 #include <limits.h>
@@ -41,13 +41,13 @@ void spectrum_table_exact_append_all
     int32_t fd[2] = { cols, rows };  /* Num of freqs in each axis. */
     int32_t fMin[2] = { -(cols-1)/2, -(rows-1)/2 }; /* min integer freqs. */
     int32_t fMax[2] = { cols/2, rows/2 }; /* Max integer freqs. */
-    int32_t ntx = tx->ne; /* Table entries in use are {tx.e[0..ntx-1]}. */
+    uint32_t ntx = tx->ne; /* Table entries in use are {tx.e[0..ntx-1]}. */
     for (int32_t fx = fMin[0]; fx <= fMax[0]; fx++)
       { for (int32_t fy = fMin[1]; fy <= fMax[1]; fy++)
           { int32_t fn[2] = { fx, fy };
             /* Compute negated freq vector {fn}: */
             int32_t fc[2];  /* Denominators of int32_t freq vectors. */
-            for (uint32_t j = 0;  j <= 1; j++) 
+            for (int32_t j = 0;  j <= 1; j++) 
               { fc[j] = -fn[j];  if (fc[j] < fMin[j]) { fc[j] += fd[j]; } }
             /* We must consider {fn} only if it is leq {fc} in lex order: */
             if ((fn[0] < fc[0]) || ((fn[0] == fc[0]) && (fn[1] <= fc[1])))
@@ -83,7 +83,7 @@ void spectrum_table_exact_append_all
   
 void spectrum_table_exact_append_term
   ( spectrum_table_exact_t *tx, 
-    int32_t *ntxp,
+    uint32_t *ntxp,
     int32_t fn[], 
     int32_t fd[],
     double nTerms,
@@ -91,7 +91,7 @@ void spectrum_table_exact_append_term
   )
   {
     bool_t debug = FALSE;
-    int32_t ntx = (*ntxp);
+    uint32_t ntx = (*ntxp);
     spectrum_table_exact_expand(tx, ntx);
     spectrum_table_exact_entry_t *txn = &(tx->e[ntx]);
     urat64_t freq2 = spectrum_table_exact_compute_freq2(fn, fd);
@@ -124,7 +124,7 @@ urat64_t spectrum_table_exact_compute_freq2(int32_t fn[], int32_t fd[])
         if (Fn > FnMax) { Fn = Fd - Fn; }
         assert((Fn >= 0) && (Fn <= FnMax));
         /* Pack as a {2×64} bit rational number: */
-        urat64_t F = (urat64_t){ .num = Fn, .den = Fd };
+        urat64_t F = (urat64_t){ .num = (uint64_t)Fn, .den = (uint64_t)Fd };
         /* Remove common factors in fraction {Fn/Fd}: */
         urat64_reduce(&F);
         /* Set {F2[i]} to {F} squared (safe, since {fn,fd} were 32 bit signed ints). */
@@ -155,7 +155,7 @@ void spectrum_table_exact_sort(spectrum_table_exact_t *tx, bool_t verbose)
     qsort(tx->e, tx->ne, sizeof(spectrum_table_exact_entry_t), &cmp_freq);
     
     /* Merge entries with identical frequencies: */
-    int32_t nc = 0; /* The condensed entries are {tb.e[0..nc-1]}. */
+    uint32_t nc = 0; /* The condensed entries are {tb.e[0..nc-1]}. */
     int32_t k;
     for (k = 0; k < tx->ne; k++)
       { if (nc == 0)

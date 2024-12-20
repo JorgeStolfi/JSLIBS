@@ -2,7 +2,7 @@
 #define float_image_transform_H
 
 /* Tools for projective and barrel/pincushion image correction. */
-/* Last edited on 2024-11-23 05:39:24 by stolfi */ 
+/* Last edited on 2024-12-04 23:32:16 by stolfi */ 
 
 #include <r2.h>
 #include <r2_extra.h>
@@ -18,7 +18,7 @@ void float_image_transform_all
     r2_map_jacobian_t *map,  /* Output-to-input coordinate transformation. */
     float undef,             /* Sample value for undefined output pixels. */
     bool_t avg,              /* TRUE to average pixels, FALSE to add them. */
-    int order,               /* Interpolation order. */
+    int32_t order,               /* Interpolation order. */
     r2_pred_t *debugp,       /* Predicate, tells whether pixel should be debugged (NULL means "never"). */
     float_image_t *oimg      /* Output image. */
   );
@@ -80,11 +80,11 @@ void float_image_transform_sub
     r2_map_jacobian_t *map,  /* Output-to-input coordinate transformation. */
     float undef,             /* Sample value for undefined output pixels. */
     bool_t avg,              /* TRUE to average pixels, FALSE to add them. */
-    int order,               /* Interpolation order. */
-    int x0,                  /* First output image column. */
-    int y0,                  /* First output image row. */
-    int NX,                  /* Number of output image columns. */
-    int NY,                  /* Number of output image rows. */
+    int32_t order,               /* Interpolation order. */
+    int32_t x0,                  /* First output image column. */
+    int32_t y0,                  /* First output image row. */
+    int32_t NX,                  /* Number of output image columns. */
+    int32_t NY,                  /* Number of output image rows. */
     r2_pred_t *debugp,       /* Predicate, tells whether pixel should be debugged (NULL means "no"). */
     float_image_t *oimg      /* Output image. */
   );
@@ -95,12 +95,12 @@ void float_image_transform_sub
 void float_image_transform_get_pixel
   ( float_image_t *img,     /* Input image. */
     ix_reduce_mode_t red,     /* Index reduction method. */ 
-    int col,                /* Column index of output pixel. */
-    int row,                /* Row index of output pixel. */
+    int32_t col,                /* Column index of output pixel. */
+    int32_t row,                /* Row index of output pixel. */
     r2_map_jacobian_t *map, /* Output-to-input coordinate transformation. */
     float undef,            /* Sample value for undefined output pixels. */
     bool_t avg,             /* TRUE to average pixels, FALSE to add them. */
-    int order,              /* Interpolation order. */
+    int32_t order,              /* Interpolation order. */
     float f[],              /* Output pixel. */
     bool_t debug            /* If TRUE, prints debugging info. */
   );
@@ -140,11 +140,11 @@ void float_image_transform_copy_persp_rectangle
     r3x3_t *T2I,        /* Projective map from true coords to image coords. */
     float undef,        /* Defaut for undefined source pixels. */
     bool_t avg,         /* TRUE to compute average. */
-    int order,          /* Interpolation order to use. */
-    int x0,             /* First output image column. */
-    int y0,             /* First output image row. */
-    int NX,             /* Number of output image columns. */
-    int NY,             /* Number of output image rows. */
+    int32_t order,          /* Interpolation order to use. */
+    int32_t x0,             /* First output image column. */
+    int32_t y0,             /* First output image row. */
+    int32_t NX,             /* Number of output image columns. */
+    int32_t NY,             /* Number of output image rows. */
     r2_pred_t *debugp,  /* Predicate, tells whether pixel should be debugged (NULL means "no"). */
     float_image_t *oimg /* Output image. */
   );

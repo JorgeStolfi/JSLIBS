@@ -1,4 +1,4 @@
-# Last edited on 2024-11-06 10:23:57 by stolfi
+# Last edited on 2024-12-20 18:42:38 by stolfi
 
 PROG = test_spectrum_table
 
@@ -7,6 +7,7 @@ TEST_LIB_DIR := ../..
 
 JS_LIBS := \
   libgeo.a \
+  libgausol.a \
   libjs.a
   
 OTHER_LIBS := \

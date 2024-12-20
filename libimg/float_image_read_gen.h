@@ -1,10 +1,9 @@
 /* Reafing {float_image_t} images from variable file formats. */
-/* Last edited on 2017-09-02 17:11:15 by stolfilocal */
+/* Last edited on 2024-12-20 17:44:57 by stolfi */
 
 #ifndef float_image_read_gen_H
 #define float_image_read_gen_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 
 #include <bool.h>
@@ -19,8 +18,8 @@ float_image_t *float_image_read_gen_named
     float v0,            /* Output sample value corresponding to file sample value 0. */
     float vM,            /* Output sample value corresponding to max file sample value. */
     uint16_t **maxvalP,  /* (OUT) Discrete nominal max value in file for each channel. */
-    double *gammaDecP,   /* (OUT) Exponent of gamma-decoding specified or implied in the input file. */
-    double *biasP,       /* (OUT) Bias parameter for gamma conversion, idem. */
+    double *expoDecP,    /* (OUT) Gamma decoding exponent specified/implied by input file. */
+    double *biasP,       /* (OUT) Gamma decoding bias, idem. */
     bool_t verbose       /* If true, prints some information about the file and conversion. */ 
   );
   /* Reads an image from file {fname}, and converts it to a float-valued
@@ -62,11 +61,11 @@ float_image_t *float_image_read_gen_named
     
     Samples in image files are usually related to light intensity values
     by a non-linear /gamma encoding/ that depends on two parameters, an
-    exponent {gammaDec} and an offset {bias}. If the file specifies or
+    exponent {expoDec} and an offset {bias}. If the file specifies or
     implies values for these parameters, they are returned in
-    {*gammaDecP} and {*biasP}. If the file does not specify them, the
+    {*expoDecP} and {*biasP}. If the file does not specify them, the
     procedure assumes the parameters of the ITU-R BT709 standard; see
-    {sample_conv.h}. For FNI images, {*gammaDecP} and {*biasP} are set
+    {sample_conv.h}. For FNI images, {*expoDecP} and {*biasP} are set
     to {NAN}. */
     
 float_image_t *float_image_read_gen_file
@@ -75,8 +74,8 @@ float_image_t *float_image_read_gen_file
     float v0,           /* Output sample value corresponding to file sample value 0. */
     float vM,           /* Output sample value corresponding to max file sample value. */
     uint16_t **maxvalP, /* (OUT) Discrete nominal max value in file for each channel. */
-    double *gammaDecP,  /* (OUT) Gamma specified or implied in the input file. */
-    double *biasP,      /* (OUT) Bias parameter for gamma conversion, idem. */
+    double *expoDecP,   /* (OUT) Gamma decoding exponent specified/implied by input file. */
+    double *biasP,      /* (OUT) Gamma decoding bias, idem. */
     bool_t verbose      /* If true, prints some information about the file and conversion. */ 
   );
   /* Same as {float_image_read_gen_named}, but reads from the file handle {rd}
@@ -85,13 +84,13 @@ float_image_t *float_image_read_gen_file
 
 float_image_t *float_image_read_gen_frame
   ( const char *fpat,
-    int fnum,
+    int32_t fnum,
     image_file_format_t ffmt,
     float v0,           /* Output sample value corresponding to file sample value 0. */
     float vM,           /* Output sample value corresponding to max file sample value. */
     uint16_t **maxvalP, /* (OUT) Discrete nominal max value in file for each channel. */
-    double *gammaDecP,  /* (OUT) Gamma specified or implied in the input file. */
-    double *biasP,      /* (OUT) Bias parameter for gamma conversion, idem. */
+    double *expoDecP,   /* (OUT) Gamma decoding exponent specified/implied by input file. */
+    double *biasP,      /* (OUT) Gamma decoding bias, idem. */
     bool_t verbose      /* If true, prints some information about the file and conversion. */ 
   );
   /* Same as {float_image_read_gen_named}, but the file name is obtained by
@@ -180,7 +179,7 @@ float_image_t *float_image_read_gen_frame
   "  Then the sample values are multiplied by the scaling factor {vd} above.\n" \
   "\n" \
   "  Note that the final float samples will be in the range {v0} to {vM} only" \
-  " of there is no gamma correction ({*gammaDecP} is set to 1) or if {{v0,vM}} is" \
+  " of there is no gamma correction ({*expoDecP} is set to 1) or if {{v0,vM}} is" \
   " a subset of {{-1,0,+1}}.  The two parameters must be distinct, but {vM] may" \
   " be less than {v0} to invert the brightness scale."
 

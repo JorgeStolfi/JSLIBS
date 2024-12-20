@@ -1,7 +1,6 @@
 /* test program for {lsq_robust} */
-/* Last edited on 2024-11-07 00:46:57 by stolfi */
+/* Last edited on 2024-12-05 10:33:46 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

@@ -2,9 +2,8 @@
 #define sheet_cut_plot_H
  
 /* Plotting layouts of rectangular plates on sheet stock. */
-/* Last edited on 2020-11-05 17:18:50 by jstolfi */
+/* Last edited on 2024-12-05 10:40:11 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 

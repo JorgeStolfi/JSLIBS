@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {spectrum_table_exact.h}, {spectrum_table_binned.h}, {spectrum_table_convert.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-06 09:07:12 by stolfi */ 
+/* Last edited on 2024-12-20 18:40:04 by stolfi */ 
 /* Created on 2008-10-05 by J. Stolfi, UNICAMP */
 
 #define test_spectrum_table_COPYRIGHT \
@@ -17,12 +17,14 @@
 
 #include <affirm.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <bool.h>
 #include <gauss_table.h>
 #include <spectrum_table_convert.h>
 #include <spectrum_table_binned.h>
 #include <spectrum_table_exact.h>
 #include <sample_conv.h>
+#include <sample_conv_gamma.h>
 #include <uint16_image.h>
 #include <uint16_image_read_pnm.h>
 #include <uint16_image_write_pnm.h>
@@ -33,10 +35,10 @@
 #include <float_image_to_uint16_image.h>
 #include <float_image.h>
 
-#define BT_GAMMA (0.450) 
-#define BT_BIAS (sample_conv_BT709_BIAS) 
-/* Values of {gamma} and {bias} parameter that approximate
-  the BT.709 encoding.  */
+#define BT_ENC_EXPO sample_conv_gamma_BT709_ENC_EXPO
+#define BT_ENC_BIAS sample_conv_gamma_BT709_BIAS 
+  /* Values of {expo} and {bias} parameters for {sample_conv_gamma}
+    that approximate the BT.709 encoding.  */
 
 typedef enum { kind_PEAK, kind_WAVE, kind_BUMP, kind_REAL } kind_t;
 #define kind_LAST (kind_REAL)
@@ -203,46 +205,46 @@ void do_test
 
     fprintf(stderr, "gathering the exact spectrum table...\n");
     spectrum_table_exact_t tx = spectrum_table_exact_new(0);
-    for (uint32_t c = 0;  c < chns; c++) 
+    for (int32_t c = 0;  c < chns; c++) 
       { spectrum_table_exact_append_all(pimg, c, center, &tx, verbose); }
     spectrum_table_exact_sort(&tx, verbose);
     write_spectrum_exact("out", kind, cols, rows, kx, ky, "2-tbex", &tx);
 
     fprintf(stderr, "checking exact spectrum table totals...\n");
-    int32_t xent = tx.ne;
+    int32_t xent = (int32_t)tx.ne;
     double xnsmp = 0.0;
     double xterg = 0.0;
-    for (uint32_t k = 0;  k < tx.ne; k++) 
+    for (int32_t k = 0;  k < tx.ne; k++) 
       { xnsmp += tx.e[k].nTerms; 
         xterg += tx.e[k].power;
       }
     check_power_totals("exact spectrum table", xent, xnsmp, xterg, insmp, iterg);
     
     fprintf(stderr, "gathering the binned spectrum table...\n");
-    spectrum_table_binned_t tb = spectrum_table_binned_make(bins);
-    for (uint32_t c = 0;  c < chns; c++) 
+    spectrum_table_binned_t tb = spectrum_table_binned_make((uint32_t)bins);
+    for (int32_t c = 0;  c < chns; c++) 
       { spectrum_table_binned_add_all(pimg, c, center, &tb, verbose); }
     write_spectrum_binned("out", kind, cols, rows, kx, ky, "3-tbbn", &tb);
 
     fprintf(stderr, "checking binned spectrum table totals...\n");
-    int32_t bent = tb.ne;
+    int32_t bent = (int32_t)tb.ne;
     double bnsmp = 0.0;
     double bterg = 0.0;
-    for (uint32_t k = 0;  k < tb.ne; k++) 
+    for (int32_t k = 0;  k < tb.ne; k++) 
       { bnsmp += tb.e[k].nTerms; 
         bterg += tb.e[k].power; 
       }
     check_power_totals("binned spectrum table", bent, bnsmp, bterg, insmp, iterg);
     
     fprintf(stderr, "checking conversion of exact spectrum to binned spectrum...\n");
-    spectrum_table_binned_t tc = spectrum_table_convert_exact_to_binned(&tx, cols, rows);
+    spectrum_table_binned_t tc = spectrum_table_convert_exact_to_binned(&tx, (uint32_t)cols, (uint32_t)rows);
     write_spectrum_binned("out", kind, cols, rows, kx, ky, "4-tbcv", &tc);
  
     fprintf(stderr, "checking converted spectrum table totals...\n");
-    int32_t cent = tc.ne;
+    int32_t cent = (int32_t)tc.ne;
     double cnsmp = 0.0;
     double cterg = 0.0;
-    for (uint32_t k = 0;  k < tc.ne; k++) 
+    for (int32_t k = 0;  k < tc.ne; k++) 
       { cnsmp += tc.e[k].nTerms; 
         cterg += tc.e[k].power;
       }
@@ -297,7 +299,7 @@ float_image_t *get_test_image(int32_t chns, int32_t cols, int32_t rows, kind_t k
             /* Make sure that the whole smudge is inside the image: */
             double cx = kx + 0.5; fit_bell(&cx, dx, cols);
             double cy = ky + 0.5; fit_bell(&cy, dy, rows);
-            for (uint32_t c = 0;  c < chns; c++)
+            for (int32_t c = 0;  c < chns; c++)
               { float val = (float)(0.1 + 0.4*c); /* Intensity in channel {c}. */
                 (void)float_image_paint_smudge(img, c, cx, cy, dx, dy, val, 3);
               }
@@ -344,7 +346,7 @@ void compute_total_image_energy(float_image_t *img, bool_t squared, double *nsmp
     int32_t npix = cols*rows;
     double nsmp = 0.0;
     double terg = 0.0;
-    for (uint32_t c = 0;  c < chns; c++) 
+    for (int32_t c = 0;  c < chns; c++) 
       { nsmp += cols*rows;
         if (squared) 
           { terg += float_image_compute_squared_sample_sum(img, c, 0.0, NULL); }
@@ -378,8 +380,7 @@ void check_power_totals(char *tname, int32_t zent, double zntrm, double zterg, d
 
 
 float_image_t *read_image(char *dir, int32_t kx, int32_t ky, int32_t chns, char *suffix)
-  { char *fname = NULL;
-    char *ext = (chns == 1 ? "pgm" : "ppm");
+  { char *ext = (chns == 1 ? "pgm" : "ppm");
     char *fname = jsprintf("%s/real-%04d-%04d-%s.%s", dir, kx, ky, suffix, ext);
     FILE *rd = open_read(fname, TRUE);
     uint16_image_t *pim = uint16_image_read_pnm_file(rd);
@@ -389,8 +390,8 @@ float_image_t *read_image(char *dir, int32_t kx, int32_t ky, int32_t chns, char 
     bool_t isMask = FALSE; /* Assume uniform distr. of pixel values in encoding/decoding. */
     float_image_t *fim = float_image_from_uint16_image(pim, isMask, NULL, NULL, yup, verbose);
     uint16_image_free(pim);
-    for (uint32_t c = 0;  c < fim->sz[0]; c++) 
-      { float_image_apply_gamma(fim, c, 1/BT_GAMMA, BT_BIAS); }
+    for (int32_t c = 0;  c < fim->sz[0]; c++) 
+      { float_image_apply_gamma(fim, c, 1/BT_ENC_EXPO, BT_ENC_BIAS); }
     return fim;
   }
 
@@ -406,7 +407,7 @@ void write_image(char *dir, kind_t kind, int32_t kx, int32_t ky, char *suffix, f
     float vMin, vMax;
     if (pwr)
       { vMin = (float)1.0e-38; vMax = vMin;
-        for (uint32_t c = 0;  c < chns; c++) 
+        for (int32_t c = 0;  c < chns; c++) 
           { if (! centered) 
               { /* Shift so that the mean value is at the center: */
                 float_image_shift(fim, c, cols/2, rows/2);
@@ -417,14 +418,14 @@ void write_image(char *dir, kind_t kind, int32_t kx, int32_t ky, char *suffix, f
         double vRef = 1.0e-5*fmax(1.0e-38,vMax); /* Reference value for log scale. */
         double vBase = 10.0;                       /* Base for log scale. */
         fprintf(stderr, "vRef for log scale = %24.16e\n", vRef);
-        for (uint32_t c = 0;  c < chns; c++) 
+        for (int32_t c = 0;  c < chns; c++) 
           { float_image_log_scale(fim, c, 0.0, vRef, vBase); }
         vMin = 0.0;
         vMax = (float)(log(1.125*vMax/vRef)/log(vBase)); 
       }
     else
       { vMin = +INF; vMax = -INF;
-        for (uint32_t c = 0;  c < chns; c++)
+        for (int32_t c = 0;  c < chns; c++)
           { float_image_update_sample_range(fim, c, &vMin, &vMax); }
         if ((vMin < 0) || (vMax < 0))
           { /* Range contains negative values, make it symmetric: */
@@ -439,9 +440,9 @@ void write_image(char *dir, kind_t kind, int32_t kx, int32_t ky, char *suffix, f
     
     /* Map {vMin} to 0, {vMax} to 1, and apply view gamma: */
     fprintf(stderr, "nominal range before rescaling = [ %24.16e _ %24.16e]\n", (double)vMin, (double)vMax);
-    for (uint32_t c = 0;  c < chns; c++) 
+    for (int32_t c = 0;  c < chns; c++) 
       { float_image_rescale_samples(fim, c, vMin, vMax, 0.0, 1.0);
-        float_image_apply_gamma(fim, c, BT_GAMMA, BT_BIAS);
+        float_image_apply_gamma(fim, c, BT_ENC_EXPO, BT_ENC_BIAS);
       }
     
     /* Quantize: */
@@ -476,7 +477,7 @@ void write_spectrum_exact
   {
     char *fname = jsprintf("%s/%s-%04dx%04d-%04d-%04d-%s.txt", dir, kind_name[kind], cols, rows, kx, ky, suffix);
     FILE *wr = open_write(fname, TRUE);
-    for (uint32_t k = 0;  k < tx->ne; k++)
+    for (int32_t k = 0;  k < tx->ne; k++)
       { spectrum_table_exact_entry_t *txk = &(tx->e[k]);
         fprintf(wr, " %20lu %20lu", txk->freq2.num, txk->freq2.den); 
         double freq_app = sqrt(((double)txk->freq2.num)/((double)txk->freq2.den));
@@ -501,7 +502,7 @@ void write_spectrum_binned
   {
     char *fname = jsprintf("%s/%s-%04dx%04d-%04d-%04d-%s.txt", dir, kind_name[kind], cols, rows, kx, ky, suffix);
     FILE *wr = open_write(fname, TRUE);
-    for (uint32_t k = 0;  k < tb->ne; k++)
+    for (int32_t k = 0;  k < tb->ne; k++)
       { spectrum_table_binned_entry_t *tbk = &(tb->e[k]);
         fprintf(wr, " %24.16e %24.16e", tbk->fmin, tbk->fmax); 
         fprintf(wr, "  %24.16e", tbk->fmid); 

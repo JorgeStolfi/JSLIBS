@@ -1,5 +1,5 @@
 /* See gem_enum.h. */
-/* Last edited on 2023-03-18 10:55:51 by stolfi */
+/* Last edited on 2024-12-05 10:38:40 by stolfi */
 
 #define gem_enum_C_copyright \
   "Copyright © 1996, 2006 Institute of Computing, Unicamp."
@@ -11,7 +11,6 @@
   latter was converted to C by J. Stolfi in 1996 and was substantially
   revised by him in January 2007. */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <malloc.h>
 #include <stdint.h>

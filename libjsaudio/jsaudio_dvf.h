@@ -1,5 +1,5 @@
 /* jsaudio_dvf.h - Sony Recorder DVF audio file I/O */
-/* Last edited on 2023-03-02 08:02:18 by stolfi */
+/* Last edited on 2024-12-05 10:32:19 by stolfi */
 
 /* 
   Derived from {rusound.h}, created by Rumiko Oishi Stolfi
@@ -9,7 +9,6 @@
 #ifndef jsaudio_dvf_H
 #define jsaudio_dvf_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

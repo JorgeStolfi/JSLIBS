@@ -1,4 +1,4 @@
-/* Last edited on 2023-02-25 15:43:04 by stolfi */
+/* Last edited on 2024-12-04 23:20:25 by stolfi */
 
 /* INTERNAL PROTOTYPES */
 
@@ -15,7 +15,7 @@ void foo(void)
      
     for (k = 0; k < 2; k++)
       { for (i = 0; i < n; i++) 
-          { int npi = img[i]->sz[k+1]; /* Number of pixels along axis {k}. */
+          { int32_t npi = img[i]->sz[k+1]; /* Number of pixels along axis {k}. */
             demand(p[i].c[k] - dmax >= 0 - fudge, "point too close to low edge"); 
             demand(p[i].c[k] + ns.c[k]*step.c[k] <= npi + fudge, "point too close to high edge"); 
           }
@@ -28,28 +28,28 @@ void foo(void)
     double w0[nr.c[0]]; /* {w1[r]} is weight for sample point {±r} from window center. */
     double w1[nr.c[1]]; /* {w1[r]} is weight for sample point {±r} from window center. */
     for (k = 0; k < 2; k++)
-      { int r; 
+      { int32_t r; 
         for (r = 0; r <= nr.c[k]; r++)
           { (k == 0 ? w0 : w1)[r] = fial_sample_weight(r, nr.c[k]); }
       }
 
   }
 
-void fial_generate_all_alignments(int nims, int dmax, double step, int nal, alignment_t *al)
+void fial_generate_all_alignments(int32_t nims, int32_t dmax, double step, int32_t nal, alignment_t *al)
   {
-    int sc, sr;
-    int *dc = (int *)malloc(nims*sizeof(int));
-    int *dr = (int *)malloc(nims*sizeof(int));
-    int k;
-    int carry; /* boolean */
-    int nfound = 0;
+    int32_t sc, sr;
+    int32_t *dc = (int32_t *)malloc(nims*sizeof(int32_t));
+    int32_t *dr = (int32_t *)malloc(nims*sizeof(int32_t));
+    int32_t k;
+    int32_t carry; /* boolean */
+    int32_t nfound = 0;
 
     k = nims; sc = 0; sr = 0; carry = 0;
     while(1)
       { 
         /* Here {sc} is the sum of {dc[k..nims-1]}, ditto for {sr,dr}. */
         /* Generate the smallest solution with current {dc,dr[k..nfound-1]}: */
-        int j;
+        int32_t j;
         while (k > 0)
           { /* Move down and set digit to minimum value: */
             k--;
@@ -107,7 +107,7 @@ void fial_generate_all_alignments(int nims, int dmax, double step, int nal, alig
   }
 
 void fial_adjust_alignment
-  ( int nims, 
+  ( int32_t nims, 
     image_rec_t *iml, 
     double dmax, 
     double epsilon, 
@@ -117,21 +117,21 @@ void fial_adjust_alignment
   {
     if (nims >= 2)
       { 
-        int arad = ceil(3*radius); /* Weights are negligible beyond this. */
-        int nwt = 2*arad+1;
+        int32_t arad = ceil(3*radius); /* Weights are negligible beyond this. */
+        int32_t nwt = 2*arad+1;
         Image *avg = allocate_image(nwt, nwt, fial_max_chns(iml));
         double *gwt = fial_gaussian_distr(nwt, radius);
         double s1 = ((double)(nims-1))/((double)nims);
         double corr = s1*s1; /* Variance correction factor. */
         image_rec_t *impi;
         double step;
-        int i;
+        int32_t i;
 
         /* Loop until convergence: */
         i = 0; impi = iml;
         step = 0.5*(dmax + epsilon);
         while(1)
-          { int krowi, kcoli;
+          { int32_t krowi, kcoli;
             interval_t prev_best; 
             /* Adjust displacements so that they add to zero: */
             fial_recenter_displacements(nims, al->dcol, al->drow);
@@ -169,9 +169,9 @@ void fial_adjust_alignment
       }
   }
 
-void write_optimal_positions(int nims, image_rec_t *iml, double *dcol, double *drow)
+void write_optimal_positions(int32_t nims, image_rec_t *iml, double *dcol, double *drow)
   {
-    int i;
+    int32_t i;
     image_rec_t *impi;
     for (i = 0, impi = iml; i < nims; i++, impi = impi->next)
       { double tcol = dcol[i] + impi->ccol;
@@ -181,10 +181,10 @@ void write_optimal_positions(int nims, image_rec_t *iml, double *dcol, double *d
     fflush(stdout);
   }
 
-void fial_recenter_displacements(int nims, double *dcol, double *drow)
+void fial_recenter_displacements(int32_t nims, double *dcol, double *drow)
   {
     double tcol = 0, trow = 0;
-    int i;
+    int32_t i;
     for (i = 0; i < nims; i++) { tcol += dcol[i]; trow += drow[i]; }
     tcol /= (double)nims;
     trow /= (double)nims;
@@ -192,9 +192,9 @@ void fial_recenter_displacements(int nims, double *dcol, double *drow)
   }
 
 void fial_align_var
-  ( int n,
+  ( int32_t n,
     float_image_t *img[],   /* Images to align. */
-    int nc,                 /* Number of channels to consider. */
+    int32_t nc,                 /* Number of channels to consider. */
     i2_t ns,                /* Number of adjustment steps along each axis. */
     r2_t step,              /* Precision required along each axis. */
     r2_t p[],               /* (IN/OUT) Corresponding points in each image. */
@@ -205,7 +205,7 @@ void fial_align_var
     bool_t debug = TRUE;
     
     double fudge = 1.0e-7; /* Fudge term to compensate roundoff errors. */
-    int i, k;
+    int32_t i, k;
       
     /* Check image channel counts: */
     demand(nc > 0, "invalid channel count"); 
@@ -221,7 +221,7 @@ void fial_align_var
           { demand(step.c[k] > 0, "search {step} must be positive"); }
         double dmax = ns.c[k]*step.c[k]; /* Max displacement along axis {k}. */
         for (i = 0; i < n; i++) 
-          { int npi = img[i]->sz[k+1]; /* Number of pixels along axis {k}. */
+          { int32_t npi = img[i]->sz[k+1]; /* Number of pixels along axis {k}. */
             demand(p[i].c[k] - dmax >= 0 - fudge, "point too close to low edge"); 
             demand(p[i].c[k] + ns.c[k]*step.c[k] <= npi + fudge, "point too close to high edge"); 
           }
@@ -232,7 +232,7 @@ void fial_align_var
     double w0[nr.c[0]]; /* {w1[r]} is weight for sample point {±r} from window center. */
     double w1[nr.c[1]]; /* {w1[r]} is weight for sample point {±r} from window center. */
     for (k = 0; k < 2; k++)
-      { int r; 
+      { int32_t r; 
         for (r = 0; r <= nr.c[k]; r++)
           { (k == 0 ? w0 : w1)[r] = fial_sample_weight(r, nr.c[k]); }
       }
@@ -264,14 +264,14 @@ void fial_align_var
   }    
 
 
-double fial_sample_weight(int r, int rmax);
+double fial_sample_weight(int32_t r, int32_t rmax);
   /* Returns the relative weight of a sample that is displaced by
     distance {r} from the center sample, assuming that the maximum {r}
     within the comparison window is {rmax}. */
 
-alignment_t *fial_alloc_alignment_set(int ncan);
+alignment_t *fial_alloc_alignment_set(int32_t ncan);
 
-void fial_generate_all_alignments(int nims, int dmax, double step, int nal, alignment_t *al);
+void fial_generate_all_alignments(int32_t nims, int32_t dmax, double step, int32_t nal, alignment_t *al);
   /* Generate all relative alignments for {nims} images whose entries 
     range in {[-dmax .. +dmax]} times {step}.
     Expects {nal} to be the exact number of such alignments. 
@@ -282,15 +282,15 @@ image_rec_t *fial_reduce_images(image_rec_t *iml);
     returns a list of the results.  Also computes the coordinates
     of the centers of the reduced images. */
 
-int fial_num_rel_shifts(int nims, int dmax, int sum);
+int32_t fial_num_rel_shifts(int32_t nims, int32_t dmax, int32_t sum);
   /* Computes the number of integer vectors in {[-dmax..+dmax]^nims}
     which add to {sum}. */
     
-void fial_recenter_displacements(int nims, double *dcol, double *drow);
+void fial_recenter_displacements(int32_t nims, double *dcol, double *drow);
   /* Shifts all displacements so that their sum is zero.  */
 
 void fial_adjust_alignment
-  ( int nims, 
+  ( int32_t nims, 
     image_rec_t *iml, 
     double dmax, 
     double epsilon, 
@@ -305,7 +305,7 @@ void fial_adjust_alignment
     align the center of the image at the origin. The displacements are
     adjusted so as to add to zero.  */
 
-void fial_average_images(int nims, image_rec_t *iml, int iex, Image *avg, double *dcol, double *drow);
+void fial_average_images(int32_t nims, image_rec_t *iml, int32_t iex, Image *avg, double *dcol, double *drow);
   /* Computes average of all images, excluding image {iex}, shifting each one 
     so that its center displaced by {dcol[j],drow[j]} matches the center
     of {avg}.  */
@@ -316,7 +316,7 @@ interval_t fial_compute_mismatch
     double drow, 
     Image *sim, 
     double scale, 
-    int nwt, 
+    int32_t nwt, 
     double *gwt
   );
   /* Computes the mismatch between the image {tim}, shifted by {(dcol,drow)},
@@ -327,32 +327,32 @@ interval_t fial_compute_mismatch
     The mismatch is the sum of the squared pixel differences, each multiplied
     by the {scale} factor and the bidimensional weight distribution {wt[col]*wt[row]}.  */
 
-void fial_recompute_pixel_variance(int nims, image_rec_t *iml, alignment_t *al, Image *avg, int nwt, double *wt);
+void fial_recompute_pixel_variance(int32_t nims, image_rec_t *iml, alignment_t *al, Image *avg, int32_t nwt, double *wt);
   /* Recomputes the mismatches {al->mism[i]} and the total pixel variance {al->tvar},
     from scratch. */
     
-int fial_max_chns(image_rec_t *iml);
+int32_t fial_max_chns(image_rec_t *iml);
   /* Returns the maximum {chns} among all images in {iml}.  */
   
-void fial_sort_and_prune_alignments(int nims, int *ncanP, alignment_t *can, double epsilon, int max);
+void fial_sort_and_prune_alignments(int32_t nims, int32_t *ncanP, alignment_t *can, double epsilon, int32_t max);
 
-double *fial_gaussian_distr(int width, double sigma);
+double *fial_gaussian_distr(int32_t width, double sigma);
   /* Gaussian distribution {g[i] = A*exp(-((i+0.5)-m)^2/sigma^2)}
     where {m = width/2} and {A} is such that sum is 1.  */
     
-void fial_debug_displacement(char *label, int i, double col, double row, interval_t s, char *tail);
+void fial_debug_displacement(char *label, int32_t i, double col, double row, interval_t s, char *tail);
 
-double fial_compare_cands(int nims, alignment_t *al, alignment_t *bl);
+double fial_compare_cands(int32_t nims, alignment_t *al, alignment_t *bl);
   /* Returns the maximum difference between the shifts of {al} and {bl}.  */
   
-int fial_compare_mismatches(interval_t *a, interval_t *b); 
+int32_t fial_compare_mismatches(interval_t *a, interval_t *b); 
   /* Returns +1 if {a} looks smaller than {b}, -1 if {a} looks larger than {b}, 
     and 0 if they look equal or incomparable. */
 
 /* IMPLEMENTATIONS */
 
 void fial_optimal_shifts
-  ( int nims, 
+  ( int32_t nims, 
     float_image_t *iml, 
     double dxmax, 
     double dymax, 
@@ -364,30 +364,30 @@ void fial_optimal_shifts
   );
 
 void fial_multiscale_optimal_shifts
-  ( int nims, 
+  ( int32_t nims, 
     float_image_t *iml, 
     double dxmax, 
     double dymax, 
     double epsilon, 
     double rx, 
     double ry, 
-    int mult, 
+    int32_t mult, 
     alignment_t *opt, 
-    int *noptP
+    int32_t *noptP
   )
   {
     double guess_step = 0.5;   /* Initial guesses are spaced every half-pixel: */
-    int idmax = (int)(floor(dmax/guess_step));
+    int32_t idmax = (int32_t)(floor(dmax/guess_step));
     double allshifts = (double)fial_num_rel_shifts(nims, idmax, 0); /* Watch oflow... */
     double allsols = allshifts*allshifts; /* Total possible alignments. */
     alignment_t *can = NULL;
-    int ncan;
-    int j, k;
+    int32_t ncan;
+    int32_t j, k;
     fprintf(stderr, "enter compute_multiscale_optimal_shifts\n");
     fprintf(stderr, "  allsols = %g\n", allsols);
     if (mult >= allsols)
       { /* The caller asked for all possible solutions. */
-        int nall = (int)(floor(allsols+0.5));
+        int32_t nall = (int32_t)(floor(allsols+0.5));
         fprintf(stderr, "  computing all %d solutions...\n", nall);
         can = fial_alloc_alignment_set(nall);
         fial_generate_all_alignments(nims, idmax, guess_step, nall, can);
@@ -404,7 +404,7 @@ void fial_multiscale_optimal_shifts
           { /* Map displacements to current scale: */
             alignment_t *al = &(can[k]);
             image_rec_t *rdli, *imli;
-            int i;
+            int32_t i;
             for (i=0, imli=iml, rdli=rdl; i<nims; i++, imli=imli->next, rdli=rdli->next)
               { al->dcol[i] = 2*al->dcol[i] + (rdli->ccol - imli->ccol);
                 al->drow[i] = 2*al->drow[i] + (rdli->crow - imli->crow);
@@ -431,7 +431,7 @@ void fial_multiscale_optimal_shifts
     fprintf(stderr, "exit compute_multiscale_optimal_shifts\n");
   }
 
-int fial_num_rel_shifts(int nims, int dmax, int sum)
+int32_t fial_num_rel_shifts(int32_t nims, int32_t dmax, int32_t sum)
   {
     fprintf(stderr, "(%d)", nims);
     if (abs(sum) > nims*dmax)
@@ -446,7 +446,7 @@ int fial_num_rel_shifts(int nims, int dmax, int sum)
       { return 8*dmax*(dmax*(2*dmax + 3) + 1)/3 + 1; }
     else if (nims == 5) 
       { /* There must be a better way... */
-        int i, s = 0;
+        int32_t i, s = 0;
         for (i=-dmax; i <= dmax; i++) { s += fial_num_rel_shifts(nims-1,dmax,sum-i); }
         return s;
       }
@@ -470,15 +470,15 @@ image_rec_t *fial_reduce_images(image_rec_t *iml)
       }
   }
 
-void fial_sort_and_prune_alignments(int nims, int *ncanP, alignment_t *can, double epsilon, int max)
+void fial_sort_and_prune_alignments(int32_t nims, int32_t *ncanP, alignment_t *can, double epsilon, int32_t max)
   {
     /* !!! must eliminate duplicates !!! */
-    int ncan = *ncanP;
-    int nok, i;
+    int32_t ncan = *ncanP;
+    int32_t nok, i;
     /* Select the best {max} alignments: */
     nok = 1;
     for (i = 1; i < ncan; i++)
-      { int j;
+      { int32_t j;
         alignment_t t = can[i];
         j = nok-1;
         while ((j >= 0) && (fial_compare_cands(nims, &(can[j]), &t) > epsilon/2)) { j--; }
@@ -494,9 +494,9 @@ void fial_sort_and_prune_alignments(int nims, int *ncanP, alignment_t *can, doub
     (*ncanP) = nok;
   }
 
-double fial_compare_cands(int nims, alignment_t *al, alignment_t *bl)
+double fial_compare_cands(int32_t nims, alignment_t *al, alignment_t *bl)
   {
-    int i;
+    int32_t i;
     double dmax = 0;
     for (i = 0; i < nims; i++)
       { double dc = fabs(al->dcol[i] - bl->dcol[i]);
@@ -507,16 +507,16 @@ double fial_compare_cands(int nims, alignment_t *al, alignment_t *bl)
     return dmax; 
   }
 
-int fial_compare_mismatches(interval_t *a, interval_t *b)
+int32_t fial_compare_mismatches(interval_t *a, interval_t *b)
   {
     double amin = 0.75*a->lo + 0.25*a->hi;
     double bmin = 0.75*b->lo + 0.25*b->hi;
     return cmp_double(&amin, &bmin);
   }
 
-alignment_t *fial_alloc_alignment_set(int ncan)
+alignment_t *fial_alloc_alignment_set(int32_t ncan)
   {
-    int i;
+    int32_t i;
     alignment_t *als = (alignment_t *)malloc(ncan*sizeof(alignment_t));
     if (als == NULL) { pnm_error("out of memory for alignments"); }
     for (i = 0; i < ncan; i++) 
@@ -527,10 +527,10 @@ alignment_t *fial_alloc_alignment_set(int ncan)
     return als;
   }
 
-alignment_t alloc_alignment(int nims)
+alignment_t alloc_alignment(int32_t nims)
   {
     alignment_t al;
-    int i;
+    int32_t i;
     al.dcol = rn_alloc(nims);
     al.drow = rn_alloc(nims);
     al.mism = (interval_t *)malloc(nims*sizeof(interval_t));
@@ -544,31 +544,31 @@ alignment_t alloc_alignment(int nims)
     return al;
   }
 
-int imin(int x, int y)
+int32_t imin(int32_t x, int32_t y)
   { 
     return (x < y ? x : y);
   }
 
-int imax(int x, int y)
+int32_t imax(int32_t x, int32_t y)
   { 
     return (x > y ? x : y);
   }
 
-void fial_generate_all_alignments(int nims, int dmax, double step, int nal, alignment_t *al)
+void fial_generate_all_alignments(int32_t nims, int32_t dmax, double step, int32_t nal, alignment_t *al)
   {
-    int sc, sr;
-    int *dc = (int *)malloc(nims*sizeof(int));
-    int *dr = (int *)malloc(nims*sizeof(int));
-    int k;
-    int carry; /* boolean */
-    int nfound = 0;
+    int32_t sc, sr;
+    int32_t *dc = (int32_t *)malloc(nims*sizeof(int32_t));
+    int32_t *dr = (int32_t *)malloc(nims*sizeof(int32_t));
+    int32_t k;
+    int32_t carry; /* boolean */
+    int32_t nfound = 0;
 
     k = nims; sc = 0; sr = 0; carry = 0;
     while(1)
       { 
         /* Here {sc} is the sum of {dc[k..nims-1]}, ditto for {sr,dr}. */
         /* Generate the smallest solution with current {dc,dr[k..nfound-1]}: */
-        int j;
+        int32_t j;
         while (k > 0)
           { /* Move down and set digit to minimum value: */
             k--;
@@ -626,7 +626,7 @@ void fial_generate_all_alignments(int nims, int dmax, double step, int nal, alig
   }
 
 void fial_adjust_alignment
-  ( int nims, 
+  ( int32_t nims, 
     image_rec_t *iml, 
     double dmax, 
     double epsilon, 
@@ -636,21 +636,21 @@ void fial_adjust_alignment
   {
     if (nims >= 2)
       { 
-        int arad = ceil(3*radius); /* Weights are negligible beyond this. */
-        int nwt = 2*arad+1;
+        int32_t arad = ceil(3*radius); /* Weights are negligible beyond this. */
+        int32_t nwt = 2*arad+1;
         Image *avg = allocate_image(nwt, nwt, fial_max_chns(iml));
         double *gwt = fial_gaussian_distr(nwt, radius);
         double s1 = ((double)(nims-1))/((double)nims);
         double corr = s1*s1; /* Variance correction factor. */
         image_rec_t *impi;
         double step;
-        int i;
+        int32_t i;
 
         /* Loop until convergence: */
         i = 0; impi = iml;
         step = 0.5*(dmax + epsilon);
         while(1)
-          { int krowi, kcoli;
+          { int32_t krowi, kcoli;
             interval_t prev_best; 
             /* Adjust displacements so that they add to zero: */
             fial_recenter_displacements(nims, al->dcol, al->drow);
@@ -688,9 +688,9 @@ void fial_adjust_alignment
       }
   }
 
-void fial_recompute_pixel_variance(int nims, image_rec_t *iml, alignment_t *al, Image *avg, int nwt, double *wt)
+void fial_recompute_pixel_variance(int32_t nims, image_rec_t *iml, alignment_t *al, Image *avg, int32_t nwt, double *wt)
   {
-    int i = 0;
+    int32_t i = 0;
     image_rec_t *impi = iml;
     double qt = 1.0/((double)nims);
     al->tvar = (interval_t){0, 0};
@@ -703,21 +703,21 @@ void fial_recompute_pixel_variance(int nims, image_rec_t *iml, alignment_t *al, 
       }
   }
 
-void fial_recenter_displacements(int nims, double *dcol, double *drow)
+void fial_recenter_displacements(int32_t nims, double *dcol, double *drow)
   {
     double tcol = 0, trow = 0;
-    int i;
+    int32_t i;
     for (i = 0; i < nims; i++) { tcol += dcol[i]; trow += drow[i]; }
     tcol /= (double)nims;
     trow /= (double)nims;
     for (i = 0; i < nims; i++) { dcol[i] -= tcol; drow[i] -= trow; }
   }
 
-double *fial_gaussian_distr(int width, double sigma)
+double *fial_gaussian_distr(int32_t width, double sigma)
   { double m = ((double)width)/2.0;
     double *g = rn_alloc(width);
     double s = 0;
-    int i;
+    int32_t i;
     if (g == NULL) { pnm_error("out of memory for gaussian weight"); }
     for (i=0; i < width; i++)
       { double x = (i + 0.5 - m)/sigma;
@@ -729,9 +729,9 @@ double *fial_gaussian_distr(int width, double sigma)
     return g;
   }
 
-void write_optimal_positions(int nims, image_rec_t *iml, double *dcol, double *drow)
+void write_optimal_positions(int32_t nims, image_rec_t *iml, double *dcol, double *drow)
   {
-    int i;
+    int32_t i;
     image_rec_t *impi;
     for (i = 0, impi = iml; i < nims; i++, impi = impi->next)
       { double tcol = dcol[i] + impi->ccol;
@@ -747,11 +747,11 @@ interval_t fial_compute_mismatch
     double drow, 
     Image *sim, 
     double scale, 
-    int nwt, 
+    int32_t nwt, 
     double *gwt
   )
   {
-    int srow, scol;
+    int32_t srow, scol;
     double wt2;
     interval_t d2;
     interval_t td2 = (interval_t){0.0, 0.0}; /* Total mismatch. */
@@ -759,7 +759,7 @@ interval_t fial_compute_mismatch
       { pnm_error("ref image has wrong size"); } 
     for (srow = 0; srow < sim->rows; srow++)
       { for (scol = 0; scol < sim->cols; scol++)
-          { int sindex = (srow * sim->cols + scol)*sim->chns;
+          { int32_t sindex = (srow * sim->cols + scol)*sim->chns;
             interval_t *sv = &(sim->el[sindex]);
             interval_t tv[MAX_CHANNELS];
             double tcol = scol + ((double)(tim->cols - sim->cols))/2.0 - dcol;
@@ -783,17 +783,17 @@ interval_t fial_compute_mismatch
     return td2;
   }
 
-void fial_average_images(int nims, image_rec_t *iml, int iex, Image *avg, double *dcol, double *drow)
+void fial_average_images(int32_t nims, image_rec_t *iml, int32_t iex, Image *avg, double *dcol, double *drow)
   {
-    int row, col;
-    int navg = ((iex >= 0) && (iex < nims) ? nims-1 : nims);
+    int32_t row, col;
+    int32_t navg = ((iex >= 0) && (iex < nims) ? nims-1 : nims);
     double qt = 1.0/((double)navg);
     double tqt;
     for (row = 0; row < avg->rows; row++)
       { for (col = 0; col < avg->cols; col++)
-          { int aindex = (row * avg->cols + col)*avg->chns;
+          { int32_t aindex = (row * avg->cols + col)*avg->chns;
             interval_t *fva = &(avg->el[aindex]);
-            int j, k;
+            int32_t j, k;
             image_rec_t *impj;
             for (k = 0; k < avg->chns; k++) { fva[k] = (interval_t){ 0.0, 0.0 }; }
             for (j = 0, impj = iml; j < nims; j++, impj = impj->next)
@@ -812,9 +812,9 @@ void fial_average_images(int nims, image_rec_t *iml, int iex, Image *avg, double
       }
   }
 
-int fial_max_chns(image_rec_t *iml)
+int32_t fial_max_chns(image_rec_t *iml)
   {
-    int chns = 0;
+    int32_t chns = 0;
     while (iml != NULL)
       { Image *im = iml->im;
         if (im->chns > chns) { chns = im->chns; }
@@ -823,7 +823,7 @@ int fial_max_chns(image_rec_t *iml)
     return chns;
   }
 
-double fial_sample_weight(int r, int rmax)
+double fial_sample_weight(int32_t r, int32_t rmax)
   { 
     if ((rmax == 0) || (r == 0))
       { return 1.0; }

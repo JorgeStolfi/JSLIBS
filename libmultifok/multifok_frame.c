@@ -1,7 +1,6 @@
 /* See {multifok_frame.h}. */
-/* Last edited on 2024-10-22 08:21:29 by stolfi */
+/* Last edited on 2024-12-05 14:17:18 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

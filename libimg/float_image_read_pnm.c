@@ -1,5 +1,5 @@
 /* See {float_image_read_pnm.h}. */
-/* Last edited on 2017-06-22 18:07:50 by stolfilocal */
+/* Last edited on 2024-12-05 01:01:11 by stolfi */
 
 #include <stdlib.h>
 #include <math.h>
@@ -26,7 +26,7 @@ float_image_t *float_image_read_pnm_named
   { uint16_image_t *pim = uint16_image_read_pnm_named(fname, warn);
     float_image_t *fim = float_image_from_uint16_image(pim, isMask, NULL, NULL, yup, verbose);
     if ((! isnan(gamma)) && (gamma >= 0) && (gamma != 1))
-      { int c;
+      { int32_t c;
         for (c = 0; c < fim->sz[0]; c++)
           { float_image_apply_gamma(fim, c, gamma, bias); }
       }
@@ -35,7 +35,7 @@ float_image_t *float_image_read_pnm_named
   }
 
 float_image_t **float_image_read_pnm_named_list
-  ( int n,          /* Number of images to read. */
+  ( int32_t n,          /* Number of images to read. */
     char *fname[],  /* PPM/PGM/PBM file names (with extensions). */
     bool_t isMask,  /* TRUE for masks, FALSE for images. */
     double gamma,   /* Gamma to use in decoding (1 = linear decoding). */
@@ -44,8 +44,8 @@ float_image_t **float_image_read_pnm_named_list
     bool_t warn,    /* If TRUE, prints "reading {fname}..." to {stderr}. */
     bool_t verbose  /* If TRUE, prints conversion diagnostics to {stderr}. */
   )
-  { float_image_t **fim = notnull(malloc(n * sizeof(float_image_t *)), "no mem");
-    int i;
+  { float_image_t **fim = talloc(n, float_image_t *); 
+    int32_t i;
     for(i = 0; i < n; i++)
       { fim[i] = float_image_read_pnm_named(fname[i], isMask, gamma, bias, yup, warn, verbose); }
     return fim;

@@ -1,10 +1,9 @@
 /* Basic test defs for {r2_opt.h}. */
-/* Last edited on 2023-02-27 10:35:50 by stolfi */
+/* Last edited on 2024-12-05 10:34:52 by stolfi */
 
 #ifndef test_r2_opt_basic_H
 #define test_r2_opt_basic_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

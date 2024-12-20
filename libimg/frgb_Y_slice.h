@@ -2,10 +2,9 @@
 #define frgb_Y_slice_H
 
 /* frgb_Y_slice.h - mapping real numbers to paths in the RGB cube */
-/* Last edited on 2023-03-06 19:44:32 by stolfi */
+/* Last edited on 2024-12-05 10:30:23 by stolfi */
 /* See the rights and conditions notice at the end of this file. */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <frgb.h>

@@ -1,7 +1,6 @@
 /* Defines a target function F for bbopt1.c */
-/* Last edited on 2023-02-20 06:42:52 by stolfi */
+/* Last edited on 2024-12-05 10:21:32 by stolfi */
   
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <ia.h>

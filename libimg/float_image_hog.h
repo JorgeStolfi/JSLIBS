@@ -2,20 +2,20 @@
 #define float_image_align_H
 
 /* Histogram of gradient orientations for a float-valued image. */
-/* Last edited on 2012-01-10 03:18:50 by stolfilocal */ 
+/* Last edited on 2024-12-04 23:29:08 by stolfi */ 
 
 #include <bool.h>
 #include <float_image.h>
 
 void float_image_hog_collect
   ( float_image_t *DX, 
-    int cX,
+    int32_t cX,
     float_image_t *DY, 
-    int cY,
+    int32_t cY,
     float_image_t *M, 
     double noise, 
     bool_t oriented,
-    int nh,
+    int32_t nh,
     double h[]
   );
   /* Collects a histogram {h[0..nh-1]} of orientations of a gradient

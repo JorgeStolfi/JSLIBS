@@ -1,7 +1,6 @@
 /* See {gem_print_graph} */
-/* Last edited on 2014-07-23 19:49:37 by stolfilocal */
+/* Last edited on 2024-12-05 10:26:05 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 
 #include <jsfile.h>

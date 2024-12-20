@@ -18,16 +18,16 @@
 #include <uint16_image_RGB_hist.h>
 #include <uint16_image_RGB_table.h>
 
-int ppm_equal(ppm_pixel_t *a, ppm_pixel_t *b)
+int32_t ppm_equal(ppm_pixel_t *a, ppm_pixel_t *b)
   { return ((a->c[0] == b->c[0]) && (a->c[1] == b->c[1]) && (a->c[2] == b->c[2])); }
 
 uint16_image_RGB_hist_vector uint16_image_RGB_hist_build
   ( uint16_t** samples, 
-    int chns,
-    int cols,
-    int rows,
-    int maxcolors, 
-    int* colorsP
+    int32_t chns,
+    int32_t cols,
+    int32_t rows,
+    int32_t maxcolors, 
+    int32_t* colorsP
   )
   { uint16_image_RGB_table cht = uint16_image_RGB_table_build(samples, chns, cols, rows, maxcolors, colorsP);
     if (cht == NULL) { return NULL; }
@@ -38,14 +38,14 @@ uint16_image_RGB_hist_vector uint16_image_RGB_hist_build
 
 void uint16_image_RGB_hist_add
   ( uint16_image_RGB_hist_vector chv, 
-    int* colorsP, 
-    int maxcolors, 
+    int32_t* colorsP, 
+    int32_t maxcolors, 
     ppm_pixel_t* colorP,
-    int value,
-    int position
+    int32_t value,
+    int32_t position
   )
   {
-    int i, j;
+    int32_t i, j;
     /* Search colorhist for the color. */
     for (i = 0; i < *colorsP; ++i)
       { if (ppm_equal(&(chv[i].color), colorP))

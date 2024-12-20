@@ -1,5 +1,5 @@
 /* See {imq_huff.h}. */
-/* Last edited on 2023-10-14 11:10:35 by stolfi */
+/* Last edited on 2024-12-05 07:54:11 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 #include <jsstring.h>
+#include <jsprintf.h>
 #include <fget.h>
 #include <affirm.h>
 
@@ -26,10 +27,10 @@ codetree_t *imq_huff_build_tree(codetree_huff_freq_t freq[])
     codetree_huff_freq_t hist[nh];
     
     /* Complement the diffs to get proper tie-breaking in Huffman tree: */
-    for (uint32_t ih = 0;  ih < nh; ih++) { hist[ih] = freq[nh-1-ih]; }
+    for (int32_t ih = 0;  ih < nh; ih++) { hist[ih] = freq[(int32_t)nh-1-ih]; }
     
     /* Build the Huffman tree for the set {V} = {0..510}: */
-    codetree_value_t maxval = nh-1;
+    codetree_data_value_t maxval = nh-1;
     codetree_t *tree = codetree_huff_build(maxval, hist);
     return tree;
   }
@@ -46,12 +47,12 @@ codetree_bit_count_t imq_huff_decode
     bool_t verbose = FALSE;
     bool_t debug = verbose && (line_num == 1);
     
-    codetree_value_t maxval = 510; /* Max decoded value: {0..510} -> {-255..+255}. */
+    codetree_data_value_t maxval = 510; /* Max decoded value: {0..510} -> {-255..+255}. */
     
     codetree_sample_count_t nd = np-1; /* Number of pixel diffs. */
     codetree_byte_count_t nb1 = nb-1;  /* Num bytes of Huffman codes. */
     byte_t *buf1 = buf+1;              /* The Huffman code bytes. */
-    codetree_value_t diff[nd];
+    codetree_data_value_t diff[nd];
     if (verbose) 
       { fprintf(stderr, "Huffman-decoding %lu bytes", nb1);
         fprintf(stderr, " into %lu complemented differences...\n", nd);
@@ -62,7 +63,7 @@ codetree_bit_count_t imq_huff_decode
       }
       
     /* We must complement the Huffman bytes due way IMQ interprets them: */
-    for (uint32_t ib = 0;  ib < nb1; ib++) { buf1[ib] ^= (byte_t)255; }
+    for (int32_t ib = 0;  ib < nb1; ib++) { buf1[ib] ^= (byte_t)255; }
     codetree_bit_count_t nbits_decoded = codetree_decode(nb1, buf1, tree, maxval, nd, diff);
     codetree_byte_count_t nbytes_decoded = (nbits_decoded + 7)/8;
     assert(nbytes_decoded <= nb);
@@ -73,10 +74,10 @@ codetree_bit_count_t imq_huff_decode
     
     if (verbose) { fprintf(stderr, "integrating the differences...\n"); }
     pix[0] = buf[0];
-    for (uint32_t i = 0;  i < nd; i++)
+    for (int32_t i = 0;  i < nd; i++)
       { /* Note that we reversed signs when building the tree. */
         /* So each {diff[i]} is {255 - (pix[i+1]-pix[i])}. */
-        int32_t di = diff[i] - 255; 
+        int32_t di = (int32_t)diff[i] - 255; 
         int32_t val = pix[i] + di;
         if (debug) 
           { fprintf(stderr, " %4u %+4d = %4d\n", pix[i], di, val); }
@@ -88,7 +89,7 @@ codetree_bit_count_t imq_huff_decode
   
 void imq_huff_print_codes(FILE *stderr, codetree_t *tree)
   { 
-    codetree_value_t maxval = 510;
+    codetree_data_value_t maxval = 510;
     demand(tree != NULL, "empty tree");
 
     int32_t nv = 0;
@@ -108,8 +109,7 @@ void imq_huff_print_codes(FILE *stderr, codetree_t *tree)
     void enum_leaves(char *pref, codetree_node_t *p)
       { if (p->value < 0)
           { for (int8_t ich = 0; ich < 2; ich++)
-              { char *pref_ch = NULL;
-                char *pref_ch = jsprintf("%s%d", pref, 1-ich);
+              { char *pref_ch = jsprintf("%s%d", pref, 1-ich);
                 enum_leaves(pref_ch, p->child[ich]);
                 free(pref_ch);
               }

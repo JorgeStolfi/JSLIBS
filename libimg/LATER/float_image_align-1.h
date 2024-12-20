@@ -1,9 +1,9 @@
-/* Last edited on 2007-09-06 13:23:15 by stolfi */
+/* Last edited on 2024-12-04 23:20:40 by stolfi */
 
 /* DEBUGGING */
 
 void fial_optimal_shifts
-  ( int nims, 
+  ( int32_t nims, 
     float_image_t *iml, 
     double dxmax, 
     double dymax, 
@@ -31,16 +31,16 @@ void fial_optimal_shifts
     {6*rx + 2*dxmax} and whose height is about {6*ry + 2*dymax}. */
 
 void fial_multiscale_optimal_shifts
-  ( int nims, 
+  ( int32_t nims, 
     float_image_t *iml, 
     double dxmax, 
     double dymax, 
     double epsilon, 
     double rx, 
     double ry, 
-    int mult, 
+    int32_t mult, 
     alignment_t *opt, 
-    int *noptP
+    int32_t *noptP
   );
   /* Takes a list {iml[0..nims-1]} of float-valued images, and
     computes up to {mult} distinct good joint alignments {opt[0..*noptP-1]}.

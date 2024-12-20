@@ -1,7 +1,6 @@
 /* test_sve_step --- test program for {sve_minn_step} in sve_minn.h */
-/* Last edited on 2024-11-08 19:31:20 by stolfi */
+/* Last edited on 2024-12-05 10:34:26 by stolfi */
 
-#define _GNU_SOURCE
 #include <values.h>
 #include <math.h>
 #include <assert.h>

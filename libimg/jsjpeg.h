@@ -1,10 +1,9 @@
 /* {jsjpeg.h} - definitions and tools for JPEG image files.  */
-/* Last edited on 2017-06-23 01:43:57 by stolfilocal */
+/* Last edited on 2024-12-05 10:30:49 by stolfi */
 
 #ifndef jsjpeg_H
 #define jsjpeg_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 

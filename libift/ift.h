@@ -1,11 +1,10 @@
 /* The Image Foresting Transform algorithm */
 /* See Falcao et al., IEEE Trans. on Patt. Anal. and Mach. Intel. (TPAMI), 2004 */
-/* Last edited on 2010-06-06 14:53:12 by stolfi */
+/* Last edited on 2024-12-05 10:29:03 by stolfi */
 
 #ifndef ift_H
 #define ift_H
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <float.h>
 #include <stdint.h>

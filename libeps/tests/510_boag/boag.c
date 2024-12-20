@@ -1,7 +1,6 @@
 /* Tech drawing for the new center gate of Boaretto da Silva 113 */
-/* Last edited on 2024-06-22 17:45:59 by stolfi */
+/* Last edited on 2024-12-05 10:15:23 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -473,7 +472,7 @@ void boag_draw_leaf_beams
     
     assert(YN %2 == 0);  /* For best looks. */
 
-    for (uint32_t kY = 0;  kY <= YN; kY++)
+    for (int32_t kY = 0;  kY <= YN; kY++)
       { 
         if (kY > 0)
           { /* Draw ver beam {kY}: */
@@ -495,7 +494,7 @@ void boag_draw_leaf_beams
         double H_Ysize = Ygap; /* {Y} extent of horz beams. */
         int32_t H_phase = ((kY + 1) % 2); /* 0 if first vert gap is whole, 1 if half-height. */
              
-        for (uint32_t kZ = 0;  kZ < ZN; kZ++)
+        for (int32_t kZ = 0;  kZ < ZN; kZ++)
            { if ((H_phase == 1) || (kZ > 0))
                { /* Draw beam {kZ}: */
                  double H_Zctr = Zmin - Zex - tube_Zsize/2 + (kZ + 0.5*H_phase)*(Zgap + tube_Zsize);

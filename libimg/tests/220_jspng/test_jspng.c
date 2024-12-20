@@ -1,5 +1,5 @@
 /* Test of jspng.h, uint16_image_io_png.h */
-/* Last edited on 2024-11-06 01:56:06 by stolfi */
+/* Last edited on 2024-12-05 22:14:29 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -12,6 +12,7 @@
 #include <jsfile.h>
 #include <fget.h>
 #include <jsmath.h>
+#include <jsprintf.h>
 #include <jspnm.h>
 #include <uint16_image.h>
 
@@ -34,7 +35,7 @@ void do_uint16_image_io_png_own_tests(char *iDir, char *oDir);
     alpha channel flag ("0" or "1"), and {MXV} is the 5-digit pixel
     maxval ("00001", "00003", "00015", "00255", or "65535"). */
 
-void do_uint16_image_io_png_own_test(char *iDir, char *oDir, int32_t csp, int32_t alp, int32_t mxv, FILE *wr);
+void do_uint16_image_io_png_own_test(char *iDir, char *oDir, uint32_t csp, uint32_t alp, uint32_t mxv, FILE *wr);
   /* Reads an image from file "{iDir}/test-{CSP}-{ALP}-{MXV}.png" and writes the
     frobnicated image as "{oDir}/test-{CSP}-A{alp}-{MXV}.png".
 
@@ -60,11 +61,11 @@ void do_uint16_image_io_png_official_test
     int32_t NX,  /* Num of columns. */                                                       
     int32_t NY,  /* Num of rows. */                                                          
     int32_t NC,  /* Number of channels of image after mapping (1 to 4). */                   
-    int32_t BY,  /* True bit depth of luminance channel (for GRAY or GRAY+ALPHA images). */  
-    int32_t BR,  /* True bit depth of red channel (for RGB or RGB+ALPHA images). */          
-    int32_t BG,  /* True bit depth of green channel (for RGB or RGB+ALPHA images). */        
-    int32_t BB,  /* True bit depth of blue channel (for RGB or RGB+ALPHA images). */         
-    int32_t BA,  /* True bit depth of alpha channel (for images with ALPHA). */              
+    uint32_t BY,  /* True bit depth of luminance channel (for GRAY or GRAY+ALPHA images). */  
+    uint32_t BR,  /* True bit depth of red channel (for RGB or RGB+ALPHA images). */          
+    uint32_t BG,  /* True bit depth of green channel (for RGB or RGB+ALPHA images). */        
+    uint32_t BB,  /* True bit depth of blue channel (for RGB or RGB+ALPHA images). */         
+    uint32_t BA,  /* True bit depth of alpha channel (for images with ALPHA). */              
     double iGamma, /* Gamma in file. */
     FILE *wr  /* File for summary. */
   );
@@ -72,7 +73,7 @@ void do_uint16_image_io_png_official_test
     and checks whether it is consistent with {NX,NY,
     NC,BY,BR,BG,BB,BA,iGamma}. */
 
-bool_t is_valid_comb(int32_t csp, int32_t alp, int32_t mxv);
+bool_t is_valid_comb(uint32_t csp, uint32_t alp, uint32_t mxv);
   /* Returns true iff {csp,alp,mxv} is a valid combination
     for a PNG image. */
 
@@ -91,7 +92,7 @@ int32_t main (int32_t argc, char **argv)
   }
   
 #define N_MAXVALS 5
-static int32_t maxval[N_MAXVALS] = { 1, 3, 15, 255, 65535};
+static uint32_t maxval[N_MAXVALS] = { 1, 3, 15, 255, 65535};
 
 void do_uint16_image_io_png_own_tests(char *iDir, char *oDir)
   { 
@@ -103,13 +104,13 @@ void do_uint16_image_io_png_own_tests(char *iDir, char *oDir)
     fprintf(wr, "# Filename               NX NY  NC BY BR BG BB BA Gamma\n");
     fprintf(wr, "# ---------------------  -- --  -- -- -- -- -- -- -------\n");
 
-    int32_t csp; /* Basic color space: 0 = GRAY, 1 = explicit RGB, 2 = mampped RGB. */
-    int32_t alp; /* Alpha channel: 0 = no, 1 = yes. */
-    int32_t imx; /* The primary bit size is {2^imx}. */
+    uint32_t csp; /* Basic color space: 0 = GRAY, 1 = explicit RGB, 2 = mampped RGB. */
+    uint32_t alp; /* Alpha channel: 0 = no, 1 = yes. */
+    uint32_t imx; /* The primary bit size is {2^imx}. */
     for (csp = 0; csp < 3; csp++)
       { for (alp = 0; alp < 2; alp++)
           { for (imx = 0; imx < N_MAXVALS; imx++)
-              { int32_t mxv = maxval[imx]; /* Maxval of image. */
+              { uint32_t mxv = maxval[imx]; /* Maxval of image. */
                 if (is_valid_comb(csp,alp,mxv))
                   { do_uint16_image_io_png_own_test(iDir, oDir, csp, alp, mxv, wr); }
               }
@@ -119,7 +120,7 @@ void do_uint16_image_io_png_own_tests(char *iDir, char *oDir)
     free(oName);
   }
 
-bool_t is_valid_comb(int32_t csp, int32_t alp, int32_t mxv)
+bool_t is_valid_comb(uint32_t csp, uint32_t alp, uint32_t mxv)
   { 
     if (csp == 0)
       { /* Explicit grayscale: */
@@ -141,7 +142,7 @@ bool_t is_valid_comb(int32_t csp, int32_t alp, int32_t mxv)
       { assert(FALSE); }
   }
 
-void do_uint16_image_io_png_own_test(char *iDir, char *oDir, int32_t csp, int32_t alp, int32_t mxv, FILE *wr)
+void do_uint16_image_io_png_own_test(char *iDir, char *oDir, uint32_t csp, uint32_t alp, uint32_t mxv, FILE *wr)
   { 
     fprintf(stderr, "\n");
     fprintf(stderr, "\n");
@@ -151,7 +152,6 @@ void do_uint16_image_io_png_own_test(char *iDir, char *oDir, int32_t csp, int32_
 
     /* File names: */
     char *csp_tbl[3] = {"GRY", "RGB", "MAP"};
-    char *iName = NULL;
     char *iName = jsprintf("%s/test-%s-A%d-%05d.png", iDir, csp_tbl[csp], alp, mxv);
     char *oName = jsprintf("%s/test-%s-A%d-%05d.png", oDir, csp_tbl[csp], alp, mxv);
 
@@ -265,7 +265,7 @@ void do_uint16_image_io_png_official_tests(char *iDir, char *oDir)
     fprintf(wr, "# Filename      NX NY  NC BY BR BG BB BA Gamma\n");
     fprintf(wr, "# ------------  -- --  -- -- -- -- -- -- -------\n");
     
-    int32_t nline = 0;
+    uint32_t nline = 0;
     while (TRUE)
       { nline++;
         if (debug) { fprintf(stderr, "parsing line %d...\n", nline); }
@@ -285,18 +285,18 @@ void do_uint16_image_io_png_official_tests(char *iDir, char *oDir)
             
             /* For palette-mapped images before expansion: */
             int32_t NI = fget_int32(rd);   /* 1 if colormapped, 0 if true color */
-            int32_t BI = fget_int32(rd);   /* If colormapped, bits per palette index; 0 otherwise. */
+            uint32_t BI = fget_uint32(rd, 10);   /* If colormapped, bits per palette index; 0 otherwise. */
             
             /* For all images, including palette-mapped after expansion: */
-            int32_t BS = fget_int32(rd);   /* Nominal bits per sample of image after mapping. */
+            uint32_t BS = fget_uint32(rd, 10);   /* Nominal bits per sample of image after mapping. */
             
             int32_t NC = fget_int32(rd);   /* Number of channels of image after mapping (1 to 4). */
             
-            int32_t BY = fget_int32(rd);   /* True bit depth of luminance channel (for GRAY or GRAY+ALPHA images). */
-            int32_t BR = fget_int32(rd);   /* True bit depth of red channel (for RGB or RGB+ALPHA images). */
-            int32_t BG = fget_int32(rd);   /* True bit depth of green channel (for RGB or RGB+ALPHA images). */
-            int32_t BB = fget_int32(rd);   /* True bit depth of blue channel (for RGB or RGB+ALPHA images). */
-            int32_t BA = fget_int32(rd);   /* True bit depth of alpha channel (for images with ALPHA). */                    
+            uint32_t BY = fget_uint32(rd, 10);   /* True bit depth of luminance channel (for GRAY or GRAY+ALPHA images). */
+            uint32_t BR = fget_uint32(rd, 10);   /* True bit depth of red channel (for RGB or RGB+ALPHA images). */
+            uint32_t BG = fget_uint32(rd, 10);   /* True bit depth of green channel (for RGB or RGB+ALPHA images). */
+            uint32_t BB = fget_uint32(rd, 10);   /* True bit depth of blue channel (for RGB or RGB+ALPHA images). */
+            uint32_t BA = fget_uint32(rd, 10);   /* True bit depth of alpha channel (for images with ALPHA). */                    
             
             double gamma = fget_double(rd); /* Gamma . */
             
@@ -334,11 +334,11 @@ void do_uint16_image_io_png_official_test
     int32_t NX,  
     int32_t NY,  
     int32_t NC, 
-    int32_t BY,  
-    int32_t BR,  
-    int32_t BG,  
-    int32_t BB,  
-    int32_t BA,  
+    uint32_t BY,  
+    uint32_t BR,  
+    uint32_t BG,  
+    uint32_t BB,  
+    uint32_t BA,  
     double iGamma,
     FILE *wr
   ) 
@@ -378,7 +378,7 @@ void do_uint16_image_io_png_official_test
     if (icB >= 0) { iMaxval[icB] = (1u << BB) - 1; }
     if (icA >= 0) { iMaxval[icA] = (1u << BA) - 1; }
     
-    for (uint32_t ic = 0;  ic < NC; ic++)
+    for (int32_t ic = 0;  ic < NC; ic++)
       { if (fMaxval[ic] != iMaxval[ic]) 
           { fprintf(stderr, "** %s: channel %d - maxval %u should be %u\n", iName, ic, fMaxval[ic], iMaxval[ic]); }
       }
@@ -413,16 +413,15 @@ void frobnicate_image(uint16_image_t *img, uint16_image_t *omg)
     
     int32_t invchns = ((chns == 2) || (chns == 4) ? chns - 1 : chns);
 
-    int32_t x, y, c;
-    for (y = 0; y < rows; y++)
+    for (int32_t y = 0; y < rows; y++)
       { uint16_t *ip = img->smp[y];
         uint16_t *op = omg->smp[rows - 1 - y];
         bool_t yinv = ((y >= skip) && (y < rows-skip));
-        for (x = 0; x < cols; x++)
+        for (int32_t x = 0; x < cols; x++)
           { uint16_t *iv = ip + chns*x;
             uint16_t *ov = op + chns*(cols - 1 - x);
             bool_t xinv = ((x >= skip) && (x < cols-skip));
-            for (c = 0; c < chns; c++)
+            for (int32_t c = 0; c < chns; c++)
               { bool_t cinv = (c < invchns);
                 bool_t inv = (xinv && yinv && cinv);
                 ov[c] = (uint16_t)(inv ? img->maxval - iv[c] : iv[c]);
@@ -438,12 +437,12 @@ void compare_images(uint16_image_t *img, uint16_image_t *omg)
     int32_t chns = img->chns; demand(img->chns == omg->chns, "wrong chns");
     demand(omg->maxval == img->maxval, "wrong maxval");
         
-    for (uint32_t y = 0;  y < rows; y++)
+    for (int32_t y = 0;  y < rows; y++)
       { uint16_t *ip = img->smp[y];
         uint16_t *op = omg->smp[y];
         int32_t k = 0;
-        for (uint32_t x = 0;  x < cols; x++)
-          { for (uint32_t c = 0;  c < chns; c++)
+        for (int32_t x = 0;  x < cols; x++)
+          { for (int32_t c = 0;  c < chns; c++)
               { if (ip[k] != op[k])
                   { fprintf(stderr, "img[%d][%d] = %d  omg[%d][%d] = %d\n", y, x, ip[k], y, x, op[k]); 
                     demand(FALSE, "samples differ!");

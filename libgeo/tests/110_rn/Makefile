@@ -1,4 +1,4 @@
-# Last edited on 2024-11-08 12:42:04 by stolfi
+# Last edited on 2024-12-05 15:29:31 by stolfi
 
 PROG = test_rn
  
@@ -6,6 +6,8 @@ TEST_LIB := libgeo.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS := \
+  libgausol.a \
+  libeigen.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

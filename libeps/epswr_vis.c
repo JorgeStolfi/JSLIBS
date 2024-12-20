@@ -1,7 +1,6 @@
 /* See epswr_vis.h */
-/* Last edited on 2024-06-22 18:54:04 by stolfi */
+/* Last edited on 2024-12-05 10:15:06 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>

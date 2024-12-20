@@ -2,7 +2,7 @@
 #define quad_H
 
 /* The quad-edge data structure (oriented surface version). */
-/* Last edited on 2023-10-05 20:52:09 by stolfi */
+/* Last edited on 2024-12-05 10:39:45 by stolfi */
 
 #define quad_H_copyright \
   "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright "\n\n" \
@@ -24,7 +24,6 @@
   Modified by J. Stolfi in Apr/1993. Changed by J. Stolfi in Dec/2011 to
   be procedure-based instead of macro-based. */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

@@ -1,10 +1,9 @@
 /* Tools for reading NASA/JPL PDS format images. */
-/* Last edited on 2023-02-07 22:01:45 by stolfi */
+/* Last edited on 2024-12-05 10:30:41 by stolfi */
 
 #ifndef imq_H
 #define imq_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 
@@ -15,10 +14,10 @@ typedef uint8_t byte_t;
 void imq_read_header
   ( FILE *rd, 
     char *format_P, 
-    uint32_t *record_bytes_P, 
-    uint32_t *label_checksum_P,
-    uint32_t *NX_P, 
-    uint32_t *NY_P, 
+    int32_t *record_bytes_P, 
+    int32_t *label_checksum_P,
+    int32_t *NX_P, 
+    int32_t *NY_P, 
     bool_t verbose
   );
   /* Reads and parses the PDS file header (aka "labels") from the input file {rd}.
@@ -40,7 +39,7 @@ void imq_read_header
     'K' if it is a Viking image.  They have somewhat different formats
     for the image and encoding histograms, among other things. */
 
-uint32_t imq_read_var_length_record(FILE *rd, uint32_t nb, byte_t ibuf[]);
+int32_t imq_read_var_length_record(FILE *rd, int32_t nb, byte_t ibuf[]);
   /* Reads one record from the from input file {rd}.
     
     Assumes that each record begins with a two-byte unsigned integer {length}

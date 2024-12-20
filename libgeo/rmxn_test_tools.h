@@ -1,11 +1,10 @@
 /* rmxn_test_tools.h --- tools for testing the {libgeo} functions. */
-/* Last edited on 2024-11-20 13:06:25 by stolfi */
+/* Last edited on 2024-12-05 10:28:41 by stolfi */
 /* Created 2005-07-20 by J. Stolfi. */
 
 #ifndef rmxn_test_tools_H
 #define rmxn_test_tools_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 

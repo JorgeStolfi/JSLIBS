@@ -1,7 +1,6 @@
-/* Last edited on 2022-10-20 06:27:25 by stolfi */
+/* Last edited on 2024-12-05 10:22:13 by stolfi */
 /* Test of bz_basic.h and bz_patch.h routines. */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

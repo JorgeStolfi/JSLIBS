@@ -2,7 +2,7 @@
 #define PROG_DESC "checks the {sample_conv.h} routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2017-06-22 03:27:52 by stolfilocal */
+/* Last edited on 2024-12-05 08:02:15 by stolfi */
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_sample_conv_C_COPYRIGHT \
@@ -83,11 +83,11 @@ typedef struct options_t
     double hi;             /* High end of float sample range. */
   } options_t;
 
-options_t *tsc_parse_options(int argc, char **argv);
+options_t *tsc_parse_options(int32_t argc, char **argv);
   /* Parses the command line arguments and returns them as
     an {options_t} record. */
 
-int main(int argc, char **argv);
+int32_t main(int32_t argc, char **argv);
 
 void tsc_test_quantize
   ( float fv, 
@@ -97,8 +97,8 @@ void tsc_test_quantize
     double hi,            /* Input value to map to {maxval}. */
     float *vmin,          /* (IN/OUT) Min float input value seen, or NULL. */
     float *vmax,          /* (IN/OUT) Max float input value seen, or NULL. */
-    int *clo,             /* (IN/OUT) Count of input values below {lo}, or NULL. */
-    int *chi,             /* (IN/OUT) Count of input values above {hi}, or NULL. */
+    int32_t *clo,             /* (IN/OUT) Count of input values below {lo}, or NULL. */
+    int32_t *chi,             /* (IN/OUT) Count of input values above {hi}, or NULL. */
     sample_uint32_t *imin,  /* (IN/OUT) Min output integer value seen, or NULL. */
     sample_uint32_t *imax   /* (IN/OUT) Max output integer value seen, or NULL. */
   );
@@ -117,24 +117,24 @@ void tsc_test_floatize
   );
   /* Tests {sample_conv_floatize} on {iv} with given parameters. */
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, char **argv)
   {
    /* Parse the command line options: */
     options_t *o = tsc_parse_options(argc, argv);
     
     sample_uint32_t imin, imax;
     float vmin, vmax;
-    int clo, chi;
+    int32_t clo, chi;
     
     fprintf(stderr, "FLT_MAX = %23.16e\n", FLT_MAX);
     fprintf(stderr, "DBL_MAX = %23.16e\n", DBL_MAX);
 
     /* Denominator for affine mapping: */
-    int den = (o->isMask ? o->maxval : o->maxval+1);
+    uint32_t den = (o->isMask ? o->maxval : o->maxval+1);
 
     /* Test the quantization functions: */
     fprintf(stderr, "=== testing sample_conv_quantize");
-    fprintf(stderr, "  maxval = %d", (int)o->maxval);
+    fprintf(stderr, "  maxval = %d", (int32_t)o->maxval);
     fprintf(stderr, "  isMask = %c", "FT"[o->isMask]);
     fprintf(stderr, "  range = [ %11.8f _ %11.8f ]", o->lo, o->hi);
     fprintf(stderr, " ===\n");
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
     vmin = +INF; vmax = -INF;
     clo = 0; chi = 0;
     
-    int kv;
+    int32_t kv;
     for (kv = -4; kv <= 2*den + 4; kv++)
       { float fvo = (float)(o->lo + (o->hi - o->lo)*((double)kv)/((double)2*den));
         float fvm = nextafterf(fvo,-INF);
@@ -160,7 +160,7 @@ int main(int argc, char **argv)
     
     /* Test the floatization functions: */
     fprintf(stderr, "=== testing sample_conv_floatize");
-    fprintf(stderr, "  maxval = %d", (int)o->maxval);
+    fprintf(stderr, "  maxval = %d", (int32_t)o->maxval);
     fprintf(stderr, "  isMask = %c", "FT"[o->isMask]);
     fprintf(stderr, "  range = [ %11.8f _ %11.8f ]", o->lo, o->hi);
     fprintf(stderr, " ===\n");
@@ -169,9 +169,8 @@ int main(int argc, char **argv)
     imin = UINT32_MAX; imax = 0;
     vmin = +INF; vmax = -INF;
     
-    int iv;
-    for (iv = 0; iv <= o->maxval; iv++)
-      { tsc_test_floatize(iv, o->maxval, o->isMask, o->lo, o->hi, &imin, &imax, &vmin, &vmax); }
+    for (int32_t iv = 0; iv <= o->maxval; iv++)
+      { tsc_test_floatize((uint32_t)iv, o->maxval, o->isMask, o->lo, o->hi, &imin, &imax, &vmin, &vmax); }
     fprintf(stderr, "\n");
     sample_conv_print_floatize_stats(0, 0, imin, imax, o->maxval, o->lo, o->hi, vmin, vmax);
     fprintf(stderr, "\n");
@@ -189,8 +188,8 @@ void tsc_test_quantize
     double hi,            /* Input value to map to {maxval}. */
     float *vmin,          /* (IN/OUT) Min float input value seen, or NULL. */
     float *vmax,          /* (IN/OUT) Max float input value seen, or NULL. */
-    int *clo,             /* (IN/OUT) Count of input values below {lo}, or NULL. */
-    int *chi,             /* (IN/OUT) Count of input values above {hi}, or NULL. */
+    int32_t *clo,             /* (IN/OUT) Count of input values below {lo}, or NULL. */
+    int32_t *chi,             /* (IN/OUT) Count of input values above {hi}, or NULL. */
     sample_uint32_t *imin,  /* (IN/OUT) Min output integer value seen, or NULL. */
     sample_uint32_t *imax   /* (IN/OUT) Max output integer value seen, or NULL. */
   )
@@ -201,10 +200,10 @@ void tsc_test_quantize
     double av = ((double)mag)*(fv - lo)/(hi - lo) + off;
     sample_uint32_t iv = sample_conv_quantize(fv, maxval, isMask, lo, hi, vmin, vmax, clo, chi, imin, imax);
     float hv = sample_conv_floatize(iv, maxval, isMask, lo, hi, NULL, NULL, NULL, NULL);
-    fprintf(stderr, "  fv = %11.8f = %11.8f/%-5d", fv, ((double)fv)*((double)mag), (int)mag);
+    fprintf(stderr, "  fv = %11.8f = %11.8f/%-5d", fv, ((double)fv)*((double)mag), (int32_t)mag);
     fprintf(stderr, "  av = %11.8f", av);
-    fprintf(stderr, "  iv = %5d", (int)iv);
-    fprintf(stderr, "  hv = %11.8f = %11.8f/%-5d", hv, ((double)hv)*((double)mag), (int)mag);
+    fprintf(stderr, "  iv = %5d", (int32_t)iv);
+    fprintf(stderr, "  hv = %11.8f = %11.8f/%-5d", hv, ((double)hv)*((double)mag), (int32_t)mag);
     fprintf(stderr, "  e = %11.8f", hv - fv);
     fprintf(stderr, "\n");
     demand(iv <= maxval, "invalid quantized result");
@@ -238,10 +237,10 @@ void tsc_test_floatize
     double av = lo + (((double)iv) + ffo)/((double)mag)*(hi - lo);
     float fv = sample_conv_floatize(iv, maxval, isMask, lo, hi, imin, imax, vmin, vmax);
     sample_uint32_t qv = sample_conv_quantize(fv, maxval, isMask, lo, hi, NULL, NULL, NULL, NULL, NULL, NULL);
-    fprintf(stderr, "  iv = %5d", (int)iv);
+    fprintf(stderr, "  iv = %5d", (int32_t)iv);
     fprintf(stderr, "  av = %11.8f", av);
-    fprintf(stderr, "  fv = %11.8f = %11.8f/%-5d", fv, ((double)fv)*((double)mag), (int)mag);
-    fprintf(stderr, "  qv = %5d", (int)qv);
+    fprintf(stderr, "  fv = %11.8f = %11.8f/%-5d", fv, ((double)fv)*((double)mag), (int32_t)mag);
+    fprintf(stderr, "  qv = %5d", (int32_t)qv);
     fprintf(stderr, "  e = %5d", ((int32_t)qv) - ((int32_t)iv));
     fprintf(stderr, "\n");
     /* Check whether floatized value is within 0.5 of raw affine map: */
@@ -249,7 +248,7 @@ void tsc_test_floatize
     demand(qv - iv == 0, "floatize-quantize is not exact");
   }
 
-options_t *tsc_parse_options(int argc, char **argv)
+options_t *tsc_parse_options(int32_t argc, char **argv)
   {
     /* INITIALIZATION: */
 

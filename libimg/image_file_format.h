@@ -1,10 +1,8 @@
 /* Image file formats. */
-/* Last edited on 2020-10-30 22:39:54 by jstolfi */
+/* Last edited on 2024-12-05 10:30:35 by stolfi */
 
 #ifndef image_file_format_H
 #define image_file_format_H
-
-#define _GNU_SOURCE
 
 #include <argparser.h>
 

@@ -6,6 +6,7 @@ TEST_LIB := libgeo.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS := \
+  libgausol.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

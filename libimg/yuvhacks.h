@@ -1,5 +1,7 @@
 /* yuvhacks.h - tools for perceptual color distance  */
-/* Last edited on 2003-09-22 04:00:46 by stolfi */
+/* Last edited on 2024-12-04 23:43:09 by stolfi */
+
+#include <stdint.h>
 
 extern void
 set_yuv_matrix(void);
@@ -8,7 +10,7 @@ set_yuv_matrix(void);
     See rgb_to_yuv below. */
 
 extern void
-rgb_to_yuv(long R, long G, long B, int maxval, float *yp, float *up, float *vp);
+rgb_to_yuv(long R, long G, long B, int32_t maxval, float *yp, float *up, float *vp);
   /* 
     Computes luminance {*yp} and chrominance {*up}, {*vp} for the
     given RGB color {(R,G,B)}. 
@@ -21,7 +23,7 @@ rgb_to_yuv(long R, long G, long B, int maxval, float *yp, float *up, float *vp);
     lies in {[0..1]}. */
 
 extern float
-rgb_to_y(long R, long G, long B, int maxval);
+rgb_to_y(long R, long G, long B, int32_t maxval);
   /* 
     Computes luminance only of pixel (R,G,B), as explined in
     rgb_to_yuv.

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_aff_compare.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-09 12:42:58 by stolfi */ 
+/* Last edited on 2024-12-20 18:42:04 by stolfi */ 
 /* Created on 2020-09-26 by J. Stolfi, UNICAMP */
 
 #define taffc_COPYRIGHT \
@@ -23,9 +23,14 @@
 #include <r2.h>
 #include <i2.h>
 #include <r2x2.h>
+#include <hr2.h>
+#include <hr2_pmap.h>
+#include <hr2_pmap_affine.h>
+#include <hr2_pmap_translation.h>
 #include <argparser_geo.h>
 #include <bool.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <jsrandom.h>
 #include <affirm.h>
 
@@ -191,14 +196,14 @@ hr2_pmap_t taffc_make_xy_shear_map(double u, double v)
     L.c[0][1] = S*u;
     L.c[1][0] = S*v;
     r2_t disp = (r2_t){{ 0.0, 0.0 }};
-    hr2_pmap_t M = hr2_pmap_aff_from_mat_and_disp(&L, &disp);
+    hr2_pmap_t M = hr2_pmap_affine_from_mat_and_disp(&L, &disp);
     return M;
   }
   
 void taffc_scale_pmap_aff(hr2_pmap_t *A, double scale)
   {
-    for (uint32_t i = 0;  i < 3; i++)
-      { for (uint32_t j = 1;  j < 3; j++) 
+    for (int32_t i = 0;  i < 3; i++)
+      { for (int32_t j = 1;  j < 3; j++) 
          { A->dir.c[i][j] *= scale; A->inv.c[j][i] /= scale; }
       }
   }

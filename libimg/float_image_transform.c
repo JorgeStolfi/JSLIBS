@@ -1,5 +1,5 @@
 /* See {float_image_transform.h}. */
-/* Last edited on 2024-11-23 05:39:51 by stolfi */
+/* Last edited on 2024-12-04 23:32:03 by stolfi */
 
 #include <assert.h>
 #include <limits.h>
@@ -30,13 +30,13 @@ void float_image_transform_all
     r2_map_jacobian_t *map, /* Output-to-input coordinate transformation. */
     float undef,            /* Sample value for undefined output pixels. */
     bool_t avg,             /* TRUE to average pixels, FALSE to add them. */
-    int order,              /* Interpolation order. */
+    int32_t order,              /* Interpolation order. */
     r2_pred_t *debugp,      /* Tells whether pixel should be debugged. */
     float_image_t *oimg     /* Output image. */
   )
   { 
-    int ocols = (int)oimg->sz[1];
-    int orows = (int)oimg->sz[2];
+    int32_t ocols = (int32_t)oimg->sz[1];
+    int32_t orows = (int32_t)oimg->sz[2];
     float_image_transform_sub(iimg, red, map, undef, avg, order, 0, 0, ocols, orows, debugp, oimg);
   }    
 
@@ -46,19 +46,19 @@ void float_image_transform_sub
     r2_map_jacobian_t *map, /* Output-to-input coordinate transformation. */
     float undef,            /* Sample value for undefined output pixels. */
     bool_t avg,             /* TRUE to average pixels, FALSE to add them. */
-    int order,              /* Interpolation order. */
-    int x0,                 /* First output image column. */
-    int y0,                 /* First output image row. */
-    int NX,                 /* Number of output image columns. */
-    int NY,                 /* Number of output image rows. */
+    int32_t order,              /* Interpolation order. */
+    int32_t x0,                 /* First output image column. */
+    int32_t y0,                 /* First output image row. */
+    int32_t NX,                 /* Number of output image columns. */
+    int32_t NY,                 /* Number of output image rows. */
     r2_pred_t *debugp,      /* Tells whether pixel should be debugged. */
     float_image_t *oimg     /* Output image. */
   )
   { demand(iimg->sz[0] == oimg->sz[0], "images must have the same channels");
-    int chns = (int)oimg->sz[0];
+    int32_t chns = (int32_t)oimg->sz[0];
     float fo[chns];
     /* Scan rows from top to bottom to make debugging easier: */
-    int row, col;
+    int32_t row, col;
     for (row = y0+NY-1; row >= y0; row--)
       { for (col = x0; col < x0+NX; col++)
           { r2_t p = (r2_t){{ col + 0.5, row + 0.5 }};
@@ -81,17 +81,17 @@ void float_image_transform_sub
 void float_image_transform_get_pixel
   ( float_image_t *img, 
     ix_reduce_mode_t red, /* Index reduction method. */ 
-    int col, 
-    int row, 
+    int32_t col, 
+    int32_t row, 
     r2_map_jacobian_t *map, 
     float undef, 
     bool_t avg,
-    int order, 
+    int32_t order, 
     float f[],
     bool_t debug        /* If TRUE, prints debugging info. */
   )
   { 
-    int chns = (int)img->sz[0];
+    int32_t chns = (int32_t)img->sz[0];
 
     /* To make the sampling integrals manageable, we replace the transform
       {map} is by its 1st degree Taylor expansion.  
@@ -121,7 +121,7 @@ void float_image_transform_get_pixel
     if (debug & (!invalid)) { r2_map_check_jacobian(&op, map, "map", 1.0e-5, FALSE); }
 
    /* Get input image value at point {pt}: */
-    int ic;
+    int32_t ic;
     if (invalid)
       { /* There is no image on the negative side of the two-sided plane: */
         for (ic = 0; ic < chns; ic++) { f[ic] = undef; }
@@ -144,11 +144,11 @@ void float_image_transform_copy_persp_rectangle
     r3x3_t *T2I,        /* Projective map from true coords to image coords. */
     float undef,        /* Defaut for undefined pixels. */
     bool_t avg,         /* TRUE to compute average. */
-    int order,          /* Interpolation order to use. */
-    int x0,             /* First output image column. */
-    int y0,             /* First output image row. */
-    int NX,             /* Number of output image columns. */
-    int NY,             /* Number of output image rows. */
+    int32_t order,          /* Interpolation order to use. */
+    int32_t x0,             /* First output image column. */
+    int32_t y0,             /* First output image row. */
+    int32_t NX,             /* Number of output image columns. */
+    int32_t NY,             /* Number of output image rows. */
     r2_pred_t *debugp,  /* Tells whether pixel should be debugged. */
     float_image_t *oimg /* Output image. */
   )

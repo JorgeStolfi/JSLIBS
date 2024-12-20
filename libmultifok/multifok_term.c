@@ -1,7 +1,6 @@
 /* See {multifok_term.h}. */
-/* Last edited on 2024-10-11 21:11:51 by stolfi */
+/* Last edited on 2024-12-05 15:12:20 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -14,6 +13,7 @@
 #include <bool.h>
 #include <fget.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 
 #include <multifok_window.h>
 #include <multifok_basis.h>
@@ -23,7 +23,7 @@
 void multifok_term_read_set_weights_and_names
   ( FILE *rd,
     bool_t weights,
-    int32_t *NT_P,
+    uint32_t *NT_P,
     char ***termName_P,
     double *wt_P[],
     bool_t verbose
@@ -37,9 +37,9 @@ void multifok_term_read_set_weights_and_names
   
 void multifok_term_indices_from_names
   ( multifok_basis_t *basis, 
-    int32_t NT, 
+    uint32_t NT, 
     char *termName[], 
-    int32_t *NP_P, 
+    uint32_t *NP_P, 
     multifok_term_prod_t **prix_P, 
     bool_t verbose
   );
@@ -67,8 +67,8 @@ void multifok_term_indices_from_names
 
 void multifok_term_parse_product
   ( char *pbeg, 
-    int32_t nc, 
-    int32_t NB, 
+    size_t nc, 
+    uint32_t NB, 
     char *belName[], 
     int32_t *jb1_P, 
     int32_t *jb2_P,
@@ -87,16 +87,14 @@ void multifok_term_values_from_basis_coeffs
     double term[]
   )
   {
-    int32_t NT = tset->NT;
-    int32_t NP = tset->NP;
-    int32_t NB = tset->basis->NB;
+    uint32_t NT = tset->NT;
+    uint32_t NP = tset->NP;
+    uint32_t NB = tset->basis->NB;
     
     for (uint32_t kt = 0;  kt < NT; kt++) { term[kt] = 0; }
     for (uint32_t ip = 0;  ip < NP; ip++) 
       { int32_t jb1 = tset->prix[ip].jb1; 
-        demand((jb1 >= 0) && (jb1 < NB), "bad basis index {jb1}");
         int32_t jb2 = tset->prix[ip].jb2; 
-        demand((jb2 >= 0) && (jb2 < NB), "bad basis index {jb2}");
         double tvk;
         if (jb1 == -1)
           { demand(jb2 == -1, "inconsitent {jb1,jb1} for unit term");
@@ -107,7 +105,7 @@ void multifok_term_values_from_basis_coeffs
             demand((jb2 >= 0) && (jb2 < NB), "invalid basis coeff index {jb2}"); 
             tvk = coeff[jb1]*coeff[jb2];
           }
-        int32_t kt = tset->prix[ip].kt;
+        uint32_t kt = tset->prix[ip].kt;
         term[kt] += tvk;
       }
   }
@@ -149,13 +147,13 @@ multifok_term_set_t *multifok_term_set_read_named
 void multifok_term_read_set_weights_and_names
   ( FILE *rd,
     bool_t weights,
-    int32_t *NT_P,
+    uint32_t *NT_P,
     char ***termName_P,
     double *wt_P[],
     bool_t verbose
   )
   {
-    int32_t NT = 0; /* Number of terms seen in file. */
+    uint32_t NT = 0; /* Number of terms seen in file. */
     double_vec_t wt = double_vec_new(50);
     string_vec_t termName = string_vec_new(50); /* Term formulas. */
     while (TRUE)
@@ -164,7 +162,7 @@ void multifok_term_read_set_weights_and_names
         if (fget_test_eof(rd)) { break; }
 
         /* There is something there. Read the term index: */
-        int32_t kt = fget_int32(rd);
+        uint32_t kt = fget_uint32(rd, 10);
         demand(kt == NT, "unexpected term index");
 
         /* Read the term weight, if any: */
@@ -192,18 +190,18 @@ void multifok_term_read_set_weights_and_names
 
 void multifok_term_indices_from_names
   ( multifok_basis_t *basis,
-    int32_t NT, 
+    uint32_t NT, 
     char *termName[], 
-    int32_t *NP_P, 
+    uint32_t *NP_P, 
     multifok_term_prod_t **prix_P, 
     bool_t verbose
   )
   {
-    int32_t NB = basis->NB;
-    int32_t NP_max = NB*(NB + 1)/2 + 1; /* Allocated size of {prodName,prix}. */
+    uint32_t NB = basis->NB;
+    uint32_t NP_max = NB*(NB + 1)/2 + 1; /* Allocated size of {prodName,prix}. */
     multifok_term_prod_t *prix = talloc(NP_max, multifok_term_prod_t);
     
-    int32_t NP = 0; /* Total number of products in all terms. */
+    uint32_t NP = 0; /* Total number of products in all terms. */
     
     for (uint32_t kt = 0;  kt < NT; kt++)
       { char *tnk = termName[kt];
@@ -232,7 +230,8 @@ void multifok_term_indices_from_names
                 ( ((*pend) == '*') )
               )
               { pend++; }
-            int32_t nc = (int32_t)(pend - pbeg);
+            assert(pbeg <= pend);
+            size_t nc = (size_t)(pend - pbeg);
             char *pr;
             int32_t jb1, jb2;
             multifok_term_parse_product(pbeg, nc, NB, basis->belName, &jb1, &jb2, &pr);
@@ -243,11 +242,11 @@ void multifok_term_indices_from_names
 
             /* Store product in tables: */
             demand (NP < NP_max, "too many products");
-            int32_t ip = NP;
+            uint32_t ip = NP;
             prix[ip] = (multifok_term_prod_t){ jb1, jb2, kt, pr };
             NP++;
     
-            if (verbose) { fprintf(stderr, "   product %d = %d %d %.*s +-> term %d\n", ip, jb1, jb2, nc, pr, kt); }
+            if (verbose) { fprintf(stderr, "   product %d = %d %d %.*s +-> term %d\n", ip, jb1, jb2, (int32_t)nc, pr, kt); }
 
             plus_next = TRUE;
             pbeg = pend;
@@ -263,8 +262,8 @@ void multifok_term_indices_from_names
 
 void multifok_term_parse_product
   ( char *pbeg, 
-    int32_t nc, 
-    int32_t NB, 
+    size_t nc, 
+    uint32_t NB, 
     char *belName[], 
     int32_t *jb1_P, 
     int32_t *jb2_P,
@@ -291,10 +290,11 @@ void multifok_term_parse_product
         if (jb1 > jb2) { int32_t tmp = jb1; jb1 = jb2; jb2 = tmp; }
       }
     /* Create a fresh copy {pr} of product name, with factors sorted: */
+    char *pr = NULL;
     if (jb1 == -1)
-      { char *pr = jsprintf("1"); }
+      { pr = jsprintf("1"); }
     else
-      { char *pr = jsprintf("%s*%s", belName[jb1], belName[jb2]); }
+      { pr = jsprintf("%s*%s", belName[jb1], belName[jb2]); }
     
     (*jb1_P) = jb1;
     (*jb2_P) = jb2;
@@ -303,13 +303,14 @@ void multifok_term_parse_product
     return;
 
     int32_t find_belName(char *beg, char *end)
-      { int32_t n = (int32_t)(end - beg);
+      { if (beg > end) { return -1; }
+        uint32_t nch_name = (uint32_t)(end - beg);
         int32_t ib = -1;
-        for (uint32_t kb = 0;  kb < NB; kb++)
+        for (int32_t kb = 0;  kb < NB; kb++)
           { char *bk = belName[kb];
-            int32_t m = (int32_t)strlen(bk);
-            if (n != m) { continue; }
-            if (strncmp(beg, bk, n) == 0) 
+            int32_t nch_bk = (int32_t)strlen(bk);
+            if (nch_name != nch_bk) { continue; }
+            if (strncmp(beg, bk, nch_name) == 0) 
               { ib = kb; break; }
           }
         demand(ib >= 0, "basis name not recognized");
@@ -319,7 +320,7 @@ void multifok_term_parse_product
 
 void multifok_term_set_names_write
   ( FILE *wr, 
-    int32_t NT,
+    uint32_t NT,
     char *termName[]
   )
   { for (uint32_t kt = 0;  kt < NT; kt++)
@@ -329,11 +330,10 @@ void multifok_term_set_names_write
  
 void multifok_term_set_names_write_named
   ( char *outPrefix, 
-    int32_t NT, 
+    uint32_t NT, 
     char *termName[]
   )
-  { char *fname = NULL;
-    char *fname = jsprintf("%s-tnames.txt", outPrefix);
+  { char *fname = jsprintf("%s-tnames.txt", outPrefix);
     FILE *wr = open_write(fname, TRUE);
     multifok_term_set_names_write(wr, NT, termName);
     fclose(wr);
@@ -345,7 +345,7 @@ void multifok_term_set_write
     bool_t weights,
     double wt[]
   )
-  { int32_t NT = tset->NT;
+  { uint32_t NT = tset->NT;
     for (uint32_t kt = 0;  kt < NT; kt++)
       { if (weights)
           { double wtk = (wt == NULL ? 1.0 : wt[kt]);
@@ -363,8 +363,7 @@ void multifok_term_set_write_named
     bool_t weights,
     double wt[]
   )
-  { char *fname = NULL;
-    char *fname = jsprintf("%s-twts.txt", outPrefix);
+  { char *fname = jsprintf("%s-twts.txt", outPrefix);
     FILE *wr = open_write(fname, TRUE);
     multifok_term_set_write(wr, tset, weights, wt);
     fclose(wr);
@@ -372,7 +371,7 @@ void multifok_term_set_write_named
 
 void multifok_term_set_product_table_write
   ( FILE *wr, 
-    int32_t NP,
+    uint32_t NP,
     multifok_term_prod_t *prix,
     bool_t verbose
   )
@@ -388,7 +387,7 @@ void multifok_term_set_product_table_write
 
 void multifok_term_set_product_table_write_named
   ( char *outPrefix, 
-    int32_t NP, 
+    uint32_t NP, 
     multifok_term_prod_t prix[],
     bool_t verbose
   )

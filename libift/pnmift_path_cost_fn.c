@@ -1,7 +1,6 @@
 /* pnmift_path_cost_fn.c - implementation of pnmift_path_cost_fn.h */
-/* Last edited on 2010-06-06 14:51:37 by stolfi */
+/* Last edited on 2024-12-05 10:29:17 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>

@@ -2,7 +2,7 @@
 #define float_image_hartley_H
 
 /* Tools for Hartley transform (real-valued Fourier-like transform). */
-/* Last edited on 2024-10-17 14:23:12 by stolfi */ 
+/* Last edited on 2024-12-04 23:28:26 by stolfi */ 
 
 #include <bool.h>
 #include <float_image.h>
@@ -72,7 +72,7 @@ void float_image_hartley_transform(float_image_t *A, float_image_t *T);
   " sum of the squares of its transform (Parseval's theorem).  Moreover, the Hartley" \
   " transform is its own inverse."
 
-void float_image_hartley_wave(float_image_t *A, int fx, int fy, double amp);
+void float_image_hartley_wave(float_image_t *A, int32_t fx, int32_t fy, double amp);
   /* Fills {A} with an image that is a Hartley component of
     frequencies {fx} and {fy} --- namely, a wave with {fx} cycles
     along the X axis and {fy} waves along the Y axis, with amplitude

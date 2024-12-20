@@ -1,10 +1,9 @@
 /* Focus detector for multi-focus stereo. */
-/* Last edited on 2024-10-15 17:03:17 by stolfi */
+/* Last edited on 2024-12-05 10:36:58 by stolfi */
 
 #ifndef multifok_score_H
 #define multifok_score_H
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 

@@ -1,10 +1,9 @@
 /* See {lsq_robust_mf.h} */
-/* Last edited on 2023-02-25 16:08:10 by stolfi */
+/* Last edited on 2024-12-05 10:33:16 by stolfi */
 
 #define lsq_robust_mf_C_COPYRIGHT \
   "Copyright © 2014  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -16,7 +15,7 @@
 #include <affirm.h>
 #include <rmxn.h>
 #include <jsmath.h>
-#include <gauss_elim.h>
+#include <gausol_solve.h>
 #include <rn.h>
 
 #include <lsq.h>
@@ -53,7 +52,7 @@ void lsq_robust_mf_fit
     lsq_compute_matrix_and_rhs(nx, nf, nt, gen_case, A, B, verbacc);
     
     /* The matrix does not change: */
-    rmxn_inv_full(nx, A, A);
+    rmxn_inv(nx, A, A);
 
     /* Solve first without correction: */
     rmxn_mul(nx, nx, nf, A, B, U);

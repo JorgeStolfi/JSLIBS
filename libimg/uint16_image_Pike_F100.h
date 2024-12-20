@@ -1,5 +1,5 @@
 /* uint16_image_Pike_F100.h - read AVC PIKE F-100 raw images. */
-/* Last edited on 2017-06-20 20:52:21 by stolfilocal */
+/* Last edited on 2024-12-04 23:36:19 by stolfi */
 
 #ifndef uint16_image_Pike_F100_H
 #define uint16_image_Pike_F100_H
@@ -27,7 +27,7 @@ void uint16_image_Pike_F100_read_trailer(FILE *rd, bool_t verbose);
   /* Reads (and prints, if {verbose} is true) the 2944 byte 
     trailer of the image file. */
 
-int uint16_image_Pike_F100_sample_channel(int col, int row);
+int32_t uint16_image_Pike_F100_sample_channel(int32_t col, int32_t row);
   /* Returns the channel index (0=R, 1=G, 2=B) of the pixel in column
     {col} and row {row}, according to the Pike F-100 Bayer screen. */
   
@@ -53,7 +53,7 @@ uint16_image_t *uint16_image_Pike_F100_debayer(uint16_image_t *img, bool_t squee
     averaged to form channel 1 of the output. The average is rounded
     down or up, in checkerboard fashion. */
   
-uint16_image_t *uint16_image_Pike_F100_extract_bayer_channel(uint16_image_t *img, int bayer_col, int bayer_row, bool_t verbose);
+uint16_image_t *uint16_image_Pike_F100_extract_bayer_channel(uint16_image_t *img, int32_t bayer_col, int32_t bayer_row, bool_t verbose);
   /* Extracts a selected Bayer channel from a Raw16 Pike F-100 image.
     The image {img} must have {img.chns==1}. The procedure assumes the
     samples of {img} are R,G,B values interleved in the Bayer pattern
@@ -68,7 +68,7 @@ void uint16_image_Pike_F100_color_balance(uint16_image_t *img, float bal[], bool
     If {img} has only one channel, assumes the three channels are
     interleaved in the Bayer pattern. */
    
-void uint16_image_Pike_F100_output_amp_balance(uint16_image_t *img, int split_col, double gain0, double gain1, bool_t verbose);
+void uint16_image_Pike_F100_output_amp_balance(uint16_image_t *img, int32_t split_col, double gain0, double gain1, bool_t verbose);
   /* Adjusts the samples of {img} to compensate for different gains in
     the output amplifiers of the KAI-1020 sensor, which result in a
     gain discontinuity around column 500. Samples in columns
@@ -83,7 +83,7 @@ uint16_image_t *pnm_Pike_F100_bayer_channel_white_mask(uint16_image_t *img, bool
     have been produced by {uint16_image_Pike_F100_extract_bayer_channel} and
     must have had its output amplifiers equalized. */
 
-void uint16_image_Pike_F100_interpolate_bayer_pixel(uint16_image_t *img, int col, int row);
+void uint16_image_Pike_F100_interpolate_bayer_pixel(uint16_image_t *img, int32_t col, int32_t row);
   /* Requires {img.chns == 3} and assumes that it is the result of
     {uint16_image_Pike_F100_debayer}. Computes the missing samples of
     pixel in column {col} and row {row} by interpolation of nearby

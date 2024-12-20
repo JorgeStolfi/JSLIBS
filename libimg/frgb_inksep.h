@@ -3,11 +3,10 @@
 #ifndef frgb_inksep_H
 #define frgb_inksep_H
 
-/* Last edited on 2023-03-04 18:07:44 by stolfi */
+/* Last edited on 2024-12-05 10:30:25 by stolfi */
 /* Copyright (C) 2006 by Jorge Stolfi, the University of Campinas, Brazil. */
 /* See the rights and conditions notice at the end of this file. */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <r4x4.h>

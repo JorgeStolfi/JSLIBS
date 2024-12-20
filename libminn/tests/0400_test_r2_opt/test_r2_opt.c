@@ -2,13 +2,12 @@
 #define PROG_DESC "test of {r2_opt.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2023-11-26 07:01:04 by stolfi */ 
+/* Last edited on 2024-12-05 10:34:44 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define tr2o_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

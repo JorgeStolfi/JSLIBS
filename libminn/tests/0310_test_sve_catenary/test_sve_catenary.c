@@ -1,7 +1,6 @@
 /* test_sve_catenary --- test of {sve_minn.h} for hanging-chain energy minimization. */
-/* Last edited on 2024-11-08 20:25:54 by stolfi */
+/* Last edited on 2024-12-05 10:34:33 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

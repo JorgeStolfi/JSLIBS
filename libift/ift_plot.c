@@ -1,7 +1,6 @@
 /* Implementation of ift_plot.h. */
-/* Last edited on 2024-06-22 17:40:32 by stolfi */
+/* Last edited on 2024-12-05 10:29:05 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

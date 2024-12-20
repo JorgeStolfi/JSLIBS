@@ -1,7 +1,6 @@
 /* See {test_r2_opt_basic.h}. */
-/* Last edited on 2023-02-27 10:38:55 by stolfi */
+/* Last edited on 2024-12-05 10:34:48 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 #include <math.h>

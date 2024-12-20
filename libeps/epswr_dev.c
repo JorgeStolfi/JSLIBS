@@ -1,7 +1,6 @@
 /* See epswr.h */
-/* Last edited on 2024-11-07 18:44:10 by stolfi */
+/* Last edited on 2024-12-05 10:13:39 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -234,7 +233,7 @@ void epswr_dev_normalize_draw_color(double *R_P, double *G_P, double *B_P)
   { double unit = epswr_dev_color_unit;
     double clr[3];
     clr[0] = (*R_P); clr[1] = (*G_P); clr[2] = (*B_P);
-    for (uint32_t c = 0;  c < 3; c++)
+    for (int32_t c = 0;  c < 3; c++)
       { demand(! isnan(clr[c]), "invalid color");
         if (clr[c] < 0.0) { clr[c] = 0.0; } else if (clr[c] > 1.0) { clr[c] = 1.0; }
         clr[c] = floor(clr[c]/unit + 0.5)*unit;
@@ -1287,7 +1286,7 @@ void epswr_dev_rounded_polygon
     if (! epswr_vis_polygon_is_invisible(eps, psx, psy, n))
       { /* Compute the radii to use at each corner: */
         double *arad = talloc(n, double);
-        for (uint32_t i = 0;  i<n; i++)
+        for (int32_t i = 0;  i<n; i++)
           { int32_t j = (i + 1) % n;
             int32_t k = (i + 2) % n;
             /* Adjust the rounding radius at corner {j = i+1}: */
@@ -1350,7 +1349,7 @@ void epswr_dev_bezier_polygon
         /* Write the arcs in the reverse order: */
         for (int32_t i = n-1; i >= 0; i--)
           { int32_t k0 = 4*i;              /* Start of arc number {i} */
-            for (uint32_t j = 0;  j < 4; j++)
+            for (int32_t j = 0;  j < 4; j++)
               { int32_t j1 = (j + 1) % 4;
                 double psxi = psx[k0+j1];
                 double psyi = psy[k0+j1];
@@ -1567,12 +1566,12 @@ void epswr_dev_grid_lines(epswr_figure_t *eps, int32_t nh, int32_t nv)
     double hMin, hMax, vMin, vMax;
     epswr_dev_get_window(eps, &hMin, &hMax, &vMin, &vMax);
     FILE *wr = eps->wr;
-    for (uint32_t ih = 0;  ih<=nh; ih++)
+    for (int32_t ih = 0;  ih<=nh; ih++)
       { double r = ((double)ih)/((double)nh);
         double h = (1 - r)*hMin + r*hMax;
         fprintf(wr, "%6.1f xgrd\n", h);
       }
-    for (uint32_t iv = 0;  iv<=nv; iv++)
+    for (int32_t iv = 0;  iv<=nv; iv++)
       { double r = ((double)iv)/((double)nv);
         double v = (1 - r)*vMin + r*vMax;
         fprintf(wr, "%6.1f ygrd\n", v);

@@ -2,9 +2,8 @@
 #define float_image_overlay_H
 
 /* Tools for overlaying float images according to opacity channels. */
-/* Last edited on 2021-08-28 03:46:13 by stolfi */ 
+/* Last edited on 2024-12-05 10:29:47 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdint.h>
 
 #include <float_image.h>

@@ -1,5 +1,5 @@
 /* See {float_image_color.h}. */
-/* Last edited on 2013-10-21 00:13:16 by stolfilocal */
+/* Last edited on 2024-12-04 23:26:53 by stolfi */
 
 #include <math.h>
 #include <limits.h>
@@ -16,10 +16,10 @@
 #include <frgb.h>
 #include <frgb_ops.h>
    
-frgb_t fic_get_frgb_pixel(float_image_t *A, int cR, int cG, int cB, int x, int y)
-  { int NC = (int)A->sz[0];
-    int NX = (int)A->sz[1]; 
-    int NY = (int)A->sz[2];
+frgb_t fic_get_frgb_pixel(float_image_t *A, int32_t cR, int32_t cG, int32_t cB, int32_t x, int32_t y)
+  { int32_t NC = (int32_t)A->sz[0];
+    int32_t NX = (int32_t)A->sz[1]; 
+    int32_t NY = (int32_t)A->sz[2];
     demand((cR >= 0) && (cR < NC), "bad R channel");
     if ((cG < 0) || (cG >= NC)) { cG = cR; }
     if ((cB < 0) || (cB >= NC)) { cB = cR; }
@@ -33,10 +33,10 @@ frgb_t fic_get_frgb_pixel(float_image_t *A, int cR, int cG, int cB, int x, int y
     return p;
   }
 
-void fic_set_frgb_pixel(float_image_t *A, int cR, int cG, int cB, int x, int y, frgb_t *p)
-  { int NC = (int)A->sz[0];
-    int NX = (int)A->sz[1]; 
-    int NY = (int)A->sz[2];
+void fic_set_frgb_pixel(float_image_t *A, int32_t cR, int32_t cG, int32_t cB, int32_t x, int32_t y, frgb_t *p)
+  { int32_t NC = (int32_t)A->sz[0];
+    int32_t NX = (int32_t)A->sz[1]; 
+    int32_t NY = (int32_t)A->sz[2];
     demand((cR >= 0) && (cR < NC), "bad R channel");
     demand((cG >= 0) && (cG < NC), "bad G channel");
     demand((cB >= 0) && (cB < NC), "bad B channel");
@@ -48,17 +48,17 @@ void fic_set_frgb_pixel(float_image_t *A, int cR, int cG, int cB, int x, int y, 
     sp[cB*A->st[0]] = p->c[2];
   }
 
-void fic_normalize_colors(float_image_t *A, int cR, int cG, int cB)
-  { int NC = (int)A->sz[0];
-    int NX = (int)A->sz[1]; 
-    int NY = (int)A->sz[2];
+void fic_normalize_colors(float_image_t *A, int32_t cR, int32_t cG, int32_t cB)
+  { int32_t NC = (int32_t)A->sz[0];
+    int32_t NX = (int32_t)A->sz[1]; 
+    int32_t NY = (int32_t)A->sz[2];
     if ((NX == 0) || (NY == 0)) { /* Nothing to do: */ return; }
     demand((cR >= 0) && (cR < NC), "bad R channel");
     demand((cG >= 0) && (cG < NC), "bad G channel");
     demand((cB >= 0) && (cB < NC), "bad B channel");
     
     float vmax, vmin;
-    int c, x, y;
+    int32_t c, x, y;
     vmax = -INF;
     vmin = +INF;
     for (y = 0; y < NY; y++)

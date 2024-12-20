@@ -2,9 +2,8 @@
 #define float_pnm_write_stream_H
 
 /* Writing a PBM/PGM/PPB image file by rows from a float-format buffer. */
-/* Last edited on 2017-06-22 02:38:39 by stolfilocal */
+/* Last edited on 2024-12-05 10:30:12 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 
@@ -14,13 +13,13 @@
 float_pnm_stream_t *float_pnm_write_stream_new
   ( FILE *wr, 
     uint16_t maxval, 
-    int rows, 
-    int cols, 
-    int chns, 
+    int32_t rows, 
+    int32_t cols, 
+    int32_t chns, 
     bool_t isMask,
     uint32_t badval,
     bool_t forceplain,
-    int bufrows
+    int32_t bufrows
   );
   /* Creates a new stream structure {str} primed for writing to the
     open PBM/PGM/PPM image file {wr}.
@@ -34,7 +33,7 @@ float_pnm_stream_t *float_pnm_write_stream_new
     have space for at most {bufrows} rows, and will be initially
     empty. The table {ftb} is not allocated. */
 
-double *float_pnm_write_stream_get_row(FILE *rd, float_pnm_stream_t *str, int y);
+double *float_pnm_write_stream_get_row(FILE *rd, float_pnm_stream_t *str, int32_t y);
   /* Makes sure that there is a sample vector in the float buffer {str->buf} to store
    row {y} of the image, and returns the address of that vector.
    

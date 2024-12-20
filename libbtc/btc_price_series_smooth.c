@@ -1,7 +1,5 @@
 /* See {btc_price_series_smooth.h} */
-/* Last edited on 2015-04-20 00:44:51 by stolfilocal */
-
-#define _GNU_SOURCE
+/* Last edited on 2024-12-05 10:23:57 by stolfi */
 
 #include <btc_price_series_smooth.h>
 #include <btc_price_series_local_avg.h>
