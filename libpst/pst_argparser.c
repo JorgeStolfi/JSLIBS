@@ -1,8 +1,8 @@
 /* See pst_argparser.h */
-/* Last edited on 2006-05-02 15:15:14 by stolfi */ 
+/* Last edited on 2024-12-22 11:38:22 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <values.h>
 #include <stdlib.h>
@@ -54,14 +54,14 @@ char *pst_parse_next_file_name(argparser_t *pp)
     return nx;
   }
 
-name_vec_t pst_parse_file_name_list(argparser_t *pp, int *NNP)
-  { int NNMax = ((NNP == NULL) || ((*NNP) < 0) ? MAXINT : (*NNP));
-    int NN = 0;
+name_vec_t pst_parse_file_name_list(argparser_t *pp, uint32_t *NNP)
+  { uint32_t NNMax = ((NNP == NULL) || ((*NNP) < 0) ? UINT32_MAX : (*NNP));
+    uint32_t NN = 0;
     name_vec_t nvec = name_vec_new(0);
     while (NN < NNMax)
       { char *name = pst_parse_next_file_name(pp);
         if (name == NULL) { break; }
-        name_vec_expand(&(nvec), NN);
+        name_vec_expand(&(nvec), (vec_index_t)NN);
         nvec.e[NN] = name;
         NN++;
       }

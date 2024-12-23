@@ -1,5 +1,5 @@
 /* See oct_shapes.h. */
-/* Last edited on 2024-12-05 10:39:37 by stolfi */
+/* Last edited on 2024-12-22 11:01:01 by stolfi */
 
 #define oct_shapes_C_copyright \
   "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -13,11 +13,11 @@
 #include <oct.h>
 #include <oct_shapes.h>
 
-oct_arc_t make_ring(int32_t n)
+oct_arc_t make_ring(uint32_t n)
   { oct_arc_t fst, a, b;
     a = oct_make_edge(); 
     fst = a;
-    uint i;
+    uint32_t i;
     for (i = 1; i < n; i++)
       { b = oct_make_edge(); 
         oct_splice(b, oct_sym(a));
@@ -27,7 +27,7 @@ oct_arc_t make_ring(int32_t n)
     return fst;
   }
 
-oct_arc_t make_orange(uint n)
+oct_arc_t make_orange(uint32_t n)
   { return oct_tor(make_ring(n)); }
 
 oct_arc_t make_tetra(void)
@@ -67,33 +67,30 @@ oct_arc_t make_cube (void)
     return b;
   }
 
-oct_arc_t make_sausage (uint len)
+oct_arc_t make_sausage (uint32_t len)
   { oct_arc_t t;
     t = make_ring(2);
     buld_tower(2, len, t);
     return t;
   }
 
-oct_arc_t make_fork(uint np, uint len)
+oct_arc_t make_fork(uint32_t np, uint32_t len)
   { oct_arc_t o;
     o = make_orange(np);
-    uint i;
-    for (i = 0; i < np; i++)
+    for (uint32_t i = 0; i < np; i++)
       { o = oct_onext(o); 
         buld_tower(2, len, o);
       }
     return o;
   }
   
-void buld_tower(uint m, uint h, oct_arc_t a)
+void buld_tower(uint32_t m, uint32_t h, oct_arc_t a)
   { oct_arc_t s, e, t;
     t = a;
-    uint i;
-    for (i = 0; i < h; i++)
+    for (uint32_t i = 0; i < h; i++)
       { t = oct_oprev(t);
         s = make_ring(m);
-        uint j;
-        for (j = 0; j < m; j++)
+        for (uint32_t j = 0; j < m; j++)
           { e = oct_make_edge();
             oct_splice(t, e); oct_splice(oct_sym(e), s);
             t = oct_lnext(t); s = oct_rnext(s);

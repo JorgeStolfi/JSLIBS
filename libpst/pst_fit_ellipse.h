@@ -2,10 +2,10 @@
 #define pst_fit_ellipse_H
 
 /* pst_fit_ellipse.h -- locating a light gauge by fitting an ellipse to its edge. */
-/* Last edited on 2009-08-22 13:04:17 by stolfi */
+/* Last edited on 2024-12-22 12:03:44 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <bool.h>
 #include <r2.h>
@@ -25,7 +25,7 @@ double pst_fit_ellipse
     double ctrAdj,      /* Maximum adjustment allowed in {EP.ctr} coordinates. */
     double radAdj,      /* Maximum adjustment allowed in {EP.rad}. */
     double strAdj,      /* Maximum adjustment allowed in {EP.str} coordinates. */
-    int maxIts          /* Max iterations of the optimizer. */
+    uint32_t maxIts          /* Max iterations of the optimizer. */
   );
   /* Fits an ellipse to the outline of a spherical object in a
     gradient image {IGR}.
@@ -78,7 +78,7 @@ double pst_fit_ellipse_multiscale
     double radAdj,      /* Maximum adjustment allowed in {EP.rad}. */
     double strAdj,      /* Maximum adjustment allowed in {EP.str} coordinates. */
     double minRadius,   /* Min acceptable radius for multiscale. */
-    int maxIts          /* Max iterations of optimizer at initial scale. */
+    uint32_t maxIts          /* Max iterations of optimizer at initial scale. */
   );
   /* Similar to {pst_fit_ellipse}, but uses a multiscale method,
     starting with a scale where the amount of adjustment is between

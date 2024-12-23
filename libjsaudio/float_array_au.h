@@ -1,5 +1,5 @@
 /* {float_array_au.h} - read/write Sun AU audio files as {float_array_t}s */
-/* Last edited on 2024-12-05 10:32:03 by stolfi */
+/* Last edited on 2024-12-20 19:17:06 by stolfi */
 
 /* Derived from {rusound.h}, created by Rumiko Oishi Stolfi
   and Jorge Stolfi on sep/2006.
@@ -27,7 +27,7 @@
 
   The remaining indices {ix[2..5]} are trivial (always 0). */
 
-float_array_t *float_array_from_sound(sound_t *snd, bool_t verbose);
+float_array_t *float_array_from_sound(jsaudio_t *snd, bool_t verbose);
   /* Converts a sound array {snd} to a {float_array_t}.
     Samples are just converted from {double} to {float}.
 
@@ -41,14 +41,14 @@ float_array_t *float_array_from_sound(sound_t *snd, bool_t verbose);
     If {verbose} is TRUE, the procedure prints statistics of the
     conversion to {stderr}. */
 
-sound_t *float_array_to_sound(float_array_t *A, int32_t chns, int32_t ch[], double freq, bool_t verbose);
+jsaudio_t *float_array_to_sound(float_array_t *A, uint32_t chns, int32_t ch[], double freq, bool_t verbose);
   /* Converts a {float_array_t} {A} to a sound file {snd}.
   
     The number of channels of {snd} will be {chns} --- usually 1 for
     mono, 2 for stereo, etc.. The samples of channel {k} of {snd} will
     be taken from the subarray of {A} with {ix[0] = ch[k]}, for each
-    {k} in {0..chns-1}. If {ch[k]} is invalid (negative, or {>=
-    A.ds.sz[0]}), the samples in channel {k} of {snd} are all set to
+    {k} in {0..chns-1}. If {ch[k]} is invalid (negative, or {ch[k]>=A.ds.sz[0]}), 
+    the samples in channel {k} of {snd} are all set to
     zero. If {ch} is NULL, it defaults to the identity vector
     {(0,1,2,...chns-1)}.
     

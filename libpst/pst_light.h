@@ -2,7 +2,7 @@
 #define pst_light_H
 
 /* pst_light.h -- light field modeling. */
-/* Last edited on 2006-05-02 16:55:41 by stolfi */
+/* Last edited on 2024-12-22 22:21:26 by stolfi */
 
 #include <bool.h>
 #include <r3.h>
@@ -24,7 +24,7 @@ typedef struct pst_light_t
   " lamp contributes a specific term to the total light" \
   " field reaching the scene from the outside."
 
-pst_light_t pst_light_new(int NS, int NC);
+pst_light_t pst_light_new(uint32_t NS, uint32_t NC);
   /* Creates a light field model with {NS} lamps (at least one)
     and {NC} color channels (possibly zero).  The
     {dir} of each lamp is set to {(0,0,0)} and the {crad} 
@@ -42,7 +42,7 @@ pst_light_t pst_light_copy(pst_light_t *lht);
 vec_typedef(pst_light_vec_t,pst_light_vec,pst_light_t);
   /* A list of light fields. */
 
-void pst_light_regularize_channels(pst_light_t *lht, int NC);
+void pst_light_regularize_channels(pst_light_t *lht, uint32_t NC);
   /* Makes sure that all lamps have {NC} channels in their power
     vectors.  Vectors with zero elements are expanded {NC} elements
     and filled with {1/NS}, where {NS} is the number of 
@@ -77,8 +77,8 @@ void pst_light_alignment_matrix(r3_t *u, r3_t *v, r3x3_t *M);
 
 void pst_light_add_uniform_array
   ( pst_lamp_vec_t *lmpv, 
-    int *NSP, 
-    int NA,
+    uint32_t *NSP, 
+    uint32_t NA,
     r3_t *dir0, 
     r3_t *dir1, 
     double_vec_t *pwr,
@@ -109,32 +109,32 @@ void pst_light_add_uniform_array
     array. Otherwise, the angular radii are set to appropriate values
     depending on {NA}. */
 
-void pst_light_add_single(pst_lamp_vec_t *lmpv, int *NSP, double crad);
+void pst_light_add_single(pst_lamp_vec_t *lmpv, uint32_t *NSP, double crad);
   /* Adds a single lamp with  given {crad} and direction (+1,0,0). */
   
-void pst_light_add_pair(pst_lamp_vec_t *lmpv, int *NSP, double crad);
+void pst_light_add_pair(pst_lamp_vec_t *lmpv, uint32_t *NSP, double crad);
   /* Adds a pair of lamps with given {crad} and directions (+1,0,0), (-1,0,0). */
   
-void pst_light_add_tetra(pst_lamp_vec_t *lmpv, int *NSP, bool_t dual);
+void pst_light_add_tetra(pst_lamp_vec_t *lmpv, uint32_t *NSP, bool_t dual);
   /* Adds four lamps at the corners of a tetrahedron.  If {dual},
     uses the dual directions. */
   
-void pst_light_add_octa(pst_lamp_vec_t *lmpv, int *NSP);
+void pst_light_add_octa(pst_lamp_vec_t *lmpv, uint32_t *NSP);
   /* Adds six lamps at the vertices of a octahedron, on the 
     coordinate axes. */
   
-void pst_light_add_icosa(pst_lamp_vec_t *lmpv, int *NSP);
+void pst_light_add_icosa(pst_lamp_vec_t *lmpv, uint32_t *NSP);
   /* Adds 12 lights at the vertices of an icosahedron. 
     The axes bisect pairs of opposite edges. */
   
-void pst_light_add_dodeca(pst_lamp_vec_t *lmpv, int *NSP);
+void pst_light_add_dodeca(pst_lamp_vec_t *lmpv, uint32_t *NSP);
   /* Adds 20 lights at the vertices of a dodceahedron,
     dual to the icosahedron above. The axes bisect pairs 
     of opposite edges. */
 
 /* COMMAND LINE PARSING */
 
-pst_light_t pst_light_spec_parse(argparser_t *pp, bool_t next, int *NCP);
+pst_light_t pst_light_spec_parse(argparser_t *pp, bool_t next, uint32_t *NCP);
   /* Parses the description of a light field, consisting of a list of
     lamp descriptions. If {next} is true, the lamp list must start
     at the next command line argument; else looks for it anywhere in

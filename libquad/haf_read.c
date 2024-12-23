@@ -1,5 +1,5 @@
 /* See {haf_read.h}. */
-/* Last edited on 2024-12-05 10:38:55 by stolfi */
+/* Last edited on 2024-12-22 09:56:39 by stolfi */
  
 #define haf_read_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -96,8 +96,8 @@ void haf_read_map(FILE *rd, haf_arc_vec_t *A, haf_edge_id_t *eid0_P, haf_arc_vec
     filefmt_read_footer(rd, FILE_TYPE);
     
     /* Trim tables: */
-    haf_arc_vec_trim(A, (vec_index_t)ne);
-    haf_arc_vec_trim(R, (vec_index_t)nr);
+    haf_arc_vec_trim(A, (vec_size_t)ne);
+    haf_arc_vec_trim(R, (vec_size_t)nr);
     
     (*eid0_P) = eid0;
   }

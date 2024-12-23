@@ -1,11 +1,11 @@
 /* See pst_geom.h */
-/* Last edited on 2024-11-04 07:29:00 by stolfi */
+/* Last edited on 2024-12-22 12:39:52 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <values.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <r2.h>
@@ -179,7 +179,7 @@ hr3_pmap_t pst_sphere_perspective_view_map(hr3_point_t *O, r2_t *K, double R)
     
     /* Assemble the rotation part of the VCS-to-NCS matrix {M.inv}: */
     hr3_pmap_t M;
-    int j;
+    int32_t j;
     for (j = 0; j < 4; j++) 
       { M.inv.c[0][j] = (j == 0 ? 1 : 0); /* For now. */
         M.inv.c[1][j] = (j == 0 ? 0 : R*udr.c[j-1]);
@@ -214,7 +214,7 @@ hr3_pmap_t pst_sphere_perspective_view_map(hr3_point_t *O, r2_t *K, double R)
         /* Debugging the code: */
         bool_t debug_A = TRUE;
         if (debug_A)
-          { int i, j, k;
+          { int32_t i, j, k;
             for (i = 0; i < 4; i++)
               for (k = +1; k>= -1; k -= 2)
                 { r4_t p = (r4_t) {{ 0, 0, 0, 0 }};

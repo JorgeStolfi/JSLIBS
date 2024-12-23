@@ -1,4 +1,4 @@
-# Last edited on 2023-02-02 21:28:47 by stolfi
+# Last edited on 2024-12-21 10:31:28 by stolfi
 
 PROG = test_jspca
  
@@ -7,6 +7,8 @@ TEST_LIB_DIR := ../..
 
 JS_LIBS := \
   libgeo.a \
+  libeigen.a \
+  libgausol.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

@@ -1,5 +1,5 @@
 /* See {spectrum_table_convert.h} */
-/* Last edited on 2024-12-05 07:14:16 by stolfi */ 
+/* Last edited on 2024-12-21 04:55:55 by stolfi */ 
 
 #include <limits.h>
 #include <float.h>
@@ -38,7 +38,7 @@ spectrum_table_binned_t spectrum_table_convert_exact_to_binned
     
     void append_proper_entry(float freq, double nTerms, double power)
       { if (nTerms != 0.0)
-          { spectrum_table_binned_expand(&tb, nb);
+          { spectrum_table_binned_expand(&tb, (vec_index_t)nb);
             spectrum_table_binned_entry_t *eb = &(tb.e[nb]);
             eb->fmin = eb->fmax = eb->fmid = (double)freq;
             eb->nTerms = nTerms;
@@ -54,7 +54,7 @@ spectrum_table_binned_t spectrum_table_convert_exact_to_binned
     void append_filler_entry(float flo, float fhi)
       { assert(flo <= fhi);
         if (flo < fhi)
-          { spectrum_table_binned_expand(&tb, nb);
+          { spectrum_table_binned_expand(&tb, (vec_index_t)nb);
             spectrum_table_binned_entry_t *eb = &(tb.e[nb]);
             eb->fmin = (double)flo;
             eb->fmax = (double)fhi;

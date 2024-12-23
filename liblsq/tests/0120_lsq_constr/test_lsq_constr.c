@@ -1,5 +1,5 @@
 /* test_lsq --- test program for constrained {lsq_solve_system}  */
-/* Last edited on 2024-12-05 10:33:43 by stolfi */
+/* Last edited on 2024-12-21 05:09:48 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,8 +14,9 @@
 #include <jsmath.h>
 #include <rn.h>
 #include <rmxn.h>
-#include <rmxn_extra.h>
+#include <rmxn_throw.h>
 #include <gausol_solve.h>
+#include <gausol_print.h>
 
 #include <lsq.h>
 #include <lsq_array.h>
@@ -44,10 +45,10 @@
 int32_t main (int32_t argc, char **argv);
 
 void tlsq_build_and_solve_system
-  ( int32_t trial,
-    int32_t nx,
-    int32_t nf,
-    int32_t nc,
+  ( uint32_t trial,
+    uint32_t nx,
+    uint32_t nf,
+    uint32_t nc,
     double tol,
     bool_t scrambleVars,
     bool_t scrrambleEqs,
@@ -61,9 +62,9 @@ void tlsq_build_and_solve_system
      Then modifies it as requested by {scrambleVars} and/or {scrambleEqs}. */
 
 void tlsq_make_trivial_problem
-  ( int32_t nx, 
-    int32_t nf,
-    int32_t nc,
+  ( uint32_t nx, 
+    uint32_t nf,
+    uint32_t nc,
     double **AP,
     double **BP, 
     double **RP,
@@ -90,9 +91,9 @@ void tlsq_make_trivial_problem
     and the solution {U} will be the numbers from 1 to {nx*nf}. */
 
 void tlsq_scramble_problem_variables
-  ( int32_t nx, 
-    int32_t nf,
-    int32_t nc,
+  ( uint32_t nx, 
+    uint32_t nf,
+    uint32_t nc,
     double A[],
     double B[], 
     double R[],
@@ -105,9 +106,9 @@ void tlsq_scramble_problem_variables
     equivalent to applying a random non-singular linear mapping to the variables. */
 
 void tlsq_scramble_problem_equations
-  ( int32_t nx, 
-    int32_t nf,
-    int32_t nc,
+  ( uint32_t nx, 
+    uint32_t nf,
+    uint32_t nc,
     double A[],
     double B[], 
     double R[],
@@ -121,21 +122,21 @@ void tlsq_scramble_problem_equations
   
 /* CHECKING LSQ FITTING */
 
-void tlsq_compare_with_expected_soln(int32_t nx, int32_t nf, double tol, double Uexp[], double Ucmp[]);
+void tlsq_compare_with_expected_soln(uint32_t nx, uint32_t nf, double tol, double Uexp[], double Ucmp[]);
   /* Checks whether the computed solution matrix {Ucmp[]} matches the expected 
     solution matrix {Uexp}, within the tolerance {tol}. */
 
-void tlsq_check_main_system(int32_t nx, int32_t nc, int32_t nf, double tol, double A[], double U[], double R[], double L[], double B[], bool_t verbose);
+void tlsq_check_main_system(uint32_t nx, uint32_t nc, uint32_t nf, double tol, double A[], double U[], double R[], double L[], double B[], bool_t verbose);
   /* Computes the residual {A*U + R'*L - B} of the main system and checks if the max abs elem does not exceed {tol}. */
   
-void tlsq_check_constraints(int32_t nx, int32_t nc, int32_t nf, double tol, double R[], double S[], double U[], bool_t verbose);
+void tlsq_check_constraints(uint32_t nx, uint32_t nc, uint32_t nf, double tol, double R[], double S[], double U[], bool_t verbose);
   /* Computes the residual {R*U - S} of the constraint equations,
     prints max elem. */
 
 void tlsq_check_system
-  ( int32_t nx,
-    int32_t nc,
-    int32_t nf,
+  ( uint32_t nx,
+    uint32_t nc,
+    uint32_t nf,
     double tol,
     double A[],
     double B[],
@@ -150,7 +151,7 @@ void tlsq_check_system
 /* IMPLEMENTATIONS */
 
 int32_t main (int32_t argc, char **argv)
-  { int32_t trial = 0;
+  { uint32_t trial = 0;
     tlsq_build_and_solve_system(trial, 1, 1, 0, 1.0e-9, FALSE, FALSE,  TRUE); trial++; /* Try 1x1 trivial, no constraints. */
     tlsq_build_and_solve_system(trial, 2, 3, 0, 1.0e-9, FALSE, FALSE,  TRUE); trial++; /* Try 2x3 trivial, no constraints. */
     tlsq_build_and_solve_system(trial, 2, 1, 1, 1.0e-8, FALSE, FALSE,  TRUE); trial++; /* Try 2x1 trivial, 1 constraint. */ 
@@ -159,11 +160,11 @@ int32_t main (int32_t argc, char **argv)
     while (trial < MAX_RUNS) 
       { srand(1665 + 2*trial);
         srandom(1665 + 2*trial);
-        int32_t max_nx = 2*trial;
-        int32_t max_nf = trial+2;
-        int32_t nx = int32_abrandom(max_nx/2, max_nx); /* Number of indep variables. */
-        int32_t nf = int32_abrandom(max_nf/2, max_nf); /* Number of dep variables. */
-        int32_t nc = int32_abrandom(nx/2, nx-1);       /* Number of constraints. */
+        uint32_t max_nx = 2*trial;
+        uint32_t max_nf = trial+2;
+        uint32_t nx = uint32_abrandom(max_nx/2, max_nx); /* Number of indep variables. */
+        uint32_t nf = uint32_abrandom(max_nf/2, max_nf); /* Number of dep variables. */
+        uint32_t nc = uint32_abrandom(nx/2, nx-1);       /* Number of constraints. */
         double tol = 1.0e-8*nx;
         bool_t scrambleVars = TRUE;
         bool_t scrambleEqs = TRUE;
@@ -178,10 +179,10 @@ int32_t main (int32_t argc, char **argv)
   }
 
 void tlsq_build_and_solve_system
-  ( int32_t trial,
-    int32_t nx,
-    int32_t nf,
-    int32_t nc,
+  ( uint32_t trial,
+    uint32_t nx,
+    uint32_t nf,
+    uint32_t nc,
     double tol,
     bool_t scrambleVars,
     bool_t scrambleEqs,
@@ -208,7 +209,7 @@ void tlsq_build_and_solve_system
     double *Ucmp = rmxn_alloc(nx, nf); /* Computed solution. */;
     double *Lcmp = (nc > 0 ? rmxn_alloc(nc, nf) : NULL); /* Lagrange multipliers. */
     
-    int32_t rank; /* Rank of least squares system. */
+    uint32_t rank; /* Rank of least squares system. */
     if (verbose) { fprintf(stderr, "  calling {lsq_solve_system}...\n\n"); }
     rank = lsq_solve_system(nx, nf, A, B, nc, R, S, Ucmp, Lcmp, verbose);
     demand(rank == nx + nc, "could not solve the least squares system");
@@ -219,9 +220,9 @@ void tlsq_build_and_solve_system
   }
 
 void tlsq_make_trivial_problem
-  ( int32_t nx, 
-    int32_t nf,
-    int32_t nc,
+  ( uint32_t nx, 
+    uint32_t nf,
+    uint32_t nc,
     double **AP,
     double **BP, 
     double **RP,
@@ -291,9 +292,9 @@ void tlsq_make_trivial_problem
   }
 
 void tlsq_scramble_problem_variables
-  ( int32_t nx, 
-    int32_t nf,
-    int32_t nc,
+  ( uint32_t nx, 
+    uint32_t nf,
+    uint32_t nc,
     double A[],
     double B[], 
     double R[],
@@ -358,9 +359,9 @@ void tlsq_scramble_problem_variables
   }
 
 void tlsq_scramble_problem_equations
-  ( int32_t nx, 
-    int32_t nf,
-    int32_t nc,
+  ( uint32_t nx, 
+    uint32_t nf,
+    uint32_t nc,
     double A[],
     double B[], 
     double R[],
@@ -440,9 +441,9 @@ void tlsq_scramble_problem_equations
   }
 
 void tlsq_check_system
-  ( int32_t nx,
-    int32_t nc,
-    int32_t nf,
+  ( uint32_t nx,
+    uint32_t nc,
+    uint32_t nf,
     double tol,
     double A[],
     double B[],
@@ -457,7 +458,7 @@ void tlsq_check_system
     if (nc > 0) { tlsq_check_constraints(nx, nc, nf, tol, R, S, U, verbose); }
   }
 
-void tlsq_compare_with_expected_soln(int32_t nx, int32_t nf, double tol, double Uexp[], double Ucmp[])
+void tlsq_compare_with_expected_soln(uint32_t nx, uint32_t nf, double tol, double Uexp[], double Ucmp[])
   { for (uint32_t ix = 0;  ix < nx; ix++)
       { for (uint32_t jf = 0;  jf < nf; jf++) 
           { double Uexpij = Uexp[ix*nf + jf];
@@ -476,7 +477,7 @@ void tlsq_compare_with_expected_soln(int32_t nx, int32_t nf, double tol, double 
     fprintf(stderr, "  matches expected solution good with tolerance %23.16e\n", tol);
   }
 
-void tlsq_check_main_system(int32_t nx, int32_t nc, int32_t nf, double tol, double A[], double U[], double R[], double L[], double B[], bool_t verbose)
+void tlsq_check_main_system(uint32_t nx, uint32_t nc, uint32_t nf, double tol, double A[], double U[], double R[], double L[], double B[], bool_t verbose)
   { 
     double *Y = rmxn_alloc(nx, nf);
     rmxn_mul(nx, nx, nf, A, U, Y);
@@ -486,19 +487,19 @@ void tlsq_check_main_system(int32_t nx, int32_t nc, int32_t nf, double tol, doub
     rmxn_add(nx, nf, Y, Z, BE);
     rmxn_sub(nx, nf, B, BE, BE);
     if (verbose)
-      { gausol_print_array(stderr, 4, "%12.6f", "residual of main system:", nx, nf, "BE", BE, ""); }
+      { gausol_print_array(stderr, 4, "%12.6f", "residual of main system:", nx,NULL,0, nf,NULL,0, "BE", BE, ""); }
     double maxE = rmxn_max_abs_elem(nx, nf, BE);
     fprintf(stderr, "  max main system residual %23.16e\n", maxE);
     demand(maxE <= tol, "main system residual is too large");
   }
 
-void tlsq_check_constraints(int32_t nx, int32_t nc, int32_t nf, double tol, double R[], double S[], double U[], bool_t verbose)
+void tlsq_check_constraints(uint32_t nx, uint32_t nc, uint32_t nf, double tol, double R[], double S[], double U[], bool_t verbose)
   { double *Y = rmxn_alloc(nc, nf);
     rmxn_mul(nc, nx, nf, R, U, Y);
     double *SE = rmxn_alloc(nc, nf);
     rmxn_sub(nc, nf, Y, S, SE);
     if (verbose)
-      { gausol_print_array(stderr, 4, "%12.6f", "residual of constraints:", nc, nf, "SE", SE, ""); }
+      { gausol_print_array(stderr, 4, "%12.6f", "residual of constraints:", nc,NULL,0, nf,NULL,0, "SE", SE, ""); }
     double maxE = rmxn_max_abs_elem(nc, nf, SE);
     fprintf(stderr, "  max constraint residual %23.16e\n", maxE);
     demand(maxE <= tol, "constraint residual is too large");

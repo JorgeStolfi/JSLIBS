@@ -2,7 +2,7 @@
 #define oct_H
 
 /* The quad-edge data structure for orientable and non-orientable maps. */
-/* Last edited on 2024-12-05 10:39:29 by stolfi */
+/* Last edited on 2024-12-22 10:58:29 by stolfi */
 
 #define oct_H_copyright \
   "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -452,7 +452,7 @@ vec_typedef(oct_edge_vec_t,oct_edge_vec,oct_edge_t);
   
 /* ARC INPUT/OUTPUT  */
 
-void oct_write_arc(FILE *wr, oct_arc_t e, int32_t width);
+void oct_write_arc(FILE *wr, oct_arc_t e, uint32_t width);
   /* Writes the arc {e} to {wr} in the format "{eid}:{tc}" where {eid}
     is {edge_id(edge(e))}, and {tc} is {tumble_code(e)} in binary.
     The {eid} is padded with spaces to have at least {width}

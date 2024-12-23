@@ -1,5 +1,5 @@
 /* See filefmt.h */
-/* Last edited on 2024-11-20 06:47:44 by stolfi */
+/* Last edited on 2024-12-21 04:50:12 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -143,13 +143,13 @@ char *filefmt_read_comment(FILE *rd, char prefix)
         do
           { c = fgetc(rd); 
             demand(c != EOF, "missing final newline in comment");
-            char_vec_expand(&cmt, ncmt);
+            char_vec_expand(&cmt, (vec_index_t)ncmt);
             cmt.e[ncmt] = (char)c;
             ncmt ++;
           }
         while (c != '\n');
       }
-    char_vec_expand(&cmt, ncmt);
+    char_vec_expand(&cmt, (vec_index_t)ncmt);
     cmt.e[ncmt] = '\000';
     ncmt ++;
     char_vec_trim(&cmt, ncmt);

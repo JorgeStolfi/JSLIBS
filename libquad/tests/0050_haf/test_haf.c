@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of the {haf.h} procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-05 10:39:47 by stolfi */ 
+/* Last edited on 2024-12-22 11:04:34 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2023  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
@@ -26,6 +26,7 @@
 #include <frgb.h>
 #include <argparser.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 
 #include <haf.h>
 #include <haf_write.h>

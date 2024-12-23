@@ -2,7 +2,7 @@
 #define haf_write_H
 
 /* Writing the half-edge representation of 2D meshes. */
-/* Last edited on 2024-12-05 10:39:10 by stolfi */
+/* Last edited on 2024-12-22 10:33:48 by stolfi */
 
 #define half_write_H_copyright \
   "Copyright (C) 2023 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
@@ -15,7 +15,7 @@
 
 #include <haf.h>
 
-void haf_write_arc(FILE *wr, haf_arc_t a, int32_t width);
+void haf_write_arc(FILE *wr, haf_arc_t a, uint32_t width);
   /* Writes the arc {a} to {wr} in the format "{eid}:{db}" where {eid}
     is {haf_edge_id(a)}, and {db} is the direction bit {haf_dir_bit(a)} (0 or 1).
     The {eid} is padded with spaces at left to have at least {width}

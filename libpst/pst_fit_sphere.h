@@ -2,10 +2,10 @@
 #define pst_fit_sphere_H
 
 /* pst_fit_ellipse.h -- locating a light gauge by fitting an ellipse to its edge. */
-/* Last edited on 2009-03-03 14:07:55 by stolfi */
+/* Last edited on 2024-12-22 12:19:31 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 
 #include <bool.h>
 #include <r2.h>
@@ -27,7 +27,7 @@ double pst_fit_sphere
     double GAdj,  /* Maximum adjustment allowed in camera spread {G}. */
     double KAdj,  /* Maximum adjustment allowed in {K} coordinates. */
     double RAdj,  /* Maximum adjustment allowed in {R}. */
-    int maxIts    /* Max iterations of the optimizer. */
+    uint32_t maxIts    /* Max iterations of the optimizer. */
   );
   /* Fits a sphere model to an elliptical outline in a gradient image
     {IGR}.
@@ -97,7 +97,7 @@ double pst_fit_sphere_multiscale
     double KAdj,        /* Maximum adjustment allowed in {K} coordinates. */
     double RAdj,        /* Maximum adjustment allowed in {R}. */
     double RMin,        /* Min acceptable radius for multiscale. */
-    int maxIts          /* Max iterations of optimizer at initial scale. */
+    uint32_t maxIts          /* Max iterations of optimizer at initial scale. */
   );
   /* Similar to {pst_fit_sphere}, but uses a multiscale method,
     starting with a scale where the amount of adjustment is between

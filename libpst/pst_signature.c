@@ -1,9 +1,9 @@
 /* See pst_signature.h */
-/* Last edited on 2023-02-25 16:10:07 by stolfi */ 
+/* Last edited on 2024-12-22 22:58:21 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <math.h>
 
@@ -21,14 +21,14 @@
 
 void pst_signature_extract 
   ( image_vec_t *IMGV, /* Scene images under {NF} different light fields. */
-    int maxval,        /* Maxval of original (quantized) images. */                 
+    uint32_t maxval,        /* Maxval of original (quantized) images. */                 
     double noise,      /* Additional per-sample noise in images. */                 
-    int c,             /* Number of channels in each image. */                      
-    int x,             /* Pixel column */                                           
-    int y,             /* Pixel row (0 = bottom). */  
+    uint32_t c,             /* Number of channels in each image. */                      
+    int32_t x,             /* Pixel column */                                           
+    int32_t y,             /* Pixel row (0 = bottom). */  
     signature_t *sig   /* (OUT) Light signature. */
   )
-  { int NF = IMGV->ne;
+  { uint32_t NF = IMGV->ne;
 
     double svar; /* Total variance of sample noise. */
     if (maxval == 0)
@@ -40,19 +40,18 @@ void pst_signature_extract
     svar += noise*noise;
 
     /* Extract the samples of channel {c} and compute their Euclidean magnitude {mag}: */
-    int i;
     double magsq = 1.0e-100; /* Channel magnitude squared (plus tiny epsilon to avoid NaNs). */
     double var = 0.0; /* Total variance of image noise in this channel. */
-    for (i = 0; i < NF; i++)
+    for (uint32_t i = 0; i < NF; i++)
       { float_image_t *img = IMGV->e[i];
-        double p = (double)float_image_get_sample(img, c, x, y); /* Pixel sample value. */
+        double p = (double)float_image_get_sample(img, (int32_t)c, x, y); /* Pixel sample value. */
         sig->rin[i] = p; 
         var += svar;
         magsq += p*p;
       }
     double mag = 1.0/sqrt(magsq);
     /* Scale samples of channel {c} by {mag}, adjusting {var} accordingly: */
-    for (i = 0; i < NF; i++)
+    for (uint32_t i = 0; i < NF; i++)
       { sig->rin[i] *= mag;
         var *= mag*mag;
       }
@@ -66,9 +65,8 @@ void pst_signature_extract
       }
   }
   
-void pst_signature_print(FILE *wr, int NF, signature_t *sig)
-  { int i;
-    for (i = 0; i < NF; i++) { fprintf(stderr, " %7.4f", sig->rin[i]); }
+void pst_signature_print(FILE *wr, uint32_t NF, signature_t *sig)
+  { for (uint32_t i = 0; i < NF; i++) { fprintf(stderr, " %7.4f", sig->rin[i]); }
     fprintf(wr, "  %7.4f", sig->mag);
     fprintf(wr, "  %7.4f", sig->var);
   }
@@ -80,38 +78,35 @@ light_table_t *pst_signature_build_table
     bool_t cubify          /* TRUE uses the cube acceleration. */
   )
   {
-    int NF = IMGV->ne;
+    uint32_t NF = IMGV->ne;
     demand(NF >= 3, "not enough photos");
-    int NC = (int)(IMGV->e[0]->sz[0]);  /* Number of channels in each gauge image. */ 
-    int NX = (int)(IMGV->e[0]->sz[1]);  /* Number of columns in each image. */
-    int NY = (int)(IMGV->e[0]->sz[2]);  /* Number of rows in each image. */ 
+    uint32_t NC = (uint32_t)(IMGV->e[0]->sz[0]);  /* Number of channels in each gauge image. */ 
+    uint32_t NX = (uint32_t)(IMGV->e[0]->sz[1]);  /* Number of columns in each image. */
+    uint32_t NY = (uint32_t)(IMGV->e[0]->sz[2]);  /* Number of rows in each image. */ 
     light_table_t *tab = (light_table_t *)notnull(malloc(sizeof(light_table_t)), "no mem");
     tab->pos = *pos;
     tab->nrm = r3_vec_new(0);  /* {nrm[k]} is the normal of entry {k}. */
     tab->sig = (signature_vec_t *)notnull(malloc(NC*sizeof(signature_vec_t)), "no mem");
-    int c;
-    for (c = 0; c < NC; c++) { tab->sig[c] = signature_vec_new(0); }
-    int NE = 0;  /* Number of entries in signature table. */
+    for (uint32_t c = 0; c < NC; c++) { tab->sig[c] = signature_vec_new(0); }
+    uint32_t NE = 0;  /* Number of entries in signature table. */
     /* Scan pixels of light field gauges, gathering the valid table entries. */
-    int x, y;
-    for (y =0; y < NY; y++)
-      { for (x = 0; x < NX; x++) 
+    for (int32_t y =0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++) 
           { r3_t nrm;
             bool_t ok = FALSE; /* TRUE iff pixel {(x,y)} is ok, i.e. {nrm} is nonzero. */
-            int ax;
-            for (ax = 0; ax < 3; ax++)
-              { float v = float_image_get_sample(NRM, ax, x, y); 
+            for (uint32_t ax = 0; ax < 3; ax++)
+              { float v = float_image_get_sample(NRM, (int32_t)ax, x, y); 
                 if (v != 0.0) { ok = TRUE; }
                 nrm.c[ax] = (double)v;
               } 
             if (ok)
-              { for (c = 0; c < NC; c++)
-                  { signature_vec_expand(&(tab->sig[c]), NE);
+              { for (uint32_t c = 0; c < NC; c++)
+                  { signature_vec_expand(&(tab->sig[c]), (vec_index_t)NE);
                     signature_t *sig = &(tab->sig[c].e[NE]);
                     (*sig) = pst_signature_new(NF);
                     pst_signature_extract(IMGV, 0, 0.0, c, x, y, sig);
                   }
-                r3_vec_expand(&(tab->nrm), NE);
+                r3_vec_expand(&(tab->nrm), (vec_index_t)NE);
                 tab->nrm.e[NE] = nrm;
                 NE++;
               }
@@ -121,24 +116,24 @@ light_table_t *pst_signature_build_table
     tab->NE = NE;
     /* Trim vectors to exact size: */
     r3_vec_trim(&(tab->nrm), NE);
-    for (c = 0; c < NC; c++) { signature_vec_trim(&(tab->sig[c]), NE); }
+    for (uint32_t c = 0; c < NC; c++) { signature_vec_trim(&(tab->sig[c]), NE); }
     return tab;
   }
 
 void pst_signature_search_table
-  ( int NF,               /* Number of light fields. */
-    int NC,               /* Number of color channels. */
+  ( uint32_t NF,               /* Number of light fields. */
+    uint32_t NC,               /* Number of color channels. */
     signature_t sig[],    /* Normalized light signature for each channel (size {NC}). */ 
     r2_t pos,             /* Nominal position of {sig} in scene images. */
-    int NG,               /* Number of light-to-normal tables. */
+    uint32_t NG,               /* Number of light-to-normal tables. */
     light_table_t *tab,   /* Light-to-normal tables extracted from gauges (size {NG}). */
     double *dsq,          /* (OUT) Discrepancy squared between {sig} and best match from tables. */
     r3_t *nrm,            /* (OUT) Normal associated to best match in tables. */
     float clr[]           /* (OUT) Intrinisc scene color (size {NC}). */
   )
   {
-    int NS = NF*NC;
-    int NE = tab->NE;
+    uint32_t NS = NF*NC;
+    uint32_t NE = tab->NE;
     
     auto double ediff2(signature_t *sigA, signature_t *sigB);
       /* The expected squared difference between two vectors 
@@ -150,8 +145,7 @@ void pst_signature_search_table
     double ediff2(signature_t *sigA, signature_t *sigB)
       { /* We need {E[\abs{(sigA + delA) - (sigB + delB)}^2]}. */
         double sum_d2 = 0.0;
-        int j;
-        for (j = 0; j < NS; j++) 
+        for (uint32_t j = 0; j < NS; j++) 
           { double dj = sigA->rin[j] - sigB->rin[j];
             sum_d2 += dj*dj;
           }
@@ -159,15 +153,13 @@ void pst_signature_search_table
       }
       
     /* Brute force search: */
-    int kBest = -1;
+    int32_t kBest = -1;
     double d2Best = +INF;
-    { int k;
-      for (k = 0; k < NE; k++)
+    { for (int32_t k = 0; k < NE; k++)
         { /* Compute distances for each channel: */
           double sum_wd2 = 0.0;
           double sum_w = 0.0;
-          int c;
-          for (c = 0; c < NC; c++)
+          for (uint32_t c = 0; c < NC; c++)
             { signature_t *sigAc = &(sig[c]);
               signature_t *sigBck = &(tab->sig[c].e[k]);
               double cd2 = ediff2(sigAc, sigBck);
@@ -185,8 +177,7 @@ void pst_signature_search_table
     (*dsq) = d2Best;
 
     /* Compute self-color as ratio of per-channel normalizing factors: */
-    { int c;
-      for (c = 0; c < NC; c++)
+    { for (uint32_t c = 0; c < NC; c++)
         { signature_t *sigck = &(tab->sig[c].e[kBest]);
           double cc = sig[c].mag/sigck->mag;
           clr[c] = (float)cc;
@@ -194,7 +185,7 @@ void pst_signature_search_table
     }        
   }
 
-signature_t pst_signature_new(int NF)
+signature_t pst_signature_new(uint32_t NF)
   { signature_t sig;
     sig.rin = rn_alloc(NF);
     sig.mag = 1.0;
@@ -203,21 +194,21 @@ signature_t pst_signature_new(int NF)
   }
 
 void pst_signature_normals_from_photos
-  ( int NG, 
+  ( uint32_t NG, 
     light_table_t *tab[], 
     image_vec_t *IMGV, 
-    int maxval,
+    uint32_t maxval,
     double noise,
     float_image_t *NRM,
     float_image_t *CLR,
     float_image_t *DIF
   )
   {
-    int NF = IMGV->ne;
+    uint32_t NF = IMGV->ne;
     demand(NF >= 3, "too few photos");
-    int NC = (int)(IMGV->e[0]->sz[0]);
-    int NX = (int)(IMGV->e[0]->sz[1]);
-    int NY = (int)(IMGV->e[0]->sz[2]);
+    uint32_t NC = (uint32_t)(IMGV->e[0]->sz[0]);
+    uint32_t NX = (uint32_t)(IMGV->e[0]->sz[1]);
+    uint32_t NY = (uint32_t)(IMGV->e[0]->sz[2]);
     
     /* Check sizes: */
     demand(NRM->sz[0] == 3, "bad num channels in normal map");
@@ -233,25 +224,23 @@ void pst_signature_normals_from_photos
     demand(DIF->sz[2] == NY, "bad num rows in strangeness map");
     
     /* Process scene images, store normal images: */
-    int c, x, y;
     r3_t nrm;         /* Computed normal vector of scene surface at some pixel. */
     float clr[NC];    /* Computed intrinsic color of scene surface at some pixel. */
     double dsq;       /* Discrepancy between pixel's signatures and best match from tables. */
     signature_t sig[NC]; /* Light signature at pixel {(x,y)}. */
-    for (c = 0; c < NC; c++) { sig[c] = pst_signature_new(NF); }          
+    for (uint32_t c = 0; c < NC; c++) { sig[c] = pst_signature_new(NF); }          
     /* Process scene pixels: */
-    for (y = 0; y < NY; y++)
-      { for (x = 0; x < NX; x++)
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
           { r2_t pos = (r2_t){{ x + 0.5, y + 0.5}}; /* Nominal pixel position. */
             /* Get light signature of scene surface at pixel {(x,y)} in each channel: */
-            for (c = 0; c < NC; c++)
+            for (uint32_t c = 0; c < NC; c++)
               { pst_signature_extract(IMGV, maxval, noise, c, x, y, &(sig[c])); }
             
             /* Find light field gauge closest to pixel: */
-            int gBest = -1;
+            int32_t gBest = -1;
             { double d2Best = +INF;
-              int g;
-              for (g = 0; g < NG; g++)
+              for (int32_t g = 0; g < NG; g++)
                 { double d2 = r2_dist_sqr(&pos, &(tab[g]->pos)); 
                   if (d2 < d2Best) { d2Best = d2; gBest = g; }
                 }
@@ -263,7 +252,7 @@ void pst_signature_normals_from_photos
             /* Save normal vector in {NRM}: */
             pst_normal_map_set_pixel(NRM, x, y, &nrm);
             /* Save intrinisc color in {CLR}: */
-            for (c = 0; c < NC; c++) { float_image_set_sample(CLR, c, x, y, clr[c]); }
+            for (uint32_t c = 0; c < NC; c++) { float_image_set_sample(CLR, (int32_t)c, x, y, clr[c]); }
           }
       }
   }

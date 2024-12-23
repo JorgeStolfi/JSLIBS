@@ -1,10 +1,10 @@
 /* See pst_fit_light.h */
-/* Last edited on 2024-12-01 00:26:10 by stolfi */ 
+/* Last edited on 2024-12-22 14:40:23 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <values.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <float_image.h>
@@ -26,7 +26,7 @@
 
 /* INTERNAL PROTOTYPES - LEAST-SQUARES SYSTEM BUILDERS AND SOLVERS */
 
-typedef double pst_flt_basis_func_t(int i, r3_t *nrm); 
+typedef double pst_flt_basis_func_t(uint32_t i, r3_t *nrm); 
   /* An element of the function basis to use for least-squares
     fitting. The integer {i} is the index of the element in the basis.
     The domain is the set of all normal directions; the value
@@ -48,7 +48,7 @@ typedef double pst_flt_weight_func_t(r3_t *nrm, double img);
 void pst_flt_build_lsq_system
   ( float_image_t *IMG, 
     float_image_t *NRM, 
-    int n,
+    uint32_t n,
     pst_flt_basis_func_t *bas[],
     pst_flt_target_func_t *fun,
     pst_flt_weight_func_t *wht,
@@ -74,13 +74,13 @@ void pst_flt_build_lsq_system
     are assumed stored by rows, without gaps between the rows. The
     right-hand-side vector {b} must have space for {n} elements. */
 
-void pst_flt_solve_lsq_system(int n, double A[], double b[], double u[], bool_t nonNegative);
+void pst_flt_solve_lsq_system(uint32_t n, double A[], double b[], double u[], bool_t nonNegative);
   /* Solves the least-squares system {A x = b}, where {A} is an {n ×
     n} matrix stored by rows, {b} is a known {n}-vector, and {u} is
     the unknown {n}-vector. If {nonNegative} is TRUE, the elements of
     {u} are constrained to be non-negative. */
 
-void pst_flt_print_lsq_system(FILE *wr, int n, double A[], double b[]);
+void pst_flt_print_lsq_system(FILE *wr, uint32_t n, double A[], double b[]);
   /* Writes to {wr} the {n × n} matrix {A}, stored by rows, and the
     {n}-vector {b}, side by side, in human-readable format.  */
 
@@ -113,7 +113,7 @@ void pst_fit_light_single_iterative
     double weightBias,  /* Bias for dark-weighted fitting, or {+INF} for normal fitting. */
     bool_t nonNegative, /* TRUE restricts lamp power and ambient dimming to be non-negative. */
     double minNormalZ,  /* Ignore pixels {p} where {NRM[p].z < minNormalZ}. */
-    int iterations,     /* Max iterations to use in fitting. */
+    uint32_t iterations,     /* Max iterations to use in fitting. */
     double tolerance    /* Iteration stopping criterion. */
   )
   { bool_t debug = TRUE;
@@ -126,21 +126,20 @@ void pst_fit_light_single_iterative
     
     /* Get the lamp array: */
     pst_lamp_vec_t *lmpv = &(lht->lmpv);
-    int NS = lmpv->ne; /* Number of lamps, including {src}. */
-    int i;
+    uint32_t NS = lmpv->ne; /* Number of lamps, including {src}. */
     
     /* Save initial lamp powers, since dimming is relative to them: */
     double ipwr[NS];   /* Initial lamp powers */
-    for (i = 0; i < NS; i++) { ipwr[i] = lmpv->e[i]->pwr.e[0]; }
+    for (uint32_t i = 0; i < NS; i++) { ipwr[i] = lmpv->e[i]->pwr.e[0]; }
 
     /* Get pointers to the adjustable parameters of {src}: */
     r3_t *sdir = &(src->dir);           /* (ADJUST) Direction of target lamp. */
     double *spwr = &(src->pwr.e[0]);   /* (ADJUST) Intensity of target lamp. */
     
-    auto void print_state(int iter, double change);
+    auto void print_state(uint32_t iter, double change);
       /* Prints a line with the state of the iteration: {sdir}, {spwr}, and {rdim}. */
     
-    int it = 0;
+    uint32_t it = 0;
     if (debug) { print_state(it, +INF); }
 
     /* State before iteration: */
@@ -152,7 +151,7 @@ void pst_fit_light_single_iterative
       { 
         /* Save state before iteration: */
         odir = *sdir;  /* Direction computed in the previous iteration: */
-        for (i = 0; i < NS; i++) { opwr[i] = lmpv->e[i]->pwr.e[0]; }
+        for (uint32_t i = 0; i < NS; i++) { opwr[i] = lmpv->e[i]->pwr.e[0]; }
 
         if (it == 0)
           { /* Make an initial heuristic adjustment of the applicable parameters: */
@@ -172,7 +171,7 @@ void pst_fit_light_single_iterative
             /* Adjust the power of {src} and the rest, if appropriate: */
             if (pwrAdjust || ambAdjust)
               { /* Reset original power of all lamps: */
-                for (i = 0; i < NS; i++) { lmpv->e[i]->pwr.e[0] = ipwr[i]; }
+                for (uint32_t i = 0; i < NS; i++) { lmpv->e[i]->pwr.e[0] = ipwr[i]; }
                 /* Use least squares on all valid pixels: */
                 pst_fit_light_single_lsq
                   ( IMG, NRM, lht, src, 0.0, pwrAdjust, ambAdjust, weightBias, nonNegative, minNormalZ );
@@ -191,7 +190,7 @@ void pst_fit_light_single_iterative
         double pwrChange_pos = 0.0; /* Total change in lamps that have increased. */
         double pwrChange_neg = 0.0; /* Total change in lamps that have decreased. */
         double maxPower = 0; /* Max power among all lamps (including {src}). */
-        for (i = 0; i < NS; i++) 
+        for (uint32_t i = 0; i < NS; i++) 
           { pst_lamp_t *alt = lmpv->e[i]; /* Lamp number {i}. */
             double apwr = alt->pwr.e[0]; /* Its power. */
             double d = apwr - opwr[i]; /* Change since prev iteration (signed). */
@@ -212,15 +211,14 @@ void pst_fit_light_single_iterative
         if (debug) { print_state(it, change); }
       }
     
-    void print_state(int iter, double chg)
+    void print_state(uint32_t iter, double chg)
       { fprintf(stderr, "    iter %2d", iter); 
         rn_gen_print(stderr, 3, sdir->c, "%8.5f", " sdir  = ( ", " ", " )");
         fprintf(stderr, "  spwr = %8.5f", (*spwr));
 
         /* Compute the average power of all lamps other than {src}. */
-        int i;
         double apwr = 0.0;
-        for (i = 0; i < NS; i++) 
+        for (uint32_t i = 0; i < NS; i++) 
           { pst_lamp_t *alt = lmpv->e[i]; /* Lamp numbr {i}. */
             if (alt != src) { apwr += alt->pwr.e[0]; }
           }
@@ -254,7 +252,7 @@ void pst_fit_light_single_lsq
     
     /* Get the lamp array: */
     pst_lamp_vec_t *lmpv = &(lht->lmpv);
-    int NS = lmpv->ne; /* Number of lamps, including {src}. */
+    uint32_t NS = lmpv->ne; /* Number of lamps, including {src}. */
     
     /* Treat negative {dirStep} as zero: */
     dirStep = fmax(0.0, dirStep);
@@ -271,7 +269,7 @@ void pst_fit_light_single_lsq
     
     /* The least squares problem: */
     pst_flt_target_func_t *fun; /* The target function to be approximated. */
-    int NP = 0;
+    uint32_t NP = 0;
     pst_flt_basis_func_t *bas[4]; /* {bas[0..NP-1]} is the function basis. */
     
     /* Get pointers to the adjustable parameters of {src}: */
@@ -281,11 +279,11 @@ void pst_fit_light_single_lsq
     /* Other auxiliary data for basis functions: */
     double cfit;  /* Exclude pixels where {dot(dir,nrm)} is less than this. */
 
-    auto double bas_nrm_x(int i, r3_t *nrm); /* Value is {nrm.x} */
-    auto double bas_nrm_y(int i, r3_t *nrm); /* Value is {nrm.y} */ 
-    auto double bas_nrm_z(int i, r3_t *nrm); /* Value is {nrm.z} */ 
-    auto double bas_shd(int i, r3_t *nrm);   /* Value is {shade(src.dir,nrm)}. */ 
-    auto double bas_amb(int i, r3_t *nrm);   /* Value is the contributin of all other lamps. */  
+    auto double bas_nrm_x(uint32_t i, r3_t *nrm); /* Value is {nrm.x} */
+    auto double bas_nrm_y(uint32_t i, r3_t *nrm); /* Value is {nrm.y} */ 
+    auto double bas_nrm_z(uint32_t i, r3_t *nrm); /* Value is {nrm.z} */ 
+    auto double bas_shd(uint32_t i, r3_t *nrm);   /* Value is {shade(src.dir,nrm)}. */ 
+    auto double bas_amb(uint32_t i, r3_t *nrm);   /* Value is the contributin of all other lamps. */  
       /* Basis functions for least-squares fitting: */
     
     auto double fun_img(r3_t *nrm, double img); 
@@ -299,9 +297,9 @@ void pst_fit_light_single_lsq
         all valid pixels for power-only fitting. */
     
     /* Interpreting the elements of the solution vector {u}: */
-    int idirx, idiry, idirz;  /* {u} indices corresp. to direction coords, or -1. */
-    int ipwr;                 /* {u} index corresp. to {src}'s power, or -1. */
-    int idim;                 /* {u} index corresp. to ambient dimming factor, or -1. */
+    int32_t idirx, idiry, idirz;  /* {u} indices corresp. to direction coords, or -1. */
+    int32_t ipwr;                 /* {u} index corresp. to {src}'s power, or -1. */
+    int32_t idim;                 /* {u} index corresp. to ambient dimming factor, or -1. */
     
     /* Assemble the basis, target, and weight functions: */
     {
@@ -313,9 +311,9 @@ void pst_fit_light_single_lsq
           /* Make sure that {src.dir} is a proper direction: */
           if (r3_L_inf_norm(sdir) == 0.0) { (*sdir) = (r3_t){{ 0.0, 0.0, 1.0 }}; }
           /* Add the three basis functions {nrm.x}, {nrm.y}, {nrm.z}: */
-          idirx = NP; bas[NP] = &bas_nrm_x; NP++;
-          idiry = NP; bas[NP] = &bas_nrm_y; NP++;
-          idirz = NP; bas[NP] = &bas_nrm_z; NP++;
+          idirx = (int32_t)NP; bas[NP] = &bas_nrm_x; NP++;
+          idiry = (int32_t)NP; bas[NP] = &bas_nrm_y; NP++;
+          idirz = (int32_t)NP; bas[NP] = &bas_nrm_z; NP++;
           /* Compute radius of that cap: */
           double rfit = M_PI/2 - acos(src->crad) - dirStep;
           /* If we adjusted {dirStep} properly, we should have enough room for fitting: */
@@ -332,7 +330,7 @@ void pst_fit_light_single_lsq
       /* Terms for fitting the power of {src}: */
       if ((dirStep <= 0.0) && pwrAdjust)
         { /* Add the basis function {shade(nrm,dir)}: */
-          ipwr = NP; bas[NP] = &bas_shd; NP++;
+          ipwr = (int32_t)NP; bas[NP] = &bas_shd; NP++;
         }
       else
         { /* No {src.pwr} in result: */
@@ -342,7 +340,7 @@ void pst_fit_light_single_lsq
       /* Terms for fitting the ambient dimming factor: */
       if (ambAdjust)
         { /* Add the contrib of all other lamps as a basis function: */
-          idim = NP; bas[NP] = &bas_amb; NP++;
+          idim = (int32_t)NP; bas[NP] = &bas_amb; NP++;
           /* The target function is the image itself: */
           fun = &fun_img;
         }
@@ -410,19 +408,19 @@ void pst_fit_light_single_lsq
         
     /* Basis, target, and weight functions: */
 
-    double bas_nrm_x(int i, r3_t *nrm)
+    double bas_nrm_x(uint32_t i, r3_t *nrm)
       { return nrm->c[0]; }
       
-    double bas_nrm_y(int i, r3_t *nrm)
+    double bas_nrm_y(uint32_t i, r3_t *nrm)
       { return nrm->c[1]; }
       
-    double bas_nrm_z(int i, r3_t *nrm)
+    double bas_nrm_z(uint32_t i, r3_t *nrm)
       { return nrm->c[2]; }
       
-    double bas_shd(int i, r3_t *nrm)
+    double bas_shd(uint32_t i, r3_t *nrm)
       { return pst_lamp_geom_factor(nrm, &(src->dir), src->crad); }
       
-    double bas_amb(int i, r3_t *nrm)
+    double bas_amb(uint32_t i, r3_t *nrm)
       { /* Shade surface with all lamps in {lht} except {src}: */
         return pst_flt_compute_ambient(lht, src, nrm);
       }
@@ -473,9 +471,8 @@ double pst_fit_light_lsq_pixel_weight
 
 void pst_flt_apply_ambient_dimming(pst_light_t *lht, pst_lamp_t *src, double adim)
   { pst_lamp_vec_t *lmpv = &(lht->lmpv);
-    int NS = lmpv->ne; /* Number of lamps, including {src}. */
-    int i;
-    for (i = 0; i < NS; i++) 
+    uint32_t NS = lmpv->ne; /* Number of lamps, including {src}. */
+    for (uint32_t i = 0; i < NS; i++) 
       { pst_lamp_t *alt = lmpv->e[i]; /* Lamp number {i}. */
         if (alt != src) { alt->pwr.e[0] *= adim; }
       }
@@ -483,10 +480,9 @@ void pst_flt_apply_ambient_dimming(pst_light_t *lht, pst_lamp_t *src, double adi
 
 double pst_flt_compute_ambient(pst_light_t *lht, pst_lamp_t *src, r3_t *nrm)
   { pst_lamp_vec_t *lmpv = &(lht->lmpv);
-    int NS = lmpv->ne; /* Number of lamps, including {src}. */
+    uint32_t NS = lmpv->ne; /* Number of lamps, including {src}. */
     double sum = 0.0;
-    int i;
-    for (i = 0; i < NS; i++) 
+    for (uint32_t i = 0; i < NS; i++) 
       { pst_lamp_t *alt = lmpv->e[i]; /* Lamp number {i}. */
         if (alt != src)
           { double gf = pst_lamp_geom_factor(nrm, &(alt->dir), alt->crad);
@@ -499,7 +495,7 @@ double pst_flt_compute_ambient(pst_light_t *lht, pst_lamp_t *src, r3_t *nrm)
 void pst_flt_build_lsq_system
   ( float_image_t *IMG, 
     float_image_t *NRM, 
-    int n,
+    uint32_t n,
     pst_flt_basis_func_t *bas[],
     pst_flt_target_func_t *fun,
     pst_flt_weight_func_t *wht,
@@ -508,23 +504,21 @@ void pst_flt_build_lsq_system
   )
   { bool_t debug = FALSE;
   
-    int NC, NX, NY;
+    int32_t NC, NX, NY;
     float_image_get_size(IMG, &NC, &NX, &NY);
     demand(NC == 1, "photo is not single-channel");
     float_image_check_size(NRM, 3, NX, NY);
 
     /* Initialize matrix and RHS vector with zeros: */
-    int i, j;
-    for (i = 0; i < n; i++)
-      { for (j = 0; j <= n; j++) { A[i*n + j] = 0.0; }
+    for (uint32_t i = 0; i < n; i++)
+      { for (uint32_t j = 0; j <= n; j++) { A[i*n + j] = 0.0; }
         b[i] = 0.0;
       }
       
     double basv[n]; /* Values of basis functions at current pixel. */
     /* Scan valid pixels and add terms to the cross products: */
-    int x, y;
-    for (y = 0; y < NY; y++)
-      { for (x = 0; x < NX; x++)
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
           { double img = float_image_get_sample(IMG, 0, x, y);
             r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
             double w = wht(&nrm, img);
@@ -535,15 +529,15 @@ void pst_flt_build_lsq_system
                     rn_gen_print(stderr, 3, nrm.c, "%7.4f", " nrm  = ( ", " ", " )");
                     fprintf(stderr, " bas = "); 
                   }
-                for (i = 0; i < n; i++)
+                for (uint32_t i = 0; i < n; i++)
                   { basv[i] = (bas[i])(i, &nrm);
                     if (debug) { fprintf(stderr, " %7.4f", basv[i]); }
                   }
                 double funv = fun(&nrm, img);
                 if (debug) { fprintf(stderr, " fun = %7.4f\n", funv); }
                 /* Compute the cross product terms and accumulate: */
-                for (i = 0; i < n; i++)
-                  { for (j = i; j < n; j++)
+                for (uint32_t i = 0; i < n; i++)
+                  { for (uint32_t j = i; j < n; j++)
                       { /* Accumulate scalar product of basis elements {i,j}: */
                         double prod = w*basv[i]*basv[j];
                         A[i*n + j] += prod;
@@ -560,12 +554,11 @@ void pst_flt_build_lsq_system
     if (debug) { pst_flt_print_lsq_system(stderr, n, A, b); }
   }
 
-void pst_flt_print_lsq_system(FILE *wr, int n, double A[], double b[])
-  { int i, j;
-    fprintf(wr, "system =\n");
-    for (i = 0; i < n; i++)
+void pst_flt_print_lsq_system(FILE *wr, uint32_t n, double A[], double b[])
+  { fprintf(wr, "system =\n");
+    for (uint32_t i = 0; i < n; i++)
       { fprintf(wr, "  ");
-        for (j = 0; j < n; j++) { fprintf(wr, " %11.3f", A[i*n + j]); }
+        for (uint32_t j = 0; j < n; j++) { fprintf(wr, " %11.3f", A[i*n + j]); }
         fprintf(wr, "   %11.3f", b[i]);
         fprintf(wr, "\n");
       }
@@ -592,7 +585,7 @@ void pst_fit_light_single_trivial
     
     /* Get the lamp array: */
     pst_lamp_vec_t *lmpv = &(lht->lmpv);
-    int NS = lmpv->ne; /* Number of lamps, including {src}. */
+    uint32_t NS = lmpv->ne; /* Number of lamps, including {src}. */
     
     /* Ignore {dirAdjust} if {src} is too big: */
     if (src->crad < pst_fit_light_trivial_min_crad) { dirAdjust = FALSE; }
@@ -604,7 +597,7 @@ void pst_fit_light_single_trivial
     if ((! dirAdjust) && (! pwrAdjust) && (! ambAdjust)) { return; }
     
     /* Get image dimensions: */
-    int NC, NX, NY;
+    int32_t NC, NX, NY;
     float_image_get_size(IMG, &NC, &NX, &NY);
     demand(NC == 1, "photo is not single-channel");
     float_image_check_size(NRM, 3, NX, NY);
@@ -615,10 +608,9 @@ void pst_fit_light_single_trivial
         assert(NS > 1);
         /* We assume that pixels where {img/amb} is minimum are in {src}'s shadow: */
         double adim = +INF; /* Estimated dimming factor. */
-        int NV = 0; /* Count pixels used in estimate. */
-        int x, y;
-        for (y = 0; y < NY; y++)
-          { for (x = 0; x < NX; x++)
+        uint32_t NV = 0; /* Count pixels used in estimate. */
+        for (int32_t y = 0; y < NY; y++)
+          { for (int32_t x = 0; x < NX; x++)
               { double img = float_image_get_sample(IMG, 0, x, y);
                 r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
                 if (pst_flt_pixel_is_valid(img, &nrm, minNormalZ))
@@ -653,10 +645,9 @@ void pst_fit_light_single_trivial
         /* Assume that the largest differnce {img-amb} is where {nrm=src.dir}. */
         double difMax = -INF; /* Max difference between {img} and {amb}. */
         r3_t nrmMax = (r3_t){{ 0.0, 0.0, 1.0 }};  /* Normal where {difMax} occurred. */
-        int NV = 0; /* Count pixels used in estimate. */
-        int x, y;
-        for (y = 0; y < NY; y++)
-          { for (x = 0; x < NX; x++)
+        uint32_t NV = 0; /* Count pixels used in estimate. */
+        for (int32_t y = 0; y < NY; y++)
+          { for (int32_t x = 0; x < NX; x++)
               { double img = float_image_get_sample(IMG, 0, x, y);
                 r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
                 if (pst_flt_pixel_is_valid(img, &nrm, minNormalZ))
@@ -699,10 +690,9 @@ void pst_fit_light_single_trivial
         /* where the average is weighted by the geometric shading factor {geo}. */
         double sum_dif_geo = 0.0; /* Sum of {geo*(img-amb)}. */
         double sum_geo_geo = 0.0; /* Sum of {geo*geo}. */
-        int NV = 0; /* Count pixels used in estimate. */
-        int x, y;
-        for (y = 0; y < NY; y++)
-          { for (x = 0; x < NX; x++)
+        uint32_t NV = 0; /* Count pixels used in estimate. */
+        for (int32_t y = 0; y < NY; y++)
+          { for (int32_t x = 0; x < NX; x++)
               { double img = float_image_get_sample(IMG, 0, x, y);
                 r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
                 if (pst_flt_pixel_is_valid(img, &nrm, minNormalZ))
@@ -747,7 +737,7 @@ void pst_fit_light_multi
   )
   { bool_t debug = TRUE;
   
-    auto double bas_gen(int i, r3_t *nrm); 
+    auto double bas_gen(uint32_t i, r3_t *nrm); 
       /* Basis functions for lamp intensity fitting (geom factor of lamp {i}). */
     
     auto double fun(r3_t *nrm, double img); 
@@ -757,12 +747,11 @@ void pst_fit_light_multi
       /* Weight for intensity fitting (1 for valid pixels, 0 for invalid). */
     
     pst_lamp_vec_t *lmpv = &(lht->lmpv);
-    int NS = lmpv->ne; /* Number of lamps in the light model. */
-    int i;
+    uint32_t NS = lmpv->ne; /* Number of lamps in the light model. */
     
     /* Basis functions: */
     pst_flt_basis_func_t *bas[NS];
-    for (i = 0; i < NS; i++) { bas[i] = &bas_gen; }
+    for (uint32_t i = 0; i < NS; i++) { bas[i] = &bas_gen; }
 
     /* Full linear system: */
     double A[NS*NS];  /* Basis rigidity matrix, {A[i,j] = <bas[i],bas[j]>}. */
@@ -776,7 +765,7 @@ void pst_fit_light_multi
     pst_flt_solve_lsq_system(NS, A, b, u, nonNegative);
       
     /* Set lamp powers from {u}: */
-    for (i = 0; i < NS; i++)
+    for (uint32_t i = 0; i < NS; i++)
       { pst_lamp_t *alt = lmpv->e[i];
         alt->pwr.e[0] = u[i];
       }
@@ -785,7 +774,7 @@ void pst_fit_light_multi
       
     /* Basis, target, and weight functions: */
     
-    double bas_gen(int i, r3_t *nrm)
+    double bas_gen(uint32_t i, r3_t *nrm)
       { pst_lamp_t *src = lmpv->e[i];
         return pst_lamp_geom_factor(nrm, &(src->dir), src->crad);
       }
@@ -799,13 +788,14 @@ void pst_fit_light_multi
       }
   }
 
-void pst_flt_solve_lsq_system(int n, double A[], double b[], double u[], bool_t nonNegative)
+void pst_flt_solve_lsq_system(uint32_t n, double A[], double b[], double u[], bool_t nonNegative)
   {
     if (nonNegative) 
-      { qms_quadratic_min(n, A, b, u); }
+      { qmin_simplex(n, A, b, u); }
     else
-      { int32_t r = gausol_solve(n, n, A, n, b, u, TRUE,TRUE, 0.0, NULL,NULL);
-        demand(r == n, "indeterminate system");
+      { uint32_t rank; 
+        gausol_solve(n, n, A, n, b, u, TRUE,TRUE, 0.0, NULL, &rank);
+        demand(rank == n, "indeterminate system");
       }
   }
 
@@ -816,9 +806,9 @@ void pst_fit_light_parse_weightBias(argparser_t *pp, double *weightBias)
       { *weightBias = argparser_get_next_double(pp, 0, +INF); }
   }
 
-void pst_fit_light_parse_iterations(argparser_t *pp, int *iterations)
+void pst_fit_light_parse_iterations(argparser_t *pp, uint32_t *iterations)
   { if ((iterations != NULL) && argparser_keyword_present(pp, "-iterations"))
-      { *iterations = (int)argparser_get_next_int(pp, 0, MAXINT); }
+      { *iterations = (uint32_t)argparser_get_next_int(pp, 0, MAXINT); }
   }
 
 void pst_fit_light_parse_tolerance(argparser_t *pp, double *tolerance)

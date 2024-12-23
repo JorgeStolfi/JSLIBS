@@ -1,5 +1,5 @@
 /* See argparser.h. */
-/* Last edited on 2024-11-22 21:41:58 by stolfi */
+/* Last edited on 2024-12-21 04:48:25 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 /* Based on Params.m3 by J.Stolfi, DEC-SRC, 1988.  */
@@ -43,14 +43,16 @@ argparser_t *argparser_new(FILE *wr, int32_t argc, char **argv)
   }
 
 void argparser_set_help(argparser_t *pp, char *help)
-  { string_vec_expand(&(pp->help), pp->nhelp);
-    pp->help.e[pp->nhelp] = help;
+  { int32_t ix = (int32_t)(pp->nhelp);
+    string_vec_expand(&(pp->help), ix);
+    pp->help.e[ix] = help;
     pp->nhelp++;
   }
 
 void argparser_set_info(argparser_t *pp, char *info)
-  { string_vec_expand(&(pp->info), pp->ninfo);
-    pp->info.e[pp->ninfo] = info;
+  { int32_t ix = (int32_t)(pp->ninfo);
+    string_vec_expand(&(pp->info), ix);
+    pp->info.e[ix] = info;
     pp->ninfo++;
   }
     

@@ -1,4 +1,4 @@
-/*  Last edited on 2024-10-06 16:49:44 by stolfi */
+/*  Last edited on 2024-12-21 11:25:27 by stolfi */
 /* Test of {tosl_mesh_make_ico.h} */
 
 #define _GNU_SOURCE
@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <jsrandom.h>
 
 #include <tosl.h>
 #include <tosl_mesh.h>

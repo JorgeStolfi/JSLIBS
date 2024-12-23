@@ -1,5 +1,5 @@
 /* See {haf_write.h}. */
-/* Last edited on 2024-12-05 10:39:08 by stolfi */
+/* Last edited on 2024-12-22 10:33:35 by stolfi */
  
 #define haf_write_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -20,7 +20,7 @@
 #include <haf.h>
 #include <haf_write.h>
 
-void haf_write_arc(FILE *wr, haf_arc_t a, int32_t width)
+void haf_write_arc(FILE *wr, haf_arc_t a, uint32_t width)
   { char *fmt = ("%*" uint64_u_fmt ":%u");
     fprintf(wr, fmt, width, haf_edge_id(a), (uint32_t)haf_dir_bit(a));
   }
@@ -38,13 +38,13 @@ void haf_write_map
     filefmt_write_header(wr, haf_write_FILE_TYPE, haf_write_FILE_VERSION);
     /* Grab the number {nr} of roots and the root index width {wa}: */
     /* Compute the width in digits {wr} of the root index: */
-    int32_t dr = (nr < 10 ? 1 : digits(nr-1));
+    uint32_t dr = (nr < 10 ? 1 : digits(nr-1));
     
     /* We should have zero edges if and only if we have zero roots: */
     demand((nr == 0) == (ne == 0), "need at least one root"); 
     
     /* Determine the width {eE} of edge ids in digits of the edge id: */
-    int32_t dE = (ne < 10 ? 1 : digits(ne-1));
+    uint32_t dE = (ne < 10 ? 1 : digits(ne-1));
 
     /* Write the edge table, one edge per line: */
     fprintf(wr, "edges = %lu\n", ne);

@@ -2,7 +2,7 @@
 #define PROG_DESC "tests the routines from {haf_read_obj.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-05 10:40:01 by stolfi */ 
+/* Last edited on 2024-12-22 11:26:44 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2024  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
@@ -60,6 +60,7 @@
 #include <argparser.h>
 #include <vec.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <r3.h>
 
 #include <haf.h>
@@ -83,11 +84,11 @@ int32_t main(int32_t argc, char **argv)
     options_t *o = get_options(argc, argv);
     
     /* Read the input file: */
-    char *rd_fname = NULL; char *rd_fname = jsprintf("in/%s.obj", o->name);
+    char *rd_fname = jsprintf("in/%s.obj", o->name);
     fprintf(stderr, "reading from file %s...\n", rd_fname);
     FILE *rd = open_read(rd_fname, TRUE);
     bool_t verbose = TRUE;
-    int32_t nf = -1;
+    uint32_t nf;
     r3_vec_t V = r3_vec_new(0);
     string_vec_t Vlab = string_vec_new(0);
     haf_arc_vec_t A = haf_arc_vec_new(0);
@@ -98,8 +99,8 @@ int32_t main(int32_t argc, char **argv)
     
     fclose(rd);
     
-    int32_t nv = V.ne;
-    int32_t ne = A.ne;
+    uint32_t nv = V.ne;
+    uint32_t ne = A.ne;
     assert(Vlab.ne == nv);
     
     fprintf(stderr, "got %6d vertices\n", nv);

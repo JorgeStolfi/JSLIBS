@@ -2,7 +2,7 @@
 #define pst_lamp_H
 
 /* pst_lamp.h -- modeling lamps (light sources). */
-/* Last edited on 2006-05-02 14:59:03 by stolfi */
+/* Last edited on 2024-12-22 22:14:24 by stolfi */
 
 #include <bool.h>
 #include <r3.h>
@@ -64,7 +64,7 @@ typedef struct pst_lamp_t
     angular radius parameter {angrad} is actually specified as
     {crad=cos(angrad)} for greater efficiency. */
  
-pst_lamp_t *pst_lamp_new(int NC, r3_t *dir, double pwr, double crad);
+pst_lamp_t *pst_lamp_new(uint32_t NC, r3_t *dir, double pwr, double crad);
   /* Creates a lamp descriptor {src} with {NC} color channels. Sets
     {src.pwr} to a new vector with {NC} elements, all initialized to
     {pwr}. Sets {src.dir} to {*dir} (or to {(0,0,0)} if {dir} is NULL),
@@ -95,7 +95,7 @@ double pst_lamp_geom_factor(r3_t *nrm, r3_t *dir, double crad);
 
 /* COMMAND LINE PARSING */
 
-pst_lamp_t *pst_lamp_spec_parse(argparser_t *pp, bool_t next, int *NC);
+pst_lamp_t *pst_lamp_spec_parse(argparser_t *pp, bool_t next, uint32_t *NC);
   /* Parses a lamp specification from the command line.
   
     The syntax is described by {pst_lamp_spec_HELP} and
@@ -135,7 +135,7 @@ pst_lamp_t *pst_lamp_spec_parse(argparser_t *pp, bool_t next, int *NC);
 
 /* Parsing the lamp parameters. */
 
-pst_lamp_t pst_lamp_spec_params_next_parse(argparser_t *pp, int *NCP);
+pst_lamp_t pst_lamp_spec_params_next_parse(argparser_t *pp, uint32_t *NCP);
   /* Like {}, but assumes that the "-lamp" keyword has just been parsed.
     Parses only the lamp parameters, starting at the next command line
     argument. If unspecified, the direction is set to the null vector,

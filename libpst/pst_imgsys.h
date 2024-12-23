@@ -1,12 +1,12 @@
 /* imgsys - linear system solving for image-related problems. */
 
-/* Created on 2005-12-04 by Jorge Stolfi, unicamp, <stolfi@ic.unicamp.br> */
-/* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2016-04-01 01:49:42 by stolfilocal */
-/* See the copyright and authorship notice at the end of this file. */
-
 #ifndef pst_imgsys_H
 #define pst_imgsys_H
+
+/* Created on 2005-12-04 by Jorge Stolfi, unicamp, <stolfi@ic.unicamp.br> */
+/* Based on the work of Rafael Saracchini, U.F.Fluminense. */
+/* Last edited on 2024-12-22 22:12:57 by stolfi */
+/* See the copyright and authorship notice at the end of this file. */
 
 #include <float_image.h>
 #include <pst_height_map.h>
@@ -14,8 +14,8 @@
 #define MAXCOEFS 5
 
 typedef struct pst_imgsys_equation_t
-  { int nt;                  /* {nt} is the number of terms in the equation. */
-    int ix[MAXCOEFS];        /* {ix[k]} is the index of some unknown in the equation. */
+  { uint32_t nt;             /* {nt} is the number of terms in the equation. */
+    uint32_t ix[MAXCOEFS];   /* {ix[k]} is the index of some unknown in the equation. */
     double cf[MAXCOEFS];     /* Coefficient of that unknown. */
     double rhs;              /* Right-hand side of equation. */
     double wtot;             /* Weight of the equation and of its main variable. */
@@ -27,12 +27,12 @@ typedef struct pst_imgsys_equation_t
     The variable with index {eq.ix[0]} is the main variable of the equation. */
 
 typedef struct pst_imgsys_t
-  { int N;                      /* Number of unknowns and equations. */
+  { uint32_t N;                 /* Number of unknowns and equations. */
     pst_imgsys_equation_t* eq;  /* The equations are {eq[0..N-1]}. */
     /* Debugging info: */
-    int *col;                   /* Maps index of an unknown/equation to {x} index. */
-    int *row;                   /* Maps index of an unknown/equation to {y} index. */
-    int *ix;                    /* Maps {x + y*NX_Z} to index of unknown/equation, or -1 if none. */
+    uint32_t *col;              /* Maps index of an unknown/equation to a {x} index. */
+    uint32_t *row;              /* Maps index of an unknown/equation to a {y} index. */
+    int32_t *ix;                /* Maps pixel index {x + y*NX_Z} to index of unknown/equation, or -1 if none. */
   } pst_imgsys_t;
   /* An {pst_imgsys_t} represents {N} linear equations {eq[0..N-1]} on {N} 
     unknowns {h[0..N-1}. In a proper system, the main variable
@@ -41,35 +41,35 @@ typedef struct pst_imgsys_t
     from equation/unknown indices to points of a 2D integer grid;
     they are used only when printing the system. */
 
-pst_imgsys_t *pst_imgsys_new(int NX, int NY, int N, int *ix, int *col, int *row);
+pst_imgsys_t *pst_imgsys_new(uint32_t NX, uint32_t NY, uint32_t N, int32_t *ix, uint32_t *col, uint32_t *row);
   /* Creates a new linear system {S} with {N} equations on {N} unknowns
     for an image with {NX} columns and {NY} rows, using the given
     index mapping tables. Allocates the equations {S.eq} but does not
     initialize them. */
 
-pst_imgsys_t *pst_imgsys_from_eqs(int NX, int NY, int N, pst_imgsys_equation_t *eq, int *ix, int *col, int *row);
+pst_imgsys_t *pst_imgsys_from_eqs(uint32_t NX, uint32_t NY, uint32_t N, pst_imgsys_equation_t *eq, int32_t *ix, uint32_t *col, uint32_t *row);
   /* Like {pst_imgsys_new} but uses the given {eq} vector instead of allocating a new one. */
 
 void pst_imgsys_free(pst_imgsys_t *S);
   /* Deallocates all storage used by {S}, including the index tables. */
 
-typedef void pst_imgsys_solution_report_proc_t(int iter, double change, bool_t final, int N, double Z[]);
+typedef void pst_imgsys_solution_report_proc_t(uint32_t iter, double change, bool_t final, uint32_t N, double Z[]);
   /* Type of a procedure that is used to report the progress of the solution. */
 
-int* pst_imgsys_sort_equations(pst_imgsys_t *S);
+uint32_t* pst_imgsys_sort_equations(pst_imgsys_t *S);
   /* Returns and array {ord[0..S->N-1]} with the indices of the equations 
      of {S} in order of increasing {wtot} field. */ 
 
 void pst_imgsys_solve
   ( pst_imgsys_t *S, 
     double Z[],
-    int ord[],
-    int maxIter, 
+    uint32_t ord[],
+    uint32_t maxIter, 
     double convTol,
-    int para, 
-    int szero,
+    bool_t para, 
+    bool_t szero,
     bool_t verbose,
-    int indent,
+    uint32_t indent,
     pst_imgsys_solution_report_proc_t *reportSol
   );
   /* Solves system {S}, and stores the solution into the vector {Z}.  
@@ -82,10 +82,10 @@ void pst_imgsys_solve
      iterations do not change any variable by more than the tolerance
      {tol}.
 
-     If {para} is TRUE, uses the ``parallel'' variant of the method
+     If {para} is true, uses the ``parallel'' variant of the method
      (Jacobi), otherwise uses the sequential variant (Gauss-Seidel).
      If {ord} is not NULL, solves the equations in the order {ord[0..N-1]}
-     If {szero == 1}, adjusts the solution so that it adds to zero,
+     If {szero} is true, adjusts the solution so that it adds to zero,
      after each iteration.
      
      If {verbose} is true, prints information about the iterations to {stderr}.
@@ -103,7 +103,7 @@ void pst_imgsys_solve
           
 /* DEBUGGING */
     
-typedef void pst_imgsys_report_proc_t(int level, pst_imgsys_t *S); 
+typedef void pst_imgsys_report_proc_t(uint32_t level, pst_imgsys_t *S); 
   /* Type of a client-given procedure that may be called
     by recursive integrators to report the system used at each scale.
     Uses {col} and {row} to map indices of unknowns to pixel indices. */   
@@ -115,7 +115,7 @@ void pst_imgsys_write(FILE *wr, pst_imgsys_t *S);
     equations are mapped to column and row indices
     with the tables {col[0..S.N-1]} and {row[0..S.N-1]}.  */
 
-void pst_imgsys_write_report(pst_imgsys_t *S, char *filePrefix, int level, char *tag, int indent);
+void pst_imgsys_write_report(pst_imgsys_t *S, char *filePrefix, int32_t level, char *tag, uint32_t indent);
   /* Writes the system {S} to a file called
     "{filePrefix}-{level}-{tag}.sys". If {tag} is null or empty the
     "-{tag}" is omitted. Uses {pst_imgsys_write}. Diagnostic messages

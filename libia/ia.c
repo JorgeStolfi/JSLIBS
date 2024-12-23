@@ -1,11 +1,12 @@
 /* See ia.h */
-/* Last edited on 2016-12-26 17:13:07 by stolfilocal */
+/* Last edited on 2024-12-21 11:23:23 by stolfi */
 
 #include <affirm.h>
 #include <math.h>
 #include <stdlib.h>
 #include <flt.h>
 #include <ia.h>
+#include <jsrandom.h>
 
 #define ia_FULL  (ia_Full)
 #define ia_ISFULL(x)  (((x).lo <= MinusInfinity) || ((x).hi >= PlusInfinity))

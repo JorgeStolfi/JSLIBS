@@ -1,7 +1,6 @@
 /* See {tosl_pick_planes.h} */
-/* Last edited on 2024-10-07 16:21:13 by stolfi */
+/* Last edited on 2024-12-21 11:26:12 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -10,6 +9,8 @@
 #include <math.h>
 
 #include <haf.h>
+#include <flt.h>
+#include <jsrandom.h>
 
 #include <tosl.h>
 

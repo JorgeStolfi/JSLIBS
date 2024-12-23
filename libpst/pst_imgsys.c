@@ -2,13 +2,12 @@
 
 /* Created on 2005-10-01 by Jorge Stolfi, unicamp, <stolfi@dcc.unicamp.br> */
 /* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2023-02-25 16:09:50 by stolfi */
+/* Last edited on 2024-12-22 22:12:52 by stolfi */
 /* See the copyright and authorship notice at the end of this file.  */
 
-
-#define _GNU_SOURCE
 #include <math.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 #include <stdio.h>
 
@@ -21,23 +20,23 @@
 
 #include <pst_imgsys.h>
 
-double pst_imgsys_sol_change(double *Zold, double *Z, int N);
+double pst_imgsys_sol_change(double *Zold, double *Z, uint32_t N);
   /* Returns the maximum of {abs(Zold[k]-Z[k])}, for {k = 0..N-1}. */
 
-pst_imgsys_t *pst_imgsys_new(int NX, int NY, int N, int *ix, int *col, int *row)
+pst_imgsys_t *pst_imgsys_new(uint32_t NX, uint32_t NY, uint32_t N, int32_t *ix, uint32_t *col, uint32_t *row)
   {
-    pst_imgsys_t *S = (pst_imgsys_t*)malloc(sizeof(pst_imgsys_t));
+    pst_imgsys_t *S = talloc(1, pst_imgsys_t);
     S->N = N;
-    S->eq = (pst_imgsys_equation_t*)malloc(sizeof(pst_imgsys_equation_t)*N);
+    S->eq = talloc(N, pst_imgsys_equation_t);
     S->ix = ix;
     S->col = col;
     S->row = row;
     return S;
   }
 
-pst_imgsys_t *pst_imgsys_from_eqs(int NX, int NY, int N, pst_imgsys_equation_t *eq, int *ix, int *col, int *row)
+pst_imgsys_t *pst_imgsys_from_eqs(uint32_t NX, uint32_t NY, uint32_t N, pst_imgsys_equation_t *eq, int32_t *ix, uint32_t *col, uint32_t *row)
   {
-    pst_imgsys_t *S = (pst_imgsys_t*)malloc(sizeof(pst_imgsys_t));
+    pst_imgsys_t *S = talloc(1, pst_imgsys_t);
     S->N = N;
     S->eq = eq;
     S->ix = ix;
@@ -58,33 +57,32 @@ void pst_imgsys_free(pst_imgsys_t *S)
 void pst_imgsys_solve
   ( pst_imgsys_t *S, 
     double Z[],
-    int ord[],
-    int maxIter, 
+    uint32_t ord[],
+    uint32_t maxIter, 
     double convTol,
-    int para, 
-    int szero,
+    bool_t para, 
+    bool_t szero,
     bool_t verbose,
-    int indent,
+    uint32_t indent,
     pst_imgsys_solution_report_proc_t *reportSol
   )
   {
-    int N = S->N;
+    uint32_t N = S->N;
 
     /* Previous solution: */
     double *Zold = rn_alloc(N);
     
-    int iter;
     double change = +INF;  /* Max {Z} change in last iteration. */
-    for (iter = 0; iter < maxIter; iter++)
+    uint32_t iter = 0;
+    while (iter < maxIter)
       {
         /* Report the current solution if so requested: */
         if (reportSol != NULL) { reportSol(iter, change, FALSE, N, Z); }
 
         /* Another pass over all unknowns {Z[k]}: */
-        int kk;
-        for (kk = 0; kk < N; kk++)
+        for (uint32_t kk = 0; kk < N; kk++)
           { /* Choose the next unknown to recompute: */
-            int k = (ord != NULL ? ord[kk] : kk);
+            uint32_t k = (ord != NULL ? ord[kk] : kk);
             /* Save current solution in {Zold}: */
             Zold[k] = Z[k];
             /* Get equation {k}: */
@@ -92,11 +90,10 @@ void pst_imgsys_solve
             /* Compute {Z[k]} using equation {k}: */
             double sum = eqk->rhs; /* Right-hand side of equation. */
             double cf_k = 0.0; /* Coefficient of {Z[k]} in equation. */
-            int t;
-            for(t = 0; t < eqk->nt; t++)
+            for(uint32_t t = 0; t < eqk->nt; t++)
               {
                 /* Get hold of another unknown {Z[j] entering in equation {k}: */
-                int j = eqk->ix[t];
+                uint32_t j = eqk->ix[t];
                 demand((j >= 0) && (j < N), "invalid variable index in system");
                 double cf_j = eqk->cf[t];
                 if (j == k) 
@@ -122,10 +119,9 @@ void pst_imgsys_solve
         if (szero)
           { /* Normalize for zero sum: */
             double sum = 0;
-            int  k;
-            for (k = 0; k < N; k++) { sum += Z[k]; }
+            for (uint32_t k = 0; k < N; k++) { sum += Z[k]; }
             double avg = sum/N;
-            for (k = 0; k < N; k++) { Z[k] -= avg; }
+            for (uint32_t k = 0; k < N; k++) { Z[k] -= avg; }
           }
         iter++;
         
@@ -135,6 +131,7 @@ void pst_imgsys_solve
           { fprintf(stderr, "%*s  iteration %3d change = %16.8f\n", indent, "", iter, change); }
         if (change <= convTol) { /* Converged: */ break; }
       }
+      
     if (change > convTol)
       { /* Failed to converge: */
         fprintf(stderr, "%*s** gave up after %6d iterations, last change = %16.8f\n", indent, "", iter, change);
@@ -149,9 +146,9 @@ void pst_imgsys_solve
     free(Zold);
   }
 
-double pst_imgsys_sol_change(double* Zold, double* Z, int N)
+double pst_imgsys_sol_change(double* Zold, double* Z, uint32_t N)
   {
-    int k;
+    uint32_t k;
     double max_change = 0;
     for(k = 0; k< N; k++)
       { double dk = Z[k] - Zold[k];
@@ -161,10 +158,10 @@ double pst_imgsys_sol_change(double* Zold, double* Z, int N)
     return max_change;
   }
 
-int* pst_imgsys_sort_equations(pst_imgsys_t *S)
+uint32_t* pst_imgsys_sort_equations(pst_imgsys_t *S)
   {
-    int M = 2*(MAXCOEFS-1); /* Max number of arcs out of or into a node. */
-    int N = S->N; /* Variables and equations are numbered from {0 to N-1}. */
+    uint32_t M = 2*(MAXCOEFS-1); /* Max number of arcs out of or into a node. */
+    uint32_t N = S->N; /* Variables and equations are numbered from {0 to N-1}. */
     
     /* BUILDING THE PRIORITY GRAPH */
 
@@ -174,18 +171,18 @@ int* pst_imgsys_sort_equations(pst_imgsys_t *S)
       of lower priority. It may have duplicate arcs. */
     
     /* Arcs of the priority graph: */
-    int *dst = (int *)notnull(malloc(M*N*sizeof(int)), "no mem");
+    uint32_t *dst = talloc(M*N, uint32_t);
     /* Value of {n_out[k]} is count of neighbours of node {k} with lower priority. */
-    int *n_out = (int *)notnull(malloc(N*sizeof(int)), "no mem");
+    uint32_t *n_out = talloc(N, uint32_t);
     /* Value of {n_in[k]} is count of unprocessed neighbours of node {k} with higher priority. */
-    int *n_in = (int *)notnull(malloc(N*sizeof(int)), "no mem");
+    uint32_t *n_in = talloc(N, uint32_t);
     /* The arcs out of node {k} go to nodes {dst[M*k+j]} for {j} in {0..n_out[k]-1}. */
 
-    auto void maybe_add_arrow(int k1, int k2);
+    auto void maybe_add_arrow(uint32_t k1, uint32_t k2);
       /* Adds an arc from node {k1} to node {k2}, 
         if the weight of {k1} is smaller than that of {k2}. */
     
-    void maybe_add_arrow(int k1, int k2)
+    void maybe_add_arrow(uint32_t k1, uint32_t k2)
       { /* Nodes with lower weights have higher priority: */
         double w1 = S->eq[k1].wtot;
         double w2 = S->eq[k2].wtot;
@@ -193,14 +190,14 @@ int* pst_imgsys_sort_equations(pst_imgsys_t *S)
       }
 
     /* Gather the graph arcs: */
-    int k;
+    uint32_t k;
     for(k = 0; k < N; k++){ n_in[k] = 0; n_out[k] = 0; }
     for(k = 0; k < N; k++)
       { pst_imgsys_equation_t *eqk = &(S->eq[k]);
         assert( eqk->ix[0] == k);
-        int j;
+        uint32_t j;
         for(j = 1; j < eqk->nt; j++)
-          { int i = eqk->ix[j];
+          { uint32_t i = eqk->ix[j];
             maybe_add_arrow(k,i);
             maybe_add_arrow(i,k);
           }
@@ -213,23 +210,23 @@ int* pst_imgsys_sort_equations(pst_imgsys_t *S)
       then {k1} appears before {k2} in {ord}. */
 
     /* Queue of source nodes, and output ordering: */
-    int *ord = (int *)notnull(malloc(N*sizeof(int)), "no mem"); /* Nodes in toporder. */
-    int q_free = 0;  /* Index of first free entry in {ord}. */
-    int q_start = 0; /* Index in {ord} of first unprocessed entry. */ 
+    uint32_t *ord = (uint32_t *)notnull(malloc(N*sizeof(uint32_t)), "no mem"); /* Nodes in toporder. */
+    uint32_t q_free = 0;  /* Index of first free entry in {ord}. */
+    uint32_t q_start = 0; /* Index in {ord} of first unprocessed entry. */ 
     /* Nodes {ord[0..q_start-1]} have been sorted and have no outgoing or incoming edges. */
     /* Nodes {ord[q_start..q_free-1]} have been sorted and have no incoming edges. */
 
-    auto void queue_insert(int index);
-    void queue_insert(int index)
+    auto void queue_insert(uint32_t index);
+    void queue_insert(uint32_t index)
       { assert(q_free < N);
         ord[q_free] = index;
         q_free++;
       }
 
-    auto int queue_remove(void);
-    int queue_remove(void)
+    auto uint32_t queue_remove(void);
+    uint32_t queue_remove(void)
       { assert(q_start < q_free );
-        int i = ord[q_start];
+        uint32_t i = ord[q_start];
         q_start++;
         return i;
       }  
@@ -239,12 +236,12 @@ int* pst_imgsys_sort_equations(pst_imgsys_t *S)
 
     while(q_start < q_free )
       { /* Get the next unprocessed node {k}: */
-        int k = queue_remove();
+        uint32_t k = queue_remove();
         /* Add all its dominated neighbors to the queue, erase the arcs: */
-        int j;
+        uint32_t j;
         for(j = 0; j < n_out[k]; j++)
           { /* Get a dominated neighbor {i}: */
-            int i = dst[M*k + j];
+            uint32_t i = dst[M*k + j];
             /* Erase the arc from {k} to {i}: */
             assert(n_in[i] > 0);
             n_in[i]--;
@@ -264,7 +261,7 @@ int* pst_imgsys_sort_equations(pst_imgsys_t *S)
     
 void pst_imgsys_write(FILE *wr, pst_imgsys_t *S)
   {
-    int k;
+    uint32_t k;
     bool_t fail = FALSE;
     for(k = 0; k < S->N; k++)
       {
@@ -272,18 +269,18 @@ void pst_imgsys_write(FILE *wr, pst_imgsys_t *S)
         pst_imgsys_equation_t *eqk = &(S->eq[k]);
         
         /* Compute indices of pixel corresponding to the unknown {Z[k]}: */
-        int xk = S->col[k]; int yk = S->row[k];
+        uint32_t xk = S->col[k]; uint32_t yk = S->row[k];
          
         /* Print indices of main pixel: */
         fprintf(wr, "eq[%d][%d]:", xk, yk);
 
         /* Print the equation coefficients: */
-        int t;
+        uint32_t t;
         for(t = 0; t < eqk->nt; t++)
           { /* Get hold of another unknown {Z[j]} that occurs in equation {k}: */
-            int j = eqk->ix[t];
+            uint32_t j = eqk->ix[t];
             /* Compute indices of the corresponding pixel. */
-            int xj = S->col[j]; int yj = S->row[j];
+            uint32_t xj = S->col[j]; uint32_t yj = S->row[j];
             double cf_j = eqk->cf[t];
             if (t > 0) { fprintf(wr, " + "); }
             fprintf(wr, "%f*Z[%d][%d]", cf_j, xj, yj);
@@ -300,7 +297,7 @@ void pst_imgsys_write(FILE *wr, pst_imgsys_t *S)
     demand(! fail, "write failed");
   }
 
-void pst_imgsys_write_report(pst_imgsys_t *S, char *filePrefix, int level, char *tag, int indent)
+void pst_imgsys_write_report(pst_imgsys_t *S, char *filePrefix, int32_t level, char *tag, uint32_t indent)
   {
     if (S == NULL) { return; }
     char *fileName = float_image_mscale_file_name(filePrefix, level, -1, tag, "sys");

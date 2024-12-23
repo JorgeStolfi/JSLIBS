@@ -1,4 +1,4 @@
-# Last edited on 2024-06-27 10:45:47 by stolfi
+# Last edited on 2024-12-22 11:27:30 by stolfi
 
 PROG := test_haf_read_obj
  
@@ -19,6 +19,7 @@ OLTHER_TESTS := \
 
 JS_LIBS := \
   libgeo.a \
+  libgausol.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

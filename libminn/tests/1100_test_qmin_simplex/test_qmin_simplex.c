@@ -1,5 +1,5 @@
 /* test_qmin_simplex.c --- test program for qmin_simplex.h  */
-/* Last edited on 2024-11-30 22:56:52 by stolfi */
+/* Last edited on 2024-12-21 10:53:59 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -121,7 +121,7 @@ void check_quadratic_min(uint32_t n, double A[], double b[], double x[], double 
 void throw_matrix(uint32_t m, uint32_t n, double A[], bool_t verbose)
   {
     /* Generate power-of-ten scale factors: */
-    double Ascale = pow(10.0, rand()/(RAND_MAX/3));
+    double Ascale = pow(10.0, int32_abrandom(0, 3));
     if (verbose) { fprintf(stderr, "  scale for A = %8.1e\n", Ascale); }
 
     /* Generate a random coefficient matrix {A}: */

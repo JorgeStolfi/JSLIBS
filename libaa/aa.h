@@ -1,13 +1,15 @@
 /* Basic Affine Arithmetic definitions and operations */
-/* Last edited on 2023-02-18 02:30:29 by stolfi */
+/* Last edited on 2024-12-21 11:22:19 by stolfi */
 
 #ifndef aa_H
 #define aa_H
 
-#include <flt.h>
-#include <ia.h>
 #include <stdio.h>
 #include <math.h>
+
+#include <flt.h>
+#include <ia.h>
+#include <jsrandom.h>
 
 /* AFFINE FORMS */
 

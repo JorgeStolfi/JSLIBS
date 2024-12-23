@@ -2,7 +2,7 @@
 #define haf_read_obj_H
 
 /* Reading the half-edge representation of 2D meshes. */ 
-/* Last edited on 2024-12-05 10:39:01 by stolfi */
+/* Last edited on 2024-12-22 10:28:01 by stolfi */
 
 #define half_read_obj_H_copyright \
   "Copyright (C) 2023 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
@@ -20,7 +20,7 @@
 void haf_read_obj_file
   ( FILE *rd,
     haf_edge_id_t eid0, 
-    int32_t *nf_P,
+    uint32_t *nf_P,
     r3_vec_t *V_P,
     string_vec_t *VL_P,
     haf_arc_vec_t *A_P,

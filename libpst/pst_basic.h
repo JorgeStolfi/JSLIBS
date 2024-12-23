@@ -2,9 +2,10 @@
 #define pst_basic_H
 
 /* pst_basic.h -- basic data types for gauge-based photostereo. */
-/* Last edited on 2024-12-05 10:42:13 by stolfi */
+/* Last edited on 2024-12-22 11:41:16 by stolfi */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <values.h>
 
@@ -25,7 +26,7 @@ vec_typedef(image_vec_t,image_vec,float_image_t *);
 
 /* TUPLES OF VALUES FOR CHANNELS */
 
-void pst_double_vec_regularize(double_vec_t *v, int NC, double defval);
+void pst_double_vec_regularize(double_vec_t *v, uint32_t NC, double defval);
   /* Make sure that the vector {v} has {NC} elements. If
     {v.ne == 0}, expands it to {NC} elements, and sets all elements
     to {defval}. If {v.ne == 1}, expands it to {NC} elements,
@@ -38,7 +39,7 @@ void pst_double_vec_uniformize(double_vec_t *v, double defval);
     If {v.ne > 1}, requires that all elements be equal, and
     truncates it to one element. Otherwise does nothing. */
 
-double_vec_t pst_double_vec_parse(argparser_t *pp, int *NC);
+double_vec_t pst_double_vec_parse(argparser_t *pp, uint32_t *NC);
   /* Parses a tuple of values from the command line, with optional 
     denominator, in the format described by {pst_double_vec_spec_HELP} and 
     {pst_double_vec_spec_INFO}.  See {argparser.h} for an explanation 
@@ -68,15 +69,15 @@ double_vec_t pst_double_vec_parse(argparser_t *pp, int *NC);
 
 /* TUPLES OF INTEGERS FOR CHANNELS */
 
-void pst_int32_vec_regularize(int32_vec_t *v, int NC, int defval);
+void pst_int_vec_regularize(int32_vec_t *v, uint32_t NC, int32_t defval);
   /* Make sure that the color vector {v} has {NC} color channels. If
     {v.ne == 0}, expands it to {NC} channels, and sets all elements
     to {defval}. If {v.ne == 1}, expands it to {NC} channels,
     replicating the first element. Otherwise does nothing. */
 
-int32_vec_t pst_int32_vec_parse(argparser_t *pp, int *NC);
+int32_vec_t pst_int_vec_parse(argparser_t *pp, uint32_t *NC);
   /* Parses a tuple of values from the command line, in the format
-    described by {pst_int32_vec_spec_HELP} and {pst_int32_vec_spec_INFO}.
+    described by {pst_int_vec_spec_HELP} and {pst_int_vec_spec_INFO}.
     See {argparser.h} for an explanation of the {pp} parameter.
     
     If {NC} is is NULL, or only one numeric argument is present (with
@@ -85,19 +86,19 @@ int32_vec_t pst_int32_vec_parse(argparser_t *pp, int *NC);
     demands and parses exactly {*NC} numeric arguments (with an
     optional denominator). */
   
-#define pst_int32_vec_spec_HELP \
-  "{NUM} .. " pst_int32_vec_spec_den_HELP
+#define pst_int_vec_spec_HELP \
+  "{NUM} .. " pst_int_vec_spec_den_HELP
   
-#define pst_int32_vec_spec_den_HELP \
+#define pst_int_vec_spec_den_HELP \
   "[ / {DEN} ]"
   
-#define pst_int32_vec_spec_INFO \
+#define pst_int_vec_spec_INFO \
   "The argument consists of one {NUM} value" \
   " for each channel, or by a single {NUM} that" \
   " applies to all channels.  " \
-  pst_int32_vec_spec_den_INFO
+  pst_int_vec_spec_den_INFO
   
-#define pst_int32_vec_spec_den_INFO \
+#define pst_int_vec_spec_den_INFO \
   "If the \"/ {DEN}\" part is present," \
   " the given values are divided by {DEN}."
 

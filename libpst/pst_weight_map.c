@@ -1,8 +1,8 @@
 /* See pst_weight_map.h */
-/* Last edited on 2023-11-26 07:11:36 by stolfi */
+/* Last edited on 2024-12-23 07:12:28 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <assert.h>
 #include <stdlib.h>
 
@@ -16,25 +16,24 @@
  
 /* IMPLEMENTATIONS */
 
-float_image_t *pst_weight_map_shrink(float_image_t *IW, bool_t harmonic, int avgWidth)
+float_image_t *pst_weight_map_shrink(float_image_t *IW, bool_t harmonic, uint32_t avgWidth)
   { 
     demand(IW->sz[0] == 1, "weight map is not mono");
-    int NX_JW = (int)((IW->sz[1]+1)/2);
-    int NY_JW = (int)((IW->sz[2]+1)/2);
-    int dxy = (avgWidth-1)/2;
-    return float_image_mscale_mask_shrink(IW, NX_JW, NY_JW, dxy, dxy, avgWidth, harmonic);
+    uint32_t NX_JW = (uint32_t)((IW->sz[1]+1)/2);
+    uint32_t NY_JW = (uint32_t)((IW->sz[2]+1)/2);
+    uint32_t dxy = (avgWidth-1)/2;
+    return float_image_mscale_mask_shrink(IW, (int32_t)NX_JW, (int32_t)NY_JW, (int32_t)dxy, (int32_t)dxy, (int32_t) avgWidth, harmonic);
   }
   
   
 float_image_t *pst_weight_map_expand_height_weights(float_image_t *IW)
   {
-    int NX,NY;
-    NX = (int)IW->sz[1];
-    NY = (int)IW->sz[2];
-    float_image_t* HW = float_image_new(1,NX+1,NY+1);
-    int x,y;
-    for(x = 0; x < NX+1; x++){
-      for(y = 0; y < NY+1; y++){
+    uint32_t NX,NY;
+    NX = (uint32_t)IW->sz[1];
+    NY = (uint32_t)IW->sz[2];
+    float_image_t* HW = float_image_new(1,(int32_t)NX+1,(int32_t)NY+1);
+    for (int32_t x = 0; x < NX+1; x++){
+      for (int32_t y = 0; y < NY+1; y++){
         double c00,c01,c10,c11;
 
         c00 = ( (x  > 0) && (y > 0) ? 1: 0 );
@@ -62,7 +61,7 @@ float_image_t *pst_weight_map_expand_height_weights(float_image_t *IW)
         double Sf = f00+f10+f01+f11;
         double Sw = w00+w01+w10+w11;
         double w = 0;
-        if(Sf !=  0) {
+        if (Sf !=  0) {
           w = Sw/Sf;
         }
     */    
@@ -75,14 +74,14 @@ float_image_t *pst_weight_map_expand_height_weights(float_image_t *IW)
     return HW;
   }
 
-float_image_t *pst_weight_map_slope_to_height(float_image_t *W, bool_t harmonic, int NXV, int NYV)
+float_image_t *pst_weight_map_slope_to_height(float_image_t *W, bool_t harmonic, uint32_t NXV, uint32_t NYV)
   { 
     demand(W->sz[0] == 1, "weight map is not mono");
-    int NXW = (int)W->sz[1];
-    int NYW = (int)W->sz[2];
+    uint32_t NXW = (uint32_t)W->sz[1];
+    uint32_t NYW = (uint32_t)W->sz[2];
     
     /* Decide the window width {nw}, either 2 or 3: */
-    int nw;
+    uint32_t nw;
     if ((NXV == NXW) && (NYV == NYW))
       { /* Same size, average {3x3} blocks: */
         nw = 3;
@@ -96,28 +95,26 @@ float_image_t *pst_weight_map_slope_to_height(float_image_t *W, bool_t harmonic,
 
     /* Get the weight table: */
     double wt[nw];
-    int32_t stride;
+    uint32_t stride;
     wt_table_binomial_fill(nw, wt, &stride);
     wt_table_normalize_sum(nw, wt);
     assert(stride == (nw - 1)/2);
 
     /* Compute displacement of window: */
-    int dxy = (nw - 1)/2;
+    int32_t dxy = ((int32_t)nw - 1)/2;
     
     /* Alocate the output image: */
-    float_image_t *V = float_image_new(1, NXV, NYV);
+    float_image_t *V = float_image_new(1, (int32_t)NXV, (int32_t)NYV);
     
-    int x, y;
-    for (y = 0; y < NYV; y++)
-      { for (x = 0; x < NXV; x++)
+    for (int32_t y = 0; y < NYV; y++)
+      { for (int32_t x = 0; x < NXV; x++)
           { double sum_cw = 0.0; /* Sum of window weights times {W} samples. */
             double sum_c = 0.0;  /* Sum of window weights. */
-            int r, s;
-            for (r = 0; r < nw; r++)
-              { for (s = 0; s < nw; s++) 
+            for (uint32_t r = 0; r < nw; r++)
+              { for (uint32_t s = 0; s < nw; s++) 
                   { /* Get the sample from {W}: */
-                    int xx = x + r - dxy;
-                    int yy = y + s - dxy;
+                    int32_t xx = x + (int32_t)r - dxy;
+                    int32_t yy = y + (int32_t)s - dxy;
                     float wrs = 
                       ( (xx >= 0) && (xx < NXW) && (yy >= 0) && (yy < NYW) ?
                         float_image_get_sample(W, 0, xx, yy) :
@@ -140,24 +137,22 @@ float_image_t *pst_weight_map_slope_to_height(float_image_t *W, bool_t harmonic,
     return V;
   }
   
-float_image_t *pst_weight_map_heights_from_slopes(int NX_Z, int NY_Z,float_image_t *GW)
+float_image_t *pst_weight_map_heights_from_slopes(uint32_t NX_Z, uint32_t NY_Z,float_image_t *GW)
   {
-    float_image_t* EW = float_image_new(1,NX_Z,NY_Z);
-    if( GW != NULL ){ assert( (GW->sz[1] == (NX_Z-1)) && (GW->sz[2] == (NY_Z -1)) ); }
-    int x,y;
-    for( y = 0 ; y < NY_Z ; y++)
-      {
-        for( x = 0 ; x < NX_Z ; x++ )
-        {
-          double wmm = ( (x  > 0 ) && (y > 0) ? (GW != NULL ? float_image_get_sample(GW,0,x-1,y-1) : 1): 0);
-          double wmp = ( (x  > 0 ) && (y < (NY_Z -1)) ? (GW != NULL ? float_image_get_sample(GW,0,x-1,y) : 1): 0);
-          double wpm = ( (x  < (NX_Z -1) ) && (y > 0) ? (GW != NULL ? float_image_get_sample(GW,0,x,y-1) : 1): 0);
-          double wpp = ( (x  < (NX_Z -1) ) && (y < (NY_Z -1) ) ? (GW != NULL ? float_image_get_sample(GW,0,x,y) : 1): 0);
+    float_image_t* EW = float_image_new(1, (int32_t)NX_Z, (int32_t)NY_Z);
+    if ( GW != NULL ){ assert( (GW->sz[1] == (NX_Z-1)) && (GW->sz[2] == (NY_Z -1)) ); }
+    for (int32_t y = 0 ; y < NY_Z ; y++)
+      { for (int32_t x = 0 ; x < NX_Z ; x++ )
+          {
+            double wmm = ( (x  > 0 ) && (y > 0) ? (GW != NULL ? float_image_get_sample(GW,0,x-1,y-1) : 1): 0);
+            double wmp = ( (x  > 0 ) && (y < (NY_Z -1)) ? (GW != NULL ? float_image_get_sample(GW,0,x-1,y) : 1): 0);
+            double wpm = ( (x  < (NX_Z -1) ) && (y > 0) ? (GW != NULL ? float_image_get_sample(GW,0,x,y-1) : 1): 0);
+            double wpp = ( (x  < (NX_Z -1) ) && (y < (NY_Z -1) ) ? (GW != NULL ? float_image_get_sample(GW,0,x,y) : 1): 0);
 
-          double w = 16.0/(1/wmm + 1/wpm + 1/wmp + 1/wpp);
-          float_image_set_sample(EW,0,x,y,(float)w);
+            double w = 16.0/(1/wmm + 1/wpm + 1/wmp + 1/wpp);
+            float_image_set_sample(EW,0,x,y,(float)w);
 
-        }
+          }
       }
     return EW;
   }

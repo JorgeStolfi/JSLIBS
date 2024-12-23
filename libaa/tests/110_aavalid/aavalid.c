@@ -1,5 +1,5 @@
 /* Validation of AA ops */
-/* Last edited on 2016-12-26 20:05:33 by stolfilocal */
+/* Last edited on 2024-12-21 11:22:29 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +9,7 @@
 #include <ia.h>
 #include <affirm.h>
 #include <aa.h>
+#include <jsrandom.h>
 
 #define DEBUG 0
 #define MAXEPS 4

@@ -1,11 +1,11 @@
 /* See pst_shading.h */
-/* Last edited on 2016-03-16 16:04:02 by stolfilocal */
+/* Last edited on 2024-12-22 22:52:27 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <values.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <float_image.h>
@@ -24,14 +24,14 @@ float_image_t *pst_shading_difference_image
     float_image_t *AIMG, 
     float_image_t *BIMG
   )
-  { int NC, NX, NY;
+  { int32_t NC, NX, NY;
     float_image_get_size(AIMG, &NC, &NX, &NY);
     float_image_check_size(BIMG, NC, NX, NY);
     float_image_check_size(NRM, 3, NX, NY);
 
     float_image_t *DIF = float_image_new(NC, NX, NY);
     
-    int c, x, y;
+    int32_t c, x, y;
     for (y = 0; y < NY; y++)
       { for (x = 0; x < NX; x++)
           { r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
@@ -75,10 +75,10 @@ void pst_shading_add_diffuse
     float_image_t *IMG
   )
   { pst_lamp_vec_t *lmpv = &(lht->lmpv);
-    int NS = lmpv->ne;
+    uint32_t NS = lmpv->ne;
 
     /* Get and check image sizes: */
-    int NC, NX, NY;
+    int32_t NC, NX, NY;
     float_image_get_size(IMG, &NC, &NX, &NY);
     float_image_check_size(NRM, 3, NX, NY);
     if (CLR != NULL) { float_image_check_size(CLR, NC, NX, NY); }
@@ -86,23 +86,21 @@ void pst_shading_add_diffuse
     double clr[NC]; /* Intrinsic color of scene at some pixel. */
     double lum[NC]; /* Diffuse illumination due to all lamps. */
 
-    int i;
-    int c, x, y;
-    for (y = 0; y < NY; y++)
-      { for (x = 0; x < NX; x++)
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
           { r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
             if (r3_L_inf_norm(&nrm) != 0)
               { /* Valid pixel, compute its shaded color. */
                 /* Clear apparent color, get intrinsic color, check if black: */
                 bool_t black = TRUE;
-                for (c = 0; c < NC; c++) 
+                for (uint32_t c = 0; c < NC; c++) 
                   { lum[c] = 0.0;
-                    clr[c] = (CLR == NULL ? 1.0 : float_image_get_sample(CLR, c, x, y)); 
+                    clr[c] = (CLR == NULL ? 1.0 : float_image_get_sample(CLR, (int32_t)c, x, y)); 
                     if (clr[c] != 0.0) { black = FALSE; }
                   }
                 if (!black)
                   { /* Shine all lamps on it: */
-                    for (i = 0; i < NS; i++)
+                    for (uint32_t i = 0; i < NS; i++)
                       { pst_lamp_t *src = lmpv->e[i];
                         r3_t *dir = &(src->dir);
                         double crad = src->crad;
@@ -111,11 +109,11 @@ void pst_shading_add_diffuse
                         /* Accumulate light on each channel: */
                         double_vec_t *pwr = &(src->pwr);
                         assert(pwr->ne == NC); 
-                        for (c = 0; c < NC; c++) { lum[c] += coef*pwr->e[c]; }
+                        for (uint32_t c = 0; c < NC; c++) { lum[c] += coef*pwr->e[c]; }
                       }
                     /* Add color to {IMG}: */
-                    for (c = 0; c < NC; c++) 
-                      { float *p = float_image_get_sample_address(IMG, c, x, y); 
+                    for (uint32_t c = 0; c < NC; c++) 
+                      { float *p = float_image_get_sample_address(IMG, (int32_t)c, x, y); 
                         (*p) += (float)(lum[c]*clr[c]);
                       }
                   }

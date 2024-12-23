@@ -1,4 +1,4 @@
-# Last edited on 2024-06-25 03:40:04 by stolfi
+# Last edited on 2024-12-22 11:24:57 by stolfi
 
 PROG := test_obj_file
  
@@ -17,6 +17,7 @@ OLTHER_TESTS := \
 
 JS_LIBS := \
   libgeo.a \
+  libgausol.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

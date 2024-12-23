@@ -1,4 +1,4 @@
-/*  Last edited on 2024-10-09 13:59:45 by stolfi */
+/*  Last edited on 2024-12-21 11:25:36 by stolfi */
 /* Test of {tosl_mesh_slice} in {totposlic.h} */
 
 #define _GNU_SOURCE
@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <jsrandom.h>
 
 #include <tosl.h>
 #include <tosl_slice.h>

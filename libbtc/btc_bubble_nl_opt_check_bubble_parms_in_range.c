@@ -1,7 +1,6 @@
 /* See {btc_bubble_nl_opt_check_bubble_parms_in_range.h} */
-/* Last edited on 2015-04-29 23:59:50 by stolfilocal */
+/* Last edited on 2024-12-21 11:58:24 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 
 #include <bool.h>

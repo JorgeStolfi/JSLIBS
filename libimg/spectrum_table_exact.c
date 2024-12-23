@@ -1,5 +1,5 @@
 /* See spectrum_table_exact.h */
-/* Last edited on 2024-12-05 07:49:23 by stolfi */ 
+/* Last edited on 2024-12-21 04:55:59 by stolfi */ 
 
 #include <stdint.h>
 #include <limits.h>
@@ -92,7 +92,7 @@ void spectrum_table_exact_append_term
   {
     bool_t debug = FALSE;
     uint32_t ntx = (*ntxp);
-    spectrum_table_exact_expand(tx, ntx);
+    spectrum_table_exact_expand(tx, (vec_index_t)ntx);
     spectrum_table_exact_entry_t *txn = &(tx->e[ntx]);
     urat64_t freq2 = spectrum_table_exact_compute_freq2(fn, fd);
     txn->freq2 = freq2;

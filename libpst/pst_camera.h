@@ -2,7 +2,7 @@
 #define pst_camera_H
 
 /* pst_camera.h -- camera parameters and tools therefor. */
-/* Last edited on 2010-05-04 00:26:32 by stolfi */
+/* Last edited on 2024-12-22 12:30:45 by stolfi */
 
 #include <r2.h>
 #include <r3.h> 
@@ -196,7 +196,7 @@ hr3_point_t pst_camera_viewpoint_from_center_spread(r2_t *Q, double G);
   /* Max angle (in degrees) allowed at the viewpoint from the optical
     axis to any pixel in the image. */
 
-double pst_camera_min_focal_length(r2_t *Q, int NX, int NY);
+double pst_camera_min_focal_length(r2_t *Q, int32_t NX, int32_t NY);
   /* A reasonable lower limit for the focal length {F} of a camera
     which took an image with {NX} columns and {NY} rows, whose optical
     center has image coordinates {Q}. The result is such that no pixel
@@ -206,12 +206,12 @@ double pst_camera_min_focal_length(r2_t *Q, int NX, int NY);
     
 /* CAMERA OPS FOR MULTISCALE */
 
-pst_camera_t pst_camera_shrink(pst_camera_t *C, int dx, int dy, int nw);
+pst_camera_t pst_camera_shrink(pst_camera_t *C, int32_t dx, int32_t dy, int32_t nw);
   /* Given a camera description appropriate for an image {A},
     returns a camera description for a reduced image {B} 
     obtained by {float_image_mscale_shrink(A, M, dx, dy, nw)}. */
 
-pst_camera_t pst_camera_expand(pst_camera_t *C, int dx, int dy, int nw);
+pst_camera_t pst_camera_expand(pst_camera_t *C, int32_t dx, int32_t dy, int32_t nw);
   /* Inverse of {pst_camera_shrink}: given a camera description
     appropriate for the reduced image {B}, returns a camera
     description for the original image {A}. */

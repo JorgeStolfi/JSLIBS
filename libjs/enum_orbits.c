@@ -1,5 +1,5 @@
 /* See enum_orbits.h. */
-/* Last edited on 2024-11-23 06:05:38 by stolfi */
+/* Last edited on 2024-12-21 04:49:26 by stolfi */
 
 #define enum_orbits_C_copyright \
   "Copyright © 1996, 2006 Institute of Computing, Unicamp."
@@ -29,7 +29,7 @@ bool_t enum_cycle(ref_t p, enum_step_t step, enum_visit_t visit, ref_vec_t *vP)
     bool_t stop = FALSE;
     do 
       { stop = ( visit == NULL ? FALSE : visit(q));
-        if (vP != NULL) { ref_vec_expand(vP, nP); vP->e[nP] = q; nP++; }
+        if (vP != NULL) { ref_vec_expand(vP, (vec_index_t)nP); vP->e[nP] = q; nP++; }
         q = step(q);
       } 
     while ((q != p) && (! stop));
@@ -107,7 +107,7 @@ bool_t enum_items
     void enum_one(ref_t p, uint32_t n)
       { if (! check_and_set_mark(p))
           { /* New item, stack it: */
-            ref_vec_expand(&Q, nQ); 
+            ref_vec_expand(&Q, (vec_index_t)nQ); 
             Q.e[nQ] = p; nQ++;
             /* Visit it: */
             if (visit[n] != NULL) 
@@ -192,7 +192,7 @@ bool_t enum_orbits
     
     bool_t do_visit(ref_t p)
       { if (vP != NULL) 
-          { ref_vec_expand(vP, nvis);
+          { ref_vec_expand(vP, (vec_index_t)nvis);
             vP->e[nvis] = p;
           }
         nvis++;

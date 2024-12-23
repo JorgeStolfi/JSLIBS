@@ -2,7 +2,7 @@
 #define obj_file_H
 
 /* Common definitions for OBJ file reading and writing. */ 
-/* Last edited on 2024-12-05 10:39:15 by stolfi */
+/* Last edited on 2024-12-22 10:00:44 by stolfi */
 
 #define obj_file_H_copyright \
   "Copyright (C) 2024 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
@@ -23,7 +23,7 @@ typedef struct obj_file_data_t
     r3_vec_t V;              /* Vertices. */
     r3_vec_t T;              /* Texpoints. */
     r3_vec_t N;              /* Normals. */
-    string_vec_t VL;          /* Vertex labels. */
+    string_vec_t VL;         /* Vertex labels. */
     /* Face corner data: */
     obj_file_face_vec_t FV;  /* Vertex indices. */
     obj_file_face_vec_t FT;  /* Texpoint indices. */

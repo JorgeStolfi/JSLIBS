@@ -2,15 +2,16 @@
 #define pst_proc_map_H
 
 /* pst_proc_map.h -- procedures for creating procedurally-defined images. */
-/* Last edited on 2018-06-30 04:32:55 by stolfilocal */
+/* Last edited on 2024-12-22 12:38:44 by stolfi */
 
-#define _GNU_SOURCE
+#include <stdint.h>
+
 #include <bool.h>
 #include <r2.h>
 #include <float_image.h>
 
 typedef struct pst_proc_map_sampling_t
-  { int N;     /* Number of sampling points per axis. */
+  { int32_t N;     /* Number of sampling points per axis. */
     double *d; /* Sampling positions relative to center point (indexed {0..NS-1}). */
     double *w; /* Sampling weights (indexed {0..NS-1}). */
   } pst_proc_map_sampling_t;
@@ -28,8 +29,8 @@ typedef void pst_proc_map_zfunc_t (r2_t p, double *z, r2_t *dz);
 
 void pst_proc_map_make_images
   ( pst_proc_map_zfunc_t *func,
-    int NX,
-    int NY,
+    int32_t NX,
+    int32_t NY,
     pst_proc_map_sampling_t smpZ,
     pst_proc_map_sampling_t smpG,
     bool_t numGrad,
@@ -93,7 +94,7 @@ void pst_proc_map_make_images
     the same factors, so that the computed gradient remains consistent
     with the image coordinate system. */
   
-pst_proc_map_sampling_t pst_proc_map_make_sampling_tables(int L, int N);
+pst_proc_map_sampling_t pst_proc_map_make_sampling_tables(int32_t L, int32_t N);
   /* Returns a sampling table {smp} for the given sampling parameters.
     Allocates {smp->d} and {smp->w} and fills them with proper values
     as specified by {L} and {N}. The parameter {L} defines the width
@@ -204,7 +205,7 @@ void pst_proc_map_function_27(r2_t p, double *z, r2_t *dz); /* 27 Fractalish rou
 #define pst_proc_map_MAX_ZFUNC 27
   /* Min and max numbers of {n} in {pst_proc_map_function_{n}}. */
 
-pst_proc_map_zfunc_t *pst_proc_map_function_generic(int n);
+pst_proc_map_zfunc_t *pst_proc_map_function_generic(int32_t n);
   /* Returns a pointer to {pst_proc_map_function_{n}}. */
 
 /* Parametrized procedure maps: */
@@ -242,7 +243,7 @@ void pst_proc_map_function_round_platform(r2_t *p, double R, double HS, double *
     soft cubic step extending by distance {HS} on either side of the
     ideal perimeter. Also computes the gradient {*dz}. */
 
-void pst_proc_map_function_polygonal_platform(r2_t *p, int N, double R, double tilt, double S, double *z, r2_t *dz);
+void pst_proc_map_function_polygonal_platform(r2_t *p, int32_t N, double R, double tilt, double S, double *z, r2_t *dz);
   /* Computes a flat polygonal platform function {*z} with height 1. 
     
     The basic outline of the platform will be a regular polygon with

@@ -1,5 +1,5 @@
 /* Operations on floating-point values */
-/* Last edited on 2024-11-20 07:48:37 by stolfi */
+/* Last edited on 2024-12-21 11:23:08 by stolfi */
 
 #ifndef flt_H
 #define flt_H
@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdint.h>
 /* #include <sys/ieeefp.h> */
-
+ 
 /* The floating-point type used by the operations below.: */
 typedef
   float Float;

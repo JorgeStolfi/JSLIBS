@@ -1,5 +1,5 @@
 // See test_minu_tools.h
-// Last edited on 2024-12-05 10:35:32 by stolfi
+// Last edited on 2024-12-21 10:35:16 by stolfi
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <jsrandom.h>
 #include <jsstring.h>
 #include <epswr.h>
@@ -26,9 +27,9 @@ typedef struct TestParms {
 // PROTOTYPES
 
 epswr_figure_t *test_minu_tools_new_figure
-  ( int32_t i_opt, 
+  ( uint32_t i_opt, 
     Minimizer *opt, 
-    int32_t i_prb, 
+    uint32_t i_prb, 
     Problem *prb, 
     char *tag
   );
@@ -108,9 +109,9 @@ bool_t test_minu_tools_multiple_check
 #define MIN(x,y) ((x) < (y) ? (x) : (y))
 
 Performance test_minu_tools_single
-  ( int32_t i_opt,   /* Index of minimizer, for file name. */
+  ( uint32_t i_opt,   /* Index of minimizer, for file name. */
     Minimizer *opt,  /* The minimization tool */
-    int32_t i_prb,   /* Index of problem, for file name. */
+    uint32_t i_prb,   /* Index of problem, for file name. */
     Problem *prb,    /* Function and parameters */
     bool_t debug     /* Passed to the minimizer */
   )
@@ -162,9 +163,9 @@ Performance test_minu_tools_single
   }
 
 Performance test_minu_tools_multiple 
-  ( int32_t i_opt,     /* Index of minimizer, for file name. */
+  ( uint32_t i_opt,     /* Index of minimizer, for file name. */
     Minimizer *opt,    /* The minimization tool */
-    int32_t i_prb,     /* Index of problem, for file name. */
+    uint32_t i_prb,     /* Index of problem, for file name. */
     Problem *prb,      /* Function and parameters */
     unsigned nTests    /* Number of tests to perform. */
   )
@@ -297,19 +298,18 @@ bool_t test_minu_tools_multiple_check
   }
 
 epswr_figure_t *test_minu_tools_new_figure
-  ( int32_t i_opt, 
+  ( uint32_t i_opt, 
     Minimizer *opt, 
-    int32_t i_prb, 
+    uint32_t i_prb, 
     Problem *prb, 
     char *tag
   )
-  { char *fname = NULL;
-    char *fname = jsprintf("aumt_opt%02d_prb%02d_%s", i_opt, i_prb, tag);
+  { char *fname = jsprintf("aumt_opt%02d_prb%02d_%s", i_opt, i_prb, tag);
     double fontHeight = 10;
     double hSize = 425; /* Plot width (pt). */
     double vSize = 425; /* Plot height (pt). */
     double mrg = 4.0;   /* Figure margin (pt). */
-    int32_t nCap = 8;
+    uint32_t nCap = 8;
     double mrg_bot = mrg + nCap*fontHeight + mrg;
     bool_t eps_verbose = FALSE;
     epswr_figure_t *eps = epswr_new_named_figure
@@ -322,7 +322,7 @@ epswr_figure_t *test_minu_tools_new_figure
         
     epswr_set_client_window(eps, 0.0,1.0, 0.0,1.0);
 
-    int32_t NSteps = 1000;
+    uint32_t NSteps = 1000;
     double dx = (prb->xMax - prb->xMin) / ((double)NSteps);
     double xb = prb->xMin;
     double yb, dfxb;

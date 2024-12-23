@@ -2,7 +2,7 @@
 #define obj_file_write_H
 
 /* Basic writing of OBJ format files. */ 
-/* Last edited on 2024-12-05 10:39:24 by stolfi */
+/* Last edited on 2024-12-22 10:49:29 by stolfi */
 
 #define half_read_obj_H_copyright \
   "Copyright (C) 2024 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
@@ -17,7 +17,7 @@
 
 #include <obj_file.h>
 
-void obj_file_write(FILE *wr, obj_file_data_t *D, int prec);
+void obj_file_write(FILE *wr, obj_file_data_t *D, uint32_t prec);
   /* Writes into {wr} a solid model in the Wavefront OBJ format,
     with the data specified in the {D} tables.
       

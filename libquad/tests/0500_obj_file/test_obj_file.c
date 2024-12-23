@@ -2,7 +2,7 @@
 #define PROG_DESC "tests the routines from {obj_file_read.h} and {obj_file_write.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-05 10:39:59 by stolfi */ 
+/* Last edited on 2024-12-22 11:24:25 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2024  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
@@ -61,6 +61,7 @@
 #include <argparser.h>
 #include <vec.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <r3.h>
 
 #include <obj_file.h>
@@ -83,7 +84,7 @@ int32_t main(int32_t argc, char **argv)
     options_t *o = get_options(argc, argv);
     
     /* Read the input file: */
-    char *rd_fname = NULL; char *rd_fname = jsprintf("in/%s.obj", o->name);
+    char *rd_fname = jsprintf("in/%s.obj", o->name);
     fprintf(stderr, "reading from file %s...\n", rd_fname);
     FILE *rd = open_read(rd_fname, TRUE);
     bool_t verbose = TRUE;
@@ -100,7 +101,7 @@ int32_t main(int32_t argc, char **argv)
       { int32_vec_t *FVk = &(D->FV.e[kf]);
         int32_vec_t *FTk = &(D->FT.e[kf]);
         int32_vec_t *FNk = &(D->FN.e[kf]);
-        int32_t nc = FVk->ne;
+        uint32_t nc = FVk->ne;
         fprintf(stderr, "  face %6d has %6d corners:", kf, nc);
         assert(FTk->ne == nc);
         assert(FNk->ne == nc);
@@ -120,10 +121,10 @@ int32_t main(int32_t argc, char **argv)
       }
 
     /* Write it out: */
-    char *wr_fname = NULL; char *wr_fname = jsprintf("out/%s-wr.obj", o->name);
+    char *wr_fname = jsprintf("out/%s-wr.obj", o->name);
     fprintf(stderr, "writing out to file %s...\n", wr_fname);
     FILE *wr = open_write(wr_fname, TRUE);
-    int32_t prec = 4;
+    uint32_t prec = 4;
     obj_file_write(wr, D, prec);
     fclose(wr);
     

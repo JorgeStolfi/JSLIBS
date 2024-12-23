@@ -1,5 +1,5 @@
 /* See wt_table_args_parse.h */
-/* Last edited on 2024-11-16 10:24:40 by stolfi */
+/* Last edited on 2024-12-21 04:52:24 by stolfi */
 
 #define wt_table_args_parse_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -35,7 +35,7 @@ double_vec_t wt_table_args_parse_weights(argparser_t *pp, bool_t unitNorm)
     uint32_t nw = 0;
     while (argparser_next_is_number(pp))
       { double wt = argparser_get_next_double(pp, -DBL_MAX, +DBL_MAX);
-        double_vec_expand(&w, nw);
+        double_vec_expand(&w, (vec_index_t)nw);
         w.e[nw] = wt; nw++;
       }
     /* Parse the optional "/ {DENOM}" args: */

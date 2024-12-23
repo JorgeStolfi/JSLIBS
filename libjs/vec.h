@@ -1,5 +1,5 @@
 /* Self-bounded vectors (one-dimensional arrays) of things */
-/* Last edited on 2024-11-15 20:33:13 by stolfi */
+/* Last edited on 2024-12-21 04:51:10 by stolfi */
 
 #ifndef vec_H
 #define vec_H
@@ -125,7 +125,7 @@ typedef int32_t vec_index_t;
 /* STORAGE EXPANSION */
   
 #define vec_DECLARE_EXPAND(VEC_TYPE,PREFIX,ELEM_TYPE) \
-  void PREFIX##_expand(VEC_TYPE *vp, vec_size_t index)
+  void PREFIX##_expand(VEC_TYPE *vp, vec_index_t index)
 /*
   This macro declares the function {{PREFIX}_expand}. The call
   {{PREFIX}_expand(&v,index)} makes sure that the element {v.e[index]}
@@ -168,7 +168,7 @@ typedef int32_t vec_index_t;
     }
 
 #define vec_IMPLEMENT_EXPAND(VEC_TYPE,PREFIX,ELEM_TYPE) \
-void PREFIX##_expand(VEC_TYPE *vp, vec_size_t index) \
+void PREFIX##_expand(VEC_TYPE *vp, vec_index_t index) \
   { if (index >= vp->ne) \
       { vec_expand(&(vp->ne), (void**)&(vp->e), (index), sizeof(ELEM_TYPE)); } \
   }
@@ -236,7 +236,7 @@ void *vec_alloc(vec_size_t ne, size_t esz);
     size {esz}. Bombs out if there is no space for the request. If
     {ne == 0}, the result is {NULL}. */
 
-void vec_expand(vec_size_t *nep, void **ep, vec_size_t index, size_t esz);
+void vec_expand(vec_size_t *nep, void **ep, vec_index_t index, size_t esz);
   /* Makes sure that element {(*ep)[index]} exists, reallocating and
     copying the array {**ep} if {index >= (*nep)}. If that happens, sets
     {(*nep) to the new element count; which will be strictly greater

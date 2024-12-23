@@ -1,5 +1,5 @@
 /* Quick test of rounding mode setting (from flt.h) */
-/* Last edited on 2024-11-20 07:51:03 by stolfi */
+/* Last edited on 2024-12-21 11:23:16 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,6 +8,7 @@
 
 #include <affirm.h>
 #include <bool.h>
+#include <jsrandom.h>
 
 #include <flt.h>
 

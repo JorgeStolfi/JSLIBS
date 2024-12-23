@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_hog.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-20 18:39:29 by stolfi */ 
+/* Last edited on 2024-12-21 11:24:28 by stolfi */ 
 /* Created on 2008-10-05 by J. Stolfi, UNICAMP */
 
 #define test_hog_COPYRIGHT \
@@ -27,6 +27,7 @@
 #include <jsfile.h>
 #include <jsprintf.h>
 #include <affirm.h>
+#include <jsrandom.h>
 
 #define BT_ENC_EXPO sample_conv_gamma_BT709_ENC_EXPO
 #define BT_ENC_BIAS sample_conv_gamma_BT709_BIAS 

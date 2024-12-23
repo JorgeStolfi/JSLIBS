@@ -1,5 +1,5 @@
 /* Validation of IA ops */
-/* Last edited on 2016-12-26 19:34:18 by stolfilocal */
+/* Last edited on 2024-12-21 11:23:58 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,6 +8,7 @@
 #include <flt.h>
 #include <ia.h>
 #include <affirm.h>
+#include <jsrandom.h>
 
 #define DEBUG 0
 

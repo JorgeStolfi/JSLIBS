@@ -1,5 +1,5 @@
 /* See {obj_file_write.h}. */
-/* Last edited on 2024-12-05 10:39:21 by stolfi */
+/* Last edited on 2024-12-22 10:49:06 by stolfi */
  
 #define obj_file_write_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -19,9 +19,9 @@
 
 #define debug FALSE
 
-void obj_file_write_coords_table(FILE *wr, char *elname, char *cmd, r3_vec_t *P, string_vec_t *VL, int32_t prc);
+void obj_file_write_coords_table(FILE *wr, char *elname, char *cmd, r3_vec_t *P, string_vec_t *VL, uint32_t prec);
   /* Writes to {wr} the 3-vectors {P.e[0..P.ne-1]}, one per line,
-    preceded by the {cmd} string. Each coordinate is written with {prc}
+    preceded by the {cmd} string. Each coordinate is written with {prec}
     decimal fraction digits.  If {VL} is not null and {VL.e[k]} is not {NULL},
     also writes the string {VL.e[k]} as a '#'-comment after the 
     coordinates of each {P.e[k]}.
@@ -30,11 +30,11 @@ void obj_file_write_coords_table(FILE *wr, char *elname, char *cmd, r3_vec_t *P,
 
 void obj_file_write_face_tables
   ( FILE *wr,
-    int32_t nv,
+    uint32_t nv,
     obj_file_face_vec_t *FV,
-    int32_t nt,
+    uint32_t nt,
     obj_file_face_vec_t *FT,
-    int32_t nn,
+    uint32_t nn,
     obj_file_face_vec_t *FN
   );
   /* Writes tp {wr} the face corner info from the tables {FV,FT,FN}.
@@ -44,11 +44,11 @@ void obj_file_write_face_tables
     Each index in the tables is zero-based, whereas OBJ indices are 1-based.
     Therefore, each index {ix} from those tables is written as {ix+1}. */ 
 
-void obj_file_write(FILE *wr, obj_file_data_t *D, int prec)
+void obj_file_write(FILE *wr, obj_file_data_t *D, uint32_t prec)
   {
-    int32_t nv = D->V.ne;  /* Number of vertices */
-    int32_t nt = D->T.ne;  /* Number of texpoints */
-    int32_t nn = D->N.ne;  /* Number of normals */
+    uint32_t nv = D->V.ne;  /* Number of vertices */
+    uint32_t nt = D->T.ne;  /* Number of texpoints */
+    uint32_t nn = D->N.ne;  /* Number of normals */
     assert(nv == D->VL.ne);
     
     fprintf(wr, "# written by %s from JSLIBS/libquad\n", __FUNCTION__);
@@ -62,14 +62,14 @@ void obj_file_write(FILE *wr, obj_file_data_t *D, int prec)
     return;
   }
     
-void obj_file_write_coords_table(FILE *wr, char *elname, char *cmd, r3_vec_t *P, string_vec_t *PL, int32_t prc)
-  { int32_t np = P->ne;  /* Number of entries */
+void obj_file_write_coords_table(FILE *wr, char *elname, char *cmd, r3_vec_t *P, string_vec_t *PL, uint32_t prec)
+  { uint32_t np = P->ne;  /* Number of entries */
     fprintf(wr, "# %s coordinates\n", elname);
     for (uint32_t kp = 0;  kp < np; kp++)
       { fprintf(wr, "%s", cmd);
         r3_t *Pk = &(P->e[kp]);
         for (uint32_t j = 0;  j < 3; j++)
-          { fprintf(wr, " %.*f", prc, Pk->c[j]); }
+          { fprintf(wr, " %.*f", prec, Pk->c[j]); }
         if (PL != NULL)
           { char *PLk = PL->e[kp];
             if (PLk != NULL) { fprintf(wr, " # %s\n", PLk); }
@@ -81,14 +81,14 @@ void obj_file_write_coords_table(FILE *wr, char *elname, char *cmd, r3_vec_t *P,
 
 void obj_file_write_face_tables
   ( FILE *wr,
-    int32_t nv,
+    uint32_t nv,
     obj_file_face_vec_t *FV,
-    int32_t nt,
+    uint32_t nt,
     obj_file_face_vec_t *FT,
-    int32_t nn,
+    uint32_t nn,
     obj_file_face_vec_t *FN
   )
-  { int32_t nf = FV->ne; /* Number of faces. */
+  { uint32_t nf = FV->ne; /* Number of faces. */
     demand(FT->ne == nf, "inconsistent face count (FT)");
     demand(FN->ne == nf, "inconsistent face count (FN)");
     fprintf(wr, "# face corners\n");
@@ -98,7 +98,7 @@ void obj_file_write_face_tables
         int32_vec_t *FVk = &(FV->e[kf]);
         int32_vec_t *FTk = &(FT->e[kf]);
         int32_vec_t *FNk = &(FN->e[kf]);
-        int32_t nc = FVk->ne;
+        uint32_t nc = FVk->ne;
         demand(nc == FTk->ne, "inconsistent corner count (FT.e[kf])");
         demand(nc == FNk->ne, "inconsistent corner count (FN.e[kf])");
         for (uint32_t kc = 0;  kc < nc; kc++)

@@ -1,5 +1,5 @@
 /* See vec.h */
-/* Last edited on 2024-11-15 20:31:00 by stolfi */
+/* Last edited on 2024-12-21 04:51:41 by stolfi */
 
 #include <vec.h>
 #include <stdlib.h>
@@ -14,15 +14,16 @@ void *vec_alloc(vec_size_t ne, size_t esz)
     return e;
   }
 
-void vec_expand(vec_size_t *nep, void **ep, vec_size_t index, size_t esz)
+void vec_expand(vec_size_t *nep, void **ep, vec_index_t index, size_t esz)
   { demand(index <= vec_MAX_INDEX, "index too large");
     if (index >= (*nep))
       { vec_size_t ne = (*nep);
+        vec_size_t ne_min = (vec_size_t)index + 1;
         assert(ne <= vec_MAX_SIZE);
-        if (index + 1 > vec_MAX_SIZE - ne) 
+        if (ne_min > vec_MAX_SIZE - ne) 
           { ne = vec_MAX_SIZE; } 
         else
-          { ne = ne + index + 1; }
+          { ne = ne + ne_min; }
         if ((*nep) == 0) { affirm((*ep) == NULL, "bad elem pointer"); } 
         (*ep) = realloc((*ep), ne*esz);
         affirm((*ep) != NULL, "out of mem");

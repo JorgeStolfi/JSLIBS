@@ -1,5 +1,5 @@
 /* See wt_table.h */
-/* Last edited on 2024-11-23 06:11:45 by stolfi */
+/* Last edited on 2024-12-21 04:52:19 by stolfi */
 
 #define wt_table_C_COPYRIGHT \
   "Copyright © 2006  by the State University of Campinas (UNICAMP)"
@@ -191,23 +191,23 @@ char *wt_table_make_descr(uint32_t n, double wt[], char *fmt)
   { char_vec_t d = char_vec_new(n*8); /* Buffer for description. */
     uint32_t nc = 0; /* Number of characters in description. */
     /* Start with open bracket: */
-    char_vec_expand(&d, nc); d.e[nc] = '['; nc++;
+    char_vec_expand(&d, (vec_index_t)nc); d.e[nc] = '['; nc++;
     /* Append the elements: */
     for (uint32_t k = 0;  k < n; k++) 
       { /* Append a space to {d}: */
-        char_vec_expand(&d, nc); d.e[nc] = ' '; nc++;
+        char_vec_expand(&d, (vec_index_t)nc); d.e[nc] = ' '; nc++;
         /* Convert the element {wt[k]} to string: */
         char *wk = jsprintf(fmt, wt[k]);
         /* Append it to {d}: */
         char *p = wk;
-        while ((*p) != 0) { char_vec_expand(&d, nc); d.e[nc] = (*p); p++; nc++; }
+        while ((*p) != 0) { char_vec_expand(&d, (vec_index_t)nc); d.e[nc] = (*p); p++; nc++; }
         /* Cleanup: */
         free(wk);
       }
     /* Append a space, a close-bracket, and zero char: */
-    char_vec_expand(&d, nc); d.e[nc] = ' '; nc++;
-    char_vec_expand(&d, nc); d.e[nc] = ']'; nc++;
-    char_vec_expand(&d, nc); d.e[nc] = 0; nc++;
+    char_vec_expand(&d, (vec_index_t)nc); d.e[nc] = ' '; nc++;
+    char_vec_expand(&d, (vec_index_t)nc); d.e[nc] = ']'; nc++;
+    char_vec_expand(&d, (vec_index_t)nc); d.e[nc] = 0; nc++;
     
     /* Trim and return: */
     char_vec_trim(&d, nc);

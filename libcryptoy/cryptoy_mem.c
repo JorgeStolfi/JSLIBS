@@ -1,10 +1,9 @@
 /* See {cryptoy_mem.h} */
-/* Last edited on 2013-10-31 01:43:25 by stolfilocal */
+/* Last edited on 2024-12-21 11:58:18 by stolfi */
 
 #define cryptoy_C_copyright \
   "Copyright © 2013 Jorge Stolfi, State University of Campinas"
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <errno.h>
 #include <stdint.h>

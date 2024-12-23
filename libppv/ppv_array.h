@@ -1,5 +1,5 @@
 /* Portable multi-dimensional sample arrays. */
-/* Last edited on 2023-03-18 10:58:20 by stolfi */
+/* Last edited on 2024-12-21 11:25:02 by stolfi */
 
 #ifndef ppv_array_H
 #define ppv_array_H
@@ -7,6 +7,8 @@
 #define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
+
+#include <jsrandom.h>
 
 #include <ppv_types.h>
 

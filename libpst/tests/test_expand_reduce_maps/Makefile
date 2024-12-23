@@ -1,4 +1,4 @@
-# Last edited on 2018-06-30 04:40:35 by stolfilocal
+# Last edited on 2024-12-23 07:13:46 by stolfi
 
 PROG = test_expand_reduce_maps
 
@@ -8,6 +8,7 @@ TEST_LIB_DIR := ../..
 JS_LIBS := \
   libimg.a \
   libgeo.a \
+  libgausol.a \
   libjs.a \
   libjsextra.a
 

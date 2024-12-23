@@ -2,18 +2,16 @@
 #define jsrandom_H
 
 /* Alternative random generator functions */
-/* Last edited on 2024-11-26 22:26:10 by stolfi */
+/* Last edited on 2024-12-21 04:47:07 by stolfi */
 
 #include <stdint.h>
 #include <stdlib.h> 
 
-/* 
-  These procedure use {random} from {stdlib.h} that is supposed to
-  return a random {long int} result in {0..RAND_MAX}, where {RAND_MAX}
+/* These procedure use {random} from {stdlib.h} that is supposed to
+  return a random integer result in {0..RAND_MAX}, where {RAND_MAX}
   is hoped to be at least {2^22-1}. To get a repeatable or truly random
   sequence of values, call {srandom} from that library with a suitable
-  {unsigned int} seed value.
-*/
+  {unsigned int} seed value. */
 
 int32_t int32_random(void);
 int64_t int64_random(void);

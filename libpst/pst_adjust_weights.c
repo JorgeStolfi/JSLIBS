@@ -1,9 +1,8 @@
-/* Last edited on 2013-03-26 23:39:05 by stolfilocal */
+/* Last edited on 2024-12-22 12:16:48 by stolfi */
 
 void pst_adjust_weights
-  (
-    int n,
-    int d,
+  ( uint32_t n,
+    uint32_t d,
     double x[],      /* IN: {x[i*d+k]} is coord {k} of observation {i}. */
     double V[],      /* IN/OUT: {V[i*d+k]} is the noise variance in {x[i*d+k]}. */
     double p_bad[],  /* IN/OUT: {p_bad[i]} is the prob of obs {i} being outlier. */

@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of the {quad.h} procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-05 10:39:50 by stolfi */ 
+/* Last edited on 2024-12-22 11:07:01 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2007  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
@@ -26,16 +26,17 @@
 #include <frgb.h>
 #include <argparser.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 
 #include <quad.h>
 
 quad_arc_t make_map_torus(void);
   /* Builds a Torus bottle with two edges. */
 
-quad_arc_t make_map_star(int32_t n);
+quad_arc_t make_map_star(uint32_t n);
   /* Builds a star with {n} edges. */
 
-quad_arc_t make_map_pyramid(int32_t n);
+quad_arc_t make_map_pyramid(uint32_t n);
   /* Builds a pyramid with {n} sides. */
 
 int32_t main(int32_t argc, char **argv);
@@ -61,9 +62,8 @@ void do_tests(char *name, quad_arc_t m)
     fprintf(stderr, "sizeof(quad_edge_t) = %d\n", (int32_t)(sizeof(quad_edge_t)));
     fprintf(stderr, "sizeof(quad_arc_t) = %d\n", (int32_t)(sizeof(quad_arc_t)));
     write_map(name, m);
-    int32_t it;
-    for (it = 0; it < 4; it++)
-      { quad_bits_t tc = it;
+    for (uint32_t it = 0; it < 4; it++)
+      { quad_bits_t tc = (quad_bits_t)it;
         quad_arc_t e = quad_orient(ed, tc);
         assert(tc == quad_tumble_code(e));
         assert(ed == quad_edge(e));
@@ -123,11 +123,10 @@ quad_arc_t make_map_torus(void)
     return a;
   } 
      
-quad_arc_t make_map_star(int32_t n)
+quad_arc_t make_map_star(uint32_t n)
   { quad_arc_t a, b;
     a = quad_make_edge();
-    int32_t k;
-    for(k = 1; k < n; k++)
+    for(uint32_t k = 1; k < n; k++)
       { b = quad_make_edge();
         quad_splice(a, b);
         a = b;
@@ -135,7 +134,7 @@ quad_arc_t make_map_star(int32_t n)
     return a;
   } 
      
-quad_arc_t make_map_pyramid(int32_t n)
+quad_arc_t make_map_pyramid(uint32_t n)
   { /* Build an {n}-armed star: */
     quad_arc_t a = make_map_star(n);
     /* Build an {n}-sided ring: */
@@ -143,8 +142,7 @@ quad_arc_t make_map_pyramid(int32_t n)
     b = quad_rot(b);
     /* Stitch them together: */
     quad_arc_t c = quad_sym(a);
-    int32_t k;
-    for(k = 0; k < n; k++)
+    for(uint32_t k = 0; k < n; k++)
       { quad_splice(b, c);
         c = quad_dnext(c);
         b = quad_lnext(b);
@@ -153,8 +151,7 @@ quad_arc_t make_map_pyramid(int32_t n)
   } 
  
 void write_map(char *name, quad_arc_t a)
-  { char *filename = NULL;
-    char *filename = jsprintf("out/%s.quad", name);
+  { char *filename = jsprintf("out/%s.quad", name);
     FILE *wr = open_write(filename, TRUE);
     quad_arc_vec_t root = quad_arc_vec_new(1); /* Root list. */
     root.e[0] = a;

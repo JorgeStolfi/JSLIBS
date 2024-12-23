@@ -1,4 +1,4 @@
-# Last edited on 2014-05-25 21:20:42 by stolfilocal
+# Last edited on 2024-12-21 05:06:32 by stolfi
 
 PROG = test_lsq
  
@@ -7,6 +7,7 @@ TEST_LIB_DIR := ../..
 
 JS_LIBS := \
   libgeo.a \
+  libgausol.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

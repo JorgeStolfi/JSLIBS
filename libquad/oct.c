@@ -1,5 +1,5 @@
 /* See oct.h. */
-/* Last edited on 2024-12-05 10:39:27 by stolfi */
+/* Last edited on 2024-12-22 10:55:51 by stolfi */
 
 /* This implementation was originally created by J. Stolfi in Apr/1993.
   It was based on the orientable-map version {quad.c} implemented by
@@ -195,7 +195,7 @@ typedef struct oct_edge_rec_t
       
     */
 
-#define NMASK ((((int64_t)1) << 61) - 1)
+#define NMASK ((((uint64_t)1) << 61) - 1)
   /* Mask for valid edge numbers, {0..2^61-1}. */
 
 uint64_t oct_edge_id(oct_edge_t ed)
@@ -382,8 +382,7 @@ void oct_destroy_edge(oct_arc_t e)
     if (EDGE(ed->next[0]) != ed) { oct_splice(e, OPREV(e)); }
     if (EDGE(ed->next[2]) != ed) { oct_splice(f, OPREV(f)); }
     /* Paranoia check -- assumes that the oct-edge is well-formed: */
-    int32_t i;
-    for (i = 0; i < 4; i++) { assert(EDGE(ed->next[i]) == ed); }
+    for (uint32_t i = 0; i < 4; i++) { assert(EDGE(ed->next[i]) == ed); }
     /* OK, reclaim the edge record: */
     free(ed);
   }
@@ -428,7 +427,7 @@ void oct_splice(oct_arc_t a, oct_arc_t b)
 
 /* ARC INPUT/OUTPUT */
 
-void oct_write_arc(FILE *wr, oct_arc_t e, int32_t width)
+void oct_write_arc(FILE *wr, oct_arc_t e, uint32_t width)
   { oct_edge_t ed = EDGE(e);
     oct_bits_t tc = TUMBLECODE(e);
     fprintf
@@ -458,7 +457,7 @@ oct_arc_t oct_read_arc(FILE *rd, oct_arc_vec_t *A)
 void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *A)
   { 
   
-    int32_t ne = 0;  /* Count of reachable octets (edge records). */
+    uint32_t ne = 0;  /* Count of reachable octets (edge records). */
     
     auto bool_t renumber_edge(oct_arc_t p);
       /* Visit-proc that renumbers the base edge of {p} with {ne}
@@ -467,9 +466,9 @@ void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *A)
     /* Write the header line: */
     filefmt_write_header(wr, FILE_TYPE, FILE_VERSION);
     /* Grab the number {nr} of roots and the root index width {wa}: */
-    int32_t nr = root->ne;
+    uint32_t nr = root->ne;
     /* Compute the width in digits {wr} of the root index: */
-    int32_t dr = (nr < 10 ? 1 : digits(nr-1));
+    uint32_t dr = (nr < 10 ? 1 : digits(nr-1));
     /* Make sure that {A} is non-null and points to an empty table: */
     oct_arc_vec_t A_local = oct_arc_vec_new(0); /* A local edge table. */
     if (A == NULL) 
@@ -480,7 +479,7 @@ void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *A)
     oct_enum_octets(*root, &renumber_edge, A);
     assert(A->ne == ne);
     /* Determine the width {eE} in digits of the edge number: */
-    int32_t dE = (ne < 10 ? 1 : digits(ne-1));
+    uint32_t dE = (ne < 10 ? 1 : digits(ne-1));
     /* We should have zero edges if and only if we have zero roots: */
     assert((nr == 0) == (ne == 0)); 
     /* Write the root and edge counts: */
@@ -503,8 +502,7 @@ void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *A)
         assert(ed->eid == eid);
         /* Write the edge's number and its {onext} links: */
         fprintf(wr, ("%*" uint64_u_fmt), dE, eid);
-        int32_t r;
-        for (r = 0; r < 4; r++)
+        for (uint32_t r = 0; r < 4; r++)
           { fputc(' ', wr); oct_write_arc(wr, ed->next[r], dE); }
         fputc('\n', wr);
       }
@@ -528,8 +526,8 @@ void oct_read_map(FILE *rd, oct_arc_vec_t *root, oct_arc_vec_t *A)
   { /* Check and consume the header line: */
     filefmt_read_header(rd, FILE_TYPE, FILE_VERSION);
     /* Parse the root count {nr} and the edge count {ne}: */
-    int32_t nr = nget_int32(rd, "roots"); fget_eol(rd);
-    int32_t ne = nget_int32(rd, "edges"); fget_eol(rd);
+    uint32_t nr = nget_uint32(rd, "roots", 10); fget_eol(rd);
+    uint32_t ne = nget_uint32(rd, "edges", 10); fget_eol(rd);
     /* Make sure that {A} is non-null and points to a table with {ne} slots: */
     oct_arc_vec_t A_local = oct_arc_vec_new(0); /* A local edge table. */
     if (A == NULL) { A = &A_local; }
@@ -560,8 +558,7 @@ void oct_read_map(FILE *rd, oct_arc_vec_t *root, oct_arc_vec_t *A)
         /* Get the edge {ed} from the edge table {A}: */
         oct_edge_t ed = oct_edge(A->e[eid]);
         /* Read its links {ed->next[0..3]}: */
-        int32_t r;
-        for (r = 0; r < 4; r++) { ed->next[r] = oct_read_arc(rd, A); } 
+        for (uint32_t r = 0; r < 4; r++) { ed->next[r] = oct_read_arc(rd, A); } 
         /* Skip to the next line: */
         fget_eol(rd);
       }

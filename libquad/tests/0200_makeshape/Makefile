@@ -1,29 +1,29 @@
-# Last edited on 2009-03-08 00:09:16 by stolfi
+# Last edited on 2024-12-22 11:34:13 by stolfi
 
-PROG := makeshape
+PROG := test_makeshape
  
 TEST_LIB := libquad.a
 
 TEST_LIB_DIR := ../..
 
-# Format: ${REFINE}:${NAME}
+# Format: ${NAME}
 
 TESTS := \
-  01:torus \
-  01:bitorus \
-  01:tritorus \
-  01:klein \
-  01:klein2 \
-  01:klein3 \
-  01:projective \
-  01:tetra \
-  01:stick \
-  01:ring \
-  01:cube \
-  01:sausage \
-  01:orange \
-  01:fork \
-  01:star \
+  torus \
+  bitorus \
+  tritorus \
+  klein \
+  klein2 \
+  klein3 \
+  projective \
+  tetra \
+  stick \
+  ring \
+  cube \
+  sausage \
+  orange \
+  fork \
+  star \
 
 JS_LIBS := \
   libjs.a
@@ -44,11 +44,10 @@ check:
 ifneq "/${TEST}" "/"
 
 TEST_ARGS := ${subst :, ,${TEST}}
-REFINE :=  ${word 1, ${TEST_ARGS}}
-NAME :=    ${word 2, ${TEST_ARGS}}
+NAME :=    ${word 1, ${TEST_ARGS}}
 
 do-test: ${PROG} out
-	${PROG} -shape ${NAME} -refine ${REFINE} > out/${NAME}.oct
+	${PROG} -shape ${NAME} > out/${NAME}.oct
 
 endif
 # End of ${TEST} section

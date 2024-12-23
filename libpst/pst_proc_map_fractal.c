@@ -1,7 +1,6 @@
 /* See pst_proc_map_fractal.h */
-/* Last edited on 2018-06-30 22:22:51 by stolfilocal */
+/* Last edited on 2024-12-22 12:38:49 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -51,7 +50,7 @@ void pst_proc_map_fractal_cone(r2_t *p, double eps, double seed, double *z, r2_t
       ( r2_t *a, double fa, double rbc,
         r2_t *b, double fb, double rca,
         r2_t *c, double fc, double rab,
-        int ind
+        int32_t ind
       );
       /* Given a triangle {a,b,c} that contains {p} (possibly at its border),
         computes the height and derivatives at {p}. Stores the result 
@@ -84,7 +83,7 @@ void pst_proc_map_fractal_cone(r2_t *p, double eps, double seed, double *z, r2_t
       ( r2_t *a, double fa, double rbc,
         r2_t *b, double fb, double rca,
         r2_t *c, double fc, double rab,
-        int ind
+        int32_t ind
       );
       /* Same as {fract}, but assumes that the triangle {a,b,c} is not
         small enough to use affine interpolation. */
@@ -123,7 +122,7 @@ void pst_proc_map_fractal_cone(r2_t *p, double eps, double seed, double *z, r2_t
       ( r2_t *a, double fa, double rbc,
         r2_t *b, double fb, double rca,
         r2_t *c, double fc, double rab,
-        int ind
+        int32_t ind
       )
       { 
         if (debug) { fprintf(stderr, "%*s fa = %8.5f  fb = %8.5f  fc = %8.5f\n", ind, "", fa, fb, fc); }
@@ -143,7 +142,7 @@ void pst_proc_map_fractal_cone(r2_t *p, double eps, double seed, double *z, r2_t
       ( r2_t *a, double fa, double rbc,
         r2_t *b, double fb, double rca,
         r2_t *c, double fc, double rab,
-        int ind
+        int32_t ind
       )    
       {
         assert((fa > 0) || (fb > 0) || (fc > 0));

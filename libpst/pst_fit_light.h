@@ -2,7 +2,7 @@
 #define pst_fit_light_H
 
 /* pst_fit_light.h -- general fitting of light fields to images. */
-/* Last edited on 2007-01-06 15:53:16 by stolfi */
+/* Last edited on 2024-12-22 11:54:46 by stolfi */
 
 #include <bool.h>
 #include <r3.h>
@@ -92,7 +92,7 @@ void pst_fit_light_single_iterative
     double weightBias,  /* Bias for dark-weighted fitting, or {+INF} for normal fitting. */
     bool_t nonNegative, /* TRUE restricts lamp power and ambient dimming to be non-negative. */
     double minNormalZ,  /* Ignore pixels {p} where {NRM[p].z < minNormalZ}. */
-    int iterations,     /* Max iterations to use in fitting. */
+    uint32_t iterations,     /* Max iterations to use in fitting. */
     double tolerance    /* Iteration stopping criterion. */
   );
   /* Adjusts the direction and power of source {src}, as well as the
@@ -378,7 +378,7 @@ void pst_fit_light_parse_minNormalZ(argparser_t *pp, double *minNormalZ);
   "  " pst_fit_light_parse_minNormalZ_HELP " \n" \
   "    " pst_fit_light_parse_minNormalZ_INFO
 
-void pst_fit_light_parse_iterations(argparser_t *pp, int *iterations);
+void pst_fit_light_parse_iterations(argparser_t *pp, uint32_t *iterations);
   /* Parses from the command line the {iterations} parameter.
     The syntax is described in {pst_fit_light_parse_iterations_HELP_INFO}.
     

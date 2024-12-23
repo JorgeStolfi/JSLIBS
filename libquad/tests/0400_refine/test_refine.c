@@ -2,7 +2,7 @@
 #define PROG_DESC "Refinement of quad-edge maps by quad triangulation."
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-05 10:39:57 by stolfi */ 
+/* Last edited on 2024-12-22 11:21:05 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2007  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
@@ -20,6 +20,49 @@
   "    -order {ORDER} \\\n" \
   "    -output {NAME_OUT}"
 
+#define PROG_INFO \
+  "NAME\n" \
+  "  " PROG_NAME " - " PROG_DESC "\n" \
+  "\n" \
+  "SYNOPSIS\n" \
+  PROG_HELP "\n" \
+  "\n" \
+  "DESCRIPTION\n" \
+  "  The program reads an oct-edge map and outputs a refined version of it.\n" \
+  "\n" \
+  "OPTIONS\n" \
+  "  -input {IN_FILE}\n" \
+  "    Specifies the name of the input file.\n" \
+  "\n" \
+  "  -order {ORDER}\n" \
+  "    Specifies the linear refinement factor to" \
+  " apply to the basic map.  Each edge tile is" \
+  " subdivided into a mesh of {ORDER × ORDER} edge" \
+  " tiles.  The default is \"-order 1\" (no refinement).\n" \
+  "\n" \
+  "  -output {OUT_FILE}\n" \
+  "    Specifies the name of the output file.\n" \
+  "\n" \
+  "DOCUMENTATION OPTIONS\n" \
+  argparser_help_info_HELP_INFO "\n" \
+  "\n" \
+  "SEE ALSO\n" \
+  "  ls(1).\n" \
+  "\n" \
+  "AUTHOR\n" \
+  "  Jorge Stolfi, UNICAMP.\n" \
+  "\n" \
+  "MODIFICATION HISTORY\n" \
+  "  2024-12-22 Created from an old skeleton..\n" \
+  "\n" \
+  "WARRANTY\n" \
+  argparser_help_info_NO_WARRANTY "\n" \
+  "\n" \
+  "RIGHTS\n" \
+  "  " PROG_COPYRIGHT ".\n" \
+  "\n" \
+  argparser_help_info_STANDARD_RIGHTS
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -34,6 +77,8 @@ typedef struct options_t
     uint order;
     char *output;
   } options_t;
+
+oct_arc_t refine_map(oct_arc_t m, uint32_t refine);
 
 oct_arc_t calc_triang(oct_arc_t a)
   { Enum(a, glue_patch);
@@ -79,10 +124,17 @@ oct_arc_t mk_edge(uint grid_order)
  int32_t main(int32_t argc, char **argv)
   { options_t *o = get_options(argc, argv);
     oct_arc_t m = read_map(o->input);
+    /* Refine the map as requested: */
+    if (o->order > 1) { m = refine_map(m, o->order); }
     write_map(o->output, m);
     return 0;
   }
-    
+      
+oct_arc_t refine_map(oct_arc_t m, uint32_t refine)
+  {
+    demand(FALSE, "!!! not implemented yet !!!");
+  }
+
 oct_arc_t read_map(char *prefix)
   { char *filename = NULL;
     char *filename = jsprintf("%s.qe", prefix);

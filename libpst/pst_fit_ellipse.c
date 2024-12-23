@@ -1,7 +1,6 @@
 /* See pst_fit_ellipse.h */
-/* Last edited on 2024-11-08 19:52:50 by stolfi */ 
+/* Last edited on 2024-12-22 12:03:35 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <values.h>
 #include <stdlib.h>
@@ -32,7 +31,7 @@
 
 /* INTERNAL PROTOTYPES */
 
-int32_t pst_fit_ellipse_num_params(double ctrAdj, double radAdj, double strAdj);
+uint32_t pst_fit_ellipse_num_params(double ctrAdj, double radAdj, double strAdj);
   /* Number of adjustable parameters, depending on which adjustment ranges
     are nonzero: {ctrAdj} (2 params), {radAdj} (1 param), {strAdj}
     (2 params). */
@@ -48,7 +47,7 @@ double pst_fit_ellipse
     double ctrAdj,      /* Maximum adjustment allowed in {EP.ctr} coordinates. */
     double radAdj,      /* Maximum adjustment allowed in {EP.rad}. */
     double strAdj,      /* Maximum adjustment allowed in {EP.str} coordinates. */
-    int32_t maxIts          /* Max iterations of the optimizer. */
+    uint32_t maxIts          /* Max iterations of the optimizer. */
   )
   { bool_t pst_debug = TRUE;
     bool_t sve_debug = FALSE;
@@ -69,7 +68,7 @@ double pst_fit_ellipse
     demand(strAdj >= 0, "invalid stretch adjustment");
     
     /* Compute the number of parameters {NP} in optimization: */
-    int32_t NP = pst_fit_ellipse_num_params(ctrAdj, radAdj, strAdj);
+    uint32_t NP = pst_fit_ellipse_num_params(ctrAdj, radAdj, strAdj);
     
     auto void gather_params(ellipse_crs_t *ET, double x[]);
       /* Packs the adjustable parameters of the ellipse into
@@ -100,9 +99,9 @@ double pst_fit_ellipse
     double radNrm = log((E_ini.rad + radAdj)/E_ini.rad);
     
     /* Count iterations for debugging and budget control: */
-    int32_t nIts = 0;
+    uint32_t nIts = 0;
     
-    auto double sve_goal(int32_t n, double x[]);
+    auto double sve_goal(uint32_t n, double x[]);
       /* Evaluates the goal function for {sve_minn_iterate} for the 
         parameters {x[0..n-1]}.   Increments {nEvals}. 
         
@@ -111,7 +110,7 @@ double pst_fit_ellipse
         {E_ini} with the variable parameters taken from
         {x[0..NP-1]} as per {scatter_params}. */
     
-    auto bool_t sve_check(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius);
+    auto bool_t sve_check(uint32_t iter, uint32_t n, double x[], double Fx, double dist, double step, double radius);
       /* To be called by the minimizer before each major optimization.
         Currently stops when the number of iterations is exceeded. */
     
@@ -169,7 +168,7 @@ double pst_fit_ellipse
 
     void gather_params(ellipse_crs_t *ET, double x[])
       { /* Store the variable fields of {ET} into {x[0..NP-1]}: */
-        int32_t k = 0;
+        uint32_t k = 0;
         if (ctrAdj > 0) 
           { /* Store the center coords: */
             x[k] = (ET->ctr.c[0] - E_ini.ctr.c[0])/ctrAdj; k++;
@@ -189,7 +188,7 @@ double pst_fit_ellipse
     
     void scatter_params(double x[], ellipse_crs_t *ET)
       { /* Get the variable fields of {ET} from {x[0..NP-1]}: */
-        int32_t k = 0;
+        uint32_t k = 0;
         /* Get the center coords from {x} or the saved guess: */
         if (ctrAdj > 0) 
           { ET->ctr.c[0] = E_ini.ctr.c[0] + x[k] * ctrAdj; k++;
@@ -215,7 +214,7 @@ double pst_fit_ellipse
         assert(k == NP);     
       }
         
-    double sve_goal(int32_t n, double x[])
+    double sve_goal(uint32_t n, double x[])
       { ellipse_crs_t ET;
         scatter_params(x, &ET);
         double Fx = pst_fit_ellipse_eval(IGR, &ET);
@@ -228,7 +227,7 @@ double pst_fit_ellipse
         return Fx;
       }
 
-    bool_t sve_check(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius)
+    bool_t sve_check(uint32_t iter, uint32_t n, double x[], double Fx, double dist, double step, double radius)
       { 
         nIts++;
         if (sve_debug) 
@@ -243,9 +242,9 @@ double pst_fit_ellipse
       }
   }
   
-int32_t pst_fit_ellipse_num_params(double ctrAdj, double radAdj, double strAdj)
+uint32_t pst_fit_ellipse_num_params(double ctrAdj, double radAdj, double strAdj)
   {
-    int32_t NP = (ctrAdj > 0 ? 2 : 0) + (radAdj > 0 ? 1 : 0) + (strAdj > 0 ? 2 : 0);
+    uint32_t NP = (uint32_t)(ctrAdj > 0 ? 2 : 0) + (radAdj > 0 ? 1 : 0) + (strAdj > 0 ? 2 : 0);
     return NP;
   }
 
@@ -257,7 +256,7 @@ double pst_fit_ellipse_multiscale
     double radAdj,      /* Maximum adjustment allowed in {EP.rad}. */
     double strAdj,      /* Maximum adjustment allowed in {EP.str} coordinates. */
     double minRadius,   /* Min acceptable radius for multiscale. */
-    int32_t maxIts          /* Max iterations of optimizer at initial scale. */
+    uint32_t maxIts          /* Max iterations of optimizer at initial scale. */
   )
   {
     bool_t debug = TRUE;
@@ -273,7 +272,7 @@ double pst_fit_ellipse_multiscale
     ellipse_crs_t E = (*EP);
     
     /* Decide whether to recurse: */
-    int32_t NP = pst_fit_ellipse_num_params(ctrAdj, radAdj, strAdj);
+    uint32_t NP = pst_fit_ellipse_num_params(ctrAdj, radAdj, strAdj);
     if ((NP > 0) && (E.rad + radAdj > 2*minRadius))
       { /* Reduce problem to half-scale: */
         float_image_t *IMG_r = pst_fit_ellipse_image_shrink(IMG);
@@ -290,7 +289,7 @@ double pst_fit_ellipse_multiscale
         radAdj = (radAdj == 0 ? 0 : 0.75);
         strAdj = (strAdj == 0 ? 0 : 0.75);
         /* We don't need many iterations to finish off: */
-        maxIts = (int32_t)imin(maxIts, 5); 
+        maxIts = (uint32_t)imin(maxIts, 5); 
       }
 
     /* Compute the relative gradient image {IGR} of original image {IMG}: */
@@ -346,8 +345,8 @@ double pst_fit_ellipse_eval(float_image_t *IGR, ellipse_crs_t *EP)
     
     /* Get the dimensions of the gradient image: */
     demand(IGR->sz[0] == 1, "image must be monochromatic");
-    int32_t NX = (int32_t)IGR->sz[1];
-    int32_t NY = (int32_t)IGR->sz[2];
+    uint32_t NX = (uint32_t)IGR->sz[1];
+    uint32_t NY = (uint32_t)IGR->sz[2];
     
     /* Choose the half-thickness {he} of the ideal ellipse outline: */
     double he = 1.5;
@@ -375,9 +374,8 @@ double pst_fit_ellipse_eval(float_image_t *IGR, ellipse_crs_t *EP)
     double sum_W_I2 = 0;
     double sum_W_E2 = 0;
     double sum_W_I_E = 0;
-    int32_t x, y;
-    for (x = xLo; x < xHi; x++)
-      { for (y = yLo; y < yHi; y++)
+    for (int32_t x = xLo; x < xHi; x++)
+      { for (int32_t y = yLo; y < yHi; y++)
           { /* Compute the coords of the pixel center {p}: */
             double xp = x + 0.5;
             double yp = y + 0.5;

@@ -1,5 +1,5 @@
 /* See haf_shapes.h. */
-/* Last edited on 2024-12-05 10:39:04 by stolfi */
+/* Last edited on 2024-12-22 10:31:04 by stolfi */
 
 #define haf_shapes_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -23,11 +23,10 @@ haf_arc_t haf_shapes_torus(void)
     return a;
   } 
      
-haf_arc_t haf_shapes_star(int32_t n)
+haf_arc_t haf_shapes_star(uint32_t n)
   { haf_arc_t a, b;
     a = haf_make_stick(0);
-    int32_t k;
-    for(k = 1; k < n; k++)
+    for(uint32_t k = 1; k < n; k++)
       { b = haf_make_stick(k);
         haf_splice(a, b);
         a = b;
@@ -35,7 +34,7 @@ haf_arc_t haf_shapes_star(int32_t n)
     return a;
   } 
      
-haf_arc_t haf_shapes_ring(int32_t n)
+haf_arc_t haf_shapes_ring(uint32_t n)
   { haf_arc_t fst, a, b;
     a = haf_make_stick(0); 
     fst = a;
@@ -48,7 +47,7 @@ haf_arc_t haf_shapes_ring(int32_t n)
     return fst;
   } 
      
-haf_arc_t haf_shapes_orange(int32_t n)
+haf_arc_t haf_shapes_orange(uint32_t n)
   { haf_arc_t a, b;
     a = haf_make_stick(0); 
     for (uint32_t k = 1;  k < n; k++)
@@ -60,15 +59,14 @@ haf_arc_t haf_shapes_orange(int32_t n)
     return a;
   }
 
-haf_arc_t haf_shapes_pyramid(int32_t n)
+haf_arc_t haf_shapes_pyramid(uint32_t n)
   { /* Build an {n}-armed star: */
     haf_arc_t a = haf_shapes_star(n);
     /* Build an {n}-sided ring: */
     haf_arc_t b = haf_shapes_ring(n);
     /* Stitch them together: */
     haf_arc_t c = haf_sym(a);
-    int32_t k;
-    for(k = 0; k < n; k++)
+    for(uint32_t k = 0; k < n; k++)
       { haf_splice(b, c);
         c = haf_dnext(c);
         b = haf_lnext(b);

@@ -1,5 +1,5 @@
 /* Tools for testing univariate minimizers */
-/* Last edited on 2024-12-05 10:35:34 by stolfi */
+/* Last edited on 2024-12-21 10:34:28 by stolfi */
 
 #ifndef test_minu_tools_H
 #define test_minu_tools_H
@@ -52,9 +52,9 @@ typedef struct Performance
 // PROCEDURES 
 
 Performance test_minu_tools_single
-  ( int32_t i_opt,   /* Index of minimizer, for file name. */
+  ( uint32_t i_opt,   /* Index of minimizer, for file name. */
     Minimizer *opt,  /* The minimization tool */
-    int32_t i_prb,   /* Index of problem, for file name. */
+    uint32_t i_prb,   /* Index of problem, for file name. */
     Problem *prb,    /* Function and parameters */
     bool_t debug     /* Passed to the minimizer */
   );
@@ -63,9 +63,9 @@ Performance test_minu_tools_single
     showing the {minimizer}'s probes. */
   
 Performance test_minu_tools_multiple
-  ( int32_t i_opt,     /* Index of minimizer, for file names. */
+  ( uint32_t i_opt,     /* Index of minimizer, for file names. */
     Minimizer *opt,    /* The minimization tool */
-    int32_t i_prb,     /* Index of problem, for file names. */
+    uint32_t i_prb,     /* Index of problem, for file names. */
     Problem *prb,      /* Function and parameters */
     unsigned nTests    /* Number of tests to perform. */
   );

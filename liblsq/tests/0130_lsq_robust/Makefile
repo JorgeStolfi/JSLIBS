@@ -1,4 +1,4 @@
-# Last edited on 2024-11-06 11:16:13 by stolfi
+# Last edited on 2024-12-21 09:39:19 by stolfi
 
 PROG = test_lsq_robust
  
@@ -7,6 +7,7 @@ TEST_LIB_DIR := ../..
 
 JS_LIBS := \
   libgeo.a \
+  libgausol.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

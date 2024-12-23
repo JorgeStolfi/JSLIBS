@@ -1,5 +1,5 @@
 /* See float_array_au.h */
-/* Last edited on 2024-12-05 10:32:00 by stolfi */
+/* Last edited on 2024-12-21 03:21:53 by stolfi */
 
 #include <limits.h>
 #include <stdio.h>
@@ -23,16 +23,15 @@
 
 /* IMPLEMENTATIONS */
  
-float_array_t *float_array_from_sound(sound_t *snd, bool_t verbose)
+float_array_t *float_array_from_sound(jsaudio_t *snd, bool_t verbose)
   { 
     /* Get sound channel and sample counts: */
-    int32_t NC = snd->nc; /* Num of channels. */
-    int32_t NS = snd->ns; /* Num of samples per channel. */
+    uint32_t NC = snd->nc; /* Num of channels. */
+    uint32_t NS = snd->ns; /* Num of samples per channel. */
     
     /* Allocate float image: */
     ix_dim_t na = 2;
-    ix_size_t sz[2];
-    sz[0] = NC; sz[1] = NS;
+    ix_size_t sz[2] = { (ix_size_t)NC, (ix_size_t)NS };
     float_array_t AN = float_array_new(na, sz);
     float_array_t *A = &AN;
     
@@ -74,7 +73,7 @@ float_array_t *float_array_from_sound(sound_t *snd, bool_t verbose)
     return A;
   }
 
-sound_t *float_array_to_sound(float_array_t *A, int32_t chns, int32_t ch[], double freq, bool_t verbose)
+jsaudio_t *float_array_to_sound(float_array_t *A, uint32_t chns, int32_t ch[], double freq, bool_t verbose)
   { 
     /* Get indexing descriptor {DA}: */
     ix_descr_t *DA = &(A->ds);
@@ -82,33 +81,28 @@ sound_t *float_array_to_sound(float_array_t *A, int32_t chns, int32_t ch[], doub
     /* Get integer image dimensions: */
     int32_t na = DA->na;
     assert(na == 2);
-    int32_t NS = (int32_t)DA->sz[1];  /* Num of samples per channel. */
-    int32_t sNC = chns;           /* Num channels in sound array. */
-    int32_t fNC = (int32_t)DA->sz[0]; /* Num channels in float image. */
+    uint32_t NS = (uint32_t)DA->sz[1];  /* Num of samples per channel. */
+    uint32_t sNC = chns;                /* Num channels in sound array. */
+    uint32_t fNC = (uint32_t)DA->sz[0]; /* Num channels in float image. */
     
     /* Allocate sound array: */
-    sound_t *snd = (sound_t *)notnull(malloc(sizeof(sound_t)), "no mem");
-    (*snd) = jsa_allocate_sound(sNC, NS);
+    jsaudio_t *snd = talloc(1, jsaudio_t);
+    (*snd) = jsaudio_allocate_sound(sNC, NS);
     
     /* Set max sample value in integer image: */
     snd->fsmp = freq;
     
-    /* Channel indexing variables: */
-    int32_t k; /* Channel of sound array. */
-    int32_t c; /* Channel of float array. */
-    
     /* Input and output range registers: */
     double vmin[sNC], vmax[sNC];   /* Sound pixel range. */
-    for (k = 0; k < sNC; k++) { vmin[k] = +INFINITY; vmax[k] = -INFINITY; }
+    for (int32_t k = 0; k < sNC; k++) { vmin[k] = +INFINITY; vmax[k] = -INFINITY; }
     
     /* Convert pixels, store in {snd}, keep statistics: */
     ix_index_t ix[na];
-    int32_t s;
-    for(s = 0; s < NS; s++)
+    for(int32_t s = 0; s < NS; s++)
       { double *srow = snd->sv[s];
         /* Convert float pixel {fpxy[c..c+2]} to integer pixel {ipxy[0..2]}, keep stats: */
-        for (k = 0; k < sNC; k++)
-          { c = (ch == NULL ? k : ch[k]);
+        for (int32_t k = 0; k < sNC; k++)
+          { int32_t c = (ch == NULL ? k : ch[k]);
             ix[0] = c; ix[1] = s; ix[2] = ix[3] = ix[4] = ix[5] = 0;
             float ismp = ((c < 0) || (c >= fNC) ? 0.0f : float_array_get_elem(A, ix));
             double osmp = (double)ismp;
@@ -124,8 +118,8 @@ sound_t *float_array_to_sound(float_array_t *A, int32_t chns, int32_t ch[], doub
         int64_t NCS = ((int64_t)sNC)*((int64_t)NS);
         fprintf(stderr, "  %d channels, %d samples per channel, %ld tot samples\n", sNC, NS, NCS);
         if (NCS > 0)
-          { for (k = 0; k < chns; k++)
-              { c = (ch == NULL ? k : ch[k]);
+          { for (int32_t k = 0; k < chns; k++)
+              { int32_t c = (ch == NULL ? k : ch[k]);
                 int32_t iChan = c;  /* Channel index in input float array. */
                 int32_t oChan = k;  /* Channel index in output sound array. */
                 fprintf(stderr, "  converted array channel %d to sound channel %d:\n", iChan, oChan);

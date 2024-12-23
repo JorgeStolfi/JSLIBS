@@ -1,5 +1,5 @@
 /* test program for {lsq_robust} */
-/* Last edited on 2024-12-05 10:33:46 by stolfi */
+/* Last edited on 2024-12-21 09:00:24 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -12,6 +12,7 @@
 #include <bool.h>
 #include <jsrandom.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <jsmath.h>
 #include <rn.h>
 #include <rmxn.h>
@@ -34,37 +35,37 @@
 
 int32_t main (int32_t argc, char **argv);
 
-void test_lsq_robust_fit(int32_t g, int32_t ixpoly, double dev_gud, double pri_bad, double dev_bad, bool_t verbose);
+void test_lsq_robust_fit(uint32_t g, uint32_t ixpoly, double dev_gud, double pri_bad, double dev_bad, bool_t verbose);
   /* Tests the least squares fit. Chooses a random polynomial {R} of
     degree {g} with {test_lsq_robust_throw_poly} with arguments
     {g,ixpoly} and generates data values using {test_lsq_robust_throw_data}
     with arguments {dev_gud,pri_bad,dev_bad}. */
 
-void test_lsq_robust_throw_poly(int32_t g, int32_t ixpoly, double R[]);
+void test_lsq_robust_throw_poly(uint32_t g, uint32_t ixpoly, double R[]);
   /* If {ixpoly} is negative of greater than {g}, generates a random polynomial coeff vector {R[0..g]}.
     If {ixpoly} is in {0..g}, returns in {R[0..g]} the coeffs of the Bernstein
     polynomial of degree {g} and index {i} for the argument range {[-1 _ +1]}. */
 
-void test_lsq_robust_gen_poly_bezier(int32_t g, int32_t ix, double a, double b, double R[]);
+void test_lsq_robust_gen_poly_bezier(uint32_t g, uint32_t ix, double a, double b, double R[]);
   /* Sets {R[0..g]} to the coefficients of the Bernstein-Bezier polynomial
     of degree {g} and index {ix} for the domain interval {[a_b]}. */
 
-void test_lsq_robust_gen_args(int32_t nt, double x[]);
+void test_lsq_robust_gen_args(uint32_t nt, double x[]);
   /* Fills {x[0..nt-1]} with equally spaced values in {[-1 _ +1]}. */ 
 
-double test_lsq_robust_poly_eval(int32_t g, double R[], double x);
+double test_lsq_robust_poly_eval(uint32_t g, double R[], double x);
   /* Evaluates the polynomial with coeffs {R[0..g]} at the given {x} value. */
   
-void test_lsq_robust_poly_eval_multi(int32_t g, double R[], int32_t nt, double x[], double yt[]);
+void test_lsq_robust_poly_eval_multi(uint32_t g, double R[], uint32_t nt, double x[], double yt[]);
   /* Assumes that {x} and {yt} have {nt} elements. Sets {yt[k]} to the
     value of the polynomial with coeffs {R[0..g]} at the argument
     {x[k]}, for {k} in {0..nt-1]}. */
 
-void test_lsq_robust_gen_weights(int32_t nt, double x[], double w[]);
+void test_lsq_robust_gen_weights(uint32_t nt, double x[], double w[]);
   /* Fills {w[0..nt-1]} with importance weight suitable for arguments {x[0..nt-1]}. */ 
 
 void test_lsq_robust_throw_data
-  ( int32_t nt, 
+  ( uint32_t nt, 
     double yt[],
     double dev_gud,
     double pri_bad,
@@ -80,10 +81,10 @@ void test_lsq_robust_throw_data
 
 void test_lsq_robust_print_data
   ( char *name,
-    int32_t g,       /* Degree of target polynomial. */
-    int32_t ixpoly,  /* Index of target polynomial. */
-    int32_t iter,    /* Iteration count, or {-1} for the target and final states. */
-    int32_t nt,      /* Number of sampling points. */
+    uint32_t g,       /* Degree of target polynomial. */
+    uint32_t ixpoly,  /* Index of target polynomial. */
+    int32_t iter,     /* Iteration count, or {-1} for the target and final states. */
+    uint32_t nt,      /* Number of sampling points. */
     double x[],      /* Argument values ({nt} elements). */
     double Pc[],     /* Assumed inlier probs for current iteration ({nt} elements). */ 
     double yc[],     /* Data values adjusted for current iteration ({nt} elements). */
@@ -113,12 +114,12 @@ void test_lsq_robust_print_data
     {yf[k]}, and {yc[k]} are printed with the format {fmt}. If {yc} is
     null, prints "nan" on the corresponding column of every row; ditto for {Pc}. */
 
-void test_lsq_robust_fill_basis_matrix(int32_t nt, double x[], int32_t g, double X[]);
+void test_lsq_robust_fill_basis_matrix(uint32_t nt, double x[], uint32_t g, double X[]);
   /* Assumes that {X} is an array with {nt} rows and {nv=g+1} columns, stored by rows.
     Fills row {k} of {X} with the powers of {x[k]}, namely 
     {X[k*nv+i] = x[k]^i}, for {i} in {0..g}. */
 
-void test_lsq_robust_check_fit(int32_t nt, double yt[], double yf[], double dev_gud, double pri_bad);
+void test_lsq_robust_check_fit(uint32_t nt, double yt[], double yf[], double dev_gud, double pri_bad);
   /* Checks whether the fitted polynomial values {yf[0..nt-1]} match the true 
     values {yt[0..nt-1]}, assuming that the inliers had noise with
     deviation {dev_gud} and the outlier probability was {pri_bad}. */
@@ -127,9 +128,9 @@ void test_lsq_robust_check_fit(int32_t nt, double yt[], double yf[], double dev_
 
 int32_t main (int32_t argc, char **argv)
   { 
-    int32_t iarg = 1;
-    int32_t g = atoi(argv[iarg]); iarg++; /* Degree of polynomial. */
-    int32_t ixpoly = atoi(argv[iarg]); iarg++; /* Polynomial index within degree {g}, from 0. */
+    uint32_t iarg = 1;
+    uint32_t g = (uint32_t)atoi(argv[iarg]); iarg++; /* Degree of polynomial. */
+    uint32_t ixpoly = (uint32_t)atoi(argv[iarg]); iarg++; /* Polynomial index within degree {g}, from 0. */
     
     srand(1665 + 2*ixpoly);
     srandom(1665 + 2*ixpoly);
@@ -147,10 +148,10 @@ int32_t main (int32_t argc, char **argv)
     return (0);
   }
 
-void test_lsq_robust_fit(int32_t g, int32_t ixpoly, double dev_gud, double pri_bad, double dev_bad, bool_t verbose)
+void test_lsq_robust_fit(uint32_t g, uint32_t ixpoly, double dev_gud, double pri_bad, double dev_bad, bool_t verbose)
   { 
-    int32_t nt = N_POINTS;  /* Num of data points. */
-    int32_t nv = g+1;       /* Num of coefficients to fit. */
+    uint32_t nt = N_POINTS;  /* Num of data points. */
+    uint32_t nv = g+1;       /* Num of coefficients to fit. */
 
     fprintf(stderr, "\n");
     fprintf(stderr, "======================================================================\n");
@@ -194,20 +195,20 @@ void test_lsq_robust_fit(int32_t g, int32_t ixpoly, double dev_gud, double pri_b
     if (verbose) { fprintf(stderr, "  computing the best polynomial fit...\n"); }
     double Q[nv];  /* Fitted polynomial. */
     double P[nt];  /* Inlier probabilities. */
-    { auto void report(int32_t iter, int32_t ntc, int32_t nvc, double Pc[], double yc[], double Qc[]);
+    { auto void report(uint32_t iter, uint32_t ntc, uint32_t nvc, double Pc[], double yc[], double Qc[]);
         /* Called by {lsq_robust_fit} at each iteration.  Assumes that {Pc[0..nt-1]} are 
           the assumed inlier probs, {yc[0..nt-1]} are the adjusted function values,
           and {Qc[0..nv-1]} are the coefficients of the approximation fitted to {Pc,yc}. */
 
-      int32_t maxiter = 12;
+      uint32_t maxiter = 12;
       lsq_robust_fit(nt, nv, X, yn, w, maxiter, Q, P, &report, verbose);
 
-      void report(int32_t iter, int32_t ntc, int32_t nvc, double Pc[], double yc[], double Qc[])
+      void report(uint32_t iter, uint32_t ntc, uint32_t nvc, double Pc[], double yc[], double Qc[])
         { assert(ntc == nt);
           assert(nvc == nv);
           double yf[nt];  /* Current approximation evaluated at sampling arguments. */
           test_lsq_robust_poly_eval_multi(g, Qc, nt, x, yf);
-          test_lsq_robust_print_data("iter", g, ixpoly, iter, nt, x, Pc, yc, yf, "%+12.6f", verbose);
+          test_lsq_robust_print_data("iter", g, ixpoly, (int32_t)iter, nt, x, Pc, yc, yf, "%+12.6f", verbose);
         }
     }
     if (verbose) { rn_gen_print(stderr, nv, Q, "%+12.6f", "  Q = ", " ", "\n"); }
@@ -224,7 +225,7 @@ void test_lsq_robust_fit(int32_t g, int32_t ixpoly, double dev_gud, double pri_b
     fprintf(stderr, "======================================================================\n");
   }
 
-void test_lsq_robust_throw_poly(int32_t g, int32_t ixpoly, double R[])
+void test_lsq_robust_throw_poly(uint32_t g, uint32_t ixpoly, double R[])
   { 
     double a = -1.0;
     double b = +1.0;
@@ -243,21 +244,21 @@ void test_lsq_robust_throw_poly(int32_t g, int32_t ixpoly, double R[])
       }
   }
 
-void test_lsq_robust_gen_poly_bezier(int32_t g, int32_t ix, double a, double b, double R[])
+void test_lsq_robust_gen_poly_bezier(uint32_t g, uint32_t ix, double a, double b, double R[])
   {
     demand((0 <= ix) && (ix <= g), "invalid Bezier exponent or index");
     double h = b - a;
     double ah = a/h, bh = b/h;
     R[0] = (double)comb(g,ix); /* Hopefully there is no overflow or rounding. */
     /* Multiply {R[0..0]} by {((x-a)/h)^ix} yielding {R[0..ix]}: */
-    for (uint32_t k = 0;  k < ix; k++)
+    for (int32_t k = 0;  k < ix; k++)
       { /* Multiply {R[0..k]} by {(x-a)/h} yielding {R[0..k+1]}: */
         R[k+1] = R[k]/h;
         for (int32_t r = k; r > 0; r--) { R[r] = R[r-1]/h - R[r]*ah; }
         R[0] = -R[0]*ah;
       }
     /* Multiply {R[0..ix]} by {((b-x)/h)^(g-ix)} yielding {R[0..g]}: */
-    for (int32_t k = ix; k < g; k++)
+    for (int32_t k = (int32_t)ix; k < g; k++)
       { /* Multiply {R[0..k]} by {(b-x)/h} yielding {R[0..k+1]}: */
         R[k+1] = -R[k]/h;
         for (int32_t r = k; r > 0; r--) { R[r] = -R[r-1]/h + R[r]*bh; }
@@ -265,15 +266,15 @@ void test_lsq_robust_gen_poly_bezier(int32_t g, int32_t ix, double a, double b, 
       }
   }
 
-double test_lsq_robust_poly_eval(int32_t g, double R[], double x)
+double test_lsq_robust_poly_eval(uint32_t g, double R[], double x)
   {
     demand(g >= 0, "invalid power");
     double y = R[g];
-    for (int32_t i = g-1; i >= 0; i--) { y = R[i] + x*y; }
+    for (int32_t i = (int32_t)g-1; i >= 0; i--) { y = R[i] + x*y; }
     return y;
   }
 
-void test_lsq_robust_poly_eval_multi(int32_t g, double R[], int32_t nt, double x[], double yt[])
+void test_lsq_robust_poly_eval_multi(uint32_t g, double R[], uint32_t nt, double x[], double yt[])
   {
     demand(g >= 0, "invalid power");
     for (uint32_t k = 0;  k < nt; k++) 
@@ -281,7 +282,7 @@ void test_lsq_robust_poly_eval_multi(int32_t g, double R[], int32_t nt, double x
   }
 
 void test_lsq_robust_throw_data
-  ( int32_t nt, 
+  ( uint32_t nt, 
     double yt[],
     double dev_gud,
     double pri_bad,
@@ -302,19 +303,18 @@ void test_lsq_robust_throw_data
       }
   }
 
-void test_lsq_robust_check_fit(int32_t nt, double yt[], double yf[], double dev_gud, double pri_bad)
+void test_lsq_robust_check_fit(uint32_t nt, double yt[], double yf[], double dev_gud, double pri_bad)
   { double tol = dev_gud/sqrt((1 - pri_bad)*nt);
     double erms = rn_dist(nt, yf, yt); 
     fprintf(stderr, "  rms error of fitted polynomial = %12.6f expected = %12.6f\n", erms, tol);
     if (erms > 3*tol) { fprintf(stderr, "** fit is not very good\n"); }
   }
   
-void test_lsq_robust_gen_args(int32_t nt, double x[])
-  { int32_t k;
-    for(k = 0; k < nt; k++) { x[k] = 2*(k + 0.5)/nt - 1.0; }
+void test_lsq_robust_gen_args(uint32_t nt, double x[])
+  { for(uint32_t k = 0; k < nt; k++) { x[k] = 2*(k + 0.5)/nt - 1.0; }
   }
   
-void test_lsq_robust_gen_weights(int32_t nt, double x[], double w[])
+void test_lsq_robust_gen_weights(uint32_t nt, double x[], double w[])
   { for (uint32_t k = 0;  k < nt; k++)
       { double xk = x[k];
         assert((xk > -1.0) && (xk < +1.0));
@@ -322,10 +322,10 @@ void test_lsq_robust_gen_weights(int32_t nt, double x[], double w[])
       }
   }
   
-void test_lsq_robust_fill_basis_matrix(int32_t nt, double x[], int32_t g, double X[])
+void test_lsq_robust_fill_basis_matrix(uint32_t nt, double x[], uint32_t g, double X[])
   {
     demand(g >= 0, "invalid power");
-    int32_t nv = g + 1;
+    uint32_t nv = g + 1;
     for (uint32_t k = 0;  k < nt; k++)
       { double *Xk = &(X[k*nv]);
         double p = 1;
@@ -337,10 +337,10 @@ void test_lsq_robust_fill_basis_matrix(int32_t nt, double x[], int32_t g, double
 
 void test_lsq_robust_print_data
   ( char *name,
-    int32_t g,
-    int32_t ixpoly, 
+    uint32_t g,
+    uint32_t ixpoly, 
     int32_t iter, 
-    int32_t nt, 
+    uint32_t nt, 
     double x[], 
     double Pc[],
     double yc[],
@@ -350,9 +350,9 @@ void test_lsq_robust_print_data
   )
   { char *fname = NULL;
     if (iter >=0)
-      { char *fname = jsprintf("out/%s_g%02d_ix%03d_i%03d.txt", name, g, ixpoly, iter); }
+      { fname = jsprintf("out/%s_g%02d_ix%03d_i%03d.txt", name, g, ixpoly, iter); }
     else
-      { char *fname = jsprintf("out/%s_g%02d_ix%03d.txt", name, g, ixpoly); }
+      { fname = jsprintf("out/%s_g%02d_ix%03d.txt", name, g, ixpoly); }
     FILE *wr = open_write(fname, TRUE);
     for (uint32_t iwr = 0;  iwr <= 1; iwr++)
       { FILE *wri = (iwr == 0 ? wr : stderr);

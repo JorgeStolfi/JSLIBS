@@ -1,5 +1,5 @@
 /* jsaudio_au.h - Sun AU audio file I/O */
-/* Last edited on 2024-12-05 10:32:15 by stolfi */
+/* Last edited on 2024-12-21 03:46:05 by stolfi */
 
 /* 
   Derived from {rusound.h}, created by Rumiko Oishi Stolfi
@@ -16,11 +16,11 @@
 
 /* HIGH-LEVEL AUDIO FILE I/O */
 
-sound_t jsa_read_au_file(FILE *rd);
+jsaudio_t jsaudio_au_read_file(FILE *rd);
   /*  Reads from file {rd} a sound file in Sun's ".au" format. 
-    Returns the samples as a {sound_t} structure. */
+    Returns the samples as a {jsaudio_t} structure. */
      
-void jsa_write_au_file(FILE *wr, sound_t *s);
+void jsaudio_au_write_file(FILE *wr, jsaudio_t *s);
   /* Writes to file {wr} the sound clip {s},
     in Sun's ".au" format (16 bits signed complement, 
     linear encoding). */
@@ -96,44 +96,45 @@ Audio samples
 */
 
 /* Fields from the Sun AU file header: */
-typedef struct au_file_header_t 
+typedef struct jsaudio_au_file_header_t 
   { uint32_t magic;       /* Magic number. */
     uint32_t hdr_size;    /* Size of this header. */
     uint32_t data_size;   /* Length of data (optional). */
     uint32_t encoding;    /* Data encoding format. */
     uint32_t sample_rate; /* Samples per second. */
     uint32_t channels;    /* Number of interleaved channels. */
-  } au_file_header_t;
+  } jsaudio_au_file_header_t;
 
-int32_t jsa_au_file_bytes_per_sample(int32_t enc);
+uint32_t jsaudio_au_file_bytes_per_sample(uint32_t enc);
   /* Returns the number of bytes per sample for the encoding type {enc}.
      Works only for encodings where each sample has a fixed number 
      of bytes; namely {enc = 1,2,3,4,5,6,7,27}.  Bombs out for 
      other encodings. */
 
-au_file_header_t jsa_read_au_file_header(FILE *rd);
+jsaudio_au_file_header_t jsaudio_au_read_file_header(FILE *rd);
   /* Reads the header of a Sun ".au" audio file from stream {rd}. 
     Leaves the stream positioned just before the first sample data byte. */
 
-void jsa_skip_au_file_samples(FILE *rd, au_file_header_t *h, int32_t ns);
-  /* Skips {ns} samples of a Sun ".au" file opened as stream {rd}.
-    Note that it is *only one* sample, not one sample from each
-    channel. Assumes that the file header data is {h} and that {rd} is
-    positioned just before the first byte of a sample. Fails if EOF is
-    encountered prematurely. */
+void jsaudio_au_skip_file_samples(FILE *rd, jsaudio_au_file_header_t *h, uint32_t ns);
+  /* Skips {ns} samples from each channel of a Sun ".au" file opened
+    as stream {rd}.  Assumes that the file header data is {h} 
+    (so that the total samples skipped is {ns*h.nc}) and that {rd} is
+    positioned just before the first byte of a sample of 
+    channel 0. Fails if EOF is encountered prematurely. */
 
-void jsa_read_au_file_samples(FILE *rd, au_file_header_t *h, sound_t *s, int32_t skip, int32_t ns);
-  /* Reads {ns} samples of a Sun ".au" file opened as stream {rd}. Assumes 
-    that the file header data is {h} and that {rd} is positioned 
-    just before the first byte of a sample of channel 0. The samples
-    are stored into the sound clip {s}, starting at sample number {skip}.
-    Fails if {skip..skip+ns-1} is not a subset of {0..s.ns-1}, or if
-    EOF is encountered prematurely. */
+void jsaudio_au_read_file_samples(FILE *rd, jsaudio_au_file_header_t *h, jsaudio_t *s, uint32_t skip, uint32_t ns);
+  /* Reads {ns} samples from each channel of a Sun ".au" file opened as
+    stream {rd}. Assumes that the file header data is {h} (so that the
+    total samples skipped is {ns*h.nc}) and that {rd} is positioned just
+    before the first byte of a sample of channel 0. The samples are
+    stored into the sound clip {s}, starting at sample number {skip} of
+    each channel. Fails if {skip..skip+ns-1} is not a subset of
+    {0..s.ns-1}, or if EOF is encountered prematurely. */
 
-void jsa_write_au_file_header(FILE *wr, au_file_header_t *h);
+void jsaudio_au_write_file_header(FILE *wr, jsaudio_au_file_header_t *h);
   /* Writes a Sun ".au" file header, with data taken from {h}, to stream {wr}. */
   
-void jsa_write_au_file_samples(FILE *wr, au_file_header_t *h, sound_t *s, int32_t skip, int32_t ns);
+void jsaudio_au_write_file_samples(FILE *wr, jsaudio_au_file_header_t *h, jsaudio_t *s, uint32_t skip, uint32_t ns);
   /* Writes samples {s[skip..skip+ns-1]} to stream {wr}, assumed to contain
     a Sun ".au" file with header data {h}. */
   

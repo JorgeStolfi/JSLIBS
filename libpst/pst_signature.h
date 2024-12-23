@@ -2,7 +2,7 @@
 #define pst_signature_H
 
 /* pst_signature.h -- procedures for computing normals from light signatures. */
-/* Last edited on 2006-04-28 23:25:15 by stolfi */
+/* Last edited on 2024-12-22 22:56:16 by stolfi */
 
 #include <pst_basic.h>
 
@@ -27,20 +27,20 @@ typedef struct signature_t
     The value of {var} is the total noise variance present in
     {rin[0..NF-1]}. */
 
-signature_t pst_signature_new(int NF);
+signature_t pst_signature_new(uint32_t NF);
   /* Allocates a light signature for {NF} light fields. */
 
-void pst_signature_print(FILE *wr, int NF, signature_t *sig);
+void pst_signature_print(FILE *wr, uint32_t NF, signature_t *sig);
   /* Prints on {wr} the light signature {sig}, assumed 
     to be for {NF} light fields. */
 
 void pst_signature_extract
-  ( image_vec_t *IMGV,    /* Scene images under {NF} different light fields. */
-    int maxval,        /* Maxval of original (quantized) images. */                 
-    double noise,      /* Additional per-sample noise in images. */                 
-    int c,             /* Channel. */                      
-    int x,             /* Pixel column. */                                           
-    int y,             /* Pixel row (0 = bottom). */  
+  ( image_vec_t *IMGV,     /* Scene images under {NF} different light fields. */
+    uint32_t maxval,       /* Maxval of original (quantized) images. */                 
+    double noise,          /* Additional per-sample noise in images. */                 
+    uint32_t c,            /* Channel. */                      
+    int32_t x,             /* Pixel column. */                                           
+    int32_t y,             /* Pixel row (0 = bottom). */  
     signature_t *sig   /* (OUT) Light signature. */
   );
   /* Extracts from channel {c} of the images {IMGV[0..NF-1]} (where
@@ -59,9 +59,9 @@ vec_typedef(signature_vec_t,signature_vec,signature_t);
 
 typedef struct light_table_t /* A table that maps light signatures to normal vectors. */
   { r2_t pos;              /* Position in scene images where table is most valid. */
-    int NF;                /* Number of light fields. */             
-    int NC;                /* Number of color channels. */
-    int NE;                /* Number of color channels. */
+    uint32_t NF;                /* Number of light fields. */             
+    uint32_t NC;                /* Number of color channels. */
+    uint32_t NE;                /* Number of color channels. */
     r3_vec_t nrm;          /* {nrm[k]} is the normal vector associated with entry {k}. */
     signature_vec_t *sig;  /* {sig[c][k]} is the light signature in channel {c} for that normal. */
   } light_table_t;
@@ -89,11 +89,11 @@ light_table_t *pst_signature_build_table
     provided with a bucket grid accelerator. */
 
 void pst_signature_search_table
-  ( int NF,               /* Number of light fields. */
-    int NC,               /* Number of color channels. */
+  ( uint32_t NF,               /* Number of light fields. */
+    uint32_t NC,               /* Number of color channels. */
     signature_t sig[],    /* Normalized light signature for each channel (size {NC}). */ 
     r2_t pos,             /* Nominal position of {sig} in scene images. */
-    int NG,               /* Number of light-to-normal tables. */
+    uint32_t NG,               /* Number of light-to-normal tables. */
     light_table_t *tab,   /* Light-to-normal table extracted from gauge. */
     double *dsq,          /* (OUT) Discrepancy squared between {sig} and best match from table. */
     r3_t *nrm,            /* (OUT) Normal associated to best match in table. */
@@ -112,10 +112,10 @@ void pst_signature_search_table
     mismatch. */
 
 void pst_signature_normals_from_photos
-  ( int NG,                  /* Number of light gauges. */
+  ( uint32_t NG,                  /* Number of light gauges. */
     light_table_t *tab[],    /* {tab[0..NG-1]} are the light-to-normal tables of the gauges. */
     image_vec_t *IMGV,       /* {IMGV[0..NF-1]} are photos of a scene under {NF} light fields. */
-    int maxval,              /* Number of quantization levels in original quantized images. */
+    uint32_t maxval,              /* Number of quantization levels in original quantized images. */
     double noise,            /* Standard deviation of additional per-sample noise. */
     float_image_t *NRM,      /* (OUT) Nomal map of the scene. */
     float_image_t *CLR,      /* (OUT) Intrinsic color map of the scene. */

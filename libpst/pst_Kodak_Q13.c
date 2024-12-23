@@ -1,11 +1,11 @@
 /* See pst_Kodak_Q13.h */
-/* Last edited on 2024-11-23 05:30:47 by stolfi */
+/* Last edited on 2024-12-22 12:30:28 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <values.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <float_image.h>
@@ -15,7 +15,7 @@
 #include <r3.h> 
 #include <r3x3.h> 
 #include <rn.h> 
-#include <gauss_elim.h> 
+#include <gausol_solve.h> 
 #include <qmin_simplex.h> 
 #include <affirm.h>
 #include <argparser.h>
@@ -101,16 +101,15 @@ void pst_Kodak_Q13_get_matrix(r2_t *tl, r2_t *tr, r2_t *bl, r2_t *br, r3x3_t *P)
     P->c[1][0] = w.c[1]; P->c[1][1] = w.c[1]*br->c[0]; P->c[1][2] = w.c[1]*br->c[1];
     P->c[2][0] = w.c[2]; P->c[2][1] = w.c[2]*tl->c[0]; P->c[2][2] = w.c[2]*tl->c[1];
     
-    int i, j;
-    for (i = 1; i < 3; i++)
-      { for (j = 0; j < 3; j++)
+    for (uint32_t i = 1; i < 3; i++)
+      { for (uint32_t j = 0; j < 3; j++)
           { P->c[i][j] -= P->c[0][j]; }
       }
       
     if (debug) { debug_matrix("unit square:", P, 1.0, 1.0, ""); }
 
     /* Combine with the matrix that maps the actual Q-13 rectangle to {U}: */
-    for (i = 0; i < 3; i++)
+    for (uint32_t i = 0; i < 3; i++)
       { P->c[1][i] /= pst_Kodak_Q13_total_width;
         P->c[2][i] /= pst_Kodak_Q13_total_height;
       }
@@ -119,9 +118,8 @@ void pst_Kodak_Q13_get_matrix(r2_t *tl, r2_t *tr, r2_t *bl, r2_t *br, r3x3_t *P)
 
     void debug_matrix(char *head, r3x3_t *M, double dx, double dy, char *foot)
       { if (head != NULL) { fprintf(stderr, "  %s\n", head); }
-        int x, y;
-        for (y = 0; y < 2; y++)
-          for (x = 0; x < 2; x++)
+        for (uint32_t y = 0; y < 2; y++)
+          for (uint32_t x = 0; x < 2; x++)
             { r3_t p = (r3_t){{ 1.0, x*dx, y*dy }};
               r3_t q;
               r3x3_map_row(&p, M, &q);
@@ -144,7 +142,7 @@ float_image_t *pst_Kodak_Q13_extract_chart
   )
   { 
     /* Get input image dimensions (samples): */
-    int NC, NX, NY;
+    int32_t NC, NX, NY;
     float_image_get_size(img, &NC, &NX, &NY);
     
     /* Chart dimensions (mm): */
@@ -152,8 +150,8 @@ float_image_t *pst_Kodak_Q13_extract_chart
     double mmY = pst_Kodak_Q13_total_height;  /* Chart height in mm. */
 
     /* Output image dimensions (pixels): */
-    int ONX = (int)floor(mmX/pixelSize + 0.5);
-    int ONY = (int)floor(mmY/pixelSize + 0.5);
+    int32_t ONX = (int32_t)floor(mmX/pixelSize + 0.5); assert(ONX >= 0);
+    int32_t ONY = (int32_t)floor(mmY/pixelSize + 0.5); assert(ONY >= 0);
     
     /* Left and right edges of chart (mm): */
     double xsz = ONX*pixelSize;
@@ -171,7 +169,7 @@ float_image_t *pst_Kodak_Q13_extract_chart
     ix_reduce_mode_t red = ix_reduce_mode_SINGLE;
     float undef = 0.5;
     bool_t avg = TRUE;
-    int order = 1;
+    int32_t order = 1;
     float_image_transform_copy_persp_rectangle(img, red, xlo, xhi, ylo, yhi, P, undef, avg, order, 0, 0, ONX, ONY, NULL, omg);
 
     return omg;
@@ -219,14 +217,16 @@ float_image_t *pst_Kodak_Q13_extract_patches
   )
   {
     /* Get input image dimensions (samples): */
-    int NC, NX, NY;
+    int32_t NC, NX, NY;
     float_image_get_size(img, &NC, &NX, &NY);
     /* Compute extracted patch dimensions {mmX_patch,mmY_patch} in mm: */
     double mmX_patch = pst_Kodak_Q13_mid_patch_width - 2*pst_Kodak_Q13_patch_trim_x;
+    demand(mmX_patch > 0, "bad patch width");
     double mmY_patch = yhi - ylo;
+    demand(mmY_patch > 0, "bad patch height");
     /* Compute extracted patch dimensions {SNX_patch,SNY_patch} in pixels: */
-    int SNX_patch = (int)floor(mmX_patch/pixelSize + 0.00001);
-    int SNY_patch = (int)floor(mmY_patch/pixelSize + 0.00001);
+    int32_t SNX_patch = (int32_t)floor(mmX_patch/pixelSize + 0.00001);
+    int32_t SNY_patch = (int32_t)floor(mmY_patch/pixelSize + 0.00001);
     demand(SNX_patch > 0, "pixel size {pixelSize} is larger than patch width");
     demand(SNY_patch > 0, "pixel size {pixelSize} is larger than patch height");
     /* Recompute ideal extracted patch Y dimensions{mmX_patch,mmY_patch} in mm: */
@@ -237,15 +237,14 @@ float_image_t *pst_Kodak_Q13_extract_patches
     ylo = yCenter - mmY_patch/2;
     yhi = yCenter + mmY_patch/2;
     /* Compute output image dimensions (pixels): */
-    int nSteps = pst_Kodak_Q13_num_steps; 
-    int SNX = SNX_patch * nSteps;
-    int SNY = SNY_patch;
+    uint32_t nSteps = pst_Kodak_Q13_num_steps; 
+    int32_t SNX = SNX_patch * (int32_t)nSteps;
+    int32_t SNY = SNY_patch;
     /* Create output image: */
     float_image_t *omg = float_image_new(NC, SNX, SNY);
     /* Compute X displacement from chart edge to regularized gray scale: */
     double xShift = (pst_Kodak_Q13_total_width - nSteps*pst_Kodak_Q13_mid_patch_width)/2;
-    int i;
-    for (i = 0; i < nSteps; i++)
+    for (int32_t i = 0; i < nSteps; i++)
       { /* Compute center X coordinate of patch {i}: */
         double xCenter = xShift + (i + 0.5)*pst_Kodak_Q13_mid_patch_width;
         /* Compute left and right edges {xlo,xhi} of patch {i}: */
@@ -255,15 +254,16 @@ float_image_t *pst_Kodak_Q13_extract_patches
         ix_reduce_mode_t red = ix_reduce_mode_SINGLE;
         float undef = 0.5;
         bool_t avg = TRUE;
-        int order = 1;
+        int32_t xi = i*SNX_patch;
+        int32_t order = 1;
         float_image_transform_copy_persp_rectangle
-          ( img, red, xlo, xhi, ylo, yhi, P, undef, avg, order, i*SNX_patch, 0, SNX_patch, SNY_patch, NULL, omg );
+          ( img, red, xlo, xhi, ylo, yhi, P, undef, avg, order, xi, 0, SNX_patch, SNY_patch, NULL, omg );
       }
         
     return omg;
   }
 
-double pst_Kodak_Q13_patch_albedo(int i)
+double pst_Kodak_Q13_patch_albedo(uint32_t i)
   { 
     return pow(0.1, i*0.10 + 0.05);
   }

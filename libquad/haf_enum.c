@@ -1,5 +1,5 @@
 /* See {haf_enum.h}. */
-/* Last edited on 2024-12-05 10:38:51 by stolfi */
+/* Last edited on 2024-12-22 09:57:55 by stolfi */
  
 #define haf_enum_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -53,7 +53,7 @@ void haf_enum_edges
     auto bool_t edge_is_seen(haf_arc_t a);
       /* True iff the arc {a} or its opposite have been saved in {E.e[0..ne-1]}. */
     
-    int32_t pe = 0;  /* The arcs {E.e[0..pe-1]} and their opposites have been processed. */
+    uint32_t pe = 0;  /* The arcs {E.e[0..pe-1]} and their opposites have been processed. */
     haf_arc_count_t kr = 0; /* The arcs {root[0..kr-1]} have been processed. */
     while ((kr < nr) || (pe < ne))
       { if (debug) { fprintf(stderr, "  kr = %lu pe = %d\n", kr, pe); } 
@@ -94,12 +94,12 @@ void haf_enum_edges
       { /* Edge table is client's, trim: */
         assert(E == E_P);
         assert(E_local.ne == 0);
-        haf_arc_vec_trim(E, (vec_index_t)ne);
+        haf_arc_vec_trim(E, (vec_size_t)ne);
       }
       
     /* Trim component table, if any: */
     assert(C == C_P);
-    if (C != NULL) { haf_arc_vec_trim(C, (vec_index_t)nc); }
+    if (C != NULL) { haf_arc_vec_trim(C, (vec_size_t)nc); }
     
     return;
       
@@ -163,8 +163,8 @@ void haf_enum_cycles(haf_edge_count_t ne, haf_arc_t a[], haf_edge_id_t eid0, uin
     haf_arc_id_t aid0 = 2*eid0;  /* Lowest arc ID. */
     for (haf_arc_count_t ka = 0; ka < na; ka++) { cid[ka] = UINT64_MAX; }
     
-    int32_t nc = 0;  /* Count of cycles identified and labeled so far. */
-    int32_t pe = 0;  /* Count of edges whose cycles have been identified and labeled. */
+    uint32_t nc = 0;  /* Count of cycles identified and labeled so far. */
+    uint32_t pe = 0;  /* Count of edges whose cycles have been identified and labeled. */
     
     while (pe < ne)
       { /* At this point the cycles of both arcs on the edges

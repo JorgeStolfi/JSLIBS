@@ -1,6 +1,6 @@
 /* See {float_image_test.h}. */
 
-/* Last edited on 2024-12-05 01:01:38 by stolfi */ 
+/* Last edited on 2024-12-21 11:24:19 by stolfi */ 
 /* Created on 2009-06-02 by J. Stolfi, UNICAMP */
 
 #define float_image_test_C_COPYRIGHT \
@@ -12,6 +12,7 @@
 
 #include <affirm.h>
 #include <r2.h>
+#include <jsrandom.h>
 
 #include <float_image.h>
 #include <float_image_waves.h>

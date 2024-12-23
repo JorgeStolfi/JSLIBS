@@ -1,10 +1,10 @@
 /* See pst_slope_map.h */
-/* Last edited on 2023-02-25 16:10:29 by stolfi */
+/* Last edited on 2024-12-23 07:08:22 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include <float_image.h>
 #include <float_image_mscale.h>
@@ -36,35 +36,33 @@ pst_imgsys_equation_t *pst_slope_map_get_eqs(float_image_t *G, float_image_t *GW
 
 /* IMPLEMENTATIONS */
 
-r2_t pst_slope_map_get_pixel(float_image_t *G, int x, int y)
+r2_t pst_slope_map_get_pixel(float_image_t *G, int32_t x, int32_t y)
   { demand(G->sz[0] == 2, "wrong slope map depth");
     r2_t grd;
     float *p = float_image_get_sample_address(G, 0, x, y);
-    int axis;
-    for (axis = 0; axis < 2; axis++)
+    for (uint32_t axis = 0; axis < 2; axis++)
       { grd.c[axis] = (*p); p += G->st[0]; }
     return grd;
   }
 
-void pst_slope_map_set_pixel(float_image_t *G, int x, int y, r2_t *grd)
+void pst_slope_map_set_pixel(float_image_t *G, int32_t x, int32_t y, r2_t *grd)
   { demand(G->sz[0] == 2, "wrong slope map depth");
     float *p = float_image_get_sample_address(G, 0, x, y);
-    int axis;
-    for (axis = 0; axis < 2; axis++)
+    for (uint32_t axis = 0; axis < 2; axis++)
       { (*p) = (float)(grd->c[axis]); p += G->st[0]; }
   }
 
 void pst_slope_map_to_depth_map_recursive
   ( float_image_t *IG, 
     float_image_t *IW, 
-    int level,
-    int maxIter,
+    uint32_t level,
+    uint32_t maxIter,
     double convTol,
     bool_t topoSort,
     float_image_t **OZP,
     float_image_t **OWP,
     bool_t verbose,
-    int reportIter,
+    uint32_t reportIter,
     pst_slope_map_report_proc_t *reportData,
     pst_imgsys_report_proc_t *reportSys,
     pst_height_map_report_proc_t *reportHeights
@@ -72,8 +70,8 @@ void pst_slope_map_to_depth_map_recursive
   {
     /* Get image size and check compatibility: */
     demand(IG->sz[0] == 2, "wrong {IG} channels");
-    int NX_G = (int)IG->sz[1];
-    int NY_G = (int)IG->sz[2];
+    uint32_t NX_G = (uint32_t)IG->sz[1];
+    uint32_t NY_G = (uint32_t)IG->sz[2];
     
     if (IW != NULL)
       { demand(IW->sz[0] == 1, "wrong {IW} channels");
@@ -82,13 +80,13 @@ void pst_slope_map_to_depth_map_recursive
       }
       
     /* Allocate output images: */
-    int NX_Z = NX_G + 1;
-    int NY_Z = NY_G + 1;
-    float_image_t *OZ = float_image_new(1, NX_Z, NY_Z);  
-    float_image_t *OW = ((IW == NULL) || (OWP == NULL) ? NULL : float_image_new(1, NX_Z, NY_Z));
+    uint32_t NX_Z = NX_G + 1;
+    uint32_t NY_Z = NY_G + 1;
+    float_image_t *OZ = float_image_new(1, (int32_t)NX_Z, (int32_t)NY_Z);  
+    float_image_t *OW = ((IW == NULL) || (OWP == NULL) ? NULL : float_image_new(1, (int32_t)NX_Z, (int32_t)NY_Z));
     if (OWP != NULL) { (*OWP) = OW; }
 
-    int indent = 2*level+2; /* Indentation for messages. */
+    uint32_t indent = 2*level+2; /* Indentation for messages. */
 
     if (verbose)
       { fprintf(stderr, "%*sEntering level %d with G size %d×%d ...\n", indent, "", level, NX_G, NY_G); }
@@ -147,7 +145,7 @@ void pst_slope_map_to_depth_map_recursive
     bool_t solve_sys = ! trivial;
     if (solve_sys)
       { /* Build the linear system: */
-        int NP_Z = NX_Z*NY_Z;
+        uint32_t NP_Z = NX_Z*NY_Z;
         if (verbose) { fprintf(stderr, "%*sBuilding linear system for %d pixels ...\n", indent, "", NP_Z); }
         bool_t full = FALSE; /* Should be parameter. FALSE means exclude indeterminate pixels. */
         pst_imgsys_t *S = pst_slope_map_build_integration_system(IG, IW, full);
@@ -157,9 +155,9 @@ void pst_slope_map_to_depth_map_recursive
 
         /* Solve the system for the corner heights: */
         if (verbose) { fprintf(stderr, "%*sSolving the system ...\n", indent, ""); }
-        int para = 0; /* Should be parameter. 1 means parallel execution, 0 sequential. */
-        int szero = 1; /* Should be parameter. 1 means adjust sum to zero, 0 let it float. */
-        int *ord = NULL;
+        bool_t para = FALSE; /* Should be parameter. 1 means parallel execution, 0 sequential. */
+        bool_t szero = TRUE; /* Should be parameter. 1 means adjust sum to zero, 0 let it float. */
+        uint32_t *ord = NULL;
         if (topoSort) { ord = pst_imgsys_sort_equations(S); }
         pst_slope_map_solve_system(S, OZ, ord, maxIter, convTol, para, szero, verbose, level, reportIter, reportHeights);
         pst_imgsys_free(S);
@@ -186,35 +184,32 @@ void pst_slope_and_weight_map_shrink
     float_image_t **SW
   )
   { 
-    int NC = (int)IG->sz[0];
-    int NXI = (int)IG->sz[1]; int NXJ = (NXI+1)/2;
-    int NYI = (int)IG->sz[2]; int NYJ = (NYI+1)/2;
-    float_image_t *JG = float_image_new(NC, NXJ, NYJ);
+    uint32_t NC = (uint32_t)IG->sz[0];
+    uint32_t NXI = (uint32_t)IG->sz[1]; uint32_t NXJ = (NXI+1)/2;
+    uint32_t NYI = (uint32_t)IG->sz[2]; uint32_t NYJ = (NYI+1)/2;
+    float_image_t *JG = float_image_new((int32_t)NC, (int32_t)NXJ, (int32_t)NYJ);
     float_image_t *OW = NULL;
     
     if (IW != NULL)
       { assert(IW->sz[0] == 1);
         assert(IW->sz[1] == NXI);
         assert(IW->sz[2] == NYI);
-	OW = float_image_new(1, NXJ, NYJ);
+	OW = float_image_new(1, (int32_t)NXJ, (int32_t)NYJ);
       }
 
-    int jx, jy;
-    for (jy = 0; jy < NYJ; jy++)
-      { for (jx = 0; jx < NXJ; jx++)
-          { 
-	    int ix = 2*jx, iy = 2*jy;
+    for (int32_t jy = 0; jy < NYJ; jy++)
+      { for (int32_t jx = 0; jx < NXJ; jx++)
+          { int32_t ix = 2*jx, iy = 2*jy;
 	    float wmin = INF;
-	    int c;
-            for( c = 0; c < 2; c++)
+	    for (uint32_t c = 0; c < 2; c++)
 	    {
 	      double da,wa;
-	      pst_interpolate_two_samples(IG,IW, c, ix,iy,  ix+1,iy+1, &da,&wa);
+	      pst_interpolate_two_samples(IG, IW, (int32_t)c, ix,iy,  ix+1,iy+1, &da,&wa);
 	      double db,wb;
- 	      pst_interpolate_two_samples(IG,IW, c, ix,iy+1, ix+1,iy,  &db,&wb);
+ 	      pst_interpolate_two_samples(IG, IW, (int32_t)c, ix,iy+1, ix+1,iy,  &db,&wb);
 	      
 	      float d = (float)( wa+wb > 0 ? (wa*da + wb*db)/(wa + wb) : (da+db)/2.0);
-	      float_image_set_sample(JG, c, jx, jy, d);
+	      float_image_set_sample(JG, (int32_t)c, jx, jy, d);
 	      float w = (float)(4/(1/wa + 1/wb));
 	      if(w < wmin) wmin = w;
 	    }
@@ -230,26 +225,26 @@ void pst_slope_and_weight_map_shrink
 void pst_slope_map_solve_system
   ( pst_imgsys_t *S, 
     float_image_t *OZ,
-    int ord[], 
-    int maxIter, 
+    uint32_t ord[], 
+    uint32_t maxIter, 
     double convTol, 
-    int para, 
-    int szero, 
+    bool_t para, 
+    bool_t szero, 
     bool_t verbose, 
-    int level, 
-    int reportIter, 
+    uint32_t level, 
+    uint32_t reportIter, 
     pst_height_map_report_proc_t *reportHeights
   )
   {
-    int indent = 2*level+2;
+    uint32_t indent = 2*level+2;
     
-    auto void reportSol(int iter, double change, bool_t final, int N, double Z[]);
+    auto void reportSol(uint32_t iter, double change, bool_t final, uint32_t N, double Z[]);
       /* A procedure that is called by the Gauss-Seidel solver at each iteration.
          When appropriate, it copies {Z} into the image {OZ} and calls {reportHeights}. 
          This happens when {final} is TRUE or when {reportIter != 0} and {iter}
          is a multiple of {reportIter}. */
     
-    void reportSol(int iter, double change, bool_t final, int N, double Z[])
+    void reportSol(uint32_t iter, double change, bool_t final, uint32_t N, double Z[])
       { bool_t doit = final || ((reportHeights != NULL) && (reportIter != 0) && (iter % reportIter == 0));
         if (doit) 
           { pst_slope_map_copy_sol_vec_to_height_map(S, Z, OZ);
@@ -266,23 +261,21 @@ void pst_slope_map_solve_system
 
 void pst_slope_map_copy_height_map_to_sol_vec(pst_imgsys_t *S, float_image_t *IZ, double VZ[])
   {
-    int N = S->N;
-    int k;
-    for(k = 0; k < N; k++)
-      { int x = S->col[k];
-        int y = S->row[k];
-        VZ[k] = float_image_get_sample(IZ, 0, x, y);
+    uint32_t N = S->N;
+    for (uint32_t k = 0; k < N; k++)
+      { uint32_t x = S->col[k];
+        uint32_t y = S->row[k];
+        VZ[k] = float_image_get_sample(IZ, 0, (int32_t)x, (int32_t)y);
       }
   }
 
 void pst_slope_map_copy_sol_vec_to_height_map(pst_imgsys_t *S, double VZ[], float_image_t *IZ)
   {
-    int NX = (int)IZ->sz[1];
-    int NY = (int)IZ->sz[2];
-    int x, y;
-    for(y = 0; y < NY; y++)
-      { for(x = 0; x < NX; x++)
-          { int k = S->ix[x + NX*y];
+    uint32_t NX = (uint32_t)IZ->sz[1];
+    uint32_t NY = (uint32_t)IZ->sz[2];
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
+          { int32_t k = S->ix[x + (int32_t)NX*y];
             float_image_set_sample(IZ, 0, x, y, (float)(k < 0 ? 0.0 : VZ[k]));
           }
       }
@@ -295,40 +288,38 @@ pst_imgsys_t* pst_slope_map_build_integration_system
   ) 
   {
     /* Get/check the sizes of the slope maps: */
-    int NX_G = (int)G->sz[1];
-    int NY_G = (int)G->sz[2];
+    uint32_t NX_G = (uint32_t)G->sz[1];
+    uint32_t NY_G = (uint32_t)G->sz[2];
     
     /* Get the size of the system: */
-    int NX_Z = NX_G+1;
-    int NY_Z = NY_G+1;
-    int NXY_Z = NX_Z*NY_Z; /* Number of unknowns (heights) in full system. */
+    uint32_t NX_Z = NX_G+1;
+    uint32_t NY_Z = NY_G+1;
+    uint32_t NXY_Z = NX_Z*NY_Z; /* Number of unknowns (heights) in full system. */
     
     /* Gather the equations {eq[0..NXY_Z-1]} of the system, using the full variable numbering: */
     bool_t fillHoles = full; /* TRUE to set isolated pixels to Poisson interpolant. */
     pst_imgsys_equation_t *eq = pst_slope_map_get_eqs(G, GW, fillHoles);
     
     /* Build the index {ix[0..N-1]} and inverse indices {col[0..N-1],row[0..N-1]}: */
-    int *ix = (int *)notnull(malloc(NXY_Z*sizeof(int)), "no mem");
-    int *col = (int *)notnull(malloc(NXY_Z*sizeof(int)), "no mem");
-    int *row = (int *)notnull(malloc(NXY_Z*sizeof(int)), "no mem");
-    int xy;
-    for (xy = 0; xy < NXY_Z; xy++) { ix[xy] = xy; col[xy] = xy % NX_Z; row[xy] = xy / NX_Z; }
+    int32_t *ix = talloc(NXY_Z, int32_t);
+    uint32_t *col = talloc(NXY_Z, uint32_t);
+    uint32_t *row = talloc(NXY_Z, uint32_t);
+    for (uint32_t xy = 0; xy < NXY_Z; xy++) { ix[xy] = (int32_t)xy; col[xy] = xy % NX_Z; row[xy] = xy / NX_Z; }
      
-    int N; /* Number of valid equations. */
+    uint32_t N; /* Number of valid equations. */
     if (full)
       { /* Keep all equations. */
         N = NXY_Z;
       }
     else
-      { 
-        /* Compress the valid equations {eq[0..N-1]} of the system, and fill the table {ix[0..NXY_Z-1]}: */
+      { /* Compress the valid equations {eq[0..N-1]} of the system, and fill the table {ix[0..NXY_Z-1]}: */
         N = 0;
-        for (xy = 0; xy < NXY_Z; xy++)
+        for (uint32_t xy = 0; xy < NXY_Z; xy++)
           { if (eq[xy].wtot > 0.0)
               { /* Keep equation: */
                 assert(N < NXY_Z);
                 eq[N] = eq[xy]; col[N] = col[xy]; row[N] = row[xy];
-                ix[xy] = N;
+                ix[xy] = (int32_t)N;
                 N++;
               }
             else
@@ -338,22 +329,20 @@ pst_imgsys_t* pst_slope_map_build_integration_system
           }
 
         /* Replace the temporary indices in the equations by the correct ones, eliminating the excluded vars: */
-        int k;
-        for (k = 0; k < N; k++)
+        for (uint32_t k = 0; k < N; k++)
           { pst_imgsys_equation_t *eqk = &(eq[k]);
             assert(eqk->ix[0] == k);
-            int nt = eqk->nt;
-            int mt = 0;
-            int i;
-            for(i = 0; i < nt; i++)
+            uint32_t nt = eqk->nt;
+            uint32_t mt = 0;
+            for (uint32_t i = 0; i < nt; i++)
               { /* Get the temporay index {xyi}: */
-                int xyi = eqk->ix[i];
+                uint32_t xyi = eqk->ix[i];
                 /* Get the definitive index {ki}: */
-                int ki = ix[xyi];
+                int32_t ki = ix[xyi];
                 if (ki >= 0)
                   { /* Append the term to the equation: */
-                    int j = mt;
-                    eqk->ix[j] = ki;
+                    uint32_t j = mt;
+                    eqk->ix[j] = (uint32_t)ki;
                     eqk->cf[j] = eqk->cf[i];
                     assert(!isnan(eqk->cf[j]));
                     mt++;
@@ -372,9 +361,9 @@ pst_imgsys_t* pst_slope_map_build_integration_system
 pst_imgsys_equation_t *pst_slope_map_get_eqs(float_image_t *G, float_image_t *GW, bool_t fillHoles)
   {
     /* Get/check the sizes of the slope maps: */
-    int NC = (int)G->sz[0]; assert(NC == 2);
-    int NX_G = (int)G->sz[1];
-    int NY_G = (int)G->sz[2];
+    uint32_t NC = (uint32_t)G->sz[0]; assert(NC == 2);
+    uint32_t NX_G = (uint32_t)G->sz[1];
+    uint32_t NY_G = (uint32_t)G->sz[2];
     
     if (GW != NULL)
       { demand(GW->sz[0] == 1, "wrong {GW} channels");
@@ -383,9 +372,9 @@ pst_imgsys_equation_t *pst_slope_map_get_eqs(float_image_t *G, float_image_t *GW
       }
     
     /* Check the size of the system: */
-    int NX_Z = NX_G+1;
-    int NY_Z = NY_G+1;
-    int NXY_Z = NX_Z*NY_Z; /* Number of unknowns (heights). */
+    uint32_t NX_Z = NX_G+1;
+    uint32_t NY_Z = NY_G+1;
+    uint32_t NXY_Z = NX_Z*NY_Z; /* Number of unknowns (heights). */
     
     /* Conceptually, we define four axial quadratic mismatch terms
       {qpo[x,y](z), qmo[x,y](z), qop[x,y](z), qom[x,y](z)} for each
@@ -447,29 +436,29 @@ pst_imgsys_equation_t *pst_slope_map_get_eqs(float_image_t *G, float_image_t *GW
       take care to exclude this solution.
     */
     
-    auto void compute_axial_edge_delta_and_weight(int axis, int x, int y, int u, double *dP, double *wP);
+    auto void compute_axial_edge_delta_and_weight(uint32_t axis, int32_t x, int32_t y, int32_t u, double *dP, double *wP);
       /* Computes the delta {*dP} and the weight {*wP} of the axial
         edge that goes from {(x,y)} to {(x+u,y)} if {axis=0} or to
         {(x,y+u)} if {axis=1}, where {u} is either {+1} or {-1}.
         Assumes that {x,y} is a vertex of the cell grid. */
 
-    void compute_axial_edge_delta_and_weight(int axis, int x, int y, int u, double *dP, double *wP)
+    void compute_axial_edge_delta_and_weight(uint32_t axis, int32_t x, int32_t y, int32_t u, double *dP, double *wP)
       {
         assert((u == -1) || (u == +1));
         (*dP) = 0.0; (*wP) = 0.0; /* If edge does not exist. */
         if (axis == 0)
           { /* X derivative */
-            int xg; /* Indices of relevant samples in {G,GW}. */
+            int32_t xg; /* Indices of relevant samples in {G,GW}. */
             if (u < 0) 
               { xg = x - 1; if (xg < 0) { return; } }
             else
               { xg = x; if (xg >= NX_G) { return; } }
-            pst_interpolate_four_samples(G,GW, 0, xg,y-1, xg,y, dP,wP);
+            pst_interpolate_four_samples(G,GW, 0, xg, y-1, xg, y, dP,wP);
             (*dP) = (*dP) * u;
           } 
         else if (axis == 1)
           { /* Y derivative */
-            int yg; /* Indices of relevant samples in {G,GW}. */
+            int32_t yg; /* Indices of relevant samples in {G,GW}. */
             if (u < 0) 
               { yg = y - 1; if (yg < 0) { return; } }
             else
@@ -482,16 +471,16 @@ pst_imgsys_equation_t *pst_slope_map_get_eqs(float_image_t *G, float_image_t *GW
         return;
       }
 
-    auto void compute_skew_edge_delta_and_weight(int x, int y, int ux, int uy, double *dP,  double *wP);
+    auto void compute_skew_edge_delta_and_weight(int32_t x, int32_t y, int32_t ux, int32_t uy, double *dP,  double *wP);
       /* Computes the delta {*dP} and the weight {*wP} of the skew edge that goes
         from {(x,y)} to {(x+ux,y+uy)}, where {ux} and {uy} are either {+1} or {-1}.
         Assumes that {x,y} is a vertex of the cell grid. */
     
-    void compute_skew_edge_delta_and_weight(int x, int y, int ux, int uy, double *dP,  double *wP)
+    void compute_skew_edge_delta_and_weight(int32_t x, int32_t y, int32_t ux, int32_t uy, double *dP,  double *wP)
       {
         assert((ux == -1) || (ux == +1));
         assert((uy == -1) || (uy == +1));
-        int xg, yg; /* Indices of relevant samples in {G,GW}. */
+        int32_t xg, yg; /* Indices of relevant samples in {G,GW}. */
         (*dP) = 0.0; (*wP) = 0.0; /* If edge does not exist. */
         if (ux < 0) 
           { xg = x - 1; if (xg < 0) { return; } }
@@ -510,14 +499,19 @@ pst_imgsys_equation_t *pst_slope_map_get_eqs(float_image_t *G, float_image_t *GW
         (*wP) = w;
       }
 
-    auto void append_equation_term(pst_imgsys_equation_t *eqk, int x, int y, int ux, int uy, double d, double w);
+    auto void append_equation_term(pst_imgsys_equation_t *eqk, int32_t x, int32_t y, int32_t ux, int32_t uy, double d, double w);
       /* Appends to equation {eqk} a term corresponding to an edge with delta {d} and weight {w}
         that starts at {(x,y)} and ends at {(x+ux,y+uy)}. */
        
-    void append_equation_term(pst_imgsys_equation_t *eqk, int x, int y, int ux, int uy, double d, double w)
-      { int nt = eqk->nt;
-        int k = (x+ux) + (y+uy)*NX_Z;
-        eqk->ix[nt] = k; eqk->cf[nt] = -w; eqk->rhs += -w*d; eqk->wtot += w; nt++;
+    void append_equation_term(pst_imgsys_equation_t *eqk, int32_t x, int32_t y, int32_t ux, int32_t uy, double d, double w)
+      { uint32_t nt = eqk->nt;
+        int32_t k = (x+ux) + (y+uy)*(int32_t)NX_Z;
+        assert(k >= 0);
+        eqk->ix[nt] = (uint32_t)k; 
+        eqk->cf[nt] = -w; 
+        eqk->rhs += -w*d; 
+        eqk->wtot += w; 
+        nt++;
         eqk->nt = nt;
       }
 
@@ -526,11 +520,10 @@ pst_imgsys_equation_t *pst_slope_map_get_eqs(float_image_t *G, float_image_t *GW
     
     pst_imgsys_equation_t *eq = (pst_imgsys_equation_t*)notnull(malloc(NXY_Z*sizeof(pst_imgsys_equation_t)), "no mem");
 
-    int xy;
-    for (xy = 0; xy < NXY_Z; xy++)
+    for (uint32_t xy = 0; xy < NXY_Z; xy++)
       { /* Get the indices of pixel number {k}: */
-        int x = xy % NX_Z;
-        int y = xy / NX_Z;
+        int32_t x = (int32_t)(xy % NX_Z);
+        int32_t y = (int32_t)(xy / NX_Z);
         
         /* Get the axial deltas and their weights: */
         double wmo, wpo, wom, wop;  /* Edge weights. */
@@ -565,7 +558,9 @@ pst_imgsys_equation_t *pst_slope_map_get_eqs(float_image_t *G, float_image_t *GW
         if (wom > 0) { use_om = TRUE; } else if ( wmm > 0) { use_mm = TRUE; } else if (wpm > 0) { use_pm = TRUE; }
         if (wop > 0) { use_op = TRUE; } else if ( wmp > 0) { use_mp = TRUE; } else if (wpp > 0) { use_pp = TRUE; }
         
-        int  n_use = use_mo + use_po + use_om + use_op + use_mm + use_mp + use_pm + use_pp;
+        uint32_t  n_use = 
+          (uint32_t)use_mo + (uint32_t)use_po + (uint32_t)use_om + (uint32_t)use_op + 
+          (uint32_t)use_mm + (uint32_t)use_mp + (uint32_t)use_pm + (uint32_t)use_pp;
         if (n_use == 0)
           { /* Vertex is isolated. */
             if (fillHoles)
@@ -614,8 +609,7 @@ pst_imgsys_equation_t *pst_slope_map_get_eqs(float_image_t *G, float_image_t *GW
 
             /* Compute {wtot} and normalize coeficients: */
             assert(eqk->wtot > 0);
-            int j;
-            for (j = 1; j < eqk->nt; j++) { eqk->cf[j] /= eqk->wtot;  }
+            for (uint32_t j = 1; j < eqk->nt; j++) { eqk->cf[j] /= eqk->wtot;  }
             eqk->rhs /= eqk->wtot;
           }
       }
@@ -625,18 +619,18 @@ pst_imgsys_equation_t *pst_slope_map_get_eqs(float_image_t *G, float_image_t *GW
 void pst_slope_map_extract_system_weight_image(pst_imgsys_t *S, float_image_t *OW)
   { 
     demand(OW->sz[0] == 1, "wrong {OW} channels");
-    int NX = (int)OW->sz[1];
-    int NY = (int)OW->sz[2];
-    int NXY = NX*NY; /* Number of unknowns (heights). */
+    int32_t NX = (int32_t)OW->sz[1];
+    int32_t NY = (int32_t)OW->sz[2];
+    int32_t NXY = NX*NY; /* Number of unknowns (heights). */
     demand(S->N <= NXY, "wrong {OW} size");
     
-    int xy;
-    for (xy = 0; xy < NXY; xy++)
+    for (int32_t xy = 0; xy < NXY; xy++)
       { /* Get the indices of pixel number {k}: */
-        int x = xy % NX;
-        int y = xy / NX;
+        int32_t x = xy % (int32_t)NX;
+        int32_t y = xy / (int32_t)NX;
         /* Get total mismatch weight of equation for vertex {(x,y)}: */
-        int k = S->ix[xy];
+        int32_t k = S->ix[xy];
+        assert(k >= 0);
         double wtot = S->eq[k].wtot;
         float_image_set_sample(OW, 0, x,y, (float)wtot);
       }

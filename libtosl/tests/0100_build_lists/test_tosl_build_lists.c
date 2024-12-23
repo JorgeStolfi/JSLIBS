@@ -1,4 +1,4 @@
-/* Last edited on 2024-10-07 20:21:41 by stolfi */
+/* Last edited on 2024-12-21 11:25:17 by stolfi */
 /* Test of {tosl_build_lists_bin_sec.h} and {tosl_build_lists_hash.h} */
 
 #define _GNU_SOURCE
@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <jsrandom.h>
 
 #include <tosl.h>
 #include <tosl_mesh.h>

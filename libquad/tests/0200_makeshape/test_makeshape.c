@@ -2,7 +2,7 @@
 #define PROG_DESC "creates some 2D maps using the quad-edge structure"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-05 10:39:54 by stolfi */ 
+/* Last edited on 2024-12-22 11:22:01 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2007  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
@@ -16,8 +16,7 @@
   
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
-  "    -shape { torus | klein | ... | star } \\\n" \
-  "    [ -refine {ORDER} ]"
+  "    -shape { torus | klein | ... | star }"
 
 #define PROG_INFO \
   "NAME\n" \
@@ -35,12 +34,6 @@
   "  -shape {NAME}\n" \
   "    Specifies which basic shape is to be built.  The options are:\n" \
   "      " SHAPE_NAMES "\n" \
-  "\n" \
-  "  -refine {ORDER}\n" \
-  "    Specifies the linear refinement factor to" \
-  " apply to the basic map.  Each edge tile is" \
-  " subdivided into a mesh of {ORDER × ORDER} edge" \
-  " tiles.  The default is \"-order 1\" (no refinement).\n" \
   "\n" \
   "DOCUMENTATION OPTIONS\n" \
   argparser_help_info_HELP_INFO "\n" \
@@ -82,7 +75,6 @@
   
 typedef struct options_t
   { char *shape;  /* Name of map to build. */
-    int32_t refine;   /* Degree of refinement requested. */
   } options_t;
 
 int32_t main(int32_t argc, char **argv);
@@ -94,13 +86,11 @@ string_vec_t split_shape_names(char *names);
 oct_arc_t make_map(char *name);
   /* Returns the oct-edge representation of the map called {name}. */
 
-oct_arc_t refine_map(oct_arc_t m, int32_t refine);
-
 void write_map(oct_arc_t a);
 
 options_t *get_options (int32_t argc, char **argv, string_vec_t *shape_name);
 
-int32_t get_shape_num(char *shp, string_vec_t *shape_name);
+uint32_t get_shape_num(char *shp, string_vec_t *shape_name);
   /* Returns the index {i} in {0..NS-1} such that
     {shape_name->e[i]===shp}, or {NS} if not there; where
     {NS==shape_name->ne}. */
@@ -117,9 +107,6 @@ int32_t main(int32_t argc, char **argv)
     
     /* Build the map and check number-name consistency: */
     oct_arc_t m = make_map(o->shape);
-    
-    /* Refine the map as requested: */
-    if (o->refine > 1) { m = refine_map(m, o->refine); }
     
     /* Write the map to standard output: */
     write_map(m);
@@ -147,11 +134,6 @@ oct_arc_t make_map(char *name)
     if (eq(name, "star"))        { return make_fork(5, 1);  } else
       { demand(FALSE, "invalid shape number"); return oct_arc_NULL; }
   } 
-  
-oct_arc_t refine_map(oct_arc_t m, int32_t refine)
-  {
-    demand(FALSE, "!!! not implemented yet !!!");
-  }
     
 void write_map(oct_arc_t a)
   { oct_arc_vec_t root = oct_arc_vec_new(1);
@@ -175,14 +157,9 @@ options_t *get_options (int32_t argc, char **argv, string_vec_t *shape_name)
 
     argparser_get_keyword(pp, "-shape");  
     o->shape = argparser_get_next(pp);
-    int32_t num = get_shape_num(o->shape, shape_name);
+    uint32_t num = get_shape_num(o->shape, shape_name);
     if (num >= shape_name->ne) 
       { argparser_error(pp, "invalid shape name"); }
-
-    if (argparser_keyword_present(pp, "-refine"))
-      { o->refine = (int32_t)argparser_get_next_int(pp, 1, 1000); }
-    else
-      { o->refine = 1; }
 
     /* Parse positional arguments: */
     argparser_skip_parsed(pp);
@@ -193,7 +170,7 @@ options_t *get_options (int32_t argc, char **argv, string_vec_t *shape_name)
     return o;
   }
 
-int32_t get_shape_num(char *shp, string_vec_t *shape_name)
+uint32_t get_shape_num(char *shp, string_vec_t *shape_name)
   {
     for (uint32_t i = 0;  i < shape_name->ne; i++)
       { if (0 == strcmp(shp, shape_name->e[i])) { return i; } }
@@ -203,18 +180,18 @@ int32_t get_shape_num(char *shp, string_vec_t *shape_name)
 string_vec_t split_shape_names(char *names)
   {
     string_vec_t shape_names = string_vec_new(0);
-    int32_t NS = 0;
+    uint32_t NS = 0;
     char *p = names;
     while (TRUE)
       { while ((*p) == ' ') { p++; } 
         if ((*p) == 0) { break; }
         char *q = p;
         while (((*q) != 0) && ((*q) != ' ')) { q++; }
-        int32_t nc = (int32_t)(q - p);
+        uint32_t nc = (uint32_t)(q - p);
         char *s = notnull(malloc(nc + 1), "no mem");
         (void)strncpy(s, p, nc);
         s[nc] = 0;
-        string_vec_expand(&shape_names, NS);
+        string_vec_expand(&shape_names, (vec_index_t)NS);
         shape_names.e[NS] = s; 
         NS++;
         p = q;

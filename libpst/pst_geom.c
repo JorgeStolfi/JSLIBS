@@ -1,11 +1,11 @@
 /* See pst_geom.h */
-/* Last edited on 2009-02-28 21:04:42 by stolfi */
+/* Last edited on 2024-12-22 12:04:21 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <values.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <r2.h>

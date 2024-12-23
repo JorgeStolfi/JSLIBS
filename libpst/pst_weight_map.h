@@ -2,7 +2,7 @@
 #define pst_weight_map_H
 
 /* pst_weight_map.h -- procedures for working with pixel weight maps. */
-/* Last edited on 2010-05-04 01:36:51 by stolfi */
+/* Last edited on 2024-12-23 07:08:45 by stolfi */
 
 #include <bool.h>
 
@@ -18,7 +18,7 @@
   of some other image {IM}.
 */
 
-float_image_t *pst_weight_map_shrink(float_image_t *IW, bool_t harmonic, int avgWidth);
+float_image_t *pst_weight_map_shrink(float_image_t *IW, bool_t harmonic, uint32_t avgWidth);
   /* Given a weight map {IW} for some image {IM}, returns another
     weight map {JW} appropriate for a half-sized version {JM} of the
     image.
@@ -38,7 +38,7 @@ float_image_t *pst_weight_map_expand_height_weights(float_image_t *IW);
 /*Given a slope weight map {IW}, creates a expanded height weight map where its elements are the 
 averaging of equivalent neighbors pixels in SW*/
       
-float_image_t *pst_weight_map_slope_to_height(float_image_t *W, bool_t harmonic, int NXV, int NYV);
+float_image_t *pst_weight_map_slope_to_height(float_image_t *W, bool_t harmonic, uint32_t NXV, uint32_t NYV);
   /* Given a weight map {W} for a slope map, returns another
     weight map {V} appropriate for the corresponding height map,
     which is assumed to have {NXV} columns and {NYV} rows.
@@ -65,9 +65,9 @@ float_image_t *pst_weight_map_slope_to_height(float_image_t *W, bool_t harmonic,
 
 /* DEBUGGING */
     
-typedef void pst_weight_map_debug_proc_t(int level, float_image_t *W); 
+typedef void pst_weight_map_debug_proc_t(uint32_t level, float_image_t *W); 
   /* Type of a client-given procedure that may be called
     by recursive integrators to report the weight map used in each scale. */   
-float_image_t *pst_weight_map_heights_from_slopes(int NX_Z, int NY_Z,float_image_t *GW);
+float_image_t *pst_weight_map_heights_from_slopes(uint32_t NX_Z, uint32_t NY_Z,float_image_t *GW);
   
 #endif

@@ -2,7 +2,7 @@
 #define pst_gray_scale_fit_H
 
 /* Fitting camera transfer function to data from a gray scale chart. */
-/* Last edited on 2008-12-12 16:59:43 by stolfi */
+/* Last edited on 2024-12-22 21:53:43 by stolfi */
 
 #include <bool.h>
 #include <r2.h>
@@ -20,7 +20,7 @@ typedef enum /* Kind of function basis to use for function approximation: */
 
 typedef struct pst_gray_scale_fit_basis_t /* Function basis for function approximation. */
   { pst_gray_scale_fit_btype_t bt;  /* Kind of basis. */
-    int N;                 /* Number of element in basis. */
+    uint32_t N;                 /* Number of element in basis. */
   } pst_gray_scale_fit_basis_t;
   /* A basis for least-squares fitting. The basis has {N} elements.
     Element {N-1} is the unit function. */
@@ -39,7 +39,7 @@ double pst_gray_scale_fit_eval_map
     
 void pst_gray_scale_fit_apply_map
   ( float_image_t *img,
-    int c, 
+    uint32_t c, 
     double noise, 
     double logVlo, 
     double logVhi,
@@ -53,8 +53,8 @@ void pst_gray_scale_fit_apply_map
 /* FITTING A MAP TO A GRAY SCALE CHART */
 
 void pst_gray_scale_fit_light_map
-  ( int c,                     /* Channel of {img} to consider. */
-    int NS,                /* Number of steps in gray scale. */
+  ( uint32_t c,                /* Channel of {img} to consider. */
+    uint32_t NS,               /* Number of steps in gray scale. */
     double noise,              /* Noise level to assume in {img} sample values. */
     float_image_t *imgScale,   /* The extracted and rectified gray-scale patches. */
     double albScale[],         /* Nominal albedo of each patch. */
@@ -116,7 +116,7 @@ double pst_gray_scale_fit_eval_raw_map(double v, pst_gray_scale_fit_basis_t B, d
     combination {pst_gray_scale_fit_eval_basis(v, p, B)} with coefficient
     {z[p]}, for {p} in {0..B.N-1}. */
     
-double pst_gray_scale_fit_eval_basis(double v, int p, pst_gray_scale_fit_basis_t B);
+double pst_gray_scale_fit_eval_basis(double v, uint32_t p, pst_gray_scale_fit_basis_t B);
   /* Evaluates element {p} of the least-squares fitting basis {B}, at
     the logscaled and normalized argument {v}. Fails if {p} is not in
     {0..B.N-1}. */

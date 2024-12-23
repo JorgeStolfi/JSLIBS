@@ -2,13 +2,12 @@
 
 /* Created on 2011-06-17 by Jorge Stolfi, unicamp, <stolfi@dcc.unicamp.br> */
 /* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2016-04-01 01:45:56 by stolfilocal */
+/* Last edited on 2024-12-22 12:37:27 by stolfi */
 /* See the copyright and authorship notice at the end of this file.  */
-
-#define _GNU_SOURCE
 
 #include <math.h>
 #include <assert.h>
+#include <stdint.h>
 
 #include <affirm.h>
 #include <float_image.h>
@@ -25,16 +24,16 @@ void pst_interpolate_two_values
 
 void pst_interpolate_two_samples
   (  float_image_t *I, float_image_t *W,
-     int c,
-     int x0, int y0,
-     int x1, int y1,
+     int32_t c,
+     int32_t x0, int32_t y0,
+     int32_t x1, int32_t y1,
      double *vR, double *wR
    )
    {
      if((I == NULL) && (W == NULL)) { *vR = 0; *wR = 1;  return;  }
      
-     int NX = (int)(I == NULL ? W->sz[1] : I->sz[1]);
-     int NY = (int)(I == NULL ? W->sz[2] : I->sz[2]);
+     int32_t NX = (int32_t)(I == NULL ? W->sz[1] : I->sz[1]);
+     int32_t NY = (int32_t)(I == NULL ? W->sz[2] : I->sz[2]);
      
      if((I != NULL) && (W != NULL)) 
        { demand((I->sz[1] == W->sz[1]) && (I->sz[2] == W->sz[2]), "image/mask size mismatch"); }
@@ -100,16 +99,16 @@ void pst_interpolate_four_values
 
 void pst_interpolate_four_samples
   (  float_image_t *I, float_image_t *W,
-     int c,
-     int x0, int y0,
-     int x1, int y1,
+     int32_t c,
+     int32_t x0, int32_t y0,
+     int32_t x1, int32_t y1,
      double *vR, double *wR
    )
    {
      if ((I == NULL) && (W == NULL)) { *vR = 0; *wR = 1;  return; }
      
-     int NX = (int)(I == NULL ? W->sz[1] : I->sz[1]);
-     int NY = (int)(I == NULL ? W->sz[2] : I->sz[2]);
+     int32_t NX = (int32_t)(I == NULL ? W->sz[1] : I->sz[1]);
+     int32_t NY = (int32_t)(I == NULL ? W->sz[2] : I->sz[2]);
      
      if((I != NULL) && (W != NULL)) 
        { demand((I->sz[1] == W->sz[1]) && (I->sz[2] == W->sz[2]), "image/mask size mismatch"); }
@@ -117,8 +116,8 @@ void pst_interpolate_four_samples
        { demand(W->sz[0] == 1, "invalid weight mask channels"); }
   
      /* Compute indices of auxiliary pixels: */
-     int xm = 2*x0 - x1, ym = 2*y0 - y1;
-     int xp = 2*x1 - x0, yp = 2*y1 - y0;
+     int32_t xm = 2*x0 - x1, ym = 2*y0 - y1;
+     int32_t xp = 2*x1 - x0, yp = 2*y1 - y0;
      
      /* Extract the sample values and weights: */
      double vm, v0, v1, vp;

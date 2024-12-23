@@ -1,5 +1,5 @@
 /* See {jsprinf.h} */
-/* Last edited on 2024-11-20 03:59:38 by stolfi */
+/* Last edited on 2024-12-21 04:45:56 by stolfi */
 
 #include <stdint.h>
 #include <stdarg.h>
@@ -83,7 +83,7 @@ void jsprintf_process_format_code(char **p_P, uint64_t *buf_size_P, va_list ap)
     
     assert((*p) == '%');
     p++;
-    int prec = 0;
+    int32_t prec = 0;
     while (strchr ("-+ #0", (*p))) { ++p; }
     if ((*p) == '*')
       { ++p; buf_size += (uint64_t)abs(va_arg(ap, int)); }

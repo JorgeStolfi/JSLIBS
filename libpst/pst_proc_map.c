@@ -1,10 +1,10 @@
 /* See pst_proc_map.h */
-/* Last edited on 2018-07-01 03:31:11 by stolfilocal */
+/* Last edited on 2024-12-22 22:34:27 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <math.h>
 #include <values.h>
 
@@ -29,8 +29,8 @@
 
 void pst_proc_map_make_images
   ( pst_proc_map_zfunc_t *func,
-    int NX,
-    int NY,
+    int32_t NX,
+    int32_t NY,
     pst_proc_map_sampling_t smpZ,
     pst_proc_map_sampling_t smpG,
     bool_t numGrad,
@@ -44,7 +44,7 @@ void pst_proc_map_make_images
   )
   {
     demand(IZ != NULL, "{IZ} must be non-null");
-    int NMIN = (NX < NY ? NX : NY);         /* Smallest dimension of image. */
+    int32_t NMIN = (NX < NY ? NX : NY);         /* Smallest dimension of image. */
     double pxPerUnit = ((double)NMIN)/2.0;  /* Number of grid pixels per {func} domain unit. */
     
     float_image_check_size(IZ, 1, NX+1, NY+1);
@@ -56,7 +56,7 @@ void pst_proc_map_make_images
     double cX = 0.5*NX;
     double cY = 0.5*NY;
     
-    int X, Y, c;
+    int32_t X, Y, c;
     /* Compute height at each grid corner: */
     for (Y = 0; Y <= NY; Y++)
       { for (X = 0; X <= NX; X++)
@@ -126,16 +126,16 @@ void pst_proc_map_make_images
       }
   }
 
-pst_proc_map_sampling_t pst_proc_map_make_sampling_tables(int L, int N)
+pst_proc_map_sampling_t pst_proc_map_make_sampling_tables(int32_t L, int32_t N)
   {
     assert(L <= 2); /* For now. */
     bool_t debug = TRUE;
     /* Compute sample positions and weights for height sampling: */
     pst_proc_map_sampling_t smp;
     smp.N = N;
-    smp.d = notnull(malloc(N*sizeof(double)), "no mem");
-    smp.w = notnull(malloc(N*sizeof(double)), "no mem");
-    int k;
+    smp.d = talloc(N, double);
+    smp.w = talloc(N, double);
+    int32_t k;
     if (debug) { fprintf(stderr, "%s L = %d N = %d\n", __FUNCTION__, L, N); }
     for (k = 0; k < N; k++)
       { double rk = (k + 0.5)/N - 0.5;    /* Relative sample position in {[-1/2 _ +1/2]}. */
@@ -176,10 +176,10 @@ double pst_proc_map_compute_height_value
     double pxPerUnit
   )
   { 
-    int NS = smp->N;
+    int32_t NS = smp->N;
     double sum_w = 0;
     double sum_wz = 0;
-    int xs, ys;
+    int32_t xs, ys;
     for (ys = 0; ys < NS; ys++)
       for (xs = 0; xs < NS; xs++)
         { /* Generate a sample point {(xk,yk)} inside cell {[X,Y]}: */
@@ -209,10 +209,10 @@ r2_t pst_proc_map_compute_analytic_pixel_gradient
     double pxPerUnit
   )
   {
-    int NS = smp->N;
+    int32_t NS = smp->N;
     double sum_w = 0;
     r2_t sum_wdz = (r2_t){{ 0, 0 }};
-    int xs, ys;
+    int32_t xs, ys;
     for (ys = 0; ys < NS; ys++)
       for (xs = 0; xs < NS; xs++)
         { /* Generate a sample point {(xk,yk)} inside cell {[X,Y]}: */
@@ -227,7 +227,7 @@ r2_t pst_proc_map_compute_analytic_pixel_gradient
           /* Get sample weight: */
           double wk = smp->w[xs]*smp->w[ys];
           /* Accumulate gradient: */
-          int c;
+          int32_t c;
           for (c=0; c < 2; c++)
             { sum_wdz.c[c] += wk*dzk.c[c]; }
           sum_w += wk;
@@ -274,7 +274,7 @@ double pst_proc_map_compute_pixel_weight
 
 void pst_proc_map_perturb_gradient(r2_t *dz, double sigma)
   { 
-    int c;
+    int32_t c;
     for (c = 0; c < 2; c++) { dz->c[c] += sigma * dgaussrand(); }
   }
 
@@ -284,7 +284,7 @@ void pst_proc_map_perturb_weight(double *w, double sigma)
     (*w) *= fac;
   }
 
-pst_proc_map_zfunc_t *pst_proc_map_function_generic(int n)
+pst_proc_map_zfunc_t *pst_proc_map_function_generic(int32_t n)
   {
     switch(n)
       { case  0: return &pst_proc_map_function_00;
@@ -411,7 +411,7 @@ void pst_proc_map_function_06(r2_t p, double *z, r2_t *dz)
     else
       { double ang = atan2(y,x);
         double dang = 2*M_PI/5;
-        double rang = dang*((int)floor((ang + 2*M_PI)/dang + 0.83) - 0.33);
+        double rang = dang*((int32_t)floor((ang + 2*M_PI)/dang + 0.83) - 0.33);
         double rx = cos(rang), ry = sin(rang);
         double S = rx*x + ry*y;
         if (S < R)
@@ -638,7 +638,7 @@ void pst_proc_map_function_19(r2_t p, double *z, r2_t *dz)
     if ((y > 0) && (y < -x/3)) { bad = TRUE; }
     
     /* Drill some holes in various places: */
-    int M = 2;
+    int32_t M = 2;
     double xf = M*x - floor(M*x);
     double yf = M*y - floor(M*y);
     double xc = 0.5 + 0.2*sin(4.615*(x+y));
@@ -741,7 +741,7 @@ void pst_proc_map_function_21(r2_t p, double *z, r2_t *dz)
     double R[3] = { 0.5, 0.4, 0.3 };      /* Nominal radii. */
     double HS[3] = { 0.05, 0.02, 0.03 };  /* Half-widthd of shoulders. */
     double zDif[3] = { 0.80, 0.60, 0.70 };   /* Heights. */
-    int k;
+    int32_t k;
     (*z) = 0;
     if (dz != NULL) { (*dz) = (r2_t){{0,0}}; }
     for (k = 0; k < 3; k++)
@@ -764,7 +764,7 @@ void pst_proc_map_function_22(r2_t p, double *z, r2_t *dz)
     double S[2] = { 0.05, 0.03 };   /* Half-widthd of shoulders. */
     double zDif[2] = { +0.80, -0.40 }; /* Heights. */
     double T[2] = { 0, M_PI/3 };    /* Tilts. */
-    int k;
+    int32_t k;
     (*z) = 0;
     if (dz != NULL) { (*dz) = (r2_t){{0,0}}; }
     for (k = 0; k < 2; k++)
@@ -934,7 +934,7 @@ void pst_proc_map_function_babel(r2_t *p, double RI, double RO, double N, double
     /* Compute height {mz} of ramp, ignoring shoulders and Z-clipping: */
     double rpt = RI + (1 - t)*DR;     /* Radius of platform at this {t}. */
     double s = r - rpt;               /* Radial distance from platform. */
-    int k = (int)floor(s/DR);              /* Index of ramp turn (0 = nearest to center). */
+    int32_t k = (int32_t)floor(s/DR);              /* Index of ramp turn (0 = nearest to center). */
     double ph = fmax(0,s - k*DR);     /* Distance from inner edge of ramp, ignoring shoulder. */
     double mz = zTop - zDif*(1 + k - t);  /* Height without shoulders or clipping. */
 
@@ -1065,7 +1065,7 @@ void pst_proc_map_function_round_platform(r2_t *p, double R, double HS, double *
       }
   }
   
-void pst_proc_map_function_polygonal_platform(r2_t *p, int N, double R, double tilt, double S, double *z, r2_t *dz)
+void pst_proc_map_function_polygonal_platform(r2_t *p, int32_t N, double R, double tilt, double S, double *z, r2_t *dz)
   {
     double x = p->c[0], y = p->c[1];
     
@@ -1088,7 +1088,7 @@ void pst_proc_map_function_polygonal_platform(r2_t *p, int N, double R, double t
       {
         /* Compute sectors to turn: */
         double ang = atan2(y,x) - tilt; /* Angle relative to ref vertex. */
-        int nw = (int)floor(N*ang/(2*M_PI));  /* Sectors to turn. */
+        int32_t nw = (int32_t)floor(N*ang/(2*M_PI));  /* Sectors to turn. */
 
         /* Convert to a coordinate system {u,v} where the mid-side is at {v=0}: */
         double hw = M_PI/N;               /* Half angular width of each sector. */

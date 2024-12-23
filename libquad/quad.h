@@ -2,7 +2,7 @@
 #define quad_H
 
 /* The quad-edge data structure (oriented surface version). */
-/* Last edited on 2024-12-05 10:39:45 by stolfi */
+/* Last edited on 2024-12-22 11:02:41 by stolfi */
 
 #define quad_H_copyright \
   "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright "\n\n" \
@@ -313,7 +313,7 @@ quad_edge_id_t quad_renumber_edges(quad_arc_vec_t *root, quad_arc_vec_t *A);
 
 /* ARC INPUT/OUTPUT */
 
-void quad_write_arc(FILE *wr, quad_arc_t e, int32_t width);
+void quad_write_arc(FILE *wr, quad_arc_t e, uint32_t width);
   /* Writes the arc {e} to {wr} in the format "{eid}:{tc}" where {eid}
     is {quad_edge_id(edge(e))}, and {tc} is {quad_tumble_code(e)} in binary.
     The {eid} is padded with spaces to have at least {width}

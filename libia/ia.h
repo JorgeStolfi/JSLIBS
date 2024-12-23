@@ -1,13 +1,15 @@
 /* Routines for standard interval arithmetic    */
-/* Last edited on 2008-01-19 13:21:57 by stolfi */
+/* Last edited on 2024-12-21 11:23:36 by stolfi */
 /* Created by Jorge Stolfi 93-01-13             */
 
 #ifndef ia_H
 #define ia_H
 
-#include <flt.h>
 #include <stdio.h>
 #include <math.h>
+
+#include <flt.h>
+#include <jsrandom.h>
 
 typedef struct {Float lo, hi; } Interval;
 

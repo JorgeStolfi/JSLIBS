@@ -1,11 +1,11 @@
 /* See pst_normal_map.h */
-/* Last edited on 2016-03-16 16:09:49 by stolfilocal */
+/* Last edited on 2024-12-22 12:38:21 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <float_image.h>
@@ -18,20 +18,20 @@
 #include <pst_normal_map.h>
 #include <pst_slope_map.h>
 
-r3_t pst_normal_map_get_pixel(float_image_t *NRM, int x, int y)
+r3_t pst_normal_map_get_pixel(float_image_t *NRM, int32_t x, int32_t y)
   { demand(NRM->sz[0] == 3, "wrong normal map depth");
     r3_t nrm;
     float *p = float_image_get_sample_address(NRM, 0, x, y);
-    int axis;
+    int32_t axis;
     for (axis = 0; axis < 3; axis++)
       { nrm.c[axis] = (*p); p += NRM->st[0]; }
     return nrm;
   }
   
-void pst_normal_map_set_pixel(float_image_t *NRM, int x, int y, r3_t *nrm)
+void pst_normal_map_set_pixel(float_image_t *NRM, int32_t x, int32_t y, r3_t *nrm)
   { demand(NRM->sz[0] == 3, "wrong normal map depth");
     float *p = float_image_get_sample_address(NRM, 0, x, y);
-    int axis;
+    int32_t axis;
     for (axis = 0; axis < 3; axis++)
       { (*p) = (float)nrm->c[axis]; p += NRM->st[0]; }
   }
@@ -81,16 +81,16 @@ r3_t pst_normal_map_eval
 
 void pst_normal_map_from_proc
   ( pst_normal_map_proc_t nrmf, /* Normal-computing funtion. */
-    int NS,                     /* Order of subsampling grid within each pixel. */
+    int32_t NS,                     /* Order of subsampling grid within each pixel. */
     r3x3_t *xym_to_uvm,         /* Affine map of image {xy} coords to model {uv} coords. */
     r3x3_t *uvw_to_xyz,         /* Linear map of {uvw} coords to normal {xyz} coords. */
     float_image_t *NRM          /* (OUT) Computed normal map. */
   )
   { /* Get/check image dimensions: */
     demand(NRM->sz[0] == 3, "bad normal map");
-    int NX = (int)(NRM->sz[1]);      /* Number of columns in output image. */
-    int NY = (int)(NRM->sz[2]);      /* Number of rows in output image. */
-    int x, y;
+    int32_t NX = (int32_t)(NRM->sz[1]);      /* Number of columns in output image. */
+    int32_t NY = (int32_t)(NRM->sz[2]);      /* Number of rows in output image. */
+    int32_t x, y;
     for (y = 0; y < NY; y++)
       { for (x = 0; x < NX; x++)
           { /* Compute average normal inside pixel in column {x}, row {y}: */
@@ -103,14 +103,14 @@ void pst_normal_map_from_proc
   
 r3_t pst_normal_map_pixel_avg
   ( pst_normal_map_proc_t nrmf, /* Normal-computing function. */
-    int x, int y,               /* Pixel indices (coords of lower left corner). */
-    int NS,                     /* Order of sub-sampling grid in pixel. */
+    int32_t x, int32_t y,               /* Pixel indices (coords of lower left corner). */
+    int32_t NS,                     /* Order of sub-sampling grid in pixel. */
     r3x3_t *xym_to_uvm,         /* Affine map of image {xy} coords to model {uv} coords. */
     r3x3_t *uvw_to_xyz          /* Linear map of {uvw} coords to normal {xyz} coords. */
   )
   { double step = 1.0/((double)NS);
     r2_t grd_uv_sum = (r2_t){{ 0, 0 }}; /* Slope totals in {U,V,W} system. */
-    int sx, sy;
+    int32_t sx, sy;
     for (sy = 0; sy < NS; sy++)
       { for (sx = 0; sx < NS; sx++) 
           { 
@@ -149,9 +149,9 @@ r3_t pst_normal_map_pixel_avg
   
 void pst_normal_map_perturb(float_image_t *NRM, double noise)
   { assert(NRM->sz[0] == 3);
-    int NX = (int)(NRM->sz[1]);
-    int NY = (int)(NRM->sz[2]);
-    int x, y;
+    int32_t NX = (int32_t)(NRM->sz[1]);
+    int32_t NY = (int32_t)(NRM->sz[2]);
+    int32_t x, y;
     for (y = 0; y < NY; y++)
       { for (x = 0; x < NX; x++)
           { r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
@@ -183,11 +183,11 @@ void pst_perturb_normal(r3_t *nrm, double amt)
 float_image_t *pst_normal_map_to_slope_map(float_image_t *NRM, double maxSlope)
   {
     demand(NRM->sz[0] == 3, "normal map should have three channels"); 
-    int NX = (int)(NRM->sz[1]); 
-    int NY = (int)(NRM->sz[2]);
+    int32_t NX = (int32_t)(NRM->sz[1]); 
+    int32_t NY = (int32_t)(NRM->sz[2]);
     float_image_t *GRD = float_image_new(2, NX, NY);
     
-    int x,y;
+    int32_t x,y;
     for (y =0; y < NY; y++)
       { for (x = 0; x < NX; x++)
           { r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
@@ -211,11 +211,11 @@ r2_t pst_normal_map_slope_from_normal(r3_t *nrm, double maxSlope)
 float_image_t *pst_normal_map_from_slope_map(float_image_t *GRD)
   {
     demand(GRD->sz[0] == 2, "slope map should have two channels"); 
-    int NX = (int)(GRD->sz[1]); 
-    int NY = (int)(GRD->sz[2]);
+    int32_t NX = (int32_t)(GRD->sz[1]); 
+    int32_t NY = (int32_t)(GRD->sz[2]);
     float_image_t *NRM = float_image_new(3, NX, NY);
     
-    int x,y;
+    int32_t x,y;
     for (y =0; y < NY; y++)
       { for (x = 0; x < NX; x++)
           { r2_t grd = pst_slope_map_get_pixel(GRD, x, y);

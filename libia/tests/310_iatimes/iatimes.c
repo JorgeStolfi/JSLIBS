@@ -1,11 +1,12 @@
 /* iatimes.c - timing of IA operations */
-/* Last edited on 2016-12-26 19:27:01 by stolfilocal */
+/* Last edited on 2024-12-21 11:24:05 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
 
 #include <ia.h>
 #include <flt.h>
+#include <jsrandom.h>
 
 #include <timefunc.h>
 

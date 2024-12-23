@@ -1,10 +1,10 @@
 /* See pst_height_map.h */
-/* Last edited on 2017-01-04 18:25:44 by stolfilocal */
+/* Last edited on 2024-12-23 06:00:41 by stolfi */
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <affirm.h>
 #include <assert.h>
+#include <stdint.h>
 
 #include <pst_height_map.h>
 #include <pst_interpolate.h>
@@ -19,27 +19,26 @@ void pst_height_map_expand
   )
   { 
     assert(JZ->sz[0] == 1);
-    int NXJ = (int)JZ->sz[1];
-    int NYJ = (int)JZ->sz[2];
+    uint32_t NXJ = (uint32_t)JZ->sz[1];
+    uint32_t NYJ = (uint32_t)JZ->sz[2];
     
     if (JW != NULL) { assert(JW->sz[0] == 1); assert(JW->sz[1] == NXJ); assert(JW->sz[2] == NYJ); }
     
     assert(IZ->sz[0] == 1);
-    int NXI = (int)IZ->sz[1]; assert(NXJ == NXI/2 + 1);
-    int NYI = (int)IZ->sz[2]; assert(NYJ == NYI/2 + 1);
+    uint32_t NXI = (uint32_t)IZ->sz[1]; assert(NXJ == NXI/2 + 1);
+    uint32_t NYI = (uint32_t)IZ->sz[2]; assert(NYJ == NYI/2 + 1);
     
     if (IW != NULL) { assert(IW->sz[0] == 1); assert(IW->sz[1] == NXI); assert(IW->sz[2] == NYI); }
     
-    int xI, yI;
-    for(yI = 0; yI < NYI; yI++)
-      { for(xI = 0; xI < NXI; xI++)
+    for (int32_t yI = 0; yI < NYI; yI++)
+      { for (int32_t xI = 0; xI < NXI; xI++)
           { 
-	    int xJ = xI/2;
-	    int yJ = yI/2;
+	    int32_t xJ = xI/2;
+	    int32_t yJ = yI/2;
 	    double v,w;
 	    
-            if( (xI%2) == 0 )
-              { if( (yI%2) == 0 )
+            if ((xI%2) == 0)
+              { if ( (yI%2) == 0 )
                   { v = float_image_get_sample (JZ, 0, xJ,yJ);
                     w = (JW == NULL ? 1.0 : float_image_get_sample(JZ,0,xJ,yJ));
                   }
@@ -47,7 +46,7 @@ void pst_height_map_expand
                   { pst_interpolate_four_samples(JZ,JW, 0, xJ,yJ, xJ,yJ+1, &v,&w); }
               }
 	    else
-              { if( (yI%2) == 0 )
+              { if ( (yI%2) == 0 )
                   { pst_interpolate_four_samples(JZ,JW, 0, xJ,yJ, xJ+1,yJ, &v,&w); }
                 else
                   { double wa,wb;
@@ -67,12 +66,12 @@ void pst_height_map_expand
       }
   }
 
-float_image_t *pst_height_map_shrink(float_image_t *IZ, int avgWidth)
+float_image_t *pst_height_map_shrink(float_image_t *IZ, uint32_t avgWidth)
   {
-    int NX_JZ = (int)IZ->sz[1]/2+1;
-    int NY_JZ = (int)IZ->sz[2]/2+1;
-    int dxy = (avgWidth-1)/2;
-    float_image_t *JZ = float_image_mscale_shrink(IZ, NULL, NX_JZ, NY_JZ, dxy, dxy, avgWidth);
+    int32_t NX_JZ = (int32_t)IZ->sz[1]/2+1;
+    int32_t NY_JZ = (int32_t)IZ->sz[2]/2+1;
+    int32_t dxy = (int32_t)(avgWidth-1)/2;
+    float_image_t *JZ = float_image_mscale_shrink(IZ, NULL, NX_JZ, NY_JZ, dxy, dxy, (int32_t)avgWidth);
     float_image_rescale_samples(JZ, 0, 0.0, 1.0, 0.0, 0.5);
     return JZ;
   }
@@ -90,8 +89,8 @@ float_image_t *pst_height_map_compare
   { 
     assert(AZ->sz[0] == 1);
     assert(BZ->sz[0] == 1);
-    int NX = (int)AZ->sz[1]; assert(BZ->sz[1] == NX);
-    int NY = (int)AZ->sz[2]; assert(BZ->sz[2] == NY);
+    int32_t NX = (int32_t)AZ->sz[1]; assert(BZ->sz[1] == NX);
+    int32_t NY = (int32_t)AZ->sz[2]; assert(BZ->sz[2] == NY);
     
     if (W != NULL)
       { assert(W->sz[0] == 1);
@@ -104,9 +103,8 @@ float_image_t *pst_height_map_compare
     double sum_BZW = 0;
     double sum_EZW = 0;
     double sum_W = 0;
-    int x, y;
-    for(y = 0; y < NY; y++)
-      { for(x = 0; x < NX; x++)
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
           { /* Get relevant samples from original image: */
             double vA = float_image_get_sample(AZ, 0, x, y);
             double vB = float_image_get_sample(BZ, 0, x, y);
@@ -128,8 +126,8 @@ float_image_t *pst_height_map_compare
     double sum_AdZ2W = 0.0;
     double sum_BdZ2W = 0.0;
     double sum_EZ2W = 0.0;
-    for(y = 0; y < NY; y++)
-      { for(x = 0; x < NX; x++)
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
           { /* Get relevant samples from original image: */
             double vA = float_image_get_sample(AZ, 0, x, y);
             double vB = float_image_get_sample(BZ, 0, x, y);
@@ -164,9 +162,9 @@ float_image_t *pst_height_map_compare
 
 void pst_height_map_level_analyze_and_write
   ( char *filePrefix,
-    int level,
+    uint32_t level,
     bool_t levelTag,
-    int iter,
+    uint32_t iter,
     bool_t iterTag,
     double change,
     float_image_t *CZ,
@@ -174,12 +172,12 @@ void pst_height_map_level_analyze_and_write
     float_image_t *U, 
     bool_t writeImages,
     bool_t writeError,
-    int indent
+    uint32_t indent
   )
   {
     demand(CZ->sz[0] == 1, "bad CZ channels");
-    int NX = (int)CZ->sz[1]; 
-    int NY = (int)CZ->sz[2]; 
+    int32_t NX = (int32_t)CZ->sz[1]; 
+    int32_t NY = (int32_t)CZ->sz[2]; 
     
     if (RZ != 0)
       { demand(RZ->sz[0] == 1, "bad RZ channels");
@@ -193,18 +191,18 @@ void pst_height_map_level_analyze_and_write
         demand(NY == U->sz[2], "bad U rows"); 
       }
       
-    int levelQ = (levelTag ? level : -1);
-    int iterQ = (iterTag ? iter : -1);
+    int32_t levelQ = (levelTag ? (int32_t)level : -1);
+    int32_t iterQ = (iterTag ? (int32_t)iter : -1);
     
     if (writeImages)
-      { float_image_mscale_write_file(CZ, filePrefix, levelQ, iterQ, "Z", indent); }
+      { float_image_mscale_write_file(CZ, filePrefix, levelQ, iterQ, "Z", (int32_t)indent); }
       
     if (RZ != NULL)
       {
         double sAZ, sBZ, sEZ, sre;
         float_image_t *EZ = pst_height_map_compare(CZ, RZ, U, TRUE, &sAZ, &sBZ, &sEZ, &sre);
         if (writeImages)
-          { float_image_mscale_write_file(EZ, filePrefix, levelQ, iterQ, "eZ", indent); }
+          { float_image_mscale_write_file(EZ, filePrefix, levelQ, iterQ, "eZ", (int32_t)indent); }
         if (writeError)
           { char *fileName = float_image_mscale_file_name(filePrefix, levelQ, iterQ, "eZ", "txt");
             fprintf(stderr, "%*swriting %s ...", indent, "", fileName);

@@ -2,7 +2,9 @@
 #define pst_argparser_H
 
 /* pst_argparser.h -- parsing photostereo-related command line arguments. */
-/* Last edited on 2006-05-02 12:06:06 by stolfi */
+/* Last edited on 2024-12-22 11:38:45 by stolfi */
+
+#include <stdint.h>
 
 #include <argparser.h>
 #include <bool.h>
@@ -26,7 +28,7 @@ char *pst_parse_next_file_name(argparser_t *pp);
     An argument looks like a file name if it is just "-", or begins
     with letter, digit, "@", "/" or ".". */
 
-name_vec_t pst_parse_file_name_list(argparser_t *pp, int *NNP);
+name_vec_t pst_parse_file_name_list(argparser_t *pp, uint32_t *NNP);
   /* Parses the next zero or more consecutive command line arguments
     as file names. Accepts only arguments that exist, have not been
     parsed, and look like file names, as defined by

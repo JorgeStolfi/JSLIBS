@@ -4,7 +4,7 @@
 
 /* Created on 2011-06-17 by Jorge Stolfi, unicamp, <stolfi@dcc.unicamp.br> */
 /* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2011-06-17 23:42:51 by stolfi */
+/* Last edited on 2024-12-22 12:37:34 by stolfi */
 /* See the copyright and authorship notice at the end of this file.  */
 
 #include <float_image.h>
@@ -22,9 +22,9 @@ void pst_interpolate_two_values
 
 void pst_interpolate_two_samples
   ( float_image_t *I, float_image_t *W,
-    int c,
-    int x0, int y0,
-    int x1, int y1,
+    int32_t c,
+    int32_t x0, int32_t y0,
+    int32_t x1, int32_t y1,
     double *vR, double *wR
   );
   /* Estimates the value value {*vR} of channel {c} of image {I}
@@ -52,9 +52,9 @@ void pst_interpolate_four_values
   
 void pst_interpolate_four_samples
   ( float_image_t *I, float_image_t *W,
-    int c,
-    int x0, int y0,
-    int x1, int y1,
+    int32_t c,
+    int32_t x0, int32_t y0,
+    int32_t x1, int32_t y1,
     double *vR, double *wR
   );
   /* Estimates the value {*vR} of channel {c} of image {I}

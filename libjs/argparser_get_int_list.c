@@ -1,5 +1,5 @@
 /* See argparser_get_int_list.h. */
-/* Last edited on 2024-11-23 03:18:07 by stolfi */
+/* Last edited on 2024-12-21 04:48:58 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 /* Based on Params.m3 by J.Stolfi, DEC-SRC, 1988.  */
@@ -210,7 +210,7 @@ void argparser_parse_int_range_string
     uint32_t n = (*n_P);
     for (int64_t v = a; v <= b; v++) 
       { if (n >= n_max) { argparser_error_at(pp, "too many integers", "at", index); }
-        int64_vec_expand(num, n);
+        int64_vec_expand(num, (vec_index_t)n);
         num->e[n] = v;
         n++;
       }

@@ -2,7 +2,7 @@
 #define pst_slope_map_H
 
 /* pst_slope_map.h -- procedures for working with slope maps. */
-/* Last edited on 2011-06-20 23:20:48 by stolfi */
+/* Last edited on 2024-12-22 23:11:41 by stolfi */
 
 #include <bool.h>
 #include <r2.h>
@@ -28,12 +28,12 @@
   
 */
 
-r2_t pst_slope_map_get_pixel(float_image_t *G, int x, int y);
+r2_t pst_slope_map_get_pixel(float_image_t *G, int32_t x, int32_t y);
   /* Extracts the derivatives {dZ/dX} and {dZ/dY} from channels 0 and
     1 of the pixel in column {x}, row {y} of {IG}, and returns them
     as a {r2_t} gradient vector. */
 
-void pst_slope_map_set_pixel(float_image_t *G, int x, int y, r2_t *grd);
+void pst_slope_map_set_pixel(float_image_t *G, int32_t x, int32_t y, r2_t *grd);
   /* Stores the derivatives {dZ/dX} and {dZ/dY}, taken from the
     gradient vector {grd} into channels 0 and 1 of the pixel in column
     {x}, row {y} of {IG}. */
@@ -66,21 +66,21 @@ void pst_slope_and_weight_map_shrink
 
 /* COMPUTING HEIGHTS FROM SLOPES */
            
-typedef void pst_slope_map_report_proc_t(int level, float_image_t *IG, float_image_t *IW); 
+typedef void pst_slope_map_report_proc_t(uint32_t level, float_image_t *IG, float_image_t *IW); 
   /* Type of a client-given procedure that may be called
     by recursive integrators to report the reduced slope map and weight map used at each scale. */   
 
 void pst_slope_map_to_depth_map_recursive
   ( float_image_t *IG, 
     float_image_t *IW, 
-    int level,
-    int maxIter,
+    uint32_t level,
+    uint32_t maxIter,
     double convTol,
     bool_t topoSort,
     float_image_t **OZP,
     float_image_t **OWP,
     bool_t verbose,
-    int reportIter,
+    uint32_t reportIter,
     pst_slope_map_report_proc_t *reportData,
     pst_imgsys_report_proc_t *reportSys,
     pst_height_map_report_proc_t *reportHeights
@@ -213,14 +213,14 @@ pst_imgsys_t* pst_slope_map_build_integration_system(float_image_t *G, float_ima
 void pst_slope_map_solve_system
   ( pst_imgsys_t *S, 
     float_image_t *OZ,
-    int ord[], 
-    int maxIter, 
+    uint32_t ord[], 
+    uint32_t maxIter, 
     double convTol, 
-    int para, 
-    int szero, 
+    bool_t para, 
+    bool_t szero, 
     bool_t verbose, 
-    int level, 
-    int reportIter, 
+    uint32_t level, 
+    uint32_t reportIter, 
     pst_height_map_report_proc_t *reportHeights
   );
   /* 

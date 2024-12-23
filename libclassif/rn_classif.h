@@ -1,5 +1,5 @@
 /* rn_classif.h --- tools for vector classifiers. */
-/* Last edited on 2024-12-05 10:24:17 by stolfi */
+/* Last edited on 2024-12-21 11:22:38 by stolfi */
 
 #ifndef rn_classif_H
 #define rn_classif_H
@@ -9,6 +9,7 @@
 
 #include <r2.h>
 #include <frgb.h>
+#include <jsrandom.h>
   
 /* VECTOR CLASSIFICATION PROBLEMS */
 

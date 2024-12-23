@@ -1,11 +1,11 @@
 /* See pst_gray_scale_fit.h */
-/* Last edited on 2024-12-01 00:26:31 by stolfi */
+/* Last edited on 2024-12-22 22:03:45 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <values.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <float_image.h>
@@ -60,20 +60,20 @@ vec_typedef(diff_data_vec_t,diff_data_vec,diff_data_t);
 
 /* INTERNAL PROTOTYPES */
 
-patch_data_t pgsf_get_patch_data
+patch_data_t pst_gray_scale_fit_get_patch_data
   ( float_image_t *img, 
-    int c,
+    uint32_t c,
     double cX,  /* X coordinate of patch center in chart (pixels). */
     double cY,  /* Y coordinate of patch center in chart (pixels). */
-    int loX,    /* Min col of patch in {img} (pixels). */
-    int hiX,    /* Max col of patch in {img} (pixels). */
-    int loY,    /* Min row of patch in {img} (pixels). */
-    int hiY     /* Max row of patch in {img} (pixels). */
+    int32_t loX,    /* Min col of patch in {img} (pixels). */
+    int32_t hiX,    /* Max col of patch in {img} (pixels). */
+    int32_t loY,    /* Min row of patch in {img} (pixels). */
+    int32_t hiY     /* Max row of patch in {img} (pixels). */
   );
   /* Extracts from channel {c} of {img} the raw data of a rectangular
     patch {{loX..hiX} × {loY..hiY}} of the chart. */
  
-diff_data_t pgsf_compute_quad
+diff_data_t pst_gray_scale_fit_compute_quad
   ( double R_a,
     patch_data_t *C_a,
     double R_b,
@@ -88,9 +88,9 @@ diff_data_t pgsf_compute_quad
     The reflectances are merely stored into the result record.
     By convention, {-1} denotes `unknown reflectance'. */
 
-void pgsf_get_patch_to_strip_data
-  ( int c,                   /* Channel of {img} to consider. */
-    int NS,                  /* Number of steps in gray scale. */
+void pst_gray_scale_fit_get_patch_to_strip_data
+  ( uint32_t c,                   /* Channel of {img} to consider. */
+    uint32_t NS,                  /* Number of steps in gray scale. */
     double noise,            /* Noise level to assume in {img} sample values. */
     float_image_t *imgScale, /* The extracted and rectified gray-scale patches. */
     double albScale[],       /* Nominal albedo of each patch. */
@@ -99,7 +99,7 @@ void pgsf_get_patch_to_strip_data
     double albStrip,         /* Albedo of {imgStrip0}. */
     double dY,               /* Y displ between centers of {imgScale} and {imgStrip} (pixels). */
     diff_data_vec_t *dd,     /* List of differential data points. */
-    int *NG                  /* Number of differential data points. */
+    uint32_t *NG                  /* Number of differential data points. */
   );
   /* Extracts a set of differential constraints
     ({diff_data_t}s) from channel {c} of {imgScale}, by
@@ -119,15 +119,15 @@ void pgsf_get_patch_to_strip_data
     matrix {P} that maps chart coordianates to {img} pixel
     coordinates. */
 
-void pgsf_get_patch_to_patch_data
-  ( int c,                     /* Channel of {img} to consider. */
-    int NS,                /* Number of steps in gray scale. */
+void pst_gray_scale_fit_get_patch_to_patch_data
+  ( uint32_t c,                     /* Channel of {img} to consider. */
+    uint32_t NS,                /* Number of steps in gray scale. */
     double noise,              /* Noise level to assume in {img} sample values. */
     float_image_t *imgScale,  /* The extracted and rectified gray-scale patches. */
     double albScale[],         /* Nominal albedo of each patch. */
     double dX,                 /* X displ between centers of successive patches (pixels). */
     diff_data_vec_t *dd,  /* List of differential data points. */
-    int *NG                    /* Number of differential data points. */
+    uint32_t *NG                    /* Number of differential data points. */
   );
   /* Extracts a set of differential constraints ({diff_data_t}s)
     from channel {c} of {imgScale}, by comparing each patch of the gray
@@ -144,19 +144,19 @@ void pgsf_get_patch_to_patch_data
     homogeneous projective matrix {P} that maps chart coordianates to
     {img} pixel coordinates. */
 
-double pgsf_estimate_reflectance(diff_data_vec_t *dd, int NG0, int NG1);
+double pst_gray_scale_fit_estimate_reflectance(diff_data_vec_t *dd, uint32_t NG0, uint32_t NG1);
   /* Estimates the reflectance {R} of a reference strip, from the
     differential data {dd[NG0..NG1-1]} collected by
-    {pgsf_get_patch_to_strip_data}. Assumes that {dd[i].R_b} is the
+    {pst_gray_scale_fit_get_patch_to_strip_data}. Assumes that {dd[i].R_b} is the
     reflectance of patch {i} from the gray scale, {dd[i].V_b} is the
     corresponding pixel value, and {dd[i].V_a} is the pixel value on the
     reference strip adjacent to that patch. */  
 
-void pgsf_add_lsq_term
+void pst_gray_scale_fit_add_lsq_term
   ( diff_data_t *ddi,
     double noise,
     pst_gray_scale_fit_basis_t B,
-    int n, 
+    uint32_t n, 
     double A[],
     double b[],
     double logVlo,          /* Log of max {V_a,V_b} in data. */
@@ -165,17 +165,17 @@ void pgsf_add_lsq_term
   /* Adds to the {n × n} least-squares system {A,b} a term that
     accounts for the differential data point {ddi}. */
 
-void pgsf_solve_lsq_system(int n, double A[], double b[], bool_t nonneg, double z[]);
+void pst_gray_scale_fit_solve_lsq_system(uint32_t n, double A[], double b[], bool_t nonneg, double z[]);
   /* Solves a least squares system with {n} basis elements, 
     given the {n × n} basis rigidity matrix {A} and the
     right-hand-side {n}-vector {b}, obtaining the {n}-vector {z}
     of coefficients for that basis. */
 
-double pgsf_fudge_log(double V, double noise);
+double pst_gray_scale_fit_fudge_log(double V, double noise);
   /* Returns the natural log of {V} fudged by {noise}. 
     More precisely, computes {log(hypot(V,noise))}. */
 
-double pgsf_nlog(double V, double noise, double logVlo, double logVhi);
+double pst_gray_scale_fit_nlog(double V, double noise, double logVlo, double logVhi);
   /* Returns the natural log of {V} fudged by {noise} and 
    affinely rescaled from {[logVlo, logVhi]} yo {[0_1]}. 
     More precisely, computes {log(hypot(V,noise))}. */
@@ -205,7 +205,7 @@ double pgsf_nlog(double V, double noise, double logVlo, double logVhi);
   in which case one may want to constrain {z[0..N-2]} to be
   positive by setting {monotonic=TRUE}. */
 
-double pst_gray_scale_fit_sigmoid_spline(double v, int p, int n);
+double pst_gray_scale_fit_sigmoid_spline(double v, uint32_t p, uint32_t n);
   /* Evaluates the quadratic sigmoid spline number {p}, in a set of
     {n} such splines, at the sample value {v}. Requires {v} in {[0_1]}
     and {p} in {0..n-1}.
@@ -228,7 +228,7 @@ double pst_gray_scale_fit_sigmoid_spline(double v, int p, int n);
     monotonic non-decreasing if and only if all coefficients are
     non-negative. */
 
-double pst_gray_scale_fit_sigmoid_gaussian(double v, int p, int n);
+double pst_gray_scale_fit_sigmoid_gaussian(double v, uint32_t p, uint32_t n);
   /* Evaluates the gaussian sigmoid spline number {p}, in a set of
     {n} such splines, at the sample value {v}. Requires {v} in {[0_1]}
     and {p} in {0..n-1}.
@@ -259,10 +259,10 @@ double pst_gray_scale_fit_sigmoid_gaussian(double v, int p, int n);
 vec_typeimpl(diff_data_vec_t,diff_data_vec,diff_data_t);
 
 void pst_gray_scale_fit_light_map
-  ( int c,                     /* Channel of {img} to consider. */
-    int NS,                /* Number of steps in gray scale. */
+  ( uint32_t c,                /* Channel of {img} to consider. */
+    uint32_t NS,               /* Number of steps in gray scale. */
     double noise,              /* Noise level to assume in {img} sample values. */
-    float_image_t *imgScale,  /* The extracted and rectified gray-scale patches. */
+    float_image_t *imgScale,   /* The extracted and rectified gray-scale patches. */
     double albScale[],         /* Nominal albedo of each patch. */
     double dX,                 /* X displ between centers of successive patches (pixels). */
     bool_t useSelf,            /* TRUE to use neighboring patches for lighting estimation. */
@@ -284,38 +284,37 @@ void pst_gray_scale_fit_light_map
     if (debug) { fprintf(stderr, "- - - - channel %d - - - - - - - - - - - - - - - \n", c); }
     
     /* Get basis size {NB} (including unit function): */
-    int NB = B.N;
+    uint32_t NB = B.N;
     
     /* Get gray-scale dimensions: */
-    int NCScale, NXScale, NYScale;
+    int32_t NCScale, NXScale, NYScale;
     float_image_get_size(imgScale, &NCScale, &NXScale, &NYScale);
     demand((c >= 0) && (c < NCScale), "invalid channel index");
-    demand(NXScale % NS == 0, "width of {imgScale} is not a multiple of {NS}");
+    demand((uint32_t)NXScale % NS == 0, "width of {imgScale} is not a multiple of {NS}");
     
     /* Extract the differential data points from the chart: */
-    int NG = 0; /* Total number of differential data points. */
+    uint32_t NG = 0; /* Total number of differential data points. */
     diff_data_vec_t dd = diff_data_vec_new(40);
     if (imgStrip0 != NULL)
-      { pgsf_get_patch_to_strip_data
+      { pst_gray_scale_fit_get_patch_to_strip_data
           ( c, NS, noise, imgScale, albScale, dX, imgStrip0, albStrip0, dY0, &dd, &NG );
       }
     if (imgStrip1 != NULL)
-      { pgsf_get_patch_to_strip_data
+      { pst_gray_scale_fit_get_patch_to_strip_data
           ( c, NS, noise, imgScale, albScale, dX, imgStrip1, albStrip1, dY1, &dd, &NG );
       }
     if (useSelf)
-      { pgsf_get_patch_to_patch_data
+      { pst_gray_scale_fit_get_patch_to_patch_data
           ( c, NS, noise, imgScale, albScale, dX, &dd, &NG );
       }
     diff_data_vec_trim(&dd, NG);
     
     /* Determine {logVlo,logVhi}: */
-    int i;
     (*logVlo) = +INF;  (*logVhi) = -INF;
-    for (i = 0; i < NG; i++)
+    for (uint32_t i = 0; i < NG; i++)
       { diff_data_t *ddi = &(dd.e[i]);
-        double logU = pgsf_fudge_log(ddi->V_a, noise);
-        double logV = pgsf_fudge_log(ddi->V_b, noise);
+        double logU = pst_gray_scale_fit_fudge_log(ddi->V_a, noise);
+        double logV = pst_gray_scale_fit_fudge_log(ddi->V_b, noise);
         if (logU < (*logVlo)) { (*logVlo) = logU; }
         if (logU > (*logVhi)) { (*logVhi) = logU; }
         if (logV < (*logVlo)) { (*logVlo) = logV; }
@@ -323,23 +322,23 @@ void pst_gray_scale_fit_light_map
       }
 
     /* The least squares system: */
-    int n = NB-1;
+    uint32_t n = NB-1;
     double A[n*n];  /* Basis rigidity matrix, {A[i,j] = <bas[i],bas[j]>}. */
     double b[n];     /* Right-hand-side vector, {b[i] = <bas[i],fun>}. */
     /* Clear {A} and {b}: */
-    int p, q;
+    uint32_t p, q;
     for (p = 0; p < n; p++)
       { for (q = 0; q < n; q++) { A[p*n + q] = 0.0; }
         b[p] = 0.0; 
       }
     /* Accumulate the least squares gradient terms: */
-    for (i = 0; i < NG; i++)
+    for (uint32_t i = 0; i < NG; i++)
       { diff_data_t *ddi = &(dd.e[i]);
-        pgsf_add_lsq_term(ddi, noise, B, n, A, b, *logVlo, *logVhi);
+        pst_gray_scale_fit_add_lsq_term(ddi, noise, B, n, A, b, *logVlo, *logVhi);
       }
       
     /* Solve the least squares system: */
-    pgsf_solve_lsq_system(n, A, b, monotonic, z);
+    pst_gray_scale_fit_solve_lsq_system(n, A, b, monotonic, z);
     z[NB-1] = 0.0; /* Just in case. */
     
     /* Compute the constant factor {z[NB]} so that {Vmax} maps to {Vmax}: */
@@ -350,17 +349,17 @@ void pst_gray_scale_fit_light_map
     z[NB-1] = log(Vmax/val1);
   }
 
-double pgsf_fudge_log(double V, double noise)
+double pst_gray_scale_fit_fudge_log(double V, double noise)
   { return log(hypot(V, noise)); }
 
-double pgsf_nlog(double V, double noise, double logVlo, double logVhi)
-  { double logV = pgsf_fudge_log(V, noise);
+double pst_gray_scale_fit_nlog(double V, double noise, double logVlo, double logVhi)
+  { double logV = pst_gray_scale_fit_fudge_log(V, noise);
     return (logV - logVlo)/(logVhi - logVlo); 
   }
 
-void pgsf_get_patch_to_strip_data
-  ( int c,                     /* Channel of {img} to consider. */
-    int NS,                /* Number of steps in gray scale. */
+void pst_gray_scale_fit_get_patch_to_strip_data
+  ( uint32_t c,                     /* Channel of {img} to consider. */
+    uint32_t NS,                /* Number of steps in gray scale. */
     double noise,              /* Noise level to assume in {img} sample values. */
     float_image_t *imgScale,  /* The extracted and rectified gray-scale patches. */
     double albScale[],         /* Nominal albedo of each patch. */
@@ -369,23 +368,23 @@ void pgsf_get_patch_to_strip_data
     double albStrip,           /* Albedo of {imgStrip0}. */
     double dY,                 /* Y displ between centers of {imgScale} and {imgStrip} (pixels). */
     diff_data_vec_t *dd,  /* List of differential data points. */
-    int *NG                    /* Number of differential data points. */
+    uint32_t *NG                    /* Number of differential data points. */
   )
   { bool_t debug = TRUE;
   
     /* Get dimensions {DXScale,DYScale} of each patch in {imgScale}: */
-    int NXScale = (int)(imgScale->sz[1]);
-    int NYScale = (int)(imgScale->sz[2]);
+    uint32_t NXScale = (uint32_t)(imgScale->sz[1]);
+    uint32_t NYScale = (uint32_t)(imgScale->sz[2]);
     demand(NXScale % NS == 0, "{imgScale} width is not divisible by {NS}");
-    int DXScale = NXScale/NS;
-    int DYScale = NYScale;
+    uint32_t DXScale = NXScale/NS;
+    uint32_t DYScale = NYScale;
 
     /* Get dimensions {DXStrip,DYStrip} of each patch in {imgStrip}: */
-    int NXStrip = (int)(imgStrip->sz[1]);
-    int NYStrip = (int)(imgStrip->sz[2]);
+    uint32_t NXStrip = (uint32_t)(imgStrip->sz[1]);
+    uint32_t NYStrip = (uint32_t)(imgStrip->sz[2]);
     demand(NXStrip % NS == 0, "{imgStrip} width is not divisible by {NS}");
-    int DXStrip = NXStrip/NS;
-    int DYStrip = NYStrip;
+    uint32_t DXStrip = NXStrip/NS;
+    uint32_t DYStrip = NYStrip;
 
     if (debug) 
       { fprintf(stderr, "comparing scale patches with reference strip\n");
@@ -395,43 +394,40 @@ void pgsf_get_patch_to_strip_data
       }
 
     /* Gather values and compute scale reflectances: */
-    int NG0 = (*NG), NG1 = NG0; /* Data gathered here is {dd[NG0..NG1-1]}. */
-    int i;
-    for (i = 0; i < NS; i++)
+    uint32_t NG0 = (*NG), NG1 = NG0; /* Data gathered here is {dd[NG0..NG1-1]}. */
+    for (int32_t i = 0; i < NS; i++)
       { /* Make sure that the next data entry exists, set {*ddi} to it: */
-        diff_data_vec_expand(dd, NG1);
+        diff_data_vec_expand(dd, (vec_index_t)NG1);
         diff_data_t *ddi = &(dd->e[NG1]);
         
-        /* Grayscale patch domain X-range and center: */
-        int loX_a = i*DXScale, hiX_a = loX_a + DXScale;
-        double cX_a = i*dX, cY_a = 0.0;
-        
-        /* Ref strip patch domain X-range and center: */
-        int loX_b = i*DXStrip, hiX_b = loX_b + DXStrip;
-        double cX_b = i*dX, cY_b = dY;
-        
         /* Get data from the gray-scale patch: */
-        patch_data_t CScale = pgsf_get_patch_data(imgScale, c, cX_a, cY_a, loX_a, hiX_a, 0, DYScale);
+        int32_t loX_a = i*(int32_t)DXScale, hiX_a = loX_a + (int32_t)DXScale;
+        double cX_a = i*dX, cY_a = 0.0;
+        int32_t loY_a = 0, hiY_a = (int32_t)DYScale;
+        patch_data_t CScale = pst_gray_scale_fit_get_patch_data(imgScale, c, cX_a, cY_a, loX_a, hiX_a, loY_a, hiY_a);
         
         /* Get data from the ref strip patch: */
-        patch_data_t CStrip = pgsf_get_patch_data(imgStrip, c, cX_b, cY_b, loX_b, hiX_b, 0, DYStrip);
+        int32_t loX_b = i*(int32_t)DXStrip, hiX_b = loX_b + (int32_t)DXStrip;
+        double cX_b = i*dX, cY_b = dY;
+        int32_t loY_b = 0, hiY_b = (int32_t)DYStrip;
+        patch_data_t CStrip = pst_gray_scale_fit_get_patch_data(imgStrip, c, cX_b, cY_b, loX_b, hiX_b, loY_b, hiY_b);
           
         /* Combine into a differential datum: */
-        (*ddi) = pgsf_compute_quad(albScale[i], &CScale, -1.0, &CStrip);
+        (*ddi) = pst_gray_scale_fit_compute_quad(albScale[i], &CScale, -1.0, &CStrip);
         NG1++;
       }
     (*NG) = NG1;
 
     /* Estimate the reflectance {R_r} of the reference strip: */
-    double RStrip = pgsf_estimate_reflectance(dd, NG0, NG1);
+    double RStrip = pst_gray_scale_fit_estimate_reflectance(dd, NG0, NG1);
 
     /* Set the reflectance  {r} of the gray background: */
-    int ig;
+    uint32_t ig;
     for (ig = NG0; ig < NG1; ig++)
       { diff_data_t *ddi = &(dd->e[ig]);
         ddi->R_a = RStrip;
         if (debug)
-          { int ip = ig - NG0;
+          { uint32_t ip = ig - NG0;
             fprintf(stderr, "  patch %02d", ip);
             fprintf(stderr, "  a: %8.5f -> %8.5f", ddi->R_a, ddi->V_a);
             fprintf(stderr, "  b: %8.5f -> %8.5f", ddi->R_b, ddi->V_b);
@@ -440,54 +436,57 @@ void pgsf_get_patch_to_strip_data
       }
   }
 
-void pgsf_get_patch_to_patch_data
-  ( int c,                     /* Channel of {img} to consider. */
-    int NS,                /* Number of steps in gray scale. */
+void pst_gray_scale_fit_get_patch_to_patch_data
+  ( uint32_t c,                     /* Channel of {img} to consider. */
+    uint32_t NS,                /* Number of steps in gray scale. */
     double noise,              /* Noise level to assume in {img} sample values. */
     float_image_t *imgScale,  /* The extracted and rectified gray-scale patches. */
     double albScale[],         /* Nominal albedo of each patch. */
     double dX,                 /* X displ between centers of successive patches (pixels). */
     diff_data_vec_t *dd,  /* List of differential data points. */
-    int *NG                    /* Number of differential data points. */
+    uint32_t *NG                    /* Number of differential data points. */
   )
   { 
     bool_t debug = TRUE;
   
     /* Get dimensions {DXScale,DYScale} of each patch in {imgScale}: */
-    int NXScale = (int)(imgScale->sz[1]);
-    int NYScale = (int)(imgScale->sz[2]);
+    uint32_t NXScale = (uint32_t)(imgScale->sz[1]);
+    uint32_t NYScale = (uint32_t)(imgScale->sz[2]);
     demand(NXScale % NS == 0, "{imgScale} width is not divisible by {NS}");
-    int DXScale = NXScale/NS;
-    int DYScale = NYScale;
+    uint32_t DXScale = NXScale/NS;
+    uint32_t DYScale = NYScale;
 
     /* Gather values and compute scale reflectances: */
-    int NG0 = (*NG), NG1 = NG0; /* Data gathered here is {dd[NG0..NG1-1]}. */
-    int i;
-    for (i = 1; i < NS; i++)
+    uint32_t NG0 = (*NG), NG1 = NG0; /* Data gathered here is {dd[NG0..NG1-1]}. */
+    for (int32_t i = 1; i < NS; i++)
       { /* Make sure that the next data entry exists, set {*ddi} to it: */
-        diff_data_vec_expand(dd, NG1);
+        diff_data_vec_expand(dd, (vec_index_t)NG1);
         diff_data_t *ddi = &(dd->e[NG1]);
         
         /* Get data from the previous patch: */
         double R_a = albScale[i-1]; /* Reflectance. */
-        int loX_a = (i-1)*DXScale, hiX_a = loX_a + DXScale;
+        int32_t loX_a = (i-1)*(int32_t)DXScale, hiX_a = loX_a + (int32_t)DXScale;
         double cX_a = (i-1)*dX; /* Central X. */
-        patch_data_t C_a = pgsf_get_patch_data(imgScale, c, cX_a, 0.0, loX_a, hiX_a, 0, DYScale);
+        int32_t loY_a = 0, hiY_a = (int32_t)DYScale;
+        patch_data_t C_a = pst_gray_scale_fit_get_patch_data(imgScale, c, cX_a, 0.0, loX_a, hiX_a, loY_a, hiY_a);
+        
         /* Get data from main scale patch: */
         double R_b = albScale[i]; /* Reflectance. */
-        int loX_b = (i-1)*DXScale, hiX_b = loX_b + DXScale;
+        int32_t loX_b = (i-1)*(int32_t)DXScale, hiX_b = loX_b + (int32_t)DXScale;
         double cX_b = i*dX;   /* Central X. */
-        patch_data_t C_b = pgsf_get_patch_data(imgScale, c, cX_b, 0.0, loX_b, hiX_b, 0, DYScale);
+        int32_t loY_b = 0, hiY_b = (int32_t)DYScale;
+        patch_data_t C_b = pst_gray_scale_fit_get_patch_data(imgScale, c, cX_b, 0.0, loX_b, hiX_b, loY_b, hiY_b);
+        
         /* Combine into a differential datum: */
-        (*ddi) = pgsf_compute_quad(R_a, &C_a, R_b, &C_b);
+        (*ddi) = pst_gray_scale_fit_compute_quad(R_a, &C_a, R_b, &C_b);
         NG1++;
       }
     (*NG) = NG1;
 
     if (debug)
-      { int ig;
+      { uint32_t ig;
         for (ig = NG0; ig < NG1; ig++)
-          { int ip = ig - NG0 + 1;
+          { uint32_t ip = ig - NG0 + 1;
             diff_data_t *ddi = &(dd->e[ig]);
             fprintf(stderr, "  patches %02d and %02d", ip-1, ip);
             fprintf(stderr, "  a: %8.5f -> %8.5f", ddi->R_a, ddi->V_a);
@@ -497,15 +496,15 @@ void pgsf_get_patch_to_patch_data
       }
   }
 
-patch_data_t pgsf_get_patch_data
+patch_data_t pst_gray_scale_fit_get_patch_data
   ( float_image_t *img, 
-    int c,
+    uint32_t c,
     double cX,  /* X coordinate of patch center in chart (pixels). */
     double cY,  /* Y coordinate of patch center in chart (pixels). */
-    int loX,    /* Min col of patch in {img} (pixels). */
-    int hiX,    /* Max col of patch in {img} (pixels). */
-    int loY,    /* Min row of patch in {img} (pixels). */
-    int hiY     /* Max row of patch in {img} (pixels). */
+    int32_t loX,    /* Min col of patch in {img} (pixels). */
+    int32_t hiX,    /* Max col of patch in {img} (pixels). */
+    int32_t loY,    /* Min row of patch in {img} (pixels). */
+    int32_t hiY     /* Max row of patch in {img} (pixels). */
   )
   { bool_t debug = TRUE;
     patch_data_t C;
@@ -530,12 +529,11 @@ patch_data_t pgsf_get_patch_data
     double dotXX = 0.0, dotXV = 0.0;
     double dotYY = 0.0, dotYV = 0.0;
     double dot1X = 0.0, dot1Y = 0.0, dotXY = 0.0; /* Jut for checking. */
-    int ix, iy;
-    for (iy = loY; iy <= hiY; iy++)
+    for (int32_t iy = loY; iy <= hiY; iy++)
       { double Y = cY + iy - 0.5*(loY + hiY);
-        for (ix = loX; ix <= hiX; ix++)
+        for (int32_t ix = loX; ix <= hiX; ix++)
           { double X = cX + ix - 0.5*(loX + hiX);
-            double V = float_image_get_sample(img, c, ix, iy);
+            double V = float_image_get_sample(img, (int32_t)c, ix, iy);
             double W = 1.0; /* Weight of subsample. */
             dot11 += W;
             dot1V += W*V;
@@ -588,7 +586,7 @@ patch_data_t pgsf_get_patch_data
     return C;
   }
 
-diff_data_t pgsf_compute_quad      
+diff_data_t pst_gray_scale_fit_compute_quad      
   ( double R_a,                  /* Reflectance of patch {a} (-1 if not known). */
     patch_data_t *C_a, /* Raw image data for patch {a}. */
     double R_b,                  /* Reflectance of patch {b} (-1 if not known). */
@@ -625,7 +623,7 @@ diff_data_t pgsf_compute_quad
     return dd;
   }
 
-double pgsf_estimate_reflectance(diff_data_vec_t *dd, int NG0, int NG1)
+double pst_gray_scale_fit_estimate_reflectance(diff_data_vec_t *dd, uint32_t NG0, uint32_t NG1)
   {
     bool_t debug = TRUE;
     
@@ -644,16 +642,15 @@ double pgsf_estimate_reflectance(diff_data_vec_t *dd, int NG0, int NG1)
     
     assert(NG1 > NG0);
     if (NG1 - NG0 == 1) { /* The best we can do: */ return dd->e[NG0].R_b; }
-    int i;
     
     /* Find indices
       {ilo} such that {V_b[ilo] <= V_a[ilo]} and {R_b[ilo]} is max,
       {ihi} such that {V_b[ihi] >= V_a[ihi]} and {R_b[ihi]} is min.
       Keep second-best in each class in {jlo,jhi}.
     */
-    int ilo = -1, ihi = -1;
-    int jlo = -1, jhi = -1;
-    for (i = NG0; i < NG1; i++)
+    int32_t ilo = -1, ihi = -1;
+    int32_t jlo = -1, jhi = -1;
+    for (int32_t i = (int32_t)NG0; i < NG1; i++)
       { if (dd->e[i].V_b <= dd->e[i].V_a)
           { /* Main patch {i} is darker than reference strip. */
             if ((ilo < 0) || (dd->e[i].R_b > dd->e[ilo].R_b)) { jlo = ilo; ilo = i; }
@@ -728,7 +725,7 @@ double pst_gray_scale_fit_eval_map
   )
   { 
     /* Convert {V} to normalized logscale: */
-    double v = pgsf_nlog(V, noise, logVlo, logVhi);
+    double v = pst_gray_scale_fit_nlog(V, noise, logVlo, logVhi);
     /* Evaluate the underlying spline: */
     double h = pst_gray_scale_fit_eval_raw_map(v, B, z);
     return exp(h);
@@ -736,7 +733,7 @@ double pst_gray_scale_fit_eval_map
 
 double pst_gray_scale_fit_eval_raw_map(double v, pst_gray_scale_fit_basis_t B, double z[])
   { /* Combine basis elements: */
-    int p;
+    uint32_t p;
     double h = 0;
     for (p = 0; p < B.N; p++)
       { double baspv = pst_gray_scale_fit_eval_basis(v, p, B); 
@@ -747,27 +744,26 @@ double pst_gray_scale_fit_eval_raw_map(double v, pst_gray_scale_fit_basis_t B, d
   
 void pst_gray_scale_fit_apply_map
   ( float_image_t *img,
-    int c, 
+    uint32_t c, 
     double noise, 
     double logVlo, 
     double logVhi,
     pst_gray_scale_fit_basis_t B,
     double z[]
   )
-  { int NC, NX, NY;
+  { int32_t NC, NX, NY;
     float_image_get_size(img, &NC, &NX, &NY);
     demand((c >= 0) && (c < NC), "invalid channel index");
-    int x, y;
-    for (y = 0; y < NY; y++)
-      { for (x = 0; x < NX; x++)
-          { float *p = float_image_get_sample_address(img, c, x, y);
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
+          { float *p = float_image_get_sample_address(img, (int32_t)c, x, y);
             double a = pst_gray_scale_fit_eval_map((double)(*p), noise, logVlo, logVhi, B, z);
             (*p) = (float)a;
           }
       }
   }
   
-double pst_gray_scale_fit_eval_basis(double v, int p, pst_gray_scale_fit_basis_t B)
+double pst_gray_scale_fit_eval_basis(double v, uint32_t p, pst_gray_scale_fit_basis_t B)
   { if (p == B.N-1)
       { /* The last element is always the unit constant function: */
         return 1.0;
@@ -782,9 +778,9 @@ double pst_gray_scale_fit_eval_basis(double v, int p, pst_gray_scale_fit_basis_t
       }
   }
 
-double pst_gray_scale_fit_sigmoid_spline(double v, int p, int n)
+double pst_gray_scale_fit_sigmoid_spline(double v, uint32_t p, uint32_t n)
   { assert((p >= 0) && (p < n));
-    int ni = n - 1; /* Number of intervals in {[0_1]} */
+    uint32_t ni = n - 1; /* Number of intervals in {[0_1]} */
     double d0 = 2; /* Derivative of mother sigmoid at 0. */
     if (v <= 0.0)
       { /* Extrapolate with a straight line: */
@@ -806,7 +802,7 @@ double pst_gray_scale_fit_sigmoid_spline(double v, int p, int n)
     /* Map {v} in {[0 _ 1]} to {t} in {[0 _ ni]}: */
     double t = v*ni;
     /* Split {t} into an interval index {it} and a remainder {ft} in [0_1]: */
-    int it = (int)floor(t);
+    uint32_t it = (uint32_t)floor(t);
     if (it >= ni) { it = ni - 1; }
     assert(it >= 0);
     assert(it < ni);
@@ -826,9 +822,9 @@ double pst_gray_scale_fit_sigmoid_spline(double v, int p, int n)
       { return 1.0 - (1 - ft)*(1 - ft); }
   }
   
-double pst_gray_scale_fit_sigmoid_gaussian(double v, int p, int n)
+double pst_gray_scale_fit_sigmoid_gaussian(double v, uint32_t p, uint32_t n)
   { assert((p >= 0) && (p < n));
-    int ni = n - 1; /* Number of intervals in {[0_1]} */
+    uint32_t ni = n - 1; /* Number of intervals in {[0_1]} */
     double S = 1.0; /* Smoothing factor */
     double d0 = S*M_2_SQRTPI;  /* Derivative of mother sigmoid at 0: S*2/sqrt(PI). */
     if (v <= 0.0)
@@ -852,11 +848,11 @@ double pst_gray_scale_fit_sigmoid_gaussian(double v, int p, int n)
     return erf(S*t);
   }
   
-void pgsf_add_lsq_term
+void pst_gray_scale_fit_add_lsq_term
   ( diff_data_t *ddi,
     double noise,
     pst_gray_scale_fit_basis_t B,
-    int n, 
+    uint32_t n, 
     double A[],
     double b[],
     double logVlo,          /* Log of min {V_a,V_b} in data. */
@@ -869,8 +865,8 @@ void pgsf_add_lsq_term
     double W = 2*ddi->R_a*ddi->R_b/(ddi->R_a + ddi->R_b);
     
     /* Map sample values to normalized log scale: */
-    double u = pgsf_nlog(ddi->V_a, noise, logVlo, logVhi);
-    double v = pgsf_nlog(ddi->V_b, noise, logVlo, logVhi);
+    double u = pst_gray_scale_fit_nlog(ddi->V_a, noise, logVlo, logVhi);
+    double v = pst_gray_scale_fit_nlog(ddi->V_b, noise, logVlo, logVhi);
     
     /* Compute the log {df} of the `true' reflectance ratio: */
     double df = log(ddi->R_a/ddi->R_b);
@@ -896,7 +892,7 @@ void pgsf_add_lsq_term
         {df*(bas[p](u) - bas[p](v))}
       both weighted by {W}. */
   
-    int p, q;
+    uint32_t p, q;
 
     /* Evaluate {dbi[p] = bas[p](u) - bas[p](v)} for all {p}: */
     double db[n];
@@ -922,12 +918,12 @@ void pgsf_add_lsq_term
       }
   }
 
-void pgsf_solve_lsq_system(int n, double A[], double b[], bool_t nonneg, double z[])
+void pst_gray_scale_fit_solve_lsq_system(uint32_t n, double A[], double b[], bool_t nonneg, double z[])
   {
     bool_t debug = TRUE;
     
     if (debug)
-      { int p, q;
+      { uint32_t p, q;
         fprintf(stderr, "  least squares system:\n");
         for (p = 0; p < n; p++)
           { for (q = 0; q < n; q++)
@@ -938,14 +934,15 @@ void pgsf_solve_lsq_system(int n, double A[], double b[], bool_t nonneg, double 
       }
     
     if (nonneg) 
-      { qms_quadratic_min(n, A, b, z); }
+      { qmin_simplex(n, A, b, z); }
     else
-      { int32_t r = gausol_solve(n, n, A, 1, b, z, TRUE,TRUE, 0.0, NULL,NULL);
-        demand(r == n, "indeterminate system");
+      { uint32_t rank;
+        gausol_solve(n, n, A, 1, b, z, TRUE,TRUE, 0.0, NULL, &rank);
+        demand(rank == n, "indeterminate system");
       }
 
     if (debug)
-      { int p;
+      { int32_t p;
         fprintf(stderr, "  solution:\n");
         for (p = 0; p < n; p++)
           { fprintf(stderr, " %7.3f\n", z[p]); }

@@ -1,11 +1,11 @@
 /* See pst_nodak.h */
-/* Last edited on 2024-11-30 22:55:24 by stolfi */
+/* Last edited on 2024-12-22 22:33:53 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <values.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <float_image.h>
@@ -43,9 +43,8 @@ void debug_matrix(char *head, r3x3_t *M, char *foot, double R);
 
 void debug_matrix(char *head, r3x3_t *M, char *foot, double R)
   { if (head != NULL) { fprintf(stderr, "  %s\n", head); }
-    int x, y;
-    for (y = -1; y <= 1; y++)
-      for (x = -1; x <= 1; x++)
+    for (int32_t y = -1; y <= 1; y++)
+      for (int32_t x = -1; x <= 1; x++)
         { r3_t p = (r3_t){{ 1.0, x*R, y*R }};
           r3_t q;
           r3x3_map_row(&p, M, &q);
@@ -60,27 +59,25 @@ void debug_matrix(char *head, r3x3_t *M, char *foot, double R)
      if (foot != NULL) { fprintf(stderr, "  %s\n", foot); }
   }
 
-r3x3_t pst_nodak_get_matrix(r2_vec_t* geo_ctr, double geo_radius, int32_vec_t* img_num, r2_vec_t* img_ctr)
+r3x3_t pst_nodak_get_matrix(r2_vec_t* geo_ctr, double geo_radius, uint32_vec_t* img_num, r2_vec_t* img_ctr)
   {
     bool_t debug = TRUE;
 
     /* Compute a number of matrices from 4 point pairs. */
-    int n = img_num->ne; /* Number of data points. */
+    uint32_t n = img_num->ne; /* Number of data points. */
     demand(img_ctr->ne == n,"Wrong list length");
-    int m = (n+3)/4;    /* Number of matrices. */
-    int step = n/m;     /* Displacement between data subsets. */
+    uint32_t m = (n+3)/4;    /* Number of matrices. */
+    uint32_t step = n/m;     /* Displacement between data subsets. */
     r3x3_t sum_Q;       /* Sum of matrices computed from each data subset. */
     r3x3_zero(&sum_Q);
-    int i;
-    for(i = 0; i < m; i++)
+    for(uint32_t i = 0; i < m; i++)
       { /* Extract the data subset number {i}. */
         r2_t geo_p[4]; 
         r2_t img_p[4];
-        int j;
-        for(j = 0; j < 4; j++)
-          { int ij = (i*step + j)%n;
+        for(uint32_t j = 0; j < 4; j++)
+          { uint32_t ij = (i*step + j)%n;
             img_p[j] = img_ctr->e[ij];
-            int k = img_num->e[ij];
+            uint32_t k = img_num->e[ij];
             demand( (k >= 0) && (k < geo_ctr->ne), "Invalid spot index");
             geo_p[j] = geo_ctr->e[k];
           }
@@ -126,14 +123,14 @@ float_image_t *pst_nodak_extract_chart
   ( float_image_t *img,   /* Photo of a scene that includes a N-Spot chart. */
     double rad,           /* Chart radius in chart coordinates. */
     r3x3_t *C2I,          /* Chart-to-image projective map matrix. */
-    int OSZ               /* Width and height of output image (pixels) */
+    uint32_t OSZ          /* Width and height of output image (pixels) */
   )
   { /* Get input image channels: */
-    int NC = (int)(img->sz[0]);
+    uint32_t NC = (uint32_t)(img->sz[0]);
     
     /* Output image dimensions (pixels): */
-    int ONX = OSZ;
-    int ONY = OSZ;
+    uint32_t ONX = OSZ;
+    uint32_t ONY = OSZ;
     
     /* Edges of chart, in chart coordinates: */
     double xlo = -rad;
@@ -142,14 +139,14 @@ float_image_t *pst_nodak_extract_chart
     double yhi = +rad;
     
     /* Create and fill the chart image: */
-    float_image_t *omg = float_image_new(NC, ONX, ONY);
+    float_image_t *omg = float_image_new((int32_t)NC, (int32_t)ONX, (int32_t)ONY);
 
     ix_reduce_mode_t red = ix_reduce_mode_SINGLE;
     float undef = 0.5;
     bool_t avg = TRUE;
-    int order = 1;
+    uint32_t order = 1;
     float_image_transform_copy_persp_rectangle
-      (img, red, xlo, xhi, ylo, yhi, C2I, undef, avg, order, 0, 0, ONX, ONY, NULL, omg);
+      (img, red, xlo, xhi, ylo, yhi, C2I, undef, avg, (int32_t)order, 0, 0, (int32_t)ONX, (int32_t)ONY, NULL, omg);
 
     /* Should clear the background around the chart. */
     return omg;
@@ -161,21 +158,20 @@ float_image_t *pst_nodak_extract_gray_scale
     double_vec_t* geo_rad, /* Radius of each spot in chart coordinates. */
     r3x3_t *C2I,           /* Chart-to-image projective map matrix. */
     double mrg,            /* Safety margin width in pixels. */
-    int NX,                /* Width of each patch in the output image (pixels) */
-    int NY                 /* Height of each patch in the output image (pixels) */
+    uint32_t NX,                /* Width of each patch in the output image (pixels) */
+    uint32_t NY                 /* Height of each patch in the output image (pixels) */
   )
   { 
     /* Get number of channels:*/
-    int NC = (int)(img->sz[0]);
+    uint32_t NC = (uint32_t)(img->sz[0]);
     /* Create output image: */
-    int NS = geo_ctr->ne;
+    uint32_t NS = geo_ctr->ne;
     demand(geo_rad->ne == NS, "inconsistent spot {ctr}/{rad}");
-    int ONX = NX*NS;
-    int ONY = NY;
-    float_image_t *omg = float_image_new(NC, ONX, ONY);
+    uint32_t ONX = NX*NS;
+    uint32_t ONY = NY;
+    float_image_t *omg = float_image_new((int32_t)NC, (int32_t)ONX, (int32_t)ONY);
     /* Fill in the patches: */
-    int i;
-    for (i = 0; i < NS; i++)
+    for (int32_t i = 0; i < NS; i++)
       { /* Get spot center and radius in chart coordinates:*/
         r2_t *ctr = &(geo_ctr->e[i]);
         double rad = geo_rad->e[i];
@@ -184,10 +180,9 @@ float_image_t *pst_nodak_extract_gray_scale
         ix_reduce_mode_t red = ix_reduce_mode_SINGLE;
         float_image_average_persp_disk(img, red, ctr, rad, C2I, mrg, avg);
         /* Fill patch in output image: */
-        int x, y;
-        for (y = 0; y < NY; y++)
-          { for (x = 0; x < NX; x++)
-              { float_image_set_pixel(omg, i*NX + x, y, avg); }
+        for (int32_t y = 0; y < NY; y++)
+          { for (int32_t x = 0; x < NX; x++)
+              { float_image_set_pixel(omg, i*(int32_t)NX + x, y, avg); }
           }
       }
     return omg;

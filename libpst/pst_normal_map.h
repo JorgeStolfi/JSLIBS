@@ -2,7 +2,7 @@
 #define pst_normal_map_H
 
 /* pst_normal_map.h -- procedures for working with normal maps. */
-/* Last edited on 2011-03-08 17:33:32 by stolfi */
+/* Last edited on 2024-12-22 12:38:29 by stolfi */
 
 #include <float_image.h>
 #include <r2.h>
@@ -19,11 +19,11 @@
   outwards-pointing unit vector normal to the scene's surface in that
   pixel. */
 
-r3_t pst_normal_map_get_pixel(float_image_t *NRM, int x, int y);
+r3_t pst_normal_map_get_pixel(float_image_t *NRM, int32_t x, int32_t y);
   /* Extracts channels 0..2 of the pixel in column {x}, row {y} of {NRM},
     and returns them as the X, Y, and Z coordinates of an {r3_t}. */
 
-void pst_normal_map_set_pixel(float_image_t *NRM, int x, int y, r3_t *nrm);
+void pst_normal_map_set_pixel(float_image_t *NRM, int32_t x, int32_t y, r3_t *nrm);
   /* Stores the X, Y, and Z coordinates of {nrm} as channels 0..2 pixel in column {x}, 
     row {y} of {NRM}. */
 
@@ -97,7 +97,7 @@ r3_t pst_normal_map_eval
 
 void pst_normal_map_from_proc
   ( pst_normal_map_proc_t nrmf, /* Normal-computing funtion. */
-    int NS,                     /* Order of subsampling grid within each pixel. */
+    int32_t NS,                     /* Order of subsampling grid within each pixel. */
     r3x3_t *xym_to_uvm,         /* Affine map of image {xy} coords to model {uv} coords. */
     r3x3_t *uvw_to_xyz,         /* Linear map of {uvw} coords to normal {xyz} coords. */
     float_image_t *NRM          /* (OUT) Computed normal map. */
@@ -113,8 +113,8 @@ void pst_normal_map_from_proc
 
 r3_t pst_normal_map_pixel_avg
   ( pst_normal_map_proc_t nrmf, /* Normal-computing funtion. */
-    int x, int y,               /* Pixel indices (coords of lower left corner). */
-    int NS,                     /* Order of sub-sampling grid in pixel. */
+    int32_t x, int32_t y,               /* Pixel indices (coords of lower left corner). */
+    int32_t NS,                     /* Order of sub-sampling grid in pixel. */
     r3x3_t *xym_to_uvm,         /* Affine map of image {xy} coords to model {uv} coords. */
     r3x3_t *uvw_to_xyz          /* Linear map of {uvw} coords to normal {xyz} coords. */
   );

@@ -1,11 +1,11 @@
 /* See pst_lamp.h */
-/* Last edited on 2008-11-08 20:48:53 by stolfi */
+/* Last edited on 2024-12-22 22:14:05 by stolfi */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <math.h>
 #include <values.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <bool.h> 
@@ -19,12 +19,12 @@
 
 vec_typeimpl(pst_lamp_vec_t,pst_lamp_vec,pst_lamp_t *);
 
-pst_lamp_t *pst_lamp_new(int NC, r3_t *dir, double pwr, double crad)
+pst_lamp_t *pst_lamp_new(uint32_t NC, r3_t *dir, double pwr, double crad)
   { pst_lamp_t *src = 
       (pst_lamp_t *)notnull(malloc(sizeof(pst_lamp_t)), "no mem");
     src->dir = (dir == NULL ? (r3_t){{ 0, 0, 0 }} : (*dir)); 
     src->pwr = double_vec_new(NC);
-    int c; for (c = 0; c < NC; c++) { src->pwr.e[c] = pwr; }
+    for (uint32_t c = 0; c < NC; c++) { src->pwr.e[c] = pwr; }
     src->crad = crad;
     return src;
   }
@@ -82,7 +82,7 @@ double pst_lamp_geom_factor(r3_t *nrm, r3_t *dir, double crad)
 #define pst_bogus_spec_MESS \
   " is not applicable or was already specified for this lamp"
 
-pst_lamp_t *pst_lamp_spec_parse(argparser_t *pp, bool_t next, int *NCP)
+pst_lamp_t *pst_lamp_spec_parse(argparser_t *pp, bool_t next, uint32_t *NCP)
   { 
     pst_lamp_t *src = NULL;
     
@@ -94,7 +94,7 @@ pst_lamp_t *pst_lamp_spec_parse(argparser_t *pp, bool_t next, int *NCP)
     return src;
   }
   
-pst_lamp_t pst_lamp_spec_params_next_parse(argparser_t *pp, int *NCP)
+pst_lamp_t pst_lamp_spec_params_next_parse(argparser_t *pp, uint32_t *NCP)
   {
     pst_lamp_t src;
     bool_t dir_given = FALSE;
@@ -192,8 +192,7 @@ void pst_lamp_spec_write(FILE *wr, pst_lamp_t *src)
     
     if (pwr->ne > 0)
       { fprintf(wr, "  power");
-        int c;
-        for (c = 0; c < pwr->ne; c++) { fprintf(wr, " %6.4f", pwr->e[c]); }
+        for (uint32_t c = 0; c < pwr->ne; c++) { fprintf(wr, " %6.4f", pwr->e[c]); }
         fprintf(wr, "\n");
       }
     fflush(wr);

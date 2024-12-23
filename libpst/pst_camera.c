@@ -1,10 +1,10 @@
 /* See pst_camera.h */
-/* Last edited on 2010-05-04 00:25:32 by stolfi */ 
+/* Last edited on 2024-12-22 12:30:57 by stolfi */ 
 
-#define _GNU_SOURCE
 #include <math.h>
 #include <values.h>
 #include <assert.h>
+#include <stdint.h>
 
 #include <float_image_mscale.h>
 #include <argparser.h>
@@ -57,7 +57,7 @@ hr3_point_t pst_camera_viewpoint_from_center_spread(r2_t *Q, double G)
       { return (hr3_point_t) {{{ 1, Q->X, Q->Y, 1/G }}}; }
   }
 
-double pst_camera_min_focal_length(r2_t *Q, int NX, int NY)
+double pst_camera_min_focal_length(r2_t *Q, int32_t NX, int32_t NY)
   { /* Determine the max distance {dMax} from {(OX,OY)} to any image pixel: */
     double xMax = (Q == NULL ? NX : fmax(NX - Q->X, Q->X));
     double yMax = (Q == NULL ? NY : fmax(NY - Q->Y, Q->Y));
@@ -68,7 +68,7 @@ double pst_camera_min_focal_length(r2_t *Q, int NX, int NY)
     return dMax/tan(aMax); 
   }
  
-pst_camera_t pst_camera_shrink(pst_camera_t *C, int dx, int dy, int nw)
+pst_camera_t pst_camera_shrink(pst_camera_t *C, int32_t dx, int32_t dy, int32_t nw)
   { if (C->O.hm == 0)
       { /* Camera at infinity: */
         return (*C);
@@ -83,7 +83,7 @@ pst_camera_t pst_camera_shrink(pst_camera_t *C, int dx, int dy, int nw)
       }
   }
 
-pst_camera_t pst_camera_expand(pst_camera_t *C, int dx, int dy, int nw)
+pst_camera_t pst_camera_expand(pst_camera_t *C, int32_t dx, int32_t dy, int32_t nw)
   { if (C->O.hm == 0)
       { /* Camera at infinity: */
         return (*C);
@@ -185,8 +185,7 @@ void pst_camera_args_parse
 void pst_camera_print(FILE *wr, pst_camera_t *C, char *fmt)
   { 
     fprintf(wr, "{");
-    int i; 
-    for (i = 0; i < 4; i++)
+    for (uint32_t i = 0; i < 4; i++)
       { fprintf(wr, " ");
         fprintf(wr, fmt, C->O.c.c[i]);
       }
@@ -198,8 +197,8 @@ void pst_camera_print(FILE *wr, pst_camera_t *C, char *fmt)
 void pst_camera_args_print(FILE *wr, pst_camera_t *C, char *fmtp, char *fmtr)
   { /* Choose the presentation format: */ 
     bool_t use_viewpoint = FALSE; /* Must use the "viewpoint" presentation. */
-    use_viewpoint |= isnan(C->O.hm);
-    use_viewpoint |= ((C->O.hm == 0) && ((C->O.hx != 0) || (C->O.hy != 0)));
+    if (isnan(C->O.hm)) { use_viewpoint = TRUE; }
+    if ((C->O.hm == 0) && ((C->O.hx != 0) || (C->O.hy != 0))) { use_viewpoint = TRUE; }
     if (use_viewpoint)
       { pst_camera_args_adjust_print_viewpoint(wr, C, 0, fmtp, fmtr); }
     else
@@ -216,8 +215,7 @@ void pst_camera_args_adjust_print_viewpoint
   { 
     fprintf(wr, "  viewpoint");
     double *Oc = C->O.c.c;
-    int i;
-    for (i = 0; i < 4; i++)
+    for (uint32_t i = 0; i < 4; i++)
       { fprintf(wr, " ");
         fprintf(wr, (Oc[0] == 0 ? fmtd : fmtp), Oc[i]);
       }

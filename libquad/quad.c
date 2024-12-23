@@ -1,5 +1,5 @@
 /* See quad.h. */
-/* Last edited on 2024-12-05 10:39:43 by stolfi */
+/* Last edited on 2024-12-22 11:03:27 by stolfi */
   
 /* Written by J. Stolfi in Apr/1993, based on an original
   implementation by Jim Roth (DEC CADM Advanced Group, May/1986).
@@ -329,14 +329,14 @@ quad_edge_id_t quad_renumber_edges(quad_arc_vec_t *root, quad_arc_vec_t *A)
     void renumber_edge(quad_arc_t p)
       { quad_edge_t ed = quad_edge(p);
         ed->eid = ne; 
-        if (A != NULL) { quad_arc_vec_expand(A, (uint32_t)ne); A->e[ne] = p; }
+        if (A != NULL) { quad_arc_vec_expand(A, (int32_t)ne); A->e[ne] = p; }
         ne++;
       }
   }
 
 /* ARC INPUT/OUTPUT */
 
-void quad_write_arc(FILE *wr, quad_arc_t e, int32_t width)
+void quad_write_arc(FILE *wr, quad_arc_t e, uint32_t width)
   { fprintf(wr, 
       ("%*" uint64_u_fmt ":%u%u"), width, 
       EDGE(e)->mark, 
@@ -366,9 +366,9 @@ void quad_write_map(FILE *wr, quad_arc_vec_t *root, quad_arc_vec_t *A)
     /* Write the header line: */
     filefmt_write_header(wr, FILE_TYPE, FILE_VERSION);
     /* Grab the number {nr} of roots and the root index width {wa}: */
-    int32_t nr = root->ne;
+    uint32_t nr = root->ne;
     /* Compute the width in digits {wr} of the root index: */
-    int32_t dr = (nr < 10 ? 1 : digits(nr-1));
+    uint32_t dr = (nr < 10 ? 1 : digits(nr-1));
     /* Make sure that {A} is non-null and points to an empty table: */
     quad_arc_vec_t A_local = quad_arc_vec_new(0); /* A local edge table. */
     if (A == NULL) { A = &A_local; }
@@ -378,7 +378,7 @@ void quad_write_map(FILE *wr, quad_arc_vec_t *root, quad_arc_vec_t *A)
     assert(ne == A->ne);
     
     /* Determine the width {eE} in digits of the edge number: */
-    int32_t dE = (ne < 10 ? 1 : digits(ne-1));
+    uint32_t dE = (ne < 10 ? 1 : digits(ne-1));
     /* We should have zero edges if and only if we have zero roots: */
     assert((nr == 0) == (ne == 0)); 
     /* Write the root and edge counts: */
@@ -415,14 +415,14 @@ void quad_read_map(FILE *rd, quad_arc_vec_t *root, quad_arc_vec_t *A)
   { /* Check and consume the header line: */
     filefmt_read_header(rd, FILE_TYPE, FILE_VERSION);
     /* Parse the root count {nr} and the edge count {ne}: */
-    int32_t nr = nget_int32(rd, "roots"); fget_eol(rd);
-    int32_t ne = nget_int32(rd, "edges"); fget_eol(rd);
+    uint32_t nr = nget_uint32(rd, "roots", 10); fget_eol(rd);
+    uint32_t ne = nget_uint32(rd, "edges", 10); fget_eol(rd);
     /* Make sure that {A} is non-null and points to a table with {ne} slots: */
     quad_arc_vec_t A_local = quad_arc_vec_new(0); /* A local edge table. */
     if (A == NULL) { A = &A_local; }
     quad_arc_vec_trim(A, ne);
     /* Create the edge records, save their base arcs in {A->e[0..ne-1]}: */
-    for (int64_t eid = 0; eid < ne; eid++) 
+    for (uint64_t eid = 0; eid < ne; eid++) 
       { quad_arc_t a = quad_make_edge(); 
         EDGE(a)->eid = eid; 
         A->e[eid] = a;

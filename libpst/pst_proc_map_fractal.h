@@ -2,9 +2,10 @@
 #define pst_proc_map_fractal_H
 
 /* pst_proc_map_fractal.h -- procedures for creating procedurally-defined fractal images. */
-/* Last edited on 2018-06-30 04:37:02 by stolfilocal */
+/* Last edited on 2024-12-22 12:06:38 by stolfi */
 
-#define _GNU_SOURCE
+#include <stdint.h>
+
 #include <r2.h>
 #include <pst_proc_map.h>
 

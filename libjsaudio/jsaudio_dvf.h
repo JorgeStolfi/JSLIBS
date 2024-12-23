@@ -1,5 +1,5 @@
 /* jsaudio_dvf.h - Sony Recorder DVF audio file I/O */
-/* Last edited on 2024-12-05 10:32:19 by stolfi */
+/* Last edited on 2024-12-21 03:31:40 by stolfi */
 
 /* 
   Derived from {rusound.h}, created by Rumiko Oishi Stolfi
@@ -134,31 +134,31 @@
 
 */
 
-typedef struct dvf_time_t
+typedef struct jsaudio_dvf_time_t
   { uint16_t year;      /*  52  53 Year (4 digit). */
     uint8_t  month;     /*  54     Month (1..12). */
     uint8_t  day;       /*  55     Day (1..31). */
     uint8_t  hour;      /*  56     Hour (0..23 or 1..24?). */
     uint8_t  minute;    /*  57     Minute (0..59). */
     uint8_t  second;    /*  58     Second (0..59). */
-  } dvf_time_t;
+  } jsaudio_dvf_time_t;
 
 /* Variable fields from the Sony Recorder DVF file header: */
-typedef struct dvf_file_header_t 
+typedef struct jsaudio_dvf_file_header_t 
   { 
-    dvf_time_t time_1;    /*  52  58 Recording date and time (1). */
+    jsaudio_dvf_time_t time_1;    /*  52  58 Recording date and time (1). */
     uint8_t  unk_059_1;   /*  59     Unknown (0..3?). */
     uint8_t  unk_170_1;   /* 170     Unknown (0..3?). */
     uint8_t  unk_171_1;   /* 171     Unknown. */
     uint16_t unk_173_2;   /* 173 174 Unknown (related to length). */
     uint32_t length_su;   /* 480 483 Recording time in seconds times 900; a multiple of 216. */
     uint8_t  unk_545_1;   /* 545     Unknown. */           
-    dvf_time_t time_2;    /* 548 554 Recording date and time (2). */
+    jsaudio_dvf_time_t time_2;    /* 548 554 Recording date and time (2). */
     uint8_t  unk_555_1;   /* 555     Unknown. */           
     char model[24];       /* 556 579 Recorder model, e.g. "SONY ICD-P", zero-padded. */
-  } dvf_file_header_t;
+  } jsaudio_dvf_file_header_t;
 
-dvf_file_header_t jsa_read_dvf_file_header(FILE *rd);
+jsaudio_dvf_file_header_t jsaudio_dvf_read_file_header(FILE *rd);
   /* Reads the header of a Sony ".dvf" audio file from stream {rd}. 
     Leaves the stream positioned just before the first sample data byte. */
  

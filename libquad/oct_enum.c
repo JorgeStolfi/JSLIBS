@@ -1,5 +1,5 @@
 /* See oct_enum.h. */
-/* Last edited on 2024-12-05 10:39:32 by stolfi */
+/* Last edited on 2024-12-22 10:58:41 by stolfi */
 
 #define oct_enum_C_copyright \
   "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright ""
@@ -59,7 +59,7 @@ bool_t oct_enum_orbits
     oct_arc_vec_t *vP
   )
   {
-    int32_t nvis; /* Counts arcs added to {vP}. */
+    uint32_t nvis; /* Counts arcs added to {vP}. */
     
     auto bool_t do_visit(oct_arc_t p);
     /* A visit-func to be called when starting a new root or 
@@ -68,11 +68,10 @@ bool_t oct_enum_orbits
        {nvis}. */
     
     /* Create the step-funcs and visit-funcs for enumeration: */
-    int32_t ns = ni + no;
+    uint32_t ns = ni + no;
     oct_step_t *stp[ns];
     oct_visit_t *vis[ns+1];
-    int32_t i;
-    for (i = 0; i < ns; i++)
+    for (uint32_t i = 0; i < ns; i++)
       { stp[i] = (i < ni ? istep[i] : ostep[i - ni]);
         vis[i] = (i < ni ? NULL : &do_visit);
       }
@@ -87,7 +86,7 @@ bool_t oct_enum_orbits
     
     bool_t do_visit(oct_arc_t p)
       { if (vP != NULL) 
-          { oct_arc_vec_expand(vP, nvis);
+          { oct_arc_vec_expand(vP, (int32_t)nvis);
             vP->e[nvis] = p;
           }
         nvis++;
@@ -98,7 +97,7 @@ bool_t oct_enum_orbits
 bool_t oct_enum_arcs(oct_arc_vec_t root, oct_visit_t *visit, oct_arc_vec_t *vP)
   {  
     /* Step functions. */
-    int32_t ns = 2;
+    uint32_t ns = 2;
     oct_step_t *stp[ns];
     stp[0] = &oct_sym;
     stp[2] = &oct_onext;
@@ -117,13 +116,13 @@ bool_t oct_enum_arcs(oct_arc_vec_t root, oct_visit_t *visit, oct_arc_vec_t *vP)
 bool_t oct_enum_nodes(oct_arc_vec_t root, oct_visit_t *visit, oct_arc_vec_t *vP)
   {  
     /* Inner step functions: cycle around origin node. */
-    int32_t ni = 1;
+    uint32_t ni = 1;
     oct_step_t *istep[ni];
     istep[0] = &oct_onext;
     assert(ni == 2);
     
     /* Outer step functions: turn arc 180 degrees. */
-    int32_t no = 1;
+    uint32_t no = 1;
     oct_step_t *ostep[no];
     ostep[0] = &oct_sym;
     assert(no == 1);
@@ -134,13 +133,13 @@ bool_t oct_enum_nodes(oct_arc_vec_t root, oct_visit_t *visit, oct_arc_vec_t *vP)
 bool_t oct_enum_edges(oct_arc_vec_t root, oct_visit_t *visit, oct_arc_vec_t *vP)
   {  
     /* Inner step functions: turn arc 180 degrees. */
-    int32_t ni = 1;
+    uint32_t ni = 1;
     oct_step_t *istep[ni];
     istep[0] = &oct_sym;
     assert(ni == 1);
     
     /* Outer step functions: cycle around origin node. */
-    int32_t no = 1;
+    uint32_t no = 1;
     oct_step_t *ostep[no];
     ostep[0] = &oct_onext;
     assert(no == 1);
@@ -151,13 +150,13 @@ bool_t oct_enum_edges(oct_arc_vec_t root, oct_visit_t *visit, oct_arc_vec_t *vP)
 bool_t oct_enum_faces(oct_arc_vec_t root, oct_visit_t *visit, oct_arc_vec_t *vP)
   {  
     /* Inner step functions: cycle around left face. */
-    int32_t ni = 1;
+    uint32_t ni = 1;
     oct_step_t *istep[ni];
     istep[0] = &oct_lnext;
     assert(ni == 1);
     
     /* Outer step functions: turn arc around. */
-    int32_t no = 1;
+    uint32_t no = 1;
     oct_step_t *ostep[no];
     ostep[0] = &oct_sym;
     assert(no == 1);
@@ -168,14 +167,14 @@ bool_t oct_enum_faces(oct_arc_vec_t root, oct_visit_t *visit, oct_arc_vec_t *vP)
 bool_t oct_enum_octets(oct_arc_vec_t root, oct_visit_t *visit, oct_arc_vec_t *vP)
   {  
     /* Inner step functions: all tumblings. */
-    int32_t ni = 2;
+    uint32_t ni = 2;
     oct_step_t *istep[ni];
     istep[0] = &oct_rot;
     istep[1] = &oct_fflip;
     assert(ni == 2);
     
     /* Outer step functions: cycle around node. */
-    int32_t no = 1;
+    uint32_t no = 1;
     oct_step_t *ostep[no];
     ostep[0] = &oct_onext;
     assert(no == 1);

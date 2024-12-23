@@ -2,7 +2,7 @@
 #define pst_height_map_H
 
 /* pst_height_map.h -- procedures for working with height maps. */
-/* Last edited on 2017-01-04 23:32:23 by stolfilocal */
+/* Last edited on 2024-12-23 05:57:31 by stolfi */
 
 #include <float_image.h>
 
@@ -27,7 +27,7 @@ void pst_height_map_expand
     rounded down. If {JW} is given, it must have one channel and the
     same size as {JZ}, Ditto for {IW} and {IZ}. */
 
-float_image_t *pst_height_map_shrink(float_image_t *IZ, int avgWidth);
+float_image_t *pst_height_map_shrink(float_image_t *IZ, uint32_t avgWidth);
   /* Given a height map {IZ}, with samples of a height function {Z},
     returns another height map {JZ}, with half the size as {IZ},
     containing the samples of the height function at half the original
@@ -71,7 +71,7 @@ float_image_t *pst_height_map_compare
       
 /* REPORTGING */
 
-typedef void pst_height_map_report_proc_t(int level, int iter, double change, bool_t final, float_image_t *OZ); 
+typedef void pst_height_map_report_proc_t(uint32_t level, uint32_t iter, double change, bool_t final, float_image_t *OZ); 
   /* Type of a client-given procedure that may be called
     by recursive integrators to report the height map used in each scale.
     The argument {iter} should be the number of iterations already done
@@ -81,9 +81,9 @@ typedef void pst_height_map_report_proc_t(int level, int iter, double change, bo
    
 void pst_height_map_level_analyze_and_write
   ( char *filePrefix,
-    int level,
+    uint32_t level,
     bool_t levelTag,
-    int iter,
+    uint32_t iter,
     bool_t iterTag,
     double change,
     float_image_t *CZ,
@@ -91,7 +91,7 @@ void pst_height_map_level_analyze_and_write
     float_image_t *U, 
     bool_t writeImages,
     bool_t writeError,
-    int indent
+    uint32_t indent
   );
   /* A procedure for monitoring the progress of iterative
     integration, especially multiscale, and writing the solution.

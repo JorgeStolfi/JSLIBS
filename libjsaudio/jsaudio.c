@@ -1,5 +1,5 @@
 /* See jsaudio.h */
-/* Last edited on 2024-12-05 10:32:06 by stolfi */
+/* Last edited on 2024-12-21 03:21:40 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,50 +12,49 @@
 
 /* IMPLEMENTATIONS */
 
-sound_t jsa_allocate_sound(int32_t nc, int32_t ns)
-  { sound_t s;
+jsaudio_t jsaudio_allocate_sound(uint32_t nc, uint32_t ns)
+  { jsaudio_t s;
     demand (nc >= 1, "invalid number of channels");
     s.nc = nc;
     s.ns = ns;
-    s.sv = malloc(nc*sizeof(float *));
+    s.sv = talloc(nc, double*);
     assert(s.sv != NULL);
-    for (uint32_t ic = 0;  ic < nc; ic++)
-      { s.sv[ic] = malloc(ns*sizeof(double));
+    for (int32_t ic = 0;  ic < nc; ic++)
+      { s.sv[ic] = talloc(ns, double);
         assert(s.sv[ic] != NULL);
-        for (uint32_t i = 0;  i < ns; i++) { s.sv[ic][i] = 0.0; }
+        for (int32_t i = 0;  i < ns; i++) { s.sv[ic][i] = 0.0; }
       }
     return s;
   }
 
-sound_t jsa_copy_sound(sound_t *s, int32_t ini, int32_t ns)
-  { assert(ns >= 0);
-    assert((ini >= 0) && (ini < s->ns)); 
-    sound_t r = jsa_allocate_sound(s->nc, ns);
+jsaudio_t jsaudio_copy_sound(jsaudio_t *s, uint32_t ini, uint32_t ns)
+  { assert(ini < s->ns); 
+    jsaudio_t r = jsaudio_allocate_sound(s->nc, ns);
     r.fsmp = s->fsmp;
     r.nc = s->nc;
     r.ns = ns;
-    for (uint32_t ic = 0;  ic < s->nc; ic++)
-      { for (uint32_t i = 0;  i < ns; i++) 
-         { r.sv[ic][i] = s->sv[ic][i + ini]; }
+    for (int32_t ic = 0;  ic < s->nc; ic++)
+      { for (int32_t i = 0;  i < ns; i++) 
+         { r.sv[ic][i] = s->sv[ic][i + (int32_t)ini]; }
       }
     return r;
   }
 
-void jsa_add_sound(sound_t *s, int32_t sskip, sound_t *r, int32_t rskip, int32_t ns)
-  { int32_t nc = (s->nc < r->nc ? s->nc : r->nc); 
-    for (uint32_t ic = 0;  ic < nc; ic++)
-      { for (uint32_t i = 0;  i < ns; i++) 
-          { int32_t si = i + sskip;
-            int32_t ri = i + rskip;
-            if ((si >= 0) && (si < s->ns) && (ri >= 0) && (ri < r->ns))
+void jsaudio_add_sound(jsaudio_t *s, uint32_t sskip, jsaudio_t *r, uint32_t rskip, uint32_t ns)
+  { uint32_t nc = (s->nc < r->nc ? s->nc : r->nc); 
+    for (int32_t ic = 0;  ic < nc; ic++)
+      { for (int32_t i = 0;  i < ns; i++) 
+          { uint32_t si = (uint32_t)i + sskip;
+            uint32_t ri = (uint32_t)i + rskip;
+            if ((si < s->ns) && (ri < r->ns))
               { s->sv[ic][ri] += r->sv[ic][si]; }
           }
        }
   }
 
-void jsa_free_sound(sound_t *s)
+void jsaudio_free_sound(jsaudio_t *s)
   { if (s->sv != NULL) 
-      { for (uint32_t ic = 0;  ic < s->nc; ic++)
+      { for (int32_t ic = 0;  ic < s->nc; ic++)
           { if (s->sv[ic] != NULL) { free(s->sv[ic]); s->sv[ic] = NULL; } }
         free(s->sv); s->sv = NULL; 
       }

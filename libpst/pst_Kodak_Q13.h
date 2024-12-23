@@ -2,7 +2,7 @@
 #define pst_Kodak_Q13_H
 
 /* Extracting sub-images of the Kodak Q-13 chart and elements thereof. */
-/* Last edited on 2008-12-12 16:21:17 by stolfi */
+/* Last edited on 2024-12-22 12:16:03 by stolfi */
 
 #include <bool.h>
 #include <r2.h>
@@ -125,10 +125,10 @@ void pst_Kodak_Q13_copy_rectangle
     double xhi,
     double ylo,
     double yhi,
-    int x0,
-    int y0,
-    int SNX,
-    int SNY,
+    int32_t x0,
+    int32_t y0,
+    uint32_t SNX,
+    uint32_t SNY,
     float_image_t *DST
   );
   /* Extracts from {img} the rectangle {R = [xlo _ xhi] × [ylo _ yhi]}, mapped by the 
@@ -141,7 +141,7 @@ void pst_Kodak_Q13_copy_rectangle
     and each affected pixel of {DST} will get the average of the pixel
     values of {img} within the corresponding grid cell. */
 
-double pst_Kodak_Q13_patch_albedo(int i);
+double pst_Kodak_Q13_patch_albedo(uint32_t i);
   /* Nominal albedo (reflectivity) of patch number {i}.  The patches
     are numbered from 0 (lightest) to {pst_Kodak_Q13_num_steps - 1}
     (darkest). */
@@ -155,13 +155,13 @@ typedef enum /* Kind of function basis to use for function approximation: */
 
 typedef struct pst_Kodak_Q13_basis_t /* Function basis for function approximation. */
   { pst_Kodak_Q13_btype_t bt;  /* Kind of basis. */
-    int N;                 /* Number of element in basis. */
+    uint32_t N;                 /* Number of element in basis. */
   } pst_Kodak_Q13_basis_t;
   /* A basis for least-squares fitting. The basis has {N} elements.
     Element {N-1} is the unit function. */
 
 void pst_Kodak_Q13_compute_light_map
-  ( int c,                     /* Channel of {img} to consider. */
+  ( uint32_t c,                     /* Channel of {img} to consider. */
     double noise,              /* Noise level to assume in {img} sample values. */
     float_image_t *grayScale,  /* The extracted and rectified gray-scale patches. */
     float_image_t *bodyStrip,  /* The extracted and rectified body strip, or NULL. */
@@ -212,7 +212,7 @@ double pst_Kodak_Q13_eval_map
     
 void pst_Kodak_Q13_apply_map
   ( float_image_t *img,
-    int c, 
+    uint32_t c, 
     double noise, 
     double logVlo, 
     double logVhi,
@@ -230,7 +230,7 @@ double pst_Kodak_Q13_eval_raw_map(double v, pst_Kodak_Q13_basis_t B, double z[])
     combination {pst_Kodak_Q13_eval_basis(v, p, B)} with coefficient
     {z[p]}, for {p} in {0..B.N-1}. */
     
-double pst_Kodak_Q13_eval_basis(double v, int p, pst_Kodak_Q13_basis_t B);
+double pst_Kodak_Q13_eval_basis(double v, uint32_t p, pst_Kodak_Q13_basis_t B);
   /* Evaluates element {p} of the least-squares fitting basis {B}, at
     the logscaled and normalized argument {v}. Fails if {p} is not in
     {0..B.N-1}. */

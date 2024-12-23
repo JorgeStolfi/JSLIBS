@@ -2,7 +2,7 @@
 #define PROG_DESC "basic tests of the {oct.h} procedures"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-05 10:39:52 by stolfi */ 
+/* Last edited on 2024-12-22 11:08:54 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2007  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
@@ -26,16 +26,17 @@
 #include <frgb.h>
 #include <argparser.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 
 #include <oct.h>
 
 oct_arc_t make_map_klein(void);
   /* Builds a Klein bottle with two edges. */
 
-oct_arc_t make_map_star(int32_t n);
+oct_arc_t make_map_star(uint32_t n);
   /* Builds a star with {n} edges. */
 
-oct_arc_t make_map_pyramid(int32_t n);
+oct_arc_t make_map_pyramid(uint32_t n);
   /* Builds a pyramid with {n} sides. */
 
 int32_t main(int32_t argc, char **argv);
@@ -61,9 +62,8 @@ void do_tests(char *name, oct_arc_t m)
     fprintf(stderr, "sizeof(oct_edge_t) = %d\n", (int32_t)(sizeof(oct_edge_t)));
     fprintf(stderr, "sizeof(oct_arc_t) = %d\n", (int32_t)(sizeof(oct_arc_t)));
     write_map(name, m);
-    int32_t it;
-    for (it = 0; it < 8; it++)
-      { oct_bits_t t = it;
+    for (uint32_t it = 0; it < 8; it++)
+      { oct_bits_t t = (oct_bits_t)it;
         oct_arc_t e = oct_orient(ed, t);
         assert(t == oct_tumble_code(e));
         assert(ed == oct_edge(e));
@@ -158,11 +158,10 @@ oct_arc_t make_map_klein(void)
     return a;
   } 
      
-oct_arc_t make_map_star(int32_t n)
+oct_arc_t make_map_star(uint32_t n)
   { oct_arc_t a, b;
     a = oct_make_edge();
-    int32_t k;
-    for(k = 1; k < n; k++)
+    for(uint32_t k = 1; k < n; k++)
       { b = oct_make_edge();
         oct_splice(a, b);
         a = b;
@@ -170,7 +169,7 @@ oct_arc_t make_map_star(int32_t n)
     return a;
   } 
      
-oct_arc_t make_map_pyramid(int32_t n)
+oct_arc_t make_map_pyramid(uint32_t n)
   { /* Build an {n}-armed star: */
     oct_arc_t a = make_map_star(n);
     /* Build an {n}-sided ring: */
@@ -178,8 +177,7 @@ oct_arc_t make_map_pyramid(int32_t n)
     b = oct_fflip(oct_rot(b));
     /* Stitch them together: */
     oct_arc_t c = oct_sym(a);
-    int32_t k;
-    for(k = 0; k < n; k++)
+    for(uint32_t k = 0; k < n; k++)
       { oct_splice(b, c);
         c = oct_dnext(c);
         b = oct_lnext(b);
@@ -188,8 +186,7 @@ oct_arc_t make_map_pyramid(int32_t n)
   } 
  
 void write_map(char *name, oct_arc_t a)
-  { char *filename = NULL;
-    char *filename = jsprintf("out/%s.oct", name);
+  { char *filename = jsprintf("out/%s.oct", name);
     FILE *wr = open_write(filename, TRUE);
     oct_arc_vec_t root = oct_arc_vec_new(1); /* Root list. */
     root.e[0] = a;

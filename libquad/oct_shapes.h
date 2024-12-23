@@ -2,7 +2,7 @@
 #define oct_shapes_H
 
 /* Procedures that build oct-edge structures for various simple maps. */
-/* Last edited on 2024-12-05 10:39:40 by stolfi */
+/* Last edited on 2024-12-22 11:01:18 by stolfi */
 
 #define oct_shapes_H_copyright \
   "Copyright © 1996, 2006 State University of Campinas (UNICAMP)\n\n" jslibs_copyright
@@ -14,17 +14,17 @@
 
 #include <oct.h>
 
-void buld_tower(uint m, uint h, oct_arc_t a);
+void buld_tower(uint32_t m, uint32_t h, oct_arc_t a);
   /* Builds a cylindrical tower on the face {oct_right(a)}, 
     which must have {m} edges. The tower will have {h} stages
     and a roof; each stage will be a ring with {m} square faces.
     The roof of the tower will be a single face of {m} edges. */
 
-oct_arc_t make_ring (int32_t n);
+oct_arc_t make_ring (uint32_t n);
   /* Builds a map on the sphere with two faces separated by
     a ring with {n} edges and {n} vertices. */
 
-oct_arc_t make_orange(uint n);
+oct_arc_t make_orange(uint32_t n);
   /* Builds a map on the sphere with two vertices (`poles') connected
     by {n} edges (`meridians'), that divide the sphere
     into {n} wedge-like faces. Namely, the dual of {make_ring}. */
@@ -39,11 +39,11 @@ oct_arc_t make_stick(void);
   /* A map on the sphere with a single edge, two vertices,
     and a single face. Namely, the dual of {make_edge}. */
 
-oct_arc_t make_sausage (uint len);
+oct_arc_t make_sausage (uint32_t len);
   /* A sausage-like map made by taking a strip of {2 × len} squares,
    sewing its long sides together, and closing the ends with two digons. */
   
-oct_arc_t make_fork(uint np, uint len);
+oct_arc_t make_fork(uint32_t np, uint32_t len);
   /* A star-shaped object consisting of {np} `prongs' radiating
     from a `hub'.  The hub is the result of {make_orange(np)},
     and each prong is similar to the result of {make_sausage(len)},
