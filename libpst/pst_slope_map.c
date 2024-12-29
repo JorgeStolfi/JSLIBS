@@ -1,5 +1,5 @@
 /* See pst_slope_map.h */
-/* Last edited on 2024-12-23 07:08:22 by stolfi */
+/* Last edited on 2024-12-24 19:13:31 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -70,8 +70,8 @@ void pst_slope_map_to_depth_map_recursive
   {
     /* Get image size and check compatibility: */
     demand(IG->sz[0] == 2, "wrong {IG} channels");
-    uint32_t NX_G = (uint32_t)IG->sz[1];
-    uint32_t NY_G = (uint32_t)IG->sz[2];
+    int32_t NX_G = (int32_t)IG->sz[1];
+    int32_t NY_G = (int32_t)IG->sz[2];
     
     if (IW != NULL)
       { demand(IW->sz[0] == 1, "wrong {IW} channels");
@@ -80,8 +80,8 @@ void pst_slope_map_to_depth_map_recursive
       }
       
     /* Allocate output images: */
-    uint32_t NX_Z = NX_G + 1;
-    uint32_t NY_Z = NY_G + 1;
+    int32_t NX_Z = NX_G + 1;
+    int32_t NY_Z = NY_G + 1;
     float_image_t *OZ = float_image_new(1, (int32_t)NX_Z, (int32_t)NY_Z);  
     float_image_t *OW = ((IW == NULL) || (OWP == NULL) ? NULL : float_image_new(1, (int32_t)NX_Z, (int32_t)NY_Z));
     if (OWP != NULL) { (*OWP) = OW; }
@@ -145,7 +145,7 @@ void pst_slope_map_to_depth_map_recursive
     bool_t solve_sys = ! trivial;
     if (solve_sys)
       { /* Build the linear system: */
-        uint32_t NP_Z = NX_Z*NY_Z;
+        uint32_t NP_Z = (uint32_t)(NX_Z*NY_Z);
         if (verbose) { fprintf(stderr, "%*sBuilding linear system for %d pixels ...\n", indent, "", NP_Z); }
         bool_t full = FALSE; /* Should be parameter. FALSE means exclude indeterminate pixels. */
         pst_imgsys_t *S = pst_slope_map_build_integration_system(IG, IW, full);
@@ -184,9 +184,9 @@ void pst_slope_and_weight_map_shrink
     float_image_t **SW
   )
   { 
-    uint32_t NC = (uint32_t)IG->sz[0];
-    uint32_t NXI = (uint32_t)IG->sz[1]; uint32_t NXJ = (NXI+1)/2;
-    uint32_t NYI = (uint32_t)IG->sz[2]; uint32_t NYJ = (NYI+1)/2;
+    int32_t NC = (int32_t)IG->sz[0];
+    int32_t NXI = (int32_t)IG->sz[1]; int32_t NXJ = (NXI+1)/2;
+    int32_t NYI = (int32_t)IG->sz[2]; int32_t NYJ = (NYI+1)/2;
     float_image_t *JG = float_image_new((int32_t)NC, (int32_t)NXJ, (int32_t)NYJ);
     float_image_t *OW = NULL;
     
@@ -201,7 +201,7 @@ void pst_slope_and_weight_map_shrink
       { for (int32_t jx = 0; jx < NXJ; jx++)
           { int32_t ix = 2*jx, iy = 2*jy;
 	    float wmin = INF;
-	    for (uint32_t c = 0; c < 2; c++)
+	    for (int32_t c = 0; c < 2; c++)
 	    {
 	      double da,wa;
 	      pst_interpolate_two_samples(IG, IW, (int32_t)c, ix,iy,  ix+1,iy+1, &da,&wa);
@@ -271,8 +271,8 @@ void pst_slope_map_copy_height_map_to_sol_vec(pst_imgsys_t *S, float_image_t *IZ
 
 void pst_slope_map_copy_sol_vec_to_height_map(pst_imgsys_t *S, double VZ[], float_image_t *IZ)
   {
-    uint32_t NX = (uint32_t)IZ->sz[1];
-    uint32_t NY = (uint32_t)IZ->sz[2];
+    int32_t NX = (int32_t)IZ->sz[1];
+    int32_t NY = (int32_t)IZ->sz[2];
     for (int32_t y = 0; y < NY; y++)
       { for (int32_t x = 0; x < NX; x++)
           { int32_t k = S->ix[x + (int32_t)NX*y];
@@ -288,13 +288,13 @@ pst_imgsys_t* pst_slope_map_build_integration_system
   ) 
   {
     /* Get/check the sizes of the slope maps: */
-    uint32_t NX_G = (uint32_t)G->sz[1];
-    uint32_t NY_G = (uint32_t)G->sz[2];
+    int32_t NX_G = (int32_t)G->sz[1];
+    int32_t NY_G = (int32_t)G->sz[2];
     
     /* Get the size of the system: */
-    uint32_t NX_Z = NX_G+1;
-    uint32_t NY_Z = NY_G+1;
-    uint32_t NXY_Z = NX_Z*NY_Z; /* Number of unknowns (heights) in full system. */
+    int32_t NX_Z = NX_G+1;
+    int32_t NY_Z = NY_G+1;
+    int32_t NXY_Z = NX_Z*NY_Z; /* Number of unknowns (heights) in full system. */
     
     /* Gather the equations {eq[0..NXY_Z-1]} of the system, using the full variable numbering: */
     bool_t fillHoles = full; /* TRUE to set isolated pixels to Poisson interpolant. */
@@ -304,12 +304,16 @@ pst_imgsys_t* pst_slope_map_build_integration_system
     int32_t *ix = talloc(NXY_Z, int32_t);
     uint32_t *col = talloc(NXY_Z, uint32_t);
     uint32_t *row = talloc(NXY_Z, uint32_t);
-    for (uint32_t xy = 0; xy < NXY_Z; xy++) { ix[xy] = (int32_t)xy; col[xy] = xy % NX_Z; row[xy] = xy / NX_Z; }
+    for (uint32_t xy = 0; xy < NXY_Z; xy++)
+      { ix[xy] = (int32_t)xy; 
+        col[xy] = xy % (uint32_t)NX_Z; 
+        row[xy] = xy / (uint32_t)NX_Z;
+      }
      
     uint32_t N; /* Number of valid equations. */
     if (full)
       { /* Keep all equations. */
-        N = NXY_Z;
+        N = (uint32_t)NXY_Z;
       }
     else
       { /* Compress the valid equations {eq[0..N-1]} of the system, and fill the table {ix[0..NXY_Z-1]}: */
@@ -361,9 +365,9 @@ pst_imgsys_t* pst_slope_map_build_integration_system
 pst_imgsys_equation_t *pst_slope_map_get_eqs(float_image_t *G, float_image_t *GW, bool_t fillHoles)
   {
     /* Get/check the sizes of the slope maps: */
-    uint32_t NC = (uint32_t)G->sz[0]; assert(NC == 2);
-    uint32_t NX_G = (uint32_t)G->sz[1];
-    uint32_t NY_G = (uint32_t)G->sz[2];
+    int32_t NC = (int32_t)G->sz[0]; assert(NC == 2);
+    int32_t NX_G = (int32_t)G->sz[1];
+    int32_t NY_G = (int32_t)G->sz[2];
     
     if (GW != NULL)
       { demand(GW->sz[0] == 1, "wrong {GW} channels");
@@ -372,9 +376,9 @@ pst_imgsys_equation_t *pst_slope_map_get_eqs(float_image_t *G, float_image_t *GW
       }
     
     /* Check the size of the system: */
-    uint32_t NX_Z = NX_G+1;
-    uint32_t NY_Z = NY_G+1;
-    uint32_t NXY_Z = NX_Z*NY_Z; /* Number of unknowns (heights). */
+    int32_t NX_Z = NX_G+1;
+    int32_t NY_Z = NY_G+1;
+    int32_t NXY_Z = NX_Z*NY_Z; /* Number of unknowns (heights). */
     
     /* Conceptually, we define four axial quadratic mismatch terms
       {qpo[x,y](z), qmo[x,y](z), qop[x,y](z), qom[x,y](z)} for each
@@ -518,12 +522,12 @@ pst_imgsys_equation_t *pst_slope_map_get_eqs(float_image_t *G, float_image_t *GW
     /* Make sure that we can build the system: */
     assert(MAXCOEFS >= 5);
     
-    pst_imgsys_equation_t *eq = (pst_imgsys_equation_t*)notnull(malloc(NXY_Z*sizeof(pst_imgsys_equation_t)), "no mem");
+    pst_imgsys_equation_t *eq = talloc(NXY_Z, pst_imgsys_equation_t);
 
     for (uint32_t xy = 0; xy < NXY_Z; xy++)
       { /* Get the indices of pixel number {k}: */
-        int32_t x = (int32_t)(xy % NX_Z);
-        int32_t y = (int32_t)(xy / NX_Z);
+        int32_t x = (int32_t)xy % NX_Z;
+        int32_t y = (int32_t)xy / NX_Z;
         
         /* Get the axial deltas and their weights: */
         double wmo, wpo, wom, wop;  /* Edge weights. */

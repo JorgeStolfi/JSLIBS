@@ -1,5 +1,5 @@
 /* See pst_scaling.h */
-/* Last edited on 2024-12-22 22:50:17 by stolfi */
+/* Last edited on 2024-12-24 19:18:16 by stolfi */
 
 #include <stdio.h>
 #include <math.h>
@@ -20,7 +20,7 @@
 
 void pst_scaling_debug_vecs
   ( char *label, 
-    uint32_vec_t *channel, 
+    int32_vec_t *channel, 
     double_vec_t *min,
     double_vec_t *max,
     double_vec_t *ctr,
@@ -29,8 +29,8 @@ void pst_scaling_debug_vecs
 
 void pst_scaling_debug_params
   ( char *label, 
-    uint32_t cin, 
-    uint32_t cot,
+    int32_t cin, 
+    int32_t cot,
     double *min,
     double *max,
     double *ctr,
@@ -44,7 +44,7 @@ void pst_scaling_debug_param(char *label, double *par);
 
 /* IMPLEMENTATIONS */
 
-double_vec_t pst_scaling_parse_range_option(argparser_t *pp, char *key, uint32_t *NC)
+double_vec_t pst_scaling_parse_range_option(argparser_t *pp, char *key, int32_t *NC)
   { if (argparser_keyword_present(pp, key))
       { return pst_double_vec_parse(pp, NC); }
     else
@@ -150,37 +150,36 @@ bool_t pst_scaling_parse_uniform(argparser_t *pp, bool_t next)
     return pst_keyword_present(pp, "-uniform", next);
   }
 
-void pst_scaling_fix_channels(uint32_t NC, uint32_vec_t *channel)
-  { uint32_t c;
+void pst_scaling_fix_channels(int32_t NC, int32_vec_t *channel)
+  { int32_t c;
     if ((channel->ne == 0) && (NC > 0))
       { /* Provide default channel indices: */
-        uint32_vec_expand(channel, (vec_index_t)NC-1);
+        int32_vec_expand(channel, (vec_index_t)NC-1);
         for (c = 0; c < NC; c++) { channel->e[c] = c; }
-        uint32_vec_trim(channel, NC);
+        int32_vec_trim(channel, (vec_size_t)NC);
       }
     else if ((channel->ne == 1) && (NC > 1))
       { /* Replicate the selected channel: */
-        uint32_vec_expand(channel, (vec_index_t)NC-1);
+        int32_vec_expand(channel, (vec_index_t)NC-1);
         for (c = 1; c < NC; c++) { channel->e[c] = channel->e[0]; }
-        uint32_vec_trim(channel, NC);
+        int32_vec_trim(channel, (vec_size_t)NC);
       }
     /* Checking (always, just for paranoia): */
     demand(channel->ne == NC, "inconsistent number of channels");
   }  
 
 void pst_scaling_fix_params
-  ( uint32_t NC,
+  ( int32_t NC,
     bool_t uniform,
     double_vec_t *min,
     double_vec_t *max,
     double_vec_t *ctr,
     double_vec_t *wid,
     float_image_t *fim, 
-    uint32_vec_t *channel
+    int32_vec_t *channel
   )
   { bool_t debug = FALSE;
     demand((channel == NULL) || (channel->ne == NC), "inconsistent channel map");
-    uint32_t k;
     if (uniform)
       { /* Uniformize all scaling parameters across all channels, shrink vectors to 1 elem: */
         pst_double_vec_uniformize(min, +INF); 
@@ -200,8 +199,8 @@ void pst_scaling_fix_params
           { if (fim != NULL)
               { /* Get the actual sample range {smin,smax} over all relevant channels: */
                 float smin = +INF; float smax = -INF;
-                for (k = 0; k < NC; k++) 
-                  { uint32_t c = (channel == NULL ? k : channel->e[k]);
+                for (int32_t k = 0; k < NC; k++) 
+                  { int32_t c = (channel == NULL ? k : channel->e[k]);
                     float_image_update_sample_range(fim, (int32_t)c, &smin, &smax);
                   }
                 /* Use the actual sample range {smin,smax} to define the scaling: */
@@ -229,9 +228,9 @@ void pst_scaling_fix_params
     if (debug) { pst_scaling_debug_vecs("regularized ranges", channel, min, max, ctr, wid);}
 
     /* Complete the scalings for each channel: */
-    for (k = 0; k < NC; k++)
+    for (int32_t k = 0; k < NC; k++)
       { /* Get scaling params for output channel {k}: */
-        uint32_t c = (channel == NULL ? k : channel->e[k]); 
+        int32_t c = (channel == NULL ? k : channel->e[k]); 
         double *mink = &(min->e[k]);
         double *maxk = &(max->e[k]);
         double *ctrk = &(ctr->e[k]);
@@ -272,7 +271,7 @@ void pst_scaling_fix_params
 
 void pst_scaling_debug_vecs
   ( char *label, 
-    uint32_vec_t *channel, 
+    int32_vec_t *channel, 
     double_vec_t *min,
     double_vec_t *max,
     double_vec_t *ctr,
@@ -286,7 +285,7 @@ void pst_scaling_debug_vecs
     if (ctr != NULL) { fprintf(stderr, "  ctr = %d", ctr->ne); }
     if (wid != NULL) { fprintf(stderr, "  wid = %d", wid->ne); }
     fprintf(stderr, "\n");
-    uint32_t k = 0;
+    int32_t k = 0;
     while (TRUE)
       { double *mink = ((min != NULL) && (k < min->ne) ? &(min->e[k]) : NULL);
         double *maxk = ((max != NULL) && (k < max->ne) ? &(max->e[k]) : NULL);
@@ -294,7 +293,7 @@ void pst_scaling_debug_vecs
         double *widk = ((wid != NULL) && (k < wid->ne) ? &(wid->e[k]) : NULL);
         if ((mink == NULL) && (maxk == NULL) && (ctrk == NULL) && (widk == NULL)) { break; }
         if ((channel == NULL) || (k >= channel->ne)) { break; } 
-        uint32_t c = channel->e[k];
+        int32_t c = channel->e[k];
         pst_scaling_debug_params("  ", c, k, mink, maxk, ctrk, widk);
         k++;
       }
@@ -303,8 +302,8 @@ void pst_scaling_debug_vecs
 
 void pst_scaling_debug_params
   ( char *label, 
-    uint32_t cin, 
-    uint32_t cot,
+    int32_t cin, 
+    int32_t cot,
     double *min,
     double *max,
     double *ctr,

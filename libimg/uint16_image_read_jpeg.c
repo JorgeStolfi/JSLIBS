@@ -1,5 +1,5 @@
 /* See {uint16_image_read_jpeg.h} */
-/* Last edited on 2024-12-05 07:40:28 by stolfi */
+/* Last edited on 2024-12-26 15:06:20 by stolfi */
 
 /* Created by R. Minetto (IC-UNICAMP) sometime in 2008--2009. */
 /* Adapted by J. Stolfi (IC-UNICMP) on 2011-05-14. */
@@ -51,20 +51,20 @@ uint16_image_t *uint16_image_read_jpeg_file(FILE *rd, bool_t verbose, int32_t *s
       if (! (cond)) { jpeg_abort_decompress(&jdec); demand(FALSE, (msg)); }
     
     /* Get the image size: */
-    int32_t cols = (int32_t)jdec.output_width;
-    int32_t rows = (int32_t)jdec.output_height;
-    int32_t chns = (int32_t)jdec.output_components;
+    uint32_t cols = jdec.output_width;
+    uint32_t rows = jdec.output_height;
+    int32_t chns = jdec.output_components;
     jdemand((chns > 0) && (chns <= 4), "invalid channel count");
 
     /* Return the image colorspace: */
     (*spaceP) = jdec.jpeg_color_space;
 
     /* Alocate the JPEG decompression sample buffer: */    
-    uint32_t spr = (uint32_t)(cols * chns);   /* Samples per row in decompressor output. */
+    uint32_t spr = cols * (uint32_t)chns;   /* Samples per row in decompressor output. */
     JSAMPARRAY buffer = (*jdec.mem->alloc_sarray)((j_common_ptr)&jdec, JPOOL_IMAGE, spr, 1);
 
     /* Alocate the in-core image: */    
-    uint16_image_t *img = uint16_image_new(cols, rows, chns);
+    uint16_image_t *img = uint16_image_new(cols, rows, (uint32_t)chns);
     img->maxval = jsjpeg_MAXVAL;
 
     /* Read scanline by scanline: */
@@ -74,8 +74,7 @@ uint16_image_t *uint16_image_read_jpeg_file(FILE *rd, bool_t verbose, int32_t *s
       jdemand(nread == 1, "{jpeg_read_scanlines} failed");
       uint16_t *img_row = img->smp[r];
       JSAMPLE *bu_row = buffer[0];
-      int32_t k;
-      for (k = 0; k < spr; k++) { img_row[k] = (int32_t) bu_row[k]; }
+      for (int32_t k = 0; k < spr; k++) { img_row[k] = (int32_t) bu_row[k]; }
     }
     
     /* Cleanup: */

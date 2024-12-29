@@ -1,5 +1,5 @@
 /* See pst_weight_map.h */
-/* Last edited on 2024-12-23 07:12:28 by stolfi */
+/* Last edited on 2024-12-24 19:13:48 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -19,8 +19,8 @@
 float_image_t *pst_weight_map_shrink(float_image_t *IW, bool_t harmonic, uint32_t avgWidth)
   { 
     demand(IW->sz[0] == 1, "weight map is not mono");
-    uint32_t NX_JW = (uint32_t)((IW->sz[1]+1)/2);
-    uint32_t NY_JW = (uint32_t)((IW->sz[2]+1)/2);
+    int32_t NX_JW = (int32_t)((IW->sz[1]+1)/2);
+    int32_t NY_JW = (int32_t)((IW->sz[2]+1)/2);
     uint32_t dxy = (avgWidth-1)/2;
     return float_image_mscale_mask_shrink(IW, (int32_t)NX_JW, (int32_t)NY_JW, (int32_t)dxy, (int32_t)dxy, (int32_t) avgWidth, harmonic);
   }
@@ -28,9 +28,9 @@ float_image_t *pst_weight_map_shrink(float_image_t *IW, bool_t harmonic, uint32_
   
 float_image_t *pst_weight_map_expand_height_weights(float_image_t *IW)
   {
-    uint32_t NX,NY;
-    NX = (uint32_t)IW->sz[1];
-    NY = (uint32_t)IW->sz[2];
+    int32_t NX,NY;
+    NX = (int32_t)IW->sz[1];
+    NY = (int32_t)IW->sz[2];
     float_image_t* HW = float_image_new(1,(int32_t)NX+1,(int32_t)NY+1);
     for (int32_t x = 0; x < NX+1; x++){
       for (int32_t y = 0; y < NY+1; y++){
@@ -74,11 +74,11 @@ float_image_t *pst_weight_map_expand_height_weights(float_image_t *IW)
     return HW;
   }
 
-float_image_t *pst_weight_map_slope_to_height(float_image_t *W, bool_t harmonic, uint32_t NXV, uint32_t NYV)
+float_image_t *pst_weight_map_slope_to_height(float_image_t *W, bool_t harmonic, int32_t NXV, int32_t NYV)
   { 
     demand(W->sz[0] == 1, "weight map is not mono");
-    uint32_t NXW = (uint32_t)W->sz[1];
-    uint32_t NYW = (uint32_t)W->sz[2];
+    int32_t NXW = (int32_t)W->sz[1];
+    int32_t NYW = (int32_t)W->sz[2];
     
     /* Decide the window width {nw}, either 2 or 3: */
     uint32_t nw;
@@ -137,7 +137,7 @@ float_image_t *pst_weight_map_slope_to_height(float_image_t *W, bool_t harmonic,
     return V;
   }
   
-float_image_t *pst_weight_map_heights_from_slopes(uint32_t NX_Z, uint32_t NY_Z,float_image_t *GW)
+float_image_t *pst_weight_map_heights_from_slopes(int32_t NX_Z, int32_t NY_Z,float_image_t *GW)
   {
     float_image_t* EW = float_image_new(1, (int32_t)NX_Z, (int32_t)NY_Z);
     if ( GW != NULL ){ assert( (GW->sz[1] == (NX_Z-1)) && (GW->sz[2] == (NY_Z -1)) ); }

@@ -1,10 +1,12 @@
 /* uint16_image_Pike_F100.h - read AVC PIKE F-100 raw images. */
-/* Last edited on 2024-12-04 23:36:19 by stolfi */
+/* Last edited on 2024-12-26 11:53:21 by stolfi */
 
 #ifndef uint16_image_Pike_F100_H
 #define uint16_image_Pike_F100_H
 
-#include <jspnm.h>
+#include <stdint.h>
+
+#include <bool.h>
 #include <uint16_image.h>
 
 uint16_image_t *uint16_image_Pike_F100_read(char *name, bool_t verbose);
@@ -76,7 +78,7 @@ void uint16_image_Pike_F100_output_amp_balance(uint16_image_t *img, int32_t spli
     multiplied by {gain1}. Can be used with single- or three-channel
     images, and with images produced by {uint16_image_Pike_F100_extract_bayer_channel}. */
  
-uint16_image_t *pnm_Pike_F100_bayer_channel_white_mask(uint16_image_t *img, bool_t verbose);
+uint16_image_t *uint16_image_Pike_F100_bayer_channel_white_mask(uint16_image_t *img, bool_t verbose);
   /* Returns a white field mask suitable for pixel sensitivity
     correction of a Bayer channel. The image {img} must be a photo of
     a smooth white surface taken with the lens out of focus. It must

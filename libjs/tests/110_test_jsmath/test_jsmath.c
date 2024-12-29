@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {jsmath.h}, {ball.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-23 06:21:11 by stolfi */ 
+/* Last edited on 2024-12-24 03:57:14 by stolfi */ 
 /* Created on 2007-01-02 by J. Stolfi, UNICAMP */
 
 #define test_jsmath_COPYRIGHT \
@@ -12,15 +12,18 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+
 #include <math.h>
 #include <values.h>
 #include <assert.h>
+#include <float.h>
 
 #include <jsmath.h>
 #include <ball.h>
 #include <jsrandom.h>
 #include <jswsize.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <affirm.h>
 #include <bool.h>
 
@@ -54,6 +57,10 @@ void test_64bit_mul(uint32_t nt);
   /* Tests {uint64_mul} and {int64_mul}. */
   
 void test_minbits(uint32_t nt);
+  
+void test_digits(uint32_t nt);
+  
+void test_frac_digits(uint32_t nt);
 
 void test_expand_contract(uint32_t nt);
 
@@ -145,7 +152,9 @@ static int64_t int64_nice[N_int64_nice] =
   };
 
 int32_t main (int32_t argn, char **argv)
-  { test_minbits(1000);
+  { test_digits(1000);
+    test_frac_digits(1000);
+    test_minbits(1000);
     test_iroundup(100);
     test_gcd(200);
     test_lcm(200);
@@ -367,6 +376,52 @@ void test_comb(uint32_t nt)
           }
       }
   }
+ 
+void test_frac_digits(uint32_t nt)
+  { fprintf(stderr, "Checking {frac_digits}...\n");
+    double x = 0; /* Test arg. */
+    for (uint32_t k = 0;  k < nt; k++)
+      { uint32_t m_cmp = frac_digits(x);
+        if (x == 0)
+          { demand(m_cmp == UINT32_MAX, "{frac_digits} failed for {x=0}"); }
+        else if (fabs(x) <= DBL_MIN)
+          { demand(m_cmp == 308, "{frac_digits} failed for {x<=DBL_MIN}"); }
+        else
+          { demand(m_cmp <= 308, "invalid {frac_digits} result"); 
+            double p = pow(0.1, (double)m_cmp);
+            if (p <= 0) { p = 0.1*DBL_MIN; /* Denenormalized but positive. */ }
+            demand(fabs(x) >= p, "{frac_digits} failed");
+          }
+        /* Advance to next {x}: */
+        x = 5*x;
+        if (! isfinite(x)) { x = sqrt(k)*DBL_MIN; }
+      }
+   }        
+ 
+void test_digits(uint32_t nt)
+  { bool_t debug = FALSE;
+    fprintf(stderr, "Checking {digits}...\n");
+    uint64_t x = 0; /* Test arg. */
+    for (uint32_t k = 0;  k < nt; k++)
+      { uint32_t m_cmp = digits(x);
+        if (debug) { fprintf(stderr, "  digits(%ld) = %d", x, m_cmp); } 
+        uint32_t m_exp; /* Expected result. */
+        if (x == 0)
+          { m_exp = 1; }
+        else
+          { char *sx = jsprintf("%ld", x);  
+            m_exp = (uint32_t)strlen(sx);
+            free(sx);
+          }
+        if (debug) { fprintf(stderr, " expected %d\n", m_exp); } 
+        demand(m_cmp == m_exp, "{digits} failed");
+        /* Advance to next {x}: */
+        if (k < nt/4)
+          { x = x + 1; }
+        else
+          { x = (7*x/5) | 1; }
+      }
+   }        
  
 void test_minbits(uint32_t nt)
   { fprintf(stderr, "Checking {minbits}...\n");

@@ -1,5 +1,5 @@
 /* See {uint16_image_read_png.h} */
-/* Last edited on 2024-12-05 07:52:42 by stolfi */
+/* Last edited on 2024-12-26 15:07:10 by stolfi */
 
 /* Created by R. Minetto (IC-UNICAMP) as {ipng.c} sometime in 2008--2009. */
 /* Adapted by J. Stolfi (IC-UNICMP) on 2011-05-14. */
@@ -212,12 +212,12 @@ uint16_image_t *uint16_image_read_png_file(FILE *rd, double *gammaP, uint32_t im
     for (int32_t chn = 0; chn < chns; chn++)
       { demand ((buse[chn] > 0) && (buse[chn] <= png_smp_bits), "invalid bit count in sBIT chunk"); 
         imaxval[chn] = (1u << buse[chn]) - 1u;
-        demand(imaxval[chn] <= PNM_MAX_SAMPLE, "file sample size too big");
+        demand(imaxval[chn] <= uint16_image_MAX_SAMPLE, "file sample size too big");
         if (imaxval[chn] > omaxval) { omaxval = imaxval[chn]; }
       }
 
     /* Allocate the image in memory: */
-    uint16_image_t *img = uint16_image_new((int32_t)cols, (int32_t)rows, (int32_t)chns);
+    uint16_image_t *img = uint16_image_new(cols, rows, chns);
     img->maxval = (uint16_t)omaxval;
   
     if (verbose) 

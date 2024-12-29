@@ -1,5 +1,5 @@
 /* See pst_fit_light.h */
-/* Last edited on 2024-12-22 14:40:23 by stolfi */ 
+/* Last edited on 2024-12-28 20:13:43 by stolfi */ 
 
 #include <math.h>
 #include <values.h>
@@ -33,17 +33,17 @@ typedef double pst_flt_basis_func_t(uint32_t i, r3_t *nrm);
     is the apparent intensity of a surface with normal {nrm} that
     results from this term alone, with unit power. */
   
-typedef double pst_flt_target_func_t(r3_t *nrm, double img); 
+typedef double pst_flt_target_func_t(r3_t *nrm, double smp); 
   /* The target function to use for least-squares fitting. The domain
     is the set of all normal directions; the value is the desired
     apparent intensity at any pixel where the normal is {nrm} and the
-    given image is {img}. */
+    image value in the relevant channel is {smp}. */
 
-typedef double pst_flt_weight_func_t(r3_t *nrm, double img); 
+typedef double pst_flt_weight_func_t(r3_t *nrm, double smp); 
   /* The weight function to use for least-squares fitting. The domain
     is the set of all normal directions; the value is the weight to be
-    given to any pixel where the normal is {nrm} and the given image
-    is {img}. */
+    given to any pixel where the normal is {nrm} and the image
+    value in the relevant channel is {smp}. */
 
 void pst_flt_build_lsq_system
   ( float_image_t *IMG, 
@@ -84,18 +84,18 @@ void pst_flt_print_lsq_system(FILE *wr, uint32_t n, double A[], double b[]);
   /* Writes to {wr} the {n × n} matrix {A}, stored by rows, and the
     {n}-vector {b}, side by side, in human-readable format.  */
 
-void pst_flt_apply_ambient_dimming(pst_light_t *lht, pst_lamp_t *src, double adim);
+void pst_flt_apply_ambient_dimming(pst_light_t *lht, int32_t c, pst_lamp_t *src, double adim);
   /* Multiplies by {adim} the power of all lights in {lht} except {src}. */
 
-double pst_flt_compute_ambient(pst_light_t *lht, pst_lamp_t *src, r3_t *nrm);
+double pst_flt_compute_ambient(pst_light_t *lht, int32_t c, pst_lamp_t *src, r3_t *nrm);
   /* Computes the apparent intensity of a pixel with surface normal
     {nrm}, when illuminated by all lamps of {lht} except {src}. */
 
-bool_t pst_flt_pixel_is_valid(double img, r3_t *nrm, double minNormalZ);
-  /* Returns TRUE iff the pixel with image value {img} and surface
-    normal {nrm} is valid. That is, {nrm} and {img} must be both
-    non-zero, and the Z coordinate of {nrm} must be at least
-    {minNormalZ}. */
+bool_t pst_flt_pixel_is_valid(double smp, r3_t *nrm, double minNormalZ);
+  /* Returns TRUE iff the pixel with image value {smp} in the relevant
+    channel and surface normal {nrm} is valid. That is, {nrm} and {smp}
+    must be both finite and non-zero, and the Z coordinate of {nrm} must
+    be at least {minNormalZ}. */
 
 /* ITERATIVE LIGHT LOCATION */
 
@@ -105,6 +105,7 @@ bool_t pst_flt_pixel_is_valid(double img, r3_t *nrm, double minNormalZ);
 void pst_fit_light_single_iterative
   ( float_image_t *IMG, /* Photo of object. */ 
     float_image_t *NRM, /* Normal map of object. */
+    int32_t c,          /* Channel to consider. */
     pst_light_t *lht,   /* (IN/OUT) Light model. */
     pst_lamp_t *src,    /* Lamp of {lht} to adjust. */
     double dirStep,     /* Max change allowed in {src} direction. */
@@ -130,11 +131,11 @@ void pst_fit_light_single_iterative
     
     /* Save initial lamp powers, since dimming is relative to them: */
     double ipwr[NS];   /* Initial lamp powers */
-    for (uint32_t i = 0; i < NS; i++) { ipwr[i] = lmpv->e[i]->pwr.e[0]; }
+    for (uint32_t i = 0; i < NS; i++) { ipwr[i] = lmpv->e[i]->pwr.c[c]; }
 
     /* Get pointers to the adjustable parameters of {src}: */
     r3_t *sdir = &(src->dir);           /* (ADJUST) Direction of target lamp. */
-    double *spwr = &(src->pwr.e[0]);   /* (ADJUST) Intensity of target lamp. */
+    float *spwr = &(src->pwr.c[c]);   /* (ADJUST) Intensity of target lamp. */
     
     auto void print_state(uint32_t iter, double change);
       /* Prints a line with the state of the iteration: {sdir}, {spwr}, and {rdim}. */
@@ -151,30 +152,30 @@ void pst_fit_light_single_iterative
       { 
         /* Save state before iteration: */
         odir = *sdir;  /* Direction computed in the previous iteration: */
-        for (uint32_t i = 0; i < NS; i++) { opwr[i] = lmpv->e[i]->pwr.e[0]; }
+        for (uint32_t i = 0; i < NS; i++) { opwr[i] = lmpv->e[i]->pwr.c[c]; }
 
         if (it == 0)
           { /* Make an initial heuristic adjustment of the applicable parameters: */
             bool_t dirAdjust = (dirStep > 0.0);
             pst_fit_light_single_trivial
-              ( IMG, NRM, lht, src, dirAdjust, pwrAdjust, ambAdjust, nonNegative, minNormalZ );
+              ( IMG, NRM, c, lht, src, dirAdjust, pwrAdjust, ambAdjust, nonNegative, minNormalZ );
           }
         else
           { /* Adjust the direction of {src}, if appropriate: */
             if (dirStep > 0.0)
               { /* Use least squares on fully lit parts. */
                 pst_fit_light_single_lsq
-                  ( IMG, NRM, lht, src, dirStep, FALSE, FALSE, weightBias, FALSE, minNormalZ );
+                  ( IMG, NRM, c, lht, src, dirStep, FALSE, FALSE, weightBias, FALSE, minNormalZ );
                 if (debug) { print_state(it, +INF); }
               }
             
             /* Adjust the power of {src} and the rest, if appropriate: */
             if (pwrAdjust || ambAdjust)
               { /* Reset original power of all lamps: */
-                for (uint32_t i = 0; i < NS; i++) { lmpv->e[i]->pwr.e[0] = ipwr[i]; }
+                for (uint32_t i = 0; i < NS; i++) { lmpv->e[i]->pwr.c[c] = (float)ipwr[i]; }
                 /* Use least squares on all valid pixels: */
                 pst_fit_light_single_lsq
-                  ( IMG, NRM, lht, src, 0.0, pwrAdjust, ambAdjust, weightBias, nonNegative, minNormalZ );
+                  ( IMG, NRM, c, lht, src, 0.0, pwrAdjust, ambAdjust, weightBias, nonNegative, minNormalZ );
               }
           }
 
@@ -192,7 +193,7 @@ void pst_fit_light_single_iterative
         double maxPower = 0; /* Max power among all lamps (including {src}). */
         for (uint32_t i = 0; i < NS; i++) 
           { pst_lamp_t *alt = lmpv->e[i]; /* Lamp number {i}. */
-            double apwr = alt->pwr.e[0]; /* Its power. */
+            double apwr = alt->pwr.c[c]; /* Its power. */
             double d = apwr - opwr[i]; /* Change since prev iteration (signed). */
             if (d > 0) 
               { pwrChange_pos += fabs(d); }
@@ -220,7 +221,7 @@ void pst_fit_light_single_iterative
         double apwr = 0.0;
         for (uint32_t i = 0; i < NS; i++) 
           { pst_lamp_t *alt = lmpv->e[i]; /* Lamp numbr {i}. */
-            if (alt != src) { apwr += alt->pwr.e[0]; }
+            if (alt != src) { apwr += alt->pwr.c[c]; }
           }
         apwr /= NS;
         fprintf(stderr, "  avg amb pwr = %8.5f", apwr);
@@ -239,6 +240,7 @@ void pst_fit_light_single_iterative
 void pst_fit_light_single_lsq
   ( float_image_t *IMG, 
     float_image_t *NRM, 
+    int32_t c,          /* Channel to consider. */
     pst_light_t *lht,   /* Light model. */
     pst_lamp_t *src,    /* Lamp of {lht} to adjust. */
     double dirStep,     /* Max change allowed in {src} direction. */
@@ -274,7 +276,7 @@ void pst_fit_light_single_lsq
     
     /* Get pointers to the adjustable parameters of {src}: */
     r3_t *sdir = &(src->dir);           /* (ADJUST) Direction of target lamp. */
-    double *spwr = &(src->pwr.e[0]);   /* (ADJUST) Intensity of target lamp. */
+    float *spwr = &(src->pwr.c[c]);   /* (ADJUST) Intensity of target lamp. */
     
     /* Other auxiliary data for basis functions: */
     double cfit;  /* Exclude pixels where {dot(dir,nrm)} is less than this. */
@@ -286,15 +288,16 @@ void pst_fit_light_single_lsq
     auto double bas_amb(uint32_t i, r3_t *nrm);   /* Value is the contributin of all other lamps. */  
       /* Basis functions for least-squares fitting: */
     
-    auto double fun_img(r3_t *nrm, double img); 
-      /* Target function for full model fitting: the image {img} itself. */
+    auto double fun_img(r3_t *nrm, double smp); 
+      /* Target function for full model fitting: the image value {smp} itself. */
     
-    auto double fun_nam(r3_t *nrm, double img); 
-      /* Target function for {src}-only fitting: {img} minus effect of other lamps. */
+    auto double fun_nam(r3_t *nrm, double smp); 
+      /* Target function for {src}-only fitting: the image value {smp} 
+        minus effect of other lamps. */
     
-    auto double wht(r3_t *nrm, double img); 
-      /* Weight function: cap around current {src.dir} for power and direction fitting,
-        all valid pixels for power-only fitting. */
+    auto double wht(r3_t *nrm, double smp); 
+      /* Weight function: sperical cap around current {src.dir} for power and 
+        direction fitting, all valid pixels for power-only fitting. */
     
     /* Interpreting the elements of the solution vector {u}: */
     int32_t idirx, idiry, idirz;  /* {u} indices corresp. to direction coords, or -1. */
@@ -347,7 +350,7 @@ void pst_fit_light_single_lsq
       else
         { /* No dimming factor in result: */
           idim = -1;
-          /* Target function is {img} minus the contrib of other lamps: */
+          /* Target function is the image value {smp} minus the contrib of other lamps: */
           fun = &fun_nam;
         }
     } 
@@ -381,7 +384,7 @@ void pst_fit_light_single_lsq
         (*sdir) = udir;
         if (pwrAdjust) 
           { /* Set {src}'s power to the new power: */
-            (*spwr) = upwr;
+            (*spwr) = (float)upwr;
           }
       }
     if((dirStep <= 0.0) && pwrAdjust)
@@ -392,7 +395,7 @@ void pst_fit_light_single_lsq
         /* Extract power from solution vector: */
         double upwr = u[ipwr];
         /* Set {src}'s power to the new power: */
-        (*spwr) = upwr;
+        (*spwr) = (float)upwr;
       }
     if (ambAdjust)
       { /* There should be an unnown for the ambient dimming factor: */
@@ -400,7 +403,7 @@ void pst_fit_light_single_lsq
         /* Get the dimming factor: */
         double udim = u[idim];
         /* Multiply it into the power of all the other lamps: */
-        pst_flt_apply_ambient_dimming(lht, src, udim);
+        pst_flt_apply_ambient_dimming(lht, c, src, udim);
       }
       
     /* We are done: */
@@ -422,33 +425,35 @@ void pst_fit_light_single_lsq
       
     double bas_amb(uint32_t i, r3_t *nrm)
       { /* Shade surface with all lamps in {lht} except {src}: */
-        return pst_flt_compute_ambient(lht, src, nrm);
+        return pst_flt_compute_ambient(lht, c, src, nrm);
       }
     
-    double fun_img(r3_t *nrm, double img)
-      { return img; }
+    double fun_img(r3_t *nrm, double smp)
+      { return smp; }
       
-    double fun_nam(r3_t *nrm, double img)
-      { return img - pst_flt_compute_ambient(lht, src, nrm); }
+    double fun_nam(r3_t *nrm, double smp)
+      { return smp - pst_flt_compute_ambient(lht, c, src, nrm); }
     
-    /* The weight is 1 for normal fitting, {1/(img + weightBias)} for dark-weighted fitting. */
+    /* The weight is 1 for normal fitting, {1/(smp + weightBias)} for dark-weighted fitting. */
     
-    double wht(r3_t *nrm, double img)
+    double wht(r3_t *nrm, double smp)
       { /* Lamp direction is relevant only when direction-fitting: */
         r3_t *dirP = (dirStep == 0.0 ? NULL : &(src->dir));
-        return pst_fit_light_lsq_pixel_weight(img, nrm, minNormalZ, dirP, cfit, weightBias);
+        return pst_fit_light_lsq_pixel_weight(smp, nrm, minNormalZ, dirP, cfit, weightBias);
       }
   }
 
-bool_t pst_flt_pixel_is_valid(double img, r3_t *nrm, double minNormalZ)
+bool_t pst_flt_pixel_is_valid(double smp, r3_t *nrm, double minNormalZ)
   { return
-     (img != 0) &&
-     (r3_L_inf_norm(nrm) != 0) &&
+     isfinite(smp) &&
+     (smp != 0) &&
+     isfinite(nrm->c[0]) && isfinite(nrm->c[1]) && isfinite(nrm->c[2]) && 
+     (r3_L_inf_norm(nrm) != 1.0e-16) &&
      (nrm->c[2] > minNormalZ);
   }
 
 double pst_fit_light_lsq_pixel_weight
-  ( double img,
+  ( double smp,
     r3_t *nrm, 
     double minNormalZ,
     r3_t *dir,
@@ -456,29 +461,32 @@ double pst_fit_light_lsq_pixel_weight
     double weightBias
   )
   { /* Weight is 1 for valid pixels within {rfit} of {src.dir}, 0 elsewhere: */
-    if (! pst_flt_pixel_is_valid(img, nrm, minNormalZ))
+    if (! pst_flt_pixel_is_valid(smp, nrm, minNormalZ))
       { return 0.0; }
     else if ((dir != NULL) && (r3_dot(nrm, dir) < minCos))
       { return 0.0; }
     else if (fabs(weightBias) == INF)
       { return 1.0; }
     else
-      { img += weightBias;
-        demand(img > 1.0e-5, "insufficient bias for dark-weighted fitting");
-        return 1.0/img;
+      { smp += weightBias;
+        demand(smp > 1.0e-5, "insufficient bias for dark-weighted fitting");
+        return 1.0/smp;
       }
   }
 
-void pst_flt_apply_ambient_dimming(pst_light_t *lht, pst_lamp_t *src, double adim)
+void pst_flt_apply_ambient_dimming(pst_light_t *lht, int32_t c, pst_lamp_t *src, double adim)
   { pst_lamp_vec_t *lmpv = &(lht->lmpv);
     uint32_t NS = lmpv->ne; /* Number of lamps, including {src}. */
     for (uint32_t i = 0; i < NS; i++) 
       { pst_lamp_t *alt = lmpv->e[i]; /* Lamp number {i}. */
-        if (alt != src) { alt->pwr.e[0] *= adim; }
+        if (alt != src) 
+          { float *pwrc = &(alt->pwr.c[c]);
+            (*pwrc) = (float)(adim * (*pwrc)); 
+          }
       }
   }
 
-double pst_flt_compute_ambient(pst_light_t *lht, pst_lamp_t *src, r3_t *nrm)
+double pst_flt_compute_ambient(pst_light_t *lht, int32_t c, pst_lamp_t *src, r3_t *nrm)
   { pst_lamp_vec_t *lmpv = &(lht->lmpv);
     uint32_t NS = lmpv->ne; /* Number of lamps, including {src}. */
     double sum = 0.0;
@@ -486,7 +494,7 @@ double pst_flt_compute_ambient(pst_light_t *lht, pst_lamp_t *src, r3_t *nrm)
       { pst_lamp_t *alt = lmpv->e[i]; /* Lamp number {i}. */
         if (alt != src)
           { double gf = pst_lamp_geom_factor(nrm, &(alt->dir), alt->crad);
-            sum += gf*alt->pwr.e[0];
+            sum += gf*alt->pwr.c[c];
           }
       }
     return sum;
@@ -519,13 +527,13 @@ void pst_flt_build_lsq_system
     /* Scan valid pixels and add terms to the cross products: */
     for (int32_t y = 0; y < NY; y++)
       { for (int32_t x = 0; x < NX; x++)
-          { double img = float_image_get_sample(IMG, 0, x, y);
+          { double smp = (double)float_image_get_sample(IMG, 0, x, y);
             r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
-            double w = wht(&nrm, img);
+            double w = wht(&nrm, smp);
             if (w > 0.0)
               { /* Evaluate the basis elements and target function at this pixel: */
                 if (debug)
-                  { fprintf(stderr, "%5d %5d img = %7.4f", x, y, img);
+                  { fprintf(stderr, "%5d %5d smp = %7.4f", x, y, smp);
                     rn_gen_print(stderr, 3, nrm.c, "%7.4f", " nrm  = ( ", " ", " )");
                     fprintf(stderr, " bas = "); 
                   }
@@ -533,7 +541,7 @@ void pst_flt_build_lsq_system
                   { basv[i] = (bas[i])(i, &nrm);
                     if (debug) { fprintf(stderr, " %7.4f", basv[i]); }
                   }
-                double funv = fun(&nrm, img);
+                double funv = fun(&nrm, smp);
                 if (debug) { fprintf(stderr, " fun = %7.4f\n", funv); }
                 /* Compute the cross product terms and accumulate: */
                 for (uint32_t i = 0; i < n; i++)
@@ -573,6 +581,7 @@ void pst_flt_print_lsq_system(FILE *wr, uint32_t n, double A[], double b[])
 void pst_fit_light_single_trivial
   ( float_image_t *IMG, 
     float_image_t *NRM, 
+    int32_t c,          /* Color channel to consider */
     pst_light_t *lht,   /* Light model. */
     pst_lamp_t *src,    /* Lamp of {lht} to adjust. */
     bool_t dirAdjust,   /* TRUE estimates the direction of {src}. */
@@ -606,19 +615,19 @@ void pst_fit_light_single_trivial
       { /* Estimate the dimming factor to apply to all other lamps. */
         /* If we fixed {ambAdjust} correctly: */
         assert(NS > 1);
-        /* We assume that pixels where {img/amb} is minimum are in {src}'s shadow: */
+        /* We assume that pixels where {smp/amb} is minimum are in {src}'s shadow: */
         double adim = +INF; /* Estimated dimming factor. */
         uint32_t NV = 0; /* Count pixels used in estimate. */
         for (int32_t y = 0; y < NY; y++)
           { for (int32_t x = 0; x < NX; x++)
-              { double img = float_image_get_sample(IMG, 0, x, y);
+              { double smp = (double)float_image_get_sample(IMG, 0, x, y);
                 r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
-                if (pst_flt_pixel_is_valid(img, &nrm, minNormalZ))
+                if (pst_flt_pixel_is_valid(smp, &nrm, minNormalZ))
                   { /* Get computed contribution from all other lamps: */
-                    double amb = pst_flt_compute_ambient(lht, src, &nrm);
-                    /* Remember smallest {img/amb} ratio: */
+                    double amb = pst_flt_compute_ambient(lht, c, src, &nrm);
+                    /* Remember smallest {smp/amb} ratio: */
                     if (amb > 0)
-                      { if (img/amb < adim) { adim = img/amb; }
+                      { if (smp/amb < adim) { adim = smp/amb; }
                         NV++;
                       }
                   }
@@ -634,7 +643,7 @@ void pst_fit_light_single_trivial
               { fprintf(stderr, "%s: ", __FUNCTION__);
                 fprintf(stderr, "amb dimming = %10.6f based on %d pixels\n", adim, NV);
               }
-            if (adim != 1.0) { pst_flt_apply_ambient_dimming(lht, src, adim); }
+            if (adim != 1.0) { pst_flt_apply_ambient_dimming(lht, c, src, adim); }
           }
       }
     
@@ -642,19 +651,19 @@ void pst_fit_light_single_trivial
       { /* It doesn't matter whether {pwrAdjust} is true or not. */
         /* If we fixed {dirAdjust} correctly: */
         assert(src->crad >= pst_fit_light_trivial_min_crad + 1.0e-6);
-        /* Assume that the largest differnce {img-amb} is where {nrm=src.dir}. */
-        double difMax = -INF; /* Max difference between {img} and {amb}. */
+        /* Assume that the largest differnce {smp-amb} is where {nrm=src.dir}. */
+        double difMax = -INF; /* Max difference between {smp} and {amb}. */
         r3_t nrmMax = (r3_t){{ 0.0, 0.0, 1.0 }};  /* Normal where {difMax} occurred. */
         uint32_t NV = 0; /* Count pixels used in estimate. */
         for (int32_t y = 0; y < NY; y++)
           { for (int32_t x = 0; x < NX; x++)
-              { double img = float_image_get_sample(IMG, 0, x, y);
+              { double smp = (double)float_image_get_sample(IMG, 0, x, y);
                 r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
-                if (pst_flt_pixel_is_valid(img, &nrm, minNormalZ))
+                if (pst_flt_pixel_is_valid(smp, &nrm, minNormalZ))
                   { /* Get computed contribution from all other lamps: */
-                    double amb = pst_flt_compute_ambient(lht, src, &nrm);
+                    double amb = pst_flt_compute_ambient(lht, c, src, &nrm);
                     /* The difference should be due to {src}: */
-                    double dif = img - amb;
+                    double dif = smp - amb;
                     /* Remember max and min difference: */
                     if ( dif > difMax) { difMax = dif; nrmMax = nrm; }
                     NV++;
@@ -680,29 +689,29 @@ void pst_fit_light_single_trivial
                   { fprintf(stderr, "%s: ", __FUNCTION__); 
                     fprintf(stderr, "power = %10.6f based on %d pixels\n", difMax, NV);
                   }
-                src->pwr.e[0] = difMax;
+                src->pwr.c[c] = (float)difMax;
               }
           }
       }
 
     if (pwrAdjust && (! dirAdjust))
-      { /* Assume that the power is the average of {img-amb} divided by the average {geo}. */
+      { /* Assume that the power is the average of {smp-amb} divided by the average {geo}. */
         /* where the average is weighted by the geometric shading factor {geo}. */
-        double sum_dif_geo = 0.0; /* Sum of {geo*(img-amb)}. */
+        double sum_dif_geo = 0.0; /* Sum of {geo*(smp-amb)}. */
         double sum_geo_geo = 0.0; /* Sum of {geo*geo}. */
         uint32_t NV = 0; /* Count pixels used in estimate. */
         for (int32_t y = 0; y < NY; y++)
           { for (int32_t x = 0; x < NX; x++)
-              { double img = float_image_get_sample(IMG, 0, x, y);
+              { double smp = (double)float_image_get_sample(IMG, 0, x, y);
                 r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
-                if (pst_flt_pixel_is_valid(img, &nrm, minNormalZ))
+                if (pst_flt_pixel_is_valid(smp, &nrm, minNormalZ))
                   { /* Get the geometric factor for {src} at this pixel: */
                     double geo = pst_lamp_geom_factor(&nrm, &(src->dir), src->crad);
                     if (geo > 0.0)
                       { /* Get computed contribution from all other lamps: */
-                        double amb = pst_flt_compute_ambient(lht, src, &nrm);
+                        double amb = pst_flt_compute_ambient(lht, c, src, &nrm);
                         /* The difference should be due to {src}: */
-                        double dif = img - amb;
+                        double dif = smp - amb;
                         /* accumulate sums: */
                         sum_dif_geo += dif*geo;
                         sum_geo_geo += geo*geo;
@@ -722,7 +731,7 @@ void pst_fit_light_single_trivial
               { fprintf(stderr, "%s: ", __FUNCTION__); 
                 fprintf(stderr, "power = %10.6f based on %d pixels\n", pwr, NV);
               }
-            src->pwr.e[0] = pwr;
+            src->pwr.c[c] = (float)pwr;
           }
       }
   }
@@ -730,6 +739,7 @@ void pst_fit_light_single_trivial
 void pst_fit_light_multi
   ( float_image_t *IMG, 
     float_image_t *NRM,
+    int32_t c,          /* Color channel to consider. */
     pst_light_t *lht,
     double weightBias,  /* Bias for dark-weighted fitting, or {+INF} for normal fitting. */
     bool_t nonNegative, /* TRUE restricts lamp power and ambient dimming to be non-negative. */
@@ -740,10 +750,10 @@ void pst_fit_light_multi
     auto double bas_gen(uint32_t i, r3_t *nrm); 
       /* Basis functions for lamp intensity fitting (geom factor of lamp {i}). */
     
-    auto double fun(r3_t *nrm, double img); 
+    auto double fun(r3_t *nrm, double smp); 
       /* Target function for lamp intensity fitting (the image values). */
     
-    auto double wht(r3_t *nrm, double img); 
+    auto double wht(r3_t *nrm, double smp); 
       /* Weight for intensity fitting (1 for valid pixels, 0 for invalid). */
     
     pst_lamp_vec_t *lmpv = &(lht->lmpv);
@@ -767,7 +777,7 @@ void pst_fit_light_multi
     /* Set lamp powers from {u}: */
     for (uint32_t i = 0; i < NS; i++)
       { pst_lamp_t *alt = lmpv->e[i];
-        alt->pwr.e[0] = u[i];
+        alt->pwr.c[c] = (float)u[i];
       }
     
     return;
@@ -779,12 +789,12 @@ void pst_fit_light_multi
         return pst_lamp_geom_factor(nrm, &(src->dir), src->crad);
       }
 
-    double fun(r3_t *nrm, double img)
-      { return img; }
+    double fun(r3_t *nrm, double smp)
+      { return smp; }
 
-    double wht(r3_t *nrm, double img)
+    double wht(r3_t *nrm, double smp)
       { /* Weight is 1 for valid pixels, 0 elsewhere: */
-        return pst_fit_light_lsq_pixel_weight(img, nrm, minNormalZ, NULL, 0.0, weightBias);
+        return pst_fit_light_lsq_pixel_weight(smp, nrm, minNormalZ, NULL, 0.0, weightBias);
       }
   }
 

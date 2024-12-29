@@ -2,7 +2,7 @@
 #define float_pnm_stream_H
 
 /* I/O streams over a PBM/PGM/PPB image with multi-row float-format buffer. */
-/* Last edited on 2024-12-04 23:33:14 by stolfi */
+/* Last edited on 2024-12-26 12:35:50 by stolfi */
 
 #include <jspnm.h>
 #include <float_image_buffer.h>
@@ -11,9 +11,9 @@
 typedef struct float_pnm_stream_t
   { /* Image file data: */
     pnm_format_t format;       /* Image file format (PGM_FORMAT, RPGM_FORMAT, etc.). */
-    int32_t rows;                  /* Image width. */
-    int32_t cols;                  /* Image height. */
-    int32_t chns;                  /* Image channels. */
+    uint32_t rows;             /* Image width. */
+    uint32_t cols;             /* Image height. */
+    uint32_t chns;             /* Image channels. */
     uint16_t maxval;           /* Maximum pixel value */
     bool_t raw;                /* TRUE if `raw' format variant. */
     bool_t bits;               /* TRUE for PBM format (`raw' or `plain'). */

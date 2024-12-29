@@ -1,5 +1,5 @@
 /* See jsmath.h */
-/* Last edited on 2024-11-23 06:17:22 by stolfi */
+/* Last edited on 2024-12-24 03:56:14 by stolfi */
 
 #include <math.h>
 #include <stdint.h>
@@ -218,6 +218,15 @@ uint32_t digits(uint64_t x)
   { uint32_t d = 1;
     while (x > 9) { x /= 10; d++; }
     return d;
+  }
+  
+uint32_t frac_digits(double x)
+  { demand(isfinite(x), "invalid argument {x}");
+    x = fabs(x);
+    if (x == 0) { return UINT32_MAX; }
+    int32_t prec = (int32_t)fmax(0, ceil(-log(x)/log(10)) + 2);
+    assert(prec >= 0);
+    return (uint32_t)prec;
   }
 
 uint32_t minbits(uint64_t x)

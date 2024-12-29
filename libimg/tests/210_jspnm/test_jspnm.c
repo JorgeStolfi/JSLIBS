@@ -1,5 +1,5 @@
 /* Test of jspnm.h, uint16_image.h */
-/* Last edited on 2024-12-05 22:05:42 by stolfi */
+/* Last edited on 2024-12-26 15:12:35 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -15,7 +15,7 @@
 #include <uint16_image_read_pnm.h>
 #include <uint16_image_write_pnm.h>
 
-int main (int argc, char **argv);
+int32_t main (int32_t argc, char **argv);
 
 void do_uint16_image_io_tests(char *name);
   /* Performs various image I/O tests, reading files
@@ -24,7 +24,7 @@ void do_uint16_image_io_tests(char *name);
     {VAR} is "raw" or "txt", {MXV} is "uni" or "sma" or "big", and
     {EXT} is "pbm" or "pgm" or "ppm". */
 
-void do_uint16_image_io_test(char *name, bool_t raw, bool_t big, int kind);
+void do_uint16_image_io_test(char *name, bool_t raw, bool_t big, uint32_t kind);
   /* Reads an image from file "{name}-rd-{VAR}-{MXV}.{EXT}" and writes 
     its complementary image as "{name}-wr-{VAR}-{MXV}.{EXT}".
 
@@ -48,20 +48,19 @@ void ressublime_image(uint16_image_t *img, uint16_image_t *omg);
     relative to {img.maxval}, flipping left-right and
     top-bottom. Also sets {omg.maxval = img.maxval}. */  
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   { do_uint16_image_io_tests("out/test");
     return 0;
   }
   
 void do_uint16_image_io_tests(char *name)
-  { int raw, big, kind;
-    for (raw = 0; raw <= 1; raw++)
-      for (big = 0; big <= 1; big++)
-        for (kind = 0; kind <= 2; kind++)
+  { for (uint32_t raw = 0; raw <= 1; raw++)
+      for (uint32_t big = 0; big <= 1; big++)
+        for (uint32_t kind = 0; kind <= 2; kind++)
           { do_uint16_image_io_test(name, (raw!=0), (big!=0), kind); }
   }
       
-void do_uint16_image_io_test(char *name, bool_t raw, bool_t big, int kind)
+void do_uint16_image_io_test(char *name, bool_t raw, bool_t big, uint32_t kind)
   { 
     /* Filename extension: */
     char *extbl[3] = {"pbm", "pgm", "ppm"};
@@ -93,25 +92,24 @@ void do_uint16_image_io_test(char *name, bool_t raw, bool_t big, int kind)
 
 void ressublime_image(uint16_image_t *img, uint16_image_t *omg)
   {
-    int cols = img->cols; assert(img->cols == omg->cols);
-    int rows = img->rows; assert(img->rows == omg->rows);
-    int chns = img->chns; assert(img->chns == omg->chns);
+    uint32_t cols = img->cols; assert(img->cols == omg->cols);
+    uint32_t rows = img->rows; assert(img->rows == omg->rows);
+    uint32_t chns = img->chns; assert(img->chns == omg->chns);
 
     omg->maxval = img->maxval;
     
     double rad = 0.45*(cols < rows ? cols : rows);
 
-    int x, y, c;
-    for (y = 0; y < rows; y++)
+    for (int32_t y = 0; y < rows; y++)
       { double dy = y + 0.5 - 0.5*rows;
         uint16_t *ip = img->smp[y];
-        uint16_t *op = omg->smp[rows - 1 - y];
-        int ik = 0;
-        int ok = cols*chns - 1;
-        for (x = 0; x < cols; x++)
+        uint16_t *op = omg->smp[(int32_t)rows - 1 - y];
+        int32_t ik = 0;
+        int32_t ok = (int32_t)(cols*chns) - 1;
+        for (int32_t x = 0; x < cols; x++)
           { double dx = x + 0.5 - 0.5*cols;
             bool_t rev = (dx*dx + dy*dy < rad*rad);
-            for (c = 0; c < chns; c++)
+            for (int32_t c = 0; c < chns; c++)
               { op[ok] = (uint16_t)(rev ? img->maxval - ip[ik] : ip[ik]);
                 ik++; ok--;
               }

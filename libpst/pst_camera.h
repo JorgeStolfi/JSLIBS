@@ -2,7 +2,7 @@
 #define pst_camera_H
 
 /* pst_camera.h -- camera parameters and tools therefor. */
-/* Last edited on 2024-12-22 12:30:45 by stolfi */
+/* Last edited on 2024-12-28 00:42:02 by stolfi */
 
 #include <r2.h>
 #include <r3.h> 
@@ -191,6 +191,10 @@ r2_t pst_camera_center_cartesian(hr3_point_t *O);
 hr3_point_t pst_camera_viewpoint_from_center_spread(r2_t *Q, double G);
   /* Computes the viewpoint of a camera given the optical
     center {Q} and the spread {G}. */
+
+r3x3_t pst_camera_normal_correction_matrix(r3_t *dir);
+  /* The orthonormal rotation matrix that converts a surface normal vector that is
+    relative to view direction {dir} to absoute normal direction. */
  
 #define pst_camera_max_angle 80.0
   /* Max angle (in degrees) allowed at the viewpoint from the optical

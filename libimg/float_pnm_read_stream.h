@@ -2,7 +2,7 @@
 #define float_pnm_read_stream_H
 
 /* Row-by-row reading of PBM/PGM/PPB image file with conversion to float samples. */
-/* Last edited on 2024-12-05 10:30:10 by stolfi */
+/* Last edited on 2024-12-26 12:37:22 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -10,7 +10,7 @@
 #include <float_pnm_stream.h>
 #include <bool.h>
 
-float_pnm_stream_t *float_pnm_read_stream_new(FILE *rd, bool_t isMask, uint32_t badval, int32_t bufrows);
+float_pnm_stream_t *float_pnm_read_stream_new(FILE *rd, bool_t isMask, uint32_t badval, uint32_t bufrows);
   /* Creates a new stream structure {str} primed for reading from the
     open PBM/PGM/PPM image file {rd}.
     

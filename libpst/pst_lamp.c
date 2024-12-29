@@ -1,5 +1,5 @@
 /* See pst_lamp.h */
-/* Last edited on 2024-12-22 22:14:05 by stolfi */
+/* Last edited on 2024-12-28 21:04:08 by stolfi */
 
 #include <stdio.h>
 #include <math.h>
@@ -10,6 +10,8 @@
 
 #include <bool.h> 
 #include <r3.h> 
+#include <frgb.h>
+#include <frgb_ops.h>
 #include <affirm.h>
 #include <argparser.h>
 
@@ -17,15 +19,28 @@
 #include <pst_lamp.h>
 #include <pst_argparser.h>
 
-vec_typeimpl(pst_lamp_vec_t,pst_lamp_vec,pst_lamp_t *);
+vec_typeimpl(pst_lamp_vec_t, pst_lamp_vec, pst_lamp_t *);
 
-pst_lamp_t *pst_lamp_new(uint32_t NC, r3_t *dir, double pwr, double crad)
-  { pst_lamp_t *src = 
-      (pst_lamp_t *)notnull(malloc(sizeof(pst_lamp_t)), "no mem");
-    src->dir = (dir == NULL ? (r3_t){{ 0, 0, 0 }} : (*dir)); 
-    src->pwr = double_vec_new(NC);
-    for (uint32_t c = 0; c < NC; c++) { src->pwr.e[c] = pwr; }
+pst_lamp_t *pst_lamp_new(r3_t *dir, frgb_t *pwr, double crad)
+  { pst_lamp_t *src = talloc(1, pst_lamp_t);
+    
+    if (dir == NULL) 
+      { src->dir = (r3_t){{ NAN, NAN, NAN }}; }
+    else
+      { src->dir = *(dir); 
+        double dm = r3_dir(&(src->dir), &(src->dir ));
+        if ((! isfinite(dm)) || (dm == 0)) { src->dir = (r3_t){{ NAN, NAN, NAN }}; }
+      }
+    
+    if (pwr == NULL)
+      { src->pwr = frgb_NoColor; }
+    else
+      { src->pwr = (*pwr);
+        if (! (isfinite(src->pwr.c[0]) && isfinite(src->pwr.c[1]) && isfinite(src->pwr.c[2])))
+          { src->pwr = frgb_NoColor; }
+      }
     src->crad = crad;
+    demand(isnan(crad) || ((crad >= -1) && (crad <= +1)), "invalid {crad}");
     return src;
   }
 
@@ -35,9 +50,13 @@ double pst_lamp_geom_factor(r3_t *nrm, r3_t *dir, double crad)
       { /* Lamp spans the whole sphere (ambient term). */ 
         coef = 1.0;
       }
-    else
+    else 
       { double clum = r3_dot(nrm, dir); /* Cosine of illumination angle. */
-        if (crad == 0.0)
+        if (crad == 1.0)
+          { /* point source: */
+            return (clum > 0 ? clum : 0.0);
+          }
+        else if (crad == 0.0)
           { /* Lamp spans a whole hemisphere (wall term). */
             return 0.25*(1 + clum)*(1 + clum);
           }
@@ -82,21 +101,16 @@ double pst_lamp_geom_factor(r3_t *nrm, r3_t *dir, double crad)
 #define pst_bogus_spec_MESS \
   " is not applicable or was already specified for this lamp"
 
-pst_lamp_t *pst_lamp_spec_parse(argparser_t *pp, bool_t next, uint32_t *NCP)
-  { 
-    pst_lamp_t *src = NULL;
-    
-    /* Check whether the "-lamp" keyword is present, return NULL if not: */
+pst_lamp_t *pst_lamp_spec_parse(argparser_t *pp, bool_t next)
+  { pst_lamp_t *src = NULL;
     if (pst_keyword_present(pp, "-lamp", next)) 
-      { src = pst_lamp_new(0, NULL, 0.0, +INF);
-        (*src) = pst_lamp_spec_params_next_parse(pp, NCP);
-      }
+      { src = pst_lamp_spec_params_next_parse(pp); }
     return src;
   }
   
-pst_lamp_t pst_lamp_spec_params_next_parse(argparser_t *pp, uint32_t *NCP)
-  {
-    pst_lamp_t src;
+pst_lamp_t *pst_lamp_spec_params_next_parse(argparser_t *pp)
+  { 
+    pst_lamp_t *src = pst_lamp_new(NULL, NULL, NAN);
     bool_t dir_given = FALSE;
     bool_t crad_given = FALSE;
     bool_t pwr_given = FALSE;
@@ -111,9 +125,9 @@ pst_lamp_t pst_lamp_spec_params_next_parse(argparser_t *pp, uint32_t *NCP)
             double a = M_PI * (azim/180);
             double e = M_PI * (elev/180);
             /* Convert to unit direction vector: */
-            src.dir.c[0] = cos(a)*cos(e);
-            src.dir.c[1] = sin(a)*cos(e);
-            src.dir.c[2] = sin(e);
+            src->dir.c[0] = cos(a)*cos(e);
+            src->dir.c[1] = sin(a)*cos(e);
+            src->dir.c[2] = sin(e);
             dir_given = TRUE;
           }
         else if (argparser_keyword_present_next(pp, "direction"))
@@ -125,7 +139,7 @@ pst_lamp_t pst_lamp_spec_params_next_parse(argparser_t *pp, uint32_t *NCP)
             vec.c[2] = argparser_get_next_double(pp, -DBL_MAX, +DBL_MAX); 
             if (r3_L_inf_norm(&vec) != 0.0)
               { /* Convert to unit direction vector: */
-                (void)r3_dir(&vec, &(src.dir));
+                (void)r3_dir(&vec, &(src->dir));
               }
             dir_given = TRUE;
           }
@@ -133,28 +147,28 @@ pst_lamp_t pst_lamp_spec_params_next_parse(argparser_t *pp, uint32_t *NCP)
           { if (crad_given) { argparser_error(pp, "lamp's radius" pst_bogus_spec_MESS); }
             /* Get radius: */
             double radius = argparser_get_next_double(pp, 0.0, M_PI/2); 
-            src.crad = cos(radius);
+            src->crad = cos(radius);
             crad_given = TRUE;
           }
         else if (argparser_keyword_present_next(pp, "ambient"))
           { if (dir_given) { argparser_error(pp, "lamp's direction" pst_bogus_spec_MESS); }
             if (crad_given) { argparser_error(pp, "lamp's radius" pst_bogus_spec_MESS); }
             /* Direction is irrelevant, radius is {PI}: */
-            src.dir = (r3_t){{ 0,0,0 }};
+            src->dir = (r3_t){{ 0,0,0 }};
             dir_given = TRUE;
-            src.crad = -1;
+            src->crad = -1;
             crad_given = TRUE;
           }
         else if (argparser_keyword_present_next(pp, "wall"))
           { if (crad_given) { argparser_error(pp, "lamp's radius" pst_bogus_spec_MESS); }
             /* Direction is irrelevant, radius is {PI}: */
-            src.crad = 0;
+            src->crad = 0;
             crad_given = TRUE;
           }
         else if (argparser_keyword_present_next(pp, "power"))
           { if (pwr_given) { argparser_error(pp, "lamp's intensity" pst_bogus_spec_MESS); }
             /* Get color: */
-            src.pwr = pst_double_vec_parse(pp, NCP);
+            src->pwr = frgb_parse_color(pp);
             pwr_given = TRUE;
           }
         else 
@@ -163,10 +177,10 @@ pst_lamp_t pst_lamp_spec_params_next_parse(argparser_t *pp, uint32_t *NCP)
           }
       }
 
-    /* Provide defaults: */
-    if (! dir_given)  { src.dir = (r3_t){{ 0.0, 0.0, 0.0 }}; }
-    if (! crad_given) { src.crad = +1.0; }
-    if (! pwr_given)  { src.pwr = double_vec_new(0); }
+    /* Provide defaults (probably redundant): */
+    if (! dir_given)  { src->dir = (r3_t){{ NAN, NAN, NAN }}; }
+    if (! crad_given) { src->crad = +1.0; }
+    if (! pwr_given)  { src->pwr = frgb_Black; }
       
     return src;
   }
@@ -176,7 +190,7 @@ void pst_lamp_spec_write(FILE *wr, pst_lamp_t *src)
     fprintf(wr, "-lamp\n");
     r3_t *dir = &(src->dir);
     double crad = src->crad;
-    double_vec_t *pwr = &(src->pwr);
+    frgb_t *pwr = &(src->pwr);
     
     if (r3_L_inf_norm(dir) != 0.0)
       { fprintf(wr, "  direction");
@@ -190,9 +204,9 @@ void pst_lamp_spec_write(FILE *wr, pst_lamp_t *src)
     else
       { fprintf(wr, "  radius %6.3f\n", acos(crad)); }
     
-    if (pwr->ne > 0)
+    if (! isnan(pwr->c[0]))
       { fprintf(wr, "  power");
-        for (uint32_t c = 0; c < pwr->ne; c++) { fprintf(wr, " %6.4f", pwr->e[c]); }
+        for (int32_t c = 0; c < 3; c++) { fprintf(wr, " %6.4f", pwr->c[c]); }
         fprintf(wr, "\n");
       }
     fflush(wr);

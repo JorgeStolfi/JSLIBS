@@ -2,7 +2,7 @@
 #define pst_gray_scale_fit_H
 
 /* Fitting camera transfer function to data from a gray scale chart. */
-/* Last edited on 2024-12-22 21:53:43 by stolfi */
+/* Last edited on 2024-12-24 18:57:27 by stolfi */
 
 #include <bool.h>
 #include <r2.h>
@@ -39,7 +39,7 @@ double pst_gray_scale_fit_eval_map
     
 void pst_gray_scale_fit_apply_map
   ( float_image_t *img,
-    uint32_t c, 
+    int32_t c, 
     double noise, 
     double logVlo, 
     double logVhi,
@@ -53,7 +53,7 @@ void pst_gray_scale_fit_apply_map
 /* FITTING A MAP TO A GRAY SCALE CHART */
 
 void pst_gray_scale_fit_light_map
-  ( uint32_t c,                /* Channel of {img} to consider. */
+  ( int32_t c,                /* Channel of {img} to consider. */
     uint32_t NS,               /* Number of steps in gray scale. */
     double noise,              /* Noise level to assume in {img} sample values. */
     float_image_t *imgScale,   /* The extracted and rectified gray-scale patches. */

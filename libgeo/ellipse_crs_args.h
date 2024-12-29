@@ -2,7 +2,7 @@
 #define ellipse_crs_args_H
 
 /* ellipse_crs_args.h -- tools to parse ellipse parameters from the command line */
-/* Last edited on 2024-12-05 10:26:32 by stolfi */
+/* Last edited on 2024-12-27 20:11:44 by stolfi */
 
 #include <r2.h>
 #include <ellipse_crs.h>
@@ -63,18 +63,17 @@ void ellipse_crs_args_adjust_print
 /* Documentation for "center": */
 
 #define ellipse_crs_args_center_HELP \
-  "center [ {CTRX} {CTRY} ]"
+  "center {CTRX} {CTRY}"
 
 #define ellipse_crs_args_center_adjust_HELP \
-  ellipse_crs_args_center_HELP " [ adjust {CTR_ADJUST} ]"
+  ellipse_crs_args_center_HELP "[ adjust {CTR_ADJUST} ]"
   
 #define ellipse_crs_args_center_INFO \
   "Specifies the center of the ellipse on the image."
 
 #define ellipse_crs_args_center_adjust_INFO \
   ellipse_crs_args_center_INFO \
-  "  If \"adjust\" is present, {CTR_ADJUST} is the" \
-  " maximum amount by which" \
+  "  If \"adjust\" is present, {CTR_ADJUST} is the maximum amount by which" \
   " {CTRX} and/or {CTRY} may be adjusted."
 
 #define ellipse_crs_args_center_HELP_INFO \
@@ -89,7 +88,7 @@ void ellipse_crs_args_adjust_print
 /* Documentation for "radius": */
 
 #define ellipse_crs_args_radius_HELP \
-  "radius [ {RAD} ]"
+  "radius {RAD}"
   
 #define ellipse_crs_args_radius_adjust_HELP \
   ellipse_crs_args_radius_HELP " [ adjust {RAD_ADJUST} ]"
@@ -116,7 +115,7 @@ void ellipse_crs_args_adjust_print
 /* Documentation for "stretch": */
 
 #define ellipse_crs_args_stretch_HELP \
-  "stretch [ {STRX} {STRY} ]"
+  "stretch {STRX} {STRY}"
 
 #define ellipse_crs_args_stretch_adjust_HELP \
   ellipse_crs_args_stretch_HELP " [ adjust stretch {STR_ADJUST} ]"

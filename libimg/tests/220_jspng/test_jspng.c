@@ -1,5 +1,5 @@
 /* Test of jspng.h, uint16_image_io_png.h */
-/* Last edited on 2024-12-05 22:14:29 by stolfi */
+/* Last edited on 2024-12-26 16:45:25 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -209,7 +209,7 @@ void do_uint16_image_io_png_own_test(char *iDir, char *oDir, uint32_t csp, uint3
     else
       { demand(fabs(bGamma-oGamma)/sqrt(bGamma*oGamma) < 0.000001, "inconsistent {gamma}"); }
    
-    int32_t NC = img->chns;
+    int32_t NC = (int32_t)img->chns;
     int32_t icY = ( (NC == 1) || (NC == 2) ? 0 : -1 ); /* Index of intensity channel, or -1 if none. */
     int32_t icR = ( NC < 3 ? -1 : 0 ); /* Index of red channel, or -1 if none. */
     int32_t icG = ( NC < 3 ? -1 : 1 ); /* Index of red channel, or -1 if none. */
@@ -403,23 +403,23 @@ void do_uint16_image_io_png_official_test
 
 void frobnicate_image(uint16_image_t *img, uint16_image_t *omg)
   {
-    int32_t cols = img->cols; assert(img->cols == omg->cols);
-    int32_t rows = img->rows; assert(img->rows == omg->rows);
-    int32_t chns = img->chns; assert(img->chns == omg->chns);
+    uint32_t cols = img->cols; assert(img->cols == omg->cols);
+    uint32_t rows = img->rows; assert(img->rows == omg->rows);
+    uint32_t chns = img->chns; assert(img->chns == omg->chns);
 
     omg->maxval = img->maxval;
     
-    int32_t skip = 20;
+    uint32_t skip = 20;
     
-    int32_t invchns = ((chns == 2) || (chns == 4) ? chns - 1 : chns);
+    uint32_t invchns = ((chns == 2) || (chns == 4) ? chns - 1 : chns);
 
     for (int32_t y = 0; y < rows; y++)
       { uint16_t *ip = img->smp[y];
-        uint16_t *op = omg->smp[rows - 1 - y];
+        uint16_t *op = omg->smp[(int32_t)rows - 1 - y];
         bool_t yinv = ((y >= skip) && (y < rows-skip));
         for (int32_t x = 0; x < cols; x++)
-          { uint16_t *iv = ip + chns*x;
-            uint16_t *ov = op + chns*(cols - 1 - x);
+          { uint16_t *iv = ip + (int32_t)chns*x;
+            uint16_t *ov = op + (int32_t)chns*((int32_t)cols - 1 - x);
             bool_t xinv = ((x >= skip) && (x < cols-skip));
             for (int32_t c = 0; c < chns; c++)
               { bool_t cinv = (c < invchns);
@@ -432,9 +432,9 @@ void frobnicate_image(uint16_image_t *img, uint16_image_t *omg)
 
 void compare_images(uint16_image_t *img, uint16_image_t *omg)
   {
-    int32_t cols = img->cols; demand(img->cols == omg->cols, "wrong cols");
-    int32_t rows = img->rows; demand(img->rows == omg->rows, "wrong rows");
-    int32_t chns = img->chns; demand(img->chns == omg->chns, "wrong chns");
+    uint32_t cols = img->cols; demand(img->cols == omg->cols, "wrong cols");
+    uint32_t rows = img->rows; demand(img->rows == omg->rows, "wrong rows");
+    uint32_t chns = img->chns; demand(img->chns == omg->chns, "wrong chns");
     demand(omg->maxval == img->maxval, "wrong maxval");
         
     for (int32_t y = 0;  y < rows; y++)

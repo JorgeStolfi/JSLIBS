@@ -3,9 +3,10 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <math.h>
 
 /* J. Stolfi's miscellaneous general-purpose definitions */
-/* Last edited on 2024-11-23 06:17:06 by stolfi */
+/* Last edited on 2024-12-25 12:36:53 by stolfi */
 
 #ifndef INF
 #define INF INFINITY
@@ -89,6 +90,14 @@ uint32_t digits(uint64_t x);
   /* Number of decimal digits needed to write {x}. 
     Namely, {1} if {x==0}, else {floor(log10(x)) + 1} */
 
+uint32_t frac_digits(double x);
+  /* Returns the number of decimal fraction digits needed in an 'f'
+    format so that {x} prints as definitely different from zero. 
+    Namely, if {x} is 1 or more, returns 0, else 
+    returns the smallest {m} such that {|x| >= 0.1^m}.
+    However, if {x} is zero, returns {UINT64_MAX}; if {x} is nonzero but 
+    {|x|} is less than {DBL_MIN}, replaces it by {DBL_MIN}. */
+    
 uint32_t minbits(uint64_t x);
   /* Number of bits needed to represent {x}.
     Namely 0 if {x=0}, else {floor(log2(x)) + 1}.

@@ -2,7 +2,7 @@
 #define pst_fit_light_H
 
 /* pst_fit_light.h -- general fitting of light fields to images. */
-/* Last edited on 2024-12-22 11:54:46 by stolfi */
+/* Last edited on 2024-12-28 20:03:58 by stolfi */
 
 #include <bool.h>
 #include <r3.h>
@@ -18,7 +18,9 @@
   The following parameters have the same meaning for all procedures
   in this interface:
   
-    {IMG}: a monochomatic photo of the scene, the target of fitting.
+    {IMG}: a photo of the scene, the target of fitting.
+    
+    {c}: the channel of {IMG} to consider.
     
     {NRM}: the scene's normal map.
       
@@ -30,8 +32,8 @@
  
 #define pst_fit_light_valid_pixels_INFO \
   "The light fitting procedures will ignore any" \
-  " pixel {p} where the given surface normal {NRM[p]} is the null" \
-  " vector and/or the photo's intensity {IMG[p]} is exactly zero.  Thus, the user" \
+  " pixel {p} where the given surface normal {NRM[p]} is not finite or is the null" \
+  " vector and/or the photo's intensity {IMG[p]} in any channel is exactly zero.  Thus, the user" \
   " may permanently exclude `bad' pixels from the light field fitting, by" \
   " setting their value to zero in the normal map and/or in the input photo."
 
@@ -66,7 +68,17 @@
   normal map {NRM}, under that light field, best matches a given photo
   {IMG} of the same scene. The light field model is described by
   {pst_fit_light_simple_model_INFO} and the scene's nature by
-  {pst_fit_light_white_Lambertian_surface_INFO}. */
+  {pst_fit_light_white_Lambertian_surface_INFO}.
+  
+  The fitting is done separately for each channel {c}. That produces a
+  light model where all lamps have nonzero power only in channel {c}.
+  After fitting all channels, fitted lamps with directions that are
+  similar enough may be merged. If these lamps have separate
+  singe-channel colors, the result will be a multichannel lamp.
+  Alternatively, if lamps are known to be white, or of a specific color,
+  the input image can be converted to grayscale first, fitted for
+  channel 0 only, and the resulting monochomatic lamps converted to
+  polychromatic ones. */
 
 #define pst_fit_light_white_Lambertian_surface_INFO \
   "  The light field fitting procedures assume that"\
@@ -82,34 +94,36 @@
 /* SINGLE-LIGHT FITTING */
 
 void pst_fit_light_single_iterative
-  ( float_image_t *IMG, /* Photo of object. */ 
-    float_image_t *NRM, /* Normal map of object. */
-    pst_light_t *lht,   /* (IN/OUT) Light model. */
-    pst_lamp_t *src,    /* Lamp of {lht} to adjust. */
-    double dirStep,     /* Max change allowed in {src} direction. */
-    bool_t pwrAdjust,   /* TRUE optimizes the power of {src}, if possible. */
-    bool_t ambAdjust,   /* TRUE optimizes the overall power of the other lamps. */
-    double weightBias,  /* Bias for dark-weighted fitting, or {+INF} for normal fitting. */
-    bool_t nonNegative, /* TRUE restricts lamp power and ambient dimming to be non-negative. */
-    double minNormalZ,  /* Ignore pixels {p} where {NRM[p].z < minNormalZ}. */
-    uint32_t iterations,     /* Max iterations to use in fitting. */
-    double tolerance    /* Iteration stopping criterion. */
+  ( float_image_t *IMG,  /* Photo of object. */ 
+    float_image_t *NRM,  /* Normal map of object. */
+    int32_t c,           /* Color channel to consider. */
+    pst_light_t *lht,    /* (IN/OUT) Light model. */
+    pst_lamp_t *src,     /* Lamp of {lht} to adjust. */
+    double dirStep,      /* Max change allowed in {src} direction. */
+    bool_t pwrAdjust,    /* TRUE optimizes the power of {src}, if possible. */
+    bool_t ambAdjust,    /* TRUE optimizes the overall power of the other lamps. */
+    double weightBias,   /* Bias for dark-weighted fitting, or {+INF} for normal fitting. */
+    bool_t nonNegative,  /* TRUE restricts lamp power and ambient dimming to be non-negative. */
+    double minNormalZ,   /* Ignore pixels {p} where {NRM[p].z < minNormalZ}. */
+    uint32_t iterations, /* Max iterations to use in fitting. */
+    double tolerance     /* Iteration stopping criterion. */
   );
   /* Adjusts the direction and power of source {src}, as well as the
     overal power of the other lights in {lht}, so as to minimize the
     difference between the predicted image {F(lht,NRM)} and the given
     image {IMG}.
 
-    If {dirStep} is positive, the procedure tries to optimize the
-    direction of {src}, by at most that amount. Otherwise it treats
-    that direction as fixed.
+    If {dirStep} is positive, and {src} is not an ambient lamp, the
+    procedure tries to optimize the direction of {src}, by at most that
+    amount. Otherwise it treats that direction as fixed.
     
     If {pwrAdjust} is TRUE, the procedure tries to optimize the
-    power of {src}. Otherwise it treats that power as fixed.
+    power of {src} in channel {c}. Otherwise it treats that
+    power as fixed. 
     
-    If {ambAdjust} is true, the procedure tries to compute the
-    optimal dimming factor for the lamps of {lht} other than {src}.
-    Otherwise it treats those lights as fixed.
+    If {ambAdjust} is true, the procedure tries to mutiply the powers in
+    channel {c} of the lamps of {lht} other than {src} by an optimal
+    dimming factor. Otherwise it treats those light powers as fixed.
     
     If {weightBias} is finite, the least-squares functional uses weight
     {1/(IMG[p] + weightBias)} for each valid pixel {p}. If {weightBias} is
@@ -117,8 +131,11 @@ void pst_fit_light_single_iterative
     
     If {nonNegative} is TRUE, lamp powers are constrained to be positive.
     
+    In any case, the procedure may only adjust the power of lamps
+    in channel {c}. The power of any lamp in other channels is not affected.
+    
     When the procedure exits, the best-fitting parameters are stored
-    into {lht}, including in {src}.
+    into {lht}, including in {src}. 
     
     For more details, see {pst_fit_light_single_iterative_INFO},
     {pst_fit_light_simple_direction_by_least_squares_INFO} and
@@ -130,7 +147,7 @@ void pst_fit_light_single_iterative
   "  The procedure adjusts the power of the selected lamp, and, if so" \
   " requested, also its direction. If there are two or more lamps, the" \
   " procedure may aslo be asked to adjust a single /dimming factor/ {dim}," \
-  " that will be multiplied into the original power of all lamps other" \
+  " that will be multiplied into the original power in channel {c} of all lamps other" \
   " than {src}.\n" \
   "\n" \
   "  The least squares criterion reduces to a linear system which is solved" \
@@ -163,6 +180,7 @@ void pst_fit_light_single_iterative
 void pst_fit_light_single_lsq
   ( float_image_t *IMG, 
     float_image_t *NRM, 
+    int32_t c,          /* Color channel to consider. */
     pst_light_t *lht,   /* Light model. */
     pst_lamp_t *src,    /* Lamp of {lht} to adjust. */
     double dirStep,     /* Max change allowed in {src} direction. */
@@ -172,27 +190,9 @@ void pst_fit_light_single_lsq
     bool_t nonNegative, /* TRUE restricts lamp power and ambient dimming to be non-negative. */
     double minNormalZ   /* Ignore image points where the normal's Z is less than this. */
   );
-  /* Adjusts the direction and power of {src}, and the overal power of
-    the other lamps in {lht}, so as to obtain the best fit between
-    {IMG} and the white Lambertian shading model {F(lht,NRM)}, in the
-    least-squares sense.
-    
-    If {dirStep} is positive, and {src} is not an ambient lamp, the
-    procedure tries to optimize the direction of {src}. Otherwise it
-    treats that direction as fixed.
-    
-    If {pwrAdjust} is TRUE, the procedure tries to optimize the
-    power of {src}. Otherwise it treats that power as fixed.
-    
-    If {ambAdjust} is TRUE , the procedure tries to mutiply the powers 
-    of all lamps in {lht}, other than {src}, by a suitable dimming 
-    factor. Otherwise it treats those lights as fixed.
-    
-    If {weightBias} is finite, the least-squares functional uses weight
-    {1/(IMG[p] + weightBias)} for each valid pixel {p}. If {weightBias} is
-    infinite, all valid pixels have weight 1.
-    
-    If {nonNegative} is TRUE, lamp powers are constrained to be positive.
+  /* Similar to {pst_fit_light_single_iterative}, but instead
+    iterative method uses a linear least-squares fitting method that 
+    is appropriate for a Lambertian shading model {F(lht,NRM)}.
     
     When computing {src.dir}, the procedure considers only those parts
     of the scene which are fully illuminated by {src}, at its current
@@ -227,31 +227,32 @@ void pst_fit_light_single_lsq
   " normals are not sufficiently varied."
 
 double pst_fit_light_lsq_pixel_weight
-  ( double img,
+  ( double smp,
     r3_t *nrm, 
     double minNormalZ,
     r3_t *dir,
     double minCos,
     double weightBias
   );
-  /* Computes the weight of a pixel with intensity {img} and 
-    surface normal {nrm}, for least-squares fitting under 
+  /* Computes the weight of a pixel with value {smp} in the 
+    relevant channel and surface normal {nrm}, for least-squares fitting under 
     a single lamp model.  
     
-    The weight is zero if {img} is zero, if {nrm} is the null vector,
+    The weight is zero if {smp} is zero, if {nrm} is the null vector,
     or if the Z coordinate of {nrm} is less than {minNormalZ}.
     The weight is zero also if {dir} (the lamp's direction) is not NULL
     and the {dot(dir,nrm)} is less than {minCos}.
     
     Otherwise, the weight is 1 if {weightBias} is infinite.
     
-    Otherwise it is {1/(img+weightBias)}. */
+    Otherwise it is {1/(smp+weightBias)}. */
 
 /* NON-ITERATIVE, SINGLE LIGHT FITING BY TRIVIAL HEURISTIC */
 
 void pst_fit_light_single_trivial
   ( float_image_t *IMG, 
     float_image_t *NRM, 
+    int32_t c,          /* Color channel to consider. */
     pst_light_t *lht,   /* Light model. */
     pst_lamp_t *src,    /* Lamp of {lht} to adjust. */
     bool_t dirAdjust,   /* TRUE estimates the direction of {src}. */
@@ -260,24 +261,8 @@ void pst_fit_light_single_trivial
     bool_t nonNegative, /* TRUE restricts lamp power and ambient dimming to be non-negative. */
     double minNormalZ   /* Ignore image points where the normal's Z is less than this. */
   );
-  /* Adjusts the direction and power of {src}, and the overal power of
-    the other lamps in {lht}, by rather crude heuristics from {IMG}
-    and {NRM}.
-    
-    If {dirAdjust} is TRUE, and {src} is not an ambient lamp, the
-    procedure tries to optimize the direction of {src}. Otherwise it
-    treats that direction as fixed.
-    
-    If {pwrAdjust} is TRUE, the procedure tries to optimize the
-    power of {src}. Otherwise it treats that power as fixed.
-    
-    If {ambAdjust} is TRUE , the procedure tries to mutiply the powers 
-    of all lamps in {lht}, other than {src}, by a suitable dimming 
-    factor. Otherwise it treats those lights as fixed.
-    
-    If {nonNegative} is TRUE, lamp powers are constrained to be positive.
-    
-    For more details, see {pst_fit_light_single_trivial_INFO} below. */
+  /* Similar to {pst_fit_light_single_iterative}, but instead
+    iterative method uses a rather crude heuristics. */
 
 #define pst_fit_light_single_trivial_INFO \
   "  !!! WRONG DESCRIPTION, FIX IT !!! The parameters are estimated" \
@@ -306,6 +291,7 @@ void pst_fit_light_single_trivial
 void pst_fit_light_multi
   ( float_image_t *IMG, 
     float_image_t *NRM,
+    int32_t c, 
     pst_light_t *lht,
     double weightBias,  /* Bias for dark-weighted fitting, or {+INF} for normal fitting. */
     bool_t nonNegative, /* TRUE restricts lamp power and ambient dimming to be non-negative. */
@@ -325,7 +311,7 @@ void pst_fit_light_multi
 
 #define pst_fit_light_multi_INFO \
   "  The fitting procedure adjusts only the intensities of" \
-  " the lamps, without changing their directions or angular" \
+  " the lamps inchannel {c}, without changing their directions or angular" \
   " radii.  It tries to minimize the sum of the squared" \
   " differences between {IMG[p]} and the expected apparent color" \
   " of a Lambertian white surface with normal {NRM[p]} under the" \

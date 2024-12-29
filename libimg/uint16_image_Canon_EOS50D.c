@@ -1,5 +1,5 @@
 /* See uint16_image_Canon_EOS50D.h */
-/* Last edited on 2024-12-04 23:35:45 by stolfi */
+/* Last edited on 2024-12-26 12:45:42 by stolfi */
 
 #include <stdlib.h>
 #include <assert.h>
@@ -17,13 +17,12 @@ uint16_image_t *pnm_Canon_EOS50D_raw16_debayer(uint16_image_t *img, bool_t squee
     uint16_image_t *omg;
     if (! squeeze)
       { /* Retain the original size, just separate the channels: */
-        int32_t rows = img->rows;
-        int32_t cols = img->cols;
+        uint32_t rows = img->rows;
+        uint32_t cols = img->cols;
         omg = uint16_image_new(cols, rows, 3);
         omg->maxval = img->maxval;
-        int32_t col, row;
-        for (row = 0; row < rows; row++)
-          { for (col = 0; col < cols; col++)
+        for (int32_t row = 0; row < rows; row++)
+          { for (int32_t col = 0; col < cols; col++)
               { /* Decide which channel {chn} this sample belongs to: */
                 int32_t chn = uint16_image_Pike_F100_sample_channel(col, row);
                 /* Copy sample, set other channels to 0: */

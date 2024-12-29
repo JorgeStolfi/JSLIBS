@@ -3,7 +3,7 @@
 
 /* pst_scaling.h -- tools for scaling sample values. */
 /* Created 2006-04-20 by Jorge Stolfi, IC-UNICAMP. */
-/* Last edited on 2024-12-22 22:35:20 by stolfi */
+/* Last edited on 2024-12-24 19:17:27 by stolfi */
 
 #include <bool.h>
 #include <vec.h>
@@ -14,7 +14,7 @@
 
 /* PARSING SCALING PARAMETERS FROM THE COMMAND LINE */
   
-double_vec_t pst_scaling_parse_range_option(argparser_t *pp, char *key, uint32_t *NC);
+double_vec_t pst_scaling_parse_range_option(argparser_t *pp, char *key, int32_t *NC);
   /* If the keyword {key} is present, marks it as parsed, then 
     parses the following arguments as a tuple of one more numbers,
     using {pst_double_vec_parse}.
@@ -101,7 +101,7 @@ bool_t pst_scaling_parse_uniform(argparser_t *pp, bool_t next);
 
 /* UNIFORMIZATION AND COMPLETION OF SCALING PARAMETERS */
 
-void pst_scaling_fix_channels(uint32_t NC, uint32_vec_t *channel);
+void pst_scaling_fix_channels(int32_t NC, int32_vec_t *channel);
   /* Adjusts a list of channel indices to have exactly {NC} elements.
     
     If the {*channel} vector has exactly {NC} channels, the procedure
@@ -146,14 +146,14 @@ void pst_scaling_use_actual_range
   " they are computed separately for each channel."
 
 void pst_scaling_fix_params
-  ( uint32_t NC,
+  ( int32_t NC,
     bool_t uniform,
     double_vec_t *min,
     double_vec_t *max,
     double_vec_t *ctr,
     double_vec_t *wid,
     float_image_t *fim, 
-    uint32_vec_t *channel
+    int32_vec_t *channel
   );
   /* Adjusts a bunch of channel selection and scaling parameters for
     {NC} channels, as may be given in the command line.

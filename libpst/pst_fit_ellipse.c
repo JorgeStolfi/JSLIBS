@@ -1,5 +1,5 @@
 /* See pst_fit_ellipse.h */
-/* Last edited on 2024-12-22 12:03:35 by stolfi */ 
+/* Last edited on 2024-12-24 18:58:52 by stolfi */ 
 
 #include <math.h>
 #include <values.h>
@@ -345,8 +345,8 @@ double pst_fit_ellipse_eval(float_image_t *IGR, ellipse_crs_t *EP)
     
     /* Get the dimensions of the gradient image: */
     demand(IGR->sz[0] == 1, "image must be monochromatic");
-    uint32_t NX = (uint32_t)IGR->sz[1];
-    uint32_t NY = (uint32_t)IGR->sz[2];
+    int32_t NX = (int32_t)IGR->sz[1];
+    int32_t NY = (int32_t)IGR->sz[2];
     
     /* Choose the half-thickness {he} of the ideal ellipse outline: */
     double he = 1.5;

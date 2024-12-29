@@ -1,5 +1,5 @@
 /* See pst_normal_map.h */
-/* Last edited on 2024-12-22 12:38:21 by stolfi */
+/* Last edited on 2024-12-29 00:13:02 by stolfi */
 
 #include <stdio.h>
 #include <math.h>
@@ -60,7 +60,7 @@ r3_t pst_normal_map_image_dir_from_scene_dir(r3_t *uvw, r3x3_t *uvw_to_xyz)
   }
 
 r3_t pst_normal_map_eval
-  ( pst_normal_map_proc_t nrmf, /* Normal-computing funtion. */
+  ( pst_normal_func_t nrmf, /* Normal-computing funtion. */
     double x,                   /* X-coordinate of projected point in image system. */
     double y,                   /* Y-coordinate of projected point in image system. */
     r3x3_t *xym_to_uvm,         /* Affine map of image {xy} coords to model {uv} coords. */
@@ -80,7 +80,7 @@ r3_t pst_normal_map_eval
   }
 
 void pst_normal_map_from_proc
-  ( pst_normal_map_proc_t nrmf, /* Normal-computing funtion. */
+  ( pst_normal_func_t nrmf, /* Normal-computing funtion. */
     int32_t NS,                     /* Order of subsampling grid within each pixel. */
     r3x3_t *xym_to_uvm,         /* Affine map of image {xy} coords to model {uv} coords. */
     r3x3_t *uvw_to_xyz,         /* Linear map of {uvw} coords to normal {xyz} coords. */
@@ -102,7 +102,7 @@ void pst_normal_map_from_proc
   }
   
 r3_t pst_normal_map_pixel_avg
-  ( pst_normal_map_proc_t nrmf, /* Normal-computing function. */
+  ( pst_normal_func_t nrmf, /* Normal-computing function. */
     int32_t x, int32_t y,               /* Pixel indices (coords of lower left corner). */
     int32_t NS,                     /* Order of sub-sampling grid in pixel. */
     r3x3_t *xym_to_uvm,         /* Affine map of image {xy} coords to model {uv} coords. */

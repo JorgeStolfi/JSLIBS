@@ -2,7 +2,7 @@
 #define PROG_DESC "test of gamma enc/dec functions in {sample_conv_gamma.h} etc."
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-20 10:33:58 by stolfi */
+/* Last edited on 2024-12-25 12:48:20 by stolfi */
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_encode_gamma_C_COPYRIGHT \
@@ -332,7 +332,7 @@ void teng_parse_pair_list(argparser_t *pp, double_vec_t *U, double_vec_t *V)
       { int32_t ip = (int32_t)np; np++;
         for (int32_t j = 0; j < 2; j++)
           { double_vec_t *w = ( j == 0 ? U : V );
-            double_vec_expand(w, (uint32_t)ip);
+            double_vec_expand(w, (vec_index_t)ip);
             w->e[ip] = argparser_get_next_double(pp, -DBL_MAX, +DBL_MAX);
             if ((w->e[ip] <= 0) || (w->e[ip] >= 1))
               { argparser_error(pp, "LRF data values must be in (0_1)"); }

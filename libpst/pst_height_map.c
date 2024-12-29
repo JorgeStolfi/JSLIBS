@@ -1,5 +1,5 @@
 /* See pst_height_map.h */
-/* Last edited on 2024-12-23 06:00:41 by stolfi */
+/* Last edited on 2024-12-24 18:59:34 by stolfi */
 
 #include <math.h>
 #include <affirm.h>
@@ -19,14 +19,14 @@ void pst_height_map_expand
   )
   { 
     assert(JZ->sz[0] == 1);
-    uint32_t NXJ = (uint32_t)JZ->sz[1];
-    uint32_t NYJ = (uint32_t)JZ->sz[2];
+    int32_t NXJ = (int32_t)JZ->sz[1];
+    int32_t NYJ = (int32_t)JZ->sz[2];
     
     if (JW != NULL) { assert(JW->sz[0] == 1); assert(JW->sz[1] == NXJ); assert(JW->sz[2] == NYJ); }
     
     assert(IZ->sz[0] == 1);
-    uint32_t NXI = (uint32_t)IZ->sz[1]; assert(NXJ == NXI/2 + 1);
-    uint32_t NYI = (uint32_t)IZ->sz[2]; assert(NYJ == NYI/2 + 1);
+    int32_t NXI = (int32_t)IZ->sz[1]; assert(NXJ == NXI/2 + 1);
+    int32_t NYI = (int32_t)IZ->sz[2]; assert(NYJ == NYI/2 + 1);
     
     if (IW != NULL) { assert(IW->sz[0] == 1); assert(IW->sz[1] == NXI); assert(IW->sz[2] == NYI); }
     

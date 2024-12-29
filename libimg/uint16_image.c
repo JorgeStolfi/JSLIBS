@@ -1,5 +1,5 @@
 /* See uint16_image.h */
-/* Last edited on 2024-12-05 07:52:18 by stolfi */
+/* Last edited on 2024-12-26 12:45:12 by stolfi */
 
 #include <stdlib.h>
 #include <string.h>
@@ -9,10 +9,17 @@
 #include <affirm.h>
 #include <jsfile.h>
 #include <jspnm.h>
+#include <bool.h>
 
 #include <uint16_image.h>
 
-uint16_image_t *uint16_image_new(int32_t cols, int32_t rows, int32_t chns)
+bool_t uint16_image_same_color(uint32_t chns, uint16_t clra[], uint16_t clrb[])
+  { for (uint32_t c = 0; c < chns; c++)
+      { if (clra[c] != clrb[c]) { return FALSE; } }
+    return TRUE;
+  }
+
+uint16_image_t *uint16_image_new(uint32_t cols, uint32_t rows, uint32_t chns)
   { /* Allocate header: */
     uint16_image_t *img = uint16_image_new_header(cols, rows, chns);
     /* Allocate pixels: */
@@ -28,9 +35,9 @@ void uint16_image_free(uint16_image_t *img)
     free(img);
   }
 
-uint16_image_t *uint16_image_new_header(int32_t cols, int32_t rows, int32_t chns)
+uint16_image_t *uint16_image_new_header(uint32_t cols, uint32_t rows, uint32_t chns)
   { /* Allocate header: */
-    uint16_image_t *img = (uint16_image_t *)pnm_malloc(sizeof(uint16_image_t));
+    uint16_image_t *img = talloc(1, uint16_image_t);
     assert(img != NULL);
     /* Initialize fields: */
     img->cols = cols;
@@ -43,29 +50,28 @@ uint16_image_t *uint16_image_new_header(int32_t cols, int32_t rows, int32_t chns
     return(img);
   }
   
-uint16_t** uint16_image_alloc_pixel_array(int32_t cols, int32_t rows, int32_t chns)
-  { int32_t row;
-    uint16_t **smp = talloc(rows, uint16_t*);
-    for (row = 0; row < rows; row++)
+uint16_t** uint16_image_alloc_pixel_array(uint32_t cols, uint32_t rows, uint32_t chns)
+  { uint16_t **smp = talloc(rows, uint16_t*);
+    for (uint32_t row = 0; row < rows; row++)
       { smp[row] = uint16_image_alloc_pixel_row(cols, chns); }
     return smp;
   }
   
-void uint16_image_free_pixel_array(uint16_t **smp, int32_t cols, int32_t rows, int32_t chns)
+void uint16_image_free_pixel_array(uint16_t **smp, uint32_t cols, uint32_t rows, uint32_t chns)
   { if (smp == NULL) { return; }
-    for (int32_t row = 0;  row < rows; row++) 
+    for (uint32_t row = 0;  row < rows; row++) 
       { uint16_image_free_pixel_row(smp[row], cols, chns); }
     free(smp);
   }
 
-uint16_t* uint16_image_alloc_pixel_row(int32_t cols, int32_t chns)
+uint16_t* uint16_image_alloc_pixel_row(uint32_t cols, uint32_t chns)
   { if (cols == 0)
       { return (uint16_t *)NULL; }
     else
       { return talloc(cols*chns, uint16_t); }
   }
   
-void uint16_image_free_pixel_row(uint16_t *row, int32_t cols, int32_t chns)
+void uint16_image_free_pixel_row(uint16_t *row, uint32_t cols, uint32_t chns)
   { 
     if (row != NULL) { free(row); }
   }
@@ -74,29 +80,28 @@ uint16_t uint16_image_get_sample(uint16_image_t *img, int32_t c, int32_t x, int3
   { if ((c < 0) || (c >= img->chns)) { return 0; }
     if ((x < 0) || (x >= img->cols)) { return 0; }
     if ((y < 0) || (y >= img->rows)) { return 0; }
-    return img->smp[y][x*img->chns + c];
+    return img->smp[y][x*(int32_t)img->chns + c];
   }
 
-void uint16_image_set_sample(uint16_image_t *img, int32_t c, int32_t x, int32_t y, uint16_t pv)
-  { if ((c < 0) || (c >= img->chns)) { pnm_error("invalid channel"); }
-    if ((x < 0) || (x >= img->cols)) { pnm_error("invalid column"); }
-    if ((y < 0) || (y >= img->rows)) { pnm_error("invalid row"); }
-    if (pv > img->maxval) { pnm_error("invalid sample value"); }
-    img->smp[y][x*img->chns + c] = pv;
+void uint16_image_set_sample(uint16_image_t *img, int32_t c, int32_t x, int32_t y, uint16_t smp)
+  { demand((c >= 0) && (c < img->chns), "invalid channel");
+    demand((x >= 0) && (x < img->cols), "invalid column");
+    demand((y >= 0) && (y < img->rows), "invalid row");
+    demand(smp <= img->maxval, "invalid sample value"); 
+    img->smp[y][x*(int32_t)img->chns + c] = smp;
   }
 
-uint16_image_t *uint16_image_crop(uint16_image_t *img, int32_t ic, int32_t nc, int32_t ix, int32_t nx, int32_t iy, int32_t ny)
+uint16_image_t *uint16_image_crop(uint16_image_t *img, uint32_t ic, uint32_t nc, uint32_t ix, uint32_t nx, uint32_t iy, uint32_t ny)
   { demand((ic >= 0) && (ic+nc <= img->chns), "invalid channel range");
     demand((ix >= 0) && (ix+nx <= img->cols), "invalid column range");
     demand((iy >= 0) && (iy+ny <= img->rows), "invalid row range");
     uint16_image_t *omg = uint16_image_new(nx, ny, nc);
     omg->maxval = img->maxval;
-    int32_t chn, col, row;
-    for (row = 0; row < ny; row++)
-      { for (col = 0; col < nx; col++)
+    for (uint32_t row = 0; row < ny; row++)
+      { for (uint32_t col = 0; col < nx; col++)
           { uint16_t *pi = &(img->smp[iy + row][(ix + col)*img->chns + ic]);
             uint16_t *po = &(omg->smp[row][col*nc]);
-            for (chn = 0; chn < nc; chn++) { (*po) = (*pi); po++; pi++; }
+            for (uint32_t chn = 0; chn < nc; chn++) { (*po) = (*pi); po++; pi++; }
           }
       }
     return omg;

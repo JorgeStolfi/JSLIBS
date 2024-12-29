@@ -1,5 +1,5 @@
 /* See jspnm.h */
-/* Last edited on 2024-12-05 07:05:59 by stolfi */
+/* Last edited on 2024-12-26 12:43:54 by stolfi */
 
 #include <limits.h>
 #include <stdlib.h>
@@ -10,14 +10,18 @@
 #include <math.h>
 
 #include <affirm.h>
-#include <jspnm.h>
 #include <jsfile.h>
 #include <fget.h>
-#include <rn.h>
+#include <bool.h>
+
+#include <jspnm.h>
+
+bool_t ppm_equal(ppm_pixel_t *a, ppm_pixel_t *b)
+  { return ((a->c[0] == b->c[0]) && (a->c[1] == b->c[1]) && (a->c[2] == b->c[2])); }
 
 void pnm_choose_output_format
   ( uint16_t maxval, 
-    int32_t chns, 
+    uint32_t chns, 
     bool_t forceplain,
     pnm_format_t *formatP,
     bool_t *rawP,
@@ -45,9 +49,9 @@ void pnm_choose_output_format
 
 void pnm_read_header
   ( FILE *rd, 
-    int32_t *colsP, 
-    int32_t *rowsP, 
-    int32_t *chnsP, 
+    uint32_t *colsP, 
+    uint32_t *rowsP, 
+    uint32_t *chnsP, 
     uint16_t *maxvalP, 
     bool_t *rawP, 
     bool_t *bitsP, 
@@ -58,7 +62,7 @@ void pnm_read_header
     *formatP = format;
     
     /* Deduce number of channels {chns} and raw/plain flag from {format}: */
-    int32_t chns = 0;
+    uint32_t chns = 0;
     bool_t raw = FALSE;
     bool_t bits = FALSE;
     switch(format)
@@ -76,11 +80,11 @@ void pnm_read_header
     
     /* Skip comments and read width: */
     pnm_skip_whitespace_and_comments(rd, FALSE);
-    *colsP = pnm_read_plain_int32_t(rd);
+    *colsP = (uint32_t)pnm_read_plain_int32_t(rd);
 
     /* Skip comments and read height: */
     pnm_skip_whitespace_and_comments(rd, FALSE);
-    *rowsP = pnm_read_plain_int32_t(rd);
+    *rowsP = (uint32_t)pnm_read_plain_int32_t(rd);
     
     uint16_t maxval;
     if ((format == PBM_FORMAT) || (format == RPBM_FORMAT))
@@ -101,7 +105,7 @@ void pnm_read_header
       { pnm_error("EOF or bad character after maxval"); }
   }
 
-void pnm_write_header(FILE *wr, int32_t cols, int32_t rows, uint16_t maxval, pnm_format_t format)
+void pnm_write_header(FILE *wr, uint32_t cols, uint32_t rows, uint16_t maxval, pnm_format_t format)
   { /* Write file's magic number: */
     pnm_write_format(wr, format);
     /* Write dimensions: */
@@ -114,7 +118,8 @@ void pnm_write_header(FILE *wr, int32_t cols, int32_t rows, uint16_t maxval, pnm
   }
 
 pnm_format_t pnm_read_format(FILE *rd)
-  { int32_t c1 = getc(rd); if (c1 == EOF) { pnm_error("empty image file"); }
+  { /* Should be signed ints with more than 8 bits> */
+    int32_t c1 = getc(rd); if (c1 == EOF) { pnm_error("empty image file"); }
     int32_t c2 = getc(rd); if (c2 == EOF) { pnm_error("unexpected EOF in magic numbr"); }
     return (pnm_format_t)((c1 << 8) | c2);
   }
@@ -305,7 +310,7 @@ double *pnm_make_floatize_table(uint16_t maxval, bool_t isMask, uint32_t badval)
     return cvt;
   }
 
-static int32_t pnm_message_count = 0;
+static uint32_t pnm_message_count = 0;
   /* Counts calls to {pnm_message}. */
 
 #define PNM_MAX_MESSAGES 100
@@ -346,8 +351,8 @@ void pnm_check_sample_range(uint16_t *ival, uint16_t maxval)
 void pnm_read_pixels
   ( FILE *rd, 
     uint16_t *smp, 
-    int32_t cols, 
-    int32_t chns,
+    uint32_t cols, 
+    uint32_t chns,
     uint16_t maxval, 
     bool_t raw,
     bool_t bits
@@ -355,8 +360,8 @@ void pnm_read_pixels
   { assert(pnm_uint_leq(maxval, PNM_FILE_MAX_MAXVAL));
     uint16_t max_byte = 255u;
     uint16_t max_short = 65535u;
-    int32_t samples_per_row = cols*chns; /* Samples per row. */
-    int32_t k;
+    uint32_t samples_per_row = cols*chns; /* Samples per row. */
+    uint32_t k;
     uint16_t *sP;
     if (bits)
       { /* PBM format. */
@@ -413,8 +418,8 @@ void pnm_read_pixels
 void pnm_write_pixels
   ( FILE* wr, 
     uint16_t *smp, 
-    int32_t cols, 
-    int32_t chns,
+    uint32_t cols, 
+    uint32_t chns,
     uint16_t maxval, 
     bool_t raw,
     bool_t bits
@@ -422,8 +427,8 @@ void pnm_write_pixels
   { assert(pnm_uint_leq(maxval, PNM_FILE_MAX_MAXVAL));
     uint16_t max_byte = 255u;
     uint16_t max_short = 65535u;
-    int32_t samples_per_row = cols*chns; /* Samples per row. */
-    int32_t k;
+    uint32_t samples_per_row = cols*chns; /* Samples per row. */
+    uint32_t k;
     uint16_t *sP;
     if (bits)
       { /* PBM format. */
@@ -444,8 +449,8 @@ void pnm_write_pixels
           }
         else
           { /* Plain PBM format - sample is ASCII '0' or '1', complemented, no whitespace: */
-            int32_t maxchars = 70 - 1; /* Max chars in line minus one pixel. */
-            int32_t chars = 0; /* Counts characters in current line. */
+            uint32_t maxchars = 70 - 1; /* Max chars in line minus one pixel. */
+            uint32_t chars = 0; /* Counts characters in current line. */
             for (k = 0, sP = smp; k < samples_per_row; k++)
               { if (chars > maxchars) 
                   { putc('\n', wr); chars = 0; }
@@ -481,11 +486,11 @@ void pnm_write_pixels
           }
         else
           { /* Plain PBM/PGM/PPM format - samples are ASCII decimal with whitespace sep: */
-            int32_t maxchars = 70 - 6*chns; /* Max chars in line minus one pixel. */
-            int32_t chars = 0; /* Counts characters in current line. */
+            uint32_t maxchars = 70 - 6*chns; /* Max chars in line minus one pixel. */
+            uint32_t chars = 0; /* Counts characters in current line. */
             for (k = 0, sP = smp; k < samples_per_row; k++)
               { uint16_t ival = *sP; ++sP;
-                chars += pnm_write_plain_sample(wr, ival, maxval);
+                chars += (uint32_t)pnm_write_plain_sample(wr, ival, maxval);
                 if (((chars > maxchars) && ((k % chns) == 0)) || (k == samples_per_row-1)) 
                   { putc('\n', wr); chars = 0; }
                 else

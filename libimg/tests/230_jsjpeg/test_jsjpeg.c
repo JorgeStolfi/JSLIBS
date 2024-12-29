@@ -1,7 +1,8 @@
 /* Test of jsjpeg.h, uint16_image_io_jpeg.h */
-/* Last edited on 2024-12-05 22:15:55 by stolfi */
+/* Last edited on 2024-12-26 16:46:48 by stolfi */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -14,7 +15,7 @@
 #include <uint16_image_write_jpeg.h>
 
 
-int main (int argc, char **argv);
+int32_t main (int32_t argc, char **argv);
 
 void do_uint16_image_read_write_jpeg_tests(char *prefix);
   /* Performs various image I/O tests, reading files
@@ -23,7 +24,7 @@ void do_uint16_image_read_write_jpeg_tests(char *prefix);
     {VAR} is "gry" or "rgb" and {QQQ} is the 3-digit 
     JPEG quality parameter. */
 
-void do_uint16_image_read_write_jpeg_test(char *prefix, int ik, int iq);
+void do_uint16_image_read_write_jpeg_test(char *prefix, int32_t ik, int32_t iq);
   /* Reads an image from file "{prefix}-rd-{VAR}.jpg" and writes the
     complemented image as files  with names "{prefix}-wr-{QQQ}-{VAR}.jpg".
 
@@ -42,19 +43,19 @@ void frobnicate_image(uint16_image_t *img, uint16_image_t *omg);
     relative to {img.maxval}, flipping left-right and
     top-bottom. Also sets {omg.maxval = img.maxval}. */
 
-int main (int argc, char **argv)
+int32_t main (int32_t argc, char **argv)
   { do_uint16_image_read_write_jpeg_tests("out/test");
     return 0;
   }
   
 void do_uint16_image_read_write_jpeg_tests(char *prefix)
-  { int iq, ik;
+  { int32_t iq, ik;
     for (iq = 0; iq <= 6; iq ++)
       for (ik = 0; ik < 2; ik++)
         { do_uint16_image_read_write_jpeg_test(prefix, ik, iq); }
   }
       
-void do_uint16_image_read_write_jpeg_test(char *prefix, int ik, int iq)
+void do_uint16_image_read_write_jpeg_test(char *prefix, int32_t ik, int32_t iq)
   { 
     /* Tag indicating format variant: */
     /* Filename extension: */
@@ -62,14 +63,14 @@ void do_uint16_image_read_write_jpeg_test(char *prefix, int ik, int iq)
     char *xkind = kindtbl[ik]; 
     
     /* JPEG quality parameter: */
-    int quality = 100 - iq*iq;
+    int32_t quality = 100 - iq*iq;
     
     fprintf(stderr, "-----------------------------------------\n");
     fprintf(stderr, "testing prefix = %s kind = %s quality = %d\n", prefix, xkind, quality);
     fprintf(stderr, "\n");
 
     char *fname = jsprintf("%s-rd-%s.jpg", prefix, xkind);
-    int kind;
+    int32_t kind;
     uint16_image_t *img = uint16_image_read_jpeg_named(fname, TRUE, &kind);
     uint16_image_describe(stderr, fname, img);
     fprintf(stderr, "JPEG colorspace = %d\n", kind);
@@ -88,23 +89,23 @@ void do_uint16_image_read_write_jpeg_test(char *prefix, int ik, int iq)
 
 void frobnicate_image(uint16_image_t *img, uint16_image_t *omg)
   {
-    int cols = img->cols; assert(img->cols == omg->cols);
-    int rows = img->rows; assert(img->rows == omg->rows);
-    int chns = img->chns; assert(img->chns == omg->chns);
+    uint32_t cols = img->cols; assert(img->cols == omg->cols);
+    uint32_t rows = img->rows; assert(img->rows == omg->rows);
+    uint32_t chns = img->chns; assert(img->chns == omg->chns);
 
     omg->maxval = img->maxval;
     
-    int skip = 20;
+    int32_t skip = 20;
 
-    int x, y, c;
+    int32_t x, y, c;
     for (y = 0; y < rows; y++)
-      { bool_t yrev = ((y >= skip) && (y < rows-skip));
+      { bool_t yrev = ((y >= skip) && (y < (int32_t)rows-skip));
         uint16_t *ip = img->smp[y];
-        uint16_t *op = omg->smp[rows - 1 - y];
-        int ik = 0;
-        int ok = cols*chns - 1;
+        uint16_t *op = omg->smp[(int32_t)rows - 1 - y];
+        int32_t ik = 0;
+        int32_t ok = (int32_t)(cols*chns - 1);
         for (x = 0; x < cols; x++)
-          { bool_t xrev = ((x >= skip) && (x < cols-skip));
+          { bool_t xrev = ((x >= skip) && (x < (int32_t)cols-skip));
             bool_t rev = (xrev && yrev);
             for (c = 0; c < chns; c++)
               { op[ok] = ( rev ? (uint16_t)(img->maxval - ip[ik]) : ip[ik]);

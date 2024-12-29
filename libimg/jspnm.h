@@ -1,5 +1,5 @@
 /* jspnm.h - basic definitions for reading/writing PBM/PGM/PBM files. */
-/* Last edited on 2024-12-04 23:34:28 by stolfi */ 
+/* Last edited on 2024-12-26 12:39:07 by stolfi */ 
 
 #ifndef jspnm_H
 #define jspnm_H
@@ -14,43 +14,48 @@
 #define PNM_MAX_SAMPLE 65535u
   /* Maximum value that can be stored in a {uint16_t}. */
 
+typedef uint16_t pnm_sample_t;
+  /* A sample value extracted from a PNM file or stored in memory. */ 
+
+typedef struct ppm_pixel_t { uint16_t c[3]; } ppm_pixel_t;
+  /* An pixel in a PPM image or file, consisting of three samples.
+    Usually red, greem and blue coords in an RGB space, but possibly
+    other spaces such as YUV, YCbCr, etc.  */
+
+bool_t ppm_equal(ppm_pixel_t *a, ppm_pixel_t *b);
+  /* TRUE if the two pixels {a,b} are identical. */
+
+/* ********************************************************************** */
+/* FILE FORMATS */
+
 typedef uint16_t pnm_format_t;
   /* The ``magic number'' (first two bytes) of a PBM/PGM/PPM file,
     packed as a big-endian short. */
 
-/* ********************************************************************** */
-/* PBM (BILEVEL) FILE FORMAT */
-
 #define PBM_FORMAT ('P' * 256 + '1')
 #define RPBM_FORMAT ('P' * 256 + '4')
-  /* Magic numbers of plain and raw PBM file formats. */
-
-/* ********************************************************************** */
-/* PGM (GRAYSCALE) FILE FORMAT */
+  /* Magic numbers of plain and raw PBM (bilevel, black or white) file formats. */
 
 #define PGM_FORMAT ('P' * 256 + '2')
 #define RPGM_FORMAT ('P' * 256 + '5')
-  /* Magic numbers of plain and raw PGM file formats. */
-
-/* ********************************************************************** */
-/* PPM (COLOR) FILE FORMAT */
+  /* Magic numbers of plain and raw PGM (grayscale) file formats. */
 
 #define PPM_FORMAT ('P' * 256 + '3')
 #define RPPM_FORMAT ('P' * 256 + '6')
-  /* Magic numbers of plain and raw PPM file formats. */
-
-#define PNM_FILE_MAX_MAXVAL 65535u
-  /* The maximum {maxval} that can be used in PGM/PPM file, raw or plain. */
+  /* Magic numbers of plain and raw PPM (three-componet color) file formats. */
 
 /* ********************************************************************** */
 /* FILE HEADER I/O */
+
+#define PNM_FILE_MAX_MAXVAL 65535u
+  /* The maximum {maxval} that can be used in PGM/PPM file, raw or plain. */
 
 uint16_t pnm_file_max_maxval(pnm_format_t format);
   /* The maximum {maxval} allowed in a file with the given {format}. */
 
 void pnm_choose_output_format
   ( uint16_t maxval, 
-    int32_t chns, 
+    uint32_t chns, 
     bool_t forceplain,
     pnm_format_t *formatP,
     bool_t *rawP,
@@ -70,9 +75,9 @@ void pnm_choose_output_format
 
 void pnm_read_header
   ( FILE *rd, 
-    int32_t *colsP, 
-    int32_t *rowsP, 
-    int32_t *chnsP, 
+    uint32_t *colsP, 
+    uint32_t *rowsP, 
+    uint32_t *chnsP, 
     uint16_t *maxvalP, 
     bool_t *rawP, 
     bool_t *bitsP,
@@ -84,7 +89,7 @@ void pnm_read_header
     variant (with binary samples).  Also sets {*bitsP} iff the format is 
     a PBM format (raw or plain). */
 
-void pnm_write_header(FILE *wr, int32_t cols, int32_t rows, uint16_t maxval, pnm_format_t format);
+void pnm_write_header(FILE *wr, uint32_t cols, uint32_t rows, uint16_t maxval, pnm_format_t format);
   /* Writes the header of a PBM/PGM/PPM file to {wr}, with the given dimensions,
     {maxval}, and {format}. */
 
@@ -173,8 +178,8 @@ bool_t pnm_uint_leq(uint32_t x, uint32_t xmax);
 void pnm_read_pixels
   ( FILE *rd, 
     uint16_t *smp, 
-    int32_t cols, 
-    int32_t chns,
+    uint32_t cols, 
+    uint32_t chns,
     uint16_t maxval, 
     bool_t raw,
     bool_t bits
@@ -210,8 +215,8 @@ void pnm_read_pixels
 void pnm_write_pixels
   ( FILE* wr, 
     uint16_t *smp, 
-    int32_t cols, 
-    int32_t chns,
+    uint32_t cols, 
+    uint32_t chns,
     uint16_t maxval, 
     bool_t raw,
     bool_t bits
@@ -244,12 +249,12 @@ void pnm_write_pixels
     beng written out. */
 
 /* ********************************************************************** */
-/* CONVERSION TO/FROM FLOAT VALUES 
+/* LINEAR CONVERSION BETWEEN PNM SAMPLE VALUES AND FLOAT VALUES 
 
   These procedures convert between integer samples in {0..maxval} 
-  and floating-point samples in [0-1].  
+  and floating-point samples in [0 _ 1].  
   
-  Conceptually, the range [0_1] is divided into {N=maxval+1} equal
+  Conceptually, the range [0 _ 1] is divided into {N=maxval+1} equal
   intervals. A float sample value {fval} in a given interval gets
   mapped to the interval's index {ival}, counting from 0. Conversely,
   an integer sample value {ival} gets mapped to the center {fval} of

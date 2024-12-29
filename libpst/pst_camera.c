@@ -1,5 +1,5 @@
 /* See pst_camera.h */
-/* Last edited on 2024-12-22 12:30:57 by stolfi */ 
+/* Last edited on 2024-12-28 06:36:51 by stolfi */ 
 
 #include <math.h>
 #include <values.h>
@@ -180,6 +180,30 @@ void pst_camera_args_parse
         /* Assemble the viewpoint from {Q,G}: */
         C->O = pst_camera_viewpoint_from_center_spread(&Q, G);
       }
+  }
+
+r3x3_t pst_camera_normal_correction_matrix(r3_t *dir)
+  { r3x3_t M;
+    double sR = hypot(dir->c[0],dir->c[1]);
+    double cR = dir->c[2];
+    if (fabs(sR) > 1.0e-14) 
+      { r3x3_t A,R;
+        double ux = dir->c[0]/sR;
+        double uy = dir->c[1]/sR;
+        A = (r3x3_t)
+          { { { +ux,  0.0, -uy },
+              { +uy,  0.0, +ux },
+              { 0.0,  1.0, 0.0 } } };
+        R = (r3x3_t)
+          { { { +cR, -sR, 0.0 },
+              { +sR, +cR, 0.0 },
+              { 0.0, 0.0, 1.0 } } };
+        r3x3_mul(&A, &R, &M);
+        r3x3_mul_tr(&M, &A, &M);
+      }else {
+        r3x3_ident(&M);
+      }
+    return M;
   }
 
 void pst_camera_print(FILE *wr, pst_camera_t *C, char *fmt)

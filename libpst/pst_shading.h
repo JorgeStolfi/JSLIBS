@@ -2,18 +2,80 @@
 #define pst_shading_H
 
 /* pst_shading.h -- tools for shading computations. */
-/* Last edited on 2007-01-06 22:15:37 by stolfi */
+/* Last edited on 2024-12-29 01:59:08 by stolfi */
 
 #include <bool.h>
 #include <r3.h>
+#include <frgb.h>
 #include <float_image.h>
 #include <argparser.h>
 
 #include <pst_basic.h>
 #include <pst_light.h>
 #include <pst_lamp.h>
-     
+       
+typedef frgb_t pst_shading_func_t(r3_t *nrm);
+  /* Type of a function that, given the normal {nrm} of the scene's
+    surface at some point, returns the shading of the surface that
+    point; namely, what would be the apparent color of the surface at
+    that point if the surface intrinsic color was white (albedo = 1). It
+    should take into account the normal, the local illumination
+    conditions, and the surface finish (Lambertian, glossy, etc) but not
+    the the intrinsic color (albedo). */
+
 /* COMPUTING SYNTHETIC PHOTOS OF OBJECTS */
+
+float_image_t* pst_shading_make_image
+  ( int32_t NC, int32_t NX, int32_t NY,
+    pst_normal_func_t *normal,
+    pst_albedo_func_t *albedo,
+    pst_shading_func_t *shading
+  );
+  /* Creates an image of a scene, given
+    procedures {normal} and {albedo} that compute, respectively, the
+    normal direction and intrinsic color of the point of the surface
+    visible at a given image point; and a procedure {shading} that
+    computes the shading (color of a white surface) of a surface point
+    given its normal.  
+    
+    The number of channels must be 3 or 4. The procedure creates an
+    image of the specified dimensions and then calls {pst_shading_paint}
+    (q.v.) to paint the scene into it. */
+
+double pst_shading_paint
+  ( float_image_t *img,
+    int32_t xlo, int32_t xhi,
+    int32_t ylo, int32_t yhi,
+    pst_normal_func_t *normal,
+    pst_albedo_func_t *albedo,
+    pst_shading_func_t* shading
+  );
+  /* Paints into {img} an image of a scene given
+    procedures {normal} and {albedo} that compute, respectively, the
+    normal direction and intrinsic color of the point of the surface
+    visible at a given image point; and a procedure {shading} that
+    computes the shading (color of a white surface) of a surface point
+    given its normal.
+    
+    The painting is limited to the sub-image consisting of columns
+    {xlo..xhi} and rows {ylo..yhi} of the image, clipped to the actual
+    image bounds.
+    
+    The number {NC} of channels in the image must be 3 or 4.
+    The three components of the computed color are 
+    pained into channels {0..2}.  If {NC} is 4, the procecdure stores
+    into channel 3 the opacity mask {alpha} (see below).
+    
+    The color painted into each pixel will be a weighted average
+    of the colors of several points inside and around the pixel, excluding
+    those where the functions {normal}, {albedo}, or {shading} return
+    invalid values.  The opacity {alpha} of each pixel is the fraction
+    of sample points which were included in the average.  This opacity is
+    used to mix the computed color with the original color of that
+    pixel in {img}, and is also stored in channel 3 if {NC} is 4.
+    
+    In any case, the returned result is the sum of all the opacities
+    {alpha} of the painted pixels. */
 
 void pst_shading_add_diffuse_single
   ( float_image_t *NRM, 
@@ -55,14 +117,20 @@ void pst_shading_add_diffuse
 /* DIFFERENCE IMAGE */
 
 float_image_t *pst_shading_difference_image
-  ( float_image_t *NRM, 
-    float_image_t *AIMG, 
-    float_image_t *BIMG
+  ( float_image_t *AIMG, 
+    float_image_t *BIMG, 
+    float_image_t *MSK,
+    float_image_t *NRM
   );
-  /* Computes the sample-by-sample difference image {AIMG-BIMG},
-    except that the difference is set to zero where the normal map
-    {NRM} is zero. The three images must have the same size, and
-    {AIMG} and {BIMG} must have the same number of channels. */
+  /* Computes the sample-by-sample difference image {AIMG-BIMG}.
+    If {MSK} is not null, excludes pixels where {MSK} is zero.
+    If {NRM} is not {NULL}, also excludes pixels where {NRM} is 
+    not finite or all zeros.
+    
+    All images must have the same number of cols and rows.
+    Also {AIMG} and {BIMG} must have the same number of channels,
+    {MSK} (if not null) must have a single channel, and {NRM} (if not null)
+    must have three channels. */
 
 
 #endif

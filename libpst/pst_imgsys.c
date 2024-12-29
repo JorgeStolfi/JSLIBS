@@ -2,7 +2,7 @@
 
 /* Created on 2005-10-01 by Jorge Stolfi, unicamp, <stolfi@dcc.unicamp.br> */
 /* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2024-12-22 22:12:52 by stolfi */
+/* Last edited on 2024-12-24 19:03:19 by stolfi */
 /* See the copyright and authorship notice at the end of this file.  */
 
 #include <math.h>
@@ -23,7 +23,7 @@
 double pst_imgsys_sol_change(double *Zold, double *Z, uint32_t N);
   /* Returns the maximum of {abs(Zold[k]-Z[k])}, for {k = 0..N-1}. */
 
-pst_imgsys_t *pst_imgsys_new(uint32_t NX, uint32_t NY, uint32_t N, int32_t *ix, uint32_t *col, uint32_t *row)
+pst_imgsys_t *pst_imgsys_new(int32_t NX, int32_t NY, uint32_t N, int32_t *ix, uint32_t *col, uint32_t *row)
   {
     pst_imgsys_t *S = talloc(1, pst_imgsys_t);
     S->N = N;
@@ -34,7 +34,7 @@ pst_imgsys_t *pst_imgsys_new(uint32_t NX, uint32_t NY, uint32_t N, int32_t *ix, 
     return S;
   }
 
-pst_imgsys_t *pst_imgsys_from_eqs(uint32_t NX, uint32_t NY, uint32_t N, pst_imgsys_equation_t *eq, int32_t *ix, uint32_t *col, uint32_t *row)
+pst_imgsys_t *pst_imgsys_from_eqs(int32_t NX, int32_t NY, uint32_t N, pst_imgsys_equation_t *eq, int32_t *ix, uint32_t *col, uint32_t *row)
   {
     pst_imgsys_t *S = talloc(1, pst_imgsys_t);
     S->N = N;
@@ -210,7 +210,7 @@ uint32_t* pst_imgsys_sort_equations(pst_imgsys_t *S)
       then {k1} appears before {k2} in {ord}. */
 
     /* Queue of source nodes, and output ordering: */
-    uint32_t *ord = (uint32_t *)notnull(malloc(N*sizeof(uint32_t)), "no mem"); /* Nodes in toporder. */
+    uint32_t *ord = talloc(N, uint32_t); /* Nodes in toporder. */
     uint32_t q_free = 0;  /* Index of first free entry in {ord}. */
     uint32_t q_start = 0; /* Index in {ord} of first unprocessed entry. */ 
     /* Nodes {ord[0..q_start-1]} have been sorted and have no outgoing or incoming edges. */

@@ -2,7 +2,7 @@
 #define pst_signature_H
 
 /* pst_signature.h -- procedures for computing normals from light signatures. */
-/* Last edited on 2024-12-22 22:56:16 by stolfi */
+/* Last edited on 2024-12-24 18:58:16 by stolfi */
 
 #include <pst_basic.h>
 
@@ -38,7 +38,7 @@ void pst_signature_extract
   ( image_vec_t *IMGV,     /* Scene images under {NF} different light fields. */
     uint32_t maxval,       /* Maxval of original (quantized) images. */                 
     double noise,          /* Additional per-sample noise in images. */                 
-    uint32_t c,            /* Channel. */                      
+    int32_t c,            /* Channel. */                      
     int32_t x,             /* Pixel column. */                                           
     int32_t y,             /* Pixel row (0 = bottom). */  
     signature_t *sig   /* (OUT) Light signature. */
@@ -60,7 +60,7 @@ vec_typedef(signature_vec_t,signature_vec,signature_t);
 typedef struct light_table_t /* A table that maps light signatures to normal vectors. */
   { r2_t pos;              /* Position in scene images where table is most valid. */
     uint32_t NF;                /* Number of light fields. */             
-    uint32_t NC;                /* Number of color channels. */
+    int32_t NC;                /* Number of color channels. */
     uint32_t NE;                /* Number of color channels. */
     r3_vec_t nrm;          /* {nrm[k]} is the normal vector associated with entry {k}. */
     signature_vec_t *sig;  /* {sig[c][k]} is the light signature in channel {c} for that normal. */
@@ -90,7 +90,7 @@ light_table_t *pst_signature_build_table
 
 void pst_signature_search_table
   ( uint32_t NF,               /* Number of light fields. */
-    uint32_t NC,               /* Number of color channels. */
+    int32_t NC,               /* Number of color channels. */
     signature_t sig[],    /* Normalized light signature for each channel (size {NC}). */ 
     r2_t pos,             /* Nominal position of {sig} in scene images. */
     uint32_t NG,               /* Number of light-to-normal tables. */

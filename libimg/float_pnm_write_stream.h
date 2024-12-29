@@ -2,7 +2,7 @@
 #define float_pnm_write_stream_H
 
 /* Writing a PBM/PGM/PPB image file by rows from a float-format buffer. */
-/* Last edited on 2024-12-05 10:30:12 by stolfi */
+/* Last edited on 2024-12-26 12:42:18 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -13,13 +13,13 @@
 float_pnm_stream_t *float_pnm_write_stream_new
   ( FILE *wr, 
     uint16_t maxval, 
-    int32_t rows, 
-    int32_t cols, 
-    int32_t chns, 
+    uint32_t rows, 
+    uint32_t cols, 
+    uint32_t chns, 
     bool_t isMask,
     uint32_t badval,
     bool_t forceplain,
-    int32_t bufrows
+    uint32_t bufrows
   );
   /* Creates a new stream structure {str} primed for writing to the
     open PBM/PGM/PPM image file {wr}.

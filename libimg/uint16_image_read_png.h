@@ -1,5 +1,5 @@
 /* uint16_image_read_png.h - routines to read PNG image files as images with {uint16_t} samples. */
-/* Last edited on 2024-12-17 17:05:14 by stolfi */
+/* Last edited on 2024-12-26 11:54:16 by stolfi */
 
 /* Created by R. Minetto (IC-UNICAMP) as {ipng.h} sometime in 2008--2009. */
 /* Adapted by J. Stolfi (IC-UNICMP) on 2011-05-14. */
@@ -9,6 +9,8 @@
 
 #include <stdio.h>
 #include <stdint.h>
+
+#include <bool.h>
 #include <uint16_image.h>
 
 #define uint16_image_read_png_MAX_CHNS (4)

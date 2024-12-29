@@ -2,7 +2,7 @@
 #define pst_nodak_H
 
 /* Extracting sub-images of the N-Spot grayscale chart  and elements thereof. */
-/* Last edited on 2024-12-22 22:31:42 by stolfi */
+/* Last edited on 2024-12-24 18:58:04 by stolfi */
 
 #include <bool.h>
 #include <r2.h>
@@ -62,8 +62,8 @@ float_image_t *pst_nodak_extract_gray_scale
     double_vec_t* geo_rad, /* Radius of each spot in chart coordinates. */
     r3x3_t *C2I,           /* Chart-to-image projective map matrix. */
     double mrg,            /* Safety margin width in pixels. */
-    uint32_t NX,                /* Width of each patch in the output image (pixels) */
-    uint32_t NY                 /* Height of each patch in the output image (pixels) */
+    int32_t NX,                /* Width of each patch in the output image (pixels) */
+    int32_t NY                 /* Height of each patch in the output image (pixels) */
   );
   /* Extracts from {img} the gray-scale proper contained in the N-spot
     chart. 

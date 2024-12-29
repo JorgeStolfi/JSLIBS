@@ -1,5 +1,5 @@
 /* frgb_ops.h - basic operations on colors. */
-/* Last edited on 2024-12-20 17:34:57 by stolfi */
+/* Last edited on 2024-12-28 20:34:05 by stolfi */
 
 #ifndef frgb_ops_H
 #define frgb_ops_H
@@ -15,6 +15,8 @@
 #include <bool.h>
 
 #include <frgb.h>
+
+/* !!! 601 and 709 are now "ITU-R", not "CCIR". !!! */
 
 frgb_t frgb_mix(double ca, frgb_t *a, double cb, frgb_t *b);
   /* Computes the linear combination {ca*a + cb*b}. */
@@ -127,7 +129,17 @@ int32_t frgb_quantize(double fval, double zero, double scale, int32_t maxval);
     {zero+scale}, clipping the result to the interval {[0..maxval]}. */
     
 /* PARSING TRIPLETS */
-  
+   
+frgb_t frgb_read(FILE *rd, double lo, double hi);
+ /* Parses three consecutive numbers from file {rd},
+    as described by {frgb_parse_color_INFO}.
+   Checks whether each component lies in {[lo _ hi]}. */
+
+frgb_t frgb_parse(argparser_t *pp, double lo, double hi);
+ /* Parses three consecutive numbers from the command line,
+   as described by {frgb_parse_INFO}. Checks whether each
+   component lies in {[lo _ hi]}.  Increments {*argn}. */
+
 #define frgb_parse_HELP \
   "{R_VALUE} {G_VALUE} {B_VALUE}"
   
@@ -136,17 +148,19 @@ int32_t frgb_quantize(double fval, double zero, double scale, int32_t maxval);
   "\n" \
   "      \"1 1 1\"\n" \
   "      \"1.000 0.500 0.600\""
-
-frgb_t frgb_parse(argparser_t *pp, double lo, double hi);
- /* Parses three consecutive numbers from the command line,
-   as described by {frgb_parse_INFO}. Checks whether each
-   component lies in {[lo _ hi]}.  Increments {*argn}. */
- 
-frgb_t frgb_read(FILE *rd, double lo, double hi);
- /* Parses three consecutive numbers from file {rd},
-   checks whether each component lies in {[lo _ hi]}. */
  
 /* PARSING COLOR VALUES */
+
+frgb_t frgb_parse_color(argparser_t *pp);
+  /* Parses a color specification from the command line,
+    as described by {frgb_parse_color_INFO}. If a denominator
+    is present, divides it into all three components. Returns the color
+    as three floats. Increments {*argn}. */
+     
+frgb_t frgb_read_color(FILE *rd);
+  /* Parses a color specification from file {rd},
+    as described by {frgb_parse_color_INFO}. 
+    Returns the color as three floats in {[0 _ 1]}. */
   
 #define frgb_parse_color_HELP \
   "{R_VALUE} {G_VALUE} {B_VALUE} [ / {DENOM} ]"
@@ -158,26 +172,14 @@ frgb_t frgb_read(FILE *rd, double lo, double hi);
   "\n" \
   "      \"1 1 1\"\n" \
   "      \"1.000 0.500 0.600\"\n" \
-  "      \"75.0 80.2 57.1 / 100\" (same as \"0.750 0.802 0.571\")\n" \
-  "      \"128 196 255 / 255\""
-
-frgb_t frgb_parse_color(argparser_t *pp);
-  /* Parses a color specification from the command line,
-    as described by {frgb_parse_color_INFO}. If a denominator
-    is present, divides it into all three components. Returns the color
-    as three floats. Increments {*argn}. */
-    
-frgb_t frgb_read_color(FILE *rd);
-  /* Parses a color specification from file {rd},
-    as described by {frgb_parse_color_INFO}. 
-    Returns the color as three doubles in {[0 _ 1]}. */
-    
+  "      \"75.0 80.2 57.1 / 100\"  (same as \"0.750 0.802 0.571\")\n" \
+  "      \"51 102 153 / 255\"  (same as \"0.2 0.4 0.6\")"
+   
 /* COLORSPACE CONVERSIONS */
 
 /* The following XYZ coordinates of the RGB primaries are used by the procedure 
-  {frgb_to_CIE_XYZrec601_1} below. Not clear where these numbers
-  came from. They are claimed to use the "European TV RGB standard.
-  according to CIE XYZ Rec. 601-1" */
+  {frgb_to_CIE_XYZrec601_1} below. They are  supposed to match the
+  "European TV RGB standard, ITU-R Rec. 601-1" */
 
 #define frgb_YR (+0.298911)
 #define frgb_YG (+0.586611)

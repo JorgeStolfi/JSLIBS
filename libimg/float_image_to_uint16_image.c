@@ -1,5 +1,5 @@
 /* See {float_image_to_uint16_image.h} */
-/* Last edited on 2024-12-05 01:01:56 by stolfi */ 
+/* Last edited on 2024-12-26 12:31:44 by stolfi */ 
 
 #include <limits.h>
 #include <assert.h>
@@ -37,7 +37,7 @@ uint16_image_t *float_image_to_uint16_image
     int32_t ichns = chns;            /* Num channels in integer image. */
     
     /* Allocate PGM/PPM image: */
-    uint16_image_t *pim = uint16_image_new(NX, NY, ichns);
+    uint16_image_t *pim = uint16_image_new((uint32_t)NX, (uint32_t)NY, (uint32_t)ichns);
     
     /* Set max sample value in integer image: */
     pim->maxval = maxval;

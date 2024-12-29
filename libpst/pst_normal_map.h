@@ -2,7 +2,7 @@
 #define pst_normal_map_H
 
 /* pst_normal_map.h -- procedures for working with normal maps. */
-/* Last edited on 2024-12-22 12:38:29 by stolfi */
+/* Last edited on 2024-12-29 00:12:54 by stolfi */
 
 #include <float_image.h>
 #include <r2.h>
@@ -29,21 +29,6 @@ void pst_normal_map_set_pixel(float_image_t *NRM, int32_t x, int32_t y, r3_t *nr
 
 /* CREATING NORMAL MAPS */
 
-typedef r3_t pst_normal_map_proc_t (r2_t *p);
-  /* A procedure that computes the normal direction {nrm} at a visible point
-    {P} of a some surface, given the projection {p} of that point in some
-    plane. 
-    
-    Both {p} and {nrm} are given in some orthogonal {U,V,W} coordinate
-    system such that the projection of point {(u,v,w)} has coordinates
-    {(u,v)} (i.e., such that the {W} axis is parallel to the direction
-    of projection). The returned normal should have a non-negative {W}
-    component.
-    
-    The procedure should return the null vector {(0,0,0)} if the
-    normal direction is not defined at the point {P} (e.g. if {P} is
-    at infinity). */ 
-
 r2_t pst_normal_map_scene_pt_from_image_pt(r2_t *xy, r3x3_t *xym_to_uvm); 
   /* Given the coordinates {xy} of a point in the image coordinate
     system (in pixels, with origin at the bottom left corner and Y
@@ -69,7 +54,7 @@ r3_t pst_normal_map_image_dir_from_scene_dir(r3_t *uvw, r3x3_t *uvw_to_xyz);
     result {xyz} is {(0,0,0)}, too. */
 
 r3_t pst_normal_map_eval
-  ( pst_normal_map_proc_t nrmf, /* Normal-computing funtion. */
+  ( pst_normal_func_t nrmf, /* Normal-computing funtion. */
     double x,                   /* X-coordinate of projected point in image system. */
     double y,                   /* Y-coordinate of projected point in image system. */
     r3x3_t *xym_to_uvm,         /* Affine map of image {X,Y} coords to scene {U,V} coords. */
@@ -96,7 +81,7 @@ r3_t pst_normal_map_eval
     matrix is multiplied on the right side. */
 
 void pst_normal_map_from_proc
-  ( pst_normal_map_proc_t nrmf, /* Normal-computing funtion. */
+  ( pst_normal_func_t nrmf, /* Normal-computing funtion. */
     int32_t NS,                     /* Order of subsampling grid within each pixel. */
     r3x3_t *xym_to_uvm,         /* Affine map of image {xy} coords to model {uv} coords. */
     r3x3_t *uvw_to_xyz,         /* Linear map of {uvw} coords to normal {xyz} coords. */
@@ -112,7 +97,7 @@ void pst_normal_map_from_proc
     {U,V,W} coords and back. */
 
 r3_t pst_normal_map_pixel_avg
-  ( pst_normal_map_proc_t nrmf, /* Normal-computing funtion. */
+  ( pst_normal_func_t nrmf, /* Normal-computing funtion. */
     int32_t x, int32_t y,               /* Pixel indices (coords of lower left corner). */
     int32_t NS,                     /* Order of sub-sampling grid in pixel. */
     r3x3_t *xym_to_uvm,         /* Affine map of image {xy} coords to model {uv} coords. */

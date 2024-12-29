@@ -1,5 +1,5 @@
 /* See pst_nodak.h */
-/* Last edited on 2024-12-22 22:33:53 by stolfi */
+/* Last edited on 2024-12-24 19:05:47 by stolfi */
 
 #include <stdio.h>
 #include <math.h>
@@ -126,7 +126,7 @@ float_image_t *pst_nodak_extract_chart
     uint32_t OSZ          /* Width and height of output image (pixels) */
   )
   { /* Get input image channels: */
-    uint32_t NC = (uint32_t)(img->sz[0]);
+    int32_t NC = (int32_t)(img->sz[0]);
     
     /* Output image dimensions (pixels): */
     uint32_t ONX = OSZ;
@@ -158,18 +158,18 @@ float_image_t *pst_nodak_extract_gray_scale
     double_vec_t* geo_rad, /* Radius of each spot in chart coordinates. */
     r3x3_t *C2I,           /* Chart-to-image projective map matrix. */
     double mrg,            /* Safety margin width in pixels. */
-    uint32_t NX,                /* Width of each patch in the output image (pixels) */
-    uint32_t NY                 /* Height of each patch in the output image (pixels) */
+    int32_t NX,                /* Width of each patch in the output image (pixels) */
+    int32_t NY                 /* Height of each patch in the output image (pixels) */
   )
   { 
     /* Get number of channels:*/
-    uint32_t NC = (uint32_t)(img->sz[0]);
+    int32_t NC = (int32_t)(img->sz[0]);
     /* Create output image: */
     uint32_t NS = geo_ctr->ne;
     demand(geo_rad->ne == NS, "inconsistent spot {ctr}/{rad}");
-    uint32_t ONX = NX*NS;
-    uint32_t ONY = NY;
-    float_image_t *omg = float_image_new((int32_t)NC, (int32_t)ONX, (int32_t)ONY);
+    int32_t ONX = NX*(int32_t)NS;
+    int32_t ONY = NY;
+    float_image_t *omg = float_image_new(NC, ONX, ONY);
     /* Fill in the patches: */
     for (int32_t i = 0; i < NS; i++)
       { /* Get spot center and radius in chart coordinates:*/

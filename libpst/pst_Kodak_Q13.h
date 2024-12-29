@@ -2,7 +2,7 @@
 #define pst_Kodak_Q13_H
 
 /* Extracting sub-images of the Kodak Q-13 chart and elements thereof. */
-/* Last edited on 2024-12-22 12:16:03 by stolfi */
+/* Last edited on 2024-12-24 18:56:03 by stolfi */
 
 #include <bool.h>
 #include <r2.h>
@@ -161,7 +161,7 @@ typedef struct pst_Kodak_Q13_basis_t /* Function basis for function approximatio
     Element {N-1} is the unit function. */
 
 void pst_Kodak_Q13_compute_light_map
-  ( uint32_t c,                     /* Channel of {img} to consider. */
+  ( int32_t c,                     /* Channel of {img} to consider. */
     double noise,              /* Noise level to assume in {img} sample values. */
     float_image_t *grayScale,  /* The extracted and rectified gray-scale patches. */
     float_image_t *bodyStrip,  /* The extracted and rectified body strip, or NULL. */
@@ -212,7 +212,7 @@ double pst_Kodak_Q13_eval_map
     
 void pst_Kodak_Q13_apply_map
   ( float_image_t *img,
-    uint32_t c, 
+    int32_t c, 
     double noise, 
     double logVlo, 
     double logVhi,

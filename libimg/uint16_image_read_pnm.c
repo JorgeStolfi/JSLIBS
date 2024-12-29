@@ -1,5 +1,5 @@
 /* See uint16_image_read.h */
-/* Last edited on 2017-06-22 02:36:01 by stolfilocal */
+/* Last edited on 2024-12-26 15:07:55 by stolfi */
 
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +24,7 @@ uint16_image_t *uint16_image_read_pnm_named(char *name, bool_t verbose)
 uint16_image_t *uint16_image_read_pnm_file(FILE *rd)
   { /* We cannot rely on {pnm_readpnm} because PBMPLUS has different pixel layout. */
     /* Read file header: */
-    int cols, rows, chns;
+    uint32_t cols, rows, chns;
     uint16_t maxval;
     bool_t raw, bits;
     pnm_format_t format;
@@ -33,7 +33,7 @@ uint16_image_t *uint16_image_read_pnm_file(FILE *rd)
     uint16_image_t *img = uint16_image_new(cols, rows, chns);
     img->maxval = maxval;
     /* Read pixels: */
-    int row;
+    int32_t row;
     for (row = 0; row < rows; row++)
       { pnm_read_pixels(rd, img->smp[row], cols, chns, maxval, raw, bits); }
     return(img);

@@ -5,7 +5,7 @@
 
 /* Created on 2005-12-04 by Jorge Stolfi, unicamp, <stolfi@ic.unicamp.br> */
 /* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2024-12-22 22:12:57 by stolfi */
+/* Last edited on 2024-12-24 18:57:06 by stolfi */
 /* See the copyright and authorship notice at the end of this file. */
 
 #include <float_image.h>
@@ -41,13 +41,13 @@ typedef struct pst_imgsys_t
     from equation/unknown indices to points of a 2D integer grid;
     they are used only when printing the system. */
 
-pst_imgsys_t *pst_imgsys_new(uint32_t NX, uint32_t NY, uint32_t N, int32_t *ix, uint32_t *col, uint32_t *row);
+pst_imgsys_t *pst_imgsys_new(int32_t NX, int32_t NY, uint32_t N, int32_t *ix, uint32_t *col, uint32_t *row);
   /* Creates a new linear system {S} with {N} equations on {N} unknowns
     for an image with {NX} columns and {NY} rows, using the given
     index mapping tables. Allocates the equations {S.eq} but does not
     initialize them. */
 
-pst_imgsys_t *pst_imgsys_from_eqs(uint32_t NX, uint32_t NY, uint32_t N, pst_imgsys_equation_t *eq, int32_t *ix, uint32_t *col, uint32_t *row);
+pst_imgsys_t *pst_imgsys_from_eqs(int32_t NX, int32_t NY, uint32_t N, pst_imgsys_equation_t *eq, int32_t *ix, uint32_t *col, uint32_t *row);
   /* Like {pst_imgsys_new} but uses the given {eq} vector instead of allocating a new one. */
 
 void pst_imgsys_free(pst_imgsys_t *S);

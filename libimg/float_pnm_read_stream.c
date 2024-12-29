@@ -1,5 +1,5 @@
 /* See {float_pnm_read_stream.h}. */
-/* Last edited on 2024-12-04 23:33:03 by stolfi */
+/* Last edited on 2024-12-26 12:41:09 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -16,7 +16,7 @@
 
 /* Internal prototypes: */
 
-float_pnm_stream_t *float_pnm_read_stream_new(FILE *rd, bool_t isMask, uint32_t badval, int32_t bufrows)
+float_pnm_stream_t *float_pnm_read_stream_new(FILE *rd, bool_t isMask, uint32_t badval, uint32_t bufrows)
   { /* Allocate top record: */
     float_pnm_stream_t *str = float_pnm_stream_new(isMask, badval);
     /* Read the input file header: */
@@ -26,7 +26,7 @@ float_pnm_stream_t *float_pnm_read_stream_new(FILE *rd, bool_t isMask, uint32_t 
      );
     str->smp = uint16_image_alloc_pixel_row(str->cols, str->chns);
     str->ftb = pnm_make_floatize_table(str->maxval, isMask, badval);
-    str->buf = float_image_buffer_new(str->chns, str->cols, str->rows, bufrows);
+    str->buf = float_image_buffer_new((int32_t)str->chns, (int32_t)str->cols, (int32_t)str->rows, (int32_t)bufrows);
     return str;
   }
 
@@ -50,7 +50,7 @@ void float_pnm_read_stream_load_next_row(FILE *rd, float_pnm_stream_t *str)
     assert(float_image_buffer_row_pos(str->buf, y) == 00);
     /* Read one row of sample values from input image into {str->smp}: */
     pnm_read_pixels(rd, str->smp, str->cols, str->chns, str->maxval, str->raw, str->bits);
-    int32_t nspr = str->chns * str->cols; /* Number of samples per row. */
+    uint32_t nspr = str->chns * str->cols; /* Number of samples per row. */
     /* Convert samples {str->smp[0..nspr-1]} to [0_1] scale, save in {str->buf}: */
     uint16_t *sP = str->smp; /* Scans raw samples. */
     double *dP = float_image_buffer_get_row(str->buf, y); /* Start of row {yb} in {ibuf}. */

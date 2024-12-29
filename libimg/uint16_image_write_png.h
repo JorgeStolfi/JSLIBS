@@ -1,5 +1,5 @@
 /* uint16_image_write_png.h - routines to write images with {uint16_t} samples as PNG files. */
-/* Last edited on 2024-12-05 10:31:22 by stolfi */
+/* Last edited on 2024-12-26 11:55:33 by stolfi */
 
 /* Created by R. Minetto (IC-UNICAMP) as {ipng.h} sometime in 2008--2009. */
 /* Adapted by J. Stolfi (IC-UNICMP) on 2011-05-14. */
@@ -9,6 +9,8 @@
 
 #include <stdio.h>
 #include <stdint.h>
+
+#include <bool.h>
 #include <uint16_image.h>
 
 void uint16_image_write_png_named(char *name, uint16_image_t *img, double gamma, bool_t verbose);

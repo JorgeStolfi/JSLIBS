@@ -1,5 +1,5 @@
 /* See pst_gray_scale_fit.h */
-/* Last edited on 2024-12-22 22:03:45 by stolfi */
+/* Last edited on 2024-12-24 19:03:08 by stolfi */
 
 #include <stdio.h>
 #include <math.h>
@@ -62,7 +62,7 @@ vec_typedef(diff_data_vec_t,diff_data_vec,diff_data_t);
 
 patch_data_t pst_gray_scale_fit_get_patch_data
   ( float_image_t *img, 
-    uint32_t c,
+    int32_t c,
     double cX,  /* X coordinate of patch center in chart (pixels). */
     double cY,  /* Y coordinate of patch center in chart (pixels). */
     int32_t loX,    /* Min col of patch in {img} (pixels). */
@@ -89,7 +89,7 @@ diff_data_t pst_gray_scale_fit_compute_quad
     By convention, {-1} denotes `unknown reflectance'. */
 
 void pst_gray_scale_fit_get_patch_to_strip_data
-  ( uint32_t c,                   /* Channel of {img} to consider. */
+  ( int32_t c,                   /* Channel of {img} to consider. */
     uint32_t NS,                  /* Number of steps in gray scale. */
     double noise,            /* Noise level to assume in {img} sample values. */
     float_image_t *imgScale, /* The extracted and rectified gray-scale patches. */
@@ -120,7 +120,7 @@ void pst_gray_scale_fit_get_patch_to_strip_data
     coordinates. */
 
 void pst_gray_scale_fit_get_patch_to_patch_data
-  ( uint32_t c,                     /* Channel of {img} to consider. */
+  ( int32_t c,                     /* Channel of {img} to consider. */
     uint32_t NS,                /* Number of steps in gray scale. */
     double noise,              /* Noise level to assume in {img} sample values. */
     float_image_t *imgScale,  /* The extracted and rectified gray-scale patches. */
@@ -259,7 +259,7 @@ double pst_gray_scale_fit_sigmoid_gaussian(double v, uint32_t p, uint32_t n);
 vec_typeimpl(diff_data_vec_t,diff_data_vec,diff_data_t);
 
 void pst_gray_scale_fit_light_map
-  ( uint32_t c,                /* Channel of {img} to consider. */
+  ( int32_t c,                /* Channel of {img} to consider. */
     uint32_t NS,               /* Number of steps in gray scale. */
     double noise,              /* Noise level to assume in {img} sample values. */
     float_image_t *imgScale,   /* The extracted and rectified gray-scale patches. */
@@ -358,33 +358,33 @@ double pst_gray_scale_fit_nlog(double V, double noise, double logVlo, double log
   }
 
 void pst_gray_scale_fit_get_patch_to_strip_data
-  ( uint32_t c,                     /* Channel of {img} to consider. */
-    uint32_t NS,                /* Number of steps in gray scale. */
+  ( int32_t c,                 /* Channel of {img} to consider. */
+    uint32_t NS,               /* Number of steps in gray scale. */
     double noise,              /* Noise level to assume in {img} sample values. */
-    float_image_t *imgScale,  /* The extracted and rectified gray-scale patches. */
+    float_image_t *imgScale,   /* The extracted and rectified gray-scale patches. */
     double albScale[],         /* Nominal albedo of each patch. */
     double dX,                 /* X displacement between successive patches (pixels). */
     float_image_t *imgStrip,   /* Extracted image of a reference strip, or NULL. */
     double albStrip,           /* Albedo of {imgStrip0}. */
     double dY,                 /* Y displ between centers of {imgScale} and {imgStrip} (pixels). */
-    diff_data_vec_t *dd,  /* List of differential data points. */
-    uint32_t *NG                    /* Number of differential data points. */
+    diff_data_vec_t *dd,       /* List of differential data points. */
+    uint32_t *NG               /* Number of differential data points. */
   )
   { bool_t debug = TRUE;
   
     /* Get dimensions {DXScale,DYScale} of each patch in {imgScale}: */
-    uint32_t NXScale = (uint32_t)(imgScale->sz[1]);
-    uint32_t NYScale = (uint32_t)(imgScale->sz[2]);
-    demand(NXScale % NS == 0, "{imgScale} width is not divisible by {NS}");
-    uint32_t DXScale = NXScale/NS;
-    uint32_t DYScale = NYScale;
+    int32_t NXScale = (int32_t)(imgScale->sz[1]);
+    int32_t NYScale = (int32_t)(imgScale->sz[2]);
+    demand(NXScale % (int32_t)NS == 0, "{imgScale} width is not divisible by {NS}");
+    int32_t DXScale = NXScale/(int32_t)NS;
+    int32_t DYScale = NYScale;
 
     /* Get dimensions {DXStrip,DYStrip} of each patch in {imgStrip}: */
-    uint32_t NXStrip = (uint32_t)(imgStrip->sz[1]);
-    uint32_t NYStrip = (uint32_t)(imgStrip->sz[2]);
-    demand(NXStrip % NS == 0, "{imgStrip} width is not divisible by {NS}");
-    uint32_t DXStrip = NXStrip/NS;
-    uint32_t DYStrip = NYStrip;
+    int32_t NXStrip = (int32_t)(imgStrip->sz[1]);
+    int32_t NYStrip = (int32_t)(imgStrip->sz[2]);
+    demand(NXStrip % (int32_t)NS == 0, "{imgStrip} width is not divisible by {NS}");
+    int32_t DXStrip = NXStrip/(int32_t)NS;
+    int32_t DYStrip = NYStrip;
 
     if (debug) 
       { fprintf(stderr, "comparing scale patches with reference strip\n");
@@ -437,7 +437,7 @@ void pst_gray_scale_fit_get_patch_to_strip_data
   }
 
 void pst_gray_scale_fit_get_patch_to_patch_data
-  ( uint32_t c,                     /* Channel of {img} to consider. */
+  ( int32_t c,                     /* Channel of {img} to consider. */
     uint32_t NS,                /* Number of steps in gray scale. */
     double noise,              /* Noise level to assume in {img} sample values. */
     float_image_t *imgScale,  /* The extracted and rectified gray-scale patches. */
@@ -450,11 +450,11 @@ void pst_gray_scale_fit_get_patch_to_patch_data
     bool_t debug = TRUE;
   
     /* Get dimensions {DXScale,DYScale} of each patch in {imgScale}: */
-    uint32_t NXScale = (uint32_t)(imgScale->sz[1]);
-    uint32_t NYScale = (uint32_t)(imgScale->sz[2]);
-    demand(NXScale % NS == 0, "{imgScale} width is not divisible by {NS}");
-    uint32_t DXScale = NXScale/NS;
-    uint32_t DYScale = NYScale;
+    int32_t NXScale = (int32_t)(imgScale->sz[1]);
+    int32_t NYScale = (int32_t)(imgScale->sz[2]);
+    demand(NXScale % (int32_t)NS == 0, "{imgScale} width is not divisible by {NS}");
+    int32_t DXScale = NXScale/(int32_t)NS;
+    int32_t DYScale = NYScale;
 
     /* Gather values and compute scale reflectances: */
     uint32_t NG0 = (*NG), NG1 = NG0; /* Data gathered here is {dd[NG0..NG1-1]}. */
@@ -498,7 +498,7 @@ void pst_gray_scale_fit_get_patch_to_patch_data
 
 patch_data_t pst_gray_scale_fit_get_patch_data
   ( float_image_t *img, 
-    uint32_t c,
+    int32_t c,
     double cX,  /* X coordinate of patch center in chart (pixels). */
     double cY,  /* Y coordinate of patch center in chart (pixels). */
     int32_t loX,    /* Min col of patch in {img} (pixels). */
@@ -744,7 +744,7 @@ double pst_gray_scale_fit_eval_raw_map(double v, pst_gray_scale_fit_basis_t B, d
   
 void pst_gray_scale_fit_apply_map
   ( float_image_t *img,
-    uint32_t c, 
+    int32_t c, 
     double noise, 
     double logVlo, 
     double logVhi,

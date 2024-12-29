@@ -1,5 +1,5 @@
 /* See uint16_image_Pike_F100.h */
-/* Last edited on 2024-12-05 07:27:48 by stolfi */
+/* Last edited on 2024-12-26 12:53:36 by stolfi */
 
 #include <math.h>
 #include <stdlib.h>
@@ -31,10 +31,9 @@ uint16_image_t *uint16_image_Pike_F100_read(char *name, bool_t verbose)
   
 void uint16_image_Pike_F100_read_trailer(FILE *rd, bool_t verbose)
   {
-    int32_t i;
-    for (i = 0; i < 2944; i += 2)
-      { int32_t c1 = getc(rd); if (c1 == EOF) { pnm_error("unexpected EOF in sample"); }
-        int32_t c2 = getc(rd); if (c2 == EOF) { pnm_error("unexpected EOF in sample"); }
+    for (int32_t i = 0; i < 2944; i += 2)
+      { int32_t c1 = getc(rd); demand(c1 != EOF, "unexpected EOF in sample");
+        int32_t c2 = getc(rd); demand(c2 != EOF, "unexpected EOF in sample");
         if (verbose)
           { fprintf(stderr, "%4d ( %02x = %3d  %02x = %3d ) = %5d\n", i, c1, c1, c2, c2, (c1 << 8) | c2); }
       }
@@ -43,18 +42,17 @@ void uint16_image_Pike_F100_read_trailer(FILE *rd, bool_t verbose)
 uint16_image_t *uint16_image_Pike_F100_fread(FILE *rd)
   { /* The AVC Pike F-100 Raw15 format is 1000x1000, 16 bits per pixel. */
     /* Create the file header: */
-    int32_t cols = 1000;
-    int32_t rows = 1000;
-    int32_t chns = 1;
+    uint32_t cols = 1000;
+    uint32_t rows = 1000;
+    uint32_t chns = 1;
     /* Allocate image and set maxval: */
     uint16_image_t *img = uint16_image_new(cols, rows, chns);
-    int32_t maxval = 65535;
+    uint32_t maxval = 65535;
     img->maxval = (uint16_t)maxval;
     /* Read pixels: */
     bool_t raw = TRUE;   /* Samples are binary, not ASCII. */
     bool_t bits = FALSE; /* Samples are byte-aligned, not bit-aligned. */
-    int32_t row;
-    for (row = 0; row < rows; row++)
+    for (int32_t row = 0; row < rows; row++)
       { pnm_read_pixels(rd, img->smp[row], cols, chns, (uint16_t)maxval, raw, bits); }
     return(img);
   }
@@ -72,20 +70,18 @@ uint16_image_t *uint16_image_Pike_F100_debayer(uint16_image_t *img, bool_t squee
     uint16_image_t *omg;
     if (! squeeze)
       { /* Retain the original size, just separate the channels: */
-        int32_t rows = img->rows;
-        int32_t cols = img->cols;
+        uint32_t rows = img->rows;
+        uint32_t cols = img->cols;
         omg = uint16_image_new(cols, rows, 3);
         omg->maxval = img->maxval;
-        int32_t col, row;
-        for (row = 0; row < rows; row++)
-          { for (col = 0; col < cols; col++)
+        for (int32_t row = 0; row < rows; row++)
+          { for (int32_t col = 0; col < cols; col++)
               { /* Decide which channel {chn} this sample belongs to: */
                 int32_t chn = uint16_image_Pike_F100_sample_channel(col, row);
                 /* Copy sample, set other channels to 0: */
                 uint16_t smp = img->smp[row][col];
                 uint16_t *po = &(omg->smp[row][3*col]);
-                int32_t k;
-                for (k = 0; k < 3; k++) 
+                for (int32_t k = 0; k < 3; k++) 
                   { (*po) = (uint16_t)(k == chn ? smp : 0); po++; }
               }
           }
@@ -95,14 +91,13 @@ uint16_image_t *uint16_image_Pike_F100_debayer(uint16_image_t *img, bool_t squee
         omg = uint16_image_new(img->cols/2, img->rows/2, 3);
         omg->maxval = img->maxval;
         /* Fill it with the merged channels: */
-        int32_t col,row;
-        for (row = 0; row < omg->rows; row++)
+        for (int32_t row = 0; row < omg->rows; row++)
           { uint16_t *G0p = &(img->smp[2*row][0]);
             uint16_t *R0p = &(img->smp[2*row][1]);
             uint16_t *B0p = &(img->smp[2*row+1][0]);
             uint16_t *G1p = &(img->smp[2*row+1][1]);
             uint16_t *op = omg->smp[row];
-            for (col = 0; col < omg->cols; col++)
+            for (int32_t col = 0; col < omg->cols; col++)
               { (*op) = (*R0p); op++; R0p++; R0p++;
                 int32_t G0v = (int32_t)(*G0p); G0p++; G0p++;
                 int32_t G1v = (int32_t)(*G1p); G1p++; G1p++;
@@ -120,14 +115,13 @@ uint16_image_t *uint16_image_Pike_F100_debayer(uint16_image_t *img, bool_t squee
 
 uint16_image_t *uint16_image_Pike_F100_extract_bayer_channel(uint16_image_t *img, int32_t bayer_col, int32_t bayer_row, bool_t verbose)
   {
-    int32_t rows = img->rows;
-    int32_t cols = img->cols;
+    uint32_t rows = img->rows;
+    uint32_t cols = img->cols;
     demand(img->chns == 1, "input must be single-channel");
     uint16_image_t *omg = uint16_image_new(img->cols/2, img->rows/2, 1);
     omg->maxval = img->maxval;
-    int32_t col, row;
-    for (row = bayer_row; row < rows; row += 2)
-      { for (col = bayer_col; col < cols; col += 2)
+    for (int32_t row = bayer_row; row < rows; row += 2)
+      { for (int32_t col = bayer_col; col < cols; col += 2)
           { uint16_t *pi = &(img->smp[row][col]);
             uint16_t *po = &(omg->smp[row >> 1][col >> 1]);
             (*po) = (*pi);
@@ -138,19 +132,17 @@ uint16_image_t *uint16_image_Pike_F100_extract_bayer_channel(uint16_image_t *img
 
 void uint16_image_Pike_F100_color_balance(uint16_image_t *img, float bal[], bool_t verbose) 
   {
-    int32_t rows = img->rows;
-    int32_t cols = img->cols;
-    int32_t chns = img->chns;
+    uint32_t rows = img->rows;
+    uint32_t cols = img->cols;
+    uint32_t chns = img->chns;
     
     auto void print_bugs(char *title, int32_t count[]);
     
     int32_t nov[3] = {0,0,0}; /* Number of overflowed pixels per channel. */
     int32_t nun[3] = {0,0,0}; /* Number of zeroed pixels per channel. */
-    int32_t col, row;
-    for (row = 0; row < rows; row++)
-      { for (col = 0; col < cols; col++)
-          { int32_t k;
-            for (k = 0; k < chns; k++)
+    for (int32_t row = 0; row < rows; row++)
+      { for (int32_t col = 0; col < cols; col++)
+          { for (int32_t k = 0; k < chns; k++)
               { /* Choose the balance factor {fac}: */
                 double fac;
                 if (chns == 1)
@@ -164,7 +156,7 @@ void uint16_image_Pike_F100_color_balance(uint16_image_t *img, float bal[], bool
                     fac = (double)bal[k];
                   }
                 /* Get hold of sample in channel {k}: */
-                uint16_t *pi = &(img->smp[row][chns*col + k]);
+                uint16_t *pi = &(img->smp[row][col*(int32_t)chns + k]);
                 /* Apply factor: */
                 double old = (double)(*pi);
                 double new = floor(fac*old + 0.5);
@@ -182,8 +174,7 @@ void uint16_image_Pike_F100_color_balance(uint16_image_t *img, float bal[], bool
     void print_bugs(char *title, int32_t count[])
       { 
         fprintf(stderr, "oversaturated pixels:");
-        int32_t k;
-        for (k = 0; k < chns; k++)
+        for (int32_t k = 0; k < chns; k++)
           { fprintf(stderr, " %c = %8d", "RGB"[k], count[k]); }
         fprintf(stderr, "\n");
       }
@@ -193,12 +184,11 @@ void uint16_image_Pike_F100_output_amp_balance(uint16_image_t *img, int32_t spli
   {
     demand(gain0 >= 0, "invalid left-half gain");
     demand(gain1 >= 0, "invalid right-half gain");
-    int32_t col, row, chn;
-    for (chn = 0; chn < img->chns; chn++)
+    for (int32_t chn = 0; chn < img->chns; chn++)
       { int32_t nov = 0; /* Number of overflowed samples. */
-        for (row = 0; row < img->rows; row++)
+        for (int32_t row = 0; row < img->rows; row++)
           { uint16_t *p = img->smp[row] + chn;
-            for (col = 0; col < img->cols; col++)
+            for (int32_t col = 0; col < img->cols; col++)
               { int32_t val = (*p);
                 double gain = (col < split_col ? gain0 : gain1);
                 val = (int32_t)floor(gain*((double)val) + 0.5);
@@ -216,18 +206,17 @@ void uint16_image_Pike_F100_output_amp_balance(uint16_image_t *img, int32_t spli
 
 void uint16_image_Pike_F100_interpolate_bayer(uint16_image_t *img, bool_t verbose)    
   { 
-    int32_t col, row;
-    for (row = 0; row < img->rows; row++)
-      { for (col = 0; col < img->cols; col++)
+    for (int32_t row = 0; row < img->rows; row++)
+      { for (int32_t col = 0; col < img->cols; col++)
           { uint16_image_Pike_F100_interpolate_bayer_pixel(img, col, row); }
       }
   }
       
 void uint16_image_Pike_F100_interpolate_bayer_pixel(uint16_image_t *img, int32_t col, int32_t row)   
   { 
-    int32_t rows = img->rows;
-    int32_t cols = img->cols;
-    int32_t chns = img->chns;
+    uint32_t rows = img->rows;
+    uint32_t cols = img->cols;
+    uint32_t chns = img->chns;
     demand(chns == 3, "cannot do interpolation, de-Bayer first");
     
     /* Get pointers to the previous, current, and next row: */
@@ -242,8 +231,7 @@ void uint16_image_Pike_F100_interpolate_bayer_pixel(uint16_image_t *img, int32_t
     /* Determine the channel {chn} that has actual data: */
     int32_t chn = uint16_image_Pike_F100_sample_channel(col, row);
     /* Interpolate the remaining channels: */
-    int32_t k;
-    for (k = 0; k < chns; k++)
+    for (int32_t k = 0; k < chns; k++)
       { 
         if (k != chn) 
           { /* Sample is missing. */
@@ -298,15 +286,15 @@ void uint16_image_Pike_F100_interpolate_bayer_pixel(uint16_image_t *img, int32_t
       }
   }
 
-uint16_image_t *pnm_Pike_F100_bayer_channel_white_mask(uint16_image_t *img, bool_t verbose)
+uint16_image_t *uint16_image_Pike_F100_bayer_channel_white_mask(uint16_image_t *img, bool_t verbose)
   {
     /* Convert the image to floating point: */
     bool_t isMask = FALSE; /* Assume smooth distr. of pixel values in encoding/decoding. */
     float_image_t *fim = float_image_from_uint16_image(img, isMask, NULL, NULL, TRUE, FALSE);
     /* Allocate an image for the high-frequency signal: */
-    float_image_t *hif = float_image_new(img->chns, img->cols, img->rows);
+    float_image_t *hif = float_image_new((int32_t)img->chns, (int32_t)img->cols, (int32_t)img->rows);
     /* Allocate a monochrome working image for the low freq signal: */
-    float_image_t *tmp = float_image_new(1, img->cols, img->rows);
+    float_image_t *tmp = float_image_new(1, (int32_t)img->cols, (int32_t)img->rows);
     /* Create a very broad Gaussian kernel: */
     uint32_t hw = 64;     /* Window half-width */
     uint32_t nw = 2*hw-1; /* Window width */
@@ -315,15 +303,13 @@ uint16_image_t *pnm_Pike_F100_bayer_channel_white_mask(uint16_image_t *img, bool
     wt_table_normalize_sum(nw, wt);
     double vRef = 4.0/256.0; /* A reasonable black level. */
     double base = 2.0;
-    int32_t chn;
-    for (chn = 0; chn < img->chns; chn++)
-      { 
-        /* Convert channe {chn} of {fim} to log scale with a fixed vRef: */
+    for (int32_t chn = 0; chn < img->chns; chn++)
+      { /* Convert channe {chn} of {fim} to log scale with a fixed vRef: */
         float_image_rescale_samples(fim, chn, 0.0f, 1.0f, (float)vRef, (float)(1.0+vRef));
         float_image_log_scale(fim, chn, 0.0, vRef, base);
         /* Extract the high-freq part, ignoring outliers: */
-        int32_t maxiter = 3;
-        int32_t iter = 0;       /* Iterations. */
+        uint32_t maxiter = 3;
+        uint32_t iter = 0;       /* Iterations. */
         int32_t nout;           /* Number of outliers in last iteration. */
         double avg, dev;    /* Average and deviation of channel {chn} of {hif}. */
         double maxd = 4;    /* Maximum deviations from mean allowed. */
@@ -338,10 +324,9 @@ uint16_image_t *pnm_Pike_F100_bayer_channel_white_mask(uint16_image_t *img, bool
             float_image_compute_sample_avg_dev(hif, chn, &avg, &dev);
             if (verbose) { fprintf(stderr, "  iteration %d avg = %+12.6f  dev = %12.6f\n", iter, avg, dev); }
             /* Check {hif} for outliers, fix them in {fim}: */
-            int32_t row, col;
             nout = 0;
-            for (row = 0; row < img->rows; row++)
-              { for (col = 0; col < img->cols; col++)
+            for (int32_t row = 0; row < img->rows; row++)
+              { for (int32_t col = 0; col < img->cols; col++)
                   { float v = float_image_get_sample(hif, chn, col, row); 
                     if (fabs(v - avg) > maxd*dev)
                       { if (verbose)
@@ -366,7 +351,10 @@ uint16_image_t *pnm_Pike_F100_bayer_channel_white_mask(uint16_image_t *img, bool
         float_image_undo_log_scale(hif, chn, 0.0, uRef, base);
       }
     /* Convert back to PNM image: */
-    uint16_image_t *pot = float_image_to_uint16_image(hif, isMask, img->chns, NULL, NULL, NULL, uint16_image_MAX_SAMPLE, TRUE, verbose);
+    uint16_image_t *pot = float_image_to_uint16_image
+      ( hif, isMask, (int32_t)img->chns, NULL, NULL, NULL, 
+        uint16_image_MAX_SAMPLE, TRUE, verbose
+      );
     float_image_free(fim);
     float_image_free(hif);
     float_image_free(tmp);

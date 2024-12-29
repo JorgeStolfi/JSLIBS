@@ -2,7 +2,7 @@
 #define pst_light_H
 
 /* pst_light.h -- light field modeling. */
-/* Last edited on 2024-12-22 22:21:26 by stolfi */
+/* Last edited on 2024-12-28 21:28:22 by stolfi */
 
 #include <bool.h>
 #include <r3.h>
@@ -13,10 +13,12 @@
 #include <pst_lamp.h>
      
 typedef struct pst_light_t 
-  { pst_lamp_vec_t lmpv; /* List of lamps. */
+  { uint32_t NL;         /* Number of lamps. */
+    pst_lamp_vec_t lmpv; /* List of lamps. */
   } pst_light_t;
   /* A light field. Presently the model is just a list of lamps
-    (which may include ambient light fields or light walls). */
+    { lmpv.e[0..NL-1]} (which may include ambient light fields 
+    or light walls). */
 
 #define pst_light_model_INFO \
   "The light field model consists of one or more round" \
@@ -24,32 +26,20 @@ typedef struct pst_light_t
   " lamp contributes a specific term to the total light" \
   " field reaching the scene from the outside."
 
-pst_light_t pst_light_new(uint32_t NS, uint32_t NC);
-  /* Creates a light field model with {NS} lamps (at least one)
-    and {NC} color channels (possibly zero).  The
-    {dir} of each lamp is set to {(0,0,0)} and the {crad} 
-    is set to {+1} The {pwr} vectors are allocated
-    and initialized with zeros. */
+pst_light_t *pst_light_new(uint32_t NL);
+  /* Creates a light field model with {NL} lamps (at least one).  The
+    {dir} of each lamp is set to {(NAN,NAN,NAN)},
+    the power {pwr} is set to {(0,0,0)}, and the {crad} 
+    is set to {+1}. */
 
-pst_light_t pst_light_from_lamps(pst_lamp_vec_t lmpv);
-  /* Creates a light field model with the given list of lamps. */
+pst_light_t *pst_light_from_lamps(uint32_t NL, pst_lamp_vec_t lmpv);
+  /* Creates a light field model with lamps
+    {lmpv.e[0..NL-1]}. */
 
-pst_light_t pst_light_copy(pst_light_t *lht);
+pst_light_t *pst_light_copy(pst_light_t *lht);
   /* Creates a new light field model with the same contents as {lht},
     but with newly allocted storage at all levels. Changing in any
     parameter of {lht} will not affect the copy, and vice-versa. */
-
-vec_typedef(pst_light_vec_t,pst_light_vec,pst_light_t);
-  /* A list of light fields. */
-
-void pst_light_regularize_channels(pst_light_t *lht, uint32_t NC);
-  /* Makes sure that all lamps have {NC} channels in their power
-    vectors.  Vectors with zero elements are expanded {NC} elements
-    and filled with {1/NS}, where {NS} is the number of 
-    lamps.  Vectors with one channel are expanded to {NC} 
-    by replicating the first element.  Vectors with {NC}
-    elements are left untouched.  A vector with any other
-    length causes the procedure to bomb out. */
 
 void pst_light_ensure_one_lamp(pst_light_t *lht, double cmin, pst_lamp_t **src);
   /* Makes sure that the light field {lht} contains at least one
@@ -76,12 +66,11 @@ void pst_light_alignment_matrix(r3_t *u, r3_t *v, r3x3_t *M);
   so the client must eventually trim the vector. */
 
 void pst_light_add_uniform_array
-  ( pst_lamp_vec_t *lmpv, 
-    uint32_t *NSP, 
+  ( pst_light_t *lht, 
     uint32_t NA,
     r3_t *dir0, 
     r3_t *dir1, 
-    double_vec_t *pwr,
+    frgb_t *pwr,
     double crad
   );
   /* Adds to the lamp vector {lmpv} a set of of {NA} lamps
@@ -92,49 +81,49 @@ void pst_light_add_uniform_array
     result is a pair of opposite wall lamps. When {NA=3}, the result
     is that pair plus an ambient lamp. When {NA} is 4 or more, the
     lamps are arranged at the corners of a regular or semi-regular
-    polyhedron, and their radii are all less than {PI/2}.
+    polyhedron, and their agular radii are all less than {PI/2}.
     
-    If {dir0} is not NULL, {*dir0} is not zero, and the first lamp of
-    the array has a nonzero direction, the lamp array is rotated so
-    that its first lamp is located in the direction {*dir0}. In that
-    case, if {dir1} is not NULL, {*dir1} is not zero, and the second
-    lamp exists and has nonzero direction, the array is then turned
-    around {dir0} so that its second lamp lies on the {*dir0,*dir1}
-    plane.
+    If {dir0} is not NULL, and {*dir0} is a valid direction, and the
+    first lamp of the array has a nonzero direction, the lamp array is
+    rotated so that its first lamp is located in the direction {*dir0}.
+    In that case, if {dir1} is not NULL, and {*dir1} is a valid
+    direction, and the second lamp exists and has nonzero direction, the
+    array is then turned around {dir0} so that its second lamp lies on
+    the {*dir0,*dir1} plane.
     
-    If {pwr} is not NULL, the power of each lamp is set to a fresh 
-    copy of {*pwr}; otherwise the powers are all set to empty vectors.
+    If {pwr} is not NULL, the power of each lamp is set to {*pwr};
+    otherwise the powers are all set to {(0,0,0)}.
     
     If {crad} is finite, it is used as the {crad} of all lamps in the
     array. Otherwise, the angular radii are set to appropriate values
     depending on {NA}. */
-
-void pst_light_add_single(pst_lamp_vec_t *lmpv, uint32_t *NSP, double crad);
-  /* Adds a single lamp with  given {crad} and direction (+1,0,0). */
   
-void pst_light_add_pair(pst_lamp_vec_t *lmpv, uint32_t *NSP, double crad);
+void pst_light_add_single(pst_light_t *lht, double crad);
+  /* Adds to {lmpv} a single lamp with  given {crad} and direction (+1,0,0). */
+
+void pst_light_add_pair(pst_light_t *lht, double crad);
   /* Adds a pair of lamps with given {crad} and directions (+1,0,0), (-1,0,0). */
   
-void pst_light_add_tetra(pst_lamp_vec_t *lmpv, uint32_t *NSP, bool_t dual);
+void pst_light_add_tetra(pst_light_t *lht, bool_t dual);
   /* Adds four lamps at the corners of a tetrahedron.  If {dual},
     uses the dual directions. */
   
-void pst_light_add_octa(pst_lamp_vec_t *lmpv, uint32_t *NSP);
+void pst_light_add_octa(pst_light_t *lht);
   /* Adds six lamps at the vertices of a octahedron, on the 
     coordinate axes. */
   
-void pst_light_add_icosa(pst_lamp_vec_t *lmpv, uint32_t *NSP);
+void pst_light_add_icosa(pst_light_t *lht);
   /* Adds 12 lights at the vertices of an icosahedron. 
     The axes bisect pairs of opposite edges. */
   
-void pst_light_add_dodeca(pst_lamp_vec_t *lmpv, uint32_t *NSP);
+void pst_light_add_dodeca(pst_light_t *lht);
   /* Adds 20 lights at the vertices of a dodceahedron,
     dual to the icosahedron above. The axes bisect pairs 
     of opposite edges. */
 
 /* COMMAND LINE PARSING */
 
-pst_light_t pst_light_spec_parse(argparser_t *pp, bool_t next, uint32_t *NCP);
+pst_light_t *pst_light_spec_parse(argparser_t *pp, bool_t next, int32_t *NCP);
   /* Parses the description of a light field, consisting of a list of
     lamp descriptions. If {next} is true, the lamp list must start
     at the next command line argument; else looks for it anywhere in
@@ -143,18 +132,18 @@ pst_light_t pst_light_spec_parse(argparser_t *pp, bool_t next, uint32_t *NCP);
     and {pst_light_spec_HELP_INFO}. */
 
 #define pst_light_spec_HELP \
-  "{ { -lamp | -array {NLAMPS} } \\\n" \
-  "      " pst_lamp_spec_params_HELP " } ..."
-  
+  "{ -lamp | -array {NLAMPS} } \\\n" \
+  "      " -pst_lamp_spec_params_HELP " ..."
+ 
 #define pst_light_spec_HELP_INFO \
   pst_light_spec_lamp_HELP_INFO "\n" \
   pst_light_spec_array_HELP_INFO
-  
 
 /* Help/info for single lamp specs: */
 
 #define pst_light_spec_lamp_HELP \
-  "-lamp {LAMP_PARAMETERS}"
+  "-lamp {LAMP_PARAMETERS}" \
+  "      " -pst_lamp_spec_params_HELP " ..."
 
 #define pst_light_spec_lamp_INFO \
   "Introduces an additional lamp.  Should be followed" \
@@ -164,7 +153,6 @@ pst_light_t pst_light_spec_parse(argparser_t *pp, bool_t next, uint32_t *NCP);
 #define pst_light_spec_lamp_HELP_INFO \
   "  " pst_light_spec_lamp_HELP \
   "    " pst_light_spec_lamp_INFO
-
 
 /* Help/info for lamp array specs: */
 
@@ -194,8 +182,8 @@ pst_light_t pst_light_spec_parse(argparser_t *pp, bool_t next, uint32_t *NCP);
   pst_lamp_spec_radius_HELP_INFO "  The default is \"radius 0\"," \
   " meaning a point-like light source.\n" \
   "\n" \
-  pst_lamp_spec_power_HELP_INFO "  The default is" \
-  " \"power 1 / {NS}\", where {NS} is the number of lamps" \
+  pst_lamp_spec_power_HELP_INFO "  The default per channel is" \
+  " \"power 1 / {NL}\", where {NL} is the number of lamps" \
   " specified for the scene.  Thus, if this parameter is" \
   " omitted for all lamps, the apparent intensity of a matte white" \
   " surface will be 1.0 or less."

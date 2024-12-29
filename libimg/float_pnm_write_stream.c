@@ -1,5 +1,5 @@
 /* See {float_pnm_write_stream.h}. */
-/* Last edited on 2024-12-04 23:33:19 by stolfi */
+/* Last edited on 2024-12-26 12:43:16 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -17,20 +17,20 @@
 float_pnm_stream_t *float_pnm_write_stream_new 
   ( FILE *wr, 
     uint16_t maxval, 
-    int32_t rows, 
-    int32_t cols, 
-    int32_t chns, 
+    uint32_t rows, 
+    uint32_t cols, 
+    uint32_t chns, 
     bool_t isMask,
     uint32_t badval, 
     bool_t forceplain,
-    int32_t bufrows
+    uint32_t bufrows
   )
   { /* Allocate top record: */
     float_pnm_stream_t *str = float_pnm_stream_new(isMask, badval);
     /* Select output format and write image header: */
-    str->chns = chns;
-    str->rows = rows;
-    str->cols = cols;
+    str->chns = (uint32_t)chns;
+    str->rows = (uint32_t)rows;
+    str->cols = (uint32_t)cols;
     str->maxval = maxval;
     pnm_choose_output_format
       ( maxval, chns, forceplain,
@@ -40,7 +40,7 @@ float_pnm_stream_t *float_pnm_write_stream_new
     str->smp = uint16_image_alloc_pixel_row(str->cols, str->chns);
     str->ftb = NULL;
     /* Allocate the floated-row buffer: */
-    str->buf = float_image_buffer_new(chns, cols, rows, bufrows);
+    str->buf = float_image_buffer_new((int32_t)chns, (int32_t)cols, (int32_t)rows, (int32_t)bufrows);
     return str;
   }
 
@@ -64,7 +64,7 @@ void float_pnm_write_stream_dump_first_row(FILE *wr, float_pnm_stream_t *str)
     double *dP = float_image_buffer_get_row(str->buf, y); /* Start of row {yb} in {ibuf}. */
     uint16_t *sP = str->smp; /* Scans raw samples. */
     int32_t k;
-    int32_t nspr = str->chns * str->cols;
+    uint32_t nspr = str->chns * str->cols;
     for (k = 0; k < nspr; k++, dP++, sP++)
       { (*sP) = pnm_quantize((*dP), str->maxval, str->isMask, str->badval); (*dP) = 0.0; }
     pnm_write_pixels(wr, str->smp, str->cols, str->chns, str->maxval, str->raw, str->bits);
