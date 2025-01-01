@@ -1,12 +1,12 @@
 /* See {aa_trapez.h}. */
-/* Last edited on 2023-02-18 02:05:39 by stolfi */
+/* Last edited on 2024-12-31 00:46:29 by stolfi */
+
+#include <affirm.h>
+#include <aa.h>
+#include <ia_trapez.h>
+#include <ia.h>
 
 #include <aa_trapez.h>
-
-#include <ia.h>
-#include <ia_trapez.h>
-#include <aa.h>
-#include <affirm.h>
 
 ia_trapez_t aa_trapez_from_pair(Interval *xr, AAP xf, AAP yf)
   { ia_trapez_t tr;

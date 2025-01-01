@@ -1,17 +1,19 @@
 /* Axis-aligned rectangular boxes in R^d. */
-/* Last edited on 2007-11-01 20:18:48 by stolfi */
+/* Last edited on 2024-12-31 00:53:08 by stolfi */
 
 #ifndef ia_box_H
 #define ia_box_H
+
+#include <stdint.h>
 
 #include <ia.h>
 
 #define ia_box_MAX_DIM 16
 
 typedef Interval ia_box_Interval;
-typedef unsigned char ia_box_Dim;
-typedef unsigned char ia_box_Axis;
-typedef unsigned short ia_box_Corner;
+typedef uint8_t ia_box_Dim;
+typedef uint8_t ia_box_Axis;
+typedef uint16_t ia_box_Corner;
 typedef enum{ LO = -1, MD = 0, HI = +1 } ia_box_Dir;
 
 void ia_box_corner(ia_box_Dim d, ia_box_Interval *b, ia_box_Corner c, Float *x);

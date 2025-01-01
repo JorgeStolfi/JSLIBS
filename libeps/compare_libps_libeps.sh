@@ -1,14 +1,18 @@
 #! /bin/bash
 
-( cd orig && find ./ -name '*.h' -print ) | sed -e 's:^[.]/::g' > .fnames
-( cd orig && find ./ -name '*.c' -print ) | sed -e 's:^[.]/::g' >> .fnames
+epsdir="/home/stolfi/programs/c/JSLIBS/libeps"
+psdir="/home/stolfi/programs/c/JSLIBS-LATER/libps"
+
+( cd ${psdir} && find ./ -name '*.h' -print ) | sed -e 's:^[.]/::g' > .psnames
+( cd ${psdir} && find ./ -name '*.c' -print ) | sed -e 's:^[.]/::g' >> .psnames
 
 rm -f .diffs
 touch .diffs
-for psname in `cat .fnames`; do
-  psfile="orig/${psname}"
-  epsfile="${psname/pswr/epswr}"
-  echo "${psname} ${psfile} ${epsfile}" 1>&2
+for psname in `cat .psnames`; do
+  epsname="${psname/pswr/epswr}"
+  psfile="${psdir}/${psname}"
+  epsfile="${epsdir}/${epsname}"
+  echo "${psname} : ${psfile} ${epsfile}" 1>&2
   if [[ -s ${epsfile} ]]; then
     echo "=== ${psfile} ${epsfile} ===" >> .diffs
     echo "" >> .diffs

@@ -1,15 +1,16 @@
 /* See ia_butfly.h */
-/* Last edited on 2023-02-07 20:42:28 by stolfi */
+/* Last edited on 2024-12-31 01:01:57 by stolfi */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+#include <epswr.h>
+#include <ia_trapez.h>
+#include <ia.h>
+#include <flt.h>
 
 #include <ia_butfly.h>
-
-#include <flt.h>
-#include <ia.h>
-#include <ia_trapez.h>
-#include <epswr.h>
-
-#include <stdlib.h>
-#include <stdio.h>
 
 ia_butfly_t ia_butfly_from_trapez(ia_trapez_t *tp)
   { Interval xe = (Interval){ tp->x.lo, tp->x.lo };

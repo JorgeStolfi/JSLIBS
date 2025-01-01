@@ -1,9 +1,11 @@
 /* Tolls for "butterfly" enclosures of univariate functions. */
-/* Last edited on 2023-02-07 20:33:43 by stolfi */
+/* Last edited on 2024-12-31 00:54:08 by stolfi */
 /* Created by Jorge Stolfi 93-01-13             */
 
 #ifndef ia_butfly_H
 #define ia_butfly_H
+
+#include <stdint.h>
 
 #include <flt.h>
 #include <ia.h>

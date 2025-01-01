@@ -1,5 +1,5 @@
 /* iatimes.c - timing of IA operations */
-/* Last edited on 2024-12-21 11:24:05 by stolfi */
+/* Last edited on 2024-12-31 01:00:59 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -10,9 +10,9 @@
 
 #include <timefunc.h>
 
-/* int ieee_flags(char *a, char *b, char *c, char **out); */
+/* int32_t ieee_flags(char *a, char *b, char *c, char **out); */
 
-int main (void);
+int32_t main (void);
 
 int64_t do_empty(int64_t ntimes);
 int64_t do_ia_add(int64_t ntimes);
@@ -20,7 +20,7 @@ int64_t do_ia_mul(int64_t ntimes);
 
 #define NTIMES 10000000
 
-int main (void)
+int32_t main (void)
   {
     ia_init();
     

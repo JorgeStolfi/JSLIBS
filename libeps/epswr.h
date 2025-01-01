@@ -1,5 +1,5 @@
 /* Tools for generating Encapsulated Postscript graphics files. */
-/* Last edited on 2024-12-05 10:13:29 by stolfi */
+/* Last edited on 2024-12-31 15:19:31 by stolfi */
 
 #ifndef epswr_H
 #define epswr_H
@@ -282,10 +282,11 @@ void epswr_set_client_window
     
     Currently, the absolute scale factors of the two mappings must be
     positive and equal, apart from floating point rounding errors. To
-    ensure that constraint, the procedure may first reduces either the
-    width or the height of the plot window, if needed, while preserving
-    its center, so that the Device-to-Client scale factors {dh/dx} and
-    {dv/dy} are equal.
+    ensure that constraint, the procedure may first reduce either the
+    horizontal range {[hMin _ hMax]} or the vertical range {[vMin
+    _vMax]} of the pot window, if needed, while preserving its center,
+    so that the Device-to-Client scale factors {dh/dx} and {dv/dy} are
+    equal.
     
     The Device coordinates and dimensions of the text area (see
     {epswr_set_text_geometry} are not changed.  Note that its

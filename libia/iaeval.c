@@ -1,16 +1,19 @@
 /* See "iaeval.h" */
+/* Last edited on 2024-12-31 00:58:51 by stolfi */
 
-#include <iaeval.h>
-#include <ia.h>
-#include <pcode.h>
-#include <flt.h>
+#include <stdint.h>
+
 #include <affirm.h>
+#include <flt.h>
+#include <pcode.h>
+#include <ia.h>
+#include <iaeval.h>
 
 void ia_eval (Interval reg[], Interval stack[], pcode_instr_t fcode[])
   {
-    int top = -1; 
+    int32_t top = -1; 
     Interval *x, *y, *z;
-    int iop = 0;
+    int32_t iop = 0;
     pcode_op_t op;
 
     while ((op = fcode[iop].op)  != pcode_op_return)
@@ -82,9 +85,9 @@ void ia_eval (Interval reg[], Interval stack[], pcode_instr_t fcode[])
 
 void ia_eval_diff (IntervalDiff reg[], IntervalDiff stack[], pcode_instr_t fcode[])
   {
-    int top = -1; 
+    int32_t top = -1; 
     IntervalDiff *x, *y, *z;
-    int iop = 0;
+    int32_t iop = 0;
     pcode_op_t op;
 
     while ((op = fcode[iop].op)  != pcode_op_return)

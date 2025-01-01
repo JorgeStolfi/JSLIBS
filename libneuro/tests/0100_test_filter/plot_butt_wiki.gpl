@@ -1,8 +1,8 @@
 # From http://en.wikipedia.org/wiki/File:Butterworth_filter_bode_plot.svg
-# Last edited on 2013-06-14 03:27:28 by stolfilocal
+# Last edited on 2024-12-30 16:59:09 by stolfi
 
 set terminal svg enhanced size 1250 875 fname "Times" fsize 25
-set output "Butterworth_filter_bode_plot.svg"
+set output "out/Butterworth_filter_bode_plot.svg"
 
 # Butterworth amplitude response and decibel calculation.  n is the order, which is just 1 in this image.
 G(w,n) = 1 / (sqrt(1 + w**(2*n)))

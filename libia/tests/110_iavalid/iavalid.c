@@ -1,9 +1,10 @@
 /* Validation of IA ops */
-/* Last edited on 2024-12-21 11:23:58 by stolfi */
+/* Last edited on 2024-12-31 01:00:38 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include <flt.h>
 #include <ia.h>
@@ -35,13 +36,13 @@ typedef enum {
   } iavalid_op_t;
 
 typedef struct IAData {  /* Data for one IA operands/result tuple */
-    iavalid_op_t  op;  /* Operation code. */
+    iavalid_op_t op; /* Operation code. */
     char *op_name;   /* Operation's name. */
     /* Arguments for {ia_const}: */
     Float fltx;      /* Value argument for {ia_const}. */
     Float flte;      /* Error argument for {ia_const}. */
     /* Arguments for {ia_int_const}: */
-    int intx;        /* Argument for {ia_int_const}. */
+    int32_t intx;    /* Argument for {ia_int_const}. */
     /* Arguments for {ia_scale,ia_shift,ia_affine,ia_affine_2}: */
     Float alpha;     /* Multiplier for {x}. */
     Float beta;      /* Multiplier for {y}. */
@@ -53,9 +54,9 @@ typedef struct IAData {  /* Data for one IA operands/result tuple */
     Float x1;        /* Abscissa of second interval {y1} (here {y}). */
     Float xev;       /* Interpolation abscissa {x}. */
     /* Main arguments and results: */
-    Interval x;           /* First argument of {op}. */
-    Interval y;           /* Second argument of {op} (if binary). */
-    Interval z;           /* Result of {ia_op(x, y)}. */
+    Interval x;      /* First argument of {op}. */
+    Interval y;      /* Second argument of {op} (if binary). */
+    Interval z;      /* Result of {ia_op(x, y)}. */
     /* Validation intervals: */
     Interval x_fix;  /* Sample value in {x}. */
     Interval y_fix;  /* Sample value in {y}. */
@@ -64,13 +65,13 @@ typedef struct IAData {  /* Data for one IA operands/result tuple */
 
 /*** INTERNAL PROTOTYPES ***/
 
-int main(int argc, char *argv[]);
+int32_t main(int32_t argc, char *argv[]);
 
 void iavalid_test_op (
     iavalid_op_t op, /* The operation to test */
     char *op_name,   /* The operation's name */
-    int nforms,      /* Number of affine evaluations */
-    int npoints      /* Number of sample points */
+    int32_t nforms,  /* Number of affine evaluations */
+    int32_t npoints  /* Number of sample points */
   );
   /* Tests an IA operation {nforms} times.  For each test, generates
      a set {x, y, ...} of IA operands, evaluates {op} on them, and then
@@ -108,12 +109,12 @@ Float iavalid_throw_float(void);
   /* Generates a random float that is 1, 0, -1, or anything, with
     probability 0.25 each. */
 
-int iavalid_is_zero(Interval x);
+int32_t iavalid_is_zero(Interval x);
   /* TRUE if the IA {x} is exactly zero. */
 
 /*** MAIN PROGRAM ***/
 
-int main(int argc, char *argv[])
+int32_t main(int32_t argc, char *argv[])
   {
     flt_init();
     ia_init();
@@ -145,13 +146,13 @@ int main(int argc, char *argv[])
 void iavalid_test_op (
     iavalid_op_t op,   /* The operation to test */
     char *op_name,   /* The operation's name */
-    int nforms,      /* Number of affine evalutaions */
-    int npoints      /* Number of sample points */
+    int32_t nforms,      /* Number of affine evalutaions */
+    int32_t npoints      /* Number of sample points */
   )
   {
     IAData d;
-    int iform, ipoint;
-    int bad, debug;
+    int32_t iform, ipoint;
+    int32_t bad, debug;
 
     fprintf(stderr, "\n");
     fprintf(stderr, "--------------------------------------------------------\n");
@@ -510,7 +511,7 @@ void iavalid_print_data(IAData *d)
     fprintf(stderr, "z_cmp = "); ia_print(stderr, d->z_cmp); fprintf(stderr, "\n");
   }
 
-int iavalid_is_zero(Interval x)
+int32_t iavalid_is_zero(Interval x)
   {
     return (x.lo == Zero) && (x.hi == Zero); 
   }

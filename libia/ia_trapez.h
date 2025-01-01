@@ -1,9 +1,11 @@
 /* Tolls for trapezoidal enclosures of univariate functions. */
-/* Last edited on 2023-02-07 20:31:32 by stolfi */
+/* Last edited on 2024-12-31 00:55:13 by stolfi */
 /* Created by Jorge Stolfi 93-01-13             */
 
 #ifndef ia_trapez_H
 #define ia_trapez_H
+
+#include <stdint.h>
 
 #include <flt.h>
 #include <ia.h>
@@ -19,7 +21,7 @@ ia_trapez_t ia_trapez_from_box(Interval *xr, Interval *yr);
   /* Repackages an IA graph enclosure (the rectangle {xr × yr})
     into a {ia_trapez_t}. */
 
-ia_trapez_t ia_trapez_from_ia_diff(Interval *xr, Interval *yr, Interval *dyr, int which);
+ia_trapez_t ia_trapez_from_ia_diff(Interval *xr, Interval *yr, Interval *dyr, int32_t which);
   /* Converts a value-slope graph enclosure into a {ia_trapez_t}. 
     
     The trapezoid has X projection equal to {xr} and two vertical sides.

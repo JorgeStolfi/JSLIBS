@@ -1,4 +1,4 @@
-/* Last edited on 2016-12-26 22:12:02 by stolfilocal */
+/* Last edited on 2024-12-31 01:11:26 by stolfi */
 /* Random simple tests of the AA library */
 
 #include <stdio.h>
@@ -11,7 +11,7 @@
 
 /*** INTERNAL PROTOTYPES ***/
 
-int main(int argc, char *argv[]);
+int32_t main(int32_t argc, char *argv[]);
 
 void aa_test_inv(void);
 void aa_test_div(void);
@@ -21,7 +21,7 @@ void aa_test_print(char *name, AAP x);
 
 /*** MAIN PROGRAM ***/
 
-int main(int argc, char *argv[])
+int32_t main(int32_t argc, char *argv[])
   {
     flt_init();
     ia_init();
@@ -91,7 +91,7 @@ void aa_test_return_n(void)
     t[4] = aa_affine(ya, Four, One, Zero, Zero);
     t[5] = aa_mul(t[1],t[4]);
     /* Return some intersting forms, in the wrong order: */
-    int n = 2;
+    int32_t n = 2;
     AAP r[n];
     r[0] = t[4];
     r[1] = t[2];

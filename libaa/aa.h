@@ -1,10 +1,11 @@
 /* Basic Affine Arithmetic definitions and operations */
-/* Last edited on 2024-12-21 11:22:19 by stolfi */
+/* Last edited on 2024-12-31 00:42:30 by stolfi */
 
 #ifndef aa_H
 #define aa_H
 
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 
 #include <flt.h>
@@ -13,7 +14,7 @@
 
 /* AFFINE FORMS */
 
-typedef unsigned long VarId; 
+typedef uint32_t VarId; 
   /* The ID number of a /noise symbol/, a symbolic variable that
     respresents some error source. The value of a noise symbol is
     usually unknown but, by definition, lies between -1 and +1. */
@@ -31,7 +32,7 @@ typedef struct AAHead *AAP;
     and the two results (IA and AA) are used synergistically
     in subsequent operations. */
 
-typedef unsigned long AATermCount;
+typedef uint32_t AATermCount;
   /* A count of terms in some affine form. */ 
 
 typedef struct AAHead  /* Head of an affine form. */
@@ -68,7 +69,7 @@ AAP aa_full(void);
     that represents the interval {(-oo _ +oo)} of all (finite) real
     numbers. */
 
-int aa_is_full (AAP x); 
+int32_t aa_is_full (AAP x); 
   /* A predicate that returns 1 (true) iff {x} represents the 
     interval {(-oo _ +oo)}. */
 
@@ -78,7 +79,7 @@ AAP aa_zero(void);
 AAP aa_one(void);
   /* Retuns an affine form for the constant 1. */
 
-int aa_is_zero (AAP x); 
+int32_t aa_is_zero (AAP x); 
   /* True iff the affine form {x} represents the exact value 0. */
 
 /* CONVERSION FROM NUMBERS AND ORDINARY INTERVALS TO AFFINE FORMS
@@ -93,7 +94,7 @@ AAP aa_const(Float c, Float err);
     a noise term with coefficient {err}, depending 
     on a brand new noise symbol. */
 
-AAP aa_int_const (int i);
+AAP aa_int_const (int32_t i);
   /* Makes an affine form for the integer {i}. If the integer
     is too big, the form may not be exact. */
 
@@ -261,7 +262,7 @@ Interval aa_implicit_range (AAP x);
     function; if {MIXED} is 1, {aa_range(x)} returns the intersection
     of {aa_implicit_range(x)} and {x->range}. */
 
-AAP aa_throw (int nterms);
+AAP aa_throw (int32_t nterms);
   /* Returns a random affine form with up to {nterms} terms, suitable for testing. 
     The {VarId}s of the terms will be 0 through {nterms-1}, but
     some of the terms may be zero (i.e. missing).
@@ -360,7 +361,7 @@ AAP aa_return (MemP frame, AAP result);
     back the saved result onto the AA stack.
     In either case, returns the result's final address. */
 
-void aa_return_n (MemP frame, int n, AAP result[]);
+void aa_return_n (MemP frame, int32_t n, AAP result[]);
   /* For each {i} in {0..n-1}, checks whether the AA form that starts
     at {result[i]} lies in the AA stack above the {frame} address.
     Then copies all the AA forms that satisfy that condition to

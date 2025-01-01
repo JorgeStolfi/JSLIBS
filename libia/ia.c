@@ -1,12 +1,14 @@
 /* See ia.h */
-/* Last edited on 2024-12-21 11:23:23 by stolfi */
+/* Last edited on 2024-12-31 00:49:21 by stolfi */
+
+#include <stdint.h>
+#include <math.h>
 
 #include <affirm.h>
-#include <math.h>
-#include <stdlib.h>
 #include <flt.h>
-#include <ia.h>
 #include <jsrandom.h>
+
+#include <ia.h>
 
 #define ia_FULL  (ia_Full)
 #define ia_ISFULL(x)  (((x).lo <= MinusInfinity) || ((x).hi >= PlusInfinity))
@@ -22,7 +24,7 @@ void ia_init(void)
 Interval ia_full(void)
   { return (ia_FULL); }
 
-int ia_is_full(Interval *x)
+int32_t ia_is_full(Interval *x)
   { return (ia_ISFULL(*x)); }
 
 void ia_norm_full (Interval *x)
@@ -38,7 +40,7 @@ Interval ia_const(Float x, Float err)
     return z;
   }
     
-Interval ia_int_const(int i)
+Interval ia_int_const(int32_t i)
   { Interval z;
     ROUND_DOWN;
     z.lo = flt_from_int(i);
@@ -488,7 +490,7 @@ Interval ia_min   (Interval x, Interval y)
   { return ((Interval){FMIN(x.lo, y.lo), FMIN(x.hi, y.hi)}); }
 
 Interval ia_throw (void)
-  { int coins;
+  { int32_t coins;
     coins = rand();
     if ((coins&255) == 0)
       return (ia_full());
@@ -512,11 +514,10 @@ Interval ia_throw (void)
       }
   }
     
-void ia_print_bound(FILE *f, Float v, int which, int full)
-  { int i;
-    if (full)
+void ia_print_bound(FILE *f, Float v, int32_t which, int32_t full)
+  { if (full)
       { putc(' ', f);
-        for (i = 1; i < flt_FMT_WIDTH; i++) putc('*', f);
+        for (int32_t i = 1; i < flt_FMT_WIDTH; i++) putc('*', f);
       }
     else
       { if (which == 0) { ROUND_DOWN; } else { ROUND_UP; }
@@ -525,7 +526,7 @@ void ia_print_bound(FILE *f, Float v, int which, int full)
   }
 
 void ia_print (FILE *f, Interval x)
-  { int full = ia_ISFULL(x);
+  { int32_t full = ia_ISFULL(x);
     putc('[', f);
     ia_print_bound(f, x.lo, 0, full);
     fputs(" __ ", f);

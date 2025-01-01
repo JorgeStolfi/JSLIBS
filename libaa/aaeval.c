@@ -1,17 +1,20 @@
 /* See "aaeval.h" */
-/* Last edited on 2002-12-29 16:04:05 by stolfi */
+/* Last edited on 2024-12-31 00:47:01 by stolfi */
+
+#include <stdint.h>
+
+#include <affirm.h>
+#include <ia.h>
+#include <flt.h>
+#include <pcode.h>
+#include <aa.h>
 
 #include <aaeval.h>
-#include <aa.h>
-#include <pcode.h>
-#include <flt.h>
-#include <ia.h>
-#include <affirm.h>
 
 void aa_eval (AAP reg[], AAP stack[], pcode_instr_t fcode[])
-  { int top = -1; 
+  { int32_t top = -1; 
     AAP *x, *y, *z;
-    int iop = 0;
+    int32_t iop = 0;
     pcode_op_t op;
 
     while ((op = fcode[iop].op)  != pcode_op_return)
@@ -83,9 +86,9 @@ void aa_eval (AAP reg[], AAP stack[], pcode_instr_t fcode[])
 
 void aa_eval_diff (DiffAAP reg[], DiffAAP stack[], pcode_instr_t fcode[])
   {
-    int top = -1; 
+    int32_t top = -1; 
     DiffAAP *x, *y, *z;
-    int iop = 0;
+    int32_t iop = 0;
     pcode_op_t op;
 
     while ((op = fcode[iop].op)  != pcode_op_return)

@@ -1,10 +1,13 @@
 /* See aarange.h */
-/* Last edited on 2003-07-29 01:12:21 by stolfi */
+/* Last edited on 2024-12-31 01:14:55 by stolfi */
+
+#include <stdlib.h>
+#include <stdint.h>
+
+#include <flt.h>
+#include <aa.h>
 
 #include <aarange.h>
-#include <aa.h>
-#include <flt.h>
-#include <stdlib.h>
 
 /* INTERNAL PROTOS */
 
@@ -95,11 +98,9 @@ void aa_2d_range_sort_pairs
   )
   {
     /* Should use a faster sort... */
-    int i;
     /* fprintf(stderr, "sorting pairs\n"); */
-    for (i = 1; i < nv; i++)
-      { 
-        int j = i, k = j-1;
+    for (int32_t i = 1; i < nv; i++)
+      { int32_t j = i, k = j-1;
         double xi = xv[i], yi = yv[i];
         while ((k >= 0) && ANG_GREATER(xi, yi, xv[k], yv[k]))
           { xv[j] = xv[k]; yv[j] = yv[k]; j = k; k--; }
@@ -116,22 +117,21 @@ void aa_2d_range_compute_vertices
   )
   {
     double xs = 0.0, ys = 0.0;
-    int i;
     
     /* fprintf(stderr, "computing vertices (nv = %ld)\n", nv); */
     /* Compute the sum of all vertices: */
-    for (i = 0; i < nv; i++)
+    for (int32_t i = 0; i < nv; i++)
       { xs += xv[i]; ys += yv[i]; }
     /* Fill the second half with the partial sums: */
-    for (i = 0; i < nv; i++) 
-      { xv[nv+i] = xs; xs -= 2*xv[i];
-        yv[nv+i] = ys; ys -= 2*yv[i]; 
+    for (int32_t i = 0; i < nv; i++) 
+      { xv[(int32_t)nv+i] = xs; xs -= 2*xv[i];
+        yv[(int32_t)nv+i] = ys; ys -= 2*yv[i]; 
       }
     /* Fill the first half with the negated vertices: */
-    for (i = 0; i < nv; i++) 
-      { xv[i] = -xv[nv+i]; yv[i] = -yv[nv+i]; }
+    for (int32_t i = 0; i < nv; i++) 
+      { xv[i] = -xv[(int32_t)nv+i]; yv[i] = -yv[(int32_t)nv+i]; }
     /* Shift everything by the center: */
-    for (i = 0; i < 2*nv; i++) 
+    for (int32_t i = 0; i < 2*nv; i++) 
       { xv[i] += (double)x0; yv[i] += (double)y0; }
   }
 

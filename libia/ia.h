@@ -1,11 +1,12 @@
 /* Routines for standard interval arithmetic    */
-/* Last edited on 2024-12-21 11:23:36 by stolfi */
+/* Last edited on 2024-12-31 00:48:01 by stolfi */
 /* Created by Jorge Stolfi 93-01-13             */
 
 #ifndef ia_H
 #define ia_H
 
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 
 #include <flt.h>
@@ -19,7 +20,7 @@ void ia_init (void);
 
 Interval ia_full (void); /* The "anything" interval, [-Inf .. +Inf] */
 
-int ia_is_full (Interval *x); 
+int32_t ia_is_full (Interval *x); 
   /* True iff {*x.lo} is -Inf or {*x.hi} is +Inf */
   
 void ia_norm_full (Interval *x);
@@ -27,7 +28,7 @@ void ia_norm_full (Interval *x);
 
 Interval ia_const (Float x, Float err); /* {x} plus or minus {err} */
 
-Interval ia_int_const (int i);  /* {i}, with rounding error if too big. */
+Interval ia_int_const (int32_t i);  /* {i}, with rounding error if too big. */
 
 Interval ia_add   (Interval x, Interval y);
 Interval ia_sub   (Interval x, Interval y);
@@ -87,7 +88,7 @@ Interval ia_throw (void);
 void ia_print (FILE *wr, Interval x);
   /* Prints {x} to file {wr}, in the format "[ {x.lo} __ {x.hi} ]". */
     
-void ia_print_bound(FILE *wr, Float v, int which, int full);
+void ia_print_bound(FILE *wr, Float v, int32_t which, int32_t full);
   /* If {full} is 0, prints the value {v} to file {wr}; 
     rounded down if {which} is 0, rounded up if {which} is 1.
     If {full} is 1, prints a bunch of '*'s instead. */

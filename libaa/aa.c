@@ -1,16 +1,18 @@
 /* See aa.h */
-/* Last edited on 2024-12-21 11:21:59 by stolfi */
+/* Last edited on 2024-12-31 01:06:47 by stolfi */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <memory.h>
 #include <math.h>
 
-#include <aa.h>
 #include <affirm.h>
 #include <flt.h>
 #include <ia.h>
 #include <jsrandom.h>
+
+#include <aa.h>
 
 #define QUICKMUL 1
 
@@ -211,17 +213,16 @@ AAP aa_return (MemP frame, AAP result)
     return(result);
   }
 
-void aa_return_n (MemP frame, int n, AAP result[])
+void aa_return_n (MemP frame, int32_t n, AAP result[])
   { affirm(aa_VALID_FRAME(frame), "aa_return: bad frame pointer");
-    int ir[n];
+    int32_t ir[n];
     /* Set {ir} so that {result[ir[0..m-1]]} are relevant addresses, increasing: */
-    int m = 0;
-    int i; 
-    for (i = 0; i < n; i++)
+    int32_t m = 0;
+    for (int32_t i = 0; i < n; i++)
       { AAP ri = result[i];
         if (aa_IN_FRAME((MemP) ri, frame))
           { /* Insert {i} into {ir[0..m-1]}, increment {m}: */
-            int j = m;
+            int32_t j = m;
             while((j > 0) && (result[ir[j-1]]>ri))
               { ir[j] = ir[j-1]; j--; } 
             ir[j] = i;
@@ -229,8 +230,7 @@ void aa_return_n (MemP frame, int n, AAP result[])
           }
       }
     /* Copy the result forms to the stack top: */
-    int j;
-    for (j = 0; j < m; j++)
+    for (int32_t j = 0; j < m; j++)
       { aa_copy_result(&frame, &(result[ir[j]])); }
     aa_stack_top = frame;
   }
@@ -294,11 +294,11 @@ void aa_init (void)
       fatalerror("aa_init: heap not allocated");
     aa_stack_lim = (MemP) (((char *) aa_stack_bot) + aa_STACK_SIZE);
     /* fprintf(stderr, "aa_stack_lim = %p\n", aa_stack_lim); */
-    /* long dif = ((char *) aa_stack_lim) - ((char *) aa_stack_bot); */
+    /* int32_t dif = ((char *) aa_stack_lim) - ((char *) aa_stack_bot); */
     /* fprintf(stderr, "stack size = %ld bytes\n", dif); */
     aa_stack_top = aa_stack_bot;
     /* fprintf(stderr, "aa_stack_top = %p (%ld)\n", */
-    /*   aa_stack_top, (unsigned long) aa_stack_top */
+    /*   aa_stack_top, (uint32_t) aa_stack_top */
     /* );                                           */
 
     aa_next_id = 0;
@@ -334,7 +334,7 @@ void aa_heap_free (AAP x)
 AAP aa_zero(void)
   { return (aa_ZERO); }
 
-int aa_is_zero (AAP x)
+int32_t aa_is_zero (AAP x)
   { return (aa_ISZERO(x)); }
 
 AAP aa_one(void)
@@ -343,7 +343,7 @@ AAP aa_one(void)
 AAP aa_full(void)
   { return (aa_FULL); }
 
-int aa_is_full (AAP x)
+int32_t aa_is_full (AAP x)
   { return (aa_ISFULL(x)); }
 
 /*** MISCELLANEOUS ***/
@@ -353,15 +353,14 @@ void aa_print (FILE *f, AAP x)
 # define TERMS_PER_LINE 4
     ia_print (f, aa_range(x));
     if (aa_ISFULL(x))
-      { int i;
-        putc(' ', f);
-        for (i=1; i<flt_FMT_WIDTH; i++) putc('*', f);
+      { putc(' ', f);
+        for (int32_t i = 1; i < flt_FMT_WIDTH; i++) putc('*', f);
         return;
       }
     else
       { AATermP xp = (AATermP) (x + 1);
         AATermCount xn = x->nterms;
-        int linct; /* Number of numbers in current line */
+        int32_t linct; /* Number of numbers in current line */
 
         putc(' ', f);
         flt_print (f, x->center);
@@ -377,7 +376,7 @@ void aa_print (FILE *f, AAP x)
             if (linct >= TERMS_PER_LINE) { fprintf(f, "\n            "); linct = 0; }
             linct++;
             flt_print(f, FABS(xp->coef)) ;
-            fprintf(f, "(%lu)", xp->id);
+            fprintf(f, "(%u)", xp->id);
             xp++; xn--;
           }
       }
@@ -442,7 +441,7 @@ Float aa_max_abs_term (AATermP xp, AATermCount n)
   }
   
 Float aa_throw_coef(void)
-  { int coins;
+  { int32_t coins;
     Float t;
 
     ROUND_NEAR;
@@ -462,8 +461,8 @@ Float aa_throw_coef(void)
     return (t);
   }
 
-AAP aa_throw(int nterms)
-  { int coins;
+AAP aa_throw(int32_t nterms)
+  { int32_t coins;
     
     coins = rand();
     if ((coins&255) == 0)
@@ -477,7 +476,6 @@ AAP aa_throw(int nterms)
         AATermCount zn = 0;
         Float t;
         Float cmag, dmag;
-        int i;
 
         z = aa_alloc_head();
 
@@ -509,7 +507,7 @@ AAP aa_throw(int nterms)
         if (FABS(z->center) >= Infinity)
           { aa_flush(frame); return(aa_FULL); }
     
-        for (i=0; i<nterms; i++)
+        for (int32_t i = 0; i < nterms; i++)
           { t = dmag * aa_throw_coef();
             if (FABS(t) >= Infinity)
               { aa_flush(frame); return(aa_FULL); }
@@ -517,7 +515,7 @@ AAP aa_throw(int nterms)
               {
                 zp = aa_alloc_term();
                 zp->coef = t;
-                zp->id = i;
+                zp->id = (uint32_t)i;
                 zn++;
               }
           }
@@ -526,7 +524,7 @@ AAP aa_throw(int nterms)
         z->nterms = zn;
         
         /* Make sure the noise symbols used do exist: */
-        if (nterms > aa_next_id) aa_next_id = nterms;
+        if (nterms > aa_next_id) aa_next_id = (uint32_t)nterms;
 
 #if (MIXED)
         /* Compute z->range: */
@@ -1197,7 +1195,7 @@ void aa_inv_approx
   /* Computes chebyshev approx to {1/x} in {xr}. */
   {
     Float maxabsalpha, axa, axb, da, db, dlo, dhi;
-    int negative;
+    int32_t negative;
 
 #if (aa_TRACE_INV)
       fprintf(stderr, "  enter aa_inv_approx:\n");
@@ -1874,7 +1872,7 @@ AAP aa_const(Float c, Float err)
       }
   }
 
-AAP aa_int_const(int i)
+AAP aa_int_const(int32_t i)
   {
     AAP z = aa_alloc_head();
     Float ilo, ihi;

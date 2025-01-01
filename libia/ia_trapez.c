@@ -1,17 +1,18 @@
 /* See {ia_trapez.h} */
-/* Last edited on 2023-02-07 20:42:38 by stolfi */
+/* Last edited on 2024-12-31 00:55:33 by stolfi */
+
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#include <epswr.h>
+#include <ia.h>
+#include <flt.h>
+#include <assert.h>
+#include <affirm.h>
 
 #include <ia_trapez.h>
-
-#include <affirm.h>
-#include <assert.h>
-#include <flt.h>
-#include <ia.h>
-#include <epswr.h>
-
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 ia_trapez_t ia_trapez_from_box(Interval *xr, Interval *yr)
   { return (ia_trapez_t) { *xr, *yr, *yr }; }
