@@ -1,5 +1,5 @@
 /* See {test_voxb_erolate.h} */
-/* Last edited on 2021-06-22 13:45:30 by jstolfi */
+/* Last edited on 2025-01-04 23:56:51 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -75,7 +75,7 @@ void test_voxb_erolate_obj(ppv_array_t *A, int32_t isec, double smr)
     r3x3_t R; /* Initial rotation matrix.*/
     r3_t u = (r3_t){{ 1.0, 0.0, 0.0 }};
     r3_t v = (r3_t){{ cos(cubeA), 0.0, sin(cubeA) }};
-    r3x3_u_v_rotation(&u, &v, &R); 
+    r3x3_u_to_v_rotation(&u, &v, &R); 
     
     r3_motion_state_t state;
     state.p = ctr;

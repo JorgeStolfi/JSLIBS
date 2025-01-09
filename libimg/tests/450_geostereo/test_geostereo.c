@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_geostereo.h} and {float_image_geostereo_uniscale.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-20 18:24:27 by stolfi */ 
+/* Last edited on 2025-01-01 16:06:57 by stolfi */ 
 /* Created on 2009-06-02 by J. Stolfi, UNICAMP */
 
 #define test_geostereo_COPYRIGHT \
@@ -131,7 +131,7 @@ void write_image(float_image_t *img, char *name, double vmin, double vmax)
         char *fname = makefname(name, NC, (NC == 3 ? "ppm" : "pgm"));
         for (int32_t c = 0;  c < NC; c++)
           { float_image_rescale_samples(img, c, (float)vmin, (float)vmax, 0.0, 1.0); }
-        float_image_write_pnm_named(fname, img, isMask, 1.0000, 0.0327, yup, warn, verbose);
+        float_image_write_pnm_named(fname, img, isMask, 1.0000, 0.000, yup, warn, verbose);
         free(fname);
       }
   }

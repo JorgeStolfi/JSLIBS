@@ -2,7 +2,7 @@
 #define pst_height_map_H
 
 /* pst_height_map.h -- procedures for working with height maps. */
-/* Last edited on 2024-12-23 05:57:31 by stolfi */
+/* Last edited on 2025-01-08 01:16:14 by stolfi */
 
 #include <float_image.h>
 
@@ -46,8 +46,17 @@ float_image_t *pst_height_map_shrink(float_image_t *IZ, uint32_t avgWidth);
     Pixels of {IZ} that fall outside the domain are ignored in
     the averaging. */
 
-/* 
-  COMPARISON */
+/* COMPARISON */
+
+float_image_t *pst_height_map_shrink_by_one(float_image_t *Z, float_image_t *W);
+  /* Shrinks the height map {Z} by one col and one row.
+    In the result, each pixel with indices {x,y} is the average 
+    of the four pixels {x+dx,y+dy} where {dx,dy} are 0 or 1.
+
+    If {W} is not null, it must be a one channel image with same 
+    col and row counts as {Z}. Each pixel of {W} is interpreted as 
+    the weight of the corresponding pixel of {Z}, for the purpose
+    of averaging. */
 
 float_image_t *pst_height_map_compare
   ( float_image_t *AZ,
@@ -71,14 +80,6 @@ float_image_t *pst_height_map_compare
       
 /* REPORTGING */
 
-typedef void pst_height_map_report_proc_t(uint32_t level, uint32_t iter, double change, bool_t final, float_image_t *OZ); 
-  /* Type of a client-given procedure that may be called
-    by recursive integrators to report the height map used in each scale.
-    The argument {iter} should be the number of iterations already done
-    (0 = initial guess) and {change} should be the max height change from the 
-    previous iteration (irrelevant for the initial guess).  The {final} arg should
-    be true if the iteration has stopped. */   
-   
 void pst_height_map_level_analyze_and_write
   ( char *filePrefix,
     uint32_t level,

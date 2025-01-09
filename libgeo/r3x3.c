@@ -1,5 +1,5 @@
 /* See r3x3.h. */
-/* Last edited on 2024-11-20 12:58:26 by stolfi */
+/* Last edited on 2025-01-05 00:37:13 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -400,26 +400,39 @@ void r3x3_from_cols(r3_t *a, r3_t *b, r3_t *c, r3x3_t *M)
       }
   }
 
-void r3x3_u_v_rotation(r3_t *u, r3_t *v, r3x3_t *M)
-  { r3_t e;
-    double cost, sint;
-    cost = r3_dot(u, v);
-    r3_cross(u,v, &e);
-    sint = r3_norm(&e);
-    r3_dir(&e, &e);
+void r3x3_u_to_v_rotation(r3_t *u, r3_t *v, r3x3_t *M)
+  { if ((u == NULL) || (v == NULL)) 
+      { r3x3_ident(M); return; }
+    r3_t uu; double mu = r3_dir(u,&uu);
+    r3_t vv; double mv = r3_dir(v,&vv);
+    if ((fabs(mu) < 1.0e-320) || (fabs(mv) < 1.0e-320))
+      { r3x3_ident(M); return; }
+
+    double cost = r3_dot(u, v);
+    r3_t e; r3_cross(&uu, &vv, &e);
+    double sint = r3_dir(&e, &e);
     /* We should have {cost*cost + sint*sint == 1.0} or nearly so. */
-    if ((fabs(cost + 1.0) < 1.0e-14) || (fabs(sint) < 1.0e-14))
-      { /* Vectors are practically collinear but opposite. */
-        /* Pick any {e} orthogonal to {u}. */
-        { unsigned k = 0; /* will be index of smallest {u} coordinate. */
-          if (fabs(u->c[1]) < fabs(u->c[k])) { k = 1; }
-          if (fabs(u->c[2]) < fabs(u->c[k])) { k = 2; }
-          e = (r3_t){{0.0, 0.0, 0.0}};
-          e.c[k] = 1.0;;
-        }
-        r3_t ue; r3_cross(u,&e,&ue); r3_dir(&ue, &e);
-        cost = -1; sint = 0.0;
+    if (fabs(sint) < 1.0e-14)
+      { /* Vectors are practically collinear or opposite: */
+        assert(fabs(fabs(cost) - 1.0) < 1.0e-14);
+        if (cost > 0)
+          { /* Vectors are practically collinear: */
+            r3x3_ident(M); return;
+          }
+        else
+          { /* Vectors are practically collinear but opposite. */
+            /* Set {e} to any vector orthogonal to {u}. */
+            e = (r3_t){{0.0, 0.0, 0.0}};
+            { unsigned k = 0; /* will be index of smallest {u} coordinate. */
+              if (fabs(uu.c[1]) < fabs(uu.c[k])) { k = 1; }
+              if (fabs(uu.c[2]) < fabs(uu.c[k])) { k = 2; }
+              e.c[k] = 1.0;;
+            }
+            r3_t ue; r3_cross(&uu,& e, &ue); r3_dir(&ue, &e);
+            cost = -1; sint = 0.0;
+          }
       }
+    /* Set {M} to a rotation matrix around {e}: */
     double x = e.c[0], y = e.c[1], z = e.c[2];
     double xx = x*x, yy = y*y, zz = z*z;
     double xy = x*y, yz = y*z, zx = z*x;
@@ -435,8 +448,63 @@ void r3x3_u_v_rotation(r3_t *u, r3_t *v, r3x3_t *M)
     M->c[2][2] = zz + cost*(xx + yy);
   }
 
+void r3x3_u_v_to_x_y_rotation(r3_t *u, r3_t *v, r3x3_t *M)
+  {
+    r3x3_ident(M);
+    /* Set {M} to the shortest rotation matrix that sends {u} to {(1,0,0)}. */
+    r3_t uu; /* Direction of {u}. */
+    if ((u == NULL) || (r3_dir(u, &uu) == 0.0))
+      { uu = (r3_t){{ 1, 0, 0 }};  }
+    else
+      { /* We need the the direction {p} of {u + x}: */
+        r3_t p = uu;
+        p.c[0] += 1.0;
+        if (r3_L_inf_norm(&p) < 1.0e-8)
+          { /* The vector {uu} is practically {(-1,0,0)}; rotate 180 deg around Z: */
+            M->c[0][0] = M->c[1][1] = -1;
+          }
+        else
+          { /* Scale {p} to unit norm: */
+            (void)r3_dir(&p, &p);
+            /* Set {M} to a mirror in direction {p}, followed by negation of {x}: */
+            for (uint32_t i = 0; i < 3; i++)
+              { for (uint32_t j = 0; j < 3; j++) { M->c[i][j] += - 2*p.c[i]*p.c[j]; }
+                M->c[i][0] = - M->c[i][0];
+              }
+          }
+      }
+
+    /* Now fixt the effect on {v}: */
+    r3_t vv;
+    if ((v == NULL) || (r3_dir(v, &vv) == 0.0))
+      { /* Nothing else to do. */ }
+    else
+      { /* We need a vector {w} perpendicular to {u,v}: */
+        r3_t w; r3_cross(&uu, &vv, &w);
+        if (r3_dir(&w, &w) < 1.0e-14)
+          { /* {u} and {v} are practically collinear, nothing to do. */ }
+        else
+          { /* Map {w} by {M}, result is {q}: */
+            r3_t q; r3x3_map_row(&w, M, &q);
+            /* Scale {q} to unit norm (paranoia): */
+            (void)r3_dir(&q, &q);
+            /* The vector {q} should be perpendicular to {x}: */
+            assert(fabs(q.c[0]) < 1.0e-7);
+            /* Make a rotation matrix around {x} that takes {q} to {(0,0,1)}: */
+            r3x3_t V; r3x3_ident(&V);
+            V.c[1][1] = V.c[2][2] = q.c[2];
+            V.c[1][2] = +q.c[1]; 
+            V.c[2][1] = -q.c[1]; 
+            /* Compose with {M} (first {M} then {V}): */
+            r3x3_mul(M, &V, M);
+          }
+      }
+  }
+
 void r3x3_print(FILE *f, r3x3_t *A)
-  { r3x3_gen_print(f, A, NULL, NULL, NULL, NULL, NULL, NULL, NULL); }
+  { 
+    r3x3_gen_print(f, A, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  }
 
 void r3x3_gen_print 
   ( FILE *f, r3x3_t *A,
@@ -444,5 +512,7 @@ void r3x3_gen_print
     char *olp, char *osep, char *orp,
     char *ilp, char *isep, char *irp
   )
-  { rmxn_gen_print(f, N, N, &(A->c[0][0]), fmt, olp, osep, orp, ilp, isep, irp); }
+  { 
+    rmxn_gen_print(f, N, N, &(A->c[0][0]), fmt, olp, osep, orp, ilp, isep, irp);
+  }
 

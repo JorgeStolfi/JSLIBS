@@ -1,5 +1,5 @@
 /* See {test_voxm_obj.h} */
-/* Last edited on 2021-06-22 13:47:34 by jstolfi */
+/* Last edited on 2025-01-04 23:56:29 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -95,7 +95,7 @@ void test_voxm_objs_rod(ppv_array_t *A, r3_t *ctr, double rad, double fuzzR)
     state.p = (*ctr);
     r3_t u = (r3_t){{ 0.0, 0.0, 1.0 }};
     r3_t v = (r3_t){{ sin(rodA), 0.0, cos(rodA) }};
-    r3x3_u_v_rotation(&u, &v, &(state.M)); 
+    r3x3_u_to_v_rotation(&u, &v, &(state.M)); 
     
     auto double fuzzy_rod(r3_t *p);
       /* Indicator function for a canonical rod with height {2*rodH},
@@ -124,7 +124,7 @@ void test_voxm_objs_tube(ppv_array_t *A, r3_t *ctr, double rad, double fuzzR)
     state.p = (*ctr); state.p.c[0] += tubeX; state.p.c[1] += tubeY;
     r3_t u = (r3_t){{ 0.0, 0.0, 1.0 }};
     r3_t v = (r3_t){{ sin(tubeA), 0.0, cos(tubeA) }};
-    r3x3_u_v_rotation(&u, &v, &(state.M)); 
+    r3x3_u_to_v_rotation(&u, &v, &(state.M)); 
     
     auto double fuzzy_tube(r3_t *p);
       /* Indicator function for a canonical tube with height {2*tubeH},
@@ -147,7 +147,7 @@ void test_voxm_objs_cube_hole(ppv_array_t *A, r3_t *ctr, double rad, double fuzz
     state.p = (*ctr); state.p.c[2] += cubeZ;
     r3_t u = (r3_t){{ 1.0, 0.0, 0.0 }};
     r3_t v = (r3_t){{ cos(cubeA), 0.0, sin(cubeA) }};
-    r3x3_u_v_rotation(&u, &v, &(state.M)); 
+    r3x3_u_to_v_rotation(&u, &v, &(state.M)); 
 
     double cubeH = 0.15*rad;   /* Half-side of cube. */
     double cubeF = 0.25*cubeH; /* Fillet radius. */
@@ -182,7 +182,7 @@ void test_voxm_objs_box(ppv_array_t *A, r3_t *ctr, double rad, double fuzzR)
     state.p = (*ctr); state.p.c[2] += boxZ;
     r3_t u = (r3_t){{ 1.0, 0.0, 0.0 }};
     r3_t v = (r3_t){{ cos(boxA), 0.0, sin(boxA) }};
-    r3x3_u_v_rotation(&u, &v, &(state.M)); 
+    r3x3_u_to_v_rotation(&u, &v, &(state.M)); 
 
     double boxRX = 0.18*rad;   /* Half {X}-side of box. */
     double boxRY = 0.12*rad;   /* Half {Y}-side of box. */
@@ -213,7 +213,7 @@ void test_voxm_objs_rounded_box(ppv_array_t *A, r3_t *ctr, double rad, double fu
     state.p = (*ctr); state.p.c[2] += boxZ;
     r3_t u = (r3_t){{ 1.0, 0.0, 0.0 }};
     r3_t v = (r3_t){{ cos(boxA), 0.0, sin(boxA) }};
-    r3x3_u_v_rotation(&u, &v, &(state.M)); 
+    r3x3_u_to_v_rotation(&u, &v, &(state.M)); 
 
     double boxRX = 0.24*rad;    /* Half {X}-side of box. */
     double boxRY = 0.18*rad;    /* Half {Y}-side of box. */

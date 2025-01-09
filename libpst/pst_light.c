@@ -1,5 +1,5 @@
 /* See pst_lamp.h */
-/* Last edited on 2024-12-28 23:14:06 by stolfi */
+/* Last edited on 2025-01-05 10:28:31 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -25,6 +25,10 @@ void pst_light_adjust_lamp_radii(pst_lamp_t *lmpv[], uint32_t NL);
   /* Adjust the angular radii of each lamp {lmpv[0..NL-1]}
     to be approximately half the average distance to its nearest
     neighbors among those lamps. */
+
+void pst_light_set_default_power(pst_lamp_t *lmpv[], uint32_t NL);
+  /* Sets the power of each lamp that has {NAN} power to {1/NL}. */
+
 
 /* IMPLEMENTATIONS */
 
@@ -128,9 +132,9 @@ void pst_light_add_pair(pst_light_t *lht, double crad)
 void pst_light_add_tetra(pst_light_t *lht, bool_t dual)
   { /* Even or odd vertices of a cube. */
     pst_lamp_vec_t *lmpv = &(lht->lmpv);
-    for (uint32_t i0 = 0; i0 < 2; i0++)
-      { for (uint32_t i1 = 0; i1 < 2; i1++)
-          { for (uint32_t i2 = 0; i2 < 2; i2++)
+    for (int32_t i0 = 0; i0 < 2; i0++)
+      { for (int32_t i1 = 0; i1 < 2; i1++)
+          { for (int32_t i2 = 0; i2 < 2; i2++)
               { int32_t parity = (i0 + i1 + i2) % 2;
                 if ((parity == 0) == dual)
                   { /* A corner of the cube: */
@@ -148,8 +152,8 @@ void pst_light_add_tetra(pst_light_t *lht, bool_t dual)
 void pst_light_add_octa(pst_light_t *lht)
   { /* Vertices on the coordinates axes. */
     pst_lamp_vec_t *lmpv = &(lht->lmpv);
-    for (uint32_t i = 0; i < 3; i++)
-      { for (uint32_t s = 0; s < 2; s++)
+    for (int32_t i = 0; i < 3; i++)
+      { for (int32_t s = 0; s < 2; s++)
           { /* A vertex of the octahedron: */
             r3_t dir = (r3_t){{ 0, 0, 0 }};
             dir.c[i] = 2*s-1;
@@ -165,9 +169,9 @@ void pst_light_add_icosa(pst_light_t *lht)
   { /* Stabbed by the axes across the midpoints of opposite edges. */
     pst_lamp_vec_t *lmpv = &(lht->lmpv);
     double phi = (sqrt(5)-1)/2;
-    for (uint32_t i = 0; i < 3; i++)
-      { for (uint32_t s = 0; s < 2; s++)
-          { for (uint32_t t = 0; t < 2; t++)
+    for (int32_t i = 0; i < 3; i++)
+      { for (int32_t s = 0; s < 2; s++)
+          { for (int32_t t = 0; t < 2; t++)
               { /* A vertex of the icosahedron: */
                 r3_t dir = (r3_t){{ 0, 0, 0 }};
                 dir.c[i] = 2*s-1;
@@ -183,12 +187,12 @@ void pst_light_add_icosa(pst_light_t *lht)
 
 void pst_light_add_dodeca(pst_light_t *lht)
   { /* Stabbed by the axes across the midpoints of opposite edges. */
-    /* Two vertices on each face of a cube: */
+    /* Icosahedron vertices, two on each face of a cube: */
     pst_lamp_vec_t *lmpv = &(lht->lmpv);
     double phi = (sqrt(5)-1)/2;
-    for (uint32_t i = 0; i < 3; i++)
-      { for (uint32_t s = 0; s < 2; s++)
-          { for (uint32_t t = 0; t < 2; t++)
+    for (int32_t i = 0; i < 3; i++)
+      { for (int32_t s = 0; s < 2; s++)
+          { for (int32_t t = 0; t < 2; t++)
               { /* A vertex of the dodecahedron: */
                 r3_t dir = (r3_t){{ 0, 0, 0 }};
                 dir.c[i] = 2*s-1;
@@ -200,10 +204,10 @@ void pst_light_add_dodeca(pst_light_t *lht)
               }
           }
       }
-    /* The corners of a cube: */
-    for (uint32_t i0 = 0; i0 < 2; i0++)
-      { for (uint32_t i1 = 0; i1 < 2; i1++)
-          { for (uint32_t i2 = 0; i2 < 2; i2++)
+    /* Cuber vertices: */
+    for (int32_t i0 = 0; i0 < 2; i0++)
+      { for (int32_t i1 = 0; i1 < 2; i1++)
+          { for (int32_t i2 = 0; i2 < 2; i2++)
               { /* A corner of the cube: */
                 r3_t dir = (r3_t){{ 2*i0-1, 2*i1-1, 2*i2-1 }};
                 (void)r3_dir(&dir, &dir);
@@ -287,8 +291,8 @@ void pst_light_add_uniform_array
         r3_t *sdir1 = (IS+1 < lht->NL ? &(lmpv->e[IS+1]->dir) : NULL);
         /* Compute the rotation matrices: */
         r3x3_t S, D;
-        pst_light_alignment_matrix(sdir0, sdir1, &S);
-        pst_light_alignment_matrix(dir0, dir1, &D);
+        r3x3_u_v_to_x_y_rotation(sdir0, sdir1, &S);
+        r3x3_u_v_to_x_y_rotation(dir0, dir1, &D);
         /* Apply it to all lamps: */
         for (uint32_t i = IS; i < lht->NL; i++)
           { pst_lamp_t *src = lmpv->e[i];
@@ -319,71 +323,20 @@ void pst_light_add_uniform_array
         pst_light_adjust_lamp_radii(&(lht->lmpv.e[IS]), NA);
       }
   }
-      
-void pst_light_alignment_matrix(r3_t *u, r3_t *v, r3x3_t *M)
-  {
-    r3x3_ident(M); /* By default. */
-    if ((u == NULL) || (r3_L_inf_norm(u) == 0.0))
-      { /* If {u} is indeterminate, there's nothing to do. */ }
-    else
-      { /* Set {M} to the shortest rotation matrix that sends {u} to {x}. */
-        /* Get the unit +X vector {x}: */
-        r3_t x = (r3_t) {{ 1, 0, 0 }};
-        /* Make sure {u} has unit length: */
-        r3_t uu; (void)r3_dir(u, &uu);
-        /* We need the the direction {p} of {u + x}: */
-        r3_t p; r3_add(&uu, &x, &p);
-        if (r3_L_inf_norm(&p) < 1.0e-8)
-          { /* The vectors are practically opposite, rotate 180 deg around Z: */
-            M->c[0][0] = M->c[1][1] = -1;
-          }
-        else
-          { /* Scale {p} to unit norm: */
-            (void)r3_dir(&p, &p);
-            /* Set {M} to a mirror in direction {p}, followed by negation of {x}: */
-            for (uint32_t i = 0; i < 3; i++)
-              { for (uint32_t j = 0; j < 3; j++) { M->c[i][j] += - 2*p.c[i]*p.c[j]; }
-                M->c[i][0] = - M->c[i][0];
-              }
-          }
-
-        /* Now fixt the effect on {v}: */
-        if ((v == NULL) && (r3_L_inf_norm(v) == 0.0))
-          { /* Nothing else to do. */ }
-        else
-          { /* We need a vector perpendicular to {u,v}: */
-            r3_t w; r3_cross(u, v, &w);
-            if (r3_L_inf_norm(v) == 0.0)
-              { /* {u} and {v} are practically collinear, nothing to do. */ }
-            else
-              { /* Map {w} by {M}, result is {q}: */
-                r3_t q; r3x3_map_row(&w, M, &q);
-                /* Scale {q} to unit norm: */
-                (void)r3_dir(&q, &q);
-                /* The vector {q} should be perpendicular to {x}: */
-                assert(fabs(q.c[0]) < 1.0e-7);
-                /* Make a rotation matrix around {x} that takes {q} to {(0,0,1)}: */
-                r3x3_t V; r3x3_ident(&V);
-                V.c[1][1] = V.c[2][2] = q.c[2];
-                V.c[1][2] = +q.c[1]; 
-                V.c[2][1] = -q.c[1]; 
-                /* Compose with {M} (first {M} then {V}): */
-                r3x3_mul(M, &V, M);
-              }
-          }
-      }
-  }
 
 void pst_light_adjust_lamp_radii(pst_lamp_t *lmpv[], uint32_t NL)
-  { for (uint32_t i = 0; i < NL; i++)
+  { bool_t debug = TRUE;
+    for (uint32_t i = 0; i < NL; i++)
       { pst_lamp_t *srci = lmpv[i];
         /* Find mean distance to nearest neighbors: */
+        if (debug) { r3_gen_print(stderr, &(srci->dir), "%+7.4f", "  srci = ( ", " ", " )\n"); }
         double twsum = 0, wsum = 0;
         for (uint32_t j = 0; j < NL; j++)
           { if (j == i) { /* Skip self: */ continue; }
             pst_lamp_t *srcj = lmpv[j];
             /* Compute angle {ang} between the two: */
             double cang = r3_dot(&(srci->dir), &(srcj->dir));
+            if (debug) { r3_gen_print(stderr, &(srcj->dir), "%+7.4f", "    srcj = ( ", " ", " )\n"); }
             demand (cang < 1.0, "two lights with same direction"); 
             double ang = acos(fmin(+1.0, fmax(-1.0, cang)));
             if (cang > - 1.0 + 1.0e-5) 
@@ -403,36 +356,52 @@ void pst_light_adjust_lamp_radii(pst_lamp_t *lmpv[], uint32_t NL)
         srci->crad = cos(rad);
       }
   }
+  
+void pst_light_set_default_power(pst_lamp_t *lmpv[], uint32_t NL)
+  { float defpwr = (float)(1.0/((double)NL));
+    for (int32_t i = 0; i < NL; i++)
+      { pst_lamp_t *lmp = lmpv[i];
+        for (int32_t c = 0; c < 3; c++)
+          { if (isnan(lmp->pwr.c[c])) { lmp->pwr.c[c] = defpwr; } }
+      }
+  }
+         
 
-pst_light_t *pst_light_spec_parse(argparser_t *pp, bool_t next, int32_t *NCP)
+frgb_t pst_light_shading(pst_light_t *lht, r3_t *nrm)
+  { uint32_t NL = lht->NL;
+    double val[3] = { 0.0, 0.0, 0.0 };
+    for (int32_t i = 0; i < NL; i++)
+      { pst_lamp_t *src = lht->lmpv.e[i];
+        double gf = pst_lamp_geom_factor(nrm, &(src->dir), src->crad);
+        for (int32_t c = 0; c < 3; c++)
+          { val[c] += gf*src->pwr.c[c]; }
+      }
+    return (frgb_t){{ (float)(val[0]), (float)(val[1]), (float)(val[2]) }}; 
+  }
+
+pst_light_t *pst_light_spec_parse(argparser_t *pp, bool_t next)
   { 
     pst_light_t *lht = pst_light_new(0);
     pst_lamp_vec_t *lmpv = &(lht->lmpv);
     while(TRUE)
-      { if (pst_keyword_present(pp, "-lamp", next))
-          { pst_lamp_t *src = pst_lamp_spec_params_next_parse(pp);
-            /* pst_lamp_spec_write(stderr, src); */
+      { uint32_t N;
+        pst_lamp_t *src = pst_lamp_spec_parse(pp, &N);
+        if (src == NULL) { break; }
+        if (N == 1)
+          { /* Single lamp: */
             pst_lamp_vec_expand(lmpv, (vec_index_t)lht->NL);
             lmpv->e[lht->NL] = src;
             lht->NL++;
           }
-        else if (pst_keyword_present(pp, "-array", next))
-          { uint32_t NA = (uint32_t)argparser_get_next_int(pp, 1, MAXINT);
-            /* Get default power and angular radius: */
-            pst_lamp_t *def = pst_lamp_spec_params_next_parse(pp);
+        else 
+          { /* Lamp array: */
             pst_light_add_uniform_array
-              ( lht, NA, &(def->dir), NULL, &(def->pwr), def->crad );
-            free(def);
+              ( lht, N, &(src->dir), NULL, &(src->pwr), src->crad );
+            free(src);
           }
-        else
-          {
-            /* Assume it is the end of the light field spec: */
-            break;
-          }
-        /* The {next} argument applies only to the first lamp/array: */
-        next = FALSE;
       }
     pst_lamp_vec_trim(lmpv, lht->NL);
+    pst_light_set_default_power(lmpv->e, lmpv->ne);
     return lht;
   }
 

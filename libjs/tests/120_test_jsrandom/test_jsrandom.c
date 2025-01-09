@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {jsmath.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-26 22:54:37 by stolfi */ 
+/* Last edited on 2025-01-02 06:48:21 by stolfi */ 
 /* Created on 2011-09-20 by J. Stolfi, UNICAMP */
 
 #define test_jsrandom_COPYRIGHT \
@@ -171,17 +171,39 @@ void test_stdint_random(uint32_t size, bool_t sgn, uint32_t nb, uint32_t ntpb, c
     for (int64_t i = 0; i < nt; i++)
       { uint32_t jlo, jhi; /* Lower and higher {nb} bits. */
         if (size == 32)
-          { uint32_t x = (sgn ? (uint32_t)int32_random() : uint32_random());
-            jlo = (uint32_t)(x & (uint32_t)(nh - 1));
-            jhi = (uint32_t)(x >> (32 - nb));
+          { uint32_t xu;
+            if (sgn)
+              { int32_t x = int32_random();
+                if (i < 6) { fprintf(stderr, "  %11d", x); }
+                xu = (uint32_t)x;
+              }
+            else
+              { uint32_t x = uint32_random();
+                if (i < 6) { fprintf(stderr, "  %11u", x); }
+                xu = x;
+              }
+            jlo = (uint32_t)(xu & (uint32_t)(nh - 1));
+            jhi = (uint32_t)(xu >> (32 - nb));
           }
         else if (size == 64)
-          { uint64_t x = (sgn ? (uint64_t)int64_random() : uint64_random());
-            jlo = (uint32_t)(x & (uint32_t)(nh - 1));
-            jhi = (uint32_t)(x >> (64 - nb));
+          { uint64_t xu;
+            if (sgn)
+              { int64_t x = int64_random();
+                if (i < 6) { fprintf(stderr, "  %21ld", x); }
+                xu = (uint64_t)x;
+              }
+            else
+              { uint64_t x = uint64_random();
+                if (i < 6) { fprintf(stderr, "  %21lu", x); }
+                xu = x;
+              }
+            jlo = (uint32_t)(xu & (uint32_t)(nh - 1));
+            jhi = (uint32_t)(xu >> (64 - nb));
           }
         else
           { assert(FALSE); }
+        
+        if (i < 6) { fprintf(stderr, " %6u %6u\n", jlo, jhi); }
           
         lo[jlo]++;
         hi[jhi]++;
@@ -271,6 +293,7 @@ void test_stdint_abrandom(uint32_t size, bool_t sgn, uint64_t a, uint64_t b, uin
               { int32_t sa = (int32_t)a;
                 int32_t sb = (int32_t)b;
                 int32_t x = int32_abrandom(sa, sb);
+                if (i < 6) { fprintf(stderr, "  %11d", x); }
                 demand((x >= sa) && (x <= sb), "int32_abrandom: out of range");
                 d = (uint64_t)(x - sa);
               }
@@ -278,6 +301,7 @@ void test_stdint_abrandom(uint32_t size, bool_t sgn, uint64_t a, uint64_t b, uin
               { uint32_t sa = (uint32_t)a;
                 uint32_t sb = (uint32_t)b;
                 uint32_t x = uint32_abrandom(sa, sb);
+                if (i < 6) { fprintf(stderr, "  %11u", x); }
                 demand((x >= sa) && (x <= sb), "uint32_abrandom: out of range");
                 d = (uint64_t)(x - sa);
               }
@@ -287,6 +311,7 @@ void test_stdint_abrandom(uint32_t size, bool_t sgn, uint64_t a, uint64_t b, uin
               { int64_t sa = (int64_t)a;
                 int64_t sb = (int64_t)b; 
                 int64_t x = int64_abrandom(sa, sb);
+                if (i < 6) { fprintf(stderr, "  %22ld", x); }
                 demand((x >= sa) && (x <= sb), "int64_abrandom: out of range");
                 d = (uint64_t)(x - sa);
               }
@@ -294,15 +319,18 @@ void test_stdint_abrandom(uint32_t size, bool_t sgn, uint64_t a, uint64_t b, uin
               { uint64_t sa = (uint64_t)a;
                 uint64_t sb = (uint64_t)b; 
                 uint64_t x = uint64_abrandom(sa, sb);
+                if (i < 6) { fprintf(stderr, "  %22lu", x); }
                 demand((x >= sa) && (x <= sb), "uint64_abrandom: out of range");
                 d = (uint64_t)(x - sa);
               }
           }
         else
           { assert(FALSE); }
-        
+
         uint32_t j = (uint32_t)(d / q); /* Bin number. */
         assert(j < nh);
+        if (i < 6) { fprintf(stderr, " %22lu %8u\n", d, j); }
+        
         hs[j]++;
       }
 

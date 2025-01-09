@@ -1,5 +1,5 @@
 /* See {pst_img_graph.h} */
-/* Last edited on 2024-12-27 09:29:04 by stolfi */
+/* Last edited on 2025-01-05 12:22:10 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #include <stdio.h>
@@ -33,13 +33,41 @@ void pst_img_graph_write_vertex(FILE* wr, pst_img_graph_vertex_data_t* v);
 
 void pst_img_graph_write_edge(FILE* wr, pst_img_graph_t *g, haf_arc_t e);
 
+#define MARK_VERTEX_NONE (-1)
+  /* A null value for the {mark} field of a {pst_img_graph_edge_data_t} record. */
+
 /* IMPLEMENTATIONS */
+
+pst_img_graph_t *pst_img_graph_new(int32_t NV_max, int32_t NE_max)
+  { pst_img_graph_t *g = talloc(1, pst_img_graph_t);
+    g->NE_max = NE_max;
+    g->NV_max = NV_max;
+    g->NE = 0;
+    g->NV = 0;
+    g->NV_valid = 0;
+    g->NE_valid = 0;
+    
+    g->vertex = talloc(NV_max, pst_img_graph_vertex_data_t);
+    g->edge = talloc(NE_max, pst_img_graph_edge_t);
+    
+    /* Initialization */
+    for (int32_t i = 0; i < NE_max; i++) 
+      { g->edge[i].edge = NULL; g->edge[i].data = NULL; }
+      
+    for (int32_t i = 0; i < NV_max; i++)
+      { g->vertex[i].edge = NULL;
+        g->vertex[i].id = -1;
+        g->vertex[i].mark = MARK_VERTEX_NONE;
+      }
+
+    return g;
+  }
 
 void pst_img_graph_edge_data_free(pst_img_graph_edge_data_t *ed)
   { free(ed); }
 
 pst_img_graph_edge_data_t *pst_img_graph_edge_data_create(void)
-  { pst_img_graph_edge_data_t *ed = (pst_img_graph_edge_data_t*)malloc(sizeof(pst_img_graph_edge_data_t));
+  { pst_img_graph_edge_data_t *ed = talloc(1, pst_img_graph_edge_data_t);
     ed->id = 0;  /*Id - unique*/
     ed->org[0] = ed->org[1] = -1;  /*Index to the vextex in the list*/
     ed->delta[0] = ed->delta[1] = 0; /*Derivative*/
@@ -70,13 +98,13 @@ int32_t  pst_img_graph_add_vertex
   }
 
 int32_t pst_img_graph_get_dir_edge_num(haf_arc_t e)
-  { if (e == haf_arc_NULL) { return  -1; }
-    return (2*haf_edge_id(haf_edge(e))) + haf_lon_bit(e);
+  { if (e == NULL) { return  -1; }
+    return (int32_t)haf_arc_id(e);
   }
 
 int32_t pst_img_graph_get_edge_num(haf_arc_t e)
-  { if (e == haf_arc_NULL) { return -1; }
-    return haf_edge_id(haf_edge(e));
+  { if (e == NULL) { return -1; }
+    return (int32_t)haf_edge_id(e);
   }
 
 int32_t pst_img_graph_get_edge_origin(pst_img_graph_t *g, haf_arc_t e)
@@ -165,12 +193,11 @@ haf_arc_t pst_img_graph_add_edge
   )
   {
     if (g->NE == g->NE_max)
-      { g->NE_max = (g->NE_max*1.5);
-        g->edge = (pst_img_graph_edge_t*)notnull(realloc(g->edge,sizeof(pst_img_graph_edge_t)*(g->NE_max)),"bug");
+      { g->NE_max = (int32_t)ceil(g->NE_max*1.5);
+        g->edge = retalloc(g->edge, g->NE_max, pst_img_graph_edge_t);
       }
 
-    haf_arc_t e = haf_make_edge();
-    haf_set_edge_num(haf_edge(e), g->NE);
+    haf_arc_t e = haf_make_stick((haf_edge_id_t)g->NE);
     int32_t ind = pst_img_graph_get_edge_num(e);
     g->edge[ind].edge = e;
     g->edge[ind].data = pst_img_graph_edge_data_create();
@@ -231,38 +258,15 @@ void pst_img_graph_edge_remove(pst_img_graph_t *g,haf_arc_t e)
           );
       }
     assert(test_dprev && test_dnext && test_lnext && test_lprev);
-    g->vertex[org_e].edge = (a == e ? haf_arc_NULL: a);
-    g->vertex[dst_e].edge = (b == haf_sym(e) ? haf_arc_NULL: b);
-    haf_destroy_edge(e);
-    g->edge[ind].edge = haf_arc_NULL;
+    g->vertex[org_e].edge = (a == e ? NULL: a);
+    g->vertex[dst_e].edge = (b == haf_sym(e) ? NULL: b);
+    haf_free_edge(e);
+    g->edge[ind].edge = NULL;
     pst_img_graph_edge_data_free(g->edge[ind].data);
     g->edge[ind].data = NULL;
     g->NE_valid--;
   }
 
-pst_img_graph_t *pst_img_graph_create(int32_t NE_max,int32_t NV_max)
-  { pst_img_graph_t *g = (pst_img_graph_t*)malloc(sizeof(pst_img_graph_t));
-    g->NE_max = NE_max;
-    g->NV_max = NV_max;
-    g->NE = 0;
-    g->NV = 0;
-    g->NV_valid = 0;
-    g->NE_valid = 0;
-    
-    g->vertex = (pst_img_graph_vertex_data_t*)malloc(sizeof(pst_img_graph_vertex_data_t)*(g->NV_max));
-    g->edge = (pst_img_graph_edge_t*)malloc(sizeof(pst_img_graph_edge_t)*(g->NE_max));
-    
-    /* Initialization */
-    int32_t i;
-    for (int32_t i = 0; i < NE_max; i++) { g->edge[i].edge = haf_arc_NULL; g->edge[i].data = NULL; }
-    for (int32_t i = 0; i < NV_max; i++)
-      { g->vertex[i].edge = haf_arc_NULL;
-        g->vertex[i].id = -1;
-        g->vertex[i].mark = MARK_VERTEX_NONE;
-      }
-
-    return g;
-  }
 
 void pst_img_graph_print_vertex(FILE *wr, pst_img_graph_vertex_data_t *v)
   { int32_t ind_edge_dir = pst_img_graph_get_dir_edge_num(v->edge);
@@ -271,7 +275,7 @@ void pst_img_graph_print_vertex(FILE *wr, pst_img_graph_vertex_data_t *v)
   }
 
 void pst_img_graph_print_edge(FILE *wr,pst_img_graph_t *g, haf_arc_t e)
-  { if (e == haf_arc_NULL) 
+  { if (e == NULL) 
       { fprintf(wr," EMPTY "); }
     else
       {  int32_t ind = pst_img_graph_get_edge_num(e);
@@ -285,7 +289,6 @@ void pst_img_graph_print_edge(FILE *wr,pst_img_graph_t *g, haf_arc_t e)
         fprintf(wr,"ID: %d ORG: %d DEST: %d Delta: %lf RDelta %lf W: %lf LABEL %s PATH: %d ",ind,org,dst,d,rd,w,label,p.n);
         /*Neighbours*/
         fprintf(wr,"ONEXTS ");
-        haf_arc_t oe;
         for (haf_arc_t oe = haf_onext(e); oe != e; oe = haf_onext(oe))
           { fprintf(wr, "%d:%d ",pst_img_graph_get_edge_num(oe),pst_img_graph_get_dir_edge_num(oe)&1); }
       }
@@ -294,7 +297,6 @@ void pst_img_graph_print_edge(FILE *wr,pst_img_graph_t *g, haf_arc_t e)
 
 void pst_img_graph_print(FILE *wr,pst_img_graph_t *g)
   {
-    int32_t i;
     for (int32_t i = 0; i < g->NV; i++)
       { fprintf(wr,"[%d] ",i);
         pst_img_graph_print_vertex(wr,&(g->vertex[i]));
@@ -309,7 +311,7 @@ void pst_img_graph_print(FILE *wr,pst_img_graph_t *g)
 
 int32_t pst_img_graph_vertex_count_neighbours(pst_img_graph_t *g, int32_t vi)
   { pst_img_graph_vertex_data_t *v = &(g->vertex[vi]);
-    if (v->edge == haf_arc_NULL) return 0;
+    if (v->edge == NULL) return 0;
     int32_t count = 1;
     haf_arc_t e = v->edge;
     for (e = haf_onext(v->edge); e!= v->edge; e = haf_onext(e)) { count++; }
@@ -318,25 +320,25 @@ int32_t pst_img_graph_vertex_count_neighbours(pst_img_graph_t *g, int32_t vi)
 
 haf_arc_t pst_img_graph_check_neighbourhood(pst_img_graph_t *g,int32_t vi0, int32_t vi1)
   { pst_img_graph_vertex_data_t *v0 = &(g->vertex[vi0]);
-    if ((v0->edge == haf_arc_NULL) || (v0->edge == haf_arc_NULL))
-      { return haf_arc_NULL; }
+    if ((v0->edge == NULL) || (v0->edge == NULL))
+      { return NULL; }
     haf_arc_t e = v0->edge;
     do
       { int32_t dst = pst_img_graph_get_edge_origin(g,haf_sym(e));
         if (dst == vi1) { return e; }
         e = haf_onext(e);
       } while(e != v0->edge);
-    return haf_arc_NULL;
+    return NULL;
   }
 
 
 haf_arc_t pst_img_graph_find_leftmost_edge(pst_img_graph_t *g,haf_arc_t e0)
   {
     haf_arc_t e = e0;
-    assert(e0 != haf_arc_NULL);
+    assert(e0 != NULL);
     int32_t org = pst_img_graph_get_edge_origin(g,e0);
     pst_img_graph_vertex_data_t *v_org = &(g->vertex[org]);
-    haf_arc_t le = haf_arc_NULL;
+    haf_arc_t le = NULL;
     double cmax = -INF;
     do 
       { int32_t dst = pst_img_graph_get_edge_origin(g,haf_sym(e));
@@ -363,18 +365,17 @@ void debug_vertex_remove_edge(pst_img_graph_t *g, haf_arc_t e)
 
 void pst_img_graph_check_consistency(pst_img_graph_t *g)
   {
-    int32_t i;
     bool_t test = TRUE;
     for (int32_t i = 0; i < g->NV; i++)
       { pst_img_graph_vertex_data_t *v = &(g->vertex[i]);
-        if (v->edge != haf_arc_NULL)
+        if (v->edge != NULL)
           { if (v->id == -1)
               { fprintf(stderr,"Dead-alive vertex [%d](%d) with edge not NULL\n",i,v->id);
                 test = FALSE;
               }
             else
               { int32_t ind_edge = pst_img_graph_get_edge_num(v->edge);
-                if (g->edge[ind_edge].edge == haf_arc_NULL)
+                if (g->edge[ind_edge].edge == NULL)
                   { fprintf(stderr,"False link at vertex [%d](%d) pointing to [%d]\n",i,v->id,ind_edge);
                     test = FALSE;
                   }
@@ -404,8 +405,8 @@ bool_t pst_img_graph_compare(pst_img_graph_t* g, pst_img_graph_t* h)
     auto void check_edge_data(pst_img_graph_edge_data_t *ga, pst_img_graph_edge_data_t *ha, char *name1, int32_t ix, char *name2);
     
     
-    check_uint32(g->NV, h->NV, -1, "NV", NULL);
-    check_uint32(g->NE, h->NE, -1, "NE", NULL);
+    check_uint32(g->NV, h->NV, "NV", -1, NULL);
+    check_uint32(g->NE, h->NE, "NE", -1, NULL);
     
     for (int32_t iv = 0; iv < g->NV; iv++)
       { pst_img_graph_vertex_data_t *gv = &(g->vertex[iv]);
@@ -413,15 +414,17 @@ bool_t pst_img_graph_compare(pst_img_graph_t* g, pst_img_graph_t* h)
         check_uint32(gv->id, hv->id, "vertex", iv, "{id}");
         /* Don't care about the {mark}. */
         check_r2(&(gv->coords), &(hv->coords), "vertex", iv, "{coords}");
-        pst_img_graph_edge_data_t *ged = &(g->edge[pst_img_graph_get_dir_edge_num(gv->edge)]);
-        pst_img_graph_edge_data_t *hed = &(h->edge[pst_img_graph_get_dir_edge_num(hv->edge)]);
+        int32_t geid = pst_img_graph_get_dir_edge_num(gv->edge);
+        int32_t heid = pst_img_graph_get_dir_edge_num(hv->edge);
+        pst_img_graph_edge_data_t *ged = g->edge[geid].data;
+        pst_img_graph_edge_data_t *hed = h->edge[heid].data;
         check_edge_data(ged, hed, "edge of vertex", iv, NULL);
       }
       
     for (int32_t ie = 0; ie < g->NE; ie++)
       { 
-        pst_img_graph_edge_data_t *ged = &(g->edge[ie]);
-        pst_img_graph_edge_data_t *hed = &(h->edge[ie]);
+        pst_img_graph_edge_data_t *ged = g->edge[ie].data;
+        pst_img_graph_edge_data_t *hed = h->edge[ie].data;
         check_edge_data(ged, hed, "edge", ie, NULL);
       }
     
@@ -454,7 +457,7 @@ bool_t pst_img_graph_compare(pst_img_graph_t* g, pst_img_graph_t* h)
     auto void check_string(char *ga, char *ha, char *name1, int32_t ix, char *name2)
       { if (strcmp(ga, ha) != 0)
           { blast(name1, ix, name2);
-            fprintf(stderr, " %24.16e %24.16e\n", ga, ha);
+            fprintf(stderr, " «%s» «%s»\n", ga, ha);
             ok = FALSE;
           }
       }
@@ -464,9 +467,9 @@ bool_t pst_img_graph_compare(pst_img_graph_t* g, pst_img_graph_t* h)
         double tol = 2.0e-6; /* Considering the format of {pst_img_graph_write}. */
         if (d > tol)
           { blast(name1, ix, name2);
-            r2.print(stderr, ga);
+            r2_print(stderr, ga);
             fprintf(stderr, " ");
-            r2.print(stderr, ha);
+            r2_print(stderr, ha);
             fprintf(stderr, "\n");
             ok = FALSE;
           }
@@ -485,7 +488,7 @@ bool_t pst_img_graph_compare(pst_img_graph_t* g, pst_img_graph_t* h)
         
         check_double(ga->weight, ha->weight, name1, ix, "{weight}");
         check_string(ga->label, ha->label, name1, ix, "{label}");
-        /* !!! Should check the paths. *//
+        /* !!! Should check the paths. !!! */
       }
         
   }
@@ -501,8 +504,7 @@ pst_img_graph_t *pst_img_graph_copy(pst_img_graph_t *g)
 
     auto haf_arc_t linha( haf_arc_t ed); 
 
-    int32_t i;
-    int32_t *eq_vector_vt = (int32_t*)malloc(sizeof(int32_t)*(g->NV));
+    int32_t *eq_vector_vt = talloc(g->NV, int32_t);
     int32_t valid_NV = 0;
     for (int32_t i = 0; i < g->NV;i++)
       { if (g->vertex[i].id != -1)
@@ -512,23 +514,23 @@ pst_img_graph_t *pst_img_graph_copy(pst_img_graph_t *g)
         else
           { eq_vector_vt[i] = -1; }
       }
-    int32_t *eq_vector_ed = (int32_t*)malloc(sizeof(int32_t)*(g->NE));
-    haf_arc_t *ref_tab = (haf_arc_t*)malloc(sizeof(haf_arc_t)*(g->NE)*2);
+    int32_t *eq_vector_ed = talloc(g->NE, int32_t);
+    haf_arc_t *ref_tab = talloc(2*g->NE, haf_arc_t);
     int32_t valid_NE  = 0;
     for (int32_t i = 0; i < g->NE;i++)
-      { if (g->edge[i].edge != haf_arc_NULL)
+      { if (g->edge[i].edge != NULL)
           { eq_vector_ed[i] = valid_NE;
             valid_NE++;
           }
         else
           { eq_vector_ed[i] = -1; }
       }
-    pst_img_graph_t  *ng = pst_img_graph_create(valid_NE,valid_NV);
+    pst_img_graph_t  *ng = pst_img_graph_new(valid_NV, valid_NE);
     /*Easy part, copy the raw data*/
     for (int32_t i = 0; i < g->NV;i++)
       { pst_img_graph_vertex_data_t *v = &(g->vertex[i]);
         if (eq_vector_vt[i] != -1)
-          {  pst_img_graph_add_vertex(ng,v->id,haf_arc_NULL, v->coords ); }
+          {  pst_img_graph_add_vertex(ng,v->id,NULL, v->coords ); }
       }
     for (int32_t i = 0; i < g->NE;i++)
       { haf_arc_t e = g->edge[i].edge;
@@ -541,12 +543,12 @@ pst_img_graph_t *pst_img_graph_copy(pst_img_graph_t *g)
             double weight = pst_img_graph_get_edge_weight(g,e);
 
             char *label = g->edge[ind_e].data->label;
-            char *nl = (label == NULL ? NULL : (char*)malloc(sizeof(char)*(strlen(label)+1)));
+            char *nl = (label == NULL ? NULL : talloc(strlen(label)+1, char));
             if (label != NULL ) strcpy(nl,label);
 
             pst_path_t np = p;
             if (p.v != NULL )
-              { np.v = (r2_t*)malloc(sizeof(r2_t)*(p.n));
+              { np.v = talloc(p.n, r2_t);
                 memcpy(np.v,p.v,sizeof(r2_t)*(p.n));
               }
             /*We dont do much with it now...*/
@@ -583,13 +585,13 @@ pst_img_graph_t *pst_img_graph_copy(pst_img_graph_t *g)
 
 void pst_img_graph_write_vertex(FILE *wr, pst_img_graph_vertex_data_t *v)
   {
-    int32_t ind_edge = (v->edge == haf_arc_NULL ? -1 : pst_img_graph_get_dir_edge_num(v->edge));
+    int32_t ind_edge = (v->edge == NULL ? -1 : pst_img_graph_get_dir_edge_num(v->edge));
     fprintf(wr,"%09d %d %9.6f %9.6f %09d\n",v->id,v->mark,v->coords.c[0],v->coords.c[1],ind_edge);
   }
 
 void pst_img_graph_write_edge(FILE *wr, pst_img_graph_t *g, haf_arc_t e)
   {
-    if (e == haf_arc_NULL)
+    if (e == NULL)
       { fprintf(wr,"-1\n");
         return;
       }
@@ -617,11 +619,11 @@ void pst_img_graph_write_edge(FILE *wr, pst_img_graph_t *g, haf_arc_t e)
 
     fprintf(wr,"%d %d %d %d ",ind_e_next,long_bit_enext,ind_e_next_sym,long_bit_enext_sym);
 
-    if (label == NULL)
+    if ((label == NULL) || (strlen(label) == 0))
       { fprintf(wr,"0 "); }
     else
-      { fprintf(wr,"%d ",strlen(label));
-        fprintf(wr,"%s ",label);
+      { fprintf(wr, "%lu ", strlen(label));
+        fprintf(wr, " %s", label);
       }
     pst_img_graph_write_path(wr,p);
     fprintf(wr,"\n");
@@ -631,7 +633,6 @@ void pst_img_graph_write(FILE *wr, pst_img_graph_t *g)
   {
     /*First, write static data*/
     fprintf(wr,"%d %d %d %d \n",g->NV_valid, g->NE_valid,g->NV, g->NE);
-    int32_t i;
     for (int32_t i = 0; i < g->NV; i++)
       {  pst_img_graph_write_vertex(wr,&(g->vertex[i]));  }
     for (int32_t i = 0; i < g->NE; i++)
@@ -645,10 +646,10 @@ void pst_img_graph_read_vertex(FILE *wr, pst_img_graph_t  *g)
     int32_t mark;
     r2_t coords;
     int32_t ind_edge;
-    int32_t nsc = fscanf(wr,"%d %d %lf %lf %d",&id,&mark,&(coords.c[0]),&(coords.c[1]),&ind_edge)
+    int32_t nsc = fscanf(wr,"%d %d %lf %lf %d",&id,&mark,&(coords.c[0]),&(coords.c[1]),&ind_edge);
     demand(nsc == 5, "Cannot read vertex");
     /*Who is responsible to fill the  real edge's value is the pst_img_read_edges*/
-    int32_t ix = pst_img_graph_add_vertex(g,id,haf_arc_NULL,coords);
+    int32_t ix = pst_img_graph_add_vertex(g,id,NULL,coords);
     g->vertex[ix].mark = mark;
   }
 
@@ -669,48 +670,50 @@ void pst_img_graph_read_edge
     if (ind != -1)
       {
         int32_t ns1 = fscanf(wr,"%d %d %d %lf %lf",&ind_dir,&org,&dst,&delta,&weight);
-        demand(ns == 5, "Cannot read edge data");
+        demand(ns1 == 5, "Cannot read edge data");
         int32_t ns2 = fscanf(wr,"%d %d %d %d",&(list_onext[0]),&(list_long_bit[0]),&(list_onext[1]),&(list_long_bit[1]));
         demand(ns2 == 4, "Cannot read edge connectivity");
 
         int32_t label_len;
-        int32_ t ns3 = fscanf(wr,"%d",&(label_len));
+        int32_t ns3 = fscanf(wr,"%d",&(label_len));
         demand(ns3 == 1, "Cannot read edge label lenght");
-        char *label = (label_len == 0  ? NULL : (char*)malloc(sizeof(char)*(label_len +1)));
-        int32_t i;
-        fgetc(wr); /*skip the first blank space*/
-        for (int32_t i = 0; i < label_len; i++)
-          { fscanf(wr,"%c",&(label[i])); }
-        if (label != NULL) label[i] = '\0';
+        demand(label_len >= 0, "invalid label length");
+        char *label = (label_len == 0 ? NULL : talloc(label_len +1, char));
+        if (label_len > 0)
+          { fgetc(wr); /*skip the first blank space*/
+            for (int32_t i = 0; i < label_len; i++)
+              { fscanf(wr, "%c",&(label[i])); }
+            label[label_len] = '\0';
+          }
         pst_path_t p = pst_img_graph_read_path(wr);
         pst_img_graph_add_edge(g,org,dst,delta,weight,label,p);
       }
     else
-      { g->edge[g->NE].edge = haf_arc_NULL;
+      { g->edge[g->NE].edge = NULL;
         g->NE++;
       }
   }
 
 pst_img_graph_t *pst_img_graph_read(FILE *wr)
   {
-    int32_t NV_valid,NE_valid, NV,NE;
-    demand( fscanf(wr,"%d %d %d %d",&NV_valid,&NE_valid,&NV,&NE) == 4,"Cannot read graph header properly");
-    assert( (NV_valid >= 0) && (NE_valid >= 0) && (NV >= 0) && (NE >=0) );
+    int32_t NV_valid, NE_valid, NV, NE;
+    demand( fscanf(wr,"%d %d %d %d", &NV_valid, &NE_valid, &NV, &NE) == 4, "parse of vertex and edge counts failed");
+    demand((NV_valid >= 0) && (NE_valid >= 0) && (NV >= 0) && (NE >=0), "invalid vertex or edge counts");
 
-    pst_img_graph_t *g = pst_img_graph_create(NE,NV);
+    pst_img_graph_t *g = pst_img_graph_new(NV, NE);
 
-    int32_t i;
     for (int32_t i = 0; i < NV ; i++) { pst_img_graph_read_vertex(wr,g); }
-    int32_t *list_next = (int32_t*)malloc(sizeof(int32_t)*2*NE);
-    int32_t *list_long_bit = (int32_t*)malloc(sizeof(int32_t)*2*NE);
-    for (int32_t i = 0; i < NE ; i++) { pst_img_graph_read_edge(wr,g,&(list_next[2*i]),&(list_long_bit[2*i])); }
+    int32_t *list_next = talloc(2*NE, int32_t);
+    int32_t *list_long_bit = talloc(2*NE, int32_t);
+    for (int32_t i = 0; i < NE ; i++)
+      { pst_img_graph_read_edge(wr,g,&(list_next[2*i]),&(list_long_bit[2*i])); }
 
     auto haf_arc_t recover_edge(int32_t index, int32_t long_bit);
 
     haf_arc_t  recover_edge(int32_t index, int32_t long_bit)
       { assert((index >= 0 ) && (index < g->NE));
         haf_arc_t e = g->edge[index].edge;
-        assert(e != haf_arc_NULL);
+        assert(e != NULL);
         if (long_bit == 1) { e = haf_sym(e); }
         return e;
       }
@@ -718,7 +721,7 @@ pst_img_graph_t *pst_img_graph_read(FILE *wr)
     /*Hard part*/
     for (int32_t i = 0; i < g->NE;i++)
       { haf_arc_t e = g->edge[i].edge;
-        if (e != haf_arc_NULL)
+        if (e != NULL)
           { haf_arc_t e_next = recover_edge(list_next[2*i],list_long_bit[2*i]);
             haf_arc_t e_next_sym = recover_edge(list_next[(2*i)+1],list_long_bit[(2*i)+1]);
 
@@ -732,18 +735,16 @@ pst_img_graph_t *pst_img_graph_read(FILE *wr)
   }
 
 int32_t pst_img_graph_find_nearest_vertex(pst_img_graph_t *g, r2_t p)
-  {
-   int32_t i;
-   double min_dist_sqr = +INF;
-   int32_t min_i = -1;
-   for (int32_t i = 0; i < g->NV; i++)
-     {
-       pst_img_graph_vertex_data_t *v = &(g->vertex[i]);
-       if (v->id == -1) continue;
-       double d= r2_dist_sqr(&p,&(v->coords));
-       if (d < min_dist_sqr)
-         { min_dist_sqr = d; min_i = i; }
-     }
+  { double min_dist_sqr = +INF;
+    int32_t min_i = -1;
+    for (int32_t i = 0; i < g->NV; i++)
+      {
+        pst_img_graph_vertex_data_t *v = &(g->vertex[i]);
+        if (v->id == -1) continue;
+        double d= r2_dist_sqr(&p,&(v->coords));
+        if (d < min_dist_sqr)
+          { min_dist_sqr = d; min_i = i; }
+      }
 
     return min_i;
   }
@@ -751,10 +752,10 @@ int32_t pst_img_graph_find_nearest_vertex(pst_img_graph_t *g, r2_t p)
 double pst_img_graph_compute_left_face_curl(pst_img_graph_t *g, haf_arc_t e0)
   { haf_arc_t e = e0;
     double curl = 0;
-    do{
-      curl+= pst_img_graph_get_edge_delta(g,e);
-      e = haf_lnext(e);
-    }while(e != e0);
+    do
+      { curl+= pst_img_graph_get_edge_delta(g,e);
+        e = haf_lnext(e);
+      } while(e != e0);
     return curl;
   }
 
@@ -776,20 +777,19 @@ r2_t pst_img_graph_left_face_baricenter(pst_img_graph_t *g, haf_arc_t e0)
     return p;
   }
 
-void pst_img_graph_put_curl_into_image(pst_img_graph_t *g,float_image_t *OZ)
-  {
-    int32_t i;
+void pst_img_graph_put_curl_into_image(pst_img_graph_t *g, float_image_t *OZ)
+  { int32_t NC, NX, NY;
+    float_image_get_size(OZ, &NC, &NX, &NY);
+    demand(NC == 1, "invalid channels in curl image");
     for (int32_t i = 0; i < g->NE; i++)
       { haf_arc_t e = g->edge[i].edge;
-        if (e != haf_arc_NULL)
-          { int32_t j;
-            for (int32_t j = 0; j < 2; j++)
-              {
-                double c = pst_img_graph_compute_left_face_curl(g,e);
+        if (e != NULL)
+          { for (int32_t j = 0; j < 2; j++)
+              { double curl = pst_img_graph_compute_left_face_curl(g,e);
                 r2_t p = pst_img_graph_left_face_baricenter(g,e);
-                int32_t x,y;
-                pst_img_graph_get_vertex_image_indices(&p,OZ->sz[1],OZ->sz[2],&x,&y);
-                float_image_set_sample(OZ,0,x,y,c);
+                int32_t x, y;
+                pst_img_graph_get_vertex_image_indices(&p, NX, NY, &x, &y);
+                float_image_set_sample(OZ, 0,x,y, (float)curl);
                 e = haf_sym(e);
               }
           }
@@ -797,20 +797,23 @@ void pst_img_graph_put_curl_into_image(pst_img_graph_t *g,float_image_t *OZ)
   }
 
 void pst_img_graph_free(pst_img_graph_t *g)
-{
-  int32_t i;
-  for (int32_t i = 0; i < g->NE; i++)
-{
-    haf_arc_t e = g->edge[i].edge;
-    if (e != haf_arc_NULL) pst_img_graph_edge_remove(g,e);
-    if (g->edge[i].data != NULL)
-{
-      pst_img_graph_edge_data_free(g->edge[i].data);
-      
-    }
+  {
+    /* Free the edge-data records and the edge list: */
+    for (int32_t i = 0; i < g->NE; i++)
+      { haf_arc_t e = g->edge[i].edge;
+        if (e != NULL) pst_img_graph_edge_remove(g,e);
+        pst_img_graph_edge_data_t *edi = g->edge[i].data;
+        if (edi != NULL)
+          { pst_path_free(edi->path[0]);
+            pst_path_free(edi->path[1]);
+            pst_img_graph_edge_data_free(g->edge[i].data); 
+          }
+      }
+    free(g->edge);
+    
+    /* Free the vertex list: */
+    free(g->vertex);
+
+    /* Free the graph: */
+    free(g);
   }
-  free(g->edge);
-  free(g->vertex);
-  
-  free(g);
-}

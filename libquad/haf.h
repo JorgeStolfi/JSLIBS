@@ -2,7 +2,7 @@
 #define haf_H
 
 /* The half-edge data structure to encode the topology of 2D meshes. */
-/* Last edited on 2024-12-05 10:38:47 by stolfi */
+/* Last edited on 2025-01-05 11:19:09 by stolfi */
 
 #include <stdint.h>
 
@@ -212,6 +212,12 @@ haf_arc_t haf_make_loop(haf_edge_id_t eid);
     topology, one loop edge, one vertex, and two distinct faces.
     The records will have {a.sym=b}, {b.sym=a}, {a.lnext=a},
     {b.lnext=b}. The arc ids will be {2*eid} and {2*eid+1}. */
+
+void haf_free_edge(haf_arc_t a);
+  /* Reclaims the space used by the edge underlying {a} and {a.sym}. 
+    The edge must be isolated, meaning that {a.lnext} and {a.sym.lnext}
+    must be respectively {a} and {a.sym} (an insolated stick) or
+    {a.sym} and {a} (an isolated loop). */
 
 void haf_splice(haf_arc_t a, haf_arc_t b);
   /* Performs a splice (split and join) operation on the {.lnext} loops

@@ -2,7 +2,7 @@
 #define pst_shading_H
 
 /* pst_shading.h -- tools for shading computations. */
-/* Last edited on 2024-12-29 01:59:08 by stolfi */
+/* Last edited on 2025-01-04 03:46:35 by stolfi */
 
 #include <bool.h>
 #include <r3.h>
@@ -123,14 +123,25 @@ float_image_t *pst_shading_difference_image
     float_image_t *NRM
   );
   /* Computes the sample-by-sample difference image {AIMG-BIMG}.
-    If {MSK} is not null, excludes pixels where {MSK} is zero.
-    If {NRM} is not {NULL}, also excludes pixels where {NRM} is 
-    not finite or all zeros.
+    The two images must have the same column and row counts {NX} and {NY}, which will be those of the 
+    resulting image.  They may have different depths (channel counts) {NCA,NCB};
+    the depth of the result will be the {NCC=min(NCA,NCB)}.
     
-    All images must have the same number of cols and rows.
-    Also {AIMG} and {BIMG} must have the same number of channels,
-    {MSK} (if not null) must have a single channel, and {NRM} (if not null)
-    must have three channels. */
-
+    Optionally multiplies the samples in the resulting diference image by
+    pixel weights obtained in any of the following ways:
+     
+       * If the depth {NCA} and {NCB} are different, then samples of channel {NCC+1} of the deepest image 
+         will be used as pixel weights.
+         
+       * If {MSK} is not {NULL}, it must be a single-channed image image with {NX} columns
+         and {NY} rows.  The value of each pixel is the 
+         
+       * If {NRM] is not {NULL}, it must be a three-channel image with {NX} columns and {NY} rows
+         containing the assumed surface normal in each pixel.  The pixel weight implied by this 
+         argument is zero if the normal is not finite or is {(0,0,0)}, 1 otherwise.
+         
+    Weights that are negative or not finite are treated as zero, and
+    weights greater than 1 are treated as 1. If two or more weights are
+    available for each pixel, they are multiplied together. */
 
 #endif

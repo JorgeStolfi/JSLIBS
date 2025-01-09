@@ -2,11 +2,12 @@
 #define pst_lamp_H
 
 /* pst_lamp.h -- modeling lamps (light sources). */
-/* Last edited on 2024-12-28 21:03:40 by stolfi */
+/* Last edited on 2025-01-03 12:32:40 by stolfi */
 
 #include <bool.h>
 #include <r3.h>
 #include <frgb.h>
+#include <frgb_ops.h>
 #include <argparser.h>
 
 #include <pst_basic.h>
@@ -115,151 +116,74 @@ void pst_lamp_spec_write(FILE *wr, pst_lamp_t *src);
   /* Writes to {wr} the parameters of lamp {src}, in a format
     compatible with {pst_lamp_spec_parse}. */
 
-pst_lamp_t *pst_lamp_spec_parse(argparser_t *pp, bool_t next);
-  /* Parses a lamp specification from the command line.
+pst_lamp_t *pst_lamp_spec_parse(argparser_t *pp, uint32_t *N_P);
+  /* Parses a lamp specification from the command line, starting 
+    with "lamp", "wall", or "ambient".  If there is none, 
+    returns {NULL}.
   
     The syntax is described by {pst_lamp_spec_HELP} and
-    {pst_lamp_spec_HELP_INFO}. All parameters of the same lamp
-    must appear together in the command line.
+    {pst_lamp_spec_HELP_INFO}.  All parameters of the same lamp
+    must appear together in the command line, starting at the 
+    current position of the parser {pp}.
     
-    If {next} is true, checks only the next command line argument for
-    the \"-lamp\" keyword, else looks for it anywhere in the command
-    line. If the keyword \"-lamp\" is not found, returns NULL.
+    The radius parameter, if given, is converted from degrees to the
+    co-sine {src.crad}. The vector specified with "direction" is
+    normalized to unit length, and the azimuth and elevation specified
+    with "angles" are converted to a unit direction vector.
     
-    See {argparser.h} for an explanation of the {pp} parameter. */
+    If {N_P} is not {NULL}, allows also "array {N}" instead of "lamp",
+    and returns the number {N} in {*N_P}. 
+    
+    If unspecified, the direction {src.dir} is set to {(0,0,0)} for
+    "ambient" and {(NAN,NAN,NAN)} otherwise; the power {src.pwr} is set
+    to {(NAN,NAN,NAN)}; and the radius co-sine {src.crad} is set to
+    {NAN} for "lamp" and "array", 0 for "wall", and {-1} for "ambient".
+    The caller must check for {NAN} values and provide appropriate
+    defaults. */
   
 /* Help/info for full lamp specification: */
 
 #define pst_lamp_spec_params_list_INFO \
   "\"angles\", \"direction\", \"radius\", \"ambient\", \"wall\", and \"power\""
-
-#define pst_lamp_spec_HELP \
-  "-lamp \\\n" \
-  pst_lamp_spec_params_HELP
  
-#define pst_lamp_spec_INFO \
-  "Begins the description of a lamp (light source).  May be" \
-  " followed by one or more lamp" \
-  " parameters, " pst_lamp_spec_params_list_INFO "."
- 
-#define pst_lamp_spec_HELP_INFO \
-  "  -lamp {LAMP_PARAMETERS}\n" \
-  "    " pst_lamp_spec_INFO "\n" \
+#define pst_lamp_spec_HELP_INFO(more_HELP_INFO,more_direction_INFO,more_radius_INFO,more_power_INFO) \
+  "A light source description may be one of the following:\n" \
   "\n" \
-  pst_lamp_spec_params_HELP_INFO
-
-/* Parsing the lamp parameters. */
-
-pst_lamp_t *pst_lamp_spec_params_next_parse(argparser_t *pp);
-  /* Like {}, but assumes that the "-lamp" keyword has just been parsed.
-    Parses only the lamp parameters, starting at the next command line
-    argument. If unspecified, the direction is set to the null vector,
-    the power is set to an empty vector, and {crad} is set to {+INF}. */
-
-#define pst_lamp_spec_params_HELP \
-  "      [ " pst_lamp_spec_ambient_HELP " \\\n" \
-  "      | [ " pst_lamp_spec_angles_HELP " | " pst_lamp_spec_direction_HELP " ] \\\n" \
-  "        [ " pst_lamp_spec_radius_HELP " | " pst_lamp_spec_wall_HELP "] \\\n" \
-  "      ] \\\n" \
-  "      [ " pst_lamp_spec_power_HELP " ]"
-
-#define pst_lamp_spec_params_HELP_INFO \
-  pst_lamp_spec_angles_HELP_INFO "  Excludes" \
-  " the \"direction\" and \"ambient\" parameter.\n" \
+  "      lamp {SOURCE_PARAMETERS}\n" \
+  "        Specifies a very distant compact source in a specific" \
+  " direction with the given parameters (see below).\n" \
   "\n" \
-  pst_lamp_spec_direction_HELP_INFO "  Excludes" \
-  " the \"angles\" and \"ambient\" parameters.\n" \
+  more_HELP_INFO \
+  "      wall {SOURCE_PARAMETERS}\n" \
+  "        Specifies a light source that is an infinite luminous plane with the given parameters.  The plane will be perpendicular to the spefified direction.\n" \
   "\n" \
-  pst_lamp_spec_radius_HELP_INFO "  Excludes the" \
-  " \"ambient\" and \"wall\" parameters.\n" \
+  "      ambient {SOURCE_PARAMETERS}\n" \
+  "        Specifies an ambient (isotropic) light source.\n" \
   "\n" \
-  pst_lamp_spec_wall_HELP_INFO "  Excludes the" \
-  " \"radius\" and \"ambient\" parameters.\n" \
+  "    The {SOURCE_PARAMETERS} are:\n" \
   "\n" \
-  pst_lamp_spec_ambient_HELP_INFO "  Excludes the \"angles\"," \
-  " \"direction\", \"wall\", and \"radius\" parameters.\n" \
-  "\n" \
-  pst_lamp_spec_power_HELP_INFO "  If not specified, assumes \"power 0 0 0\"."
-  
-/* Help/info for individual lamp parameters: */
-
-#define pst_lamp_spec_angles_HELP \
-  "angles {AZIMUTH} {ELEVATION}"
-
-#define pst_lamp_spec_angles_INFO \
-  "Specifies the spherical coordinates of the lamp" \
-  " relative to the scene.  The {AZIMUTH} is measured" \
-  " counterclockwise from the X axis. The {ELEVATION} is" \
-  " measured from the XY plane towards the Z axis.  Both" \
-  " angles should be given in degrees."
-
-#define pst_lamp_spec_angles_HELP_INFO \
-  "      " pst_lamp_spec_angles_HELP "\n" \
-  "        " pst_lamp_spec_angles_INFO 
-
-  
-#define pst_lamp_spec_direction_HELP \
-  "direction {DX} {DY} DZ}"
-
-#define pst_lamp_spec_direction_INFO \
-  "Specifies the direction of the lamp, in Cartesian" \
+  "      direction {DX} {DY} DZ}\n" \
+  "        Specifies the direction of the lamp, in Cartesian" \
   " coordinates.  Only the direction of the vector is important," \
-  " not its length."
-
-#define pst_lamp_spec_direction_HELP_INFO \
-  "      " pst_lamp_spec_direction_HELP "\n" \
-  "        " pst_lamp_spec_direction_INFO 
-  
-
-#define pst_lamp_spec_radius_HELP \
-  "radius {ANGRAD}"
- 
-#define pst_lamp_spec_radius_INFO \
-  "Specifies the angular radius of the lamp, as seen from the" \
-  " scene.  The value should be in radians" \
-  " (not degrees!); it should be non-negative and at most" \
-  " {PI/2}.  The default is \"radius 0\"," \
-  " meaning a point-like light source."
-
-#define pst_lamp_spec_radius_HELP_INFO \
-  "      " pst_lamp_spec_radius_HELP "\n" \
-  "        " pst_lamp_spec_radius_INFO 
-
-
-#define pst_lamp_spec_wall_HELP \
-  "wall"
-
-#define pst_lamp_spec_wall_INFO \
-  "Specifies a light source that covers a whole hemisphere" \
-  " of directions with uniform apparent brightness; equivalent" \
-  " to \"radius 1.5707963\"."
-
-#define pst_lamp_spec_wall_HELP_INFO \
-  "      " pst_lamp_spec_wall_HELP "\n" \
-  "        " pst_lamp_spec_wall_INFO
- 
-
-#define pst_lamp_spec_ambient_HELP \
-  "ambient"
-
-#define pst_lamp_spec_ambient_INFO \
-  "Specifies an isotropic `ambient light' field; equivalent" \
-  " to \"radius 3.1415926\"."
-
-#define pst_lamp_spec_ambient_HELP_INFO \
-  "      " pst_lamp_spec_ambient_HELP "\n" \
-  "        " pst_lamp_spec_ambient_INFO
-
-
-#define pst_lamp_spec_power_HELP \
-  "power " frgb_parse_color_HELP
-  
-#define pst_lamp_spec_power_INFO \
-  "Specifies the intensity and color of the light produced" \
-  " by the lamp. It consists of " frgb_parse_color_INFO "" 
-
-#define pst_lamp_spec_power_HELP_INFO \
-  "      " pst_lamp_spec_power_HELP "\n" \
-  "        " pst_lamp_spec_power_INFO
+  " not its length.  This parameter excludes" \
+  " the \"angles\" parameter, and is not allowed for \"ambient\" sources." more_direction_INFO "\n" \
+  "\n" \
+  "      angles {AZIMUTH} {ELEVATION}\n" \
+  "        Specifies the spherical coordinates of the lamp" \
+  " relative to the scene.  The {AZIMUTH} is measured" \
+  " from the {X} axis towards the {Y} axis. The {ELEVATION} is" \
+  " measured from the {XY} plane towards the Z axis.  Both" \
+  " angles should be given in degrees.  This parameter excludes" \
+  " the \"direction\" parameter, and is not allowed for \"ambient\" sources." more_direction_INFO "\n" \
+  "\n" \
+  "      radius {ANGRAD}\n" \
+  "        Specifies the angular radius of the lamp, as seen from the" \
+  " scene.  The value should be in degrees; " \
+  " it should be non-negative and between 0 and 180.  A \"lamp\" with zero radius" \
+  " is a distant point-like light source.   A \"lamp\" with radius 90 covers a whole hemisphere of the sky sphere, and is equivalent to a \"wall\" source.  A \"lamp\" with \"radius\" 180 is equivalent to an \"ambient\" source." more_radius_INFO "  This parameter is not allowed for \"ambient\" and \"wall\" sources.\n" \
+  "\n" \
+  "      power " frgb_parse_color_HELP "\n" \
+  "        Specifies the intensity and color of the light produced" \
+  " by the lamp. It consists of " frgb_parse_color_INFO ".  This is the apparent color that results when the light source illuminates a white Lambertian (matte) surface whose normal direction is the light source's direction." more_power_INFO ""
 
 #endif

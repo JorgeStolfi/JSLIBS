@@ -1,5 +1,5 @@
 /* See pst_proc_map.h */
-/* Last edited on 2024-12-22 22:34:27 by stolfi */
+/* Last edited on 2025-01-08 17:25:11 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -287,49 +287,86 @@ void pst_proc_map_perturb_weight(double *w, double sigma)
 pst_proc_map_zfunc_t *pst_proc_map_function_generic(int32_t n)
   {
     switch(n)
-      { case  0: return &pst_proc_map_function_00;
-        case  1: return &pst_proc_map_function_01;
-        case  2: return &pst_proc_map_function_02;
-        case  3: return &pst_proc_map_function_03;
-        case  4: return &pst_proc_map_function_04;
-        case  5: return &pst_proc_map_function_05;
-        case  6: return &pst_proc_map_function_06;
-        case  7: return &pst_proc_map_function_07;
-        case  8: return &pst_proc_map_function_08;
-        case  9: return &pst_proc_map_function_09;
-        case 10: return &pst_proc_map_function_10;
-        case 11: return &pst_proc_map_function_11;
-        case 12: return &pst_proc_map_function_12;
-        case 13: return &pst_proc_map_function_13;
-        case 14: return &pst_proc_map_function_14;
-        case 15: return &pst_proc_map_function_15;
-        case 16: return &pst_proc_map_function_16;
-        case 17: return &pst_proc_map_function_17;
-        case 18: return &pst_proc_map_function_18;
-        case 19: return &pst_proc_map_function_19;
-        case 20: return &pst_proc_map_function_20;
-        case 21: return &pst_proc_map_function_21;
-        case 22: return &pst_proc_map_function_22;
-        case 23: return &pst_proc_map_function_23;
-        case 24: return &pst_proc_map_function_24;
-        case 25: return &pst_proc_map_function_25;
-        case 26: return &pst_proc_map_function_26;
-        case 27: return &pst_proc_map_function_27;
-        default: 
-          fprintf(stderr, "bad {n} %d\n", n); 
+      { case  0: return &pst_proc_map_function_00; /* "zeflat" Constant function (zero gradient). */
+        case  1: return &pst_proc_map_function_01; /* "ramp10" Linear ramp in the X direction. */
+        case  2: return &pst_proc_map_function_02; /* "ramp01" Linear ramp in the Y direction. */
+        case  3: return &pst_proc_map_function_03; /* "ramp11" Linear ramp in the XY diagonal direction. */
+        case  4: return &pst_proc_map_function_04; /* "parabo" Slanted elliptical parabolic hump. */
+        case  5: return &pst_proc_map_function_05; /* "spdom1" Buried sphere. */
+        case  6: return &pst_proc_map_function_06; /* "pyram5" Pentagonal pyramid. */
+        case  7: return &pst_proc_map_function_07; /* "rtcone" Conical mound. */
+        case  8: return &pst_proc_map_function_08; /* "ripple" Circular waves. */
+        case  9: return &pst_proc_map_function_09; /* "sbabel" Tower of Babel with smooth shoulders. */
+        case 10: return &pst_proc_map_function_10; /* "hcliff" Diverging parabolic ramps with cliff. */
+        case 11: return &pst_proc_map_function_11; /* "sinw01" Sinusoidal wave, low freq. */
+        case 12: return &pst_proc_map_function_12; /* "cosw01" Co-sinusoidal wave, low freq. */
+        case 13: return &pst_proc_map_function_13; /* "sinw02" Sinusoidal wave, med freq. */
+        case 14: return &pst_proc_map_function_14; /* "cosw02" Co-sinusoidal wave, med freq. */
+        case 15: return &pst_proc_map_function_15; /* "sinw03" Sinusoidal wave, high freq. */
+        case 16: return &pst_proc_map_function_16; /* "cosw03" Co-sinusoidal wave, high freq. */
+        case 17: return &pst_proc_map_function_17; /* "cbabel" Tower of Babel with cliff. */
+        case 18: return &pst_proc_map_function_18; /* "cbramp" Cubic ramp with cliff on three sides. */
+        case 19: return &pst_proc_map_function_19; /* "holes1" Buried sphere with many holes in slope map. */
+        case 20: return &pst_proc_map_function_20; /* "cpiece" Three nested stages connected by ramps. */
+        case 21: return &pst_proc_map_function_21; /* "cplat3" Three flat round platforms with smooth edges. */
+        case 22: return &pst_proc_map_function_22; /* "plat3a" Triangular wall with smooth edges. */
+        case 23: return &pst_proc_map_function_23; /* "plat5a" Pentagonal platform with smooth edges. */
+        case 24: return &pst_proc_map_function_24; /* "cplatv" Circular platform with sharp edges. */
+        case 25: return &pst_proc_map_function_25; /* "cplats" Circular platform with smooth edges. */
+        case 26: return &pst_proc_map_function_26; /* "qtbell" Quartic bell. */
+        case 27: return &pst_proc_map_function_27; /* "fracto" Fractalish round montain. */
+        default:
+          fprintf(stderr, "bad {n} %d\n", n);
+          assert(FALSE);
+      }
+  }
+
+char* pst_proc_map_function_generic_name(int32_t n)
+  {
+    switch(n)
+      { case  0: return "zeflat"; /* Constant function (zero gradient). */
+        case  1: return "ramp10"; /* Linear ramp in the X direction. */
+        case  2: return "ramp01"; /* Linear ramp in the Y direction. */
+        case  3: return "ramp11"; /* Linear ramp in the XY diagonal direction. */
+        case  4: return "parabo"; /* Slanted elliptical parabolic hump. */
+        case  5: return "spdom1"; /* Buried sphere. */
+        case  6: return "pyram5"; /* Pentagonal pyramid. */
+        case  7: return "rtcone"; /* Conical mound. */
+        case  8: return "ripple"; /* Circular waves. */
+        case  9: return "sbabel"; /* Tower of Babel with smooth shoulders. */
+        case 10: return "hcliff"; /* Diverging parabolic ramps with cliff. */
+        case 11: return "sinw01"; /* Sinusoidal wave, low freq. */
+        case 12: return "cosw01"; /* Co-sinusoidal wave, low freq. */
+        case 13: return "sinw02"; /* Sinusoidal wave, med freq. */
+        case 14: return "cosw02"; /* Co-sinusoidal wave, med freq. */
+        case 15: return "sinw03"; /* Sinusoidal wave, high freq. */
+        case 16: return "cosw03"; /* Co-sinusoidal wave, high freq. */
+        case 17: return "cbabel"; /* Tower of Babel with cliff. */
+        case 18: return "cbramp"; /* Cubic ramp with cliff on three sides. */
+        case 19: return "holes1"; /* Buried sphere with many holes in slope map. */
+        case 20: return "cpiece"; /* Three nested stages connected by ramps. */
+        case 21: return "cplat3"; /* Three flat round platforms with smooth edges. */
+        case 22: return "plat3a"; /* Triangular wall with smooth edges. */
+        case 23: return "plat5a"; /* Pentagonal platform with smooth edges. */
+        case 24: return "cplatv"; /* Circular platform with sharp edges. */
+        case 25: return "cplats"; /* Circular platform with smooth edges. */
+        case 26: return "qtbell"; /* Quartic bell. */
+        case 27: return "fracto"; /* Fractalish round montain. */
+        default:
+          fprintf(stderr, "bad {n} %d\n", n);
           assert(FALSE);
       }
   }
 
 void pst_proc_map_function_00(r2_t p, double *z, r2_t *dz)
-  { /* Constant function: */
+  { /* "zeflat" - constant function: */
     double zval = 0.50;
     (*z) = zval;
     if (dz != NULL) { dz->c[0] = dz->c[1] = 0; }
   }
 
 void pst_proc_map_function_01(r2_t p, double *z, r2_t *dz)
-  { /* Linear ramp along X: */
+  { /* "ramp10" - linear ramp along X: */
     double x = p.c[0], y = p.c[1];
     double Cx = 0.5, Cy = 0.0;
     (*z) = Cx*x + Cy*y;
@@ -337,7 +374,7 @@ void pst_proc_map_function_01(r2_t p, double *z, r2_t *dz)
   }
 
 void pst_proc_map_function_02(r2_t p, double *z, r2_t *dz)
-  { /* Linear ramp along Y: */
+  { /* "ramp01" - linear ramp along Y: */
     double x = p.c[0], y = p.c[1];
     double Cx = 0.0, Cy = 0.5;
     (*z) = Cx*x + Cy*y;
@@ -345,7 +382,7 @@ void pst_proc_map_function_02(r2_t p, double *z, r2_t *dz)
   }
 
 void pst_proc_map_function_03(r2_t p, double *z, r2_t *dz)
-  { /* Linear ramp along diagonal: */
+  { /* "ramp11" - linear ramp along diagonal: */
     double x = p.c[0], y = p.c[1];
     double Cx = 1/4.0, Cy = 1/3.0;
     (*z) = Cx*x + Cy*y;
@@ -353,7 +390,7 @@ void pst_proc_map_function_03(r2_t p, double *z, r2_t *dz)
   }
 
 void pst_proc_map_function_04(r2_t p, double *z, r2_t *dz)
-  { /* Slanted parabolic hump: */
+  { /* "parabo" - slanted parabolic hump: */
     double x = p.c[0], y = p.c[1];
     double A = 0.10;
     double B = 0.05;
@@ -368,16 +405,16 @@ void pst_proc_map_function_04(r2_t p, double *z, r2_t *dz)
     }
 
 void pst_proc_map_function_05(r2_t p, double *z, r2_t *dz)
-  { /* Buried sphere: */
+  { /* "spdom1" - buried sphere: */
     double x = p.c[0], y = p.c[1];
     double zMin = 0.05; /* Ground level. */
     /* Initialize {*z,*dz} with the ground plane: */
-    (*z) = zMin; 
+    (*z) = zMin;
     if (dz != NULL) { dz->c[0] = dz->c[1] = 0.00; }
     /* Where the sphere is above the ground, set {*z,*dz} to it: */
     double R = 0.8;     /* Sphere radius. */
     double D2 = x*x + y*y;
-    if (D2 < R*R) 
+    if (D2 < R*R)
       { double S = R*R - D2;
         double dSdx = -2*x;
         double dSdy = -2*y;
@@ -394,11 +431,11 @@ void pst_proc_map_function_05(r2_t p, double *z, r2_t *dz)
   }
 
 void pst_proc_map_function_06(r2_t p, double *z, r2_t *dz)
-  { /* Pentagonal pyramid: */
+  { /* "pyram5" - pentagonal pyramid: */
     double x = p.c[0], y = p.c[1];
     double zMin = 0.1; /* Ground level. */
     /* Initialize {*z,*dz} with the ground plane: */
-    (*z) = zMin; 
+    (*z) = zMin;
     if (dz != NULL){ dz->c[0] = dz->c[1] = 0.00; }
     /* Where the pyramid is above the ground, set {*z,*dz} to it: */
     double R = 0.75; /* Pyramid radius at z = 0. */
@@ -431,11 +468,11 @@ void pst_proc_map_function_06(r2_t p, double *z, r2_t *dz)
   }
 
 void pst_proc_map_function_07(r2_t p, double *z, r2_t *dz)
-  { /* Conical mound: */
+  { /* "rtcone" - conical mound: */
     double x = p.c[0], y = p.c[1];
     double zMin = 0.1; /* Ground level. */
     /* Initialize {*z,*dz} with the ground plane: */
-    (*z) = zMin; 
+    (*z) = zMin;
     if (dz != NULL){ dz->c[0] = dz->c[1] = 0.00; }
     double R = 0.75; /* Cone radius at z = 0. */
     double H = 0.80; /* Cone height. */
@@ -446,7 +483,7 @@ void pst_proc_map_function_07(r2_t p, double *z, r2_t *dz)
       }
     else
       { /* Where the cone is above the ground, set {*z,*dz} to it: */
-        if (D2 < R*R) 
+        if (D2 < R*R)
           { double S = sqrt(D2);
             double dSdx = x/S;
             double dSdy = y/S;
@@ -464,7 +501,7 @@ void pst_proc_map_function_07(r2_t p, double *z, r2_t *dz)
   }
 
 void pst_proc_map_function_08(r2_t p, double *z, r2_t *dz)
-  { /* Ripples: */
+  { /* "ripple" - circular waves: */
     double x = p.c[0], y = p.c[1];
     double A = 0.450; /* Ripple amplitude (one half of peak-to-peak). */
     double R = 0.075; /* Min ripple radius. */
@@ -484,17 +521,17 @@ void pst_proc_map_function_08(r2_t p, double *z, r2_t *dz)
   }
 
 void pst_proc_map_function_09(r2_t p, double *z, r2_t *dz)
-  { /* Tower of Babel with soulders: */
+  { /* "sbabel" - tower of Babel with soulders: */
     double N = 3.0;       /* Number of full turns. */
     double RI = 0.05;     /* Inner radius of top platform (excl. shoulder). */
     double RO = 0.90;     /* Outer radius of tower (excl. shoulder). */
     double EF = 1.0/3.0;  /* Relative width of soft shoulder. */
-    
+
     pst_proc_map_function_babel(&p, RI, RO, N, EF, z, dz);
   }
 
 void pst_proc_map_function_10(r2_t p, double *z, r2_t *dz)
-  { /* Diverging parabolic ramps, with cliff: */
+  { /* "hcliff" - diverging parabolic ramps, with cliff: */
     double x = p.c[0], y = p.c[1];
     double Cx = 1.0, Cy = 1.5;
     double S = Cx*x + Cy*y;
@@ -527,69 +564,69 @@ void pst_proc_map_function_10(r2_t p, double *z, r2_t *dz)
   }
 
 void pst_proc_map_function_11(r2_t p, double *z, r2_t *dz)
-  { /* A low-frequency sinusoid wave: */
+  { /* "sinw01" - low-frequency sinusoid wave: */
     r2_t f = (r2_t){{ 0.25, 0.50 }};
     pst_proc_map_function_wave(&p, &f, 0.0, z, dz);
   }
 
 void pst_proc_map_function_12(r2_t p, double *z, r2_t *dz)
-  { /* A low-frequency co-sinusoid wave: */
+  { /* "cosw01" - low-frequency co-sinusoid wave: */
     r2_t f = (r2_t){{ 0.25, 0.50 }};
     pst_proc_map_function_wave(&p, &f, M_PI/2, z, dz);
   }
 
 void pst_proc_map_function_13(r2_t p, double *z, r2_t *dz)
-  { /* A medium-frequency sinusoid wave: */
+  { /* "sinw02" - medium-frequency sinusoid wave: */
     r2_t f = (r2_t){{ 3.00, 2.50 }};
     pst_proc_map_function_wave(&p, &f, 0.0, z, dz);
   }
 
 void pst_proc_map_function_14(r2_t p, double *z, r2_t *dz)
-  { /* A medium-frequency co-sinusoid wave: */
+  { /* "cosw02" - medium-frequency co-sinusoid wave: */
     r2_t f = (r2_t){{ 3.00, 2.50 }};
     pst_proc_map_function_wave(&p, &f, M_PI/2, z, dz);
   }
 
 void pst_proc_map_function_15(r2_t p, double *z, r2_t *dz)
-  { /* A higher-frequency sinusoid wave: */
+  { /* "sinw03" - high-frequency sinusoid wave: */
     r2_t f = (r2_t){{ 5.00, 7.00 }};
     pst_proc_map_function_wave(&p, &f, 0.0, z, dz);
   }
 
 void pst_proc_map_function_16(r2_t p, double *z, r2_t *dz)
-  { /* A higher-frequency co-sinusoid wave: */
+  { /* "cosw03" - higher-frequency co-sinusoid wave: */
     r2_t f = (r2_t){{ 5.00, 7.00 }};
     pst_proc_map_function_wave(&p, &f, M_PI/2, z, dz);
   }
 
 void pst_proc_map_function_17(r2_t p, double *z, r2_t *dz)
-  { /* Tower of Babel with cliff: */
+  { /* "cbabel" - tower of Babel with cliff: */
     double N = 2.25;      /* Number of full turns. */
     double RI = 0.05;     /* Inner radius of top platform. */
     double RO = 0.90;     /* Outer radius of tower. */
     double EF = 0.0;      /* Relative width of soft shoulder. */
-    
+
     pst_proc_map_function_babel(&p, RI, RO, N, EF, z, dz);
   }
 
 void pst_proc_map_function_18(r2_t p, double *z, r2_t *dz)
-  { /* Tilted bicubic ramp: */
+  { /* "cbramp" - tilted bicubic ramp with cliffs on three sides: */
     double x = p.c[0], y = p.c[1];
-    
+
     /* Tilt {theta}, half-side {A} and height {H} of ramp: */
     double theta = M_PI/7;
     double Ct = cos(theta);
     double St = sin(theta);
     double A = 0.75/(fabs(Ct) + fabs(St));
     double H = 0.80;
-    
+
     /* Remap {x,y} to {u,v} tilted by theta: */
     double u = (+ Ct*x + St*y)/A;
     double v = (- St*x + Ct*y)/A;
-    
+
     double Vmax = 0.75;
     double Umax = 1.50;
-    
+
     if ((u < -1.00) || (u > +Umax) || (fabs(v) > Vmax))
       { /* Ground floor: */
         (*z) = 0;
@@ -606,7 +643,7 @@ void pst_proc_map_function_18(r2_t p, double *z, r2_t *dz)
             dz->c[1] = 0;
           }
       }
-    else 
+    else
       { /* Ramp: */
         (*z) = 0.25*H*(2 + 3*u - u*u*u);
         if (dz != NULL)
@@ -618,25 +655,25 @@ void pst_proc_map_function_18(r2_t p, double *z, r2_t *dz)
   }
 
 void pst_proc_map_function_19(r2_t p, double *z, r2_t *dz)
-  { /* Buried sphere with undefined regions and scattered outliers: */
-    
+  { /* "holes1" - buried sphere with undefined regions and scattered outliers: */
+
     /* Compute the buried sphere without noise: */
     pst_proc_map_function_05(p, z, dz);
-    
+
     if (dz == NULL) { return; }
-    
+
     /* Now add a large value (20.0) to the slopes at random places: */
     bool_t bad = FALSE; /* For now. */
     double x = p.c[0], y = p.c[1];
-    
+
     /* Make it bad outside the dome: */
     double R = 0.95;    /* Slightly bigger than sphere radius. */
     double D2 = x*x + y*y;
     if (D2 > R*R) { bad = TRUE; }
-    
+
     /* Make a pizza slice bad: */
     if ((y > 0) && (y < -x/3)) { bad = TRUE; }
-    
+
     /* Drill some holes in various places: */
     int32_t M = 2;
     double xf = M*x - floor(M*x);
@@ -646,7 +683,7 @@ void pst_proc_map_function_19(r2_t p, double *z, r2_t *dz)
     double hr = 0.1 + 0.05*sin(22.01*x);
     double hd = hypot(xf-xc, yf-yc);
     if (hd <= hr) { bad = TRUE; }
-    
+
     /* Add a big value to the slope where we want it to be bad: */
     /* This should set the weight map to zero in those places: */
     double Big = 20; /* Hopefully bigger than any actual slope. */
@@ -654,8 +691,8 @@ void pst_proc_map_function_19(r2_t p, double *z, r2_t *dz)
   }
 
 void pst_proc_map_function_20(r2_t p, double *z, r2_t *dz)
-  { /* Buried annulus connected by straight ramps: */
-    
+  { /* "cpiece" - buried annulus connected by straight ramps: */
+
     double x = p.c[0], y = p.c[1];
 
     auto void fix_ramp(double r, double z0, double z1, double t, double w, double d, double s, double *z, r2_t *dz);
@@ -667,14 +704,14 @@ void pst_proc_map_function_20(r2_t p, double *z, r2_t *dz)
         and a slanted plane with length {d-s}. The ramp is directed
         outwards if {d>0}, inwards if {d<0}. The sign of {s} must be
         the same as that of {d}. */
-     
+
     void fix_ramp(double r, double z0, double z1, double t, double w, double d, double s, double *z, r2_t *dz)
       {
         /* Rotate {x,y} so that the ramp is at +X: */
         double ct = cos(t), st = sin(t);
         double xr = + ct*x + st*y;
         double yr = - st*x + ct*y;
-        
+
         if ((fabs(yr) <= w/2) && (xr > 0))
           { /* Compute X of beginning of ramp: */
             double xbeg = (d > 0 ? sqrt(r*r - w*w/4) - 0.00001*r : 1.00001*r);
@@ -683,7 +720,7 @@ void pst_proc_map_function_20(r2_t p, double *z, r2_t *dz)
             if ((u >= 0) && (u < 1.0))
               { double ubot = s/d;
                 if (u < ubot)
-                  { (*z) = z0; 
+                  { (*z) = z0;
                     if (dz != NULL) { (*dz) = (r2_t){{ 0, 0 }}; }
                   }
                 else
@@ -704,10 +741,10 @@ void pst_proc_map_function_20(r2_t p, double *z, r2_t *dz)
     double zA = 0.10; /* Background level. */
     double zB = 0.00; /* Annulus level. */
     double zC = 0.05; /* Inner platform level. */
-    
+
     /* Initialize {*dz} with a plane: */
     if (dz != NULL) { dz->c[0] = dz->c[1] = 0.00; }
-    
+
     /* Determine the basic floor level: */
     double rA = 0.75; /* Outer annulus radius. */
     double rB = 0.50; /* Outer annulus radius. */
@@ -718,25 +755,25 @@ void pst_proc_map_function_20(r2_t p, double *z, r2_t *dz)
       { (*z) = zC; }
     else
       { (*z) = zB; }
-      
+
     /* Excavate outer ramp: */
     double tA =  0.80; /* Position in radians. */
     double wA =  0.20; /* Width. */
     double dA = +0.30; /* Depth. */
     double sA = +0.05; /* Threshold depth. */
     fix_ramp(rA, zB, zA, tA, wA, dA, sA, z, dz);
-    
+
     /* Excavate inner ramp: */
     double tB =  2.50; /* Position in radians. */
     double wB =  0.16; /* Width. */
     double dB = -0.24; /* Depth. */
     double sB = -0.04; /* Threshold depth. */
     fix_ramp(rB, zB, zC, tB, wB, dB, sB, z, dz);
-    
+
   }
 
 void pst_proc_map_function_21(r2_t p, double *z, r2_t *dz)
-  { /* Circular platforms with smooth edges. */
+  { /* "cplat3" - circular platforms with smooth edges. */
     r2_t ctr[3] = { (r2_t){{+0.3,+0.4}}, (r2_t){{-0.5,-0.2}}, (r2_t){{+0.4,-0.5}} }; /* Centers. */
     double R[3] = { 0.5, 0.4, 0.3 };      /* Nominal radii. */
     double HS[3] = { 0.05, 0.02, 0.03 };  /* Half-widthd of shoulders. */
@@ -745,21 +782,21 @@ void pst_proc_map_function_21(r2_t p, double *z, r2_t *dz)
     (*z) = 0;
     if (dz != NULL) { (*dz) = (r2_t){{0,0}}; }
     for (k = 0; k < 3; k++)
-      { 
+      {
         r2_t vk; r2_sub(&p, &(ctr[k]), &vk);
         double zk;
         r2_t dzk;
         pst_proc_map_function_round_platform(&vk, R[k], HS[k], &zk, (dz == NULL ? NULL : &dzk));
         (*z) += zDif[k]*zk;
-        if (dz != NULL) 
+        if (dz != NULL)
           { dz->c[0] += zDif[k]*dzk.c[0];
             dz->c[1] += zDif[k]*dzk.c[1];
           }
       }
   }
-  
+
 void pst_proc_map_function_22(r2_t p, double *z, r2_t *dz)
-  { /* Triangular wall with smooth edges. */
+  { /* "plat3a" - triangular wall with smooth edges. */
     double R[2] = { 0.9, 0.4 };     /* Nominal radii. */
     double S[2] = { 0.05, 0.03 };   /* Half-widthd of shoulders. */
     double zDif[2] = { +0.80, -0.40 }; /* Heights. */
@@ -772,15 +809,15 @@ void pst_proc_map_function_22(r2_t p, double *z, r2_t *dz)
         r2_t dzk;
         pst_proc_map_function_polygonal_platform(&p, 3, R[k], T[k] + M_PI/12, S[k], &zk, (dz == NULL ? NULL : &dzk));
         (*z) += zDif[k]*zk;
-        if (dz != NULL) 
+        if (dz != NULL)
           { dz->c[0] += zDif[k]*dzk.c[0];
             dz->c[1] += zDif[k]*dzk.c[1];
           }
       }
   }
-  
+
 void pst_proc_map_function_23(r2_t p, double *z, r2_t *dz)
-  { /* Pentagonal platform with smooth edges. */
+  { /* "plat5a" - pentagonal platform with smooth edges. */
     double R = 0.6;
     double S = 0.2;
     double T = M_PI/15.0;
@@ -788,7 +825,7 @@ void pst_proc_map_function_23(r2_t p, double *z, r2_t *dz)
   }
 
 void pst_proc_map_function_24(r2_t p, double *z, r2_t *dz)
-  { /* Circular platform with sharp edges. */
+  { /* "cplatv" - circular platform with sharp edges. */
 
     r2_t ctr = (r2_t){{ 0.0, 0.0 }};
     double zMin = 0.05; /* Z-level outside. */
@@ -802,14 +839,14 @@ void pst_proc_map_function_24(r2_t p, double *z, r2_t *dz)
     r2_t dzt;
     pst_proc_map_function_round_platform(&v, R, HS, &zt, &dzt);
     (*z) = zMin + zDif*zt;
-    if (dz != NULL) 
+    if (dz != NULL)
       { dz->c[0] = zDif*dzt.c[0];
         dz->c[1] = zDif*dzt.c[1];
       }
   }
-  
+
 void pst_proc_map_function_25(r2_t p, double *z, r2_t *dz)
-  { /* Circular platform with smooth edges. */
+  { /* "cplats" - circular platform with smooth edges. */
 
     r2_t ctr = (r2_t){{ 0.0, 0.0 }};
     double zMin = 0.05; /* Z-level outside. */
@@ -823,23 +860,23 @@ void pst_proc_map_function_25(r2_t p, double *z, r2_t *dz)
     r2_t dzt;
     pst_proc_map_function_round_platform(&v, R, HS, &zt, &dzt);
     (*z) = zMin + zDif*zt;
-    if (dz != NULL) 
+    if (dz != NULL)
       { dz->c[0] = zDif*dzt.c[0];
         dz->c[1] = zDif*dzt.c[1];
       }
   }
 
 void pst_proc_map_function_26(r2_t p, double *z, r2_t *dz)
-  { /* Quartic bell. */
+  { /* "qtbell" - quartic bell. */
     r2_t ctr = (r2_t){{ 0.0, 0.0 }};
     double zMin = 0.05; /* Z-level outside. */
     double zMax = 0.95; /* Z-level inside. */
     double R = 0.8;     /* Nominal radius. */
-    
+
     double X = (p.c[0] - ctr.c[0])/R; double dXdx = 1/R;
     double Y = (p.c[1] - ctr.c[1])/R; double dYdy = 1/R;
     double zDif = zMax - zMin;
-    
+
     double r2 = X*X + Y*Y;
     if (r2 >= 1.0)
       { (*z) = zMin;
@@ -849,7 +886,7 @@ void pst_proc_map_function_26(r2_t p, double *z, r2_t *dz)
       { double dr2dx = 2*X*dXdx; double dr2dy = 2*Y*dYdy;
         double F2 = 1.0 - r2; double dF2dx = - dr2dx; double dF2dy = - dr2dy;
         double F4 = F2*F2; double dF4dx = 2*F2*dF2dx; double dF4dy = 2*F2*dF2dy;
-        (*z) = zMin + zDif*F4; 
+        (*z) = zMin + zDif*F4;
         if (dz != NULL)
           { dz->c[0] = zDif*dF4dx;
             dz->c[1] = zDif*dF4dy;
@@ -858,7 +895,7 @@ void pst_proc_map_function_26(r2_t p, double *z, r2_t *dz)
   }
 
 void pst_proc_map_function_27(r2_t p, double *z, r2_t *dz)
-  { /* Fractalish round mountain. */
+  { /* "fracto" - fractalish round mountain. */
 
     r2_t ctr = (r2_t){{ 0.0, 0.0 }};
     double zMin = 0.05; /* Z-level outside. */
@@ -873,7 +910,7 @@ void pst_proc_map_function_27(r2_t p, double *z, r2_t *dz)
     pst_proc_map_fractal_cone(&v, eps, seed, &zt, &dzt);
     double zDif = zMax - zMin;
     (*z) = zMin + zDif*zt;
-    if (dz != NULL) 
+    if (dz != NULL)
       { dz->c[0] = zDif*dzt.c[0]/R;
         dz->c[1] = zDif*dzt.c[1]/R;
       }
@@ -882,7 +919,7 @@ void pst_proc_map_function_27(r2_t p, double *z, r2_t *dz)
 /* PARAMETRIZED FIELDS */
 
 void pst_proc_map_function_affine(r2_t *p, r2_t *a, double fa, r2_t *b, double fb, r2_t *c, double fc, double *z, r2_t *dz)
-  { 
+  {
     r2_t vca; r2_sub(a, c, &vca);
     r2_t vcb; r2_sub(b, c, &vcb);
     /* Compute the 2x2 matrix {N} that maps {vca} to {(1,0)} to and {vcb} to {(0,1)} : */
@@ -891,8 +928,8 @@ void pst_proc_map_function_affine(r2_t *p, r2_t *a, double fa, r2_t *b, double f
     /* Get the barycentric coordinates of {p} relative to {a,b,c}: */
     r2_t vcp; r2_sub(p, c, &vcp);
     r2_t bar; r2x2_map_row(&vcp, &N, &bar);
-    double ua = bar.c[0]; double duadx = N.c[0][0], duady = N.c[1][0]; 
-    double ub = bar.c[1]; double dubdx = N.c[0][1], dubdy = N.c[1][1]; 
+    double ua = bar.c[0]; double duadx = N.c[0][0], duady = N.c[1][0];
+    double ub = bar.c[1]; double dubdx = N.c[0][1], dubdy = N.c[1][1];
     double uc = 1 - ua - ub; double ducdx = - (duadx + dubdx), ducdy = - (duady + dubdy);
     /* Barycentric interpolation of {fa,fb,fc}: */
     (*z) = fa*ua + fb*ub + fc*uc;
@@ -921,16 +958,16 @@ void pst_proc_map_function_babel(r2_t *p, double RI, double RO, double N, double
 
     double zBot = 0.1;  /* Height of ground floor. */
     double zTop = 0.80; /* Height of top platform. */
-    
+
     double DR = (RO - RI)/(N+1);  /* Width of ramp. */
     double zDif = (zTop - zBot)/N;  /* Height difference between adjacent turns. */
     double EP = EF*DR;            /* Width of shoulder. */
-    
-    /* Convert {x,y} to polar {r,t}: */ 
+
+    /* Convert {x,y} to polar {r,t}: */
     double r2 = x*x + y*y;
     double r = sqrt(r2);              /* Distance from center. */
     double t = atan2(y, x)/(2*M_PI);  /* Argument of {(x,y)} in turns. */
-    
+
     /* Compute height {mz} of ramp, ignoring shoulders and Z-clipping: */
     double rpt = RI + (1 - t)*DR;     /* Radius of platform at this {t}. */
     double s = r - rpt;               /* Radial distance from platform. */
@@ -940,52 +977,52 @@ void pst_proc_map_function_babel(r2_t *p, double RI, double RO, double N, double
 
     if (mz >= zTop)
       { /* Central platform: */
-        (*z) = zTop; 
+        (*z) = zTop;
         if (dz != NULL) { dz->c[0] = dz->c[1] = 0.00; }
       }
     else if ((mz <= zBot) && (ph > EP))
       { /* The ramp here is below ground and we are not on the shoulder, so we are on the ground: */
-        (*z) = zBot; 
+        (*z) = zBot;
         if (dz != NULL) { dz->c[0] = dz->c[1] = 0.00; }
       }
     else if (mz <= zBot - zDif)
       { /* The ramp here is buried so deeply that there is not even the shoulder, so we are on the ground: */
-        (*z) = zBot; 
+        (*z) = zBot;
         if (dz != NULL) { dz->c[0] = dz->c[1] = 0.00; }
       }
     else
       { /* We are on the ramp or shoulder (including the outermost shoulder): */
-      
+
         double drdx = x/r;
         double drdy = y/r;
-        
+
         double dtdx = -y/r2/(2*M_PI);
         double dtdy = +x/r2/(2*M_PI);
-        
+
         double dmdx = zDif*dtdx;
         double dmdy = zDif*dtdy;
-        
+
         /* First compute {z,dz} ignoring the shoulder fill: */
         if (mz < zBot)
           { /* Ramp is buried so we would be on the ground: */
-            (*z) = zBot; 
+            (*z) = zBot;
             if (dz != NULL) { dz->c[0] = dz->c[1] = 0.00; }
           }
         else
           { /* We would be on the ramp: */
-            (*z) = mz; 
+            (*z) = mz;
             if (dz != NULL)
-              { dz->c[0] = dmdx; 
+              { dz->c[0] = dmdx;
                 dz->c[1] = dmdy;
-              } 
+              }
           }
-          
+
         if (ph < EP)
           { /* We are on the shoulder region, add the shoulder fill: */
-            
+
             /* Get the relative position {w} across the shoulder, in [0_1]: */
             double w = ph/EP;
-            
+
             /* Compute the the derivatives of {w}: */
             double dsdx = drdx + DR*dtdx;
             double dsdy = drdy + DR*dtdy;
@@ -1015,9 +1052,9 @@ void pst_proc_map_function_babel(r2_t *p, double RI, double RO, double N, double
               }
 
             /* Now add the shoulder of height {a} to {mz}: */
-            (*z) += a*h; 
+            (*z) += a*h;
             if (dz != NULL)
-              { dz->c[0] += dadx*h + a*dhdx; 
+              { dz->c[0] += dadx*h + a*dhdx;
                 dz->c[1] += dady*h + a*dhdy;
               }
           }
@@ -1036,13 +1073,13 @@ void pst_proc_map_function_round_platform(r2_t *p, double R, double HS, double *
 
     demand(R > 0, "bad radius {R}");
     demand((HS >= 0) && (HS <= R), "bad {HS}");
-    
+
     /* Default derivative: */
     if (dz != NULL) { (*dz) = (r2_t){{0, 0}}; }
-    
+
     double RI = R - HS;
     double RO = R + HS;
-    
+
     double r2 = x*x + y*y;
     if (r2 <= RI*RI)
       { (*z) = 1.0; }
@@ -1064,21 +1101,21 @@ void pst_proc_map_function_round_platform(r2_t *p, double R, double HS, double *
           }
       }
   }
-  
+
 void pst_proc_map_function_polygonal_platform(r2_t *p, int32_t N, double R, double tilt, double S, double *z, r2_t *dz)
   {
     double x = p->c[0], y = p->c[1];
-    
+
     demand(R > 0, "bad radius {R}");
     demand(S >= 0, "bad {S}");
     demand(N >= 3, "bad {N}");
-    
+
     /* Default derivative: */
     if (dz != NULL) { (*dz) = (r2_t){{0, 0}}; }
-    
+
     double RI = R*cos(M_PI/N); /* Inscribed circle radius. */
     double RO = R + S;  /* Outer radius including smooth transition. */
-    
+
     double r2 = x*x + y*y;
     if (r2 >= RO*RO)
       { (*z) = 0; }
@@ -1098,26 +1135,26 @@ void pst_proc_map_function_polygonal_platform(r2_t *p, int32_t N, double R, doub
 
         double u = + x*ct - y*st;
         double v = + x*st + y*ct;
-        
+
         /* Fold negative {v}: */
         double sv = (v < 0 ? -1 : +1);
         v = sv*v;
-        
+
         double HL = R*sin(hw); /* Half-side of outline. */
 
         if (u <= 0)
           { fprintf(stderr, "p = ( %+8.5f %+8.5f )  ang = %+8.2f  nw = %+2d", x, y, ang*180/M_PI, nw);
             fprintf(stderr, "  t = %+8.2f  uv = ( %+8.5f %+8.5f )  auv = %+8.2f\n", t*180/M_PI, u, v, atan2(v,u)*180/M_PI);
           }
-        
+
         assert(u > 0);
         assert(v/u <= 1.00001*HL/RI);
-        
-        if (u <= RI) 
+
+        if (u <= RI)
           { (*z) = 1; }
-        else if (u >= RI + S) 
+        else if (u >= RI + S)
           { (*z) = 0; }
-        else 
+        else
           { if (v <= HL)
               { /* Ramp on straight part of outline: */
                 double m = 2*(u - RI)/S - 1; /* Position along ramp, in {[-1_+1]}. */
@@ -1131,7 +1168,7 @@ void pst_proc_map_function_polygonal_platform(r2_t *p, int32_t N, double R, doub
                     dz->c[1] = - dz_du*st;
                   }
               }
-            else 
+            else
               { /* Ramp on corner: */
                 double q = hypot(u - RI, v - HL);
                 if (q >= S)

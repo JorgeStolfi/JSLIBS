@@ -1,5 +1,5 @@
 /* See {haf.h}. */
-/* Last edited on 2024-12-05 10:38:44 by stolfi */
+/* Last edited on 2025-01-05 11:20:41 by stolfi */
  
 #define haf_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -173,6 +173,16 @@ haf_arc_t haf_make_loop(haf_edge_id_t eid)
     return a;
   }
   
+void haf_free_edge(haf_arc_t a)
+  { haf_arc_t b = SYM(a);
+    haf_edge_rec_t *ed = EDGE(a);
+    
+    demand((ed->lnext[0] == a) || (ed->lnext[0] == b), "edge is not isolated");
+    demand((ed->lnext[1] == a) || (ed->lnext[1] == b), "edge is not isolated");
+
+    free(ed);
+  }
+
 void haf_splice(haf_arc_t a, haf_arc_t b)
   { demand(a != NULL, "invalid {NULL} argument {a}");
     demand(b != NULL, "invalid {NULL} argument {b}");

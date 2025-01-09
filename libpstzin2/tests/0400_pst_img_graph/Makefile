@@ -1,11 +1,12 @@
-# Last edited on 2024-12-23 14:50:01 by stolfi
+# Last edited on 2025-01-05 10:53:23 by stolfi
 
 PROG = test_pst_img_graph
 
-TEST_LIB := libpst.a
+TEST_LIB := libpstzin2.a
 TEST_LIB_DIR := ../..
 
 JS_LIBS := \
+  libpst.a \
   libimg.a \
   libgeo.a \
   libgausol.a \

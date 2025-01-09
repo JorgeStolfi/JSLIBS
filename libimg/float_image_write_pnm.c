@@ -1,5 +1,5 @@
 /* See {float_image_write_pnm.h}. */
-/* Last edited on 2024-12-04 23:32:49 by stolfi */
+/* Last edited on 2025-01-01 16:02:59 by stolfi */
 
 #include <stdlib.h>
 #include <math.h>
@@ -18,7 +18,7 @@ void float_image_write_pnm_named
   ( char *fname,        /* PPM/PGM/PBM file name (with extension). */            
     float_image_t *fim, /* Image to write. */
     bool_t isMask,      /* TRUE for masks, FALSE for images. */
-    double gamma,       /* Gamma to use in encoding (1 = linear encoding). */    
+    double expoDec,     /* Gamma exponent that will be used in decoding (1 = linear encoding). */    
     double bias,        /* Offset to use in encoding. */                         
     bool_t yup,         /* If TRUE, reverses the indexing of rows. */            
     bool_t warn,        /* If TRUE, prints "writing {fname}..." to {stderr}. */
@@ -29,7 +29,7 @@ void float_image_write_pnm_named
     float_image_t * gim = float_image_copy(fim);
     int32_t c;
     for (c = 0; c < fim->sz[0]; c++)
-      { float_image_apply_gamma(gim, c, 1.0/gamma, bias); }
+      { float_image_apply_gamma(gim, c, 1.0/expoDec, bias); }
     uint16_t maxval = uint16_image_MAX_SAMPLE;
     uint16_image_t *pim = 
       float_image_to_uint16_image(gim, isMask, nc, NULL, NULL, NULL, maxval, yup, verbose);
@@ -39,11 +39,11 @@ void float_image_write_pnm_named
   }
 
 void float_image_write_pnm_named_list
-  ( int32_t n,                /* Number of images to write. */
+  ( int32_t n,            /* Number of images to write. */
     char *fname[],        /* PPM/PGM/PBM file names (with extensions). */            
     float_image_t *fim[], /* Images to write. */
     bool_t isMask,        /* TRUE for masks, FALSE for images. */
-    double gamma,         /* Gamma to use in encoding (1 = linear encoding). */    
+    double expoDec,       /* Gamma exponent that will be used in decoding (1 = linear encoding). */    
     double bias,          /* Offset to use in encoding. */                         
     bool_t yup,           /* If TRUE, reverses the indexing of rows. */ 
     bool_t warn,          /* If TRUE, prints "writing {fname}..." to {stderr}. */
@@ -51,5 +51,5 @@ void float_image_write_pnm_named_list
   )
   { int32_t i;
     for(i = 0; i < n; i++)
-      { float_image_write_pnm_named(fname[i], fim[i], isMask, gamma, bias, yup, warn, verbose); }
+      { float_image_write_pnm_named(fname[i], fim[i], isMask, expoDec, bias, yup, warn, verbose); }
   }

@@ -1,5 +1,5 @@
 /* See pst_height_map.h */
-/* Last edited on 2024-12-24 18:59:34 by stolfi */
+/* Last edited on 2025-01-08 01:19:44 by stolfi */
 
 #include <math.h>
 #include <affirm.h>
@@ -74,6 +74,39 @@ float_image_t *pst_height_map_shrink(float_image_t *IZ, uint32_t avgWidth)
     float_image_t *JZ = float_image_mscale_shrink(IZ, NULL, NX_JZ, NY_JZ, dxy, dxy, (int32_t)avgWidth);
     float_image_rescale_samples(JZ, 0, 0.0, 1.0, 0.0, 0.5);
     return JZ;
+  }
+
+float_image_t *pst_height_map_shrink_by_one(float_image_t *Z, float_image_t *W)
+  {
+    int32_t NC_Z, NX_Z, NY_Z;
+    float_image_get_size(Z, &NC_Z, &NX_Z, &NY_Z);
+    demand(NC_Z == 1, "height map must have a single channel");
+    demand((NX_Z >= 1) && (NY_Z >= 1), "height map cannot be empty");
+    if (W != NULL) { float_image_check_size(W, 1, NX_Z, NY_Z); }
+    
+    int32_t NX_R = NX_Z - 1;
+    int32_t NY_R = NY_Z - 1;
+    float_image_t *R = float_image_new(1, NX_R, NY_R);
+    
+    for (int32_t y = 0; y < NY_R; y++)
+      { for (int32_t x = 0; x < NX_R; x++)
+          { double sum_wv = 0;
+            double sum_w = 0;
+            for (int32_t dx = 0; dx <= 1; dx++)
+              { for (int32_t dy = 0; dy <= 1; dy++)
+                  { double v = float_image_get_sample(Z, 0, x+dx, y+dy);
+                    double w = (W == NULL ? 1.0 : float_image_get_sample(W, 0, x+dx, y+dy));
+                    /* Fudge in case all weights are zero: */
+                    if (w == 0) { w = 1.0e-200; }
+                    sum_wv += v*w;
+                    sum_w += w;
+                  }
+              }
+            double val = sum_wv/sum_w;
+            float_image_set_sample(R, 0, x, y, (float)val);
+          }
+      }
+    return R;
   }
 
 float_image_t *pst_height_map_compare

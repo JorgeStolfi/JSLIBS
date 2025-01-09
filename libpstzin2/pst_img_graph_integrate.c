@@ -1,5 +1,5 @@
 /* See {pst_img_graph.h} */
-/* Last edited on 2024-12-24 18:59:41 by stolfi */
+/* Last edited on 2025-01-07 08:11:08 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #include <stdio.h>
@@ -36,8 +36,8 @@ pst_imgsys_t *pst_img_graph_build_integration_system
       { pst_imgsys_equation_t *eqk = &(eq[N]);
         uint32_t nt = 0; /* Number of terms in equation. */
         eqk->rhs = 0.0;
-        eqk->ix[nt] = i;  eqk->cf[nt] = 1.00; nt++;
-        ind_ix[i] = (int32_t)N;
+        eqk->uid[nt] = i;  eqk->cf[nt] = 1.00; nt++;
+        ind_uid[i] = (int32_t)N;
         pst_img_graph_vertex_data_t *v = &(g->vertex[i]);
         uint32_t num_neighbours = (v->id == -1 ? 0:pst_img_graph_vertex_count_neighbours(g,i));
         haf_arc_t e0 = v->edge;
@@ -50,14 +50,14 @@ pst_imgsys_t *pst_img_graph_build_integration_system
                 assert(dest != -1);
                 uint32_t id = g->vertex[dest].id;
                 assert(id != -1);
-                eqk->ix[nt] = dest;
+                eqk->uid[nt] = dest;
                 assert(w > 0) ;
                 eqk->cf[nt] = -w;
                 eqk->rhs += -w*d;
                 nt++;
                 e = haf_onext(e);
               } while(e != e0);
-            assert(nt <= MAXCOEFS);
+            assert(nt <= MAX_COEFFS);
             double wtot = 0;
             for (uint32_t j = 1; j < nt; j++)
               { assert(eqk->cf[j] < 0); wtot+= -eqk->cf[j]; } 
@@ -70,7 +70,7 @@ pst_imgsys_t *pst_img_graph_build_integration_system
             N++;
          }
        else
-         { ind_ix[i] = -1;
+         { ind_uid[i] = -1;
            iW[i] = 0;
          }
       }
@@ -80,13 +80,13 @@ pst_imgsys_t *pst_img_graph_build_integration_system
         uint32_t mt = 0;
         for (uint32_t i = 0; i < nt; i++)
           { /* Get the temporay index {xyi}: */
-            uint32_t xyi = eqk->ix[i];
+            uint32_t xyi = eqk->uid[i];
             /* Get the definitive index {ki}: */
-            int32_t ki = ind_ix[xyi];
+            int32_t ki = ind_uid[xyi];
             if (ki >= 0)
               { /* Append the term to the equation: */
                 int32_t j = (int32_t)mt;
-                eqk->ix[j] = (uint32_t)ki;
+                eqk->uid[j] = (uint32_t)ki;
                 eqk->cf[j] = eqk->cf[i];
                 assert(!isnan(eqk->cf[j]));
                 mt++;
@@ -100,7 +100,7 @@ pst_imgsys_t *pst_img_graph_build_integration_system
     uint32_t *row = talloc(N, uint32_t);
     uint32_t count_idx = 0;
     for (uint32_t i =0; i < g->NV; i++)
-      { if (ind_ix[i] >= 0)
+      { if (ind_uid[i] >= 0)
           { int32_t x, y;
             pst_img_graph_get_vertex_image_indices(&(g->vertex[i].coords), NX_Z, NY_Z, &x, &y);
             col[count_idx] = (uint32_t)x;
@@ -111,8 +111,7 @@ pst_imgsys_t *pst_img_graph_build_integration_system
      assert(count_idx == N);
    
     /* Now package the equations as a system: */
-    /* pst_imgsys_t *S = pst_imgsys_from_eqs(NX_Z, NY_Z, N, eq, ix, col, row); */
-    *ref_tab = ind_ix;
+    *ref_tab = ind_uid;
     pst_imgsys_t *S = pst_imgsys_from_eqs(NX_Z, NY_Z, N, eq, NULL, col,row);  
     return S;
   }
@@ -146,7 +145,7 @@ void pst_img_graph_solve_system
     assert(count_vt == S->N);
     
     uint32_t *queue = pst_img_graph_sort_equations(S,ref_tab,iW,g->NV );
-    pst_imgsys_solve(S, Z, queue, maxIter, convTol, para, szero, verbose, 0, NULL);
+    pst_imgsys_solve_iterative(S, Z, queue, maxIter, convTol, para, szero, verbose, 0, NULL);
     count_vt = 0;
     for (uint32_t i = 0; i < g->NV; i++)
       { if ( ref_tab[i] >= 0)
@@ -293,9 +292,9 @@ uint32_t *pst_img_graph_sort_equations
   )
 {
  
-  #define MAXDEGREE (2*((MAXCOEFS)-1))
+  #define MAXDEGREE (2*((MAX_COEFFS)-1))
   uint32_t N = S->N;
-  assert(MAXCOEFS <= 20);
+  assert(MAX_COEFFS <= 20);
   /* Build the graph of the equations */
   uint32_t *graph = talloc(MAXDEGREE*N, uint32_t);
   /* Value of out_degree[k] is the number of neighbours of pixel[k] with weight less than OW[k]  */
@@ -333,10 +332,10 @@ uint32_t *pst_img_graph_sort_equations
   for (uint32_t k = 0; k < N; k++)
 {
     pst_imgsys_equation_t *eqk = &(S->eq[k]);
-    assert( eqk->ix[0] == k);
+    assert( eqk->uid[0] == k);
     for (uint32_t j = 1; j < eqk->nt; j++)
     {
-      uint32_t i = eqk->ix[j];
+      uint32_t i = eqk->uid[j];
       if (arrow(k,i))
 { in_degree[i]++; graph[MAXDEGREE*k + out_degree[k]] = i; out_degree[k]++;}
       if (arrow(i,k))

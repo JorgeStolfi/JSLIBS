@@ -1,5 +1,5 @@
 /* See ellipse.h */
-/* Last edited on 2021-06-09 19:48:11 by jstolfi */
+/* Last edited on 2025-01-02 18:22:57 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -9,6 +9,7 @@
 #include <assert.h>
 
 #include <r2.h>
+#include <box.h>
 #include <r2x2.h>
 #include <interval.h>
 #include <affirm.h>
@@ -87,6 +88,14 @@ bool_t ellipse_crs_inside(ellipse_crs_t *E, r2_t *p)
     r2_t hp; r2_sub(p, &(E->ctr), &hp);
     return ellipse_ouv_inside(&F, &hp);
   }
+    
+bool_t ellipse_crs_box_inside(ellipse_crs_t *E, interval_t B[])
+  { ellipse_ouv_t F;
+    ellipse_crs_to_ouv(E, &F);
+    interval_t BS[2];
+    box_unshift(2, B, E->ctr.c, BS);
+    return ellipse_ouv_box_inside(&F, BS);
+  }
 
 r2_t ellipse_crs_relative_coords(ellipse_crs_t *E, r2_t *p)
   { 
@@ -95,6 +104,7 @@ r2_t ellipse_crs_relative_coords(ellipse_crs_t *E, r2_t *p)
     ellipse_crs_to_ouv(E, &F);
     r2_t op;
     r2_sub(p, &(E->ctr), &op);
+    
     r2_t uvp = (r2_t){{ r2_dot(&op, &(F.u)), r2_dot(&op, &(F.v)) }};
     if (debug) { r2_gen_print(stderr, &uvp, "%12.7f", "uvp abs = (", " ", ")\n"); }
     uvp.c[0] /= F.a;
@@ -128,6 +138,15 @@ double ellipse_crs_border_position(ellipse_crs_t *E, double hwd, r2_t *p)
     r2_t hp; r2_sub(p, &(E->ctr), &hp);
     return ellipse_ouv_border_position(&F, hwd, &hp);
   }  
+  
+double ellipse_crs_box_coverage(ellipse_crs_t *E, interval_t B[], uint32_t N)
+  { 
+    ellipse_ouv_t F;
+    ellipse_crs_to_ouv(E, &F);
+    interval_t BS[2];
+    box_unshift(2, B, E->ctr.c, BS);
+    return ellipse_ouv_box_coverage(&F, BS, N);
+  }
   
 void ellipse_crs_print(FILE *wr, ellipse_crs_t *E, char *fmt)
   { 

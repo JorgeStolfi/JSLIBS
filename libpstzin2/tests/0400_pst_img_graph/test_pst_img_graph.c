@@ -2,7 +2,7 @@
 #define PROG_DESC "checks the {pst_img_graph.h} routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-23 16:07:13 by stolfi */
+/* Last edited on 2025-01-05 10:52:31 by stolfi */
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_pst_img_graph_C_COPYRIGHT \
@@ -57,6 +57,7 @@
 #include <limits.h>
 
 #include <float_image.h>
+#include <float_image_read_gen.h>
 #include <image_file_format.h>
 #include <bool.h>
 #include <jsmath.h>
@@ -78,7 +79,7 @@ options_t *tb_parse_options(int32_t argc, char **argv);
   /* Parses the command line arguments and returns them as
     an {options_t} record. */
 
-pst_img_graph_t* make_graph(void);
+pst_img_graph_t* make_graph(bool_t add_diags);
   /* Creates a graph from the slope map file "in/IG.fni" and the
     weight map file "in/IW.fni". */
 
@@ -101,7 +102,7 @@ int32_t main(int32_t argc, char **argv)
     options_t *o = tb_parse_options(argc, argv);
     
     /* Create a test graph: */
-    pst_img_graph_t *g = make_graph();
+    pst_img_graph_t *g = make_graph(FALSE);
     
     write_graph(g);
     pst_img_graph_t *h = read_graph();
@@ -113,11 +114,11 @@ int32_t main(int32_t argc, char **argv)
     return 0;
   }
     
-pst_img_graph_t* make_graph(void)
+pst_img_graph_t* make_graph(bool_t add_diags)
   { 
     float_image_t *IG = read_image("in/IG.fni");
     float_image_t *IW = read_image("in/IW.fni");
-    pst_img_graph_t g = pst_img_graph_create_from_gradient_and_weight_maps(IG, IW);
+    pst_img_graph_t *g = pst_img_graph_from_gradient_and_weight_maps(IG, IW, add_diags);
     float_image_free(IG);
     float_image_free(IW);
     return g;
@@ -142,8 +143,9 @@ void write_graph(pst_img_graph_t *g)
 pst_img_graph_t* read_graph(void)
   { 
     FILE *rd = open_read("out/graph_g.txt", TRUE);
-    pst_img_graph_read(wr, g);
-    fclose(wr);
+    pst_img_graph_t *g = pst_img_graph_read(rd);
+    fclose(rd);
+    return g;
   }
 
 options_t *tb_parse_options(int32_t argc, char **argv)

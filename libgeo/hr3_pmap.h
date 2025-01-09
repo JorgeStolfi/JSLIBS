@@ -1,5 +1,5 @@
 /* Oriented projective maps in three dimensions. */
-/* Last edited on 2024-12-05 10:27:23 by stolfi */ 
+/* Last edited on 2025-01-05 00:25:59 by stolfi */ 
 
 #ifndef hr3_pmap_H
 #define hr3_pmap_H
@@ -101,16 +101,11 @@ hr3_pmap_t hr3_pmap_scaling(r3_t *scale);
     The map is actually linear map of {\RR^3} (has {[1 0 0 0]} as the
     first column and the first row). */
 
-hr3_pmap_t hr3_pmap_u_v_rotation(r3_t *u, r3_t *v);
+hr3_pmap_t hr3_pmap_u_to_v_rotation(r3_t *u, r3_t *v);
   /* Returns the projective map {M} that performs an Euclidean
     rotation, around some axis through the origin, that takes the
     Cartesian unit vector {u} to the Cartesian unit vector {v} by the
-    shortest route.
-    
-    If {u} is equal to {v}, it returns the identity map. If {u} is
-    opposite to {v}, returns a map that performs a 180 degree rotation
-    around a random axis through the origin that is orthogonal to
-    both. */
+    shortest route.  See {r3x3_u_to_v_rotation} for details. */
 
 hr3_pmap_t hr3_pmap_aff_from_mat_and_disp(r3x3_t *E, r3_t *d);
   /* Returns an affine map {M} that performs the linear map 

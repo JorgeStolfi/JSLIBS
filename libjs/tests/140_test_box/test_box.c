@@ -2,7 +2,7 @@
 #define PROG_DESC "tests the ordered table search procedure"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2024-11-22 20:40:58 by stolfi */
+/* Last edited on 2025-01-03 13:08:44 by stolfi */
 /* Created on 2021-09-25 or earler by J. Stolfi, UNICAMP */
 
 #define test_box_COPYRIGHT \
@@ -34,11 +34,14 @@ int32_t main (int32_t argc, char **argv);
 void do_tests(box_dim_t d, bool_t verbose);
 void test_print(box_dim_t d, interval_t B[], bool_t verbose);
 void test_attribs(box_dim_t d, interval_t B[], bool_t verbose);
+void test_dimension__measure(box_dim_t d, interval_t B[], bool_t verbose);
 void test_equal(box_dim_t d, interval_t B[], bool_t verbose);
+void test_disjoint__contained(box_dim_t d, interval_t B[], bool_t verbose);
 void test_include_point(box_dim_t d, interval_t B[], bool_t verbose);
-void test_join_meet(box_dim_t d, interval_t B[], bool_t verbose);
+void test_join__meet(box_dim_t d, interval_t B[], bool_t verbose);
 void test_split(box_dim_t d, interval_t B[], bool_t verbose);
-void test_widen_round(box_dim_t d, interval_t B[], bool_t verbose);
+void test_widen__round(box_dim_t d, interval_t B[], bool_t verbose);
+void test_shift__unshift(box_dim_t d, interval_t B[], bool_t verbose);
 void test_box_map(box_dim_t d, interval_t B[], bool_t verbose);
 void test_face(box_dim_t d, interval_t B[], bool_t verbose);
 
@@ -46,15 +49,18 @@ void test_face(box_dim_t d, interval_t B[], bool_t verbose);
 
 int32_t main (int32_t argc, char **argv)
   {
-    srand(4615);
+    srand(4615*417+2);
     
     int32_t nt = 10000;
     
+    box_dim_t d = 0;
     for (uint32_t it = 0;  it < nt; it++)
-      { /* Choose the dimension {d}: */
-        box_dim_t d = (box_dim_t)int32_abrandom(0, box_MAX_DIM);
-        bool_t verbose = (it < 10);
+      { bool_t verbose = (it < 10);
         do_tests(d, verbose);
+        if (it < 5)
+          { d++; }
+        else 
+          { d = (box_dim_t)int32_abrandom(5, box_MAX_DIM); }
       }
     fprintf(stderr, "done.\n");
     return 0;
@@ -71,12 +77,16 @@ void do_tests(box_dim_t d, bool_t verbose)
     test_print(d, B, verbose);
   
     test_attribs(d, B, verbose);
+    test_dimension__measure(d, B, verbose);
     
     test_equal(d, B, verbose);
-    
+    test_disjoint__contained(d, B, verbose);
+
     test_include_point(d, B, verbose);
-    test_join_meet(d, B, verbose);
-    test_widen_round(d, B, verbose);
+    test_join__meet(d, B, verbose);
+    test_widen__round(d, B, verbose);
+    test_shift__unshift(d, B, verbose);
+    test_box_map(d, B, verbose); 
     
     test_split(d, B, verbose);
             
@@ -118,7 +128,7 @@ void test_print(box_dim_t d, interval_t B[], bool_t verbose)
   
 void test_attribs(box_dim_t d, interval_t B[], bool_t verbose)
   {
-    if (verbose) { fprintf(stderr, "--- testing {box_{lo_corner,hi_corner,corner,center,half_widths,widths,max_width,radius}} ---\n"); }
+    if (verbose) { fprintf(stderr, "--- testing {box_{lo_corner,hi_corner,corner,center,half_widths,widths,max_width,radius}} d = %d ---\n", d); }
     
     double ctr[d], h[d], w[d], plo[d], phi[d], pdir[d];
     double er, mw;
@@ -169,9 +179,44 @@ void test_attribs(box_dim_t d, interval_t B[], bool_t verbose)
     assert(fabs(er - sqrt(sum2)) < 1.0e-12);
   }
      
+void test_dimension__measure(box_dim_t d, interval_t B[], bool_t verbose)
+  {
+    if (verbose) { fprintf(stderr, "--- testing {box_dimension,box_measure} d = %d ---\n", d); }
+
+    uint32_t dim = 0;
+    double mes_hi = 1.0;
+    double mes_lo = 1.0;
+    double eps = 1.0e-14;
+    double tiny = 1.0e-320;
+    for (uint32_t i = 0; i < d; i++)
+      { double lo = LO(B[i]), hi = HI(B[i]);
+        if (lo > hi) { dim = 0; mes_lo = 0.0; mes_hi = 0.0; break; }
+        if (lo < hi)
+          { dim++; 
+            mes_lo = mes_lo * (1-eps)*(hi-lo); 
+            mes_hi = mes_hi * (1+eps)*(hi-lo); 
+            if (mes_hi < tiny) { mes_hi = tiny; }
+          }
+      }
+    demand(dim == box_dimension(d, B), "{box_dimension} failed");
+    assert(mes_lo <= mes_hi);
+    if (mes_hi == 0)
+      { /* Box must be empty: */
+        assert(box_is_empty(d, B));
+        demand(box_measure(d, B) == 0.0, "empty box has nonzero {box_measure}");
+      }
+    else
+      { /* Box must be non-empty: */
+        assert(! box_is_empty(d, B));
+        double mes = box_measure(d, B);
+        demand(mes != 0, "non-empty box has zero {box_measure}");
+        demand((mes_lo <= mes) && (mes <= mes_hi), "{box_measure} failed");
+      }
+  }
+
 void test_equal(box_dim_t d, interval_t B[], bool_t verbose)
   {
-    if (verbose) { fprintf(stderr, "--- testing {box_equal} ---\n"); }
+    if (verbose) { fprintf(stderr, "--- testing {box_equal} d = %d ---\n", d); }
 
     interval_t A[d]; box_throw(d, GLOB_LO, GLOB_HI, 0.100, 0.100, A);
 
@@ -194,7 +239,7 @@ void test_equal(box_dim_t d, interval_t B[], bool_t verbose)
   
 void test_include_point(box_dim_t d, interval_t B[], bool_t verbose)
   {
-    if (verbose) { fprintf(stderr, "--- testing {box_include_point} ---\n"); }
+    if (verbose) { fprintf(stderr, "--- testing {box_include_point} d = %d ---\n", d); }
 
     /* TESTING: void box_include_point(box_dim_t d, interval_t B[], double p[], interval_t C[]); */
 
@@ -218,9 +263,9 @@ void test_include_point(box_dim_t d, interval_t B[], bool_t verbose)
       }
   }
 
-void test_join_meet(box_dim_t d, interval_t B[], bool_t verbose)
+void test_join__meet(box_dim_t d, interval_t B[], bool_t verbose)
   {
-    if (verbose) { fprintf(stderr, "--- testing {box_join,box_meet} ---\n"); }
+    if (verbose) { fprintf(stderr, "--- testing {box_join,box_meet} d = %d ---\n", d); }
 
     /* TESTING: void box_join(box_dim_t d, interval_t A[], interval_t B[], interval_t C[]); */
     /* TESTING: void box_meet(box_dim_t d, interval_t A[], interval_t B[], interval_t C[]); */
@@ -270,6 +315,128 @@ void test_join_meet(box_dim_t d, interval_t B[], bool_t verbose)
               }
           }
       }
+  }
+
+void test_disjoint__contained(box_dim_t d, interval_t B[], bool_t verbose)
+  {
+    if (verbose) { fprintf(stderr, "--- testing {box_disjoint,box_contained} d = %d ---\n", d); }
+
+    /* TESTING: void box_disjoint(box_dim_t d, interval_t A[], interval_t B[], interval_t C[]); */
+    /* TESTING: void box_contained(box_dim_t d, interval_t A[], interval_t B[], interval_t C[]); */
+    
+    auto void throw_cute_interval(double loR, double hiR, double *loS_P, double *hiS_P, bool_t *disj_P, bool_t *cont_P);
+      /* Given a non-empty interval {R=[loR _ hiR]}, throws a non-empty interval {S=[loS _ hiS]}
+        that is likely to have interesting relation to {R}, such as overlap, containment,
+        and coincident borders.  Also returns booleans {disj} that tells if {R} and {S} are disjoint and
+        {cont} that tells if {S} is contained in {R}. (These take into account the convention
+        that a non-empty interval is closed iff it is a singleton.) */
+    
+    uint32_t nt = 100; /* Number of cases to try. */
+    for (uint32_t it = 0; it < nt; it++)
+      { /* Create box {A} that is in interesting postion relative to {B}: */
+        interval_t A[d];
+        bool_t disjoint;  /* True if {A,B} are disjoint along some axis. */
+        bool_t contained;  /* True if {A} is contained in {B} along every axis. */
+        if (d == 0)
+          { /* The boxes are always identical and non-empty: */
+            disjoint = FALSE;
+            contained = TRUE;
+          }
+        else if (drandom() < 0.10)
+          { /* Set {A} to an empty box: */
+            box_empty(d, A);
+            /* No matter what {B} is: */
+            disjoint = TRUE;
+            contained = TRUE;
+          } 
+        else if (box_is_empty(d, B))
+          { /* Set {A} to random non-empty box: */
+            for (int32_t i = 0; i < d; i++) 
+              { LO(A[i]) = 3.14; HI(A[i]) = LO(A[i]) + (drandom() < 0.5 ? 0.0 : 1.0); }
+            /* Since {B} is empty and {A} is non-empty: */
+            disjoint = TRUE;
+            contained = FALSE;
+          }
+        else 
+          { /* Set {A} to random non-empty box likely in special relation to {B}: */
+            disjoint = FALSE;
+            contained = TRUE;
+            for(int32_t i = 0; i < d; i++)
+              { bool_t disj_i, cont_i;
+                throw_cute_interval(LO(B[i]), HI(B[i]), &(LO(A[i])), &(HI(A[i])), &disj_i, &cont_i);
+                if (disj_i) { disjoint = TRUE; }
+                if (! cont_i) { contained = FALSE; }
+              }
+          }
+        if (verbose && (it < 3))
+          { fprintf(stderr, "testing with");
+            box_gen_print(stderr, d, A, "%+24.16e", " A = ", " x ", "");
+            box_gen_print(stderr, d, B, "%+24.16e", " B = ", " x ", "");
+            fprintf(stderr, " expecting disjoint = %c  contained = %c\n", "FT"[disjoint], "FT"[contained]);
+          }
+        demand(disjoint == box_disjoint(d, A, B), "box_disjoint failed");
+        demand(contained == box_contained(d, A, B), "box_contained failed");
+      }
+    
+    void throw_cute_interval(double loR, double hiR, double *loS_P, double *hiS_P, bool_t *disj_P, bool_t *cont_P)
+      { assert(loR <= hiR);
+        /* Get some interesting values for {loS,hiS}: */
+        uint32_t nx = 0;
+        double x[8]; /* Interesting values for {loS,hiS} are {x[0..nc-1]} */
+        x[nx] = loR - 2; nx++;
+        x[nx] = loR - 1; nx++;
+        x[nx] = loR; nx++;
+        if (loR < hiR) 
+          { x[nx] = 0.75*loR + 0.25*hiR; nx++;
+            x[nx] = 0.25*loR + 0.75*hiR; nx++;
+            x[nx] = hiR; nx++;
+          }
+        x[nx] = hiR + 1; nx++;
+        x[nx] = hiR + 2; nx++;
+        assert(nx <= 8);
+        
+        /* Now choose randomly a pair of interesting values */
+        uint32_t i = uint32_abrandom(0, nx-1);
+        uint32_t j = uint32_abrandom(0, nx-1);
+        if (i > j) { uint32_t t = i; i = j; j = t; }
+        double loS = x[i];
+        double hiS = x[j];
+        assert(loS <= hiS);
+        bool_t disj;
+        bool_t cont;
+        if (loR < hiR)
+          { /* {R} is open */
+            if (loS < hiS)
+              { /* {R} and {S} are open: */
+                disj = (hiS <= loR) || (loS >= hiR);
+                cont = (loS >= loR) && (hiS <= hiR);
+              }
+            else
+              { /* {R} is open, {S} is singleton: */
+                disj = (hiS <= loR) || (loS >= hiR);
+                cont = (loS > loR) && (hiS < hiR);
+              }
+          }
+        else
+          { /* {R} is singleton: */
+            if (loS < hiS)
+              { /* {R} is singleton, {S} is open: */
+                disj = (hiS <= loR) || (loS >= hiR);
+                cont = FALSE;
+              }
+            else
+              { /* {R} and {S} are both singletons: */
+                disj = (loS != loR);
+                cont = (loS == loR);
+              }
+          }
+        (*loS_P) = loS;
+        (*hiS_P) = hiS;
+        (*disj_P) = disj;
+        (*cont_P) = cont;
+      }
+        
+
   }
 
 void test_split(box_dim_t d, interval_t B[], bool_t verbose)
@@ -381,9 +548,9 @@ void test_split(box_dim_t d, interval_t B[], bool_t verbose)
       }
   }
 
-void test_widen_round(box_dim_t d, interval_t B[], bool_t verbose)
+void test_widen__round(box_dim_t d, interval_t B[], bool_t verbose)
   {
-    if (verbose) { fprintf(stderr, "--- testing {box_{widen,widen_var,round}} ---\n"); }
+    if (verbose) { fprintf(stderr, "--- testing {box_{widen,widen_var,round}} d = %d ---\n", d); }
 
     /* TESTING: void box_widen(box_dim_t d, interval_t B[], double margin, interval_t C[]); */
     /* TESTING: void box_widen_var(box_dim_t d, interval_t B[], double mrglo[], double mrghi[], interval_t C[]); */
@@ -407,9 +574,33 @@ void test_widen_round(box_dim_t d, interval_t B[], bool_t verbose)
     if (verbose) { fprintf(stderr, "!!! NOT TESTED !!!\n"); }
   }
                   
+void test_shift__unshift(box_dim_t d, interval_t B[], bool_t verbose)
+  { if (verbose) { fprintf(stderr, "--- testing {box_{shift,unshift}} d = %d ---\n", d); }
+    interval_t C[d];
+    interval_t D[d];
+    double v[d];
+    for (int32_t i = 0; i < d; i++) { v[i] = dabrandom(-5.0, +5.0); }
+    box_shift(d, B, v, C);
+    box_unshift(d, C, v, D);
+    if (box_is_empty(d, B))
+      { demand(box_is_empty(d, C), "box_shift of empty box is not empty");
+        demand(box_is_empty(d, D), "box_unshift of empty box is not empty");
+      }
+    else
+      { demand(! box_is_empty(d, C), "box_shift of non-empty box is empty");
+        demand(! box_is_empty(d, D), "box_unshift of non-empty box is empty");
+        for (int32_t i = 0; i < d; i++)
+          { for (int32_t ke = 0; ke <= 1; ke++)
+              { demand(C[i].end[ke] == B[i].end[ke] + v[i], "box_shift bug");
+                demand(D[i].end[ke] == C[i].end[ke] - v[i], "box_unshift bug");
+              }
+          }
+      } 
+  }
+
 void test_box_map(box_dim_t d, interval_t B[], bool_t verbose)
   {
-    if (verbose) { fprintf(stderr, "--- testing {box_{point,box}_{mpa,unmap)}} ---\n"); }
+    if (verbose) { fprintf(stderr, "--- testing {box_{point,box}_{mpa,unmap)}} d = %d ---\n", d); }
       
     /* TESTING: void box_point_map(box_dim_t d, double z[], interval_t B[], double x[]); */
     /* TESTING: void box_point_unmap(box_dim_t d, double x[], interval_t B[], double z[]); */
@@ -422,7 +613,7 @@ void test_box_map(box_dim_t d, interval_t B[], bool_t verbose)
                   
 void test_face(box_dim_t d, interval_t B[], bool_t verbose)
   {
-    if (verbose) { fprintf(stderr, "--- testing {box_face_{dimension,position,signature,rel_box,print}} ---\n"); }
+    if (verbose) { fprintf(stderr, "--- testing {box_face_{dimension,position,signature,rel_box,print}} d = %d ---\n", d); }
       
     /* TESTING: box_dim_t box_face_dimension(box_dim_t m, box_face_index_t fi); */
     /* TESTING: box_signed_dir_t box_face_position(box_face_index_t fi, box_axis_index_t j); */

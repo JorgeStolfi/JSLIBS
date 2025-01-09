@@ -2,7 +2,7 @@
 #define ellipse_ouv_H
 
 /* ellipse_ouv.h -- tools for ellipses in the dir-radius form. */
-/* Last edited on 2024-12-05 10:26:35 by stolfi */
+/* Last edited on 2025-01-02 18:19:10 by stolfi */
 
 #include <stdint.h>
 
@@ -59,6 +59,13 @@ bool_t ellipse_ouv_inside(ellipse_ouv_t *F, r2_t *p);
   /* Returns TRUE if {p} is inside {F}, FALSE if outside.  
     May return either value if {p} is very close to the boundary. */
 
+bool_t ellipse_ouv_box_inside(ellipse_ouv_t *F, interval_t B[]);
+  /* Returns TRUE if and only if the rectangle {B[0] × B[1]} is entirely 
+    inside {F}.  Since both are convex sets, this is true iff 
+    the four corners of {B} are inside {F}.  Both {B} and {F} are
+    treated as closed sets.  May return either value if 
+    some corner of {B} is very close to the boundary. */
+
 double ellipse_ouv_position(ellipse_ouv_t *F, r2_t *p, r2_t *csp);
   /* Returns the radial and angular position of {p} relative to the
     ellipse {F}. 
@@ -90,6 +97,18 @@ double ellipse_ouv_border_position(ellipse_ouv_t *F, double hwd, r2_t *p);
     it is painted with a round brush o radius {hwd}. This procedure is
     much faster than {ellipse_ouv_nearest_point} when {p} is not close
     to the stroked region. */
+
+double ellipse_ouv_box_coverage(ellipse_ouv_t *F, interval_t B[], uint32_t N);
+  /* Returns the approximate fraction of the box {B} that is covered by 
+    the ellipse {F}. 
+    
+    The result is 1.0 if the box is determined to be completely inside
+    {F}, and 0.0 if {B} is determined to be disjoint from {F}. Otherwise
+    it is a fraction strictly between 0 and 1, determined by generating
+    a jittered grid of at least {N} points inside {B} and checking what
+    fraction of them is inside {F}. 
+    
+    !!! Figure out the error distribution as a function of true coverage. !!! */
 
 double ellipse_ouv_compute_t(double A, double B);
   /* Solves the polynomial equation {P(t) == 0} that occurs in the

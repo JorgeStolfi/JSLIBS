@@ -1,5 +1,5 @@
 /* test_i3 --- test program for i3.h, i3x3.h  */
-/* Last edited on 2024-11-20 18:55:21 by stolfi */
+/* Last edited on 2025-01-05 00:45:50 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -16,29 +16,44 @@
 #define N 3
 #define NO NULL
 
-/* Internal prototypes */
-
+/* Internal prototypes */ 
 int32_t main (int32_t argc, char **argv);
-void test_i3(bool_t verbose);
+
+void test_i3_sizes__zero__all__axis__throw_cube(bool_t verbose);
+void test_i3_add__sub__neg(bool_t verbose);
+void test_i3_norm_sqr__L_inf_norm__dist_sqr__L_inf_dist(bool_t verbose);
+void test_i3_dot__cross__det(bool_t verbose);
+void test_i3_print__gen_print(bool_t verbose);
+
 /* void test_i3x3(bool_t verbose); */
 /* void throw_matrix(i3x3_t *m); */
 
 int32_t main (int32_t argc, char **argv)
   { srand(1993);
     srandom(1993);
-    for (uint32_t i = 0;  i < 100; i++) test_i3(i < 3);
+    for (uint32_t i = 0;  i < 100; i++)
+      { bool_t verbose = (i < 3);
+        test_i3_sizes__zero__all__axis__throw_cube(verbose);
+        test_i3_add__sub__neg(verbose);
+        test_i3_norm_sqr__L_inf_norm__dist_sqr__L_inf_dist(verbose);
+        test_i3_dot__cross__det(verbose);
+        test_i3_print__gen_print(verbose);
+      
+      }
+
+    fprintf(stderr, "!! i3_eq NOT TESTED\n");
+
     /* for (uint32_t i = 0;  i < 100; i++) test_i3x3(i < 3); */
-    fclose(stderr);
-    fclose(stdout);
-    return (0);
+
+    return 0;
   }
 
-void test_i3(bool_t verbose)
-  { i3_t a, b, c, d, e;
-    uint64_t u64a, u64b, u64c, u64d;
-    int64_t i64a, i64c;
+void test_i3_sizes__zero__all__axis__throw_cube(bool_t verbose)
+  { 
+    i3_t a;
     int32_t trad = 4615;
 
+    if (verbose) { fprintf(stderr, "--- sizes ---\n"); }
     if (verbose)
       { fprintf(stderr,
           "sizeof(i3_t) = %lu  %d*sizeof(uint32_t) = %lu\n",
@@ -70,6 +85,12 @@ void test_i3(bool_t verbose)
         affirm(a.c[i] != a.c[(i+1)%N], "i3_throw probable error(1)"); 
         affirm((a.c[i] >= -trad) && (a.c[i] <= +trad), "i3_throw error(2)"); 
       }
+  }
+
+void test_i3_add__sub__neg(bool_t verbose)
+  { 
+    i3_t a, b, d;
+    int32_t trad = 4615;
 
     if (verbose) { fprintf(stderr, "--- i3_add ---\n"); }
     i3_throw_cube(trad, &a);
@@ -90,6 +111,13 @@ void test_i3(bool_t verbose)
     i3_neg(&a, &d);
     for (uint32_t i = 0;  i < N; i++)
       { in_check_eq(d.c[i], -a.c[i], NO, NO, "i3_neg error"); }
+  }
+
+void test_i3_norm_sqr__L_inf_norm__dist_sqr__L_inf_dist(bool_t verbose)
+  { 
+    i3_t a, b;
+    uint64_t u64a, u64b, u64c, u64d;
+    int32_t trad = 4615;
 
     if (verbose) { fprintf(stderr, "--- i3_norm_sqr, i3_L_inf_norm ---\n"); }
     i3_throw_cube(trad, &a);
@@ -119,6 +147,13 @@ void test_i3(bool_t verbose)
       }
     in_check_eq((int64_t)u64a, (int64_t)u64c, NO, NO, "i3_dist_sqr error");
     in_check_eq((int64_t)u64b, (int64_t)u64d, NO, NO, "i3_L_inf_dist error");
+  }
+
+void test_i3_dot__cross__det(bool_t verbose)
+  { 
+    i3_t a, b, c, d, e;
+    int64_t i64a, i64c;
+    int32_t trad = 4615;
 
     if (verbose) { fprintf(stderr, "--- i3_dot ---\n"); }
     i3_throw_cube(trad, &a);
@@ -184,6 +219,12 @@ void test_i3(bool_t verbose)
     i3_cross(&a, &b, &e);
     i64c = i3_dot(&e, &c);
     in_check_eq(i64a, i64c, NO, NO, "i3_det error(1)");
+  }
+
+void test_i3_print__gen_print(bool_t verbose)
+  { 
+    i3_t a;
+    int32_t trad = 4615;
 
     if (verbose) { fprintf(stderr, "--- i3_print ---\n"); }
     if (verbose)
@@ -193,9 +234,12 @@ void test_i3(bool_t verbose)
         fputc('\n', stderr);
       }
 
+    if (verbose) { fprintf(stderr, "--- i3_gen_print ---\n"); }
     if (verbose)
-      { 
-        fprintf(stderr, "!! i3_eq NOT TESTED\n");
+      { i3_throw_cube(trad, &a);
+        fprintf(stderr, "a = ");
+        i3_gen_print(stderr, &a, "%+05d", "< ", " : ", " >");
+        fputc('\n', stderr);
       }
   }
 
@@ -355,21 +399,21 @@ void test_i3(bool_t verbose)
 //         	in_check_eps(r,-rr,000000001 * mag, NO, NO, "i3x3_det error(3)");
 //       }
 // 
-//     if (verbose) { fprintf(stderr, "--- i3x3_inv ---\n"); }
+//     if (verbose) { fprintf(stderr, "--- i3x3_adj ---\n"); }
 //     throw_matrix(&A);
-//     i3x3_inv(&A, &B);
+//     i3x3_adj(&A, &B);
 //     i3x3_mul(&A, &B, &C);
+//     int64_t detA = i3x3_det(&A);
 //     for (uint32_t i = 0;  i < N; i++)
 //       { for (uint32_t j = 0;  j < N; j++)
-//           { double val = (i == j ? 1.0 : 0.0);
-//             affirm(fabs(C.c[i][j] - val) < 000000001, "i3x3_inv error");
+//           { double val = (i == j ? detA : 0);
+//             affirm(C.c[i][j] == val, "i3x3_adj error");
 //           }
 //       }
 // 
-//     if (verbose) { fprintf(stderr, "--- i3x3_norm,i3x3_norm_sqr,i3x3_mod_norm ---\n"); }
+//     if (verbose) { fprintf(stderr, "--- i3x3_norm_sqr,i3x3_mod_norm_sqr ---\n"); }
 //     throw_matrix(&A);
 //     s = i3x3_norm_sqr(&A);
-//     r = i3x3_norm(&A);
 //     t = i3x3_mod_norm_sqr(&A);
 //     ss = 0; tt = 0;
 //     for (uint32_t i = 0;  i < N; i++)
@@ -381,19 +425,9 @@ void test_i3(bool_t verbose)
 //           }
 //       }
 //     affirm(ss >= 0, "i3x3_norm_sqr error");
-//     affirm(fabs(ss - s) < 000000001, "i3x3_norm_sqr error");
-//     rr = sqrt(ss);
-//     affirm(fabs(rr - r) < 000000001, "i3x3_norm error");
+//     affirm(ss == s, "i3x3_norm_sqr error");
 //     affirm(tt >= 0, "i3x3_mod_norm_sqr error");
-//     affirm(fabs(tt - t) < 000000001, "i3x3_mod_norm_sqr error");
-// 
-//     if (verbose) { fprintf(stderr, "--- i3x3_u_v_rotation ---\n"); }
-//     i3_throw_dir(&a);
-//     i3_throw_dir(&b);
-//     i3x3_u_v_rotation(&a, &b, &A);
-//     i3x3_map_row(&a, &A, &c);
-//     for (uint32_t i = 0;  i < N; i++)
-//       { affirm(fabs(b.c[i] - c.c[i]) < 000000001, "i3x3_u_v_rotation error"); }
+//     affirm(tt == t, "i3x3_mod_norm_sqr error");
 // 
 //     if (verbose) { fprintf(stderr, "--- i3x3_print ---\n"); }
 //     if (verbose)

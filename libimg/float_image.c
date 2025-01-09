@@ -1,5 +1,5 @@
 /* See float_image.h */
-/* Last edited on 2024-12-20 17:50:15 by stolfi */ 
+/* Last edited on 2025-01-02 23:09:48 by stolfi */ 
 
 #include <limits.h>
 #include <float.h>
@@ -16,6 +16,7 @@
 #include <frgb_ops.h>
 #include <float_image_color.h>
 #include <ix.h>
+#include <jsfile.h>
 #include <filefmt.h>
 #include <nget.h>
 #include <fget.h>
@@ -1088,6 +1089,13 @@ void float_image_write(FILE *wr, float_image_t *A)
     fflush(wr);
   }
 
+void float_image_write_named(char *fname, float_image_t *A)
+  { bool_t warn = TRUE;
+    FILE *wr = open_write(fname, warn);
+    float_image_write(wr, A);
+    fclose(wr);
+  }
+    
 float_image_t *float_image_read(FILE *rd)
   {
     filefmt_read_header(rd, "float_image_t", float_image_file_version);
@@ -1110,6 +1118,14 @@ float_image_t *float_image_read(FILE *rd)
           }
       }
     filefmt_read_footer(rd, "float_image_t");
+    return A;
+  }
+
+float_image_t *float_image_read_named(char *fname)
+  { bool_t warn = TRUE;
+    FILE *rd = open_read(fname, warn);
+    float_image_t *A = float_image_read(rd);
+    fclose(rd);
     return A;
   }
 

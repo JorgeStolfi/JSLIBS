@@ -1,4 +1,4 @@
-/* Last edited on 2024-12-23 13:46:28 by stolfi */
+/* Last edited on 2025-01-05 10:54:28 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #ifndef pst_img_graph_integrate_recursive_H
@@ -24,14 +24,6 @@ void pst_img_graph_mark_vertex_removal(pst_img_graph_t* g, uint32_t degree[]);
 void pst_img_graph_mark_vertex_removal_no_bucket(pst_img_graph_t* g);
 
 void pst_img_graph_shrink(pst_img_graph_t* g,double* w_i,double wmag);
-
-void pst_img_graph_vertex_remove
-  ( pst_img_graph_t* g,
-    uint32_t vi,
-    double* w_i,
-    double wmag,
-    bool_t verbose
-  );
   
 void pst_img_graph_remove_paralel_edges(pst_img_graph_t* g);
 

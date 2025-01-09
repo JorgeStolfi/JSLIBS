@@ -2,7 +2,7 @@
 #define box_H
 
 /*  Axis-aligned boxes in {R^d}.  */
-/*  Last edited on 2023-02-18 22:14:25 by stolfi */
+/*  Last edited on 2025-01-02 16:37:55 by stolfi */
 
 /* We need to set these in order to get {asinh}. What a crock... */
 #undef __STRICT_ANSI__
@@ -20,8 +20,9 @@
   and {d-m} are singleton sets.
   
   A box {B} of {R^d} is here represented by an array of {interval_ts}
-  {B[0..d-1]}, where {B[i]} is interpreted as open if {LO(B[i] < HI(B[i])},
-  and as closed (i.e., singleton) if {LO(B[i]) == HI(B[i])}.
+  {B[0..d-1]}, where {B[i]} is interpreted as open if {LO(B[i] <
+  HI(B[i])}, and as closed if {LO(B[i]) == HI(B[i])} (i.e., {B[i]} is a
+  singleton set).
   
   A box {B} is empty if any of the intervals {B[0..d-1]} is empty;
   that is, if {LO(B[i]) > HI(B[i])}.
@@ -48,7 +49,12 @@ typedef int8_t box_axis_t;
 bool_t box_is_empty(box_dim_t d, interval_t B[]);
   /* True iff the box {B0..d-1]} is empty; that is, any of 
     the intervals {B[i]} is empty.  Returns {FALSE} if {d} is zero. */
-
+    
+box_dim_t box_dimension(box_dim_t d, interval_t B[]);
+  /* Returns the number (in {0..d}) of axes that span the box (that is,
+    along which the box is an open interval rather than a single point).
+    If the box is empty, or {d} is zero, returns zero. */
+    
 void box_lo_corner(box_dim_t d, interval_t B[], double p[]);
   /* Stores in {p[0..d-1]} the /inferior corner/ of the box {B[0..d-1]},
     i.e. sets {p[i] = lo(B[i])} for all {i}.  Fails if {B} is empty. */
@@ -89,15 +95,42 @@ double box_radius(box_dim_t d, interval_t B[]);
   /* Euclidean radius of box {B[0..d-1]}. If {B} is empty or {d} is zero,
     returns zero. */
 
+double box_measure(box_dim_t d, interval_t B[]);
+  /* Returns the product of the widths of all non-singleton
+    intervals in {B}.  
+    
+    Thus, if {box_dimension} is 1 (that is, {B} is an open line segment
+    in {\RR^d}) the result is that segment's length; if it is 2 (that
+    is, {B} is a rectangle), the result is its area; if 3, it is its
+    volume; and so on.   
+    
+    In particular, the result is 0.0 iff {d>0} and {B} is empty, and is
+    1.0 if the dimension of {B} is 0 (meaning {d=0} or {B} is a single
+    point of {\RR^d}). Otherwise the result is rounded up, and will be
+    {+INF} if it overflows. */
+    
+/* BOX COMPARISONS */
+
 bool_t box_equal(box_dim_t d, interval_t A[], interval_t B[]);
   /* Returns true iff {A} and {B} are both empty, or both non-empty
     and identical. */
 
+bool_t box_disjoint(box_dim_t d, interval_t A[], interval_t B[]);
+  /* True iff the boxes are disjoint.  In particular, if {A}
+    and/or {B} are empty. */
+    
+bool_t box_contained(box_dim_t d, interval_t A[], interval_t B[]);
+  /* True if box {A} is contained in (or equal to) box {B}.
+    In particular, if {A} is empty. */
+
 /* BOX CREATION AND MODIFICATION */
 
-void box_empty(box_dim_t d,  interval_t C[]);
+void box_empty(box_dim_t d, interval_t C[]);
   /* Sets {B} to an empty box, by setting all coordinate intervals {C[0..d-1]}
     to some empty interval. */
+    
+void box_copy(box_dim_t d, interval_t B[], interval_t C[]);
+  /* Copies box {B} into {C}. */
 
 void box_include_point(box_dim_t d, interval_t B[], double p[], interval_t C[]);
   /* Sets box {C[0..d-1]} to the smallest box enclosing box {B} and point {p[0..d-1]}.
@@ -163,6 +196,18 @@ void box_split
     
     If any of the parameters {BLO,BMD,BHI} is {NULL}, the corresponding
     box is not generated. */
+    
+void box_shift(box_dim_t d, interval_t B[], double v[], interval_t C[]);
+  /* Sets {C} to the box {B} translated along each axis {i} in {0..d-1}
+    by {v[i]}.
+    
+    The box {C} may be the same as {B}.  The result should be empty
+    if and only if {B} is empty.  However, roundoff errors may cause
+    some open intervals of {B} to become singletons in {C}. */
+    
+void box_unshift(box_dim_t d, interval_t B[], double v[], interval_t C[]);
+  /* The inverse of {box_shift}. Namely, sets {C} to box {B} translate
+    along each axis {i} in {0..d-1} by {-v[i]}. */
 
 void box_throw(box_dim_t d, double elo, double ehi, double p_empty, double p_single, interval_t B[]);
   /* Stores into {B[0..d-1]} a random {d}-dimensional box. 

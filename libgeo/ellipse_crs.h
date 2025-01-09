@@ -2,7 +2,7 @@
 #define ellipse_crs_H
 
 /* ellipse_crs.h -- tools for ellipses in the center-radius-stretch form. */
-/* Last edited on 2024-12-05 10:26:24 by stolfi */
+/* Last edited on 2025-01-02 18:22:17 by stolfi */
 
 #include <stdint.h>
 
@@ -60,8 +60,21 @@ void ellipse_ouv_to_crs(ellipse_ouv_t *F, r2_t *ctr, ellipse_crs_t *E);
     with {*ctr} as the center. */
   
 bool_t ellipse_crs_inside(ellipse_crs_t *E, r2_t *p);
-  /* Returns TRUE if {p} is inside {E}, FALSE if outside.  
-    May return either value if {p} is very close to the boundary. */
+  /* Returns TRUE if {p} is inside {E}, FALSE if outside.
+     May return either value  if {p} is very close to the boundary.
+    Implemented as {ellipse_ouv_inside(F, p-E.ctr)} where
+    {F=ellipse_crs_to_ouv(E)}. */
+  
+bool_t ellipse_crs_box_inside(ellipse_crs_t *E, interval_t B[]);
+  /* Returns TRUE if and only if the rectangle {B[0] × B[1]} is entirely 
+    inside {E}.  
+    
+    Since both are convex sets, this is true iff the four corners of {B}
+    are inside {E}. May return either value if some corner of {B} is
+    very close to the boundary.
+    
+    Implemented as {ellipse_ouv_box_inside(F, BS)} where
+    {F=ellipse_crs_to_ouv(E)} and {BS=box_unshift(B,E.ctr)}. */
 
 r2_t ellipse_crs_relative_coords(ellipse_crs_t *E, r2_t *p);
   /* Returns the coordinates of {p} relative to the ellipse {E}.
@@ -80,7 +93,10 @@ double ellipse_crs_position(ellipse_crs_t *E, r2_t *p, r2_t *csp);
     
     If {csp} is not NULL, the procedure also stores in {*csp} the
     cosine and sine of the angular argument of {p}, measured from the
-    vector {E.str}. */
+    vector {E.str}. 
+    
+    Implemented as {ellipse_ouv_position(F,p-E.ctr,csp)} where
+    {F=ellipse_crs_to_ouv(E)}. */
 
 double ellipse_crs_nearest_point(ellipse_crs_t *E, r2_t *p, r2_t *q);
   /* Finds the signed distance from {p} to the boundary of the ellipse {E}.
@@ -90,9 +106,8 @@ double ellipse_crs_nearest_point(ellipse_crs_t *E, r2_t *p, r2_t *q);
     The return value {+dist(p,q)} if {p} is outside, and {-dist(p,q)}
     if {p} is inside.
     
-    If you have many points to test against the same elipse, consider
-    using {ellipse_crs_to_ouv} and then {ellipse_ouv_nearest_point},
-    which is slightly faster. */
+    Implemented as {E.ctr+ellipse_ouv_nearest_point(F,p-E.ctr,q);q=q+E.ctr}
+    where {F=ellipse_crs_to_ouv(E)}. */
 
 double ellipse_crs_border_position(ellipse_crs_t *E, double hwd, r2_t *p);
   /* If the distance from {p} to {E} is less than {hwd}, returns that
@@ -101,8 +116,18 @@ double ellipse_crs_border_position(ellipse_crs_t *E, double hwd, r2_t *p);
     
     This is the relative position of {p} in the boundary of {E}, when
     it is painted with a round brush o radius {hwd}. This procedure is
-    much faster than {ellipse_ouv_nearest_point} when {p} is not close
-    to the stroked region. */
+    much faster than {ellipse_crs_nearest_point} when {p} is not close
+    to the stroked region.
+    
+    Implemented as {ellipse_ouv_border_position(F,hwd,p-E.ctr)}
+    where {F=ellipse_crs_to_ouv(E)}. */
+    
+double ellipse_crs_box_coverage(ellipse_crs_t *E, interval_t B[], uint32_t N);
+  /* Returns the approximate fraction of the box {B} that is covered by 
+    the ellipse {E}. 
+    
+    Implemented as {ellipse_ouv_box_coverage(F,BS,N)} where 
+    {F=ellipse_crs_to_ouv(E)} and {BS=box_unshift(B,E.ctr)}. */
 
 void ellipse_crs_print(FILE *wr, ellipse_crs_t *E, char *fmt);
   /* Writes to {wr} the geometric parameters {E}.  Each parameter

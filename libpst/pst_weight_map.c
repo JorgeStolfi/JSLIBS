@@ -1,5 +1,5 @@
 /* See pst_weight_map.h */
-/* Last edited on 2024-12-24 19:13:48 by stolfi */
+/* Last edited on 2025-01-08 01:19:21 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -73,6 +73,32 @@ float_image_t *pst_weight_map_expand_height_weights(float_image_t *IW)
 
     return HW;
   }
+float_image_t *pst_weight_map_shrink_by_one(float_image_t *W)
+  {
+    int32_t NC_W, NX_W, NY_W;
+    float_image_get_size(W, &NC_W, &NX_W, &NY_W);
+    demand(NC_W == 1, "weight map must have a single channel");
+    demand((NX_W >= 1) && (NY_W >= 1), "weight map cannot be empty");
+    
+    int32_t NX_R = NX_W - 1;
+    int32_t NY_R = NY_W - 1;
+    float_image_t *R = float_image_new(1, NX_R, NY_R);
+    
+    for (int32_t y = 0; y < NY_R; y++)
+      { for (int32_t x = 0; x < NX_R; x++)
+          { double sum_w = 0;
+            for (int32_t dx = 0; dx <= 1; dx++)
+              { for (int32_t dy = 0; dy <= 1; dy++)
+                  { double w = float_image_get_sample(W, 0, x+dx, y+dy);
+                    sum_w += w;
+                  }
+              }
+            double wht = sum_w/4;
+            float_image_set_sample(R, 0, x, y, (float)wht);
+          }
+      }
+    return R;
+  }
 
 float_image_t *pst_weight_map_slope_to_height(float_image_t *W, bool_t harmonic, int32_t NXV, int32_t NYV)
   { 
@@ -137,17 +163,17 @@ float_image_t *pst_weight_map_slope_to_height(float_image_t *W, bool_t harmonic,
     return V;
   }
   
-float_image_t *pst_weight_map_heights_from_slopes(int32_t NX_Z, int32_t NY_Z,float_image_t *GW)
+float_image_t *pst_weight_map_heights_from_slopes(int32_t NX_Z, int32_t NY_Z,float_image_t *W)
   {
     float_image_t* EW = float_image_new(1, (int32_t)NX_Z, (int32_t)NY_Z);
-    if ( GW != NULL ){ assert( (GW->sz[1] == (NX_Z-1)) && (GW->sz[2] == (NY_Z -1)) ); }
+    if ( W != NULL ){ assert( (W->sz[1] == (NX_Z-1)) && (W->sz[2] == (NY_Z -1)) ); }
     for (int32_t y = 0 ; y < NY_Z ; y++)
       { for (int32_t x = 0 ; x < NX_Z ; x++ )
           {
-            double wmm = ( (x  > 0 ) && (y > 0) ? (GW != NULL ? float_image_get_sample(GW,0,x-1,y-1) : 1): 0);
-            double wmp = ( (x  > 0 ) && (y < (NY_Z -1)) ? (GW != NULL ? float_image_get_sample(GW,0,x-1,y) : 1): 0);
-            double wpm = ( (x  < (NX_Z -1) ) && (y > 0) ? (GW != NULL ? float_image_get_sample(GW,0,x,y-1) : 1): 0);
-            double wpp = ( (x  < (NX_Z -1) ) && (y < (NY_Z -1) ) ? (GW != NULL ? float_image_get_sample(GW,0,x,y) : 1): 0);
+            double wmm = ( (x  > 0 ) && (y > 0) ? (W != NULL ? float_image_get_sample(W,0,x-1,y-1) : 1): 0);
+            double wmp = ( (x  > 0 ) && (y < (NY_Z -1)) ? (W != NULL ? float_image_get_sample(W,0,x-1,y) : 1): 0);
+            double wpm = ( (x  < (NX_Z -1) ) && (y > 0) ? (W != NULL ? float_image_get_sample(W,0,x,y-1) : 1): 0);
+            double wpp = ( (x  < (NX_Z -1) ) && (y < (NY_Z -1) ) ? (W != NULL ? float_image_get_sample(W,0,x,y) : 1): 0);
 
             double w = 16.0/(1/wmm + 1/wpm + 1/wmp + 1/wpp);
             float_image_set_sample(EW,0,x,y,(float)w);

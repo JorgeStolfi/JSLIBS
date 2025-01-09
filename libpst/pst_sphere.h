@@ -2,7 +2,7 @@
 #define pst_sphere_H
 
 /* pst_sphere.h -- geometric tools for images of spheres. */
-/* Last edited on 2024-11-04 07:26:13 by stolfi */
+/* Last edited on 2025-01-01 15:23:25 by stolfi */
 
 #include <ellipse_crs.h>
 #include <r2.h>
@@ -94,13 +94,13 @@ pst_sphere_t pst_sphere_from_ellipse(hr3_point_t *O, ellipse_crs_t *E);
     sphere whose projection from {*O} is {*E}. In those cases, the
     procedure finds a sphere {S} whose projection is close to {*E} in
     some sense.  The client may want to compute an ellipse {E'}
-    with{} and compare it with {*E}.
+    with {} and compare it with {*E}.
     
     The client may specify that some coordinates of the viewpoint {*O}
     are unknown, by setting them to {NAN}. The procedure will then replace
     any such {NAN} in {*O} by an apropriate value, deduced from {E}
     and the other coordinates of {O}. The procedure does not 
-    directly change coordiantes of {Q} that are not {NAN};
+    directly change coordinates of {Q} that are not {NAN};
     but it may rescale {*O} by an arbitrary positive factor.
     Since the factor may be arbitrarily large, some non-zero elements 
     of {Q} may become zero.

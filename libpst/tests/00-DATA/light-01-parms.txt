@@ -1,0 +1,1 @@
+lamp angles 45 60 radius 0 power 0.800 0.800 0.700

@@ -1,5 +1,5 @@
 /* r3x3.h --- 3x3 matrices and operations on them */
-/* Last edited on 2024-12-05 10:28:04 by stolfi */
+/* Last edited on 2025-01-04 23:48:41 by stolfi */
 
 #ifndef r3x3_H
 #define r3x3_H
@@ -153,14 +153,24 @@ void r3x3_gen_print
   
 /* OPERATIONS SPECIFIC TO 3x3 MATRICES */
 
-void r3x3_u_v_rotation(r3_t *u, r3_t *v, r3x3_t *M);
-  /* Sets {M} to a rotation matrix, around some axis through the
-    origin, that takes the unit vector {u} to to the unit vector {v}
-    by the shortest route.
+void r3x3_u_to_v_rotation(r3_t *u, r3_t *v, r3x3_t *M);
+  /* Sets {M} to a rotation matrix, around some axis through the origin,
+    that takes the direction of vector {u} to to the direction of vector
+    {v} by the shortest route.
     
-    If {u} is equal to {v}, then {M} will be the identity matrix.
-    If {u} is opposite to {v}, {M} will be a 180 degree rotation around a
-    random axis through the origin that is orthogonal to both. */
+    If {u} is {NULL} or zero, {v} is {NULL} or zero, or {u} is equal to
+    {v}, then {M} will be the identity matrix. If {u} is opposite to
+    {v}, {M} will be a 180 degree rotation around a random axis through
+    the origin that is orthogonal to both. */
 
-#endif
+void r3x3_u_v_to_x_y_rotation(r3_t *u, r3_t *v, r3x3_t *M);
+  /* Sets {M} to a rotation matrix, around some axis through the origin,
+    that takes the direction of the vector {u} to to the unit {+X}
+    vector {(1,0,0)} and the unit vector {v} to some vector on the {XY}
+    plane, with positive {Y}.
 
+    If {u} is {NULL} or zero, it is assumed to be {(1,0,0)}. If {v} is
+    {NULL}, zero, or collinear with {u}, the result is simply
+    {r3x3_u_to_v_rotation(u,(1,0,0))}. */
+
+#endif 

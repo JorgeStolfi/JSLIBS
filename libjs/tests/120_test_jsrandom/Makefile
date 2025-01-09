@@ -1,4 +1,4 @@
-# Last edited on 2020-12-06 18:20:39 by jstolfi
+# Last edited on 2025-01-02 06:34:03 by stolfi
 
 PROG = test_jsrandom
 
@@ -13,10 +13,9 @@ include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 
 all: check
 
-check:  do-test show-plots
+check:  clean do-test show-plots
 
 do-test: ${PROG}
-	-rm -f out/*.{his,png}
 	${PROG}
 
 show-plots: out/drandom_qt_A.his
@@ -35,4 +34,4 @@ show-plots: out/drandom_qt_A.his
         done
 
 clean::
-	rm -f out/*.his out/*.png
+	rm -f out/*.his out/*.png out/*.eps

@@ -1,5 +1,5 @@
 /* See pst_shading.h */
-/* Last edited on 2024-12-29 02:06:44 by stolfi */
+/* Last edited on 2025-01-04 03:59:32 by stolfi */
 
 #include <stdio.h>
 #include <math.h>
@@ -147,35 +147,51 @@ float_image_t *pst_shading_difference_image
     float_image_t *MSK, 
     float_image_t *NRM
   )
-  { int32_t NC, NX, NY;
-    float_image_get_size(AIMG, &NC, &NX, &NY);
-    float_image_check_size(BIMG, NC, NX, NY);
-    if (NRM != NULL) { float_image_check_size(NRM, 3, NX, NY); }
+  { int32_t NCA, NCB, NX, NY;
+    float_image_get_size(AIMG, &NCA, &NX, &NY);
+    float_image_check_size(BIMG, -1, NX, NY);
+    float_image_get_size(BIMG, &NCB, NULL, NULL);
+    
     if (MSK != NULL) { float_image_check_size(NRM, 1, NX, NY); }
+    if (NRM != NULL) { float_image_check_size(NRM, 3, NX, NY); }
+    
+    int32_t NCC = (NCA < NCB ? NCA : NCB);
 
-    float_image_t *DIF = float_image_new(NC, NX, NY);
+    float_image_t *dif = float_image_new(NCC, NX, NY);
     
     for (int32_t y = 0; y < NY; y++)
       { for (int32_t x = 0; x < NX; x++)
-          { float msk = (MSK == NULL ? 1.0f : float_image_get_sample(MSK, 0, x, y));
-            demand(isfinite(msk), "invalid mask value");
-            r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
-            double dn = r3_L_inf_norm(&nrm);
-            bool_t ok = ((msk >= 0.5) && isfinite(dn) && (dn > 1.0e-16)); 
-            for (int32_t c = 0; c < NC; c++) 
+          { double w_msk = 1.0;
+            if (MSK != NULL)
+              { w_msk = (double)float_image_get_sample(MSK, 0, x, y);
+                w_msk = (isfinite(w_msk) ? fmax(0.0, fmin(1.0, w_msk)) : 0.0);
+              }
+            double w_img = 1.0;
+            if (NCA != NCB)
+              { w_img = (double)float_image_get_sample((NCA > NCB ? AIMG : BIMG), NCC, x, y);
+                w_img = (isfinite(w_img) ? fmax(0.0, fmin(1.0, w_img)) : 0.0);
+              }
+            double w_nrm = 1.0;
+            if (NRM != NULL)
+              { r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
+                double len2 = r3_norm_sqr(&nrm);
+                w_nrm = (isfinite(len2) && len2 > 0 ? 1.0 : 0.0);
+              }
+            double w = w_img*w_msk*w_nrm;
+            for (int32_t c = 0; c < NCC; c++) 
               { float sd;
-                if (ok) 
+                if (w > 0) 
                   { float sa = float_image_get_sample(AIMG, c, x, y); 
                     float sb = float_image_get_sample(BIMG, c, x, y); 
-                    sd = sa - sb;
+                    sd = (float)(w*(sa - sb));
                   }
                 else
                   { sd = 0.0; }
-                float_image_set_sample(DIF, c, x, y, sd); 
+                float_image_set_sample(dif, c, x, y, sd); 
               }
           }
       }
-    return DIF;
+    return dif;
   }    
 
 void pst_shading_add_diffuse_single

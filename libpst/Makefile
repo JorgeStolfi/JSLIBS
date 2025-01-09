@@ -1,10 +1,8 @@
-# Last edited on 2024-12-24 18:38:18 by stolfi
+# Last edited on 2025-01-06 00:11:34 by stolfi
 
 LIBNAME := libpst
 
 IGNORE := \
-  pst_adjust_weights.c \
-  pst_img_graph.c \
-  pst_img_graph_from_maps.c \
+  pst_adjust_weights.c
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB.make

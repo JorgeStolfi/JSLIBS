@@ -184,12 +184,12 @@ float_image_t * nmap_map_compare
   }
 
 
-float_image_t* height_map_shrink_one_pixel(float_image_t* IZ);
+float_image_t* height_map_shrink_one_pixel(float_image_t* Z);
 
-float_image_t* height_map_shrink_one_pixel(float_image_t* IZ){
-	int NC = IZ->sz[0];
-	int NX = IZ->sz[1];
-	int NY = IZ->sz[2];
+float_image_t* height_map_shrink_one_pixel(float_image_t* Z){
+	int NC = Z->sz[0];
+	int NX = Z->sz[1];
+	int NY = Z->sz[2];
 	float_image_t* IJ = float_image_new(NC,NX-1,NY-1);
 	int c;
 	for( c = 0; c < NC; c++)
@@ -200,10 +200,10 @@ float_image_t* height_map_shrink_one_pixel(float_image_t* IZ){
 			int y;
       			for(y = 0; y < NY -1; y++)
 			{
-				double P00 = float_image_get_sample(IZ,c,x,y);
-				double P10 = float_image_get_sample(IZ,c,x+1,y);
-				double P01 = float_image_get_sample(IZ,c,x,y+1);
-				double P11 = float_image_get_sample(IZ,c,x+1,y+1);
+				double P00 = float_image_get_sample(Z,c,x,y);
+				double P10 = float_image_get_sample(Z,c,x+1,y);
+				double P01 = float_image_get_sample(Z,c,x,y+1);
+				double P11 = float_image_get_sample(Z,c,x+1,y+1);
 
 				double val = (P00 + P01 + P10 + P11)/4.0;
 				float_image_set_sample(IJ,c,x,y,val);

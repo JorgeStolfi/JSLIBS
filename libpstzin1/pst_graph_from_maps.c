@@ -1,5 +1,5 @@
 /* See {pst_graph_from_maps.h}. */
-/* Last edited on 2024-12-24 18:59:00 by stolfi */
+/* Last edited on 2025-01-06 18:48:12 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #include <stdio.h>
@@ -30,7 +30,7 @@ int32_t pst_graph_compute_vertex_index(int32_t ix, int32_t iy, int32_t NX, int32
   {
     if ((iy < 0 ) || (iy > NY)) { return -1; }
     if ((ix < 0 ) || (ix > NX)) { return -1; }
-    return iy*NX + ix;
+    return ix + iy*NX;
   }
 
 void pst_graph_restore_vertex_index(int32_t id, int32_t NX, int32_t NY, int32_t *ix, int32_t *iy)

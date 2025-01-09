@@ -1,5 +1,5 @@
 /* Write a {float_image_t} to a file with variable format. */
-/* Last edited on 2024-12-20 17:41:21 by stolfi */
+/* Last edited on 2025-01-03 16:24:20 by stolfi */
 
 #ifndef float_image_write_gen_H
 #define float_image_write_gen_H
@@ -20,7 +20,7 @@
   appropriately.
     
   For FNI images, there is no conversion; the samples are written
-  out in a suitabl decimal floating-point format.
+  out in a suitable decimal floating-point format.
   
   For all other formats except FNI, {float} samples from the image
   are converted from their original assumed range {[v0 _ vM]} 
@@ -77,7 +77,7 @@ void float_image_write_gen_named
     image_file_format_t ffmt,  /* File format. */
     double v0,                 /* Output sample value corresponding to file sample value 0. */
     double vM,                 /* Output sample value corresponding to max file sample value. */
-    double expoEnc,           /* Exponent parameter for gamma encoding. */
+    double expoEnc,            /* Exponent parameter for gamma encoding. */
     double bias,               /* Bias parameter for gamma encoding. */
     bool_t verbose
   );

@@ -1,0 +1,1 @@
+center 400 300 radius 50 stretch 3 5  view -3 -5 7 albedo 0.400 0.200 0.100

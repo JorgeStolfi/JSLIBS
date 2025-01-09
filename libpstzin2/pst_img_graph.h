@@ -1,4 +1,4 @@
-/* Last edited on 2024-12-27 09:28:54 by stolfi */
+/* Last edited on 2025-01-05 12:17:44 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #ifndef pst_img_graph_H
@@ -26,11 +26,11 @@ typedef struct pst_img_graph_vertex_data_t
 
 typedef struct pst_img_graph_edge_data_t
   { int32_t id;  /*Id - unique*/
-    int32_t org[2];  /* Index to the origin vertex in each direction. */
-    int32_t dst[2];  /* Index to the destination vertex in each direction. */
+    int32_t org[2];   /* Index to the origin vertex in each direction. */
+    int32_t dst[2];   /* Index to the destination vertex in each direction. */
     double delta[2];  /* Height difference in each direction. */
     double weight;    /* Edge weight (for both directions). */
-    int32_t mark;    /* Used for connected component enumeration. */
+    int32_t mark;     /* Used for connected component enumeration. */
     char* label;      /* Label for printout. */
     pst_path_t path[2];
   } pst_img_graph_edge_data_t;
@@ -56,6 +56,11 @@ typedef struct pst_img_graph_t
     Ditto for {edge[0..NE-1]} and {NE_valid}. 
     
     The ID of a vertex {vertex[iv]} is unrelated to its index {iv]}. */
+
+pst_img_graph_t *pst_img_graph_new(int32_t NV_max, int32_t NE_max);
+  /* Creates a new graph record {g}.  Allocates the lists {g.vertex} and {g.edge}
+    with sizes {NV_max} and {NE_max}, but initializes {g.NV} and {g.NE}
+    to zero. */
 
 void pst_img_graph_free(pst_img_graph_t *g);
 
@@ -124,8 +129,6 @@ pst_path_t pst_img_graph_compute_star_wedge_path
 void pst_img_graph_edge_remove(pst_img_graph_t* g,haf_arc_t e);
 
 void pst_img_graph_connect_vertices(pst_img_graph_t* g);
-
-pst_img_graph_t* pst_img_graph_create(int32_t NE_max,int32_t NV_max);
 
 void pst_img_graph_print(FILE* wr,pst_img_graph_t* g);
 

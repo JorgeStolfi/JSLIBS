@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_test.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-20 18:19:18 by stolfi */ 
+/* Last edited on 2025-01-01 16:05:54 by stolfi */ 
 /* Created on 2023-01-10 by J. Stolfi, UNICAMP */
 
 #define test_waves_COPYRIGHT \
@@ -218,11 +218,11 @@ void wt_write_image(int32_t NX, int32_t NY, int32_t kf0, int32_t kf1, bool_t squ
       }
 
     bool_t isMask = FALSE; /* Assume uniform distr. of pixel values in encoding/decoding. */
-    double gamma = 1.000;
+    double expoDec = 1.000;
     double bias = 0.000;
     bool_t yup = TRUE;
     bool_t warn = TRUE;
     bool_t verbose = TRUE;
-    float_image_write_pnm_named(fname, img, isMask, gamma, bias, yup, warn, verbose);
+    float_image_write_pnm_named(fname, img, isMask, expoDec, bias, yup, warn, verbose);
     free(fname);
   }

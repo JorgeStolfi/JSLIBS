@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_map_channels.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-20 18:27:41 by stolfi */ 
+/* Last edited on 2025-01-01 16:06:11 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_map_channels_COPYRIGHT \
@@ -102,10 +102,10 @@ void tm_write_pnm(char *outPrefix, float_image_t *img)
     char *ext = (NCB == 1 ? "pgm" : "ppm");
     char *fname = jsprintf("%s.%s", outPrefix, ext);
     bool_t isMask = FALSE;
-    double gamma = 1.000;
+    double expoDec = 1.000;
     double bias = 0.000;
     bool_t yup = FALSE;
     bool_t warn = TRUE;
     bool_t verbose = FALSE;
-    float_image_write_pnm_named(fname, img, isMask, gamma, bias, yup, warn, verbose);
+    float_image_write_pnm_named(fname, img, isMask, expoDec, bias, yup, warn, verbose);
   }

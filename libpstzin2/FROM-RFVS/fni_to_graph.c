@@ -4,7 +4,7 @@
 
 #define slope_to_height_C_COPYRIGHT "Copyright � 2005 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2024-12-25 08:13:02 by stolfi */
+/* Last edited on 2025-01-05 19:53:19 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -243,45 +243,6 @@ void  pst_img_graph_get_axial_edge_data_from_maps(
     double *d, double *w
  );
 
-void  pst_img_graph_get_axial_edge_data_from_maps(
-    float_image_t* IG,
-    float_image_t* IW,
-    long int x, long int y,
-    int axis, int dir,
-    double *d, double *w
- ){
-  
-  if( (IG == NULL) && (IW == NULL) ){
-    *d = 0;
-    *w = 1;
-    return;
-  }
-  
-  assert( fabs(dir) == 1);
-  
-  if(axis == X_AXIS){
-    if(dir == +1){ pst_interpolate_four_samples(IG,IW,X_AXIS,x-0,y-2,x-0,y-1,x-0,y+0,x-0,y+1,d,w); }
-    if(dir == -1){ pst_interpolate_four_samples(IG,IW,X_AXIS,x-1,y-2,x-1,y-1,x-1,y+0,x-1,y+1,d,w); }
-    
-//      if(dir == +1){ pst_graph_interpolate_two_samples(IG,IW,X_AXIS,x,y-1,x,y,d,w); }
-//      if(dir == -1){ pst_graph_interpolate_two_samples(IG,IW,X_AXIS,x-1,y-1,x-1,y,d,w); }
-  }else if( axis == Y_AXIS)
-  {
-    if(dir == +1){  pst_interpolate_four_samples(IG,IW,Y_AXIS,x-2,y+0,x-1,y+0,x+0,y+0,x+1,y+0,d,w);}
-    if(dir == -1){  pst_interpolate_four_samples(IG,IW,Y_AXIS,x-2,y-1,x-1,y-1,x+0,y-1,x+1,y-1,d,w);}
-    
-//     if(dir == +1){ pst_graph_interpolate_two_samples(IG,IW,X_AXIS,x-1,y,x,y,d,w); }
-//      if(dir == -1){ pst_graph_interpolate_two_samples(IG,IW,X_AXIS,x-1,y-1,x,y-1,d,w); }
-    
-  }else{
-    demand(FALSE,"invalid  AXIS");
-  }
-  if(dir == -1){
-    *d = -(*d);
-  }
-  if( *w == 0){ *d = 0; }
-  
-}
 
 int main(int argc, char** argv){
   
@@ -294,7 +255,7 @@ int main(int argc, char** argv){
   float_image_t* IW = (o->weightMap == NULL ? NULL : readFNI(o->weightMap) );
   
   fprintf(stderr,"START!\n");
-  pst_img_graph_t* g = pst_img_graph_create_from_gradient_weights(IG, IW,o);
+  pst_img_graph_t* g = pst_img_graph_from_gradient_weights(IG, IW,o);
   
   assert(g != NULL);
 //   fprintf(stderr,"Generated graph with %ld vertices and %ld edges\n",g->n, g->m);

@@ -1,5 +1,5 @@
 /* test_r3 --- test program for r3.h, r3x3.h  */
-/* Last edited on 2024-11-20 13:19:24 by stolfi */
+/* Last edited on 2025-01-05 00:34:53 by stolfi */
 
 #include <math.h>
 #include <stdio.h>
@@ -81,7 +81,8 @@ void test_r3x3_inv(bool_t verbose);
 void test_r3x3_norm__r3x3_norm_sqr__r3x3_mod_norm_sqr(bool_t verbose);
 void test_r3x3_normalize(bool_t verbose);
 void test_r3x3_diff_sqr(bool_t verbose);
-void test_r3x3_u_v_rotation(bool_t verbose);
+void test_r3x3_u_to_v_rotation(bool_t verbose);
+void test_r3x3_u_v_to_x_y_rotation(bool_t verbose);
 void test_r3x3_throw_rotation(bool_t verbose);
 void test_r3x3_print(bool_t verbose);
 
@@ -211,7 +212,7 @@ void test_r3_throw_ball(bool_t verbose)
     double rr = 0;
     for (uint32_t i = 0;  i < N; i++) { double ai = a.c[i]; rr += ai*ai; }
     rr = sqrt(rr);
-    demand(rr <= 1 + 0.000000001*rr, "r3_throw_ball error (2)");
+    demand(rr <= 1 + 1.0e-9*rr, "r3_throw_ball error (2)");
   }
 
 void test_r3_throw_normal(bool_t verbose)
@@ -236,7 +237,7 @@ void test_r3_throw_dir(bool_t verbose)
     double rr = 0;
     for (uint32_t i = 0;  i < N; i++) { double ai = a.c[i]; rr += ai*ai; }
     rr = sqrt(rr);
-    rn_test_tools_check_eps(1,rr,0.000000001*rr, NO, NO, "r3_throw_dir error (2)");
+    rn_test_tools_check_eps(1,rr,1.0e-9*rr, NO, NO, "r3_throw_dir error (2)");
   }
 
 void test_r3_throw_ortho(bool_t verbose)
@@ -264,13 +265,13 @@ void test_r3_throw_ortho(bool_t verbose)
         double ma = r3_norm(&a);
         double mo = r3_throw_ortho(&a, &d);
         double md = r3_norm(&d);
-        rn_test_tools_check_eps(ma, mo, 0.00000001*ma + 1.0e-15, NO, NO, "r3_throw_ortho error (1)");
-        rn_test_tools_check_eps(ma, md, 0.00000001*ma + 1.0e-15, NO, NO, "r3_throw_ortho error (2)");
+        rn_test_tools_check_eps(ma, mo, 1.0e-8*ma + 1.0e-15, NO, NO, "r3_throw_ortho error (1)");
+        rn_test_tools_check_eps(ma, md, 1.0e-8*ma + 1.0e-15, NO, NO, "r3_throw_ortho error (2)");
         /* Check orthogonality: */
         double dot = 0;
         for (uint32_t i = 0;  i < N; i++) 
           { double di = d.c[i], ai = a.c[i]; dot += di*ai; }
-        rn_test_tools_check_eps(dot, 0.0, 0.00000001*ma, NO, NO, "r3_throw_ortho error (3)");
+        rn_test_tools_check_eps(dot, 0.0, 1.0e-8*ma, NO, NO, "r3_throw_ortho error (3)");
         if (ma > 1.0e-12)
           { /* Check variation: */
             rn_test_tools_check_all_different(N, d.c, "r3_throw_ortho probable error (4)");
@@ -304,18 +305,18 @@ void test_r3_throw_ortho_pair(bool_t verbose)
         double mo = r3_throw_ortho_pair(&a, &d, &e);
         double md = r3_norm(&d);
         double me = r3_norm(&e);
-        rn_test_tools_check_eps(ma, mo, 0.00000001*ma + 1.0e-15, NO, NO, "r3_throw_ortho_pair error (1)");
-        rn_test_tools_check_eps(ma, md, 0.00000001*ma + 1.0e-15, NO, NO, "r3_throw_ortho_pair error (2)");
-        rn_test_tools_check_eps(ma, me, 0.00000001*ma + 1.0e-15, NO, NO, "r3_throw_ortho_pair error (3)");
+        rn_test_tools_check_eps(ma, mo, 1.0e-8*ma + 1.0e-15, NO, NO, "r3_throw_ortho_pair error (1)");
+        rn_test_tools_check_eps(ma, md, 1.0e-8*ma + 1.0e-15, NO, NO, "r3_throw_ortho_pair error (2)");
+        rn_test_tools_check_eps(ma, me, 1.0e-8*ma + 1.0e-15, NO, NO, "r3_throw_ortho_pair error (3)");
         /* Check orthogonality: */
         double addot = 0, aedot = 0, dedot = 0;
         for (uint32_t i = 0;  i < N; i++) 
           { double ai = a.c[i], di = d.c[i], ei = e.c[i];
             addot += ai*di; aedot += ai*ei; dedot += di*ei;
           }
-        rn_test_tools_check_eps(addot, 0.0, 0.00000001*ma, NO, NO, "r3_throw_ortho_pair error (4)");
-        rn_test_tools_check_eps(aedot, 0.0, 0.00000001*ma, NO, NO, "r3_throw_ortho_pair error (5)");
-        rn_test_tools_check_eps(dedot, 0.0, 0.00000001*ma, NO, NO, "r3_throw_ortho_pair error (6)");
+        rn_test_tools_check_eps(addot, 0.0, 1.0e-8*ma, NO, NO, "r3_throw_ortho_pair error (4)");
+        rn_test_tools_check_eps(aedot, 0.0, 1.0e-8*ma, NO, NO, "r3_throw_ortho_pair error (5)");
+        rn_test_tools_check_eps(dedot, 0.0, 1.0e-8*ma, NO, NO, "r3_throw_ortho_pair error (6)");
         if (ma > 1.0e-12)
           { /* Check variation: */
             rn_test_tools_check_all_different(N, d.c, "r3_throw_ortho_pair probable error (7)");
@@ -452,8 +453,8 @@ void test_r3_norm__r3_norm_sqr__r3_L_inf_norm(bool_t verbose)
         if (ai > tt) { tt = ai; }
       }
     double rr = sqrt(ss);
-    rn_test_tools_check_eps(r,rr,0.000000001 * rr, NO, NO, "r3_norm error");
-    rn_test_tools_check_eps(s,ss,0.000000001 * ss, NO, NO, "r3_norm_sqr error");
+    rn_test_tools_check_eps(r,rr,1.0e-9 * rr, NO, NO, "r3_norm error");
+    rn_test_tools_check_eps(s,ss,1.0e-9 * ss, NO, NO, "r3_norm_sqr error");
     rn_test_tools_check_eq(t,tt, NO, NO, "r3_L_inf_norm error");
   }
 
@@ -474,8 +475,8 @@ void test_r3_dist__r3_dist_sqr__r3_L_inf_dist(bool_t verbose)
         if (di > tt) { tt = di; }
       }
     double rr = sqrt(ss);
-    rn_test_tools_check_eps(r,rr,0.000000001 * rr, NO, NO, "r3_dist error");
-    rn_test_tools_check_eps(s,ss,0.000000001 * ss, NO, NO, "r3_dist_sqr error");
+    rn_test_tools_check_eps(r,rr,1.0e-9 * rr, NO, NO, "r3_dist error");
+    rn_test_tools_check_eps(s,ss,1.0e-9 * ss, NO, NO, "r3_dist_sqr error");
     rn_test_tools_check_eq(t,tt, NO, NO, "r3_L_inf_dist error");
   }
 
@@ -486,15 +487,15 @@ void test_r3_dir__r3_L_inf_dir(bool_t verbose)
     r3_throw_cube(&a);
     double r = r3_dir(&a, &b);
     double rr = r3_norm(&a);
-    rn_test_tools_check_eps(r, rr, 0.000000001*rr, NO, NO, "r3_dir error (1)");
+    rn_test_tools_check_eps(r, rr, 1.0e-9*rr, NO, NO, "r3_dir error (1)");
     
     double s = r3_L_inf_dir(&a, &d);
     double ss = r3_L_inf_norm(&a);
     rn_test_tools_check_eq(s, ss, NO, NO, "r3_L_inf_dir error (1)");
         
     for (uint32_t i = 0;  i < N; i++)
-      { rn_test_tools_check_eps(b.c[i],a.c[i]/rr, 0.000000001*rr, NO, NO, "r3_dir error (2)");
-        rn_test_tools_check_eps(d.c[i],a.c[i]/ss, 0.000000001*ss, NO, NO, "r3_L_inf_dir error (2)");
+      { rn_test_tools_check_eps(b.c[i],a.c[i]/rr, 1.0e-9*rr, NO, NO, "r3_dir error (2)");
+        rn_test_tools_check_eps(d.c[i],a.c[i]/ss, 1.0e-9*ss, NO, NO, "r3_L_inf_dir error (2)");
       }
   }
 
@@ -512,14 +513,14 @@ void test_r3_dot__r3_cos__r3_sin__r3_angle(bool_t verbose)
     double rr = 0.0;
     for (uint32_t i = 0;  i < N; i++) { rr += a.c[i]*b.c[i]; }
     double CC = rr/(r3_norm(&a)*r3_norm(&b));
-    rn_test_tools_check_eps(r,rr,0.000000001 * mag, NO, NO, "r3_dot error (1)");
-    rn_test_tools_check_eps(C,CC,0.000000001, NO, NO, "r3_cos error (1)");
+    rn_test_tools_check_eps(r,rr,1.0e-9 * mag, NO, NO, "r3_dot error (1)");
+    rn_test_tools_check_eps(C,CC,1.0e-9, NO, NO, "r3_cos error (1)");
     d = a;
     r3_mix_in(-rr/r3_norm_sqr(&b), &b, &d);
     double SS = r3_norm(&d)/r3_norm(&a);
-    rn_test_tools_check_eps(S,SS,0.000000001, NO, NO, "r3_sin error (1)");
+    rn_test_tools_check_eps(S,SS,1.0e-9, NO, NO, "r3_sin error (1)");
     double AA = atan2(SS, CC);
-    rn_test_tools_check_eps(A,AA,0.000000001, NO, NO, "r3_angle error (1)");
+    rn_test_tools_check_eps(A,AA,1.0e-9, NO, NO, "r3_angle error (1)");
     for (uint32_t i = 0;  i < N; i++)
       { r3_axis(i, &a);
         for (uint32_t j = 0;  j < N; j++)
@@ -559,9 +560,9 @@ void test_r3_cross(bool_t verbose)
     r3_cross(&a, &b, &d);
     double mag = r3_norm(&a)*r3_norm(&b);
     double r = r3_dot(&a, &d);
-    rn_test_tools_check_eps(r, 0.0, 0.00000001*mag*r3_norm(&a), NO, NO, "r3_cross error (1)");
+    rn_test_tools_check_eps(r, 0.0, 1.0e-8*mag*r3_norm(&a), NO, NO, "r3_cross error (1)");
     double s = r3_dot(&b, &d);
-    rn_test_tools_check_eps(s, 0.0, 0.00000001*mag*r3_norm(&b), NO, NO, "r3_cross error (2)");
+    rn_test_tools_check_eps(s, 0.0, 1.0e-8*mag*r3_norm(&b), NO, NO, "r3_cross error (2)");
   }
 
 void test_r3_det(bool_t verbose)
@@ -587,7 +588,7 @@ void test_r3_det(bool_t verbose)
     r3_cross(&a, &b, &e);
     double rr = r3_dot(&e, &c);
     double mag = r3_norm(&a)*r3_norm(&b)*r3_norm(&c);
-    rn_test_tools_check_eps(r,rr, 0.00000001*mag, NO, NO, "r3_det error (1)");
+    rn_test_tools_check_eps(r,rr, 1.0e-8*mag, NO, NO, "r3_det error (1)");
   }
 
 void test_r3_decomp(bool_t verbose)
@@ -598,17 +599,17 @@ void test_r3_decomp(bool_t verbose)
     r3_throw_cube(&b);
     double r = r3_decomp(&a, &b, &para, &perp);
     double rr = r3_dot(&a, &b)/r3_norm_sqr(&b);  
-    rn_test_tools_check_eps(r,rr, 0.000000001*(fabs(r) + fabs(rr)), NO, NO, "r3_decomp error (1)");
+    rn_test_tools_check_eps(r,rr, 1.0e-9*(fabs(r) + fabs(rr)), NO, NO, "r3_decomp error (1)");
     
     r3_add(&para, &perp, &c);
     double u = r3_dist(&a, &c);
-    affirm (u <= 0.000000001*r3_norm(&a), "r3_decomp error (2)");
+    affirm (u <= 1.0e-9*r3_norm(&a), "r3_decomp error (2)");
 
     double s = r3_dot(&perp, &b);
-    rn_test_tools_check_eps(s, 0.0, 0.000000001*r3_norm(&b), NO, NO, "r3_decomp error (3)");
+    rn_test_tools_check_eps(s, 0.0, 1.0e-9*r3_norm(&b), NO, NO, "r3_decomp error (3)");
 
     double t = r3_dot(&para, &perp);
-    rn_test_tools_check_eps(t, 0.0, 0.000000001*r3_norm(&a), NO, NO, "r3_decomp error (4)");
+    rn_test_tools_check_eps(t, 0.0, 1.0e-9*r3_norm(&a), NO, NO, "r3_decomp error (4)");
   }
 
 void test_r3_print(bool_t verbose)
@@ -692,7 +693,8 @@ void test_r3x3(bool_t verbose)
     test_r3x3_norm__r3x3_norm_sqr__r3x3_mod_norm_sqr(verbose);
     test_r3x3_normalize(verbose);
     test_r3x3_diff_sqr(verbose);
-    test_r3x3_u_v_rotation(verbose);
+    test_r3x3_u_to_v_rotation(verbose);
+    test_r3x3_u_v_to_x_y_rotation(verbose);
     test_r3x3_throw_rotation(verbose);
     test_r3x3_print(verbose);
 
@@ -818,9 +820,9 @@ void test_r3x3_map_row__r3x3_map_col(bool_t verbose)
           }
       }
     double r = r3_dist(&b, &bb);
-    affirm(r < 0.000000001 * r3_norm(&bb), "r3_map_row error");
+    affirm(r < 1.0e-9 * r3_norm(&bb), "r3_map_row error");
     double s = r3_dist(&c, &cc);
-    affirm(s < 0.000000001 * r3_norm(&cc), "r3_map_col error");
+    affirm(s < 1.0e-9 * r3_norm(&cc), "r3_map_col error");
   }
 
 void test_r3x3_scale(bool_t verbose)
@@ -833,7 +835,7 @@ void test_r3x3_scale(bool_t verbose)
     for (uint32_t i = 0;  i < N; i++)
       { for (uint32_t j = 0;  j < N; j++)
           { double sel = r * A.c[i][j];
-            rn_test_tools_check_eps(C.c[i][j],sel,0.000000001 * fabs(sel), NO, NO,
+            rn_test_tools_check_eps(C.c[i][j],sel,1.0e-9 * fabs(sel), NO, NO,
               "r3x3_scale error"
             );
           }
@@ -851,7 +853,7 @@ void test_r3x3_mul(bool_t verbose)
       { for (uint32_t j = 0;  j < N; j++)
           { double sum = 0.0;
             for (uint32_t k = 0;  k < N; k++) { sum += A.c[i][k]*B.c[k][j]; }
-            rn_test_tools_check_eps(C.c[i][j],sum,0.000000001 * fabs(sum), NO, NO,
+            rn_test_tools_check_eps(C.c[i][j],sum,1.0e-9 * fabs(sum), NO, NO,
               "r3x3_mul error"
             );
           }
@@ -869,7 +871,7 @@ void test_r3x3_mul_tr(bool_t verbose)
       { for (uint32_t j = 0;  j < N; j++)
           { double sum = 0.0;
             for (uint32_t k = 0;  k < N; k++) { sum += A.c[i][k]*B.c[j][k]; }
-            rn_test_tools_check_eps(C.c[i][j],sum,0.000000001 * fabs(sum), NO, NO,
+            rn_test_tools_check_eps(C.c[i][j],sum,1.0e-9 * fabs(sum), NO, NO,
               "r3x3_mul_tr error"
             );
           }
@@ -887,7 +889,7 @@ void test_r3x3_tr_mul(bool_t verbose)
       { for (uint32_t j = 0;  j < N; j++)
           { double sum = 0.0;
             for (uint32_t k = 0;  k < N; k++) { sum += A.c[k][i]*B.c[k][j]; }
-            rn_test_tools_check_eps(C.c[i][j], sum, 0.000000001*fabs(sum), NO, NO,
+            rn_test_tools_check_eps(C.c[i][j], sum, 1.0e-9*fabs(sum), NO, NO,
               "r3x3_tr_mul error"
             );
           }
@@ -934,7 +936,7 @@ void test_r3x3_det(bool_t verbose)
             A.c[i][j] = r*(1-t) + s*t;
             double tt = r3x3_det(&A);
             double mag = fabs(rr) + fabs(ss) + fabs(tt);
-            rn_test_tools_check_eps(tt, (rr*(1-t)+ss*t), 0.000000001*mag, NO, NO,
+            rn_test_tools_check_eps(tt, (rr*(1-t)+ss*t), 1.0e-9*mag, NO, NO,
               "r3x3_det error (1)"
             );
           }
@@ -945,7 +947,7 @@ void test_r3x3_det(bool_t verbose)
           { double t = A.c[i][j]; A.c[i][j] = A.c[k][j]; A.c[k][j] = t; }
         double rr = r3x3_det(&A);
         double rmag = fabs(r) + fabs(rr);
-        rn_test_tools_check_eps(r, -rr, 0.000000001*rmag, NO, NO, "r3x3_det error (2)");
+        rn_test_tools_check_eps(r, -rr, 1.0e-9*rmag, NO, NO, "r3x3_det error (2)");
 
         /* Col swap test: */
         double s = r3x3_det(&A);
@@ -953,7 +955,7 @@ void test_r3x3_det(bool_t verbose)
           { double t = A.c[j][i]; A.c[j][i] = A.c[j][k]; A.c[j][k] = t; }
         double ss = r3x3_det(&A);
         double smag = fabs(s) + fabs(ss);
-        rn_test_tools_check_eps(s, -ss, 0.000000001*smag, NO, NO, "r3x3_det error (3)");
+        rn_test_tools_check_eps(s, -ss, 1.0e-9*smag, NO, NO, "r3x3_det error (3)");
       }
   }
 
@@ -967,7 +969,7 @@ void test_r3x3_inv(bool_t verbose)
     for (uint32_t i = 0;  i < N; i++)
       { for (uint32_t j = 0;  j < N; j++)
           { double val = (i == j ? 1.0 : 0.0);
-            affirm(fabs(C.c[i][j] - val) < 0.000000001, "r3x3_inv error");
+            affirm(fabs(C.c[i][j] - val) < 1.0e-9, "r3x3_inv error");
           }
       }
   }
@@ -990,11 +992,11 @@ void test_r3x3_norm__r3x3_norm_sqr__r3x3_mod_norm_sqr(bool_t verbose)
           }
       }
     affirm(ss >= 0, "r3x3_norm_sqr error");
-    affirm(fabs(ss - s) < 0.000000001, "r3x3_norm_sqr error");
+    affirm(fabs(ss - s) < 1.0e-9, "r3x3_norm_sqr error");
     double rr = sqrt(ss);
-    affirm(fabs(rr - r) < 0.000000001, "r3x3_norm error");
+    affirm(fabs(rr - r) < 1.0e-9, "r3x3_norm error");
     affirm(tt >= 0, "r3x3_mod_norm_sqr error");
-    affirm(fabs(tt - t) < 0.000000001, "r3x3_mod_norm_sqr error");
+    affirm(fabs(tt - t) < 1.0e-9, "r3x3_mod_norm_sqr error");
   }
 
 void test_r3x3_normalize(bool_t verbose)
@@ -1005,15 +1007,15 @@ void test_r3x3_normalize(bool_t verbose)
     B = A;
     double s = r3x3_norm(&B);
     double ss = r3x3_normalize(&B);
-    affirm(fabs(ss - s) < 0.000000001, "r3x3_normalize result error");
+    affirm(fabs(ss - s) < 1.0e-9, "r3x3_normalize result error");
     double t = r3x3_norm(&B);
     double tt = 1.0;
-    affirm(fabs(tt - t) < 0.000000001, "r3x3_normalize norm error");
+    affirm(fabs(tt - t) < 1.0e-9, "r3x3_normalize norm error");
     for (uint32_t i = 0;  i < N; i++)
       { for (uint32_t j = 0;  j < N; j++)
           { double Aij = A.c[i][j];
             double Bij = B.c[i][j];
-            affirm(fabs(Bij*ss - Aij) < 0.000000001, "r3x3_normalize elem error");
+            affirm(fabs(Bij*ss - Aij) < 1.0e-9, "r3x3_normalize elem error");
           }
       }
   }
@@ -1048,21 +1050,39 @@ void test_r3x3_diff_sqr(bool_t verbose)
               }
           }
       }
-    tr3_check_num_eps("drel2", drel2, crel2, 0.0000001, "r3x3_diff_sqr failed");
-    tr3_check_num_eps("dabs2", dabs2, cabs2, 0.0000001, "r3x3_diff_sqr failed");
+    tr3_check_num_eps("drel2", drel2, crel2, 1.0e-7, "r3x3_diff_sqr failed");
+    tr3_check_num_eps("dabs2", dabs2, cabs2, 1.0e-7, "r3x3_diff_sqr failed");
   }
 
-void test_r3x3_u_v_rotation(bool_t verbose)
+void test_r3x3_u_to_v_rotation(bool_t verbose)
   {
-    if (verbose) { fprintf(stderr, "--- r3x3_u_v_rotation ---\n"); }
+    if (verbose) { fprintf(stderr, "--- r3x3_u_to_v_rotation ---\n"); }
     r3x3_t A;
     r3_t a, b, c;
     r3_throw_dir(&a);
     r3_throw_dir(&b);
-    r3x3_u_v_rotation(&a, &b, &A);
+    r3x3_u_to_v_rotation(&a, &b, &A);
     r3x3_map_row(&a, &A, &c);
     for (uint32_t i = 0;  i < N; i++)
-      { affirm(fabs(b.c[i] - c.c[i]) < 0.000000001, "r3x3_u_v_rotation error"); }
+      { affirm(fabs(b.c[i] - c.c[i]) < 1.0e-9, "r3x3_u_to_v_rotation error"); }
+    /* !!! Should check special cases ({u=NULL}, {u=(1,0,0)}, {u=(-1,0,0)}, {v=u} etc.) !!! */
+  }
+
+void test_r3x3_u_v_to_x_y_rotation(bool_t verbose)
+  {
+    if (verbose) { fprintf(stderr, "--- r3x3_u_v_to_x_y_rotation ---\n"); }
+    r3x3_t A;
+    r3_t a, b, c, d;
+    r3_throw_dir(&a);
+    r3_throw_dir(&b);
+    r3x3_u_v_to_x_y_rotation(&a, &b, &A);
+    r3x3_map_row(&a, &A, &c);
+    r3x3_map_row(&b, &A, &d);
+    for (uint32_t i = 0;  i < N; i++)
+      { affirm(fabs(c.c[i] - (i == 0 ? 1.0 : 0.0)) < 1.0e-9, "r3x3_u_v_to_x_y_rotation error (1)"); }
+    affirm(fabs(d.c[2]) < 1.0e-9, "r3x3_u_v_to_x_y_rotation error (2)"); 
+    affirm(d.c[1] > 0, "r3x3_u_v_to_x_y_rotation error (3)"); 
+    /* !!! Should check special cases ({u=NULL}, {u=(1,0,0)}, {u=(-1,0,0)}, {v=u}, etc.) !!! */
   }
 
 void test_r3x3_throw_rotation(bool_t verbose)
@@ -1180,17 +1200,17 @@ void tr3_check_regular_polyhedron(char *func, double R, double L, uint32_t n, r3
       { for (uint32_t j = 0;  j < i; j++)
           { dmin = fmin(dmin, r3_dist(&(p[i]), &(p[j]))); }
       }
-    rn_test_tools_check_eps(dmin, L, 0.000001*R, NULL, NULL, "polyhedron has wrong side");
+    rn_test_tools_check_eps(dmin, L, 1.0e-6*R, NULL, NULL, "polyhedron has wrong side");
     /* Check each vertex: */
     for (uint32_t i = 0;  i < n; i++)
       { /* Check distance from origin: */
         double Ri = r3_norm(&(p[i]));
-        rn_test_tools_check_eps(Ri, R, 0.000001*R, &i, NULL, "vertex has wrong radius");
+        rn_test_tools_check_eps(Ri, R, 1.0e-6*R, &i, NULL, "vertex has wrong radius");
         /* Check number of nearest neighbors: */
         uint32_t degi = 0;
         for (uint32_t j = 0;  j < n; j++)
           { double dij = r3_dist(&(p[i]), &(p[j]));
-            if (fabs(dij - L) < 0.0001*R) { degi++; }
+            if (fabs(dij - L) < 1.0e-4*R) { degi++; }
           }
         rn_test_tools_check_eq(degi, deg, &i, NULL, "vertex has wrong degree");
       }

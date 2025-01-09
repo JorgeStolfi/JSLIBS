@@ -1,5 +1,5 @@
 /* See hr3_pmap.h */
-/* Last edited on 2024-11-22 03:43:17 by stolfi */ 
+/* Last edited on 2025-01-05 00:35:21 by stolfi */ 
 
 #include <stdint.h>
 #include <math.h>
@@ -119,10 +119,10 @@ hr3_pmap_t hr3_pmap_scaling(r3_t *scale)
   
   }
 
-hr3_pmap_t hr3_pmap_u_v_rotation(r3_t *u, r3_t *v)
+hr3_pmap_t hr3_pmap_u_to_v_rotation(r3_t *u, r3_t *v)
   { /* Compute the matrix {r} for {R^3} to {R^3}: */
     r3x3_t r;
-    r3x3_u_v_rotation(u, v, &r);
+    r3x3_u_to_v_rotation(u, v, &r);
     
     /* Convert to a projective map (note that inverse is just transpose): */
     hr3_pmap_t M;

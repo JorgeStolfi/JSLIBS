@@ -1,5 +1,5 @@
 /* Test program for {hr3_pmap.h}  */
-/* Last edited on 2024-11-20 18:17:45 by stolfi */
+/* Last edited on 2025-01-05 00:24:02 by stolfi */
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -42,7 +42,7 @@ void test_hr3_pmap_r3_point(bool_t verbose);
 
 void test_hr3_pmap_aff_from_mat_and_disp(bool_t verbose);
 void test_hr3_pmap_aff_from_four_points(bool_t verbose);
-void test_hr3_pmap_u_v_rotation(bool_t verbose);
+void test_hr3_pmap_u_to_v_rotation(bool_t verbose);
 void test_hr3_pmap_translation(bool_t verbose);
 void test_hr3_pmap_scaling(bool_t verbose);
 void test_hr3_pmap_from_five_points(bool_t verbose);
@@ -95,7 +95,7 @@ void test_hr3_pmap_aff(bool_t verbose)
     test_hr3_pmap_aff_from_mat_and_disp(verbose);
 
     test_hr3_pmap_translation(verbose);
-    test_hr3_pmap_u_v_rotation(verbose);
+    test_hr3_pmap_u_to_v_rotation(verbose);
     test_hr3_pmap_scaling(verbose);
     test_hr3_pmap_aff_from_four_points(verbose);
 
@@ -250,26 +250,26 @@ void test_hr3_pmap_translation(bool_t verbose)
       }
   }
 
-void test_hr3_pmap_u_v_rotation(bool_t verbose)
+void test_hr3_pmap_u_to_v_rotation(bool_t verbose)
   { 
-    if (verbose) { fprintf(stderr, "--- hr3_pmap_u_v_rotation ---\n"); }
+    if (verbose) { fprintf(stderr, "--- hr3_pmap_u_to_v_rotation ---\n"); }
     r3_t u; r3_throw_dir(&u);
     r3_t v; r3_throw_dir(&v);
-    hr3_pmap_t M = hr3_pmap_u_v_rotation(&u, &v);
+    hr3_pmap_t M = hr3_pmap_u_to_v_rotation(&u, &v);
     
     /* Check that it is a rotation: */
     for (uint32_t d = 0;  d < 2; d++)
       { r4x4_t *Q = (d == 0 ? &(M.dir) : &(M.inv));
-        affirm(Q->c[0][0] > 0, "hr3_pmap_u_v_rotation failed - not affine (1)");
+        affirm(Q->c[0][0] > 0, "hr3_pmap_u_to_v_rotation failed - not affine (1)");
         for (uint32_t i = 1;  i < NH; i++)
-          { affirm(Q->c[i][0] == 0, "hr3_pmap_u_v_rotation failed - not affine (2)");
-            affirm(Q->c[0][i] == 0, "hr3_pmap_u_v_rotation failed - not linear");
+          { affirm(Q->c[i][0] == 0, "hr3_pmap_u_to_v_rotation failed - not affine (2)");
+            affirm(Q->c[0][i] == 0, "hr3_pmap_u_to_v_rotation failed - not linear");
             for (uint32_t k = 1;  k <= i; k++)
               { double dot = Q->c[i][0]*Q->c[k][0] + Q->c[i][1]*Q->c[k][1] + Q->c[i][2]*Q->c[k][2];
-                affirm(fabs(dot - (i == k ? 1 : 0)) > 1.0e-11, "hr3_pmap_u_v_rotation failed - not orthonormal");
+                affirm(fabs(dot - (i == k ? 1 : 0)) > 1.0e-11, "hr3_pmap_u_to_v_rotation failed - not orthonormal");
               }
           }
-        affirm(r4x4_det(Q) > 0, "hr3_pmap_u_v_rotation failed - not orient preserving");
+        affirm(r4x4_det(Q) > 0, "hr3_pmap_u_to_v_rotation failed - not orient preserving");
       }
 
     /* Check that it maps {u} to {v}: */

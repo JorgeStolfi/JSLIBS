@@ -1,0 +1,1 @@
+array 6 angles 45 60 power 1.000 1.000 1.000

@@ -1,5 +1,5 @@
 #! /bin/bash
-# Last edited on 2024-11-05 11:21:28 by stolfi
+# Last edited on 2025-01-02 06:33:11 by stolfi
 
 # Usage: "plot-hist.sh {FILE}"
 # Plots histogram {FILE}.his to {FILE}.png
@@ -9,6 +9,8 @@ name="$1"; shift
 hfile="out/${name}.his"
 pfile="out/${name}.png"
 
+if [[ ! ( -s ${hfile} ) ]]; then echo "** ${hfile} not found" 1>&2; exit 1; fi
+ 
 gnuplot <<EOF
 set term png small truecolor background rgb '#ffffff'
 set output "${pfile}"

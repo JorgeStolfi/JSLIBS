@@ -2,7 +2,7 @@
 #define pst_weight_map_H
 
 /* pst_weight_map.h -- procedures for working with pixel weight maps. */
-/* Last edited on 2024-12-24 18:58:23 by stolfi */
+/* Last edited on 2025-01-08 01:14:31 by stolfi */
 
 #include <bool.h>
 
@@ -30,13 +30,11 @@ float_image_t *pst_weight_map_shrink(float_image_t *IW, bool_t harmonic, uint32_
     If the width of {IW} is odd, the last column is implicitly doubled
     before the image is shrunk. Ditto for the last row, if the height
     is odd. !!! Instead, should assume that pixels outside the domain
-    have weight zero. !!!
-    
-    */
+    have weight zero. !!! */
   
 float_image_t *pst_weight_map_expand_height_weights(float_image_t *IW);
-/*Given a slope weight map {IW}, creates a expanded height weight map where its elements are the 
-averaging of equivalent neighbors pixels in SW*/
+  /*Given a slope weight map {IW}, creates an expanded height weight map 
+    where its elements are the averaging of equivalent neighbors pixels in {IW}. */
       
 float_image_t *pst_weight_map_slope_to_height(float_image_t *W, bool_t harmonic, int32_t NXV, int32_t NYV);
   /* Given a weight map {W} for a slope map, returns another
@@ -63,11 +61,17 @@ float_image_t *pst_weight_map_slope_to_height(float_image_t *W, bool_t harmonic,
     harmonic mean if {harmonic} is true.  Any {W} samples whose
     pixels lie outside {W}'s domain are assumed to be zero. */
 
+float_image_t *pst_weight_map_shrink_by_one(float_image_t *W);
+  /* Shrinks the weight map {W} by one col and one row.
+    In the result, each pixel with indices {x,y} is the average 
+    of the four pixels {x+dx,y+dy} where {dx,dy} are 0 or 1. */
+
 /* DEBUGGING */
     
 typedef void pst_weight_map_debug_proc_t(uint32_t level, float_image_t *W); 
   /* Type of a client-given procedure that may be called
     by recursive integrators to report the weight map used in each scale. */   
-float_image_t *pst_weight_map_heights_from_slopes(int32_t NX_Z, int32_t NY_Z,float_image_t *GW);
+
+float_image_t *pst_weight_map_heights_from_slopes(int32_t NX_Z, int32_t NY_Z,float_image_t *W);
   
 #endif

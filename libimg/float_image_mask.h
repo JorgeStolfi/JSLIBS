@@ -2,7 +2,7 @@
 #define float_image_mask_H
 
 /* Procedures to create mask images for convolution, filtering, etc.. */
-/* Last edited on 2024-12-04 23:29:35 by stolfi */ 
+/* Last edited on 2025-01-02 18:06:21 by stolfi */ 
 
 #include <bool.h>
 #include <float_image.h>
@@ -18,7 +18,7 @@ void float_image_mask_window(float_image_t *msk, int32_t ic, int32_t ord, bool_t
     {R}. If {round} is TRUE, the mask spans the right ellipse {E}
     inscribed in {R}.
     
-    The {order} parameter specifies the general profile of the sample
+    The {ord} parameter specifies the general profile of the sample
     values inside the window region {S} ({R} or {E}), as a function of
     the distance {r} from the center relative to the window radius:
     
@@ -30,12 +30,12 @@ void float_image_mask_window(float_image_t *msk, int32_t ic, int32_t ord, bool_t
       2 A biquadratic {(1-r^2)^2}: value 1 and slope 0 at the center,
         value 0 and slope 0 at the boundary of {S}. 
         
-    Other values of {order} are illegal. In all cases, the mask falls
+    Other values of {ord} are illegal. In all cases, the mask falls
     smoothly to 0, with slope 0, at the boundary of {S}. To achieve
-    this condition, when {order} is 0, the basic constant profile
+    this condition, when {ord} is 0, the basic constant profile
     above is replaced by a cubic sigmoid starting 2 pixels inwards
-    from the boundary of {S}. When {order} is 1, the basic downwards
-    parabola above is replaced by and upwards parabola, starting 1
+    from the boundary of {S}. When {ord} is 1, the basic downwards
+    parabola above is replaced by an upwards parabola, starting 1
     pixel away from the boundary of {S}. */
   
 /* MASK MODIFIERS 
@@ -81,10 +81,10 @@ void float_image_mask_mul_power
 /* MASK PROPERTIES */
 
 typedef struct float_image_mask_stats_t
-  { int32_t NX;            /* Number of pixel columns. */
-    int32_t NY;            /* Number of pixel rows. */
-    int32_t nINF;          /* Number of infinite samples. */
-    int32_t nNAN;          /* Number of NAN samples. */
+  { int32_t NX;        /* Number of pixel columns. */
+    int32_t NY;        /* Number of pixel rows. */
+    int32_t nINF;      /* Number of infinite samples. */
+    int32_t nNAN;      /* Number of NAN samples. */
     double min;        /* Minimum sample value. */
     double max;        /* Max sample value. */               
     double avg;        /* Average of sample values. */       

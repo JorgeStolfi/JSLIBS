@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_interpolate.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-20 18:18:10 by stolfi */ 
+/* Last edited on 2025-01-01 16:05:06 by stolfi */ 
 /* Created on 2009-06-02 by J. Stolfi, UNICAMP */
 
 #define test_interpolate_COPYRIGHT \
@@ -263,7 +263,7 @@ void write_image(char *name, char *ttag, r2_t *ish, r2_t *dsh, r2_t *osh, int or
     
     { char *fname = makename((NC == 3 ? "ppm" : "pgm"));
       bool_t isMask = FALSE; /* Assume pixels have a smooth distribution. */
-      float_image_write_pnm_named(fname, img, isMask, 0.4500, 0.0327, TRUE, TRUE, TRUE);
+      float_image_write_pnm_named(fname, img, isMask, 1.0, 0.0, TRUE, TRUE, TRUE);
       free(fname);
     }
 

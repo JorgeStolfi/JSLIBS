@@ -2,7 +2,7 @@
 #define pst_light_H
 
 /* pst_light.h -- light field modeling. */
-/* Last edited on 2024-12-28 21:28:22 by stolfi */
+/* Last edited on 2025-01-05 10:17:27 by stolfi */
 
 #include <bool.h>
 #include <r3.h>
@@ -48,14 +48,6 @@ void pst_light_ensure_one_lamp(pst_light_t *lht, double cmin, pst_lamp_t **src);
     lamp in {lht}, adds one, with {src.crad == cmin}. In any case,
     returns in {*src} the address of the lamp with smaller radius,
     i.e. greatest {src.crad} --- which will be {cmin} or greater. */
-
-void pst_light_alignment_matrix(r3_t *u, r3_t *v, r3x3_t *M);
-  /* If {u} is not NULL and {*u} is not {(0,0,0)},sets {*M} to 
-    a {3×3} rotation matrix that maps the direction vector {*u} to {(1,0,0)}.
-    In that case, if if {v} is not NULL and {*v} is not {(0,0,0)},
-    the matrix will map {*v} to the {X,Y} plane, with positive {Y}.
-    If {u} is NULL, or {*u} is the null vector, set {M} to the
-    identity matrix. */
 
 /* CREATING ARRAYS OF LAMPS */
 
@@ -121,9 +113,29 @@ void pst_light_add_dodeca(pst_light_t *lht);
     dual to the icosahedron above. The axes bisect pairs 
     of opposite edges. */
 
+/* SHADING */
+
+frgb_t pst_light_shading(pst_light_t *lht, r3_t *nrm);
+  /* Computes the shading factor 
+    from the light field {lht} for a surface with normal {nrm}.
+    That is the amount of light per channel
+    falling per unit area of the surface.  If the surface is 
+    Lambertian with white intrinsic color (albedo), that will
+    be its apparent color, viewed from any direction.
+    
+    The result is the sum of the intensity of each lamp in {lht}
+    times its geometric factor for normal {nrm} (See {pst_lamp_geom_factor}).
+    Depending on the lamp intensities, the final value may be greater than 1. */
+
+/* LIGHTING SPEC I/O */
+
+void pst_light_spec_write(FILE *wr, pst_light_t *lht);
+  /* Writes to {wr} the parameters of the light field {lht}, in a format
+    compatible with {pst_light_spec_parse}. */
+
 /* COMMAND LINE PARSING */
 
-pst_light_t *pst_light_spec_parse(argparser_t *pp, bool_t next, int32_t *NCP);
+pst_light_t *pst_light_spec_parse(argparser_t *pp, bool_t next);
   /* Parses the description of a light field, consisting of a list of
     lamp descriptions. If {next} is true, the lamp list must start
     at the next command line argument; else looks for it anywhere in
@@ -131,65 +143,38 @@ pst_light_t *pst_light_spec_parse(argparser_t *pp, bool_t next, int32_t *NCP);
     lamps.  The syntax is described by {pst_light_spec_HELP}
     and {pst_light_spec_HELP_INFO}. */
 
+/* HELP/INFO FOR MULTIPLE LAMPS AND/OR LAMP ARRAYS */
+
 #define pst_light_spec_HELP \
-  "{ -lamp | -array {NLAMPS} } \\\n" \
-  "      " -pst_lamp_spec_params_HELP " ..."
+  "{ { lamp | array {NLAMPS} | wall | ambient } {SOURCE_PARAMETERS} }..."
  
 #define pst_light_spec_HELP_INFO \
-  pst_light_spec_lamp_HELP_INFO "\n" \
-  pst_light_spec_array_HELP_INFO
-
-/* Help/info for single lamp specs: */
-
-#define pst_light_spec_lamp_HELP \
-  "-lamp {LAMP_PARAMETERS}" \
-  "      " -pst_lamp_spec_params_HELP " ..."
-
-#define pst_light_spec_lamp_INFO \
-  "Introduces an additional lamp.  Should be followed" \
-  " by the lamp's parameters.  This keyword must" \
-  " appear at least once."
+  "The light field is described as a list of one or more light" \
+  " sources.  "  pst_lamp_spec_HELP_INFO(pst_light_array_spec_HELP_INFO,pst_light_array_direction_INFO,pst_light_array_radius_INFO,pst_light_array_power_INFO) ""
   
-#define pst_light_spec_lamp_HELP_INFO \
-  "  " pst_light_spec_lamp_HELP \
-  "    " pst_light_spec_lamp_INFO
-
-/* Help/info for lamp array specs: */
-
-#define pst_light_spec_array_HELP \
-  "-array {NLAMPS} {LAMP_PARAMETERS}"
-  
-#define pst_light_spec_array_INFO \
-  "Adds to the lighting model an array of {NLAMPS} lamps,"\
-  " with the given parameters"\
+#define pst_light_array_spec_HELP_INFO \
+  "      array {NLAMPS}\\\n" \
+  "        Specifies an array of {NLAMPS} light sources with the given parameters," \
+  " whose directions are"\
   " uniformly distributed over the direction sphere.  Currenly"\
   " implemented only for a few values of {NLAMPS}, including"\
   " 1,2,3,4,6,8,12,14,20,32."
-
-#define pst_light_spec_array_HELP_INFO \
-  "  " pst_light_spec_array_HELP \
-  "    " pst_light_spec_array_INFO
-
-/* Help/info for lamp parameter specs (single or arrays): */
-
-#define pst_light_spec_lamp_params_HELP_INFO \
-  pst_lamp_spec_angles_HELP_INFO "  Each lamp description must have" \
-  " either \"angles\" or \"direction\" (not both).  For a lamp" \
-  " array, it specifies the direction of the first lamp.\n" \
-  "\n" \
-  pst_lamp_spec_direction_HELP_INFO "\n" \
-  "\n" \
-  pst_lamp_spec_radius_HELP_INFO "  The default is \"radius 0\"," \
-  " meaning a point-like light source.\n" \
-  "\n" \
-  pst_lamp_spec_power_HELP_INFO "  The default per channel is" \
-  " \"power 1 / {NL}\", where {NL} is the number of lamps" \
+  
+#define pst_light_array_direction_INFO \
+  "  For an \"array\" source, the direction is that of the first lamp in the array."
+  
+#define pst_light_array_radius_INFO \
+  "  For an \"array\" source, if \"radius\" is not specified, the" \
+  " radii of the lamps in the array are adjusted so that each lamp" \
+  " extends to about halfway of the distance do the nearest lamp in the array."
+  
+#define pst_light_array_power_INFO \
+  "  Whenever \"power\" is not specified, the default in each color channel will be" \
+  " \"power {1/NL}\", where {NL} is the total number of lamps" \
   " specified for the scene.  Thus, if this parameter is" \
   " omitted for all lamps, the apparent intensity of a matte white" \
-  " surface will be 1.0 or less."
-
-void pst_light_spec_write(FILE *wr, pst_light_t *lht);
-  /* Writes to {wr} the parameters of the light field {lht}, in a format
-    compatible with {pst_light_spec_parse}. */
-
+  " surface will be 1.0 or less.   If \"power {POWER}\" is specified" \
+  " for an \"array\" with {NLAMPS} lamps, the power of each of" \
+  " those lamps will be {POWER/NLAMPS}."
+  
 #endif

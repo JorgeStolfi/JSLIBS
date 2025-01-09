@@ -2,7 +2,7 @@
 #define pst_proc_map_H
 
 /* pst_proc_map.h -- procedures for creating procedurally-defined images. */
-/* Last edited on 2024-12-22 12:38:44 by stolfi */
+/* Last edited on 2025-01-08 17:35:13 by stolfi */
 
 #include <stdint.h>
 
@@ -166,34 +166,34 @@ void pst_proc_map_perturb_weight(double *w, double sigma);
     random value with log-Gaussian distribution with mean of log 0 
     and deviation of log {sigma}. */
 
-void pst_proc_map_function_00(r2_t p, double *z, r2_t *dz); /* 00 Constant function. */
-void pst_proc_map_function_01(r2_t p, double *z, r2_t *dz); /* 01 Linear ramp along X. */
-void pst_proc_map_function_02(r2_t p, double *z, r2_t *dz); /* 02 Linear ramp along Y. */
-void pst_proc_map_function_03(r2_t p, double *z, r2_t *dz); /* 03 Linear ramp along diagonal. */
-void pst_proc_map_function_04(r2_t p, double *z, r2_t *dz); /* 04 Slanted parabolic hump. */
-void pst_proc_map_function_05(r2_t p, double *z, r2_t *dz); /* 05 Buried sphere. */
-void pst_proc_map_function_06(r2_t p, double *z, r2_t *dz); /* 06 Pentagonal pyramid. */
-void pst_proc_map_function_07(r2_t p, double *z, r2_t *dz); /* 07 Conical mound. */
-void pst_proc_map_function_08(r2_t p, double *z, r2_t *dz); /* 08 Ripples. */
-void pst_proc_map_function_09(r2_t p, double *z, r2_t *dz); /* 09 Tower of Babel with soulders. */
-void pst_proc_map_function_10(r2_t p, double *z, r2_t *dz); /* 10 Parabolic ramps with cliff. */
-void pst_proc_map_function_11(r2_t p, double *z, r2_t *dz); /* 11 A low-frequency sin wave. */
-void pst_proc_map_function_12(r2_t p, double *z, r2_t *dz); /* 12 A low-frequency cos wave. */
-void pst_proc_map_function_13(r2_t p, double *z, r2_t *dz); /* 13 A medium-frequency sin wave. */
-void pst_proc_map_function_14(r2_t p, double *z, r2_t *dz); /* 14 A medium-frequency cos wave. */
-void pst_proc_map_function_15(r2_t p, double *z, r2_t *dz); /* 15 A higher-frequency sin wave. */
-void pst_proc_map_function_16(r2_t p, double *z, r2_t *dz); /* 16 A higher-frequency cos wave. */
-void pst_proc_map_function_17(r2_t p, double *z, r2_t *dz); /* 17 Tower of Babel with cliff. */
-void pst_proc_map_function_18(r2_t p, double *z, r2_t *dz); /* 18 Tilted bicubic ramp. */
-void pst_proc_map_function_19(r2_t p, double *z, r2_t *dz); /* 19 Buried sphere with defects. */
-void pst_proc_map_function_20(r2_t p, double *z, r2_t *dz); /* 20 Buried annulus with ramps. */
-void pst_proc_map_function_21(r2_t p, double *z, r2_t *dz); /* 21 Circular platforms with smooth edges. */
-void pst_proc_map_function_22(r2_t p, double *z, r2_t *dz); /* 22 Triangular wall with smooth edges. */
-void pst_proc_map_function_23(r2_t p, double *z, r2_t *dz); /* 23 Pentagonal platform with smooth edges. */
-void pst_proc_map_function_24(r2_t p, double *z, r2_t *dz); /* 24 Circular platform with sharp edges. */
-void pst_proc_map_function_25(r2_t p, double *z, r2_t *dz); /* 25 Circular platform with smooth edges. */
-void pst_proc_map_function_26(r2_t p, double *z, r2_t *dz); /* 26 Quartic bell. */
-void pst_proc_map_function_27(r2_t p, double *z, r2_t *dz); /* 27 Fractalish round mountain. */
+void pst_proc_map_function_00(r2_t p, double *z, r2_t *dz); /* 00 "zeflat" Constant function (zero gradient). */
+void pst_proc_map_function_01(r2_t p, double *z, r2_t *dz); /* 01 "ramp10" Linear ramp in the X direction. */
+void pst_proc_map_function_02(r2_t p, double *z, r2_t *dz); /* 02 "ramp01" Linear ramp in the Y direction. */
+void pst_proc_map_function_03(r2_t p, double *z, r2_t *dz); /* 03 "ramp11" Linear ramp in the XY diagonal direction. */
+void pst_proc_map_function_04(r2_t p, double *z, r2_t *dz); /* 04 "parabo" Slanted elliptical parabolic hump. */
+void pst_proc_map_function_05(r2_t p, double *z, r2_t *dz); /* 05 "spdom1" Buried sphere. */
+void pst_proc_map_function_06(r2_t p, double *z, r2_t *dz); /* 06 "pyram5" Pentagonal pyramid. */
+void pst_proc_map_function_07(r2_t p, double *z, r2_t *dz); /* 07 "rtcone" Conical mound. */
+void pst_proc_map_function_08(r2_t p, double *z, r2_t *dz); /* 08 "ripple" Circular waves. */
+void pst_proc_map_function_09(r2_t p, double *z, r2_t *dz); /* 09 "sbabel" Tower of Babel with smooth soulders. */
+void pst_proc_map_function_10(r2_t p, double *z, r2_t *dz); /* 10 "hcliff" Diverging parabolic ramps with cliff. */
+void pst_proc_map_function_11(r2_t p, double *z, r2_t *dz); /* 11 "sinw01" Sinusoidal wave, low freq. */
+void pst_proc_map_function_12(r2_t p, double *z, r2_t *dz); /* 12 "cosw01" Co-sinusoidal wave, low freq. */
+void pst_proc_map_function_13(r2_t p, double *z, r2_t *dz); /* 13 "sinw02" Sinusoidal wave, med freq. */
+void pst_proc_map_function_14(r2_t p, double *z, r2_t *dz); /* 14 "cosw02" Co-sinusoidal wave, med freq. */
+void pst_proc_map_function_15(r2_t p, double *z, r2_t *dz); /* 15 "sinw03" Sinusoidal wave, high freq. */
+void pst_proc_map_function_16(r2_t p, double *z, r2_t *dz); /* 16 "cosw03" Co-sinusoidal wave, high freq. */
+void pst_proc_map_function_17(r2_t p, double *z, r2_t *dz); /* 17 "cbabel" Tower of Babel with cliff. */
+void pst_proc_map_function_18(r2_t p, double *z, r2_t *dz); /* 18 "cbramp" Cubic ramp with cliff on three sides. */
+void pst_proc_map_function_19(r2_t p, double *z, r2_t *dz); /* 19 "holes1" Buried sphere with many holes in slope map. */
+void pst_proc_map_function_20(r2_t p, double *z, r2_t *dz); /* 20 "cpiece" Three nested stages connected by ramps. */
+void pst_proc_map_function_21(r2_t p, double *z, r2_t *dz); /* 21 "cplat3" Three flat round platforms with smooth edges. */
+void pst_proc_map_function_22(r2_t p, double *z, r2_t *dz); /* 22 "plat3a" Triangular wall with smooth edges. */
+void pst_proc_map_function_23(r2_t p, double *z, r2_t *dz); /* 23 "plat5a" Pentagonal platform with smooth edges. */
+void pst_proc_map_function_24(r2_t p, double *z, r2_t *dz); /* 24 "cplatv" Circular platform with sharp edges. */
+void pst_proc_map_function_25(r2_t p, double *z, r2_t *dz); /* 25 "cplats" Circular platform with smooth edges. */
+void pst_proc_map_function_26(r2_t p, double *z, r2_t *dz); /* 26 "qtbell" Quartic bell. */
+void pst_proc_map_function_27(r2_t p, double *z, r2_t *dz); /* 27 "fracto" Fractalish round mountain. */
   /* The built-in height map functions. They assume that the signed unit 
     square {[-1_+1]×[-1_+1]} fits snugly inside the image's domain.
     
@@ -208,6 +208,9 @@ void pst_proc_map_function_27(r2_t p, double *z, r2_t *dz); /* 27 Fractalish rou
 pst_proc_map_zfunc_t *pst_proc_map_function_generic(int32_t n);
   /* Returns a pointer to {pst_proc_map_function_{n}}. */
 
+char* pst_proc_map_function_generic_name(int32_t n);
+  /* Returns the name of the function {n}, as per the table above. */
+  
 /* Parametrized procedure maps: */
 
 void pst_proc_map_function_affine(r2_t *p, r2_t *a, double fa, r2_t *b, double fb, r2_t *c, double fc, double *z, r2_t *dz);

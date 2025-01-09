@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_test.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-20 18:26:42 by stolfi */ 
+/* Last edited on 2025-01-01 16:05:30 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_test_image_COPYRIGHT \
@@ -76,10 +76,10 @@ void do_test_gen(int32_t NC, int32_t NX, int32_t NY, float_image_test_generator_
 void write_color_image(float_image_t *img, char *outPrefix, int32_t NC, int32_t NX, int32_t NY, char *funcName)
   {
     char *fname = jsprintf("%s-%04dx%04d-%d-%s.png", outPrefix, NX, NY, NC, funcName);
-    double gammaEnc = 1.000;
+    double expoEnc = 1.000;
     double bias = 0.000;
     bool_t verbose = TRUE;
     image_file_format_t ffmt = image_file_format_PNG;
-    float_image_write_gen_named(fname, img, ffmt, 0.0, 1.0, gammaEnc, bias, verbose);
+    float_image_write_gen_named(fname, img, ffmt, 0.0, 1.0, expoEnc, bias, verbose);
     free(fname);
   }
