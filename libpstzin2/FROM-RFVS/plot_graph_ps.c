@@ -5,7 +5,7 @@
 
 #define slope_to_height_C_COPYRIGHT "Copyright � 2005 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2010-05-04 03:56:21 by stolfi */
+/* Last edited on 2025-01-10 07:53:26 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -74,13 +74,14 @@ typedef struct options_t{
   double NX,NY;
 } options_t;
 
-void img_graph_write_ps(PSStream *ps, pst_img_graph_t* g,bool_t useLabels,double ballSize, long int NX, long int NY);
-void img_graph_write_ps(PSStream *ps, pst_img_graph_t* g,bool_t useLabels,double ballSize, long int NX, long int NY)
+void img_graph_write_ps(PSStream *ps, pst_img_graph_t* g,bool_t useLabels,double ballSize, int32_t NX, int32_t NY);
+
+void img_graph_write_ps(PSStream *ps, pst_img_graph_t* g,bool_t useLabels,double ballSize, int32_t NX, int32_t NY)
 {
   
-  auto void write_ps_vertex(long int index,bool_t label);
+  auto void write_ps_vertex(int32_t index,bool_t label);
   
-  void write_ps_vertex(long int index,bool_t label)
+  void write_ps_vertex(int32_t index,bool_t label)
   {
     pst_vertex_data_t* v = &(g->vertex[index]);
     r2_t coords = v->coords;
@@ -101,8 +102,8 @@ void img_graph_write_ps(PSStream *ps, pst_img_graph_t* g,bool_t useLabels,double
   auto void write_ps_edge(oct_arc_t e);
   void write_ps_edge(oct_arc_t e){
     
-    long int o = pst_img_graph_get_edge_origin(g,e);
-    long int d = pst_img_graph_get_edge_origin(g,oct_sym(e));
+    int32_t o = pst_img_graph_get_arc_origin(g,e);
+    int32_t d = pst_img_graph_get_arc_origin(g,oct_sym(e));
     
     write_ps_vertex(o,FALSE);
     write_ps_vertex(d,FALSE);
@@ -113,7 +114,7 @@ void img_graph_write_ps(PSStream *ps, pst_img_graph_t* g,bool_t useLabels,double
     
     pst_path_t path = pst_img_graph_get_edge_path(g,e);
 //     path = pst_path_create_empty();
-    long int i;
+    int32_t i;
     r2_t  p_medio = (r2_t){{ 0,0 }};
     for(i = 0; i <= path.n; i++){
 	
@@ -141,10 +142,10 @@ void img_graph_write_ps(PSStream *ps, pst_img_graph_t* g,bool_t useLabels,double
   
   /* First draw the segments in blue (non tree)*/
   pswr_set_pen(ps,0,0,1,0.1, 0, 0);
-  long int i;
+  int32_t i;
   for(i = 0; i < g->m; i++){
-    if(g->edge[i].edge != oct_NULL){
-      write_ps_edge(g->edge[i].edge);
+    if(g->???[i].aout != oct_NULL){
+      write_ps_edge(g->{hedge|dedge}@@[i].aout);
     }
   }
   
@@ -162,8 +163,8 @@ void img_graph_write_ps(PSStream *ps, pst_img_graph_t* g,bool_t useLabels,double
 
 
 
-void writePSA(char* outPrefix,pst_img_graph_t* g,bool_t useLabels,double ballSize, long int NX, long int NY);
-void writePSA(char* outPrefix,pst_img_graph_t* g,bool_t useLabels,double ballSize, long int NX, long int NY){
+void writePSA(char* outPrefix,pst_img_graph_t* g,bool_t useLabels,double ballSize, int32_t NX, int32_t NY);
+void writePSA(char* outPrefix,pst_img_graph_t* g,bool_t useLabels,double ballSize, int32_t NX, int32_t NY){
 //   
     double xMin = -0.20*NX;
     double xMax = +1.20*NX;
@@ -199,8 +200,8 @@ void writePSA(char* outPrefix,pst_img_graph_t* g,bool_t useLabels,double ballSiz
     free(filename);
 }
 
-options_t *parse_options(int argc, char **argv);
-options_t *parse_options(int argc, char **argv)
+options_t *parse_options(int32_t argc, char **argv);
+options_t *parse_options(int32_t argc, char **argv)
   { 
     argparser_t *pp = argparser_new(stderr, argc, argv);
     argparser_set_help(pp, PROG_NAME " version " PROG_VERS ", usage:\n" PROG_HELP);
@@ -237,7 +238,7 @@ options_t *parse_options(int argc, char **argv)
   }
   
   
-int main(int argc, char** argv){
+int32_t main(int32_t argc, char** argv){
   
   options_t* o = parse_options(argc,argv);
   
@@ -245,9 +246,9 @@ int main(int argc, char** argv){
   pst_img_graph_t* g = pst_img_graph_read(graph_arq);
   fclose(graph_arq);
   /*We have to determnie NX,NY looking at the vertices*/
-  long int NX, NY;
+  int32_t NX, NY;
   NX = 0; NY = 0;
-  long int i;
+  int32_t i;
   if(o->NX == -1){
     for(i = 0; i < g->n; i++){
       pst_vertex_data_t* v = &(g->vertex[i]);

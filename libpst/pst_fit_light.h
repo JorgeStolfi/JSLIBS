@@ -2,7 +2,7 @@
 #define pst_fit_light_H
 
 /* pst_fit_light.h -- general fitting of light fields to images. */
-/* Last edited on 2024-12-28 20:03:58 by stolfi */
+/* Last edited on 2025-01-19 06:45:32 by stolfi */
 
 #include <bool.h>
 #include <r3.h>
@@ -251,8 +251,8 @@ double pst_fit_light_lsq_pixel_weight
 
 void pst_fit_light_single_trivial
   ( float_image_t *IMG, 
-    float_image_t *NRM, 
     int32_t c,          /* Color channel to consider. */
+    float_image_t *NRM, 
     pst_light_t *lht,   /* Light model. */
     pst_lamp_t *src,    /* Lamp of {lht} to adjust. */
     bool_t dirAdjust,   /* TRUE estimates the direction of {src}. */

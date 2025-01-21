@@ -2,7 +2,7 @@
 #define float_image_H
 
 /* Multichannel images with floating-point samples. */
-/* Last edited on 2025-01-05 19:54:56 by stolfi */ 
+/* Last edited on 2025-01-18 13:23:55 by stolfi */ 
 
 #include <stdio.h>
 #include <stdint.h>
@@ -546,13 +546,23 @@ void float_image_get_size(float_image_t *A, int32_t *NC_P, int32_t *NX_P, int32_
     
     !!! Should be a {define} since it is often called for every pixel or sample !!! */
   
-void float_image_check_size(float_image_t *A, int32_t NC, int32_t NX, int32_t NY);
+void float_image_check_size(float_image_t *A, int32_t NC, int32_t NX, int32_t NY, char *msg);
   /* Bombs out if {A} does not have exactly {NC} channels, {NX}
     columns, and {NY} rows.  If any of {NC,NX,NY} is negative,
-    the corresponding parameter of {A} is not checked. */
+    the corresponding parameter of {A} is not checked. 
+    
+    If the test fails, the procedure writes a message to {stderr}
+    saying "wrong image size", the actual image dimensions, the given
+    message {msg} (if not {NULL}), and the desired
+    values of the incorrect dimensions. */
 
 /* INPUT/OUTPUT */
 
+void float_image_print_size(FILE *wr, char *pref, float_image_t *A, char *sep, char *suff);
+  /* Writes to {wr} the dimension of {A} (channel, column, and row counts)
+    spearated by {sep} and preceded by {pref} and {suff} (if not {NULL}).
+    The {sep} defaults to " " if {NULL}. */
+    
 void float_image_write(FILE *wr, float_image_t *A);
   /* Writes the image {A} to {wr}, in ASCII floating point format.
     The file will start with a standard header line 

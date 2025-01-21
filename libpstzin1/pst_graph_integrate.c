@@ -1,5 +1,5 @@
 /* See {pst_graph_integrate.h}. */
-/* Last edited on 2025-01-07 14:16:28 by stolfi */
+/* Last edited on 2025-01-13 15:22:39 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #include <stdio.h>
@@ -19,34 +19,42 @@
 
 #include <pst_graph_integrate.h>
 
-pst_imgsys_t *pst_graph_build_integration_system(pst_graph_t *g, int32_t NX_Z, int32_t NY_Z)
+pst_imgsys_t *pst_graph_build_system(pst_graph_t *g, int32_t NX_Z, int32_t NY_Z)
   {
     int32_t NXY_Z = NX_Z*NY_Z;
-    int32_t *ind_ix = talloc
-  ( g->NV,
-    int32_t
-  ); /* Maps vertex index to height value index, or {-1}. */
-    pst_imgsys_equation_t *eq = talloc(g->NV, pst_imgsys_equation_t);
-    uint32_t N = 0;
-    for (uint32_t i = 0; i < g->NV; i++)
-      { pst_imgsys_equation_t *eqk = &(eq[N]);
-
-        uint32_t nt = 0; /* Number of terms in equation. */
-        eqk->rhs = 0.0;
-        eqk->uid[nt] = i; eqk->cf[nt] = 1.00; nt++;
-        ind_uid[i] = (int32_t)N;
-        pst_vertex_t *v = &(g->vertices[i]);
-        uint32_t has_xp = (uint32_t)(v->vtxp != -1); 
-        uint32_t has_xm = (uint32_t)(v->vtxm != -1);
-        uint32_t has_yp = (uint32_t)(v->vtyp != -1);
-        uint32_t has_ym = (uint32_t)(v->vtym != -1);
+    int32_t *ind_ix = talloc(NXY_Z, int32_t);
+    /* Build a table {uid} that maps vertex index to equation/height index, or {-1}: */
+    uint32_t NZ = 0; /* Number of equations and variables. */
+    int32_t *uid = talloc(g->NV, int32_t);
+    for (uint32_t kv = 0; kv < g->NV ; kv++)
+      { pst_vertex_t *vdk = &(g->vertices[vk]);
+        if (vdk->vmark == DELETED) 
+          { uid[vk] = -1; }
+        else
+          { uid[vk] = (int32_t)NZ; NZ++; }
+      }
+    /* Now build the equations: */
+    pst_imgsys_equation_t *eq = talloc(NZ, pst_imgsys_equation_t);
+    for (uint32_t kv = 0; kv < g->NV; kv++)
+      { int32_y uidk = uid[kv];
+        if (uidk != -1)
+          { assert((uidk >= 0) && (uidk < NZ));
+            pst_imgsys_equation_t *eqk = &(eq[N]);
+            eqk->nt = 0; /* Number of terms in equation. */
+            eqk->rhs = 0.0;
+            eqk->uid[nt] = kv; eqk->cf[nt] = 0.00; nt++;
+            pst_vertex_t *vk = &(g->vertices[kv]);
+            uint32_t has_xp = (uint32_t)(vk->vtxp != -1); 
+            uint32_t has_xm = (uint32_t)(vk->vtxm != -1);
+            uint32_t has_yp = (uint32_t)(vk->vtyp != -1);
+            uint32_t has_ym = (uint32_t)(vk->vtym != -1);
 
         uint32_t num_neighbours = has_xp + has_xm + has_yp + has_ym;
         if (num_neighbours > 0)
           { if (has_xm)
               { int32_t vxm;
                 double dxm, wxm;
-                pst_graph_vertex_get_neighbour(g, i, -1, 0, &vxm, &dxm, &wxm);
+                pst_graph_vertex_get_neighbour(g, kv, -1, 0, &vxm, &dxm, &wxm);
                 assert(vxm != -1);
                 eqk->uid[nt] = (uint32_t)vxm;
                 eqk->cf[nt] = -wxm;
@@ -56,7 +64,7 @@ pst_imgsys_t *pst_graph_build_integration_system(pst_graph_t *g, int32_t NX_Z, i
             if (has_xp)
               { int32_t vxp;
                 double dxp, wxp;
-                pst_graph_vertex_get_neighbour(g, i, 1, 0, &vxp, &dxp, &wxp);
+                pst_graph_vertex_get_neighbour(g, kv, 1, 0, &vxp, &dxp, &wxp);
                 assert(vxp != -1);
                 eqk->uid[nt] = (uint32_t)vxp;
                 eqk->cf[nt] = -wxp;
@@ -66,7 +74,7 @@ pst_imgsys_t *pst_graph_build_integration_system(pst_graph_t *g, int32_t NX_Z, i
             if (has_ym)
               { int32_t vym;
                 double dym, wym;
-                pst_graph_vertex_get_neighbour(g, i, 0, -1, &vym, &dym, &wym);
+                pst_graph_vertex_get_neighbour(g, kv, 0, -1, &vym, &dym, &wym);
                 assert(vym != -1);
                 eqk->uid[nt] = (uint32_t)vym;
                 eqk->cf[nt] = -wym;
@@ -76,7 +84,7 @@ pst_imgsys_t *pst_graph_build_integration_system(pst_graph_t *g, int32_t NX_Z, i
             if (has_yp)
               { int32_t vyp;
                 double dyp, wyp;
-                pst_graph_vertex_get_neighbour(g, i, 0, 1, &vyp, &dyp, &wyp);
+                pst_graph_vertex_get_neighbour(g, kv, 0, 1, &vyp, &dyp, &wyp);
                 assert(vyp != -1);
                 eqk->uid[nt] = (uint32_t)vyp;
                 eqk->cf[nt] = -wyp;
@@ -92,23 +100,23 @@ pst_imgsys_t *pst_graph_build_integration_system(pst_graph_t *g, int32_t NX_Z, i
             N++;
           }
         else
-          { ind_uid[i] = -1; }
+          { ind_uid[kv] = -1; }
       }
 
     for (uint32_t k = 0; k < N; k++)
       { pst_imgsys_equation_t *eqk = &(eq[k]);
         uint32_t nt = eqk->nt;
         uint32_t mt = 0;
-        for (uint32_t i = 0; i < nt; i++)
+        for (uint32_t kv = 0; kv < nt; kv++)
           { /* Get the temporay index {xyi}: */
-            uint32_t xyi = eqk->uid[i];
+            uint32_t xyi = eqk->uid[kv];
             /* Get the definitive index {ki}: */
             int32_t ki = ind_uid[xyi];
             if (ki >= 0)
               { /* Append the term to the equation: */
                 int32_t j = (int32_t)mt;
                 eqk->uid[j] = (uint32_t)ki;
-                eqk->cf[j] = eqk->cf[i];
+                eqk->cf[j] = eqk->cf[kv];
                 assert(!isnan(eqk->cf[j]));
                 mt++;
               }

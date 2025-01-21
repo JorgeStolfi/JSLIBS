@@ -4,7 +4,7 @@
 
 #define slope_to_height_C_COPYRIGHT "Copyright � 2011 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2010-05-04 03:56:21 by stolfi */
+/* Last edited on 2025-01-10 07:53:58 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -79,9 +79,9 @@ typedef struct options_t{
   char* refFile;
   char* graphFile;
   char* outPrefix;
-  long int NX,NY;
+  int32_t NX,NY;
   double convTol;
-  long int maxIter;
+  int32_t maxIter;
   bool_t debug;
   double wmag;
 } options_t;
@@ -106,8 +106,8 @@ void writeFNI(char* filename, float_image_t* img){
 
 
 
-options_t *parse_options(int argc, char **argv);
-options_t *parse_options(int argc, char **argv)
+options_t *parse_options(int32_t argc, char **argv);
+options_t *parse_options(int32_t argc, char **argv)
   { 
     argparser_t *pp = argparser_new(stderr, argc, argv);
     argparser_set_help(pp, PROG_NAME " version " PROG_VERS ", usage:\n" PROG_HELP);
@@ -125,8 +125,8 @@ options_t *parse_options(int argc, char **argv)
     o->graphFile = argparser_get_next(pp);    
 
     argparser_get_keyword(pp, "-size");
-    o->NX = argparser_get_next_int(pp, 0, INT64_MAX);
-    o->NY = argparser_get_next_int(pp, 0, INT64_MAX);
+    o->NX = (int32_t)argparser_get_next_int(pp, 0, INT64_MAX);
+    o->NY = (int32_t)argparser_get_next_int(pp, 0, INT64_MAX);
     
     o->debug = argparser_keyword_present(pp,"-debug");
     
@@ -162,7 +162,7 @@ int main(int argc, char** argv){
   float_image_t* RZ = NULL;
   if(o->refFile != NULL) RZ = readFNI(o->refFile);
   
-  long int maxIter = o->maxIter;
+  int32_t maxIter = o->maxIter;
   double convTol = o->convTol;
   int para = 0;
   int szero = 1;
@@ -172,11 +172,11 @@ int main(int argc, char** argv){
   pst_img_graph_t* g = pst_img_graph_read(arq);
   fclose(arq);
   fprintf(stderr,"Generated graph with %ld vertexes and %ld edges\n",g->n, g->m);
-  long int NX = o->NX;
-  long int NY = o->NY;
-  long int  NX_Z = NX+1;
-  long int  NY_Z = NY+1;
-  long int  NXY_Z = NX_Z*NY_Z;
+  int32_t NX = o->NX;
+  int32_t NY = o->NY;
+  int32_t  NX_Z = NX+1;
+  int32_t  NY_Z = NY+1;
+  int32_t  NXY_Z = NX_Z*NY_Z;
   float_image_t* OZ = float_image_new(1,NX_Z,NY_Z);
   double* iZ = (double*)malloc(sizeof(double)*NXY_Z);
   double* iW = (double*)malloc(sizeof(double)*NXY_Z);

@@ -2,7 +2,7 @@
 #define oct_H
 
 /* The quad-edge data structure for orientable and non-orientable maps. */
-/* Last edited on 2024-12-22 10:58:29 by stolfi */
+/* Last edited on 2025-01-09 23:05:09 by stolfi */
 
 #define oct_H_copyright \
   "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -471,7 +471,7 @@ oct_arc_t oct_read_arc(FILE *rd, oct_arc_vec_t *A);
 void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *A);
   /* Writes to {wr} a description of the map(s) that can be reached by
     {sym} and {onext} steps on the quad-edge structure from the root
-    arcs {root->e[0..nr-1]}, where {nr = root->ne}.
+    arcs {root->e[0..NR-1]}, where {NR = root->ne}.
     
     As a side effect, the procedure renumbers all octets (primal/dual
     edge pairs) in the reachable submap, sequentially from 0.

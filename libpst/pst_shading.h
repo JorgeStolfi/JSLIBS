@@ -2,7 +2,7 @@
 #define pst_shading_H
 
 /* pst_shading.h -- tools for shading computations. */
-/* Last edited on 2025-01-04 03:46:35 by stolfi */
+/* Last edited on 2025-01-17 04:07:39 by stolfi */
 
 #include <bool.h>
 #include <r3.h>
@@ -38,7 +38,7 @@ float_image_t* pst_shading_make_image
     computes the shading (color of a white surface) of a surface point
     given its normal.  
     
-    The number of channels must be 3 or 4. The procedure creates an
+    The number of channels {NC} must be 3 or 4. The procedure creates an
     image of the specified dimensions and then calls {pst_shading_paint}
     (q.v.) to paint the scene into it. */
 

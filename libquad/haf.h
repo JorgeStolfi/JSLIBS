@@ -2,7 +2,7 @@
 #define haf_H
 
 /* The half-edge data structure to encode the topology of 2D meshes. */
-/* Last edited on 2025-01-05 11:19:09 by stolfi */
+/* Last edited on 2025-01-10 08:14:31 by stolfi */
 
 #include <stdint.h>
 
@@ -134,14 +134,11 @@ typedef uint8_t haf_dir_bit_t;
 haf_dir_bit_t haf_dir_bit(haf_arc_t a);
   /* The direction bit of arc {a}. */
 
-haf_arc_t haf_base_arc(haf_arc_t a);
-  /* The base arc with same edge as {a}, with direction bit 0. */
-
 /* UNORIENTED EDGES */
 
 typedef struct haf_edge_rec_t *haf_edge_t;
-  /* Reference to an undirected and unoriented edge {ed}
-    of the mesh.  It is shared by the two arcs that consist of {ed}
+  /* Reference to an undirected and unoriented edge {e}
+    of the mesh.  It is shared by the two arcs that consist of {e}
     taken with both directions. */
 
 vec_typedef(haf_edge_vec_t, haf_edge_vec, haf_edge_t);
@@ -151,8 +148,11 @@ haf_edge_t haf_edge(haf_arc_t a);
   /* Obtains the edge reference of an arc reference {a}. Satisfies
     {a.sym.edge == a.edge}.  */
 
-haf_arc_t haf_orient(haf_edge_t ed, haf_dir_bit_t db);
-  /* Returns the arc {a} that has {haf_edge(a) = ed} and {had_dir_bit(a) = db}.  */
+haf_arc_t haf_orient(haf_edge_t e, haf_dir_bit_t db);
+  /* Returns the arc {a} that has {haf_edge(a) = e} and {had_dir_bit(a) = db}.  */
+
+haf_arc_t haf_base_arc(haf_edge_t e);
+  /* The base arc of the edge {e} (the one with direction bit 0). */
 
 /* EDGE IDENTIFIERS 
   
@@ -169,14 +169,17 @@ typedef uint64_t haf_edge_id_t;  /* An edge ID number. */
 #define haf_edge_id_MAX (haf_arc_id_MAX/2)
   /* Max edge identifier (so that the arc identifier does not overflow). */
 
-haf_edge_id_t haf_edge_id(haf_arc_t a);
-  /* Returns the identifier of the undirected edge underlying arc {a},
-    namely {aid/2} where {aid} is the arc's id. */
+haf_edge_id_t haf_edge_id(haf_edge_t e);
+  /* Returns the identifier of the undirected edge {e},
+    namely {aid/2} where {aid} is the id of the edge's base arc. */
 
 typedef uint64_t haf_edge_count_t;  /* A count of edges in a data structure, table, etc.. */
 
 #define haf_edge_count_MAX (haf_arc_count_MAX/2)
   /* Max number of edges in a structure. */
+
+vec_typedef(haf_edge_id_vec_t, haf_edge_id_vec, haf_edge_id_t);
+  /* An extensible vector of edge ids. */
 
 /* ARC IDENTIFIERS 
 
@@ -197,6 +200,9 @@ typedef uint64_t haf_arc_count_t;   /* A count of arcs in a data structure, tabl
 #define haf_arc_count_MAX (((uint64_t)1024)*1024*1024)
   /* Max number of arcs in a structure for sane table allocation. */
 
+vec_typedef(haf_arc_id_vec_t, haf_arc_id_vec, haf_arc_id_t);
+  /* An extensible vector of arc ids. */
+
 /* BUILDING AND MODIFICATION */
   
 haf_arc_t haf_make_stick(haf_edge_id_t eid);
@@ -209,15 +215,18 @@ haf_arc_t haf_make_stick(haf_edge_id_t eid);
 haf_arc_t haf_make_loop(haf_edge_id_t eid);
   /* Creates a new half-edge structure consisting of a pair of
     {haf_arc_t} records, {a,b}, representing a mesh with spherical
-    topology, one loop edge, one vertex, and two distinct faces.
-    The records will have {a.sym=b}, {b.sym=a}, {a.lnext=a},
-    {b.lnext=b}. The arc ids will be {2*eid} and {2*eid+1}. */
+    topology, one loop edge, one vertex, and two distinct faces. The
+    records will have {a.sym=b}, {b.sym=a}, {a.lnext=a}, {b.lnext=b}.
+    The arc ids will be {2*eid} and {2*eid+1}. */
 
-void haf_free_edge(haf_arc_t a);
-  /* Reclaims the space used by the edge underlying {a} and {a.sym}. 
-    The edge must be isolated, meaning that {a.lnext} and {a.sym.lnext}
-    must be respectively {a} and {a.sym} (an insolated stick) or
-    {a.sym} and {a} (an isolated loop). */
+void haf_edge_free(haf_edge_t e);
+  /* Reclaims the space used by the edge {e}. 
+  
+    The edge must be isolated, meaning that {a.lnext} and {b.lnext} must
+    be respectively {a} and {b} or {b} and {a}, where {a,b} are the two
+    arcs on {e}. That is, {e} must be an isolated stick or an isolated
+    loop.  The two arcs become invalid after this operation and should 
+    not be used in any way. */
 
 void haf_splice(haf_arc_t a, haf_arc_t b);
   /* Performs a splice (split and join) operation on the {.lnext} loops
@@ -243,17 +252,18 @@ void haf_set_lnext(haf_arc_t a, haf_arc_t b);
     The caller must make sure that eventually the consistency is restored, namely that 
     the {.lnext} operator is a permutation of all the {haf_arc_t} records. */
 
-void haf_set_edge_id(haf_arc_t a, haf_edge_id_t eid);
-  /* Sets the identifiers of {a} and {a.sym} to {2*eid} and {2*eid+1}. */
+void haf_set_edge_id(haf_edge_t e, haf_edge_id_t eid);
+  /* Sets the identifier of edge {e} to {eid}.  Thus, if {a} is the base arc of {e},
+    it will set {haf_arc_id(a)} to {2*eid} and {haf_arc_id(a.sym)} to {2*eid+1}. */
   
 /* DEBUGGING */
 
-void haf_check_topology(haf_edge_count_t ne, haf_arc_t a[], haf_edge_id_t eid0, bool_t verbose);
-  /* Expects that the vector {a[0..ne-1]} has one {haf_arc_t} record
-    out of every edge of the mesh.  
-    Checks that the ids of arc {a[ke]} and {a[ke].sym} are {2*(eid0+ke)} and {2(eid0+ke)+1}
-    for all {ke} in {0..ne-1}.  Checks that the {.lnext} operator is a permutation of 
-    those records and their opposites, and that the {.sym} operator is an involution 
-    on those records and their syms, with no fixed point. */
+void haf_check_topology(haf_edge_count_t NE, haf_edge_t e[], haf_edge_id_t eid0, bool_t verbose);
+  /* Expects that the vector {e[0..NE-1]} has the edges of the mesh, in
+    order of edge id. Checks that the id of {e[ke]} is {eid0+ke} for
+    all {ke} in {0..NE-1}. Checks that the {.lnext} operator is a
+    permutation of the arcs derived from those edges, and that the
+    {.sym} operator is an involution on those arcs, with no fixed
+    point. */
 
 #endif

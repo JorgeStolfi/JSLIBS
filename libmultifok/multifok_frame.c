@@ -1,5 +1,5 @@
 /* See {multifok_frame.h}. */
-/* Last edited on 2024-12-05 14:17:18 by stolfi */
+/* Last edited on 2025-01-18 12:56:18 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,9 +36,9 @@ multifok_frame_t *multifok_frame_from_images
     frame->hDev = hDev; 
 
     float_image_get_size(sVal, &(frame->NC), &(frame->NX), &(frame->NY));
-    float_image_check_size(frame->shrp, 1, frame->NX, frame->NY);
-    float_image_check_size(frame->hAvg, 1, frame->NX, frame->NY);
-    float_image_check_size(frame->hDev, 1, frame->NX, frame->NY);
+    float_image_check_size(frame->shrp, 1, frame->NX, frame->NY, "bad sharp image");
+    float_image_check_size(frame->hAvg, 2, frame->NX, frame->NY, "bad height map image");
+    float_image_check_size(frame->hDev, 1, frame->NX, frame->NY, "bad height deviation map image");
 
     frame->zFoc = zFoc;
     frame->zDep = zDep;

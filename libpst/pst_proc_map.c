@@ -1,5 +1,5 @@
 /* See pst_proc_map.h */
-/* Last edited on 2025-01-08 17:25:11 by stolfi */
+/* Last edited on 2025-01-20 08:02:16 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -26,262 +26,239 @@
 /* INTERNAL PROTOTYPES */
 
 /* IMPLEMENTATIONS */
+  
+void pst_proc_map_compute_height
+  ( pst_proc_map_zfunc_t *func,
+    r2_t p,
+    uint32_t NS,
+    double ws[],
+    double xyScale,
+    double maxGrad,
+    double *z_P,
+    double *w_P
+  )
+  { 
+    demand(isfinite(xyScale) && (xyScale > 0), "invalid {xyScale}");
+    demand(isfinite(maxGrad) && (maxGrad > 0), "invalid maxGrad");
+    demand(((NS%2) == 1) && (NS >= 3), "sampoint count {NS} must be odd and at least 3");
 
-void pst_proc_map_make_images
+    int32_t HS = (int32_t)NS/2;
+    double step = 1.0/(HS+1.0)/xyScale; /* Displacement between sampoiints. */
+    
+    /* Accumulators for average height: */
+    double sum_wkzk = 0;
+    double sum_wk = 0;
+    double zprev[NS]; /* Height value in previous sampoint row. */
+    
+    double max_rdz = 0; /* Max relative gradient seen. */
+    
+    for (int32_t ky = -HS; ky <= +HS; ky++)
+      { for (int32_t kx = -HS; kx <= +HS; kx++)
+          { /* Generate a sampoint {(xk,yk)} around {p}: */
+            double xk = p.c[0] + ((double)kx)*step;
+            double yk = p.c[1] + ((double)ky)*step;
+            r2_t pk = (r2_t){{ xk, yk }};
+            /* Get the sampoint weight {wk}: */
+            double wk = ws[HS+kx]*ws[HS+ky];
+            /* Get height value, ignore gradient: */
+            double zk;
+            func(pk, &zk, NULL);
+            if (! isfinite(zk)) { max_rdz = +INF; zk = 0.0; }
+            /* Accumulate height value: */
+            sum_wkzk += wk*zk;
+            sum_wk += wk;
+            /* Check gradient, for weight's sake: */
+            double dzx = 0, dzy = 0;
+            if (kx > 0) 
+              { /* Check {X} derivative: */
+                dzx = fabs(zk - zprev[HS+kx-1])/step;
+              }
+            if (ky > 0)
+              { /* Check {Y} derivative: */
+                dzy = fabs(zk - zprev[HS+kx])/step;
+              }
+            zprev[HS+kx] = zk;
+            double rdz = hypot(dzx,dzy)/maxGrad;
+            max_rdz = fmax(max_rdz, rdz);
+          }
+      }
+    /* Return average {z} and weight: */
+    (*z_P) = (float)(sum_wk == 0 ? 0.0: sum_wkzk/sum_wk);
+    (*w_P) = (float)(max_rdz >= 1.0 ? 0.0 : 1 - max_rdz*max_rdz);
+  }  
+
+void pst_proc_map_compute_gradient
+  ( pst_proc_map_zfunc_t *func,
+    r2_t p,
+    uint32_t NS,
+    double ws[],
+    double xyScale,
+    bool_t numGrad,
+    double maxGrad,
+    double maxGDiff,
+    r2_t *dz_P,
+    float *w_P
+  )
+  {
+    demand(isfinite(xyScale) && (xyScale > 0), "invalid {xyScale}");
+    demand(isfinite(maxGrad) && (maxGrad > 0), "invalid maxGrad");
+    demand(isfinite(maxGDiff) && (maxGDiff > 0), "invalid maxGDiff");
+    demand(((NS%2) == 1) && (NS >= 3), "sampoint count {NS} must be odd and at least 3");
+
+    int32_t HS = (int32_t)NS/2;
+    double step = 1.0/(HS+1.0)/xyScale; /* Displacement between sampoiints. */
+    
+    /* Accumulators for average analytic gradient: */
+    r2_t sum_wa_dz = (r2_t){{ 0, 0 }};
+    double sum_wa = 0;
+    
+    /* Accumulators for average numeric gradient: */
+    r2_t sum_wn_dz = (r2_t){{ 0, 0 }};
+    r2_t sum_wn = (r2_t){{ 0, 0 }};
+    double zprev[NS]; /* Height values on previous sampoint row. */
+     
+    double max_rdz = 0; /* Max relative gradient seen. */
+    
+    for (int32_t ky = -HS; ky <= +HS; ky++)
+      { for (int32_t kx = -HS; kx <= +HS; kx++)
+          { /* Generate a sampoint {(xk,yk)} around {p}: */
+            double xk = p.c[0] + ((double)kx)*step;
+            double yk = p.c[1] + ((double)ky)*step;
+            r2_t pk = (r2_t){{ xk, yk }};
+            /* Get the sampoint weight {wk}: */
+            double wk = ws[HS+kx]*ws[HS+ky];
+            /* Get height value and analytic derivatives: */
+            double zk; r2_t dazk;
+            func(pk, &zk, &dazk);
+            if (! isfinite(zk)) { max_rdz = +INF; zk = 0.0; }
+            if (! isfinite(dazk.c[0])) { max_rdz = +INF; dazk.c[0] = 0.0; }
+            if (! isfinite(dazk.c[1])) { max_rdz = +INF; dazk.c[1] = 0.0; }
+            /* Accumulate the analytic gradient: */
+            sum_wa_dz.c[0] += wk*dazk.c[0];
+            sum_wa_dz.c[1] += wk*dazk.c[1];
+            sum_wa += wk;
+            double dnzxk = 0, dnzyk = 0;
+            if (kx > 0)
+              { /* Compute and accumulate numeric {X} derivative: */
+                dnzxk = (zk - zprev[HS+kx-1])/step;
+                double wnx = (ws[HS+kx] + ws[HS+kx-1])/2;
+                sum_wn_dz.c[0] += wnx*dnzxk;
+                sum_wn.c[0] += wnx;
+              }
+            if (ky > 0)
+              { /* Compute and accumulate numeric {Y} derivative: */
+                dnzyk = (zk - zprev[HS+kx])/step;
+                double wny = (ws[HS+ky] + ws[HS+ky-1])/2;
+                sum_wn_dz.c[1] += wny*dnzyk;
+                sum_wn.c[1] += wny;
+              }
+            zprev[HS+kx] = zk;
+            /* Update max relative gradient: */
+            /* If {zk} was invalid this is nonsense but does not matter: */
+            double rdz = hypot(dnzxk, dnzyk)/maxGrad;
+            max_rdz = fmax(max_rdz, rdz);
+         }
+     }
+        
+    /* Compute mean numeric gradient: */
+    double dnzx_avg = (sum_wn.c[0] == 0 ? 0.0 : sum_wn_dz.c[0]/sum_wn.c[0]);
+    double dnzy_avg = (sum_wn.c[1] == 0 ? 0.0 : sum_wn_dz.c[1]/sum_wn.c[1]);
+    r2_t dnz_avg = (r2_t){{ dnzx_avg, dnzy_avg }};
+
+    double dazx_avg = (sum_wa == 0 ? 0.0: sum_wa_dz.c[0]/sum_wa);
+    double dazy_avg = (sum_wa == 0 ? 0.0: sum_wa_dz.c[1]/sum_wa);
+    r2_t daz_avg = (r2_t){{ dazx_avg, dazy_avg }};
+        
+    (*dz_P) = (numGrad ? dnz_avg : daz_avg);
+            
+    /* Compute weight from {max_rdz} and num/analytic discrepancy: */
+    double w_avg;
+    if (max_rdz >= 1.0)
+      { w_avg = 0.0; }
+    else
+      { double rg = hypot(dnzx_avg  - dazx_avg, dnzy_avg - dazy_avg)/maxGDiff;
+        w_avg = (rg >= 1.0 ? 0.0 : (1 - rg*rg));
+      }
+    (*w_P) = (float)w_avg;
+  }
+
+float_image_t* pst_proc_map_make_height_map
   ( pst_proc_map_zfunc_t *func,
     int32_t NX,
     int32_t NY,
-    pst_proc_map_sampling_t smpZ,
-    pst_proc_map_sampling_t smpG,
-    bool_t numGrad,
-    double maxGDiff,
-    double sigmaG,
-    double sigmaW,
-    float_image_t *IZ, 
-    float_image_t *IG, 
-    float_image_t *IW, 
-    float_image_t *IN
+    uint32_t NS,
+    double ws[],
+    double maxGrad
   )
   {
-    demand(IZ != NULL, "{IZ} must be non-null");
-    int32_t NMIN = (NX < NY ? NX : NY);         /* Smallest dimension of image. */
-    double pxPerUnit = ((double)NMIN)/2.0;  /* Number of grid pixels per {func} domain unit. */
+    int32_t NC = 2;
+    float_image_t *IZ = float_image_new(NC, NX+1, NY+1);
+
+    int32_t NMIN = (NX < NY ? NX : NY);  /* Smallest dimension of image. */
+    double xyScale = ((double)NMIN)/2.0;  /* Number of grid pixels per {func} domain unit. */
+    /* Center of image domain (in pixels, from bottom left corner): */
+    double cX = 0.5*NX;
+    double cY = 0.5*NY;
     
-    float_image_check_size(IZ, 1, NX+1, NY+1);
-    if (IG != NULL) { float_image_check_size(IG, 2, NX, NY); }
-    if (IW != NULL) { float_image_check_size(IW, 1, NX, NY); }
-    if (IN != NULL) { float_image_check_size(IN, 3, NX, NY); }
+    /* Compute height at each grid corner: */
+    for (int32_t y = 0; y <= NY; y++)
+      { for (int32_t x = 0; x <= NX; x++)
+          { /* Compute function domain coordinates {(xp,yp)} of grid corner: */
+            double xp = (x - cX)/xyScale;
+            double yp = (y - cY)/xyScale;
+            r2_t p = (r2_t){{ xp, yp }};
+
+            /* Compute height at grid corner: */
+            double z, w;
+            pst_proc_map_compute_height(func, p, NS, ws, xyScale, maxGrad, &z, &w);
+
+            /* Scale height from {func} units to pixels: */
+            float_image_set_sample(IZ, 0, x, y, (float)(z*xyScale));
+            float_image_set_sample(IZ, 1, x, y, (float)w);
+          }
+      }
+    return IZ;
+  }
+
+float_image_t* pst_proc_map_make_slope_map
+  ( pst_proc_map_zfunc_t *func,
+    int32_t NX,
+    int32_t NY,
+    uint32_t NS,
+    double ws[],
+    bool_t numGrad,
+    double maxGrad,
+    double maxGDiff
+  )
+  {
+    int32_t NC = 3;
+    float_image_t *IG = float_image_new(NC, NX, NY);
+
+    int32_t NMIN = (NX < NY ? NX : NY);   /* Smallest dimension of image. */
+    double xyScale = ((double)NMIN)/2.0;  /* Number of grid pixels per {func} domain unit. */
     
     /* Center of image domain (in pixels, from bottom left corner): */
     double cX = 0.5*NX;
     double cY = 0.5*NY;
     
-    int32_t X, Y, c;
-    /* Compute height at each grid corner: */
-    for (Y = 0; Y <= NY; Y++)
-      { for (X = 0; X <= NX; X++)
-          { 
-            /* Compute function domain coordinates {(x,y)} of grid corner: */
-            double x = (X - cX)/pxPerUnit;
-            double y = (Y - cY)/pxPerUnit;
-            r2_t p = (r2_t){{ x, y }};
+    /* Compute gradient at center of each grid pixel: */
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
+          { /* Compute function domain coordinates {(xp,yp)} of pixel center: */
+            double xp = (x + 0.5 - cX)/xyScale;
+            double yp = (y + 0.5 - cY)/xyScale;
+            r2_t p = (r2_t){{ xp, yp }};
 
-            /* Compute height at grid corner: */
-            double za = pst_proc_map_compute_height_value(func, p, &smpZ, pxPerUnit);
-
-            /* Scale height from {func} units to pixels: */
-            float_image_set_sample(IZ, 0, X, Y, (float)(za*pxPerUnit));
+            /* Compute gradient at pixel center: */
+            r2_t dz; float w;
+            pst_proc_map_compute_gradient
+              ( func, p, NS, ws, xyScale, numGrad, maxGrad, maxGDiff, &dz, &w );
+            float_image_set_sample(IG, 0, x, y, (float)dz.c[0]); 
+            float_image_set_sample(IG, 1, x, y, (float)dz.c[1]);
+            float_image_set_sample(IG, 2, x, y, (float)w);
           }
       }
-    /* Ensure that the mean Z value is zero: */
-    double mean_z;
-    float_image_compute_sample_avg_dev(IZ, 0, &mean_z, NULL);
-    for (Y = 0; Y <= NY; Y++)
-      { for (X = 0; X <= NX; X++)
-          { double z = float_image_get_sample(IZ, 0, X, Y);
-            float_image_set_sample(IZ, 0, X, Y, (float)(z - mean_z));
-          }
-      }
-    
-    if((IG != NULL) || (IW != NULL) || (IN != NULL))
-      { /* Compute slope, weight, and normal map at each grid pixel: */
-        for (Y = 0; Y < NY; Y++)
-          { for (X = 0; X < NX; X++)
-              { 
-                /* Compute function domain coordinates {(x,y)} of pixel center: */
-                double x = (X + 0.5 - cX)/pxPerUnit;
-                double y = (Y + 0.5 - cY)/pxPerUnit;
-                r2_t p = (r2_t){{ x, y }};
-
-                /* Compute analytic gradient at pixel center: */
-                r2_t dza = pst_proc_map_compute_analytic_pixel_gradient(func, p, &smpG, pxPerUnit);
-
-                /* Compute the numeric gradient by simple differences of heights: */
-                double f00 = float_image_get_sample(IZ, 0, X, Y);
-                double f10 = float_image_get_sample(IZ, 0, X+1, Y);
-                double f01 = float_image_get_sample(IZ, 0, X, Y+1);
-                double f11 = float_image_get_sample(IZ, 0, X+1, Y+1);
-                r2_t dzn = pst_proc_map_compute_numeric_pixel_gradient(f00, f10, f01, f11);
-
-                /* Compute weight by comparing the analytic and numeric gradients: */
-                double wt = (numGrad ? 1.0 : pst_proc_map_compute_pixel_weight(func, &dza, &dzn, maxGDiff));
-
-                /* Choose final gradient: */
-                r2_t dz = (numGrad ? dzn : dza);
-
-                /* Add perturbations to the slopes and weights: */
-                if (sigmaG > 0.0) { pst_proc_map_perturb_gradient(&dz, sigmaG); }
-                if (sigmaW > 0.0) { pst_proc_map_perturb_weight(&wt, sigmaW); }
-
-                /* Compute average normal from the average gradient: */
-                r3_t nrm = pst_normal_map_normal_from_slope(&dz);
-
-                /* Save the results in the images: */
-                if (IG != NULL) { float_image_set_sample(IG, 0, X, Y, (float)dz.c[0]); }
-                if (IG != NULL) { float_image_set_sample(IG, 1, X, Y, (float)dz.c[1]); }
-                if (IW != NULL) { float_image_set_sample(IW, 0, X, Y, (float)wt); }
-                if (IN != NULL) { for (c = 0; c < 3; c++) { float_image_set_sample(IN, c, X, Y, (float)nrm.c[c]); } }
-              }
-          }
-      }
-  }
-
-pst_proc_map_sampling_t pst_proc_map_make_sampling_tables(int32_t L, int32_t N)
-  {
-    assert(L <= 2); /* For now. */
-    bool_t debug = TRUE;
-    /* Compute sample positions and weights for height sampling: */
-    pst_proc_map_sampling_t smp;
-    smp.N = N;
-    smp.d = talloc(N, double);
-    smp.w = talloc(N, double);
-    int32_t k;
-    if (debug) { fprintf(stderr, "%s L = %d N = %d\n", __FUNCTION__, L, N); }
-    for (k = 0; k < N; k++)
-      { double rk = (k + 0.5)/N - 0.5;    /* Relative sample position in {[-1/2 _ +1/2]}. */
-        smp.d[k] = rk*L;        /* Relative sample position in pixels. */
-        switch(L)
-          {
-          case 0:
-            /* Dirac (presumably {N=1} in this case): */
-            smp.w[k] = 1.0;
-            break;
-          case 1:
-            /* Flat box: */
-            smp.w[k] = 1.0;
-            break;
-          case 2:
-            /* Linear tent: */
-            smp.w[k] = 1.0 - 2*fabs(rk);
-            break;
-          default:
-            demand(FALSE, "invalid {L}");
-          }
-        if (debug) { fprintf(stderr, "  sample %2d position = %12.8f weight = %12.8f\n", k, smp.d[k], smp.w[k]); }
-      }
-    if (debug) { fprintf(stderr, "\n"); }
-    return smp;
-  }
-
-void pst_proc_map_free_sampling_tables(pst_proc_map_sampling_t *smp)
-  { 
-    free(smp->d); smp->d = NULL;
-    free(smp->w); smp->w = NULL;
-  }
-  
-double pst_proc_map_compute_height_value
-  ( pst_proc_map_zfunc_t *func,
-    r2_t p,
-    pst_proc_map_sampling_t *smp,
-    double pxPerUnit
-  )
-  { 
-    int32_t NS = smp->N;
-    double sum_w = 0;
-    double sum_wz = 0;
-    int32_t xs, ys;
-    for (ys = 0; ys < NS; ys++)
-      for (xs = 0; xs < NS; xs++)
-        { /* Generate a sample point {(xk,yk)} inside cell {[X,Y]}: */
-          double xk = p.c[0] + smp->d[xs]/pxPerUnit;
-          double yk = p.c[1] + smp->d[ys]/pxPerUnit;
-          r2_t pk = (r2_t){{ xk, yk }};
-          /* Get height value, ignore gradient: */
-          double zk;
-          func(pk, &zk, NULL);
-          assert(isfinite(zk)); /* Neither infinity nor NAN. */
-          /* Get sample weight: */
-          double wk = smp->w[xs]*smp->w[ys];
-          /* Accumulate height value: */
-          sum_wz += wk*zk;
-          sum_w += wk;
-       }
-    /* Compute average: */
-    assert(sum_w > 0);
-    double za = sum_wz/sum_w;
-    return za;
-  }  
-
-r2_t pst_proc_map_compute_analytic_pixel_gradient
-  ( pst_proc_map_zfunc_t *func,
-    r2_t p,
-    pst_proc_map_sampling_t *smp,
-    double pxPerUnit
-  )
-  {
-    int32_t NS = smp->N;
-    double sum_w = 0;
-    r2_t sum_wdz = (r2_t){{ 0, 0 }};
-    int32_t xs, ys;
-    for (ys = 0; ys < NS; ys++)
-      for (xs = 0; xs < NS; xs++)
-        { /* Generate a sample point {(xk,yk)} inside cell {[X,Y]}: */
-          double xk = p.c[0] + smp->d[xs]/pxPerUnit;
-          double yk = p.c[1] + smp->d[ys]/pxPerUnit;
-          r2_t pk = (r2_t){{ xk, yk }};
-          /* Get height value, derivatives: */
-          double zk; r2_t dzk;
-          func(pk, &zk, &dzk);
-          assert(isfinite(dzk.c[0])); /* Neither infinity nor NAN. */
-          assert(isfinite(dzk.c[1])); /* Neither infinity nor NAN. */
-          /* Get sample weight: */
-          double wk = smp->w[xs]*smp->w[ys];
-          /* Accumulate gradient: */
-          int32_t c;
-          for (c=0; c < 2; c++)
-            { sum_wdz.c[c] += wk*dzk.c[c]; }
-          sum_w += wk;
-       }
-        
-    /* Compute mean gradient from sum of gradients: */
-    assert(sum_w > 0);
-    r2_t dza;
-    r2_scale(1/sum_w, &sum_wdz, &dza);
-    return dza;
-  }
-
-r2_t pst_proc_map_compute_numeric_pixel_gradient
-  ( double f00,
-    double f10,
-    double f01,
-    double f11
-  )
-  {
-    r2_t dzn;
-    dzn.c[0] = 0.5*(f10 - f00 + f11 - f01);
-    dzn.c[1] = 0.5*(f01 - f00 + f11 - f10);
-    return dzn;
-  }
-
-double pst_proc_map_compute_pixel_weight
-  ( pst_proc_map_zfunc_t *func,
-    r2_t *dza,
-    r2_t *dzn,
-    double maxGDiff
-  )
-  {
-    bool_t debug = FALSE;
-    double diff = r2_dist(dza, dzn);
-    double rerr = diff/maxGDiff;
-    double wa = (rerr > 1.0 ? 0.0 : (1.0 - rerr)*(1.0 - rerr));
-    if (debug && (wa < 0.95))
-      { fprintf(stderr, "compute_pixel_weight:");
-        fprintf(stderr, "dza = %e %e  dzn = %e %e\n", dza->c[0], dza->c[1], dzn->c[0], dzn->c[1]);
-        fprintf(stderr, "diff = %e rerr = %e  wa = %e\n", diff, rerr, wa);
-      }
-    return wa;
-  }
-
-void pst_proc_map_perturb_gradient(r2_t *dz, double sigma)
-  { 
-    int32_t c;
-    for (c = 0; c < 2; c++) { dz->c[c] += sigma * dgaussrand(); }
-  }
-
-void pst_proc_map_perturb_weight(double *w, double sigma)
-  { 
-    double fac = exp(sigma * dgaussrand());
-    (*w) *= fac;
+    return IG;
   }
 
 pst_proc_map_zfunc_t *pst_proc_map_function_generic(int32_t n)
@@ -852,8 +829,8 @@ void pst_proc_map_function_25(r2_t p, double *z, r2_t *dz)
     double zMin = 0.05; /* Z-level outside. */
     double zMax = 0.95; /* Z-level inside. */
     double zDif = zMax - zMin;
-    double R = 0.8;     /* Nominal radius. */
-    double HS = 0.05;   /* Half-widthd of shoulder. */
+    double R = 0.70;     /* Nominal radius. */
+    double HS = 0.25;   /* Half-width of shoulder. */
 
     r2_t v; r2_sub(&p, &ctr, &v);
     double zt;
@@ -1089,7 +1066,7 @@ void pst_proc_map_function_round_platform(r2_t *p, double R, double HS, double *
       { assert(HS > 0);
         double r = sqrt(r2);
         /* Compute {z} as a function of position within smoothed band: */
-        double t = (r - R)/HS;
+        double t = (r - R)/HS; /* Range {[-1 _ +1]}. */
         double h, dh_dt;
         pst_proc_map_function_cubic_ramp(t, &h, (dz == NULL ? NULL : &dh_dt));
         (*z) = 1.0 - h;

@@ -1,4 +1,4 @@
-# Last edited on 2025-01-08 01:23:27 by stolfi
+# Last edited on 2025-01-16 06:13:38 by stolfi
 
 PROG = test_integrate_recursive
 
@@ -26,13 +26,19 @@ all: check
 
 check:  clean do-tests
 
-ZFUNCS := 01 02 03 04 05 11 
+# TESTS := 01-ramp10-N 03-ramp11-N 
+# TESTS := 03-ramp11-N 
+TESTS := 04-parabo-N
+
+SIZE := 0016x0012
+# SIZE := 0256x0192
 
 do-tests: ${PROG}
 	mkdir -p out
-	for nf in ${ZFUNCS} ; do \
-	  ./run_test.sh $$nf ; \
+	for test in ${TESTS} ; do \
+	  func="$${test}"; \
+	  ./run_test.sh $${func} ${SIZE}; \
         done
  
 clean::
-	/bin/rm -fv out/*-*.fni
+	/bin/rm -fv out/*-*.{fni,txt,png}

@@ -1,6 +1,7 @@
 /* See float_image_interpolate.h */
-/* Last edited on 2024-12-05 00:53:46 by stolfi */ 
+/* Last edited on 2025-01-14 16:25:01 by stolfi */ 
 
+#include <stdint.h>
 #include <limits.h>
 #include <float.h>
 #include <assert.h>

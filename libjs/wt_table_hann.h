@@ -2,7 +2,7 @@
 #define wt_table_hann_H
 
 /* Weight table with Hann (shifted cosine) profile and optional flat center. */
-/* Last edited on 2024-11-16 10:27:56 by stolfi */
+/* Last edited on 2025-01-19 22:11:25 by stolfi */
 
 #define wt_table_hann_H_COPYRIGHT \
   "Copyright © 2023  by the State University of Campinas (UNICAMP)"
@@ -27,7 +27,7 @@ void wt_table_hann_fill(uint32_t n, double flat, double wt[], uint32_t *stride_P
     result is the discrete Hann (shifted cosine) distribution.  
     If {flat} is 1 (so that {r = 0}), the table uniform equal to 1.
     
-    The table is a partition of constant (PoC) and only if {r} is an
+    The table is a partition of constant (PoC) if and only if {r} is an
     integer (in particular, if {flat} is 1, or {n} is odd and {flat} is
     0), in which case its max PoC stride will be {n-r}. Otherwise the
     max PoC stride is 0 by convention. If {stride_P} is not {NULL},

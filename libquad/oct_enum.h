@@ -2,7 +2,7 @@
 #define oct_enum_H
 
 /* Element enumeration procedures for the general quad-edge structure. */
-/* Last edited on 2024-12-05 10:39:34 by stolfi */
+/* Last edited on 2025-01-09 23:21:11 by stolfi */
 
 #define oct_enum_H_copyright \
   "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -53,7 +53,7 @@ typedef bool_t oct_visit_t(oct_arc_t p);
 
 bool_t oct_enum
   ( oct_arc_vec_t root, 
-    uint ns, 
+    uint NS, 
     oct_step_t *step[], 
     oct_visit_t *visit[], 
     oct_arc_vec_t *vP
@@ -63,15 +63,15 @@ bool_t oct_enum
     
     Namely, enumerates all arcs that can be reached from the arcs
     {root.e[0..root.ne-1]} by all possible sequences of calls to the
-    step-funcs {step[0..ns-1]}. These are tried in order of increasing
+    step-funcs {step[0..NS-1]}. These are tried in order of increasing
     index, so that the procedure only attempts to use {step[i]} after
     exhausting all possibilities with steps {step[0..i-1]}.
     
-    The procedure calls {visit[i](e)}, for {i} in {0..ns-1}, when it
+    The procedure calls {visit[i](e)}, for {i} in {0..NS-1}, when it
     used {step[i]} to each a new arc {e} for the first time. It also
-    calls {visit[ns](e)} when it gets to a root arc {e} that could not
+    calls {visit[NS](e)} when it gets to a root arc {e} that could not
     be reached from previous roots. Note that the list {step} must
-    have {ns} elements, while {visit} must have {ns+1}. 
+    have {NS} elements, while {visit} must have {NS+1}. 
     
     A visit-proc may return TRUE to halt the enumeration with a TRUE
     result; otherwise the result is FALSE. A {visit[k]} that is NULL
@@ -100,9 +100,9 @@ bool_t oct_enum_cycle
 
 bool_t oct_enum_orbits
   ( oct_arc_vec_t root,
-    uint ni, 
+    uint NI, 
     oct_step_t *istep[], 
-    uint no, 
+    uint NO, 
     oct_step_t *ostep[], 
     oct_visit_t *visit,
     oct_arc_vec_t *vP
@@ -112,7 +112,7 @@ bool_t oct_enum_orbits
     
     More precisely, the procedure enumerates all arcs that can be
     reached from {root.e[0..root.ne-1]} by any sequence of steps in
-    {istep[0..ni-1]} and/or {ostep[0..no-1]}. It then visits exactly
+    {istep[0..NI-1]} and/or {ostep[0..NO-1]}. It then visits exactly
     one arc in each maximal subset that is connected by chains of
     {istep} functions alone. The {visit} function and the visit-list
     {vP}, if not NULL, are used according to the general rules. */

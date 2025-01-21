@@ -1,5 +1,5 @@
 /* See {float_image_geostereo.h}. */
-/* Last edited on 2024-12-05 00:46:05 by stolfi */
+/* Last edited on 2025-01-18 13:00:37 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -88,7 +88,7 @@ double float_image_geostereo_single_disp_score
     /* Check image sizes: */
     int32_t NC, NX, NY;
     float_image_get_size(f1 ,&NC, &NX, &NY);
-    float_image_check_size(f2, NC, NX, NY);
+    float_image_check_size(f2, NC, NX, NY, "mismatched {f1,f2} images");
 
     /* Window parameters: */
     int32_t npix = nwx*nwy;

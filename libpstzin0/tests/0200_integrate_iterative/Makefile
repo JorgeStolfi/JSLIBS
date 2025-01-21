@@ -1,4 +1,4 @@
-# Last edited on 2025-01-09 05:49:42 by stolfi
+# Last edited on 2025-01-15 14:13:47 by stolfi
 
 PROG = test_integrate_iterative
 
@@ -26,9 +26,9 @@ all: check
 
 check:  clean do-tests
 
-# TESTS := 01-ramp10:F 03-ramp11:F 
-# TESTS := 03-ramp11:F 
-TESTS := 04-parabo:F
+# TESTS := 01-ramp10-N:F 03-ramp11-N:F 
+# TESTS := 03-ramp11-N:F 
+TESTS := 04-parabo-N:F
 
 # SIZE := 0001x0001
 SIZE := 0016x0012
@@ -41,4 +41,4 @@ do-tests: ${PROG}
         done
  
 clean::
-	/bin/rm -fv out/*-*.fni
+	/bin/rm -fv out/*-*.{fni,txt,png}

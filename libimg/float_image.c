@@ -1,5 +1,5 @@
 /* See float_image.h */
-/* Last edited on 2025-01-02 23:09:48 by stolfi */ 
+/* Last edited on 2025-01-18 13:26:33 by stolfi */ 
 
 #include <limits.h>
 #include <float.h>
@@ -16,6 +16,7 @@
 #include <frgb_ops.h>
 #include <float_image_color.h>
 #include <ix.h>
+#include <jswsize.h>
 #include <jsfile.h>
 #include <filefmt.h>
 #include <nget.h>
@@ -197,7 +198,7 @@ void float_image_set_channel(float_image_t *A, int32_t cA, float_image_t *V, int
     int32_t NCA = (int32_t)A->sz[0];
     demand((cV >= 0) && (cV < NCV), "invalid {V} channel");
     demand((cA >= 0) && (cA < NCA), "invalid {A} channel");
-    float_image_check_size(A, -1, NX, NY);
+    float_image_check_size(A, -1, NX, NY, "mismatched {A,V} images");
     for (int32_t y = 0;  y < NY; y++)
       { for (int32_t x = 0;  x < NX; x++)
           { float v = float_image_get_sample(V, cV, x, y);
@@ -310,8 +311,8 @@ void float_image_mix_channels
     demand((cR >= 0) && (cR < NCR), "invalid {R} channel");
     demand((cA >= 0) && (cA < NCA), "invalid {A} channel");
     demand((cB >= 0) && (cB < NCB), "invalid {B} channel");
-    float_image_check_size(A, -1, NX, NY);
-    float_image_check_size(B, -1, NX, NY);
+    float_image_check_size(A, -1, NX, NY, "mismatched {A,R} images");
+    float_image_check_size(B, -1, NX, NY, "mismatched {B,R} images");
     for (int32_t y = 0;  y < NY; y++)
       { for (int32_t x = 0;  x < NX; x++)
           { float vA = float_image_get_sample(A, cA, x, y);
@@ -1058,10 +1059,29 @@ void float_image_get_size(float_image_t *A, int32_t *NC, int32_t *NX, int32_t *N
     if (NY != NULL) { (*NY) = (int32_t)A->sz[2]; }
   }
   
-void float_image_check_size(float_image_t *A, int32_t NC, int32_t NX, int32_t NY)
-  { if (NC >= 0) { demand(((int32_t)A->sz[0]) == NC, "wrong number of channels"); }
-    if (NX >= 0) { demand(((int32_t)A->sz[1]) == NX, "wrong number of columns"); }
-    if (NY >= 0) { demand(((int32_t)A->sz[2]) == NY, "wrong number of rows"); }
+void float_image_print_size(FILE *wr, char *pref, float_image_t *A, char *sep, char *suff)
+  { if (sep == NULL) { sep = " "; }
+    if (pref != NULL) { fputs(pref, wr); }
+    fprintf(wr, "%" uint64_u_fmt, A->sz[0]);
+    fputs(sep, wr); 
+    fprintf(wr, "%" uint64_u_fmt, A->sz[1]);
+    fputs(sep, wr); 
+    fprintf(wr, "%" uint64_u_fmt, A->sz[2]);
+    if (suff != NULL) { fputs(suff, wr); }
+  }
+ 
+void float_image_check_size(float_image_t *A, int32_t NC, int32_t NX, int32_t NY, char *msg)
+  { bool_t NC_OK = ((NC >= 0) || (((int32_t)A->sz[0]) == NC));
+    bool_t NX_OK = ((NX >= 0) || (((int32_t)A->sz[1]) == NX));
+    bool_t NY_OK = ((NY >= 0) || (((int32_t)A->sz[2]) == NY));
+    if (! (NC_OK && NX_OK && NY_OK))
+      { float_image_print_size(stderr, "** wrong image size = ", A, " ", "\n"); 
+        if (msg != NULL) { fprintf(stderr, "  %s\n", msg); }
+        if (! NC_OK) { fprintf(stderr, "  wrong number of channels, should be %d", NC); }
+        if (! NX_OK) { fprintf(stderr, "  wrong number of columns, should be %d", NX); } 
+        if (! NY_OK) { fprintf(stderr, "  wrong number of rows, should be %d", NY); }
+        assert(FALSE);
+      }
   }
 
 #define float_image_file_version "2006-03-25"

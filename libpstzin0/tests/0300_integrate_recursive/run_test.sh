@@ -1,13 +1,42 @@
 #! /bin/bash
-# Last edited on 2025-01-07 22:20:56 by stolfi
+# Last edited on 2025-01-16 10:51:20 by stolfi
 
-nf="$1"; shift;
+mapName="$1"; shift;
+size="$1"; shift;
 
 PROG="test_integrate_recursive"
 
-printf "function ${nf} ..."
-${PROG} -function ${nf}
-for tag in IZ KZ  IG JG KG DG  IW JW KW DW ; do
-  fni_view -scale 1.0 out/${nf}-*-*-${tag}.fni
+inDir="in/slope_to_height"
+
+testName="${mapName}-${size}"
+
+in_slopes_fni="${inDir}/${testName}-G.fni"
+in_weights_fni="${inDir}/${testName}-W.fni"
+in_refz_fni="${inDir}/${testName}-Z.fni"
+outPrefix="out/${testName}-${keepNull}"
+out_heights_fni="${outPrefix}-dbg-Z.fni"
+out_errz_fni="${outPrefix}-dbg-eZ.fni"
+
+rm -f ${outPrefix}*.{fni,sys,pgm,txt,png}
+set -x
+${PROG} \
+  -slopes ${in_slopes_fni} \
+  -weights ${in_weights_fni} \
+  -compareZ ${in_refz_fni} \
+  -convTol 0.0005 \
+  -outPrefix ${outPrefix} \
+  -debugG -debugZ -debugSys -debugIter 10 \
+  -verbose
+set +x
+for ofile in ${out_heights_fni} ${out_errz_fni} ; do
+  if [[ -s ${ofile} ]]; then 
+    if [[ "/${ofile}" == "/${out_errz_fni}" ]]; then scale = 1000; else scale = 1; fi
+    fni_view -scale ${scale} ${ofile}
+    pfile="${ofile/.fni/.pgm}"
+    fni_to_pnm -yAxis up < ${ofile} > ${pfile}
+    display -title '%f' -filter box -resize 'x800<' ${pfile}
+  else
+    echo "** ${ofile} not created" 1>&2
+  fi
 done
 echo "OK"

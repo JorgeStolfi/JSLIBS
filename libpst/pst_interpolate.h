@@ -4,7 +4,7 @@
 
 /* Created on 2011-06-17 by Jorge Stolfi, unicamp, <stolfi@dcc.unicamp.br> */
 /* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2025-01-08 08:18:59 by stolfi */
+/* Last edited on 2025-01-16 12:54:52 by stolfi */
 /* See the copyright and authorship notice at the end of this file.  */
 
 #include <float_image.h>
@@ -21,23 +21,6 @@ void pst_interpolate_two_values
     points, and their reliability weights {w0,w1}. Returns the 
     results in {*vRP} and {*wRP}. */
 
-void pst_interpolate_two_samples
-  ( float_image_t *I, float_image_t *W,
-    int32_t c,
-    int32_t x0, int32_t y0,
-    int32_t x1, int32_t y1,
-    double *vRP, double *wRP
-  );
-  /* Estimates the value value {vR} of channel {c} of image {I}
-    halfway between the centers of the pixels with indices {x0,y0}
-    and {x1,y1}, and its reliability weight {wR}. Returns the 
-    results in {*vRP} and {*wRP}.
-    
-    If {W} is given, it must be a single-channel image with same size
-    as {I}, containing the reliability weighs of the pixels of {I}.
-    If {I} is null, assumes it is all zeros.  If {W} is null,
-    assumes it is all ones. */
- 
 /* CUBIC HALFPOINT INTERPOLATION: */
  
 void pst_interpolate_four_values
@@ -52,27 +35,5 @@ void pst_interpolate_four_values
     given the values {vm,v0,v1,vp} at those four points (in order) and
     the corresponding reliability weights {wm,w0,w1,wp}. Returns the 
     results in {*vRP} and {*wRP}. */
-  
-void pst_interpolate_four_samples
-  ( float_image_t *I, float_image_t *W,
-    int32_t c,
-    int32_t x0, int32_t y0,
-    int32_t x1, int32_t y1,
-    double *vRP, double *wRP
-  );
-  /* Estimates the value {vR} of channel {c} of image {I}
-    halfway between the centers of the pixels with indices {x0,y0}
-    and {x1,y1}, and its reliability weight {wR}.  The pixels must be 
-    adjacent either vertically or horizontally.  Returns the 
-    results in {*vRP} and {*wRP}. 
-    
-    Uses two other samples of {I} with indices {xm,ym} and {xp,yp} that
-    are collinear with those two points and equally spaced, on both
-    sides.
-    
-    If {W} is given, it must be a single-channel image with same size
-    as {I}, containing the reliability weighs of the pixels of {I}.
-    If {I} is null, assumes it is all zeros.  If {W} is null,
-    assumes it is all ones. */
 
 #endif

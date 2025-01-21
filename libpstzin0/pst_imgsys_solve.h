@@ -5,7 +5,7 @@
 
 /* Created on 2005-12-04 by Jorge Stolfi, unicamp, <stolfi@ic.unicamp.br> */
 /* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2025-01-08 00:21:23 by stolfi */
+/* Last edited on 2025-01-15 14:35:22 by stolfi */
 /* See the copyright and authorship notice at the end of this file. */
 
 #include <stdint.h>
@@ -15,10 +15,10 @@
 #include <pst_imgsys.h>
 
 uint32_t* pst_imgsys_sort_equations(pst_imgsys_t *S);
-  /* Returns and array {ord[0..S->N-1]} with the indices of the equations 
+  /* Returns an array {ord[0..S->N-1]} with the indices of the equations 
      of {S} in order of increasing {wtot} field. */ 
 
-typedef void pst_imgsys_solve_report_sol_proc_t(uint32_t indent, uint32_t iter, double change, bool_t final, uint32_t N, double h[]);
+typedef void pst_imgsys_solve_report_sol_proc_t(int32_t level, int32_t iter, double change, bool_t final, uint32_t N, double h[]);
   /* Type of a procedure that is used to report the progress of the solution. */
 
 void pst_imgsys_solve_iterative
@@ -30,13 +30,13 @@ void pst_imgsys_solve_iterative
     bool_t para, 
     bool_t szero,
     bool_t verbose,
-    uint32_t indent,
+    int32_t level,
     uint32_t reportStep,
     pst_imgsys_solve_report_sol_proc_t *reportSol
   );
   /* Solves system {S}, and stores the solution into the vector {h}.  
 
-    Uses an iterative method, and therefore assumes that the unknown
+    Uses an iterative method, and therefore assumes that the variable
     {h[i]} is the first term in equation {S->eq[i]}, for {i =
     0..N-1} and {N = S->N}; and that its coefficient is ``large enough''. Upon
     entry, the {h} vector must contain the starting guess. Executes
@@ -51,19 +51,22 @@ void pst_imgsys_solve_iterative
     after each iteration.
 
     If {verbose} is true, prints information about the iterations to {stderr}.
-    All messages will be indented by {indent} spaces.
 
     if {reportSol} is not null, the procedure calls
-    {reportSol(indent,iter,change,final,N,h) one or more times during the
+    {reportSol(level,iter,change,final,N,h) one or more times during the
     solution. Here {iter} is the number of complete Gauss-Seidel or
     Gauss-Jacobi iterations performed before the call; and {change} is
     the max absolute change in any {h} element since the previous
     iteration (meaningless when {iter=0}). The procedure {reportSol} is
     always called once with {final=TRUE} after the last iteration, and
     once with {iter=0} and {final=FALSE} before the first iteration. If
-    {reportStep} is not zero, {reportSol} is also called with {final=FALSE}
-    before each iteration whose index {iter} is a positive multiple of
-    {reportStep}. */
+    {reportStep} is not zero, {reportSol} is also called with
+    {final=FALSE} before each iteration whose index {iter} is 
+    less than {reportStep} or a positive  multiple thereof.
+    
+    The parameter {level} passed to {reportSol}. It is not used by this
+    procedure, except that any diagnostic messages will be indentde by
+    {2*level} spaces. Otherwise its meaning is client-defined. */
 
 #endif
 

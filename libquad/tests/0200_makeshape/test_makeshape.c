@@ -2,7 +2,7 @@
 #define PROG_DESC "creates some 2D maps using the quad-edge structure"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-22 11:22:01 by stolfi */ 
+/* Last edited on 2025-01-09 22:56:53 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2007  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
@@ -187,10 +187,10 @@ string_vec_t split_shape_names(char *names)
         if ((*p) == 0) { break; }
         char *q = p;
         while (((*q) != 0) && ((*q) != ' ')) { q++; }
-        uint32_t nc = (uint32_t)(q - p);
-        char *s = notnull(malloc(nc + 1), "no mem");
-        (void)strncpy(s, p, nc);
-        s[nc] = 0;
+        uint32_t nch = (uint32_t)(q - p);
+        char *s = notnull(malloc(nch + 1), "no mem");
+        (void)strncpy(s, p, nch);
+        s[nch] = 0;
         string_vec_expand(&shape_names, (vec_index_t)NS);
         shape_names.e[NS] = s; 
         NS++;

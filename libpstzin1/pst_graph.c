@@ -1,5 +1,5 @@
 /* See {pst_graph.h}. */
-/* Last edited on 2024-12-23 14:53:50 by stolfi */
+/* Last edited on 2025-01-10 05:41:43 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #include <stdio.h>

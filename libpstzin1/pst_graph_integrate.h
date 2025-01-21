@@ -1,9 +1,9 @@
 #ifndef pst_graph_integrate_H
 #define pst_graph_integrate_H
 
-/* Last edited on 2024-12-24 18:57:20 by stolfi */
+/* Last edited on 2025-01-11 14:57:22 by stolfi */
 /* Created by Rafael F. V. Saracchini */
-
+  
 #include <stdint.h>
 
 #include <bool.h>
@@ -12,7 +12,7 @@
 #include <pst_graph.h>
 #include <pst_imgsys.h>
 
-pst_imgsys_t* pst_graph_build_integration_system
+pst_imgsys_t* pst_graph_build_system
   ( pst_graph_t* g,
     int32_t NX_Z,
     int32_t NY_Z

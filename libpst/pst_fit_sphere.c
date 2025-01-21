@@ -1,5 +1,5 @@
 /* See pst_fit_sphere.h */
-/* Last edited on 2024-12-22 14:44:11 by stolfi */ 
+/* Last edited on 2025-01-14 17:30:00 by stolfi */ 
 
 #include <math.h>
 #include <values.h>

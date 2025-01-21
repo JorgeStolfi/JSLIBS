@@ -2,21 +2,13 @@
 #define pst_proc_map_H
 
 /* pst_proc_map.h -- procedures for creating procedurally-defined images. */
-/* Last edited on 2025-01-08 17:35:13 by stolfi */
+/* Last edited on 2025-01-20 08:00:58 by stolfi */
 
 #include <stdint.h>
 
 #include <bool.h>
 #include <r2.h>
 #include <float_image.h>
-
-typedef struct pst_proc_map_sampling_t
-  { int32_t N;     /* Number of sampling points per axis. */
-    double *d; /* Sampling positions relative to center point (indexed {0..NS-1}). */
-    double *w; /* Sampling weights (indexed {0..NS-1}). */
-  } pst_proc_map_sampling_t;
-  /* A one-dimensional sampling kernel. The displacements {d[0..N-1]} are in pixels.
-    The weights are in {[0_1]}, not particularly normalized. */
 
 typedef void pst_proc_map_zfunc_t (r2_t p, double *z, r2_t *dz);
   /* A function that returns a height field {Z} and its gradient at a
@@ -25,146 +17,144 @@ typedef void pst_proc_map_zfunc_t (r2_t p, double *z, r2_t *dz);
     A function of this type should should return in {*z} the height
     {Z(p)}, which should be a number in the range {[-1 _ +1]}. If {dz}
     is not NULL, it should also return in {*dz} the gradient of {Z}
-    with respect to {p}. */
+    with respect to {p}.  If the height is undefined or uncomputable, 
+    it should return {NAN} in both. */
+     
+/* AVERAGED HEIGHTS AND GRADIENTS */
 
-void pst_proc_map_make_images
+/* The procedures in this section compute either the mean height {Z}
+  or the mean gradient {(dZ/dX,dZ/dY)} in the neighborhood of a
+  given point {p} of {func}'s domain.
+  
+  The result is obtained by evaluanting {func} at a grid of {NS×NS}
+  sampoints (sampling points) around the given point {p} and averaging
+  the desired quantity. The count {NS} must be at
+  least 2. The sampoints will span about {1/xyScale} on each side 
+  of {p}.   The weight the sampoint with indices {kx,ky}
+  will be {ws[kx]*ws[ky]}, for {kx,ky} in {0..NS-1}.  Preferably,
+  {NS} should be odd, and the weights {ws[0..NS-1]} should be a 
+  partition of unity with stride {NS/2+1}.  See {wt_table_hann_fill}
+  for a suitable instance. */ 
+
+void pst_proc_map_compute_height
+  ( pst_proc_map_zfunc_t *func,
+    r2_t p,
+    uint32_t NS,
+    double ws[],
+    double xyScale,
+    double maxGrad,
+    double *z_P,
+    double *w_P
+  );
+  /* Computes the height field defined by {func} at the point {p}
+    of func's domain.
+    
+    The result {z}, returned in {*z_P}, is the weighted average of the
+    height function {Z(X,Y)} as defined by {func} over the grid of
+    {NS×NS} sampoints with weights {ws[0..NS-1]}.
+    
+    The height is scaled by {xyScale} so that the gradient is 
+    independent of {xyScale}.
+    
+    The procedure also computes a reliability weight {w} that is
+    returned in {*w_P}. Basically, the weight is zero if the gradient of
+    {Z} exceeds {maxGrad} in modulus.
+    
+    More precisely, the procedure computes an estimate {dnk} of the gradient {(dZ/dX,dZ/dY)} at each sampoint
+    by numerical divided differences between adjacent  sampoints, and notes the maximum value {v} of the quantity
+    {|dnk|/maxGrad}. The weight is zero if {v > 1.0},  else it is {1 - v^2}. */
+  
+void pst_proc_map_compute_gradient
+  ( pst_proc_map_zfunc_t *func,
+    r2_t p,
+    uint32_t NS,
+    double ws[],
+    double xyScale,
+    bool_t numGrad, /* Use numeric gradient? */
+    double maxGrad,
+    double maxGDiff,
+    r2_t *dz_P,
+    float *w_P
+  );
+  /* Computes the mean gradient of the height field defined by {func}
+    at the point {p} of {func's} domain. 
+    
+    The result {dz}, returned in {*dz_P}, can be obtained in two ways, 'numeric'
+    or 'analytic', as determined by the {numGrad} flag. 
+    
+    The numeric gradient is obtained by computing the height {Z(X,Y)}
+    with {func} at a grid of {NS×NS} sampoints {(X,Y)} around {p}, with
+    weights {ws[0..NS-1]}; computing the numeric derivatives
+    {dnxk=dZ/dX} and {dnyk=dZ/dY} by divided differences between
+    adjacent sampoints; and averaging these numeric derivatives to
+    obtain the final numeric gradient {dnz=(dnzx,dnzy)}.
+    
+    The 'analytic' gradient is obtained by computing the analyitc
+    derivatives {daxk=dZ/dX} and {dayk=dZ/dY} at each sampoint, using
+    {func}, and taking the average of those valus with the sampoint
+    weights, obtaining the average analytic gradient {daz=(dazx,dazy)}.
+    
+    The procedure computes a reliability weight {w} that is returned in
+    {*w_P}. Basically, the weight is zero if the numeric gradient of {Z}
+    between two sampoints exceeds {maxGrad} in modulus, or the numeric
+    and analytic gradients differ by more than {mxGradDiff} in modulus.
+    
+    More precisely, the procedure first notes the maximum value {vn} of
+    the quantity {|dnz|/maxGrad}. Then it computes the
+    quantity {va = |dnz-daz|/maxGDiff}. Finally, it takes
+    {v = hypot(vn,va)}. The weight is zero if {v > 1.0}, else it is {1 -
+    v^2}. */
+    
+/* CREATING IMAGES FROM PROCEDURAL MAPS */
+
+/* The procedures in this section assumes that the interesting part of the
+  function occurs when the argument {p=(x,y)} spans the signed unit square
+  {U^2=[-1_+1]×[-1_+1]} of the plane. Therefore, when calling the
+  {func} procedure, the image domain coordinates {P=(X,Y)} are
+  uniformly scaled and shifted, in such a way that the
+  rectangle {[0 _ NX] × [0 _ NY]} is mapped to a rectangle
+  that snugly surrounds the square {U^2} and is concentric with
+  it. */
+    
+float_image_t* pst_proc_map_make_height_map
   ( pst_proc_map_zfunc_t *func,
     int32_t NX,
     int32_t NY,
-    pst_proc_map_sampling_t smpZ,
-    pst_proc_map_sampling_t smpG,
-    bool_t numGrad,
-    double maxGDiff,
-    double sigmaG,
-    double sigmaW,
-    float_image_t *IZ, 
-    float_image_t *IG,
-    float_image_t *IW,
-    float_image_t *IN
+    uint32_t NS,
+    double ws[],
+    double maxGrad
   );
-  /* 
-    Create a height map {Z(X,Y)}, the associated gradient map {G(X,Y)
-    = dZ/dX(X,Y),dZ/dY(X,Y)}, a reliability weight map {W(X,Y)}, and a
-    normal map {N(X,Y)}, from the given function {func}.
+  /* Creates a height map {IZ} from the height function {Z(X,Y)} defined
+    by the procedure {func}.
     
-    All images refer to the same grid {M} with unit square cells,
-    spanning a rectangle {[0 _ NX]×[0 _ NY]}.
+    The {IZ} image will have 2 channels, {NX+1} columns, and {NY+1} rows
+    (for consistency with {pst_proc_map_make_slope_map} below). 
     
-    The height {Z(X,Y)} is nominally computed at the grid vertex
-    {(X,Y)} and stored in cell {[X,Y]} of the grid of image {IZ},
-    which must be non-NULL and must have {NX+1} columns and {NY+1} rows.
-    The sampling is controlled by {smpZ}.
-    
-    If {IG} is not null, the procedure stores into {*IG} the gradient
-    {G(X,Y)} of the height function {Z(X,Y)}. The {numGrad} parameter
-    specifies how the gradient is computed. If {numGrad} is false, the
-    procedure samples the analytic gradient as computed by {func} in
-    the neighborhood of the cell centers, using the sub-sampling
-    points and weights defined by {smpG}. If {numGrad} is true, each
-    pixel of {IG} is set to a numeric gradient estimate computed by
-    averaging the differences between the {IZ} heights at the four
-    corners of the corresponding grid cell. In either case, the float image {IG} must
-    have two channels (for the X and Y derivatives), {NX} columns, and
-    {NY} rows.
-    
-    If {IW} is not null, the procedure fills {*IW} with the gradient
-    reliability weights. If {numGrad} is true, the weights {IW[X,Y]}
-    are 1 everywhere. If {numGrad} is false, each weight {IW[X,Y]} is
-    computed by comparing the analytic gradient {IG[X,Y]} with the
-    numerical gradient computed from the {IZ} map. In either case, the
-    image {IW} must have one channel, {NX} columns and {NY} rows.
-    
-    The parameters {sigmaG} and {sigmaW} control the amount of noise
-    to be introduced in the gradient and weight maps, respectively.
-    
-    If {IN} is not null, the procedure stores into {*IN} the unit
-    normal vectors that correspond to the gradients stored in {IG}
-    (after adding the noise, if any). The {Z} coordinate of the normal
-    vector will be always non-negative. The image {IN} must have three
-    channels (for the X, Y, and Z coordinates of the normal vector),
-    {NX} columns, and {NY} rows.
-    
-    The procedure assumes that the interesting part of the function
-    occurs when the argument {p=(x,y)} spans the signed unit square
-    {U^2=[-1_+1]×[-1_+1]} of the plane. Therefore, when calling the
-    {func} procedure, the image domain coordinates {P=(X,Y)} are
-    uniformly scaled down and shifted, in such a way that the scaled
-    grid {M} snugly surrounds the square {U^2} and is concentric with
-    it. The function values returned by {func} are then scaled up by
-    the same factors, so that the computed gradient remains consistent
-    with the image coordinate system. */
-  
-pst_proc_map_sampling_t pst_proc_map_make_sampling_tables(int32_t L, int32_t N);
-  /* Returns a sampling table {smp} for the given sampling parameters.
-    Allocates {smp->d} and {smp->w} and fills them with proper values
-    as specified by {L} and {N}. The parameter {L} defines the width
-    of the sampling kernel (in pixels) and its degree. Current values
-    are {0..3}:
-      
-      * {L=0} - point sampling, assumes {N=1}.
-      * {L=1} - uniform over one pixel.
-      * {L=2} - linear tent over 2 pixels.
-      * {L=3} - quadratic bell over 3 pixels. */
+    The height value of {IZ[0,x,y]} and the reliability weight
+    {IZ[1,x,y]}, for {x} in {0..NX} and {y} in {0..NY}, will be obtained
+    by {pst_proc_map_compute_height}, with {p} being the grid VERTEX
+    {(x,y)} mapped to {func}'s domain. */
 
-void pst_proc_map_free_sampling_tables(pst_proc_map_sampling_t *smp);
-  /* Reclaims the space used by the internals tables of {*smp} (but NOT
-     the {*smp} record itself). */
-
-double pst_proc_map_compute_height_value
+float_image_t* pst_proc_map_make_slope_map
   ( pst_proc_map_zfunc_t *func,
-    r2_t p,
-    pst_proc_map_sampling_t *smp,
-    double pxPerUnit
-  );
-  /* Computes the height field defined by {func} at the grid corner point {p}.
-    
-    Evaluates {f} at a grid of {N}×{N} subsampling points near 
-    {p} with displacements {smp->d[0..N-1]/pxPerUnit} and averages them with the
-    weights {smp->w[0..N-1]}. The count {N} is {smp->N}, which must be odd. */
-  
-r2_t pst_proc_map_compute_analytic_pixel_gradient
-  ( pst_proc_map_zfunc_t *func,
-    r2_t p,
-    pst_proc_map_sampling_t *smp,
-    double pxPerUnit
-  );
-  /* Computes the mean gradient of the height field defined by {func}
-    at the point {p}. 
-    
-    Evaluates the gradient of {f} at a grid of {N}×{N} subsampling points near 
-    {p} with displacements {r*smp->d[0..N-1]/pxPerUnit} and averages them with the
-    weights {smp->w[0..N-1]}. The count {N} is {smp->N}, which must be odd. */
-
-r2_t pst_proc_map_compute_numeric_pixel_gradient
-  ( double f00,
-    double f10,
-    double f01,
-    double f11
-  );
-  /* Estimates the gradient of the height in a pixel by numerical
-    differences from the four height values at the corners of the
-    pixel: {f00} at bottom left, {f10} at bottom right, {f01} at top
-    left, and {f11} at top right. */
-
-double pst_proc_map_compute_pixel_weight
-  ( pst_proc_map_zfunc_t *func,
-    r2_t *dza,
-    r2_t *dzn,
+    int32_t NX,
+    int32_t NY,
+    uint32_t NS,
+    double ws[],
+    bool_t numGrad, /* Use numeric gradient? */
+    double maxGrad,
     double maxGDiff
   );
-  /* Computes the reliability weight of a pixel given the average 
-    gradient {*dza} in the pixel and the numerical gradient {*dzn}.
-    The weight depends on the Euclidean norm {e} of the difference between the 
-    two gradients, and is zero if {e >= maxGDiff}. */
-
-void pst_proc_map_perturb_gradient(r2_t *dz, double sigma);
-  /* Adds to each component of {*dz} a random value
-    with Gaussian distribution, mean 0 and deviation {sigma}. */
-
-void pst_proc_map_perturb_weight(double *w, double sigma);
-  /* Multiplies {*w} by {max(0,1-S)} where {S} is a 
-    random value with log-Gaussian distribution with mean of log 0 
-    and deviation of log {sigma}. */
+  /* Computes a slope map {IG} from the height function {Z(X,Y)} defined
+    by the procedure {func}.
+    
+    The slope map image {IG} will have three channels, {NX} columns, and
+    {NY} rows.  The procedure stores into {IG[0..2,x,y]} the
+    estimated derivatieves {dZ/dX} and {dZ/dY} (numeric or analytic, as
+    specified by {numGrad}) and the reliability 
+    weight {w}, as computed by {pst_proc_map_compute_gradient} with {p}
+    being the CENTER of the pixel {[x,y]} -- that is, {(x+0.5,y+0.5)} --
+    mapped to the domain of {func}. */
 
 void pst_proc_map_function_00(r2_t p, double *z, r2_t *dz); /* 00 "zeflat" Constant function (zero gradient). */
 void pst_proc_map_function_01(r2_t p, double *z, r2_t *dz); /* 01 "ramp10" Linear ramp in the X direction. */
@@ -221,7 +211,7 @@ void pst_proc_map_function_wave(r2_t *p, r2_t *f, double phase, double *z, r2_t 
   /* Computes the generic wave function {*z = 0.5*sin(2*PI*dot(p,f) + phase)}.
     Also computes its gradient {*dz}. */
 
-void pst_proc_map_function_babel(r2_t *p, double RI, double RO, double N, double EF, double *z, r2_t *dz);
+void pst_proc_map_function_babel(r2_t *p, double RI, double RO, double NS, double EF, double *z, r2_t *dz);
   /* Computes the generic Tower of Babel function {*z} with inner radius {RI},
     outer radius {RO}, a ramp with {N} full turns. Also computes its gradient
     {*dz}.  

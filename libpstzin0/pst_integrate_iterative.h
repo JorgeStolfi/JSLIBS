@@ -2,7 +2,7 @@
 #define pst_integrate_iterative_H
 
 /* procedures for integratings slope maps by smultiscale ieration. */
-/* Last edited on 2025-01-08 00:17:58 by stolfi */
+/* Last edited on 2025-01-15 14:30:54 by stolfi */
 
 #include <bool.h>
 #include <r2.h>
@@ -17,29 +17,29 @@
 #include <pst_integrate.h>
 
 void pst_integrate_iterative
-  ( float_image_t *IG, 
-    float_image_t *IW, 
+  ( float_image_t *G, 
+    float_image_t *W, 
     bool_t keepNull,
-    float_image_t *IZ, 
+    float_image_t *Z, 
+    float_image_t *U,
     uint32_t maxIter,
     double convTol,
     bool_t topoSort,
-    float_image_t **OZP,
-    float_image_t **OWP,
     bool_t verbose,
+    int32_t level,
+    pst_imgsys_report_sys_proc_t *reportSys,
     uint32_t reportStep,
     pst_integrate_report_heights_proc_t *reportHeights
   );
-  /* Computes a depth map {OZ} given the slope map {IG}, where channel
-    0 is {dZ/dX} and channel 1 is {dZ/dY}. The {OZ} image is returned
-    in {*OZP}; it will be allocated by the procedure and will be
-    bigger than {IG} by one row and one column.
+  /* Fills {Z} with the depth map that best matches the slope map {G}, where channel
+    0 is {dZ/dX} and channel 1 is {dZ/dY}.  The image {Z} must have one channel and
+    must be bigger than {G} by one col and one row
     
-    If {IW} is not NULL, it is taken to be a single-channel weight map, 
-    with the same dimensions as the slope map.
+    If {W} is not NULL, it is taken to be a single-channel weight map, 
+    with the same dimensions as the slope map {G}.
     
-    The image {OZ} is computed by solving a set of linear equations,
-    constructed from {IG} and {IW} using {pst_integrate_build_system}
+    The height map {Z} is computed by solving a set of linear equations,
+    constructed from {G} and {W} using {pst_integrate_build_system}
     (q.v.).  
     
     If {keepNull} is true, the system is fudged so that any height map
@@ -53,32 +53,36 @@ void pst_integrate_iterative
     height map.
     
     The linear system is solved by the Gauss-Jordan iterative method.
-    If {IZ} is not {NULL}, it must be a height map, bigger than {IG}
-    by one col and one row, which will be used as the initial guess
+    On entry, the contents of, which will be used as the initial guess
     for the iteration. Otherwise the initial guess will be all zeros.
     The iteration will stop when the maximum change in
     any height value is less than {convTol}, or after {maxIter}
     iterations, whichever happens first. If {topoSort} is TRUE,
     solves the equations in order of increasing equation weight {wtot}.
     
-    IF {IW} and {OWP} are not {NULL}, the procedure also creates a weight map {OW}
-    for the result {OZ}, returned in {*OWP}. It will be a
-    single-channel map with the same size as {OZ}. Each sample of {OW}
-    will be set to the weight {wtot} of the equation that defines the
-    corresponding sample of {OZ}.
+    IF {U} is not {NULL}, it must be a single-channel weight map with
+    the same size as the height map {Z}. Each sample of {U} will be
+    set to the weight {wtot} of the equation that defines the
+    corresponding sample of {Z}.  Pixels of {Z} that end up with no equation 
+    (if {keepHoles} is false) are set to zero.
 
     If {verbose} is TRUE, prints a report of the interations. 
     
+    if {reportSys} is not {NULL}, the procedure calls {reportSys}
+    once after building the system.
+    
     If {reportHeights} is not null, the procedure calls
-    {reportHeights(0,iter,change,final,OZ)} one or more times. Here
+    {reportHeights(level,iter,change,final,OZ)} one or more times. Here
     {iter} is the number of complete Gauss-Seidel or Gauss-Jacobi
     iterations performed before the call; and {changeZ} is the max
     absolute change in any {OZ} sample since the previous iteration
-    (meaningless when {iter=0}). The procedure {reportHeights} is always
+    (meaningless when {iter=0}).  The {level} argument is used only here.
+    
+    The procedure {reportHeights} is always
     called once with {final=TRUE} after the last iteration, and once
     with {iter=0} and {final=FALSE} before the first iteration. If
     {reportStep} is not zero, {reportHeight} is also called with
-    {final=FALSE} before each iteration whose index {iter} is a positive
-    multiple of {reportStep}. */
+    {final=FALSE} before each iteration whose index {iter} is less than 
+    {reportStep} or a positive multiple thereof.  */
 
 #endif

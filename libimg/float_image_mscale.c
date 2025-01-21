@@ -1,5 +1,5 @@
 /* See {float_image_mscale.h}. */
-/* Last edited on 2024-12-05 00:58:08 by stolfi */
+/* Last edited on 2025-01-12 15:33:51 by stolfi */
 
 #include <assert.h>
 #include <limits.h>
@@ -168,8 +168,9 @@ char *float_image_mscale_file_name(char *filePrefix, int32_t level, int32_t iter
     return fileName;
   }
 
-void float_image_mscale_write_file(float_image_t *M, char *filePrefix, int32_t level, int32_t iter, char *tag, int32_t indent)
+void float_image_mscale_write_file(float_image_t *M, char *filePrefix, int32_t level, int32_t iter, char *tag)
   { char *fileName = float_image_mscale_file_name(filePrefix, level, iter, tag, "fni");
+    int32_t indent = (level < 0 ? 0 : 2*level);
     fprintf(stderr, "%*sWriting %s ...", indent, "", fileName);
     FILE* wr = open_write(fileName, FALSE);
     float_image_write(wr, M);

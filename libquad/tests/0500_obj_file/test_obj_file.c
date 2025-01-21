@@ -2,7 +2,7 @@
 #define PROG_DESC "tests the routines from {obj_file_read.h} and {obj_file_write.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-22 11:24:25 by stolfi */ 
+/* Last edited on 2025-01-09 22:56:16 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2024  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
@@ -101,11 +101,11 @@ int32_t main(int32_t argc, char **argv)
       { int32_vec_t *FVk = &(D->FV.e[kf]);
         int32_vec_t *FTk = &(D->FT.e[kf]);
         int32_vec_t *FNk = &(D->FN.e[kf]);
-        uint32_t nc = FVk->ne;
-        fprintf(stderr, "  face %6d has %6d corners:", kf, nc);
-        assert(FTk->ne == nc);
-        assert(FNk->ne == nc);
-        for (uint32_t kc = 0;  kc < nc; kc++)
+        uint32_t NC = FVk->ne;
+        fprintf(stderr, "  face %6d has %6d corners:", kf, NC);
+        assert(FTk->ne == NC);
+        assert(FNk->ne == NC);
+        for (uint32_t kc = 0;  kc < NC; kc++)
           { assert(FVk->e[kc] >= 0);
             fprintf(stderr, " %d", FVk->e[kc] + 1);
             if ((FTk->e[kc] >= 0) || (FNk->e[kc] >= 0))

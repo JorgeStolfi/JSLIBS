@@ -1,4 +1,4 @@
-/* Last edited on 2024-12-24 18:57:53 by stolfi */
+/* Last edited on 2025-01-14 17:26:51 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #ifndef pst_img_graph_integrate_H
@@ -9,66 +9,37 @@
 #include <r2.h>
 #include <float_image.h>
 
-#include <pst_img_graph.h>
 #include <pst_imgsys.h>
-
 #include <pst_img_graph.h>
 
-pst_imgsys_t *pst_img_graph_build_integration_system
+typedef void pst_img_graph_integrate_report_data_proc_t(int32_t level, pst_img_graph_t *g); 
+  /* Type of a client-given procedure that may be called by recursive integrators
+    to report the input graph at each scale. */   
+
+pst_imgsys_t *pst_img_graph_build_system
   ( pst_img_graph_t* g,
-    double *iW,
-    int32_t NX_Z,
-    int32_t NY_Z,
-    int32_t **ref_tab
+    int32_t NX,
+    int32_t NY,
+    int32_t kz_from_kv[],
+    bool_t verbose
   );
-
-void pst_img_graph_solve_system
-  ( pst_img_graph_t *g,
-    pst_imgsys_t *S,
-    double *iZ,
-    double *iW,
-    int32_t *ref_tab,
-    uint32_t maxIter, 
-    double convTol, 
-    bool_t para, 
-    bool_t szero, 
-    bool_t verbose 
-  );
-
-void pst_img_graph_integration
-  ( pst_img_graph_t *g,
-    double *iZ,
-    double *iW,
-    uint32_t maxIter,
-    double convTol, 
-    bool_t para, 
-    bool_t szero, 
-    bool_t verbose,
-    uint32_t level,
-    float_image_t *OZ, /*debug only*/
-    float_image_t *RZ,
-    char* out_prefix
-  );
-
-void pst_img_graph_put_solution_into_image
-  ( pst_img_graph_t* g,
-    double *iZ,
-    float_image_t* OZ
-  );
-
-void pst_img_graph_put_error_into_image
-  ( pst_img_graph_t *g,
-    double *iZ,
-    double *iW,
-    float_image_t *RZ,
-    float_image_t *OZ
-  );
-
-uint32_t *pst_img_graph_sort_equations
-  ( pst_imgsys_t *S,
-    int32_t *ref_tab,
-    double *iW ,
-    uint32_t NV 
-  );
+  /* Builds an equation system {S} from the graph {g}. 
+  
+    Each vertex of {g} with index {kv} has a corresponding (unknown)
+    height {Z[kz]} and a corresponding equation {S.eq[kz]}; except for
+    vertices marked {DELETED} and vertices of degree zero. The indices
+    {kz} are assigned sequentially in {0..S.N-1}, skipping the omitted
+    vertices. The correspondence is returned in the table
+    {kz_from_kv[0..g.NV-1]}, with {-1} marking the omitted vertices A
+    vertex is considered deleted if and only if {g.vdata[kv].vmark} is
+    {DELETED}.
+    
+    The fields {S.NX} and {S.NY} are set to {NX} and {NY}, respectively.
+    The pixel indices {x,y} stored in each vertex data record of {g}
+    must be either {-1} or in the ranges {0..NX-1} and {0..NY-1},
+    respectively, and are stored in {S.col[kz]} and {S.row[kz]}, and
+    used to build the inverse table {S.uid[0..S->N-1]}.
+    
+    The edge weights of {g} must be all finite and positive. */
 
 #endif

@@ -2,7 +2,7 @@
 #define PROG_DESC "Merges several registered images with focus blur at different heights"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-20 18:13:28 by stolfi */ 
+/* Last edited on 2025-01-18 12:53:48 by stolfi */ 
 /* Created on 2023-01-19 by J. Stolfi, UNICAMP */
 
 #define test_mfok_merge_images_COPYRIGHT \
@@ -187,20 +187,19 @@ int32_t main (int32_t argc, char **argv)
     return 0;
   }
     
-  
 mfok_result_t* mfmi_read_reference_result(char *inPrefix)
   { 
     /* Read {sVal}, the unblurred true scene colors, for comparison: */
     float_image_t *sVal = multifok_test_read_scene_color_image(o->inPrefix, "-sharp");
-    float_image_check_size(sVal, NC, NX, NY);
+    float_image_check_size(sVal, NC, NX, NY, "bad input image");
 
     /* Read {hAvg}, the unblurred true scene {Z} map, for comparison: */
     float_image_t *hAvg = multifok_test_read_hAvg??_image(o->inPrefix, "-sharp");
-    float_image_check_size(hAvg, 1, NX, NY);
+    float_image_check_size(hAvg, 2, NX, NY, "bad height map");
    
     /* Read {hDev}, the map with deviation of {Z} inside each pixel: */
     float_image_t *hDev = multifok_test_read_hDev_image(o->inPrefix, "-sharp"); 
-    float_image_check_size(hDev, 1, NX, NY);
+    float_image_check_size(hDev, 1, NX, NY, "bad height deviation map");
   }
   
 void mfmi_process_image_stack

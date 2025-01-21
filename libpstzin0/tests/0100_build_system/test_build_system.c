@@ -4,7 +4,7 @@
 
 #define slope_to_height_C_COPYRIGHT "Copyright © 2024 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2025-01-07 22:18:02 by stolfi */
+/* Last edited on 2025-01-15 06:46:22 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -209,12 +209,12 @@ void write_system(pst_imgsys_t *S, char *fname)
 
 void write_system_weights(pst_imgsys_t *S, char *fname)
   { demand(fname != NULL, "file name not given");
-    float_image_t *wimg = float_image_new(1, S->NX, S->NY);
-    pst_imgsys_extract_system_weight_image(S, wimg);
+    float_image_t *U = float_image_new(1, S->NX, S->NY);
+    pst_imgsys_extract_system_eq_tot_weight_image(S, U, 0.0);
     double expoEnc = 1.0;
     double bias = 0.0;
     bool_t verbose = TRUE;
-    float_image_write_gen_named(fname, wimg, image_file_format_PNG, 0.0, 1.0, expoEnc, bias, verbose);
+    float_image_write_gen_named(fname, U, image_file_format_PNG, 0.0, 1.0, expoEnc, bias, verbose);
     fprintf(stderr, "\n");
   }
 

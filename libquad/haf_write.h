@@ -2,7 +2,7 @@
 #define haf_write_H
 
 /* Writing the half-edge representation of 2D meshes. */
-/* Last edited on 2024-12-22 10:33:48 by stolfi */
+/* Last edited on 2025-01-09 23:08:04 by stolfi */
 
 #define half_write_H_copyright \
   "Copyright (C) 2023 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
@@ -26,33 +26,33 @@ void haf_write_arc(FILE *wr, haf_arc_t a, uint32_t width);
 
 void haf_write_map
   ( FILE *wr,
-    haf_edge_count_t ne,
-    haf_arc_t a[],
+    haf_edge_count_t NE,
+    haf_edge_t ed[],
     haf_edge_id_t eid0,
-    haf_arc_count_t nr,
+    haf_arc_count_t NR,
     haf_arc_t root[]
   );
   /* Writes to {wr} a description of the half-edge structure.
 
-    The parameter {a[0..ne-1]} must list exactly one arc on each undirected edge.
-    The edge id of arc {a[ke]} must be {eid0 + ke}. 
+    The parameter {ed[0..NE-1]} must list all the undirected edges of the 
+    structure, with no repetitions.   The id of edge {ed[ke]} must be {eid0 + ke}. 
 
-    The arcs {root[0..nr-1]} are selected arcs that are supposed to be 
-    handles to the structure.  Typically they comprise eactly one arc
-    on each connected component of the structure.
+    The arcs {root[0..NR-1]} are optional selected arcs that are
+    supposed to be handles to the structure. Typically they comprise
+    exactly one arc on each connected component of the structure.
     
     The file format is a header with four lines
 
       "begin {haf_write_FILE_TYPE} (format of {haf_write_FILE_VERSION})"
-      "edges = {ne}"
+      "edges = {NE}"
       "edge_id_min = {eid0}"
 
-    followed by {ne} lines with "{ke} {a[ke].lnext} {a[ke].sym.lnext}",
-    for {ke} in {0..ne-1]}, followed by a line
+    followed by {NE} lines with "{ke} {a[ke].lnext} {a[ke].sym.lnext}",
+    for {ke} in {0..NE-1]}, followed by a line
     
-       "roots = {nr}"
+       "roots = {NR}"
 
-    then {nr} lines with "{kr} {root[kr]}" for {kr} in {0..nr-1},
+    then {NR} lines with "{kr} {root[kr]}" for {kr} in {0..NR-1},
     then finally the file trailer line 
    
       "end {haf_write_FILE_TYPE}"

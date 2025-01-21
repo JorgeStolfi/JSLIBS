@@ -1,6 +1,6 @@
-/* Last edited on 2025-01-07 08:12:06 by stolfi */
+/* Last edited on 2025-01-11 14:55:47 by stolfi */
 
-void pst_slope_map_build_integration_system_2(float_image_t *IG, float_image_t *IW, imgsys_t* S)
+void pst_slope_map_build_system_2(float_image_t *IG, float_image_t *IW, imgsys_t* S)
   {
 
     /* Get/check the sizes of the slope maps: */

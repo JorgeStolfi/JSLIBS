@@ -2,7 +2,7 @@
 #define PROG_DESC "checks the {pst_{height,slope}_map_{expand,reduce}.h} routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-23 09:23:37 by stolfi */
+/* Last edited on 2025-01-17 04:26:12 by stolfi */
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_maps_expand_reduce_C_COPYRIGHT \
@@ -87,34 +87,39 @@ void test_r_e_slope_map(int32_t nfunc);
   /* Tests {pst_slope_map_expand}, {pst_slope_map_reduce}.  The integer {nfunc} is 
     the iteration number. Output files will be called "out/{nfunc}-{NX}-{NY}-{tag}.fni"
     where {nfunc} is a procedural image ID number (see {pst_proc_map.h}),
-    {NX,NY} are the dimensions of the test map, and {tag} is "IG", "IW", "JG", etc. */
+    {NX,NY} are the dimensions of the test map, and {tag} is "IG", "JG", etc. */
 
-void make_maps(int32_t NX, int32_t NY, zfunc_t func, double maxGDiff, float_image_t **ZP, float_image_t **GP, float_image_t **WP);
-  /* Creates a height map {*ZP} of size {(NX+1)×(NY+1)} from a procedural image {func}. 
-    Also creates its gradient map {*GP} and the corresponding weight map {*WP},
-    both with size {NX×NY}. The {maxGDiff} is the threshold that defines
-    the weight map (see {pst_proc_map_make_images}).  Allocates the images internally. If any of
-    {ZP,GP,WP} is null, omits the corresponding map. */
+void make_maps
+  ( int32_t NX,
+    int32_t NY,
+    zfunc_t func,
+    double maxGDiff,
+    float_image_t **ZP,
+    float_image_t **GP
+  );
+  /* Creates a height map {*ZP} of size {(NX+1)×(NY+1)} from a
+    procedural image {func}. Also creates its gradient map {*GP}, both
+    with size {NX×NY}. The {maxGDiff} is the threshold that defines the
+    weight map (see {pst_proc_map_make_images}). Allocates the images
+    internally. If any of {ZP,GP} is null, omits the corresponding
+    map. */
 
 void compare_and_write_slope_maps
   ( int32_t nfunc,
     float_image_t *IZ,
     float_image_t *IG, 
-    float_image_t *IW, 
     float_image_t *JG, 
-    float_image_t *JW, 
     float_image_t *KZ, 
-    float_image_t *KG,
-    float_image_t *KW
+    float_image_t *KG
   );
-  /* Takes a gradient map {IG} and its weight {IW}, a reduced version {JG,JW}
-     of the same, and a reference image {KG,KW} for {JG,JW}. Writes all
-     images and also the difference maps {DG=JG-KG} and {DW=JW-KW}.  The parameter {nfunc} is the 
+  /* Takes a gradient map {IG}, a reduced version {JG}
+     of the same, and a reference image {KG} for {JG}. Writes all
+     images and also the difference maps {DG=JG-KG}.  The parameter {nfunc} is the 
      function ID used for file names. All images are written to files 
      "out/{nfunc}-{NX}-{NY}-{tag}.fni" where {NX,NY} are the dimensions of {IG},
      and {tag} identifies the map. */
 
-void write_map(float_image_t *M, int32_t nfunc, int32_t NX,int32_t NY, char *tag);
+void write_map(float_image_t *M, int32_t nfunc, int32_t NX, int32_t NY, char *tag);
   /* Writes the image {M} as a FNI file called "out/{nfunc}-{NX}-{NY}-{tag}.fni", where
     {nfunc} is formatted as 4 digits zero-filled.  The parameters {NX} and {NY} 
     need not be the dimensions of {M}. */
@@ -132,13 +137,11 @@ int32_t main(int32_t argc, char **argv)
     /* Create a test map: */
     float_image_t *IZ = NULL;
     float_image_t *IG = NULL;
-    float_image_t *IW = NULL;
     test_r_e_slope_map(o->function);
     test_r_e_height_map(o->function);
     fprintf(stderr, "\n");
     float_image_free(IZ);
     float_image_free(IG);
-    float_image_free(IW);
 
     /* Cleanup: */
     free(o); o = NULL;
@@ -149,8 +152,8 @@ void test_r_e_slope_map(int32_t nfunc)
   {
     fprintf(stderr, "--- testing slopes ---------------------------------------------------\n");
     /* Choose size: */
-    int32_t NX_I = int32_abrandom(10, 20);
-    int32_t NY_I = int32_abrandom(10, 20);
+    int32_t NXI = int32_abrandom(10, 20);
+    int32_t NYI = int32_abrandom(10, 20);
     /* Choose the function: */
     zfunc_t *func = pst_proc_map_function_generic(nfunc);  /* The function that defines the map. */
     double maxGDiff = NAN; /* Threshold for weight map definition. */
@@ -190,26 +193,20 @@ void test_r_e_slope_map(int32_t nfunc)
     /* Create full-size height, slope and weight maps: */
     float_image_t *IZ = NULL;
     float_image_t *IG = NULL;
-    float_image_t *IW = NULL;
-    make_maps(NX_I, NY_I, func, maxGDiff, &IZ, &IG, &IW);
+    make_maps(NXI, NYI, func, maxGDiff, &IZ, &IG);
     /* Shrink it: */
-    float_image_t *JG;
-    float_image_t *JW;
-    pst_slope_and_weight_map_shrink(IG, IW, &JG, &JW);
+    float_image_t *JG = pst_slope_map_shrink(IG);
     /* Make a reduced version of the height, slope, and weight maps: */
-    int32_t NX_J = (NX_I + 1)/2;
-    int32_t NY_J = (NY_I + 1)/2;
+    int32_t NX_J = (NXI + 1)/2;
+    int32_t NY_J = (NYI + 1)/2;
     float_image_t *KZ = NULL;
     float_image_t *KG = NULL;
-    float_image_t *KW = NULL;
-    make_maps(NX_J, NY_J, func, maxGDiff, &KZ, &KG, &KW);
+    make_maps(NX_J, NY_J, func, maxGDiff, &KZ, &KG);
     /* Compare and write: */
-    compare_and_write_slope_maps(nfunc, IZ, IG, IW, JG, JW, KZ, KG, KW);
+    compare_and_write_slope_maps(nfunc, IZ, IG, JG, KZ, KG);
     fprintf(stderr, "----------------------------------------------------------------------\n");
     float_image_free(JG);
-    float_image_free(JW);
     float_image_free(KG);
-    float_image_free(KW);
   }
   
 void test_r_e_height_map(int32_t nfunc) { }
@@ -218,46 +215,35 @@ void compare_and_write_slope_maps
   ( int32_t nfunc,
     float_image_t *IZ, 
     float_image_t *IG, 
-    float_image_t *IW, 
     float_image_t *JG, 
-    float_image_t *JW, 
     float_image_t *KZ,
-    float_image_t *KG,
-    float_image_t *KW
+    float_image_t *KG
   )  
   {
-    /* Dimensions of full-size maps: */
-    int32_t NX_I = (int32_t)IG->sz[1];
-    int32_t NY_I = (int32_t)IG->sz[2];
+    int32_t NCI, NXI, NYI;
+    float_image_get_size(IG, &NCI, &NXI, &NYI);
+    demand(NCI == 3, "gradient map has wrong depth");
     
     /* Dimensions of reduced reference map: */
-    int32_t NX_K = (int32_t)KG->sz[1];
-    int32_t NY_K = (int32_t)KG->sz[2];
+    int32_t NCK, NXK, NYK;
+    float_image_get_size(IG, &NCK, &NXK, &NYK);
+    demand(NCK == 3, "reduced gradient map has wrong depth");
     
-    /* Write the given height, slope, and weight maps: */
     /* Use the full dimensions to compose the filename: */
-    write_map(IZ, nfunc, NX_I, NY_I, "IZ");
-    write_map(IG, nfunc, NX_I, NY_I, "IG");
-    write_map(IW, nfunc, NX_I, NY_I, "IW");
-    write_map(JG, nfunc, NX_I, NY_I, "JG");
-    write_map(JW, nfunc, NX_I, NY_I, "JW");
-    write_map(KZ, nfunc, NX_I, NY_I, "KZ");
-    write_map(KG, nfunc, NX_I, NY_I, "KG");
-    write_map(KW, nfunc, NX_I, NY_I, "KW");
+    write_map(IZ, nfunc, NXI, NYI, "IZ");
+    write_map(IG, nfunc, NXI, NYI, "IG");
+    write_map(JG, nfunc, NXI, NYI, "JG");
+    write_map(KZ, nfunc, NXI, NYI, "KZ");
+    write_map(KG, nfunc, NXI, NYI, "KG");
     
     /* Compare the reduced gradient maps (shrunk and pristine): */
-    float_image_t *DG = float_image_new(2, NX_K, NY_K);
+    float_image_t *DG = float_image_new(3, NXK, NYK);
     float_image_mix_channels(1.0,JG,0, -1.0,KG,0, DG,0);
     float_image_mix_channels(1.0,JG,1, -1.0,KG,1, DG,1);
-    write_map(DG, nfunc, NX_I, NY_I, "DG");
-    
-    /* Compare the reduced weight maps (shrunk and pristine): */
-    float_image_t *DW = float_image_new(1, NX_K, NY_K);
-    float_image_mix_channels(1.0,JW,0, -1.0,KW,0, DW,0);
-    write_map(DW, nfunc, NX_I, NY_I, "DW");
+    float_image_mix_channels(1.0,JG,2, -1.0,KG,2, DG,2);
+    write_map(DG, nfunc, NXI, NYI, "DG");
     
     float_image_free(DG);
-    float_image_free(DW);
   }
   
 void write_map(float_image_t *M, int32_t nfunc, int32_t NX,int32_t NY, char *tag)
@@ -269,7 +255,14 @@ void write_map(float_image_t *M, int32_t nfunc, int32_t NX,int32_t NY, char *tag
     free(fname);
   }
 
-void make_maps(int32_t NX, int32_t NY, zfunc_t func, double maxGDiff, float_image_t **ZP, float_image_t **GP, float_image_t **WP)
+void make_maps
+  ( int32_t NX,
+    int32_t NY,
+    zfunc_t func,
+    double maxGDiff,
+    float_image_t **ZP,
+    float_image_t **GP
+  )
   {
     int32_t smoothGL = 2;
     int32_t smoothGN = 11;
@@ -280,13 +273,11 @@ void make_maps(int32_t NX, int32_t NY, zfunc_t func, double maxGDiff, float_imag
     bool_t numGrad = FALSE;
     double sigmaG = 0.0;
     double sigmaW = 0.0;
-    float_image_t *Z = float_image_new(1, NX+1, NY+1); /* Must be non-null. */
-    float_image_t *G = (GP == NULL ? NULL : float_image_new(2, NX, NY));
-    float_image_t *W = (WP == NULL ? NULL : float_image_new(1, NX, NY));
-    pst_proc_map_make_images(func, NX, NY, smpZ, smpG, numGrad, maxGDiff, sigmaG, sigmaW, Z, G, W, NULL);
+    float_image_t *Z = float_image_new(2, NX+1, NY+1); /* Must be non-null. */
+    float_image_t *G = (GP == NULL ? NULL : float_image_new(3, NX, NY));
+    pst_proc_map_make_images(func, NX, NY, smpZ, smpG, numGrad, maxGDiff, sigmaG, sigmaW, Z, G, NULL);
     if (ZP != NULL) { (*ZP) = Z; }
     if (GP != NULL) { (*GP) = G; }
-    if (WP != NULL) { (*WP) = W; }
     pst_proc_map_free_sampling_tables(&smpZ);
     pst_proc_map_free_sampling_tables(&smpG);
   }

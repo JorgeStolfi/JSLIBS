@@ -1,5 +1,5 @@
 /* See pst_fit_sphere.h */
-/* Last edited on 2009-02-28 13:19:12 by stolfi */ 
+/* Last edited on 2025-01-18 12:50:33 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -62,12 +62,12 @@ double pst_fit_sphere_and_lights
 
     int NC, NX, NY;
     float_image_get_size(NRM, &NC, &NX, &NY);
-    demand(NC == 3, "bad normal map");
+    demand(NC == 4, "bad normal map");
     
     int i;
     for (i = 0; i < NF; i++)
-      { float_image_check_size(IMGV->e[i], 1, NX, NY);
-        float_image_check_size(SYNV->e[i], 1, NX, NY);
+      { float_image_check_size(IMGV->e[i], 1, NX, NY, "mismatched input images");
+        float_image_check_size(SYNV->e[i], 1, NX, NY, "mismatched output sinthetic images");
       }
       
     /* Grab parameters in local variables {centerX,centerY,radius,stretchX,stretchY}: */
@@ -269,8 +269,8 @@ double pst_fit_sphere_diff_sqr
   { /* Get/check sizes: */
     int NC, NX, NY;
     float_image_get_size(AIMG, &NC, &NX, &NY);
-    float_image_check_size(BIMG, NC, NX, NY);
-    float_image_check_size(NRM, 3, NX, NY);
+    float_image_check_size(BIMG, NC, NX, NY, "bad {BIMG} image");
+    float_image_check_size(NRM, 4, NX, NY, "bad normal map");
     /* Compute sum of squared differences: */
     double d2sum = 0.0; /* Sum of squared differences between valid pixels. */
     double np = 0;      /* Number of valid pixels. */

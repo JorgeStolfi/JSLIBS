@@ -2,7 +2,7 @@
 #define PROG_DESC "Merges several registered images with focus blur at different heights"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-05 10:37:34 by stolfi */ 
+/* Last edited on 2025-01-18 12:53:58 by stolfi */ 
 /* Created on 2023-01-24 by J. Stolfi, UNICAMP */
 
 #define test_mfok_sort_stack_COPYRIGHT \
@@ -275,10 +275,10 @@ int32_t main (int32_t argc, char **argv)
     double zMax = o->zRange_hi;
     double zStep = o->zStep;
     int32_t NI = (int32_t)ceil((zMax - zMin + 0.0001*zStep)/zStep);
-    float_image_t *sVal[NI]; /* Sythetic images of scene with simulated focus blu##rring. */
+    float_image_t *sVal[NI];  /* Sythetic images of scene with simulated focus blu##rring. */
     float_image_t *grimg[NI]; /* Grayscale versions of {sVal[0..NI-1]}. */
-    float_image_t *shrp[NI]; /* Specify the actual sharpness of {sVal[k]} at each pixel. */
-    double zFoc[NI];         /* The {Z} coordinates of focus planes. */
+    float_image_t *shrp[NI];  /* Specify the actual sharpness of {sVal[k]} at each pixel. */
+    double zFoc[NI];          /* The {Z} coordinates of focus planes. */
     double zDep = o->focDepth; /* Depth of focus. */
     
     int32_t NC; /* Number of channels of {sVal[ki]}. */
@@ -292,23 +292,23 @@ int32_t main (int32_t argc, char **argv)
         if (ki == 0)
           { float_image_get_size(sVal[ki], &NC, &NX, &NY); }
         else
-          { float_image_check_size(sVal[ki], NC, NX, NY); }
+          { float_image_check_size(sVal[ki], NC, NX, NY, "mismatched output frame images"); }
 
         /* Convert to grayscale: */
         grimg[ki] = float_image_new(1, NX, NY);
         ??float_image_map_channels_RGB_to_YUV(sVal[ki], grimg[ki]);
 
         shrp[ki] = multifok_test_read_sharpness_image(o->inPrefix, zTag); 
-        float_image_check_size(shrp[ki], 1, NX, NY);
+        float_image_check_size(shrp[ki], 1, NX, NY, "mismatched output sharp image");
       } 
 
     /* Read {azimg}, the true scene {Z} map, for comparison: */
     float_image_t *azimg = multifok_test_read_zave_image(o->inPrefix, "-sharp");
-    float_image_check_size(azimg, 1, NX, NY);
+    float_image_check_size(azimg, 2, NX, NY, "bad height map");
    
     /* Read {dzimg}, the map with deviation of {Z} inside each pixel: */
     float_image_t *dzimg = multifok_test_read_zdev_image(o->inPrefix, "-sharp"); 
-    float_image_check_size(dzimg, 1, NX, NY);
+    float_image_check_size(dzimg, 1, NX, NY, "bad height deviation map");
 
     /* Process images: */
     mfss_process_image_stack

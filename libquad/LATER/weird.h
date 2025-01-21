@@ -2,7 +2,7 @@
 #define weird_H
 
 /* A data structure inspired on Weiler's radial edge for 2D pseudomanifolds. */
-/* Last edited on 2024-12-05 10:38:42 by stolfi */
+/* Last edited on 2025-01-09 23:20:21 by stolfi */
 
 #include <stdint.h>
 
@@ -319,11 +319,11 @@ void weird_set_edge_id(weird_flag_t a, weird_edge_id_t eid);
   
 /* DEBUGGING */
 
-void weird_check_topology(weird_edge_count_t ne, weird_flag_t a[], weird_edge_id_t eid0, bool_t verbose);
-  /* Expects that the vector {a[0..ne-1]} has one {weird_flag_t} record
+void weird_check_topology(weird_edge_count_t NE, weird_flag_t a[], weird_edge_id_t eid0, bool_t verbose);
+  /* Expects that the vector {a[0..NE-1]} has one {weird_flag_t} record
     out of every edge of the mesh.  
     Checks that the ids of flag {a[ke]} and {a[ke].cflip} are {2*(eid0+ke)} and {2(eid0+ke)+1}
-    for all {ke} in {0..ne-1}.  Checks that the {.lnext} operator is a permutation of 
+    for all {ke} in {0..NE-1}.  Checks that the {.lnext} operator is a permutation of 
     those records and their opposites, and that the {.cflip} operator is an involution 
     on those records and their syms, with no fixed point. */
 

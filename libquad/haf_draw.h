@@ -1,7 +1,7 @@
 #ifndef haf_draw_H
 #define haf_draw_H
 /* Generating EPS drawing of half-edge meshes and data structures. */
-/* Last edited on 2023-10-05 12:21:35 by stolfi */
+/* Last edited on 2025-01-09 23:15:55 by stolfi */
 
 #define half_draw_H_copyright \
   "Copyright (C) 2023 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
@@ -16,17 +16,17 @@
 /* DRAWING THE MESH ELEMENTS */
     
 typedef struct haf_draw_data_t
-  { int64_t ne;      /* Number of undirected edges. */
-    haf_arc_t edge; /* Natural arc on each edge, indexed {0..ne-1}. */
+  { int64_t NE;      /* Number of undirected edges. */
+    haf_arc_t edge; /* Natural arc on each edge, indexed {0..NE-1}. */
     uint64_t eid0;   /* Lowest edge ID. */
-    int64_t nv;      /* Number of vertices. */
-    uint64_t *iorg;  /* IDs of origin vertex of each arc. indexed {0..2*ne-1}. */
-    r3_t *vpos;      /* Coordinates of each vertex, indexed {0..nv-1}. */
-    bool_t *vshow;   /* Whether each vertex is to be drawn, indexed {0..nv-1}. */
-    int64_t nf;      /* Number of faces. */
-    uint64_t *ileft; /* ID of left face of each arc, indexed {0..2*ne-1}. */
-    r3_t *fctr;      /* Nominal center of each face, indexed {0..nf-1}. */
-    bool_t *fshow;   /* Whether each face center or record is to be shown, indexed {0..nf-1}. */
+    int64_t NV;      /* Number of vertices. */
+    uint64_t *iorg;  /* IDs of origin vertex of each arc. indexed {0..2*NE-1}. */
+    r3_t *vpos;      /* Coordinates of each vertex, indexed {0..NV-1}. */
+    bool_t *vshow;   /* Whether each vertex is to be drawn, indexed {0..NV-1}. */
+    int64_t NF;      /* Number of faces. */
+    uint64_t *ileft; /* ID of left face of each arc, indexed {0..2*NE-1}. */
+    r3_t *fctr;      /* Nominal center of each face, indexed {0..NF-1}. */
+    bool_t *fshow;   /* Whether each face center or record is to be shown, indexed {0..NF-1}. */
   } haf_draw_data_t;
   /* Data needed to draw the mesh or the records and pointers of a half-edge structure. */
 

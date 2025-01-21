@@ -2,7 +2,7 @@
 #define obj_file_H
 
 /* Common definitions for OBJ file reading and writing. */ 
-/* Last edited on 2024-12-22 10:00:44 by stolfi */
+/* Last edited on 2025-01-09 23:24:44 by stolfi */
 
 #define obj_file_H_copyright \
   "Copyright (C) 2024 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
@@ -34,11 +34,11 @@ typedef struct obj_file_data_t
         
     The components {V}, {T}, and {N} are lists of points or vectors in {\RR^3}.
     
-      {V.e[0..nv-1]} vertex coordinates (from "v" lines).
-      {T.e[0..nt-1]} texpoint coordinates (from "vt" lines).
-      {N.e[0..nn-1]} normal vectors (from "vn" lines).
+      {V.e[0..NV-1]} vertex coordinates (from "v" lines).
+      {T.e[0..NT-1]} texpoint coordinates (from "vt" lines).
+      {N.e[0..NN-1]} normal vectors (from "vn" lines).
       
-    where {nv = V.ne}, {nt = T.ne}, and {nn = N.ne}.
+    where {NV = V.ne}, {NT = T.ne}, and {NN = N.ne}.
       
     A /textpoint/ is a texture mapping point, a point in the domain of
     some 2D or 3D texture image.
@@ -48,10 +48,10 @@ typedef struct obj_file_data_t
     there.  Each non-{NULL} label is separately allocated on the heap.
     
     The parameters {FV}, {FT}, and {FN} are tables that specify the
-    attributes of each corner of each face. The number of faces {nf} is
+    attributes of each corner of each face. The number of faces {NF} is
     assumed to be {FV.ne} which should be equal to {FT.ne} and {FN.ne}.
     
-    For each {i} in {0..nf-1}, element {FV.e[i]} is the list of the
+    For each {i} in {0..NF-1}, element {FV.e[i]} is the list of the
     indices into {V.e} of the vertices on the border of face {i}.
     Likewise, {FT.e[i]} is the list of indices into {T.e} of the
     texpoints at those corners, and {FN.e[i]} is the list of indices
@@ -65,9 +65,9 @@ typedef struct obj_file_data_t
       {FT.e[i].e[j]} is the index into {T.e} of the texpoint of corner {j} of face {i}.
       {FN.e[i].e[j]} is the index into {N.e} of the normal of corner {j} of face {i}.
       
-    The vertex index {FV.e[i].e[j]} must be in the range {0..nv-1}.
+    The vertex index {FV.e[i].e[j]} must be in the range {0..NV-1}.
     The texpoint index {FT.e[i].e[j]} must be either in the range
-    {0..nt-1}, or {-1} if no texpoint was specified for that corner.
+    {0..NT-1}, or {-1} if no texpoint was specified for that corner.
     Similarly the normal index {FN.e[i].e[j]} must be either in the
     range {0..n-1}, or {-1} if no normal was specified for that
     corner.

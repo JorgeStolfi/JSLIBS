@@ -71,10 +71,10 @@
 typedef struct options_t{
   char* graphPrefix;
   char* errFile;
-  long int NX,NY;
+  int32_t NX,NY;
   char* outPrefix;
   r2_t removeVertex;
-  long int nWeights;
+  int32_t nWeights;
   double* weights;
   double wmag;
 } options_t;
@@ -103,7 +103,7 @@ void printGRA(char* filename, pst_img_graph_t* g);
 
 void printGRA(char* filename, pst_img_graph_t* g){
   FILE* arq = open_write(filename,TRUE);
-  pst_img_graph_print(arq,g);
+  pst_img_graph_write(arq,g);
   fclose(arq);
 }
 
@@ -124,8 +124,8 @@ pst_img_graph_t* readGRA(char* filename){
   return g;
 }
 
-pst_img_graph_t* readGraph(char* inPrefix,char* tag,int level);
-pst_img_graph_t* readGraph(char* inPrefix,char* tag,int level){
+pst_img_graph_t* readGraph(char* inPrefix,char* tag,int32_t level);
+pst_img_graph_t* readGraph(char* inPrefix,char* tag,int32_t level){
   char* filename = NULL;
   char *filename = jsprintf("%s-%02d-%s.grf",inPrefix,level,tag);
   pst_img_graph_t* g = readGRA(filename);
@@ -136,8 +136,8 @@ pst_img_graph_t* readGraph(char* inPrefix,char* tag,int level){
 
 
 
-void writeGraph(pst_img_graph_t* g,char* outPrefix,char* tag, int level);
-void writeGraph(pst_img_graph_t* g,char* outPrefix,char* tag, int level){
+void writeGraph(pst_img_graph_t* g,char* outPrefix,char* tag, int32_t level);
+void writeGraph(pst_img_graph_t* g,char* outPrefix,char* tag, int32_t level){
   char* filename = NULL;
   char *filename = jsprintf("%s-%02d-%s.txt",outPrefix,level,tag);
   printGRA(filename,g);
@@ -151,7 +151,7 @@ void writeGraph(pst_img_graph_t* g,char* outPrefix,char* tag, int level){
 void compute_solution_weights(pst_img_graph_t *ig,double *iW,r2_t rem_coord,double *eW );
 void compute_solution_weights(pst_img_graph_t *ig,double *iW,r2_t rem_coord,double *eW){
 
-  long int i;
+  int32_t i;
   
   for(i = 0; i < ig->n; i++){
     pst_vertex_data_t* iv = &(ig->vertex[i]);
@@ -168,7 +168,7 @@ void normalize_solution_dist2(pst_img_graph_t* ig, double* iZ,double *eW){
   
   double sW = 0;
   double sWZ = 0;
-  long int i;
+  int32_t i;
   
   for(i = 0; i < ig->n; i++){
     pst_vertex_data_t* iv = &(ig->vertex[i]);
@@ -192,16 +192,16 @@ void normalize_solution_dist2(pst_img_graph_t* ig, double* iZ,double *eW){
   
 }
 
-options_t* parse_options(int argc, char **argv);
+options_t* parse_options(int32_t argc, char **argv);
 
 
-int main(int argc, char** argv){
+int32_t main(int32_t argc, char** argv){
 
   options_t* o = parse_options(argc,argv);
   
  
-  long int NX_Z = o->NX +1;
-  long int NY_Z = o->NY +1;
+  int32_t NX_Z = o->NX +1;
+  int32_t NY_Z = o->NY +1;
   
   char* ig_prefix = NULL;
   char *ig_prefix = jsprintf("%s-I",o->outPrefix);
@@ -214,9 +214,6 @@ int main(int argc, char** argv){
   
   assert(ig != NULL);
   fprintf(stderr,"Generated graph with %ld vertices and %ld edges\n",ig->n, ig->m);
-
-  
-  
   
   float_image_t* OZ = float_image_new(1,NX_Z,NY_Z);
   float_image_t* SZ = float_image_new(1,NX_Z,NY_Z);
@@ -227,23 +224,23 @@ int main(int argc, char** argv){
   double* jW = (double*)malloc(sizeof(double)*(ig->n));
   double* sZ = (double*)malloc(sizeof(double)*(ig->n));
   
-  long int maxIter = 50000;
+  int32_t maxIter = 50000;
   double convTol = 0.00000005;
-  int para = 0;
-  int szero = 1;
+  int32_t para = 0;
+  int32_t szero = 1;
   bool_t verbose = FALSE;
   pst_img_graph_integration(ig,iZ,iW,maxIter,convTol,para,szero,verbose,0,OZ,NULL,ig_prefix);
   
   
   pst_img_graph_t* jg = pst_img_graph_copy(ig);
     
-  long int ix = pst_img_graph_find_nearest_vertex(jg,o->removeVertex);
+  int32_t ix = pst_img_graph_find_nearest_vertex(jg,o->removeVertex);
   demand(ix != -1,"Invalid vertex index !");
   pst_vertex_data_t* v = &(jg->vertex[ix]);
   fprintf(stderr,"Removing vertex [%ld] = %ld = (%lf,%lf) with query (%lf %lf)\n",
 	  ix,v->id,v->coords.c[0],v->coords.c[1],o->removeVertex.c[0],o->removeVertex.c[1]
   );
-  long int n_edges = pst_img_graph_vertex_count_neighbours(jg,ix);
+  int32_t n_edges = pst_img_graph_vertex_out_degree(jg,ix);
   if(o->weights != NULL ){
     demand(n_edges == o->nWeights,"Number of weights differ from number of edges.");
   }
@@ -265,12 +262,12 @@ int main(int argc, char** argv){
   double sumW = 1.0e-300; /*safe*/
   double sumWE2 = 0;
   float_image_fill_channel(CZ,0,0);
-  long int i;
+  int32_t i;
   for(i = 0; i < ig->n; i++){
     pst_vertex_data_t* iv = &(ig->vertex[i]);
     if(iv->id != -1){
       if(iv->mark != MARK_VERTEX_REMOVED){
-	long int ix,iy;
+	int32_t ix,iy;
 	pst_img_graph_get_vertex_image_indices(&(iv->coords),NX_Z,NY_Z,&ix,&iy);
 	double err = iZ[i] - sZ[i];
 	double d2 = r2_dist_sqr(&(o->removeVertex),&(iv->coords));
@@ -312,7 +309,7 @@ int main(int argc, char** argv){
 }
 
 
-options_t* parse_options(int argc, char **argv){
+options_t* parse_options(int32_t argc, char **argv){
   argparser_t *pp = argparser_new(stderr, argc, argv);
   argparser_set_help(pp, PROG_NAME " version " PROG_VERS ", usage:\n" PROG_HELP);
   argparser_set_info(pp, PROG_INFO);
@@ -328,8 +325,8 @@ options_t* parse_options(int argc, char **argv){
   o->removeVertex.c[1] = argparser_get_next_double(pp, -DBL_MAX, DBL_MAX);
   
   argparser_get_keyword(pp, "-size");
-  o->NX = argparser_get_next_int(pp, 1, INT64_MAX );
-  o->NY = argparser_get_next_int(pp, 1, INT64_MAX );
+  o->NX = (int32_t)argparser_get_next_int(pp, 1, INT64_MAX );
+  o->NY = (int32_t)argparser_get_next_int(pp, 1, INT64_MAX );
   
    o->wmag = 1.0;
     if(argparser_keyword_present(pp,"-wmag")){
@@ -341,7 +338,7 @@ options_t* parse_options(int argc, char **argv){
   if(argparser_keyword_present(pp, "-weights")){
     o->nWeights = argparser_get_next_int(pp, 1, INT64_MAX );
     o->weights = (double*)malloc(sizeof(double)*(o->nWeights));
-    long int i;
+    int32_t i;
     for(i = 0; i < o->nWeights;i++){
       o->weights[i] = argparser_get_next_double(pp, 0, DBL_MAX);
     }

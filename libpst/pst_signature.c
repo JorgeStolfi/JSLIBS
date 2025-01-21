@@ -1,5 +1,5 @@
 /* See pst_signature.h */
-/* Last edited on 2024-12-24 19:11:09 by stolfi */ 
+/* Last edited on 2025-01-17 04:13:40 by stolfi */ 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -250,7 +250,7 @@ void pst_signature_normals_from_photos
             /* Save discrepancy in {DIF}: */
             float_image_set_sample(DIF, 0, x, y, (float)sqrt(dsq));
             /* Save normal vector in {NRM}: */
-            pst_normal_map_set_pixel(NRM, x, y, &nrm);
+            pst_normal_map_set_vector(NRM, x, y, &nrm);
             /* Save intrinisc color in {CLR}: */
             for (int32_t c = 0; c < NC; c++) { float_image_set_sample(CLR, (int32_t)c, x, y, clr[c]); }
           }

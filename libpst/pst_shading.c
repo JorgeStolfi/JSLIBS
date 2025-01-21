@@ -1,5 +1,5 @@
 /* See pst_shading.h */
-/* Last edited on 2025-01-04 03:59:32 by stolfi */
+/* Last edited on 2025-01-19 07:04:21 by stolfi */
 
 #include <stdio.h>
 #include <math.h>
@@ -149,11 +149,11 @@ float_image_t *pst_shading_difference_image
   )
   { int32_t NCA, NCB, NX, NY;
     float_image_get_size(AIMG, &NCA, &NX, &NY);
-    float_image_check_size(BIMG, -1, NX, NY);
+    float_image_check_size(BIMG, -1, NX, NY, "bad {BIMG} image");
     float_image_get_size(BIMG, &NCB, NULL, NULL);
     
-    if (MSK != NULL) { float_image_check_size(NRM, 1, NX, NY); }
-    if (NRM != NULL) { float_image_check_size(NRM, 3, NX, NY); }
+    if (MSK != NULL) { float_image_check_size(NRM, 1, NX, NY, "bad mask image"); }
+    if (NRM != NULL) { float_image_check_size(NRM, 4, NX, NY, "bad normal map"); }
     
     int32_t NCC = (NCA < NCB ? NCA : NCB);
 
@@ -173,7 +173,7 @@ float_image_t *pst_shading_difference_image
               }
             double w_nrm = 1.0;
             if (NRM != NULL)
-              { r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
+              { r3_t nrm = pst_normal_map_get_vector(NRM, x, y);
                 double len2 = r3_norm_sqr(&nrm);
                 w_nrm = (isfinite(len2) && len2 > 0 ? 1.0 : 0.0);
               }
@@ -220,24 +220,39 @@ void pst_shading_add_diffuse
     uint32_t NS = lmpv->ne;
 
     /* Get and check image sizes: */
-    int32_t NC, NX, NY;
-    float_image_get_size(IMG, &NC, &NX, &NY);
-    float_image_check_size(NRM, 3, NX, NY);
-    if (CLR != NULL) { float_image_check_size(CLR, NC, NX, NY); }
+    int32_t NCI, NXI, NYI;
+    float_image_get_size(IMG, &NCI, &NXI, &NYI);
+    demand(NCI <= 4, "image should have 1 to 4 channels");
+    float_image_check_size(NRM, 4, NXI, NYI, "bad normal map");
+    int32_t NCC = ((NCI == 1) || (NCI == 2) ? 1 : 3); /* Color channels, excluding alpha. */
+    if (CLR != NULL) { float_image_check_size(CLR, NCC, NXI, NYI, "bad albedo map"); }
     
-    double clr[NC]; /* Intrinsic color of scene at some pixel. */
-    double lum[NC]; /* Diffuse illumination due to all lamps. */
+    int32_t cAlpha; /* Alpha channel of image, or {-1} if none. */
+    if (NCI > NCC)
+      { /* Clear the alpha channel: */
+        assert(NCI == NCC+1);
+        cAlpha = NCI-1;
+        float_image_fill_channel(IMG, cAlpha, 0.0);
+      }
+    else
+      { cAlpha = -1; }
+    
+    /* Data for each pixel: */
+    double clr[NCC]; /* Intrinsic color of scene at some pixel. */
+    double lum[NCC]; /* Diffuse illumination due to all lamps. */
 
-    for (int32_t y = 0; y < NY; y++)
-      { for (int32_t x = 0; x < NX; x++)
-          { r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
-            if (r3_L_inf_norm(&nrm) != 0)
+    for (int32_t y = 0; y < NYI; y++)
+      { for (int32_t x = 0; x < NXI; x++)
+          { r3_t nrm = pst_normal_map_get_vector(NRM, x, y);
+            double w = pst_normal_map_get_weight(NRM, x, y);
+            if (r3_L_inf_norm(&nrm) == 0) { w = 0.0; }
+            if (w > 0)
               { /* Valid pixel, compute its shaded color. */
                 /* Clear apparent color, get intrinsic color, check if black: */
                 bool_t black = TRUE;
-                for (int32_t c = 0; c < NC; c++) 
+                for (int32_t c = 0; c < NCC; c++) 
                   { lum[c] = 0.0;
-                    clr[c] = (CLR == NULL ? 1.0 : float_image_get_sample(CLR, (int32_t)c, x, y)); 
+                    clr[c] = (CLR == NULL ? 1.0 : float_image_get_sample(CLR, c, x, y)); 
                     if (clr[c] != 0.0) { black = FALSE; }
                   }
                 if (!black)
@@ -250,13 +265,17 @@ void pst_shading_add_diffuse
                         double coef = pst_lamp_geom_factor(&nrm, dir, crad);
                         /* Accumulate light on each channel: */
                         frgb_t *pwr = &(src->pwr);
-                        for (int32_t c = 0; c < NC; c++) { lum[c] += coef*pwr->c[c]; }
+                        for (int32_t c = 0; c < NCC; c++) { lum[c] += coef*pwr->c[c]; }
                       }
                     /* Add color to {IMG}: */
-                    for (int32_t c = 0; c < NC; c++) 
+                    for (int32_t c = 0; c < NCC; c++) 
                       { float *p = float_image_get_sample_address(IMG, (int32_t)c, x, y); 
                         (*p) += (float)(lum[c]*clr[c]);
                       }
+                  }
+                if (cAlpha > 0)
+                  { /* Set the alpha channel: */
+                    float_image_set_sample(IMG, cAlpha, x, y, (float)w);
                   }
               }
           }

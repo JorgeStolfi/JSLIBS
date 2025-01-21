@@ -1,5 +1,5 @@
 /* See {obj_file.h}. */
-/* Last edited on 2024-12-22 10:36:16 by stolfi */
+/* Last edited on 2025-01-09 23:53:47 by stolfi */
  
 #define obj_file_C_copyright \
   "Copyright © 2024 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -26,10 +26,10 @@ obj_file_data_t *obj_file_data_new(void)
     D->T = r3_vec_new(100);
     D->N = r3_vec_new(100);
     D->VL = string_vec_new(100);
-    uint32_t nf_alloc = 50;
-    D->FV = obj_file_face_vec_new(nf_alloc);
-    D->FT = obj_file_face_vec_new(nf_alloc);
-    D->FN = obj_file_face_vec_new(nf_alloc);
+    uint32_t NF_alloc = 50;
+    D->FV = obj_file_face_vec_new(NF_alloc);
+    D->FT = obj_file_face_vec_new(NF_alloc);
+    D->FN = obj_file_face_vec_new(NF_alloc);
     return D;
   }
   
@@ -67,8 +67,8 @@ bool_t obj_file_data_compare(obj_file_data_t *D1, obj_file_data_t *D2, double to
     assert(D1->FT.ne == D1->FV.ne); assert(D2->FT.ne == D2->FV.ne);
     assert(D1->FN.ne == D1->FV.ne); assert(D2->FN.ne == D2->FV.ne);
     if (D1->FV.ne == D2->FV.ne)
-      { uint32_t nf = D1->FV.ne; /* Number of faces. */
-        for (int32_t kf = 0;  kf < nf; kf++)
+      { uint32_t NF = D1->FV.ne; /* Number of faces. */
+        for (int32_t kf = 0;  kf < NF; kf++)
           { int32_vec_t *FV1k = &(D1->FV.e[kf]); int32_vec_t *FV2k = &(D2->FV.e[kf]);
             int32_vec_t *FT1k = &(D1->FT.e[kf]); int32_vec_t *FT2k = &(D2->FT.e[kf]);
             int32_vec_t *FN1k = &(D1->FN.e[kf]); int32_vec_t *FN2k = &(D2->FN.e[kf]);
@@ -76,8 +76,8 @@ bool_t obj_file_data_compare(obj_file_data_t *D1, obj_file_data_t *D2, double to
             assert(FT1k->ne == FV1k->ne); assert(FT2k->ne == FV2k->ne); 
             assert(FN1k->ne == FV1k->ne); assert(FN2k->ne == FV2k->ne); 
             if (FV1k->ne == FV2k->ne)
-              { uint32_t nc = FV1k->ne; /* Number of corners. */
-                for (int32_t kc = 0;  kc < nc; kc++)
+              { uint32_t NC = FV1k->ne; /* Number of corners. */
+                for (int32_t kc = 0;  kc < NC; kc++)
                   { numcmp("vertex indices",   FV1k->e[kc], FV2k->e[kc], kf, kc);
                     numcmp("texpoint indices", FT1k->e[kc], FT2k->e[kc], kf, kc);
                     numcmp("normal indices",   FN1k->e[kc], FN2k->e[kc], kf, kc);
@@ -122,8 +122,8 @@ bool_t obj_file_data_compare(obj_file_data_t *D1, obj_file_data_t *D2, double to
 
    void labcmp(char *name, string_vec_t *L1, string_vec_t *L2)
      { assert(L1->ne == L2->ne);
-       uint32_t ns = L1->ne;
-       for (int32_t ks = 0;  ks < ns; ks++)
+       uint32_t NS = L1->ne;
+       for (int32_t ks = 0;  ks < NS; ks++)
          { char *L1k = L1->e[ks];
            char *L2k = L2->e[ks];
            if (strcmp(L1k, L2k) != 0)
@@ -143,10 +143,10 @@ void obj_file_data_free(obj_file_data_t *D)
     free(D->V.e);
     free(D->T.e);
     free(D->N.e);
-    uint32_t nf = D->FV.ne;
-    assert(D->FT.ne == nf);
-    assert(D->FN.ne == nf);
-    for (int32_t kf = 0;  kf < nf; kf++)
+    uint32_t NF = D->FV.ne;
+    assert(D->FT.ne == NF);
+    assert(D->FN.ne == NF);
+    for (int32_t kf = 0;  kf < NF; kf++)
       { free(D->FV.e[kf].e); 
         free(D->FT.e[kf].e); 
         free(D->FN.e[kf].e); 

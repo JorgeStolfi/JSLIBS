@@ -1,5 +1,5 @@
 /* See {float_image_geostereo.h}. */
-/* Last edited on 2024-12-05 00:48:30 by stolfi */
+/* Last edited on 2025-01-18 13:00:01 by stolfi */
 
 #include <stdint.h>
 #include <assert.h>
@@ -36,7 +36,7 @@ void float_image_geostereo_uniscale
     /* Get and check image and window sizes: */
     int32_t NC, NX, NY;
     float_image_get_size(f1 ,&NC, &NX, &NY);
-    float_image_check_size(f2, NC, NX, NY);
+    float_image_check_size(f2, NC, NX, NY, "mismatched {f1,f2} images");
     demand((nwx % 2) == 1, "window width must be odd");
     demand((nwy % 2) == 1, "window height must be odd");
     int32_t npix = nwx*nwy; /* Number of pixels in window. */

@@ -1,5 +1,5 @@
 /* See float_image_map_channels.h */
-/* Last edited on 2024-12-05 00:54:03 by stolfi */ 
+/* Last edited on 2025-01-18 12:56:52 by stolfi */ 
 
 #include <limits.h>
 #include <float.h>
@@ -25,7 +25,7 @@ void float_image_map_channels
     int32_t NCA, NCB, NX, NY;
     float_image_get_size(imgA, &NCA, &NX, &NY);
     float_image_get_size(imgB, &NCB, NULL, NULL);
-    float_image_check_size(imgB, -1, NX, NY);
+    float_image_check_size(imgB, -1, NX, NY, "mismatched images");
     float vA[NCA];
     float vB[NCB];
     for (int32_t iy = 0;  iy < NY; iy++) 

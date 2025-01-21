@@ -1,5 +1,5 @@
 /* See {float_image_gradient.h}. */
-/* Last edited on 2024-12-05 00:48:56 by stolfi */
+/* Last edited on 2025-01-18 12:59:29 by stolfi */
 
 #include <math.h>
 #include <assert.h>
@@ -26,13 +26,13 @@ void float_image_gradient_sobel(float_image_t *A, int32_t cA, float_image_t *DX,
     
     bool_t has_DX = ((cX >= 0) && (DX != NULL));
     if (has_DX)
-      { float_image_check_size(DX, -1, NX, NY);
+      { float_image_check_size(DX, -1, NX, NY, "bad {DX} image");
         demand((cX >= 0) && (cX < DX->sz[0]), "invalid {DX} channel");
       }
     
     bool_t has_DY = ((cY >= 0) && (DY != NULL));
     if (has_DY)
-      { float_image_check_size(DY, -1, NX, NY);
+      { float_image_check_size(DY, -1, NX, NY, "bad {DY} image");
         demand((cY >= 0) && (cY < DY->sz[0]), "invalid {DY} channel");
       }
       
@@ -61,7 +61,7 @@ void float_image_gradient_sqr_sobel(float_image_t *A, int32_t cA, float_image_t 
     demand((cG >= 0) && (cG < NCG), "invalid {G} channel");
     int32_t NX = (int32_t)A->sz[1]; 
     int32_t NY = (int32_t)A->sz[2];
-    float_image_check_size(G, -1, NX, NY);
+    float_image_check_size(G, -1, NX, NY, "bad gradient image");
     
     /* Fill it: */
     int32_t x, y;

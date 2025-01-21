@@ -4,7 +4,7 @@
 
 #define slope_to_height_C_COPYRIGHT "Copyright � 2005 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2025-01-05 19:53:19 by stolfi */
+/* Last edited on 2025-01-10 07:54:21 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -89,11 +89,11 @@ typedef struct options_t{
   char* outPrefix;
   char* weightMap;
   char* gradientMap;
-  long int shrinksSteps;
+  int32_t shrinksSteps;
   bool_t addDiags;
-  int weightFunction;
-  int gradientFunction;
-  long int NX,NY;
+  int32_t weightFunction;
+  int32_t gradientFunction;
+  int32_t NX,NY;
 } options_t;
 
 float_image_t* readFNI(char* filename);
@@ -118,7 +118,7 @@ void printGRA(char* filename, pst_img_graph_t* g);
 
 void printGRA(char* filename, pst_img_graph_t* g){
   FILE* arq = open_write(filename,TRUE);
-  pst_img_graph_print(arq,g);
+  pst_img_graph_write(arq,g);
   fclose(arq);
 }
 
@@ -131,8 +131,8 @@ void writeGRA(char* filename, pst_img_graph_t* g){
 }
 
 
-void writeGraph(pst_img_graph_t* g,char* outPrefix,char* tag, int level);
-void writeGraph(pst_img_graph_t* g,char* outPrefix,char* tag, int level){
+void writeGraph(pst_img_graph_t* g,char* outPrefix,char* tag, int32_t level);
+void writeGraph(pst_img_graph_t* g,char* outPrefix,char* tag, int32_t level){
   char* filename = NULL;
   char *filename = jsprintf("%s-%02d-%s.grf",outPrefix,level,tag);
   writeGRA(filename,g);
@@ -142,8 +142,8 @@ void writeGraph(pst_img_graph_t* g,char* outPrefix,char* tag, int level){
   free(filename);
 }
 
-options_t *parse_options(int argc, char **argv);
-options_t *parse_options(int argc, char **argv)
+options_t *parse_options(int32_t argc, char **argv);
+options_t *parse_options(int32_t argc, char **argv)
   { 
     argparser_t *pp = argparser_new(stderr, argc, argv);
     argparser_set_help(pp, PROG_NAME " version " PROG_VERS ", usage:\n" PROG_HELP);
@@ -155,7 +155,7 @@ options_t *parse_options(int argc, char **argv)
     o->addDiags = argparser_keyword_present(pp, "-addDiags");
     
     if (argparser_keyword_present(pp, "-shrinkSteps"))
-      { o->shrinksSteps = argparser_get_next_int(pp, 0, INT64_MAX); }
+      { o->shrinksSteps = argparser_get_next_int32_t(pp, 0, INT64_MAX); }
     else
       { o->shrinksSteps = 0; }
 
@@ -192,8 +192,8 @@ options_t *parse_options(int argc, char **argv)
     
     if( (o->weightMap == NULL) &&  (o->gradientMap == NULL)){
       argparser_get_keyword(pp, "-size");
-      o->NX = argparser_get_next_int(pp, 0, INT64_MAX);
-      o->NY = argparser_get_next_int(pp, 0, INT64_MAX);
+      o->NX = argparser_get_next_int32_t(pp, 0, INT64_MAX);
+      o->NY = argparser_get_next_int32_t(pp, 0, INT64_MAX);
     }
     
     argparser_get_keyword(pp, "-outPrefix");
@@ -209,15 +209,15 @@ options_t *parse_options(int argc, char **argv)
   
 void pst_graph_interpolate_two_samples
   (  float_image_t* I, float_image_t* W,
-     int c,
-     int x0, int y0,
-     int x1, int y1,
+     int32_t c,
+     int32_t x0, int32_t y0,
+     int32_t x1, int32_t y1,
      double *v, double* w
    )
    {
-     int NX = I->sz[1]; 
+     int32_t NX = I->sz[1]; 
      if( W != NULL ){ assert(W->sz[1] == NX);}
-     int NY = I->sz[2]; 
+     int32_t NY = I->sz[2]; 
      if( W != NULL ){ assert(W->sz[2] == NY);}
 
      
@@ -238,13 +238,13 @@ void pst_graph_interpolate_two_samples
 void  pst_img_graph_get_axial_edge_data_from_maps(
     float_image_t* IG,
     float_image_t* IW,
-    long int x, long int y,
-    int axis, int dir,
+    int32_t x, int32_t y,
+    int32_t axis, int32_t dir,
     double *d, double *w
  );
 
 
-int main(int argc, char** argv){
+int32_t main(int32_t argc, char** argv){
   
   options_t* o = parse_options(argc,argv);
   
@@ -262,7 +262,7 @@ int main(int argc, char** argv){
   
   if(o->addDiags == FALSE) fprintf(stderr,"NO DIAGS\n");
   
-  long int level = 0;
+  int32_t level = 0;
   do {
     g = pst_img_graph_copy(g);
     fprintf(stderr,"Level[%02ld] - %ld vertexes %ld edges \n",level,g->n_valid,g->m_valid);

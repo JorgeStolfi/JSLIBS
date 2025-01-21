@@ -2,7 +2,7 @@
 #define float_image_mscale_H
 
 /* Tools for multiscale image processing. */
-/* Last edited on 2024-12-04 23:30:19 by stolfi */
+/* Last edited on 2025-01-14 21:03:44 by stolfi */
 
 #include <bool.h>
 #include <r2.h>
@@ -90,9 +90,9 @@ char *float_image_mscale_file_name(char *filePrefix, int32_t level, int32_t iter
     for the "-{iter}" part.  If {filePrefix} is "-", ignores all other 
     arguments and returns a new string containing just "-". */
 
-void float_image_mscale_write_file(float_image_t *M, char *filePrefix, int32_t level, int32_t iter, char *tag, int32_t indent);
+void float_image_mscale_write_file(float_image_t *M, char *filePrefix, int32_t level, int32_t iter, char *tag);
   /* Writes the float image {M} in a human-readable FNI format.
     The file name is created by {float_image_mscale_file_name} with extension "fni".
-    Diagnostic messages are indented by {indent}. */
+    Diagnostic messages are indented by {2*level+2} if {level} is non-negative. */
 
 #endif

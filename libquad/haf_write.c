@@ -1,5 +1,5 @@
 /* See {haf_write.h}. */
-/* Last edited on 2024-12-22 10:33:35 by stolfi */
+/* Last edited on 2025-01-09 23:57:31 by stolfi */
  
 #define haf_write_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -22,43 +22,40 @@
 
 void haf_write_arc(FILE *wr, haf_arc_t a, uint32_t width)
   { char *fmt = ("%*" uint64_u_fmt ":%u");
-    fprintf(wr, fmt, width, haf_edge_id(a), (uint32_t)haf_dir_bit(a));
+    fprintf(wr, fmt, width, haf_edge_id(haf_edge(a)), (uint32_t)haf_dir_bit(a));
   }
 
 void haf_write_map
   ( FILE *wr,
-    haf_edge_count_t ne,
-    haf_arc_t a[],
+    haf_edge_count_t NE,
+    haf_edge_t ed[],
     haf_edge_id_t eid0,
-    haf_arc_count_t nr,
+    haf_arc_count_t NR,
     haf_arc_t root[]
   )
   { 
     /* Write the header line: */
     filefmt_write_header(wr, haf_write_FILE_TYPE, haf_write_FILE_VERSION);
-    /* Grab the number {nr} of roots and the root index width {wa}: */
+    /* Grab the number {NR} of roots and the root index width {wa}: */
     /* Compute the width in digits {wr} of the root index: */
-    uint32_t dr = (nr < 10 ? 1 : digits(nr-1));
-    
-    /* We should have zero edges if and only if we have zero roots: */
-    demand((nr == 0) == (ne == 0), "need at least one root"); 
+    uint32_t dr = (NR < 10 ? 1 : digits(NR-1));
     
     /* Determine the width {eE} of edge ids in digits of the edge id: */
-    uint32_t dE = (ne < 10 ? 1 : digits(ne-1));
+    uint32_t dE = (NE < 10 ? 1 : digits(NE-1));
 
     /* Write the edge table, one edge per line: */
-    fprintf(wr, "edges = %lu\n", ne);
+    fprintf(wr, "edges = %lu\n", NE);
     fprintf(wr, "edge_id_min = %lu\n", eid0);
-    for (haf_edge_count_t ke = 0; ke < ne; ke++)
-      { haf_arc_t ak = a[ke];
-        assert(ak != NULL);
-        haf_edge_id_t eid = haf_edge_id(ak);
+    for (haf_edge_count_t ke = 0; ke < NE; ke++)
+      { haf_edge_t edk = ed[ke];
+        assert(edk != NULL);
+        haf_edge_id_t eid = haf_edge_id(edk);
         /* Check whether the numbering is as specified: */
         demand(eid == eid0 + ke, "edge id inconsistent with index");
-        demand(haf_dir_bit(ak) == 0, "given arc is not the base arc");
         /* Write the edge's number and its {lnext} links: */
         fprintf(wr, ("%*" uint64_u_fmt), dE, eid);
         fputc(' ', wr); 
+        haf_arc_t ak = haf_base_arc(edk);
         haf_write_arc(wr, haf_lnext(ak), dE);
         fputc(' ', wr); 
         haf_write_arc(wr, haf_lnext(haf_sym(ak)), dE);
@@ -66,9 +63,9 @@ void haf_write_map
       }
 
     /* Write the root arcs: */
-    fprintf(wr, "roots = %lu\n", nr);
+    fprintf(wr, "roots = %lu\n", NR);
     /* Write the roots, one per line: */
-    for (uint32_t kr = 0;  kr < nr; kr++)
+    for (uint32_t kr = 0;  kr < NR; kr++)
       { /* Write {kr} and the root arc number {kr}: */
         fprintf(wr, "%*u ", dr, kr);
         haf_write_arc(wr, root[kr], dE);

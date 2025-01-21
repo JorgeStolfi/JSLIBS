@@ -4,7 +4,7 @@
 
 #define slope_to_height_C_COPYRIGHT "Copyright © 2005 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2025-01-08 08:35:34 by stolfi */
+/* Last edited on 2025-01-18 12:32:29 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -140,7 +140,7 @@
   "     {NX} {NY} {iter} {change} {sRZ} {sOZ} {sEZ} {sre}.\n" \
   "\n" \
   "    where {NX,NY} is the image size, {iter} is the number of" \
-  " iterations performed at level 0, {change} is the change in" \
+  " iterations performed, {change} is the change in" \
   " the last iteration, {sRZ} and {sOZ} are the deviations of" \
   " the {RZ} and {OZ} maps, {sEZ} is the RMS value of {EZ}, and" \
   " {sre} is the relative error.\n" \
@@ -152,13 +152,13 @@
   " some of them with \"-compareZ\", together with a positive \"-reportStep\".\n" \
   "\n" \
   "  {PREFIX}-dbg-{ITER}-Z.fni\n" \
-  "    The computed height map {OZ} at level {LEVEL} after {ITER} iterations.\n" \
+  "    The computed height map {OZ}  after {ITER} iterations.\n" \
   "\n" \
   "  {PREFIX}-dbg-{ITER}-eZ.fni\n" \
-  "    The height error map {EZ} for {OZ} and {RZ} at level {LEVEL} after {ITER} iterations.\n" \
+  "    The height error map {EZ} for {OZ} and {RZ} after {ITER} iterations.\n" \
   "\n" \
   "  {PREFIX}-dbg-{ITER}-eZ.txt\n" \
-  "    The height error summary for level {LEVEL} after {ITER} iterations."
+  "    The height error summary after {ITER} iterations."
 
 #define PROG_INFO_OPTS \
   "  -slopes {IG_FNI_NAME}\n" \
@@ -242,6 +242,7 @@
 #include <argparser.h>
 #include <float_image.h>
 #include <float_image_mscale.h>
+#include <float_image_expand_by_one.h>
 
 #include <pst_slope_map.h>
 #include <pst_imgsys.h>
@@ -274,8 +275,8 @@ float_image_t *read_fni_file(char *fileName);
 void write_fni_file(float_image_t *I, char *fileName, int32_t indent);
   /* Writes the float image {I} in a human-readable format, to a file
     called "{fileName}" (which should include the extension ".fni").
-    If {fileName} is "-", writes the image to standard output.
-    Diagnostic messages are indented by {indent}. */
+    If {fileName} is "-", writes the image to standard output. 
+    Diagnostic images are indented by {indent} spaces. */
     
 void write_system_weights(pst_imgsys_t *S, char *fname);
   /* Writes the equation weights {S.eq[k].wtot} as a PNG image "{fname}". */
@@ -285,17 +286,33 @@ options_t *parse_options(int32_t argc, char **argv);
 
 void compute_and_write_height_map
   ( options_t *o,
-    float_image_t *IG,
-    float_image_t *IW,
-    float_image_t *IZ,
+    float_image_t *G,
+    float_image_t *W,
+    float_image_t *Z,
+    float_image_t *U,
     float_image_t *RZ
   );
-  /* Computes the height map {OZ} from the gradient map {IG} and its
-    reliability map {IW}. If {IW} is null, assumes all weights are 1.
-    If {RZ} is not null, compares {OZ} with {RZ} and writes the error
-    map {EZ=OZ-RZ} and the error sumary file.   If {IZ} is not {NULL}
-    uses it as the initial guess, else starts with all heights equal to zero.
-    Also writes the height map every {o.reportStep} iterations. */
+  /* Computes the height map {Z} from the gradient map {G} and its
+    reliability map {W}.
+    
+    The map {G} must have two channels (intrepreted as {dZ/dX} and {dZ/dY}),
+    and the map {W}, if not null, must have a single channel and the same
+    size as {G}.  Sample {W[0,x,y]}, which must be non-negative,
+    is interpreted as the reliability of {G[*,x,y]}; if zero, the value
+    of {G[*x,y]} will be ignored.  If {W} is null, assumes all weights are 1.
+    
+    The image {Z} must have one channel, and one row and one col more than {G}
+    and {W}.  On input, it gives the initial guess for the iterative method.
+    On output, it will contain the computed height map. 
+    
+    If {o.reportStep} is not zero, writes the height map
+    for the first {o.reportStep} iterations, and then 
+    every {o.reportStep} iterations thereafter.
+    
+    If {RZ} is not null, it must be a single-channel image with the same
+    size as {G} or {Z}. Whenever {Z} is reported, the procedure compares
+    {Z} with {RZ} and writes the error map {EZ=Z-RZ} and the error
+    sumary file. */
 
 int32_t main(int32_t argc,char** argv);
 
@@ -305,24 +322,24 @@ int32_t main(int32_t argc, char** argv)
   {
     options_t *o = parse_options(argc, argv);
     
-    fprintf(stderr, "Reading the slope map {IG}:\n");
-    float_image_t *IG;  /* Input gradient map. */
-    IG = read_fni_file(o->slopes_fname);
+    fprintf(stderr, "Reading the slope map {G}:\n");
+    float_image_t *G;  /* Input gradient map. */
+    G = read_fni_file(o->slopes_fname);
+    int32_t NC_G, NX_G, NY_G;
+    float_image_get_size(G, &NC_G, &NX_G, &NY_G);
+    demand(NC_G == 3, "gradient map must have 3 channels");
     
-    float_image_t *IW; /* Input (gradient) reliability weight map. */
-    if (o->weights_fname == NULL)
-      { IW = NULL; }
-    else
-      { fprintf(stderr, "Reading the slope reliability weight map {IW}:\n");
-        IW = read_fni_file(o->weights_fname);
-      }
-    
-    float_image_t *IZ; /* Input initial guess for height map. */
+    int32_t NX_Z = NX_G + 1;
+    int32_t NY_Z = NY_G + 1;
+    float_image_t *Z; /* Input initial guess for height map. */
     if (o->initial_fname == NULL)
-      { IZ = NULL; }
+      { Z = float_image_new(1, NX_Z, NY_Z);
+        float_image_fill_channel(Z, 0, 0.0);
+      }
     else
-      { fprintf(stderr, "Reading the intial height map {IZ}:\n");
-        IZ = read_fni_file(o->initial_fname);
+      { fprintf(stderr, "Reading the intial height map {Z}:\n");
+        Z = read_fni_file(o->initial_fname);
+        float_image_check_size(Z, 2, NX_Z, NY_Z, "bad height map");
       }
     
     float_image_t *RZ; /* Reference height map. */
@@ -330,97 +347,109 @@ int32_t main(int32_t argc, char** argv)
       { RZ = NULL; }
     else
       { fprintf(stderr, "Reading the reference height map {RZ}:\n");
-        RZ = read_fni_file(o->compareZ_fname);
+        float_image_t *IRZ = read_fni_file(o->compareZ_fname);
+        int32_t NC_R, NX_R, NY_R;
+        float_image_get_size(IRZ, &NC_R, &NX_R, &NY_R);
+        demand(NC_R == 1, "reference height map must have 1 channel");
+        if ((NX_R == NX_Z) && (NY_R == NY_Z))
+          { RZ = IRZ; }
+        else if ((NX_R == NX_G) && (NY_R == NY_G))
+          { RZ = float_image_expand_by_one(IRZ, NULL); float_image_free(IRZ); }
+        else
+          { demand(FALSE, "wrong ref height map {IRZ} size"); }
       }
     
-    fprintf(stderr, "Computing the height map {OZ}:\n");
-    compute_and_write_height_map(o, IG, IW, IZ, RZ);
+    fprintf(stderr, "Computing the height map {Z}:\n");
+    compute_and_write_height_map(o, G, W, Z, U, RZ);
     
-    float_image_free(IG); IG = NULL;
-    if (IW != NULL) { float_image_free(IW); IW = NULL; }
-    if (IZ != NULL) { float_image_free(IZ); IZ = NULL; }
+    float_image_free(G); G = NULL;
+    if (W != NULL) { float_image_free(W); W = NULL; }
+    if (Z != NULL) { float_image_free(Z); Z = NULL; }
     if (RZ != NULL) { float_image_free(RZ); RZ = NULL; }
 
     fprintf(stderr, "Done!\n");
     return 0;
   }
   
-#define MAX_LEVEL 20
-  /* Max level expected in recursion; that is {log_2} of max image width or height. */
-  
 void compute_and_write_height_map
   ( options_t *o,
-    float_image_t *IG,
-    float_image_t *IW,
-    float_image_t *IZ,
+    float_image_t *G,
+    float_image_t *Z,
     float_image_t *RZ
   )
   {
     int32_t NC_G, NX_G, NY_G;
-    float_image_get_size(IG, &NC_G, &NX_G, &NY_G);
-    demand(NC_G == 2, "gradient map must have 2 channels");
-    if (IW != NULL) { float_image_check_size(IW, 1, NX_G, NY_G); }
+    float_image_get_size(G, &NC_G, &NX_G, &NY_G);
+    demand(NC_G == 3, "gradient map must have 3 channels");
+    int32_t NX_Z = NX_G + 1;
+    int32_t NY_Z = NY_G + 1;
+    float_image_check_size(Z, 2, NX_Z, NY_Z, "bad height map");
     
-    /* Check the reference height map {RZ}: */
-    bool_t interpolate_OZ = FALSE;  /* Tells whether {OZ} must be reduced by 1 before comparison. */
+    /* Check the reference height map {RZ}, expand it of needed: */
+    float_image_t *EZ = NULL; /* Version of {RZ} to use when comparing with {Z}. */
     if (RZ != NULL)
       { int32_t NC_R, NX_R, NY_R;
         float_image_get_size(RZ, &NC_R, &NX_R, &NY_R);
-        if ((NX_R == NX_G+1) && (NY_R == NY_G+1))
-          { interpolate_OZ = FALSE; }
+        if ((NX_R == NX_Z) && (NY_R == NY_Z))
+          { EZ = RZ; }
         else if ((NX_R == NX_G) && (NY_R == NY_G))
-          { interpolate_OZ = TRUE; }
+          { EZ = float_image_expand_by_one(RZ, NULL); }
         else
-          { demand(FALSE, "wrong ref Z size"); }
+          { demand(FALSE, "wrong ref height map {RZ} size"); }
       }
 
     char *debugPrefix = txtcat(o->outPrefix, "-dbg"); /* Prefix for debug file names. */
 
-    auto void reportHeights(uint32_t level, uint32_t iter, double change, bool_t final, float_image_t *Z);
+    auto void reportSys(int32_t level, pst_imgsys_t *S, float_image_t *U);
+      /* This procedure is called by {pst_integrate_iterative} once 
+        to report the linear system created from the slope and weight maps. */
+
+    auto void reportHeights(int32_t level, int32_t iter, double change, bool_t final, float_image_t *Z, float_image_t *U);
       /* This procedure is called by {pst_integrate_iterative} to write
          the current height map {Z} and the height error map {EZ}, and
          the error summary. */
 
     /* Call iterative integrator: */
-    float_image_t *OZ = NULL;
-    float_image_t *OW = NULL;
+    int32_t level = -1;
     pst_integrate_iterative
-      ( IG, IW, o->keepNull, IZ,  
+      ( G, W, o->keepNull, Z, U,
         o->maxIter, o->convTol, o->topoSort,
-        &OZ, &OW,
         o->verbose,
+        level,
+        &reportSys,
         o->reportStep,
         &reportHeights
       );
       
     /* Free working storage: */
     free(debugPrefix);
+    if ((EZ != NULL) && (EZ != RZ)) { float_image_free(EZ); }
       
     return;
     
-    void reportHeights(uint32_t level, uint32_t iter, double change, bool_t final, float_image_t *Z)
+    void reportHeights(int32_t level, int32_t iter, double change, bool_t final, float_image_t *Z, float_image_t *U)
       { 
-        assert(level == 0);
-        uint32_t indent = 2*level+2;
+        assert(level == -1);
          
-        bool_t levelTag = FALSE;
-        bool_t iterTag = (! final);
         bool_t writeImages = TRUE;
-        bool_t writeError = (RZ != NULL);
-        float_image_t *ZC, *WC;
-        if (interpolate_OZ)
-          { ZC = pst_height_map_shrink_by_one(Z, OW); 
-            WC = (OW == NULL ? NULL : pst_weight_map_shrink_by_one(OW));
-          }
-        else
-          { ZC = Z; WC = OW; }
+        bool_t writeError = (EZ != NULL);
         pst_height_map_level_analyze_and_write
-          ( debugPrefix, 0, levelTag, iter, iterTag, change, 
-            ZC, RZ, WC, 
-            writeImages, writeError, indent
+          ( debugPrefix, level, (final ? -1 : iter), change, 
+            Z, EZ, U, 
+            writeImages, writeError
           );
-        if (ZC != Z) { float_image_free(ZC); }
-        if ((WC != NULL) && (WC != OW)) { float_image_free(WC); }
+      }
+      
+    void reportSys(int32_t level, pst_imgsys_t *S, float_image_t *U)
+      { char *fileName_sys = float_image_mscale_file_name(debugPrefix, level, -1, "sys", "txt");
+        FILE* wr_sys = fopen(fileName_sys, "wt");
+        pst_imgsys_write(wr_sys, S);
+        fclose(wr_sys);
+        free(fileName_sys);
+        
+        char *fileName_U = float_image_mscale_file_name(debugPrefix, level, -1, "U", "fni");
+        float_image_write_named(fileName_U, U);
+        free(fileName_U);
       }
   }
 

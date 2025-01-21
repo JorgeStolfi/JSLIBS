@@ -2,7 +2,7 @@
 #define PROG_DESC "tests the routines from {haf_read_obj.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-22 11:26:44 by stolfi */ 
+/* Last edited on 2025-01-09 23:03:48 by stolfi */ 
 
 #define PROG_COPYRIGHT \
   "Copyright © 2024  State University of Campinas (UNICAMP)\n\n" jslibs_copyright
@@ -88,26 +88,26 @@ int32_t main(int32_t argc, char **argv)
     fprintf(stderr, "reading from file %s...\n", rd_fname);
     FILE *rd = open_read(rd_fname, TRUE);
     bool_t verbose = TRUE;
-    uint32_t nf;
+    uint32_t NF;
     r3_vec_t V = r3_vec_new(0);
     string_vec_t Vlab = string_vec_new(0);
-    haf_arc_vec_t A = haf_arc_vec_new(0);
+    haf_edge_vec_t A = haf_edge_vec_new(0);
     int32_t *fleft = NULL;
     int32_t *vorg = NULL;
     haf_edge_id_t eid0 = 4615;
-    haf_read_obj_file(rd, eid0, &nf, &V, &Vlab, &A, &fleft, &vorg, verbose);
+    haf_read_obj_file(rd, eid0, &NF, &V, &Vlab, &A, &fleft, &vorg, verbose);
     
     fclose(rd);
     
-    uint32_t nv = V.ne;
-    uint32_t ne = A.ne;
-    assert(Vlab.ne == nv);
+    uint32_t NV = V.ne;
+    uint32_t NE = A.ne;
+    assert(Vlab.ne == NV);
     
-    fprintf(stderr, "got %6d vertices\n", nv);
-    fprintf(stderr, "got %6d edges\n", ne);
-    fprintf(stderr, "got %6d faces\n", nf);
+    fprintf(stderr, "got %6d vertices\n", NV);
+    fprintf(stderr, "got %6d edges\n", NE);
+    fprintf(stderr, "got %6d faces\n", NF);
     
-    haf_check_topology(ne, A.e, eid0, verbose);
+    haf_check_topology(NE, A.e, eid0, verbose);
 
     /* !!! Should do more tests !!! */
     

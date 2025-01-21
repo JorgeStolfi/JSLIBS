@@ -1,5 +1,5 @@
 /* See {multifok_image.h}. */
-/* Last edited on 2024-12-20 18:14:41 by stolfi */
+/* Last edited on 2025-01-18 12:54:47 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -74,7 +74,7 @@ void multifok_image_pixel_mask_write(float_image_t *pSel, float_image_t *bgrd, c
     else
       { int32_t NC, NX, NY;
         float_image_get_size(bgrd, &NC, &NX, &NY);
-        float_image_check_size(pSel, 1, NX, NY);
+        float_image_check_size(pSel, 1, NX, NY, "bad pixel pick image");
         float_image_t *comp = float_image_new(NC, NX, NY);
         for (int32_t c = 0;  c < NC; c++)
           { float_image_mix_channels(0.75, pSel, 0, 0.25, bgrd, c, comp, c); }

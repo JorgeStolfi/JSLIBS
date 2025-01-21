@@ -2,7 +2,9 @@
 #define float_image_interpolate_H
 
 /* Bilinear (C0) and Bicubic (C1) interpolation of floating-point images. */
-/* Last edited on 2024-12-04 23:38:42 by stolfi */ 
+/* Last edited on 2025-01-14 16:25:15 by stolfi */ 
+
+#include <stdint.h>
 
 #include <bool.h>
 #include <ix_reduce.h>

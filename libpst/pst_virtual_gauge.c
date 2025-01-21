@@ -1,5 +1,5 @@
 /* See pst_virtual_gauge.h */
-/* Last edited on 2025-01-04 04:52:35 by stolfi */ 
+/* Last edited on 2025-01-18 12:37:12 by stolfi */ 
 
 #include <stdint.h>
 #include <math.h>
@@ -81,7 +81,7 @@ void pst_virtual_gauge_paint
   { int32_t NC, NX, NY;
     float_image_get_size(img, &NC, &NX, &NY);
     demand((NC == 3) || (NC == 4), "image must have 3 or 4 channels");
-    if (nrm != NULL) { float_image_check_size(nrm, 3, NX, NY); }
+    if (nrm != NULL) { float_image_check_size(nrm, 4, NX, NY, "bad normal image"); }
     
     /* Get the normal correction matrix: */
     /* !!! Should compute {p} from the point {p} and camera position {obs} !!! */

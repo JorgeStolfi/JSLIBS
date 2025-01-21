@@ -1,4 +1,4 @@
-# Last edited on 2025-01-07 22:01:14 by stolfi
+# Last edited on 2025-01-14 15:45:34 by stolfi
 
 PROG = test_build_system
 
@@ -26,13 +26,13 @@ all: check
 
 check:  clean do-tests
 
-TESTS := 00:T 01:T 20:T
+TESTS := 00-zeflat-N:T 01-ramp10-N:T 04-parabo-N:T 20-cpiece-N:T
 
 do-tests: ${PROG}
 	mkdir -p out
 	for test in ${TESTS} ; do \
-          nmap="$${test/:*/}"; full="$${test/*:/}" ; \
-	  ./run_test.sh $${nmap} $${full} ; \
+          mapName="$${test/:*/}"; full="$${test/*:/}" ; \
+	  ./run_test.sh $${mapName} $${full} ; \
         done
  
 clean::

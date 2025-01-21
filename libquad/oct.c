@@ -1,5 +1,5 @@
 /* See oct.h. */
-/* Last edited on 2024-12-22 10:55:51 by stolfi */
+/* Last edited on 2025-01-09 23:01:04 by stolfi */
 
 /* This implementation was originally created by J. Stolfi in Apr/1993.
   It was based on the orientable-map version {quad.c} implemented by
@@ -457,37 +457,37 @@ oct_arc_t oct_read_arc(FILE *rd, oct_arc_vec_t *A)
 void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *A)
   { 
   
-    uint32_t ne = 0;  /* Count of reachable octets (edge records). */
+    uint32_t NE = 0;  /* Count of reachable octets (edge records). */
     
     auto bool_t renumber_edge(oct_arc_t p);
-      /* Visit-proc that renumbers the base edge of {p} with {ne}
-        and increments {ne}. */
+      /* Visit-proc that renumbers the base edge of {p} with {NE}
+        and increments {NE}. */
     
     /* Write the header line: */
     filefmt_write_header(wr, FILE_TYPE, FILE_VERSION);
-    /* Grab the number {nr} of roots and the root index width {wa}: */
-    uint32_t nr = root->ne;
+    /* Grab the number {NR} of roots and the root index width {wa}: */
+    uint32_t NR = root->ne;
     /* Compute the width in digits {wr} of the root index: */
-    uint32_t dr = (nr < 10 ? 1 : digits(nr-1));
+    uint32_t dr = (NR < 10 ? 1 : digits(NR-1));
     /* Make sure that {A} is non-null and points to an empty table: */
     oct_arc_vec_t A_local = oct_arc_vec_new(0); /* A local edge table. */
     if (A == NULL) 
       { A = &A_local; }
     else
       { oct_arc_vec_trim(A, 0); }
-    /* Renumber all edge records reachable from {root[0..nr-1]}: */
+    /* Renumber all edge records reachable from {root[0..NR-1]}: */
     oct_enum_octets(*root, &renumber_edge, A);
-    assert(A->ne == ne);
+    assert(A->ne == NE);
     /* Determine the width {eE} in digits of the edge number: */
-    uint32_t dE = (ne < 10 ? 1 : digits(ne-1));
+    uint32_t dE = (NE < 10 ? 1 : digits(NE-1));
     /* We should have zero edges if and only if we have zero roots: */
-    assert((nr == 0) == (ne == 0)); 
+    assert((NR == 0) == (NE == 0)); 
     /* Write the root and edge counts: */
-    fprintf(wr, "roots = %d\n", nr);
-    fprintf(wr, "edges = %d\n", ne);
+    fprintf(wr, "roots = %d\n", NR);
+    fprintf(wr, "edges = %d\n", NE);
     /* Write the roots, one per line: */
     uint32_t i;
-    for (i = 0; i < nr; i++)
+    for (i = 0; i < NR; i++)
       { /* Write {i} and the root arc number {i}: */
         fprintf(wr, "%*u ", dr, i);
         oct_write_arc(wr, root->e[i], dE);
@@ -495,7 +495,7 @@ void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *A)
       }
     /* Write the edge records, one per line: */
     uint64_t eid;
-    for (eid = 0; eid < ne; eid++)
+    for (eid = 0; eid < NE; eid++)
       { /* Get the reachable edge number {eid}: */
         oct_edge_t ed = oct_edge(A->e[eid]);
         /* Check whether the renumbering worked: */
@@ -517,7 +517,7 @@ void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *A)
     bool_t renumber_edge(oct_arc_t p)
       {
         oct_edge_t ed = oct_edge(p);
-        ed->eid = ne; ne++;
+        ed->eid = NE; NE++;
         return FALSE;
       }
   }
@@ -525,23 +525,23 @@ void oct_write_map(FILE *wr, oct_arc_vec_t *root, oct_arc_vec_t *A)
 void oct_read_map(FILE *rd, oct_arc_vec_t *root, oct_arc_vec_t *A)
   { /* Check and consume the header line: */
     filefmt_read_header(rd, FILE_TYPE, FILE_VERSION);
-    /* Parse the root count {nr} and the edge count {ne}: */
-    uint32_t nr = nget_uint32(rd, "roots", 10); fget_eol(rd);
-    uint32_t ne = nget_uint32(rd, "edges", 10); fget_eol(rd);
-    /* Make sure that {A} is non-null and points to a table with {ne} slots: */
+    /* Parse the root count {NR} and the edge count {NE}: */
+    uint32_t NR = nget_uint32(rd, "roots", 10); fget_eol(rd);
+    uint32_t NE = nget_uint32(rd, "edges", 10); fget_eol(rd);
+    /* Make sure that {A} is non-null and points to a table with {NE} slots: */
     oct_arc_vec_t A_local = oct_arc_vec_new(0); /* A local edge table. */
     if (A == NULL) { A = &A_local; }
-    oct_arc_vec_trim(A, ne);
-    /* Create the edge records, save their base arcs in {A->e[0..ne-1]}: */
+    oct_arc_vec_trim(A, NE);
+    /* Create the edge records, save their base arcs in {A->e[0..NE-1]}: */
     uint64_t eid;
-    for (eid = 0; eid < ne; eid++) 
+    for (eid = 0; eid < NE; eid++) 
       { A->e[eid] = oct_make_edge(); 
         oct_set_edge_id(oct_edge(A->e[eid]), eid);
       }
     /* (Re)alocate the root record and read the root arcs, one per line: */
-    oct_arc_vec_trim(root, nr);
+    oct_arc_vec_trim(root, NR);
     uint64_t i;
-    for (i = 0; i < nr; i++)
+    for (i = 0; i < NR; i++)
       { /* Parse the root index {i} and the root arc {root->e[i]}: */
         uint64_t iread = fget_uint64(rd, 10);
         demand(iread == i, "root index mismatch");
@@ -550,8 +550,8 @@ void oct_read_map(FILE *rd, oct_arc_vec_t *root, oct_arc_vec_t *A)
         /* Skip to the next line: */
         fget_eol(rd);
       }
-    /* Read the contents of the edge records {0..ne-1}: */
-    for (eid = 0; eid < ne; eid++) 
+    /* Read the contents of the edge records {0..NE-1}: */
+    for (eid = 0; eid < NE; eid++) 
       { /* Parse the edge number {eid}: */
         uint64_t eid_read = fget_uint64(rd, 10);
         demand(eid_read == eid, "edge number mismatch");

@@ -1,4 +1,4 @@
-#define _GNU_SOURCE
+
 #define PROG_NAME "compute_rms"
 
 #define _GNU_SOURCE 
@@ -41,14 +41,14 @@ struct options_t{
   char* cmpMap;
   char* outMap;
   char* wgtMap;
-  int numChannels;
-  int* channels;
+  int32_t numChannels;
+  int32_t* channels;
 };
 
 typedef struct options_t options_t;
 
-options_t* parse_args(int argc, char** argv);
-options_t* parse_args(int argc, char** argv){
+options_t* parse_args(int32_t argc, char** argv);
+options_t* parse_args(int32_t argc, char** argv){
   options_t* o = (options_t*)malloc(sizeof(options_t));
   argparser_t *pp = argparser_new(stderr, argc, argv);
   argparser_set_help(pp, PROG_HELP);
@@ -76,7 +76,7 @@ options_t* parse_args(int argc, char** argv){
     char* string_ch = origin_ch;
     char aux_str[strlen(origin_ch) + 1];
     /*first, count how much numbers we have*/
-    int count=0;
+    int32_t count=0;
     for(string_ch = origin_ch; string_ch != NULL; string_ch = string_ch){
       count++;
       string_ch = strchr(string_ch,',');
@@ -86,12 +86,12 @@ options_t* parse_args(int argc, char** argv){
     }
     
     o->numChannels = count;
-    o->channels = (int*)malloc(sizeof(int)*count);
+    o->channels = (int32_t*)malloc(sizeof(int32_t)*count);
     
     string_ch = origin_ch;
     count = 0;
     while(strlen(string_ch) != 0){
-      int lenght_num = strcspn(string_ch,",");
+      int32_t lenght_num = strcspn(string_ch,",");
       strncpy(aux_str,string_ch,lenght_num);
       aux_str[lenght_num] = '\0';
       if( sscanf(aux_str,"%d",&(o->channels[count])) != 1){
@@ -127,9 +127,9 @@ float_image_t * nmap_map_compare
     double *sEZP
   )
   { 
-    int NC = AZ->sz[0]; assert(BZ->sz[0] == NC);
-    int NX = AZ->sz[1]; assert(BZ->sz[1] == NX);
-    int NY = AZ->sz[2]; assert(BZ->sz[2] == NY);
+    int32_t NC = AZ->sz[0]; assert(BZ->sz[0] == NC);
+    int32_t NX = AZ->sz[1]; assert(BZ->sz[1] == NX);
+    int32_t NY = AZ->sz[2]; assert(BZ->sz[2] == NY);
     
     if (W != NULL)
       { assert(W->sz[0] == 1);
@@ -139,7 +139,7 @@ float_image_t * nmap_map_compare
       
     /* Compute the mean values of {AZ,BZ,EZ}: */
     double sum_W = 0;
-    int x, y;
+    int32_t x, y;
     for(y = 0; y < NY; y++)
       { for(x = 0; x < NX; x++)
           { /* Get relevant samples from original image: */
@@ -160,7 +160,7 @@ float_image_t * nmap_map_compare
           { /* Get relevant samples from original image: */
             double vA[NC];
             double vB[NC];
-	    int c;
+	    int32_t c;
 	    for(c = 0; c < NC; c++){
 	      vA[c] = float_image_get_sample(AZ,c,x,y);
 	      vB[c] = float_image_get_sample(BZ,c,x,y);
@@ -184,41 +184,12 @@ float_image_t * nmap_map_compare
   }
 
 
-float_image_t* height_map_shrink_one_pixel(float_image_t* Z);
-
-float_image_t* height_map_shrink_one_pixel(float_image_t* Z){
-	int NC = Z->sz[0];
-	int NX = Z->sz[1];
-	int NY = Z->sz[2];
-	float_image_t* IJ = float_image_new(NC,NX-1,NY-1);
-	int c;
-	for( c = 0; c < NC; c++)
-	{
-		int x;
-		for(x = 0; x < NX -1; x++)
-		{
-			int y;
-      			for(y = 0; y < NY -1; y++)
-			{
-				double P00 = float_image_get_sample(Z,c,x,y);
-				double P10 = float_image_get_sample(Z,c,x+1,y);
-				double P01 = float_image_get_sample(Z,c,x,y+1);
-				double P11 = float_image_get_sample(Z,c,x+1,y+1);
-
-				double val = (P00 + P01 + P10 + P11)/4.0;
-				float_image_set_sample(IJ,c,x,y,val);
-      			}
-		}
-	}
-	return IJ;
-}
-
 void add_border_weights(float_image_t* IW);
 
 void add_border_weights(float_image_t* IW){
-  int NX = IW->sz[1];
-  int NY = IW->sz[2];
-  int x,y;
+  int32_t NX = IW->sz[1];
+  int32_t NY = IW->sz[2];
+  int32_t x,y;
   for(y = 0; y < NY; y++){
     for( x = 0; x < NX; x++){
       if( (x== 0) || (y == 0) ){
@@ -246,7 +217,7 @@ void writeFNI(char* filename, float_image_t* img){
 	fclose(arq);
 }
 
-int main(int argc, char** argv){
+int32_t main(int32_t argc, char** argv){
 
 	options_t* o = parse_args(argc,argv);
 	char* hmREF_filename = o->refMap;
@@ -272,19 +243,19 @@ int main(int argc, char** argv){
 	}
 
 	
-	int NC_REF = imgREF->sz[0];
-	int NC_CPR = imgCPR->sz[0];
+	int32_t NC_REF = imgREF->sz[0];
+	int32_t NC_CPR = imgCPR->sz[0];
 	
 	assert(NC_REF == NC_CPR);
 	
-	int NX_REF = imgREF->sz[1];
-	int NY_REF = imgREF->sz[2];
+	int32_t NX_REF = imgREF->sz[1];
+	int32_t NY_REF = imgREF->sz[2];
 
-	int NX_CPR = imgCPR->sz[1];
-	int NY_CPR = imgCPR->sz[2];
+	int32_t NX_CPR = imgCPR->sz[1];
+	int32_t NY_CPR = imgCPR->sz[2];
 
-	int NX_WGT;
-	int NY_WGT;
+	int32_t NX_WGT;
+	int32_t NY_WGT;
 
    	fprintf(stderr,"Height maps sizes: REF[%d x %d] and CPR[%d x %d]\n",NX_REF,NY_REF,NX_CPR,NY_CPR);
 	if(imgW != NULL){ 
@@ -340,7 +311,7 @@ int main(int argc, char** argv){
 
 
 	
-	int NC = imgREF->sz[0];
+	int32_t NC = imgREF->sz[0];
 	if(o->channels == NULL){
 	  NC = 1;
 	}else{
@@ -353,10 +324,10 @@ int main(int argc, char** argv){
 	float_image_t* img_diff = float_image_new(NC,NX_CPR,NY_CPR);
 	if( (NC_REF ==1 ) || (NC > 1)){
 	  fprintf(stderr,"Comparing single-channel map\n");
-	  int c;
+	  int32_t c;
 	  for( c = 0; c < NC ; c++)
 	  {
-		  int ic = (o->channels == NULL ? 0 : o->channels[c]);
+		  int32_t ic = (o->channels == NULL ? 0 : o->channels[c]);
 		  assert((ic >= 0) && (ic < NC_REF));
 		  double sAZP,sBZP; /* The standard deviations of the values of {imgREF,imgCPR}, each from its own mean value. */
 		  double sEZP; /* The root-mean-square value of the error */

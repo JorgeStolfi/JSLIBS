@@ -1,5 +1,5 @@
 /* See {float_image_hog.h} */
-/* Last edited on 2024-12-04 23:29:02 by stolfi */
+/* Last edited on 2025-01-18 12:57:50 by stolfi */
 
 #include <stdio.h>
 #include <math.h>
@@ -31,10 +31,10 @@ void float_image_hog_collect
     /* Get the image dimensions: */
     int32_t NX = (int32_t)DX->sz[1]; 
     int32_t NY = (int32_t)DX->sz[2];
-    float_image_check_size(DY, -1, NX, NY);
+    float_image_check_size(DY, -1, NX, NY, "mismatched {DX,DY} images");
     demand((cX >= 0) && (cX < DX->sz[0]), "invalid {DX} channel");
     demand((cY >= 0) && (cY < DY->sz[0]), "invalid {DY} channel");
-    if (M != NULL) { float_image_check_size(M, -1, NX, NY); }
+    if (M != NULL) { float_image_check_size(M, -1, NX, NY, "mismatched {DX,DY,M} images"); }
     
     /* Clear histogram: */
     int32_t ih;

@@ -2,76 +2,83 @@
 #define pst_height_map_H
 
 /* pst_height_map.h -- procedures for working with height maps. */
-/* Last edited on 2025-01-08 01:16:14 by stolfi */
+/* Last edited on 2025-01-19 15:29:15 by stolfi */
 
 #include <float_image.h>
 
 /* HEIGHT MAPS
   
-  A /height map/ is a single-channel float-valued image where
-  the pixel value represents a height field {Z(X,Y)}. */
+  A /height map/ is a float-valued image with 1 or 2 channels, where
+  the samples in channel 0 are height values {Z[x,y]}.  Channel 1,
+  if present, stores the corresponding reliability weights {U[x,y]}.
+  
+  A height map {Z} is usually related to a slope (or normal) map {G}.
+  In that situation, the PIXELS of {Z} correspond to CORNERS
+  of pixels of {G}.  More precisely, pixel {Z[x,y]} is the low corner
+  of pixel {G[x,y]}; that is it lies between pixels {G[x-dx,y-dy]} where
+  {dx,xy} range in {0,1} -- when those pixels exist in {G}.  Conversely,
+  {G[x,y]} is the pixel whose corners are {Z[x+dx,y+dy]} for {dx,dy} in {0,1}. */
 
-void pst_height_map_expand
-  ( float_image_t *JZ,
-    float_image_t *JW,
-    float_image_t *IZ,
-    float_image_t *IW
-  );
-  /* Given a height map {JZ} and its (possibly null) weight map {JW},
-    magnifies it to produce a height map {IZ} twice as big,
-    and (if {IW} is not null) a corresponding weight map {IW}.
-    The heights too are scaled by 2.
+float_image_t *pst_height_map_shrink(float_image_t *IZ);
+  /* Given a height map {IZ}, with samples of a height function, returns
+    another height map {JZ}, with half the size as {IZ} and the same
+    number of channels, containing the samples of the height function at
+    half the original resolution and half the original scale.
     
-    If the output map {IZ} has {NXI} columns and {NYI} rows, the
+    The reduction is meant to be compatible with that of
+    {pst_slope_map_shrink}.  Thus, if {IZ} has {NXI} cols and {NYI} rows, 
+    the output map {JZ} must have {NXI/2+1} cols and {NY/2+1} rows,
+    rounded DOWN.
+    
+    Moreover, a height sample in column {x} and row {y} of {JZ} should
+    be the half of the weighted average of samples {IZ[x',y']} where
+    {x'=2*x-dx}, {y'=2*y-dy}, and {dx,dy} range in {0..1}, if such
+    pixels exist. The factor of 1/2 is meant to maintain the
+    compatibility with {pst_slope_map_shrink}, that does not change the
+    slope values even though the pixels are shrunk to half the size.
+    
+    If the map {IZ} has two channels, the weights for the averaging are
+    taken from channel 1 of {IZ}. IN that case, the weight of the pixel
+    in {JZ} is the minimum of the weights of the input samples used in
+    the avergaing. If {IZ} has only one channel, the weigths are assumed
+    to be all 1.0. */
+
+float_image_t *pst_height_map_expand(float_image_t *JZ, int32_t NX, int32_t NY);
+  /* The approximate inverse of {pst_height_map_shrink}.
+    Given a height map {JZ}, magnifies it to produce a height
+    map {IZ} twice as big.  The heights too are scaled by 2.
+    
+    The output map {IZ} will have {NX} columns and {NY} rows. The
     original image {JZ} must have size {NXI/2 + 1} by {NYI/2 + 1},
-    rounded down. If {JW} is given, it must have one channel and the
-    same size as {JZ}, Ditto for {IW} and {IZ}. */
+    rounded down. */
 
-float_image_t *pst_height_map_shrink(float_image_t *IZ, uint32_t avgWidth);
-  /* Given a height map {IZ}, with samples of a height function {Z},
-    returns another height map {JZ}, with half the size as {IZ},
-    containing the samples of the height function at half the original
-    resolution and half the original scale. If the given image has
-    size {NX} by {NY}, the result has size {NX/2+1} by {NY/2+1},
-    rounded down. In particular, if {IZ} has {2^k+1} columns then {JZ}
-    will have {2^{k-1}+1} columns.
+void pst_height_map_shift_to_zero_mean(float_image_t *Z);
+  /* Subtracts the mean of all height values in {Z} from each height
+    value, so that the mean height becomes zero. 
     
-    A sample in column {x} and row {y} of {JZ} is conceptually
-    located at the corner {(x,y)} of {JZ}'s domain and at the corner {(2x,2y)} of {IZ}'s domain.
-    The {avgWidth} parameter determines the width of the averaging kernel.
-    If {avgWidth = 1}, uses subsampling (copies 1 every 2x2 pixels).
-    If {avgWidth = 2}, averages a window of {3x3} pixels with binomial weights.
-    If {avgWidth >= 3} , uses a smoother window of that width.
-    
-    Pixels of {IZ} that fall outside the domain are ignored in
-    the averaging. */
+    The map {Z} must have 1 or 2 channels. If it has 2 channels, the
+    mean is a weighted averagem, with the weights taken from channel 1.
+    If {Z} has only one channel, the weights are assumed to be 1.0.
+    However, if a height value is {NAN} or infinity, the corresponding
+    weight is set to zero. */
+  
 
 /* COMPARISON */
-
-float_image_t *pst_height_map_shrink_by_one(float_image_t *Z, float_image_t *W);
-  /* Shrinks the height map {Z} by one col and one row.
-    In the result, each pixel with indices {x,y} is the average 
-    of the four pixels {x+dx,y+dy} where {dx,dy} are 0 or 1.
-
-    If {W} is not null, it must be a one channel image with same 
-    col and row counts as {Z}. Each pixel of {W} is interpreted as 
-    the weight of the corresponding pixel of {Z}, for the purpose
-    of averaging. */
 
 float_image_t *pst_height_map_compare
   ( float_image_t *AZ,
     float_image_t *BZ,
-    float_image_t *U,
     bool_t zero_mean,
     double *sAZP,
     double *sBZP,
     double *sEZP,
     double *sreP
   );
-  /* Returns a height map {EZ} which is the difference {AZ-BZ} of the 
-    two given height maps (which msut have the same size). 
+  /* Returns a height map {EZ} whose channel 0 is the difference {AZ-BZ} of the 
+    two given height maps (which must have the same size). 
     If {zero_mean} is TRUE, subtracts the mean values so that
-    the mean difference is zero. 
+    the mean difference is zero.  Also sets the weight channel 1 of {EZ}
+    to the product of the weight channels of {AZ} and {BZ}.
     
     Also returns in {*sAZP,*sBZP} the standard deviations {sZ,sBZ} of the values
     of {AZ,BZ}, each from its own mean value; in {*sEZP} the root-mean-square
@@ -82,40 +89,32 @@ float_image_t *pst_height_map_compare
 
 void pst_height_map_level_analyze_and_write
   ( char *filePrefix,
-    uint32_t level,
-    bool_t levelTag,
-    uint32_t iter,
-    bool_t iterTag,
+    int32_t level,
+    int32_t iter,
     double change,
     float_image_t *CZ,
-    float_image_t *RZ,
-    float_image_t *U, 
+    float_image_t *RZ, 
     bool_t writeImages,
-    bool_t writeError,
-    uint32_t indent
+    bool_t writeError
   );
   /* A procedure for monitoring the progress of iterative
     integration, especially multiscale, and writing the solution.
     
-    The image {CZ} must be single-channel.
+    The image {CZ} must be a height map with 1 or 2 channels. The image
+    {RZ}, if not NULL, is a reference height map, which must have 1 oe 2
+    channels and the same size as {CZ}.
     
-    The image {RZ}, if not NULL, is a reference height map, which
-    must be single-channel and must have the same size as {CZ}.
-
-    The image {U} should be a single-channel height confidence mask,
-    with the same size as {CZ}. If null, it is assumed to be all 1's.
-    
-    If {RZ} is non-null, the procedure computes an image {EZ = CZ'
-    - RZ'} where {CZ'} is {CZ} minus the average value of {CZ}; and
-    ditto for {RZ'} from {RZ}. In the averages, each pixel is weighted
-    by the corresponding pixel of {U}.
+    If {RZ} is non-null, the procedure computes an image {EZ=CZ'-RZ'}
+    where {CZ'} is {CZ} minus the average value of {CZ}; and ditto for
+    {RZ'} from {RZ}. In the averages, each pixel is weighted by the
+    product of the weights in the two maps.
     
     If {RZ} is non-null, the procedure also computes values
     {sZ=RMS(CZ')}, {sRZ=RMS(RZ')}, {sMZ=hypot(sZ,sRZ)/sqrt(2)},
-    {sEZ=RMS(EZ)}, and {sre=sEZ/sMZ}. All the {RMS} values use {U} as
-    the weight mask.
+    {sEZ=RMS(EZ)}, and {sre=sEZ/sMZ}.   In the the {RMS} values, the weight each
+    squared sample error is the product of the two weight channels.
      
-    If {writeImages} is true, the images {CZ} is written to disk file
+    If {writeImages} is true, the image {CZ} is written to disk file
     "{filePrefix}-{level}-{iter}-Z.fni". In that case, if {RZ} is not
     null, the procedure also writes the error image {EZ} to
     "{filePrefix}-{level}-{iter}-eZ.fni".
@@ -126,9 +125,9 @@ void pst_height_map_level_analyze_and_write
     
       "{level} {NX} {NY} {iter} {change} {sAZ} {sBZ} {sEZ} {sre}"
       
-    If {levelTag} is false the "-{level}" part is omitted from the file 
-    names.  If {iterTag} is false the "-{iter}" tag is omitted.
-    
-    All messages to {stderr} are indented by {indent} spaces. */    
+    If {level} is negative, the "-{level}" part is omitted from the file
+    names. If {iter} is negative, the "-{iter}" part is omitted. If
+    {level} is non-negative, all messages to {stderr} are indented by
+    {2*level+2} spaces. */   
 
 #endif

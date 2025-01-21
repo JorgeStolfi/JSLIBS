@@ -1,18 +1,18 @@
 #! /bin/bash
-# Last edited on 2025-01-08 03:51:48 by stolfi
+# Last edited on 2025-01-14 15:44:44 by stolfi
 
-nmap="$1"; shift;
+mapName="$1"; shift;
 full="$1"; shift;
 
 PROG="test_build_system"
 
-size=0256x0256
+size=0256x0192
 
 indir="in/slope_to_height"
 
-in_slopes_fni="${indir}/${nmap}-*-${size}-G.fni"
-in_weights_fni="${indir}/${nmap}-*-${size}-W.fni"
-outPrefix="out/${nmap}-${full}"
+in_slopes_fni="${indir}/${mapName}-${size}-G.fni"
+in_weights_fni="${indir}/${mapName}-${size}-W.fni"
+outPrefix="out/${mapName}-${size}-${full}"
 out_system_txt="${outPrefix}-S.sys"
 out_weights_pgm="${outPrefix}-W.pgm"
 

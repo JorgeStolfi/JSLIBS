@@ -2,7 +2,7 @@
 #define obj_file_read_H
 
 /* Basic parsing of Wavefront OBJ mesh files. */ 
-/* Last edited on 2024-12-05 10:39:19 by stolfi */
+/* Last edited on 2025-01-09 23:24:20 by stolfi */
 
 #define obj_file_read_H_copyright \
   "Copyright (C) 2024 Jorge Stolfi, UNICAMP.\n\n" jslibs_copyright
@@ -22,18 +22,18 @@ obj_file_data_t *obj_file_read(FILE *rd, bool_t verbose);
     Returns the essential information as a {obj_file_data_t} structure {D}.
     
     The procedure returns the mesh vertex coordinates and labels as read
-    from the file (from the "v" lines) in the vectors {D.V.e[0..nv-1]}
-    and {D.VL.e[0..nv-1]}, the corner texpoint (texture mapping)
-    coordinates (from the "vt" lines) in {D.T.e[0..nt-1]}, and the
-    corner normals (from the "vn" lines) in {D.N.e[0..nn-1]}. Note that
+    from the file (from the "v" lines) in the vectors {D.V.e[0..NV-1]}
+    and {D.VL.e[0..NV-1]}, the corner texpoint (texture mapping)
+    coordinates (from the "vt" lines) in {D.T.e[0..NT-1]}, and the
+    corner normals (from the "vn" lines) in {D.N.e[0..NN-1]}. Note that
     indices into these arrays are 1 less than the indices of the things
     in the OBJ file, since the latter starts counting at 1. That is,
     {D.V.e[i]} are actually the vertex numbered {i+1} in the file. These
-    vectors will be trimmed so that one will have {nv==D.V.ne==D.VL.ne},
-    {nt = D.T.ne}, and {nn = D.N.ne}.
+    vectors will be trimmed so that one will have {NV==D.V.ne==D.VL.ne},
+    {NT = D.T.ne}, and {NN = D.N.ne}.
     
     The procedure also returns the face data ("f" lines) into the arrays
-    {D.FV}, {D.FT}, and {D.FN}.  The number of faces {nf} will be 
+    {D.FV}, {D.FT}, and {D.FN}.  The number of faces {NF} will be 
     {D.FV.ne = D.FT.ne = D.FN.ne}
     
     Lines "vt" that have only two texpoint coordinates will get an extra 

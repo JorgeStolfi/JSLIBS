@@ -1,5 +1,5 @@
 /* See {obj_file_write.h}. */
-/* Last edited on 2024-12-22 10:49:06 by stolfi */
+/* Last edited on 2025-01-09 23:10:19 by stolfi */
  
 #define obj_file_write_C_copyright \
   "Copyright © 2023 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -30,15 +30,15 @@ void obj_file_write_coords_table(FILE *wr, char *elname, char *cmd, r3_vec_t *P,
 
 void obj_file_write_face_tables
   ( FILE *wr,
-    uint32_t nv,
+    uint32_t NV,
     obj_file_face_vec_t *FV,
-    uint32_t nt,
+    uint32_t NT,
     obj_file_face_vec_t *FT,
-    uint32_t nn,
+    uint32_t NN,
     obj_file_face_vec_t *FN
   );
   /* Writes tp {wr} the face corner info from the tables {FV,FT,FN}.
-    Assumes that the definitions of {nv} vertices,{nt} textpoints, and {nn} normals have been 
+    Assumes that the definitions of {NV} vertices,{NT} textpoints, and {NN} normals have been 
     written.
     
     Each index in the tables is zero-based, whereas OBJ indices are 1-based.
@@ -46,10 +46,10 @@ void obj_file_write_face_tables
 
 void obj_file_write(FILE *wr, obj_file_data_t *D, uint32_t prec)
   {
-    uint32_t nv = D->V.ne;  /* Number of vertices */
-    uint32_t nt = D->T.ne;  /* Number of texpoints */
-    uint32_t nn = D->N.ne;  /* Number of normals */
-    assert(nv == D->VL.ne);
+    uint32_t NV = D->V.ne;  /* Number of vertices */
+    uint32_t NT = D->T.ne;  /* Number of texpoints */
+    uint32_t NN = D->N.ne;  /* Number of normals */
+    assert(NV == D->VL.ne);
     
     fprintf(wr, "# written by %s from JSLIBS/libquad\n", __FUNCTION__);
     fprintf(wr, "\n");
@@ -57,7 +57,7 @@ void obj_file_write(FILE *wr, obj_file_data_t *D, uint32_t prec)
     obj_file_write_coords_table(wr, "texpoint", "vt", &(D->T), NULL, prec);
     obj_file_write_coords_table(wr, "normal", "vn", &(D->N), NULL, 7);
     fprintf(wr, "# faces\n");
-    obj_file_write_face_tables(wr, nv, &(D->FV), nt, &(D->FT), nn, &(D->FN));
+    obj_file_write_face_tables(wr, NV, &(D->FV), NT, &(D->FT), NN, &(D->FN));
     fflush(wr);
     return;
   }
@@ -81,41 +81,41 @@ void obj_file_write_coords_table(FILE *wr, char *elname, char *cmd, r3_vec_t *P,
 
 void obj_file_write_face_tables
   ( FILE *wr,
-    uint32_t nv,
+    uint32_t NV,
     obj_file_face_vec_t *FV,
-    uint32_t nt,
+    uint32_t NT,
     obj_file_face_vec_t *FT,
-    uint32_t nn,
+    uint32_t NN,
     obj_file_face_vec_t *FN
   )
-  { uint32_t nf = FV->ne; /* Number of faces. */
-    demand(FT->ne == nf, "inconsistent face count (FT)");
-    demand(FN->ne == nf, "inconsistent face count (FN)");
+  { uint32_t NF = FV->ne; /* Number of faces. */
+    demand(FT->ne == NF, "inconsistent face count (FT)");
+    demand(FN->ne == NF, "inconsistent face count (FN)");
     fprintf(wr, "# face corners\n");
-    for (uint32_t kf = 0;  kf < nf; kf++)
+    for (uint32_t kf = 0;  kf < NF; kf++)
       { if (debug) { fprintf(stderr, "  writing face %d\n", kf); }
         fprintf(wr, "f");
         int32_vec_t *FVk = &(FV->e[kf]);
         int32_vec_t *FTk = &(FT->e[kf]);
         int32_vec_t *FNk = &(FN->e[kf]);
-        uint32_t nc = FVk->ne;
-        demand(nc == FTk->ne, "inconsistent corner count (FT.e[kf])");
-        demand(nc == FNk->ne, "inconsistent corner count (FN.e[kf])");
-        for (uint32_t kc = 0;  kc < nc; kc++)
+        uint32_t NC = FVk->ne;
+        demand(NC == FTk->ne, "inconsistent corner count (FT.e[kf])");
+        demand(NC == FNk->ne, "inconsistent corner count (FN.e[kf])");
+        for (uint32_t kc = 0;  kc < NC; kc++)
           { int32_t ixv = FVk->e[kc]; if (ixv != -1) { ixv += 1; }
             int32_t ixt = FTk->e[kc]; if (ixt != -1) { ixt += 1; }
             int32_t ixn = FNk->e[kc]; if (ixn != -1) { ixn += 1; }
             if (debug) { fprintf(stderr, "    writing corner %d = %d/%d/%d\n", kc, ixv, ixt, ixn); }
-            demand((ixv >= 1) && (ixv <= nv), "bad vertex index");
+            demand((ixv >= 1) && (ixv <= NV), "bad vertex index");
             fprintf(wr, " %d", ixv);
             if ((ixt >= 0) || (ixn >= 0))
               { fprintf(wr, "/");
                 if (ixt >= 0)
-                  { demand((ixt >= 1) && (ixt <= nt), "bad texpoint index");
+                  { demand((ixt >= 1) && (ixt <= NT), "bad texpoint index");
                     fprintf(wr, "%d", ixt);
                   }
                 if (ixn >= 0)
-                  { demand((ixn >= 1) && (ixn <= nn), "bad normal index");
+                  { demand((ixn >= 1) && (ixn <= NN), "bad normal index");
                     fprintf(wr, "/");
                     fprintf(wr, "%d", ixn);
                   }

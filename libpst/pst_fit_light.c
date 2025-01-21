@@ -1,5 +1,5 @@
 /* See pst_fit_light.h */
-/* Last edited on 2024-12-28 20:13:43 by stolfi */ 
+/* Last edited on 2025-01-19 06:47:06 by stolfi */ 
 
 #include <math.h>
 #include <values.h>
@@ -47,6 +47,7 @@ typedef double pst_flt_weight_func_t(r3_t *nrm, double smp);
 
 void pst_flt_build_lsq_system
   ( float_image_t *IMG, 
+    int32_t c,
     float_image_t *NRM, 
     uint32_t n,
     pst_flt_basis_func_t *bas[],
@@ -56,19 +57,19 @@ void pst_flt_build_lsq_system
     double b[]
   );
   /* Computes the {n×n} matrix {A} and the right-hand-side {n}-vector {b} of
-    the the least squares system {A u = b} for a linear shading model.
+    the the least squares system {A u = b} for a linear shading model,
+    for channel {c} of the image {IMG}.
     
-    The procedure requires the scene's photo {IMG} and its normal map
-    {NRM}.
+    The procedure requires the scene's normal map {NRM}.
 
-    The image to be aproximated is assumed to have, at any pixel {p},
-    the value {FUN[p] = fun(NRM[p],IMG[p])}.  The approximation {APP[p]} is
-    assumed to be a linear combination of the images {BAS[i][p] =
-    bas[i](NRM[p])}, where {i} ranges in {0..n-1}.  The
-    system's unknowns {u[0..n-1]} are the coefficients of this linear
-    combination.  The quadratic
-    functional, to be minimized, is the sum of {(FUN[p] - APP[p])^2}
-    over all pixels {p} where {wht(NRM[p],IMG[p])!=0}.
+    For each pixel {p=(x,y)}, let {FUN[p]} be
+    {fun(NRM[0..2,p],IMG[c,p])}. The approximation {APP[p]} to be fitted
+    to it is assumed to be a linear combination of the images {BAS[i][p]
+    = bas[i](NRM[0..2,p])}, where {i} ranges in {0..n-1}. The system's
+    unknowns {u[0..n-1]} are the coefficients of this linear
+    combination. The quadratic functional, to be minimized, is the sum
+    of {W[p]*(FUN[p] - APP[p])^2} where {W =
+    NRM[3,p]*wht(NRM[0..2,p],IMG[c,p])}.
     
     The output matrix {A} must have space for {n^2} elements, which
     are assumed stored by rows, without gaps between the rows. The
@@ -158,7 +159,7 @@ void pst_fit_light_single_iterative
           { /* Make an initial heuristic adjustment of the applicable parameters: */
             bool_t dirAdjust = (dirStep > 0.0);
             pst_fit_light_single_trivial
-              ( IMG, NRM, c, lht, src, dirAdjust, pwrAdjust, ambAdjust, nonNegative, minNormalZ );
+              ( IMG, c, NRM, lht, src, dirAdjust, pwrAdjust, ambAdjust, nonNegative, minNormalZ );
           }
         else
           { /* Adjust the direction of {src}, if appropriate: */
@@ -362,7 +363,7 @@ void pst_fit_light_single_lsq
     
     /* Build system: */
     if (debug) { fprintf(stderr, "building the least squares system...\n"); }
-    pst_flt_build_lsq_system(IMG, NRM, NP, bas, fun, &wht, A, b);
+    pst_flt_build_lsq_system(IMG, c, NRM, NP, bas, fun, &wht, A, b);
     
     /* Solve system: */
     if (debug) { fprintf(stderr, "solving the least squares system...\n"); }
@@ -502,6 +503,7 @@ double pst_flt_compute_ambient(pst_light_t *lht, int32_t c, pst_lamp_t *src, r3_
 
 void pst_flt_build_lsq_system
   ( float_image_t *IMG, 
+    int32_t c,
     float_image_t *NRM, 
     uint32_t n,
     pst_flt_basis_func_t *bas[],
@@ -514,8 +516,8 @@ void pst_flt_build_lsq_system
   
     int32_t NC, NX, NY;
     float_image_get_size(IMG, &NC, &NX, &NY);
-    demand(NC == 1, "photo is not single-channel");
-    float_image_check_size(NRM, 3, NX, NY);
+    demand((c >= 0) && (c < NC), "invalid photo channel");
+    float_image_check_size(NRM, 4, NX, NY, "bad normal map");
 
     /* Initialize matrix and RHS vector with zeros: */
     for (uint32_t i = 0; i < n; i++)
@@ -527,9 +529,9 @@ void pst_flt_build_lsq_system
     /* Scan valid pixels and add terms to the cross products: */
     for (int32_t y = 0; y < NY; y++)
       { for (int32_t x = 0; x < NX; x++)
-          { double smp = (double)float_image_get_sample(IMG, 0, x, y);
-            r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
-            double w = wht(&nrm, smp);
+          { double smp = (double)float_image_get_sample(IMG, c, x, y);
+            r3_t nrm = pst_normal_map_get_vector(NRM, x, y);
+            double w = pst_normal_map_get_weight(NRM, x, y)*wht(&nrm, smp);
             if (w > 0.0)
               { /* Evaluate the basis elements and target function at this pixel: */
                 if (debug)
@@ -580,8 +582,8 @@ void pst_flt_print_lsq_system(FILE *wr, uint32_t n, double A[], double b[])
 
 void pst_fit_light_single_trivial
   ( float_image_t *IMG, 
-    float_image_t *NRM, 
     int32_t c,          /* Color channel to consider */
+    float_image_t *NRM, 
     pst_light_t *lht,   /* Light model. */
     pst_lamp_t *src,    /* Lamp of {lht} to adjust. */
     bool_t dirAdjust,   /* TRUE estimates the direction of {src}. */
@@ -591,6 +593,11 @@ void pst_fit_light_single_trivial
     double minNormalZ   /* Ignore image points where the normal's Z is less than this. */
   )
   { bool_t debug = TRUE;
+  
+    int32_t NC, NX, NY;
+    float_image_get_size(IMG, &NC, &NX, &NY);
+    demand((c >= 0) && (c < NC), "invalid photo channel");
+    float_image_check_size(NRM, 4, NX, NY, "bad normal map");
     
     /* Get the lamp array: */
     pst_lamp_vec_t *lmpv = &(lht->lmpv);
@@ -604,12 +611,6 @@ void pst_fit_light_single_trivial
     
     /* If nothing is adjustable, we are done: */
     if ((! dirAdjust) && (! pwrAdjust) && (! ambAdjust)) { return; }
-    
-    /* Get image dimensions: */
-    int32_t NC, NX, NY;
-    float_image_get_size(IMG, &NC, &NX, &NY);
-    demand(NC == 1, "photo is not single-channel");
-    float_image_check_size(NRM, 3, NX, NY);
 
     if (ambAdjust)
       { /* Estimate the dimming factor to apply to all other lamps. */
@@ -621,7 +622,7 @@ void pst_fit_light_single_trivial
         for (int32_t y = 0; y < NY; y++)
           { for (int32_t x = 0; x < NX; x++)
               { double smp = (double)float_image_get_sample(IMG, 0, x, y);
-                r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
+                r3_t nrm = pst_normal_map_get_vector(NRM, x, y);
                 if (pst_flt_pixel_is_valid(smp, &nrm, minNormalZ))
                   { /* Get computed contribution from all other lamps: */
                     double amb = pst_flt_compute_ambient(lht, c, src, &nrm);
@@ -658,7 +659,7 @@ void pst_fit_light_single_trivial
         for (int32_t y = 0; y < NY; y++)
           { for (int32_t x = 0; x < NX; x++)
               { double smp = (double)float_image_get_sample(IMG, 0, x, y);
-                r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
+                r3_t nrm = pst_normal_map_get_vector(NRM, x, y);
                 if (pst_flt_pixel_is_valid(smp, &nrm, minNormalZ))
                   { /* Get computed contribution from all other lamps: */
                     double amb = pst_flt_compute_ambient(lht, c, src, &nrm);
@@ -703,7 +704,7 @@ void pst_fit_light_single_trivial
         for (int32_t y = 0; y < NY; y++)
           { for (int32_t x = 0; x < NX; x++)
               { double smp = (double)float_image_get_sample(IMG, 0, x, y);
-                r3_t nrm = pst_normal_map_get_pixel(NRM, x, y);
+                r3_t nrm = pst_normal_map_get_vector(NRM, x, y);
                 if (pst_flt_pixel_is_valid(smp, &nrm, minNormalZ))
                   { /* Get the geometric factor for {src} at this pixel: */
                     double geo = pst_lamp_geom_factor(&nrm, &(src->dir), src->crad);
@@ -767,7 +768,7 @@ void pst_fit_light_multi
     double A[NS*NS];  /* Basis rigidity matrix, {A[i,j] = <bas[i],bas[j]>}. */
     double b[NS];     /* Right-hand side vector, {b[i] = <bas[i],fun>}. */
     if (debug) { fprintf(stderr, "building the least squares system...\n"); }
-    pst_flt_build_lsq_system(IMG, NRM, NS, bas, fun, &wht, A, b);
+    pst_flt_build_lsq_system(IMG, c, NRM, NS, bas, fun, &wht, A, b);
     double u[NS]; /* Solution vector. */
     
     /* Solve the system: */

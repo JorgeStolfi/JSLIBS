@@ -1,5 +1,5 @@
 /* See {obj_file_read.h}. */
-/* Last edited on 2024-12-22 10:46:32 by stolfi */
+/* Last edited on 2025-01-09 23:18:06 by stolfi */
  
 #define obj_file_read_C_copyright \
   "Copyright © 2024 State University of Campinas (UNICAMP).\n\n" jslibs_copyright
@@ -77,11 +77,11 @@ int32_t obj_file_read_index(FILE *rd, uint32_t nlin, char *elname, uint32_t n);
 void  obj_file_read_face
   ( FILE *rd,
     uint32_t nlin,
-    uint32_t nv,
+    uint32_t NV,
     int32_vec_t *FVk,
-    uint32_t nt,
+    uint32_t NT,
     int32_vec_t *FTk,
-    uint32_t nn,
+    uint32_t NN,
     int32_vec_t *FNk
   );
   /* Assumes that {rd} is positioned right after an "f" command. Reads the data for the corners
@@ -92,9 +92,9 @@ void  obj_file_read_face
     of a vertex, a "/", the index of a texpoint, a "/", and the index of a normal.
     The last two maybe omitted, as well as any trailing "/" not followed by an index.
     
-    The vertex index {ixv} must be in {1..nv}, or in {-nv..-1} indicating {nv+1-nv}.
-    Likewise, the texpoint index {ixt} must be in {1..nt} or {-nt..-1},
-    and the normal index must be in {1..nn} or {-nn..-1}.  Note that indices in the
+    The vertex index {ixv} must be in {1..NV}, or in {-NV..-1} indicating {NV+1-NV}.
+    Likewise, the texpoint index {ixt} must be in {1..NT} or {-NT..-1},
+    and the normal index must be in {1..NN} or {-NN..-1}.  Note that indices in the
     file start at 1 (not at 0, as they do in memory).
     
     On input the arrays {FVk,FTk,FNk} must be initialized with valid vectors, possibly empty.
@@ -111,11 +111,11 @@ char *obj_file_read_cleanup_label(char *lab);
 
 obj_file_data_t *obj_file_read(FILE *rd, bool_t verbose)
   { uint32_t nlin = 0; /* Number of lines read. */
-    uint32_t nv = 0; /* Number of vertices ('v' lines) found. */
-    uint32_t nt = 0; /* Number of texpoints ('vt' lines) found. */
-    uint32_t nn = 0; /* Number of normals ('vn' lines) found. */
-    uint32_t nf = 0; /* Number of faces ('f' lines) found. */
-    uint32_t ns = 0; /* Number of sides/corners (entries in 'f' lines) found. */
+    uint32_t NV = 0; /* Number of vertices ('v' lines) found. */
+    uint32_t NT = 0; /* Number of texpoints ('vt' lines) found. */
+    uint32_t NN = 0; /* Number of normals ('vn' lines) found. */
+    uint32_t NF = 0; /* Number of faces ('f' lines) found. */
+    uint32_t NS = 0; /* Number of sides/corners (entries in 'f' lines) found. */
     
     obj_file_data_t *D = obj_file_data_new();
     
@@ -132,23 +132,23 @@ obj_file_data_t *obj_file_read(FILE *rd, bool_t verbose)
                 r3_t u = (r3_t){{ NAN, NAN, NAN }};
                 char *lab = NULL;
                 obj_file_read_coords(rd, nlin, "vertex", 3, &u, &lab);
-                r3_vec_expand(&(D->V), (int32_t)nv);
-                D->V.e[nv] = u;
-                string_vec_expand(&(D->VL), (int32_t)nv);
-                D->VL.e[nv] = obj_file_read_cleanup_label(lab);
+                r3_vec_expand(&(D->V), (int32_t)NV);
+                D->V.e[NV] = u;
+                string_vec_expand(&(D->VL), (int32_t)NV);
+                D->VL.e[NV] = obj_file_read_cleanup_label(lab);
                 if (debug) { fget_show_next(stderr, "    next char = ", rd, "\n"); }
                 fget_eol(rd);
-                nv++;
+                NV++;
               }
             else if (ch2 == 't')
               { /* New texpoint: */
                 r3_t u = (r3_t){{ NAN, NAN, NAN }};
                 obj_file_read_coords(rd, nlin, "texpoint", 2, &u, NULL);
-                r3_vec_expand(&(D->T), (int32_t)nt);
-                D->T.e[nt] = u;
+                r3_vec_expand(&(D->T), (int32_t)NT);
+                D->T.e[NT] = u;
                 if (debug) { fget_show_next(stderr, "    next char = ", rd, "\n"); }
                 fget_eol(rd);
-                nt++;
+                NT++;
               }
             else if (ch2 == 'n')
               { /* New normal vector: */
@@ -156,11 +156,11 @@ obj_file_data_t *obj_file_read(FILE *rd, bool_t verbose)
                 obj_file_read_coords(rd, nlin, "normal", 3, &u, NULL);
                 double um = r3_dir(&u, &u); /* Normalize to unit length. */
                 if (um < 1.0e-6) { obj_file_read_err(nlin, "normal vector is too short"); }
-                r3_vec_expand(&(D->N), (int32_t)nn);
-                D->N.e[nn] = u;
+                r3_vec_expand(&(D->N), (int32_t)NN);
+                D->N.e[NN] = u;
                 if (debug) { fget_show_next(stderr, "    next char = ", rd, "\n"); }
                 fget_eol(rd);
-                nn++;
+                NN++;
               }
             else
               { 
@@ -171,12 +171,12 @@ obj_file_data_t *obj_file_read(FILE *rd, bool_t verbose)
         else if (ch1 == 'f')
           { /* Face definition line: */
             assert(ch2 == ' ');
-            obj_file_face_vec_expand(&(D->FV), (int32_t)nf); D->FV.e[nf] = int32_vec_new(5); 
-            obj_file_face_vec_expand(&(D->FT), (int32_t)nf); D->FT.e[nf] = int32_vec_new(5); 
-            obj_file_face_vec_expand(&(D->FN), (int32_t)nf); D->FN.e[nf] = int32_vec_new(5); 
-            obj_file_read_face(rd, nlin, nv, &(D->FV.e[nf]), nt, &(D->FT.e[nf]), nn, &(D->FN.e[nf]));
-            ns += D->FV.e[nf].ne;
-            nf++;
+            obj_file_face_vec_expand(&(D->FV), (int32_t)NF); D->FV.e[NF] = int32_vec_new(5); 
+            obj_file_face_vec_expand(&(D->FT), (int32_t)NF); D->FT.e[NF] = int32_vec_new(5); 
+            obj_file_face_vec_expand(&(D->FN), (int32_t)NF); D->FN.e[NF] = int32_vec_new(5); 
+            obj_file_read_face(rd, nlin, NV, &(D->FV.e[NF]), NT, &(D->FT.e[NF]), NN, &(D->FN.e[NF]));
+            NS += D->FV.e[NF].ne;
+            NF++;
             if (debug) { fget_show_next(stderr, "    next char = ", rd, "\n"); }
             fget_eol(rd);
           }
@@ -202,15 +202,15 @@ obj_file_data_t *obj_file_read(FILE *rd, bool_t verbose)
           }
       }
     if (verbose) 
-      { fprintf(stderr, "%s: found %d vertices  %d texpoints  %d normals  %d faces  %d corners\n", __FUNCTION__, nv, nt, nn, nf, ns); }
+      { fprintf(stderr, "%s: found %d vertices  %d texpoints  %d normals  %d faces  %d corners\n", __FUNCTION__, NV, NT, NN, NF, NS); }
         
-    r3_vec_trim(&(D->V), nv);                
-    r3_vec_trim(&(D->T), nt);                
-    r3_vec_trim(&(D->N), nn);                
-    string_vec_trim(&(D->VL), nv);                
-    obj_file_face_vec_trim(&(D->FV), nf);  
-    obj_file_face_vec_trim(&(D->FT), nf);  
-    obj_file_face_vec_trim(&(D->FN), nf); 
+    r3_vec_trim(&(D->V), NV);                
+    r3_vec_trim(&(D->T), NT);                
+    r3_vec_trim(&(D->N), NN);                
+    string_vec_trim(&(D->VL), NV);                
+    obj_file_face_vec_trim(&(D->FV), NF);  
+    obj_file_face_vec_trim(&(D->FT), NF);  
+    obj_file_face_vec_trim(&(D->FN), NF); 
     
     return D;
   }
@@ -252,59 +252,59 @@ void obj_file_read_command(FILE *rd, int32_t *ch1_P, int32_t *ch2_P, uint32_t *n
 void  obj_file_read_face
   ( FILE *rd,
     uint32_t nlin,
-    uint32_t nv,
+    uint32_t NV,
     int32_vec_t *FVk,
-    uint32_t nt,
+    uint32_t NT,
     int32_vec_t *FTk,
-    uint32_t nn,
+    uint32_t NN,
     int32_vec_t *FNk
   )  
-  { uint32_t nc = 0;  /* Number of corners read for this face. */
+  { uint32_t NC = 0;  /* Number of corners read for this face. */
     while(TRUE)
-      { if (debug) { fprintf(stderr, "      looking for corner data, nc = %d\n", nc); }
+      { if (debug) { fprintf(stderr, "      looking for corner data, NC = %d\n", NC); }
         if (fget_test_comment_or_eol(rd, '#', NULL)) 
           { ungetc('\n', rd); break; }
 
-        int32_t ixv = obj_file_read_index(rd, nlin, "vertex", nv);
+        int32_t ixv = obj_file_read_index(rd, nlin, "vertex", NV);
         if (ixv == -1) { obj_file_read_err(nlin, "missing vertex index"); }
 
-        int32_vec_expand(FVk, (int32_t)nc); 
-        int32_vec_expand(FTk, (int32_t)nc); 
-        int32_vec_expand(FNk, (int32_t)nc); 
+        int32_vec_expand(FVk, (int32_t)NC); 
+        int32_vec_expand(FTk, (int32_t)NC); 
+        int32_vec_expand(FNk, (int32_t)NC); 
 
-        assert((ixv >= 1) && (ixv <= nv));
-        FVk->e[nc] = ixv-1;
-        FTk->e[nc] = -1;  /* If there is no '/'. */
-        FNk->e[nc] = -1;  /* If there is no '/'. */
+        assert((ixv >= 1) && (ixv <= NV));
+        FVk->e[NC] = ixv-1;
+        FTk->e[NC] = -1;  /* If there is no '/'. */
+        FNk->e[NC] = -1;  /* If there is no '/'. */
 
         if (fget_test_char(rd, '/'))
-          { int32_t ixt = obj_file_read_index(rd, nlin, "texpoint", nt);
+          { int32_t ixt = obj_file_read_index(rd, nlin, "texpoint", NT);
             if (ixt == -1)
-              { FTk->e[nc] = -1; }
+              { FTk->e[NC] = -1; }
             else
-              { assert((ixt >= 1) && (ixt <= nt));
-                FTk->e[nc] = ixt-1;
+              { assert((ixt >= 1) && (ixt <= NT));
+                FTk->e[NC] = ixt-1;
               }
           }
         if (fget_test_char(rd, '/'))
-          { int32_t ixn = obj_file_read_index(rd, nlin, "normal", nn);
+          { int32_t ixn = obj_file_read_index(rd, nlin, "normal", NN);
             if (ixn == -1)
-              { FNk->e[nc] = -1; }
+              { FNk->e[NC] = -1; }
             else
-              { assert((ixn >= 1) && (ixn <= nn));
-                FNk->e[nc] = ixn-1;
+              { assert((ixn >= 1) && (ixn <= NN));
+                FNk->e[NC] = ixn-1;
               }
           }
-        nc++;
+        NC++;
       }
-    if (nc < 3)
+    if (NC < 3)
       { 
-        char *msg = jsprintf("face has only %d corners (min 3)", nc);
+        char *msg = jsprintf("face has only %d corners (min 3)", NC);
         obj_file_read_err(nlin, msg);
       }
-    int32_vec_trim(FVk, nc);  
-    int32_vec_trim(FTk, nc);  
-    int32_vec_trim(FNk, nc);  
+    int32_vec_trim(FVk, NC);  
+    int32_vec_trim(FTk, NC);  
+    int32_vec_trim(FNk, NC);  
   }
 
 int32_t obj_file_read_index(FILE *rd, uint32_t nlin, char *elname, uint32_t n)
@@ -337,7 +337,7 @@ void obj_file_read_coords(FILE * rd, uint32_t nlin, char *elname, uint32_t ncmin
   {
     r3_t u = (r3_t){{ 0,0,0 }};
     char *lab = NULL;
-    uint32_t nc = 0; /* Number of coordinates read. */
+    uint32_t NC = 0; /* Number of coordinates read. */
     while (TRUE)
       { if (fget_test_comment_or_eol(rd, '#', &lab))
           { ungetc('\n', rd);
@@ -347,17 +347,17 @@ void obj_file_read_coords(FILE * rd, uint32_t nlin, char *elname, uint32_t ncmin
         double uj = fget_double(rd);
         if (debug) { fprintf(stderr, "      read %9.4f\n", uj); }
         if (debug) { fget_show_next(stderr, "    next char = ", rd, "\n"); }
-        if (nc < 3) { u.c[nc] = uj; }
-        nc++;
+        if (NC < 3) { u.c[NC] = uj; }
+        NC++;
       }
-    if (nc > 3) 
+    if (NC > 3) 
       { 
-        char *msg = jsprintf("too many %s coordinates (%d, max 3)", elname, nc);
+        char *msg = jsprintf("too many %s coordinates (%d, max 3)", elname, NC);
         obj_file_read_err(nlin, msg);
       }
-    else if (nc < ncmin)
+    else if (NC < ncmin)
       { 
-        char *msg = jsprintf("too few %s coordinates (%d, min %d)", elname, nc, ncmin);
+        char *msg = jsprintf("too few %s coordinates (%d, min %d)", elname, NC, ncmin);
         obj_file_read_err(nlin, msg);
       }
     (*u_P) = u;

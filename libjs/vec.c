@@ -1,5 +1,5 @@
 /* See vec.h */
-/* Last edited on 2024-12-21 04:51:41 by stolfi */
+/* Last edited on 2025-01-10 00:11:34 by stolfi */
 
 #include <vec.h>
 #include <stdlib.h>

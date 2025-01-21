@@ -2,7 +2,7 @@
 #define PROG_DESC "checks the {pst_img_graph.h} routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-01-05 10:52:31 by stolfi */
+/* Last edited on 2025-01-09 18:09:50 by stolfi */
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_pst_img_graph_C_COPYRIGHT \
@@ -106,7 +106,7 @@ int32_t main(int32_t argc, char **argv)
     
     write_graph(g);
     pst_img_graph_t *h = read_graph();
-    pst_img_graph_compare(g, h);
+    pst_img_graph_equal(g, h);
 
     /* Cleanup: */
     pst_img_graph_free(g);

@@ -2,7 +2,7 @@
 #define quad_H
 
 /* The quad-edge data structure (oriented surface version). */
-/* Last edited on 2024-12-22 11:02:41 by stolfi */
+/* Last edited on 2025-01-09 23:04:24 by stolfi */
 
 #define quad_H_copyright \
   "Copyright © 1996, 2006 State University of Campinas (UNICAMP).\n\n" jslibs_copyright "\n\n" \
@@ -302,14 +302,14 @@ void quad_set_edge_id(quad_edge_t ed, quad_edge_id_t eid);
   /* Sets the number of edge {ed} to {eid}. */
 
 quad_edge_id_t quad_renumber_edges(quad_arc_vec_t *root, quad_arc_vec_t *A);
-  /* Renumbers all edge records reachable from {root[0..nr-1]}
-    sequentially from 0, where {nr = root->ne}. Returns the number {ne}
+  /* Renumbers all edge records reachable from {root[0..NR-1]}
+    sequentially from 0, where {NR = root->ne}. Returns the number {NE}
     of edges found. 
     
     If {A} is not NULL, stores into each element {A->e[k]} with {k} in
-    {0..ne} one reachable arc from the edge {ed} such that
+    {0..NE-1} one reachable arc from the edge {ed} such that
     {quad_edge_id(ed) == k}. The vector {A} is expanded as needed and
-    trimmed to {ne} elements. */
+    trimmed to {NE} elements. */
 
 /* ARC INPUT/OUTPUT */
 
@@ -332,7 +332,7 @@ quad_arc_t quad_read_arc(FILE *rd, quad_arc_vec_t *A);
 void quad_write_map(FILE *wr, quad_arc_vec_t *root, quad_arc_vec_t *A);
   /* Writes to {wr} a description of the map(s) that can be reached by
     {sym} and {onext} steps on the quad-edge structure from the root
-    arcs {root->e[0..nr-1]}, where {nr = root->ne}.
+    arcs {root->e[0..NR-1]}, where {NR = root->ne}.
     
     As a side effect, the procedure renumbers all edges in the reachable
     submap, with {quad_renumber_edges(root, A)}. */

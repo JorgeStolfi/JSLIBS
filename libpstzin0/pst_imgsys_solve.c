@@ -2,7 +2,7 @@
 
 /* Created on 2005-10-01 by Jorge Stolfi, unicamp, <stolfi@dcc.unicamp.br> */
 /* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2025-01-08 00:25:09 by stolfi */
+/* Last edited on 2025-01-16 06:02:33 by stolfi */
 /* See the copyright and authorship notice at the end of this file.  */
 
 #include <stdio.h>
@@ -31,29 +31,34 @@ void pst_imgsys_solve_iterative
     bool_t para, 
     bool_t szero,
     bool_t verbose,
-    uint32_t indent,
+    int32_t level,
     uint32_t reportStep,
     pst_imgsys_solve_report_sol_proc_t *reportSol
   )
   {
     uint32_t N = S->N;
+    int32_t indent = (level < -1 ? 0 : 2*level+2);
 
     /* Previous solution: */
     double *h_old = rn_alloc(N);
     
     double change = +INF;  /* Max {h} change in last iteration. */
-    uint32_t iter = 0;
+    int32_t iter = 0;
     while (iter < maxIter)
       {
         /* Report the current solution if so requested: */
         if (reportSol != NULL)
-          { bool_t report = ((iter == 0) || ((reportStep != 0) && ((iter % reportStep) == 0)));
-            if (report) { reportSol(indent, iter, change, FALSE, N, h); }
+          { bool_t reportSolBefore = (iter == 0);
+            if (reportStep != 0)
+              { reportSolBefore |= (iter < reportStep);
+                reportSolBefore |= ((iter % (int32_t)reportStep) == 0);
+              }
+            if (reportSolBefore) { reportSol(level, iter, change, FALSE, N, h); }
           }
 
-        /* Another pass over all unknowns {h[k]}: */
+        /* Another pass over all variables {h[k]}: */
         for (uint32_t kk = 0; kk < N; kk++)
-          { /* Choose the next unknown to recompute: */
+          { /* Choose the next variable to recompute: */
             uint32_t k = (ord != NULL ? ord[kk] : kk);
             /* Save current solution in {h_old}: */
             h_old[k] = h[k];
@@ -63,7 +68,7 @@ void pst_imgsys_solve_iterative
             double sum = eqk->rhs; /* Right-hand side of equation. */
             double cf_k = 0.0; /* Coefficient of {h[k]} in equation. */
             for(uint32_t t = 0; t < eqk->nt; t++)
-              { /* Get hold of another unknown {h[j] entering in equation {k}: */
+              { /* Get hold of another variable {h[j] entering in equation {k}: */
                 uint32_t j = eqk->uid[t];
                 demand((j >= 0) && (j < N), "invalid variable index in system");
                 double cf_j = eqk->cf[t];
@@ -72,7 +77,7 @@ void pst_imgsys_solve_iterative
                     cf_k = cf_j;
                   }
                 else if (cf_j != 0)
-                  { /* The unknown {h[j]} is distinct from {h[k]}. */
+                  { /* The variable {h[j]} is distinct from {h[k]}. */
                     /* Get the appropriate value (new or old) of {h[j]}: */
                     double Zj = (para && (j < k) ? h_old[j] : h[j]);
                     /* Subtract from the right-hand side: */
@@ -99,7 +104,7 @@ void pst_imgsys_solve_iterative
         /* Check for apparent convergence: */
         change = pst_imgsys_sol_change(h_old, h, N);
         if (verbose)
-          { fprintf(stderr, "%*s  iteration %3d change = %16.8f\n", indent, "", iter, change); }
+          { fprintf(stderr, "%*s iteration %3d change = %16.8f\n", indent, "", iter, change); }
         if (change <= convTol) { /* Converged: */ break; }
       }
       
@@ -112,7 +117,7 @@ void pst_imgsys_solve_iterative
         fprintf(stderr, "%*sconverged after %6d iterations,last change = %16.8f\n", indent, "", iter, change);
       }
 
-    if (reportSol != NULL) { reportSol(indent, iter, change, TRUE, N, h); }
+    if (reportSol != NULL) { reportSol(level, iter, change, TRUE, N, h); }
 
     free(h_old);
   }
@@ -137,7 +142,7 @@ uint32_t* pst_imgsys_sort_equations(pst_imgsys_t *S)
 
     /* The priority graph has one node per system variable,
       and at most one arc per non-diagonal coefficient of the system, 
-      pointing from the unknown with higher priority to that
+      pointing from the variable with higher priority to that
       of lower priority. It may have duplicate arcs. */
     
     /* Arcs of the priority graph: */

@@ -1,5 +1,5 @@
 /* See {pst_graph_integrate_recursive.h}. */
-/* Last edited on 2024-12-24 19:01:13 by stolfi */
+/* Last edited on 2025-01-14 17:27:01 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #include <stdio.h>
@@ -31,7 +31,7 @@ void pst_graph_integration_recursive
     bool_t para, 
     bool_t szero, 
     bool_t verbose,
-    uint32_t level
+    int32_t level
   )
   { char *filename_grph = jsprintf("graph-%02d.txt", level);
     FILE *wr_grph = open_write(filename_grph, FALSE);
@@ -56,7 +56,7 @@ void pst_graph_integration_recursive
         float_image_fill_channel(OZ, 0, 0);
       }
     fprintf(stderr, "solving Graph level[%d] with [%d] vertices\n", level, g->NV);
-    pst_imgsys_t *S = pst_graph_build_integration_system(g, (int32_t)OZ->sz[1], (int32_t)OZ->sz[2]);
+    pst_imgsys_t *S = pst_graph_build_system(g, (int32_t)OZ->sz[1], (int32_t)OZ->sz[2]);
 
     char *filename = jsprintf("system-%02d.txt", level);
     FILE *wr_dump = open_write(filename,  FALSE);

@@ -1,5 +1,5 @@
 /* See pst_integrate.h */
-/* Last edited on 2025-01-08 08:23:04 by stolfi */
+/* Last edited on 2025-01-18 12:35:09 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -27,7 +27,7 @@
 
 void pst_integrate_set_equations(pst_imgsys_t *S, float_image_t *G, float_image_t *W, bool_t verbose);
   /* Builds the equation list {S.eq} for the integration system {S}, given
-    the gradient map {G} and its weight map {W}. */
+    the gradient map {G} and its weight map {W}.*/
    
 #define MAX_COEFFS pst_imgsys_MAX_COEFFS
 
@@ -36,12 +36,11 @@ void pst_integrate_set_equations(pst_imgsys_t *S, float_image_t *G, float_image_
 
 /* IMPLEMENTATIONS */
 
-pst_imgsys_t* pst_integrate_build_system(float_image_t *G, float_image_t *W, bool_t verbose) 
+pst_imgsys_t* pst_integrate_build_system(float_image_t *G, bool_t verbose) 
   {
     int32_t NC_G, NX_G, NY_G;
     float_image_get_size(G, &NC_G, &NX_G, &NY_G);
-    demand(NC_G == 2, "gradient map must have 2 channels");
-    if (W != NULL) { float_image_check_size(W, 1, NX_G, NY_G); }
+    demand(NC_G == 3, "gradient map must have 3 channels");
     
     /* Get the size of the system: */
     int32_t NX_Z = NX_G + 1;
@@ -55,16 +54,17 @@ pst_imgsys_t* pst_integrate_build_system(float_image_t *G, float_image_t *W, boo
     return S;
   }
 
-void pst_integrate_set_equations(pst_imgsys_t *S, float_image_t *G, float_image_t *W, bool_t verbose)
+void pst_integrate_set_equations(pst_imgsys_t *S, float_image_t *G, bool_t verbose)
   {
     /* Get/check the sizes of the slope maps: */
     int32_t NC_G, NX_G, NY_G;
     float_image_get_size(G, &NC_G, &NX_G, &NY_G);
-    if (W != NULL) { float_image_check_size(W, 1, NX_G, NY_G); }
+    assert(NC_G == 3);
     
-    /* Check the size of the height map: */
-    demand(S->NX == NX_G + 1, "system's height map {NX} incompatible with gradient map's");
-    demand(S->NY == NY_G + 1, "system's height map {NY} incompatible with gradient map's");
+    /* Get size of the height map: */
+    int32_t NX_Z = NX_G + 1;
+    int32_t NY_Z = NY_G + 1;
+    assert(S->N == NX_Z*NY_Z);
     
     /* Conceptually, we define four axial quadratic mismatch terms
       {qpo[x,y](z), qmo[x,y](z), qop[x,y](z), qom[x,y](z)} for each
@@ -110,7 +110,7 @@ void pst_integrate_set_equations(pst_imgsys_t *S, float_image_t *G, float_image_
       wpm[x,y], wpp[x,y]}, respectively, which are defined to be the
       weights of the corresponding skew mismatch terms.
       
-      For each unknown height {z[x,y]} we select from these eight mismatch
+      For each height variable {z[x,y]} we select from these eight mismatch
       terms a subset of at most four terms. If an axial term has non-zero 
       weight, it is included in the system; otherwise one of the adjacent
       skew terms is included.      
@@ -211,8 +211,7 @@ void pst_integrate_set_equations(pst_imgsys_t *S, float_image_t *G, float_image_
         if ((y1 < 0) || (y1 >= S->NY)) { return; }
         
         /* Check if {x',y'} is in the system: */
-        int32_t uid1 = S->uid[x1 + y1*S->NX];
-        if (uid1 == -1) { return; }
+        int32_t uid1 = x1 + y1*S->NX;
         assert((uid1 >= 0) && (uid1 < N));
       
         /* Get the estimated height difference {d} and its weight {w}: */
@@ -229,6 +228,49 @@ void pst_integrate_set_equations(pst_imgsys_t *S, float_image_t *G, float_image_
             nt++;
             eqk->nt = nt;
           }
+      }
+  }
+   
+void pst_integrate_fill_holes(pst_imgsys_t *S, int32_t NX_Z, int32_t NY_Z)
+  { uint32_t N = S->N; 
+
+    auto void add_term(pst_imgsys_equation_t *eq, int32_t x1, int32_t y1);
+      /* If the variable {x1,y1} exists, adds to {eq} a term with coefficient 1
+        that pulls the variable of {eq} towards the mean of its neighbors. */
+    
+    for (uint32_t k = 0; k < N; k++)
+      { uint32_t uidk = k;
+        pst_imgsys_equation_t *eqk = &(S->eq[k]);
+        if (pst_imgsys_equation_is_null(uidk, eqk, N))
+          { assert(eqk->nt == 1);
+            assert(eqk->uid[0] == uidk);
+            /* Get neighbors if variable {uidk}: */
+            int32_t x = S->col[uidk];
+            int32_t y = S->row[uidk];
+            assert((x >= 0) && (x < NX_Z));
+            assert((y >= 0) && (y < NY_Z));
+            add_term(eqk, x-1,y);
+            add_term(eqk, x+1,y);
+            add_term(eqk, x,y-1);
+            add_term(eqk, x,y+1);
+          }
+        eqk->wtot = 1.0e-5;
+      }      
+    return;
+    
+    void add_term(pst_imgsys_equation_t *eq, int32_t x1, int32_t y1)
+      { if ((x1 < 0) || (x1 >= NX_Z)) { return; }
+        if ((y1 < 0) || (y1 >= NY_Z)) { return; }
+        /* Variable {x1,y1} exists: */
+        int32_t uid1 = x1 + y1*NX_Z;
+        assert((uid1 >= 0) && (uid1 < S->N));
+        assert((uid1 >= 0) && (uid1 < S->N));
+        assert((eq->nt >= 1) && (eq->nt < MAX_COEFFS));
+        int32_t j = (int32_t)eq->nt;
+        eq->uid[j] = (uint32_t)uid1;
+        eq->cf[j] = -1.0;
+        eq->cf[0] += 1.0;
+        (eq->nt)++;
       }
   }
 
