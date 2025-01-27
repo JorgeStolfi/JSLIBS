@@ -4,7 +4,7 @@
 
 #define slope_to_height_C_COPYRIGHT "Copyright © 2024 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2025-01-15 06:46:22 by stolfi */
+/* Last edited on 2025-01-25 09:32:50 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -143,9 +143,6 @@ float_image_t *read_fni_file(char *fname);
 void write_system(pst_imgsys_t *S, char *fname);
   /* Writes the system {S} to file "{fname}". If {fname} is "-", writes
     to standard output. */
-    
-void write_system_weights(pst_imgsys_t *S, char *fname);
-  /* Writes the equation weights {S.eq[k].wtot} as a PNG image "{fname}". */
 
 options_t *parse_options(int32_t argc, char **argv);
   /* Parses the command line arguments and packs them as an {options_t}. */
@@ -178,10 +175,6 @@ int32_t main(int32_t argc, char** argv)
     write_system(S, system_fname);
     free(system_fname);
     
-    char *weights_fname = jsprintf("%s-W.png", o->outPrefix);
-    write_system_weights(S, weights_fname);
-    free(weights_fname);
-    
     float_image_free(IG); IG = NULL;
     if (IW != NULL) { float_image_free(IW); IW = NULL; }
     pst_imgsys_free(S); S = NULL;
@@ -204,17 +197,6 @@ void write_system(pst_imgsys_t *S, char *fname)
     FILE* wr = open_write(fname, TRUE);
     pst_imgsys_write(wr, S);
     if (wr == stdout) { fflush(wr); } else { fclose(wr); }
-    fprintf(stderr, "\n");
-  }
-
-void write_system_weights(pst_imgsys_t *S, char *fname)
-  { demand(fname != NULL, "file name not given");
-    float_image_t *U = float_image_new(1, S->NX, S->NY);
-    pst_imgsys_extract_system_eq_tot_weight_image(S, U, 0.0);
-    double expoEnc = 1.0;
-    double bias = 0.0;
-    bool_t verbose = TRUE;
-    float_image_write_gen_named(fname, U, image_file_format_PNG, 0.0, 1.0, expoEnc, bias, verbose);
     fprintf(stderr, "\n");
   }
 

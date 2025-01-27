@@ -1,5 +1,5 @@
 /* See argparser_extra.h. */
-/* Last edited on 2024-11-22 21:42:58 by stolfi */
+/* Last edited on 2025-01-22 19:06:27 by stolfi */
 
 /* Copyright © 2003 Jorge Stolfi, Unicamp. See note at end of file. */
 /* Based on Params.m3 by J.Stolfi, DEC-SRC, 1988.  */
@@ -11,6 +11,7 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <float.h>
 
 #include <affirm.h>
 #include <jswsize.h>
@@ -136,4 +137,94 @@ char *argparser_print_info_line(FILE *wr, char *lin, uint32_t wd)
       }
     while (((*lin) != '\000') && ((*lin) != '\n'));
     return lin;
+  }
+
+double_vec_t argparser_get_next_double_vec(argparser_t *pp, int32_t *NC)
+  { double_vec_t v = double_vec_new(0);
+    uint32_t NP = 0; /* Number of values actually parsed. */
+    uint32_t NPMAX = ((NC == NULL) || ((*NC) < 0) ? UINT32_MAX : (uint32_t)(*NC)); /* Max to parse. */
+    while ((NP < NPMAX) && argparser_next_is_number(pp))
+      { double_vec_expand(&v, (vec_index_t)NP);
+        v.e[NP] = argparser_get_next_double(pp, -DBL_MAX, +DBL_MAX);
+        NP++;
+      }
+    if ((NC != NULL) && (NP != 1))
+      { /* Set/check {*NC} against {NP}: */
+        if ((*NC) < 0)
+          { (*NC) = (int32_t)NP; }
+        else
+          { if (NP != (uint32_t)(*NC)) { argparser_error(pp, "wrong number of elements"); } }
+      }
+    double_vec_trim(&v, NP);
+    if (argparser_keyword_present_next(pp, "/"))
+      { double den = argparser_get_next_double(pp, -DBL_MAX, +DBL_MAX);
+        if (den == 0.0) { argparser_error(pp, "bad denominator"); } 
+        for (int32_t c = 0; c < NP; c++) { v.e[c] /= den; }
+      }
+    return v;
+  }
+
+int32_vec_t argparser_get_next_int32_vec(argparser_t *pp, int32_t *NC)
+  { int32_vec_t v = int32_vec_new(0);
+    uint32_t NP = 0; /* Number of values actually parsed. */
+    uint32_t NPMAX = (uint32_t)((NC == NULL) || ((*NC) < 0) ? INT32_MAX : (*NC)); /* Max to parse. */
+    while ((NP < NPMAX) && argparser_next_is_number(pp))
+      { int32_vec_expand(&v, (vec_index_t)NP);
+        v.e[NP] = (int32_t)argparser_get_next_int(pp, -INT32_MAX, +INT32_MAX);
+        NP++;
+      }
+    if ((NC != NULL) && (NP != 1))
+      { /* Set/check {*NC} against {NP}: */
+        if ((*NC) < 0)
+          { (*NC) = (int32_t)NP; }
+        else
+          { if (NP != (*NC)) { argparser_error(pp, "wrong number of elements"); } }
+      }
+    int32_vec_trim(&v, NP);
+    return v;
+  }
+  
+char *argparser_get_next_file_name(argparser_t *pp)
+  { /* Peek at next argument: */
+    char *nx = argparser_next(pp);
+    /* If it is missing or parsed, it is not a file name: */
+    if (nx == NULL) { return NULL; }
+    /* If it is empty, it is not a file name: */
+    if (nx[0] == '\000') { return NULL; }
+    /* If it looks like a keyword, it is not a file name: */
+    if ((nx[0] == '-') && (nx[1] != '\000')) { return NULL; }
+    /* If it begins with a funny character, it is not a file name: */
+    if
+      ( (nx[0] != '@') &&
+        (nx[0] != '/') && 
+        (nx[0] != '.') &&
+        ((nx[0] < 'A') || (nx[0] > 'Z')) &&
+        ((nx[0] < 'a') || (nx[0] > 'z')) &&
+        ((nx[0] < '0') || (nx[0] > '9'))
+      ) 
+      { return NULL; }
+    /* Grab the next argument and check if it is a valid filename: */
+    nx = argparser_get_next(pp);
+    return nx;
+  }
+
+string_vec_t argparser_get_next_file_name_list(argparser_t *pp, uint32_t *NNP)
+  { uint32_t NNMax = ((NNP == NULL) || ((*NNP) < 0) ? UINT32_MAX : (*NNP));
+    uint32_t NN = 0;
+    string_vec_t nvec = string_vec_new(0);
+    while (NN < NNMax)
+      { char *name = argparser_get_next_file_name(pp);
+        if (name == NULL) { break; }
+        string_vec_expand(&(nvec), (vec_index_t)NN);
+        nvec.e[NN] = name;
+        NN++;
+      }
+    if (NNP != NULL)
+      { if ((*NNP) >= 0)
+          { if (NN != (*NNP)) { argparser_error(pp, "not enough file names"); } }
+        else
+          { (*NNP) = NN; }
+      }
+    string_vec_trim(&(nvec), NN);
+    return nvec;
   }

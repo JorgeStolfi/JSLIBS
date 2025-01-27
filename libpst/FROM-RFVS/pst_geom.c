@@ -1,5 +1,5 @@
 /* See pst_geom.h */
-/* Last edited on 2025-01-01 15:10:45 by stolfi */
+/* Last edited on 2025-01-21 19:45:11 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -127,7 +127,12 @@ ellipse_crs_t *pst_geom_sphere_parse
   )
   { 
     /* If there is no "-sphere" keyword, return NULL: */
-    if (! pst_keyword_present(pp, "-sphere", next)) { return NULL; }
+    bool_t ok;
+    if (next)
+      { ok = argparser_keyword_present_next(pp, "-sphere"); }
+    else
+      { ok = argparser_keyword_present(pp, "-sphere"); }
+    if (! ok) { return NULL; }
   
     /* Keyword is present; create and return a new descriptor: */
     ellipse_crs_t *geo = pst_geom_sphere_new();

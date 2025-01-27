@@ -3,7 +3,7 @@
 
 /* sample_scaling.h -- tools for scaling sample values. */
 /* Created 2006-04-20 by Jorge Stolfi, IC-UNICAMP. */
-/* Last edited on 2025-01-21 18:18:26 by stolfi */
+/* Last edited on 2025-01-21 19:31:47 by stolfi */
 
 #include <bool.h>
 #include <vec.h>
@@ -14,18 +14,27 @@
 
 /* PARSING SCALING PARAMETERS FROM THE COMMAND LINE */
   
-#define sample_scaling_options_any_parse_HELP \
-  "    [ -min {VMIN}.. " pst_double_vec_spec_den_HELP " ] \\\n" \
-  "    [ -max {VMAX}.. " pst_double_vec_spec_den_HELP " ] \\\n" \
-  "    [ -center {VCTR}.. " pst_double_vec_spec_den_HELP " ] \\\n" \
-  "    [ -width {VWID}.. " pst_double_vec_spec_den_HELP " ] \\\n" \
+typedef struct sample_scaling_options_t
+  { double_vec_t min;      /* Low endpoint of scaling range; empty vec if not given. */
+    double_vec_t max;      /* High endpoint of scaling range; empty vec if not given. */
+    double_vec_t ctr;      /* Center of scaling range; empty vec if not given. */
+    double_vec_t wid;      /* Width of scaling range; empty vec if not given. */
+    bool_t uniform;        /* Obtains default scaling args from whole image rather than single channel. */
+  } sample_scaling_options_t;
+  /* Sample scaling options as read from the command line. */
+
+#define sample_scaling_options_parse_HELP \
+  "    [ -min {VMIN}.. " argparser_double_vec_den_HELP " ] \\\n" \
+  "    [ -max {VMAX}.. " argparser_double_vec_den_HELP " ] \\\n" \
+  "    [ -center {VCTR}.. " argparser_double_vec_den_HELP " ] \\\n" \
+  "    [ -width {VWID}.. " argparser_double_vec_den_HELP " ] \\\n" \
   "    [ -uniform ]"
   
-#define sample_scaling_options_any_parse_HELP_INFO \
-  "  -min {VMIN}.. " pst_double_vec_spec_den_HELP "\n" \
-  "  -max {VMAX}.. " pst_double_vec_spec_den_HELP "\n" \
-  "  -center {VCTR}.. " pst_double_vec_spec_den_HELP "\n" \
-  "  -width {VWID}.. " pst_double_vec_spec_den_HELP "\n" \
+#define sample_scaling_options_parse_HELP_INFO \
+  "  -min {VMIN}.. " argparser_double_vec_den_HELP "\n" \
+  "  -max {VMAX}.. " argparser_double_vec_den_HELP "\n" \
+  "  -center {VCTR}.. " argparser_double_vec_den_HELP "\n" \
+  "  -width {VWID}.. " argparser_double_vec_den_HELP "\n" \
   "    These options specify a range [{VMIN} _ {VMAX}] used to scale samples between the {float} values and discrete pixels.\n" \
   "\n" \
   "    If none of these four arguments is present, {VMIN} and {VMAX} will be set" \
@@ -50,16 +59,7 @@
   " are computed over all relevant channels of the image. Otherwise," \
   " they are computed separately for each channel."
 
-typedef struct sample_scaling_options_t
-  { double_vec_t min;      /* Low endpoint of scaling range; empty vec if not given. */
-    double_vec_t max;      /* High endpoint of scaling range; empty vec if not given. */
-    double_vec_t ctr;      /* Center of scaling range; empty vec if not given. */
-    double_vec_t wid;      /* Width of scaling range; empty vec if not given. */
-    bool_t uniform;        /* Obtains default scaling args from whole image rather than single channel. */
-  } sample_scaling_options_t;
-  /* Sample scaling options as read from the command line. */
-
-sample_scaling_options_t sample_scaling_parse_options_any(argparser_t *pp, int32_t *NC_P); 
+sample_scaling_options_t sample_scaling_parse_options(argparser_t *pp, int32_t *NC_P); 
   /* Parses the options "-min", "-max", "-center", "-width", and "-uniform" from 
     the command line.
     
@@ -108,7 +108,7 @@ void sample_scaling_fix_params
     {fim} is not NULL, the procedure tries to use the minimum and
     maximum sample values {smin,smax} from the image {*fim} to provide
     suitable defaults, as explained in
-    {sample_scaling_options_any_parse_HELP_INFO}. In that case, if
+    {sample_scaling_options_parse_HELP_INFO}. In that case, if
     {channel} is not NULL, the procedure assumes that the channels to
     analyze are {channel.e[0..NC-1]}. If {channel} is NULL, channels
     {0,1,...NC-1} are analyzed.

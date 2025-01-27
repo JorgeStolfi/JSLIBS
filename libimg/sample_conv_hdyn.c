@@ -1,5 +1,5 @@
 /* See {sample_conv_hdyn.h}. */
-/* Last edited on 2024-12-20 17:32:02 by stolfi */
+/* Last edited on 2025-01-23 14:37:53 by stolfi */
 
 #include <math.h>
 #include <stdint.h>
@@ -137,20 +137,20 @@ sample_uint32_t sample_conv_hdyn_quantize
   }
   
 void sample_conv_hdyn_print_quantize_stats
-  ( int32_t iChan,           /* Channel index in input image. */
-    int32_t oChan,           /* Channel index in output image. */
-    double brght,        /* Brightness setting ({b}). */
-    double ctrst,        /* Contrast setting ({c}). */ 
-    sample_uint32_t black, /* Black offset ({k}). */ 
-    sample_uint32_t white, /* White limit ({w}). */ 
-    float vmin,          /* Minimum float sample seen. */
-    float vmax,          /* Maximum float sample seen. */
-    int32_t clo,             /* Number of samples seen below {lo}. */
-    int32_t chi,             /* Number of samples seen above {hi}. */
+  ( int32_t iChan,          /* Channel index in input image. */
+    int32_t oChan,          /* Channel index in output image. */
+    double brght,           /* Brightness setting ({b}). */
+    double ctrst,           /* Contrast setting ({c}). */ 
+    sample_uint32_t black,  /* Black offset ({k}). */ 
+    sample_uint32_t white,  /* White limit ({w}). */ 
+    float vmin,             /* Minimum float sample seen. */
+    float vmax,             /* Maximum float sample seen. */
+    int32_t clo,            /* Number of samples seen below {lo}. */
+    int32_t chi,            /* Number of samples seen above {hi}. */
     sample_uint32_t imin,   /* Minimum integer sample seen. */
     sample_uint32_t imax    /* Maximum integer sample seen. */
   )
-  { fprintf(stderr, "  converted float channel %d to int32_t channel %d:\n", iChan, oChan);
+  { fprintf(stderr, "  converted float channel %d to int channel %d:\n", iChan, oChan);
     double fvmin = (0.0 - brght)/ctrst;
     double fvmax = (1.0 - brght)/ctrst;
     fprintf(stderr, "    mapped [ %12.5e _ %12.5e ] to [ %u .. %u ]\n", fvmin, fvmax, black, white);

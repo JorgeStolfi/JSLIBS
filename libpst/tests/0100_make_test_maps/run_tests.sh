@@ -1,5 +1,5 @@
 #! /bin/bash 
-# Last edited on 2025-01-20 06:46:37 by stolfi
+# Last edited on 2025-01-26 10:06:54 by stolfi
 
 for func in `cat in/funcs.txt | sed -e 's:[#].*$::g'`; do 
   func_num="${func/-*/}"

@@ -1,5 +1,5 @@
 /* See {sample_conv.h}. */
-/* Last edited on 2024-12-19 17:46:43 by stolfi */
+/* Last edited on 2025-01-23 14:37:34 by stolfi */
 
 #include <math.h>
 #include <stdint.h>
@@ -237,19 +237,19 @@ sample_uint32_t sample_conv_quantize
   }
   
 void sample_conv_print_quantize_stats
-  ( int32_t iChan,           /* Channel index in input image. */
-    int32_t oChan,           /* Channel index in output image. */
-    float vmin,          /* Minimum float sample seen. */
-    float vmax,          /* Maximum float sample seen. */
-    double lo,           /* Low end of float scaling range. */
-    double hi,           /* High end of float scaling range. */
-    int32_t clo,             /* Number of samples seen below {lo}. */
-    int32_t chi,             /* Number of samples seen above {hi}. */
+  ( int32_t iChan,          /* Channel index in input image. */
+    int32_t oChan,          /* Channel index in output image. */
+    float vmin,             /* Minimum float sample seen. */
+    float vmax,             /* Maximum float sample seen. */
+    double lo,              /* Low end of float scaling range. */
+    double hi,              /* High end of float scaling range. */
+    int32_t clo,            /* Number of samples seen below {lo}. */
+    int32_t chi,            /* Number of samples seen above {hi}. */
     sample_uint32_t maxval, /* Maximum possible integer sample. */
     sample_uint32_t imin,   /* Minimum integer sample seen. */
     sample_uint32_t imax    /* Maximum integer sample seen. */
   )
-  { fprintf(stderr, "  converted float channel %d to int32_t channel %d:\n", iChan, oChan);
+  { fprintf(stderr, "  converted float channel %d to int channel %d:\n", iChan, oChan);
     fprintf(stderr, "    mapped [ %12.5e _ %12.5e ] to [ 0 .. %u ]\n", lo, hi, maxval);
     fprintf(stderr, "    actual input range  = [ %12.5e _ %12.5e ]\n", vmin, vmax);
     fprintf(stderr, "    actual output range = [ %5u .. %5u ]\n", imin, imax);

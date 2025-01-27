@@ -5,7 +5,7 @@
 
 /* Created on 2005-12-04 by Jorge Stolfi, unicamp, <stolfi@ic.unicamp.br> */
 /* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2025-01-16 08:26:22 by stolfi */
+/* Last edited on 2025-01-25 08:46:50 by stolfi */
 /* See the copyright and authorship notice at the end of this file. */
 
 #include <stdint.h>
@@ -21,16 +21,16 @@
   /* Shorter local name. */
 
 typedef struct pst_imgsys_equation_t
-  { uint32_t nt;             /* {nt} is the number of terms in the equation. */
-    uint32_t uid[MAX_COEFFS];   /* {uid[k]} is the index of some variable in the equation. */
+  { uint32_t nt;               /* {nt} is the number of terms in the equation. */
+    uint32_t uid[MAX_COEFFS];  /* {uid[k]} is the index of some variable in the equation. */
     double cf[MAX_COEFFS];     /* Coefficient of that variable. */
-    double rhs;              /* Right-hand side of equation. */
-    double wtot;             /* Weight of the equation and of its main variable. */
+    double rhs;                /* Right-hand side of equation. */
+    double wtot;               /* Weight of the equation and of its main variable. */
   } pst_imgsys_equation_t;
   /* An {pst_imgsys_equation_t} record {eq} represents a linear equation 
     with at most {MAX_COEFFS} nonzero terms, namely
-      {SUM {eq.cf[j]*h[eq.uid[j]] : j = 0..eq.nt-1} == rhs},
-    where {h[j]} is the variable with index {j}.
+      {SUM {eq.cf[j]*z[eq.uid[j]] : j = 0..eq.nt-1} == rhs},
+    where {z[j]} is the variable with index {j}.
     The variable with index {eq.uid[0]} is the main variable of the equation. */
 
 typedef struct pst_imgsys_t
@@ -42,7 +42,7 @@ typedef struct pst_imgsys_t
     int32_t *row;               /* Maps index of a variable/equation to a {y} index, pr -1. */
   } pst_imgsys_t;
   /* A {pst_imgsys_t} record {S} represents {N} linear equations
-    {eq[0..N-1]} on {N} variables {h[0..N-1}. In a proper system, the
+    {eq[0..N-1]} on {N} variables {z[0..N-1}. In a proper system, the
     main variable of equation {k} has index {k} --- that is,
     {eq[k].uid[0] == k} --- for all {k} in {0..N-1}.
     
@@ -56,7 +56,7 @@ typedef struct pst_imgsys_t
 pst_imgsys_t *pst_imgsys_new_grid(int32_t NX, int32_t NY);
   /* Creates a new linear system {S} with {N=NX*NY} equations on {N} variables.
     Each equation {eqk=S.eq[k]} intially has zero righ-hand side {eqk.rhs} and
-    total weight {eqk.wtot}, and one term ({eqk.nt=1}) with variable 
+    zero total weight {eqk.wtot}, and one term ({eqk.nt=1}) with variable 
     {eqk.uid[0]=k} and coefficient {eqk.cf[0]=0}.   Namely, the equation is
     indeterminate, {0*Z[k]=0}.
     
@@ -88,53 +88,30 @@ bool_t pst_imgsys_equation_is_null(uint32_t uid, pst_imgsys_equation_t *eq, uint
     meaning that it is essentially {0*Z[uidk]=0} for its
     main variable {uidk}.  Also does some consistency checks. */
 
-void pst_imgsys_remove_holes(pst_imgsys_t *S, int32_t *nuid_from_ouid);
-  /* Removes from the system {S} any variable {Z[k]=Z[x,y} whose equation {S->eq[k]}
-   is indeterminate, namely {0*Z[k]=0}.  This will reduce the number {S->N}
-   (but not {S->NX} and {S->NY}), renumber the equations and variables
-   to the new range {0..S->N-1}, and set {S->uid[x + y*NX]} to {-1}.
-   
-   If not {NULL}, the parameter {nuid_from_ouid} must be a table of
-   {N_in} entries where {N_in} is {S.N} upon entry. In that case, the
-   procedure will set {nuid_from_ouid[oi]} to the new index of the
-   variable/equation whose old index was {oi}; or to -1 if that
-   variable/equation was deleted. */
-
-void pst_imgsys_copy_image_to_sol_vec(pst_imgsys_t *S, float_image_t *Z, double h[], double vdef);
-  /* Sets the height value vector {h[0..S.N-1]} of system {S} to the samples of the
-    height map {Z}. Specifically, sets {h[k]} to {Z[0,x,y]}, where {x} and {y} are {S->col[k]}
-    and {S->row[k]}.
+void pst_imgsys_copy_image_to_sol_vec(pst_imgsys_t *S, float_image_t *Z, double z[], double vdef);
+  /* Sets the height value vector {z[0..S.N-1]} of system {S} to the samples of channel 0 the
+    height map {Z}. Specifically, sets {z[k]} to {Z[0,x,y]}, where {x} and {y} are {S->col[k]}
+    and {S->row[k]}.  Any other channels of {Z} are ignored.
     
-    However, if {x} and {y} are {-1} (meaning that the {h[k]} is
-    not associated to an heigh map pixel), {h[k]} is set to {vdef}. */
+    However, if {x} and {y} are {-1} (meaning that the {z[k]} is
+    not associated to an heigh map pixel), {z[k]} is set to {vdef}. */
     
-void pst_imgsys_copy_sol_vec_to_image(pst_imgsys_t *S, double h[], float_image_t *Z, float vdef);
-  /* Stores the height value vector {h[0..S.N-1]} of system {S} into the height map {Z}.
-    Specifically, fills channel 0 of {Z} with {vdef}, then copies each height value {h[k}} 
-    into {Z[0,x,y]}, where {x} and {y} are {S->col[k]} and {S->row[k]}.
+void pst_imgsys_copy_sol_vec_to_image(pst_imgsys_t *S, double z[], float_image_t *Z, float vdef);
+  /* Stores the height value vector {z[0..S.N-1]} of system {S} into the height map {Z}.
+    Specifically, fills channel 0 of {Z} with {vdef}, then copies each height value {z[k}} 
+    into {Z[0,x,y]}, where {x} and {y} are {S->col[k]} and {S->row[k]}.  
+    
+    If {Z} has two or more chanels, also initialized channel 1 with zeros, 
+    then copies the total weight of each equation {S.eq[k]} to {Z[1,x,y]}.
     
     However, skips the assignment if {x} and {y} are {-1} (meaning that the
-    height value {h[k]} is not associated to an heigh map pixel). */
-          
-void pst_imgsys_extract_system_eq_tot_weight_image(pst_imgsys_t *S, float_image_t *U, float vdef);
-  /* Stores into channel 0 of {U} the equation weights {.wtot} of the system {S}.
-    Specifically, fills channel 0 of {U} with {vdef}, then copies each equation weight {S.eq[k].wtot}
-    into {U[0,x,y]}, where {x} and {y} are {S->col[k]} and {S->row[k]}.
-    
-    However, skips the assignment if {x} and {y} are {-1} (meaning that the
-    equation {k} is not associated to an heigh map pixel).  */ 
+    height value {z[k]} is not associated to an heigh map pixel). */
 
 /* DEBUGGING */
     
-typedef void pst_imgsys_report_sys_proc_t(int32_t level, pst_imgsys_t *S, float_image_t *U); 
+typedef void pst_imgsys_report_sys_proc_t(int32_t level, pst_imgsys_t *S); 
   /* Type of a client-given procedure that may be called
-    by recursive integrators to report the system used at each scale.
-    
-    Each pixel of the image {U} will be the assumed reliability for the
-    corresponding pixel of the height map, which is just the total weight
-    {eq.wtot} of the corresponding equation.  The {S.col} and {S.row} 
-    tables are used to map indices of variables and equations to 
-    height map pixel indices. */   
+    by recursive integrators to report the system used at each scale. */   
 
 /* I/O */
 

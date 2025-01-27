@@ -2,7 +2,7 @@
 #define pst_geom_sphere_H
 
 /* pst_geom.h -- geometric tools for images of spheres. */
-/* Last edited on 2025-01-01 15:09:11 by stolfi */
+/* Last edited on 2025-01-21 19:45:23 by stolfi */
 
 #include <float_image.h>
 #include <r2.h>

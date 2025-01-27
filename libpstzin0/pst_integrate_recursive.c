@@ -1,5 +1,5 @@
 /* See pst_integrate_recursive.h */
-/* Last edited on 2025-01-18 12:32:59 by stolfi */
+/* Last edited on 2025-01-25 09:31:51 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -21,12 +21,17 @@
 #include <pst_weight_map.h>
 #include <pst_height_map.h>
 #include <pst_integrate.h>
+#include <pst_integrate_iterative.h>
 
 #include <pst_integrate_recursive.h>
 
+#define MIN_SLOPE_MAP_SIZE 3
+  /* Stop the recursion when the slope map has no more than 
+    this number of rows and columns. */
+
 void pst_integrate_recursive
   ( float_image_t *G, 
-    bool_t keepNull,
+    float_image_t *H,
     float_image_t *Z, 
     int32_t level,
     uint32_t maxIter,
@@ -50,105 +55,53 @@ void pst_integrate_recursive
     int32_t NY_Z = NY_G + 1;
     if (verbose) { fprintf(stderr, "%*sheight map size = %d×%d ...\n", indent, "", NX_Z, NY_Z); }
     demand(Z != NULL, "height map must not be null");
-    float_image_check_size(Z, 2, NX_Z, NY_Z, "bad height map");
+    float_image_check_size(Z, 2, NX_Z, NY_Z, "bad unknown height map {Z}");
+    if (H != NULL) { float_image_check_size(H, 2, NX_Z, NY_Z, "bad external height map {H}"); }
 
     if (verbose)
-      { fprintf(stderr, "%*sEntering level %d with G size %d×%d ...\n", indent, "", level, NX_G, NY_G); }
-
-    if (reportData != NULL) { reportData(level, G, Z); }
+      { fprintf(stderr, "%*sentering level %d with G size %d×%d ...\n", indent, "", level, NX_G, NY_G); }
 
     /* Decide whether to use multi-scale: */
-    bool_t trivial = ((NX_G == 1) && (NY_G == 1));
-    
-    /* Get the initial guess {OZ} for the heights: */
-    if (trivial)
-      { /* Solution for the 1x1 system: */
-        /* Get slopes: */
-        float dZdX = float_image_get_sample(G, 0, 0, 0); 
-        float dZdY = float_image_get_sample(G, 1, 0, 0); 
-        /* Assume an affine function that is 0 at center, with the given gradient: */
-        double z10 = 0.5*(dZdX - dZdY);
-        double z11 = 0.5*(dZdX + dZdY);
-        float_image_set_sample(Z, 0, 0, 0, (float)-z11);
-        float_image_set_sample(Z, 0, 0, 1, (float)-z10);
-        float_image_set_sample(Z, 0, 1, 0, (float)+z10);
-        float_image_set_sample(Z, 0, 1, 1, (float)+z11);
-        float_image_fill_channel(Z, 1, 1.0);
-        /* The initial guess is the solution: */
-        if (reportSys != NULL) { reportSys(level); }
-        if (reportHeights != NULL) { reportHeights(level, 0, 0.0, TRUE, Z); }
-      }
-    else
-      { /* Shrink slope maps and weight map by half: */
-        if (verbose) { fprintf(stderr, "%*sShrinking slope and weight maps ...\n", indent, ""); }
+    bool_t trivial = ((NX_G <= MIN_SLOPE_MAP_SIZE) && (NY_G <= MIN_SLOPE_MAP_SIZE));
+    if (! trivial)
+      { /* Obtain the initial guess {Z} recursively: */
+        /* Shrink all maps by half: */
+        if (verbose) { fprintf(stderr, "%*sshrinking slope and weight maps ...\n", indent, ""); }
         float_image_t *RG = pst_slope_map_shrink(G);
         int32_t NC_RG, NX_RG, NY_RG;
         float_image_get_size(RG, &NC_RG, &NX_RG, &NY_RG);
         assert(NC_RG == 2);
+        
         int32_t NX_RZ = NX_RG+1;
         int32_t NY_RZ = NY_RG+1;
+        float_image_t *RZ = pst_height_map_shrink(Z);
+        float_image_check_size(RZ, 2, NX_RZ, NY_RZ, "shrunk height map {RZ} has wrong size");
+        float_image_t *RH = (H == NULL ? NULL : pst_height_map_shrink(H));
+        if (H != NULL) { float_image_check_size(RH,2, NX_RZ, NY_RZ, "shrunk height map {RH} has wrong size"); }
         
-        /* Compute the half-scale height map: */
-        float_image_t *RZ = float_image_new(2, NX_RZ, NY_RZ);
+        /* Compute the half-scale height maps: */
         pst_integrate_recursive
-          ( RG, keepNull, RZ,
+          ( RG, RH, RZ,
             level+1, 2*maxIter, convTol/2, topoSort,
             verbose, reportData, reportSys, reportStep, reportHeights
           );
         
         /* Expand the computed height map to double size: */
-        if (verbose) { fprintf(stderr, "%*sExpanding height map to %d×%d ...\n", indent, "", NX_Z, NY_Z); }
-        Z = pst_height_map_expand(RZ);
-          
+        if (verbose) { fprintf(stderr, "%*sexpanding height map to %d×%d ...\n", indent, "", NX_Z, NY_Z); }
+        Z = pst_height_map_expand(RZ, NX_Z,NY_Z);
+
         /* Free the working storage: */
         float_image_free(RG);
+        if (RH != NULL) { float_image_free(RH); }
         float_image_free(RZ);
-        
-        /* Build the linear system: */
-        uint32_t NXY_Z = (uint32_t)(NX_Z*NY_Z);
-        if (verbose) { fprintf(stderr, "%*sBuilding linear system for %d pixels ...\n", indent, "", NXY_Z); }
-        pst_imgsys_t *S = pst_integrate_build_system(G, W, verbose);
-        assert(S->N == NXY_Z);
-        if (keepNull)
-          { pst_integrate_fill_holes(S, NX_Z, NY_Z); }
-        else
-          { pst_imgsys_remove_holes(S, NULL); }
-        if (verbose) { fprintf(stderr, "%*sSystem has %d equations and %d variables\n", indent, "", S->N, S->N); }
-        if (reportSys != NULL) { reportSys(level, S, U); }
-
-        if (verbose) { fprintf(stderr, "%*scopying var/eq weights to {U} map ...\n", indent, ""); }
-        pst_imgsys_extract_system_eq_tot_weight_image(S, U, 0.0);
-
-        /* Get the initial guess {Z} for the heights: */
-        double *h = talloc(S->N, double);
-        if (verbose) { fprintf(stderr, "%*staking initial guess of heights ...\n", indent, ""); }
-        pst_imgsys_copy_image_to_sol_vec(S, Z, h, 0.0); 
-
-        auto void reportSol(int32_t level, int32_t iter, double change, bool_t final, uint32_t N, double h[]);
-        
-        if (verbose) { fprintf(stderr, "%*sSolving the system ...\n", indent, ""); }
-        bool_t para = FALSE; /* Should be parameter. 1 means parallel execution, 0 sequential. */
-        bool_t szero = TRUE; /* Should be parameter. 1 means adjust sum to zero, 0 let it float. */
-        uint32_t *ord = NULL;
-        if (topoSort) { ord = pst_imgsys_sort_equations(S); }
-        pst_imgsys_solve_iterative
-          ( S, h, ord, maxIter, convTol, 
-            para, szero, verbose, level, 
-            reportStep,
-            (reportHeights == NULL ? NULL : &reportSol)
-          );
-        pst_imgsys_copy_sol_vec_to_image(S, h, Z, 0.0);
-
-        free(h);
-        pst_imgsys_free(S);
-        if (ord != NULL) { free(ord); }
-        
-        void reportSol(int32_t level, int32_t iter, double change, bool_t final, uint32_t N, double h[])
-          { assert(reportHeights != NULL);
-            pst_imgsys_copy_sol_vec_to_image(S, h, Z, 0.0);
-            reportHeights(level, iter, change, final, Z);
-          }
       }
+
+    if (reportData != NULL) { reportData(level, G, H, Z); }
+
+    pst_integrate_iterative
+      ( G , H, Z, maxIter, convTol, topoSort, verbose, level,
+        reportSys, reportStep, reportHeights
+      );
 
    if (verbose)
       { fprintf
@@ -156,4 +109,6 @@ void pst_integrate_recursive
             indent, "", level, NX_Z, NY_Z
           );
       }
+    
+    return;
   }

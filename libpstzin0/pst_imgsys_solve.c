@@ -2,7 +2,7 @@
 
 /* Created on 2005-10-01 by Jorge Stolfi, unicamp, <stolfi@dcc.unicamp.br> */
 /* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2025-01-16 06:02:33 by stolfi */
+/* Last edited on 2025-01-25 08:46:08 by stolfi */
 /* See the copyright and authorship notice at the end of this file.  */
 
 #include <stdio.h>
@@ -19,12 +19,12 @@
 
 #include <pst_imgsys_solve.h>
 
-double pst_imgsys_sol_change(double *h_old, double *h, uint32_t N);
-  /* Returns the maximum of {abs(h_old[k]-h[k])}, for {k = 0..N-1}. */
+double pst_imgsys_sol_change(double *z_old, double *z, uint32_t N);
+  /* Returns the maximum of {abs(z_old[k]-z[k])}, for {k = 0..N-1}. */
 
 void pst_imgsys_solve_iterative
   ( pst_imgsys_t *S, 
-    double h[],
+    double z[],
     uint32_t ord[],
     uint32_t maxIter, 
     double convTol,
@@ -40,9 +40,9 @@ void pst_imgsys_solve_iterative
     int32_t indent = (level < -1 ? 0 : 2*level+2);
 
     /* Previous solution: */
-    double *h_old = rn_alloc(N);
+    double *z_old = rn_alloc(N);
     
-    double change = +INF;  /* Max {h} change in last iteration. */
+    double change = +INF;  /* Max {z} change in last iteration. */
     int32_t iter = 0;
     while (iter < maxIter)
       {
@@ -53,56 +53,56 @@ void pst_imgsys_solve_iterative
               { reportSolBefore |= (iter < reportStep);
                 reportSolBefore |= ((iter % (int32_t)reportStep) == 0);
               }
-            if (reportSolBefore) { reportSol(level, iter, change, FALSE, N, h); }
+            if (reportSolBefore) { reportSol(level, iter, change, FALSE, N, z); }
           }
 
-        /* Another pass over all variables {h[k]}: */
+        /* Another pass over all variables {z[k]}: */
         for (uint32_t kk = 0; kk < N; kk++)
           { /* Choose the next variable to recompute: */
             uint32_t k = (ord != NULL ? ord[kk] : kk);
-            /* Save current solution in {h_old}: */
-            h_old[k] = h[k];
+            /* Save current solution in {z_old}: */
+            z_old[k] = z[k];
             /* Get equation {k}: */
             pst_imgsys_equation_t *eqk = &(S->eq[k]);
-            /* Compute {h[k]} using equation {k}: */
+            /* Compute {z[k]} using equation {k}: */
             double sum = eqk->rhs; /* Right-hand side of equation. */
-            double cf_k = 0.0; /* Coefficient of {h[k]} in equation. */
+            double cf_k = 0.0; /* Coefficient of {z[k]} in equation. */
             for(uint32_t t = 0; t < eqk->nt; t++)
-              { /* Get hold of another variable {h[j] entering in equation {k}: */
+              { /* Get hold of another variable {z[j] entering in equation {k}: */
                 uint32_t j = eqk->uid[t];
                 demand((j >= 0) && (j < N), "invalid variable index in system");
                 double cf_j = eqk->cf[t];
                 if (j == k) 
-                  { /* This term uses {h[k]}, store the coefficient: */
+                  { /* This term uses {z[k]}, store the coefficient: */
                     cf_k = cf_j;
                   }
                 else if (cf_j != 0)
-                  { /* The variable {h[j]} is distinct from {h[k]}. */
-                    /* Get the appropriate value (new or old) of {h[j]}: */
-                    double Zj = (para && (j < k) ? h_old[j] : h[j]);
+                  { /* The variable {z[j]} is distinct from {z[k]}. */
+                    /* Get the appropriate value (new or old) of {z[j]}: */
+                    double Zj = (para && (j < k) ? z_old[j] : z[j]);
                     /* Subtract from the right-hand side: */
                     sum = sum - Zj * cf_j;
                   }
               }
             
-            /* Require that {eqk} depends on {h[k]}: */
+            /* Require that {eqk} depends on {z[k]}: */
             demand(cf_k != 0.0, "system's matrix has a zero in the diagonal"); 
             
             /* Solve the equation: */
-            h[k] = sum / cf_k;
+            z[k] = sum / cf_k;
           }
           
         if (szero)
           { /* Normalize for zero sum: */
             double sum = 0;
-            for (uint32_t k = 0; k < N; k++) { sum += h[k]; }
+            for (uint32_t k = 0; k < N; k++) { sum += z[k]; }
             double avg = sum/N;
-            for (uint32_t k = 0; k < N; k++) { h[k] -= avg; }
+            for (uint32_t k = 0; k < N; k++) { z[k] -= avg; }
           }
         iter++;
         
         /* Check for apparent convergence: */
-        change = pst_imgsys_sol_change(h_old, h, N);
+        change = pst_imgsys_sol_change(z_old, z, N);
         if (verbose)
           { fprintf(stderr, "%*s iteration %3d change = %16.8f\n", indent, "", iter, change); }
         if (change <= convTol) { /* Converged: */ break; }
@@ -117,16 +117,16 @@ void pst_imgsys_solve_iterative
         fprintf(stderr, "%*sconverged after %6d iterations,last change = %16.8f\n", indent, "", iter, change);
       }
 
-    if (reportSol != NULL) { reportSol(level, iter, change, TRUE, N, h); }
+    if (reportSol != NULL) { reportSol(level, iter, change, TRUE, N, z); }
 
-    free(h_old);
+    free(z_old);
   }
 
-double pst_imgsys_sol_change(double* h_old, double* h, uint32_t N)
+double pst_imgsys_sol_change(double* z_old, double* z, uint32_t N)
   { uint32_t k;
     double max_change = 0;
     for(k = 0; k< N; k++)
-      { double dk = h[k] - h_old[k];
+      { double dk = z[k] - z_old[k];
         if(dk < 0) { dk = - dk; }
         if(dk > max_change) { max_change = dk; }
       }

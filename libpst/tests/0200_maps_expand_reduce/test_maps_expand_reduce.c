@@ -2,7 +2,7 @@
 #define PROG_DESC "checks the {pst_{height,slope}_map_{expand,reduce}.h} routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-01-17 04:26:12 by stolfi */
+/* Last edited on 2025-01-24 22:21:32 by stolfi */
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_maps_expand_reduce_C_COPYRIGHT \
@@ -69,6 +69,7 @@
 #include <jsprintf.h>
 #include <affirm.h>
 #include <vec.h>
+#include <wt_table_hann.h>
 #include <argparser.h>
 
 typedef struct options_t
@@ -93,6 +94,7 @@ void make_maps
   ( int32_t NX,
     int32_t NY,
     zfunc_t func,
+    double maxGrad,
     double maxGDiff,
     float_image_t **ZP,
     float_image_t **GP
@@ -155,45 +157,11 @@ void test_r_e_slope_map(int32_t nfunc)
     int32_t NXI = int32_abrandom(10, 20);
     int32_t NYI = int32_abrandom(10, 20);
     /* Choose the function: */
-    zfunc_t *func = pst_proc_map_function_generic(nfunc);  /* The function that defines the map. */
-    double maxGDiff = NAN; /* Threshold for weight map definition. */
-    switch(nfunc)
-      { 
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 11:
-        case 12:
-        case 13:
-        case 14:
-        case 15:
-        case 16:
-          maxGDiff = +INF;
-          break;
-        case 8:
-          maxGDiff = 0.01;
-          break;
-        case 5:
-        case 6:
-        case 7:
-        case 9:
-        case 10:
-        case 17:
-        case 18:
-        case 19:
-        case 20:
-          maxGDiff = 0.001;
-          break;
-        default:
-          maxGDiff = +INF;
-          break;
-      }
+    pst_proc_map_zfunc_props_t fp = pst_proc_map_function_generic(nfunc);  /* The function that defines the map. */
     /* Create full-size height, slope and weight maps: */
     float_image_t *IZ = NULL;
     float_image_t *IG = NULL;
-    make_maps(NXI, NYI, func, maxGDiff, &IZ, &IG);
+    make_maps(NXI, NYI, fp.func, fp.maxGrad, fp.maxGDiff, &IZ, &IG);
     /* Shrink it: */
     float_image_t *JG = pst_slope_map_shrink(IG);
     /* Make a reduced version of the height, slope, and weight maps: */
@@ -201,7 +169,7 @@ void test_r_e_slope_map(int32_t nfunc)
     int32_t NY_J = (NYI + 1)/2;
     float_image_t *KZ = NULL;
     float_image_t *KG = NULL;
-    make_maps(NX_J, NY_J, func, maxGDiff, &KZ, &KG);
+    make_maps(NX_J, NY_J, fp.func, fp.maxGrad, fp.maxGDiff, &KZ, &KG);
     /* Compare and write: */
     compare_and_write_slope_maps(nfunc, IZ, IG, JG, KZ, KG);
     fprintf(stderr, "----------------------------------------------------------------------\n");
@@ -259,27 +227,26 @@ void make_maps
   ( int32_t NX,
     int32_t NY,
     zfunc_t func,
+    double maxGrad,
     double maxGDiff,
     float_image_t **ZP,
     float_image_t **GP
   )
   {
-    int32_t smoothGL = 2;
-    int32_t smoothGN = 11;
-    pst_proc_map_sampling_t smpG = pst_proc_map_make_sampling_tables(smoothGL, smoothGN);
-    int32_t smoothZL = 1;
-    int32_t smoothZN = 11;
-    pst_proc_map_sampling_t smpZ = pst_proc_map_make_sampling_tables(smoothZL, smoothZN);
-    bool_t numGrad = FALSE;
-    double sigmaG = 0.0;
-    double sigmaW = 0.0;
-    float_image_t *Z = float_image_new(2, NX+1, NY+1); /* Must be non-null. */
-    float_image_t *G = (GP == NULL ? NULL : float_image_new(3, NX, NY));
-    pst_proc_map_make_images(func, NX, NY, smpZ, smpG, numGrad, maxGDiff, sigmaG, sigmaW, Z, G, NULL);
-    if (ZP != NULL) { (*ZP) = Z; }
-    if (GP != NULL) { (*GP) = G; }
-    pst_proc_map_free_sampling_tables(&smpZ);
-    pst_proc_map_free_sampling_tables(&smpG);
+    demand(ZP != NULL, "null argument {ZP}");
+    demand(GP != NULL, "null argument {GP}");
+
+    uint32_t NS = 5;
+    double ws[NS];
+    uint32_t stride;
+    wt_table_hann_fill(NS, 0.0, ws, &stride);
+    assert(stride == NS/2 + 1);
+
+    bool_t numGrad = TRUE;
+    (*ZP) = pst_proc_map_make_height_map
+      ( func, NX+1, NY+1, NS, ws, maxGrad );
+    (*GP) = pst_proc_map_make_slope_map
+      ( func, NX, NY, NS, ws, numGrad, maxGDiff );
   }
 
 options_t *tb_parse_options(int32_t argc, char **argv)

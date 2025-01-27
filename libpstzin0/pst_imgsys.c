@@ -2,7 +2,7 @@
 
 /* Created on 2005-10-01 by Jorge Stolfi, unicamp, <stolfi@dcc.unicamp.br> */
 /* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2025-01-18 12:36:19 by stolfi */
+/* Last edited on 2025-01-25 08:47:15 by stolfi */
 /* See the copyright and authorship notice at the end of this file.  */
 
 #include <stdio.h>
@@ -115,92 +115,6 @@ bool_t pst_imgsys_equation_is_null(uint32_t uid, pst_imgsys_equation_t *eq, uint
         return FALSE;
       }
   }
-  
-void pst_imgsys_remove_holes(pst_imgsys_t *S, int32_t *nuid_from_ouid)
-  { bool_t debug = TRUE;
-  
-    uint32_t N_in = S->N; 
-      
-    /* Provide a local table if the client did not give one: */
-    int32_t *nfo_old = nuid_from_ouid;
-    if (nuid_from_ouid == NULL) { nuid_from_ouid = talloc(N_in, int32_t); }
-    for (int32_t k = 0; k < N_in; k++) { nuid_from_ouid[k] = -1; }
-    
-    /* Get number {N-ot} of non-null equations and set {nuid_from_ouid}: */
-    uint32_t N_ot = 0; /* Non-null equations. */
-    uint32_t N_ex = 0; /* Number of equations excluded. */
-    for (uint32_t k = 0; k < N_in; k++)
-      { uint32_t uidk_old = k;
-        pst_imgsys_equation_t *eqk_old = &(S->eq[k]);
-        if (pst_imgsys_equation_is_null(uidk_old, eqk_old, N_in))
-          { /* Will exclude it: */
-            if (debug) { fprintf(stderr, "    excluding null height/equation %d\n", uidk_old); }
-            N_ex++;
-          }
-        else
-          { /* Will keep it: */
-            uint32_t uidk_new = N_ot;
-            nuid_from_ouid[uidk_old] = (int32_t)uidk_new;
-            N_ot++; 
-          }
-      }          
-    assert(N_ot + N_ex == N_in); /* Paranoia. */
-    
-    if (N_ex > 0)
-      { /* Now create the equation, colum, row tables for a new system and copy the non-null equations into them: */
-        pst_imgsys_equation_t *eq_ot = talloc(N_ot, pst_imgsys_equation_t);
-        int32_t *col_ot = talloc(N_ot, int32_t);
-        int32_t *row_ot = talloc(N_ot, int32_t);
-        uint32_t k_new = 0;
-        for (uint32_t k = 0; k < N_in; k++)
-          { uint32_t uidk_old = k;
-            pst_imgsys_equation_t *eqk = &(S->eq[k]);
-            if (! pst_imgsys_equation_is_null(uidk_old, eqk, N_in))
-              { /* Will keep it: */
-                uint32_t uidk_new = k_new;
-                assert(nuid_from_ouid[uidk_old] == uidk_new);
-                eq_ot[k_new] = (*eqk);
-                /* Remap terms; for good measure, discard null ones: */
-                uint32_t nt = eqk->nt;
-                assert((nt >= 2) && (nt <= MAX_COEFFS));
-                uint32_t nt_new = 0;
-                for (int32_t j = 0; j < nt; j++)
-                  { if ((j == 0) || (fabs(eqk->cf[j]) >= FLUFF))
-                      { uint32_t uidj_old = eqk->uid[j];
-                        int32_t j_new = (int32_t)nt_new;
-                        int32_t uidj_new = nuid_from_ouid[uidj_old];
-                        assert(uidj_new != -1);
-                        assert((uidj_new >= 0) && (uidj_new < N_ot));
-                        eqk->uid[j_new] = (uint32_t)uidj_new;
-                        eqk->cf[j_new] = eqk->cf[j];
-                        nt_new++;
-                      }
-                  }
-                assert(nt_new >= 2);
-                eqk->nt = nt_new;
-                assert(eqk->uid[0] == uidk_new);
-                /* Remap {col,row,uid}: */
-                int32_t x = S->col[uidk_old];
-                int32_t y = S->row[uidk_old];
-                col_ot[uidk_new] = x;
-                row_ot[uidk_new] = y;
-                /* One more: */
-                k_new++;
-              }
-          }
-        assert(k_new == N_ot);
-    
-        /* Replace the tables: */
-        S->N = N_ot;
-        free(S->eq); S->eq = eq_ot;
-        free(S->col); S->col = col_ot;
-        free(S->row); S->row = row_ot;
-        pst_imgsys_check_valid(S, N_ot, -1, -1);
-      }
-    
-    if (nuid_from_ouid != nfo_old) { free(nuid_from_ouid); }
-    return;
-  }
     
 void pst_imgsys_write(FILE *wr, pst_imgsys_t *S)
   {
@@ -274,7 +188,7 @@ void pst_imgsys_write_report(pst_imgsys_t *S, char *filePrefix, int32_t level, c
     free(fileName);
   }
 
-void pst_imgsys_copy_image_to_sol_vec(pst_imgsys_t *S, float_image_t *Z, double h[], double vdef)
+void pst_imgsys_copy_image_to_sol_vec(pst_imgsys_t *S, float_image_t *Z, double z[], double vdef)
   {
     uint32_t N = S->N;
     int32_t NX = S->NX, NY = S->NY;
@@ -286,22 +200,21 @@ void pst_imgsys_copy_image_to_sol_vec(pst_imgsys_t *S, float_image_t *Z, double 
         if (x != -1)
           { assert((x >= 0) && (x < NX));
             assert((y >= 0) && (y < NY));
-            h[k] = float_image_get_sample(Z, 0, x, y);
+            z[k] = float_image_get_sample(Z, 0, x, y);
           }
         else
           { /* Height Value is not associated with any height map pixel: */
-            h[k] = vdef;
-            ??? say that channel 1 is ignored
+            z[k] = vdef;
           }
       }
   }
 
-void pst_imgsys_copy_sol_vec_to_image(pst_imgsys_t *S, double h[], float_image_t *Z, float vdef)
+void pst_imgsys_copy_sol_vec_to_image(pst_imgsys_t *S, double z[], float_image_t *Z, float vdef)
   {
     int32_t NC, NX, NY;
     float_image_get_size(Z, &NC, &NX, &NY);
-    demand(NC == 1, "image should have only one channel");
     float_image_fill_channel(Z, 0, vdef);
+    if (NC >= 2) { float_image_fill_channel(Z, 1, 0.0); }
     for (uint32_t uid = 0; uid < S->N; uid++)
       { int32_t x = S->col[uid];
         int32_t y = S->row[uid];
@@ -309,26 +222,8 @@ void pst_imgsys_copy_sol_vec_to_image(pst_imgsys_t *S, double h[], float_image_t
         if (x != -1)
           { demand((x >= 0) && (x < NX), "invalid image col in system");
             demand((y >= 0) && (y < NY), "invalid image row in system");
-            float_image_set_sample(Z, 0, x, y, (float)h[uid]);
-          }
-      }
-  }
-
-void pst_imgsys_extract_system_eq_tot_weight_image(pst_imgsys_t *S, float_image_t *U, float vdef)
-  { int32_t NC, NX, NY;
-    float_image_get_size(U, &NC, &NX, &NY);
-    demand(NC == 1, "image should have only one channel");
-    float_image_fill_channel(U, 0, vdef);
-    
-    for (uint32_t uid = 0; uid < S->N; uid++)
-      { int32_t x = S->col[uid];
-        int32_t y = S->row[uid];
-        assert((x == -1) == (y == -1));
-        if (x != -1)
-          { demand((x >= 0) && (x < NX), "invalid image col in system");
-            demand((y >= 0) && (y < NY), "invalid image row in system");
-            double wtot = S->eq[uid].wtot;
-            float_image_set_sample(U, 0, x,y, (float)wtot);
+            float_image_set_sample(Z, 0, x, y, (float)z[uid]);
+            if (NC >= 2) { float_image_set_sample(Z, 1, x, y, (float)S->eq[uid].wtot); }
           }
       }
   }

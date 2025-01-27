@@ -2,7 +2,7 @@
 #define pst_slope_map_H
 
 /* pst_slope_map.h -- procedures for working with slope maps. */
-/* Last edited on 2025-01-19 19:35:09 by stolfi */
+/* Last edited on 2025-01-23 13:20:16 by stolfi */
 
 #include <bool.h>
 #include <r2.h>
@@ -163,9 +163,10 @@ float_image_t *pst_slope_map_shrink(float_image_t *IG);
 
 /* ADDING NOISE */
 
-void pst_slope_map_perturb(float_image_t *G, double sigma);
+void pst_slope_map_perturb(float_image_t *G, double sigma, uint32_t seed);
   /* Adds to each sample of {G} a random value
     with independent Gaussian distribution, mean 0 and
-    deviation {sigma}. */
+    deviation {sigma}.  If {seed} is nonzero,
+    resets the random generator with that seed. */
 
 #endif

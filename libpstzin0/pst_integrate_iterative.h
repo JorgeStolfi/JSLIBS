@@ -2,7 +2,7 @@
 #define pst_integrate_iterative_H
 
 /* procedures for integratings slope maps by smultiscale ieration. */
-/* Last edited on 2025-01-15 14:30:54 by stolfi */
+/* Last edited on 2025-01-25 09:22:56 by stolfi */
 
 #include <bool.h>
 #include <r2.h>
@@ -18,10 +18,8 @@
 
 void pst_integrate_iterative
   ( float_image_t *G, 
-    float_image_t *W, 
-    bool_t keepNull,
+    float_image_t *H, 
     float_image_t *Z, 
-    float_image_t *U,
     uint32_t maxIter,
     double convTol,
     bool_t topoSort,
@@ -31,40 +29,41 @@ void pst_integrate_iterative
     uint32_t reportStep,
     pst_integrate_report_heights_proc_t *reportHeights
   );
-  /* Fills {Z} with the depth map that best matches the slope map {G}, where channel
-    0 is {dZ/dX} and channel 1 is {dZ/dY}.  The image {Z} must have one channel and
-    must be bigger than {G} by one col and one row
+  /* Fills the height map {Z} with the height values that best match the
+    slope map {G} and the optional independent estimate {H}.
     
-    If {W} is not NULL, it is taken to be a single-channel weight map, 
-    with the same dimensions as the slope map {G}.
+    The image {G} must have 3 channels, where channel 0 is {dZ/dX},
+    channel 1 is {dZ/dY}, and channel 2 is the reliability weight for
+    that data.
+    
+    The image {Z} must have two channels, and must be bigger than {G} by
+    one col and one row. Channel 0 will be the integrated height values,
+    and channel 1 will be a reliability weight for them.
+
+    If {H} is not {NULL}, it must be a height map with two channels and
+    same size as {Z}. The value of {H[0,x,y]} is taken to be independent
+    estimate of the height {Z[0,x,y]}; and {H[1,x,y]} is taken to be the
+    reliability weight of that estimate.  If {H} is null, or some 
+    weight {H[1,x,y]} is zero, 
     
     The height map {Z} is computed by solving a set of linear equations,
-    constructed from {G} and {W} using {pst_integrate_build_system}
-    (q.v.).  
-    
-    If {keepNull} is true, the system is fudged so that any height map
-    pixel that is completely surrounded by zero-weight data (so that its
-    equation has only one term with weight zero) will be ultimately be
-    set to the average of their neighbors. Thus the regions of weight
-    zero in the input data will be filled with a Laplace equilibrium
-    surface. This fudging does not affect the final result for pixels
-    with non-null equations. If {keepNull} is false, those pixels will
-    be excluded from the system, and will be set to zero in the final
-    height map.
+    constructed from {G} and {H} using {pst_integrate_build_system}
+    (q.v.). 
     
     The linear system is solved by the Gauss-Jordan iterative method.
-    On entry, the contents of, which will be used as the initial guess
-    for the iteration. Otherwise the initial guess will be all zeros.
-    The iteration will stop when the maximum change in
-    any height value is less than {convTol}, or after {maxIter}
-    iterations, whichever happens first. If {topoSort} is TRUE,
-    solves the equations in order of increasing equation weight {wtot}.
+    The initial guess for the iteration will be the weighted average of
+    {H[0,x,y]} and the value of {Z[0,x,y]} on entry, with weights
+    {H[1,x,y]} and {Z[1,x,y]}. If {H} is null, all weights {H[1,x,y]}
+    are assumed to be zero.
     
-    IF {U} is not {NULL}, it must be a single-channel weight map with
-    the same size as the height map {Z}. Each sample of {U} will be
-    set to the weight {wtot} of the equation that defines the
-    corresponding sample of {Z}.  Pixels of {Z} that end up with no equation 
-    (if {keepHoles} is false) are set to zero.
+    The iteration will stop when the maximum change
+    in any height value is less than {convTol}, or after {maxIter}
+    iterations, whichever happens first. If {topoSort} is TRUE, solves
+    the equations in order of increasing equation weight {wtot}.
+    
+    On exit, each sample {Z[1,x,y]} will be
+    set to the weight {wtot} of the main equation that defines the
+    value {Z[0,x,y]}. 
 
     If {verbose} is TRUE, prints a report of the interations. 
     

@@ -1,5 +1,5 @@
 #! /bin/bash
-# Last edited on 2025-01-19 23:43:17 by stolfi
+# Last edited on 2025-01-25 17:13:42 by stolfi
 
 func_num="$1"; shift
 func_name="$1"; shift
@@ -24,23 +24,26 @@ noiseW=0.000
 if [[ ( ${nx} -le 1 ) || ( ${ny} -le 1 ) ]]; then smoothG=( 0 1 ); else smoothG=( 1  5 ); fi
 if [[ ( ${nx} -le 1 ) || ( ${ny} -le 1 ) ]]; then smoothZ=( 1 5 ); else smoothZ=( 2  11 ); fi
 
-outPrefix="out/${func_num}-${func_name}-${noisy}-"`printf "%04dx%04d" ${nx} ${ny}`
+outDir=out
+sizeTag="`printf "%04dx%04d" ${nx} ${ny}`"
+outPrefix="${outDir}/${func_num}-${func_name}-${noisy}-${sizeTag}"
+
 rm -f ${outPrefix}-*.{fni,ppm,pgm,eps}
 set -x
 ${PROGDIR}/${PROG} \
   -function ${func_num} \
   -size ${nx} ${ny} \
   -numGrad Y \
-  -maxGrad 100.0 \
-  -maxGDiff 1.000 \
   -noiseG ${noiseG} \
-  -outPrefix ${outPrefix}
+  -outDir ${outDir}
 set +x
 
 ls -d ${outPrefix}-*.fni
 
 out_heights_fni="${outPrefix}-Z.fni"
-out_slopes_fni="${outPrefix}-G.fni"
+out_slopes_n_fni="${outPrefix}-Gn.fni"
+out_slopes_a_fni="${outPrefix}-Ga.fni"
+out_slopes_d_fni="${outPrefix}-Gd.fni"
 out_normals_fni="${outPrefix}-N.fni"
 
 view_fni=1
@@ -48,111 +51,163 @@ make_pnm=1
 make_hist=0
 make_plot=0
 
-pfiles=()
-efiles=()
-hfiles=()
+# ======================================================================
+# Viewing maps with fni_view
 
-scale=`echo "${ny}/2" | bc -lq`
+function view(){
+  ofile="$1"; shift;
+  txSelf="$1"; shift
+  
+  scale=`echo "sqrt(${nx}^2+${ny}^2)/2" | bc -lq`
+  scale=`printf "%.2f" "${scale}"`
+  if [[ ${txSelf} -ne 0 ]]; then txOps=( -txChannels 0 1 2 ); else txOps=(); fi
+  if [[ -s ${ofile} ]]; then
+    set -x
+    fni_view -channel 0 -hist T -range auto -scale ${scale} ${txOps[@]} -verbose ${ofile}
+    set +x
+  else
+    echo "** did not find file ${ofile}" 1>&2
+  fi
+}
 
 if [[ ${view_fni} -gt 0 ]]; then
-  ofile=${out_heights_fni}; if [[ -s ${ofile} ]]; then fni_view -channel 0 -scale ${scale} ${ofile}; fi
-  ofile=${out_slopes_fni};  if [[ -s ${ofile} ]]; then fni_view -channel 0 -scale ${scale} ${ofile}; fi
-  ofile=${out_normals_fni}; if [[ -s ${ofile} ]]; then fni_view -channel 0 -scale ${scale} -texture ${ofile} ${ofile}; fi
+  view ${out_heights_fni}   0
+  view ${out_slopes_a_fni}  0
+  view ${out_slopes_n_fni}  0
+  view ${out_slopes_d_fni}  0
+  view ${out_normals_fni}   1
 fi
 
+# ======================================================================
+# Converting maps to ".ppm" and/or ".pgm"
+
+pfiles=()
+
+function topnm(){
+  ofile="$1"; shift
+  chans="$1"; shift
+  tag="$1"; shift
+  
+  chans=(`echo ${chans} | tr ',' ' '`)
+  
+  if [[ ${#chans[@]} -eq 1 ]]; then
+    ext="pgm"; chop=( -channel ${chans[0]} )
+  elif [[ ${#chans[@]} -eq 3 ]]; then
+    ext="ppm"; chop=( -channels ${chans[@]} )
+  else
+    echo "** invalid {chans}" 1>&2; exit 1;
+  fi
+  if [[ -s ${ofile} ]]; then 
+    pfile="${ofile/.fni/${tag}.${ext}}"
+    fni_to_pnm ${chop[@]} -center 0 -uniform < ${ofile} > ${pfile}
+    if [[ -s ${pfile} ]]; then pfiles+=( ${pfile} ); fi
+  else
+    echo "** file ${ofile} not found" 1>&2
+  fi
+}
+
 if [[ ${make_pnm} -gt 0 ]]; then
-  ofile=${out_heights_fni}; if [[ -s ${ofile} ]]; then 
-    pfile="${ofile/.fni/.pgm}"
-    fni_to_pnm -channel 0 < ${ofile} > ${pfile}
-    if [[ -s ${pfile} ]]; then pfiles+=( ${pfile} ); fi
-    wfile="${ofile/.fni/W.pgm}"
-    fni_to_pnm -channel 1 < ${ofile} > ${wfile}
-    if [[ -s ${wfile} ]]; then pfiles+=( ${wfile} ); fi
-  fi
   
-  ofile=${out_slopes_fni};  if [[ -s ${ofile} ]]; then 
-    pfile="${ofile/.fni/.ppm}"
-    fni_to_pnm -channels 0 1 0 -center 0 -uniform < ${ofile} > ${pfile}
-    if [[ -s ${pfile} ]]; then pfiles+=( ${pfile} ); fi
-    wfile="${ofile/.fni/W.pgm}"
-    fni_to_pnm -channel 2 < ${ofile} > ${wfile}
-    if [[ -s ${wfile} ]]; then pfiles+=( ${wfile} ); fi
-  fi
+  topnm ${out_heights_fni} 0    ''
+  topnm ${out_heights_fni} 1    'W'
   
-  ofile=${out_normals_fni}; if [[ -s ${ofile} ]]; then 
-    pfile="${ofile/.fni/.ppm}"
-    fni_to_pnm -channels 0 1 2 -min -1 -max +1 < ${ofile} > ${pfile}
-    if [[ -s ${pfile} ]]; then pfiles+=( ${pfile} ); fi
-    wfile="${ofile/.fni/W.pgm}"
-    fni_to_pnm -channel 3 < ${ofile} > ${wfile}
-    if [[ -s ${wfile} ]]; then pfiles+=( ${wfile} ); fi
+  topnm ${out_slopes_a_fni} 0,1,0 ''
+  topnm ${out_slopes_a_fni} 2     'W'
+  
+  topnm ${out_slopes_n_fni} 0,1,0 ''
+  topnm ${out_slopes_n_fni} 2     'W'
+  
+  topnm ${out_slopes_d_fni} 0,1,0 ''
+  topnm ${out_slopes_d_fni} 2     'W'
+  
+  topnm ${out_normals_fni} 0,1,2 ''
+  topnm ${out_normals_fni} 3     'W'
+
+  if [[ ${#pfiles[@]} -ne 0 ]]; then
+    display -title '%f' -filter box -resize 'x480<' ${pfiles[@]}; status=$?
+    if [[ ${status} -ne 0 ]]; then echo "** display exited with status = ${status} - aborted" 1>&2; exit 1; fi
   fi
 fi  
 
+# ======================================================================
+# Converting maps to EPS plots:
+
+efiles=()
+
+function plotit(){
+  ofile="$1"; shift
+  chan="$1"; shift
+  tag="$1"; shift
+  title="$1"; shift
+  
+  if [[ -s ${ofile} ]]; then 
+    efile="${ofile/.fni/${tag}.eps}"
+    fni_plot.sh -channel ${chan} -title "${title}" < ${ofile} > ${efile}
+    if [[ -s ${efile} ]]; then efiles+=( ${efile} ); fi
+  else
+    echo "** file ${ofile} not found" 1>&2
+  fi
+}
+
 if [[ ${make_plot} -gt 0 ]]; then
 
-  ofile=${out_heights_fni}; if [[ -s ${ofile} ]]; then 
-    efile="${ofile/.fni/.eps}"; efiles+=( ${efile} )
-    fni_plot.sh -channel 0 -title "Z" < ${ofile} > ${efile}
-    if [[ -s ${efile} ]] ; then efiles+=( ${efile} ); fi
-  fi
+  plotit ${out_heights_fni} 0 '' "Z"
 
-  ofile=${out_slopes_fni};  if [[ -s ${ofile} ]]; then 
-    efile_X="${ofile/.fni/X.eps}"; efiles+=( ${efile_X} )
-    fni_plot.sh -channel 0 -title "dZ/dX" < ${ofile} > ${efile_X}
-    if [[ -s ${efile_X} ]] ; then efiles+=( ${efile_X} ); fi
+  plotit ${out_slopes_a_fni} 0 'X' "dZ/dX"
+  plotit ${out_slopes_a_fni} 1 'Y' "dZ/dY"
 
-    efile_Y="${ofile/.fni/Y.eps}"; efiles+=( ${efile_Y} )
-    fni_plot.sh -channel 1 -title "dZ/dY" < ${ofile} > ${efile_Y}
-    if [[ -s ${efile_Y} ]] ; then efiles+=( ${efile_Y} ); fi
-  fi
+  plotit ${out_slopes_n_fni} 0 'X' "dZ/dX"
+  plotit ${out_slopes_n_fni} 1 'Y' "dZ/dY"
 
-  ofile=${out_normals_fni}; if [[ -s ${ofile} ]]; then 
-    efile_X="${ofile/.fni/X.eps}"; 
-    fni_plot.sh -channel 0 -title "nrm.X" < ${ofile} > ${efile_X};
-    if [[ -s ${efile_X} ]] ; then efiles+=( ${efile_X} ); fi
+  plotit ${out_slopes_d_fni} 0 'X' "dZ/dX"
+  plotit ${out_slopes_d_fni} 1 'Y' "dZ/dY"
 
-    efile_Y="${ofile/.fni/Y.eps}";
-    fni_plot.sh -channel 1 -title "nrm.Y" < ${ofile} > ${efile_Y}
-    if [[ -s ${efile_Y} ]] ; then efiles+=( ${efile_Y} ); fi
+  plotit ${out_normals_fni} 0 'X' "nrm.X"
+  plotit ${out_normals_fni} 0 'Y' "nrm.Y"
+  plotit ${out_normals_fni} 0 'Z' "nrm.Z"
 
-    efile_Z="${ofile/.fni/Z.eps}"; 
-    fni_plot.sh -channel 2 -title "nrm.Z" < ${ofile} > ${efile_Z}
-    if [[ -s ${efile_Z} ]] ; then efiles+=( ${efile_Z} ); fi
+  if [[ ${#efiles[@]} -ne 0 ]]; then
+    evince ${efiles[@]}; status=$?
+    if [[ ${status} -ne 0 ]]; then echo "** evince exited with status = ${status} - aborted" 1>&2; exit 1; fi
   fi
 
 fi
+
+# ======================================================================
+# Computing map histograms:
+
+hfiles=()
+
+function tohist(){
+  ofile="$1"; shift
+  chan="$1"; shift
+  tag="$1"; shift
+  title="$1"; shift
+  
+  if [[ -s ${ofile} ]]; then 
+    hfile="${ofile/.fni/${tag}-hist.eps}"
+    fni_hist -channel ${chan} -step 0.250 -title "${title}" < ${ofile} > ${hfile}
+    if [[ -s ${hfile} ]]; then hfiles+=( ${hfile} ); fi
+  else
+    echo "** file ${ofile} not found" 1>&2
+  fi
+}
 
 if [[ ${make_hist} -gt 0 ]]; then
 
-  ofile=${out_heights_fni}; if [[ -s ${ofile} ]]; then 
-    efile_h="${ofile/.fni/-h.eps}"
-    fni_hist -channel 0 -title "Z" -step 0.250 < ${ofile} > ${efile_h}
-    if [[ -s ${efile_h} ]] ; then hfiles+=( ${efile_h} ); fi
+  tohist ${out_heights_fni} 0 '' "Z"
+
+  tohist ${out_slopes_a_fni} 0 'X' "dZ/dX"
+  tohist ${out_slopes_a_fni} 1 'Y' "dZ/dY"
+
+  tohist ${out_slopes_n_fni} 0 'X' "dZ/dX"
+  tohist ${out_slopes_n_fni} 1 'Y' "dZ/dY"
+
+  tohist ${out_slopes_d_fni} 0 'X' "dZ/dX"
+  tohist ${out_slopes_d_fni} 1 'Y' "dZ/dY"
+
+  if [[ ${#hfiles[@]} -ne 0 ]]; then
+    evince ${hfiles[@]}; status=$?
+    if [[ ${status} -ne 0 ]]; then echo "** evince exited with status = ${status} - aborted" 1>&2; exit 1; fi
   fi
-
-  ofile=${out_slopes_fni};  if [[ -s ${ofile} ]]; then 
-    efile_Xh="${ofile/.fni/X-h.eps}"
-    fni_hist -channel 0 -title "dZ/DX" -step 0.250 < ${ofile} > ${efile_Xh}
-    if [[ -s ${efile_Xh} ]] ; then hfiles+=( ${efile_Xh} ); fi
-
-    efile_Yh="${ofile/.fni/Y-h.eps}"
-    fni_hist -channel 1 -title "dZ/dY" -step 0.250 < ${ofile} > ${efile_Yh}
-    if [[ -s ${efile_Yh} ]] ; then hfiles+=( ${efile_Yh} ); fi
-  fi
-fi
-
-if [[ ${#pfiles[@]} -ne 0 ]]; then
-  display -title '%f' -filter box -resize 'x480<' ${pfiles[@]}; status=$?
-  if [[ ${status} -ne 0 ]]; then echo "** display exited with status = ${status} - aborted" 1>&2; exit 1; fi
-fi
-
-if [[ ${#efiles[@]} -ne 0 ]]; then
-  evince ${efiles[@]}; status=$?
-  if [[ ${status} -ne 0 ]]; then echo "** evince exited with status = ${status} - aborted" 1>&2; exit 1; fi
-fi
-
-if [[ ${#hfiles[@]} -ne 0 ]]; then
-  evince ${hfiles[@]}; status=$?
-  if [[ ${status} -ne 0 ]]; then echo "** evince exited with status = ${status} - aborted" 1>&2; exit 1; fi
 fi

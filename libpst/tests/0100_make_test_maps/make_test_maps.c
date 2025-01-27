@@ -4,17 +4,14 @@
 
 /* Copyright © 2005 by the State University of Campinas (UNICAMP). */
 /* See the copyright, authorship, and warranty notice at end of file. */
-/* Last edited on 2025-01-19 23:31:02 by stolfi */
+/* Last edited on 2025-01-26 19:30:00 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
   "    -function {ZFUNC} \\\n" \
   "    -size {NX} {NY} \\\n" \
-  "    [ -numGrad {NUMGRAD} ] \\\n" \
-  "    -noiseG {SIGMA_G} \\\n" \
-  "    -maxGrad {MAXGRAD} \\\n" \
-  "    -maxGDiff {MAXGDIFF} \\\n" \
-  "    -outPrefix {OUT_PREFIX}" " \\\n" \
+  "    -noiseG {NOISE_G} \\\n" \
+  "    -outDir {OUT_DIR}" " \\\n" \
   "    " argparser_help_info_HELP
   
 #define PROG_INFO \
@@ -28,15 +25,8 @@
   "  Generates a height map {Z(X,Y)} and its gradient (slope)" \
   " map {G(X,Y)}, inclunding" \
   " the corresponding realiability weights, in the format required" \
-  " by {slope_to_height}.  The height map is written as channel 0 of the" \
-  " two-channel float image file \"{OUT_PREFIX}-Z.fni\"." \
-  " The gradient is written as" \
-  " channels 0 (X derivative) and channel 1 (Y derivative) of" \
-  " the three-channel float image file \"{OUT_PREFIX}-G.fni\".  The normal map" \
-  " is written as channels 0, 1, and 2 of the four-channel float image" \
-  " file \"{OUT_PREFIX}-N.fni\". The respective weight" \
-  " mapsare saved as channel 1 of {Z}, channel 2 of {G}, and\n" \
-  " channel 3 of {N}.\n" \
+  " by {slope_to_height}.\n" \
+  "\n" \
   "  The height map is defined by the {ZFUNC} parameter, an integer" \
   " that selects one of the program's built-in functions" \
   " ({function_00}, {function_01}, ...). See {pst_proc_map.h} for" \
@@ -45,35 +35,64 @@
   " map, in pixels.\n" \
   "\n" \
   "  The height function is nominally evaluated" \
-  " at the corners of a rectangular grid with" \
-  " {NX} by {NY} square cells. Note that the height map" \
+  " at the points (corners) of a rectangular grid with" \
+  " {NX} by {NY} square cells.  The value is the average of the" \
+  " heights at several sampling points (sampoints) surrounding" \
+  " each corner, weighted by a suitable window weight" \
+  " table.  Note that the height map" \
   " has {NX+1} columns and {NY+1} rows.\n" \
   "\n" \
-  "  The slope maps are nominally evaluated at the center of each pixel" \
-  " of the grid, so it has {NX} columns and {NY} rows.  If \"-numGrad\" is" \
-  " specified as true, the average gradient in each cell is computed by finite" \
-  " differences from the height values at the four corners of the" \
-  " cell.  If \"-numGrad\" is specified as false, the gradient is computed" \
-  " by sampling the analytic gradient of the function.  Note that" \
-  " the analytic gradient may be" \
-  " widely inconsistent with the height field, especially if the function" \
+  "  The slope map is nominally evaluated at the center of each cell (pixel)" \
+  " of the grid, so it has {NX} columns and {NY} rows.  Two versions" \
+  " of the slope map are computed, 'numeric' and 'analytic'. The numeric" \
+  " gradient in each grid cell is computed by divided" \
+  " differences of the height values computed a collection sampoints" \
+  " spanning the cell and part of adjacent cells. The analytic" \
+  " gradient is computed by sampling and averaging the analytic" \
+  " gradient of the height function at those sampoints.  Note that" \
+  " the analytic slope map may be" \
+  " very different from the numeric one, and inconsistent" \
+  " with the height map, especially if the function" \
   " is discontinuous or highly random inside the pixel.\n" \
+  "\n" \
+  "  If {NOISE_G} is positive, the program also randomly perturbs each" \
+  " component of the gradient value, to simulate noisy data.  The" \
+  " perturbation consists in adding to each gradient component a random number with" \
+  " Gaussian distribution, zero mean, and standard" \
+  " deviation {NOISE_G}.  The same random value is added to both gradient" \
+  " versions, numeric and anaytic.  The perturbation affects only" \
+  " channels 0 and 1 of the gradient map.\n" \
+  "\n" \
+  "  The program also writes a map with the discrepancy between the" \
+  " numeric and analytic gradients at each pixel (before the random noise).\n" \
+  "\n" \
+  "  The normal map is computed from the (perturbed) numeric slope map.  The Z"\
+  " component is always positive.\n" \
   "\n" \
   "  Each map includes a weight channel, whose value at each pixel gives" \
   " the reliability of the corresponding height, gradient, or normal" \
-  " in the same pixel.  These weights are affected by the {MAXGRAD} and" \
-  " {MAXGDIFF} parameters; see {pst_proc_map_make_height_map} and" \
+  " in the same pixel.  See {pst_proc_map_make_height_map} and" \
   " {pst_proc_map_make_slope_map} for details.\n" \
   "\n" \
-  "  If {SIGMA_G} is positive, the program also randomly perturbs each" \
-  " component of the gradient value, to simulate noisy data.  The" \
-  " perturbation consists in adding a random number {E} with" \
-  " Gaussian distribution, zero mean, and standard" \
-  " deviation {SIGMA_G}.  The perturbation affects only" \
-  " the gradient map, not the height map.\n" \
+  "OUTPUT FILES\n" \
+  "  The names of output files begin with {OUT_PREFIX} which" \
+  " is \"{OUT_DIR}/{ZFUNC}-{FUNC_NAME}-{NOISY}-{XXXX}x{YYYY}\", where" \
+  " {NOISY} is 'N' or 'Y' depending on {NOISE_G}, and {XXXX} and {YYYY} are" \
+  " the parameters {NX} and {NY} formatted as '%04d'.\n" \
   "\n" \
-  "  The normal map is computed from the (perturbed) gradient map.  The Z"\
-  " component is always positive.\n" \
+  "  The height map is written as channel 0 of the" \
+  " two-channel float image file \"{OUT_PREFIX}-Z.fni\".  Note that" \
+  " its size is actually {NX+1} by {NY+1}.  The reliability weights are saved in channel 1.\n" \
+  "\n" \
+  "  The slope maps are written as" \
+  " channels 0 (X derivative) and channel 1 (Y derivative) of" \
+  " the three-channel float image files \"{OUT_PREFIX}-Gn.fni\" (numeric)" \
+  " and \"{OUT_PREFIX}-Ga.fni\" (analytic).  The discrepancy between them" \
+  " is saved as \"{OUT_PREFIX}-Gd.fni\" The reliability weights are saved in channel 2.\n" \
+  "\n" \
+  "  The normal map is written as channels 0, 1, and 2 of the four-channel float image" \
+  " file \"{OUT_DIR}-N.fni\". The reliability weights" \
+  " are saved in channel 3." \
   "\n" \
   "SEE ALSO\n" \
   "  fni_to_pnm(1), pnm_to_fni(1), slope_to_height(1)\n" \
@@ -88,7 +107,10 @@
   "    2025-01-18 Weight is extra channel in each \".fni\" image file.\n" \
   "    2025-01-19 Removed options \"-smoothZ\", \"-smoothG\", \"-noiseW\".\n" \
   "    2025-01-19 Added option \"-maxGrad\".\n" \
-  "    2025-01-19 Made \"-numGrad\" take an argument."
+  "    2025-01-19 Made \"-numGrad\" take an argument.\n" \
+  "    2025-01-21 Removed options \"-maxGrad\", \"-maxGDiff\"." \
+  "    2025-01-24 Removed option \"-numGrad\"." \
+  "    2025-01-24 Wrote both versions of the slope map and the difference."
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -123,21 +145,17 @@ typedef struct options_t
   { int function;            /* Integer code of height map. */
     int NX, NY;              /* Image size. */
     bool_t numGrad;          /* Output numeric gradient instead of analytic one. */
-    double maxGrad;          /* Max value of numeric gradient. */
-    double maxGDiff;         /* Max discrepancy between analyic and numeric gradient. */
     double noiseG;           /* Deviation of gaussian gradient noise. */
-    char* outPrefix;         /* Output name prefix. */
+    char* outDir;            /* Output directory. */
   } options_t;
 
 /* INTERNAL PROTOTYPES */
 
-void write_test_image
-  ( char *pref,
-    char *tag,
-    float_image_t *I
-  );
-  /* Writes the image {I} to file named "{pref}-{tag}.fni",
-    in FNI format (see float_image.h}). */
+void write_test_image(char *pref, int32_t fnum, char *fname, bool_t noisy, int32_t NX, int32_t NY, char *tag, float_image_t *I);
+  /* Writes the image {I} to file named
+    "{pref}-{NN}-{fname}-{S}-{tag}.fni", in FNI format (see
+    float_image.h}); where {NN} is {fnum} formatted as "%02d", and {S}
+    is {noisy} formatted as 'N' or 'Y'. */
 
 void normalize(double v[]);
   /* Normalizes the three-vector {v[0..2]} to unit Euclidean length. */
@@ -161,7 +179,7 @@ int main(int argc, char** argv)
   {
     options_t *o = parse_options(argc, argv);
     
-    pst_proc_map_zfunc_t *func = pst_proc_map_function_generic(o->function);
+    pst_proc_map_zfunc_props_t fp = pst_proc_map_function_generic(o->function);
 
     /* Compute the sample displacements and weights: */
     uint32_t NS = 5;
@@ -172,25 +190,46 @@ int main(int argc, char** argv)
 
     /* Compute height and gradient maps: */
     float_image_t *IZ = pst_proc_map_make_height_map
-      ( func, o->NX, o->NY, NS, ws, o->maxGrad );
+      ( fp.func, o->NX, o->NY, NS, ws );
       
-    float_image_t *IG = pst_proc_map_make_slope_map
-      ( func, o->NX, o->NY, NS, ws, o->numGrad, o->maxGrad, o->maxGDiff );
+    float_image_t *IGn = pst_proc_map_make_slope_map
+      ( fp.func, o->NX, o->NY, NS, ws, TRUE, fp.maxGrad, fp.maxGDiff );
+      
+    float_image_t *IGa = pst_proc_map_make_slope_map
+      ( fp.func, o->NX, o->NY, NS, ws, FALSE, fp.maxGrad, fp.maxGDiff );
+      
+    float_image_t *IGd = float_image_new(3, o->NX, o->NY);
+    for (int32_t y = 0; y < o->NY; y++)
+      { for (int32_t x = 0; x < o->NX; x++)
+          { for (int32_t c = 0; c < 3; c++)
+              { float va = float_image_get_sample(IGa, c, x, y);
+                float vn = float_image_get_sample(IGn, c, x, y);
+                float vd = (float)(c < 2 ? vn - va : 2.0/(1.0/va + 1.0/vn));
+                float_image_set_sample(IGd, c, x, y, vd);
+              }
+          }
+      }
     if (o->noiseG != 0.0)
-      { pst_slope_map_perturb(IG, o->noiseG); }
+      { uint32_t seed = 271828183;
+        pst_slope_map_perturb(IGa, o->noiseG, seed);
+        pst_slope_map_perturb(IGn, o->noiseG, seed);
+      }
       
-    float_image_t *IN = pst_normal_map_from_slope_map(IG);
+    float_image_t *IN = pst_normal_map_from_slope_map(IGn);
     
     /* Write images: */
-    write_test_image(o->outPrefix, "Z", IZ);
-    write_test_image(o->outPrefix, "G", IG);
-    write_test_image(o->outPrefix, "N", IN);
+    bool_t noisy = (o->noiseG != 0.0);
+    write_test_image(o->outDir, fp.num, fp.name, noisy, o->NX, o->NY, "Z",  IZ);
+    write_test_image(o->outDir, fp.num, fp.name, noisy, o->NX, o->NY, "Ga", IGa);
+    write_test_image(o->outDir, fp.num, fp.name, noisy, o->NX, o->NY, "Gn", IGn);
+    write_test_image(o->outDir, fp.num, fp.name, noisy, o->NX, o->NY, "Gd", IGd);
+    write_test_image(o->outDir, fp.num, fp.name, noisy, o->NX, o->NY, "N",  IN);
     
     return 0;
   }
 
-void write_test_image(char *pref, char *tag, float_image_t *I)
-  { char *fileName = jsprintf("%s-%s.fni", pref, tag);
+void write_test_image(char *pref, int32_t fnum, char *fname, bool_t noisy, int32_t NX, int32_t NY, char *tag, float_image_t *I)
+  { char *fileName = jsprintf("%s/%02d-%s-%c-%04dx%04d-%s.fni", pref, fnum, fname, "NY"[noisy], NX, NY, tag);
     write_fni_image(fileName, I);
     free(fileName);
   }
@@ -242,17 +281,11 @@ options_t *parse_options(int argc, char **argv)
     else
       { o->numGrad = TRUE; }
     
-    argparser_get_keyword(pp, "-maxGrad"); 
-    o->maxGrad = argparser_get_next_double(pp, 1.0e-15, +DBL_MAX);
-    
-    argparser_get_keyword(pp, "-maxGDiff"); 
-    o->maxGDiff = argparser_get_next_double(pp, 1.0e-15, +DBL_MAX);
-    
     argparser_get_keyword(pp, "-noiseG"); 
     o->noiseG = argparser_get_next_double(pp, 0.0, +DBL_MAX);
     
-    argparser_get_keyword(pp, "-outPrefix"); 
-    o->outPrefix = argparser_get_next(pp);
+    argparser_get_keyword(pp, "-outDir"); 
+    o->outDir = argparser_get_next(pp);
 
     argparser_finish(pp);
     

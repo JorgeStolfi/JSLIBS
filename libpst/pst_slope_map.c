@@ -1,5 +1,5 @@
 /* See pst_slope_map.h */
-/* Last edited on 2025-01-19 22:43:05 by stolfi */
+/* Last edited on 2025-01-23 13:20:12 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -294,11 +294,13 @@ float_image_t *pst_slope_map_shrink(float_image_t *IG)
     return JG;
   }
 
-void pst_slope_map_perturb(float_image_t *G, double sigma)
+void pst_slope_map_perturb(float_image_t *G, double sigma, uint32_t seed)
   { 
     int32_t NC, NX, NY;
     float_image_get_size(G, &NC, &NX, &NY);
     demand((NC == 2) || (NC == 3), "slope map must have 2 or 3 channels");
+    
+    if (seed != 0) { srand(seed); srandom(seed); }
     
     for (int32_t y = 0; y < NY; y++)
       { for (int32_t x = 0; x < NX; x++)

@@ -1,8 +1,8 @@
-#define PROG_NAME "test_image_mask"
+ #define PROG_NAME "test_image_mask"
 #define PROG_DESC "test of {float_image_mask.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-01-21 18:31:21 by stolfi */
+/* Last edited on 2025-01-21 18:34:31 by stolfi */
 
 #define test_image_mask_C_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"

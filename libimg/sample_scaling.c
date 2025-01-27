@@ -1,5 +1,5 @@
 /* See sample_scaling.h */
-/* Last edited on 2025-01-21 18:27:19 by stolfi */
+/* Last edited on 2025-01-22 19:06:56 by stolfi */
 
 #include <stdio.h>
 #include <math.h>
@@ -8,22 +8,22 @@
 #include <stdint.h>
 #include <assert.h>
 
+#include <double_vec.h>
 #include <float_image.h>
 #include <argparser.h>
+#include <argparser_extra.h>
 #include <affirm.h> 
 
 #include <sample_scaling.h>
-#include <pst_basic.h>
-#include <pst_argparser.h>
 
 /* INTERNAL PROTOTYPES */
 
 double_vec_t sample_scaling_parse_range_option(argparser_t *pp, char *key, int32_t *NC);
   /* If the keyword {key} is present, marks it as parsed, then 
     parses the following arguments as a tuple of one more numbers,
-    using {pst_double_vec_parse}.
+    using {argparser_get_next_double_vec}.
     
-    The parameter {NC} has the same meaning as in {sample_scaling_parse_options_any}. */
+    The parameter {NC} has the same meaning as in {sample_scaling_parse_options}. */
 
 bool_t sample_scaling_parse_uniform(argparser_t *pp, bool_t next);
   /* Parses the \"-uniform\" switch; returns TRUE if 
@@ -91,7 +91,7 @@ void sample_scaling_debug_param(char *label, double *par);
 
 /* IMPLEMENTATIONS */
 
-sample_scaling_options_t sample_scaling_parse_options_any(argparser_t *pp, int32_t *NC_P)
+sample_scaling_options_t sample_scaling_parse_options(argparser_t *pp, int32_t *NC_P)
   { sample_scaling_options_t sop;
     sop.min = sample_scaling_parse_range_option(pp, "-min",    NC_P);
     sop.max = sample_scaling_parse_range_option(pp, "-max",    NC_P);
@@ -106,7 +106,7 @@ sample_scaling_options_t sample_scaling_parse_options_any(argparser_t *pp, int32
 
 double_vec_t sample_scaling_parse_range_option(argparser_t *pp, char *key, int32_t *NC)
   { if (argparser_keyword_present(pp, key))
-      { return pst_double_vec_parse(pp, NC); }
+      { return argparser_get_next_double_vec(pp, NC); }
     else
       { return double_vec_new(0); }
   }
@@ -207,7 +207,10 @@ void sample_scaling_use_actual_range
 
 bool_t sample_scaling_parse_uniform(argparser_t *pp, bool_t next)
   { 
-    return pst_keyword_present(pp, "-uniform", next);
+    if (next)
+      { return argparser_keyword_present_next(pp, "-uniform"); }
+    else
+      { return argparser_keyword_present(pp, "-uniform"); }
   }
 
 void sample_scaling_fix_channels(int32_t NC, int32_vec_t *channel)
@@ -238,10 +241,10 @@ void sample_scaling_fix_params
     demand((channel == NULL) || (channel->ne == NC), "inconsistent channel map");
     if (sop->uniform)
       { /* Uniformize all scaling parameters across all channels, shrink vectors to 1 elem: */
-        pst_double_vec_uniformize(&(sop->min), +INF); 
-        pst_double_vec_uniformize(&(sop->max), +INF); 
-        pst_double_vec_uniformize(&(sop->ctr), +INF); 
-        pst_double_vec_uniformize(&(sop->wid), +INF); 
+        double_vec_uniformize(&(sop->min), +INF); 
+        double_vec_uniformize(&(sop->max), +INF); 
+        double_vec_uniformize(&(sop->ctr), +INF); 
+        double_vec_uniformize(&(sop->wid), +INF); 
         if (debug) { sample_scaling_debug_vecs("uniformized ranges", NULL, sop); }
         /* Check for over-specification: */
         double *min0 = &(sop->min.e[0]);
@@ -277,10 +280,10 @@ void sample_scaling_fix_params
       }
       
     /* Make sure that all scaling arg tuples have {NC} elements: */
-    pst_double_vec_regularize(&(sop->min), NC, +INF);   
-    pst_double_vec_regularize(&(sop->max), NC, +INF);   
-    pst_double_vec_regularize(&(sop->ctr), NC, +INF);
-    pst_double_vec_regularize(&(sop->wid), NC, +INF); 
+    double_vec_regularize(&(sop->min), NC, +INF);   
+    double_vec_regularize(&(sop->max), NC, +INF);   
+    double_vec_regularize(&(sop->ctr), NC, +INF);
+    double_vec_regularize(&(sop->wid), NC, +INF); 
     if (debug) { sample_scaling_debug_vecs("regularized ranges", channel, sop); }
 
     /* Complete the scalings for each channel: */

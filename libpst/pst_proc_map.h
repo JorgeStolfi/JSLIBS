@@ -2,7 +2,7 @@
 #define pst_proc_map_H
 
 /* pst_proc_map.h -- procedures for creating procedurally-defined images. */
-/* Last edited on 2025-01-20 08:00:58 by stolfi */
+/* Last edited on 2025-01-26 18:59:53 by stolfi */
 
 #include <stdint.h>
 
@@ -20,6 +20,18 @@ typedef void pst_proc_map_zfunc_t (r2_t p, double *z, r2_t *dz);
     with respect to {p}.  If the height is undefined or uncomputable, 
     it should return {NAN} in both. */
      
+typedef struct pst_proc_map_zfunc_props_t 
+  { pst_proc_map_zfunc_t *func;  /* The function. */
+    int32_t num;                 /* ID number. */
+    char *name;                  /* Function name (6 alphanum chars). */
+    double maxGrad;              /* Maximum valid gradient value. */
+    double maxGDiff;             /* Maximum valid numeric/analytic gradient mismatch. */
+  } pst_proc_map_zfunc_props_t;
+  /* Main attributes of a procedural map.
+
+    The {maxGrad} and {maxGDiff} attributes are the proper parameters for the
+    paint procedures below. */
+     
 /* AVERAGED HEIGHTS AND GRADIENTS */
 
 /* The procedures in this section compute either the mean height {Z}
@@ -30,7 +42,7 @@ typedef void pst_proc_map_zfunc_t (r2_t p, double *z, r2_t *dz);
   sampoints (sampling points) around the given point {p} and averaging
   the desired quantity. The count {NS} must be at
   least 2. The sampoints will span about {1/xyScale} on each side 
-  of {p}.   The weight the sampoint with indices {kx,ky}
+  of {p}.   The weight of the sampoint with indices {kx,ky}
   will be {ws[kx]*ws[ky]}, for {kx,ky} in {0..NS-1}.  Preferably,
   {NS} should be odd, and the weights {ws[0..NS-1]} should be a 
   partition of unity with stride {NS/2+1}.  See {wt_table_hann_fill}
@@ -42,68 +54,77 @@ void pst_proc_map_compute_height
     uint32_t NS,
     double ws[],
     double xyScale,
-    double maxGrad,
+    bool_t debug,
     double *z_P,
-    double *w_P
+    double *wz_P
   );
   /* Computes the height field defined by {func} at the point {p}
     of func's domain.
     
     The result {z}, returned in {*z_P}, is the weighted average of the
     height function {Z(X,Y)} as defined by {func} over the grid of
-    {NS×NS} sampoints with weights {ws[0..NS-1]}.
+    {NS×NS} sampoints with weights {ws[0..NS-1]}.  Sampoints
+    where {func} returns {NAN} or {±INF} are excluded from the average.
     
     The height is scaled by {xyScale} so that the gradient is 
     independent of {xyScale}.
     
-    The procedure also computes a reliability weight {w} that is
-    returned in {*w_P}. Basically, the weight is zero if the gradient of
-    {Z} exceeds {maxGrad} in modulus.
-    
-    More precisely, the procedure computes an estimate {dnk} of the gradient {(dZ/dX,dZ/dY)} at each sampoint
-    by numerical divided differences between adjacent  sampoints, and notes the maximum value {v} of the quantity
-    {|dnk|/maxGrad}. The weight is zero if {v > 1.0},  else it is {1 - v^2}. */
+    The procedure also computes a reliability weight {wz}, that is
+    returned in {*wz_P}, consisting of the weighted fraction of
+    sampoints where {func} returned a finite value. In particular, the
+    weight {wz} will be 1.0 if {func} did not return {NAN} or {±INF} at
+    any sampoint. */
   
-void pst_proc_map_compute_gradient
+void pst_proc_map_compute_numeric_gradient
   ( pst_proc_map_zfunc_t *func,
     r2_t p,
     uint32_t NS,
     double ws[],
     double xyScale,
-    bool_t numGrad, /* Use numeric gradient? */
     double maxGrad,
-    double maxGDiff,
-    r2_t *dz_P,
-    float *w_P
+    bool_t debug,
+    r2_t *dnz_P,
+    double *wdnz_P
   );
-  /* Computes the mean gradient of the height field defined by {func}
-    at the point {p} of {func's} domain. 
+  /* Computes the mean numeric gradient {dnz=(dnzx,dnzy)} of the height field defined by
+    {func} at the point {p} of {func's} domain. The gradient is returned
+    in {*dnz_P}.
     
-    The result {dz}, returned in {*dz_P}, can be obtained in two ways, 'numeric'
-    or 'analytic', as determined by the {numGrad} flag. 
+    The result is obtained by computing the height {Z(X,Y)} with {func}
+    at a grid of {NS×NS} sampoints {(X,Y)} around {p}, with weights
+    {ws[0..NS-1]}; computing the numeric derivatives {dnxk=dZ/dX} and
+    {dnyk=dZ/dY} by divided differences between pairs of adjacent sampoints; and
+    averaging these numeric derivatives.
     
-    The numeric gradient is obtained by computing the height {Z(X,Y)}
-    with {func} at a grid of {NS×NS} sampoints {(X,Y)} around {p}, with
-    weights {ws[0..NS-1]}; computing the numeric derivatives
-    {dnxk=dZ/dX} and {dnyk=dZ/dY} by divided differences between
-    adjacent sampoints; and averaging these numeric derivatives to
-    obtain the final numeric gradient {dnz=(dnzx,dnzy)}.
+    The procedure computes a reliability weight {wdnz}, that is returned
+    in {*wdnz_P}. If any sampoint heights are {NAN} or {±INF}, or any
+    computed derivative exceeded {maxGrad} in absolute value, or the
+    final gradient is greater than {maxGrad} in modulus, the gradient is
+    set to {NAN,NAN} and the weight is zero; otherwise it is 1.0. */
+  
+void pst_proc_map_compute_analytic_gradient
+  ( pst_proc_map_zfunc_t *func,
+    r2_t p,
+    uint32_t NS,
+    double ws[],
+    double xyScale,
+    double maxGrad,
+    bool_t debug,
+    r2_t *daz_P,
+    double *wdaz_P
+  );
+  /* Computes the mean analytic gradient {daz=(dazx,dazy)} of the height
+    field defined by {func} at the point {p} of {func's} domain. The
+    gradient is returned in {*daz_P}.
     
-    The 'analytic' gradient is obtained by computing the analyitc
-    derivatives {daxk=dZ/dX} and {dayk=dZ/dY} at each sampoint, using
-    {func}, and taking the average of those valus with the sampoint
-    weights, obtaining the average analytic gradient {daz=(dazx,dazy)}.
+    The gradient is obtained by computing the analyitc derivatives
+    {dazxk=dZ/dX} and {dazyk=dZ/dY} at each sampoint, using {func}, and
+    taking the average of those valus with the sampoint weights.
     
-    The procedure computes a reliability weight {w} that is returned in
-    {*w_P}. Basically, the weight is zero if the numeric gradient of {Z}
-    between two sampoints exceeds {maxGrad} in modulus, or the numeric
-    and analytic gradients differ by more than {mxGradDiff} in modulus.
-    
-    More precisely, the procedure first notes the maximum value {vn} of
-    the quantity {|dnz|/maxGrad}. Then it computes the
-    quantity {va = |dnz-daz|/maxGDiff}. Finally, it takes
-    {v = hypot(vn,va)}. The weight is zero if {v > 1.0}, else it is {1 -
-    v^2}. */
+    The procedure computes a reliability weight {wdnz}, that is returned
+    in {*wdnz_P}. If any sampoint heights are {NAN} or {±INF}, or any
+    gradient returned by {func} exceeds {maxGrad} in modulus, the gradient is
+    set to {NAN,NAN} and the weight is zero; otherwise it is 1.0. */
     
 /* CREATING IMAGES FROM PROCEDURAL MAPS */
 
@@ -121,8 +142,7 @@ float_image_t* pst_proc_map_make_height_map
     int32_t NX,
     int32_t NY,
     uint32_t NS,
-    double ws[],
-    double maxGrad
+    double ws[]
   );
   /* Creates a height map {IZ} from the height function {Z(X,Y)} defined
     by the procedure {func}.
@@ -145,8 +165,8 @@ float_image_t* pst_proc_map_make_slope_map
     double maxGrad,
     double maxGDiff
   );
-  /* Computes a slope map {IG} from the height function {Z(X,Y)} defined
-    by the procedure {func}.
+  /* Computes a slope map {IG} from the gradient of the 
+    height function {Z(X,Y)} defined by the procedure {func}.
     
     The slope map image {IG} will have three channels, {NX} columns, and
     {NY} rows.  The procedure stores into {IG[0..2,x,y]} the
@@ -154,7 +174,19 @@ float_image_t* pst_proc_map_make_slope_map
     specified by {numGrad}) and the reliability 
     weight {w}, as computed by {pst_proc_map_compute_gradient} with {p}
     being the CENTER of the pixel {[x,y]} -- that is, {(x+0.5,y+0.5)} --
-    mapped to the domain of {func}. */
+    mapped to the domain of {func}.
+    
+    If the */
+
+#define pst_proc_map_MIN_ZFUNC  0
+#define pst_proc_map_MAX_ZFUNC 27
+  /* Min and max numbers of {n} in {pst_proc_map_function_{n}}. */
+
+pst_proc_map_zfunc_props_t pst_proc_map_function_generic(int32_t n);
+  /* Returns a record with the attributes of
+    the height function {pst_proc_map_function_{n}} below. */
+  
+/* PREDEFINED PROCEDURAL HEIGHT MAPS */
 
 void pst_proc_map_function_00(r2_t p, double *z, r2_t *dz); /* 00 "zeflat" Constant function (zero gradient). */
 void pst_proc_map_function_01(r2_t p, double *z, r2_t *dz); /* 01 "ramp10" Linear ramp in the X direction. */
@@ -191,17 +223,7 @@ void pst_proc_map_function_27(r2_t p, double *z, r2_t *dz); /* 27 "fracto" Fract
     !!! Either that, or let {z=NAN} to get weight 0. !!!
     !!! Each function should be told the resolution of the map? !!! */
 
-#define pst_proc_map_MIN_ZFUNC  0
-#define pst_proc_map_MAX_ZFUNC 27
-  /* Min and max numbers of {n} in {pst_proc_map_function_{n}}. */
-
-pst_proc_map_zfunc_t *pst_proc_map_function_generic(int32_t n);
-  /* Returns a pointer to {pst_proc_map_function_{n}}. */
-
-char* pst_proc_map_function_generic_name(int32_t n);
-  /* Returns the name of the function {n}, as per the table above. */
-  
-/* Parametrized procedure maps: */
+/* PARAMETRIZED PROCEDURAL HEIGHT MAPS: */
 
 void pst_proc_map_function_affine(r2_t *p, r2_t *a, double fa, r2_t *b, double fb, r2_t *c, double fc, double *z, r2_t *dz);
   /* Computes the affine function {z = A*x + B*y + C} that has values {fa,fb,fc}

@@ -1,5 +1,5 @@
 /* See pst_integrate_iterative.h */
-/* Last edited on 2025-01-18 12:33:58 by stolfi */
+/* Last edited on 2025-01-25 08:53:32 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -26,7 +26,7 @@
 
 void pst_integrate_iterative
   ( float_image_t *G, 
-    bool_t keepNull,
+    float_image_t *H, 
     float_image_t *Z,
     uint32_t maxIter,
     double convTol,
@@ -54,51 +54,63 @@ void pst_integrate_iterative
 
     /* Build the system: */
     if (verbose) { fprintf(stderr, "%*sbuilding the system ...\n", indent, ""); }
-    pst_imgsys_t *S = pst_integrate_build_system(G, W, verbose);
-    if (keepNull)
-      { if (verbose) { fprintf(stderr, "%*sfilling holes with default eqs ...\n", indent, ""); }
-        pst_integrate_fill_holes(S, NX_Z, NY_Z);
-      }
-    else
-      { if (verbose) { fprintf(stderr, "%*sremoving holes ...\n", indent, ""); }
-        pst_imgsys_remove_holes(S, NULL);
-      }
+    pst_imgsys_t *S = pst_integrate_build_system(G, H, verbose);
     if (verbose) { fprintf(stderr, "%*sfinal system has %d equations and %d variables\n", indent, "", S->N, S->N); }
-    
-    if (verbose) { fprintf(stderr, "%*scopying var/eq weights to {U} map ...\n", indent, ""); }
-    pst_imgsys_extract_system_eq_tot_weight_image(S, U, 0.0);
  
-    if (reportSys != NULL) { reportSys(level, S, U); }
+    if (reportSys != NULL) { reportSys(level, S); }
 
-    /* Get the initial guess {Z} for the heights: */
-    double *h = talloc(S->N, double);
-    if (verbose) { fprintf(stderr, "%*staking initial guess of heights ...\n", indent, ""); }
-    pst_imgsys_copy_image_to_sol_vec(S, Z, h, 0.0); 
+    /* Get the initial guess {z} for the heights: */
+    double *z = talloc(S->N, double);
+    
+    auto void get_initial_guess(void);
+      /* Sets {z[k]} to the initial guess of variable {k}, derived from {H,Z}. */
       
-    auto void reportSol(int32_t level, int32_t iter, double change, bool_t final, uint32_t N, double h[]);
+    auto void reportSol(int32_t level, int32_t iter, double change, bool_t final, uint32_t N, double z[]);
 
+    get_initial_guess();
     if (verbose) { fprintf(stderr, "%*ssolving the system ...\n", indent, ""); }
     bool_t para = FALSE; /* Should be parameter. 1 means parallel execution, 0 sequential. */
     bool_t szero = TRUE; /* Should be parameter. 1 means adjust sum to zero, 0 let it float. */
     uint32_t *ord = NULL;
     if (topoSort) { ord = pst_imgsys_sort_equations(S); }
     pst_imgsys_solve_iterative
-      ( S, h, ord, maxIter, convTol, 
+      ( S, z, ord, maxIter, convTol, 
         para, szero, verbose, level, 
         reportStep,
         (reportHeights == NULL ? NULL : &reportSol)
       );
-    pst_imgsys_copy_sol_vec_to_image(S, h, Z, 0.0);
+    pst_imgsys_copy_sol_vec_to_image(S, z, Z, 0.0);
         
-    free(h);
+    free(z);
     pst_imgsys_free(S);
     if (ord != NULL) { free(ord); }
     return;
 
-    void reportSol(int32_t level, int32_t iter, double change, bool_t final, uint32_t N, double h[])
+    void reportSol(int32_t level, int32_t iter, double change, bool_t final, uint32_t N, double z[])
       { assert(reportHeights != NULL);
-        pst_imgsys_copy_sol_vec_to_image(S, h, Z, 0.0);
-        pst_imgsys_extract_system_eq_tot_weight_image(S, U, 0.0);
-        reportHeights(level, iter, change, final, Z, U);
+        pst_imgsys_copy_sol_vec_to_image(S, z, Z, 0.0);
+        reportHeights(level, iter, change, final, Z);
+      }
+
+    void get_initial_guess(void)
+      { if (verbose) { fprintf(stderr, "%*sobtaining initial guess of heights ...\n", indent, ""); }
+        for (int32_t k = 0; k < S->N; k++)
+          { /* Index of equation's main variable: */
+            int32_t uidk = k;
+
+            /* Compute indices of pixel corresponding to the variable {Z[k]}: */
+            int32_t xk = S->col[uidk]; int32_t yk = S->row[uidk];
+
+            double wzk = float_image_get_sample(Z, 1, xk, yk);
+            demand(isfinite(wzk) && (wzk >= 0), "invalid {Z} weight");
+            double zk = (wzk == 0.0 ? 0.0 : float_image_get_sample(Z, 0, xk, yk));
+            demand(isfinite(zk), "invalid {Z} height value");
+            double whk = (H == NULL ? 0.0 : float_image_get_sample(H, 1, xk, yk));
+            demand(isfinite(whk) && (whk >= 0), "invalid {H} weight");
+            double hk = (whk == 0.0 ? 0.0 : float_image_get_sample(H, 0, xk, yk));
+            demand(isfinite(hk), "invalid {H} height value");
+            double wtk = wzk + whk;
+            z[uidk] = (wtk == 0.0 ? 0.0 : (wzk*zk + whk*hk)/wtk);
+          }
       }
   }
