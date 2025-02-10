@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_mask.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-01-21 18:34:31 by stolfi */
+/* Last edited on 2025-01-30 08:05:03 by stolfi */
 
 #define test_image_mask_C_COPYRIGHT \
   "Copyright © 2007  by the State University of Campinas (UNICAMP)"
@@ -196,9 +196,9 @@ void tim_write_image(char *img_name, float_image_t *img)
     char *fname = jsprintf("%s%s", img_name, suff);
     FILE *wr = open_write(fname, TRUE);
     int chns = (int)img->sz[0];
-    bool_t yup = TRUE, verbose = TRUE;
+    bool_t yUp = TRUE, verbose = TRUE;
     bool_t isMask = TRUE; /* Assume 0 and 1 are important in encoding/decoding. */
-    uint16_image_t *pimg = float_image_to_uint16_image(img, isMask, chns, NULL, NULL, NULL, 255, yup, verbose);
+    uint16_image_t *pimg = float_image_to_uint16_image(img, isMask, chns, NULL, NULL, NULL, 255, yUp, verbose);
     bool_t forceplain = FALSE;
     uint16_image_write_pnm_file(wr, pimg, forceplain, verbose);
     uint16_image_free(pimg);

@@ -1,5 +1,5 @@
 /* See interval.h */
-/* Last edited on 2023-03-18 11:27:59 by stolfi */
+/* Last edited on 2025-02-06 23:23:34 by stolfi */
 
 /* We need to set these in order to get {asinh}. What a crock... */
 #undef __STRICT_ANSI__
@@ -12,30 +12,34 @@
 #include <fpu_control.h>
 #include <assert.h>
 
+#include <bool.h>
 #include <jsmath.h>
 #include <affirm.h>
 
 #include <interval.h> 
 
+#define interval_IS_NAN(X)     (isnan((X).end[0]) || isnan((X).end[1]))
 #define interval_IS_EMPTY(X)   ((X).end[0] > (X).end[1])
 #define interval_IS_FULL(X)    (((X).end[0] == -INF) || ((X).end[1] == +INF))
 #define interval_IS_FINITE(X)  (((X).end[0] > -INF) && ((X).end[1] < +INF))
 #define interval_IS_TRIVIAL(X) ((X).end[0] == (X).end[1])
 
 double interval_is_empty(interval_t *X)
-  { return interval_IS_EMPTY(*X); }
+  { return (! interval_IS_NAN(*X)) && interval_IS_EMPTY(*X); }
 
 double interval_is_full(interval_t *X)
-  { return interval_IS_FULL(*X); }
+  { return (! interval_IS_NAN(*X)) && interval_IS_FULL(*X); }
 
 double interval_is_finite(interval_t *X)
-  { return interval_IS_FINITE(*X); }
+  { return (! interval_IS_NAN(*X)) && interval_IS_FINITE(*X); }
 
 double interval_is_trivial(interval_t *X)
-  { return interval_IS_TRIVIAL(*X); }
+  { return (! interval_IS_NAN(*X)) && interval_IS_TRIVIAL(*X); }
 
 void interval_mid_rad (interval_t *X, double *mid, double *rad)
-  { if (interval_IS_FULL(*X))
+  { if (interval_IS_NAN(*X))
+      { if (mid != NULL) { (*mid) = NAN; } if (rad != NULL) { (*rad) = NAN; } }
+    else if (interval_IS_FULL(*X))
       { if (mid != NULL) { (*mid) = 0; } if (rad != NULL) { (*rad) = +INF; } }
     else if (interval_IS_EMPTY(*X))
       { if (mid != NULL) { (*mid) = NAN; } if (rad != NULL) { (*rad) = -INF; } }
@@ -63,6 +67,10 @@ void interval_mid_rad (interval_t *X, double *mid, double *rad)
           { fesetround(FE_UPWARD);
             double rlo = m - LO(*X);
             double rhi = HI(*X) - m;
+            if ((rlo < 0) && (rhi < 0)) 
+              { fprintf(stderr, "!! [ %24.16e  %24.16e ] m = %24.16e\n", LO(*X), HI(*X), m);
+                fprintf(stderr, "!! rlo = %24.16e  rhi = %24.16e\n", rlo, rhi);
+              } 
             affirm((rlo >= 0.0) && (rhi >= 0.0), "rounding failed");
             (*rad) = (rlo > rhi ? rlo: rhi);
           }
@@ -83,9 +91,66 @@ double interval_rad (interval_t *X)
     return r;
   }
 
+double interval_width (interval_t *X)
+  { if (interval_IS_NAN(*X))
+      { return NAN; }
+    else if (interval_IS_FULL(*X))
+      { return +INF; }
+    else if (interval_IS_EMPTY(*X))
+      { return -INF; }
+    else if (interval_IS_TRIVIAL(*X))
+      { return 0.0; }
+    else if (LO(*X) == -INF)
+      { return +INF; }
+    else if (HI(*X) == +INF)
+      { return +INF; }
+    else
+      { int32_t oround = fegetround();
+        fesetround(FE_UPWARD);
+        double w = HI(*X) - LO(*X);
+        fesetround(oround);
+        return w;
+      }
+  }
+
+bool_t interval_equal(interval_t *A, interval_t *B)
+  { bool_t na = interval_IS_NAN(*A);
+    bool_t nb = interval_IS_NAN(*B);
+    if (na && nb) 
+      { return TRUE; }
+    else if (na || nb)
+      { return FALSE; }
+    bool_t ea = interval_IS_EMPTY(*A);
+    bool_t eb = interval_IS_EMPTY(*B);
+    if (ea && eb) 
+      { return TRUE; }
+    else if (ea || eb)
+      { return FALSE; }
+    else
+      { return ((LO(*A) == LO(*B)) && (HI(*A) == HI(*B))); }
+  }
+
+bool_t interval_closed_has_point(interval_t *A, double p)
+  { if (interval_IS_NAN(*A) || (LO(*A) > HI(*A)))
+      { return FALSE; }
+    else
+      { return ((LO(*A) <= p) && (p <= HI(*A))); }
+  }
+  
+bool_t interval_open_has_point(interval_t *A, double p)
+  { if (interval_IS_NAN(*A) || (LO(*A) >= HI(*A)))
+      { return FALSE; }
+    else
+      { return ((LO(*A) < p) && (p < HI(*A))); }
+  }
+
 interval_t interval_from_mid_rad (double mid, double rad)
   { 
-    if (rad < 0) 
+    if (isnan(mid) || isnan(rad)) 
+      { /* Invalid interval: */
+        return (interval_t) {{ NAN, NAN }};
+      }
+    else if (rad < 0) 
       { /* Empty interval: */
         return (interval_t) {{ +INF, -INF }};
       }
@@ -118,16 +183,10 @@ interval_t interval_from_mid_rad (double mid, double rad)
       }
   }
 
-double interval_width (interval_t *X)
-  { int32_t oround = fegetround();
-    fesetround(FE_UPWARD);
-    double w = HI(*X) - LO(*X);
-    fesetround(oround);
-    return w;
-  }
-
 interval_t interval_split(interval_t *X, interval_side_t dir)
   { 
+    if (interval_IS_NAN(*X)) 
+      { return (interval_t){{ NAN, NAN }}; }
     double mid = interval_mid(X);
     if (dir == 0)
       { return (interval_t){{ LO(*X), mid }}; }
@@ -136,7 +195,9 @@ interval_t interval_split(interval_t *X, interval_side_t dir)
   }
 
 interval_t interval_include(interval_t *X, double z)
-  { double Xlo = LO(*X), Xhi = HI(*X);
+  { if (interval_IS_NAN(*X) || isnan(z)) 
+      { return (interval_t){{ NAN, NAN }}; }
+    double Xlo = LO(*X), Xhi = HI(*X);
     if (Xlo > Xhi) 
       { return (interval_t){{ z, z }}; }
     else
@@ -148,7 +209,9 @@ interval_t interval_include(interval_t *X, double z)
   }
 
 interval_t interval_join(interval_t *X, interval_t *Y)
-  { double Xlo = LO(*X), Xhi = HI(*X);
+  { if (interval_IS_NAN(*X) || interval_IS_NAN(*Y)) 
+      { return (interval_t){{ NAN, NAN }}; }
+    double Xlo = LO(*X), Xhi = HI(*X);
     double Ylo = LO(*Y), Yhi = HI(*Y);
     if (Xlo > Xhi) 
       { return *Y; }
@@ -163,7 +226,9 @@ interval_t interval_join(interval_t *X, interval_t *Y)
   }
 
 interval_t interval_meet(interval_t *X, interval_t *Y)
-  { double Xlo = LO(*X), Xhi = HI(*X);
+  { if (interval_IS_NAN(*X) || interval_IS_NAN(*Y)) 
+      { return (interval_t){{ NAN, NAN }}; }
+    double Xlo = LO(*X), Xhi = HI(*X);
     double Ylo = LO(*Y), Yhi = HI(*Y);
     if (Xlo > Xhi)
       { return *X; }
@@ -178,7 +243,9 @@ interval_t interval_meet(interval_t *X, interval_t *Y)
   }
 
 void interval_widen(interval_t *X, double margin)
-  { if (interval_IS_EMPTY(*X)) { return; }
+  { if (interval_IS_NAN(*X) || isnan(margin)) 
+      { (*X) = (interval_t){{ NAN, NAN }}; return; }
+    if (interval_IS_EMPTY(*X)) { return; }
     int32_t oround = fegetround();
     fesetround(FE_UPWARD);
     double nlo = margin - LO(*X);
@@ -191,7 +258,13 @@ void interval_widen(interval_t *X, double margin)
   }
 
 void interval_adjust_ratio(interval_t *X, interval_t *Y, double tx, double ty)
-  { demand(! interval_IS_EMPTY(*X), "interval {X} must be non-empty");
+  { if (isnan(tx) || isnan(ty)) 
+      { (*X) = (interval_t){{ NAN, NAN }}; (*Y) = (interval_t){{ NAN, NAN }}; return; }
+    else if (interval_IS_NAN(*X)) 
+      { (*X) = (interval_t){{ NAN, NAN }}; return; }
+    if (interval_IS_NAN(*Y)) 
+      { (*Y) = (interval_t){{ NAN, NAN }}; return; }
+    demand(! interval_IS_EMPTY(*X), "interval {X} must be non-empty");
     demand(! interval_IS_EMPTY(*Y), "interval {Y} must be non-empty");
     demand(tx > 0, "ratio {tx} must be positive");
     demand(ty > 0, "ratio {ty} must be positive");
@@ -211,6 +284,7 @@ void interval_adjust_ratio(interval_t *X, interval_t *Y, double tx, double ty)
 
 double interval_project(interval_t *X, double y)
   {
+    if (interval_IS_NAN(*X) || isnan(y)) { return NAN; }
     demand(LO(*X) <= HI(*X), "empty interval");
     if (y < LO(*X))
       { return LO(*X); }

@@ -1,5 +1,5 @@
 /* See {multifok_scene_raytrace.h}. */
-/* Last edited on 2024-12-17 16:21:54 by stolfi */
+/* Last edited on 2025-02-06 21:22:38 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,7 +99,7 @@ double multifok_scene_raytrace_tree
     double tHit = +INF;
     
     if (tr != NULL)
-      { if (verbose) { fprintf(stderr, "      %*stracing tree with ray tMin = %12.8f tMax = %12.8f\n", 2*level, "", tMin, tMax); }
+      { if (verbose) { fprintf(stderr, "        %*stracing tree with ray tMin = %12.8f tMax = %12.8f\n", 2*level, "", tMin, tMax); }
         assert(tMin <= tMax);
 
         /* Check if it it intersects the tree's bbox: */
@@ -260,48 +260,6 @@ double multifok_scene_pixel_size(int32_t NX, int32_t NY, interval_t scene_dom[])
     return pixSize;
   }
 
-frgb_t multifok_scene_raytrace_compute_hit_color
-  ( multifok_scene_object_t *obj,
-    r3_t *q,
-    multifok_scene_raytrace_pattern_t *pattern,
-    r3_t *light_dir,
-    double ambient
-  )
-  { 
-    bool_t debug = FALSE;
-    demand((ambient >= 0.0) && (ambient <= 1.0), "invalid {ambient} fraction");
-    if (obj == NULL)
-      { return (frgb_t){{ 0.500, 0.500, 0.500 }}; }
-    else
-      { interval_t *bbox = obj->bbox; 
-        /* Express {q} relative to object: */
-        r3_t u; 
-        for (uint32_t j = 0;  j < 3; j++) 
-          { u.c[j] = q->c[j] - interval_mid(&(bbox[j])); }
-        int32_t ID = obj->ID;
-        assert(ID != multifok_scene_object_ID_NONE);
-        /* Rotate {u} about {Z} by an angle that is a function of {ID}: */
-        r3_rot_axis(&u, 0, 1, 3.0*ID + 1.0, &u);
-        /* Evaluate the 3D pattern at {u}: */
-        double r = pattern(u.c[0],u.c[1],u.c[1]);
-        /* Get the albedo {clr} as an {r}-mix of the object's {fg} and {bg}: */
-        frgb_t clr = frgb_mix((1-r), &(obj->bg), r, &(obj->fg));
-        if ((light_dir != NULL) || (ambient < 1.0))
-          { /* Apply shading: */
-            r3_t onorm = multifok_scene_object_normal(obj, q, debug);
-            if (debug && (ID != 0)) 
-               { fprintf(stderr, "    :: ID = %d\n", ID);
-                 r3_gen_print(stderr, q,         "%+8.5f", "      :: hit point =       ( ", " ", " )\n");
-                 r3_gen_print(stderr, &onorm,    "%+8.5f", "      :: object normal =   ( ", " ", " )\n");
-               }
-            double dot = r3_dot(&onorm, light_dir);
-            double diffuse  = (dot <= 0 ? 0.0 : (1-ambient)*dot);
-            double shade = ambient + diffuse;
-            for (uint32_t j = 0;  j < 3; j++){ clr.c[j] = (float)(shade*clr.c[j]); }
-          }
-        return clr;
-      }
-  }
 
 #define multifok_scene_C_COPYRIGHT \
     "© 2023 by the State University of Campinas (UNICAMP)"

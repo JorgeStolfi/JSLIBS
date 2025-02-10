@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_test.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-01-01 16:06:30 by stolfi */ 
+/* Last edited on 2025-01-30 04:57:12 by stolfi */ 
 /* Created on 2023-01-10 by J. Stolfi, UNICAMP */
 
 #define test_noise_COPYRIGHT \
@@ -346,10 +346,11 @@ void tnoi_write_image(char *sizeTag, char *prefix, char *filterTag, float_image_
     mkdir(sizeDir, 0755);
     char *imgName = jsprintf("%s/%s-%s.%s", sizeDir, prefix, filterTag, ext);
     image_file_format_t ffmt = image_file_format_PNG;
+    bool_t yUp = FALSE;
     double expoEnc = 1.000;
     double bias = 0.000;
     bool_t verbose = TRUE;
-    float_image_write_gen_named(imgName, img, ffmt, vMin, vMax, expoEnc, bias, verbose);
+    float_image_write_gen_named(imgName, img, ffmt, yUp, vMin, vMax, expoEnc, bias, verbose);
 
     free(sizeDir);
     free(imgName);

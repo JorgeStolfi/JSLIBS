@@ -1,5 +1,5 @@
 /* See r6.h. */
-/* Last edited on 2024-11-20 16:22:48 by stolfi */
+/* Last edited on 2025-02-05 15:46:08 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -208,23 +208,31 @@ double r6_L_inf_dist (r6_t *a, r6_t *b)
 
 double r6_dir (r6_t *a, r6_t *r)
   { double d = r6_norm(a);
-    r->c[0] = a->c[0]/d;
-    r->c[1] = a->c[1]/d;
-    r->c[2] = a->c[2]/d;
-    r->c[3] = a->c[3]/d;
-    r->c[4] = a->c[4]/d;
-    r->c[5] = a->c[5]/d;
+    if (d == 0)
+      { (*r) = (r6_t){{ NAN, NAN, NAN, NAN, NAN, NAN }}; }
+    else
+      { r->c[0] = a->c[0]/d;
+        r->c[1] = a->c[1]/d;
+        r->c[2] = a->c[2]/d;
+        r->c[3] = a->c[3]/d;
+        r->c[4] = a->c[4]/d;
+        r->c[5] = a->c[5]/d;
+      }
     return (d);
   }
 
 double r6_L_inf_dir (r6_t *a, r6_t *r)
   { double d = r6_L_inf_norm(a);
-    r->c[0] = a->c[0]/d;
-    r->c[1] = a->c[1]/d;
-    r->c[2] = a->c[2]/d;
-    r->c[3] = a->c[3]/d;
-    r->c[4] = a->c[4]/d;
-    r->c[5] = a->c[5]/d;
+    if (d == 0)
+      { (*r) = (r6_t){{ NAN, NAN, NAN, NAN, NAN, NAN }}; }
+    else
+      { r->c[0] = a->c[0]/d;
+        r->c[1] = a->c[1]/d;
+        r->c[2] = a->c[2]/d;
+        r->c[3] = a->c[3]/d;
+        r->c[4] = a->c[4]/d;
+        r->c[5] = a->c[5]/d;
+      }
     return (d);
   }
 

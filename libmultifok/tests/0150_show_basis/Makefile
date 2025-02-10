@@ -1,4 +1,4 @@
-# Last edited on 2024-10-11 16:47:26 by stolfi
+# Last edited on 2025-01-30 10:38:02 by stolfi
 
 TEST_LIB := libmultifok.a
 TEST_LIB_DIR := ../..
@@ -16,12 +16,12 @@ include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 all: check
 
 NW := 3
-OUT_DIR := out
+OUT_FOLDER := out
 
 check:  ${PROG}
 	mkdir -p out
-	rm -f ${OUT_DIR}/*.ppm ${OUT_DIR}/*.pgm
+	rm -f ${OUT_FOLDER}/*.ppm ${OUT_FOLDER}/*.pgm
 	./${PROG} \
           -winSize ${NW} \
-          -outDir ${OUT_DIR}
-	display -title '%f' -filter Box -resize '25600%' ${OUT_DIR}/{weights*-ws,basis*-be}.pgm
+          -outFolder ${OUT_FOLDER}
+	display -title '%f' -filter Box -resize '25600%' ${OUT_FOLDER}/{weights*-ws,basis*-be}.pgm

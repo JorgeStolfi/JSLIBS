@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_hist.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-24 16:31:00 by stolfi */ 
+/* Last edited on 2025-01-30 08:05:32 by stolfi */ 
 /* Created on 2008-10-05 by J. Stolfi, UNICAMP */
 
 #define test_float_image_hist_COPYRIGHT \
@@ -132,9 +132,9 @@ float_image_t *read_image(char *imgName, bool_t doGamma)
     uint16_image_t *pim = uint16_image_read_pnm_file(rd);
     fclose(rd);
     free(fname);
-    bool_t yup = TRUE, verbose = TRUE;
+    bool_t yUp = TRUE, verbose = TRUE;
     bool_t isMask = FALSE; /* Assume uniform distr. of pixel values in encoding/decoding. */
-    float_image_t *fim = float_image_from_uint16_image(pim, isMask, NULL, NULL, yup, verbose);
+    float_image_t *fim = float_image_from_uint16_image(pim, isMask, NULL, NULL, yUp, verbose);
     if (doGamma)
       { for (int32_t c = 0;  c < fim->sz[0]; c++) 
           { float_image_apply_gamma(fim, c, 1/BT_ENC_EXPO, BT_ENC_BIAS); }

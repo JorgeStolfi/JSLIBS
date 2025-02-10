@@ -1,5 +1,5 @@
 /* r2.h --- operations on points and vectors of R^2 */
-/* Last edited on 2024-12-05 10:27:45 by stolfi */
+/* Last edited on 2025-02-05 15:44:05 by stolfi */
 
 #ifndef r2_H
 #define r2_H
@@ -71,13 +71,16 @@ double r2_L_inf_dist(r2_t *a, r2_t *b);
   /* Returns the L-infinity distance between {a} and {b} 
     (max absolute diff). */
 
-double r2_dir(r2_t *a, r2_t *r); 
-  /* Sets {r} to {a} normalized to unit Euclidean length; 
-    returns the original length. */
+double r2_dir(r2_t *a, r2_t *r);   
+  /* Sets {r} to {a} normalized to unit Euclidean length.
+    If the Euclidean length of {a} is zero, sets {r} to all {NAN}s.
+    Returns the original Euclidean length of {a}. */
   
 double r2_L_inf_dir(r2_t *a, r2_t *r); 
-  /* Sets {r} to the vector {a/r2_L_inf_norm(a)}; 
-    returns the original norm. */
+  /* Sets {r} to the vector {a} divided by {r2_L_inf_norm(a)},
+    the max absolute value of any coordinate.
+    If that denominator is zero, sets {r} to all {NAN}s.
+    Returns the original value of {r2_L_inf_norm(a)}.  */
 
 double r2_dot(r2_t *a, r2_t *b);
   /* Dot product of vectors {a} and {b}. */

@@ -2,7 +2,7 @@
 #define PROG_DESC "Analyzes relation between image sharpness and local quadratic operators."
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-20 18:13:52 by stolfi */ 
+/* Last edited on 2025-01-30 10:29:16 by stolfi */ 
 /* Created on 2023-01-24 by J. Stolfi, UNICAMP */
 
 #define test_mfok_diff_ops_COPYRIGHT \
@@ -10,14 +10,14 @@
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
-  "    -inDir {inDir} \\\n" \
+  "    -inFolder {inFolder} \\\n" \
   "    -imageSize {NX} {NY} \\\n" \
   "    { -frame {zFoc[ki]} {zDep[ki]} }.. \\\n" \
   "    -basisType {basisType} \\\n" \
   "    -windowType {windowType} \\\n" \
   "    -termSetFile {termSetFile} \\\n" \
   "    -sampleNoise {sampleNoise} \\\n" \
-  "    -outDir {outDir}" \
+  "    -outFolder {outFolder}" \
 
 #define PROG_INFO \
   "SYNOPSIS\n" \
@@ -51,8 +51,8 @@
   " frame has a nominal focus plane height {zFoc[ki]} and nominal depth of" \
   " focus {zDep[ki]} used to generate the virtual view.\n" \
   "\n" \
-  "    The images are read from files \"{inDir}/{frameDir}/{tag}.png\" where" \
-  " {tag} is \"sVal\", \"hAvg\", etc; {frameDir} is \"frame-zf{FFF.FFFF}-df{DDD.DDDD}\";" \
+  "    The images are read from files \"{inFolder}/{frameFolder}/{tag}.png\" where" \
+  " {tag} is \"sVal\", \"hAvg\", etc; {frameFolder} is \"frame-zf{FFF.FFFF}-df{DDD.DDDD}\";" \
   " and {FFF.FFFF} and {DDD.DDDD} are the focus plane" \
   " height {zFoc[ki]} and depth of focus {zDep[ki]}, both, formatted as \"%08.4f\"." \
   "\n" \
@@ -73,34 +73,34 @@
   "\n" \
   "  OUTPUT FOLDERS\n" \
   "    All output files associated with each frame {ki} are written out to a" \
-  " folder \"{outDir}/{frameDir}/\" where, as above, {KKKKK} is the frame index {ki}, formatted" \
+  " folder \"{outFolder}/{frameFolder}/\" where, as above, {KKKKK} is the frame index {ki}, formatted" \
   " as \"%05d\".   Some files, not associated with any specific frame, are" \
-  " written to folder \"{outDir}/\" itself.\n" \
+  " written to folder \"{outFolder}/\" itself.\n" \
   "\n" \
   "  BASIS IMAGE FILES\n" \
   "    For each input frame {ki} and each basis element {kb} in {0..NB-1}, the program writes" \
-  " to \"{outDir}/{frameDir}/be{BBB}-bVal.png\" a grayscale" \
+  " to \"{outFolder}/{frameFolder}/be{BBB}-bVal.png\" a grayscale" \
   " image showing the coefficient of that basis element computed on normalized window" \
   " samples; where {BBB} is the element index {kb} zero-padded to 3 digits." \
   "\n" \
   "  TERM IMAGE FILES\n" \
   "    For each input frame {ki} and each quadratic term {kt} in {0..NT-1}, the program writes" \
-  " to \"{outDir}/{frameDir}/tm{TTT}-tVal.png\" a grayscale" \
+  " to \"{outFolder}/{frameFolder}/tm{TTT}-tVal.png\" a grayscale" \
   " image showing the value of that quadratic term computed from the basis" \
   " coefficients above; where {TTT} is the term index {kt} zero-padded to 3 digits." \
   "\n" \R
   "  LOCAL AVERAGE, GRADIENT, AND DEVIATION IMAGE FILES\n" \
   "    For each input frame {ki} the program computes images {sAvg}, {sGrd}, and {sDev} with" \
   " the weighted window sample average, gradient, gradient modululs and deviation around each pixel of the scene view image {sVal[ki]}.  The {sGrd} image has three channels, respectively the {X} derivative {sGrx} of {sVal}, the {Y} derivative {sGry}, and the modulus {sGrm = hypot(sGrx,sGry)/sqrt(2)}.   The {sDev} image is the weighted RMS value of the residual window sample values after subtracting the affine ramp {sAvg + sGrx*x + sGry*y}, where {x} and {y} are sample indices relative to the window center.  The program writes" \
-  " these images to \"{outDir}/{frameDir}/{tag}.png\" where {tag} is \"sAvg\", \"sGrd\", and \"sDev\", respectively.\n" \
+  " these images to \"{outFolder}/{frameFolder}/{tag}.png\" where {tag} is \"sAvg\", \"sGrd\", and \"sDev\", respectively.\n" \
   "\n" \
   "  LOCALLY NORMALIZED IMAGE FILES\n" \
   "    For each input frame {ki}, the program writes" \
-  " to \"{outDir}/{frameDir}/sNrm.png\" a grayscale image {sNrm} that is the normalized  version of {ifr.sVal}, showing the central window pixel after" \
+  " to \"{outFolder}/{frameFolder}/sNrm.png\" a grayscale image {sNrm} that is the normalized  version of {ifr.sVal}, showing the central window pixel after" \
   " removing the local linear ramp component {sAvg + sGrx*x + sGry*y} and dividing the residual by {hypot(sDev,sampleNoise)}.  The image {sNrm} is scaled from {[-1_+1]} to {[0_1]} on writing.\n" \
   "\n" \
   "  REGRESSION DATA FILE\n" \
-  "    Writes to \"{outDir}/odata.txt\" a file with columns\n" \
+  "    Writes to \"{outFolder}/odata.txt\" a file with columns\n" \
   "\n" \
   "    ?? P{ki}.{ix}.{iy} {sAvg} {sGrd} {sDev} {shrp} {hDif} {hDev} {coeff[0]} .. {coeff[NB-1]} {term[0]} .. {term[NT-1]} \n" \
   "\n" \
@@ -128,15 +128,15 @@
   " line is written after the {NI} lines of each pixel.\n" \
   "\n" \
   "  PLOT MASK IMAGE FILE\n" \
-  "    Writes to \"{outDir}/pSel.png\" a binary image file that is 1 for pixels" \
+  "    Writes to \"{outFolder}/pSel.png\" a binary image file that is 1 for pixels" \
   " that were written out to the regression data file, 0 otherwise.\n" \
   "\n" \
   "  BASIS NAMES, PRODUCTS, AND TERM FILE\n" \
   "    Also writes, for documentation, the following files:\n" \
   "\n" \
-  "      \"{outDir}/bnames.txt\"  names of the {NB} basis elements, like \"FXY\";\n" \
-  "      \"{outDir}/prix.txt\"    table mapping products of pairs of coefficients to terms;\n" \
-  "      \"{outDir}/tnames.txt\"  list of quadratic term formulas, like \"FX*FX+FY*FY\"." \
+  "      \"{outFolder}/bnames.txt\"  names of the {NB} basis elements, like \"FXY\";\n" \
+  "      \"{outFolder}/prix.txt\"    table mapping products of pairs of coefficients to terms;\n" \
+  "      \"{outFolder}/tnames.txt\"  list of quadratic term formulas, like \"FX*FX+FY*FY\"." \
   "\n" \
   "    See {multifok_term_read_index_table} for the format and semantics of the \"prix\" file." \
   "\n" \
@@ -169,7 +169,7 @@
 
 typedef struct mfdo_options_t 
   { /* Input images: */
-    char *inDir;                       /* Directory where input image files live. */
+    char *inFolder;                    /* Directory where input image files live. */
     char *sceneType;                   /* Scene type shown in the frame images. */
     char *pattern;                     /* Name of pattern used to texturize the scene. */
     int32_t imageSize_NX;              /* Image pixels per row.  */
@@ -181,7 +181,7 @@ typedef struct mfdo_options_t
     multifok_window_type_t windowType; /* Window weights distribution type. */
     char *termSetFile;                 /* Name of file with formulas of quadratic terms. */
     double sampleNoise;                /* Noise level to assume when normalizing window samples. */
-    char *outDir;                      /* Prefix for output filenames. */
+    char *outFolder;                      /* Prefix for output filenames. */
   } mfdo_options_t;
   /* Command line parameters. */
    
@@ -286,7 +286,7 @@ multifok_stack_t *mfdo_read_stack(mfdo_options_t *o);
     for {ki} in {0..NI-1}.
     
     The frames are read from files
-    "{o.inDir}/frame-zf{FFF.FFFF}-df{DDD.DDDD}/{tag}.png", where
+    "{o.inFolder}/frame-zf{FFF.FFFF}-df{DDD.DDDD}/{tag}.png", where
     {FFF.FFFF} and {DDD.DDDD} are {o.zFoc[ki]} and {o.zDep[ki]}
     formatted as "%08.4f", and {tag} is "sVal" (simulated view), "hAvg"
     ({Z}-coordinates), "hDev" ({Z}-deviation), and "shrp" ("actual"
@@ -317,11 +317,11 @@ mfdo_result_frame_t *mfdo_process_frame
     average, gradient, and residue, etc.). */
 
 void mfdo_write_correl_data
-  ( char *outDir,
+  ( char *outFolder,
     multifok_stack_t *istack,
     mfdo_result_stack_t *ostack
   );
-  /* Writes to {outDir}/odata.txt} a subset of the pixel data that can
+  /* Writes to {outFolder}/odata.txt} a subset of the pixel data that can
     be used to determine the best focus estimator by regression. Writes
     one line for each pixel considered useful for plotting and analysis,
     as explained in {PROG_INFO}.
@@ -333,8 +333,8 @@ void mfdo_write_result_stack(mfdo_result_stack_t *ostack);
   /* Writes the resulting stack images. 
   
     For each frame {ofr} with index {ki} writes 
-    a set of images whose names begin with {framePrefix = "{outDir}/{frameDir}/{tag}.png"}
-    where {frameDir} and {tag} are as explained in {PROG_INFO}. */
+    a set of images whose names begin with {framePrefix = "{outFolder}/{frameFolder}/{tag}.png"}
+    where {frameFolder} and {tag} are as explained in {PROG_INFO}. */
 
 void mfdo_fit_quadratic(int32_t NI, double u[], double v[], double ev[], double *u_max_P, double *v_max_P, double *A_P);
   /* Estimates the maximum of a quadratic function {v = A*u^2 + B*u + C} with {A < 0},
@@ -399,10 +399,10 @@ multifok_stack_t *mfdo_read_stack(mfdo_options_t *o)
     int32_t NI = o->NI;
     int32_t NX = o->imageSize_NX;
     int32_t NY = o->imageSize_NY;
-    char *stackDir = jsprintf("%s/st%s-%04dx%04d-%s", o->inDir, o->sceneType, NX, NY, o->pattern);
+    char *stackFolder = jsprintf("%s/st%s-%04dx%04d-%s", o->inFolder, o->sceneType, NX, NY, o->pattern);
     
     bool_t gray = TRUE;
-    multifok_stack_t *istack = multifok_stack_read(stackDir, gray, NI, o->zFoc, o->zDep, o->zMax);
+    multifok_stack_t *istack = multifok_stack_read(stackFolder, gray, NI, o->zFoc, o->zDep, o->zMax);
     
     assert(istack->NI == NI);
     demand(istack->NX == NX, "inconsistent frame {NX}");
@@ -513,9 +513,9 @@ mfdo_result_stack_t *mfdo_process_stack
     int32_t NT = tset->NT;
      
     /* File with basis element names: */
-    multifok_basis_elem_names_write_named(o->outDir, basis);
-    multifok_term_set_write_named(o->outDir, tset, FALSE, NULL);
-    multifok_term_set_product_table_write_named(o->outDir, tset->NP, tset->prix, TRUE);
+    multifok_basis_elem_names_write_named(o->outFolder, basis);
+    multifok_term_set_write_named(o->outFolder, tset, FALSE, NULL);
+    multifok_term_set_product_table_write_named(o->outFolder, tset->NP, tset->prix, TRUE);
    
     mfdo_result_stack_t *ostack = mfdo_result_stack_new(NI);
     
@@ -617,7 +617,7 @@ mfdo_result_frame_t *mfdo_process_frame
   }
             
 void mfdo_write_correl_data
-  ( char *outDir,
+  ( char *outFolder,
     multifok_stack_t *istack,
     mfdo_result_stack_t *ostack
   )
@@ -631,7 +631,7 @@ void mfdo_write_correl_data
     int32_t HW = ostack->HW;
 
     /* File with pixel-wise data for regression: */
-    FILE *wr_dat = multifok_test_open_text_file(outDir, "odata");
+    FILE *wr_dat = multifok_test_open_text_file(outFolder, "odata");
     
     double zFoc[NI];  /* Nominal focus plane {Z} for each frame. */
     double zDep[NI];  /* Nominal depth of focus for each frame. */
@@ -730,37 +730,37 @@ void mfdo_write_correl_data
     
   }
   
-void mfdo_write_result_stack(char *outDir, mfdo_result_stack_t *ostack)
+void mfdo_write_result_stack(char *outFolder, mfdo_result_stack_t *ostack)
   {
-    fprintf(stderr, "writing the output stack to %s...\n", outDir);
+    fprintf(stderr, "writing the output stack to %s...\n", outFolder);
     for (uint32_t ki = 0;  ki < NI; ki++)
       { mfdo_result_frame_t *ofr = ostack->frame[ki];
-        char *frameDir = jsprintf("%s/frame-zf%08.4f-fd-%08.4f", outDir, ofr->zFoc, ofr->zDep);
+        char *frameFolder = jsprintf("%s/frame-zf%08.4f-fd-%08.4f", outFolder, ofr->zFoc, ofr->zDep);
         mfdo_write_result_frame(frameSir, ofr);
-        free(frameDir);
+        free(frameFolder);
       }
 
     /* Write the pixel selection mask image: */
-    multifok_test_write_pixel_mask_image(outDir, pSel, NULL, stackPrefix);
+    multifok_test_write_pixel_mask_image(outFolder, pSel, NULL, stackPrefix);
   }
 
-void mfdo_write_result_frame(int32_t ki, char *frameDir, mfdo_result_frame_t *ofr)
+void mfdo_write_result_frame(int32_t ki, char *frameFolder, mfdo_result_frame_t *ofr)
   {
-    fprintf(stderr, "  writing output frame %d to %s...\n", ki, frameDir);
+    fprintf(stderr, "  writing output frame %d to %s...\n", ki, frameFolder);
 
     /* Write the average, deviation, and normalized images: */
-    multifok_test_write_window_average_image(ofr->sAvg, frameDir);
-    multifok_test_write_window_gradient_image(ofr->sGrd, frameDir);
-    multifok_test_write_window_deviation_image(ofr->sDev, frameDir);
-    multifok_test_write_normalized_image(ofr->sNrm, frameDir);
+    multifok_test_write_window_average_image(ofr->sAvg, frameFolder);
+    multifok_test_write_window_gradient_image(ofr->sGrd, frameFolder);
+    multifok_test_write_window_deviation_image(ofr->sDev, frameFolder);
+    multifok_test_write_normalized_image(ofr->sNrm, frameFolder);
 
     /* Write out the squared basis coefficient images: */
     for (uint32_t kb = 0;  kb < NB; kb++)
-      { multifok_test_write_basis_coeff_squared_image(bVal[kb], kb, frameDir); }
+      { multifok_test_write_basis_coeff_squared_image(bVal[kb], kb, frameFolder); }
 
     /* Write out the quadratic term images: */
     for (uint32_t kt = 0;  kt < NT; kt++)
-      { multifok_test_write_quadratic_term_image(tVal[kt], kt, frameDir); }
+      { multifok_test_write_quadratic_term_image(tVal[kt], kt, frameFolder); }
 
   }
 
@@ -813,8 +813,8 @@ mfdo_options_t *mfdo_parse_options(int32_t argc, char **argv)
     
     mfdo_options_t *o = notnull(malloc(sizeof(mfdo_options_t)), "no mem");
 
-    argparser_get_keyword(pp, "-inDir");
-    o->inDir = argparser_get_next(pp);
+    argparser_get_keyword(pp, "-inFolder");
+    o->inFolder = argparser_get_next(pp);
     
     argparser_get_keyword(pp, "-imageSize");
     o->imageSize_NX = (int32_t)argparser_get_next_int(pp,50,4096);
@@ -850,8 +850,8 @@ mfdo_options_t *mfdo_parse_options(int32_t argc, char **argv)
     argparser_get_keyword(pp, "-sampleNoise");
     o->sampleNoise = argparser_get_next_double(pp, 0.0, 100.0);  
 
-    argparser_get_keyword(pp, "-outDir");
-    o->outDir = argparser_get_next(pp);
+    argparser_get_keyword(pp, "-outFolder");
+    o->outFolder = argparser_get_next(pp);
 
     argparser_skip_parsed(pp);
     argparser_finish(pp);

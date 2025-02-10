@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_aff_extract.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-20 18:24:09 by stolfi */ 
+/* Last edited on 2025-01-30 04:57:57 by stolfi */ 
 /* Created on 2020-11-05 by J. Stolfi, UNICAMP */
 
 #define taffe_COPYRIGHT \
@@ -89,7 +89,8 @@ float_image_t *taffe_read_image(char *imageName)
     image_file_format_t ffmt = image_file_format_PNG;
     uint16_t *maxval; /* Max file sample value per channel. */
     double gammaDec, bias; /* Sample decoding parameters. */
-    float_image_t *img = float_image_read_gen_named(fname, ffmt, 0.0, 1.0, &maxval, &gammaDec, &bias, FALSE);
+    bool_t yUp = FALSE;
+    float_image_t *img = float_image_read_gen_named(fname, ffmt, yUp, 0.0, 1.0, &maxval, &gammaDec, &bias, FALSE);
     fprintf(stderr, "gammaDec = %.6f 1/gammaDec = %.6f  bias = %.6f\n", gammaDec, 1/gammaDec, bias);
     free(fname);
     return img;
@@ -99,7 +100,8 @@ void taffe_write_image(float_image_t *img, char *prefix, char *imageName)
   {
     char *fname = jsprintf("out/%s_%s.png", prefix, imageName);
     image_file_format_t ffmt = image_file_format_PNG;
-    float_image_write_gen_named(fname, img, ffmt, 0.0, 1.0, NAN, NAN, FALSE);
+    bool_t yUp = FALSE;
+    float_image_write_gen_named(fname, img, ffmt, yUp, 0.0, 1.0, NAN, NAN, FALSE);
     free(fname);
   }
  

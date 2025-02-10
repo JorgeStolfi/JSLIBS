@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {image_window_op.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-20 18:27:23 by stolfi */ 
+/* Last edited on 2025-01-30 08:05:11 by stolfi */ 
 /* Created on 2012-01-25 by J. Stolfi, UNICAMP */
 
 #define test_image_window_op_COPYRIGHT \
@@ -573,10 +573,10 @@ void tiwo_write_image(const char *name, float_image_t *img)
     assert(NC == 3);
     char *fname = jsprintf("out/t-%s.ppm", name);
     FILE *wr = open_write(fname, TRUE);
-    bool_t yup = TRUE;
+    bool_t yUp = TRUE;
     bool_t verbose = TRUE;
     bool_t isMask = FALSE; /* Assume uniform distr. of pixel values in encoding/decoding. */
-    uint16_image_t *pimg = float_image_to_uint16_image(img, isMask, NC, NULL, NULL, NULL, 255, yup, verbose);
+    uint16_image_t *pimg = float_image_to_uint16_image(img, isMask, NC, NULL, NULL, NULL, 255, yUp, verbose);
     bool_t forceplain = FALSE;
     uint16_image_write_pnm_file(wr, pimg, forceplain, verbose);
     uint16_image_free(pimg);

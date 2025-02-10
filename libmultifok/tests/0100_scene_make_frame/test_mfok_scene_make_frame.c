@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {multifok_test_image_make.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-16 12:49:29 by stolfi */ 
+/* Last edited on 2025-02-10 09:06:28 by stolfi */ 
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
 #define test_mfok_scene_make_frame_COPYRIGHT \
@@ -24,10 +24,13 @@
 #include <bool.h>
 #include <jsmath.h>
 #include <jsrandom.h>
+#include <interval.h>
+#include <box.h>
 #include <ix_reduce.h>
 #include <r3.h>
 #include <i2.h>
 #include <frgb.h>
+#include <frgb_ops.h>
 #include <float_image.h>
 #include <float_image_waves.h>
 #include <float_image_interpolate.h>
@@ -55,14 +58,15 @@
 
 typedef struct mfmi_options_t 
   { int32_t imageSize_X;       /* Image width. */
-    int32_t imageSize_Y;       /* Image height. */
-    char *sceneType;           /* Scene type: "R", "F", "T", etc. */
+    int32_t imageSize_Y;       /* Image height (not including the grayscale chart). */
+    char *sceneType;           /* Type of scene. See below. */
     uint32_t pixSampling;      /* Number of sampling points per axis and pixel. */
     uint32_t dirSampling;      /* Min number of aperture rays per point. */
     char *patternFile;         /* File name of pattern to use to paint objects. */
     r3_t *lightDir;            /* Light source direction, or {NULL}. */
-    double ambient;            /* Ambient light fraction. */
-    char *stackDir;            /* Parent folder for frames of the stack. */
+    double ambient;            /* Intensity of "ambient" (isotropic) light. */
+    double gloss;              /* Intensity of "glossy" surface finish. */
+    char *stackFolder;         /* Parent folder for frames of the stack. */
     /* These parameters are specified in user units: */
     interval_t sceneSize[3];   /* Nominal coordinate ranges of scene. */
     double dephOfFocus;        /* Depth of focus. */
@@ -70,41 +74,49 @@ typedef struct mfmi_options_t
     double focusHeight_hi;     /* Highest focus plane {Z}. */
     double focusHeight_step;   /* {Z} increment between focus planes. */
   } mfmi_options_t;
-  /* Command line parameters. */
+  /* Command line parameters. 
+    The {sceneType} may be:
+     "R" Ramp only.
+     "D" Single disk.
+     "B" Single ball.
+     "C" Single cone.
+     "P" Single square pyramid.
+     "F" Non-overlapping mixed objects.
+     "T" Overlapping mixed objects.
+  */
   
 #define PROG_OUTPUT_INFO \
   "  RUN DIRECTORY\n" \
-  "    The program writes all its output files to a specified folder \"{stackDir}\".\n" \
+  "    The program writes all its output files to a specified" \
+  " folder \"{stackFolder}\".  This folder has one sub-folder for each frame of" \
+  " the multifocus stack," \
+  " called \"{stackFolder}/{frameFolder}\"." \
+  "  " multifok_FRAME_DIR_INFO "\n" \
   "\n" \
-  "  FRAME DIRECTORIES\n" \
-  "    " multifok_FRAME_DIR_INFO "\n" \
-  "\n" \
+  "  \n" \
   "  FRAME IMAGE FILES\n" \
   "\n" \
-  "    The run directory will contain one frame sub-folder {frameDir} for each frame of the stack.  " multifok_FRAME_FILES_INFO "\n" \
+  "    " multifok_FRAME_FILES_INFO "\n" \
   "\n" \
   "  PIXEL V FOCUS PLOT FILES\n" \
   "\n" \
-  "    The program also writes to the run directory \"{stackDir}\" zero or more" \
-  " files \"pixel-data-{XXXX}-{YYYY}.txt\" where {XXXX} and {YYYY} are the column and" \
-  " row indices {ix,iy} of a pixel that was selected for detailed debugging.  Each of" \
-  " these files contain one line for each frame, excluding the sharp one.  Each line has" \
-  " fields\n" \
-  "\n" \
-  "     \"{kf} {zFoc[kf]} {zDep[kf]} {hAvg[kf]} {hDev[kf]} {shrp[kf]} {sVal[kf][0]} .. {sVal[kf][NC-1]}\n" \
-  "\n" \
-  " where {kf} is a frame index (from 0), {zFoc[kf]} and {zDep[kf]} are the frame's" \
-  " nominal {zFoc} and {zDep} parameters, and the other fields are the sample values of" \
-  " pixel {ix,it} of the corresponding image from that frame.  These files can be used" \
-  " to plot the variation of those pixel properties as a function of the" \
+  "    The program also writes to the \"{stackFolder}\" zero or more" \
+  " files \"pixel-data-{XXXX}-{YYYY}.txt\" where {XXXX} and {YYYY} are" \
+  " the column and" \
+  " row indices {ix,iy} of a pixel that was selected for detailed" \
+  " debugging.  Each of" \
+  " these files contain one line for each frame, excluding the" \
+  " sharp one.  " multifok_raytrace_write_pixel_data_INFO "\n" \
+  "    These files can be used" \
+  " to plot the variation of pixel properties as a function of the" \
   " parameters {zFoc} and/or {zDep}.\n" \
   "\n" \
   "  RAY DATA FILES\n" \
   "\n" \
-  "    The program will also write in each frame directory \"{stackDir}/{framedir}\" zero" \
+  "    The program will also write in each frame directory \"{stackFolder}/{frameFolder}\" zero" \
   " or more files \"pixel-rays-{XXXX}-{YYYY}.txt\" where {XXXX} and {YYYY} are the column" \
-  " and row indices {ix,iy} of a selected debigging pixel, as above.  This file contains on" \
-  "e line for each ray that was cast in order to compute the values of the frame images" \
+  " and row indices {ix,iy} of a selected debugging pixel, as above.  This file contains one" \
+  " line for each ray that was cast in order to compute the values of the frame images" \
   " at that pixel. \n" \
   "    " multifok_raytrace_write_ray_data_INFO "\n" \
   "\n" \
@@ -118,6 +130,19 @@ typedef struct mfmi_options_t
 #define ot_DISK multifok_scene_object_type_DISK
 #define ot_BALL multifok_scene_object_type_BALL
 #define ot_CONE multifok_scene_object_type_CONE
+#define ot_PYRA multifok_scene_object_type_PYRA
+
+typedef enum { 
+    mfmi_scene_kind_EMPTY,
+    mfmi_scene_kind_SINGU,
+    mfmi_scene_kind_MULTI,
+    mfmi_scene_kind_QUART
+  } mfmi_scene_kind_t;
+  
+#define sk_EMPTY mfmi_scene_kind_EMPTY
+#define sk_SINGU mfmi_scene_kind_SINGU
+#define sk_MULTI mfmi_scene_kind_MULTI
+#define sk_QUART mfmi_scene_kind_QUART
 
 int32_t main(int32_t argn, char **argv);
 
@@ -125,37 +150,109 @@ mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv);
   /* Parses the command line options. */
   
 multifok_scene_t *mfmi_make_scene
-  ( char *sceneType,
-    interval_t dom[],
-    int32_t NX,
-    int32_t NY,
+  ( interval_t dom[],
+    char *sceneType,
+    double gloss,
+    double pixelSize,
     double zDep,
     bool_t verbose
   );
-  /* Generates a test scene with disks, balls, and a back plane, roughly
+  /* Generates a test scene with some number of objects, roughly
     spanning the box {dom[0]×dom[1]×dom[2]} in scene coordinates.
     
-    If {sceneType} is "R", the scene will have no disks or balls, just a
-    titled floor --- a ramp that rises from {Z=0} at {X=0} to
-    {Z=WZ} at {X=WX}.
+    If {sceneType} is "R", the scene have only a floor object
+    of type {ot_RAMP}. See {mfmi_fill_scene_empty}.
     
-    If {sceneType} is "F" or "T", the floor will be flat at {Z=0.0},
-    and there will be some number of disks and balls at random
-    {XY} coordinates and contained between {Z=0} and {Z=WZ}.
+    If {sceneType} is "D", "B", "C", or "P", the scene will have a flat floor (an
+    object of type {ot_FLAT}) at {Z=0.0} plus a single foreground object
+    of type {ot_DISK}, {ot_BALL}, {ot_CONE}, or {ot_PYRA}, respectively. 
+    See {mfmi_fill_scene_singu}.
     
-    Specifically, if {sceneType} is "F", the {XY} projections of the
-    disks and balls will be disjoint, even when out of focus (assuming
-    that the depth of focus is {zDep}). If {sceneType} is "T", the {XY}
-    projections of the disks and balls will often overlap. */
+    If {sceneType} is "F" or "T", the scene will have a flat floor at
+    {Z=0.0}, and there will be some number of foreground objects at
+    random {XY} coordinates. The parameters {pixelSize} and {zDep} are
+    relevant only for this kind of scene. See {mfmi_fill_scene_multi}.
+    The {overlap} flag will be true if {sceneType} is "T", and false if
+    {sceneType} is "F". 
+    
+    If {sceneType} is "Q", the scene will be like "F", but there will be
+    only four foreground objects, one of each type {DISK,BALL,CONE,PYRA}.
+    See {mfmi_fill_scene_quartet}*/
+
+void mfmi_fill_scene_empty
+  ( multifok_scene_t *scene,
+    multifok_scene_object_type_t type,
+    bool_t verbose
+  );
+  /* The {scene} must have no objects.  Adds a floor object of the
+    specified type ({ot_FLAT} or {ot_RAMP}). */
+
+void mfmi_fill_scene_singu
+  ( multifok_scene_t *scene,
+    multifok_scene_object_type_t type,
+    frgb_t *fgGlo,
+    bool_t verbose
+  );
+  /* The {scene} must have no objects. Adds a floor object of the type
+    {ot_FLAT} at {Z=0} and a single foreground object of the specified type
+    (which must not be {ot_FLAT} or {ot_RAMP}). The object will be
+    centered in the scene's domain {scene.dom}. */
+  
+void mfmi_fill_scene_multi
+  ( multifok_scene_t *scene,
+    frgb_t *fgGlo,
+    double pixelSize,
+    bool_t overlap,
+    double zDep,
+    bool_t verbose
+  );
+  /* The {scene} must have no objects.  Adds a floor object of the
+    type {ot_FLAT} and zero or more foreground objects of random
+    types, sizes, and positions.
+    
+    The {Z} spans of all these foreground objects will be strictly
+    contained in the {Z} range {scene.dom[2]}. 
+    
+    If the {overlap} flag is true, the {XY} projections of the
+    foreground objects will be disjoint and contained in the {XY}
+    projection of {scene.dom}, even when out of focus (assuming that the
+    depth of focus is {zDep}). Otherwise the {XY} projections of the
+    foreground objects will probably overlap and extend outside the {XY}
+    projection of {scene.dom}; only their centers will be in that
+    rectangle.
+    
+    The {pixelSize} parameter is the size of one pixel in SCUs. 
+    It affects the min size of objects. */
+  
+void mfmi_fill_scene_quartet
+  ( multifok_scene_t *scene,
+    frgb_t *fgGlo,
+    double pixelSize,
+    double zDep,
+    bool_t verbose
+  );
+  /* The {scene} must have no objects.  Adds a floor object of the
+    type {ot_FLAT} and four foreground objects of types
+    {DISK,BALL,CONE,PYRA}, as large as possible.
+    
+    The {Z} range of each foreground object will be limited to 
+    the {Z} range of the scene ({scene.dom[2]}).  Their {XY} projections
+    will be disjoint and contained in the {XY}
+    projection of {scene.dom}, even when out of focus (assuming that the
+    depth of focus is {zDep}).
+    
+    The {pixelSize} parameter is the size of one pixel in SCUs. 
+    It affects the min size of objects. */
 
 multifok_stack_t *mfmi_make_and_write_stack
-  ( char *stackDir,
+  ( char *stackFolder,
     int32_t NX,
     int32_t NY, 
     multifok_scene_t *scene,
     char *patternFile,
-    r3_t *light_dir,
-    double ambient,
+    r3_t *uLit,
+    frgb_t *cLit,
+    frgb_t *cIso,
     double zFoc_min,
     double zFoc_max,
     double zFoc_step,
@@ -183,18 +280,20 @@ multifok_stack_t *mfmi_make_and_write_stack
     
     Also writes debuging information about the rays used to compute the
     pixels {iDeb[0..NQ-1]}, to files called
-    "{stackDir}/{frameDir}/pixel-rays-{XXXX}-{YYYY}.txt", where
+    "{stackFolder}/{frameFolder}/pixel-rays-{XXXX}-{YYYY}.txt", where
     {XXXX,YYYY} are the pixel indices formatted as "%04d". Here
-    {stackDir} is as explained in {PROG_INFO}. */
+    {stackFolder} is as explained in {PROG_INFO}. */
 
 multifok_stack_t *mfmi_make_and_write_stack_from_pattern_function
-  ( char *stackDir,
+  ( char *stackFolder,
     int32_t NX,
     int32_t NY,
     multifok_scene_t *scene, 
-    multifok_scene_raytrace_pattern_t *pattern,
-    r3_t *light_dir,
-    double ambient,
+    multifok_pattern_double_proc_t *patternGlo,
+    multifok_pattern_double_proc_t *patternLam,
+    r3_t *uLit,
+    frgb_t *cLit,
+    frgb_t *cIso,
     double zFoc_min,
     double zFoc_max,
     double zFoc_step,
@@ -208,14 +307,16 @@ multifok_stack_t *mfmi_make_and_write_stack_from_pattern_function
     with the given pattern function. */
 
 multifok_frame_t *mfmi_make_and_write_frame
-  ( char *frameDir,
+  ( char *frameFolder,
     int32_t NX, 
     int32_t NY, 
     multifok_scene_t *scene,
     multifok_scene_tree_t *tree,
-    multifok_scene_raytrace_pattern_t *pattern,
-    r3_t *light_dir,
-    double ambient,
+    multifok_pattern_double_proc_t *patternGlo,
+    multifok_pattern_double_proc_t *patternLam,
+    r3_t *uLit,
+    frgb_t *cLit,
+    frgb_t *cIso,
     double zFoc,
     double zDep, 
     uint32_t HS,
@@ -231,29 +332,29 @@ multifok_frame_t *mfmi_make_and_write_frame
     As a special case, if {zDep} is infinite then the scene view {sVal}
     will be sharp everywhere, and {shrp} will be 1.0.
     
-    Writes the images to "{frameDir}/{tag}.png" were {tag} is "sVal",
-    "hAvg", "hDev", "shrp". Also writes pixel ray data files
-    "{frameDir}/pixel-rays-{XXXX}-{YYYY}.txt" */
+    Writes the images to "{frameFolder}/{tag}.png" were {tag} is "sVal",
+    "hAvg", "hDev", "sNrm", and "shrp". Also writes pixel ray data files
+    "{frameFolder}/pixel-rays-{XXXX}-{YYYY}.txt" */
 
 void mfmi_write_pixel_profiles
   ( multifok_stack_t *stack,
     uint32_t NQ,
     i2_t iDeb[],
     multifok_scene_t *scene,
-    char *stackDir
+    char *stackFolder
   );
   /* Given a list of {NQ} of pixels {iDeb[0..NQ-1]} in the 
-    image domain, writes a file "{stackDir}/pixel-data-{XXXX}-{YYYY}.txt"
+    image domain, writes a file "{stackFolder}/pixel-data-{XXXX}-{YYYY}.txt"
     for each pixel, where {XXXX} an {YYYY} are the pixel column and row indices.
     
     Each file will have up to {NI = stack.NI} lines with format
 
-      "{ki} {zFoc} {zDep}  {hAvg} {hDev} {shrp} {sVal[0]} ...  {sVal[NC-1]}"
+      "{ki} {zFoc} {zDep}  {hAvg} {hDev} {shrp} {sNrm.x} {sNrm.y} {sNrm.z} {sVal[0]} ...  {sVal[NC-1]}"
 
     where {ki} is a frame number in {0..NI-1} and {hAvg}, and 
-    {hDev}, {shrp}, and {sVal[0..NC-1]} are the values of
-    that pixel in the images {hAvg} {hDev}, {shrp}, and {sVal} of
-    {stack.frame[ki]}. Note that {zDep} may be {+INF}.  */
+    {hDev}, {shrp}, {sNrm}, and {sVal[0..NC-1]} are the values of
+    that pixel in the images {hAvg} {hDev}, {shrp}, and {sNrm}, and 
+    {sVal} of {stack.frame[ki]}. Note that {zDep} may be {+INF}.  */
     
 void mfmi_select_debug_pixels
   ( int32_t NX,
@@ -273,8 +374,8 @@ float_image_t *mfmi_read_pattern_image(char *fname);
   /* Reads an image from file {fname}, to be used as pattern to paint the scene.
     If the image is in color, converts it to grayscale. */
     
-FILE *mfmi_open_pixel_plot_data_file(char *stackDir);
-  /* Opens the file "{stackDir}/pixplot.txt" for writing. */
+FILE *mfmi_open_pixel_plot_data_file(char *stackFolder);
+  /* Opens the file "{stackFolder}/pixplot.txt" for writing. */
 
 /* IMPLEMENTATIONS */
 
@@ -284,24 +385,36 @@ int32_t main (int32_t argc, char **argv)
     
     int32_t NX = o->imageSize_X;
     int32_t NY = o->imageSize_Y;
+    
+    interval_t *dom = o->sceneSize;
+    double wX = 2*interval_rad(&(dom[0]));
+    double wY = 2*interval_rad(&(dom[1]));
+    double pixelSize = fmin(wX/NX, wY/NY);
 
     /* Create the test scene: */
-    bool_t verbose_scene = FALSE;
+    bool_t verbose_scene = TRUE;
     multifok_scene_t *scene = mfmi_make_scene
-      ( o->sceneType, o->sceneSize,
-        NX, NY, 
-        o->dephOfFocus, verbose_scene
+      ( o->sceneSize, o->sceneType, o->gloss,
+        pixelSize, o->dephOfFocus, 
+        verbose_scene
       );
       
     /* Select the debugging pixels: */
     uint32_t NQ_max = 10;
     uint32_t NQ;
     i2_t *iDeb;
+    /* !!! {mfmi_select_debug_pixels} calls {drandom} !!! */
+    /* !!! So call it as before but then reset {NQ} !!! */
     mfmi_select_debug_pixels(NX, NY, scene, NQ_max, &NQ, &iDeb);
+    NQ = 0;
+    
+    frgb_t lightColor = (frgb_t){{ 0.900f, 0.850f, 0.800f }}; /* Color of point source. */
+    frgb_t ambColor = (frgb_t){{ 0.800f, 0.900f, 1.000f }}; 
+    ambColor = frgb_scale(o->ambient, &ambColor);
 
     multifok_stack_t *stack = mfmi_make_and_write_stack
-      ( o->stackDir,
-        NX, NY, scene, o->patternFile, o->lightDir, o->ambient, 
+      ( o->stackFolder,
+        NX, NY, scene, o->patternFile, o->lightDir, &(lightColor), &(ambColor),
         o->focusHeight_lo, o->focusHeight_hi, o-> focusHeight_step,
         o->dephOfFocus, o->pixSampling, o->dirSampling,
         NQ, iDeb
@@ -312,93 +425,249 @@ int32_t main (int32_t argc, char **argv)
     multifok_frame_t *fr_sharp = stack->frame[NI-1];
     assert(fr_sharp->zDep == +INF);
     float_image_t *bgrd = fr_sharp->sVal;
-    multifok_image_selected_pixels_write(NQ, iDeb, bgrd, o->stackDir);
+    multifok_image_selected_pixels_write(NQ, iDeb, bgrd, o->stackFolder);
     
-    mfmi_write_pixel_profiles(stack, NQ, iDeb, scene, o->stackDir);
+    mfmi_write_pixel_profiles(stack, NQ, iDeb, scene, o->stackFolder);
     
     return 0;
   }
 
 multifok_scene_t *mfmi_make_scene
-  ( char *sceneType,
-    interval_t dom[],
-    int32_t NX,
-    int32_t NY,
+  ( interval_t dom[],
+    char *sceneType,
+    double gloss,
+    double pixelSize,
     double zDep,
     bool_t verbose
   )
   {
-    fprintf(stderr, "creating scene of type %s", sceneType); 
-    /* Define the scene's domain: */
-    for (uint32_t j = 0;  j < 3; j++)
-      { fprintf(stderr, "%s[%.3f _ %.3f]", (j == 0 ? " size = " : " × "), dom[j].end[0], dom[j].end[1]); }
-    fprintf(stderr, "\n");
-
-    /* Parse the {sceneType} defining {floorOnly,flatFloor,minSep}: */
-    bool_t floorOnly; /* If true the scene is just the floor, else it has foreground objs. */
-    bool_t flatFloor; /* If true the floor is a flat plane at {zMin}, else a ramp. */
-    double minSep; /* Min {XY} sep of non-overlapping objs. */
-    
-    /* The {minSep} is ignored if {floorOnly} is true. */
-
-    if (strcmp(sceneType, "R") == 0)
-      { /* Tilted floor surface only: */
-        floorOnly = TRUE;
-        flatFloor = FALSE;
-        minSep = NAN;   /* Irrelevant. */
-      }
-    else 
-      { /* Disk, balls, etc: */
-        floorOnly = FALSE;
-        flatFloor = TRUE;
-        if (strcmp(sceneType, "F") == 0)
-          { /* Non-overlapping objects: */
-            minSep = 0.5*zDep; 
+    if (verbose)
+      { fprintf(stderr, "creating scene of kind '%s'", sceneType); 
+        for (uint32_t j = 0;  j < 3; j++)
+          { char *ps = (j == 0 ? " size = " : " × ");
+            fprintf(stderr, "%s[%.3f _ %.3f]", ps, dom[j].end[0], dom[j].end[1]);
           }
-        else if (strcmp(sceneType, "T") == 0)
-          { /* Overlapping objects: */
-            minSep = -1.0;
-          }
-        else
-          { demand(FALSE, "invalid scene type"); }
+        fprintf(stderr, "\n");
       }
-
-    assert(floorOnly | flatFloor);
+    demand(strlen(sceneType) == 1, "the scene type should be a single char");
+ 
     multifok_scene_t *scene = multifok_scene_new(dom, verbose);
-    /* Define the object radius range {rMin,rMax} (in scene units): */
-    double WX = 2*interval_rad(&(dom[0]));
-    double WY = 2*interval_rad(&(dom[1]));
-    double WZ = 2*interval_rad(&(dom[2]));
-    double Wmin = fmin(WX, WY);
-    double scale_out = fmax(NX/WX, NY/WY);
-    /* The min obj radius must be at least 7 pixels and 1/100 of scene: */
-    double rMin = fmax(7.0/scale_out, 0.01*Wmin); /* Min object radius. */
-    /* The max obj radius must be 1/4 of scene X or Y size. */
-    /* Don't worry about Z, will be fitted as needed if spherical: */
-    double rMax = fmin(0.30*WZ, 0.25*Wmin);       /* Max object radius. */
-    multifok_scene_throw_objects
-      ( scene, floorOnly, flatFloor, rMin, rMax, minSep, verbose );
     
-    assert((scene->objs[0].type == ot_FLAT) || (scene->objs[0].type == ot_RAMP));
-    char *floorX = multifok_scene_object_type_to_string(scene->objs[0].type);
-    fprintf(stderr, "generated a scene with a %s floor", floorX);
-    if (scene->NO == 1)
-      { fprintf(stderr, " only.\n"); }
-    else
-      { char *olapX = (minSep < 0.0 ? "overlapping" : "non-overlapping");
-        fprintf(stderr, " and %d %s foreground objects\n", scene->NO-1, olapX);
+    frgb_t fgGlo = (frgb_t){{ 0.300f, 1.000f, 0.500f }}; 
+    fgGlo = frgb_scale(gloss, &(fgGlo));
+
+    multifok_scene_object_type_t type = ot_FLAT;
+    mfmi_scene_kind_t kind = sk_EMPTY;
+    bool_t overlap = FALSE;
+    switch (sceneType[0])
+      { case 'R': kind = sk_EMPTY; type = ot_RAMP;  break;
+        case 'F': kind = sk_MULTI; overlap = FALSE; break;
+        case 'T': kind = sk_MULTI; overlap = TRUE;  break;
+        
+        case 'Q': kind = sk_QUART; break;
+
+        case 'D': kind = sk_SINGU; type = ot_DISK; break;
+        case 'B': kind = sk_SINGU; type = ot_BALL; break;
+        case 'C': kind = sk_SINGU; type = ot_CONE; break;
+        case 'P': kind = sk_SINGU; type = ot_PYRA; break;
+        default: demand(FALSE, "invalid scene type");
       }
+        
+    switch (kind)
+      { case sk_EMPTY:
+          mfmi_fill_scene_empty(scene, type, verbose); break;
+         
+        case sk_SINGU:
+          mfmi_fill_scene_singu(scene, type, &(fgGlo), verbose); break;
+          
+        case sk_MULTI:
+          mfmi_fill_scene_multi(scene, &(fgGlo), pixelSize, overlap, zDep, verbose); break;
+          
+        case sk_QUART:
+          mfmi_fill_scene_quartet(scene, &(fgGlo), pixelSize, zDep, verbose); break;
+        
+        default: assert(FALSE);
+      }
+
+    assert((scene->objs[0].type == ot_FLAT) || (scene->objs[0].type == ot_RAMP));
+    if (verbose) { multifok_scene_print(stderr, scene); }
     return scene;
+  }
+      
+void mfmi_fill_scene_empty
+  ( multifok_scene_t *scene,
+    multifok_scene_object_type_t type,
+    bool_t verbose
+  )
+  {
+    if (verbose) 
+      { char *typeX = multifok_scene_object_type_to_string(type);
+        fprintf(stderr, "generating a scene with only floor of type %s\n", typeX);
+      }
+    multifok_scene_add_floor(scene, type, verbose);
+  }
+  
+void mfmi_fill_scene_singu
+  ( multifok_scene_t *scene,
+    multifok_scene_object_type_t type,
+    frgb_t *fgGlo,
+    bool_t verbose
+  )  
+  { 
+    if (verbose) 
+      { char *typeX = multifok_scene_object_type_to_string(type);
+        fprintf(stderr, "filling scene with floor and one foreground object of type %s\n", typeX); 
+      }
+    
+    /* In principle the object can use the whole {scene.dom} minus a margin: */
+    interval_t *dom = scene->dom;
+    double wX = interval_width(&(dom[0]));
+    double wY = interval_width(&(dom[1]));
+    
+    double wSceneXY = fmin(wX, wY);
+    double wSceneZ = interval_width(&(dom[2]));
+    double marginXY = 0.05*wSceneXY; 
+    double marginZ = 0.0005*wSceneZ;
+    double slackX = wX - wSceneXY;
+    double slackY = wY - wSceneXY;
+
+    double wObjXY = wSceneXY - marginXY;
+    if (verbose) { fprintf(stderr, "object {XY} size = %12.6f\n", wObjXY); }
+    
+    interval_t bbox[3]; 
+
+    LO(bbox[0]) = 0.5*slackX + marginXY;
+    HI(bbox[0]) = LO(bbox[0]) + wObjXY;
+
+    LO(bbox[1]) = 0.5*slackY + marginXY;
+    HI(bbox[1]) = LO(bbox[1]) + wObjXY;
+
+    bbox[2] = dom[2];
+    interval_widen(&(bbox[2]), -marginZ);
+    
+    /* Pick colors: */
+    frgb_t fgLam = (frgb_t){{ 1.000f, 0.700f, 0.300f }};
+    frgb_t bgLam = (frgb_t){{ 0.600f, 0.500f, 0.250f }};
+      
+    frgb_t bgGlo = (frgb_t){{ 0.000f, 0.000f, 0.000f }};
+      
+    if (verbose) { fprintf(stderr, "adding FLAT floor ...\n"); }
+    multifok_scene_add_floor(scene, ot_FLAT, verbose);
+
+    if (verbose) { fprintf(stderr, "adding the foreground object ...\n"); }
+    multifok_scene_add_foreground_object(scene, type, bbox, fgGlo, &bgGlo, &fgLam, &bgLam, verbose);
+  }
+  
+void mfmi_fill_scene_multi
+  ( multifok_scene_t *scene,
+    frgb_t *fgGlo,
+    double pixelSize,
+    bool_t overlap,
+    double zDep,
+    bool_t verbose
+  ) 
+  { 
+    if (verbose) 
+      { char *olapX = (overlap ? "overlapping" : "non-overlapping");
+        fprintf(stderr, "filling scene with floor and multiple random %s foreground objects\n", olapX);
+      }
+
+    double minSep = (overlap ? -1.0 : 0.5*zDep);
+    
+    /* Define the object {XY} width range {wMinXY,wMaxXY} (in scene units): */
+    interval_t *dom = scene->dom;
+    double wX = interval_width(&(dom[0]));
+    double wY = interval_width(&(dom[1]));
+    double wXYMin = fmin(wX, wY);
+
+    /* Define the range {wMinXY,wMaxXY} of object XY widths: */
+    /* Don't worry about Z, will be fitted as needed: */
+    double wMinXY = fmax(30.0*pixelSize, 0.05*wXYMin);
+    double wMaxXY = 0.33*wXYMin;
+    if (verbose) { fprintf(stderr, "object {XY} size range = [ %12.6f _ %12.6f ]\n", wMinXY, wMaxXY); }
+
+    if (verbose) { fprintf(stderr, "adding FLAT floor ...\n"); }
+    multifok_scene_add_floor(scene, ot_FLAT, verbose);
+
+    if (verbose) { fprintf(stderr, "throwing foreground objects ...\n"); }
+    multifok_scene_throw_foreground_objects(scene, wMinXY, wMaxXY, fgGlo, minSep, verbose);
+  }
+  
+void mfmi_fill_scene_quartet
+  ( multifok_scene_t *scene,
+    frgb_t *fgGlo,
+    double pixelSize,
+    double zDep,
+    bool_t verbose
+  ) 
+  { 
+    if (verbose) 
+      { fprintf(stderr, "filling scene with floor and four foreground objects to scene\n"); }
+
+    double minSep = 0.5*zDep;
+
+    if (verbose) { fprintf(stderr, "adding FLAT floor ...\n"); }
+    multifok_scene_add_floor(scene, ot_FLAT, verbose);
+    
+    interval_t *dom = scene->dom;
+    
+    /* Define the foreground object's {XY} width {wXY} (in scene units): */
+    double wX = interval_width(&(dom[0]));
+    double wY = interval_width(&(dom[1]));
+    double wZ = interval_width(&(dom[2]));
+    double wSceneXY = fmin(wX, wY);
+    double slackX = wX - wSceneXY;
+    double slackY = wY - wSceneXY;
+
+    double marginXY = 0.05*wSceneXY + minSep; 
+    double marginZ = 0.0005*wZ; 
+
+    /* Don't worry about Z, will be fitted as needed: */
+    double wObjXY = (wSceneXY - 3*marginXY)/2;
+    if (verbose) { fprintf(stderr, "object {XY} size = %12.6f\n", wObjXY); }
+    
+    auto void place_object(int32_t kx, int32_t ky, multifok_scene_object_type_t type);
+    
+    place_object(0,0, ot_DISK);
+    place_object(1,0, ot_BALL);
+    place_object(0,1, ot_PYRA);
+    place_object(1,1, ot_CONE);
+    
+    return;
+    
+    void place_object(int32_t kx, int32_t ky, multifok_scene_object_type_t type)
+      {
+        interval_t bbox[3];
+        
+        LO(bbox[0]) = 0.5*slackX + marginXY + kx*(wObjXY + marginXY);
+        HI(bbox[0]) = LO(bbox[0]) + wObjXY;
+        
+        LO(bbox[1]) = 0.5*slackY + marginXY + ky*(wObjXY + marginXY);
+        HI(bbox[1]) = LO(bbox[1]) + wObjXY;
+        
+        bbox[2] = dom[2];
+        interval_widen(&(bbox[2]), -marginZ);
+
+        /* Pick colors: */
+        frgb_t fgLam = (frgb_t){{ (float)drandom(), 1.000, 0.600f }}; frgb_from_HTY(&(fgLam));
+        frgb_t bgLam = (frgb_t){{ (float)drandom(), 1.000, 0.200f }}; frgb_from_HTY(&(bgLam));
+
+        frgb_t bgGlo = (frgb_t){{ 0.000f, 0.000f, 0.000f }};
+
+        if (verbose) { fprintf(stderr, "adding the foreground object ...\n"); }
+        multifok_scene_add_foreground_object(scene, type, bbox, fgGlo, &bgGlo, &fgLam, &bgLam, verbose);
+      }
   }
   
 multifok_stack_t *mfmi_make_and_write_stack
-  ( char *stackDir,
+  ( char *stackFolder,
     int32_t NX,
     int32_t NY, 
     multifok_scene_t *scene,
     char *patternFile,
-    r3_t *light_dir,
-    double ambient,
+    r3_t *uLit,
+    frgb_t *cLit,
+    frgb_t *cIso,
     double zFoc_min,
     double zFoc_max,
     double zFoc_step, 
@@ -411,15 +680,15 @@ multifok_stack_t *mfmi_make_and_write_stack
   { 
     fprintf(stderr, "creating stack with zDep = %8.4f HS = %d KR = %d\n", zDep, HS, KR); 
     fprintf(stderr, "zFoc varying from %8.4f to %8.4f step %8.4f\n", zFoc_min, zFoc_max, zFoc_step); 
-    r3_gen_print(stderr, light_dir, "%+8.5f", "light direction = ( ", " ", " )");
-    fprintf(stderr, " ambient = %6.4f\n", ambient); 
+    r3_gen_print(stderr, uLit, "%+8.5f", "light direction = ( ", " ", " )");
+    frgb_print(stderr, " color = ( ", cLit, 3, "%7.5f", " )\n"); 
+    frgb_print(stderr, " ambient = ( ", cIso, 3, "%7.5f", " )\n"); 
 
     /* Scene size and center in user units:  */
-    r3_t size_scene, ctr_scene;
+    r3_t size_scene;
     for (uint32_t j = 0;  j < 3; j++) 
       { interval_t *domj = &(scene->dom[j]);
         size_scene.c[j] = 2*interval_rad(domj);
-        ctr_scene.c[j] = interval_mid(domj);
       }
  
     /* Compute the output image pixels per scene unit: */
@@ -441,48 +710,60 @@ multifok_stack_t *mfmi_make_and_write_stack
 
     r2_t ctr_pat = (r2_t){{ 0.5*NX_pat, 0.5*NY_pat }};
      
-    auto double eval_pattern(double x, double y, double z);
-      /* Returns a grayscale pattern value as function of the point with
-        scene coordinates {(x,y,z)}. Currently returns the value of {pimg}
-        interpolated at {x,y} relative to the center of the scene,
-        scaled so that 1 pattern pixel is about 1 image pixel.
-        The image {pimg} is replicated to cover the whole plane. */
+    auto double eval_pattern(r3_t *q, float_image_t *img);
+      /* Return the value of {img} interpolated at {q.x,q.y}, scaled so
+        that 1 pattern pixel is about 1 image pixel, and relative to the
+        center of the pattern. The image {img} is replicated to cover
+        the whole plane. */
+
+    auto double patternGlo(r3_t *q);
+    auto double patternLam(r3_t *q);
+      /* Each of these procedures returns a grayscale pattern value as
+        function of the point with scene coordinates {q}.  Currently both 
+        call {eval_pattern(q,pimg)} with the same image {pimg}. */
     
     multifok_stack_t *stack = mfmi_make_and_write_stack_from_pattern_function
-      ( stackDir,
-        NX, NY, scene, eval_pattern, light_dir, ambient,
+      ( stackFolder,
+        NX, NY, scene, patternGlo, patternLam, uLit, cLit, cIso,
         zFoc_min, zFoc_max, zFoc_step,
         zDep, HS, KR, NQ, iDeb
       );
     
     return stack;
 
-    double eval_pattern(double x, double y, double z)
+    double patternGlo(r3_t *q)
+      { return eval_pattern(q, pimg); }
+      
+    double patternLam(r3_t *q)
+      { return eval_pattern(q, pimg); }
+      
+    double eval_pattern(r3_t *q, float_image_t *img)
       {
-        /* Express {x,y} relative to center of scene: */
-        double dx_scene = x - ctr_scene.c[0];
-        double dy_scene = y - ctr_scene.c[1];
+        double dx = q->c[0];
+        double dy = q->c[1];
         
         /* Convert to image units relative to center of pattern: */
-        double xr_pat = ctr_pat.c[0] + scale_pat*dx_scene;
-        double yr_pat = ctr_pat.c[1] + scale_pat*dy_scene;
+        double xr_pat = ctr_pat.c[0] + scale_pat*dx;
+        double yr_pat = ctr_pat.c[1] + scale_pat*dy;
         
         /* Eval the pattern image, mirroring as needed: */
         int32_t order = 1;  /* Bicubic C1 interpolation. */
         ix_reduce_mode_t red = ix_reduce_mode_PXMIRR;
-        double r = float_image_interpolate_sample(pimg, 0, xr_pat, yr_pat, order, red);
+        double r = float_image_interpolate_sample(img, 0, xr_pat, yr_pat, order, red);
         return r;
       }
   }
 
 multifok_stack_t *mfmi_make_and_write_stack_from_pattern_function
-  ( char *stackDir,
+  ( char *stackFolder,
     int32_t NX,
     int32_t NY, 
     multifok_scene_t *scene, 
-    multifok_scene_raytrace_pattern_t *pattern,
-    r3_t *light_dir,
-    double ambient,
+    multifok_pattern_double_proc_t *patternGlo,
+    multifok_pattern_double_proc_t *patternLam,
+    r3_t *uLit,
+    frgb_t *cLit,
+    frgb_t *cIso,
     double zFoc_min,
     double zFoc_max,
     double zFoc_step,
@@ -503,7 +784,7 @@ multifok_stack_t *mfmi_make_and_write_stack_from_pattern_function
     
    /* Generate the blurred image stack: */
     multifok_stack_t *stack = multifok_stack_new(NI, 3,NX,NY);
-    char *frameDir = NULL;
+    char *frameFolder = NULL;
     for (uint32_t ki = 0;  ki < NI; ki++)
       { double zFoc_fri, zDep_fri;
         uint32_t KR_fri; /* Rays to trace per image sampling point. */
@@ -512,28 +793,28 @@ multifok_stack_t *mfmi_make_and_write_stack_from_pattern_function
             zFoc_fri = zFoc_min + 0.5*NI*zFoc_step;
             zDep_fri = +INF;
             KR_fri = 1;
-            frameDir = jsprintf("%s/sharp", stackDir); 
+            frameFolder = jsprintf("%s/sharp", stackFolder); 
           }
         else
           { /* Blurred frame: */
             zFoc_fri = zFoc_min + ki*zFoc_step;
             zDep_fri = zDep;
             KR_fri = KR;
-            frameDir = jsprintf("%s/zf%08.4f-df%08.4f", stackDir, zFoc_fri, zDep_fri); 
+            frameFolder = jsprintf("%s/zf%08.4f-df%08.4f", stackFolder, zFoc_fri, zDep_fri); 
           }
 
         /* Create the frame's directory: */
-        char *mkdirCmd = jsprintf("mkdir -pv %s", frameDir);
+        char *mkdirCmd = jsprintf("mkdir -pv %s", frameFolder);
         system(mkdirCmd);
         free(mkdirCmd);
 
         bool_t verbose = FALSE;
         multifok_frame_t *fri = mfmi_make_and_write_frame
-          ( frameDir, NX, NY, scene, tree, pattern, light_dir, ambient,
+          ( frameFolder, NX, NY, scene, tree, patternGlo, patternLam, uLit, cLit, cIso,
             zFoc_fri, zDep_fri, HS, KR_fri, verbose,
             NQ, iDeb
           );
-        free(frameDir);
+        free(frameFolder);
           
         stack->frame[ki] = fri;
       }
@@ -541,14 +822,16 @@ multifok_stack_t *mfmi_make_and_write_stack_from_pattern_function
   }
 
 multifok_frame_t *mfmi_make_and_write_frame
-  ( char *frameDir,
+  ( char *frameFolder,
     int32_t NX, 
     int32_t NY, 
     multifok_scene_t *scene,
     multifok_scene_tree_t *tree,
-    multifok_scene_raytrace_pattern_t *pattern,
-    r3_t *light_dir,
-    double ambient,
+    multifok_pattern_double_proc_t *patternGlo,
+    multifok_pattern_double_proc_t *patternLam,
+    r3_t *uLit,
+    frgb_t *cLit,
+    frgb_t *cIso,
     double zFoc,
     double zDep, 
     uint32_t HS,
@@ -561,8 +844,9 @@ multifok_frame_t *mfmi_make_and_write_frame
     double pixSize = multifok_scene_pixel_size(NX, NY, scene->dom); 
     fprintf(stderr, "generating frame images for zFoc = %12.6f  zDep = %12.6f\n", zFoc, zDep);
     fprintf(stderr, "HS = %d KR = %d pixSize = %.6f\n", HS, KR, pixSize);
-    r3_gen_print(stderr, light_dir, "%+8.5f", "light direction = ( ", " ", " )");
-    fprintf(stderr, " ambient = %6.4f\n", ambient); 
+    r3_gen_print(stderr, uLit, "%+8.5f", "light direction = ( ", " ", " )");
+    frgb_print(stderr, " color = ( ", cLit, 3, "%7.5f", " )\n"); 
+    frgb_print(stderr, " ambient = ( ", cIso, 3, "%7.5f", " )\n"); 
 
     auto bool_t debug_pixel(i2_t *iPix);
       /* A pixel debugging predicate suitable for 
@@ -576,7 +860,8 @@ multifok_frame_t *mfmi_make_and_write_frame
     auto void report_ray
       ( i2_t *iPix, i2_t *iSmp, double step, double wSmp,
         r3_t *pRay, r3_t *dRay, double wRay, 
-        r3_t *pHit, double hHit, double vBlr
+        r3_t *pHit, double hHit, double vBlr, 
+        r3_t *sNrm, int32_t NC, float sVal[]
       );
       /* Type of a procedure suitable for the {report_ray} argument of
         {multifok_raytrace_make_frame}.
@@ -587,7 +872,7 @@ multifok_frame_t *mfmi_make_and_write_frame
         {iPix} differs from {iPix_wr}. */
 
     multifok_frame_t *frame = multifok_scene_make_frame
-      ( NX, NY, scene, tree, pattern, light_dir, ambient,
+      ( NX, NY, scene, tree, patternGlo, patternLam, uLit, cLit, cIso,
         zFoc, zDep, HS, KR, verbose, 
         &debug_pixel, &report_ray, NULL
       );
@@ -595,13 +880,12 @@ multifok_frame_t *mfmi_make_and_write_frame
     /* Write the frame out: */
     double hMin = scene->dom[2].end[0];
     double hMax = scene->dom[2].end[1];
-    multifok_frame_write(frame, frameDir, hMin, hMax);
+    multifok_frame_write(frame, frameFolder, hMin, hMax);
     
     return frame;
        
     bool_t debug_pixel(i2_t *iPix)
-      { if (! verbose) { return FALSE; }
-        bool_t deb = FALSE;
+      { bool_t deb = FALSE;
         for (uint32_t kq = 0;  (kq < NQ) && (! deb); kq++)
           { bool_t debug_col = (iPix->c[0] == iDeb[kq].c[0]);
             bool_t debug_row = (iPix->c[1] == iDeb[kq].c[1]);
@@ -613,7 +897,8 @@ multifok_frame_t *mfmi_make_and_write_frame
     void report_ray
       ( i2_t *iPix, i2_t *iSmp, double step, double wSmp,
         r3_t *pRay, r3_t *dRay, double wRay, 
-        r3_t *pHit, double hHit, double vBlr
+        r3_t *pHit, double hHit, double vBlr, 
+        r3_t *sNrm, int32_t NC, float sVal[]
       )
       { if ((wr_ray != NULL) && ((iPix->c[0] != iPix_wr.c[0]) || (iPix->c[1] != iPix_wr.c[1])))
           { fclose(wr_ray);
@@ -621,13 +906,13 @@ multifok_frame_t *mfmi_make_and_write_frame
             wr_ray = NULL;
           }
         if (wr_ray == NULL)
-          { char *fname_ray = jsprintf("%s/pixel-rays-%04d-%04d.txt", frameDir, iPix->c[0], iPix->c[1]);
+          { char *fname_ray = jsprintf("%s/pixel-rays-%04d-%04d.txt", frameFolder, iPix->c[0], iPix->c[1]);
             wr_ray = open_write(fname_ray, TRUE);
             free(fname_ray);
             iPix_wr = *iPix;
           }
-        multifok_raytrace_show_ray_data(stderr, 8, iPix, pixSize, iSmp, step, wSmp, pRay, dRay, wRay, pHit, hHit, vBlr);
-        multifok_raytrace_write_ray_data(wr_ray, iPix, pixSize, iSmp, step, wSmp, pRay, dRay, wRay, pHit, hHit, vBlr);
+        multifok_raytrace_show_ray_data(stderr, 8, iPix, pixSize, iSmp, step, wSmp, pRay, dRay, wRay, pHit, hHit, vBlr, sNrm, NC, sVal);
+        multifok_raytrace_write_ray_data(wr_ray, iPix, pixSize, iSmp, step, wSmp, pRay, dRay, wRay, pHit, hHit, vBlr, sNrm, NC, sVal);
       }
   }
 
@@ -640,10 +925,11 @@ multifok_frame_t *mfmi_make_and_write_frame
 float_image_t *mfmi_read_pattern_image(char *fname)
   {
     image_file_format_t ffmt = image_file_format_PNG;
+    bool_t yUp = FALSE;
     double gammaDec[1];
     double bias[1];
     bool_t verbose = TRUE;
-    float_image_t *pat = float_image_read_gen_named(fname, ffmt, 0.0, 1.0, NULL, gammaDec, bias, verbose);
+    float_image_t *pat = float_image_read_gen_named(fname, ffmt, yUp, 0.0, 1.0, NULL, gammaDec, bias, verbose);
     int32_t NC_pat, NX_pat, NY_pat;
     float_image_get_size(pat, &NC_pat, &NX_pat, &NY_pat);
     if (NC_pat == 3)
@@ -702,7 +988,7 @@ void mfmi_select_debug_pixels
               { uint32_t NQ_rem = NQ_exp - NQ;  /* Number of pixels still to be selected. */
                 double prpick = (NO_rem <= NQ_rem ? 1.0 : ((double)NQ_rem)/NO_rem);
                 if (drandom() < prpick) 
-                  { r3_t ctr = multifok_scene_box_center(objk->bbox);
+                  { r3_t ctr; box_center(3, objk->bbox, ctr.c);
                     selpix(ctr.c[0], ctr.c[1]);
                   }
                 NO_rem--;
@@ -738,7 +1024,7 @@ void mfmi_select_debug_pixels
         int32_t iy = (int32_t)floor(p_img.c[1] + 0.5);
         if ((ix >= 0) && (ix < NX) && (iy >= 0) && (iy < NY))
           { if (verbose) { fprintf(stderr, "  selected %d,%d\n", ix, iy); }
-            i2_vec_expand(&iDeb, NQ);
+            i2_vec_expand(&iDeb, (vec_index_t)NQ);
             iDeb.e[NQ] = (i2_t){{ ix, iy }};
             NQ++;
           }
@@ -750,7 +1036,7 @@ void mfmi_write_pixel_profiles
     uint32_t NQ,
     i2_t iDeb[],
     multifok_scene_t *scene,
-    char *stackDir
+    char *stackFolder
   )
   { 
     int32_t NC = stack->NC;
@@ -770,7 +1056,7 @@ void mfmi_write_pixel_profiles
         if ((ix >= 0) && (ix < NX) && (iy >= 0) && (iy < NY))
           { 
             /* Open the file for this pixel: */
-            char *fname = jsprintf("%s/pixel-data-%04d-%04d.txt", stackDir, ix, iy);
+            char *fname = jsprintf("%s/pixel-data-%04d-%04d.txt", stackFolder, ix, iy);
             FILE *wr = open_write(fname, TRUE);
 
             for (uint32_t ki = 0;  ki < NI; ki++)
@@ -779,14 +1065,17 @@ void mfmi_write_pixel_profiles
                   { float hAvg = float_image_get_sample(fri->hAvg, 0, ix, iy);
                     float hDev = float_image_get_sample(fri->hDev, 0, ix, iy);
                     float shrp = float_image_get_sample(fri->shrp, 0, ix, iy);
-                    float colr[3];
+                    r3_t sNrm;
+                    for (int32_t j = 0;  j < 3; j++)
+                      { sNrm.c[j] = float_image_get_sample(fri->sNrm, j, ix, iy); }
+                    float sVal[3];
                     for (int32_t ic = 0;  ic < 3; ic++)
-                      { colr[ic] = (float)(ic < NC ? float_image_get_sample(fri->sVal, ic, ix, iy) : 0.0); }
+                      { sVal[ic] = (float)(ic < NC ? float_image_get_sample(fri->sVal, ic, ix, iy) : 0.0); }
                     r3_t ctr = (r3_t){{ ix+0.5, iy+0.5, 0.0 }};
                     r3_t pCtr = multifok_scene_coords_from_image_coords(&ctr, NX, NY, scene->dom, fri->zFoc);
                     multifok_raytrace_write_pixel_data
                       ( wr, iPix, pixSize, &pCtr, fri->zFoc, fri->zDep,
-                        shrp, hAvg, hDev, NC, colr
+                        shrp, hAvg, hDev, &sNrm, NC, sVal
                       );
                     fprintf(wr, "\n");
                   }
@@ -818,7 +1107,9 @@ mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv)
       }
 
     argparser_get_keyword(pp, "-sceneType");
-    o->sceneType = argparser_get_next_non_keyword(pp);  
+    o->sceneType = argparser_get_next_non_keyword(pp); 
+    if (strlen(o->sceneType) != 1)
+      { argparser_error(pp, "invalid \"-sceneType\""); }
     
     argparser_get_keyword(pp, "-pixSampling");
     o->pixSampling = (uint32_t)argparser_get_next_int(pp, 0, 9999);  
@@ -849,10 +1140,13 @@ mfmi_options_t *mfmi_parse_options(int32_t argc, char **argv)
       }
 
     argparser_get_keyword(pp, "-ambient");
-    o->ambient = argparser_get_next_double(pp, 0.0, 1.0);  
+    o->ambient = argparser_get_next_double(pp, 0.0, 1.0);
 
-    argparser_get_keyword(pp, "-stackDir");
-    o->stackDir = argparser_get_next(pp);
+    argparser_get_keyword(pp, "-gloss");
+    o->gloss = argparser_get_next_double(pp, 0.0, 1.0);
+
+    argparser_get_keyword(pp, "-stackFolder");
+    o->stackFolder = argparser_get_next(pp);
 
     argparser_skip_parsed(pp);
     argparser_finish(pp);

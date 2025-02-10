@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_transform.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-20 18:21:40 by stolfi */ 
+/* Last edited on 2025-01-30 08:04:39 by stolfi */ 
 /* Created on 2008-09-21 by J. Stolfi, UNICAMP */
 
 #define test_hartley_COPYRIGHT \
@@ -263,9 +263,9 @@ void write_image(int kx, int ky, bool_t wave, char *prefix, char *suffix, float_
         float_image_update_sample_range(img, c, &vMin, &vMax);
         vLo[c] = vMin; vHi[c] = vMax;
       }
-    bool_t yup = TRUE, verbose = TRUE;
+    bool_t yUp = TRUE, verbose = TRUE;
     bool_t isMask = FALSE; /* Assume uniform distr. of pixel values in encoding/decoding. */
-    uint16_image_t *pimg = float_image_to_uint16_image(img, isMask, chns, vLo, vHi, NULL, 255, yup, verbose);
+    uint16_image_t *pimg = float_image_to_uint16_image(img, isMask, chns, vLo, vHi, NULL, 255, yUp, verbose);
     bool_t forceplain = FALSE;
     uint16_image_write_pnm_file(wr, pimg, forceplain, verbose);
     uint16_image_free(pimg);

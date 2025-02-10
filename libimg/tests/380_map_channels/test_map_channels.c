@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_map_channels.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-01-01 16:06:11 by stolfi */ 
+/* Last edited on 2025-01-30 08:04:55 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_map_channels_COPYRIGHT \
@@ -80,10 +80,10 @@ float_image_t *tm_read_pnm(char *fname)
     bool_t isMask = FALSE;
     double gamma = 1.000;
     double bias = 0.000;
-    bool_t yup = FALSE;
+    bool_t yUp = FALSE;
     bool_t warn = TRUE;
     bool_t verbose = FALSE;
-    float_image_t *img = float_image_read_pnm_named("in/test-RGB.ppm", isMask, gamma, bias, yup, warn, verbose);
+    float_image_t *img = float_image_read_pnm_named("in/test-RGB.ppm", isMask, gamma, bias, yUp, warn, verbose);
     return img;
   }
   
@@ -104,8 +104,8 @@ void tm_write_pnm(char *outPrefix, float_image_t *img)
     bool_t isMask = FALSE;
     double expoDec = 1.000;
     double bias = 0.000;
-    bool_t yup = FALSE;
+    bool_t yUp = FALSE;
     bool_t warn = TRUE;
     bool_t verbose = FALSE;
-    float_image_write_pnm_named(fname, img, isMask, expoDec, bias, yup, warn, verbose);
+    float_image_write_pnm_named(fname, img, isMask, expoDec, bias, yUp, warn, verbose);
   }

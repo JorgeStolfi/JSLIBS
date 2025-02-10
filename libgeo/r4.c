@@ -1,5 +1,5 @@
 /* See r4.h. */
-/* Last edited on 2024-11-20 15:51:39 by stolfi */
+/* Last edited on 2025-02-05 15:45:44 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -175,27 +175,31 @@ double r4_dir (r4_t *a, r4_t *r)
         a->c[2]*a->c[2] + 
         a->c[3]*a->c[3]
       );
-    r->c[0] = a->c[0]/d;
-    r->c[1] = a->c[1]/d;
-    r->c[2] = a->c[2]/d;
-    r->c[3] = a->c[3]/d;
+    if (d == 0)
+      { (*r) = (r4_t){{ NAN, NAN, NAN, NAN }}; }
+    else
+      { r->c[0] = a->c[0]/d;
+        r->c[1] = a->c[1]/d;
+        r->c[2] = a->c[2]/d;
+        r->c[3] = a->c[3]/d;
+      }
     return d;
   }
 
 double r4_L_inf_dir (r4_t *a, r4_t *r)
   { double d = 0.0;
-    double a0 = fabs(a->c[0]);
-    double a1 = fabs(a->c[1]);
-    double a2 = fabs(a->c[2]);
-    double a3 = fabs(a->c[3]);
-    if (a0 > d) d = a0;
-    if (a1 > d) d = a1;
-    if (a2 > d) d = a2;
-    if (a3 > d) d = a3;
-    r->c[0] = a->c[0]/d;
-    r->c[1] = a->c[1]/d;
-    r->c[2] = a->c[2]/d;
-    r->c[3] = a->c[3]/d;
+    double a0 = fabs(a->c[0]); if (a0 > d) d = a0;
+    double a1 = fabs(a->c[1]); if (a1 > d) d = a1;
+    double a2 = fabs(a->c[2]); if (a2 > d) d = a2;
+    double a3 = fabs(a->c[3]); if (a3 > d) d = a3;
+    if (d == 0)
+      { (*r) = (r4_t){{ NAN, NAN, NAN, NAN }}; }
+    else
+      { r->c[0] = a->c[0]/d;
+        r->c[1] = a->c[1]/d;
+        r->c[2] = a->c[2]/d;
+        r->c[3] = a->c[3]/d;
+      }
     return d;
   }
 

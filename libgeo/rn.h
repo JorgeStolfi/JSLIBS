@@ -1,5 +1,5 @@
 /* rn.h --- operations on points and vectors of R^n */
-/* Last edited on 2024-12-05 10:28:49 by stolfi */
+/* Last edited on 2025-02-05 15:45:12 by stolfi */
 /* 
   Based on VectorN.mg, created  95-02-27 by J. Stolfi.
 */
@@ -82,13 +82,16 @@ double rn_abs_rel_diff (uint32_t n, double a[], double b[], double abs_tol, doub
     divided by {abs_tol} or by {rel_tol} times the largest of the two
     elements. See {abs_rel_diff} in {jsmath.h} for details. */
  
-double rn_dir (uint32_t n, double a[], double r[]);
-  /* Sets {r} to {a} normalized to unit Euclidean length; 
-    returns the original length. */
+double rn_dir (uint32_t n, double a[], double r[]);  
+  /* Sets {r} to {a} normalized to unit Euclidean length.
+    If the Euclidean length of {a} is zero, sets {r} to all {NAN}s.
+    Returns the original Euclidean length of {a}. */
 
 double rn_L_inf_dir (uint32_t n, double a[], double r[]);
-  /* Sets {r} to the vector {a/rn_L_inf_norm(a)}; 
-    returns the original norm. */
+  /* Sets {r} to the vector {a} divided by {rn_L_inf_norm(n,a)},
+    the max absolute value of any coordinate.
+    If that denominator is zero, sets {r} to all {NAN}s.
+    Returns the original value of {rn_L_inf_norm(n,a)}.  */
 
 double rn_dot (uint32_t n, double a[], double b[]);
   /* Dot product of vectors {a} and {b}. */

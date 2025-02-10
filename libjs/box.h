@@ -2,7 +2,7 @@
 #define box_H
 
 /*  Axis-aligned boxes in {R^d}.  */
-/*  Last edited on 2025-01-02 16:37:55 by stolfi */
+/*  Last edited on 2025-02-07 17:56:07 by stolfi */
 
 /* We need to set these in order to get {asinh}. What a crock... */
 #undef __STRICT_ANSI__
@@ -69,27 +69,29 @@ void box_corner(box_dim_t d, interval_t B[], interval_side_t dir[], double p[]);
     {p[i] = B[i].end[dir[i]]} for all {i}.
     Fails if {B} is empty. */
 
-void box_center(box_dim_t d, interval_t B[], double p[]);
-  /* Stores in {p[0..d-1]} the center of the box {B[0..d-1]} -- namely,
-    {p[i] = interval_mid(B[i])} for all {i}.
+void box_center(box_dim_t d, interval_t B[], double c[]);
+  /* Stores in {c[0..d-1]} the center of the box {B[0..d-1]} -- namely,
+    {c[i] = interval_mid(B[i])} for all {i}.
     Fails if {B} is empty. */
 
-void box_half_widths(box_dim_t d, interval_t B[], double h[]);
-  /* Stores in {h[0..d-1]} the half-extent of the box {B[0..d-1]} along each 
-    axis {i}.  Namely, if {B} is not empty, it sets {h[i] = interval_rad(B[i])}
-    for all {i}.
-    
-    If {B} is empty, sets all {h[i]} to zero. Note that this is
-    inconsistent with {interval_rad}, that would return {-INF}. */
+void box_radii(box_dim_t d, interval_t B[], double r[]);
+  /* Stores in {r[0..d-1]} the half-extent of the box {B[0..d-1]} along each 
+    axis {i}.  Namely, if {B} is not empty, it sets {r[i] = interval_rad(B[i])}
+    for all {i}.  If {B} is empty, sets all {r[i]} to {-INF}. */
+
+void box_center_and_radii(box_dim_t d, interval_t B[], double c[], double r[]);
+  /* Equivalent to {box_center(d,B,c);box_radii(c,B,r)},
+    except that if {B} is empty it will set {c} to all zeros
+    and {r} to all {-INF}. */
 
 void box_widths(box_dim_t d, interval_t B[], double w[]);
   /* Stores in {w[0..d-1]} the extent of the box {B[0..d-1]} along each 
     axis {i} -- namely, {w[i] = interval(B[i].end[1] - B[i].end[1])/2} for all {i}.
-    If {B} is empty, sets all {h[i]} to zeros. */
+    If {B} is empty, sets all {w[i]} to {-INF}. */
 
 double box_max_width(box_dim_t d, interval_t B[]);
   /* Returns the maximum extent of box {B[0..d-1]} along any axis.
-    If {B} is empty or {d} is zero, returns zero. */
+    If {B} is empty or {d} is zero, returns {-INF}. */
 
 double box_radius(box_dim_t d, interval_t B[]);
   /* Euclidean radius of box {B[0..d-1]}. If {B} is empty or {d} is zero,
@@ -123,6 +125,12 @@ bool_t box_contained(box_dim_t d, interval_t A[], interval_t B[]);
   /* True if box {A} is contained in (or equal to) box {B}.
     In particular, if {A} is empty. */
 
+bool_t box_has_point(box_dim_t d, interval_t A[], double p[]);
+  /* True iff the point {p[0..d-1]} is in the box {A}. Namely iff, for
+    every {j} in {0..d-1}, we have {LO[A[j]] == p[j] == HI[A[j]]} or
+    {LO[A[j]] < p[j] < HI[A[j]]. In particular, returns false if any
+    {p[j]} is infinite. */
+
 /* BOX CREATION AND MODIFICATION */
 
 void box_empty(box_dim_t d, interval_t C[]);
@@ -131,6 +139,11 @@ void box_empty(box_dim_t d, interval_t C[]);
     
 void box_copy(box_dim_t d, interval_t B[], interval_t C[]);
   /* Copies box {B} into {C}. */
+
+void box_from_center_and_radii(box_dim_t d, double ctr[], double rad[], interval_t B[]);
+  /* Sets box {B[0..d-1]} to the box with center {ctr[0..d-1]} and radii {rad[0..d-1]}.
+    If {rad[j]} is zero, the box is trivial along axis {j}. However, if any radius
+    is negative, sets {B} to an empty box. */
 
 void box_include_point(box_dim_t d, interval_t B[], double p[], interval_t C[]);
   /* Sets box {C[0..d-1]} to the smallest box enclosing box {B} and point {p[0..d-1]}.

@@ -1,5 +1,5 @@
 #! /bin/bash 
-# Last edited on 2024-10-26 07:59:39 by stolfi
+# Last edited on 2025-02-01 16:28:09 by stolfi
 
 # Plots the various image values of a selected pixel as a function of {zFoc}. 
 #
@@ -7,18 +7,19 @@
 # {test_mfok_scene_make_frame.c} with one line per frame image,
 # containing
 #
-#   {ki} {zFoc} {zDep}  {hAvg} {hDev} {shrp} {sVal[0]} ...  {sVal[NC-1]}
+#   {ki} {zFoc} {zDep}  {hAvg} {hDev} {shrp} {sNrm.x} {sNrm.y} {sNrm.z} {sVal[0]} ...  {sVal[NC-1]}
 #
 # where {ki} is a frame index in the stack, {zFoc} is the {Z}-coordinate
 # of the in-focus plane, {zDep} is the nominal depth of focus, {hAvg[k]}
 # and {hDev[k]} are the average and deviation of the scene's height
 # within that pixel, {shrp[k]} is the pixel's sharpness indicator
 # (1/{vBlr}, where {vBlr} is the average of the squared horizontal
-# radius of the hit points), and {sVal[0..NC-1]} are the values of
+# radius of the hit points), {sNrm} is the surface normal vector,
+# and {sVal[0..NC-1]} are the values of
 # channels {0..NC-1} of the simulated scene view {sVal}.
 #
-# Creates an image "{dataFile}.png" with plots of {hAvg} {hDev} {shrp} {sVal[0..NC-1]}
-# as a function of {zFoc}.
+# Creates an image "{dataFile}.png" with plots of {hAvg} {hDev}
+# {shrp} {sVal[0..NC-1]} as a function of {zFoc}.
 
 dataFile="$1"; shift # File with pixel data, with the ".txt" extension.
 
@@ -84,15 +85,16 @@ zMax = 30.0
 
 znorm(z) = (z - zMin)/(zMax - zMin)
 
-# {ki} {zFoc} {zDep} {hAvg} {hDev} {shrp} {sVal.R} {sVal.G} {sVal.B}
+# {ki} {zFoc} {zDep} {hAvg} {hDev} {shrp} {sNrm.x} {sNrm.y} {sNrm.z} {sVal.R} {sVal.G} {sVal.B}
 zFoc(k) = column(2)
 zDep(k) = column(3)
 hAvg(k) = znorm(column(4))
 hDev(k) = column(5)/(zMax - zMin)
 shrp(k) = column(6)
-sRed(k) = column(7)
-sGrn(k) = column(8)
-sBlu(k) = column(9)
+
+sRed(k) = column(10)
+sGrn(k) = column(11)
+sBlu(k) = column(12)
 
 zUnc(k) = zDep(k)
 hDif(k) = column(4) - zFoc(k)

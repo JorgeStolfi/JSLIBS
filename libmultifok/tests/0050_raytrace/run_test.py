@@ -1,5 +1,5 @@
 #! /usr/bin/python3
-# Last edited on 2024-12-16 09:40:13 by stolfi
+# Last edited on 2025-02-04 18:07:14 by stolfi
 
 import os, sys, subprocess
 from subprocess import run
@@ -20,11 +20,11 @@ def main():
   NY = imageSize*120
 
   pixDeb = choose_pixDeb(NX, NY)
-  stackDir = stack_dir_name(NX, NY, pix_smp, dir_smp, imgType)
+  stackFolder = stack_dir_name(NX, NY, pix_smp, dir_smp, imgType)
   if run_prog:
-    clean_stack(stackDir)
-    make_stack(NX, NY, pix_smp, dir_smp, imgType, stackDir, pixDeb)
-  show_results(stackDir,pixDeb)
+    clean_stack(stackFolder)
+    make_stack(NX, NY, pix_smp, dir_smp, imgType, stackFolder, pixDeb)
+  show_results(stackFolder,pixDeb)
   os.system(f"( cd out/ && rmempty.sh )");
   return 0
   
@@ -34,17 +34,16 @@ def stack_dir_name(NX, NY, pix_smp, dir_smp, imgType):
   
   sizeTag = f"{NX:04d}x{NY:04d}"
   samplingTag = f"hs{pix_smp:02d}-kr{dir_smp:02d}"
-  stackDir = f"out/img-{imgType}-{sizeTag}-{samplingTag}"
-  return stackDir
+  stackFolder = f"out/img-{imgType}-{sizeTag}-{samplingTag}"
+  return stackFolder
   # ------------------------------------------------------------
   
-def clean_stack(stackDir):
-  # Returns the name of the top-level directory for all output files
-  # of this run. Includes the "out/" prefix.
+def clean_stack(stackFolder):
+  # Removes the folder {stackFolder} and recreats it empty.
   
-  os.system(f"rm -rf '{stackDir}'")
-  os.system(f"mkdir -pv {stackDir}")
-  return stackDir
+  os.system(f"rm -rf '{stackFolder}'")
+  os.system(f"mkdir -pv {stackFolder}")
+  return stackFolder
   # ------------------------------------------------------------
 
 def choose_pixDeb(NX, NY):
@@ -56,7 +55,7 @@ def choose_pixDeb(NX, NY):
   return pixDeb
   # ------------------------------------------------------------
 
-def make_stack(NX, NY, pix_smp, dir_smp, imgType, stackDir, pixDeb):
+def make_stack(NX, NY, pix_smp, dir_smp, imgType, stackFolder, pixDeb):
   # Runs the C program generating the rendered frame images  and 
   # sampling information files. Also compiles the program.
   
@@ -77,80 +76,80 @@ def make_stack(NX, NY, pix_smp, dir_smp, imgType, stackDir, pixDeb):
           "-pixSampling", f"{pix_smp}",
           "-dirSampling", f"{dir_smp}",
           "-debugPixel",  f"{pixDeb[0]}", f"{pixDeb[1]}",
-          "-stackDir",    f"{stackDir}"
+          "-stackFolder", f"{stackFolder}"
         ]
       )
     assert status.returncode == 0, f"** '{prog}' failed - returned status = {status}"
   return
   # ------------------------------------------------------------
  
-def show_results(stackDir, pixDeb):  
+def show_results(stackFolder, pixDeb):  
   # Runs 'mfok_plot_rays.sh {file}' script on the pixel sampling information {file}
   # of each frames.  Then runs 'display' with all rendered frame images.
   #
-  # Assumes that each frame image file is is "{stackDir}/{frameName}"
+  # Assumes that each frame image file is is "{stackFolder}/{frameName}"
   # where {frameName} is each string returned by {list_frames}.
   #
   # Assumes that the pixel information files are called
-  # "{stackDir}/{frameName}/pixel-rays-{XXXX}-{YYYY}.txt"
+  # "{stackFolder}/{frameName}/pixel-rays-{XXXX}-{YYYY}.txt"
   # where {XXXX} and {YYYY} are the pixel indices in {pixDeb}
   # formatted as "%04d".
   
   err.write("collecting the images and plotting ray data ...\n")
   images = []
-  for frameName in list_frames(stackDir):
+  for frameName in list_frames(stackFolder):
     err.write(f"  frame {frameName} ...\n");
-    frame_dir = f"{stackDir}/{frameName}"
-    plot_rays(stackDir, frameName, pixDeb);
+    frame_dir = f"{stackFolder}/{frameName}"
+    plot_rays(stackFolder, frameName, pixDeb);
 
     imageName = "img-blur"
     images.append(f"{frameName}/{imageName}.png")
 
   # Display the images>
   args = " ".join(images)
-  err.write(f"displaying the images from {stackDir} ...\n")
+  err.write(f"displaying the images from {stackFolder} ...\n")
   err.write("args = «" + args + "»\n")
-  status = os.system(f"( cd {stackDir} && display -title '%d' -filter Box -resize '300%' {args} )")
+  status = os.system(f"( cd {stackFolder} && display -title '%d' -filter Box -resize '300%' {args} )")
   
-  plot_pixels(stackDir, pixDeb)
+  plot_pixels(stackFolder, pixDeb)
   return
   # ------------------------------------------------------------
     
-def plot_pixels(stackDir, pixDeb):
+def plot_pixels(stackFolder, pixDeb):
   # Plots the computed pixel properties of pixel {pixDeb}
-  # across all frames in directory {stackDir},
+  # across all frames in directory {stackFolder},
   # using the script {plotter} below.
  
   plotter = 'mfok_plot_pixels.sh'
   
   err.write("plotting pixel data ...\n")
   pixelFile = f"pixel-data-{pixDeb[0]:04d}-{pixDeb[1]:04d}.txt"
-  if not os.path.isfile(f"{stackDir}/{pixelFile}"):
+  if not os.path.isfile(f"{stackFolder}/{pixelFile}"):
     err.write(f"** file {pixelFile} not found\n")
   else:
-    status = os.system(f"( cd {stackDir} && ../../{plotter} {pixelFile} )")
+    status = os.system(f"( cd {stackFolder} && ../../{plotter} {pixelFile} )")
     assert status == 0, f"** '{plotter} ...' returned status = {status}"
 
-def plot_rays(stackDir, frameName, pixDeb):   
+def plot_rays(stackFolder, frameName, pixDeb):   
   # Display the sampling points and ray hits fro pixel {pixDeb}
-  # of the frame {frameName} in directory {stackDir},
+  # of the frame {frameName} in directory {stackFolder},
   # using the script {plotter} below.
  
   plotter = 'mfok_plot_rays.sh'
   
   rayName = f"pixel-rays-{pixDeb[0]:04d}-{pixDeb[1]:04d}.txt"
   rayFile = f"{frameName}/{rayName}"
-  if not os.path.isfile(f"{stackDir}/{rayFile}"):
+  if not os.path.isfile(f"{stackFolder}/{rayFile}"):
     err.write(f"** file {rayFile} not found\n")
   else:
-    status = os.system(f"( cd {stackDir} && ../../{plotter} {rayFile} )")
+    status = os.system(f"( cd {stackFolder} && ../../{plotter} {rayFile} )")
     assert status == 0, f"** '{plotter} ...' returned status = {status}"
   
-def list_frames(stackDir):
+def list_frames(stackFolder):
   # Returns a list of the names of all frame folders in directory
-  # {stackDir}.  The folder names are assumed to begin with "zf".
+  # {stackFolder}.  The folder names are assumed to begin with "zf".
   
-  LS = os.listdir(stackDir); LS.sort()
+  LS = os.listdir(stackFolder); LS.sort()
   FS = [ x for x in LS if x[0:2] == "zf" ]
   return FS
   

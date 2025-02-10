@@ -1,5 +1,5 @@
 /* See {float_image_from_uint16_image.h} */
-/* Last edited on 2024-12-26 12:31:16 by stolfi */ 
+/* Last edited on 2025-01-30 08:07:55 by stolfi */ 
 
 #include <limits.h>
 #include <assert.h>
@@ -22,7 +22,7 @@ float_image_t *float_image_from_uint16_image
     bool_t isMask,    /* TRUE for masks, FALSE for photos. */
     double lo[],      /* Min float sample value. */
     double hi[],      /* Max float sample value. */
-    bool_t yup,       /* If TRUE, reverses the indexing of rows. */
+    bool_t yUp,       /* If TRUE, reverses the indexing of rows. */
     bool_t verbose    /* If TRUE, prints conversion diagnostics to {stderr}. */
   )
   { 
@@ -51,7 +51,7 @@ float_image_t *float_image_from_uint16_image
     
     /* Convert pixels, keep statistics: */
     for(int32_t y = 0; y < NY; y++)
-      { int32_t pgmy = (yup ? (int32_t)NY - 1 - y : y);
+      { int32_t pgmy = (yUp ? (int32_t)NY - 1 - y : y);
         uint16_t *prow = pim->smp[pgmy];
         for(int32_t x = 0; x < NX; x++)
           { for (int32_t c = 0; c < chns; c++)

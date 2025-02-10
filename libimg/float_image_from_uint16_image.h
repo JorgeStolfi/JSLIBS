@@ -2,7 +2,7 @@
 #define float_image_from_uint16_image_H
 
 /* Conversion from multichannel {uint16_t}-valued images to float-valued images. */
-/* Last edited on 2017-06-22 17:43:06 by stolfilocal */ 
+/* Last edited on 2025-01-30 08:07:46 by stolfi */ 
 
 #include <stdio.h>
 
@@ -16,7 +16,7 @@ float_image_t *float_image_from_uint16_image
     bool_t isMask,    /* TRUE for masks, FALSE for images. */
     double lo[],      /* Min float sample value. */
     double hi[],      /* Max float sample value. */
-    bool_t yup,       /* If TRUE, reverses the indexing of rows. */
+    bool_t yUp,       /* If TRUE, reverses the indexing of rows. */
     bool_t verbose    /* If TRUE, prints conversion diagnostics to {stderr}. */
   );
   /* Converts a PGM or PPM image {pim} into a {float_image_t} {fim}.
@@ -26,10 +26,10 @@ float_image_t *float_image_from_uint16_image
     If {lo} is NULL, it defaults to a vector of zeros.
     If {hi} is NULL, it defaults to a vector of ones.
 
-    If {yup} is TRUE, the row indices are reversed, so that row 0 of
+    If {yUp} is TRUE, the row indices are reversed, so that row 0 of
     the resulting image {fim} is at the BOTTOM of the image; and, in
-    general, row {i} of {fim} is row {ny-1-i} of {pim}. If {yup} is
-    FALSE, the row indices are preserved. NOTE: The {yup} parameter was
+    general, row {i} of {fim} is row {ny-1-i} of {pim}. If {yUp} is
+    FALSE, the row indices are preserved. NOTE: The {yUp} parameter was
     added on 2009-02-24.
 
     As a rough rule, the {isMask} flag should be FALSE for

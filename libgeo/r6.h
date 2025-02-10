@@ -1,5 +1,5 @@
 /* r6.h --- operations on points and vectors of R^6 */
-/* Last edited on 2024-12-05 10:28:11 by stolfi */
+/* Last edited on 2025-02-05 15:42:47 by stolfi */
 
 #ifndef r6_H
 #define r6_H
@@ -71,12 +71,15 @@ double r6_L_inf_dist (r6_t *a, r6_t *b);
     (max absolute diff). */
 
 double r6_dir (r6_t *a, r6_t *r); 
-  /* Sets {r} to {a} normalized to unit Euclidean length; 
-    returns the original length. */
+  /* Sets {r} to {a} normalized to unit Euclidean length.
+    If the Euclidean length of {a} is zero, sets {r} to all {NAN}s.
+    Returns the original Euclidean length of {a}. */
   
 double r6_L_inf_dir (r6_t *a, r6_t *r); 
-  /* Sets {r} to the vector {a/r6_L_inf_norm(a)}; 
-    returns the original norm. */
+  /* Sets {r} to the vector {a} divided by {r6_L_inf_norm(a)},
+    the max absolute value of any coordinate.
+    If that denominator is zero, sets {r} to all {NAN}s.
+    Returns the original value of {r6_L_inf_norm(a)}.  */
   
 double r6_dot (r6_t *a, r6_t *b);
   /* Dot product of vectors {a} and {b}. */

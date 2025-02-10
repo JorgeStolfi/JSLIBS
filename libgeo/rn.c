@@ -1,4 +1,4 @@
-/*Last edited on 2024-11-30 22:34:09 by stolfi */
+/*Last edited on 2025-02-05 15:37:27 by stolfi */
 /*
   Based on VectorN.mg, created  95-02-27 by J. Stolfi.
   Last edited by stolfi 
@@ -153,13 +153,13 @@ double rn_dir (uint32_t n, double a[], double r[])
   { /* Don't worry about overflow. */
     /* Client should use {rn_L_inf_dir} first if that is a problem. */
     double d = rn_norm(n, a);
-    for (uint32_t i = 0;  i < n; i++) { r[i] = a[i]/d; }
+    for (uint32_t i = 0;  i < n; i++) { r[i] = (d == 0 ? NAN : a[i]/d); }
     return d;
   }
 
 double rn_L_inf_dir (uint32_t n, double a[], double r[])
   { double mag = rn_L_inf_norm(n, a);
-    for (uint32_t i = 0;  i < n; i++) { r[i] = a[i]/mag; }
+    for (uint32_t i = 0;  i < n; i++) { r[i] = (mag == 0 ? NAN : a[i]/mag); }
     return mag;
   }
 

@@ -2,7 +2,7 @@
 #define PROG_DESC "tests the ordered table search procedure"
 #define PROG_VERS "1.1"
 
-/* Last edited on 2025-01-03 13:08:44 by stolfi */
+/* Last edited on 2025-02-07 18:18:43 by stolfi */
 /* Created on 2021-09-25 or earler by J. Stolfi, UNICAMP */
 
 #define test_box_COPYRIGHT \
@@ -31,12 +31,18 @@
 /* PROTOTYPES */
 
 int32_t main (int32_t argc, char **argv);
-void do_tests(box_dim_t d, bool_t verbose);
+void tbx_do_tests(box_dim_t d, bool_t verbose);
+void tbx_print_point(FILE *wr, box_dim_t d, double p[], char *pref, char *fmt, char *sep, char *suff);
+  /* Prints {p[0..d-1]} on {wr} preceded by {pref} and followed by {suff}.
+    Each element is printed with {fmt} and elements are separated by {sep}. */
+
 void test_print(box_dim_t d, interval_t B[], bool_t verbose);
 void test_attribs(box_dim_t d, interval_t B[], bool_t verbose);
 void test_dimension__measure(box_dim_t d, interval_t B[], bool_t verbose);
 void test_equal(box_dim_t d, interval_t B[], bool_t verbose);
 void test_disjoint__contained(box_dim_t d, interval_t B[], bool_t verbose);
+void test_has_point(box_dim_t d, interval_t B[], bool_t verbose);
+void test_from_center_and_radii(box_dim_t d, interval_t B[], bool_t verbose);
 void test_include_point(box_dim_t d, interval_t B[], bool_t verbose);
 void test_join__meet(box_dim_t d, interval_t B[], bool_t verbose);
 void test_split(box_dim_t d, interval_t B[], bool_t verbose);
@@ -56,7 +62,7 @@ int32_t main (int32_t argc, char **argv)
     box_dim_t d = 0;
     for (uint32_t it = 0;  it < nt; it++)
       { bool_t verbose = (it < 10);
-        do_tests(d, verbose);
+        tbx_do_tests(d, verbose);
         if (it < 5)
           { d++; }
         else 
@@ -66,7 +72,7 @@ int32_t main (int32_t argc, char **argv)
     return 0;
   }
   
-void do_tests(box_dim_t d, bool_t verbose)
+void tbx_do_tests(box_dim_t d, bool_t verbose)
   { 
     /* TESTING: void box_throw(box_dim_t d, double elo, double ehi, double p_empty, double p_single, interval_t B[]); */
     /* TESTING: void box_is_empty(box_dim_t d, interval_t B[]); */
@@ -81,7 +87,9 @@ void do_tests(box_dim_t d, bool_t verbose)
     
     test_equal(d, B, verbose);
     test_disjoint__contained(d, B, verbose);
+    test_has_point(d, B, verbose);
 
+    test_from_center_and_radii(d, B, verbose);
     test_include_point(d, B, verbose);
     test_join__meet(d, B, verbose);
     test_widen__round(d, B, verbose);
@@ -103,7 +111,7 @@ void test_print(box_dim_t d, interval_t B[], bool_t verbose)
     /* TESTING: void box_hi_corner(box_dim_t d, interval_t B[], double p[]); */
     /* TESTING: void box_corner(box_dim_t d, interval_t B[], interval_side_t dir[], double p[]); */
     /* TESTING: void box_center(box_dim_t d, interval_t B[], double p[]); */
-    /* TESTING: void box_half_widths(box_dim_t d, interval_t B[], double h[]); */
+    /* TESTING: void box_radii(box_dim_t d, interval_t B[], double h[]); */
     /* TESTING: void box_widths(box_dim_t d, interval_t B[], double w[]); */
     /* TESTING: double box_max_width(box_dim_t d, interval_t B[], bool_t verbose); */
     /* TESTING: double box_radius(box_dim_t d, interval_t B[], bool_t verbose); */
@@ -128,9 +136,9 @@ void test_print(box_dim_t d, interval_t B[], bool_t verbose)
   
 void test_attribs(box_dim_t d, interval_t B[], bool_t verbose)
   {
-    if (verbose) { fprintf(stderr, "--- testing {box_{lo_corner,hi_corner,corner,center,half_widths,widths,max_width,radius}} d = %d ---\n", d); }
+    if (verbose) { fprintf(stderr, "--- testing {box_{lo_corner,hi_corner,corner,center,radii,widths,max_width,radius}} d = %d ---\n", d); }
     
-    double ctr[d], h[d], w[d], plo[d], phi[d], pdir[d];
+    double ctr[d], rad[d], wid[d], plo[d], phi[d], pdir[d];
     double er, mw;
 
     interval_side_t dir[d];
@@ -140,8 +148,8 @@ void test_attribs(box_dim_t d, interval_t B[], bool_t verbose)
     /* TESTING: void box_hi_corner(box_dim_t d, interval_t B[], double p[]); */
     /* TESTING: void box_corner(box_dim_t d, interval_t B[], interval_side_t dir[], double p[]); */
     /* TESTING: void box_center(box_dim_t d, interval_t B[], double p[]); */
-    /* TESTING: void box_half_widths(box_dim_t d, interval_t B[], double h[]); */
-    /* TESTING: void box_widths(box_dim_t d, interval_t B[], double w[]); */
+    /* TESTING: void box_radii(box_dim_t d, interval_t B[], double rad[]); */
+    /* TESTING: void box_widths(box_dim_t d, interval_t B[], double wid[]); */
     /* TESTING: double box_max_width(box_dim_t d, interval_t B[], bool_t verbose); */
     /* TESTING: double box_radius(box_dim_t d, interval_t B[], bool_t verbose); */
     
@@ -151,32 +159,35 @@ void test_attribs(box_dim_t d, interval_t B[], bool_t verbose)
         box_corner(d, B, dir, pdir);
         box_center(d, B, ctr);
       }
-    box_half_widths(d, B, h);
-    box_widths(d, B, w);
+    box_radii(d, B, rad);
+    box_widths(d, B, wid);
     mw = box_max_width(d, B);
     er = box_radius(d, B);
     
-    double mw_cmp = 0;
-    double sum2 = 0;
-    for (uint32_t i = 0;  i < d; i++)
-      { interval_t Bi = B[i];
-        if (box_is_empty(d, B))
-          { assert(w[i] == 0);
-            assert(h[i] == 0);
+    if ((d == 0) || box_is_empty(d, B))
+      { for (int32_t i = 0;  i < d; i++)
+          { assert(wid[i] == -INF);
+            assert(rad[i] == -INF);
+            assert(mw == -INF);
           }
-        else
-          { assert(LO(Bi) == plo[i]);
+      }
+    else
+      { double mw_cmp = -INF;
+        double sum2 = 0;
+        for (uint32_t i = 0;  i < d; i++)
+          { interval_t Bi = B[i];
+            assert(LO(Bi) == plo[i]);
             assert(HI(Bi) == phi[i]);
             assert(Bi.end[dir[i]] == pdir[i]);
             assert(interval_mid(&Bi) == ctr[i]);
-            assert(interval_rad(&Bi) == h[i]);
-            assert(fabs(w[i] - 2*h[i]) < 1.0e-13);
+            assert(interval_rad(&Bi) == rad[i]);
+            assert(fabs(wid[i] - 2*rad[i]) < 1.0e-13);
+            mw_cmp = fmax(mw_cmp, wid[i]);
+            sum2 += rad[i]*rad[i];
           }
-        mw_cmp = fmax(mw_cmp, w[i]);
-        sum2 += h[i]*h[i];
+        assert(fabs(mw_cmp - mw) < 1.0e-12);
+        assert(fabs(er - sqrt(sum2)) < 1.0e-12);
       }
-    assert(mw_cmp == mw);
-    assert(fabs(er - sqrt(sum2)) < 1.0e-12);
   }
      
 void test_dimension__measure(box_dim_t d, interval_t B[], bool_t verbose)
@@ -234,6 +245,47 @@ void test_equal(box_dim_t d, interval_t B[], bool_t verbose)
             if (HI(Ai) != HI(Bi)) { eq = FALSE; }
           }
         assert(eq == box_equal(d, A, B));
+      }
+  }
+  
+void test_from_center_and_radii(box_dim_t d, interval_t B[], bool_t verbose)
+  { 
+    if (verbose) { fprintf(stderr, "--- testing {box_from_center_and_radii(} d = %d ---\n", d); }
+
+    /* TESTING: void box_from_center_and_radii(box_dim_t d, double ctr[], double rad[], interval_t B[]);  */
+    double ctr[d], rad[d];
+    bool_t ety = FALSE;
+    for (uint32_t i = 0;  i < d; i++)
+      { ctr[i] = drandom();
+        if (drandom() < 0.1)
+          { rad[i] = -1; ety = TRUE; }
+        else if (drandom() < 0.1)
+          { rad[i] = 0; }
+        else if (drandom() < 0.1)
+          { rad[i] = +INF; }
+        else
+          { rad[i] = fabs(drandom()); }
+      }
+    box_from_center_and_radii(d, ctr, rad, B);
+    
+    for (uint32_t i = 0;  i < d; i++)
+      { interval_t Bi = B[i];
+        if (ety)
+          { demand(interval_is_empty(&Bi), "box should be empty"); }
+        else
+          { double Bctri, Bradi;
+            interval_mid_rad(&Bi, &Bctri, &Bradi);
+            if ((! isnan(Bctri)) && (! isnan(Bradi)))
+              { demand ((Bradi == +INF) == (rad[i] == +INF), "inconsistent infinities");
+                if (isfinite(Bradi))
+                  { double mag = 1.0e-200;
+                    mag += fabs(Bradi) + fabs(rad[i]);
+                    mag += fabs(Bctri) + fabs(ctr[i]);
+                    demand(fabs(Bradi - rad[i]) <= 1.0e-8*mag, "radius mismatch");
+                    demand(fabs(Bctri - ctr[i]) <= 1.0e-8*mag, "center mismatch");
+                  }
+              }
+          }
       }
   }
   
@@ -435,8 +487,82 @@ void test_disjoint__contained(box_dim_t d, interval_t B[], bool_t verbose)
         (*disj_P) = disj;
         (*cont_P) = cont;
       }
-        
+  }
 
+void test_has_point(box_dim_t d, interval_t B[], bool_t verbose)
+  {
+    if (verbose) { fprintf(stderr, "--- testing {box_has_point} d = %d ---\n", d); }
+    
+    auto void throw_cute_value(double loR, double hiR, double *v_P, bool_t *inside_P);
+      /* Given a non-empty interval {R=[loR _ hiR]}, throws a value {v}
+        that is likely to have interesting relation to {R}, such as
+        overlap, containment, and coincident borders. Also returns
+        boolean {inside} that tells if {v} is inside {R}, taking into
+        account the convention that a non-empty interval is closed iff
+        it is a singleton. */
+    
+    uint32_t nt = 100; /* Number of cases to try. */
+    for (uint32_t it = 0; it < nt; it++)
+      { /* Create point {p} that is in interesting postion relative to {B}: */
+        double p[d];
+        bool_t inside;  /* True if {p} is inside {B}. */
+        if (d == 0)
+          { /* The box {B} is not empty and contains {p}: */
+            inside = TRUE;
+          }
+        else if (box_is_empty(d, B))
+          { /* The box {B} is empty: */
+            inside = FALSE;
+          }
+        else 
+          { /* Set {p} to random point likely in special relation to {B}: */
+            inside = TRUE;
+            for(int32_t i = 0; i < d; i++)
+              { bool_t inside_i;
+                throw_cute_value(LO(B[i]), HI(B[i]), &(p[i]), &inside_i);
+                if (! inside_i) { inside = FALSE; }
+              }
+          }
+        if (verbose && (it < 3))
+          { fprintf(stderr, "testing with");
+            tbx_print_point(stderr, d, p, " p = ( ", "%+24.16e", " ", " )");
+            box_gen_print(stderr, d, B, "%+24.16e", " B = ", " x ", "");
+            fprintf(stderr, " expecting inside = %c\n", "FT"[inside]);
+          }
+        demand(inside == box_has_point(d, B, p), "box_has_point failed");
+      }
+    
+    void throw_cute_value(double loR, double hiR, double *v_P, bool_t *inside_P)
+      { assert(loR <= hiR);
+        /* Get some interesting values for {v}: */
+        uint32_t nx = 0;
+        double x[5]; /* Interesting values for {loS,hiS} are {x[0..nx-1]} */
+        x[nx] = loR - 1; nx++;
+        x[nx] = loR; nx++;
+        if (loR < hiR) 
+          { x[nx] = 0.75*loR + 0.25*hiR; nx++;
+            x[nx] = hiR; nx++;
+          }
+        x[nx] = hiR + 1; nx++;
+        assert(nx <= 5);
+        
+        /* Now choose randomly an interesting value */
+        uint32_t i = uint32_abrandom(0, nx-1);
+        double v = x[i];
+        bool_t inside;
+        if (loR < hiR)
+          { /* {R} is open */
+            inside = ((loR < v) && (v < hiR));
+          }
+        else if (loR == hiR)
+          { /* {R} is singleton: */
+            inside = (v == loR);
+          }
+        else
+          { inside = FALSE; }
+        (*v_P) = v;
+        (*inside_P) = inside;
+      }
   }
 
 void test_split(box_dim_t d, interval_t B[], bool_t verbose)
@@ -624,3 +750,15 @@ void test_face(box_dim_t d, interval_t B[], bool_t verbose)
     if (verbose) { fprintf(stderr, "!!! NOT TESTED !!!\n"); }
 
   }
+
+void tbx_print_point(FILE *wr, box_dim_t d, double p[], char *pref, char *fmt, char *sep, char *suff)
+  { 
+    if (sep == NULL) { sep = " "; }
+    if (pref != NULL) { fputs(pref, wr); }
+    for (uint32_t i = 0; i < d; i++)
+      { if (i > 0) { fputs(sep, wr); }
+        fprintf(wr, fmt, p[i]);
+      }
+    if (suff != NULL) { fputs(suff, wr); }
+  }
+        

@@ -1,5 +1,5 @@
 /* Ray-tracing scene objects for multi-focus stereo. */
-/* Last edited on 2024-12-05 10:36:43 by stolfi */
+/* Last edited on 2025-02-03 02:27:26 by stolfi */
 
 #ifndef multifok_scene_object_raytrace_H
 #define multifok_scene_object_raytrace_H
@@ -29,27 +29,31 @@ double multifok_scene_object_raytrace
     a parameter value {tHit} in the range {[tMin _ tMax]}. If it does,
     returns {tHit}, otherwise returns {+INF}. */
 
-/* TRACING SPECIFI OBJECTS */
+/* TRACING SPECIFIC OBJECTS */
     
 double multifok_scene_object_raytrace_FLAT(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose);   
   /* Like {multifok_scene_object_raytrace}, but specialized 
-    for a {FLAT} floor object. Returns the ray's {t} parameter 
+    for a {ot_FLAT} floor object. Returns the ray's {t} parameter 
     if hit, {+INF} otherwise. */
       
 double multifok_scene_object_raytrace_RAMP(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose);   
-  /* Like {multifok_scene_object_raytrace}, but specialized for a {RAMP}
+  /* Like {multifok_scene_object_raytrace}, but specialized for a {ot_RAMP}
     object. Returns the ray's {t} parameter if hit, {+INF} otherwise. */
       
 double multifok_scene_object_raytrace_DISK(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose);   
-  /* Like {multifok_scene_object_raytrace}, but specialized for a {DISK}
+  /* Like {multifok_scene_object_raytrace}, but specialized for a {ot_DISK}
     object. Returns the ray's {t} parameter if hit, {+INF} otherwise. */
       
 double multifok_scene_object_raytrace_BALL(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose);   
-  /* Like {multifok_scene_object_raytrace}, but specialized for a {BALL} 
+  /* Like {multifok_scene_object_raytrace}, but specialized for a {ot_BALL} 
     object. Returns the ray's {t} parameter if hit, {+INF} otherwise. */
       
 double multifok_scene_object_raytrace_CONE(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose);   
-  /* Like {multifok_scene_object_raytrace}, but specialized for a {CONE} 
+  /* Like {multifok_scene_object_raytrace}, but specialized for a {ot_CONE} 
+    object. Returns the ray's {t} parameter if hit, {+INF} otherwise. */
+      
+double multifok_scene_object_raytrace_PYRA(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose);   
+  /* Like {multifok_scene_object_raytrace}, but specialized for a {ot_PYRA} 
     object. Returns the ray's {t} parameter if hit, {+INF} otherwise. */
 
     

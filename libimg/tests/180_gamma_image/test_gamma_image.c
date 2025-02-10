@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_gamma.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-20 17:23:37 by stolfi */
+/* Last edited on 2025-01-30 08:05:49 by stolfi */
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_gamma_image_C_COPYRIGHT \
@@ -393,9 +393,9 @@ void tgim_write_image(char *name, char *suff, float_image_t *A)
   { char *fname = jsprintf("%s%s", name, suff);
     FILE *wr = open_write(fname, TRUE);
     int32_t chns = (int32_t)A->sz[0];
-    bool_t yup = TRUE, verbose = TRUE;
+    bool_t yUp = TRUE, verbose = TRUE;
     bool_t isMask = FALSE; /* Assume uniform distr. of pixel values in encoding/decoding. */
-    uint16_image_t *pimg = float_image_to_uint16_image(A, isMask, chns, NULL, NULL, NULL, 255, yup, verbose);
+    uint16_image_t *pimg = float_image_to_uint16_image(A, isMask, chns, NULL, NULL, NULL, 255, yUp, verbose);
     bool_t forceplain = FALSE;
     uint16_image_write_pnm_file(wr, pimg, forceplain, verbose);
     uint16_image_free(pimg);

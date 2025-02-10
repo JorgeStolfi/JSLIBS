@@ -1,5 +1,5 @@
 /* See {multifok_term.h}. */
-/* Last edited on 2024-12-05 15:12:20 by stolfi */
+/* Last edited on 2025-01-29 13:35:11 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -168,12 +168,12 @@ void multifok_term_read_set_weights_and_names
         /* Read the term weight, if any: */
         double wtk = 1.0;
         if (weights) { wtk = fget_double(rd); }
-        double_vec_expand(&wt, NT);
+        double_vec_expand(&wt, (vec_index_t)NT);
         wt.e[kt] = wtk;
         
         /* Read the term name, if any: */
         char *tnamek = fget_string(rd);
-        string_vec_expand(&termName, NT);
+        string_vec_expand(&termName, (vec_index_t)NT);
         termName.e[NT] = tnamek;
         
         if (verbose) { fprintf(stderr, "  %3d %12.8f %s\n", NT, wtk, (tnamek == NULL ? "" : tnamek)); }

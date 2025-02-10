@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_aff_compare.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-20 18:42:04 by stolfi */ 
+/* Last edited on 2025-01-30 04:58:13 by stolfi */ 
 /* Created on 2020-09-26 by J. Stolfi, UNICAMP */
 
 #define taffc_COPYRIGHT \
@@ -212,10 +212,11 @@ float_image_t *taffc_read_image(char *imgname)
   {
     char *fname = jsprintf("in/%s.png", imgname);
     image_file_format_t ffmt = image_file_format_PNG;
+    bool_t yUp = FALSE;
     uint16_t *maxval; /* Max file sample value per channel. */
     double gammaDec, bias; /* Sample decoding parameters. */
     float_image_t *img = float_image_read_gen_named
-      ( fname, ffmt, 0.0, 1.0, &maxval, &gammaDec, &bias, FALSE);
+      ( fname, ffmt, yUp, 0.0, 1.0, &maxval, &gammaDec, &bias, FALSE);
     free(fname);
     return img;
   }

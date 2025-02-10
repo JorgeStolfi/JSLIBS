@@ -1,5 +1,5 @@
 /* See {float_image_to_uint16_image.h} */
-/* Last edited on 2024-12-26 12:31:44 by stolfi */ 
+/* Last edited on 2025-01-30 08:06:58 by stolfi */ 
 
 #include <limits.h>
 #include <assert.h>
@@ -25,7 +25,7 @@ uint16_image_t *float_image_to_uint16_image
     double hi[],         /* Nominal max float sample for each chosen channel. */
     int32_t ch[],            /* Indices of channels of {fim} to convert. */
     uint16_t maxval, /* Max integer sample value in result image. */
-    bool_t yup,          /* If TRUE, reverses the indexing of rows. */
+    bool_t yUp,          /* If TRUE, reverses the indexing of rows. */
     bool_t verbose       /* If TRUE, prints conversion diagnostics to {stderr}. */
   )
   { /* Get image dimensions: */
@@ -61,7 +61,7 @@ uint16_image_t *float_image_to_uint16_image
     /* Convert pixels, store in {pim}, keep statistics: */
     int32_t x, y;
     for(y = 0; y < NY; y++)
-      { int32_t ppmy = (yup ? NY - 1 - y : y);
+      { int32_t ppmy = (yUp ? NY - 1 - y : y);
         uint16_t *prow = pim->smp[ppmy];
         for(x = 0; x < NX; x++)
           { /* Convert float pixel {fpxy[c..c+2]} to integer pixel {ipxy[0..2]}, keep stats: */

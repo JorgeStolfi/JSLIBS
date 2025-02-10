@@ -1,5 +1,5 @@
 /* See {multifok_scene.h}. */
-/* Last edited on 2024-12-06 05:56:27 by stolfi */
+/* Last edited on 2025-02-10 03:36:19 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,10 +20,22 @@
 #include <multifok_scene.h>
 #include <multifok_scene_object.h>
 
-uint32_t multifok_scene_choose_object_count(bool_t floorOnly, interval_t dom[], double rMin, double rMax, double minSep);
-  /* Chooses the ideal number of objects (disks or balls) that {multifok_scene_throw_busy} 
-    should try to put in a scene.  The parameter {minSep} has the meaning described 
-    under {multifok_scene_throw_busy}. */
+uint32_t multifok_scene_choose_throw_object_count(interval_t dom[], double wMinXY, double wMaxXY, double minSep);
+  /* Chooses the ideal number of foreground objects that
+    {multifok_scene_throw_foreground_objects} should try to put in a
+    scene. The parameter {minSep} has the meaning described under that
+    procedure. */
+
+/* Shorter names for object types: */
+#define ot_FLAT multifok_scene_object_type_FLAT
+#define ot_RAMP multifok_scene_object_type_RAMP
+#define ot_DISK multifok_scene_object_type_DISK
+#define ot_BALL multifok_scene_object_type_BALL
+#define ot_CONE multifok_scene_object_type_CONE
+#define ot_PYRA multifok_scene_object_type_PYRA
+
+#define DASHES "----------------------------------------------------------------------"
+#define TILDES "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
 /* IMPLEMENTATIONS */
 
@@ -40,46 +52,113 @@ multifok_scene_t *multifok_scene_new(interval_t dom[], bool_t verbose)
     return scene;
   }
 
-void multifok_scene_throw_objects
+void multifok_scene_add_floor
   ( multifok_scene_t *scene,
-    bool_t floorOnly,
-    bool_t flatFloor,
-    double rMin, 
-    double rMax,
+    multifok_scene_object_type_t type, 
+    bool_t verbose
+  )
+  {
+    demand((scene->NO == 0) && (scene->objs == NULL), "scene already has objects");
+    
+    if (verbose) 
+      { char *typeX = multifok_scene_object_type_to_string(type);
+        fprintf(stderr, "trying to add a floor object of type %s\n", typeX); 
+      }
+      
+    interval_t *dom = scene->dom;
+    multifok_scene_object_t obj = multifok_scene_object_background_make(type, dom, verbose);
+    
+    /* Add to scene: */
+    uint32_t NO = scene->NO; /* Number of objects already generated. */
+    scene->objs = retalloc(scene->objs, NO+1, multifok_scene_object_t);
+    obj.ID = (multifok_scene_object_ID_t)NO; 
+    scene->objs[NO] = obj; NO++;
+    scene->NO = NO;
+  }
+
+void multifok_scene_add_foreground_object
+  ( multifok_scene_t *scene,
+    multifok_scene_object_type_t type,
+    interval_t bbox[],
+    frgb_t *fgGlo,
+    frgb_t *bgGlo,
+    frgb_t *fgLam,
+    frgb_t *bgLam,
+    bool_t verbose
+  )
+  {
+    if (verbose)  { fprintf(stderr, "  entering {multifok_scene_add_foreground_object}\n"); }
+
+    demand((scene->NO >= 1) && (scene->objs != NULL), "scene must have at least one object");
+    demand((scene->objs[0].type == ot_FLAT) || (scene->objs[0].type == ot_RAMP), "the first object must be a floor");
+    
+    demand((type != ot_FLAT) && (type != ot_RAMP), "invalid object type");
+    
+    uint32_t NO = scene->NO; /* Number of objects already generated. */
+    scene->objs = retalloc(scene->objs, NO+1, multifok_scene_object_t);
+      
+    multifok_scene_object_t obj = multifok_scene_object_foreground_make(type, bbox, fgGlo, bgGlo, fgLam, bgLam, verbose);
+    
+    /* Check object's containment in {scene.dom}: */
+    interval_t *dom = scene->dom;
+    for (uint32_t j = 0; j < 3; j++) 
+      { assert(dom[j].end[0] <= dom[j].end[1]);
+        assert(obj.bbox[j].end[0] <= obj.bbox[j].end[1]);
+        if (j == 2)
+          { bool_t inside = (LO(dom[j]) <= LO(obj.bbox[j])) && (HI(obj.bbox[j]) <= HI(dom[j]));
+            demand(inside, "object's extends outside scene's {Z} range"); }
+        else
+          { double ctrj = interval_mid(&(obj.bbox[j]));
+            bool_t inside = (LO(dom[j]) <= ctrj) && (ctrj <= HI(dom[j]));
+            demand(inside, "object's center is outside scene's {XY} range"); 
+          }
+      }
+
+    /* Add to scene: */
+    obj.ID = (multifok_scene_object_ID_t)NO; 
+    scene->objs[NO] = obj; NO++;
+    scene->NO = NO;
+
+    if (verbose)  { fprintf(stderr, "  exiting {multifok_scene_add_foreground_object}, ID = %d\n", obj.ID); }
+  }
+
+void multifok_scene_throw_foreground_objects
+  ( multifok_scene_t *scene,
+    double wMinXY, 
+    double wMaxXY,
+    frgb_t *fgGlo,
     double minSep, 
     bool_t verbose
   )
   {
-    bool_t debug = FALSE;
+    demand((scene->NO == 1) && (scene->objs != NULL), "scene is empty pr has 2+ objects");
+    multifok_scene_object_t *ground = &(scene->objs[0]);
+    if (verbose) 
+      { fprintf(stderr, "floor object:\n");
+        multifok_scene_object_print(stderr, 2, ground);
+      }
+    demand(ground->type == ot_FLAT, "invalid floor object type");
     
-    demand((scene->NO == 0) && (scene->objs == NULL), "scene already has objects");
-    
-    /* Determine the max number of objects: */
-    uint32_t NO_max = multifok_scene_choose_object_count(floorOnly, scene->dom, rMin, rMax, minSep);
-    if (verbose) { fprintf(stderr, "trying to generate %d objects\n", NO_max); }
+    /* Determine the max number of objects to generate: */
+    uint32_t NO = scene->NO; /* Number of objects already generated. */
+    uint32_t NO_max = NO + multifok_scene_choose_throw_object_count(scene->dom, wMinXY, wMaxXY, minSep);
+    if (verbose) { fprintf(stderr, "trying to generate %d foreground objects\n", NO_max-NO); }
 
-    uint32_t NO = 0; /* Number of objects already generated. */
-    multifok_scene_object_t *objs = talloc(NO_max, multifok_scene_object_t);
+    scene->objs = retalloc(scene->objs, NO_max, multifok_scene_object_t);
 
     interval_t *dom = scene->dom;
 
-    /* Generate the objects {objs[0..NO-1]}. */
+    /* Generate the new objects {objs[1..]}. */
     /* If overlapping, every try is valid, otherwise we need many more tries: */
     uint32_t NT = (minSep >= 0 ? 50 : 1)*NO_max; /* Number of tries. */
     
     for (uint32_t kt = 0;  (kt < NT) && (NO < NO_max); kt++)
-      { multifok_scene_object_t obj;
-        if (NO == 0)
-          { /* First object is a background flat or ramp floor: */
-            obj = multifok_scene_object_background_make(dom, flatFloor);
-          }
-        else
-          { /* Subsequent objects are foreground ones: */
-            assert(! floorOnly);
-            /* Generate a random object {obj}: */
-            obj = multifok_scene_object_foreground_throw(dom, minSep, rMin, rMax, debug);
-          }
-        if (debug) { multifok_scene_object_print(stderr, "  ", &obj, ""); }
+      { if (verbose) { fprintf(stderr, "" TILDES "\n"); }
+        /* Generate a random foreground object {obj}: */
+        multifok_scene_object_t obj = multifok_scene_object_foreground_throw(dom, minSep, wMinXY, wMaxXY, fgGlo, verbose);
+        if (verbose) { fprintf(stderr, "trying to add object ...\n"); }
+
+        demand((obj.type != ot_FLAT) && (obj.type != ot_RAMP), "invalid object type");
         
         /* Check containment in {Z}: */
         assert(dom[2].end[0] <= obj.bbox[2].end[0]);
@@ -87,89 +166,82 @@ void multifok_scene_throw_objects
         assert(obj.bbox[2].end[1] <= dom[2].end[1]);
         
         int32_t ko_overlap = -1; /* Index of object overlapped by {obj}, or {-1}. */
-        if (minSep >= 0 && NO > 0)
-          { demand(flatFloor, "inconsistent parameters");
-            /* Reject {obj} if it overlaps previous foreground objects in {X} and {Y}: */
-            /* Check for {XY} overlaps: */
+        if (minSep >= 0)
+          { /* Reject {obj} if it overlaps previous foreground objects in {X} and {Y}: */
+            /* Check for {XY} overlaps, skipping the floor: */
             for (int32_t ko = 0;  (ko < NO) && (ko_overlap < 0); ko++)
-              { multifok_scene_object_t *objk = &(objs[ko]);
-                bool_t overlap = multifok_scene_object_XY_overlap(objk, &obj, minSep);
-                if (overlap) { ko_overlap = ko; }
+              { multifok_scene_object_t *objk = &(scene->objs[ko]);
+                if ((objk->type != ot_FLAT) && (objk->type != ot_RAMP))
+                  { bool_t overlap = multifok_scene_object_XY_overlap(&obj, objk, minSep);
+                    if (overlap) { ko_overlap = ko; }
+                  }
               }
             assert(multifok_scene_object_XY_is_inside(&obj, scene->dom, minSep));
           }
         if (ko_overlap < 0)
-          { if (debug) { fprintf(stderr, " (accepted, ID = %d)\n", NO); }
+          { if (verbose) { fprintf(stderr, "accepted, ID = %d\n", NO); }
+            assert(NO < NO_max);
             obj.ID = (multifok_scene_object_ID_t)NO;
-            if (verbose && (! debug)) {  multifok_scene_object_print(stderr, "  ", &obj, "\n"); }
-            objs[NO] = obj;
-            NO++;
+            scene->objs[NO] = obj;  NO++;
           }
         else
-          { if (debug) { fprintf(stderr, " (overlaps %d, rejected)\n", ko_overlap); } }
+          { if (verbose) { fprintf(stderr, "overlaps %d, rejected\n", ko_overlap); } }
       }
-    
+    if (verbose) { fprintf(stderr, "" TILDES "\n"); }
+        
     assert(NO <= NO_max);
     if (NO < NO_max)
       { if (verbose) { fprintf(stderr, "generated only %d objects\n", NO); }
         /* Trim array: */
-        objs = retalloc(objs, NO, multifok_scene_object_t);
+        scene->objs = retalloc(scene->objs, NO, multifok_scene_object_t);
       }
-     
-    /* Store data in scene: */
     scene->NO = NO;
-    scene->objs = objs;
-    return;
   }
 
-uint32_t multifok_scene_choose_object_count
-  ( bool_t floorOnly,
-    interval_t dom[],
-    double rMin,
-    double rMax,
+uint32_t multifok_scene_choose_throw_object_count
+  ( interval_t dom[],
+    double wMinXY,
+    double wMaxXY,
     double minSep
   )
   {
-    if (floorOnly) { return 1; }
-    
-    /* Compute the average area {aObj} of an object with radius in {[rMin _ rMax]}, accounting for min sep: */
+    /* Compute the average area {aObj} of an object with width in {[wMinXY _ wMaxXY]}, accounting for min sep: */
     double rfat = (minSep >= 0 ? 0.5*minSep : 0);
-    double rr0 = rMin + rfat; /* Min radius object occup. */
-    double rr1 = rMax + rfat; /* Max radius object occup. */
-    double aObj = M_PI*(rr1*rr1*rr1 - rr0*rr0*rr0)/(rr1 - rr0)/3; /* Average disk area. */
-    double rObj = sqrt(aObj/M_PI); /* RMS average object radius. */
+    double rr0 = 0.5*wMinXY + rfat; /* Min radius object occup. */
+    double rr1 = 0.5*wMaxXY + rfat; /* Max radius object occup. */
+    double avgPI = (3*M_PI + 4)/4; /* Average value of {PI} assuming equal chances. */
+    double areaObj = avgPI*(rr1*rr1*rr1 - rr0*rr0*rr0)/(rr1 - rr0)/3; /* Average {XY} proj area. */
+    double rObj = sqrt(areaObj/avgPI); /* RMS average object radius. */
     
-    /* Compute the {XY} area {aBox} available for those disks: */
+    /* Compute the {XY} area {areaBox} available for those objects: */
     double wd[2];
-    for (uint32_t j = 0;  j < 2; j++)
+    for (uint32_t j = 0;  j < 2; j++)  /* Note 0 and 1 only. */
       { wd[j] = dom[j].end[1] - dom[j].end[0]; 
         if (minSep >= 0)
-          { wd[j] -= 2*minSep; }
+          { /* Objects wholly inside: */ wd[j] -= 2*minSep; }
         else
-          { wd[j] += 2*rObj; }
+          { /* Objects may go outside: */ wd[j] += 2*rObj; }
         demand (wd[j] >= 0, "dom too tight");
       }
-    double aBox = wd[0]*wd[1]; /* Total useful area of dom. */
+    double areaBox = wd[0]*wd[1]; /* Total useful area of dom. */
 
-    /* Decide max number of foreground objects {NO_max}. */
+    /* Decide max number of foreground objects {NO_gen}. */
     /* If non-overlapping, limited by area ratio, else more than that: */
-    uint32_t NO_max = (minSep >= 0 ? 1 : 2)*(uint32_t)ceil(aBox/aObj);
-    /* Ensure at least one foregreound object: */
-    if (NO_max <= 0) { NO_max = 1; }
+    uint32_t NO_gen = (minSep >= 0 ? 1 : 2)*(uint32_t)ceil(areaBox/areaObj);
+    /* Ensure at least one foreground object: */
+    if (NO_gen <= 0) { NO_gen = 1; }
     
-    return NO_max + 1; /* Including the background object. */
-  }
-      
-r3_t multifok_scene_box_center(interval_t box[])
-  { r3_t ctr;
-    for (uint32_t j = 0;  j < 3; j++) { ctr.c[j] = interval_mid(&(box[j])); }
-    return ctr;
+    return NO_gen;
   }
   
-r3_t multifok_scene_box_radius(interval_t box[])
-  { r3_t rad;
-    for (uint32_t j = 0;  j < 3; j++) { rad.c[j] = interval_rad(&(box[j])); }
-    return rad;
+void multifok_scene_print(FILE *wr, multifok_scene_t *scene)
+  { multifok_scene_print_box(wr, "dom = ", scene->dom, "\n");
+    fprintf(stderr, "scene has %d objects:\n", scene->NO);
+    fputs("  " DASHES "\n", wr);
+    for (int32_t i = 0; i < scene->NO; i++)
+      { multifok_scene_object_print(wr, 2, &(scene->objs[i]));
+        fputs("  " DASHES "\n", wr);
+      }
   }
 
 void multifok_scene_print_box(FILE *wr, char *pref, interval_t box[], char *suff)

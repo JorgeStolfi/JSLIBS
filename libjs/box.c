@@ -1,5 +1,5 @@
 /* See box.h */
-/* Last edited on 2025-01-03 13:04:14 by stolfi */ 
+/* Last edited on 2025-02-07 18:19:04 by stolfi */ 
 
 /* We need to set these in order to get {asinh}. What a crock... */
 #undef __STRICT_ANSI__
@@ -64,30 +64,45 @@ void box_corner(box_dim_t d, interval_t B[], interval_side_t dir[], double p[])
       }
   }
 
-void box_center(box_dim_t d, interval_t B[], double p[])
+void box_center(box_dim_t d, interval_t B[], double c[])
   { 
     for (uint32_t i = 0;  i < d; i++) 
       { interval_t *Bi = &(B[i]);
         demand(! interval_is_empty(Bi), "empty box");
-        p[i] = interval_mid(Bi);
+        c[i] = interval_mid(Bi);
       }
   }
 
-void box_half_widths(box_dim_t d, interval_t B[], double h[])
+void box_radii(box_dim_t d, interval_t B[], double r[])
   { 
     if (box_is_empty(d, B))
-      { for (uint32_t i = 0;  i < d; i++) { h[i] = 0.0; } }
+      { for (uint32_t i = 0;  i < d; i++) { r[i] = -INF; } }
     else
       { for (uint32_t i = 0;  i < d; i++) 
           { interval_t *Bi = &(B[i]);
-            h[i] = interval_rad(Bi);
+            r[i] = interval_rad(Bi);
+          }
+      }
+  }
+
+void box_center_and_radii(box_dim_t d, interval_t B[], double c[], double r[])
+  { if (box_is_empty(d, B))
+      { for (uint32_t i = 0;  i < d; i++) 
+          { c[i] = 0.0; r[i] = -INF; }
+      }
+    else
+      { for (uint32_t i = 0;  i < d; i++) 
+          { interval_t *Bi = &(B[i]);
+            interval_mid_rad(Bi, &(c[i]), &(r[i]));
           }
       }
   }
 
 void box_widths(box_dim_t d, interval_t B[], double w[])
   { if (box_is_empty(d, B))
-      { for (uint32_t i = 0;  i < d; i++) { w[i] = 0.0; } }
+      { for (uint32_t i = 0;  i < d; i++) 
+         { w[i] = -INF; }
+      }
     else
       { int32_t oround = fegetround();
         fesetround(FE_UPWARD);
@@ -98,7 +113,7 @@ void box_widths(box_dim_t d, interval_t B[], double w[])
 
 double box_max_width(box_dim_t d, interval_t B[])
   { if ((d == 0) || (box_is_empty(d, B)))
-      { return 0.0; }
+      { return -INF; }
     else
       { int32_t oround = fegetround();
         fesetround(FE_UPWARD);
@@ -216,6 +231,26 @@ bool_t box_contained(box_dim_t d, interval_t A[], interval_t B[])
         return TRUE;
       }
   }
+  
+bool_t box_has_point(box_dim_t d, interval_t A[], double p[])
+  { for (uint32_t i = 0; i < d; i++) 
+      { interval_t *Ai = &(A[i]);
+        double pi = p[i];
+        /* Intervals are closed if singletons otherwise open: */
+        if (LO(*Ai) > HI(*Ai))
+          { return FALSE; }
+        else if (LO(*Ai) < HI(*Ai))
+          { /* Box {A} is open interval on this axis: */
+            if ((pi <= LO(*Ai)) || (pi >= HI(*Ai))) { return FALSE; }
+          }
+        else 
+          { assert (LO(*Ai) == HI(*Ai));
+            /* Box {A} is singleton on this axis: */
+            if (pi != LO(*Ai)) { return FALSE; }
+          }
+      }
+    return TRUE;
+  }  
 
 /* BOX CREATION AND MODIFICATION */
 
@@ -227,6 +262,25 @@ void box_empty(box_dim_t d,  interval_t C[])
 void box_copy(box_dim_t d, interval_t B[], interval_t C[])
   { for (uint32_t i = 0;  i < d; i++)
       { C[i] = B[i]; }
+  }
+
+void box_from_center_and_radii(box_dim_t d, double ctr[], double rad[], interval_t B[])
+  { bool_t nan = FALSE; /* Is box {NAN}? */
+    bool_t ety = FALSE; /* Is box empty? */
+    for (uint32_t i = 0; i < d; i++) 
+      { if (isnan(rad[i]) || isnan(ctr[i])) 
+          { nan = TRUE; }
+        else if (rad[i] < 0)
+          { ety = TRUE; }
+      }
+    for (uint32_t i = 0; i < d; i++) 
+      { if (nan) 
+          { B[i] = (interval_t){{ NAN, NAN }}; }
+        else if (ety)
+          { B[i] = (interval_t){{ +1, -1 }};; }
+        else
+          { B[i] = interval_from_mid_rad(ctr[i], rad[i]); }
+      }
   }
 
 void box_include_point(box_dim_t d, interval_t B[], double p[], interval_t C[])

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {multifok_sampling.h} and {multifok_raytrace.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-15 20:36:49 by stolfi */
+/* Last edited on 2025-02-05 15:14:24 by stolfi */
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
 #define test_mfok_raytrace_COPYRIGHT \
@@ -42,13 +42,13 @@
   /* The depth-of-focus to use. */
   
 
-/* For each frame, the program writes a file "{frameDir}/pixel-rays-{XXXX}-{YYYY}.txt",
+/* For each frame, the program writes a file "{frameFolder}/pixel-rays-{XXXX}-{YYYY}.txt",
 where {XXXX} and {YYYY} are the indices of the pixel {o.debigPixel} 
 formated as "%04d".   The file will will have one line for each ray that was 
 cast for that pixel, as per {multifok_raytrace_write_ray_data_INFO}.
 
 The program will also write a single file
-"{stackDir}/pixel-data-{XXXX}-{YYYY}.txt" with one line for each frame,
+"{stackFolder}/pixel-data-{XXXX}-{YYYY}.txt" with one line for each frame,
 showing the computed data for that pixel, as per
 multifok_raytrace_write_pixel_data_INFO}. */
 
@@ -59,7 +59,7 @@ typedef struct mfrs_options_t
     uint32_t pixSampling;   /* Determines the sampling points per axis and pixel. */
     uint32_t dirSampling;   /* Min rays per sampling point, or 0 for sharp view. */
     i2_t debugPixel;        /* Pixel to debug. */
-    char *stackDir;         /* Directory where to put output frame folders. */
+    char *stackFolder;         /* Directory where to put output frame folders. */
   } mfrs_options_t;
   /* Command line parameters. */
 
@@ -79,12 +79,12 @@ void mfrs_make_and_write_image
     multifok_raytrace_debug_pred_t *debug_pixel,
     multifok_raytrace_report_ray_proc_t report_ray,
     multifok_raytrace_report_pixel_proc_t report_pixel,
-    char *frameDir,
+    char *frameFolder,
     bool_t verbose
   );
   /* Creates a monochrme test image {oimg} with size {NX,NY} showing the
     color at each pixel for of a focus-blurred version of the image
-    {fimg}.  Writes the image to "{frameDir}/img-blur.png".
+    {fimg}.  Writes the image to "{frameFolder}/img-blur.png".
 
     using {(2*HS+1)^2} subsampling points at each pixel aof
     {oimg} and about {3*HR^2} rays through each sampling point.
@@ -110,9 +110,9 @@ void mfrs_make_and_write_image
     {HR} is ignored, and the scene view {sVal} will be just
     {fimg} with antialiasing by the sub-pixel sampling. */
 
-void mfrs_write_image(float_image_t *oimg, char *frameDir);
+void mfrs_write_image(float_image_t *oimg, char *frameFolder);
   /* Writes the image {oimg} to file
-    "{frameDir}/img-blur.png". */
+    "{frameFolder}/img-blur.png". */
     
     
 float_image_t *mfrs_read_pattern_image(char *patName);
@@ -151,12 +151,12 @@ int32_t main (int32_t argc, char **argv)
 
     uint32_t kf = 0; /* Images generated so far. */
 
-    /* Define the output directory {stackDir}: */
-    char *stackDir = o->stackDir;
+    /* Define the output directory {stackFolder}: */
+    char *stackFolder = o->stackFolder;
 
     i2_t *iPixDeb = &(o->debugPixel);
     
-    char *fname_pixels = jsprintf("%s/pixel-data-%04d-%04d.txt", stackDir, iPixDeb->c[0], iPixDeb->c[1]);
+    char *fname_pixels = jsprintf("%s/pixel-data-%04d-%04d.txt", stackFolder, iPixDeb->c[0], iPixDeb->c[1]);
     FILE *wr_pixels = open_write(fname_pixels, TRUE);
     free(fname_pixels);
 
@@ -167,44 +167,41 @@ int32_t main (int32_t argc, char **argv)
 
     auto void report_pixel
       ( i2_t *iPix, r3_t *pCtr, double zFoc, double zDep,
-        double shrp, double hAvg, double hDev, int32_t NC, float colr[]
+        double shrp, double hAvg, double hDev, 
+        r3_t *sNrm, int32_t NC, float sVal[]
       );
       /* A procedure suitable for the {report_pixel} argument of
-        {multifok_raytrace_make_frame}.
-
-        The procedure prints the ray data on {stderr} and also writes it
-        to the file {wr_rays}, saving {iPix} to {iPix_wr}. The file
-        {wr_rays} is opened if needed, and closed and re-opened whenever
-        {iPix} differs from {iPix_wr}. */
+        {multifok_raytrace_make_frame}.  It writes the data to the file {wr_pixel}.
+        It will be called only when {iPix} is {iPixDeb}. */
 
     double zDep = zDep_DEFAULT;
     double zFoc = 0.0;
     while (zFoc < zFoc_MAX + 0.0000001)
       { bool_t verbose_frame = (kf == 0) || (kf == 1);
 
-        char *frameDir = jsprintf("%s/zf%08.4f-df%08.4f", stackDir, zFoc, zDep);
-        mkdir(frameDir, 0755);
+        char *frameFolder = jsprintf("%s/zf%08.4f-df%08.4f", stackFolder, zFoc, zDep);
+        mkdir(frameFolder, 0755);
 
-        char *fname_rays = jsprintf("%s/pixel-rays-%04d-%04d.txt", frameDir, iPixDeb->c[0], iPixDeb->c[1]);
+        char *fname_rays = jsprintf("%s/pixel-rays-%04d-%04d.txt", frameFolder, iPixDeb->c[0], iPixDeb->c[1]);
         FILE *wr_rays = open_write(fname_rays, TRUE);
         free(fname_rays);
 
         auto void report_ray
           ( i2_t *iPix, i2_t *iSmp, double step, double wSmp,
             r3_t *pRay, r3_t *dRay, double wRay,
-            r3_t *pHit, double hHit, double vBlr
+            r3_t *pHit, double hHit, double vBlr,
+            r3_t *sNrm, int32_t NC, float sVal[]
           );
           /* A procedure suitable for the {report_ray} argument of
-            {multifok_raytrace_make_frame}.
-
-            The procedure prints the ray data on {stderr} and also writes it
-            to the file {wr_rays}.  The {iPix} must be the same as {iPixDeb}. */
+            {multifok_raytrace_make_frame}. It writes the data to the 
+            file {wr_rays}. It will be called only when {iPix} is 
+            equal to {iPixDeb}. */
 
         mfrs_make_and_write_image
           ( NX, NY, fimg, HS, KR_min, zFoc, zDep, 
-            &debug_pixel, &report_ray, &report_pixel, frameDir, verbose_frame
+            &debug_pixel, &report_ray, &report_pixel, frameFolder, verbose_frame
           );
-        free(frameDir);
+        free(frameFolder);
 
         if (wr_rays != NULL) { fclose(wr_rays); }
 
@@ -214,18 +211,14 @@ int32_t main (int32_t argc, char **argv)
         void report_ray
           ( i2_t *iPix, i2_t *iSmp, double step, double wSmp,
             r3_t *pRay, r3_t *dRay, double wRay,
-            r3_t *pHit, double hHit, double vBlr
+            r3_t *pHit, double hHit, double vBlr,
+            r3_t *sNrm, int32_t NC, float sVal[]
           )
           { demand((iPix->c[0] == iPixDeb->c[0]) && (iPix->c[1] == iPixDeb->c[1]), "wrong pixel");
             double pixSize = 1.0;
-            if (verbose_frame) 
-              { multifok_raytrace_show_ray_data
-                  ( stderr, 8, iPix, pixSize, 
-                    iSmp, step, wSmp, pRay, dRay, wRay, pHit, hHit, vBlr
-                  ); }
             multifok_raytrace_write_ray_data
               ( wr_rays, iPix, pixSize, 
-                iSmp, step, wSmp, pRay, dRay, wRay, pHit, hHit, vBlr
+                iSmp, step, wSmp, pRay, dRay, wRay, pHit, hHit, vBlr, sNrm, NC, sVal
               );
           }
       }
@@ -250,17 +243,14 @@ int32_t main (int32_t argc, char **argv)
     
     void report_pixel
       ( i2_t *iPix, r3_t *pCtr, double zFoc, double zDep,
-        double shrp, double hAvg, double hDev,  int32_t NC, float colr[]
+        double shrp, double hAvg, double hDev, 
+        r3_t *sNrm, int32_t NC, float sVal[]
       )
       { double pixSize = 1.0;
         demand((iPix->c[0] == iPixDeb->c[0]) && (iPix->c[1] == iPixDeb->c[1]), "wrong pixel");
-        multifok_raytrace_show_pixel_data
-          ( stderr, 4, iPix, pixSize, pCtr, zFoc, zDep,
-            shrp, hAvg, hDev, NC, colr
-          );
         multifok_raytrace_write_pixel_data
           ( wr_pixels, iPix, pixSize, pCtr, zFoc, zDep,
-            shrp, hAvg, hDev, NC, colr
+            shrp, hAvg, hDev, sNrm, NC, sVal
           );
       }
   }
@@ -276,7 +266,7 @@ void mfrs_make_and_write_image
     multifok_raytrace_debug_pred_t *debug_pixel,
     multifok_raytrace_report_ray_proc_t report_ray,
     multifok_raytrace_report_pixel_proc_t report_pixel,
-    char *frameDir,
+    char *frameFolder,
     bool_t verbose
   )
   {
@@ -289,7 +279,7 @@ void mfrs_make_and_write_image
     assert(NS >= 1);
     assert(KR >= 1);
 
-    auto void trace_ray(r3_t *pR, r3_t *dR, bool_t debug_loc, r3_t *pHit_P, int32_t NC_loc, float colr[]);
+    auto void trace_ray(r3_t *pR, r3_t *dR, bool_t debug_loc, r3_t *pHit_P, r3_t *sNrm_P, int32_t NC_loc, float sVal[]);
       /* A ray-tracing func suitable for {multifok_raytrace_make_frame}.
         The procedure assumes that the scene is the input image {fimg},
         covering the rectangle {[0 _ NX] × [0 _ NY]} on the plane {Z=0}. */
@@ -311,7 +301,7 @@ void mfrs_make_and_write_image
         verbose, debug_pixel, report_ray, report_pixel
       );
 
-    mfrs_write_image(fr->sVal, frameDir);
+    mfrs_write_image(fr->sVal, frameFolder);
 
     multifok_sampling_free(samp);
 
@@ -319,18 +309,23 @@ void mfrs_make_and_write_image
 
     return;
 
-    void trace_ray(r3_t *pR, r3_t *dR, bool_t debug_loc, r3_t *pHit_P, int32_t NC_loc, float colr[])
+    void trace_ray(r3_t *pR, r3_t *dR, bool_t debug_loc, r3_t *pHit_P, r3_t *sNrm_P, int32_t NC_loc, float sVal[])
       { assert(NC_loc == NC);
         assert(dR->c[2] < 0);
 
         double zscale = -pR->c[2]/dR->c[2];
         r2_t q = (r2_t){{ pR->c[0] + dR->c[0]*zscale, pR->c[1] + dR->c[1]*zscale }};
+        r3_t sNrm = (r3_t){{0,0,0}};
         if ((q.c[0] < 0) || (q.c[0] > NX) || (q.c[1] < 0) || (q.c[1] > NY))
-          { for (uint32_t ic = 0;  ic < NC; ic++) { colr[ic] = 0.0; } }
+          { for (uint32_t ic = 0; ic < NC; ic++) { sVal[ic] = 0.0; } }
         else
-          { fimg(&q, NC, NX, NY, colr); }
+          { fimg(&q, NC, NX, NY, sVal);
+            for (int32_t j = 0; j < 3; j++) { sNrm.c[j] = (j < NC ? sVal[j] : 1.0e-6); }
+            (void)r3_dir(&sNrm, &sNrm);
+          }
         r3_t pHit = (r3_t){{ q.c[0], q.c[1], 0.0 }};
         (*pHit_P) = pHit;
+        (*sNrm_P) = sNrm;
       }
 
     void map_point(r2_t *p2_img, r3_t *p3_scene)
@@ -339,23 +334,25 @@ void mfrs_make_and_write_image
       }
   }
 
-void mfrs_write_image(float_image_t *oimg, char *frameDir)
-  { char *fname = jsprintf("%s/img-blur.png", frameDir);
+void mfrs_write_image(float_image_t *oimg, char *frameFolder)
+  { char *fname = jsprintf("%s/img-blur.png", frameFolder);
     image_file_format_t ffmt = image_file_format_PNG;
+    bool_t yUp = TRUE;
     double gammaEnc = 1.0;
     double bias = 0.0;
     bool_t verbose = TRUE;
-    float_image_write_gen_named(fname, oimg, ffmt, 0.0,1.0, gammaEnc,bias, verbose);
+    float_image_write_gen_named(fname, oimg, ffmt, yUp, 0.0,1.0, gammaEnc,bias, verbose);
     free(fname);
   }
   
 float_image_t *mfrs_read_pattern_image(char *patName)
   { 
     char *fileName = jsprintf("in/%s.png", patName);
+    bool_t yUp = TRUE;
     double gammaDec, bias;
     bool_t verbose = TRUE;
     float_image_t *img = float_image_read_gen_named
-      ( fileName, image_file_format_PNG,
+      ( fileName, image_file_format_PNG, yUp, 
         0.0, 1.0, NULL, &gammaDec, &bias, 
         verbose
       );
@@ -388,8 +385,8 @@ mfrs_options_t *mfrs_parse_options(int32_t argc, char **argv)
     o->debugPixel.c[0] = (int32_t)argparser_get_next_int(pp, 0, o->imageSize_X-1);
     o->debugPixel.c[1] = (int32_t)argparser_get_next_int(pp, 0, o->imageSize_Y-1);
 
-    argparser_get_keyword(pp, "-stackDir");
-    o->stackDir = argparser_get_next_non_keyword(pp);
+    argparser_get_keyword(pp, "-stackFolder");
+    o->stackFolder = argparser_get_next_non_keyword(pp);
 
     argparser_skip_parsed(pp);
     argparser_finish(pp);

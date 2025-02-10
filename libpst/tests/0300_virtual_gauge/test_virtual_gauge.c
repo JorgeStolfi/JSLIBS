@@ -1,7 +1,7 @@
 #define PROG_NAME "compare_gauge_virtual"
 #define PROG_DESC "compares a simple lighting model to a spherical light gauge image"
 
-/* Last edited on 2025-01-04 18:44:54 by stolfi */
+/* Last edited on 2025-01-30 05:01:13 by stolfi */
 
 #define _GNU_SOURCE
 
@@ -151,10 +151,11 @@ void tvga_write_image(char *prefix, char *tag, float_image_t *img, float vmin, f
     free(fni_name);
 
     char *png_name = jsprintf("%s-%s.png", prefix, tag);
+    bool_t yUp = FALSE;
     double expoEnc = sRGB_ENC_EXPO;
     double bias = sRGB_BIAS;
     bool_t verbose = TRUE;
-    float_image_write_gen_named(png_name, img, image_file_format_PNG, vmin, vmax, expoEnc, bias, verbose);
+    float_image_write_gen_named(png_name, img, image_file_format_PNG, yUp, vmin, vmax, expoEnc, bias, verbose);
     free(png_name);
   }
 

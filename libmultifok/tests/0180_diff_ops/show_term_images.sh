@@ -1,10 +1,10 @@
 #! /bin/bash
-# Last edited on 2024-10-19 09:55:49 by stolfi
+# Last edited on 2025-01-30 10:29:44 by stolfi
 
 echo "=== show_terms_images.sh =============================" 1>&2
 echo "$@" 1>&2
 
-inDir="$1"; shift;    # Directory where images are 
+inFolder="$1"; shift;    # Directory where images are 
 outPrefix="$1"; shift
 
 sceneType="$1"; shift;

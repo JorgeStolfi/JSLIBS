@@ -1,5 +1,5 @@
 /* Reafing {float_image_t} images from variable file formats. */
-/* Last edited on 2024-12-20 17:44:57 by stolfi */
+/* Last edited on 2025-01-30 04:54:21 by stolfi */
 
 #ifndef float_image_read_gen_H
 #define float_image_read_gen_H
@@ -15,6 +15,7 @@
 float_image_t *float_image_read_gen_named
   ( const char *fname,
     image_file_format_t ffmt,
+    bool_t yUp,          /* If true, the BOTTOM row of the file will be row 0 of the image. */
     float v0,            /* Output sample value corresponding to file sample value 0. */
     float vM,            /* Output sample value corresponding to max file sample value. */
     uint16_t **maxvalP,  /* (OUT) Discrete nominal max value in file for each channel. */
@@ -44,7 +45,7 @@ float_image_t *float_image_read_gen_named
     Y/Cr/Cb.
     
     Sample values read from an FNI file are returned without any change.
-    The parameters {v0} and {vM} are ignored. For all other file formats
+    The parameters {yUp}, {v0}, and {vM} are ignored. For all other file formats
     except FNI, integer samples read from the file are converted to
     float values as described next, and detailed in
     {float_image_read_gen_INFO} and {float_image_read_gen_CONV_INFO}
@@ -71,6 +72,7 @@ float_image_t *float_image_read_gen_named
 float_image_t *float_image_read_gen_file
   ( FILE *rd,
     image_file_format_t ffmt,
+    bool_t yUp,         /* If true, the BOTTOM row of the file will be row 0 of the image. */
     float v0,           /* Output sample value corresponding to file sample value 0. */
     float vM,           /* Output sample value corresponding to max file sample value. */
     uint16_t **maxvalP, /* (OUT) Discrete nominal max value in file for each channel. */
@@ -86,6 +88,7 @@ float_image_t *float_image_read_gen_frame
   ( const char *fpat,
     int32_t fnum,
     image_file_format_t ffmt,
+    bool_t yUp,         /* If true, the BOTTOM row of the file will be row 0 of the image. */
     float v0,           /* Output sample value corresponding to file sample value 0. */
     float vM,           /* Output sample value corresponding to max file sample value. */
     uint16_t **maxvalP, /* (OUT) Discrete nominal max value in file for each channel. */
@@ -110,7 +113,7 @@ float_image_t *float_image_read_gen_frame
   " complete dump of the {float_image_t} memory" \
   " representation.  Therefore, the image is read just" \
   " as it is in the file, without any conversion," \
-  " scaling, or gamma correction.\n" \
+  " scaling, gamma correction, or {Y}-axis flipping.\n" \
   "\n" \
   "  PNM (PBM, PGM, PPM) FORMAT:\n" \
   "\n" \

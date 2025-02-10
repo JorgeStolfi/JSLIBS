@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {spectrum_table_exact.h}, {spectrum_table_binned.h}, {spectrum_table_convert.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-20 18:40:04 by stolfi */ 
+/* Last edited on 2025-01-30 08:04:30 by stolfi */ 
 /* Created on 2008-10-05 by J. Stolfi, UNICAMP */
 
 #define test_spectrum_table_COPYRIGHT \
@@ -386,9 +386,9 @@ float_image_t *read_image(char *dir, int32_t kx, int32_t ky, int32_t chns, char 
     uint16_image_t *pim = uint16_image_read_pnm_file(rd);
     fclose(rd);
     free(fname);
-    bool_t yup = TRUE, verbose = TRUE;
+    bool_t yUp = TRUE, verbose = TRUE;
     bool_t isMask = FALSE; /* Assume uniform distr. of pixel values in encoding/decoding. */
-    float_image_t *fim = float_image_from_uint16_image(pim, isMask, NULL, NULL, yup, verbose);
+    float_image_t *fim = float_image_from_uint16_image(pim, isMask, NULL, NULL, yUp, verbose);
     uint16_image_free(pim);
     for (int32_t c = 0;  c < fim->sz[0]; c++) 
       { float_image_apply_gamma(fim, c, 1/BT_ENC_EXPO, BT_ENC_BIAS); }
@@ -446,9 +446,9 @@ void write_image(char *dir, kind_t kind, int32_t kx, int32_t ky, char *suffix, f
       }
     
     /* Quantize: */
-    bool_t yup = TRUE, verbose = TRUE;
+    bool_t yUp = TRUE, verbose = TRUE;
     bool_t isMask = FALSE; /* Assume uniform distr. of pixel values in encoding/decoding. */
-    uint16_image_t *pim = float_image_to_uint16_image(fim, isMask, chns, NULL, NULL, NULL, 255, yup, verbose);
+    uint16_image_t *pim = float_image_to_uint16_image(fim, isMask, chns, NULL, NULL, NULL, 255, yUp, verbose);
     
     /* Write to PPM file: */
     char *ext = (chns == 1 ? "pgm" : "ppm");

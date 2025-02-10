@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_hog.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-21 11:24:28 by stolfi */ 
+/* Last edited on 2025-01-30 08:04:46 by stolfi */ 
 /* Created on 2008-10-05 by J. Stolfi, UNICAMP */
 
 #define test_hog_COPYRIGHT \
@@ -136,9 +136,9 @@ float_image_t *read_image(char *prefix, char *suffix, char *ext)
     uint16_image_t *pim = uint16_image_read_pnm_file(rd);
     fclose(rd);
     free(fname);
-    bool_t yup = TRUE, verbose = TRUE;
+    bool_t yUp = TRUE, verbose = TRUE;
     bool_t isMask = FALSE; /* Assume uniform distr. of pixel values in encoding/decoding. */
-    float_image_t *fim = float_image_from_uint16_image(pim, isMask, NULL, NULL, yup, verbose);
+    float_image_t *fim = float_image_from_uint16_image(pim, isMask, NULL, NULL, yUp, verbose);
     uint16_image_free(pim);
     int c;
     for (c = 0; c < fim->sz[0]; c++) { float_image_apply_gamma(fim, c, 1/BT_ENC_EXPO, BT_ENC_BIAS); }

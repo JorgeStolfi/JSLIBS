@@ -1,5 +1,5 @@
 /* See r2.h */
-/* Last edited on 2024-11-20 15:45:08 by stolfi */
+/* Last edited on 2025-02-05 15:45:32 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -125,19 +125,25 @@ double r2_L_inf_dist(r2_t *a, r2_t *b)
 
 double r2_dir(r2_t *a, r2_t *r)
   { double d = sqrt(a->c[0]*a->c[0] + a->c[1]*a->c[1]);
-    r->c[0] = a->c[0]/d;
-    r->c[1] = a->c[1]/d;
+    if (d == 0)
+      { (*r) = (r2_t){{ NAN, NAN }}; }
+    else
+      { r->c[0] = a->c[0]/d;
+        r->c[1] = a->c[1]/d;
+      }
     return d;
   }
 
 double r2_L_inf_dir(r2_t *a, r2_t *r)
   { double d = 0.0;
-    double a0 = fabs(a->c[0]);
-    double a1 = fabs(a->c[1]);
-    if (a0 > d) d = a0;
-    if (a1 > d) d = a1;
-    r->c[0] = a->c[0]/d;
-    r->c[1] = a->c[1]/d;
+    double a0 = fabs(a->c[0]); if (a0 > d) d = a0;
+    double a1 = fabs(a->c[1]); if (a1 > d) d = a1;
+    if (d == 0)
+      { (*r) = (r2_t){{ NAN, NAN }}; }
+    else
+      { r->c[0] = a->c[0]/d;
+        r->c[1] = a->c[1]/d;
+      }
     return d;
   }
 

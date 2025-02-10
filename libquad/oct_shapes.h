@@ -2,7 +2,7 @@
 #define oct_shapes_H
 
 /* Procedures that build oct-edge structures for various simple maps. */
-/* Last edited on 2024-12-22 11:01:18 by stolfi */
+/* Last edited on 2025-02-04 20:29:36 by stolfi */
 
 #define oct_shapes_H_copyright \
   "Copyright © 1996, 2006 State University of Campinas (UNICAMP)\n\n" jslibs_copyright
@@ -72,5 +72,5 @@ oct_arc_t make_klein2(void);
 
 oct_arc_t make_klein3(void);
   /* A map on the Klein bottle, with six edges. */
-
+    
 #endif

@@ -1,5 +1,5 @@
 /* r3.h --- operations on points and vectors of R^3 */
-/* Last edited on 2024-12-05 10:27:53 by stolfi */
+/* Last edited on 2025-02-05 15:43:28 by stolfi */
 
 #ifndef r3_H
 #define r3_H
@@ -73,13 +73,16 @@ double r3_L_inf_dist(r3_t *a, r3_t *b);
   /* Returns the L-infinity distance between {a} and {b} 
     (max absolute diff). */
   
-double r3_dir(r3_t *a, r3_t *r); 
-  /* Sets {r} to {a} normalized to unit Euclidean length; 
-    returns the original length. */
+double r3_dir(r3_t *a, r3_t *r);  
+  /* Sets {r} to {a} normalized to unit Euclidean length.
+    If the Euclidean length of {a} is zero, sets {r} to all {NAN}s.
+    Returns the original Euclidean length of {a}. */
 
 double r3_L_inf_dir(r3_t *a, r3_t *r); 
-  /* Sets {r} to the vector {a/r3_L_inf_norm(a)}; 
-    returns the original norm. */
+  /* Sets {r} to the vector {a} divided by {r3_L_inf_norm(a)},
+    the max absolute value of any coordinate.
+    If that denominator is zero, sets {r} to all {NAN}s.
+    Returns the original value of {r3_L_inf_norm(a)}.  */
 
 double r3_dot(r3_t *a, r3_t *b);
   /* Dot product of vectors {a} and {b}. */

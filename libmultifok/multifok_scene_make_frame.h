@@ -1,5 +1,5 @@
 /* Creates focus-blurred images of a scene. */
-/* Last edited on 2024-12-15 06:52:50 by stolfi */
+/* Last edited on 2025-02-08 17:45:03 by stolfi */
 
 #ifndef multifok_scene_make_frame_H
 #define multifok_scene_make_frame_H
@@ -23,9 +23,11 @@ multifok_frame_t *multifok_scene_make_frame
     int32_t NY, 
     multifok_scene_t *scene,
     multifok_scene_tree_t *tree,
-    multifok_scene_raytrace_pattern_t *pattern,
-    r3_t *light_dir,
-    double ambient,
+    multifok_pattern_double_proc_t *patternGlo,
+    multifok_pattern_double_proc_t *patternLam,
+    r3_t *uLit,
+    frgb_t *cLit,
+    frgb_t *cIso,
     double zFoc, 
     double zDep, 
     uint32_t HS,
@@ -36,7 +38,7 @@ multifok_frame_t *multifok_scene_make_frame
     multifok_raytrace_report_pixel_proc_t report_pixel
   );
   /* Creates a frame record {fr} with images {fr.sVal}, {fr.shrp}, {fr.hAvg},
-    and {fr.hDev} of the given {scene}, with simulated depth-of-focus
+    {fr.hDev}, and {fr.sNrm} of the given {scene}, with simulated depth-of-focus
     blur. All four images will have {NX} columns of {NY} pixels.
     
     The scene will be implicitly scaled so that the entire image fits in
@@ -61,6 +63,9 @@ multifok_frame_t *multifok_scene_make_frame
     deviation of the {Z} coordinate of the scene inside each pixel. It
     should be in the range {[0 _ zdMax]} where {zdMax} is
     {max(|zMin-zFoc|, |zMax-zFoc|)}.
+    
+    The {fr.sNrm} image will have three channels, and shows the 
+    {X}, {Y}, and {Z} coordinates of the average surface normal in each pixel.
 
     The value of each pixel of the four images is computed by
     {multifok_raytrace}, using an array of {2*HS+1} by {2*HS+1} sampling
@@ -74,9 +79,13 @@ multifok_frame_t *multifok_scene_make_frame
     deviation of the rays from the vertical, over a vertical travel of
     {zDep} away from the focus plane, will be about 1.
     
-    The color of the scene at the ray's hit point is obtained as
-    described under {multifok_scene_raytrace_compute_hit_color}, with
-    the given {light_dir} and {ambient}.
+    The functions {patternGlo} and {patternLam} are used to interpolate
+    the object attributes {fgGlo,bgGlo} and {fgLam,bgLam} to obtain the
+    surface BRDF attributes {sGlo,sLam}. Then the color of the scene at
+    the ray's hit point is obtained as described under
+    {multifok_render_compute_color}, with the given point light
+    direction {uLit} and color {cLit}, and isotropic ("ambient") light
+    color {cIso}.
     
     if {verbose} is true, will print to {stderr} some general debugging
     information about the frame computation.

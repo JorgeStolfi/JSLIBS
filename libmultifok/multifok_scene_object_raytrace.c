@@ -1,5 +1,5 @@
 /* See {multifok_scene_object_raytrace.h}. */
-/* Last edited on 2024-12-05 10:36:40 by stolfi */
+/* Last edited on 2025-02-09 00:15:23 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +11,7 @@
 #include <bool.h>
 #include <affirm.h>
 #include <interval.h>
+#include <box.h>
 #include <r3.h>
 #include <jsrandom.h>
 #include <jsqroots.h>
@@ -26,6 +27,7 @@
 #define ot_DISK multifok_scene_object_type_DISK
 #define ot_BALL multifok_scene_object_type_BALL
 #define ot_CONE multifok_scene_object_type_CONE
+#define ot_PYRA multifok_scene_object_type_PYRA
 
 #define FUDGE (1.0e-6)
   /* Fudge amount to expand bounding boxes to account for roundoff. */
@@ -51,9 +53,9 @@ double multifok_scene_object_raytrace
       }
     if (! ok)
       { if (verbose) 
-          { fprintf(stderr, "    ray and object bboxes don't intersect");
-            multifok_scene_print_box(stderr, " obj = ", obj->bbox, "");
-            multifok_scene_print_box(stderr, " ray = ", ray_bbox, "\n");
+          { fprintf(stderr, "    ray and object bboxes don't intersect\n");
+            multifok_scene_print_box(stderr, "      obj = ", obj->bbox, "\n");
+            multifok_scene_print_box(stderr, "      ray = ", ray_bbox, "\n");
           } 
         return +INF;
       }
@@ -70,13 +72,15 @@ double multifok_scene_object_raytrace
           tHit = multifok_scene_object_raytrace_BALL(obj->bbox, p, d, verbose); break;
         case ot_CONE:
           tHit = multifok_scene_object_raytrace_CONE(obj->bbox, p, d, verbose); break;
+        case ot_PYRA:
+          tHit = multifok_scene_object_raytrace_PYRA(obj->bbox, p, d, verbose); break;
         default: demand(FALSE, "unrecognized object type");
       }
     /* If we still have a hit, check its {Z} against {zMIn}: */
     if (isfinite(tHit)) 
       { /* Ray hits object, but maybe below {zMin}: */
         char *typeX = multifok_scene_object_type_to_string(obj->type);
-        if (verbose) { fprintf(stderr, "    hit %s object %d at t = %+12.8f", typeX, obj->ID, tHit); } 
+        if (verbose) { fprintf(stderr, "        hit %s object %d at t = %+12.8f", typeX, obj->ID, tHit); } 
         if (tHit < tMin)
           { /* Must be rounding error? */
             if (verbose) { fprintf(stderr, " (!! clipped, tMin = %12.8f)\n", tMin); }
@@ -98,16 +102,14 @@ double multifok_scene_object_raytrace_DISK(interval_t bbox[], r3_t *p, r3_t *d, 
     double dX = d->c[0], dY = d->c[1], dZ = d->c[2];
     demand(dZ < 0.0, "invalid direction vector");
     
-    r3_t ctr = multifok_scene_box_center(bbox);
-    double cX = ctr.c[0], cY = ctr.c[1], cZ = ctr.c[2];
-    r3_t rad = multifok_scene_box_radius(bbox);
-    double r_obj = fmin(rad.c[0], rad.c[1]);
+    r3_t ctr, rad; box_center_and_radii(3, bbox, ctr.c, rad.c);
+    double r_obj = hypot(rad.c[0], rad.c[1])/M_SQRT2;
 
     /* Compute the parameter {tHit} where {ray(tHit)} hits the disk's plane: */
-    double tHit = (cZ - pZ)/dZ; 
+    double tHit = (ctr.c[2] - pZ)/dZ; 
     /* Compute horizontal displacement {sX,sY} from object's center to {ray(tHit)}: */ 
-    double sX = pX + dX*tHit - cX; /* {X} position of ray hit rel to object ctr */
-    double sY = pY + dY*tHit - cY; /* {Y} position of ray hit rel to object ctr */
+    double sX = pX + dX*tHit - ctr.c[0]; /* {X} position of ray hit rel to object ctr */
+    double sY = pY + dY*tHit - ctr.c[1]; /* {Y} position of ray hit rel to object ctr */
     /* Check if ray hits object: */
     double r2_ray = sX*sX + sY*sY;
     if (r2_ray <= r_obj*r_obj)
@@ -120,8 +122,7 @@ double multifok_scene_object_raytrace_BALL(interval_t bbox[], r3_t *p, r3_t *d, 
   { double pX = p->c[0], pY = p->c[1], pZ = p->c[2];
     double dX = d->c[0], dY = d->c[1], dZ = d->c[2];
     demand(dZ < 0.0, "invalid direction vector");
-    r3_t ctr = multifok_scene_box_center(bbox);
-    r3_t rad = multifok_scene_box_radius(bbox);
+    r3_t ctr, rad; box_center_and_radii(3, bbox, ctr.c, rad.c);
     double cX = ctr.c[0], cY = ctr.c[1], cZ = ctr.c[2];
     double r_obj = fmin(fmin(rad.c[0], rad.c[1]), rad.c[2]);
 
@@ -155,51 +156,125 @@ double multifok_scene_object_raytrace_CONE(interval_t bbox[], r3_t *p, r3_t *d, 
     double pX = p->c[0], pY = p->c[1], pZ = p->c[2];
     double dX = d->c[0], dY = d->c[1], dZ = d->c[2];
     demand(dZ < 0.0, "invalid direction vector");
-    double cX = interval_mid(&(bbox[0]));
-    double cY = interval_mid(&(bbox[1]));
+
     double loZ = bbox[2].end[0];
     double hiZ = bbox[2].end[1];
+
+    /* Apex coordinates: */
+    double aX, rX; interval_mid_rad(&(bbox[0]), &aX, &rX);
+    double aY, rY; interval_mid_rad(&(bbox[1]), &aY, &rY);
+    double aZ = hiZ, hZ = hiZ - loZ;
+ 
+    /* The cone equation is {((X-aX)/rX)^2 + ((Y-aY)/rY)^2 = ((Z-aZ)/hZ)^2}. */
+    /* Substitute {X = pX+t*dX}, {Y=pY+t*dY}, {Z=pZ+t*dZ}. */
+    /* {((t*dX+pX-aX)/rX)^2 + ((t*dY+pY-aY)/rY)^2 = ((t*dZ+pZ-aZ)/rZ)^2} */
+
+    double LX = (pX - aX)/rX, KX = dX/rX;  
+    double LY = (pY - aY)/rY, KY = dY/rY;  
+    double LZ = (pZ - aZ)/hZ, KZ = dZ/hZ; 
+   
+    /* The cone equation is then: */
+    /* {(t*KX+LX)^2 + (t*KY+LY)^2 = (t*KZ+LZ)^2} */
+    /* Collect terms to get {A*t^2 + B^t + C = 0}: */
+
+    double A = KX*KX + KY*KY - KZ*KZ;
+    double B = 2*LX*KX + 2*LY*KY - 2*LZ*KZ;
+    double C = LX*LX + LY*LY - LZ*LZ;
     
     double tMin = (hiZ - pZ)/dZ;
     double tMax = (loZ - pZ)/dZ;
     
-    /* The cone equation is {(X-cX)^2 + (Y-cY)^2 = ((Z-hiZ)/2)^2}. */
-    /* Substitute {X = pX+t*dX}, {Y=pY+t*dY}, {Z=pZ+t*DZ}. */
-    /* {(t*dX+pX-cX)^2 + (t*dY+pY-cY)^2 = ((t*dZ+pZ-hiZ)/2)^2} */
-
-    double LX = pX - cX;  
-    double LY = pY - cY;  
-    double LZ = pZ - hiZ; 
-    
-    /* Collect terms to get {A*t^2 + B^t + C = 0}: */
-
-    double A = dX*dX + dY*dY - dZ*dZ/4;
-    double B = 2*LX*dX + 2*LY*dY - LZ*dZ/2;
-    double C = LX*LX + LY*LY - LZ*LZ/4;
-    
+    double tq;
     double r1, r2, im;
     int32_t sgn = roots_quadratic(A, B, C, &r1, &r2, &im);
     if (im != 0)
-      { /* No real root: */ return +INF; }
-    else if (isnan(r1))
-      { /* Degenerate, no roots: */ return +INF; }
-    else if (isnan(r2))
+      { /* No real root: */ tq = +INF; }
+    else if (! isfinite(r1))
+      { /* Degenerate, no roots: */ tq = +INF; }
+    else if ((sgn == 0) || (! isfinite(r2)))
       { /* Only one root {r1}: */
         if ((r1 >= tMin) && (r1 <= tMax)) 
-          { return r1; }
+          { tq = r1; }
         else
-          { return +INF; }
+          { tq = +INF; }
       }
     else
       { assert(r1 <= r2);
         assert(sgn > 0);
         if ((r1 >= tMin) && (r1 <= tMax)) 
-          { return r1; }
+          { tq = r1; }
         else if ((r2 >= tMin) && (r2 <= tMax)) 
-          { return r2; }
+          { tq = r2; }
         else
-          { return +INF; }
+          { tq = +INF; }
       }
+    return tq;
+  }
+        
+double multifok_scene_object_raytrace_PYRA(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose)
+  { /* Grab important cordinates: */
+    double pZ = p->c[2];
+    double dZ = d->c[2];
+
+    double cX, rX; interval_mid_rad(&(bbox[0]), &cX, &rX);
+    double cY, rY; interval_mid_rad(&(bbox[1]), &cY, &rY);
+    double loZ = bbox[2].end[0];
+    double hiZ = bbox[2].end[1];
+
+    assert(fabs(rX-rY) < 1.0e-12*(rX+rY));
+    double rXY = 0.5*(rX + rY);
+    double hZ = hiZ - loZ;
+    
+    r3_t a = (r3_t){{ cX, cY, hiZ }}; /* Pyramid's apex. */
+    r3_t pa; r3_sub(p, &a, &pa);
+    
+    /* The pyramid is the intersection of four side half-spaces plus the base half-space. */
+    /* Check the four side faces and base of the pyramid, get interval {tLo,tHi} inside each: */
+    r3_t sNrm = (r3_t){{ hZ, 0.0, rXY }}; /* Oytwards normal of next halfspace. */
+    double tLo = 0, tHi = +INF;  /* Range of {t} that is inside the pyramid. */
+    for (int32_t ks = 0; ks <= 4; ks++)
+      { /* Get {A,B} so that point is outside iff {A t + B > 0}: */
+        double A, B;
+        if (ks < 4)
+          { /* Pyramid side: */
+            A = r3_dot(d, &sNrm);  
+            B = r3_dot(&pa, &sNrm);
+            /* Rotate the normal about {Z} axis, for next iteration: */
+            sNrm = (r3_t){{ -sNrm.c[1], +sNrm.c[0], sNrm.c[2] }};
+          }
+        else
+          { /* Pyramid base: */
+            A = -dZ; B = loZ - pZ;
+          }
+        double tkLo, tkHi;
+        if (B < 0)
+          { if (A <= 0) 
+              { /* {pR} is inside the halfspace, {dR} is pointing inward: */
+                tkLo = 0; tkHi = +INF;
+              }
+            else
+              { /* {pR} is inside the halfspace, {dR} is pointing outward: */
+                tkLo = 0; tkHi = -B/A;
+              }
+          }
+        else
+          { if (A < 0)
+              { /* {pR} is outside, {dR} is pointing inward: */
+                tkLo = -B/A; tkHi = +INF;
+              }
+            else
+              { /* {pR} is outside, {dR} is pointing outwards: */
+                tkLo = +INF, tkHi = 0;
+              }
+          }
+        if ((! isnan(tkLo)) && (! isnan(tkHi)))
+          { tLo = fmax(tLo, tkLo); tHi = fmin(tHi, tkHi); }
+      }
+    
+    if (tLo < tHi)
+      { return tLo; }
+    else
+      { return +INF; }
   }
         
 double multifok_scene_object_raytrace_FLAT(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose)

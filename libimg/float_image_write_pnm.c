@@ -1,5 +1,5 @@
 /* See {float_image_write_pnm.h}. */
-/* Last edited on 2025-01-01 16:02:59 by stolfi */
+/* Last edited on 2025-01-30 08:06:26 by stolfi */
 
 #include <stdlib.h>
 #include <math.h>
@@ -20,7 +20,7 @@ void float_image_write_pnm_named
     bool_t isMask,      /* TRUE for masks, FALSE for images. */
     double expoDec,     /* Gamma exponent that will be used in decoding (1 = linear encoding). */    
     double bias,        /* Offset to use in encoding. */                         
-    bool_t yup,         /* If TRUE, reverses the indexing of rows. */            
+    bool_t yUp,         /* If TRUE, reverses the indexing of rows. */            
     bool_t warn,        /* If TRUE, prints "writing {fname}..." to {stderr}. */
     bool_t verbose      /* If TRUE, prints conversion diagnostics to {stderr}. */
   )
@@ -32,7 +32,7 @@ void float_image_write_pnm_named
       { float_image_apply_gamma(gim, c, 1.0/expoDec, bias); }
     uint16_t maxval = uint16_image_MAX_SAMPLE;
     uint16_image_t *pim = 
-      float_image_to_uint16_image(gim, isMask, nc, NULL, NULL, NULL, maxval, yup, verbose);
+      float_image_to_uint16_image(gim, isMask, nc, NULL, NULL, NULL, maxval, yUp, verbose);
     float_image_free(gim);
     uint16_image_write_pnm_named(fname, pim, FALSE, warn);
     uint16_image_free(pim);
@@ -45,11 +45,11 @@ void float_image_write_pnm_named_list
     bool_t isMask,        /* TRUE for masks, FALSE for images. */
     double expoDec,       /* Gamma exponent that will be used in decoding (1 = linear encoding). */    
     double bias,          /* Offset to use in encoding. */                         
-    bool_t yup,           /* If TRUE, reverses the indexing of rows. */ 
+    bool_t yUp,           /* If TRUE, reverses the indexing of rows. */ 
     bool_t warn,          /* If TRUE, prints "writing {fname}..." to {stderr}. */
     bool_t verbose        /* If TRUE, prints conversion diagnostics to {stderr}. */
   )
   { int32_t i;
     for(i = 0; i < n; i++)
-      { float_image_write_pnm_named(fname[i], fim[i], isMask, expoDec, bias, yup, warn, verbose); }
+      { float_image_write_pnm_named(fname[i], fim[i], isMask, expoDec, bias, yUp, warn, verbose); }
   }

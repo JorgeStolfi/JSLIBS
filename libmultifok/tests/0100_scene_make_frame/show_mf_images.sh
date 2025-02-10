@@ -1,7 +1,7 @@
 #! /bin/bash
-# Last edited on 2024-10-22 10:57:40 by stolfi
+# Last edited on 2025-02-01 16:24:29 by stolfi
 
-stackDir="$1"; shift;    # Prefix for all images.
+stackFolder="$1"; shift;    # Prefix for all images.
 zDep_FMT="$1"; shift;    # Depth of focus, formatted as in image names.
 
 tmp="/tmp/$$"
@@ -11,19 +11,20 @@ tmp="/tmp/$$"
 
 tmpPrefixSharp="${tmp}-sharp"
 
-sVal_sharp="${stackDir}/frame-sharp/sVal.png"
-iDeb="${stackDir}/selected-pixels.png"
+sVal_sharp="${stackFolder}/frame-sharp/sVal.png"
+iDeb="${stackFolder}/selected-pixels.png"
 
 row1img="${tmpPrefixSharp}-sVal-iDeb.png"
 convert +append ${sVal_sharp} ${iDeb} ${row1img}
 
-hAvg_sharp="${stackDir}/frame-sharp/hAvg.png"
-hDev_sharp="${stackDir}/frame-sharp/hDev.png"
+hAvg_sharp="${stackFolder}/frame-sharp/hAvg.png"
+hDev_sharp="${stackFolder}/frame-sharp/hDev.png"
+sNrm_sharp="${stackFolder}/frame-sharp/sNrm.png"
 
-row2img="${tmpPrefixSharp}-hAvg-hDev.png"
-convert +append ${hAvg_sharp} ${hDev_sharp} ${row2img}
+row2img="${tmpPrefixSharp}-hAvg-hDev-sNrm.png"
+convert +append ${hAvg_sharp} ${hDev_sharp} ${sNrm_sharp} ${row2img}
 
-showImgSharp="${stackDir}/frame-sharp/show.png"
+showImgSharp="${stackFolder}/frame-sharp/show.png"
 convert -append ${row1img} ${row2img} ${showImgSharp}
 if [[ ! ( -s ${showImgSharp} ) ]]; then
   echo "sharp montage failed" 1>&2; exit 1
@@ -32,32 +33,34 @@ fi
 # ----------------------------------------------------------------------
 # Assemble the per-frame images:
 
-frameDirs=( `cd ${stackDir} && ls -d frame-*-df${zDep_FMT} | sort` )
-for frameDir in ${frameDirs[@]} ; do
-  tmpPrefixFrame="${tmp}-${frameDir}"
-  echo "=== ${frameDir} ===" 1>&2
+frameDirs=( `cd ${stackFolder} && ls -d frame-*-df${zDep_FMT} | sort` )
+for frameFolder in ${frameDirs[@]} ; do
+  tmpPrefixFrame="${tmp}-${frameFolder}"
+  echo "=== ${frameFolder} ===" 1>&2
 
-  sVal="${stackDir}/${frameDir}/sVal.png"
-  shrp="${stackDir}/${frameDir}/shrp.png"
+  sVal="${stackFolder}/${frameFolder}/sVal.png"
+  shrp="${stackFolder}/${frameFolder}/shrp.png"
 
   row1img="${tmpPrefixFrame}-sVal-shrp.png"
   convert +append ${sVal} ${shrp} ${row1img}
 
-  hAvg="${stackDir}/${frameDir}/hAvg.png"
-  hDev="${stackDir}/${frameDir}/hDev.png"
+  hAvg="${stackFolder}/${frameFolder}/hAvg.png"
+  hDev="${stackFolder}/${frameFolder}/hDev.png"
 
-  row2img="${tmpPrefixFrame}-hAvg-hDev.png"
-  convert +append ${hAvg} ${hDev} ${row2img}
+  sNrm="${stackFolder}/${frameFolder}/sNrm.png"
 
-  showImgFrame="${stackDir}/${frameDir}/show.png"
+  row2img="${tmpPrefixFrame}-hAvg-hDev-sNrm.png"
+  convert +append ${hAvg} ${hDev} ${sNrm} ${row2img}
+
+  showImgFrame="${stackFolder}/${frameFolder}/show.png"
   convert -append ${row1img} ${row2img} ${showImgFrame}
   rm -f ${row1img} ${row2img}
   if [[ ! ( -s ${showImgFrame} ) ]]; then
-    echo "frame ${frameDir} montage failed" 1>&2; exit 1
+    echo "frame ${frameFolder} montage failed" 1>&2; exit 1
   fi
 done
 
 # ----------------------------------------------------------------------
 # Show the assembled images:
 
-( cd ${stackDir} && display -geometry '1600x800' -title '%d/%f' -filter Box -resize '400%' frame-{sharp,*-df${zDep_FMT}}/show.png )
+( cd ${stackFolder} && display -geometry '1600x800' -title '%d/%f' -filter Box -resize '400%' frame-{sharp,*-df${zDep_FMT}}/show.png )

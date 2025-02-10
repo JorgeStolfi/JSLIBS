@@ -1,5 +1,5 @@
 /* Write a {float_image_t} to a file with variable format. */
-/* Last edited on 2025-01-03 16:24:20 by stolfi */
+/* Last edited on 2025-01-30 04:46:50 by stolfi */
 
 #ifndef float_image_write_gen_H
 #define float_image_write_gen_H
@@ -14,18 +14,18 @@
 
 #define float_image_write_gen_MAX_CHANS (4)
 
-/* Each procedure in this section writes given {float_image_t} in-memory image
-  to an image file in a specified
-  format, including PNG, JPG, PNM (PBM, PGM, or PPM), and FNI; converting it 
-  appropriately.
+/* Each procedure in this section writes given {float_image_t} in-memory
+  image to an image file in a specified format, including PNG, JPG, PNM
+  (PBM, PGM, or PPM), and FNI; converting it appropriately.
     
   For FNI images, there is no conversion; the samples are written
-  out in a suitable decimal floating-point format.
+  out in a suitable decimal floating-point format. The {yUp} flag is 
+  ignored.
   
-  For all other formats except FNI, {float} samples from the image
-  are converted from their original assumed range {[v0 _ vM]} 
-  to the range {0..maxval}, where {maxval} depends on the image file 
-  format. 
+  For all other formats except FNI, the {yUp} flag is considered, and
+  each {float} sample from the image is converted from its original
+  assumed range {[v0 _ vM]} to the range {0..maxval}, where {maxval}
+  depends on the image file format.
   
   Image samples that are outside the range {[v0_vM]} are clipped to that
   range, with a warning. However, a warning is printed if the sample
@@ -75,6 +75,7 @@ void float_image_write_gen_named
   ( const char *fname,         /* File name. */
     float_image_t *fimg,       /* Image to write out. */
     image_file_format_t ffmt,  /* File format. */
+    bool_t yUp,                /* If true, row 0 will be at BOTTOM of image. */
     double v0,                 /* Output sample value corresponding to file sample value 0. */
     double vM,                 /* Output sample value corresponding to max file sample value. */
     double expoEnc,            /* Exponent parameter for gamma encoding. */
@@ -96,10 +97,11 @@ void float_image_write_gen_file
   ( FILE *wr,
     float_image_t *fimg,
     image_file_format_t ffmt,
-    double v0,      /* Output sample value corresponding to file sample value 0. */
-    double vM,      /* Output sample value corresponding to max file sample value. */
-    double expoEnc,  /* Exponent parameter for gamma encoding. */
-    double bias,      /* Bias parameter for gamma encoding. */
+    bool_t yUp,                /* If true, row 0 will be at BOTTOM of image. */
+    double v0,                 /* Output sample value corresponding to file sample value 0. */
+    double vM,                 /* Output sample value corresponding to max file sample value. */
+    double expoEnc,            /* Exponent parameter for gamma encoding. */
+    double bias,               /* Bias parameter for gamma encoding. */
     bool_t verbose
   );
   /* Same as {float_image_write_gen_named}, but reads from the file handle {rd}
@@ -111,6 +113,7 @@ void float_image_write_gen_frame
     int32_t fnum,
     float_image_t *fimg,
     image_file_format_t ffmt,
+    bool_t yUp,      /* If true, row 0 will be at BOTTOM of image. */
     double v0,       /* Output sample value corresponding to file sample value 0. */
     double vM,       /* Output sample value corresponding to max file sample value. */
     double expoEnc,  /* Exponent parameter for gamma encoding. */

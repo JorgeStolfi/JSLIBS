@@ -1,5 +1,5 @@
 /* Stack of images with limited depth of focus. */
-/* Last edited on 2024-12-05 14:20:58 by stolfi */
+/* Last edited on 2025-02-01 16:55:48 by stolfi */
 
 #ifndef multifok_frame_H
 #define multifok_frame_H
@@ -15,47 +15,55 @@ typedef struct multifok_frame_t
     float_image_t *shrp;    /* Actual sharpness map. */
     float_image_t *hAvg;    /* Actual scene {Z} average map. */
     float_image_t *hDev;    /* Actual scene {Z} deviation map. */
+    float_image_t *sNrm;    /* Surface normal direction. */
     double zFoc;            /* Nominal {Z} of focus plane in each image. */
     double zDep;            /* Nominal depth of focus. */
   } multifok_frame_t;
   /* A a simulated limited-focus camera view image {sVal} and associated
-    data images {shrp,hAvg,hDev}.  All four images must have the 
-    same number of columns {NX} and of rows {NY}.  The simulated image {sVal}
-    must have {NC} channels, while the others must have a single channel. */
+    data images {shrp,hAvg,hDev,sNrm}. All five images must have the
+    same number of columns {NX} and of rows {NY}. The simulated image
+    {sVal} must have {NC} channels, the normal image {sNrm} must have 3
+    channels, while the others must have a single channel. */
      
 multifok_frame_t *multifok_frame_from_images
   ( float_image_t *sVal,    /* Simulated camera image. */
     float_image_t *shrp,    /* Actual sharpness map. */
     float_image_t *hAvg,    /* Actual scene {Z} average map. */
     float_image_t *hDev,    /* Actual scene {Z} deviation map. */
-    double zFoc,             /* Nominal {Z} of focus plane in each image. */
-    double zDep              /* Nominal depth of focus. */
+    float_image_t *sNrm,    /* Surface normal direction. */
+    double zFoc,            /* Nominal {Z} of focus plane in each image. */
+    double zDep             /* Nominal depth of focus. */
   );
-  /* Creates a {multifok_frame_t} record from the given data. Checks that all images 
-    have the same {NX,NY}, and all have one channel
-    except {sVal} which may have more. */
+  /* Creates a {multifok_frame_t} record from the given data. Checks
+    that all images have the same {NX,NY}, and all have one channel
+    except {sNrm} that must have three channels and {sVal} which may
+    have one or more. */
 
 void multifok_frame_free(multifok_frame_t *frame);
   /* Releases all storage used by {frame} including the images and
     the {*frame} record itself. */
     
 multifok_frame_t *multifok_frame_read
-  ( char *frameDir,
+  ( char *frameFolder,
     bool_t gray,
     double zFoc,
     double zDep,
     double hMin,
     double hMax
   );
-  /* Reads a set of images {frame.{sVal,shrp,hAvg,hDev}} from files
-    "{frameDir}/{sub}.png" where {sub} is "sVal", "shrp", 
-    "hAvg", "hDev", respectively.
+  /* Reads a set of images {frame.{sVal,shrp,hAvg,hDev,sNrm}} from files
+    "{frameFolder}/{sub}.png" where {sub} is "sVal", "shrp", 
+    "hAvg", "hDev", and "sNrm", respectively.
     
-    The samples in the {hAvg} and {hDev} images are implicit converted from their
-    natural {[0 _ 1]} range to {[hMin _ hMax]}. Typically {hMin} and {hMax} are the scene's
-    min and max {Z} coordinates.  
+    The samples in the {hAvg} and {hDev} files are implicit converted
+    from their {0..maxval} range to {[hMin _ hMax]}. Typically
+    {hMin} and {hMax} are the scene's min and max {Z} coordinates.
     
-    The {shrp} image will have samples in the range {[0 _ 1]} as implied by the file.
+    The {sNrm} image will have the file samples in {0..maxval} mapped to the
+    range {[-1 _ +1]}.
+    
+    The {shrp} image will have samples in the range {[0 _ 1]} as implied
+    by the file.
     
     If {gray} is true, the camera view image {sVal} is converted to grayscale
     (with a single channel) as it is read.
@@ -64,27 +72,34 @@ multifok_frame_t *multifok_frame_read
 
 void multifok_frame_write
   ( multifok_frame_t *frame,
-    char *frameDir,
+    char *frameFolder,
     double hMin,
     double hMax
   ); 
-  /* Writes the images of the {frame} to the directory "{frameDir}"
+  /* Writes the images of the {frame} to the directory "{frameFolder}"
     as described in {multifok_FRAME_DIR_INFO} and {multifok_FRAME_FILES_INFO}. */
   
 #define multifok_FRAME_DIR_INFO \
   "The frame sub-folder name is" \
-  " generally \"frame-zf{FFF.FFFF}-df{DDD.DDDD}\", where" \
+  " generally \"zf{FFF.FFFF}-df{DDD.DDDD}\", where" \
   " {FFF.FFFF} and {DDD.DDDD} are the values of the frame's in-focus plane" \
   " position {zFoc} and nominal depth of focus {zDep}" \
   " fields, both formatted as \"%08.4d\".  As a special case, the" \
-  " sub-folder \"frame-sharp\" will have a frame without any focus" \
+  " sub-folder \"sharp\" will have a frame without any focus" \
   " blurring ({zDep} infinite)."
   
 #define multifok_FRAME_FILES_INFO \
   "Each frame sub-folder will contain four images:\n" \
   "\n" \
   "      \"sVal.png\" The simulated snapshot of the scene with" \
-  " depth-of-focus blur.\n" \
+  " depth-of-focus blur.  The samples are encoded linearly with " \
+  " file samples {0..maxval} corresponding to {[0 _ 1]}.\n" \
+  "\n" \
+  "      \"sNrm.png\" The average normal direction of the" \
+  " portion of the scene's surface visible within each pixel, in scene" \
+  " coordinates.  All three channels will be encoded linearly" \
+  " with file samples {0..maxval} corresponding to {[-1 _ +1]}.\n" \
+  "\n\n" \
   "\n" \
   "      \"zAgv.png\" The average {hAvg} of the height of the" \
   " scene's surface visible within each pixel, accounting for" \
@@ -102,13 +117,13 @@ void multifok_frame_write
   " of the distance between the" \
   " points of the scene surface that are visible in" \
   " the pixel and the center of the pixel, measured in" \
-  " a direction parallel to the in-focus plane.\n" \
+  " a direction parallel to the in-focus plane.   The" \
+  " samples are encoded linearly with " \
+  " file samples {0..maxval} corresponding to {[0 _ 1]}.\n" \
   "\n" \
   "    The pixel values of the {hAvg} and {hDev} images are" \
   " implicitly scaled so that some range {[hMin _ hMax]} is mapped" \
   " to {[0 _ 1]}.  Typically {hMin} and {hMax} are the nominal" \
-  " min and max {Z} coordinates of the scene's surface. The pixel" \
-  " values of the {sVal} and {shrp} images naturally range" \
-  " in {[0 _ 1]} so they are written out without any scaling."
+  " min and max {Z} coordinates of the scene's surface."
 
 #endif

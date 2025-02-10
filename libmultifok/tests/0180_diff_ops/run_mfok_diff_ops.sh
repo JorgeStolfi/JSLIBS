@@ -1,5 +1,5 @@
 #! /bin/bash
-# Last edited on 2024-10-19 09:55:30 by stolfi
+# Last edited on 2025-01-30 10:30:22 by stolfi
 
 echo "=== run_mfok_diff_ops.sh =============================" 1>&2
 echo "$@" 1>&2
@@ -98,7 +98,7 @@ noise="$1"; shift;       # Noise level for local brightness/contrast normalizati
 
 noise_TAG="`printf "%05.2f" ${noise}`"
 
-inDir="in"
+inFolder="in"
 
 formFiles=( ) # Files with term coeffcients fitted to binned or pixel data.
 
@@ -113,16 +113,16 @@ while [[ ${ko} -lt ${no} ]]; do
   ko=$(( ${ko} + 7 ))
 done
 
-outDir="out/bt${basisType}-wt${weightsType}-${termSet}-ns${noise_TAG}-ims${imageSet}"
-outPrefix="${outDir}/run"
+outFolder="out/bt${basisType}-wt${weightsType}-${termSet}-ns${noise_TAG}-ims${imageSet}"
+outPrefix="${outFolder}/run"
 
 # Get the list of quadratic terms descriptions:
 termSetFile="term-set/${basisType}-${termSet}.txt"
 
-mkdir -pv ${outDir}
+mkdir -pv ${outFolder}
 rm -fv ${outPrefix}*.ppm ${outPrefix}*.pgm ${outPrefix}*.txt
 ./test_mfok_diff_ops \
-  -inDir ${inDir} \
+  -inFolder ${inFolder} \
   ${imageOptions[@]} \
   -basisType ${basisType} \
   -weightsType ${weightsType} \
@@ -166,7 +166,7 @@ if [[ -s ${pixDataFile} ]]; then
   ./plot_terms_by_hrad2.sh ${outPrefix} ${basisType} ${termSet} "${coeffPlotTitle}"
 
   echo "showing the quadratic terms term images for the firsts input image ..." 1>&2 
-  ./show_term_images.sh ${inDir} ${outPrefix} ${imageOptions[@]:1:6}
+  ./show_term_images.sh ${inFolder} ${outPrefix} ${imageOptions[@]:1:6}
 
   # Do regression on {shrp} as func of bin-averaged quadratic terms with and without the "1" term:
   for unitTerm in 0 1 ; do

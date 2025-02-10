@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_geostereo.h} and {float_image_geostereo_uniscale.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-01-01 16:06:57 by stolfi */ 
+/* Last edited on 2025-01-30 08:04:16 by stolfi */ 
 /* Created on 2009-06-02 by J. Stolfi, UNICAMP */
 
 #define test_geostereo_COPYRIGHT \
@@ -102,10 +102,10 @@ float_image_t *get_test_image(char *name, int32_t NC)
     demand((NC == 1) || (NC == 3), "bad num of channels");
     char *fname = jsprintf("in/%s.%s", name, (NC == 3 ? "ppm" : "pgm"));
     bool_t isMask = FALSE; /* Assume pixels have a smooth distribution. */
-    bool_t yup = FALSE;
+    bool_t yUp = FALSE;
     bool_t warn = TRUE;
     bool_t verbose = FALSE;
-    float_image_t *img = float_image_read_pnm_named(fname, isMask, 1.0000, 0.0327, yup, warn, verbose);
+    float_image_t *img = float_image_read_pnm_named(fname, isMask, 1.0000, 0.0327, yUp, warn, verbose);
     free(fname);
     return img;
   }
@@ -114,7 +114,7 @@ void write_image(float_image_t *img, char *name, double vmin, double vmax)
   {
     int32_t NC = (int32_t)img->sz[0];
     bool_t isMask = FALSE; /* Assume pixels have a smooth distribution. */
-    bool_t yup = FALSE; /* Reverse order of lines in file. */
+    bool_t yUp = FALSE; /* Reverse order of lines in file. */
     bool_t warn = TRUE; /* Print message on open. */
     bool_t verbose = FALSE;
     
@@ -131,7 +131,7 @@ void write_image(float_image_t *img, char *name, double vmin, double vmax)
         char *fname = makefname(name, NC, (NC == 3 ? "ppm" : "pgm"));
         for (int32_t c = 0;  c < NC; c++)
           { float_image_rescale_samples(img, c, (float)vmin, (float)vmax, 0.0, 1.0); }
-        float_image_write_pnm_named(fname, img, isMask, 1.0000, 0.000, yup, warn, verbose);
+        float_image_write_pnm_named(fname, img, isMask, 1.0000, 0.000, yUp, warn, verbose);
         free(fname);
       }
   }

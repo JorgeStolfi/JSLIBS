@@ -1,5 +1,5 @@
 /* See {float_image_read_gen.h} */
-/* Last edited on 2024-12-20 17:48:38 by stolfi */
+/* Last edited on 2025-01-30 04:55:25 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -42,6 +42,7 @@ float_image_t *float_image_read_gen_frame
   ( const char *fpat,
     int32_t fnum,
     image_file_format_t ffmt,
+    bool_t yUp,         /* If true, the BOTTOM row of the file will be row 0 of the image. */
     float v0,           /* Output sample value corresponding to file sample value 0. */
     float vM,           /* Output sample value corresponding to max file sample value. */
     uint16_t **maxvalP, /* (OUT) Discrete nominal max value in file for each channel. */
@@ -53,7 +54,7 @@ float_image_t *float_image_read_gen_frame
     /* Insert the frame number in {fpat}: */
     char *fname = jsprintf(fpat, fnum);
     /* Read the file: */
-    float_image_t *fimg = float_image_read_gen_named(fname, ffmt, v0, vM, maxvalP, expoDecP, biasP, verbose);
+    float_image_t *fimg = float_image_read_gen_named(fname, ffmt, yUp, v0, vM, maxvalP, expoDecP, biasP, verbose);
     free(fname);
     return fimg;
   }
@@ -61,6 +62,7 @@ float_image_t *float_image_read_gen_frame
 float_image_t *float_image_read_gen_named
   ( const char *fname,
     image_file_format_t ffmt,
+    bool_t yUp,         /* If true, the BOTTOM row of the file will be row 0 of the image. */
     float v0,           /* Output sample value corresponding to file sample value 0. */
     float vM,           /* Output sample value corresponding to max file sample value. */
     uint16_t **maxvalP, /* (OUT) Discrete nominal max value in file for each channel. */
@@ -70,7 +72,7 @@ float_image_t *float_image_read_gen_named
   )
   {
     FILE *rd = open_read(fname, verbose);
-    float_image_t *fimg = float_image_read_gen_file(rd, ffmt, v0, vM, maxvalP, expoDecP, biasP, verbose);
+    float_image_t *fimg = float_image_read_gen_file(rd, ffmt, yUp, v0, vM, maxvalP, expoDecP, biasP, verbose);
     fclose(rd);
     return fimg;
   }
@@ -78,6 +80,7 @@ float_image_t *float_image_read_gen_named
 float_image_t *float_image_read_gen_file
   ( FILE *rd,
     image_file_format_t ffmt,
+    bool_t yUp,         /* If true, the BOTTOM row of the file will be row 0 of the image. */
     float v0,           /* Output sample value corresponding to file sample value 0. */
     float vM,           /* Output sample value corresponding to max file sample value. */
     uint16_t **maxvalP, /* (OUT) Discrete nominal max value in file for each channel. */
@@ -156,9 +159,8 @@ float_image_t *float_image_read_gen_file
     
     /* Convert to float image in the range {[eslo_eshi]}: */
     bool_t isMask = FALSE;          /* TRUE for masks, FALSE for images. */
-    bool_t yup = FALSE;             /* TRUE to reverse the indexing of rows. */
     bool_t verbose_float = verbose; /* TRUE to debug the conversion. */
-    float_image_t *fimg = float_image_from_uint16_image(pimg, isMask, slo, shi, yup, verbose_float);
+    float_image_t *fimg = float_image_from_uint16_image(pimg, isMask, slo, shi, yUp, verbose_float);
     
     /* Discards the pixel array and header of the PNM image. */
     uint16_image_free(pimg);

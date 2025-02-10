@@ -1,5 +1,5 @@
 /* See {float_image_write_gen.h} */
-/* Last edited on 2024-12-20 17:41:45 by stolfi */
+/* Last edited on 2025-01-30 04:49:55 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -33,6 +33,7 @@ void float_image_write_gen_frame
     int32_t fnum,
     float_image_t *fimg,
     image_file_format_t ffmt,
+    bool_t yUp,       /* If true, row 0 will be at BOTTOM of image. */
     double v0,        /* Output sample value corresponding to file sample value 0. */
     double vM,        /* Output sample value corresponding to max file sample value. */
     double expoEnc,   /* Exponent parameter for gamma encoding. */
@@ -44,7 +45,7 @@ void float_image_write_gen_frame
     char *fname = jsprintf(fpat, fnum);
 
     /* Write the file: */
-    float_image_write_gen_named(fname, fimg, ffmt, v0, vM, expoEnc, bias, verbose);
+    float_image_write_gen_named(fname, fimg, ffmt, yUp, v0, vM, expoEnc, bias, verbose);
 
     free(fname);
   }
@@ -53,6 +54,7 @@ void float_image_write_gen_named
   ( const char *fname,
     float_image_t *fimg,
     image_file_format_t ffmt,
+    bool_t yUp,       /* If true, row 0 will be at BOTTOM of image. */
     double v0,        /* Output sample value corresponding to file sample value 0. */
     double vM,        /* Output sample value corresponding to max file sample value. */
     double expoEnc,   /* Exponent parameter for gamma encoding. */
@@ -60,7 +62,7 @@ void float_image_write_gen_named
     bool_t verbose
   )
   { FILE *wr = open_write(fname, verbose);
-    float_image_write_gen_file(wr, fimg, ffmt, v0, vM, expoEnc, bias, verbose);
+    float_image_write_gen_file(wr, fimg, ffmt, yUp, v0, vM, expoEnc, bias, verbose);
     fclose(wr);
   }
 
@@ -68,6 +70,7 @@ void float_image_write_gen_file
   ( FILE *wr,
     float_image_t *fimg,
     image_file_format_t ffmt,
+    bool_t yUp,       /* If true, row 0 will be at BOTTOM of image. */
     double v0,        /* Output sample value corresponding to file sample value 0. */
     double vM,        /* Output sample value corresponding to max file sample value. */
     double expoEnc,   /* Exponent parameter for gamma encoding. */
@@ -111,10 +114,9 @@ void float_image_write_gen_file
     
     /* Quantize samples of {gimg} to the {uint16_t} image {pimg}: */
     bool_t isMask  = FALSE;
-    bool_t yup = FALSE;
     bool_t verbose_quant = FALSE;
     if (debug) { fprintf(stderr, "  quantizing image...\n"); }
-    uint16_image_t *pimg = float_image_to_uint16_image(gimg, isMask, NC, slo, shi, NULL, maxval, yup, verbose_quant);
+    uint16_image_t *pimg = float_image_to_uint16_image(gimg, isMask, NC, slo, shi, NULL, maxval, yUp, verbose_quant);
     float_image_free(gimg);
     
     /* Write {pimg} to file: */

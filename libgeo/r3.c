@@ -1,5 +1,5 @@
 /* See r3.h */
-/* Last edited on 2024-11-20 15:49:06 by stolfi */
+/* Last edited on 2025-02-05 15:34:59 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -152,23 +152,28 @@ double r3_L_inf_dist(r3_t *a, r3_t *b)
 
 double r3_dir(r3_t *a, r3_t *r)
   { double d = sqrt(a->c[0]*a->c[0] + a->c[1]*a->c[1] + a->c[2]*a->c[2]);
-    r->c[0] = a->c[0]/d;
-    r->c[1] = a->c[1]/d;
-    r->c[2] = a->c[2]/d;
+    if (d == 0)
+      { (*r) = (r3_t){{ NAN, NAN, NAN }}; }
+    else
+      { r->c[0] = a->c[0]/d;
+        r->c[1] = a->c[1]/d;
+        r->c[2] = a->c[2]/d;
+      }
     return d;
   }
 
 double r3_L_inf_dir(r3_t *a, r3_t *r)
   { double d = 0.0;
-    double a0 = fabs(a->c[0]);
-    double a1 = fabs(a->c[1]);
-    double a2 = fabs(a->c[2]);
-    if (a0 > d) d = a0;
-    if (a1 > d) d = a1;
-    if (a2 > d) d = a2;
-    r->c[0] = a->c[0]/d;
-    r->c[1] = a->c[1]/d;
-    r->c[2] = a->c[2]/d;
+    double a0 = fabs(a->c[0]); if (a0 > d) d = a0;
+    double a1 = fabs(a->c[1]); if (a1 > d) d = a1;
+    double a2 = fabs(a->c[2]); if (a2 > d) d = a2;
+    if (d == 0)
+      { (*r) = (r3_t){{ NAN, NAN, NAN }}; }
+    else
+      { r->c[0] = a->c[0]/d;
+        r->c[1] = a->c[1]/d;
+        r->c[2] = a->c[2]/d;
+      }
     return d;
   }
 

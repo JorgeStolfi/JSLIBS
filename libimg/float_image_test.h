@@ -2,15 +2,12 @@
 #define float_image_test_H
 
 /* Tools for testing programs that deal with {float_image_t}. */
-/* Last edited on 2024-12-05 10:29:56 by stolfi */ 
+/* Last edited on 2025-01-30 09:39:45 by stolfi */ 
 
 #include <stdint.h>
 
 #include <float_image.h>
 #include <r2.h>
-
-/* !!! Currently each fundtion has to choose its internal parameters again on every call. !!! */ 
-/* !!! Add a storage area argument where parameters can be stored on the first call. !!! */
 
 typedef void float_image_test_generator_t (r2_t *p, int32_t NC, int32_t NX, int32_t NY, float fs[]);
   /* Type of a procedure that defines a procedural image with {NC} channels, 

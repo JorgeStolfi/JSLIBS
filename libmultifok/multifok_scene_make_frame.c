@@ -1,5 +1,5 @@
 /* See {multifok_scene.h}. */
-/* Last edited on 2024-12-15 10:46:09 by stolfi */
+/* Last edited on 2025-02-08 17:45:43 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,24 +20,30 @@
 #include <wt_table.h>
 #include <wt_table_hann.h>
 
+#include <multifok_pattern.h>
+#include <multifok_render.h>
 #include <multifok_scene.h>
 #include <multifok_sampling.h>
 #include <multifok_raytrace.h>
 #include <multifok_scene.h>
 #include <multifok_scene_tree.h>
+#include <multifok_scene_object.h>
+#include <multifok_scene_object_normal.h>
 
 #include <multifok_scene_make_frame.h>
   
-#define DASHES "------------------------------------------------------------"
+#define DASHES "----------------------------------------------------------------------"
 
 multifok_frame_t *multifok_scene_make_frame
   ( int32_t NX, 
     int32_t NY, 
     multifok_scene_t *scene, 
     multifok_scene_tree_t *tree,
-    multifok_scene_raytrace_pattern_t *pattern,
-    r3_t *light_dir,
-    double ambient,
+    multifok_pattern_double_proc_t *patternGlo,
+    multifok_pattern_double_proc_t *patternLam,
+    r3_t *uLit,
+    frgb_t *cLit,
+    frgb_t *cIso,
     double zFoc, 
     double zDep, 
     uint32_t HS,
@@ -60,7 +66,7 @@ multifok_frame_t *multifok_scene_make_frame
     assert(NS >= 1);
     assert(KR >= 1);
      
-    auto void trace_scene(r3_t *pR, r3_t *dR, bool_t debug_loc, r3_t *pHit_P, int32_t NC_loc, float colr[]);
+    auto void trace_scene(r3_t *pR, r3_t *dR, bool_t debug_loc, r3_t *pHit_P, r3_t *sNrm_P, int32_t NC_loc, float sVal[]);
       /* A ray-tracing function suitable for the {trace_ray} argument of
         {multifok_raytrace_make_frame}. It shoots a ray {R} through the
         point {pR} with direction {dR}, which must be downward
@@ -68,12 +74,13 @@ multifok_frame_t *multifok_scene_make_frame
         
         The procedure finds the first point {pHit(R)} on the scene's
         surface hit by the ray. It returns that point in {*pHit_P}.
-        It also returns in {colr[0..NC-1]} the
+        It also returns in {*sNrm_P} the surface normal at that 
+        points, and in {sVal[0..NC-1]} the
         color of the scene's surface at that point. 
         
         If the ray does not hit any object, returns in {*pHit_P} the 
-        intersection of the ray with the plane {Z=zMin}, and 
-        sets {colr[0..NC-1]} to {0.500}. */
+        intersection of the ray with the plane {Z=zMin}, 
+        sets {*sNrmp_P} to {(0,0,0)}, and sets {sVal[0..NC-1]} to {0.500}. */
         
     auto void map_point(r2_t *p2_img, r3_t *p3_scene);
       /* An image-to-scene coordinate conversion fucntion, suitable for
@@ -100,19 +107,24 @@ multifok_frame_t *multifok_scene_make_frame
 
     return frame;
     
-    void trace_scene(r3_t *pR, r3_t *dR, bool_t debug_loc, r3_t *pHit_P, int32_t NC_loc, float colr[])
+    void trace_scene(r3_t *pR, r3_t *dR, bool_t debug_loc, r3_t *pHit_P, r3_t *sNrm_P, int32_t NC_loc, float sVal[])
       { 
         assert(NC_loc == NC);
           
-        if (debug_loc) { fprintf(stderr, "        %s\n", DASHES); }
+        if (debug_loc) 
+          { fprintf(stderr, "        %s\n", DASHES);
+            fprintf(stderr, "        entering {multifok_scene_make_frame.trace_scene}\n");
+          }
         
         /* Ray-trace the scene: */
         multifok_scene_object_t *oHit_ray; /* Object hit, or {NULL} if floor. */
         r3_t pHit_ray; /* Hit point. */
+        r3_t sNrm_ray = (r3_t){{0,0,0}};
+        frgb_t sVal_ray = (frgb_t){{0.500, 0.500, 0.500}};
         multifok_scene_raytrace(scene, tree, pR, dR, debug_loc, &oHit_ray, &pHit_ray);
         if (oHit_ray == NULL)
           { /* Ray missed scene entirely, provide a gray plane at {zMin}: */
-            for (uint32_t ic = 0;  ic < NC; ic++) { colr[ic] = 0.500; }
+            for (uint32_t ic = 0;  ic < NC; ic++) { sVal[ic] = 0.500; }
             double tHit = (zMin - pR->c[2])/dR->c[2];
             r3_mix(1.0, pR, tHit, dR, &pHit_ray);
           }
@@ -123,14 +135,31 @@ multifok_frame_t *multifok_scene_make_frame
             interval_t zRange = scene->dom[2];
             /* The scene surface must be entirely contained in the scene's box: */
             if ((hHit_ray < zRange.end[0]) || (hHit_ray > zRange.end[1]))
-              { fprintf(stderr, "        ray hit at Z = %16.12f, outside range {%16.12f _ %16.12f]\n", hHit_ray, zRange.end[0], zRange.end[1]);
+              { fprintf(stderr, "        ** ray hit at Z = %16.12f, outside range {%16.12f _ %16.12f]\n", hHit_ray, zRange.end[0], zRange.end[1]);
                 assert(FALSE);
               }
-            frgb_t colr_ray = multifok_scene_raytrace_compute_hit_color(oHit_ray, &(pHit_ray), pattern, light_dir, ambient);
-            for (uint32_t ic = 0;  ic < NC; ic++) { colr[ic] = colr_ray.c[ic]; }
+            frgb_t sGlo_ray, sLam_ray;
+            multifok_scene_object_finish(oHit_ray, &pHit_ray, patternGlo, &sGlo_ray, patternLam, &sLam_ray);
+            sNrm_ray = multifok_scene_object_normal(oHit_ray, &pHit_ray, verbose);
+            if (debug_loc) 
+               { fprintf(stderr, "        :: ID = %d\n", oHit_ray->ID);
+                 r3_gen_print(stderr, &pHit_ray, "%+8.5f", "        :: hit point =       ( ", " ", " )\n");
+                 r3_t oCtr_ray; for(int32_t j = 0; j < 3; j++) { oCtr_ray.c[j] = interval_mid(&(oHit_ray->bbox[j])); }
+                 r3_t uHit_ray; r3_sub(&pHit_ray, &oCtr_ray, &uHit_ray);
+                 r3_gen_print(stderr, &uHit_ray, "%+8.5f", "        :: rel hit =         ( ", " ", " )\n");
+                 frgb_print(stderr, "        :: gloss =           ( ", &sGlo_ray, 3, "%6.4f", " )\n");
+                 frgb_print(stderr, "        :: lambedo =         ( ", &sLam_ray, 3, "%6.4f", " )\n");
+                 r3_gen_print(stderr, &sNrm_ray, "%+8.5f", "        :: object normal =   ( ", " ", " )\n");
+               }
+            sVal_ray = multifok_render_compute_color(dR, &sNrm_ray, &sGlo_ray, &sLam_ray, uLit, cLit, cIso, debug_loc);
+          }
+        if (debug_loc) 
+          { fprintf(stderr, "        leaving {multifok_scene_make_frame.trace_scene}\n");
+            fprintf(stderr, "        %s\n", DASHES);
           }
         (*pHit_P) = pHit_ray;
-        if (debug_loc) { fprintf(stderr, "        %s\n", DASHES); }
+        (*sNrm_P) = sNrm_ray;
+        for (uint32_t ic = 0;  ic < NC; ic++) { sVal[ic] = sVal_ray.c[ic]; }
       }
 
     void map_point(r2_t *p2_img, r3_t *p3_scene)

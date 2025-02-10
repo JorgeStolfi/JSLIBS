@@ -2,7 +2,7 @@
 #define PROG_DESC "checks the {pst_img_graph.h} routines"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-01-09 18:09:50 by stolfi */
+/* Last edited on 2025-01-30 05:00:48 by stolfi */
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_pst_img_graph_C_COPYRIGHT \
@@ -127,9 +127,10 @@ pst_img_graph_t* make_graph(bool_t add_diags)
 float_image_t *read_image(char *fname)
   { uint16_t *maxval = NULL;
     double expoDec, bias;
+    bool_t yUp = FALSE; /* Irrelevant. for FNI files */
     bool_t verbose = TRUE;
     float_image_t *img = float_image_read_gen_named
-      ( fname, image_file_format_FNI, 0, 1, &maxval, &expoDec, &bias, verbose );
+      ( fname, image_file_format_FNI, yUp, 0, 1, &maxval, &expoDec, &bias, verbose );
     free(maxval);
     return img;
   }

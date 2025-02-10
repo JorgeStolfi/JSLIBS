@@ -1,5 +1,5 @@
 /* See {multifok_stack.h}. */
-/* Last edited on 2024-12-05 23:54:21 by stolfi */
+/* Last edited on 2025-02-08 11:09:37 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +15,7 @@
 
 #include <multifok_stack.h>
   
-#define DASHES "------------------------------------------------------------"
+#define DASHES "----------------------------------------------------------------------"
      
 multifok_stack_t *multifok_stack_new(uint32_t NI, int32_t NC, int32_t NX, int32_t NY)
   {
@@ -29,7 +29,7 @@ multifok_stack_t *multifok_stack_new(uint32_t NI, int32_t NC, int32_t NX, int32_
    }
    
 multifok_stack_t *multifok_stack_read
-  ( char *stackDir,
+  ( char *stackFolder,
     bool_t gray,
     uint32_t NI,
     double zFoc[],
@@ -43,9 +43,9 @@ multifok_stack_t *multifok_stack_read
     
     int32_t NC, NX, NY; /* Image dimensions. */
      for (uint32_t ki = 0;  ki < NI; ki++)
-      { char *frameDir = jsprintf("%s/frame-zf%08.4f-df%08.4f", stackDir, zFoc[ki], zDep[ki]);
+      { char *frameFolder = jsprintf("%s/frame-zf%08.4f-df%08.4f", stackFolder, zFoc[ki], zDep[ki]);
         multifok_frame_t *fri = multifok_frame_read 
-          ( frameDir, gray, zFoc[ki], zDep[ki], hMin, hMax );
+          ( frameFolder, gray, zFoc[ki], zDep[ki], hMin, hMax );
         if (ki == 0)
           { NC = fri->NC; NX = fri->NX; NY = fri->NY; }
         else
@@ -54,7 +54,7 @@ multifok_stack_t *multifok_stack_read
             demand(NY == fri->NY, "frame {NY} is not uniform"); 
           }
         stack->frame[ki] = fri;
-        free(frameDir);
+        free(frameFolder);
       } 
 
     stack->NI = NI;
@@ -67,22 +67,22 @@ multifok_stack_t *multifok_stack_read
  
 void multifok_stack_write
   ( multifok_stack_t *stack,
-    char *stackDir,
+    char *stackFolder,
     double hMin,
     double hMax
   )
   {
     uint32_t NI = stack->NI;
-    mkdir(stackDir, 0755); /* "-rwxr-xr-x" */
+    mkdir(stackFolder, 0755); /* "-rwxr-xr-x" */
     for (uint32_t ki = 0;  ki < NI; ki++)
       { multifok_frame_t *fri = stack->frame[ki];
-        char *frameDir = NULL;
+        char *frameFolder = NULL;
         if (fri->zDep == +INF)
-          { frameDir = jsprintf("%s/frame-sharp", stackDir); }
+          { frameFolder = jsprintf("%s/frame-sharp", stackFolder); }
         else
-          { frameDir = jsprintf("%s/frame-zf%08.4f-df%08.4f", stackDir, fri->zFoc, fri->zDep); }
-        multifok_frame_write(fri, frameDir, hMin, hMax); 
-        free(frameDir);
+          { frameFolder = jsprintf("%s/frame-zf%08.4f-df%08.4f", stackFolder, fri->zFoc, fri->zDep); }
+        multifok_frame_write(fri, frameFolder, hMin, hMax); 
+        free(frameFolder);
       }
   }
   

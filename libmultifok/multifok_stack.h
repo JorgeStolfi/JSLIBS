@@ -1,5 +1,5 @@
 /* Stack of images with limited depth of focus. */
-/* Last edited on 2024-12-05 23:54:06 by stolfi */
+/* Last edited on 2025-02-01 16:30:07 by stolfi */
 
 #ifndef multifok_stack_H
 #define multifok_stack_H
@@ -25,7 +25,7 @@ multifok_stack_t* multifok_stack_new(uint32_t NI, int32_t NC, int32_t NX, int32_
     {stack.frame} is allocated with space for {NI} frames, but is filled with {NULL}. */
 
 multifok_stack_t* multifok_stack_read
-  ( char *stackDir,
+  ( char *stackFolder,
     bool_t gray,
     uint32_t NI,
     double zFoc[],
@@ -34,11 +34,12 @@ multifok_stack_t* multifok_stack_read
     double hMax
   );
   /* Reads a stack of simulated multifocus images from files
-    "{stackDir}/{frameSub}/{name}.png", where {ki} ranges in {0..NI-1},
+    "{stackFolder}/{frameSub}/{name}.png", where {ki} ranges in {0..NI-1},
     {frameSub} is "frame-zf{FFF.FFFF}-df{DDD.DDDD}", {FFF.FFFF} and {DDD.DDDD} are
     respectively the values of {zFoc[ki]} and {zDep[ki]}, formatted as
-    "%08.4f", and {name} is "sVal", "hAvg", "hDev", or "shrp".
-    However, if {zDep[ki]} is {+INF}, the {frameSub} will be "frame-sharp" instead.
+    "%08.4f", and {name} is "sVal", "hAvg", "hDev", "sNrm", or "shrp".
+    However, if {zDep[ki]} is {+INF}, the {frameSub} will
+    be "frame-sharp" instead.
     
     Each frame is read with {multifok_frame_read}.  The
     parameters {gray}, {hMin} and {hMax} are passed to it.
@@ -47,12 +48,12 @@ multifok_stack_t* multifok_stack_read
 
 void multifok_stack_write
   ( multifok_stack_t *stack,
-    char *stackDir,
+    char *stackFolder,
     double hMin,
     double hMax
   );
   /* Writes the frames {stack.frame[0..NI-1]}, where {NI} is {stack->NI},
-    to files "{stackDir}/{frameSub}/{name}.png", using {multifok_frame_write}.
+    to files "{stackFolder}/{frameSub}/{name}.png", using {multifok_frame_write}.
     See that procedure for the file names and formats. */
 
 #endif

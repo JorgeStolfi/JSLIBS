@@ -1,5 +1,5 @@
 /* r4.h --- operations on points and vectors of R^4 */
-/* Last edited on 2024-12-05 10:28:06 by stolfi */
+/* Last edited on 2025-02-05 15:42:19 by stolfi */
 
 #ifndef r4_H
 #define r4_H
@@ -71,13 +71,16 @@ double r4_L_inf_dist (r4_t *a, r4_t *b);
   /* Returns the L-infinity distance between {a} and {b} 
     (max absolute diff). */
 
-double r4_dir (r4_t *a, r4_t *r); 
-  /* Sets {r} to {a} normalized to unit Euclidean length; 
-    returns the original length. */
+double r4_dir (r4_t *a, r4_t *r);  
+  /* Sets {r} to {a} normalized to unit Euclidean length.
+    If the Euclidean length of {a} is zero, sets {r} to all {NAN}s.
+    Returns the original Euclidean length of {a}. */
   
 double r4_L_inf_dir (r4_t *a, r4_t *r); 
-  /* Sets {r} to the vector {a/r4_L_inf_norm(a)}; 
-    returns the original norm. */
+  /* Sets {r} to the vector {a} divided by {r4_L_inf_norm(a)},
+    the max absolute value of any coordinate.
+    If that denominator is zero, sets {r} to all {NAN}s.
+    Returns the original value of {r4_L_inf_norm(a)}.  */
   
 double r4_dot (r4_t *a, r4_t *b);
   /* Dot product of vectors {a} and {b}. */

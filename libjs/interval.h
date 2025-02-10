@@ -2,7 +2,7 @@
 #define interval_H
 
 /* Intervals with {double} endpoints. */
-/* Last edited on 2023-02-18 21:53:18 by stolfi */ 
+/* Last edited on 2025-02-03 07:02:52 by stolfi */ 
 
 /* Should be merged with (or replaced by) {ia.h}. */
  
@@ -30,6 +30,8 @@
 #define _ISOC99_SOURCE 1
 
 #include <stdio.h>
+
+#include <bool.h>
 #include <jsmath.h>
 
 typedef struct interval_t { double end[2]; } interval_t;
@@ -87,16 +89,32 @@ double interval_rad (interval_t *X);
     interval_mid(X)}. I.e. a value {r} such that {[m-r _ m+r]}
     contains {X}. Negative if {X} is empty. Finite as long as {X} is
     finite. */
+   
+double interval_width (interval_t *X);
+  /* If {X} is empty, returns {-INF}. If {X} is trivial, returns zero.
+    Otherwise returns the width of {X}, i.e. {HI(X) - LO(X)}, rounded
+    up. In this case, returns {+INF} if {LO(X)} is {-INF}, or {HI)X)} is
+    {+INF}, or the subtraction overflows. */
+ 
+/* INTERVAL COMPARISONS */
+
+bool_t interval_equal(interval_t *A, interval_t *B);
+  /* Returns true iff {A} and {B} are both empty, or both non-empty
+    and identical.  Assumes that trivial intervals are not empty. */
+
+bool_t interval_closed_has_point(interval_t *A, double p);
+  /* True if the number {p} is in the interval {A}, assumed closed. */
+  
+bool_t interval_open_has_point(interval_t *A, double p);
+  /* True if the number {p} is in the interval {A}, assumed open. */
+
+/* INTERVAL CREATION AND MODIFICATION */
 
 interval_t interval_from_mid_rad (double mid, double rad);
   /* If {rad} is negative, returns an empty interval. If {rad} is
     {+INF}, returns the full interval {-INF,+INF} (even if {mid} is
     {±INF}. Otherwise returns an interval that includes {[mid-rad,
     mid+rad]}. If either endpoint overflows, sets it to infinity.*/
-
-double interval_width (interval_t *X);
-  /* The width of {X}, i.e. {HI(X) - LO(X)}, rounded up. Returns
-    {+INF} if the subtraction overflows. */
 
 interval_t interval_split(interval_t *X, interval_side_t dir);
   /* Returns the lower or upper half of the closed interval {X},

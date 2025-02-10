@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_test.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-01-01 16:05:30 by stolfi */ 
+/* Last edited on 2025-02-04 19:35:10 by stolfi */ 
 /* Created on 2007-07-11 by J. Stolfi, UNICAMP */
 
 #define test_test_image_COPYRIGHT \
@@ -80,6 +80,7 @@ void write_color_image(float_image_t *img, char *outPrefix, int32_t NC, int32_t 
     double bias = 0.000;
     bool_t verbose = TRUE;
     image_file_format_t ffmt = image_file_format_PNG;
-    float_image_write_gen_named(fname, img, ffmt, 0.0, 1.0, expoEnc, bias, verbose);
+    bool_t yUp = FALSE; /* !!! Should test with {TRUE} too !!! */
+    float_image_write_gen_named(fname, img, ffmt, yUp, 0.0, 1.0, expoEnc, bias, verbose);
     free(fname);
   }
