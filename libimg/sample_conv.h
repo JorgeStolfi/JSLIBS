@@ -2,7 +2,7 @@
 #define sample_conv_H
 
 /* {sample_conv.h} - conversion between floating-point and integer samples. */
-/* Last edited on 2024-12-18 22:49:54 by stolfi */
+/* Last edited on 2025-02-26 03:38:15 by stolfi */
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -149,13 +149,13 @@ float sample_conv_interp(float u, int32_t np, double U[], double V[]);
 float sample_conv_floatize
   ( sample_uint32_t iv,      /* Integer sample value to convert. */
     sample_uint32_t maxval,  /* Max output sample value. */
-    bool_t isMask,         /* The precise meaning of integer sample values mean. */
-    double lo,             /* Nominal output for input {0}. */
-    double hi,             /* Nominal output for input {maxval}. */
+    bool_t isMask,           /* The precise meaning of integer sample values mean. */
+    double lo,               /* Nominal output for input {0}. */
+    double hi,               /* Nominal output for input {maxval}. */
     sample_uint32_t *imin,   /* (IN/OUT) Min integer input value seen, or NULL. */
     sample_uint32_t *imax,   /* (IN/OUT) Max integer input value seen, or NULL. */
-    float *vmin,           /* (IN/OUT) Min float output value seen, or NULL. */
-    float *vmax            /* (IN/OUT) Max float output value seen, or NULL. */
+    float *vmin,             /* (IN/OUT) Min float output value seen, or NULL. */
+    float *vmax              /* (IN/OUT) Max float output value seen, or NULL. */
   );
   /* Converts an integer sample {iv} in {0..maxval},
     to a float value {fv} in {[0_1]}, by an affine function.  
@@ -195,27 +195,27 @@ float sample_conv_floatize
 void sample_conv_print_floatize_stats
   ( int32_t iChan,           /* Channel index in input image. */
     int32_t oChan,           /* Channel index in output image. */
-    sample_uint32_t imin,       /* Minimum integer sample seen. */
-    sample_uint32_t imax,       /* Maximum integer sample seen. */
-    sample_uint32_t maxval,     /* Maximum possible integer sample. */
-    double lo,           /* Low end of float scaling range. */
-    double hi,           /* High end of float scaling range. */
-    float vmin,          /* Minimum float sample seen. */
-    float vmax           /* Maximum float sample seen. */
+    sample_uint32_t imin,    /* Minimum integer sample seen. */
+    sample_uint32_t imax,    /* Maximum integer sample seen. */
+    sample_uint32_t maxval,  /* Maximum possible integer sample. */
+    double lo,               /* Low end of float scaling range. */
+    double hi,               /* High end of float scaling range. */
+    float vmin,              /* Minimum float sample seen. */
+    float vmax               /* Maximum float sample seen. */
   );
   /* Prints statistics for floatizing channel {iChan} of a PGM/PPM image
     into channel {oChan} of a float image. */
 
 sample_uint32_t sample_conv_quantize
-  ( float fv,             /* Float sample value to convert. */
+  ( float fv,               /* Float sample value to convert. */
     sample_uint32_t maxval, /* Max output sample value. */ 
-    bool_t isMask,        /* The precise meaning of integer sample values mean. */
-    double lo,            /* Input value to map to 0. */
-    double hi,            /* Input value to map to {maxval}. */
-    float *vmin,          /* (IN/OUT) Min float input value seen, or NULL. */
-    float *vmax,          /* (IN/OUT) Max float input value seen, or NULL. */
-    int32_t *clo,             /* (IN/OUT) Count of input values below {lo}, or NULL. */
-    int32_t *chi,             /* (IN/OUT) Count of input values above {hi}, or NULL. */
+    bool_t isMask,          /* The precise meaning of integer sample values mean. */
+    double lo,              /* Input value to map to 0. */
+    double hi,              /* Input value to map to {maxval}. */
+    float *vmin,            /* (IN/OUT) Min float input value seen, or NULL. */
+    float *vmax,            /* (IN/OUT) Max float input value seen, or NULL. */
+    int32_t *clo,           /* (IN/OUT) Count of input values below {lo}, or NULL. */
+    int32_t *chi,           /* (IN/OUT) Count of input values above {hi}, or NULL. */
     sample_uint32_t *imin,  /* (IN/OUT) Min output integer value seen, or NULL. */
     sample_uint32_t *imax   /* (IN/OUT) Max output integer value seen, or NULL. */
   );

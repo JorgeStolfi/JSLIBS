@@ -1,4 +1,4 @@
-# Last edited on 2024-11-07 18:52:30 by stolfi
+# Last edited on 2025-02-16 20:41:05 by stolfi
 
 PROG = test_sve_catenary
  
@@ -7,7 +7,10 @@ TEST_LIB_DIR := ../..
 
 JS_LIBS := \
   libimg.a \
+  libminn.a \
   libgeo.a \
+  libgausol.a \
+  libeigen.a  \
   libjs.a
   
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

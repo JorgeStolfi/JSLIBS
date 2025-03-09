@@ -5,7 +5,7 @@
 
 /* Created on 2005-12-04 by Jorge Stolfi, unicamp, <stolfi@ic.unicamp.br> */
 /* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2025-01-25 08:45:26 by stolfi */
+/* Last edited on 2025-02-21 06:44:25 by stolfi */
 /* See the copyright and authorship notice at the end of this file. */
 
 #include <stdint.h>
@@ -37,10 +37,10 @@ void pst_imgsys_solve_iterative
   /* Solves system {S}, and stores the solution into the vector {z}.  
 
     Uses an iterative method, and therefore assumes that the variable
-    {z[i]} is the first term in equation {S->eq[i]}, for {i =
-    0..N-1} and {N = S->N}; and that its coefficient is ``large enough''. Upon
-    entry, the {z} vector must contain the starting guess. Executes
-    at most {max_iter} iterations, but stops whenever two consecutive
+    {z[i]} is the first term in equation {S->eq[i]}, for {i = 0..N-1}
+    and {N = S->N}; and that its coefficient is ``large enough''. Upon
+    entry, the {z} vector must contain the starting guess. Executes at
+    most {max_iter} iterations, but stops whenever two consecutive
     iterations do not change any variable by more than the tolerance
     {tol}.
 

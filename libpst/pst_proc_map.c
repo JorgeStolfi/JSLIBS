@@ -1,5 +1,5 @@
 /* See pst_proc_map.h */
-/* Last edited on 2025-01-26 19:42:28 by stolfi */
+/* Last edited on 2025-02-28 18:57:54 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -40,13 +40,12 @@ void pst_proc_map_compute_average_gradient_and_weight
     {wdz}, given, for each axis, the sums of weights {sum_wx,xum_wy} and
     sums weights times derivatives {sum_wx_dzx,sum_wy_dzy} included in
     the average, and the flag {ok} which should be false if any would-be
-    term was invalid or exceeded {maxGrad}. Returns the results in
-    {*dz_P} and {*wdz_P}.
+    term was invalid. Returns the results in {*dz_P} and {*wdz_P}.
     
-    The gradient {dz} will be {(sum_wx_dzx/sum_wx, sum_wy_dzysum_wy)}
-    and the weight {wdz} will be 1.0 if {ok} is true and both quotients
-    are finite, and its norm does not exceed {maxGrad}. Otherwise {dz}
-    will be {(NAN,NAN)} and {wdz} will be zero. */
+    The gradient {dz} will be {(sum_wx_dzx/sum_wx, sum_wy_dzysum_wy)}.
+    The weight {wdz} will be {ok} is false or either quotient
+    is not finite. Otherwise {dz} will be {(NAN,NAN)} and {wdz}
+    will as described in the interface. */
 
 /* IMPLEMENTATIONS */
 
@@ -55,22 +54,22 @@ void pst_proc_map_compute_height
     r2_t p,
     uint32_t NS,
     double ws[],
-    double xyScale,
+    double pixSize,
     bool_t debug,
     double *z_P,
     double *wz_P
   )
   {
-    demand(isfinite(xyScale) && (xyScale > 0), "invalid {xyScale}");
+    demand(isfinite(pixSize) && (pixSize > 0), "invalid {pixSize}");
     demand(((NS%2) == 1) && (NS >= 3), "sampoint count {NS} must be odd and at least 3");
 
     int32_t HS = (int32_t)NS/2;
-    double step = 1.0/(HS+1.0)/xyScale; /* Displacement between sampoints. */
+    double step = pixSize/(HS+1.0); /* Displacement between sampoints. */
 
     /* Accumulators for average height: */
-    double sum_wz = 0;    /* Sum of weight times height for valid sampoints. */
-    double sum_w = 0;     /* Sum of weights for valid sampoints. */
-    double tot_w = 0;     /* Sum of weights for all sampoints. */
+    double sum_wz = 0;    /* Sum of sampoint weights times heights. */
+    double sum_w = 0;     /* Sum of sampoint weights. */
+    bool_t bad = FALSE;
 
     for (int32_t ky = -HS; ky <= +HS; ky++)
       { for (int32_t kx = -HS; kx <= +HS; kx++)
@@ -86,7 +85,6 @@ void pst_proc_map_compute_height
 
             /* Get the sampoint weight {wk}: */
             double wk = ws[HS+kx]*ws[HS+ky];
-            tot_w += wk;
 
             if (isfinite(zk))
               { /* Accumulate height value: */
@@ -94,17 +92,23 @@ void pst_proc_map_compute_height
                 sum_wz += wk*zk;
                 sum_w += wk;
               }
-         }
-     }
+            else
+              { bad = TRUE; }
+          }
+      }
+    if (debug) { fprintf(stderr, "  sum_wz = %24.16e sum_w = %24.16e\n", sum_wz, sum_w); }
 
     /* Compute mean height: */
-    double z_avg = (sum_w == 0 ? NAN: sum_wz/sum_w);
-    double wz_avg = (isnan(z_avg) ? 0.0 : (sum_w/tot_w));
-    if (debug) { fprintf(stderr, "  avg z = %24.16e wz = %24.16e\n", z_avg, wz_avg); }
+    double z = (bad || (sum_w == 0) ? NAN: sum_wz/sum_w);
+    double wz;
+    if (isfinite(z))
+      { wz = 1.0; }
+    else
+      { z = NAN; wz = 0.0; }
 
     /* Return results: */
-    if (z_P != NULL) { (*z_P) = z_avg; }
-    if (wz_P != NULL) { (*wz_P) = wz_avg; }
+    if (z_P != NULL) { (*z_P) = z; }
+    if (wz_P != NULL) { (*wz_P) = wz; }
   }
 
 void pst_proc_map_compute_numeric_gradient
@@ -112,19 +116,19 @@ void pst_proc_map_compute_numeric_gradient
     r2_t p,
     uint32_t NS,
     double ws[],
-    double xyScale,
+    double pixSize,
     double maxGrad,
     bool_t debug,
     r2_t *dnz_P,
     double *wdnz_P
   )
   {
-    demand(isfinite(xyScale) && (xyScale > 0), "invalid {xyScale}");
+    demand(isfinite(pixSize) && (pixSize > 0), "invalid {pixSize}");
     demand((! isnan(maxGrad)) && (maxGrad > 0), "invalid maxGrad");
     demand(((NS%2) == 1) && (NS >= 3), "sampoint count {NS} must be odd and at least 3");
 
     int32_t HS = (int32_t)NS/2;
-    double step = 1.0/(HS+1.0)/xyScale; /* Displacement between sampoiints. */
+    double step = pixSize/(HS+1.0); /* Displacement between sampoints. */
 
     /* Accumulators for sampoints that are not {NAN}: */
     r2_t sum_wn_dz = (r2_t){{ 0, 0 }};
@@ -156,35 +160,32 @@ void pst_proc_map_compute_numeric_gradient
             else
               { if (HS+kx > 0)
                   { /* Compute and accumulate numeric {X} derivative: */
-                    double zpxk = zprev[HS+kx-1];
+                    double zpxk = zprev[HS+kx-1]; /* Already on same sampoint row {ky}. */
                     assert(isfinite(zpxk)); /* Should have stopped if not. */
                     double dnzxk = (zk - zpxk)/step;
                     if (debug) { fprintf(stderr, "  dnzxk = %24.16e  wnxk = %24.16e\n", dnzxk, wnxk); }
-                    if (fabs(dnzxk) > maxGrad) 
-                      { ok = FALSE; }
-                    else
-                      { sum_wn_dz.c[0] += wnxk*dnzxk;
-                        sum_wn.c[0] += wnxk;
-                      }
+                    sum_wn_dz.c[0] += wnxk*dnzxk;
+                    sum_wn.c[0] += wnxk;
                   }
                 if (HS+ky > 0)
                   { /* Compute and accumulate numeric {Y} derivative: */
-                    double zpyk = zprev[HS+kx];
+                    double zpyk = zprev[HS+kx]; /* Still of previous sampoint row {ky-1}. */
                     assert(isfinite(zpyk)); /* Should have stopped if not. */
                     double dnzyk = (zk - zpyk)/step;
                     if (debug) { fprintf(stderr, "  dnzyk = %24.16e  wnyk = %24.16e\n", dnzyk, wnyk); }
-                    if (fabs(dnzyk) > maxGrad)
-                      { ok = FALSE; }
-                    else
-                      { sum_wn_dz.c[1] += wnyk*dnzyk;
-                        sum_wn.c[1] += wnyk;
-                      }
+                    sum_wn_dz.c[1] += wnyk*dnzyk;
+                    sum_wn.c[1] += wnyk;
                   }
               }
 
             if (debug) { fprintf(stderr, "\n"); }
             zprev[HS+kx] = zk;
           }
+      }
+    if (debug)
+      { fprintf(stderr, "  sum_wn_dzx = %24.16e sum_wnx = %24.16e\n", sum_wn_dz.c[0], sum_wn.c[0]);
+        fprintf(stderr, "  sum_wn_dzy = %24.16e sum_wny = %24.16e\n", sum_wn_dz.c[1], sum_wn.c[1]);
+        fprintf(stderr, "  ok = %c\n", "FT"[ok]);
       }
     r2_t dnz_avg; double wdnz_avg;
     pst_proc_map_compute_average_gradient_and_weight
@@ -193,7 +194,7 @@ void pst_proc_map_compute_numeric_gradient
         ok, maxGrad, debug,
         &dnz_avg, &wdnz_avg
       );
-    if (debug) { fprintf(stderr, "  avg dnzx = %24.16e dnzy = %24.16e\n", dnz_avg.c[0], dnz_avg.c[1]); }
+    if (debug) { fprintf(stderr, "  avg dnzx = %24.16e dnzy = %24.16e wdnz = %24.16e\n", dnz_avg.c[0], dnz_avg.c[1], wdnz_avg); }
 
     /* Return results: */
     if ( dnz_P != NULL) { (*dnz_P) = dnz_avg; }
@@ -205,19 +206,19 @@ void pst_proc_map_compute_analytic_gradient
     r2_t p,
     uint32_t NS,
     double ws[],
-    double xyScale,
+    double pixSize,
     double maxGrad,
     bool_t debug,
     r2_t *daz_P,
     double *wdaz_P
   )
   {
-    demand(isfinite(xyScale) && (xyScale > 0), "invalid {xyScale}");
+    demand(isfinite(pixSize) && (pixSize > 0), "invalid {pixSize}");
     demand((! isnan(maxGrad)) && (maxGrad > 0), "invalid maxGrad");
     demand(((NS%2) == 1) && (NS >= 3), "sampoint count {NS} must be odd and at least 3");
 
     int32_t HS = (int32_t)NS/2;
-    double step = 1.0/(HS+1.0)/xyScale; /* Displacement between sampoiints. */
+    double step = pixSize/(HS+1.0); /* Displacement between sampoiints. */
 
     /* Accumulators for average analytic gradient: */
     r2_t sum_wa_dz = (r2_t){{ 0, 0 }}; /* Sum of weight × derivative for valid sampoints. */
@@ -242,16 +243,10 @@ void pst_proc_map_compute_analytic_gradient
 
             if (isfinite(dazk.c[0]) && isfinite(dazk.c[1]))
               { if (debug) { fprintf(stderr, "  dazk = ( %24.16e %24.16e ) wak = %24.16e", dazk.c[0], dazk.c[1], wak); }
-                /* Check max gradient condition: */
-                double dazmk = hypot(dazk.c[0], dazk.c[1]);
-                if (dazmk > maxGrad)
-                  { ok = FALSE; }
-                else
-                  { /* Accumulate analytic slopes in {sum_wa_dz,sum_wa}: */
-                    sum_wa_dz.c[0] += wak*dazk.c[0];
-                    sum_wa_dz.c[1] += wak*dazk.c[1];
-                    sum_wa += wak;
-                  }
+                /* Accumulate analytic slopes in {sum_wa_dz,sum_wa}: */
+                sum_wa_dz.c[0] += wak*dazk.c[0];
+                sum_wa_dz.c[1] += wak*dazk.c[1];
+                sum_wa += wak;
               }
             else
               { ok = FALSE; }
@@ -267,7 +262,7 @@ void pst_proc_map_compute_analytic_gradient
         ok, maxGrad, debug,
         &daz_avg, &wdaz_avg
       );
-    if (debug) { fprintf(stderr, "  avg dazx = %24.16e dazy = %24.16e\n", daz_avg.c[0], daz_avg.c[1]); }
+    if (debug) { fprintf(stderr, "  avg dazx = %24.16e dazy = %24.16e wdaz = %24.16e\n", daz_avg.c[0], daz_avg.c[1], wdaz_avg); }
 
     /* Return results: */
     if ( daz_P != NULL) { (*daz_P) = daz_avg; }
@@ -285,27 +280,21 @@ void pst_proc_map_compute_average_gradient_and_weight
     r2_t *dz_P,
     double *wdz_P
   )
-  { /* Compute mean numeric gradient: */
+  { /* Compute mean numeric gradient and overall reliability weight: */
     double dzx_avg = (sum_wx == 0 ? NAN : sum_wx_dzx/sum_wx);
     double dzy_avg = (sum_wy == 0 ? NAN : sum_wy_dzy/sum_wy);
     r2_t dz_avg;
+    double wdz_avg = 1.0;
     if ((! ok) || (! isfinite(dzx_avg)) || (! isfinite(dzy_avg)))
-      { dz_avg = (r2_t){{ NAN, NAN }}; }
+      { dz_avg = (r2_t){{ NAN, NAN }}; wdz_avg = 0.0; }
     else
-      { /* Check again the {maxGrad} condition, just in case: */
-        double dzm = hypot(dzx_avg, dzy_avg);
-        if (dzm > maxGrad)
-          { dz_avg = (r2_t){{ NAN, NAN }}; }
-        else
-          { dz_avg = (r2_t){{ dzx_avg, dzy_avg }}; }
+      { dz_avg = (r2_t){{ dzx_avg, dzy_avg }};
+        if (isfinite(maxGrad))
+          { double dzm = hypot(dzx_avg, dzy_avg);
+            double r = maxGrad/hypot(maxGrad, dzm);
+            wdz_avg = (! isfinite(r) ? 0.0 : r*r);
+          }
       }
-
-    /* Compute overal reliability weight: */
-    double wdz_avg;
-    if ((! ok) || isnan(dz_avg.c[0]) || isnan(dz_avg.c[1]))
-      { wdz_avg = 0.0; }
-    else
-      { wdz_avg = 1.0; }
 
     /* Return results: */
     (*dz_P) = dz_avg;
@@ -314,41 +303,39 @@ void pst_proc_map_compute_average_gradient_and_weight
 
 float_image_t* pst_proc_map_make_height_map
   ( pst_proc_map_zfunc_t *func,
-    int32_t NX,
-    int32_t NY,
+    int32_t NXG,
+    int32_t NYG,
+    r2_t *org,
+    double pixSize,
     uint32_t NS,
-    double ws[]
+    double ws[],
+    int32_t xDebug,
+    int32_t yDebug
   )
   {
-    int32_t xDebug = -1, yDebug = -1;
-
     int32_t NC = 2;
-    float_image_t *IZ = float_image_new(NC, NX+1, NY+1);
-
-    int32_t NMIN = (NX < NY ? NX : NY);  /* Smallest dimension of slope map. */
-    double xyScale = ((double)NMIN)/2.0;  /* Number of grid pixels per {func} domain unit. */
-    /* Center of image domain (in pixels, from bottom left corner): */
-    double cX = 0.5*NX;
-    double cY = 0.5*NY;
+    float_image_t *IZ = float_image_new(NC, NXG+1, NYG+1);
 
     /* Compute height at each grid CORNER: */
-    for (int32_t y = 0; y <= NY; y++)
-      { for (int32_t x = 0; x <= NX; x++)
-          { bool_t debug = ((x == xDebug) && (y == yDebug));
+    for (int32_t y = 0; y <= NYG; y++)
+      { for (int32_t x = 0; x <= NXG; x++)
+          { bool_t debug_xy = ((x == xDebug) && (y == yDebug));
 
             /* Compute function domain coordinates {(xp,yp)} of grid corner: */
-            double xp = (x - cX)/xyScale;
-            double yp = (y - cY)/xyScale;
+            double xp = (x - org->c[0])*pixSize;
+            double yp = (y - org->c[1])*pixSize;
             r2_t p = (r2_t){{ xp, yp }};
 
             /* Compute height at grid corner: */
             double z, wz;
-            if (debug) { fprintf(stderr, "=== debugging {pst_proc_map_compute_height} for pixel [%d,%d]\n", x, y); }
-            pst_proc_map_compute_height(func, p, NS, ws, xyScale, debug, &z, &wz);
-            if (debug) { fprintf(stderr, "=== end debugging\n"); }
+            if (debug_xy) { fprintf(stderr, "=== debugging {pst_proc_map_compute_height} for {IZ[%d,%d]} p = (%+10.6f,%+10.6f)\n", x, y, xp, yp); }
+            pst_proc_map_compute_height(func, p, NS, ws, pixSize, debug_xy, &z, &wz);
+            z = z/pixSize;
+            if ((! isfinite(z)) || (wz == 0.0)) { z = NAN; wz = 0.0; }
+            if (debug_xy) { fprintf(stderr, "=== end debugging {pst_proc_map_compute_height}\n"); }
 
             /* Scale height from {func} units to pixels: */
-            float_image_set_sample(IZ, 0, x, y, (float)(z*xyScale));
+            float_image_set_sample(IZ, 0, x, y, (float)z);
             float_image_set_sample(IZ, 1, x, y, (float)wz);
           }
       }
@@ -357,55 +344,59 @@ float_image_t* pst_proc_map_make_height_map
 
 float_image_t* pst_proc_map_make_slope_map
   ( pst_proc_map_zfunc_t *func,
-    int32_t NX,
-    int32_t NY,
+    int32_t NXG,
+    int32_t NYG,
+    r2_t *org,
+    double pixSize,
     uint32_t NS,
     double ws[],
     bool_t numGrad,
     double maxGrad,
-    double maxGDiff
+    double maxGDiff,
+    double minWeight,
+    int32_t xDebug,
+    int32_t yDebug
   )
   {
-    int32_t xDebug = 197, yDebug = 96;
-
     int32_t NC = 3;
-    float_image_t *IG = float_image_new(NC, NX, NY);
-
-    int32_t NMIN = (NX < NY ? NX : NY);   /* Smallest dimension of image. */
-    double xyScale = ((double)NMIN)/2.0;  /* Number of grid pixels per {func} domain unit. */
-
-    /* Center of image domain (in pixels, from bottom left corner): */
-    double cX = 0.5*NX;
-    double cY = 0.5*NY;
+    float_image_t *IG = float_image_new(NC, NXG, NYG);
 
     /* Compute gradient at center of each grid pixel: */
-    for (int32_t y = 0; y < NY; y++)
-      { for (int32_t x = 0; x < NX; x++)
-          { bool_t debug = ((x == xDebug) && (y == yDebug));
+    for (int32_t y = 0; y < NYG; y++)
+      { for (int32_t x = 0; x < NXG; x++)
+          { bool_t debug_xy = ((x == xDebug) && (y == yDebug));
 
             /* Compute function domain coordinates {(xp,yp)} of pixel center: */
-            double xp = (x + 0.5 - cX)/xyScale;
-            double yp = (y + 0.5 - cY)/xyScale;
+            double xp = (x + 0.5 - org->c[0])*pixSize;
+            double yp = (y + 0.5 - org->c[1])*pixSize;
             r2_t p = (r2_t){{ xp, yp }};
 
             /* Compute gradient at pixel center: */
-            if (debug) { fprintf(stderr, "=== debugging {pst_proc_map_compute_gradient} for pixel [%d,%d]\n", x, y); }
             r2_t dnz, daz; double wdnz, wdaz;
+
+            if (debug_xy) { fprintf(stderr, "=== debugging {pst_proc_map_compute_numeric_gradient} for pixel {IG[%d,%d]} p = (%+10.6f,%+10.6f)\n", x, y, xp, yp); }
             pst_proc_map_compute_numeric_gradient
-              ( func, p, NS, ws, xyScale, maxGrad, debug, &dnz, &wdnz );
+              ( func, p, NS, ws, pixSize, maxGrad, debug_xy, &dnz, &wdnz );
+            if (wdnz < minWeight) { dnz = (r2_t){{ NAN, NAN }}; wdnz = 0.0; }
+            if (debug_xy) { fprintf(stderr, "=== end debugging {pst_proc_map_compute_numeric_gradient}\n"); }
+
+            if (debug_xy) { fprintf(stderr, "=== debugging {pst_proc_map_compute_analytic_gradient} for pixel {IG[%d,%d]}\n", x, y); }
             pst_proc_map_compute_analytic_gradient
-              ( func, p, NS, ws, xyScale, maxGrad, debug, &daz, &wdaz );
+              ( func, p, NS, ws, pixSize, maxGrad, debug_xy, &daz, &wdaz );
+            if (wdaz < minWeight) { daz = (r2_t){{ NAN, NAN }}; wdaz = 0.0; }
 
             /* If gradients are discrepant, the analytic one is unreliable: */
             if ((wdaz == 0) || (wdnz == 0))
               { wdaz = 0.0; }
             else
               { double ddz = r2_dist(&dnz, &daz);
-                if (ddz > maxGDiff) { wdaz = 0.0; }
+                if (ddz > maxGDiff) 
+                  { wdaz = 0.0;
+                    if (debug_xy) { fprintf(stderr, "  gradients differ by %24.16e, wdaz set to zero\n", ddz); }
+                  }
               }
-            if (wdaz == 0) { daz = (r2_t){{ NAN, NAN }}; }
+            if (debug_xy) { fprintf(stderr, "=== end debugging {pst_proc_map_compute_analytic_gradient}\n"); }
 
-            if (debug) { fprintf(stderr, "=== end debugging\n"); }
             r2_t *dz = (numGrad ? &dnz : &daz);
             double wdz = (numGrad ? wdnz : wdaz);
             float_image_set_sample(IG, 0, x, y, (float)dz->c[0]);
@@ -433,21 +424,21 @@ pst_proc_map_zfunc_props_t pst_proc_map_function_generic(int32_t n)
         case  7: dfp(&pst_proc_map_function_07, "rtcone", +INF, +INF); break; /* Conical mound. */
         case  8: dfp(&pst_proc_map_function_08, "ripple", +INF, +INF); break; /* Circular waves. */
         case  9: dfp(&pst_proc_map_function_09, "sbabel", +INF, +INF); break; /* Tower of Babel with smooth shoulders. */
-        case 10: dfp(&pst_proc_map_function_10, "hcliff", 5.00, 0.05); break; /* Diverging parabolic ramps with cliff. */
+        case 10: dfp(&pst_proc_map_function_10, "hcliff", 2.00, 0.01); break; /* Diverging parabolic ramps with cliff. */
         case 11: dfp(&pst_proc_map_function_11, "sinw01", +INF, +INF); break; /* Sinusoidal wave, low freq. */
         case 12: dfp(&pst_proc_map_function_12, "cosw01", +INF, +INF); break; /* Co-sinusoidal wave, low freq. */
         case 13: dfp(&pst_proc_map_function_13, "sinw02", +INF, +INF); break; /* Sinusoidal wave, med freq. */
         case 14: dfp(&pst_proc_map_function_14, "cosw02", +INF, +INF); break; /* Co-sinusoidal wave, med freq. */
         case 15: dfp(&pst_proc_map_function_15, "sinw03", +INF, +INF); break; /* Sinusoidal wave, high freq. */
         case 16: dfp(&pst_proc_map_function_16, "cosw03", +INF, +INF); break; /* Co-sinusoidal wave, high freq. */
-        case 17: dfp(&pst_proc_map_function_17, "cbabel", 5.00, 0.05); break; /* Tower of Babel with cliff. */
-        case 18: dfp(&pst_proc_map_function_18, "cbramp", 5.00, 0.05); break; /* Cubic ramp with cliff on three sides. */
+        case 17: dfp(&pst_proc_map_function_17, "cbabel", 2.00, 0.05); break; /* Tower of Babel with cliff. */
+        case 18: dfp(&pst_proc_map_function_18, "cbramp", 2.00, 0.01); break; /* Cubic ramp with cliff on three sides. */
         case 19: dfp(&pst_proc_map_function_19, "holes1", +INF, 0.05); break; /* Buried sphere with many holes in slope map. */
-        case 20: dfp(&pst_proc_map_function_20, "cpiece", 5.00, 0.05); break; /* Three nested stages connected by ramps. */
+        case 20: dfp(&pst_proc_map_function_20, "cpiece", 0.80, 0.01); break; /* Three nested stages connected by ramps. */
         case 21: dfp(&pst_proc_map_function_21, "cplat3", +INF, +INF); break; /* Three flat round platforms with smooth edges. */
         case 22: dfp(&pst_proc_map_function_22, "plat3a", +INF, +INF); break; /* Triangular wall with smooth edges. */
         case 23: dfp(&pst_proc_map_function_23, "plat5a", +INF, +INF); break; /* Pentagonal platform with smooth edges. */
-        case 24: dfp(&pst_proc_map_function_24, "cplatv", 5.00, 0.05); break; /* Circular platform with cliffs. */
+        case 24: dfp(&pst_proc_map_function_24, "cplatv", 0.30, 0.01); break; /* Circular platform with cliffs. */
         case 25: dfp(&pst_proc_map_function_25, "cplats", +INF, +INF); break; /* Circular platform with smooth edges. */
         case 26: dfp(&pst_proc_map_function_26, "qtbell", +INF, +INF); break; /* Quartic bell. */
         case 27: dfp(&pst_proc_map_function_27, "fracto", +INF, +INF); break; /* Fractalish round montain. */
@@ -466,9 +457,12 @@ pst_proc_map_zfunc_props_t pst_proc_map_function_generic(int32_t n)
       }
   }
 
+#define Z_GROUND 0.05
+  /* {Z} value of packground area. */
+
 void pst_proc_map_function_00(r2_t p, double *z, r2_t *dz)
   { /* "zeflat" - constant function: */
-    double zval = 0.50;
+    double zval = Z_GROUND;
     if (z != NULL) { (*z) = zval; }
     if (dz != NULL) { dz->c[0] = dz->c[1] = 0; }
   }
@@ -515,7 +509,7 @@ void pst_proc_map_function_04(r2_t p, double *z, r2_t *dz)
 void pst_proc_map_function_05(r2_t p, double *z, r2_t *dz)
   { /* "spdom1" - buried sphere: */
     double x = p.c[0], y = p.c[1];
-    double zMin = 0.05; /* Ground level. */
+    double zMin = Z_GROUND; /* Ground level. */
     /* Initialize {*z,*dz} with the ground plane: */
     if (z != NULL) { (*z) = zMin; }
     if (dz != NULL) { dz->c[0] = dz->c[1] = 0.00; }
@@ -541,7 +535,7 @@ void pst_proc_map_function_05(r2_t p, double *z, r2_t *dz)
 void pst_proc_map_function_06(r2_t p, double *z, r2_t *dz)
   { /* "pyram5" - pentagonal pyramid: */
     double x = p.c[0], y = p.c[1];
-    double zMin = 0.1; /* Ground level. */
+    double zMin = Z_GROUND; /* Ground level. */
     /* Initialize {*z,*dz} with the ground plane: */
     if (z != NULL) { (*z) = zMin; }
     if (dz != NULL){ dz->c[0] = dz->c[1] = 0.00; }
@@ -578,7 +572,7 @@ void pst_proc_map_function_06(r2_t p, double *z, r2_t *dz)
 void pst_proc_map_function_07(r2_t p, double *z, r2_t *dz)
   { /* "rtcone" - conical mound: */
     double x = p.c[0], y = p.c[1];
-    double zMin = 0.1; /* Ground level. */
+    double zMin = Z_GROUND; /* Ground level. */
     /* Initialize {*z,*dz} with the ground plane: */
     if (z != NULL) { (*z) = zMin; }
     if (dz != NULL){ dz->c[0] = dz->c[1] = 0.00; }
@@ -647,7 +641,7 @@ void pst_proc_map_function_10(r2_t p, double *z, r2_t *dz)
     double A = 0.10;
     if (S < 0)
       { /* Flat region: */
-        if (z != NULL) { (*z) = 0; }
+        if (z != NULL) { (*z) = Z_GROUND; }
         if (dz != NULL)
           { dz->c[0] = 0;
             dz->c[1] = 0;
@@ -655,7 +649,7 @@ void pst_proc_map_function_10(r2_t p, double *z, r2_t *dz)
       }
     else if (T > 0)
       { /* Rising parabolic ramp: */
-        if (z != NULL) { (*z) = + A*S*S; }
+        if (z != NULL) { (*z) = Z_GROUND + A*S*S; }
         if (dz != NULL)
           { dz->c[0] = + 2*A*S*Cx;
             dz->c[1] = + 2*A*S*Cy;
@@ -663,7 +657,7 @@ void pst_proc_map_function_10(r2_t p, double *z, r2_t *dz)
       }
     else
       { /* Descending parabolic ramp: */
-        if (z != NULL) { (*z) = - A*S*S; }
+        if (z != NULL) { (*z) = Z_GROUND - A*S*S; }
         if (dz != NULL)
           { dz->c[0] = - 2*A*S*Cx;
             dz->c[1] = - 2*A*S*Cy;
@@ -737,7 +731,7 @@ void pst_proc_map_function_18(r2_t p, double *z, r2_t *dz)
 
     if ((u < -1.00) || (u > +Umax) || (fabs(v) > Vmax))
       { /* Ground floor: */
-        if (z != NULL) { (*z) = 0; }
+        if (z != NULL) { (*z) = Z_GROUND; }
         if (dz != NULL)
           { dz->c[0] = 0;
             dz->c[1] = 0;
@@ -745,7 +739,7 @@ void pst_proc_map_function_18(r2_t p, double *z, r2_t *dz)
       }
     else if (u > +1.00)
       { /* Upper floor: */
-        if (z != NULL) { (*z) = H; }
+        if (z != NULL) { (*z) = Z_GROUND + H; }
         if (dz != NULL)
           { dz->c[0] = 0;
             dz->c[1] = 0;
@@ -753,7 +747,7 @@ void pst_proc_map_function_18(r2_t p, double *z, r2_t *dz)
       }
     else
       { /* Ramp: */
-        if (z != NULL) { (*z) = 0.25*H*(2 + 3*u - u*u*u); }
+        if (z != NULL) { (*z) = Z_GROUND + 0.25*H*(2 + 3*u - u*u*u); }
         if (dz != NULL)
           { double dzdu = 0.75*H*(1 - u*u)/A;
             dz->c[0] = dzdu*Ct;
@@ -802,59 +796,24 @@ void pst_proc_map_function_20(r2_t p, double *z, r2_t *dz)
 
     double x = p.c[0], y = p.c[1];
 
-    auto void fix_ramp(double r, double z0, double z1, double t, double w, double d, double s, double *z, r2_t *dz);
+    auto void fix_ramp(double r, double z0, double z1, double t, double w, double d, double *z, r2_t *dz);
       /* Defines the {z,dz} values inside a ramp of width {w} and
         total length {d}. The ramp connects a region at level {z0}
         (bottom) to a region at level {z1} (top), separated by a
         circle with radius {r}. The ramp is located at angle {t} from
-        the X-axis. The ramp consists of a flat region with length {s}
-        and a slanted plane with length {d-s}. The ramp is directed
-        outwards if {d>0}, inwards if {d<0}. The sign of {s} must be
-        the same as that of {d}. */
+        the X-axis and is centered on the circle. */
 
-    void fix_ramp(double r, double z0, double z1, double t, double w, double d, double s, double *z, r2_t *dz)
-      {
-        /* Rotate {x,y} so that the ramp is at +X: */
-        double ct = cos(t), st = sin(t);
-        double xr = + ct*x + st*y;
-        double yr = - st*x + ct*y;
+    double zA = Z_GROUND;        /* Background level. */
+    double zB = Z_GROUND - 0.05; /* Annulus level. */
+    double zC = Z_GROUND + 0.05; /* Inner platform level. */
 
-        if ((fabs(yr) <= w/2) && (xr > 0))
-          { /* Compute X of beginning of ramp: */
-            double xbeg = (d > 0 ? sqrt(r*r - w*w/4) - 0.00001*r : 1.00001*r);
-            /* Compute the X position relative to the begin & end of ramp: */
-            double u = (xr - xbeg)/d;
-            if ((u >= 0) && (u < 1.0))
-              { double ubot = s/d;
-                if (u < ubot)
-                  { if (z != NULL) { (*z) = z0; }
-                    if (dz != NULL) { (*dz) = (r2_t){{ 0, 0 }}; }
-                  }
-                else
-                  { double v = (u - ubot)/(1.0 - ubot);
-                    if (z != NULL) { (*z) = (1-v)*z0 + v*z1; }
-                    if (dz != NULL)
-                      { /* Compute gradient relative to {xr,yr}: */
-                        double dzdxr = (z1 - z0)/(d - s);
-                        /* Rotate gradient to original position: */
-                        dz->c[0] = dzdxr*ct;
-                        dz->c[1] = dzdxr*st;
-                      }
-                  }
-              }
-          }
-      }
-
-    double zA = 0.10; /* Background level. */
-    double zB = 0.00; /* Annulus level. */
-    double zC = 0.05; /* Inner platform level. */
+    double rA = 0.75; /* Outer annulus radius. */
+    double rB = 0.30; /* Inner annulus radius. */
 
     /* Initialize {*dz} with a plane: */
     if (dz != NULL) { dz->c[0] = dz->c[1] = 0.00; }
 
     /* Determine the basic floor level: */
-    double rA = 0.75; /* Outer annulus radius. */
-    double rB = 0.50; /* Outer annulus radius. */
     double r2 = x*x + y*y;
     if (z != NULL)
       { if (r2 > rA*rA)
@@ -868,17 +827,41 @@ void pst_proc_map_function_20(r2_t p, double *z, r2_t *dz)
     /* Excavate outer ramp: */
     double tA =  0.80; /* Position in radians. */
     double wA =  0.20; /* Width. */
-    double dA = +0.30; /* Depth. */
-    double sA = +0.05; /* Threshold depth. */
-    fix_ramp(rA, zB, zA, tA, wA, dA, sA, z, dz);
+    double dA =  0.50; /* Length. */
+    fix_ramp(rA, zB, zA, tA, wA, dA, z, dz);
 
     /* Excavate inner ramp: */
     double tB =  2.50; /* Position in radians. */
     double wB =  0.16; /* Width. */
-    double dB = -0.24; /* Depth. */
-    double sB = -0.04; /* Threshold depth. */
-    fix_ramp(rB, zB, zC, tB, wB, dB, sB, z, dz);
+    double dB =  0.50; /* Length. */
+    fix_ramp(rB, zC, zB, tB, wB, dB, z, dz);
 
+    return;
+
+    void fix_ramp(double r, double z0, double z1, double t, double w, double d, double *z, r2_t *dz)
+      {
+        /* Rotate {x,y} so that the ramp is at +X: */
+        double ct = cos(t), st = sin(t);
+        double xr = + ct*x + st*y;
+        double yr = - st*x + ct*y;
+        
+        /* Compute {X} range of ramp, after rotation: */
+        double xrMin = r - d/2;
+        double xrMax = r + d/2;
+
+        if ((fabs(yr) <= w/2) && (xr > xrMin) && (xr < xrMax))
+          { /* Compute the X position relative to the ends of ramp: */
+            double u = (xr - xrMin)/d;
+            if (z != NULL) { (*z) = (1-u)*z0 + u*z1; }
+            if (dz != NULL)
+              { /* Compute gradient relative to {xr,yr}: */
+                double dzdxr = (z1 - z0)/d;
+                /* Rotate gradient to original position: */
+                dz->c[0] = dzdxr*ct;
+                dz->c[1] = dzdxr*st;
+              }
+          }
+      }
   }
 
 void pst_proc_map_function_21(r2_t p, double *z, r2_t *dz)
@@ -888,7 +871,7 @@ void pst_proc_map_function_21(r2_t p, double *z, r2_t *dz)
     double HS[3] = { 0.05, 0.02, 0.03 };  /* Half-widthd of shoulders. */
     double zDif[3] = { 0.80, 0.60, 0.70 };   /* Heights. */
     int32_t k;
-    if (z != NULL) { (*z) = 0; }
+    if (z != NULL) { (*z) = Z_GROUND; }
     if (dz != NULL) { (*dz) = (r2_t){{0,0}}; }
     for (k = 0; k < 3; k++)
       {
@@ -911,7 +894,7 @@ void pst_proc_map_function_22(r2_t p, double *z, r2_t *dz)
     double zDif[2] = { +0.80, -0.40 }; /* Heights. */
     double T[2] = { 0, M_PI/3 };    /* Tilts. */
     int32_t k;
-    if (z != NULL) { (*z) = 0; }
+    if (z != NULL) { (*z) = Z_GROUND; }
     if (dz != NULL) { (*dz) = (r2_t){{0,0}}; }
     for (k = 0; k < 2; k++)
       { double zk;
@@ -937,8 +920,8 @@ void pst_proc_map_function_24(r2_t p, double *z, r2_t *dz)
   { /* "cplatv" - circular platform with sharp edges. */
 
     r2_t ctr = (r2_t){{ 0.0, 0.0 }};
-    double zMin = 0.05; /* Z-level outside. */
-    double zMax = 0.95; /* Z-level inside. */
+    double zMin = Z_GROUND; /* Z-level outside. */
+    double zMax = Z_GROUND + 0.90; /* Z-level inside. */
     double zDif = zMax - zMin;
     double R = 0.8;     /* Nominal radius. */
     double HS = 0.0;    /* Half-widthd of shoulder. */
@@ -958,8 +941,8 @@ void pst_proc_map_function_25(r2_t p, double *z, r2_t *dz)
   { /* "cplats" - circular platform with smooth edges. */
 
     r2_t ctr = (r2_t){{ 0.0, 0.0 }};
-    double zMin = 0.05; /* Z-level outside. */
-    double zMax = 0.95; /* Z-level inside. */
+    double zMin = Z_GROUND; /* Z-level outside. */
+    double zMax = Z_GROUND + 0.90; /* Z-level inside. */
     double zDif = zMax - zMin;
     double R = 0.70;     /* Nominal radius. */
     double HS = 0.25;   /* Half-width of shoulder. */
@@ -978,8 +961,8 @@ void pst_proc_map_function_25(r2_t p, double *z, r2_t *dz)
 void pst_proc_map_function_26(r2_t p, double *z, r2_t *dz)
   { /* "qtbell" - quartic bell. */
     r2_t ctr = (r2_t){{ 0.0, 0.0 }};
-    double zMin = 0.05; /* Z-level outside. */
-    double zMax = 0.95; /* Z-level inside. */
+    double zMin = Z_GROUND; /* Z-level outside. */
+    double zMax = Z_GROUND + 0.90; /* Z-level inside. */
     double R = 0.8;     /* Nominal radius. */
 
     double X = (p.c[0] - ctr.c[0])/R; double dXdx = 1/R;
@@ -1007,8 +990,8 @@ void pst_proc_map_function_27(r2_t p, double *z, r2_t *dz)
   { /* "fracto" - fractalish round mountain. */
 
     r2_t ctr = (r2_t){{ 0.0, 0.0 }};
-    double zMin = 0.05; /* Z-level outside. */
-    double zMax = 0.95; /* Z-level inside. */
+    double zMin = Z_GROUND; /* Z-level outside. */
+    double zMax = Z_GROUND + 0.90; /* Z-level inside. */
     double R = 0.8;     /* Nominal radius. */
 
     r2_t v; r2_sub(&p, &ctr, &v); r2_scale(1/R, &v, &v);
@@ -1065,8 +1048,8 @@ void pst_proc_map_function_babel(r2_t *p, double RI, double RO, double N, double
   { /* Generic tower of Babel: */
     double x = p->c[0], y = p->c[1];
 
-    double zBot = 0.1;  /* Height of ground floor. */
-    double zTop = 0.80; /* Height of top platform. */
+    double zBot = Z_GROUND;  /* Height of ground floor. */
+    double zTop = Z_GROUND + 0.70; /* Height of top platform. */
 
     double DR = (RO - RI)/(N+1);  /* Width of ramp. */
     double zDif = (zTop - zBot)/N;  /* Height difference between adjacent turns. */

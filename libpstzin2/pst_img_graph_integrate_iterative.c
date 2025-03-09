@@ -1,5 +1,5 @@
 /* See {pst_img_graph.h} */
-/* Last edited on 2025-01-15 06:46:11 by stolfi */
+/* Last edited on 2025-02-24 06:40:28 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #include <stdio.h>
@@ -25,7 +25,7 @@
 void pst_img_graph_integrate_iterative
   ( pst_img_graph_t *g,
     double Z[],
-    bool_t topoSort,
+    bool_t sortSys,
     uint32_t maxIter,
     double convTol, 
     bool_t para, 
@@ -35,11 +35,11 @@ void pst_img_graph_integrate_iterative
     uint32_t reportStep,
     pst_integrate_report_heights_proc_t *reportHeights
   )
-  { int32_t indent = (level < -1 ? 0 : 2*level + 2);
+  { int32_t indent = (level < -1 ? 0 : 2*level+2);
 
     if (verbose) { fprintf(stderr, "%*sbuilding the system ...\n", indent, ""); }
     int32_t *zid_from_vid = talloc(g->NV, int32_t);
-    pst_imgsys_t *S = pst_img_graph_build_system(g, zid_from_vid, verbose);
+    pst_imgsys_t *S = pst_img_graph_integrate_build_system(g, zid_from_vid, verbose);
     uint32_t NZ = S->N;
     if (verbose) { fprintf(stderr, "%*ssystem has %d equations and %d variables\n", indent, "", NZ, NZ); }
 
@@ -61,7 +61,7 @@ void pst_img_graph_integrate_iterative
     auto void reportSol(int32_t level, int32_t iter, double change, bool_t final, uint32_t N, double Z[]);
 
     uint32_t *ord = NULL;
-    if (topoSort) { ord = pst_imgsys_sort_equations(S); }
+    if (sortSys) { ord = pst_imgsys_sort_equations(S); }
     bool_t szero = TRUE;
     pst_imgsys_solve_iterative
       ( S, h, ord, maxIter, convTol, 

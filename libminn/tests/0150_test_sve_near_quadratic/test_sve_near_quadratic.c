@@ -1,5 +1,5 @@
 /* test_sve_near_quadratic --- test of {sve_minn.h} for a nearly quadratic func */
-/* Last edited on 2024-12-05 10:34:29 by stolfi */
+/* Last edited on 2025-02-16 20:24:03 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,7 +18,6 @@
 #include <jsstring.h>
 #include <affirm.h>
 #include <rmxn.h>
-#include <rmxn_extra.h>
 #include <rn.h>
 #include <jsfile.h>
 #include <vec.h>

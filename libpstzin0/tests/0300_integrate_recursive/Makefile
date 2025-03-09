@@ -1,4 +1,4 @@
-# Last edited on 2025-01-16 06:13:38 by stolfi
+# Last edited on 2025-03-07 07:57:41 by stolfi
 
 PROG = test_integrate_recursive
 
@@ -24,21 +24,65 @@ include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 
 all: check
 
-check:  clean do-tests
+# check: do-tests
+check: do-gustavo
 
-# TESTS := 01-ramp10-N 03-ramp11-N 
-# TESTS := 03-ramp11-N 
-TESTS := 04-parabo-N
+# FUNC := 03-ramp11-N 
+FUNC := 04-parabo-N
+# FUNC := 20-cpiece-N
+# FUNC := 24-cplatv-N    
+# FUNC := 18-cbramp-N
 
-SIZE := 0016x0012
+# SIZE := 0001x0001
+# SIZE := 0016x0012
+SIZE := 0032x0024
 # SIZE := 0256x0192
+
+HINTS := 0
+REFERENCE := 1
+INITIAL_OPTION := zero
+INITIAL_NOISE := 0.25
+MAX_LEVEL := 999
 
 do-tests: ${PROG}
 	mkdir -p out
-	for test in ${TESTS} ; do \
-	  func="$${test}"; \
-	  ./run_test.sh $${func} ${SIZE}; \
-        done
+	./run_test.sh ${FUNC} ${SIZE} ${HINTS} ${REFERENCE} ${INITIAL_OPTION} ${INITIAL_NOISE} ${MAX_LEVEL}
  
+GU_SCENE := manyob
+GU_SIZE := 0512x0422
+
+
+GU_INPUT_DTSEQ := 2025-03-03-00
+GU_INPUT_METHOD := WA
+
+
+GU_HINTS_DTSEQ := NONE
+GU_HINTS_METHOD := MF
+
+# GU_HINTS_DTSEQ := 2025-03-05-00
+# GU_HINTS_METHOD := MF
+
+# GU_HINTS_DTSEQ := 2025-03-03-00
+# GU_HINTS_METHOD := SY
+
+
+GU_REFERENCE_DTSEQ := 2025-03-03-00
+GU_REFERENCE_METHOD := SY
+
+GU_INITIAL_OPT := zero
+GU_INITIAL_NOISE := 0.0
+
+GU_MAXLEVEL := 4
+
+do-gustavo:
+	mkdir -p out
+	./run_gustavo.sh \
+          ${GU_SCENE} ${GU_SIZE} \
+          ${GU_INPUT_DTSEQ} ${GU_INPUT_METHOD} \
+          ${GU_HINTS_DTSEQ} ${GU_HINTS_METHOD} \
+          ${GU_REFERENCE_DTSEQ} ${GU_REFERENCE_METHOD} \
+          ${GU_INITIAL_OPT} ${GU_INITIAL_NOISE} \
+          ${GU_MAXLEVEL}
+
 clean::
 	/bin/rm -fv out/*-*.{fni,txt,png}

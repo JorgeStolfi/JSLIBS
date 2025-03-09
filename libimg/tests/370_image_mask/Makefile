@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:27:36 by jstolfi
+# Last edited on 2025-02-17 02:40:31 by stolfi
 
 PROG = test_image_mask
 
@@ -55,8 +55,8 @@ plot-mask-single:
             -title "${MASK}" \
             -range -0.01 1.01 \
           < ${TEMP}.fni \
-          > ${TEMP}.eps
-	display -background white ${TEMP}.eps
+          > ${TEMP}.png
+	display -background white ${TEMP}.png
 
 view-mask-single: 
 	fni_view \

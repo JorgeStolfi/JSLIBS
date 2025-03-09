@@ -1,5 +1,5 @@
 /* See pst_signature.h */
-/* Last edited on 2025-01-17 04:13:40 by stolfi */ 
+/* Last edited on 2025-03-01 19:55:25 by stolfi */ 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,6 +13,7 @@
 #include <rn.h>
 
 #include <pst_basic.h>
+#include <pst_map.h>
 #include <pst_normal_map.h>
 
 #include <pst_signature.h>
@@ -20,7 +21,7 @@
 #define ltn_normals_debug TRUE
 
 void pst_signature_extract 
-  ( image_vec_t *IMGV, /* Scene images under {NF} different light fields. */
+  ( pst_map_vec_t *IMGV, /* Scene images under {NF} different light fields. */
     uint32_t maxval,        /* Maxval of original (quantized) images. */                 
     double noise,      /* Additional per-sample noise in images. */                 
     int32_t c,             /* Number of channels in each image. */                      
@@ -74,7 +75,7 @@ void pst_signature_print(FILE *wr, uint32_t NF, signature_t *sig)
 light_table_t *pst_signature_build_table
   ( r2_t *pos,             /* Position in scene images where table is most valid. */
     float_image_t *NRM,    /* Normal map of light field gauge. */ 
-    image_vec_t *IMGV,     /* Images of the gauge objects under various light fields. */ 
+    pst_map_vec_t *IMGV,     /* Images of the gauge objects under various light fields. */ 
     bool_t cubify          /* TRUE uses the cube acceleration. */
   )
   {
@@ -196,7 +197,7 @@ signature_t pst_signature_new(uint32_t NF)
 void pst_signature_normals_from_photos
   ( uint32_t NG, 
     light_table_t *tab[], 
-    image_vec_t *IMGV, 
+    pst_map_vec_t *IMGV, 
     uint32_t maxval,
     double noise,
     float_image_t *NRM,

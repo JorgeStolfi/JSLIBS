@@ -1,21 +1,24 @@
 #! /bin/bash
-# Last edited on 2025-01-25 17:13:42 by stolfi
+# Last edited on 2025-02-28 18:59:48 by stolfi
 
 func_num="$1"; shift
 func_name="$1"; shift
 nx="$1"; shift
 ny="$1"; shift
-noisy="$1"; shift  # "Y" or "N".
+noisy="$1"; shift  # 'Y' or 'N'.
+export="$1"; shift  # 'Y' or 'N'
 
 echo "creating images of function ${func_num} = '${func_name}' size ${nx} x ${ny}"
+
+show=1
 
 PROGDIR="."
 PROG="make_test_maps"
 
 if [[ "/${noisy}" == "/Y" ]]; then 
-  noiseG=0.300 
+  perturbG=0.300 
 elif [[ "/${noisy}" == "/N" ]]; then 
-  noiseG=0.000
+  perturbG=0.000
 else
   echo "**invalid noisy = '${noisy}'" 1>&2; exit 1
 fi
@@ -33,8 +36,7 @@ set -x
 ${PROGDIR}/${PROG} \
   -function ${func_num} \
   -size ${nx} ${ny} \
-  -numGrad Y \
-  -noiseG ${noiseG} \
+  -perturbG ${perturbG} \
   -outDir ${outDir}
 set +x
 
@@ -44,10 +46,12 @@ out_heights_fni="${outPrefix}-Z.fni"
 out_slopes_n_fni="${outPrefix}-Gn.fni"
 out_slopes_a_fni="${outPrefix}-Ga.fni"
 out_slopes_d_fni="${outPrefix}-Gd.fni"
+out_slopes_fni="${outPrefix}-G.fni"
 out_normals_fni="${outPrefix}-N.fni"
 
 view_fni=1
 make_pnm=1
+make_png=1
 make_hist=0
 make_plot=0
 
@@ -70,18 +74,19 @@ function view(){
   fi
 }
 
-if [[ ${view_fni} -gt 0 ]]; then
+if [[ ( ${show} -gt 0) && ( ${view_fni} -gt 0 ) ]]; then
   view ${out_heights_fni}   0
   view ${out_slopes_a_fni}  0
   view ${out_slopes_n_fni}  0
   view ${out_slopes_d_fni}  0
+  view ${out_slopes_fni}    0
   view ${out_normals_fni}   1
 fi
 
 # ======================================================================
 # Converting maps to ".ppm" and/or ".pgm"
 
-pfiles=()
+pnmfiles=()
 
 function topnm(){
   ofile="$1"; shift
@@ -100,13 +105,13 @@ function topnm(){
   if [[ -s ${ofile} ]]; then 
     pfile="${ofile/.fni/${tag}.${ext}}"
     fni_to_pnm ${chop[@]} -center 0 -uniform < ${ofile} > ${pfile}
-    if [[ -s ${pfile} ]]; then pfiles+=( ${pfile} ); fi
+    if [[ -s ${pfile} ]]; then pnmfiles+=( ${pfile} ); fi
   else
     echo "** file ${ofile} not found" 1>&2
   fi
 }
 
-if [[ ${make_pnm} -gt 0 ]]; then
+if [[ ( ${make_png} -gt 0 ) || ( ${make_pnm} -gt 0 ) ]]; then
   
   topnm ${out_heights_fni} 0    ''
   topnm ${out_heights_fni} 1    'W'
@@ -120,11 +125,61 @@ if [[ ${make_pnm} -gt 0 ]]; then
   topnm ${out_slopes_d_fni} 0,1,0 ''
   topnm ${out_slopes_d_fni} 2     'W'
   
+  topnm ${out_slopes_fni} 0,1,0   ''
+  topnm ${out_slopes_fni} 2       'W'
+  
   topnm ${out_normals_fni} 0,1,2 ''
   topnm ${out_normals_fni} 3     'W'
 
-  if [[ ${#pfiles[@]} -ne 0 ]]; then
-    display -title '%f' -filter box -resize 'x480<' ${pfiles[@]}; status=$?
+  if [[ ( ${show} -gt 0) && ( ${#pnmfiles[@]} -ne 0 ) ]]; then
+    display -title '%f' -filter box -resize 'x480<' ${pnmfiles[@]}; status=$?
+    if [[ ${status} -ne 0 ]]; then echo "** display exited with status = ${status} - aborted" 1>&2; exit 1; fi
+  fi
+fi  
+
+# ======================================================================
+# Converting maps from ".pgm" or ".ppm" tp ".png":
+
+pngfiles=()
+
+function topng(){
+  ofni="$1"; shift
+  oext="$1"; shift
+  tag="$1"; shift
+  
+  ofile="${ofni/.fni/${tag}.${oext}}"
+  
+  if [[ -s ${ofile} ]]; then 
+    pfile="${ofile/.${oext}/.png}"
+    convert ${ofile} ${pfile}
+    if [[ -s ${pfile} ]]; then pngfiles+=( ${pfile} ); fi
+  else
+    echo "** file ${ofile} not found" 1>&2
+  fi
+}
+
+if [[ ${make_png} -gt 0 ]]; then
+  
+  topng ${out_heights_fni} pgm    ''
+  topng ${out_heights_fni} pgm    'W'
+  
+  topng ${out_slopes_a_fni} ppm   ''
+  topng ${out_slopes_a_fni} pgm   'W'
+  
+  topng ${out_slopes_n_fni} ppm   ''
+  topng ${out_slopes_n_fni} pgm   'W'
+  
+  topng ${out_slopes_d_fni} ppm   ''
+  topng ${out_slopes_d_fni} pgm   'W'
+  
+  topng ${out_slopes_fni} ppm     ''
+  topng ${out_slopes_fni} pgm     'W'
+  
+  topng ${out_normals_fni} ppm   ''
+  topng ${out_normals_fni} pgm   'W'
+
+  if [[ ( ${show} -gt 0) && ( ${#pngfiles[@]} -ne 0 ) ]]; then
+    display -title '%f' -filter box -resize 'x480<' ${pngfiles[@]}; status=$?
     if [[ ${status} -ne 0 ]]; then echo "** display exited with status = ${status} - aborted" 1>&2; exit 1; fi
   fi
 fi  
@@ -142,7 +197,7 @@ function plotit(){
   
   if [[ -s ${ofile} ]]; then 
     efile="${ofile/.fni/${tag}.eps}"
-    fni_plot.sh -channel ${chan} -title "${title}" < ${ofile} > ${efile}
+    ???fni_plot.sh -channel ${chan} -title "${title}" < ${ofile} > ${efile}
     if [[ -s ${efile} ]]; then efiles+=( ${efile} ); fi
   else
     echo "** file ${ofile} not found" 1>&2
@@ -166,7 +221,7 @@ if [[ ${make_plot} -gt 0 ]]; then
   plotit ${out_normals_fni} 0 'Y' "nrm.Y"
   plotit ${out_normals_fni} 0 'Z' "nrm.Z"
 
-  if [[ ${#efiles[@]} -ne 0 ]]; then
+  if [[ ( ${show} -gt 0) && ( ${#efiles[@]} -ne 0 ) ]]; then
     evince ${efiles[@]}; status=$?
     if [[ ${status} -ne 0 ]]; then echo "** evince exited with status = ${status} - aborted" 1>&2; exit 1; fi
   fi
@@ -186,7 +241,7 @@ function tohist(){
   
   if [[ -s ${ofile} ]]; then 
     hfile="${ofile/.fni/${tag}-hist.eps}"
-    fni_hist -channel ${chan} -step 0.250 -title "${title}" < ${ofile} > ${hfile}
+    fni_hist.sh -channel ${chan} -step 0.250 -logScale -title "${title}" < ${ofile} > ${hfile}
     if [[ -s ${hfile} ]]; then hfiles+=( ${hfile} ); fi
   else
     echo "** file ${ofile} not found" 1>&2
@@ -206,8 +261,20 @@ if [[ ${make_hist} -gt 0 ]]; then
   tohist ${out_slopes_d_fni} 0 'X' "dZ/dX"
   tohist ${out_slopes_d_fni} 1 'Y' "dZ/dY"
 
-  if [[ ${#hfiles[@]} -ne 0 ]]; then
+  if [[ ( ${show} -gt 0) && ( ${#hfiles[@]} -ne 0 ) ]]; then
     evince ${hfiles[@]}; status=$?
     if [[ ${status} -ne 0 ]]; then echo "** evince exited with status = ${status} - aborted" 1>&2; exit 1; fi
+  fi
+fi
+
+# ======================================================================
+# exporting:
+
+if [[ "/${export}" == "/Y" ]]; then
+  echo "exporting ..." 1>&2
+
+  mv -v ${outPrefix}-{Z,G,N}.fni ../00-DATA/slope_to_height/
+  if [[ "/${sizeTag}" == "/0256x0192" ]]; then
+    mv -v ${outPrefix}-{Z,G}{,W}.png ../00-DATA/slope_to_height/
   fi
 fi

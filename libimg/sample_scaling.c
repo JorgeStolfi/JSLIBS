@@ -1,5 +1,5 @@
 /* See sample_scaling.h */
-/* Last edited on 2025-01-22 19:06:56 by stolfi */
+/* Last edited on 2025-03-04 12:08:16 by stolfi */
 
 #include <stdio.h>
 #include <math.h>
@@ -23,7 +23,7 @@ double_vec_t sample_scaling_parse_range_option(argparser_t *pp, char *key, int32
     parses the following arguments as a tuple of one more numbers,
     using {argparser_get_next_double_vec}.
     
-    The parameter {NC} has the same meaning as in {sample_scaling_parse_options}. */
+    The parameter {NC} has the same meaning as in {sample_scaling_options_parse}. */
 
 bool_t sample_scaling_parse_uniform(argparser_t *pp, bool_t next);
   /* Parses the \"-uniform\" switch; returns TRUE if 
@@ -91,7 +91,7 @@ void sample_scaling_debug_param(char *label, double *par);
 
 /* IMPLEMENTATIONS */
 
-sample_scaling_options_t sample_scaling_parse_options(argparser_t *pp, int32_t *NC_P)
+sample_scaling_options_t sample_scaling_options_parse(argparser_t *pp, int32_t *NC_P)
   { sample_scaling_options_t sop;
     sop.min = sample_scaling_parse_range_option(pp, "-min",    NC_P);
     sop.max = sample_scaling_parse_range_option(pp, "-max",    NC_P);

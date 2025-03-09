@@ -2,7 +2,7 @@
 #define hr2_pmap_from_many_pairs_aux_H
 
 /* Headers of some internal procedures of {hr2_pmap_from_many_pairs.c} for testing. */
-/* Last edited on 2024-12-05 10:19:35 by stolfi */ 
+/* Last edited on 2025-02-16 19:50:30 by stolfi */ 
 
 #include <stdint.h>
 
@@ -16,7 +16,7 @@
 
 void hr2_pmap_from_many_pairs_try_find_frame_pair
   ( hr2_pmap_type_t type_req,
-    int32_t np,
+    uint32_t np,
     r2_t p1[],
     r2_t p2[],
     double w[],
@@ -51,14 +51,14 @@ void hr2_pmap_from_many_pairs_try_find_frame_pair
 
 hr2_pmap_t hr2_pmap_from_many_pairs_initial
   ( hr2_pmap_type_t type,
-    int32_t np,
+    uint32_t np,
     r2_t p1[],
     r2_t p2[], 
     double w[],
     int32_t nr,
     int32_t ixr[],
     sign_t sgn,
-    int32_t class
+    uint32_t class
   );
   /* Returns an initial map {M} of the specified {type} that takes the
     /source frame points/ {p1[ixr[0..nr-1]]} onto or near to 
@@ -114,7 +114,7 @@ hr2_pmap_t hr2_pmap_from_many_pairs_initial
 void hr2_pmap_from_many_pairs_optimize
   ( hr2_pmap_type_t type,
     sign_t sgn,
-    int32_t np,
+    uint32_t np,
     r2_t p1[],
     r2_t p2[],
     double w[],

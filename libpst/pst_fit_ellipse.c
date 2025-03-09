@@ -1,5 +1,5 @@
 /* See pst_fit_ellipse.h */
-/* Last edited on 2024-12-24 18:58:52 by stolfi */ 
+/* Last edited on 2025-02-25 18:30:55 by stolfi */ 
 
 #include <math.h>
 #include <values.h>
@@ -12,6 +12,7 @@
 #include <float_image.h>
 #include <float_image_gradient.h>
 #include <float_image_mscale.h>
+#include <float_image_wfilter.h>
 #include <argparser.h>
 #include <r2.h>
 #include <rn.h>
@@ -311,17 +312,25 @@ double pst_fit_ellipse_multiscale
   
 float_image_t *pst_fit_ellipse_image_shrink(float_image_t *IMG)
   {
+    /* int32_t NC = (int32_t)(IMG->sz[0]); */
     int32_t NXR = (int32_t)((IMG->sz[1]+1)/2);
     int32_t NYR = (int32_t)((IMG->sz[2]+1)/2);
-    int32_t dxy = (int32_t)((pst_fit_ellipse_nw-1)/2);
-    return float_image_mscale_shrink(IMG, NULL, NXR, NYR, dxy, dxy, pst_fit_ellipse_nw);
+    
+    float_image_t *IMF;
+    if (pst_fit_ellipse_nw > 2)
+      { IMF = float_image_wfilter_hann(IMG, pst_fit_ellipse_nw); }
+    else
+      { IMF = IMG; }
+    float_image_t *IMR = float_image_mscale_shrink(IMF, -1, FALSE, NXR, NYR, 0, 0);
+    if (IMF != IMG) { float_image_free(IMF); }
+    return IMR;
   }
 
 ellipse_crs_t pst_fit_ellipse_geom_shrink(ellipse_crs_t *EP)
   {
     ellipse_crs_t E_r;
     int32_t dxy = (pst_fit_ellipse_nw-1)/2;
-    E_r.ctr = float_image_mscale_point_shrink(&(EP->ctr), dxy, dxy, pst_fit_ellipse_nw);
+    E_r.ctr      = float_image_mscale_point_shrink(&(EP->ctr), dxy, dxy);
     E_r.rad      = 0.5 * EP->rad;
     E_r.str.c[0] = 0.5 * EP->str.c[0];
     E_r.str.c[1] = 0.5 * EP->str.c[1];
@@ -331,8 +340,7 @@ ellipse_crs_t pst_fit_ellipse_geom_shrink(ellipse_crs_t *EP)
 ellipse_crs_t pst_fit_ellipse_geom_expand(ellipse_crs_t *EP)
   {
     ellipse_crs_t E_x;
-    int32_t dxy = (pst_fit_ellipse_nw-1)/2;
-    E_x.ctr = float_image_mscale_point_expand(&(EP->ctr), dxy, dxy, pst_fit_ellipse_nw);
+    E_x.ctr = float_image_mscale_point_expand(&(EP->ctr), 0, 0);
     E_x.rad      = 2.0 * EP->rad;
     E_x.str.c[0] = 2.0 * EP->str.c[0];
     E_x.str.c[1] = 2.0 * EP->str.c[1];

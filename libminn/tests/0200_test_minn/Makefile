@@ -1,4 +1,4 @@
-# Last edited on 2023-03-27 09:45:38 by stolfi
+# Last edited on 2025-02-16 20:33:51 by stolfi
 
 PROG = test_minn
 
@@ -23,6 +23,8 @@ JS_LIBS := \
   libminn.a \
   libminu.a \
   libgeo.a \
+  libgausol.a \
+  libeigen.a \
   libjs.a
 
 .PHONY:: all-tests single-test

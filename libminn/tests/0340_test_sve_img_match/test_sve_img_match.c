@@ -2,7 +2,7 @@
 #define PROG_DESC "tests {sve_minn.h} on an image matching problem"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-05 10:34:38 by stolfi */
+/* Last edited on 2025-02-16 20:23:55 by stolfi */
 
 #define test_sve_img_match_C_COPYRIGHT "Copyright © 2009 by the State University of Campinas (UNICAMP)"
 
@@ -25,7 +25,6 @@
 #include <r2_extra.h>
 #include <rn.h>
 #include <rmxn.h>
-#include <rmxn_extra.h>
 #include <affirm.h>
 #include <ix_reduce.h>
 #include <wt_table.h>

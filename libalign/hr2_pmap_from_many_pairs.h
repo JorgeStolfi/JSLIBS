@@ -2,7 +2,7 @@
 #define hr2_pmap_from_many_pairs_H
 
 /* Tools for optimizing projective maps. */
-/* Last edited on 2024-12-05 10:19:30 by stolfi */ 
+/* Last edited on 2025-02-16 20:00:50 by stolfi */ 
 
 #include <stdint.h>
 
@@ -14,7 +14,7 @@
 
 hr2_pmap_t hr2_pmap_from_many_pairs
   ( hr2_pmap_type_t type,
-    int32_t np,
+    uint32_t np,
     r2_t p1[], 
     r2_t p2[], 
     double w[],
@@ -74,7 +74,7 @@ hr2_pmap_t hr2_pmap_from_many_pairs
     the goal function above, to remove the spurious degree of freedom
     due to homogeneous matrix scaling. */
 
-int32_t hr2_pmap_from_many_pairs_required_rank(hr2_pmap_type_t type);
+uint32_t hr2_pmap_from_many_pairs_required_rank(hr2_pmap_type_t type);
   /* Returns the minimum number of point pairs that
     {hr2_pmap_from_many_pairs_try_find_frame_pair} must find in order to
     compute the optimum map with the given {type}. Namely, 0 for

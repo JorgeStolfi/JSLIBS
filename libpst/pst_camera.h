@@ -2,7 +2,7 @@
 #define pst_camera_H
 
 /* pst_camera.h -- camera parameters and tools therefor. */
-/* Last edited on 2024-12-28 00:42:02 by stolfi */
+/* Last edited on 2025-02-25 14:45:08 by stolfi */
 
 #include <r2.h>
 #include <r3.h> 
@@ -210,10 +210,11 @@ double pst_camera_min_focal_length(r2_t *Q, int32_t NX, int32_t NY);
     
 /* CAMERA OPS FOR MULTISCALE */
 
-pst_camera_t pst_camera_shrink(pst_camera_t *C, int32_t dx, int32_t dy, int32_t nw);
-  /* Given a camera description appropriate for an image {A},
-    returns a camera description for a reduced image {B} 
-    obtained by {float_image_mscale_shrink(A, M, dx, dy, nw)}. */
+pst_camera_t pst_camera_shrink(pst_camera_t *C, int32_t dx, int32_t dy);
+  /* Given a camera description appropriate for an image {A}, returns a
+    camera description for a reduced image {B} that would be obtained by
+    {float_image_mscale_shrink(A,wch,harm,NXB,NYB,dx,dy)} for any
+    {wch,harm,NXB,NYB}. */
 
 pst_camera_t pst_camera_expand(pst_camera_t *C, int32_t dx, int32_t dy, int32_t nw);
   /* Inverse of {pst_camera_shrink}: given a camera description

@@ -1,5 +1,5 @@
 /* See {pst_img_graph_shrink.h} */
-/* Last edited on 2025-01-13 08:25:59 by stolfi */
+/* Last edited on 2025-03-03 03:46:37 by stolfi */
 
 /* Created by Rafael F. V. Saracchini */
 
@@ -591,30 +591,30 @@ void pst_img_graph_shrink(pst_img_graph_t *g,double *w_i,double wmag)
   fprintf(stderr,"Solving Graph level[%d] with [%d] vertices [%d] valid\n",level, g->NV,g->NV_valid);
 
   int32_t *ref_tab;
-  pst_imgsys_t *S = pst_img_graph_build_system(g, iW, (int32_t)OZ->sz[1], (int32_t)OZ->sz[2], &ref_tab);
+  pst_imgsys_t *S = pst_img_graph_integrate_build_system(g, iW, (int32_t)OZ->sz[1], (int32_t)OZ->sz[2], &ref_tab);
   
   if (debug)
-{
-  
-    char *filename = jsprintf("%s-%02d-S.txt",out_prefix,level);
-    FILE *wr_dump = open_write(filename,FALSE);
-    pst_imgsys_write(wr_dump,S);
-    fclose(wr_dump);
-    free(filename);
-    
-    pst_img_graph_put_solution_into_image(g,iZ,OZ);
-    filename = jsprintf("%s-%02d-iZ.fni",out_prefix,level);
-    wr_dump = open_write(filename,FALSE);
-    float_image_write(wr_dump,OZ);
-    fclose(wr_dump);
-    free(filename);
-    
-    pst_img_graph_put_solution_into_image(g,iW,OZ);
-    filename = jsprintf("%s-%02d-iW.fni",out_prefix,level);
-    wr_dump = open_write(filename,FALSE);
-    float_image_write(wr_dump,OZ);
-    fclose(wr_dump);
-    free(filename);
+    {
+      char *filename = jsprintf("%s-%02d-S.txt",out_prefix,level);
+      FILE *wr_dump = open_write(filename,FALSE);
+      pst_imgsys_write(wr_dump,S,"%+10.6f");
+      fclose(wr_dump);
+      free(filename);
+
+      pst_img_graph_put_solution_into_image(g,iZ,OZ);
+      filename = jsprintf("%s-%02d-iZ.fni",out_prefix,level);
+      wr_dump = open_write(filename,FALSE);
+      float_image_write(wr_dump,OZ);
+      fclose(wr_dump);
+      free(filename);
+
+      pst_img_graph_put_solution_into_image(g,iW,OZ);
+      filename = jsprintf("%s-%02d-iW.fni",out_prefix,level);
+      wr_dump = open_write(filename,FALSE);
+      float_image_write(wr_dump,OZ);
+      fclose(wr_dump);
+      free(filename);
+    }
     
     if (RZ != NULL)
 {

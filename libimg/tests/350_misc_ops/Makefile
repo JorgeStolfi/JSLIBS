@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:27:22 by jstolfi
+# Last edited on 2025-02-17 02:40:37 by stolfi
 
 PROG = test_misc_ops
 
@@ -84,8 +84,8 @@ plot-output:
             -title "${OUT_FILE}" \
             -range -1.01 2.01 \
           < ${TEMP}.fni \
-          > ${TEMP}.eps
-	-display -title '%f' -background White +matte ${TEMP}.eps
+          > ${TEMP}.png
+	-display -title '%f' ${TEMP}.png
 
 endif
 # End ${RUN} section

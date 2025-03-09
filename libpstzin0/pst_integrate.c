@@ -1,5 +1,5 @@
 /* See pst_integrate.h */
-/* Last edited on 2025-01-25 08:44:57 by stolfi */
+/* Last edited on 2025-03-05 15:02:24 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -29,21 +29,29 @@
 #define FLUFF (1.0e-140)
   /* Practically zero. */
 
-#define TINY (2.0e-7)
-  /* Just a bit greater than the relative error of single-precision float. */
-
 /* IMPLEMENTATIONS */
 
-pst_imgsys_t* pst_integrate_build_system(float_image_t *G, float_image_t *H, bool_t verbose) 
+pst_imgsys_t* pst_integrate_build_system
+  ( float_image_t *G,
+    float_image_t *H,
+    double hintsWeight,
+    int32_t indent,
+    bool_t verbose
+  ) 
   {
     int32_t NC_G, NX_G, NY_G;
     float_image_get_size(G, &NC_G, &NX_G, &NY_G);
-    demand(NC_G == 3, "gradient map must have 3 channels");
-    
-    /* Get the size of the system: */
+    demand((NC_G == 2) || (NC_G == 3), "gradient map must have 2 or 3 channels");
     int32_t NX_Z = NX_G + 1;
     int32_t NY_Z = NY_G + 1;
-    if (H != NULL) { float_image_check_size(H, 2, NX_Z, NY_Z, "height estimate map {H} has wrong size"); }
+   
+    int32_t NC_H = 0;
+    if (H != NULL)
+      { /* Get the size of the system: */
+        float_image_get_size(H, &NC_H, NULL, NULL);
+        demand((NC_H == 1) || (NC_H == 2), "gradient map must have 1 or 2 channels");
+        float_image_check_size(H, 0, NX_Z, NY_Z, "hints map {H} has wrong size");
+      }
     
     pst_imgsys_t *S = pst_imgsys_new_grid(NX_Z, NY_Z);
     assert(S->N == NX_Z*NY_Z);
@@ -102,8 +110,8 @@ pst_imgsys_t* pst_integrate_build_system(float_image_t *G, float_image_t *H, boo
       
         { qoo[x,y](Z) = (H[0,x,y] - Z[x,y])^2 }
         
-      with weight {woo[x,y] = H[1,x,y]}. However, if {H} is
-      null or the weight {H[1,x,y]} is zero, we add a term 
+      with weight {woo[x,y] = hintsWeight*H[1,x,y]}. However, if {H} is
+      null or the weight {hintsWeight*H[1,x,y]} is zero, we add a term 
       that corresponds to assuming {H[0,x,y]} is zero with
       a very small positive weight.
       
@@ -132,30 +140,38 @@ pst_imgsys_t* pst_integrate_build_system(float_image_t *G, float_image_t *H, boo
       The equation for {Z[x,y]} is obtained by adding all these partial equations
       with the indicated weights, leaving out the common factor '2*'. */
 
-    auto void append_edge_term(pst_imgsys_equation_t *eqk, int32_t x, int32_t y, int32_t ux, int32_t uy);
+    auto bool_t append_edge_term(pst_imgsys_equation_t *eqk, int32_t x, int32_t y, int32_t ux, int32_t uy);
       /* Tries to add to equation {eqk} a term corresponding to a grid
         edge or diagonal that starts at {(x,y)} and ends at
         {(x+ux,y+uy)}, where {ux,uy} are in {-1..+1} (but not both
         zero). If the weight of that edge turns out to be zero, does
         nothing. Otherwise appends the term for the height value
         {Z[x+ux,y+uy]}, increments term 0 (expected to be the height value
-        {Z[x,y]}), increments {eq->rhs,eq->wtot}. */
+        {Z[x,y]}), increments {eq->rhs,eq->wtot}.
+        
+        Returns {TRUE} iff the edge term was succesfully added. */
 
-    auto void append_vertex_term(pst_imgsys_equation_t *eqk, int32_t x, int32_t y);
+    auto void append_hints_term(pst_imgsys_equation_t *eqk, int32_t x, int32_t y);
       /* Tries to add to equation {eqk} a term corresponding to the
-        equation {Z[0,x,y] == H[0,x,y]} with weight {H[1,x,y]}. If
-        {H[1,x,y]} is zero, pretends that {H[0,x,y] = 0} and {H[1,x,y]}
+        equation {Z[0,x,y] == H[0,x,y]} with weight {hintsWeight*H[1,x,y]}. If
+        {hintsWeight*H[1,x,y]} is zero, pretends that {H[0,x,y] = 0} and {hintsWeight*H[1,x,y]}
         is a very small weight. Increments the coefficient of term 0 of
-        the equation, as well as {eq->rhs,eq->wtot}. Must be called after
-        adding all edge terms. */
+        the equation, as well as {eq->rhs,eq->wtot}. */
+
+    auto void append_fudge_term(pst_imgsys_equation_t *eqk);
+      /* Adds to to equation {eqk} a term corresponding to the
+        equation {Z[0,x,y] == 0} with weight 1.0.  Must be called only if {eqk.wtot}
+        and {eqk.nt} are zero. */
 
     /* Make sure that we can build the system: */
     assert(MAX_COEFFS >= 5);
     
+    bool_t ignoreSlopes = FALSE; /* Normally {FALSE}; {TRUE} for debugging. */
+    
     uint32_t N = S->N;
     
     uint32_t N_hors = 0; /* Equations that do not correspond to any height map pixel. */
-    uint32_t N_good = 0; /* Equations that got at least one term with nonzero weight. */
+    uint32_t N_cook = 0; /* Equations that ended up {0==0} and had to be cooked. */
     
     for (int32_t k = 0; k < N; k++)
       { uint32_t uidk = (uint32_t)k;  /* Index of main unknow of equation {k}. */
@@ -177,62 +193,90 @@ pst_imgsys_t* pst_integrate_build_system(float_image_t *G, float_image_t *H, boo
             N_hors++;
           }
         else
-          { /* The height value is pixel {x,y} of the height map. Try to add the axial terms: */
-            append_edge_term(eqk, x, y, -1, 00);
-            append_edge_term(eqk, x, y, +1, 00);
-            append_edge_term(eqk, x, y, 00, -1);
-            append_edge_term(eqk, x, y, 00, +1);
-            /* If some of them were zero, try to add the diagonal terms: */
-            if (eqk->nt < MAX_COEFFS) { append_edge_term(eqk, x, y, -1, -1); }
-            if (eqk->nt < MAX_COEFFS) { append_edge_term(eqk, x, y, -1, +1); }
-            if (eqk->nt < MAX_COEFFS) { append_edge_term(eqk, x, y, +1, -1); }
-            if (eqk->nt < MAX_COEFFS) { append_edge_term(eqk, x, y, +1, +1); }
+          { /* The height value is pixel {x,y} of the height map. */
+            if (! ignoreSlopes)
+              { /* Try to add the axial terms: */
+                bool_t axm = append_edge_term(eqk, x, y, -1, 00);
+                bool_t axp = append_edge_term(eqk, x, y, +1, 00);
+                bool_t aym = append_edge_term(eqk, x, y, 00, -1);
+                bool_t ayp = append_edge_term(eqk, x, y, 00, +1);
+                /* If two adjacent , try to add the diagonal terms: */
+                if ((! axm) || (! aym)) { (void)append_edge_term(eqk, x, y, -1, -1); }
+                if ((! axm) || (! ayp)) { (void)append_edge_term(eqk, x, y, -1, +1); }
+                if ((! axp) || (! aym)) { (void)append_edge_term(eqk, x, y, +1, -1); }
+                if ((! axp) || (! ayp)) { (void)append_edge_term(eqk, x, y, +1, +1); }
+              }
             /* This must come last: */
-            append_vertex_term(eqk, x, y);
+            append_hints_term(eqk, x, y);
+            /* Check final equation weight: */
+            if (eqk->wtot == 0)
+              { /* Add a fudge term pulling the variable to 0: */
+                append_fudge_term(eqk);
+                N_cook++;
+              }
           }
       }
-    assert(N_hors + N_good == N);
+
     if (verbose)
-      { fprintf(stderr, "%5d system variables are not height map pixels\n", N_hors);
-        fprintf(stderr, "%5d non-null equations found\n", N_good);
+      { fprintf(stderr, "%*s%5d system variables are not height map pixels\n", indent, "", N_hors);
+        fprintf(stderr, "%*s%5d null equations cooked to pull to zero\n", indent, "", N_cook);
+      }
+      
+    /* Normalize {wtot} fields: */
+    double nt_exp = (ignoreSlopes ? 0 : 4) + 1.0;
+    for (int32_t k = 0; k < N; k++)
+      { pst_imgsys_equation_t *eqk = &(S->eq[k]);
+        eqk->wtot /= nt_exp;
       }
 
     return S;
        
-    void append_edge_term(pst_imgsys_equation_t *eqk, int32_t x, int32_t y, int32_t ux, int32_t uy)
+    bool_t append_edge_term(pst_imgsys_equation_t *eqk, int32_t x, int32_t y, int32_t ux, int32_t uy)
       { 
+        bool_t debug = FALSE;
+        
         /* Check if we got enough equations: */
-        if (eqk->nt >= MAX_COEFFS) { return; }
+        if (eqk->nt >= MAX_COEFFS) { return FALSE; }
+      
+        /* Term 0 must be there, even if with zero coef: */
+        assert(eqk->nt >= 1);
         
         /* Check if both height values {Z[x,y]} and {Z[x',y']} are in the height map: */
-        if ((x < 0) || (x >= S->NX)) { return; }
-        if ((y < 0) || (y >= S->NY)) { return; }
+        if ((x < 0) || (x >= S->NX)) { return FALSE; }
+        if ((y < 0) || (y >= S->NY)) { return FALSE; }
         
         int32_t x1 = x + ux, y1 = y + uy;
-        if ((x1 < 0) || (x1 >= S->NX)) { return; }
-        if ((y1 < 0) || (y1 >= S->NY)) { return; }
+        if ((x1 < 0) || (x1 >= S->NX)) { return FALSE; }
+        if ((y1 < 0) || (y1 >= S->NY)) { return FALSE; }
         
         /* Check if {x',y'} is in the system: */
         int32_t uid1 = x1 + y1*S->NX;
         assert((uid1 >= 0) && (uid1 < N));
       
-        /* Get the estimated height difference {d} and its weight {w}: */
-        double d, w;
-        pst_slope_map_get_edge_data(G, x, y, ux, uy, &d, &w);
-        if (fabs(w) >= FLUFF)
+        /* Get the estimated height difference {vD} and its weight {wD}: */
+        double vD, wD;
+        pst_slope_map_get_edge_data(G, x, y, ux, uy, &vD, &wD);
+        if (debug && ((x == 0) || (x == S->NX-1) || (y == 0) || (y == S->NY-1)))
+          { fprintf(stderr, "%*s  @ {append_edge_term} [%d,%d] - [%d,%d] %+10.6f %8.4f\n", indent, "", x, y, x+ux, y+uy, vD, wD); }
+        assert(isfinite(wD) && (wD >= 0));
+        if (fabs(wD) >= FLUFF)
           { /* Add term to equation */
+            assert(isfinite(vD));
             uint32_t nt = eqk->nt;
             eqk->uid[nt] = (uint32_t)uid1; 
-            eqk->cf[nt] = -w; 
-            eqk->cf[0] += w;
-            eqk->rhs += -w*d; 
-            eqk->wtot += w; 
+            eqk->cf[nt] = -wD; 
+            eqk->cf[0] += wD;
+            eqk->rhs += -wD*vD; 
+            eqk->wtot += wD; 
             nt++;
             eqk->nt = nt;
+            return TRUE;
           }
+        else
+          { return FALSE; }
       }
        
-    void append_vertex_term(pst_imgsys_equation_t *eqk, int32_t x, int32_t y)
+    void append_hints_term(pst_imgsys_equation_t *eqk, int32_t x, int32_t y)
       { 
         /* Check if height values {Z[x,y]} is in the height map: */
         if ((x < 0) || (x >= S->NX)) { return; }
@@ -241,22 +285,41 @@ pst_imgsys_t* pst_integrate_build_system(float_image_t *G, float_image_t *H, boo
         int32_t uid = x + y*S->NX;
         assert((uid >= 0) && (uid < N));
       
-        /* Term 0 must be there: */
+        /* Term 0 must be there, even if with zero coef: */
         assert(eqk->nt >= 1);
         assert(eqk->uid[0] == uid);
         
-        /* Get the external estimated height {h} and its weight {wh}: */
-        double h = (H == NULL ? 0.0 : float_image_get_sample(H, 0, x, y));
-        double wh = (H == NULL ? 0.0 : float_image_get_sample(H, 1, x, y));
-        demand(isfinite(h), "invalid height estimate {H} value");
-        demand(isfinite(wh) && (wh >= 0), "invalid height estimage weight");
-        if (wh < FLUFF)
-          { /* Fudge a tiny but positive term: */
-            wh = TINY*fmax(TINY, fabs(eqk->cf[0]));
+        /* Get the hint (external estimated height) {vH} and its weight {wH}: */
+        double wH = ((H == NULL) ? 0.0 : (NC_H < 2 ? 1.0 : float_image_get_sample(H, 1, x, y)));
+        demand(isfinite(wH) && (wH >= 0), "invalid hint weight");
+        double vH = NAN;  /* Hint value, or 0 if undefined. */
+        if (fabs(wH) >= FLUFF)
+          { vH = ((H == NULL) || (wH == 0) ? 0.0 : float_image_get_sample(H, 0, x, y));
+            if (! isfinite(vH)) { wH = 0; vH = NAN; }
           }
-        /* Add term to equation */
-        eqk->cf[0] += wh;
-        eqk->rhs += -wh*h; 
-        eqk->wtot += wh; 
+        /* Adjust the weight: */
+        wH = wH * hintsWeight;
+        if (! isfinite(wH)) { wH = 0.0; }
+        if (fabs(wH) >= FLUFF)
+          { /* Add term {Z=H} to equation */
+            eqk->cf[0] += wH;
+            eqk->rhs += wH*vH; 
+            eqk->wtot += wH; 
+          }
+      }
+      
+    void append_fudge_term(pst_imgsys_equation_t *eqk)
+      {
+        /* Term 0 must be there, but with zero coef: */
+        assert(eqk->nt == 1);
+        assert(eqk->cf[0] == 0);
+        assert(eqk->wtot == 0);
+        assert(eqk->rhs == 0);
+        
+        double vC = 0.0;  /* Default value. */
+        double wC = 1.0;  /* Irrelevant. */
+        eqk->cf[0] += wC;
+        eqk->rhs += vC; 
+        eqk->wtot += wC; 
       }
   }

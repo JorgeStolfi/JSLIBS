@@ -1,5 +1,5 @@
 /* See {pst_img_graph.h} */
-/* Last edited on 2025-01-14 17:40:23 by stolfi */
+/* Last edited on 2025-02-11 10:13:33 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #include <stdio.h>
@@ -25,7 +25,7 @@
 #define MAX_COEFFS pst_imgsys_MAX_COEFFS
 #define FLUFF (1.0e-140)
 
-pst_imgsys_t *pst_img_graph_build_system
+pst_imgsys_t *pst_img_graph_integrate_build_system
   ( pst_img_graph_t *g,
     int32_t NX_Z,
     int32_t NY_Z,

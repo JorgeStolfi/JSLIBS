@@ -1,5 +1,5 @@
 /* See {float_image_mscale.h}. */
-/* Last edited on 2025-01-12 15:33:51 by stolfi */
+/* Last edited on 2025-03-02 01:28:40 by stolfi */
 
 #include <assert.h>
 #include <limits.h>
@@ -21,125 +21,128 @@
 
 /* IMPLEMENTATIONS */
 
-float_image_t *float_image_mscale_shrink(float_image_t *A, float_image_t *M, int32_t NXR, int32_t NYR, int32_t dx, int32_t dy, int32_t nw)
+float_image_t *float_image_mscale_shrink
+  ( float_image_t *A,
+    int32_t wch,
+    bool_t harm,
+    int32_t NXR,
+    int32_t NYR,
+    int32_t dx,
+    int32_t dy
+  )
   { 
-    /* Generate the 1D weight mask: */
-    demand(nw > 0, "invalid filter width");
-    double wt[nw];
-    wt_table_binomial_fill((uint32_t)nw, wt, NULL);
-    wt_table_normalize_sum((uint32_t)nw, wt);
-    
-    /* Get the image dimensions: */
+    /* Get the input image dimensions: */
     int32_t NC = (int32_t)A->sz[0];
     int32_t NXA = (int32_t)A->sz[1];
     int32_t NYA = (int32_t)A->sz[2];
-
-    /* Check the mask dimensions: */
-    if (M != NULL)
-      { demand((int32_t)M->sz[0] == 1, "weight mask should be monochromatic");
-        demand((int32_t)M->sz[1] == NXA, "mask width mismatch");
-        demand((int32_t)M->sz[2] == NYA, "mask height mismatch");
-      }
     
     /* Create the output image {R}: */
     float_image_t *R = float_image_new(NC, NXR, NYR);
     
     /* Fill the pixels of {R}: */
-    int32_t xR, yR, c;
-    for(yR = 0; yR < NYR; yR++)
-      { for(xR = 0; xR < NXR; xR++)
+    for (int32_t yR = 0; yR < NYR; yR++)
+      { for (int32_t xR = 0; xR < NXR; xR++)
           { /* Accumulate the weighted pixel sum over the window: */
-            double sum_w = 0;    /* Sum of weights. */
-            double sum_w_v[NC];  /* Sum of weighted pixels. */
-            for (c = 0; c < NC; c++) { sum_w_v[c] = 0; }
-            int32_t xD, yD;
-            for(yD = 0; yD < nw; yD++)
-              { int32_t yA = 2*yR+yD-dy;
-                double wty = ((yA < 0) || (yA >= NYA) ? 0.0 : wt[yD]);
-                for(xD = 0; xD < nw; xD++)
-                  { int32_t xA = 2*xR+xD-dx;
-                    double wtx = ((xA < 0) || (xA >= NXA) ? 0.0 : wt[xD]);
-                    double w = wtx*wty;
-                    if (w > 0)
-                      { /* Multiply by the mask weight, if any: */
-                        if (M != NULL) { w *= float_image_get_sample(M, 0, xA, yA); }
-                        sum_w += w; 
-                        for (c = 0; c < NC; c++)
-                          { double v = float_image_get_sample(A, c, xA, yA);
-                            sum_w_v[c] += w*v;
+            /* For {c!=wch}, the value of {sum_w_vA[c]} is the sum of the sample {A[c,X',Y']}
+              times the weight of pixel {A[X',Y']} times {A[c.X',Y']},
+              for all {X',Y'} in the {2×2} block that maps to {R[X,Y]}.
+              If {wch} is a valid channel index, {sum_w_vA[wch]}
+              is the simple (unweighted) sum of the weights
+              of those four pixels, if {harm} is false, or of 
+              their inverses, if {harm} is true. */
+            
+            double sum_wA = 0;    /* Sum of pixel weights in block. */
+            double sum_wA_vA[NC]; /* Sum of weighted pixel values in block. */
+            for (int32_t c = 0; c < NC; c++) { sum_wA_vA[c] = 0; }
+            for (int32_t s = 0; s < 2; s++)
+              { int32_t yA = 2*yR - dy + s;
+                for (int32_t r = 0; r < 2; r++)
+                  { int32_t xA = 2*xR - dx + r;
+                    if ((xA >= 0) && (xA < NXA) && (yA >= 0) && (yA < NYA))
+                      { /* Get the reliability weight, if any: */
+                        double wA = ((wch >= 0) && (wch < NC) ? float_image_get_sample(A, wch, xA, yA) : 1.0); 
+                        demand(isfinite(wA) && (wA >= 0), "invalid weight value");
+                        if (wA > 0)
+                          { sum_wA += wA; 
+                            float vA[NC];
+                            float_image_get_pixel(A, xA, yA, vA);
+                            for (int32_t c = 0; c < NC; c++)
+                              { if (c == wch)
+                                  { sum_wA_vA[c] += (harm ? 1/vA[c] : vA[c]); }
+                                else
+                                  { sum_wA_vA[c] += wA*vA[c]; }
+                              }
                           }
+                        else
+                          { if (harm) { sum_wA_vA[wch] = +INF; } }
                       }
                   }
               }
             /* Store the weighted average (maybe NAN) in the {R} pixel: */
-            if (sum_w == 0) { sum_w = 1; }
-            for (c = 0; c < NC; c++)
-              { double v = sum_w_v[c]/sum_w; 
-                float_image_set_sample(R, c, xR, yR, (float)v);
-              }
-          }
-      }
-    return R;
-  }
-  
-float_image_t *float_image_mscale_mask_shrink(float_image_t *M, int32_t NXR, int32_t NYR, int32_t dx, int32_t dy, int32_t nw, bool_t harm)
-  { /* Generate the 1D weight mask: */
-    demand(nw > 0, "invalid filter width");
-    double wt[nw];
-    wt_table_binomial_fill((uint32_t)nw, wt, NULL);
-    wt_table_normalize_sum((uint32_t)nw, wt);
-    
-    /* Get the image dimensions: */
-    int32_t NC = (int32_t)M->sz[0];
-    int32_t NXM = (int32_t)M->sz[1];
-    int32_t NYM = (int32_t)M->sz[2];
-        
-    /* Create the output image {R}: */
-    float_image_t *R = float_image_new(NC, NXR, NYR);
-    
-    /* Fill the pixels of {R}: */
-    int32_t xR, yR, c;
-    for(yR = 0; yR < NYR; yR++)
-      { for(xR = 0; xR < NXR; xR++)
-          { for (c = 0; c < NC; c++)
-              { /* Accumulate the sample sums over the window: */
-                double sum_w = 0;    /* Sum of weights. */
-                double sum_w_m = 0;  /* Sum of weighted pixels. */
-                int32_t xD, yD;
-                for(yD = 0; yD < nw; yD++)
-                  { int32_t yM = 2*yR+yD-dy;
-                    double wty = ((yM < 0) || (yM >= NYM) ? 0.0 : wt[yD]);
-                    for(xD = 0; xD < nw; xD++)
-                      { int32_t xM = 2*xR+xD-dx;
-                        double wtx = ((xM < 0) || (xM >= NXM) ? 0.0 : wt[xD]);
-                        double w = wtx*wty;
-                        if (w > 0)
-                          { sum_w += w;
-                            double m = float_image_get_sample(M, c, xM, yM);
-                            /* !!! Must find a probabilistic justification for this: */
-                            sum_w_m += (harm ? w/m : w*m);
-                          }
-                      }
+            if (sum_wA == 0) { sum_wA = 1; }
+            float vR[NC];
+            bool_t bad = FALSE;
+            for (int32_t c = 0; c < NC; c++)
+              { double vRc;
+                if (c == wch)
+                  { vRc = sum_wA_vA[c]/4.0;
+                    if (harm) { vRc = 1.0/vRc; }
                   }
-                double m = (harm ? sum_w/sum_w_m : sum_w_m/sum_w);
-                assert(! isnan(m));
-                float_image_set_sample(R, c, xR, yR, (float)m);
+                else
+                  { vRc = sum_wA_vA[c]/sum_wA; }
+                vR[c] = (float)vRc;
+                if (! isfinite(vR[c])) { bad = TRUE; }
               }
+            if (bad) { for (int32_t c = 0; c < NC; c++) { vR[c] = (c == wch ? 0.0 : NAN); }}
+            float_image_set_pixel(R, xR, yR, vR);
           }
       }
     return R;
   }
 
-r2_t float_image_mscale_point_shrink(r2_t *pA, int32_t dx, int32_t dy, int32_t nw)
+float_image_t *float_image_mscale_expand
+  ( float_image_t *R,
+    int32_t NXA,
+    int32_t NYA,
+    int32_t dx,
+    int32_t dy
+  )
   {
-    double hw = 0.5*(nw - 1);
-    return (r2_t){{ 0.5*(pA->c[0] + dx - hw), 0.5*(pA->c[1] + dy - hw) }};
+    /* Get the input image dimensions: */
+    int32_t NC = (int32_t)R->sz[0];
+    int32_t NXR = (int32_t)R->sz[1];
+    int32_t NYR = (int32_t)R->sz[2];
+    
+    /* Create the output image {R}: */
+    float_image_t *A = float_image_new(NC, NXA, NYA);
+    float_image_fill(A, 0.0); /* In case there are undefined margins. */
+   
+    /* Expand pixels of {R} into {2×2} blocks of {A}. */
+    float vR[NC];
+    for(int32_t yR = 0; yR < NYR; yR++)
+      { for(int32_t xR = 0; xR < NXR; xR++)
+          { float_image_get_pixel(R, xR, yR, vR);
+            for(int32_t s = 0; s < 2; s++)
+              { int32_t yA = 2*yR - dy + s;
+                for(int32_t r = 0; r < 2; r++)
+                  { int32_t xA = 2*xR - dx + r;
+                    if ((xA >= 0) && (xA < NXA) && (yA >= 0) && (yA < NYA))
+                      { float_image_set_pixel(A, xA, yA, vR); }
+                  }
+              }
+          }
+      }
+    return A;
   }
 
-r2_t float_image_mscale_point_expand(r2_t *pR, int32_t dx, int32_t dy, int32_t nw)
+r2_t float_image_mscale_point_shrink(r2_t *pA, int32_t dx, int32_t dy)
   {
-    double hw = 0.5*(nw - 1);
-    return (r2_t){{ 2.0*pR->c[0] + hw - dx , 2.0*pR->c[1] + hw - dy }};
+    return (r2_t){{ 0.5*(pA->c[0] + dx - 0.5), 0.5*(pA->c[1] + dy - 0.5) }};
+  }
+
+r2_t float_image_mscale_point_expand(r2_t *pR, int32_t dx, int32_t dy)
+  {
+    return (r2_t){{ 2.0*pR->c[0] + 0.5 - dx , 2.0*pR->c[1] + 0.5 - dy }};
   }
 
 int32_t float_image_mscale_rounding_bias(int32_t n)
@@ -157,21 +160,21 @@ char *float_image_mscale_file_name(char *filePrefix, int32_t level, int32_t iter
     else
       { /* Typeset {level} and {iter}; leave "" to omit. */
         char *xlevel = (level >= 0 ? jsprintf("-%02d", level) : "");
-        char *xiter = (iter >= 0 ? jsprintf("-%09d", iter) : "");
+        char *xiter = (iter == 0 ? "-beg" : (iter < 0 ? "-end" : jsprintf("-%09d", iter)));
         /* Typeset the filename: */
         if (tag == NULL) { tag = ""; }
         char *tagsep = (tag[0] == 0 ? "" : "-");
         fileName = jsprintf("%s%s%s%s%s.%s", filePrefix, xlevel, xiter, tagsep, tag, ext);
         if (level >= 0) { free(xlevel); }
-        if (iter >= 0) { free(xiter); }
+        if (iter > 0) { free(xiter); }
       }
     return fileName;
   }
 
 void float_image_mscale_write_file(float_image_t *M, char *filePrefix, int32_t level, int32_t iter, char *tag)
   { char *fileName = float_image_mscale_file_name(filePrefix, level, iter, tag, "fni");
-    int32_t indent = (level < 0 ? 0 : 2*level);
-    fprintf(stderr, "%*sWriting %s ...", indent, "", fileName);
+    int32_t indent = (level < 0 ? 0 : 2*level+2);
+    fprintf(stderr, "%*swriting %s ...", indent, "", fileName);
     FILE* wr = open_write(fileName, FALSE);
     float_image_write(wr, M);
     if (wr == stdout) { fflush(wr); } else { fclose(wr); }

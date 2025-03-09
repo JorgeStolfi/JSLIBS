@@ -2,7 +2,7 @@
 #define pst_normal_map_H
 
 /* pst_normal_map.h -- procedures for working with normal maps. */
-/* Last edited on 2025-01-19 08:46:42 by stolfi */
+/* Last edited on 2025-03-04 18:34:38 by stolfi */
 
 #include <float_image.h>
 #include <r2.h>
@@ -123,32 +123,6 @@ void pst_normal_map_perturb(float_image_t *NRM, double amt);
     the procedure sets channel 3 (the weight) to 0 whenever the normal is 
     not finite or has zero length. */
 
-void pst_perturb_normal(r3_t *nrm, double amt);
-  /* Randomly perturbs the unit vector {nrm} by the amount {amt},
-    preserving its unit length. In particular, {amt=0} means no
-    perturbation, while {amt=1} means that the result is a uniformly
-    distributed on the unit sphere and independent of the given {nrm}.
-    For small {amt}, the perturbation is (to first order) a tangential
-    vector perpendicular to {nrm}, with zero mean and root mean square
-    length {amt}.  */
-
-/* NORMAL MAPS AND SLOPE MAPS */
-
-r2_t pst_normal_map_slope_from_normal(r3_t *nrm, double maxSlope);
-  /* Converts a normal vector {nrm} to a gradient vector (that is, the
-    slopes {dZ/dX} and {dZ/dY}). 
-    
-    The Z coordinate or the normal must be non-negative. The length of
-    the normal vector needs not be 1. If necessary, the computed
-    gradient is scaled so that its Euclidean norm does not exceed
-    {maxSlope}. The result is undefined if {nrm} is the zero
-    vector. */
-
-r3_t pst_normal_map_normal_from_slope(r2_t *grd);
-  /* Converts a gradient vector {grd} (that is, the slopes {dZ/dX} and
-    {dZ/dY}) to an outwards-pointing normal vector, with unit
-    Euclidean length. */
-
 float_image_t *pst_normal_map_to_slope_map(float_image_t *NRM, double maxSlope);
   /* Given a normal map {NRM} returns a slope map {GRD} with 3 channels
     and the same size, such that the samples in channels 0 and 1, column
@@ -160,7 +134,7 @@ float_image_t *pst_normal_map_to_slope_map(float_image_t *NRM, double maxSlope);
     slope map {GRD} will have 3 channels; channel 2 of {GRD} will be 
     the weight (channel 3) of {NRM}, or 1.0 if there is no such channel.
     However the weight will be 0 if the normal vector is not finite
-    or has zero length. */
+    or has zero length.  */
 
 float_image_t *pst_normal_map_from_slope_map(float_image_t *GRD);
   /* Given a three-channel slope map {GRD}, returns a four-channel 

@@ -1,5 +1,5 @@
 /* See pst_normal_map.h */
-/* Last edited on 2025-01-19 08:48:12 by stolfi */
+/* Last edited on 2025-03-04 18:36:06 by stolfi */
 
 #include <stdio.h>
 #include <math.h>
@@ -172,7 +172,7 @@ void pst_normal_map_pixel_avg
             double mag = r3_L_inf_norm(&scnv);
             if (isfinite(scnv.c[0]) && isfinite(mag) && (mag > 0.0))
               { /* Convert normal direction to slopes, and accumulat: */
-                r2_t scng = pst_normal_map_slope_from_normal(&scnv, +INF);
+                r2_t scng = pst_slope_from_normal(&scnv, +INF);
                 scng_sum.c[0] += scng.c[0];
                 scng_sum.c[1] += scng.c[1];
               }
@@ -188,7 +188,7 @@ void pst_normal_map_pixel_avg
         r2_scale(1.0/(NS*NS), &scng_sum, &scng_sum);
 
         /* Convert gradient to normal: */
-        r3_t scnv = pst_normal_map_normal_from_slope(&scng_sum);
+        r3_t scnv = pst_normal_from_slope(&scng_sum);
 
         /* Convert normal direction back to image {X,Y,Z} coords. */
         r3_t imgv =  pst_normal_map_image_dir_from_scene_dir(&scnv, scn_to_img);
@@ -221,42 +221,6 @@ void pst_normal_map_perturb(float_image_t *NRM, double noise)
       }
   }
 
-void pst_perturb_normal(r3_t *nrm, double amt)
-  { /* Generate a Gaussian random vector with mean 0, deviation {1} in each coordinate: */
-    r3_t rnd; 
-    r3_throw_normal(&rnd);
-    /* Scale {rnd} by {1/sqrt(2)} so that a small {amt} gives
-      an rms displacement of {amt}, then mix it into {nrm}
-      with weights {amt}:{1-amt}: */
-    double crnd = amt/M_SQRT2;
-    double cnrm = 1 - amt;
-    r3_mix(crnd, &rnd, cnrm, nrm, nrm);
-    /* Re-normalize: */
-    double len = r3_dir(nrm, nrm);
-    /* If we were so unlucky as to get a near-zero mix, try again: */
-    while (len < 0.00001) { r3_throw_normal(nrm); len = r3_dir(nrm, nrm); }
-  }
-
-r3_t pst_normal_map_normal_from_slope(r2_t *grd)
-  { double dZdX = grd->c[0]; 
-    double dZdY = grd->c[1]; 
-    double m = sqrt(1.0 + dZdX*dZdX + dZdY*dZdY);
-    double nx = dZdX/m; 
-    double ny = dZdY/m; 
-    double nz = 1.0/m; 
-    return (r3_t){{ nx, ny, nz }};
-  }
-  
-r2_t pst_normal_map_slope_from_normal(r3_t *nrm, double maxSlope)
-  { double nx = nrm->c[0], ny = nrm->c[1], nz = nrm->c[2];
-    double nr = hypot(nx, ny);
-    double nzmin = nr / maxSlope;
-    if (nz < nzmin) { nz = nzmin; }
-    double dZdX = -nx / nz;
-    double dZdY = -ny / nz;
-    return (r2_t) {{ dZdX, dZdY }};
-  }
-
 float_image_t *pst_normal_map_to_slope_map(float_image_t *NRM, double maxSlope)
   {
     /* Get/check image dimensions: */
@@ -270,7 +234,7 @@ float_image_t *pst_normal_map_to_slope_map(float_image_t *NRM, double maxSlope)
     for (y =0; y < NY; y++)
       { for (x = 0; x < NX; x++)
           { r3_t nrm = pst_normal_map_get_vector(NRM, x, y);
-            r2_t grd = pst_normal_map_slope_from_normal(&nrm, maxSlope);
+            r2_t grd = pst_slope_from_normal(&nrm, maxSlope);
             pst_slope_map_set_gradient(GRD, x, y, &grd);
             float w = pst_normal_map_get_weight(NRM, x, y);
             double mag = r3_L_inf_norm(&nrm);
@@ -292,7 +256,7 @@ float_image_t *pst_normal_map_from_slope_map(float_image_t *GRD)
     for (y =0; y < NY; y++)
       { for (x = 0; x < NX; x++)
           { r2_t grd = pst_slope_map_get_gradient(GRD, x, y);
-            r3_t nrm = pst_normal_map_normal_from_slope(&grd);
+            r3_t nrm = pst_normal_from_slope(&grd);
             pst_normal_map_set_vector(NRM, x, y, &nrm);
             float w = pst_slope_map_get_weight(GRD, x, y);
             double mag = r3_L_inf_norm(&nrm);

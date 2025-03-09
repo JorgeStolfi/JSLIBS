@@ -2,7 +2,7 @@
 #define pst_proc_map_H
 
 /* pst_proc_map.h -- procedures for creating procedurally-defined images. */
-/* Last edited on 2025-01-26 18:59:53 by stolfi */
+/* Last edited on 2025-02-28 17:53:38 by stolfi */
 
 #include <stdint.h>
 
@@ -41,7 +41,7 @@ typedef struct pst_proc_map_zfunc_props_t
   The result is obtained by evaluanting {func} at a grid of {NS×NS}
   sampoints (sampling points) around the given point {p} and averaging
   the desired quantity. The count {NS} must be at
-  least 2. The sampoints will span about {1/xyScale} on each side 
+  least 2. The sampoints will span almost {pixSize} on each side 
   of {p}.   The weight of the sampoint with indices {kx,ky}
   will be {ws[kx]*ws[ky]}, for {kx,ky} in {0..NS-1}.  Preferably,
   {NS} should be odd, and the weights {ws[0..NS-1]} should be a 
@@ -53,7 +53,7 @@ void pst_proc_map_compute_height
     r2_t p,
     uint32_t NS,
     double ws[],
-    double xyScale,
+    double pixSize,
     bool_t debug,
     double *z_P,
     double *wz_P
@@ -63,32 +63,32 @@ void pst_proc_map_compute_height
     
     The result {z}, returned in {*z_P}, is the weighted average of the
     height function {Z(X,Y)} as defined by {func} over the grid of
-    {NS×NS} sampoints with weights {ws[0..NS-1]}.  Sampoints
-    where {func} returns {NAN} or {±INF} are excluded from the average.
+    {NS×NS} sampoints with weights {ws[0..NS-1]}.
     
-    The height is scaled by {xyScale} so that the gradient is 
-    independent of {xyScale}.
+    However, if the function returns {NAN} or {±INF} at any sampoint, or
+    the computation overflows, the result is {NAN}.
+    
+    The height is scaled by {1/pixSize} so that the gradient is 
+    independent of {pixSize}.
     
     The procedure also computes a reliability weight {wz}, that is
-    returned in {*wz_P}, consisting of the weighted fraction of
-    sampoints where {func} returned a finite value. In particular, the
-    weight {wz} will be 1.0 if {func} did not return {NAN} or {±INF} at
-    any sampoint. */
+    returned in {*wz_P}; which is 0.0 when the result is {NAN},
+    and 1.0 otherwise. */
   
 void pst_proc_map_compute_numeric_gradient
   ( pst_proc_map_zfunc_t *func,
     r2_t p,
     uint32_t NS,
     double ws[],
-    double xyScale,
+    double pixSize,
     double maxGrad,
     bool_t debug,
     r2_t *dnz_P,
     double *wdnz_P
   );
-  /* Computes the mean numeric gradient {dnz=(dnzx,dnzy)} of the height field defined by
-    {func} at the point {p} of {func's} domain. The gradient is returned
-    in {*dnz_P}.
+  /* Computes the mean numeric gradient {dnz=(dnzx,dnzy)} of the height
+    field defined by {func} at the point {p} of {func's} domain. The
+    gradient is returned in {*dnz_P}.
     
     The result is obtained by computing the height {Z(X,Y)} with {func}
     at a grid of {NS×NS} sampoints {(X,Y)} around {p}, with weights
@@ -97,17 +97,16 @@ void pst_proc_map_compute_numeric_gradient
     averaging these numeric derivatives.
     
     The procedure computes a reliability weight {wdnz}, that is returned
-    in {*wdnz_P}. If any sampoint heights are {NAN} or {±INF}, or any
-    computed derivative exceeded {maxGrad} in absolute value, or the
-    final gradient is greater than {maxGrad} in modulus, the gradient is
-    set to {NAN,NAN} and the weight is zero; otherwise it is 1.0. */
+    in {*wdnz_P}. If any sampoint heights are {NAN} or {±INF}, the gradient is
+    set to {NAN,NAN} and the weight is zero; otherwise it is 
+    the square of the ratio {maxGrad/hypot(maxGrad,|dnz|)}. */
   
 void pst_proc_map_compute_analytic_gradient
   ( pst_proc_map_zfunc_t *func,
     r2_t p,
     uint32_t NS,
     double ws[],
-    double xyScale,
+    double pixSize,
     double maxGrad,
     bool_t debug,
     r2_t *daz_P,
@@ -121,10 +120,10 @@ void pst_proc_map_compute_analytic_gradient
     {dazxk=dZ/dX} and {dazyk=dZ/dY} at each sampoint, using {func}, and
     taking the average of those valus with the sampoint weights.
     
-    The procedure computes a reliability weight {wdnz}, that is returned
-    in {*wdnz_P}. If any sampoint heights are {NAN} or {±INF}, or any
-    gradient returned by {func} exceeds {maxGrad} in modulus, the gradient is
-    set to {NAN,NAN} and the weight is zero; otherwise it is 1.0. */
+    The procedure computes a reliability weight {wdaz}, that is returned
+    in {*wdaz_P}. If any sampoint heights are {NAN} or {±INF}, the gradient is
+    set to {NAN,NAN} and the weight is zero; otherwise it is 
+    the square of the ratio {maxGrad/hypot(maxGrad,|daz|)}. */
     
 /* CREATING IMAGES FROM PROCEDURAL MAPS */
 
@@ -139,44 +138,72 @@ void pst_proc_map_compute_analytic_gradient
     
 float_image_t* pst_proc_map_make_height_map
   ( pst_proc_map_zfunc_t *func,
-    int32_t NX,
-    int32_t NY,
+    int32_t NXG,
+    int32_t NYG,
+    r2_t *org,
+    double pixSize,
     uint32_t NS,
-    double ws[]
+    double ws[],
+    int32_t xDebug,
+    int32_t yDebug
   );
   /* Creates a height map {IZ} from the height function {Z(X,Y)} defined
     by the procedure {func}.
     
-    The {IZ} image will have 2 channels, {NX+1} columns, and {NY+1} rows
-    (for consistency with {pst_proc_map_make_slope_map} below). 
+    The {IZ} image will have 2 channels, {NXG+1} columns, and {NYG+1} rows
+    (for consistency with {pst_proc_map_make_slope_map}, q. v.). 
     
     The height value of {IZ[0,x,y]} and the reliability weight
-    {IZ[1,x,y]}, for {x} in {0..NX} and {y} in {0..NY}, will be obtained
+    {IZ[1,x,y]}, for {x} in {0..NXG} and {y} in {0..NYG}, will be obtained
     by {pst_proc_map_compute_height}, with {p} being the grid VERTEX
-    {(x,y)} mapped to {func}'s domain. */
+    {(x,y)} mapped to {func}'s domain.
+    
+    The arguments passed to {func} is the coordinates {(x,y)} of a point
+    in the rectangle {[0 _ NXG] × [0 _ NYG]}, affinely mapped so that the
+    point {org} is mapped to {(0,0)} and {org + (1,1)} is mapped
+    to {(pixSize,pixSize)}.  That is, {pixSize} is the size of one
+    pixel in the {func} domain.
+    
+    If {xDebug} and {yDebug} are valid indices of a pixel, prints
+    debugging info fo that pixel. */
 
 float_image_t* pst_proc_map_make_slope_map
   ( pst_proc_map_zfunc_t *func,
-    int32_t NX,
-    int32_t NY,
+    int32_t NXG,
+    int32_t NYG,
+    r2_t *org,
+    double pixSize,
     uint32_t NS,
     double ws[],
     bool_t numGrad, /* Use numeric gradient? */
     double maxGrad,
-    double maxGDiff
+    double maxGDiff,
+    double minWeight,
+    int32_t xDebug,
+    int32_t yDebug
   );
   /* Computes a slope map {IG} from the gradient of the 
     height function {Z(X,Y)} defined by the procedure {func}.
     
-    The slope map image {IG} will have three channels, {NX} columns, and
-    {NY} rows.  The procedure stores into {IG[0..2,x,y]} the
-    estimated derivatieves {dZ/dX} and {dZ/dY} (numeric or analytic, as
-    specified by {numGrad}) and the reliability 
-    weight {w}, as computed by {pst_proc_map_compute_gradient} with {p}
-    being the CENTER of the pixel {[x,y]} -- that is, {(x+0.5,y+0.5)} --
-    mapped to the domain of {func}.
+    The slope map image {IG} will have three channels, {NXG} columns, and
+    {NYG} rows. The procedure stores into {IG[0..2,x,y]} the estimated
+    derivatieves {dZ/dX} and {dZ/dY} (numeric or analytic, as specified
+    by {numGrad}) and the reliability weight {w}, as computed by
+    {pst_proc_map_compute_gradient} with {p} being the CENTER of the
+    pixel {[x,y]} -- that is, {(x+0.5,y+0.5)} -- mapped to the domain of
+    {func}. 
     
-    If the */
+    The arguments passed to {func} is the coordinates {(x,y)} of a point
+    in the domain of {IG}, affinely mapped so that the
+    point {org} is mapped to {(0,0)} and {org + (1,1)} is mapped
+    to {(pixSize,pixSize)}.  That is, {pixSize} is the size of one
+    pixel in the {func} domain.
+    
+    If the weight of any pixel comes out as less than {minWeight},
+    the gradient is set to {(NAN,NAN)} and the weight is set to zero. 
+    
+    If {xDebug} and {yDebug} are valid indices of a pixel, prints
+    debugging info fo that pixel. */
 
 #define pst_proc_map_MIN_ZFUNC  0
 #define pst_proc_map_MAX_ZFUNC 27

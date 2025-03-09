@@ -2,17 +2,19 @@
 
 /* Created on 2005-10-01 by Jorge Stolfi, unicamp, <stolfi@dcc.unicamp.br> */
 /* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2025-01-25 08:47:15 by stolfi */
+/* Last edited on 2025-03-03 14:25:05 by stolfi */
 /* See the copyright and authorship notice at the end of this file.  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <assert.h>
-#include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #include <bool.h>
 #include <affirm.h>
+#include <jsfile.h>
 #include <float_image.h>
 #include <float_image_mscale.h>
 #include <filefmt.h>
@@ -116,16 +118,23 @@ bool_t pst_imgsys_equation_is_null(uint32_t uid, pst_imgsys_equation_t *eq, uint
       }
   }
     
-void pst_imgsys_write(FILE *wr, pst_imgsys_t *S)
+void pst_imgsys_write(FILE *wr, pst_imgsys_t *S, char *fmt)
   {
     filefmt_write_header(wr, pst_imgsys_FILE_TYPE, pst_imgsys_FILE_VERSION);
+    
+    /* Provide a default format: */
+    if ((fmt == NULL) || (strlen(fmt) == 0)) { fmt = "%+24.16e"; }
+    
+    fprintf(wr, "N = %d\n", S->N);
+    fprintf(wr, "NX = %d\n", S->NX);
+    fprintf(wr, "NY = %d\n", S->NY);
 
     for(int32_t k = 0; k < S->N; k++)
       {
         /* Index of equation's main variable: */
         int32_t uidk = k;
         
-        /* Compute indices of pixel corresponding to the variable {Z[k]}: */
+        /* Get indices of pixel corresponding to the variable {Z[k]}: */
         int32_t xk = S->col[uidk]; int32_t yk = S->row[uidk];
          
         /* Print indices of main pixel: */
@@ -142,11 +151,11 @@ void pst_imgsys_write(FILE *wr, pst_imgsys_t *S)
         /* Print the total weight: */
         fprintf(wr, " w = %8.6f ", eqk->wtot);
 
+        /* Print the right-hand side and weight: */
+        fprintf(wr, " rhs = "); fprintf(wr, fmt, eqk->rhs);
+        
         /* Print the number of terms: */
         fprintf(wr, " nt = %2d", eqk->nt);
-        
-        /* Print the right-hand side and weight: */
-        fprintf(wr, " eq = %+12.7f", eqk->rhs);
         
         assert((eqk->nt >= 1) && (eqk->nt <= MAX_COEFFS));
         assert(eqk->uid[0] == k);
@@ -157,7 +166,8 @@ void pst_imgsys_write(FILE *wr, pst_imgsys_t *S)
             uint32_t uidj = eqk->uid[j];
             assert((uidj >= 0) && (uidj < S->N));
             double cfj = eqk->cf[j];
-            fprintf(wr, " %+12.7f*Z[%d", cfj, uidj);
+            fprintf(wr, " "); fprintf(wr, fmt, cfj); 
+            fprintf(wr, "*Z[%d", uidj);
             /* Get indices of the corresponding pixel: */
             int32_t xj = S->col[uidj]; int32_t yj = S->row[uidj];
             assert((xj == -1) == (yj == -1));
@@ -174,18 +184,42 @@ void pst_imgsys_write(FILE *wr, pst_imgsys_t *S)
     fflush(wr);
   }
 
-void pst_imgsys_write_report(pst_imgsys_t *S, char *filePrefix, int32_t level, char *tag)
+float_image_t* pst_imgsys_make_weight_image(pst_imgsys_t *S)
+  {
+    float_image_t *SW = float_image_new(1, S->NX, S->NY);
+    
+    int32_t nout = 0; /* Equations without valid pixel indices. */
+    for (int32_t k = 0; k < S->N; k++)
+      {
+        /* Index of equation's main variable: */
+        int32_t uidk = k;
+        
+        /* Get equation {k}: */
+        pst_imgsys_equation_t *eqk = &(S->eq[k]);
+        
+        /* Get indices of pixel corresponding to the variable {Z[k]}: */
+        int32_t xk = S->col[uidk]; int32_t yk = S->row[uidk];
+         
+        /* Print the total weight: */
+        if ((xk >= 0) && (xk < S->NX) && (yk >= 0) && (yk < S->NY))
+          { float_image_set_sample(SW, 0, xk, yk, (float)(eqk->wtot)); }
+        else
+          { nout++; }
+      }
+    if (nout > 0)
+      { fprintf(stderr, "{pst_imgsys_make_weight_image}: there were %d equations without pixel indices\n", nout); }
+
+    return SW;
+  }
+
+void pst_imgsys_write_named(char *fileName, pst_imgsys_t *S, char *fmt, int32_t indent)
   {
     if (S == NULL) { return; }
-    char *fileName = float_image_mscale_file_name(filePrefix, level, -1, tag, "sys");
-    int32_t indent = (level < -1 ? 0 : 2*level+2);
-    fprintf(stderr, "%*swriting %s ...", indent, "", fileName);
-    FILE* wr = fopen(fileName, "wt");
+    fprintf(stderr, "%*swriting %s ...\n", indent, "", fileName);
+    FILE* wr = open_write(fileName, FALSE);
     assert(wr != NULL); 
-    pst_imgsys_write(wr, S);
+    pst_imgsys_write(wr, S, fmt);
     if (wr == stdout) { fflush(wr); } else { fclose(wr); }
-    fprintf(stderr, "\n");
-    free(fileName);
   }
 
 void pst_imgsys_copy_image_to_sol_vec(pst_imgsys_t *S, float_image_t *Z, double z[], double vdef)

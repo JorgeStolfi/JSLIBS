@@ -1,5 +1,5 @@
 /* See float_image.h */
-/* Last edited on 2025-01-18 13:26:33 by stolfi */ 
+/* Last edited on 2025-02-27 11:50:21 by stolfi */ 
 
 #include <limits.h>
 #include <float.h>
@@ -721,8 +721,10 @@ void float_image_rescale_samples(float_image_t *A, int32_t c, float a0, float a1
     int32_t NX = (int32_t)A->sz[1];
     int32_t NY = (int32_t)A->sz[2];
     demand((c >= 0) && (c < NC), "invalid channel index");
-    double scale = (z1 - z0)/(a1 - a0);
-    demand(! isnan(scale), "scale factor is NaN");
+
+    double scale = ((double)z1 - z0)/((double)a1 - a0);
+    demand(! isnan(scale), "scale factor is {NAN}");
+
     for (int32_t y = 0;  y < NY; y++)
       { for (int32_t x = 0;  x < NX; x++)
           { float *v = float_image_get_sample_address(A, c, x, y);
@@ -1071,15 +1073,15 @@ void float_image_print_size(FILE *wr, char *pref, float_image_t *A, char *sep, c
   }
  
 void float_image_check_size(float_image_t *A, int32_t NC, int32_t NX, int32_t NY, char *msg)
-  { bool_t NC_OK = ((NC >= 0) || (((int32_t)A->sz[0]) == NC));
-    bool_t NX_OK = ((NX >= 0) || (((int32_t)A->sz[1]) == NX));
-    bool_t NY_OK = ((NY >= 0) || (((int32_t)A->sz[2]) == NY));
+  { bool_t NC_OK = ((NC <= 0) || (((int32_t)A->sz[0]) == NC));
+    bool_t NX_OK = ((NX <= 0) || (((int32_t)A->sz[1]) == NX));
+    bool_t NY_OK = ((NY <= 0) || (((int32_t)A->sz[2]) == NY));
     if (! (NC_OK && NX_OK && NY_OK))
       { float_image_print_size(stderr, "** wrong image size = ", A, " ", "\n"); 
         if (msg != NULL) { fprintf(stderr, "  %s\n", msg); }
-        if (! NC_OK) { fprintf(stderr, "  wrong number of channels, should be %d", NC); }
-        if (! NX_OK) { fprintf(stderr, "  wrong number of columns, should be %d", NX); } 
-        if (! NY_OK) { fprintf(stderr, "  wrong number of rows, should be %d", NY); }
+        if (! NC_OK) { fprintf(stderr, "  wrong number of channels, should be %d\n", NC); }
+        if (! NX_OK) { fprintf(stderr, "  wrong number of columns, should be %d\n", NX); } 
+        if (! NY_OK) { fprintf(stderr, "  wrong number of rows, should be %d\n", NY); }
         assert(FALSE);
       }
   }

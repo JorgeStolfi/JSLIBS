@@ -2,7 +2,7 @@
 #define pst_weight_map_H
 
 /* pst_weight_map.h -- procedures for working with pixel weight maps. */
-/* Last edited on 2025-01-16 11:47:06 by stolfi */
+/* Last edited on 2025-02-25 15:08:19 by stolfi */
 
 #include <bool.h>
 
@@ -13,13 +13,13 @@
   A /weight map/ is a float-valued image {IW} where each element
   {IW[c,x,y]} is a non-negative weight. */
 
-float_image_t *pst_weight_map_shrink(float_image_t *IW, bool_t harmonic, uint32_t avgWidth);
+float_image_t *pst_weight_map_shrink(float_image_t *IW, bool_t harmonic, uint32_t nw);
   /* Given a weight map {IW} for some image {IM}, returns another
     weight map {JW} appropriate for a half-sized version {JM} of the
     image.
     
-    Each weight in the reduced map is an average of four weights of
-    the given map. The average is the arithmetic mean if {harmonic} is
+    Each weight in the reduced map is the average of four weights of the
+    given map. The average is the arithmetic mean if {harmonic} is
     false, of the harmonic mean if {harmonic} is true.
     
     If the width of {IW} is odd, the last column is implicitly doubled

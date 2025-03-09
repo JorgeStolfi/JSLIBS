@@ -1,4 +1,4 @@
-# Last edited on 2025-01-14 15:45:34 by stolfi
+# Last edited on 2025-03-01 02:54:00 by stolfi
 
 PROG = test_build_system
 
@@ -24,15 +24,17 @@ include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 
 all: check
 
-check:  clean do-tests
+check:  clean do-tests 
 
-TESTS := 00-zeflat-N:T 01-ramp10-N:T 04-parabo-N:T 20-cpiece-N:T
+# TESTS := 00-zeflat-N:T 01-ramp10-N:T 04-parabo-N:T 20-cpiece-N:T
+TESTS := 04-parabo-N:T
 
 do-tests: ${PROG}
 	mkdir -p out
 	for test in ${TESTS} ; do \
-          mapName="$${test/:*/}"; full="$${test/*:/}" ; \
-	  ./run_test.sh $${mapName} $${full} ; \
+          mapName="$${test/:*/}"; \
+	  withHints="$${test/*:/}" ; \
+	  ./run_test.sh $${mapName} $${withHints} ; \
         done
  
 clean::

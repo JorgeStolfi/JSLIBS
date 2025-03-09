@@ -2,9 +2,10 @@
 #define pst_signature_H
 
 /* pst_signature.h -- procedures for computing normals from light signatures. */
-/* Last edited on 2024-12-24 18:58:16 by stolfi */
+/* Last edited on 2025-03-01 19:55:12 by stolfi */
 
 #include <pst_basic.h>
+#include <pst_map.h>
 
 #include <vec.h>
 
@@ -35,7 +36,7 @@ void pst_signature_print(FILE *wr, uint32_t NF, signature_t *sig);
     to be for {NF} light fields. */
 
 void pst_signature_extract
-  ( image_vec_t *IMGV,     /* Scene images under {NF} different light fields. */
+  ( pst_map_vec_t *IMGV,     /* Scene images under {NF} different light fields. */
     uint32_t maxval,       /* Maxval of original (quantized) images. */                 
     double noise,          /* Additional per-sample noise in images. */                 
     int32_t c,            /* Channel. */                      
@@ -74,7 +75,7 @@ typedef struct light_table_t /* A table that maps light signatures to normal vec
 light_table_t *pst_signature_build_table
   ( r2_t *pos,            /* Position in scene images where table is most valid. */
     float_image_t *NRM,   /* Normal map of light gauge. */ 
-    image_vec_t *IMGV,    /* Images of the gauge object under various lightings. */ 
+    pst_map_vec_t *IMGV,    /* Images of the gauge object under various lightings. */ 
     bool_t cubify         /* TRUE uses the cube acceleration. */
   );
   /* Creates a light table from images {IMGV[0..NF-1]} of a light gauge under
@@ -114,7 +115,7 @@ void pst_signature_search_table
 void pst_signature_normals_from_photos
   ( uint32_t NG,                  /* Number of light gauges. */
     light_table_t *tab[],    /* {tab[0..NG-1]} are the light-to-normal tables of the gauges. */
-    image_vec_t *IMGV,       /* {IMGV[0..NF-1]} are photos of a scene under {NF} light fields. */
+    pst_map_vec_t *IMGV,       /* {IMGV[0..NF-1]} are photos of a scene under {NF} light fields. */
     uint32_t maxval,              /* Number of quantization levels in original quantized images. */
     double noise,            /* Standard deviation of additional per-sample noise. */
     float_image_t *NRM,      /* (OUT) Nomal map of the scene. */

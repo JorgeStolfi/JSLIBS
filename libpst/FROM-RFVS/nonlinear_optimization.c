@@ -3,7 +3,6 @@
 #include <rn.h>
 #include <stdlib.h>
 #include <math.h>
-#include <rmxn_extra.h>
 #include <assert.h>
 #include <sve_minn.h>
 #include <nonlinear_optimization.h>

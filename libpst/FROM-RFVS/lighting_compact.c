@@ -4,7 +4,6 @@
 #include <math_utils.h>
 #include <jsfile.h>
 #include <lighting_models.h>
-#include <rmxn_extra.h>
 #include <r3x3.h>
 #include <rn.h>
 #include <pst_lamp.h>

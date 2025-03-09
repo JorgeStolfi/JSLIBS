@@ -2,7 +2,7 @@
 #define float_image_geostereo_multiscale_H
 
 /* Tools for multiscale geometric stereo reconstruction from image pairs. */
-/* Last edited on 2024-12-05 10:29:37 by stolfi */ 
+/* Last edited on 2025-02-25 15:00:58 by stolfi */ 
 
 #include <stdio.h>
 
@@ -53,5 +53,17 @@ void float_image_geostereo_refine_and_prune_displacement_map
     that of {gd}. The displacement scores in {fs} will be a
     combination of the rough scores in {gs} and the newly computed
     scores for the adjusted displacements. */
+
+float_image_t *float_image_geostereo_mscale_shrink
+  ( float_image_t *A,
+    int32_t NXR,
+    int32_t NYR,
+    int32_t dx,
+    int32_t dy
+  );
+  /* Performs a smoothing pass with a {3×3} Hann window, then
+    returns the result of
+    {float_image_mscale_shrink(A,-1,FALSE,NXR,NYR,dx,dy)}.
+    The image {A} is not changed. */
 
 #endif

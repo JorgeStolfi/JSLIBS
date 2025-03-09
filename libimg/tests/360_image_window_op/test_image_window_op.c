@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {image_window_op.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-01-30 08:05:11 by stolfi */ 
+/* Last edited on 2025-02-27 15:04:05 by stolfi */ 
 /* Created on 2012-01-25 by J. Stolfi, UNICAMP */
 
 #define test_image_window_op_COPYRIGHT \

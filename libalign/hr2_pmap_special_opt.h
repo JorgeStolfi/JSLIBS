@@ -2,7 +2,7 @@
 #define hr2_pmap_special_opt_H
 
 /* Tools for optimizing projective maps. */
-/* Last edited on 2024-12-05 10:19:54 by stolfi */ 
+/* Last edited on 2025-02-16 20:09:46 by stolfi */ 
 
 #include <bool.h>
 #include <stdint.h>
@@ -17,6 +17,8 @@ void hr2_pmap_special_opt_quadratic
     sign_t sgn,               /* Handedness, when applicable. */
     hr2_pmap_opt_func_t *f2,  /* Goal function to minimize. */
     hr2_pmap_opt_pred_t *OK,  /* Client acceptance function. */
+    uint32_t ny,              /* Number of optimization variables. Must be consist w {type}. */
+    double yctr[],            /* Center value for each encoding element */
     double yrad[],            /* Scaling factor for each encoding element. */
     int32_t maxIter,          /* Max outer loop iterations. */
     hr2_pmap_t *M,            /* (IN/OUT) The projective map to adjust. */
@@ -41,11 +43,11 @@ void hr2_pmap_special_opt_quadratic
     The {sgn} parameter indicates whether the map should be orientation-preserving
     ({dir = +1}) or orientation-reversing ({dir = -1}).
     
-    The parameter {yrad[0..ny-1]} determines maximum change allowed in
-    the encoding {y[0..ny-1]} of the map {M}. Its length {ny} should be
-    {hr2_pmap_encode_num_parameters(type)}. Ideally the values should be
-    such that, for small {d}, a change of {d*yrad[ky]} on the encoding
-    element {y[ky]} will have the same effect on {f2(M)}, for any {ky}.
+    The parameters {yctr[0..ny-1]} and {yrad[0..ny-1]} determine range
+    allowed in the encoding {y[0..ny-1]} of the map {M}. Its length {ny}
+    should be {hr2_pmap_encode_num_parameters(type)}. Ideally the values
+    should be such that, for small {d}, a change to {yctr[k]} by
+    {d*yrad[k]} will have the same effect on {f2(M)}, for any {k}.
     
     In any case, the output value of {*f2M_P} will be the value of {f2(M)}.
   

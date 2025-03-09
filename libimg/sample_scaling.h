@@ -3,14 +3,13 @@
 
 /* sample_scaling.h -- tools for scaling sample values. */
 /* Created 2006-04-20 by Jorge Stolfi, IC-UNICAMP. */
-/* Last edited on 2025-01-21 19:31:47 by stolfi */
+/* Last edited on 2025-03-04 12:08:06 by stolfi */
 
 #include <bool.h>
 #include <vec.h>
 #include <argparser.h>
+#include <argparser_extra.h>
 #include <float_image.h>
-
-#include <pst_basic.h>
 
 /* PARSING SCALING PARAMETERS FROM THE COMMAND LINE */
   
@@ -35,7 +34,8 @@ typedef struct sample_scaling_options_t
   "  -max {VMAX}.. " argparser_double_vec_den_HELP "\n" \
   "  -center {VCTR}.. " argparser_double_vec_den_HELP "\n" \
   "  -width {VWID}.. " argparser_double_vec_den_HELP "\n" \
-  "    These options specify a range [{VMIN} _ {VMAX}] used to scale samples between the {float} values and discrete pixels.\n" \
+  "    These options specify a range [{VMIN} _ {VMAX}] used to scale" \
+  " samples between the {float} values and discrete pixels.\n" \
   "\n" \
   "    If none of these four arguments is present, {VMIN} and {VMAX} will be set" \
   " to {SMIN} and {SMAX}, respectively the minimum and maximum" \
@@ -59,7 +59,7 @@ typedef struct sample_scaling_options_t
   " are computed over all relevant channels of the image. Otherwise," \
   " they are computed separately for each channel."
 
-sample_scaling_options_t sample_scaling_parse_options(argparser_t *pp, int32_t *NC_P); 
+sample_scaling_options_t sample_scaling_options_parse(argparser_t *pp, int32_t *NC_P); 
   /* Parses the options "-min", "-max", "-center", "-width", and "-uniform" from 
     the command line.
     

@@ -5,7 +5,7 @@
 
 /* Created on 2005-12-04 by Jorge Stolfi, unicamp, <stolfi@ic.unicamp.br> */
 /* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2025-01-25 08:46:50 by stolfi */
+/* Last edited on 2025-03-03 03:47:56 by stolfi */
 /* See the copyright and authorship notice at the end of this file. */
 
 #include <stdint.h>
@@ -87,6 +87,11 @@ bool_t pst_imgsys_equation_is_null(uint32_t uid, pst_imgsys_equation_t *eq, uint
   /* Returns true iff the equation {eqk} is indeterminate,
     meaning that it is essentially {0*Z[uidk]=0} for its
     main variable {uidk}.  Also does some consistency checks. */
+    
+float_image_t* pst_imgsys_make_weight_image(pst_imgsys_t *S);
+  /* Returns a single-channel image {SW} with {S.NX} cols and {S.NY} rows where pixel 
+    {SW[X,Y]} is the reliability weight of the equation that defines {Z[X,Y]},
+    as implied by the {S.col} and {S.row} tables. */
 
 void pst_imgsys_copy_image_to_sol_vec(pst_imgsys_t *S, float_image_t *Z, double z[], double vdef);
   /* Sets the height value vector {z[0..S.N-1]} of system {S} to the samples of channel 0 the
@@ -116,9 +121,9 @@ typedef void pst_imgsys_report_sys_proc_t(int32_t level, pst_imgsys_t *S);
 /* I/O */
 
 #define pst_imgsys_FILE_TYPE "pst_imgsys_t"
-#define pst_imgsys_FILE_VERSION "2024-01-07"
+#define pst_imgsys_FILE_VERSION "2025-03-04"
     
-void pst_imgsys_write(FILE *wr, pst_imgsys_t *S);
+void pst_imgsys_write(FILE *wr, pst_imgsys_t *S, char *fmt);
   /* Writes the system {S} to stream {wr}.  
     
     The whole system is preceded by a line "begin {TYPE} (version of {VERSION})"
@@ -128,19 +133,23 @@ void pst_imgsys_write(FILE *wr, pst_imgsys_t *S);
     
     Then follows one line for each variable and equation, with the format 
     
-      "{k} = {xk} {yk} w = {eqk.wtot} rhs = {eqk.rhs} nt = {eqk.nt} {TERMS}"
+      "{k} = {xk} {yk} w = {eqk.wtot} rhs = {eqk.rhs} nt = {ntk} {TERMS}"
       
-    where {k} is the unknow/equation index in {0..N-1}, {xk} is {S.row[k]},
-    {yk} is {S.col[k]}, {eqk} us {S.eq[k]},
-    and {TERMS} is a  list of {eqk.nt} pairs "{eqk.uid[j]} {eqk.cf[j]}"
-    where {j} varies in {0..eqk.nt-1}.  The term's 
-    variable index {uidj = eqk.uid[j]} will be followed by " = {x},{y}" if 
-    {col[uidj]} and {row[uidj]} are not {-1}.  */
+    where {k} is the unknow/equation index in {0..N-1}, {xk} is
+    {S.row[k]}, {yk} is {S.col[k]}, {eqk} us {S.eq[k]}, {ntk=eqk.nt} is
+    the number of left-hand terms, and {TERMS} is a list of {ntk}
+    entries "{eqk.cf[j]}*Z[{eqk.uid[j]}]" where {j} varies in
+    {0..eqk.nt-1}. The term's variable index {uidj = eqk.uid[j]} will be
+    followed by "={x},{y}" if {x=col[uidj]} and {y=row[uidj]} are not
+    {-1}.  
+    
+    The string {fmt} must be a valid float format spec with forced sign,
+    such as "%+10.8f" or "%+24.16e", and is used to print the right-hand
+    side {eqk.rhs} and each coefficient {eqk.cf[j]}. */
 
-void pst_imgsys_write_report(pst_imgsys_t *S, char *filePrefix, int32_t level, char *tag);
-  /* Writes the system {S} to a file called
-    "{filePrefix}-{level}-{tag}.sys". If the {level} is negative, omits the "-{level}" part.
-    If {tag} is null or empty, omits the "-{tag}" part. Uses {pst_imgsys_write}. */
+void pst_imgsys_write_named(char *fileName, pst_imgsys_t *S, char *fmt, int32_t indent);
+  /* Writes the system {S} to a the file "{fileName}".
+    Messages to {stderr} are indented by {indent} spaces. */
 
 #undef MAX_COEFFS
   /* Clients please use full name. */

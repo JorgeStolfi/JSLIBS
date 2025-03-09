@@ -1,5 +1,5 @@
 /* See {float_image_geostereo_multiscale.h}. */
-/* Last edited on 2024-12-04 23:27:34 by stolfi */
+/* Last edited on 2025-02-25 15:02:57 by stolfi */
 
 #include <assert.h>
 #include <limits.h>
@@ -54,8 +54,8 @@ void float_image_geostereo_multiscale_displacement_map
       { /* Scale images to half-size: */
         int32_t gNX = (fNX+1)/2;
         int32_t gNY = (fNY+1)/2;
-        float_image_t *g1 = float_image_mscale_shrink(f1, NULL, gNX, gNY, 1, 1, 3);
-        float_image_t *g2 = float_image_mscale_shrink(f2, NULL, gNX, gNY, 1, 1, 3);
+        float_image_t *g1 = float_image_geostereo_multiscale_shrink(f1, -1, FALSE, gNX, gNY, 1, 1);
+        float_image_t *g2 = float_image_geostereo_multiscale_shrink(f2, -1, FALSE, gNX, gNY, 1, 1);
         float_image_t *gd;  /* Displacement map. */
         float_image_t *gs;  /* Score map. */
         
@@ -381,4 +381,19 @@ void float_image_geostereo_debug_window(float *w, int32_t rx, int32_t ry, int32_
         fprintf(stderr, "\n");
       }
     fprintf(stderr, "\n");
+  }
+
+float_image_t *float_image_geostereo_mscale_shrink
+  ( float_image_t *A,
+    int32_t NXR,
+    int32_t NYR,
+    int32_t dx,
+    int32_t dy
+  )
+  {
+    float_image_t *S = float_image_copy(A);;
+    for (int32_t c = 0; c < NC; c++) { float_image_filter_channel_hann(IMF, pst_fit_ellipse_nw); }
+    float_image_t *R = float_image_mscale_shrink(S, -1, FALSE, NXR, NYR, dx, dy);
+    float_image_free(S);
+    return R;
   }

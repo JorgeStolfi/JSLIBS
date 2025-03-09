@@ -1,4 +1,4 @@
-/* Last edited on 2021-07-17 23:58:52 by jstolfi */
+/* Last edited on 2025-02-16 20:23:47 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -6,7 +6,6 @@
 #include <analytic_alpha.h>
 #include <r3x3.h>
 #include <tabela.h>
-#include <rmxn_extra.h>
 #include <assert.h>
 #include <sve_minn.h>
 #include <jsfile.h>

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {multifok_test_image_make.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-02-10 09:06:28 by stolfi */ 
+/* Last edited on 2025-03-07 14:32:26 by stolfi */ 
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
 #define test_mfok_scene_make_frame_COPYRIGHT \
@@ -645,7 +645,9 @@ void mfmi_fill_scene_quartet
         LO(bbox[1]) = 0.5*slackY + marginXY + ky*(wObjXY + marginXY);
         HI(bbox[1]) = LO(bbox[1]) + wObjXY;
         
-        bbox[2] = dom[2];
+        double stepZ = (HI(dom[2]) - LO(dom[2]))/10; 
+        LO(bbox[2]) = LO(dom[2]) + (2*ky + kx)*stepZ;
+        HI(bbox[2]) = HI(dom[2]) - (3 - 2*ky - kx)*stepZ;
         interval_widen(&(bbox[2]), -marginZ);
 
         /* Pick colors: */

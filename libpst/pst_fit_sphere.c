@@ -1,5 +1,5 @@
 /* See pst_fit_sphere.h */
-/* Last edited on 2025-01-14 17:30:00 by stolfi */ 
+/* Last edited on 2025-02-25 18:22:10 by stolfi */ 
 
 #include <math.h>
 #include <values.h>
@@ -373,8 +373,7 @@ double pst_fit_sphere_multiscale
     if ((NP > 0) && (Rt + RAdj > 2*RMin))
       { /* Reduce problem to half-scale: */
         float_image_t *IMG_r = pst_fit_ellipse_image_shrink(IMG);
-        int32_t dxy = (pst_fit_ellipse_nw-1)/2;
-        r2_t QCr = float_image_mscale_point_shrink(Q, dxy, dxy, pst_fit_ellipse_nw);
+        r2_t QCr = float_image_mscale_point_shrink(Q, 0, 0);
         double Gr;
         r2_t Kr;
         double Rr;
@@ -436,9 +435,8 @@ void pst_fit_sphere_data_shrink
     double *Rr
   )
   {
-    int32_t dxy = (pst_fit_ellipse_nw-1)/2;
     (*Gr) = G / 2;
-    (*Kr) = float_image_mscale_point_shrink(&K, dxy, dxy, pst_fit_ellipse_nw);
+    (*Kr) = float_image_mscale_point_shrink(&K, 0, 0);
     (*Rr) = R / 2;
   }
 
@@ -452,8 +450,7 @@ void pst_fit_sphere_data_expand
   )
   {
     (*Gx) = G * 2;
-    int32_t dxy = (pst_fit_ellipse_nw-1)/2;
-    (*Kx) = float_image_mscale_point_expand(&K, dxy, dxy, pst_fit_ellipse_nw);
+    (*Kx) = float_image_mscale_point_expand(&K, 0, 0);
     (*Rx) = R * 2;
   }
 

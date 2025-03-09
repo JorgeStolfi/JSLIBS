@@ -1,6 +1,6 @@
 begin float_image_t (format of 2006-03-25)
-NC = 2
+NC = 3
 NX = 1
 NY = 1
-    0     0 +5.0000000e-01 +0.0000000e+00
+    0     0 +5.0000000e-01 +0.0000000e+00 +1.0000000e+00
 end float_image_t

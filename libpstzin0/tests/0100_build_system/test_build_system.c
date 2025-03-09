@@ -4,14 +4,13 @@
 
 #define slope_to_height_C_COPYRIGHT "Copyright © 2024 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2025-01-25 09:32:50 by stolfi */
+/* Last edited on 2025-03-03 03:47:29 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
   "    -slopes {IG_FNI_NAME} \\\n" \
-  "    -weights {IW_FNI_NAME} \\\n" \
+  "    [ -hints {IH_FNI_NAME} ] \\\n" \
   "    -outPrefix {PREFIX} \\\n" \
-  "    [ -full {FULL} ] \\\n" \
   "    " argparser_help_info_HELP ""
 
 #define PROG_INFO \
@@ -39,6 +38,10 @@
   "  Created 2025-01-06 by Jorge Stolfi, UNICAMP, based on {slope_to_height.c} by R. Saracchini.\n" \
   "MODIFICATION HISTORY\n" \
   "  2025-01-06 Created.\n" \
+  "  2025-02-11 Modified to use {Z} hint map {IH}, option \"-hints\".\n" \
+  "  2025-02-11 Replaced \"-weights\" by weights embedded in {IG,IH}.\n" \
+  "  2025-02-11 Removed option \"-full\".\n" \
+  "  2025-02-11 Removed option to read {stdin}, write {stdout}.\n" \
   "\n" \
   "WARRANTY\n" \
   argparser_help_info_NO_WARRANTY "\n" \
@@ -52,22 +55,25 @@
 #define strngf(x) #x
 
 #define PROG_INFO_DESC \
-  "  The program reads a /slope map/ {IG}, consisting of" \
-  " the {X} and {Y} derivatives of some terrain surface {Z(X,Y)}; builds" \
-  " the corresponding (overdetermined) system of equations directly fron iy; and" \
+  "  The program reads a /slope map/ image {IG} with" \
+  " the {X} and {Y} derivatives of some terrain surface {Z(X,Y)}; and" \
+  " a /hints map/ {IH} with external" \
+  " estimates of {Z(X,Y)}.  It builds" \
+  " the corresponding (overdetermined) system of equations that" \
+  " estimates the heights {Z(X,Y)} from {IG} and {IH}; and" \
   " writes that system out.\n" \
   "\n" \
-  "  The input slope map is a two-channel float image {IG}.  Each" \
-  " pixel {IG[X,Y]} of this image is" \
-  " the gradient of the {Z} function, averaged" \
+  "  The input slope map {IG} is a three-channel float image.  Each" \
+  " pixel {IG[X,Y]} of this image has samples {(xG,yG,wG)}, where " \
+  " {(xG,yG)} is the gradient of the {Z} function, averaged" \
   " over the unit square cell (/pixel/) whose lower left corner" \
-  " is the point {(X,Y)}.\n" \
+  " is the point {(X,Y)}; and {wG} is the reliability weight of that gradient.\n" \
   "\n" \
-  "  The program may also read an optional /weight map/ {IW}, a" \
-  " single-channel image that specifies the reliability" \
-  " of the slope data.  Specifically, {IW[X,Y]} is the reliability" \
-  " for the slope datum {IG[X,Y]}.  A zero weight means that the slope" \
-  " datum should be ignored."
+  "  The input hints map {IH} is a two-channel float image.  Each" \
+  " pixel {IH[X,Y]} of this image has samples {(zH,wH)}, where " \
+  " {zH} is some independent estimate of the {Z} function at the pixel corner" \
+  " {(X,Y)}; and {wH} is the reliability weight of that estimate.  The {IH} image" \
+  " must therefore have one col and one row more than the {IG} image."
   
 #define PROG_INFO_OUT_FILES \
   "  {PREFIX}-S.sys\n" \
@@ -76,29 +82,21 @@
   "  {PREFIX}-W.png\n" \
   "    A single-channel image showing the total" \
   " weights {eq[x,y].wtot} of the equation of the" \
-  " integration system referring to each pixel {x,y}."
+  " integration system referring to each pixel corner {x,y}."
 
 #define PROG_INFO_OPTS \
   "  -slopes {IG_FNI_NAME}\n" \
   "    This mandatory argument specifies the file name" \
-  " containing the input slope map {IG}, which must be a two-channel" \
+  " containing the input slope map {IG}.  It must be a three-channel" \
   " image in FNI format" \
-  " (see float_image.h).  If {IG_FNI_NAME}" \
-  " is \"-\", the slope map is read from standard input.\n" \
+  " (see float_image.h).\n" \
   "\n" \
-  "  -weights {IW_FNI_NAME}\n" \
-  "    This optional argument specifies the file containing the input" \
-  " slope weight map {IW}.  It must be a single-channel image with non-negative" \
-  " values, preferably between 0 and 1, and with the same size as {IG}.  Slope" \
-  " samples with weight 0 are ignored.  If {IW_FNI_NAME}" \
-  " is \"-\", the slope weight map is read from standard input.  If this" \
-  " argument is omitted, the" \
-  " program assumes that all slope samples have weight 1.\n" \
-  "\n" \
-  "  -full {FULL}\n" \
-  "    This optional argument specifies the {full} argument" \
-  " to {pst_integrate_build_system} (q.v.).  The {FULL} value" \
-  " can be 0, 1, 'F', or 'T'.  If omitted, assumes \"-full F\".\n" \
+  "  -hints {IH_FNI_NAME}\n" \
+  "    This optional argument specifies the file name" \
+  " containing the hints map {IH}, with the independent {Z}" \
+  " estimates. It must be a two-channel" \
+  " image in FNI format" \
+  " (see float_image.h).\n" \
   "\n" \
   "  -outPrefix {PREFIX}\n" \
   "    Specifies the common prefix for all output" \
@@ -130,19 +128,19 @@
 
 typedef struct options_t
   {
-    char *slopes_fname;   /* File name of input slope file, or "-" for stdin. */
-    char *weights_fname;  /* File name of weight slope file, or "-" for stdin (NULL if none). */
-    bool_t full;          /* True to include equations for isolated height pixels. */
+    char *slopes;         /* File name of input slope map. */
+    char *hints;          /* File name of input {Z} hints map, or NULL. */
     char *outPrefix;      /* Output file name prefix. */
   } options_t;
 
 float_image_t *read_fni_file(char *fname);
-  /* Reads a FNI image from file "{fname}" (which should include the extension ".fni").
-    If {fname} is "-", reads from standard input. */
+  /* Reads a FNI image from file "{fname}" (which should include the extension ".fni"). */
 
 void write_system(pst_imgsys_t *S, char *fname);
-  /* Writes the system {S} to file "{fname}". If {fname} is "-", writes
-    to standard output. */
+  /* Writes the system {S} to file "{fname}". */
+
+void write_fni_file(char *fname, float_image_t *img);
+  /* Writes {img} in FNI format as "{fname}" (which should include the extension ".fni"). */
 
 options_t *parse_options(int32_t argc, char **argv);
   /* Parses the command line arguments and packs them as an {options_t}. */
@@ -156,29 +154,35 @@ int32_t main(int32_t argc, char** argv)
     options_t *o = parse_options(argc, argv);
     
     fprintf(stderr, "Reading the slope map {IG}:\n");
-    float_image_t *IG;  /* Input gradient map. */
-    IG = read_fni_file(o->slopes_fname);
+    float_image_t *IG = read_fni_file(o->slopes);
     
-    float_image_t *IW; /* Input (gradient) reliability weight map. */
-    if (o->weights_fname == NULL)
-      { IW = NULL; }
-    else
-      { fprintf(stderr, "Reading the slope reliability weight map {IW}:\n");
-        IW = read_fni_file(o->weights_fname);
+    float_image_t *IH = NULL;
+    if (o->hints != NULL)
+      { fprintf(stderr, "Reading the {Z} hints map {IH}:\n");
+        IH = read_fni_file(o->hints);
       }
     
     fprintf(stderr, "Building the integration system:\n");
-    bool_t full = TRUE;
-    pst_imgsys_t *S = pst_integrate_build_system(IG, IW, full);
+    bool_t verbose_build = TRUE;
+    double wHMult = 0.1;
+    int32_t indent = 6;
+    pst_imgsys_t *S = pst_integrate_build_system(IG, IH, wHMult, indent, verbose_build);
     
     char *system_fname = jsprintf("%s-S.txt", o->outPrefix);
     write_system(S, system_fname);
     free(system_fname);
     
-    float_image_free(IG); IG = NULL;
-    if (IW != NULL) { float_image_free(IW); IW = NULL; }
-    pst_imgsys_free(S); S = NULL;
+    float_image_t *SW = pst_imgsys_make_weight_image(S);
 
+    char *wtot_fname = jsprintf("%s-SW.fni", o->outPrefix);
+    write_fni_file(wtot_fname, SW);
+    free(wtot_fname);
+    
+    float_image_free(IG); IG = NULL;
+    if (IH != NULL) { float_image_free(IH); IH = NULL; }
+    pst_imgsys_free(S); S = NULL;
+    float_image_free(SW); SW = NULL;
+    
     fprintf(stderr, "Done!\n");
     return 0;
   }
@@ -195,9 +199,14 @@ float_image_t *read_fni_file(char *fname)
 void write_system(pst_imgsys_t *S, char *fname)
   { demand(fname != NULL, "file name not given");
     FILE* wr = open_write(fname, TRUE);
-    pst_imgsys_write(wr, S);
+    pst_imgsys_write(wr, S, "%+10.6f");
     if (wr == stdout) { fflush(wr); } else { fclose(wr); }
     fprintf(stderr, "\n");
+  }
+
+void write_fni_file(char *fname, float_image_t *img)
+  { demand(fname != NULL, "file name not given");
+    float_image_write_named(fname, img);
   }
 
 options_t *parse_options(int32_t argc, char **argv)
@@ -207,19 +216,14 @@ options_t *parse_options(int32_t argc, char **argv)
     argparser_process_help_info_options(pp);
     
     options_t *o = talloc(1, options_t);
-    
-    if (argparser_keyword_present(pp, "-full"))
-      { o->full = argparser_get_next_bool(pp); }
-    else
-      { o->full = FALSE; }
 
     argparser_get_keyword(pp, "-slopes");
-    o->slopes_fname = argparser_get_next_non_keyword(pp);
-    
-    if (argparser_keyword_present(pp, "-weights"))
-      { o->weights_fname = argparser_get_next(pp); }
+    o->slopes = argparser_get_next_non_keyword(pp);
+
+    if (argparser_keyword_present(pp, "-hints"))
+      { o->hints = argparser_get_next_non_keyword(pp); }
     else
-      { o->weights_fname = NULL; }
+      { o->hints = NULL; }
     
     argparser_get_keyword(pp, "-outPrefix");
     o->outPrefix = argparser_get_next(pp);

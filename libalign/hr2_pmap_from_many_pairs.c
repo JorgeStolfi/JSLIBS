@@ -1,5 +1,5 @@
 /* See {hr2_pmap_from_many_pairs.h}. */
-/* Last edited on 2024-12-05 10:19:28 by stolfi */
+/* Last edited on 2025-02-16 20:01:03 by stolfi */
 
 #include <math.h>
 #include <stdint.h>
@@ -21,7 +21,7 @@
 
 hr2_pmap_t hr2_pmap_from_many_pairs
   ( hr2_pmap_type_t type_req,
-    int32_t np,
+    uint32_t np,
     r2_t p1[], 
     r2_t p2[], 
     double w[],
@@ -73,7 +73,7 @@ hr2_pmap_t hr2_pmap_from_many_pairs
   }
 
 
-int32_t hr2_pmap_from_many_pairs_required_rank(hr2_pmap_type_t type)
+uint32_t hr2_pmap_from_many_pairs_required_rank(hr2_pmap_type_t type)
   {
     switch(type)
       { 

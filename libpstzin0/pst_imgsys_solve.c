@@ -2,7 +2,7 @@
 
 /* Created on 2005-10-01 by Jorge Stolfi, unicamp, <stolfi@dcc.unicamp.br> */
 /* Based on the work of Rafael Saracchini, U.F.Fluminense. */
-/* Last edited on 2025-01-25 08:46:08 by stolfi */
+/* Last edited on 2025-03-02 14:28:38 by stolfi */
 /* See the copyright and authorship notice at the end of this file.  */
 
 #include <stdio.h>
@@ -36,6 +36,7 @@ void pst_imgsys_solve_iterative
     pst_imgsys_solve_report_sol_proc_t *reportSol
   )
   {
+    bool_t debug = FALSE;
     uint32_t N = S->N;
     int32_t indent = (level < -1 ? 0 : 2*level+2);
 
@@ -45,8 +46,7 @@ void pst_imgsys_solve_iterative
     double change = +INF;  /* Max {z} change in last iteration. */
     int32_t iter = 0;
     while (iter < maxIter)
-      {
-        /* Report the current solution if so requested: */
+      { /* Report the current solution if so requested: */
         if (reportSol != NULL)
           { bool_t reportSolBefore = (iter == 0);
             if (reportStep != 0)
@@ -62,6 +62,7 @@ void pst_imgsys_solve_iterative
             uint32_t k = (ord != NULL ? ord[kk] : kk);
             /* Save current solution in {z_old}: */
             z_old[k] = z[k];
+            if (debug && (iter == 0) && (kk < 10)) { fprintf(stderr, "%*s  z[%d] = %24.16e\n", indent, "", k, z[k]); }
             /* Get equation {k}: */
             pst_imgsys_equation_t *eqk = &(S->eq[k]);
             /* Compute {z[k]} using equation {k}: */
@@ -103,9 +104,12 @@ void pst_imgsys_solve_iterative
         
         /* Check for apparent convergence: */
         change = pst_imgsys_sol_change(z_old, z, N);
-        if (verbose)
-          { fprintf(stderr, "%*s iteration %3d change = %16.8f\n", indent, "", iter, change); }
-        if (change <= convTol) { /* Converged: */ break; }
+        if (change <= convTol)
+          { /* Converged: */ 
+            if (verbose)
+              { fprintf(stderr, "%*siteration %3d change = %16.8f - converged\n", indent, "", iter, change); }
+            break;
+          }
       }
       
     if (change > convTol)

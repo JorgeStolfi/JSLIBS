@@ -1,5 +1,5 @@
 /* See {sample_conv.h}. */
-/* Last edited on 2025-01-23 14:37:34 by stolfi */
+/* Last edited on 2025-02-26 04:31:23 by stolfi */
 
 #include <math.h>
 #include <stdint.h>
@@ -204,6 +204,8 @@ sample_uint32_t sample_conv_quantize
     sample_uint32_t *imax
   )
   { demand(! isnan(fv), "{fv} is NAN"); 
+    demand(isfinite(lo), "invalid {lo}"); 
+    demand(isfinite(hi), "invalid {hi}"); 
     demand(maxval > 0, "{maxval} is zero"); 
     if ((vmin != NULL) && (fv < (*vmin))) { (*vmin) = fv; }
     if ((vmax != NULL) && (fv > (*vmax))) { (*vmax) = fv; }
@@ -212,21 +214,24 @@ sample_uint32_t sample_conv_quantize
       { smp = maxval/2; }
     else
       { double rv = (fv - lo)/(hi - lo);
-        assert(! isnan(rv));
-        if (rv <= 0.0) 
+        demand(! isnan(rv), "overflow/underflow");
+        if (rv < 0.0)
           { smp = 0;  if (clo != NULL) { (*clo)++; } }
-        else if (rv >= 1)
+        else if (rv > 1.0)
           { smp = maxval; if (chi != NULL) { (*chi)++; } }
         else if (isMask) 
           { /* Map 0 to 0, 1 to {2*maxval}, linearly, with directed rounding: */ 
-            double fsmp = rv*((double)maxval - 1.0e-12);
+            double fsmp = rv*((1 - 1.0e-12)*maxval);
             fsmp = (rv < 0.5 ? ceil(fsmp - 0.5) : floor(fsmp + 0.5)); 
+            /* fprintf(stderr, "mask fv = %24.16e lo = %24.16e hi = %24.16e fsmp = %24.16e\n", fv, lo, hi, fsmp); */
             assert((fsmp >= 0) && (fsmp <= maxval));
             smp = (sample_uint32_t)fsmp;
           }
         else
           { /* Round every interval {[iv/(maxval+1),(iv+1)/(maxval+1))} down to {iv}: */
-            double fsmp = floor(rv*((double)maxval + 1.0 - 1.0e-12));
+            double fsmp = rv*((1 - 1.0e-12)*maxval + 1.0);
+            /* fprintf(stderr, "data fv = %24.16e lo = %24.16e hi = %24.16e fsmp = %24.16e\n", fv, lo, hi, fsmp); */
+            fsmp = floor(fsmp);
             assert((fsmp >= 0) && (fsmp <= maxval));
             smp = (sample_uint32_t)fsmp;
           }

@@ -2,7 +2,7 @@
 #define pst_fit_sphere_H
 
 /* pst_fit_sphere.h -- tools for precisely locating spherical gauges in photos. */
-/* Last edited on 2009-03-01 00:50:58 by stolfi */
+/* Last edited on 2025-03-01 19:28:24 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -17,7 +17,7 @@
 #include <pst_geom.h>
 
 double pst_fit_sphere_and_lights
-  ( image_vec_t *IMGV,      /* Photos of a spherical object. */  
+  ( pst_map_vec_t *IMGV,      /* Photos of a spherical object. */  
     ellipse_crs_t *E,       /* (IN/OUT) Geometric parameters of sphere in {IMGV}. */
     double ctrAdj,          /* Maximum ± adjustment allowed in {ctr} coordinates. */
     double radAdj,          /* Maximum ± adjustment allowed in {rad}. */
@@ -32,7 +32,7 @@ double pst_fit_sphere_and_lights
     int iterLight,          /* Max geometry-fitting iterations. */
     double tolLight,        /* Convergence criterion for geometry fitting. */
     float_image_t *NRM,     /* (OUT) Normal map of sphere. */ 
-    image_vec_t *SYNV       /* (OUT) Synthetic photos of the fitted sphere. */
+    pst_map_vec_t *SYNV       /* (OUT) Synthetic photos of the fitted sphere. */
   );
   /* The procedure assumes that {IMGV[0..NF-1]} (where {NF=IMGV.nel})
     are {NF} monochromatic photos of a spherical object with a
@@ -132,7 +132,7 @@ double pst_fit_sphere_and_lights
     projection. */
 
 double pst_fit_sphere_evaluate_geometry
-  ( image_vec_t *IMGV,      /* Actual photos of a spherical object. */
+  ( pst_map_vec_t *IMGV,      /* Actual photos of a spherical object. */
     ellipse_crs_t *E,       /* Geometric parameters of sphere's projection. */
     pst_light_vec_t *lhtv,  /* (IN/OUT) light model. */
     int adjustDir,          /* Index of lamp for direction adjustment, or -1. */
@@ -143,7 +143,7 @@ double pst_fit_sphere_evaluate_geometry
     int iterLight,          /* Max iterations for light field fitting. */
     double tolLight,        /* Stopping tolerance for light field fitting. */
     float_image_t *NRM,     /* (OUT) Normal map of best-fit sphere. */
-    image_vec_t *SYNV       /* (OUT) Synthetic photos of the fitted sphere. */
+    pst_map_vec_t *SYNV       /* (OUT) Synthetic photos of the fitted sphere. */
   );
   /* Evaluates the parameter set {E}, that describes the presumed
     geometry of a sphere's projection, by comparison with a list of

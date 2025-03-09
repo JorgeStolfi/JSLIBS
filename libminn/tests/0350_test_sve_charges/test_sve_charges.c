@@ -1,5 +1,5 @@
 /* test_sve_charges --- test of {sve_minn.h} with Rutherford's atom potential.  */
-/* Last edited on 2024-12-05 10:34:40 by stolfi */
+/* Last edited on 2025-02-16 20:23:50 by stolfi */
 
 #include <stdio.h>
 #include <unistd.h>
@@ -17,7 +17,6 @@
 #include <r3.h>
 #include <r3_hedron.h>
 #include <rmxn.h>
-#include <rmxn_extra.h>
 #include <rn.h>
 #include <jsfile.h>
 #include <js.h>

@@ -1,5 +1,5 @@
 #! /usr/bin/python3
-# Last edited on 2025-02-10 09:10:18 by stolfi
+# Last edited on 2025-03-08 15:38:36 by stolfi
 
 from math import sin, cos, log, exp, pi, sqrt
 import os
@@ -29,7 +29,7 @@ def main():
   )
 
   runProg = True      # Actually run the program?
-  singleFrame = True  # Create a single frame, not a full stack?
+  singleFrame = False # Create a single frame, not a full stack?
 
   iniLight =  0       # Index of first light source to use.
   finLight = 11       # Index of last light source to use.
@@ -39,7 +39,7 @@ def main():
     images += make_stack \
       ( sceneType = 'Q', 
         lightNum = lightNum, lightDir = lightDirs[lightNum],
-        ambient = 0.25, gloss = 0.50,
+        ambient = 0.00, gloss = 0.00,
         runProg = runProg, singleFrame = singleFrame
       )
       
@@ -51,10 +51,10 @@ def make_stack(sceneType, lightNum, lightDir, ambient, gloss, runProg, singleFra
   # "out/{sceneTag}/{sizeTag}-{samplingTag}/{lightTag}"
   # where 
   
-  #   {sceneTag} is "st{sceneType}-{texture}"
+  #   {sceneTag} is "st{sceneType}-{texture}-amb{A.AA}-glo{G.GG}"
   #   {sizeTag} is "{NX}x{NY}", both formatted as '%04d'
   #   {samplingTag} is "hs{HH}-kr{RR}"
-  #   {lightTag} is "L{LLLL}-amb{A.AA}-glo{G.GG}"
+  #   {lightTag} is "L{LLLL}"
   # 
   #   {sceneType} is a letter 'R', 'S' etc (see below)
   #   {texture} is the texture file, e.g. "noise01"
@@ -81,17 +81,17 @@ def make_stack(sceneType, lightNum, lightDir, ambient, gloss, runProg, singleFra
   # SCU = Scene unit of length.
   scene_WX = 256       # {X}-size of scene in SCU.
   scene_WY = 192       # {Y}-size of scene in SCU.
-  scene_zMin = 30      # Min {Z} coord of scne in SCU.
+  scene_zMin = 20      # Min {Z} coord of scne in SCU.
   scene_WXY = min(scene_WX, scene_WY);   # Usefuel {XY] size of scene in SCU. 
   # Define max scene {Z} coord {scene_zMax} in SCU:
   if sceneType == 'R' or sceneType == 'F' or sceneType == 'T':
-    scene_zMax = scene_zMin + 60
+    scene_zMax = scene_zMin + 50
   elif sceneType == 'Q':
-    scene_zMax = scene_zMin + 90
+    scene_zMax = scene_zMin + 100
   else:
     scene_zMax = scene_zMin + scene_WXY
     
-  NF = 10              # Num of frames in full stack.
+  NF = 12              # Num of frames in full stack.
  
   zFoc_step = (scene_zMax - scene_zMin)/(NF-2)  # Inc of {zFoc} btw frames in SCU.  
   zDep = 2*zFoc_step   # Depth of focus in SCU.
@@ -100,17 +100,17 @@ def make_stack(sceneType, lightNum, lightDir, ambient, gloss, runProg, singleFra
   NX = ppu * scene_WX  # Actual image {X} size.
   NY = ppu * scene_WY  # Actual image {Y} size.
 
-  texture = 'melon24'  # See other textures in the "in" folder.
+  texture = 'melon14'  # See other textures in the "in" folder.
     
   patternFolder = "in"
-  sceneTag = f"st{sceneType}-{texture}"
+  sceneTag = f"st{sceneType}-{texture}-amb{ambient:04.2f}-glo{gloss:04.2f}"
   sizeTag = f"{NX:04d}x{NY:04d}"
   samplingTag = f"hs{HS:02d}-kr{KR:02d}"
   images = []
   runFolder = f"out/{sceneTag}/{sizeTag}-{samplingTag}"
 
   lid = lightDir
-  lightTag = f"L{lightNum:03d}-amb{ambient:04.2f}-glo{gloss:04.2f}"
+  lightTag = f"L{lightNum:03d}"
   err.write("lightTag = %s\n" % lightTag)
   stackFolder = f"{runFolder}/{lightTag}"
 

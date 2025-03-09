@@ -1,5 +1,5 @@
 /* See pst_fit_sphere.h */
-/* Last edited on 2025-01-18 12:50:33 by stolfi */ 
+/* Last edited on 2025-03-01 19:28:11 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -36,7 +36,7 @@ void pst_fit_sphere_adjust_bounds(double *mid, double *adj, double low);
 /* IMPLEMENTATIONS */
 
 double pst_fit_sphere_and_lights
-  ( image_vec_t *IMGV,      /* Photos of a spherical object. */  
+  ( pst_map_vec_t *IMGV,      /* Photos of a spherical object. */  
     ellipse_crs_t *E,       /* (IN/OUT) Geometric parameters of sphere in {IMGV}. */
     double ctrAdj,          /* Maximum ± adjustment allowed in {ctr} coordinates. */
     double radAdj,          /* Maximum ± adjustment allowed in {rad}. */
@@ -51,7 +51,7 @@ double pst_fit_sphere_and_lights
     int iterLight,          /* Max geometry-fitting iterations. */
     double tolLight,        /* Convergence criterion for geometry fitting. */
     float_image_t *NRM,     /* (OUT) Normal map of sphere. */ 
-    image_vec_t *SYNV       /* (OUT) Synthetic photos of the fitted sphere. */
+    pst_map_vec_t *SYNV       /* (OUT) Synthetic photos of the fitted sphere. */
   )
   { bool_t debug = TRUE;
   
@@ -189,7 +189,7 @@ double pst_fit_sphere_and_lights
   }
   
 double pst_fit_sphere_evaluate_geometry
-  ( image_vec_t *IMGV,      /* Actual photos of a spherical object. */
+  ( pst_map_vec_t *IMGV,      /* Actual photos of a spherical object. */
     ellipse_crs_t *E,       /* Geometric parameters of sphere's projection. */
     pst_light_vec_t *lhtv,  /* (IN/OUT) light model. */
     int adjustDir,          /* Index of lamp for direction adjustment, or -1. */
@@ -200,7 +200,7 @@ double pst_fit_sphere_evaluate_geometry
     int iterLight,          /* Max iterations for light field fitting. */
     double tolLight,        /* Stopping tolerance for light field fitting. */
     float_image_t *NRM,     /* (OUT) Normal map of best-fit sphere. */
-    image_vec_t *SYNV       /* (OUT) Synthetic photos of the fitted sphere. */
+    pst_map_vec_t *SYNV       /* (OUT) Synthetic photos of the fitted sphere. */
   )
   {
     bool_t debug = FALSE;

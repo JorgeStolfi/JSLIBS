@@ -1,5 +1,5 @@
 /* See pst_camera.h */
-/* Last edited on 2024-12-28 06:36:51 by stolfi */ 
+/* Last edited on 2025-02-25 14:45:30 by stolfi */ 
 
 #include <math.h>
 #include <values.h>
@@ -68,7 +68,7 @@ double pst_camera_min_focal_length(r2_t *Q, int32_t NX, int32_t NY)
     return dMax/tan(aMax); 
   }
  
-pst_camera_t pst_camera_shrink(pst_camera_t *C, int32_t dx, int32_t dy, int32_t nw)
+pst_camera_t pst_camera_shrink(pst_camera_t *C, int32_t dx, int32_t dy)
   { if (C->O.hm == 0)
       { /* Camera at infinity: */
         return (*C);
@@ -77,7 +77,7 @@ pst_camera_t pst_camera_shrink(pst_camera_t *C, int32_t dx, int32_t dy, int32_t 
       { /* Must halve {F}, shrink and shift the center: */
         r2_t Q = pst_camera_center_cartesian(&(C->O));
         double F = pst_camera_focal_length(&(C->O));
-        r2_t Q_r = float_image_mscale_point_shrink(&Q, dx, dy, nw); 
+        r2_t Q_r = float_image_mscale_point_shrink(&Q, dx, dy); 
         hr3_point_t O_r = pst_camera_viewpoint_from_center_spread(&Q_r, F/2);
         return (pst_camera_t) { .O = O_r };
       }
@@ -92,7 +92,7 @@ pst_camera_t pst_camera_expand(pst_camera_t *C, int32_t dx, int32_t dy, int32_t 
       { /* Must double {F}, expand and shift the center: */
         r2_t Q = pst_camera_center_cartesian(&(C->O));
         double F = pst_camera_focal_length(&(C->O));
-        r2_t Q_e = float_image_mscale_point_expand(&(Q), dx, dy, nw); 
+        r2_t Q_e = float_image_mscale_point_expand(&(Q), dx, dy); 
         hr3_point_t O_e = pst_camera_viewpoint_from_center_spread(&Q_e, F*2);
         return (pst_camera_t) { .O = O_e };
       }

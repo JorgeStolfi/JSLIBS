@@ -1,5 +1,5 @@
 /* See {hr2_pmap_generic_opt.h}. */
-/* Last edited on 2024-12-05 10:19:37 by stolfi */
+/* Last edited on 2025-02-16 20:20:42 by stolfi */
 
 #include <math.h>
 #include <stdint.h>
@@ -14,7 +14,6 @@
 #include <r2.h>
 #include <rn.h>
 #include <r3x3.h>
-#include <rmxn_extra.h>
 #include <jsmath.h>
 #include <jsrandom.h>
 #include <jsfile.h>
@@ -28,11 +27,11 @@
 
 #include <hr2_pmap_generic_opt.h>
 
-void hr2_pmap_generic_opt_map_to_vars(hr2_pmap_t *M, int32_t ny, double y[]);
+void hr2_pmap_generic_opt_map_to_vars(hr2_pmap_t *M, uint32_t ny, double y[]);
   /* Copies the elements of {M.dir}, in row order, to {y[0..ny-1]}.
     Expects that {M} has the sign {sng} and {ny==9}. */
 
-void hr2_pmap_generic_opt_vars_to_mat(int32_t ny, double y[], sign_t sgn, hr2_pmap_t *M);
+void hr2_pmap_generic_opt_vars_to_mat(uint32_t ny, double y[], sign_t sgn, hr2_pmap_t *M);
   /* Copies {y[0..ny-1]} to the the elements of {M.dir}, in row order.
     Then computes {M.inv}. Then forces the sign of {M}
     to be {sgn} by {hr2_pmap_set_sign} if necessary.
@@ -61,7 +60,7 @@ void hr2_pmap_generic_opt_quadratic
     demand(hr2_pmap_sign(M) == sgn, "initial guess has the wrong sign");
 
     /* The optimization variables are the elements of {M.dir}: */
-    int32_t nz = 9;
+    uint32_t nz = 9;
     double z[nz];
 
     hr2_pmap_generic_opt_map_to_vars(M, nz, z);

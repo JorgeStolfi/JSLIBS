@@ -1,5 +1,5 @@
 /* See {pst_img_graph_integration_recursive.h} */
-/* Last edited on 2025-01-14 17:34:22 by stolfi */
+/* Last edited on 2025-02-24 06:40:34 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #include <stdio.h>
@@ -99,7 +99,7 @@ void pst_img_graph_integration_recursive
     pst_integrate_report_heights_proc_t *reportHeights
   )
   {
-    int32_t indent = (level < -1 ? 0 : 2*level + 2);
+    int32_t indent = (level < -1 ? 0 : 2*level+2);
     if (verbose) { fprintf(stderr,"%*sstarting level %d with %d vertices\n", indent,"", level, g->NV); }
     if (reportData != NULL) { reportData(level, g); }
 
@@ -133,7 +133,7 @@ void pst_img_graph_integration_recursive
     fprintf(stderr,"%*ssolving level %d with %dvertices\n", indent,"", level, g->NV);
 
     pst_img_graph_integrate_iterative
-      ( g, NX, NY, iZ, topoSort, convTol, para, szero, verbose, 
+      ( g, NX, NY, iZ, sortSys, convTol, para, szero, verbose, 
         level, reportSys, reportStep, reportHeights 
       );
   }

@@ -1,5 +1,5 @@
 /* See {multifok_scene_object_raytrace.h}. */
-/* Last edited on 2025-02-09 00:15:23 by stolfi */
+/* Last edited on 2025-03-07 16:33:29 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -212,7 +212,9 @@ double multifok_scene_object_raytrace_CONE(interval_t bbox[], r3_t *p, r3_t *d, 
   }
         
 double multifok_scene_object_raytrace_PYRA(interval_t bbox[], r3_t *p, r3_t *d, bool_t verbose)
-  { /* Grab important cordinates: */
+  { bool_t debug = FALSE;
+  
+    /* Grab important cordinates: */
     double pZ = p->c[2];
     double dZ = d->c[2];
 
@@ -231,7 +233,10 @@ double multifok_scene_object_raytrace_PYRA(interval_t bbox[], r3_t *p, r3_t *d, 
     /* The pyramid is the intersection of four side half-spaces plus the base half-space. */
     /* Check the four side faces and base of the pyramid, get interval {tLo,tHi} inside each: */
     r3_t sNrm = (r3_t){{ hZ, 0.0, rXY }}; /* Oytwards normal of next halfspace. */
-    double tLo = 0, tHi = +INF;  /* Range of {t} that is inside the pyramid. */
+    double tLo = (hiZ - pZ)/dZ - 1.0e-6;  /* Min {t} based on {Z} span of pyramid. */
+    double tHi = (loZ - pZ)/dZ + 1.0e-6;  /* Max {t} based on {Z} span of pyramid. */
+    if (tLo > tHi) { /* {dz} positive: */ double tmp = tLo; tLo = tHi; tHi = tmp; }
+    if (debug) { fprintf(stderr, "! pZ = %+10.6f t = [ %+10.6f _ %+10.6f ]\n", pZ, tLo, tHi); }
     for (int32_t ks = 0; ks <= 4; ks++)
       { /* Get {A,B} so that point is outside iff {A t + B > 0}: */
         double A, B;
@@ -246,27 +251,17 @@ double multifok_scene_object_raytrace_PYRA(interval_t bbox[], r3_t *p, r3_t *d, 
           { /* Pyramid base: */
             A = -dZ; B = loZ - pZ;
           }
+        if (debug) { fprintf(stderr, "@ ks = %d  A = %+10.6f  B = %+10.6f, t = [ %+10.6f _ %+10.6f ]", ks, A, B, tLo, tHi); }
         double tkLo, tkHi;
-        if (B < 0)
-          { if (A <= 0) 
-              { /* {pR} is inside the halfspace, {dR} is pointing inward: */
-                tkLo = 0; tkHi = +INF;
-              }
-            else
-              { /* {pR} is inside the halfspace, {dR} is pointing outward: */
-                tkLo = 0; tkHi = -B/A;
-              }
+        if (A <= 0) 
+          { /* {dR} is pointing into the halfspace: */
+            tkLo = -B/A; tkHi = +INF;
           }
         else
-          { if (A < 0)
-              { /* {pR} is outside, {dR} is pointing inward: */
-                tkLo = -B/A; tkHi = +INF;
-              }
-            else
-              { /* {pR} is outside, {dR} is pointing outwards: */
-                tkLo = +INF, tkHi = 0;
-              }
+          { /* {dR} is pointing out of the halfspace: */
+            tkLo = -INF; tkHi = -B/A;
           }
+        if (debug) { fprintf(stderr, " tk = [ %+10.6f _ %+10.6f ]\n", tkLo, tkHi); }
         if ((! isnan(tkLo)) && (! isnan(tkHi)))
           { tLo = fmax(tLo, tkLo); tHi = fmin(tHi, tkHi); }
       }

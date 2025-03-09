@@ -2,7 +2,7 @@
 #define float_image_H
 
 /* Multichannel images with floating-point samples. */
-/* Last edited on 2025-01-18 13:23:55 by stolfi */ 
+/* Last edited on 2025-02-12 14:55:31 by stolfi */ 
 
 #include <stdio.h>
 #include <stdint.h>
@@ -547,9 +547,9 @@ void float_image_get_size(float_image_t *A, int32_t *NC_P, int32_t *NX_P, int32_
     !!! Should be a {define} since it is often called for every pixel or sample !!! */
   
 void float_image_check_size(float_image_t *A, int32_t NC, int32_t NX, int32_t NY, char *msg);
-  /* Bombs out if {A} does not have exactly {NC} channels, {NX}
-    columns, and {NY} rows.  If any of {NC,NX,NY} is negative,
-    the corresponding parameter of {A} is not checked. 
+  /* Bombs out if {A} does not have exactly {NC} channels, {NX} columns,
+    and {NY} rows. If any of {NC,NX,NY} is zero or negative, the
+    corresponding parameter of {A} is not checked.
     
     If the test fails, the procedure writes a message to {stderr}
     saying "wrong image size", the actual image dimensions, the given

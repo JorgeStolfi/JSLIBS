@@ -1,31 +1,31 @@
-# 00-zeflat:N # Constant function (zero gradient).
-# 01-ramp10:N # Linear ramp in the X direction.
-# 02-ramp01:N # Linear ramp in the Y direction.
-# 03-ramp11:N # Linear ramp in the XY diagonal direction.
-# 04-parabo:N # Slanted elliptical parabolic hump.
-# 05-spdom1:N # Buried sphere.
-# 06-pyram5:N # Pentagonal pyramid.
-# 07-rtcone:N # Conical mound.
-# 08-ripple:N # Circular waves.
-# 09-sbabel:N # Tower of Babel with smooth soulders.
-# 10-hcliff:N # Diverging parabolic ramps with cliff.
-# 11-sinw01:N # Sinusoidal wave, low freq.
-# 12-cosw01:N # Co-sinusoidal wave, low freq.
-# 13-sinw02:N # Sinusoidal wave, med freq.
-# 14-cosw02:N # Co-sinusoidal wave, med freq.
-# 15-sinw03:N # Sinusoidal wave, high freq.
-# 16-cosw03:N # Co-sinusoidal wave, high freq.
-# 17-cbabel:N # Tower of Babel with cliff.
-# 18-cbramp:N # Cubic ramp with cliff on three sides.
-# 19-holes1:N # Buried sphere with many holes in slope map.
-# 20-cpiece:N # Three nested stages connected by ramps.
-# 21-cplat3:N # Three flat round platforms with smooth edges.
-# 22-plat3a:N # Triangular wall with smooth edges.
-# 23-plat5a:N # Pentagonal platform with smooth edges.
-# 24-cplatv:N # Circular platform with sharp edges.
-# 25-cplats:N # Circular platform with smooth edges.
+00-zeflat:N # Constant function (zero gradient).
+01-ramp10:N # Linear ramp in the X direction.
+02-ramp01:N # Linear ramp in the Y direction.
+03-ramp11:N # Linear ramp in the XY diagonal direction.
+04-parabo:N # Slanted elliptical parabolic hump.
+05-spdom1:N # Buried sphere.
+06-pyram5:N # Pentagonal pyramid.
+07-rtcone:N # Conical mound.
+08-ripple:N # Circular waves.
+09-sbabel:N # Tower of Babel with smooth soulders.
+10-hcliff:N # Diverging parabolic ramps with cliff.
+11-sinw01:N # Sinusoidal wave, low freq.
+12-cosw01:N # Co-sinusoidal wave, low freq.
+13-sinw02:N # Sinusoidal wave, med freq.
+14-cosw02:N # Co-sinusoidal wave, med freq.
+15-sinw03:N # Sinusoidal wave, high freq.
+16-cosw03:N # Co-sinusoidal wave, high freq.
+17-cbabel:N # Tower of Babel with cliff.
+18-cbramp:N # Cubic ramp with cliff on three sides.
+19-holes1:N # Buried sphere with many holes in slope map.
+20-cpiece:N # Three nested stages connected by ramps.
+21-cplat3:N # Three flat round platforms with smooth edges.
+22-plat3a:N # Triangular wall with smooth edges.
+23-plat5a:N # Pentagonal platform with smooth edges.
+24-cplatv:N # Circular platform with sharp edges.
+25-cplats:N # Circular platform with smooth edges.
 26-qtbell:N # Quartic bell.
-# 27-fracto:N # Fractalish round mountain.
-#  
-# 05-spdom1:Y # Buried sphere, noisy gradient.
+27-fracto:N # Fractalish round mountain.
+            # 
+05-spdom1:Y # Buried sphere, noisy gradient.
 

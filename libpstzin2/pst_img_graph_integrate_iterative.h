@@ -1,4 +1,4 @@
-/* Last edited on 2025-01-14 17:26:23 by stolfi */
+/* Last edited on 2025-02-23 12:31:25 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #ifndef pst_img_graph_integrate_iterative_H
@@ -17,7 +17,7 @@
 void pst_img_graph_integrate_iterative
   ( pst_img_graph_t *g,
     double Z[],
-    bool_t topoSort,
+    bool_t sortSys,
     uint32_t maxIter,
     double convTol, 
     bool_t para, 
@@ -34,7 +34,7 @@ void pst_img_graph_integrate_iterative
     The vector {Z} is computed with the iterative Gauss-Seidel or
     Gauss-Jacobi method as implemented by {pst_imgsys_solve_iterative}
     (q.v.) with parameters {maxIter,convTol,para,szero}. as well as
-    {verbose,level,reportStep}, and {reportHeights}. If {topoSort} is
+    {verbose,level,reportStep}, and {reportHeights}. If {sortSys} is
     true, the equations will be sorted with {pst_imgsys_sort_equations}.
     On input, {Z} should contain an initial guess for the solution. 
     

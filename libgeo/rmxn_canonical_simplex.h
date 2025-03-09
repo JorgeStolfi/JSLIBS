@@ -1,5 +1,5 @@
-/* rmxn_extra.h --- additional operation on MxN matrices */
-/* Last edited on 2024-12-05 10:28:29 by stolfi */
+/* rmxn_canonical_simplex.h --- functions for canonical simplex in {\RR^n} */
+/* Last edited on 2025-02-16 20:24:43 by stolfi */
 
 #ifndef rmxn_canonical_simplex_H
 #define rmxn_canonical_simplex_H

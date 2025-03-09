@@ -1,4 +1,4 @@
-/* Last edited on 2025-01-14 17:26:51 by stolfi */
+/* Last edited on 2025-02-11 10:19:55 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #ifndef pst_img_graph_integrate_H
@@ -16,10 +16,10 @@ typedef void pst_img_graph_integrate_report_data_proc_t(int32_t level, pst_img_g
   /* Type of a client-given procedure that may be called by recursive integrators
     to report the input graph at each scale. */   
 
-pst_imgsys_t *pst_img_graph_build_system
+pst_imgsys_t *pst_img_graph_integrate_build_system
   ( pst_img_graph_t* g,
-    int32_t NX,
-    int32_t NY,
+    int32_t NX_Z,
+    int32_t NY_Z,
     int32_t kz_from_kv[],
     bool_t verbose
   );
@@ -34,7 +34,7 @@ pst_imgsys_t *pst_img_graph_build_system
     vertex is considered deleted if and only if {g.vdata[kv].vmark} is
     {DELETED}.
     
-    The fields {S.NX} and {S.NY} are set to {NX} and {NY}, respectively.
+    The fields {S.NX} and {S.NY} are set to {NX_Z} and {NY_Z}, respectively.
     The pixel indices {x,y} stored in each vertex data record of {g}
     must be either {-1} or in the ranges {0..NX-1} and {0..NY-1},
     respectively, and are stored in {S.col[kz]} and {S.row[kz]}, and

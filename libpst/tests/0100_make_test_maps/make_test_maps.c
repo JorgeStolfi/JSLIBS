@@ -4,13 +4,13 @@
 
 /* Copyright © 2005 by the State University of Campinas (UNICAMP). */
 /* See the copyright, authorship, and warranty notice at end of file. */
-/* Last edited on 2025-01-26 19:30:00 by stolfi */
+/* Last edited on 2025-03-04 18:33:35 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
   "    -function {ZFUNC} \\\n" \
   "    -size {NX} {NY} \\\n" \
-  "    -noiseG {NOISE_G} \\\n" \
+  "    -perturbG {PERTURB_G} \\\n" \
   "    -outDir {OUT_DIR}" " \\\n" \
   "    " argparser_help_info_HELP
   
@@ -55,11 +55,17 @@
   " with the height map, especially if the function" \
   " is discontinuous or highly random inside the pixel.\n" \
   "\n" \
-  "  If {NOISE_G} is positive, the program also randomly perturbs each" \
+  "   If {RAW_COORDS} is true, the argument{p} passed to the" \
+  " height function ranges over the rectangle {[0_NX]×[0_NY]}.  If" \
+  " {RAW_COORDS} is false, these coordinates are shifted and scaled" \
+  " so that the largest centered square that fits in that" \
+  " rectangle is mapped to {[-1 _ +1]^2}.\n" \
+  "\n" \
+  "  If {PERTURB_G} is positive, the program also randomly perturbs each" \
   " component of the gradient value, to simulate noisy data.  The" \
   " perturbation consists in adding to each gradient component a random number with" \
   " Gaussian distribution, zero mean, and standard" \
-  " deviation {NOISE_G}.  The same random value is added to both gradient" \
+  " deviation {PERTURB_G}.  The same random value is added to both gradient" \
   " versions, numeric and anaytic.  The perturbation affects only" \
   " channels 0 and 1 of the gradient map.\n" \
   "\n" \
@@ -71,13 +77,15 @@
   "\n" \
   "  Each map includes a weight channel, whose value at each pixel gives" \
   " the reliability of the corresponding height, gradient, or normal" \
-  " in the same pixel.  See {pst_proc_map_make_height_map} and" \
+  " in the same pixel.  The weight depends on the map values and the" \
+  " assumed implicit noise levels {MAX_GRAD} and {MAX_GDIFF}. See" \
+  " {pst_proc_map_make_height_map} and" \
   " {pst_proc_map_make_slope_map} for details.\n" \
   "\n" \
   "OUTPUT FILES\n" \
   "  The names of output files begin with {OUT_PREFIX} which" \
   " is \"{OUT_DIR}/{ZFUNC}-{FUNC_NAME}-{NOISY}-{XXXX}x{YYYY}\", where" \
-  " {NOISY} is 'N' or 'Y' depending on {NOISE_G}, and {XXXX} and {YYYY} are" \
+  " {NOISY} is 'N' or 'Y' depending on {PERTURB_G}, and {XXXX} and {YYYY} are" \
   " the parameters {NX} and {NY} formatted as '%04d'.\n" \
   "\n" \
   "  The height map is written as channel 0 of the" \
@@ -108,9 +116,11 @@
   "    2025-01-19 Removed options \"-smoothZ\", \"-smoothG\", \"-noiseW\".\n" \
   "    2025-01-19 Added option \"-maxGrad\".\n" \
   "    2025-01-19 Made \"-numGrad\" take an argument.\n" \
-  "    2025-01-21 Removed options \"-maxGrad\", \"-maxGDiff\"." \
-  "    2025-01-24 Removed option \"-numGrad\"." \
-  "    2025-01-24 Wrote both versions of the slope map and the difference."
+  "    2025-01-21 Removed options \"-maxGrad\", \"-maxGDiff\".\n" \
+  "    2025-01-24 Removed option \"-numGrad\".\n" \
+  "    2025-01-24 Wrote both versions of the slope map and the difference.\n" \
+  "    2025-02-25 Uses {.rawCoords} attribute to func descriptor.\n" \
+  "    2025-02-25 Removed the {.rawCoords} attribute from the func descriptor."
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -144,8 +154,7 @@ typedef struct sampling_opts_t
 typedef struct options_t
   { int function;            /* Integer code of height map. */
     int NX, NY;              /* Image size. */
-    bool_t numGrad;          /* Output numeric gradient instead of analytic one. */
-    double noiseG;           /* Deviation of gaussian gradient noise. */
+    double perturbG;         /* Deviation of gaussian gradient noise. */
     char* outDir;            /* Output directory. */
   } options_t;
 
@@ -189,14 +198,22 @@ int main(int argc, char** argv)
     assert(stride == NS/2 + 1);
 
     /* Compute height and gradient maps: */
+    double minWeight = 1.0e-4;
+    
+    int32_t xDebug = -1, yDebug = -1;
+
+    int32_t NGMIN = (o->NX < o->NY ? o->NX : o->NY);  /* Smallest dimension of slope map. */
+    double pixSize = 2.0/NGMIN; /* Number of grid pixels per {func} slope map domain unit. */
+    r2_t org = (r2_t){{ 0.5*o->NX, 0.5*o->NY }};
+    
     float_image_t *IZ = pst_proc_map_make_height_map
-      ( fp.func, o->NX, o->NY, NS, ws );
+      ( fp.func, o->NX, o->NY, &org, pixSize, NS, ws, xDebug, yDebug );
       
     float_image_t *IGn = pst_proc_map_make_slope_map
-      ( fp.func, o->NX, o->NY, NS, ws, TRUE, fp.maxGrad, fp.maxGDiff );
+      ( fp.func, o->NX, o->NY, &org, pixSize, NS, ws, TRUE, fp.maxGrad, fp.maxGDiff, minWeight, xDebug, yDebug );
       
     float_image_t *IGa = pst_proc_map_make_slope_map
-      ( fp.func, o->NX, o->NY, NS, ws, FALSE, fp.maxGrad, fp.maxGDiff );
+      ( fp.func, o->NX, o->NY, &org, pixSize, NS, ws, FALSE, fp.maxGrad, fp.maxGDiff, minWeight, xDebug, yDebug );
       
     float_image_t *IGd = float_image_new(3, o->NX, o->NY);
     for (int32_t y = 0; y < o->NY; y++)
@@ -209,20 +226,23 @@ int main(int argc, char** argv)
               }
           }
       }
-    if (o->noiseG != 0.0)
+    if (o->perturbG != 0.0)
       { uint32_t seed = 271828183;
-        pst_slope_map_perturb(IGa, o->noiseG, seed);
-        pst_slope_map_perturb(IGn, o->noiseG, seed);
+        pst_slope_map_perturb(IGa, o->perturbG, seed);
+        pst_slope_map_perturb(IGn, o->perturbG, seed);
       }
+      
+    float_image_t *IG = pst_slope_map_merge(IGa, IGn);
       
     float_image_t *IN = pst_normal_map_from_slope_map(IGn);
     
     /* Write images: */
-    bool_t noisy = (o->noiseG != 0.0);
+    bool_t noisy = (o->perturbG != 0.0);
     write_test_image(o->outDir, fp.num, fp.name, noisy, o->NX, o->NY, "Z",  IZ);
     write_test_image(o->outDir, fp.num, fp.name, noisy, o->NX, o->NY, "Ga", IGa);
     write_test_image(o->outDir, fp.num, fp.name, noisy, o->NX, o->NY, "Gn", IGn);
     write_test_image(o->outDir, fp.num, fp.name, noisy, o->NX, o->NY, "Gd", IGd);
+    write_test_image(o->outDir, fp.num, fp.name, noisy, o->NX, o->NY, "G",  IG);
     write_test_image(o->outDir, fp.num, fp.name, noisy, o->NX, o->NY, "N",  IN);
     
     return 0;
@@ -265,8 +285,6 @@ options_t *parse_options(int argc, char **argv)
     argparser_process_help_info_options(pp);
    
     options_t *o = (options_t *)malloc(sizeof(options_t));
-    
-    argparser_skip_parsed(pp);
 
     argparser_get_keyword(pp, "-function"); 
     o->function = (int)argparser_get_next_int
@@ -276,16 +294,13 @@ options_t *parse_options(int argc, char **argv)
     o->NX = (int)argparser_get_next_int(pp, 1, 4095);
     o->NY = (int)argparser_get_next_int(pp, 1, 4095);
    
-    if (argparser_keyword_present(pp, "-numGrad"))
-      { o->numGrad = argparser_get_next_bool(pp); }
-    else
-      { o->numGrad = TRUE; }
-    
-    argparser_get_keyword(pp, "-noiseG"); 
-    o->noiseG = argparser_get_next_double(pp, 0.0, +DBL_MAX);
+    argparser_get_keyword(pp, "-perturbG"); 
+    o->perturbG = argparser_get_next_double(pp, 0.0, +DBL_MAX);
     
     argparser_get_keyword(pp, "-outDir"); 
     o->outDir = argparser_get_next(pp);
+    
+    argparser_skip_parsed(pp);
 
     argparser_finish(pp);
     

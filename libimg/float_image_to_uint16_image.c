@@ -1,5 +1,5 @@
 /* See {float_image_to_uint16_image.h} */
-/* Last edited on 2025-01-30 08:06:58 by stolfi */ 
+/* Last edited on 2025-02-26 03:36:09 by stolfi */ 
 
 #include <limits.h>
 #include <assert.h>
@@ -20,11 +20,11 @@
 uint16_image_t *float_image_to_uint16_image
   ( float_image_t *fim,  /* Float image to convert. */
     bool_t isMask,       /* TRUE for masks, FALSE for images. */
-    int32_t chns,            /* Number of channels of output image. */
+    int32_t chns,        /* Number of channels of output image. */
     double lo[],         /* Nominal min float sample for each chosen channel. */
     double hi[],         /* Nominal max float sample for each chosen channel. */
-    int32_t ch[],            /* Indices of channels of {fim} to convert. */
-    uint16_t maxval, /* Max integer sample value in result image. */
+    int32_t ch[],        /* Indices of channels of {fim} to convert. */
+    uint16_t maxval,     /* Max integer sample value in result image. */
     bool_t yUp,          /* If TRUE, reverses the indexing of rows. */
     bool_t verbose       /* If TRUE, prints conversion diagnostics to {stderr}. */
   )
@@ -47,11 +47,11 @@ uint16_image_t *float_image_to_uint16_image
     int32_t c; /* Channel of float image. */
     
     /* Input and output range registers: */
-    float vmin[ichns], vmax[ichns];         /* Float pixel range. */
-    sample_uint32_t imin[ichns], imax[ichns]; /* Int32_T pixel range. */
-    int32_t clo[ichns], chi[ichns];             /* Counts of lo-clipped and hi-clipped pixels. */
+    float vmin[ichns], vmax[ichns];            /* Float pixel range. */
+    sample_uint32_t imin[ichns], imax[ichns];  /* Int32_T pixel range. */
+    int32_t clo[ichns], chi[ichns];            /* Counts of lo-clipped and hi-clipped pixels. */
     for (k = 0; k < ichns; k++) 
-      { clo[k] = chi[k] = 0;
+      { clo[k] = 0; chi[k] = 0;
         vmin[k] = +INF;
         vmax[k] = -INF; 
         imin[k] = maxval;

@@ -1,4 +1,4 @@
-# Last edited on 2025-01-19 23:36:40 by stolfi
+# Last edited on 2025-02-26 03:23:35 by stolfi
 
 PROG := make_test_maps
 
@@ -20,6 +20,8 @@ OTHER_LIBS := \
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 
 all: run_tests.sh ${PROG}
-	run_tests.sh
+	run_tests.sh N
         
-
+export: run_tests.sh ${PROG}
+	run_tests.sh Y
+	

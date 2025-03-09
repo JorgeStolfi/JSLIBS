@@ -1,6 +1,6 @@
-# Last edited on 2024-12-23 09:16:29 by stolfi
+# Last edited on 2025-02-27 23:03:21 by stolfi
 
-PROG = test_maps_expand_reduce
+PROG = test_maps_shrink_expand
 
 TEST_LIB := libpst.a
 TEST_LIB_DIR := ../..
@@ -20,13 +20,14 @@ all: check
 
 check:  clean do-tests
 
-ZFUNCS := 01 02 03 04 05 11 
+# ZFUNCS := 01-ramp10 02-ramp01 04-parabo 05-spdom1 10-hcliff
+ZFUNCS := 03-ramp11
 
 do-tests: ${PROG}
 	mkdir -p out
-	for nf in ${ZFUNCS} ; do \
-	  ./run_test.sh $$nf ; \
+	for fp in ${ZFUNCS} ; do \
+	  ./run_test.sh $$fp ; \
         done
  
 clean::
-	/bin/rm -fv out/*-*.fni
+	/bin/rm -fv out/*-*.{fni.png}

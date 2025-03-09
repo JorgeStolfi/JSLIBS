@@ -2,7 +2,7 @@
 #define pst_slope_map_H
 
 /* pst_slope_map.h -- procedures for working with slope maps. */
-/* Last edited on 2025-01-23 13:20:16 by stolfi */
+/* Last edited on 2025-03-01 02:25:14 by stolfi */
 
 #include <bool.h>
 #include <r2.h>
@@ -48,43 +48,36 @@ void pst_slope_map_set_gradient(float_image_t *G, int32_t x, int32_t y, r2_t *gr
 void pst_slope_map_set_weight(float_image_t *G, int32_t x, int32_t y, float w);
   /* Stores the weight {w} into channel 2 of the pixel in column
     {x}, row {y} of {G}. The image {G} must have three channels. */
-
-void pst_slope_map_interpolate_two_samples
-  ( float_image_t *G,
-    int32_t c,
-    int32_t x0, int32_t y0,
-    int32_t x1, int32_t y1,
-    double *vRP, double *wRP
-  );
-  /* Estimates the value value {vR} of channel {c} (0 or 1) of map {G}
-    halfway between the centers of the pixels with indices {x0,y0} and
-    {x1,y1}, and its reliability weight {wR}. Returns the results in
-    {*vRP} and {*wRP}.
-    
-    Assumes that channel 2 of {G}, if ot exists,
-    gives the reliability of channels 0 and 1 of {G}. */
    
 void pst_slope_map_interpolate_four_samples
   ( float_image_t *G,
     int32_t c,
     int32_t x0, int32_t y0,
     int32_t x1, int32_t y1,
-    double *vRP, double *wRP
+    double *vR_P, double *wR_P
   );
   /* Estimates the value {vR} of channel {c} (0 or 1) of image {G}
-    halfway between the centers of the pixels with indices {x0,y0}
-    and {x1,y1}, and its reliability weight {wR}.  The pixels must be 
-    adjacent either vertically or horizontally.  Returns the 
-    results in {*vRP} and {*wRP}. 
+    halfway between the centers of the pixels with indices {x0,y0} and
+    {x1,y1}, and its reliability weight {wR}. The pixels must be
+    adjacent either vertically ({x0-x1}) or horizontally ({y0=y1}).
+    Returns the results in {*vR_P} and {*wR_P}.
     
     Uses two other samples of {G} with indices {xm,ym} and {xp,yp} that
     are collinear with those two points and equally spaced, on both
-    sides.  Adjusts the interpolation formula appropritely if
-    those samples do not exist,
+    sides. 
     
-    Assumes that channel 2 of {G} has the reliability weighs for the 
-    slope values in channels 0 and 1.  If {G} is null, assumes it is 
-    all zeros. */
+    Assumes that channel 2 of {G}, if it exists, has the reliability
+    weighs for the slope values in channels 0 and 1. This weight must be
+    a finite non-negative number. If a pixel does not exist in the
+    map, its weight is taken to be zero.
+    
+    The formula uses the values {vm,v0,v1,vp} of those four pixels and
+    their respective weights {wm,w0,w1,wp}. Pixels with zero weight are
+    ignored.
+    
+    If {w0} and/or {w1} are zero, the result is {vR=NAN} and {wR=0}.
+    Otherwise uses a linear, quadratic, or cubic interpolation forumula
+    depending on whether none, one, or two of {wm,wp} are nonzero. */
     
 /* ESTIMATING HEIGHT DIFFERENCES */
 
@@ -128,38 +121,47 @@ void pst_slope_map_get_edge_data
     
     The parameters {ux,uy} must be  {+1}, 0, or {-1}, and must not be both zero.
     If one of them is zero, the values of {d} and {w} are estimated using
-    {pst_slope_map_get_axial_edge_data}.  Otherwise the procedure 
-    uses {pst_slope_map_get_axial_edge_data} on the four edges of 
-    the grid cell with corners {x,y} and {x',y'},
-    and combines them appropriately to obtain the estimates of {d} and {w}. */
+    {pst_slope_map_get_axial_edge_data}.  Otherwise the procedure
+    uses the gradient in the cell with corners {(x,y)} and {(x',y')}. */
 
 /* MAP SHRINKING */
  
-float_image_t *pst_slope_map_shrink(float_image_t *IG);
-  /* Given a slope map {IG}, containing the derivative of a height
+float_image_t *pst_slope_map_shrink(float_image_t *IG, double scale);
+  /* Given a slope map {IG}, containing the derivatives of a height
     function {Z} along X and Y axes, returns another slope map {JG},
-    with half the size as {IG}, containing the derivatives of a
-    version {SZ} of {IZ} with both dimensions and heights scaled by
-    half.  If the given image has size {NX} by {NY},
-    the result has size {NX/2} by {NY/2}, rounded UP.
-    The number of channels will be the same as that of {IG} (2 or 3). 
+    with half the size as {IG} and same number of channels, 
+    containing the derivatives of {Z} sampled at half the 
+    resoluton.  The gradient (channels 0 and 1) of the
+    result are multipled by the given {scale}.
     
-    In fractional index terms, point {(x,y)} of {IG}'s domain gets mapped
-    to point {(x/2,y/2)} of {JG}'s domain. Thus the pixel {JG[x,y]} in
-    column {x} and row {y} of {JG} conceptually corresponds to the {2x2}
-    block of pixels {IG[x',y']} of {IG}, where {x'=2*x+dx}, {y'=2*y+dy},
-    and {dx,dy} range in {0..1}.
+    If the map {IG} has size {NXI} by {NYI}, the result {JG} has size
+    {NXJ=NXI/2} by {NYJ=NYI/2}, rounded UP. The number of channels of
+    {JG} will be the same as that of {IG} (which must be 2 or 3).
     
-    Thus the value of {JG[c,x,y]}, for {c} in {0..1}, will be the
-    the weighted average of the four samples {IG[c,x1,y']} above.  The
-    averaging will use the weights of those samples in channel 2 of {IG}.
-    If the pixel does not exist in {IG}, its weight is taken to be zero.
+    The {scale} factor is typically 1.0.  Since the domain 
+    size is reduced by half, the {Z} function values implied by map {JG}
+    will be scaled by 1/2.
     
-    If {IG} has three channels, the value of {JG[2,x,y]} will be the
-    smallest of the weights of those four samples.  This criterion is
-    justified by the assumption that a weight {IG[2,x',y']=0} indicates
-    that the height {Z} may be discontinuous in that pixel, in which
-    case it will be discontinuous in pixel {x,y} of {JG}. */
+    The reduction is performed by
+    {pst_cell_map_shrink(IG,2,NXJ,NYJ,scale)} (q.v.). */
+
+/* ADDING NOISE */
+
+float_image_t* pst_slope_map_merge(float_image_t *GA, float_image_t *GB);
+  /* Creates a slope map {G} by combining two slope maps {GA,GB} -- for
+    example, one computed numerically, one computed analytically. 
+    
+    The two maps must have the same size, and either 2 or 3 channels. If
+    a map has only two channels, it is assumed to have a third channel
+    with all 1.0 reliability weights.
+    
+    The gradient values (channels 0 and 1) of {G} are the average of the
+    corresponding values of {GA,GB}, weighted by the respective
+    reliability weights. The reliability weight (channel 2) {w} of {G}
+    is the harmonic mean of the weights {wA} and {wB} of {GA} and {GB}.
+    In particular, if the result is zero (that is, if {wA} and/or {wB}
+    are zero), the weight {w} is zero, and the gradient is set to
+    {(NAN,NAN)}. */
 
 /* ADDING NOISE */
 

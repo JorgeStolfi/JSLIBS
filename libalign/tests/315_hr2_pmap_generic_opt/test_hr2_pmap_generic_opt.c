@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {hr2_pmap_generic_opt.h} and related modules"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-12-05 10:20:29 by stolfi */ 
+/* Last edited on 2025-02-16 20:24:50 by stolfi */ 
 /* Created on 2020-07-11 by J. Stolfi, UNICAMP */
 
 #define test_hr2_pmap_generic_opt_COPYRIGHT \
@@ -21,7 +21,6 @@
 #include <rn.h>
 #include <r3x3.h>
 #include <rmxn.h>
-#include <rmxn_extra.h>
 #include <bool.h>
 #include <jsfile.h>
 #include <jsrandom.h>

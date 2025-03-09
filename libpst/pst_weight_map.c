@@ -1,5 +1,5 @@
 /* See pst_weight_map.h */
-/* Last edited on 2025-01-14 16:20:53 by stolfi */
+/* Last edited on 2025-02-25 18:36:37 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -10,21 +10,29 @@
 #include <float_image_mscale.h>
 #include <wt_table.h>
 #include <wt_table_binomial.h>
+#include <float_image_wfilter.h>
 
 #include <pst_basic.h>
 #include <pst_weight_map.h>
  
 /* IMPLEMENTATIONS */
 
-float_image_t *pst_weight_map_shrink(float_image_t *IW, bool_t harmonic, uint32_t avgWidth)
+float_image_t *pst_weight_map_shrink(float_image_t *IW, bool_t harmonic, uint32_t nw)
   { 
     demand(IW->sz[0] == 1, "weight map is not mono");
     int32_t NX_JW = (int32_t)((IW->sz[1]+1)/2);
     int32_t NY_JW = (int32_t)((IW->sz[2]+1)/2);
-    uint32_t dxy = (avgWidth-1)/2;
-    return float_image_mscale_mask_shrink(IW, (int32_t)NX_JW, (int32_t)NY_JW, (int32_t)dxy, (int32_t)dxy, (int32_t) avgWidth, harmonic);
+    int32_t dxy = ((int32_t)nw-1)/2;
+    
+    float_image_t *SW;
+    if (nw > 2)
+      { SW = float_image_wfilter_hann(IW, (int32_t)nw); }
+    else
+      { SW = IW; }
+    float_image_t *JW = float_image_mscale_shrink(SW, -1, FALSE, NX_JW, NY_JW, dxy, dxy);
+    if (SW != IW) { float_image_free(SW); }
+    return JW;
   }
-  
   
 float_image_t *pst_weight_map_expand_height_weights(float_image_t *IW)
   {
