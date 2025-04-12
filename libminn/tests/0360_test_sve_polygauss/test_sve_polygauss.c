@@ -1,5 +1,5 @@
 /* test_polygauss --- test of {sve_minn.h} for flat-topped sum of gaussians */
-/* Last edited on 2024-12-05 10:34:42 by stolfi */
+/* Last edited on 2025-04-01 08:59:03 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,12 +12,14 @@
 #include <sign.h>
 #include <argparser.h>
 #include <jsrandom.h>
+#include <jsprintf.h>
 #include <affirm.h>
 #include <rn.h>
 #include <jsfile.h>
 #include <vec.h>
 
 #include <sve_minn.h>
+#include <sve_minn_iterate.h>
 #include <minn_plot.h>
 
 /* INTERNAL PROTOTYPES */
@@ -28,9 +30,9 @@ double tpg_eval_hump(double x, double avg, double dev, double mag);
   /* Evaluates at argument {x} the Gaussian hump with mean {avg}, deviation {dev}, 
     and max value {mag}. */
 
-double tpg_eval_train_simple(double x, int32_t np, double avg[], double dev[], double mag[]);
-double tpg_eval_train_serial(double x, int32_t np, double avg[], double dev[], double mag[]);
-double tpg_eval_train(double x, int32_t np, bool_t serial, double avg[], double dev[], double mag[]);
+double tpg_eval_train_simple(double x, uint32_t np, double avg[], double dev[], double mag[]);
+double tpg_eval_train_serial(double x, uint32_t np, double avg[], double dev[], double mag[]);
+double tpg_eval_train(double x, uint32_t np, bool_t serial, double avg[], double dev[], double mag[]);
   /* Evaluates at argument {x} a train of {np} Gaussian pulses with
     means {avg0..np-1]}, deviations {dev[0..np-1]}, and magnitudes
     {mag[0..np-1]}, sampled at {ns} samples.
@@ -38,13 +40,13 @@ double tpg_eval_train(double x, int32_t np, bool_t serial, double avg[], double 
     If {serial} is false, the result is  simply the sum of the humps.  If {serial} is true,
     each pair of symmetric humps is multiplied by the complement of the combined previous humps. */
 
-double tpg_train_badness(int32_t np, bool_t serial, double avg[], double dev[], double mag[], bool_t verbose);
+double tpg_train_badness(uint32_t np, bool_t serial, double avg[], double dev[], double mag[], bool_t verbose);
   /* A badness score that measures the non-uniformity 
     of {F(x)=tpg_eval_train(np,delta,x)} where it is supposed to be flat.
     Specifically, it is the average the curvature squared, weigthed
     {w(x)=tpg_weight(x,np)}. */
 
-double tpg_weight(double x, int32_t np);
+double tpg_weight(double x, uint32_t np);
   /* A weight function that is mostly 1, with soft shoulders
     between 0 and {h} and {1-h} and 1, where {h = 0.5/(np-1)}. */
 
@@ -67,7 +69,7 @@ typedef struct tpg_sym_t
     the first and last are 1.0, and generally {mag[np-1-ip]}
     is equal to {mag[ip]}. */
 
-void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym);
+void tpg_find_parms(uint32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym);
   /* Finds numerically the parameters {{avg,dev,mag}[0..np-1]} so that
     the function {tpg_train_badness(np,serial,avg,dev,mag)} has the
     the flattest top.  The means {avg[0]} and {avg[np-1]} are
@@ -75,16 +77,16 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
     {dev[0..np-1]} are all equal.  Also if {fixmag} is true 
     the amplitudes {mag[0..np-1]} are all fixed at 1. */ 
 
-void tpg_initialize(int32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym);
+void tpg_initialize(uint32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym);
   /* Initializes the vectors {{avg,dev,mag}[0..np-1]} for {tpg_find_parms}. */ 
 
-void tpg_print_parms(char *tag, int32_t np, bool_t serial, double avg[], double dev[], double mag[]);
+void tpg_print_parms(char *tag, uint32_t np, bool_t serial, double avg[], double dev[], double mag[]);
   /* Prints the parameters {serial} and {{avg,dev,mag}[0..np-1]} to {stderr}. */ 
 
-void tpg_print_packed_parms(char *tag, int32_t nv, double v[]);
+void tpg_print_packed_parms(char *tag, uint32_t nv, double v[]);
   /* Prints{v[0..nv-1]}, the parameters in packed form, to {stderr}. */ 
 
-void tpg_write_plot(char *tag, int32_t iter, int32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym);
+void tpg_write_plot(char *tag, int32_t iter, uint32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym);
   /* Writes a file containing the plot of
     {tpg_eval_train(x,np,serial,avg,dev,mag)} and the {np} individual
     humps.
@@ -95,7 +97,7 @@ void tpg_write_plot(char *tag, int32_t iter, int32_t np, bool_t serial, double a
     {sym.fixavg}, {sym.samedev}, and {sym.fixmag} (each either 'F' or 'T'). If {iter} is
     negative, the part "_{NNNN}" of the name is omitted. */
     
-void tpg_num_variables(int32_t np, tpg_sym_t *sym, int32_t *nv_avg_P, int32_t *nv_dev_P, int32_t *nv_mag_P);
+void tpg_num_variables(uint32_t np, tpg_sym_t *sym, uint32_t *nv_avg_P, uint32_t *nv_dev_P, uint32_t *nv_mag_P);
   /* Number of parameters in {avg[0..np-1]}, {dev[0..np-1]}, and {mag[0..np-1]} in a train of {np} humps that 
     are variable and independent, given the constraints {sym}. */
     
@@ -119,7 +121,7 @@ void tpg_num_variables(int32_t np, tpg_sym_t *sym, int32_t *nv_avg_P, int32_t *n
 #define tpg_mag_MAX 1.40
   /* The magnitude of a hump may vary in this range */
 
-void tpg_pack(int32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym, int32_t nv, double v[]);
+void tpg_pack(uint32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym, uint32_t nv, double v[]);
   /* Copies the variable parameters in {{avg,dev,mag}[0..np-1]} to the
     optimization variables {v[0..nv-1]}. The size {nv} must be the sum
     of the counts returned by {tpg_num_variables(...)}.
@@ -143,26 +145,26 @@ void tpg_pack(int32_t np, bool_t serial, double avg[], double dev[], double mag[
     (mag[ip]-mmid)/mrad} where {mmid} and {mrad} are the center and
     half-width of that range. */
     
-void tpg_unpack(int32_t nv, double v[], int32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym);
+void tpg_unpack(uint32_t nv, const double v[], uint32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym);
   /* Copies the optimization variables {v[0..nv-1]} to the corresponding
     parameters in {{avg,dev,mag}[0..np-1]}, undoing the encoding,
     supplying the fixed ones, and duplicating the symmetric ones, as
     determined by the options {serial,samedev,fixmag}. The size {nv}
     must be the sum of the counts returned by {tpg_num_variables()}. */
 
-void tpg_test_pack_unpack(int32_t np);
+void tpg_test_pack_unpack(uint32_t np);
   /* Tests {tpg_pack,tpg_unpack} for the given parameters. */
 
-void tpg_test_weight(int32_t np);
+void tpg_test_weight(uint32_t np);
   /* Prints out the values of {tpg_weight(x,np)} for a few values between 0 and 1. */
 
 /* IMPLEMENTATIONS */
 
 int32_t main (int32_t argc, char **argv)
   { 
-    int32_t npmin = 2;
-    int32_t npmax = 5;
-    for (int32_t np = npmin; np <= npmax; np++)
+    uint32_t npmin = 2;
+    uint32_t npmax = 5;
+    for (uint32_t np = npmin; np <= npmax; np++)
       { tpg_test_pack_unpack(np);
         tpg_test_weight(np);
     
@@ -184,7 +186,7 @@ int32_t main (int32_t argc, char **argv)
     return 0;
   }
 
-double tpg_eval_train(double x, int32_t np, bool_t serial, double avg[], double dev[], double mag[])
+double tpg_eval_train(double x, uint32_t np, bool_t serial, double avg[], double dev[], double mag[])
   { assert(avg[0] == 0.0);
     assert(avg[np-1] == 1.0);
     assert(mag[0] == 1.0);
@@ -197,7 +199,7 @@ double tpg_eval_train(double x, int32_t np, bool_t serial, double avg[], double 
     return F;
   }
 
-double tpg_eval_train_simple(double x, int32_t np, double avg[], double dev[], double mag[])
+double tpg_eval_train_simple(double x, uint32_t np, double avg[], double dev[], double mag[])
   { double F = 0;
     for (uint32_t ip = 0;  ip < np; ip++)
       { double G = tpg_eval_hump(x, avg[ip], dev[ip], mag[ip]);
@@ -206,10 +208,10 @@ double tpg_eval_train_simple(double x, int32_t np, double avg[], double dev[], d
     return F;
   }
 
-double tpg_eval_train_serial(double x, int32_t np, double avg[], double dev[], double mag[])
-  { int32_t hp = np/2;  /* Number of humps minus the central one, if any. */
+double tpg_eval_train_serial(double x, uint32_t np, double avg[], double dev[], double mag[])
+  { uint32_t hp = np/2;  /* Number of humps minus the central one, if any. */
     double F = ((np%2) == 0 ? 0 : tpg_eval_hump(x, avg[hp], dev[hp], mag[hp]));
-    for (int32_t ip = hp-1; ip >= 0; ip--)
+    for (uint32_t ip = hp-1; ip >= 0; ip--)
       { double G0 = tpg_eval_hump(x, avg[ip], dev[ip], mag[ip]);
         double G1 = tpg_eval_hump(x, avg[np-1-ip], dev[np-1-ip], mag[np-1-ip]);
         double G = (1 - F)*(G0 + G1);
@@ -226,11 +228,11 @@ double tpg_eval_hump(double x, double avg, double dev, double mag)
       { return 0.0; }
   }
 
-double tpg_train_badness(int32_t np, bool_t serial, double avg[], double dev[], double mag[], bool_t verbose)
+double tpg_train_badness(uint32_t np, bool_t serial, double avg[], double dev[], double mag[], bool_t verbose)
   { 
     /* Evaluate the filter over the region of possible interest: */
-    int32_t nx_gap = 30; /* Intervals per gap between humps. */
-    int32_t nx = (np - 1)*nx_gap; /* Sampling intervals in the region. */
+    uint32_t nx_gap = 30; /* Intervals per gap between humps. */
+    uint32_t nx = (np - 1)*nx_gap; /* Sampling intervals in the region. */
     double step = 1.0/(nx - 1); /* Sampling step. */
     double xv[nx+1];
     double Fv[nx+1];
@@ -265,7 +267,7 @@ double tpg_train_badness(int32_t np, bool_t serial, double avg[], double dev[], 
     return bad;
   }
     
-double tpg_weight(double x, int32_t np)
+double tpg_weight(double x, uint32_t np)
   { double F;
     double h0 = 0.40/(np-1);
     double h1 = 0.45/(np-1);
@@ -282,7 +284,7 @@ double tpg_weight(double x, int32_t np)
     return F*F;
   }
   
-void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym)
+void tpg_find_parms(uint32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym)
   { 
     fprintf(stderr, "--- optimizing parms for {np} = %d", np);
     fprintf(stderr, " serial = %c", "FT"[serial]);
@@ -291,13 +293,13 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
 
     demand(np >= 2, "invalid {np}");
     
-    auto double sve_goal(int32_t n, double v[]); 
+    auto double sve_goal(uint32_t n, const double v[]); 
       /* The goal function for uptimization. */
 
     /* Working storage for the goal function: */
-    int32_t nv_avg, nv_dev, nv_mag;
+    uint32_t nv_avg, nv_dev, nv_mag;
     tpg_num_variables(np, sym, &nv_avg, &nv_dev, &nv_mag);
-    int32_t nv = nv_avg + nv_dev + nv_mag; /* Number of optimization variables. */
+    uint32_t nv = nv_avg + nv_dev + nv_mag; /* Number of optimization variables. */
     double v[nv];
       
     double vprev[nv];  /* Guess in previous call of {sve_OK} function. */
@@ -305,7 +307,7 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
     bool_t sve_debug = FALSE;
     bool_t sve_debug_probes = FALSE;
     
-    auto bool_t sve_OK(int32_t iter, int32_t n, double v[], double Fv, double dist, double step, double radius); 
+    auto bool_t sve_OK(uint32_t iter, uint32_t n, const double v[], double Fv, double dist, double step, double radius); 
       /* Acceptance criterion function. */
     
     srand(4615);  srandom(4615);
@@ -319,7 +321,7 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
     double Fv = sve_goal(nv, v);
     
     /* Optimize iteratively: */
-    double *ctr = NULL;
+    double *dCtr = NULL;
     double dMax = 1.0;
     double dBox = TRUE;
     double rMin = 1.0e-8;
@@ -327,12 +329,12 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
     double rIni = 0.1/np;
     double minStep = 0.1*rMin;
     sign_t dir = -1;
-    int32_t maxIters = 300;
+    uint32_t maxIters = 300;
     
     sve_minn_iterate
       ( nv, &sve_goal, &sve_OK, NULL, 
         v, &Fv, 
-        dir, ctr, dMax, dBox, rIni, rMin, rMax, 
+        dir, dCtr, dMax, dBox, rIni, rMin, rMax, 
         minStep, maxIters, sve_debug, sve_debug_probes
       );
     
@@ -344,18 +346,18 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
 
     return;
       
-    double sve_goal(int32_t n, double v[])
+    double sve_goal(uint32_t n, const double v[])
       { assert(n == nv);
         tpg_unpack(nv, v, np, serial, avg, dev, mag, sym);
         double Fv = tpg_train_badness(np, serial, avg, dev, mag, FALSE);
         return Fv;
       }
       
-    bool_t sve_OK(int32_t iter, int32_t n, double v[], double Fv, double dist, double step, double radius)
+    bool_t sve_OK(uint32_t iter, uint32_t n, const double v[], double Fv, double dist, double step, double radius)
       { assert(n == nv);
         fprintf(stderr, "  iteration %4d", nok);
         if (nok > 0)
-          { double d = rn_dist(n, vprev, v);
+          { double d = rn_dist(n, vprev, (double*)v);
             fprintf(stderr, "  sve_goal = %16.12f displacement = %16.10f ( ", Fv, d);
             for (uint32_t iv = 0;  iv < nv; iv++) { fprintf(stderr, " %16.10f", v[iv] - vprev[iv]); }
             fprintf(stderr, " )");
@@ -366,29 +368,29 @@ void tpg_find_parms(int32_t np, bool_t serial, double avg[], double dev[], doubl
             tpg_write_plot("tmp", nok, np, serial, avg, dev, mag, sym);
           }
         /* Save guess in {vprev} for next call: */
-        rn_copy(nv, v, vprev); 
+        rn_copy(nv, (double*)v, vprev); 
         nok++;
         return FALSE;
       }
   }
 
-void tpg_initialize(int32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym)
+void tpg_initialize(uint32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym)
   {
     for (uint32_t ia = 0;  ia < np; ia++) { avg[ia] = ((double)ia)/(np-1); }
     for (uint32_t id = 0;  id < np; id++) { dev[id] = 0.5/(np-1); }
     for (uint32_t im = 0;  im < np; im++) { mag[im] = 1.0 ; }
   }
 
-void tpg_num_variables(int32_t np, tpg_sym_t *sym, int32_t *nv_avg_P, int32_t *nv_dev_P, int32_t *nv_mag_P)
+void tpg_num_variables(uint32_t np, tpg_sym_t *sym, uint32_t *nv_avg_P, uint32_t *nv_dev_P, uint32_t *nv_mag_P)
   { 
     (*nv_avg_P) = (sym->fixavg ? 0 : np/2 - 1);  /* The means are fixed, or symmetric and variable, minus two. */
     (*nv_dev_P) = (sym->samedev ? 1 : (np+1)/2); /* Deviations are symmetrical, maybe all equal. */
     (*nv_mag_P) = (sym->fixmag ? 0 : (np-1)/2);  /* Magnitudes are all 1 or symmatrical, with two fixed. */
   }
 
-void tpg_pack(int32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym, int32_t nv, double v[])
+void tpg_pack(uint32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym, uint32_t nv, double v[])
   { 
-    int32_t nv_avg, nv_dev, nv_mag;
+    uint32_t nv_avg, nv_dev, nv_mag;
     tpg_num_variables(np, sym, &nv_avg, &nv_dev, &nv_mag);
     assert(nv == nv_avg + nv_dev + nv_mag);
     
@@ -449,7 +451,7 @@ void tpg_pack(int32_t np, bool_t serial, double avg[], double dev[], double mag[
       }
 
     /* Copy the independent variables: */
-    int32_t iv = 0;  /* Counts optimization variables. */
+    uint32_t iv = 0;  /* Counts optimization variables. */
     double amid = 0.5*(avg_d_MIN + avg_d_MAX);
     double arad = 0.5*(avg_d_MAX - avg_d_MIN);
     for (uint32_t ia = 1;  ia <= nv_avg; ia++) { assert(iv < nv); v[iv] = (avg[ia] - ia*s - amid)/arad; iv++; }
@@ -462,11 +464,11 @@ void tpg_pack(int32_t np, bool_t serial, double avg[], double dev[], double mag[
     assert(iv == nv);
   }
 
-void tpg_unpack(int32_t nv, double v[], int32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym)
+void tpg_unpack(uint32_t nv, const double v[], uint32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym)
   { 
     bool_t debug = FALSE;
     
-    int32_t nv_avg, nv_dev, nv_mag;
+    uint32_t nv_avg, nv_dev, nv_mag;
     tpg_num_variables(np, sym, &nv_avg, &nv_dev, &nv_mag);
     assert(nv == nv_avg + nv_dev + nv_mag);
 
@@ -485,7 +487,7 @@ void tpg_unpack(int32_t nv, double v[], int32_t np, bool_t serial, double avg[],
     double mag_MAX = (sym->fixmag ? 1.0 : tpg_mag_MAX);
 
     /* Copy the independent variables: */
-    int32_t iv = 0;  /* Counts optimization variables. */
+    uint32_t iv = 0;  /* Counts optimization variables. */
     double amid = 0.5*(avg_d_MIN + avg_d_MAX);
     double arad = 0.5*(avg_d_MAX - avg_d_MIN);
     for (uint32_t ia = 1;  ia <= nv_avg; ia++) { assert(iv < nv); avg[ia] = ia*s + v[iv]*arad + amid; iv++; }
@@ -542,7 +544,7 @@ void tpg_unpack(int32_t nv, double v[], int32_t np, bool_t serial, double avg[],
       }
   }
 
-void tpg_print_parms(char *tag, int32_t np, bool_t serial, double avg[], double dev[], double mag[])
+void tpg_print_parms(char *tag, uint32_t np, bool_t serial, double avg[], double dev[], double mag[])
   { fprintf(stderr, "  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n");
     fprintf(stderr, "  (%s) %d parameters, {serial} = %c\n", tag, np, "FT"[serial]);
     for (uint32_t ip = 0;  ip < np; ip++)
@@ -552,7 +554,7 @@ void tpg_print_parms(char *tag, int32_t np, bool_t serial, double avg[], double 
     fprintf(stderr, "  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n");
   }
 
-void tpg_print_packed_parms(char *tag, int32_t nv, double v[])
+void tpg_print_packed_parms(char *tag, uint32_t nv, double v[])
   { fprintf(stderr, "  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n");
     fprintf(stderr, "  (%s) %d packed parameters parameters\n", tag, nv);
     for (uint32_t iv = 0;  iv < nv; iv++)
@@ -560,10 +562,10 @@ void tpg_print_packed_parms(char *tag, int32_t nv, double v[])
      fprintf(stderr, "  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n");
   }
 
-void tpg_write_plot(char *tag, int32_t iter, int32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym)
+void tpg_write_plot(char *tag, int32_t iter, uint32_t np, bool_t serial, double avg[], double dev[], double mag[], tpg_sym_t *sym)
   { 
     /* Compute the sample args {xv[0..nx]} and train values {Fv[0..nx]}, and find maximum {F_max}: */
-    int32_t nx = 50*(np - 1 + 14);
+    uint32_t nx = 50*(np - 1 + 14);
     double x_min = avg[0] - 7*dev[0];
     double x_max = avg[np-1] + 7*dev[np-1];
     double xv[nx+1];
@@ -605,7 +607,7 @@ void tpg_write_plot(char *tag, int32_t iter, int32_t np, bool_t serial, double a
     fclose(wr);
   }
 
-void tpg_test_pack_unpack(int32_t np)
+void tpg_test_pack_unpack(uint32_t np)
   { 
     fprintf(stderr, "--- testing pack/unpack for {np} = %d", np);
     fprintf(stderr, " ----------------------------------------\n");
@@ -618,9 +620,9 @@ void tpg_test_pack_unpack(int32_t np)
                 fprintf(stderr, "  fixavg = %c samedev = %c fixmag = %c\n", "FT"[sym.fixavg], "FT"[sym.samedev], "FT"[sym.fixmag]);
                 for (bool_t serial = FALSE; serial <= TRUE; serial++)
                   { fprintf(stderr, "    serial = %c", "FT"[serial]);
-                    int32_t nv_avg, nv_dev, nv_mag;
+                    uint32_t nv_avg, nv_dev, nv_mag;
                     tpg_num_variables(np, &sym, &nv_avg, &nv_dev, &nv_mag);
-                    int32_t nv = nv_avg + nv_dev + nv_mag; /* Number of optimization variables. */
+                    uint32_t nv = nv_avg + nv_dev + nv_mag; /* Number of optimization variables. */
                     fprintf(stderr, " %d indep variables avg = %d dev = %d mag = %d\n", nv, nv_avg, nv_dev, nv_mag);
                     double v0[nv], v1[nv];
                     for (uint32_t iv = 0;  iv < nv; iv++) { v0[iv] = v1[iv] = dabrandom(-1.0, +1.0); }
@@ -642,11 +644,11 @@ void tpg_test_pack_unpack(int32_t np)
       }
   }
 
-void tpg_test_weight(int32_t np)
+void tpg_test_weight(uint32_t np)
   { 
     fprintf(stderr, "--- testing weight function for {np} = %d", np);
     fprintf(stderr, " ----------------------------------------\n");
-    int32_t nx = 10*(np-1);
+    uint32_t nx = 10*(np-1);
     for (int32_t ix = -1; ix <= nx+1; ix++)
       { double x = ((double)ix)/nx;
         double W = tpg_weight(x, np);

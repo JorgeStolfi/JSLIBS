@@ -1,5 +1,5 @@
 /* test_r2 --- test program for r2.h, r2x2.h  */
-/* Last edited on 2024-12-01 10:21:21 by stolfi */
+/* Last edited on 2025-03-27 04:45:53 by stolfi */
 
 #include <math.h>
 #include <stdio.h>
@@ -62,6 +62,7 @@ void test_r2_det(bool_t verbose);
 void test_r2_decomp(bool_t verbose);
 void test_r2_throw_cube(bool_t verbose);
 void test_r2_throw_dir(bool_t verbose);
+void test_r2_throw_ortho_dirs(bool_t verbose);
 void test_r2_throw_ball(bool_t verbose);
 void test_r2_print(bool_t verbose);
 void test_r2_gen_print(bool_t verbose);
@@ -150,8 +151,9 @@ void test_r2(bool_t verbose)
     test_r2_det(verbose);
     test_r2_decomp(verbose);
     test_r2_throw_cube(verbose);
-    test_r2_throw_dir(verbose);
     test_r2_throw_ball(verbose);
+    test_r2_throw_dir(verbose);
+    test_r2_throw_ortho_dirs(verbose);
     test_r2_gen_print(verbose);
     test_r2_print(verbose);
 
@@ -163,6 +165,7 @@ void test_r2(bool_t verbose)
         fprintf(stderr, "!! r2_mean_dist_sqr NOT TESTED\n");
         fprintf(stderr, "!! r2_bbox NOT TESTED\n");
         fprintf(stderr, "!! r2_orient NOT TESTED\n");
+        fprintf(stderr, "!! r2_cyclic_order NOT TESTED\n");
         fprintf(stderr, "!! r2_circumcenter NOT TESTED\n");
         fprintf(stderr, "!! r2_incircle NOT TESTED\n");
         fprintf(stderr, "!! r2_throw_normal NOT TESTED\n");
@@ -608,6 +611,20 @@ void test_r2_throw_cube(bool_t verbose)
       }
   }
 
+void test_r2_throw_ball(bool_t verbose)
+  {
+    if (verbose) { fprintf(stderr, "--- r2_throw_ball ---\n"); }
+    r2_t a;
+    /* Should check uniformity... */
+    r2_throw_ball(&a);
+    /* Check variation: */
+    for (uint32_t i = 0;  i < N; i++) { affirm(a.c[i] != a.c[(i+1)%N], "r2_throw_ball error(1)"); }
+    /* Check whether the norm is at most 1: */
+    double rr = 0;
+    for (uint32_t i = 0;  i < N; i++) { double ai = a.c[i]; rr += ai*ai; }
+    demand(rr <= 1 + 0.000000001*rr, "r2_throw_ball error (2)");
+  }
+
 void test_r2_throw_dir(bool_t verbose)
   {
     if (verbose) { fprintf(stderr, "--- r2_throw_dir ---\n"); }
@@ -622,18 +639,26 @@ void test_r2_throw_dir(bool_t verbose)
     rn_test_tools_check_eps(1, rr, 0.000000001*rr, NO, NO, "r2_throw_dir error (2)");
   }
 
-void test_r2_throw_ball(bool_t verbose)
+void test_r2_throw_ortho_dirs(bool_t verbose)
   {
-    if (verbose) { fprintf(stderr, "--- r2_throw_ball ---\n"); }
-    r2_t a;
+    if (verbose) { fprintf(stderr, "--- r2_throw_ortho_dirs ---\n"); }
+    r2_t a, b;
     /* Should check uniformity... */
-    r2_throw_ball(&a);
-    /* Check variation: */
-    for (uint32_t i = 0;  i < N; i++) { affirm(a.c[i] != a.c[(i+1)%N], "r2_throw_ball error(1)"); }
-    /* Check whether the norm is at most 1: */
-    double rr = 0;
-    for (uint32_t i = 0;  i < N; i++) { double ai = a.c[i]; rr += ai*ai; }
-    demand(rr <= 1 + 0.000000001*rr, "r2_throw_ball error (2)");
+    r2_throw_ortho_dirs(&a, &b);
+    for (int32_t which = 0; which <= 1; which++)
+      { r2_t u = (which == 0 ? a : b);
+        /* Check variation: */
+        for (uint32_t i = 0;  i < N; i++) 
+          { affirm(u.c[i] != u.c[(i+1)%N], "r2_throw_ortho_dirs error(1)"); }
+        /* Check whether the norm is 1: */
+        double rr = 0;
+        for (uint32_t i = 0;  i < N; i++) { double ui = u.c[i]; rr += ui*ui; }
+        rn_test_tools_check_eps(1, rr, 0.000000001*rr, NO, NO, "r2_throw_ortho_dirs error (2)");
+      }
+    /* Check orthogonality: */
+    double s = r2_dot(&a, &b);
+    rn_test_tools_check_eps(s, 0.0, 0.000000001, NO, NO, "r2_throw_ortho_dirs error(3)");
+    
   }
 
 void test_r2_gen_print(bool_t verbose)

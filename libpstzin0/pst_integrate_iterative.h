@@ -2,7 +2,7 @@
 #define pst_integrate_iterative_H
 
 /* procedures for integratings slope maps by smultiscale ieration. */
-/* Last edited on 2025-03-05 15:06:32 by stolfi */
+/* Last edited on 2025-04-03 17:35:57 by stolfi */
 
 #include <bool.h>
 #include <r2.h>
@@ -11,7 +11,6 @@
 #include <pst_imgsys.h>
 #include <pst_imgsys_solve.h>
 #include <pst_slope_map.h>
-#include <pst_weight_map.h>
 #include <pst_height_map.h>
 
 #include <pst_integrate.h>
@@ -20,6 +19,7 @@ void pst_integrate_iterative
   ( float_image_t *G, 
     float_image_t *H, 
     double hintsWeight,
+    bool_t extrapolate,
     float_image_t *Z, 
     float_image_t *R, 
     uint32_t maxIter,
@@ -44,9 +44,10 @@ void pst_integrate_iterative
 
     If {H} is not {NULL}, it must be a height map with one or two
     channels and same size as {Z}, which is taken to be an externally
-    determined hint for {Z}, with weights multiplied by {hintsWeight}. The
-    height map {Z} is computed by solving a set of linear equations,
-    constructed by {pst_integrate_build_system(G,H,hintsWeight)} (q.v.).
+    determined hint for {Z}, with weights multiplied by {hintsWeight}.
+    The height map {Z} is computed by solving a set of linear equations,
+    constructed by {pst_integrate_build_system} (q.v.) with parameters
+    {G,H,hintsWeight,extrapolate}.
     
     See {pst_integrate_iterative_INFO("maxIter","convTol","sortSys")} for
     details of the solution method. The initial guess for the iteration

@@ -1,5 +1,5 @@
 /* test_qmin_simplex.c --- test program for qmin_simplex.h  */
-/* Last edited on 2024-12-21 10:53:59 by stolfi */
+/* Last edited on 2025-03-19 13:58:10 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -12,6 +12,7 @@
 #include <rmxn.h>
 #include <jsmath.h>
 #include <jsrandom.h>
+#include <jsprintf.h>
 #include <bool.h>
 #include <affirm.h>
 
@@ -21,10 +22,12 @@
 
 /* INTERNAL PROTOTYPES */
 
+#define MAX_RUNS 100
+
 int32_t main (int32_t argc, char **argv);
 
 void test_qmin_simplex(uint32_t trial, bool_t verbose);
-  /* Tests {gausol_quadratic_min}. */???
+  /* Tests {gausol_quadratic_min}. */
 
 void throw_quadratic_fn(uint32_t n, double A[], double b[], bool_t verbose);
   /* Generates a random {n × n} coefficient matrix {A}, positive semidefinite,

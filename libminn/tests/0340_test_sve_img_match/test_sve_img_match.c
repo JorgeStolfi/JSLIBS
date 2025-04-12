@@ -2,7 +2,7 @@
 #define PROG_DESC "tests {sve_minn.h} on an image matching problem"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-02-16 20:23:55 by stolfi */
+/* Last edited on 2025-04-03 14:19:10 by stolfi */
 
 #define test_sve_img_match_C_COPYRIGHT "Copyright © 2009 by the State University of Campinas (UNICAMP)"
 
@@ -25,11 +25,13 @@
 #include <r2_extra.h>
 #include <rn.h>
 #include <rmxn.h>
+#include <rmxn_throw.h>
 #include <affirm.h>
 #include <ix_reduce.h>
 #include <wt_table.h>
 #include <wt_table_hann.h>
 #include <jsfile.h>
+#include <jsprintf.h>
 #include <js.h>
 #include <vec.h> 
 #include <minn_plot.h>
@@ -116,6 +118,7 @@
 
 
 #include <sve_minn.h>
+#include <sve_minn_iterate.h>
 
 /* GENERAL PARAMETERS */
 
@@ -196,15 +199,15 @@ double mismatch(float_image_t *img, float_image_t *obj, float_image_t *msk, r3x3
     {obj} (which must be the domain of {msk}), and {A} is the area of
     that domain. */
 
-int32_t num_parameters(adjust_options_t *adop);
+uint32_t num_parameters(adjust_options_t *adop);
   /* The number of parameters neeeded to specify a particular matrix in 
     the class of matrices allowed by {adop}. */
 
 void param_to_matrix
   ( r3x3_t *P, 
     adjust_options_t *adop, 
-    int32_t n, 
-    double x[], 
+    uint32_t n, 
+    const double x[], 
     r3x3_t *Q,
     r3x3_t *M, 
     bool_t verbose
@@ -331,7 +334,7 @@ float_image_t *shrink_image(float_image_t *A, int32_t shrink)
     demand(shrink >= 1, "invalid reduction factor");
 
     /* Generate the 1D weight mask: */
-    int32_t nw = 3*shrink;
+    uint32_t nw = (uint32_t)(3*shrink);
     double wt[nw];
     wt_table_hann_fill(nw, 0.0, wt, NULL);
     wt_table_normalize_sum(nw, wt);
@@ -347,23 +350,23 @@ float_image_t *shrink_image(float_image_t *A, int32_t shrink)
     float_image_t *R = float_image_new(NC, NXR, NYR);
     
     /* Fill the pixels of {R}: */
-    for (uint32_t yR = 0;  yR < NYR; yR++)
-      { for (uint32_t xR = 0;  xR < NXR; xR++)
+    for (int32_t yR = 0;  yR < NYR; yR++)
+      { for (int32_t xR = 0;  xR < NXR; xR++)
           { /* Accumulate the weighted pixel sum over the window: */
             double sum_w = 0;    /* Sum of weights. */
             double sum_w_v[NC];  /* Sum of weighted pixels. */
             for (uint32_t c = 0;  c < NC; c++) { sum_w_v[c] = 0; }
-            for (uint32_t yD = 0;  yD < nw; yD++)
+            for (int32_t yD = 0;  yD < nw; yD++)
               { int32_t yA = shrink*yR - shrink + yD;
                 double wty = ((yA < 0) || (yA >= NYA) ? 0.0 : wt[yD]);
-                for (uint32_t xD = 0;  xD < nw; xD++)
+                for (int32_t xD = 0;  xD < nw; xD++)
                   { int32_t xA = shrink*xR - shrink + xD;
                     double wtx = ((xA < 0) || (xA >= NXA) ? 0.0 : wt[xD]);
                     double w = wtx*wty;
                     if (w > 0)
                       { /* Multiply by the mask weight, if any: */
                         sum_w += w; 
-                        for (uint32_t c = 0;  c < NC; c++)
+                        for (int32_t c = 0;  c < NC; c++)
                           { double v = float_image_get_sample(A, c, xA, yA);
                             sum_w_v[c] += w*v;
                           }
@@ -372,7 +375,7 @@ float_image_t *shrink_image(float_image_t *A, int32_t shrink)
               }
             /* Store the weighted average (maybe NAN) in the {R} pixel: */
             if (sum_w == 0) { sum_w = 1; }
-            for (uint32_t c = 0;  c < NC; c++)
+            for (int32_t c = 0;  c < NC; c++)
               { double v = sum_w_v[c]/sum_w; 
                 float_image_set_sample(R, c, xR, yR, (float)v);
               }
@@ -446,26 +449,26 @@ void find_best_matrix
     int32_t NXO = (int32_t)obj->sz[1];
     int32_t NYO = (int32_t)obj->sz[2];
     
-    int32_t nx = num_parameters(adop); /* Number of degrees of freedom in matrix. */
+    uint32_t nx = num_parameters(adop); /* Number of degrees of freedom in matrix. */
     
     bool_t plot_goal = TRUE;
     
-    auto double sve_goal(int32_t n, double x[]); 
+    auto double sve_goal(uint32_t n, const double x[]); 
       /* The goal function for uptimization.  Also sets {M} to the corresp. matrix. */
       
     double xPrev[nx]; /* Parameter vector in previous call of {sve_OK} function. */
     r3x3_t MPrev;     /* Matrix in previous call of  {sve_OK} function. */
-    int32_t nok = 0;      /* Counts iterations (actually, calls to {sve_OK}). */
-    bool_t sve_debug = TRUE;
+    uint32_t nok = 0;      /* Counts iterations (actually, calls to {sve_OK}). */
+    bool_t sve_debug = FALSE;
     bool_t sve_debug_probes = FALSE;
     
-    auto bool_t sve_OK(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius); 
+    auto bool_t sve_OK(uint32_t iter, uint32_t n, const double x[], double Fx, double dist, double step, double radius); 
       /* Acceptance criterion function. */
       
     double xx[nx];     /* Initial guess and final solution. */
 
     /* Start with the null paramenter vector, which should be the identity matrix: */
-    { int32_t ix; for (ix = 0; ix < nx; ix++) { xx[ix] = 0.0; } }
+    for (uint32_t ix = 0; ix < nx; ix++) { xx[ix] = 0.0; }
 
     fprintf(stderr, "initial matrix:\n");
     param_to_matrix(P, adop, nx, xx, Q, M, TRUE);
@@ -476,7 +479,7 @@ void find_best_matrix
 
     if (nx > 0)
       { /* Optimize iteratively: */
-        double *ctr = NULL;
+        double *dCtr = NULL;
         double dMax = 0.250;
         bool_t dBox = FALSE;
         double rMin = 1.0/hypot(0.5*NXO,0.5*NYO);
@@ -484,11 +487,11 @@ void find_best_matrix
         double rIni = 0.25*dMax;
         double minStep = 0.0001*rMin;
         sign_t dir = -1;
-        int32_t maxIters = 100;
+        uint32_t maxIters = 100;
         
         if (plot_goal)
           { /* Choose the plot directions: */
-            int32_t nu = (nx < 6 ? nx : 6); /* Number of directions. */
+            uint32_t nu = (nx < 6 ? nx : 6); /* Number of directions. */
             double U[nu*nx]; /* The rows are the directions. */
             rmxn_throw_directions(nu, nx, U);
             /* Plot goal function along those directions: */
@@ -507,7 +510,7 @@ void find_best_matrix
         sve_minn_iterate
           ( nx, &sve_goal, &sve_OK, NULL,
             xx, &Fx, dir, 
-            ctr, dMax, dBox, rIni, rMin, rMax, 
+            dCtr, dMax, dBox, rIni, rMin, rMax, 
             minStep, maxIters, sve_debug, sve_debug_probes
           );
         fprintf(stderr, "\n");
@@ -524,7 +527,7 @@ void find_best_matrix
     demand(Fx == FxN, "inconsistent function value on return");
     return;
     
-    double sve_goal(int32_t n, double x[])
+    double sve_goal(uint32_t n, const double x[])
       { assert(n == nx);
         r3x3_t MM;
         param_to_matrix(P, adop, n, x, Q, &MM, FALSE);
@@ -533,13 +536,13 @@ void find_best_matrix
         return Fx;
       }
       
-    bool_t sve_OK(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius)
+    bool_t sve_OK(uint32_t iter, uint32_t n, const double x[], double Fx, double dist, double step, double radius)
       { assert(n == nx);
         fprintf(stderr, "\n");
         fprintf(stderr, "iteration %d matrix:\n", nok);
         param_to_matrix(P, adop, n, x, Q, M, TRUE);
         if (nok > 0)
-          { double d = rn_dist(n, xPrev, x);
+          { double d = rn_dist(n, xPrev, (double*)x);
             fprintf(stderr, "  change in x = %16.10f\n", d);
             r3x3_t D; r3x3_inv(&MPrev, &D); r3x3_mul(&D, M, &D);
             fprintf(stderr, "  change in M = \n");
@@ -548,7 +551,7 @@ void find_best_matrix
         fprintf(stderr, "mismatch = %16.10f\n", Fx);
         fprintf(stderr, "\n");
         /* Save guess in {xPrev,MPrev} for next call: */
-        rn_copy(nx, x, xPrev); MPrev = (*M);
+        rn_copy(nx, (double*)x, xPrev); MPrev = (*M);
         nok++;
         return FALSE;
       }
@@ -593,9 +596,8 @@ void write_matched_object_images
     float imgf[NC];                            /* Pixel from {img}, unmapped. */
     float objf[NC];                            /* Pixel from {obj} mapped by {M}. */
     float mskf;                                /* Sample from {msk} mapped by {M}. */
-    int32_t ic, ix, iy;
-    for (iy = 0; iy < NYI; iy++)
-      for (ix = 0; ix < NXI; ix++)
+    for (int32_t iy = 0; iy < NYI; iy++)
+      for (int32_t ix = 0; ix < NXI; ix++)
         { /* Get the (mapped) mask value {mskf[0]} for the output pixel {ix,iy}: */
           bool_t debug_pix = FALSE;
           float_image_transform_get_pixel
@@ -616,7 +618,7 @@ void write_matched_object_images
                 ( obj, red, ix, iy, &map_img_to_obj, NAN, TRUE, order, objf, debug_pix );
               float_image_get_pixel(img, ix, iy, imgf);
               /* Blend {valf} with {bgvf} with weight {mskf}: */
-              for (ic = 0; ic < NC; ic++) 
+              for (int32_t ic = 0; ic < NC; ic++) 
                 { objf[ic] = mskf*objf[ic] + (1-mskf)*bgrf[ic];
                   imgf[ic] = mskf*imgf[ic] + (1-mskf)*bgrf[ic];
                 }
@@ -651,8 +653,8 @@ void write_matched_object_images
       }
   }
 
-int32_t num_parameters(adjust_options_t *adop)
-  { int32_t n = 0;
+uint32_t num_parameters(adjust_options_t *adop)
+  { uint32_t n = 0;
 
     if (adop->translate) 
       { n += 2;}
@@ -674,14 +676,14 @@ int32_t num_parameters(adjust_options_t *adop)
 void param_to_matrix
   ( r3x3_t *P, 
     adjust_options_t *adop, 
-    int32_t n, 
-    double x[], 
+    uint32_t n, 
+    const double x[], 
     r3x3_t *Q,
     r3x3_t *M, 
     bool_t verbose
   )
   { r3x3_t A; r3x3_ident(&A);
-    int32_t k = 0;
+    uint32_t k = 0;
     
     if (adop->translate) 
       { /* Translation terms: */
@@ -786,8 +788,8 @@ double mismatch
     float imgf[NC];
     double sumw = 0;
     double sumwd2 = 0;
-    for (uint32_t iy = 0;  iy < NYO; iy++)
-      for (uint32_t ix = 0;  ix < NXO; ix++)
+    for (int32_t iy = 0;  iy < NYO; iy++)
+      for (int32_t ix = 0;  ix < NXO; ix++)
         { /* Get pixel {ix,iy} of {obj} in {objf[0..NC-1]} and of {msk} in {mskf[0]}: */
           float_image_get_pixel(obj, ix, iy, objf);
           float mskf = float_image_get_sample(msk, 0, ix, iy);
@@ -797,7 +799,7 @@ double mismatch
               float_image_transform_get_pixel
                 ( img, red, ix, iy, &map_obj_to_img, undef, avg, order, imgf, debug_pix );
               /* Accumulate square diff: */
-              for (uint32_t ic = 0;  ic < NC; ic++)
+              for (int32_t ic = 0;  ic < NC; ic++)
                 { if (! isnan(imgf[ic]))
                     { double d = ((double)imgf[ic]) - ((double)objf[ic]);
                       sumw += mskf;

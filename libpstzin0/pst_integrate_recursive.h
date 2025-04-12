@@ -2,7 +2,7 @@
 #define pst_integrate_recursive_H
 
 /* procedures for integratings slope maps by smultiscale ieration. */
-/* Last edited on 2025-03-05 15:05:54 by stolfi */
+/* Last edited on 2025-04-03 17:30:02 by stolfi */
 
 #include <bool.h>
 #include <r2.h>
@@ -11,7 +11,6 @@
 #include <pst_imgsys.h>
 #include <pst_imgsys_solve.h>
 #include <pst_slope_map.h>
-#include <pst_weight_map.h>
 #include <pst_height_map.h>
 
 #include <pst_integrate.h>
@@ -21,6 +20,7 @@ void pst_integrate_recursive
     float_image_t *G, 
     float_image_t *H,
     double hintsWeight,
+    bool_t extrapolate, 
     float_image_t *Z, 
     float_image_t *R,
     uint32_t maxLevel,
@@ -38,9 +38,10 @@ void pst_integrate_recursive
     fitting is done by recursively solving a hierarchy of problems of 
     smaller and smaller sizes; see {pst_integrate_recursive_INFO} for details.
   
-    The parameters {G,H,hintsWeight,Z,R,maxIter,convTol,sortSys} have the
-    same requirements and meanings as in {pst_integrate_iterative}
-    (q.v.), but apply to each level of the recursion.
+    The parameters {G,H,hintsWeight,extrapolate} as well as
+    {Z,R,maxIter,convTol,sortSys} have the same requirements and
+    meanings as in {pst_integrate_iterative} (q.v.), but apply to each
+    level of the recursion.
 
     The {level} parameter indicates the current depth of the recursion.
     

@@ -114,31 +114,31 @@ void writeFNI(char* filename, float_image_t* img){
 }
 
 
-void printGRA(char* filename, pst_img_graph_t* g);
+void printGRA(char* filename, pst_img_graph_t* gr);
 
-void printGRA(char* filename, pst_img_graph_t* g){
+void printGRA(char* filename, pst_img_graph_t* gr){
   FILE* arq = open_write(filename,TRUE);
-  pst_img_graph_write(arq,g);
+  pst_img_graph_write(arq,gr);
   fclose(arq);
 }
 
-void writeGRA(char* filename, pst_img_graph_t* g);
+void writeGRA(char* filename, pst_img_graph_t* gr);
 
-void writeGRA(char* filename, pst_img_graph_t* g){
+void writeGRA(char* filename, pst_img_graph_t* gr){
   FILE* arq = open_write(filename,TRUE);
-  pst_img_graph_write(arq,g);
+  pst_img_graph_write(arq,gr);
   fclose(arq);
 }
 
 
-void writeGraph(pst_img_graph_t* g,char* outPrefix,char* tag, int32_t level);
-void writeGraph(pst_img_graph_t* g,char* outPrefix,char* tag, int32_t level){
+void writeGraph(pst_img_graph_t* gr,char* outPrefix,char* tag, int32_t level);
+void writeGraph(pst_img_graph_t* gr,char* outPrefix,char* tag, int32_t level){
   char* filename = NULL;
   char *filename = jsprintf("%s-%02d-%s.grf",outPrefix,level,tag);
-  writeGRA(filename,g);
+  writeGRA(filename,gr);
   filename = NULL;
   char *filename = jsprintf("%s-%02d-%s.txt",outPrefix,level,tag);
-  printGRA(filename,g);
+  printGRA(filename,gr);
   free(filename);
 }
 
@@ -255,28 +255,28 @@ int32_t main(int32_t argc, char** argv){
   float_image_t* IW = (o->weightMap == NULL ? NULL : readFNI(o->weightMap) );
   
   fprintf(stderr,"START!\n");
-  pst_img_graph_t* g = pst_img_graph_from_gradient_weights(IG, IW,o);
+  pst_img_graph_t* gr = pst_img_graph_from_gradient_weights(IG, IW,o);
   
-  assert(g != NULL);
-//   fprintf(stderr,"Generated graph with %ld vertices and %ld edges\n",g->n, g->m);
+  assert(gr != NULL);
+//   fprintf(stderr,"Generated graph with %ld vertices and %ld edges\n",gr->n, gr->m);
   
   if(o->addDiags == FALSE) fprintf(stderr,"NO DIAGS\n");
   
   int32_t level = 0;
   do {
-    g = pst_img_graph_copy(g);
-    fprintf(stderr,"Level[%02ld] - %ld vertexes %ld edges \n",level,g->n_valid,g->m_valid);
-    pst_img_graph_mark_vertex_removal(g,NULL);
-     writeGraph(g,o->outPrefix,"G",level);
+    gr = pst_img_graph_copy(gr);
+    fprintf(stderr,"Level[%02ld] - %ld vertexes %ld edges \n",level,gr->n_valid,gr->m_valid);
+    pst_img_graph_mark_vertex_removal(gr,NULL);
+     writeGraph(gr,o->outPrefix,"G",level);
     
     double time_before = user_cpu_time_usec();
-    pst_img_graph_shrink(g,NULL,1.0);
+    pst_img_graph_shrink(gr,NULL,1.0);
     double time_after = user_cpu_time_usec(); 
     double diff_time = time_after - time_before;
-    fprintf(stderr,"\nTime level [%ld] : %ld %ld %lf\n",level,g->n_valid, g->m_valid,diff_time/1000000.0);
+    fprintf(stderr,"\nTime level [%ld] : %ld %ld %lf\n",level,gr->n_valid, gr->m_valid,diff_time/1000000.0);
     
     level++;
-  }while( (g->n_valid > 2) && (level < o->shrinksSteps) );
+  }while( (gr->n_valid > 2) && (level < o->shrinksSteps) );
   
   return 0;  
 }

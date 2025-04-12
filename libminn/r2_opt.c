@@ -1,5 +1,5 @@
 /* See {r2_opt.h}. */
-/* Last edited on 2024-12-05 13:17:48 by stolfi */
+/* Last edited on 2025-04-01 09:01:30 by stolfi */
 
 #include <math.h>
 #include <limits.h>
@@ -18,6 +18,7 @@
 #include <affirm.h>
 
 #include <sve_minn.h>
+#include <sve_minn_iterate.h>
 
 #include <r2_opt.h>
 
@@ -150,10 +151,10 @@ void r2_opt_single_scale_quadopt
         auto void points_to_vars(r2_t q[], double y[]);
           /* Stores the candidate displacements {q[0..ni-1]-p0[0..ni-1]} into {y[0..nv-1]}. */
 
-        auto void vars_to_points(double y[], r2_t q[]);
+        auto void vars_to_points(const double y[], r2_t q[]);
           /* Stores the optimization variables {y[0..nv-1]} into the candidate {q[0..ni-1]}, adding {p0[0..ni-1]}. */
 
-        auto double f2_for_sve(uint32_t nx, double x[]);
+        auto double f2_for_sve(uint32_t nx, const double x[]);
           /* Computes the minimization goal function from the given argument {x[0..nv-1]}.
             Expects {nx == nv}. Also sets {p[0..ni-1]} from {x[0..nx-1]}. */
 
@@ -165,7 +166,7 @@ void r2_opt_single_scale_quadopt
         /* Optimize: */
         sign_t dir = -1;                   /* Look for minimum. */
         /* All these parameters are realative to the search radius in each coord: */
-        double *ctr = NULL;                /* Center of search domain is the origin. */
+        double *dCtr = NULL;                /* Center of search domain is the origin. */
         double dMax = 1.0;                 /* Max deviation from initial guess. */
         bool_t dBox = TRUE;                /* Search in box, not ball. */
         double rIni = 0.5;                 /* Initial probe simplex radius. */
@@ -179,7 +180,7 @@ void r2_opt_single_scale_quadopt
           ( nv, 
             &f2_for_sve, NULL, NULL, 
             z, &Fz,
-            dir, ctr, dMax, dBox, rIni, rMin, rMax, minStep,
+            dir, dCtr, dMax, dBox, rIni, rMin, rMax, minStep,
             maxIters,
             sve_debug, sve_debug_probes
           );
@@ -206,7 +207,7 @@ void r2_opt_single_scale_quadopt
             assert(k == nv);
           }
 
-        void vars_to_points(double y[], r2_t q[])
+        void vars_to_points(const double y[], r2_t q[])
           { uint32_t k = 0;
             for (uint32_t i = 0;  i < ni; i++)
               { for (uint32_t j = 0;  j < 2; j++)
@@ -221,7 +222,7 @@ void r2_opt_single_scale_quadopt
             assert(k == nv);
           }
 
-        double f2_for_sve(uint32_t nx, double x[])
+        double f2_for_sve(uint32_t nx, const double x[])
           { assert(nx == nv);
             /* Convert variables {x[0..nx-1]} to displacements {p[0..ni-1]}: */
             vars_to_points(x, p);

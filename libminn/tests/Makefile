@@ -1,6 +1,7 @@
-# Last edited on 2023-03-24 12:50:36 by stolfi
+# Last edited on 2025-03-19 14:11:43 by stolfi
 
-IGNOREDIRS :=
+IGNOREDIRS := \
+  1100_test_qmin_simplex
   
 all: check
 

@@ -1,5 +1,5 @@
 #! /usr/bin/python3
-# Last edited on 2025-03-08 15:38:36 by stolfi
+# Last edited on 2025-04-02 08:57:33 by stolfi
 
 from math import sin, cos, log, exp, pi, sqrt
 import os
@@ -160,7 +160,8 @@ def show_images(images):
     ( [ f"( display -title '%d/%f' -filter Box -resize '200%' " + \
         " ".join(images) + " )" 
       ], 
-      shell=True
+      shell=True,
+      executable="/bin/bash"
     )
   print(result)
     

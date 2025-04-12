@@ -2,7 +2,7 @@
 #define pst_integrate_H
 
 /* pst_integrate.h -- simple procedures for integratings slope maps. */
-/* Last edited on 2025-03-05 15:04:16 by stolfi */
+/* Last edited on 2025-04-03 17:35:31 by stolfi */
 
 #include <bool.h>
 #include <r2.h>
@@ -11,7 +11,6 @@
 #include <pst_imgsys.h>
 #include <pst_imgsys_solve.h>
 #include <pst_slope_map.h>
-#include <pst_weight_map.h>
 #include <pst_height_map.h>
    
 typedef void pst_integrate_report_data_proc_t
@@ -57,6 +56,7 @@ pst_imgsys_t* pst_integrate_build_system
   ( float_image_t *G,
     float_image_t *H,
     double hintsWeight,
+    bool_t extrapolate,
     int32_t indent,
     bool_t verbose
   );
@@ -65,12 +65,15 @@ pst_imgsys_t* pst_integrate_build_system
     the height map {Z} given a slope map {G}.  See {pst_integrate_build_system_ARGS_INFO("hintsWeight")}
     and {pst_integrate_build_system_RESULT_INFO} for details. 
     
+    The {extrapolate} flag is passed to {pst_slope_map_get_edge_data} (q. v.). It 
+    authorizes the procedure to use linear extrapolation when 
+    
     Messages to {stderr} are indented by {indent} spaces. */
     
 #define pst_integrate_build_system_ARGS_INFO(hintsWeight) \
   "The input slope map {G} must have two or three channels. The value of {G[0,x,y]}  must" \
-  " be the X derivative {dZ/dX} of the heigh map, averaged over the pixel with" \
-  " indices {[x,y]}; that is, with lower corner {(x,y)}.  The value of {G[1,x,y]} must" \
+  " be the X derivative {dZ/dX} of the heigh map, averaged over the domain pixel with" \
+  " indices {[x,y]}; that is, with opposite corners {(x,y)} and {(x+1,y+1)}.  The value of {G[1,x,y]} must" \
   " be the Y derivative {dZ/dY} averaged over the same pixel.\n" \
   "\n" \
   "  If the slope map has three channels, the value of {G[2,x,y]} must be a finite" \
@@ -96,21 +99,21 @@ pst_imgsys_t* pst_integrate_build_system
   " estimate of the height {Z[0,x,y]}.  If {H} has two channels, {H[1,x,y]} should" \
   " be a finite non-negative number which is taken to be the" \
   " reliability weight of that estimate; otherwise all the reliability weights are" \
-  " assumed to be 1.  If {H[0,X,Y]} is not finite, its weight is assumed to be zero. " \
-  " If the weight of {H[0,X,Y]} is nonzero, the equation for the height at grid" \
-  " corner {(X,Y)} will include a term that pulls" \
+  " assumed to be 1.  If {H[0,x,y]} is not finite, its weight is assumed to be zero. " \
+  " If the weight of {H[0,x,y]} is nonzero, the equation for the height at grid" \
+  " vertex {(x,y)} will include a term that pulls" \
   " the solution {Z[0,x,y]} towards {H[0,x,y]} with that weight times the overall weight" \
   " factor {" hintsWeight "}.\n" \
   "\n" \
-  "  If there is no {H} hint for the height of a grid corner {(x,y)}, and" \
+  "  If there is no {H} hint for the height of a grid vertex {(x,y)}, and" \
   " all {G} weights on the edges around" \
-  " that corner are equal, the equations essentially state that the Laplacian of the height, as" \
+  " that vertex are equal, the equations essentially state that the Laplacian of the height, as" \
   " computed from the (unknown) height map {Z}, shall be equal to the Laplacian computed" \
   " from the (known) slope map {G}.  Both Laplacians are computed by weighted finite-difference" \
   " formulas, properly adjusted along the edges and at the places where the weights are zero.\n" \
   "\n" \
   "   If there is no {H} hint term for some variable, and the {G} weights of the edge" \
-  " terms around that corner turn out to be all zero, the equation would be {0 = 0} which" \
+  " terms around that vertex turn out to be all zero, the equation would be {0 = 0} which" \
   " could cause problems in the solution of the system.  In such cases, the procedure" \
   " sets the equation to {Z[0,x,y] = 0}.\n" \
   "\n" \

@@ -1,3 +1,5 @@
+/* Last edited on 2025-03-15 10:07:59 by stolfi */
+
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,7 +63,7 @@ void generatePOVMesh(FILE* arq,float_image_t* height_map,  float_image_t* normal
 				B = 0.500;
 			}
 			
-                        // h{X}{Y} = height at corner {(x+X,y+Y)}
+                        // h{X}{Y} = height at grid vertex {(x+X,y+Y)}
 // 			double h00 = height_map->pixel[y][x];
 // 			double h01 = height_map->pixel[y+1][x];
 // 			double h10 = height_map->pixel[y][x+1];

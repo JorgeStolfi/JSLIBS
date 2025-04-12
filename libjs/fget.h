@@ -1,5 +1,5 @@
 /* fget.h -- reading items from text files. */
-/* Last edited on 2024-11-15 19:12:22 by stolfi */
+/* Last edited on 2025-03-13 06:35:34 by stolfi */
 
 #ifndef fget_H
 #define fget_H
@@ -81,7 +81,7 @@ bool_t fget_bool(FILE *rd);
 
 char *fget_string(FILE *rd);
   /* Skips spaces. Fails if hits end-fo-file or a formatting character.
-    Otherwise reads one or more characters, until end-of-file or the
+    Otherwise reads one or more characters, until end-of-file or 
     a formatting character (space, line break, or page break), which
     is not consumed.  The result is returned as a newly allocated,
     zero-terminated string (which has at least one character). */
@@ -196,7 +196,7 @@ bool_t fget_test_char(FILE *rd, char c);
     
     Note that {c = -1 = '\377'} will match only the byte 0xff, not {EOF}. */
 
-bool_t fget_skip_and_test_char(FILE *rd, char c);
+bool_t fget_skip_spaces_and_test_char(FILE *rd, char c);
   /* Equivalent to {fget_skip_spaces(rd); fget_test_char(rd, c)}. */
 
 void fget_match(FILE *rd, char *t);

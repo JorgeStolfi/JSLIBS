@@ -99,19 +99,19 @@ void writeFNI(char* filename, float_image_t* img){
 }
 
 
-void printGRA(char* filename, pst_img_graph_t* g);
+void printGRA(char* filename, pst_img_graph_t* gr);
 
-void printGRA(char* filename, pst_img_graph_t* g){
+void printGRA(char* filename, pst_img_graph_t* gr){
   FILE* arq = open_write(filename,TRUE);
-  pst_img_graph_write(arq,g);
+  pst_img_graph_write(arq,gr);
   fclose(arq);
 }
 
-void writeGRA(char* filename, pst_img_graph_t* g);
+void writeGRA(char* filename, pst_img_graph_t* gr);
 
-void writeGRA(char* filename, pst_img_graph_t* g){
+void writeGRA(char* filename, pst_img_graph_t* gr){
   FILE* arq = open_write(filename,TRUE);
-  pst_img_graph_write(arq,g);
+  pst_img_graph_write(arq,gr);
   fclose(arq);
 }
 
@@ -119,42 +119,42 @@ pst_img_graph_t* readGRA(char* filename);
 
 pst_img_graph_t* readGRA(char* filename){
   FILE* arq = open_read(filename,TRUE);
-  pst_img_graph_t* g = pst_img_graph_read(arq);
+  pst_img_graph_t* gr = pst_img_graph_read(arq);
   fclose(arq);
-  return g;
+  return gr;
 }
 
 pst_img_graph_t* readGraph(char* inPrefix,char* tag,int32_t level);
 pst_img_graph_t* readGraph(char* inPrefix,char* tag,int32_t level){
   char* filename = NULL;
   char *filename = jsprintf("%s-%02d-%s.grf",inPrefix,level,tag);
-  pst_img_graph_t* g = readGRA(filename);
+  pst_img_graph_t* gr = readGRA(filename);
   free(filename);
-  return g;
+  return gr;
   
 }
 
 
 
-void writeGraph(pst_img_graph_t* g,char* outPrefix,char* tag, int32_t level);
-void writeGraph(pst_img_graph_t* g,char* outPrefix,char* tag, int32_t level){
+void writeGraph(pst_img_graph_t* gr,char* outPrefix,char* tag, int32_t level);
+void writeGraph(pst_img_graph_t* gr,char* outPrefix,char* tag, int32_t level){
   char* filename = NULL;
   char *filename = jsprintf("%s-%02d-%s.txt",outPrefix,level,tag);
-  printGRA(filename,g);
+  printGRA(filename,gr);
   free(filename);
   filename = NULL;
   char *filename = jsprintf("%s-%02d-%s.grf",outPrefix,level,tag);
-  writeGRA(filename,g);
+  writeGRA(filename,gr);
   free(filename);
 }
 
-void compute_solution_weights(pst_img_graph_t *ig,double *iW,r2_t rem_coord,double *eW );
-void compute_solution_weights(pst_img_graph_t *ig,double *iW,r2_t rem_coord,double *eW){
+void compute_solution_weights(pst_img_graph_t *gri,double *iW,r2_t rem_coord,double *eW );
+void compute_solution_weights(pst_img_graph_t *gri,double *iW,r2_t rem_coord,double *eW){
 
   int32_t i;
   
-  for(i = 0; i < ig->n; i++){
-    pst_vertex_data_t* iv = &(ig->vertex[i]);
+  for(i = 0; i < gri->n; i++){
+    pst_vertex_data_t* iv = &(gri->vertex[i]);
 
     if(iv->id == -1) continue;
     double d2 = r2_dist_sqr(&rem_coord,&(iv->coords));
@@ -163,15 +163,15 @@ void compute_solution_weights(pst_img_graph_t *ig,double *iW,r2_t rem_coord,doub
   
 }
 
-void normalize_solution_dist2(pst_img_graph_t* ig, double* iZ,double *eW);
-void normalize_solution_dist2(pst_img_graph_t* ig, double* iZ,double *eW){
+void normalize_solution_dist2(pst_img_graph_t* gri, double* iZ,double *eW);
+void normalize_solution_dist2(pst_img_graph_t* gri, double* iZ,double *eW){
   
   double sW = 0;
   double sWZ = 0;
   int32_t i;
   
-  for(i = 0; i < ig->n; i++){
-    pst_vertex_data_t* iv = &(ig->vertex[i]);
+  for(i = 0; i < gri->n; i++){
+    pst_vertex_data_t* iv = &(gri->vertex[i]);
 
     if(iv->id == -1) continue;
     sW+= eW[i];
@@ -181,8 +181,8 @@ void normalize_solution_dist2(pst_img_graph_t* ig, double* iZ,double *eW){
   if(sW == 0) return;
   
   double avg = sWZ/sW;
-  for(i = 0; i < ig->n; i++){
-    pst_vertex_data_t* iv = &(ig->vertex[i]);
+  for(i = 0; i < gri->n; i++){
+    pst_vertex_data_t* iv = &(gri->vertex[i]);
     if(iv->id == -1) iZ[i] = 0;
     else{ 
       iZ[i]-=avg;
@@ -203,58 +203,58 @@ int32_t main(int32_t argc, char** argv){
   int32_t NX_Z = o->NX +1;
   int32_t NY_Z = o->NY +1;
   
-  char* ig_prefix = NULL;
-  char *ig_prefix = jsprintf("%s-I",o->outPrefix);
-  char* jg_prefix = NULL;
-  char *jg_prefix = jsprintf("%s-J",o->outPrefix);
+  char* gri_prefix = NULL;
+  char *gri_prefix = jsprintf("%s-I",o->outPrefix);
+  char* grj_prefix = NULL;
+  char *grj_prefix = jsprintf("%s-J",o->outPrefix);
   
   fprintf(stderr,"START!\n");
-  pst_img_graph_t*  ig = readGraph(o->graphPrefix,"G", 0);
-  writeGraph(ig,ig_prefix,"G", 0);
+  pst_img_graph_t*  gri = readGraph(o->graphPrefix,"G", 0);
+  writeGraph(gri,gri_prefix,"G", 0);
   
-  assert(ig != NULL);
-  fprintf(stderr,"Generated graph with %ld vertices and %ld edges\n",ig->n, ig->m);
+  assert(gri != NULL);
+  fprintf(stderr,"Generated graph with %ld vertices and %ld edges\n",gri->n, gri->m);
   
   float_image_t* OZ = float_image_new(1,NX_Z,NY_Z);
   float_image_t* SZ = float_image_new(1,NX_Z,NY_Z);
   float_image_t* CZ = float_image_new(1,NX_Z,NY_Z);
-  double* iZ = (double*)malloc(sizeof(double)*(ig->n));
-  double* jZ = (double*)malloc(sizeof(double)*(ig->n));
-  double* iW = (double*)malloc(sizeof(double)*(ig->n));
-  double* jW = (double*)malloc(sizeof(double)*(ig->n));
-  double* sZ = (double*)malloc(sizeof(double)*(ig->n));
+  double* iZ = (double*)malloc(sizeof(double)*(gri->n));
+  double* jZ = (double*)malloc(sizeof(double)*(gri->n));
+  double* iW = (double*)malloc(sizeof(double)*(gri->n));
+  double* jW = (double*)malloc(sizeof(double)*(gri->n));
+  double* sZ = (double*)malloc(sizeof(double)*(gri->n));
   
   int32_t maxIter = 50000;
   double convTol = 0.00000005;
   int32_t para = 0;
   int32_t szero = 1;
   bool_t verbose = FALSE;
-  pst_img_graph_integration(ig,iZ,iW,maxIter,convTol,para,szero,verbose,0,OZ,NULL,ig_prefix);
+  pst_img_graph_integration(gri,iZ,iW,maxIter,convTol,para,szero,verbose,0,OZ,NULL,gri_prefix);
   
   
-  pst_img_graph_t* jg = pst_img_graph_copy(ig);
+  pst_img_graph_t* grj = pst_img_graph_copy(gri);
     
-  int32_t ix = pst_img_graph_find_nearest_vertex(jg,o->removeVertex);
+  int32_t ix = pst_img_graph_find_nearest_vertex(grj,o->removeVertex);
   demand(ix != -1,"Invalid vertex index !");
-  pst_vertex_data_t* v = &(jg->vertex[ix]);
+  pst_vertex_data_t* v = &(grj->vertex[ix]);
   fprintf(stderr,"Removing vertex [%ld] = %ld = (%lf,%lf) with query (%lf %lf)\n",
 	  ix,v->id,v->coords.c[0],v->coords.c[1],o->removeVertex.c[0],o->removeVertex.c[1]
   );
-  int32_t n_edges = pst_img_graph_vertex_out_degree(jg,ix);
+  int32_t n_edges = pst_img_graph_vertex_out_degree(grj,ix);
   if(o->weights != NULL ){
     demand(n_edges == o->nWeights,"Number of weights differ from number of edges.");
   }
-  pst_img_graph_vertex_remove(jg, ix,o->weights,o->wmag,TRUE);
-  pst_img_graph_remove_paralel_edges(jg);
+  pst_img_graph_vertex_remove(grj, ix,o->weights,o->wmag,TRUE);
+  pst_img_graph_remove_paralel_edges(grj);
    
-  pst_img_graph_integration(jg,jZ,jW,maxIter,convTol,para,szero,verbose,0,SZ,NULL,jg_prefix);
-  pst_img_graph_copy_solution_from_shrunk(jg,jZ,ig,sZ);
-  double *eW = (double*)malloc(sizeof(double)*(ig->n));
+  pst_img_graph_integration(grj,jZ,jW,maxIter,convTol,para,szero,verbose,0,SZ,NULL,grj_prefix);
+  pst_img_graph_copy_solution_from_shrunk(grj,jZ,gri,sZ);
+  double *eW = (double*)malloc(sizeof(double)*(gri->n));
   
-  compute_solution_weights(ig,iW,o->removeVertex,eW);
+  compute_solution_weights(gri,iW,o->removeVertex,eW);
   
-  normalize_solution_dist2(ig,iZ,eW);
-  normalize_solution_dist2(ig,sZ,eW);
+  normalize_solution_dist2(gri,iZ,eW);
+  normalize_solution_dist2(gri,sZ,eW);
   
   char* filename_error = NULL;
   char *filename_error = jsprintf("%s-ERR.txt",o->outPrefix);
@@ -263,8 +263,8 @@ int32_t main(int32_t argc, char** argv){
   double sumWE2 = 0;
   float_image_fill_channel(CZ,0,0);
   int32_t i;
-  for(i = 0; i < ig->n; i++){
-    pst_vertex_data_t* iv = &(ig->vertex[i]);
+  for(i = 0; i < gri->n; i++){
+    pst_vertex_data_t* iv = &(gri->vertex[i]);
     if(iv->id != -1){
       if(iv->mark != MARK_VERTEX_REMOVED){
 	int32_t ix,iy;
@@ -295,8 +295,8 @@ int32_t main(int32_t argc, char** argv){
   char *diff_filename = jsprintf("%s-D.fni",o->outPrefix);
   writeFNI(diff_filename,CZ);
   free(diff_filename);
-  free(ig_prefix);
-  free(jg_prefix);
+  free(gri_prefix);
+  free(grj_prefix);
   free(iZ);
   free(jZ);
   free(sZ);

@@ -1,5 +1,5 @@
 /* See {minn.h}. */
-/* Last edited on 2024-12-05 13:10:49 by stolfi */
+/* Last edited on 2025-04-01 09:09:23 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -20,9 +20,9 @@
 #include <minn_quad.h>
     
 void minn_uniform
-  ( uint32_t n,          /* Dimension of search space. */
+  ( uint32_t n,         /* Dimension of search space. */
     minn_goal_t *F,     /* Function to be minimized. */
-    bool_t box,         /* True to search in the unit cube, false in the unit ball. */
+    bool_t dBox,         /* True to search in the unit cube, false in the unit ball. */
     double atol[],      /* Desired precision along each coordinate. */
     minn_method_t meth, /* Minimizaton method do use.*/
     double v[],         /* (OUT) Minimum vector found. */
@@ -33,14 +33,14 @@ void minn_uniform
     switch (meth)
       {
         case minn_method_ENUM:
-          minn_enum(n, F, box, atol, v, Fval_P);
+          minn_enum(n, F, dBox, atol, v, Fval_P);
           break;
           
         case minn_method_QUAD:
           /* Compute the general tolerance {tol}: */
           double tol = +INF;
           for (uint32_t i = 0;  i < n; i++) { tol = fmin(tol, atol[i]); }
-          minn_quad(n, F, box, tol, v, Fval_P);
+          minn_quad(n, F, dBox, tol, v, Fval_P);
           break;
           
         default:
@@ -49,12 +49,12 @@ void minn_uniform
   }
 
 void minn_subspace
-  ( uint32_t n,          /* Dimension of search space. */
+  ( uint32_t n,         /* Dimension of search space. */
     minn_goal_t *F,     /* Function to be minimized. */
-    uint32_t d,          /* Dimension of search domain. */
+    uint32_t d,         /* Dimension of search domain. */
     double U[],         /* Main axis directions of the search domain. */
     double urad[],      /* Radii of the search domain. */
-    bool_t box,         /* True the search domain is a box, false it is an ellipsoid. */
+    bool_t dBox,        /* True the search domain is a box, false it is an ellipsoid. */
     double utol[],      /* Desired precision along each {U} row. */
     minn_method_t meth, /* Minimizaton method do use.*/
     double v[],         /* (OUT) Minimum vector found. */
@@ -74,33 +74,33 @@ void minn_subspace
 
     double ys[d], vt[n]; /* Work vectors for {unmap,F_unit}. */
     
-    auto void unmap_vec(double x[], double v[]);
+    auto void unmap_vec(const double x[], double v[]);
       /* Unmaps {x[0..d-1]} from the unit cube/ball to a vector {v[0..n-1]}
         in the original domain {D}. */
         
-    auto double F_unit(uint32_t nx, double x[]);
+    auto double F_unit(uint32_t nx, const double x[]);
       /* Unmaps {x[0..d-1]} to vector {v[0..n-1]} and evaluates
         the given goal function {F} on it. Expects {nx} to be {d}. */
         
     double x[d]; /* Minumum in the unit ball/cube. */
-    minn_uniform(d, &F_unit, box, xtol, meth, x, Fval_P);
+    minn_uniform(d, &F_unit, dBox, xtol, meth, x, Fval_P);
     unmap_vec(x, v);
     return;
     
     /* INTERNAL IMPS */
     
-    void unmap_vec(double xs[], double vs[])
+    void unmap_vec(const double xs[], double vs[])
       { if (U == NULL)
           { assert(d == n);
-            rn_weigh(n, xs, urad, vs);
+            rn_weigh(n, (double *)xs, urad, vs);
           }
         else
-          { rn_weigh(n, xs, urad, ys);
+          { rn_weigh(n, (double *)xs, urad, ys);
             rmxn_map_row(d, n, ys, U, vs);
           }
       }
       
-    double F_unit(uint32_t nx, double xt[])
+    double F_unit(uint32_t nx, const double xt[])
       { assert(nx == d);
         unmap_vec(xt, vt);
         return F(n, vt);
@@ -136,9 +136,9 @@ void minn_ellipsoid_constrained
     rmxn_ellipsoid_cut(n, arad, m, C, d, U, urad);
     
     /* Minimize over the ellipsoid {\RF(U,urad)}: */
-    bool_t box = FALSE; /* Cutting a box is messy. */
+    bool_t dBox = FALSE; /* Cutting a box is messy. */
     double utol[d];
     for (uint32_t k = 0;  k < d; k++) { utol[k] = tol; }
-    minn_subspace(n, F, d, U, urad, box, utol, meth, v, Fval_P);
+    minn_subspace(n, F, d, U, urad, dBox, utol, meth, v, Fval_P);
     free(C);
   }

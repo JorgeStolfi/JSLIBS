@@ -1,5 +1,5 @@
 /* Stack of images with limited depth of focus. */
-/* Last edited on 2025-02-01 16:55:48 by stolfi */
+/* Last edited on 2025-04-10 18:40:45 by stolfi */
 
 #ifndef multifok_frame_H
 #define multifok_frame_H
@@ -77,7 +77,15 @@ void multifok_frame_write
     double hMax
   ); 
   /* Writes the images of the {frame} to the directory "{frameFolder}"
-    as described in {multifok_FRAME_DIR_INFO} and {multifok_FRAME_FILES_INFO}. */
+    as described in {multifok_FRAME_DIR_INFO} and
+    {multifok_FRAME_FILES_INFO}.
+    
+    The height values in the {frame.hAvg} map are converted to sample values
+    in the "hAvg.png" file by affinely scaling the range {[hMin _ hMax]}
+    to {[0 _ 1]}.  
+    
+    The height deviation values in the {frame.hDev} map are converted to sample values
+    in the "hDev.png" file by affinely scaling the range {[0_(hMax-hMin)/2]} to {[0_1]}. */
   
 #define multifok_FRAME_DIR_INFO \
   "The frame sub-folder name is" \
@@ -91,26 +99,34 @@ void multifok_frame_write
 #define multifok_FRAME_FILES_INFO \
   "Each frame sub-folder will contain four images:\n" \
   "\n" \
-  "      \"sVal.png\" The simulated snapshot of the scene with" \
-  " depth-of-focus blur.  The samples are encoded linearly with " \
+  "      \"sVal.png\" The simulated snapshot of the scene (in RGB color) with" \
+  " depth-of-focus blur.  The R, G, and B samples are encoded linearly with " \
   " file samples {0..maxval} corresponding to {[0 _ 1]}.\n" \
   "\n" \
-  "      \"sNrm.png\" The average normal direction of the" \
-  " portion of the scene's surface visible within each pixel, in scene" \
-  " coordinates.  All three channels will be encoded linearly" \
-  " with file samples {0..maxval} corresponding to {[-1 _ +1]}.\n" \
-  "\n\n" \
-  "\n" \
-  "      \"zAgv.png\" The average {hAvg} of the height of the" \
+  "      \"hAvg.png\" A grayscale image with the average {hAvg} of the height of the" \
   " scene's surface visible within each pixel, accounting for" \
-  " focus blur, measured perpendicularly to the in-focus plane" \
-  " with position {zFoc = 0}, in the direction towards" \
-  " the camera.  In particular, if the frame's in-focus plane" \
+  " focus blur, measured perpendicularly from the {zFoc = 0} focusing plane" \
+  " in the direction towards the camera.  In particular, if the frame's in-focus plane" \
   " is horizontal at {Z = zFoc} and the camera is looking down, the" \
   " height of the scene's sutface is is just its {Z} coordinate.\n" \
   "\n" \
-  "      \"hDev.png\" The standard deviation of the surface height" \
+  "      \"hAvg.fni\" Same as \"sNrm.png\" but in FNI format, with" \
+  " two channels: heights in channel 0, with no conversion, and an" \
+  " estimated reliability weight in {[0_1]} added as channel 1.\n" \
+  "\n" \
+  "      \"hDev.png\" A greyscale image with the standard deviation of the surface height" \
   " in each pixel (the RMS value of the height minus the average {hAvg}).\n" \
+  "\n" \
+  "      \"sNrm.png\" An RGB image with the average normal direction of the" \
+  " portion of the scene's surface visible within each pixel.  The R, G, and B" \
+  " channels are the {X}, {Y}, and {Z} coordinates of the normal vector, in the" \
+  " scene coordinate system.  All three channels will be encoded linearly" \
+  " with file samples {0..maxval} corresponding to coordinates {[-1 _ +1]}.\n" \
+  "\n" \
+  "      \"sNrm.fni\" Same as \"sNrm.png\" but in FNI format, with" \
+  " four channels: normal vector components {X}, {Y}, {Z} in" \
+  " channels 0..2, with no conversion, and an estimated reliability" \
+  " weight in {[0_1]} added as channel 3.\n" \
   "\n" \
   "      \"shrp.png\" An indicator of how blurry is the image within" \
   " each pixel.  It is defined as {1/vBlr}, where {vBlr} is the RMS value" \
@@ -119,11 +135,6 @@ void multifok_frame_write
   " the pixel and the center of the pixel, measured in" \
   " a direction parallel to the in-focus plane.   The" \
   " samples are encoded linearly with " \
-  " file samples {0..maxval} corresponding to {[0 _ 1]}.\n" \
-  "\n" \
-  "    The pixel values of the {hAvg} and {hDev} images are" \
-  " implicitly scaled so that some range {[hMin _ hMax]} is mapped" \
-  " to {[0 _ 1]}.  Typically {hMin} and {hMax} are the nominal" \
-  " min and max {Z} coordinates of the scene's surface."
+  " file samples {0..maxval} corresponding to {[0 _ 1]}."
 
 #endif

@@ -4,7 +4,7 @@
 
 #define slope_to_height_C_COPYRIGHT "Copyright © 2024 by the State University of Campinas (UNICAMP)"
 
-/* Last edited on 2025-03-03 03:47:29 by stolfi */
+/* Last edited on 2025-03-15 21:46:36 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -64,15 +64,16 @@
   " writes that system out.\n" \
   "\n" \
   "  The input slope map {IG} is a three-channel float image.  Each" \
-  " pixel {IG[X,Y]} of this image has samples {(xG,yG,wG)}, where " \
-  " {(xG,yG)} is the gradient of the {Z} function, averaged" \
-  " over the unit square cell (/pixel/) whose lower left corner" \
-  " is the point {(X,Y)}; and {wG} is the reliability weight of that gradient.\n" \
+  " pixel {IG[x,y]} of this image has samples {(dxG,dyG,wG)}, where " \
+  " {(dxG,dyG)} is the gradient of the {Z} function, averaged" \
+  " over the unit square cell (/pixel/) whose opposite corners" \
+  " are the point {(x,y)} and {(x+1,y+1)}; and {wG} is the" \
+  " reliability weight of that gradient.\n" \
   "\n" \
   "  The input hints map {IH} is a two-channel float image.  Each" \
-  " pixel {IH[X,Y]} of this image has samples {(zH,wH)}, where " \
-  " {zH} is some independent estimate of the {Z} function at the pixel corner" \
-  " {(X,Y)}; and {wH} is the reliability weight of that estimate.  The {IH} image" \
+  " pixel {IH[x,y]} of this image has samples {(zH,wH)}, where " \
+  " {zH} is some independent estimate of the {Z} function at the grid vertex" \
+  " {(x,y)}; and {wH} is the reliability weight of that estimate.  The {IH} image" \
   " must therefore have one col and one row more than the {IG} image."
   
 #define PROG_INFO_OUT_FILES \
@@ -82,7 +83,7 @@
   "  {PREFIX}-W.png\n" \
   "    A single-channel image showing the total" \
   " weights {eq[x,y].wtot} of the equation of the" \
-  " integration system referring to each pixel corner {x,y}."
+  " integration system referring to each grid vertex {x,y}."
 
 #define PROG_INFO_OPTS \
   "  -slopes {IG_FNI_NAME}\n" \
@@ -166,7 +167,9 @@ int32_t main(int32_t argc, char** argv)
     bool_t verbose_build = TRUE;
     double wHMult = 0.1;
     int32_t indent = 6;
-    pst_imgsys_t *S = pst_integrate_build_system(IG, IH, wHMult, indent, verbose_build);
+    bool_t extrapolate = FALSE;
+    pst_imgsys_t *S = pst_integrate_build_system
+      ( IG, IH, wHMult, extrapolate, indent, verbose_build );
     
     char *system_fname = jsprintf("%s-S.txt", o->outPrefix);
     write_system(S, system_fname);

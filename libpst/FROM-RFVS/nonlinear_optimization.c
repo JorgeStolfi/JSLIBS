@@ -5,6 +5,7 @@
 #include <math.h>
 #include <assert.h>
 #include <sve_minn.h>
+#include <sve_minn_iterate.h>
 #include <nonlinear_optimization.h>
 #include <jsfile.h>
 
@@ -112,9 +113,9 @@ void nonlinear_optimize(
 	k++;
       }
     }
-    double baricentric[num_vertices];
-    sve_minn_step(num_parms,Fv, baricentric);
-    rmxn_map_row (num_vertices, num_parms, baricentric,S, parameters);
+    double barycentric[num_vertices];
+    sve_minn_quadratic_optimum(num_parms,Fv, barycentric);
+    rmxn_map_row (num_vertices, num_parms, barycentric,S, parameters);
     
     if(arq_debug != NULL){  debug_parameters(arq_debug,"OP",-1,-1,parameters,NAN); }
     
@@ -276,9 +277,9 @@ void nonlinear_optimize_z(
 	k++;
       }
     }
-    double baricentric[num_vertices];
-    sve_minn_step(num_parms,Fv, baricentric);
-    rmxn_map_row (num_vertices, num_parms, baricentric,S, z_star);
+    double barycentric[num_vertices];
+    sve_minn_quadratic_optimum(num_parms,Fv, barycentric);
+    rmxn_map_row (num_vertices, num_parms, barycentric,S, z_star);
     
     if(arq_debug != NULL){  debug_parameters(arq_debug,"OP",-1,-1,z_star,NAN); }
     /*Decompresses the simplex parameters*/

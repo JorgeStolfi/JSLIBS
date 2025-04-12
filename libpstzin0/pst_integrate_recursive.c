@@ -1,5 +1,5 @@
 /* See pst_integrate_recursive.h */
-/* Last edited on 2025-03-03 20:46:01 by stolfi */
+/* Last edited on 2025-04-03 17:30:14 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -18,7 +18,6 @@
 #include <pst_imgsys_solve.h>
 #include <pst_interpolate.h>
 #include <pst_slope_map.h>
-#include <pst_weight_map.h>
 #include <pst_height_map.h>
 #include <pst_integrate.h>
 #include <pst_integrate_iterative.h>
@@ -34,6 +33,7 @@ void pst_integrate_recursive
     float_image_t *G, 
     float_image_t *H,
     double hintsWeight,
+    bool_t extrapolate, 
     float_image_t *Z, 
     float_image_t *R, 
     uint32_t maxLevel,
@@ -116,7 +116,7 @@ void pst_integrate_recursive
         
         /* Compute the half-scale height maps: */
         pst_integrate_recursive
-          ( level+1, G_red, H_red, hintsWeight, Z_red, R_red,
+          ( level+1, G_red, H_red, hintsWeight, extrapolate, Z_red, R_red,
             maxLevel, 2*maxIter, convTol/2, sortSys,
             verbose, reportData, reportSys, reportStep, reportHeights
           );
@@ -134,7 +134,8 @@ void pst_integrate_recursive
       }
 
     pst_integrate_iterative
-      ( G, H, hintsWeight, Z, R, maxIter, convTol, sortSys, verbose, level,
+      ( G, H, hintsWeight, extrapolate, 
+        Z, R, maxIter, convTol, sortSys, verbose, level,
         reportSys, reportStep, reportHeights
       );
 

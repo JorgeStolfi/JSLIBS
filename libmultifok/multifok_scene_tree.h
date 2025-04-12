@@ -1,5 +1,5 @@
 /* A tree structure to speed up raytracing of a scene. */
-/* Last edited on 2024-12-05 14:51:35 by stolfi */
+/* Last edited on 2025-04-09 22:17:06 by stolfi */
 
 #ifndef multifok_scene_tree_H
 #define multifok_scene_tree_H
@@ -43,4 +43,11 @@ multifok_scene_tree_t *multifok_scene_tree_build
     
     If {debug_level} is non-negative, also prints debugging information. */
  
+void multifok_scene_tree_print
+  ( FILE *wr,
+    multifok_scene_tree_t *tree,
+    uint32_t level
+  );
+  /* Prints the (sub)tree {tree} to {wr}.  The root node will be indented by {2*level}. */
+  
 #endif

@@ -1,10 +1,11 @@
 /* test_i2 --- test program for i2.h, i2x2.h  */
-/* Last edited on 2024-11-20 18:43:29 by stolfi */
+/* Last edited on 2025-03-13 12:12:50 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include <affirm.h>
 #include <jsrandom.h>
@@ -25,6 +26,8 @@ void test_i2(bool_t verbose);
 /* void throw_matrix(i2x2_t *m); */
 /* void throw_diag_matrix(i2x2_t *m); */
 /* void throw_symmetric_matrix(i2x2_t *m); */
+
+void test_i2_cyclic_order(bool_t verbose);
 
 int32_t main (int32_t argc, char **argv)
   {
@@ -179,7 +182,9 @@ void test_i2(bool_t verbose)
     i2_cross(&a, &e);
     ib64 = i2_dot(&e, &b);
     in_check_eq(ia64,ib64, NO, NO, "i2_det error(1)");
-
+    
+    test_i2_cyclic_order(verbose);
+    
     if (verbose) { fprintf(stderr, "--- i2_print ---\n"); }
     if (verbose)
       { i2_throw_cube(trad, &a);
@@ -191,6 +196,105 @@ void test_i2(bool_t verbose)
     if (verbose)
       { 
         fprintf(stderr, "!! i2_eq NOT TESTED\n");
+      }
+  }
+
+void test_i2_cyclic_order(bool_t verbose)
+  {
+    i2_t a, b, c;
+    int32_t trad = 4634;
+    if (verbose) { fprintf(stderr, "--- i2_cyclic_order ---\n"); }
+    if (drandom() < 0.5)
+      { /* Create two vectors {a,b} such that {angle(a,b)} is {~45} deg: */
+        i2_throw_cube(trad, &a);
+        i2_cross(&a, &b);
+        i2_add(&a, &b, &b);
+      }
+    else if (drandom() < 0.5)
+      { /* Take {a,b} to be opposite: */
+        a = (i2_t){{ +1, +1 }};
+        b = (i2_t){{ -2, -2 }};
+      }
+    else
+      { /* Take {a,b} codirectional: */
+        a = (i2_t){{ +1, +1 }};
+        b = (i2_t){{ +2, +2 }};
+      }
+      
+    for (int32_t ib = +1; ib >= -1; ib -= 2)
+      { 
+        double tab; /* CCW angle from {a} to {b}. */
+        int64_t cab = i2_dot(&a, &b);
+        int64_t sab = i2_det(&a, &b);
+        if ((cab >= 0) && (sab == 0))
+          { tab = 0; }
+        else
+          { tab = atan2((double)sab, (double)cab);
+            if (tab < 1.0e-12) { tab += 2*M_PI; }
+            assert(tab != 0);
+          }
+        
+        for (int32_t ica = -1; ica <= +1; ica += 2)
+          { for (int32_t icb = -1; icb <= +1; icb += 2)
+              { if (drandom() < 0.5)
+                  { /* Pick {c} is in the quadrant {ica,icb} rel to {a,b}. */
+                    c = (i2_t){{ ica*a.c[0] + icb*b.c[0], ica*a.c[1] + icb*b.c[1] }};
+                  }
+                else
+                  { /* Pick {c} at 0, 90, 180, or 270 degrees from {a}: */
+                    switch (2*ica + icb)
+                     { case -3: c = a; break;
+                       case -1: i2_cross(&a, &c); break;
+                       case +1: i2_cross(&a, &c); i2_neg(&c, &c); break;
+                       case +3: i2_neg(&a, &c); break;
+                       default: assert(FALSE);
+                     }
+                  }
+                    
+                double tbc; /* Angle from {b} to {c}, in {[-PI _ +Pi]} */
+                int64_t cbc = i2_dot(&b, &c);
+                int64_t sbc = i2_det(&b, &c);
+                if ((cbc >= 0) && (sbc == 0))
+                  { tbc = 0; }
+                else
+                  { tbc = atan2((double)sbc, (double)cbc);
+                    assert(tbc != 0);
+                  }
+
+                double tac; /* CCW angle from {a} to {c}. */
+                int64_t cac = i2_dot(&a, &c);
+                int64_t sac = i2_det(&a, &c);
+                if ((cac >= 0) && (sac == 0))
+                  { tac = 0; }
+                else
+                  { tac = atan2((double)sac, (double)cac);
+                    if (tac < 1.0e-12) { tac += 2*M_PI; }
+                    assert(tac != 0);
+                  }
+                
+                sign_t ord_exp; /* Expected cyclic order. */
+                if ((tab == 0) || (tbc == 0) || (tac == 0))
+                  { ord_exp = 0; }
+                else
+                  { ord_exp = (tab < tac ? +1 : -1); }
+                
+                /* Computer order by library: */
+                sign_t ord_cmp = i2_cyclic_order(&a, &b, &c);
+                if (ord_cmp != ord_exp)
+                  { fprintf(stderr, "i2_cyclic_order error - cmp = %+d exp = %+d\n", ord_cmp, ord_exp);
+                    i2_gen_print(stderr, &a, "%+6d", "a = ( ", " ", " )\n");
+                    i2_gen_print(stderr, &b, "%+6d", "b = ( ", " ", " )\n");
+                    i2_gen_print(stderr, &c, "%+6d", "c = ( ", " ", " )\n");
+                    fprintf(stderr, "tab = %.12f  tbc = %.12f  tac = %.12f\n", tab, tbc, tac);
+                    assert(FALSE); 
+                  }
+                demand(i2_cyclic_order(&a, &a, &c) == 0, "i2_cyclic_order(a,a,c) not zero");
+                demand(i2_cyclic_order(&a, &b, &b) == 0, "i2_cyclic_order(a,b,b) not zero");
+                demand(i2_cyclic_order(&c, &a, &c) == 0, "i2_cyclic_order(c,a,c) not zero");
+              }
+           }
+        i2_neg(&b, &b);
+        tab = - tab;
       }
   }
 

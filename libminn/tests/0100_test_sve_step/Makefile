@@ -1,4 +1,4 @@
-# Last edited on 2008-01-14 23:30:40 by stolfi
+# Last edited on 2025-04-02 08:13:56 by stolfi
 
 PROG = test_sve_step
  
@@ -7,6 +7,8 @@ TEST_LIB_DIR := ../..
 
 JS_LIBS := \
   libgeo.a \
+  libeigen.a \
+  libgausol.a \
   libjs.a
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

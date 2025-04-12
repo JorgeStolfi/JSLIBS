@@ -1,5 +1,5 @@
 /* See {multifok_scene_object_raytrace.h}. */
-/* Last edited on 2025-03-07 16:33:29 by stolfi */
+/* Last edited on 2025-04-09 21:10:01 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -232,7 +232,7 @@ double multifok_scene_object_raytrace_PYRA(interval_t bbox[], r3_t *p, r3_t *d, 
     
     /* The pyramid is the intersection of four side half-spaces plus the base half-space. */
     /* Check the four side faces and base of the pyramid, get interval {tLo,tHi} inside each: */
-    r3_t sNrm = (r3_t){{ hZ, 0.0, rXY }}; /* Oytwards normal of next halfspace. */
+    r3_t sNrm = (r3_t){{ hZ, 0.0, rXY }}; /* Outwards normal of next halfspace. */
     double tLo = (hiZ - pZ)/dZ - 1.0e-6;  /* Min {t} based on {Z} span of pyramid. */
     double tHi = (loZ - pZ)/dZ + 1.0e-6;  /* Max {t} based on {Z} span of pyramid. */
     if (tLo > tHi) { /* {dz} positive: */ double tmp = tLo; tLo = tHi; tHi = tmp; }

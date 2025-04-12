@@ -1,5 +1,5 @@
 /* See {btc_bubble_parms_read.h} */
-/* Last edited on 2024-12-05 10:23:11 by stolfi */
+/* Last edited on 2025-03-13 06:35:44 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,7 +28,7 @@ void btc_bubble_parms_read(char* fName, int nd, char* dt[], int* nbP, btc_bubble
     int nb = 0;    /* Number of bubbles found. */
     int nlin = 0;  /* Line number, starting from 1. */
     bool_t ok = TRUE;
-    while (! fget_skip_and_test_char(rd, EOF))
+    while (! fget_skip_spaces_and_test_char(rd, EOF))
       { 
         /* One more line in file; should have skipped leading blanks: */
         nlin++;

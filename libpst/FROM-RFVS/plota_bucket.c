@@ -50,7 +50,7 @@ struct bucket_grid_data_t{
 	double bu,bv;
 	double R;
 	double bucketSize;
-	double* baricenter;
+	double* barycenter;
 	double* u;
 	double* v;
 	int** entries; //Number of table entries of the BG
@@ -128,10 +128,10 @@ bucket_grid_data* loadBucketGridData(char* filename){
 	advanceUntilEqual(arq,'=');
 	fscanf(arq,"%lf",&(bg->bucketSize));
 	advanceUntilEqual(arq,'=');
-	bg->baricenter = (double*)malloc(sizeof(double)*(bg->nLights));
+	bg->barycenter = (double*)malloc(sizeof(double)*(bg->nLights));
 	int i,j;
 	for(i = 0; i < bg->nLights; i++){
-		fscanf(arq,"%lf",&(bg->baricenter[i]));
+		fscanf(arq,"%lf",&(bg->barycenter[i]));
 	}
 	advanceUntilEqual(arq,'=');
 	bg->u = (double*)malloc(sizeof(double)*(bg->nLights));
@@ -551,7 +551,7 @@ void plotScene(char* prefix, plot_config* pg,bucket_grid_data* bg_data){
 			//gets center bucket
 			vec[i] = bg_data->u[i]*((bg_data->umin[x][y] + bg_data->umax[x][y])/2.0);
 			vec[i]+= bg_data->v[i]*((bg_data->vmin[x][y] + bg_data->vmax[x][y])/2.0);
-			vec[i]+= bg_data->baricenter[i];
+			vec[i]+= bg_data->barycenter[i];
 			
 		}
 		for(i = 0; i < bg_data->nLights; i++){

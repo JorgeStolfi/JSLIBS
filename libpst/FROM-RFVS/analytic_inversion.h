@@ -15,7 +15,7 @@ typedef struct analytic_inversion_t{
   double* u; /*Main direction of signature set*/
   double* v; /*Secondary direction of the signature set*/
   double *b; /*Baricenter of the signature set*/
-  double bu,bv; /*{U,V} coordinates of the baricenter*/
+  double bu,bv; /*{U,V} coordinates of the barycenter*/
   double radius; /*Radius of the plane*/
   int type_inv;
   approx_model_t* inv_model; /*Maps a projected signature to a normal coordinate*/

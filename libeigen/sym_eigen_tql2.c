@@ -1,5 +1,5 @@
 /* See sym_eigen_tql2.h */
-/* Last edited on 2024-12-05 18:44:56 by stolfi */
+/* Last edited on 2025-04-02 08:17:26 by stolfi */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -111,23 +111,23 @@ void sym_eigen_tql2(uint32_t n, double d[], double e[], double z[], uint32_t *ne
         double s2, c3;
         int32_t mmr = m - r;
         /* for i=m-1 step -1 until r do -- */
-        fprintf(stderr, "!! m=%d r=%d r1=%d dr1=%20.14f\n", m+1, r+1, r1+1, dr1);
+        if (debug) { fprintf(stderr, "!! m=%d r=%d r1=%d dr1=%20.14f\n", m+1, r+1, r1+1, dr1); }
         for (int32_t ii = 1; ii <= mmr; ii++) /* 200 */
           { int32_t i = m - ii;
-            fprintf(stderr, "!! i=%d p=%20.14f c=%20.14f s=%20.14f\n", i+1, p, c, s);
+            if (debug) { fprintf(stderr, "!! i=%d p=%20.14f c=%20.14f s=%20.14f\n", i+1, p, c, s); }
             c3 = c2;
             c2 = c;
             s2 = s;
             double g = c * e[i];
             double h = c * p;
             double rr = hypot(p,e[i]);
-            fprintf(stderr, "!! i=%d s=%20.14f e(i)=%20.14f rr=%24.18f\n", i+1, s, e[i], rr);
+            if (debug) { fprintf(stderr, "!! i=%d s=%20.14f e(i)=%20.14f rr=%24.18f\n", i+1, s, e[i], rr); }
             e[i+1] = s * rr;
             s = e[i] / rr;
             c = p / rr;
             p = c * d[i] - s * g;
             d[i+1] = h + s * (c * g + s * d[i]);
-            fprintf(stderr, "!! i = %d  d(i+1) =  %20.14f\n", i+1, d[i+1]);
+            if (debug) { fprintf(stderr, "!! i = %d  d(i+1) =  %20.14f\n", i+1, d[i+1]); }
             /* Compute the vector: */
             for (int32_t k = 0; k < n; k++) /* 180 */
               { h = z[(i+1)*(int32_t)n + k];
@@ -143,9 +143,11 @@ void sym_eigen_tql2(uint32_t n, double d[], double e[], double z[], uint32_t *ne
 
     void tq2s300(void)
       { uint32_t nev = (*nev_P); /* Number of eigenvalues found. */
-        fprintf(stderr, "!! nev = %d\n", nev);
-        for (int32_t kk = 0; kk < nev; kk++) 
-          { fprintf(stderr, "!!   %14.10f\n", d[kk]); }
+        if (debug) 
+          { fprintf(stderr, "!! nev = %d\n", nev);
+            for (int32_t kk = 0; kk < nev; kk++) 
+              { fprintf(stderr, "!!   %14.10f\n", d[kk]); }
+          }
         /* Selection sort of eigenvalues {d[0..nev-1]}: */
         for (int32_t i = 0; i < nev-1; i++)
           { /* Find smallest element in {d[i]} through {d[nev-1]}: */

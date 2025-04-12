@@ -1,5 +1,5 @@
 /* See jsstring.h */
-/* Last edited on 2024-11-20 06:52:44 by stolfi */
+/* Last edited on 2025-03-13 08:58:19 by stolfi */
 
 #include <stdlib.h>
 #include <string.h>
@@ -29,26 +29,36 @@ string_t prefix(const string_t s, int32_t len)
   }
 
 string_t txtcat (const string_t a, const string_t b)
-  { string_t r = jsprintf("%s%s", a, b);
+  { char *aa = (a == NULL ? "" : a);
+    char *bb = (b == NULL ? "" : b);
+    string_t r = jsprintf("%s%s", aa, bb);
     return (string_t)notnull(r, "no mem");
   }
 
 string_t txtcat3 (const string_t a, const string_t b, const string_t c)
-  { string_t r = jsprintf("%s%s%s", a, b, c);
+  { char *aa = (a == NULL ? "" : a);
+    char *bb = (b == NULL ? "" : b);
+    char *cc = (c == NULL ? "" : c);
+    string_t r = jsprintf("%s%s%s", aa, bb, cc);
     return (string_t)notnull(r, "no mem");
   }
 
 string_t txtcat4 (const string_t a, const string_t b, const string_t c, const string_t d)
-  { string_t r = jsprintf("%s%s%s%s", a, b, c, d);
+  { char *aa = (a == NULL ? "" : a);
+    char *bb = (b == NULL ? "" : b);
+    char *cc = (c == NULL ? "" : c);
+    char *dd = (d == NULL ? "" : d);
+    string_t r = jsprintf("%s%s%s%s", aa, bb, cc, dd);
     return (string_t)notnull(r, "no mem");
   }
   
 string_t txtrep(const string_t  x, uint32_t n)
-  { uint64_t m = strlen(x);
+  { char *xx = (x == NULL ? "" : x);
+    uint64_t m = strlen(xx);
     string_t r = talloc(n*m  +  1, char);
     string_t p = r;
     uint32_t k;
-    for (k = 0; k < n; k++) { strcpy(p, x); p += m; }
+    for (k = 0; k < n; k++) { strcpy(p, xx); p += m; }
     return r;
   }  
 

@@ -1,5 +1,5 @@
 /* See {test_r2_opt_basic.h}. */
-/* Last edited on 2024-12-05 10:34:48 by stolfi */
+/* Last edited on 2025-03-19 14:33:39 by stolfi */
 
 #include <stdint.h>
 #include <stdio.h>
@@ -11,9 +11,9 @@
 #include <test_r2_opt_basic.h>
 
 void tr2o_debug_points
-  ( int32_t ind,
+  ( uint32_t indent,
     char *title,
-    int32_t NI, 
+    uint32_t NI, 
     char *pname,
     r2_t p[], 
     r2_t pini[], 
@@ -34,9 +34,9 @@ void tr2o_debug_points
         {d} from the point named {qtag} as a fraction of the vector {r}
         named {rtag}. */
        
-    fprintf(stderr, "%*s%s\n", ind, "", title);
+    fprintf(stderr, "%*s%s\n", indent, "", title);
     for (uint32_t i = 0;  i < NI; i++)
-      { fprintf(stderr, "%*s  %s[%02d] =       ( %9.4f %9.4f )\n", ind, "", pname, i, p[i].c[0], p[i].c[1]);
+      { fprintf(stderr, "%*s  %s[%02d] =       ( %9.4f %9.4f )\n", indent, "", pname, i, p[i].c[0], p[i].c[1]);
         r2_t *r = (arad != NULL ? &(arad[i]) : NULL);
         r2_t *s = (astp != NULL ? &(astp[i]) : NULL);
         if (pini != NULL) { show_disp("ini", &(p[i]), &(pini[i]), r, s); }
@@ -44,7 +44,7 @@ void tr2o_debug_points
         fprintf(stderr, "\n");
       }
     if ((! isnan(f2p)) || (! isnan(b2p)))
-      { fprintf(stderr, "%*s", ind, "");
+      { fprintf(stderr, "%*s", indent, "");
         if (! isnan(f2p)) { fprintf(stderr, "  f2(p) = %22.10f", f2p); }
         if (! isnan(b2p)) { fprintf(stderr, "  b2(p) = %22.10f", b2p); }
         if ((! isnan(f2p)) && (! isnan(b2p))) { fprintf(stderr, "  f2_full(p) = %22.10f\n", f2p+b2p); }
@@ -54,7 +54,7 @@ void tr2o_debug_points
 
     void show_disp(char *qtag, r2_t *q, r2_t *o, r2_t *r, r2_t *s) 
       { r2_t d; r2_sub(q, o, &d);
-        fprintf(stderr, "%*s           = %s + ( %+9.4f %+9.4f )\n", ind, "", qtag, d.c[0], d.c[1]);
+        fprintf(stderr, "%*s           = %s + ( %+9.4f %+9.4f )\n", indent, "", qtag, d.c[0], d.c[1]);
         show_rel_disp(qtag, &d, "rad", r);
         show_rel_disp(qtag, &d, "stp", s);
       }
@@ -66,29 +66,29 @@ void tr2o_debug_points
             if ((rx != 0.0) || (ry != 0.0))
               { double dx = (rx == 0 ? 0.0 : d->c[0]/rx);
                 double dy = (ry == 0 ? 0.0 : d->c[1]/ry);
-                fprintf(stderr, "%*s           = %s + ( %+9.4f %+9.4f )*%s\n", ind, "", qtag, dx, dy, rtag);
+                fprintf(stderr, "%*s           = %s + ( %+9.4f %+9.4f )*%s\n", indent, "", qtag, dx, dy, rtag);
               }
           }
       }
    }
 
 void tr2o_debug_r2
-  ( int32_t ind,
+  ( uint32_t indent,
     char *pname,
-    int32_t i,
+    uint32_t i,
     r2_t *p
   )
   { 
-    fprintf(stderr, "%*s %s[%02d] = ( %20.15f %20.15f )\n", ind, "", pname, i, p->c[0], p->c[1]); 
+    fprintf(stderr, "%*s %s[%02d] = ( %20.15f %20.15f )\n", indent, "", pname, i, p->c[0], p->c[1]); 
   }
 
 void tr2o_debug_params
-  ( int32_t ind,
+  ( uint32_t indent,
     char *pname,
-    int32_t NI, 
+    uint32_t NI, 
     r2_t p[]
   )
-  { for (uint32_t i = 0;  i < NI; i++) { tr2o_debug_r2(ind, pname, i, &(p[i])); }
+  { for (uint32_t i = 0;  i < NI; i++) { tr2o_debug_r2(indent, pname, i, &(p[i])); }
     fprintf(stderr, "\n");
     return;
   }

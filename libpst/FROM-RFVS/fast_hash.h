@@ -16,7 +16,7 @@ struct Fast_Hash_t{
     double* v; /* Direção principal da nuvem de pontos {[0..num_luzes-1]}. */
     double bu, bv; /* Posição do baricentro projetado em {u,v} */
     double R; /* Raio da grade de buckets no plano {u,v}. */
-    double* baricenter; /* Centro da grade de buckets. */
+    double* barycenter; /* Centro da grade de buckets. */
 };
 
 

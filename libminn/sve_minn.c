@@ -1,5 +1,5 @@
 /* See {sve_minn.h} */
-/* Last edited on 2024-12-05 14:09:36 by stolfi */
+/* Last edited on 2025-04-02 09:44:03 by stolfi */
 
 #include <math.h>
 #include <assert.h>
@@ -18,71 +18,71 @@
 #include <gausol_solve.h>
 
 #include <sve_minn.h>
+#include <sve_minn_iterate.h>
 
 #define Pr fprintf
 #define Er stderr
 
 /* INTERNAL PROTOTYPES */
 
-void sve_clip_candidate
+bool_t sve_clip_candidate
   ( uint32_t n,
     double y[],
-    double ctr[],
+    double dCtr[],
     double dMax,
-    bool_t box, 
-    bool_t debug,
-    bool_t debug_probes
+    bool_t dBox, 
+    bool_t debug
   );
-  /* Pulls the point {y[0..n-1]} towards the point {ctr[0..n-1]} so that 
-    it lies within the search domain defined by {dMax} and {box}. 
-    If {ctr} is {NULL}, assumes a vector of {n} zeros. */
+  /* Pulls the point {y[0..n-1]} towards the point {dCtr[0..n-1]} so that 
+    it lies within the search domain defined by {dMax} and {dBox}. 
+    If {dCtr} is {NULL}, assumes a vector of {n} zeros.
+    Returns true iff {y} was changed. */
 
-uint32_t sve_take_step
-  ( uint32_t n,
-    sign_t dir,
-    double y[],
-    double *FyP,
-    double x[],
-    double Fx,
-    uint32_t nv,
-    double v[],
-    uint32_t nf,
-    double Fv[],
-    bool_t debug,
-    bool_t debug_probes
+uint32_t sve_take_best_candidate
+  ( sign_t dir,
+    uint32_t n, 
+    double x[], double *FxP,  /* Previous guess and its value. */
+    double y[], double Fy,    /* Computed stationary point and value. */
+    uint32_t nv, double v[], uint32_t nf, double Fv[],
+    double *dStep,
+    bool_t debug
   );
-  /* Chooses the next next probe center for {sve_minn_iterate}.
+  /* Chooses the best candidate point among the previous solution 
+    and the probe points (candidates) examined by {sve_minn_single_step}.
 
-    The candidates for the next probe center are the estimated
-    stationary point {y[0..n-1]} computed by {sve_minn_step}, the
-    current probe center {x[0..n-1]}, and the probe points of this
-    iteration (namely the vertices {V(i)} and edge midpoints {V(i,j)}
-    of the current probe simplex).
+    The candidates for the next probe center are the previous best
+    solution {x[0..n-1]}, the estimated stationary point {y[0..n-1]} of
+    the approximating quadratic, as computed by
+    {sve_minn_quadratic_optimum}, and the probe points of this iteration
+    (namely the vertices {V(i)} and edge midpoints {V(i,j)} of the
+    current probe simplex).
     
-    Upon entry, assumes that {y} has been clipped as appropriate; that
-    {Fx} and {*FyP} are the function values at {x} and {y},
-    respectively; that {v} contains the coordinates of the simplex
-    vertices, by rows; and that {Fv} contains the function values at
-    all probe points.
+    Upon entry, assumes that the computed stationary point {y} has been
+    clipped to the search domain, and that {*FxP} and {Fy} are the
+    function values at {x} and {y}, respectively. It also assumes that
+    {v[0..nv*n-1]} contains the (unprojected) coordinates of the simplex
+    vertices, by rows; and that {Fv[0..nf-1]} contains the function
+    values at all {nf} probe points.
     
-    The chosen next center is stored in {y[0..n-1]} and its function
-    value in {*FyP}.
+    If the best candidate is not {x}, its coordinates will be stored in
+    {x[0..n-1]}, its function value in {*FxP}, and the Euclidean
+    distance between it and the original {x} in in {*dStepP}. Otherwise
+    {x} and {*FxP} are not changed and {dStepP} is set to zero.
     
-    If {dir} is zero, the chosen point is always the quadratic 
-    statonary point; that is, the procedure is a no-op.
-    Otherwise it is the candidate with minimum (if {dir==-1}) or maximum 
-    (if {dir==+1}) function value.
+    If {dir} is zero, the chosen point is always the computed stationary
+    point {y}. Otherwise it is the candidate with minimum (if {dir==-1})
+    or maximum (if {dir==+1}) function value.
     
-    The returned value is 0 if the winner is the estimated minimum
+    The returned value is 0 if the winner is the computed stationary point
     {y}, 1 if it is one of the probe point, and 2 if it is the
-    original center itself (i.e. if the step failed altogether). */
+    previous best solution {x} (i.e. if the step failed altogether).  */
 
 void sve_print_probes(FILE *wr, uint32_t nv, uint32_t n, double v[], uint32_t nf, double Fv[]);
   /* Prints the probe values {Fv[0..nf-1]} and the probe points.
     Assumes that {v[0..nv*n-1]} are the coordinates of the vertices,
     stored by rows. */
 
-void sve_minn_step(uint32_t n, double Fv[], double cm[], bool_t debug, bool_t debug_system)
+void sve_minn_quadratic_optimum(uint32_t n, double Fv[], double cm[], bool_t debug, bool_t debug_system)
   { uint32_t nv = n+1; /* Number of vertices in simplex. */
     uint32_t rows = nv+1; /* {n+1} stationary eqs and one unit-sum eq. */
     uint32_t cols = nv+1; /* {n+1} barycentric coords and one Lagrange multip. */
@@ -151,288 +151,173 @@ void sve_sample_function(uint32_t n, sve_goal_t *F, double v[], double Fv[])
       }
   }
 
-void sve_minn_iterate
+uint32_t sve_minn_single_step
   ( uint32_t n, 
-    sve_goal_t *F, 
-    sve_pred_t *OK,
-    sve_proj_t *Proj,
-    double x[],
-    double *FxP,
-    sign_t dir, 
-    double ctr[],
-    double dMax,
-    bool_t box,
-    double rIni,
-    double rMin, 
-    double rMax,
-    double minStep,
-    uint32_t maxIters,
+    double x[], double *FxP,
+    sve_goal_t *F, sign_t dir,
+    double dCtr[], double dMax, bool_t dBox, 
+    double *radiusP, double rMin,
+    double v[], double Fv[],
+    uint32_t *nEvalsP,
+    double *dStepP,
     bool_t debug,
     bool_t debug_probes
   )
   { 
-    if (debug_probes) { /* Implies {debug}: */ debug = TRUE; }
-    if (debug) { Pr(Er, ">> enter %s >>\n", __FUNCTION__); }
+    demand(rMin <= dMax, "invalid {rMin}, larger than {dMax}");
+
+    uint32_t nv = n + 1;          /* Number of simplex vertices. */
+    uint32_t nf = (n+1)*(n+2)/2;  /* Number {nf} of probe points. */
     
-    demand((rMin >= sve_minn_MIN_RADIUS) && (rMin <= rMax), "invalid {rMin,rMax}");
-    demand((rMin <= rIni) && (rIni <= rMax), "invalid {rIni}");
-    
-    /* Allocate storage for the simplex: */
-    uint32_t nv = n+1; /* Number of vertices in simplex. */
-    double_vec_t vv = double_vec_new(nv*n); 
-    double *v = vv.e; /* Cartesian coords of simplex vertices. */
-    
-    /* Allocate storage for the sample values: */
-    uint32_t nf = (n+1)*(n+2)/2; /* Number of probe points. */
-    double_vec_t Fvv = double_vec_new(nf);
-    double *Fv = Fvv.e; /* Sampled function values. */
+    double y[n];   /* Simplex center, then computed stationary point. */
+    double cm[nv]; /* Barycentric coords of stationary point. */
+    /* The probe simplex center {y} is in principle the current optimum {x}: */
+    rn_copy(n, x, y);
 
-    /* Iteration variables: */
-    double cm[nv]; /* Barycentric coords of next solution. */
-    double y[n];    /* Cartesian coords of next solution; also simplex center. */
-    double radius = rIni; /* Current probe simplex radius: */
-    double dPrev = dMax; /* Distance moved in previous iteration ({dMax} if none). */
-    uint32_t nIters = 0; /* Counts quadratic step iterations. */
-    uint32_t nEvals = 0; /* Counts function evaluations. */
-    
-    /* Get initial function value: */
-    double Fx = (*FxP);
-    
-    while(TRUE) 
-      { if (debug) { Pr(Er, "  iteration %4d  function = %22.16e\n", nIters, Fx); }
-        double Fx_save = Fx; /* Before {Proj}. */
-        if (Proj != NULL)
-          { /* Apply client's projection: */
-            Fx = Proj(n, x, Fx);
-            if (debug) 
-              { Pr(Er, " applyed {Proj}");
-                if (Fx != Fx_save) { Pr(Er, " function changed = %22.16e", Fx); }
-                Pr(Er, "\n");    
+    /* Compute distance from {dCtr}: */
+    double dist;
+    if (dCtr == NULL)
+      { dist = (dBox ? rn_L_inf_norm(n, y) : rn_norm(n, y)); }
+    else
+      { dist = (dBox ? rn_L_inf_dist(n, dCtr, y) : rn_dist(n, dCtr, y)); }
+
+    /* Adjust simplex center {y} and {radius} so that it fits in domain: */
+    double radius = (*radiusP);
+    if (debug)  { Pr(Er, "      dist(x, dCtr) = %16.12f  raw simplex radius = %12.8f\n", dist, radius); }
+    demand((radius >= rMin) && (radius <= dMax), "invalid simplex {radius}");
+    if (dMax < INFINITY)
+      { /* Ensure that the simplex fits in the domain box/ball: */
+        double dExtra = dist + radius - dMax; 
+        if (dExtra > 0.0)
+          { /* Simplex risks falling out of {dCtr,dMax} ball/box. */
+            if (debug) { Pr(Er, "      dist plus simplex radius =  %16.12f  exceeds {dMax} by %16.12f\n", dist+radius, dExtra); }
+            /* Compute new radius {rSafe} such that the ball 
+              with center at the adjusted point will fit inside that ball/box. */
+            double rSafe = radius - 0.50000001*dExtra;
+            if (rSafe < rMin) { rSafe = rMin; }              
+            if (rSafe > dMax) { rSafe = dMax; }
+            /* Adjust {y} so that it is at {dMax-rSafe} from {dCtr}: */
+            bool_t y_clipped = sve_clip_candidate(n, y, dCtr, dMax - rSafe, dBox, debug);
+            if(y_clipped && debug_probes)
+              { Pr(Er, "      clipped simplex center y = \n");
+                rn_gen_print(Er, n, y, "%20.16f", "    [ ", "\n      ", " ]\n");
               }
+            /* Use this adjusted radius: */
+            assert(rSafe <= radius); /* Should always be the case. */
+            radius = rSafe;
+            if (debug) { Pr(Er, "      simplex radius reduced to %12.8f\n", radius); }
+            (*radiusP) = radius;
           }
-        /* Check budget: */
-        if (nIters >= maxIters) 
-          { if (debug) { Pr(Er, "  iteration limit exhausted\n"); }
-            break;
-          }
-
-        /* Compute distance from {ctr}: */
-        double dist;
-        if (ctr == NULL)
-          { dist = (box ? rn_L_inf_norm(n, y) : rn_norm(n, y)); }
-        else
-          { dist = (box ? rn_L_inf_dist(n, ctr, y) : rn_dist(n, ctr, y)); }
-          
-        /* Ajdust radius so that the probe simplex radius is in {[rMin _ rMax]}: */
-        if (debug)  { Pr(Er, "  dist(y, ctr) = %16.12f  raw simplex radius = %12.8f\n", dist, radius); }
-
-        /* Check for termination: */
-        if ((OK != NULL) && (OK(nIters, n, x, Fx, dist, dPrev, radius))) 
-          { if (debug) { Pr(Er, "  client is satisfied\n"); }
-            break;
-          }
-        
-        /* The probe simplex center {y} is in principle the current guess {x}: */
-        rn_copy(n, x, y);
-        
-        /* Adjust simplex center {y} and {radius} so that there is room for the probe simplex: */
-        if (dMax < INFINITY)
-          { /* Ensure that the simplex fits in the domain box/ball: */
-            double dExtra = dist + radius - dMax; 
-            if (dExtra > 0.0)
-              { /* Simplex risks falling out of {ctr,dMax} ball/box. */
-                if (debug) { Pr(Er, "  dist+radius =  %16.12f  exceeds {dMax} by %16.12f\n", dist+radius, dExtra); }
-                /* Compute new radius {rSafe} such that the ball 
-                  with center at the adjusted point will fit inside that ball/box. */
-                double rSafe = radius - 0.50000001*dExtra;
-                if (rSafe < rMin) { rSafe = rMin; }              
-                if (rSafe > dMax) { rSafe = dMax; }
-                assert((rMin <= rSafe) && (rSafe <= rMax)); /* Should be always the case. */
-                /* Adjust {y} so that it is at {dMax-rSafe} from {ctr}: */
-                sve_clip_candidate(n, y, ctr, dMax - rSafe, box, debug, debug_probes);
-                /* Use this adjusted radius: */
-                assert(rSafe <= radius); /* Should always be the case. */
-                radius = rSafe;
-                if (debug) { Pr(Er, "  radius reduced to %12.8f\n", radius); }
-              }
-          }
-        if(debug) { Pr(Er, "\n"); }
-
-        /* Choose a regular simplex around {y}: */
-        rmxn_regular_simplex(n, v);
-        rmxn_spin_rows(nv, n, v, v);
-        /* Compute the scaling factor {scale} for the regular simplex: */
-        double scale = radius/rmxn_regular_simplex_radius(n);
-        rmxn_scale(nv, n, scale, v, v);
-        rmxn_shift_rows(nv, n, v, y, v);
-        /* Evaluate the goal function at sample points: */
-        if (debug && debug_probes)
-          { /* Print the current simplex: */
-            Pr(Er, "    simplex vertices:\n");
-            rmxn_gen_print(Er, nv, n, v, "%20.16f", "", "\n", "", "    [ ", " ", " ]");
-            Pr(Er, "\n");
-            for (uint32_t iv = 0;  iv < nv; iv++)
-              { double *vi = &(v[iv*n]);
-                Pr(Er, "    dist(v[%3d], y) = %16.12f\n", iv, rn_dist(n, vi, y));
-              }
-          } 
-        sve_sample_function(n, F, v, Fv);
-        if (debug_probes)
-          { /* Print the probe points and values: */
-            Pr(Er, "    probe values and points:\n");
-            sve_print_probes(Er, nv, n, v, nf, Fv); 
-            Pr(Er, "\n");
-          }
-        nEvals += nf;
-        /* Optimize as a quadratic obtaining barycentric coords {cm[0..nv-1]}: */
-        bool_t debug_system = debug_probes;
-        sve_minn_step(n, Fv, cm, debug, debug_system);
-        nIters++;
-        /* Convert solution {cm} to Cartesian coordinates {y[0..n-1]}: */
-        rmxn_map_row(nv, n, cm, v, y);
-        if (debug_probes) 
-          { Pr(Er, "    new point (quadratic stationary) y = \n");
-            rn_gen_print(Er, n, y, "%20.16f", "    [ ", "\n      ", " ]\n");
-            Pr(Er, "\n");
-          }
-        
-        /* STEP ADJUSTMENT */
-        
-        if (dMax < INFINITY)
-          { /* Adjust the estimated min {y} to be inside the sphere/box {ctr,dMax}: */
-            sve_clip_candidate(n, y, ctr, dMax, box, debug, debug_probes);
-          }
-        /* Evaluate at new point: */
-        double Fy = F(n, y);
-        nEvals++;
-        if (debug) { Pr(Er, "  function at new point = %22.16e\n", Fy); }
-        /* Set {y} to the best of all points seen so far: */
-        uint32_t stepKind = sve_take_step(n, dir, y, &Fy, x, Fx, nv, v, nf, Fv, debug, debug_probes);
-        double dStep = rn_dist(n, x, y); /* Length of this step: */
-
-        /* Update the point {x}: */
-        rn_copy(n, y, x);
-        Fx = Fy;
-        if (debug) 
-          { char *choice = ((char*[3]){"quadratic min", "sample point", "old center"})[stepKind];
-            Pr(Er, "  chosing %s  step len = %22.16e function = %22.16e\n", choice, dStep, Fx);
-            if (debug_probes)
-              { Pr(Er, "    new guess = \n");
-                rn_gen_print(Er, n, x, "%20.16f", "    [ ", "\n      ", " ]\n");
-              }
-          }
-          
-        /* Estimate the distance {dEst} to the minimum and choose new radisu {rNew}: */
-        double dEst, rNew;  
-        if (stepKind == 0)
-          { /* Quadratic minimization succeeded, assume geometric convergence: */
-            dEst = (dPrev <= dStep ? +INF : dStep*dStep/(dPrev - dStep));
-            rNew = dStep/2;
-          }
-        else if (stepKind == 1)
-          { /* Moved to a simplex probe point: */
-            dEst = +INF;
-            rNew = radius/2;
-          }
-        else if (stepKind == 2)
-          { /* Current guess is still the optimum: */
-            dEst = radius;
-            rNew = radius/2;
-          }
-        else
-          { assert(FALSE); }
-        if (rNew < 0.1*radius) { rNew = 0.1*radius; }
-        if (rNew > 2.0*radius) { rNew = 2.0*radius; }
-        if (debug)  { Pr(Er, "  next simplex radius = %12.8f", rNew); }
-        if (rNew < rMin)
-          { rNew = rMin;
-            if (debug)  { Pr(Er, " augmented to {rMin} = %12.8f", rNew); }
-          }
-        if (rNew > rMax) 
-          { rNew = rMax; 
-            if (debug)  { Pr(Er, " reduced to {rMax} = %12.8f", rNew); }
-          }
-        if (debug) { Pr(Er, "\n"); }
-
-        /* Check for convergence: */
-        bool_t dEst_is_small = (dEst < minStep);
-        bool_t no_progress = ((dStep < minStep) && (radius <= rMin));
-        if (dEst_is_small || no_progress) 
-          { if (debug) 
-              { Pr(Er, "  seems to have converged:\n");
-                Pr(Er, "    dPrev = %22.16e\n", dPrev);
-                Pr(Er, "    dStep = %22.16e\n", dStep);
-                Pr(Er, "    dEst =  %22.16e\n", dEst);
-              }
-            break;
-          }
-        /* The motion is at least the center-to-edge radius of the simplex: */
-        /* Remember how much we moved in this iteration: */
-        dPrev = dStep;
-        radius = rNew;
       }
-    if (debug) { Pr(Er, "  did %d iterations and %d function evaluations.\n", nIters, nEvals); }
-    free(v);
-    free(Fv);
+    if(debug) { Pr(Er, "\n"); }
+
+    /* Choose a regular simplex of radius {radius} around {y}: */
+    rmxn_regular_simplex(n, v);
+    rmxn_spin_rows(nv, n, v, v);
+    double scale = radius/rmxn_regular_simplex_radius(n);
+    rmxn_scale(nv, n, scale, v, v);
+    rmxn_shift_rows(nv, n, v, y, v);
     
-    /* Return final function value: */
-    (*FxP) = Fx;
-    if (debug) { Pr(Er, "<< leave %s <<\n", __FUNCTION__); }
+    /* Evaluate the goal function at sampling points: */
+    if (debug_probes)
+      { /* Print the current simplex: */
+        Pr(Er, "      simplex vertices:\n");
+        rmxn_gen_print(Er, nv, n, v, "%20.16f", "", "\n", "", "        [ ", " ", " ]");
+        Pr(Er, "\n");
+        for (uint32_t iv = 0;  iv < nv; iv++)
+          { double *vi = &(v[iv*n]);
+            Pr(Er, "        dist(v[%3d], y) = %16.12f\n", iv, rn_dist(n, vi, y));
+          }
+      } 
+    sve_sample_function(n, F, v, Fv);
+    if (debug_probes)
+      { /* Print the probe points and values: */
+        Pr(Er, "      probe values and points:\n");
+        sve_print_probes(Er, nv, n, v, nf, Fv); 
+        Pr(Er, "\n");
+      }
+    if (nEvalsP != NULL) { (*nEvalsP) += nf; }
+    
+    /* Optimize as a quadratic obtaining barycentric coords {cm[0..nv-1]}: */
+    bool_t debug_system = debug_probes;
+    sve_minn_quadratic_optimum(n, Fv, cm, debug, debug_system);
+
+    /* Convert barycentric coords {cm} to Cartesian coords {y[0..n-1]}: */
+    rmxn_map_row(nv, n, cm, v, y);
+    if (debug) 
+      { Pr(Er, "      computed quadratic stationary point y = \n");
+        rn_gen_print(Er, n, y, "%20.16f", "    [ ", "\n      ", " ]\n");
+        Pr(Er, "\n");
+      }
+
+    if (dMax < INFINITY)
+      { /* Adjust the estimated min {y} to be inside the sphere/box {dCtr,dMax}: */
+        bool_t y_clipped = sve_clip_candidate(n, y, dCtr, dMax, dBox, debug);
+        if(y_clipped && debug)
+          { Pr(Er, "      clipped stationary point y = \n");
+            rn_gen_print(Er, n, y, "%20.16f", "    [ ", "\n      ", " ]\n");
+          }
+      }
+      
+    /* Evaluate at new point: */
+    double Fy = F(n, y);
+    if (nEvalsP != NULL) { (*nEvalsP)++; }
+    if (debug) { Pr(Er, "      function at stationary point {y} = %22.16e\n", Fy); }
+
+    uint32_t stepKind = sve_take_best_candidate(dir, n, x, FxP, y, Fy, nv, v, nf, Fv, dStepP, debug);
+    return stepKind;
   }
 
-void sve_clip_candidate
+bool_t sve_clip_candidate
   ( uint32_t n,
     double y[],
-    double ctr[],
+    double dCtr[],
     double dMax,
-    bool_t box,
-    bool_t debug,
-    bool_t debug_probes
+    bool_t dBox,
+    bool_t debug
   )
   {
     double dist;
-    if (ctr == NULL)
-      { dist = (box ? rn_L_inf_norm(n, y) : rn_norm(n, y)); }
+    if (dCtr == NULL)
+      { dist = (dBox ? rn_L_inf_norm(n, y) : rn_norm(n, y)); }
     else
-      { dist = (box ? rn_L_inf_dist(n, ctr, y) : rn_dist(n, ctr, y)); }
-    if (debug) { Pr(Er, "  distance from center = %20.16e\n", dist); }
+      { dist = (dBox ? rn_L_inf_dist(n, dCtr, y) : rn_dist(n, dCtr, y)); }
+    if (debug) { Pr(Er, "        distance from center = %20.16e\n", dist); }
             
     if (dist > dMax) 
-      { /* Moved too much, curb it: */
+      { /* Point {y} is outside domain, curb it: */
         double s = (1.0 - 1.0e-12)*dMax/dist;
         if (debug) 
-          { Pr(Er, "  moved too far - contracting by s = %20.16f\n", s);
-          }
-        for (uint32_t k = 0;  k < n; k++) { y[k] = (1-s)*(ctr == NULL ? 0.0 : ctr[k]) + s*y[k]; }
-        if(debug_probes)
-          { Pr(Er, "    clipped y = \n");
-            rn_gen_print(Er, n, y, "%20.16f", "    [ ", "\n      ", " ]\n");
-          }
+          { Pr(Er, "        moved too far - contracting towards {dCtr} by s = %20.16f\n", s); }
+        for (uint32_t k = 0;  k < n; k++) { y[k] = (1-s)*(dCtr == NULL ? 0.0 : dCtr[k]) + s*y[k]; }
+        return TRUE;
       }
+    else
+      { return FALSE; }
   }
 
-uint32_t sve_take_step
-  ( uint32_t n,
-    sign_t dir,
-    double y[],
-    double *FyP,
-    double x[],
-    double Fx,
-    uint32_t nv,
-    double v[],
-    uint32_t nf,
-    double Fv[],
-    bool_t debug,
-    bool_t debug_probes
+uint32_t sve_take_best_candidate
+  ( sign_t dir,
+    uint32_t n, 
+    double x[], double *FxP,
+    double y[], double Fy,
+    uint32_t nv, double v[], uint32_t nf, double Fv[],
+    double *dStepP,
+    bool_t debug
   )
   {
     /* If looking for a stationary point, keep {y} and {*FyP}: */
-    if (dir == 0) { return 0; }
+    if (dir == 0) 
+      { /* Ignore simplex vertices and previous guess: */
+        rn_copy(n, y, x);
+        (*FxP) = Fy;
+        return 0;
+      }
     
     /* Grab the current function value at {y}: */
-    double Fy = (*FyP);
+    double Fx = (*FxP);
     
-    /* Find the optimum value among {Fv[0..nf-1]}: */
+    /* Find the optimum value among the values {Fv[0..nf-1]} sampled at simplex nodes: */
     double FOpt = -INF*(double)dir; /* {FOpt} is the optimum sample value. */
     int32_t iOpt = -1, jOpt = -1; /* {V(iOpt,jOpt)} is the optimum sample point. */
     for (int32_t i = 0;  i < nv; i++)
@@ -444,32 +329,34 @@ uint32_t sve_take_step
       }
     if (nv > 0) { assert((iOpt >= 0) && (jOpt >= 0)); }
 
-    /* Choose the next center {x} and set the nominal step {d}: */
-    if ((dir*Fx > dir*Fy) || (dir*FOpt > dir*Fy))
-      { /* Quadratic step failed: */
-        if (debug) { Pr(Er, "    quadratic step failed - not optimum\n"); }
-        if (dir*Fx >= dir*FOpt)
-          { /* The minimum is still {x}: */
-            if (debug) { Pr(Er, "    the optimum is still the simplex center\n"); }
-            rn_copy(n, x, y);
-            (*FyP) = Fx;
-            return 2;
-          }
-        else
-          { /* The minimum is {V(iOpt,jOpt)}: */
-            if (debug) { Pr(Er, "    the optimum is V(%d,%d)\n", iOpt, jOpt); }
+    /* Choose the best guess: */
+    uint32_t stepKind; 
+    if ((dir*Fx > dir*Fy) && (dir*Fx > dir*FOpt))
+      { if (debug) { Pr(Er, "      step failed - the optimum is still the input guess {x}\n"); }
+        stepKind = 2;
+        (*dStepP) = 0;
+      }
+    else 
+      { if (dir*FOpt > dir*Fy)
+          { if (debug) { Pr(Er, "      the optimum is the sampling point V(%d,%d)\n", iOpt, jOpt); }
             double *vi = &(v[iOpt*(int32_t)n]);
             double *vj = &(v[jOpt*(int32_t)n]);
-            for (uint32_t k = 0;  k < n; k++) { y[k] = (vi[k] + vj[k])/2; }
-            (*FyP) = FOpt;
-            return 1;
+            double vOpt[n];
+            for (uint32_t k = 0; k < n; k++) { vOpt[k] = (vi[k] + vj[k])/2; }
+            (*dStepP) = rn_dist(n, x, vOpt);
+            rn_copy(n, vOpt, x);
+            (*FxP) = FOpt;
+            stepKind = 1;
+          }
+        else
+          { if (debug) { Pr(Er, "      the optimum is the (clipped) quadratic stationary point {y}\n"); }
+            (*dStepP) = rn_dist(n, x, y);
+            rn_copy(n, y, x);
+            (*FxP) = Fy;
+            stepKind = 0;
           }
       }
-    else
-      { /* Quadratic step seems to have succeeded: */ 
-        if (debug) { Pr(Er, "    quadratic step yielded a new optimum\n"); }
-        return 0;
-      }
+    return stepKind;
   }
 
 void sve_print_probes(FILE *wr, uint32_t nv, uint32_t n, double v[], uint32_t nf, double Fv[])
@@ -477,7 +364,7 @@ void sve_print_probes(FILE *wr, uint32_t nv, uint32_t n, double v[], uint32_t nf
     for (uint32_t i = 0;  i < nv; i++)
       { for (uint32_t j = 0;  j <= i; j++)
           { uint32_t ij = i*(i+1)/2 + j;
-            fprintf(wr, "    %24.16e", Fv[ij]);
+            fprintf(wr, "        %24.16e", Fv[ij]);
             fprintf(wr, "  ");
             double *vi = &(v[i*n]);
             double *vj = &(v[j*n]);

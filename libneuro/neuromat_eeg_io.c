@@ -1,5 +1,5 @@
 /* See {neuromat_eeg_io.h}. */
-/* Last edited on 2023-12-05 23:33:02 by stolfi */
+/* Last edited on 2025-03-13 06:35:04 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -47,7 +47,7 @@ int32_t neuromat_eeg_frame_read(FILE *rd, int32_t nc, double frm[], int32_t *nlP
               { /* Parse the data values, store in {frm}: */
                 ungetc(r, rd);
                 for (uint32_t ic = 0;  ic < nc; ic++) { frm[ic] = fget_double(rd); }
-                (void)fget_skip_and_test_char(rd, '\015');
+                (void)fget_skip_spaces_and_test_char(rd, '\015');
                 fget_comment_or_eol(rd, '#', NULL);
               }
             break;

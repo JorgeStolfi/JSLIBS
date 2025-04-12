@@ -1,4 +1,4 @@
-# Last edited on 2025-02-26 03:23:35 by stolfi
+# Last edited on 2025-04-08 09:24:40 by stolfi
 
 PROG := make_test_maps
 
@@ -17,11 +17,10 @@ OTHER_LIBS := \
   /usr/lib/x86_64-linux-gnu/libpng.so \
   /usr/lib/x86_64-linux-gnu/libz.so
 
-include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
+.include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
+
+EXPORT := Y
 
 all: run_tests.sh ${PROG}
-	run_tests.sh N
-        
-export: run_tests.sh ${PROG}
-	run_tests.sh Y
+	run_tests.sh ${EXPORT}
 	

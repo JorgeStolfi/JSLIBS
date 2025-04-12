@@ -1,5 +1,5 @@
 #! /bin/bash
-# Last edited on 2012-01-25 04:50:18 by stolfilocal
+# Last edited on 2025-03-19 15:15:58 by stolfi
 
 fname="$1"; shift
 
@@ -14,6 +14,6 @@ plot \
   ""         using 2:8  with linespoints pt 7 lt 1 lc rgb '#0033ff', \
   ""         using 2:9  with linespoints pt 7 lt 1 lc rgb '#7700ff', \
   ""         using 2:10 with linespoints pt 7 lt 1 lc rgb '#aa0044'
-pause 200
+pause mouse
 quit
 EOF

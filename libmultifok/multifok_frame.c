@@ -1,5 +1,5 @@
 /* See {multifok_frame.h}. */
-/* Last edited on 2025-02-08 11:10:59 by stolfi */
+/* Last edited on 2025-04-11 14:50:19 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +15,10 @@
 #include <float_image_map_channels.h>
 
 #include <multifok_image.h>
+#include <multifok_image_read.h>
+#include <multifok_image_write.h>
+#include <multifok_weight.h>
+
 #include <multifok_frame.h>
   
 #define DASHES "----------------------------------------------------------------------"
@@ -68,7 +72,7 @@ multifok_frame_t *multifok_frame_read
     double hMax
   )
   {
-    float_image_t *sVal_in = multifok_image_scene_view_read(frameFolder); 
+    float_image_t *sVal_in = multifok_image_read_scene_view(frameFolder); 
     int32_t NC, NX, NY;
     float_image_get_size(sVal_in, &(NC), &(NX), &(NY));
     float_image_t *sVal = NULL;
@@ -81,10 +85,10 @@ multifok_frame_t *multifok_frame_read
       }
     else
       { sVal = sVal_in; }
-    float_image_t *hAvg = multifok_image_height_average_read(frameFolder, hMin, hMax); 
-    float_image_t *hDev = multifok_image_height_deviation_read(frameFolder, hMin, hMax); 
-    float_image_t *sNrm = multifok_image_normal_average_read(frameFolder); 
-    float_image_t *shrp = multifok_image_sharpness_read(frameFolder); 
+    float_image_t *hAvg = multifok_image_read_height_average(frameFolder, hMin, hMax); 
+    float_image_t *hDev = multifok_image_read_height_deviation(frameFolder, (hMax-hMin)/2); 
+    float_image_t *sNrm = multifok_image_read_normal_average(frameFolder); 
+    float_image_t *shrp = multifok_image_read_sharpness(frameFolder); 
     
     multifok_frame_t *frame = multifok_frame_from_images
       ( sVal, shrp, hAvg, hDev, sNrm, zFoc, zDep );
@@ -100,11 +104,31 @@ void multifok_frame_write
   )
   {
     mkdir(frameFolder, 0755); /* "-rwxr-xr-x" */
-    multifok_image_scene_view_write(frame->sVal, frameFolder);
-    multifok_image_height_average_write(frame->hAvg, frameFolder, hMin, hMax);
-    multifok_image_height_deviation_write(frame->hDev, frameFolder, hMin, hMax);
-    multifok_image_normal_average_write(frame->sNrm, frameFolder);
-    multifok_image_sharpness_write(frame->shrp, frameFolder);
+    multifok_image_write_scene_view(frame->sVal, frameFolder);
+    multifok_image_write_height_average(frame->hAvg, frameFolder, hMin, hMax);
+    multifok_image_write_height_deviation(frame->hDev, frameFolder, hMax-hMin);
+    multifok_image_write_normal_average(frame->sNrm, frameFolder);
+    multifok_image_write_sharpness(frame->shrp, frameFolder);
+    if (frame->zDep == +INF)
+      { /* Sharp frame. Write the FNI versions of the height and normal maps: */
+      
+        /* Compute a weight map: */
+        double dhMax = 0.05*(hMax-hMin); /* Max height deviation in a pixel. */
+        double dnMax = 0.1; /* Max normal difference between adh pixels. */
+        float_image_t *sWht = multifok_weight_from_height_and_normal(frame->hDev, dhMax, frame->sNrm, dnMax);
+
+        /* Add weight to height map and write: */
+        float_image_t *hAvgWht = multifok_image_set_weight_channel(frame->hAvg, sWht, 1, TRUE);
+        multifok_image_write_fni_height_average(hAvgWht, frameFolder);
+
+        /* Add weight to normal map and write: */
+        float_image_t *sNrmWht = multifok_image_set_weight_channel(frame->sNrm, sWht, 3, TRUE);
+        multifok_image_write_fni_normal_average(sNrmWht, frameFolder);
+
+        float_image_free(sWht);
+        float_image_free(hAvgWht);
+        float_image_free(sNrmWht);
+      }
   }
   
 #define multifok_frame_C_COPYRIGHT \

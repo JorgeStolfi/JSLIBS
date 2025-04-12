@@ -1,5 +1,5 @@
 /* test_sve_catenary --- test of {sve_minn.h} for hanging-chain energy minimization. */
-/* Last edited on 2025-02-16 20:40:18 by stolfi */
+/* Last edited on 2025-04-01 08:59:29 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,6 +21,7 @@
 #include <vec.h>
 
 #include <sve_minn.h>
+#include <sve_minn_iterate.h>
 #include <minn_plot.h>
 
 /* GENERAL PARAMETERS */
@@ -52,24 +53,24 @@ void write_solution
     char *tag, 
     sve_goal_t *F, 
     uint32_t nc,
-    double c[],
+    const double c[],
     double Fc,
     uint32_t nk,
-    double x[],
-    double y[],
+    const double x[],
+    const double y[],
     double wd
   );
   /* Writes the node positions to stderr and, if {prefix} is not NULL
     also to file "{prefix}-{tag}.dat". Also prints the function value {Fx}
     to {stderr}. */
   
-void write_node_positions(char *prefix, char*tag, uint32_t nk, double x[], double y[]);
+void write_node_positions(char *prefix, char*tag, uint32_t nk, const double x[], const double y[]);
   /* Writes the chain node positions to a file named "{fname}". Each
     line contains the node index and two values {(x[i],y[i])} for {i =
     0..nk}.  Note that {x} and {y} must have {nk+1} elements each.
     If {fname} is NULL, writes to {stderr} instead. */
 
-void compute_node_positions(uint32_t nk, double c[], double x[], double y[]);
+void compute_node_positions(uint32_t nk, const double c[], double x[], double y[]);
   /* Computes the node positions implied by the coefficients
     {c[0..nk-2]}. Coefficient {c[i]} encodes the angle between links
     {i} and {i+1} of the chain, in the range {{-1 _ +1]}; where {-1}
@@ -81,7 +82,7 @@ void compute_node_positions(uint32_t nk, double c[], double x[], double y[]);
     left. In particular, the point {(x[0],y[0])} is always {(0,0)} and
     point {(x[nk-1],y[nk-1])} is {(a,0)} for some {a}. */
 
-double chain_energy(uint32_t nk, double x[], double y[], double wd);
+double chain_energy(uint32_t nk, const double x[], const double y[], double wd);
   /* The potential energy of the chain, plus the elastic energy of a spring
     that tries to keep the right end-point of the chain at abscissa {x[nk] = 1}. */
 
@@ -90,7 +91,7 @@ void plot_energy
     char *tag,
     sve_goal_t *F,
     uint32_t nc,
-    double c[]
+    const double c[]
   );
   /* Writes a FNI file "{prefix}-{tag}-plt.fni"
     with a plot of the energy on an arbitrary 2D
@@ -118,7 +119,7 @@ void find_chain_shape(uint32_t nk, double wd)
     /* Working storage for the goal function: */
     double x[nk+1], y[nk+1];  /* Node positions. */
     
-    auto double sve_goal(uint32_t n, double c[]); 
+    auto double sve_goal(uint32_t n, const double c[]); 
       /* The goal function for optimization. */
       
     double cprev[nc]; /* Guess in previous call of {sve_OK} function. */
@@ -126,7 +127,7 @@ void find_chain_shape(uint32_t nk, double wd)
     bool_t sve_debug = FALSE;
     bool_t sve_debug_probes = FALSE;
     
-    auto bool_t sve_OK(uint32_t iter, uint32_t n, double c[], double Fc, double dist, double step, double radius); 
+    auto bool_t sve_OK(uint32_t iter, uint32_t n, const double c[], double Fc, double dist, double step, double radius); 
       /* Acceptance criterion function. */
 
     double c[nc];     /* Initial guess and final solution. */
@@ -141,7 +142,7 @@ void find_chain_shape(uint32_t nk, double wd)
     write_solution(prefix, "ini", sve_goal, nc, c, Fc, nk, x, y, wd);
     
     /* Optimize iteratively: */
-    double *ctr = NULL;
+    double *dCtr = NULL;
     double dMax = (175.0/180.0)*M_PI;
     bool_t dBox = FALSE;
     double rMin = 0.000001;
@@ -154,7 +155,7 @@ void find_chain_shape(uint32_t nk, double wd)
     sve_minn_iterate
       ( nc, &sve_goal, &sve_OK, NULL,
         c, &Fc, dir, 
-        ctr, dMax, dBox, rIni, rMin, rMax, 
+        dCtr, dMax, dBox, rIni, rMin, rMax, 
         minStep, maxIters, sve_debug, sve_debug_probes
       );
     
@@ -164,19 +165,19 @@ void find_chain_shape(uint32_t nk, double wd)
     write_solution(prefix, "fin", sve_goal, nc, c, Fc, nk, x, y, wd);
     return;
       
-    double sve_goal(uint32_t n, double c[])
+    double sve_goal(uint32_t n, const double c[])
       { assert(n == nc);
         /* Compute the potential energy of the chain: */
-        compute_node_positions(nk, c, x, y);
+        compute_node_positions(nk, (double*)c, x, y);
         double Fc = chain_energy(nk, x, y, wd);
         return Fc;
       }
       
-    bool_t sve_OK(uint32_t iter, uint32_t n, double c[], double Fc, double dist, double step, double radius)
+    bool_t sve_OK(uint32_t iter, uint32_t n, const double c[], double Fc, double dist, double step, double radius)
       { assert(n == nc);
         fprintf(stderr, "iteration %d\n", nok);
         if (nok > 0)
-          { double d = rn_dist(n, cprev, c);
+          { double d = rn_dist(n, cprev, (double*)c);
             fprintf(stderr, "change = %16.10f\n", d);
           }
         if (sve_debug) 
@@ -184,7 +185,7 @@ void find_chain_shape(uint32_t nk, double wd)
             write_solution(NULL, "tmp", sve_goal, nc, c, Fc, nk, x, y, wd);
           }
         /* Save guess in {xprev} for next call: */
-        rn_copy(n, c, cprev); 
+        rn_copy(n, (double*)c, cprev); 
         nok++;
         return FALSE;
       }
@@ -194,13 +195,13 @@ void find_chain_shape(uint32_t nk, double wd)
 void write_solution
   ( char *prefix, 
     char *tag, 
-    sve_goal_t *sve_goal, 
+    sve_goal_t *F, 
     uint32_t nc,
-    double c[],
+    const double c[],
     double Fc,
     uint32_t nk,
-    double x[],
-    double y[],
+    const double x[],
+    const double y[],
     double wd
   )
   { fprintf(stderr, "  positions =\n");
@@ -211,17 +212,17 @@ void write_solution
     fprintf(stderr, "  potential = %+24.16e\n", E);
     fprintf(stderr, "\n");
     
-    double FcN = sve_goal(nc, c);
+    double FcN = F(nc, c);
     fprintf(stderr, "goal function = %+24.16e %+24.16e\n", Fc, FcN);
     demand(Fc == FcN, "inconsistent function value on return");
 
     if (prefix != NULL) 
       { write_node_positions(prefix, tag, nk, x, y);
-        plot_energy(prefix, tag, sve_goal, nc, c);
+        plot_energy(prefix, tag, F, nc, c);
       }
   }
 
-void write_node_positions(char *prefix, char *tag, uint32_t nk, double x[], double y[])
+void write_node_positions(char *prefix, char *tag, uint32_t nk, const double x[], const double y[])
   { FILE *wr;
     if (prefix == NULL)
       { wr = stderr; }
@@ -238,9 +239,9 @@ void write_node_positions(char *prefix, char *tag, uint32_t nk, double x[], doub
 void plot_energy
   ( char *prefix,
     char *tag,
-    sve_goal_t *sve_goal,
+    sve_goal_t *F,
     uint32_t nc,
-    double c[]
+    const double c[]
   )
   { /* Choose two orthogonal deformation modes {ua,ub} with mags {ra,rb}: */
     double va[nc], ua[nc];
@@ -253,7 +254,7 @@ void plot_energy
     double rb = rn_dir(nc, vb, ub);
     /* Plot the energy as image: */
     double step = fmax(ra, rb)/30;
-    float_image_t *img = minn_plot_2D_float_image(nc, c, ua, ra, ub, rb, TRUE, step, sve_goal);
+    float_image_t *img = minn_plot_2D_float_image(nc, (double*)c, ua, ra, ub, rb, TRUE, step, F);
     char *fname = jsprintf("%s-%s-plt.fni", prefix, tag);
     FILE *wr = open_write(fname, TRUE);
     float_image_write(wr, img);
@@ -261,7 +262,7 @@ void plot_energy
     free(fname);
   }
 
-void compute_node_positions(uint32_t nk, double c[], double x[], double y[])
+void compute_node_positions(uint32_t nk, const double c[], double x[], double y[])
   { uint32_t nc = nk - 1;
     /* Initial node is always {(0,0)}: */
     x[0] = y[0] = 0;
@@ -287,7 +288,7 @@ void compute_node_positions(uint32_t nk, double c[], double x[], double y[])
       }
   }
 
-double chain_energy(uint32_t nk, double x[], double y[], double wd)
+double chain_energy(uint32_t nk, const double x[], const double y[], double wd)
   { /* Compute the gravitational energy {G}: */
     double G = 0;
     for (uint32_t i = 0;  i < nk; i++) 

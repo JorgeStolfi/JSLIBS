@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {multifok_test_image_make.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-03-07 14:32:26 by stolfi */ 
+/* Last edited on 2025-04-11 09:06:32 by stolfi */ 
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
 #define test_mfok_scene_make_frame_COPYRIGHT \
@@ -43,6 +43,8 @@
 #include <multifok_stack.h>
 #include <multifok_frame.h>
 #include <multifok_image.h>
+#include <multifok_image_read.h>
+#include <multifok_image_write.h>
 #include <multifok_raytrace.h>
 #include <multifok_scene_tree.h>
 #include <multifok_scene_raytrace.h>
@@ -97,6 +99,11 @@ typedef struct mfmi_options_t
   "  FRAME IMAGE FILES\n" \
   "\n" \
   "    " multifok_FRAME_FILES_INFO "\n" \
+  "\n" \
+  "    The height values in the {hAvg} map are converted to sample values" \
+  " in the \"hAvg.png\" file by affinely scaling the scene's {Z} range {[hMin _ hMax]}" \
+  " to {[0 _ 1]}.  The height deviation values in the {hDev} map are converted to sample values" \
+  " in \"hDev.png\" file by affinely scaling the range {[0_(hMax-hMin)/2]} to {[0_1]}.\n" \
   "\n" \
   "  PIXEL V FOCUS PLOT FILES\n" \
   "\n" \
@@ -425,7 +432,7 @@ int32_t main (int32_t argc, char **argv)
     multifok_frame_t *fr_sharp = stack->frame[NI-1];
     assert(fr_sharp->zDep == +INF);
     float_image_t *bgrd = fr_sharp->sVal;
-    multifok_image_selected_pixels_write(NQ, iDeb, bgrd, o->stackFolder);
+    multifok_image_write_selected_pixels(NQ, iDeb, bgrd, o->stackFolder);
     
     mfmi_write_pixel_profiles(stack, NQ, iDeb, scene, o->stackFolder);
     
@@ -776,8 +783,10 @@ multifok_stack_t *mfmi_make_and_write_stack_from_pattern_function
     i2_t iDeb[] 
   ) 
   {
-    int32_t debug_level = -1;
+    int32_t debug_level = 0;
     multifok_scene_tree_t *tree = multifok_scene_tree_build(scene->NO, scene->objs, debug_level);
+    multifok_scene_tree_print(stderr, tree, 0);
+    
     /* Check that the objects are still OK: */
     multifok_scene_check_object_IDs(scene->NO, scene->objs);
 

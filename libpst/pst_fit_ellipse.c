@@ -1,5 +1,5 @@
 /* See pst_fit_ellipse.h */
-/* Last edited on 2025-02-25 18:30:55 by stolfi */ 
+/* Last edited on 2025-04-03 17:32:06 by stolfi */ 
 
 #include <math.h>
 #include <values.h>
@@ -20,6 +20,7 @@
 #include <ellipse_crs.h> 
 #include <affirm.h> 
 #include <sve_minn.h> 
+#include <sve_minn_iterate.h>
 
 #include <pst_fit_ellipse.h>
 #include <pst_geom.h>
@@ -89,7 +90,7 @@ double pst_fit_ellipse
        Here {radNrm} is such that {ET.rad} is {E_ini.rad + radAdj}
        when {x[k]} is {+1}. */
     
-    auto void scatter_params(double x[], ellipse_crs_t *ETP);
+    auto void scatter_params(const double x[], ellipse_crs_t *ETP);
       /* The inverse of {gather_params}. Namely, unpacks the parameter
         vector {x[0..NP-1]} and stores its decoded elements into the
         adjustable fields of {ETP}. The fixed fields of {*ETP} are
@@ -102,7 +103,7 @@ double pst_fit_ellipse
     /* Count iterations for debugging and budget control: */
     uint32_t nIts = 0;
     
-    auto double sve_goal(uint32_t n, double x[]);
+    auto double sve_goal(uint32_t n, const double x[]);
       /* Evaluates the goal function for {sve_minn_iterate} for the 
         parameters {x[0..n-1]}.   Increments {nEvals}. 
         
@@ -111,7 +112,7 @@ double pst_fit_ellipse
         {E_ini} with the variable parameters taken from
         {x[0..NP-1]} as per {scatter_params}. */
     
-    auto bool_t sve_check(uint32_t iter, uint32_t n, double x[], double Fx, double dist, double step, double radius);
+    auto bool_t sve_check(uint32_t iter, uint32_t n, const double x[], double Fx, double dist, double step, double radius);
       /* To be called by the minimizer before each major optimization.
         Currently stops when the number of iterations is exceeded. */
     
@@ -127,7 +128,7 @@ double pst_fit_ellipse
         double dMax = 1.000; /* Since each param ranges in {[-1_+1]}. */
         
        /* Call the nonlinear optimizer: */
-        double ctr[NP]; rn_copy(NP, x, ctr);
+        double dCtr[NP]; rn_copy(NP, x, dCtr);
         sve_minn_iterate
           ( /*n:*/        NP,
             /*F:*/        sve_goal,
@@ -136,7 +137,7 @@ double pst_fit_ellipse
             /*x:*/        x,
             /*FxP:*/      &Q,
             /*dir:*/      -1,
-            /*ctr:*/      ctr,
+            /*dCtr:*/      dCtr,
             /*dMax:*/     dMax,
             /*dBox:*/     TRUE,
             /*rIni:*/     0.50*dMax,
@@ -187,7 +188,7 @@ double pst_fit_ellipse
         assert(k == NP);          
       }
     
-    void scatter_params(double x[], ellipse_crs_t *ET)
+    void scatter_params(const double x[], ellipse_crs_t *ET)
       { /* Get the variable fields of {ET} from {x[0..NP-1]}: */
         uint32_t k = 0;
         /* Get the center coords from {x} or the saved guess: */
@@ -215,7 +216,7 @@ double pst_fit_ellipse
         assert(k == NP);     
       }
         
-    double sve_goal(uint32_t n, double x[])
+    double sve_goal(uint32_t n, const double x[])
       { ellipse_crs_t ET;
         scatter_params(x, &ET);
         double Fx = pst_fit_ellipse_eval(IGR, &ET);
@@ -228,7 +229,7 @@ double pst_fit_ellipse
         return Fx;
       }
 
-    bool_t sve_check(uint32_t iter, uint32_t n, double x[], double Fx, double dist, double step, double radius)
+    bool_t sve_check(uint32_t iter, uint32_t n, const double x[], double Fx, double dist, double step, double radius)
       { 
         nIts++;
         if (sve_debug) 

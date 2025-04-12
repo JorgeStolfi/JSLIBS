@@ -1,5 +1,5 @@
 /* See r2.h */
-/* Last edited on 2025-02-05 15:45:32 by stolfi */
+/* Last edited on 2025-03-27 04:46:04 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -11,6 +11,7 @@
 #include <interval.h>
 #include <affirm.h>
 #include <sign.h>
+#include <sign_get.h>
 #include <rn.h>
 #include <vec.h>
 
@@ -282,6 +283,17 @@ sign_t r2_orient(r2_t *a, r2_t *b, r2_t *c)
       { return 0; }
   }
 
+sign_t r2_cyclic_order(r2_t *a, r2_t *b, r2_t *c)
+  { double ax = a->c[0], ay = a->c[1];
+    double bx = b->c[0], by = b->c[1];
+    double cx = c->c[0], cy = c->c[1];
+    sign_t sab = sign_double(ax*by - ay*bx);
+    sign_t sbc = sign_double(bx*cy - by*cx);
+    sign_t sca = sign_double(cx*ay - cy*ax);
+    int32_t sum = sab + sbc + sca;
+    return (sum == 0 ? 0 : (sum > 0 ? +1 : -1));
+  }
+
 r2_t r2_circumcenter(r2_t *a, r2_t *b, r2_t *c)
   { double xa = a->c[0], ya = a->c[1];
     double xb = b->c[0], yb = b->c[1];
@@ -313,12 +325,6 @@ void r2_throw_cube(r2_t *r)
     r->c[1] = 2.0 * drandom() - 1.0;
   }
 
-void r2_throw_dir(r2_t *r)
-  { double theta = 2*M_PI*drandom();
-    r->c[0] = cos(theta);
-    r->c[1] = sin(theta);
-  }
-
 void r2_throw_ball(r2_t *r)
   { double x, y;
     do
@@ -326,6 +332,24 @@ void r2_throw_ball(r2_t *r)
         y = 2.0 * drandom() - 1.0; r->c[1] = y;
       }
     while (x*x + y*y >= 1.0);
+  }
+
+void r2_throw_dir(r2_t *r)
+  { double theta = 2*M_PI*drandom();
+    r->c[0] = cos(theta);
+    r->c[1] = sin(theta);
+  }
+
+void r2_throw_ortho_dirs(r2_t *r, r2_t *s)
+  { r2_throw_dir(r);
+    double dot;
+    do
+      { r2_throw_dir(s);
+        dot = r2_dot(s, r);
+      }
+    while (fabs(dot) < 0.05);
+    r2_mix(-dot, r, 1.0, s, s);
+    (void)r2_dir(s, s);
   }
 
 void r2_throw_normal(r2_t *r)

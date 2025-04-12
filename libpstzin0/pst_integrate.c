@@ -1,5 +1,5 @@
 /* See pst_integrate.h */
-/* Last edited on 2025-03-05 15:02:24 by stolfi */
+/* Last edited on 2025-04-03 17:35:40 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -18,7 +18,6 @@
 #include <pst_imgsys_solve.h>
 #include <pst_interpolate.h>
 #include <pst_slope_map.h>
-#include <pst_weight_map.h>
 #include <pst_height_map.h>
 
 #include <pst_integrate.h>
@@ -35,6 +34,7 @@ pst_imgsys_t* pst_integrate_build_system
   ( float_image_t *G,
     float_image_t *H,
     double hintsWeight,
+    bool_t extrapolate,
     int32_t indent,
     bool_t verbose
   ) 
@@ -58,7 +58,7 @@ pst_imgsys_t* pst_integrate_build_system
     
     /* Conceptually, we define four axial quadratic mismatch terms
       {qpo[x,y](Z), qmo[x,y](Z), qop[x,y](Z), qom[x,y](Z)} for each
-      corner of the pixel grid, that depend on the height map {Z}.
+      vertex of the pixel grid, that depend on the height map {Z}.
       Each term is the square of the difference between two 
       estimates of the height increment along one of the edges incident to {(x,y)}:
       one obtained by interpolation of the slope map {G}, and the 
@@ -233,13 +233,15 @@ pst_imgsys_t* pst_integrate_build_system
        
     bool_t append_edge_term(pst_imgsys_equation_t *eqk, int32_t x, int32_t y, int32_t ux, int32_t uy)
       { 
-        bool_t debug = FALSE;
+        bool_t debug = TRUE;
         
         /* Check if we got enough equations: */
         if (eqk->nt >= MAX_COEFFS) { return FALSE; }
       
         /* Term 0 must be there, even if with zero coef: */
+        int32_t uid = x + y*S->NX;
         assert(eqk->nt >= 1);
+        assert(eqk->uid[0] == uid);
         
         /* Check if both height values {Z[x,y]} and {Z[x',y']} are in the height map: */
         if ((x < 0) || (x >= S->NX)) { return FALSE; }
@@ -255,9 +257,22 @@ pst_imgsys_t* pst_integrate_build_system
       
         /* Get the estimated height difference {vD} and its weight {wD}: */
         double vD, wD;
-        pst_slope_map_get_edge_data(G, x, y, ux, uy, &vD, &wD);
-        if (debug && ((x == 0) || (x == S->NX-1) || (y == 0) || (y == S->NY-1)))
-          { fprintf(stderr, "%*s  @ {append_edge_term} [%d,%d] - [%d,%d] %+10.6f %8.4f\n", indent, "", x, y, x+ux, y+uy, vD, wD); }
+        pst_slope_map_get_edge_data(G, x, y, ux, uy, extrapolate, &vD, &wD);
+        /* bool_t debugPix = ((x <= 1) || (x >= S->NX-2) || (y <= 1) || (y >= S->NY-2)); */
+        bool_t debugPix = ((x == 1) && (y == 1));
+        if (debug && debugPix)
+          { char utype = '?';
+            if ((ux != 0) && (uy == 0)) { utype = '-'; }
+            if ((ux == 0) && (uy != 0)) { utype = '|'; }
+            if (ux*uy > 0) { utype = '/'; }
+            if (ux*uy < 0) { utype = '|'; }
+            char ctype = '*';
+            if ((x == 0) || (x == S->NX-1)) { ctype = '|'; }
+            if ((y == 0) || (y == S->NY-1)) { ctype = '-'; }
+            if (((x == 0) || (x == S->NX-1)) && ((y == 0) || (y == S->NY-1))) { ctype = '<'; }
+            fprintf(stderr, "%*s  @ {append_edge_term} %c %c", indent, "", utype, ctype); 
+            fprintf(stderr, " Z[%d=%d,%d] - Z[%d=%d,%d] = %+10.6f (w = %8.4f)\n", uid,x,y, uid1,x1,y1, -vD, wD);
+          }
         assert(isfinite(wD) && (wD >= 0));
         if (fabs(wD) >= FLUFF)
           { /* Add term to equation */

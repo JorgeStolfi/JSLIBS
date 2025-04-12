@@ -2,7 +2,7 @@
 #define minn_enum_H
 
 /* Tools for optimizing {d}-dimensional function by enumeration. */
-/* Last edited on 2024-12-05 13:14:21 by stolfi */ 
+/* Last edited on 2025-04-01 09:10:13 by stolfi */ 
 
 #include <stdint.h>
 
@@ -10,9 +10,9 @@
 #include <minn.h>
 
 void minn_enum
-  ( uint32_t n,        /* Dimension of search space. */
+  ( uint32_t n,       /* Dimension of search space. */
     minn_goal_t *F,   /* Function to be minimized. */
-    bool_t box,       /* True to search in the cube, false in the ball. */
+    bool_t dBox,      /* True to search in the cube, false in the ball. */
     double tol[],     /* Desired precision along each axis. */
     double v[],       /* (OUT) Minimum vector found. */
     double *Fval_P    /* (OUT) Goal function value at the minimum. */
@@ -22,8 +22,8 @@ void minn_enum
     Uses exhaustive enumeration of a regular grid vectors {u} in
     the domain {\RD} with spacing {tol[i]} along each axis {i}.
     
-    If {box} is true, the domain {\RD} is the axis-aligned {n}-dimensional cube
-    {[-1 _ +1]^n}. If {box} is false, the domain is the {n}-dimensional ball
+    If {dBox} is true, the domain {\RD} is the axis-aligned {n}-dimensional cube
+    {[-1 _ +1]^n}. If {dBox} is false, the domain is the {n}-dimensional ball
     of unit radius.
     
     On output, {v[0..n-1]} will be the best vector found. The value

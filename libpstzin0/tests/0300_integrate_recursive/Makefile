@@ -1,4 +1,4 @@
-# Last edited on 2025-03-07 07:57:41 by stolfi
+# Last edited on 2025-03-16 12:09:52 by stolfi
 
 PROG = test_integrate_recursive
 
@@ -25,15 +25,20 @@ include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 all: check
 
 # check: do-tests
+
 check: do-gustavo
 
+# FUNC := 01-ramp10-N 
+# FUNC := 02-ramp01-N 
 # FUNC := 03-ramp11-N 
-FUNC := 04-parabo-N
+# FUNC := 04-parabo-N
 # FUNC := 20-cpiece-N
 # FUNC := 24-cplatv-N    
-# FUNC := 18-cbramp-N
+FUNC := 18-cbramp-N
+# FUNC := 21-cplat3-N
 
 # SIZE := 0001x0001
+# SIZE := 0002x0002
 # SIZE := 0016x0012
 SIZE := 0032x0024
 # SIZE := 0256x0192
@@ -42,7 +47,9 @@ HINTS := 0
 REFERENCE := 1
 INITIAL_OPTION := zero
 INITIAL_NOISE := 0.25
-MAX_LEVEL := 999
+
+# MAX_LEVEL := 999
+MAX_LEVEL := 0
 
 do-tests: ${PROG}
 	mkdir -p out

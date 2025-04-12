@@ -1,5 +1,5 @@
 /* See {test_r2_opt_plot.h}. */
-/* Last edited on 2024-12-05 10:35:01 by stolfi */
+/* Last edited on 2025-03-19 14:42:17 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -13,12 +13,13 @@
 #include <affirm.h>
 #include <jsfile.h>
 #include <jsrandom.h>
+#include <jsprintf.h>
 
 #include <test_r2_opt_basic.h>
 
 #include <test_r2_opt_plot.h>
 
-void tr2o_choose_plot_directions(int32_t NI, r2_t rad[], r2_t u[], r2_t v[]);
+void tr2o_choose_plot_directions(uint32_t NI, r2_t rad[], r2_t u[], r2_t v[]);
   /* Chooses displacement vectors {u[0..NI-1],v[0..NI-1]} that define
     the grid of sampling points for {tr2o_plot_goal}.  Namely, sample point
     {q[ku,kv][i]} will be {ctr[i] + ku/NS*u[i] + kv/NS*v[i]}. */
@@ -29,7 +30,7 @@ double tr2o_throw_nonzero_U(void);
 
 void tr2o_plot_goal
   ( r2_opt_goal_func_t *f2, 
-    int32_t NI, 
+    uint32_t NI, 
     i2_t iscale, 
     r2_t ctr[],
     char *ctrtag,
@@ -44,13 +45,13 @@ void tr2o_plot_goal
     char *fname = jsprintf("out/f2-%02d-%02d-%s.dat", iscale.c[0], iscale.c[1], ctrtag);
     FILE *fpl = open_write(fname, TRUE);
     
-    int32_t NS = 20; /* Number of steps in each direction, in each sense. */
+    uint32_t NS = 20; /* Number of steps in each direction, in each sense. */
     r2_t q[NI]; /* Probe points. */
     fprintf(stderr, "\n");
-    for (int32_t ku = -NS; ku <= +NS; ku++)
+    for (int32_t ku = -(int32_t)NS; ku <= +(int32_t)NS; ku++)
       { double du = ((double)ku)/((double)NS);
         fprintf(stderr, ".");
-        for (int32_t kv = -NS; kv <= +NS; kv++)
+        for (int32_t kv = -(int32_t)NS; kv <= +(int32_t)NS; kv++)
           { double dv = ((double)kv)/((double)NS);
             /* Compute the probe points {q[0..NI-1]}. */
             for (uint32_t i = 0;  i < NI; i++)
@@ -58,7 +59,7 @@ void tr2o_plot_goal
                 r2_add(&(ctr[i]), &(q[i]), &(q[i])); 
               }
             /* Evaluate the function and plot: */
-            double f2p = f2(NI, q, iscale);
+            double f2p = f2((uint32_t)NI, q, iscale);
             fprintf(fpl, "%+16.10f %+16.10f  %22.16f\n", du, dv, f2p); 
           }
         /* Blank line between scanlines, for {gnuplot}: */
@@ -70,7 +71,7 @@ void tr2o_plot_goal
     fclose(fpl);
   }
 
-void tr2o_choose_plot_directions(int32_t NI, r2_t rad[], r2_t u[], r2_t v[])
+void tr2o_choose_plot_directions(uint32_t NI, r2_t rad[], r2_t u[], r2_t v[])
   { /* For each {i} in {0..NI-1}, we generate
       two orthogonal vectors {u[i],v[i]},
       that are nonzero along the variable coords of {ctr[i]}.
@@ -78,11 +79,11 @@ void tr2o_choose_plot_directions(int32_t NI, r2_t rad[], r2_t u[], r2_t v[])
       are zero.  If {p[i]} has only one variable coord, then 
       {u[i]} is nonzero along that coord, and {v[i]} is zero.
     */
-    for (uint32_t i = 0;  i < NI; i++) 
+    for (int32_t i = 0; i < NI; i++) 
       { /* Count variable coords {nv} of {p[i]}, find last nonzero var {jf}: */
-        int32_t nv = 0;
+        uint32_t nv = 0;
         int32_t jf = -1;
-        for (uint32_t j = 0;  j < 2; j++)
+        for (int32_t j = 0; j < 2; j++)
           { double rij = rad[i].c[j];
             if (rij > 0.0) { nv++; jf = j; }
           }
@@ -130,14 +131,14 @@ void tr2o_choose_plot_directions(int32_t NI, r2_t rad[], r2_t u[], r2_t v[])
     tr2o_debug_points(0, "plot direction v", NI, "pltv", v, NULL, NULL, rad, NULL, NAN, NAN);
   }
 
-void tr2o_plot_grid_normalize_to_span(int32_t NI, r2_t u[], r2_t rad[])
+void tr2o_plot_grid_normalize_to_span(uint32_t NI, r2_t u[], r2_t rad[])
   {
     double tmax = tr2o_compute_rel_span(NI, u, rad); 
     double sf = 1.0/tmax; /* Scaling factor. */
     for (uint32_t i = 0;  i < NI; i++) { r2_scale(sf, &(u[i]), &(u[i])); }
   }
   
-double tr2o_compute_rel_span(int32_t NI, r2_t u[], r2_t rad[]) 
+double tr2o_compute_rel_span(uint32_t NI, r2_t u[], r2_t rad[]) 
   { double tmax = 0.0;
     for (uint32_t i = 0;  i < NI; i++) 
       { /* Get the direction {dui} of {u[i]}: */
@@ -156,7 +157,7 @@ double tr2o_compute_rel_span(int32_t NI, r2_t u[], r2_t rad[])
 
 void tr2o_write_test_image
   ( tr2o_image_eval_proc_t *eval, 
-    int32_t i,        /* Image index. */
+    uint32_t i,        /* Image index. */
     i2_t iscale,  /* Image shrink scale in each axis. */
     i2_t wsize,   /* Comparison widow size along each axis. */
     r2_t ctr,     /* Center of image (unscaled). */
@@ -174,8 +175,10 @@ void tr2o_write_test_image
     
     char *fname = jsprintf("out/image-%02d-%02d-%03d-%s.pgm", iscale.c[0], iscale.c[1], i, ctrtag);
     /* Image size: */
-    int32_t HX = 2*((int32_t)ceil(rad.c[0])+hwx)+1; int32_t NX = 2*HX + 1;
-    int32_t HY = 2*((int32_t)ceil(rad.c[1])+hwy)+1; int32_t NY = 2*HY + 1;
+    int32_t HX = 2*((int32_t)ceil(rad.c[0])+hwx)+1; 
+    int32_t HY = 2*((int32_t)ceil(rad.c[1])+hwy)+1;
+    int32_t NX = 2*HX + 1;
+    int32_t NY = 2*HY + 1;
     fprintf(stderr, "writing image file %s (%d x %d)\n", fname, NX, NY);
     
     /* We cannot import {libimg} yet so let's write ASCII PGM: */

@@ -2,12 +2,13 @@
 #define i2_H
 
 /* Operations on points and vectors of Z^2 */
-/* Last edited on 2024-12-05 10:27:34 by stolfi */
+/* Last edited on 2025-03-11 20:05:08 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
 
 #include <vec.h>
+#include <sign.h>
 
 /* OVERFLOW
 
@@ -78,6 +79,12 @@ int64_t i2_det (i2_t *a, i2_t *b);
 
 bool_t i2_eq(i2_t *p, i2_t *q);
   /* True iff points {p} and {q} are identical. */
+
+sign_t i2_cyclic_order(i2_t *a, i2_t *b, i2_t *c);
+  /* Returns {+1} if the directions of the vectors {a}, {b}, and {c}, in
+    that order, turn counterclockwise around the origin. Returns {-1} if
+    they turn clockwise. Returns 0 if any two have the same direction,
+    or any one of them is zero. */
 
 void i2_throw_cube (int32_t m, i2_t *r);
   /* Sets {r} to a uniformly random integer point of the 2-cube (square)

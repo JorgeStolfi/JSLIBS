@@ -1,14 +1,16 @@
 /* See i2.h */
-/* Last edited on 2024-11-20 14:10:02 by stolfi */
+/* Last edited on 2025-03-13 12:34:14 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
 
-#include <i2.h>
-
 #include <jsrandom.h>
 #include <affirm.h>
 #include <vec.h>
+#include <sign.h>
+#include <sign_get.h>
+
+#include <i2.h>
 
 #define N 2
 
@@ -106,6 +108,19 @@ bool_t i2_eq(i2_t *p, i2_t *q)
     if (p->c[1] != q->c[1]) return FALSE;
     return TRUE;
   }
+
+
+sign_t i2_cyclic_order(i2_t *a, i2_t *b, i2_t *c)
+  { int64_t ax = a->c[0], ay = a->c[1];
+    int64_t bx = b->c[0], by = b->c[1];
+    int64_t cx = c->c[0], cy = c->c[1];
+    sign_t sab = sign_int64(ax*by - ay*bx);
+    sign_t sbc = sign_int64(bx*cy - by*cx);
+    sign_t sca = sign_int64(cx*ay - cy*ax);
+    int32_t sum = sab + sbc + sca;
+    return (sum == 0 ? 0 : (sum > 0 ? +1 : -1));
+  }
+
 
 void i2_throw_cube (int32_t m, i2_t *r)
   { m = abs(m);

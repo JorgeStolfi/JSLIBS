@@ -1,5 +1,5 @@
 /* See {test_r2_opt_tools.h}. */
-/* Last edited on 2024-12-05 10:35:07 by stolfi */
+/* Last edited on 2025-03-19 14:19:04 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -18,7 +18,7 @@
 double tr2o_tools_eval_mother_image
   ( r2_t *p, 
     r2_t *scale,
-    int32_t mom_NF, 
+    uint32_t mom_NF, 
     r2_t mom_frq[], 
     r2_t mom_phi[], 
     double mom_amp[]
@@ -65,7 +65,7 @@ double tr2o_tools_eval_mother_image
   }
       
 void tr2o_tools_initialize_mother_image
-  ( int32_t mom_NF, 
+  ( uint32_t mom_NF, 
     r2_t mom_frq[], 
     r2_t mom_phi[], 
     double mom_amp[],

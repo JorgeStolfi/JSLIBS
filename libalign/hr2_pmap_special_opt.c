@@ -1,5 +1,5 @@
 /* See {hr2_pmap_special_opt.h}. */
-/* Last edited on 2025-02-16 20:14:17 by stolfi */
+/* Last edited on 2025-04-01 09:20:38 by stolfi */
 
 #include <math.h>
 #include <stdint.h>
@@ -21,6 +21,7 @@
 #include <minn.h>
 #include <minn_plot.h>
 #include <sve_minn.h>
+#include <sve_minn_iterate.h>
 
 #include <hr2_pmap_encode.h>
 #include <hr2_pmap_opt.h>
@@ -122,7 +123,7 @@ void hr2_pmap_special_opt_quadratic
         for (uint32_t k = 0;  k < ny; k++) { z[k] = 0.0; }
 
         sign_t dir = -1; /* Look for minimum. */
-        double *ctr = NULL; /* Domain of {z} is centered at origin. */
+        double *dCtr = NULL; /* Domain of {z} is centered at origin. */
         double dMax = 1.0;
         bool_t dBox = FALSE;
         double rIni = 0.5*dMax;
@@ -140,7 +141,7 @@ void hr2_pmap_special_opt_quadratic
         sve_minn_iterate
           ( ny, &sve_goal, (OK == NULL ? NULL : &sve_ok), &sve_proj,
             z, &f2z, dir, 
-            ctr, dMax, dBox, rIni, rMin, rMax, 
+            dCtr, dMax, dBox, rIni, rMin, rMax, 
             minStep, maxIter, sve_debug, sve_debug_probes
           );
 

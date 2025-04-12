@@ -1,4 +1,4 @@
-# Last edited on 2024-01-08 17:01:41 by stolfi
+# Last edited on 2025-03-19 12:51:47 by stolfi
 
 PROG = test_sve_polygauss
  
@@ -9,6 +9,7 @@ TEST_LIB_DIR := ../..
 JS_LIBS := \
   libimg.a \
   libgeo.a \
+  libgausol.a \
   libjs.a
   
 OTHER_LIBS :=

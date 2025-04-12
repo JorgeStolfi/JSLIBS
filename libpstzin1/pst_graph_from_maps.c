@@ -1,5 +1,5 @@
 /* See {pst_graph_from_maps.h}. */
-/* Last edited on 2025-01-16 11:58:42 by stolfi */
+/* Last edited on 2025-03-15 21:30:48 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #include <stdio.h>
@@ -92,7 +92,7 @@ pst_graph_t *pst_graph_create_from_gradient_and_weight_maps(float_image_t *IG, f
 
             /* Edge from {(x,y)} to {(x-1,y)}: */
             double dxm, wxm;
-            pst_slope_map_interpolate_four_samples(IG, IW, 0, x-1, y-1, x-1, y+0, &dxm, &wxm);
+            pst_map_interpolate_samples(IG, IW, 0, 2, x-1, y-1, x-1, y+0, &dxm, &wxm);
             if (wxm > 0) 
               { int32_t imo = pst_graph_compute_vertex_index(x-1, y, NX_Z, NY_Z);
                 assert((imo >= 0) && (imo < NV_max));
@@ -101,7 +101,7 @@ pst_graph_t *pst_graph_create_from_gradient_and_weight_maps(float_image_t *IG, f
 
             /* Edge from {(x,y)} to {(x,y-1)}: */
             double dym, wym;
-            pst_slope_map_interpolate_four_samples(IG, IW, 1, x-1, y-1, x+0, y-1, &dym, &wym);
+            pst_map_interpolate_samples(IG, IW, 1, 2, x-1, y-1, x+0, y-1, &dym, &wym);
             if (wym > 0) 
               { int32_t iom = pst_graph_compute_vertex_index(x, y-1, NX_Z, NY_Z);
                 assert((iom >= 0) && (iom < NV_max));

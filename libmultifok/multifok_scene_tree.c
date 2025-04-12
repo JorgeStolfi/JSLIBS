@@ -1,5 +1,5 @@
 /* See {multifok_scene_tree.h}. */
-/* Last edited on 2024-12-06 07:09:46 by stolfi */
+/* Last edited on 2025-04-09 22:35:19 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +14,7 @@
 #include <r3.h>
 #include <frgb.h>
 #include <r2.h>
+#include <box.h>
 #include <frgb_ops.h>
 #include <jsrandom.h>
 
@@ -34,7 +35,8 @@ multifok_scene_tree_t *multifok_scene_tree_build
     int32_t debug_level
   )
   {
-    if (debug_level > 0) { fprintf(stderr, "  %*s> %s NO = %d\n", 2*debug_level, "", __FUNCTION__, NO); }
+    uint32_t indent = (debug_level < 0 ? 0 : (uint32_t)(2*debug_level));
+    if (debug_level >= 0) { fprintf(stderr, "  %*s> %s NO = %d\n", indent, "", __FUNCTION__, NO); }
     multifok_scene_tree_t *tr = NULL;
     if (NO != 0)
       { tr = talloc(1, multifok_scene_tree_t);
@@ -90,7 +92,7 @@ multifok_scene_tree_t *multifok_scene_tree_build
         /* Check that the objects are still OK: */
         /* multifok_scene_check_object_IDs(NO, objs, -1); */
       }
-    if (debug_level > 0) { fprintf(stderr, "  %*s< %s\n", 2*debug_level, "", __FUNCTION__); }
+    if (debug_level >= 0) { fprintf(stderr, "  %*s< %s\n", indent, "", __FUNCTION__); }
     return tr;
   }
             
@@ -133,6 +135,27 @@ void multifok_scene_tree_check_object_order(uint32_t NO, multifok_scene_object_t
         assert(ctr >= ctr_prev);
         ctr_prev = ctr;
       }
+  }
+
+void multifok_scene_tree_print
+  ( FILE *wr,
+    multifok_scene_tree_t *tree,
+    uint32_t level
+  )
+  {
+    uint32_t indent = 2*level;
+    fprintf(wr, "%*s------------------------------------------------------------\n", indent, "");
+    if (tree == NULL)
+      { fprintf(wr, "%*sNULL\n", indent, ""); }
+    else
+      { multifok_scene_object_print(wr, indent, tree->obj);
+        fprintf(wr, "%*ssubtree bbox = ", indent, "");
+        box_gen_print(wr, 3, tree->bbox, "%.4f", "", "×", "");
+        fprintf(wr, " split axis = %d\n", tree->axis);
+        for (int32_t ch = 0; ch < 2; ch++)
+          { multifok_scene_tree_print(wr, tree->sub[ch], level+1); }
+      }
+    fprintf(wr, "%*s------------------------------------------------------------\n", indent, "");
   }
 
 #define multifok_scene_tree_C_COPYRIGHT \

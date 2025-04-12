@@ -2,7 +2,7 @@
 #define pst_proc_map_H
 
 /* pst_proc_map.h -- procedures for creating procedurally-defined images. */
-/* Last edited on 2025-02-28 17:53:38 by stolfi */
+/* Last edited on 2025-03-09 12:00:48 by stolfi */
 
 #include <stdint.h>
 
@@ -236,7 +236,7 @@ void pst_proc_map_function_17(r2_t p, double *z, r2_t *dz); /* 17 "cbabel" Tower
 void pst_proc_map_function_18(r2_t p, double *z, r2_t *dz); /* 18 "cbramp" Cubic ramp with cliff on three sides. */
 void pst_proc_map_function_19(r2_t p, double *z, r2_t *dz); /* 19 "holes1" Buried sphere with many holes in slope map. */
 void pst_proc_map_function_20(r2_t p, double *z, r2_t *dz); /* 20 "cpiece" Three nested stages connected by ramps. */
-void pst_proc_map_function_21(r2_t p, double *z, r2_t *dz); /* 21 "cplat3" Three flat round platforms with smooth edges. */
+void pst_proc_map_function_21(r2_t p, double *z, r2_t *dz); /* 21 "cplat3" Three flat round platforms with vertical edges. */
 void pst_proc_map_function_22(r2_t p, double *z, r2_t *dz); /* 22 "plat3a" Triangular wall with smooth edges. */
 void pst_proc_map_function_23(r2_t p, double *z, r2_t *dz); /* 23 "plat5a" Pentagonal platform with smooth edges. */
 void pst_proc_map_function_24(r2_t p, double *z, r2_t *dz); /* 24 "cplatv" Circular platform with sharp edges. */

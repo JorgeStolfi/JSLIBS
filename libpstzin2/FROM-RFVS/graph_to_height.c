@@ -169,9 +169,9 @@ int main(int argc, char** argv){
   bool_t verbose = FALSE;
   
   FILE* arq = open_read(o->graphFile,TRUE);
-  pst_img_graph_t* g = pst_img_graph_read(arq);
+  pst_img_graph_t* gr = pst_img_graph_read(arq);
   fclose(arq);
-  fprintf(stderr,"Generated graph with %ld vertexes and %ld edges\n",g->n, g->m);
+  fprintf(stderr,"Generated graph with %ld vertexes and %ld edges\n",gr->n, gr->m);
   int32_t NX = o->NX;
   int32_t NY = o->NY;
   int32_t  NX_Z = NX+1;
@@ -184,7 +184,7 @@ int main(int argc, char** argv){
   process_stats_t stats_before = get_process_status();
   double time_before = user_cpu_time_usec();
   
-  pst_img_graph_integration_recursive(g,iZ,iW,o->wmag,maxIter,convTol,para,szero,verbose,0,OZ,RZ,o->outPrefix,o->debug);
+  pst_img_graph_integration_recursive(gr,iZ,iW,o->wmag,maxIter,convTol,para,szero,verbose,0,OZ,RZ,o->outPrefix,o->debug);
   
   double time_after = user_cpu_time_usec(); 
   process_stats_t stats_after = get_process_status();

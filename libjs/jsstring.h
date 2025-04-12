@@ -5,7 +5,7 @@
 #include <bool.h>
 
 /* J. Stolfi's miscellaneous string utilities. */
-/* Last edited on 2024-11-15 19:14:38 by stolfi */
+/* Last edited on 2025-03-13 08:54:50 by stolfi */
 
 typedef char* string_t;
   /* A more logical name for strings. */
@@ -21,15 +21,18 @@ string_t prefix(const string_t s, int32_t len);
 
 string_t txtcat (const string_t a, const string_t b);
   /* Returns a string that is the concatenation of {*a} and {*b}. 
-    The result is always a newly allocated string. */
+    The result is always a newly allocated string, even if {a} and/or {b}
+    are empty or {NULL}. */
   
 string_t txtcat3 (const string_t a, const string_t b, const string_t c);
-  /* Returns a string that is the concatenation of {*a,*b,*c}. 
-    The result is always a newly allocated string. */
+  /* Returns a string that is the concatenation of {*a,*b,*c}. The
+    result is always a newly allocated string, even if any or all
+    arguments are empty or {NULL}. */
   
 string_t txtcat4 (const string_t a, const string_t b, const string_t c, const string_t d);
   /* Returns a string that is the concatenation of {*a,*b,*c,*d}. 
-    The result is always a newly allocated string. */
+    The result is always a newly allocated string, even if any or all
+    arguments are empty or {NULL}. */
 
 string_t txtrep(const string_t  x, uint32_t n);
   /* Return the string {x} concatenated with itself {n} times. */

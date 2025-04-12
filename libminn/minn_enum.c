@@ -1,5 +1,5 @@
 /* See {minn_enum.h}. */
-/* Last edited on 2024-12-05 13:22:08 by stolfi */
+/* Last edited on 2025-04-01 09:09:55 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -17,9 +17,9 @@
 #include <minn_enum.h>
 
 void minn_enum
-  ( uint32_t n,        /* Dimension of search space. */
+  ( uint32_t n,       /* Dimension of search space. */
     minn_goal_t *F,   /* Function to be minimized. */
-    bool_t box,       /* True to search in the unit cube, false in the unit ball. */
+    bool_t dBox,      /* True to search in the unit cube, false in the unit ball. */
     double tol[],     /* Desired precision. */
     double v[],       /* (OUT) Minimum vector found. */
     double *Fval_P    /* (OUT) Goal function value at the minimum. */
@@ -54,7 +54,7 @@ void minn_enum
           }
 
         /* Determine whether the point is inside the domain: */
-        bool_t inside = (box ? TRUE : rn_norm_sqr(n, u) <= 1 + fudge);
+        bool_t inside = (dBox ? TRUE : rn_norm_sqr(n, u) <= 1 + fudge);
         if (inside)
           { /* Evaluate the goal function at {v}: */
             double Fval = F(n, u);

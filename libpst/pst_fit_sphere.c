@@ -1,5 +1,5 @@
 /* See pst_fit_sphere.h */
-/* Last edited on 2025-02-25 18:22:10 by stolfi */ 
+/* Last edited on 2025-04-03 17:33:11 by stolfi */ 
 
 #include <math.h>
 #include <values.h>
@@ -18,6 +18,7 @@
 #include <ellipse_crs.h> 
 #include <affirm.h> 
 #include <sve_minn.h> 
+#include <sve_minn_iterate.h>
 
 #include <pst_fit_sphere.h>
 #include <pst_fit_ellipse.h>
@@ -96,7 +97,7 @@ double pst_fit_sphere
     /* Compute the number of parameters {NP} in optimization: */
     uint32_t NP = pst_fit_sphere_num_params(KAdj, RAdj, GAdj);
     
-    auto void scatter_params(double x[], double *GT, r2_t *KT, double *RT);
+    auto void scatter_params(const double x[], double *GT, r2_t *KT, double *RT);
       /* Maps the minimizer's argument vector {x[0..NP-1]} to the
         variable fields of {*CT,*ET}. The fixed fields of {*CT,*ET}
         are taken from from the saved values {CIni,EIni}. The decoding
@@ -165,7 +166,7 @@ double pst_fit_sphere
     /* Count iterations for debugging and budget control: */
     int32_t nIts = 0;
     
-    auto double sve_goal(uint32_t n, double x[]);
+    auto double sve_goal(uint32_t n, const double x[]);
       /* Evaluates the goal function for {sve_minn_iterate} for the 
         parameters {x[0..n-1]}.   Increments {nEvals}. 
         
@@ -178,7 +179,7 @@ double pst_fit_sphere
         is to avoid a degenerate minimum (goal value independent of
         {G}) when the sphere is on the optical axis. */
     
-    auto bool_t sve_check(uint32_t iter, uint32_t n, double x[], double Fx, double dist, double step, double radius);
+    auto bool_t sve_check(uint32_t iter, uint32_t n, const double x[], double Fx, double dist, double step, double radius);
       /* To be called by the minimizer before each major optimization.
         Currently stops when the number of iterations is exceeded. */
     
@@ -194,7 +195,7 @@ double pst_fit_sphere
         double dMax = 1.000; /* Since each param ranges in {[-1_+1]}. */
         
         /* Call the nonlinear optimizer: */
-        double ctr[NP]; rn_copy(NP, x, ctr);
+        double dCtr[NP]; rn_copy(NP, x, dCtr);
         double minStep = 0.001*dMax;
         sve_minn_iterate
           ( /*n:*/        NP,
@@ -204,7 +205,7 @@ double pst_fit_sphere
             /*x:*/        x,
             /*FxP:*/      &H,
             /*dir:*/      -1,
-            /*ctr:*/      ctr,
+            /*dCtr:*/     dCtr,
             /*dMax:*/     dMax,
             /*dBox:*/     TRUE,
             /*rIni:*/     0.50*dMax,
@@ -239,7 +240,7 @@ double pst_fit_sphere
     
     /* IMPLEMENTATIONS OF INTERNAL PROCS */
 
-    void scatter_params(double x[], double *GT, r2_t *KT, double *RT)
+    void scatter_params(const double x[], double *GT, r2_t *KT, double *RT)
       { uint32_t k = 0;
         
         /* Get center {*KT}, from {x} or from the saved guess: */
@@ -296,7 +297,7 @@ double pst_fit_sphere
     double diomgis(double v)
        { return tan(HPI*v)/HPI; }
     
-    double sve_goal(uint32_t n, double x[])
+    double sve_goal(uint32_t n, const double x[])
       { /* Unpack {x} into local variables {GT,KT,RT}: */
         double GT;
         r2_t KT;
@@ -320,7 +321,7 @@ double pst_fit_sphere
         return HT;
       }
 
-    bool_t sve_check(uint32_t iter, uint32_t n, double x[], double Fx, double dist, double step, double radius)
+    bool_t sve_check(uint32_t iter, uint32_t n, const double x[], double Fx, double dist, double step, double radius)
       { nIts++;
         if (sve_debug) 
           { /* Unpack {x} into local variables {GT,KT,RT}: */

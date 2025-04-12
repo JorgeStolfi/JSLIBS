@@ -1,4 +1,4 @@
-# Last edited on 2024-11-07 18:54:24 by stolfi
+# Last edited on 2025-03-19 15:12:12 by stolfi
 
 PROG = test_sve_blpulse
  
@@ -8,6 +8,7 @@ TEST_LIB_DIR := ../..
 JS_LIBS := \
   libimg.a \
   libgeo.a \
+  libgausol.a \
   libjs.a
   
 OTHER_LIBS := \
@@ -55,7 +56,6 @@ single-test: ${PROG}
           ( show-pulse.sh $$ff-a.dat & ) ; \
           ( show-spectrum.sh $$ff-p.dat & ) ; \
           ( show-plot.sh $$ff-plt.fni ) ; \
-  	  ( xmessage "OK" ; echo "OK" 1>&2 ) ; \
         done
 
 endif

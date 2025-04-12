@@ -1,5 +1,5 @@
 /* r2.h --- operations on points and vectors of R^2 */
-/* Last edited on 2025-02-05 15:44:05 by stolfi */
+/* Last edited on 2025-03-27 04:37:41 by stolfi */
 
 #ifndef r2_H
 #define r2_H
@@ -136,6 +136,13 @@ sign_t r2_orient(r2_t *a, r2_t *b, r2_t *c);
   /* The orientation of the triangle{a,b,c}: {+1} if CCW, {-1} if CW, 0 if flat.
     Note that the result is unreliable if {a,b,c} is nearly flat. */
 
+sign_t r2_cyclic_order(r2_t *a, r2_t *b, r2_t *c);
+  /* Returns {+1} if the directions of the vectors {a}, {b}, and {c}, in
+    that order, turn counterclockwise around the origin. Returns {-1} if
+    they turn clockwise. Returns 0 if any two have the same direction,
+    or any one of them is zero. Roundoff errors may cause the wrong
+    result if two vectors have almost the same direction. */
+
 r2_t r2_circumcenter(r2_t *a, r2_t *b, r2_t *c);
   /* The center of the circle passing through the three points {a,b,c}. */
     
@@ -148,6 +155,10 @@ void r2_throw_cube(r2_t *r);
 void r2_throw_dir(r2_t *r);
   /* Sets {r} to a random direction of {\RR^2}; that is, a 
     uniformly random point on the unit circle {\RS^1}. */
+  
+void r2_throw_ortho_dirs(r2_t *r, r2_t *s);
+  /* Sets {r} and {s} to two random direction of {\RR^2} that are
+    mutually orthogonal. */
 
 void r2_throw_ball(r2_t *r);
   /* Sets {r} to a uniformly random point of the unit 2-ball. */

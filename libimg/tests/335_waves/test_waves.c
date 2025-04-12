@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {float_image_test.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-01-30 08:05:25 by stolfi */ 
+/* Last edited on 2025-03-24 15:21:33 by stolfi */ 
 /* Created on 2023-01-10 by J. Stolfi, UNICAMP */
 
 #define test_waves_COPYRIGHT \
@@ -82,13 +82,25 @@ int main (int argn, char **argv)
     bool_t verbose = TRUE;
     float_image_waves_pick(NF, amp, fx, fy, phase, verbose);
     
+    /* Single-wave: */
     for (int32_t kf = 0;  kf < 12; kf++)
       { wt_create_images_from_wave_range(NF, amp, fx, fy, phase, kf, kf, TRUE); }
-    wt_create_images_from_wave_range(NF, amp, fx, fy, phase, 0, 3, TRUE);
-    wt_create_images_from_wave_range(NF, amp, fx, fy, phase, 0, 9, TRUE);
-    wt_create_images_from_wave_range(NF, amp, fx, fy, phase, 0, NF-1, TRUE);
     
-    wt_create_images_from_wave_range(NF, amp, fx, fy, phase, 9, 9, FALSE);
+    /* Multi-wave, squashed: */
+    wt_create_images_from_wave_range(NF, amp, fx, fy, phase, 0,  3, TRUE);
+    wt_create_images_from_wave_range(NF, amp, fx, fy, phase, 0,  9, TRUE);
+    wt_create_images_from_wave_range(NF, amp, fx, fy, phase, 1, 10, TRUE);
+    wt_create_images_from_wave_range(NF, amp, fx, fy, phase, 2, 11, TRUE);
+    wt_create_images_from_wave_range(NF, amp, fx, fy, phase, 3, 12, TRUE);
+    wt_create_images_from_wave_range(NF, amp, fx, fy, phase, 5, 14, TRUE);
+    wt_create_images_from_wave_range(NF, amp, fx, fy, phase, 8, 20, TRUE);
+    
+    wt_create_images_from_wave_range(NF, amp, fx, fy, phase, 0, NF-1, TRUE);
+    wt_create_images_from_wave_range(NF, amp, fx, fy, phase, 1, NF-1, TRUE);
+    wt_create_images_from_wave_range(NF, amp, fx, fy, phase, 2, NF-1, TRUE);
+    
+    /* Unsquashed: */
+    wt_create_images_from_wave_range(NF, amp, fx, fy, phase,    9,    9, FALSE);
     wt_create_images_from_wave_range(NF, amp, fx, fy, phase, NF-1, NF-1, FALSE);
    
     return 0;
@@ -108,10 +120,10 @@ void wt_create_images_from_wave_range
     fprintf(stderr, "=== test float_image_waves = %d..%d ============\n", kf0, kf1);
     demand((0 <= kf0) && (kf0 <= kf1) && (kf1 < NF), "invalid wave indices");
 
-    wt_create_image_from_wave_range_chans_and_size(NF, amp, fx, fy, phase, kf0, kf1, squash, 3, 400, 400);
+    /* wt_create_image_from_wave_range_chans_and_size(NF, amp, fx, fy, phase, kf0, kf1, squash, 3, 400, 400); */
     wt_create_image_from_wave_range_chans_and_size(NF, amp, fx, fy, phase, kf0, kf1, squash, 1, 512, 512);
-    wt_create_image_from_wave_range_chans_and_size(NF, amp, fx, fy, phase, kf0, kf1, squash, 1, 256, 256);
-    wt_create_image_from_wave_range_chans_and_size(NF, amp, fx, fy, phase, kf0, kf1, squash, 1, 128, 128);
+    /* wt_create_image_from_wave_range_chans_and_size(NF, amp, fx, fy, phase, kf0, kf1, squash, 1, 256, 256); */
+    /* wt_create_image_from_wave_range_chans_and_size(NF, amp, fx, fy, phase, kf0, kf1, squash, 1, 128, 128); */
 
   }
 

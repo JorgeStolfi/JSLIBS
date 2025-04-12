@@ -1,5 +1,5 @@
 #! /bin/bash
-# Last edited on 2012-01-23 02:10:55 by stolfilocal
+# Last edited on 2025-03-19 15:17:34 by stolfi
 
 # Plots a potential file created by {test_sve_charges}
 
@@ -17,5 +17,5 @@ minpot = 1.07*(nq - 0.75)**2
 # minpot = 200
 set zrange [(0.80*minpot):(1.30*minpot)]
 splot "${potfile}" using 1:2:3 title "potential" with lines lc rgb '#008800'
-pause 300
+pause mouse
 EOF

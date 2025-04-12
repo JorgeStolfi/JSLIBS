@@ -1,5 +1,5 @@
 /* test_sve_near_quadratic --- test of {sve_minn.h} for a nearly quadratic func */
-/* Last edited on 2025-02-16 20:24:03 by stolfi */
+/* Last edited on 2025-04-01 08:59:14 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +16,7 @@
 #include <argparser.h>
 #include <jsrandom.h>
 #include <jsstring.h>
+#include <jsprintf.h>
 #include <affirm.h>
 #include <rmxn.h>
 #include <rn.h>
@@ -23,6 +24,7 @@
 #include <vec.h>
 
 #include <sve_minn.h>
+#include <sve_minn_iterate.h>
 
 /* GENERAL PARAMETERS */
 
@@ -36,14 +38,14 @@ int32_t main (int32_t argc, char **argv);
 options_t *get_options(int32_t argc, char **argv);
   /* Parses the command-line options. */
 
-void test_minimizer(int32_t id, int32_t n);
+void test_minimizer(uint32_t id, uint32_t n);
   /* Tests the minimizer on problem with index {id} and dimension {n}. */ 
 
-void write_solution(char *prefix, char *tag, int32_t n, sve_goal_t *F, double x[], double Fx);
+void write_solution(char *prefix, char *tag, uint32_t n, sve_goal_t *F, const double x[], double Fx);
   /* Writes the solution to problem with index {id} and dimension {n},
     also shows it to {stderr}, together with the function value {Fx}. */
 
-void write_vector(char *prefix, char *tag, int32_t n, double x[]);
+void write_vector(char *prefix, char *tag, uint32_t n, const double x[]);
   /* Writes the solution to problem with index {id} and dimension {n}. */
 
 /* IMPLEMENTATIONS */
@@ -51,7 +53,7 @@ void write_vector(char *prefix, char *tag, int32_t n, double x[]);
 int32_t main (int32_t argc, char **argv)
   { /* options_t *o = get_options(argc, argv); */
     for (uint32_t id = 0;  id < 10; id++) 
-      { int32_t n = (id % 3) + 1;
+      { uint32_t n = (id % 3) + 1;
         test_minimizer(id, n);
       }
     fclose(stderr);
@@ -59,14 +61,13 @@ int32_t main (int32_t argc, char **argv)
     return (0);
   }
   
-void test_minimizer(int32_t id, int32_t n)
+void test_minimizer(uint32_t id, uint32_t n)
   { 
     fprintf(stderr, "=== %s ===\n", __FUNCTION__);
     fprintf(stderr, "test id = %d\n", id);
     fprintf(stderr, "dimension = %d\n", n);
     
     /* Output file names: */
-    char *prefix = NULL; /* Prefix for output file names. */
     char *prefix = jsprintf("out/%03d-%02d", id, n);
     
     /* Shake the dice: */
@@ -91,12 +92,12 @@ void test_minimizer(int32_t id, int32_t n)
     bool_t sve_debug = FALSE;
     bool_t sve_debug_probes = FALSE;
 
-    auto double sve_goal(int32_t n, double x[]); 
+    auto double sve_goal(uint32_t n, const double x[]); 
       /* The goal function for optimization. */
       
-    int32_t nok = 0;      /* Counts iterations (actually, calls to {sve_OK}). */
+    uint32_t nok = 0;      /* Counts iterations (actually, calls to {sve_OK}). */
     
-    auto bool_t sve_OK(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius); 
+    auto bool_t sve_OK(uint32_t iter, uint32_t n, const double x[], double Fx, double dist, double step, double radius); 
       /* Acceptance criterion function. */
 
     /* Output the true solution: */
@@ -114,19 +115,19 @@ void test_minimizer(int32_t id, int32_t n)
     
     /* Optimize iteratively: */
     double dMax = +INFINITY;
-    double *ctr = NULL;
+    double *dCtr = NULL;
     bool_t dBox = FALSE;
     double rMin = 0.0000001;
     double rMax = 10.0;
     double rIni = 0.5;
     double minStep = 0.01*rMin;
     sign_t dir = -1;
-    int32_t maxIters = 200;
+    uint32_t maxIters = 200;
     
     sve_minn_iterate
       ( n, &sve_goal, &sve_OK, NULL,
         x, &Fx, dir, 
-        ctr, dMax, dBox, rIni, rMin, rMax, 
+        dCtr, dMax, dBox, rIni, rMin, rMax, 
         minStep, maxIters, sve_debug, sve_debug_probes
       );
     
@@ -135,10 +136,10 @@ void test_minimizer(int32_t id, int32_t n)
     write_solution(prefix, "fin", n, &sve_goal, x, Fx);
     return;
       
-    double sve_goal(int32_t n, double x[])
+    double sve_goal(uint32_t n, const double x[])
       { assert(n == n);
         /* Subtract the true minimum: */
-        rn_sub(n, x, x_tru, dx);
+        rn_sub(n, (double*)x, x_tru, dx);
         /* Apply a slight nonlinear deformation: */
         double r2 = rn_norm(n, dx);
         double scale = 1.0 + 0.0001*r2;
@@ -152,7 +153,7 @@ void test_minimizer(int32_t id, int32_t n)
         return S;
       }
       
-    bool_t sve_OK(int32_t iter, int32_t n, double x[], double Fx, double dist, double step, double radius)
+    bool_t sve_OK(uint32_t iter, uint32_t n, const double x[], double Fx, double dist, double step, double radius)
       { assert(n == n);
         fprintf(stderr, "iteration %d:\n", nok);
         write_solution(NULL, "tmp", n, &sve_goal, x, Fx);
@@ -162,7 +163,7 @@ void test_minimizer(int32_t id, int32_t n)
       }
   }
 
-void write_solution(char *prefix, char *tag, int32_t n, sve_goal_t *sve_goal, double x[], double Fx)
+void write_solution(char *prefix, char *tag, uint32_t n, sve_goal_t *sve_goal, const double x[], double Fx)
   { /* Print and write the pulse: */
     fprintf(stderr, "  point =\n");
     write_vector(NULL, tag, n, x); 
@@ -173,7 +174,7 @@ void write_solution(char *prefix, char *tag, int32_t n, sve_goal_t *sve_goal, do
     /* if (prefix != NULL) { write_vector(prefix, tag, n, x); }a */
   }
 
-void write_vector(char *prefix, char *tag, int32_t n, double x[])
+void write_vector(char *prefix, char *tag, uint32_t n, const double x[])
   { char *fname = NULL;
     FILE *wr;
     if (prefix != NULL) 

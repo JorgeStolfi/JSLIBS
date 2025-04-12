@@ -1,5 +1,5 @@
 /* See pst_slope_map.h */
-/* Last edited on 2025-03-01 02:57:56 by stolfi */
+/* Last edited on 2025-03-15 21:39:01 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -12,6 +12,7 @@
 #include <jsrandom.h>
 
 #include <pst_basic.h>
+#include <pst_map.h>
 #include <pst_interpolate.h>
 #include <pst_cell_map_shrink.h>
 
@@ -48,6 +49,7 @@ void pst_slope_map_get_axial_edge_data
   ( float_image_t* G,
     int32_t x, int32_t y,
     int32_t axis, int32_t dir,
+    bool_t extrapolate,
     double *dP, double *wP
   )
   {
@@ -56,24 +58,23 @@ void pst_slope_map_get_axial_edge_data
     demand((NC == 2) || (NC == 3), "slope map must have 2 or 3 channels");
     demand((dir == -1) || (dir == +1), "invalid direction {dir}");
     
-    demand((x >= 0) && (x <= NX), "invalid grid corner {X} (1)");
-    demand((y >= 0) && (y <= NY), "invalid grid corner {Y} (1)");
+    demand((x >= 0) && (x <= NX), "invalid grid vertex {X} (1)");
+    demand((y >= 0) && (y <= NY), "invalid grid vertex {Y} (1)");
     
     int32_t x1 = x + (axis == 0 ? dir : 0);
     int32_t y1 = y + (axis == 1 ? dir : 0);
     
-    
-    demand((x1 >= 0) && (x1 <= NX), "invalid grid corner {X} (2)");
-    demand((y1 >= 0) && (y1 <= NY), "invalid grid corner {Y} (2)");
+    demand((x1 >= 0) && (x1 <= NX), "invalid grid vertex {X} (2)");
+    demand((y1 >= 0) && (y1 <= NY), "invalid grid vertex {Y} (2)");
   
     double d,w;
     if (axis == 0)
-      { if (dir == +1){ pst_slope_map_interpolate_four_samples(G, 0, x+0,y+0, x+0,y-1, &d,&w); }
-        if (dir == -1){ pst_slope_map_interpolate_four_samples(G, 0, x-1,y+0, x-1,y-1, &d,&w); }
-      }
-    else if (axis == 1)
-      { if (dir == +1){ pst_slope_map_interpolate_four_samples(G, 1, x-1,y+0, x+0,y+0, &d,&w); }
-        if (dir == -1){ pst_slope_map_interpolate_four_samples(G, 1, x-1,y-1, x+0,y-1, &d,&w); }
+      { if (dir == +1){ pst_map_interpolate_samples(G, 0, 2, x+0,y-1, x+0,y+0, extrapolate, &d,&w); }
+        if (dir == -1){ pst_map_interpolate_samples(G, 0, 2, x-1,y-1, x-1,y+0, extrapolate, &d,&w); }
+      }                                                            
+    else if (axis == 1)                                            
+      { if (dir == +1){ pst_map_interpolate_samples(G, 1, 2, x-1,y+0, x+0,y+0, extrapolate, &d,&w); }
+        if (dir == -1){ pst_map_interpolate_samples(G, 1, 2, x-1,y-1, x+0,y-1, extrapolate, &d,&w); }
       }
     else
       { demand(FALSE,"invalid  AXIS"); }
@@ -87,60 +88,11 @@ void pst_slope_map_get_axial_edge_data
     (*dP) = d; (*wP) = w;
   }
 
-void pst_slope_map_interpolate_four_samples
-  (  float_image_t *G,
-     int32_t c,
-     int32_t x0, int32_t y0,
-     int32_t x1, int32_t y1,
-     double *vR_P, double *wR_P
-   )
-   {
-     int32_t NC, NX, NY;
-     float_image_get_size(G, &NC, &NX, &NY);
-     demand((NC == 2) || (NC == 3), "slope map must have 2 or 3 channels");
-     demand((c == 0) || (c == 1), "invalid channel index {c}");
-     
-     int32_t dx = x1 - x0, dy = y1 - y0;
-     demand((abs(dx) <= 1) && (abs(dy) <= 1) && (abs(dx) + abs(dy) == 1), "pixels are not adjacent");
-  
-     /* Compute indices of auxiliary pixels: */
-     int32_t xm = 2*x0 - x1, ym = 2*y0 - y1;
-     int32_t xp = 2*x1 - x0, yp = 2*y1 - y0;
-     
-     auto void fetch(int32_t x, int32_t y, double *v_P,double *w_P);
-       /* Fetches the value {v = G[c,X,Y]} and the weight {w=G[2,X,Y]},
-         returning them in {*v_P} and {*w_P}. However, if pixel {x,y}
-         does not exist, or {v} is not finite, of {w} is zero, sets
-         {v=NAN} and {w=0}. */
-     
-     /* Extract the sample values and weights: */
-     double vm, wm; fetch(xm, ym, &vm, &wm);
-     double v0, w0; fetch(x0, y0, &v0, &w0);
-     double v1, w1; fetch(x1, y1, &v1, &w1);
-     double vp, wp; fetch(xp, yp, &vp, &wp);
-     pst_interpolate_four_values(vm, wm, v0, w0, v1, w1, vp, wp, vR_P, wR_P);
-
-     return;
-     
-     void fetch(int32_t x, int32_t y, double *v_P,double *w_P)
-       { double v = NAN, w = 0.0;
-         if ((x >= 0) && (y >= 0) && (x < NX) && (y < NY))
-           { w = (NC == 3 ? float_image_get_sample(G,2,x,y) : 1.0); 
-             assert(isfinite(w) && (w >= 0));
-             if (w > 0)
-               { v = float_image_get_sample(G,c,x,y);
-                 if (! isfinite(v)) { v = NAN; w = 0; }
-               }
-           }
-         (*v_P) = v;
-         (*w_P) = w;
-       }
-   }
-
-void  pst_slope_map_get_edge_data
+void pst_slope_map_get_edge_data
   ( float_image_t* G,
     int32_t x, int32_t y,
     int32_t ux, int32_t uy,
+    bool_t extrapolate,
     double *dP, double *wP
   )
   {
@@ -148,9 +100,9 @@ void  pst_slope_map_get_edge_data
     
     double d, w;
     if (ux == 0)
-      { pst_slope_map_get_axial_edge_data(G, x, y, 1, uy, &d, &w); }
+      { pst_slope_map_get_axial_edge_data(G, x, y, 1, uy, extrapolate, &d, &w); }
     else if (uy == 0)
-      { pst_slope_map_get_axial_edge_data(G, x, y, 0, ux, &d, &w); }
+      { pst_slope_map_get_axial_edge_data(G, x, y, 0, ux, extrapolate, &d, &w); }
     else
       { assert((ux == -1) || (ux == +1));
         assert((uy == -1) || (uy == +1));

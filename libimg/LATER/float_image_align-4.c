@@ -1,5 +1,5 @@
 /* See {float_image_align.h}. */
-/* Last edited on 2024-12-04 23:20:57 by stolfi */
+/* Last edited on 2025-03-19 12:46:39 by stolfi */
 
 #include <math.h>
 #include <limits.h>
@@ -17,6 +17,7 @@
 #include <affirm.h>
 #include <float_image.h>
 #include <sve_minn.h>
+#include <sve_minn_iterate.h>
 
 #include <float_image_align.h>
 

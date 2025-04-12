@@ -1,5 +1,5 @@
 /* See {btc_bubble_nl_opt_do_adjust_continuous_parameters.h} */
-/* Last edited on 2024-12-05 10:22:51 by stolfi */
+/* Last edited on 2025-04-01 09:22:54 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +11,7 @@
 #include <rn.h>
 #include <jsmath.h>
 #include <sve_minn.h>
+#include <sve_minn_iterate.h>
 
 #include <btc_bubble_t.h>
 #include <btc_bubble_nl_opt_gather_continuous_variable_parameters.h>
@@ -53,13 +54,13 @@ void btc_bubble_nl_opt_do_adjust_continuous_parameters
         and adding a small bias term and an off-limits penalty. */
 
     /* Compute the maximum search radius: */
+    double dCtr[npf]; rn_copy(npf, x_ini, dCtr);
     double dMax = btc_bubble_nl_opt_compute_dmax(npf, x_ini);
     bool_t dBox = FALSE;  /* Search in ball, not box. */
 
     /* Non-linear adjustment of the continuous parameters: */
     double x_opt[npf]; /* Trial argument vector. */
-    int ip;
-    for (ip = 0; ip < npf; ip++) { x_opt[ip] = x_ini[ip]; }
+    rn_copy(npf, x_ini, x_opt);
     double Q_opt = sve_goal(npf, x_opt);
 
     double rIni = 0.050;      /* Initial simplex radius. */
@@ -75,7 +76,7 @@ void btc_bubble_nl_opt_do_adjust_continuous_parameters
         x_opt,      /* double x[],     */
         &Q_opt,     /* double *FxP,    */
         -1,         /* sign_t dir,     */
-        x_ini,      /* Center of search domain. */
+        dCtr,       /* Center of search domain. */
         dMax,       /* double dMax,    */
         dBox,       /* bool_t dBox,    */
         rIni,       /* double rIni,    */

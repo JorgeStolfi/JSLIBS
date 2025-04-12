@@ -1,5 +1,5 @@
 #! /bin/bash 
-# Last edited on 2025-02-28 14:21:52 by stolfi
+# Last edited on 2025-04-08 09:23:07 by stolfi
 
 export="$1"; shift
 
@@ -15,8 +15,8 @@ for func in `cat in/funcs.txt | sed -e 's:[#].*$::g'`; do
   func_num="${func/-*/}"
   func_name="${func/*-/}"; func_name="${func_name/:*/}"
   noisy="${func/*:/}"
-  # in 1x1 2x2 4x3 16x12
-  for size in 32x24 256x192 ; do
+  # in 1x1 2x2 4x3 16x12 32x24 64x48 128x96 256x192 512x384
+  for size in 16x12  ; do
     nx="${size/x*/}"; ny="${size/*x/}"
     run_one_test.sh ${func_num} ${func_name} ${nx} ${ny} ${noisy} ${export}
   done

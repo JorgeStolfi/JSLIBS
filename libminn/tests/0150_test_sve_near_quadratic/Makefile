@@ -1,4 +1,4 @@
-# Last edited on 2009-02-22 19:20:11 by stolfi
+# Last edited on 2025-03-19 12:51:12 by stolfi
 
 PROG = test_sve_near_quadratic
  
@@ -7,6 +7,7 @@ TEST_LIB_DIR := ../..
 
 JS_LIBS := \
   libgeo.a \
+  libgausol.a \
   libjs.a
   
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make

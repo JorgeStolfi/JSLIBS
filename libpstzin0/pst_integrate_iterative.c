@@ -1,5 +1,5 @@
 /* See pst_integrate_iterative.h */
-/* Last edited on 2025-03-02 14:16:10 by stolfi */
+/* Last edited on 2025-04-03 17:35:59 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -18,7 +18,6 @@
 #include <pst_imgsys_solve.h>
 #include <pst_interpolate.h>
 #include <pst_slope_map.h>
-#include <pst_weight_map.h>
 #include <pst_height_map.h>
 #include <pst_integrate.h>
 
@@ -28,6 +27,7 @@ void pst_integrate_iterative
   ( float_image_t *G, 
     float_image_t *H,
     double hintsWeight,
+    bool_t extrapolate, 
     float_image_t *Z,
     float_image_t *R,
     uint32_t maxIter,
@@ -56,7 +56,7 @@ void pst_integrate_iterative
 
     /* Build the system: */
     if (verbose) { fprintf(stderr, "%*sbuilding the system ...\n", indent, ""); }
-    pst_imgsys_t *S = pst_integrate_build_system(G, H, hintsWeight, indent, verbose);
+    pst_imgsys_t *S = pst_integrate_build_system(G, H, hintsWeight, extrapolate, indent, verbose);
     if (verbose) { fprintf(stderr, "%*sfinal system has %d equations and %d variables\n", indent, "", S->N, S->N); }
  
     if (reportSys != NULL) { reportSys(level, S); }

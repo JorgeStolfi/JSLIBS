@@ -1,5 +1,5 @@
 /* See {btc_bubble_nl_opt_adjust_continuous_parameters.h} */
-/* Last edited on 2024-12-05 10:22:43 by stolfi */
+/* Last edited on 2025-03-19 12:46:24 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +11,7 @@
 #include <rn.h>
 #include <jsmath.h>
 #include <sve_minn.h>
+#include <sve_minn_iterate.h>
 
 #include <btc_bubble_t.h>
 #include <btc_bubble_nl_opt_gather_continuous_variable_parameters.h>

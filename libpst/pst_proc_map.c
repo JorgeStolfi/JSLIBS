@@ -1,5 +1,5 @@
 /* See pst_proc_map.h */
-/* Last edited on 2025-02-28 18:57:54 by stolfi */
+/* Last edited on 2025-03-15 10:10:30 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -321,12 +321,12 @@ float_image_t* pst_proc_map_make_height_map
       { for (int32_t x = 0; x <= NXG; x++)
           { bool_t debug_xy = ((x == xDebug) && (y == yDebug));
 
-            /* Compute function domain coordinates {(xp,yp)} of grid corner: */
+            /* Compute function domain coordinates {(xp,yp)} of grid vertex: */
             double xp = (x - org->c[0])*pixSize;
             double yp = (y - org->c[1])*pixSize;
             r2_t p = (r2_t){{ xp, yp }};
 
-            /* Compute height at grid corner: */
+            /* Compute height at grid vertex: */
             double z, wz;
             if (debug_xy) { fprintf(stderr, "=== debugging {pst_proc_map_compute_height} for {IZ[%d,%d]} p = (%+10.6f,%+10.6f)\n", x, y, xp, yp); }
             pst_proc_map_compute_height(func, p, NS, ws, pixSize, debug_xy, &z, &wz);
@@ -434,11 +434,11 @@ pst_proc_map_zfunc_props_t pst_proc_map_function_generic(int32_t n)
         case 17: dfp(&pst_proc_map_function_17, "cbabel", 2.00, 0.05); break; /* Tower of Babel with cliff. */
         case 18: dfp(&pst_proc_map_function_18, "cbramp", 2.00, 0.01); break; /* Cubic ramp with cliff on three sides. */
         case 19: dfp(&pst_proc_map_function_19, "holes1", +INF, 0.05); break; /* Buried sphere with many holes in slope map. */
-        case 20: dfp(&pst_proc_map_function_20, "cpiece", 0.80, 0.01); break; /* Three nested stages connected by ramps. */
-        case 21: dfp(&pst_proc_map_function_21, "cplat3", +INF, +INF); break; /* Three flat round platforms with smooth edges. */
+        case 20: dfp(&pst_proc_map_function_20, "cpiece", 3.00, 0.01); break; /* Three nested stages connected by ramps. */
+        case 21: dfp(&pst_proc_map_function_21, "cplat3", 0.01, 0.01); break; /* Three flat round platforms with vertical edges. */
         case 22: dfp(&pst_proc_map_function_22, "plat3a", +INF, +INF); break; /* Triangular wall with smooth edges. */
         case 23: dfp(&pst_proc_map_function_23, "plat5a", +INF, +INF); break; /* Pentagonal platform with smooth edges. */
-        case 24: dfp(&pst_proc_map_function_24, "cplatv", 0.30, 0.01); break; /* Circular platform with cliffs. */
+        case 24: dfp(&pst_proc_map_function_24, "cplatv", 0.01, 0.01); break; /* Circular platform with cliffs. */
         case 25: dfp(&pst_proc_map_function_25, "cplats", +INF, +INF); break; /* Circular platform with smooth edges. */
         case 26: dfp(&pst_proc_map_function_26, "qtbell", +INF, +INF); break; /* Quartic bell. */
         case 27: dfp(&pst_proc_map_function_27, "fracto", +INF, +INF); break; /* Fractalish round montain. */
@@ -826,13 +826,13 @@ void pst_proc_map_function_20(r2_t p, double *z, r2_t *dz)
 
     /* Excavate outer ramp: */
     double tA =  0.80; /* Position in radians. */
-    double wA =  0.20; /* Width. */
+    double wA =  0.30; /* Width. */
     double dA =  0.50; /* Length. */
     fix_ramp(rA, zB, zA, tA, wA, dA, z, dz);
 
     /* Excavate inner ramp: */
     double tB =  2.50; /* Position in radians. */
-    double wB =  0.16; /* Width. */
+    double wB =  0.30; /* Width. */
     double dB =  0.50; /* Length. */
     fix_ramp(rB, zC, zB, tB, wB, dB, z, dz);
 
@@ -865,10 +865,9 @@ void pst_proc_map_function_20(r2_t p, double *z, r2_t *dz)
   }
 
 void pst_proc_map_function_21(r2_t p, double *z, r2_t *dz)
-  { /* "cplat3" - circular platforms with smooth edges. */
+  { /* "cplat3" - circular platforms with vertical edges. */
     r2_t ctr[3] = { (r2_t){{+0.3,+0.4}}, (r2_t){{-0.5,-0.2}}, (r2_t){{+0.4,-0.5}} }; /* Centers. */
     double R[3] = { 0.5, 0.4, 0.3 };      /* Nominal radii. */
-    double HS[3] = { 0.05, 0.02, 0.03 };  /* Half-widthd of shoulders. */
     double zDif[3] = { 0.80, 0.60, 0.70 };   /* Heights. */
     int32_t k;
     if (z != NULL) { (*z) = Z_GROUND; }
@@ -878,7 +877,7 @@ void pst_proc_map_function_21(r2_t p, double *z, r2_t *dz)
         r2_t vk; r2_sub(&p, &(ctr[k]), &vk);
         double zk;
         r2_t dzk;
-        pst_proc_map_function_round_platform(&vk, R[k], HS[k], &zk, (dz == NULL ? NULL : &dzk));
+        pst_proc_map_function_round_platform(&vk, R[k], 0.0, &zk, (dz == NULL ? NULL : &dzk));
         if (z != NULL) { (*z) += zDif[k]*zk; }
         if (dz != NULL)
           { dz->c[0] += zDif[k]*dzk.c[0];
@@ -1261,7 +1260,7 @@ void pst_proc_map_function_polygonal_platform(r2_t *p, int32_t N, double R, doub
                   }
               }
             else
-              { /* Ramp on corner: */
+              { /* Ramp on corner of outline: */
                 double q = hypot(u - RI, v - HL);
                 if (q >= S)
                   { if (z != NULL) { (*z) = 0; } }

@@ -51,14 +51,14 @@ fast_hash_t* create_fasthash(int N,Tabela* tab,double sigma,int normal_degree, i
   fast_hash_t* fh = (fast_hash_t*)malloc(sizeof(fast_hash_t));
   fh->N = N;
   fh->nLights = nLights;
-  fh->baricenter = (double*)malloc(sizeof(double)*nLights);
+  fh->barycenter = (double*)malloc(sizeof(double)*nLights);
   fh->u = (double*)malloc(sizeof(double)*nLights);
   fh->v = (double*)malloc(sizeof(double)*nLights);
   
   
   double* u = fh->u;
   double* v = fh->v;
-  double* bar = fh->baricenter;
+  double* bar = fh->barycenter;
   double R ;
   calcula_sistema_de_coordenadas(tab, u, v, bar, &fh->bu, &fh->bv);
   int num_lines = get_num_linhas(tab);
@@ -296,7 +296,7 @@ void SaveFastHash(FILE* arq, fast_hash_t* fh){
   fprintf(arq,"%8.6lf %8.6lf %8.6lf\n",fh->bu,fh->bv,fh->R);
 
   for(i = 0; i < fh->nLights; i++){
-    fprintf(arq,"%8.6lf ",fh->baricenter[i]);
+    fprintf(arq,"%8.6lf ",fh->barycenter[i]);
   }
   fprintf(arq,"\n");
   
@@ -332,7 +332,7 @@ void PrintFastHash(FILE* arq, fast_hash_t* fh){
   rn_gen_print(arq,fh->nLights,fh->u,"%8.6lf","U (",",",")\n");
   rn_gen_print(arq,fh->nLights,fh->v,"%8.6lf","V (",",",")\n");
   fprintf(arq,"BU: %8.6lf\nBV: %8.6lf\nR:%8.6lf\n",fh->bu,fh->bv,fh->R);
-  rn_gen_print(arq,fh->nLights,fh->baricenter,"%8.6lf","BAR (",",",")\n");
+  rn_gen_print(arq,fh->nLights,fh->barycenter,"%8.6lf","BAR (",",",")\n");
   fprintf(arq,"********************************\n");
 
  
@@ -406,9 +406,9 @@ fast_hash_t* LoadFastHash(FILE* arq){
     
   fscanf(arq,"%lf %lf %lf",&(fh->bu),&(fh->bv),&(fh->R));
 
-  fh->baricenter = (double*)malloc(sizeof(double)*(fh->nLights));
+  fh->barycenter = (double*)malloc(sizeof(double)*(fh->nLights));
   for(i = 0; i < fh->nLights; i++){
-    fscanf(arq,"%lf",&(fh->baricenter[i]));
+    fscanf(arq,"%lf",&(fh->barycenter[i]));
   }
   
   int j;
@@ -445,7 +445,7 @@ r3_t fast_hash_compute_normal( fast_hash_t* fh, const double SO[], double sigma,
   int nLights = fh->nLights;
   double so[nLights];
   double Smag = rn_dir(nLights,(double*)SO,so);
-  r2_t pt_coords = fasthash_mapeiaHash(so,fh->u,fh->v,fh->baricenter,nLights,fh->N,fh->R);
+  r2_t pt_coords = fasthash_mapeiaHash(so,fh->u,fh->v,fh->barycenter,nLights,fh->N,fh->R);
     
   double u = pt_coords.c[0];
   double v = pt_coords.c[1];

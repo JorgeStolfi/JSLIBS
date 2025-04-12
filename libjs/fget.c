@@ -1,5 +1,5 @@
 /* See fget.h */
-/* Last edited on 2024-11-15 20:31:57 by stolfi */
+/* Last edited on 2025-03-13 06:35:38 by stolfi */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -372,7 +372,7 @@ void fget_skip_spaces_and_match(FILE *rd, char *t)
     fget_match(rd, t); 
   }
 
-bool_t fget_skip_and_test_char(FILE *rd, char c)
+bool_t fget_skip_spaces_and_test_char(FILE *rd, char c)
   { fget_skip_spaces(rd); 
     return fget_test_char(rd, c); 
   }

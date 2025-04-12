@@ -2,13 +2,12 @@
 #define pst_slope_map_H
 
 /* pst_slope_map.h -- procedures for working with slope maps. */
-/* Last edited on 2025-03-01 02:25:14 by stolfi */
+/* Last edited on 2025-04-03 17:27:16 by stolfi */
 
 #include <bool.h>
 #include <r2.h>
 
 #include <float_image.h>
-#include <pst_weight_map.h>
 #include <pst_height_map.h>
 
 /* SLOPE MAPS
@@ -48,36 +47,6 @@ void pst_slope_map_set_gradient(float_image_t *G, int32_t x, int32_t y, r2_t *gr
 void pst_slope_map_set_weight(float_image_t *G, int32_t x, int32_t y, float w);
   /* Stores the weight {w} into channel 2 of the pixel in column
     {x}, row {y} of {G}. The image {G} must have three channels. */
-   
-void pst_slope_map_interpolate_four_samples
-  ( float_image_t *G,
-    int32_t c,
-    int32_t x0, int32_t y0,
-    int32_t x1, int32_t y1,
-    double *vR_P, double *wR_P
-  );
-  /* Estimates the value {vR} of channel {c} (0 or 1) of image {G}
-    halfway between the centers of the pixels with indices {x0,y0} and
-    {x1,y1}, and its reliability weight {wR}. The pixels must be
-    adjacent either vertically ({x0-x1}) or horizontally ({y0=y1}).
-    Returns the results in {*vR_P} and {*wR_P}.
-    
-    Uses two other samples of {G} with indices {xm,ym} and {xp,yp} that
-    are collinear with those two points and equally spaced, on both
-    sides. 
-    
-    Assumes that channel 2 of {G}, if it exists, has the reliability
-    weighs for the slope values in channels 0 and 1. This weight must be
-    a finite non-negative number. If a pixel does not exist in the
-    map, its weight is taken to be zero.
-    
-    The formula uses the values {vm,v0,v1,vp} of those four pixels and
-    their respective weights {wm,w0,w1,wp}. Pixels with zero weight are
-    ignored.
-    
-    If {w0} and/or {w1} are zero, the result is {vR=NAN} and {wR=0}.
-    Otherwise uses a linear, quadratic, or cubic interpolation forumula
-    depending on whether none, one, or two of {wm,wp} are nonzero. */
     
 /* ESTIMATING HEIGHT DIFFERENCES */
 
@@ -93,25 +62,29 @@ void  pst_slope_map_get_axial_edge_data
   ( float_image_t* G,
     int32_t x, int32_t y,
     int32_t axis, int32_t dir,
+    bool_t extrapolate,
     double *dP, double *wP
   );
   /* Sets {*d} to the height difference {d} between the height values at
     two adjacent grid points, estimated by interpolating the gradient map {G}.
     Also sets {*wP} to the weight {w} of that estimate.
     
-    One of the two pixels in question is {x,y}; the other pixel {x',y'}
+    One of the two grid vertices in question is {x,y}; the other grid point {x',y'}
     is determined by {axis}, which must be 0 or 1, and {dir} must be
     {+1} or {-1}. Specifically, {x',y'} is {x+dir,y} if {axis} is 0, and
     {x,y+dir} if {axis} is 1.  
     
-    The values of {d} and {w} are estimated by interpolating two or
-    more pixels of {G} that are adjacent to the grid edge 
-    from {x,y} to {x',y'}. */
+    The values of {d} and {w} are estimated by interpolating the
+    gradients of the two grid cells {x0,y0} and {x1,y1} of {G} that are
+    adjacent to the grid edge from {x,y} to {x',y'}, plus two pixels
+    {xm,ym} and {xp,yp} that are once removed from them. See
+    {pst_map_interpolate_samples}. */
 
 void pst_slope_map_get_edge_data
   ( float_image_t* G,
     int32_t x, int32_t y,
     int32_t ux, int32_t uy,
+    bool_t extrapolate,
     double *dP, double *wP
   );
   /* Sets {*d} to the height difference {d} between the height map

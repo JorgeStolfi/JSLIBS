@@ -2,7 +2,7 @@
 #define sve_minn_H
 
 /* Quadratic minimzation by the simplex vertex-edge method. */
-/* Last edited on 2024-12-05 13:18:14 by stolfi */
+/* Last edited on 2025-04-01 09:44:30 by stolfi */
 
 /* SIMPLICES
 
@@ -32,24 +32,24 @@
   and edge midpoints of some {n}-simplex {V}; that is, at 
   all points {V(i,j)} such that {0 <= j <= i <= n}.
   
-  The number of such /nodes/ is {K(n) = (n+1)*(n+2)/2}. */
+  The number of such /nodes/ is {nf = (n+1)*(n+2)/2}. */
 
 #include <stdint.h>
 
 #include <bool.h>
 #include <sign.h>
 
-void sve_minn_step(uint32_t n, double Fv[], double cm[], bool_t debug, bool_t debug_system);
-  /* Given the values {Fv[0..K(n)-1]} of a quadratic function {F} at the 
+void sve_minn_quadratic_optimum(uint32_t n, double Fv[], double cm[], bool_t debug, bool_t debug_system);
+  /* Given the values {Fv[0..nf-1]} of a quadratic function {F} at the 
     nodes of some {n}-simplex {V}, returns in {cm[0..n]} 
     the barycentric coordinates of the stationary point of {F} in the 
     affine subspace spanned by {V}.
 
-    The procedure assumes that the array {Fv} has {K(n)} elements, and
+    The procedure assumes that the array {Fv} has {nf} elements, and
     that {Fv[i*(i+1)/2+j] == F(V(i,j))} for all {i,j} such that 
     {0 <= j <= i <= n}. */
 
-typedef double sve_goal_t(uint32_t n, double x[]);
+typedef double sve_goal_t(uint32_t n, const double x[]);
   /* The type of a procedure that can be provided as the {F} parameter to
     {sve_sample_function} and {sve_optimize} below. It should compute
     some function of the vector {x[0..n-1]}. The function had better be
@@ -58,101 +58,81 @@ typedef double sve_goal_t(uint32_t n, double x[]);
 void sve_sample_function(uint32_t n, sve_goal_t *F, double v[], double Fv[]);
   /* Evaluates the {n}-variate goal function {F} at the nodes of an
     {n}-simplex {V} in {R^n}, ad stores the values into
-    {Fv[0..K(n)-1]}, in the order expected by {sve_minn_step}.
-    Assumes that {v} has {K(n)*n} elements and contains the 
+    {Fv[0..nf-1]}, in the order expected by {sve_minn_quadratic_optimum}.
+    Assumes that {v} has {nf*n} elements and contains the 
     coordinates of the vertices of the simplex, stored by rows.
     
     More precisely, sets {Fv[i*(i+1)/2+j]} to {F(V(i,j))} for all
     {i,j} such that {0 <= j <= i <= n}. */
 
-typedef bool_t sve_pred_t(uint32_t iter, uint32_t n, double x[], double Fx, double dist, double step, double radius);
-  /* The type of a procedure that can be provided as the {OK} parameter to
-    {sve_minn_iterate} below. It should check the current solution
-    {x[0..n-1]} and the corresponding goal function value {Fx}, and
-    return {TRUE} to stop the iteration, {FALSE} to continue it. 
-    
-    The parameter {iter} is number of complete iterations peformed; {dist}
-    is the distance (Euclidean or L-infinity) from the domain center {ctr} to {x[0..n-1]};
-    {step} is the distance from the previous iteration point, or {dMax} if {iter}
-    is zero; and {radius} is the tentative radius of the probe simplex for the next iteration. */
- 
-typedef double sve_proj_t(uint32_t n, double x[], double Fx);
-  /* The type of a procedure that can be provided as the {project} parameter to
-    {sve_minn_iterate} below.  It can modify the current guess {x[0..n-1]}
-    and return a paossibly changed value of the goal function at that point. */
-   
-void sve_minn_iterate
+uint32_t sve_minn_single_step
   ( uint32_t n, 
-    sve_goal_t *F, 
-    sve_pred_t *OK,
-    sve_proj_t *Proj,
-    double x[],
-    double *FxP,
-    sign_t dir,
-    double ctr[],
-    double dMax,
-    bool_t box,
-    double rIni,
-    double rMin, 
-    double rMax,
-    double minStep,
-    uint32_t maxIters,
+    double x[], double *FxP,
+    sve_goal_t *F, sign_t dir,
+    double dCtr[], double dMax, bool_t dBox, 
+    double *radiusP, double rMin,
+    double v[], double Fv[],
+    uint32_t *nEvalsP,
+    double *dStepP,
     bool_t debug,
     bool_t debug_probes
-  );
-  /*  Tries to find a stationary point {x[0..n-1]} of the {n}-argument
-    function {F}, by repeated calls to {sve_minn_step}.
+  ); 
+  /* Performs a single SVE quadratic optimization step of a goal
+    function {F}, including clipping the guess to a specified
+    box or ball domain, choosing the probe simplex, sampling the goal
+    function at the simplex nodes, computing the quadratic optimum
+    from those samples, clipping it to the domain, evaluating {F}
+    at that point, and choosing the best of all
+    values thus obtained.
     
-    Upon entry, the vector {x[0..n-1]} should contain the initial guess,
-    and {*FxP} should contain its function value {F(n,x)}. Upon exit,
-    {x} will contain the final guess, and {*FxP} with contain the value
-    of {F(n,x)}. 
+    The search domain is assumed to have center {dCtr[0..n-1]} and radius
+    {dMax}, being either a box or a ball depending on the {dBox} flag.
     
-    At each iteration, if {Proj} is not {NULL}, the procedure calls it
-    to adjust the current guess {x[0..n-1]}, e. g. projecting or
-    normalizing it onto some special subspace. Then the procedure
-    chooses a random probe simplex centered on {x[0..n-1]}. The radius
-    {r} of the simplex is dynamically adjusted, starting with {rIni} but
-    staying within the range {[rMin _ rMax]}.
+    On input, {x[0..n-1]} is assumed to be the guess for the optimum 
+    (or previously computed optimum), and {*FxP} is the goal function
+    value at that point.
     
-    The procedure then evaluates the goal function {F} at the 
-    vertices and edge midpoints of this simplex. as per {sve_sample_function}.
-    Note that the {Proj} function is NOT called on these 
-    probe points.  It then does a quadratic optimization step
-    on these values, as per {sve_minn_step}.  It then updates 
-    the current guess to either the result of this quadratic 
-    optimizaton or to one of the probe points, depending 
-    on the values of {F} at those points and the parameter {dir}.
+    The procedure first chooses a probe simplex {v[p..nv*n-1]} with some
+    radius {rad} and center {csi[0..n-1]}, where {nv} is {n+1}. If
+    possible, the center {csi} will be {x} and the radius will be the
+    input value of {*radiusP}, but both may have to be adjusted to
+    ensure that the simplex lies within the search domain. The adjusted
+    radius (which will not be less than {rMin}) is returned in
+    {*radiusP}. The simplex will have {nv = n+1} vertices. Coordinate
+    {j} of simplex vertex {i} will be stored in {v[i*n + j]}, for {i} in
+    {0..nv-1} and {j} in {0..n-1}.
     
-    The parameter {dir} specifies the minimization drection. If {dir ==
-    +1}, the procedure looks for a local maximum of {F}. If {dir == -1},
-    it looks for a local minimum. If {dir == 0}, it looks for any
-    stationary point of {F}, which may be a local minimum, a local
-    maximum, or a saddle point. In the latter case, the next guess at
-    each iteration is always the result of the quadratic optimization.
-    In this case, the value of {F} at the current guess {x} may increase
-    or decrease during the search; especially if the function is neither
-    concave nor convex, or has a significant non-quadratic behavior in
-    the region searched. In this case, the final guess {x} may be
-    neither the minimum nor the maximum of all sample points.
+    The procedure then evaluates the function {F} at the
+    {nf=(n+1)*(n+2)/2}} probe points, which are the vertices and edge
+    midpoints of the simplex, using {sve_sample_function}. The values
+    are stored in {Fv[0..nf-1]}.
     
-    If {dMax} is {+INF}, the search domain is the whole of {\RR}, and
-    the {ctr} and {box} parameters are ignored. Otherwise, if {box} is
-    {TRUE}, the search is limited to the signed unit cube {ctr + [-dMax
-    _ +dMax]^n}. If {box} is {FALSE}, the search domain is the unit
-    {n}-ball {{ x\in \RR^n : |x - ctr| <= dMax }}. If the {ctr}
-    parameter is {NULL}, it is assumed to be all zeros. In any case, the
-    initial guess {x} had better be inside the domain.
+    The procedure then computes the stationary point {y[0..n-1]}
+    from those sampling points and sampled values.  If this 
+    point lies outside the search domain, it is pulled towards
+    the domain center {dCtr} until it lies on the boundary of the domain.
+    Then the procedure computes the value {Fy} of the goal function {F}
+    at this point.
     
-    The iterations will stop when (A) the current guess {x} satisfies
-    the predicate {OK(n,x,F(n,x))}; or (B) the distance between
-    successive guesses is less than {minStep}; or (C) the quadratic
-    minimization loop has been performed {maxIters} times.
+    If {dir} is zero, the procedure just replaces the input vector {x}
+    with the computed and clipped stationary point {y}, and sets {*FxP}
+    to {Fy}. Otherwise it identifies either the maximum (if {dir} is
+    {+1}) or minimum (if {dir} is {-1}) among the input {*FxP}, the
+    value {Fy} at the computed stationary point, and the {nf} sampled
+    values {Fv[0..nf-1]}.  It then sets {*FxP} to that maximum or minimum, and
+    and sets {x} to the corresponding point ({x}, {y} one of the
+    vertices in {v}, or one of the edge midpoints).
     
-    If {debug} is true, the procedure prints basic information at each iteration.
-    If {debug_probes} is true, also prints the 
-    argument {x[0..nx-1]} and {F} value at each probe point (simplex center, 
-    vertices, and edge midpoints). */
+    The procedure increments {*nevals_P} with the number of calls to {F}
+    that it made (normally {nf+1}, for the simplex sampling and 
+    the stationary poont {y}).
+    
+    The procedure also sets {*dStepP} to the Euclidean distance
+    between the input and output positions of the point {x}. 
+    
+    The return value will be 0 if the winner is the computed stationary
+    point {y}, 1 if it is one of the probe points, and 2 if it is the
+    input solution {x} (i.e. if the step failed altogether). */
 
 /* LIMITS */
 

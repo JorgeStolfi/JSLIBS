@@ -1,4 +1,4 @@
-# Last edited on 2020-10-11 15:31:09 by jstolfi
+# Last edited on 2025-03-19 12:51:42 by stolfi
 
 PROG = test_r2_opt
 
@@ -25,6 +25,7 @@ JS_LIBS := \
   libminn.a \
   libminu.a \
   libgeo.a \
+  libgausol.a \
   libjs.a
 
 .PHONY:: all-tests single-test

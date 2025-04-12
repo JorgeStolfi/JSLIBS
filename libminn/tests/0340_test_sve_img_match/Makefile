@@ -1,4 +1,4 @@
-# Last edited on 2024-11-07 18:57:31 by stolfi
+# Last edited on 2025-03-19 15:15:17 by stolfi
 
 PROG = test_sve_img_match
  
@@ -8,6 +8,7 @@ TEST_LIB_DIR := ../..
 JS_LIBS := \
   libimg.a \
   libgeo.a \
+  libgausol.a \
   libjs.a
   
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
@@ -91,8 +92,7 @@ show-images:
 	display -title '%f' -filter box -resize '400%' \
 	    ${OIMG_INI}.png ${OOBJ_INI}.png ${OMSK_INI}.png \
 	    ${OIMG_OPT}.png ${OOBJ_OPT}.png ${OMSK_OPT}.png \
-          & show-goalf-plot.sh ${OPLOT}.txt \
-	  & ( xmessage "OK" ; echo "OK" 1>&2 )
+          & show-goalf-plot.sh ${OPLOT}.txt
 
 ${IIMG}.fni: ${IIMG}.png 
 	convert ${IIMG}.png PGM:- | pnm_to_fni -min 0 -max 1 > ${IIMG}.fni

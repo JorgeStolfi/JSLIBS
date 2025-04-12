@@ -1,7 +1,7 @@
 #ifndef pst_graph_from_maps_H
 #define pst_graph_from_maps_H
 
-/* Last edited on 2024-12-24 18:56:57 by stolfi */
+/* Last edited on 2025-03-15 10:17:59 by stolfi */
 /* Created by Rafael F. V. Saracchini */
 
 #include <stdint.h>
@@ -16,8 +16,8 @@ pst_graph_t* pst_graph_create_from_gradient_and_weight_maps(float_image_t* IG, f
     of rows. Image {IG} must have two channels, the {X} and {Y}
     derivatives. Image {IW} must have only one channel.
   
-    Each vertex {v} of {g} corresponds to a corner {(v.x,v.y)} of the
-    image domain, with {v.x} in {0..NX} and {v.y} in {0..NY}. 
+    Each vertex {v} of {g} corresponds to a vertex {(v.x,v.y)} of the
+    image domain grid, with {v.x} in {0..NX} and {v.y} in {0..NY}. 
     
     The vertex index {v.id} is a unique combination {v.x} and {v.y}.
     Note that this correspondence may be lost in reduced copies of

@@ -5,6 +5,7 @@
 #include <gauss_elim.h>
 #include <rmxn.h>
 #include <sve_minn.h>
+#include <sve_minn_iterate.h>
 #include <tabela.h>
 #include <jsfile.h>
 #include <lighting_models.h>
@@ -248,12 +249,12 @@ void approx_model_fit_non_linear_model_simplex(double** X, double* F,double* w,d
        }
      }
      
-     double baricentric[num_vertices];
+     double barycentric[num_vertices];
 
-     sve_minn_step(num_parms,Fv, baricentric);
-     rmxn_map_row (num_vertices, num_parms, baricentric,S, parameters);
+     sve_minn_quadratic_optimum(num_parms,Fv, barycentric);
+     rmxn_map_row (num_vertices, num_parms, barycentric,S, parameters);
      am->update_nl_parameters_and_errors(parameters,num_parms, l_data,alpha,beta,gamma);
-     fprintf(stderr,"Baricenter\n");
+     fprintf(stderr,"Barycenter\n");
      (void) approx_model_compute_S_star(am,X,F,w,wpos,n,parameters,l_data);
 //      am->write_parameters(stderr,l_data);
      num_iters++;

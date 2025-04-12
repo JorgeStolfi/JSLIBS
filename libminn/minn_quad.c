@@ -1,5 +1,5 @@
 /* See {minn_quad.h}. */
-/* Last edited on 2024-12-05 13:14:39 by stolfi */
+/* Last edited on 2025-04-01 09:04:49 by stolfi */
 
 #include <stdio.h>
 #include <assert.h>
@@ -14,6 +14,7 @@
 #include <minn.h>
 
 #include <sve_minn.h>
+#include <sve_minn_iterate.h>
 
 #include <minn_quad.h>
 
@@ -22,7 +23,7 @@
 void minn_quad
   ( uint32_t n,        /* Dimension of search space. */
     minn_goal_t *F,   /* Function to be minimized. */
-    bool_t box,       /* True to search in the unit cube, false in the unit ball. */
+    bool_t dBox,       /* True to search in the unit cube, false in the unit ball. */
     double tol,       /* Desired precision. */
     double v[],       /* (OUT) Minimum vector found. */
     double *Fval_P    /* (OUT) Goal function value at the minimum. */
@@ -42,7 +43,7 @@ void minn_quad
         /* Optimize: */
         sign_t dir = -1; /* Look for minimum. */
         uint32_t maxIters = 10;
-        double *ctr = NULL;        /* Search domain center is the origin. */
+        double *dCtr = NULL;       /* Search domain center is the origin. */
         double dMax = 1.0;         /* Search domain radius. */
         double rIni = 0.5;         /* Initial probe simplex radius. */
         double rMin = tol;         /* Minimum probe simplex radius. */
@@ -54,7 +55,7 @@ void minn_quad
         sve_minn_iterate
           ( n, F, NULL, NULL,
             v, &Fv, dir,
-            ctr, dMax, box, rIni, rMin, rMax, minStep,
+            dCtr, dMax, dBox, rIni, rMin, rMax, minStep,
             maxIters,
             sve_debug, sve_debug_probes
           );

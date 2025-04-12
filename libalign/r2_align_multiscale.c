@@ -1,5 +1,5 @@
 /* See {r2_align_multiscale.h}. */
-/* Last edited on 2024-12-05 10:20:06 by stolfi */
+/* Last edited on 2025-03-19 12:46:16 by stolfi */
 
 #include <math.h>
 #include <stdint.h>
@@ -16,6 +16,7 @@
 #include <jsmath.h>
 #include <affirm.h>
 #include <sve_minn.h>
+#include <sve_minn_iterate.h>
 
 #include <r2_align.h>
 #include <r2_align_enum.h>

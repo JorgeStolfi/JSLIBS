@@ -1,4 +1,4 @@
-/* Last edited on 2025-02-16 20:23:47 by stolfi */
+/* Last edited on 2025-03-19 12:47:27 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -8,6 +8,7 @@
 #include <tabela.h>
 #include <assert.h>
 #include <sve_minn.h>
+#include <sve_minn_iterate.h>
 #include <jsfile.h>
 #include <math_utils.h>
 #include <estlogprob.h>

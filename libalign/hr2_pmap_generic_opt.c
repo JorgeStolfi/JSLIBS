@@ -1,5 +1,5 @@
 /* See {hr2_pmap_generic_opt.h}. */
-/* Last edited on 2025-02-16 20:20:42 by stolfi */
+/* Last edited on 2025-04-01 09:20:22 by stolfi */
 
 #include <math.h>
 #include <stdint.h>
@@ -21,6 +21,7 @@
 #include <minn.h>
 #include <minn_plot.h>
 #include <sve_minn.h>
+#include <sve_minn_iterate.h>
 
 #include <hr2_pmap_encode.h>
 #include <hr2_pmap_opt.h>
@@ -96,7 +97,7 @@ void hr2_pmap_generic_opt_quadratic
             should be the same as {f2y}. Expects {ny == nz}. */
         
         sign_t dir = -1; /* Look for minimum. */
-        double ctr[nz]; rn_copy(nz, z, ctr);
+        double dCtr[nz]; rn_copy(nz, z, dCtr);
         double dMax = maxMod * sqrt(nz);
         bool_t dBox = FALSE;
         double rIni = 0.5*dMax;
@@ -113,7 +114,7 @@ void hr2_pmap_generic_opt_quadratic
         sve_minn_iterate
           ( nz, &sve_goal, (OK == NULL ? NULL : &sve_ok), &sve_proj,
             z, &f2z, dir, 
-            ctr, dMax, dBox, rIni, rMin, rMax, 
+            dCtr, dMax, dBox, rIni, rMin, rMax, 
             minStep, maxIter, sve_debug, sve_debug_probes
           );
 

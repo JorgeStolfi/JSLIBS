@@ -1,4 +1,4 @@
-# Last edited on 2024-11-07 18:59:14 by stolfi
+# Last edited on 2025-03-19 15:17:57 by stolfi
 
 PROG = test_sve_charges
  
@@ -8,6 +8,7 @@ TEST_LIB_DIR := ../..
 JS_LIBS := \
   libimg.a \
   libgeo.a \
+  libgausol.a \
   libjs.a
   
 include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
@@ -150,13 +151,12 @@ POTFILE := out/${NAME}-pot.dat
 
 single-test: ${PROG} 
 	time ${PROG} ${NQ} ${DIM} ${SYM}
-	if [[ -r ${POTFILE} ]] ; then \
-          show-potential-2d.sh ${NQ} ${POTFILE} & \
-        fi
 	if [[ -r ${SOLFILE} ]] ; then \
           show-solution-3d.sh ${NQ} ${LMAX} ${SOLFILE} & \
         fi
-	@-xmessage "OK"
+	if [[ -r ${POTFILE} ]] ; then \
+          show-potential-2d.sh ${NQ} ${POTFILE} & \
+        fi
 
 endif
 # end ${TEST} make

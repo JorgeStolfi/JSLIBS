@@ -74,16 +74,16 @@ typedef struct options_t{
   double NX,NY;
 } options_t;
 
-void img_graph_write_ps(PSStream *ps, pst_img_graph_t* g,bool_t useLabels,double ballSize, int32_t NX, int32_t NY);
+void img_graph_write_ps(PSStream *ps, pst_img_graph_t* gr,bool_t useLabels,double ballSize, int32_t NX, int32_t NY);
 
-void img_graph_write_ps(PSStream *ps, pst_img_graph_t* g,bool_t useLabels,double ballSize, int32_t NX, int32_t NY)
+void img_graph_write_ps(PSStream *ps, pst_img_graph_t* gr,bool_t useLabels,double ballSize, int32_t NX, int32_t NY)
 {
   
   auto void write_ps_vertex(int32_t index,bool_t label);
   
   void write_ps_vertex(int32_t index,bool_t label)
   {
-    pst_vertex_data_t* v = &(g->vertex[index]);
+    pst_vertex_data_t* v = &(gr->vertex[index]);
     r2_t coords = v->coords;
     if(label){
       char* id_text = NULL;
@@ -102,17 +102,17 @@ void img_graph_write_ps(PSStream *ps, pst_img_graph_t* g,bool_t useLabels,double
   auto void write_ps_edge(oct_arc_t e);
   void write_ps_edge(oct_arc_t e){
     
-    int32_t o = pst_img_graph_get_arc_origin(g,e);
-    int32_t d = pst_img_graph_get_arc_origin(g,oct_sym(e));
+    int32_t o = pst_img_graph_get_arc_origin(gr,e);
+    int32_t d = pst_img_graph_get_arc_origin(gr,oct_sym(e));
     
     write_ps_vertex(o,FALSE);
     write_ps_vertex(d,FALSE);
 
     
-    r2_t org_coords  = g->vertex[o].coords;
-    r2_t dst_coords  = g->vertex[d].coords;
+    r2_t org_coords  = gr->vertex[o].coords;
+    r2_t dst_coords  = gr->vertex[d].coords;
     
-    pst_path_t path = pst_img_graph_get_edge_path(g,e);
+    pst_path_t path = pst_img_graph_get_edge_path(gr,e);
 //     path = pst_path_create_empty();
     int32_t i;
     r2_t  p_medio = (r2_t){{ 0,0 }};
@@ -143,17 +143,17 @@ void img_graph_write_ps(PSStream *ps, pst_img_graph_t* g,bool_t useLabels,double
   /* First draw the segments in blue (non tree)*/
   pswr_set_pen(ps,0,0,1,0.1, 0, 0);
   int32_t i;
-  for(i = 0; i < g->m; i++){
-    if(g->???[i].aout != oct_NULL){
-      write_ps_edge(g->{hedge|dedge}@@[i].aout);
+  for(i = 0; i < gr->m; i++){
+    if(gr->???[i].aout != oct_NULL){
+      write_ps_edge(gr->{hedge|dedge}@@[i].aout);
     }
   }
   
   /* Now draw the vertices in black*/
    pswr_set_pen(ps,0,0,0,0.1, 0, 0);
-   for(i = 0; i < g->n; i++){
-     if(g->vertex[i].id != -1 ){
-// 	write_ps_vertex(i,g->n <= 256);
+   for(i = 0; i < gr->n; i++){
+     if(gr->vertex[i].id != -1 ){
+// 	write_ps_vertex(i,gr->n <= 256);
       write_ps_vertex(i,useLabels);
      }
    }
@@ -163,8 +163,8 @@ void img_graph_write_ps(PSStream *ps, pst_img_graph_t* g,bool_t useLabels,double
 
 
 
-void writePSA(char* outPrefix,pst_img_graph_t* g,bool_t useLabels,double ballSize, int32_t NX, int32_t NY);
-void writePSA(char* outPrefix,pst_img_graph_t* g,bool_t useLabels,double ballSize, int32_t NX, int32_t NY){
+void writePSA(char* outPrefix,pst_img_graph_t* gr,bool_t useLabels,double ballSize, int32_t NX, int32_t NY);
+void writePSA(char* outPrefix,pst_img_graph_t* gr,bool_t useLabels,double ballSize, int32_t NX, int32_t NY){
 //   
     double xMin = -0.20*NX;
     double xMax = +1.20*NX;
@@ -195,7 +195,7 @@ void writePSA(char* outPrefix,pst_img_graph_t* g,bool_t useLabels,double ballSiz
    );
    pswr_set_fill_color(ps,1.0,1.0,0.95);
    pswr_rectangle(ps,xMin,xMax,yMin,yMax,TRUE,FALSE);
-   img_graph_write_ps(ps,g,useLabels,ballSize, NX,NY);
+   img_graph_write_ps(ps,gr,useLabels,ballSize, NX,NY);
    pswr_close_stream(ps);
     free(filename);
 }
@@ -243,15 +243,15 @@ int32_t main(int32_t argc, char** argv){
   options_t* o = parse_options(argc,argv);
   
   FILE* graph_arq = open_read(o->graphFile,TRUE);
-  pst_img_graph_t* g = pst_img_graph_read(graph_arq);
+  pst_img_graph_t* gr = pst_img_graph_read(graph_arq);
   fclose(graph_arq);
   /*We have to determnie NX,NY looking at the vertices*/
   int32_t NX, NY;
   NX = 0; NY = 0;
   int32_t i;
   if(o->NX == -1){
-    for(i = 0; i < g->n; i++){
-      pst_vertex_data_t* v = &(g->vertex[i]);
+    for(i = 0; i < gr->n; i++){
+      pst_vertex_data_t* v = &(gr->vertex[i]);
       if( v->coords.c[0] > NX) NX = v->coords.c[0];
       if( v->coords.c[1] > NY) NY = v->coords.c[1];
     }
@@ -260,7 +260,7 @@ int32_t main(int32_t argc, char** argv){
     NY = o->NY;
   }
   fprintf(stderr,"%ld %ld\n",NX,NY);
-  writePSA(o->epsFile,g,o->useLabels,o->ballSize,NX,NY);
+  writePSA(o->epsFile,gr,o->useLabels,o->ballSize,NX,NY);
   
   return 0;
 }

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {fget.h}, {fget_data.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2024-11-23 07:48:56 by stolfi */ 
+/* Last edited on 2025-03-13 06:35:26 by stolfi */ 
 /* Created on 2007-01-02 by J. Stolfi, UNICAMP */
 
 #define test_fget_COPYRIGHT \
@@ -313,7 +313,7 @@ void test_fget_chars(bool_t verbose)
         else if (c == '2')
           { /* Skip leading spaces then read all with {fget_char}. */
             fget_skip_spaces(rd);
-            while (! fget_skip_and_test_char(rd, '\n')) 
+            while (! fget_skip_spaces_and_test_char(rd, '\n')) 
               { c = fget_char(rd);
                 ifv { Pr(Er, "[%c]", c); }
               }
@@ -322,8 +322,8 @@ void test_fget_chars(bool_t verbose)
         else if (c == '3')
           { /* Skip leading spaces then read until comment. */
             while (TRUE)
-              { if (fget_skip_and_test_char(rd, '#'))  { fget_skip_to_eol(rd); break; }
-                if (fget_skip_and_test_char(rd, '\n')) { break; }
+              { if (fget_skip_spaces_and_test_char(rd, '#'))  { fget_skip_to_eol(rd); break; }
+                if (fget_skip_spaces_and_test_char(rd, '\n')) { break; }
                 c = fget_char(rd);
                 ifv { Pr(Er, "[%c]", c); }
               }

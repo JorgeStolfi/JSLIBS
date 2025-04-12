@@ -2,7 +2,7 @@
 #define minn_H
 
 /* Basic defs for n-dimensional minimization. */
-/* Last edited on 2024-12-05 13:11:09 by stolfi */ 
+/* Last edited on 2025-04-01 09:04:13 by stolfi */ 
 
 #include <stdio.h>
 #include <stdint.h>
@@ -17,7 +17,7 @@
   {n}-dimensional signed unit cube {\RB = [-1 _ +1]^n} or the 
   {n}-dimensional unit ball {\RE} = {{v \in \RR^n : |v| <= 1}}. */
 
-typedef double minn_goal_t (uint32_t n, double c[]); 
+typedef double minn_goal_t (uint32_t n, const double c[]); 
   /* Type of a function of {\RR^n} to {\RR} that is to be minimized. */
 
 typedef enum
@@ -27,21 +27,21 @@ typedef enum
   /* Minimization method to use. */
 
 void minn_uniform
-  ( uint32_t n,          /* Dimension of search space. */
+  ( uint32_t n,         /* Dimension of search space. */
     minn_goal_t *F,     /* Function to be minimized. */
-    bool_t box,         /* True to search in the unit cube, false in the unit ball. */
+    bool_t dBox,        /* True to search in the unit cube, false in the unit ball. */
     double atol[],      /* Desired precision along each coordinate. */
     minn_method_t meth, /* Minimizaton method do use.*/
     double v[],         /* (OUT) Minimum vector found. */
     double *Fval_P      /* (OUT) Goal function value at the minimum. */
   );
-  /* Minimizes {F} over a search domain {\RD} of {\RR^n}d defined by {dMax} and {box},
+  /* Minimizes {F} over a search domain {\RD} of {\RR^n}d defined by {dMax} and {dBox},
     unig the mextod {meth}.
     
-    If {dMax} is {+INF}, the search domain {\RD} is the whole of {\RR^n}, and {box}
+    If {dMax} is {+INF}, the search domain {\RD} is the whole of {\RR^n}, and {dBox}
     is ignored.  If {dMax} is finite, it must be positive; then the domain {\RD} is the 
-    signed unit cube {[-dMax _ +dMax]^n} if {box} is true, or the ball of radius {dMax},
-    {{v\in \RR^n : |v| <= dMax}} if {box} is false.
+    signed unit cube {[-dMax _ +dMax]^n} if {dBox} is true, or the ball of radius {dMax},
+    {{v\in \RR^n : |v| <= dMax}} if {dBox} is false.
     
     The parameter {atol} must be an {n}-vector of positive numbers. 
     The procedure will attempt to achieve precision {atol[i]} along
@@ -57,25 +57,25 @@ void minn_uniform
     {atol[k]} for {k} over {0..n-1}. */
 
 void minn_subspace
-  ( uint32_t n,          /* Dimension of search space. */
+  ( uint32_t n,         /* Dimension of search space. */
     minn_goal_t *F,     /* Function to be minimized. */
-    uint32_t d,          /* Dimension of search domain. */
+    uint32_t d,         /* Dimension of search domain. */
     double U[],         /* Main axis directions of the search domain. */
     double urad[],      /* Radii of the search domain. */
-    bool_t box,         /* True the search domain is a box, false it is an ellipsoid. */
+    bool_t dBox,        /* True the search domain is a box, false it is an ellipsoid. */
     double utol[],      /* Desired precision along each {U} row. */
     minn_method_t meth, /* Minimizaton method do use.*/
     double v[],         /* (OUT) Minimum vector found. */
     double *Fval_P      /* (OUT) Goal function value at the minimum. */
   );
   /* Minimizes {F} in the search domain {\RD} defined by the orthonormal 
-    basis matrix {U}, the radius vector {urad}, and the {box} parameter.
+    basis matrix {U}, the radius vector {urad}, and the {dBox} parameter.
     
     The matrix {U} must have {d} orthonormal rows and {n} columns, and
     {urad} must be a {d}-vector of finite positive numbers. If {U} is {NULL},
     {d} must be {n}, and {U} is assumed to be the identity matrix.
     
-    If {box} is true, the search domain is the {d}-dimensional box {\RB(U,urad)}
+    If {dBox} is true, the search domain is the {d}-dimensional box {\RB(U,urad)}
     in {\RR^n} whose sides are parallel to the rows of {U}, and whose half-width 
     along each direction {U[k,*]} is {urad[k]}.  Namely, {\RB(U,urad)}
     is the set {{ s*U : s \in \RA(urad)}} where {\RA(urad)} is the axis-aligned

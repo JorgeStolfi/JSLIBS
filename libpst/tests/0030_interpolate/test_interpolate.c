@@ -4,7 +4,7 @@
 
 /* Copyright © 2025 by the State University of Campinas (UNICAMP). */
 /* See the copyright, authorship, and warranty notice at end of file. */
-/* Last edited on 2025-02-20 08:42:26 by stolfi */
+/* Last edited on 2025-03-16 01:21:20 by stolfi */
 
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
@@ -48,6 +48,26 @@ typedef struct options_t
   } options_t;
 
 /* INTERNAL PROTOTYPES */
+    
+void tint_define_data_and_exp(int32_t N, double vP[], double wP[], double vH_exp[]);
+  /* Fills the data points {vP[k],wP[k]} for {k} in {0..N-1}. In most
+    cases, the weights {wP[k]} will be randomly chosen in {[0_1]}, and
+    the value {vP[k]} will be a frequency-modulated sinusoid.
+    Occasionally there will be gaps of one or more points. where {wP[k]}
+    is 0 and {vP[k]} is {NAN}.
+
+    Also fills {vH_exp[k]}, for {k} in {0..N}, with the same function
+    evaluated at half a step before {vP[k]} (but witout {NAN}s). */
+
+void tint_write_data(char *outDir, int32_t N, double vP[], double wP[]);
+  /* Writes {k}, {vP[k]} and {wP[k]} for {k} in {0..N-1}
+    to file "{outDir}/data.txt". */
+
+void tint_write_iterp(char *outDir, int32_t N, double vH_exp[], double vH_cmp[], double wH_cmp[]);
+  /* Writes to file "{outDir}/interp.txt" {N+1} lines with the interpolated data.
+    Each line has "{k-0.5} {vH_exp[k]} {vH_cmp[k]} {wH_cmp[k]} {vE[k]}"
+    where {k} ranges in {0..N} and {vE[k]} is {vH_cmp[k] - vH_exp[k]}.
+    If {wH_cmp[k]} is 0 (and thus {vH_cmp[k]} is {NAN}), omits the last three values. */
 
 options_t *parse_options(int32_t argc, char **argv);
   /* Parses the command line arguments and packs them as an {options_t}. */
@@ -60,29 +80,134 @@ int32_t main(int32_t argc, char** argv)
   {
     options_t *o = parse_options(argc, argv);
     
-    int32_t N = 200;      /* Num of test points. */
-    double vP[N], wP[N];  /* Data values and weights. */
-    double vH[N+1];       /* Expected interpolated values. */
+    int32_t N = 160;      /* Num of test points. */
+    double vP[N], wP[N];  /* Function values and weights at integer args. */
+    double vH_exp[N+1];   /* Ideal function values at half-integer args. */
     
-    auto void fill_points(int32_t ip0, int32_t np);
-      /* Fills the data points {vP[ip],wP[ip]}, for {ip = ip0+k} and {k}
-        in {0..np-1}. In most cases, the weights {wP[ip]} will be
-        randomly chosen in {[0_1]}, and the value {vP[ip]} will be
-        a frequency-modulated sinusoid. Occasionally there
-        will be gaps of one or more points. where {wP[ip]} is 0 and
-        {vP[ip]} is {NAN}.
+    tint_define_data_and_exp(N, vP, wP, vH_exp);
+    tint_write_data(o->outDir, N, vP, wP);
+
+    double vH_cmp[N+1];   /* Interpolated values at half-integer args. */
+    double wH_cmp[N+1];   /* Weights of interpolated values at half-integer args. */
+    
+    auto void fetch(int32_t j, double *vR_P, double *wR_P);
+      /* Returns {vP[j]} and {wP[j]}, if {j} is in {0..N-1};
+        otherwise returns {NAN,0}. */
+
+    for (int32_t j = 0; j <= N; j++)
+      { double vR, wR;
+
+        int32_t ja, jb, n, m;
+        pst_interpolate_select_data(j-1, fetch, &ja, &jb, &n, &m);
+        assert((n >= 0) && (n <= 4));
+        assert((m >= 0) && (m <= n));
+
+        /* Collect values to interpolate: */
+        double vS[n], wS[n];
+        for (int32_t k = 0; k < n; k++)
+          { vS[k] = vP[ja + k];
+            wS[k] = wP[ja + k];
+          }
         
-        Also fills {vH[ip]}, for {ip = ip0+k} and {k} in {0..np},
-        with the same function evaluated at half a step before {vP[ip]}. */
+        pst_interpolate_values((uint32_t)n, vS, wS, (uint32_t)m, &vR, &wR);
+        vH_cmp[j] = vR;
+        wH_cmp[j] = wR;
         
+        /* Decide whether weight {wR} is expected to be zero: */
+        bool_t expZero = (n == 0);
+
+        bool_t bug = FALSE;
+        if (wR == 0)
+          { if (! expZero) 
+              { fprintf(stderr, "** got zero weight out, expected nonzero\n"); bug = TRUE; }
+          }
+        else
+          { if (expZero)
+              { fprintf(stderr, "** got nonzero weight out, expected zero\n"); 
+                fprintf(stderr, "  vR = %24.16e  wR = %24.16e\n", vR, wR);
+                bug = TRUE;
+              }
+          }
+        if (bug)
+          { fprintf(stderr, "  n = %d  m= %d\n", n, m);
+            for (int32_t k = 0; k <= n; k++)
+              { if (k == m) { fprintf(stderr, "  .....\n"); }
+                if (k < n) { fprintf(stderr, "  vS[%d] = %24.16e  wS[%d] = %24.16e\n", k, vS[k], k, wS[k]); }
+              }
+          }
+      }
+      
+    tint_write_iterp(o->outDir, N, vH_exp, vH_cmp, wH_cmp);
+    
+    return 0;
+    
+    void fetch(int32_t j, double *vR_P, double *wR_P)
+      { double vR, wR;
+        if ((j >= 0) && (j < N))
+          { vR = vP[j]; wR = wP[j]; }
+        else
+          { vR = NAN; wR = 0; }
+        assert((isfinite(vR)) == ((isfinite(wR)) && (wR > 0)));
+        (*vR_P) = vR;
+        (*wR_P) = wR;
+      }
+  }
+
+void tint_define_data_and_exp(int32_t N, double vP[], double wP[], double vH_exp[])
+  { 
+    auto void plop(int32_t i);
+    
+    auto void skip(int32_t i);
+    
     auto double func(double z);
-      /* The function that defines the point value {vPk[ip]} for the value
-        of {z = ip/(np-1)}. */
+      /* Computes a frequency-varying sinusoid. Assumes the 
+        {z} argument varies in {[0 _ 1]}. */
     
-    fill_points(0, N);
+    int32_t k = 0;
+    for (int32_t j = 0; j < 6; j++) { plop(k); k++; }
+    int32_t nr = 5;
+    for (int32_t b = 0; b < 6; b++)
+      { for (int32_t r = 1; (r <= nr) && (k + r + 2 <= N); r++)
+          { /* Write a block with 1 gap, {r} points, 1 gap */
+            skip(k); k++;
+            for (int32_t i = 0; i < r; i++) { plop(k); k++; }
+            skip(k); k++;
+          }
+      }
+    while (k < N) { plop(k); k++; }
+
+    for (int32_t k = 0; k <= N; k++)
+      { double zHk = ((double)k - 0.5)/((double)N - 1);
+        double vHk = func(zHk);
+        vH_exp[k] = vHk;
+      }
+
+    return;
     
-    char *fname_data = jsprintf("%s/data.txt", o->outDir);
-    FILE *wr_data = open_write(fname_data, TRUE);
+    void plop(int32_t i)
+      { double zPk = ((double)i)/((double)N - 1);
+        double vPk = func(zPk); 
+        double wPk = dabrandom(0, 1);
+        if (wPk == 0) { vPk = NAN; }
+        vP[i] = vPk; wP[i] = wPk;
+      }
+    
+    void skip(int32_t i)
+      { double vPk = NAN; 
+        double wPk = 0;
+        vP[i] = vPk; wP[i] = wPk;
+      }
+    
+    double func(double z)
+      { double t = 3*z*(1 + 1.0*z); 
+        return 3.5 + 2.0*sin(2*M_PI*t);  
+      }
+  }
+    
+void tint_write_data(char *outDir, int32_t N, double vP[], double wP[])
+  { 
+    char *fname = jsprintf("%s/data.txt", outDir);
+    FILE *wr = open_write(fname, TRUE);
 
     for (int32_t k = 0; k < N; k++)
       { double xk = k;
@@ -90,84 +215,31 @@ int32_t main(int32_t argc, char** argv)
         double wk = wP[k];
         
         if (wk == 0)
-          { fprintf(wr_data, "\n"); }
+          { fprintf(wr, "\n"); }
         else
-          { fprintf(wr_data, "%8.4f  %8.4f %8.6f\n", xk, vk, wk); }
+          { fprintf(wr, "%8.4f  %8.4f %8.6f\n", xk, vk, wk); }
       }
-    fclose(wr_data);
-
-    char *fname_interp = jsprintf("%s/interp.txt", o->outDir);
-    FILE *wr_interp = open_write(fname_interp, TRUE);
-    
-    for (int32_t k = 0; k <= N; k++)
-      { double vm = (k <= 1 ? NAN : vP[k-2]);
-        double wm = (k <= 1 ? 0.0 : wP[k-2]);
-        
-        double x0 = k-1;
-        double v0 = (k == 0 ? NAN : vP[k-1]);
-        double w0 = (k == 0 ? 0.0 : wP[k-1]);
-        
-        double x1 = k;
-        double v1 = (k == N ? NAN : vP[k]);
-        double w1 = (k == N ? 0.0 : wP[k]);
-        
-        double vp = (k >= N-1 ? NAN : vP[k+1]);
-        double wp = (k >= N-1 ? 0.0 : wP[k+1]);
-        
-        double xR = (x0 + x1)/2;
-        double vR, wR;
-        pst_interpolate_four_values(vm, wm, v0, w0, v1, w1, vp, wp, &vR, &wR);
-        
-        if (wR == 0)
-          { fprintf(wr_interp, "\n"); }
-        else
-          { fprintf(wr_interp, "%10.4f  %12.8f %12.8f  %12.8f %12.8f\n", xR, vR, wR, vH[k], vR - vH[k]); }
-      }
-      
-    fclose(wr_interp);
-    return 0;
-    
-    double func(double z)
-      { double t = 3*z*(1 + 1.0*z); 
-        return 3.5 + 2.0*sin(2*M_PI*t);  
-      }
-    
-    void fill_points(int32_t ip0, int32_t np)
-      { int32_t nskip = 0; /* Points to skip. */
-        int32_t ixgap = 0; /* Gaps generated so far, modulo 3. */
-        for (int32_t k = 0; k < np; k++)
-          { double zPk = ((double)k)/((double)np -1);
-            double vPk, wPk;
-            if ((k <= 1) || (k >= np-2) || (nskip > 0))
-              { vPk = NAN; wPk = 0;
-                if (nskip > 0) { nskip--; }
-              }
-            else
-              { vPk = func(zPk);
-                wPk = dabrandom(0, 1);
-              }
-            /* Just in case: */
-            if (wPk == 0) { vPk = NAN; }
-            /* Save point: */
-            int32_t ip = ip0 + k;
-            vP[ip] = vPk; wP[ip] = wPk;
-            /* Define random bursts of faults: */
-            if ((nskip == 0) && (drandom() < 0.10))
-              { nskip = ixgap + 1;
-                ixgap = (ixgap + 1) % 3;
-              }
-          }
-
-        for (int32_t k = 0; k <= np; k++)
-          { double zHk = ((double)k-0.5)/((double)np -1);
-            double vHk = func(zHk);
-            /* Save point: */
-            int32_t ip = ip0 + k;
-            vH[ip] = vHk;
-          }
-      }
+    fclose(wr);
+    free(fname);
   }
-  
+    
+void tint_write_iterp(char *outDir, int32_t N, double vH_exp[], double vH_cmp[], double wH_cmp[])
+  {
+    char *fname = jsprintf("%s/interp.txt", outDir);
+    FILE *wr = open_write(fname, TRUE);
+    for (int32_t j = 0; j <= N; j++)
+      { double xR = ((double)j) - 0.5;
+        double vF = vH_exp[j];
+        double vR = vH_cmp[j];
+        double wR = wH_cmp[j];
+        if (wR == 0)
+          { fprintf(wr, "%10.4f  %12.8f\n", xR, vF); }
+        else
+          { fprintf(wr, "%10.4f  %12.8f  %12.8f %12.8f  %12.8f\n", xR, vF, vR, wR, vR - vF); }
+      }
+    fclose(wr);
+    free(fname);
+  }
 
 options_t *parse_options(int argc, char **argv)
   {
