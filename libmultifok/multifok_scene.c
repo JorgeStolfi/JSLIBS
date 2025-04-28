@@ -1,5 +1,5 @@
 /* See {multifok_scene.h}. */
-/* Last edited on 2025-02-10 03:36:19 by stolfi */
+/* Last edited on 2025-04-13 05:46:43 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,6 +80,7 @@ void multifok_scene_add_foreground_object
   ( multifok_scene_t *scene,
     multifok_scene_object_type_t type,
     interval_t bbox[],
+    bool_t bottom,
     frgb_t *fgGlo,
     frgb_t *bgGlo,
     frgb_t *fgLam,
@@ -97,7 +98,8 @@ void multifok_scene_add_foreground_object
     uint32_t NO = scene->NO; /* Number of objects already generated. */
     scene->objs = retalloc(scene->objs, NO+1, multifok_scene_object_t);
       
-    multifok_scene_object_t obj = multifok_scene_object_foreground_make(type, bbox, fgGlo, bgGlo, fgLam, bgLam, verbose);
+    multifok_scene_object_t obj = multifok_scene_object_foreground_make
+      ( type, bbox, bottom, fgGlo, bgGlo, fgLam, bgLam, verbose );
     
     /* Check object's containment in {scene.dom}: */
     interval_t *dom = scene->dom;

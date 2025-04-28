@@ -1,7 +1,9 @@
 #! /bin/bash
-# Last edited on 2025-04-02 18:36:39 by stolfi
+# Last edited on 2025-04-19 10:27:28 by stolfi
 
 dfile="$1"; shift
+tagk="$1"; shift
+tagj="$1"; shift
 
 export GDFONTPATH="${HOME}/ttf"
 

@@ -1,5 +1,5 @@
 /* See aa_compile.h */
-/* Last edited on 2024-12-05 10:19:08 by stolfi */
+/* Last edited on 2025-04-24 14:20:35 by stolfi */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -339,16 +339,16 @@ void aa_compile
     maxe = shared_ne + p->nin + p->nops;
     
     /* Allocate internal tables: */
-    defined = (int32_t *) malloc(maxv * sizeof (int32_t));
-    last_used = (int32_t *) malloc(maxv * sizeof (int32_t));
-    depends = (bool_t **) malloc(maxv * sizeof(bool_t*));
-    erreps = (int32_t *) malloc (maxv * sizeof(int32_t));
-    reduce = (int32_t **) malloc(maxv * sizeof(int32_t*));
-    result = (int32_t *) malloc(p->nout * sizeof(int32_t));
+    defined = talloc(maxv, int32_t);
+    last_used = talloc(maxv, int32_t);
+    depends = talloc(maxv, bool_t*);
+    erreps = talloc(maxv, int32_t);
+    reduce = talloc(maxv, int32_t*);
+    result = talloc(p->nout, int32_t);
     { int32_t iv;
       for (iv = 0; iv < maxv; iv++)
-        { depends[iv] = (bool_t *) malloc(maxe * sizeof(bool_t));
-          reduce[iv] = (int32_t *) malloc(maxe * sizeof(int32_t));
+        { depends[iv] = talloc(maxe, bool_t);
+          reduce[iv] = talloc(maxe, int32_t);
         }
     }
     
@@ -390,8 +390,8 @@ void aa_compute_value_scopes
 
     /* Process pcode: */
     {
-      int32_t *stack = (int32_t *) malloc(p->nstack * sizeof(int32_t));
-      int32_t *reg = (int32_t *) malloc(p->nregs * sizeof(int32_t));
+      int32_t *stack = talloc(p->nstack , int32_t);
+      int32_t *reg = talloc(p->nregs , int32_t );
 
       int32_t top = -1;
       int32_t iop = 1;
@@ -515,7 +515,7 @@ void aa_compute_epsilon_tables
     
     /* Initialize tables: */
     (*ne) = 0;
-    dep_count = (int32_t *) malloc(maxe * sizeof(int32_t));
+    dep_count = talloc(maxe , int32_t);
     { int32_t iv, ie;
       for (iv = 0; iv < nv; iv++)
         { erreps[iv] = -1;
@@ -526,8 +526,8 @@ void aa_compute_epsilon_tables
     }
     
     { 
-      int32_t *stack = (int32_t *) malloc(p->nstack * sizeof(int32_t));
-      int32_t *reg = (int32_t *) malloc(p->nregs * sizeof(int32_t));
+      int32_t *stack = talloc(p->nstack, int32_t );
+      int32_t *reg = talloc(p->nregs, int32_t);
 
       int32_t iv = p->nin;
       int32_t iop, je;
@@ -783,10 +783,10 @@ void aa_generate_code
 
 char **aa_compute_value_names(int32_t nv)
   {
-    char **v_name = (char**) malloc(nv * sizeof(char*));
+    char **v_name = talloc(nv, char*);
     int32_t iv;
     for (iv = 0; iv < nv; iv++)
-      { char *p = ((char*) malloc(4 * sizeof(char))) + 3;
+      { char *p = talloc(4, char);
 	int32_t k = iv;
 	*p = '\000';
 	p--; *p = (char)('a' + (k % 26)); k = k / 26;
@@ -875,8 +875,8 @@ void aa_generate_body
     int32_t ne,
     char **v_name
   )
-  { int32_t *stack = (int32_t *) malloc(p->nstack * sizeof(int32_t));
-    int32_t *reg = (int32_t *) malloc(p->nregs * sizeof(int32_t));
+  { int32_t *stack = talloc(p->nstack, int32_t);
+    int32_t *reg = talloc(p->nregs, int32_t);
     int32_t top = -1;
     int32_t iop;
     int32_t iv, ie;

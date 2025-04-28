@@ -2,7 +2,7 @@
 #define mkgr_mark_grid_paint_image_H
 
 /* mkgr_mark_grid_paint_image.h - functions to draw grid of marks as PS files. */
-/* Last edited on 2020-11-29 18:28:28 by jstolfi */
+/* Last edited on 2025-04-24 13:41:09 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdint.h>
@@ -20,7 +20,7 @@ void mkgr_mark_grid_paint_image
     mkgr_mark_grid_t *gr,   /* The list of marks. */
     double scale,           /* Scale factor from grid coordinates and sizes to pixels. */
     r2_t *org,              /* Pixel coordinates of grid origin, or {NULL}. */
-    int32_t m               /* Subsampling factor. */
+    uint32_t m              /* Subsampling factor. */
   );
   /* Draws the marks described in {gr} to the float image {img}. The
     marks are overlaid on top of the existing contents, with opaque

@@ -1,8 +1,10 @@
 /* pnmift_root_cost_fn.h - some arc cost functions for PNM segmentation */
-/* Last edited on 2010-06-06 16:54:11 by stolfi */
+/* Last edited on 2025-04-24 14:18:12 by stolfi */
 
 #ifndef pnmift_root_cost_fn_H
 #define pnmift_root_cost_fn_H
+
+#include <stdint.h>
 
 #include <frgb.h>
 
@@ -10,7 +12,7 @@
 
 typedef double pnmift_root_cost_t;
 
-typedef pnmift_root_cost_t pnmift_root_cost_fn_t(frgb_t q, int chns);
+typedef pnmift_root_cost_t pnmift_root_cost_fn_t(frgb_t q, uint32_t chns);
   /* Type of a function that returns the cost of a trivial path, given the RGB value {q}
     of the path's origin. */
 
@@ -24,12 +26,12 @@ pnmift_root_cost_fn_t *pnmift_root_cost_fn_from_name(char *name);
   "        lum\n" \
   "        " pnmift_root_cost_fn_lum_INFO 
 
-pnmift_root_cost_t pnmift_root_cost_fn_zero(frgb_t q, int chns);
+pnmift_root_cost_t pnmift_root_cost_fn_zero(frgb_t q, uint32_t chns);
 
 #define pnmift_root_cost_fn_zero_INFO \
   "  The root cost is zero."
 
-pnmift_root_cost_t pnmift_root_cost_fn_lum(frgb_t q, int chns);
+pnmift_root_cost_t pnmift_root_cost_fn_lum(frgb_t q, uint32_t chns);
 
 #define pnmift_root_cost_fn_lum_INFO \
   "  The root cost is the luminance of root pixel {q}."

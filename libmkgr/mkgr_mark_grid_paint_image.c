@@ -1,5 +1,5 @@
 /* See {mkgr_mark_grid_paint_image.h} */
-/* Last edited on 2023-04-23 11:10:48 by stolfi */
+/* Last edited on 2025-04-24 13:40:51 by stolfi */
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -25,7 +25,7 @@ void mkgr_mark_grid_paint_image
     mkgr_mark_grid_t *gr, 
     double scale,
     r2_t *org, 
-    int32_t m
+    uint32_t m
   )
   {
     int32_t NC = (int32_t)img->sz[0];
@@ -46,7 +46,7 @@ void mkgr_mark_grid_paint_image
             frgb_t color = mk->color;
             double lwd = mk->lwd * scale;
             double ang = mk->ang;
-            for (uint32_t ic = 0;  ic < chns; ic++)
+            for (int32_t ic = 0; ic < chns; ic++)
               { /* Get the channel index {c} and the respective mark color {val}: */
                 int32_t c = (ch == NULL ? ic : ch[ic]);
                 demand((c >= 0) && (c < NC), "invalid channel index");

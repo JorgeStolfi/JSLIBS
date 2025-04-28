@@ -1,10 +1,11 @@
 /* ift_plot.h - Postscript plotting of IFT path forests. */
-/* Last edited on 2024-12-05 10:29:07 by stolfi */
+/* Last edited on 2025-04-24 13:45:59 by stolfi */
 
 #ifndef ift_plot_H
 #define ift_plot_H
 
 #include <stdio.h>
+#include <stdint.h>
 
 #include <bool.h>
 #include <frgb.h>
@@ -23,7 +24,7 @@ void ift_plot_pixel
     ift_pixel_index_t col, 
     ift_pixel_index_t row,
     frgb_t *rgb,
-    int outline
+    int32_t outline
   );
   /* 
     Fills the specified pixel with the specified color.
@@ -48,7 +49,7 @@ void ift_plot_arc
     ift_pixel_index_t row1,
     ift_pixel_index_t col2, 
     ift_pixel_index_t row2,
-    int arrow
+    int32_t arrow
   );
   /* 
     Draws an arc from pixel (col1, row1) to pixel (col2, row2).

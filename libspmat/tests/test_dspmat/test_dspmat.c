@@ -4,7 +4,7 @@
 
 #define test_dspmat_C_COPYRIGHT "Copyright © 2008  by the State University of Campinas (UNICAMP)"
 /* Created on 2008-07-05 by J. Stolfi, UNICAMP */
-/* Last edited on 2023-03-18 10:44:36 by stolfi */ 
+/* Last edited on 2025-04-24 15:07:34 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -29,8 +29,8 @@
 #include <spmat_linalg.h>
 #include <dspmat.h>
 
-#define i32min(X,Y) (((X) <= (Y) ? (X) : (Y)))
-#define i32max(X,Y) (((X) >= (Y) ? (X) : (Y)))
+#define i32min(X,Y) ((((int32_t)X) <= ((int32_t)Y) ? ((int32_t)X) : ((int32_t)Y)))
+#define i32max(X,Y) ((((int32_t)X) >= ((int32_t)Y) ? ((int32_t)X) : ((int32_t)Y)))
 
 /* PROTOTYPES */
 
@@ -193,9 +193,9 @@ void test_dspmat_trim(int32_t it, bool_t verbose)
         posA = dspmat_add_element(&A, posA, i, j, Aij);
       }
     assert(posA <= A.ents);
-    dspmat_trim(&A, posA); assert(A.ents == posA); if (verbose) show_dspmat("A", &A, 1);
+    dspmat_trim(&A, (dspmat_count_t)posA); assert(A.ents == posA); if (verbose) show_dspmat("A", &A, 1);
     posA = posA/2;
-    dspmat_trim(&A, posA); assert(A.ents == posA); if (verbose) show_dspmat("A", &A, 1);
+    dspmat_trim(&A, (dspmat_count_t)posA); assert(A.ents == posA); if (verbose) show_dspmat("A", &A, 1);
     
     free(A.e);
   }
@@ -252,11 +252,11 @@ void test_dspmat_sort_entries_ins(int32_t it, bool_t verbose)
     dspmat_t R = dspmat_new(17,312,11);     
     dspmat_copy(&A, &R);
     
-    dspmat_sort_entries_ins(&A, +1, +2, 0,A.ents); if (verbose) show_dspmat("A", &A, 10);
+    dspmat_sort_entries_ins(&A, +1, +2, 0,(spmat_pos_t)A.ents); if (verbose) show_dspmat("A", &A, 10);
     dspmat_sort_entries(&R, +1, +2); if (verbose) show_dspmat("R", &R, 10);
     check_dspmat(&A, "A", &R, "R", verbose);
     
-    dspmat_sort_entries_ins(&A, +2, +1, 0,A.ents); if (verbose) show_dspmat("A", &A, 10);
+    dspmat_sort_entries_ins(&A, +2, +1, 0,(spmat_pos_t)A.ents); if (verbose) show_dspmat("A", &A, 10);
     dspmat_sort_entries(&R, +2, +1); if (verbose) show_dspmat("R", &R, 10);
     check_dspmat(&A, "A", &R, "R", verbose);
   }
@@ -287,8 +287,8 @@ void test_dspmat_condense(int32_t it, bool_t verbose)
               }
           }
       }
-    dspmat_trim(&A, posA); dspmat_sort_entries(&A, +2, +1); if (verbose) show_dspmat("A", &A, 10);
-    dspmat_trim(&R, posR); dspmat_sort_entries(&R, +2, +1); if (verbose) show_dspmat("R", &R, 10);
+    dspmat_trim(&A, (spmat_size_t)posA); dspmat_sort_entries(&A, +2, +1); if (verbose) show_dspmat("A", &A, 10);
+    dspmat_trim(&R, (spmat_size_t)posR); dspmat_sort_entries(&R, +2, +1); if (verbose) show_dspmat("R", &R, 10);
 
     auto double dbl_add(dspmat_index_t row, dspmat_index_t col, double v0, double v1);
     
@@ -322,9 +322,9 @@ void test_dspmat_mix(int32_t it, bool_t verbose)
         posB = dspmat_add_element(&B, posB, i, j, Bij);
         posR = dspmat_add_element(&R, posR, i, j, Rij);
       }
-    dspmat_trim(&A, posA); dspmat_sort_entries(&A, +2, +1); if (verbose) show_dspmat("A", &A, 10);
-    dspmat_trim(&B, posB); dspmat_sort_entries(&B, +2, +1); if (verbose) show_dspmat("B", &B, 10);
-    dspmat_trim(&R, posR); dspmat_sort_entries(&R, +2, +1); if (verbose) show_dspmat("R", &R, 10);
+    dspmat_trim(&A, (spmat_size_t)posA); dspmat_sort_entries(&A, +2, +1); if (verbose) show_dspmat("A", &A, 10);
+    dspmat_trim(&B, (spmat_size_t)posB); dspmat_sort_entries(&B, +2, +1); if (verbose) show_dspmat("B", &B, 10);
+    dspmat_trim(&R, (spmat_size_t)posR); dspmat_sort_entries(&R, +2, +1); if (verbose) show_dspmat("R", &R, 10);
     
     dspmat_t C = dspmat_new(0,0,0);
     dspmat_mix(0.5, &A, 2.0, &B, &C);
@@ -406,7 +406,7 @@ void test_dspmat_extract_row_dspmat_extract_col_dspmat_mul(int32_t it, bool_t ve
             posR = dspmat_add_element(&R, posR, i,j, sum);
           }
       }
-    dspmat_trim(&R, posR);
+    dspmat_trim(&R, (spmat_size_t)posR);
     
     check_dspmat(&C, "C", &R, "R", verbose);
     free(A.e);
@@ -434,7 +434,7 @@ void test_dspmat_map_row(int32_t it, bool_t verbose)
     /* By the book, reult in {r}: */
     dspmat_size_t nr = A.cols;
     double r[nr];
-    dspmat_sort_entries_ins(&A, +1, +2, 0, A.ents) /* (by col,row) */; if (verbose) show_dspmat("A", &A, 10);
+    dspmat_sort_entries_ins(&A, +1, +2, 0,(spmat_pos_t)A.ents) /* (by col,row) */; if (verbose) show_dspmat("A", &A, 10);
     double Acol[A.rows];
     dspmat_pos_t posA = 0;
     for (j = 0; j < A.cols; j++) 
@@ -487,28 +487,27 @@ void test_dspmat_add_diagonal_dspmat_fill_diagonal(int32_t it, bool_t fill, bool
     if (verbose) fprintf(stderr, "\ntesting {dspmat_add_diagonal,dspmat_fill_diagonal} ...\n");
     
     dspmat_t C = dspmat_new(17,31,0);
-    dspmat_count_t nd = imin(lcm(C.cols, C.rows), 300);
+    dspmat_count_t nd = (dspmat_count_t)imin((int64_t)lcm(C.cols, C.rows), 300);
     double d[nd];
-    int32_t k;
     double vfill = drandom();
-    for (k = 0; k < nd; k++) { d[k] = (fill ? vfill : drandom()); }
+    for (int32_t k = 0; k < nd; k++) { d[k] = (fill ? vfill : drandom()); }
     dspmat_pos_t posC = 0;
     dspmat_index_t row1 = 5, col1 = 3;
     if (fill)
       { posC = dspmat_fill_diagonal(&C, posC, row1, col1, vfill, nd); }
     else
       { posC = dspmat_add_diagonal(&C, posC, row1, col1, d, nd); }
-    dspmat_trim(&C, posC);
+    dspmat_trim(&C, (dspmat_count_t)posC);
     
     /* Check elements: */
     dspmat_t R = dspmat_new(C.rows,C.cols,0);
     dspmat_pos_t posR = 0;
-    for (k = 0; k < nd; k++) 
-      { dspmat_index_t row = (row1 + k) % R.rows;
-        dspmat_index_t col = (col1 + k) % R.cols;
+    for (int32_t k = 0; k < nd; k++) 
+      { dspmat_index_t row = (row1 + k) % (dspmat_index_t)R.rows;
+        dspmat_index_t col = (col1 + k) % (dspmat_index_t)R.cols;
         posR = dspmat_add_element(&R, posR, row, col, d[k]);
       }
-    dspmat_trim(&R, posR);
+    dspmat_trim(&R, (dspmat_count_t)posR);
          
     check_dspmat(&C, "C", &R, "R", verbose);
     free(C.e);   
@@ -587,15 +586,15 @@ void dspmat_throw(dspmat_t *M, double frac)
             posM = dspmat_add_element(M, posM, i, j, Mij);
           }
       }
-    dspmat_trim(M, posM);
+    dspmat_trim(M, (spmat_count_t)posM);
   }
 
 void dspmat_scramble_entries(dspmat_t *M)
   {
     dspmat_pos_t p;
     for (p = 0; p < M->ents; p++)
-      { dspmat_pos_t q = p + (int32_t)floor(drandom()*(M->ents - p));
-        if (q >= M->ents) { q = M->ents - 1; }
+      { dspmat_pos_t q = p + (int32_t)floor(drandom()*((double)M->ents - p));
+        if (q >= M->ents) { q = (dspmat_pos_t)M->ents - 1; }
         dspmat_entry_t e = M->e[p];
         M->e[p] = M->e[q];
         M->e[q] = e;

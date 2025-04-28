@@ -2,7 +2,7 @@
 #define PROG_DESC "test an analysis of basis functions from {multifok_focus_op.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-01-30 10:30:57 by stolfi */ 
+/* Last edited on 2025-04-13 05:55:55 by stolfi */ 
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
 #define test_mfok_show_basis_COPYRIGHT \
@@ -118,6 +118,8 @@ int32_t main (int32_t argc, char **argv)
           { if ((NW == 3) || (bt != DIFF))
               { for (uint32_t io = 0;  io <= 1; io++)
                   { bool_t ortho = (io == 1);
+                    char *bTypeX = multifok_basis_type_to_text(bt);
+                    char *wTypeX = multifok_window_type_to_text(wt);
                     char *basFolder = jsprintf("%s/basis-nw%03d-bt%s-wt%s-or%c", o->outFolder, NW, bTypeX, wTypeX, "FT"[ortho]);
                     mfsb_show_single_basis(NW, ws, bt, wt, ortho, basFolder);
                     free(basFolder);
@@ -145,8 +147,8 @@ void mfsb_show_sample_weights
     float_image_t *wsimg = float_image_new(NC, NX, NY);
     
     /* Write weights as an image: */
-    for (uint32_t ix = 0;  ix < NW; ix++)
-      { for (uint32_t iy = 0;  iy < NW; iy++) 
+    for (int32_t ix = 0;  ix < NW; ix++)
+      { for (int32_t iy = 0;  iy < NW; iy++) 
           { int32_t ks = iy*NW + ix;
             float_image_set_sample(wsimg, 0, ix, iy, (float)ws[ks]);
             double ws_check = (double)float_image_get_sample(wsimg, 0, ix, iy);

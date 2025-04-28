@@ -1,5 +1,5 @@
 /* See {multifok_weight.h}. */
-/* Last edited on 2025-04-11 09:05:42 by stolfi */
+/* Last edited on 2025-04-13 15:24:48 by stolfi */
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -13,71 +13,81 @@
 
 #include <multifok_weight.h>
 
-float_image_t *multifok_weight_from_height_and_normal(float_image_t *htd, double dhMax, float_image_t *nrm, double dnMax)
+float_image_t *multifok_weight_from_height_dev(float_image_t *hDev, double dhMax)
   {
-    demand((htd != NULL) || (nrm != NULL), "at least one of {htd} and {nrm} must be given");
+    demand(hDev != NULL, "{hDev} must be non-null");
     
-    int32_t NC_h = -1, NC_n = -1, NX = -1, NY = -1;
-    if (htd != NULL)
-      { float_image_get_size(htd, &NC_h, &NX, &NY);
-        if (nrm != NULL)
-          { NC_n = (int32_t)(nrm->sz[0]);
-            float_image_check_size(nrm, -1, NX, NY, "inconsistent sizes {htd,nrm}");
-          }
-      }
-    else
-      { float_image_get_size(nrm, &NC_h, &NX, &NY); }
+    int32_t NC, NX, NY;
+    float_image_get_size(hDev, &NC, &NX, &NY);
       
-    if (htd != NULL) { demand(NC_h >= 1, "invalid {htd} channel count"); }
-    if (nrm != NULL) { demand(NC_n >= 3, "invalid {nrm} channel count"); }
+    demand(NC >= 1, "invalid {hDev} channel count");
         
-    auto double weight_from_htd(int32_t x, int32_t y);
-      /* Return the weight for pixel {[x,y]} (either 0 or 1) considering {htd} alone.
-        In particular, if {htd} is null, returns 1. */
-        
-    auto double weight_from_nrm(int32_t x, int32_t y);
-      /* Return the weight for pixel {[x,y]} (either 0 or 1) considering {nrm} alone.
-        In particular, if {nrm} is null, returns 1. */
-        
-    auto bool_t get_normal(int32_t x, int32_t y, r3_t *u_P);
-      /* Tries to gets the normal vector {u=nrm[0..2,x,y]} and normalize
-        it to unit length. If the pixel {[x,y]} does not exist or any
-        coordinate of {u} is not finite or the norm of {u} is too close
-        to zero, returns {FALSE} and {*u_P} is undefined. Othwerwise
-        stores the normalized {u} into {*u_P} and returns {TRUE} */
+    auto double compute_weight(int32_t x, int32_t y);
+      /* Return the weight for pixel {[x,y]} (either 0 or 1) 
+        considering {hDev[0,x,y]} and {hdev[1,x,y]} if 
+        it exists. */
 
-    float_image_t *wht = float_image_new(1, NX, NY);
-    for (int32_t y = 0; y < NY;y++)
+    float_image_t *hWht = float_image_new(1, NX, NY);
+    for (int32_t y = 0; y < NY; y++)
       { for (int32_t x = 0; x < NX; x++)
-          { double w = weight_from_htd(x, y);
-            if (w != 0) { w *= weight_from_nrm(x, y); }
-            float_image_set_sample(wht, 0, x, y, (float)w);
+          { double w = compute_weight(x, y);
+            float_image_set_sample(hWht, 0, x, y, (float)w);
           }
       }
       
-    return wht;
+    return hWht;
     
-    double weight_from_htd(int32_t x, int32_t y)
-      { if (htd == NULL) { return 1.0; }
-        
-        /* Check height deviation: */
-        float dh = float_image_get_sample(htd, 0, x, y);
+    double compute_weight(int32_t x, int32_t y)
+      { /* Check height deviation: */
+        float dh = float_image_get_sample(hDev, 0, x, y);
         if (! isfinite(dh)) { return 0.0; }
         demand(dh >= 0, "deviation cannot be negative");
         if (dh > dhMax) { return 0.0; }
         
-        if (NC_h >= 2)
-          { /* Get the weight from {htd} too: */
-            float wh = float_image_get_sample(htd, 1, x, y);
-            demand(isfinite(wh) && (wh >= 0), "invalid weight value in height deviation map");
-            if (wh == 0) { return 0.0; }
+        if (NC >= 2)
+          { /* Get the weight from {hDev} too: */
+            float wh = float_image_get_sample(hDev, 1, x, y);
+            if (! isnan(wh)) 
+              { demand(isfinite(wh) && (wh >= 0), "invalid weight value in height deviation map");
+                return wh;
+              }
           }
         return 1.0;
       }
+  }
+
+float_image_t *multifok_weight_from_normal_grad(float_image_t *sNrm, double dnMax)
+  {
+    demand(sNrm != NULL, "{sNrm} must not be null");
     
-    double weight_from_nrm(int32_t x, int32_t y)
-      { if (nrm == NULL) { return 1.0; }
-        /* Get normal at pixel: */
+    int32_t NC, NX, NY;
+    float_image_get_size(sNrm, &NC, &NX, &NY);
+      
+    demand(NC >= 3, "invalid {sNrm} channel count");
+        
+    auto double compute_weight(int32_t x, int32_t y);
+      /* Return the weight for pixel {[x,y]} (either 0 or 1) considering {sNrm} alone.
+        In particular, if {sNrm} is null, returns 1. */
+        
+    auto bool_t get_normal(int32_t x, int32_t y, r3_t *u_P);
+      /* Tries to gets the normal vector {u=sNrm[0..2,x,y]} and normalize
+        it to unit length. If the pixel {[x,y]} does not exist or {u} is
+        any coordinate of {u} is {NAN} or the norm of {u} is too close
+        to zero, returns {FALSE} and {*u_P} is undefined. Othwerwise
+        stores the normalized {u} into {*u_P} and returns {TRUE} */
+
+    float_image_t *nWht = float_image_new(1, NX, NY);
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
+          { double w = compute_weight(x, y);
+            float_image_set_sample(nWht, 0, x, y, (float)w);
+          }
+      }
+      
+    return nWht;
+    
+    double compute_weight(int32_t x, int32_t y)
+      { /* Get normal at pixel: */
         r3_t u0;  
         bool_t u0_ok = get_normal(x, y, &u0);
         if (! u0_ok) { return 0.0; }
@@ -94,11 +104,13 @@ float_image_t *multifok_weight_from_height_and_normal(float_image_t *htd, double
                   }
               }
           }
-        if (NC_n >= 4)
-          { /* Get the weight from {nrm} too: */
-            float wn = float_image_get_sample(nrm, 1, x, y);
-            demand(isfinite(wn) && (wn >= 0), "invalid weight value in normal map");
-            if (wn == 0) { return 0.0; }
+        if (NC >= 4)
+          { /* Get the weight from {sNrm} too: */
+            float wn = float_image_get_sample(sNrm, 1, x, y);
+            if (! isnan(wn))
+              { demand(isfinite(wn) && (wn >= 0), "invalid weight value in normal map");
+                return wn;
+              }
           }
         return 1.0;
       }
@@ -107,8 +119,9 @@ float_image_t *multifok_weight_from_height_and_normal(float_image_t *htd, double
       { if ((x < 0) || (x >= NX) || (y < 0) || (y >= NY)) { return FALSE; }
         r3_t u;
         for (int32_t c = 0; c < 3; c++) 
-          { u.c[c] = float_image_get_sample(nrm, c, x, y);
+          { u.c[c] = float_image_get_sample(sNrm, c, x, y);
             if (! isfinite(u.c[c])) { return FALSE; } 
+            /* No need to check for {±INF}, will get to it eventually. */
           }
         /* Try to normalize, just in case: */
         double u_mag = r3_dir(&u, &u);
@@ -117,3 +130,43 @@ float_image_t *multifok_weight_from_height_and_normal(float_image_t *htd, double
         return TRUE;
       }
   }
+
+void multifok_weight_multiply(float_image_t *dst, int32_t cd, float_image_t *src, int32_t cs)
+  {
+    bool_t debug = TRUE;
+    
+    int32_t NC_d, NC_s, NX, NY;
+    float_image_get_size(dst, &NC_d, &NX, &NY);
+    float_image_check_size(src, -1, NX, NY, "images {src,dst} have different sizes");
+    if ((cd < 0) || (cd >= NC_d)) { return; }
+    
+    NC_s = (int32_t)(src->sz[0]);
+    if ((cs < 0) || (cs >= NC_s)) { return; }
+    
+    if (debug) { fprintf(stderr, "entered %s ...\n", __FUNCTION__); }
+
+    for (int32_t y = 0; y < NY; y++)
+      { for (int32_t x = 0; x < NX; x++)
+          { float *wdp = float_image_get_sample_address(dst, cd, x, y);
+            double wd = (*wdp);
+            if (! isnan(wd))
+              { demand(isfinite(wd) && (wd >= 0), "invalid weight value in {dst} map"); };
+            double ws = float_image_get_sample(src, cs, x, y);
+            if (! isnan(ws))
+              { demand(isfinite(ws) && (ws >= 0), "invalid weight value in {src} map"); };
+            double w;
+            if (isnan(ws))
+              { w = wd; }
+            else if (ws == 0)
+              { w = 0; }
+            else if (isnan(wd))
+              { w = NAN; }
+            else
+              { w = ws*wd; }
+            (*wdp) = (float)w;
+          }
+      }
+     
+    if (debug) { fprintf(stderr, "exiting %s ...\n", __FUNCTION__); }
+  }
+  

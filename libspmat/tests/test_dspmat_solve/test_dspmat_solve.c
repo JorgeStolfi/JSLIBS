@@ -4,7 +4,7 @@
 
 #define test_dspmat_solve_C_COPYRIGHT "Copyright © 2007  by the State University of Campinas (UNICAMP)"
 /* Created on 2007-01-02 by J. Stolfi, UNICAMP */
-/* Last edited on 2023-03-18 10:44:02 by stolfi */ 
+/* Last edited on 2025-04-24 15:10:29 by stolfi */ 
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -71,8 +71,7 @@ int32_t main (int32_t argn, char **argv)
 
 void test_dspmat_extra(int32_t nt)
   { fprintf(stderr, "Checking {dspmat_extra,dspmat_linsys_{GS,ALT,BOOT}} ...\n");
-    int32_t it;
-    for (it = 0; it < nt; it++)
+    for (int32_t it = 0; it < nt; it++)
       { 
         fprintf(stderr, "=== pass %d ===\n", it);
         bool_t verbose = (it < 4);
@@ -92,27 +91,26 @@ void test_dspmat_solve(int32_t it, bool_t verbose, solver_t solver)
       { fprintf(stderr, "\ntesting {dspmat_linsys_%s} ...\n", solver_name[solver]); }
     
     /* Generate a random linear equation system {A,b} of random size {n}: */
-    dspmat_size_t n = int32_abrandom(1,11)*int32_abrandom(1,17);
+    dspmat_size_t n = (dspmat_size_t)(int32_abrandom(1,11)*int32_abrandom(1,17));
     dspmat_t A = dspmat_new(n,n,0); 
     double b[n];
-    int32_t i;
     if (it == 0)
       { /* Use a diagonal matrix and a simple right-hand-side vector: */ 
         dspmat_pos_t posA = dspmat_fill_diagonal(&A, 0, 0,0, 4.0, n);
-        dspmat_trim(&A, posA);
-        for (i = 0; i < A.rows; i++) { b[i] = 8+i; }
+        dspmat_trim(&A, (spmat_count_t)posA);
+        for (int32_t i = 0; i < A.rows; i++) { b[i] = 8+i; }
       }
     else
       { /* Use a random matrix with nonzero diagonal, and a random vector: */  
         dspmat_throw_nzd(&A, 0.20, 1.0); 
-        for (i = 0; i < n; i++) { b[i] = 2*(drandom() - 0.5); }
+        for (int32_t i = 0; i < n; i++) { b[i] = 2*(drandom() - 0.5); }
       }
     if (verbose) show_dspmat("A", &A, 10);
     if (verbose) show_vec("b", b, n, 10);
     
     /* Solve it: */
     double x[n];
-    int32_t max_iter = 30;
+    uint32_t max_iter = 30;
     double omega = 0.50;
     double abs_tol = 1.0e-4;
     double rel_tol = 1.0e-3;
@@ -154,8 +152,7 @@ bool_t check_dspmat(dspmat_t *A, char *Aname, dspmat_t *R, char *Rname, bool_t v
         assert(FALSE);
       }
     
-    dspmat_pos_t p;
-    for (p = 0; p < A->ents; p++)
+    for (dspmat_pos_t p = 0; p < A->ents; p++)
       { dspmat_entry_t *a = &(A->e[p]);
         dspmat_entry_t *r = &(R->e[p]);
         if ((a->row != r->row) || (a->col != r->col) || (a->val != r->val))
@@ -169,8 +166,7 @@ bool_t check_dspmat(dspmat_t *A, char *Aname, dspmat_t *R, char *Rname, bool_t v
   }
       
 void compare_vectors(double v[], char *vname, double r[], char *rname, dspmat_size_t n, double abs_tol, double rel_tol)
-  { int32_t k;
-    for (k = 0; k < n; k++) 
+  { for (int32_t k = 0; k < n; k++) 
       { double vk = v[k];
         double rk = r[k];
         double dbase2 = abs_tol*abs_tol + rel_tol*rel_tol*vk*vk + 1.0e-300;
@@ -192,8 +188,7 @@ void show_dspmat(char *Mname, dspmat_t *M, dspmat_count_t nPrint)
     if (nPrint > M->ents) { nPrint = M->ents; }
     fprintf(stderr, "%s = { %3u %3u %10p[%5u] } = (", Mname, M->rows, M->cols, M->e, M->ents); 
     if (M->ents > 0)
-      { dspmat_pos_t k;
-        for (k = 0; k < nPrint; k++)
+      { for (dspmat_pos_t k = 0; k < nPrint; k++)
           { dspmat_entry_t *eP = &(M->e[k]); 
             if (nPrint > 1) { fprintf(stderr, "\n   "); }
             fprintf(stderr, " [%3u][%3u] = %+24.16e", eP->row, eP->col, eP->val);
@@ -210,15 +205,14 @@ void show_dspmat(char *Mname, dspmat_t *M, dspmat_count_t nPrint)
   }
    
 void dspmat_throw(dspmat_t *M, double frac)
-  { dspmat_index_t i,j;
-    dspmat_pos_t posM = 0;
-    for (i = 0; i < M->rows; i++)
-      { for (j = 0; j < M->cols; j++)
+  { dspmat_pos_t posM = 0;
+    for (dspmat_index_t i = 0; i < M->rows; i++)
+      { for (dspmat_index_t j = 0; j < M->cols; j++)
           { double Mij = (drandom() < frac ? drandom() : 0.0);
             posM = dspmat_add_element(M, posM, i, j, Mij);
           }
       }
-    dspmat_trim(M, posM);
+    dspmat_trim(M, (spmat_count_t)posM);
   }
 
 void dspmat_throw_nzd(dspmat_t *M, double frac, double mag)
@@ -231,10 +225,9 @@ void dspmat_throw_nzd(dspmat_t *M, double frac, double mag)
     /* Make sure that diagonal elements are at leas {mag}: */
     dspmat_count_t n_old = M->ents;
     dspmat_pos_t pos_old = 0;;
-    dspmat_pos_t pos_new = M->ents; /* Current number of filled entries in {M}. */
+    dspmat_pos_t pos_new = (dspmat_pos_t)M->ents; /* Current number of filled entries in {M}. */
     
-    int32_t row;
-    for (row = 0; row < M->rows; row++)
+    for (int32_t row = 0; row < M->rows; row++)
       { bool_t has_diag = FALSE; /* TRUE iff row {row} has a diagonal elem. */
         while (pos_old < n_old)
           { dspmat_entry_t *mP = &(M->e[pos_old]);
@@ -249,15 +242,14 @@ void dspmat_throw_nzd(dspmat_t *M, double frac, double mag)
         if (! has_diag)
           { pos_new = dspmat_add_element(M, pos_new, row, row, copysign(mag, drandom()-0.5)); }
       }
-    dspmat_trim(M, pos_new);
+    dspmat_trim(M, (spmat_count_t)pos_new);
     
     /* Make sure that entries are sorted: */
     dspmat_sort_entries(M, +2, +1);
   }
 
 void show_vec(char *vname, double v[], dspmat_size_t n, dspmat_size_t nPrint)
-  { int32_t i;
-    for (i = 0; i < n; i++)
+  { for (int32_t i = 0; i < n; i++)
       { fprintf(stderr, "  %s[%4d] = %9.4f  %24.16e\n", vname, i, v[i], v[i]); }
   }
 

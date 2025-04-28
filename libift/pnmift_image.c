@@ -1,7 +1,7 @@
 /* See pnmift_image.h */
-/* Last edited on 2024-12-05 10:29:12 by stolfi */
+/* Last edited on 2025-04-24 14:16:39 by stolfi */
 
-#include <uint16_image.h>
+#include <stdint.h>
 #include <math.h>
 #include <assert.h>
 
@@ -12,10 +12,10 @@
 
 #include <pnmift_image.h>
 
-void pnmift_check_maxval(unsigned int maxval, unsigned int maxmaxval);
+void pnmift_check_maxval(uint32_t maxval, uint32_t maxmaxval);
   /* Bombs out if {maxval} is zero or greater than {maxmaxval}. */
 
-void pnmift_check_maxval(unsigned int maxval, unsigned int maxmaxval)
+void pnmift_check_maxval(uint32_t maxval, uint32_t maxmaxval)
   { if ((maxval < 1) || (maxval > maxmaxval)) 
       { fprintf(stderr, "maxval = %d\n", maxval); 
         demand(FALSE, "bad maxval");
@@ -28,18 +28,17 @@ void pnmift_set_values_from_image(uint16_image_t *img, ift_graph_t *G, frgb_t rg
     demand(img->rows == G->rows, "rows mismatch");
     demand((G->rows <= pnmift_MAX_ROWS) && (G->cols <= pnmift_MAX_COLS), "image is too big");
     /* Initialize unused channels: */
-    int col, row, chn; 
-    for (row = 0; row < G->rows; row++)
-      for (col = 0; col < G->cols; col++)
-        { uint16_t *pm = &(img->smp[row][col*img->chns]);
+    for (ift_pixel_index_t row = 0; row < G->rows; row++)
+      for (ift_pixel_index_t col = 0; col < G->cols; col++)
+        { uint16_t *pm = &(img->smp[row][col*(int32_t)img->chns]);
           frgb_t yy;
-          for (chn = 0; chn < 3; chn++) 
+          for (uint32_t chn = 0; chn < 3; chn++) 
             { if (chn < img->chns)
                 { yy.c[chn] = (float)(((double)(*pm))/fmaxval); pm++; }
               else
                 { yy.c[chn] = yy.c[0]; }
             }
-          int ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
+          int32_t ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
           ift_node_t *pg = &(G->node[ig]);
           assert(pg->col == col);
           assert(pg->row == row);
@@ -52,12 +51,11 @@ void pnmift_set_labels_from_image(uint16_image_t *seed_img, ift_graph_t *G, uint
     demand(seed_img->cols == G->cols, "cols mismatch");
     demand(seed_img->rows == G->rows, "rows mismatch");
     demand((G->rows <= pnmift_MAX_ROWS) && (G->cols <= pnmift_MAX_COLS), "image is too big");
-    int col, row;
-    for (row = 0; row < G->rows; row++)
-      for (col = 0; col < G->cols; col++)
-        { unsigned int pm = seed_img->smp[row][col];
+    for (ift_pixel_index_t row = 0; row < G->rows; row++)
+      for (ift_pixel_index_t col = 0; col < G->cols; col++)
+        { uint32_t pm = seed_img->smp[row][col];
           demand(pm <= pnmift_MAX_LABEL, "seed label too big");
-          int ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
+          int32_t ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
           ift_node_t *pg = &(G->node[ig]);
           assert(pg->col == col);
           assert(pg->row == row);
@@ -69,15 +67,14 @@ void pnmift_set_labels_from_image(uint16_image_t *seed_img, ift_graph_t *G, uint
 
 uint16_image_t *pnmift_get_cost_image(ift_graph_t *G, ift_path_cost_t maxcost, uint16_t maxval)
   { demand((G->rows <= pnmift_MAX_ROWS) && (G->cols <= pnmift_MAX_COLS), "image is too big");
-    uint16_image_t *img = uint16_image_new(G->cols, G->rows, 1);
+    uint16_image_t *img = uint16_image_new((uint32_t)G->cols, (uint32_t)G->rows, 1);
     pnmift_check_maxval(maxval, PNM_FILE_MAX_MAXVAL);
     img->maxval = maxval;
     double scale = (maxcost <= 0 ? 1.0 : ((double)(maxval - 1))/maxcost);
-    int col, row;
-    for (row = 0; row < G->rows; row++)
-      for (col = 0; col < G->cols; col++)
+    for (ift_pixel_index_t row = 0; row < G->rows; row++)
+      for (ift_pixel_index_t col = 0; col < G->cols; col++)
         { uint16_t *pm = &(img->smp[row][col]);
-          int ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
+          int32_t ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
           ift_node_t *pg = &(G->node[ig]);
           if (pg->C == +INFINITY)
             { (*pm) = img->maxval; }
@@ -99,17 +96,17 @@ uint16_image_t *pnmift_get_pred_image(ift_graph_t *G)
     uint16_image_t *img = uint16_image_new(G->cols, G->rows, 1);
     img->maxval = PNM_FILE_MAX_MAXVAL;
     demand(img->maxval >= 65535, "maxval too small"); 
-    int col, row, dcol, drow;
-    for (row = 0; row < G->rows; row++)
-      for (col = 0; col < G->cols; col++)
+    for (ift_pixel_index_t row = 0; row < G->rows; row++)
+      for (ift_pixel_index_t col = 0; col < G->cols; col++)
         { uint16_t *pm = &(img->smp[row][col]);
-          int ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
+          int32_t ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
           ift_node_t *pg = &(G->node[ig]);
           ift_node_t *pp = (ift_node_t *)pg->P;
+          int32_t dcol, drow;
           if (pp == NULL)
             { dcol = 0; drow = 0; }
           else
-            { dcol = pp->col - col; drow = pp->row - row; }
+            { dcol = (int32_t)pp->col - col; drow = (int32_t)pp->row - row; }
           demand((dcol >= -127) && (dcol <= 127), "pred dcol out of range"); 
           demand((drow >= -127) && (drow <= 127), "pred drow out of range"); 
           (*pm) = (uint16_t)(((drow + 128) << 8) | (dcol + 128));
@@ -122,15 +119,14 @@ uint16_image_t *pnmift_get_label_image(ift_graph_t *G, uint16_t label[], uint16_
     uint16_image_t *img = uint16_image_new(G->cols, G->rows, 1);
     pnmift_check_maxval(maxval, PNM_FILE_MAX_MAXVAL);
     img->maxval = maxval;
-    int col, row;
-    for (row = 0; row < G->rows; row++)
-      for (col = 0; col < G->cols; col++)
+    for (ift_pixel_index_t row = 0; row < G->rows; row++)
+      for (ift_pixel_index_t col = 0; col < G->cols; col++)
         { uint16_t *pm = &(img->smp[row][col]);
-          int ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
+          int32_t ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
           ift_node_t *pg = &(G->node[ig]);
           ift_node_t *pr = pg->R; /* Root of forest containing {pg}. */
           demand(pr != NULL, "null root"); 
-          int ir = ift_node_index(G, pr->col, pr->row);
+          int32_t ir = ift_node_index(G, pr->col, pr->row);
           uint16_t lab = label[ir];
           /* fprintf(stderr, " ( %5d %5d ) = %5d --> ( %5d %5d ) = %5d\n", col,row,label[ig],pr->col,pr->row,label[ir]); */
           demand(lab <= maxval, "label too big"); 
@@ -143,11 +139,10 @@ uint16_image_t *pnmift_get_root_image(ift_graph_t *G)
   { demand((G->rows <= pnmift_MAX_ROWS) && (G->cols <= pnmift_MAX_COLS), "image is too big");
     uint16_image_t *img = uint16_image_new(G->cols, G->rows, 1);
     img->maxval = 255;
-    int col, row;
-    for (row = 0; row < G->rows; row++)
-      for (col = 0; col < G->cols; col++)
+    for (ift_pixel_index_t row = 0; row < G->rows; row++)
+      for (ift_pixel_index_t col = 0; col < G->cols; col++)
         { uint16_t *pm = &(img->smp[row][col]);
-          int ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
+          int32_t ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
           ift_node_t *pg = &(G->node[ig]);
           demand((pg->P == NULL) == (pg->R == pg), "P/R inconsistency"); 
           (*pm) = (pg->P == NULL ? img->maxval : 0);
@@ -155,10 +150,9 @@ uint16_image_t *pnmift_get_root_image(ift_graph_t *G)
     return img;
   }
 
-uint16_image_t *pnmift_get_spread_image(ift_graph_t *G, frgb_t rgb[], int chns, uint16_t maxval)
+uint16_image_t *pnmift_get_spread_image(ift_graph_t *G, frgb_t rgb[], uint32_t chns, uint16_t maxval)
   { demand((G->rows <= pnmift_MAX_ROWS) && (G->cols <= pnmift_MAX_COLS), "image is too big");
     uint16_image_t *img;
-    int col, row, chn;
     double fmaxval = (double)maxval;
     /* Choose image type: */
     pnmift_check_maxval(maxval, PNM_FILE_MAX_MAXVAL);
@@ -166,25 +160,25 @@ uint16_image_t *pnmift_get_spread_image(ift_graph_t *G, frgb_t rgb[], int chns, 
     /* Allocate image and fill it out: */
     img = uint16_image_new(G->cols, G->rows, chns);
     img->maxval = maxval;
-    for (row = 0; row < G->rows; row++)
-      for (col = 0; col < G->cols; col++)
-        { int ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
+    for (ift_pixel_index_t row = 0; row < G->rows; row++)
+      for (ift_pixel_index_t col = 0; col < G->cols; col++)
+        { int32_t ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
           ift_node_t *pg = &(G->node[ig]);
           ift_node_t *pr = pg->R;
           demand(pr != NULL, "R is null"); 
           demand((pr == pg) == (pg->P == NULL), "P/R inconsistency"); 
-          int ir = ift_node_index(G, pr->col, pr->row);
+          int32_t ir = ift_node_index(G, pr->col, pr->row);
           frgb_t yy = rgb[ir];
-          uint16_t *pm = &(img->smp[row][col*img->chns]);
-          for (chn = 0; chn < chns; chn++)
+          uint16_t *pm = &(img->smp[row][col*(int32_t)img->chns]);
+          for (uint32_t chn = 0; chn < chns; chn++)
             { double fv = yy.c[chn];
-              int pv;
+              int32_t pv;
               if (fv <= 0.0) 
                 { pv = 0; }
               else if (fv >= 1.0)
                 { pv = maxval; }
               else
-                { pv = (int)floor(0.5 + fv*fmaxval); }
+                { pv = (int32_t)floor(0.5 + fv*fmaxval); }
               (*pm) = (uint16_t)pv;
               pm++;
             }
@@ -198,7 +192,7 @@ uint16_image_t *pnmift_get_single_label_image
     uint16_t lab, 
     frgb_t rgb[],
     uint16_t bg[], 
-    int chns,
+    uint32_t chns,
     uint16_t maxval
   )
   { demand((G->rows <= pnmift_MAX_ROWS) && (G->cols <= pnmift_MAX_COLS), "image is too big");
@@ -211,10 +205,9 @@ uint16_image_t *pnmift_get_single_label_image
     img->maxval = maxval;
 
     /* Fill image: */
-    int col, row, chn;
-    for (row = 0; row < G->rows; row++)
-      for (col = 0; col < G->cols; col++)
-        { int ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
+    for (ift_pixel_index_t row = 0; row < G->rows; row++)
+      for (ift_pixel_index_t col = 0; col < G->cols; col++)
+        { int32_t ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
           ift_node_t *pg = &(G->node[ig]);
           frgb_t yy = rgb[ig];
           demand(pg->R != NULL, "null root"); 
@@ -222,9 +215,9 @@ uint16_image_t *pnmift_get_single_label_image
           ift_node_index_t ir = ift_node_index(G, pr->col, pr->row);
           uint16_t prlab = label[ir];
           /* Set the {chns} channels of {img.smp[row][col]} from {yy} or {bg}: */
-          uint16_t *pm = &(img->smp[row][col*img->chns]);
-          for (chn = 0; chn < chns; chn++)
-            { int pv;
+          uint16_t *pm = &(img->smp[row][col*(int32_t)img->chns]);
+          for (uint32_t chn = 0; chn < chns; chn++)
+            { int32_t pv;
               if (prlab == lab) 
                 { double fv = yy.c[chn];
                   if (fv <= 0.0) 
@@ -232,7 +225,7 @@ uint16_image_t *pnmift_get_single_label_image
                   else if (fv >= 1.0)
                     { pv = maxval; }
                   else
-                    { pv = (int)floor(0.5 + fv*fmaxval); }
+                    { pv = (int32_t)floor(0.5 + fv*fmaxval); }
                 }
               else
                 { pv = bg[chn]; }
@@ -243,30 +236,28 @@ uint16_image_t *pnmift_get_single_label_image
     return img;
   }
 
-void pnmift_write_boxes(FILE *wr, ift_graph_t *G, uint16_t label[], uint16_t maxval, int margin)
+void pnmift_write_boxes(FILE *wr, ift_graph_t *G, uint16_t label[], uint16_t maxval, int32_t margin)
   { demand((G->rows <= pnmift_MAX_ROWS) && (G->cols <= pnmift_MAX_COLS), "image is too big");
-    int col, row;
     
     /* Max and min pixel indices for each label: */
-    int *colmin = (int *)notnull(malloc((maxval+1)*sizeof(int)), "out of mem");
-    int *colmax = (int *)notnull(malloc((maxval+1)*sizeof(int)), "out of mem");
-    int *rowmin = (int *)notnull(malloc((maxval+1)*sizeof(int)), "out of mem");
-    int *rowmax = (int *)notnull(malloc((maxval+1)*sizeof(int)), "out of mem");
+    int32_t *colmin = (int32_t *)notnull(malloc((maxval+1)*sizeof(int32_t)), "out of mem");
+    int32_t *colmax = (int32_t *)notnull(malloc((maxval+1)*sizeof(int32_t)), "out of mem");
+    int32_t *rowmin = (int32_t *)notnull(malloc((maxval+1)*sizeof(int32_t)), "out of mem");
+    int32_t *rowmax = (int32_t *)notnull(malloc((maxval+1)*sizeof(int32_t)), "out of mem");
     
     pnmift_check_maxval(maxval, PNM_FILE_MAX_MAXVAL);
 
     /* Initialize max/min accumulators: */
-    { int lab;
-      for (lab = 0; lab <= maxval; lab++) 
+    { for (uint32_t lab = 0; lab <= maxval; lab++) 
         { colmin[lab] = rowmin[lab] = 1000000; 
           colmax[lab] = rowmax[lab] = 0;
         }
     }
       
     /* Scan image and collect max/min indices per label: */
-    for (row = 0; row < G->rows; row++)
-      for (col = 0; col < G->cols; col++)
-        { int ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
+    for (ift_pixel_index_t row = 0; row < G->rows; row++)
+      for (ift_pixel_index_t col = 0; col < G->cols; col++)
+        { int32_t ig = ift_node_index(G, (ift_pixel_index_t)col, (ift_pixel_index_t)row);
           ift_node_t *pg = &(G->node[ig]);
           demand(! (pg->R == NULL), "null root"); 
           ift_node_t *pr = pg->R;
@@ -280,19 +271,18 @@ void pnmift_write_boxes(FILE *wr, ift_graph_t *G, uint16_t label[], uint16_t max
         }
       
     /* Print region boxes: */
-    { int lab;
-      for (lab = 0; lab <= maxval; lab++) 
-        { int colLO = colmin[lab], colHI = colmax[lab] + 1;
-          int rowLO = rowmin[lab], rowHI = rowmax[lab] + 1;
+    { for (uint32_t lab = 0; lab <= maxval; lab++) 
+        { int32_t colLO = colmin[lab], colHI = colmax[lab] + 1;
+          int32_t rowLO = rowmin[lab], rowHI = rowmax[lab] + 1;
           fprintf(wr, "%5d ", lab);
           /* Apply margin expansion/contraction: */
           if ((colLO < colHI) && (rowLO < rowHI))
             { colLO -= margin; colHI += margin;
               rowLO -= margin; rowHI += margin;
               if (colLO < 0) { colLO = 0; }
-              if (colHI > G->cols) { colHI = G->cols; }
+              if (colHI > G->cols) { colHI = (int32_t)G->cols; }
               if (rowLO < 0) { rowLO = 0; }
-              if (rowHI > G->rows) { rowHI = G->rows; }
+              if (rowHI > G->rows) { rowHI = (int32_t)G->rows; }
             }
           /* Normalize empty boxes: */
           if ((colLO >= colHI) || (rowLO >= rowHI))

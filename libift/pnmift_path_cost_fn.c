@@ -1,7 +1,8 @@
 /* pnmift_path_cost_fn.c - implementation of pnmift_path_cost_fn.h */
-/* Last edited on 2024-12-05 10:29:17 by stolfi */
+/* Last edited on 2025-04-24 13:47:50 by stolfi */
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <math.h>
 #include <float.h>

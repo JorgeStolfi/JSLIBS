@@ -1,5 +1,5 @@
 /* Test scenes and ray-tracing for {multifok_test}. */
-/* Last edited on 2025-02-10 03:32:55 by stolfi */
+/* Last edited on 2025-04-13 05:15:11 by stolfi */
 
 #ifndef multifok_scene_H
 #define multifok_scene_H
@@ -50,6 +50,7 @@ void multifok_scene_add_foreground_object
   ( multifok_scene_t *scene,
     multifok_scene_object_type_t type,
     interval_t bbox[],
+    bool_t bottom,
     frgb_t *fgGlo,
     frgb_t *bgGlo,
     frgb_t *fgLam,
@@ -62,7 +63,7 @@ void multifok_scene_add_foreground_object
     {type} must not be {ot_FLAT} or {ot_RAMP}.
 
     The object is generated with {multifok_scene_object_foreground_make}
-    (q.v.) with parameters {type,dom,bbox,fgGlo,bgGlo,fgLam,bgLam)}.
+    (q.v.) with parameters {type,dom,bbox,bottom,fgGlo,bgGlo,fgLam,bgLam)}.
     
     The center of {bbox[0]} and {bbox[1]}, as well as the entire range
     {bbox[2]}, must be inside {scene.dom}. */ 

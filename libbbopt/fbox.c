@@ -1,5 +1,5 @@
 /* See fbox.h */
-/* Last edited on 2024-12-05 10:21:46 by stolfi */
+/* Last edited on 2025-04-24 13:37:12 by stolfi */
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -9,7 +9,7 @@
 #include <fbox.h>
 
 FBox *fbox_make(int32_t d, int32_t depth, Interval *xr, Interval fr)
-  { FBox *b = (FBox *)malloc(sizeof(FBox) + (d-1)*sizeof(Interval));
+  { FBox *b = (FBox *)malloc(sizeof(FBox) + ((uint32_t)d-1)*sizeof(Interval));
     int32_t i;
     b->d = d;
     b->depth = depth;

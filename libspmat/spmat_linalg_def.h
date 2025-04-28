@@ -4,7 +4,7 @@
 
 #define spmat_linalg_def_H_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2017-01-02 21:39:29 by jstolfi */
+/* Last edited on 2025-04-24 15:01:10 by stolfi */
 
 /* These inclusions are necessary if this file is included or compiled on its own: */
 #include <stdint.h>
@@ -102,7 +102,7 @@
       C->rows = A->rows; \
       C->cols = A->cols; \
       PREFIX##_merge(A, B, &mix_entries); \
-      PREFIX##_trim(C, posC); \
+      PREFIX##_trim(C, (spmat_count_t)posC); \
     }
 
 #define spmat_IMPLEMENT_mul(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
@@ -119,7 +119,7 @@
           PREFIX##_map_row(av, A->cols, B, cv, B->cols); \
           posC = PREFIX##_add_row(C, posC, row, cv, B->cols); \
         } \
-      PREFIX##_trim(C, posC); \
+      PREFIX##_trim(C, (spmat_count_t)posC); \
       free(av); free(cv); \
     }
 

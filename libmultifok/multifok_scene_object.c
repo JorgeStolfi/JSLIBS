@@ -1,5 +1,5 @@
 /* See {multifok_scene_object.h}. */
-/* Last edited on 2025-02-09 00:06:32 by stolfi */
+/* Last edited on 2025-04-13 05:45:23 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@ void multifok_scene_object_foreground_choose_bbox
     interval_t bbox[]
   );
   /* Chooses a bounding box {bbox[0..2]} for an object of the given {type}
-    and scene domain {dom[0..2]}.  The box {X} and {Y] width will be 
+    and scene domain {dom[0..2]}.  The box {X} and {Y} width will be 
     randomly chosen in {[wMinXY _ wMaxXY]}.   
     
     If {margin} is positive or zero, the chosen box will be entirely
@@ -55,9 +55,9 @@ void multifok_scene_object_foreground_choose_bbox
     {XY} projection of the box may extend up to {0.5*wMaxXY} outside {dom},
     but its center will lie inside {dom}.
     
-    The shape of the box will
-    depend on {type}. See {multifok_scene_object_adjust_bbox_size_and_shape}
-    below.
+    The shape and size of the box will depend on {type}, and it 
+    will be positioned randomly inside {dom}. See
+    {multifok_scene_object_adjust_bbox_size_and_shape} below.
     
     The procedure will fail if {sdom} is too small given {wMinXY} and
     {margin}. */
@@ -68,7 +68,12 @@ void multifok_scene_object_foreground_choose_bbox
   needed to make its aspect ratio conform to the specific object type. They
   fail if the reduced {X} or {Y} width of the box is less than {wdMIn}. */
  
-void multifok_scene_object_adjust_bbox_size_and_shape(multifok_scene_object_type_t type, double wXY, interval_t bbox[]);
+void multifok_scene_object_adjust_bbox_size_and_shape
+  ( multifok_scene_object_type_t type,
+    double wXY,
+    interval_t bbox[],
+    bool_t bottom
+  );
   /* Shrinks {bbox[0..2]}if needed so that its {X} and {Y} sizes are at
     most {wXY}, and its shape (the ratios between then three
     dimensions) is appropriate for an object of the given {type}. For
@@ -76,7 +81,9 @@ void multifok_scene_object_adjust_bbox_size_and_shape(multifok_scene_object_type
     is {ot_DISK}, the box will be a square in {XY} with zero height.
     
     If {bbox} needs to be shrunk along any axis {j}, its new range {bbox[j]}
-    will be randomly placed inside the original {bbox[j]} */
+    will be randomly placed inside the original {bbox[j]}.  However, if {bottom}
+    is true, the new {Z} range {bbox[2]} will start at the bottom
+    of the original {bbox[2]}. */
 
 void multifok_scene_object_adjust_bbox_size_and_shape_round_or_square(double width[], double wXY, double hRel);
   /* Reduces {width[0..2]} if needed so that {width[0]} and {width[1]} are equal and at most {wXY},
@@ -227,6 +234,7 @@ multifok_scene_object_t multifok_scene_object_background_make
 multifok_scene_object_t multifok_scene_object_foreground_make
   ( multifok_scene_object_type_t type,
     interval_t bbox[],
+    bool_t bottom,
     frgb_t *fgGlo,
     frgb_t *bgGlo,
     frgb_t *fgLam,
@@ -238,7 +246,7 @@ multifok_scene_object_t multifok_scene_object_foreground_make
     obj.ID = multifok_scene_object_ID_NONE;
     obj.type = type;
     box_copy(3, bbox, obj.bbox);
-    multifok_scene_object_adjust_bbox_size_and_shape(type, +INF, obj.bbox);
+    multifok_scene_object_adjust_bbox_size_and_shape(type, +INF, obj.bbox, bottom);
     obj.fgGlo = (fgGlo == NULL ? (frgb_t){{ 0,0,0 }} : (*fgGlo));
     obj.bgGlo = (bgGlo == NULL ? (frgb_t){{ 0,0,0 }} : (*bgGlo));
     obj.fgLam = (fgLam == NULL ? (frgb_t){{ 0,0,0 }} : (*fgLam));
@@ -282,7 +290,9 @@ multifok_scene_object_t multifok_scene_object_foreground_throw
     frgb_t fgLam = (frgb_t){{ (float)drandom(), 1.000, 0.600f }}; frgb_from_HTY(&(fgLam));
     frgb_t bgLam = (frgb_t){{ (float)drandom(), 1.000, 0.200f }}; frgb_from_HTY(&(bgLam));
 
-    multifok_scene_object_t obj = multifok_scene_object_foreground_make(type, bbox, fgGlo, &bgGlo, &fgLam, &bgLam, verbose);
+    bool_t bottom = FALSE;
+    multifok_scene_object_t obj = multifok_scene_object_foreground_make
+      ( type, bbox, bottom, fgGlo, &bgGlo, &fgLam, &bgLam, verbose );
     return obj;
   }
 
@@ -322,7 +332,8 @@ void multifok_scene_object_foreground_choose_bbox
     /* Adjust the {bbox} size and aspect ratios: */
     if (debug) { box_gen_print(stderr, 3, bbox, "%12.8f", "bbox befor adjstment = ", " × ", "\n"); }
     double wXY = dabrandom(wMinXY, wMaxXY);
-    multifok_scene_object_adjust_bbox_size_and_shape(type, wXY, bbox);
+    bool_t bottom = FALSE;
+    multifok_scene_object_adjust_bbox_size_and_shape(type, wXY, bbox, bottom);
     if (debug) { box_gen_print(stderr, 3, bbox, "%12.8f", "bbox after adjstment = ", " × ", "\n"); }
     
     /* Ensure that the center is inside {dom}, in case {margin} was negative: */
@@ -337,7 +348,12 @@ void multifok_scene_object_foreground_choose_bbox
     if (debug) { multifok_scene_print_box(stderr, "    chosen box = ", bbox, "\n");  }
   }
     
-void multifok_scene_object_adjust_bbox_size_and_shape(multifok_scene_object_type_t type, double wXY, interval_t bbox[])
+void multifok_scene_object_adjust_bbox_size_and_shape
+  ( multifok_scene_object_type_t type,
+    double wXY,
+    interval_t bbox[],
+    bool_t bottom
+  )
   {
     double width[3];
     box_widths(3, bbox, width); 
@@ -368,12 +384,18 @@ void multifok_scene_object_adjust_bbox_size_and_shape(multifok_scene_object_type
     /* Reposition shrunk box inside original box: */
     for (int32_t j = 0; j < 3; j++)
       { interval_t bbj = bbox[j];
-        double slack = interval_width(&bbj) - width[j];
-        assert(slack >= -1.0e-10);
-        if (slack > 0)
-          { /* Pick new range: */
-            bbox[j].end[0] = LO(bbj) + slack*drandom();
-            bbox[j].end[1] = fmin(HI(bbj), bbox[j].end[0] + width[j]);
+        if ((j == 2) && bottom)
+          { /* Keep {LO(bbox[j])}, set its {HI}: */
+            bbox[j].end[1] = LO(bbj) + width[j];
+          }
+        else
+          { double slack = interval_width(&bbj) - width[j];
+            assert(slack >= -1.0e-10);
+            if (slack > 0)
+              { /* Pick new range: */
+                bbox[j].end[0] = LO(bbj) + slack*drandom();
+                bbox[j].end[1] = fmin(HI(bbj), bbox[j].end[0] + width[j]);
+              }
           }
       }
   }

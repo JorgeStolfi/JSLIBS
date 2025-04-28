@@ -4,7 +4,7 @@
 
 #define spmat_def_H_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2023-03-18 10:46:34 by stolfi */
+/* Last edited on 2025-04-24 15:00:01 by stolfi */
 
 /* These inclusions are necessary if this file is included or compiled on its own: */
 #define _GNU_SOURCE
@@ -272,8 +272,7 @@
   spmat_DECLARE_copy(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
     { N->rows = M->rows; N->cols = M->cols; \
       PREFIX##_trim(N, M->ents); \
-      int32_t k; \
-      for (k = 0; k < M->ents; k++) { N->e[k] = M->e[k]; } \
+      for (int32_t k = 0; k < M->ents; k++) { N->e[k] = M->e[k]; } \
     }
 
 #define spmat_BIN_SEARCH_THRESHOLD 5
@@ -285,7 +284,7 @@
 
 #define spmat_IMPLEMENT_find_element(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
   spmat_DECLARE_find_element(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
-    { if (posLim > M->ents) { posLim = M->ents; } \
+    { if (posLim > M->ents) { posLim = (spmat_pos_t)M->ents; } \
       if (posIni >= posLim) { return posLim; } \
       spmat_pos_t pos = posIni; \
       PREFIX##_entry_t *eP = &(M->e[pos]); \
@@ -300,8 +299,8 @@
   spmat_DECLARE_add_element(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
     { demand(row <= spmat_MAX_INDEX, "invalid row index"); \
       demand(col <= spmat_MAX_INDEX, "invalid col index"); \
-      if (row >= M->rows) { M->rows = row + 1; } \
-      if (col >= M->cols) { M->cols = col + 1; } \
+      if (row >= M->rows) { M->rows = (spmat_size_t)row + 1; } \
+      if (col >= M->cols) { M->cols = (spmat_size_t)col + 1; } \
       if (PREFIX##_elem_is_trivial(val))                                  \
         { return pos; } \
       else \
@@ -315,10 +314,9 @@
   spmat_DECLARE_add_row(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
     { demand(row <= spmat_MAX_INDEX, "invalid row index"); \
       demand(nv <= spmat_MAX_COLS, "too many cols"); \
-      if (row >= M->rows) { M->rows = row + 1; } \
+      if (row >= M->rows) { M->rows = (spmat_size_t)row + 1; } \
       if (nv > M->cols) { M->cols = nv; } \
-      int32_t k; \
-      for (k = 0; k < nv; k++) \
+      for (int32_t k = 0; k < nv; k++) \
         { ELEM_TYPE *vk = &(val[k]); \
           if (! PREFIX##_elem_is_trivial(*vk)) \
             { PREFIX##_expand(M, pos); \
@@ -333,10 +331,9 @@
   spmat_DECLARE_add_col(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
     { demand(col <= spmat_MAX_INDEX, "invalid col index"); \
       demand(nv <= spmat_MAX_ROWS, "too many rows"); \
-      if (nv > M->rows) { M->rows = nv; } \
-      if (col >= M->cols) { M->cols = col + 1; } \
-      int32_t k; \
-      for (k = 0; k < nv; k++) \
+      if (nv > M->rows) { M->rows = (spmat_size_t)nv; } \
+      if (col >= M->cols) { M->cols = (spmat_size_t)col + 1; } \
+      for (int32_t k = 0; k < nv; k++) \
         { ELEM_TYPE *vk = &(val[k]); \
           if (! PREFIX##_elem_is_trivial(*vk)) \
             { PREFIX##_expand(M, pos); \
@@ -349,10 +346,9 @@
 
 #define spmat_IMPLEMENT_add_diagonal(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
   spmat_DECLARE_add_diagonal(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
-    { row = row % M->rows; \
-      col = col % M->cols; \
-      int32_t k; \
-      for (k = 0; k < nv; k++) \
+    { row = row % (spmat_index_t)M->rows; \
+      col = col % (spmat_index_t)M->cols; \
+      for (int32_t k = 0; k < nv; k++) \
         { ELEM_TYPE *vk = &(val[k]); \
           if (! PREFIX##_elem_is_trivial(*vk)) \
             { PREFIX##_expand(M, pos); \
@@ -368,10 +364,9 @@
 #define spmat_IMPLEMENT_fill_diagonal(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
   spmat_DECLARE_fill_diagonal(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
     { if (PREFIX##_elem_is_trivial(val)) { return pos; } \
-      row = row % M->rows; \
-      col = col % M->cols; \
-      int32_t k; \
-      for (k = 0; k < nv; k++) \
+      row = row % (spmat_index_t)M->rows; \
+      col = col % (spmat_index_t)M->cols; \
+      for (int32_t k = 0; k < nv; k++) \
         { PREFIX##_expand(M, pos); \
           M->e[pos] = (PREFIX##_entry_t){ .row = row, .col = col, .val = val }; \
           pos++; \
@@ -384,8 +379,7 @@
 #define spmat_IMPLEMENT_extract_row(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
   spmat_DECLARE_extract_row(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
     { demand(nv == M->cols, "incompatible vector size"); \
-      int32_t k; \
-      for (k = 0; k < nv; k++) { val[k] = PREFIX##_trivial_elem; } \
+      for (int32_t k = 0; k < nv; k++) { val[k] = PREFIX##_trivial_elem; } \
       while (pos < M->ents) \
         { PREFIX##_entry_t *eP = &(M->e[pos]); \
           if (eP->row != row) { break; } \
@@ -399,8 +393,7 @@
 #define spmat_IMPLEMENT_extract_col(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
   spmat_DECLARE_extract_col(MATRIX_TYPE,PREFIX,ELEM_TYPE) \
     { demand(nv == M->rows, "incompatible vector size"); \
-      int32_t k; \
-      for (k = 0; k < nv; k++) { val[k] = PREFIX##_trivial_elem; } \
+      for (int32_t k = 0; k < nv; k++) { val[k] = PREFIX##_trivial_elem; } \
       while (pos < M->ents) \
         { PREFIX##_entry_t *eP = &(M->e[pos]); \
           if (eP->col != col) { break; } \
@@ -550,7 +543,7 @@
           posA++; aP++; \
         } \
       if (! PREFIX##_elem_is_trivial(cP->val)) { posC++; cP++; } \
-      if (posC < A->ents) { PREFIX##_trim(A, posC); } \
+      if (posC < A->ents) { PREFIX##_trim(A, (spmat_count_t)posC); } \
     }
 
 #define spmat_IMPL(MATRIX_TYPE,PREFIX,ELEM_TYPE) \

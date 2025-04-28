@@ -1,6 +1,6 @@
 /* The Image Foresting Transform algorithm */
 /* See Falcao et al., IEEE Trans. on Patt. Anal. and Mach. Intel. (TPAMI), 2004 */
-/* Last edited on 2024-12-05 10:29:03 by stolfi */
+/* Last edited on 2025-04-24 14:11:24 by stolfi */
 
 #ifndef ift_H
 #define ift_H
@@ -24,32 +24,34 @@ typedef double ift_path_cost_t;
 
 /* Representation of a pixel in the image graph: */
 typedef struct ift_node_t
-  { ift_pixel_index_t col, row; /* Column and row indices. */
-    ift_path_cost_t C;          /* Cost of a path to the node. */
-    struct ift_node_t *P;       /* Predecessor in path forest, or NULL if root. */
-    struct ift_node_t *R;       /* Root of path forest. */
+  { ift_pixel_index_t col; /* Column index. */
+    ift_pixel_index_t row; /* Row index. */
+    ift_path_cost_t C;     /* Cost of a path to the node. */
+    struct ift_node_t *P;  /* Predecessor in path forest, or NULL if root. */
+    struct ift_node_t *R;  /* Root of path forest. */
   } ift_node_t;
   
 /* Representation of a relative arc out of a generic pixel: */
 typedef struct ift_rel_arc_t
-  { ift_pixel_step_t dcol, drow;  /* Increments in pixel indices, up to MAX_ARC_LENGTH. */
-    int32_t daddr;         /* Index increment in ift_node_t vector. */
-    double len;            /* Euclidean length of arc */
+  { ift_pixel_step_t dcol;  /* Increment in pixel index per column, up to MAX_ARC_LENGTH. */
+    ift_pixel_step_t drow;  /* Increment in pixel index per row, up to MAX_ARC_LENGTH. */
+    int32_t daddr;          /* Index increment in ift_node_t vector. */
+    double len;             /* Euclidean length of arc */
   } ift_rel_arc_t;
   
 /* Graph representation of an image and its IFT: */
 typedef struct ift_graph_t 
-  { int cols;            /* Number of columns in image. */
-    int rows;            /* Number of rows in image. */
-    int32_t nodes;       /* Number of nodes = cols*rows */
+  { uint32_t cols;       /* Number of columns in image. */
+    uint32_t rows;       /* Number of rows in image. */
+    uint32_t nodes;      /* Number of nodes = cols*rows */
     ift_node_t *node;    /* Nodes in row-by-row order. */
-    int arcs;            /* Number of neighbors of a generic pixel. */
+    uint32_t arcs;       /* Number of neighbors of a generic pixel. */
     ift_rel_arc_t *arc;  /* Relative arcs out of a generic pixel. */
   } ift_graph_t;
   /* A pixel in column {col} and row {row} of the image is represented 
     by the node {G.node[ip]} where {ip = col + row*G.rows}. */
 
-ift_graph_t *ift_make_graph(int cols, int rows, double radius);
+ift_graph_t *ift_make_graph(uint32_t cols, uint32_t rows, double radius);
   /*  Builds a graph suitable for an image with the specified dimensions.
     The relative arcs are those of the Euclidean adjacency relation 
     with given neighborhood {radius} (minimum 1.0). In particular, 

@@ -2,7 +2,7 @@
 
 #define dspmat_linsys_GS_C_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2023-03-18 10:49:20 by stolfi */
+/* Last edited on 2025-04-24 15:05:28 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -93,7 +93,7 @@ void dspmat_linsys_GS_solve
     dspmat_t *A, 
     double x[],
     dspmat_size_t nx,
-    int32_t max_iter, 
+    uint32_t max_iter, 
     double omega,
     double abs_tol, 
     double rel_tol
@@ -128,7 +128,7 @@ void dspmat_inv_mul_GS
   ( dspmat_t *A, 
     dspmat_t *B, 
     dspmat_t *X,
-    int32_t max_iter, 
+    uint32_t max_iter, 
     double omega,
     double abs_tol, 
     double rel_tol
@@ -142,10 +142,10 @@ void dspmat_inv_mul_GS
     X->rows = A->rows;
     X->cols = B->cols;
     
-    int32_t nb = B->rows; 
+    uint32_t nb = B->rows; 
     double *b = notnull(malloc(nb * sizeof(double)), "no mem"); /* Will hold a col of {B}. */
     
-    int32_t nx = X->rows;
+    uint32_t nx = X->rows;
     double *x = notnull(malloc(nx * sizeof(double)), "no mem"); /* Will hold a col of {X}. */
     
     /* Sort the entries of {B} by column: */
@@ -170,7 +170,7 @@ void dspmat_inv_mul_GS
           { fprintf(stderr, " %u:%u", posB - oposB, posX - oposX); }
       }
     assert(posB == B->ents); 
-    dspmat_trim(X, posX);
+    dspmat_trim(X, (spmat_count_t)posX);
     if (debug_level > 0) 
       { fprintf(stderr, "\n");
         fprintf(stderr, "  matrix X: %d cols %d rows %d entries\n", X->cols, X->rows, X->ents);

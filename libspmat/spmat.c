@@ -2,7 +2,7 @@
 
 #define spmat_linalg_C_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2023-03-18 10:48:07 by stolfi */
+/* Last edited on 2025-04-24 15:06:20 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -23,7 +23,7 @@ void spmat_expand(void **eP, spmat_count_t *entsP, spmat_pos_t index, size_t esz
   { if (index >= (*entsP))
       { demand(index <= spmat_MAX_POS, "index too large");
         if ((*entsP) == 0) { affirm((*eP) == NULL, "bad elem pointer"); }
-        spmat_count_t ents = index + 1; /* New min entry count. */
+        spmat_count_t ents = (spmat_count_t)index + 1; /* New min entry count. */
         /* Expand the array to at least twice its size (but beware of overflow): */
         if (ents <= spmat_MAX_ENTS - (*entsP))
           { ents = ents + (*entsP); }
@@ -56,8 +56,8 @@ int32_t spmat_compare_indices
     int32_t orow, 
     int32_t ocol
   )
-  { uint32_t zrow = (orow < 0 ? -orow : orow);
-    uint32_t zcol = (ocol < 0 ? -ocol : ocol);
+  { uint32_t zrow = (uint32_t)(orow < 0 ? -orow : orow);
+    uint32_t zcol = (uint32_t)(ocol < 0 ? -ocol : ocol);
     demand(zrow != zcol, "ambiguous sorting criterion");
     if (zrow > zcol)
       { /* Row index is more important: */

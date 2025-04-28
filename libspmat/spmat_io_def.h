@@ -4,7 +4,7 @@
 
 #define spmat_io_def_H_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2009-08-31 21:50:09 by stolfi */
+/* Last edited on 2025-04-24 15:00:40 by stolfi */
 
 /* These inclusions are necessary if this file is included or compiled on its own: */
 #define _GNU_SOURCE
@@ -87,9 +87,9 @@ void spmat_write_footer(FILE *wr, char *type);
       PREFIX##_pos_t pos; \
       for (pos = 0; pos < M->ents; pos++) \
         { PREFIX##_entry_t *eP = &(M->e[pos]); \
-          eP->row = fget_uint32(rd, 10); \
+          eP->row = (spmat_index_t)fget_uint32(rd, 10); \
           demand(eP->row < M->rows, "invalid row index"); \
-          eP->col = fget_uint32(rd, 10); \
+          eP->col = (spmat_index_t)fget_uint32(rd, 10); \
           demand(eP->col < M->cols, "invalid col index"); \
           fget_skip_spaces(rd); \
           PREFIX##_elem_read(rd, &(eP->val)); \

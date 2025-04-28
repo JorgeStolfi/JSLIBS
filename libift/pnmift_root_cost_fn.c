@@ -1,6 +1,7 @@
 /* pnmift_root_cost_fn.c - implementation of pnmift_root_cost_fn.h */
-/* Last edited on 2024-12-05 10:29:19 by stolfi */
+/* Last edited on 2025-04-24 13:49:28 by stolfi */
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -25,12 +26,12 @@ pnmift_root_cost_fn_t *pnmift_root_cost_fn_from_name(char *name)
     return NULL;
   }
 
-pnmift_root_cost_t pnmift_root_cost_fn_zero(frgb_t q, int chns)
+pnmift_root_cost_t pnmift_root_cost_fn_zero(frgb_t q, uint32_t chns)
   {
     return 0;
   }
 
-pnmift_root_cost_t pnmift_root_cost_fn_lum(frgb_t q, int chns)
+pnmift_root_cost_t pnmift_root_cost_fn_lum(frgb_t q, uint32_t chns)
   {
     return frgb_get_Y(&q);
   }

@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {multifok_rendere.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-02-08 17:28:11 by stolfi */
+/* Last edited on 2025-04-13 10:52:54 by stolfi */
 /* Created on 2025-02-02 by J. Stolfi, UNICAMP */
 
 #define test_mfok_render_COPYRIGHT \
@@ -164,7 +164,7 @@ void mren_write_image(float_image_t *oimg, float vMin, float vMax, char *frameFo
     mapping {[vMin _ vMax]} to {0..maxval}. . */
     
 float_image_t *mren_read_pattern_image(char *patName);
-  /* Reads an image from file "in/{patName}.png". */
+  /* Reads an image from file "in/texture/{patName}.png". */
 
 /* IMPLEMENTATIONS */
 
@@ -181,7 +181,7 @@ int32_t main (int32_t argc, char **argv)
     uint32_t HS = o->pixSampling;
     
     /* Read the pattern image: */
-    float_image_t *sGlo_pat = mren_read_pattern_image("NOISE06");
+    float_image_t *sGlo_pat = mren_read_pattern_image("noise06");
     float_image_t *sLam_pat = mren_read_pattern_image("melon26");
 
     i2_t *iPixDeb = &(o->debugPixel);

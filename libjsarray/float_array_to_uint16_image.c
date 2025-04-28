@@ -1,5 +1,5 @@
 /* See float_array_to_uint16_image.h */
-/* Last edited on 2024-12-05 10:53:59 by stolfi */ 
+/* Last edited on 2025-04-24 12:27:08 by stolfi */ 
 
 #include <stdint.h>
 #include <limits.h>
@@ -48,7 +48,7 @@ uint16_image_t *float_array_to_uint16_image
     int32_t iNC = chns;           /* Num channels in integer image. */
     
     /* Allocate PGM/PPM image: */
-    uint16_image_t *img = uint16_image_new(NX, NY, iNC);
+    uint16_image_t *img = uint16_image_new((uint32_t)NX, (uint32_t)NY, (uint32_t)iNC);
     
     /* Set max sample value in integer image: */
     demand(maxval + 0u <= uint16_image_MAX_SAMPLE, "invalid maxval");

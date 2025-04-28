@@ -1,5 +1,5 @@
 /* Image Foresting Transform (IFT) - Implementation */
-/* Last edited on 2024-12-05 10:29:01 by stolfi */
+/* Last edited on 2025-04-24 14:14:27 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,7 +16,7 @@
 
 /* Internal procedures: */
 
-void ift_make_arcs(double radius, int cols, int rows, ift_rel_arc_t **arcp, int *arcsp);
+void ift_make_arcs(double radius, uint32_t cols, uint32_t rows, ift_rel_arc_t **arcp, uint32_t *arcsp);
   /* 
     Computes a relative arc table for an Euclidean neighborhood
     of the given radius (minimum 1.0). In particular, 
@@ -46,9 +46,9 @@ void ift_initialize_forest(ift_graph_t *G);
     
 /* IMPLEMENTATIONS */
 
-ift_graph_t *ift_make_graph(int cols, int rows, double radius)
+ift_graph_t *ift_make_graph(uint32_t cols, uint32_t rows, double radius)
   {
-    int32_t nodes = ((int32_t)cols)*((int32_t)rows);
+    uint32_t nodes = cols*rows;
     ift_graph_t *G;
     demand(cols <= ift_MAX_COLS, "too many cols");
     demand(rows <= ift_MAX_ROWS, "too many rows");
@@ -58,12 +58,11 @@ ift_graph_t *ift_make_graph(int cols, int rows, double radius)
     G->rows = rows;
     /* Allocate and initialize the ift_node_t vector: */
     G->nodes = nodes;
-    G->node = (ift_node_t *)malloc(nodes*sizeof(ift_node_t));
-    ift_pixel_index_t col, row; 
+    G->node = talloc(nodes, ift_node_t);
     int32_t i;
     i = 0;
-    for (row = 0; row < rows; row++)
-      for (col = 0; col < cols; col++)
+    for (ift_pixel_index_t row = 0; row < rows; row++)
+      for (ift_pixel_index_t col = 0; col < cols; col++)
         { ift_node_t *pg = &(G->node[i]);
           pg->col = col; pg->row = row;
           /* Make {pg} into a trivial tree: */
@@ -77,35 +76,34 @@ ift_graph_t *ift_make_graph(int cols, int rows, double radius)
     return G;
   }
 
-void ift_make_arcs(double radius, int cols, int rows, ift_rel_arc_t **arcp, int *arcsp)
+void ift_make_arcs(double radius, uint32_t cols, uint32_t rows, ift_rel_arc_t **arcp, uint32_t *arcsp)
   {
     /* Compute the max col/row displacement {m} of an arc: */
     double max_radius = hypot(cols, rows); 
-    int m = (int)floor(fabs(fmin(radius, max_radius)));
+    int32_t m = (int32_t)floor(fabs(fmin(radius, max_radius)));
     
     double r2 = radius*radius;
     ift_rel_arc_t *arc;
-    int32_t dcol, drow;
-    int32_t arcs;
+    uint32_t arcs;
     /* Count the number of arcs in the neighborhood (excluding the self-loop): */
     arcs = 0;
-    for (drow = -m; drow <= m; drow++)
-      for (dcol = -m; dcol <= m; dcol++)
+    for (int32_t drow = -m; drow <= m; drow++)
+      for (int32_t dcol = -m; dcol <= m; dcol++)
         { double d2 = (double)(dcol*dcol + drow*drow);
           if ((d2 != 0) && (d2 <= r2)) {arcs++; }
         }
         
     /* Now allocate the relative arc array and fill it: */
-    arc = (ift_rel_arc_t*)notnull(malloc(arcs*sizeof(ift_rel_arc_t)), "out of memory");
+    arc = talloc(arcs, ift_rel_arc_t);
     arcs = 0;
-    for (drow = -m; drow <= m; drow++)
-      for (dcol = -m; dcol <= m; dcol++)
+    for (int32_t drow = -m; drow <= m; drow++)
+      for (int32_t dcol = -m; dcol <= m; dcol++)
         { double d2 = (double)(dcol*dcol + drow*drow);
           if ((d2 != 0) && (d2 <= r2))
             { ift_rel_arc_t *pa = &(arc[arcs]);
               pa->dcol = (ift_pixel_step_t)dcol; 
               pa->drow = (ift_pixel_step_t)drow;
-              pa->daddr = drow*cols + dcol;
+              pa->daddr = drow*(int32_t)cols + dcol;
               pa->len = sqrt(d2);
               arcs++;
             }
@@ -118,14 +116,14 @@ ift_node_index_t ift_node_index(ift_graph_t *G, ift_pixel_index_t col, ift_pixel
   {
     demand((col >= 0) && (col < G->cols), "bad col");
     demand((row >= 0) && (row < G->rows), "bad row");
-    return G->cols*row + col;
+    return ((int32_t)G->cols)*row + col;
   }
 
 ift_node_t *ift_get_node(ift_graph_t *G, ift_pixel_index_t col, ift_pixel_index_t row)
   {
     demand((col >= 0) && (col < G->cols), "bad col");
     demand((row >= 0) && (row < G->rows), "bad row");
-    return &(G->node[G->cols*row + col]);
+    return &(G->node[((int32_t)G->cols)*row + col]);
   }
 
 void ift_compute_forest(
@@ -136,16 +134,14 @@ void ift_compute_forest(
     ift_path_cost_t *maxCostp
   )
   {
-    int32_t i;
-    int ia;
     pqueue_t *Q = pqueue_new();
-    pqueue_realloc(Q, G->nodes, G->nodes);
+    pqueue_realloc(Q, (uint32_t)G->nodes, (uint32_t)G->nodes);
     
     /* Insert all seed nodes in the queue, with their trivial path costs; */
     /* Leave all other nodes with infinite cost. */
-    for (i = 0; i < G->nodes; i++)
+    for (uint32_t i = 0; i < G->nodes; i++)
       { assert(G->rows*G->cols == G->nodes);
-        int32_t j = (order == ift_order_UP ? i : G->nodes-1-i);
+        uint32_t j = (order == ift_order_UP ? i : (uint32_t)(G->nodes-1-i));
         ift_node_t *pg = &(G->node[j]);
         /* Make {pg} into a trivial forest: */
         pg->R = pg;
@@ -154,7 +150,7 @@ void ift_compute_forest(
         /* Initialize the node cost to the cost of the trivial path {(pg)}: */
         pg->C = ift_check_path_cost(pf(NULL, NULL, pg, G), 0.0);
         DEBUG_NODE("  ini  ", pg, NAN);
-        pqueue_insert(Q, j, pg->C);
+        pqueue_insert(Q, (uint32_t)j, pg->C);
         assert(G->rows*G->cols == G->nodes);
      }
 
@@ -168,13 +164,13 @@ void ift_compute_forest(
         DEBUG_NODE("  pop  ", s, NAN);
         assert(s->C >= *(maxCostp));
         if (isfinite(s->C)) { *(maxCostp) = s->C; }
-        for (ia = 0; ia < G->arcs; ia++)
-          { int ja = (order == ift_order_UP ? ia : G->arcs-1-ia);
+        for (uint32_t ia = 0; ia < G->arcs; ia++)
+          { uint32_t ja = (order == ift_order_UP ? ia : (uint32_t)(G->arcs-1-ia));
             ift_rel_arc_t *a = &(G->arc[ja]);
-            int tcol = s->col + a->dcol;
-            int trow = s->row + a->drow;
+            int32_t tcol = s->col + a->dcol;
+            int32_t trow = s->row + a->drow;
             if ((tcol >= 0) && (tcol < G->cols) && (trow >= 0) && (trow < G->rows))
-              { pqueue_item_t jt = js + a->daddr;
+              { pqueue_item_t jt = js + (uint32_t)a->daddr;
                 ift_node_t *t = s + a->daddr;
                 if (pqueue_has(Q, jt))
                   { if ((t->C > s->C) || (tbreak == ift_tbreak_LIFO))

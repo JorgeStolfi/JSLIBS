@@ -1,8 +1,10 @@
 /* pnmift_path_cost_fn.h - some path cost functions for PNM segmentation */
-/* Last edited on 2016-04-01 01:29:10 by stolfilocal */
+/* Last edited on 2025-04-24 13:48:04 by stolfi */
 
 #ifndef pnmift_path_cost_fn_H
 #define pnmift_path_cost_fn_H
+
+#include <stdint.h>
 
 #include <ift.h>
 

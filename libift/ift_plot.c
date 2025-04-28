@@ -1,7 +1,8 @@
 /* Implementation of ift_plot.h. */
-/* Last edited on 2024-12-05 10:29:05 by stolfi */
+/* Last edited on 2025-04-24 14:15:38 by stolfi */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
 
@@ -19,11 +20,11 @@ void ift_plot_pixel
     ift_pixel_index_t col, 
     ift_pixel_index_t row,
     frgb_t *rgb,
-    int outline
+    int32_t outline
   )
   {
     double xclo = (double)col;
-    double yclo = (double)(G->rows - 1 - row);
+    double yclo = (double)((int32_t)G->rows-1-row);
     double xchi = xclo + 1;
     double ychi = yclo + 1;
     
@@ -40,7 +41,7 @@ void ift_plot_node
     frgb_t *rgb
   )
   { double xp = 0.5+(double)col;
-    double yp = 0.5+(double)(G->rows - 1 - row);
+    double yp = 0.5+(double)((int32_t)G->rows-1-row);
     epswr_set_fill_color(eps, rgb->c[0], rgb->c[1], rgb->c[2]);
     epswr_dot(eps, xp,yp, radius, TRUE, TRUE);
   }
@@ -52,7 +53,7 @@ void ift_plot_arc
     ift_pixel_index_t row1,
     ift_pixel_index_t col2, 
     ift_pixel_index_t row2,
-    int arrow
+    int32_t arrow
   );
   /* Draws an arc from pixel (col1, row1) to pixel (col2, row2).
     If {arrow} is TRUE, also draws the arrowhead. */
@@ -63,8 +64,7 @@ void ift_plot_pixel_values
     frgb_t rgb[],
     double whiten
   )
-  { int k;
-    for (k = 0; k < G->nodes; k++)
+  { for (uint32_t k = 0; k < G->nodes; k++)
       { ift_node_t *p = &(G->node[k]);
         frgb_t yy = rgb[k];
         if (whiten != 0.0)
@@ -80,15 +80,14 @@ void ift_plot_forest_edges
   ( epswr_figure_t *eps, 
     ift_graph_t *G
   )
-  { int k;
-    for (k = 0; k < G->nodes; k++)
+  { for (uint32_t k = 0; k < G->nodes; k++)
       { ift_node_t *p = &(G->node[k]);
         ift_node_t *q = p->P;
         if ((q != NULL) && (q != p))
           { double xp = 0.5+(double)p->col;
-            double yp = 0.5+(double)(G->rows - 1 - p->row);
+            double yp = 0.5+(double)((int32_t)G->rows-1-p->row);
             double xq = 0.5+(double)q->col;
-            double yq = 0.5+(double)(G->rows - 1 - q->row);
+            double yq = 0.5+(double)((int32_t)G->rows-1-q->row);
             epswr_segment(eps, xp,yp, xq,yq);
           }
       }
@@ -101,8 +100,7 @@ void ift_plot_forest_nodes
     double radius,
     frgb_t *rgb
   )
-  { int k;
-    for (k = 0; k < G->nodes; k++)
+  { for (uint32_t k = 0; k < G->nodes; k++)
       { ift_node_t *p = &(G->node[k]);
         ift_node_t *q = p->P;
         bool_t isroot = ((q == NULL) | (q == p));

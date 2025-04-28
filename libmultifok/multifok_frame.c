@@ -1,5 +1,5 @@
 /* See {multifok_frame.h}. */
-/* Last edited on 2025-04-11 14:50:19 by stolfi */
+/* Last edited on 2025-04-13 20:45:12 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -113,19 +113,22 @@ void multifok_frame_write
       { /* Sharp frame. Write the FNI versions of the height and normal maps: */
       
         /* Compute a weight map: */
-        double dhMax = 0.05*(hMax-hMin); /* Max height deviation in a pixel. */
-        double dnMax = 0.1; /* Max normal difference between adh pixels. */
-        float_image_t *sWht = multifok_weight_from_height_and_normal(frame->hDev, dhMax, frame->sNrm, dnMax);
+        double dhMax = 0.02*(hMax-hMin); /* Max height deviation in a pixel. */
+        double dnMax = 0.1; /* Max normal difference between adj pixels. */
 
         /* Add weight to height map and write: */
-        float_image_t *hAvgWht = multifok_image_set_weight_channel(frame->hAvg, sWht, 1, TRUE);
+        float_image_t *hWht = multifok_weight_from_height_dev(frame->hDev, dhMax);
+        float_image_t *hAvgWht = multifok_image_set_weight_channel(frame->hAvg, hWht, 1, TRUE);
         multifok_image_write_fni_height_average(hAvgWht, frameFolder);
 
         /* Add weight to normal map and write: */
-        float_image_t *sNrmWht = multifok_image_set_weight_channel(frame->sNrm, sWht, 3, TRUE);
+        float_image_t *nWht = multifok_weight_from_normal_grad(frame->sNrm, dnMax);
+        float_image_t *sNrmWht = multifok_image_set_weight_channel(frame->sNrm, nWht, 3, TRUE);
+        multifok_weight_multiply(sNrmWht, 3, hWht, 0);
         multifok_image_write_fni_normal_average(sNrmWht, frameFolder);
 
-        float_image_free(sWht);
+        float_image_free(hWht);
+        float_image_free(nWht);
         float_image_free(hAvgWht);
         float_image_free(sNrmWht);
       }

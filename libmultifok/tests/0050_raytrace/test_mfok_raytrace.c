@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {multifok_sampling.h} and {multifok_raytrace.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-02-05 15:14:24 by stolfi */
+/* Last edited on 2025-04-19 07:18:29 by stolfi */
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
 #define test_mfok_raytrace_COPYRIGHT \
@@ -55,11 +55,11 @@ multifok_raytrace_write_pixel_data_INFO}. */
 typedef struct mfrs_options_t
   { int32_t imageSize_X;    /* Image width. */
     int32_t imageSize_Y;    /* Image height. */
-    char *imageType;        /* Image type: "bullsex", "bullsqr", "noise01", etc. */
+    char *inputImage;       /* File name of input image to be raytraced. */
     uint32_t pixSampling;   /* Determines the sampling points per axis and pixel. */
     uint32_t dirSampling;   /* Min rays per sampling point, or 0 for sharp view. */
     i2_t debugPixel;        /* Pixel to debug. */
-    char *stackFolder;         /* Directory where to put output frame folders. */
+    char *stackFolder;      /* Directory where to put output frame folders. */
   } mfrs_options_t;
   /* Command line parameters. */
 
@@ -114,7 +114,6 @@ void mfrs_write_image(float_image_t *oimg, char *frameFolder);
   /* Writes the image {oimg} to file
     "{frameFolder}/img-blur.png". */
     
-    
 float_image_t *mfrs_read_pattern_image(char *patName);
   /* Reads an image from file "in/{patName}.png". */
 
@@ -135,16 +134,14 @@ int32_t main (int32_t argc, char **argv)
 
     /* Choose the test image to be blurred: */
     float_image_test_generator_t *fimg;
-    if (strcmp(o->imageType, "bullsex") == 0)
+    if (strcmp(o->inputImage, "bullsex") == 0)
       { fimg = &float_image_test_gen_bullsex; }
-    else if (strcmp(o->imageType, "bullsqr") == 0)
+    else if (strcmp(o->inputImage, "bullsqr") == 0)
       { fimg = &float_image_test_gen_bullsqr; }
-    else if (strcmp(o->imageType, "noise01") == 0)
-      { img_pat = mfrs_read_pattern_image(o->imageType);
+    else 
+      { img_pat = mfrs_read_pattern_image(o->inputImage);
         fimg = &pattern_from_image;
       }
-    else
-      { demand(FALSE, "unrecognized image type"); }
  
     uint32_t HS = o->pixSampling;
     uint32_t KR_min = o->dirSampling;
@@ -372,8 +369,8 @@ mfrs_options_t *mfrs_parse_options(int32_t argc, char **argv)
     argparser_get_keyword(pp, "-imageSize");
     o->imageSize_X = (int32_t)argparser_get_next_int(pp, 30, 4096);
     o->imageSize_Y = (int32_t)argparser_get_next_int(pp, 30, 4096);
-    argparser_get_keyword(pp, "-imageType");
-    o->imageType = argparser_get_next_non_keyword(pp);
+    argparser_get_keyword(pp, "-inputImage");
+    o->inputImage = argparser_get_next_non_keyword(pp);
 
     argparser_get_keyword(pp, "-pixSampling");
     o->pixSampling = (uint32_t)argparser_get_next_int(pp, 0, 9999);

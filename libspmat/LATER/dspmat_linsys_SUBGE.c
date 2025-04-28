@@ -2,7 +2,7 @@
 
 #define dspmat_linsys_SUBGE_C_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2024-12-05 10:40:22 by stolfi */
+/* Last edited on 2025-04-24 15:03:49 by stolfi */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,7 +67,7 @@ void dspmat_linsys_SUBGE_solve
     dspmat_t *A, 
     double x[], 
     dspmat_size_t nx,
-    int32_t max_iter, 
+    uint32_t max_iter, 
     double omega,
     double abs_tol, 
     double rel_tol
@@ -136,7 +136,7 @@ void dspmat_inv_mul_SUBGE
   ( dspmat_t *A,
     dspmat_t *B,
     dspmat_t *X,
-    int32_t max_iter, 
+    uint32_t max_iter, 
     double abs_tol, 
     double rel_tol
   )

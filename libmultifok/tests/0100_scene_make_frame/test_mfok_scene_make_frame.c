@@ -2,7 +2,7 @@
 #define PROG_DESC "test of {multifok_test_image_make.h}"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-04-11 09:06:32 by stolfi */ 
+/* Last edited on 2025-04-14 14:01:14 by stolfi */ 
 /* Created on 2023-01-05 by J. Stolfi, UNICAMP */
 
 #define test_mfok_scene_make_frame_COPYRIGHT \
@@ -78,11 +78,12 @@ typedef struct mfmi_options_t
   } mfmi_options_t;
   /* Command line parameters. 
     The {sceneType} may be:
-     "R" Ramp only.
+     "R" Ramp floor only.
      "D" Single disk.
      "B" Single ball.
      "C" Single cone.
      "P" Single square pyramid.
+     "Q" Disk, cone, pyramid, and ball at various heights.
      "F" Non-overlapping mixed objects.
      "T" Overlapping mixed objects.
   */
@@ -172,7 +173,7 @@ multifok_scene_t *mfmi_make_scene
     
     If {sceneType} is "D", "B", "C", or "P", the scene will have a flat floor (an
     object of type {ot_FLAT}) at {Z=0.0} plus a single foreground object
-    of type {ot_DISK}, {ot_BALL}, {ot_CONE}, or {ot_PYRA}, respectively. 
+    of type {ot_DISK}, {ot_BALL}, {ot_CONE}, or {ot_PYRA}, respectively.
     See {mfmi_fill_scene_singu}.
     
     If {sceneType} is "F" or "T", the scene will have a flat floor at
@@ -202,8 +203,17 @@ void mfmi_fill_scene_singu
   );
   /* The {scene} must have no objects. Adds a floor object of the type
     {ot_FLAT} at {Z=0} and a single foreground object of the specified type
-    (which must not be {ot_FLAT} or {ot_RAMP}). The object will be
-    centered in the scene's domain {scene.dom}. */
+    (which must not be {ot_FLAT} or {ot_RAMP}).
+    
+    The object's {X} and {Y} extents 
+    will not exceed the {X} and {Y} extents of the scene's domain
+    bounding box, minus a safety margin.  Its {Z} extent
+    will fit between {Z=0} and a tad less than the top {Z} of the 
+    scene's domain.  The object's size will be the largest that
+    satisfies these constraints.
+    
+    The disk will be vertically centered in that interval.
+    The other objects will be resting on the floor at {Z=0}. */
   
 void mfmi_fill_scene_multi
   ( multifok_scene_t *scene,
@@ -388,6 +398,8 @@ FILE *mfmi_open_pixel_plot_data_file(char *stackFolder);
 
 int32_t main (int32_t argc, char **argv)
   {
+    uint32_t seed = 461517;
+    srand(seed); srandom(seed);
     mfmi_options_t *o = mfmi_parse_options(argc, argv);
     
     int32_t NX = o->imageSize_X;
@@ -407,13 +419,15 @@ int32_t main (int32_t argc, char **argv)
       );
       
     /* Select the debugging pixels: */
-    uint32_t NQ_max = 10;
+    uint32_t NQ_max = 2;
     uint32_t NQ;
     i2_t *iDeb;
-    /* !!! {mfmi_select_debug_pixels} calls {drandom} !!! */
-    /* !!! So call it as before but then reset {NQ} !!! */
+    /* !!! Note, {mfmi_select_debug_pixels} calls {drandom} !!! */
     mfmi_select_debug_pixels(NX, NY, scene, NQ_max, &NQ, &iDeb);
-    NQ = 0;
+    
+    /* Re-iitialize the random generator: */
+    seed = 463417;
+    srand(seed); srandom(seed);
     
     frgb_t lightColor = (frgb_t){{ 0.900f, 0.850f, 0.800f }}; /* Color of point source. */
     frgb_t ambColor = (frgb_t){{ 0.800f, 0.900f, 1.000f }}; 
@@ -523,46 +537,52 @@ void mfmi_fill_scene_singu
   { 
     if (verbose) 
       { char *typeX = multifok_scene_object_type_to_string(type);
-        fprintf(stderr, "filling scene with floor and one foreground object of type %s\n", typeX); 
+        fprintf(stderr, "filling scene with flat floor and one foreground object of type %s\n", typeX); 
       }
+      
+    if (verbose) { fprintf(stderr, "adding FLAT floor ...\n"); }
+    multifok_scene_add_floor(scene, ot_FLAT, verbose);
     
-    /* In principle the object can use the whole {scene.dom} minus a margin: */
     interval_t *dom = scene->dom;
-    double wX = interval_width(&(dom[0]));
-    double wY = interval_width(&(dom[1]));
-    
-    double wSceneXY = fmin(wX, wY);
-    double wSceneZ = interval_width(&(dom[2]));
-    double marginXY = 0.05*wSceneXY; 
-    double marginZ = 0.0005*wSceneZ;
-    double slackX = wX - wSceneXY;
-    double slackY = wY - wSceneXY;
 
-    double wObjXY = wSceneXY - marginXY;
-    if (verbose) { fprintf(stderr, "object {XY} size = %12.6f\n", wObjXY); }
-    
-    interval_t bbox[3]; 
+    double wSceneX = interval_width(&(dom[0]));
+    double wSceneY = interval_width(&(dom[1]));
+    double wSceneXY = fmin(wSceneX, wSceneY);
 
+    interval_t bbox[3]; /* Object's max bounding box. */
+
+    /* The object's {XY} span is the largest square that fits in {scene.dom} minus a margin: */
+    double marginXY = 0.025*wSceneXY; 
+    double wObjXY = wSceneXY - 2*marginXY;
+
+    double slackX = wSceneX - wSceneXY;
     LO(bbox[0]) = 0.5*slackX + marginXY;
     HI(bbox[0]) = LO(bbox[0]) + wObjXY;
 
+    double slackY = wSceneY - wSceneXY;
     LO(bbox[1]) = 0.5*slackY + marginXY;
     HI(bbox[1]) = LO(bbox[1]) + wObjXY;
 
-    bbox[2] = dom[2];
-    interval_widen(&(bbox[2]), -marginZ);
+    /* The object's {Z} span is scene {Z} span minus tiny margin and floor: */
+    double topFloorZ = HI(scene->objs[0].bbox[2]);
+    double wSceneZ = HI(dom[2]) - topFloorZ;
+    demand(wSceneZ > 0.1*wObjXY, "scene {Z} range too small");
+    double marginZ = 0.00025*wSceneZ;
     
+    LO(bbox[2]) = topFloorZ + marginZ;
+    HI(bbox[2]) = HI(dom[2]) - marginZ;
+    
+    if (verbose) { box_gen_print(stderr, 3, bbox,"%12.6f", "object's box = ", " × ", "\n"); }
+
     /* Pick colors: */
     frgb_t fgLam = (frgb_t){{ 1.000f, 0.700f, 0.300f }};
     frgb_t bgLam = (frgb_t){{ 0.600f, 0.500f, 0.250f }};
       
     frgb_t bgGlo = (frgb_t){{ 0.000f, 0.000f, 0.000f }};
-      
-    if (verbose) { fprintf(stderr, "adding FLAT floor ...\n"); }
-    multifok_scene_add_floor(scene, ot_FLAT, verbose);
 
     if (verbose) { fprintf(stderr, "adding the foreground object ...\n"); }
-    multifok_scene_add_foreground_object(scene, type, bbox, fgGlo, &bgGlo, &fgLam, &bgLam, verbose);
+    bool_t bottom = TRUE;
+    multifok_scene_add_foreground_object(scene, type, bbox, bottom, fgGlo, &bgGlo, &fgLam, &bgLam, verbose);
   }
   
 void mfmi_fill_scene_multi
@@ -583,21 +603,21 @@ void mfmi_fill_scene_multi
     
     /* Define the object {XY} width range {wMinXY,wMaxXY} (in scene units): */
     interval_t *dom = scene->dom;
-    double wX = interval_width(&(dom[0]));
-    double wY = interval_width(&(dom[1]));
-    double wXYMin = fmin(wX, wY);
+    double wSceneX = interval_width(&(dom[0]));
+    double wSceneY = interval_width(&(dom[1]));
+    double wSceneXY = fmin(wSceneX, wSceneY);
 
-    /* Define the range {wMinXY,wMaxXY} of object XY widths: */
+    /* Define the range {wObjXYMin,wObjXYMax} of object XY widths: */
     /* Don't worry about Z, will be fitted as needed: */
-    double wMinXY = fmax(30.0*pixelSize, 0.05*wXYMin);
-    double wMaxXY = 0.33*wXYMin;
-    if (verbose) { fprintf(stderr, "object {XY} size range = [ %12.6f _ %12.6f ]\n", wMinXY, wMaxXY); }
+    double wObjXYMin = fmax(30.0*pixelSize, 0.05*wSceneXY);
+    double wObjXYMax = 0.33*wSceneXY;
+    if (verbose) { fprintf(stderr, "object {XY} size range = [ %12.6f _ %12.6f ]\n", wObjXYMin, wObjXYMax); }
 
     if (verbose) { fprintf(stderr, "adding FLAT floor ...\n"); }
     multifok_scene_add_floor(scene, ot_FLAT, verbose);
 
     if (verbose) { fprintf(stderr, "throwing foreground objects ...\n"); }
-    multifok_scene_throw_foreground_objects(scene, wMinXY, wMaxXY, fgGlo, minSep, verbose);
+    multifok_scene_throw_foreground_objects(scene, wObjXYMin, wObjXYMax, fgGlo, minSep, verbose);
   }
   
 void mfmi_fill_scene_quartet
@@ -618,16 +638,15 @@ void mfmi_fill_scene_quartet
     
     interval_t *dom = scene->dom;
     
-    /* Define the foreground object's {XY} width {wXY} (in scene units): */
-    double wX = interval_width(&(dom[0]));
-    double wY = interval_width(&(dom[1]));
-    double wZ = interval_width(&(dom[2]));
-    double wSceneXY = fmin(wX, wY);
-    double slackX = wX - wSceneXY;
-    double slackY = wY - wSceneXY;
+    double wSceneX = interval_width(&(dom[0]));
+    double wSceneY = interval_width(&(dom[1]));
+    double wSceneZ = interval_width(&(dom[2]));
+    double wSceneXY = fmin(wSceneX, wSceneY);
+    double slackX = wSceneX - wSceneXY;
+    double slackY = wSceneY - wSceneXY;
 
     double marginXY = 0.05*wSceneXY + minSep; 
-    double marginZ = 0.0005*wZ; 
+    double marginZ = 0.0005*wSceneZ; 
 
     /* Don't worry about Z, will be fitted as needed: */
     double wObjXY = (wSceneXY - 3*marginXY)/2;
@@ -635,10 +654,10 @@ void mfmi_fill_scene_quartet
     
     auto void place_object(int32_t kx, int32_t ky, multifok_scene_object_type_t type);
     
-    place_object(0,0, ot_DISK);
-    place_object(1,0, ot_BALL);
-    place_object(0,1, ot_PYRA);
-    place_object(1,1, ot_CONE);
+    place_object(0,0, ot_BALL);
+    place_object(1,0, ot_PYRA);
+    place_object(0,1, ot_CONE);
+    place_object(1,1, ot_DISK);
     
     return;
     
@@ -664,7 +683,8 @@ void mfmi_fill_scene_quartet
         frgb_t bgGlo = (frgb_t){{ 0.000f, 0.000f, 0.000f }};
 
         if (verbose) { fprintf(stderr, "adding the foreground object ...\n"); }
-        multifok_scene_add_foreground_object(scene, type, bbox, fgGlo, &bgGlo, &fgLam, &bgLam, verbose);
+        bool_t bottom = TRUE;
+        multifok_scene_add_foreground_object(scene, type, bbox, bottom, fgGlo, &bgGlo, &fgLam, &bgLam, verbose);
       }
   }
   

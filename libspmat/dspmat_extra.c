@@ -2,7 +2,7 @@
 
 #define dspmat_extra_C_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2009-08-31 21:42:54 by stolfi */
+/* Last edited on 2025-04-24 14:52:08 by stolfi */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -65,7 +65,7 @@ void dspmat_normalize_rows(dspmat_t *A, dspmat_t *R)
         dspmat_scale_row(A, row, &posA, scale, R, &posR);
       }
     demand(posA == A->ents, "matrix {A} was not sorted by rows");
-    dspmat_trim(R, posR);
+    dspmat_trim(R, (spmat_count_t)posR);
   }
   
 double dspmat_max_element_in_row

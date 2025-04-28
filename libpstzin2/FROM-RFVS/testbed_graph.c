@@ -268,7 +268,7 @@ int32_t main(int32_t argc, char** argv){
     if(iv->id != -1){
       if(iv->mark != MARK_VERTEX_REMOVED){
 	int32_t ix,iy;
-	pst_img_graph_get_vertex_image_indices(&(iv->coords),NX_Z,NY_Z,&ix,&iy);
+	pst_img_graph_get_vertex_pixel(&(iv->coords),NX_Z,NY_Z,&ix,&iy);
 	double err = iZ[i] - sZ[i];
 	double d2 = r2_dist_sqr(&(o->removeVertex),&(iv->coords));
 	double w = iW[i]/(1+d2);

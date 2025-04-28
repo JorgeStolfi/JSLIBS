@@ -4,7 +4,7 @@
 
 #define spmat_H_COPYRIGHT "Copyright © 2008 by J. Stolfi, UNICAMP"
 /* Created on 2008-07-19 by J.Stolfi, UNICAMP */
-/* Last edited on 2024-11-22 01:57:25 by stolfi */
+/* Last edited on 2025-04-24 14:56:33 by stolfi */
 
 /* 
   !!! change sort_entries so that (+1,+2) means row-by-row ? !!!
@@ -67,7 +67,7 @@
     dspmat_t M = dspmat_new(50,200,400); // Guesing ~400 entries.
     
     // Store some elements into {M}, in arbitrary order:
-    int32_t count = 0;
+    spmat_count_t count = 0;
     while(! finished(...))
       { int32_t i = ...;
         int32_t j = ...;
@@ -76,13 +76,13 @@
       }
     
     // Reclaim unused entries:
-    dspmat_trim(&M, count); 
+    dspmat_trim(&M, (spmap_count_t)count); 
     
     // Sort the entries by rows:
     dspmat_sort_entries(&M, +1, 0);
     
     // Print the elements, one row per line:
-    int32_t r = -1; // Current row index.
+    spmat_index_t r = -1; // Current row index.
     for (k = 0; k < M.ents; k++)
       { dspmat_entry_t *ek = &(M.e[k]);
         if (ek->row != r) { r = ek->row; printf("\n [%d] :", r); }
@@ -533,14 +533,14 @@ void PREFIX##_extract_col
       dspmat_sort_entries(&M, +1, 0);  // Sort entries of {M} by row.
       dspmat_t R = dspmat_new(M->rows,M->cols,0);  // Matrix for result.
       double v[M.cols];
-      int32_t pM = 0, pR = 0; // Scan the entries of {M} and {R}.
-      int32_t i;              // Scans the rows of {M} and {R}.
-      for (i = 0; i < M.rows; i++)
-        { pM = dspmat_extract_row(&M, pM, i, v);
-          for (j = 0; j < M.cols; j++) { modify(v[j]); }
-          pR = dspmat_add_row(&R, pR, i, v);
+      spmap_pos_t pM = 0, pR = 0; // Scan the entries of {M} and {R}.
+      // Scan the rows of {M} and {R}.
+      for (spmat_index_t row = 0; row < M.rows; row++)
+        { pM = dspmat_extract_row(&M, pM, row, v);
+          for (spmat_index_t col = 0; col < M.cols; col++) { modify(v[col]); }
+          pR = dspmat_add_row(&R, pR, row, v);
         }
-      dspmat_trim(&R, pR);
+      dspmat_trim(&R, (spmap_count_t)pR);
       ------------------------------------------------------------
   */
 

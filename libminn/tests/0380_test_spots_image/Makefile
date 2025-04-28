@@ -1,4 +1,4 @@
-# Last edited on 2025-03-31 13:36:55 by stolfi
+# Last edited on 2025-04-19 09:43:10 by stolfi
 
 PROG = test_spots_image 
 
@@ -22,4 +22,4 @@ include ${STOLFIHOME}/programs/c/GENERIC-LIB-TEST.make
 .PHONY:: do-test single-clean single-image all-images
 
 all: 
-	./make_all_textures.py
+	./make_all_spots_images.py

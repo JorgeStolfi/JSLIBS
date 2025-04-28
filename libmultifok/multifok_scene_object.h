@@ -1,5 +1,5 @@
 /* Objects for a {multifok_scene_t}. */
-/* Last edited on 2025-02-08 17:26:26 by stolfi */
+/* Last edited on 2025-04-13 05:49:39 by stolfi */
 
 #ifndef multifok_scene_object_H
 #define multifok_scene_object_H
@@ -159,6 +159,7 @@ multifok_scene_object_t multifok_scene_object_background_make
 multifok_scene_object_t multifok_scene_object_foreground_make
   ( multifok_scene_object_type_t type,
     interval_t bbox[],
+    bool_t bottom,
     frgb_t *fgGlo,
     frgb_t *bgGlo,
     frgb_t *fgLam,
@@ -172,7 +173,11 @@ multifok_scene_object_t multifok_scene_object_foreground_make
     {bgGlo,fgGlo,bgLam,fgLam}. The bounding box may be reduced so that
     it has the proper aspect ratio for the {type}. If any is {NULL},
     {0,0,0} is assumed. The {ID} will be set to
-    {multifok_scene_object_ID_NONE}. */
+    {multifok_scene_object_ID_NONE}.
+    
+    If the box is reduced along any axis, its position along that axis will be randomly chosen 
+    within the original interval; except for the {Z} axis when {bottom} is true,
+    in which case the object will rest at the bottom of the given {bbox}. */
 
 multifok_scene_object_t multifok_scene_object_foreground_throw
   ( interval_t dom[],

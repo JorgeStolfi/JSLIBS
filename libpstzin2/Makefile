@@ -1,17 +1,13 @@
-# Last edited on 2025-03-14 16:21:57 by stolfi
+# Last edited on 2025-04-27 02:45:09 by stolfi
 
 LIBNAME := libpstzin2
 
 IGNORE := \
-  pst_gr_shrink.h \
-  pst_gr_shrink.c \
-  pst_gr_integrate_recursive.h \
-  pst_gr_integrate_recursive.c \
-  pst_gr_integrate_iterative.h \
-  pst_gr_integrate_iterative.c \
-  pst_gr_integrate.h \
-  pst_gr_integrate.c \
-  pst_gr_copy.h \
-  pst_gr_copy.c \
+  psgr_integrate_recursive.h \
+  psgr_integrate_recursive.c \
+  psgr_integrate_iterative.h \
+  psgr_integrate_iterative.c \
+  psgr_integrate.h \
+  psgr_integrate.c
 
 include ${STOLFIHOME}/programs/c/GENERIC-LIB.make

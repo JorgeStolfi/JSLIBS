@@ -2,7 +2,7 @@
 #define PROG_DESC "tests {sve_minn_single_step} by generating a image with random spots"
 #define PROG_VERS "1.0"
 
-/* Last edited on 2025-04-03 14:20:16 by stolfi */ 
+/* Last edited on 2025-04-22 11:22:35 by stolfi */ 
 /* Created on 2025-03-16 by J. Stolfi, UNICAMP */
 
 #define test_spots_COPYRIGHT \
@@ -11,7 +11,7 @@
 #define PROG_HELP \
   "  " PROG_NAME " \\\n" \
   "    -imageSize {NX} {NY} \\\n" \
-  "    -spotSize {SPOT_SIZE_MIN} {SPOT_SIZE_VAR} ] \\\n" \
+  "    -spotSizes {SPOT_SIZE_MIN} {SPOT_SIZE_MAX} ] \\\n" \
   "    -relSpotDist {REL_SPOT_DIST} \\\n" \
   "    [ -maxSpots {MAX_SPOTS} ] \\\n" \
   "    -numPasses {NUM_PASSES} \\\n" \
@@ -20,10 +20,14 @@
 #define PROG_INFO \
   "The program creates an image of size {NX} by {NY} with many round" \
   " dots in random places (at most {MAX_SPOTS}), and writes it" \
-  " to \"out/png-{NX}x{NY}/spots-{SPOT_SIZE_VAR}{SPOT_SIZE_MIN}.png\" with; where" \
-  " {NX} and {NY} are formatted as \"%04d\" and {SPOT_SIZE_MIN} and {SPOT_SIZE_VAR} are" \
-  " formatted as \"%01d\".  The actual spot radius {rad} is an exponential" \
-  " function of {SPOT_SIZE_MIN} and {SPOT_SIZE_MIN+SPOT_SIZE_VAR}, where 0 is about one pixel.\n" \
+  " to \"out/png-{NX}x{NY}/spots-{SPOT_SIZE_MIN}{SPOT_SIZE_MAX}.png\" with; where" \
+  " {NX} and {NY} are formatted as \"%04d\" and {SPOT_SIZE_MIN} and {SPOT_SIZE_MAX} are" \
+  " formatted as \"%01d\".\n" \
+  "\n" \
+  "  The nominal spot size will vary between {SPOT_SIZE_MIN}" \
+  " and {SPOT_SIZE_MAX}.  Currently it will be one of the two.  The" \
+  " actual spot radius is an exponential function of the nominal spot size, where nominal size 0" \
+  " gives a radius of about one pixel.\n" \
   "\n" \
   "  The {REL_SPOT_DIST} parameter is" \
   " a multiplier for the sum of the radii of two spots that gives the ideal" \
@@ -48,7 +52,7 @@
   " state has the spots fairly evenly distributed.\n" \
   "\n" \
   "  The program also writes a" \
-  " file \"out/png-{NX}x{NY}/spots-{SPOT_SIZE_VAR}{SPOT_SIZE_MIN}-epair.txt\" with" \
+  " file \"out/png-{NX}x{NY}/spots-{SPOT_SIZE_MIN}{SPOT_SIZE_MAX}-epair.txt\" with" \
   " a graph of the single-pair energy function as a function of" \
   " center-to-center distance assuming unit spot radius.  If {NX} and {NY} are zero, this" \
   " is the only output of the program.\n" \
@@ -87,28 +91,38 @@
 #include <float_image_paint.h>
 
 typedef struct tspi_options_t
-  { int32_t imageSize_NX;   /* Image cols count. */
-    int32_t imageSize_NY;   /* Image rows count. */
-    uint32_t spotSize_min;  /* Integer code for min spot radius. */
-    uint32_t spotSize_var;  /* Integer code for variability of spot radii. */
-    double relSpotDist;     /* Distance between nearest spots as fraction of sum of radii. */
-    uint32_t maxSpots;      /* Max number of spots. */
-    uint32_t numPasses;     /* Number of center optimization passes. */
-  } tspi_options_t;
+  { int32_t imageSize_NX;    /* Image cols count. */
+    int32_t imageSize_NY;    /* Image rows count. */
+    uint32_t spotSizes_min;  /* Integer code for min spot radius. */
+    uint32_t spotSizes_max;  /* Integer code for max spot radius. */
+    double relSpotDist;      /* Distance between nearest spots as fraction of sum of radii. */
+    uint32_t maxSpots;       /* Max number of spots. */
+    uint32_t numPasses;      /* Number of center optimization passes. */
+  } tspi_options_t; 
                
-void tspi_compute_spot_radius_range(uint32_t spotSize_min, uint32_t spotSize_var, double *radMin_P, double *radMax_P);
+void tspi_compute_spot_radius_range
+  ( uint32_t spotSizeMin,
+    uint32_t spotSizeMax,
+    double *radMin_P,
+    double *radMax_P,
+    double *fracMin_P
+  );
   /* Returns in {*radMin_P} and {*radMax_P} the min and max radius (in
-     pixels) of the spots for the user-specified
-     {spotSize_min,spotSize_var}. */
+     pixels) of the spots for the user-specified nominal sizes
+     {spotSizeMin} and {spotSizeMax}.  Also returns in {*fracMin_P}
+     the fraction of spots with radius {radMin} such that the total area of the
+     largest spots is about twice that of the smallest ones. */
     
 uint32_t tspi_choose_number_of_spots
   ( int32_t NX, int32_t NY,
     double radMin, double radMax,
+    double fracMin,
     double relSpotDist,
     uint32_t maxSpots
   );
   /* Chooses a proper number of spots for an image with {NX} cols and {NY} rows 
-    assuming each spot has average area {avgArea} and that the typical distance
+    assuming that fraction {fracMin} of the spots have radius {radMin}
+    and the remainder have radius {radMax},  and the ideal distance
     between adjacent spots is {relSpotDist} times the sum of the radii.
     The number is limited to {maxSpots} or less. */
 
@@ -116,11 +130,13 @@ void tspi_throw_initial_centers_and_radii
   ( int32_t NX, int32_t NY,
     uint32_t NS,
     double radMin, double radMax,
+    double fracMin,
     r2_t sctr[], double srad[]
   );
   /* Throw {NS} initial spot centers {sctr[0..NS-1]} in the rectangle
-    {[0 _ NX) x [0 _ NY)} and their radii {srad[0..NS-1]} in the range
-    {[radMin _ radMax]}. The centers are mostly at jittered centers of
+    {[0 _ NX) x [0 _ NY)} and their radii {srad[0..NS-1]}, such that a
+    fraction of about {fracMin} has radius {radMin} and the remainder
+    has radius {radMax}. The centers are mostly at jittered centers of
     cells of a grid. */
 
 void tspi_relax_centers
@@ -144,7 +160,7 @@ void tspi_relax_centers
     {NNNNN} is the pass index from 0 to {numPasses-1}, formatted as
     '%05d'. */
   
-void tspi_relax_center
+double tspi_relax_center
   ( int32_t NX, int32_t NY,
     uint32_t NS,
     r2_t sctr[], double srad[], double dRef,
@@ -158,7 +174,9 @@ void tspi_relax_center
     are assumed to be {sctr[0..NS-1]} and {srad[0..NS-1]}. The
     parameters {NX,NY,dRef,UX,UY} are passed to {tspi_single_spot_energy}
     (q. v.).  The {stepMax} if the max displacement allowed for the center
-    in the minimization. */
+    in the minimization.
+    
+    Returns the displacement of the center relative to its previous position. */
        
 void tspi_reduce_center(int32_t NX, int32_t NY, r2_t *ck);
   /* Reduces the coordinates of {ck} to the image domain {[0 _ NX) × [0 _ NY)}
@@ -244,7 +262,7 @@ void tspi_single_pair_energy
     distance {dkj} and radii {rk,rj}.
     
     The parameter {dRef} should be the typical distance (in pixels)
-    between a spot and its efw nearest neighbors. The formula is such
+    between a spot and its few nearest neighbors. The formula is such
     that the energy is proportional to {(rk+rj)/dkj} for small {dkj},
     but drops rapidly to zero as {dkj} becomes larger than a few times
     {dRef}.
@@ -335,9 +353,9 @@ float_image_t* tspi_make_single_spot_energy_image
     {sctr[j]}. The parameters {dRef,UX,UY} are passed to
     {tspi_single_spot_energy} (q. v.). */
 
-void tspi_write_single_pair_energy_graph(char *outPrefix, double radMax, double dRef);
-  /* Writes to a file "{outPrefix}-epair.txt" with the energy {E(dkj)}
-    contributed by a single pair of spots of radius {radMax} as a function of the
+void tspi_write_single_pair_energy_graph(char *outPrefix, double rk, char *tagk, double rj, char *tagj, double dRef);
+  /* Writes a file "{outPrefix}-epair-{tagk}-{tagj}.txt" with the energy {E(dkj)}
+    contributed by a single pair of spots of radii {rk} and {rj} as a function of the
     Euclidean distance {dkj} between the centers.
     
     Uses {tspi_single_pair_energy} with reference distance {dRef} to compute {E(dkj)}. 
@@ -348,7 +366,7 @@ tspi_options_t* tspi_parse_options(int32_t argc, char **argv);
 
 int32_t main(int32_t argc, char **argv);
 
-#define tspi_NS_MAX 10000
+#define tspi_NS_MAX 20000
  /* Max number of spots in an image. */
 
 int32_t main (int32_t argc, char **argv)
@@ -356,41 +374,47 @@ int32_t main (int32_t argc, char **argv)
     tspi_options_t *o = tspi_parse_options(argc, argv);
     
     int32_t NX = o->imageSize_NX, NY = o->imageSize_NY;
+    
+    bool_t debugSpotEnergy = FALSE;
 
     mkdir("out", 0755);
     char *outDir = jsprintf("out/png-%04dx%04d", NX, NY);
     mkdir(outDir, 0755);
-    char *outPrefix = jsprintf("%s/spots-%01d%01d", outDir, o->spotSize_var, o->spotSize_min);
+    char *outPrefix = jsprintf("%s/spots-%01d%01d", outDir, o->spotSizes_min, o->spotSizes_max);
     
-    double radMin, radMax;
-    tspi_compute_spot_radius_range(o->spotSize_min, o->spotSize_var, &radMin, &radMax);
+    double radMin, radMax, fracMin;
+    tspi_compute_spot_radius_range(o->spotSizes_min, o->spotSizes_max, &radMin, &radMax, &fracMin);
     fprintf(stderr, "actual spot radius = [ %.2f _ %.2f ] pixels\n", radMin, radMax);
-
-    uint32_t NS = tspi_choose_number_of_spots(NX, NY, radMin, radMax, o->relSpotDist, o->maxSpots);
+    
+    uint32_t NS = tspi_choose_number_of_spots(NX, NY, radMin, radMax, fracMin, o->relSpotDist, o->maxSpots);
     fprintf(stderr, "will generate image with {NS} = %d spots\n", NS);
     assert(NS >= 2);
 
-    double avgSpotDist = sqrt(NX*NY/(double)NS/sqrt(3)); /* Typical dist between centers (px). */
+    double avgSpotDist = sqrt(NX*NY/(double)NS/sqrt(3)); /* Typical dist between centers (px) assuming hex grid. */
     fprintf(stderr, "assumed average center spacing {avgSpotDist} = %12.8f\n", avgSpotDist);
     
-    double dRef = avgSpotDist; /* Reference distance for energy cutoff. */
+    double dRef = 2.0*avgSpotDist; /* Reference distance for energy cutoff. */
     fprintf(stderr, "energy cutoff distance {dRef} = %12.8f\n", dRef);
 
-    fprintf(stderr, "writing single pair energy graph ...\n");
-    tspi_write_single_pair_energy_graph(outPrefix, radMax, dRef);
+    fprintf(stderr, "writing single pair energy graphs ...\n");
+    tspi_write_single_pair_energy_graph(outPrefix, radMin, "min", radMin, "min", dRef);
+    tspi_write_single_pair_energy_graph(outPrefix, radMin, "min", radMax, "max", dRef);
+    tspi_write_single_pair_energy_graph(outPrefix, radMax, "max", radMax, "max", dRef);
 
     fprintf(stderr, "choosing %d initial centers ...\n", NS);
     r2_t *sctr = talloc(NS, r2_t);
     double *srad = talloc(NS, double);
-    tspi_throw_initial_centers_and_radii(NX, NY, NS, radMin, radMax, sctr, srad);
+    tspi_throw_initial_centers_and_radii(NX, NY, NS, radMin, radMax, fracMin, sctr, srad);
 
     fprintf(stderr, "determining the replication limits {UX,UY} ...\n");
     int32_t UX = tspi_find_toroidal_rep_max(NX, NY, radMax, dRef, 0);
     int32_t UY = tspi_find_toroidal_rep_max(NX, NY, radMax, dRef, 1);
     fprintf(stderr, "  UX = %d  UY = %d ...\n", UX, UY);
 
-    fprintf(stderr, "making initial single-spot energy image ...\n");
-    tspi_make_and_write_single_spot_energy_image(outPrefix, "beg", NX, NY, NS, sctr, srad, dRef, UX, UY);
+    if (debugSpotEnergy)
+      { fprintf(stderr, "making initial single-spot energy image ...\n");
+        tspi_make_and_write_single_spot_energy_image(outPrefix, "beg", NX, NY, NS, sctr, srad, dRef, UX, UY);
+      }
 
     fprintf(stderr, "writing initial 2D total energy plot ...\n");
     tspi_write_2D_energy_plot(outPrefix, "beg", NX, NY, NS, sctr, srad, dRef, UX, UY);
@@ -399,8 +423,10 @@ int32_t main (int32_t argc, char **argv)
     fprintf(stderr, "relaxing the centers - max step = %12.8f ...\n", stepMax);
     tspi_relax_centers(outPrefix, NX, NY, NS, sctr, srad, dRef, UX, UY, stepMax, o->numPasses);
 
-    fprintf(stderr, "making final energy image ...\n");
-    tspi_make_and_write_single_spot_energy_image(outPrefix, "end", NX, NY, NS, sctr, srad, dRef, UX, UY);
+    if (debugSpotEnergy)
+      { fprintf(stderr, "making final energy image ...\n");
+        tspi_make_and_write_single_spot_energy_image(outPrefix, "end", NX, NY, NS, sctr, srad, dRef, UX, UY);
+      }
 
     fprintf(stderr, "writing final 2D total energy plot ...\n");
     tspi_write_2D_energy_plot(outPrefix, "end", NX, NY, NS, sctr, srad, dRef, UX, UY);
@@ -416,15 +442,26 @@ int32_t main (int32_t argc, char **argv)
     return 0;
   }
 
-void tspi_compute_spot_radius_range(uint32_t spotSize_min, uint32_t spotSize_var, double *radMin_P, double *radMax_P)
+void tspi_compute_spot_radius_range(uint32_t spotSizeMin, uint32_t spotSizeMax, double *radMin_P, double *radMax_P, double *fracMin_P)
   { 
-    (*radMin_P) = pow(M_SQRT2, spotSize_min + 2);
-    (*radMax_P) = pow(M_SQRT2, spotSize_min + spotSize_var + 2);
+    double radMin = pow(M_SQRT2, spotSizeMin + 2);
+    double radMax = pow(M_SQRT2, spotSizeMax + 2);
+    double areaMin = M_PI*radMin*radMin; /* Area of min spot. */
+    double areaMax = M_PI*radMax*radMax; /* Area of max spot. */
+    
+    /* We want {(1-fracMin)*areaMax = C*fracMin*areaMin}, so: */
+    double C = 4.0;
+    double fracMin = areaMax/(C*areaMin+areaMax); 
+        
+    (*radMin_P) = radMin;
+    (*radMax_P) = radMax; 
+    (*fracMin_P) = fracMin;
   }
  
 uint32_t tspi_choose_number_of_spots
   ( int32_t NX, int32_t NY,
     double radMin, double radMax,
+    double fracMin,
     double relSpotDist,
     uint32_t maxSpots
   )
@@ -437,7 +474,7 @@ uint32_t tspi_choose_number_of_spots
         double areaMin = M_PI*radMin*radMin;     /* Area of smallest spot. */
         double areaMax = M_PI*radMax*radMax;     /* Area of largest spot. */
 
-        double areaMed = (2*areaMax + areaMin)/3; /* Mean spot area. */
+        double areaMed = fracMin*areaMin + (1-fracMin)*areaMax; /* Mean spot area. */
 
         double areaNom = areaMed*relSpotDist*relSpotDist; /* Mean area of spot plus spot spacing. */
 
@@ -464,6 +501,7 @@ void tspi_throw_initial_centers_and_radii
   ( int32_t NX, int32_t NY,
     uint32_t NS,
     double radMin, double radMax,
+    double fracMin,
     r2_t sctr[], double srad[]
   )
   { 
@@ -486,7 +524,7 @@ void tspi_throw_initial_centers_and_radii
                 /* Store the candidate: */
                 assert(ns < NS);
                 sctr[ns] = (r2_t){{ x, y }};
-                srad[ns] = dabrandom(radMin, radMax);
+                srad[ns] = (drandom() < fracMin ? radMin : radMax);
                 ns++;
               }
             kp++;
@@ -530,11 +568,14 @@ void tspi_relax_centers
       { /* One more pass over the whole dot collection: */
         fprintf(stderr, "  pass %d ...\n", kpass);
         tspi_make_and_write_spots_image(outPrefix, kpass, NX, NY, NS, sctr, srad, dRef);
+        double dispMax = 0;
         for (uint32_t kc = 0; kc < NS; kc++)
           { if (debug) { fprintf(stderr, "    relaxing spot center %d ...\n", kc); }
-            tspi_relax_center(NX, NY, NS, sctr, srad, dRef, UX, UY, kc, stepMax);
+            double disp = tspi_relax_center(NX, NY, NS, sctr, srad, dRef, UX, UY, kc, stepMax);
+            dispMax = fmax(dispMax, disp);
             if (debug) { fprintf(stderr, "    ..............................\n"); }
           }
+        fprintf(stderr, "  max displacement = %14.8f\n", dispMax);
 
         fprintf(stderr, "\n");
       }
@@ -543,7 +584,7 @@ void tspi_relax_centers
     tspi_make_and_write_spots_image(outPrefix, INT32_MAX, NX, NY, NS, sctr, srad, dRef);
   }
 
-void tspi_relax_center
+double tspi_relax_center
   ( int32_t NX, int32_t NY,
     uint32_t NS,
     r2_t sctr[], double srad[], double dRef,
@@ -588,7 +629,7 @@ void tspi_relax_center
     uint32_t nEvals = 0;
     double dStep = NAN;
     bool_t debug_probes = FALSE;
-    if (kc == NS/2) { fprintf(stderr, "        dMax = %12.8f  rSim = %12.8f  rMin = %12.8f\n", dMax, rSim, rMin); }
+    if (debug && (kc == NS/2)) { fprintf(stderr, "        dMax = %12.8f  rSim = %12.8f  rMin = %12.8f\n", dMax, rSim, rMin); }
     uint32_t stepKind = sve_minn_single_step
       ( nz, z_fin, &Fz_fin, goal, -1,
         z_ini, dMax, dBox, &rSim, rMin, 
@@ -596,19 +637,26 @@ void tspi_relax_center
       );
     if (debug) { fprintf(stderr, "        moved to %s point\n", (char*[3]){"stationary", "simplex", "previous"}[stepKind]); }
     
+    double disp = 0.0;
     if (Fz_fin > Fz_ini)
       { fprintf(stderr, "        failed, reverting ...\n");
-        Fz_fin = goal(nz, z_ini);
+        rn_copy(nz, z_ini, z_fin); /* Just in case. */
+        Fz_fin = goal(nz, z_fin); /* Will set {sctr[kc]} to {z_ini} hence original value. */
       }
     else
-      { if (debug) { fprintf(stderr, "        succeeded\n"); } }
+      { if (debug) { fprintf(stderr, "        succeeded\n"); }
+        /* Compute displacement modulo toroidal geometry: */
+        double dx = fabs(z_fin[0] - z_ini[0]); while (dx > 0.5000001*NX) { dx = fabs(dx - NX); }
+        double dy = fabs(z_fin[1] - z_ini[1]); while (dy > 0.5000001*NY) { dy = fabs(dy - NY); }
+        disp = hypot(dx, dy);
+      }
 
     if (debug) { fprintf(stderr, "      Fz_fin = %24.16e\n", Fz_fin); }
 
     if (debug) { fprintf(stderr, "      reducing centers to domain ...\n"); }
     tspi_reduce_centers(NX, NY, NS, sctr);
 
-    return;
+    return disp;
     
     double goal(uint32_t nz_cur, const double z_cur[])
       { assert(nz == 2); 
@@ -729,9 +777,9 @@ void tspi_single_pair_energy_toroidal
           { double xju = xj + ux*NX, yju = yj + uy*NY;
             double E;
             double dkju = hypot(xk - xju, yk - yju);
-            double dRelkju = dkju/(rk + rj);
             tspi_single_pair_energy(dkju, rk, rj, dRef, &E, NULL, NULL);
             EToro += E;
+            double dRelkju = dkju/(rk + rj);
             if (dRelkju < dRelMin) { dRelMin = dRelkju; }
           }
       } 
@@ -775,30 +823,29 @@ void tspi_single_pair_energy
     double *eTerm_P
   )
   { 
-    double dRel = dkj/(rk + rj);
-    
-    /* Rational term: */
-    double rTerm = 1/dRel;
-    
     /* Exponential term: */
     double uRel = dkj/dRef;
     /* We want {zr} to be about 0 for {uRel <~ 1.0}, and about 8 for {uRel > 6}: */
-    double C = 1.5;
-    double zr = C*(hypot(1.0, uRel) - 1.0);
+    double A = 0.3;
+    double C = 2.3;
+    double zr = (C/A)*(hypot(1.0, A*uRel) - 1.0);
     double eTerm = exp(-zr*zr/2);
-
+    
+    /* Rational term: */
+    /* double szFac = 2 - fmin(rk, rj)/fmax(rk,rj); */
+    /* double rTerm = szFac*pow(rk*rj,1.5)/dkj; */
+    /* double rTerm = pow(rk*rj,1.5)/dkj; */
+    double rTerm = pow(rk*rj/dkj,1.5);
+    
     double E = rTerm*eTerm;
     (*E_P) = E;
     if (rTerm_P != NULL) { (*rTerm_P) = rTerm; }
     if (eTerm_P != NULL) { (*eTerm_P) = eTerm; }
   }
   
-void tspi_write_single_pair_energy_graph(char *outPrefix, double radMax, double dRef)
-  { char *fname = jsprintf("%s-epair.txt", outPrefix);
+void tspi_write_single_pair_energy_graph(char *outPrefix, double rk, char *tagk, double rj, char *tagj, double dRef)
+  { char *fname = jsprintf("%s-epair-%s-%s.txt", outPrefix, tagk, tagj);
     FILE *wr = open_write(fname, TRUE);
-
-    /* Assumed parameters: */
-    double rk = radMax, rj = radMax;    /* Assumed for this plot. */
     
     /* Compute an energy value {ERef} at typical distances: */
     double dkjRef = dRef;
@@ -1004,9 +1051,9 @@ tspi_options_t *tspi_parse_options(int32_t argc, char **argv)
     o->imageSize_NX = (int32_t)argparser_get_next_int(pp, tspi_imageSize_MIN, tspi_imageSize_MAX);
     o->imageSize_NY = (int32_t)argparser_get_next_int(pp, tspi_imageSize_MIN, tspi_imageSize_MAX);
     
-    argparser_get_keyword(pp, "-spotSize");
-    o->spotSize_min = (uint32_t)argparser_get_next_int(pp, 0, 9);
-    o->spotSize_var = (uint32_t)argparser_get_next_int(pp, 0, 9 - o->spotSize_min);
+    argparser_get_keyword(pp, "-spotSizes");
+    o->spotSizes_min = (uint32_t)argparser_get_next_int(pp, 0, 9);
+    o->spotSizes_max = (uint32_t)argparser_get_next_int(pp, o->spotSizes_min, 9);
 
     argparser_get_keyword(pp, "-relSpotDist");
     o->relSpotDist = argparser_get_next_double(pp, 1.1, 99.0);
